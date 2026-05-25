@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Score-system — tre visuella primitiver (LED / score-block / sparkline)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal:          #1a1612;
+    --bg-portal-surface:  #221d18;
+    --bg-portal-elevated: #2a241e;
+    --bg-leather:         #3D3A32;
+    --bg-leather-dk:      #1d1b18;
+    --bg:                 #EDE8DF;
+    --bg-surface:         #FAF8F4;
+    --border:             #DDD7CC;
+    --border-dark:        #C4BAA8;
+    --text-light:           #F5F1EB;
+    --text-light-secondary: #C4BAA8;
+    --text-muted:           #8A857A;
+    --text-primary:         #1A1A18;
+    --text-secondary:       #6B6760;
+    --accent:      #C47A3A;
+    --accent-dark: #A25828;
+    --accent-deep: #8B4820;
+    --cold:        #4a6680;
+    --cold-light:  #7095b8;
+    --warm:        #8c6e3a;
+    --warm-light:  #c8a058;
+    --gold:        #E8B95C;
+    --gold-deep:   #B88838;
+    --success:     #5A9A4A;
+    --danger:      #B05040;
+    --led-red:     #FF2A18;
+    --led-amber:   #FFAA00;
+    --led-green:   #66FF33;
+    --led-bg:      #0A0A0A;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono:    ui-monospace, 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color: var(--text-light); font-family: var(--font-body); }
+  body {
+    background: var(--bg-leather);
+    padding: 32px 16px 80px;
+    color: var(--text-light);
+    min-height: 100vh;
+  }
+
+  .page-head { max-width: 1640px; margin: 0 auto 24px; }
+  .page-head h1 {
+    font-family: var(--font-display); font-size: 24px;
+    letter-spacing: 0.2px; margin-bottom: 6px;
+  }
+  .page-head p {
+    font-size: 13px; color: rgba(245,241,235,0.7);
+    line-height: 1.6; max-width: 820px;
+  }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 28px;
+    max-width: 1640px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  .col {
+    background: var(--bg-portal);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    width: 100%; max-width: 380px;
+    justify-self: center;
+  }
+  .col-head {
+    padding: 12px 16px;
+    background: var(--bg-leather-dk);
+    color: var(--text-light);
+    font-family: var(--font-display);
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .col-head .num {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--accent);
+    background: rgba(196,122,58,0.1);
+    padding: 2px 6px; border-radius: 2px;
+    margin-right: 8px; vertical-align: 2px;
+  }
+  .col-head .phase {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 1.5px;
+    color: var(--text-light-secondary);
+    background: rgba(245,241,235,0.05);
+    padding: 2px 6px; border-radius: 2px;
+    margin-left: 6px; vertical-align: 2px;
+    text-transform: uppercase;
+  }
+  .col-head .sub {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(245,241,235,0.6);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .body { padding: 14px 14px 16px; }
+
+  /* ── Overview-blocks ──────────────────────────────── */
+  .primitiv-card {
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px dashed rgba(196,122,58,0.18);
+  }
+  .primitiv-card:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+  .primitiv-eyebrow {
+    font-family: var(--font-body);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 5px;
+  }
+  .primitiv-name {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+  .primitiv-desc {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-light-secondary);
+    line-height: 1.45;
+    margin-bottom: 12px;
+  }
+  .primitiv-demo {
+    background: var(--bg-portal-surface);
+    border-radius: 4px;
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+  .primitiv-context {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    opacity: 0.85;
+  }
+
+  /* ── 1. LED-numerals demo ─────────────────────────── */
+  .led-demo {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--led-bg);
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .led-numeral {
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--led-red);
+    line-height: 1;
+    text-shadow: 0 0 8px rgba(255,42,24,0.5);
+    letter-spacing: 1px;
+  }
+  .led-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--led-amber);
+    letter-spacing: 1px;
+    text-shadow: 0 0 4px rgba(255,170,0,0.4);
+  }
+  .led-sep {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    color: var(--led-amber);
+    opacity: 0.6;
+  }
+
+  /* ── 2. Score-block demo ──────────────────────────── */
+  .score-block {
+    display: inline-block;
+    background: var(--bg-portal-elevated);
+    border: 1px solid rgba(196,122,58,0.25);
+    border-left: 3px solid var(--accent);
+    border-radius: 2px;
+    padding: 8px 10px 6px;
+    text-align: center;
+    line-height: 1;
+    min-width: 64px;
+  }
+  .score-block.win   { border-left-color: var(--success); }
+  .score-block.loss  { border-left-color: var(--danger); }
+  .score-block.draw  { border-left-color: var(--text-muted); }
+  .score-block.derby { border-left-color: var(--warm); }
+  .score-block.gold  { border-left-color: var(--gold); background: rgba(232,185,92,0.06); }
+  .score-block-num {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-light);
+    font-variant-numeric: tabular-nums;
+  }
+  .score-block.loss  .score-block-num { color: var(--danger); }
+  .score-block.win   .score-block-num { color: var(--success); }
+  .score-block.gold  .score-block-num { color: var(--gold); }
+  .score-block-label {
+    font-family: var(--font-body);
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .score-block.loss  .score-block-label { color: var(--danger); }
+  .score-block.win   .score-block-label { color: var(--success); }
+  .score-block.gold  .score-block-label { color: var(--gold); }
+  .score-block.derby .score-block-label { color: var(--warm-light); }
+
+  .score-block.compact { min-width: 44px; padding: 5px 7px 4px; }
+  .score-block.compact .score-block-num { font-size: 12px; }
+  .score-block.compact .score-block-label { font-size: 6.5px; margin-top: 2px; }
+
+  .score-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .score-row + .score-row { margin-top: 8px; }
+  .score-row-note {
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.35;
+  }
+  .score-row-note strong { font-weight: 700; }
+  .score-row-note .opp {
+    color: var(--text-light-secondary);
+    font-size: 11px;
+  }
+
+  /* ── 3. Sparkline demo ─────────────────────────────── */
+  .sparkline-frame {
+    background: var(--bg-portal-surface);
+    border-radius: 4px;
+    padding: 10px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .sparkline-frame .label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    width: 56px;
+    flex-shrink: 0;
+  }
+  .sparkline-svg { flex: 1; height: 28px; display: block; }
+
+  .sparkline-mini {
+    display: inline-block;
+    width: 60px; height: 18px;
+    vertical-align: middle;
+  }
+
+  /* ── Application examples — RoundSummary ─────────── */
+  .summary-list {
+    background: var(--bg-portal-surface);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .summary-list-head {
+    font-family: var(--font-body);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .summary-text-row {
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(196,122,58,0.08);
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.4;
+  }
+  .summary-text-row:last-child { border-bottom: none; }
+  .summary-text-row .res {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    margin-right: 8px;
+  }
+
+  .summary-block-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(196,122,58,0.06);
+  }
+  .summary-block-row:last-child { border-bottom: none; }
+  .summary-block-row .match {
+    flex: 1;
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.3;
+  }
+  .summary-block-row .match strong { font-weight: 600; }
+  .summary-block-row .match .vs {
+    color: var(--text-light-secondary);
+    font-weight: 400;
+    margin: 0 4px;
+  }
+
+  /* ── Application examples — OpponentForm ─────────── */
+  .opp-form-old {
+    padding: 10px 12px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--cold);
+    border-radius: 0 6px 6px 0;
+  }
+  .opp-form-eyebrow {
+    font-family: var(--font-body);
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cold-light);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .opp-form-string {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--text-light);
+  }
+  .opp-form-summary {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 11px;
+    color: var(--text-light-secondary);
+    margin-top: 4px;
+  }
+  .opp-form-blocks {
+    display: flex; gap: 4px;
+    margin-top: 4px;
+  }
+
+  /* ── Application examples — FormStatusMinimal ────── */
+  .minimal-tile {
+    background: var(--bg-portal-surface);
+    border-radius: 6px;
+    padding: 8px 10px 9px;
+    text-align: center;
+    border: 1px solid rgba(245,241,235,0.03);
+    min-width: 90px;
+  }
+  .minimal-tile-label {
+    font-family: var(--font-body);
+    font-size: 7.5px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    opacity: 0.75;
+    margin-bottom: 3px;
+  }
+  .minimal-tile-value-text {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-light);
+    line-height: 1;
+    letter-spacing: 2px;
+  }
+  .minimal-tile-meta {
+    font-family: var(--font-body);
+    font-size: 9px;
+    color: var(--text-light-secondary);
+    margin-top: 4px;
+    opacity: 0.7;
+  }
+
+  /* ── Cheatsheet ───────────────────────────────────── */
+  .cheat-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px dashed rgba(196,122,58,0.18);
+    align-items: start;
+  }
+  .cheat-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .cheat-row-key {
+    font-family: var(--font-body);
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding-top: 2px;
+  }
+  .cheat-row.led .cheat-row-key       { color: var(--led-red); }
+  .cheat-row.block .cheat-row-key     { color: var(--accent); }
+  .cheat-row.spark .cheat-row-key     { color: var(--cold-light); }
+  .cheat-row-content {
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.45;
+  }
+  .cheat-row-content .when {
+    font-family: var(--font-body);
+    font-size: 10px;
+    color: var(--text-light-secondary);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .cheat-row-content .when strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .cheat-rule {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: rgba(232,185,92,0.05);
+    border-left: 2px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 11.5px;
+    color: var(--text-light-secondary);
+    line-height: 1.5;
+  }
+  .cheat-rule strong {
+    font-style: normal;
+    color: var(--gold);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ── Notes ───────────────────────────────────────── */
+  .notes {
+    max-width: 1640px; margin: 40px auto 0;
+    padding: 24px;
+    background: rgba(245,241,235,0.04);
+    border-radius: 8px;
+    color: rgba(245,241,235,0.85);
+    line-height: 1.65;
+    font-size: 13px;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin-bottom: 14px;
+    color: var(--text-light);
+  }
+  .notes h4 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 18px 0 8px;
+  }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes p strong { color: var(--accent); font-weight: 600; }
+  .notes ul { margin: 4px 0 8px 18px; max-width: 880px; }
+  .notes li { margin-bottom: 4px; }
+  .notes code {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: rgba(245,241,235,0.06);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--gold);
+  }
+  .notes table {
+    border-collapse: collapse;
+    margin: 10px 0;
+    width: 100%;
+    max-width: 1100px;
+    font-size: 12px;
+  }
+  .notes th, .notes td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(245,241,235,0.08);
+    vertical-align: top;
+  }
+  .notes th {
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Score-system — tre visuella primitiver</h1>
+  <p>Klubbminne-arbetet etablerade två nya visuella primitiver — <strong>score-block</strong> och <strong>sparkline</strong>. Tillsammans med befintliga <strong>LED-numerals</strong> (Westerstrand-Stalvallen-systemet) ger det Bandy Manager <em>tre</em> visuella vokabulär för att presentera score-data. Den här designspec'en etablerar dem som del av designsystemet, med tydlig gränsdragning för när vilken används.</p>
+  <p>Principen: <strong>tre register för tre situationer</strong>. LED för "live, just nu". Score-block för "vad blev resultatet". Sparkline för "över tid". Ingen konflikt — specialisering.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ════════════════════════════════════════════════════════
+       01 · ÖVERSIKT — tre primitiver sida vid sida
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">01</span>ÖVERSIKT<span class="phase">tre primitiver</span>
+      <span class="sub">Visuell deklaration av varje primitiv med kontextuell tag. Detta är den minsta enheten för score-data per situation.</span>
+    </div>
+    <div class="body">
+
+      <div class="primitiv-card">
+        <div class="primitiv-eyebrow">⬩ Primitiv 1 ⬩</div>
+        <div class="primitiv-name">LED-numerals</div>
+        <div class="primitiv-desc">Live-tid. Score som lyser. 7-segment-LED-anstrykning från Westerstrand-resultattavlan.</div>
+        <div class="primitiv-demo">
+          <div class="led-demo">
+            <span class="led-numeral">3</span>
+            <span class="led-sep">·</span>
+            <span class="led-numeral">2</span>
+            <span class="led-label" style="margin-left: 10px;">HL2 74:22</span>
+          </div>
+        </div>
+        <div class="primitiv-context">Kontext · live match-vy</div>
+      </div>
+
+      <div class="primitiv-card">
+        <div class="primitiv-eyebrow">⬩ Primitiv 2 ⬩</div>
+        <div class="primitiv-name">Score-block</div>
+        <div class="primitiv-desc">Retrospekt. Score som visuellt block med färg-stripe per typ. Label under.</div>
+        <div class="primitiv-demo">
+          <div style="display: flex; gap: 10px; justify-content: center;">
+            <div class="score-block win">
+              <div class="score-block-num">4–1</div>
+              <div class="score-block-label">Vinst</div>
+            </div>
+            <div class="score-block loss">
+              <div class="score-block-num">2–3</div>
+              <div class="score-block-label">Förlust</div>
+            </div>
+            <div class="score-block gold">
+              <div class="score-block-num">2–3</div>
+              <div class="score-block-label">SM-Final</div>
+            </div>
+          </div>
+        </div>
+        <div class="primitiv-context">Kontext · historik, sammanfattning</div>
+      </div>
+
+      <div class="primitiv-card">
+        <div class="primitiv-eyebrow">⬩ Primitiv 3 ⬩</div>
+        <div class="primitiv-name">Sparkline</div>
+        <div class="primitiv-desc">Över tid. Trend som visuell linje. Markers vid signifikanta punkter.</div>
+        <div class="primitiv-demo">
+          <div class="sparkline-frame">
+            <span class="label">Placering</span>
+            <svg class="sparkline-svg" viewBox="0 0 200 28" preserveAspectRatio="none">
+              <polyline fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"
+                points="2,18 18,20 35,16 52,12 70,14 88,10 105,12 122,6 140,8 158,4 175,6 192,4"/>
+              <circle cx="175" cy="6" r="2.5" fill="var(--gold)"/>
+            </svg>
+          </div>
+        </div>
+        <div class="primitiv-context">Kontext · trend, utveckling</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       02 · APPLICATION — RoundSummaryScreen
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">02</span>ROUND SUMMARY<span class="phase">före/efter</span>
+      <span class="sub">Andra lags resultat i RoundSummaryScreen. Idag: textuell rad per match. Förslag: score-block per match — snabbt skannbart.</span>
+    </div>
+    <div class="body">
+
+      <div style="margin-bottom: 18px;">
+        <div class="primitiv-context" style="margin-bottom: 8px;">FÖRE · text-rad per match</div>
+        <div class="summary-list">
+          <div class="summary-list-head">📰 Andra matcher · Omg 14</div>
+          <div class="summary-text-row">
+            <span class="res">3–1</span> Söderfors hemma mot Skutskär.
+          </div>
+          <div class="summary-text-row">
+            <span class="res">2–2</span> Karlsborg–Heros oavgjort.
+          </div>
+          <div class="summary-text-row">
+            <span class="res">4–0</span> Slottsbron knäckte Lesjöfors.
+          </div>
+          <div class="summary-text-row">
+            <span class="res">1–2</span> Gagnef förlorade hemma mot Västanfors.
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="primitiv-context" style="margin-bottom: 8px; color: var(--success);">EFTER · score-block per match</div>
+        <div class="summary-list">
+          <div class="summary-list-head">📰 Andra matcher · Omg 14</div>
+
+          <div class="summary-block-row">
+            <div class="score-block compact win">
+              <div class="score-block-num">3–1</div>
+              <div class="score-block-label">Hemma</div>
+            </div>
+            <div class="match">
+              <strong>Söderfors</strong><span class="vs">vs</span>Skutskär
+            </div>
+          </div>
+
+          <div class="summary-block-row">
+            <div class="score-block compact draw">
+              <div class="score-block-num">2–2</div>
+              <div class="score-block-label">Oavgjort</div>
+            </div>
+            <div class="match">
+              <strong>Karlsborg</strong><span class="vs">vs</span>Heros
+            </div>
+          </div>
+
+          <div class="summary-block-row">
+            <div class="score-block compact win">
+              <div class="score-block-num">4–0</div>
+              <div class="score-block-label">Hemma</div>
+            </div>
+            <div class="match">
+              <strong>Slottsbron</strong><span class="vs">vs</span>Lesjöfors
+            </div>
+          </div>
+
+          <div class="summary-block-row">
+            <div class="score-block compact loss">
+              <div class="score-block-num">1–2</div>
+              <div class="score-block-label">Hemma</div>
+            </div>
+            <div class="match">
+              <strong>Gagnef</strong><span class="vs">vs</span>Västanfors
+            </div>
+          </div>
+        </div>
+        <p style="font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light-secondary); margin-top: 10px; line-height: 1.4;">
+          Score-blocket bär storyn — text är bara teamnamn.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       03 · APPLICATION — OpponentForm + FormStatusMinimal
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">03</span>FORM-VISUALISERING<span class="phase">före/efter</span>
+      <span class="sub">Två relaterade ytor: OpponentFormSecondary och FormStatusMinimal. Båda visar W/L-streak. Score-block-row för Opponent, mini-sparkline för Minimal-bar.</span>
+    </div>
+    <div class="body">
+
+      <div style="margin-bottom: 18px;">
+        <div class="primitiv-context" style="margin-bottom: 8px;">FÖRE · "V V O V F"-string</div>
+        <div class="opp-form-old">
+          <div class="opp-form-eyebrow">📊 Söderfors senaste 5</div>
+          <div class="opp-form-string">V V O V F</div>
+          <div class="opp-form-summary">Pålsson 4 mål i serien.</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <div class="primitiv-context" style="margin-bottom: 8px; color: var(--success);">EFTER · score-block-row</div>
+        <div class="opp-form-old">
+          <div class="opp-form-eyebrow">📊 Söderfors senaste 5</div>
+          <div class="opp-form-blocks">
+            <div class="score-block compact win"><div class="score-block-num">3–1</div></div>
+            <div class="score-block compact win"><div class="score-block-num">2–0</div></div>
+            <div class="score-block compact draw"><div class="score-block-num">1–1</div></div>
+            <div class="score-block compact win"><div class="score-block-num">4–2</div></div>
+            <div class="score-block compact loss"><div class="score-block-num">0–2</div></div>
+          </div>
+          <div class="opp-form-summary">Pålsson 4 mål i serien.</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <div class="primitiv-context" style="margin-bottom: 8px;">FÖRE · FormStatusMinimal text</div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Form</div>
+          <div class="minimal-tile-value-text">V V O</div>
+          <div class="minimal-tile-meta">3 senaste</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="primitiv-context" style="margin-bottom: 8px; color: var(--success);">EFTER · mini-sparkline</div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Form</div>
+          <div style="display: flex; justify-content: center; align-items: center; height: 22px;">
+            <svg class="sparkline-mini" viewBox="0 0 60 18" preserveAspectRatio="none">
+              <polyline fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"
+                points="3,12 14,8 25,6 36,8 48,4 57,4"/>
+              <circle cx="3"  cy="12" r="2" fill="var(--danger)" />
+              <circle cx="14" cy="8"  r="2" fill="var(--text-muted)" />
+              <circle cx="25" cy="6"  r="2" fill="var(--success)" />
+              <circle cx="36" cy="8"  r="2" fill="var(--text-muted)" />
+              <circle cx="48" cy="4"  r="2" fill="var(--success)" />
+              <circle cx="57" cy="4"  r="2.5" fill="var(--success)" stroke="var(--text-light)" stroke-width="0.5"/>
+            </svg>
+          </div>
+          <div class="minimal-tile-meta">5 senaste</div>
+        </div>
+        <p style="font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light-secondary); margin-top: 10px; line-height: 1.4;">
+          Linjen visar trenden, dots ger detalj. Mer info, samma plats.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       04 · APPLICATION — Sparkline över tid
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">04</span>TREND ÖVER TID<span class="phase">sparkline</span>
+      <span class="sub">PlayerCard form-graph, EkonomiTab kassan över säsongen, AcademyTab CA-progression — alla har samma "över tid"-natur. Sparkline-mönster passar.</span>
+    </div>
+    <div class="body">
+
+      <div style="margin-bottom: 14px;">
+        <div class="primitiv-context" style="margin-bottom: 8px;">PLAYER FORM · 8 senaste omgångar</div>
+        <div class="sparkline-frame">
+          <span class="label">Form</span>
+          <svg class="sparkline-svg" viewBox="0 0 200 28" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"
+              points="2,18 28,14 55,20 82,12 108,10 135,8 162,12 192,6"/>
+            <circle cx="192" cy="6" r="2.5" fill="var(--success)" stroke="var(--bg-portal)" stroke-width="0.5"/>
+          </svg>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <div class="primitiv-context" style="margin-bottom: 8px;">KASSA · över säsong 3</div>
+        <div class="sparkline-frame">
+          <span class="label">Kassa</span>
+          <svg class="sparkline-svg" viewBox="0 0 200 28" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round"
+              points="2,20 22,18 42,16 62,22 82,14 102,16 122,8 142,10 162,6 182,8 192,4"/>
+            <circle cx="62" cy="22" r="2.5" fill="var(--danger)" stroke="var(--bg-portal)" stroke-width="0.5"/>
+            <circle cx="192" cy="4" r="2.5" fill="var(--gold)" stroke="var(--bg-portal)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <p style="font-family: var(--font-display); font-style: italic; font-size: 10.5px; color: var(--text-light-secondary); margin-top: 4px; padding-left: 8px;">
+          Röd dot = en stor utgift. Gold = nuvarande kassa-rekord.
+        </p>
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <div class="primitiv-context" style="margin-bottom: 8px;">JOURNALIST · relation över säsongen</div>
+        <div class="sparkline-frame">
+          <span class="label">Relation</span>
+          <svg class="sparkline-svg" viewBox="0 0 200 28" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--cold)" stroke-width="1.5" stroke-linecap="round"
+              points="2,14 22,12 42,16 62,18 82,20 102,16 122,12 142,14 162,8 182,6 192,4"/>
+            <circle cx="82" cy="20" r="2" fill="var(--danger)" />
+            <circle cx="192" cy="4" r="2.5" fill="var(--success)" stroke="var(--bg-portal)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <p style="font-family: var(--font-display); font-style: italic; font-size: 10.5px; color: var(--text-light-secondary); margin-top: 4px; padding-left: 8px;">
+          Röd dot = pressrefusal. Trenden uppåt nu.
+        </p>
+      </div>
+
+      <div>
+        <div class="primitiv-context" style="margin-bottom: 8px;">AKADEMI · Henrikssons CA per säsong</div>
+        <div class="sparkline-frame">
+          <span class="label">CA-utveckling</span>
+          <svg class="sparkline-svg" viewBox="0 0 200 28" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"
+              points="20,22 80,16 140,8 192,6"/>
+            <circle cx="20" cy="22" r="2" fill="var(--text-muted)" />
+            <circle cx="80" cy="16" r="2" fill="var(--accent)" />
+            <circle cx="140" cy="8" r="2.5" fill="var(--gold)" />
+            <circle cx="192" cy="6" r="3" fill="var(--gold)" stroke="var(--text-light)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <p style="font-family: var(--font-display); font-style: italic; font-size: 10.5px; color: var(--text-light-secondary); margin-top: 4px; padding-left: 8px;">
+          Fyra säsongers progression. Gold = över potential-tröskel.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       05 · CHEATSHEET — när vilken används
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">05</span>CHEATSHEET<span class="phase">när vilken</span>
+      <span class="sub">Den centrala regeln: tre register för tre situationer. Plus undantag och konflikt-hantering.</span>
+    </div>
+    <div class="body">
+
+      <div class="cheat-row led">
+        <div class="cheat-row-key">LED</div>
+        <div class="cheat-row-content">
+          <strong>Live · just nu</strong>
+          <div class="when">När en match <strong>pågår</strong>. Tid + score uppdateras realtid. Westerstrand-vokabulär.</div>
+          <div class="when"><strong>Var:</strong> Scoreboard, MatchEvents, MatchLive, MatchHalftime.</div>
+        </div>
+      </div>
+
+      <div class="cheat-row block">
+        <div class="cheat-row-key">BLOCK</div>
+        <div class="cheat-row-content">
+          <strong>Retrospekt · vad blev resultatet</strong>
+          <div class="when">När matchen är <strong>klar</strong>. Score är en historisk fakta. Färg-stripe per typ.</div>
+          <div class="when"><strong>Var:</strong> RoundSummary, WatchOthers, MatchReport, Klubbminne, OpponentForm.</div>
+        </div>
+      </div>
+
+      <div class="cheat-row spark">
+        <div class="cheat-row-key">SPARK</div>
+        <div class="cheat-row-content">
+          <strong>Trend · över tid</strong>
+          <div class="when">När datan visar <strong>förändring över tid</strong>. Form, kassa, relation, CA-progression.</div>
+          <div class="when"><strong>Var:</strong> FormStatus, PlayerCard, Ekonomi, Akademi, SeasonSummary, JournalistSec.</div>
+        </div>
+      </div>
+
+      <div class="cheat-rule">
+        <strong>Regel 1</strong>
+        En primitiv per yta. Blanda inte LED + Block på samma skärm.
+      </div>
+
+      <div class="cheat-rule">
+        <strong>Regel 2</strong>
+        Sparkline kräver minimum 5 datapunkter. Färre = använd Block.
+      </div>
+
+      <div class="cheat-rule">
+        <strong>Regel 3</strong>
+        Score-block-label får vara max 11 tecken ("KVARTS G5"). Längre = ta bort label.
+      </div>
+
+      <div class="cheat-rule">
+        <strong>Regel 4</strong>
+        Gold-variant av Block reserveras för SM-final + Cup-final. Spara magin.
+      </div>
+
+      <div class="cheat-rule">
+        <strong>Regel 5</strong>
+        Sparkline-stroke = <code>--accent</code> default. <code>--cold</code> för relation. <code>--success</code> för kassa (åt rätt håll).
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ═════════════════════════════════════════════════════════
+     Notes
+     ═════════════════════════════════════════════════════════ -->
+<div class="notes">
+
+  <h3>Implementations-spec</h3>
+
+  <h4>Två återanvändbara komponenter</h4>
+
+  <p>Code bygger två komponenter som hela appen kan använda:</p>
+
+  <table>
+    <thead>
+      <tr><th>Komponent</th><th>Props</th><th>Var renderas</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>&lt;ScoreBlock&gt;</code></td>
+        <td><code>score: string, label?: string, variant: 'win' | 'loss' | 'draw' | 'derby' | 'gold' | 'subtle', compact?: boolean</code></td>
+        <td>Ny: <code>src/presentation/components/primitives/ScoreBlock.tsx</code></td>
+      </tr>
+      <tr>
+        <td><code>&lt;Sparkline&gt;</code></td>
+        <td><code>points: number[], markers?: { index, color, size }[], stroke: 'accent' | 'cold' | 'success', height?: number</code></td>
+        <td>Ny: <code>src/presentation/components/primitives/Sparkline.tsx</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Båda har CSS i <code>src/presentation/styles/score-primitives.css</code> (ny fil).</p>
+
+  <h4>LED-numerals — bevarad oförändrad</h4>
+
+  <p>LED-systemet är redan implementerat i Stalvallen-bundle (<code>scoreboard-stalvallen.html</code>, <code>match-live-stalvallen.html</code>). Inga ändringar — bara dokumentera dess plats i systemet.</p>
+
+  <h4>Migreringsplan</h4>
+
+  <p>Inte alla ytor migreras samtidigt. Plocka selektivt — börja där text är värst:</p>
+
+  <table>
+    <thead>
+      <tr><th>Prioritet</th><th>Yta</th><th>Primitiv</th><th>Estimat</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>🔴 Hög</td><td>RoundSummaryScreen "Andra matcher"</td><td>ScoreBlock compact</td><td>~1h</td></tr>
+      <tr><td>🔴 Hög</td><td>Klubbminne (redan i klubbminne-handoff)</td><td>ScoreBlock + Sparkline</td><td>~3h (G-sektionen)</td></tr>
+      <tr><td>🟧 Medel</td><td>OpponentFormSecondary</td><td>ScoreBlock-row</td><td>~45 min</td></tr>
+      <tr><td>🟧 Medel</td><td>FormStatusMinimal</td><td>Mini-Sparkline</td><td>~30 min</td></tr>
+      <tr><td>🟧 Medel</td><td>WatchOthersSecondary (spectator)</td><td>ScoreBlock</td><td>~30 min</td></tr>
+      <tr><td>🟨 Låg</td><td>PlayerCard form-graph</td><td>Sparkline</td><td>~1h</td></tr>
+      <tr><td>🟨 Låg</td><td>EkonomiTab kassan över tid</td><td>Sparkline + data-pipeline</td><td>~2h</td></tr>
+      <tr><td>🟨 Låg</td><td>JournalistSecondary relation-trend</td><td>Mini-Sparkline</td><td>~45 min</td></tr>
+      <tr><td>🟨 Låg</td><td>AcademyTab CA-progression</td><td>Sparkline per spelare</td><td>~1.5h</td></tr>
+      <tr><td>🟨 Låg</td><td>SeasonSummaryScreen hero-trend</td><td>Sparkline</td><td>~1h</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>Total migrering:</strong> ~13h spridda. Inte en sprint. Plockas över flera veckor.</p>
+
+  <h4>Risker att flagga</h4>
+
+  <ul>
+    <li><strong>Sparkline-inflation:</strong> Om allt blir kurva tappar man visuell hierarki. Disciplin krävs — bara där "över tid" är relevant. <em>Inte</em> på TransferPlayerCard. <em>Inte</em> på enskild matchrad.</li>
+    <li><strong>LED + Block-konflikt:</strong> MatchReport visar både live-score-känsla och historisk-score samtidigt. Klar regel: under match = LED. Efter slutsignal (rapporten genereras) = Block. Inga övergångar.</li>
+    <li><strong>Mini-sparkline-minimum:</strong> ~40×16px för 5 punkter. Mindre = brusig, inte informativ.</li>
+    <li><strong>Performance:</strong> OpponentForm × 12 klubbar × sparkline + Portal-stacken med 8 kort = 100+ SVG-renderingar. Mät på low-end Android innan migrering är klar.</li>
+    <li><strong>Datakrav:</strong> Sparkline behöver historiska datapunkter. Många ytor saknar det idag. Inkrementell: börja samla data nu, rendera tomma-sparkliner med "saknar historik" tills datat byggts upp.</li>
+  </ul>
+
+  <h4>Designsystem-additions</h4>
+
+  <p>Föreslag att dokumentera i <code>design-system/DESIGN-DECISIONS.md</code>:</p>
+
+  <ol>
+    <li><strong>Tre score-primitiver:</strong> LED / Block / Sparkline. Tre register för tre situationer.</li>
+    <li><strong>Gold-variant av ScoreBlock</strong> reserveras för SM-final + Cup-final.</li>
+    <li><strong>Sparkline-stroke-färger</strong> per kontext: accent default, cold för relation, success för positiva trender.</li>
+    <li><strong>Sparkline minimum:</strong> 5 datapunkter och 40×16px.</li>
+  </ol>
+
+  <h4>Vad denna mock INTE rör</h4>
+
+  <ul>
+    <li><strong>Stalvallen LED-systemet</strong> — befintligt, fungerar, ingen ändring.</li>
+    <li><strong>Bar-charts, donut-charts, etc.</strong> — vi har inte behov av dem. Sparkline täcker "över tid", block täcker "vad blev". Stapeldiagram skulle bara öppna en fjärde primitiv.</li>
+    <li><strong>Färgade emoji som datavisualisering</strong> (🟢🟡🔴) — Transfers-auditen flaggade redan detta som problem. Score-primitiver löser det.</li>
+  </ul>
+
+  <h4>Estimat — denna leverans</h4>
+
+  <p><strong>Bygga komponenterna:</strong> ~4h Code (ScoreBlock ~1h + Sparkline ~3h med proper SVG-rendering).<br>
+  <strong>Dokumentation i designsystem:</strong> ~1h.<br>
+  <strong>Första migrering (RoundSummary "andra matcher"):</strong> ~1h.<br>
+  <strong>Total första-implementations:</strong> ~6h. Resterande ytor migreras inkrementellt.</p>
+
+</div>
+
+</body>
+</html>

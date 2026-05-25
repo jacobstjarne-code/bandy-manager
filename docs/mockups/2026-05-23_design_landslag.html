@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>C-K1 Landslagsuttagning</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --accent: #C47A3A; --cold: #4a6680; --cold-light: #7095b8;
+    --warm: #8c6e3a; --warm-light: #c8a058; --gold: #E8B95C;
+    --danger: #B05040; --success: #5A9A4A;
+    --font-display: 'Georgia', serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 32px 16px 80px; min-height: 100vh; }
+
+  .page-head { max-width: 1640px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 820px; }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 28px; max-width: 1640px; margin: 0 auto; }
+  .col { background: var(--bg-portal); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.35); width: 100%; max-width: 380px; justify-self: center; }
+  .col-head { padding: 12px 16px; background: var(--bg-leather-dk); font-family: var(--font-display); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .col-head .num { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; color: var(--accent); background: rgba(196,122,58,0.1); padding: 2px 6px; border-radius: 2px; margin-right: 8px; vertical-align: 2px; }
+  .col-head .phase { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; color: var(--text-light-secondary); background: rgba(245,241,235,0.05); padding: 2px 6px; border-radius: 2px; margin-left: 6px; vertical-align: 2px; text-transform: uppercase; }
+  .col-head .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }
+  .body { padding: 14px 14px 16px; }
+
+  .situation { margin: 0 0 12px; padding: 10px 12px; color: var(--text-light-secondary); font-family: var(--font-display); font-style: italic; font-size: 12px; line-height: 1.4; border-left: 1px dashed rgba(196,122,58,0.3); opacity: 0.85; }
+  .situation strong { font-style: normal; font-family: var(--font-body); font-weight: 600; color: var(--text-light); display: block; margin-bottom: 2px; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  /* Landslags-mark — Portal */
+  .lands-mark {
+    margin-bottom: 14px; padding: 13px 14px;
+    border-top: 1px solid rgba(232,185,92,0.32);
+    border-bottom: 1px solid rgba(232,185,92,0.12);
+    background: linear-gradient(180deg, rgba(232,185,92,0.06) 0%, rgba(232,185,92,0.02) 100%);
+  }
+  .lm-eye { font-family: var(--font-body); font-size: 8px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); text-align: center; margin-bottom: 7px; }
+  .lm-quote { font-family: var(--font-display); font-style: italic; font-size: 13.5px; color: var(--text-light); text-align: center; line-height: 1.4; margin-bottom: 5px; }
+  .lm-helper { font-family: var(--font-body); font-size: 10px; color: var(--text-light-secondary); text-align: center; opacity: 0.7; line-height: 1.4; }
+
+  /* Uttagnings-modal */
+  .modal-card {
+    padding: 16px 14px;
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(232,185,92,0.18);
+    border-radius: 8px;
+  }
+  .modal-eye { font-size: 8px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); text-align: center; margin-bottom: 10px; opacity: 0.95; }
+  .modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-light); text-align: center; margin-bottom: 6px; letter-spacing: -0.2px; }
+  .modal-subtitle { font-family: var(--font-body); font-size: 11px; color: var(--text-light-secondary); text-align: center; margin-bottom: 14px; opacity: 0.85; }
+  .player-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; background: rgba(0,0,0,0.18); border-radius: 4px; margin-bottom: 6px; border-left: 2px solid var(--gold); }
+  .player-row.subtle { border-left-color: transparent; opacity: 0.75; }
+  .player-row .name { flex: 1; font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-light); }
+  .player-row .pos { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); letter-spacing: 0.5px; min-width: 24px; }
+  .player-row .ca { font-family: var(--font-mono); font-size: 9.5px; color: var(--gold); font-weight: 700; }
+  .player-row.subtle .ca { color: var(--text-muted); }
+
+  /* Frånvaro-effekt */
+  .absent-frame { padding: 12px 14px; background: var(--bg-portal-surface); border-left: 2px solid var(--cold); border-radius: 0 8px 8px 0; }
+  .absent-eye { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--cold-light); font-weight: 600; margin-bottom: 8px; }
+  .absent-list { display: flex; flex-direction: column; gap: 6px; }
+  .absent-row { display: flex; align-items: center; gap: 10px; font-family: var(--font-body); font-size: 12px; color: var(--text-light); }
+  .absent-row .icon { font-size: 14px; opacity: 0.85; }
+  .absent-row .text { flex: 1; line-height: 1.4; }
+  .absent-row .text .muted { color: var(--text-light-secondary); }
+  .absent-row .when { font-family: var(--font-mono); font-size: 9px; color: var(--cold-light); }
+
+  /* Retur-scen */
+  .retur-card { padding: 14px; background: var(--bg-portal-surface); border-left: 2px solid var(--success); border-radius: 0 8px 8px 0; }
+  .retur-eye { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--success); font-weight: 700; margin-bottom: 8px; }
+  .retur-name { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text-light); margin-bottom: 4px; }
+  .retur-quote { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--text-light); line-height: 1.5; margin-bottom: 10px; }
+  .retur-quote strong { font-weight: 700; font-style: normal; }
+  .retur-effects { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .retur-effect { padding: 6px 8px; background: rgba(0,0,0,0.18); border-radius: 4px; text-align: center; }
+  .retur-effect-label { font-size: 7px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
+  .retur-effect-value { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--success); }
+  .retur-effect.warm .retur-effect-value { color: var(--warm-light); }
+
+  .notes { max-width: 1640px; margin: 40px auto 0; padding: 24px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.65; font-size: 13px; }
+  .notes h3 { font-family: var(--font-display); font-size: 18px; margin-bottom: 14px; color: var(--text-light); }
+  .notes h4 { font-family: var(--font-body); font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 18px 0 8px; }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes ul { margin: 4px 0 8px 18px; max-width: 880px; }
+  .notes code { font-family: var(--font-mono); font-size: 11.5px; background: rgba(245,241,235,0.06); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>C-K1 Landslagsuttagning</h1>
+  <p>Idag finns inget landslag i spelet. När en bandyspelare i bruksortsliga blir uttagen är det stort — ortens stoltaste ögonblick. <strong>Spelet missar det helt.</strong></p>
+  <p>Fyra spalter: <strong>uttagning</strong> (modal vid landslagsbeslut) · <strong>frånvaro</strong> (sekundär i Portal under landslagssamlingen) · <strong>retur</strong> (scen + form-bump efter) · <strong>icke-uttagen</strong> (när en kandidat blir bortvald — kafferum-spår).</p>
+</div>
+
+<div class="grid">
+
+  <!-- 01 · Uttagning -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">01</span>UTTAGNING<span class="phase">modal · stilltje-omgång</span>
+      <span class="sub">Landslags-uttagning sker 2 ggr/säsong (oktober + januari). Modal visas en gång — Henriksson på sin första uttagning är säsongens guldkorn.</span>
+    </div>
+    <div class="body">
+
+      <div class="modal-card">
+        <div class="modal-eye">⬩ Sverige har ringt ⬩</div>
+        <div class="modal-title">Landslagsuttagning</div>
+        <div class="modal-subtitle">Tre uttagningar för World Cup-träff 14-17 januari.</div>
+
+        <div class="player-row">
+          <span class="pos">A</span>
+          <span class="name">M. Lindqvist</span>
+          <span class="ca">CA 78</span>
+        </div>
+
+        <div class="player-row">
+          <span class="pos">MF</span>
+          <span class="name">S. Sundström</span>
+          <span class="ca">CA 74</span>
+        </div>
+
+        <div class="player-row">
+          <span class="pos">B</span>
+          <span class="name">H. Henriksson</span>
+          <span class="ca">CA 68</span>
+        </div>
+
+        <p style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(232,185,92,0.18); font-family: var(--font-display); font-style: italic; font-size: 11.5px; color: var(--text-light-secondary); text-align: center; line-height: 1.5;">
+          Tre av ortens stoltaste ögonblick samtidigt. Henrikssons första.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 02 · Frånvaro i Portal -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">02</span>FRÅNVARO<span class="phase">Portal · under samling</span>
+      <span class="sub">Under landslagsveckan (3 omg) är tre spelare borta. Visas som sekundär — kall blå, tydlig. Påminner om vad du saknar i lineup.</span>
+    </div>
+    <div class="body">
+
+      <div class="situation">
+        <strong>TISDAG · OMG 11</strong>
+        Lindqvist + Sundström + Henriksson åkte till Bollnäs i morse.
+      </div>
+
+      <div class="absent-frame">
+        <div class="absent-eye">🇸🇪 Landslagssamling</div>
+        <div class="absent-list">
+          <div class="absent-row">
+            <span class="icon">A</span>
+            <span class="text"><strong>Lindqvist</strong> <span class="muted">· borta 3 omg</span></span>
+            <span class="when">retur omg 14</span>
+          </div>
+          <div class="absent-row">
+            <span class="icon">MF</span>
+            <span class="text"><strong>Sundström</strong> <span class="muted">· borta 3 omg</span></span>
+            <span class="when">retur omg 14</span>
+          </div>
+          <div class="absent-row">
+            <span class="icon">B</span>
+            <span class="text"><strong>Henriksson</strong> <span class="muted">· borta 3 omg</span></span>
+            <span class="when">retur omg 14</span>
+          </div>
+        </div>
+        <p style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(74,102,128,0.15); font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light-secondary); line-height: 1.45;">
+          Akademin får större roll i derbyt på lördag.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 03 · Retur -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">03</span>RETUR<span class="phase">efter samling</span>
+      <span class="sub">När spelarna kommer tillbaka — kafferum-scen om mötet, plus en synlig boost. Form upp, mood upp. Synlig vinst, inget dolt.</span>
+    </div>
+    <div class="body">
+
+      <div class="retur-card">
+        <div class="retur-eye">🇸🇪 Tillbaka från Bollnäs</div>
+        <div class="retur-name">Henriksson</div>
+        <div class="retur-quote">
+          Magnus: "Han kom in i klubblokalen igår. Sa ingenting på en kvart. Sen <strong>la han fram en svensk landslagströja på bordet</strong> och bara nickade."
+        </div>
+        <div class="retur-effects">
+          <div class="retur-effect">
+            <div class="retur-effect-label">Form</div>
+            <div class="retur-effect-value">+4</div>
+          </div>
+          <div class="retur-effect warm">
+            <div class="retur-effect-label">Mood</div>
+            <div class="retur-effect-value">+6</div>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top: 14px; padding: 10px 12px; background: rgba(232,185,92,0.05); border-left: 2px solid var(--gold); border-radius: 0 4px 4px 0; font-family: var(--font-display); font-style: italic; font-size: 11.5px; color: var(--text-light-secondary); line-height: 1.5;">
+        Detta blir också en <strong>MemoryEvent</strong> med significance 60 — landar i Klubbminne under säsongen. Henrikssons första landslagstrupp = klubbhistoria.
+      </p>
+
+    </div>
+  </div>
+
+  <!-- 04 · Icke-uttagen -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">04</span>ICKE-UTTAGEN<span class="phase">kafferum-spår</span>
+      <span class="sub">När en spelare presterat bra men inte tagits ut — där bor ett av spelets djupare narrativ. Sture läser bandysidan. Spelaren märker. Bandysvensk understatement.</span>
+    </div>
+    <div class="body">
+
+      <div class="situation">
+        <strong>SÖNDAG · OMG 10</strong>
+        Tidningen ligger på bordet. Truppen står på sida fyra.
+      </div>
+
+      <div class="retur-card" style="border-left-color: var(--warm);">
+        <div class="retur-eye" style="color: var(--warm-light);">☕ Kafferummet</div>
+        <div class="retur-name">Sundström har 11 mål — och står inte med.</div>
+        <div class="retur-quote">
+          Magnus la tidningen åt sidan. "Bergström från Bollnäs har sju." — <strong>Sture sa ingenting.</strong> Sundström hade redan gått ut.
+        </div>
+        <div class="retur-effects">
+          <div class="retur-effect" style="background: rgba(176,80,64,0.12);">
+            <div class="retur-effect-label">Form</div>
+            <div class="retur-effect-value" style="color: var(--danger);">−3</div>
+          </div>
+          <div class="retur-effect warm">
+            <div class="retur-effect-label">Mood</div>
+            <div class="retur-effect-value">−5</div>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top: 14px; padding: 10px 12px; background: rgba(245,241,235,0.04); border-radius: 4px; font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light-secondary); line-height: 1.5;">
+        Form-träffen är <strong>synlig</strong> (player-card visar "−3 form: snubblade förbi i landslagstruppen"). Jacobs princip: inga dolda straff.
+      </p>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Landslagssystemet — design-rationale</h3>
+
+  <h4>Vad mocken introducerar</h4>
+  <ul>
+    <li><strong>UttagningsModal</strong> — 2 gånger per säsong (oktober + januari) när landslaget tar ut trupp</li>
+    <li><strong>LandslagsFrånvaroSecondary</strong> i Portal under samlingsveckorna (3 omg)</li>
+    <li><strong>LandslagsReturScen</strong> — kafferum + form/mood-boost (synlig)</li>
+    <li><strong>IckeUttagenScen</strong> — när kandidat förbigås, form/mood-träff (synlig)</li>
+    <li><strong>MemoryEvent</strong> sig 60 för första-gång-uttagning per spelare</li>
+  </ul>
+
+  <h4>Uttagnings-logik</h4>
+  <p>Ren funktion <code>selectNationalTeam(game)</code>:</p>
+  <ul>
+    <li>Topp-20 spelare per position (A/B/MF/YH/MV) viktade på CA + form senaste 5</li>
+    <li>Boost för spelare i tabelltoppen (klubbens tabellplats påverkar uttagningschans)</li>
+    <li>Slumpat 1-2 udda val (för narrativ — etablerade stjärnor missar ibland)</li>
+    <li>Returnera 3-5 spelare totalt över alla klubbar</li>
+  </ul>
+
+  <h4>Datakrav</h4>
+  <ul>
+    <li><code>Player.nationalTeamCallups: number</code> (räknare över karriären)</li>
+    <li><code>Player.lastNationalTeamCallup: number</code> (säsong)</li>
+    <li><code>game.activeNationalTeamCamp?: { startRound, endRound, playerIds[] }</code></li>
+    <li><code>game.lastNationalSnub?: { playerId, season, round }</code> (för icke-uttagen-narrativ)</li>
+  </ul>
+
+  <h4>Designval öppna</h4>
+  <ul>
+    <li><strong>Q1:</strong> 2 uttagningar/säsong, eller också vid VM/EM-år? Föreslag: 2 grundläggande + extra för cup-år (kan vänta).</li>
+    <li><strong>Q2:</strong> Spelaren har inflytande över uttagningen (lobby Henriksson genom press) eller ren motor-output? Föreslag: ren motor i v1. Lobby är spår 2.</li>
+    <li><strong>Q3:</strong> Vad händer med klubbens ekonomi? Landslagsuttagna får bonus från SBF? Föreslag: ja, +5 tkr/uttagen. Synligt, narrativt.</li>
+    <li><strong>Q4:</strong> Visa hela landslagstruppen (även andra klubbars spelare) eller bara dina? Föreslag: bara dina i Portal. Andra finns i Inbox-uppdatering.</li>
+  </ul>
+
+  <h4>Konsekvenser för andra spår</h4>
+  <ul>
+    <li><strong>Spectator-säsongen</strong>: Om managed elim:ad och samling pågår — flytta fokus i SpectatorPrimary till uttagna spelare ("dina i landslaget")</li>
+    <li><strong>Klubbminne</strong>: MemoryEvent för första landslagsuttagning per spelare</li>
+    <li><strong>SquadStatusMinimal</strong>: visa frånvaro-indikator när samling pågår</li>
+    <li><strong>Score-system</strong>: Återanvänder befintliga primitiver — LandslagsMark använder samma anatomi som PhaseMark/AnniversaryMark (gold-tonad)</li>
+  </ul>
+
+  <h4>Estimat</h4>
+  <p><strong>selectNationalTeam-helper:</strong> ~1h<br>
+  <strong>UttagningsModal:</strong> ~1h<br>
+  <strong>LandslagsFrånvaroSecondary:</strong> ~1h<br>
+  <strong>ReturScen + IckeUttagenScen:</strong> ~1.5h<br>
+  <strong>State + migration + MemoryEvent-integration:</strong> ~1h<br>
+  <strong>Schedule-trigger (oktober + januari):</strong> ~30 min<br>
+  <strong>Opus-leverans:</strong> ~30 strängar (uttagning, retur, icke-uttagen-varianter)<br>
+  <strong>Total:</strong> ~6h Code + Opus copy.</p>
+</div>
+
+</body>
+</html>

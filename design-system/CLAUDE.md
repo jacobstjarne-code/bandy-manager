@@ -60,6 +60,7 @@ När du levererar en mock som ska ligga i `docs/mockups/`, använd prefix:
 
 Senaste först. Format: `YYYY-MM-DD — kort beskrivning — commit-hash`.
 
+- **2026-05-25** — Synlighetssprint-text + C-FM1 + score-migration-reconcile (Opus). Text levererad, byggd av Code: C-U1 orsakskrok (`suspensionText.ts`), C-SY1#4 manager-kvitto (`managerKvittoText.ts` inkl. `STARTED_TIRED_OUTCOMES`). Text klar, bygge pågår: C-MK1 (`managerKaraktarText.ts`, greenlit, 2 faser), C-K1 landslag (`landslagText.ts`, greenlit), C-SY1#1 Efterklang (`efterklangText.ts`). C-FM1: utrett — positionerna redan bandy-äkta, big version avförd, default-bugg fixad (`worldGenerator` seed → 3-3-4). Score-primitiverna (ScoreBlock/Sparkline) visade sig REDAN byggda; migration klar RoundSummary/GranskaForlopp/OpponentForm; SimSummary nästa. AI fitness-golv byggt. **Lärdom: 2026-05-23-auditen var stale → ledde till no-op-spec. DESIGN-DECISIONS.md + kod är sanning, inte auditen. Grep före spec.**
 - **2026-05-17 (senare kväll)** — R3 + R3+ wired av Code (commits inkl. `c83a5b2`). R3: `seasonPhaseBias`, `suppressIn` på 3 kort, `PortalPhaseMark`, `isManagedClubInPlayoff`-helper ersätter `playoffOngoingInLeague`, `phaseMarksSeen`-state. R3+: `PortalRoundMark` (gold på SM-Final), `getPlayoffSeriesContext()` med criticality + weight 1-3, NextMatchCard weight-styling progression, SeriesBoxes decisive/gold-dot, `btn-gold` på SM-Final-CTA. Nya tokens `--gold-deep` + `--shadow-gold`. Plus deferredDecisions backend + ArrivalScene A2-A5 + Cup-tonen Nivå 2.
 - **2026-05-16** — R3 Endgame Portal-känsla levererad (design). Mock: `docs/mockups/2026-05-16_design_endgame_portal.html` + handoff `design-system/HANDOFF-ENDGAME-PORTAL-R3.md`. Svar på Opus fyra frågor: hård borttagning (inte fade), ny `PortalPhaseMark`-komponent med copy från `SEASON_MOOD[phase][0]`, inga styling-ändringar på kvarvarande sekundärer, kafferum/journalist/signatur helt borta i playoff (inte weight 0.2). Opus låste: PhaseMark-copy = SEASON_MOOD direkt; `isPlayoff` måste vara `managedClubInPlayoff` (kräver fix i `dailyBriefingService.ts:340` — nuvarande är `playoffOngoingInLeague`).
 - **2026-05-16** — R3+ Playoff-klimax-eskalering levererad (design, valbart tillägg). Mock: `docs/mockups/2026-05-16_design_endgame_klimax.html` + handoff `design-system/HANDOFF-ENDGAME-PORTAL-R3-PLUS-KLIMAX.md`. Tre tekniker: `PortalRoundMark` per playoff-runda, primary-vikt 1/2/3 baserat på round + criticality, gold-token (`--gold`) aktiverad på SM-Final primary + CTA. Jacob valde in tillägget.
@@ -78,6 +79,20 @@ Senaste först. Format: `YYYY-MM-DD — kort beskrivning — commit-hash`.
 ## OPEN THREADS
 
 Vad du förväntas leverera nästa, prioriterat. Uppdateras vid varje session.
+
+### 2026-05-25 — AKTUELLT LÄGE (2026-05-23-auditen är INAKTUELL, använd inte som spårning)
+
+**Score-systemet:** primitiverna (ScoreBlock/Sparkline) är byggda och i produktion. Migration KLAR: RoundSummary, GranskaForlopp "andra matcher", OpponentFormSecondary. NÄSTA: SimSummaryScreen MATCHRESULTAT → ScoreBlock compact (instruktion skriven). Sen Våg 2–4 per `DESIGN-DECISIONS.md`, inte auditen (den hade 3 redan-byggda ytor + WatchOthers som är ogiltig — visar kommande matcher, inget score).
+
+**Text levererad, bygge hos Code:** C-MK1 manager-karaktär (greenlit, 2 faser), C-K1 landslag (greenlit — kalenderflytt R7→R14 + selectNationalTeam + UI), C-N1 stiltje, skade-narrativ, C-SY1#1 Efterklang (kan byggas nu, primitiverna finns).
+
+**Verifierat utan ändring:** C-SD1 (regular_done korrekt), C-FT1 b/c (AI tröttnar också, 25,5pp extremfall). C-FM1 big version avförd — positionstaxonomin är redan bandy-äkta.
+
+**Park (designrunda med Jacob krävs):** C-SD2 portal-eskalering, C-SY2 score-vokabulär, C-SY1#2 orsaks-prefix (troligen överflödig pga Efterklang). C-SY1#3 layout-audit grindad på 15-min-playtest. Kemi v2 (motor, ingen press).
+
+**Osäkert — verifiera mot kod/DESIGN-DECISIONS, anta inte:** 🟥 gold-tokens + SMFinalPrimary (gold-varianten funkar redan i ScoreBlock → tokens kan ha landat), 🟧 klubbminne-CSS, transfers-refaktor, C-V1 OpponentForm-visual (troligen mootad — score-block fyller kortet nu).
+
+*Trådarna nedan är från 2026-05-17 (F1/R3-pixel-audits). Status overifierad sedan dess — verifiera innan de antas öppna eller klara.*
 
 ### REDO FÖR PIXEL-AUDIT (Code rapporterat klart 2026-05-17)
 

@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>R3 Endgame Portal-känsla — fas-dämpning, suppression, slutspelsmarkör</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* ── Inline tokens (matchar design-system/colors_and_type.css) ── */
+  :root {
+    --bg:                 #EDE8DF;
+    --bg-surface:         #FAF8F4;
+    --bg-portal:          #1a1612;
+    --bg-portal-surface:  #221d18;
+    --bg-portal-elevated: #2a241e;
+    --bg-leather:         #3D3A32;
+    --bg-leather-dk:      #1d1b18;
+    --border:             #DDD7CC;
+    --border-dark:        #C4BAA8;
+    --text-primary:       #1A1A18;
+    --text-secondary:     #6B6760;
+    --text-muted:         #8A857A;
+    --text-light:           #F5F1EB;
+    --text-light-secondary: #C4BAA8;
+    --accent:      #C47A3A;
+    --accent-dark: #A25828;
+    --accent-deep: #8B4820;
+    --cold:        #4a6680;
+    --cold-light:  #7095b8;
+    --warm:        #8c6e3a;
+    --warm-light:  #c8a058;
+    --gold:        #E8B95C;
+    --success:     #5A9A4A;
+    --warning:     #C47A3A;
+    --danger:      #B05040;
+    --danger-dark: #8B3E30;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono:    ui-monospace, 'Courier New', monospace;
+    --radius:       14px;
+    --radius-md:    8px;
+    --radius-sm:    3px;
+    --shadow-card:    0 1px 3px rgba(0,0,0,0.05);
+    --shadow-btn:     0 2px 5px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-primary: 0 3px 5px rgba(162,88,40,0.38);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color: var(--text-primary); font-family: var(--font-body); }
+  body {
+    background: var(--bg-leather);
+    padding: 32px 16px 80px;
+    color: var(--text-light);
+    min-height: 100vh;
+  }
+
+  /* ── Page chrome ───────────────────────────────────────── */
+  .page-head {
+    max-width: 1640px; margin: 0 auto 24px;
+    color: var(--text-light);
+  }
+  .page-head h1 {
+    font-family: var(--font-display); font-size: 24px;
+    letter-spacing: 0.2px; margin-bottom: 6px;
+  }
+  .page-head p {
+    font-size: 13px;
+    color: rgba(245,241,235,0.7);
+    line-height: 1.6;
+    max-width: 820px;
+  }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 28px;
+    max-width: 1640px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  /* ── Column shell (mobile-frame i Portal-bg) ─────────── */
+  .col {
+    background: var(--bg-portal);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    width: 100%; max-width: 380px;
+    justify-self: center;
+  }
+  .col-head {
+    padding: 12px 16px;
+    background: var(--bg-leather-dk);
+    color: var(--text-light);
+    font-family: var(--font-display);
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .col-head .num {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--accent);
+    background: rgba(196,122,58,0.1);
+    padding: 2px 6px; border-radius: 2px;
+    margin-right: 8px; vertical-align: 2px;
+  }
+  .col-head .phase {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 1.5px;
+    color: var(--text-light-secondary);
+    background: rgba(245,241,235,0.05);
+    padding: 2px 6px; border-radius: 2px;
+    margin-left: 6px; vertical-align: 2px;
+    text-transform: uppercase;
+  }
+  .col-head .sub {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(245,241,235,0.6);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .portal-frame { padding: 14px 0 16px; }
+
+  /* ── Situation stub ─────────────────────────────────── */
+  .situation {
+    margin: 0 14px 12px;
+    padding: 10px 12px;
+    background: transparent;
+    color: var(--text-light-secondary);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    line-height: 1.4;
+    border-left: 1px dashed rgba(196,122,58,0.3);
+    opacity: 0.85;
+  }
+  .situation strong {
+    font-style: normal; font-family: var(--font-body);
+    font-weight: 600; color: var(--text-light);
+    display: block; margin-bottom: 2px;
+    font-size: 11px; letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     NYTT KOMPONENTSPÅR: PortalPhaseMark
+     En ceremoniell markör som rendreras EN gång per säsongs-fas-byte
+     (early→mid, mid→endgame, endgame→playoff). Mellan SituationCard
+     och PortalBeat. Bär hela fas-skiftet narrativt — så att vi inte
+     behöver fade:a varje kort som faller bort.
+     ══════════════════════════════════════════════════════════ */
+  .phasemark {
+    margin: 0 14px 14px;
+    padding: 14px 14px 14px;
+    position: relative;
+    border-top: 1px solid rgba(196,122,58,0.35);
+    border-bottom: 1px solid rgba(196,122,58,0.12);
+    background: linear-gradient(180deg,
+      rgba(196,122,58,0.06) 0%,
+      rgba(196,122,58,0.02) 100%);
+  }
+  .phasemark-eyebrow {
+    font-family: var(--font-body);
+    font-size: 8px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 8px;
+    opacity: 0.9;
+  }
+  .phasemark-quote {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14.5px;
+    color: var(--text-light);
+    text-align: center;
+    line-height: 1.4;
+    letter-spacing: 0.1px;
+    margin-bottom: 6px;
+  }
+  .phasemark-helper {
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    color: var(--text-light-secondary);
+    text-align: center;
+    opacity: 0.75;
+    line-height: 1.4;
+  }
+  .phasemark-helper kbd {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    background: rgba(196,122,58,0.12);
+    border: 1px solid rgba(196,122,58,0.3);
+    border-radius: 2px;
+    padding: 0 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  /* ── PortalBeat (atmosfärisk rad) ────────────────────── */
+  .beat {
+    margin: 0 14px 12px;
+    padding: 9px 12px;
+    background: var(--bg-portal-surface);
+    border-radius: 6px;
+    border: 1px solid rgba(245,241,235,0.04);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-light-secondary);
+    line-height: 1.45;
+  }
+
+  /* ── Active budget rad ────────────────────────────────── */
+  .active-section {
+    margin: 0 14px 4px;
+    padding: 2px 0 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .active-eyebrow {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    font-family: var(--font-body);
+  }
+  .active-budget {
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 1.5px;
+    color: var(--text-light-secondary);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .budget-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    border: 1px solid var(--accent); box-sizing: border-box;
+  }
+  .budget-dot.on  { background: var(--accent); box-shadow: 0 0 4px rgba(196,122,58,0.4); }
+  .budget-dot.off { background: transparent; }
+
+  /* ── Decision card (active) ───────────────────────────── */
+  .dec-card {
+    margin: 0 14px 10px;
+    padding: 12px 14px 13px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    box-shadow: var(--shadow-card);
+  }
+  .dec-card.warm { border-left-color: var(--warm); }
+  .dec-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-body);
+  }
+  .dec-label-icon { font-size: 12px; line-height: 1; }
+  .dec-question {
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-light);
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+  .dec-options {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .dec-option {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 11px 10px;
+    background: var(--bg-portal-elevated);
+    border: 1.5px solid var(--accent);
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: var(--shadow-btn);
+    font-family: var(--font-body);
+    cursor: pointer;
+  }
+  .dec-option-label {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 0.4px;
+  }
+  .dec-option-effect {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 10.5px;
+    line-height: 1.3;
+  }
+  .dec-option-effect.success { color: #A0C890; }
+  .dec-option-effect.danger  { color: #E8A090; }
+  .dec-option-effect.muted   { color: var(--text-light-secondary); opacity: 0.75; }
+
+  /* ── Primary card stub (NextMatch / Playoff-serie) ─── */
+  .primary {
+    margin: 0 14px 12px;
+    padding: 14px 14px 12px;
+    background: var(--bg-portal-elevated);
+    border: 1px solid rgba(196,122,58,0.18);
+    border-radius: 8px;
+    position: relative;
+  }
+  .primary.playoff {
+    border-color: rgba(196,122,58,0.45);
+    background: linear-gradient(180deg,
+      rgba(196,122,58,0.06) 0%,
+      var(--bg-portal-elevated) 36%);
+  }
+  .primary-eyebrow {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-body);
+  }
+  .primary-eyebrow .meta {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 1px;
+    color: var(--text-light-secondary);
+    opacity: 0.75;
+    text-transform: uppercase;
+  }
+  .primary-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-light);
+    line-height: 1.15;
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+  }
+  .primary-body {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    color: var(--text-light-secondary);
+    line-height: 1.45;
+  }
+  .primary-body strong { color: var(--text-light); font-weight: 600; }
+
+  /* ── Best-of-five serie-tracker (playoff only) ──────── */
+  .series-tracker {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px dashed rgba(196,122,58,0.22);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .series-label {
+    font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-light-secondary);
+    opacity: 0.85;
+  }
+  .series-dots {
+    display: inline-flex; gap: 5px;
+    margin-left: auto;
+  }
+  .series-game {
+    width: 18px; height: 18px;
+    border-radius: 3px;
+    border: 1px solid rgba(196,122,58,0.35);
+    background: var(--bg-portal);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--text-light-secondary);
+    line-height: 1;
+  }
+  .series-game.win  { background: rgba(90,154,74,0.20); border-color: rgba(90,154,74,0.55); color: #A0C890; }
+  .series-game.loss { background: rgba(176,80,64,0.18); border-color: rgba(176,80,64,0.5); color: #E8A090; }
+  .series-game.next { background: rgba(196,122,58,0.18); border-color: var(--accent); color: var(--accent); }
+
+  /* ── Secondary card (mörk kontext) ────────────────── */
+  .sec-card {
+    margin: 0 14px 10px;
+    padding: 12px 14px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    box-shadow: var(--shadow-card);
+  }
+  .sec-card.warm { border-left-color: var(--warm); }
+  .sec-card.cold { border-left-color: var(--cold); }
+  .sec-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-light-secondary);
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-body);
+  }
+  .sec-label.warm { color: var(--warm-light); }
+  .sec-label.cold { color: var(--cold-light); }
+  .sec-label-icon { font-size: 12px; line-height: 1; }
+  .sec-body {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.5;
+    opacity: 0.92;
+  }
+  .sec-body strong {
+    font-style: normal; font-family: var(--font-body);
+    font-weight: 600;
+  }
+
+  /* ── Minimal bar (botten av Portal) ──────────────────── */
+  .minimal-bar {
+    margin: 6px 14px 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .minimal-tile {
+    background: var(--bg-portal-surface);
+    border-radius: 6px;
+    padding: 8px 8px 9px;
+    text-align: center;
+    border: 1px solid rgba(245,241,235,0.03);
+  }
+  .minimal-tile-label {
+    font-family: var(--font-body);
+    font-size: 7.5px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    opacity: 0.75;
+    margin-bottom: 3px;
+  }
+  .minimal-tile-value {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-light);
+    line-height: 1;
+  }
+  .minimal-tile-meta {
+    font-family: var(--font-body);
+    font-size: 9px;
+    color: var(--text-light-secondary);
+    margin-top: 2px;
+    opacity: 0.7;
+  }
+
+  /* ── Inbox-row ───────────────────────────────────────── */
+  .inbox-row {
+    margin: 14px 14px 0;
+    padding: 8px 12px;
+    background: transparent;
+    border-top: 1px dashed rgba(196,122,58,0.18);
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--text-light-secondary);
+    letter-spacing: 0.3px;
+  }
+  .inbox-row strong { color: var(--accent); font-weight: 700; }
+  .inbox-row .sep { opacity: 0.4; margin: 0 6px; }
+
+  /* ── CTA (kompakt mock-version) ──────────────────────── */
+  .cta-zone {
+    margin: 14px 14px 0;
+    padding-top: 10px;
+    border-top: 1px solid rgba(196,122,58,0.10);
+  }
+  .cta {
+    width: 100%;
+    padding: 13px 12px;
+    background: linear-gradient(180deg, #DD9555 0%, #8B4820 100%);
+    border: none;
+    border-radius: 12px;
+    color: var(--text-light);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    box-shadow: var(--shadow-primary);
+    cursor: pointer;
+  }
+  .cta.danger {
+    background: linear-gradient(180deg, #B05040 0%, #8B3E30 100%);
+    box-shadow: 0 3px 10px rgba(176,80,64,0.40);
+  }
+
+  /* ── Diff-spalt (vad som faller bort) ────────────────── */
+  .col-diff {
+    background: var(--bg-portal);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    width: 100%; max-width: 380px;
+    justify-self: center;
+  }
+  .diff-frame { padding: 14px; }
+  .diff-row {
+    display: flex; align-items: center;
+    padding: 9px 10px;
+    background: var(--bg-portal-surface);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    border-left: 2px solid transparent;
+  }
+  .diff-row.kept    { border-left-color: var(--success); }
+  .diff-row.dampen  { border-left-color: var(--warm); }
+  .diff-row.gone    { border-left-color: var(--danger); opacity: 0.55; }
+  .diff-icon { font-size: 14px; margin-right: 9px; line-height: 1; }
+  .diff-name {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+  .diff-row.gone .diff-name { text-decoration: line-through; text-decoration-color: rgba(176,80,64,0.55); }
+  .diff-meta {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-light-secondary);
+    opacity: 0.85;
+  }
+  .diff-row.kept .diff-meta   { color: #A0C890; }
+  .diff-row.dampen .diff-meta { color: var(--warm-light); }
+  .diff-row.gone .diff-meta   { color: #E8A090; }
+
+  .diff-section-label {
+    font-family: var(--font-body);
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 12px 0 6px;
+    padding-left: 2px;
+  }
+  .diff-section-label:first-child { margin-top: 0; }
+
+  /* ── Notes-sektion ───────────────────────────────────── */
+  .notes {
+    max-width: 1640px; margin: 40px auto 0;
+    padding: 24px;
+    background: rgba(245,241,235,0.04);
+    border-radius: 8px;
+    color: rgba(245,241,235,0.85);
+    line-height: 1.65;
+    font-size: 13px;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin-bottom: 14px;
+    color: var(--text-light);
+  }
+  .notes h4 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 18px 0 8px;
+  }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes p strong { color: var(--accent); font-weight: 600; }
+  .notes ul { margin: 4px 0 8px 18px; max-width: 880px; }
+  .notes li { margin-bottom: 4px; }
+  .notes code {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: rgba(245,241,235,0.06);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--gold);
+  }
+  .notes .q-table {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px 24px;
+    margin: 10px 0;
+    max-width: 1200px;
+  }
+  .notes .q-table > div {
+    padding: 12px 14px 12px 14px;
+    background: rgba(245,241,235,0.04);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+  }
+  .notes .q-table h5 {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .notes .q-table .verdict {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 99px;
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 1px;
+    background: rgba(90,154,74,0.18);
+    color: #A0C890;
+    text-transform: uppercase;
+    vertical-align: 1px;
+  }
+  .notes .q-table p { font-size: 12px; margin: 0 0 4px 0; }
+  .notes .meta-banner {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: rgba(245,241,235,0.04);
+    border: 1px solid rgba(245,241,235,0.08);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.6;
+    color: var(--text-light-secondary);
+  }
+  .notes .meta-banner strong { color: var(--accent); font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>R3 Endgame Portal-känsla — fas-dämpning, suppression, slutspelsmarkör</h1>
+  <p>Designsvar på <code>docs/SPEC_SEASON_PHASE_BIAS.md</code>. Card-bag-vikter dämpas progressivt mot säsongsslut; vissa kort plockas bort helt i playoff. Designens jobb: göra att stacken som <em>stramat åt</em> känns avsiktlig — inte buggig.</p>
+  <p>Fyra Portal-tillstånd visas: <strong>endgame-start</strong> (Omg 12, första tightningen), <strong>endgame-slut</strong> (Omg 22, tabellen avgör), <strong>första playoff-Portal</strong> (slutspelsmarkör + kafferum borta), <strong>senare playoff</strong> (vardag i slutspel). En femte spalt visar diff:en mellan endgame och playoff.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ════════════════════════════════════════════════════════
+       01 · ENDGAME-START · Omg 12 — fas-byte mid→endgame
+       Phasemark visas EN gång vid första endgame-Portal.
+       Bias: secondary × 0.6. Kafferum/journalist/signatur är
+       fortfarande med — bara tunnare i sortering.
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">01</span>ENDGAME-START<span class="phase">Omg 12 · mid→endgame</span>
+      <span class="sub">Phasemark visas en gång. Bias × 0.6 på sekundärer — kafferum/journalist faller längre ner men finns. Spelaren ser <em>att</em> det stramat åt utan att kort försvinner mitt i flödet.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>MÅNDAG · OMG 12</strong>
+        Februari. Frostnatten har lagt sig över Forsbacka.
+      </div>
+
+      <div class="phasemark">
+        <div class="phasemark-eyebrow">⬩ Slutstriden börjar ⬩</div>
+        <div class="phasemark-quote">"Februari. Varje match räknas nu."</div>
+        <div class="phasemark-helper">Visas en gång <kbd>per säsong</kbd> vid fas-byte mid→endgame.</div>
+      </div>
+
+      <div class="beat">
+        Tabellen stramas åt. Skutskär två poäng bakom.
+      </div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans fråga</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot off"></span>
+        </span>
+      </div>
+
+      <div class="dec-card">
+        <div class="dec-label">
+          <span class="dec-label-icon">🏒</span>
+          <span>Veckans spelarfråga</span>
+        </div>
+        <div class="dec-question">
+          Lindqvist har dragit på sig en mild ljumske. Vila eller spela?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Vila</span>
+            <span class="dec-option-effect success">−skaderisk · −0 form</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Spela</span>
+            <span class="dec-option-effect danger">+rutin · +skaderisk</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Primary: NextMatch (vanlig variant, Februari är fortfarande seriespel) -->
+      <div class="primary">
+        <div class="primary-eyebrow">
+          <span>🏒 Nästa match</span>
+          <span class="meta">Hemma · Lö 18:30</span>
+        </div>
+        <div class="primary-title">Forsbacka — Skutskär</div>
+        <div class="primary-body">
+          <strong>2 pt bakom oss i tabellen.</strong> Frostnatten väntas hålla i sig. Plan torr.
+        </div>
+      </div>
+
+      <!-- Sekundärer — full familj, men sorterade efter bias × 0.6.
+           board_objectives (87 × 1.0 i primary skiktet — nej, sec × 0.6 = 52.2) först,
+           tabell (30 × 1.0 = 30 nu × 0.6 = 18), kafferum (60 × 0.6 = 36),
+           journalist (65 × 0.6 = 39). Visar 3 av N. -->
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          Slutspelskval — 8:e plats eller bättre. <strong>Vi ligger 6:a, 2 pt marginal.</strong>
+        </div>
+      </div>
+
+      <div class="sec-card warm">
+        <div class="sec-label warm">
+          <span class="sec-label-icon">📰</span>
+          <span>Lokaltidningen</span>
+        </div>
+        <div class="sec-body">
+          Holmberg på BT-sporten: "Forsbacka har inte råd med poängtapp nu."
+        </div>
+      </div>
+
+      <div class="sec-card warm">
+        <div class="sec-label warm">
+          <span class="sec-label-icon">☕</span>
+          <span>Kafferummet</span>
+        </div>
+        <div class="sec-body">
+          Magnus och Sture läser tabellen tre gånger om dagen.
+        </div>
+      </div>
+
+      <div class="minimal-bar">
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Form</div>
+          <div class="minimal-tile-value">V V O</div>
+          <div class="minimal-tile-meta">3 senaste</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Trupp</div>
+          <div class="minimal-tile-value">21</div>
+          <div class="minimal-tile-meta">2 skadade</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Kassa</div>
+          <div class="minimal-tile-value">88</div>
+          <div class="minimal-tile-meta">tkr</div>
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>3</strong> notiser <span class="sep">·</span> 1 aktiv
+      </div>
+
+      <div class="cta-zone">
+        <button class="cta">Spela omgång 12 →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       02 · ENDGAME-SLUT · Omg 22 — sista grundserien
+       Bias × 0.6 fortfarande aktiv, men nu syns det:
+       tabell + opponent_form rankas högre, kafferum sjunker.
+       Inget phasemark (har spelat ut sin roll Omg 12).
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">02</span>ENDGAME-SLUT<span class="phase">Omg 22 · sista grundserien</span>
+      <span class="sub">Bias × 0.6 har varit aktiv i 10 omg — sortering har ätit sig in. Tabell + opponent_form fortfarande i toppen, kafferum kvar men längre ner. Inget phasemark.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>FREDAG · OMG 22</strong>
+        Sista omgången. 5:a, 4 pt:s marginal till 9:e.
+      </div>
+
+      <div class="beat">
+        Lokaltidningen har räknat tre gånger. Kvalet är säkrat — men slutspelsplatsen avgörs i morgon.
+      </div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans frågor</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot on"></span>
+        </span>
+      </div>
+
+      <div class="dec-card">
+        <div class="dec-label">
+          <span class="dec-label-icon">🏒</span>
+          <span>Veckans taktikfråga</span>
+        </div>
+        <div class="dec-question">
+          Heros har bara haft tre mål framåt senaste fem. Backa hemma eller pressa?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Backa</span>
+            <span class="dec-option-effect success">+defensiv stabilitet</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Pressa</span>
+            <span class="dec-option-effect muted">+chans · −kondition</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="dec-card warm">
+        <div class="dec-label warm">
+          <span class="dec-label-icon">💼</span>
+          <span>Veckans sponsorfråga</span>
+        </div>
+        <div class="dec-question">
+          Eklund vill annonsera i programbladet inför slutspelet. 12 tkr.
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Tacka ja</span>
+            <span class="dec-option-effect success">+12 tkr · +sponsor</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Tacka nej</span>
+            <span class="dec-option-effect danger">−eklund-relation</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="primary">
+        <div class="primary-eyebrow">
+          <span>🏒 Sista omgången</span>
+          <span class="meta">Borta · Sö 14:00</span>
+        </div>
+        <div class="primary-title">Heros — Forsbacka</div>
+        <div class="primary-body">
+          <strong>Vinst räcker för 5:e plats.</strong> Tabellen är låst om Skutskär förlorar. Plan: kalldagsis, lite vind.
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          Slutspelskval — säkrat. <strong>Kvarvarande:</strong> egenfostrade i startelvan 1/3.
+        </div>
+      </div>
+
+      <div class="sec-card cold">
+        <div class="sec-label cold">
+          <span class="sec-label-icon">📊</span>
+          <span>Tabell</span>
+        </div>
+        <div class="sec-body">
+          5. Forsbacka 38 — 6. Skutskär 36 — 7. Slottsbron 33 — 8. Söderfors 30.
+        </div>
+      </div>
+
+      <!-- Kafferum är fortfarande med — bara längre ner pga bias. -->
+      <div class="sec-card warm">
+        <div class="sec-label warm">
+          <span class="sec-label-icon">☕</span>
+          <span>Kafferummet</span>
+        </div>
+        <div class="sec-body">
+          Sture: "Bäst-av-fem är ingen seriespel. Det är något helt annat."
+        </div>
+      </div>
+
+      <div class="minimal-bar">
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Form</div>
+          <div class="minimal-tile-value">V V V</div>
+          <div class="minimal-tile-meta">3 senaste</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Trupp</div>
+          <div class="minimal-tile-value">22</div>
+          <div class="minimal-tile-meta">1 skadad</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Kassa</div>
+          <div class="minimal-tile-value">112</div>
+          <div class="minimal-tile-meta">tkr</div>
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>5</strong> notiser <span class="sep">·</span> 2 aktiva
+      </div>
+
+      <div class="cta-zone">
+        <button class="cta">Spela omgång 22 →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       03 · PLAYOFF-FÖRSTA · Kvartsfinal 1
+       Phasemark visas EN gång vid första playoff-Portal.
+       Kafferum/journalist/signatur SUPPRESS'ad. Stack tydligt
+       tunnare. Primary card byter visuell variant (playoff
+       border + serie-tracker). Bias × 0.4 — bara de mest
+       vikt-tunga sekundärerna återstår.
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">03</span>PLAYOFF-FÖRSTA<span class="phase">Kvartsfinal G1 · första playoff-Portal</span>
+      <span class="sub">Phasemark visas en gång. Kafferum/journalist/signatur <em>helt borta</em>. Sekundärer som finns kvar oförändrade i utseende. Primary får serie-tracker. Hierarkin sker via vad som inte är där.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>TISDAG · KVARTSFINAL</strong>
+        Best-of-five. Grundserien är historia.
+      </div>
+
+      <div class="phasemark">
+        <div class="phasemark-eyebrow">⬩ Slutspelet börjar ⬩</div>
+        <div class="phasemark-quote">"Slutspel. Inga andra chanser."</div>
+        <div class="phasemark-helper">Portal har stramat åt — bara det viktiga nu. Visas <kbd>en gång</kbd> per slutspel.</div>
+      </div>
+
+      <div class="beat">
+        Hallen luktar lim och kallt järn. Trumman var med upp från källaren igår.
+      </div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans fråga</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot off"></span>
+        </span>
+      </div>
+
+      <div class="dec-card">
+        <div class="dec-label">
+          <span class="dec-label-icon">🏒</span>
+          <span>Veckans truppfråga</span>
+        </div>
+        <div class="dec-question">
+          Henriksson, P19, har varit med på alla pass. Plats i Game 1?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Sätt i 18:an</span>
+            <span class="dec-option-effect success">+akademiprestige</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Vänta</span>
+            <span class="dec-option-effect muted">Ingen effekt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Primary med serie-tracker -->
+      <div class="primary playoff">
+        <div class="primary-eyebrow">
+          <span>⚔️ Kvartsfinal · Game 1</span>
+          <span class="meta">Hemma · On 19:00</span>
+        </div>
+        <div class="primary-title">Forsbacka — Söderfors</div>
+        <div class="primary-body">
+          <strong>Best-of-5.</strong> Söderfors slutade 4:a — kommer hit med hela formationen. Vinden mot norr förväntas hålla i.
+        </div>
+        <div class="series-tracker">
+          <span class="series-label">Serien</span>
+          <span class="series-dots">
+            <span class="series-game next">G1</span>
+            <span class="series-game">G2</span>
+            <span class="series-game">G3</span>
+            <span class="series-game">G4</span>
+            <span class="series-game">G5</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- ENDAST de tunga sekundärerna visas — bias × 0.4 +
+           kafferum/journalist/signatur är helt borta. -->
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          <strong>Slutspelskval — passerat.</strong> Nytt mål: minst semifinal.
+        </div>
+      </div>
+
+      <div class="sec-card cold">
+        <div class="sec-label cold">
+          <span class="sec-label-icon">📊</span>
+          <span>Söderfors senaste 5</span>
+        </div>
+        <div class="sec-body">
+          V V O V F · 11 mål gjorda, 6 insläppta. Pålsson tre senaste matcher.
+        </div>
+      </div>
+
+      <div class="minimal-bar">
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Form</div>
+          <div class="minimal-tile-value">V V V</div>
+          <div class="minimal-tile-meta">3 senaste</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Trupp</div>
+          <div class="minimal-tile-value">22</div>
+          <div class="minimal-tile-meta">full</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Kassa</div>
+          <div class="minimal-tile-value">115</div>
+          <div class="minimal-tile-meta">tkr</div>
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>2</strong> notiser <span class="sep">·</span> 1 aktiv
+      </div>
+
+      <div class="cta-zone">
+        <button class="cta">Redo — spela Kvartsfinal G1 →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       04 · PLAYOFF-SENARE · Semifinal G2
+       Inget phasemark (har visats en gång). Stack fortsatt
+       tunn — vardagen i slutspel. Serie-tracker visar 1–0 lead.
+       Den enda new bit: opponent_form visar serien, inte
+       grundserien.
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">04</span>PLAYOFF-SENARE<span class="phase">Semifinal G2 · vardag i slutspel</span>
+      <span class="sub">Phasemark har spelat ut sin roll. Stack är fortsatt tunn. Serie-tracker visar att Forsbacka leder 1–0. Inget kafferum, ingen journalist — det är inte avsiktligt frånvarande, det är just bortdesignat.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>TORSDAG · SEMIFINAL</strong>
+        Serien 1–0. Heros väntar borta i morgon.
+      </div>
+
+      <div class="beat">
+        Borta-bussen lämnar i gryningen. Ingen extra träning utlagd — bara genomgång i klubblokalen.
+      </div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans fråga</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot off"></span>
+        </span>
+      </div>
+
+      <div class="dec-card warm">
+        <div class="dec-label warm">
+          <span class="dec-label-icon">🏋️</span>
+          <span>Veckans träningsfråga</span>
+        </div>
+        <div class="dec-question">
+          Truppen är tung efter G1. Lättare pass eller fulla?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Lättare</span>
+            <span class="dec-option-effect success">+återhämtning</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Fulla</span>
+            <span class="dec-option-effect danger">+rutin · −fysik</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="primary playoff">
+        <div class="primary-eyebrow">
+          <span>⚔️ Semifinal · Game 2</span>
+          <span class="meta">Borta · Fr 18:30</span>
+        </div>
+        <div class="primary-title">Heros — Forsbacka</div>
+        <div class="primary-body">
+          <strong>Forsbacka leder 1–0.</strong> Vinst i morgon = match-puck nästa hemmamatch.
+        </div>
+        <div class="series-tracker">
+          <span class="series-label">Serien</span>
+          <span class="series-dots">
+            <span class="series-game win">W</span>
+            <span class="series-game next">G2</span>
+            <span class="series-game">G3</span>
+            <span class="series-game">G4</span>
+            <span class="series-game">G5</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          Mål: minst semifinal — <strong>passerat</strong>. Stretch: final.
+        </div>
+      </div>
+
+      <div class="sec-card cold">
+        <div class="sec-label cold">
+          <span class="sec-label-icon">📊</span>
+          <span>Heros i serien</span>
+        </div>
+        <div class="sec-body">
+          G1 borta: F 2–4. Olsson skadad efter en närkamp i 2:a. Ny start.
+        </div>
+      </div>
+
+      <div class="minimal-bar">
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Form</div>
+          <div class="minimal-tile-value">V V V</div>
+          <div class="minimal-tile-meta">3 senaste</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Trupp</div>
+          <div class="minimal-tile-value">21</div>
+          <div class="minimal-tile-meta">1 sliten</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Kassa</div>
+          <div class="minimal-tile-value">118</div>
+          <div class="minimal-tile-meta">tkr</div>
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>1</strong> notis <span class="sep">·</span> 1 aktiv
+      </div>
+
+      <div class="cta-zone">
+        <button class="cta">Redo — spela Semifinal G2 →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       DIFF · Vad som händer i card-bag mellan endgame → playoff
+       En "tredjedel-spalt" som inte är en Portal-render utan
+       en visuell legend. Hjälper Code förstå exakt vad de ska
+       wire'a.
+       ════════════════════════════════════════════════════════ -->
+  <div class="col-diff">
+    <div class="col-head">
+      <span class="num">DIFF</span>Card-bag · endgame → playoff
+      <span class="sub">Visuell legend, inte en Portal-render. Vilka kort behålls (med bias × 0.4)? Vilka <em>dämpas tyngre</em>? Vilka är helt borta? Spegelbild av <code>seasonPhaseBias.ts</code> + <code>suppressIn</code>.</span>
+    </div>
+    <div class="diff-frame">
+
+      <div class="diff-section-label">PRIMARY · oförändrad</div>
+      <div class="diff-row kept">
+        <span class="diff-icon">🏒</span>
+        <span class="diff-name">NextMatch / SMFinal / Derby</span>
+        <span class="diff-meta">× 1.0</span>
+      </div>
+      <div class="diff-row kept">
+        <span class="diff-icon">⚠️</span>
+        <span class="diff-name">EventPrimary (kritisk)</span>
+        <span class="diff-meta">× 1.0</span>
+      </div>
+      <div class="diff-row kept">
+        <span class="diff-icon">💼</span>
+        <span class="diff-name">TransferDeadline</span>
+        <span class="diff-meta">× 1.0</span>
+      </div>
+      <div class="diff-row kept">
+        <span class="diff-icon">👤</span>
+        <span class="diff-name">PatronDemand</span>
+        <span class="diff-meta">× 1.0</span>
+      </div>
+
+      <div class="diff-section-label">SECONDARY · dämpas × 0.4 i playoff</div>
+      <div class="diff-row dampen">
+        <span class="diff-icon">📋</span>
+        <span class="diff-name">BoardObjectives</span>
+        <span class="diff-meta">87 → 34.8</span>
+      </div>
+      <div class="diff-row dampen">
+        <span class="diff-icon">📰</span>
+        <span class="diff-name">WeeklyDecision</span>
+        <span class="diff-meta">85 → 34.0</span>
+      </div>
+      <div class="diff-row dampen">
+        <span class="diff-icon">⭐</span>
+        <span class="diff-name">ActiveArcs</span>
+        <span class="diff-meta">80 → 32.0</span>
+      </div>
+      <div class="diff-row dampen">
+        <span class="diff-icon">💼</span>
+        <span class="diff-name">OpenBids</span>
+        <span class="diff-meta">80 → 32.0</span>
+      </div>
+      <div class="diff-row dampen">
+        <span class="diff-icon">🩹</span>
+        <span class="diff-name">InjuryStatus</span>
+        <span class="diff-meta">70 → 28.0</span>
+      </div>
+      <div class="diff-row dampen">
+        <span class="diff-icon">📊</span>
+        <span class="diff-name">OpponentForm</span>
+        <span class="diff-meta">60 → 24.0</span>
+      </div>
+      <div class="diff-row dampen">
+        <span class="diff-icon">📣</span>
+        <span class="diff-name">Klacken</span>
+        <span class="diff-meta">50 → 20.0</span>
+      </div>
+      <div class="diff-row dampen">
+        <span class="diff-icon">📊</span>
+        <span class="diff-name">Tabell</span>
+        <span class="diff-meta">30 → 12.0</span>
+      </div>
+      <div class="diff-row dampen">
+        <span class="diff-icon">💰</span>
+        <span class="diff-name">Ekonomi</span>
+        <span class="diff-meta">25 → 10.0</span>
+      </div>
+
+      <div class="diff-section-label">SECONDARY · borta i playoff <code>suppressIn</code></div>
+      <div class="diff-row gone">
+        <span class="diff-icon">☕</span>
+        <span class="diff-name">CoffeeRoom</span>
+        <span class="diff-meta">SUPPRESS</span>
+      </div>
+      <div class="diff-row gone">
+        <span class="diff-icon">📰</span>
+        <span class="diff-name">Journalist</span>
+        <span class="diff-meta">SUPPRESS</span>
+      </div>
+      <div class="diff-row gone">
+        <span class="diff-icon">🌨️</span>
+        <span class="diff-name">SeasonSignature</span>
+        <span class="diff-meta">SUPPRESS</span>
+      </div>
+
+      <div class="diff-section-label">MINIMAL · oförändrad × 1.0</div>
+      <div class="diff-row kept">
+        <span class="diff-icon">📈</span>
+        <span class="diff-name">Form / Trupp / Kassa / Klacken-mood</span>
+        <span class="diff-meta">× 1.0</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ═════════════════════════════════════════════════════════
+     Designmotiveringar — svar på de fyra frågorna i specen
+     ═════════════════════════════════════════════════════════ -->
+<div class="notes">
+
+  <h3>Designsvar på SPEC_SEASON_PHASE_BIAS.md (Opus 2026-05-08)</h3>
+
+  <p>Specen ställer fyra frågor till Design innan Code wire:ar. Här är svaren — alla bär ett gemensamt argument: <strong>tystnaden måste vara avsiktlig, inte tom</strong>. Om kafferummet bara försvinner spårlöst tolkar spelaren det som bug. Lösningen är inte att smyga ut kort med fade, det är att <em>säga vad som händer</em> en gång (phasemark) och sedan stå för det (suppression, ingen styling-ändring).</p>
+
+  <div class="q-table">
+    <div>
+      <h5>Q1 · Fade vs hård borttagning <span class="verdict">SVAR: hård</span></h5>
+      <p>Sekundärer som faller bort via <code>suppressIn</code> försvinner <strong>direkt vid fas-byte</strong>. Ingen fade över 2 omgångar.</p>
+      <p><em>Varför:</em> En fade-out gör att två omgångar känns halvfärdiga — varför är kafferummet med, men dämpat? Det är ingen lösning, det är en kompromiss. Hårt skifte vid fas-byte är diskret och tydligt. Phasemark-bandet (Q2) bär överraskningen.</p>
+    </div>
+
+    <div>
+      <h5>Q2 · Briefing-text vid första playoff-Portal <span class="verdict">SVAR: ja, som PhaseMark</span></h5>
+      <p>Ny komponent: <code>PortalPhaseMark</code>. Renderas mellan SituationCard och PortalBeat. Visas <strong>en gång per säsong per fas-byte</strong> (mid→endgame, endgame→playoff).</p>
+      <p>Copy hämtas ur <code>SEASON_MOOD[phase][0]</code> (finns redan i <code>dailyBriefingService.ts</code>): playoff blir <em>"Slutspel. Inga andra chanser."</em> — bandysvensk understatement, ingen Hollywood.</p>
+      <p>Mekanism: en flagga per fas i state (<code>game.phaseMarksSeen: SeasonPhase[]</code>). När fas-byte upptäcks och fasen inte är i listan: rendera markören + lägg till fasen. Renderas tills CTA klickas, sedan inte mer.</p>
+    </div>
+
+    <div>
+      <h5>Q3 · Visuell skillnad på kvarvarande sekundärer <span class="verdict">SVAR: nej</span></h5>
+      <p>Sekundärer som överlever (BoardObjectives, ActiveArcs, OpponentForm, m.fl.) renderas <strong>identiskt</strong> i playoff och seriespel. Inga playoff-skinns, inga "tightare" varianter.</p>
+      <p><em>Varför:</em> Hierarkin sker via vad som är borta. Om kvarvarande kort också ändrar utseende delas signalen i två och båda blir svagare. Att kafferummet är borta gör <em>klacken</em> tyngre — det är poängen.</p>
+      <p><strong>Undantag (ej i denna spec):</strong> Primary-cardet får en playoff-variant med best-of-5 serie-tracker (se kolumn 03–04). Det är inte en sekundär — det är att <code>NextMatchPrimary</code> ersätts med en playoff-specifik primary när <code>game.playoffBracket</code> finns. Den finns delvis idag och bör finkalibreras parallellt.</p>
+    </div>
+
+    <div>
+      <h5>Q4 · Kafferum-säsongen <span class="verdict">SVAR: helt borta i playoff</span></h5>
+      <p>Kafferum, journalist, season_signature får alla tre <code>suppressIn: ['playoff']</code>. <strong>Inte</strong> weight 0.2.</p>
+      <p><em>Varför:</em> Weight 0.2 ger sämsta utfallet — kortet poppar upp ibland och spelaren vet inte om det är meningsfullt eller "leftover slop". Helt borta är ett beslut. Det säger något om vad slutspel är.</p>
+      <p><em>Fortsatt liv i endgame:</em> Kafferummet är finkalibrerat och spelat mycket. I endgame (Omg 12–22) är det kvar men dämpat × 0.6 — det dyker upp lägre i sortering, vilket gör tabell och opponent_form starkare utan att tysta säsongens vardag. Det är där det hör hemma.</p>
+    </div>
+  </div>
+
+  <h4>Phasemark — komponent-specifikation</h4>
+  <p>Ny komponent <code>PortalPhaseMark</code> i <code>src/presentation/components/portal/</code>. Anatomi:</p>
+  <ul>
+    <li><strong>Eyebrow:</strong> Genre-label-styling. Format: <code>⬩ FÖRSTA HALVAN ⬩</code> / <code>⬩ SLUTSTRIDEN BÖRJAR ⬩</code> / <code>⬩ SLUTSPELET BÖRJAR ⬩</code>. Tokens: <code>--accent</code>, opacity 0.9, font-size 8px, letter-spacing 4px.</li>
+    <li><strong>Quote:</strong> Georgia italic 14.5px, <code>--text-light</code>. Hämtas ur <code>SEASON_MOOD[phase][0]</code>.</li>
+    <li><strong>Helper:</strong> En rad system-ui 10.5px, <code>--text-light-secondary</code>, opacity 0.75. Förklarar vad som händer (frivillig — kan tas bort efter playtest om den är överflödig).</li>
+    <li><strong>Frame:</strong> Mellan SituationCard och PortalBeat. <code>border-top: 1px solid rgba(196,122,58,0.35)</code>, <code>border-bottom: 1px solid rgba(196,122,58,0.12)</code>. Lätt vertikal gradient <code>rgba(196,122,58,0.06) → 0.02</code>. Inga rundade hörn — markören är linjär, en marginalanteckning, inte ett kort.</li>
+    <li><strong>Visning:</strong> Renderas bara om <code>!game.phaseMarksSeen.includes(currentPhase)</code>. Markörens "consumed"-tillstånd sätts när CTA klickas (<code>advance()</code> kallar <code>markPhaseAcknowledged(phase)</code>).</li>
+  </ul>
+
+  <h4>Vad är PhaseMark INTE</h4>
+  <ul>
+    <li><strong>Inte en banner.</strong> Ingen full-bredd, ingen avvikande bakgrund. En marginalanteckning som passar in i Portal-stacken.</li>
+    <li><strong>Inte en overlay.</strong> Spelaren ska kunna scrolla förbi och se sina kort under utan att klicka bort något.</li>
+    <li><strong>Inte återkommande.</strong> En gång per fas per säsong. Aldrig fler.</li>
+    <li><strong>Inte för early/pre_season.</strong> Bara mid→endgame och endgame→playoff har dramatiska skiften. Säsongsstarten har redan ArrivalScene.</li>
+  </ul>
+
+  <h4>Vad bias × 0.6 / × 0.4 faktiskt gör i praktiken</h4>
+  <p><strong>Endgame × 0.6:</strong> Kafferum 60 → 36, journalist 65 → 39. Fortfarande rankas över tabell (30) och ekonomi (25). De faller en eller två platser, men finns ofta kvar i topp-3-secondary-sortering. Spelaren ser dem fortfarande regelbundet — bara <em>oftare</em> ersatta av styrelsens krav och opponent form.</p>
+  <p><strong>Playoff × 0.4:</strong> Kafferum/journalist/signatur försvinner ändå genom <code>suppressIn</code>. Bias × 0.4 träffar bara de kvarvarande — board_objectives 87 → 34.8, opponent_form 60 → 24, klacken 50 → 20. Det leder till en plattare hierarki där primary-cardet (vikt 100) dominerar mer än någonsin. Det är poängen.</p>
+
+  <h4>Edge case · Spelare ute ur slutspelet</h4>
+  <p>Specen flaggar detta. Min läsning: <code>getSeasonPhase(round, isPlayoff)</code> returnerar <code>'playoff'</code> så länge spelaren har en playoff-fixtur kvar. När spelaren elimineras och bara har "spectator-rounds" kvar bör fasen falla tillbaka till <code>'endgame'</code> — eller en ny fas <code>'eliminated'</code>. Designsvar: <strong>använd <code>endgame</code></strong>. Kafferum och journalist återkommer (de hör hemma i en utfasande säsong där spelaren är åskådare). Inget nytt phasemark — spelaren har redan sett <em>slutspelet börjar</em>; att de själva är ute är en annan story som hör hemma i SM-final-briefingen eller en post-elimination scene (R5-territorium).</p>
+
+  <h4>Implementation-delta för Code</h4>
+  <p>Vad som ändras utöver Opus spec:</p>
+  <ul>
+    <li><strong>Ny state-property:</strong> <code>game.phaseMarksSeen: SeasonPhase[]</code> (default <code>[]</code>). Persistas med save.</li>
+    <li><strong>Ny komponent:</strong> <code>PortalPhaseMark.tsx</code>. Renderas i <code>PortalScreen</code> mellan <code>SituationCard</code> och <code>PortalBeat</code>. Läser <code>getSeasonPhase()</code> + <code>game.phaseMarksSeen</code>; om diff → render.</li>
+    <li><strong>Ny store-action:</strong> <code>markPhaseAcknowledged(phase: SeasonPhase)</code>. Triggas i <code>advance()</code> efter att phasemark visats.</li>
+    <li><strong>Inget</strong> på minimal tier. <code>SquadStatusMinimal</code> etc. lämnas oförändrade × 1.0.</li>
+    <li><strong>Tester:</strong> phasemark visas exakt en gång per fas-byte; phasemark visas inte i pre_season/early; kafferum-suppress + bias × 0.4 ger förväntad sort-ordning i playoff.</li>
+  </ul>
+
+  <h4>Open till Opus — bekräfta innan Code wire:ar</h4>
+  <ul>
+    <li><strong>PhaseMark-copy</strong> för mid→endgame och endgame→playoff: använder vi <code>SEASON_MOOD[phase][0]</code> direkt eller skriver Opus dedikerade strängar? Spec'ad föreslag: använd SEASON_MOOD som default; Opus kan ersätta med dedikerad strängpool senare utan att designen ändras.</li>
+    <li><strong>PhaseMark för "endgame" → "playoff"</strong>: är det rätt fas-byte att markera om spelaren elimineras innan playoff? Föreslag: nej, markeras bara om spelaren faktiskt går in i playoff (= har minst en playoff-fixtur). Annars är fasen <code>endgame</code> och ingen ny markör.</li>
+    <li><strong>Helper-raden under quote</strong> ("Visas en gång per säsong"): rätt att inkludera i v1? Den är pedagogisk men kan kännas över­förklarande. Föreslag: håll i v1, ta bort efter playtest om Jacob säger "vet redan det".</li>
+  </ul>
+
+  <h4>Meta — vad denna mock är frusen i</h4>
+  <div class="meta-banner">
+    <strong>Visad:</strong> Forsbacka säsong 2 · 5:a-placering · Februari–Mars · normalt slutspel · ingen aktiv season-signature · neutral journalist-relation.<br>
+    <strong>Variation:</strong> Byt månad → bakgrund tonar (orelaterat till R3). Byt suppression-set → annan diff. Aktivera arc → primary kan ersättas med <code>EventPrimary</code> även i playoff (oförändrad logik). Trigga elimination → fas faller tillbaka till <code>endgame</code>, kafferum återkommer.
+  </div>
+
+</div>
+
+</body>
+</html>

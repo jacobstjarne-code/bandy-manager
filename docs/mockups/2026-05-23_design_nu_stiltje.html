@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>C-N1 NU-fliken vid stiltje</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --accent: #C47A3A; --cold: #4a6680; --cold-light: #7095b8;
+    --warm: #8c6e3a; --warm-light: #c8a058; --gold: #E8B95C;
+    --danger: #B05040; --success: #5A9A4A;
+    --font-display: 'Georgia', serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 32px 16px 80px; min-height: 100vh; }
+
+  .page-head { max-width: 1640px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 820px; }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 28px; max-width: 1640px; margin: 0 auto; }
+  .col { background: var(--bg-portal); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.35); width: 100%; max-width: 380px; justify-self: center; }
+  .col-head { padding: 12px 16px; background: var(--bg-leather-dk); font-family: var(--font-display); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .col-head .num { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; color: var(--accent); background: rgba(196,122,58,0.1); padding: 2px 6px; border-radius: 2px; margin-right: 8px; vertical-align: 2px; }
+  .col-head .phase { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; color: var(--text-light-secondary); background: rgba(245,241,235,0.05); padding: 2px 6px; border-radius: 2px; margin-left: 6px; vertical-align: 2px; text-transform: uppercase; }
+  .col-head .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }
+  .body { padding: 14px 14px 16px; }
+
+  .situation { margin: 0 0 12px; padding: 10px 12px; color: var(--text-light-secondary); font-family: var(--font-display); font-style: italic; font-size: 12px; line-height: 1.4; border-left: 1px dashed rgba(196,122,58,0.3); opacity: 0.85; }
+  .situation strong { font-style: normal; font-family: var(--font-body); font-weight: 600; color: var(--text-light); display: block; margin-bottom: 2px; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  .stillness-beat {
+    margin-bottom: 12px; padding: 12px 14px;
+    background: var(--bg-portal-surface);
+    border-radius: 6px;
+    border-left: 2px solid var(--cold);
+    font-family: var(--font-display); font-style: italic;
+    font-size: 13px; line-height: 1.5; color: var(--text-light-secondary);
+  }
+  .stillness-beat strong { font-style: normal; font-family: var(--font-body); font-weight: 600; color: var(--text-light); }
+
+  .ritual-card {
+    margin-bottom: 10px; padding: 12px 14px;
+    background: var(--bg-portal-surface); border-left: 2px solid var(--warm);
+    border-radius: 0 8px 8px 0;
+  }
+  .ritual-eyebrow { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--warm-light); font-weight: 700; margin-bottom: 7px; display: flex; gap: 6px; align-items: center; }
+  .ritual-body { font-family: var(--font-display); font-style: italic; font-size: 11.5px; color: var(--text-light); line-height: 1.5; }
+
+  .micro-row {
+    margin: 0 0 8px; padding: 9px 12px;
+    background: var(--bg-portal-surface);
+    border-radius: 6px;
+    display: flex; align-items: center; gap: 10px;
+    border-left: 2px solid transparent;
+  }
+  .micro-row .icon { font-size: 16px; opacity: 0.85; }
+  .micro-row .text { flex: 1; font-family: var(--font-body); font-size: 11.5px; color: var(--text-light); line-height: 1.4; }
+  .micro-row .text strong { font-weight: 600; }
+  .micro-row .text .muted { color: var(--text-light-secondary); opacity: 0.75; }
+  .micro-row.subtle { background: transparent; padding-left: 14px; opacity: 0.78; }
+
+  .stillness-sparkline { background: rgba(0,0,0,0.18); border-radius: 4px; padding: 9px 11px; margin-bottom: 12px; }
+  .ss-head { display: flex; justify-content: space-between; font-family: var(--font-body); font-size: 8px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+  .ss-svg { width: 100%; height: 26px; display: block; }
+
+  .heritage { margin: 12px 0 0; padding-top: 10px; border-top: 1px dashed rgba(196,122,58,0.15); font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light-secondary); line-height: 1.5; }
+
+  .notes { max-width: 1640px; margin: 40px auto 0; padding: 24px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.65; font-size: 13px; }
+  .notes h3 { font-family: var(--font-display); font-size: 18px; margin-bottom: 14px; color: var(--text-light); }
+  .notes h4 { font-family: var(--font-body); font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 18px 0 8px; }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes ul { margin: 4px 0 8px 18px; max-width: 880px; }
+  .notes code { font-family: var(--font-mono); font-size: 11.5px; background: rgba(245,241,235,0.06); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>C-N1 NU-fliken vid stiltje</h1>
+  <p>Frågan: <em>vad ÄR NU, vad visar den när inget brinner?</em> Idag visar NU samma som Portal — när inget händer blir det en tom slätt. Stiltje är inte buggar; det är säsongens vardag mellan dramerna. Den måste få vara stilla utan att kännas tom.</p>
+  <p>Förslag: <strong>fyra subtila lager</strong>. Atmosfärisk beat. Veckans rytm (träning, åkning, frilek). Mikrohändelser från bygden. Heritage-rad. Inget pekande, ingen action — bara att klubben lever även när inget brinner.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 01 · Stiltje-NU -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">01</span>STILTJE<span class="phase">omg 9 · onsdag</span>
+      <span class="sub">Två segrar bakom, ingen match förrän lördag. Inboxen tyst. Ingen decision, inget event. Detta är NU vid sin lugnaste — och det är där dagen ska kunna vila.</span>
+    </div>
+    <div class="body">
+
+      <div class="situation">
+        <strong>ONSDAG · OMG 9</strong>
+        Två tre dagar in i veckan. Inget skriker.
+      </div>
+
+      <!-- Atmosfärisk beat-rad — alltid där -->
+      <div class="stillness-beat">
+        Frostnatten höll i sig. Klacken har börjat öva på en ny sång — Magnus hörde det från läktaren.
+      </div>
+
+      <!-- Veckans rytm — vad sker varje dag -->
+      <div class="ritual-card">
+        <div class="ritual-eyebrow"><span>🏋️</span><span>Veckans rytm</span></div>
+        <div class="ritual-body">
+          Måndag: vila. Tisdag: teknik. <strong>Idag:</strong> isåkning, kondition. Torsdag: matchgenomgång. Fredag: lätt. Lördag: <strong>Heros borta</strong>.
+        </div>
+      </div>
+
+      <!-- Sparkline över team-puls -->
+      <div class="stillness-sparkline">
+        <div class="ss-head">
+          <span>Truppens puls · 7 dagar</span>
+          <span>Jämn</span>
+        </div>
+        <svg class="ss-svg" viewBox="0 0 200 26" preserveAspectRatio="none">
+          <polyline fill="none" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round"
+            points="4,14 32,12 60,14 88,12 116,14 144,12 172,14 196,12"/>
+          <circle cx="196" cy="12" r="2.5" fill="var(--success)"/>
+        </svg>
+      </div>
+
+      <!-- Mikrohändelser från bygden — tre rader -->
+      <div class="micro-row">
+        <span class="icon">☕</span>
+        <span class="text">Magnus köpte ny kaffebryggare. <span class="muted">Tre gånger redan idag.</span></span>
+      </div>
+      <div class="micro-row">
+        <span class="icon">🚗</span>
+        <span class="text">Bryggeriet har börjat dekorera bussen <span class="muted">för borta-resan.</span></span>
+      </div>
+      <div class="micro-row subtle">
+        <span class="icon">🦌</span>
+        <span class="text"><span class="muted">Tre älgar på Forsbacka-isen i morse. Vaktmästaren ringde polisen.</span></span>
+      </div>
+
+      <!-- Heritage-rad — en gång om dagen -->
+      <div class="heritage">
+        Idag är det 8 år sedan klubben spelade sin första elitseriematch — mot Söderfors. Det blev 1–4.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 02 · Halv-stiltje -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">02</span>HALV-STILTJE<span class="phase">någonting brinner</span>
+      <span class="sub">När en sak händer (en decision i kön, en skadad spelare i rehab) tar den platsen — men resten av stillheten lever kvar. NU är inte alarm; det är att visa nästa sak utan att skrika.</span>
+    </div>
+    <div class="body">
+
+      <div class="situation">
+        <strong>FREDAG · OMG 14</strong>
+        Lindqvist är tillbaka från lätt-pass. Klart för match.
+      </div>
+
+      <div class="stillness-beat">
+        Vintervind drog över bygden i natt. Hallen luktar lim, som alltid.
+      </div>
+
+      <!-- En enda aktiv sak — vill du höra Lindqvist? -->
+      <div class="ritual-card" style="border-left-color: var(--accent);">
+        <div class="ritual-eyebrow" style="color: var(--accent);"><span>🩺</span><span>Bandydoktorn</span></div>
+        <div class="ritual-body">
+          Henrik kollade Lindqvist på morgonen. "<strong>Han är klar för halva matchen.</strong> Vi tar det därifrån."
+        </div>
+      </div>
+
+      <div class="ritual-card">
+        <div class="ritual-eyebrow"><span>🏋️</span><span>Veckans rytm</span></div>
+        <div class="ritual-body">
+          Måndag: vila. <strong>Idag:</strong> lätt, individuellt. <strong>I morgon:</strong> Heros borta.
+        </div>
+      </div>
+
+      <div class="micro-row">
+        <span class="icon">📰</span>
+        <span class="text">Helena ringer aldrig på fredagar. <span class="muted">Det är en regel hon själv satte.</span></span>
+      </div>
+      <div class="micro-row subtle">
+        <span class="icon">☕</span>
+        <span class="text"><span class="muted">Sture har inte sagt något om derbyt än. Magnus märker.</span></span>
+      </div>
+
+      <div class="heritage">
+        Söderfors–Forsbacka spelades första gången 1962. Det blev 0–0. Det var januari.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 03 · Stilltje-mekanik -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">03</span>FYRA LAGER<span class="phase">stillness-mekanik</span>
+      <span class="sub">Vad som faktiskt renderas. Fyra lager med olika triggers. Tillsammans gör de att NU aldrig blir tomt utan att vara påträngande.</span>
+    </div>
+    <div class="body">
+
+      <div class="stillness-beat">
+        <strong>1 · Stillness-beat (alltid)</strong>
+        En italic-rad. Roterar per dag/säsong/väder. Säger ingenting actionable. Bara att klubben finns.
+      </div>
+
+      <div class="ritual-card">
+        <div class="ritual-eyebrow"><span>🏋️</span><span>2 · Veckans rytm (alltid)</span></div>
+        <div class="ritual-body">
+          Träningsschema från måndag → söndag. "Idag"-rad markerad. Nästa match visas i slutet. Konkret bandymanagerskap.
+        </div>
+      </div>
+
+      <div class="stillness-sparkline">
+        <div class="ss-head">
+          <span>3 · Stämningskurva (om data finns)</span>
+          <span>Sparkline</span>
+        </div>
+        <svg class="ss-svg" viewBox="0 0 200 26" preserveAspectRatio="none">
+          <polyline fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"
+            points="4,18 32,16 60,18 88,14 116,16 144,12 172,14 196,12"/>
+          <circle cx="196" cy="12" r="2.5" fill="var(--accent)"/>
+        </svg>
+      </div>
+
+      <div class="micro-row">
+        <span class="icon">·</span>
+        <span class="text"><strong>4 · Mikrohändelser (1-3 per omg)</strong> — bygden, klubben, vädret. Atmosfäriska, icke-actionable. Pool från smallAbsurditiesData + ny stillness-pool.</span>
+      </div>
+
+      <div class="heritage">
+        <strong>5 · Heritage-rad (1 per dag)</strong> — något från klubbens historia på samma datum. Driver klubbidentitet utan att brinna.
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Stillness-design — fyra lager, två regler</h3>
+
+  <h4>De fyra lagren</h4>
+  <ol>
+    <li><strong>Stillness-beat</strong> — alltid. Italic-rad. Roterar per dag/säsong/väder. Inget actionable.</li>
+    <li><strong>Veckans rytm</strong> — alltid. Träningsschema mån-sön + nästa match. "Idag"-rad markerad.</li>
+    <li><strong>Stämningskurva</strong> — sparkline över team-puls senaste 7 dagar. Visual-only.</li>
+    <li><strong>Mikrohändelser</strong> — 1-3 atmosfäriska rader per omg. Bygden, klubben, vädret.</li>
+    <li><strong>Heritage-rad</strong> — 1 per dag. Från klubbens historia på samma datum. Driver identitet.</li>
+  </ol>
+
+  <h4>Två regler</h4>
+  <ul>
+    <li><strong>Stillness är inte tomhet.</strong> Om inget brinner ska NU vara <em>full</em> av lager 1-5, inte tom. Bandysvenskt: vardagen är värd att visa.</li>
+    <li><strong>När något brinner, sjunker stillness.</strong> Lager 2-5 stannar, men aktiv decision/skada/event tar plats överst. Stillness är bakgrund, inte konkurrens.</li>
+  </ul>
+
+  <h4>Heritage-rad — datakrav</h4>
+  <p>För att Heritage-raden ska säga "8 år sedan idag mot Söderfors" behöver vi <code>clubMemoryEvents</code> indexerat per datum. Datat finns (clubMemoryEventBuilders). Behöver bara en helper: <code>findEventsOnDate(game, currentDate)</code> som söker historiska events på samma månad-dag. **Återanvänder R5-anniversary-logiken.**</p>
+
+  <h4>Stämningskurva — datakrav</h4>
+  <p><code>game.teamPulseHistory: number[]</code> (snapshot per omg). Pulse-värde = aggregerad team-mood + senaste matchers form + injury-fri %. Använder <code>&lt;Sparkline&gt;</code> från score-system.</p>
+
+  <h4>Mikrohändelser — pool-byggnad</h4>
+  <p>Ny pool: <code>src/domain/data/stillnessMicroPool.ts</code>. ~50 strängar, viktade per kontext: väder-typ, dag-i-veckan, tabellplacering, tid-på-säsongen. Opus levererar.</p>
+
+  <p>Plus: återanvänd <code>smallAbsurditiesData</code> där det passar. Tre älgar på isen passar perfekt.</p>
+
+  <h4>Designval öppna</h4>
+  <ul>
+    <li><strong>Q1:</strong> Visa stämningskurvan alltid, eller bara när trenden är märkbar (high variance)? Föreslag: alltid. Förändring över tid är information.</li>
+    <li><strong>Q2:</strong> Heritage-rad — bara för "exakta jubileum" (samma datum) eller också "ungefärlig" (samma vecka, samma månad)? Föreslag: bara exakta — sällsynta jubileum är guld, ofta-jubileum blir spam.</li>
+    <li><strong>Q3:</strong> Mikrohändelser — får de driva mood-effekter (t.ex. "tre älgar" ger +1 spelarnostalgi)? Princip-fråga: gör vi stiltje till mekanik eller stannar den narrativ? <strong>Föreslag:</strong> stannar narrativ. Inga osynliga konsekvenser. Konsekvent med Jacobs princip "mjukt och synligt".</li>
+  </ul>
+
+  <h4>Estimat</h4>
+  <p><strong>Stillness-beat-rotation:</strong> ~30 min Code (väderintegration, dag-pickers)<br>
+  <strong>Veckans rytm-komponent:</strong> ~1h Code<br>
+  <strong>Stämningskurva (med data-pipeline):</strong> ~1.5h Code<br>
+  <strong>Mikrohändelser-rendering + pool-integration:</strong> ~1h Code<br>
+  <strong>Heritage-rad + findEventsOnDate-helper:</strong> ~1h Code<br>
+  <strong>Opus-leverans:</strong> ~50 strängar mikrohändelser + ~20 stillness-beats<br>
+  <strong>Total:</strong> ~5h Code + Opus copy.</p>
+
+</div>
+
+</body>
+</html>

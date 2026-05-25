@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Manager som karaktär — du själv åldras och slits</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612;
+    --bg-portal-surface: #221d18;
+    --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32;
+    --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB;
+    --text-light-secondary: #C4BAA8;
+    --text-muted: #8A857A;
+    --accent: #C47A3A;
+    --cold: #4a6680;
+    --cold-light: #7095b8;
+    --warm: #8c6e3a;
+    --warm-light: #c8a058;
+    --gold: #E8B95C;
+    --danger: #B05040;
+    --success: #5A9A4A;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+    --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color: var(--text-light); font-family: var(--font-body); }
+  body { background: var(--bg-leather); padding: 32px 16px 80px; min-height: 100vh; }
+
+  .page-head { max-width: 1640px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 820px; }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 28px; max-width: 1640px; margin: 0 auto;
+  }
+  .col {
+    background: var(--bg-portal); border-radius: 12px; overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    width: 100%; max-width: 380px; justify-self: center;
+  }
+  .col-head {
+    padding: 12px 16px; background: var(--bg-leather-dk);
+    font-family: var(--font-display); font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .col-head .num {
+    display: inline-block; font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 2px; color: var(--accent);
+    background: rgba(196,122,58,0.1); padding: 2px 6px; border-radius: 2px;
+    margin-right: 8px; vertical-align: 2px;
+  }
+  .col-head .phase {
+    display: inline-block; font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 1.5px; color: var(--text-light-secondary);
+    background: rgba(245,241,235,0.05); padding: 2px 6px; border-radius: 2px;
+    margin-left: 6px; vertical-align: 2px; text-transform: uppercase;
+  }
+  .col-head .sub {
+    display: block; font-size: 11px; color: rgba(245,241,235,0.6);
+    margin-top: 6px; line-height: 1.5;
+  }
+
+  .body { padding: 14px 14px 16px; }
+
+  /* Manager-profil-card */
+  .manager-card {
+    padding: 16px 14px 14px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+  }
+  .manager-card.cold { border-left-color: var(--cold); }
+  .manager-card.warm { border-left-color: var(--warm); }
+  .manager-card.danger { border-left-color: var(--danger); }
+
+  .manager-eyebrow {
+    font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .manager-card.cold .manager-eyebrow { color: var(--cold-light); }
+  .manager-card.warm .manager-eyebrow { color: var(--warm-light); }
+  .manager-card.danger .manager-eyebrow { color: var(--danger); }
+
+  .manager-name {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 700;
+    color: var(--text-light); margin-bottom: 3px;
+  }
+  .manager-meta {
+    font-family: var(--font-mono);
+    font-size: 9.5px; letter-spacing: 0.5px;
+    color: var(--text-light-secondary); margin-bottom: 12px;
+  }
+
+  .manager-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .stat-tile {
+    background: rgba(0,0,0,0.18);
+    padding: 7px 9px 8px;
+    border-radius: 4px;
+    border-left: 2px solid var(--accent);
+  }
+  .stat-tile.cold { border-left-color: var(--cold); }
+  .stat-tile.warm { border-left-color: var(--warm); }
+  .stat-tile.danger { border-left-color: var(--danger); }
+  .stat-tile.success { border-left-color: var(--success); }
+  .stat-label {
+    font-family: var(--font-body); font-size: 7.5px;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 3px;
+  }
+  .stat-value {
+    font-family: var(--font-display); font-size: 15px;
+    font-weight: 700; color: var(--text-light); line-height: 1;
+  }
+  .stat-value.danger { color: var(--danger); }
+  .stat-value.warm   { color: var(--warm-light); }
+  .stat-value.success{ color: var(--success); }
+  .stat-meta {
+    font-family: var(--font-body); font-size: 9px;
+    color: var(--text-light-secondary); margin-top: 3px;
+    opacity: 0.8;
+  }
+
+  /* Burnout-sparkline */
+  .burnout-frame {
+    background: rgba(0,0,0,0.18);
+    border-radius: 4px;
+    padding: 9px 11px;
+    margin-bottom: 12px;
+  }
+  .burnout-head {
+    display: flex; justify-content: space-between;
+    font-family: var(--font-body); font-size: 8px;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 5px;
+  }
+  .burnout-spark { height: 26px; width: 100%; display: block; }
+
+  .manager-bio {
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 4px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 11.5px;
+    color: var(--text-light-secondary);
+    line-height: 1.45;
+    border-left: 1px dashed rgba(196,122,58,0.25);
+  }
+  .manager-bio strong {
+    font-style: normal; font-family: var(--font-body);
+    font-weight: 600; color: var(--text-light);
+  }
+
+  /* Tränaravtal-row */
+  .contract-row {
+    margin-top: 10px;
+    padding: 9px 11px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 4px;
+    border-left: 2px solid var(--warm);
+  }
+  .contract-row.expiring { border-left-color: var(--danger); }
+  .contract-label {
+    font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--warm-light); font-weight: 700; margin-bottom: 3px;
+  }
+  .contract-row.expiring .contract-label { color: var(--danger); }
+  .contract-text {
+    font-family: var(--font-display); font-size: 12px;
+    color: var(--text-light); line-height: 1.4;
+  }
+  .contract-text strong { font-weight: 700; }
+
+  /* Portal-integration · burnout-mark */
+  .situation {
+    margin: 0 0 12px; padding: 10px 12px;
+    color: var(--text-light-secondary);
+    font-family: var(--font-display); font-style: italic;
+    font-size: 12px; line-height: 1.4;
+    border-left: 1px dashed rgba(196,122,58,0.3); opacity: 0.85;
+  }
+  .situation strong {
+    font-style: normal; font-family: var(--font-body); font-weight: 600;
+    color: var(--text-light); display: block; margin-bottom: 2px;
+    font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .burnout-mark {
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border-top: 1px solid rgba(176,80,64,0.28);
+    border-bottom: 1px solid rgba(176,80,64,0.12);
+    background: linear-gradient(180deg, rgba(176,80,64,0.06) 0%, rgba(176,80,64,0.02) 100%);
+  }
+  .burnout-mark-eyebrow {
+    font-family: var(--font-body); font-size: 8px;
+    font-weight: 600; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--danger); text-align: center; margin-bottom: 7px;
+  }
+  .burnout-mark-quote {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 13.5px; color: var(--text-light);
+    text-align: center; line-height: 1.4; margin-bottom: 5px;
+  }
+  .burnout-mark-helper {
+    font-family: var(--font-body); font-size: 10px;
+    color: var(--text-light-secondary); text-align: center;
+    opacity: 0.7; line-height: 1.4;
+  }
+
+  /* Coach rivalry */
+  .rival-card {
+    margin-bottom: 8px;
+    padding: 11px 13px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--cold);
+    border-radius: 0 6px 6px 0;
+  }
+  .rival-card.warm { border-left-color: var(--warm); }
+  .rival-card.success { border-left-color: var(--success); }
+  .rival-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 5px;
+  }
+  .rival-name {
+    font-family: var(--font-display);
+    font-size: 13px; font-weight: 700;
+    color: var(--text-light);
+  }
+  .rival-club {
+    font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 0.5px; color: var(--text-light-secondary);
+  }
+  .rival-record {
+    display: flex; gap: 10px; align-items: center;
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--text-light-secondary);
+    margin-bottom: 5px;
+  }
+  .rival-record .v { color: var(--success); }
+  .rival-record .o { color: var(--text-muted); }
+  .rival-record .f { color: var(--danger); }
+  .rival-quote {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 11px; color: var(--text-light-secondary);
+    line-height: 1.4;
+  }
+
+  /* Notes */
+  .notes {
+    max-width: 1640px; margin: 40px auto 0; padding: 24px;
+    background: rgba(245,241,235,0.04); border-radius: 8px;
+    color: rgba(245,241,235,0.85); line-height: 1.65; font-size: 13px;
+  }
+  .notes h3 {
+    font-family: var(--font-display); font-size: 18px;
+    margin-bottom: 14px; color: var(--text-light);
+  }
+  .notes h4 {
+    font-family: var(--font-body); font-weight: 700;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin: 18px 0 8px;
+  }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes ul { margin: 4px 0 8px 18px; max-width: 880px; }
+  .notes code {
+    font-family: var(--font-mono); font-size: 11.5px;
+    background: rgba(245,241,235,0.06); padding: 1px 5px;
+    border-radius: 2px; color: var(--gold);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Manager som karaktär — du själv åldras och slits</h1>
+  <p>Idag är du <em>Sture</em> (eller <em>Margareta</em>) i board-meeting-scenen — men ingen annanstans. Du är en ID. Du åldras inte, slits inte, har inget kontrakt. <strong>Spelet känner inte att DU finns</strong>. Den här designen ger dig en plats.</p>
+  <p>Fyra spalter: <strong>profil tidigt</strong> (S1, ny i klubben) · <strong>profil etablerad</strong> (S3, har vunnit silver) · <strong>burnout-tillstånd</strong> (mycket pressure under lång tid) · <strong>coach-rivalry</strong> (relationer till andra klubbars tränare).</p>
+</div>
+
+<div class="grid">
+
+  <!-- 01 · Tidig manager -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">01</span>NY MANAGER<span class="phase">Säsong 1 · Omg 5</span>
+      <span class="sub">Du har precis kommit till Forsbacka. Inget track record. Tränaravtalet är 2 år. Burnout-meter knappt mätbar — du är ny, energin är ny.</span>
+    </div>
+    <div class="body">
+      <div class="manager-card">
+        <div class="manager-eyebrow"><span>👤</span><span>Tränare</span></div>
+        <div class="manager-name">Sture Olofsson</div>
+        <div class="manager-meta">52 år · Forsbacka 1:a säsong · 8 matcher</div>
+
+        <div class="manager-stats">
+          <div class="stat-tile">
+            <div class="stat-label">Tabell</div>
+            <div class="stat-value">9:e</div>
+            <div class="stat-meta">av 12</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-label">Säsong-rec</div>
+            <div class="stat-value">2-2-4</div>
+            <div class="stat-meta">V-O-F</div>
+          </div>
+        </div>
+
+        <div class="burnout-frame">
+          <div class="burnout-head">
+            <span>Tröttsamhet</span>
+            <span>Frisk</span>
+          </div>
+          <svg class="burnout-spark" viewBox="0 0 200 26" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round"
+              points="4,20 36,20 68,18 100,18 132,16 164,18 196,16"/>
+            <circle cx="196" cy="16" r="2" fill="var(--success)"/>
+          </svg>
+        </div>
+
+        <div class="manager-bio">
+          <strong>Från Edsbyn ursprungligen.</strong> Spelade B i tio år, blev tränare 2014. Första elitserie-jobbet. Familjen är kvar i Edsbyn — pendling varje vecka.
+        </div>
+
+        <div class="contract-row">
+          <div class="contract-label">Tränaravtal</div>
+          <div class="contract-text">
+            <strong>2 år.</strong> Löper ut säsong 3. 32 tkr/månad.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 · Etablerad manager -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">02</span>ETABLERAD<span class="phase">Säsong 3 · Omg 18</span>
+      <span class="sub">Tre år in. Du tog silver i SM-finalen förra säsongen. Tränaravtalet förhandlas — utgår om en omg 22. Burnout vågar något men håller — du har lärt dig.</span>
+    </div>
+    <div class="body">
+      <div class="manager-card warm">
+        <div class="manager-eyebrow"><span>👤</span><span>Tränare · etablerad</span></div>
+        <div class="manager-name">Sture Olofsson</div>
+        <div class="manager-meta">54 år · Forsbacka 3:e säsongen · 60 matcher</div>
+
+        <div class="manager-stats">
+          <div class="stat-tile success">
+            <div class="stat-label">Tabell</div>
+            <div class="stat-value success">2:a</div>
+            <div class="stat-meta">silver S2</div>
+          </div>
+          <div class="stat-tile warm">
+            <div class="stat-label">Karriärsrec</div>
+            <div class="stat-value warm">32-12-16</div>
+            <div class="stat-meta">3 säsonger</div>
+          </div>
+        </div>
+
+        <div class="burnout-frame">
+          <div class="burnout-head">
+            <span>Tröttsamhet</span>
+            <span>Märkbar</span>
+          </div>
+          <svg class="burnout-spark" viewBox="0 0 200 26" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--warm)" stroke-width="1.5" stroke-linecap="round"
+              points="4,22 36,20 68,18 100,16 132,14 164,12 196,11"/>
+            <circle cx="100" cy="16" r="2" fill="var(--accent)"/>
+            <circle cx="196" cy="11" r="2.5" fill="var(--warm)" stroke="var(--bg-portal-surface)" stroke-width="0.5"/>
+          </svg>
+        </div>
+
+        <div class="manager-bio">
+          <strong>Tog silvret förra säsongen.</strong> Familjen flyttade till Forsbacka under sommaren — pendlingen blev för mycket. Bygdens puls. Bryggeriet kallar honom "Sture-Forsbacka" nu.
+        </div>
+
+        <div class="contract-row expiring">
+          <div class="contract-label">Tränaravtal · löper ut</div>
+          <div class="contract-text">
+            <strong>4 omg kvar.</strong> Styrelsen har inte förlängt än. Anbud från Söderfors enligt rykten.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 · Burnout-tillstånd -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">03</span>BURNOUT-RISK<span class="phase">i Portal</span>
+      <span class="sub">När burnout når hot-tröskel (sparkline-uppgång + decision-fatigue + förluster) triggas BurnoutMark i Portal. En gång per säsong. Sture får ett halvår tystare ritual — eller risken växer.</span>
+    </div>
+    <div class="body">
+      <div class="situation">
+        <strong>FREDAG · OMG 19</strong>
+        Tre förluster i rad. Inboxen är full.
+      </div>
+
+      <div class="burnout-mark">
+        <div class="burnout-mark-eyebrow">⬩ Sture är trött ⬩</div>
+        <div class="burnout-mark-quote">"Jag måste tänka klart över helgen."</div>
+        <div class="burnout-mark-helper">Klacken märker. Spelarna märker. Du behöver en paus.</div>
+      </div>
+
+      <div class="manager-card danger">
+        <div class="manager-eyebrow"><span>👤</span><span>Tränarens tillstånd</span></div>
+        <div class="manager-name">Sture Olofsson</div>
+        <div class="manager-meta">54 år · 12 omg i hot-zon</div>
+
+        <div class="burnout-frame">
+          <div class="burnout-head">
+            <span>Tröttsamhet · senaste 10 omg</span>
+            <span>Hög</span>
+          </div>
+          <svg class="burnout-spark" viewBox="0 0 200 26" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--danger)" stroke-width="1.5" stroke-linecap="round"
+              points="4,20 24,18 44,16 64,14 84,12 104,10 124,8 144,6 164,4 184,3 196,2"/>
+            <circle cx="196" cy="2" r="2.5" fill="var(--danger)" stroke="var(--bg-portal-surface)" stroke-width="0.5"/>
+          </svg>
+        </div>
+
+        <div class="manager-stats">
+          <div class="stat-tile danger">
+            <div class="stat-label">Konsekvens</div>
+            <div class="stat-value danger">−10</div>
+            <div class="stat-meta">team-mood</div>
+          </div>
+          <div class="stat-tile warm">
+            <div class="stat-label">Återhämtning</div>
+            <div class="stat-value warm">3 omg</div>
+            <div class="stat-meta">utan press</div>
+          </div>
+        </div>
+
+        <div class="manager-bio">
+          <strong>Tre förluster i rad. Pendelfönstret stänger.</strong> Magnus pratade med honom. "Hur länge tänker du köra på, Sture?" — han svarade inte.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 · Coach-rivalry -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">04</span>COACH-RIVALRY<span class="phase">Klubb-tab</span>
+      <span class="sub">Andra klubbars tränare har relationer till dig. H2H-rekord, rivalitet-status, citat från presskonferenser. Manager-möten över årtionden.</span>
+    </div>
+    <div class="body">
+
+      <div class="rival-card success">
+        <div class="rival-head">
+          <span class="rival-name">Lars Holmgren</span>
+          <span class="rival-club">Söderfors</span>
+        </div>
+        <div class="rival-record">
+          <span class="v">V 5</span><span class="o">O 2</span><span class="f">F 3</span>
+        </div>
+        <div class="rival-quote">
+          "Sture är hederlig. Vi pratar alltid efter matchen — om vädret, inte om bandyn."
+        </div>
+      </div>
+
+      <div class="rival-card">
+        <div class="rival-head">
+          <span class="rival-name">Mikael Bergström</span>
+          <span class="rival-club">Karlsborg</span>
+        </div>
+        <div class="rival-record">
+          <span class="v">V 2</span><span class="o">O 1</span><span class="f">F 4</span>
+        </div>
+        <div class="rival-quote">
+          "Han har slagit mig fyra av sju gånger. Det är inte personligt. Inte än."
+        </div>
+      </div>
+
+      <div class="rival-card warm">
+        <div class="rival-head">
+          <span class="rival-name">Per-Erik Lindqvist</span>
+          <span class="rival-club">Gagnef</span>
+        </div>
+        <div class="rival-record">
+          <span class="v">V 3</span><span class="o">O 1</span><span class="f">F 2</span>
+        </div>
+        <div class="rival-quote">
+          "Vi var lagkamrater i Edsbyn 1998. Han glömmer inte att jag avgjorde det dagsbordet."
+        </div>
+      </div>
+
+      <div class="rival-card">
+        <div class="rival-head">
+          <span class="rival-name">Lasse Engström</span>
+          <span class="rival-club">Heros</span>
+        </div>
+        <div class="rival-record">
+          <span class="v">V 4</span><span class="o">O 0</span><span class="f">F 0</span>
+        </div>
+        <div class="rival-quote">
+          "Aldrig förlorat mot honom. Han ringer aldrig först."
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Manager-karaktären — design-rationale</h3>
+
+  <h4>Vad mocken introducerar</h4>
+  <ul>
+    <li><strong>Manager-profil-card</strong> i ClubScreen "Tränare"-tab (NY tab) — stats, burnout-sparkline, bio, kontraktsstatus.</li>
+    <li><strong>Burnout-meter</strong> mätt över tid via sparkline. Färger: success (frisk) → warm (märkbar) → danger (hot).</li>
+    <li><strong>BurnoutMark</strong> i Portal — pendant till PhaseMark/SpectatorMark/AnniversaryMark men danger-tonad. En gång per säsong vid trigger.</li>
+    <li><strong>Coach-rivalry-block</strong> — H2H-rekord per motståndartränare med karaktärs-citat.</li>
+    <li><strong>Tränaravtal</strong> — du har ett kontrakt som löper ut. Förlängning förhandlas. Anbud från andra klubbar.</li>
+  </ul>
+
+  <h4>Datakrav</h4>
+  <p><strong>Ny domän-entity:</strong> <code>ManagerProfile</code> med:</p>
+  <ul>
+    <li><code>name</code>, <code>age</code> (åldras 1/säsong)</li>
+    <li><code>hometown</code>, <code>familySituation</code> (driver bio-narrativ)</li>
+    <li><code>contractUntilSeason</code>, <code>monthlySalary</code></li>
+    <li><code>burnoutHistory: number[]</code> (sparkline-datapunkter, en per omgång)</li>
+    <li><code>careerRecord: { wins, draws, losses }</code></li>
+    <li><code>coachRivalries: Record&lt;clubId, RivalryRecord&gt;</code></li>
+  </ul>
+
+  <h4>Burnout-mekanik</h4>
+  <p>Per omgång beräkna burnout-värde (0-100). Faktorer:</p>
+  <ul>
+    <li>Decision-fatigue-meter (R1)</li>
+    <li>Förluster senaste 3 omg (+10 per förlust)</li>
+    <li>Pendingar i inkorgen (+2 per oläst)</li>
+    <li>Återhämtning vid vinst (−5)</li>
+    <li>Drift mot 0 per omg utan tryck</li>
+  </ul>
+  <p>När burnout ≥ 70 i 2+ omgångar i rad → BurnoutMark triggas vid nästa Portal-render. Konsekvens: team-mood −10 nästa match, eller acceptera "paus-omg" (Sture skippar press, missar event).</p>
+
+  <h4>Tränaravtal</h4>
+  <p>Vid säsongsslut (eller 3 omg innan utgång): styrelsen tar beslut om förlängning. Faktorer:</p>
+  <ul>
+    <li>Tabellresultat senaste 2 säsonger</li>
+    <li>Burnout-medel (high = mindre attraktivt)</li>
+    <li>Patron-relation</li>
+    <li>Slumpat 20-40% chans på utbud från annan klubb (skapar förhandlingsläge)</li>
+  </ul>
+  <p>Om kontraktet inte förlängs: GameOver i slutet av säsongen. Spelaren får välja om de fortsätter på annan klubb eller startar nytt.</p>
+
+  <h4>Coach-rivalry</h4>
+  <p>Generera 1 fiktiv tränare per AI-klubb vid season start. Karaktärs-data (namn, ålder, hometown, signature-style). H2H-rekord byggs över tid. Citat-pool per tränare-personlighet (3-4 typer: heders / kall / passiv-aggressiv / ödmjuk).</p>
+
+  <h4>Designval öppna</h4>
+  <ul>
+    <li><strong>Q1:</strong> Får manager-bio förändras över tid (livsförändringar — familjen flyttar, hemorten byts)? Eller är det statisk?</li>
+    <li><strong>Q2:</strong> Burnout = mjuk konsekvens (mood-effekt) eller hård (GameOver-risk)?</li>
+    <li><strong>Q3:</strong> Coach-rivalry-citat — Opus genererar pool eller blir det LLM-genererat per session?</li>
+    <li><strong>Q4:</strong> När du startar S3 — ska du <em>se</em> dig själv åldras? Subtila förändringar i bio över säsonger?</li>
+  </ul>
+
+  <h4>Estimat</h4>
+  <p><strong>Manager-profil + tab + bio:</strong> ~3h Code<br>
+  <strong>Burnout-mekanik + sparkline:</strong> ~2h Code<br>
+  <strong>Tränaravtal-system + förlängningsbeslut:</strong> ~3h Code<br>
+  <strong>Coach-rivalry-genrering + H2H-tracking:</strong> ~2h Code<br>
+  <strong>BurnoutMark i Portal:</strong> ~30 min<br>
+  <strong>Opus-leverans:</strong> ~30 strängar (bio-templates × 5, coach-personality-citat × 4 typer × 4 varianter)<br>
+  <strong>Total:</strong> ~10.5h Code + Opus copy. Stort spår.</p>
+
+  <p>Föreslå dela i två fas: <strong>Fas 1</strong> manager-profil + burnout (5h). <strong>Fas 2</strong> tränaravtal + coach-rivalry (5.5h). Levererat när Jacob bekräftar Q1-Q4.</p>
+</div>
+
+</body>
+</html>

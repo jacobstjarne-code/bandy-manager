@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Skade-narrativet — bandydoktor + rehab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612;
+    --bg-portal-surface: #221d18;
+    --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32;
+    --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB;
+    --text-light-secondary: #C4BAA8;
+    --text-muted: #8A857A;
+    --accent: #C47A3A;
+    --cold: #4a6680;
+    --cold-light: #7095b8;
+    --warm: #8c6e3a;
+    --warm-light: #c8a058;
+    --gold: #E8B95C;
+    --danger: #B05040;
+    --success: #5A9A4A;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+    --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color: var(--text-light); font-family: var(--font-body); }
+  body { background: var(--bg-leather); padding: 32px 16px 80px; min-height: 100vh; }
+
+  .page-head { max-width: 1640px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 820px; }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 28px; max-width: 1640px; margin: 0 auto;
+  }
+  .col {
+    background: var(--bg-portal); border-radius: 12px; overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    width: 100%; max-width: 380px; justify-self: center;
+  }
+  .col-head {
+    padding: 12px 16px; background: var(--bg-leather-dk);
+    font-family: var(--font-display); font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .col-head .num {
+    display: inline-block; font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 2px; color: var(--accent);
+    background: rgba(196,122,58,0.1); padding: 2px 6px; border-radius: 2px;
+    margin-right: 8px; vertical-align: 2px;
+  }
+  .col-head .phase {
+    display: inline-block; font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 1.5px; color: var(--text-light-secondary);
+    background: rgba(245,241,235,0.05); padding: 2px 6px; border-radius: 2px;
+    margin-left: 6px; vertical-align: 2px; text-transform: uppercase;
+  }
+  .col-head .sub {
+    display: block; font-size: 11px; color: rgba(245,241,235,0.6);
+    margin-top: 6px; line-height: 1.5;
+  }
+  .body { padding: 14px 14px 16px; }
+
+  /* Doktor-scen */
+  .doktor-scene {
+    padding: 16px 14px;
+    background: var(--bg-portal-surface);
+    border-radius: 8px;
+    border-left: 2px solid var(--cold);
+  }
+  .doktor-eyebrow {
+    font-size: 8px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--cold-light); text-align: center;
+    font-family: var(--font-body); font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .doktor-name {
+    font-family: var(--font-mono); font-size: 9px;
+    color: var(--accent); letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .doktor-quote {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 13px; color: var(--text-light); line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .doktor-quote strong {
+    font-style: normal; font-weight: 600;
+  }
+  .doktor-diagnosis {
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.2);
+    border-left: 2px solid var(--danger);
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 12px;
+  }
+  .diagnosis-label {
+    font-size: 7.5px; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--danger);
+    font-weight: 700; margin-bottom: 4px;
+  }
+  .diagnosis-text {
+    font-family: var(--font-display);
+    font-size: 12.5px; color: var(--text-light); line-height: 1.4;
+  }
+  .diagnosis-text strong { font-weight: 700; }
+  .doktor-options {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .doktor-option {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 10px 9px;
+    background: var(--bg-portal-elevated);
+    border: 1.5px solid var(--accent);
+    border-radius: 6px;
+    text-align: center;
+  }
+  .doktor-option-label {
+    font-size: 12px; font-weight: 700;
+    color: var(--text-light);
+  }
+  .doktor-option-effect {
+    font-family: var(--font-display);
+    font-style: italic; font-size: 10px;
+    color: var(--text-light-secondary);
+    line-height: 1.3;
+  }
+
+  /* Rehab-progression */
+  .rehab-card {
+    padding: 12px 14px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--warm);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 10px;
+  }
+  .rehab-label {
+    font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--warm-light); font-weight: 700; margin-bottom: 7px;
+  }
+  .rehab-player {
+    font-family: var(--font-display); font-size: 14px;
+    font-weight: 700; color: var(--text-light); margin-bottom: 2px;
+  }
+  .rehab-injury {
+    font-family: var(--font-body); font-size: 11px;
+    color: var(--text-light-secondary); margin-bottom: 10px;
+  }
+
+  .rehab-track {
+    margin: 10px 0 8px;
+  }
+  .rehab-stages {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 6px;
+  }
+  .rehab-stage {
+    flex: 1;
+    height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(245,241,235,0.05);
+    border-right: none;
+    position: relative;
+  }
+  .rehab-stage:first-child { border-radius: 4px 0 0 4px; }
+  .rehab-stage:last-child {
+    border-radius: 0 4px 4px 0;
+    border-right: 1px solid rgba(245,241,235,0.05);
+  }
+  .rehab-stage.done {
+    background: rgba(90,154,74,0.18);
+    color: var(--success);
+    border-color: rgba(90,154,74,0.3);
+  }
+  .rehab-stage.now {
+    background: rgba(196,122,58,0.18);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .rehab-meta {
+    display: flex; justify-content: space-between;
+    font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 0.5px; color: var(--text-light-secondary);
+  }
+  .rehab-quote {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px dashed rgba(196,122,58,0.18);
+    font-family: var(--font-display); font-style: italic;
+    font-size: 11.5px; color: var(--text-light-secondary);
+    line-height: 1.45;
+  }
+
+  /* Långtidsskada-narrativ */
+  .arc-card {
+    padding: 14px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--danger);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 10px;
+  }
+  .arc-eyebrow {
+    font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--danger); font-weight: 700; margin-bottom: 8px;
+  }
+  .arc-player {
+    font-family: var(--font-display); font-size: 14px;
+    font-weight: 700; color: var(--text-light); margin-bottom: 3px;
+  }
+  .arc-injury {
+    font-family: var(--font-body); font-size: 11px;
+    color: var(--danger); margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .arc-quote {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 12px; color: var(--text-light); line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .arc-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+    margin-bottom: 12px;
+  }
+  .arc-stat {
+    padding: 6px 8px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 4px;
+    text-align: center;
+  }
+  .arc-stat-label {
+    font-size: 7px; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 2px;
+  }
+  .arc-stat-value {
+    font-family: var(--font-display);
+    font-size: 14px; font-weight: 700;
+    color: var(--text-light);
+  }
+  .arc-stat-value.danger { color: var(--danger); }
+  .arc-stat-value.warm   { color: var(--warm-light); }
+
+  .arc-timeline {
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 4px;
+  }
+  .timeline-label {
+    font-size: 7.5px; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--text-muted);
+    font-weight: 700; margin-bottom: 6px;
+  }
+  .timeline-svg { width: 100%; height: 40px; display: block; }
+
+  /* Bandydoktor-card kompakt */
+  .doktor-mini {
+    padding: 11px 13px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--cold);
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 10px;
+  }
+  .doktor-mini-label {
+    font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--cold-light); font-weight: 600; margin-bottom: 6px;
+    display: flex; gap: 5px; align-items: center;
+  }
+  .doktor-mini-body {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 11.5px; color: var(--text-light);
+    line-height: 1.45;
+  }
+
+  /* Notes */
+  .notes {
+    max-width: 1640px; margin: 40px auto 0; padding: 24px;
+    background: rgba(245,241,235,0.04); border-radius: 8px;
+    color: rgba(245,241,235,0.85); line-height: 1.65; font-size: 13px;
+  }
+  .notes h3 {
+    font-family: var(--font-display); font-size: 18px;
+    margin-bottom: 14px; color: var(--text-light);
+  }
+  .notes h4 {
+    font-family: var(--font-body); font-weight: 700;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin: 18px 0 8px;
+  }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes ul { margin: 4px 0 8px 18px; max-width: 880px; }
+  .notes code {
+    font-family: var(--font-mono); font-size: 11.5px;
+    background: rgba(245,241,235,0.06); padding: 1px 5px;
+    border-radius: 2px; color: var(--gold);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Skade-narrativet — bandydoktor + rehab-progression</h1>
+  <p>Idag är skador en <code>injuryReturnRound</code>-siffra och en 🩹-emoji. Spelet har 🩺 (bandydoktorn) i emoji-mappen — men ingen scen, ingen karaktär, ingen rehab-progression. Det är en tyst zon i en annars rik värld.</p>
+  <p>Fyra spalter: <strong>skade-scen</strong> (när skada inträffar — Henrik från bandydoktorn pratar) · <strong>rehab-progression</strong> (4-stegs-resa istället för bara timer) · <strong>långtidsskada-arc</strong> (säsongsavslutande skada som narrativ båge) · <strong>doktor-secondary</strong> (subtila Portal-rader om läkprocessen).</p>
+</div>
+
+<div class="grid">
+
+  <!-- 01 · Skade-scen -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">01</span>SKADE-SCEN<span class="phase">vid inträffande</span>
+      <span class="sub">När en spelare skadas under match triggas en doktor-scen — inte modal, en blockerande scen som situations-card där bandydoktorn pratar. Val: spela vidare nästa match (risk) eller vila (säker).</span>
+    </div>
+    <div class="body">
+      <div class="doktor-scene">
+        <div class="doktor-eyebrow">⬩ Bandydoktorn ⬩</div>
+        <div class="doktor-name">Henrik · Forsbackas läkare i 18 år</div>
+        <div class="doktor-quote">
+          "Det är ljumsken. Han kände det redan i andra. Spelade igenom — det gör de alla. <strong>Tre veckor om vi tar det lugnt. Sex om vi inte gör det.</strong>"
+        </div>
+        <div class="doktor-diagnosis">
+          <div class="diagnosis-label">Diagnos · Lindqvist</div>
+          <div class="diagnosis-text">
+            <strong>Ljumskskada (mild).</strong> 3 omg rehab. Risk för långvarig om press-spelad.
+          </div>
+        </div>
+        <div class="doktor-options">
+          <button class="doktor-option">
+            <span class="doktor-option-label">Vila</span>
+            <span class="doktor-option-effect">3 omg ute · säker</span>
+          </button>
+          <button class="doktor-option">
+            <span class="doktor-option-label">Spela på</span>
+            <span class="doktor-option-effect">−25% prestanda · 40% risk</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 · Rehab-progression -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">02</span>REHAB-PROGRESSION<span class="phase">SquadScreen player-row</span>
+      <span class="sub">Istället för "ute i 3 omg" som siffra: fyrstegs-rehab visualiseras. Spelaren ser var i läkprocessen Lindqvist är. Förändras per omgång.</span>
+    </div>
+    <div class="body">
+      <div class="rehab-card">
+        <div class="rehab-label">🩹 Rehab pågår</div>
+        <div class="rehab-player">S. Lindqvist</div>
+        <div class="rehab-injury">Ljumskskada · vecka 2 av 3</div>
+
+        <div class="rehab-track">
+          <div class="rehab-stages">
+            <div class="rehab-stage done">VILA</div>
+            <div class="rehab-stage now">LÄTT</div>
+            <div class="rehab-stage">FULL</div>
+            <div class="rehab-stage">MATCH</div>
+          </div>
+          <div class="rehab-meta">
+            <span>Påbörjad omg 14</span>
+            <span>Klar omg 17</span>
+          </div>
+        </div>
+
+        <div class="rehab-quote">
+          Henrik: "Han springer på bandet idag. Klart för fri träning nästa vecka."
+        </div>
+      </div>
+
+      <div class="rehab-card">
+        <div class="rehab-label">🩹 Rehab pågår</div>
+        <div class="rehab-player">A. Johansson</div>
+        <div class="rehab-injury">Mjuk vad · vecka 1 av 2</div>
+
+        <div class="rehab-track">
+          <div class="rehab-stages">
+            <div class="rehab-stage now">VILA</div>
+            <div class="rehab-stage">LÄTT</div>
+            <div class="rehab-stage">FULL</div>
+            <div class="rehab-stage">MATCH</div>
+          </div>
+          <div class="rehab-meta">
+            <span>Påbörjad omg 16</span>
+            <span>Klar omg 18</span>
+          </div>
+        </div>
+
+        <div class="rehab-quote">
+          Henrik: "Vi vet inte än. Beror på hur han svarar."
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 · Långtidsskada-arc -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">03</span>LÅNGTIDSSKADA<span class="phase">säsongsavslutande</span>
+      <span class="sub">När skadan är 12+ omg ute blir det en arc — inte bara en timer. Stat-summering, doktor-quote, timeline-sparkline över återkomstens stadier. Spelar-card i ClubScreen "Bandydoktorn"-tab.</span>
+    </div>
+    <div class="body">
+      <div class="arc-card">
+        <div class="arc-eyebrow">⬩ Långtidsskada ⬩</div>
+        <div class="arc-player">M. Lindqvist</div>
+        <div class="arc-injury">Korsbandsskada · säsongen slut</div>
+
+        <div class="arc-quote">
+          Henrik: "Det är inte slutet. Men 2026 är slut för Magnus. Han kommer tillbaka starkare — om han vill."
+        </div>
+
+        <div class="arc-stats">
+          <div class="arc-stat">
+            <div class="arc-stat-label">Sedan</div>
+            <div class="arc-stat-value danger">Omg 8</div>
+          </div>
+          <div class="arc-stat">
+            <div class="arc-stat-label">Tillbaka</div>
+            <div class="arc-stat-value warm">Säsong 4</div>
+          </div>
+          <div class="arc-stat">
+            <div class="arc-stat-label">Total</div>
+            <div class="arc-stat-value danger">22 omg</div>
+          </div>
+        </div>
+
+        <div class="arc-timeline">
+          <div class="timeline-label">Återkomst-prognos</div>
+          <svg class="timeline-svg" viewBox="0 0 300 40" preserveAspectRatio="none">
+            <!-- nu-markör -->
+            <line x1="20" y1="6" x2="20" y2="34" stroke="var(--danger)" stroke-width="1.5" stroke-dasharray="2 2"/>
+            <text x="22" y="14" font-family="ui-monospace, monospace" font-size="7" fill="var(--danger)" letter-spacing="1">NU</text>
+
+            <!-- huvudlinje -->
+            <line x1="20" y1="22" x2="280" y2="22" stroke="rgba(245,241,235,0.15)" stroke-width="1"/>
+
+            <!-- stadier -->
+            <g>
+              <circle cx="80" cy="22" r="3" fill="var(--danger)" stroke="var(--bg-portal-surface)" stroke-width="1"/>
+              <text x="80" y="38" font-family="ui-monospace, monospace" font-size="7" fill="var(--text-muted)" text-anchor="middle">Operation</text>
+            </g>
+            <g>
+              <circle cx="140" cy="22" r="3" fill="var(--warm)" stroke="var(--bg-portal-surface)" stroke-width="1"/>
+              <text x="140" y="38" font-family="ui-monospace, monospace" font-size="7" fill="var(--text-muted)" text-anchor="middle">Rehab</text>
+            </g>
+            <g>
+              <circle cx="210" cy="22" r="3" fill="var(--accent)" stroke="var(--bg-portal-surface)" stroke-width="1"/>
+              <text x="210" y="38" font-family="ui-monospace, monospace" font-size="7" fill="var(--text-muted)" text-anchor="middle">Match-fit</text>
+            </g>
+            <g>
+              <circle cx="280" cy="22" r="4" fill="var(--success)" stroke="var(--bg-portal-surface)" stroke-width="1"/>
+              <text x="280" y="38" font-family="ui-monospace, monospace" font-size="7" fill="var(--success)" text-anchor="middle">S4 omg 1</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 · Doktor-secondary i Portal -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">04</span>DOKTOR-PORTAL<span class="phase">secondary-card</span>
+      <span class="sub">När det finns spelare i rehab visas Bandydoktorn som en Portal-secondary — subtila uppdateringar från Henrik. Inte spam — bara när det är värt att säga något.</span>
+    </div>
+    <div class="body">
+      <div class="doktor-mini">
+        <div class="doktor-mini-label">
+          <span>🩺</span><span>Bandydoktorn</span>
+        </div>
+        <div class="doktor-mini-body">
+          Henrik: "Lindqvist sprang utanför banan på morgonen. Det är ett bra tecken."
+        </div>
+      </div>
+
+      <div class="doktor-mini">
+        <div class="doktor-mini-label">
+          <span>🩺</span><span>Bandydoktorn</span>
+        </div>
+        <div class="doktor-mini-body">
+          Henrik: "Johansson har börjat tappa fokus i rehab. Det är vecka tre."
+        </div>
+      </div>
+
+      <div class="doktor-mini" style="border-left-color: var(--danger);">
+        <div class="doktor-mini-label" style="color: #E8A090;">
+          <span>🩺</span><span>Bandydoktorn</span>
+        </div>
+        <div class="doktor-mini-body">
+          Henrik: "Magnus var här igår. Han frågade om operation. Jag sa det är hans beslut."
+        </div>
+      </div>
+
+      <p style="font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light-secondary); margin-top: 14px; line-height: 1.5; padding: 10px 12px; background: rgba(245,241,235,0.04); border-radius: 4px;">
+        Triggas i Portal-card-bag bara när det finns ≥1 spelare i rehab AND något nytt att säga den omgången. Cooldown 2 omg mellan rader.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Skade-narrativet — design-rationale</h3>
+
+  <h4>Vad mocken introducerar</h4>
+  <ul>
+    <li><strong>Bandydoktor-scen</strong> (Henrik) — full screen-scen när skada inträffar. Val: vila eller spela på.</li>
+    <li><strong>Rehab-progression</strong> i 4 stadier: VILA → LÄTT → FULL → MATCH. Visuellt staplat istället för bara "3 omg kvar".</li>
+    <li><strong>Långtidsskada-arc</strong> — när skadan är 12+ omg blir det en narrativ båge med stats, quote, timeline-sparkline.</li>
+    <li><strong>Doktor-secondary</strong> i Portal — subtila läk-uppdateringar med cooldown.</li>
+  </ul>
+
+  <h4>Karaktär Henrik (bandydoktorn)</h4>
+  <p>Som journalisten — namngiven, per save. Pratar bandysvenskt understatement. Ger råd, kommenterar rehab, lyfter fram det som hänt. Säger inte "Vi måste operera!". Säger "Tre veckor om vi tar det lugnt. Sex om vi inte gör det."</p>
+
+  <p>Data-modell: <code>game.bandydoctor: { name, yearsAtClub, style }</code>. Liten karaktär — inte stor som journalisten — men finns där.</p>
+
+  <h4>Skade-typer + rehab-mappning</h4>
+  <table style="margin: 8px 0; font-size: 11.5px; max-width: 700px;">
+    <thead><tr style="color: var(--accent);"><th style="text-align:left; padding: 4px 8px;">Typ</th><th style="text-align:left; padding: 4px 8px;">Omg</th><th style="text-align:left; padding: 4px 8px;">Rehab-stadier</th></tr></thead>
+    <tbody>
+      <tr><td style="padding: 4px 8px;">Mjuk muskel</td><td style="padding: 4px 8px;">1-2</td><td style="padding: 4px 8px;">VILA → MATCH (2 steg)</td></tr>
+      <tr><td style="padding: 4px 8px;">Ljumske / mild</td><td style="padding: 4px 8px;">3-5</td><td style="padding: 4px 8px;">VILA → LÄTT → FULL → MATCH</td></tr>
+      <tr><td style="padding: 4px 8px;">Brott / svår</td><td style="padding: 4px 8px;">6-12</td><td style="padding: 4px 8px;">+ rehab-spårning per stadie</td></tr>
+      <tr><td style="padding: 4px 8px;">Korsband / långtids</td><td style="padding: 4px 8px;">22+</td><td style="padding: 4px 8px;">ARC: Operation → Rehab → Match-fit → Tillbaka</td></tr>
+    </tbody>
+  </table>
+
+  <h4>"Spela på"-mekanik</h4>
+  <p>När Henrik säger 3 veckor och du väljer spela: 40% risk att rehab förlängs (3 → 6 omg). Plus −25% prestanda nästa match. Hård val. Sture-Forsbacka-känsla: "han måste vara med på derbyt".</p>
+
+  <h4>Datakrav</h4>
+  <ul>
+    <li><code>Player.injury: Injury | null</code> ersätter dagens <code>injuryReturnRound</code></li>
+    <li><code>Injury</code> har: <code>type</code>, <code>stage</code> ('rest' | 'light' | 'full' | 'matchfit'), <code>startedRound</code>, <code>estimatedReturnRound</code>, <code>narrative: string[]</code> (quotes över tid)</li>
+    <li><code>game.bandydoctor</code> + character-pool</li>
+  </ul>
+
+  <h4>Designval öppna</h4>
+  <ul>
+    <li><strong>Q1:</strong> Skade-scen vid <em>varje</em> skada eller bara över viss tröskel (>3 omg)? Mindre skador kan vara stilla inbox-rader.</li>
+    <li><strong>Q2:</strong> Henrik talar — eller är han bara en signatur? Pratar han från första sekund eller etableras han långsamt?</li>
+    <li><strong>Q3:</strong> Långtidsskada-arc-deltagande — får spelaren välja behandlingstyp (operation/rehab/utländsk klinik)? Eller är det Henrik som bestämmer?</li>
+    <li><strong>Q4:</strong> Rehab-stadier 4 räcker, eller behöver vi 5? "MENTAL" som steg innan "MATCH" för längre skador?</li>
+  </ul>
+
+  <h4>Konsekvenser för andra system</h4>
+  <ul>
+    <li><strong>InjuryStatusSecondary</strong> blir mer informativ — visar stadie istället för bara antal-omg.</li>
+    <li><strong>SquadScreen player-rows</strong> får rehab-progression-track inline.</li>
+    <li><strong>InboxScreen</strong> får skade-uppdateringar med Henrik-citat.</li>
+    <li><strong>Långtidsskador som narrativ-arc</strong> kvalificerar för <code>MemoryEvent</code>-system (klubbminne) med significance 60+.</li>
+  </ul>
+
+  <h4>Estimat</h4>
+  <p><strong>Bandydoktor-karaktär + scene-komponent:</strong> ~2.5h Code<br>
+  <strong>Rehab-progression-data + UI:</strong> ~2h Code<br>
+  <strong>Långtidsskada-arc + timeline-svg:</strong> ~2h Code<br>
+  <strong>DoktorSecondary i Portal + cooldown:</strong> ~1h Code<br>
+  <strong>Spela-på-mekanik (risk-roll):</strong> ~45 min<br>
+  <strong>Opus-leverans:</strong> ~40 strängar (henrik-citat per stadie × 4 + skade-typ × 4 + spela-på-aftermath × 6)<br>
+  <strong>Total:</strong> ~8.5h Code + Opus copy.</p>
+</div>
+
+</body>
+</html>

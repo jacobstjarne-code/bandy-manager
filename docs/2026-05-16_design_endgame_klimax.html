@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>R3+ Playoff-klimax — progression KF G1 → SM-Final G5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* ── Tokens (samma som R3-basen) ────────────────────── */
+  :root {
+    --bg-portal:          #1a1612;
+    --bg-portal-surface:  #221d18;
+    --bg-portal-elevated: #2a241e;
+    --bg-leather:         #3D3A32;
+    --bg-leather-dk:      #1d1b18;
+    --text-light:           #F5F1EB;
+    --text-light-secondary: #C4BAA8;
+    --text-muted:           #8A857A;
+    --accent:      #C47A3A;
+    --accent-dark: #A25828;
+    --accent-deep: #8B4820;
+    --warm:        #8c6e3a;
+    --warm-light:  #c8a058;
+    --gold:        #E8B95C;
+    --gold-deep:   #B88838;
+    --success:     #5A9A4A;
+    --danger:      #B05040;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono:    ui-monospace, 'Courier New', monospace;
+    --radius-md:    8px;
+    --shadow-card:    0 1px 3px rgba(0,0,0,0.05);
+    --shadow-btn:     0 2px 5px rgba(0,0,0,0.08);
+    --shadow-primary: 0 3px 5px rgba(162,88,40,0.38);
+    --shadow-gold:    0 3px 12px rgba(232,185,92,0.32);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color: var(--text-light); font-family: var(--font-body); }
+  body {
+    background: var(--bg-leather);
+    padding: 32px 16px 80px;
+    color: var(--text-light);
+    min-height: 100vh;
+  }
+
+  /* ── Page chrome ───────────────────────────────────────── */
+  .page-head {
+    max-width: 1640px; margin: 0 auto 24px;
+  }
+  .page-head h1 {
+    font-family: var(--font-display); font-size: 24px;
+    letter-spacing: 0.2px; margin-bottom: 6px;
+  }
+  .page-head p {
+    font-size: 13px;
+    color: rgba(245,241,235,0.7);
+    line-height: 1.6;
+    max-width: 820px;
+  }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 28px;
+    max-width: 1640px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  /* ── Mobile-frame ─────────────────────────────────────── */
+  .col {
+    background: var(--bg-portal);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    width: 100%; max-width: 380px;
+    justify-self: center;
+  }
+  .col-head {
+    padding: 12px 16px;
+    background: var(--bg-leather-dk);
+    color: var(--text-light);
+    font-family: var(--font-display);
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .col-head .num {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--accent);
+    background: rgba(196,122,58,0.1);
+    padding: 2px 6px; border-radius: 2px;
+    margin-right: 8px; vertical-align: 2px;
+  }
+  .col-head .phase {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 1.5px;
+    color: var(--text-light-secondary);
+    background: rgba(245,241,235,0.05);
+    padding: 2px 6px; border-radius: 2px;
+    margin-left: 6px; vertical-align: 2px;
+    text-transform: uppercase;
+  }
+  .col-head.gold .num {
+    color: var(--gold);
+    background: rgba(232,185,92,0.12);
+  }
+  .col-head .sub {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(245,241,235,0.6);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .portal-frame { padding: 14px 0 16px; }
+
+  /* ── Situation stub ─────────────────────────────────── */
+  .situation {
+    margin: 0 14px 12px;
+    padding: 10px 12px;
+    color: var(--text-light-secondary);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    line-height: 1.4;
+    border-left: 1px dashed rgba(196,122,58,0.3);
+    opacity: 0.85;
+  }
+  .situation strong {
+    font-style: normal; font-family: var(--font-body);
+    font-weight: 600; color: var(--text-light);
+    display: block; margin-bottom: 2px;
+    font-size: 11px; letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── Beat (atmosfärisk rad) ─────────────────────────── */
+  .beat {
+    margin: 0 14px 12px;
+    padding: 9px 12px;
+    background: var(--bg-portal-surface);
+    border-radius: 6px;
+    border: 1px solid rgba(245,241,235,0.04);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-light-secondary);
+    line-height: 1.45;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     NYTT KOMPONENTSPÅR: PortalRoundMark (MiniMark)
+     Pendant till PhaseMark — mindre, repeterande, en typografisk
+     linje som fångar "vilken runda är vi i nu". Visas på alla
+     playoff-Portal-renders. Tonalitet ackumulerar:
+     KF (accent) → SF (accent, +avgörande-möjlighet) → SMF (gold).
+     ══════════════════════════════════════════════════════════ */
+  .roundmark {
+    margin: 2px 14px 12px;
+    padding: 0;
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: 0.85;
+    line-height: 1.2;
+  }
+  .roundmark::before,
+  .roundmark::after {
+    content: '⬩';
+    display: inline-block;
+    margin: 0 8px;
+    opacity: 0.7;
+  }
+  .roundmark .crit {
+    color: var(--warm-light);
+    margin-left: 6px;
+    font-weight: 700;
+  }
+  .roundmark.gold { color: var(--gold); opacity: 1; }
+  .roundmark.gold .crit { color: var(--gold); }
+
+  /* ── Primary card — ackumulerar vikt per runda ───────── */
+  .primary {
+    margin: 0 14px 12px;
+    padding: 14px 14px 12px;
+    background: var(--bg-portal-elevated);
+    border: 1px solid rgba(196,122,58,0.18);
+    border-radius: 8px;
+    position: relative;
+  }
+  /* KF-vikt (lätt) */
+  .primary.weight-1 {
+    border-color: rgba(196,122,58,0.32);
+  }
+  /* SF / decisive KF-vikt (medium) */
+  .primary.weight-2 {
+    border-color: rgba(196,122,58,0.55);
+    background: linear-gradient(180deg,
+      rgba(196,122,58,0.08) 0%,
+      var(--bg-portal-elevated) 38%);
+    box-shadow: 0 0 0 1px rgba(196,122,58,0.10), var(--shadow-card);
+  }
+  /* SM-Final-vikt (full, gold) */
+  .primary.weight-3 {
+    border-color: rgba(232,185,92,0.55);
+    background: linear-gradient(180deg,
+      rgba(232,185,92,0.10) 0%,
+      var(--bg-portal-elevated) 42%);
+    box-shadow: 0 0 0 1px rgba(232,185,92,0.18), 0 6px 18px rgba(232,185,92,0.10);
+  }
+
+  .primary-eyebrow {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-body);
+  }
+  .primary.weight-2 .primary-eyebrow { color: var(--warm-light); }
+  .primary.weight-3 .primary-eyebrow { color: var(--gold); }
+
+  .primary-eyebrow .meta {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 1px;
+    color: var(--text-light-secondary);
+    opacity: 0.75;
+    text-transform: uppercase;
+  }
+  .primary-eyebrow .crit-tag {
+    margin-left: 6px;
+    font-family: var(--font-body);
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    background: rgba(140,110,58,0.18);
+    border: 1px solid rgba(140,110,58,0.45);
+    color: var(--warm-light);
+  }
+  .primary.weight-3 .primary-eyebrow .crit-tag {
+    background: rgba(232,185,92,0.16);
+    border-color: rgba(232,185,92,0.55);
+    color: var(--gold);
+  }
+
+  .primary-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-light);
+    line-height: 1.15;
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+  }
+  .primary.weight-3 .primary-title { font-size: 22px; }
+  .primary-body {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    color: var(--text-light-secondary);
+    line-height: 1.45;
+  }
+  .primary-body strong { color: var(--text-light); font-weight: 600; }
+
+  /* ── Serie-tracker — eskalerar per decisive ─────────── */
+  .series-tracker {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px dashed rgba(196,122,58,0.22);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .primary.weight-3 .series-tracker {
+    border-top-color: rgba(232,185,92,0.32);
+  }
+  .series-label {
+    font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-light-secondary);
+    opacity: 0.85;
+  }
+  .series-dots {
+    display: inline-flex; gap: 5px;
+    margin-left: auto;
+  }
+  .series-game {
+    width: 18px; height: 18px;
+    border-radius: 3px;
+    border: 1px solid rgba(196,122,58,0.35);
+    background: var(--bg-portal);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--text-light-secondary);
+    line-height: 1;
+  }
+  .series-game.win  { background: rgba(90,154,74,0.20); border-color: rgba(90,154,74,0.55); color: #A0C890; }
+  .series-game.loss { background: rgba(176,80,64,0.18); border-color: rgba(176,80,64,0.5); color: #E8A090; }
+  .series-game.next { background: rgba(196,122,58,0.18); border-color: var(--accent); color: var(--accent); }
+  /* Decisive next-state: tyngre */
+  .series-game.next.decisive {
+    width: 22px; height: 22px;
+    background: rgba(140,110,58,0.20);
+    border-color: var(--warm);
+    color: var(--warm-light);
+    box-shadow: 0 0 6px rgba(140,110,58,0.3);
+  }
+  .series-game.next.gold {
+    width: 22px; height: 22px;
+    background: rgba(232,185,92,0.22);
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 8px rgba(232,185,92,0.35);
+  }
+
+  /* ── Active budget rad + dec-card ─────────────────────── */
+  .active-section {
+    margin: 0 14px 4px;
+    padding: 2px 0 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .active-eyebrow {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    font-family: var(--font-body);
+  }
+  .active-budget {
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 1.5px;
+    color: var(--text-light-secondary);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .budget-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    border: 1px solid var(--accent); box-sizing: border-box;
+  }
+  .budget-dot.on  { background: var(--accent); box-shadow: 0 0 4px rgba(196,122,58,0.4); }
+  .budget-dot.off { background: transparent; }
+
+  .dec-card {
+    margin: 0 14px 10px;
+    padding: 12px 14px 13px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    box-shadow: var(--shadow-card);
+  }
+  .dec-card.warm { border-left-color: var(--warm); }
+  .dec-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-body);
+  }
+  .dec-label.warm { color: var(--warm-light); }
+  .dec-label-icon { font-size: 12px; line-height: 1; }
+  .dec-question {
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-light);
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+  .dec-options {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .dec-option {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 11px 10px;
+    background: var(--bg-portal-elevated);
+    border: 1.5px solid var(--accent);
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: var(--shadow-btn);
+    font-family: var(--font-body);
+    cursor: pointer;
+  }
+  .dec-option-label {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 0.4px;
+  }
+  .dec-option-effect {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 10.5px;
+    line-height: 1.3;
+  }
+  .dec-option-effect.success { color: #A0C890; }
+  .dec-option-effect.danger  { color: #E8A090; }
+  .dec-option-effect.muted   { color: var(--text-light-secondary); opacity: 0.75; }
+
+  /* ── Sekundärer (oförändrade — Q3 stå fast) ──────────── */
+  .sec-card {
+    margin: 0 14px 10px;
+    padding: 12px 14px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    box-shadow: var(--shadow-card);
+  }
+  .sec-card.cold { border-left-color: #4a6680; }
+  .sec-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-light-secondary);
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-body);
+  }
+  .sec-label.cold { color: #7095b8; }
+  .sec-label-icon { font-size: 12px; line-height: 1; }
+  .sec-body {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.5;
+    opacity: 0.92;
+  }
+  .sec-body strong { font-style: normal; font-family: var(--font-body); font-weight: 600; }
+
+  /* ── Minimal bar ───────────────────────────────────── */
+  .minimal-bar {
+    margin: 6px 14px 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .minimal-tile {
+    background: var(--bg-portal-surface);
+    border-radius: 6px;
+    padding: 8px 8px 9px;
+    text-align: center;
+    border: 1px solid rgba(245,241,235,0.03);
+  }
+  .minimal-tile-label {
+    font-family: var(--font-body);
+    font-size: 7.5px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    opacity: 0.75;
+    margin-bottom: 3px;
+  }
+  .minimal-tile-value {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-light);
+    line-height: 1;
+  }
+  .minimal-tile-meta {
+    font-family: var(--font-body);
+    font-size: 9px;
+    color: var(--text-light-secondary);
+    margin-top: 2px;
+    opacity: 0.7;
+  }
+
+  /* ── Inbox-row ───────────────────────────────────────── */
+  .inbox-row {
+    margin: 14px 14px 0;
+    padding: 8px 12px;
+    border-top: 1px dashed rgba(196,122,58,0.18);
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--text-light-secondary);
+    letter-spacing: 0.3px;
+  }
+  .inbox-row strong { color: var(--accent); font-weight: 700; }
+  .inbox-row .sep { opacity: 0.4; margin: 0 6px; }
+
+  /* ── CTA — gold på SM-Final ────────────────────────── */
+  .cta-zone {
+    margin: 14px 14px 0;
+    padding-top: 10px;
+    border-top: 1px solid rgba(196,122,58,0.10);
+  }
+  .cta-zone.gold {
+    border-top-color: rgba(232,185,92,0.15);
+  }
+  .cta {
+    width: 100%;
+    padding: 13px 12px;
+    background: linear-gradient(180deg, #DD9555 0%, #8B4820 100%);
+    border: none;
+    border-radius: 12px;
+    color: var(--text-light);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    box-shadow: var(--shadow-primary);
+    cursor: pointer;
+  }
+  .cta.gold {
+    background: linear-gradient(180deg, #E8B95C 0%, #B88838 100%);
+    color: var(--bg-portal);
+    box-shadow: var(--shadow-gold);
+  }
+
+  /* ── Notes ───────────────────────────────────────────── */
+  .notes {
+    max-width: 1640px; margin: 40px auto 0;
+    padding: 24px;
+    background: rgba(245,241,235,0.04);
+    border-radius: 8px;
+    color: rgba(245,241,235,0.85);
+    line-height: 1.65;
+    font-size: 13px;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin-bottom: 14px;
+    color: var(--text-light);
+  }
+  .notes h4 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 18px 0 8px;
+  }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes p strong { color: var(--accent); font-weight: 600; }
+  .notes ul { margin: 4px 0 8px 18px; max-width: 880px; }
+  .notes li { margin-bottom: 4px; }
+  .notes code {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: rgba(245,241,235,0.06);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--gold);
+  }
+  .notes table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 1000px;
+    margin: 10px 0;
+    font-size: 12px;
+  }
+  .notes th, .notes td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(245,241,235,0.08);
+  }
+  .notes th {
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .notes .swatch {
+    display: inline-block;
+    width: 11px; height: 11px;
+    border-radius: 2px;
+    vertical-align: -1px;
+    margin-right: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>R3+ Playoff-klimax — progression KF G1 → SM-Final G5</h1>
+  <p>Tillägg ovanpå <strong>R3 Endgame Portal-känsla</strong> (<code>2026-05-16_design_endgame_portal.html</code>). R3-basen löser fas-byten med PhaseMark + suppression — men hela playoff ser ut som "Kvartsfinal G1". Slutspel är en kumulativ båge: G1 i KF är inte samma vikt som G5 i SM-Final.</p>
+  <p>Tre tekniker ackumulerar: <strong>(a) RoundMark</strong> — typografisk markör per runda; <strong>(b) Decisive-eskalation</strong> — primary-card-tyngd ökar med serie-kritikalitet; <strong>(c) Gold-accent</strong> — <code>--gold</code>-token tas i bruk på SM-Final.</p>
+  <p>Sekundärerna förändras <em>inte</em> (Q3-principen står fast). All eskalation sker i Primary-area + RoundMark. Det är vad som gör att stacken är konsekvent men toppen är progressivt tyngre.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ════════════════════════════════════════════════════════
+       01 · KF Game 1 — baseline, lätt vikt
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">01</span>KF · G1<span class="phase">baseline</span>
+      <span class="sub">RoundMark introducerar rundan typografiskt. Primary-vikt 1 (lätt). Inget decisive-tillstånd. Detta är slutspelets vardag — fortfarande tystare än grundserien (kafferum är borta) men inte klimax.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>TISDAG · KVARTSFINAL</strong>
+        Best-of-five mot Söderfors. Series open.
+      </div>
+
+      <div class="beat">
+        Hallen luktar lim och kallt järn. Trumman var med upp från källaren igår.
+      </div>
+
+      <div class="roundmark">Kvartsfinal</div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans fråga</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot off"></span>
+        </span>
+      </div>
+
+      <div class="dec-card">
+        <div class="dec-label">
+          <span class="dec-label-icon">🏒</span>
+          <span>Veckans truppfråga</span>
+        </div>
+        <div class="dec-question">
+          Henriksson, P19, har varit med på alla pass. Plats i Game 1?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Sätt i 18:an</span>
+            <span class="dec-option-effect success">+akademiprestige</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Vänta</span>
+            <span class="dec-option-effect muted">Ingen effekt</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="primary weight-1">
+        <div class="primary-eyebrow">
+          <span>⚔️ Kvartsfinal · Game 1</span>
+          <span class="meta">Hemma · On 19:00</span>
+        </div>
+        <div class="primary-title">Forsbacka — Söderfors</div>
+        <div class="primary-body">
+          Söderfors slutade 4:a — kommer hit med hela formationen. Vinden mot norr.
+        </div>
+        <div class="series-tracker">
+          <span class="series-label">Serien</span>
+          <span class="series-dots">
+            <span class="series-game next">G1</span>
+            <span class="series-game">G2</span>
+            <span class="series-game">G3</span>
+            <span class="series-game">G4</span>
+            <span class="series-game">G5</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          Slutspelskval — passerat. <strong>Stretch:</strong> semifinal.
+        </div>
+      </div>
+
+      <div class="sec-card cold">
+        <div class="sec-label cold">
+          <span class="sec-label-icon">📊</span>
+          <span>Söderfors senaste 5</span>
+        </div>
+        <div class="sec-body">V V O V F · Pålsson tre senaste matcher.</div>
+      </div>
+
+      <div class="minimal-bar">
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Form</div>
+          <div class="minimal-tile-value">V V V</div>
+          <div class="minimal-tile-meta">3 senaste</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Trupp</div>
+          <div class="minimal-tile-value">22</div>
+          <div class="minimal-tile-meta">full</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Kassa</div>
+          <div class="minimal-tile-value">115</div>
+          <div class="minimal-tile-meta">tkr</div>
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>2</strong> notiser <span class="sep">·</span> 1 aktiv
+      </div>
+
+      <div class="cta-zone">
+        <button class="cta">Redo — spela Kvartsfinal G1 →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       02 · KF Game 5 — serie 2-2, AVGÖRANDE
+       Lät­tare eskalering: primary-vikt 2, decisive-state på
+       serie-tracker, crit-tag på eyebrow.
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">02</span>KF · G5<span class="phase">avgörande · serie 2–2</span>
+      <span class="sub">Decisive-state aktivt. RoundMark får crit-suffix ("Avgörande"). Primary-vikt 2: subtil amber-glow + border-stärkning. Serie-tracker visar 2 vinster, 2 förluster, en avgörande match. Sekundärer förändras inte.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>SÖNDAG · KVARTSFINAL G5</strong>
+        Serien 2–2. Allt på en match hemma.
+      </div>
+
+      <div class="beat">
+        Norra läktaren öppnade dörrarna två timmar tidigare. Kön ringlar förbi parkeringen.
+      </div>
+
+      <div class="roundmark">Kvartsfinal<span class="crit">· Avgörande</span></div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans fråga</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot off"></span>
+        </span>
+      </div>
+
+      <div class="dec-card warm">
+        <div class="dec-label warm">
+          <span class="dec-label-icon">🏋️</span>
+          <span>Veckans träningsfråga</span>
+        </div>
+        <div class="dec-question">
+          Truppen har spelat fyra matcher på elva dagar. Lättare pass eller fulla?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Lättare</span>
+            <span class="dec-option-effect success">+återhämtning</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Fulla</span>
+            <span class="dec-option-effect danger">+rutin · −fysik</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="primary weight-2">
+        <div class="primary-eyebrow">
+          <span>⚔️ Kvartsfinal · Game 5</span>
+          <span class="crit-tag">Avgörande</span>
+          <span class="meta">Hemma · Sö 14:00</span>
+        </div>
+        <div class="primary-title">Forsbacka — Söderfors</div>
+        <div class="primary-body">
+          <strong>2–2 i serien.</strong> Vinst = semifinal. Förlust = säsongen slut. Plan torr, klart.
+        </div>
+        <div class="series-tracker">
+          <span class="series-label">Serien</span>
+          <span class="series-dots">
+            <span class="series-game win">W</span>
+            <span class="series-game loss">L</span>
+            <span class="series-game win">W</span>
+            <span class="series-game loss">L</span>
+            <span class="series-game next decisive">G5</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          Slutspelskval — passerat. <strong>Stretch:</strong> semifinal.
+        </div>
+      </div>
+
+      <div class="sec-card cold">
+        <div class="sec-label cold">
+          <span class="sec-label-icon">📊</span>
+          <span>Söderfors i serien</span>
+        </div>
+        <div class="sec-body">G1 V · G2 F · G3 V · G4 F. Pålsson 4 mål i serien.</div>
+      </div>
+
+      <div class="minimal-bar">
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Form</div>
+          <div class="minimal-tile-value">V F V F</div>
+          <div class="minimal-tile-meta">serien</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Trupp</div>
+          <div class="minimal-tile-value">21</div>
+          <div class="minimal-tile-meta">2 slitna</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Kassa</div>
+          <div class="minimal-tile-value">128</div>
+          <div class="minimal-tile-meta">tkr</div>
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>4</strong> notiser <span class="sep">·</span> 1 aktiv
+      </div>
+
+      <div class="cta-zone">
+        <button class="cta">Redo — spela Kvartsfinal G5 →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       03 · SF Game 3 — serie 1-1, matchpuck
+       Mid-eskalation. RoundMark visar "Semifinal". Primary-vikt
+       2 men eyebrow har "Matchpuck"-tag istället för "Avgörande".
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">03</span>SF · G3<span class="phase">matchpuck · serie 1–1</span>
+      <span class="sub">Semifinal. Primary-vikt 2 (samma som decisive KF — runda är högre, kritikalitet är medel, totalvikt jämn). Inget "Avgörande" än — G3 är matchpuck för båda lagen. Vinst → 2–1 lead.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>LÖRDAG · SEMIFINAL G3</strong>
+        Serien 1–1. Båda jagar matchpuck.
+      </div>
+
+      <div class="beat">
+        Borta-bussen har lossats. Klacken har redan brett ut Forsbackas flagga på östra läktaren.
+      </div>
+
+      <div class="roundmark">Semifinal<span class="crit">· Matchpuck</span></div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans fråga</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot off"></span>
+        </span>
+      </div>
+
+      <div class="dec-card">
+        <div class="dec-label">
+          <span class="dec-label-icon">🏒</span>
+          <span>Veckans taktikfråga</span>
+        </div>
+        <div class="dec-question">
+          Heros backade djupt i G2. Hög press eller speglar deras låga blockuppställning?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Pressa</span>
+            <span class="dec-option-effect success">+chans · −kondition</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Spegla</span>
+            <span class="dec-option-effect muted">+tålamod · −flyt</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="primary weight-2">
+        <div class="primary-eyebrow">
+          <span>⚔️ Semifinal · Game 3</span>
+          <span class="crit-tag">Matchpuck</span>
+          <span class="meta">Borta · Lö 14:00</span>
+        </div>
+        <div class="primary-title">Heros — Forsbacka</div>
+        <div class="primary-body">
+          <strong>1–1 i serien.</strong> Vinst = 2–1 och två chanser att stänga. Vind 6 m/s från söder.
+        </div>
+        <div class="series-tracker">
+          <span class="series-label">Serien</span>
+          <span class="series-dots">
+            <span class="series-game win">W</span>
+            <span class="series-game loss">L</span>
+            <span class="series-game next decisive">G3</span>
+            <span class="series-game">G4</span>
+            <span class="series-game">G5</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          Semifinal <strong>passerat</strong>. Stretch: final.
+        </div>
+      </div>
+
+      <div class="sec-card cold">
+        <div class="sec-label cold">
+          <span class="sec-label-icon">📊</span>
+          <span>Heros i serien</span>
+        </div>
+        <div class="sec-body">G1 F · G2 V. Olsson skadad efter en närkamp i G1.</div>
+      </div>
+
+      <div class="minimal-bar">
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Form</div>
+          <div class="minimal-tile-value">V V F</div>
+          <div class="minimal-tile-meta">3 senaste</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Trupp</div>
+          <div class="minimal-tile-value">22</div>
+          <div class="minimal-tile-meta">full</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Kassa</div>
+          <div class="minimal-tile-value">142</div>
+          <div class="minimal-tile-meta">tkr</div>
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>3</strong> notiser <span class="sep">·</span> 1 aktiv
+      </div>
+
+      <div class="cta-zone">
+        <button class="cta">Redo — spela Semifinal G3 →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       04 · SM-Final Game 5 — serie 2-2, GOLD
+       Full eskalering. RoundMark gold-tonad. Primary-vikt 3
+       (gold border, gold-gradient bas). CTA gold. Detta är
+       säsongens klimax i Portal-form.
+       ════════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head gold">
+      <span class="num">04</span>SM-Final · G5<span class="phase">gold · serie 2–2</span>
+      <span class="sub">Full eskalation. <code>--gold</code>-token aktiveras: RoundMark, primary border, eyebrow, serie-tracker decisive-dot, CTA. Sekundärerna förblir oförändrade — det är Primary-area som bär guldet.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>SÖNDAG · SM-FINAL G5</strong>
+        Serien 2–2. Sista matchen för säsongen.
+      </div>
+
+      <div class="beat">
+        Hela bruksortet samlas. Bryggeriet har stängt klockan tre på lördagen.
+      </div>
+
+      <div class="roundmark gold">SM-Final<span class="crit">· Avgörande</span></div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans fråga</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot off"></span>
+        </span>
+      </div>
+
+      <div class="dec-card warm">
+        <div class="dec-label warm">
+          <span class="dec-label-icon">📣</span>
+          <span>Veckans supporterfråga</span>
+        </div>
+        <div class="dec-question">
+          Klacken vill släppa kanonröken vid första avslag, mot reglerna. Tillåt?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Tillåt</span>
+            <span class="dec-option-effect success">+atmosfär · risk böter</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Neka</span>
+            <span class="dec-option-effect muted">−5 stämning · 0 risk</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="primary weight-3">
+        <div class="primary-eyebrow">
+          <span>⚔️ SM-Final · Game 5</span>
+          <span class="crit-tag">Avgörande</span>
+          <span class="meta">Hemma · Sö 14:00</span>
+        </div>
+        <div class="primary-title">Forsbacka — Karlsborg</div>
+        <div class="primary-body">
+          <strong>2–2 i serien.</strong> En match till guldet eller säsongen är slut. Klar himmel, ingen vind.
+        </div>
+        <div class="series-tracker">
+          <span class="series-label">Serien</span>
+          <span class="series-dots">
+            <span class="series-game loss">L</span>
+            <span class="series-game win">W</span>
+            <span class="series-game loss">L</span>
+            <span class="series-game win">W</span>
+            <span class="series-game next gold">G5</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          Final <strong>passerad</strong>. Allt övrigt är bonus.
+        </div>
+      </div>
+
+      <div class="sec-card cold">
+        <div class="sec-label cold">
+          <span class="sec-label-icon">📊</span>
+          <span>Karlsborg i serien</span>
+        </div>
+        <div class="sec-body">G1 V · G2 F · G3 V · G4 F. Halvarsson 5 mål i serien — ojämn nivå.</div>
+      </div>
+
+      <div class="minimal-bar">
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Form</div>
+          <div class="minimal-tile-value">F V F V</div>
+          <div class="minimal-tile-meta">serien</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Trupp</div>
+          <div class="minimal-tile-value">21</div>
+          <div class="minimal-tile-meta">1 sliten</div>
+        </div>
+        <div class="minimal-tile">
+          <div class="minimal-tile-label">Kassa</div>
+          <div class="minimal-tile-value">156</div>
+          <div class="minimal-tile-meta">tkr</div>
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>6</strong> notiser <span class="sep">·</span> 1 aktiv
+      </div>
+
+      <div class="cta-zone gold">
+        <button class="cta gold">Spela SM-Final G5 →</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ═════════════════════════════════════════════════════════
+     Motiveringar
+     ═════════════════════════════════════════════════════════ -->
+<div class="notes">
+
+  <h3>Designmotiveringar — tre tekniker, en princip</h3>
+
+  <p>Frågan: <em>"Kan man uppa känslan att vi närmar oss klimax?"</em> R3-basen löste fas-byten men lämnade slutspels-progressionen platt — G1 i Kvartsfinal ser ut som G5 i SM-Final. Det är luckan denna mock fyller.</p>
+
+  <p>Principen jag följer: <strong>en signal per skift, kumulativ — inte fyra parallella tekniker som var och en skriker.</strong> Allt visuellt språk bygger på två tokens (<code>--accent</code> och <code>--gold</code>) och två lägen för Primary (weight-1/2/3). Inget nytt typografi-system, inga nya kort-varianter på sekundärer.</p>
+
+  <h4>Teknik A · PortalRoundMark — typografisk mini-markör</h4>
+  <p>Pendant till PhaseMark, men <em>repeterande</em> (visas alla playoff-Portal-renders). Centrerad eyebrow med ⬩-flankar:</p>
+  <ul>
+    <li><code>Kvartsfinal</code> · accent</li>
+    <li><code>Kvartsfinal · Avgörande</code> · accent + amber crit-suffix (warm-light)</li>
+    <li><code>Semifinal · Matchpuck</code> · accent + amber crit-suffix</li>
+    <li><code>SM-Final · Avgörande</code> · gold</li>
+  </ul>
+  <p>Är inte en banner. Tar två rader vertikalt. Etablerar att rundan har en typografisk plats — utan att stjäla vikt från Primary-cardet.</p>
+  <p><strong>Skillnad mot PhaseMark:</strong> PhaseMark visas en gång per fas (linjär, med quote + helper). RoundMark visas alltid i playoff (typografisk, en rad). Två olika frekvenser, två olika tonaliteter.</p>
+
+  <h4>Teknik B · Primary-vikt — tre lägen</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Vikt</th>
+        <th>När</th>
+        <th>Visuellt</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>weight-1</strong></td>
+        <td>G1, G2, eller G3 i 0–2 / 2–0</td>
+        <td><span class="swatch" style="background:rgba(196,122,58,0.32);border-color:var(--accent)"></span> Tunn accent-border, ingen gradient. Baseline.</td>
+      </tr>
+      <tr>
+        <td><strong>weight-2</strong></td>
+        <td>Decisive (G3 i 1–1, G4 i 2–1, G5 i 2–2) eller Semifinal/Final G1+</td>
+        <td><span class="swatch" style="background:rgba(196,122,58,0.55);border-color:var(--accent)"></span> Stärkt accent-border + subtil top-gradient. <code>crit-tag</code> på eyebrow ("Avgörande" eller "Matchpuck").</td>
+      </tr>
+      <tr>
+        <td><strong>weight-3</strong></td>
+        <td>SM-Final (alla games)</td>
+        <td><span class="swatch" style="background:rgba(232,185,92,0.55);border-color:var(--gold)"></span> Gold-border + gold-top-gradient + gold crit-tag.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Vikt är funktion av <em>två</em> faktorer: <strong>runda</strong> (KF=1, SF=2, SM=3) och <strong>kritikalitet</strong> (open=0, matchpuck=1, avgörande=2). Slutgiltig vikt är <code>Math.min(3, round + criticality)</code>. KF G1 = 1+0 = 1. KF G5 (2–2) = 1+2 = 3 → kapas till 2 (KF får aldrig weight-3, det är reserverat för SM-Final). SF G3 (1–1) = 2+1 = 3 → kapas. SM-Final G1 = 3+0 = 3.</p>
+
+  <h4>Teknik C · Gold-token på SM-Final</h4>
+  <p><code>--gold (#E8B95C)</code> finns redan i token-systemet, reserverad för cup-vinnare/specialanslag. SM-Final är samma kategori — det är säsongens enda annan tillfälle där guldet hör hemma.</p>
+  <p>Var den används i SM-Final-spalten:</p>
+  <ul>
+    <li>RoundMark text-color</li>
+    <li>Primary-border + top-gradient (vid 10% opacity)</li>
+    <li>Eyebrow + crit-tag</li>
+    <li>Serie-tracker decisive-dot (när G3+ är next och spelaren har minst en vinst i serien)</li>
+    <li>CTA-gradient + skuggning (<code>--shadow-gold</code>)</li>
+  </ul>
+  <p><strong>Vad som INTE blir gold:</strong> sekundärer, situations-card, inbox-row, minimal-bar, decision-cards. Guldet stannar i Primary-zonen och CTA. Spridning skulle förstöra effekten.</p>
+
+  <h4>Vad jag aktivt INTE gjorde</h4>
+  <ul>
+    <li><strong>Ingen drama-banner.</strong> Ingen full-bredd "FINAL!"-stripe, ingen blinkande pulse, ingen röd accent. Princip 3 i designsystemet: 70-talsliggare, inte 1800-talssigill.</li>
+    <li><strong>Inga ändringar på sekundärer.</strong> Q3 står fast. Styrelsens krav ser likadan ut i KF G1 och SM-Final G5. Hierarkin sker via Primary-tyngd, inte via att allt skriker.</li>
+    <li><strong>Ingen ny typografi.</strong> Använder befintliga tokens (font-display, font-body). Ingen Letraset-imitation, ingen pseudo-historik.</li>
+    <li><strong>Inga decisive-skinns på decision-cards.</strong> Veckans träningsfråga är en träningsfråga oavsett om det är G1 eller G5. Decision-economyn (F1) har sin egen logik.</li>
+    <li><strong>Ingen Hollywood-copy.</strong> "Avgörande" och "Matchpuck" — bandysvenska. Inte "ALLT ELLER INTET" eller "DET HÄNGER PÅ DENNA MATCH".</li>
+  </ul>
+
+  <h4>Implementations-skiss (om R3+ godkänns)</h4>
+  <p>Bygger ovanpå R3-handoffen. Tilläggsleverans:</p>
+  <ul>
+    <li><strong>Ny komponent:</strong> <code>PortalRoundMark.tsx</code> + tillhörande CSS-klasser (<code>.portal-roundmark</code>, <code>.portal-roundmark.gold</code>, <code>.portal-roundmark .crit</code>).</li>
+    <li><strong>Helper-service:</strong> <code>getPlayoffSeriesContext(game): { round: PlayoffRound; criticality: 'open' | 'matchpuck' | 'decisive'; weight: 1 | 2 | 3 }</code>. Ren funktion, läser <code>game.playoffBracket</code>.</li>
+    <li><strong>NextMatchPrimary / SMFinalPrimary:</strong> får en <code>weight</code>-prop och tre styling-varianter. Inget rendering-byte mellan komponenter — bara klassen ändras.</li>
+    <li><strong>Eyebrow crit-tag:</strong> liten span med klass <code>.crit-tag</code> som primary-komponenten själv renderar när criticality ≠ 'open'.</li>
+    <li><strong>CTA gold-variant:</strong> ny modifier <code>.btn-cta.btn-gold</code> i <code>stalvallen-portal.css</code>. Endast aktiv när SM-Final och spelaren är i den. Inte automatisk på allt.</li>
+  </ul>
+  <p><strong>Estimerat scope:</strong> ~100 rader kod + ~30 rader CSS + ~40 rader test. Litet tillägg ovanpå R3:s ~190 rader.</p>
+
+  <h4>Open till Opus + Jacob</h4>
+  <ul>
+    <li><strong>Copy för crit-tag:</strong> "Avgörande" (G5 i 2–2) och "Matchpuck" (G3+ där en vinst stänger eller en förlust ger eliminering) — låsta? Eller behöver fler varianter (t.ex. "Förlängning sätt", "Måste vinna")?</li>
+    <li><strong>RoundMark alltid synlig?</strong> Förslag: ja, alla playoff-Portal. Alternativ: bara från och med Semifinal. Min läsning är att etablera typografisk plats tidigt → att den sen får mer vikt (gold) känns naturligt.</li>
+    <li><strong>SM-Final-CTA i gold</strong> — för dramatisk eller precis lagom? Detta är det enda stället CTA-färgen ändras genom hela appen. Jacob: playtest:a och säg till.</li>
+    <li><strong>Spectator-final</strong> (eliminerad spelare ser ändå SM-Final som åskådare): RoundMark + weight-3 fortfarande? Eller backas tonen ner när spelaren inte själv är inne? Min instinkt: ja, behåll — guldet handlar om turneringen, inte om vem som vinner.</li>
+  </ul>
+
+  <h4>Meta</h4>
+  <p>Detta är ett <em>valbart tillägg</em> ovanpå R3-basen. Om Jacob playtest:ar R3 och tycker det räcker → strunta i R3+. Om hela slutspelet ändå känns platt → wire R3+ ovanpå. R3-basen är giltig oavsett.</p>
+
+</div>
+
+</body>
+</html>

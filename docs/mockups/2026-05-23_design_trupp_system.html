@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Trupp-tab — fullt system-audit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18; --bg: #EDE8DF; --bg-surface: #FAF8F4; --bg-elevated: #FFFFFF;
+    --border: #DDD7CC; --border-dark: #C4BAA8;
+    --text-primary: #1A1A18; --text-secondary: #6B6760; --text-muted: #8A857A;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8;
+    --accent: #C47A3A; --cold: #4a6680; --cold-light: #7095b8;
+    --warm: #8c6e3a; --warm-light: #c8a058; --gold: #E8B95C;
+    --danger: #B05040; --success: #5A9A4A; --ice: #7EB3D4;
+    --font-display: 'Georgia', serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 32px 16px 80px; min-height: 100vh; }
+
+  .page-head { max-width: 1640px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 820px; }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 28px; max-width: 1640px; margin: 0 auto; }
+  .col { background: var(--bg); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.35); width: 100%; max-width: 400px; justify-self: center; color: var(--text-primary); }
+  .col.dark { background: var(--bg-portal); color: var(--text-light); }
+  .col-head { padding: 12px 16px; background: var(--bg-leather-dk); color: var(--text-light); font-family: var(--font-display); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .col-head .num { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; color: var(--accent); background: rgba(196,122,58,0.1); padding: 2px 6px; border-radius: 2px; margin-right: 8px; vertical-align: 2px; }
+  .col-head .num.new { color: var(--success); background: rgba(90,154,74,0.15); }
+  .col-head .num.audit { color: var(--danger); background: rgba(176,80,64,0.15); }
+  .col-head .phase { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; color: var(--text-light-secondary); background: rgba(245,241,235,0.05); padding: 2px 6px; border-radius: 2px; margin-left: 6px; vertical-align: 2px; text-transform: uppercase; }
+  .col-head .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }
+  .body { padding: 12px; }
+
+  /* Tab-bar (Squad-screen sticky header) */
+  .squad-tabbar { display: flex; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--bg-surface); }
+  .squad-tab {
+    flex: 1; padding: 7px 4px; font-size: 11px; font-weight: 700;
+    letter-spacing: 1.2px; border-radius: 4px;
+    color: var(--text-muted); background: transparent;
+    border: 1px solid var(--border); cursor: pointer;
+  }
+  .squad-tab.active { color: var(--text-light); background: var(--accent); border: none; }
+
+  /* Player portrait placeholder — illustrationsbevis ──── */
+  .portrait {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-dark, #A25828) 0%, var(--accent) 100%);
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--border);
+    flex-shrink: 0; position: relative; overflow: hidden;
+  }
+  .portrait svg { width: 100%; height: 100%; }
+  .portrait.lg { width: 54px; height: 54px; }
+  .portrait .placeholder-icon {
+    color: rgba(255,255,255,0.6);
+    font-family: var(--font-display); font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  /* Variant-färger per arketyp / position */
+  .portrait.finisher { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); }
+  .portrait.playmaker { background: linear-gradient(135deg, #2563EB 0%, #4F8AFF 100%); }
+  .portrait.defensive { background: linear-gradient(135deg, #1a5e3a 0%, #2D8A5A 100%); }
+  .portrait.gk { background: linear-gradient(135deg, #8B6914 0%, #D4A938 100%); }
+  .portrait.dribbler { background: linear-gradient(135deg, #1a5e8a 0%, #2D7BAE 100%); }
+  .portrait.twoway { background: linear-gradient(135deg, #5a2d7a 0%, #7B4A9F 100%); }
+
+  /* Placeholder-glyf — visar position-bokstav i platshållarläge */
+  .portrait-glyph {
+    font-family: var(--font-display);
+    font-weight: 700; font-size: 16px;
+    color: rgba(255,255,255,0.85);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  }
+  .portrait.lg .portrait-glyph { font-size: 22px; }
+
+  /* Subtil dot för injury / lobby state */
+  .portrait-dot {
+    position: absolute; bottom: 0; right: 0;
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid var(--bg-surface);
+  }
+  .portrait-dot.injury { background: var(--danger); }
+  .portrait-dot.lobby { background: var(--warm); }
+  .portrait-dot.suspended { background: var(--danger); }
+  .portrait-dot.national { background: var(--gold); }
+
+  /* ═══ FÖRSLAG · KOMPONENTER ═══════════════════ */
+
+  /* TRUPP-rad (förslag) */
+  .new-row {
+    padding: 10px 12px; margin-bottom: 8px;
+    background: var(--bg-surface); border-radius: 8px;
+    border: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    gap: 10px;
+  }
+  .new-row.cap   { border-left-color: var(--accent); }
+  .new-row.dev   { border-left-color: var(--cold); }
+  .new-row.peak  { border-left-color: var(--success); }
+  .new-row.fade  { border-left-color: var(--text-muted); }
+  .new-row.injured { background: linear-gradient(180deg, rgba(176,80,64,0.04) 0%, var(--bg-surface) 60%); border-left-color: var(--danger); }
+  .new-row.lobby { border-left-color: var(--warm); }
+  .new-row.in-lineup { background: linear-gradient(180deg, rgba(196,122,58,0.05) 0%, var(--bg-surface) 50%); }
+
+  .new-headrow { display: flex; align-items: baseline; gap: 8px; }
+  .new-name { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .new-name .num { font-size: 11px; color: var(--text-muted); margin-right: 3px; font-family: var(--font-mono); }
+  .new-name .cap { color: var(--accent); margin-right: 3px; }
+  .new-meta { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); letter-spacing: 0.5px; margin-left: auto; flex-shrink: 0; }
+
+  .new-subrow {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 2px;
+    font-size: 11px; color: var(--text-secondary);
+  }
+  .new-subrow strong { color: var(--text-primary); font-weight: 600; }
+  .new-subrow .sep { color: var(--border-dark); margin: 0 2px; }
+
+  .new-ca-stack {
+    display: flex; flex-direction: column; align-items: flex-end;
+    gap: 1px;
+    grid-row: 1 / span 2;
+  }
+  .new-ca-row { display: flex; align-items: baseline; gap: 4px; }
+  .new-ca-num { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--text-primary); line-height: 1; font-variant-numeric: tabular-nums; }
+  .new-ca-num.high { color: var(--success); }
+  .new-ca-num.low { color: var(--danger); }
+  .new-ca-delta { font-family: var(--font-mono); font-size: 10px; font-weight: 700; }
+  .new-ca-delta.up { color: var(--success); }
+  .new-ca-delta.down { color: var(--danger); }
+  .new-ca-spark { width: 56px; height: 12px; display: block; }
+
+  .new-chips {
+    grid-column: 2 / span 2;
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-top: 4px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 7px; border-radius: 99px;
+    font-family: var(--font-body); font-size: 10px;
+    font-weight: 600; border: 1px solid; line-height: 1.3;
+  }
+  .chip.injury { color: var(--danger); border-color: rgba(176,80,64,0.3); background: rgba(176,80,64,0.05); }
+  .chip.suspended { color: var(--danger); border-color: rgba(176,80,64,0.3); background: rgba(176,80,64,0.05); }
+  .chip.pro { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+  .chip.dayjob { color: var(--text-secondary); border-color: var(--border-dark); background: transparent; }
+  .chip.role { color: var(--accent); border-color: rgba(196,122,58,0.3); background: rgba(196,122,58,0.05); }
+  .chip.morale-low { color: var(--warm-light); border-color: rgba(140,110,58,0.4); background: rgba(140,110,58,0.06); }
+  .chip.lobby { color: var(--warm-light); border-color: rgba(140,110,58,0.5); background: rgba(140,110,58,0.08); }
+  .chip.contract-exp { color: var(--warm-light); border-color: rgba(140,110,58,0.4); background: rgba(140,110,58,0.06); }
+  .chip.national { color: var(--gold); border-color: rgba(232,185,92,0.4); background: rgba(232,185,92,0.06); }
+  .chip.muted { color: var(--text-muted); border-color: var(--border); background: transparent; font-weight: 500; }
+  .chip.lineup { color: var(--accent); border-color: var(--accent); background: rgba(196,122,58,0.08); }
+
+  /* ═══ NU-vy moduler ═══════════════════════════ */
+
+  .nu-section { margin-bottom: 14px; }
+  .nu-label {
+    font-family: var(--font-body); font-size: 8px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 8px;
+  }
+  .nu-label .count {
+    color: var(--accent); margin-left: 5px;
+    font-family: var(--font-mono);
+  }
+  .nu-empty {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 11.5px; color: var(--text-muted);
+    padding: 6px 12px; text-align: center;
+    background: var(--bg-surface); border-radius: 4px;
+    border: 1px dashed var(--border);
+  }
+  .nu-status-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-surface);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    border-left: 2px solid transparent;
+  }
+  .nu-status-card.danger { border-left-color: var(--danger); }
+  .nu-status-card.warn { border-left-color: var(--warm); }
+  .nu-status-card .info { flex: 1; }
+  .nu-status-card .name { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; margin-bottom: 2px; }
+  .nu-status-card .desc { font-size: 11px; line-height: 1.4; }
+  .nu-status-card.danger .desc { color: var(--danger); }
+  .nu-status-card.warn .desc { color: var(--warm); }
+  .nu-status-card .pos { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); letter-spacing: 0.5px; }
+
+  /* Health bar / pulse */
+  .squad-pulse {
+    margin-bottom: 14px;
+    padding: 11px 13px;
+    background: var(--bg-surface); border-radius: 6px;
+    border-left: 2px solid var(--success);
+  }
+  .squad-pulse.warn { border-left-color: var(--warm); }
+  .squad-pulse.danger { border-left-color: var(--danger); }
+  .pulse-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .pulse-title { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .pulse-value { font-family: var(--font-mono); font-size: 11px; color: var(--success); letter-spacing: 0.5px; font-weight: 700; }
+  .squad-pulse.warn .pulse-value { color: var(--warm); }
+  .squad-pulse.danger .pulse-value { color: var(--danger); }
+  .pulse-spark { width: 100%; height: 28px; display: block; }
+  .pulse-meta { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
+
+  /* Formation-card */
+  .formation-card { padding: 11px 13px; background: var(--bg-surface); border-radius: 6px; }
+  .formation-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; }
+  .formation-row.match { color: var(--success); }
+  .formation-row .label { color: var(--text-muted); }
+  .formation-row .val { font-weight: 700; color: var(--text-primary); font-family: var(--font-display); font-size: 14px; }
+  .formation-row.suggest .val { color: var(--accent); }
+  .formation-quote { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
+
+  /* ═══ TAKTIK-vy moduler ═══════════════════════ */
+
+  .pitch-frame {
+    background: linear-gradient(180deg, #2a5a3e 0%, #1f4530 100%);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+  }
+  .pitch-line {
+    position: absolute;
+    background: rgba(255,255,255,0.18);
+  }
+  .pitch-line.center-h { left: 12px; right: 12px; top: 50%; height: 1px; }
+  .pitch-line.center-v { top: 12px; bottom: 12px; left: 50%; width: 1px; }
+  .pitch-circle {
+    position: absolute; left: 50%; top: 50%;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.18);
+    transform: translate(-50%, -50%);
+  }
+  .pitch-dot {
+    position: absolute;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid rgba(255,255,255,0.9);
+    transform: translate(-50%, -50%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 9px;
+    color: white; font-weight: 700;
+  }
+  .pitch-dot.warning { background: var(--warm); }
+  .pitch-dot.danger { background: var(--danger); }
+  .pitch-dot.success { background: var(--success); }
+
+  .chemistry-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 9px 12px; background: var(--bg-surface); border-radius: 6px; }
+  .chem-pair { flex: 1; font-family: var(--font-body); font-size: 12px; color: var(--text-primary); }
+  .chem-pair .arrow { color: var(--text-muted); margin: 0 5px; }
+  .chem-spark { width: 50px; height: 14px; }
+  .chem-value { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--success); min-width: 28px; text-align: right; }
+  .chem-value.warn { color: var(--warm); }
+
+  /* ═══ AUDIT-blocks ═══════════════════════════ */
+  .audit-card {
+    padding: 11px 13px;
+    background: var(--bg-portal-surface);
+    border-radius: 6px;
+    border-left: 2px solid var(--danger);
+    margin-bottom: 8px;
+  }
+  .audit-card.warn { border-left-color: var(--warm); }
+  .audit-card.observ { border-left-color: var(--cold); }
+  .audit-card.positive { border-left-color: var(--success); }
+  .audit-eye { font-family: var(--font-body); font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--danger); margin-bottom: 4px; }
+  .audit-card.warn .audit-eye { color: var(--warm-light); }
+  .audit-card.observ .audit-eye { color: var(--cold-light); }
+  .audit-card.positive .audit-eye { color: var(--success); }
+  .audit-text { font-family: var(--font-body); font-size: 11.5px; color: var(--text-light); line-height: 1.5; }
+  .audit-text code { font-family: var(--font-mono); font-size: 10.5px; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 2px; color: var(--gold); }
+
+  .notes { max-width: 1640px; margin: 40px auto 0; padding: 24px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.65; font-size: 13px; }
+  .notes h3 { font-family: var(--font-display); font-size: 18px; margin-bottom: 14px; color: var(--text-light); }
+  .notes h4 { font-family: var(--font-body); font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 18px 0 8px; }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes p strong { color: var(--accent); font-weight: 600; }
+  .notes ul { margin: 4px 0 8px 18px; max-width: 880px; }
+  .notes li { margin-bottom: 4px; }
+  .notes code { font-family: var(--font-mono); font-size: 11.5px; background: rgba(245,241,235,0.06); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+  .notes table { border-collapse: collapse; margin: 10px 0; max-width: 1100px; font-size: 12px; }
+  .notes th, .notes td { text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(245,241,235,0.08); vertical-align: top; }
+  .notes th { font-family: var(--font-body); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Trupp-tab — fullt system-audit</h1>
+  <p>Förra mocken auditerade bara <code>PlayerRow</code>. Trupp-flödet har <strong>fyra ytor</strong>: <code>NU</code> (status-vy) · <code>TRUPP</code> (spelarlista) · <code>TAKTIK</code> (formation + kemi) · <code>PlayerCard</code> (modal djuplodning). Plus en <strong>portrait-placeholder</strong> som hanteras separat och förbereder för riktiga karaktärsillustrationer.</p>
+  <p>Sex spalter: NU före/efter · TRUPP nu/förslag · TAKTIK förslag · PlayerCard-modal förslag.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ═══════════════ 01 · NU-vy (förslag) ═══════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num new">01</span>NU-vy<span class="phase">förslag · status-overview</span>
+      <span class="sub">Idag: fyra textsektioner + formation-card. Förslag: <strong>Squad-pulse-sparkline</strong> överst som hero, sektioner som färgade chips/cards. Hela truppens hälsa på 1 sek.</span>
+    </div>
+
+    <div class="squad-tabbar">
+      <button class="squad-tab active">⚡ NU</button>
+      <button class="squad-tab">👥 TRUPP</button>
+      <button class="squad-tab">📋 TAKTIK</button>
+    </div>
+
+    <div class="body">
+
+      <!-- Squad-pulse — hero -->
+      <div class="squad-pulse warn">
+        <div class="pulse-head">
+          <span class="pulse-title">Truppens puls · 7 omg</span>
+          <span class="pulse-value">−12% från peak</span>
+        </div>
+        <svg class="pulse-spark" viewBox="0 0 280 28" preserveAspectRatio="none">
+          <polyline fill="none" stroke="var(--warm)" stroke-width="1.5" stroke-linecap="round"
+            points="4,4 44,6 84,8 124,12 164,14 204,18 244,20 276,22"/>
+          <circle cx="276" cy="22" r="2.5" fill="var(--warm)" stroke="var(--bg-surface)" stroke-width="0.5"/>
+        </svg>
+        <div class="pulse-meta">Två skadade. Lägre kondition senaste tre omg.</div>
+      </div>
+
+      <!-- Skadade -->
+      <div class="nu-section">
+        <div class="nu-label">🩹 Skadade <span class="count">· 2</span></div>
+
+        <div class="nu-status-card danger">
+          <div class="portrait defensive">
+            <span class="portrait-glyph">A</span>
+            <span class="portrait-dot injury"></span>
+          </div>
+          <div class="info">
+            <div class="name">A. Johansson</div>
+            <div class="desc">Ljumske · vecka 2 av 3 · LÄTT</div>
+          </div>
+          <span class="pos">B</span>
+        </div>
+
+        <div class="nu-status-card danger">
+          <div class="portrait twoway">
+            <span class="portrait-glyph">E</span>
+            <span class="portrait-dot injury"></span>
+          </div>
+          <div class="info">
+            <div class="name">E. Bergman</div>
+            <div class="desc">Mjuk vad · vecka 1 av 2 · VILA</div>
+          </div>
+          <span class="pos">YH</span>
+        </div>
+      </div>
+
+      <!-- Sur / låg moral -->
+      <div class="nu-section">
+        <div class="nu-label">😤 Surar <span class="count">· 1</span></div>
+
+        <div class="nu-status-card warn">
+          <div class="portrait finisher">
+            <span class="portrait-glyph">S</span>
+            <span class="portrait-dot lobby"></span>
+          </div>
+          <div class="info">
+            <div class="name">S. Sundström</div>
+            <div class="desc">11 mål, ingen landslagsuttagning. Surar på fjärde dagen.</div>
+          </div>
+          <span class="pos">A</span>
+        </div>
+      </div>
+
+      <!-- Kontrakt -->
+      <div class="nu-section">
+        <div class="nu-label">📋 Kontrakt löper ut <span class="count">· 3</span></div>
+
+        <div class="nu-status-card warn">
+          <div class="portrait playmaker">
+            <span class="portrait-glyph">P</span>
+          </div>
+          <div class="info">
+            <div class="name">P. Eriksson</div>
+            <div class="desc">t.o.m. säsong 3 · 3 omg kvar</div>
+          </div>
+          <span class="pos">MF</span>
+        </div>
+
+        <div class="nu-status-card warn">
+          <div class="portrait finisher">
+            <span class="portrait-glyph">S</span>
+          </div>
+          <div class="info">
+            <div class="name">S. Sundström</div>
+            <div class="desc">t.o.m. säsong 3 · ovan-kandidat</div>
+          </div>
+          <span class="pos">A</span>
+        </div>
+      </div>
+
+      <!-- Formation-block — bevarad, polerad -->
+      <div class="nu-section">
+        <div class="nu-label">📋 Formation</div>
+        <div class="formation-card">
+          <div class="formation-row">
+            <span class="label">Nuvarande</span>
+            <span class="val">3-3-4</span>
+          </div>
+          <div class="formation-row suggest">
+            <span class="label">Rekommenderad</span>
+            <span class="val">3-4-3</span>
+          </div>
+          <div class="formation-quote">"Vi har två naturliga ytter just nu. 3-4-3 låter dem få utrymme."</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ 02 · TRUPP-vy (befintlig) ═══════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num audit">02</span>TRUPP-vy<span class="phase">befintlig idag</span>
+      <span class="sub">Filter-tabs + sort-rad + summary-card + lineup-tabs + lista. Funktionell — men många systemkopplingar saknas och visuell hierarki är platt.</span>
+    </div>
+
+    <div class="squad-tabbar">
+      <button class="squad-tab">⚡ NU</button>
+      <button class="squad-tab active">👥 TRUPP</button>
+      <button class="squad-tab">📋 TAKTIK</button>
+    </div>
+
+    <div class="body">
+
+      <!-- Filter-tabs (recreated) -->
+      <div style="display: flex; gap: 4px; margin-bottom: 10px; overflow-x: auto;">
+        <button class="chip" style="border-color: var(--accent); background: var(--accent); color: var(--bg); padding: 4px 10px;">Alla</button>
+        <button class="chip muted" style="padding: 4px 10px;">MV</button>
+        <button class="chip muted" style="padding: 4px 10px;">B</button>
+        <button class="chip muted" style="padding: 4px 10px;">YH</button>
+        <button class="chip muted" style="padding: 4px 10px;">MF</button>
+        <button class="chip muted" style="padding: 4px 10px;">A</button>
+      </div>
+
+      <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 10px; font-size: 11px; color: var(--text-muted);">
+        <span>Sortera:</span>
+        <button class="chip" style="padding: 3px 8px; font-weight: 700; color: var(--text-primary); background: var(--bg-elevated); border-color: var(--border);">Position</button>
+        <button class="chip muted" style="padding: 3px 8px;">Styrka</button>
+        <button class="chip muted" style="padding: 3px 8px;">Form</button>
+      </div>
+
+      <!-- Lineup-tabs -->
+      <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+        <button style="flex: 1; padding: 7px; border-radius: 8px; font-size: 11px; font-weight: 600; background: var(--accent); color: var(--text-light); border: none; cursor: pointer;">Startelva (11)</button>
+        <button style="flex: 1; padding: 7px; border-radius: 8px; font-size: 11px; font-weight: 600; background: transparent; color: var(--accent); border: 1px solid var(--accent); cursor: pointer;">Bänken (5)</button>
+        <button style="flex: 1; padding: 7px; border-radius: 8px; font-size: 11px; font-weight: 600; background: transparent; color: var(--accent); border: 1px solid var(--accent); cursor: pointer;">Reserv</button>
+      </div>
+
+      <!-- Summary-card (befintlig) -->
+      <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <div style="padding: 6px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;">
+          <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">🏒 Toppskytt</p>
+          <p style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Sundström <span style="color: var(--accent); font-weight: 800;">11</span></p>
+        </div>
+        <div style="padding: 6px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;">
+          <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">🅰️ Flest assist</p>
+          <p style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Eriksson <span style="color: var(--accent); font-weight: 800;">9</span></p>
+        </div>
+        <div style="padding: 6px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;">
+          <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">⭐ Bäst betyg</p>
+          <p style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Lindqvist <span style="color: var(--accent); font-weight: 800;">7.4</span></p>
+        </div>
+        <div style="padding: 6px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;">
+          <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">🏒 Utvisningar</p>
+          <p style="font-size: 12px; color: var(--text-muted);">—</p>
+        </div>
+      </div>
+
+      <!-- Existerande rader (förenklat) -->
+      <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">
+        <div class="portrait playmaker"><span class="portrait-glyph">M</span></div>
+        <div style="flex: 1;">
+          <p style="font-size: 14px; font-weight: 700; color: var(--text-primary); font-family: var(--font-display);">#10 © M. Lindqvist</p>
+          <p style="font-size: 12px; color: var(--text-secondary);">A · 28 år</p>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-size: 15px; font-weight: 800; color: var(--accent);">78</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--success); margin-left: 3px;">↑+3</span>
+        </div>
+      </div>
+
+      <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">
+        <div class="portrait defensive"><span class="portrait-glyph">A</span></div>
+        <div style="flex: 1;">
+          <p style="font-size: 14px; font-weight: 700; color: var(--text-primary); font-family: var(--font-display);">#4 A. Johansson</p>
+          <p style="font-size: 12px; color: var(--text-secondary);">B · 31 år</p>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-size: 15px; font-weight: 800; color: var(--accent);">62</span>
+        </div>
+      </div>
+
+      <p style="font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-secondary); padding: 12px 8px; text-align: center; background: var(--bg-surface); border-radius: 4px; margin-top: 12px;">
+        Detta är dagens design. Förslag i spalt 03.
+      </p>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ 03 · TRUPP-vy (förslag) ═══════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num new">03</span>TRUPP-vy<span class="phase">förslag · samma data</span>
+      <span class="sub">Border-stripe per åldersfas. CA-block med sparkline. Chips för skade/lobby/landslag/kontrakt. Summary-card behålls med små förbättringar. Filter/sort polerad.</span>
+    </div>
+
+    <div class="squad-tabbar">
+      <button class="squad-tab">⚡ NU</button>
+      <button class="squad-tab active">👥 TRUPP</button>
+      <button class="squad-tab">📋 TAKTIK</button>
+    </div>
+
+    <div class="body">
+
+      <!-- Squad-summary med sparklines -->
+      <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="portrait finisher" style="width: 28px; height: 28px;"><span class="portrait-glyph" style="font-size: 11px;">S</span></div>
+            <div style="flex: 1;">
+              <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 1px; letter-spacing: 1px; text-transform: uppercase;">🏒 Toppskytt</p>
+              <p style="font-size: 12px; font-weight: 700;"><strong style="color: var(--accent);">11</strong> · Sundström</p>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="portrait playmaker" style="width: 28px; height: 28px;"><span class="portrait-glyph" style="font-size: 11px;">P</span></div>
+            <div style="flex: 1;">
+              <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 1px; letter-spacing: 1px; text-transform: uppercase;">🅰️ Flest assist</p>
+              <p style="font-size: 12px; font-weight: 700;"><strong style="color: var(--accent);">9</strong> · Eriksson</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Captain · peak · national -->
+      <div class="new-row peak">
+        <div class="portrait playmaker">
+          <span class="portrait-glyph">M</span>
+          <span class="portrait-dot national"></span>
+        </div>
+        <div>
+          <div class="new-headrow">
+            <span class="new-name"><span class="num">#10</span><span class="cap">©</span>M. Lindqvist</span>
+            <span class="new-meta">A · 28</span>
+          </div>
+          <div class="new-subrow">
+            <strong>14M</strong> · <strong>8G</strong> · 5A · <strong style="color: var(--accent);">7.4★</strong>
+          </div>
+        </div>
+        <div class="new-ca-stack">
+          <div class="new-ca-row">
+            <span class="new-ca-num high">78</span>
+            <span class="new-ca-delta up">↑3</span>
+          </div>
+          <svg class="new-ca-spark" viewBox="0 0 56 12" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--success)" stroke-width="1.2" stroke-linecap="round" points="2,8 10,7 18,6 26,7 34,5 42,4 50,3 54,3"/>
+            <circle cx="54" cy="3" r="1.6" fill="var(--success)"/>
+          </svg>
+        </div>
+        <div class="new-chips">
+          <span class="chip role">📐 Hörnspec</span>
+          <span class="chip pro">⭐ Proffs</span>
+          <span class="chip national">🇸🇪 Landslag</span>
+          <span class="chip lineup">📋 Startelva</span>
+        </div>
+      </div>
+
+      <!-- Injured -->
+      <div class="new-row injured">
+        <div class="portrait defensive">
+          <span class="portrait-glyph">A</span>
+          <span class="portrait-dot injury"></span>
+        </div>
+        <div>
+          <div class="new-headrow">
+            <span class="new-name"><span class="num">#4</span>A. Johansson</span>
+            <span class="new-meta">B · 31</span>
+          </div>
+          <div class="new-subrow" style="color: var(--danger);">
+            <strong>Ljumske</strong> · 🩺 vecka 2 av 3 · LÄTT
+          </div>
+        </div>
+        <div class="new-ca-stack">
+          <div class="new-ca-row">
+            <span class="new-ca-num">62</span>
+          </div>
+          <svg class="new-ca-spark" viewBox="0 0 56 12" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--danger)" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="2 2" points="2,5 10,6 18,7 26,8 34,9"/>
+          </svg>
+        </div>
+        <div class="new-chips">
+          <span class="chip injury">🩹 1 omg kvar</span>
+          <span class="chip dayjob">👷 Svetsare</span>
+          <span class="chip muted">31 år · avtar</span>
+        </div>
+      </div>
+
+      <!-- Surar med lobby -->
+      <div class="new-row lobby">
+        <div class="portrait finisher">
+          <span class="portrait-glyph">S</span>
+          <span class="portrait-dot lobby"></span>
+        </div>
+        <div>
+          <div class="new-headrow">
+            <span class="new-name"><span class="num">#7</span>S. Sundström</span>
+            <span class="new-meta">A · 27</span>
+          </div>
+          <div class="new-subrow">
+            <strong>11M</strong> · <strong>11G</strong> · 3A · 7.1★
+          </div>
+        </div>
+        <div class="new-ca-stack">
+          <div class="new-ca-row">
+            <span class="new-ca-num">74</span>
+            <span class="new-ca-delta down">↓1</span>
+          </div>
+          <svg class="new-ca-spark" viewBox="0 0 56 12" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--warm)" stroke-width="1.2" stroke-linecap="round" points="2,3 12,4 22,5 32,5 42,6 54,7"/>
+            <circle cx="54" cy="7" r="1.6" fill="var(--warm)"/>
+          </svg>
+        </div>
+        <div class="new-chips">
+          <span class="chip lobby">📣 Vill bli uttagen</span>
+          <span class="chip contract-exp">📋 Kontrakt löper ut</span>
+          <span class="chip lineup">📋 Startelva</span>
+        </div>
+      </div>
+
+      <!-- Young dev -->
+      <div class="new-row dev">
+        <div class="portrait twoway">
+          <span class="portrait-glyph">H</span>
+        </div>
+        <div>
+          <div class="new-headrow">
+            <span class="new-name"><span class="num">#19</span>H. Henriksson</span>
+            <span class="new-meta">MF · 17</span>
+          </div>
+          <div class="new-subrow">
+            <strong>5M</strong> · 2G · 1A · 6.8★ · <strong style="color: var(--cold-light);">+8 form</strong>
+          </div>
+        </div>
+        <div class="new-ca-stack">
+          <div class="new-ca-row">
+            <span class="new-ca-num high">68</span>
+            <span class="new-ca-delta up">↑8</span>
+          </div>
+          <svg class="new-ca-spark" viewBox="0 0 56 12" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round" points="2,10 12,8 22,6 32,5 42,3 54,2"/>
+            <circle cx="54" cy="2" r="1.8" fill="var(--gold)" stroke="var(--bg-surface)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <div class="new-chips">
+          <span class="chip muted">17 år · utvecklas</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ 04 · TAKTIK-vy (förslag) ═══════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num new">04</span>TAKTIK-vy<span class="phase">förslag · kemi-synlighet</span>
+      <span class="sub">Pitch behåll. Plus: <strong>kemi-rader</strong> mellan spelarpar med sparkline över tid + advice. Aktivera <code>chemistryStats</code> som redan finns i state.</span>
+    </div>
+
+    <div class="squad-tabbar">
+      <button class="squad-tab">⚡ NU</button>
+      <button class="squad-tab">👥 TRUPP</button>
+      <button class="squad-tab active">📋 TAKTIK</button>
+    </div>
+
+    <div class="body">
+
+      <!-- Pitch -->
+      <div class="pitch-frame">
+        <div class="pitch-line center-h"></div>
+        <div class="pitch-line center-v"></div>
+        <div class="pitch-circle"></div>
+        <!-- Spelarpunkter (förenklat) -->
+        <div class="pitch-dot success" style="left: 50%; top: 92%;">MV</div>
+        <div class="pitch-dot" style="left: 25%; top: 75%;">B</div>
+        <div class="pitch-dot" style="left: 50%; top: 75%;">B</div>
+        <div class="pitch-dot warning" style="left: 75%; top: 75%;">B</div>
+        <div class="pitch-dot" style="left: 30%; top: 50%;">YH</div>
+        <div class="pitch-dot" style="left: 70%; top: 50%;">YH</div>
+        <div class="pitch-dot success" style="left: 50%; top: 45%;">MF</div>
+        <div class="pitch-dot" style="left: 50%; top: 28%;">MF</div>
+        <div class="pitch-dot" style="left: 35%; top: 18%;">A</div>
+        <div class="pitch-dot" style="left: 65%; top: 18%;">A</div>
+        <div class="pitch-dot danger" style="left: 50%; top: 8%;">A</div>
+        <div style="position: absolute; top: 8px; right: 10px; font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,0.6); letter-spacing: 1px;">3-3-4</div>
+      </div>
+
+      <!-- Kemi-bevis -->
+      <div class="nu-label" style="color: var(--accent);">⚡ Kemi-par · senaste 5 omg</div>
+
+      <div class="chemistry-row">
+        <span class="chem-pair">Lindqvist <span class="arrow">↔</span> Eriksson</span>
+        <svg class="chem-spark" viewBox="0 0 50 14" preserveAspectRatio="none">
+          <polyline fill="none" stroke="var(--success)" stroke-width="1.2" stroke-linecap="round" points="2,10 12,9 22,7 32,5 42,3 48,2"/>
+        </svg>
+        <span class="chem-value">82</span>
+      </div>
+
+      <div class="chemistry-row">
+        <span class="chem-pair">Sundström <span class="arrow">↔</span> Lindqvist</span>
+        <svg class="chem-spark" viewBox="0 0 50 14" preserveAspectRatio="none">
+          <polyline fill="none" stroke="var(--warm)" stroke-width="1.2" stroke-linecap="round" points="2,4 12,5 22,7 32,8 42,9 48,9"/>
+        </svg>
+        <span class="chem-value warn">54</span>
+      </div>
+
+      <div class="chemistry-row">
+        <span class="chem-pair">Henriksson <span class="arrow">↔</span> Eriksson</span>
+        <svg class="chem-spark" viewBox="0 0 50 14" preserveAspectRatio="none">
+          <polyline fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round" points="2,12 14,10 26,8 38,6 48,4"/>
+        </svg>
+        <span class="chem-value" style="color: var(--accent);">66</span>
+      </div>
+
+      <p style="font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-secondary); margin-top: 10px; padding: 10px 12px; background: var(--bg-surface); border-radius: 4px; border-left: 2px solid var(--accent);">
+        Coach: "Lindqvist–Eriksson har klickat. Sundströms missnöje syns i mätningen."
+      </p>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ 05 · PlayerCard-modal (förslag) ═══════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num new">05</span>PLAYER-MODAL<span class="phase">förslag · djuplodning</span>
+      <span class="sub">Modal-vyn är 832 rader idag. Förslag: hero med stor portrait + CA-trend, sedan tabs (Stats · Karriär · Skador · Relationer). Inline-actions kvar i Trupp-listan; modal är för historik.</span>
+    </div>
+
+    <div class="body">
+
+      <!-- Hero -->
+      <div style="background: linear-gradient(180deg, var(--bg-leather-dk) 0%, var(--bg-portal) 100%); padding: 18px 14px; border-radius: 8px 8px 0 0; color: var(--text-light); margin: -12px -12px 0;">
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <div class="portrait lg playmaker">
+            <span class="portrait-glyph">M</span>
+            <span class="portrait-dot national"></span>
+          </div>
+          <div style="flex: 1;">
+            <p style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-light); line-height: 1.1; margin-bottom: 3px;">
+              <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-light-secondary); margin-right: 5px;">#10</span>
+              <span style="color: var(--accent); margin-right: 3px;">©</span>
+              Magnus Lindqvist
+            </p>
+            <p style="font-family: var(--font-mono); font-size: 10px; color: var(--text-light-secondary); letter-spacing: 0.5px;">A · 28 år · Spelmottagare</p>
+            <div style="display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap;">
+              <span class="chip national">🇸🇪 Landslag · 3 ggr</span>
+              <span class="chip pro">⭐ Proffs</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 14px;">
+          <div style="text-align: center;">
+            <div style="font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--success);">78</div>
+            <div style="font-family: var(--font-body); font-size: 8px; letter-spacing: 1.2px; color: var(--text-muted); text-transform: uppercase;">Styrka · ↑3</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text-light);">72%</div>
+            <div style="font-family: var(--font-body); font-size: 8px; letter-spacing: 1.2px; color: var(--text-muted); text-transform: uppercase;">Form</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--gold);">7.4</div>
+            <div style="font-family: var(--font-body); font-size: 8px; letter-spacing: 1.2px; color: var(--text-muted); text-transform: uppercase;">Betyg ★</div>
+          </div>
+        </div>
+
+        <!-- CA-trend full -->
+        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+          <div style="display: flex; justify-content: space-between; font-family: var(--font-body); font-size: 8px; letter-spacing: 1.2px; color: var(--text-light-secondary); text-transform: uppercase; margin-bottom: 5px;">
+            <span>Styrka över karriären</span>
+            <span style="color: var(--gold);">Peak nu</span>
+          </div>
+          <svg viewBox="0 0 280 36" preserveAspectRatio="none" style="width: 100%; height: 36px;">
+            <polyline fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" points="4,30 32,28 60,22 88,18 116,14 144,10 172,8 200,7 228,6 256,5 276,4"/>
+            <circle cx="276" cy="4" r="3" fill="var(--gold)" stroke="var(--bg-portal)" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display: flex; gap: 4px; padding: 10px 0; margin: 0 -2px;">
+        <button class="chip" style="background: var(--accent); color: var(--bg); border-color: var(--accent); padding: 5px 12px;">Stats</button>
+        <button class="chip muted" style="padding: 5px 12px;">Karriär</button>
+        <button class="chip muted" style="padding: 5px 12px;">Skador</button>
+        <button class="chip muted" style="padding: 5px 12px;">Relationer</button>
+      </div>
+
+      <!-- Stats-content -->
+      <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px;">
+        <p style="font-family: var(--font-body); font-size: 8px; letter-spacing: 2px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">Topp-attribut</p>
+
+        <div style="margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
+            <span style="color: var(--text-secondary);">Passning</span>
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">82</span>
+          </div>
+          <div style="height: 4px; background: var(--border); border-radius: 99px; overflow: hidden;">
+            <div style="width: 82%; height: 100%; background: var(--success); border-radius: 99px;"></div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
+            <span style="color: var(--text-secondary);">Speluppfattning</span>
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">79</span>
+          </div>
+          <div style="height: 4px; background: var(--border); border-radius: 99px; overflow: hidden;">
+            <div style="width: 79%; height: 100%; background: var(--success); border-radius: 99px;"></div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
+            <span style="color: var(--text-secondary);">Hörnor</span>
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--accent);">75</span>
+          </div>
+          <div style="height: 4px; background: var(--border); border-radius: 99px; overflow: hidden;">
+            <div style="width: 75%; height: 100%; background: var(--accent); border-radius: 99px;"></div>
+          </div>
+        </div>
+
+        <p style="font-family: var(--font-body); font-size: 8px; letter-spacing: 2px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin: 12px 0 6px;">Säsongen</p>
+        <div style="display: flex; gap: 12px; font-size: 11px; color: var(--text-secondary);">
+          <span><strong style="color: var(--text-primary); font-family: var(--font-display); font-size: 13px;">14</strong>M</span>
+          <span><strong style="color: var(--text-primary); font-family: var(--font-display); font-size: 13px;">8</strong>G</span>
+          <span><strong style="color: var(--text-primary); font-family: var(--font-display); font-size: 13px;">5</strong>A</span>
+          <span><strong style="color: var(--accent); font-family: var(--font-display); font-size: 13px;">7.4</strong>★</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; gap: 6px; margin-top: 12px;">
+        <button style="flex: 1; padding: 10px; background: var(--accent); color: var(--text-light); border: none; border-radius: 6px; font-weight: 700; font-size: 12px;">Prata</button>
+        <button style="flex: 1; padding: 10px; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; font-weight: 700; font-size: 12px;">Förläng</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ 06 · AUDIT + portrait-spec ═══════════════ -->
+  <div class="col dark">
+    <div class="col-head">
+      <span class="num audit">06</span>AUDIT + PORTRAIT<span class="phase">spec + portrait-placeholder</span>
+      <span class="sub">Fynd över hela trupp-systemet (NU, TRUPP, TAKTIK, Modal). Plus portrait-placeholder-spec som förbereder för riktiga karaktärsillustrationer.</span>
+    </div>
+
+    <div class="body">
+
+      <!-- Portrait spec -->
+      <h4 style="font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">Portrait-placeholder · spec</h4>
+
+      <div style="display: flex; gap: 14px; margin-bottom: 10px; padding: 12px; background: var(--bg-portal-surface); border-radius: 6px;">
+        <div class="portrait finisher"><span class="portrait-glyph">A</span></div>
+        <div class="portrait playmaker"><span class="portrait-glyph">M</span></div>
+        <div class="portrait defensive"><span class="portrait-glyph">B</span></div>
+        <div class="portrait gk"><span class="portrait-glyph">MV</span></div>
+        <div class="portrait dribbler"><span class="portrait-glyph">YH</span></div>
+        <div class="portrait twoway"><span class="portrait-glyph">MF</span></div>
+      </div>
+
+      <p style="font-family: var(--font-body); font-size: 11px; color: var(--text-light-secondary); margin-bottom: 12px; line-height: 1.5;">
+        Färgad cirkel per arketyp/position. Initial-bokstav. Status-dot nere höger (skadad/lobby/landslag). När riktiga karaktärsillustrationer landar (separat projekt), <code>getPortraitSvg()</code> returnerar dem istället — kortet är förberett.
+      </p>
+
+      <div style="background: var(--bg-portal-surface); padding: 10px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-light-secondary); margin-bottom: 16px; line-height: 1.5;">
+        <span style="color: var(--accent);">// Placeholder-funktion</span><br>
+        getPortraitPlaceholder(player) → {<br>
+        &nbsp;&nbsp;variant: archetype, <span style="color: var(--gold);">// finisher/playmaker/etc</span><br>
+        &nbsp;&nbsp;glyph: lastName.charAt(0),<br>
+        &nbsp;&nbsp;stateDot: injury|lobby|national|null<br>
+        }
+      </div>
+
+      <h4 style="font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">Audit-fynd över hela trupp-systemet</h4>
+
+      <div class="audit-card">
+        <div class="audit-eye">🟥 NU-vy · 4 sektioner men ingen hierarki</div>
+        <div class="audit-text">Sektionerna har platt struktur. Hjälp spelaren förstå <strong>hur trupp mår på 1 sek</strong>: <code>Squad-pulse-sparkline</code> överst som hero.</div>
+      </div>
+
+      <div class="audit-card">
+        <div class="audit-eye">🟥 TAKTIK · ingen kemi-synlighet</div>
+        <div class="audit-text"><code>chemistryStats</code> finns i state men visas inte. <strong>Kemi-par-rader</strong> med sparkline över tid aktiverar systemet.</div>
+      </div>
+
+      <div class="audit-card warn">
+        <div class="audit-eye">🟧 NU · status-cards utan portrait</div>
+        <div class="audit-text">Idag: bara text. Förslag: portrait + chip + position. <strong>Konsistens med Trupp-vy.</strong></div>
+      </div>
+
+      <div class="audit-card warn">
+        <div class="audit-eye">🟧 TRUPP · summary-card statisk</div>
+        <div class="audit-text">Toppskytt/assist/betyg är skytteliga, inte trend. <strong>Lägg sparkline</strong> + visa portrait för stjärnan.</div>
+      </div>
+
+      <div class="audit-card warn">
+        <div class="audit-eye">🟧 Modal · 832 rader, ingen tab-struktur</div>
+        <div class="audit-text">Stats, karriär, skador, relationer huller om buller. <strong>Tabs separerar</strong> + hero-block med stor portrait + CA-trend.</div>
+      </div>
+
+      <div class="audit-card observ">
+        <div class="audit-eye">🟨 Filter/sort · chip-konsistens</div>
+        <div class="audit-text">Filter använder <code>btn-copper/btn-ghost</code>. Sort använder annan stil. <strong>Båda till chip-system</strong> som matchar trupp-rader.</div>
+      </div>
+
+      <div class="audit-card observ">
+        <div class="audit-eye">🟨 Pitch · spelarpunkter utan kemi-bevis</div>
+        <div class="audit-text">Idag: bara position-prick. Förslag: <strong>dot-färg per kemi-state</strong> (success/warn/danger) ger snabb-skanning av lineup-styrka.</div>
+      </div>
+
+      <div class="audit-card positive">
+        <div class="audit-eye">💎 Lineup-tabs · bevara</div>
+        <div class="audit-text">Startelva/Bänken/Reserv-tabs är robusta. Polera bara stilen (chip-konsistens) — behåll mekaniken.</div>
+      </div>
+
+      <div class="audit-card positive">
+        <div class="audit-eye">💎 NU-formation-card · bra grund</div>
+        <div class="audit-text">"Nuvarande vs Rekommenderad" + coach-citat funkar. Förbättring: <strong>migrera coach-citat till expandable-area</strong> om man vill se argumentet.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Systemförslag — fyra ytor som arbetar tillsammans</h3>
+
+  <h4>Hierarki över trupp-tab</h4>
+  <p>Idag är de tre ytorna oberoende. Förslag: <strong>NU = sammanfattning</strong>, <strong>TRUPP = djup</strong>, <strong>TAKTIK = relationer</strong>. Modal = historik. Varje yta använder samma primitiver (portrait, chip, sparkline, border-stripe).</p>
+
+  <h4>Designsystem-konsekvenser</h4>
+  <table>
+    <thead><tr><th>Primitiv</th><th>Källa</th><th>Var används</th></tr></thead>
+    <tbody>
+      <tr><td>Portrait (placeholder)</td><td>Ny <code>getPortraitPlaceholder()</code></td><td>Alla fyra ytor — konsistent</td></tr>
+      <tr><td>Chip-system (10 varianter)</td><td>Designsystem-tillägg</td><td>Trupp-rad, NU-status, Modal-hero, Filter/sort</td></tr>
+      <tr><td>Sparkline</td><td>Score-system</td><td>Squad-pulse, CA-trend, Kemi-trend, Summary-card</td></tr>
+      <tr><td>Border-stripe per fas</td><td>Designsystem-tillägg</td><td>Trupp-rad, NU-status-card</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Portrait-placeholder · övergångsstrategi</h4>
+  <ul>
+    <li><strong>Idag:</strong> <code>getPortraitSvg(playerId, age, position)</code> returnerar genererad SVG. Behåll som fallback.</li>
+    <li><strong>Förslag:</strong> Ny <code>getPortraitPlaceholder(player)</code> returnerar gradient-cirkel + initial + state-dot. Mer visuellt bandysvenskt.</li>
+    <li><strong>När riktiga illustrationer landar:</strong> Wrappa båda i <code>&lt;Portrait player={p} /&gt;</code>-komponent. Switchar källa internt baserat på <code>player.illustrationUrl</code>. Existing code behöver inte ändras.</li>
+  </ul>
+
+  <h4>Spellogik-aktiveringar utöver förra mocken</h4>
+  <ul>
+    <li><strong>NU-vy:</strong> Squad-pulse aktiverar <code>teamFitnessHistory</code> (R1 + C-FT1-data). Lyfter osynlig trötthet till synlig.</li>
+    <li><strong>TAKTIK-vy:</strong> Aktiverar <code>chemistryStats</code> som idag är dolt i state. Per-par-sparkline visar trender över omg.</li>
+    <li><strong>Modal:</strong> Tab-struktur ("Skador") integrerar Henrik från #5-handoffen — modal-hero visar status-dot för injury, tab visar full historik.</li>
+    <li><strong>Status-dots på portrait:</strong> 4 dot-varianter (injury, lobby, national, suspended) ger snabbskannning utan att läsa chips.</li>
+  </ul>
+
+  <h4>Migration · 6 steg</h4>
+  <ol>
+    <li><strong>Portrait-placeholder-komponent</strong> (~1.5h) — fungerar isolerat, ersätter <code>getPortraitSvg</code> stegvis</li>
+    <li><strong>Chip-system + border-stripe</strong> (~2h) — kosmetisk refaktor av PlayerRow</li>
+    <li><strong>NU-vy redesign</strong> (~2h) — Squad-pulse + status-cards med portrait</li>
+    <li><strong>TAKTIK kemi-rader</strong> (~2h) — läser chemistryStats, sparkline + advice</li>
+    <li><strong>Modal tab-struktur</strong> (~3h) — refaktor av 832-rad-modalen</li>
+    <li><strong>Summary-card med sparkline</strong> (~1h) — sista polering</li>
+  </ol>
+  <p><strong>Total:</strong> ~11.5h Code. Inkrementellt, kan delas över 3-4 sprintar.</p>
+
+  <h4>Designval öppna</h4>
+  <ul>
+    <li><strong>Q1:</strong> Squad-pulse i NU — vad mäter den exakt? Föreslag: viktad sum av fitness × moral × injuries × form. Synlig formel — inga dolda viktningar.</li>
+    <li><strong>Q2:</strong> Portrait-status-dot — max ett samtidigt eller stapla? Föreslag: max ett, prioritet <code>injury &gt; suspended &gt; lobby &gt; national</code>.</li>
+    <li><strong>Q3:</strong> Kemi-rader — visa topp 3 eller alla? Föreslag: topp 3 + "se alla 28" länk om spelaren vill djuplöda.</li>
+    <li><strong>Q4:</strong> Modal-tabs — 4 stycken räcker, eller behövs "Lön/Kontrakt" som 5:e? Föreslag: behåll 4. Lön är del av "Karriär".</li>
+  </ul>
+
+</div>
+
+</body>
+</html>

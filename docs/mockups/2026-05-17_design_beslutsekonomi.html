@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>F1 Beslutsekonomi — kö-indikator, cooldowns, hopas vs blockas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* ── Inline tokens (matchar design-system/colors_and_type.css) ── */
+  :root {
+    --bg:                 #EDE8DF;
+    --bg-surface:         #FAF8F4;
+    --bg-portal:          #1a1612;
+    --bg-portal-surface:  #221d18;
+    --bg-portal-elevated: #2a241e;
+    --bg-leather:         #3D3A32;
+    --bg-leather-dk:      #1d1b18;
+    --border:             #DDD7CC;
+    --border-dark:        #C4BAA8;
+    --text-primary:       #1A1A18;
+    --text-secondary:     #6B6760;
+    --text-muted:         #8A857A;
+    --text-light:           #F5F1EB;
+    --text-light-secondary: #C4BAA8;
+    --accent:      #C47A3A;
+    --accent-dark: #A25828;
+    --accent-deep: #8B4820;
+    --cold:        #4a6680;
+    --cold-light:  #7095b8;
+    --warm:        #8c6e3a;
+    --warm-light:  #c8a058;
+    --gold:        #E8B95C;
+    --success:     #5A9A4A;
+    --warning:     #C47A3A;
+    --danger:      #B05040;
+    --danger-dark: #8B3E30;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono:    ui-monospace, 'Courier New', monospace;
+    --radius:       14px;
+    --radius-md:    8px;
+    --radius-sm:    3px;
+    --shadow-card:    0 1px 3px rgba(0,0,0,0.05);
+    --shadow-btn:     0 2px 5px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-primary: 0 3px 5px rgba(162,88,40,0.38);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color: var(--text-primary); font-family: var(--font-body); }
+  body {
+    background: var(--bg-leather);
+    padding: 32px 16px 80px;
+    color: var(--text-light);
+    min-height: 100vh;
+  }
+
+  /* ── Page chrome ── */
+  .page-head {
+    max-width: 1480px; margin: 0 auto 24px;
+    color: var(--text-light);
+  }
+  .page-head h1 {
+    font-family: var(--font-display); font-size: 24px;
+    letter-spacing: 0.2px; margin-bottom: 6px;
+  }
+  .page-head p {
+    font-size: 13px;
+    color: rgba(245,241,235,0.7);
+    line-height: 1.6;
+    max-width: 720px;
+  }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 28px;
+    max-width: 1480px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  /* ── Column shell — mobil-frame i Portal-bg ── */
+  .col {
+    background: var(--bg-portal);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    width: 100%; max-width: 380px;
+    justify-self: center;
+  }
+  .col-head {
+    padding: 12px 16px;
+    background: var(--bg-leather-dk);
+    color: var(--text-light);
+    font-family: var(--font-display);
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .col-head .num {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--accent);
+    background: rgba(196,122,58,0.1);
+    padding: 2px 6px; border-radius: 2px;
+    margin-right: 8px; vertical-align: 2px;
+  }
+  .col-head .sub {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(245,241,235,0.6);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .portal-frame { padding: 14px 0 16px; }
+
+  /* ── Situation card stub ── */
+  .situation {
+    margin: 0 14px 12px;
+    padding: 10px 12px;
+    background: transparent;
+    color: var(--text-light-secondary);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    line-height: 1.4;
+    border-left: 1px dashed rgba(196,122,58,0.3);
+    opacity: 0.85;
+  }
+  .situation strong {
+    font-style: normal; font-family: var(--font-body);
+    font-weight: 600; color: var(--text-light);
+    display: block; margin-bottom: 2px;
+    font-size: 11px; letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ════════════════════════════════════════════════════
+     SECTION: ACTIVE DECISIONS (max 2)
+     Stripe 2px accent. card-sharp på portal-surface.
+     ════════════════════════════════════════════════════ */
+  .active-section {
+    margin: 0 14px 4px;
+    padding: 2px 0 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .active-eyebrow {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    font-family: var(--font-body);
+  }
+  .active-budget {
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 1.5px;
+    color: var(--text-light-secondary);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .budget-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    border: 1px solid var(--accent);
+    box-sizing: border-box;
+  }
+  .budget-dot.on  { background: var(--accent); box-shadow: 0 0 4px rgba(196,122,58,0.4); }
+  .budget-dot.off { background: transparent; }
+  .budget-dot.locked { border-color: rgba(196,122,58,0.25); }
+
+  /* ── Decision card (active) ── */
+  .dec-card {
+    margin: 0 14px 10px;
+    padding: 12px 14px 13px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    box-shadow: var(--shadow-card);
+    position: relative;
+  }
+  .dec-card.warm  { border-left-color: var(--warm); }
+  .dec-card.cold  { border-left-color: var(--cold); }
+
+  .dec-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-body);
+  }
+  .dec-label.warm { color: var(--warm-light); }
+  .dec-label.cold { color: var(--cold-light); }
+  .dec-label-icon { font-size: 12px; line-height: 1; }
+
+  .dec-question {
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-light);
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .dec-options {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .dec-option {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 11px 10px;
+    background: var(--bg-portal-elevated);
+    border: 1.5px solid var(--accent);
+    border-radius: 8px;
+    cursor: pointer; text-align: center;
+    box-shadow: var(--shadow-btn);
+    font-family: var(--font-body);
+  }
+  .dec-option-label {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 0.4px;
+  }
+  .dec-option-effect {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 10.5px;
+    line-height: 1.3;
+  }
+  .dec-option-effect.success { color: #A0C890; }
+  .dec-option-effect.danger  { color: #E8A090; }
+  .dec-option-effect.muted   { color: var(--text-light-secondary); opacity: 0.75; }
+
+  /* ════════════════════════════════════════════════════
+     SECTION: QUEUE INDICATOR
+     "Hopas" — global budget full. Tunn rad mellan Active
+     och Secondary-stack. Inte alarmism — typografisk
+     bokföring. "3 nästa veckan" är inte ett problem,
+     det är en tideräkning.
+     ════════════════════════════════════════════════════ */
+  .queue-rail {
+    margin: 6px 14px 14px;
+    padding: 9px 12px 11px;
+    background: rgba(196,122,58,0.04);
+    border: 1px solid rgba(196,122,58,0.18);
+    border-radius: 6px;
+  }
+  .queue-rail-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 7px;
+  }
+  .queue-rail-eyebrow {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-body);
+  }
+  .queue-rail-count {
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 1.5px;
+    color: var(--text-light-secondary);
+    opacity: 0.85;
+  }
+  .queue-rail-count strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .queue-rail-chips {
+    display: flex; flex-wrap: wrap; gap: 5px;
+  }
+  .queue-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 8px;
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196,122,58,0.2);
+    border-radius: 99px;
+    font-family: var(--font-mono);
+    font-size: 9.5px; letter-spacing: 1px;
+    color: var(--text-light-secondary);
+    text-transform: uppercase;
+  }
+  .queue-chip-icon { font-size: 10px; }
+  .queue-chip.warm { border-color: rgba(140,110,58,0.4); color: var(--warm-light); }
+  .queue-chip.cold { border-color: rgba(74,102,128,0.4); color: var(--cold-light); }
+
+  /* ════════════════════════════════════════════════════
+     SECTION: SECONDARY CARDS — source-specifika
+     (Kafferummet, Klacken, Kommunen, etc.) — visar
+     cooldown-state per källa när tillämpligt.
+     ════════════════════════════════════════════════════ */
+  .sec-card {
+    margin: 0 14px 10px;
+    padding: 12px 14px;
+    background: var(--bg-portal-surface);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    box-shadow: var(--shadow-card);
+  }
+  .sec-card.warm { border-left-color: var(--warm); }
+  .sec-card.dormant {
+    border-left-color: rgba(196,122,58,0.3);
+    background: rgba(34,29,24,0.5);
+  }
+
+  .sec-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-light-secondary);
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-body);
+  }
+  .sec-label.warm  { color: var(--warm-light); }
+  .sec-label-icon { font-size: 12px; line-height: 1; }
+
+  .sec-body {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.5;
+    opacity: 0.92;
+  }
+  .sec-card.dormant .sec-body {
+    color: var(--text-light-secondary);
+    opacity: 0.55;
+  }
+
+  /* ── Cooldown footer på sekundärkort ──
+     "Blockas helt" — denna källa är tyst i N omgångar.
+     Visuellt: tre prickar som tickar ner.
+   */
+  .cooldown-row {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px dashed rgba(196,122,58,0.18);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+  }
+  .cooldown-label {
+    font-family: var(--font-mono);
+    font-size: 9.5px; letter-spacing: 1.2px;
+    color: var(--text-light-secondary);
+    text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .cooldown-icon {
+    opacity: 0.7;
+    font-size: 11px;
+    line-height: 1;
+  }
+  .cooldown-dots {
+    display: inline-flex; gap: 4px;
+  }
+  .cooldown-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    border: 1px solid rgba(196,122,58,0.35);
+    box-sizing: border-box;
+  }
+  .cooldown-dot.left {
+    background: var(--warm);
+    border-color: var(--warm);
+    box-shadow: 0 0 4px rgba(140,110,58,0.5);
+  }
+  .cooldown-dot.spent {
+    background: transparent;
+    border-color: rgba(196,122,58,0.2);
+  }
+
+  /* ── Inline cooldown chip — när källan har en sekundär
+       med kvarvarande val men inget nytt kan triggas ── */
+  .inline-cooldown {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-left: 6px;
+    padding: 2px 6px;
+    background: rgba(140,110,58,0.10);
+    border: 1px solid rgba(140,110,58,0.3);
+    border-radius: 99px;
+    font-family: var(--font-mono);
+    font-size: 8.5px; letter-spacing: 0.8px;
+    color: var(--warm-light);
+    text-transform: uppercase;
+  }
+
+  /* ── Inbox-counter (bottom of Portal) ── */
+  .inbox-row {
+    margin: 14px 14px 0;
+    padding: 8px 12px;
+    background: transparent;
+    border-top: 1px dashed rgba(196,122,58,0.18);
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--text-light-secondary);
+    cursor: pointer;
+    letter-spacing: 0.3px;
+  }
+  .inbox-row strong { color: var(--accent); font-weight: 700; }
+  .inbox-row .sep { opacity: 0.4; margin: 0 6px; }
+
+  /* ════════════════════════════════════════════════════
+     SECTION: TUTORIAL-FRAME (Säsong 1 Omg 1)
+     ════════════════════════════════════════════════════ */
+  .tutorial-frame {
+    margin: 6px 14px 14px;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(196,122,58,0.10), rgba(196,122,58,0.04));
+    border-radius: 6px;
+    border: 1px solid rgba(196,122,58,0.25);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--text-light-secondary);
+  }
+  .tutorial-frame strong {
+    font-style: normal;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ── State demo (resolution → next slides in) ── */
+  .demo-arrow {
+    margin: 0 14px 8px;
+    text-align: center;
+    color: var(--accent);
+    font-size: 10px; letter-spacing: 2px;
+    font-family: var(--font-mono);
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  /* ── Notes ── */
+  .notes {
+    max-width: 1480px; margin: 40px auto 0;
+    padding: 24px;
+    background: rgba(245,241,235,0.04);
+    border-radius: 8px;
+    color: rgba(245,241,235,0.85);
+    line-height: 1.65;
+    font-size: 13px;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 17px;
+    margin-bottom: 14px;
+    color: var(--text-light);
+  }
+  .notes h4 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 16px 0 8px;
+  }
+  .notes p { margin-bottom: 8px; }
+  .notes p strong { color: var(--accent); font-weight: 600; }
+  .notes ul { margin: 4px 0 8px 18px; }
+  .notes li { margin-bottom: 4px; }
+  .notes code {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: rgba(245,241,235,0.06);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--gold);
+  }
+  .notes .rule-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+    margin: 10px 0;
+  }
+  .notes .rule-table > div {
+    padding: 10px 12px;
+    background: rgba(245,241,235,0.04);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+  }
+  .notes .rule-table h5 {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .notes .rule-table p { font-size: 12px; margin: 0; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>F1 Beslutsekonomi — kö-indikator, cooldowns, hopas vs blockas</h1>
+  <p>UI-mönster för Code's <code>pendingDecisions</code> + <code>deferredDecisions</code> + per-source cooldowns. <strong>Max 2 active</strong> i Portal (Säsong 1 Omg 1: <strong>max 1</strong>). När 3:e triggas hamnar den i kö — köhandling visas i <em>queue-rail</em> mellan Active och Secondary-stacken. Källor som ligger i cooldown signaleras på sin egen sekundär — inte i den globala kö-raden, eftersom det är två olika informationsklasser.</p>
+  <p>Sex tillstånd visas: <em>tutorial</em>, <em>lugnt</em>, <em>en aktiv</em>, <em>fullt + 3 i kö</em>, <em>fullt + en källa på cooldown</em>, <em>resolution-övergång</em>.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ═════════════════════════════════════════════════════
+       01 · TUTORIAL — Säsong 1 Omg 1 (max 1)
+       ═════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">01</span>TUTORIAL · Säsong 1, Omg 1
+      <span class="sub">Max 1 active. Tutorial-bandet förklarar varför. Andra triggers köas i tysthet — inget queue-rail visas än, för spelaren har inte sett en decision innan.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>FREDAG · OMG 1</strong>
+        Premiärveckan. Två träningar kvar innan första hemmamatchen.
+      </div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans fråga</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot locked"></span>
+        </span>
+      </div>
+
+      <div class="tutorial-frame">
+        <strong>Lugnare första veckan</strong>
+        En fråga åt gången. Resten ligger och väntar tills du hittat rytmen.
+      </div>
+
+      <div class="dec-card">
+        <div class="dec-label">
+          <span class="dec-label-icon">🏒</span>
+          <span>Veckans spelarfråga</span>
+        </div>
+        <div class="dec-question">
+          S. Sundström vill öva hörnskott efter träningen. Extra pass?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Tillåt</span>
+            <span class="dec-option-effect success">+3 hörnskicklighet</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Neka</span>
+            <span class="dec-option-effect muted">Ingen effekt</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        Inboxen är tom <span class="sep">·</span> 0 olästa
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════
+       02 · LUGNT — 0 active, 0 i kö
+       ═════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">02</span>LUGNT · 0 aktiva
+      <span class="sub">Tystnad är en designsignal. Inget queue-rail, inga budget-prickar, ingen cooldown-rad. Portal är sekundärerna + situationscard. Spelaren får ANDAS.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>TISDAG · OMG 9</strong>
+        Träning igår. Klacken jobbar på derbykoreografin.
+      </div>
+
+      <!-- INGEN active-section, INGET queue-rail. -->
+      <!-- Portal renderas direkt med secondaries. -->
+
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          Fan mood ska nå 70. 55/70.
+        </div>
+      </div>
+
+      <div class="sec-card warm">
+        <div class="sec-label warm">
+          <span class="sec-label-icon">☕</span>
+          <span>Kafferummet</span>
+        </div>
+        <div class="sec-body">
+          Gabriel har börjat dyka upp tidigare. Står och pratar med Magnus.
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        Inboxen är tom <span class="sep">·</span> 0 olästa
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════
+       03 · NORMAL — 1 active, 0 i kö
+       ═════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">03</span>NORMAL · 1 aktiv
+      <span class="sub">Budget-rad visar 1/2 — andra slot kan fyllas när som helst. Inget queue-rail än. Spelaren ser exakt en fråga, vet att rummet finns för en till.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>ONSDAG · OMG 14</strong>
+        Två dagar till bortamatch på Heros.
+      </div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans fråga</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot off"></span>
+        </span>
+      </div>
+
+      <div class="dec-card">
+        <div class="dec-label">
+          <span class="dec-label-icon">📣</span>
+          <span>Veckans supporterfråga</span>
+        </div>
+        <div class="dec-question">
+          Anders har hyrt en buss till Heros. Bidra med 3 000 kr?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Bidra</span>
+            <span class="dec-option-effect success">−3 tkr · +bortasupport</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Låt dem ordna</span>
+            <span class="dec-option-effect danger">−5 Klacken-stämning</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          Egenfostrade i startelvan: 1/3. Trenden går åt fel håll.
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>2</strong> notiser i inboxen <span class="sep">·</span> senast: rykten från Kungsör
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════
+       04 · FULLT — 2 active + 3 i kö
+       ═════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">04</span>FULLT · 2 aktiva, 3 i kö
+      <span class="sub">Budget-prickarna båda fyllda. Queue-rail mellan Active och Secondary visar exakt vad som väntar — kategori-chip per källa, så spelaren ser <em>vilka</em> röster som vill in, inte bara hur många.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>TORSDAG · OMG 17</strong>
+        Två segrar i rad. Tonen är god.
+      </div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans frågor</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot on"></span>
+        </span>
+      </div>
+
+      <div class="dec-card">
+        <div class="dec-label">
+          <span class="dec-label-icon">🏒</span>
+          <span>Veckans spelarfråga</span>
+        </div>
+        <div class="dec-question">
+          Lindqvist vill träna utanför schemat. Stanna i hallen efter kvällspass?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Tillåt</span>
+            <span class="dec-option-effect success">+form · −fysik</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Neka</span>
+            <span class="dec-option-effect muted">Ingen effekt</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="dec-card warm">
+        <div class="dec-label warm">
+          <span class="dec-label-icon">💼</span>
+          <span>Veckans sponsorfråga</span>
+        </div>
+        <div class="dec-question">
+          Mecenat Eklund vill bjuda på middag före derbyt. Två platser kvar.
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Tacka ja</span>
+            <span class="dec-option-effect success">+sponsor · −kvällsförberedelser</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Be om regn-check</span>
+            <span class="dec-option-effect muted">−eklund-relation (mild)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KÖ-RAIL — så här ser den ut när 3 har triggats medan slot:arna är fyllda -->
+      <div class="queue-rail">
+        <div class="queue-rail-head">
+          <span class="queue-rail-eyebrow">⏳ I kö</span>
+          <span class="queue-rail-count"><strong>3</strong> nästa veckan</span>
+        </div>
+        <div class="queue-rail-chips">
+          <span class="queue-chip">
+            <span class="queue-chip-icon">🏛️</span>
+            <span>Kommunen</span>
+          </span>
+          <span class="queue-chip warm">
+            <span class="queue-chip-icon">📰</span>
+            <span>Lokaltidningen</span>
+          </span>
+          <span class="queue-chip">
+            <span class="queue-chip-icon">🎓</span>
+            <span>Akademin</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-label">
+          <span class="sec-label-icon">📋</span>
+          <span>Styrelsens krav</span>
+        </div>
+        <div class="sec-body">
+          Fan mood: 68/70 — på väg upp efter Heros.
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>2</strong> aktiva <span class="sep">·</span> 3 i kö <span class="sep">·</span> 7 notiser i inboxen
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════
+       05 · COOLDOWN — 1 active + en källa på cooldown
+       ═════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">05</span>COOLDOWN · per källa
+      <span class="sub">Källan är inte i kön — den är <em>tyst</em> i N omgångar. Cooldown-raden bor i den sekundär som källan tillhör. Tre prickar tickar ner: 3 → 2 → 1 → källan kan fyra igen.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>MÅNDAG · OMG 21</strong>
+        Hallendebatten avgjord förra omgången. Kommunen tystnar.
+      </div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans fråga</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot off"></span>
+        </span>
+      </div>
+
+      <div class="dec-card">
+        <div class="dec-label">
+          <span class="dec-label-icon">🎓</span>
+          <span>Veckans akademifråga</span>
+        </div>
+        <div class="dec-question">
+          Henriksson, P19, är redo för uppflyttning. Plats i truppen mot Skutskär?
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Flytta upp</span>
+            <span class="dec-option-effect success">+akademiprestige · −rutin</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Vänta</span>
+            <span class="dec-option-effect muted">Ingen effekt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sekundär — kommunen är på cooldown.
+           Cooldown-raden bor i botten av kortet, inte i global queue. -->
+      <div class="sec-card dormant">
+        <div class="sec-label">
+          <span class="sec-label-icon">🏛️</span>
+          <span>Kommunen</span>
+          <span class="inline-cooldown">
+            <span>Lugnar sig</span>
+          </span>
+        </div>
+        <div class="sec-body">
+          Hallendebatten är avgjord. Inget nytt förrän efter midsommar.
+        </div>
+        <div class="cooldown-row">
+          <span class="cooldown-label">
+            <span class="cooldown-icon">🕐</span>
+            <span>3 omgångar kvar</span>
+          </span>
+          <span class="cooldown-dots">
+            <span class="cooldown-dot left"></span>
+            <span class="cooldown-dot left"></span>
+            <span class="cooldown-dot left"></span>
+          </span>
+        </div>
+      </div>
+
+      <div class="sec-card warm">
+        <div class="sec-label warm">
+          <span class="sec-label-icon">☕</span>
+          <span>Kafferummet</span>
+        </div>
+        <div class="sec-body">
+          Magnus har sagt att man "inte ska låta sig nöjas" — tre gånger denna vecka.
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>1</strong> aktiv <span class="sep">·</span> 0 i kö <span class="sep">·</span> 1 källa lugnar sig
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════
+       06 · RESOLUTION → KÖN AVANCERAR
+       Visar hur queue-railen krymper när en aktiv resolves
+       ═════════════════════════════════════════════════════ -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">06</span>RESOLUTION → kö avancerar
+      <span class="sub">När en aktiv resolves: en kö-chip blir nästa aktiva card. Inget pop-läge, ingen toast. Bara "Kommunen" lyfts upp ur queue-railen till active-stacken nästa render-tick.</span>
+    </div>
+    <div class="portal-frame">
+
+      <div class="situation">
+        <strong>TORSDAG · OMG 17 · efter klick</strong>
+        Just bidragit till bussen. Anders höjer tummen.
+      </div>
+
+      <div class="active-section">
+        <span class="active-eyebrow">Veckans frågor</span>
+        <span class="active-budget">
+          <span class="budget-dot on"></span>
+          <span class="budget-dot on"></span>
+        </span>
+      </div>
+
+      <!-- Mecenat-kortet kvar -->
+      <div class="dec-card warm">
+        <div class="dec-label warm">
+          <span class="dec-label-icon">💼</span>
+          <span>Veckans sponsorfråga</span>
+        </div>
+        <div class="dec-question">
+          Mecenat Eklund vill bjuda på middag före derbyt. Två platser kvar.
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Tacka ja</span>
+            <span class="dec-option-effect success">+sponsor · −kvällsförberedelser</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Be om regn-check</span>
+            <span class="dec-option-effect muted">−eklund-relation (mild)</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="demo-arrow">↓ kommunen lyfts upp ur kön ↓</div>
+
+      <!-- Kommunfrågan promoteras från queue till active -->
+      <div class="dec-card">
+        <div class="dec-label">
+          <span class="dec-label-icon">🏛️</span>
+          <span>Veckans kommunfråga</span>
+        </div>
+        <div class="dec-question">
+          Kommunen erbjuder en begagnad ismaskin till rabatterat pris (15 000 kr).
+        </div>
+        <div class="dec-options">
+          <button class="dec-option">
+            <span class="dec-option-label">Köp den</span>
+            <span class="dec-option-effect success">−15 tkr · +iskvalitet</span>
+          </button>
+          <button class="dec-option">
+            <span class="dec-option-label">Tacka nej</span>
+            <span class="dec-option-effect muted">Ingen effekt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Queue-rail krymper från 3 → 2 -->
+      <div class="queue-rail">
+        <div class="queue-rail-head">
+          <span class="queue-rail-eyebrow">⏳ I kö</span>
+          <span class="queue-rail-count"><strong>2</strong> nästa veckan</span>
+        </div>
+        <div class="queue-rail-chips">
+          <span class="queue-chip warm">
+            <span class="queue-chip-icon">📰</span>
+            <span>Lokaltidningen</span>
+          </span>
+          <span class="queue-chip">
+            <span class="queue-chip-icon">🎓</span>
+            <span>Akademin</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="inbox-row">
+        <strong>2</strong> aktiva <span class="sep">·</span> 2 i kö <span class="sep">·</span> 8 notiser i inboxen
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Beslutsmotiveringar — vad är vad och varför</h3>
+
+  <h4>Tre informationsklasser, tre platser</h4>
+  <div class="rule-table">
+    <div>
+      <h5>1 · ACTIVE — i Portal-flödet</h5>
+      <p>Max 2 (max 1 i Säsong 1 Omg 1). Rendereras som <code>dec-card</code> med 2 px <code>--accent</code>-stripe. Budget-prickar längst upp visar 1/2 eller 2/2. Inget annat på Portal har den visuella vikten.</p>
+    </div>
+    <div>
+      <h5>2 · DEFERRED — i kö-rail</h5>
+      <p>När global budget är full hopas inkommande triggers tyst i <code>deferredDecisions[]</code>. Visas som en kompakt rad mellan Active och Secondary: eyebrow + räknare + kategori-chip per källa. <em>Detta är informationsklassen "kommer snart"</em>.</p>
+    </div>
+    <div>
+      <h5>3 · COOLDOWN — på källan själv</h5>
+      <p>När en specifik källa just fyrat och ligger i sin egen cooldown. Inte i kön — källan är <em>tyst</em>. Visas i botten av den sekundär som källan tillhör: tre amber-prickar som tickar ner. <em>Detta är informationsklassen "den här rösten är borta ett tag"</em>.</p>
+    </div>
+    <div>
+      <h5>4 · INBOX — dokumentation</h5>
+      <p>Resolved decisions + atmospheric notiser. Inbox-räknaren längst ner visar bara att de finns — driver inte spelet, minns det. Räknaren är <strong>aldrig</strong> samma siffra som queue-railen — det är olika kategorier.</p>
+    </div>
+  </div>
+
+  <h4>Hopas vs blockas — designsvar</h4>
+  <p><strong>Hopas (deferred).</strong> Källan vill säga något, men budget är full. Den fortsätter generera triggers — de buntas in i <code>game.deferredDecisions</code> tills budget öppnar. Spelaren ser kö-rail med <strong>positiv räknare</strong> ("3 nästa veckan") och kategori-chip. Tonen är ackumulativ, inte bromsande. Konceptuellt: spelaren har <em>fler</em> röster bakom dörren, inte färre.</p>
+  <p><strong>Blockas (cooldown).</strong> Källan har just sagt sitt och måste vara tyst N omgångar (per spec: Kommunen 8 omg, Mecenat 4, Rumor 3, Event 2, Arc 2). Den genererar inget under tiden — inte ens till deferred-kön. Spelaren ser cooldown-raden <strong>i den sekundär som källan tillhör</strong>, inte i den globala kö-railen. Tre amber-prickar tickar ner. <em>Källan får ett ansikte i tystnaden</em> — kortet finns kvar, det är bara dormant.</p>
+
+  <h4>Varför två separata platser?</h4>
+  <p>Om vi blandade deferred och cooldown i samma räknare skulle "3 i kö" betyda olika saker beroende på state. Med två platser blir gränsen tydlig: <strong>kö-railen växer av tryck</strong>, <strong>cooldown-raden krymper av tid</strong>. Olika dynamik, olika visuellt språk.</p>
+
+  <h4>Vad kö-railen INTE är</h4>
+  <ul>
+    <li><strong>Inte en alarmklocka.</strong> "3 i kö" är inte ett problem. Det är en tideräkning. Inga röda färger, ingen warning-emoji. Bara <code>⏳</code> + räknare + chip.</li>
+    <li><strong>Inte klickbar i sig.</strong> Inboxen är klickbar, kö-railen är information. Spelaren kan inte "öppna kön" — de väntar tills budget öppnar.</li>
+    <li><strong>Inte räknad i inboxen.</strong> Deferred är pending, inte arkiverat. Inbox-räknaren räknar olästa atmospheric-notiser + resolved decisions. Separata domäner.</li>
+  </ul>
+
+  <h4>Tutorial-bandet (Säsong 1 Omg 1)</h4>
+  <p>Spelaren har aldrig sett ett decision-card förut. Vi visar <strong>1 åt gången</strong> och förklarar varför med en kort kursiv rad i ett ljust copper-band ovanför kortet. Tutorial-bandet försvinner från och med Omg 2 — då är spelaren inläst, max-budgeten höjs till 2, och dotterraden kan visa 1/2 eller 2/2 utan kommentar.</p>
+
+  <h4>Cooldown-tabell (per spec)</h4>
+  <ul>
+    <li><code>weeklyDecisionService</code> · 1 omgång · ingen visuell cooldown behövs (definitionsmässigt en/vecka)</li>
+    <li><code>eventQueueService</code> (random events) · 2 omgångar · tyst på Portal-event-slot</li>
+    <li><code>arcService</code> phase-events · 2 omgångar · arc-kortet förblir kvar, dormant</li>
+    <li><code>rumorService</code> · 3 omgångar · cooldown-rad på lokaltidnings-sekundären</li>
+    <li><code>mecenatDinnerService</code> · 4 omgångar · cooldown-rad på Eklund-relations-sekundären</li>
+    <li><code>hallDebateService</code> · 8 omgångar · cooldown-rad på kommun-sekundären</li>
+    <li><code>boardObjectives</code> · 1 gång/säsong · ingen cooldown behövs</li>
+    <li><code>playerVoiceService</code> · 20%-chans + form-villkor · naturlig throttling, ingen visuell cooldown</li>
+  </ul>
+
+  <h4>Implementationshintar (för Code)</h4>
+  <ul>
+    <li>Budget-prickar tillstånd: <code>.on</code> (fylld accent), <code>.off</code> (tom rund stroke), <code>.locked</code> (transparent stroke, opacity 0.25). <code>.locked</code> används bara i Säsong 1 Omg 1 för 2:a sloten.</li>
+    <li>Kö-railens chip ärver färgsystem från sin källa: kommun/akademi/spelare = <code>--accent</code>. Lokaltidning/mecenat = <code>--warm</code>. Klacken-kopplade frågor = <code>--accent</code> (bandysvensk-grupp, inte kall).</li>
+    <li>Resolution-övergång (state 06): inget animeringskrav från vår sida — låt det bli en omgångssteg. Kö-chip blir card vid nästa render-tick, gör det inte till en animation. Hellre en explicit "+1 till kön"-toast vid trigger än ett poppat kort vid resolve.</li>
+    <li>Inbox-counter behåller exakt sin nuvarande copy från <code>EventCardInline.tsx</code> rad 140 ("X notiser i inboxen"). Vi adderar bara förleden: <code>[active] · [deferred] · X notiser i inboxen</code>.</li>
+    <li>Cooldown-raden är <strong>bara</strong> på sekundärkortet, aldrig fristående. En källa utan synlig sekundär (eventQueue, arcService) har ingen visuell cooldown — den är bara tyst. Det är OK, för deras tystnad är inte intressant för spelaren.</li>
+  </ul>
+
+  <h4>Vad jag medvetet inte gör</h4>
+  <ul>
+    <li><strong>Ingen "fullt!"-banner.</strong> Att budget är full är inte ett problem som ska kommuniceras med en blockerande overlay. Det är ett tillstånd. Designen visar tillståndet, men aldrig en blockerande modal.</li>
+    <li><strong>Ingen progress-bar på cooldown.</strong> Tre prickar är mer ärligt än en bar — det är heltalsomgångar, inte en kontinuerlig timer.</li>
+    <li><strong>Inga utropstecken.</strong> Bandysvensk understatement. "Lugnar sig", inte "BLOCKERAD!". "Nästa veckan", inte "VÄNTAR!".</li>
+    <li><strong>Inget filterval.</strong> Spelaren kan inte säga "jag vill ha fler decisions". Budget och cooldowns är systemets ansvar, inte UI:ts.</li>
+  </ul>
+</div>
+
+</body>
+</html>

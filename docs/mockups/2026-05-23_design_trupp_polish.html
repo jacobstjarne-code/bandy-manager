@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Trupp-kort polish + extra integrationer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18; --bg: #EDE8DF; --bg-surface: #FAF8F4;
+    --border: #DDD7CC; --border-dark: #C4BAA8;
+    --text-primary: #1A1A18; --text-secondary: #6B6760; --text-muted: #8A857A;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8;
+    --accent: #C47A3A; --accent-dark: #A25828; --accent-deep: #8B4820;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --gold: #E8B95C; --gold-deep: #B88838; --danger: #B05040; --success: #5A9A4A;
+    --font-display: 'Georgia', serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 32px 16px 80px; min-height: 100vh; }
+
+  .page-head { max-width: 1640px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 820px; }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 28px; max-width: 1640px; margin: 0 auto; }
+  .col { background: var(--bg); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.35); width: 100%; max-width: 400px; justify-self: center; color: var(--text-primary); }
+  .col.dark { background: var(--bg-portal); color: var(--text-light); }
+  .col-head { padding: 12px 16px; background: var(--bg-leather-dk); color: var(--text-light); font-family: var(--font-display); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .col-head .num { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; color: var(--accent); background: rgba(196,122,58,0.1); padding: 2px 6px; border-radius: 2px; margin-right: 8px; vertical-align: 2px; }
+  .col-head .num.new { color: var(--success); background: rgba(90,154,74,0.15); }
+  .col-head .phase { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; color: var(--text-light-secondary); background: rgba(245,241,235,0.05); padding: 2px 6px; border-radius: 2px; margin-left: 6px; text-transform: uppercase; vertical-align: 2px; }
+  .col-head .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }
+  .body { padding: 14px; }
+
+  /* ── Portrait med variant-stack ──────────────── */
+  .portrait-wrap { position: relative; flex-shrink: 0; }
+  .portrait {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 100%);
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .portrait.finisher  { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); }
+  .portrait.playmaker { background: linear-gradient(135deg, #2563EB 0%, #4F8AFF 100%); }
+  .portrait.defensive { background: linear-gradient(135deg, #1a5e3a 0%, #2D8A5A 100%); }
+  .portrait.gk        { background: linear-gradient(135deg, #8B6914 0%, #D4A938 100%); }
+  .portrait.twoway    { background: linear-gradient(135deg, #5a2d7a 0%, #7B4A9F 100%); }
+  .portrait.dribbler  { background: linear-gradient(135deg, #1a5e8a 0%, #2D7BAE 100%); }
+  .portrait-glyph {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 18px; color: rgba(255,255,255,0.92);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  }
+
+  /* Veteran-ring runt portrait (5+ säsonger) */
+  .portrait-wrap.veteran::before {
+    content: ''; position: absolute;
+    top: -4px; left: -4px; right: -4px; bottom: -4px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gold);
+    opacity: 0.6;
+  }
+  .portrait-wrap.legend::before {
+    border-color: var(--gold);
+    border-width: 2px;
+    opacity: 1;
+    box-shadow: 0 0 6px rgba(232,185,92,0.4);
+  }
+
+  /* Akademi-pärla — liten copper-dot uppe vänster */
+  .portrait-academy {
+    position: absolute; top: -2px; left: -2px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg-surface);
+    z-index: 2;
+  }
+  .portrait-academy::after {
+    content: '🎓'; position: absolute;
+    left: 50%; top: 50%; transform: translate(-50%, -50%);
+    font-size: 6px;
+  }
+
+  /* Status-dot (botten höger) */
+  .portrait-status {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid var(--bg-surface);
+    z-index: 2;
+  }
+  .portrait-status.injury { background: var(--danger); }
+  .portrait-status.lobby { background: var(--warm); }
+  .portrait-status.national { background: var(--gold); }
+  .portrait-status.suspended { background: var(--danger); }
+
+  /* Captain-band — liten gul/copper-stripe under portrait */
+  .portrait-cap-band {
+    position: absolute;
+    bottom: -8px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: var(--bg);
+    padding: 1px 6px; border-radius: 3px;
+    font-family: var(--font-display); font-size: 8px; font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    z-index: 3;
+  }
+
+  /* Position-shield — liten badge bredvid namn */
+  .pos-shield {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 20px;
+    background: var(--accent-deep);
+    color: white;
+    font-family: var(--font-display); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.5px;
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+    margin-right: 5px;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  }
+  .pos-shield.fwd { background: #c0392b; }
+  .pos-shield.mid { background: #5a2d7a; }
+  .pos-shield.half { background: #1a5e8a; }
+  .pos-shield.def { background: #1a5e3a; }
+  .pos-shield.gk { background: #8B6914; }
+
+  /* ── Rad-design (utvecklad) ──────────────── */
+  .player-row {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 12px;
+    padding: 12px 14px 12px 12px;
+    background: var(--bg-surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .player-row.peak { border-left-color: var(--success); }
+  .player-row.cap { border-left-color: var(--accent); }
+  .player-row.dev { border-left-color: var(--cold); }
+  .player-row.fade { border-left-color: var(--text-muted); }
+  .player-row.injured { border-left-color: var(--danger); background: linear-gradient(180deg, rgba(176,80,64,0.04) 0%, var(--bg-surface) 60%); }
+  .player-row.lobby { border-left-color: var(--warm); }
+
+  /* Veteran corner-band (för spelare 5+ säsonger) */
+  .veteran-band {
+    position: absolute; top: 0; right: 0;
+    width: 22px; height: 22px;
+    overflow: hidden;
+  }
+  .veteran-band::after {
+    content: '';
+    position: absolute; top: -6px; right: -16px;
+    width: 32px; height: 12px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 4px rgba(232,185,92,0.3);
+  }
+  .veteran-band-label {
+    position: absolute; top: 3px; right: 1px;
+    font-family: var(--font-display); font-size: 7px; font-weight: 700;
+    color: var(--accent-deep); z-index: 2;
+    letter-spacing: 0.5px;
+  }
+
+  .row-portrait-cell { display: flex; align-items: center; justify-content: center; padding-top: 4px; padding-bottom: 4px; }
+
+  .row-info { min-width: 0; }
+  .row-headrow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .row-name {
+    font-family: var(--font-display); font-size: 15px; font-weight: 700;
+    color: var(--text-primary); line-height: 1.2;
+  }
+  .row-name .num {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--text-muted); margin-right: 3px;
+  }
+  .row-meta {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--text-muted); letter-spacing: 0.5px;
+    margin-left: auto; flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Stat-rad med inline-glyfer */
+  .row-stats {
+    display: flex; gap: 8px; align-items: center;
+    margin-top: 4px;
+    font-family: var(--font-body); font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .row-stats strong {
+    color: var(--text-primary); font-family: var(--font-display);
+    font-weight: 700; font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-pair { display: flex; align-items: baseline; gap: 2px; }
+  .stat-label { font-size: 9px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; }
+  .stat-divider {
+    width: 1px; height: 11px;
+    background: var(--border-dark);
+    opacity: 0.5;
+  }
+
+  /* CA-block med area-fill sparkline */
+  .row-ca {
+    display: flex; flex-direction: column; align-items: flex-end;
+    gap: 2px; grid-row: 1 / span 3;
+  }
+  .row-ca-num {
+    font-family: var(--font-display); font-size: 22px;
+    font-weight: 700; line-height: 1;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .row-ca-num.high { color: var(--success); }
+  .row-ca-num.low { color: var(--danger); }
+  .row-ca-delta {
+    font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  }
+  .row-ca-delta.up { color: var(--success); }
+  .row-ca-delta.down { color: var(--danger); }
+  .row-ca-spark { width: 60px; height: 18px; display: block; }
+
+  /* Trait stamps — små copper-stämplar */
+  .trait-row {
+    display: flex; gap: 4px; margin-top: 6px;
+    grid-column: 1 / span 3;
+    flex-wrap: wrap;
+  }
+  .trait-stamp {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 6px;
+    background: rgba(196,122,58,0.06);
+    border: 1px solid rgba(196,122,58,0.3);
+    border-radius: 2px;
+    font-family: var(--font-mono); font-size: 9px;
+    color: var(--accent); letter-spacing: 0.5px;
+    text-transform: uppercase; font-weight: 600;
+  }
+  .trait-stamp.gold {
+    color: var(--gold-deep);
+    border-color: rgba(184,136,56,0.4);
+    background: rgba(232,185,92,0.06);
+  }
+  .trait-stamp.cold {
+    color: var(--cold-light);
+    border-color: rgba(74,102,128,0.4);
+    background: rgba(74,102,128,0.06);
+  }
+  .trait-stamp.warm {
+    color: var(--warm-light);
+    border-color: rgba(140,110,58,0.4);
+    background: rgba(140,110,58,0.08);
+  }
+
+  /* Storyline-rad: ett senaste citat eller note */
+  .row-storyline {
+    grid-column: 2 / span 2;
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: rgba(0,0,0,0.04);
+    border-left: 2px solid var(--cold);
+    border-radius: 0 4px 4px 0;
+    font-family: var(--font-display); font-style: italic;
+    font-size: 11px; color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .row-storyline.warm { border-left-color: var(--warm); }
+  .row-storyline.gold { border-left-color: var(--gold); }
+  .row-storyline strong {
+    font-style: normal; font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Chips */
+  .row-chips {
+    grid-column: 1 / span 3;
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-top: 6px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 7px; border-radius: 99px;
+    font-family: var(--font-body); font-size: 10px;
+    font-weight: 600; border: 1px solid; line-height: 1.3;
+  }
+  .chip.injury { color: var(--danger); border-color: rgba(176,80,64,0.3); background: rgba(176,80,64,0.05); }
+  .chip.lobby { color: var(--warm-light); border-color: rgba(140,110,58,0.5); background: rgba(140,110,58,0.08); }
+  .chip.national { color: var(--gold-deep); border-color: rgba(184,136,56,0.4); background: rgba(232,185,92,0.06); }
+  .chip.contract-exp { color: var(--warm-light); border-color: rgba(140,110,58,0.4); background: rgba(140,110,58,0.06); }
+  .chip.lineup { color: var(--accent); border-color: var(--accent); background: rgba(196,122,58,0.08); }
+  .chip.klacken { color: var(--accent-deep); border-color: rgba(196,122,58,0.45); background: rgba(196,122,58,0.06); }
+  .chip.loan { color: var(--cold-light); border-color: rgba(74,102,128,0.45); background: rgba(74,102,128,0.06); }
+  .chip.muted { color: var(--text-muted); border-color: var(--border); background: transparent; font-weight: 500; }
+
+  /* Sparkline area fill */
+  .spark-area { opacity: 0.18; }
+
+  /* Anniversary-eko-rad */
+  .anniv-row {
+    grid-column: 1 / span 3;
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: linear-gradient(90deg, rgba(232,185,92,0.08) 0%, rgba(232,185,92,0.02) 100%);
+    border-left: 2px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    font-family: var(--font-body); font-size: 10.5px;
+    color: var(--accent-deep);
+  }
+  .anniv-row::before { content: '↻ '; color: var(--gold); font-weight: 700; }
+  .anniv-row strong { color: var(--gold-deep); font-weight: 700; }
+
+  /* Manager-anteckning under */
+  .manager-note {
+    grid-column: 1 / span 3;
+    margin-top: 6px;
+    padding: 5px 10px;
+    background: rgba(196,122,58,0.05);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    font-family: var(--font-display); font-style: italic;
+    font-size: 10.5px; color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .manager-note::before { content: '✎ '; color: var(--accent); font-style: normal; font-weight: 700; }
+
+  /* Notes */
+  .notes { max-width: 1640px; margin: 40px auto 0; padding: 24px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.65; font-size: 13px; }
+  .notes h3 { font-family: var(--font-display); font-size: 18px; margin-bottom: 14px; color: var(--text-light); }
+  .notes h4 { font-family: var(--font-body); font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 18px 0 8px; }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes ul { margin: 4px 0 8px 18px; max-width: 880px; }
+  .notes code { font-family: var(--font-mono); font-size: 11.5px; background: rgba(245,241,235,0.06); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+  .notes table { border-collapse: collapse; margin: 10px 0; max-width: 1100px; font-size: 12px; }
+  .notes th, .notes td { text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(245,241,235,0.08); vertical-align: top; }
+  .notes th { font-family: var(--font-body); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Trupp-kort polish-pass + extra integrationer</h1>
+  <p>Andra titten på trupp-systemet. Adderar lekfullhet inom 70-talsliggar-vokabulären och fångar fyra integrationspunkter som föll mellan stolarna: <strong>akademi-uppflyttning</strong>, <strong>player-traits</strong>, <strong>storylines / Klacken-favoriter</strong>, <strong>veteranstatus</strong>. Plus <strong>anniversary-eko</strong> (R5) och <strong>manager-anteckning</strong> (din inställning).</p>
+  <p>Tre spalter visar utvecklat designsspråk: <strong>variation per persona-typ</strong> · <strong>integrationsdjup per spelare</strong> · <strong>portrait-system + audit</strong>.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 01 · Variation per persona -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num new">01</span>PERSONA-VARIATION<span class="phase">lekfullhet</span>
+      <span class="sub">Captain-band som tygmärke. Veteran-ring i guld runt portrait. Akademi-pärla uppe vänster för uppflyttade. Position-shield bredvid namn som liten heraldisk markör.</span>
+    </div>
+    <div class="body">
+
+      <!-- Veteran captain · alla varianter -->
+      <div class="player-row cap">
+        <div class="veteran-band"><span class="veteran-band-label">8år</span></div>
+        <div class="row-portrait-cell">
+          <div class="portrait-wrap legend">
+            <div class="portrait playmaker">
+              <span class="portrait-glyph">M</span>
+            </div>
+            <div class="portrait-status national"></div>
+            <div class="portrait-cap-band">© KAPTEN</div>
+          </div>
+        </div>
+        <div class="row-info">
+          <div class="row-headrow">
+            <span class="row-name"><span class="num">#10</span>M. Lindqvist</span>
+            <span class="pos-shield mid">A</span>
+            <span class="row-meta">28 år</span>
+          </div>
+          <div class="row-stats">
+            <span class="stat-pair"><strong>14</strong><span class="stat-label">M</span></span>
+            <span class="stat-divider"></span>
+            <span class="stat-pair"><strong>8</strong><span class="stat-label">G</span></span>
+            <span class="stat-divider"></span>
+            <span class="stat-pair"><strong>5</strong><span class="stat-label">A</span></span>
+            <span class="stat-divider"></span>
+            <span class="stat-pair"><strong style="color: var(--accent);">7.4</strong><span class="stat-label">★</span></span>
+          </div>
+        </div>
+        <div class="row-ca">
+          <span class="row-ca-num high">78</span>
+          <svg class="row-ca-spark" viewBox="0 0 60 18" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="var(--success)" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="var(--success)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M 2,12 L 12,11 L 22,9 L 32,10 L 42,7 L 52,5 L 58,4 L 58,16 L 2,16 Z" fill="url(#g1)"/>
+            <polyline fill="none" stroke="var(--success)" stroke-width="1.4" stroke-linecap="round" points="2,12 12,11 22,9 32,10 42,7 52,5 58,4"/>
+          </svg>
+          <span class="row-ca-delta up">↑3</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-stamp gold">★ Ledare</span>
+          <span class="trait-stamp">📐 Hörnspec</span>
+          <span class="trait-stamp">⚡ Ärlig</span>
+        </div>
+        <div class="row-chips">
+          <span class="chip national">🇸🇪 Landslag · 3 ggr</span>
+          <span class="chip lineup">📋 Startelva</span>
+        </div>
+        <div class="manager-note">
+          Mest stabila spelaren. Pratar med Magnus efter varje match.
+        </div>
+      </div>
+
+      <!-- Akademi-spelare med klacken-favorit -->
+      <div class="player-row dev">
+        <div class="row-portrait-cell">
+          <div class="portrait-wrap">
+            <div class="portrait-academy"></div>
+            <div class="portrait twoway">
+              <span class="portrait-glyph">H</span>
+            </div>
+          </div>
+        </div>
+        <div class="row-info">
+          <div class="row-headrow">
+            <span class="row-name"><span class="num">#19</span>H. Henriksson</span>
+            <span class="pos-shield mid">MF</span>
+            <span class="row-meta">17 år</span>
+          </div>
+          <div class="row-stats">
+            <span class="stat-pair"><strong>5</strong><span class="stat-label">M</span></span>
+            <span class="stat-divider"></span>
+            <span class="stat-pair"><strong>2</strong><span class="stat-label">G</span></span>
+            <span class="stat-divider"></span>
+            <span class="stat-pair"><strong>1</strong><span class="stat-label">A</span></span>
+            <span class="stat-divider"></span>
+            <span class="stat-pair"><strong>6.8</strong><span class="stat-label">★</span></span>
+          </div>
+        </div>
+        <div class="row-ca">
+          <span class="row-ca-num high">68</span>
+          <svg class="row-ca-spark" viewBox="0 0 60 18" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="g2" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M 2,15 L 12,13 L 22,10 L 32,8 L 42,5 L 52,3 L 58,2 L 58,16 L 2,16 Z" fill="url(#g2)"/>
+            <polyline fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-linecap="round" points="2,15 12,13 22,10 32,8 42,5 52,3 58,2"/>
+            <circle cx="58" cy="2" r="2" fill="var(--gold)" stroke="var(--bg-surface)" stroke-width="0.5"/>
+          </svg>
+          <span class="row-ca-delta up">↑8</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-stamp">🎓 Akademist</span>
+          <span class="trait-stamp cold">🌱 Hungrig</span>
+        </div>
+        <div class="row-chips">
+          <span class="chip klacken">📣 Klacken-favorit</span>
+        </div>
+        <div class="row-storyline">
+          <strong>Säsongens berättelse:</strong> Norra läktaren har börjat sjunga hans namn. Bryggeriet erbjöd extra-bilett mot signering.
+        </div>
+      </div>
+
+      <!-- Veteran fade · skadad · 12 år -->
+      <div class="player-row injured">
+        <div class="veteran-band"><span class="veteran-band-label">12år</span></div>
+        <div class="row-portrait-cell">
+          <div class="portrait-wrap legend">
+            <div class="portrait defensive">
+              <span class="portrait-glyph">A</span>
+            </div>
+            <div class="portrait-status injury"></div>
+          </div>
+        </div>
+        <div class="row-info">
+          <div class="row-headrow">
+            <span class="row-name"><span class="num">#4</span>A. Johansson</span>
+            <span class="pos-shield def">B</span>
+            <span class="row-meta">31 år</span>
+          </div>
+          <div class="row-stats" style="color: var(--danger);">
+            <strong>Ljumske</strong>
+            <span class="stat-divider"></span>
+            <span>🩺 vecka 2 av 3 · LÄTT</span>
+          </div>
+        </div>
+        <div class="row-ca">
+          <span class="row-ca-num">62</span>
+          <svg class="row-ca-spark" viewBox="0 0 60 18" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--danger)" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="3 2"
+              points="2,6 12,7 22,8 32,9 42,10 52,11 58,12"/>
+          </svg>
+          <span class="row-ca-delta down">↓2</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-stamp warm">🛡️ Klubbtrogen</span>
+          <span class="trait-stamp">⚙️ Pålitlig</span>
+        </div>
+        <div class="anniv-row">
+          <strong>10 år sedan idag</strong> — debut mot Söderfors, 2-1 vinst hemma.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 02 · Integrationsdjup -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num new">02</span>INTEGRATIONSDJUP<span class="phase">en spelare, alla system</span>
+      <span class="sub">Sundström. Ser hur många systemkopplingar som kan visualiseras samtidigt utan att kortet blir tjockt. Selektivt — bara det som händer just nu.</span>
+    </div>
+    <div class="body">
+
+      <div class="player-row lobby">
+        <div class="row-portrait-cell">
+          <div class="portrait-wrap">
+            <div class="portrait finisher">
+              <span class="portrait-glyph">S</span>
+            </div>
+            <div class="portrait-status lobby"></div>
+          </div>
+        </div>
+        <div class="row-info">
+          <div class="row-headrow">
+            <span class="row-name"><span class="num">#7</span>S. Sundström</span>
+            <span class="pos-shield fwd">A</span>
+            <span class="row-meta">27 år · 3:e säsongen</span>
+          </div>
+          <div class="row-stats">
+            <span class="stat-pair"><strong>11</strong><span class="stat-label">M</span></span>
+            <span class="stat-divider"></span>
+            <span class="stat-pair"><strong>11</strong><span class="stat-label">G</span></span>
+            <span class="stat-divider"></span>
+            <span class="stat-pair"><strong>3</strong><span class="stat-label">A</span></span>
+            <span class="stat-divider"></span>
+            <span class="stat-pair"><strong style="color: var(--text-primary);">7.1</strong><span class="stat-label">★</span></span>
+          </div>
+        </div>
+        <div class="row-ca">
+          <span class="row-ca-num">74</span>
+          <svg class="row-ca-spark" viewBox="0 0 60 18" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="g3" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="var(--warm)" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="var(--warm)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M 2,5 L 12,6 L 22,7 L 32,7 L 42,8 L 52,9 L 58,10 L 58,16 L 2,16 Z" fill="url(#g3)"/>
+            <polyline fill="none" stroke="var(--warm)" stroke-width="1.4" stroke-linecap="round" points="2,5 12,6 22,7 32,7 42,8 52,9 58,10"/>
+          </svg>
+          <span class="row-ca-delta down">↓1</span>
+        </div>
+
+        <div class="trait-row">
+          <span class="trait-stamp" style="color: var(--danger); border-color: rgba(176,80,64,0.4); background: rgba(176,80,64,0.04);">⚡ Sur</span>
+          <span class="trait-stamp gold">🎯 Skytt</span>
+          <span class="trait-stamp">⭐ Snabb</span>
+        </div>
+
+        <div class="row-chips">
+          <span class="chip lobby">📣 Vill till landslaget</span>
+          <span class="chip contract-exp">📋 Kontrakt löper ut</span>
+          <span class="chip lineup">📋 Startelva</span>
+        </div>
+
+        <div class="row-storyline warm">
+          <strong>Senast i karriären:</strong> Magnus la tidningen åt sidan när Bergström namngavs. Sundström hade redan gått.
+        </div>
+
+        <div class="manager-note">
+          Förargad. Förläng innan han hör från Söderfors.
+        </div>
+      </div>
+
+      <!-- Systemmap för referens -->
+      <h4 style="font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-top: 16px; margin-bottom: 10px;">
+        Vad varje element visar
+      </h4>
+
+      <ul style="font-family: var(--font-body); font-size: 11px; line-height: 1.7; color: var(--text-secondary); padding-left: 14px;">
+        <li><strong>Portrait variant</strong> · arketyp (finisher = röd)</li>
+        <li><strong>Status-dot</strong> · lobby-state (warm)</li>
+        <li><strong>Position-shield</strong> · A · som heraldisk markör</li>
+        <li><strong>Row-meta "3:e säsongen"</strong> · klubbveteranskap</li>
+        <li><strong>Border-stripe</strong> · lobby-state (warm)</li>
+        <li><strong>Trait-stamps</strong> · sur · skytt · snabb (TRAIT_META)</li>
+        <li><strong>Lobby-chip</strong> · vad spelaren vill (Manager v1)</li>
+        <li><strong>Contract-exp chip</strong> · transfer-utgång</li>
+        <li><strong>Lineup-chip</strong> · finns i startelvan</li>
+        <li><strong>Storyline-rad</strong> · senaste från narrativeLog</li>
+        <li><strong>Manager-note</strong> · din anteckning (ny)</li>
+        <li><strong>CA-sparkline med area-fill</strong> · trend</li>
+      </ul>
+
+      <p style="font-family: var(--font-display); font-style: italic; font-size: 11.5px; color: var(--text-light-secondary); margin-top: 14px; padding: 10px 12px; background: var(--bg-surface); border-radius: 4px; border-left: 2px solid var(--accent); color: var(--text-secondary);">
+        12 system aktiverade på <strong>ett</strong> kort. Selektivt — bara det som händer just nu visas. Resten är dolt tills relevant.
+      </p>
+
+    </div>
+  </div>
+
+  <!-- 03 · Portrait-system + audit -->
+  <div class="col dark">
+    <div class="col-head">
+      <span class="num new">03</span>PORTRAIT + AUDIT<span class="phase">spec + integrationsmap</span>
+      <span class="sub">Portrait-system med veteran-ring + akademi-pärla + captain-band + status-dot. Plus full lista över integrationspunkter — vad mocken aktiverar och vad som fortfarande är outnyttjat.</span>
+    </div>
+    <div class="body">
+
+      <!-- Portrait-system showcase -->
+      <h4 style="font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">Portrait-stack · alla varianter</h4>
+
+      <div style="background: var(--bg-portal-surface); padding: 16px 14px; border-radius: 6px; margin-bottom: 14px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; align-items: end;">
+          <div style="text-align: center;">
+            <div class="portrait-wrap" style="display: inline-block;">
+              <div class="portrait playmaker"><span class="portrait-glyph">M</span></div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--text-light-secondary); margin-top: 4px; letter-spacing: 0.5px;">Standard</div>
+          </div>
+
+          <div style="text-align: center;">
+            <div class="portrait-wrap veteran" style="display: inline-block;">
+              <div class="portrait defensive"><span class="portrait-glyph">A</span></div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--gold); margin-top: 4px; letter-spacing: 0.5px;">Veteran 5+</div>
+          </div>
+
+          <div style="text-align: center;">
+            <div class="portrait-wrap legend" style="display: inline-block;">
+              <div class="portrait playmaker"><span class="portrait-glyph">M</span></div>
+              <div class="portrait-status national"></div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--gold); margin-top: 4px; letter-spacing: 0.5px;">Legend 10+</div>
+          </div>
+
+          <div style="text-align: center;">
+            <div class="portrait-wrap" style="display: inline-block;">
+              <div class="portrait-academy"></div>
+              <div class="portrait twoway"><span class="portrait-glyph">H</span></div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--accent); margin-top: 4px; letter-spacing: 0.5px;">Akademist</div>
+          </div>
+
+          <div style="text-align: center; padding-top: 14px;">
+            <div class="portrait-wrap" style="display: inline-block;">
+              <div class="portrait defensive"><span class="portrait-glyph">A</span></div>
+              <div class="portrait-status injury"></div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--danger); margin-top: 4px; letter-spacing: 0.5px;">Skadad</div>
+          </div>
+
+          <div style="text-align: center; padding-top: 14px;">
+            <div class="portrait-wrap" style="display: inline-block;">
+              <div class="portrait finisher"><span class="portrait-glyph">S</span></div>
+              <div class="portrait-status lobby"></div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--warm-light); margin-top: 4px; letter-spacing: 0.5px;">Surar/lobby</div>
+          </div>
+
+          <div style="text-align: center; padding-top: 14px;">
+            <div class="portrait-wrap" style="display: inline-block;">
+              <div class="portrait gk"><span class="portrait-glyph">MV</span></div>
+              <div class="portrait-status suspended"></div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--danger); margin-top: 4px; letter-spacing: 0.5px;">Avstängd</div>
+          </div>
+
+          <div style="text-align: center; padding-top: 14px;">
+            <div class="portrait-wrap" style="display: inline-block;">
+              <div class="portrait playmaker"><span class="portrait-glyph">M</span></div>
+              <div class="portrait-cap-band">© KAPTEN</div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--accent); margin-top: 18px; letter-spacing: 0.5px;">Kapten-band</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Integrationskarta -->
+      <h4 style="font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">Integrationsmap · vad som aktiveras</h4>
+
+      <div style="background: var(--bg-portal-surface); padding: 12px 14px; border-radius: 4px; font-family: var(--font-body); font-size: 11px; line-height: 1.8; color: var(--text-light-secondary);">
+        <div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed rgba(196,122,58,0.18);">
+          <strong style="color: var(--success); font-weight: 700;">✓ Aktiverade i denna polish-pass</strong>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 12px;">
+          <div>· Skade-narrativ (#5)</div>
+          <div>· Landslag (C-K1)</div>
+          <div>· Lobby (Manager v1)</div>
+          <div>· Decision-fatigue (R1)</div>
+          <div>· Score-system</div>
+          <div>· Chemistry</div>
+          <div>· Transfers (kontrakt)</div>
+          <div style="color: var(--accent);">· <strong>Akademi-uppflyttning</strong></div>
+          <div style="color: var(--accent);">· <strong>TRAIT_META</strong></div>
+          <div style="color: var(--accent);">· <strong>narrativeLog</strong></div>
+          <div style="color: var(--accent);">· <strong>Klubbveteranskap</strong></div>
+          <div style="color: var(--accent);">· <strong>Klacken-favorit</strong></div>
+          <div style="color: var(--accent);">· <strong>Anniversary-eko (R5)</strong></div>
+          <div style="color: var(--accent);">· <strong>Manager-anteckning</strong></div>
+        </div>
+
+        <div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed rgba(196,122,58,0.18);">
+          <strong style="color: var(--warm-light); font-weight: 700;">○ Fortfarande utanför</strong>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px;">
+          <div>· Mentor-roll (academy)</div>
+          <div>· Loan-out-state</div>
+          <div>· Coach-rivalry</div>
+          <div>· Patron-favorit</div>
+          <div>· Player-voice quotes</div>
+          <div>· Förläng-pågående</div>
+        </div>
+
+        <p style="margin-top: 10px; font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-muted); line-height: 1.5;">
+          Sista sex är mindre frekvent — kommer bara på modal eller event-card vid trigger. Trupp-listan får sin densitet.
+        </p>
+      </div>
+
+      <!-- Riktigt-portrait-övergång -->
+      <h4 style="font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin: 18px 0 10px;">Riktiga karaktärsillustrationer · spec</h4>
+
+      <p style="font-family: var(--font-body); font-size: 11px; color: var(--text-light-secondary); line-height: 1.6; margin-bottom: 8px;">
+        När riktiga illustrationer landar från det separata projektet: <code>&lt;Portrait /&gt;</code>-komponenten switchar källa baserat på <code>player.illustrationUrl</code>. Placeholder behålls som fallback.
+      </p>
+
+      <div style="background: var(--bg-portal-surface); padding: 11px 13px; border-radius: 4px; font-family: var(--font-mono); font-size: 10.5px; line-height: 1.6; color: var(--text-light-secondary);">
+        <span style="color: var(--accent);">// Övergångskomponent</span><br>
+        &lt;Portrait<br>
+        &nbsp;&nbsp;player={player}<br>
+        &nbsp;&nbsp;size="md|lg"<br>
+        &nbsp;&nbsp;showVeteranRing={true}<br>
+        &nbsp;&nbsp;showAcademyBead={true}<br>
+        &nbsp;&nbsp;showCaptainBand={isCaptain}<br>
+        &nbsp;&nbsp;statusDot={injuryStatus}<br>
+        /&gt;
+      </div>
+
+      <p style="font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light-secondary); margin-top: 12px; line-height: 1.5;">
+        Veteran-ring, akademi-pärla, captain-band fungerar med <strong>båda</strong> källorna — de overlayas alltid ovanpå portrait.
+      </p>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Polish-pass · sammanfattning</h3>
+
+  <h4>Lekfullhets-tillägg (inom 70-talsliggar-vokabulär)</h4>
+  <ul>
+    <li><strong>Position-shield</strong> bredvid namn — liten heraldisk badge (5×6 shape via clip-path). Färgkodad per position.</li>
+    <li><strong>Captain-band</strong> under portrait — tygmärke-effekt med "© KAPTEN"-text. Konkret bandysvenskt — riktiga lag har riktiga kaptensband.</li>
+    <li><strong>Veteran-ring</strong> i gold runt portrait. Två nivåer: 5+ säsonger (subtle ring) och 10+ säsonger (legend-glow).</li>
+    <li><strong>Akademi-pärla</strong> uppe vänster — liten copper-dot för uppflyttade. Diskret men permanent identitetsmärke.</li>
+    <li><strong>Veteran-corner-band</strong> — guld-flagg uppe höger på kortet med "8år" / "12år" för spelare med långt klubbåtagande.</li>
+    <li><strong>CA-sparkline med area-fill</strong> — gradient under linjen ger mer visuell tyngd. Behåller score-system-anatomin.</li>
+    <li><strong>Trait-stamps</strong> — små copper-stämplar (3px radius) som efterliknar typografisk stämpel-effekt. Tre färger: copper (default), gold (positiv trait), cold (utvecklings-trait), warm (loyalty/klubb).</li>
+    <li><strong>Inline stat-glyfer</strong> — `14M · 8G · 5A · 7.4★` med tabular-num + uppercase-labels. Mer typografisk rytm.</li>
+  </ul>
+
+  <h4>Fyra nya integrationspunkter</h4>
+  <table>
+    <thead><tr><th>System</th><th>Data idag</th><th>Visuell aktivering</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Akademi-uppflyttning</strong></td><td><code>player.promotedFromAcademy</code></td><td>Akademi-pärla på portrait + trait-stamp "🎓 Akademist"</td></tr>
+      <tr><td><strong>Player-traits</strong></td><td><code>TRAIT_META</code> (importerat men oanvänt)</td><td>Trait-stamps under stat-rad (max 3)</td></tr>
+      <tr><td><strong>Storylines / narrativeLog</strong></td><td><code>player.narrativeLog</code></td><td>Storyline-rad italic Georgia med senaste post</td></tr>
+      <tr><td><strong>Klubbveteranskap</strong></td><td><code>player.seasonsAtClub</code> + <code>seasonHistory</code></td><td>Veteran-ring + corner-band ("12år")</td></tr>
+      <tr><td><strong>Anniversary-eko (R5)</strong></td><td><code>activeAnniversaries</code></td><td>Anniv-rad ("↻ 10 år sedan idag — debut mot…")</td></tr>
+      <tr><td><strong>Klacken-favorit</strong></td><td><code>narrativeLog</code> + Klacken-events</td><td>Chip "📣 Klacken-favorit"</td></tr>
+      <tr><td><strong>Manager-anteckning</strong></td><td>Ny — <code>player.managerNote?: string</code></td><td>Italic-rad med ✎-prefix</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Manager-anteckning (NY data-modell)</h4>
+  <p>Förslag: spelaren kan skriva en kort fri-text-anteckning per spelare (max 80 tecken). Sparas i <code>player.managerNote</code>. Visas under chips i raden. Bandysvenskt: Sture skriver "förargad. förläng innan han hör från söderfors" — minne för en själv.</p>
+
+  <p>Editas via long-press på raden eller knapp i Modal. Ej krav, ej dolt — frivilligt minne som påminner spelaren om sin tidigare bedömning.</p>
+
+  <h4>Densitets-disciplin</h4>
+  <p>Ett kort kan visa <strong>upp till 12 olika system samtidigt</strong> — men aldrig alla på en gång. Selektivt-regel:</p>
+  <ol>
+    <li><strong>Alltid:</strong> portrait + namn + position-shield + CA + sparkline + stats</li>
+    <li><strong>När aktivt:</strong> status-dot (skadad/lobby/landslag/avstängd) + border-stripe</li>
+    <li><strong>När relevant:</strong> max 3 trait-stamps + max 2 chips (prioriterad)</li>
+    <li><strong>Vid trigger:</strong> storyline-rad ELLER anniv-rad ELLER manager-note (en åt gången)</li>
+    <li><strong>Vid match-betydelse:</strong> veteran-ring/-band, captain-band, akademi-pärla — permanenta identitetsmärken</li>
+  </ol>
+
+  <h4>Vad som inte adderats — och varför</h4>
+  <ul>
+    <li><strong>Mentor-roll</strong> — vissa spelare mentorerar yngre. Bara visas på Modal "Relationer"-tab, inte i list. För specifikt.</li>
+    <li><strong>Loan-out-state</strong> — spelaren är inte synlig i trupp-listan när utlånad. Egen vy.</li>
+    <li><strong>Coach-rivalry</strong> — visas i Manager-profil-tab, inte per spelare.</li>
+    <li><strong>Patron-favorit</strong> — sällsynt event, hellre kafferum-scen än chip.</li>
+    <li><strong>Player-voice quotes</strong> — bättre i Modal-hero. Ger för mycket textdensitet i list.</li>
+    <li><strong>Förläng-pågående</strong> — chip kan komplettera (<code>📋 Förhandlar</code>). Bekräfta om Jacob vill.</li>
+  </ul>
+
+  <h4>Estimat · polish-pass</h4>
+  <p><strong>Position-shield, veteran-ring, akademi-pärla, captain-band, area-fill-sparkline:</strong> ~2h Code (CSS + komponenter).<br>
+  <strong>Trait-stamps + TRAIT_META-integration:</strong> ~1h.<br>
+  <strong>Storyline-rad + narrativeLog-läsning:</strong> ~1h.<br>
+  <strong>Anniversary-eko-rad (beror på R5):</strong> ~30 min.<br>
+  <strong>Manager-note state + edit-flöde:</strong> ~1.5h.<br>
+  <strong>Klacken-favorit-mapping (kräver helper):</strong> ~1h.<br>
+  <strong>Veteran-corner-band:</strong> ~30 min.<br>
+  <strong>Total:</strong> ~7.5h utöver den första trupp-redesign-handoffen.</p>
+
+  <h4>Designval öppna</h4>
+  <ul>
+    <li><strong>Q1:</strong> Captain-band — under portrait eller över portrait? Föreslag: under, så portrait är primär.</li>
+    <li><strong>Q2:</strong> Veteran-tröskel 5/10 år vid klubben — eller karriärs-säsonger oavsett klubb? Föreslag: vid klubben — det är klubbidentitet.</li>
+    <li><strong>Q3:</strong> Manager-note — fri text eller pre-defined-pool? Föreslag: fri text. Förenklat ER en personlig anteckning.</li>
+    <li><strong>Q4:</strong> Trait-stamps — synliga alltid eller bara på top-3-trait? Föreslag: top 3 alltid synliga + resten i modal.</li>
+    <li><strong>Q5:</strong> Klacken-favorit — manuell trigger eller auto från narrativeLog? Föreslag: auto från events där spelaren är "Klacken-event-subject".</li>
+  </ul>
+
+</div>
+
+</body>
+</html>
