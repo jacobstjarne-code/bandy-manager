@@ -109,11 +109,17 @@ import type { CounterInteractionData } from './counterAttackInteractionService'
 import type { FreeKickInteractionData } from './freeKickInteractionService'
 import type { LastMinutePressData } from './lastMinutePressService'
 
-const CHEM_K = 0.12  // tie-breaker weight; ±6% at extreme chemistry, ~1-2% at normal spread
+const CHEM_K = 0.12  // tie-breaker weight on the mean of SIGNIFICANT pairs
+const CHEM_SIGNIFICANCE = 0.15  // |strength| under detta = brus, exkluderas ur snittet
 
+// Snitta bara par som bär en verklig relation (|strength| >= CHEM_SIGNIFICANCE), så ett fåtal
+// starka/svaga par driver modifieraren istället för att spädas av den neutrala massan i en full
+// 55-pars-elva. Neutral elva (inga signifikanta par) -> x1.0, kalibreringen orörd.
 function chemMultiplier(pairs: PairChemistry[] | undefined): number {
   if (!pairs || pairs.length === 0) return 1.0
-  const avg = pairs.reduce((s, p) => s + p.strength, 0) / pairs.length
+  const significant = pairs.filter(p => Math.abs(p.strength) >= CHEM_SIGNIFICANCE)
+  if (significant.length === 0) return 1.0
+  const avg = significant.reduce((s, p) => s + p.strength, 0) / significant.length
   return clamp(1 + avg * CHEM_K, 0.94, 1.06)
 }
 

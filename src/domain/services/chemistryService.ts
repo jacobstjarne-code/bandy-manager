@@ -22,9 +22,11 @@ export function calculatePairChemistry(
   let strength = 0
   const reasons: string[] = []
 
-  // Shared minutes (0–5400 = 60 matches × 90 min)
-  const togetherBonus = Math.min(0.4, sharedMinutes / 13500)
-  if (togetherBonus > 0.15) {
+  // Delade minuter -> uppbyggd kemi. Tunad så ett sammansvetsat par gel:ar inom en säsong:
+  // ~halv säsong (~11 matcher, 990 min) börjar registrera, full säsong (~22, 1980 min) ger
+  // tydlig bonus, tak vid ~27 matcher. (Var /13500 + grind 0.15 = fleräsongs-effekt, för trögt.)
+  const togetherBonus = Math.min(0.4, sharedMinutes / 6000)
+  if (togetherBonus > 0.08) {
     strength += togetherBonus
     reasons.push(`${Math.round(sharedMinutes / 90)} matcher ihop`)
   }
