@@ -134,7 +134,7 @@ export function MatchLiveScreen() {
   const [halftimeChoice, setHalftimeChoice] = useState<'calm' | 'angry' | 'tactical' | null>(null)
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
-  const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : 0)
+  const [finalIntroSlide, setFinalIntroSlide] = useState(() => (isSmFinal || !!isCupFinal) ? 1 : 0)
   const [postIntroFade, setPostIntroFade] = useState(false)
   const [hintVisible, setHintVisible] = useState(() => !(game?.dismissedHints ?? []).includes('matchLive'))
   const prevHomeScore = useRef(0)
