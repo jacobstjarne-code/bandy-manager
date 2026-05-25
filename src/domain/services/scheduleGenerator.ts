@@ -297,8 +297,8 @@ export function buildSeasonCalendar(season: number): MatchdaySlot[] {
     })()
 
     const isWindowDeadlineDay = dateStr.endsWith('-01-31') ? true : undefined
-    // R7 is the first round after the landslagsuppehåll (pause between R6 and R7)
-    const isLandslagsuppehall = round === 7 ? true : undefined
+    // R14 is the landslagsuppehåll (pause for VM / World Championship)
+    const isLandslagsuppehall = round === 14 ? true : undefined
     calendar.push({
       matchday: day,
       type: 'league',

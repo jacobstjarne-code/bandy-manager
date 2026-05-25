@@ -51,6 +51,7 @@ import { RetirementDecisionSecondary } from '../../../presentation/components/po
 import { ActiveArcsSecondary } from '../../../presentation/components/portal/secondary/ActiveArcsSecondary'
 import { BoardObjectivesSecondary } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
 import { WatchOthersSecondary } from '../../../presentation/components/portal/secondary/WatchOthersSecondary'
+import { LandslagsFranvaroSecondary } from '../../../presentation/components/portal/secondary/LandslagsFranvaroSecondary'
 import { SpectatorPrimary } from '../../../presentation/components/portal/primary/SpectatorPrimary'
 import type { CardRenderProps } from './dashboardCardBag'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
@@ -253,6 +254,18 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 75,
     triggers: [(game) => isManagedClubSpectator(game)],
     Component: WatchOthersSecondary,
+  },
+  // C-K1 — Landslagsuttagning: visa under VM-uppehållet
+  {
+    id: 'landslag_franvaro',
+    tier: 'secondary',
+    weight: 80,
+    triggers: [(game) => {
+      const camp = game.activeNationalTeamCamp
+      if (!camp) return false
+      return game.players.some(p => camp.playerIds.includes(p.id) && p.clubId === game.managedClubId)
+    }],
+    Component: LandslagsFranvaroSecondary,
   },
 
   // ── MINIMAL TIER ──────────────────────────────────────────────

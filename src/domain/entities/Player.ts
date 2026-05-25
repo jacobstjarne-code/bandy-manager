@@ -137,6 +137,10 @@ export interface Player {
   dreamClubId?: string  // only set if transferPersonality === 'dream_club'
 
   managerNote?: string  // fri text, max 80 tecken, satt av spelaren
+
+  // C-K1 — Landslagsuttagning
+  nationalTeamCallups?: number       // total career callups
+  lastNationalTeamCallup?: number    // season of last callup
 }
 
 export type PlayerAvailability =

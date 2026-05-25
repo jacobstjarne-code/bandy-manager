@@ -294,6 +294,10 @@ export interface SaveGame {
   pendingVictoryEcho?: import('../services/postVictoryNarrativeService').VictoryEcho
   victoryEchoExpires?: number  // matchday after which echo is cleared
 
+  // C-K1 — Landslagsuttagning
+  activeNationalTeamCamp?: { startRound: number; endRound: number; playerIds: string[] }
+  lastNationalSnub?: { playerId: string; season: number; round: number }
+
   // Sprint 11 — Truppledarskap (NARR-005)
   leadershipActions?: Array<{
     playerId: string

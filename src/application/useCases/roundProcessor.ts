@@ -67,6 +67,11 @@ import { detectNotableResult, decayKlackEcho } from '../../domain/services/klack
 import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
 import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
 import { adjustSupporterMood } from '../../domain/services/supporterService'
+import { selectNationalTeam } from '../../domain/services/nationalTeamService'
+import {
+  CALLUP_NOTICE_LINES,
+  SNUB_SCENE_LINES,
+} from '../../domain/data/landslagText'
 
 export type { AdvanceResult }
 
@@ -477,6 +482,132 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         })
       }
     }
+  }
+
+  // ── C-K1: Landslagsuttagning — VM-uppehåll vid omgång 14 ─────────────
+  // calendarSlot here uses same logic as the one declared below; resolved early for national team trigger
+  const nationalTeamCalSlot = (game.seasonCalendar ?? []).find(s => s.matchday === nextMatchday)
+  let nationalTeamUpdatedPlayers = finalPlayers
+  let nationalTeamCampState = game.activeNationalTeamCamp
+  let nationalTeamSnub = game.lastNationalSnub
+
+  // Trigger callup on landslagsuppehall round
+  if (nationalTeamCalSlot?.isLandslagsuppehall && !isCupRound && !isPlayoffRound && !game.activeNationalTeamCamp) {
+    const calledUpIds = selectNationalTeam({ ...game, players: nationalTeamUpdatedPlayers })
+    if (calledUpIds.length > 0) {
+      const calledUpPlayers = nationalTeamUpdatedPlayers.filter(p => calledUpIds.includes(p.id))
+      const names = calledUpPlayers.map(p => p.lastName)
+      const nameStr = names.length === 1
+        ? names[0]
+        : `${names.slice(0, -1).join(', ')} och ${names[names.length - 1]}`
+
+      const noticeTemplates = calledUpIds.length === 1
+        ? CALLUP_NOTICE_LINES.single
+        : CALLUP_NOTICE_LINES.multi
+      const noticeTemplate = noticeTemplates[game.currentSeason % noticeTemplates.length]
+      const noticeBody = noticeTemplate
+        .replace('{spelare}', nameStr)
+        .replace('{spelare_lista}', nameStr)
+
+      const callupInboxId = `inbox_vm_callup_${game.currentSeason}`
+      if (!game.inbox.some(i => i.id === callupInboxId)) {
+        newInboxItems.push({
+          id: callupInboxId,
+          date: game.currentDate,
+          type: InboxItemType.Community,
+          title: 'VM-uttagning',
+          body: noticeBody,
+          isRead: false,
+        })
+      }
+
+      // Apply callup effects to players
+      nationalTeamUpdatedPlayers = nationalTeamUpdatedPlayers.map(p => {
+        if (!calledUpIds.includes(p.id)) return p
+        return {
+          ...p,
+          nationalTeamCallups: (p.nationalTeamCallups ?? 0) + 1,
+          lastNationalTeamCallup: game.currentSeason,
+        }
+      })
+      nationalTeamCampState = {
+        startRound: nextMatchday,
+        endRound: nextMatchday + 1,
+        playerIds: calledUpIds,
+      }
+
+      // Snub mechanic — high-form, high-CA player not selected
+      const snubCandidate = nationalTeamUpdatedPlayers
+        .filter(p =>
+          p.clubId === game.managedClubId &&
+          !calledUpIds.includes(p.id) &&
+          p.form > 70 &&
+          p.currentAbility > 75
+        )
+        .sort((a, b) => b.currentAbility - a.currentAbility)[0]
+
+      if (snubCandidate) {
+        nationalTeamUpdatedPlayers = nationalTeamUpdatedPlayers.map(p => {
+          if (p.id !== snubCandidate.id) return p
+          return {
+            ...p,
+            form: Math.max(0, p.form - 3),
+            morale: Math.max(0, p.morale - 5),
+          }
+        })
+        nationalTeamSnub = {
+          playerId: snubCandidate.id,
+          season: game.currentSeason,
+          round: nextMatchday,
+        }
+        const snubTemplate = SNUB_SCENE_LINES[game.currentSeason % SNUB_SCENE_LINES.length]
+        const snubBody = snubTemplate.replace('{spelare}', `${snubCandidate.firstName} ${snubCandidate.lastName}`)
+        const snubInboxId = `inbox_vm_snub_${game.currentSeason}`
+        if (!game.inbox.some(i => i.id === snubInboxId)) {
+          newInboxItems.push({
+            id: snubInboxId,
+            date: game.currentDate,
+            type: InboxItemType.Community,
+            title: 'Förbi utan VM-kallelse',
+            body: snubBody,
+            isRead: false,
+          })
+        }
+      }
+    }
+  }
+
+  // Return from national team camp
+  if (game.activeNationalTeamCamp && nextMatchday > game.activeNationalTeamCamp.endRound) {
+    const camp = game.activeNationalTeamCamp
+    nationalTeamUpdatedPlayers = nationalTeamUpdatedPlayers.map(p => {
+      if (!camp.playerIds.includes(p.id)) return p
+      return {
+        ...p,
+        form: Math.min(100, p.form + 4),
+        morale: Math.min(100, p.morale + 6),
+      }
+    })
+    nationalTeamCampState = undefined
+    const returnInboxId = `inbox_vm_return_${game.currentSeason}`
+    if (!game.inbox.some(i => i.id === returnInboxId)) {
+      newInboxItems.push({
+        id: returnInboxId,
+        date: game.currentDate,
+        type: InboxItemType.Community,
+        title: 'Landslagsspelarena är tillbaka',
+        body: 'Landslagslägret är över. Spelarna är hemma och redo.',
+        isRead: false,
+      })
+    }
+  }
+
+  // Merge national team player updates into finalPlayers
+  if (nationalTeamUpdatedPlayers !== finalPlayers) {
+    finalPlayers = finalPlayers.map(p => {
+      const updated = nationalTeamUpdatedPlayers.find(u => u.id === p.id)
+      return updated ?? p
+    })
   }
 
   // ── Process active scout assignment + talent search ───────────────────
@@ -1251,6 +1382,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     sourceCooldowns: decrementCooldowns(game.sourceCooldowns ?? {}),
     // C-B2 — klack echo
     klackEcho: updatedKlackEcho,
+    // C-K1 — Landslagsuttagning
+    activeNationalTeamCamp: nationalTeamCampState,
+    lastNationalSnub: nationalTeamSnub,
   }
 
   // Append market value change notifications to inbox

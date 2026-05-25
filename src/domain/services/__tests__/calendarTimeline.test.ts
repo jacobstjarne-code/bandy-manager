@@ -182,11 +182,11 @@ describe('B11 T7D — Single source invariant (structural)', () => {
     }
   })
 
-  it('landslagsuppehåll marker on R7', () => {
+  it('landslagsuppehåll marker on R14 (C-K1: VM-uppehåll)', () => {
     const cal = buildSeasonCalendar(2026)
-    const r7 = cal.find(s => s.type === 'league' && s.leagueRound === 7)
-    expect(r7, 'R7 must exist').toBeTruthy()
-    expect(r7!.isLandslagsuppehall, 'R7 should have isLandslagsuppehall marker').toBe(true)
+    const r14 = cal.find(s => s.type === 'league' && s.leagueRound === 14)
+    expect(r14, 'R14 must exist').toBeTruthy()
+    expect(r14!.isLandslagsuppehall, 'R14 should have isLandslagsuppehall marker').toBe(true)
   })
 
   it('gap between R6 and R7 is at least 7 days (landslagsuppehåll)', () => {
