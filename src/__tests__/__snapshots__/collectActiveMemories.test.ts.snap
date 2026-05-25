@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`collectActiveMemories > snapshot: rich game state produces expected memory stream 1`] = `
+[
+  "moment",
+  "board_history",
+  "rival_sale",
+  "klack",
+  "nemesis",
+]
+`;
+
+exports[`collectActiveMemories > snapshot: rich game state produces expected memory stream 2`] = `
+[
+  "triumph",
+  "triumph",
+  "scar",
+  "triumph",
+  "tension",
+]
+`;
