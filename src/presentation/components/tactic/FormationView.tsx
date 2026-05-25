@@ -13,7 +13,7 @@ interface FormationViewProps {
   onChange: (tactic: Tactic) => void
 }
 
-const FORMATION_OPTIONS: FormationType[] = ['5-3-2', '3-3-4', '4-3-3', '3-4-3', '2-3-2-3', '4-2-4']
+const FORMATION_OPTIONS: FormationType[] = ['3-3-4', '5-3-2', '4-3-3', '3-4-3', '2-3-2-3', '4-2-4']
 
 const MENTALITY_LABELS: Record<string, string> = {
   defensive: 'Defensiv', balanced: 'Balanserad', offensive: 'Offensiv',
@@ -52,7 +52,7 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
     if (autoFillTimerRef.current) clearTimeout(autoFillTimerRef.current)
   }, [])
 
-  const formation = tactic.formation ?? '5-3-2'
+  const formation = tactic.formation ?? '3-3-4'
   const template = FORMATIONS[formation]
   const rawLineupSlots = tactic.lineupSlots ?? autoAssignFormation(template, players)
 

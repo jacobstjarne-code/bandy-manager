@@ -52,6 +52,13 @@ export const LINEUP_ROTATION_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
   neutral: ['Rotationen syntes varken på gott eller ont.'],
 }
 
+/** Startade en trött spelare (started_tired) → höll benen eller inte. Egen pool — detta är INTE rotering/vila, så LINEUP_ROTATION_OUTCOMES passar inte här. */
+export const STARTED_TIRED_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
+  good: ['{spelare} höll trots tunga ben.', 'Tröttheten syntes inte — {spelare} bar matchen ändå.'],
+  bad: ['De tunga benen syntes. {spelare} räckte inte hela vägen.', '{spelare} var tom redan i andra perioden.'],
+  neutral: ['{spelare} gjorde sitt, varken mer eller mindre.'],
+}
+
 /** Leadership-action (senaste leadershipActions) → grepp om gruppen. */
 export const LEADERSHIP_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
   good: ['Kaptenen tog tag i det och laget följde.', 'Ledarorden satte sig i omklädningsrummet.'],

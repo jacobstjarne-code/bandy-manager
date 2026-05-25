@@ -21,7 +21,7 @@ export function SquadStatusMinimal({ game }: CardRenderProps) {
   return (
     <div
       style={{ textAlign: 'center', cursor: 'pointer' }}
-      onClick={() => navigate('/game/squad')}
+      onClick={() => navigate('/game/taktik')}
     >
       <div style={{ color: 'var(--text-muted)', fontSize: 8, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 2 }}>
         Kondition
