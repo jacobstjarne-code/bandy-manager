@@ -30,6 +30,10 @@ export function PortalEventSlot({ game }: Props) {
   // Kritiska går via EventOverlay (utanför Portal). Skippa här.
   if (priority === 'critical') return null
 
+  // Suppressa community-events under cup-finalhelgen (tonalt fel att visa bandyskola under finalen)
+  const currentSlot = (game.seasonCalendar ?? []).find(s => s.matchday === game.currentMatchday)
+  if (currentSlot?.isCupFinalhelgen && event.type === 'communityEvent') return null
+
   return (
     <EventCardInline event={event} currentMatchday={game.currentMatchday} />
   )

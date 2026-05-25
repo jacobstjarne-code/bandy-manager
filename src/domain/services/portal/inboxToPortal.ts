@@ -20,7 +20,7 @@ export const FREKVENTA = new Set<InboxKind>(['bigResult', 'scandal', 'journalist
 export const SALLSYNTA = new Set<InboxKind>(['playerMilestone', 'nemesis', 'mecenat'])
 
 const KIND_LABEL: Record<InboxKind, string> = {
-  bigResult: '🏆 RESULT',
+  bigResult: '🏆 RESULTAT',
   scandal: '⚠️ SKANDAL',
   playerMilestone: '⭐ MILSTOLPE',
   derbyRamning: '⚔️ DERBY',
