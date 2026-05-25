@@ -214,6 +214,7 @@ export function gameFlowActions(get: Get, set: Set) {
       if (PHASEMARK_PHASES.has(advPhase) && !advSeen.includes(advPhase)) {
         const markedGame = { ...gameToSave, phaseMarksSeen: [...advSeen, advPhase] }
         set({ game: markedGame })
+        void persistAutosave(markedGame, 'advance')
       }
 
       const managerFired = result.game.managerFired
