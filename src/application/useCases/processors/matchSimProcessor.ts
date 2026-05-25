@@ -18,6 +18,10 @@ import type { Referee } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
 
+const AI_FITNESS_FLOOR = 40            // starter below this triggers swap-check
+const AI_ROTATION_CA_TOLERANCE = 8    // bench replacement must be within this CA delta
+const AI_REPLACEMENT_MIN_FITNESS = 60  // bench replacement must have at least this fitness
+
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Defensive]: '4-3-3',
   [ClubStyle.Balanced]: '5-3-2',
@@ -84,6 +88,28 @@ export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => n
     const regen = createRegenPlayer(club, regenIndex++, rand)
     starters.push(regen)
     regenPlayers.push(regen)
+  }
+
+  // Fitness floor: swap out starters below AI_FITNESS_FLOOR for a bench-eligible
+  // replacement on the same position with CA within tolerance and adequate fitness.
+  // Regen players are skipped (no real id match in sorted).
+  const regenIds = new Set(regenPlayers.map(p => p.id))
+  const starterIdsTemp = new Set(starters.map(p => p.id))
+  const benchPool = sorted.filter(p => !starterIdsTemp.has(p.id) && !regenIds.has(p.id))
+
+  for (let i = 0; i < starters.length; i++) {
+    const s = starters[i]
+    if (regenIds.has(s.id) || s.fitness >= AI_FITNESS_FLOOR) continue
+    const replacement = benchPool.find(
+      b =>
+        b.position === s.position &&
+        b.fitness >= AI_REPLACEMENT_MIN_FITNESS &&
+        Math.abs(b.currentAbility - s.currentAbility) <= AI_ROTATION_CA_TOLERANCE,
+    )
+    if (!replacement) continue
+    starters[i] = replacement
+    benchPool.splice(benchPool.indexOf(replacement), 1)
+    benchPool.push(s)
   }
 
   const starterIds = new Set(starters.map(p => p.id))
