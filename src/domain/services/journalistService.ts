@@ -165,15 +165,15 @@ export function generatePostMatchHeadline(
   // draw: only sensationalist and supportive publish headlines
   if (bucket === 'draw' && persona !== 'sensationalist' && persona !== 'supportive') return null
 
-  const headline = pickHeadline(bucket, persona, fixture.id, prevLoss, oppName, scoreline, fixture.matchday)
+  const headline = pickHeadline(bucket, persona, fixture.id, prevLoss, oppName, scoreline, fixture.matchday, fixture.isCup)
   if (!headline) return null
 
   return {
     id: `inbox_headline_md${fixture.matchday}_${season}`,
     date: currentDate,
     type: InboxItemType.MediaEvent,
-    title: `${headline} — ${journalist.name}, ${journalist.outlet}`,
-    body: headline,
+    title: headline,
+    body: `${journalist.name}, ${journalist.outlet}`,
     isRead: false,
   } as InboxItem
 }

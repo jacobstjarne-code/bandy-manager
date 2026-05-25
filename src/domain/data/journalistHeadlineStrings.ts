@@ -50,14 +50,14 @@ const BIG_WIN_HEADLINES: Record<Persona, SimplePool> = {
 
 const WIN_HEADLINES: Record<Persona, SimplePool> = {
   supportive: [
-    'Tre poäng efter god kamp',
+    'Två poäng efter god kamp',
     'Hemmaseger som betalde sig',
     'Ortens lag bröt isen',
     'Knapp men förtjänt seger',
     'Gick i mål när det krävdes',
   ],
   sensationalist: [
-    'Sen avgörare — tre poäng till {opp}',
+    'Sen avgörare — två poäng till {opp}',
     'Slutspurt fixade segern',
     'Drama in i sista sekunden',
     'Vände matchen efter 0–1',
@@ -72,7 +72,7 @@ const WIN_HEADLINES: Record<Persona, SimplePool> = {
   ],
   critical: [
     'Vann trots ojämn insats — mer krävs framöver',
-    'Tre poäng som inte ska tolkas för optimistiskt',
+    'Två poäng som inte ska tolkas för optimistiskt',
     'Knappt — och knappt räcker inte alltid',
     'Vinsten skymmer underliggande problem',
     'Räddat resultat, inte räddat spel',
@@ -104,7 +104,7 @@ const DRAW_HEADLINES: Record<Persona, SimplePool> = {
   critical: [
     'En poäng räcker inte i längden',
     'Oavgjort mot bottenlag — frågetecken kvarstår',
-    'Två tappade poäng — så ska det räknas',
+    'En tappad poäng — så ska det räknas',
     'Slätstruken poäng — inget byggs av såna här matcher',
     'Hemma och oavgjort — inte vad som ska levereras',
   ],
@@ -230,6 +230,7 @@ export function pickHeadline(
   oppName?: string,
   scoreline?: string,
   matchday = 0,
+  isCup = false,
 ): string {
   const cell = HEADLINES[bucket][persona]
 
@@ -238,6 +239,13 @@ export function pickHeadline(
     pool = prevLoss && cell.prevLoss.length > 0 ? cell.prevLoss : cell.fresh
   } else {
     pool = cell
+  }
+
+  // Cup: inga poäng delas ut — filtrera bort poäng-språk (ligalogik hör inte hemma i cup).
+  // Defensiv guard: töm aldrig poolen (om en bucket vore helt poäng-baserad, behåll original).
+  if (isCup) {
+    const filtered = pool.filter(h => !/poäng/i.test(h))
+    if (filtered.length > 0) pool = filtered
   }
 
   // Include matchday in seed so consecutive rounds never repeat even if fixtureId hashes collide

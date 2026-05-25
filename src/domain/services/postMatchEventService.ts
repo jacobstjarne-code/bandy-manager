@@ -58,7 +58,7 @@ export function generatePostMatchEvents(game: SaveGame, fixture: Fixture): GameE
         events.push({
           id: `opponentQuote_${fixture.id}`,
           type: 'opponentQuote',
-          title: isDerby ? `🛡 ${opponentClubName} — derby` : `🛡 ${opponentClubName}`,
+          title: isDerby ? `🛡 ${opponentClubName} efter derbyt` : `🛡 ${opponentClubName} efter matchen`,
           body: quote,
           choices: [],
           resolved: false,
