@@ -11,6 +11,8 @@ import { generateSilentMatchReport } from '../../../domain/services/silentMatchR
 import { generateQuickSummary, choiceStyle } from './helpers'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
+import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, LEADERSHIP_OUTCOMES } from '../../../domain/data/managerKvittoText'
+import type { KvittoOutcomeDir } from '../../../domain/data/managerKvittoText'
 
 interface GranskaOversiktProps {
   game: SaveGame
@@ -345,6 +347,61 @@ export function GranskaOversikt({
             <p style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.4 }}>
               {headlineItem.body}
             </p>
+          </div>
+        )
+      })()}
+
+      {/* Manager kvitto — val → utfall */}
+      {(() => {
+        const log = fixture?.report?.managerChoiceLog
+        if (!log || log.length === 0) return null
+        const kvittoDir: KvittoOutcomeDir = won ? 'good' : lost ? 'bad' : 'neutral'
+        const seed = (fixture?.homeScore ?? 0) + (fixture?.awayScore ?? 0)
+        const lines: { label: string; text: string }[] = []
+
+        for (const entry of log) {
+          if (lines.length >= 4) break
+          if (entry.type === 'halftime_tactic') {
+            const key = entry.detail === 'lowered_tempo' ? 'lugna'
+              : entry.detail === 'increased_pressure' ? 'pressa'
+              : 'prata' as const
+            const pool = HALFTIME_OUTCOMES[key][kvittoDir]
+            lines.push({ label: HALFTIME_LABELS[key], text: pool[seed % pool.length] })
+          } else if (entry.type === 'captain' && entry.playerId) {
+            const player = game.players.find(p => p.id === entry.playerId)
+            if (!player) continue
+            const pool = LEADERSHIP_OUTCOMES[kvittoDir]
+            lines.push({ label: `Kapten: ${player.lastName}`, text: pool[seed % pool.length] })
+          } else if (entry.type === 'started_tired' && entry.playerId) {
+            const player = game.players.find(p => p.id === entry.playerId)
+            if (!player) continue
+            const rating = fixture?.report?.playerRatings[entry.playerId]
+            const dir: KvittoOutcomeDir = rating !== undefined ? (rating >= 7 ? 'good' : rating <= 5 ? 'bad' : 'neutral') : kvittoDir
+            const cond = entry.detail.replace('condition_', '')
+            const pool = LINEUP_ROTATION_OUTCOMES[dir]
+            lines.push({ label: `Startade trött: ${player.lastName} (${cond}%)`, text: pool[seed % pool.length].replace('{spelare}', player.lastName) })
+          } else if (entry.type === 'bench_fit' && entry.playerId) {
+            const player = game.players.find(p => p.id === entry.playerId)
+            if (!player) continue
+            const pool = LINEUP_ROTATION_OUTCOMES[kvittoDir]
+            lines.push({ label: `Vilad: ${player.lastName}`, text: pool[seed % pool.length].replace('{spelare}', player.lastName) })
+          }
+        }
+
+        if (lines.length === 0) return null
+        return (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(7) }}>
+            <SectionLabel style={{ marginBottom: 8 }}>📋 DINA VAL</SectionLabel>
+            {lines.map((line, i) => (
+              <div key={i} style={{ marginBottom: i < lines.length - 1 ? 8 : 0 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>
+                  {line.label}
+                </p>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.4 }}>
+                  {line.text}
+                </p>
+              </div>
+            ))}
           </div>
         )
       })()}
