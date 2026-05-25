@@ -5,6 +5,7 @@ import { MatchEventType, InboxItemType } from '../../../domain/enums'
 import { csColor, formatFinance } from '../../utils/formatters'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { SectionLabel } from '../../components/SectionLabel'
+import { ScoreBlock } from '../../components/primitives'
 import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
 
 interface GranskaForloppProps {
@@ -154,11 +155,13 @@ export function GranskaForlopp({ game, fixture, isHome, rs, standing, standingBe
                 const homeWon = (f.homeScore ?? 0) > (f.awayScore ?? 0)
                 const awayWon = (f.awayScore ?? 0) > (f.homeScore ?? 0)
                 const isRivalMatch = rivalClubId && (f.homeClubId === rivalClubId || f.awayClubId === rivalClubId)
+                const isDraw = !homeWon && !awayWon
+                const blockVariant = isRivalMatch ? 'derby' : isDraw ? 'draw' : 'subtle'
                 return (
-                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', padding: '3px 0 3px 6px', borderLeft: isRivalMatch ? '2px solid var(--accent)' : '2px solid transparent' }}>
-                    <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{isRivalMatch && f.homeClubId === rivalClubId ? '🔥 ' : ''}{getClubShort(f.homeClubId)}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', width: 40, textAlign: 'center', flexShrink: 0 }}>{f.homeScore}–{f.awayScore}</span>
-                    <span style={{ flex: 1, fontSize: 11, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{isRivalMatch && f.awayClubId === rivalClubId ? '🔥 ' : ''}{getClubShort(f.awayClubId)}</span>
+                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 600 : 400, color: homeWon ? 'var(--text-primary)' : 'var(--text-secondary)', textAlign: 'right' }}>{isRivalMatch && f.homeClubId === rivalClubId ? '🔥 ' : ''}{getClubShort(f.homeClubId)}</span>
+                    <ScoreBlock score={`${f.homeScore}–${f.awayScore}`} variant={blockVariant} light compact />
+                    <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 600 : 400, color: awayWon ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{isRivalMatch && f.awayClubId === rivalClubId ? '🔥 ' : ''}{getClubShort(f.awayClubId)}</span>
                   </div>
                 )
               })}
