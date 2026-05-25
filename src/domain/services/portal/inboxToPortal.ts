@@ -5,6 +5,7 @@ import { InboxItemType } from '../../enums'
 import type { DashboardCard } from './dashboardCardBag'
 import type { CardRenderProps } from './dashboardCardBag'
 import { isRivalryMatch } from '../../data/rivalries'
+import { nextMatchIsDerby } from './triggers/matchTriggers'
 
 export type InboxKind =
   | 'bigResult'
@@ -142,6 +143,10 @@ export function inboxItemToCardCandidate(
     weight = 88
     stripe = 'danger'
   } else if (item.type === InboxItemType.Derby) {
+    // Fixtur-bundet: surfa bara derby-storykortet om nästa match faktiskt är ett derby.
+    // Annars ligger ett gammalt derby-ramnings-item kvar och säger "nästa motståndare" om ett
+    // derby som redan spelats — vilket motsade NÄSTA MATCH-kortet (Slottsbron vs Heros).
+    if (!nextMatchIsDerby(game)) return null
     kind = 'derbyRamning'
     tier = 'primary'
     weight = 80
