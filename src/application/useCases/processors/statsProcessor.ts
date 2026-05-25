@@ -153,8 +153,11 @@ export function updatePlayerMatchStats(
         const oppName = opponent?.shortName ?? opponent?.name ?? 'motståndet'
         const newEntries: NonNullable<Player['narrativeLog']> = []
 
-        // Debut (first ever game)
-        if (prevCareerGames === 0) {
+        // A-lagsdebut — bara meningsfull för en akademispelare som gör sin första A-match.
+        // Grundtruppen "debuterar" INTE: de var etablerade när spelet började (alla skapas med
+        // totalGames 0, vilket annars ger elva falska debuter i premiären). En äkta debut är
+        // när akademin levererar en spelare till A-laget.
+        if (prevCareerGames === 0 && p.promotedFromAcademy) {
           newEntries.push(generateDebutEntry(oppName, game.currentSeason, nextRound))
         }
 
