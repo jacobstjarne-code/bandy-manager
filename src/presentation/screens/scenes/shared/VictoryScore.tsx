@@ -1,7 +1,4 @@
-/**
- * VictoryScore — slutresultat + lagnamn + arena/åskådarinfo.
- * Pixel-värden från victory-mockup .victory-score / .victory-teams.
- */
+import { ScoreBlock } from '../../../components/primitives/ScoreBlock'
 
 interface Props {
   homeScore: number
@@ -20,24 +17,17 @@ export function VictoryScore({
 }: Props) {
   return (
     <>
-      <div
-        style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: 64,
-          fontWeight: 800,
-          color: 'var(--match-gold)',
-          lineHeight: 1,
-          letterSpacing: -2,
-          marginBottom: 8,
-          textShadow: '0 2px 30px rgba(212,164,96,0.30)',
-        }}
-      >
-        {homeScore}–{awayScore}
+      <div style={{ marginBottom: 10 }}>
+        <ScoreBlock
+          score={`${homeScore}–${awayScore}`}
+          variant="gold"
+          label="Slutresultat"
+        />
       </div>
 
       <div
         style={{
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'var(--font-display)',
           fontSize: 14,
           color: 'var(--text-light-secondary)',
           marginBottom: 4,
