@@ -398,6 +398,7 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
       form: clamp(50 + Math.round(rng.float(0, 20)), 0, 100),
       fitness: clamp(70 + Math.round(rng.float(0, 20)), 0, 100),
       sharpness: clamp(30 + Math.round(rng.float(0, 20)), 0, 100),
+      seasonForm: clamp(55 + Math.round(rng.float(0, 15)), 0, 100),
       currentAbility: ca,
       potentialAbility: pa,
       developmentRate: clamp(70 + Math.round(rng.float(0, 20)), 0, 100),

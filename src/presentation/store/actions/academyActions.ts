@@ -230,6 +230,7 @@ export function academyActions(get: Get, set: Set) {
         form: 50,
         fitness: 80,
         sharpness: 60,
+        seasonForm: 60,
         dayJob: undefined,
         isFullTimePro: false,
         currentAbility: youthPlayer.currentAbility,

@@ -165,6 +165,6 @@ describe('migrateSaveGame', () => {
   it('sets version to current version', () => {
     const oldSave = { version: '0.1.0', players: [], communityActivities: {} }
     const migrated = migrateSaveGame(oldSave)
-    expect(migrated.version).toBe('0.3.0')
+    expect(migrated.version).toBe('0.3.1')
   })
 })

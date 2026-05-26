@@ -426,7 +426,13 @@ export interface SaveGame {
     avgFitness: number
     avgMorale: number
     injuryCount: number
+    avgSeasonForm?: number   // ny axel — undefined på äldre poster
+    avgSharpness?: number    // ny axel — undefined på äldre poster
   }>
+
+  // Periodisering — säsongsbåge
+  managedClubPeriodisation?: 'bygg' | 'hall' | 'toppa' | 'vila'
+  managedClubPeriodisationSince?: number  // matchday när läget sattes (för Toppa-spike-tracking)
 
   // Portal-kurering — story-slot rotation
   lastStorySlotType?: string     // kind från FÖREGÅENDE matchdag — läses av buildPortal, fryst under matchdagen

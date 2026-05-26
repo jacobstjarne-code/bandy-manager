@@ -11,6 +11,23 @@ import { developPlayers } from '../../../domain/services/playerDevelopmentServic
 import { mulberry32 } from '../../../domain/utils/random'
 import { generateInjuryEntry, generateReturnFromInjuryEntry } from '../../../domain/services/narrativeService'
 import { generateInjuryNarrative } from '../../../domain/data/injuryStories'
+import { getEffectiveMode } from '../../../domain/services/periodisationService'
+import type { PeriodisationMode } from '../../../domain/services/periodisationService'
+
+// D-SAB-001: Säsongsbage — periodisering magnituder
+const BYGG_SEASON_FORM_RATE   = 1.5   // per round, capped at 88
+const BYGG_SEASON_FORM_CAP    = 88
+const BYGG_EXTRA_FITNESS_COST = 4     // added to normal match fatigue
+const BYGG_INJURY_MULT        = 1.15
+const TOPPA_SPIKE_RATE        = 1.0   // rounds 1-3 in mode
+const TOPPA_DECAY_RATE        = 1.7   // rounds 4+ in mode
+const TOPPA_SPIKE_ROUNDS      = 3
+const TOPPA_EXTRA_SHARPNESS   = 2.4
+const TOPPA_EXTRA_FITNESS_REC = 3     // non-starter recovery bonus
+const VILA_SEASON_FORM_DECAY  = 1.0   // per round
+const VILA_EXTRA_FITNESS_REC  = 5     // non-starter recovery bonus
+const VILA_SHARPNESS_PENALTY  = 3     // extra sharpness loss
+const SEASON_FORM_FITNESS_SLACK = 5   // fitness can recover to seasonForm + this
 
 export interface PlayerStateResult {
   updatedPlayers: Player[]
@@ -38,7 +55,11 @@ export function applyPlayerStateUpdates(
   baseSeed: number,
   nextRound: number,
   simulatedFixtures: Fixture[],
+  daysBetweenFixtures = 7,
 ): PlayerStateResult {
+  const teamMode = (game.managedClubPeriodisation ?? 'hall') as PeriodisationMode
+  const periodisationSince = game.managedClubPeriodisationSince ?? 0
+  const currentMatchday = game.currentMatchday
   const localRand = mulberry32(baseSeed + 9999)
 
   // Player fitness / form / sharpness updates (start from training-updated players)
@@ -69,19 +90,25 @@ export function applyPlayerStateUpdates(
       }
     }
 
+    // Periodisation — only for managed club players
+    const isManaged = player.clubId === game.managedClubId
+    const effectiveMode = isManaged ? getEffectiveMode(player, teamMode) : 'hall'
+    const roundsInMode = currentMatchday - periodisationSince
+
     if (startersThisRound.has(player.id)) {
       // Reduce fitness 15-25
       const baseFitnessLoss = 15 + Math.floor(localRand() * 10)
-      const tacticFatigue = managedTacticMods && player.clubId === game.managedClubId
+      const tacticFatigue = managedTacticMods && isManaged
         ? managedTacticMods.fatigueRate
         : 1.0
       // Tactic × weather extra fatigue for managed players
       let weatherTacticFatigue = 1.0
-      if (player.clubId === game.managedClubId && managedFixtureWeather && managedClubForTactic) {
+      if (isManaged && managedFixtureWeather && managedClubForTactic) {
         const twi = computeWeatherTacticInteraction(managedFixtureWeather, managedClubForTactic.activeTactic)
         weatherTacticFatigue = 1.0 + twi.extraFatigue
       }
-      const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue * weatherTacticFatigue)
+      const byggExtraCost = isManaged && effectiveMode === 'bygg' ? BYGG_EXTRA_FITNESS_COST : 0
+      const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue * weatherTacticFatigue) + byggExtraCost
       updated.fitness = Math.max(0, updated.fitness - fitnessLoss)
 
       // Form update based on match rating
@@ -93,15 +120,40 @@ export function applyPlayerStateUpdates(
       }
 
       // Sharpness increases
-      updated.sharpness = Math.min(100, updated.sharpness + 10)
+      let sharpnessGain = 10
+      if (isManaged && effectiveMode === 'toppa') sharpnessGain += TOPPA_EXTRA_SHARPNESS
+      updated.sharpness = Math.min(100, updated.sharpness + sharpnessGain)
 
     } else if (benchThisRound.has(player.id)) {
       updated.fitness = Math.min(100, updated.fitness + 5)
       updated.sharpness = Math.max(0, updated.sharpness - 5)
     } else {
-      // Did not play
-      updated.fitness = Math.min(100, updated.fitness + 8)
-      updated.sharpness = Math.max(0, updated.sharpness - 3)
+      // Did not play — calendar-scaled recovery capped by seasonForm
+      const calendarFactor = Math.min(3.0, daysBetweenFixtures / 7)
+      const staminaFactor = 0.7 + 0.3 * ((player.attributes?.stamina ?? 50) / 100)
+      let baseRecovery = Math.round(8 * calendarFactor * staminaFactor)
+      if (isManaged && effectiveMode === 'toppa') baseRecovery += TOPPA_EXTRA_FITNESS_REC
+      if (isManaged && effectiveMode === 'vila')  baseRecovery += VILA_EXTRA_FITNESS_REC
+      const fitnessCapFromSeasonForm = (updated.seasonForm ?? 60) + SEASON_FORM_FITNESS_SLACK
+      updated.fitness = Math.min(fitnessCapFromSeasonForm, Math.min(100, updated.fitness + baseRecovery))
+
+      let sharpnessPenalty = 3
+      if (isManaged && effectiveMode === 'vila') sharpnessPenalty += VILA_SHARPNESS_PENALTY
+      updated.sharpness = Math.max(0, updated.sharpness - sharpnessPenalty)
+    }
+
+    // Periodisation — seasonForm drift for managed players
+    if (isManaged) {
+      const sf = updated.seasonForm ?? 60
+      let sfDelta = 0
+      if (effectiveMode === 'bygg') {
+        sfDelta = sf < BYGG_SEASON_FORM_CAP ? BYGG_SEASON_FORM_RATE : 0
+      } else if (effectiveMode === 'toppa') {
+        sfDelta = roundsInMode <= TOPPA_SPIKE_ROUNDS ? TOPPA_SPIKE_RATE : -TOPPA_DECAY_RATE
+      } else if (effectiveMode === 'vila') {
+        sfDelta = -VILA_SEASON_FORM_DECAY
+      }
+      updated.seasonForm = Math.max(0, Math.min(100, sf + sfDelta))
     }
 
     // Day job morale effects
@@ -189,7 +241,10 @@ export function applyPlayerStateUpdates(
     const midSeasonMult = (nextRound >= 8 && nextRound <= 15)
       ? (game.currentSeasonSignature?.modifiers.midSeasonInjuryMultiplier ?? 1.0)
       : 1.0
-    const injuryChance = 0.06 * Math.max(0.1, proneFactor) * fatigueFactor * tacticInjuryMod * midSeasonMult
+    const byggInjuryMult = player.clubId === game.managedClubId &&
+      getEffectiveMode(player, teamMode) === 'bygg'
+        ? BYGG_INJURY_MULT : 1.0
+    const injuryChance = 0.06 * Math.max(0.1, proneFactor) * fatigueFactor * tacticInjuryMod * midSeasonMult * byggInjuryMult
 
     if (localRand() < injuryChance) {
       const days = 7 + Math.floor(localRand() * 28)  // 1–5 weeks

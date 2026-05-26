@@ -42,7 +42,7 @@ function createRegenPlayer(club: Club, index: number, rand: () => number): Playe
     nationality: 'svenska', clubId: club.id, isHomegrown: false,
     position: pos, archetype: PlayerArchetype.TwoWaySkater,
     salary: 3000, contractUntilSeason: 9999, marketValue: 10000,
-    morale: 60, form: 50, fitness: 70, sharpness: 50,
+    morale: 60, form: 50, fitness: 70, sharpness: 50, seasonForm: 60,
     isFullTimePro: false, currentAbility: 25 + Math.floor(rand() * 15),
     potentialAbility: 40, developmentRate: 30,
     injuryProneness: 30, discipline: 60, attributes: attrs,

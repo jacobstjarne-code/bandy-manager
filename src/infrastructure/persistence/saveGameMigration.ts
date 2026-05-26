@@ -22,7 +22,7 @@ function defaultBoardPersonalities(clubId: string): BoardMember[] {
   }))
 }
 
-export const CURRENT_SAVE_VERSION = '0.3.0'
+export const CURRENT_SAVE_VERSION = '0.3.1'
 
 export function migrateSaveGame(raw: unknown): SaveGame {
   const data = raw as Record<string, unknown>
@@ -61,6 +61,8 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   // pendingCSPress defaults to undefined — no migration needed
   if (data.playoffBracket === undefined) data.playoffBracket = null
   if (data.cupBracket === undefined) data.cupBracket = null
+  // v0.3.1 — säsongsbage
+  if (data.managedClubPeriodisation === undefined) data.managedClubPeriodisation = 'hall'
   // ARCH-003: migrate old show* booleans to pendingScreen enum
   if (data.pendingScreen === undefined) {
     if (data.showSeasonSummary) data.pendingScreen = PendingScreen.SeasonSummary
@@ -126,6 +128,8 @@ export function migrateSaveGame(raw: unknown): SaveGame {
         // dreamClubId is not backfilled here (clubs may not be available in migration)
         // dream_club players act as reluctant sellers until a new game is started
       }
+      // v0.3.1 — säsongsbage
+      if (p.seasonForm === undefined) p.seasonForm = 60
       if (!p.seasonStats || typeof p.seasonStats !== 'object') {
         p.seasonStats = { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 }
       } else {

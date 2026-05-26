@@ -80,6 +80,10 @@ export interface Player {
   form: number         // 0-100
   fitness: number      // 0-100
   sharpness: number    // 0-100
+  seasonForm: number   // 0-100 — lång axel, tak för fitness-effectivitet
+
+  // Periodiseringsundantag — null/undefined = följer truppen
+  periodisationOverride?: 'hall' | 'vila' | null
 
   dayJob?: PlayerDayJob
   isFullTimePro: boolean // true = no day job, full focus

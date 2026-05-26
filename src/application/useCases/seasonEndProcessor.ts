@@ -1042,7 +1042,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         salary: Math.round(ca * 120 + 2000),
         contractUntilSeason: nextSeason + 2 + Math.floor(replenishRand() * 2),
         marketValue: ca * 1500,
-        morale: 60, form: 55, fitness: 70, sharpness: 50,
+        morale: 60, form: 55, fitness: 70, sharpness: 50, seasonForm: 60,
         isFullTimePro: ca >= 50,
         currentAbility: ca,
         potentialAbility: Math.min(90, ca + 5 + Math.floor(replenishRand() * 15)),

@@ -1,0 +1,106 @@
+id: D027
+name: periodisation_magnitudes
+description: >
+  Säsongsbage — magnituder för de fyra periodiseringslägen (Bygg/Håll/Toppa/Vila).
+  Styr hur snabbt grundformen (seasonForm) rör sig och vilka sidoeffekter varje läge ger.
+
+values:
+  bygg_season_form_rate:
+    value: 1.5
+    unit: points/round
+    description: >
+      Hur snabbt grundformen stiger i Bygg-läge. Verkar tills cap (88) nås.
+      Extra kostnad på dagsform och förhöjd skaderisk balanserar uppgången.
+
+  bygg_season_form_cap:
+    value: 88
+    unit: points
+    description: >
+      Grundform stannar vid 88 i Bygg-läge. Toppa-spiken kräver Toppa-läge.
+
+  bygg_extra_fitness_cost:
+    value: 4
+    unit: points/match
+    description: >
+      Extra dagsformkostnad per match i Bygg-läge. Adderas ovanpå normal match-
+      utmattning (15–25 points). Reflekterar tyngre träningsbelastning.
+
+  bygg_injury_multiplier:
+    value: 1.15
+    unit: multiplier
+    description: >
+      Skaderisk i Bygg-läge multipliceras med 1.15. Spelet visar inga explicita
+      varningar, men Bygg + gammal spelare/låg uthållighet ger flagg i UI.
+
+  toppa_spike_rate:
+    value: 1.0
+    unit: points/round
+    description: >
+      Grundformen stiger de första 3 rundorna i Toppa-läge (spiken).
+
+  toppa_spike_rounds:
+    value: 3
+    unit: rounds
+    description: >
+      Antal rundor med positiv grundformsrörelse i Toppa-läge innan decay tar vid.
+
+  toppa_decay_rate:
+    value: 1.7
+    unit: points/round
+    description: >
+      Grundformen sjunker efter spikfönstret. Snabbare fall än uppgång — Toppa
+      är ett fönster, inte ett uthålligt läge.
+
+  toppa_extra_sharpness:
+    value: 2.4
+    unit: points/match
+    description: >
+      Extra matchskärpa för startande spelare i Toppa-läge. Adderas till normal +10.
+
+  toppa_extra_fitness_recovery:
+    value: 3
+    unit: points/round
+    description: >
+      Extra dagsformsåterhämtning för icke-spelande spelare i Toppa-läge.
+
+  vila_season_form_decay:
+    value: 1.0
+    unit: points/round
+    description: >
+      Grundformen sjunker sakta i Vila-läge. Ingen match-exponering stoppar
+      processen — spelet signalerar detta via Behöver minuter-flagg.
+
+  vila_extra_fitness_recovery:
+    value: 5
+    unit: points/round
+    description: >
+      Extra dagsformsåterhämtning för icke-spelande spelare i Vila-läge.
+
+  vila_sharpness_penalty:
+    value: 3
+    unit: points/round
+    description: >
+      Extra matchskärpeförlust vid vila. Adderas till normal -3 → -6 totalt.
+
+  season_form_fitness_slack:
+    value: 5
+    unit: points
+    description: >
+      Dagsform kan återhämta sig till (grundform + 5) max. Fitnesstak = säsongsbage.
+      Hindrar en spänd spelare från att toppa sig hela säsongen.
+
+  calendar_recovery_base:
+    value: 8
+    unit: points/round at 7-day interval
+    description: >
+      Basåterhämtning för ej spelande spelare vid normal veckointervall (7 dagar).
+      Skalas med daysBetweenFixtures/7, capped vid faktor 3.0.
+      Modifieras av stamina-attributet (0.7–1.0 range).
+
+revisions:
+  - date: "2026-05-26"
+    change: "Initial values — baserade på spec docs/mockups/2026-05-25_sasongsbage_spec.md"
+    rationale: >
+      Startvals tunade för att ge en tydlig men inte brutal kurva:
+      ~6 rundor Bygg från 60 → 88 grundform, Toppa-decay synlig på 3+ rundor.
+      Jacob justerar efter playtest.

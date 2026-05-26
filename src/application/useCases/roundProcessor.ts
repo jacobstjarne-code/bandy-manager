@@ -1759,8 +1759,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (squadPlayers.length > 0) {
       const avgFitness = Math.round(squadPlayers.reduce((s, p) => s + p.fitness, 0) / squadPlayers.length)
       const avgMorale = Math.round(squadPlayers.reduce((s, p) => s + p.morale, 0) / squadPlayers.length)
+      const avgSeasonForm = Math.round(squadPlayers.reduce((s, p) => s + (p.seasonForm ?? 60), 0) / squadPlayers.length)
+      const avgSharpness = Math.round(squadPlayers.reduce((s, p) => s + p.sharpness, 0) / squadPlayers.length)
       const injuryCount = squadPlayers.filter(p => p.isInjured).length
-      const newTFH = [...(updatedGame.teamFitnessHistory ?? []), { matchday: nextMatchday, avgFitness, avgMorale, injuryCount }].slice(-10)
+      const newTFH = [...(updatedGame.teamFitnessHistory ?? []), { matchday: nextMatchday, avgFitness, avgMorale, avgSeasonForm, avgSharpness, injuryCount }].slice(-10)
       updatedGame = { ...updatedGame, teamFitnessHistory: newTFH }
     }
   }

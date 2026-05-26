@@ -24,6 +24,7 @@ import { trainingActions } from './actions/trainingActions'
 import { transferActions } from './actions/transferActions'
 import { academyActions } from './actions/academyActions'
 import { gameFlowActions } from './actions/gameFlowActions'
+import { periodisationActions } from './actions/periodisationActions'
 import { computeCardStaleTracking } from '../../domain/services/portal/portalBuilder'
 
 type SaveActionResult = { success: boolean; error?: string }
@@ -68,6 +69,8 @@ interface GameState {
   applyHalftimeDecision: (decision: 'lugna' | 'pressa' | 'prata') => void
   clearPlayoffIntro: () => void
   clearQFSummary: () => void
+  setPeriodisation: (mode: 'bygg' | 'hall' | 'toppa' | 'vila') => void
+  setPlayerPeriodisationOverride: (playerId: string, mode: 'hall' | 'vila' | null) => void
   setBudgetPriority: (priority: 'squad' | 'balanced' | 'youth') => void
   setCaptain: (playerId: string) => void
   interactWithPolitician: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
@@ -772,6 +775,7 @@ export const useGameStore = create<GameState>()(
       ...transferActions(get, set),
       ...academyActions(get, set),
       ...gameFlowActions(get, set),
+      ...periodisationActions(get, set),
     }),
     {
       name: 'bandy-game-store',
