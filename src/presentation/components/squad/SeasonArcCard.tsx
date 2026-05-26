@@ -37,19 +37,17 @@ function ArcSparkline({ history, mode, roundsInMode }: ArcSparklineProps) {
     )
   }
 
-  const horizon = PROJECTION_HORIZON
   const gf = entries.map(e => e.avgSeasonForm ?? 60)
   const df = entries.map(e => e.avgFitness ?? 70)
   const sk = entries.map(e => e.avgSharpness ?? 50)
 
-  const projGf = projectSeasonForm(gf[gf.length - 1], mode, roundsInMode, horizon)
-  // projection shares the "now" point as first plotted value
+  const projGf = projectSeasonForm(gf[gf.length - 1], mode, roundsInMode)
   const allProjGf = [gf[gf.length - 1], ...projGf]
 
   const W = 360, H = 66, pl = 8, pr = 10, pt = 11, pb = 15
   const histN = entries.length
-  // total x slots: historyLen (0-indexed) + horizon
-  const totalN = histN - 1 + horizon
+  // total x slots: history indices (0..histN-1) + PROJECTION_HORIZON future steps
+  const totalN = histN - 1 + PROJECTION_HORIZON
   const sx = (i: number) => pl + (i / totalN) * (W - pl - pr)
   const sy = (v: number) => pt + (1 - v / 100) * (H - pt - pb)
 
@@ -69,14 +67,13 @@ function ArcSparkline({ history, mode, roundsInMode }: ArcSparklineProps) {
   // Peak band: seasonForm 82–90 in the projection region
   const bandY1 = sy(90)
   const bandY2 = sy(82)
-  const bandX = nowX
   const bandW = W - nowX - pr
 
   return (
     <div style={{ padding: '4px 10px 0' }}>
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block', width: '100%', height: 'auto' }}>
         {/* Peak goal band — subtle amber zone 82-90 in projection region */}
-        <rect x={bandX} y={bandY1} width={bandW} height={bandY2 - bandY1} fill="rgba(196,122,58,0.06)" />
+        <rect x={nowX} y={bandY1} width={bandW} height={bandY2 - bandY1} fill="rgba(196,122,58,0.06)" />
         {/* grundform — history */}
         <polyline
           points={histPts(gf)}

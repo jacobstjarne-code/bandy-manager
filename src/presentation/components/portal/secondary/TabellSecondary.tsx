@@ -3,6 +3,7 @@ import type { CardRenderProps } from '../portalTypes'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { getFormResults } from '../../../utils/formUtils'
 import { Sparkline, MIN_POINTS } from '../../primitives/Sparkline'
+import { trendStroke } from '../../../utils/formatters'
 
 function getContextLine(game: SaveGame): string | null {
   const managedId = game.managedClubId
@@ -61,9 +62,7 @@ export function TabellSecondary({ game }: CardRenderProps) {
 
   const rawPositions = game.scoreSnapshots?.standingsPosition ?? []
   const plotPositions = rawPositions.map(p => 13 - p)
-  const posLast = plotPositions[plotPositions.length - 1] ?? 0
-  const posPrev = plotPositions[plotPositions.length - 2] ?? 0
-  const posTrendStroke = posLast > posPrev ? 'success' : posLast < posPrev ? 'danger' : 'accent'
+  const posTrendStroke = trendStroke(plotPositions[plotPositions.length - 1] ?? 0, plotPositions[plotPositions.length - 2] ?? 0)
 
   const dotColor = (r: 'V' | 'O' | 'F') =>
     r === 'V' ? 'var(--success)' : r === 'F' ? 'var(--danger)' : 'var(--accent)'
@@ -145,7 +144,7 @@ export function TabellSecondary({ game }: CardRenderProps) {
           )}
           {plotPositions.length >= MIN_POINTS && (
             <div style={{ marginTop: 5 }}>
-              <Sparkline points={plotPositions} stroke={posTrendStroke as 'success' | 'danger' | 'accent'} height={10} />
+              <Sparkline points={plotPositions} stroke={posTrendStroke} height={10} />
             </div>
           )}
           {contextLine ? (

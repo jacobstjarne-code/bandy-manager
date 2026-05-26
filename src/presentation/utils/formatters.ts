@@ -64,6 +64,10 @@ export function eventIcon(type: MatchEventType): string {
   return ''
 }
 
+export function trendStroke(last: number, prev: number): 'success' | 'danger' | 'accent' {
+  return last > prev ? 'success' : last < prev ? 'danger' : 'accent'
+}
+
 export function attributeLabel(key: string): string {
   const map: Record<string, string> = {
     skating: 'Skridskoåkning', acceleration: 'Acceleration', stamina: 'Kondition',

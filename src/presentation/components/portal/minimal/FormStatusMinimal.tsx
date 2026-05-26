@@ -1,5 +1,6 @@
 import type { CardRenderProps } from '../portalTypes'
 import { Sparkline, MIN_POINTS } from '../../primitives/Sparkline'
+import { trendStroke } from '../../../utils/formatters'
 
 /** Minimal-kort: genomsnittlig form i truppen. */
 export function FormStatusMinimal({ game }: CardRenderProps) {
@@ -15,9 +16,7 @@ export function FormStatusMinimal({ game }: CardRenderProps) {
     : 'var(--danger)'
 
   const snapForm = game.scoreSnapshots?.playerForm ?? []
-  const formLast = snapForm[snapForm.length - 1] ?? 0
-  const formPrev = snapForm[snapForm.length - 2] ?? 0
-  const formTrendStroke = formLast > formPrev ? 'success' : formLast < formPrev ? 'danger' : 'accent'
+  const formTrendStroke = trendStroke(snapForm[snapForm.length - 1] ?? 0, snapForm[snapForm.length - 2] ?? 0)
 
   return (
     <div style={{ textAlign: 'center' }}>
@@ -40,7 +39,7 @@ export function FormStatusMinimal({ game }: CardRenderProps) {
       </div>
       {snapForm.length >= MIN_POINTS && (
         <div style={{ marginTop: 3 }}>
-          <Sparkline points={snapForm} stroke={formTrendStroke as 'success' | 'danger' | 'accent'} height={10} />
+          <Sparkline points={snapForm} stroke={formTrendStroke} height={10} />
         </div>
       )}
     </div>
