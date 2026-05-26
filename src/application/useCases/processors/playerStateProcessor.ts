@@ -13,6 +13,7 @@ import { generateInjuryEntry, generateReturnFromInjuryEntry } from '../../../dom
 import { generateInjuryNarrative } from '../../../domain/data/injuryStories'
 import { getEffectiveMode } from '../../../domain/services/periodisationService'
 import type { PeriodisationMode } from '../../../domain/services/periodisationService'
+import { clamp } from '../../../domain/utils/clamp'
 
 // D-SAB-001: Säsongsbage — periodisering magnituder
 const BYGG_SEASON_FORM_RATE   = 1.5   // per round, capped at 88
@@ -149,11 +150,12 @@ export function applyPlayerStateUpdates(
       if (effectiveMode === 'bygg') {
         sfDelta = sf < BYGG_SEASON_FORM_CAP ? BYGG_SEASON_FORM_RATE : 0
       } else if (effectiveMode === 'toppa') {
-        sfDelta = roundsInMode <= TOPPA_SPIKE_ROUNDS ? TOPPA_SPIKE_RATE : -TOPPA_DECAY_RATE
+        // roundsInMode is 0-indexed on switch — strictly < gives 3 spike rounds (0,1,2)
+        sfDelta = roundsInMode < TOPPA_SPIKE_ROUNDS ? TOPPA_SPIKE_RATE : -TOPPA_DECAY_RATE
       } else if (effectiveMode === 'vila') {
         sfDelta = -VILA_SEASON_FORM_DECAY
       }
-      updated.seasonForm = Math.max(0, Math.min(100, sf + sfDelta))
+      updated.seasonForm = clamp(sf + sfDelta, 0, 100)
     }
 
     // Day job morale effects
@@ -241,9 +243,9 @@ export function applyPlayerStateUpdates(
     const midSeasonMult = (nextRound >= 8 && nextRound <= 15)
       ? (game.currentSeasonSignature?.modifiers.midSeasonInjuryMultiplier ?? 1.0)
       : 1.0
-    const byggInjuryMult = player.clubId === game.managedClubId &&
-      getEffectiveMode(player, teamMode) === 'bygg'
-        ? BYGG_INJURY_MULT : 1.0
+    const isStarterManaged = player.clubId === game.managedClubId
+    const byggInjuryMult = isStarterManaged && getEffectiveMode(player, teamMode) === 'bygg'
+      ? BYGG_INJURY_MULT : 1.0
     const injuryChance = 0.06 * Math.max(0.1, proneFactor) * fatigueFactor * tacticInjuryMod * midSeasonMult * byggInjuryMult
 
     if (localRand() < injuryChance) {

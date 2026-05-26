@@ -1762,7 +1762,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const avgSeasonForm = Math.round(squadPlayers.reduce((s, p) => s + (p.seasonForm ?? 60), 0) / squadPlayers.length)
       const avgSharpness = Math.round(squadPlayers.reduce((s, p) => s + p.sharpness, 0) / squadPlayers.length)
       const injuryCount = squadPlayers.filter(p => p.isInjured).length
-      const newTFH = [...(updatedGame.teamFitnessHistory ?? []), { matchday: nextMatchday, avgFitness, avgMorale, avgSeasonForm, avgSharpness, injuryCount }].slice(-10)
+      const newTFH = [...(updatedGame.teamFitnessHistory ?? []), { matchday: nextMatchday, avgFitness, avgMorale, avgSeasonForm, avgSharpness, injuryCount }].slice(-12)
       updatedGame = { ...updatedGame, teamFitnessHistory: newTFH }
     }
   }

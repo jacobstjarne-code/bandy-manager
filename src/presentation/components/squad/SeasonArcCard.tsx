@@ -2,6 +2,8 @@ import { useGameStore } from '../../store/gameStore'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getEffectiveMode, getReaction } from '../../../domain/services/periodisationService'
 import type { PeriodisationMode } from '../../../domain/services/periodisationService'
+import { positionShort } from '../../utils/formatters'
+import { PlayerPosition } from '../../../domain/enums'
 
 const MODE_LABELS: Record<PeriodisationMode, string> = {
   bygg: 'Bygg', hall: 'Håll', toppa: 'Toppa', vila: 'Vila',
@@ -106,14 +108,14 @@ export function SeasonArcCard({ game }: Props) {
   return (
     <>
       {/* ── Säsongsbåge card ── */}
-      <div className="card-sharp" style={{ marginBottom: 12 }}>
+      <div className="card-sharp" style={{ marginBottom: 12, overflow: 'hidden' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'baseline', padding: '12px 13px 0', gap: 8 }}>
           <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
             Säsongsbåge
           </span>
           <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-secondary)' }}>
-            Truppen: <b style={{ fontFamily: 'Georgia, serif', color: 'var(--accent-dark)', fontWeight: 700 }}>{MODE_LABELS[mode]}</b>
+            Truppen: <b style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-dark)', fontWeight: 700 }}>{MODE_LABELS[mode]}</b>
             {' · '}
             <span>{warnCount > 0 ? `${warnCount} undantag` : '0 undantag'}</span>
           </span>
@@ -155,7 +157,7 @@ export function SeasonArcCard({ game }: Props) {
               }}
             >
               <div style={{
-                fontFamily: 'Georgia, serif',
+                fontFamily: 'var(--font-display)',
                 fontSize: 14,
                 fontWeight: 700,
                 color: m === mode ? 'var(--accent-dark)' : 'var(--text-primary)',
@@ -173,14 +175,14 @@ export function SeasonArcCard({ game }: Props) {
           <div style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
             ⚙ Reagerar på {MODE_LABELS[mode]}
             {warnCount > 0 && (
-              <span style={{ marginLeft: 'auto', color: 'var(--accent-dark)', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 11 }}>
+              <span style={{ marginLeft: 'auto', color: 'var(--accent-dark)', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 11 }}>
                 {warnCount}
               </span>
             )}
           </div>
 
           {reactingPlayers.length === 0 ? (
-            <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: 'var(--text-muted)', fontSize: 12.5, padding: '4px 6px' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-muted)', fontSize: 12.5, padding: '4px 6px' }}>
               Ingen reagerar. Hela truppen följer {MODE_LABELS[mode]}.
             </div>
           ) : (
@@ -202,7 +204,7 @@ export function SeasonArcCard({ game }: Props) {
 }
 
 interface ReactionRowProps {
-  player: { id: string; firstName: string; lastName: string; position: string; sharpness: number; fitness: number; periodisationOverride?: string | null }
+  player: { id: string; firstName: string; lastName: string; position: PlayerPosition; sharpness: number; fitness: number; periodisationOverride?: string | null }
   reaction: { type: string; text: string }
   hasOverride: boolean
   teamMode: PeriodisationMode
@@ -215,14 +217,6 @@ function ReactionRow({ player, reaction, hasOverride, onSetOverride }: ReactionR
     ? `Undantag: ${player.periodisationOverride === 'hall' ? 'Håll' : 'Vila'}`
     : reaction.text
 
-  const posShort = (pos: string) => {
-    if (pos === 'Goalkeeper') return 'MV'
-    if (pos === 'Defender') return 'B'
-    if (pos === 'Half' || pos === 'Midfielder') return 'HB'
-    if (pos === 'Forward') return 'F'
-    return pos.slice(0, 2).toUpperCase()
-  }
-
   const fitnessColor = (v: number) =>
     v >= 75 ? 'var(--success)' : v >= 62 ? 'var(--warning)' : 'var(--danger)'
 
@@ -230,7 +224,7 @@ function ReactionRow({ player, reaction, hasOverride, onSetOverride }: ReactionR
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 6px', borderRadius: 'var(--radius-md, 8px)' }}>
       {/* pos chip */}
       <div style={{ width: 24, flexShrink: 0, textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 0' }}>
-        {posShort(player.position)}
+        {positionShort(player.position)}
       </div>
       {/* name + meta */}
       <div style={{ minWidth: 0, flex: 1 }}>
@@ -246,7 +240,7 @@ function ReactionRow({ player, reaction, hasOverride, onSetOverride }: ReactionR
         <div style={{ width: 30, height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
           <div style={{ display: 'block', height: '100%', borderRadius: 2, background: fitnessColor(player.fitness), width: `${player.fitness}%` }} />
         </div>
-        <span style={{ fontFamily: 'Georgia, serif', fontSize: 12, color: 'var(--text-secondary)', width: 18, textAlign: 'right' }}>{player.fitness}</span>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: 12, color: 'var(--text-secondary)', width: 18, textAlign: 'right' }}>{player.fitness}</span>
       </div>
       {/* flag */}
       <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 600, padding: '3px 7px', borderRadius: 99, whiteSpace: 'nowrap', maxWidth: 122, overflow: 'hidden', textOverflow: 'ellipsis', ...FLAG_STYLE[flagType] }}>
