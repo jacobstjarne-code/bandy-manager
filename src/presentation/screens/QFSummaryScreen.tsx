@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
+import { ScoreBlock } from '../components/primitives'
 
 export function QFSummaryScreen() {
   const navigate = useNavigate()
@@ -78,10 +79,12 @@ export function QFSummaryScreen() {
                     : homeWon ? 'var(--text-primary)' : 'var(--text-muted)',
                   flex: 1,
                 }}>{home}</span>
-                <span style={{
-                  fontSize: 13, fontWeight: 800, color: 'var(--accent)',
-                  fontFamily: 'Georgia, serif', width: 40, textAlign: 'center',
-                }}>{series.homeWins}–{series.awayWins}</span>
+                <ScoreBlock
+                  score={`${series.homeWins}–${series.awayWins}`}
+                  variant={isManaged ? (series.winnerId === g.managedClubId ? 'win' : 'loss') : 'subtle'}
+                  compact
+                  light
+                />
                 <span style={{
                   fontSize: 12,
                   fontWeight: awayWon ? 700 : 400,

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore, useManagedClub } from '../store/gameStore'
 import { PlayoffRound } from '../../domain/enums'
+import { ScoreBlock } from '../components/primitives'
 
 interface ConfettiParticle {
   id: number
@@ -181,13 +182,12 @@ export function ChampionScreen() {
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                   {roundLabel} vs {opponent?.name ?? '?'}
                 </span>
-                <span style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: won ? 'var(--success)' : 'var(--danger)',
-                }}>
-                  {myWins}-{theirWins} {won ? '✓' : '✗'}
-                </span>
+                <ScoreBlock
+                  score={`${myWins}–${theirWins}`}
+                  variant={s.round === PlayoffRound.Final ? 'gold' : (won ? 'win' : 'loss')}
+                  compact
+                  light
+                />
               </div>
             )
           }) : (
