@@ -100,6 +100,24 @@
   margin-bottom: 6px;
   text-shadow: 0 0 4px rgba(255, 100, 75, 0.35);
 }
+.team-score {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 42px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--led-warm);
+  text-shadow: 0 0 10px rgba(255, 120, 80, 0.55), 0 0 22px rgba(255, 90, 50, 0.3);
+}
+.team-score.win {
+  color: var(--led-amber);
+  text-shadow: 0 0 10px rgba(255, 170, 0, 0.6), 0 0 24px rgba(255, 140, 0, 0.32);
+}
+.team-score.loss {
+  color: rgba(255, 120, 100, 0.7);
+  text-shadow: none;
+}
 .clock-block {
   display: flex;
   flex-direction: column;

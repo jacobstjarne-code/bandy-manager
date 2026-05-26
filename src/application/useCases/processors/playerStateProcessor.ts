@@ -11,24 +11,24 @@ import { developPlayers } from '../../../domain/services/playerDevelopmentServic
 import { mulberry32 } from '../../../domain/utils/random'
 import { generateInjuryEntry, generateReturnFromInjuryEntry } from '../../../domain/services/narrativeService'
 import { generateInjuryNarrative } from '../../../domain/data/injuryStories'
-import { getEffectiveMode } from '../../../domain/services/periodisationService'
+import {
+  getEffectiveMode,
+  BYGG_SEASON_FORM_RATE,
+  BYGG_SEASON_FORM_CAP,
+  BYGG_EXTRA_FITNESS_COST,
+  BYGG_INJURY_MULT,
+  TOPPA_SPIKE_RATE,
+  TOPPA_DECAY_RATE,
+  TOPPA_SPIKE_ROUNDS,
+  TOPPA_EXTRA_SHARPNESS,
+  TOPPA_EXTRA_FITNESS_REC,
+  VILA_SEASON_FORM_DECAY,
+  VILA_EXTRA_FITNESS_REC,
+  VILA_SHARPNESS_PENALTY,
+  SEASON_FORM_FITNESS_SLACK,
+} from '../../../domain/services/periodisationService'
 import type { PeriodisationMode } from '../../../domain/services/periodisationService'
 import { clamp } from '../../../domain/utils/clamp'
-
-// D-SAB-001: Säsongsbage — periodisering magnituder
-const BYGG_SEASON_FORM_RATE   = 1.5   // per round, capped at 88
-const BYGG_SEASON_FORM_CAP    = 88
-const BYGG_EXTRA_FITNESS_COST = 4     // added to normal match fatigue
-const BYGG_INJURY_MULT        = 1.15
-const TOPPA_SPIKE_RATE        = 1.0   // rounds 1-3 in mode
-const TOPPA_DECAY_RATE        = 1.7   // rounds 4+ in mode
-const TOPPA_SPIKE_ROUNDS      = 3
-const TOPPA_EXTRA_SHARPNESS   = 2.4
-const TOPPA_EXTRA_FITNESS_REC = 3     // non-starter recovery bonus
-const VILA_SEASON_FORM_DECAY  = 1.0   // per round
-const VILA_EXTRA_FITNESS_REC  = 5     // non-starter recovery bonus
-const VILA_SHARPNESS_PENALTY  = 3     // extra sharpness loss
-const SEASON_FORM_FITNESS_SLACK = 5   // fitness can recover to seasonForm + this
 
 export interface PlayerStateResult {
   updatedPlayers: Player[]

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { MatchEventType } from '../../domain/enums'
+import '../styles/stalvallen-match.css'
 
 export function MatchResultScreen() {
   const navigate = useNavigate()
@@ -42,6 +43,15 @@ export function MatchResultScreen() {
 
   const won = myScore > theirScore || wonByOT || wonByPenalties
   const lost = myScore < theirScore || lostByOT || lostByPenalties
+
+  const homeWon = penResult ? penResult.home > penResult.away
+    : otResult ? otResult === 'home'
+    : (fixture.homeScore ?? 0) > (fixture.awayScore ?? 0)
+  const awayWon = penResult ? penResult.away > penResult.home
+    : otResult ? otResult === 'away'
+    : (fixture.awayScore ?? 0) > (fixture.homeScore ?? 0)
+  const homeAbbr = (homeClub?.shortName ?? homeClub?.name ?? '').slice(0, 3).toUpperCase()
+  const awayAbbr = (awayClub?.shortName ?? awayClub?.name ?? '').slice(0, 3).toUpperCase()
 
   const potmId = fixture.report?.playerOfTheMatchId
   const potm = potmId ? game.players.find(p => p.id === potmId) : null
@@ -124,32 +134,47 @@ export function MatchResultScreen() {
           </span>
         </div>
 
-        {/* Big score */}
-        {(() => {
-          // Determine winner for individual score colors
-          const homeWon = penResult ? penResult.home > penResult.away
-            : otResult ? otResult === 'home'
-            : (fixture.homeScore ?? 0) > (fixture.awayScore ?? 0)
-          const awayWon = penResult ? penResult.away > penResult.home
-            : otResult ? otResult === 'away'
-            : (fixture.awayScore ?? 0) > (fixture.homeScore ?? 0)
-          const homeColor = homeWon ? 'var(--success)' : awayWon ? 'var(--danger)' : 'var(--accent)'
-          const awayColor = awayWon ? 'var(--success)' : homeWon ? 'var(--danger)' : 'var(--accent)'
-          return (
-            <div style={{
-              display: 'flex', justifyContent: 'center', alignItems: 'center',
-              gap: 16, marginBottom: penResult ? 4 : 12, ...fadeIn('160ms'),
-            }}>
-              <span style={{ fontSize: 32, fontWeight: 800, color: homeColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
-                {fixture.homeScore}
-              </span>
-              <span style={{ fontSize: 24, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
-              <span style={{ fontSize: 32, fontWeight: 800, color: awayColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
-                {fixture.awayScore}
-              </span>
+        {/* Big score — LED Stålvallen-tavla */}
+        <div style={{ marginBottom: penResult ? 4 : 12, ...fadeIn('160ms') }}>
+          <div
+            className="scoreboard-root"
+            style={{ position: 'relative', flexShrink: 'unset', zIndex: 'auto', borderRadius: 6 }}
+          >
+            <div className="scoreboard-final-band">
+              <span className="scoreboard-final-band-label">◾ Slutsignal</span>
             </div>
-          )
-        })()}
+            <div className="board-system">
+              <div className="module-main">
+                <div className="main-row">
+                  <div className="team-col home">
+                    <span className="team-code">{homeAbbr}</span>
+                    <span className={`team-score${homeWon ? ' win' : awayWon ? ' loss' : ''}`}>
+                      {fixture.homeScore}
+                    </span>
+                  </div>
+                  <div style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    gap: 4, padding: '0 4px',
+                    borderLeft: '1px solid rgba(255,255,255,0.06)',
+                    borderRight: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                    <span style={{
+                      fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '2px',
+                      color: 'rgba(255,220,200,0.7)',
+                      textShadow: '0 0 4px rgba(255,100,75,0.4)',
+                    }}>FT</span>
+                  </div>
+                  <div className="team-col away">
+                    <span className="team-code">{awayAbbr}</span>
+                    <span className={`team-score${awayWon ? ' win' : homeWon ? ' loss' : ''}`}>
+                      {fixture.awayScore}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* OT / Penalty info */}
         {(fixture.wentToOvertime || penResult) && (

@@ -3,6 +3,22 @@ import type { Player } from '../entities/Player'
 export type PeriodisationMode = 'bygg' | 'hall' | 'toppa' | 'vila'
 export type ReactionType = 'warn' | 'good' | 'rust'
 
+// D-SAB-001: Säsongsbage — periodisering magnituder (shared with playerStateProcessor)
+export const BYGG_SEASON_FORM_RATE   = 1.5
+export const BYGG_SEASON_FORM_CAP    = 88
+export const BYGG_EXTRA_FITNESS_COST = 4
+export const BYGG_INJURY_MULT        = 1.15
+export const TOPPA_SPIKE_RATE        = 1.0
+export const TOPPA_DECAY_RATE        = 1.7
+export const TOPPA_SPIKE_ROUNDS      = 3
+export const TOPPA_EXTRA_SHARPNESS   = 2.4
+export const TOPPA_EXTRA_FITNESS_REC = 3
+export const VILA_SEASON_FORM_DECAY  = 1.0
+export const VILA_EXTRA_FITNESS_REC  = 5
+export const VILA_SHARPNESS_PENALTY  = 3
+export const SEASON_FORM_FITNESS_SLACK = 5
+export const PROJECTION_HORIZON       = 10
+
 export interface PeriodisationReaction {
   type: ReactionType
   text: string
@@ -40,4 +56,32 @@ export function getReaction(
   }
 
   return null
+}
+
+/**
+ * Projects seasonForm avg forward from currentAvg for `horizon` rounds
+ * under the given mode. First returned value = after round 1.
+ */
+export function projectSeasonForm(
+  currentAvg: number,
+  mode: PeriodisationMode,
+  roundsInMode: number,
+  horizon: number = PROJECTION_HORIZON,
+): number[] {
+  const result: number[] = []
+  let sf = currentAvg
+  for (let i = 0; i < horizon; i++) {
+    const roundN = roundsInMode + i
+    let delta = 0
+    if (mode === 'bygg') {
+      delta = sf < BYGG_SEASON_FORM_CAP ? BYGG_SEASON_FORM_RATE : 0
+    } else if (mode === 'toppa') {
+      delta = roundN < TOPPA_SPIKE_ROUNDS ? TOPPA_SPIKE_RATE : -TOPPA_DECAY_RATE
+    } else if (mode === 'vila') {
+      delta = -VILA_SEASON_FORM_DECAY
+    }
+    sf = Math.max(0, Math.min(100, sf + delta))
+    result.push(Math.round(sf))
+  }
+  return result
 }

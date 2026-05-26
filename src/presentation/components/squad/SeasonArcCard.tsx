@@ -1,6 +1,11 @@
 import { useGameStore } from '../../store/gameStore'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { getEffectiveMode, getReaction } from '../../../domain/services/periodisationService'
+import {
+  getEffectiveMode,
+  getReaction,
+  projectSeasonForm,
+  PROJECTION_HORIZON,
+} from '../../../domain/services/periodisationService'
 import type { PeriodisationMode } from '../../../domain/services/periodisationService'
 import { positionShort } from '../../utils/formatters'
 import { PlayerPosition } from '../../../domain/enums'
@@ -16,7 +21,13 @@ const FLAG_STYLE: Record<string, React.CSSProperties> = {
   ovr:  { color: 'var(--text-muted)', background: 'transparent', border: '1px dashed var(--border-dark)' },
 }
 
-function ArcSparkline({ history }: { history: SaveGame['teamFitnessHistory'] }) {
+interface ArcSparklineProps {
+  history: SaveGame['teamFitnessHistory']
+  mode: PeriodisationMode
+  roundsInMode: number
+}
+
+function ArcSparkline({ history, mode, roundsInMode }: ArcSparklineProps) {
   const entries = (history ?? []).slice(-12)
   if (entries.length < 2) {
     return (
@@ -26,40 +37,58 @@ function ArcSparkline({ history }: { history: SaveGame['teamFitnessHistory'] }) 
     )
   }
 
-  const W = 360, H = 66, pl = 8, pr = 10, pt = 11, pb = 15
-  const n = entries.length
-  const sx = (i: number) => pl + (i / (n - 1)) * (W - pl - pr)
-  const sy = (v: number) => pt + (1 - v / 100) * (H - pt - pb)
-
-  function pts(vals: number[]): string {
-    return vals.map((v, i) => `${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ')
-  }
-
+  const horizon = PROJECTION_HORIZON
   const gf = entries.map(e => e.avgSeasonForm ?? 60)
   const df = entries.map(e => e.avgFitness ?? 70)
   const sk = entries.map(e => e.avgSharpness ?? 50)
 
-  const curX = sx(n - 1).toFixed(1)
-  const curGfY = sy(gf[n - 1]).toFixed(1)
+  const projGf = projectSeasonForm(gf[gf.length - 1], mode, roundsInMode, horizon)
+  // projection shares the "now" point as first plotted value
+  const allProjGf = [gf[gf.length - 1], ...projGf]
 
-  // Dashed skärpa line: build d attribute for path
+  const W = 360, H = 66, pl = 8, pr = 10, pt = 11, pb = 15
+  const histN = entries.length
+  // total x slots: historyLen (0-indexed) + horizon
+  const totalN = histN - 1 + horizon
+  const sx = (i: number) => pl + (i / totalN) * (W - pl - pr)
+  const sy = (v: number) => pt + (1 - v / 100) * (H - pt - pb)
+
+  const nowI = histN - 1
+  const nowX = sx(nowI)
+
+  function histPts(vals: number[]): string {
+    return vals.map((v, i) => `${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ')
+  }
+
+  // Projection line starts at nowI
+  const projPts = allProjGf.map((v, i) => `${sx(nowI + i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ')
   const skPath = sk.map((v, i) => `${i === 0 ? 'M' : 'L'}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ')
+
+  const curGfY = sy(gf[gf.length - 1]).toFixed(1)
+
+  // Peak band: seasonForm 82–90 in the projection region
+  const bandY1 = sy(90)
+  const bandY2 = sy(82)
+  const bandX = nowX
+  const bandW = W - nowX - pr
 
   return (
     <div style={{ padding: '4px 10px 0' }}>
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block', width: '100%', height: 'auto' }}>
-        {/* grundform — fyllig, --accent */}
+        {/* Peak goal band — subtle amber zone 82-90 in projection region */}
+        <rect x={bandX} y={bandY1} width={bandW} height={bandY2 - bandY1} fill="rgba(196,122,58,0.06)" />
+        {/* grundform — history */}
         <polyline
-          points={pts(gf)}
+          points={histPts(gf)}
           fill="none"
           stroke="#C47A3A"
           strokeWidth="2.2"
           strokeLinejoin="round"
           strokeLinecap="round"
         />
-        {/* dagsform — tunnare, --gold-deep */}
+        {/* dagsform — history */}
         <polyline
-          points={pts(df)}
+          points={histPts(df)}
           fill="none"
           stroke="#B88838"
           strokeWidth="1.4"
@@ -67,7 +96,7 @@ function ArcSparkline({ history }: { history: SaveGame['teamFitnessHistory'] }) 
           strokeLinecap="round"
           opacity="0.85"
         />
-        {/* skärpa — streckad, --cold */}
+        {/* skärpa — dashed history */}
         <path
           d={skPath}
           fill="none"
@@ -77,8 +106,29 @@ function ArcSparkline({ history }: { history: SaveGame['teamFitnessHistory'] }) 
           strokeLinecap="round"
           opacity="0.75"
         />
+        {/* Now-line */}
+        <line
+          x1={nowX} y1={pt - 4}
+          x2={nowX} y2={H - pb + 2}
+          stroke="rgba(196,122,58,0.35)"
+          strokeWidth="1"
+          strokeDasharray="2 2"
+        />
+        {/* Projection grundform — dashed, faded, keyed to mode for fade-in tween */}
+        <g key={mode} style={{ animation: 'fadeInUp 200ms ease-out both' }}>
+          <polyline
+            points={projPts}
+            fill="none"
+            stroke="#C47A3A"
+            strokeWidth="1.6"
+            strokeDasharray="5 4"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            opacity="0.55"
+          />
+        </g>
         {/* Du är här dot on grundform */}
-        <circle cx={curX} cy={curGfY} r="3.5" fill="#C47A3A" opacity="0.9" />
+        <circle cx={nowX} cy={curGfY} r="3.5" fill="#C47A3A" opacity="0.9" />
       </svg>
     </div>
   )
@@ -93,6 +143,7 @@ export function SeasonArcCard({ game }: Props) {
   const setPlayerOverride = useGameStore(s => s.setPlayerPeriodisationOverride)
 
   const mode: PeriodisationMode = (game.managedClubPeriodisation ?? 'hall') as PeriodisationMode
+  const roundsInMode = game.currentMatchday - (game.managedClubPeriodisationSince ?? 0)
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId && !p.isInjured)
 
   // Players with a reaction
@@ -122,7 +173,7 @@ export function SeasonArcCard({ game }: Props) {
         </div>
 
         {/* Sparkline */}
-        <ArcSparkline history={game.teamFitnessHistory} />
+        <ArcSparkline history={game.teamFitnessHistory} mode={mode} roundsInMode={roundsInMode} />
 
         {/* Legend */}
         <div style={{ display: 'flex', gap: 14, justifyContent: 'center', padding: '3px 12px 0', fontSize: 9.5, color: 'var(--text-muted)' }}>

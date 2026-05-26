@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { getFormResults } from '../../../utils/formUtils'
+import { Sparkline, MIN_POINTS } from '../../primitives/Sparkline'
 
 function getContextLine(game: SaveGame): string | null {
   const managedId = game.managedClubId
@@ -57,6 +58,12 @@ export function TabellSecondary({ game }: CardRenderProps) {
   const standing = game.standings.find(s => s.clubId === managedId)
   const recentForm = getFormResults(managedId, game.fixtures, game.clubs).slice(-5)
   const contextLine = getContextLine(game)
+
+  const rawPositions = game.scoreSnapshots?.standingsPosition ?? []
+  const plotPositions = rawPositions.map(p => 13 - p)
+  const posLast = plotPositions[plotPositions.length - 1] ?? 0
+  const posPrev = plotPositions[plotPositions.length - 2] ?? 0
+  const posTrendStroke = posLast > posPrev ? 'success' : posLast < posPrev ? 'danger' : 'accent'
 
   const dotColor = (r: 'V' | 'O' | 'F') =>
     r === 'V' ? 'var(--success)' : r === 'F' ? 'var(--danger)' : 'var(--accent)'
@@ -134,6 +141,11 @@ export function TabellSecondary({ game }: CardRenderProps) {
                   }} />
                 )
               })}
+            </div>
+          )}
+          {plotPositions.length >= MIN_POINTS && (
+            <div style={{ marginTop: 5 }}>
+              <Sparkline points={plotPositions} stroke={posTrendStroke as 'success' | 'danger' | 'accent'} height={10} />
             </div>
           )}
           {contextLine ? (
