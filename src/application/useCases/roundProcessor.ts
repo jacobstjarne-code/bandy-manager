@@ -230,6 +230,17 @@ function stripCompletedFixture(f: Fixture, managedFixtureId?: string, managedClu
   }
 }
 
+// Types that must never be auto-expired — user action may be required
+const INBOX_PROTECTED_TYPES = new Set<InboxItemType>([
+  InboxItemType.TransferOffer,
+  InboxItemType.ContractExpiring,
+  InboxItemType.Retirement,
+  InboxItemType.TransferBidReceived,
+  InboxItemType.YouthIntake,
+  InboxItemType.ScoutReport,
+  InboxItemType.TransferDeadline,
+])
+
 export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult {
   const preRound = derivePreRoundContext(game, seed)
   if (preRound.kind === 'earlyReturn') return preRound.result
@@ -992,26 +1003,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     i.createdMatchday === undefined ? { ...i, createdMatchday: nextMatchday } : i
   )
 
-  // Gallring: lästa informativa notiser äldre än 2 omgångar arkiveras.
-  // Olästa lågprio-items äldre än 4 omgångar förfaller också — skyddar besluts-
-  // krävande typer (TransferOffer, ContractExpiring, Retirement, TransferBidReceived,
-  // YouthIntake, ScoutReport, TransferDeadline) från auto-rensning.
   const INBOX_GALLRING_ROUNDS = 2
   const INBOX_UNREAD_EXPIRY_ROUNDS = 4
-  const INBOX_PROTECTED_TYPES = new Set<InboxItemType>([
-    InboxItemType.TransferOffer,
-    InboxItemType.ContractExpiring,
-    InboxItemType.Retirement,
-    InboxItemType.TransferBidReceived,
-    InboxItemType.YouthIntake,
-    InboxItemType.ScoutReport,
-    InboxItemType.TransferDeadline,
-  ])
   const gallredOldInbox = game.inbox.filter(i => {
     if (i.createdMatchday === undefined) return true
     const age = nextMatchday - i.createdMatchday
     if (i.isRead) return age < INBOX_GALLRING_ROUNDS
-    if (INBOX_PROTECTED_TYPES.has(i.type as InboxItemType)) return true
+    if (INBOX_PROTECTED_TYPES.has(i.type)) return true
     return age < INBOX_UNREAD_EXPIRY_ROUNDS
   })
 

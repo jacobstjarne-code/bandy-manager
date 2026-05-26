@@ -15,7 +15,7 @@ import { getSeasonContext } from './seasonContextService'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function nextManagedFixture(game: SaveGame) {
+export function nextManagedFixture(game: SaveGame) {
   const id = game.managedClubId
   const bracket = game.playoffBracket
   const eliminated = bracket
