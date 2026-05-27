@@ -21,6 +21,7 @@ export function VictoryScore({
         <ScoreBlock
           score={`${homeScore}–${awayScore}`}
           variant="gold"
+          size="hero"
           label="Slutresultat"
         />
       </div>

@@ -1,21 +1,25 @@
 // gold reserveras för SM-final/Cup-final — se designsystem regel 4
 export type ScoreBlockVariant = 'win' | 'loss' | 'draw' | 'derby' | 'gold' | 'subtle'
+export type ScoreBlockSize = 'compact' | 'default' | 'hero'
 
 interface ScoreBlockProps {
   score: string
   label?: string
   variant?: ScoreBlockVariant
+  size?: ScoreBlockSize
+  /** @deprecated Använd size="compact" */
   compact?: boolean
   light?: boolean
 }
 
 export const MAX_LABEL_LENGTH = 11
 
-export function ScoreBlock({ score, label, variant, compact, light }: ScoreBlockProps) {
+export function ScoreBlock({ score, label, variant, size, compact, light }: ScoreBlockProps) {
+  const resolvedSize = size ?? (compact ? 'compact' : 'default')
   const cls = [
     'score-block',
     variant ?? '',
-    compact ? 'compact' : '',
+    resolvedSize !== 'default' ? resolvedSize : '',
     light ? 'light' : '',
   ].filter(Boolean).join(' ')
 

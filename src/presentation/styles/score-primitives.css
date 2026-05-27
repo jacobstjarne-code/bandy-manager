@@ -73,6 +73,42 @@
 /* gold-siffra bevaras på ljus yta — ceremoniell SM-final */
 .score-block.light.gold .score-block-num { color: var(--gold); }
 
+/* ── Hero (segerscener: SM-final, Cup-final) ─────────────────────────────
+   Ingen border-left — siffran är inte ett element i en lista, den är ensam.
+   Ingen tung ram — trophy + titel co-leder, siffran är ögonblicket.       */
+.score-block.hero {
+  display: block;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(196, 122, 58, 0.2);
+  border-radius: 0;
+  padding: 4px 0 8px;
+  min-width: unset;
+  text-align: center;
+}
+
+.score-block.hero .score-block-num {
+  font-size: 48px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+
+.score-block.hero .score-block-label {
+  font-size: 8px;
+  letter-spacing: 1.4px;
+  margin-top: 5px;
+}
+
+/* gold + hero: guld-siffra utan ram */
+.score-block.hero.gold {
+  border-bottom-color: rgba(212, 164, 96, 0.25);
+  background: transparent;
+}
+
+.score-block.hero.gold .score-block-num { color: var(--gold); }
+.score-block.hero.gold .score-block-label { color: var(--gold); opacity: 0.7; }
+
 /* ── Sparkline ──────────────────────────────────────────────────────────── */
 
 .sparkline-svg {
