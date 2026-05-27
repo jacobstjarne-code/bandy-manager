@@ -1,5 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { lazy, Suspense, useEffect, useRef } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+
+const DevScenesScreen = import.meta.env.DEV
+  ? lazy(() => import('../screens/dev/DevScenesScreen').then(m => ({ default: m.DevScenesScreen })))
+  : null
 import { setGlobalNavigate } from './globalNavigate'
 
 function NavigateSetter() {
@@ -135,6 +139,11 @@ export function AppRouter() {
           <Route path="/game/match-result" element={<MatchResultScreen />} />
           <Route path="/game/game-over" element={<GameOverScreen />} />
         </Route>
+        {import.meta.env.DEV && DevScenesScreen && (
+          <Route path="/dev/scenes" element={
+            <Suspense fallback={null}><DevScenesScreen /></Suspense>
+          } />
+        )}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
