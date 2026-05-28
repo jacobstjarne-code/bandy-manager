@@ -13,15 +13,19 @@ import { SMFinalVictoryScene } from '../scenes/SMFinalVictoryScene'
 import { SeasonArcCard } from '../../components/squad/SeasonArcCard'
 import { TabellSecondary } from '../../components/portal/secondary/TabellSecondary'
 import { FormStatusMinimal } from '../../components/portal/minimal/FormStatusMinimal'
+import { MatchResultScreen } from '../MatchResultScreen'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'match-result-win' | 'match-result-loss' | 'match-result-draw'
 
 const SCENES: { id: SceneId; label: string }[] = [
-  { id: 'cup-victory',   label: 'Cup Victory' },
-  { id: 'sm-victory',    label: 'SM-Final Victory' },
-  { id: 'season-arc',    label: 'SeasonArcCard (toppa, omg 16)' },
-  { id: 'portal-cards',  label: 'Portal Cards (mörk yta)' },
+  { id: 'cup-victory',      label: 'Cup Victory' },
+  { id: 'sm-victory',       label: 'SM-Final Victory' },
+  { id: 'season-arc',       label: 'SeasonArcCard (toppa, omg 16)' },
+  { id: 'portal-cards',     label: 'Portal Cards (mörk yta)' },
+  { id: 'match-result-win',  label: 'MatchResult (seger)' },
+  { id: 'match-result-loss', label: 'MatchResult (förlust)' },
+  { id: 'match-result-draw', label: 'MatchResult (kryss)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -141,7 +145,7 @@ const devFitnessHistory = Array.from({ length: 12 }, (_, i) => ({
   injuryCount: i % 4 === 0 ? 1 : 0,
 }))
 
-function makeGame(fixtureOverrides: object[]): SaveGame {
+function makeGame(fixtureOverrides: object[], extra: Record<string, unknown> = {}): SaveGame {
   return {
     id: 'dev-game',
     managedClubId: HOME_ID,
@@ -162,7 +166,34 @@ function makeGame(fixtureOverrides: object[]): SaveGame {
     // Minimal required fields
     inbox: [], leagueId: 'liga-dev', managedClubName: 'Edsbyn BK',
     transferBids: [], scoutingReports: [],
+    ...extra,
   } as unknown as SaveGame
+}
+
+// Match-result fingered fixtures
+const matchResultWinFixture = {
+  id: 'fx-mr-win', leagueId: 'liga-dev', season: 8, roundNumber: 16, matchday: 16,
+  homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 4, awayScore: 2,
+  status: 'completed' as const, events: [
+    { minute: 12, type: 'goal', clubId: HOME_ID, playerId: 'p1', description: 'Mål', isCornerGoal: false, isPenaltyGoal: false },
+    { minute: 34, type: 'goal', clubId: HOME_ID, playerId: 'p2', description: 'Mål', isCornerGoal: true, isPenaltyGoal: false },
+    { minute: 51, type: 'goal', clubId: AWAY_ID, playerId: undefined, description: 'Mål bortaklubben', isCornerGoal: false, isPenaltyGoal: false },
+    { minute: 68, type: 'goal', clubId: HOME_ID, playerId: 'p3', description: 'Mål', isCornerGoal: false, isPenaltyGoal: false },
+    { minute: 75, type: 'goal', clubId: AWAY_ID, playerId: undefined, description: 'Mål bortaklubben', isCornerGoal: false, isPenaltyGoal: false },
+    { minute: 87, type: 'goal', clubId: HOME_ID, playerId: 'p1', description: 'Mål', isCornerGoal: false, isPenaltyGoal: false },
+  ],
+  report: { playerRatings: { p1: 8.1, p2: 7.4, p3: 6.9 }, shotsHome: 16, shotsAway: 8, onTargetHome: 8, onTargetAway: 4, savesHome: 4, savesAway: 8, cornersHome: 7, cornersAway: 3, penaltiesHome: 0, penaltiesAway: 0, possessionHome: 58, possessionAway: 42, playerOfTheMatchId: 'p1' },
+  attendance: 412,
+}
+
+const matchResultLossFixture = {
+  ...matchResultWinFixture, id: 'fx-mr-loss',
+  homeScore: 1, awayScore: 3,
+}
+
+const matchResultDrawFixture = {
+  ...matchResultWinFixture, id: 'fx-mr-draw',
+  homeScore: 2, awayScore: 2,
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -172,14 +203,21 @@ const smGame    = makeGame([...makeLeagueFixtures(), smFinalFixture])
 const arcGame   = makeGame(makeLeagueFixtures())
 const portalGame = makeGame(makeLeagueFixtures())
 
+const mrWinGame  = makeGame([...makeLeagueFixtures(), matchResultWinFixture], { lastCompletedFixtureId: 'fx-mr-win' })
+const mrLossGame = makeGame([...makeLeagueFixtures(), matchResultLossFixture], { lastCompletedFixtureId: 'fx-mr-loss' })
+const mrDrawGame = makeGame([...makeLeagueFixtures(), matchResultDrawFixture], { lastCompletedFixtureId: 'fx-mr-draw' })
+
 export function DevScenesScreen() {
   const [scene, setScene] = useState<SceneId>('cup-victory')
 
-  // Seed the store so components that call useGameStore() work (SeasonArcCard actions)
+  // Seed the store so components that call useGameStore() work (SeasonArcCard, MatchResultScreen)
   useEffect(() => {
     const g = scene === 'cup-victory' ? cupGame
       : scene === 'sm-victory' ? smGame
       : scene === 'season-arc' ? arcGame
+      : scene === 'match-result-win' ? mrWinGame
+      : scene === 'match-result-loss' ? mrLossGame
+      : scene === 'match-result-draw' ? mrDrawGame
       : portalGame
     useGameStore.setState({ game: g })
   }, [scene])
@@ -253,6 +291,12 @@ export function DevScenesScreen() {
                 <FormStatusMinimal game={portalGame} />
               </div>
             </div>
+          </div>
+        )}
+
+        {(scene === 'match-result-win' || scene === 'match-result-loss' || scene === 'match-result-draw') && (
+          <div style={{ height: '100vh', background: 'var(--bg)' }}>
+            <MatchResultScreen />
           </div>
         )}
       </div>

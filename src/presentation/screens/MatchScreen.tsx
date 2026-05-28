@@ -406,7 +406,7 @@ export function MatchScreen() {
             setLineupError('Kunde inte simulera matchen')
             return
           }
-          navigate('/game/review')
+          navigate('/game/match-result')
         } catch (err) {
           console.error('Snabbsim kraschade:', err)
           setLineupError(`Något gick fel: ${err instanceof Error ? err.message : 'okänt fel'}`)
@@ -440,7 +440,7 @@ export function MatchScreen() {
       <MatchReportView
         fixture={completedFixture}
         game={game}
-        onClose={() => navigate('/game/review', { replace: true })}
+        onClose={() => navigate('/game/match-result', { replace: true })}
       />
     )
   }

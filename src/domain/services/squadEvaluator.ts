@@ -3,6 +3,7 @@ import type { Tactic } from '../entities/Club'
 import { PlayerPosition } from '../enums'
 import { clamp } from '../utils/clamp'
 import { FORMATIONS } from '../entities/Formation'
+import { SEASON_FORM_FITNESS_SLACK } from './periodisationService'
 
 const ADJACENT: Record<PlayerPosition, PlayerPosition[]> = {
   [PlayerPosition.Goalkeeper]: [],
@@ -37,12 +38,8 @@ function round1(value: number): number {
   return Math.round(value * 10) / 10
 }
 
-// D027: seasonForm caps how high fitness contribution can reach.
-// A player stuck in bygg/hall never reaches full fitness contribution unless grundform is high.
-const SEASON_FORM_FITNESS_CAP_SLACK = 3
-
 function playerModifier(player: Player): number {
-  const effectiveFitness = Math.min(player.fitness, (player.seasonForm ?? 60) + SEASON_FORM_FITNESS_CAP_SLACK)
+  const effectiveFitness = Math.min(player.fitness, (player.seasonForm ?? 60) + SEASON_FORM_FITNESS_SLACK)
   const base = (player.form / 100) * 0.4 + (effectiveFitness / 100) * 0.6
   // Rust-faktor: full sharpness (100) → ×1.0 (ingen gratis-boost), låg sharpness → liten straff.
   // Normalt spelande startelva ligger nära 100 → kalibreringen påverkas minimalt.

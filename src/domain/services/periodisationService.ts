@@ -16,8 +16,10 @@ export const TOPPA_EXTRA_FITNESS_REC = 3
 export const VILA_SEASON_FORM_DECAY  = 1.0
 export const VILA_EXTRA_FITNESS_REC  = 5
 export const VILA_SHARPNESS_PENALTY  = 3
-export const SEASON_FORM_FITNESS_SLACK = 5
-export const PROJECTION_HORIZON       = 10
+// D-SAB-001: unified cap — squadEvaluator och bench-recovery använder samma värde
+export const SEASON_FORM_FITNESS_SLACK = 3
+export const RAMP_ROUNDS               = 3   // D-SAB-002: rundor av ramp-skydd efter skada
+export const PROJECTION_HORIZON        = 10
 
 export interface PeriodisationReaction {
   type: ReactionType
@@ -34,11 +36,20 @@ export function getEffectiveMode(
 export function getReaction(
   player: Player,
   effectiveMode: PeriodisationMode,
+  currentMatchday: number = 0,
 ): PeriodisationReaction | null {
   const age = player.age
   const stamina = player.attributes.stamina
   const sharpness = player.sharpness
   const ca = player.currentAbility
+
+  // Ramp-skydd vinner alltid — nyss skadad spelare ska inte drivas i Bygg/Toppa
+  if (
+    (effectiveMode === 'bygg' || effectiveMode === 'toppa') &&
+    currentMatchday < ((player as { recentlyInjuredUntil?: number }).recentlyInjuredUntil ?? 0)
+  ) {
+    return { type: 'warn', text: 'Ramp först' }
+  }
 
   if (effectiveMode === 'bygg') {
     if (age >= 33) return { type: 'warn', text: 'Tål inte Bygg' }

@@ -103,6 +103,7 @@ export interface Player {
   isInjured: boolean
   injuryDaysRemaining: number
   suspensionGamesRemaining: number
+  recentlyInjuredUntil?: number  // matchday — "Ramp först" warn om Bygg/Toppa sätts före detta
   suspensionCause?: { sinceMatchday: number; opponentName: string; matches: number }
 
   seasonStats: PlayerSeasonStats

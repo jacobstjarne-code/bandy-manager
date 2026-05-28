@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MatchResultScreen — Block vs LED</title>
+<style>
+  :root{
+    --bg:#EDE8DF; --bg-surface:#FAF8F4; --bg-elevated:#F3EEE6;
+    --border:#E2DACE;
+    --text-primary:#2A2521; --text-secondary:#6B6358; --text-muted:#9B9182;
+    --accent:#C47A3A; --accent-dark:#A8632C; --gold:#E8B95C;
+    --success:#5A9A4A; --success-muted:rgba(74,124,89,.72);
+    --danger:#B05040;  --danger-muted:rgba(168,74,74,.72);
+    --font-display:Georgia,'Times New Roman',serif;
+    --font-body:system-ui,-apple-system,sans-serif;
+    --font-mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
+    /* LED-tavla */
+    --leather-dk:#1C1714; --panel:#0A0A0A;
+    --bezel-top:#3a352f; --bezel-mid:#241f1b; --bezel-bot:#120f0c;
+    --led-warm:rgba(255,217,197,.92); --led-glow:rgba(255,100,75,.4);
+    --led-amber:#FFAA00; --copper:#C47A3A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#3a352f;
+    font-family:var(--font-body);
+    padding:32px 20px 48px;
+    display:flex;flex-direction:column;align-items:center;gap:28px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .intro{max-width:760px;text-align:center;color:#E2DACE}
+  .intro h1{font-family:var(--font-display);font-size:20px;font-weight:600;letter-spacing:.3px;margin-bottom:8px;color:#FAF8F4}
+  .intro p{font-size:13px;line-height:1.6;color:#C9C0B2}
+  .row{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .col{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .col-cap{font-family:var(--font-mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#9B9182}
+  .col-cap b{color:#FAF8F4;font-weight:700}
+
+  /* ── Telefon-chrome: den riktiga MatchResultScreen-ljusytan ── */
+  .phone{
+    width:330px;background:var(--bg);
+    border-radius:22px;padding:14px 12px;
+    box-shadow:0 14px 40px rgba(0,0,0,.45);
+  }
+  .card{
+    background:var(--bg-surface);
+    border:1px solid var(--border);
+    border-radius:8px;            /* card-sharp */
+    padding:14px 16px 16px;
+  }
+  .roundlabel{
+    text-align:center;font-size:8px;font-weight:600;letter-spacing:2px;
+    text-transform:uppercase;color:var(--text-muted);margin-bottom:11px;
+  }
+  .clubs{
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+  }
+  .clubs span{font-size:13px;font-weight:600;color:var(--text-secondary);flex:1}
+  .clubs .away{text-align:right}
+
+  /* ── A · BLOCK: ScoreBlock-primitiven som hjälte (ljus variant, win) ── */
+  .block-hero{display:flex;justify-content:center;margin:4px 0 14px}
+  .score-block{
+    display:inline-flex;flex-direction:column;align-items:center;
+    background:var(--bg-surface);
+    border:1px solid rgba(196,122,58,.18);
+    border-left:4px solid var(--success-muted);
+    border-radius:2px;                 /* medvetet vassare än kortet */
+    padding:12px 22px 10px;min-width:150px;line-height:1;
+  }
+  .score-block .num{
+    font-family:var(--font-mono);font-weight:700;font-size:46px;
+    font-variant-numeric:tabular-nums;letter-spacing:1px;
+    color:var(--success);
+  }
+  .score-block .num .dash{color:var(--text-muted);font-weight:400;margin:0 4px}
+  .score-block .lab{
+    font-family:var(--font-body);font-size:7.5px;font-weight:700;
+    letter-spacing:1.4px;text-transform:uppercase;color:var(--success);margin-top:7px;
+  }
+
+  /* ── B · LED: Stålvallen-tavlan som hjälte ── */
+  .led-hero{margin:2px 0 14px}
+  .scoreboard-root{
+    background:var(--leather-dk);
+    border-radius:6px;overflow:hidden;
+    border-bottom:2px solid rgba(196,122,58,.3);
+    box-shadow:0 4px 16px rgba(0,0,0,.5);
+  }
+  .final-band{
+    background:rgba(196,122,58,.15);
+    border-bottom:1px solid rgba(196,122,58,.2);
+    padding:4px 12px;display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .final-band .lab{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:3px;color:var(--copper);text-transform:uppercase}
+  .board-system{
+    background:linear-gradient(180deg,var(--bezel-top),var(--bezel-mid) 60%,var(--bezel-bot));
+    padding:1px;
+    box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 -1px 0 rgba(0,0,0,.6) inset;
+  }
+  .module-main{
+    background:var(--panel);
+    padding:14px 16px 16px;position:relative;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .module-main::before{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 1px,transparent 1px 3px);
+  }
+  .main-row{
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;
+    position:relative;
+  }
+  .team-col{text-align:center}
+  .team-code{
+    display:block;font-family:var(--font-mono);font-size:9px;letter-spacing:3px;
+    color:var(--led-warm);margin-bottom:8px;text-shadow:0 0 4px var(--led-glow);
+  }
+  .team-score{
+    font-family:var(--font-mono);font-weight:700;font-size:42px;line-height:1;
+    font-variant-numeric:tabular-nums;
+    color:#FFE7D8;text-shadow:0 0 10px rgba(255,120,80,.55),0 0 22px rgba(255,90,50,.3);
+  }
+  .team-score.win{color:#FFD9A0;text-shadow:0 0 10px rgba(255,170,0,.6),0 0 24px rgba(255,140,0,.32)}
+  .mid-col{
+    display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 4px;
+    border-left:1px solid rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.06);
+  }
+  .mid-mark{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:rgba(255,220,200,.7);text-shadow:0 0 4px var(--led-glow)}
+
+  /* ── gemensam underdel (identisk i båda) ── */
+  .pill{
+    text-align:center;margin-bottom:9px;
+  }
+  .pill span{
+    display:inline-block;font-size:12px;font-weight:700;letter-spacing:1px;
+    padding:4px 12px;border-radius:20px;
+    background:rgba(90,154,74,.12);border:1px solid rgba(90,154,74,.3);color:var(--success);
+  }
+  .flavor{text-align:center}
+  .flavor span{font-size:13px;font-weight:600;color:var(--success)}
+
+  .note{
+    max-width:330px;font-size:11.5px;line-height:1.55;color:#C9C0B2;text-align:center;
+    font-family:var(--font-body);
+  }
+  .note b{color:#FAF8F4;font-weight:600}
+</style>
+</head>
+<body>
+
+  <div class="intro">
+    <h1>MatchResultScreen — vilket språk talar slutsiffran?</h1>
+    <p>Skärmen ritar i dag resultatet ad hoc: två 32px Georgia-siffror. Frågan är vilket etablerat språk hjälte-siffran ska tala. Samma match (Skutskär 4–2, hemma, omgång 12), samma chrome runt — bara hjälten skiljer.</p>
+  </div>
+
+  <div class="row">
+
+    <!-- ─────────── BLOCK ─────────── -->
+    <div class="col">
+      <div class="col-cap"><b>A · BLOCK</b> · ScoreBlock-primitiven</div>
+      <div class="phone">
+        <div class="card">
+          <div class="roundlabel">Omgång 12</div>
+          <div class="clubs"><span>Skutskär</span><span class="away">Gripen</span></div>
+          <div class="block-hero">
+            <div class="score-block">
+              <div class="num">4<span class="dash">–</span>2</div>
+              <div class="lab">Slutresultat</div>
+            </div>
+          </div>
+          <div class="pill"><span>SEGER</span></div>
+          <div class="flavor"><span>✅ Klar vinst</span></div>
+        </div>
+      </div>
+      <div class="note">Samma vokabulär som Champion/QF/RoundSummary: ljus yta, koppar/win-stripe, mono tabularsiffror, 2px-hörn. <b>Den reflektiva sammanfattningens språk.</b></div>
+    </div>
+
+    <!-- ─────────── LED ─────────── -->
+    <div class="col">
+      <div class="col-cap"><b>B · LED</b> · Stålvallen-tavlan</div>
+      <div class="phone">
+        <div class="card">
+          <div class="roundlabel">Omgång 12</div>
+          <div class="clubs"><span>Skutskär</span><span class="away">Gripen</span></div>
+          <div class="led-hero">
+            <div class="scoreboard-root">
+              <div class="final-band"><span class="lab">◾ Slutsignal</span></div>
+              <div class="board-system"><div class="module-main">
+                <div class="main-row">
+                  <div class="team-col">
+                    <span class="team-code">SKU</span>
+                    <span class="team-score win">4</span>
+                  </div>
+                  <div class="mid-col"><span class="mid-mark">FT</span></div>
+                  <div class="team-col">
+                    <span class="team-code">GRI</span>
+                    <span class="team-score">2</span>
+                  </div>
+                </div>
+              </div></div>
+            </div>
+          </div>
+          <div class="pill"><span>SEGER</span></div>
+          <div class="flavor"><span>✅ Klar vinst</span></div>
+        </div>
+      </div>
+      <div class="note">Arenatavlan från livematchen: mörk panel, glödande mono-siffror, scanlines. <b>Dramatisk — men det är live-språket, och tavlan tänds redan vid slutsignal inne i matchen.</b></div>
+    </div>
+
+  </div>
+
+  <div class="note" style="max-width:620px;margin-top:4px">
+    Lägg märke till hur LED-panelen klipper in en mörk arenakänsla mitt på den ljusa pappersytan — den vill ha hela skärmen mörk för att sitta rätt, medan Block smälter in i den editoriella sammanfattningen som redan finns runt omkring.
+  </div>
+
+</body>
+</html>

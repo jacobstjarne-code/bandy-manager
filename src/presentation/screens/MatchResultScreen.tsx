@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { MatchEventType } from '../../domain/enums'
-import '../styles/stalvallen-match.css'
+import { ScoreBlock } from '../components/primitives/ScoreBlock'
 
 export function MatchResultScreen() {
   const navigate = useNavigate()
@@ -43,15 +43,6 @@ export function MatchResultScreen() {
 
   const won = myScore > theirScore || wonByOT || wonByPenalties
   const lost = myScore < theirScore || lostByOT || lostByPenalties
-
-  const homeWon = penResult ? penResult.home > penResult.away
-    : otResult ? otResult === 'home'
-    : (fixture.homeScore ?? 0) > (fixture.awayScore ?? 0)
-  const awayWon = penResult ? penResult.away > penResult.home
-    : otResult ? otResult === 'away'
-    : (fixture.awayScore ?? 0) > (fixture.homeScore ?? 0)
-  const homeAbbr = (homeClub?.shortName ?? homeClub?.name ?? '').slice(0, 3).toUpperCase()
-  const awayAbbr = (awayClub?.shortName ?? awayClub?.name ?? '').slice(0, 3).toUpperCase()
 
   const potmId = fixture.report?.playerOfTheMatchId
   const potm = potmId ? game.players.find(p => p.id === potmId) : null
@@ -134,46 +125,13 @@ export function MatchResultScreen() {
           </span>
         </div>
 
-        {/* Big score — LED Stålvallen-tavla */}
-        <div style={{ marginBottom: penResult ? 4 : 12, ...fadeIn('160ms') }}>
-          <div
-            className="scoreboard-root"
-            style={{ position: 'relative', flexShrink: 'unset', zIndex: 'auto', borderRadius: 6 }}
-          >
-            <div className="scoreboard-final-band">
-              <span className="scoreboard-final-band-label">◾ Slutsignal</span>
-            </div>
-            <div className="board-system">
-              <div className="module-main">
-                <div className="main-row">
-                  <div className="team-col home">
-                    <span className="team-code">{homeAbbr}</span>
-                    <span className={`team-score${homeWon ? ' win' : awayWon ? ' loss' : ''}`}>
-                      {fixture.homeScore}
-                    </span>
-                  </div>
-                  <div style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    gap: 4, padding: '0 4px',
-                    borderLeft: '1px solid rgba(255,255,255,0.06)',
-                    borderRight: '1px solid rgba(255,255,255,0.06)',
-                  }}>
-                    <span style={{
-                      fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '2px',
-                      color: 'rgba(255,220,200,0.7)',
-                      textShadow: '0 0 4px rgba(255,100,75,0.4)',
-                    }}>FT</span>
-                  </div>
-                  <div className="team-col away">
-                    <span className="team-code">{awayAbbr}</span>
-                    <span className={`team-score${awayWon ? ' win' : homeWon ? ' loss' : ''}`}>
-                      {fixture.awayScore}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Big score — Block hero */}
+        <div style={{ marginBottom: penResult ? 4 : 12, textAlign: 'center', ...fadeIn('160ms') }}>
+          <ScoreBlock
+            score={`${myScore}–${theirScore}`}
+            variant={won ? 'win' : lost ? 'loss' : 'draw'}
+            size="hero"
+          />
         </div>
 
         {/* OT / Penalty info */}
@@ -318,7 +276,7 @@ export function MatchResultScreen() {
         {/* Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, ...fadeIn('1000ms') }}>
           <button
-            onClick={() => navigate('/game/match', { state: { showReport: true } })}
+            onClick={() => navigate('/game/review')}
             style={{
               width: '100%', padding: '13px 16px', borderRadius: 10,
               fontSize: 14, fontWeight: 600, cursor: 'pointer',

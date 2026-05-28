@@ -7,9 +7,13 @@ Format per lärdom: Mönster (symptom), Rotorsak (varför), Fix, Känn igen (sig
 
 ---
 
-## INNEHÅLL — 36 LÄRDOMAR i 6 kategorier
+## INNEHÅLL — 38 LÄRDOMAR i 6 kategorier
 
 Använd Ctrl-F på numret för att hoppa.
+
+**Designbeslut / migrationsprocess:**
+- 37. Exkludering är en designdom — riv med pixlar, inte argument
+- 38. Slentrianparkera inte väldefinierade uppgifter
 
 **React / UI:**
 - 1. SVG width/height skriver över container
@@ -906,3 +910,29 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
   det som står i claude.md." Fix-bekräftelse: läs kodläget + DESIGN-DECISIONS INNAN
   spec. En audit daterad >2 dagar tillbaka är en andrahandskälla, inte sanning —
   migreringar sker parallellt och hinner förbi auditen samma vecka.
+
+---
+
+## 37. Exkludering är en designdom — riv med pixlar, inte argument
+
+**Mönster:** En yta exkluderas från en migration med motivering ("byte = regression"). Vid nästa migration ignoreras exkluderingen med ett konsekvens-argument ("gold-varianten används konsekvent nu") istället för att designdomen rivs explicit med pixel-bevis.
+
+**Rotorsak:** Exkluderingar dokumenteras sällan som designdomar — de sitter i en commit-kommentar eller implicitit i att filen inte rördes. Nästa ingenjör ser möjligheten, inte förbudet.
+
+**Fix:** Innan du migrerar en exkluderad yta: öppna dev-galleriet (`/dev/scenes`), ta screenshot av nuläget, jämför mot målbilden. Om pixlarna visar att den gamla lösningen fortfarande är bättre — dokumentera det explicit. Om de visar att migrationen håller — riv exkluderingen och genomför.
+
+**Känn igen:** "Konsekvensvinsten" som argument för att genomföra en migration ingen bett om. Speciellt riskabelt när ytan inte finns i dev-galleriet och aldrig skärmdumpats.
+
+**Historik (2026-05-26/27):** VictoryScore hade 64px Georgia-hjälte, exkluderades från Score Våg 1 som "regression". Score Våg 2 migrerade ändå till ScoreBlock default (16px) med motivering "gold reserveras rätt nu". Dev-galleriet bekräftade regression. ScoreBlock hero (48px, ingen border-left) behövde byggas. Kostade tre sessionsmoment.
+
+---
+
+## 38. Slentrianparkera inte väldefinierade uppgifter
+
+**Mönster:** En uppgift är välspecad och färdigbeskriven men parkeras med "tas nästa gång" utan specifikt skäl. Nästa session börjar med att återidentifiera uppgiften och förstå varför den parkerades.
+
+**Rotorsak:** Parkering används som default-val istället för genomförande. Konsekvensen är dubbeljobb och missade kopplingar till annan pågående kod.
+
+**Fix:** Om en uppgift är väldefinierad och Code har verktygen — genomför direkt. Parkera bara om: (a) uppgiften beror på något som inte finns ännu, (b) Jacob explicit ber om att parkera, eller (c) specen är ofullständig och behöver Opus-runda.
+
+**Känn igen:** "Det här kan göras senare" utan konkret beroende. "Tas i nästa sprint" utan förklaring.

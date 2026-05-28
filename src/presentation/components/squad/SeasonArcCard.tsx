@@ -146,7 +146,7 @@ export function SeasonArcCard({ game }: Props) {
   // Players with a reaction
   const reactingPlayers = managedPlayers.flatMap(p => {
     const eff = getEffectiveMode(p, mode)
-    const reaction = getReaction(p, eff)
+    const reaction = getReaction(p, eff, game.currentMatchday)
     if (!reaction) return []
     return [{ player: p, reaction, hasOverride: !!p.periodisationOverride }]
   })

@@ -26,6 +26,7 @@ import {
   VILA_EXTRA_FITNESS_REC,
   VILA_SHARPNESS_PENALTY,
   SEASON_FORM_FITNESS_SLACK,
+  RAMP_ROUNDS,
 } from '../../../domain/services/periodisationService'
 import type { PeriodisationMode } from '../../../domain/services/periodisationService'
 import { clamp } from '../../../domain/utils/clamp'
@@ -74,6 +75,7 @@ export function applyPlayerStateUpdates(
         updated.isInjured = false
         updated.injuryDaysRemaining = 0
         updated.fitness = Math.max(30, updated.fitness - 15)
+        updated.recentlyInjuredUntil = nextRound + RAMP_ROUNDS
         updated.injuryNarrative = undefined
         // Narrative: recovery entry for managed players
         if (player.clubId === game.managedClubId) {
@@ -126,7 +128,10 @@ export function applyPlayerStateUpdates(
       updated.sharpness = Math.min(100, updated.sharpness + sharpnessGain)
 
     } else if (benchThisRound.has(player.id)) {
-      updated.fitness = Math.min(100, updated.fitness + 5)
+      updated.fitness = Math.min(
+        (updated.seasonForm ?? 60) + SEASON_FORM_FITNESS_SLACK,
+        Math.min(100, updated.fitness + 5),
+      )
       updated.sharpness = Math.max(0, updated.sharpness - 5)
     } else {
       // Did not play — calendar-scaled recovery capped by seasonForm

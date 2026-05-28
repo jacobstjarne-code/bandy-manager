@@ -119,7 +119,7 @@ Mest konkreta buggar Code kan ta direkt (ej Design). Opus hann EJ lokalisera all
 | # | Idé | Plats | Estimat |
 |---|---|---|---|
 | C-SY1 | **Synlighetssprinten** — 2 tickets kvar: orsakskrok på reaktiva texter, Portal-hierarki-justering. (Efterklang-secondary levererad 2026-05-25. Efter-match-kvitto levererad 2026-05-25.) Kräver designrunda per ticket före spec. | `docs/SKISS_SYNLIGHETSSPRINT_2026-05-20.md` | ~6–8h Code + 2 designrundor. |
-| C-SY2 | **Score-system tre-vokabulär (LED / score-block / sparkline)** — primitiver BYGGDA, Våg-1 KLAR. Våg 2 KLAR (VictoryScore → ScoreBlock gold, MatchResultScreen → LED Stålvallen `db06bf3`). Våg 3 DELVIS KLAR (TabellSecondary + FormStatusMinimal sparklines `db06bf3`; OpponentForm öppen per C-V1). Kvar: Våg 4 (featured: Ekonomi, SeasonSummary, PlayerCard). | `AUDIT-SCORE-SYSTEM-COVERAGE-2026-05-23` | ~2h per yta som migreras. Inkrementellt. |
+| C-SY2 | **Score-system tre-vokabulär (LED / score-block / sparkline)** — primitiver BYGGDA, Våg-1 KLAR. Våg 2 KLAR (VictoryScore + MatchResultScreen → ScoreBlock hero `2d2b2d4`, LED borttagen). Säsongsbåge + projektion KLAR (`51d0f73`). Våg 3 DELVIS KLAR (TabellSecondary + FormStatusMinimal sparklines; OpponentForm öppen per C-V1). ScoreBlock hero-storlek `2d2b2d4`. Dev-scengalleri `/dev/scenes` på `570ca45`. Kvar: Våg 4 (featured: Ekonomi, SeasonSummary, PlayerCard). | `AUDIT-SCORE-SYSTEM-COVERAGE-2026-05-23` | ~2h per yta som migreras. Inkrementellt. |
 
 ### Säsong och kalender (flaggat 2026-05-21, efter B11)
 
