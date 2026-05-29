@@ -406,7 +406,7 @@ export function MatchScreen() {
             setLineupError('Kunde inte simulera matchen')
             return
           }
-          navigate('/game/match-result')
+          navigate('/game/review')
         } catch (err) {
           console.error('Snabbsim kraschade:', err)
           setLineupError(`Något gick fel: ${err instanceof Error ? err.message : 'okänt fel'}`)

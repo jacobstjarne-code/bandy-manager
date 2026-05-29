@@ -30,7 +30,6 @@ import { ChampionScreen } from '../screens/ChampionScreen'
 import { SeasonSummaryScreen } from '../screens/SeasonSummaryScreen'
 import { InboxScreen } from '../screens/InboxScreen'
 
-import { MatchResultScreen } from '../screens/MatchResultScreen'
 import { GameOverScreen } from '../screens/GameOverScreen'
 import { GranskaScreen } from '../screens/granska/GranskaScreen'
 import { TaktikScreen } from '../screens/TaktikScreen'
@@ -136,8 +135,7 @@ export function AppRouter() {
         </Route>
         <Route element={<GameGuard />}>
           <Route path="/game/round-summary" element={<RoundSummaryScreen />} />
-          <Route path="/game/match-result" element={<MatchResultScreen />} />
-          <Route path="/game/game-over" element={<GameOverScreen />} />
+<Route path="/game/game-over" element={<GameOverScreen />} />
         </Route>
         {import.meta.env.DEV && DevScenesScreen && (
           <Route path="/dev/scenes" element={

@@ -1426,7 +1426,7 @@ export function MatchLiveScreen() {
         endResult={endResult}
         endSummary={endSummary}
         endArenaMeta={endArenaMeta}
-        onSeeSummary={() => navigate('/game/match-result', { replace: true })}
+        onSeeSummary={() => navigate('/game/review', { replace: true })}
       />
 
       {showHalftime && !matchDone && (

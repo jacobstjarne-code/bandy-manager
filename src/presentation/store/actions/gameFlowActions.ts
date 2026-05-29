@@ -236,7 +236,7 @@ export function gameFlowActions(get: Get, set: Set) {
           // so user sees between-round info and clicks "Spela omgång X" themselves
           navigateTo('/game/dashboard', { replace: true })
         } else if (summary.matchPlayed) {
-          navigateTo('/game/match-result', { replace: true })
+          navigateTo('/game/review', { replace: true })
         } else {
           navigateTo('/game/dashboard', { replace: true })
         }
