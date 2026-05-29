@@ -54,7 +54,6 @@ export function GameShell() {
   // EventOverlay visas BARA för kritiska events — medium/atmospheric visas av PortalEventSlot
   const isMatchRoute = location.pathname.includes('/match/live') ||
     location.pathname === '/game/match' ||
-    location.pathname === '/game/match-result' ||
     location.pathname === '/game/review'
   const isReviewRoute = location.pathname === '/game/review'
   const isPressConferenceRoute = location.pathname.includes('/press-conference')

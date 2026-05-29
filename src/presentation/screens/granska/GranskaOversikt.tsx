@@ -45,8 +45,8 @@ export function GranskaOversikt({
     <>
       {/* Result hero */}
       {fixture && (
-        <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(0) }}>
-          <div style={{ padding: '16px 14px 12px', textAlign: 'center' }}>
+        <div className="card-sharp" style={{ margin: '0 0 3px', ...fadeIn(0) }}>
+          <div style={{ padding: '16px 14px 16px', textAlign: 'center' }}>
             <SectionLabel style={{ marginBottom: 10 }}>SLUTRESULTAT</SectionLabel>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -112,7 +112,7 @@ export function GranskaOversikt({
 
       {/* Statistik */}
       {fixture?.report && (
-        <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(1) }}>
+        <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(1) }}>
           <SectionLabel style={{ marginBottom: 8 }}>STATISTIK</SectionLabel>
           {[
             { label: 'Skott', home: fixture.report.shotsHome, away: fixture.report.shotsAway },
@@ -152,7 +152,7 @@ export function GranskaOversikt({
               const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
               const relatedClub = event.relatedClubId ? game.clubs.find(c => c.id === event.relatedClubId) : null
               return (
-                <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(2 + ei) }}>
+                <div key={event.id} className="card-sharp" style={{ margin: '0 0 3px', ...fadeIn(2 + ei) }}>
                   <div style={{ padding: '10px 12px' }}>
                     <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>{event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}</SectionLabel>
                     {resolved ? (
@@ -207,7 +207,7 @@ export function GranskaOversikt({
         const pcTitle = pc.title.replace(/^🎤\s*Presskonferens\s*[—–-]\s*/i, '').trim()
         return (
           <div className="card-sharp" style={{
-            margin: '0 0 6px',
+            margin: '0 0 3px',
             borderLeft: '3px solid var(--warm)',
             borderRadius: '0 8px 8px 0',
             ...fadeIn(4),
@@ -248,7 +248,7 @@ export function GranskaOversikt({
         const journalist = game.journalist
         return (
           <div className="card-sharp" style={{
-            margin: '0 0 6px',
+            margin: '0 0 3px',
             borderLeft: '3px solid var(--warm)',
             borderRadius: '0 8px 8px 0',
             ...fadeIn(4),
@@ -290,7 +290,7 @@ export function GranskaOversikt({
         const rmResolved = resolvedEventIds.has(rm.id)
         const rmChosenLabel = chosenLabels[rm.id]
         return (
-          <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(4) }}>
+          <div className="card-sharp" style={{ margin: '0 0 3px', ...fadeIn(4) }}>
             <div style={{ padding: '10px 12px' }}>
               <SectionLabel style={{ marginBottom: rmResolved ? 4 : 6 }}>🏟️ DOMARENS LOCKER ROOM</SectionLabel>
               {rmResolved ? (
@@ -333,7 +333,7 @@ export function GranskaOversikt({
           : journalist?.persona === 'analytical' ? 'Analytisk' : null
         return (
           <div className="card-sharp" style={{
-            margin: '0 0 6px', padding: '10px 12px',
+            margin: '0 0 3px', padding: '10px 12px',
             borderLeft: '2px solid var(--accent)',
             borderRadius: '0 8px 8px 0',
             ...fadeIn(5),
@@ -394,7 +394,7 @@ export function GranskaOversikt({
 
         if (lines.length === 0) return null
         return (
-          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(7) }}>
+          <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(7) }}>
             <SectionLabel style={{ marginBottom: 4 }}>📋 DINA VAL</SectionLabel>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 8 }}>
               Dina beslut den här matchen, och hur de föll ut.
@@ -415,7 +415,7 @@ export function GranskaOversikt({
 
       {/* Nyckelmoment */}
       {keyMoments.length > 0 && (
-        <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(6) }}>
+        <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(6) }}>
           <SectionLabel style={{ marginBottom: 8 }}>NYCKELMOMENT</SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {keyMoments.map((e, i) => {

@@ -249,6 +249,11 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     data.pendingScreen = null
   }
 
+  // 2026-05-29: BoardMeeting ska aldrig trigga säsong 1. Rensa stale pendingScene.
+  if ((data.pendingScene as Record<string, unknown> | undefined)?.sceneId === 'board_meeting' && data.currentSeason === 1) {
+    data.pendingScene = null
+  }
+
   // ── SPEC_INLEDNING_FAS_2 — board + clubhouse på varje klubb ─────────────
   if (Array.isArray(data.clubs)) {
     data.clubs = (data.clubs as Record<string, unknown>[]).map(c => {

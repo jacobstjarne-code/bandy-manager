@@ -302,7 +302,8 @@ export function gameFlowActions(get: Get, set: Set) {
     clearSeasonSummary: () => {
       const { game } = get()
       if (!game) return
-      set({ game: { ...game, pendingScreen: PendingScreen.BoardMeeting } })
+      // BoardMeeting fires via detectSceneTrigger on säsong 2+, matchday 0
+      set({ game: { ...game, pendingScreen: null } })
     },
 
     clearRoundSummary: () => set({ roundSummary: null }),

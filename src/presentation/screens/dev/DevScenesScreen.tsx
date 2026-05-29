@@ -13,15 +13,17 @@ import { SMFinalVictoryScene } from '../scenes/SMFinalVictoryScene'
 import { SeasonArcCard } from '../../components/squad/SeasonArcCard'
 import { TabellSecondary } from '../../components/portal/secondary/TabellSecondary'
 import { FormStatusMinimal } from '../../components/portal/minimal/FormStatusMinimal'
+import { EfterklangSecondary } from '../../components/portal/secondary/EfterklangSecondary'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
   { id: 'sm-victory',   label: 'SM-Final Victory' },
   { id: 'season-arc',   label: 'SeasonArcCard (toppa, omg 16)' },
   { id: 'portal-cards', label: 'Portal Cards (mörk yta)' },
+  { id: 'efterklang',   label: 'Efterklang (journalist-tråd)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -166,6 +168,20 @@ function makeGame(fixtureOverrides: object[], extra: Record<string, unknown> = {
   } as unknown as SaveGame
 }
 
+// Efterklang — fingered journalist with 3 memories over 5 rounds
+const efterklangGame = makeGame(makeLeagueFixtures(), {
+  journalist: {
+    name: 'Britta Sandström',
+    persona: 'sceptical',
+    relationship: 62,
+    memory: [
+      { season: 8, matchday: 4, event: 'big_win', sentiment: 6 },
+      { season: 8, matchday: 7, event: 'bad_answer', sentiment: -5 },
+      { season: 8, matchday: 9, event: 'good_answer', sentiment: 4 },
+    ],
+  },
+})
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 const cupGame    = makeGame([...makeLeagueFixtures(), cupFinalFixture])
@@ -181,6 +197,7 @@ export function DevScenesScreen() {
     const g = scene === 'cup-victory' ? cupGame
       : scene === 'sm-victory' ? smGame
       : scene === 'season-arc' ? arcGame
+      : scene === 'efterklang' ? efterklangGame
       : portalGame
     useGameStore.setState({ game: g })
   }, [scene])
@@ -257,6 +274,11 @@ export function DevScenesScreen() {
           </div>
         )}
 
+        {scene === 'efterklang' && (
+          <div style={{ padding: '20px 12px', background: 'var(--bg-portal-surface)', minHeight: 'calc(100vh - 40px)' }}>
+            <EfterklangSecondary game={efterklangGame} />
+          </div>
+        )}
       </div>
     </div>
   )

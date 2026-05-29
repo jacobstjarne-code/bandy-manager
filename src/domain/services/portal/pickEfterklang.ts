@@ -2,10 +2,18 @@ import type { SaveGame } from '../../entities/SaveGame'
 import { EFTERKLANG_ECHO, type EfterklangType } from '../../data/efterklangText'
 import { mulberry32 } from '../../utils/random'
 
+export interface EfterklangThreadEntry {
+  matchday: number
+  text: string
+}
+
 export interface EfterklangMemory {
   type: EfterklangType
   primaryText: string
   echo: string
+  objectName: string
+  sinceMatchday?: number
+  threadEntries: EfterklangThreadEntry[]
   /** journalist type only */
   journalistName?: string
   hasJournalistSparkline?: boolean
@@ -34,10 +42,15 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   if (anniversaries.length > 0) {
     const ann = anniversaries[0]
     const echo = interpolate(pickEcho('anniversary', seed), {})
+    const name = ann.originalEventText.length > 28 ? ann.originalEventText.slice(0, 26) + '…' : ann.originalEventText
     candidates.push({
       type: 'anniversary',
       score: ann.significance * (ann.echoSize === 'big' ? 1.3 : 1.0),
-      memory: { type: 'anniversary', primaryText: ann.originalEventText, echo },
+      memory: {
+        type: 'anniversary', primaryText: ann.originalEventText, echo,
+        objectName: name,
+        threadEntries: [{ matchday: round, text: ann.originalEventText }],
+      },
     })
   }
 
@@ -47,7 +60,11 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     candidates.push({
       type: 'klackEcho',
       score: game.klackEcho.currentWeight,
-      memory: { type: 'klackEcho', primaryText: '', echo },
+      memory: {
+        type: 'klackEcho', primaryText: '', echo,
+        objectName: 'Klacken',
+        threadEntries: [{ matchday: round, text: echo }],
+      },
     })
   }
 
@@ -57,10 +74,17 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     const name = game.journalist.name
     const echo = interpolate(pickEcho('journalist', seed + 2), { journalist: name })
     const hasSparkline = (game.scoreSnapshots?.journalistRelation?.length ?? 0) >= 5
-    // Score on recency + sentiment magnitude of most notable memory
     const notable = journalistMemories.reduce((best, m) =>
       Math.abs(m.sentiment) > Math.abs(best.sentiment) ? m : best
     )
+    const sortedMemories = [...journalistMemories].sort((a, b) => a.matchday - b.matchday)
+    const journalistEventLabel: Record<string, string> = {
+      refused_press: 'Refuserade pressen',
+      good_answer: 'Bra svar',
+      bad_answer: 'Dåligt svar',
+      big_win: 'Stor seger',
+      crisis: 'Kris',
+    }
     candidates.push({
       type: 'journalist',
       score: 50 + Math.abs(notable.sentiment) * 3 + (game.journalist.relationship ?? 50) * 0.3,
@@ -68,6 +92,12 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
         type: 'journalist',
         primaryText: name,
         echo,
+        objectName: name,
+        sinceMatchday: sortedMemories[0]?.matchday,
+        threadEntries: sortedMemories.map(m => ({
+          matchday: m.matchday,
+          text: journalistEventLabel[m.event] ?? m.event,
+        })),
         journalistName: name,
         hasJournalistSparkline: hasSparkline,
       },
@@ -82,7 +112,11 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     candidates.push({
       type: 'followUp',
       score: 40,
-      memory: { type: 'followUp', primaryText: letter.senderName, echo },
+      memory: {
+        type: 'followUp', primaryText: letter.senderName, echo,
+        objectName: letter.senderName,
+        threadEntries: [{ matchday: round, text: letter.senderName }],
+      },
     })
   }
 
@@ -93,7 +127,11 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     candidates.push({
       type: 'boardObjective',
       score: 55,
-      memory: { type: 'boardObjective', primaryText: recentObjective.ownerReaction, echo },
+      memory: {
+        type: 'boardObjective', primaryText: recentObjective.ownerReaction, echo,
+        objectName: 'Styrelsemålet',
+        threadEntries: [{ matchday: round, text: recentObjective.ownerReaction }],
+      },
     })
   }
 
@@ -110,7 +148,11 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     candidates.push({
       type: 'nemesis',
       score: 45 + n.goalsAgainstUs * 5,
-      memory: { type: 'nemesis', primaryText: n.name, echo },
+      memory: {
+        type: 'nemesis', primaryText: n.name, echo,
+        objectName: n.name,
+        threadEntries: [{ matchday: round, text: `${n.goalsAgainstUs} mål mot oss` }],
+      },
     })
   }
 
@@ -120,7 +162,11 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     candidates.push({
       type: 'economicScar',
       score: 60,
-      memory: { type: 'economicScar', primaryText: '', echo },
+      memory: {
+        type: 'economicScar', primaryText: '', echo,
+        objectName: 'Budgetkrisen',
+        threadEntries: [{ matchday: round, text: echo }],
+      },
     })
   }
 
@@ -128,7 +174,6 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   if (game.lastRivalSaleMatchday !== undefined) {
     const recency = round - game.lastRivalSaleMatchday
     if (recency >= 0 && recency <= 10) {
-      // Text pools without {spelare}/{rival} interpolation (data not stored)
       const fallbackEchoes = [
         'Ni sålde en spelare dit. Han hälsar inte längre när ni möts.',
         'En spelare bär deras färger nu. Det svider fortfarande.',
@@ -137,7 +182,11 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
       candidates.push({
         type: 'rivalSale',
         score: 35 + (10 - recency) * 3,
-        memory: { type: 'rivalSale', primaryText: '', echo },
+        memory: {
+          type: 'rivalSale', primaryText: '', echo,
+          objectName: 'Rivalförsäljning',
+          threadEntries: [{ matchday: game.lastRivalSaleMatchday, text: echo }],
+        },
       })
     }
   }
