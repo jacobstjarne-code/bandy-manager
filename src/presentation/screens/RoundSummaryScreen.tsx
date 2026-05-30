@@ -185,7 +185,7 @@ export function RoundSummaryScreen() {
           <div
             className="card-sharp"
             style={{ margin: '0 0 8px', overflow: 'hidden', cursor: 'pointer', ...fadeIn(1) }}
-            onClick={() => navigate('/game/match-result')}
+            onClick={() => navigate('/game/review')}
           >
             <div style={{ padding: '12px 14px 10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>

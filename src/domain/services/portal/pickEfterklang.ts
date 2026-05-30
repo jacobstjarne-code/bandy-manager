@@ -2,6 +2,14 @@ import type { SaveGame } from '../../entities/SaveGame'
 import { EFTERKLANG_ECHO, type EfterklangType } from '../../data/efterklangText'
 import { mulberry32 } from '../../utils/random'
 
+const JOURNALIST_EVENT_LABEL: Record<string, string> = {
+  refused_press: 'Refuserade pressen',
+  good_answer:   'Bra svar',
+  bad_answer:    'Dåligt svar',
+  big_win:       'Stor seger',
+  crisis:        'Kris',
+}
+
 export interface EfterklangThreadEntry {
   matchday: number
   text: string
@@ -78,13 +86,6 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
       Math.abs(m.sentiment) > Math.abs(best.sentiment) ? m : best
     )
     const sortedMemories = [...journalistMemories].sort((a, b) => a.matchday - b.matchday)
-    const journalistEventLabel: Record<string, string> = {
-      refused_press: 'Refuserade pressen',
-      good_answer: 'Bra svar',
-      bad_answer: 'Dåligt svar',
-      big_win: 'Stor seger',
-      crisis: 'Kris',
-    }
     candidates.push({
       type: 'journalist',
       score: 50 + Math.abs(notable.sentiment) * 3 + (game.journalist.relationship ?? 50) * 0.3,
@@ -96,7 +97,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
         sinceMatchday: sortedMemories[0]?.matchday,
         threadEntries: sortedMemories.map(m => ({
           matchday: m.matchday,
-          text: journalistEventLabel[m.event] ?? m.event,
+          text: JOURNALIST_EVENT_LABEL[m.event] ?? m.event,
         })),
         journalistName: name,
         hasJournalistSparkline: hasSparkline,

@@ -85,6 +85,8 @@ export function shouldTriggerBoardMeeting(game: SaveGame): boolean {
   // Triggar vid säsongsstart från och med säsong 2. Säsong 1 hanteras av ArrivalScene.
   if (game.currentSeason === 1) return false
   if ((game.shownScenes ?? []).includes('board_meeting')) return false
+  // Guard: scenen är redan aktiv — undviker re-trigger om onComplete aldrig kallades
+  if (game.pendingScene?.sceneId === 'board_meeting') return false
   if (game.currentMatchday !== 0) return false
   const anyMatchPlayed = game.fixtures.some(f => f.status === 'completed')
   if (anyMatchPlayed) return false

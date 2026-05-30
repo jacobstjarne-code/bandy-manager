@@ -2,21 +2,11 @@ import { useState } from 'react'
 import type { CardRenderProps } from '../portalTypes'
 import { pickEfterklang } from '../../../../domain/services/portal/pickEfterklang'
 import type { EfterklangMemory } from '../../../../domain/services/portal/pickEfterklang'
-import { EFTERKLANG_EYEBROW } from '../../../../domain/data/efterklangText'
+import { EFTERKLANG_EYEBROW, EFTERKLANG_TYPE_ICON } from '../../../../domain/data/efterklangText'
 import { Sparkline, MIN_POINTS } from '../../primitives/Sparkline'
 import { SectionLabel } from '../../SectionLabel'
 import { EfterklangThreadModal } from './EfterklangThreadModal'
 
-const TYPE_ICON: Record<string, string> = {
-  anniversary:    '📅',
-  klackEcho:      '📣',
-  journalist:     '📰',
-  followUp:       '✉️',
-  boardObjective: '🎯',
-  nemesis:        '⚔️',
-  economicScar:   '💸',
-  rivalSale:      '🔄',
-}
 
 function timingLine(mem: EfterklangMemory, currentRound: number): string {
   if (mem.sinceMatchday !== undefined && currentRound > mem.sinceMatchday) {
@@ -63,7 +53,7 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
             <div key={mem.type} style={i > 0 ? { borderTop: '1px solid var(--bg-leather)', paddingTop: 10 } : {}}>
               {mem.primaryText && (
                 <p style={{ fontSize: 11, color: 'var(--text-light-secondary)', margin: '0 0 4px' }}>
-                  {TYPE_ICON[mem.type]} {mem.primaryText}
+                  {EFTERKLANG_TYPE_ICON[mem.type]} {mem.primaryText}
                 </p>
               )}
 

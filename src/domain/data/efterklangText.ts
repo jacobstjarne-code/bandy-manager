@@ -10,6 +10,17 @@
 
 export const EFTERKLANG_EYEBROW = '⏳ Efterklang' // Code lägger till "· {n} minnen"
 
+export const EFTERKLANG_TYPE_ICON: Record<string, string> = {
+  anniversary:    '📅',
+  klackEcho:      '📣',
+  journalist:     '📰',
+  followUp:       '✉️',
+  boardObjective: '🎯',
+  nemesis:        '⚔️',
+  economicScar:   '💸',
+  rivalSale:      '🔄',
+}
+
 export type EfterklangType =
   | 'anniversary'      // ett tidigare resultat, +1 år
   | 'klackEcho'        // klackens minne av en kväll

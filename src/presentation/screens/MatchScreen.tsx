@@ -440,7 +440,7 @@ export function MatchScreen() {
       <MatchReportView
         fixture={completedFixture}
         game={game}
-        onClose={() => navigate('/game/match-result', { replace: true })}
+        onClose={() => navigate('/game/review', { replace: true })}
       />
     )
   }

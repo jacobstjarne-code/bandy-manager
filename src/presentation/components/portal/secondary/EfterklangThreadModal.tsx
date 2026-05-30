@@ -1,15 +1,5 @@
 import type { EfterklangMemory } from '../../../../domain/services/portal/pickEfterklang'
-
-const TYPE_ICON: Record<string, string> = {
-  anniversary:    '📅',
-  klackEcho:      '📣',
-  journalist:     '📰',
-  followUp:       '✉️',
-  boardObjective: '🎯',
-  nemesis:        '⚔️',
-  economicScar:   '💸',
-  rivalSale:      '🔄',
-}
+import { EFTERKLANG_TYPE_ICON } from '../../../../domain/data/efterklangText'
 
 interface Props {
   memory: EfterklangMemory
@@ -42,7 +32,7 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div>
             <div style={{ fontSize: 8, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 2 }}>
-              {TYPE_ICON[memory.type]} EFTERKLANG
+              {EFTERKLANG_TYPE_ICON[memory.type]} EFTERKLANG
             </div>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-light)' }}>
               {memory.objectName}
