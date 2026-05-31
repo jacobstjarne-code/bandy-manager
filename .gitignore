@@ -16,3 +16,8 @@ design-system/uploads/
 docs/data/INTERNAL_referee_per_match.json
 docs/data/INTERNAL_referee_aggregates.json
 docs/data/INTERNAL_REFEREE_PATTERNS.md
+docs/data/INTERNAL_REFEREE_DEEP_DIVE.md
+docs/data/INTERNAL_REFEREE_PROFILES.md
+docs/data/INTERNAL_referee_season_trends.json
+docs/data/INTERNAL_referee_penalty_attribution.json
+docs/data/INTERNAL_referee_dam_herr.json
