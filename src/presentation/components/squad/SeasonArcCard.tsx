@@ -186,6 +186,10 @@ export function SeasonArcCard({ game }: Props) {
             <i style={{ width: 12, height: 0, display: 'inline-block', borderTop: '2px dashed #4a6680' }} />
             Skärpa
           </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <i style={{ width: 8, height: 8, borderRadius: 2, display: 'inline-block', background: 'rgba(196,122,58,0.28)' }} />
+            <span style={{ color: 'rgba(196,122,58,0.75)' }}>Topp-zon</span>
+          </span>
         </div>
 
         {/* Dial */}

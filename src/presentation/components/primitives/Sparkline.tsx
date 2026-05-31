@@ -24,6 +24,8 @@ interface SparklineProps {
   yInverted?: boolean
   label?: string
   areaFill?: boolean
+  /** Override the minimum number of points required to render (default: MIN_POINTS=5) */
+  minPoints?: number
 }
 
 export function normalize(points: number[], height: number, yInverted: boolean): [number, number][] {
@@ -47,8 +49,8 @@ export function normalize(points: number[], height: number, yInverted: boolean):
   })
 }
 
-export function Sparkline({ points, markers, stroke = 'accent', height = 28, yInverted = false, label, areaFill = false }: SparklineProps) {
-  if (points.length < MIN_POINTS) {
+export function Sparkline({ points, markers, stroke = 'accent', height = 28, yInverted = false, label, areaFill = false, minPoints }: SparklineProps) {
+  if (points.length < (minPoints ?? MIN_POINTS)) {
     return (
       <div className="sparkline-empty" style={{ height }}>
         —

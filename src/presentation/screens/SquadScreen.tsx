@@ -342,7 +342,7 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 50 }}>
         <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, width: 60 }}>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>Form</p>
-          <Sparkline points={recentRatings} stroke={sparkStroke} height={12} />
+          <Sparkline points={recentRatings} stroke={sparkStroke} height={12} minPoints={2} />
         </div>
         <div style={{ width: 50, flexShrink: 0 }}>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>Kond</p>

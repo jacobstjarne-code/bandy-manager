@@ -1,5 +1,6 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { Sparkline } from '../primitives'
+import { ManagerPortrait } from '../squad/ManagerPortrait'
 import {
   getManagerBio,
   getBurnoutZone,
@@ -52,19 +53,23 @@ export function TranareTab({ game }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {/* Profil-card */}
       <div className="card-sharp" style={{ padding: '12px 14px' }}>
-        <SectionLabel style={{ marginBottom: 8 }}>👔 TRÄNARPROFIL</SectionLabel>
+        <SectionLabel style={{ marginBottom: 10 }}>👔 TRÄNARPROFIL</SectionLabel>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
-          <div>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
+          <ManagerPortrait
+            firstName={profile.firstName}
+            lastName={profile.lastName}
+            seasonsAtClub={profile.seasonsAtClub}
+            burnoutScore={profile.burnoutScore}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', margin: 0 }}>
               {profile.firstName} {profile.lastName}
             </p>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>
               {profile.age} år · {profile.hometown}
             </p>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0 }}>Säsong {profile.seasonsAtClub} vid klubben</p>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0' }}>Säsong {profile.seasonsAtClub} vid klubben</p>
           </div>
         </div>
 
