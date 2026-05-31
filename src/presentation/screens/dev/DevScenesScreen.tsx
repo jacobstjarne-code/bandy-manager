@@ -14,9 +14,12 @@ import { SeasonArcCard } from '../../components/squad/SeasonArcCard'
 import { TabellSecondary } from '../../components/portal/secondary/TabellSecondary'
 import { FormStatusMinimal } from '../../components/portal/minimal/FormStatusMinimal'
 import { EfterklangSecondary } from '../../components/portal/secondary/EfterklangSecondary'
+import { SquadScreen } from '../SquadScreen'
+import { PortalScreen } from '../PortalScreen'
+import { TranareTab } from '../../components/club/TranareTab'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -24,6 +27,9 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'season-arc',   label: 'SeasonArcCard (toppa, omg 16)' },
   { id: 'portal-cards', label: 'Portal Cards (mörk yta)' },
   { id: 'efterklang',   label: 'Efterklang (journalist-tråd)' },
+  { id: 'squad',        label: 'SquadScreen (trupp)' },
+  { id: 'portal',       label: 'PortalScreen (dashboard)' },
+  { id: 'tranare',      label: 'TranareTab (manager-karaktär)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -54,31 +60,43 @@ const devClubs = [
   },
 ]
 
+function makePlayer(id: string, first: string, last: string, age: number, pos: PlayerPosition, ca: number, extra: Record<string, unknown> = {}) {
+  return {
+    id, firstName: first, lastName: last, age, clubId: HOME_ID, position: pos,
+    fitness: 75 + Math.floor(ca / 10), sharpness: 60 + Math.floor(ca / 8), seasonForm: 68, form: 70,
+    currentAbility: ca, potentialAbility: Math.min(100, ca + 5), morale: 68,
+    attributes: { finishing: 60, dribbling: 58, passing: 62, defending: 60, stamina: 65, positioning: 62, goalkeeping: pos === PlayerPosition.Goalkeeper ? 78 : 5, corners: 55, penaltyShooting: 50, longShots: 50 },
+    isInjured: false, suspensionGamesRemaining: 0, contractEnd: 9, wage: ca * 25, value: ca * 300, goals: 0, assists: 0, gamesPlayed: 14,
+    seasonStats: { goals: 0, assists: 0, gamesPlayed: 14, averageRating: 6.5 },
+    careerStats: { goals: 0, assists: 0, gamesPlayed: 50, averageRating: 6.5, seasons: 3 },
+    seasonHistory: [
+      { season: 6, goals: 4, assists: 3, games: 18, rating: 6.4, clubId: HOME_ID },
+      { season: 7, goals: 5, assists: 4, games: 20, rating: 6.7, clubId: HOME_ID },
+    ],
+    ...extra,
+  }
+}
+
 const devPlayers = [
-  {
-    id: 'p1', firstName: 'Karl', lastName: 'Lindström', age: 34,
-    clubId: HOME_ID, position: PlayerPosition.Forward,
-    fitness: 72, sharpness: 78, seasonForm: 65, form: 68,
-    currentAbility: 75, potentialAbility: 76, morale: 70,
-    attributes: { finishing: 74, dribbling: 68, passing: 65, defending: 40, stamina: 52, positioning: 65, goalkeeping: 5, corners: 70, penaltyShooting: 65, longShots: 60 },
-    isInjured: false, contractEnd: 9, wage: 1800, value: 22000, goals: 8, assists: 5, gamesPlayed: 14,
-  },
-  {
-    id: 'p2', firstName: 'Erik', lastName: 'Johansson', age: 19,
-    clubId: HOME_ID, position: PlayerPosition.Half,
-    fitness: 82, sharpness: 55, seasonForm: 70, form: 72,
-    currentAbility: 62, potentialAbility: 82, morale: 75,
-    attributes: { finishing: 58, dribbling: 64, passing: 70, defending: 60, stamina: 74, positioning: 62, goalkeeping: 5, corners: 55, penaltyShooting: 50, longShots: 55 },
-    isInjured: false, contractEnd: 10, wage: 1200, value: 18000, goals: 3, assists: 7, gamesPlayed: 14,
-  },
-  {
-    id: 'p3', firstName: 'Mattias', lastName: 'Holm', age: 27,
-    clubId: HOME_ID, position: PlayerPosition.Defender,
-    fitness: 85, sharpness: 82, seasonForm: 78, form: 74,
-    currentAbility: 80, potentialAbility: 81, morale: 68,
-    attributes: { finishing: 40, dribbling: 52, passing: 68, defending: 80, stamina: 74, positioning: 76, goalkeeping: 5, corners: 60, penaltyShooting: 55, longShots: 45 },
-    isInjured: false, contractEnd: 9, wage: 2100, value: 28000, goals: 1, assists: 3, gamesPlayed: 14,
-  },
+  // GK
+  makePlayer('p-gk1', 'Anders', 'Nilsson', 30, PlayerPosition.Goalkeeper, 78),
+  makePlayer('p-gk2', 'Jonas', 'Berg', 24, PlayerPosition.Goalkeeper, 65),
+  // DEF
+  makePlayer('p-d1', 'Mattias', 'Holm', 27, PlayerPosition.Defender, 80, { sharpness: 82 }),
+  makePlayer('p-d2', 'Sven', 'Eriksson', 32, PlayerPosition.Defender, 74),
+  makePlayer('p-d3', 'Patrik', 'Björk', 22, PlayerPosition.Defender, 68, { contractEnd: 9, availability: 'contract_expiring' }),
+  makePlayer('p-d4', 'Lars', 'Forsberg', 29, PlayerPosition.Defender, 72),
+  // HALF
+  makePlayer('p-h1', 'Erik', 'Johansson', 19, PlayerPosition.Half, 62, { potentialAbility: 84, promotedFromAcademy: true }),
+  makePlayer('p-h2', 'Mikael', 'Strand', 26, PlayerPosition.Half, 75),
+  makePlayer('p-h3', 'Thomas', 'Ågren', 33, PlayerPosition.Half, 71, { isInjured: true, injuryDaysRemaining: 14, injuryNarrative: 'Muskelskada, vänster lår. Räknar med 2 veckor.' }),
+  makePlayer('p-h4', 'Viktor', 'Lund', 28, PlayerPosition.Half, 69),
+  // FWD
+  makePlayer('p-f1', 'Karl', 'Lindström', 34, PlayerPosition.Forward, 75, { seasonForm: 65, fitness: 72 }),
+  makePlayer('p-f2', 'Daniel', 'Pettersson', 25, PlayerPosition.Forward, 77, { isCharacterPlayer: true }),
+  makePlayer('p-f3', 'Marcus', 'Svensson', 21, PlayerPosition.Forward, 64),
+  makePlayer('p-f4', 'Henrik', 'Magnusson', 30, PlayerPosition.Forward, 70),
+  makePlayer('p-f5', 'Johan', 'Karlsson', 28, PlayerPosition.Forward, 73, { suspensionGamesRemaining: 1 }),
 ]
 
 // Standing rows for 12-lag liga; managed = 3:a, opponent = 7:e
@@ -164,6 +182,19 @@ function makeGame(fixtureOverrides: object[], extra: Record<string, unknown> = {
     // Minimal required fields
     inbox: [], leagueId: 'liga-dev', managedClubName: 'Edsbyn BK',
     transferBids: [], scoutingReports: [],
+    managerProfile: {
+      id: 'mgr-dev', firstName: 'Jacob', lastName: 'Stjärne',
+      age: 45, hometown: 'Uppsala',
+      burnoutScore: 42, burnoutHistory: [28, 31, 35, 38, 40, 42],
+      coachRivalries: [{ clubId: AWAY_ID, h2hWins: 3, h2hDraws: 2, h2hLosses: 4, personality: 'kall', intensity: 6 }],
+      contractUntilSeason: 10, seasonsAtClub: 8, monthlySalary: 32,
+      careerWins: 62, careerDraws: 24, careerLosses: 44,
+      personalityType: 'ambitious', trait: 'ironman',
+      familyStatus: 'partner',
+    },
+    aiCoaches: {
+      [AWAY_ID]: { name: 'Per Andersson', persona: 'confident', yearsAtClub: 3, clubId: AWAY_ID },
+    },
     ...extra,
   } as unknown as SaveGame
 }
@@ -188,16 +219,18 @@ const cupGame    = makeGame([...makeLeagueFixtures(), cupFinalFixture])
 const smGame     = makeGame([...makeLeagueFixtures(), smFinalFixture])
 const arcGame    = makeGame(makeLeagueFixtures())
 const portalGame = makeGame(makeLeagueFixtures())
+const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1' })
 
 export function DevScenesScreen() {
   const [scene, setScene] = useState<SceneId>('cup-victory')
 
-  // Seed the store so components that call useGameStore() work (SeasonArcCard actions)
+  // Seed the store so all screens that call useGameStore() work
   useEffect(() => {
     const g = scene === 'cup-victory' ? cupGame
       : scene === 'sm-victory' ? smGame
       : scene === 'season-arc' ? arcGame
       : scene === 'efterklang' ? efterklangGame
+      : scene === 'squad' || scene === 'portal' || scene === 'tranare' ? squadGame
       : portalGame
     useGameStore.setState({ game: g })
   }, [scene])
@@ -277,6 +310,24 @@ export function DevScenesScreen() {
         {scene === 'efterklang' && (
           <div style={{ padding: '20px 12px', background: 'var(--bg-portal-surface)', minHeight: 'calc(100vh - 40px)' }}>
             <EfterklangSecondary game={efterklangGame} />
+          </div>
+        )}
+
+        {scene === 'squad' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <SquadScreen />
+          </div>
+        )}
+
+        {scene === 'portal' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <PortalScreen />
+          </div>
+        )}
+
+        {scene === 'tranare' && (
+          <div style={{ background: 'var(--bg)', padding: '12px', minHeight: '812px' }}>
+            <TranareTab game={squadGame} />
           </div>
         )}
       </div>
