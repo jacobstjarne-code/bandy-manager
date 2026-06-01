@@ -20,9 +20,11 @@ export function PortalRoundMark({ game }: Props) {
   const ctx = getPlayoffSeriesContext(game)
   if (!ctx) return null
   const isFinal = ctx.round === PlayoffRound.Final
+  // C-SD2: kvart + semi → warm-variant (mellansteg mot gold), final → gold
+  const toneClass = isFinal ? ' gold' : ' warm'
   const critLabel = CRIT_LABELS[ctx.criticality]
   return (
-    <div className={`portal-roundmark${isFinal ? ' gold' : ''}`}>
+    <div className={`portal-roundmark${toneClass}`}>
       {ROUND_LABELS[ctx.round]}
       {critLabel && <span className="crit">· {critLabel}</span>}
     </div>

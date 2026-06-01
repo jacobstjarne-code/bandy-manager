@@ -75,6 +75,7 @@ export interface SaveGame {
 
   // Portal fas-markeringar (visas en gång per fas per säsong)
   phaseMarksSeen: SeasonPhase[]        // default []
+  upptaktPhaseMarkSeenSeason?: number  // C-SD2: säsong då upptakt-PhaseMark visats (engångs/säsong)
 
   // Fas-anslag (säsongskapitel-overlay)
   seenAnslag?: import('../services/anslagService').AnslagKey[]

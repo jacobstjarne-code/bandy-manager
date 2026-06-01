@@ -19,9 +19,10 @@ import { PortalScreen } from '../PortalScreen'
 import { TranareTab } from '../../components/club/TranareTab'
 import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
 import { GranskaScreen } from '../granska/GranskaScreen'
+import { PortalUpptakt } from '../../components/portal/PortalUpptakt'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -37,6 +38,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'board-c',      label: 'BoardMeeting C (dålig)' },
   { id: 'stillness',    label: 'NU-stiltje (lugn vecka)' },
   { id: 'granska',      label: 'Granska (IA: 3 grupper)' },
+  { id: 'upptakt',      label: 'Upptakt (C-SD2 sub-states)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -259,6 +261,19 @@ const granskaOtherFixtures = [
 const granskaGame = makeGame([...makeLeagueFixtures(), granskaFixture, ...granskaOtherFixtures], {
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 20, communityStanding: 58,
 })
+// Upptakt sub-states — fingerade tabeller (played=19, 3 omg kvar)
+function makeUpptaktStandings(managedPoints: number, otherPoints: number[]) {
+  const rows = [
+    { clubId: HOME_ID, played: 19, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: managedPoints, position: 0 },
+    ...otherPoints.map((p, i) => ({ clubId: `us${i}`, played: 19, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: p, position: 0 })),
+  ]
+  rows.sort((a, b) => b.points - a.points).forEach((r, i) => { r.position = i + 1 })
+  return rows
+}
+const upptaktSakrat = makeGame(makeLeagueFixtures(), { currentMatchday: 19, standings: makeUpptaktStandings(34, [38, 36, 30, 28, 28, 20, 18, 16, 14, 12, 10]) })
+const upptaktFarozon = makeGame(makeLeagueFixtures(), { currentMatchday: 19, standings: makeUpptaktStandings(20, [30, 30, 28, 28, 28, 28, 26, 24, 22, 12, 10]) })
+const upptaktBottenstrid = makeGame(makeLeagueFixtures(), { currentMatchday: 19, standings: makeUpptaktStandings(8, [32, 30, 28, 26, 24, 22, 20, 18, 16, 10, 6]) })
+
 const granskaRoundSummary = {
   round: 20, date: '2026-02-01', matchPlayed: true,
   communityStandingBefore: 54, communityStandingAfter: 58, communityStandingChanges: [],
@@ -424,6 +439,17 @@ export function DevScenesScreen() {
         {scene === 'granska' && storeReady && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <GranskaScreen />
+          </div>
+        )}
+
+        {scene === 'upptakt' && (
+          <div style={{ background: 'var(--bg-portal)', minHeight: '812px', padding: '14px 0' }}>
+            {([['Säkrat', upptaktSakrat], ['Farozon', upptaktFarozon], ['Bottenstrid', upptaktBottenstrid]] as const).map(([label, g]) => (
+              <div key={label} style={{ marginBottom: 18 }}>
+                <div style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', padding: '0 14px 6px' }}>{label}</div>
+                <PortalUpptakt game={g} />
+              </div>
+            ))}
           </div>
         )}
       </div>

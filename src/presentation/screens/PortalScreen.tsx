@@ -20,6 +20,8 @@ import { getActiveDecisionCount } from '../../domain/services/decisionBudgetServ
 import { PlayoffRound, PendingScreen } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 import { PortalRoundMark } from '../components/portal/PortalRoundMark'
+import { PortalUpptakt } from '../components/portal/PortalUpptakt'
+import { shouldShowUpptakt } from '../../application/services/portalEscalationResolver'
 import { AnnandagsValEvent } from '../components/portal/AnnandagsValEvent'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
@@ -226,7 +228,12 @@ export function PortalScreen() {
   const StorySlotComponent = layout.storySlot?.Component ?? null
 
   const isSeason1Round1 = game.currentSeason === 1 && game.currentMatchday === 1
-  const isSmFinal = getPlayoffSeriesContext(game)?.round === PlayoffRound.Final
+  const playoffCtx = getPlayoffSeriesContext(game)
+  const isSmFinal = playoffCtx?.round === PlayoffRound.Final
+  // C-SD2: warm CTA på kvart/semi + upptakt-fönstret (ej final → gold)
+  const isCtaWarm = !isSmFinal && (
+    (playoffCtx != null && playoffCtx.round !== PlayoffRound.Final) || shouldShowUpptakt(game)
+  )
   const activeCount = getActiveDecisionCount(game)
 
   return (
@@ -249,6 +256,7 @@ export function PortalScreen() {
       >
         <SituationCard game={game} />
         <PortalPhaseMark game={game} />
+        <PortalUpptakt game={game} />
         <PortalSpectatorMark game={game} />
         <PortalAnniversaryMark game={game} />
         <PortalBeat game={game} />
@@ -296,7 +304,7 @@ export function PortalScreen() {
           data-coach-id="cta-button"
           onClick={handleAdvance}
           disabled={!canClickAdvance}
-          className={`btn btn-primary btn-cta${canClickAdvance ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : ''}`}
+          className={`btn btn-primary btn-cta${canClickAdvance ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
         >
           {advanceButtonText}
         </button>

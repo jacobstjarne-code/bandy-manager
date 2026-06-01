@@ -3,6 +3,7 @@ import type { AnslagKey } from '../../../domain/services/anslagService'
 import { findActiveAnniversaries } from '../../../domain/services/clubMemoryService'
 import { PendingScreen } from '../../../domain/enums'
 import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../../../domain/data/seasonPhases'
+import { shouldShowUpptakt } from '../../../application/services/portalEscalationResolver'
 import { clamp } from '../../../domain/utils/clamp'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
 import { RETIREMENT_RESPONSES } from '../../../domain/data/retirementText'
@@ -213,6 +214,13 @@ export function gameFlowActions(get: Get, set: Set) {
       const advSeen = gameToSave.phaseMarksSeen ?? []
       if (PHASEMARK_PHASES.has(advPhase) && !advSeen.includes(advPhase)) {
         const markedGame = { ...gameToSave, phaseMarksSeen: [...advSeen, advPhase] }
+        set({ game: markedGame })
+        void persistAutosave(markedGame, 'advance')
+      }
+
+      // C-SD2: märk upptakt-PhaseMark sedd (engångs per säsong) när spelaren lämnar Portal
+      if (shouldShowUpptakt(gameToSave) && gameToSave.upptaktPhaseMarkSeenSeason !== gameToSave.currentSeason) {
+        const markedGame = { ...gameToSave, upptaktPhaseMarkSeenSeason: gameToSave.currentSeason }
         set({ game: markedGame })
         void persistAutosave(markedGame, 'advance')
       }

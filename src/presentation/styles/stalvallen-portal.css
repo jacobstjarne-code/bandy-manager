@@ -421,6 +421,40 @@
   line-height: 1.4;
 }
 
+/* warm-variant — upptakt (mellansteg mot gold) */
+.portal-phasemark.warm {
+  border-top-color: rgba(140, 110, 58, 0.45);
+  border-bottom-color: rgba(140, 110, 58, 0.15);
+  background: linear-gradient(180deg, rgba(140, 110, 58, 0.08) 0%, rgba(140, 110, 58, 0.02) 100%);
+}
+.portal-phasemark.warm .portal-phasemark-eyebrow { color: var(--warm-light); }
+/* bottenstrid: warm-ram men cold-tonad helper (allvar åt andra hållet) */
+.portal-phasemark.warm.bottenstrid .portal-phasemark-helper { color: var(--cold-light); }
+
+/* ── Upptakt-countdown — pip-rail ─────────────────────────────── */
+.upptakt-countdown {
+  margin: 0 14px 12px;
+  padding: 8px 11px;
+  background: var(--bg-portal-surface);
+  border-radius: 6px;
+  border-left: 2px solid var(--warm);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.upptakt-countdown.bottenstrid { border-left-color: var(--cold); }
+.upptakt-countdown-pips { display: flex; gap: 5px; }
+.upptakt-countdown-pip { width: 9px; height: 9px; border-radius: 2px; background: var(--warm); }
+.upptakt-countdown.bottenstrid .upptakt-countdown-pip { background: var(--cold); }
+.upptakt-countdown-text {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  color: var(--text-light-secondary);
+  line-height: 1.35;
+}
+.upptakt-countdown-text strong { color: var(--warm-light); font-weight: 700; }
+.upptakt-countdown.bottenstrid .upptakt-countdown-text strong { color: var(--cold-light); }
+
 /* ── PortalRoundMark ─────────────────────────────────────────── */
 
 .portal-roundmark {
@@ -447,6 +481,8 @@
   margin-left: 6px;
   font-weight: 700;
 }
+.portal-roundmark.warm        { color: var(--warm-light); opacity: 0.95; }
+.portal-roundmark.warm .crit  { color: var(--warm-light); }
 .portal-roundmark.gold        { color: var(--gold); opacity: 1; }
 .portal-roundmark.gold .crit  { color: var(--gold); }
 
@@ -475,7 +511,16 @@
     var(--bg-portal-elevated) 42%);
   box-shadow: 0 0 0 1px rgba(232, 185, 92, 0.18), 0 6px 18px rgba(232, 185, 92, 0.10);
 }
+/* w2-warm: mellansteg mellan w2 (accent) och w3 (gold) — semi + farozon-upptakt */
+.primary-card.primary-weight-2-warm {
+  border-color: rgba(140, 110, 58, 0.55);
+  background: linear-gradient(180deg,
+    rgba(140, 110, 58, 0.10) 0%,
+    var(--bg-portal-elevated) 40%);
+  box-shadow: 0 0 0 1px rgba(140, 110, 58, 0.14), var(--shadow-card);
+}
 .primary-card.primary-weight-2 .primary-eyebrow { color: var(--warm-light); }
+.primary-card.primary-weight-2-warm .primary-eyebrow { color: var(--warm-light); }
 .primary-card.primary-weight-3 .primary-eyebrow { color: var(--gold); }
 .primary-card.primary-weight-3 .primary-title   { font-size: 22px; }
 
@@ -506,6 +551,13 @@
   color: var(--warm-light);
   box-shadow: 0 0 6px rgba(140, 110, 58, 0.3);
 }
+.series-game.next.warm {
+  width: 19px;
+  height: 19px;
+  background: rgba(140, 110, 58, 0.20);
+  border-color: var(--warm);
+  color: var(--warm-light);
+}
 .series-game.next.gold {
   width: 22px;
   height: 22px;
@@ -533,6 +585,11 @@
 
 /* ── Gold CTA ─────────────────────────────────────────────────── */
 
+.btn.btn-primary.btn-cta.btn-warm {
+  background: linear-gradient(180deg, var(--warm-light) 0%, var(--warm) 100%);
+  color: var(--text-light);
+  box-shadow: 0 3px 8px rgba(140, 110, 58, 0.32);
+}
 .btn.btn-primary.btn-cta.btn-gold {
   background: linear-gradient(180deg, var(--gold) 0%, var(--gold-deep, #B88838) 100%);
   color: var(--bg-portal);
