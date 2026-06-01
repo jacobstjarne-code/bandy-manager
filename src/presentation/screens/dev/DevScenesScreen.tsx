@@ -17,9 +17,10 @@ import { EfterklangSecondary } from '../../components/portal/secondary/Efterklan
 import { SquadScreen } from '../SquadScreen'
 import { PortalScreen } from '../PortalScreen'
 import { TranareTab } from '../../components/club/TranareTab'
+import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -30,6 +31,9 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'squad',        label: 'SquadScreen (trupp)' },
   { id: 'portal',       label: 'PortalScreen (dashboard)' },
   { id: 'tranare',      label: 'TranareTab (manager-karaktär)' },
+  { id: 'board-a',      label: 'BoardMeeting A (första)' },
+  { id: 'board-b',      label: 'BoardMeeting B (bra)' },
+  { id: 'board-c',      label: 'BoardMeeting C (dålig)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -221,6 +225,34 @@ const arcGame    = makeGame(makeLeagueFixtures())
 const portalGame = makeGame(makeLeagueFixtures())
 const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1' })
 
+// BoardMeeting fingered state — season 2+, prev-season objective history + new goals
+const boardPersonalities = [
+  { name: 'Margareta Sahlin', role: 'ordförande', personality: 'traditionalist' },
+  { name: 'Bengt Ek', role: 'kassör', personality: 'ekonom' },
+]
+const newGoalsSet = [
+  { id: 'g-sport', type: 'sporting', label: 'Topp 6', description: 'Ett steg upp', ownerId: 'b1', ownerPersonality: 'traditionalist', targetValue: 6, currentValue: 0, measureFn: 'placement', status: 'active', assignedSeason: 3, successReward: '', failureConsequence: '', carryOver: false },
+  { id: 'g-acad', type: 'academy', label: 'En egenfostrad i startelvan', description: 'Akademin ska synas', ownerId: 'b1', ownerPersonality: 'traditionalist', targetValue: 1, currentValue: 0, measureFn: 'academy', status: 'active', assignedSeason: 3, successReward: '', failureConsequence: '', carryOver: false },
+]
+const stretchGoalsSet = [
+  ...newGoalsSet.slice(0, 1),
+  { id: 'g-sm', type: 'sporting', label: 'SM-guld', description: 'SM-final och hela vägen', ownerId: 'b1', ownerPersonality: 'modernist', targetValue: 1, currentValue: 0, measureFn: 'title', status: 'active', assignedSeason: 3, successReward: '', failureConsequence: '', carryOver: false },
+]
+const histA = [{ season: 1, objectiveId: 'x', result: 'met' as const, ownerReaction: 'Bra jobbat.', label: 'Kvar i serien' }]
+const histB = [
+  { season: 2, objectiveId: 'a', result: 'met' as const, ownerReaction: '', label: 'Topp 4' },
+  { season: 2, objectiveId: 'b', result: 'met' as const, ownerReaction: '', label: 'Slutspel' },
+  { season: 2, objectiveId: 'c', result: 'met' as const, ownerReaction: '', label: 'Egenfostrad i startelva' },
+]
+const histC = [
+  { season: 2, objectiveId: 'a', result: 'failed' as const, ownerReaction: '', label: 'Topp 6' },
+  { season: 2, objectiveId: 'b', result: 'failed' as const, ownerReaction: '', label: 'Undvik kvalstrid' },
+  { season: 2, objectiveId: 'c', result: 'met' as const, ownerReaction: '', label: 'Egenfostrad i startelva' },
+]
+const boardGameA = makeGame(makeLeagueFixtures(), { currentSeason: 2, boardPersonalities, boardObjectives: newGoalsSet, boardObjectiveHistory: histA, seasonStartFinances: 62000 })
+const boardGameB = makeGame(makeLeagueFixtures(), { currentSeason: 3, boardPersonalities, boardObjectives: stretchGoalsSet, boardObjectiveHistory: histB, seasonStartFinances: 40000 })
+const boardGameC = makeGame(makeLeagueFixtures(), { currentSeason: 3, boardPersonalities, boardObjectives: newGoalsSet, boardObjectiveHistory: histC, seasonStartFinances: 120000 })
+
 export function DevScenesScreen() {
   const [scene, setScene] = useState<SceneId>('cup-victory')
 
@@ -231,6 +263,9 @@ export function DevScenesScreen() {
       : scene === 'season-arc' ? arcGame
       : scene === 'efterklang' ? efterklangGame
       : scene === 'squad' || scene === 'portal' || scene === 'tranare' ? squadGame
+      : scene === 'board-a' ? boardGameA
+      : scene === 'board-b' ? boardGameB
+      : scene === 'board-c' ? boardGameC
       : portalGame
     useGameStore.setState({ game: g })
   }, [scene])
@@ -330,6 +365,10 @@ export function DevScenesScreen() {
             <TranareTab game={squadGame} />
           </div>
         )}
+
+        {scene === 'board-a' && <BoardMeetingScene game={boardGameA} onComplete={() => {}} />}
+        {scene === 'board-b' && <BoardMeetingScene game={boardGameB} onComplete={() => {}} />}
+        {scene === 'board-c' && <BoardMeetingScene game={boardGameC} onComplete={() => {}} />}
       </div>
     </div>
   )

@@ -1,12 +1,16 @@
 /**
- * BoardMeetingScene — styrelsemötet, intro-scen säsong 1.
- * Fyra beats i dialog-format. Ordförande, kassör, ledamot.
- * Siffrorna flätas in dynamiskt från game state.
+ * BoardMeetingScene — styrelsemötet inför säsong 2+.
+ * Säsong 1 hanteras av ArrivalScene (denna scen triggas bara säsong 2+, matchday 0).
+ *
+ * Layout per docs/mockups/2026-05-30_design_boardmeeting_s2plus.html.
+ * A/B/C-tillstånd resolveras från föregående säsongs måluppfyllelse.
+ * Pixel-värden från mocken. Justera inte.
  */
 
-import { useState, useEffect } from 'react'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { getBoardMeetingBeats } from '../../../domain/data/scenes/boardMeetingScene'
+import type { BoardObjective } from '../../../domain/entities/Community'
+import { resolveBoardMeetingState } from '../../../application/services/boardMeetingStateResolver'
+import { BOARD_MEETING_COPY, GOAL_MOTIVATIONS, pickFromPool } from '../../../domain/data/boardMeetingCopy'
 import { SceneCTA } from './shared/SceneCTA'
 
 interface Props {
@@ -14,161 +18,168 @@ interface Props {
   onComplete: () => void
 }
 
+const GENRE_COLOR = { A: 'var(--accent)', B: 'var(--gold)', C: 'var(--cold-light)' } as const
+
+const TYPE_ICON: Record<string, string> = {
+  sporting: '📊', academy: '🎓', economic: '💰', community: '🏠', identity: '🏒',
+}
+
+function isStretch(obj: BoardObjective): boolean {
+  return obj.type === 'sporting' && /guld|sm-?final|\bsm\b|cup|final/i.test(`${obj.label} ${obj.description}`)
+}
+
 export function BoardMeetingScene({ game, onComplete }: Props) {
-  const beats = getBoardMeetingBeats(game)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const data = resolveBoardMeetingState(game)
+  const { state } = data
+  const pool = BOARD_MEETING_COPY[state]
+  const seed = game.currentSeason * 9301 + game.managedClubId.length * 7
 
-  const currentBeat = beats[currentIndex]
+  const setting = pickFromPool(pool.settings, seed)
+  const title = pickFromPool(pool.titles, seed + 1)
+  const speakerLine = pickFromPool(pool.speakerLines, seed + 2)
 
-  // Auto-advance for beats with autoAdvance
-  useEffect(() => {
-    if (!currentBeat?.autoAdvance) return
-    const timer = setTimeout(() => {
-      if (currentIndex < beats.length - 1) {
-        setCurrentIndex(i => i + 1)
-      } else {
-        onComplete()
-      }
-    }, currentBeat.durationMs ?? 4000)
-    return () => clearTimeout(timer)
-  }, [currentIndex, currentBeat, beats.length, onComplete])
-
-  if (!currentBeat) {
-    return (
-      <div style={{ padding: 24 }}>
-        <SceneCTA label="Stäng" onClick={onComplete} />
-      </div>
-    )
+  const goalMotivation = (obj: BoardObjective, i: number): string => {
+    const key = `${state}:${obj.type}`
+    const motivs = GOAL_MOTIVATIONS[key]
+    if (motivs && motivs.length > 0) return pickFromPool(motivs, seed + 3 + i)
+    return obj.description
   }
 
-  const handleCTA = () => {
-    if (currentIndex < beats.length - 1) {
-      setCurrentIndex(i => i + 1)
-    } else {
-      onComplete()
-    }
-  }
+  const evalStripe = state === 'B' ? 'var(--success)' : state === 'C' ? 'var(--danger)' : 'var(--cold)'
+  const finValColor = state === 'B' ? 'var(--success)' : state === 'C' ? 'var(--danger)' : 'var(--text-light)'
 
-  // Format body: replace *"..."* with italic styling
-  const formatBody = (text: string) => {
-    const parts = text.split(/(\*"[^"]*"\*|\*[^*]+\*)/g)
-    return parts.map((part, i) => {
-      if (part.startsWith('*') && part.endsWith('*')) {
-        const inner = part.slice(1, -1)
-        return <em key={i}>{inner}</em>
-      }
-      // Split on newlines to render paragraphs
-      return part.split('\n\n').map((para, j) => (
-        <p key={`${i}-${j}`} style={{ margin: '0 0 12px' }}>{para}</p>
-      ))
-    })
-  }
+  const fmtTkr = (v: number) => `${Math.round(v / 1000)} tkr`
+  const delta = data.finance.financesDelta
+  const deltaText = delta === null ? null
+    : delta > 0 ? `▲ +${fmtTkr(delta)}`
+    : delta < 0 ? `▼ ${fmtTkr(delta)}`
+    : 'Oförändrad'
 
   return (
-    <div
-      style={{
-        background: 'var(--bg-scene)',
-        minHeight: '100vh',
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          padding: '30px 24px 0',
-          textAlign: 'center',
-        }}
-      >
-        <div className="h-scene-genre">STYRELSEMÖTET</div>
-        <div
-          style={{
-            fontFamily: 'Georgia, serif',
-            fontSize: 22,
-            fontWeight: 700,
-            color: 'var(--text-light)',
-            lineHeight: 1.2,
-            marginBottom: 4,
-          }}
-        >
-          Inför säsongen
-        </div>
+    <div style={{
+      background: 'var(--bg-portal)',
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '30px 22px 28px',
+      animation: 'fadeIn 300ms ease both',
+    }}>
+      {/* Genre */}
+      <div style={{
+        fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase',
+        textAlign: 'center', color: GENRE_COLOR[state],
+        opacity: state === 'A' ? 0.7 : 0.85, marginBottom: 14,
+      }}>
+        ⬩ Styrelsemöte ⬩
+      </div>
 
-        {/* Beat progress indicator */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 4,
-            justifyContent: 'center',
-            marginTop: 12,
-            marginBottom: 20,
-          }}
-        >
-          {beats.map((_, i) => (
-            <div
-              key={i}
-              style={{
-                width: 24,
-                height: 2,
-                borderRadius: 1,
-                background: i <= currentIndex ? 'var(--accent)' : 'var(--border-dark)',
-                opacity: i <= currentIndex ? 0.8 : 0.3,
-                transition: 'background 0.3s ease',
-              }}
-            />
-          ))}
+      {/* Setting — rumsprolog */}
+      <div style={{
+        fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 12.5,
+        color: 'var(--text-light-secondary)', textAlign: 'center',
+        maxWidth: 280, margin: '0 auto 20px', lineHeight: 1.55,
+      }}>
+        {setting}
+      </div>
+
+      {/* Title */}
+      <div style={{
+        fontFamily: 'Georgia, serif', fontSize: 23, fontWeight: 700,
+        color: 'var(--text-light)', textAlign: 'center', marginBottom: 18, lineHeight: 1.25,
+      }}>
+        {title}
+      </div>
+
+      {/* Speaker */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{
+          fontSize: 9, textTransform: 'uppercase', letterSpacing: '2px',
+          color: 'var(--text-muted)', marginBottom: 5,
+        }}>
+          {data.chairmanName} · {data.chairmanRole}
+        </div>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: 14.5, color: 'var(--text-light)', lineHeight: 1.55 }}>
+          {speakerLine}
         </div>
       </div>
 
-      {/* Beat body */}
-      <div
-        style={{
-          flex: 1,
-          padding: '0 24px',
-          position: 'relative',
-          zIndex: 1,
-        }}
-      >
-        {currentBeat.speaker && (
-          <div className="h-scene-speaker" style={{ marginBottom: 8 }}>
-            {currentBeat.speaker.firstName} {currentBeat.speaker.lastName}
+      {/* Eval — måluppfyllelse förra säsongen */}
+      {data.evalRows.length > 0 && (
+        <div style={{
+          background: 'var(--bg-portal-surface)', borderRadius: 8,
+          padding: '13px 14px', marginBottom: 14,
+          borderLeft: `2px solid ${evalStripe}`,
+        }}>
+          <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: 8 }}>
+            Förra säsongen · måluppfyllelse
           </div>
-        )}
-        <div
-          style={{
-            fontFamily: 'Georgia, serif',
-            fontSize: 16,
-            color: 'var(--text-light)',
-            lineHeight: 1.65,
-          }}
-        >
-          {formatBody(currentBeat.body)}
+          {data.evalRows.map((row, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: i < data.evalRows.length - 1 ? 6 : 0 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-light-secondary)' }}>{row.label}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: row.met ? 'var(--success)' : 'var(--danger)' }}>
+                {row.met ? '✓' : '✕'}
+              </span>
+            </div>
+          ))}
+          {data.hiddenEvalCount > 0 && (
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, fontStyle: 'italic' }}>
+              +{data.hiddenEvalCount} övriga
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Fin — kassa + budget */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+        <div style={{ background: 'var(--bg-portal-surface)', borderRadius: 8, padding: '11px 13px' }}>
+          <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: 4 }}>Kassa</div>
+          <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-mono)', color: finValColor }}>{fmtTkr(data.finance.finances)}</div>
+          {deltaText && (
+            <div style={{ fontSize: 10, color: delta && delta > 0 ? 'var(--success)' : delta && delta < 0 ? 'var(--danger)' : 'var(--text-muted)', marginTop: 2 }}>
+              {deltaText}
+            </div>
+          )}
+        </div>
+        <div style={{ background: 'var(--bg-portal-surface)', borderRadius: 8, padding: '11px 13px' }}>
+          <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: 4 }}>Transferbudget</div>
+          <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-light)' }}>{fmtTkr(data.finance.transferBudget)}</div>
         </div>
       </div>
 
-      {/* CTA — only for beats with cta (not auto-advance beats) */}
-      {!currentBeat.autoAdvance && currentBeat.cta && (
-        <div style={{ padding: '16px 24px 32px', position: 'relative', zIndex: 1 }}>
-          <SceneCTA label={currentBeat.cta} onClick={handleCTA} />
+      {/* Goals — nya mål */}
+      {data.newGoals.length > 0 && (
+        <div style={{ marginBottom: 'auto' }}>
+          <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: 8 }}>
+            📋 Mål för säsong {game.currentSeason}
+          </div>
+          {data.newGoals.map((obj, i) => {
+            const stretch = isStretch(obj)
+            return (
+              <div key={obj.id} style={{
+                display: 'flex', gap: 10, alignItems: 'flex-start',
+                background: 'var(--bg-portal-surface)', borderRadius: 8,
+                padding: '9px 12px', marginBottom: 6,
+                borderLeft: `2px solid ${stretch ? 'var(--gold)' : 'var(--border-dark)'}`,
+              }}>
+                <span style={{ fontSize: 15, lineHeight: 1.3, flexShrink: 0 }}>{TYPE_ICON[obj.type] ?? '📋'}</span>
+                <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: stretch ? 'var(--gold)' : 'var(--text-light)' }}>{obj.label}</span>
+                  <span style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', lineHeight: 1.4 }}>{goalMotivation(obj, i)}</span>
+                </span>
+              </div>
+            )
+          })}
         </div>
       )}
 
-      {/* Auto-advance indicator */}
-      {currentBeat.autoAdvance && (
-        <div
-          style={{
-            padding: '16px 24px 32px',
-            textAlign: 'center',
-            color: 'var(--text-muted)',
-            fontSize: 11,
-            fontStyle: 'italic',
-          }}
-        >
-          ...
-        </div>
-      )}
+      {/* CTA — gold ENDAST vid B */}
+      <div style={{ marginTop: 16 }}>
+        <SceneCTA
+          label={`Till säsong ${game.currentSeason} →`}
+          onClick={onComplete}
+          variant={state === 'B' ? 'gold' : 'default'}
+        />
+      </div>
     </div>
   )
 }

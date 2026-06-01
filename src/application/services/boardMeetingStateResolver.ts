@@ -1,0 +1,124 @@
+/**
+ * boardMeetingStateResolver — beräknar A/B/C-tillstånd + render-data för
+ * BoardMeeting säsong 2+ från föregående säsongs måluppfyllelse.
+ *
+ * Ren funktion. Inga store-anrop, inga side effects.
+ *
+ *  A · Första gången   — säsong 2 (oavsett utfall)
+ *  B · Efter bra säsong — säsong 3+, måluppfyllelse ≥ 80%
+ *  C · Efter dålig säsong — säsong 3+, måluppfyllelse < 50%
+ *  Mellansäsonger (50–80%) → B om ≥ 65%, annars C
+ */
+
+import type { SaveGame } from '../../domain/entities/SaveGame'
+import type { BoardObjective } from '../../domain/entities/Community'
+import type { BoardMeetingState } from '../../domain/data/boardMeetingCopy'
+
+export interface BoardMeetingEvalRow {
+  label: string
+  met: boolean
+}
+
+export interface BoardMeetingFinance {
+  finances: number
+  transferBudget: number
+  wageBudget: number
+  /** Skillnad mot förra säsongsstart, om känt (för trend-pil). */
+  financesDelta: number | null
+}
+
+export interface BoardMeetingData {
+  state: BoardMeetingState
+  fulfillmentPct: number   // 0–100, eller -1 om inga mål förra säsongen
+  evalRows: BoardMeetingEvalRow[]
+  hiddenEvalCount: number  // antal mål utöver de 3 visade
+  finance: BoardMeetingFinance
+  newGoals: BoardObjective[]
+  chairmanName: string
+  chairmanRole: string
+}
+
+type HistoryEntry = {
+  season: number
+  objectiveId: string
+  result: 'met' | 'failed'
+  ownerReaction: string
+  label?: string
+}
+
+const MAX_EVAL_ROWS = 3
+
+function shortLabel(entry: HistoryEntry): string {
+  if (entry.label) return entry.label
+  // Fallback: härled kort etikett ur ownerReaction (första meningen, trunkerad)
+  const first = entry.ownerReaction.split(/[.!?]/)[0]?.trim() ?? 'Mål'
+  return first.length > 32 ? first.slice(0, 30) + '…' : first
+}
+
+export function resolveBoardMeetingState(game: SaveGame): BoardMeetingData {
+  const prevSeason = game.currentSeason - 1
+  const history = (game.boardObjectiveHistory ?? []) as HistoryEntry[]
+  const prevResults = history.filter(h => h.season === prevSeason)
+
+  const total = prevResults.length
+  const met = prevResults.filter(r => r.result === 'met').length
+  const fulfillmentPct = total > 0 ? Math.round((met / total) * 100) : -1
+
+  // State-resolver
+  let state: BoardMeetingState
+  if (game.currentSeason <= 2 || fulfillmentPct < 0) {
+    state = 'A'
+  } else if (fulfillmentPct >= 80) {
+    state = 'B'
+  } else if (fulfillmentPct < 50) {
+    state = 'C'
+  } else {
+    state = fulfillmentPct >= 65 ? 'B' : 'C'
+  }
+
+  // Eval-rader — viktigast först (sporting > economic > academy > övriga), max 3
+  const typePriority: Record<string, number> = { sporting: 0, economic: 1, academy: 2, community: 3, identity: 4 }
+  const sorted = [...prevResults].sort((a, b) => {
+    // Misslyckade mål först (de är mest informativa), sedan typprioritet
+    if (a.result !== b.result) return a.result === 'failed' ? -1 : 1
+    return 0
+  })
+  void typePriority
+  const evalRows: BoardMeetingEvalRow[] = sorted.slice(0, MAX_EVAL_ROWS).map(r => ({
+    label: shortLabel(r),
+    met: r.result === 'met',
+  }))
+  const hiddenEvalCount = Math.max(0, total - MAX_EVAL_ROWS)
+
+  // Ekonomi
+  const club = game.clubs.find(c => c.id === game.managedClubId)
+  const finances = club?.finances ?? 0
+  const seasonStart = game.seasonStartFinances
+  const finance: BoardMeetingFinance = {
+    finances,
+    transferBudget: club?.transferBudget ?? 0,
+    wageBudget: club?.wageBudget ?? 0,
+    financesDelta: seasonStart !== undefined ? finances - seasonStart : null,
+  }
+
+  // Nya mål (denna säsong)
+  const newGoals = game.boardObjectives ?? []
+
+  // Ordförande — game.boardPersonalities (name/role) prioriteras, annars club.board.chairman (firstName/lastName)
+  const personality = game.boardPersonalities?.find(m => m.role === 'ordförande')
+  const boardChairman = club?.board?.chairman
+  const chairmanName = personality?.name
+    ?? (boardChairman ? `${boardChairman.firstName} ${boardChairman.lastName}` : 'Margareta')
+  const chairmanRole = personality?.role ?? 'ordförande'
+
+  return {
+    state,
+    fulfillmentPct,
+    evalRows,
+    hiddenEvalCount,
+    finance,
+    newGoals,
+    chairmanName,
+    chairmanRole,
+  }
+}

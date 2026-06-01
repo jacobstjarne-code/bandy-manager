@@ -217,6 +217,7 @@ export interface SaveGame {
     objectiveId: string
     result: 'met' | 'failed'
     ownerReaction: string
+    label?: string   // måletikett för BoardMeeting-eval (tillagd 2026-06-01)
   }>
 
   // V1.0 — Trainer narrative arc

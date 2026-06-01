@@ -859,7 +859,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   // ── Board objectives — evaluate + generate new ────────────────────────────
-  const objectiveResults: Array<{ season: number; objectiveId: string; result: 'met' | 'failed'; ownerReaction: string }> = []
+  const objectiveResults: Array<{ season: number; objectiveId: string; result: 'met' | 'failed'; ownerReaction: string; label: string }> = []
   for (const obj of game.boardObjectives ?? []) {
     const result = evaluateObjective(obj, game)
     const finalStatus = result.status === 'met' ? 'met' as const : 'failed' as const
@@ -868,6 +868,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       objectiveId: obj.id,
       result: finalStatus,
       ownerReaction: finalStatus === 'met' ? obj.successReward : obj.failureConsequence,
+      label: obj.label,
     })
     newInboxItems.push({
       id: `inbox_boardobj_end_${obj.id}_${game.currentSeason}`,
