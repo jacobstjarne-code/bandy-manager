@@ -1,13 +1,13 @@
 {
   "_meta": {
     "description": "Comeback-mekanikens djupanalys — 7 dimensioner",
-    "generatedAt": "2026-06-01T07:22:11.283625+00:00",
+    "generatedAt": "2026-06-01T09:26:57.838086+00:00",
     "series": "herr + dam (baseline per serie, djupanalys på herr)",
     "baseline_comeback_rate_herr": 0.132893,
     "baseline_n_herr": 1061,
     "baseline_comeback_rate_dam": 0.072,
     "baseline_n_dam": 375,
-    "window_51_55_comeback_rate": 0.27451,
+    "window_51_55_comeback_rate": 0.27044,
     "minute_convention": "raw_minutes: 2H = 46-90+. Finding-notation adds 45 (raw 51-55 = finding 96-100)"
   },
   "baselines": {
@@ -43,9 +43,9 @@
       "binom_p_vs_baseline": 0.0
     },
     "1_window_51_55": {
-      "n": 81,
+      "n": 82,
       "comebacks": 32,
-      "rate": 0.395062
+      "rate": 0.390244
     },
     "2": {
       "n": 260,
@@ -80,13 +80,13 @@
   },
   "goal_types_window_51_55": {
     "window_51_55": {
-      "n": 556,
-      "open": 0.7212,
-      "penalty": 0.0594,
-      "corner": 0.2194,
-      "n_open": 401,
+      "n": 551,
+      "open": 0.7205,
+      "penalty": 0.0599,
+      "corner": 0.2196,
+      "n_open": 397,
       "n_penalty": 33,
-      "n_corner": 122
+      "n_corner": 121
     },
     "window_56_90": {
       "n": 4148,
@@ -97,14 +97,14 @@
       "n_penalty": 269,
       "n_corner": 863
     },
-    "penalty_lift_abs": -0.0055,
-    "corner_lift_abs": 0.0113,
+    "penalty_lift_abs": -0.005,
+    "corner_lift_abs": 0.0115,
     "note": "Alla mål (jagande + ledande lag) i herr-matcher med klar HT-underläge."
   },
   "power_play_proxy": {
-    "total_comeback_goals": 593,
-    "goals_with_recent_foul_vs_leading": 165,
-    "proxy_rate": 0.278246,
+    "total_comeback_goals": 585,
+    "goals_with_recent_foul_vs_leading": 163,
+    "proxy_rate": 0.278632,
     "method": "Utvisning mot ledande laget inom 10 minuter före comeback-mål. Proxy — exakt pågående man-up okänt.",
     "limitation": "Vi vet inte om utvisningen fortfarande pågick vid målögonblicket. 10-minutersfönstret är konservativt."
   },
@@ -492,82 +492,82 @@
   },
   "window_breakdown": {
     "46-50": {
-      "n_with_first_red": 239,
-      "comebacks": 48,
-      "comeback_rate": 0.200837,
+      "n_with_first_red": 188,
+      "comebacks": 40,
+      "comeback_rate": 0.212766,
       "ci": [
-        0.154959,
-        0.25618
+        0.160318,
+        0.276717
       ],
-      "binom_p_vs_baseline": 0.003062
+      "binom_p_vs_baseline": 0.002436
     },
     "51-55": {
-      "n_with_first_red": 153,
-      "comebacks": 42,
-      "comeback_rate": 0.27451,
+      "n_with_first_red": 159,
+      "comebacks": 43,
+      "comeback_rate": 0.27044,
       "ci": [
-        0.209972,
-        0.350093
+        0.207417,
+        0.344295
       ],
       "binom_p_vs_baseline": 4e-06
     },
     "56-60": {
-      "n_with_first_red": 132,
-      "comebacks": 20,
-      "comeback_rate": 0.151515,
+      "n_with_first_red": 139,
+      "comebacks": 21,
+      "comeback_rate": 0.151079,
       "ci": [
-        0.100274,
-        0.222467
+        0.100987,
+        0.219939
       ],
-      "binom_p_vs_baseline": 0.521031
+      "binom_p_vs_baseline": 0.531405
     },
     "61-65": {
-      "n_with_first_red": 90,
+      "n_with_first_red": 97,
       "comebacks": 10,
-      "comeback_rate": 0.111111,
+      "comeback_rate": 0.103093,
       "ci": [
-        0.061483,
-        0.19258
+        0.056967,
+        0.179459
       ],
-      "binom_p_vs_baseline": 0.642499
+      "binom_p_vs_baseline": 0.456222
     },
     "66-70": {
-      "n_with_first_red": 74,
-      "comebacks": 10,
-      "comeback_rate": 0.135135,
+      "n_with_first_red": 79,
+      "comebacks": 13,
+      "comeback_rate": 0.164557,
       "ci": [
-        0.07509,
-        0.231194
+        0.098766,
+        0.261459
       ],
-      "binom_p_vs_baseline": 0.865197
+      "binom_p_vs_baseline": 0.406044
     },
     "71-75": {
-      "n_with_first_red": 75,
-      "comebacks": 9,
-      "comeback_rate": 0.12,
+      "n_with_first_red": 79,
+      "comebacks": 10,
+      "comeback_rate": 0.126582,
       "ci": [
-        0.064433,
-        0.212598
+        0.070232,
+        0.217566
       ],
-      "binom_p_vs_baseline": 0.865642
+      "binom_p_vs_baseline": 1.0
     },
     "76-90": {
-      "n_with_first_red": 151,
-      "comebacks": 2,
-      "comeback_rate": 0.013245,
+      "n_with_first_red": 162,
+      "comebacks": 3,
+      "comeback_rate": 0.018519,
       "ci": [
-        0.00364,
-        0.047003
+        0.006318,
+        0.053026
       ],
-      "binom_p_vs_baseline": 0.0
+      "binom_p_vs_baseline": 1e-06
     },
     "no_reduction": {
-      "n_with_first_red": 147,
+      "n_with_first_red": 150,
       "comebacks": 0,
       "comeback_rate": 0.0,
       "ci": [
         0.0,
-        0.025468
+        0.024971
       ]
     }
   }

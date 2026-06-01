@@ -5,7 +5,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <Base
   title="Finding 051 — Comeback-fönstret: sex minuter tidigt i andra halvlek"
-  description="Lag som reducerar i matchens sjätte till tionde minut av andra halvlek vänder i 27,5 % av fallen — mot 13,3 % i snitt. Sju dimensioners analys av comeback-mekaniken i herrbandy."
+  description="Lag som reducerar i matchens sjätte till tionde minut av andra halvlek vänder i 27,0 % av fallen — mot 13,3 % i snitt. Sju dimensioners analys av comeback-mekaniken i herrbandy."
 >
   <div class="finding-layout">
 
@@ -18,9 +18,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     <div class="key-numbers">
       <div class="key-number">
-        <span class="key-number__value">27,5 %</span>
+        <span class="key-number__value">27,0 %</span>
         <span class="key-number__label">Comeback-andel, fönster 6–10 min (2H)</span>
-        <span class="key-number__note">42 av 153 matcher — rådata min 51–55</span>
+        <span class="key-number__note">43 av 159 matcher — korrigerat med halvleks-flagga</span>
       </div>
       <div class="key-number">
         <span class="key-number__value">13,3 %</span>
@@ -28,12 +28,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <span class="key-number__note">141 av 1 061 herr-matcher med klar HT-underläge</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">2,07×</span>
+        <span class="key-number__value">2,03×</span>
         <span class="key-number__label">Relativ risk vs. baslinje</span>
         <span class="key-number__note">Fönstret ger drygt dubbelt så hög comeback-andel</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">39,5 %</span>
+        <span class="key-number__value">39,0 %</span>
         <span class="key-number__label">Comeback-andel vid HT-underläge +1</span>
         <span class="key-number__note">Om reducering sker i fönstret vid exakt ett måls underläge</span>
       </div>
@@ -64,7 +64,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <div class="finding-section prose">
       <p class="finding-section-label">Vad vi fann</p>
 
-      <p><strong>Fönstereffekten håller — och skärps vid ett måls underläge.</strong> Grundläggande comeback-andel i hela herr-datasetet är 13,3 % (141/1 061). Fönstret 51–55 (6–10 min in i 2H) ger 27,5 % (42/153), vilket är statistiskt signifikant (p &lt; 0,0001). Fönstret 46–50 (1–5 min) ger 20,1 % (48/239) — förhöjt men inte lika starkt. Från rådata-minut 56 och framåt faller andelen tillbaka mot baseline.</p>
+      <p><strong>Fönstereffekten håller — och skärps vid ett måls underläge.</strong> Grundläggande comeback-andel i hela herr-datasetet är 13,3 % (141/1 061). Fönstret 51–55 (6–10 min in i 2H) ger 27,0 % (43/159), vilket är statistiskt signifikant (p &lt; 0,0001). Fönstret 46–50 (1–5 min) ger 21,3 % (40/188) — förhöjt men inte lika starkt. Från rådata-minut 56 och framåt faller andelen tillbaka mot baseline.</p>
 
       <table>
         <thead>
@@ -78,18 +78,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           </tr>
         </thead>
         <tbody>
-          <tr><td>46–50</td><td>1–5</td><td>48</td><td>239</td><td>20,1 %</td><td>0,003</td></tr>
-          <tr><td>51–55</td><td>6–10</td><td>42</td><td>153</td><td>27,5 %</td><td>&lt; 0,0001</td></tr>
-          <tr><td>56–60</td><td>11–15</td><td>20</td><td>132</td><td>15,2 %</td><td>0,52</td></tr>
-          <tr><td>61–65</td><td>16–20</td><td>10</td><td>90</td><td>11,1 %</td><td>0,64</td></tr>
-          <tr><td>66–70</td><td>21–25</td><td>10</td><td>74</td><td>13,5 %</td><td>0,87</td></tr>
-          <tr><td>71–75</td><td>26–30</td><td>9</td><td>75</td><td>12,0 %</td><td>0,87</td></tr>
-          <tr><td>76–90</td><td>31–45</td><td>2</td><td>151</td><td>1,3 %</td><td>&lt; 0,0001</td></tr>
-          <tr><td>Ingen reducering</td><td>—</td><td>0</td><td>147</td><td>0 %</td><td>—</td></tr>
+          <tr><td>46–50</td><td>1–5</td><td>40</td><td>188</td><td>21,3 %</td><td>0,002</td></tr>
+          <tr><td>51–55</td><td>6–10</td><td>43</td><td>159</td><td>27,0 %</td><td>&lt; 0,0001</td></tr>
+          <tr><td>56–60</td><td>11–15</td><td>21</td><td>139</td><td>15,1 %</td><td>0,53</td></tr>
+          <tr><td>61–65</td><td>16–20</td><td>10</td><td>97</td><td>10,3 %</td><td>0,46</td></tr>
+          <tr><td>66–70</td><td>21–25</td><td>13</td><td>79</td><td>16,5 %</td><td>0,41</td></tr>
+          <tr><td>71–75</td><td>26–30</td><td>10</td><td>79</td><td>12,7 %</td><td>1,00</td></tr>
+          <tr><td>76–90</td><td>31–45</td><td>3</td><td>162</td><td>1,9 %</td><td>&lt; 0,0001</td></tr>
+          <tr><td>Ingen reducering</td><td>—</td><td>0</td><td>150</td><td>0 %</td><td>—</td></tr>
         </tbody>
       </table>
 
-      <p><strong>Underlägets storlek är avgörande.</strong> Vid ett måls halvtidsunderläge är comeback-andelen 24,0 % (103/430). Vid två måls underläge 11,5 % (30/260). Vid tre eller fler mål under 2,2 % (8/371). Kombineras fönster 51–55 med just ett måls underläge stiger andelen till 39,5 % (32/81).</p>
+      <p><strong>Underlägets storlek är avgörande.</strong> Vid ett måls halvtidsunderläge är comeback-andelen 24,0 % (103/430). Vid två måls underläge 11,5 % (30/260). Vid tre eller fler mål under 2,2 % (8/371). Kombineras fönster 51–55 med just ett måls underläge stiger andelen till 39,0 % (32/82).</p>
 
       <p><strong>Domarbilden i fönstret.</strong> I fönstret 51–55 ges 201 utvisningar, varav 113 (56,2 %) mot det ledande laget. I hela andra halvlek är den andelen 49,9 % (1 266/2 537). Ledande lag straffas alltså 6,3 procentenheter oftare i det tidiga fönstret — relativt är det 12,7 % fler utvisningar mot ledande laget än vad 2H-snittet motiverar. Det är ett deskriptivt mönster, inte ett orsakssamband.</p>
 
@@ -108,7 +108,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>Det finns ett relativt stabilt och statistiskt signifikant fönster tidigt i andra halvlek — ungefär minut 6–10 — där en reducering ger mer än dubbelt så hög comeback-sannolikhet som baslinjen. Effekten är koncentrerad till matcher med ett måls halvtidsunderläge: vid exakt ett måls underläge och reducering i det fönstret vänder laget i 39,5 % av fallen.</p>
+      <p>Det finns ett relativt stabilt och statistiskt signifikant fönster tidigt i andra halvlek — ungefär minut 6–10 — där en reducering ger mer än dubbelt så hög comeback-sannolikhet som baslinjen. Effekten är koncentrerad till matcher med ett måls halvtidsunderläge: vid exakt ett måls underläge och reducering i det fönstret vänder laget i 39,0 % av fallen.</p>
       <p>Mekanismen är sannolikt sammansatt. En tidig reducering ger det jagande laget tillräckligt med tid för att hinna score ytterligare — det är ett nödvändigt villkor, inte ett tillräckligt. Domarmönstret i fönstret (ledande lag straffas 12 % oftare än genomsnittet för 2H) antyder att det ledande lagets spel förändras tidigt i andra halvlek på ett sätt som leder till fler utvisningar, vilket i sin tur skapar möjligheter för det jagande laget. Att ungefär 28 % av comeback-målen föregås av en utvisning mot motståndaren de senaste tio minuterna stöder att spelläge och numerärt övertag spelar roll, men mekaniken är inte isolerbar utan mer detaljerad tidsstämpling.</p>
       <p>Det faktum att måltypsfördelningen är i princip identisk i fönstret jämfört med resten av 2H tyder på att det inte är en specifik taktisk manöver — som att satsa på hörnor — som driver fönstereffekten. Det är tajmingen i sig, inte sättet målet faller, som verkar ha förklaringsvärde.</p>
     </div>

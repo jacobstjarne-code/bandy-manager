@@ -89,13 +89,19 @@ def build_records(matches: list, series: str) -> list:
         else:
             comeback = hs > as_
 
-        # Mål av jagande laget i 2a halvlek (rådata ≥ 46)
+        # Mål av jagande laget i 2a halvlek — använd half-flagga om tillgänglig
+        # (schemaVersion 4+), annars fallback till minute >= 46
+        def is_h2(g):
+            if "half" in g:
+                return g["half"] == 2
+            return g.get("minute", 0) >= 46
+
         comeback_goals_raw = [
-            g for g in goals if g.get("minute", 0) >= 46 and g.get("team") == trailing_team
+            g for g in goals if is_h2(g) and g.get("team") == trailing_team
         ]
         # Mål av ledande laget i 2a halvlek
         conceded_goals_raw = [
-            g for g in goals if g.get("minute", 0) >= 46 and g.get("team") == leading_team
+            g for g in goals if is_h2(g) and g.get("team") == leading_team
         ]
 
         # Första reducerande mål (första mål av jagande laget i 2H)
