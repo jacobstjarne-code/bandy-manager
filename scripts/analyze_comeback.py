@@ -3,10 +3,22 @@ analyze_comeback.py
 
 Comeback-mekanikens djupanalys — 7 dimensioner.
 
-Minutkonvention:
-  Rådata:   2:a halvlek = minuter 46–90+
-  Finding:  "minut 91–100" = rådata 46–55 (lägger till 45)
-  Fönster:  "96–100-fenomenet" = rådata 51–55
+MINUTKONVENTION — VIKTIGT (verifierat 2026-06-01):
+  Bandygrytan loggar halvtid som event typ 13. Event 13 inträffar vid
+  median minut 46 i rådata (range 45–53). Event 14 (2H-start) är konstant
+  vid minut 45 — en fast markör, inte verklig tidsstämpel.
+
+  Konsekvens: regeln `minute >= 46 ⇒ 2H` är felaktig för ~24% av matcher.
+  Events i minut 46–50 som förekommer FÖRE event 13 är tilläggstid 1H.
+
+  Bucketen 46–50 i denna analys är kontaminerad med ~24% 1H-tilläggstid.
+  Bucketen 51–55 är kontaminerad med ~5.5% och bedöms som tillförlitlig.
+
+  Finding 041:s "minut 96–100" = rådata 51–55 (46+45=91... konventionen
+  lägger till 45 för att skapa ett "120-minuters matchur"). Fönster 51–55
+  i denna analys motsvararett fenomenet i finding 041.
+
+  Se docs/data/INTERNAL_MINUTE_CONVENTION.md för fullständig verifiering.
 
 Output:
   docs/data/comeback_mechanics.json
