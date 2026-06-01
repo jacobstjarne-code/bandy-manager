@@ -87,7 +87,7 @@ import { evaluateSquad } from './squadEvaluator'
 import { getTacticModifiers } from './tacticModifiers'
 import { mulberry32, fixtureSeed } from '../utils/random'
 import { commentary, fillTemplate, pickCommentary, getTraitCommentary } from '../data/matchCommentary'
-import { KLACK_ECHO } from '../data/klackEchoText'
+import { pickKlackEchoText } from '../data/klackEchoText'
 import { RIVAL_SALE_KLACK } from '../data/transferResponseText'
 import { ANNIVERSARY_KLACK } from '../data/anniversaryKlackText'
 import { pickSpecialDateCommentary } from './specialDateService'
@@ -1269,9 +1269,9 @@ function* simulateMatchCore(
           commentaryText = ANNIVERSARY_KLACK[Math.floor(rand() * ANNIVERSARY_KLACK.length)]
         } else if (input.klackEcho && supporterCtx && rand() < input.klackEcho.currentWeight * 0.5) {
           // C-B2: klack echo overrides normal pool with probability = currentWeight * 0.5
-          const echoPool = KLACK_ECHO[input.klackEcho.type]?.klack
-          if (echoPool?.length) {
-            const echoText = echoPool[Math.floor(rand() * echoPool.length)]
+          // C-SY1 #2: cause-prefix-variant i 35% av fallen när orsaken är färsk
+          const echoText = pickKlackEchoText(input.klackEcho, input.currentMatchday ?? 0, 'klack', rand)
+          if (echoText) {
             commentaryText = echoText
           } else {
             const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }

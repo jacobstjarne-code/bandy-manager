@@ -2,7 +2,8 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { ScandalType } from './scandalService'
 import { InboxItemType } from '../enums'
 import { getCharacterName } from './supporterService'
-import { KLACK_ECHO } from '../data/klackEchoText'
+import { pickKlackEchoText } from '../data/klackEchoText'
+import { mulberry32 } from '../utils/random'
 import { RIVAL_SALE_KAFFERUM, INCOMING_BID_KAFFERUM } from '../data/transferResponseText'
 import { ANNIVERSARY_KAFFERUM } from '../data/anniversaryKafferumText'
 import { getFatigueState } from './decisionFatigueService'
@@ -351,12 +352,11 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   }
 
   // C-B2: klack echo in kafferum — 33% chance when weight > 0.15
+  // C-SY1 #2: cause-prefix-variant i 35% av fallen när orsaken är färsk
   if (game.klackEcho && game.klackEcho.currentWeight > 0.15 && seed % 3 === 0) {
-    const echoPool = KLACK_ECHO[game.klackEcho.type]?.kafferum
-    if (echoPool?.length) {
-      const t = echoPool[Math.abs(seed) % echoPool.length]
-      return { text: t }
-    }
+    const echoRand = mulberry32(Math.abs(seed) + 7)
+    const t = pickKlackEchoText(game.klackEcho, game.currentMatchday, 'kafferum', echoRand)
+    if (t) return { text: t }
   }
 
   const lastHash = game.lastCoffeeQuoteHash ?? -1

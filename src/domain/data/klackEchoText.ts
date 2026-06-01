@@ -93,3 +93,102 @@ export const KLACK_ECHO: Record<NotableEventType, EchoPool> = {
     ],
   },
 }
+
+/**
+ * C-SY1 #2 — cause-prefixade varianter (parallell pool, Alt A).
+ * Plockas i 35% av visningarna när orsaken är färsk (1–4 omg sedan eventet).
+ * Naturlig prosa per variant — inte mekanisk "Sedan X. [text]"-ihopklistring.
+ * 2 per voice per event-type. Samma persongalleri som KLACK_ECHO.
+ */
+export const KLACK_ECHO_CAUSE_PREFIXED: Record<NotableEventType, EchoPool> = {
+  derby_win: {
+    klack: [
+      'Tre veckor sen derbyt — och min Birgitta säger fortfarande att jag är lugnare än vanligt.',
+      'Sedan derbyt går jag förbi rinken på vägen hem. Den glömmer jag inte.',
+    ],
+    kafferum: [
+      'Sedan söndagen pratar gubbarna fortfarande om målet i tre-fyra.',
+      'Tre veckor sedan derbyt. Det räcker fortfarande till lite skryt i affären.',
+    ],
+  },
+  derby_loss: {
+    klack: [
+      'Det är två veckor sedan derbyt. Jag har inte spelat in den senaste klacksången än.',
+      'Sedan vi tappade derbyt har det varit tystare än vanligt på söndagskvällarna.',
+    ],
+    kafferum: [
+      'Min granne har inte frågat om bandy sedan derbyt. Det säger något.',
+      'Två veckor sen söndagen. Och två veckor av att tala om annat.',
+    ],
+  },
+  derby_draw: {
+    klack: [
+      'Sedan derbyts oavgjorda fortsätter Birger att räkna mål. Han räknar fel ibland.',
+      'Tre veckor sedan vi inte vann och inte heller förlorade. Lustig vecka.',
+    ],
+    kafferum: [
+      'Sedan oavgjorda derbyt har gubbarna inte landat — varken i firande eller sorgesnack.',
+      'Två veckor sen sex-sex. Eller var det sju-sju? Birger säger båda.',
+    ],
+  },
+  heavy_home_loss: {
+    klack: [
+      'Det är två veckor sedan sjumålsmatchen. Klacken börjar våga sjunga igen.',
+      'Sedan sjuan har ingen sagt "minns du"-något. Det får vänta.',
+    ],
+    kafferum: [
+      'Tre veckor sedan sjumålsmatchen. Magnus tänder cigarillen igen — men inte direkt efter slutsignal.',
+      'Sedan smällen har gubbarna pratat om allt utom bandy. Det är välkomnande.',
+    ],
+  },
+  top_team_win: {
+    klack: [
+      'Tre veckor sen segern mot storstaden — och jag har fortfarande inte slutat berätta om den.',
+      'Sedan vi slog dem hemma sjunger klacken den långa ramsan oftare.',
+    ],
+    kafferum: [
+      'Min farbror har inte slutat ringa sedan segern. Han ringer fortfarande.',
+      'Tre veckor sen storsegern. Pojken frågar fortfarande om jag ska titta på inspelningen igen.',
+    ],
+  },
+  storstad_loss: {
+    klack: [
+      'Två veckor sedan Sandviken. Vi vet vad det betyder — men det gör ont kvar.',
+      'Sedan storstadsförlusten har klacken sjungit kortare ramsor.',
+    ],
+    kafferum: [
+      'Min granne pendlade till Sandviken — han säger fortfarande inget om matchen.',
+      'Tre veckor sedan storstaden. Inget nytt att säga. Det är som det alltid är.',
+    ],
+  },
+}
+
+/** Cause-prefix taket — 35% av visningarna när orsaken är färsk. */
+export const KLACK_ECHO_CAUSE_PREFIX_THRESHOLD = 0.35
+
+/** Cause är färsk nog att referera explicit (1–4 omg sedan eventet). */
+export function klackEchoCauseIsRelevant(currentMatchday: number, resultMatchday: number | undefined): boolean {
+  if (resultMatchday === undefined) return false
+  const delta = currentMatchday - resultMatchday
+  return delta >= 1 && delta <= 4
+}
+
+/**
+ * Väljer echo-text för given voice. Returnerar cause-prefixad variant i 35% av
+ * fallen när orsaken är färsk, annars vanlig pool. Deterministisk via rand().
+ * resultMatchday undefined → ingen cause-prefix (degraderar till vanlig pool).
+ */
+export function pickKlackEchoText(
+  klackEcho: { type: NotableEventType; resultMatchday?: number },
+  currentMatchday: number,
+  voice: 'klack' | 'kafferum',
+  rand: () => number,
+): string | null {
+  const relevant = klackEchoCauseIsRelevant(currentMatchday, klackEcho.resultMatchday)
+  const useCausePrefix = relevant && rand() < KLACK_ECHO_CAUSE_PREFIX_THRESHOLD
+  const pool = useCausePrefix
+    ? KLACK_ECHO_CAUSE_PREFIXED[klackEcho.type]?.[voice]
+    : KLACK_ECHO[klackEcho.type]?.[voice]
+  if (!pool?.length) return null
+  return pool[Math.floor(rand() * pool.length)]
+}
