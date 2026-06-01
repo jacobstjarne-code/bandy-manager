@@ -147,8 +147,9 @@ const fixtures = await fbGet(`preCache/getCompetitionFixtures`)
 | Problem | Förklaring |
 |---------|------------|
 | `cornerGoal%` opålitlig | Parser-metod: hörnevent ≤2 min före mål → "corner". Ger ~45% hörnmål mot korrekt ~22%. Använd inte cornerGoal%-analys från kval/Allsvenskan-data. |
-| `fouls[].team` alltid null | Event typ 3 innehåller inget lag-ID i Firebase. Utvisningsfrekvens är tillförlitlig, men inte per lag. |
-| `fouls[].duration` alltid 10 min | Duration kan inte bestämmas från events — defaultas till 10. |
+| ~~`fouls[].team` alltid null~~ | **FELAKTIG DOKUMENTATION** — verifierat 2026-06-01. Event typ 3 innehåller `teamID` som källdata i Firebase, present i 100 % av events i både 2019-20 (numeriska ID:n) och 2025-26 (`fx_`-ID:n). `fouls[].team: 'home'/'away'` i `bandygrytan_detailed.json` är en tillförlitlig derivation från `teamID` via jämförelse mot `homeTeamID`/`awayTeamID`. Se `INTERNAL_DATA_NOTES.md`. |
+| ~~`fouls[].duration` alltid 10 min~~ | **FELAKTIG DOKUMENTATION** — verifierat 2026-06-01. `number`-fältet på suspension-events innehåller faktisk duration: 5 eller 10 minuter. 5-minutersutvisningar förekommer. `bandygrytan_detailed.json` defaultar till 10 i sin parser — det innebär att vi underregistrerar 5-minutersfall. Se `INTERNAL_DATA_NOTES.md`. |
+| `fouls[].info` ej extraherat | Event typ 3 har ett `info`-fält med utvisningsorsak i klartext ("Våldsamt slag", "Hakning", "Ojust tackling" etc.). Fältet finns i källdata men är inte extraherat i `bandygrytan_detailed.json`. |
 | 2023-24 kval saknas | Competition fixture-listan finns inte i preCache. |
 | 2024-25 kval saknas | Dito. |
 | 2024-25 Allsvenskan Nedre saknas | Sub-competition-nyckeln finns inte i preCache. |
