@@ -8,12 +8,14 @@ import { SectionLabel } from '../../SectionLabel'
 import { EfterklangThreadModal } from './EfterklangThreadModal'
 
 
-function timingLine(mem: EfterklangMemory, currentRound: number): string {
+/** Subrad-delar: [vänster, höger] med pip-separator emellan, eller [text] ensam. */
+function timingParts(mem: EfterklangMemory, currentRound: number): string[] {
   if (mem.sinceMatchday !== undefined && currentRound > mem.sinceMatchday) {
     const rounds = currentRound - mem.sinceMatchday
-    return rounds === 1 ? 'Etablerad i omg 1' : `Sedan omg ${mem.sinceMatchday} · ${rounds} omg`
+    if (rounds === 1) return ['Etablerad i omg 1']
+    return [`${rounds} omgångar pågående`, `senast omg ${currentRound}`]
   }
-  return `Senast omg ${currentRound}`
+  return [`senast omg ${currentRound}`]
 }
 
 export function EfterklangSecondary({ game }: CardRenderProps) {
@@ -24,6 +26,7 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
   const journalistPoints = game.scoreSnapshots?.journalistRelation ?? []
   const topMemory = memories[0]
   const eyebrow = `${EFTERKLANG_EYEBROW} · ${topMemory.objectName}`
+  const subParts = timingParts(topMemory, game.currentMatchday)
 
   return (
     <>
@@ -33,19 +36,35 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
         onClick={() => setOpenMemory(topMemory)}
         onKeyDown={e => e.key === 'Enter' && setOpenMemory(topMemory)}
         style={{
+          position: 'relative',
           background: 'var(--bg-portal-surface)',
           border: '1px solid var(--bg-leather)',
-          borderLeft: '2px solid var(--cold)',
+          borderLeft: '2px solid var(--warm)',
           borderRadius: 10,
           padding: '10px 14px',
           cursor: 'pointer',
         }}
       >
+        {/* Chevron */}
+        <span style={{
+          position: 'absolute', top: 12, right: 13,
+          fontSize: 15, color: 'var(--warm-light)', opacity: 0.8, lineHeight: 1,
+        }}>›</span>
+
         <SectionLabel style={{ marginBottom: 2 }}>{eyebrow}</SectionLabel>
 
-        {/* Tidsanvisning */}
-        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.5px' }}>
-          {timingLine(topMemory, game.currentMatchday)}
+        {/* Tidsanvisning — mono med pip-separator */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.5px',
+          color: 'var(--text-muted)', marginBottom: 8,
+        }}>
+          {subParts.map((part, i) => (
+            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              {i > 0 && <i style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--warm)', opacity: 0.6, display: 'inline-block' }} />}
+              {part}
+            </span>
+          ))}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -70,7 +89,7 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
           ))}
         </div>
 
-        <div style={{ marginTop: 8, fontSize: 9, color: 'var(--cold)', opacity: 0.7, letterSpacing: '0.5px' }}>
+        <div style={{ marginTop: 8, fontSize: 9, color: 'var(--warm-light)', opacity: 0.7, letterSpacing: '0.5px' }}>
           Tryck för hela tråden →
         </div>
       </div>

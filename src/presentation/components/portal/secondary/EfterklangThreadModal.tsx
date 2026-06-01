@@ -50,22 +50,39 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
           </button>
         </div>
 
-        {/* Thread entries */}
+        {/* Thread entries — tidslinje */}
         {memory.threadEntries.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {memory.threadEntries.map((entry, i) => (
-              <div key={i} style={{
-                borderLeft: '2px solid var(--cold)',
-                paddingLeft: 10,
-              }}>
-                <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '1px', marginBottom: 2 }}>
-                  OMG {entry.matchday}
+          <div style={{ position: 'relative' }}>
+            {/* Vertikal gradient-linje */}
+            <div style={{
+              position: 'absolute', left: 7, top: 4, bottom: 8, width: 1,
+              background: 'linear-gradient(180deg, rgba(140,110,58,0.5), rgba(140,110,58,0.15))',
+            }} />
+            {memory.threadEntries.map((entry, i) => {
+              const isLatest = i === memory.threadEntries.length - 1
+              return (
+                <div key={i} style={{ position: 'relative', paddingLeft: 26, marginBottom: isLatest ? 0 : 16, opacity: isLatest ? 1 : 0.78 }}>
+                  {/* Nod-prick */}
+                  <span style={{
+                    position: 'absolute', left: 3, top: 2,
+                    width: 9, height: 9, borderRadius: '50%',
+                    background: isLatest ? 'var(--warm)' : 'var(--bg-portal-elevated)',
+                    border: '1.5px solid var(--warm)',
+                    boxShadow: isLatest ? '0 0 6px rgba(140,110,58,0.5)' : 'none',
+                    boxSizing: 'border-box',
+                  }} />
+                  <div style={{
+                    fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '1px',
+                    color: isLatest ? 'var(--warm-light)' : 'var(--text-muted)', marginBottom: 2,
+                  }}>
+                    OMG {entry.matchday}{isLatest ? ' · senast' : ''}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-light-secondary)', lineHeight: 1.4 }}>
+                    {entry.text}
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-light-secondary)', lineHeight: 1.4 }}>
-                  {entry.text}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : (
           <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>Ingen historik lagrad.</p>
@@ -78,6 +95,16 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
           fontSize: 11, color: 'var(--text-light-secondary)', fontStyle: 'italic',
         }}>
           ↻ {memory.echo}
+        </div>
+
+        {/* Modal-foot — kontext-rad */}
+        <div style={{
+          marginTop: 16, paddingTop: 12,
+          borderTop: '1px dashed rgba(140,110,58,0.2)',
+          fontFamily: 'var(--font-mono)', fontStyle: 'italic',
+          fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5,
+        }}>
+          En linje som löper genom säsongen.
         </div>
       </div>
     </div>
