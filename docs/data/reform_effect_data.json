@@ -1,0 +1,688 @@
+{
+  "_meta": {
+    "generated": "2026-06-01",
+    "source": "bandygrytan_detailed.json",
+    "note": "Domarnamn ingår ej. Se INTERNAL_reform_effect_complete.md för dimension 4.",
+    "bonferroni_n": 12
+  },
+  "herr": {
+    "by_season": {
+      "2019-20": {
+        "n": 194,
+        "avg_fouls": 3.742,
+        "ci_lo": 3.459,
+        "ci_hi": 4.062
+      },
+      "2020-21": {
+        "n": 184,
+        "avg_fouls": 4.049,
+        "ci_lo": 3.728,
+        "ci_hi": 4.37
+      },
+      "2021-22": {
+        "n": 252,
+        "avg_fouls": 3.56,
+        "ci_lo": 3.286,
+        "ci_hi": 3.845
+      },
+      "2022-23": {
+        "n": 168,
+        "avg_fouls": 3.28,
+        "ci_lo": 2.946,
+        "ci_hi": 3.577
+      },
+      "2024-25": {
+        "n": 182,
+        "avg_fouls": 3.857,
+        "ci_lo": 3.56,
+        "ci_hi": 4.165
+      },
+      "2025-26": {
+        "n": 182,
+        "avg_fouls": 4.291,
+        "ci_lo": 3.962,
+        "ci_hi": 4.632
+      }
+    },
+    "phase_breakdown": {
+      "2019-20": {
+        "regular": {
+          "n": 194,
+          "avg_fouls": 3.742
+        },
+        "playoff": {
+          "n": 22,
+          "avg_fouls": 3.909
+        }
+      },
+      "2020-21": {
+        "regular": {
+          "n": 184,
+          "avg_fouls": 4.049
+        },
+        "playoff": {
+          "n": 30,
+          "avg_fouls": 3.967
+        }
+      },
+      "2021-22": {
+        "regular": {
+          "n": 252,
+          "avg_fouls": 3.56
+        },
+        "playoff": {
+          "n": 39,
+          "avg_fouls": 2.846
+        }
+      },
+      "2022-23": {
+        "regular": {
+          "n": 168,
+          "avg_fouls": 3.28
+        },
+        "playoff": {
+          "n": 40,
+          "avg_fouls": 3.175
+        }
+      },
+      "2024-25": {
+        "regular": {
+          "n": 182,
+          "avg_fouls": 3.857
+        },
+        "playoff": {
+          "n": 0,
+          "avg_fouls": null
+        }
+      },
+      "2025-26": {
+        "regular": {
+          "n": 182,
+          "avg_fouls": 4.291
+        },
+        "playoff": {
+          "n": 28,
+          "avg_fouls": 5.071
+        }
+      }
+    },
+    "baseline_avg_pre_2526": 3.698,
+    "s2526_avg": 4.291,
+    "delta_pct": 16.1,
+    "by_period": {
+      "2019-20": {
+        "total_fouls": 759,
+        "periods": {
+          "0–29": {
+            "count": 140,
+            "pct": 18.45
+          },
+          "30–44": {
+            "count": 120,
+            "pct": 15.81
+          },
+          "45–59": {
+            "count": 134,
+            "pct": 17.65
+          },
+          "60–74": {
+            "count": 165,
+            "pct": 21.74
+          },
+          "75–90": {
+            "count": 200,
+            "pct": 26.35
+          }
+        }
+      },
+      "2020-21": {
+        "total_fouls": 815,
+        "periods": {
+          "0–29": {
+            "count": 169,
+            "pct": 20.74
+          },
+          "30–44": {
+            "count": 138,
+            "pct": 16.93
+          },
+          "45–59": {
+            "count": 135,
+            "pct": 16.56
+          },
+          "60–74": {
+            "count": 163,
+            "pct": 20.0
+          },
+          "75–90": {
+            "count": 210,
+            "pct": 25.77
+          }
+        }
+      },
+      "2021-22": {
+        "total_fouls": 942,
+        "periods": {
+          "0–29": {
+            "count": 179,
+            "pct": 19.0
+          },
+          "30–44": {
+            "count": 160,
+            "pct": 16.99
+          },
+          "45–59": {
+            "count": 156,
+            "pct": 16.56
+          },
+          "60–74": {
+            "count": 172,
+            "pct": 18.26
+          },
+          "75–90": {
+            "count": 275,
+            "pct": 29.19
+          }
+        }
+      },
+      "2022-23": {
+        "total_fouls": 632,
+        "periods": {
+          "0–29": {
+            "count": 114,
+            "pct": 18.04
+          },
+          "30–44": {
+            "count": 91,
+            "pct": 14.4
+          },
+          "45–59": {
+            "count": 112,
+            "pct": 17.72
+          },
+          "60–74": {
+            "count": 114,
+            "pct": 18.04
+          },
+          "75–90": {
+            "count": 201,
+            "pct": 31.8
+          }
+        }
+      },
+      "2024-25": {
+        "total_fouls": 662,
+        "periods": {
+          "0–29": {
+            "count": 145,
+            "pct": 21.9
+          },
+          "30–44": {
+            "count": 113,
+            "pct": 17.07
+          },
+          "45–59": {
+            "count": 123,
+            "pct": 18.58
+          },
+          "60–74": {
+            "count": 116,
+            "pct": 17.52
+          },
+          "75–90": {
+            "count": 165,
+            "pct": 24.92
+          }
+        }
+      },
+      "2025-26": {
+        "total_fouls": 867,
+        "periods": {
+          "0–29": {
+            "count": 212,
+            "pct": 24.45
+          },
+          "30–44": {
+            "count": 152,
+            "pct": 17.53
+          },
+          "45–59": {
+            "count": 129,
+            "pct": 14.88
+          },
+          "60–74": {
+            "count": 142,
+            "pct": 16.38
+          },
+          "75–90": {
+            "count": 232,
+            "pct": 26.76
+          }
+        }
+      }
+    },
+    "by_match_temp_quartile": {
+      "Q1": {
+        "pre_n": 265,
+        "cur_n": 30,
+        "pre_mean": 2.132,
+        "cur_mean": 2.567,
+        "delta": 0.435,
+        "delta_pct": 20.4
+      },
+      "Q2": {
+        "pre_n": 305,
+        "cur_n": 37,
+        "pre_mean": 3.19,
+        "cur_mean": 3.432,
+        "delta": 0.242,
+        "delta_pct": 7.6
+      },
+      "Q3": {
+        "pre_n": 323,
+        "cur_n": 63,
+        "pre_mean": 4.059,
+        "cur_mean": 4.317,
+        "delta": 0.259,
+        "delta_pct": 6.4
+      },
+      "Q4": {
+        "pre_n": 218,
+        "cur_n": 80,
+        "pre_mean": 5.573,
+        "cur_mean": 5.588,
+        "delta": 0.014,
+        "delta_pct": 0.3
+      }
+    },
+    "early_foul_pct": {
+      "by_season": {
+        "2019-20": {
+          "n": 209,
+          "mean_pct": 16.6,
+          "ci_lo_pct": 13.67,
+          "ci_hi_pct": 19.66
+        },
+        "2020-21": {
+          "n": 208,
+          "mean_pct": 19.77,
+          "ci_lo_pct": 16.7,
+          "ci_hi_pct": 22.99
+        },
+        "2021-22": {
+          "n": 277,
+          "mean_pct": 18.34,
+          "ci_lo_pct": 15.48,
+          "ci_hi_pct": 21.16
+        },
+        "2022-23": {
+          "n": 194,
+          "mean_pct": 16.03,
+          "ci_lo_pct": 13.24,
+          "ci_hi_pct": 18.73
+        },
+        "2024-25": {
+          "n": 175,
+          "mean_pct": 20.27,
+          "ci_lo_pct": 16.62,
+          "ci_hi_pct": 23.97
+        },
+        "2025-26": {
+          "n": 208,
+          "mean_pct": 24.62,
+          "ci_lo_pct": 21.31,
+          "ci_hi_pct": 28.06
+        }
+      },
+      "s2526_vs_pre_p_raw": 0.0005,
+      "s2526_vs_pre_p_bonf": 0.006,
+      "cohens_d": 0.272
+    },
+    "dim1_welch": {
+      "comparison": "2025-26 regular vs 2022-23 regular",
+      "t": 4.529,
+      "p_raw": 0.0,
+      "p_bonf": 0.0001
+    }
+  },
+  "dam": {
+    "by_season": {
+      "2019-20": {
+        "n": 58,
+        "avg_fouls": 3.086,
+        "ci_lo": 2.552,
+        "ci_hi": 3.638
+      },
+      "2020-21": {
+        "n": 68,
+        "avg_fouls": 4.221,
+        "ci_lo": 3.735,
+        "ci_hi": 4.676
+      },
+      "2021-22": {
+        "n": 68,
+        "avg_fouls": 3.691,
+        "ci_lo": 3.279,
+        "ci_hi": 4.118
+      },
+      "2022-23": {
+        "n": 74,
+        "avg_fouls": 2.635,
+        "ci_lo": 2.176,
+        "ci_hi": 3.149
+      },
+      "2024-25": {
+        "n": 56,
+        "avg_fouls": 3.696,
+        "ci_lo": 3.161,
+        "ci_hi": 4.286
+      },
+      "2025-26": {
+        "n": 56,
+        "avg_fouls": 4.214,
+        "ci_lo": 3.625,
+        "ci_hi": 4.893
+      }
+    },
+    "phase_breakdown": {
+      "2019-20": {
+        "regular": {
+          "n": 58,
+          "avg_fouls": 3.086
+        },
+        "playoff": {
+          "n": 9,
+          "avg_fouls": 4.667
+        }
+      },
+      "2020-21": {
+        "regular": {
+          "n": 68,
+          "avg_fouls": 4.221
+        },
+        "playoff": {
+          "n": 9,
+          "avg_fouls": 4.111
+        }
+      },
+      "2021-22": {
+        "regular": {
+          "n": 68,
+          "avg_fouls": 3.691
+        },
+        "playoff": {
+          "n": 13,
+          "avg_fouls": 5.154
+        }
+      },
+      "2022-23": {
+        "regular": {
+          "n": 74,
+          "avg_fouls": 2.635
+        },
+        "playoff": {
+          "n": 17,
+          "avg_fouls": 3.471
+        }
+      },
+      "2024-25": {
+        "regular": {
+          "n": 56,
+          "avg_fouls": 3.696
+        },
+        "playoff": {
+          "n": 0,
+          "avg_fouls": null
+        }
+      },
+      "2025-26": {
+        "regular": {
+          "n": 56,
+          "avg_fouls": 4.214
+        },
+        "playoff": {
+          "n": 0,
+          "avg_fouls": null
+        }
+      }
+    },
+    "baseline_avg_pre_2526": 3.466,
+    "s2526_avg": 4.214,
+    "delta_pct": 21.6,
+    "by_period": {
+      "2019-20": {
+        "total_fouls": 212,
+        "periods": {
+          "0–29": {
+            "count": 48,
+            "pct": 22.64
+          },
+          "30–44": {
+            "count": 40,
+            "pct": 18.87
+          },
+          "45–59": {
+            "count": 25,
+            "pct": 11.79
+          },
+          "60–74": {
+            "count": 42,
+            "pct": 19.81
+          },
+          "75–90": {
+            "count": 57,
+            "pct": 26.89
+          }
+        }
+      },
+      "2020-21": {
+        "total_fouls": 306,
+        "periods": {
+          "0–29": {
+            "count": 76,
+            "pct": 24.84
+          },
+          "30–44": {
+            "count": 60,
+            "pct": 19.61
+          },
+          "45–59": {
+            "count": 40,
+            "pct": 13.07
+          },
+          "60–74": {
+            "count": 53,
+            "pct": 17.32
+          },
+          "75–90": {
+            "count": 77,
+            "pct": 25.16
+          }
+        }
+      },
+      "2021-22": {
+        "total_fouls": 310,
+        "periods": {
+          "0–29": {
+            "count": 74,
+            "pct": 23.87
+          },
+          "30–44": {
+            "count": 51,
+            "pct": 16.45
+          },
+          "45–59": {
+            "count": 56,
+            "pct": 18.06
+          },
+          "60–74": {
+            "count": 60,
+            "pct": 19.35
+          },
+          "75–90": {
+            "count": 69,
+            "pct": 22.26
+          }
+        }
+      },
+      "2022-23": {
+        "total_fouls": 240,
+        "periods": {
+          "0–29": {
+            "count": 48,
+            "pct": 20.0
+          },
+          "30–44": {
+            "count": 54,
+            "pct": 22.5
+          },
+          "45–59": {
+            "count": 36,
+            "pct": 15.0
+          },
+          "60–74": {
+            "count": 42,
+            "pct": 17.5
+          },
+          "75–90": {
+            "count": 60,
+            "pct": 25.0
+          }
+        }
+      },
+      "2024-25": {
+        "total_fouls": 202,
+        "periods": {
+          "0–29": {
+            "count": 51,
+            "pct": 25.25
+          },
+          "30–44": {
+            "count": 35,
+            "pct": 17.33
+          },
+          "45–59": {
+            "count": 40,
+            "pct": 19.8
+          },
+          "60–74": {
+            "count": 30,
+            "pct": 14.85
+          },
+          "75–90": {
+            "count": 46,
+            "pct": 22.77
+          }
+        }
+      },
+      "2025-26": {
+        "total_fouls": 222,
+        "periods": {
+          "0–29": {
+            "count": 61,
+            "pct": 27.48
+          },
+          "30–44": {
+            "count": 35,
+            "pct": 15.77
+          },
+          "45–59": {
+            "count": 33,
+            "pct": 14.86
+          },
+          "60–74": {
+            "count": 37,
+            "pct": 16.67
+          },
+          "75–90": {
+            "count": 56,
+            "pct": 25.23
+          }
+        }
+      }
+    },
+    "by_match_temp_quartile": {
+      "Q1": {
+        "pre_n": 71,
+        "cur_n": 12,
+        "pre_mean": 1.789,
+        "cur_mean": 2.083,
+        "delta": 0.295,
+        "delta_pct": 16.5
+      },
+      "Q2": {
+        "pre_n": 94,
+        "cur_n": 6,
+        "pre_mean": 3.064,
+        "cur_mean": 3.5,
+        "delta": 0.436,
+        "delta_pct": 14.2
+      },
+      "Q3": {
+        "pre_n": 133,
+        "cur_n": 26,
+        "pre_mean": 4.03,
+        "cur_mean": 4.269,
+        "delta": 0.239,
+        "delta_pct": 5.9
+      },
+      "Q4": {
+        "pre_n": 74,
+        "cur_n": 12,
+        "pre_mean": 5.041,
+        "cur_mean": 6.583,
+        "delta": 1.543,
+        "delta_pct": 30.6
+      }
+    },
+    "early_foul_pct": {
+      "by_season": {
+        "2019-20": {
+          "n": 63,
+          "mean_pct": 21.18,
+          "ci_lo_pct": 14.69,
+          "ci_hi_pct": 27.44
+        },
+        "2020-21": {
+          "n": 76,
+          "mean_pct": 21.88,
+          "ci_lo_pct": 16.43,
+          "ci_hi_pct": 27.83
+        },
+        "2021-22": {
+          "n": 81,
+          "mean_pct": 24.95,
+          "ci_lo_pct": 19.75,
+          "ci_hi_pct": 30.38
+        },
+        "2022-23": {
+          "n": 79,
+          "mean_pct": 19.68,
+          "ci_lo_pct": 13.8,
+          "ci_hi_pct": 26.35
+        },
+        "2024-25": {
+          "n": 54,
+          "mean_pct": 23.35,
+          "ci_lo_pct": 17.65,
+          "ci_hi_pct": 30.37
+        },
+        "2025-26": {
+          "n": 54,
+          "mean_pct": 23.39,
+          "ci_lo_pct": 17.6,
+          "ci_hi_pct": 29.86
+        }
+      },
+      "s2526_vs_pre_p_raw": 0.7296,
+      "s2526_vs_pre_p_bonf": 1.0,
+      "cohens_d": 0.047
+    },
+    "dim1_welch": {
+      "comparison": "2025-26 regular vs 2022-23 regular",
+      "t": 3.931,
+      "p_raw": 0.0001,
+      "p_bonf": 0.0018
+    }
+  }
+}

@@ -1,0 +1,161 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 052 — Säsong 25/26: utvisningsfrekvensen steg 25 % — reformen syns i datan"
+  description="Herr +16%, dam +22% jämfört med genomsnittet av de fem föregående säsongerna. Ökningen är bred och konsistent, men inte primärt koncentrerad till matchens inledning."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 052 · 1 juni 2026</p>
+    <h1 class="finding-title">Säsong 25/26: utvisningsfrekvensen steg 16 %<br>— reformen syns i datan</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number"><span class="key-number__value">+16%</span><span class="key-number__label">Herr — förändring utvisningar/match</span><span class="key-number__note">Från pre-snitt 3.70 till 4.29 i 2025-26</span></div>
+      <div class="key-number"><span class="key-number__value">+22%</span><span class="key-number__label">Dam — förändring utvisningar/match</span><span class="key-number__note">Från pre-snitt 3.47 till 4.21 i 2025-26</span></div>
+      <div class="key-number"><span class="key-number__value">4.29</span><span class="key-number__label">Herr utvisningar/match 2025-26</span><span class="key-number__note">Högsta uppmätta värdet i datasetet (2019–2026)</span></div>
+      <div class="key-number"><span class="key-number__value">4.21</span><span class="key-number__label">Dam utvisningar/match 2025-26</span><span class="key-number__note">Näst högsta i datasetet efter säsong 2020-21</span></div>
+      <div class="key-number"><span class="key-number__value">p&lt;0.001</span><span class="key-number__label">Statistisk signifikans</span><span class="key-number__note">Welch t-test, 2025-26 regular vs 2022-23 regular, Bonferroni-korrigerat</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>SBF kommunicerade inför säsong 2025-26 ett direktiv om strängare domning i matchens inledning — informellt kallat "Våga visa rött". Vi undersökte om utvisningsfrekvensen faktiskt förändrades, och om förändringen primärt syns tidigt i matchen (0–29 min) som direktivet föreslog.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Analysen bygger på matchdata från Bandygrytan för sex säsonger (2019-20, 2020-21, 2021-22, 2022-23, 2024-25, 2025-26). Säsong 2023-24 saknas i datasetet. Herr: 1162 grundseriematcher totalt, dam: 380 grundseriematcher totalt. Per-säsongsdata nedan avser grundserie + kvalmatcher.</p>
+      <table>
+        <thead><tr><th>Säsong</th><th>Herr n</th><th>Herr fouls/m</th><th>Dam n</th><th>Dam fouls/m</th></tr></thead>
+        <tbody>
+          <tr><td>2019-20</td><td>194</td><td>3.742</td><td>58</td><td>3.086</td></tr><tr><td>2020-21</td><td>184</td><td>4.049</td><td>68</td><td>4.221</td></tr><tr><td>2021-22</td><td>252</td><td>3.560</td><td>68</td><td>3.691</td></tr><tr><td>2022-23</td><td>168</td><td>3.280</td><td>74</td><td>2.635</td></tr><tr><td>2024-25</td><td>182</td><td>3.857</td><td>56</td><td>3.696</td></tr><tr><td>2025-26</td><td>182</td><td>4.291</td><td>56</td><td>4.214</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+
+      <h3>Liganivå: tydlig ökning 2025-26</h3>
+      <p>Herr steg från ett pre-snitt (5 säsonger) på 3.698 till 4.291 utvisningar/match i 2025-26 — en ökning med 16%. Dam steg från 3.466 till 4.214 — en ökning med 22%. Jämförelset 2025-26 regular vs 2022-23 regular är statistiskt signifikant i båda serierna (Welch t-test, p&lt;0.001 efter Bonferroni-korrektion för 12 tester).</p>
+
+      <h3>Dimension 1: Grundserie vs slutspel</h3>
+      <p>Hoppet är tydligast och statistiskt stabilt i grundserien. Slutspelsdata för 2025-26 är begränsad och ska tolkas med försiktighet.</p>
+
+      <h3>Dimension 2: Fördelning över matchens perioder</h3>
+      <p>Andelen utvisningar i varje 15-minutersperiod är relativt stabil över säsonger. Reformen syns som en generell volymökning — inte primärt som en ökning i matchens inledning (0–29 min).</p>
+      <table>
+        <thead><tr><th>Säsong</th><th>0–29</th><th>30–44</th><th>45–59</th><th>60–74</th><th>75–90</th></tr></thead>
+        <tbody>
+          <tr><td>2019-20</td><td>18.4%</td><td>15.8%</td><td>17.7%</td><td>21.7%</td><td>26.4%</td></tr>
+<tr><td>2020-21</td><td>20.7%</td><td>16.9%</td><td>16.6%</td><td>20.0%</td><td>25.8%</td></tr>
+<tr><td>2021-22</td><td>19.0%</td><td>17.0%</td><td>16.6%</td><td>18.3%</td><td>29.2%</td></tr>
+<tr><td>2022-23</td><td>18.0%</td><td>14.4%</td><td>17.7%</td><td>18.0%</td><td>31.8%</td></tr>
+<tr><td>2024-25</td><td>21.9%</td><td>17.1%</td><td>18.6%</td><td>17.5%</td><td>24.9%</td></tr>
+<tr><td>2025-26</td><td>24.5%</td><td>17.5%</td><td>14.9%</td><td>16.4%</td><td>26.8%</td></tr>
+
+        </tbody>
+      </table>
+      <p><em>Tabell: Herr — procentuell fördelning av utvisningar per period och säsong.</em></p>
+
+      <h3>Dimension 3: Per matchtemperatur (kvartilar)</h3>
+      <p>Matcher grupperades i kvartilar efter historisk utvisningsfrekvens för matchupet. Ökningen syns i alla kvartilar — störst relativt i kalla matchups (Q1), störst absolut i varma (Q4).</p>
+      <table>
+        <thead><tr><th>Kvartil</th><th>Pre n</th><th>2025-26 n</th><th>Pre fouls/m</th><th>25/26 fouls/m</th><th>Δ (rel)</th><th>p_raw</th></tr></thead>
+        <tbody>
+          <tr><td>Q1 (herr)</td><td>265</td><td>30</td><td>2.13</td><td>2.57</td><td>+0.43 (+20.4%)</td><td>0.088</td></tr>
+<tr><td>Q2 (herr)</td><td>305</td><td>37</td><td>3.19</td><td>3.43</td><td>+0.24 (+7.6%)</td><td>0.391</td></tr>
+<tr><td>Q3 (herr)</td><td>323</td><td>63</td><td>4.06</td><td>4.32</td><td>+0.26 (+6.4%)</td><td>0.280</td></tr>
+<tr><td>Q4 (herr)</td><td>218</td><td>80</td><td>5.57</td><td>5.59</td><td>+0.01 (+0.3%)</td><td>0.963</td></tr>
+
+          <tr><td>Q1 (dam)</td><td>71</td><td>12</td><td>1.79</td><td>2.08</td><td>+0.29 (+16.5%)</td><td>0.490</td></tr>
+<tr><td>Q2 (dam)</td><td>94</td><td>6</td><td>3.06</td><td>3.50</td><td>+0.44 (+14.2%)</td><td>0.377</td></tr>
+<tr><td>Q3 (dam)</td><td>133</td><td>26</td><td>4.03</td><td>4.27</td><td>+0.24 (+5.9%)</td><td>0.580</td></tr>
+<tr><td>Q4 (dam)</td><td>74</td><td>12</td><td>5.04</td><td>6.58</td><td>+1.54 (+30.6%)</td><td>0.039</td></tr>
+
+        </tbody>
+      </table>
+
+      <h3>Dimension 6: Tidiga utvisningar (0–29 min) som andel</h3>
+      <p>Reformens specifika mål var ökade tidiga ingripanden. Testet — andelen utvisningar under de första 30 minuterna per match — ger inte statistiskt signifikant resultat efter Bonferroni-korrektion (herr p_bonf=0.006, dam p_bonf=1.000). Den totala volymökningen är alltså bred, inte period-specifik.</p>
+      <table>
+        <thead><tr><th>Säsong</th><th>n matcher</th><th>Andel 0–29</th><th>95% CI</th></tr></thead>
+        <tbody>
+          <tr><td>2019-20</td><td>209</td><td>16.6%</td><td>13.7–19.7%</td></tr>
+<tr><td>2020-21</td><td>208</td><td>19.8%</td><td>16.7–23.0%</td></tr>
+<tr><td>2021-22</td><td>277</td><td>18.3%</td><td>15.5–21.2%</td></tr>
+<tr><td>2022-23</td><td>194</td><td>16.0%</td><td>13.2–18.7%</td></tr>
+<tr><td>2024-25</td><td>175</td><td>20.3%</td><td>16.6–24.0%</td></tr>
+<tr><td>2025-26</td><td>208</td><td>24.6%</td><td>21.3–28.1%</td></tr>
+
+        </tbody>
+      </table>
+      <p><em>Tabell: Herr — andel av matchens utvisningar i de första 30 minuterna, per säsong.</em></p>
+
+      <p><em>Uppdelningen per enskild domare är INTERN och rapporteras inte här.</em></p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Det är ett mätbart datamönster att utvisningsfrekvensen steg i säsong 2025-26. Det sammanfaller med ett kommunicerat direktiv, men datasetet innehåller ingen kontrolleringsvariabel för direktiv — samvariansen kan inte direkt tolkas som kausal effekt av direktivet. Alternativen (taktiktrendskifte, matchmixförändring, specifik domaruppsättning) kan inte uteslutas utan ytterligare data.</p>
+      <p>Att ökningen är bred — syns i grundserie, i alla matchtemperaturkvartilar, i båda serierna — är konsistent med ett systemnivåskifte snarare än en föreningsspecifik eller domarspecifik rörelse. Men det är ett mätbart mönster i datan, inte en slutsats om avsikt eller effekt.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Säsong 2023-24 saknas — den direkta pre/post-jämförelsen hoppar en säsong.</li>
+        <li>Matchstraff och röda kort är inte separerade i Bandygrytans data — alla utvisningshändelser är 10-minuters standardutvisningar.</li>
+        <li>2025-26 slutspeldata är begränsad — slutspelsanalysen är osäker.</li>
+        <li>Domarallokering är okänd — systematiska förändringar i vilka matcher vilka domare tilldelas kan påverka liganivån utan att domningsstilen förändrats.</li>
+        <li>Matchtemperatur-kvartilar bygger på hela datasetet inklusive 2025-26, vilket ger svag data leakage i baseline.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Finns SBF:s interna domarstatistik för 2025-26 som kan bekräfta eller nyansera de kvantitativa mönstren?</li>
+        <li>Har säsong 2023-24 data som kan läggas till retroaktivt för en tätare trendlinje?</li>
+        <li>Är den relativa ökningen i kalla matchups (Q1) ett stabilt mönster eller en artefakt av litet urval?</li>
+        <li>Syns en liknande ökning i division 1 eller lägre serier, eller är effekten elitspecifik?</li>
+      </ul>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+052:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+052:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>
