@@ -8,16 +8,14 @@ import { getCriticalEventsForGranska } from '../../../domain/services/granskaEve
 import { GranskaOversikt } from './GranskaOversikt'
 import { GranskaSpelare } from './GranskaSpelare'
 import { GranskaShotmap } from './GranskaShotmap'
-import { GranskaForlopp } from './GranskaForlopp'
 import { GranskaAnalys } from './GranskaAnalys'
 
-type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'forlop' | 'analys'
+type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'analys'
 
 const STEPS: { id: GranskaStep; icon: string; label: string }[] = [
   { id: 'oversikt', icon: '🎯', label: 'Översikt' },
   { id: 'spelare', icon: '👥', label: 'Spelare' },
   { id: 'shotmap', icon: '📈', label: 'Shotmap' },
-  { id: 'forlop', icon: '⚡', label: 'Förlopp' },
   { id: 'analys', icon: '🎓', label: 'Analys' },
 ]
 
@@ -181,6 +179,14 @@ export function GranskaScreen() {
             fadeIn={fadeIn}
             onChoice={handleChoice}
             onResolve={handleResolveReactions}
+            rs={rs}
+            standing={standing}
+            standingBefore={standingBefore}
+            financesDelta={financesDelta}
+            csDelta={csDelta}
+            cs={cs}
+            otherResults={otherResults}
+            onOpenReport={() => goToStep('analys')}
           />
         )}
         {step === 'spelare' && (
@@ -202,20 +208,6 @@ export function GranskaScreen() {
             isHome={isHome}
           />
         )}
-        {step === 'forlop' && (
-          <GranskaForlopp
-            game={game}
-            fixture={fixture}
-            isHome={isHome}
-            rs={rs}
-            standing={standing}
-            standingBefore={standingBefore}
-            financesDelta={financesDelta}
-            csDelta={csDelta}
-            cs={cs}
-            otherResults={otherResults}
-          />
-        )}
         {step === 'analys' && (
           <GranskaAnalys
             game={game}
@@ -226,11 +218,6 @@ export function GranskaScreen() {
             myScore={myScore}
             theirScore={theirScore}
             potm={potm}
-            standing={standing}
-            standingBefore={standingBefore}
-            financesDelta={financesDelta}
-            csDelta={csDelta}
-            cs={cs}
           />
         )}
       </div>

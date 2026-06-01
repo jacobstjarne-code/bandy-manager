@@ -18,9 +18,10 @@ import { SquadScreen } from '../SquadScreen'
 import { PortalScreen } from '../PortalScreen'
 import { TranareTab } from '../../components/club/TranareTab'
 import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
+import { GranskaScreen } from '../granska/GranskaScreen'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -35,6 +36,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'board-b',      label: 'BoardMeeting B (bra)' },
   { id: 'board-c',      label: 'BoardMeeting C (dålig)' },
   { id: 'stillness',    label: 'NU-stiltje (lugn vecka)' },
+  { id: 'granska',      label: 'Granska (IA: 3 grupper)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -231,6 +233,40 @@ const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1' })
 const calmPlayers = devPlayers.map(p => ({ ...p, isInjured: false, injuryDaysRemaining: 0, suspensionGamesRemaining: 0, morale: 70 }))
 const stillnessGame = makeGame(makeLeagueFixtures(), { players: calmPlayers, captainPlayerId: 'p-d1' })
 
+// Granska IA — fingerad spelad match (md 20) + andra matcher + roundSummary
+const granskaFixture = {
+  id: 'fx-granska', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
+  homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 4, awayScore: 2,
+  status: 'completed' as const,
+  events: [
+    { minute: 8, type: 'goal', clubId: HOME_ID, playerId: 'p-f1', description: 'Mål', isCornerGoal: false },
+    { minute: 22, type: 'goal', clubId: AWAY_ID, playerId: undefined, description: 'Kvittering' },
+    { minute: 34, type: 'corner', clubId: HOME_ID, description: 'Hörna' },
+    { minute: 41, type: 'goal', clubId: HOME_ID, playerId: 'p-h1', description: 'Mål', isCornerGoal: true },
+    { minute: 58, type: 'suspension', clubId: AWAY_ID, description: 'Utvisning' },
+    { minute: 67, type: 'goal', clubId: HOME_ID, playerId: 'p-f2', description: 'Mål' },
+    { minute: 79, type: 'penalty', clubId: AWAY_ID, description: 'Straff' },
+    { minute: 81, type: 'goal', clubId: AWAY_ID, playerId: undefined, description: 'Straffmål' },
+    { minute: 88, type: 'goal', clubId: HOME_ID, playerId: 'p-f1', description: 'Mål' },
+  ],
+  report: { playerRatings: { 'p-f1': 8.4, 'p-h1': 7.2, 'p-f2': 7.0, 'p-d2': 5.2 }, shotsHome: 17, shotsAway: 9, onTargetHome: 9, onTargetAway: 4, savesHome: 3, savesAway: 8, cornersHome: 9, cornersAway: 3, penaltiesHome: 0, penaltiesAway: 1, possessionHome: 58, possessionAway: 42, playerOfTheMatchId: 'p-f1' },
+  attendance: 478,
+}
+const granskaOtherFixtures = [
+  { id: 'fx-o1', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20, homeClubId: 'club-s1', awayClubId: 'club-s5', homeScore: 3, awayScore: 2, status: 'completed' as const, events: [] },
+  { id: 'fx-o2', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20, homeClubId: 'club-s8', awayClubId: 'club-s2', homeScore: 1, awayScore: 1, status: 'completed' as const, events: [] },
+]
+const granskaGame = makeGame([...makeLeagueFixtures(), granskaFixture, ...granskaOtherFixtures], {
+  lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 20, communityStanding: 58,
+})
+const granskaRoundSummary = {
+  round: 20, date: '2026-02-01', matchPlayed: true,
+  communityStandingBefore: 54, communityStandingAfter: 58, communityStandingChanges: [],
+  standingBefore: 5, financesBefore: 70000, financesAfter: 84000,
+  injuries: ['Holm — lätt stukning, 1 vecka'], youthMatchResult: 'P19 vann 3–1',
+  newInboxCount: 2,
+}
+
 // BoardMeeting fingered state — season 2+, prev-season objective history + new goals
 const boardPersonalities = [
   { name: 'Margareta Sahlin', role: 'ordförande', personality: 'traditionalist' },
@@ -261,6 +297,7 @@ const boardGameC = makeGame(makeLeagueFixtures(), { currentSeason: 3, boardPerso
 
 export function DevScenesScreen() {
   const [scene, setScene] = useState<SceneId>('cup-victory')
+  const storeReady = useGameStore(s => s.game?.lastCompletedFixtureId === 'fx-granska')
 
   // Seed the store so all screens that call useGameStore() work
   useEffect(() => {
@@ -273,8 +310,9 @@ export function DevScenesScreen() {
       : scene === 'board-b' ? boardGameB
       : scene === 'board-c' ? boardGameC
       : scene === 'stillness' ? stillnessGame
+      : scene === 'granska' ? granskaGame
       : portalGame
-    useGameStore.setState({ game: g })
+    useGameStore.setState({ game: g, roundSummary: scene === 'granska' ? granskaRoundSummary : null } as never)
   }, [scene])
 
   return (
@@ -380,6 +418,12 @@ export function DevScenesScreen() {
         {scene === 'stillness' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <SquadScreen />
+          </div>
+        )}
+
+        {scene === 'granska' && storeReady && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <GranskaScreen />
           </div>
         )}
       </div>

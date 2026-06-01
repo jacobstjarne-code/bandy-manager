@@ -1,10 +1,9 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
-import { csColor, formatFinance } from '../../utils/formatters'
+import { MatchEventType } from '../../../domain/enums'
 import { SectionLabel } from '../../components/SectionLabel'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
-import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
 
 interface GranskaAnalysProps {
   game: SaveGame
@@ -15,19 +14,18 @@ interface GranskaAnalysProps {
   myScore: number
   theirScore: number
   potm: Player | null
-  standing: { clubId: string; position: number } | undefined
-  standingBefore: number | null
-  financesDelta: number
-  csDelta: number
-  cs: number
 }
 
-export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, theirScore, potm, standing, standingBefore, financesDelta, csDelta, cs }: GranskaAnalysProps) {
-  const leaguePosition = getCurrentLeaguePosition(game.managedClubId, game)
+export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, theirScore, potm }: GranskaAnalysProps) {
   const coach = game.assistantCoach
   const coachItem = game.inbox
     .filter(i => i.tone === 'coach')
     .sort((a, b) => b.date.localeCompare(a.date))[0]
+
+  // HÄNDELSETIDSLINJE — flyttad från forlop (full event-för-event-vy)
+  const allEvents = fixture?.events
+    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.Suspension || e.type === MatchEventType.Corner || e.type === MatchEventType.Penalty)
+    .sort((a, b) => a.minute - b.minute) ?? []
 
   return (
     <>
@@ -55,28 +53,44 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
         )
       })()}
 
-      {/* Consequences */}
-      {standing && (
+      {/* Händelsetidslinje — full event-för-event-vy (flyttad från forlop) */}
+      {allEvents.length > 0 && (
         <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-          <SectionLabel style={{ marginBottom: 8 }}>KONSEKVENSER</SectionLabel>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Tabellplacering</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-              {leaguePosition === null ? '—'
-                : standingBefore && standingBefore !== leaguePosition
-                ? `${standingBefore} → ${leaguePosition}`
-                : `${leaguePosition}:a`}
-            </span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Ekonomi denna omgång</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: financesDelta >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatFinance(financesDelta)}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Bygdens puls</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: csColor(cs) }}>
-              {csDelta !== 0 ? `${csDelta > 0 ? '+' : ''}${csDelta} → ${cs}` : `${cs}`}
-            </span>
+          <SectionLabel style={{ marginBottom: 8 }}>HÄNDELSETIDSLINJE</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {allEvents.map((e, i) => {
+              const isHomeEvent = e.clubId === fixture?.homeClubId
+              const isManagedEvent = isHome ? isHomeEvent : !isHomeEvent
+              const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🏒')
+                : e.type === MatchEventType.Corner ? '🔄'
+                : e.type === MatchEventType.Penalty ? '🎯'
+                : '🟥'
+              const p = e.playerId ? game.players.find(pl => pl.id === e.playerId) : null
+              const name = p ? `${p.firstName[0]}. ${p.lastName}` : (e.description ?? '')
+              const textColor = isManagedEvent ? 'var(--text-primary)' : 'var(--text-muted)'
+              return (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: '2px 0', borderBottom: i < allEvents.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {isHomeEvent && (
+                      <>
+                        <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, minWidth: 18 }}>{e.minute}'</span>
+                        <span style={{ fontSize: 11 }}>{icon}</span>
+                        <span style={{ fontSize: 11, color: textColor }}>{name}</span>
+                      </>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+                    {!isHomeEvent && (
+                      <>
+                        <span style={{ fontSize: 11, color: textColor }}>{name}</span>
+                        <span style={{ fontSize: 11 }}>{icon}</span>
+                        <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, minWidth: 18, textAlign: 'right' }}>{e.minute}'</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

@@ -1,18 +1,44 @@
-import type { SaveGame } from '../../../domain/entities/SaveGame'
+import { useNavigate } from 'react-router-dom'
+import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
 import type { Fixture, MatchEvent } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { Club } from '../../../domain/entities/Club'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { EventChoice } from '../../../domain/entities/GameEvent'
-import { MatchEventType, InboxItemType } from '../../../domain/enums'
+import { MatchEventType, InboxItemType, TrainingType } from '../../../domain/enums'
 import { formatArenaName } from '../../../domain/utils/arenaName'
+import { csColor, formatFinance } from '../../utils/formatters'
+import { getRivalry } from '../../../domain/data/rivalries'
+import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
+import { getFormResults } from '../../utils/formUtils'
 import { SectionLabel } from '../../components/SectionLabel'
+import { ScoreBlock } from '../../components/primitives'
 import { generateSilentMatchReport } from '../../../domain/services/silentMatchReportService'
 import { generateQuickSummary, choiceStyle } from './helpers'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
 import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, LEADERSHIP_OUTCOMES, STARTED_TIRED_OUTCOMES } from '../../../domain/data/managerKvittoText'
 import type { KvittoOutcomeDir } from '../../../domain/data/managerKvittoText'
+
+const TRAINING_LABEL: Record<string, string> = {
+  [TrainingType.Skating]: 'Skridskoteknik', [TrainingType.BallControl]: 'Bollkontroll',
+  [TrainingType.Passing]: 'Passningsspel', [TrainingType.Shooting]: 'Avslut',
+  [TrainingType.Defending]: 'Försvarsspel', [TrainingType.CornerPlay]: 'Hörnor',
+  [TrainingType.Physical]: 'Fysik', [TrainingType.Tactical]: 'Taktik',
+  [TrainingType.Recovery]: 'Återhämtning', [TrainingType.MatchPrep]: 'Matchförberedelse',
+}
+
+/** Grupp-avdelare: ⬩ + label + hairline. */
+function GroupDivider({ label, style }: { label: string; style?: React.CSSProperties }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '14px 2px 6px', ...style }}>
+      <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+        ⬩ {label}
+      </span>
+      <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+    </div>
+  )
+}
 
 interface GranskaOversiktProps {
   game: SaveGame
@@ -34,20 +60,36 @@ interface GranskaOversiktProps {
   fadeIn: (i: number) => React.CSSProperties
   onChoice: (eventId: string, choiceId: string, choiceLabel: string) => void
   onResolve: (ids: string[]) => void
+  rs: RoundSummaryData | null
+  standing: { clubId: string; position: number } | undefined
+  standingBefore: number | null
+  financesDelta: number
+  csDelta: number
+  cs: number
+  otherResults: Fixture[]
+  onOpenReport: () => void
 }
 
 export function GranskaOversikt({
   game, fixture, homeClub, awayClub, isHome,
   won, lost, resultColor, resultLabel, potm, potmRating, penResult,
   keyMoments, pendingEvents, resolvedEventIds, chosenLabels, fadeIn, onChoice, onResolve,
+  rs, standing, standingBefore, financesDelta, csDelta, cs, otherResults, onOpenReport,
 }: GranskaOversiktProps) {
+  const navigate = useNavigate()
+  const leaguePosition = getCurrentLeaguePosition(game.managedClubId, game)
+  const getClubShort = (id: string) => game.clubs.find(c => c.id === id)?.shortName ?? game.clubs.find(c => c.id === id)?.name ?? '?'
+  const latestTraining = (game.trainingHistory ?? []).slice(-1)[0]
+  const trainingLabel = latestTraining ? TRAINING_LABEL[latestTraining.focus.type] ?? 'Träning' : null
   return (
     <>
-      {/* Result hero */}
+      <GroupDivider label="Resultatet" style={{ marginTop: 2 }} />
+      {/* Result hero — tappbar → Analys (händelsetidslinje + insikter) */}
       {fixture && (
-        <div className="card-sharp" style={{ margin: '0 0 3px', ...fadeIn(0) }}>
+        <div className="card-sharp card-tap" onClick={onOpenReport} style={{ margin: '0 0 3px', position: 'relative', cursor: 'pointer', ...fadeIn(0) }}>
+          <span style={{ position: 'absolute', top: 13, right: 14, fontSize: 16, color: 'var(--accent)' }}>›</span>
           <div style={{ padding: '16px 14px 16px', textAlign: 'center' }}>
-            <SectionLabel style={{ marginBottom: 10 }}>SLUTRESULTAT</SectionLabel>
+            <SectionLabel style={{ marginBottom: 10 }}>🏒 MATCHEN</SectionLabel>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: 'left' }}>{homeClub?.shortName ?? homeClub?.name}</span>
@@ -109,6 +151,37 @@ export function GranskaOversikt({
           </div>
         </div>
       )}
+
+      {/* Resultat-strip — tabell + form (två kolumner) */}
+      {standing && (() => {
+        const form = getFormResults(game.managedClubId, game.fixtures, game.clubs).slice(-5)
+        const dotColor = (r: 'V' | 'O' | 'F') => r === 'V' ? 'var(--success)' : r === 'F' ? 'var(--danger)' : 'var(--text-muted)'
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '0 0 3px', ...fadeIn(1) }}>
+            <div className="card-sharp card-tap" onClick={() => navigate('/game/tabell')} style={{ padding: '10px 12px', cursor: 'pointer' }}>
+              <SectionLabel style={{ marginBottom: 7 }}>📊 TABELL</SectionLabel>
+              <span style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+                {leaguePosition ?? '—'}{leaguePosition ? ':a' : ''}
+              </span>
+              {standingBefore && leaguePosition && standingBefore !== leaguePosition && (
+                <span style={{ fontSize: 11, marginLeft: 6, color: standingBefore > leaguePosition ? 'var(--success)' : 'var(--danger)' }}>
+                  {standingBefore > leaguePosition ? '↑' : '↓'}
+                </span>
+              )}
+            </div>
+            <div className="card-sharp" style={{ padding: '10px 12px' }}>
+              <SectionLabel style={{ marginBottom: 7 }}>📈 FORM</SectionLabel>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {form.length === 0
+                  ? <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>
+                  : form.map((r, i) => (
+                    <span key={i} style={{ width: 16, height: 16, borderRadius: 4, background: dotColor(r.result), color: 'var(--text-light)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{r.result}</span>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Statistik */}
       {fixture?.report && (
@@ -437,6 +510,97 @@ export function GranskaOversikt({
         </div>
       )}
 
+      {/* ── KLUBBEN ── */}
+      <GroupDivider label="Klubben" />
+      {rs && (
+        <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+          <SectionLabel style={{ marginBottom: 8 }}>OMGÅNGSSAMMANFATTNING</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>💰 Ekonomi</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: financesDelta >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatFinance(financesDelta)}/omg</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🏘 Bygdens puls</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: csColor(cs) }}>
+                {csDelta !== 0 ? `${rs.communityStandingBefore ?? cs} → ${cs} ${csDelta > 0 ? '↑' : '↓'}` : `${cs}`}
+              </span>
+            </div>
+            {trainingLabel && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🏋️ Träning</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{trainingLabel}</span>
+              </div>
+            )}
+            {rs.injuries && rs.injuries.length > 0 && (
+              <div style={{ padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🩹 Skador</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 3 }}>
+                  {rs.injuries.map((inj: string, i: number) => <span key={i} style={{ fontSize: 12, fontWeight: 600, color: 'var(--danger)' }}>{inj}</span>)}
+                </div>
+              </div>
+            )}
+            {rs.youthMatchResult && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🎓 Akademin (P19)</span>
+                <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>{rs.youthMatchResult}</span>
+              </div>
+            )}
+            {rs.newInboxCount > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', cursor: 'pointer' }} onClick={() => navigate('/game/inbox')}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>📬 Inkorg</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>{rs.newInboxCount} nya</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── OMVÄRLDEN ── */}
+      {(otherResults.length > 0 || game.inbox.some(i => i.type === InboxItemType.ScoutReport && !i.isRead)) && (
+        <GroupDivider label="Omvärlden" />
+      )}
+      {otherResults.length > 0 && (() => {
+        const rivalClubId = game.clubs.filter(c => c.id !== game.managedClubId).find(c => getRivalry(game.managedClubId, c.id))?.id ?? null
+        return (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+            <SectionLabel style={{ marginBottom: 6 }}>🏒 ANDRA MATCHER</SectionLabel>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {otherResults.map(f => {
+                const homeWon = (f.homeScore ?? 0) > (f.awayScore ?? 0)
+                const awayWon = (f.awayScore ?? 0) > (f.homeScore ?? 0)
+                const isRivalMatch = rivalClubId && (f.homeClubId === rivalClubId || f.awayClubId === rivalClubId)
+                const isDraw = !homeWon && !awayWon
+                const blockVariant = isRivalMatch ? 'derby' : isDraw ? 'draw' : 'subtle'
+                return (
+                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 600 : 400, color: homeWon ? 'var(--text-primary)' : 'var(--text-secondary)', textAlign: 'right' }}>{isRivalMatch && f.homeClubId === rivalClubId ? '🔥 ' : ''}{getClubShort(f.homeClubId)}</span>
+                    <ScoreBlock score={`${f.homeScore}–${f.awayScore}`} variant={blockVariant} light compact />
+                    <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 600 : 400, color: awayWon ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{isRivalMatch && f.awayClubId === rivalClubId ? '🔥 ' : ''}{getClubShort(f.awayClubId)}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
+      {(() => {
+        const scoutItems = game.inbox.filter(i => i.type === InboxItemType.ScoutReport && !i.isRead).slice(-2)
+        if (scoutItems.length === 0) return null
+        return (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+            <SectionLabel style={{ marginBottom: 6 }}>🔍 SCOUTING</SectionLabel>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {scoutItems.map((item, i) => (
+                <div key={i} style={{ borderBottom: i < scoutItems.length - 1 ? '1px solid var(--border)' : 'none', paddingBottom: i < scoutItems.length - 1 ? 5 : 0 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{item.title}</p>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{item.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
     </>
   )
 }
