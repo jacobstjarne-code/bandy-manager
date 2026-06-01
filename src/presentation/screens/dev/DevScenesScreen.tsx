@@ -20,6 +20,7 @@ import { TranareTab } from '../../components/club/TranareTab'
 import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
 import { GranskaScreen } from '../granska/GranskaScreen'
 import { PortalUpptakt } from '../../components/portal/PortalUpptakt'
+import { NextMatchPrimary } from '../../components/portal/primary/NextMatchPrimary'
 import { useGameStore } from '../../store/gameStore'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt'
@@ -270,9 +271,16 @@ function makeUpptaktStandings(managedPoints: number, otherPoints: number[]) {
   rows.sort((a, b) => b.points - a.points).forEach((r, i) => { r.position = i + 1 })
   return rows
 }
-const upptaktSakrat = makeGame(makeLeagueFixtures(), { currentMatchday: 19, standings: makeUpptaktStandings(34, [38, 36, 30, 28, 28, 20, 18, 16, 14, 12, 10]) })
-const upptaktFarozon = makeGame(makeLeagueFixtures(), { currentMatchday: 19, standings: makeUpptaktStandings(20, [30, 30, 28, 28, 28, 28, 26, 24, 22, 12, 10]) })
-const upptaktBottenstrid = makeGame(makeLeagueFixtures(), { currentMatchday: 19, standings: makeUpptaktStandings(8, [32, 30, 28, 26, 24, 22, 20, 18, 16, 10, 6]) })
+// Schemalagd nästa match (md 20, grundserie) så NextMatchPrimary renderar w2-warm pcard
+const upptaktNextFixture = {
+  id: 'fx-upptakt-next', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
+  homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 0, awayScore: 0,
+  status: 'scheduled' as const, events: [], isCup: false, date: '2026-02-08', tipoffHour: 14,
+}
+const upptaktFx = () => [...makeLeagueFixtures(), upptaktNextFixture]
+const upptaktSakrat = makeGame(upptaktFx(), { currentMatchday: 19, standings: makeUpptaktStandings(34, [38, 36, 30, 28, 28, 20, 18, 16, 14, 12, 10]) })
+const upptaktFarozon = makeGame(upptaktFx(), { currentMatchday: 19, standings: makeUpptaktStandings(20, [30, 30, 28, 28, 28, 28, 26, 24, 22, 12, 10]) })
+const upptaktBottenstrid = makeGame(upptaktFx(), { currentMatchday: 19, standings: makeUpptaktStandings(8, [32, 30, 28, 26, 24, 22, 20, 18, 16, 10, 6]) })
 
 const granskaRoundSummary = {
   round: 20, date: '2026-02-01', matchPlayed: true,
@@ -448,6 +456,7 @@ export function DevScenesScreen() {
               <div key={label} style={{ marginBottom: 18 }}>
                 <div style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', padding: '0 14px 6px' }}>{label}</div>
                 <PortalUpptakt game={g} />
+                <div style={{ padding: '0 14px' }}><NextMatchPrimary game={g} /></div>
               </div>
             ))}
           </div>
