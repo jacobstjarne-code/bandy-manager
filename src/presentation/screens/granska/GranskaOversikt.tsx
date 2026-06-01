@@ -148,6 +148,26 @@ export function GranskaOversikt({
                 </p>
               ) : null
             })()}
+
+            {/* Flavor-rad — kort sammanfattning, border-top, klipps aldrig mot underkanten */}
+            {(() => {
+              const myScore = isHome ? fixture.homeScore : fixture.awayScore
+              const theirScore = isHome ? fixture.awayScore : fixture.homeScore
+              const margin = myScore - theirScore
+              const totalGoals = (fixture.homeScore ?? 0) + (fixture.awayScore ?? 0)
+              const flavor = won
+                ? margin >= 3 ? '💪 Dominant insats' : totalGoals >= 8 ? '🔥 Målrik historia' : margin === 1 ? '😅 Knapp seger' : '✅ Klar vinst'
+                : lost
+                ? margin <= -3 ? '💣 Svår dag på jobbet' : margin === -1 ? '😤 Nära men inte nog' : '❌ Klar förlust'
+                : totalGoals >= 8 ? '🎢 Dramatiskt kryss' : '🤝 Rättvis poängdelning'
+              const venue = isHome ? 'hemmaseger' : 'bortaseger'
+              const flavorTail = won ? ` · ${venue}` : ''
+              return (
+                <div style={{ marginTop: 12, paddingTop: 11, borderTop: '1px solid var(--border)', fontSize: 12, fontWeight: 600, color: won ? 'var(--success)' : lost ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                  {flavor}{flavorTail}
+                </div>
+              )
+            })()}
           </div>
         </div>
       )}
@@ -532,14 +552,6 @@ export function GranskaOversikt({
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{trainingLabel}</span>
               </div>
             )}
-            {rs.injuries && rs.injuries.length > 0 && (
-              <div style={{ padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🩹 Skador</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 3 }}>
-                  {rs.injuries.map((inj: string, i: number) => <span key={i} style={{ fontSize: 12, fontWeight: 600, color: 'var(--danger)' }}>{inj}</span>)}
-                </div>
-              </div>
-            )}
             {rs.youthMatchResult && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🎓 Akademin (P19)</span>
@@ -552,6 +564,19 @@ export function GranskaOversikt({
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>{rs.newInboxCount} nya</span>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* NY SKADA — eget danger-stripe-kort, bara om en ny skada finns denna omg */}
+      {rs?.injuries && rs.injuries.length > 0 && (
+        <div className="card-sharp card-tap" onClick={() => navigate('/game/squad')}
+          style={{ margin: '0 0 6px', padding: '10px 12px', borderLeft: '3px solid var(--danger)', borderRadius: '0 8px 8px 0', cursor: 'pointer' }}>
+          <SectionLabel style={{ marginBottom: 6 }}>🩹 NY SKADA</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {rs.injuries.map((inj: string, i: number) => (
+              <span key={i} style={{ fontSize: 12, fontWeight: 600, color: 'var(--danger)' }}>{inj}</span>
+            ))}
           </div>
         </div>
       )}
