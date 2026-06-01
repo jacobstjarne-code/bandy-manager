@@ -80,6 +80,26 @@ export function appendFinanceLog(
     : updated
 }
 
+/**
+ * Härleder kassasaldo per omgång ur transaktionsloggen (C-SY2 Våg 4).
+ * Ingen dedikerad tidsserie finns — vi rekonstruerar bakåt från nuvarande saldo:
+ * saldo efter senaste loggade omg = currentBalance, sen subtraheras varje omgs netto.
+ * Returnerar saldon i kronologisk ordning (äldst först). Tom array om loggen är tom.
+ */
+export function deriveKassaHistory(log: FinanceEntry[], currentBalance: number): number[] {
+  if (log.length === 0) return []
+  const rounds = [...new Set(log.map(e => e.round))].sort((a, b) => a - b)
+  const netByRound = new Map<number, number>()
+  for (const e of log) netByRound.set(e.round, (netByRound.get(e.round) ?? 0) + e.amount)
+
+  const balances = new Array<number>(rounds.length)
+  balances[rounds.length - 1] = currentBalance
+  for (let i = rounds.length - 1; i > 0; i--) {
+    balances[i - 1] = balances[i] - (netByRound.get(rounds[i]) ?? 0)
+  }
+  return balances
+}
+
 // ── Canonical round income calculation ───────────────────────────────────────
 
 export interface RoundIncomeBreakdown {

@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { Club } from '../../../domain/entities/Club'
 import { PlayerPosition } from '../../../domain/enums'
 import { CupFinalVictoryScene } from '../scenes/CupFinalVictoryScene'
 import { SMFinalVictoryScene } from '../scenes/SMFinalVictoryScene'
@@ -21,9 +22,10 @@ import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
 import { GranskaScreen } from '../granska/GranskaScreen'
 import { PortalUpptakt } from '../../components/portal/PortalUpptakt'
 import { NextMatchPrimary } from '../../components/portal/primary/NextMatchPrimary'
+import { EkonomiTab } from '../../components/club/EkonomiTab'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -40,6 +42,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'stillness',    label: 'NU-stiltje (lugn vecka)' },
   { id: 'granska',      label: 'Granska (IA: 3 grupper)' },
   { id: 'upptakt',      label: 'Upptakt (C-SD2 sub-states)' },
+  { id: 'ekonomi',      label: 'Ekonomi (Våg 4: kassa-trend)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -76,7 +79,7 @@ function makePlayer(id: string, first: string, last: string, age: number, pos: P
     fitness: 75 + Math.floor(ca / 10), sharpness: 60 + Math.floor(ca / 8), seasonForm: 68, form: 70,
     currentAbility: ca, potentialAbility: Math.min(100, ca + 5), morale: 68,
     attributes: { finishing: 60, dribbling: 58, passing: 62, defending: 60, stamina: 65, positioning: 62, goalkeeping: pos === PlayerPosition.Goalkeeper ? 78 : 5, corners: 55, penaltyShooting: 50, longShots: 50 },
-    isInjured: false, suspensionGamesRemaining: 0, contractEnd: 9, wage: ca * 25, value: ca * 300, goals: 0, assists: 0, gamesPlayed: 14,
+    isInjured: false, suspensionGamesRemaining: 0, contractEnd: 9, wage: ca * 25, salary: ca * 100, value: ca * 300, goals: 0, assists: 0, gamesPlayed: 14,
     seasonStats: { goals: 0, assists: 0, gamesPlayed: 14, averageRating: 6.5 },
     careerStats: { goals: 0, assists: 0, gamesPlayed: 50, averageRating: 6.5, seasons: 3 },
     seasonHistory: [
@@ -282,6 +285,23 @@ const upptaktSakrat = makeGame(upptaktFx(), { currentMatchday: 19, standings: ma
 const upptaktFarozon = makeGame(upptaktFx(), { currentMatchday: 19, standings: makeUpptaktStandings(20, [30, 30, 28, 28, 28, 28, 26, 24, 22, 12, 10]) })
 const upptaktBottenstrid = makeGame(upptaktFx(), { currentMatchday: 19, standings: makeUpptaktStandings(8, [32, 30, 28, 26, 24, 22, 20, 18, 16, 10, 6]) })
 
+// Ekonomi (Våg 4) — kassa-trend härledd ur financeLog. Två states för stroke-färgning.
+function makeFinanceLog(nets: number[]) {
+  return nets.map((amount, i) => ({ round: i + 1, amount, reason: 'match_income' as const, label: `Omg ${i + 1}` }))
+}
+// Lugn säsong: stigande kassa (positiva netton) → success-stroke
+const ekonomiCalmClub = { ...devClubs[0], finances: 96000, transferBudget: 30000, wageBudget: 40000 } as unknown as Club
+const ekonomiCalmGame = makeGame(makeLeagueFixtures(), {
+  financeLog: makeFinanceLog([4000, 6000, 3000, 7000, 5000, 8000, 6000, 9000]),
+  sponsors: [], communityActivities: {},
+})
+// Krissäsong: fallande kassa (negativa netton) → danger-stroke
+const ekonomiCrisisClub = { ...devClubs[0], finances: 7000, transferBudget: 0, wageBudget: 28000 } as unknown as Club
+const ekonomiCrisisGame = makeGame(makeLeagueFixtures(), {
+  financeLog: makeFinanceLog([-3000, -5000, 2000, -7000, -4000, -6000, -3000, -8000]),
+  sponsors: [], communityActivities: {},
+})
+
 const granskaRoundSummary = {
   round: 20, date: '2026-02-01', matchPlayed: true,
   communityStandingBefore: 54, communityStandingAfter: 58, communityStandingChanges: [],
@@ -447,6 +467,17 @@ export function DevScenesScreen() {
         {scene === 'granska' && storeReady && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <GranskaScreen />
+          </div>
+        )}
+
+        {scene === 'ekonomi' && (
+          <div style={{ background: 'var(--bg)', minHeight: '812px', padding: '12px' }}>
+            {([['Lugn säsong (stigande)', ekonomiCalmClub, ekonomiCalmGame], ['Krissäsong (fallande)', ekonomiCrisisClub, ekonomiCrisisGame]] as const).map(([label, c, g]) => (
+              <div key={label} style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
+                <EkonomiTab club={c} game={g} seekSponsor={() => ({ success: false })} activateCommunity={() => ({ success: false })} setTransferBudget={() => {}} buyScoutRounds={() => {}} />
+              </div>
+            ))}
           </div>
         )}
 

@@ -3,7 +3,8 @@ import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
 import { formatCurrency, formatFinance } from '../../utils/formatters'
-import { calcRoundIncome } from '../../../domain/services/economyService'
+import { calcRoundIncome, deriveKassaHistory } from '../../../domain/services/economyService'
+import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 
 interface EkonomiTabProps {
   club: Club
@@ -74,6 +75,11 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
     : licenseReview?.status === 'denied' ? 'var(--danger)'
     : 'var(--text-muted)'
   const communityStanding = game.communityStanding ?? 50
+
+  // C-SY2 Våg 4: kassa-trend härledd ur transaktionsloggen. Stroke = riktning (success/danger).
+  const kassaHistory = deriveKassaHistory(game.financeLog ?? [], club.finances)
+  const kassaStroke: 'success' | 'danger' = kassaHistory.length >= 2 && kassaHistory[kassaHistory.length - 1] >= kassaHistory[0]
+    ? 'success' : 'danger'
 
   interface CommunityRow {
     icon: string; name: string; active: boolean; status: string
@@ -167,12 +173,19 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
     <>
       {/* Kassaöversikt */}
       <SectionCard title="💰 Kassaöversikt" stagger={1}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: kassaHistory.length >= MIN_POINTS ? 8 : 10, marginBottom: kassaHistory.length >= MIN_POINTS ? 8 : 10, borderBottom: '1px solid var(--border)' }}>
           <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Saldo</span>
           <span style={{ fontSize: 18, fontWeight: 800, color: club.finances < 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
             {formatCurrency(club.finances)}
           </span>
         </div>
+        {/* Kassa-trend över säsongen — Sparkline, stroke per riktning */}
+        {kassaHistory.length >= MIN_POINTS && (
+          <div style={{ paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.5px', marginBottom: 4 }}>KASSA ÖVER SÄSONGEN</div>
+            <Sparkline points={kassaHistory} stroke={kassaStroke} height={28} />
+          </div>
+        )}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Intäkter / omg</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(weeklyIncome)}</span>
