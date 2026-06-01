@@ -20,7 +20,7 @@ import { TranareTab } from '../../components/club/TranareTab'
 import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -34,6 +34,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'board-a',      label: 'BoardMeeting A (första)' },
   { id: 'board-b',      label: 'BoardMeeting B (bra)' },
   { id: 'board-c',      label: 'BoardMeeting C (dålig)' },
+  { id: 'stillness',    label: 'NU-stiltje (lugn vecka)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -171,6 +172,8 @@ function makeGame(fixtureOverrides: object[], extra: Record<string, unknown> = {
     managedClubId: HOME_ID,
     currentSeason: 8,
     currentMatchday: 16,
+    currentDate: '2026-01-15',
+    trainingHistory: [{ season: 8, roundNumber: 15, focus: { type: 'physical', intensity: 'normal' }, effects: {} }],
     clubs: devClubs,
     players: devPlayers,
     fixtures: fixtureOverrides,
@@ -224,6 +227,9 @@ const smGame     = makeGame([...makeLeagueFixtures(), smFinalFixture])
 const arcGame    = makeGame(makeLeagueFixtures())
 const portalGame = makeGame(makeLeagueFixtures())
 const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1' })
+// Lugn trupp (allEmpty) för NU-stiltje: inga skador/avstängningar/låg moral
+const calmPlayers = devPlayers.map(p => ({ ...p, isInjured: false, injuryDaysRemaining: 0, suspensionGamesRemaining: 0, morale: 70 }))
+const stillnessGame = makeGame(makeLeagueFixtures(), { players: calmPlayers, captainPlayerId: 'p-d1' })
 
 // BoardMeeting fingered state — season 2+, prev-season objective history + new goals
 const boardPersonalities = [
@@ -266,6 +272,7 @@ export function DevScenesScreen() {
       : scene === 'board-a' ? boardGameA
       : scene === 'board-b' ? boardGameB
       : scene === 'board-c' ? boardGameC
+      : scene === 'stillness' ? stillnessGame
       : portalGame
     useGameStore.setState({ game: g })
   }, [scene])
@@ -369,6 +376,12 @@ export function DevScenesScreen() {
         {scene === 'board-a' && <BoardMeetingScene game={boardGameA} onComplete={() => {}} />}
         {scene === 'board-b' && <BoardMeetingScene game={boardGameB} onComplete={() => {}} />}
         {scene === 'board-c' && <BoardMeetingScene game={boardGameC} onComplete={() => {}} />}
+
+        {scene === 'stillness' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <SquadScreen />
+          </div>
+        )}
       </div>
     </div>
   )

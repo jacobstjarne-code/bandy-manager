@@ -18,6 +18,7 @@ import { FirstVisitHint } from '../components/FirstVisitHint'
 import { LockerRoomCard } from '../components/club/LockerRoomCard'
 import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
 import { SeasonArcCard } from '../components/squad/SeasonArcCard'
+import { StillnessSection } from '../components/squad/StillnessSection'
 import { getRecommendedFormation, FORMATION_META } from '../../domain/entities/Formation'
 import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from '../../domain/data/squadNuStrings'
 import { findActiveAnniversaries } from '../../domain/services/clubMemoryService'
@@ -559,9 +560,7 @@ export function SquadScreen() {
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
             <SeasonArcCard game={game} />
             {allEmpty ? (
-              <div className="card-sharp" style={{ padding: '16px 14px', fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--text-secondary)', textAlign: 'center', marginBottom: 12 }}>
-                Allt är lugnt — truppen är hel och stadig.
-              </div>
+              <StillnessSection game={game} />
             ) : (
               <>
                 <div style={{ marginBottom: 12, ...(injuryDanger ? { borderLeft: '3px solid var(--danger)', paddingLeft: 10 } : {}) }}>
@@ -593,6 +592,8 @@ export function SquadScreen() {
                     ? <div style={nuEmpty}>Inga kontrakt löper ut den här säsongen.</div>
                     : expiringContracts.map(p => playerRow(p, p.contractUntilSeason < game.currentSeason ? 'var(--danger)' : 'var(--warning)', getContractText(p.contractUntilSeason, game.currentSeason, p.id)))}
                 </div>
+                {/* Stiltje-lagren stannar men tonas ned när något brinner */}
+                <StillnessSection game={game} receded />
               </>
             )}
             <div>
