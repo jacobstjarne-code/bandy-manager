@@ -82,6 +82,8 @@ interface NextMatchCardProps {
   seriesWeight?: 1 | 2 | 3
   critTagLabel?: string
   seriesNextStyle?: 'decisive' | 'gold'
+  /** C-SD2: explicit warm vikt-klass (semi + upptakt). Vinner över seriesWeight. */
+  primaryWeightClass?: string
 }
 
 export function NextMatchCard({
@@ -100,6 +102,7 @@ export function NextMatchCard({
   seriesWeight,
   critTagLabel,
   seriesNextStyle,
+  primaryWeightClass,
 }: NextMatchCardProps) {
   const rivalry = getRivalry(nextFixture.homeClubId, nextFixture.awayClubId)
   const isAnnandagen = nextFixture.isAnnandagen === true
@@ -226,7 +229,7 @@ export function NextMatchCard({
 
   return (
     <div
-      className={`card-stagger-1${isPlayoff ? ` primary-card primary-weight-${seriesWeight ?? 1}` : ''}`}
+      className={`card-stagger-1${primaryWeightClass ? ` primary-card ${primaryWeightClass}` : isPlayoff ? ` primary-card primary-weight-${seriesWeight ?? 1}` : ''}`}
       style={{ ...cardStyle, ...actGlow, borderRadius: 14, overflow: 'hidden' }}
     >
       {/* Leather header bar */}

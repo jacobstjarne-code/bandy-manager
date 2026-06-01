@@ -10,6 +10,8 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { computeManagedStanding, REGULAR_SEASON_ROUNDS } from './clubStandingService'
 import { isManagedClubInPlayoff } from '../../domain/data/seasonPhases'
+import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
+import { PlayoffRound } from '../../domain/enums'
 
 export type EscalationSubState = 'sakrat' | 'farozon' | 'mittfalt' | 'bottenstrid' | null
 
@@ -56,4 +58,21 @@ export function getRemainingRegularRounds(game: SaveGame): number {
 export function shouldShowUpptakt(game: SaveGame): boolean {
   const s = getEscalationSubState(game)
   return s !== null && s !== 'mittfalt'
+}
+
+/**
+ * Primary-vikt-klass för eskaleringens warm-mellansteg (C-SD2 4:e axeln).
+ * Returnerar warm-klassen ENBART för semifinal + upptakt — kvart/final/grundserie
+ * får null (befintlig vikt-logik i NextMatchCard behålls oförändrad).
+ *
+ *   Upptakt (säkrat/farozon/bottenstrid) → primary-weight-2-warm
+ *   Semifinal                            → primary-weight-2-warm
+ *   Kvart / Final / Grundserie           → null (befintlig: w2/w3/w1)
+ */
+export function getEscalationPrimaryWeightClass(game: SaveGame): string | null {
+  const ctx = getPlayoffSeriesContext(game)
+  if (ctx) {
+    return ctx.round === PlayoffRound.SemiFinal ? 'primary-weight-2-warm' : null
+  }
+  return shouldShowUpptakt(game) ? 'primary-weight-2-warm' : null
 }

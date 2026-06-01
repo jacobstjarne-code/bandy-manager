@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { getEscalationSubState } from '../application/services/portalEscalationResolver'
+import { getEscalationSubState, getEscalationPrimaryWeightClass } from '../application/services/portalEscalationResolver'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { StandingRow } from '../domain/entities/Standing'
 
@@ -68,5 +68,28 @@ describe('getEscalationSubState — upptakt-fönster (3 omg kvar)', () => {
   it('utanför fönstret (mer än 3 omg kvar) → null', () => {
     const g = makeGame(20, [30, 30, 28, 28, 28, 28, 26, 24, 22, 12, 10], 15)
     expect(getEscalationSubState(g)).toBeNull()
+  })
+})
+
+describe('getEscalationPrimaryWeightClass — 4:e axeln (C-SD2)', () => {
+  it('upptakt säkrat → primary-weight-2-warm', () => {
+    const g = makeGame(34, [38, 36, 30, 28, 28, 20, 18, 16, 14, 12, 10])
+    expect(getEscalationPrimaryWeightClass(g)).toBe('primary-weight-2-warm')
+  })
+  it('upptakt farozon → primary-weight-2-warm', () => {
+    const g = makeGame(20, [30, 30, 28, 28, 28, 28, 26, 24, 22, 12, 10])
+    expect(getEscalationPrimaryWeightClass(g)).toBe('primary-weight-2-warm')
+  })
+  it('upptakt bottenstrid → primary-weight-2-warm', () => {
+    const g = makeGame(8, [32, 30, 28, 26, 24, 22, 20, 18, 16, 10, 6])
+    expect(getEscalationPrimaryWeightClass(g)).toBe('primary-weight-2-warm')
+  })
+  it('cementerat mittfält → null (behåll befintlig w1)', () => {
+    const g = makeGame(30, [44, 42, 40, 38, 22, 20, 18, 16, 14, 12, 10])
+    expect(getEscalationPrimaryWeightClass(g)).toBeNull()
+  })
+  it('utanför upptakt-fönstret → null (grundserie w1)', () => {
+    const g = makeGame(20, [30, 30, 28, 28, 28, 28, 26, 24, 22, 12, 10], 15)
+    expect(getEscalationPrimaryWeightClass(g)).toBeNull()
   })
 })

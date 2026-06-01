@@ -2,6 +2,7 @@ import type React from 'react'
 import type { CardRenderProps } from '../portalTypes'
 import { NextMatchCard } from '../../dashboard/NextMatchCard'
 import { getPlayoffSeriesContext } from '../../../../domain/services/portal/playoffSeriesContext'
+import { getEscalationPrimaryWeightClass } from '../../../../application/services/portalEscalationResolver'
 import { PlayoffRound } from '../../../../domain/enums'
 
 export function NextMatchPrimary({ game }: CardRenderProps) {
@@ -77,6 +78,9 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
       : undefined)
     : undefined
 
+  // C-SD2 4:e axeln — warm primary-vikt på semi + upptakt (null = behåll befintlig)
+  const primaryWeightClass = getEscalationPrimaryWeightClass(game) ?? undefined
+
   // Override light-theme tokens — NextMatchCard was built for Dashboard (light bg, dark text).
   // Portal uses a dark background. Text overrides use direct hex values (not var() references)
   // to avoid var-in-var resolution issues in inline styles across React renders.
@@ -112,6 +116,7 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
         seriesWeight={seriesWeight}
         critTagLabel={critTagLabel}
         seriesNextStyle={seriesNextStyle}
+        primaryWeightClass={primaryWeightClass}
       />
     </div>
   )
