@@ -1,0 +1,574 @@
+{
+  "_meta": {
+    "description": "Comeback-mekanikens djupanalys — 7 dimensioner",
+    "generatedAt": "2026-06-01T07:22:11.283625+00:00",
+    "series": "herr + dam (baseline per serie, djupanalys på herr)",
+    "baseline_comeback_rate_herr": 0.132893,
+    "baseline_n_herr": 1061,
+    "baseline_comeback_rate_dam": 0.072,
+    "baseline_n_dam": 375,
+    "window_51_55_comeback_rate": 0.27451,
+    "minute_convention": "raw_minutes: 2H = 46-90+. Finding-notation adds 45 (raw 51-55 = finding 96-100)"
+  },
+  "baselines": {
+    "herr": {
+      "n": 1061,
+      "comebacks": 141,
+      "rate": 0.132893,
+      "ci_low": 0.113786,
+      "ci_high": 0.15465
+    },
+    "dam": {
+      "n": 375,
+      "comebacks": 27,
+      "rate": 0.072,
+      "ci_low": 0.049951,
+      "ci_high": 0.102729
+    },
+    "combined": {
+      "n": 1436,
+      "comebacks": 168,
+      "rate": 0.116992,
+      "ci_low": 0.10138,
+      "ci_high": 0.134647
+    }
+  },
+  "by_ht_margin": {
+    "1": {
+      "n": 430,
+      "comebacks": 103,
+      "rate": 0.239535,
+      "ci_low": 0.201613,
+      "ci_high": 0.282069,
+      "binom_p_vs_baseline": 0.0
+    },
+    "1_window_51_55": {
+      "n": 81,
+      "comebacks": 32,
+      "rate": 0.395062
+    },
+    "2": {
+      "n": 260,
+      "comebacks": 30,
+      "rate": 0.115385,
+      "ci_low": 0.082029,
+      "ci_high": 0.15994,
+      "binom_p_vs_baseline": 0.464723
+    },
+    "3plus": {
+      "n": 371,
+      "comebacks": 8,
+      "rate": 0.021563,
+      "ci_low": 0.010966,
+      "ci_high": 0.041967,
+      "binom_p_vs_baseline": 0.0
+    }
+  },
+  "foul_analysis_window_51_55": {
+    "window_51_55": {
+      "total_fouls": 201,
+      "fouls_vs_leading_team": 113,
+      "leading_ratio": 0.562189
+    },
+    "full_2h_baseline": {
+      "total_fouls": 2537,
+      "fouls_vs_leading_team": 1266,
+      "leading_ratio": 0.499015
+    },
+    "ratio_vs_baseline": 1.1266,
+    "note": "Utvisning mot ledande lag = proxy för 'ledande laget straffas / spenderas'. Alla herr-matcher med klar HT-ledning."
+  },
+  "goal_types_window_51_55": {
+    "window_51_55": {
+      "n": 556,
+      "open": 0.7212,
+      "penalty": 0.0594,
+      "corner": 0.2194,
+      "n_open": 401,
+      "n_penalty": 33,
+      "n_corner": 122
+    },
+    "window_56_90": {
+      "n": 4148,
+      "open": 0.7271,
+      "penalty": 0.0649,
+      "corner": 0.2081,
+      "n_open": 3016,
+      "n_penalty": 269,
+      "n_corner": 863
+    },
+    "penalty_lift_abs": -0.0055,
+    "corner_lift_abs": 0.0113,
+    "note": "Alla mål (jagande + ledande lag) i herr-matcher med klar HT-underläge."
+  },
+  "power_play_proxy": {
+    "total_comeback_goals": 593,
+    "goals_with_recent_foul_vs_leading": 165,
+    "proxy_rate": 0.278246,
+    "method": "Utvisning mot ledande laget inom 10 minuter före comeback-mål. Proxy — exakt pågående man-up okänt.",
+    "limitation": "Vi vet inte om utvisningen fortfarande pågick vid målögonblicket. 10-minutersfönstret är konservativt."
+  },
+  "club_distribution": [
+    {
+      "team": "Broberg/Söderhamn",
+      "n_trailing": 54,
+      "comebacks": 11,
+      "comeback_rate": 0.2037,
+      "ci_low": 0.1177,
+      "ci_high": 0.329,
+      "share_of_total_comebacks": 0.078
+    },
+    {
+      "team": "IK Sirius",
+      "n_trailing": 74,
+      "comebacks": 10,
+      "comeback_rate": 0.1351,
+      "ci_low": 0.0751,
+      "ci_high": 0.2312,
+      "share_of_total_comebacks": 0.0709
+    },
+    {
+      "team": "Hammarby IF",
+      "n_trailing": 61,
+      "comebacks": 10,
+      "comeback_rate": 0.1639,
+      "ci_low": 0.0916,
+      "ci_high": 0.2761,
+      "share_of_total_comebacks": 0.0709
+    },
+    {
+      "team": "Västerås SK/BK",
+      "n_trailing": 40,
+      "comebacks": 9,
+      "comeback_rate": 0.225,
+      "ci_low": 0.1232,
+      "ci_high": 0.375,
+      "share_of_total_comebacks": 0.0638
+    },
+    {
+      "team": "IFK Motala",
+      "n_trailing": 56,
+      "comebacks": 9,
+      "comeback_rate": 0.1607,
+      "ci_low": 0.0869,
+      "ci_high": 0.2781,
+      "share_of_total_comebacks": 0.0638
+    },
+    {
+      "team": "Sandvikens AIK/BK",
+      "n_trailing": 37,
+      "comebacks": 7,
+      "comeback_rate": 0.1892,
+      "ci_low": 0.0948,
+      "ci_high": 0.3421,
+      "share_of_total_comebacks": 0.0496
+    },
+    {
+      "team": "Västerås SK",
+      "n_trailing": 24,
+      "comebacks": 7,
+      "comeback_rate": 0.2917,
+      "ci_low": 0.1491,
+      "ci_high": 0.4917,
+      "share_of_total_comebacks": 0.0496
+    },
+    {
+      "team": "IFK Vänersborg",
+      "n_trailing": 66,
+      "comebacks": 6,
+      "comeback_rate": 0.0909,
+      "ci_low": 0.0423,
+      "ci_high": 0.1845,
+      "share_of_total_comebacks": 0.0426
+    },
+    {
+      "team": "Bollnäs GIF",
+      "n_trailing": 43,
+      "comebacks": 6,
+      "comeback_rate": 0.1395,
+      "ci_low": 0.0656,
+      "ci_high": 0.2726,
+      "share_of_total_comebacks": 0.0426
+    },
+    {
+      "team": "Vetlanda BK",
+      "n_trailing": 72,
+      "comebacks": 6,
+      "comeback_rate": 0.0833,
+      "ci_low": 0.0388,
+      "ci_high": 0.1701,
+      "share_of_total_comebacks": 0.0426
+    },
+    {
+      "team": "Villa Lidköping BK",
+      "n_trailing": 17,
+      "comebacks": 6,
+      "comeback_rate": 0.3529,
+      "ci_low": 0.1731,
+      "ci_high": 0.587,
+      "share_of_total_comebacks": 0.0426
+    },
+    {
+      "team": "Edsbyns IF Bandy",
+      "n_trailing": 15,
+      "comebacks": 6,
+      "comeback_rate": 0.4,
+      "ci_low": 0.1982,
+      "ci_high": 0.6425,
+      "share_of_total_comebacks": 0.0426
+    },
+    {
+      "team": "Sandvikens AIK",
+      "n_trailing": 26,
+      "comebacks": 6,
+      "comeback_rate": 0.2308,
+      "ci_low": 0.1103,
+      "ci_high": 0.4205,
+      "share_of_total_comebacks": 0.0426
+    },
+    {
+      "team": "AIK Bandy",
+      "n_trailing": 32,
+      "comebacks": 5,
+      "comeback_rate": 0.1562,
+      "ci_low": 0.0686,
+      "ci_high": 0.3175,
+      "share_of_total_comebacks": 0.0355
+    },
+    {
+      "team": "Edsbyns IF",
+      "n_trailing": 21,
+      "comebacks": 5,
+      "comeback_rate": 0.2381,
+      "ci_low": 0.1063,
+      "ci_high": 0.4509,
+      "share_of_total_comebacks": 0.0355
+    },
+    {
+      "team": "Edsbyns IF Bandyförening",
+      "n_trailing": 16,
+      "comebacks": 5,
+      "comeback_rate": 0.3125,
+      "ci_low": 0.1416,
+      "ci_high": 0.556,
+      "share_of_total_comebacks": 0.0355
+    },
+    {
+      "team": "Frillesås BK",
+      "n_trailing": 101,
+      "comebacks": 4,
+      "comeback_rate": 0.0396,
+      "ci_low": 0.0155,
+      "ci_high": 0.0974,
+      "share_of_total_comebacks": 0.0284
+    },
+    {
+      "team": "Villa-Lidköping BK",
+      "n_trailing": 9,
+      "comebacks": 4,
+      "comeback_rate": 0.4444,
+      "ci_low": 0.1888,
+      "ci_high": 0.7334,
+      "share_of_total_comebacks": 0.0284
+    },
+    {
+      "team": "Åby/Tjureda IF",
+      "n_trailing": 53,
+      "comebacks": 3,
+      "comeback_rate": 0.0566,
+      "ci_low": 0.0194,
+      "ci_high": 0.1537,
+      "share_of_total_comebacks": 0.0213
+    },
+    {
+      "team": "Broberg/Söderhamn BIF",
+      "n_trailing": 28,
+      "comebacks": 3,
+      "comeback_rate": 0.1071,
+      "ci_low": 0.0371,
+      "ci_high": 0.272,
+      "share_of_total_comebacks": 0.0213
+    },
+    {
+      "team": "IK Tellus",
+      "n_trailing": 44,
+      "comebacks": 2,
+      "comeback_rate": 0.0455,
+      "ci_low": 0.0126,
+      "ci_high": 0.1514,
+      "share_of_total_comebacks": 0.0142
+    },
+    {
+      "team": "GripenTrollhättan BK",
+      "n_trailing": 16,
+      "comebacks": 2,
+      "comeback_rate": 0.125,
+      "ci_low": 0.035,
+      "ci_high": 0.3602,
+      "share_of_total_comebacks": 0.0142
+    },
+    {
+      "team": "Örebro SK Bandy",
+      "n_trailing": 23,
+      "comebacks": 2,
+      "comeback_rate": 0.087,
+      "ci_low": 0.0242,
+      "ci_high": 0.268,
+      "share_of_total_comebacks": 0.0142
+    },
+    {
+      "team": "Bollnäs GOIF BF",
+      "n_trailing": 18,
+      "comebacks": 2,
+      "comeback_rate": 0.1111,
+      "ci_low": 0.031,
+      "ci_high": 0.328,
+      "share_of_total_comebacks": 0.0142
+    },
+    {
+      "team": "Falu BS Bandy",
+      "n_trailing": 3,
+      "comebacks": 1,
+      "comeback_rate": 0.3333,
+      "ci_low": 0.0615,
+      "ci_high": 0.7923,
+      "share_of_total_comebacks": 0.0071
+    },
+    {
+      "team": "Hammarby Bandy",
+      "n_trailing": 18,
+      "comebacks": 1,
+      "comeback_rate": 0.0556,
+      "ci_low": 0.0099,
+      "ci_high": 0.2576,
+      "share_of_total_comebacks": 0.0071
+    },
+    {
+      "team": "Ljusdals BK",
+      "n_trailing": 23,
+      "comebacks": 1,
+      "comeback_rate": 0.0435,
+      "ci_low": 0.0077,
+      "ci_high": 0.2099,
+      "share_of_total_comebacks": 0.0071
+    },
+    {
+      "team": "Gripen BK Trollhättan",
+      "n_trailing": 9,
+      "comebacks": 1,
+      "comeback_rate": 0.1111,
+      "ci_low": 0.0199,
+      "ci_high": 0.435,
+      "share_of_total_comebacks": 0.0071
+    },
+    {
+      "team": "Gripen Trollhättan BK",
+      "n_trailing": 16,
+      "comebacks": 1,
+      "comeback_rate": 0.0625,
+      "ci_low": 0.0111,
+      "ci_high": 0.2833,
+      "share_of_total_comebacks": 0.0071
+    },
+    {
+      "team": "Lidköpings AIK",
+      "n_trailing": 9,
+      "comebacks": 0,
+      "comeback_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.2992,
+      "share_of_total_comebacks": 0.0
+    },
+    {
+      "team": "IFK Rättvik",
+      "n_trailing": 15,
+      "comebacks": 0,
+      "comeback_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.2039,
+      "share_of_total_comebacks": 0.0
+    },
+    {
+      "team": "IFK Kungälv",
+      "n_trailing": 3,
+      "comebacks": 0,
+      "comeback_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.5615,
+      "share_of_total_comebacks": 0.0
+    },
+    {
+      "team": "IF Boltic",
+      "n_trailing": 19,
+      "comebacks": 0,
+      "comeback_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.1682,
+      "share_of_total_comebacks": 0.0
+    }
+  ],
+  "by_phase": {
+    "regular": {
+      "phases": [
+        "regular"
+      ],
+      "n": 907,
+      "comebacks": 123,
+      "rate": 0.135612,
+      "ci_low": 0.114861,
+      "ci_high": 0.159437,
+      "binom_p_vs_baseline": 0.806775
+    },
+    "playoff": {
+      "phases": [
+        "quarterfinal",
+        "semifinal",
+        "final",
+        "playoff"
+      ],
+      "n": 120,
+      "comebacks": 14,
+      "rate": 0.116667,
+      "ci_low": 0.070781,
+      "ci_high": 0.186335,
+      "binom_p_vs_baseline": 0.687597
+    },
+    "other": {
+      "phases": [
+        "qualification",
+        "round_of_16"
+      ],
+      "n": 34,
+      "comebacks": 4,
+      "rate": 0.117647,
+      "ci_low": 0.046714,
+      "ci_high": 0.266212,
+      "binom_p_vs_baseline": 1.0
+    }
+  },
+  "by_season": {
+    "2019-20": {
+      "n": 169,
+      "comebacks": 19,
+      "rate": 0.112426,
+      "ci_low": 0.073165,
+      "ci_high": 0.168916
+    },
+    "2020-21": {
+      "n": 164,
+      "comebacks": 21,
+      "rate": 0.128049,
+      "ci_low": 0.085298,
+      "ci_high": 0.187826
+    },
+    "2021-22": {
+      "n": 241,
+      "comebacks": 34,
+      "rate": 0.141079,
+      "ci_low": 0.102745,
+      "ci_high": 0.190676
+    },
+    "2022-23": {
+      "n": 165,
+      "comebacks": 28,
+      "rate": 0.169697,
+      "ci_low": 0.120095,
+      "ci_high": 0.234329
+    },
+    "2024-25": {
+      "n": 152,
+      "comebacks": 19,
+      "rate": 0.125,
+      "ci_low": 0.081503,
+      "ci_high": 0.186985
+    },
+    "2025-26": {
+      "n": 170,
+      "comebacks": 20,
+      "rate": 0.117647,
+      "ci_low": 0.077462,
+      "ci_high": 0.174731
+    }
+  },
+  "window_breakdown": {
+    "46-50": {
+      "n_with_first_red": 239,
+      "comebacks": 48,
+      "comeback_rate": 0.200837,
+      "ci": [
+        0.154959,
+        0.25618
+      ],
+      "binom_p_vs_baseline": 0.003062
+    },
+    "51-55": {
+      "n_with_first_red": 153,
+      "comebacks": 42,
+      "comeback_rate": 0.27451,
+      "ci": [
+        0.209972,
+        0.350093
+      ],
+      "binom_p_vs_baseline": 4e-06
+    },
+    "56-60": {
+      "n_with_first_red": 132,
+      "comebacks": 20,
+      "comeback_rate": 0.151515,
+      "ci": [
+        0.100274,
+        0.222467
+      ],
+      "binom_p_vs_baseline": 0.521031
+    },
+    "61-65": {
+      "n_with_first_red": 90,
+      "comebacks": 10,
+      "comeback_rate": 0.111111,
+      "ci": [
+        0.061483,
+        0.19258
+      ],
+      "binom_p_vs_baseline": 0.642499
+    },
+    "66-70": {
+      "n_with_first_red": 74,
+      "comebacks": 10,
+      "comeback_rate": 0.135135,
+      "ci": [
+        0.07509,
+        0.231194
+      ],
+      "binom_p_vs_baseline": 0.865197
+    },
+    "71-75": {
+      "n_with_first_red": 75,
+      "comebacks": 9,
+      "comeback_rate": 0.12,
+      "ci": [
+        0.064433,
+        0.212598
+      ],
+      "binom_p_vs_baseline": 0.865642
+    },
+    "76-90": {
+      "n_with_first_red": 151,
+      "comebacks": 2,
+      "comeback_rate": 0.013245,
+      "ci": [
+        0.00364,
+        0.047003
+      ],
+      "binom_p_vs_baseline": 0.0
+    },
+    "no_reduction": {
+      "n_with_first_red": 147,
+      "comebacks": 0,
+      "comeback_rate": 0.0,
+      "ci": [
+        0.0,
+        0.025468
+      ]
+    }
+  }
+}
