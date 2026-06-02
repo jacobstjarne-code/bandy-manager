@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>BoardMeeting säsong 2+ — tre tillstånd</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-dark: #0E0D0B; --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --accent: #C47A3A; --accent-dark: #A25828; --accent-deep: #8B4820;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --gold: #E8B95C; --gold-deep: #B88838; --danger: #B05040; --success: #5A9A4A;
+    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 32px 16px 80px; min-height: 100vh; }
+  .page-head { max-width: 1400px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 800px; }
+  .page-head p strong { color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 28px; max-width: 1400px; margin: 0 auto; align-items: start; }
+  .col { background: var(--bg-portal); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.35); width: 100%; max-width: 380px; justify-self: center; }
+  .col-head { padding: 12px 16px; background: var(--bg-leather-dk); font-family: var(--font-display); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .col-head .num { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; padding: 2px 6px; border-radius: 2px; margin-right: 8px; vertical-align: 2px; }
+  .col-head .num.a { color: var(--cold-light); background: rgba(74,102,128,0.15); }
+  .col-head .num.b { color: var(--success); background: rgba(90,154,74,0.15); }
+  .col-head .num.c { color: var(--danger); background: rgba(176,80,64,0.15); }
+  .col-head .phase { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; color: var(--text-light-secondary); background: rgba(245,241,235,0.05); padding: 2px 6px; border-radius: 2px; margin-left: 6px; text-transform: uppercase; vertical-align: 2px; }
+  .col-head .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }
+
+  /* Board scene — dark portal surface */
+  .scene { padding: 22px 16px 18px; min-height: 620px; display: flex; flex-direction: column; }
+
+  .genre { font-family: var(--font-body); font-size: 9px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); opacity: 0.7; text-align: center; margin-bottom: 14px; }
+  .genre.b { color: var(--gold); opacity: 0.85; }
+  .genre.c { color: var(--cold-light); opacity: 0.85; }
+
+  .setting { font-family: var(--font-display); font-style: italic; font-size: 12.5px; color: var(--text-light-secondary); text-align: center; line-height: 1.6; max-width: 280px; margin: 0 auto 20px; }
+
+  .scene-title { font-family: var(--font-display); font-size: 23px; font-weight: 700; color: var(--text-light); text-align: center; line-height: 1.2; letter-spacing: -0.3px; margin-bottom: 18px; }
+
+  /* speaker block */
+  .speaker { margin-bottom: 16px; }
+  .speaker-name { font-family: var(--font-body); font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); opacity: 0.85; margin-bottom: 5px; }
+  .speaker-line { font-family: var(--font-display); font-size: 14.5px; color: var(--text-light); line-height: 1.55; }
+
+  /* evaluation block */
+  .eval { background: var(--bg-portal-surface); border-radius: 8px; padding: 13px 14px; margin-bottom: 14px; border-left: 2px solid var(--cold); }
+  .eval.good { border-left-color: var(--success); }
+  .eval.bad { border-left-color: var(--danger); }
+  .eval-label { font-family: var(--font-body); font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+  .eval-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; font-family: var(--font-body); font-size: 12px; color: var(--text-light-secondary); border-bottom: 1px dashed rgba(255,255,255,0.05); }
+  .eval-row:last-child { border-bottom: none; }
+  .eval-row .v { font-family: var(--font-display); font-weight: 700; font-size: 14px; }
+  .eval-row .v.met { color: var(--success); }
+  .eval-row .v.miss { color: var(--danger); }
+  .eval-row .v.neutral { color: var(--text-light); }
+
+  /* finance row */
+  .fin { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .fin-cell { background: var(--bg-portal-surface); border-radius: 6px; padding: 10px 12px; }
+  .fin-label { font-family: var(--font-body); font-size: 7.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+  .fin-val { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text-light); line-height: 1; }
+  .fin-val.good { color: var(--success); }
+  .fin-val.bad { color: var(--danger); }
+  .fin-spark { width: 100%; height: 16px; display: block; margin-top: 5px; }
+
+  /* new goals */
+  .goals { margin-bottom: auto; }
+  .goals-label { font-family: var(--font-body); font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 9px; display: flex; align-items: center; gap: 6px; }
+  .goal-card { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; background: var(--bg-portal-surface); border-radius: 6px; margin-bottom: 6px; border-left: 2px solid var(--accent); }
+  .goal-card.stretch { border-left-color: var(--gold); }
+  .goal-icon { font-size: 14px; line-height: 1.2; }
+  .goal-text { flex: 1; }
+  .goal-main { font-family: var(--font-body); font-size: 12.5px; font-weight: 600; color: var(--text-light); line-height: 1.35; }
+  .goal-sub { font-family: var(--font-display); font-style: italic; font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+
+  /* CTA */
+  .scene-cta { margin-top: 16px; width: 100%; padding: 14px; border-radius: 8px; background: var(--bg-portal-elevated); border: 1px solid var(--bg-leather); color: var(--text-light); font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 0.5px; }
+  .scene-cta.primary { background: linear-gradient(180deg, #DD9555 0%, #8B4820 100%); border: none; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 3px 5px rgba(162,88,40,0.38); }
+  .scene-cta.gold { background: linear-gradient(180deg, var(--gold) 0%, var(--gold-deep) 100%); border: none; color: var(--bg-portal); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 3px 12px rgba(232,185,92,0.3); }
+
+  /* notes */
+  .notes { max-width: 1400px; margin: 36px auto 0; padding: 22px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.6; font-size: 13px; }
+  .notes h3 { font-family: var(--font-display); font-size: 17px; color: var(--text-light); margin-bottom: 12px; }
+  .notes h4 { font-family: var(--font-body); font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 16px 0 6px; }
+  .notes p { margin-bottom: 8px; max-width: 860px; }
+  .notes ul { margin: 4px 0 8px 16px; max-width: 860px; }
+  .notes li { margin-bottom: 5px; }
+  .notes code { font-family: var(--font-mono); font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+  .notes table { border-collapse: collapse; margin: 8px 0; max-width: 900px; font-size: 12px; }
+  .notes th, .notes td { text-align: left; padding: 7px 11px; border-bottom: 1px solid rgba(245,241,235,0.08); vertical-align: top; }
+  .notes th { font-family: var(--font-body); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>BoardMeeting säsong 2+ — tre tillstånd</h1>
+  <p>Fires efter <code>SeasonSummaryScreen → clearSeasonSummary</code> vid säsong 2+ (säsong 1 ägs av ArrivalScene). Samma scen-vokabulär — men <strong>tonen skiljer markant</strong> mellan A first-time, B bra säsong, C dålig säsong. Bandysvensk understatement, inte cinematik.</p>
+</div>
+
+<div class="grid">
+
+  <!-- A · FÖRSTA GÅNGEN -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num a">A</span>FÖRSTA GÅNGEN<span class="phase">säsong 2</span>
+      <span class="sub">Efter en genomspelad säsong 1. Lägre energi, etablerande. Inga historiska referenser — det finns bara ett år bakom.</span>
+    </div>
+    <div class="scene">
+      <div class="genre">⬩ Styrelsemöte ⬩</div>
+      <div class="setting">Kommunalhusets möteslokal. Kaffe i termos. Ordföranden har tagit av sig kavajen.</div>
+      <div class="scene-title">Ett år bakom oss.</div>
+
+      <div class="speaker">
+        <div class="speaker-name">Margareta · Ordförande</div>
+        <div class="speaker-line">"Vi vet hur det funkar nu. Första året var att hitta foten. Andra är att börja bygga."</div>
+      </div>
+
+      <div class="eval">
+        <div class="eval-label">Förra säsongen</div>
+        <div class="eval-row"><span>Sluttabell</span><span class="v neutral">7:a</span></div>
+        <div class="eval-row"><span>Kvar i serien</span><span class="v met">✓ Säkrat</span></div>
+      </div>
+
+      <div class="fin">
+        <div class="fin-cell">
+          <div class="fin-label">Kassa</div>
+          <div class="fin-val">218 tkr</div>
+        </div>
+        <div class="fin-cell">
+          <div class="fin-label">Budget S2</div>
+          <div class="fin-val">Oförändrad</div>
+        </div>
+      </div>
+
+      <div class="goals">
+        <div class="goals-label">📋 Mål för säsong 2</div>
+        <div class="goal-card">
+          <span class="goal-icon">📊</span>
+          <span class="goal-text">
+            <span class="goal-main">Topp 6</span>
+            <span class="goal-sub">Ett steg upp. Rimligt med samma trupp.</span>
+          </span>
+        </div>
+        <div class="goal-card">
+          <span class="goal-icon">🎓</span>
+          <span class="goal-text">
+            <span class="goal-main">En egenfostrad i startelvan</span>
+            <span class="goal-sub">Akademin ska börja synas.</span>
+          </span>
+        </div>
+      </div>
+
+      <button class="scene-cta primary">Till säsong 2 →</button>
+    </div>
+  </div>
+
+  <!-- B · EFTER BRA SÄSONG -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num b">B</span>EFTER BRA SÄSONG<span class="phase">målen nådda</span>
+      <span class="sub">Ekonomi stark, styrelsen vill höja förväntningar. Försiktig optimism — inte överdramatik.</span>
+    </div>
+    <div class="scene">
+      <div class="genre b">⬩ Styrelsemöte ⬩</div>
+      <div class="setting">Samma lokal, men någon har tagit med bakelser. Ordföranden ler innan hon säger något.</div>
+      <div class="scene-title">Det gick bättre än vi vågade hoppas.</div>
+
+      <div class="speaker">
+        <div class="speaker-name">Margareta · Ordförande</div>
+        <div class="speaker-line">"Silvret sitter i. Men vi ska inte bli mätta. Ett år till på den nivån — då pratar vi om något."</div>
+      </div>
+
+      <div class="eval good">
+        <div class="eval-label">Förra säsongen · måluppfyllelse</div>
+        <div class="eval-row"><span>Topp 4</span><span class="v met">✓ 2:a</span></div>
+        <div class="eval-row"><span>Slutspel</span><span class="v met">✓ SM-final</span></div>
+        <div class="eval-row"><span>Egenfostrad i startelva</span><span class="v met">✓ Henriksson</span></div>
+      </div>
+
+      <div class="fin">
+        <div class="fin-cell">
+          <div class="fin-label">Kassa</div>
+          <div class="fin-val good">412 tkr</div>
+          <svg class="fin-spark" viewBox="0 0 120 16" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--success)" stroke-width="1.4" stroke-linecap="round" points="2,13 24,11 46,9 68,7 90,5 116,3"/>
+          </svg>
+        </div>
+        <div class="fin-cell">
+          <div class="fin-label">Budget S3</div>
+          <div class="fin-val good">+90 tkr</div>
+        </div>
+      </div>
+
+      <div class="goals">
+        <div class="goals-label">📋 Mål för säsong 3</div>
+        <div class="goal-card">
+          <span class="goal-icon">📊</span>
+          <span class="goal-text">
+            <span class="goal-main">Topp 3 igen</span>
+            <span class="goal-sub">Bekräfta att silvret inte var en tillfällighet.</span>
+          </span>
+        </div>
+        <div class="goal-card stretch">
+          <span class="goal-icon">🏆</span>
+          <span class="goal-text">
+            <span class="goal-main">SM-guld</span>
+            <span class="goal-sub">Stretch. Styrelsen vågar säga ordet i år.</span>
+          </span>
+        </div>
+      </div>
+
+      <button class="scene-cta gold">Till säsong 3 →</button>
+    </div>
+  </div>
+
+  <!-- C · EFTER DÅLIG SÄSONG -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num c">C</span>EFTER DÅLIG SÄSONG<span class="phase">målen missade</span>
+      <span class="sub">Ekonomi pressad, justerade förväntningar. Allvar utan klagomål — ingen pekar finger, men tonen är dämpad.</span>
+    </div>
+    <div class="scene">
+      <div class="genre c">⬩ Styrelsemöte ⬩</div>
+      <div class="setting">Lokalen är kall — värmen var avstängd över helgen. Ordföranden bläddrar i pärmen lite för länge.</div>
+      <div class="scene-title">Vi måste prata om året som gick.</div>
+
+      <div class="speaker">
+        <div class="speaker-name">Margareta · Ordförande</div>
+        <div class="speaker-line">"Ingen sitter här och letar syndabockar. Men siffrorna är siffror. Vi får dra ner och bygga om."</div>
+      </div>
+
+      <div class="eval bad">
+        <div class="eval-label">Förra säsongen · måluppfyllelse</div>
+        <div class="eval-row"><span>Topp 6</span><span class="v miss">✕ 10:a</span></div>
+        <div class="eval-row"><span>Undvik kvalstrid</span><span class="v miss">✕ Nära nedflyttning</span></div>
+        <div class="eval-row"><span>Egenfostrad i startelva</span><span class="v met">✓ Henriksson</span></div>
+      </div>
+
+      <div class="fin">
+        <div class="fin-cell">
+          <div class="fin-label">Kassa</div>
+          <div class="fin-val bad">96 tkr</div>
+          <svg class="fin-spark" viewBox="0 0 120 16" preserveAspectRatio="none">
+            <polyline fill="none" stroke="var(--danger)" stroke-width="1.4" stroke-linecap="round" points="2,4 24,6 46,7 68,9 90,11 116,13"/>
+          </svg>
+        </div>
+        <div class="fin-cell">
+          <div class="fin-label">Budget S3</div>
+          <div class="fin-val bad">−60 tkr</div>
+        </div>
+      </div>
+
+      <div class="goals">
+        <div class="goals-label">📋 Mål för säsong 3</div>
+        <div class="goal-card">
+          <span class="goal-icon">🛟</span>
+          <span class="goal-text">
+            <span class="goal-main">Trygg mitten</span>
+            <span class="goal-sub">Inget mer. Bort från strecket först.</span>
+          </span>
+        </div>
+        <div class="goal-card">
+          <span class="goal-icon">💰</span>
+          <span class="goal-text">
+            <span class="goal-main">Positiv kassa till sommaren</span>
+            <span class="goal-sub">Sälj om det krävs. Inga nya stora löner.</span>
+          </span>
+        </div>
+      </div>
+
+      <button class="scene-cta primary">Till säsong 3 →</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Designbeslut</h3>
+
+  <h4>Yta: portal-mörk scen (inte ljust kort)</h4>
+  <p>BoardMeeting är en <em>ceremoniell övergång</em> mellan säsonger — samma kategori som ArrivalScene. Den ärver scen-vokabulären (genre-label, setting-prolog, speaker-block, scene-CTA) på mörk <code>--bg-portal</code>. Ett ljust kort hade signalerat "vardags-status", men detta är ett avstamp. Mörk yta = vi stannar upp.</p>
+
+  <h4>Återanvänt från ArrivalScene-vokabulären</h4>
+  <ul>
+    <li><code>.genre</code> — "⬩ STYRELSEMÖTE ⬩" diamantflankerad genre-label</li>
+    <li><code>.setting</code> — Georgia-italic prolog som sätter rummet (kaffe, bakelser, kall lokal)</li>
+    <li><code>.speaker-name</code> + <code>.speaker-line</code> — Margareta talar, samma som scen-dialog</li>
+    <li><code>.scene-cta</code> — mörk-yta-knapp, gold-variant vid bra säsong</li>
+  </ul>
+
+  <h4>Nya block för BoardMeeting</h4>
+  <ul>
+    <li><strong>Eval-block</strong> — förra säsongens måluppfyllelse. ✓/✕ per mål, stripe-färg per utfall (cold neutral / success / danger).</li>
+    <li><strong>Fin-block</strong> — kassa + budget, med trend-sparkline (score-system) som visar riktning.</li>
+    <li><strong>Goals-block</strong> — nya mål. Stretch-mål får gold-stripe + 🏆. Vanliga accent-stripe.</li>
+  </ul>
+
+  <h4>Hur tonen skiljer sig</h4>
+  <table>
+    <thead><tr><th>Läge</th><th>Setting</th><th>Titel</th><th>CTA</th></tr></thead>
+    <tbody>
+      <tr><td><strong>A First-time</strong></td><td>Tar av kavajen — informellt</td><td>"Ett år bakom oss."</td><td>Copper</td></tr>
+      <tr><td><strong>B Bra</strong></td><td>Bakelser, ler innan hon talar</td><td>"Det gick bättre än vi vågade hoppas."</td><td>Gold</td></tr>
+      <tr><td><strong>C Dålig</strong></td><td>Kall lokal, bläddrar för länge</td><td>"Vi måste prata om året som gick."</td><td>Copper</td></tr>
+    </tbody>
+  </table>
+  <p>Tonen sitter i <em>settingen</em> (rummets detalj) och <em>titeln</em> — inte i fanfar eller röd-larm. C säger "ingen letar syndabockar" — allvar utan klagomål, exakt som briefen ber om. Gold-CTA reserveras för B (samma magi-princip som SM-final).</p>
+
+  <h4>"Nya mål" visualisering</h4>
+  <p>Mål som goal-cards med ikon + huvudtext + italic-motivering. Stretch-mål (SM-guld i B) får gold-stripe så det syns att det är en högre ambition, inte ett baskrav. I C är båda målen defensiva (🛟 trygg mitten, 💰 positiv kassa) — inga stretch.</p>
+
+  <h4>Bandysvensk understatement</h4>
+  <p>Ingen cinematik. Margareta säger "då pratar vi om något" (B) istället för "vi siktar på guldet!". C säger "vi får dra ner och bygga om" istället för dramatik. Settings bär känslan genom konkret bild (kall lokal, bakelser) — visa, inte berätta.</p>
+
+  <h4>Öppna frågor till Opus</h4>
+  <ul>
+    <li>Speaker — alltid ordföranden (Margareta), eller varierar talaren per klubb (boardPersonalities)? Mocken antar ordförande; lätt att parametrisera.</li>
+    <li>Eval-block — visa alla mål eller bara de viktigaste 3? Föreslag: max 3, det viktigaste först.</li>
+    <li>Copy-pooler per läge (A/B/C) levereras av Opus — settings + titel + speaker-line + goal-motiveringar.</li>
+  </ul>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>C-SD2 Portal-eskalering före slutspel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --accent: #C47A3A; --accent-dark: #A25828; --accent-deep: #8B4820;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --gold: #E8B95C; --gold-deep: #B88838; --danger: #B05040; --success: #5A9A4A;
+    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 32px 16px 80px; min-height: 100vh; }
+  .page-head { max-width: 1900px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 820px; }
+  .page-head p strong { color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 24px; max-width: 1900px; margin: 0 auto; align-items: start; }
+  .col { background: var(--bg-portal); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.35); width: 100%; max-width: 340px; justify-self: center; }
+  .col-head { padding: 12px 16px; background: var(--bg-leather-dk); font-family: var(--font-display); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .col-head .num { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; color: var(--accent); background: rgba(196,122,58,0.1); padding: 2px 6px; border-radius: 2px; margin-right: 8px; vertical-align: 2px; }
+  .col-head .num.ref { color: var(--text-muted); background: rgba(245,241,235,0.05); }
+  .col-head .num.gold { color: var(--gold); background: rgba(232,185,92,0.12); }
+  .col-head .phase { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; color: var(--text-light-secondary); background: rgba(245,241,235,0.05); padding: 2px 6px; border-radius: 2px; margin-left: 6px; text-transform: uppercase; vertical-align: 2px; }
+  .col-head .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }
+  .body { padding: 12px 0 14px; }
+
+  .situation { margin: 0 12px 10px; padding: 9px 11px; color: var(--text-light-secondary); font-family: var(--font-display); font-style: italic; font-size: 11.5px; line-height: 1.4; border-left: 1px dashed rgba(196,122,58,0.3); opacity: 0.85; }
+  .situation strong { font-style: normal; font-family: var(--font-body); font-weight: 600; color: var(--text-light); display: block; margin-bottom: 2px; font-size: 10.5px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  /* Phasemark (existing R3) + new upptakt variant */
+  .pmark { margin: 0 12px 12px; padding: 12px 13px; text-align: center; border-top: 1px solid rgba(196,122,58,0.35); border-bottom: 1px solid rgba(196,122,58,0.12); background: linear-gradient(180deg, rgba(196,122,58,0.06) 0%, rgba(196,122,58,0.02) 100%); }
+  .pmark.warm { border-top-color: rgba(140,110,58,0.45); border-bottom-color: rgba(140,110,58,0.15); background: linear-gradient(180deg, rgba(140,110,58,0.09) 0%, rgba(140,110,58,0.02) 100%); }
+  .pmark.gold { border-top-color: rgba(232,185,92,0.5); border-bottom-color: rgba(232,185,92,0.18); background: linear-gradient(180deg, rgba(232,185,92,0.1) 0%, rgba(232,185,92,0.02) 100%); }
+  .pmark-eye { font-family: var(--font-body); font-size: 8px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); opacity: 0.9; margin-bottom: 7px; }
+  .pmark.warm .pmark-eye { color: var(--warm-light); }
+  .pmark.gold .pmark-eye { color: var(--gold); opacity: 1; }
+  .pmark-quote { font-family: var(--font-display); font-style: italic; font-size: 13.5px; color: var(--text-light); line-height: 1.35; margin-bottom: 5px; }
+  .pmark-help { font-family: var(--font-body); font-size: 10px; color: var(--text-light-secondary); opacity: 0.72; line-height: 1.4; }
+
+  /* countdown rail — new upptakt element */
+  .countdown { margin: 0 12px 12px; padding: 8px 11px; background: var(--bg-portal-surface); border-radius: 6px; border-left: 2px solid var(--warm); display: flex; align-items: center; gap: 9px; }
+  .cd-pips { display: flex; gap: 4px; }
+  .cd-pip { width: 9px; height: 9px; border-radius: 2px; background: var(--warm); }
+  .cd-pip.spent { background: rgba(140,110,58,0.25); }
+  .cd-text { font-family: var(--font-body); font-size: 10.5px; color: var(--text-light-secondary); line-height: 1.4; }
+  .cd-text strong { color: var(--warm-light); font-weight: 700; }
+
+  /* roundmark */
+  .rmark { margin: 2px 12px 10px; text-align: center; font-family: var(--font-body); font-size: 9px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); opacity: 0.85; }
+  .rmark.warm { color: var(--warm-light); opacity: 0.95; }
+  .rmark.gold { color: var(--gold); opacity: 1; }
+  .rmark::before, .rmark::after { content: '⬩'; margin: 0 7px; opacity: 0.7; }
+  .rmark .crit { margin-left: 5px; color: var(--warm-light); font-weight: 700; }
+  .rmark.gold .crit { color: var(--gold); }
+
+  /* primary card weight variants */
+  .pcard { margin: 0 12px 11px; padding: 13px 13px 12px; border-radius: 8px; border: 1px solid rgba(196,122,58,0.18); background: var(--bg-portal-elevated); position: relative; overflow: hidden; }
+  .pcard.w1 { border-color: rgba(196,122,58,0.32); }
+  .pcard.w2 { border-color: rgba(196,122,58,0.55); background: linear-gradient(180deg, rgba(196,122,58,0.08) 0%, var(--bg-portal-elevated) 38%); box-shadow: 0 0 0 1px rgba(196,122,58,0.1); }
+  .pcard.w2warm { border-color: rgba(140,110,58,0.6); background: linear-gradient(180deg, rgba(140,110,58,0.1) 0%, var(--bg-portal-elevated) 40%); box-shadow: 0 0 0 1px rgba(140,110,58,0.14); }
+  .pcard.w3 { border-color: rgba(232,185,92,0.55); background: linear-gradient(180deg, rgba(232,185,92,0.1) 0%, var(--bg-portal-elevated) 42%); box-shadow: 0 0 0 1px rgba(232,185,92,0.18), 0 6px 18px rgba(232,185,92,0.1); }
+  .pc-eye { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 7px; display: flex; align-items: center; gap: 6px; }
+  .pcard.w2warm .pc-eye { color: var(--warm-light); }
+  .pcard.w3 .pc-eye { color: var(--gold); }
+  .pc-eye .meta { margin-left: auto; font-family: var(--font-mono); font-size: 9px; color: var(--text-light-secondary); opacity: 0.75; text-transform: uppercase; }
+  .pc-crit { margin-left: 5px; font-size: 8px; letter-spacing: 1px; padding: 1px 5px; border-radius: 2px; background: rgba(140,110,58,0.18); border: 1px solid rgba(140,110,58,0.45); color: var(--warm-light); }
+  .pcard.w3 .pc-crit { background: rgba(232,185,92,0.16); border-color: rgba(232,185,92,0.55); color: var(--gold); }
+  .pc-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--text-light); line-height: 1.15; margin-bottom: 5px; letter-spacing: -0.2px; }
+  .pcard.w3 .pc-title { font-size: 22px; }
+  .pc-body { font-family: var(--font-body); font-size: 11px; color: var(--text-light-secondary); line-height: 1.45; }
+  .pc-body strong { color: var(--text-light); font-weight: 600; }
+
+  /* series tracker */
+  .series { margin-top: 9px; padding-top: 8px; border-top: 1px dashed rgba(196,122,58,0.22); display: flex; align-items: center; gap: 7px; }
+  .pcard.w3 .series { border-top-color: rgba(232,185,92,0.3); }
+  .series-lbl { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light-secondary); opacity: 0.85; }
+  .series-dots { display: flex; gap: 4px; margin-left: auto; }
+  .sg { width: 16px; height: 16px; border-radius: 3px; border: 1px solid rgba(196,122,58,0.35); background: var(--bg-portal); font-family: var(--font-mono); font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: var(--text-light-secondary); }
+  .sg.w { background: rgba(90,154,74,0.2); border-color: rgba(90,154,74,0.55); color: #A0C890; }
+  .sg.l { background: rgba(176,80,64,0.18); border-color: rgba(176,80,64,0.5); color: #E8A090; }
+  .sg.next { border-color: var(--accent); color: var(--accent); background: rgba(196,122,58,0.15); }
+  .sg.next.warm { width: 19px; height: 19px; border-color: var(--warm); color: var(--warm-light); background: rgba(140,110,58,0.2); }
+  .sg.next.gold { width: 19px; height: 19px; border-color: var(--gold); color: var(--gold); background: rgba(232,185,92,0.22); box-shadow: 0 0 6px rgba(232,185,92,0.3); }
+
+  /* secondary stub */
+  .sec { margin: 0 12px 8px; padding: 10px 12px; background: var(--bg-portal-surface); border-left: 2px solid var(--accent); border-radius: 0 8px 8px 0; }
+  .sec.cold { border-left-color: var(--cold); }
+  .sec-l { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light-secondary); font-weight: 600; margin-bottom: 6px; display: flex; gap: 5px; }
+  .sec.cold .sec-l { color: var(--cold-light); }
+  .sec-b { font-family: var(--font-display); font-style: italic; font-size: 11.5px; color: var(--text-light); line-height: 1.45; opacity: 0.9; }
+
+  /* CTA */
+  .cta-z { margin: 10px 12px 0; padding-top: 9px; border-top: 1px solid rgba(196,122,58,0.1); }
+  .cta { width: 100%; padding: 12px; border: none; border-radius: 12px; background: linear-gradient(180deg, #DD9555 0%, #8B4820 100%); color: var(--text-light); font-family: var(--font-body); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 3px 5px rgba(162,88,40,0.38); }
+  .cta.warm { background: linear-gradient(180deg, var(--warm-light) 0%, var(--warm) 100%); }
+  .cta.gold { background: linear-gradient(180deg, var(--gold) 0%, var(--gold-deep) 100%); color: var(--bg-portal); box-shadow: 0 3px 12px rgba(232,185,92,0.32); }
+
+  /* notes */
+  .notes { max-width: 1900px; margin: 36px auto 0; padding: 22px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.6; font-size: 13px; }
+  .notes h3 { font-family: var(--font-display); font-size: 17px; color: var(--text-light); margin-bottom: 12px; }
+  .notes h4 { font-family: var(--font-body); font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 16px 0 6px; }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes ul { margin: 4px 0 8px 16px; max-width: 880px; }
+  .notes li { margin-bottom: 5px; }
+  .notes code { font-family: var(--font-mono); font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+  .notes table { border-collapse: collapse; margin: 8px 0; max-width: 1000px; font-size: 12px; }
+  .notes th, .notes td { text-align: left; padding: 7px 11px; border-bottom: 1px solid rgba(245,241,235,0.08); vertical-align: top; }
+  .notes th { font-family: var(--font-body); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); }
+  .esc-scale { display: flex; gap: 0; margin: 10px 0; max-width: 760px; border-radius: 6px; overflow: hidden; }
+  .esc-step { flex: 1; padding: 12px 10px; text-align: center; }
+  .esc-step .lbl { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .esc-step .desc { font-size: 10.5px; line-height: 1.4; opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>C-SD2 Portal-eskalering — grundserie → upptakt → kvart → semi → final</h1>
+  <p>Fem steg i en <strong>graderad estetik-familj</strong>. Eskaleringen är en kontinuerlig kurva: accent (lugn) → warm (upptakt + kvart) → starkare warm (semi) → gold (final). Bygger på R3-vokabulären (PhaseMark, RoundMark, primary-weight) — <strong>inga nya tokens</strong>, bara ett warm-mellansteg som fyller gapet mellan accent och gold.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 1 · GRUNDSERIE referens -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num ref">1</span>GRUNDSERIE<span class="phase">referens</span>
+      <span class="sub">Vanilla portal. CTA "Spela omgång". Ingen eskalering — utgångsläget.</span>
+    </div>
+    <div class="body">
+      <div class="situation"><strong>Tisdag · Omg 15</strong>November. Tabellen jämn.</div>
+      <div class="rmark" style="visibility:hidden;">·</div>
+      <div class="pcard w1">
+        <div class="pc-eye"><span>🏒 Nästa match</span><span class="meta">Lö 14:00</span></div>
+        <div class="pc-title">Forsbacka — Heros</div>
+        <div class="pc-body">Hemma. Vinden vänder mot kväll.</div>
+      </div>
+      <div class="sec"><div class="sec-l">📋 Styrelsens krav</div><div class="sec-b">Topp 8 — vi ligger 6:a.</div></div>
+      <div class="sec cold"><div class="sec-l">📊 Tabell</div><div class="sec-b">6:a · 18 poäng efter 14.</div></div>
+      <div class="cta-z"><button class="cta">Spela omgång 15 →</button></div>
+    </div>
+  </div>
+
+  <!-- 2 · UPPTAKT — NEW -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">2</span>UPPTAKT<span class="phase">sista 3 omg · NY</span>
+      <span class="sub">Sub-fas innan slutspel. Countdown-rail + warm PhaseMark "Det börjar närma sig". CTA warm. Primary lyfts till w2-warm.</span>
+    </div>
+    <div class="body">
+      <div class="situation"><strong>Måndag · Omg 20</strong>Tre omgångar kvar. Marginalen krymper.</div>
+
+      <div class="pmark warm">
+        <div class="pmark-eye">⬩ Slutstriden närmar sig ⬩</div>
+        <div class="pmark-quote">"Tre omgångar. Sen avgörs allt."</div>
+        <div class="pmark-help">Slutspelsplatsen är inom räckhåll — men inte säkrad.</div>
+      </div>
+
+      <div class="countdown">
+        <div class="cd-pips"><span class="cd-pip"></span><span class="cd-pip"></span><span class="cd-pip"></span></div>
+        <div class="cd-text"><strong>3 omgångar</strong> kvar till slutspelet</div>
+      </div>
+
+      <div class="pcard w2warm">
+        <div class="pc-eye"><span>🏒 Nästa match</span><span class="pc-crit">Måste-vinna</span><span class="meta">Lö 14:00</span></div>
+        <div class="pc-title">Forsbacka — Skutskär</div>
+        <div class="pc-body"><strong>Sex-poängsmatch.</strong> Skutskär jagar samma plats. Vinst = stort kliv mot topp 8.</div>
+      </div>
+
+      <div class="sec"><div class="sec-l">📋 Styrelsens krav</div><div class="sec-b">Topp 8 — vi ligger 7:a, två poäng över strecket.</div></div>
+      <div class="cta-z"><button class="cta warm">Spela omgång 20 →</button></div>
+    </div>
+  </div>
+
+  <!-- 3 · KVART -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">3</span>KVARTSFINAL<span class="phase">lugnaste eskalering</span>
+      <span class="sub">RoundMark warm. PhaseMark "Slutspelet börjar" (engång). Primary w2. Best-of-5-tracker. CTA warm.</span>
+    </div>
+    <div class="body">
+      <div class="situation"><strong>Tisdag · Kvartsfinal</strong>Best-of-five. Grundserien är historia.</div>
+
+      <div class="pmark">
+        <div class="pmark-eye">⬩ Slutspelet börjar ⬩</div>
+        <div class="pmark-quote">"Slutspel. Inga andra chanser."</div>
+        <div class="pmark-help">Portal har stramat åt — bara det viktiga nu.</div>
+      </div>
+
+      <div class="rmark warm">Kvartsfinal</div>
+
+      <div class="pcard w2">
+        <div class="pc-eye"><span>⚔️ Kvartsfinal · G1</span><span class="meta">On 19:00</span></div>
+        <div class="pc-title">Forsbacka — Söderfors</div>
+        <div class="pc-body">Söderfors slutade 4:a. Hela formationen hit.</div>
+        <div class="series">
+          <span class="series-lbl">Serien</span>
+          <span class="series-dots"><span class="sg next">G1</span><span class="sg">G2</span><span class="sg">G3</span><span class="sg">G4</span><span class="sg">G5</span></span>
+        </div>
+      </div>
+
+      <div class="sec"><div class="sec-l">📊 Söderfors senaste 5</div><div class="sec-b">V V O V F · Pålsson tre senaste.</div></div>
+      <div class="cta-z"><button class="cta warm">Redo — Kvartsfinal G1 →</button></div>
+    </div>
+  </div>
+
+  <!-- 4 · SEMI -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">4</span>SEMIFINAL<span class="phase">mellan</span>
+      <span class="sub">RoundMark starkare warm + crit. Primary w2-warm. Decisive-dot i tracker. CTA warm. Stegrad men inte gold än.</span>
+    </div>
+    <div class="body">
+      <div class="situation"><strong>Lördag · Semifinal</strong>Serien 1–1. Båda jagar matchpuck.</div>
+
+      <div class="rmark warm">Semifinal<span class="crit">· Matchpuck</span></div>
+
+      <div class="pcard w2warm">
+        <div class="pc-eye"><span>⚔️ Semifinal · G3</span><span class="pc-crit">Matchpuck</span><span class="meta">Borta · Lö 14:00</span></div>
+        <div class="pc-title">Heros — Forsbacka</div>
+        <div class="pc-body"><strong>1–1 i serien.</strong> Vinst = 2–1 och två chanser att stänga.</div>
+        <div class="series">
+          <span class="series-lbl">Serien</span>
+          <span class="series-dots"><span class="sg w">W</span><span class="sg l">L</span><span class="sg next warm">G3</span><span class="sg">G4</span><span class="sg">G5</span></span>
+        </div>
+      </div>
+
+      <div class="sec"><div class="sec-l">📊 Heros i serien</div><div class="sec-b">G1 F · G2 V. Olsson skadad efter närkamp.</div></div>
+      <div class="cta-z"><button class="cta warm">Redo — Semifinal G3 →</button></div>
+    </div>
+  </div>
+
+  <!-- 5 · FINAL -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num gold">5</span>SM-FINAL<span class="phase">full kraft · referens</span>
+      <span class="sub">RoundMark gold. Primary w3 (gold-gradient). Gold-dot i tracker. Gold-CTA. Befintlig estetik — oförändrad.</span>
+    </div>
+    <div class="body">
+      <div class="situation"><strong>Söndag · SM-Final G5</strong>Serien 2–2. Sista matchen för säsongen.</div>
+
+      <div class="rmark gold">SM-Final<span class="crit">· Avgörande</span></div>
+
+      <div class="pcard w3">
+        <div class="pc-eye"><span>⚔️ SM-Final · G5</span><span class="pc-crit">Avgörande</span><span class="meta">Hemma · Sö 14:00</span></div>
+        <div class="pc-title">Forsbacka — Karlsborg</div>
+        <div class="pc-body"><strong>2–2 i serien.</strong> En match till guldet eller säsongen är slut. Klar himmel.</div>
+        <div class="series">
+          <span class="series-lbl">Serien</span>
+          <span class="series-dots"><span class="sg l">L</span><span class="sg w">W</span><span class="sg l">L</span><span class="sg w">W</span><span class="sg next gold">G5</span></span>
+        </div>
+      </div>
+
+      <div class="sec"><div class="sec-l">📊 Karlsborg i serien</div><div class="sec-b">Halvarsson 5 mål — ojämn nivå.</div></div>
+      <div class="cta-z"><button class="cta gold">Spela SM-Final G5 →</button></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Eskaleringskurvan</h3>
+  <div class="esc-scale">
+    <div class="esc-step" style="background:rgba(196,122,58,0.1);"><div class="lbl" style="color:var(--accent)">Grundserie</div><div class="desc">accent · lugn</div></div>
+    <div class="esc-step" style="background:rgba(140,110,58,0.14);"><div class="lbl" style="color:var(--warm-light)">Upptakt</div><div class="desc">warm · närmar sig</div></div>
+    <div class="esc-step" style="background:rgba(140,110,58,0.18);"><div class="lbl" style="color:var(--warm-light)">Kvart</div><div class="desc">warm · w2</div></div>
+    <div class="esc-step" style="background:rgba(140,110,58,0.28);"><div class="lbl" style="color:var(--warm-light)">Semi</div><div class="desc">starkare warm · w2-warm</div></div>
+    <div class="esc-step" style="background:rgba(232,185,92,0.18);"><div class="lbl" style="color:var(--gold)">Final</div><div class="desc">gold · w3</div></div>
+  </div>
+
+  <h4>Svar på Opus fem frågor</h4>
+
+  <p><strong>1 · Hur signaleras pre-playoff-spänningen?</strong> Tre samverkande element vid sista 3 omg när slutspelsplats är på spel: (a) <strong>warm PhaseMark</strong> "Slutstriden närmar sig" — engångsmarkör, samma komponent som R3 men warm-tonad; (b) <strong>countdown-rail</strong> med pips ("3 omgångar kvar till slutspelet") — krymper per omg; (c) <strong>primary lyfts till w2-warm</strong> + crit-tag på must-win-matcher. Inte skrikigt — warm är ett mellansteg, inte alarm.</p>
+
+  <p><strong>2 · Finalhelg-portalens unika element (inspekterat i kod):</strong></p>
+  <table>
+    <thead><tr><th>Element</th><th>Final har</th><th>Kvart/semi har</th></tr></thead>
+    <tbody>
+      <tr><td><code>.portal-roundmark.gold</code></td><td>gold färg, opacity 1</td><td>accent (kvart), warm (semi) — fanns ej tidigare</td></tr>
+      <tr><td><code>.primary-weight-3</code></td><td>gold-gradient, box-shadow gold-glow, title 22px</td><td>w2 (accent-gradient), title 19px</td></tr>
+      <tr><td><code>.series-game.next.gold</code></td><td>gold-dot 19px + glow</td><td>accent-dot (kvart), warm-dot (semi)</td></tr>
+      <tr><td><code>.btn-cta.btn-gold</code></td><td>gold-gradient CTA</td><td>copper (kvart i dag), warm (nytt)</td></tr>
+    </tbody>
+  </table>
+  <p>Final-estetiken är alltså redan byggd. Gapet: kvart/semi hoppar från accent rakt till gold utan mellansteg. <strong>Lösningen är inte att ändra final</strong> — det är att lägga in <strong>warm-graderingen</strong> mellan accent och gold.</p>
+
+  <p><strong>3 · Hur graderas kvart → semi → final?</strong> Fyra axlar varieras samtidigt, alla i samma estetik-familj:</p>
+  <table>
+    <thead><tr><th>Axel</th><th>Kvart</th><th>Semi</th><th>Final</th></tr></thead>
+    <tbody>
+      <tr><td>RoundMark-färg</td><td>warm (svag)</td><td>warm (stark) + crit</td><td>gold + crit</td></tr>
+      <tr><td>Primary-vikt</td><td>w2</td><td>w2-warm</td><td>w3</td></tr>
+      <tr><td>Next-dot</td><td>accent</td><td>warm-decisive</td><td>gold + glow</td></tr>
+      <tr><td>CTA</td><td>warm</td><td>warm</td><td>gold</td></tr>
+    </tbody>
+  </table>
+  <p>Ingen enskild axel byter binärt — det är en kontinuerlig stegring. Semi är synligt mellan kvart och final, inte en kopia av endera.</p>
+
+  <p><strong>4 · Återanvänder R3-vokabulär?</strong> Ja, helt. PhaseMark, RoundMark, primary-weight-klasserna, series-tracker, gold-CTA finns alla. <strong>Enda nytt:</strong> ett <code>w2-warm</code>-mellansteg (primary-vikt med warm istället för accent) + warm-CTA + warm-PhaseMark-variant + countdown-rail. Allt med befintliga tokens (<code>--warm</code>, <code>--warm-light</code>). Modus är <strong>portal-permanent</strong> (inte scen-flash) förutom PhaseMark som är engångs — konsekvent med R3.</p>
+
+  <p><strong>5 · Overlap med C-SY1 #3 Portal-hierarki:</strong> Eskaleringen lyfter <em>primär-tier</em> (matchen) visuellt men rör inte sorteringen. När hierarki-rundan kommer: dessa portaler bör behålla primary-dominansen — eskaleringen är just att matchen tar mer plats ju närmare avgörandet. En framtida hierarki-justering ska <strong>dämpa secondary i playoff</strong> (R3 gör redan detta via bias × 0.4), inte röra primary-eskaleringen. Noterat, ej löst nu.</p>
+
+  <h4>Upptakt — kontextuell variation (textuell, ej fyra mockar)</h4>
+  <p>Ett huvudtillstånd (warm upptakt) + PhaseMark/countdown-copy som varierar per sub-state:</p>
+  <ul>
+    <li><strong>Säkrat, kämpar topp:</strong> "Slutspelet är klart. Nu gäller placeringen." — countdown visar "till seedning"</li>
+    <li><strong>Farozonen:</strong> "Tre omgångar. Sen avgörs allt." — must-win crit-tag (mockad ovan)</li>
+    <li><strong>Mittfält, garanterat:</strong> Ingen warm-upptakt — vanlig portal. Eskalering börjar först vid kvart. (Ingen dramatik = ingen falsk signal.)</li>
+    <li><strong>Bottenstrid:</strong> warm-upptakt men annan copy: "Slutspelet är utom räckhåll. Men det finns annat att spela för." — cold-ton istället för warm</li>
+  </ul>
+
+  <h4>Öppna frågor till Opus</h4>
+  <ul>
+    <li>Upptakt-trigger: exakt 3 omg kvar, eller dynamiskt baserat på tabellmarginal (närmare = tidigare upptakt)? Föreslag: 3 omg fast, men bara om matematiskt på-spel.</li>
+    <li>Mittfält-garanterat utan dramatik: bekräfta att ingen upptakt visas (vs en lugn neutral variant). Föreslag: ingen — falsk spänning bryter understatement.</li>
+    <li>Copy-pooler för PhaseMark/countdown per sub-state levereras av Opus (4 varianter × eyebrow + quote + helper).</li>
+  </ul>
+</div>
+
+</body>
+</html>

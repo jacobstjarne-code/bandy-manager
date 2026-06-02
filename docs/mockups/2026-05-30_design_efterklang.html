@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Efterklang redesign + tråd-modal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --accent: #C47A3A; --cold: #4a6680; --cold-light: #7095b8;
+    --warm: #8c6e3a; --warm-light: #c8a058; --gold: #E8B95C; --danger: #B05040;
+    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 32px 16px 80px; min-height: 100vh; }
+  .page-head { max-width: 1300px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 780px; }
+  .page-head p strong { color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 28px; max-width: 1300px; margin: 0 auto; align-items: start; }
+  .col { background: var(--bg-portal); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.35); width: 100%; max-width: 380px; justify-self: center; }
+  .col-head { padding: 12px 16px; background: var(--bg-leather-dk); font-family: var(--font-display); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .col-head .num { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; color: var(--accent); background: rgba(196,122,58,0.1); padding: 2px 6px; border-radius: 2px; margin-right: 8px; vertical-align: 2px; }
+  .col-head .num.bad { color: var(--text-muted); background: rgba(245,241,235,0.05); }
+  .col-head .phase { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; color: var(--text-light-secondary); background: rgba(245,241,235,0.05); padding: 2px 6px; border-radius: 2px; margin-left: 6px; text-transform: uppercase; vertical-align: 2px; }
+  .col-head .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }
+  .body { padding: 16px 14px; }
+
+  /* Context-card shell */
+  .ctx-card { background: var(--bg-portal-surface); border-left: 2px solid var(--cold); border-radius: 0 8px 8px 0; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+  /* OLD efterklang */
+  .old-eye { font-family: var(--font-body); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light-secondary); font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+  .old-journalist { font-family: var(--font-body); font-size: 13px; color: var(--text-light); margin-bottom: 5px; }
+  .old-quote { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--text-light-secondary); line-height: 1.5; }
+
+  /* NEW efterklang card */
+  .ek-card { background: var(--bg-portal-surface); border-left: 2px solid var(--warm); border-radius: 0 8px 8px 0; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); position: relative; cursor: pointer; }
+  .ek-chev { position: absolute; top: 12px; right: 13px; color: var(--warm-light); font-size: 15px; opacity: 0.8; }
+  .ek-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 3px; padding-right: 18px; }
+  .ek-eye { font-family: var(--font-body); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--warm-light); font-weight: 700; }
+  .ek-object { font-family: var(--font-body); font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); font-weight: 700; }
+  .ek-sub { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+  .ek-sub .pip { width: 4px; height: 4px; border-radius: 50%; background: var(--warm); opacity: 0.6; }
+  .ek-journalist { font-family: var(--font-body); font-size: 12.5px; color: var(--text-light); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+  .ek-journalist .ico { color: var(--text-muted); font-size: 11px; }
+  .ek-quote { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--text-light-secondary); line-height: 1.5; display: flex; gap: 6px; }
+  .ek-quote .recur { color: var(--warm); flex-shrink: 0; }
+
+  /* thread modal */
+  .modal-stage { background: rgba(0,0,0,0.6); border-radius: 8px; padding: 24px 16px; }
+  .modal { background: var(--bg-portal-elevated); border: 1px solid rgba(140,110,58,0.25); border-radius: 12px; padding: 16px 16px 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+  .modal-eye { font-family: var(--font-body); font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm-light); font-weight: 700; text-align: center; margin-bottom: 4px; }
+  .modal-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--text-light); text-align: center; line-height: 1.2; margin-bottom: 3px; }
+  .modal-meta { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); letter-spacing: 0.5px; text-align: center; margin-bottom: 16px; }
+  .modal-journalist { font-family: var(--font-body); font-size: 11px; color: var(--text-light-secondary); text-align: center; margin-bottom: 18px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+  /* thread list */
+  .thread { position: relative; padding-left: 26px; }
+  .thread::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 12px; width: 1px; background: linear-gradient(180deg, rgba(140,110,58,0.5), rgba(140,110,58,0.15)); }
+  .tmemo { position: relative; margin-bottom: 16px; }
+  .tmemo:last-child { margin-bottom: 0; }
+  .tmemo::before { content: ''; position: absolute; left: -22px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg-portal-elevated); border: 1.5px solid var(--warm); }
+  .tmemo.latest::before { background: var(--warm); box-shadow: 0 0 6px rgba(140,110,58,0.5); }
+  .tmemo-round { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--warm-light); margin-bottom: 4px; }
+  .tmemo-quote { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--text-light); line-height: 1.45; }
+  .tmemo.faded .tmemo-quote { color: var(--text-light-secondary); opacity: 0.78; }
+
+  .modal-foot { margin-top: 16px; padding-top: 12px; border-top: 1px dashed rgba(140,110,58,0.2); font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-muted); text-align: center; line-height: 1.45; }
+
+  /* notes */
+  .notes { max-width: 1300px; margin: 36px auto 0; padding: 22px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.6; font-size: 13px; }
+  .notes h3 { font-family: var(--font-display); font-size: 17px; color: var(--text-light); margin-bottom: 12px; }
+  .notes h4 { font-family: var(--font-body); font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 16px 0 6px; }
+  .notes p { margin-bottom: 8px; max-width: 820px; }
+  .notes ul { margin: 4px 0 8px 16px; max-width: 820px; }
+  .notes li { margin-bottom: 5px; }
+  .notes code { font-family: var(--font-mono); font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Efterklang — klarhetsredesign + tråd-modal</h1>
+  <p>Kortet sade "<strong>1 MINNE</strong>" — abstrakt, döljer modellen. Den verkliga modellen är <em>en återkommande spänning markerad av en journalist över flera omgångar</em>. Ny header namnger objektet, subraden visar linjen-över-tid, och kortet öppnar en kronologisk tråd.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 01 · FÖRE -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num bad">01</span>IDAG<span class="phase">abstrakt</span>
+      <span class="sub">"EFTERKLANG · 1 MINNE" + en journalist-quote. Säger inte vad det handlar om eller att det är en linje över tid.</span>
+    </div>
+    <div class="body">
+      <div class="ctx-card">
+        <div class="old-eye">⧗ Efterklang · 1 minne</div>
+        <div class="old-journalist">⚔ Håvard Berglund</div>
+        <div class="old-quote">↻ Hälleforsnäs igen. Det tar visst aldrig riktigt slut mellan er.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 · KORTET NY DESIGN -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">02</span>KORTET · NY<span class="phase">namnger objektet</span>
+      <span class="sub">Header: EFTERKLANG · {objektet}. Subrad: faktisk tidsanvisning ("3 omgångar pågående · senast Omg 16"). Body oförändrad. Chevron som klick-cue.</span>
+    </div>
+    <div class="body">
+      <div class="ek-card">
+        <span class="ek-chev">›</span>
+        <div class="ek-head">
+          <span class="ek-eye">⧗ Efterklang ·</span>
+          <span class="ek-object">Hälleforsnäs</span>
+        </div>
+        <div class="ek-sub">3 omgångar pågående <span class="pip"></span> senast Omg 16</div>
+        <div class="ek-journalist"><span class="ico">⚔</span>Håvard Berglund</div>
+        <div class="ek-quote"><span class="recur">↻</span><span>Hälleforsnäs igen. Det tar visst aldrig riktigt slut mellan er.</span></div>
+      </div>
+
+      <p style="font-family:var(--font-display);font-style:italic;font-size:11px;color:var(--text-light-secondary);margin-top:14px;line-height:1.5;opacity:0.8;">
+        Tre signaler nu: <em>vad</em> (Hälleforsnäs), <em>hur länge</em> (3 omg), <em>att det går att öppna</em> (chevron + ↻).
+      </p>
+    </div>
+  </div>
+
+  <!-- 03 · TRÅD-MODAL -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">03</span>TAP → TRÅD-MODAL<span class="phase">kronologi</span>
+      <span class="sub">Portal-mörk yta. Kronologisk lista, tidslinje vänster, varje minne med omgång + quote. Senaste markerad. Äldre tonade.</span>
+    </div>
+    <div class="body" style="padding:0;">
+      <div class="modal-stage">
+        <div class="modal">
+          <div class="modal-eye">⧗ Efterklang</div>
+          <div class="modal-title">Hälleforsnäs</div>
+          <div class="modal-meta">Etablerad Omg 8 · 3 omgångar pågående</div>
+          <div class="modal-journalist"><span>⚔</span>Markerad av Håvard Berglund</div>
+
+          <div class="thread">
+            <div class="tmemo faded">
+              <div class="tmemo-round">Omg 8</div>
+              <div class="tmemo-quote">"Hälleforsnäs-hatet sitter djupt."</div>
+            </div>
+            <div class="tmemo faded">
+              <div class="tmemo-round">Omg 12</div>
+              <div class="tmemo-quote">"Skulden från oktober läker inte."</div>
+            </div>
+            <div class="tmemo latest">
+              <div class="tmemo-round">Omg 16 · senast</div>
+              <div class="tmemo-quote">"Hälleforsnäs igen. Det tar visst aldrig riktigt slut mellan er."</div>
+            </div>
+          </div>
+
+          <div class="modal-foot">En linje som löper genom säsongen. Nästa derby vänder bladet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Designbeslut</h3>
+
+  <h4>Header — objektet före abstraktionen</h4>
+  <p><code>EFTERKLANG · Hälleforsnäs</code> ersätter <code>EFTERKLANG · 1 MINNE</code>. Objektet (motståndaren/spelaren/temat) är det spelaren känner igen. "1 minne" var en räknare utan innebörd.</p>
+
+  <h4>Subrad — vald tidsanvisning</h4>
+  <p>Av de tre alternativen valde jag <strong>"X omgångar pågående · senast Omg Y"</strong> — den enda som signalerar både <em>linje</em> (pågående) och <em>aktualitet</em> (senast). "Etablerad i Omg 8" säger bara start; "Senast Omg X" bara slut. Kombinationen säger "detta är en tråd som lever nu". Mono-font + pip-separator håller den lätt.</p>
+
+  <h4>Klick-cue</h4>
+  <p>Chevron uppe höger (samma mönster som tappbara kort i Portal) + ↻-glyfen kvar framför quoten. Två cue:er utan att skrika.</p>
+
+  <h4>Tråd-modal — kronologi som tidslinje</h4>
+  <ul>
+    <li><strong>Vertikal tidslinje</strong> vänster (gradient, ljusnar nedåt) binder minnena till en linje — visuellt "över tid".</li>
+    <li><strong>Omgång + quote</strong> ställs vertikalt: omgång som mono-eyebrow (warm), quote som Georgia-italic under. Tidsanvisning leder, citatet följer.</li>
+    <li><strong>Senaste markeras</strong> — fylld nod med glow + "· senast". Äldre minnen tonade (opacity 0.78) så ögat landar på det aktuella men ser historiken.</li>
+    <li><strong>Rytm</strong>: 16px mellan minnen, nod-prickar på tidslinjen. Inte för tätt — varje minne ska få andas.</li>
+    <li><strong>Foot-rad</strong> sätter linjen i kontext ("nästa derby vänder bladet") utan att bli mekanik-text.</li>
+  </ul>
+
+  <h4>Tonalitet</h4>
+  <p>Bytte stripe från <code>--cold</code> till <code>--warm</code> — Efterklang är en laddad relation (rivalitet/skuld), inte kall info. Warm-paletten matchar journalist-severity-systemet. Modal ärver warm-accenter (tidslinje, noder, eyebrow).</p>
+
+  <h4>Öppna designval bekräftade</h4>
+  <ul>
+    <li>Header-hierarki: EFTERKLANG (warm, mindre) + objektet (light, bold) — objektet vinner visuellt.</li>
+    <li>Tidsanvisning + quote i tråden: tid leder (eyebrow), quote följer (body). Ej sida-vid-sida — vertikal läsning är lugnare.</li>
+    <li>Modal-layout: centrerad header + vänsterställd tråd. Header är ceremoniell, tråden är läsning.</li>
+  </ul>
+</div>
+
+</body>
+</html>

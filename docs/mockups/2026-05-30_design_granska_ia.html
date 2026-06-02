@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Granska IA-pass</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #EDE8DF; --bg-surface: #FAF8F4; --bg-elevated: #FFFFFF;
+    --bg-dark: #0E0D0B; --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --border: #DDD7CC; --border-dark: #C4BAA8;
+    --text-primary: #1A1A18; --text-secondary: #6B6760; --text-muted: #8A857A;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8;
+    --accent: #C47A3A; --accent-dark: #A25828; --accent-deep: #8B4820;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --gold: #E8B95C; --danger: #B05040; --success: #5A9A4A; --ice: #7EB3D4;
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); font-family: var(--font-body); padding: 32px 16px 80px; min-height: 100vh; color: var(--text-light); }
+
+  .page-head { max-width: 1100px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 760px; }
+  .page-head p strong { color: var(--accent); }
+
+  .layout { display: flex; gap: 36px; max-width: 1100px; margin: 0 auto; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
+
+  /* Phone frame */
+  .phone { width: 390px; flex-shrink: 0; background: var(--bg); border-radius: 28px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,0.4); border: 1px solid rgba(0,0,0,0.2); }
+
+  /* GameHeader */
+  .gh { background: var(--bg-dark); padding: 10px 14px 0; border-bottom: 2px solid var(--accent); }
+  .gh-top { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; }
+  .gh-logo { width: 30px; height: 30px; border-radius: 5px; background: var(--bg-leather); display: flex; align-items: center; justify-content: center; font-size: 7px; font-family: var(--font-display); color: var(--text-light-secondary); text-align: center; line-height: 1; }
+  .gh-club { flex: 1; }
+  .gh-club .name { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text-light); }
+  .gh-club .season { font-family: var(--font-display); font-style: italic; font-size: 10px; color: var(--text-light-secondary); }
+  .gh-round { font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; padding: 3px 9px; }
+  .gh-ico { color: var(--text-light-secondary); font-size: 14px; margin-left: 4px; position: relative; }
+  .gh-ico .dot { position: absolute; top: -1px; right: -2px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  /* Phase strip */
+  .phase-strip { display: flex; align-items: center; padding: 7px 4px 8px; }
+  .phase-item { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; font-family: var(--font-body); font-size: 11px; letter-spacing: 1.5px; font-weight: 600; color: var(--text-muted); }
+  .phase-item.done { color: var(--text-light-secondary); }
+  .phase-item.active { color: var(--accent); }
+  .phase-line { width: 28px; height: 1px; background: var(--accent-deep); opacity: 0.6; }
+
+  /* scroll body */
+  .screen { padding: 12px 12px 0; max-height: 1400px; }
+
+  /* round pill */
+  .round-pill { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 99px; padding: 9px 18px; text-align: center; font-family: var(--font-body); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--text-secondary); margin: 0 auto 12px; width: fit-content; box-shadow: var(--shadow-card); }
+
+  /* group label */
+  .group-label { font-family: var(--font-body); font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin: 0 2px 6px; display: flex; align-items: center; gap: 8px; }
+  .group-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-card); }
+  .clabel { font-family: var(--font-body); font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+
+  /* HERO MATCHEN */
+  .matchen { padding: 13px 15px 14px; margin-bottom: 6px; position: relative; }
+  .matchen .chev { position: absolute; top: 13px; right: 14px; color: var(--accent); font-size: 16px; }
+  .matchen .clabel { margin-bottom: 12px; }
+  .matchen-teams { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .mt-side { flex: 1; text-align: center; }
+  .mt-side.home { text-align: left; padding-left: 6px; }
+  .mt-side.away { text-align: right; padding-right: 6px; }
+  .mt-name { font-family: var(--font-body); font-size: 12.5px; color: var(--text-secondary); margin-bottom: 6px; }
+  .mt-score { font-family: var(--font-display); font-size: 40px; font-weight: 800; line-height: 1; }
+  .mt-score.win { color: var(--success); }
+  .mt-score.loss { color: var(--danger); }
+  .mt-dash { font-family: var(--font-display); font-size: 30px; color: var(--text-muted); padding-top: 6px; }
+  .flavor { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--border); font-family: var(--font-display); font-style: italic; font-size: 12.5px; color: var(--accent-dark); }
+
+  /* result strip (tabell + form) */
+  .result-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+  .rs-cell { padding: 10px 12px; }
+  .rs-num { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--accent-dark); line-height: 1; }
+  .rs-meta { font-family: var(--font-body); font-size: 11px; color: var(--text-secondary); margin-left: 4px; }
+  .form-dots { display: flex; gap: 4px; margin-top: 4px; }
+  .fdot { width: 16px; height: 16px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: white; font-family: var(--font-body); }
+  .fdot.v { background: var(--success); }
+  .fdot.f { background: var(--danger); }
+  .fdot.o { background: var(--text-muted); }
+
+  /* klubb-status block */
+  .stack { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .row-card { padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+  .row-card .chev { margin-left: auto; color: var(--accent); font-size: 15px; }
+  .row-card .body { flex: 1; }
+  .row-card .clabel { margin-bottom: 4px; }
+  .row-val { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .row-sub { font-family: var(--font-body); font-size: 11px; color: var(--text-secondary); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .injury-card { border-left: 3px solid var(--danger); }
+  .injury-card .clabel { color: var(--danger); }
+  .orten-bar { height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+  .orten-bar div { height: 100%; background: var(--accent); border-radius: 99px; }
+  .delta-up { color: var(--success); font-size: 11px; font-weight: 700; }
+  .delta-down { color: var(--danger); font-size: 11px; font-weight: 700; }
+
+  /* omvärld */
+  .other-matches { padding: 11px 13px; margin-bottom: 6px; }
+  .other-matches .clabel { margin-bottom: 9px; }
+  .om-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; padding: 4px 0; font-family: var(--font-body); font-size: 12px; }
+  .om-row .h { text-align: right; color: var(--text-primary); font-weight: 600; }
+  .om-row .a { text-align: left; color: var(--text-primary); font-weight: 600; }
+  .om-row.dim .h, .om-row.dim .a { color: var(--text-muted); font-weight: 400; }
+  .om-score { font-family: var(--font-mono, ui-monospace); font-size: 11px; font-weight: 700; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; background: var(--bg-elevated); min-width: 42px; text-align: center; }
+  .press-card { padding: 11px 13px; position: relative; margin-bottom: 14px; }
+  .press-card .chev { position: absolute; top: 11px; right: 13px; color: var(--accent); font-size: 15px; }
+  .press-card .clabel { margin-bottom: 8px; }
+  .press-headline { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+  .press-byline { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+  /* CTA */
+  .cta-zone { padding: 4px 12px 16px; }
+  .cta { width: 100%; padding: 15px; border: none; border-radius: 12px; background: linear-gradient(180deg, #DD9555 0%, #8B4820 100%); color: var(--text-light); font-family: var(--font-body); font-size: 14px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 3px 5px rgba(162,88,40,0.38); }
+
+  /* bottom nav */
+  .bnav { display: flex; background: var(--bg-leather); border-top: 1px solid rgba(0,0,0,0.2); padding: 6px 0 calc(6px + env(safe-area-inset-bottom)); }
+  .bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-family: var(--font-body); font-size: 9px; color: var(--text-light-secondary); }
+  .bnav-item .ic { font-size: 16px; opacity: 0.7; }
+  .bnav-item.active { color: var(--accent); }
+  .bnav-item.active .ic { opacity: 1; }
+
+  /* notes */
+  .notes { width: 420px; flex-shrink: 0; color: rgba(245,241,235,0.85); font-size: 13px; line-height: 1.6; }
+  .notes h3 { font-family: var(--font-display); font-size: 17px; color: var(--text-light); margin-bottom: 12px; }
+  .notes h4 { font-family: var(--font-body); font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 16px 0 6px; }
+  .notes p { margin-bottom: 8px; }
+  .notes ul { margin: 4px 0 8px 16px; }
+  .notes li { margin-bottom: 5px; }
+  .notes code { font-family: ui-monospace, monospace; font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+  .notes .grp { padding: 8px 11px; background: rgba(245,241,235,0.04); border-left: 2px solid var(--accent); border-radius: 0 4px 4px 0; margin-bottom: 8px; }
+  .notes .grp strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Granska IA-pass — komponerad post-match-hemskärm</h1>
+  <p>Tre grupper med tydlig hierarki istället för platt lista. <strong>Resultatet</strong> (matchen + var den lämnar dig) överst som hero, <strong>klubben</strong> (status att hantera) i mitten, <strong>omvärlden</strong> (kontext) sist. Tightare vertikal rytm, grupp-avdelare, MATCHEN tappbar med chevron, flavor-rad ryms inom kortet.</p>
+</div>
+
+<div class="layout">
+
+  <div class="phone">
+    <!-- Header -->
+    <div class="gh">
+      <div class="gh-top">
+        <div class="gh-logo">BANDY<br>MANAGER</div>
+        <div class="gh-club">
+          <div class="name">Lesjöfors</div>
+          <div class="season">Fsdfdsf · 2026/2027</div>
+        </div>
+        <span class="gh-round">Omg 2</span>
+        <span class="gh-ico">?</span>
+        <span class="gh-ico">✉<span class="dot"></span></span>
+        <span class="gh-ico">⚙</span>
+      </div>
+      <div class="phase-strip">
+        <span class="phase-item done">⊘ FÖRBERED</span>
+        <span class="phase-line"></span>
+        <span class="phase-item done">⊘ SPELA</span>
+        <span class="phase-line"></span>
+        <span class="phase-item active">◉ GRANSKA</span>
+      </div>
+    </div>
+
+    <div class="screen">
+      <div class="round-pill">OMGÅNG 1 · 6 NOVEMBER ☀ +5°C</div>
+
+      <!-- ── RESULTAT ── -->
+      <div class="group-label">⬩ Resultatet</div>
+
+      <div class="card matchen">
+        <span class="chev">›</span>
+        <div class="clabel">🏒 Matchen</div>
+        <div class="matchen-teams">
+          <div class="mt-side home">
+            <div class="mt-name">Målilla</div>
+            <div class="mt-score loss">6</div>
+          </div>
+          <div class="mt-dash">–</div>
+          <div class="mt-side away">
+            <div class="mt-name">Lesjöfors</div>
+            <div class="mt-score win">7</div>
+          </div>
+        </div>
+        <div class="flavor">🔥 Målrik historia · borta­seger</div>
+      </div>
+
+      <div class="result-strip">
+        <div class="card rs-cell">
+          <div class="clabel" style="margin-bottom:7px;">📊 Tabell</div>
+          <div><span class="rs-num">4</span><span class="rs-meta">:a · 2p · <span class="delta-up">+1</span></span></div>
+        </div>
+        <div class="card rs-cell">
+          <div class="clabel" style="margin-bottom:7px;">📈 Form</div>
+          <div class="form-dots">
+            <span class="fdot v">V</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── KLUBBEN ── -->
+      <div class="group-label">⬩ Klubben</div>
+      <div class="stack">
+        <div class="card row-card">
+          <div class="body">
+            <div class="clabel">🏋️ Träning</div>
+            <div class="row-val">Fysik</div>
+          </div>
+          <span class="chev">›</span>
+        </div>
+
+        <div class="two-col">
+          <div class="card row-card">
+            <div class="body">
+              <div class="clabel">🏠 Orten</div>
+              <div><span class="row-val" style="color:var(--accent-dark)">58</span> <span class="delta-up">+4</span></div>
+              <div class="orten-bar"><div style="width:58%"></div></div>
+            </div>
+          </div>
+          <div class="card row-card">
+            <div class="body">
+              <div class="clabel">💰 Ekonomi</div>
+              <div class="row-val">254 tkr</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card row-card">
+          <div class="body">
+            <div class="clabel">🎓 Akademin</div>
+            <div class="row-sub" style="color:var(--text-primary);font-weight:600;">3 nya talanger spanade</div>
+          </div>
+          <span class="chev">›</span>
+        </div>
+      </div>
+
+      <!-- ── OMVÄRLDEN ── -->
+      <div class="group-label">⬩ Omvärlden</div>
+
+      <div class="card other-matches">
+        <div class="clabel">🏒 Andra matcher</div>
+        <div class="om-row"><span class="h">Forsbacka</span><span class="om-score">3–2</span><span class="a">Heros</span></div>
+        <div class="om-row"><span class="h">Söderfors</span><span class="om-score">2–3</span><span class="a">Skutskär</span></div>
+        <div class="om-row"><span class="h">Västanfors</span><span class="om-score">7–5</span><span class="a">Slottsbron</span></div>
+        <div class="om-row dim"><span class="h">Karlsborg</span><span class="om-score">6–2</span><span class="a">Rögle</span></div>
+        <div class="om-row"><span class="h">Gagnef</span><span class="om-score">0–3</span><span class="a">Hälleforsnäs</span></div>
+      </div>
+
+      <div class="card press-card">
+        <span class="chev">›</span>
+        <div class="clabel">📰 Pressklipp</div>
+        <div class="press-headline">Matchresultat: Målilla–Lesjöfors 6–7</div>
+        <div class="press-byline">Allehanda · söndag</div>
+      </div>
+    </div>
+
+    <div class="cta-zone">
+      <button class="cta">Nästa omgång →</button>
+    </div>
+
+    <div class="bnav">
+      <div class="bnav-item"><span class="ic">🏠</span>Hem</div>
+      <div class="bnav-item"><span class="ic">👥</span>Trupp</div>
+      <div class="bnav-item active"><span class="ic">🏒</span>Match</div>
+      <div class="bnav-item"><span class="ic">📊</span>Tabell</div>
+      <div class="bnav-item"><span class="ic">⇄</span>Transfers</div>
+      <div class="bnav-item"><span class="ic">🏛</span>Klubb</div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h3>IA-beslut</h3>
+    <p>Tre grupper med grupp-avdelare som ger Granska en läsbar berättelse: <em>vad hände → var lämnar det mig → vad gör jag nu → vad gör omvärlden</em>.</p>
+
+    <div class="grp"><strong>1 · Resultatet</strong> — MATCHEN (hero, full bredd, tappbar) + en kompakt resultat-strip som slår ihop TABELL + FORM. De hör ihop: "vad blev resultatet och var står jag nu". Form-prickar blir score-block-tonade V/F/O.</div>
+    <div class="grp"><strong>2 · Klubben</strong> — TRÄNING, ORTEN+EKONOMI (par), AKADEMIN, NY SKADA. Status du hanterar. Tappbara rader får chevron.</div>
+    <div class="grp"><strong>3 · Omvärlden</strong> — ANDRA MATCHER + PRESSKLIPP. Kontext, inte handling. Sist.</div>
+
+    <h4>Hierarki-grepp</h4>
+    <ul>
+      <li><strong>Grupp-avdelare</strong> (⬩-label + hairline) ersätter den platta listan. Tre tydliga sektioner.</li>
+      <li><strong>Tightare spacing</strong>: 6px mellan kort i grupp, 14px mellan grupper (var 20-24px luddigt förr).</li>
+      <li><strong>MATCHEN tappbar</strong>: chevron uppe höger → öppnar MatchReportView med shotmaps.</li>
+      <li><strong>Flavor-fix</strong>: "🔥 Målrik historia" ligger på egen rad inom kortet med <code>border-top</code> + padding — klipps aldrig mot underkanten.</li>
+    </ul>
+
+    <h4>Båda nav-strukturer samexisterar</h4>
+    <p>Sub-tab-strip (FÖRBERED · SPELA · GRANSKA) sitter i headern uppe; BottomNav nere. Scroll-ytan emellan har 12px sidopadding. Verifierat: ingen kollision — round-pill ger andrum mot phase-strip, CTA + BottomNav staplar i botten.</p>
+
+    <h4>Score-primitiver</h4>
+    <p>ANDRA MATCHER använder score-block (<code>.om-score</code>) — ej text. PRESSKLIPP-headline för matchresultatet kan på sikt också få inline score-block. Form använder V/F/O-block.</p>
+
+    <h4>NY SKADA</h4>
+    <p>Visas i Klubb-gruppen med <code>danger</code>-stripe när det finns (image 4 hade "1 ny skada"). I omg 1-vyn (image 1) fanns ingen — då utelämnas kortet, gruppen krymper.</p>
+  </div>
+
+</div>
+
+</body>
+</html>
