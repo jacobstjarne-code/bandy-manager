@@ -24,9 +24,11 @@ import { PortalUpptakt } from '../../components/portal/PortalUpptakt'
 import { NextMatchPrimary } from '../../components/portal/primary/NextMatchPrimary'
 import { EkonomiTab } from '../../components/club/EkonomiTab'
 import { PlayerCard } from '../../components/PlayerCard'
+import { ScoreBlock as ScoreBlockComp } from '../../components/primitives/ScoreBlock'
+import { Sparkline as SparklineComp } from '../../components/primitives/Sparkline'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -45,6 +47,9 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'upptakt',      label: 'Upptakt (C-SD2 sub-states)' },
   { id: 'ekonomi',      label: 'Ekonomi (Våg 4: kassa-trend)' },
   { id: 'playercard',   label: 'PlayerCard (Våg 4: rating-block)' },
+  { id: 'season-a',     label: 'SeasonSummary A (mästare → gold)' },
+  { id: 'season-b',     label: 'SeasonSummary B (topp 3 → win)' },
+  { id: 'season-c',     label: 'SeasonSummary C (mittfält → subtle)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -304,6 +309,35 @@ const ekonomiCrisisGame = makeGame(makeLeagueFixtures(), {
   sponsors: [], communityActivities: {},
 })
 
+// SeasonSummary — fingerade summaries för fyra states
+function makeSeasonSummary(overrides: Record<string, unknown>) {
+  const base = {
+    season: 8, clubId: HOME_ID, clubName: 'Edsbyn BK', finalPosition: 5,
+    wins: 14, draws: 4, losses: 4, goalsFor: 62, goalsAgainst: 38, goalDifference: 24, points: 32,
+    totalGoals: 14, totalAssists: 10, totalCornerGoals: 4, totalCleanSheets: 6,
+    longestWinStreak: 5, longestLossStreak: 2, biggestWin: { opponent: 'BGF', score: '7–1', round: 12 }, worstLoss: null,
+    homeRecord: { wins: 8, draws: 2, losses: 1 }, awayRecord: { wins: 6, draws: 2, losses: 3 },
+    firstHalfPoints: 15, secondHalfPoints: 17, formTrend: 'improving' as const,
+    totalInjuries: 2, mostInjuredPlayer: null,
+    startFinances: 60000, endFinances: 95000, financialChange: 35000,
+    youthIntakeCount: 2, bestYouthProspect: null,
+    roundPoints: [2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,32,32,32,32,32,32],
+    narrativeSummary: 'En stark säsong.',
+    boardExpectation: 'playoff' as const, metExpectation: true, expectationVerdict: 'met' as const,
+    playoffResult: null, cupResult: null, signatureRubric: null, cupFinalScore: null,
+    topScorer: null, topAssister: null, topRated: null, mostImproved: null, youngPlayer: null,
+    storyTriggers: [],
+    ...overrides,
+  }
+  return base
+}
+const seasonSumChampion = makeSeasonSummary({ finalPosition: 1, playoffResult: 'champion', expectedVerdict: 'exceeded', expectationVerdict: 'exceeded' as const })
+const seasonSumTopThree = makeSeasonSummary({ finalPosition: 2, playoffResult: 'finalist', expectationVerdict: 'met' as const })
+const seasonSumMidtable = makeSeasonSummary({ finalPosition: 6, playoffResult: 'quarterfinal', expectationVerdict: 'met' as const, formTrend: 'stable' as const })
+const seasonGameA = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumChampion] })
+const seasonGameB = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumTopThree] })
+const seasonGameC = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumMidtable] })
+
 const granskaRoundSummary = {
   round: 20, date: '2026-02-01', matchPlayed: true,
   communityStandingBefore: 54, communityStandingAfter: 58, communityStandingChanges: [],
@@ -356,6 +390,9 @@ export function DevScenesScreen() {
       : scene === 'board-c' ? boardGameC
       : scene === 'stillness' ? stillnessGame
       : scene === 'granska' ? granskaGame
+      : scene === 'season-a' ? seasonGameA
+      : scene === 'season-b' ? seasonGameB
+      : scene === 'season-c' ? seasonGameC
       : portalGame
     useGameStore.setState({ game: g, roundSummary: scene === 'granska' ? granskaRoundSummary : null } as never)
   }, [scene])
@@ -486,6 +523,34 @@ export function DevScenesScreen() {
             ))}
           </div>
         )}
+
+        {(scene === 'season-a' || scene === 'season-b' || scene === 'season-c') && (() => {
+          const sumMap = { 'season-a': seasonSumChampion, 'season-b': seasonSumTopThree, 'season-c': seasonSumMidtable }
+          const sum = sumMap[scene as 'season-a' | 'season-b' | 'season-c']
+          const isChamp = sum.playoffResult === 'champion' || sum.cupResult === 'winner'
+          const posVariant = isChamp ? 'gold' : sum.finalPosition <= 3 ? 'win' : 'subtle'
+          const formStroke = sum.formTrend === 'improving' ? 'success' : sum.formTrend === 'declining' ? 'danger' : 'accent'
+          return (
+            <div style={{ background: 'var(--bg)', padding: '20px 16px', minHeight: '812px' }}>
+              <p style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>
+                {scene === 'season-a' ? 'Mästare → gold' : scene === 'season-b' ? 'Topp 3 → win' : 'Mittfält → subtle'}
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <ScoreBlockComp score={`${sum.finalPosition}.`} variant={posVariant} label="plats" />
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{sum.points} poäng</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <ScoreBlockComp score={String(sum.wins)} variant="win" label="V" compact />
+                <ScoreBlockComp score={String(sum.draws)} variant="draw" label="O" compact />
+                <ScoreBlockComp score={String(sum.losses)} variant="loss" label="F" compact />
+              </div>
+              <div style={{ background: 'var(--bg-elevated)', borderRadius: 8, padding: '10px 12px' }}>
+                <p style={{ fontSize: 9, letterSpacing: '1.5px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>POÄNGKURVA</p>
+                <SparklineComp points={sum.roundPoints} stroke={formStroke} height={40} areaFill />
+              </div>
+            </div>
+          )
+        })()}
 
         {scene === 'ekonomi' && (
           <div style={{ background: 'var(--bg)', minHeight: '812px', padding: '12px' }}>

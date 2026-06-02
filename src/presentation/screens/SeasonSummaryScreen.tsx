@@ -12,6 +12,8 @@ import { generateTeamPhotoSvg } from '../utils/teamPhotoGenerator'
 import { saveTeamPhoto, loadTeamPhoto } from '../../infrastructure/teamPhotoStorage'
 import { pickSeasonElimText } from '../../domain/data/seasonSummaryElimText'
 import type { SeasonEliminationContext } from '../../domain/data/seasonSummaryElimText'
+import { ScoreBlock } from '../components/primitives/ScoreBlock'
+import { Sparkline, MIN_POINTS } from '../components/primitives/Sparkline'
 
 function getSignatureEmojiFromRubric(rubric: string): string {
   if (rubric.includes('köldvintern')) return '🌨'
@@ -67,7 +69,6 @@ export function SeasonSummaryScreen() {
 
   const isHistorical = !!params.season
   const isChampion = summary.playoffResult === 'champion'
-  const positionColor = summary.finalPosition <= 3 ? 'var(--accent)' : summary.finalPosition >= 10 ? 'var(--danger)' : 'var(--text-primary)'
 
   function playoffResultLabel(r: SeasonSummary['playoffResult']): string {
     switch (r) {
@@ -138,59 +139,6 @@ export function SeasonSummaryScreen() {
     )
   }
 
-  // Cumulative points chart SVG
-  function PointsChart() {
-    const data = summary!.roundPoints
-    if (!data || data.length === 0) return null
-    const maxPts = Math.max(...data, 66) // 22 wins × 3 = 66 max
-    const w = 280, h = 80
-    const pad = { l: 8, r: 8, t: 8, b: 16 }
-    const chartW = w - pad.l - pad.r
-    const chartH = h - pad.t - pad.b
-
-    const points = data.map((pts, i) => {
-      const x = pad.l + (i / 21) * chartW
-      const y = pad.t + chartH - (pts / maxPts) * chartH
-      return `${x},${y}`
-    }).join(' ')
-
-    // Top-8 threshold line (roughly at 33 points for 22 rounds)
-    const threshold8 = 33
-    const thresholdY = pad.t + chartH - (threshold8 / maxPts) * chartH
-
-    return (
-      <svg viewBox={`0 0 ${w} ${h}`} width="100%" style={{ display: 'block' }}>
-        {/* Background */}
-        <rect x="0" y="0" width={w} height={h} fill="transparent"/>
-        {/* Threshold line (top 8 approx) */}
-        <line x1={pad.l} y1={thresholdY} x2={w - pad.r} y2={thresholdY}
-          stroke="var(--accent)" strokeWidth="1" strokeDasharray="4,4" opacity="0.4"/>
-        <text x={w - pad.r - 2} y={thresholdY - 3} fontSize="8" fill="var(--accent)" textAnchor="end" opacity="0.6">Topp 8</text>
-        {/* Line */}
-        <polyline
-          points={points}
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth="2"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-        {/* Dots at first and last */}
-        {data.length > 0 && (
-          <>
-            <circle cx={pad.l} cy={pad.t + chartH - (data[0] / maxPts) * chartH} r="3" fill="var(--accent)"/>
-            <circle cx={pad.l + chartW} cy={pad.t + chartH - (data[data.length-1] / maxPts) * chartH} r="3" fill="var(--accent)"/>
-          </>
-        )}
-        {/* X-axis labels */}
-        {[1, 6, 11, 16, 22].map(r => {
-          const x = pad.l + ((r-1) / 21) * chartW
-          return <text key={r} x={x} y={h - 2} fontSize="8" fill="rgba(26,26,24,0.35)" textAnchor="middle">{r}</text>
-        })}
-      </svg>
-    )
-  }
-
   const [sharing, setSharing] = useState(false)
 
   async function handleShare() {
@@ -238,20 +186,17 @@ export function SeasonSummaryScreen() {
             SÄSONG {summary.season}/{summary.season + 1}
           </h1>
 
-          {/* Position badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <span style={{
-              fontSize: 32,
-              fontWeight: 900,
-              color: positionColor,
-              textShadow: summary.finalPosition <= 3 ? '0 0 20px rgba(196,122,58,0.5)' : 'none',
-            }}>
-              {summary.finalPosition}.
-            </span>
-            <div style={{ textAlign: 'left' }}>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>plats</p>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{summary.points} poäng</p>
-            </div>
+          {/* Position — ScoreBlock (C-SY2 Våg 4). gold=mästare/cup, win=topp3, subtle=övrigt) */}
+          {/* Poängsumman stannar text — ScoreBlock är för resultat, inte numeriska tal */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <ScoreBlock
+              score={`${summary.finalPosition}.`}
+              variant={isChampion || summary.cupResult === 'winner' ? 'gold'
+                : summary.finalPosition <= 3 ? 'win'
+                : 'subtle'}
+              label="plats"
+            />
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{summary.points} poäng</p>
           </div>
 
           {/* Playoff result */}
@@ -598,12 +543,15 @@ export function SeasonSummaryScreen() {
         {/* STATISTICS */}
         <div className="card-sharp card-stagger-3" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>STATISTIK</SectionLabel>
+          {/* C-SY2 Våg 4: W-D-L som tre kompakta ScoreBlocks sida vid sida */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <ScoreBlock score={String(summary.wins)} variant="win" label="V" compact />
+            <ScoreBlock score={String(summary.draws)} variant="draw" label="O" compact />
+            <ScoreBlock score={String(summary.losses)} variant="loss" label="F" compact />
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
             <div>
               <StatRow label="Spelade" value={summary.wins + summary.draws + summary.losses} />
-              <StatRow label="Vinster" value={summary.wins} color="var(--success)" />
-              <StatRow label="Oavgjorda" value={summary.draws} />
-              <StatRow label="Förluster" value={summary.losses} color="var(--danger)" />
             </div>
             <div>
               <StatRow label="Mål gjorda" value={summary.goalsFor} />
@@ -672,7 +620,21 @@ export function SeasonSummaryScreen() {
               </span>
             </div>
           </div>
-          <PointsChart />
+          {/* C-SY2 Våg 4: kumulativa poäng → Sparkline (formkurva över säsongen, full bredd) */}
+          {summary.roundPoints && summary.roundPoints.length >= MIN_POINTS ? (
+            <Sparkline
+              points={summary.roundPoints}
+              stroke={summary.formTrend === 'improving' ? 'success' : summary.formTrend === 'declining' ? 'danger' : 'accent'}
+              height={40}
+              areaFill
+            />
+          ) : summary.roundPoints && summary.roundPoints.length >= 2 ? (
+            <Sparkline
+              points={summary.roundPoints}
+              stroke={summary.formTrend === 'improving' ? 'success' : summary.formTrend === 'declining' ? 'danger' : 'accent'}
+              height={40}
+            />
+          ) : null}
         </div>
 
         {/* YOUTH INTAKE */}
