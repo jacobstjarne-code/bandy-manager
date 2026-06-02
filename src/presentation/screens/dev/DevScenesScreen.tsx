@@ -23,9 +23,10 @@ import { GranskaScreen } from '../granska/GranskaScreen'
 import { PortalUpptakt } from '../../components/portal/PortalUpptakt'
 import { NextMatchPrimary } from '../../components/portal/primary/NextMatchPrimary'
 import { EkonomiTab } from '../../components/club/EkonomiTab'
+import { PlayerCard } from '../../components/PlayerCard'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -43,6 +44,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'granska',      label: 'Granska (IA: 3 grupper)' },
   { id: 'upptakt',      label: 'Upptakt (C-SD2 sub-states)' },
   { id: 'ekonomi',      label: 'Ekonomi (Våg 4: kassa-trend)' },
+  { id: 'playercard',   label: 'PlayerCard (Våg 4: rating-block)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -467,6 +469,21 @@ export function DevScenesScreen() {
         {scene === 'granska' && storeReady && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <GranskaScreen />
+          </div>
+        )}
+
+        {scene === 'playercard' && (
+          <div style={{ background: 'var(--bg)', minHeight: '812px', padding: '12px' }}>
+            {([
+              ['Över snitt → win', [{ rating: 5.8, result: 'O' as const, opponentShortName: 'BGF' }, { rating: 6.2, result: 'V' as const, opponentShortName: 'EBK' }, { rating: 6.0, result: 'O' as const, opponentShortName: 'VÄS' }, { rating: 7.1, result: 'V' as const, opponentShortName: 'SAN' }, { rating: 7.8, result: 'V' as const, opponentShortName: 'BOL' }]],
+              ['Under snitt → loss', [{ rating: 6.5, result: 'V' as const, opponentShortName: 'BGF' }, { rating: 6.0, result: 'O' as const, opponentShortName: 'EBK' }, { rating: 5.8, result: 'F' as const, opponentShortName: 'VÄS' }, { rating: 5.2, result: 'F' as const, opponentShortName: 'SAN' }, { rating: 4.9, result: 'F' as const, opponentShortName: 'BOL' }]],
+              ['Neutral → subtle', [{ rating: 6.2, result: 'O' as const, opponentShortName: 'BGF' }, { rating: 5.9, result: 'F' as const, opponentShortName: 'EBK' }, { rating: 6.1, result: 'V' as const, opponentShortName: 'VÄS' }, { rating: 6.0, result: 'O' as const, opponentShortName: 'SAN' }, { rating: 6.0, result: 'O' as const, opponentShortName: 'BOL' }]],
+            ] as const).map(([label, ratings]) => (
+              <div key={label} style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
+                <PlayerCard player={devPlayers[10] as never} clubName="Edsbyn BK" isOwned currentSeason={8} recentRatings={ratings as never} game={portalGame} />
+              </div>
+            ))}
           </div>
         )}
 

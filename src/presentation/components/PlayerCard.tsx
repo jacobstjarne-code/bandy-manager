@@ -9,6 +9,7 @@ import { getPortraitSvg } from '../../domain/services/portraitService'
 import { getPlayerVoice } from '../../domain/services/playerVoiceService'
 import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
+import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
 
 export interface PlayerCardProps {
   player: Player
@@ -487,6 +488,19 @@ export function PlayerCard({
       {isOwned && recentRatings && recentRatings.length > 0 && (
         <div style={SECTION_STYLE}>
           <p style={{ ...LABEL_STYLE, marginBottom: 6 }}>📈 SENASTE 5 MATCHER</p>
+          {/* C-SY2 Våg 4: senaste matchrating som ScoreBlock (win ≥6.5 / loss ≤5.5 / subtle neutral) */}
+          {(() => {
+            const latest = recentRatings[recentRatings.length - 1]
+            const variant: ScoreBlockVariant = latest.rating >= 6.5 ? 'win' : latest.rating <= 5.5 ? 'loss' : 'subtle'
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                <ScoreBlock score={latest.rating.toFixed(1)} variant={variant} label={`vs ${latest.opponentShortName}`} />
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                  Senaste matchbetyg
+                </span>
+              </div>
+            )
+          })()}
           <MatchSparkline ratings={recentRatings} />
         </div>
       )}
