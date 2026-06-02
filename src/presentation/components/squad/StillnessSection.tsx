@@ -9,7 +9,7 @@
  */
 
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { pickStillnessBeat, pickStillnessMicro, computeTeamPulse } from '../../../domain/services/stillnessService'
+import { pickStillnessBeat, pickStillnessMicro, computeTeamPulse, buildStillnessContext } from '../../../domain/services/stillnessService'
 import { findActiveAnniversaries } from '../../../domain/services/clubMemoryService'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 import { Sparkline } from '../primitives/Sparkline'
@@ -37,8 +37,9 @@ interface Props {
 }
 
 export function StillnessSection({ game, receded = false }: Props) {
-  const beat = pickStillnessBeat(game)
-  const micros = pickStillnessMicro(game, 2)
+  const stillnessCtx = buildStillnessContext(game)  // beräkna en gång, dela mellan pickers (undviker dubbla getFormResults)
+  const beat = pickStillnessBeat(game, stillnessCtx)
+  const micros = pickStillnessMicro(game, 2, stillnessCtx)
   const pulse = computeTeamPulse(game)
   const anniversaries = findActiveAnniversaries(game)
   const heritage = anniversaries.find(a => Number.isInteger(a.yearsAgo) && a.yearsAgo >= 1) ?? null

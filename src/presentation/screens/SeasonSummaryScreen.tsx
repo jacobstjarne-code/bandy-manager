@@ -620,21 +620,17 @@ export function SeasonSummaryScreen() {
               </span>
             </div>
           </div>
-          {/* C-SY2 Våg 4: kumulativa poäng → Sparkline (formkurva över säsongen, full bredd) */}
-          {summary.roundPoints && summary.roundPoints.length >= MIN_POINTS ? (
+          {/* C-SY2 Våg 4: kumulativa poäng → Sparkline (formkurva över säsongen, full bredd).
+              areaFill bara vid full data (≥5); 0–1 punkter → ingen sparkline (yttre guard). */}
+          {summary.roundPoints && summary.roundPoints.length >= 2 && (
             <Sparkline
               points={summary.roundPoints}
               stroke={summary.formTrend === 'improving' ? 'success' : summary.formTrend === 'declining' ? 'danger' : 'accent'}
               height={40}
-              areaFill
+              minPoints={2}
+              areaFill={summary.roundPoints.length >= MIN_POINTS}
             />
-          ) : summary.roundPoints && summary.roundPoints.length >= 2 ? (
-            <Sparkline
-              points={summary.roundPoints}
-              stroke={summary.formTrend === 'improving' ? 'success' : summary.formTrend === 'declining' ? 'danger' : 'accent'}
-              height={40}
-            />
-          ) : null}
+          )}
         </div>
 
         {/* YOUTH INTAKE */}

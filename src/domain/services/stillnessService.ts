@@ -51,9 +51,9 @@ function matchesContext(item: { seasonTime?: StillnessSeasonTime; form?: Stillne
   return true
 }
 
-/** En stillness-beat per dag, deterministiskt per (säsong, matchday). */
-export function pickStillnessBeat(game: SaveGame): StillnessBeat {
-  const ctx = buildStillnessContext(game)
+/** En stillness-beat per dag, deterministiskt per (säsong, matchday).
+ *  ctx kan förberäknas av anroparen för att undvika dubbla getFormResults per render. */
+export function pickStillnessBeat(game: SaveGame, ctx: StillnessContext = buildStillnessContext(game)): StillnessBeat {
   const candidates = STILLNESS_BEATS.filter(b => matchesContext(b, ctx))
   const pool = candidates.length > 0 ? candidates : STILLNESS_BEATS
   const seed = game.currentSeason * 7919 + game.currentMatchday * 31
@@ -61,8 +61,7 @@ export function pickStillnessBeat(game: SaveGame): StillnessBeat {
 }
 
 /** 1–3 mikrohändelser, deterministiskt, utan upprepning inom rundan. */
-export function pickStillnessMicro(game: SaveGame, count = 2): StillnessMicro[] {
-  const ctx = buildStillnessContext(game)
+export function pickStillnessMicro(game: SaveGame, count = 2, ctx: StillnessContext = buildStillnessContext(game)): StillnessMicro[] {
   const candidates = STILLNESS_MICRO.filter(m => matchesContext(m, ctx))
   const pool = candidates.length > 0 ? candidates : STILLNESS_MICRO
   const n = Math.min(count, pool.length)

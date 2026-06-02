@@ -76,14 +76,10 @@ export function resolveBoardMeetingState(game: SaveGame): BoardMeetingData {
     state = fulfillmentPct >= 65 ? 'B' : 'C'
   }
 
-  // Eval-rader — viktigast först (sporting > economic > academy > övriga), max 3
-  const typePriority: Record<string, number> = { sporting: 0, economic: 1, academy: 2, community: 3, identity: 4 }
-  const sorted = [...prevResults].sort((a, b) => {
-    // Misslyckade mål först (de är mest informativa), sedan typprioritet
-    if (a.result !== b.result) return a.result === 'failed' ? -1 : 1
-    return 0
-  })
-  void typePriority
+  // Eval-rader — misslyckade mål först (mest informativa), max 3
+  const sorted = [...prevResults].sort((a, b) =>
+    a.result !== b.result ? (a.result === 'failed' ? -1 : 1) : 0
+  )
   const evalRows: BoardMeetingEvalRow[] = sorted.slice(0, MAX_EVAL_ROWS).map(r => ({
     label: shortLabel(r),
     met: r.result === 'met',

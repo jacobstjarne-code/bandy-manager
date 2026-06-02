@@ -231,9 +231,8 @@ export function PortalScreen() {
   const playoffCtx = getPlayoffSeriesContext(game)
   const isSmFinal = playoffCtx?.round === PlayoffRound.Final
   // C-SD2: warm CTA på kvart/semi + upptakt-fönstret (ej final → gold)
-  const isCtaWarm = !isSmFinal && (
-    (playoffCtx != null && playoffCtx.round !== PlayoffRound.Final) || shouldShowUpptakt(game)
-  )
+  // !isSmFinal garanterar redan att en ev. playoffCtx inte är final
+  const isCtaWarm = !isSmFinal && (playoffCtx != null || shouldShowUpptakt(game))
   const activeCount = getActiveDecisionCount(game)
 
   return (
