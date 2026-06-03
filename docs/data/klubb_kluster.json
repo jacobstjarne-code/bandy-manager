@@ -1,0 +1,1630 @@
+{
+  "_meta": {
+    "description": "Spelstilsklustring av klubbar, Elitserien herr 2019-2026",
+    "n_club_seasons": 64,
+    "n_clubs": 15,
+    "chosen_k": 3,
+    "k_selection_rationale": "k=3 ger högst silhouette score (0.1622).",
+    "silhouette_scores": {
+      "3": 0.1622,
+      "4": 0.1313,
+      "5": 0.1343,
+      "6": 0.1342
+    },
+    "features": [
+      "avg_goals_for",
+      "avg_goals_against",
+      "goal_diff",
+      "avg_corners",
+      "corner_goal_pct",
+      "avg_fouls",
+      "penalty_goal_pct",
+      "ht_lead_freq",
+      "ht_lead_win_pct",
+      "home_minus_away_win",
+      "comeback_freq",
+      "late_goal_diff"
+    ],
+    "min_matches_per_club_season": 10,
+    "min_seasons_per_club": 3
+  },
+  "clusters": [
+    {
+      "id": 0,
+      "name": "Offensiva topplag",
+      "n_club_seasons": 13,
+      "mean_profile": {
+        "avg_goals_for": 1.4555,
+        "avg_goals_against": -1.2482,
+        "goal_diff": 1.4874,
+        "avg_corners": 0.97,
+        "corner_goal_pct": -0.6044,
+        "avg_fouls": -1.1004,
+        "penalty_goal_pct": 0.1258,
+        "ht_lead_freq": 1.4083,
+        "ht_lead_win_pct": 0.9912,
+        "home_minus_away_win": -0.2639,
+        "comeback_freq": 0.6587,
+        "late_goal_diff": 1.3975
+      },
+      "mean_profile_raw": {
+        "avg_goals_for": 6.3837,
+        "avg_goals_against": 3.0057,
+        "goal_diff": 3.2588,
+        "avg_corners": 9.9865,
+        "corner_goal_pct": 0.1903,
+        "avg_fouls": 1.2977,
+        "penalty_goal_pct": 0.0561,
+        "ht_lead_freq": 0.6727,
+        "ht_lead_win_pct": 0.906,
+        "home_minus_away_win": 0.0715,
+        "comeback_freq": 0.254,
+        "late_goal_diff": 0.7337
+      },
+      "dominant_clubs": [
+        "AIK Bandy",
+        "Edsbyns IF",
+        "Villa Lidköping BK",
+        "Västerås SK"
+      ],
+      "club_seasons": [
+        {
+          "team": "AIK Bandy",
+          "season": "2020-21"
+        },
+        {
+          "team": "AIK Bandy",
+          "season": "2021-22"
+        },
+        {
+          "team": "Edsbyns IF",
+          "season": "2019-20"
+        },
+        {
+          "team": "Edsbyns IF",
+          "season": "2021-22"
+        },
+        {
+          "team": "IK Sirius",
+          "season": "2024-25"
+        },
+        {
+          "team": "Villa Lidköping BK",
+          "season": "2019-20"
+        },
+        {
+          "team": "Villa Lidköping BK",
+          "season": "2020-21"
+        },
+        {
+          "team": "Villa Lidköping BK",
+          "season": "2021-22"
+        },
+        {
+          "team": "Villa Lidköping BK",
+          "season": "2022-23"
+        },
+        {
+          "team": "Västerås SK",
+          "season": "2022-23"
+        },
+        {
+          "team": "Västerås SK",
+          "season": "2024-25"
+        },
+        {
+          "team": "Västerås SK",
+          "season": "2025-26"
+        },
+        {
+          "team": "Västerås SK/BK",
+          "season": "2021-22"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Allroundat mittfält",
+      "n_club_seasons": 26,
+      "mean_profile": {
+        "avg_goals_for": 0.0414,
+        "avg_goals_against": -0.1753,
+        "goal_diff": 0.1166,
+        "avg_corners": 0.3323,
+        "corner_goal_pct": 0.0036,
+        "avg_fouls": 0.0028,
+        "penalty_goal_pct": 0.0107,
+        "ht_lead_freq": 0.011,
+        "ht_lead_win_pct": 0.1394,
+        "home_minus_away_win": 0.0781,
+        "comeback_freq": 0.2462,
+        "late_goal_diff": 0.1906
+      },
+      "mean_profile_raw": {
+        "avg_goals_for": 4.6373,
+        "avg_goals_against": 4.1427,
+        "goal_diff": 0.493,
+        "avg_corners": 9.2191,
+        "corner_goal_pct": 0.2189,
+        "avg_fouls": 1.8374,
+        "penalty_goal_pct": 0.0536,
+        "ht_lead_freq": 0.4263,
+        "ht_lead_win_pct": 0.7712,
+        "home_minus_away_win": 0.139,
+        "comeback_freq": 0.1968,
+        "late_goal_diff": 0.1499
+      },
+      "dominant_clubs": [
+        "Broberg/Söderhamn",
+        "Hammarby IF",
+        "IFK Motala",
+        "Sandvikens AIK/BK",
+        "Västerås SK/BK"
+      ],
+      "club_seasons": [
+        {
+          "team": "AIK Bandy",
+          "season": "2019-20"
+        },
+        {
+          "team": "Bollnäs GIF",
+          "season": "2019-20"
+        },
+        {
+          "team": "Bollnäs GIF",
+          "season": "2022-23"
+        },
+        {
+          "team": "Broberg/Söderhamn",
+          "season": "2019-20"
+        },
+        {
+          "team": "Broberg/Söderhamn",
+          "season": "2021-22"
+        },
+        {
+          "team": "Broberg/Söderhamn",
+          "season": "2022-23"
+        },
+        {
+          "team": "Edsbyns IF",
+          "season": "2020-21"
+        },
+        {
+          "team": "Hammarby IF",
+          "season": "2019-20"
+        },
+        {
+          "team": "Hammarby IF",
+          "season": "2024-25"
+        },
+        {
+          "team": "Hammarby IF",
+          "season": "2025-26"
+        },
+        {
+          "team": "IFK Motala",
+          "season": "2019-20"
+        },
+        {
+          "team": "IFK Motala",
+          "season": "2020-21"
+        },
+        {
+          "team": "IFK Motala",
+          "season": "2021-22"
+        },
+        {
+          "team": "IFK Motala",
+          "season": "2022-23"
+        },
+        {
+          "team": "IFK Vänersborg",
+          "season": "2019-20"
+        },
+        {
+          "team": "IK Sirius",
+          "season": "2020-21"
+        },
+        {
+          "team": "IK Sirius",
+          "season": "2025-26"
+        },
+        {
+          "team": "Sandvikens AIK/BK",
+          "season": "2019-20"
+        },
+        {
+          "team": "Sandvikens AIK/BK",
+          "season": "2020-21"
+        },
+        {
+          "team": "Sandvikens AIK/BK",
+          "season": "2021-22"
+        },
+        {
+          "team": "Sandvikens AIK/BK",
+          "season": "2022-23"
+        },
+        {
+          "team": "Vetlanda BK",
+          "season": "2022-23"
+        },
+        {
+          "team": "Vetlanda BK",
+          "season": "2024-25"
+        },
+        {
+          "team": "Vetlanda BK",
+          "season": "2025-26"
+        },
+        {
+          "team": "Västerås SK/BK",
+          "season": "2019-20"
+        },
+        {
+          "team": "Västerås SK/BK",
+          "season": "2020-21"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Öppna bottenlag",
+      "n_club_seasons": 25,
+      "mean_profile": {
+        "avg_goals_for": -0.7999,
+        "avg_goals_against": 0.8314,
+        "goal_diff": -0.8947,
+        "avg_corners": -0.85,
+        "corner_goal_pct": 0.3105,
+        "avg_fouls": 0.5693,
+        "penalty_goal_pct": -0.0766,
+        "ht_lead_freq": -0.7438,
+        "ht_lead_win_pct": -0.6604,
+        "home_minus_away_win": 0.056,
+        "comeback_freq": -0.5986,
+        "late_goal_diff": -0.925
+      },
+      "mean_profile_raw": {
+        "avg_goals_for": 3.5983,
+        "avg_goals_against": 5.2097,
+        "goal_diff": -1.5477,
+        "avg_corners": 7.7964,
+        "corner_goal_pct": 0.2333,
+        "avg_fouls": 2.1145,
+        "penalty_goal_pct": 0.0517,
+        "ht_lead_freq": 0.2932,
+        "ht_lead_win_pct": 0.6446,
+        "home_minus_away_win": 0.1346,
+        "comeback_freq": 0.0798,
+        "late_goal_diff": -0.3898
+      },
+      "dominant_clubs": [
+        "Frillesås BK",
+        "IFK Vänersborg",
+        "Åby/Tjureda IF"
+      ],
+      "club_seasons": [
+        {
+          "team": "Bollnäs GIF",
+          "season": "2020-21"
+        },
+        {
+          "team": "Bollnäs GIF",
+          "season": "2021-22"
+        },
+        {
+          "team": "Broberg/Söderhamn",
+          "season": "2020-21"
+        },
+        {
+          "team": "Frillesås BK",
+          "season": "2019-20"
+        },
+        {
+          "team": "Frillesås BK",
+          "season": "2020-21"
+        },
+        {
+          "team": "Frillesås BK",
+          "season": "2021-22"
+        },
+        {
+          "team": "Frillesås BK",
+          "season": "2022-23"
+        },
+        {
+          "team": "Frillesås BK",
+          "season": "2024-25"
+        },
+        {
+          "team": "Frillesås BK",
+          "season": "2025-26"
+        },
+        {
+          "team": "Hammarby IF",
+          "season": "2020-21"
+        },
+        {
+          "team": "Hammarby IF",
+          "season": "2021-22"
+        },
+        {
+          "team": "IFK Vänersborg",
+          "season": "2020-21"
+        },
+        {
+          "team": "IFK Vänersborg",
+          "season": "2021-22"
+        },
+        {
+          "team": "IFK Vänersborg",
+          "season": "2022-23"
+        },
+        {
+          "team": "IFK Vänersborg",
+          "season": "2024-25"
+        },
+        {
+          "team": "IFK Vänersborg",
+          "season": "2025-26"
+        },
+        {
+          "team": "IK Sirius",
+          "season": "2019-20"
+        },
+        {
+          "team": "IK Sirius",
+          "season": "2021-22"
+        },
+        {
+          "team": "IK Sirius",
+          "season": "2022-23"
+        },
+        {
+          "team": "Vetlanda BK",
+          "season": "2019-20"
+        },
+        {
+          "team": "Vetlanda BK",
+          "season": "2020-21"
+        },
+        {
+          "team": "Vetlanda BK",
+          "season": "2021-22"
+        },
+        {
+          "team": "Åby/Tjureda IF",
+          "season": "2019-20"
+        },
+        {
+          "team": "Åby/Tjureda IF",
+          "season": "2024-25"
+        },
+        {
+          "team": "Åby/Tjureda IF",
+          "season": "2025-26"
+        }
+      ]
+    }
+  ],
+  "all_club_seasons": [
+    {
+      "team": "AIK Bandy",
+      "season": "2019-20",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.2692,
+        "avg_goals_against": 3.7692,
+        "goal_diff": 0.5,
+        "avg_corners": 7.5,
+        "corner_goal_pct": 0.2613,
+        "avg_fouls": 2.0769,
+        "penalty_goal_pct": 0.027,
+        "ht_lead_freq": 0.4231,
+        "ht_lead_win_pct": 0.9091,
+        "home_minus_away_win": 0.1538,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": 0.5
+      }
+    },
+    {
+      "team": "AIK Bandy",
+      "season": "2020-21",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 7.1538,
+        "avg_goals_against": 3.7692,
+        "goal_diff": 3.3846,
+        "avg_corners": 10.8077,
+        "corner_goal_pct": 0.1882,
+        "avg_fouls": 1.9231,
+        "penalty_goal_pct": 0.0538,
+        "ht_lead_freq": 0.7308,
+        "ht_lead_win_pct": 0.8947,
+        "home_minus_away_win": -0.2308,
+        "comeback_freq": 0.6667,
+        "late_goal_diff": 0.7692
+      }
+    },
+    {
+      "team": "AIK Bandy",
+      "season": "2021-22",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 6.7,
+        "avg_goals_against": 3.2667,
+        "goal_diff": 3.4333,
+        "avg_corners": 9.5333,
+        "corner_goal_pct": 0.1692,
+        "avg_fouls": 1.9,
+        "penalty_goal_pct": 0.0796,
+        "ht_lead_freq": 0.6,
+        "ht_lead_win_pct": 1.0,
+        "home_minus_away_win": 0.2,
+        "comeback_freq": 0.4286,
+        "late_goal_diff": 1.2667
+      }
+    },
+    {
+      "team": "Bollnäs GIF",
+      "season": "2019-20",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.1154,
+        "avg_goals_against": 3.5,
+        "goal_diff": 0.6154,
+        "avg_corners": 7.8846,
+        "corner_goal_pct": 0.2336,
+        "avg_fouls": 1.6154,
+        "penalty_goal_pct": 0.0374,
+        "ht_lead_freq": 0.4231,
+        "ht_lead_win_pct": 0.5455,
+        "home_minus_away_win": 0.2308,
+        "comeback_freq": 0.2,
+        "late_goal_diff": 0.1538
+      }
+    },
+    {
+      "team": "Bollnäs GIF",
+      "season": "2020-21",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.4231,
+        "avg_goals_against": 4.6538,
+        "goal_diff": -1.2308,
+        "avg_corners": 8.8846,
+        "corner_goal_pct": 0.2135,
+        "avg_fouls": 1.7308,
+        "penalty_goal_pct": 0.0562,
+        "ht_lead_freq": 0.2692,
+        "ht_lead_win_pct": 0.5714,
+        "home_minus_away_win": 0.4615,
+        "comeback_freq": 0.0909,
+        "late_goal_diff": -0.5385
+      }
+    },
+    {
+      "team": "Bollnäs GIF",
+      "season": "2021-22",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.7333,
+        "avg_goals_against": 5.0333,
+        "goal_diff": -1.3,
+        "avg_corners": 8.6333,
+        "corner_goal_pct": 0.2411,
+        "avg_fouls": 1.7667,
+        "penalty_goal_pct": 0.0536,
+        "ht_lead_freq": 0.2667,
+        "ht_lead_win_pct": 0.5,
+        "home_minus_away_win": 0.0667,
+        "comeback_freq": 0.0667,
+        "late_goal_diff": -0.2667
+      }
+    },
+    {
+      "team": "Bollnäs GIF",
+      "season": "2022-23",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.0417,
+        "avg_goals_against": 3.4583,
+        "goal_diff": 0.5833,
+        "avg_corners": 9.2083,
+        "corner_goal_pct": 0.2474,
+        "avg_fouls": 1.5833,
+        "penalty_goal_pct": 0.0412,
+        "ht_lead_freq": 0.4583,
+        "ht_lead_win_pct": 0.8182,
+        "home_minus_away_win": -0.25,
+        "comeback_freq": 0.5,
+        "late_goal_diff": 0.2083
+      }
+    },
+    {
+      "team": "Broberg/Söderhamn",
+      "season": "2019-20",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.3462,
+        "avg_goals_against": 4.2692,
+        "goal_diff": 0.0769,
+        "avg_corners": 8.9615,
+        "corner_goal_pct": 0.1858,
+        "avg_fouls": 1.8462,
+        "penalty_goal_pct": 0.0619,
+        "ht_lead_freq": 0.3077,
+        "ht_lead_win_pct": 0.875,
+        "home_minus_away_win": 0.4615,
+        "comeback_freq": 0.3333,
+        "late_goal_diff": 0.1538
+      }
+    },
+    {
+      "team": "Broberg/Söderhamn",
+      "season": "2020-21",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 4.2308,
+        "avg_goals_against": 5.2308,
+        "goal_diff": -1.0,
+        "avg_corners": 8.6154,
+        "corner_goal_pct": 0.2636,
+        "avg_fouls": 2.1538,
+        "penalty_goal_pct": 0.0727,
+        "ht_lead_freq": 0.3846,
+        "ht_lead_win_pct": 0.6,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1667,
+        "late_goal_diff": -0.3077
+      }
+    },
+    {
+      "team": "Broberg/Söderhamn",
+      "season": "2021-22",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 5.4667,
+        "avg_goals_against": 4.6,
+        "goal_diff": 0.8667,
+        "avg_corners": 10.6667,
+        "corner_goal_pct": 0.2378,
+        "avg_fouls": 1.2,
+        "penalty_goal_pct": 0.0671,
+        "ht_lead_freq": 0.4333,
+        "ht_lead_win_pct": 0.8462,
+        "home_minus_away_win": 0.2,
+        "comeback_freq": 0.3333,
+        "late_goal_diff": 0.2333
+      }
+    },
+    {
+      "team": "Broberg/Söderhamn",
+      "season": "2022-23",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.5417,
+        "avg_goals_against": 4.3333,
+        "goal_diff": 0.2083,
+        "avg_corners": 9.2917,
+        "corner_goal_pct": 0.2385,
+        "avg_fouls": 1.25,
+        "penalty_goal_pct": 0.0642,
+        "ht_lead_freq": 0.375,
+        "ht_lead_win_pct": 0.5556,
+        "home_minus_away_win": 0.4167,
+        "comeback_freq": 0.125,
+        "late_goal_diff": -0.1667
+      }
+    },
+    {
+      "team": "Edsbyns IF",
+      "season": "2019-20",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 6.6154,
+        "avg_goals_against": 1.9615,
+        "goal_diff": 4.6538,
+        "avg_corners": 10.0385,
+        "corner_goal_pct": 0.186,
+        "avg_fouls": 0.8846,
+        "penalty_goal_pct": 0.0523,
+        "ht_lead_freq": 0.7308,
+        "ht_lead_win_pct": 0.9474,
+        "home_minus_away_win": 0.1538,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": 0.6154
+      }
+    },
+    {
+      "team": "Edsbyns IF",
+      "season": "2020-21",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.7308,
+        "avg_goals_against": 3.3077,
+        "goal_diff": 1.4231,
+        "avg_corners": 9.4615,
+        "corner_goal_pct": 0.187,
+        "avg_fouls": 1.2692,
+        "penalty_goal_pct": 0.0488,
+        "ht_lead_freq": 0.4231,
+        "ht_lead_win_pct": 0.7273,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1667,
+        "late_goal_diff": 0.3462
+      }
+    },
+    {
+      "team": "Edsbyns IF",
+      "season": "2021-22",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 5.9,
+        "avg_goals_against": 3.1333,
+        "goal_diff": 2.7667,
+        "avg_corners": 9.6,
+        "corner_goal_pct": 0.2429,
+        "avg_fouls": 1.1333,
+        "penalty_goal_pct": 0.0508,
+        "ht_lead_freq": 0.6333,
+        "ht_lead_win_pct": 0.9474,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.2,
+        "late_goal_diff": 0.4
+      }
+    },
+    {
+      "team": "Frillesås BK",
+      "season": "2019-20",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 2.2308,
+        "avg_goals_against": 5.0,
+        "goal_diff": -2.7692,
+        "avg_corners": 6.8462,
+        "corner_goal_pct": 0.3103,
+        "avg_fouls": 1.4615,
+        "penalty_goal_pct": 0.0862,
+        "ht_lead_freq": 0.0417,
+        "ht_lead_win_pct": 0.7778,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.0556,
+        "late_goal_diff": -0.1154
+      }
+    },
+    {
+      "team": "Frillesås BK",
+      "season": "2020-21",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.3846,
+        "avg_goals_against": 5.3462,
+        "goal_diff": -1.9615,
+        "avg_corners": 5.8077,
+        "corner_goal_pct": 0.2727,
+        "avg_fouls": 1.9231,
+        "penalty_goal_pct": 0.0568,
+        "ht_lead_freq": 0.0769,
+        "ht_lead_win_pct": 0.7778,
+        "home_minus_away_win": 0.2308,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.1154
+      }
+    },
+    {
+      "team": "Frillesås BK",
+      "season": "2021-22",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.4333,
+        "avg_goals_against": 4.5667,
+        "goal_diff": -1.1333,
+        "avg_corners": 8.0333,
+        "corner_goal_pct": 0.1942,
+        "avg_fouls": 1.4333,
+        "penalty_goal_pct": 0.0874,
+        "ht_lead_freq": 0.2667,
+        "ht_lead_win_pct": 0.875,
+        "home_minus_away_win": 0.0667,
+        "comeback_freq": 0.0625,
+        "late_goal_diff": -0.1667
+      }
+    },
+    {
+      "team": "Frillesås BK",
+      "season": "2022-23",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.125,
+        "avg_goals_against": 4.8333,
+        "goal_diff": -1.7083,
+        "avg_corners": 7.75,
+        "corner_goal_pct": 0.2533,
+        "avg_fouls": 1.4167,
+        "penalty_goal_pct": 0.0133,
+        "ht_lead_freq": 0.25,
+        "ht_lead_win_pct": 0.5,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.5417
+      }
+    },
+    {
+      "team": "Frillesås BK",
+      "season": "2024-25",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.6923,
+        "avg_goals_against": 6.8077,
+        "goal_diff": -3.1154,
+        "avg_corners": 8.2692,
+        "corner_goal_pct": 0.2396,
+        "avg_fouls": 2.4615,
+        "penalty_goal_pct": 0.0625,
+        "ht_lead_freq": 0.1923,
+        "ht_lead_win_pct": 0.4,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.0588,
+        "late_goal_diff": -0.5769
+      }
+    },
+    {
+      "team": "Frillesås BK",
+      "season": "2025-26",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.5769,
+        "avg_goals_against": 6.2308,
+        "goal_diff": -2.6538,
+        "avg_corners": 9.1923,
+        "corner_goal_pct": 0.2473,
+        "avg_fouls": 1.7308,
+        "penalty_goal_pct": 0.0323,
+        "ht_lead_freq": 0.1154,
+        "ht_lead_win_pct": 0.3333,
+        "home_minus_away_win": 0.2308,
+        "comeback_freq": 0.0556,
+        "late_goal_diff": -0.1923
+      }
+    },
+    {
+      "team": "Hammarby IF",
+      "season": "2019-20",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.1923,
+        "avg_goals_against": 4.4615,
+        "goal_diff": -0.2692,
+        "avg_corners": 8.1154,
+        "corner_goal_pct": 0.1651,
+        "avg_fouls": 1.9615,
+        "penalty_goal_pct": 0.0459,
+        "ht_lead_freq": 0.4231,
+        "ht_lead_win_pct": 0.6364,
+        "home_minus_away_win": 0.3846,
+        "comeback_freq": 0.0909,
+        "late_goal_diff": -0.3077
+      }
+    },
+    {
+      "team": "Hammarby IF",
+      "season": "2020-21",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 4.1923,
+        "avg_goals_against": 4.9231,
+        "goal_diff": -0.7308,
+        "avg_corners": 9.5385,
+        "corner_goal_pct": 0.2385,
+        "avg_fouls": 2.1538,
+        "penalty_goal_pct": 0.0734,
+        "ht_lead_freq": 0.3462,
+        "ht_lead_win_pct": 0.7778,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.3846
+      }
+    },
+    {
+      "team": "Hammarby IF",
+      "season": "2021-22",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 4.0667,
+        "avg_goals_against": 4.9333,
+        "goal_diff": -0.8667,
+        "avg_corners": 7.4667,
+        "corner_goal_pct": 0.1721,
+        "avg_fouls": 2.2333,
+        "penalty_goal_pct": 0.041,
+        "ht_lead_freq": 0.3667,
+        "ht_lead_win_pct": 0.6364,
+        "home_minus_away_win": 0.2,
+        "comeback_freq": 0.1429,
+        "late_goal_diff": -0.3
+      }
+    },
+    {
+      "team": "Hammarby IF",
+      "season": "2024-25",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.7692,
+        "avg_goals_against": 4.4615,
+        "goal_diff": 0.3077,
+        "avg_corners": 9.3077,
+        "corner_goal_pct": 0.2339,
+        "avg_fouls": 1.5,
+        "penalty_goal_pct": 0.0484,
+        "ht_lead_freq": 0.4231,
+        "ht_lead_win_pct": 0.9091,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.2,
+        "late_goal_diff": 0.1538
+      }
+    },
+    {
+      "team": "Hammarby IF",
+      "season": "2025-26",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 5.0,
+        "avg_goals_against": 4.5769,
+        "goal_diff": 0.4231,
+        "avg_corners": 8.8077,
+        "corner_goal_pct": 0.1615,
+        "avg_fouls": 1.9231,
+        "penalty_goal_pct": 0.0692,
+        "ht_lead_freq": 0.4231,
+        "ht_lead_win_pct": 0.8182,
+        "home_minus_away_win": -0.0769,
+        "comeback_freq": 0.2,
+        "late_goal_diff": 0.0385
+      }
+    },
+    {
+      "team": "IFK Motala",
+      "season": "2019-20",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 3.1154,
+        "avg_goals_against": 3.3077,
+        "goal_diff": -0.1923,
+        "avg_corners": 8.0,
+        "corner_goal_pct": 0.1605,
+        "avg_fouls": 1.5,
+        "penalty_goal_pct": 0.0617,
+        "ht_lead_freq": 0.375,
+        "ht_lead_win_pct": 0.6667,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1667,
+        "late_goal_diff": -0.1538
+      }
+    },
+    {
+      "team": "IFK Motala",
+      "season": "2020-21",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 3.8077,
+        "avg_goals_against": 4.2692,
+        "goal_diff": -0.4615,
+        "avg_corners": 8.5,
+        "corner_goal_pct": 0.1515,
+        "avg_fouls": 1.8077,
+        "penalty_goal_pct": 0.101,
+        "ht_lead_freq": 0.2308,
+        "ht_lead_win_pct": 0.8333,
+        "home_minus_away_win": 0.3846,
+        "comeback_freq": 0.125,
+        "late_goal_diff": 0.5
+      }
+    },
+    {
+      "team": "IFK Motala",
+      "season": "2021-22",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 3.6,
+        "avg_goals_against": 3.8333,
+        "goal_diff": -0.2333,
+        "avg_corners": 9.4,
+        "corner_goal_pct": 0.1759,
+        "avg_fouls": 1.2667,
+        "penalty_goal_pct": 0.0185,
+        "ht_lead_freq": 0.3333,
+        "ht_lead_win_pct": 0.7,
+        "home_minus_away_win": 0.0667,
+        "comeback_freq": 0.2308,
+        "late_goal_diff": 0.0769
+      }
+    },
+    {
+      "team": "IFK Motala",
+      "season": "2022-23",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 3.5833,
+        "avg_goals_against": 3.7083,
+        "goal_diff": -0.125,
+        "avg_corners": 7.7917,
+        "corner_goal_pct": 0.1744,
+        "avg_fouls": 1.5,
+        "penalty_goal_pct": 0.0465,
+        "ht_lead_freq": 0.3333,
+        "ht_lead_win_pct": 0.75,
+        "home_minus_away_win": 0.25,
+        "comeback_freq": 0.1667,
+        "late_goal_diff": 0.0833
+      }
+    },
+    {
+      "team": "IFK Vänersborg",
+      "season": "2019-20",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 3.4231,
+        "avg_goals_against": 4.2308,
+        "goal_diff": -0.8077,
+        "avg_corners": 9.2692,
+        "corner_goal_pct": 0.2921,
+        "avg_fouls": 1.8846,
+        "penalty_goal_pct": 0.1124,
+        "ht_lead_freq": 0.2308,
+        "ht_lead_win_pct": 0.6667,
+        "home_minus_away_win": 0.1538,
+        "comeback_freq": 0.1818,
+        "late_goal_diff": 0.1538
+      }
+    },
+    {
+      "team": "IFK Vänersborg",
+      "season": "2020-21",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.8077,
+        "avg_goals_against": 3.1538,
+        "goal_diff": 0.6538,
+        "avg_corners": 7.5769,
+        "corner_goal_pct": 0.303,
+        "avg_fouls": 2.8846,
+        "penalty_goal_pct": 0.0303,
+        "ht_lead_freq": 0.4615,
+        "ht_lead_win_pct": 0.5833,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.25,
+        "late_goal_diff": -0.2308
+      }
+    },
+    {
+      "team": "IFK Vänersborg",
+      "season": "2021-22",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.4,
+        "avg_goals_against": 3.8333,
+        "goal_diff": -0.4333,
+        "avg_corners": 8.7,
+        "corner_goal_pct": 0.2451,
+        "avg_fouls": 2.0333,
+        "penalty_goal_pct": 0.0392,
+        "ht_lead_freq": 0.4333,
+        "ht_lead_win_pct": 0.6154,
+        "home_minus_away_win": 0.6,
+        "comeback_freq": 0.1,
+        "late_goal_diff": -0.1
+      }
+    },
+    {
+      "team": "IFK Vänersborg",
+      "season": "2022-23",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.7083,
+        "avg_goals_against": 4.75,
+        "goal_diff": -1.0417,
+        "avg_corners": 8.75,
+        "corner_goal_pct": 0.191,
+        "avg_fouls": 2.3333,
+        "penalty_goal_pct": 0.0225,
+        "ht_lead_freq": 0.375,
+        "ht_lead_win_pct": 0.6667,
+        "home_minus_away_win": 0.1667,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.5833
+      }
+    },
+    {
+      "team": "IFK Vänersborg",
+      "season": "2024-25",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 4.3462,
+        "avg_goals_against": 5.8846,
+        "goal_diff": -1.5385,
+        "avg_corners": 7.7308,
+        "corner_goal_pct": 0.3009,
+        "avg_fouls": 2.4231,
+        "penalty_goal_pct": 0.0531,
+        "ht_lead_freq": 0.3462,
+        "ht_lead_win_pct": 0.7778,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.6538
+      }
+    },
+    {
+      "team": "IFK Vänersborg",
+      "season": "2025-26",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.3077,
+        "avg_goals_against": 6.3462,
+        "goal_diff": -3.0385,
+        "avg_corners": 7.7308,
+        "corner_goal_pct": 0.3256,
+        "avg_fouls": 2.9231,
+        "penalty_goal_pct": 0.0581,
+        "ht_lead_freq": 0.2308,
+        "ht_lead_win_pct": 0.6667,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.6923
+      }
+    },
+    {
+      "team": "IK Sirius",
+      "season": "2019-20",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.6538,
+        "avg_goals_against": 4.5769,
+        "goal_diff": -0.9231,
+        "avg_corners": 7.0,
+        "corner_goal_pct": 0.1895,
+        "avg_fouls": 2.0385,
+        "penalty_goal_pct": 0.1053,
+        "ht_lead_freq": 0.4231,
+        "ht_lead_win_pct": 0.7273,
+        "home_minus_away_win": -0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.3462
+      }
+    },
+    {
+      "team": "IK Sirius",
+      "season": "2020-21",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 5.0385,
+        "avg_goals_against": 4.7308,
+        "goal_diff": 0.3077,
+        "avg_corners": 8.6923,
+        "corner_goal_pct": 0.2443,
+        "avg_fouls": 2.2692,
+        "penalty_goal_pct": 0.084,
+        "ht_lead_freq": 0.5,
+        "ht_lead_win_pct": 0.6154,
+        "home_minus_away_win": -0.1538,
+        "comeback_freq": 0.2,
+        "late_goal_diff": -0.1154
+      }
+    },
+    {
+      "team": "IK Sirius",
+      "season": "2021-22",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 4.1333,
+        "avg_goals_against": 3.9,
+        "goal_diff": 0.2333,
+        "avg_corners": 8.8333,
+        "corner_goal_pct": 0.2581,
+        "avg_fouls": 2.2667,
+        "penalty_goal_pct": 0.0484,
+        "ht_lead_freq": 0.5667,
+        "ht_lead_win_pct": 0.7647,
+        "home_minus_away_win": -0.0667,
+        "comeback_freq": 0.1,
+        "late_goal_diff": -0.3667
+      }
+    },
+    {
+      "team": "IK Sirius",
+      "season": "2022-23",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.3333,
+        "avg_goals_against": 4.5417,
+        "goal_diff": -1.2083,
+        "avg_corners": 7.75,
+        "corner_goal_pct": 0.2375,
+        "avg_fouls": 1.625,
+        "penalty_goal_pct": 0.0125,
+        "ht_lead_freq": 0.2917,
+        "ht_lead_win_pct": 0.5714,
+        "home_minus_away_win": 0.4167,
+        "comeback_freq": 0.2667,
+        "late_goal_diff": -0.2917
+      }
+    },
+    {
+      "team": "IK Sirius",
+      "season": "2024-25",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 4.8846,
+        "avg_goals_against": 3.5769,
+        "goal_diff": 1.3077,
+        "avg_corners": 9.0385,
+        "corner_goal_pct": 0.2047,
+        "avg_fouls": 1.3846,
+        "penalty_goal_pct": 0.0551,
+        "ht_lead_freq": 0.6538,
+        "ht_lead_win_pct": 0.8235,
+        "home_minus_away_win": -0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": 0.3077
+      }
+    },
+    {
+      "team": "IK Sirius",
+      "season": "2025-26",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.9231,
+        "avg_goals_against": 3.0769,
+        "goal_diff": 1.8462,
+        "avg_corners": 10.4231,
+        "corner_goal_pct": 0.3125,
+        "avg_fouls": 2.5,
+        "penalty_goal_pct": 0.0391,
+        "ht_lead_freq": 0.5385,
+        "ht_lead_win_pct": 0.9286,
+        "home_minus_away_win": 0.6154,
+        "comeback_freq": 0.1667,
+        "late_goal_diff": 0.3846
+      }
+    },
+    {
+      "team": "Sandvikens AIK/BK",
+      "season": "2019-20",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.8462,
+        "avg_goals_against": 3.7692,
+        "goal_diff": 1.0769,
+        "avg_corners": 10.6923,
+        "corner_goal_pct": 0.2063,
+        "avg_fouls": 2.1154,
+        "penalty_goal_pct": 0.0714,
+        "ht_lead_freq": 0.6,
+        "ht_lead_win_pct": 0.8667,
+        "home_minus_away_win": 0.3077,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": 0.1538
+      }
+    },
+    {
+      "team": "Sandvikens AIK/BK",
+      "season": "2020-21",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.9231,
+        "avg_goals_against": 3.6154,
+        "goal_diff": 1.3077,
+        "avg_corners": 11.2308,
+        "corner_goal_pct": 0.25,
+        "avg_fouls": 1.7692,
+        "penalty_goal_pct": 0.1016,
+        "ht_lead_freq": 0.4231,
+        "ht_lead_win_pct": 1.0,
+        "home_minus_away_win": 0.2308,
+        "comeback_freq": 0.2857,
+        "late_goal_diff": 0.1923
+      }
+    },
+    {
+      "team": "Sandvikens AIK/BK",
+      "season": "2021-22",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.9,
+        "avg_goals_against": 4.0,
+        "goal_diff": 0.9,
+        "avg_corners": 9.2,
+        "corner_goal_pct": 0.2789,
+        "avg_fouls": 2.3333,
+        "penalty_goal_pct": 0.0476,
+        "ht_lead_freq": 0.4333,
+        "ht_lead_win_pct": 0.7692,
+        "home_minus_away_win": -0.2,
+        "comeback_freq": 0.4,
+        "late_goal_diff": 0.3667
+      }
+    },
+    {
+      "team": "Sandvikens AIK/BK",
+      "season": "2022-23",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.7083,
+        "avg_goals_against": 4.125,
+        "goal_diff": 0.5833,
+        "avg_corners": 10.5833,
+        "corner_goal_pct": 0.3274,
+        "avg_fouls": 2.0833,
+        "penalty_goal_pct": 0.0354,
+        "ht_lead_freq": 0.5417,
+        "ht_lead_win_pct": 0.6154,
+        "home_minus_away_win": 0.25,
+        "comeback_freq": 0.1667,
+        "late_goal_diff": 0.0769
+      }
+    },
+    {
+      "team": "Vetlanda BK",
+      "season": "2019-20",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.8462,
+        "avg_goals_against": 4.4231,
+        "goal_diff": -0.5769,
+        "avg_corners": 7.0385,
+        "corner_goal_pct": 0.13,
+        "avg_fouls": 2.6923,
+        "penalty_goal_pct": 0.07,
+        "ht_lead_freq": 0.375,
+        "ht_lead_win_pct": 0.8889,
+        "home_minus_away_win": 0.2308,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.3077
+      }
+    },
+    {
+      "team": "Vetlanda BK",
+      "season": "2020-21",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 5.2308,
+        "avg_goals_against": 5.7692,
+        "goal_diff": -0.5385,
+        "avg_corners": 7.8846,
+        "corner_goal_pct": 0.1912,
+        "avg_fouls": 2.3462,
+        "penalty_goal_pct": 0.0441,
+        "ht_lead_freq": 0.3462,
+        "ht_lead_win_pct": 0.6667,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.2,
+        "late_goal_diff": 0.1923
+      }
+    },
+    {
+      "team": "Vetlanda BK",
+      "season": "2021-22",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 4.2667,
+        "avg_goals_against": 4.8333,
+        "goal_diff": -0.5667,
+        "avg_corners": 8.6,
+        "corner_goal_pct": 0.2344,
+        "avg_fouls": 1.8667,
+        "penalty_goal_pct": 0.0469,
+        "ht_lead_freq": 0.5,
+        "ht_lead_win_pct": 0.6667,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.1333
+      }
+    },
+    {
+      "team": "Vetlanda BK",
+      "season": "2022-23",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.125,
+        "avg_goals_against": 5.1667,
+        "goal_diff": -1.0417,
+        "avg_corners": 8.8333,
+        "corner_goal_pct": 0.1616,
+        "avg_fouls": 1.7083,
+        "penalty_goal_pct": 0.0202,
+        "ht_lead_freq": 0.2917,
+        "ht_lead_win_pct": 0.8571,
+        "home_minus_away_win": 0.5,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": 0.2917
+      }
+    },
+    {
+      "team": "Vetlanda BK",
+      "season": "2024-25",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 6.7692,
+        "avg_goals_against": 5.0,
+        "goal_diff": 1.7692,
+        "avg_corners": 8.6154,
+        "corner_goal_pct": 0.2216,
+        "avg_fouls": 2.3077,
+        "penalty_goal_pct": 0.017,
+        "ht_lead_freq": 0.5769,
+        "ht_lead_win_pct": 0.8,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.2692
+      }
+    },
+    {
+      "team": "Vetlanda BK",
+      "season": "2025-26",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 5.1154,
+        "avg_goals_against": 4.0769,
+        "goal_diff": 1.0385,
+        "avg_corners": 8.9231,
+        "corner_goal_pct": 0.2105,
+        "avg_fouls": 2.5385,
+        "penalty_goal_pct": 0.0451,
+        "ht_lead_freq": 0.5385,
+        "ht_lead_win_pct": 0.7857,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": 0.1923
+      }
+    },
+    {
+      "team": "Villa Lidköping BK",
+      "season": "2019-20",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 5.6154,
+        "avg_goals_against": 2.9231,
+        "goal_diff": 2.6923,
+        "avg_corners": 8.7692,
+        "corner_goal_pct": 0.1781,
+        "avg_fouls": 1.6154,
+        "penalty_goal_pct": 0.0411,
+        "ht_lead_freq": 0.6154,
+        "ht_lead_win_pct": 0.8125,
+        "home_minus_away_win": -0.1538,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": 0.7308
+      }
+    },
+    {
+      "team": "Villa Lidköping BK",
+      "season": "2020-21",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 6.8846,
+        "avg_goals_against": 2.8462,
+        "goal_diff": 4.0385,
+        "avg_corners": 10.0385,
+        "corner_goal_pct": 0.1788,
+        "avg_fouls": 0.9615,
+        "penalty_goal_pct": 0.0447,
+        "ht_lead_freq": 0.7308,
+        "ht_lead_win_pct": 0.8947,
+        "home_minus_away_win": 0.2308,
+        "comeback_freq": 0.3333,
+        "late_goal_diff": 0.6923
+      }
+    },
+    {
+      "team": "Villa Lidköping BK",
+      "season": "2021-22",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 7.9333,
+        "avg_goals_against": 2.9,
+        "goal_diff": 5.0333,
+        "avg_corners": 11.1,
+        "corner_goal_pct": 0.1639,
+        "avg_fouls": 0.8333,
+        "penalty_goal_pct": 0.0336,
+        "ht_lead_freq": 0.8,
+        "ht_lead_win_pct": 0.875,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": 1.3333
+      }
+    },
+    {
+      "team": "Villa Lidköping BK",
+      "season": "2022-23",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 7.125,
+        "avg_goals_against": 2.5833,
+        "goal_diff": 4.5417,
+        "avg_corners": 9.9167,
+        "corner_goal_pct": 0.1988,
+        "avg_fouls": 0.9167,
+        "penalty_goal_pct": 0.0409,
+        "ht_lead_freq": 0.8333,
+        "ht_lead_win_pct": 1.0,
+        "home_minus_away_win": 0.0833,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": 0.75
+      }
+    },
+    {
+      "team": "Västerås SK",
+      "season": "2022-23",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 4.9583,
+        "avg_goals_against": 3.4167,
+        "goal_diff": 1.5417,
+        "avg_corners": 9.25,
+        "corner_goal_pct": 0.2353,
+        "avg_fouls": 0.9583,
+        "penalty_goal_pct": 0.0588,
+        "ht_lead_freq": 0.625,
+        "ht_lead_win_pct": 0.8,
+        "home_minus_away_win": 0.25,
+        "comeback_freq": 0.3333,
+        "late_goal_diff": 1.0417
+      }
+    },
+    {
+      "team": "Västerås SK",
+      "season": "2024-25",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 6.6923,
+        "avg_goals_against": 4.6154,
+        "goal_diff": 2.0769,
+        "avg_corners": 10.9615,
+        "corner_goal_pct": 0.2184,
+        "avg_fouls": 1.5,
+        "penalty_goal_pct": 0.0402,
+        "ht_lead_freq": 0.5385,
+        "ht_lead_win_pct": 0.9286,
+        "home_minus_away_win": 0.3846,
+        "comeback_freq": 0.1429,
+        "late_goal_diff": 0.5769
+      }
+    },
+    {
+      "team": "Västerås SK",
+      "season": "2025-26",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 6.9615,
+        "avg_goals_against": 3.3462,
+        "goal_diff": 3.6154,
+        "avg_corners": 10.8846,
+        "corner_goal_pct": 0.1878,
+        "avg_fouls": 1.7308,
+        "penalty_goal_pct": 0.0773,
+        "ht_lead_freq": 0.6923,
+        "ht_lead_win_pct": 0.8333,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.25,
+        "late_goal_diff": 0.5
+      }
+    },
+    {
+      "team": "Västerås SK/BK",
+      "season": "2019-20",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 5.2308,
+        "avg_goals_against": 3.6923,
+        "goal_diff": 1.5385,
+        "avg_corners": 9.4615,
+        "corner_goal_pct": 0.1765,
+        "avg_fouls": 2.1538,
+        "penalty_goal_pct": 0.0735,
+        "ht_lead_freq": 0.5,
+        "ht_lead_win_pct": 0.9231,
+        "home_minus_away_win": -0.1538,
+        "comeback_freq": 0.25,
+        "late_goal_diff": 0.0769
+      }
+    },
+    {
+      "team": "Västerås SK/BK",
+      "season": "2020-21",
+      "cluster": 1,
+      "features": {
+        "avg_goals_for": 4.5385,
+        "avg_goals_against": 4.8462,
+        "goal_diff": -0.3077,
+        "avg_corners": 8.5,
+        "corner_goal_pct": 0.1695,
+        "avg_fouls": 1.6923,
+        "penalty_goal_pct": 0.0339,
+        "ht_lead_freq": 0.4231,
+        "ht_lead_win_pct": 0.8182,
+        "home_minus_away_win": -0.2308,
+        "comeback_freq": 0.1111,
+        "late_goal_diff": 0.1154
+      }
+    },
+    {
+      "team": "Västerås SK/BK",
+      "season": "2021-22",
+      "cluster": 0,
+      "features": {
+        "avg_goals_for": 5.7333,
+        "avg_goals_against": 3.2,
+        "goal_diff": 2.5333,
+        "avg_corners": 9.5,
+        "corner_goal_pct": 0.157,
+        "avg_fouls": 1.4,
+        "penalty_goal_pct": 0.0581,
+        "ht_lead_freq": 0.5667,
+        "ht_lead_win_pct": 0.9412,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.4,
+        "late_goal_diff": 0.6333
+      }
+    },
+    {
+      "team": "Åby/Tjureda IF",
+      "season": "2019-20",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 1.9231,
+        "avg_goals_against": 7.5385,
+        "goal_diff": -5.6154,
+        "avg_corners": 5.5769,
+        "corner_goal_pct": 0.16,
+        "avg_fouls": 2.0769,
+        "penalty_goal_pct": 0.04,
+        "ht_lead_freq": 0.04,
+        "ht_lead_win_pct": 0.7778,
+        "home_minus_away_win": 0.0769,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -1.3077
+      }
+    },
+    {
+      "team": "Åby/Tjureda IF",
+      "season": "2024-25",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 3.7692,
+        "avg_goals_against": 6.1923,
+        "goal_diff": -2.4231,
+        "avg_corners": 7.5769,
+        "corner_goal_pct": 0.1939,
+        "avg_fouls": 2.5769,
+        "penalty_goal_pct": 0.0612,
+        "ht_lead_freq": 0.1923,
+        "ht_lead_win_pct": 0.4,
+        "home_minus_away_win": 0.2308,
+        "comeback_freq": 0.1765,
+        "late_goal_diff": -0.2308
+      }
+    },
+    {
+      "team": "Åby/Tjureda IF",
+      "season": "2025-26",
+      "cluster": 2,
+      "features": {
+        "avg_goals_for": 4.4231,
+        "avg_goals_against": 6.0,
+        "goal_diff": -1.5769,
+        "avg_corners": 7.8846,
+        "corner_goal_pct": 0.2174,
+        "avg_fouls": 2.1538,
+        "penalty_goal_pct": 0.0435,
+        "ht_lead_freq": 0.2692,
+        "ht_lead_win_pct": 0.5714,
+        "home_minus_away_win": 0.1538,
+        "comeback_freq": 0.1538,
+        "late_goal_diff": -0.6538
+      }
+    }
+  ]
+}

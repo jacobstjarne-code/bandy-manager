@@ -1,0 +1,153 @@
+---
+import Base from '../../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 053 — Temperaturkartan: vilka matchups hettar upp Elitserien?"
+  description="95 matchups analyserade. Varmaste mötet: 7,0 utvisningar/match. Kallaste: 1,75. Ligamedel: 3,8. Skillnaden mellan varmaste och kallaste överstiger 3× liganormen."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 053 · 3 juni 2026</p>
+    <h1 class="finding-title">Temperaturkartan: vilka matchups<br>hettar upp Elitserien?</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">7,0</span>
+        <span class="key-number__label">Fouls/match, varmaste matchup</span>
+        <span class="key-number__note">Vetlanda BK – Åby/Tjureda IF (n=6)</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">1,75</span>
+        <span class="key-number__label">Fouls/match, kallaste matchup</span>
+        <span class="key-number__note">Vetlanda BK – Villa-Lidköping (n=8)</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">3,8</span>
+        <span class="key-number__label">Ligamedel fouls/match</span>
+        <span class="key-number__note">Elitserien herr 2019–2026, n=1 321 matcher</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">95</span>
+        <span class="key-number__label">Matchups med ≥6 möten</span>
+        <span class="key-number__note">Av 284 unika par i datasetet</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Är det slumpen, domaren eller något matchup-specifikt som avgör om en Elitseriematch genererar många eller få utvisningar? Vi ville ta reda på om vissa möten systematiskt är varmare än andra — oavsett säsong och domare — och hur stor temperaturdifferensen faktiskt är.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Analysen bygger på 1 321 herrmatchar i Elitserien herr från säsongerna 2019–20 till 2025–26 (exklusive 2023–24 som saknas ur datasetet). Varje matchup — ett kanoniserat par av klubbar, oavsett vilken som spelar hemma — krävde minst 6 möten för att inkluderas. 95 av 284 unika par uppfyller kriteriet. Fouls-data är direkt från Bandygrytans Firebase med fullt lag-attributionsstöd.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+
+      <p><strong>Top 10 varmaste matchups (fouls/match, n≥6):</strong></p>
+      <table>
+        <thead><tr><th>Matchup</th><th>n</th><th>Fouls/match</th><th>95 % CI</th></tr></thead>
+        <tbody>
+          <tr><td>Vetlanda BK – Åby/Tjureda IF</td><td>6</td><td>7,0</td><td>[5,5 – 8,3]</td></tr>
+          <tr><td>IFK Vänersborg – Sandvikens AIK/BK</td><td>8</td><td>6,75</td><td>[5,1 – 8,4]</td></tr>
+          <tr><td>Broberg/Söderhamn – IK Sirius</td><td>10</td><td>6,2</td><td>[4,6 – 7,7]</td></tr>
+          <tr><td>AIK Bandy – Vetlanda BK</td><td>6</td><td>5,83</td><td>[3,3 – 8,7]</td></tr>
+          <tr><td>AIK Bandy – Hammarby IF</td><td>6</td><td>5,83</td><td>[3,8 – 8,2]</td></tr>
+          <tr><td>Broberg/Söderhamn – IFK Vänersborg</td><td>8</td><td>5,75</td><td>[4,4 – 7,6]</td></tr>
+          <tr><td>Hammarby IF – Sandvikens AIK/BK</td><td>6</td><td>5,17</td><td>[3,2 – 7,3]</td></tr>
+          <tr><td>Bollnäs GOIF BF – Edsbyns IF</td><td>8</td><td>5,12</td><td>[3,4 – 7,1]</td></tr>
+          <tr><td>AIK Bandy – IK Sirius</td><td>6</td><td>5,0</td><td>[3,3 – 6,5]</td></tr>
+          <tr><td>Bollnäs GIF – Sandvikens AIK/BK</td><td>8</td><td>5,0</td><td>[3,6 – 6,1]</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>Top 10 kallaste matchups:</strong></p>
+      <table>
+        <thead><tr><th>Matchup</th><th>n</th><th>Fouls/match</th></tr></thead>
+        <tbody>
+          <tr><td>Vetlanda BK – Villa-Lidköping BK</td><td>8</td><td>1,75</td></tr>
+          <tr><td>Broberg/Söderhamn – Villa-Lidköping BK</td><td>8</td><td>1,75</td></tr>
+          <tr><td>IFK Motala – Villa-Lidköping BK</td><td>11</td><td>1,82</td></tr>
+          <tr><td>Edsbyns IF – Frillesås BK</td><td>6</td><td>1,83</td></tr>
+          <tr><td>Frillesås BK – Villa-Lidköping BK</td><td>8</td><td>2,0</td></tr>
+          <tr><td>AIK Bandy – Frillesås BK</td><td>6</td><td>2,0</td></tr>
+          <tr><td>Bollnäs GIF – Broberg/Söderhamn</td><td>11</td><td>2,09</td></tr>
+          <tr><td>Edsbyns IF – Hammarby IF</td><td>6</td><td>2,17</td></tr>
+          <tr><td>Frillesås BK – Västerås SK/BK</td><td>6</td><td>2,17</td></tr>
+          <tr><td>Bollnäs GIF – Frillesås BK</td><td>10</td><td>2,3</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>Top 5 mest målrika matchups:</strong></p>
+      <table>
+        <thead><tr><th>Matchup</th><th>n</th><th>Mål/match</th></tr></thead>
+        <tbody>
+          <tr><td>IK Sirius – Åby/Tjureda IF</td><td>6</td><td>12,67</td></tr>
+          <tr><td>Hammarby IF – Sandvikens AIK/BK</td><td>6</td><td>12,67</td></tr>
+          <tr><td>AIK Bandy – Vetlanda BK</td><td>6</td><td>12,5</td></tr>
+          <tr><td>Hammarby Bandy – Vetlanda BK</td><td>6</td><td>12,33</td></tr>
+          <tr><td>Broberg/Söderhamn – Hammarby IF</td><td>6</td><td>11,17</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>Asymmetri — hemmafördelens variation per matchup (n≥4 per riktning):</strong></p>
+      <table>
+        <thead><tr><th>Matchup</th><th>Lag A hemma</th><th>Lag B hemma</th><th>Differens</th></tr></thead>
+        <tbody>
+          <tr><td>IK Sirius – Villa-Lidköping BK</td><td>IK Sirius hemma: 0,0 %</td><td>Villa borta: 100 %</td><td>100 pp</td></tr>
+          <tr><td>IFK Motala – Villa-Lidköping BK</td><td>IFK Motala hemma: 0,0 %</td><td>Villa borta: 83 %</td><td>83 pp</td></tr>
+          <tr><td>Edsbyns IF – Sandvikens AIK/BK</td><td>Edsbyn hemma: 80 %</td><td>Sandviken hemma: 0,0 %</td><td>80 pp</td></tr>
+        </tbody>
+      </table>
+      <p>Tabellen visar matchups där utfallet nästan uteslutande beror på vem som spelar hemma — inte på vem som är starkare i absoluta termer.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Temperaturdifferensen är substantiell: varmaste matchup har 3,8× fler utvisningar per match än kallaste (7,0 vs 1,75). Differensen är inte ett enstaka extremfall — de 10 varmaste matchupsen ligger alla ≥32 % över liganormen (3,8 fouls/match). Matchtemperaturen verkar vara en stabil egenskap knuten till de specifika lagsambanden, inte enbart till enskilda säsonger eller domare.</p>
+      <p>Villa-Lidköping BK förekommer i tre av de tio kallaste matchupsen. Bollnäs GIF förekommer i två. En klubb som återkommande genererar låg foulfrekvens mot flera motståndare kan ha spelmässiga eller taktiska egenskaper som bidrar till detta — men det är inte vad datan kan belägga direkt.</p>
+      <p>Asymmetri-mönstret (att utfallet i ett möte i princip avgörs av vem som är hemma, inte av matchhistoriken totalt) indikerar att hemmaplansfördelen är ojämnt fördelad mellan matchups.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Utvisnings-duration (5 min vs 10 min) är inte extraherat ur vårt dataset — alla utvisningar behandlas som lika oavsett längd.</li>
+        <li>Matchups med exakt n=6 har breda konfidensintervall. Rangordningen i de yttersta decilerna är osäker.</li>
+        <li>2023–24 saknas ur datasetet — matchups med lag som degraderades eller promoverades det året är underrepresenterade.</li>
+        <li>Temperaturmönstern kan delvis drivas av ligaposition (toppmöten med mer att spela för) — denna effekt är inte kontrollerad för.</li>
+        <li><code>goals[].type</code> (öppet/hörna/straff) är härledd via heuristik, inte källattribut.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Öppna frågor</p>
+      <ul>
+        <li>Är matchtemperaturen stabil över säsonger, eller förändras den när lag byter tränare eller spelargrupp?</li>
+        <li>Korrelerar varm matchup-temperatur med antalet mål, eller är det decoupled? (Tabellen antyder delvis kopplade, delvis oberoende.)</li>
+        <li>Vad händer med temperaturen i dessa matchups när en ny domare tilldelas?</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>
