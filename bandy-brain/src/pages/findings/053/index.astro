@@ -104,16 +104,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </tbody>
       </table>
 
-      <p><strong>Asymmetri — hemmafördelens variation per matchup (n≥4 per riktning):</strong></p>
+      <p><strong>"Asymmetri" som visade sig vara klass, inte plan.</strong> Några matchups ser ut att avgöras av vem som spelar hemma — tydligast IK Sirius–Villa, där Sirius vinner 0 % hemma och Villa 100 % borta. Men det är en synvilla: "Sirius 0 % hemma" och "Villa 100 % borta" beskriver <em>samma matcher</em> från två håll. En disentangling mot lagens egna baslinjer visar orsaken.</p>
       <table>
-        <thead><tr><th>Matchup</th><th>Lag A hemma</th><th>Lag B hemma</th><th>Differens</th></tr></thead>
+        <thead><tr><th>Lag (alla matchups 2019–2026)</th><th>Hemmavinst %</th><th>Borta, vinst+oavgjort %</th></tr></thead>
         <tbody>
-          <tr><td>IK Sirius – Villa-Lidköping BK</td><td>IK Sirius hemma: 0,0 %</td><td>Villa borta: 100 %</td><td>100 pp</td></tr>
-          <tr><td>IFK Motala – Villa-Lidköping BK</td><td>IFK Motala hemma: 0,0 %</td><td>Villa borta: 83 %</td><td>83 pp</td></tr>
-          <tr><td>Edsbyns IF – Sandvikens AIK/BK</td><td>Edsbyn hemma: 80 %</td><td>Sandviken hemma: 0,0 %</td><td>80 pp</td></tr>
+          <tr><td>Villa-Lidköping</td><td>82,7 %</td><td>83,9 %</td></tr>
+          <tr><td>IK Sirius</td><td>53,1 %</td><td>50,0 %</td></tr>
         </tbody>
       </table>
-      <p>Tabellen visar matchups där utfallet nästan uteslutande beror på vem som spelar hemma — inte på vem som är starkare i absoluta termer.</p>
+      <p>Villa vinner i princip lika ofta borta som hemma — laget har ingen hemmaplansfördel att tala om, det vinner överallt. Att Villa tar alla matcher hos Sirius är därför klass, inte en venue-effekt. Sirius, ett snittlag (53 % hemma), förlorar mot ett klart bättre lag oavsett plan — och förlorar lika ofta hemma som borta mot Villa. Den enda matchupen i mönstret som möjligen rymmer en äkta venue-komponent är Edsbyn–Sandviken (två olika lag, var sin hemmaplan) — den är inte disentanglad här.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -121,8 +120,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
       <p>Temperaturdifferensen är substantiell: varmaste matchup har 3,8× fler utvisningar per match än kallaste (7,0 vs 1,75). Differensen är inte ett enstaka extremfall — de 10 varmaste matchupsen ligger alla ≥32 % över liganormen (3,8 fouls/match). Matchtemperaturen verkar vara en stabil egenskap knuten till de specifika lagsambanden, inte enbart till enskilda säsonger eller domare.</p>
-      <p>Villa-Lidköping BK förekommer i tre av de tio kallaste matchupsen. Bollnäs GIF förekommer i två. En klubb som återkommande genererar låg foulfrekvens mot flera motståndare kan ha spelmässiga eller taktiska egenskaper som bidrar till detta — men det är inte vad datan kan belägga direkt.</p>
-      <p>Asymmetri-mönstret (att utfallet i ett möte i princip avgörs av vem som är hemma, inte av matchhistoriken totalt) indikerar att hemmaplansfördelen är ojämnt fördelad mellan matchups.</p>
+      <p>Villa-Lidköping BK förekommer i tre av de tio kallaste matchupsen. Bollnäs GIF förekommer i två. En klubb som återkommande genererar låg foulfrekvens mot flera motståndare kan ha spelmässiga eller taktiska egenskaper som bidrar till detta — men det är inte vad datan kan belägga direkt. (Villas kalla matchups rimmar med Finding 054: Villa är ett omställnings-/öppet spel-lag med låg utvisningsprofil.)</p>
+      <p>Det som först såg ut som ett asymmetri-/hemmaplansmönster i vissa matchups visade sig vid närmare granskning vara klasskillnad: dominanta lag som Villa vinner oavsett plan, och deras matchups ser "asymmetriska" ut bara för att man läser ett ensidigt resultat från två håll. Verklig venue-driven asymmetri kräver att man jämför ett lags egen hemma- mot bortaresultat — inte två lags resultat i samma matcher.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -130,7 +129,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <div class="finding-section prose">
       <p class="finding-section-label">Begränsningar</p>
       <ul>
-        <li>Utvisnings-duration (5 min vs 10 min) är inte extraherat ur vårt dataset — alla utvisningar behandlas som lika oavsett längd.</li>
+        <li>Utvisnings-duration (5/10 min) är extraherad sedan denna analys gjordes (se Finding 055) men används inte här — alla utvisningar räknas lika oavsett längd.</li>
+        <li>Klubbnamn normaliseras inte fullt ut — "Villa-Lidköping BK" och "Villa Lidköping BK" förekommer som separata enheter, vilket splittrar vissa matchup-aggregat (Sirius–Villa låg i två poster, n=14 + n=4). Resultaten bör läsas med det i åtanke.</li>
         <li>Matchups med exakt n=6 har breda konfidensintervall. Rangordningen i de yttersta decilerna är osäker.</li>
         <li>2023–24 saknas ur datasetet — matchups med lag som degraderades eller promoverades det året är underrepresenterade.</li>
         <li>Temperaturmönstern kan delvis drivas av ligaposition (toppmöten med mer att spela för) — denna effekt är inte kontrollerad för.</li>

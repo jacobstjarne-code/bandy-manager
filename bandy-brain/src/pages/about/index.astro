@@ -5,7 +5,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <Base
   title="Om projektet"
-  description="Vad Bandy-Brain är, hur datan genereras och vad begränsningarna är."
+  description="Vad Bandy-Brain är, var datan kommer ifrån och vad begränsningarna är."
 >
   <div class="finding-layout">
 
@@ -14,61 +14,64 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <div class="prose">
       <h2>Vad det här är</h2>
       <p>
-        Bandy-Brain är ett biprodukt-projekt till Bandy Manager — ett
-        bandyspel under utveckling. När vi kalibrerar spelets matchmotor
-        mot verklig Elitseriedata upptäcker vi mönster som varken är
-        allmänt diskuterade eller väldokumenterade. Det här är ett
-        ställe att lägga upp de insikterna.
+        Bandy-Brain är en biprodukt till Bandy Manager — ett bandyspel under
+        utveckling. För att bygga spelet analyserar vi stora mängder verklig
+        bandydata, och på vägen dyker det upp mönster som varken är allmänt
+        diskuterade eller väldokumenterade. Det här är ett ställe att lägga upp
+        dem.
+      </p>
+      <p>
+        Varje finding är en hypotes som datan väckt. Inget är verifierat mot
+        bandykunskap ännu — det är själva poängen. Findingarna är råmaterial för
+        någon som kan bandy att bedöma: vilka är värda att gräva i, vilka är
+        brus, vilka säger något vi inte visste? Se det som ett proof of concept
+        och en idégenerator, inte som färdiga slutsatser.
       </p>
 
-      <h2>Hur datan genereras</h2>
+      <h2>Var datan kommer ifrån</h2>
       <p>
-        Bandy Manager simulerar bandymatcher med en motormodell kalibrerad
-        mot Bandygrytans matchdatabas. Bandygrytan är ett community-projekt
-        som samlar Elitserie-statistik från säsong 2019–20 och framåt —
-        1 124 matcher i den version vi arbetar med.
+        De flesta findings bygger på <strong>verklig matchdata</strong> från
+        Bandygrytan — ett community-projekt som samlar Elitserie-statistik från
+        säsong 2019–20 och framåt. I den version vi arbetar med finns 1 321
+        herrmatcher, plus dam- och allsvenskedata. Det är riktiga matcher,
+        händelse för händelse: mål med minut och typ, utvisningar med längd och
+        orsak, hörnor, halvtidsställningar.
       </p>
       <p>
-        Kalibreringen innebär att motorns parametrar justeras tills
-        simulerade säsonger producerar samma statistiska fördelningar
-        som verkliga Elitseriematcher: målfrekvens, hörnmålsprocent,
-        hemmafördel, utvisningsfrekvens och så vidare.
-      </p>
-      <p>
-        När motorn är kalibrerad kan vi köra den i stor skala — 10 000 matcher
-        på ett dygn. Det ger statistisk styrka att besvara frågor som kräver
-        fler matcher än vad verklig serie hinner producera på rimlig tid.
+        Där verklig data tar slut kompletterar vi med <strong>Bandy Managers
+        simuleringsmotor</strong>, kalibrerad mot samma Bandygrytan-data tills
+        simulerade säsonger producerar samma statistiska fördelningar som
+        verkliga: målfrekvens, hörnmålsprocent, hemmafördel, utvisningsfrekvens.
+        När motorn är kalibrerad kan vi köra den i stor skala — tusentals
+        matcher på ett dygn — för att besvara frågor som kräver fler matcher än
+        vad en verklig serie hinner producera. Findings som bygger på
+        simulering är märkta som sådana (se t.ex. motorkalibreringen).
       </p>
 
       <h2>Varför det är användbart</h2>
       <p>
-        Elitserien spelar ungefär 300 matcher per säsong. En full säsong
-        tar åtta månader. Frågor som kräver 5 000 matcher för tillförlitliga
-        svar tar alltså 15–20 år av verklig serie att besvara.
-      </p>
-      <p>
-        Bandy Manager kan köra det på en eftermiddag. Det är inte detsamma
-        som verklig data — men det är ett komplement som besvarar specifika
-        frågor snabbare och med kontrollerade förutsättningar.
+        Verklig data berättar vad som faktiskt hänt — men en enskild säsong är
+        bara ~300 matcher, och vissa frågor kräver fler för ett tillförlitligt
+        svar. Den verkliga datan ger sanningshalten; simuleringen ger volym och
+        kontrollerade förutsättningar. Tillsammans kan de besvara frågor som
+        ingen av dem klarar ensam.
       </p>
 
       <h2>Begränsningarna</h2>
       <p>
-        Motorn är en abstraktion. Den modellerar bandy som en serie
-        parametriserade sannolikheter. Vad den inte modellerar: spelarnas
-        psykologi, taktiska justeringar i realtid, skadors inverkan,
-        väder, is-kvalitet, domarbeslut.
+        För verklig-data-findings gäller den vanliga varningen: korrelation är
+        inte kausalitet, urvalen är ibland små, och 2023–24 saknas i datasetet.
+        Vi rapporterar mönster, inte slutsatser om orsak.
       </p>
       <p>
-        Det innebär att findings från simuleringen alltid ska läsas med
-        brasklappen: <em>detta stämmer om modellen är korrekt</em>. Varje
-        finding anger tydligt hur motorns resultat förhåller sig till
-        verklig Bandygrytan-data. Stämmer de överens är det ett tecken på
-        att modellen fångar något reellt. Skiljer de sig åt är det antingen
-        en modelleringssvaghet eller en dold faktor i verkligheten.
-      </p>
-      <p>
-        Vi gissar inte vilket det är. Vi rapporterar avvikelsen.
+        För simuleringsbaserade findings gäller dessutom att motorn är en
+        abstraktion. Den modellerar inte spelarpsykologi, taktiska justeringar i
+        realtid, skador, väder eller is-kvalitet. Sådana findings ska läsas med
+        brasklappen: <em>detta stämmer om modellen är korrekt</em>. Stämmer
+        motorns resultat överens med Bandygrytan-data är det ett tecken på att
+        modellen fångar något reellt; skiljer de sig åt är det antingen en
+        modelleringssvaghet eller en dold faktor i verkligheten. Vi gissar inte
+        vilket — vi rapporterar avvikelsen.
       </p>
 
       <h2>Källorna</h2>
@@ -81,10 +84,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
       <h2>Vem som gör det</h2>
       <p>
-        Jacob Stjärne bygger Bandy Manager. Erik är den förste
-        läsaren av findings. Fler perspectives välkomnas — hör av dig
-        om du har bandydata, kalibreringsfrågor eller hittar något som
-        inte stämmer.
+        Jacob Stjärne bygger Bandy Manager. Erik är den förste läsaren av
+        findings. Fler perspektiv välkomnas — hör av dig om du har bandydata,
+        kalibreringsfrågor eller hittar något som inte stämmer.
       </p>
     </div>
   </div>

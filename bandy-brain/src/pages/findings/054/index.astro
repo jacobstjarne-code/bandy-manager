@@ -4,38 +4,38 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <Base
-  title="Finding 054 — Tre spelstilstyper i Elitserien herr"
-  description="K-means-klustring av 64 klubb-säsonger på 12 spelstilsdimensioner identifierar tre distinkta profiler. Sju klubbar hamnar i samma kluster varje säsong de deltar."
+  title="Finding 054 — Spelstil eller kvalitet? En klusteranalys i två omgångar"
+  description="Första klustringen fångade kvalitet, inte stil — topplag, mittfält, botten. En kvalitetsneutral omkörning visar att stil inte bildar skarpa typer, men att en reell omställning-mot-hörnberoende-axel finns, oberoende av hur bra laget är."
 >
   <div class="finding-layout">
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
     <p class="finding-meta">Finding 054 · 3 juni 2026</p>
-    <h1 class="finding-title">Tre spelstilstyper i Elitserien herr<br>— en klusteranalys</h1>
+    <h1 class="finding-title">Spelstil eller kvalitet?<br>En klusteranalys i två omgångar</h1>
 
     <hr class="finding-divider" />
 
     <div class="key-numbers">
       <div class="key-number">
-        <span class="key-number__value">3</span>
-        <span class="key-number__label">Spelstilstyper identifierade</span>
-        <span class="key-number__note">k=3 valdes av silhouette score (0,162)</span>
+        <span class="key-number__value">0,23</span>
+        <span class="key-number__label">Silhouette, kvalitetsneutral omkörning</span>
+        <span class="key-number__note">Under 0,30 — stil bildar inte skarpa kluster</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">64</span>
-        <span class="key-number__label">Klubb-säsonger analyserade</span>
-        <span class="key-number__note">15 klubbar × 3–6 säsonger, grundserie</span>
+        <span class="key-number__value">2,1×</span>
+        <span class="key-number__label">Skillnad i målklustring mellan ytterpolerna</span>
+        <span class="key-number__note">1,18 mot 0,57 målkluster per match</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">7</span>
-        <span class="key-number__label">Klubbar 100 % konsistenta</span>
-        <span class="key-number__note">Hamnar i samma kluster varje säsong</span>
+        <span class="key-number__value">0,23 → 0,24</span>
+        <span class="key-number__label">Silhouette efter kvalitetsresidualisering</span>
+        <span class="key-number__note">Axeln är inte ett kvalitetsartefakt</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">12</span>
-        <span class="key-number__label">Spelstilsdimensioner</span>
-        <span class="key-number__note">Mål, hörnor, utvisningar, HT-ledning m.m.</span>
+        <span class="key-number__value">Villa &amp; Edsbyn</span>
+        <span class="key-number__label">Ankrar omställning/öppet spel-änden</span>
+        <span class="key-number__note">Båda 4/4 säsonger i samma ände</span>
       </div>
     </div>
 
@@ -43,15 +43,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Frågan</p>
-      <p>Finns det distinkta och stabila spelstilstyper bland Elitseriens klubbar, eller är varje klubb-säsong ett unikt mönster? Och om typerna finns — är samma klubbar konsekvent av samma typ oavsett säsong?</p>
+      <p>Finns det distinkta spelstilstyper bland Elitseriens klubbar — eller är "stil" egentligen kvalitet i förklädnad? Och om en stilaxel finns: är den oberoende av hur bra laget är? Analysen kördes i två omgångar, och den första omgången lärde oss varför den andra behövdes.</p>
     </div>
 
     <hr class="finding-divider" />
 
     <div class="finding-section prose">
-      <p class="finding-section-label">Datan och metoden</p>
-      <p>Analysen bygger på 1 124 grundseriematcher i Elitserien herr 2019–2026 (exkl. 2023–24). Per kombination av klubb och säsong beräknades 12 features: genomsnittliga mål gjorda och insläppta, måldifferens, hörnor per match, hörnmålsandel, utvisningar, straffmålsandel, halvtidsledningsfrekvens, halvtidsledningskonvertering, hemmaplanspåverkan (vinstfrekvens hemma minus borta), comebackfrekvens och senspelsmåldifferens (minut 75–90). Features standardiserades per säsong (z-score) för att hantera att ligamedel förändras över tid.</p>
-      <p>K-means kördes för k ∈ {3, 4, 5, 6}. Silhouette-scores: k=3: 0,162, k=4: 0,131, k=5: 0,134, k=6: 0,134. K=3 valdes — högst silhouette och tydligast distinkt profil.</p>
+      <p class="finding-section-label">Omgång 1 — och varför den inte räckte</p>
+      <p>Den första klustringen använde 12 features per klubb-säsong, bland dem mål gjorda och insläppta, måldifferens, halvtidsledningsfrekvens och comebackfrekvens. K-means med k=3 gav silhouette 0,16 och tre kluster — men när man tittade på vilka klubbar som hamnade var visade det sig att klustren var <em>ligastrukturen</em>: ett topplagskluster (Villa, Västerås, Edsbyn), ett mittfältskluster (Sandviken, Motala) och ett bottenlagskluster (Frillesås, Åby).</p>
+      <p>Med andra ord: klustringen sorterade på kvalitet, inte på spelstil. Det är ett verkligt mönster — bra lag liknar bra lag — men nästan tautologiskt, eftersom de flesta av de 12 måtten (mål, insläppta, differens, ledningsfrekvens) är kvalitetsmått. Att Villa hamnar i topp varje säsong säger att Villa är konsekvent bra, inte att Villa har en igenkännbar stil. Omgång 1 besvarade alltså inte frågan. Den motiverade omgång 2.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Omgång 2 — kvalitetsneutral</p>
+      <p>De kvalitetsladdade måtten byttes ut mot rena stilmarkörer: hörnmålsandel, hörnberoende, öppet spel-andel, målklustring (andelen matcher med ≥2 mål inom fem minuter), utvisningsprofil och hemma/borta-split. Som robusthetskoll residualiserades kvalitet dessutom bort — varje feature regresserades mot en kvalitetsproxy och klustringen kördes på residualerna.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -59,39 +66,35 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <div class="finding-section prose">
       <p class="finding-section-label">Vad vi fann</p>
 
-      <h2 style="font-size:1rem;font-weight:600;margin:1.5rem 0 0.5rem">Kluster 1 — Offensiva topplag (13 klubb-säsonger)</h2>
-      <p>Högt antal gjorda mål (snitt ~6,4/match mot liganormens ~4,8), lågt antal insläppta (~3,0 mot ~5,0), stark måldifferens, hög hörnfrekvens, låg utvisningsfrekvens. Leder ofta vid halvtid (67 % av matcherna) och konverterar de ledningarna i 91 % av fallen. Stark senspelsmåldifferens — vinner skyttekampen i slutminuterna.</p>
-      <p><strong>Konsistenta klubbar:</strong> Villa-Lidköping BK (4/4 säsonger), Västerås SK (3/3), Edsbyns IF (3/3 senare säsonger), AIK Bandy (3/3).</p>
+      <p><strong>Stil bildar inte skarpa kluster.</strong> Silhouette stannade på 0,23 — under tumregeln 0,30. Den fotbollslika dikotomin mellan omställningsspel och bollinnehav finns alltså inte som <em>diskreta typer</em> i Elitserien. Antingen är uppdelningen gradvis snarare än kategorisk, eller så är datasetet (64 klubb-säsonger) för litet för att separera den.</p>
 
-      <h2 style="font-size:1rem;font-weight:600;margin:1.5rem 0 0.5rem">Kluster 2 — Allroundat mittfält (26 klubb-säsonger)</h2>
-      <p>Genomsnittsprofil på de flesta dimensioner — inga starka utslag i z-score-rymd. Något fler hörnor än ligamedel men inga tydliga stilmarkörer. Det bredaste klustret och troligtvis det som fångar "normalt fungerande ligalag".</p>
-      <p><strong>Konsistenta klubbar:</strong> Sandvikens AIK/BK (4/4), IFK Motala (4/4), Broberg/Söderhamn (3/4), Hammarby IF (3/5).</p>
+      <p><strong>Men en reell kontinuerlig axel finns.</strong> Den starkaste separatorn är målklustring. I ena änden faller målen i tätare sekvenser — 1,18 målkluster per match — mot 0,57 i den andra. En faktor 2,1, vilket är en verklig skillnad, inte brus. Samma ände har också lägre hörnmålsandel (19,3 % mot 23,6 %) och högre andel mål i öppet spel. Det ser ut som en omställnings-/öppet spel-profil i ena änden och en hörnberoende profil i den andra.</p>
 
-      <h2 style="font-size:1rem;font-weight:600;margin:1.5rem 0 0.5rem">Kluster 3 — Öppna bottenlag (25 klubb-säsonger)</h2>
-      <p>Lågt antal gjorda mål (~3,6/match), högt antal insläppta (~5,2), negativ måldifferens. Färre hörnor, lägre halvtidsledningsfrekvens (29 %), sämre senspelsmåldifferens. Leder mer sällan och lyckas sällan hålla ledningar.</p>
-      <p><strong>Konsistenta klubbar:</strong> Frillesås BK (6/6 säsonger), Åby/Tjureda IF (3/3), IFK Vänersborg (5/6).</p>
-
-      <h2 style="font-size:1rem;font-weight:600;margin:1.5rem 0 0.5rem">Konsistensöversikt</h2>
       <table>
-        <thead><tr><th>Klubb</th><th>Kluster</th><th>Säsonger</th><th>Konsistens</th></tr></thead>
+        <thead><tr><th>Stilmarkör</th><th>Kluster 0 (n=26)</th><th>Kluster 1 (n=38)</th></tr></thead>
         <tbody>
-          <tr><td>Villa-Lidköping BK</td><td>Offensiva topplag</td><td>4/4</td><td>100 %</td></tr>
-          <tr><td>Västerås SK</td><td>Offensiva topplag</td><td>3/3</td><td>100 %</td></tr>
-          <tr><td>Sandvikens AIK/BK</td><td>Allroundat mittfält</td><td>4/4</td><td>100 %</td></tr>
-          <tr><td>IFK Motala</td><td>Allroundat mittfält</td><td>4/4</td><td>100 %</td></tr>
-          <tr><td>Frillesås BK</td><td>Öppna bottenlag</td><td>6/6</td><td>100 %</td></tr>
-          <tr><td>Åby/Tjureda IF</td><td>Öppna bottenlag</td><td>3/3</td><td>100 %</td></tr>
-          <tr><td>IFK Vänersborg</td><td>Öppna bottenlag</td><td>5/6</td><td>83 %</td></tr>
+          <tr><td>Kluster-frekvens (≥2 mål inom 5 min)</td><td>1,18/match</td><td>0,57/match</td></tr>
+          <tr><td>Hörnmålsandel</td><td>19,3 %</td><td>23,6 %</td></tr>
+          <tr><td>Öppet spel-andel</td><td>75,9 %</td><td>71,4 %</td></tr>
+          <tr><td>Hörnor/match</td><td>9,5</td><td>8,3</td></tr>
+          <tr><td>Hörnor/mål</td><td>1,72</td><td>2,21</td></tr>
+          <tr><td>Utvisningar/match</td><td>1,59</td><td>2,00</td></tr>
         </tbody>
       </table>
+
+      <p><strong>Kluster 0 (omställning/öppet spel)</strong> ankras av Edsbyn, Villa och Västerås SK — alla 100 % av sina säsonger — med Broberg/Söderhamn (75 %) och AIK (67 %). <strong>Kluster 1 (hörnberoende, mer fysiskt)</strong> rymmer IFK Motala, Frillesås, Åby/Tjureda, IFK Vänersborg och Bollnäs GIF (alla 100 %) samt IK Sirius (83 %). Värt att notera: Sirius hamnar i den hörnberoende, fysiska änden — inte i den öppet spelande — vilket motsäger en vanlig intuition om laget.</p>
+
+      <p><strong>Axeln är inte kvalitet i förklädnad.</strong> När kvalitet residualiseras bort ändras silhouette bara marginellt, 0,23 → 0,24. Stilaxeln överlever alltså kvalitetskontrollen — den är åtminstone delvis frikopplad från hur bra laget är. Det var precis det omgång 1 inte kunde visa.</p>
     </div>
 
     <hr class="finding-divider" />
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>De tre klustren speglar tydligt en ligastruktur — topplaget, mittfältet och bottenlagen — men klustring på spelstilsdimensioner ger ändå ett mer nyanserat mönster än enbart tabellposition. Att Frillesås BK hamnar i "öppna bottenlag" sex säsonger i rad, och Villa-Lidköping BK i "offensiva topplag" fyra av fyra säsonger, antyder att spelstilen är organisationsspecifik snarare än säsongsspecifik.</p>
-      <p>Att k=3 ger bäst silhouette men låga absoluta värden (~0,16) signalerar att Elitserien inte har extremt separerade spelstilskluster — överlappen är betydande och övergångarna gradvisa. De tre klustren är ett analytiskt verktyg, inte skarpa kategorier.</p>
+      <p>Omgång 1 återskapade tabellen, inte spelsätten. Det har ett värde — att metoden korrekt återger något vi redan vet (bra lag förblir bra) bygger förtroende för att den fångar verkligheten — men det är nästan en tautologi, för kvalitet består så länge resurserna består.</p>
+      <p>Omgång 2 ger det egentliga svaret. Bandylag faller inte i stilfack; det finns ingen ren transition-mot-bollinnehav-uppdelning. Men lagen varierar genuint längs en kontinuerlig axel — tät målklustring och öppet spel i ena änden, hörnberoende i den andra — och den axeln överlever när man kontrollerar för kvalitet. Stil är alltså delvis ett val, skilt från hur bra laget råkar vara den säsongen.</p>
+      <p>En viktig nyansering: den hörnberoende änden är <em>inte</em> "bottenlagen". Den rymmer mittfältslag (Motala) och historiskt habila klubbar (Bollnäs). Det är alltså inte sant att skickliga lag spelar öppet och svaga förlitar sig på fasta situationer. Två elitlag (Villa, Edsbyn) ankrar öppet spel-änden, men det är en stilegenskap, inte en kvalitetsregel.</p>
+      <p><strong>Fotbollsvarning:</strong> uppdelningen transition kontra bollinnehav är en fotbolls- och hockeyram. Datan stöder inte att den finns som rena typer i bandy. Att leta efter två stilar och i stället hitta ett kontinuum är ett exempel på varför man ska låta datan tala i stället för ramen.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -99,13 +102,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <div class="finding-section prose">
       <p class="finding-section-label">Begränsningar</p>
       <ul>
-        <li>K-means antar konvexa kluster av liknande storlek — Elitseriens struktur uppfyller det bara delvis.</li>
-        <li>Silhouette ~0,16 är lågt — klustren är meningsfulla men inte skarpt separerade.</li>
-        <li>12 features täcker inte spelsätt, possession, press-intensitet eller spelarmaterial.</li>
-        <li>2023–24 saknas — lag som degraderades eller promoverades det året saknar en säsong.</li>
-        <li>Grundserie-filter: lagens beteende i slutspelet kan skilja sig markant, vilket inte fångas.</li>
-        <li>Västerås SK och Västerås SK/BK behandlas som separata enheter — i verkligheten kan det vara delvis överlappande organisation.</li>
+        <li>Silhouette under 0,30 i båda omgångarna — stil bildar inte skarpa kluster. Slutsatserna gäller en kontinuerlig axel, inte diskreta typer.</li>
+        <li>64 klubb-säsonger är ett litet underlag för klustring; en verklig stiluppdelning kan finnas men kräva mer data för att separeras.</li>
+        <li>Features fångar utfallsmått, inte possession, pressintensitet, formationer eller spelarmaterial.</li>
+        <li>Säsong 2023–24 saknas i datasetet.</li>
+        <li>"Omställning" och "winback" är tolkningar av ett matematiskt mönster (målklustring). Om mekanismen verkligen är winback är en videofråga, inte en statistisk — och just den sortens fråga en bandykunnig kan bedöma.</li>
       </ul>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+054:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+054:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
     </div>
 
   </div>

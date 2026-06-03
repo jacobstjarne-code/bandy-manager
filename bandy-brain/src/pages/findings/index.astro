@@ -4,9 +4,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 const findings = [
       { num: '055', date: '3 juni 2026', title: 'Reformens mekanism: lätta utvisningar, inte grova', excerpt: '' },
-      { num: '054', date: '3 juni 2026', title: 'Tre spelstilstyper i Elitserien herr — en klusteranalys', excerpt: '' },
+      { num: '054', date: '3 juni 2026', title: 'Spelstil eller kvalitet? En klusteranalys i två omgångar', excerpt: '' },
       { num: '053', date: '3 juni 2026', title: 'Temperaturkartan: vilka matchups hettar upp Elitserien?', excerpt: '' },
-      { num: '052', date: '1 juni 2026', title: 'Säsong 25/26: utvisningsfrekvensen steg 25 % — reformen syns i datan', excerpt: '' },
+      { num: '052', date: '1 juni 2026', title: 'Säsong 25/26: utvisningsfrekvensen steg 16 % — reformen syns i datan', excerpt: '' },
       { num: '051', date: '31 maj 2026', title: 'Comeback-fönstret: sex minuter tidigt i andra halvlek', excerpt: '' },
       { num: '046', date: '26 april 2026', title: 'Hörnmålsandelen faller stadigt mot final', excerpt: '' },
       { num: '045', date: '25 april 2026', title: 'VSK och Vetlanda nära ligasnittet i hörnakonvertering', excerpt: '' },
@@ -62,9 +62,18 @@ const findings = [
     <h1 style="font-family: var(--font-ui); font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem;">
       Findings
     </h1>
-    <p style="max-width: 560px; color: var(--color-muted); font-size: 0.95rem; margin-bottom: 2.5rem; font-family: var(--font-ui);">
-      En finding är en rapport om ett specifikt fenomen i bandy — baserad på
-      Bandygrytans verkliga matchdata och Bandy Managers simuleringsmotor.
+    <p style="max-width: 620px; color: var(--color-muted); font-size: 0.95rem; margin-bottom: 1.5rem; font-family: var(--font-ui); line-height: 1.6;">
+      Bandy Brain är en skiss på vad som händer när man systematiskt letar mönster
+      i bandydata. Varje finding är en hypotes som datan väckt — byggd på verklig
+      matchdata från Bandygrytan och Bandy Managers simuleringsmotor.
+    </p>
+    <p style="max-width: 620px; color: var(--color-muted); font-size: 0.95rem; margin-bottom: 2.5rem; font-family: var(--font-ui); line-height: 1.6;">
+      Inget här är verifierat mot bandykunskap ännu, och det är själva poängen:
+      findingarna är råmaterial för en bandykunnig att bedöma — vilka är värda att
+      gräva i, vilka är brus, vilka säger något vi inte visste? Se det som ett
+      proof of concept och en idéväckare, inte som färdiga slutsatser. När en nyare
+      analys ersätter en äldre — ofta för att metoden förbättrats — markeras det.
+      Att findings revideras är inte en svaghet i ansatsen, det är hur den ska fungera.
     </p>
 
     <div class="filter-bar" id="filter-bar">
