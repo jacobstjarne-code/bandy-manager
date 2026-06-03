@@ -1,0 +1,112 @@
+---
+import Base from '../../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 055 — Reformens mekanism: lätta utvisningar, inte grova"
+  description="Utvisningsökningen 25/26 är till 89 % femminutare. Grova tiominutare är oförändrade och våldsamt slag minskade 30 %. Reformen sanktionerar tekniska förseelser, inte fysiskt våld."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 055 · 3 juni 2026</p>
+    <h1 class="finding-title">Reformens mekanism:<br>lätta utvisningar, inte grova</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">89 %</span>
+        <span class="key-number__label">Av ökningen är 5-minutare (herr)</span>
+        <span class="key-number__note">10-minutersutvisningar i princip oförändrade</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">+338 %</span>
+        <span class="key-number__label">5-minutare/match (herr)</span>
+        <span class="key-number__note">0,19 → 0,85 per match, pre-snitt → 25/26</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">−30 %</span>
+        <span class="key-number__label">Våldsamt slag (herr)</span>
+        <span class="key-number__note">Den grövsta kategorin minskade</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">+267 %</span>
+        <span class="key-number__label">Slag på klubban (herr)</span>
+        <span class="key-number__note">Teknisk förseelse — driver ökningen</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 052 visade att utvisningsfrekvensen steg 16–22 % säsong 2025/26 i samband med domardirektivet "Våga visa rött". Den frågan som följde var: <em>vilka</em> utvisningar ökade? Direktivets namn antyder fler grova utvisningar — hårdare tag mot fysiskt våld. Vi ville pröva det mot datan i stället för att anta det.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Bandygrytan loggar för varje utvisning både dess längd (5 eller 10 minuter) och dess orsak i klartext ("Våldsamt slag", "Slag på klubban", "Friläge" och så vidare). Dessa fält har verifierats vara komplett loggade i alla sex säsonger 2019–20 till 2025–26 — trenden är alltså inte en effekt av att loggningen blivit bättre med tiden, utan en verklig förändring i vad som döms. Analysen jämför säsong 2025/26 mot snittet av de fem föregående säsongerna (2023/24 saknas i datasetet).</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann — per utvisningslängd</p>
+      <p>Hela ökningen ligger i de lätta femminutarna. De grövre tiominutarna är i praktiken oförändrade.</p>
+      <table>
+        <thead><tr><th>Mått (herr)</th><th>Pre-snitt</th><th>2025/26</th><th>Förändring</th></tr></thead>
+        <tbody>
+          <tr><td>Total utvisn./match</td><td>3,66</td><td>4,40</td><td>+20 %</td></tr>
+          <tr><td>5-min/match</td><td>0,19</td><td>0,85</td><td>+338 %</td></tr>
+          <tr><td>10-min/match</td><td>3,46</td><td>3,51</td><td>+1,6 %</td></tr>
+        </tbody>
+      </table>
+      <p><strong>89 % av hela ökningen i herrserien består av femminutersutvisningar.</strong> Andelen femminutare av alla utvisningar steg från ~3 % (2019–22) till 19 % (2025/26). Damserien visar samma riktning — 71 % av ökningen är femminutare.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann — per orsak</p>
+      <p>De förseelsetyper som ökade är tekniska, inte våldsamma. Slag på klubban och frilägesförseelser driver ökningen. Den grövsta kategorin — våldsamt slag — minskade i herrserien.</p>
+      <table>
+        <thead><tr><th>Orsak (herr, per match)</th><th>Pre</th><th>2025/26</th><th>Förändring</th></tr></thead>
+        <tbody>
+          <tr><td>Slag på klubban</td><td>0,20</td><td>0,73</td><td>+267 %</td></tr>
+          <tr><td>Friläge</td><td>0,03</td><td>0,25</td><td>+701 %</td></tr>
+          <tr><td>Slag på skridskon</td><td>0,67</td><td>0,81</td><td>+22 %</td></tr>
+          <tr><td>Fasthållning</td><td>0,61</td><td>0,72</td><td>+18 %</td></tr>
+          <tr><td>Bentackling</td><td>0,37</td><td>0,30</td><td>−20 %</td></tr>
+          <tr><td>Sabotage</td><td>0,24</td><td>0,12</td><td>−48 %</td></tr>
+          <tr><td>Våldsamt slag</td><td>0,61</td><td>0,43</td><td>−30 %</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Reformen syns i datan som strängare bedömning av lätta tekniska förseelser — framför allt slag på klubban och frilägessituationer — sanktionerade med femminutersutvisningar. Det är inte en ökning av grovt våldsspel som bestraffas hårdare. Tvärtom: de grova tiominutarna är oförändrade och våldsamt slag minskade i herrserien.</p>
+      <p>Det är två helt olika berättelser, och datan pekar på den ena. "Domarna slår ner på det fysiska våldet" stämmer inte. "Domarna sätter en lägre tröskel för tekniska förseelser som tidigare lät passera" stämmer bättre med mönstret. Vad som orsakar förändringen — ändrat spel, ändrad domarinstruktion eller ändrad benägenhet att blåsa — kan datan inte avgöra.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Korrelation är inte kausalitet. Att förseelsemönstret förändrades samtidigt som direktivet infördes betyder inte att direktivet orsakade det.</li>
+        <li>Orsakskategorierna sätts av matchsekreteraren/domaren och kan i sig ha påverkats av direktivet (samma handling kan rapporteras under en annan etikett).</li>
+        <li>Säsong 2023/24 saknas i datasetet — jämförelsen hoppar över ett år.</li>
+        <li>Analysen är på liganivå. Uppdelning per enskild domare är intern och rapporteras inte här.</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>
