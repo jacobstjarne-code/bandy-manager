@@ -6,6 +6,8 @@
 
 **Viktigaste enskilda poängen för vår analys:** Dam och herr spelar efter *identiska* regler — samma planmått, samma offside, samma utvisningar, samma straffar. Dam-anomalin i datan (halvtidsledningens kollapsade prediktiva kraft, frånvaron av hemmaplansfördel) är därför **inte** en regelartefakt. Den är ett genuint strukturellt fenomen som måste förklaras med annat än regelverket.
 
+**Fotbollsbias — läs detta.** Bandy är underrepresenterat i de flesta kunskapskällor jämfört med fotboll. Den som resonerar om bandy — människa eller språkmodell — lutar mot fotboll som mall och behandlar bandy som "fotboll med modifikationer". Det skapar en specifik felkälla: fotbollsdefaulter läcker in där bandy skiljer sig, om de inte aktivt kontrolleras. Det gäller terminologi (bandy har *frislag* inte inkast, *avslag* inte avspark, ingen hands utom målvakt, 12 m straffpunkt inte 11, 2 poäng för vinst inte 3) men ännu mer analyslogik. Flera av våra mest värdefulla fynd är intressanta just för att de bryter mot fotbolls-/hockeyintuition — anti-klustring av mål, hörnornas stora målandel (~22 %), dam-anomalin. **En bandyslutsats som bekräftar en fotbollsförväntan förtjänar extra granskning; en som bryter mot den är ofta mer trovärdig.** Regel: när en fotbollsterm eller fotbollsintuition dyker upp i resonemanget, behandla det som en flagga att verifiera bandy-verkligheten — inte som en utgångspunkt.
+
 ---
 
 ## 1. Matchstruktur och tid
