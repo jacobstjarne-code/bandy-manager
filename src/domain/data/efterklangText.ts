@@ -66,3 +66,39 @@ export const EFTERKLANG_ECHO: Record<EfterklangType, string[]> = {
     'Ni sålde {spelare} dit. Han hälsar inte längre när ni möts.',
   ],
 }
+
+// Resolutions-medveten efterdyning (Opus-copy 2026-06-03). När budgetkrisen är
+// överstånden minns ärret HUR du överlevde. Premiss = du/ni-faktum (uppställning),
+// echo = världens röst tillbaka (payoff). {spelare} interpoleras endast för sold_star.
+export type EconomicResolutionType = 'sold_star' | 'loan' | 'mecenat' | 'natural_recovery'
+
+export const ECONOMIC_SCAR_AFTERMATH: Record<EconomicResolutionType, { premiss: string; echoes: string[] }> = {
+  sold_star: {
+    premiss: 'Ni sålde {spelare} för att rädda kassan.',
+    echoes: [
+      'Laget är tunnare där han stod.',
+      'Alla minns vem som fick gå när det brann.',
+    ],
+  },
+  loan: {
+    premiss: 'Kommunlånet löper fortfarande.',
+    echoes: [
+      'Räntan äter sin del varje månad, tyst.',
+      'Kommunen glömmer inte vem som knackade på.',
+    ],
+  },
+  mecenat: {
+    premiss: 'Mecenaten täckte krisen åt er.',
+    echoes: [
+      'Han räddade er — och han vet om det.',
+      'Det finns en räkning som inte står i böckerna.',
+    ],
+  },
+  natural_recovery: {
+    premiss: 'Ni red ut krisen utan att sälja.',
+    echoes: [
+      'Sponsorn är borta. Spelarna är kvar.',
+      'Ni klarade er. Knappt, men utan att sälja själen.',
+    ],
+  },
+}

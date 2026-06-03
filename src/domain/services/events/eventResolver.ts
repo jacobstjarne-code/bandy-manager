@@ -754,10 +754,28 @@ export function resolveEvent(
         sold_star: 'sold_star', loan: 'loan', mecenat: 'mecenat',
       }
       const outcome = outcomeMap[effect.crisisPhase ?? ''] ?? 'natural_recovery'
+      // Efterdyning-stämpel: senaste spelade ligamatch denna säsong (counter-oberoende,
+      // samma mönster som journalist-premissen ovan — rör inte currentMatchday-räknaren).
+      const resolvedMatchday = updatedGame.fixtures
+        .filter(f => f.status === 'completed' && !f.isCup && f.season === updatedGame.currentSeason)
+        .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+      // sold_star: fånga namnet FÖRE removePlayerId tar bort spelaren ur truppen
+      const soldToSurvivePlayerName = outcome === 'sold_star' && effect.removePlayerId
+        ? (() => {
+            const sold = updatedGame.players.find(p => p.id === effect.removePlayerId)
+            return sold ? `${sold.firstName} ${sold.lastName}` : undefined
+          })()
+        : undefined
       updatedGame = {
         ...updatedGame,
         economicCrisisState: updatedGame.economicCrisisState
-          ? { ...updatedGame.economicCrisisState, phase: 'resolved' as const, outcome }
+          ? {
+              ...updatedGame.economicCrisisState,
+              phase: 'resolved' as const,
+              outcome,
+              resolvedMatchday,
+              ...(soldToSurvivePlayerName ? { soldToSurvivePlayerName } : {}),
+            }
           : undefined,
       }
       if (effect.value) {

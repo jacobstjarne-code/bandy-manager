@@ -329,7 +329,11 @@ export interface SaveGame {
     startedMatchday: number
     phase: 'awareness' | 'pressure' | 'decision' | 'resolved'
     eventsFired: string[]
+    // `outcome` = resolutionsvägen (sold_star/loan/mecenat/natural_recovery). Återanvänds
+    // som Efterklang-efterdyningens resolutionType — inget separat resolutionType-fält (dublett).
     outcome?: 'sold_star' | 'loan' | 'mecenat' | 'natural_recovery'
+    resolvedMatchday?: number          // efterdyning — counter-oberoende stämpel vid resolution
+    soldToSurvivePlayerName?: string   // endast sold_star — fångas FÖRE removePlayerId
   }
 
   // DREAM-014 — Tyst mode (extend preferredMatchMode handled here)

@@ -1,5 +1,5 @@
 import type { SaveGame } from '../../entities/SaveGame'
-import { EFTERKLANG_ECHO, type EfterklangType } from '../../data/efterklangText'
+import { EFTERKLANG_ECHO, ECONOMIC_SCAR_AFTERMATH, type EfterklangType } from '../../data/efterklangText'
 import { mulberry32 } from '../../utils/random'
 import { FixtureStatus } from '../../enums'
 
@@ -201,24 +201,40 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   }
 
   // Economic scar
-  if (game.economicCrisisState && game.economicCrisisState.phase !== 'resolved') {
-    const echo = pickEcho('economicScar', seed + 6)
-    // B4 — premiss på phase. NOTE: brief antog phase-namn 'acute'/'recovering' som inte finns;
-    // faktiska faser är awareness|pressure|decision|resolved (resolved filtreras bort ovan).
-    // 'decision' = sharpest = acute-copy; awareness/pressure = annat-copy. recovering-strängen
-    // ("Ni reser er ur krisen, sakta.") saknar matchande aktiv fas → oanvänd (flaggat till Jacob).
-    const premiss = game.economicCrisisState.phase === 'decision'
-      ? 'Kassan är tom — igen.'
-      : 'Inte länge sedan kassan var tom.'
-    candidates.push({
-      type: 'economicScar',
-      score: 60,
-      memory: {
-        type: 'economicScar', primaryText: '', premiss, echo,
-        objectName: 'Budgetkrisen',
-        threadEntries: [{ matchday: round, text: echo }],
-      },
-    })
+  const crisis = game.economicCrisisState
+  if (crisis) {
+    if (crisis.phase !== 'resolved') {
+      // A. Aktiv kris — oförändrad. 'decision' = sharpest, annars dämpat.
+      const echo = pickEcho('economicScar', seed + 6)
+      const premiss = crisis.phase === 'decision' ? 'Kassan är tom — igen.' : 'Inte länge sedan kassan var tom.'
+      candidates.push({
+        type: 'economicScar',
+        score: 60,
+        memory: {
+          type: 'economicScar', primaryText: '', premiss, echo,
+          objectName: 'Budgetkrisen',
+          threadEntries: [{ matchday: round, text: echo }],
+        },
+      })
+    } else if (crisis.resolvedMatchday !== undefined) {
+      // B. Efterdyning — vägspecifik, inom 10 omgångar (gamla saves utan resolvedMatchday faller här).
+      const recency = round - crisis.resolvedMatchday
+      if (recency >= 0 && recency <= 10) {
+        const rt = crisis.outcome ?? 'natural_recovery'
+        const aftermath = ECONOMIC_SCAR_AFTERMATH[rt]
+        const echo = aftermath.echoes[Math.floor(mulberry32(seed + 6)() * aftermath.echoes.length)]
+        const premiss = interpolate(aftermath.premiss, { spelare: crisis.soldToSurvivePlayerName ?? '' })
+        candidates.push({
+          type: 'economicScar',
+          score: 60,
+          memory: {
+            type: 'economicScar', primaryText: '', premiss, echo,
+            objectName: 'Budgetkrisen',
+            threadEntries: [{ matchday: crisis.resolvedMatchday, text: echo }],
+          },
+        })
+      }
+    }
   }
 
   // Rival sale — only surface if recent enough (within 10 rounds)

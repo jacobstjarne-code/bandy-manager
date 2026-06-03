@@ -238,6 +238,42 @@ const efterklangGame = makeGame(makeLeagueFixtures(), {
   },
 })
 
+// economicScar — resolutions-medveten efterdyning. Varje variant har BARA en budgetkris
+// (ingen journalist/nemesis) så economicScar är enda Efterklang-kandidaten och syns.
+// currentMatchday=16, resolvedMatchday=13 → recency 3 (inom 10-fönstret).
+const efterklangCrisisVariants: Array<{ label: string; game: SaveGame }> = [
+  {
+    label: 'Aktiv kris (decision-fas)',
+    game: makeGame(makeLeagueFixtures(), {
+      economicCrisisState: { startedSeason: 8, startedMatchday: 9, phase: 'decision', eventsFired: [] },
+    }),
+  },
+  {
+    label: 'Efterdyning · sold_star',
+    game: makeGame(makeLeagueFixtures(), {
+      economicCrisisState: { startedSeason: 8, startedMatchday: 9, phase: 'resolved', eventsFired: [], outcome: 'sold_star', resolvedMatchday: 13, soldToSurvivePlayerName: 'Viktor Ahlén' },
+    }),
+  },
+  {
+    label: 'Efterdyning · loan',
+    game: makeGame(makeLeagueFixtures(), {
+      economicCrisisState: { startedSeason: 8, startedMatchday: 9, phase: 'resolved', eventsFired: [], outcome: 'loan', resolvedMatchday: 13 },
+    }),
+  },
+  {
+    label: 'Efterdyning · mecenat',
+    game: makeGame(makeLeagueFixtures(), {
+      economicCrisisState: { startedSeason: 8, startedMatchday: 9, phase: 'resolved', eventsFired: [], outcome: 'mecenat', resolvedMatchday: 13 },
+    }),
+  },
+  {
+    label: 'Efterdyning · natural_recovery',
+    game: makeGame(makeLeagueFixtures(), {
+      economicCrisisState: { startedSeason: 8, startedMatchday: 9, phase: 'resolved', eventsFired: [], outcome: 'natural_recovery', resolvedMatchday: 13 },
+    }),
+  },
+]
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 const cupGame    = makeGame([...makeLeagueFixtures(), cupFinalFixture])
@@ -475,6 +511,15 @@ export function DevScenesScreen() {
         {scene === 'efterklang' && (
           <div style={{ padding: '20px 12px', background: 'var(--bg-portal-surface)', minHeight: 'calc(100vh - 40px)' }}>
             <EfterklangSecondary game={efterklangGame} />
+            <div style={{ marginTop: 28, fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+              ⬩ economicScar — resolutions-medveten efterdyning
+            </div>
+            {efterklangCrisisVariants.map(v => (
+              <div key={v.label} style={{ marginTop: 14 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, letterSpacing: '0.5px', color: 'var(--text-muted)', marginBottom: 6 }}>{v.label}</div>
+                <EfterklangSecondary game={v.game} />
+              </div>
+            ))}
           </div>
         )}
 

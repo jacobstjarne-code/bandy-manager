@@ -35,3 +35,12 @@ Samlad runda. Räknaren (`currentMatchday`) och kalendern (`scheduleGenerator.ts
 - **economicScar phase-mismatch:** briefens premiss-tabell antog faser `acute`/`recovering` som inte finns i koden. Faktiska faser: `awareness | pressure | decision | resolved` (resolved filtreras bort). Mappning: `decision` → `Kassan är tom — igen.` (acute), `awareness`/`pressure` → `Inte länge sedan kassan var tom.`. Strängen `Ni reser er ur krisen, sakta.` (recovering) saknar matchande aktiv fas → **oanvänd**. Vill du ha den, behövs en `recovering`-fas eller annan trigger.
 - **Ikoner:** mocken ritade 💔/🎯 för rivalSale/nemesis; behöll befintliga `EFTERKLANG_TYPE_ICON` (🔄/⚔️) — 🎯 krockar med boardObjective, och ikonerna är Opus-text-data.
 - **rivalSale objectName:** sätts nu till spelarnamnet när enrich finns (annars "Rivalförsäljning") — mer konkret namn i rad + modaltitel.
+
+## Tillägg samma dag — economicScar resolutions-medveten efterdyning
+
+Löser den tidigare flaggade "oanvänd recovering-sträng": economicScar har nu TVÅ grenar.
+- [x] **§1** `resolveEconomicCrisis`-effekten stämplar `resolvedMatchday` (counter-oberoende, senaste completed ligamatch) + återanvänder befintlig `outcome` som resolutionType (inget dublett-fält) + `soldToSurvivePlayerName` (fångas FÖRE `removePlayerId`). Verifierat via test per resolutionsväg.
+- [x] **§2** pickEfterklang: A. aktiv kris oförändrad. B. `resolved` inom 10-omg-fönster → vägspecifik premiss/echo; utanför fönster eller saknad `resolvedMatchday` (gammal save) → ingen economicScar.
+- [x] **§3** `ECONOMIC_SCAR_AFTERMATH` i efterklangText (Opus-copy 2026-06-03), fyra vägar. Gamla "Ni reser er ur krisen, sakta." fanns aldrig i koden (bara i kommentar) — kommentaren ersatt.
+- **Verifiering:** dev-galleri visar 4 efterdynings-varianter + 1 aktiv kris (`screenshots/efterklang_economicscar_variants.png`). 1078/1078 test grönt (+7 nya).
+- **Avvikelse:** spec bad om nytt `resolutionType`-fält; befintliga `outcome` håller exakt samma värde → återanvänt för att undvika dublett (flaggat).
