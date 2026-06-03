@@ -28,6 +28,34 @@ const TRAINING_LABEL: Record<string, string> = {
   [TrainingType.Recovery]: 'Återhämtning', [TrainingType.MatchPrep]: 'Matchförberedelse',
 }
 
+/**
+ * A1 — flavor-radens text. Straffavgjord match (bara cup/slutspel sätter penResult)
+ * får egen label FÖRE margin-logiken, annars hade en straffseger 4–4 hamnat i kryss-grenen.
+ * Ren funktion → enhetstestbar (straff-guard + att ligamatch aldrig läcker straff-text).
+ */
+export function granskaFlavorText(args: {
+  penResult?: { home: number; away: number }
+  won: boolean
+  lost: boolean
+  isHome: boolean
+  homeScore?: number
+  awayScore?: number
+}): string {
+  const { penResult, won, lost, isHome, homeScore, awayScore } = args
+  if (penResult) return won ? '🎯 Straffseger' : '🎯 Förlust på straffar'
+  const myScore = isHome ? (homeScore ?? 0) : (awayScore ?? 0)
+  const theirScore = isHome ? (awayScore ?? 0) : (homeScore ?? 0)
+  const margin = myScore - theirScore
+  const totalGoals = (homeScore ?? 0) + (awayScore ?? 0)
+  const flavor = won
+    ? margin >= 3 ? '💪 Dominant insats' : totalGoals >= 8 ? '🔥 Målrik historia' : margin === 1 ? '😅 Knapp seger' : '✅ Klar vinst'
+    : lost
+    ? margin <= -3 ? '💣 Svår dag på jobbet' : margin === -1 ? '😤 Nära men inte nog' : '❌ Klar förlust'
+    : totalGoals >= 8 ? '🎢 Dramatiskt kryss' : '🤝 Rättvis poängdelning'
+  const flavorTail = won ? ` · ${isHome ? 'hemmaseger' : 'bortaseger'}` : ''
+  return `${flavor}${flavorTail}`
+}
+
 /** Grupp-avdelare: ⬩ + label + hairline. */
 function GroupDivider({ label, style }: { label: string; style?: React.CSSProperties }) {
   return (
@@ -151,20 +179,18 @@ export function GranskaOversikt({
 
             {/* Flavor-rad — kort sammanfattning, border-top, klipps aldrig mot underkanten */}
             {(() => {
-              const myScore = isHome ? fixture.homeScore : fixture.awayScore
-              const theirScore = isHome ? fixture.awayScore : fixture.homeScore
-              const margin = myScore - theirScore
-              const totalGoals = (fixture.homeScore ?? 0) + (fixture.awayScore ?? 0)
-              const flavor = won
-                ? margin >= 3 ? '💪 Dominant insats' : totalGoals >= 8 ? '🔥 Målrik historia' : margin === 1 ? '😅 Knapp seger' : '✅ Klar vinst'
-                : lost
-                ? margin <= -3 ? '💣 Svår dag på jobbet' : margin === -1 ? '😤 Nära men inte nog' : '❌ Klar förlust'
-                : totalGoals >= 8 ? '🎢 Dramatiskt kryss' : '🤝 Rättvis poängdelning'
-              const venue = isHome ? 'hemmaseger' : 'bortaseger'
-              const flavorTail = won ? ` · ${venue}` : ''
+              const flavorText = granskaFlavorText({ penResult, won, lost, isHome, homeScore: fixture.homeScore, awayScore: fixture.awayScore })
+              // penResult-grenen har egen färglogik (straff → alltid won/lost, ingen neutral)
+              if (penResult) {
+                return (
+                  <div style={{ marginTop: 12, paddingTop: 11, borderTop: '1px solid var(--border)', fontSize: 12, fontWeight: 600, color: won ? 'var(--success)' : 'var(--danger)' }}>
+                    {flavorText}
+                  </div>
+                )
+              }
               return (
                 <div style={{ marginTop: 12, paddingTop: 11, borderTop: '1px solid var(--border)', fontSize: 12, fontWeight: 600, color: won ? 'var(--success)' : lost ? 'var(--danger)' : 'var(--text-secondary)' }}>
-                  {flavor}{flavorTail}
+                  {flavorText}
                 </div>
               )
             })()}

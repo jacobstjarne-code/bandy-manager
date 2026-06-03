@@ -1126,10 +1126,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
   // Rival sale: fanMood -20, set lastRivalSaleMatchday
-  const hasRivalSaleMoment = transferExecResult.moments.some(m => m.source === 'rival_sale')
-  if (hasRivalSaleMoment) {
+  const rivalSaleMoment = transferExecResult.moments.find(m => m.source === 'rival_sale')
+  let lastRivalSaleInfo = game.lastRivalSaleInfo
+  if (rivalSaleMoment) {
     newFanMood = Math.max(0, Math.min(100, newFanMood - 20))
     lastRivalSaleMatchday = nextMatchday
+    // B1 — namn-anchor för Efterklang-premiss (spelaren har redan bytt klubb, läs ur moment)
+    const soldP = postTransferPlayers.find(p => p.id === rivalSaleMoment.subjectPlayerId)
+    const buyerC = postTransferClubs.find(c => c.id === rivalSaleMoment.subjectClubId)
+    if (soldP && buyerC) {
+      lastRivalSaleInfo = { soldPlayerName: `${soldP.firstName} ${soldP.lastName}`, buyerClubName: buyerC.name }
+    }
   }
 
   // ── Community standing, politician/mecenat inbox, facility projects ────────
@@ -1292,6 +1299,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     scoutReports: { ...updatedScoutReports, ...rumorScoutReports },
     activeScoutAssignment: updatedScoutAssignment,
     lastRivalSaleMatchday,
+    lastRivalSaleInfo,
     lastIncomingBidMatchday,
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: trimmedBids,

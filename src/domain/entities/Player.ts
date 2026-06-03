@@ -106,7 +106,8 @@ export interface Player {
   recentlyInjuredUntil?: number  // matchday — "Ramp först" warn om Bygg/Toppa sätts före detta
   suspensionCause?: { sinceMatchday: number; opponentName: string; matches: number }
 
-  seasonStats: PlayerSeasonStats
+  seasonStats: PlayerSeasonStats       // A5: liga-only (cup separeras till seasonCupStats)
+  seasonCupStats?: PlayerSeasonStats   // A5: cup-only denna säsong; careerStats är fortsatt all-tävling
   careerStats: PlayerCareerStats
   careerMilestones?: CareerMilestone[]
   isOnLoan?: boolean

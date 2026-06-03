@@ -221,17 +221,20 @@ function makeGame(fixtureOverrides: object[], extra: Record<string, unknown> = {
   } as unknown as SaveGame
 }
 
-// Efterklang — fingered journalist with 3 memories over 5 rounds
+// Efterklang — fingered journalist (3 memories) + nemesis, så flödet visar två trådar
 const efterklangGame = makeGame(makeLeagueFixtures(), {
   journalist: {
     name: 'Britta Sandström',
     persona: 'sceptical',
     relationship: 62,
     memory: [
-      { season: 8, matchday: 4, event: 'big_win', sentiment: 6 },
+      { season: 8, matchday: 4, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' },
       { season: 8, matchday: 7, event: 'bad_answer', sentiment: -5 },
-      { season: 8, matchday: 9, event: 'good_answer', sentiment: 4 },
+      { season: 8, matchday: 9, event: 'big_win', sentiment: 6 },
     ],
+  },
+  nemesisTracker: {
+    [AWAY_ID]: { playerId: 'np-1', name: 'Theo Dahlqvist', clubId: AWAY_ID, goalsAgainstUs: 3 },
   },
 })
 

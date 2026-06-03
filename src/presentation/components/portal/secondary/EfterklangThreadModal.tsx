@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import type { EfterklangMemory } from '../../../../domain/services/portal/pickEfterklang'
 import { EFTERKLANG_TYPE_ICON } from '../../../../domain/data/efterklangText'
 
@@ -7,12 +8,15 @@ interface Props {
 }
 
 export function EfterklangThreadModal({ memory, onClose }: Props) {
-  return (
+  // A2: renderas via portal till body — annars fångar Portal-innehållets
+  // stacking-context (.screen-enter animation: fadeIn) z-index:n lokalt och den
+  // sticky CTA-baren (z 200, root-kontext) målar över modalens nederkant + äter touch.
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       style={{
-        position: 'fixed', inset: 0, zIndex: 300,
+        position: 'fixed', inset: 0, zIndex: 400,
         background: 'rgba(0,0,0,0.6)',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
       }}
@@ -107,6 +111,7 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
           En linje som löper genom säsongen.
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

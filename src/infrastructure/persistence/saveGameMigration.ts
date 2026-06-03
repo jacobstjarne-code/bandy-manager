@@ -315,6 +315,49 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   // ── C-P1 — cardStaleTracking ─────────────────────────────────────────────
   if (data.cardStaleTracking === undefined) data.cardStaleTracking = {}
 
+  // ── A5 — cup/liga stat-split: rensa förorenad seasonStats (cup-mål hade adderats
+  //    till ligastatistiken). Re-summera ur denna säsongs completed fixtures, delat
+  //    på isCup. careerStats lämnas orört (all-tävling). Körs en gång per save som
+  //    saknar seasonCupStats. ──────────────────────────────────────────────────
+  if (Array.isArray(data.players) && Array.isArray(data.fixtures)) {
+    const players = data.players as Record<string, unknown>[]
+    const needsSplit = players.some(p => p.seasonCupStats === undefined)
+    if (needsSplit) {
+      const season = data.currentSeason as number
+      const fixtures = (data.fixtures as Record<string, unknown>[]).filter(
+        f => f.status === 'completed' && f.season === season
+      )
+      const recompute = (playerId: string, isCup: boolean) => {
+        const subset = fixtures.filter(f => !!f.isCup === isCup)
+        const s = { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 }
+        let ratingSum = 0, ratingCount = 0
+        for (const f of subset) {
+          const home = (f.homeLineup as { startingPlayerIds?: string[] } | undefined)?.startingPlayerIds ?? []
+          const away = (f.awayLineup as { startingPlayerIds?: string[] } | undefined)?.startingPlayerIds ?? []
+          const started = home.includes(playerId) || away.includes(playerId)
+          if (!started) continue
+          s.gamesPlayed += 1
+          s.minutesPlayed += 90
+          const events = (f.events as Array<Record<string, unknown>>) ?? []
+          for (const e of events) {
+            if (e.playerId !== playerId) continue
+            if (e.type === 'goal') { s.goals += 1; if (e.isCornerGoal) s.cornerGoals += 1; if (e.isPenaltyGoal) s.penaltyGoals += 1 }
+            else if (e.type === 'assist') s.assists += 1
+            else if (e.type === 'redCard' || e.type === 'suspension') s.redCards += 1
+          }
+          const rating = (f.report as { playerRatings?: Record<string, number> } | undefined)?.playerRatings?.[playerId]
+          if (rating !== undefined) { ratingSum += rating; ratingCount += 1 }
+        }
+        s.averageRating = ratingCount > 0 ? Math.round((ratingSum / ratingCount) * 100) / 100 : 0
+        return s
+      }
+      data.players = players.map(p => {
+        const id = p.id as string
+        return { ...p, seasonStats: recompute(id, false), seasonCupStats: recompute(id, true) }
+      })
+    }
+  }
+
   // ── version stamp ────────────────────────────────────────────────────────
   data.version = CURRENT_SAVE_VERSION
 

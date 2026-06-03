@@ -50,8 +50,9 @@ export function recordInteraction(
   matchday: number,
   event: string,
   sentiment: number,
+  opponentShort?: string,  // B1 — motståndaren matchen gällde (Efterklang-premiss)
 ): Journalist {
-  const entry: JournalistMemory = { season, matchday, event, sentiment }
+  const entry: JournalistMemory = { season, matchday, event, sentiment, opponentShort }
   const memory = [...journalist.memory, entry].slice(-MAX_MEMORY)
   const newRelationship = Math.max(0, Math.min(100, journalist.relationship + sentiment))
   return {

@@ -237,16 +237,27 @@ export function resolveEvent(
       }
       // Update journalist memory
       if (updatedGame.journalist) {
-        const matchday = updatedGame.fixtures
+        // B1 — premiss-anchor: senaste ligamatchens motståndare (lätt åtkomligt här,
+        // pressfrågan gäller den just spelade matchen)
+        const lastLeagueFixture = updatedGame.fixtures
           .filter(f => f.status === 'completed' && !f.isCup)
-          .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+          .reduce<typeof updatedGame.fixtures[number] | undefined>(
+            (latest, f) => (f.roundNumber > (latest?.roundNumber ?? -1) ? f : latest), undefined)
+        const matchday = lastLeagueFixture?.roundNumber ?? 0
+        const oppId = lastLeagueFixture
+          ? (lastLeagueFixture.homeClubId === updatedGame.managedClubId
+              ? lastLeagueFixture.awayClubId : lastLeagueFixture.homeClubId)
+          : undefined
+        const opponentShort = oppId
+          ? (updatedGame.clubs.find(c => c.id === oppId)?.shortName)
+          : undefined
         const isRefusal = choiceId === 'refuse_press'
         updatedGame = {
           ...updatedGame,
           journalist: isRefusal
             ? recordPressRefusal(updatedGame.journalist, updatedGame.currentSeason, matchday)
             : recordInteraction(updatedGame.journalist, updatedGame.currentSeason, matchday,
-                moraleBoost > 0 ? 'good_answer' : 'bad_answer', moraleBoost > 0 ? 3 : -3),
+                moraleBoost > 0 ? 'good_answer' : 'bad_answer', moraleBoost > 0 ? 3 : -3, opponentShort),
           journalistRelationship: isRefusal
             ? Math.max(0, (updatedGame.journalistRelationship ?? 50) - 8)
             : (updatedGame.journalistRelationship ?? 50) + (moraleBoost > 0 ? 3 : -3),

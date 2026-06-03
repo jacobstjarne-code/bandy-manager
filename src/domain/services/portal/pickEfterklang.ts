@@ -1,6 +1,7 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import { EFTERKLANG_ECHO, type EfterklangType } from '../../data/efterklangText'
 import { mulberry32 } from '../../utils/random'
+import { FixtureStatus } from '../../enums'
 
 const JOURNALIST_EVENT_LABEL: Record<string, string> = {
   refused_press: 'Refuserade pressen',
@@ -8,6 +9,16 @@ const JOURNALIST_EVENT_LABEL: Record<string, string> = {
   bad_answer:    'Dåligt svar',
   big_win:       'Stor seger',
   crisis:        'Kris',
+}
+
+// B4 — premiss-stam per journalist-event (Opus-copy 2026-06-03). Trailing ", omg {N}."
+// (eller " efter {opp}, omg {N}." på good/bad/refused med opponentShort) sätts vid komposition.
+const JOURNALIST_PREMISS_STEM: Record<string, string> = {
+  good_answer:   'Du gav {journalist} ett rakt svar',
+  bad_answer:    'Du snäste av {journalist}',
+  refused_press: 'Du nekade {journalist} en kommentar',
+  big_win:       '{journalist} skrev om storsegern',
+  crisis:        '{journalist} ringde mitt i krisen',
 }
 
 export interface EfterklangThreadEntry {
@@ -18,6 +29,8 @@ export interface EfterklangThreadEntry {
 export interface EfterklangMemory {
   type: EfterklangType
   primaryText: string
+  /** B1 — dämpad anchor-rad före ekot (uppställningen → payoff). Komponeras per typ. */
+  premiss: string
   echo: string
   objectName: string
   sinceMatchday?: number
@@ -25,6 +38,9 @@ export interface EfterklangMemory {
   /** journalist type only */
   journalistName?: string
   hasJournalistSparkline?: boolean
+  /** rivalSale type only — B1 */
+  soldPlayerName?: string
+  buyerClubName?: string
 }
 
 function pickEcho(type: EfterklangType, seed: number): string {
@@ -37,6 +53,12 @@ function interpolate(text: string, vars: Record<string, string>): string {
 }
 
 export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
+  // A3: gate på spelade ligamatcher (inte currentMatchday) — visa inte efterklang för tidigt
+  const playedLeague = game.fixtures.filter(f =>
+    f.status === FixtureStatus.Completed && !f.isCup && f.season === game.currentSeason
+  ).length
+  if (playedLeague < 5) return []
+
   const round = game.currentMatchday
   const season = game.currentSeason
   const seed = season * 7919 + round * 31
@@ -51,11 +73,14 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     const ann = anniversaries[0]
     const echo = interpolate(pickEcho('anniversary', seed), {})
     const name = ann.originalEventText.length > 28 ? ann.originalEventText.slice(0, 26) + '…' : ann.originalEventText
+    // B4 — premiss: "{N} år sedan {händelse}." (delta 1 → "Ett år sedan …")
+    const annEvent = ann.originalEventText.length > 30 ? ann.originalEventText.slice(0, 29) + '…' : ann.originalEventText
+    const premiss = ann.yearsAgo === 1 ? `Ett år sedan ${annEvent}.` : `${ann.yearsAgo} år sedan ${annEvent}.`
     candidates.push({
       type: 'anniversary',
       score: ann.significance * (ann.echoSize === 'big' ? 1.3 : 1.0),
       memory: {
-        type: 'anniversary', primaryText: ann.originalEventText, echo,
+        type: 'anniversary', primaryText: ann.originalEventText, premiss, echo,
         objectName: name,
         threadEntries: [{ matchday: round, text: ann.originalEventText }],
       },
@@ -65,11 +90,16 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   // Klack echo
   if (game.klackEcho && game.klackEcho.currentWeight > 20) {
     const echo = pickEcho('klackEcho', seed + 1)
+    // B4 — premiss på currentWeight
+    const w = game.klackEcho.currentWeight
+    const premiss = w > 60 ? 'Klacken har inte släppt det än.'
+      : w >= 40 ? 'Klacken minns hur säsongen kändes.'
+      : 'Känslorna sitter kvar i själva läktaren.'
     candidates.push({
       type: 'klackEcho',
       score: game.klackEcho.currentWeight,
       memory: {
-        type: 'klackEcho', primaryText: '', echo,
+        type: 'klackEcho', primaryText: '', premiss, echo,
         objectName: 'Klacken',
         threadEntries: [{ matchday: round, text: echo }],
       },
@@ -86,12 +116,22 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
       Math.abs(m.sentiment) > Math.abs(best.sentiment) ? m : best
     )
     const sortedMemories = [...journalistMemories].sort((a, b) => a.matchday - b.matchday)
+    // B4 — premiss: stam per event + ", omg {N}." (med opponentShort: " efter {opp}, omg {N}."
+    // på good/bad/refused). {N} = första (äldsta) entryns matchday.
+    const firstMem = sortedMemories[0]
+    const ev = firstMem?.event ?? ''
+    const premissN = firstMem?.matchday ?? round
+    const opp = firstMem?.opponentShort
+    const stem = interpolate(JOURNALIST_PREMISS_STEM[ev] ?? '{journalist} hörde av sig', { journalist: name })
+    const canAppendOpp = !!opp && (ev === 'good_answer' || ev === 'bad_answer' || ev === 'refused_press')
+    const premiss = canAppendOpp ? `${stem} efter ${opp}, omg ${premissN}.` : `${stem}, omg ${premissN}.`
     candidates.push({
       type: 'journalist',
       score: 50 + Math.abs(notable.sentiment) * 3 + (game.journalist.relationship ?? 50) * 0.3,
       memory: {
         type: 'journalist',
         primaryText: name,
+        premiss,
         echo,
         objectName: name,
         sinceMatchday: sortedMemories[0]?.matchday,
@@ -110,11 +150,12 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   if (thisSeasonLetters.length > 0) {
     const letter = thisSeasonLetters[0]
     const echo = pickEcho('followUp', seed + 3)
+    const premiss = `${letter.senderName} skrev till dig tidigare i säsongen.`  // B4
     candidates.push({
       type: 'followUp',
       score: 40,
       memory: {
-        type: 'followUp', primaryText: letter.senderName, echo,
+        type: 'followUp', primaryText: letter.senderName, premiss, echo,
         objectName: letter.senderName,
         threadEntries: [{ matchday: round, text: letter.senderName }],
       },
@@ -125,11 +166,12 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   const recentObjective = (game.boardObjectiveHistory ?? []).slice(-1)[0]
   if (recentObjective && recentObjective.result === 'failed') {
     const echo = pickEcho('boardObjective', seed + 4)
+    const premiss = 'Du missade styrelsens mål förra säsongen.'  // B4
     candidates.push({
       type: 'boardObjective',
       score: 55,
       memory: {
-        type: 'boardObjective', primaryText: recentObjective.ownerReaction, echo,
+        type: 'boardObjective', primaryText: recentObjective.ownerReaction, premiss, echo,
         objectName: 'Styrelsemålet',
         threadEntries: [{ matchday: round, text: recentObjective.ownerReaction }],
       },
@@ -146,11 +188,12 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     const echo = interpolate(pickEcho('nemesis', seed + 5), {
       motståndare: opponentClub?.name ?? n.name,
     })
+    const premiss = `${n.goalsAgainstUs} mål mot er den här säsongen.`  // B4 (goalsAgainstUs alltid ≥ 2)
     candidates.push({
       type: 'nemesis',
       score: 45 + n.goalsAgainstUs * 5,
       memory: {
-        type: 'nemesis', primaryText: n.name, echo,
+        type: 'nemesis', primaryText: n.name, premiss, echo,
         objectName: n.name,
         threadEntries: [{ matchday: round, text: `${n.goalsAgainstUs} mål mot oss` }],
       },
@@ -160,11 +203,18 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   // Economic scar
   if (game.economicCrisisState && game.economicCrisisState.phase !== 'resolved') {
     const echo = pickEcho('economicScar', seed + 6)
+    // B4 — premiss på phase. NOTE: brief antog phase-namn 'acute'/'recovering' som inte finns;
+    // faktiska faser är awareness|pressure|decision|resolved (resolved filtreras bort ovan).
+    // 'decision' = sharpest = acute-copy; awareness/pressure = annat-copy. recovering-strängen
+    // ("Ni reser er ur krisen, sakta.") saknar matchande aktiv fas → oanvänd (flaggat till Jacob).
+    const premiss = game.economicCrisisState.phase === 'decision'
+      ? 'Kassan är tom — igen.'
+      : 'Inte länge sedan kassan var tom.'
     candidates.push({
       type: 'economicScar',
       score: 60,
       memory: {
-        type: 'economicScar', primaryText: '', echo,
+        type: 'economicScar', primaryText: '', premiss, echo,
         objectName: 'Budgetkrisen',
         threadEntries: [{ matchday: round, text: echo }],
       },
@@ -180,13 +230,20 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
         'En spelare bär deras färger nu. Det svider fortfarande.',
       ]
       const echo = fallbackEchoes[Math.floor(mulberry32(seed + 7)() * fallbackEchoes.length)]
+      // B4 — premiss: "Ni sålde {spelare} till {klubb}." (fallback om enrich saknas)
+      const info = game.lastRivalSaleInfo
+      const premiss = info
+        ? `Ni sålde ${info.soldPlayerName} till ${info.buyerClubName}.`
+        : 'Ni sålde en nyckelspelare till en rival.'
       candidates.push({
         type: 'rivalSale',
         score: 35 + (10 - recency) * 3,
         memory: {
-          type: 'rivalSale', primaryText: '', echo,
-          objectName: 'Rivalförsäljning',
+          type: 'rivalSale', primaryText: '', premiss, echo,
+          objectName: info ? info.soldPlayerName : 'Rivalförsäljning',
           threadEntries: [{ matchday: game.lastRivalSaleMatchday, text: echo }],
+          soldPlayerName: info?.soldPlayerName,
+          buyerClubName: info?.buyerClubName,
         },
       })
     }

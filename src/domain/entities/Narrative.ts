@@ -29,6 +29,7 @@ export interface JournalistMemory {
   matchday: number
   event: string       // 'refused_press', 'good_answer', 'bad_answer', 'big_win', 'crisis'
   sentiment: number   // -10 to +10
+  opponentShort?: string  // B1 — motståndaren matchen gällde, för Efterklang-premiss ("…efter {opp}")
 }
 
 export interface Journalist {

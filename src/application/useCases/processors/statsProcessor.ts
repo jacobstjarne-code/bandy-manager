@@ -1,7 +1,12 @@
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
-import type { Player, CareerMilestone } from '../../../domain/entities/Player'
+import type { Player, CareerMilestone, PlayerSeasonStats } from '../../../domain/entities/Player'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import { FixtureStatus, MatchEventType, InboxItemType } from '../../../domain/enums'
+
+/** A5: tom säsongsstatistik (för cup-grenen innan första cupmatchen). */
+function emptySeasonStats(): PlayerSeasonStats {
+  return { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 }
+}
 import {
   generateHatTrickEntry,
   generateGoodMatchEntry,
@@ -27,6 +32,7 @@ export function updatePlayerMatchStats(
 
   for (const fixture of simulatedFixtures) {
     if (fixture.status !== FixtureStatus.Completed) continue
+    const isCupFixture = !!fixture.isCup  // A5: cup-mål bokförs separat från ligastatistik
     const allStarters = [
       ...(fixture.homeLineup?.startingPlayerIds ?? []),
       ...(fixture.awayLineup?.startingPlayerIds ?? []),
@@ -56,8 +62,10 @@ export function updatePlayerMatchStats(
       )
       const minutesThisGame = subOutEvent ? Math.min(90, subOutEvent.minute) : 90
 
-      const prevGames = p.seasonStats.gamesPlayed
-      const prevAvgRating = p.seasonStats.averageRating
+      // A5: läs/skriv mot rätt statistik-hink (cup vs liga)
+      const targetStats = isCupFixture ? (p.seasonCupStats ?? emptySeasonStats()) : p.seasonStats
+      const prevGames = targetStats.gamesPlayed
+      const prevAvgRating = targetStats.averageRating
       const newAvgRating = rating !== undefined
         ? (prevAvgRating * prevGames + rating) / (prevGames + 1)
         : prevAvgRating
@@ -192,19 +200,21 @@ export function updatePlayerMatchStats(
         }
       }
 
+      const updatedTarget: PlayerSeasonStats = {
+        ...targetStats,
+        gamesPlayed: prevGames + 1,
+        goals: targetStats.goals + goals,
+        assists: targetStats.assists + assists,
+        cornerGoals: targetStats.cornerGoals + cornerGoals,
+        yellowCards: targetStats.yellowCards + 0,
+        redCards: targetStats.redCards + reds,
+        averageRating: Math.round(newAvgRating * 100) / 100,
+        minutesPlayed: targetStats.minutesPlayed + minutesThisGame,
+      }
       finalPlayers[idx] = {
         ...p,
-        seasonStats: {
-          ...p.seasonStats,
-          gamesPlayed: prevGames + 1,
-          goals: p.seasonStats.goals + goals,
-          assists: p.seasonStats.assists + assists,
-          cornerGoals: p.seasonStats.cornerGoals + cornerGoals,
-          yellowCards: p.seasonStats.yellowCards + 0,
-          redCards: p.seasonStats.redCards + reds,
-          averageRating: Math.round(newAvgRating * 100) / 100,
-          minutesPlayed: p.seasonStats.minutesPlayed + minutesThisGame,
-        },
+        seasonStats: isCupFixture ? p.seasonStats : updatedTarget,
+        seasonCupStats: isCupFixture ? updatedTarget : p.seasonCupStats,
         careerStats: {
           ...p.careerStats,
           totalGames: newCareerGames,
@@ -229,12 +239,12 @@ export function updatePlayerMatchStats(
       const subPlayer = finalPlayers[subInIdx]
       const subMinutes = Math.max(0, 90 - Math.min(90, subEvent.minute))
       if (subMinutes <= 0) continue
+      const subTarget = isCupFixture ? (subPlayer.seasonCupStats ?? emptySeasonStats()) : subPlayer.seasonStats
+      const subUpdated = { ...subTarget, minutesPlayed: subTarget.minutesPlayed + subMinutes }
       finalPlayers[subInIdx] = {
         ...subPlayer,
-        seasonStats: {
-          ...subPlayer.seasonStats,
-          minutesPlayed: subPlayer.seasonStats.minutesPlayed + subMinutes,
-        },
+        seasonStats: isCupFixture ? subPlayer.seasonStats : subUpdated,
+        seasonCupStats: isCupFixture ? subUpdated : subPlayer.seasonCupStats,
       }
     }
 
@@ -250,13 +260,13 @@ export function updatePlayerMatchStats(
       const idx = finalPlayers.findIndex(p => p.id === benchId)
       if (idx === -1) continue
       const benchMinutes = 30 + Math.floor(Math.random() * 11)  // 30-40 min
+      const benchPlayer = finalPlayers[idx]
+      const benchTarget = isCupFixture ? (benchPlayer.seasonCupStats ?? emptySeasonStats()) : benchPlayer.seasonStats
+      const benchUpdated = { ...benchTarget, minutesPlayed: benchTarget.minutesPlayed + benchMinutes, gamesPlayed: benchTarget.gamesPlayed + 1 }
       finalPlayers[idx] = {
-        ...finalPlayers[idx],
-        seasonStats: {
-          ...finalPlayers[idx].seasonStats,
-          minutesPlayed: finalPlayers[idx].seasonStats.minutesPlayed + benchMinutes,
-          gamesPlayed: finalPlayers[idx].seasonStats.gamesPlayed + 1,
-        },
+        ...benchPlayer,
+        seasonStats: isCupFixture ? benchPlayer.seasonStats : benchUpdated,
+        seasonCupStats: isCupFixture ? benchUpdated : benchPlayer.seasonCupStats,
       }
     }
   }

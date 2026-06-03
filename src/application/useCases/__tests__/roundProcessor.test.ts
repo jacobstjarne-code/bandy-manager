@@ -113,6 +113,13 @@ describe('roundProcessor — suspension handling', () => {
 // ── Group 2: Player stats after a round ──────────────────────────────────────
 
 describe('roundProcessor — player stats after a round', () => {
+  // A5: cup-mål bokförs i seasonCupStats, ligamål i seasonStats. Första omgången i
+  // detta schema är en cup-runda, så testerna måste läsa rätt hink per tävling.
+  const bucketFor = (p: SaveGame['players'][number], isCup: boolean) =>
+    isCup ? (p.seasonCupStats ?? { gamesPlayed: 0, minutesPlayed: 0 }) : p.seasonStats
+  const totalGames = (p: SaveGame['players'][number]) =>
+    p.seasonStats.gamesPlayed + (p.seasonCupStats?.gamesPlayed ?? 0)
+
   it('starters have gamesPlayed incremented by 1 after a round', () => {
     const game = makeGame()
     const result = advanceToNextEvent(game, 1)
@@ -125,18 +132,20 @@ describe('roundProcessor — player stats after a round', () => {
 
     const before = game.players.find(p => p.id === starterId)!
     const after = result.game.players.find(p => p.id === starterId)!
-    expect(after.seasonStats.gamesPlayed).toBe(before.seasonStats.gamesPlayed + 1)
+    expect(bucketFor(after, !!completed!.isCup).gamesPlayed)
+      .toBe(bucketFor(before, !!completed!.isCup).gamesPlayed + 1)
   })
 
   it('no player gains more than 1 gamesPlayed per round', () => {
     const game = makeGame()
     const result = advanceToNextEvent(game, 1)
 
-    // Every player should gain at most 1 gamesPlayed per round (no double-counting)
+    // Every player should gain at most 1 gamesPlayed per round (no double-counting).
+    // A5: summera liga + cup, en spelare kan inte spela två matcher samma omgång.
     let anyIncreased = false
     for (const before of game.players) {
       const after = result.game.players.find(ap => ap.id === before.id)!
-      const delta = after.seasonStats.gamesPlayed - before.seasonStats.gamesPlayed
+      const delta = totalGames(after) - totalGames(before)
       expect(delta).toBeGreaterThanOrEqual(0)
       expect(delta).toBeLessThanOrEqual(1)
       if (delta === 1) anyIncreased = true
@@ -156,7 +165,8 @@ describe('roundProcessor — player stats after a round', () => {
 
     const before = game.players.find(p => p.id === starterId)!
     const after = result.game.players.find(p => p.id === starterId)!
-    expect(after.seasonStats.minutesPlayed).toBeGreaterThan(before.seasonStats.minutesPlayed)
+    expect(bucketFor(after, !!completed!.isCup).minutesPlayed)
+      .toBeGreaterThan(bucketFor(before, !!completed!.isCup).minutesPlayed)
   })
 })
 

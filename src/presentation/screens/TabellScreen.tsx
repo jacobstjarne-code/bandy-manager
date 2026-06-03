@@ -624,6 +624,48 @@ export function TabellScreen() {
                 </div>
               )
             })}
+
+            {/* A5: Cupens skyttekungar — läser seasonCupStats (cup-only, ej liga) */}
+            {(() => {
+              const cupScorers = game.players
+                .filter(p => (p.seasonCupStats?.goals ?? 0) > 0)
+                .sort((a, b) => (b.seasonCupStats!.goals) - (a.seasonCupStats!.goals))
+                .slice(0, 5)
+              if (cupScorers.length === 0) return null
+              return (
+                <div style={{ marginBottom: 14 }}>
+                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+                    🏒 CUPENS SKYTTEKUNGAR
+                  </p>
+                  <div className="card-sharp" style={{ overflow: 'hidden' }}>
+                    {cupScorers.map((p, i) => {
+                      const club = game.clubs.find(c => c.id === p.clubId)
+                      const managed = isManaged(p.clubId)
+                      return (
+                        <div key={p.id} style={{
+                          display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px',
+                          borderTop: i === 0 ? 'none' : '1px solid var(--border)',
+                          background: managed ? 'rgba(196,122,58,0.06)' : 'transparent',
+                        }}>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)', width: 16, textAlign: 'right' }}>{i + 1}</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ fontSize: 13, fontWeight: managed ? 700 : 500, color: managed ? 'var(--accent)' : 'var(--text-primary)' }}>
+                              {p.firstName} {p.lastName}
+                            </span>
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
+                              {club?.shortName ?? club?.name ?? '?'}
+                            </span>
+                          </div>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent-dark)', fontFamily: 'var(--font-display)' }}>
+                            {p.seasonCupStats!.goals}<span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}> mål</span>
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })()}
           </div>
         )
       })()}
