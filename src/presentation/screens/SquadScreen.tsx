@@ -833,7 +833,7 @@ export function SquadScreen() {
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 200,
+            zIndex: 'var(--z-modal)',  // T1c: 200 → z-skala (modal = 300)
             background: 'rgba(0,0,0,0.6)',
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch',

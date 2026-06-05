@@ -13,11 +13,6 @@ interface SimSummaryState {
   pointsAfter: number
 }
 
-const LABEL: React.CSSProperties = {
-  fontSize: 8, fontWeight: 600, letterSpacing: '2px',
-  textTransform: 'uppercase', color: 'var(--text-muted)',
-  fontFamily: 'var(--font-body)', margin: 0,
-}
 
 function ordinal(n: number): string {
   return `${n}:a`
@@ -111,7 +106,7 @@ export function SimSummaryScreen() {
 
         {/* ── Header ── */}
         <div className="card-sharp" style={{ padding: '10px 14px' }}>
-          <p style={{ ...LABEL, marginBottom: 6 }}>⏩ SIMULERINGSRESULTAT</p>
+          <p className="h-label" style={{ marginBottom: 6 }}>⏩ SIMULERINGSRESULTAT</p>
           <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', margin: '0 0 2px' }}>
             {sorted.length} matcher simulerade
           </p>
@@ -119,7 +114,7 @@ export function SimSummaryScreen() {
           <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
             {/* Position */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span style={{ ...LABEL }}>Placering</span>
+              <span className="h-label" style={{ margin: 0 }}>Placering</span>
               <span style={{ fontSize: 13, fontFamily: 'var(--font-body)', color: 'var(--text-secondary)' }}>
                 {ordinal(positionBefore)}
                 {' '}→{' '}
@@ -133,7 +128,7 @@ export function SimSummaryScreen() {
 
             {/* Points gained */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span style={{ ...LABEL }}>Poäng under perioden</span>
+              <span className="h-label" style={{ margin: 0 }}>Poäng under perioden</span>
               <span style={{ fontSize: 13, fontFamily: 'var(--font-body)', color: 'var(--text-secondary)' }}>
                 <span style={{ color: pointsGained > 0 ? 'var(--success)' : pointsGained < 0 ? 'var(--danger)' : 'var(--text-secondary)', fontWeight: 600 }}>
                   {pointsGained >= 0 ? '+' : ''}{pointsGained} poäng
@@ -149,7 +144,7 @@ export function SimSummaryScreen() {
         {/* ── Results list ── */}
         {sorted.length > 0 && (
           <div className="card-sharp" style={{ padding: '10px 14px' }}>
-            <p style={{ ...LABEL, marginBottom: 8 }}>MATCHRESULTAT</p>
+            <p className="h-label" style={{ marginBottom: 8 }}>MATCHRESULTAT</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {sorted.map(f => {
                 const outcome = getOutcome(f)
@@ -187,7 +182,7 @@ export function SimSummaryScreen() {
         {/* ── Highlights ── */}
         {hasHighlights && (
           <div className="card-sharp" style={{ padding: '10px 14px' }}>
-            <p style={{ ...LABEL, marginBottom: 8 }}>HÖJDPUNKTER</p>
+            <p className="h-label" style={{ marginBottom: 8 }}>HÖJDPUNKTER</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
               {biggestWin && (() => {
@@ -232,13 +227,8 @@ export function SimSummaryScreen() {
         <div style={{ padding: '4px 0' }}>
           <button
             onClick={() => navigate('/game/dashboard', { replace: true })}
-            style={{
-              width: '100%', padding: '13px 0',
-              background: 'var(--accent)', color: 'var(--bg)',
-              border: 'none', borderRadius: 8, cursor: 'pointer',
-              fontSize: 14, fontWeight: 700, letterSpacing: '1px',
-              fontFamily: 'var(--font-display)',
-            }}
+            className="btn btn-primary"
+            style={{ width: '100%', letterSpacing: '2px', textTransform: 'uppercase' }}
           >
             Tillbaka till dashboard →
           </button>

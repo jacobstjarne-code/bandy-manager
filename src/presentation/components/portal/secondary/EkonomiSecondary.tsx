@@ -54,13 +54,14 @@ export function EkonomiSecondary({ game }: CardRenderProps) {
       }}>
         💰 KASSA
       </div>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 22,
-        fontWeight: 700,
-        color: finances < 0 ? 'var(--danger)' : 'var(--text-light)',
-        lineHeight: 1.3,
-      }}>
+      <div
+        className="h-display-sm"
+        style={{
+          // mörk portal-yta: roll-klassen sätter ingen färg → override krävs
+          color: finances < 0 ? 'var(--danger)' : 'var(--text-light)',
+          lineHeight: 1.3,  // bevarad (roll-klassens 1.15 avviker; behåll exakt)
+        }}
+      >
         {formatFinanceAbs(finances)}
       </div>
       <div style={{

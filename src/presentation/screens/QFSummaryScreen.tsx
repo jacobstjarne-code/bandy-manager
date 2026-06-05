@@ -36,7 +36,7 @@ export function QFSummaryScreen() {
 
       {/* ── RUBRIK ── */}
       <div style={{ textAlign: 'center', padding: '40px 20px 16px' }}>
-        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 12 }}>
+        <p className="h-label" style={{ marginBottom: 12 }}>
           ⚔️ KVARTSFINALERNA AVGJORDA
         </p>
         <p style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Georgia, serif', lineHeight: 1.3, marginBottom: 6 }}>
@@ -51,7 +51,7 @@ export function QFSummaryScreen() {
 
       {/* ── QF-RESULTAT ── */}
       <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 6 }}>
-        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8 }}>
+        <p className="h-label" style={{ marginBottom: 8 }}>
           🏒 KVARTSFINALER — RESULTAT
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -102,7 +102,7 @@ export function QFSummaryScreen() {
       {/* ── SEMIFINALPAR ── */}
       {sfMatchups.length > 0 && (
         <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 6 }}>
-          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8 }}>
+          <p className="h-label" style={{ marginBottom: 8 }}>
             ⚔️ SEMIFINALER — BÄST AV 5
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
