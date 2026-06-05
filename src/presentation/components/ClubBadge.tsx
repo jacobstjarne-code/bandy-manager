@@ -143,7 +143,7 @@ interface ClubBadgeProps {
 export function ClubBadge({ clubId, name, size = 40, strokeColor }: ClubBadgeProps) {
   const badge = CLUB_BADGES[clubId]
   const gradId = `badge-grad-${clubId || name}`
-  const stroke = strokeColor ?? 'rgba(196,122,58,0.5)'
+  const stroke = strokeColor ?? 'color-mix(in srgb, var(--accent) 50%, transparent)'
 
   if (!badge) {
     return (

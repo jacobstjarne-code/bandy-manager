@@ -364,7 +364,7 @@ export function PlayerCard({
       </div>
 
       {/* Gold divider */}
-      <div style={{ height: 1, background: 'rgba(196,122,58,0.3)', margin: '0 14px' }} />
+      <div style={{ height: 1, background: 'color-mix(in srgb, var(--accent) 30%, transparent)', margin: '0 14px' }} />
 
       {/* ═══ PORTRAIT ═══ */}
       <div style={{
@@ -381,7 +381,7 @@ export function PlayerCard({
       </div>
 
       {/* Gold divider */}
-      <div style={{ height: 1, background: 'rgba(196,122,58,0.5)', margin: '0 14px' }} />
+      <div style={{ height: 1, background: 'color-mix(in srgb, var(--accent) 50%, transparent)', margin: '0 14px' }} />
 
       {/* ═══ NAME + CLUB + BADGES ═══ */}
       <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--border)' }}>
@@ -444,7 +444,7 @@ export function PlayerCard({
           </p>
           {/* DREAM-012: injury narrative */}
           {player.isInjured && player.injuryNarrative && (
-            <div style={{ padding: '8px 10px', background: 'rgba(176,80,64,0.08)', borderLeft: '3px solid var(--danger)', marginTop: 8, borderRadius: '0 4px 4px 0' }}>
+            <div style={{ padding: '8px 10px', background: 'color-mix(in srgb, var(--danger) 8%, transparent)', borderLeft: '3px solid var(--danger)', marginTop: 8, borderRadius: '0 4px 4px 0' }}>
               <p style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: 2, color: 'var(--danger)', marginBottom: 4 }}>
                 🏥 SKADAD — {Math.ceil(player.injuryDaysRemaining / 7)} veckor kvar
               </p>
@@ -529,7 +529,7 @@ export function PlayerCard({
                   padding: '4px 8px',
                   background: 'rgba(255,255,255,0.04)',
                   borderRadius: 6,
-                  border: '1px solid rgba(196,122,58,0.1)',
+                  border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)',
                 }}>
                   <span style={{ fontSize: 10, color: 'var(--text-secondary)', letterSpacing: '0.3px' }}>{stat.label}</span>
                   <span className="tabular" style={{ fontSize: 12, fontWeight: 800, color: statValueColor(stat.value), marginLeft: 4, fontFamily: 'var(--font-display)' }}>
@@ -670,7 +670,7 @@ export function PlayerCard({
                 {onExtendContract && currentSeason !== undefined && player.contractUntilSeason <= currentSeason + 1 && (
                   <button
                     onClick={e => { e.stopPropagation(); onExtendContract() }}
-                    style={{ marginLeft: 8, padding: '2px 8px', borderRadius: 6, background: 'rgba(196,122,58,0.15)', border: '1px solid rgba(196,122,58,0.4)', color: 'var(--accent)', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
+                    style={{ marginLeft: 8, padding: '2px 8px', borderRadius: 6, background: 'color-mix(in srgb, var(--accent) 15%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', color: 'var(--accent)', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
                   >
                     Förläng →
                   </button>

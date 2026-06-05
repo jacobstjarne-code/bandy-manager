@@ -54,7 +54,7 @@ export function GameOverScreen() {
     }}>
       <div style={{
         background: 'var(--bg)',
-        border: '1px solid rgba(176,80,64,0.3)',
+        border: '1px solid color-mix(in srgb, var(--danger) 30%, transparent)',
         borderRadius: 12,
         padding: '32px 24px',
         width: '100%',
@@ -66,8 +66,8 @@ export function GameOverScreen() {
           width: 64,
           height: 64,
           borderRadius: '50%',
-          background: 'rgba(176,80,64,0.15)',
-          border: '2px solid rgba(176,80,64,0.4)',
+          background: 'color-mix(in srgb, var(--danger) 15%, transparent)',
+          border: '2px solid color-mix(in srgb, var(--danger) 40%, transparent)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -105,8 +105,8 @@ export function GameOverScreen() {
 
         {/* Board statement */}
         <div style={{
-          background: 'rgba(176,80,64,0.08)',
-          border: '1px solid rgba(176,80,64,0.2)',
+          background: 'color-mix(in srgb, var(--danger) 8%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--danger) 20%, transparent)',
           borderRadius: 10,
           padding: '10px 14px',
           marginBottom: 24,

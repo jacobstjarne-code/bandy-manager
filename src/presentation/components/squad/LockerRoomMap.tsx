@@ -190,7 +190,7 @@ function PlayerDot({ player, x, y, dotSize, isCaptain, isInner, opacity = 1, onH
   const border = isCaptain
     ? '2px solid var(--accent)'
     : isInner
-      ? '1px solid rgba(196,122,58,0.5)'
+      ? '1px solid color-mix(in srgb, var(--accent) 50%, transparent)'
       : '1px solid var(--border)'
 
   return (

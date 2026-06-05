@@ -21,9 +21,9 @@ function SeriesRow({ series, game, compact }: { series: PlayoffSeries; game: Sav
     <div style={{
       display: 'flex', alignItems: 'center', gap: 6,
       padding: compact ? '4px 8px' : '6px 10px',
-      background: isManaged ? 'rgba(196,122,58,0.06)' : 'transparent',
+      background: isManaged ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
       borderRadius: 6,
-      border: isManaged ? '1px solid rgba(196,122,58,0.2)' : '1px solid var(--border)',
+      border: isManaged ? '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' : '1px solid var(--border)',
       marginBottom: 4,
     }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -72,8 +72,8 @@ export function PlayoffBanner({ game, playoffInfo }: PlayoffBannerProps) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, rgba(196,122,58,0.12), rgba(196,122,58,0.04))',
-      border: '2px solid rgba(196,122,58,0.35)',
+      background: 'linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent), color-mix(in srgb, var(--accent) 4%, transparent))',
+      border: '2px solid color-mix(in srgb, var(--accent) 35%, transparent)',
       borderRadius: 12,
       padding: '16px 14px',
       marginBottom: 10,

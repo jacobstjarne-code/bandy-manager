@@ -1366,7 +1366,7 @@ export function MatchLiveScreen() {
         const referee = refereeId ? game?.referees?.find(r => r.id === refereeId) : undefined
         if (!referee) return null
         return (
-          <div style={{ padding: '4px 14px', background: 'var(--bg-leather-dk)', borderBottom: '1px solid rgba(196,122,58,0.1)' }}>
+          <div style={{ padding: '4px 14px', background: 'var(--bg-leather-dk)', borderBottom: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}>
             <span style={{ fontSize: 9, color: 'rgba(245,241,235,0.4)', fontFamily: 'var(--font-mono)', letterSpacing: '1px' }}>
               DOMARE: {referee.firstName} {referee.lastName} ({referee.homeTown})
             </span>

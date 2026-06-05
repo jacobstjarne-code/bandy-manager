@@ -148,8 +148,8 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
             {relatedPlayer && (
               <span style={{
                 fontSize: 12,
-                background: 'rgba(196,122,58,0.1)',
-                border: '1px solid rgba(196,122,58,0.3)',
+                background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
                 borderRadius: 20,
                 padding: '4px 10px',
                 color: 'var(--accent)',
@@ -161,8 +161,8 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
             {relatedClub && (
               <span style={{
                 fontSize: 12,
-                background: 'rgba(126,179,212,0.10)',
-                border: '1px solid rgba(126,179,212,0.25)',
+                background: 'color-mix(in srgb, var(--ice) 10%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--ice) 25%, transparent)',
                 borderRadius: 20,
                 padding: '4px 10px',
                 color: 'var(--ice)',

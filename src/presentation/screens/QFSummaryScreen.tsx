@@ -68,7 +68,7 @@ export function QFSummaryScreen() {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '5px 8px',
                 borderBottom: i < qfMatchups.length - 1 ? '1px solid var(--border)' : 'none',
-                background: isManaged ? 'rgba(196,122,58,0.06)' : 'transparent',
+                background: isManaged ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
                 borderRadius: isManaged && i === qfMatchups.length - 1 ? 4 : 0,
               }}>
                 <span style={{
@@ -114,8 +114,8 @@ export function QFSummaryScreen() {
                 <div key={series.id} style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   padding: '6px 8px',
-                  background: isManaged ? 'rgba(196,122,58,0.08)' : 'var(--bg-elevated)',
-                  border: isManaged ? '1px solid rgba(196,122,58,0.2)' : 'none',
+                  background: isManaged ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'var(--bg-elevated)',
+                  border: isManaged ? '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' : 'none',
                   borderRadius: 6,
                 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, flex: 1, color: isManaged && series.homeClubId === g.managedClubId ? 'var(--accent)' : 'var(--text-primary)' }}>{home}</span>

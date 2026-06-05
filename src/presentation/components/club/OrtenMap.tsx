@@ -73,7 +73,7 @@ export function OrtenMap({ club, game, onNodeClick }: OrtenMapProps) {
             <animate attributeName="r" values={`${pulseRadius - 10};${pulseRadius + 10};${pulseRadius - 10}`} dur="4s" repeatCount="indefinite" />
             <animate attributeName="stroke-opacity" values="0.15;0.03;0.15" dur="4s" repeatCount="indefinite" />
           </circle>
-          <circle cx={W / 2} cy={H / 2} r={65} fill="none" stroke="rgba(196,122,58,0.06)" strokeWidth={2} />
+          <circle cx={W / 2} cy={H / 2} r={65} fill="none" stroke="color-mix(in srgb, var(--accent) 6%, transparent)" strokeWidth={2} />
 
           {/* Edges */}
           {edges.map(([a, b]) => {

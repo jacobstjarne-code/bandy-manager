@@ -119,7 +119,7 @@ export function PlayoffIntroScreen() {
               return (
                 <tr key={s.clubId} style={{
                   color: isManaged ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  background: isManaged ? 'rgba(196,122,58,0.06)' : 'transparent',
+                  background: isManaged ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
                 }}>
                   <td style={{ padding: '3px 0', fontWeight: isManaged ? 700 : 600, color: 'var(--accent)' }}>{s.position}</td>
                   <td style={{ fontWeight: isManaged ? 700 : 400 }}>{c?.shortName ?? c?.name ?? '?'}</td>
@@ -153,8 +153,8 @@ export function PlayoffIntroScreen() {
                   style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     padding: '6px 8px',
-                    background: isManaged ? 'rgba(196,122,58,0.08)' : 'var(--bg-elevated)',
-                    border: isManaged ? '1px solid rgba(196,122,58,0.2)' : 'none',
+                    background: isManaged ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'var(--bg-elevated)',
+                    border: isManaged ? '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' : 'none',
                     borderRadius: 6,
                   }}
                 >

@@ -83,7 +83,7 @@ export function NameInputScreen() {
           style={{
             width: '100%', maxWidth: 300, padding: '12px 4px',
             background: 'transparent', border: 'none',
-            borderBottom: '2px solid rgba(196,122,58,0.5)',
+            borderBottom: '2px solid color-mix(in srgb, var(--accent) 50%, transparent)',
             color: 'var(--accent)', fontSize: 22, fontWeight: 700,
             outline: 'none', textAlign: 'center', letterSpacing: '1px',
           }}

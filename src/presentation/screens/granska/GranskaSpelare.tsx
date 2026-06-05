@@ -61,7 +61,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                   </p>
                 )}
                 {relatedPlayer && (
-                  <span style={{ display: 'inline-block', fontSize: 11, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '2px 8px', color: 'var(--accent)', fontWeight: 600, marginBottom: 4 }}>
+                  <span style={{ display: 'inline-block', fontSize: 11, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)', borderRadius: 20, padding: '2px 8px', color: 'var(--accent)', fontWeight: 600, marginBottom: 4 }}>
                     {relatedPlayer.firstName} {relatedPlayer.lastName}
                   </span>
                 )}
@@ -109,7 +109,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '7px 12px',
               borderBottom: i < starters.length - 1 ? '1px solid var(--border)' : 'none',
-              background: isPOTM ? 'rgba(196,122,58,0.06)' : 'transparent',
+              background: isPOTM ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
             }}>
               {/* TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md */}
               <div style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: isCap ? '1.5px solid var(--accent)' : '1px solid var(--border)' }}

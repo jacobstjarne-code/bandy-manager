@@ -138,8 +138,8 @@ export function GranskaOversikt({
 
             <span style={{
               display: 'inline-block', padding: '4px 14px', borderRadius: 20,
-              background: won ? 'rgba(90,154,74,0.12)' : lost ? 'rgba(176,80,64,0.12)' : 'rgba(245,241,235,0.08)',
-              border: `1px solid ${won ? 'rgba(90,154,74,0.3)' : lost ? 'rgba(176,80,64,0.3)' : 'rgba(245,241,235,0.2)'}`,
+              background: won ? 'color-mix(in srgb, var(--success) 12%, transparent)' : lost ? 'color-mix(in srgb, var(--danger) 12%, transparent)' : 'rgba(245,241,235,0.08)',
+              border: `1px solid ${won ? 'color-mix(in srgb, var(--success) 30%, transparent)' : lost ? 'color-mix(in srgb, var(--danger) 30%, transparent)' : 'rgba(245,241,235,0.2)'}`,
               color: resultColor, fontSize: 11, fontWeight: 700, letterSpacing: '1px', marginBottom: 8,
             }}>
               {resultLabel}
@@ -285,8 +285,8 @@ export function GranskaOversikt({
                         <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 8, whiteSpace: 'pre-line' }}>{event.body}</p>
                         {(relatedPlayer || relatedClub) && (
                           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                            {relatedPlayer && <span style={{ fontSize: 11, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '3px 8px', color: 'var(--accent)', fontWeight: 600 }}>{relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}</span>}
-                            {relatedClub && <span style={{ fontSize: 11, background: 'rgba(126,179,212,0.10)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 20, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>{relatedClub.name}</span>}
+                            {relatedPlayer && <span style={{ fontSize: 11, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)', borderRadius: 20, padding: '3px 8px', color: 'var(--accent)', fontWeight: 600 }}>{relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}</span>}
+                            {relatedClub && <span style={{ fontSize: 11, background: 'color-mix(in srgb, var(--ice) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--ice) 25%, transparent)', borderRadius: 20, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>{relatedClub.name}</span>}
                           </div>
                         )}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>

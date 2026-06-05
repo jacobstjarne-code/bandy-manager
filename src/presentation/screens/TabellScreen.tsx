@@ -55,9 +55,9 @@ export function TabellScreen() {
 
   function getRowBorderColor(position: number): string {
     if (position <= 3) return 'var(--accent)'
-    if (position <= 8) return 'rgba(196,122,58,0.4)'
+    if (position <= 8) return 'color-mix(in srgb, var(--accent) 40%, transparent)'
     if (position <= 10) return 'transparent'
-    return 'rgba(239,68,68,0.6)'
+    return 'color-mix(in srgb, var(--danger) 60%, transparent)'
   }
 
   const myRow = standings.find(s => s.clubId === managedClubId)
@@ -120,7 +120,7 @@ export function TabellScreen() {
                       display: 'flex', alignItems: 'center', gap: 8,
                       padding: '9px 12px',
                       borderTop: i === 0 ? 'none' : '1px solid var(--border)',
-                      background: isManaged ? 'rgba(196,122,58,0.06)' : 'transparent',
+                      background: isManaged ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
                     }}>
                       <span style={{ fontSize: 11, color: 'var(--text-muted)', width: 16, textAlign: 'right' }}>{i + 1}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -226,13 +226,13 @@ export function TabellScreen() {
               {hasLeagueStarted && row.position === 9 && (
                 <div style={{
                   padding: '5px 10px',
-                  borderTop: '1px solid rgba(196,122,58,0.4)',
+                  borderTop: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
                   fontSize: 9,
                   fontWeight: 700,
                   letterSpacing: '1px',
                   textTransform: 'uppercase',
-                  color: 'rgba(196,122,58,0.6)',
-                  background: 'rgba(196,122,58,0.03)',
+                  color: 'color-mix(in srgb, var(--accent) 60%, transparent)',
+                  background: 'color-mix(in srgb, var(--accent) 3%, transparent)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
@@ -245,13 +245,13 @@ export function TabellScreen() {
               {hasLeagueStarted && row.position === 11 && (
                 <div style={{
                   padding: '5px 10px',
-                  borderTop: '1px solid rgba(239,68,68,0.5)',
+                  borderTop: '1px solid color-mix(in srgb, var(--danger) 50%, transparent)',
                   fontSize: 9,
                   fontWeight: 700,
                   letterSpacing: '1px',
                   textTransform: 'uppercase',
-                  color: 'rgba(239,68,68,0.5)',
-                  background: 'rgba(239,68,68,0.03)',
+                  color: 'color-mix(in srgb, var(--danger) 50%, transparent)',
+                  background: 'color-mix(in srgb, var(--danger) 3%, transparent)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
@@ -272,11 +272,11 @@ export function TabellScreen() {
                   borderTop: i === 0 ? 'none' : '1px solid var(--border)',
                   borderLeft: `3px solid ${hasLeagueStarted ? getRowBorderColor(row.position) : 'transparent'}`,
                   background: isManaged
-                    ? 'linear-gradient(90deg, rgba(196,122,58,0.12) 0%, rgba(196,122,58,0.04) 100%)'
+                    ? 'linear-gradient(90deg, color-mix(in srgb, var(--accent) 12%, transparent) 0%, color-mix(in srgb, var(--accent) 4%, transparent) 100%)'
                     : isTop3
-                    ? 'rgba(196,122,58,0.05)'
+                    ? 'color-mix(in srgb, var(--accent) 5%, transparent)'
                     : hasLeagueStarted && row.position >= 11
-                    ? 'rgba(239,68,68,0.04)'
+                    ? 'color-mix(in srgb, var(--danger) 4%, transparent)'
                     : 'transparent',
                   cursor: 'pointer',
                 }}
@@ -358,8 +358,8 @@ export function TabellScreen() {
                       padding: '8px 10px 10px 59px',
                       fontSize: 12,
                       color: 'var(--text-secondary)',
-                      background: 'rgba(196,122,58,0.04)',
-                      borderTop: '1px solid rgba(196,122,58,0.1)',
+                      background: 'color-mix(in srgb, var(--accent) 4%, transparent)',
+                      borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)',
                       display: 'flex',
                       gap: 10,
                     }}>
@@ -397,8 +397,8 @@ export function TabellScreen() {
                     padding: '10px 10px 12px 59px',
                     fontSize: 12,
                     color: 'var(--text-secondary)',
-                    background: 'rgba(196,122,58,0.04)',
-                    borderTop: '1px solid rgba(196,122,58,0.1)',
+                    background: 'color-mix(in srgb, var(--accent) 4%, transparent)',
+                    borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 6,
@@ -584,7 +584,7 @@ export function TabellScreen() {
                       return (
                         <div key={m.fixtureId ?? i} style={{
                           borderBottom: i < matches.length - 1 ? '1px solid var(--border)' : 'none',
-                          background: (homeManaged || awayManaged) ? 'rgba(196,122,58,0.04)' : undefined,
+                          background: (homeManaged || awayManaged) ? 'color-mix(in srgb, var(--accent) 4%, transparent)' : undefined,
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px' }}>
                             <span style={{
@@ -645,7 +645,7 @@ export function TabellScreen() {
                         <div key={p.id} style={{
                           display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px',
                           borderTop: i === 0 ? 'none' : '1px solid var(--border)',
-                          background: managed ? 'rgba(196,122,58,0.06)' : 'transparent',
+                          background: managed ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
                         }}>
                           <span style={{ fontSize: 11, color: 'var(--text-muted)', width: 16, textAlign: 'right' }}>{i + 1}</span>
                           <div style={{ flex: 1, minWidth: 0 }}>

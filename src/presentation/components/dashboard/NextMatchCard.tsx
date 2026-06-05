@@ -126,11 +126,11 @@ export function NextMatchCard({
     : derbyIntense
     ? { border: '1.5px solid rgba(196,80,50,0.30)', background: 'rgba(196,80,50,0.03)' }
     : isDerby
-    ? { border: '1.5px solid rgba(196,122,58,0.30)', background: 'rgba(196,122,58,0.03)' }
+    ? { border: '1.5px solid color-mix(in srgb, var(--accent) 30%, transparent)', background: 'color-mix(in srgb, var(--accent) 3%, transparent)' }
     : isAnnandagen
     ? { border: '1.5px solid rgba(100,140,80,0.25)', background: 'rgba(100,140,80,0.03)' }
     : isCup
-    ? { border: '1.5px solid rgba(196,122,58,0.30)', background: 'rgba(196,122,58,0.03)' }
+    ? { border: '1.5px solid color-mix(in srgb, var(--accent) 30%, transparent)', background: 'color-mix(in srgb, var(--accent) 3%, transparent)' }
     : { border: '1px solid var(--border)', background: 'var(--bg-surface)' }
 
   // ── Leather bar bg per variant ──
@@ -168,7 +168,7 @@ export function NextMatchCard({
     headerIcon = '🏆'
     headerLabel = `Cupen · ${roundLabel}`
     headerTagText = 'NEUTRAL PLAN'
-    headerTagStyle = { background: 'rgba(196,122,58,0.15)', color: 'var(--match-copper)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,122,58,0.2)' }
+    headerTagStyle = { background: 'color-mix(in srgb, var(--accent) 15%, transparent)', color: 'var(--match-copper)', fontSize: 8, padding: '2px 7px', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }
   } else if (isDerby) {
     headerIcon = derbyIntense ? '🔥' : '⚔️'
     headerLabel = 'Nästa match'
@@ -289,7 +289,7 @@ export function NextMatchCard({
                 clubId={game.managedClubId}
                 name={club.name}
                 size={crestSize}
-                strokeColor={isFinal ? 'rgba(212,184,96,0.8)' : 'rgba(196,122,58,0.7)'}
+                strokeColor={isFinal ? 'rgba(212,184,96,0.8)' : 'color-mix(in srgb, var(--accent) 70%, transparent)'}
               />
             </div>
             <p style={{ fontSize: 11, fontWeight: 700, margin: '3px 0 0', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>

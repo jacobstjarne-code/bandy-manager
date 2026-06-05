@@ -157,8 +157,8 @@ export function FinalIntroScreen({
           }}>LAGPRESENTATION</p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
             <div style={{
-              flex: 1, background: 'rgba(196,122,58,0.06)',
-              border: '1px solid rgba(196,122,58,0.2)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
+              flex: 1, background: 'color-mix(in srgb, var(--accent) 6%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
             }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-light)', marginBottom: 8 }}>
                 {truncate(homeClubName, 14)}
@@ -171,8 +171,8 @@ export function FinalIntroScreen({
               <p style={{ fontSize: 11, color: 'rgba(245,241,235,0.35)', lineHeight: 1.4 }}>{homeJourney}</p>
             </div>
             <div style={{
-              flex: 1, background: 'rgba(196,122,58,0.06)',
-              border: '1px solid rgba(196,122,58,0.2)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
+              flex: 1, background: 'color-mix(in srgb, var(--accent) 6%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
             }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-light)', marginBottom: 8 }}>
                 {truncate(awayClubName, 14)}

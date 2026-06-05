@@ -60,7 +60,7 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
             {/* Vertikal gradient-linje */}
             <div style={{
               position: 'absolute', left: 7, top: 4, bottom: 8, width: 1,
-              background: 'linear-gradient(180deg, rgba(140,110,58,0.5), rgba(140,110,58,0.15))',
+              background: 'linear-gradient(180deg, color-mix(in srgb, var(--warm) 50%, transparent), color-mix(in srgb, var(--warm) 15%, transparent))',
             }} />
             {memory.threadEntries.map((entry, i) => {
               const isLatest = i === memory.threadEntries.length - 1
@@ -104,7 +104,7 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
         {/* Modal-foot — kontext-rad */}
         <div style={{
           marginTop: 16, paddingTop: 12,
-          borderTop: '1px dashed rgba(140,110,58,0.2)',
+          borderTop: '1px dashed color-mix(in srgb, var(--warm) 20%, transparent)',
           fontFamily: 'var(--font-mono)', fontStyle: 'italic',
           fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5,
         }}>

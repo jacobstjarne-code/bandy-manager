@@ -80,7 +80,7 @@ export function EventCardInline({ event, currentMatchday }: Props) {
         position: 'relative',
         margin: '0 0 8px 0',
         background: 'var(--bg-portal-surface)',
-        border: '1px solid rgba(196,122,58,0.15)',
+        border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
         borderRadius: 'var(--radius-md)',
         padding: '14px 16px 14px 18px',
       }}

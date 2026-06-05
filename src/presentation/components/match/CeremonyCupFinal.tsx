@@ -96,7 +96,7 @@ export function CeremonyCupFinal({
             <p style={{ fontSize: 18, color: 'var(--text-light)', fontWeight: 700, marginBottom: 4 }}>{managedClubName}</p>
             <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 20 }}>Svenska Cupen {season}</p>
             {cupJourney && (
-              <div style={{ marginBottom: 24, padding: '12px 16px', background: 'rgba(196,122,58,0.06)', border: '1px solid rgba(196,122,58,0.2)', borderRadius: 10, textAlign: 'left' }}>
+              <div style={{ marginBottom: 24, padding: '12px 16px', background: 'color-mix(in srgb, var(--accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 10, textAlign: 'left' }}>
                 <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px' }}>Cupvägen</p>
                 {cupJourney.split('\n').map((line, i) => (
                   <p key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 4 }}>{line}</p>

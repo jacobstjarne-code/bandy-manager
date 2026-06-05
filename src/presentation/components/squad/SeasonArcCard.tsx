@@ -15,8 +15,8 @@ const MODE_LABELS: Record<PeriodisationMode, string> = {
 }
 
 const FLAG_STYLE: Record<string, React.CSSProperties> = {
-  warn: { color: 'var(--accent-dark)', background: 'rgba(196,122,58,.08)', border: '1px solid rgba(196,122,58,.35)' },
-  good: { color: '#4A6A3A', background: 'rgba(90,154,74,.10)', border: '1px solid rgba(90,154,74,.4)' },
+  warn: { color: 'var(--accent-dark)', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 35%, transparent)' },
+  good: { color: '#4A6A3A', background: 'color-mix(in srgb, var(--success) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 40%, transparent)' },
   rust: { color: 'var(--cold)', background: 'rgba(74,102,128,.08)', border: '1px solid rgba(74,102,128,.35)' },
   ovr:  { color: 'var(--text-muted)', background: 'transparent', border: '1px dashed var(--border-dark)' },
 }
@@ -73,7 +73,7 @@ function ArcSparkline({ history, mode, roundsInMode }: ArcSparklineProps) {
     <div style={{ padding: '4px 10px 0' }}>
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block', width: '100%', height: 'auto' }}>
         {/* Peak goal band — subtle amber zone 82-90 in projection region */}
-        <rect x={nowX} y={bandY1} width={bandW} height={bandY2 - bandY1} fill="rgba(196,122,58,0.06)" />
+        <rect x={nowX} y={bandY1} width={bandW} height={bandY2 - bandY1} fill="color-mix(in srgb, var(--accent) 6%, transparent)" />
         {/* grundform — history */}
         <polyline
           points={histPts(gf)}
@@ -107,7 +107,7 @@ function ArcSparkline({ history, mode, roundsInMode }: ArcSparklineProps) {
         <line
           x1={nowX} y1={pt - 4}
           x2={nowX} y2={H - pb + 2}
-          stroke="rgba(196,122,58,0.35)"
+          stroke="color-mix(in srgb, var(--accent) 35%, transparent)"
           strokeWidth="1"
           strokeDasharray="2 2"
         />
@@ -187,8 +187,8 @@ export function SeasonArcCard({ game }: Props) {
             Skärpa
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <i style={{ width: 8, height: 8, borderRadius: 2, display: 'inline-block', background: 'rgba(196,122,58,0.28)' }} />
-            <span style={{ color: 'rgba(196,122,58,0.75)' }}>Topp-zon</span>
+            <i style={{ width: 8, height: 8, borderRadius: 2, display: 'inline-block', background: 'color-mix(in srgb, var(--accent) 28%, transparent)' }} />
+            <span style={{ color: 'color-mix(in srgb, var(--accent) 75%, transparent)' }}>Topp-zon</span>
           </span>
         </div>
 
@@ -199,7 +199,7 @@ export function SeasonArcCard({ game }: Props) {
               key={m}
               onClick={() => setPeriodisation(m)}
               style={{
-                background: m === mode ? 'rgba(196,122,58,.12)' : 'var(--bg-elevated)',
+                background: m === mode ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-elevated)',
                 border: m === mode ? '1px solid var(--accent)' : '1px solid var(--border)',
                 borderRadius: 'var(--radius-md, 8px)',
                 padding: '9px 4px',

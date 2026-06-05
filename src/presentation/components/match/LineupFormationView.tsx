@@ -95,7 +95,7 @@ export function LineupFormationView({
                       ? `color-mix(in srgb, var(--accent) 40%, transparent)`
                       : `color-mix(in srgb, ${ringColor} 18%, transparent)`,
                   border: isEmpty
-                    ? '1.5px dashed rgba(26,26,24,0.3)'
+                    ? '1.5px dashed color-mix(in srgb, var(--ink) 30%, transparent)'
                     : isSelected
                       ? '2px solid var(--accent)'
                       : `1.5px solid color-mix(in srgb, ${ringColor} 55%, transparent)`,
@@ -104,7 +104,7 @@ export function LineupFormationView({
                   justifyContent: 'center',
                   fontSize: isEmpty ? 9 : 13,
                   fontWeight: isEmpty ? 700 : 800,
-                  color: isEmpty ? 'rgba(26,26,24,0.4)' : 'var(--text-primary)',
+                  color: isEmpty ? 'color-mix(in srgb, var(--ink) 40%, transparent)' : 'var(--text-primary)',
                   transition: 'background 120ms, border-color 120ms, transform 120ms',
                   transform: isSelected ? 'scale(1.18)' : 'scale(1)',
                   boxShadow: isSelected ? '0 0 8px rgba(196,122,58,0.5)' : 'none',

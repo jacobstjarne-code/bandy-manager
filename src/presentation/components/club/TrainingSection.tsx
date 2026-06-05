@@ -67,7 +67,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8,
         padding: '6px 10px', borderRadius: 'var(--radius-sm)',
-        background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.2)',
+        background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)',
       }}>
         <span style={{ fontSize: 18 }}>{trainingTypeEmoji(focus.type)}</span>
         <div style={{ flex: 1 }}>
@@ -97,7 +97,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '5px 8px', borderRadius: 6,
-                background: isActive ? 'rgba(196,122,58,0.15)' : 'var(--bg-elevated)',
+                background: isActive ? 'color-mix(in srgb, var(--accent) 15%, transparent)' : 'var(--bg-elevated)',
                 border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
                 color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
                 fontSize: 11, fontWeight: isActive ? 700 : 400,
@@ -208,8 +208,8 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
 
       {/* Training injuries this season */}
       <div style={{
-        background: trainingInjuriesThisSeason > 0 ? 'rgba(176,80,64,0.06)' : 'var(--bg-elevated)',
-        border: `1px solid ${trainingInjuriesThisSeason > 0 ? 'rgba(176,80,64,0.25)' : 'var(--border)'}`,
+        background: trainingInjuriesThisSeason > 0 ? 'color-mix(in srgb, var(--danger) 6%, transparent)' : 'var(--bg-elevated)',
+        border: `1px solid ${trainingInjuriesThisSeason > 0 ? 'color-mix(in srgb, var(--danger) 25%, transparent)' : 'var(--border)'}`,
         borderRadius: 'var(--radius-sm)', padding: '6px 14px', marginTop: 6,
         fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>

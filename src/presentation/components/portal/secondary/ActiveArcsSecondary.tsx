@@ -50,12 +50,12 @@ function ArcRow({ arc, glyph, currentMatchday, player, onClick, isLast }: ArcRow
   const glyphBorderColor = variant === 'warm'
     ? 'rgba(180,120,140,0.4)'
     : variant === 'muted'
-    ? 'rgba(196,122,58,0.2)'
-    : 'rgba(196,122,58,0.4)'
+    ? 'color-mix(in srgb, var(--accent) 20%, transparent)'
+    : 'color-mix(in srgb, var(--accent) 40%, transparent)'
 
   const glyphBg = variant === 'warm'
     ? 'rgba(180,120,140,0.06)'
-    : 'rgba(196,122,58,0.06)'
+    : 'color-mix(in srgb, var(--accent) 6%, transparent)'
 
   const phaseLabel = arc.phase === 'building'
     ? 'Akt 1'
@@ -71,7 +71,7 @@ function ArcRow({ arc, glyph, currentMatchday, player, onClick, isLast }: ArcRow
       className={`arc-row ${isLast ? '' : 'arc-row-bordered'}`}
       style={{
         cursor: onClick ? 'pointer' : 'default',
-        background: hovered && onClick ? 'rgba(196,122,58,0.04)' : 'transparent',
+        background: hovered && onClick ? 'color-mix(in srgb, var(--accent) 4%, transparent)' : 'transparent',
       }}
     >
       {/* Typographic glyph */}
@@ -95,7 +95,7 @@ function ArcRow({ arc, glyph, currentMatchday, player, onClick, isLast }: ArcRow
                     ? 'var(--accent-deep)'
                     : dot === filledDots
                     ? 'var(--accent)'
-                    : 'rgba(196,122,58,0.3)',
+                    : 'color-mix(in srgb, var(--accent) 30%, transparent)',
                 }}
               />
             ))}

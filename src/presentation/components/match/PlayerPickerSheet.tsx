@@ -100,13 +100,13 @@ export function PlayerPickerSheet({
                   borderBottom: '1px solid var(--border)',
                   cursor: (unavailable || isOtherSlot) ? 'default' : 'pointer',
                   opacity: unavailable ? 0.4 : 1,
-                  background: isCurrentSlot ? 'rgba(196,122,58,0.08)' : 'transparent',
+                  background: isCurrentSlot ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'transparent',
                 }}
               >
                 {/* Shirt number badge */}
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                  background: isCurrentSlot ? 'rgba(196,122,58,0.2)' : 'var(--bg)',
+                  background: isCurrentSlot ? 'color-mix(in srgb, var(--accent) 20%, transparent)' : 'var(--bg)',
                   border: `1px solid ${isCurrentSlot ? 'var(--accent)' : 'var(--border)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 10, fontWeight: 700,

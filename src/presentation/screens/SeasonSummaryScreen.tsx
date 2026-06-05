@@ -237,8 +237,8 @@ export function SeasonSummaryScreen() {
             gap: 6,
             padding: '6px 12px',
             borderRadius: 99,
-            background: summary.expectationVerdict === 'failed' ? 'rgba(176,80,64,0.15)' : 'rgba(90,154,74,0.15)',
-            border: `1px solid ${summary.expectationVerdict === 'failed' ? 'rgba(176,80,64,0.4)' : 'rgba(90,154,74,0.4)'}`,
+            background: summary.expectationVerdict === 'failed' ? 'color-mix(in srgb, var(--danger) 15%, transparent)' : 'color-mix(in srgb, var(--success) 15%, transparent)',
+            border: `1px solid ${summary.expectationVerdict === 'failed' ? 'color-mix(in srgb, var(--danger) 40%, transparent)' : 'color-mix(in srgb, var(--success) 40%, transparent)'}`,
           }}>
             <span style={{ fontSize: 12 }}>{verdictIcon(summary.expectationVerdict)}</span>
             <span style={{ fontSize: 12, fontWeight: 600, color: summary.expectationVerdict === 'failed' ? 'var(--danger)' : 'var(--success)' }}>
@@ -266,7 +266,7 @@ export function SeasonSummaryScreen() {
         )}
 
         {/* NARRATIVE */}
-        <div className="card-sharp card-stagger-1" style={{ padding: '10px 14px', marginBottom: 8, borderLeft: '3px solid var(--accent)', background: 'rgba(196,122,58,0.05)' }}>
+        <div className="card-sharp card-stagger-1" style={{ padding: '10px 14px', marginBottom: 8, borderLeft: '3px solid var(--accent)', background: 'color-mix(in srgb, var(--accent) 5%, transparent)' }}>
           <p style={{ fontSize: 15, fontStyle: 'italic', color: 'var(--text-primary)', lineHeight: 1.6 }}>
             "{summary.narrativeSummary}"
           </p>
@@ -285,7 +285,7 @@ export function SeasonSummaryScreen() {
           })()
           return (
             <div style={{
-              background: 'linear-gradient(180deg, var(--bg-elevated) 0%, rgba(196,122,58,0.06) 100%)',
+              background: 'linear-gradient(180deg, var(--bg-elevated) 0%, color-mix(in srgb, var(--accent) 6%, transparent) 100%)',
               border: '2px solid var(--accent)',
               borderRadius: 8,
               padding: '20px 18px',
@@ -641,7 +641,7 @@ export function SeasonSummaryScreen() {
               {summary.youthIntakeCount} nya spelare rekryterades
             </p>
             {summary.bestYouthProspect && (
-              <div style={{ background: 'rgba(196,122,58,0.08)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(196,122,58,0.2)' }}>
+              <div style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)', borderRadius: 8, padding: '10px 12px', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}>
                 <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 4 }}>BÄSTA PROSPEKT</p>
                 <p style={{ fontSize: 14, fontWeight: 700 }}>{summary.bestYouthProspect.name}</p>
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
@@ -662,7 +662,7 @@ export function SeasonSummaryScreen() {
                 {summary.communityStandingEnd}
               </span>
             </div>
-            <div style={{ height: 6, background: 'rgba(26,26,24,0.08)', borderRadius: 3 }}>
+            <div style={{ height: 6, background: 'color-mix(in srgb, var(--ink) 8%, transparent)', borderRadius: 3 }}>
               <div style={{
                 height: '100%',
                 width: `${summary.communityStandingEnd}%`,
@@ -769,7 +769,7 @@ export function SeasonSummaryScreen() {
               disabled={sharing}
               style={{
                 width: '100%', padding: '13px', marginBottom: 10,
-                background: 'transparent', border: '1px solid rgba(196,122,58,0.4)',
+                background: 'transparent', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
                 borderRadius: 12, color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
               }}
             >
@@ -814,8 +814,8 @@ export function SeasonSummaryScreen() {
 function AwardCard({ icon, title, name, value }: { icon: string; title: string; name: string; value: string }) {
   return (
     <div style={{
-      background: 'rgba(196,122,58,0.06)',
-      border: '1px solid rgba(196,122,58,0.15)',
+      background: 'color-mix(in srgb, var(--accent) 6%, transparent)',
+      border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
       borderRadius: 8,
       padding: '10px',
     }}>

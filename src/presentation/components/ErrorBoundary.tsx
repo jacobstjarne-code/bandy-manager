@@ -39,8 +39,8 @@ export class ErrorBoundary extends Component<Props, State> {
             style={{
               marginTop: 8,
               padding: '10px 24px',
-              background: 'rgba(196,122,58,0.15)',
-              border: '1px solid rgba(196,122,58,0.4)',
+              background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
               borderRadius: 8,
               color: 'var(--accent)',
               fontSize: 13,

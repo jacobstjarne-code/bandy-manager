@@ -145,9 +145,9 @@ export function CommentaryFeed({
     if (!currentMatchStep) return undefined
     const step = currentMatchStep
     const hasSusp = step.activeSuspensions.homeCount > 0 || step.activeSuspensions.awayCount > 0
-    if (hasSusp) return 'rgba(176,80,64,0.03)'
+    if (hasSusp) return 'color-mix(in srgb, var(--danger) 3%, transparent)'
     const isLateAndTight = step.minute >= 55 && Math.abs(step.homeScore - step.awayScore) <= 1
-    if (isLateAndTight) return 'rgba(196,122,58,0.04)'
+    if (isLateAndTight) return 'color-mix(in srgb, var(--accent) 4%, transparent)'
     const recentSteps = displayedSteps.slice(-5)
     const recentHomeShots = recentSteps.length > 1
       ? (recentSteps[recentSteps.length - 1]?.shotsHome ?? 0) - (recentSteps[0]?.shotsHome ?? 0)
@@ -155,8 +155,8 @@ export function CommentaryFeed({
     const recentAwayShots = recentSteps.length > 1
       ? (recentSteps[recentSteps.length - 1]?.shotsAway ?? 0) - (recentSteps[0]?.shotsAway ?? 0)
       : 0
-    if (recentHomeShots >= 3 && recentAwayShots === 0) return 'rgba(196,122,58,0.03)'
-    if (recentAwayShots >= 3 && recentHomeShots === 0) return 'rgba(126,179,212,0.03)'
+    if (recentHomeShots >= 3 && recentAwayShots === 0) return 'color-mix(in srgb, var(--accent) 3%, transparent)'
+    if (recentAwayShots >= 3 && recentHomeShots === 0) return 'color-mix(in srgb, var(--ice) 3%, transparent)'
     if (matchWeather?.weather.condition === WeatherCondition.Fog) return 'linear-gradient(to bottom, rgba(200,210,220,0.04), transparent)'
     if (matchWeather?.weather.condition === WeatherCondition.Thaw) return 'rgba(100,130,160,0.03)'
     return undefined
@@ -237,7 +237,7 @@ export function CommentaryFeed({
         let showMinute = true
 
         if (hasGoal) {
-          background = 'rgba(196, 122, 58, 0.12)'
+          background = 'color-mix(in srgb, var(--accent) 12%, transparent)'
           borderLeft = '3px solid var(--accent)'
           fontSize = 14
           fontWeight = 600
@@ -254,7 +254,7 @@ export function CommentaryFeed({
             fontWeight = 500
           }
         } else if (hasCorner) {
-          borderLeft = '3px solid rgba(196,122,58,0.4)'
+          borderLeft = '3px solid color-mix(in srgb, var(--accent) 40%, transparent)'
           color = 'var(--text-primary)'
           fontWeight = 500
         } else if (isDerby) {
@@ -342,7 +342,7 @@ export function CommentaryFeed({
               style={{
                 display: 'flex', alignItems: 'center',
                 padding: '6px 16px', gap: 8,
-                borderLeft: '3px solid rgba(196,122,58,0.35)',
+                borderLeft: '3px solid color-mix(in srgb, var(--accent) 35%, transparent)',
                 animation: 'fadeInUp 250ms ease-out both',
               }}
             >
@@ -364,7 +364,7 @@ export function CommentaryFeed({
               style={{
                 display: 'flex', alignItems: 'center',
                 padding: '6px 16px', gap: 8,
-                borderLeft: '3px solid rgba(196,122,58,0.35)',
+                borderLeft: '3px solid color-mix(in srgb, var(--accent) 35%, transparent)',
                 animation: 'fadeInUp 250ms ease-out both',
               }}
             >

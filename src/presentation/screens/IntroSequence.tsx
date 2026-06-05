@@ -96,8 +96,8 @@ export function IntroSequence() {
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: [
-          'radial-gradient(ellipse 65% 45% at 18% 0%, rgba(196,122,58,0.14) 0%, transparent 60%)',
-          'radial-gradient(ellipse 55% 40% at 82% 0%, rgba(196,122,58,0.11) 0%, transparent 60%)',
+          'radial-gradient(ellipse 65% 45% at 18% 0%, color-mix(in srgb, var(--accent) 14%, transparent) 0%, transparent 60%)',
+          'radial-gradient(ellipse 55% 40% at 82% 0%, color-mix(in srgb, var(--accent) 11%, transparent) 0%, transparent 60%)',
         ].join(', '),
         zIndex: 2,
       }} />
@@ -209,8 +209,8 @@ export function IntroSequence() {
               onClick={() => navigate('/game')}
               style={{
                 width: '100%', maxWidth: 300, padding: '14px 24px',
-                background: 'rgba(196,122,58,0.15)',
-                border: '1.5px solid rgba(196,122,58,0.5)',
+                background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
+                border: '1.5px solid color-mix(in srgb, var(--accent) 50%, transparent)',
                 borderRadius: 10,
                 color: 'rgba(245,241,235,0.85)',
                 fontSize: 13, fontWeight: 600, letterSpacing: '2px',

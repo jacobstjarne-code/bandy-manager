@@ -66,8 +66,8 @@ export function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingPr
         if (!def) return null
         return (
           <div key={p.id} style={{
-            background: 'rgba(34,197,94,0.06)',
-            border: '1px solid rgba(34,197,94,0.2)',
+            background: 'color-mix(in srgb, var(--success) 6%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--success) 20%, transparent)',
             borderRadius: 'var(--radius-sm)',
             padding: '8px 12px',
             marginBottom: 8,

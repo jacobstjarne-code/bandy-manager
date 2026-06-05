@@ -185,30 +185,30 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
   })
   const allChips: React.ReactNode[] = []
   if (player.isInjured) {
-    allChips.push(<span key="injury" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.05)', 'rgba(176,80,64,0.3)')}>🩹 {getInjuryText(player.injuryDaysRemaining, player.id)}</span>)
+    allChips.push(<span key="injury" style={chipStyle('var(--danger-text)', 'color-mix(in srgb, var(--danger) 5%, transparent)', 'color-mix(in srgb, var(--danger) 30%, transparent)')}>🩹 {getInjuryText(player.injuryDaysRemaining, player.id)}</span>)
   }
   if (player.suspensionGamesRemaining > 0) {
-    allChips.push(<span key="suspension" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.05)', 'rgba(176,80,64,0.3)')}>🚫 {getSuspensionText(player.suspensionGamesRemaining, player.id, player.suspensionCause)}</span>)
+    allChips.push(<span key="suspension" style={chipStyle('var(--danger-text)', 'color-mix(in srgb, var(--danger) 5%, transparent)', 'color-mix(in srgb, var(--danger) 30%, transparent)')}>🚫 {getSuspensionText(player.suspensionGamesRemaining, player.id, player.suspensionCause)}</span>)
   }
   if (player.morale < 45) {
-    allChips.push(<span key="morale" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.06)', 'rgba(140,110,58,0.4)')}>😟 {getMoraleText(player.morale, player.lowMoraleDays, player.id)}</span>)
+    allChips.push(<span key="morale" style={chipStyle('var(--warm-light)', 'color-mix(in srgb, var(--warm) 6%, transparent)', 'color-mix(in srgb, var(--warm) 40%, transparent)')}>😟 {getMoraleText(player.morale, player.lowMoraleDays, player.id)}</span>)
   } else if (player.availability === 'unhappy') {
-    allChips.push(<span key="unhappy" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.08)', 'rgba(140,110,58,0.5)')}>😤 Missnöjd</span>)
+    allChips.push(<span key="unhappy" style={chipStyle('var(--warm-light)', 'color-mix(in srgb, var(--warm) 8%, transparent)', 'color-mix(in srgb, var(--warm) 50%, transparent)')}>😤 Missnöjd</span>)
   } else if (player.availability === 'want_to_leave') {
-    allChips.push(<span key="want_to_leave" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.08)', 'rgba(140,110,58,0.5)')}>🚪 Vill lämna</span>)
+    allChips.push(<span key="want_to_leave" style={chipStyle('var(--warm-light)', 'color-mix(in srgb, var(--warm) 8%, transparent)', 'color-mix(in srgb, var(--warm) 50%, transparent)')}>🚪 Vill lämna</span>)
   }
   if (player.contractUntilSeason <= currentSeason) {
-    allChips.push(<span key="contract" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.06)', 'rgba(140,110,58,0.4)')}>📄 {getContractText(player.contractUntilSeason, currentSeason, player.id)}</span>)
+    allChips.push(<span key="contract" style={chipStyle('var(--warm-light)', 'color-mix(in srgb, var(--warm) 6%, transparent)', 'color-mix(in srgb, var(--warm) 40%, transparent)')}>📄 {getContractText(player.contractUntilSeason, currentSeason, player.id)}</span>)
   }
   if (player.trait && TRAIT_META[player.trait]) {
     const meta = TRAIT_META[player.trait]
-    allChips.push(<span key="trait" style={chipStyle(meta.color, 'rgba(196,122,58,0.05)', 'rgba(196,122,58,0.3)')}>{meta.emoji} {meta.label}</span>)
+    allChips.push(<span key="trait" style={chipStyle(meta.color, 'color-mix(in srgb, var(--accent) 5%, transparent)', 'color-mix(in srgb, var(--accent) 30%, transparent)')}>{meta.emoji} {meta.label}</span>)
   }
   if (player.archetype === PlayerArchetype.CornerSpecialist) {
-    allChips.push(<span key="corner" style={chipStyle('var(--accent)', 'rgba(196,122,58,0.05)', 'rgba(196,122,58,0.3)')}>📐 Hörnspec.</span>)
+    allChips.push(<span key="corner" style={chipStyle('var(--accent)', 'color-mix(in srgb, var(--accent) 5%, transparent)', 'color-mix(in srgb, var(--accent) 30%, transparent)')}>📐 Hörnspec.</span>)
   }
   if (player.promotedFromAcademy) {
-    allChips.push(<span key="academy" style={chipStyle('var(--cold-light)', 'rgba(126,179,212,0.05)', 'rgba(126,179,212,0.3)')}>◆ Akademi</span>)
+    allChips.push(<span key="academy" style={chipStyle('var(--cold-light)', 'color-mix(in srgb, var(--ice) 5%, transparent)', 'color-mix(in srgb, var(--ice) 30%, transparent)')}>◆ Akademi</span>)
   }
   if (player.isFullTimePro) {
     allChips.push(<span key="pro" style={chipStyle('var(--bg)', 'var(--accent)', 'var(--accent)')}>⭐ Proffs</span>)
@@ -318,7 +318,7 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>Styrka</span>
             {player.age < 24 && (
-              <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--ice)', background: 'rgba(126,179,212,0.1)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 4, padding: '1px 4px' }}>Utvecklas</span>
+              <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--ice)', background: 'color-mix(in srgb, var(--ice) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--ice) 25%, transparent)', borderRadius: 4, padding: '1px 4px' }}>Utvecklas</span>
             )}
             {player.age >= 24 && player.age <= 30 && (
               <span className="tag tag-copper" style={{ fontSize: 9, fontWeight: 700, padding: '1px 4px' }}>Peak</span>
@@ -622,8 +622,8 @@ export function SquadScreen() {
         {/* Lineup hint */}
         {!hasPendingLineup && (
           <div className="card-stagger-1" style={{
-            background: 'rgba(196,122,58,0.08)',
-            border: '1px solid rgba(196,122,58,0.2)',
+            background: 'color-mix(in srgb, var(--accent) 8%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)',
             borderRadius: 10,
             padding: '10px 14px',
             fontSize: 13,
@@ -708,7 +708,7 @@ export function SquadScreen() {
           <div
             onClick={() => navigate('/game/club', { state: { tab: 'training' } })}
             style={{
-              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
+              background: 'color-mix(in srgb, var(--danger) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 25%, transparent)',
               borderRadius: 10, padding: '10px 14px', marginBottom: 12,
               cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}

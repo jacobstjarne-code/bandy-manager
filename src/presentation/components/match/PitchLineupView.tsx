@@ -227,7 +227,7 @@ export function PitchLineupView({
               onClick={() => handleRemove(selection.playerId)}
               style={{
                 marginTop: 6, padding: '5px 14px', fontSize: 11, fontWeight: 600,
-                background: 'rgba(176,80,64,0.08)', border: '1px solid rgba(176,80,64,0.25)',
+                background: 'color-mix(in srgb, var(--danger) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 25%, transparent)',
                 color: 'var(--danger)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
               }}
             >

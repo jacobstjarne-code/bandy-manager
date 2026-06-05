@@ -55,7 +55,7 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
               onKeyDown={e => e.key === 'Enter' && setOpenMemory(mem)}
               style={{
                 padding: i === 0 ? '2px 0 9px' : '9px 0',
-                borderTop: i === 0 ? 'none' : '1px solid rgba(196,122,58,0.1)',
+                borderTop: i === 0 ? 'none' : '1px solid color-mix(in srgb, var(--accent) 10%, transparent)',
                 cursor: 'pointer',
               }}
             >

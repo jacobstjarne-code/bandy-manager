@@ -16,14 +16,14 @@ const COLORS = {
 } as const
 
 const BG_COLORS = {
-  V: 'rgba(90,154,74,0.15)',
-  F: 'rgba(176,80,64,0.15)',
+  V: 'color-mix(in srgb, var(--success) 15%, transparent)',
+  F: 'color-mix(in srgb, var(--danger) 15%, transparent)',
   O: 'rgba(196,186,168,0.15)',
 } as const
 
 const BORDER_COLORS = {
-  V: 'rgba(90,154,74,0.3)',
-  F: 'rgba(176,80,64,0.3)',
+  V: 'color-mix(in srgb, var(--success) 30%, transparent)',
+  F: 'color-mix(in srgb, var(--danger) 30%, transparent)',
   O: 'rgba(196,186,168,0.3)',
 } as const
 

@@ -29,7 +29,7 @@ function PitchLines() {
   return (
     <>
       {/* Outer rect fill */}
-      <rect width="280" height="400" fill="rgba(196,122,58,0.04)" />
+      <rect width="280" height="400" fill="color-mix(in srgb, var(--accent) 4%, transparent)" />
       {/* Center line */}
       <line x1="0" y1="200" x2="280" y2="200" stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3,3" />
       {/* Center circle */}
@@ -307,7 +307,7 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                 padding: '6px 8px', borderRadius: 6, width: 56,
                 border: `1px solid ${selectedSlotId ? 'var(--accent)' : 'var(--border)'}`,
-                background: selectedSlotId ? 'rgba(196,122,58,0.1)' : 'var(--bg-elevated)',
+                background: selectedSlotId ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'var(--bg-elevated)',
                 cursor: selectedSlotId ? 'pointer' : 'default',
               }}
             >

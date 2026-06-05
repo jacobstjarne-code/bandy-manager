@@ -6,12 +6,12 @@ interface PositionTagProps {
 
 // text color → [bgRgba, textColor]
 const POSITION_STYLE: Record<PositionTagProps['position'], { bg: string; text: string }> = {
-  MV: { bg: 'rgba(196,122,58,0.15)',  text: 'var(--accent)' },
-  B:  { bg: 'rgba(176,80,64,0.15)',   text: 'var(--danger)' },
-  MF: { bg: 'rgba(90,154,74,0.15)',   text: 'var(--success)' },
-  YH: { bg: 'rgba(126,179,212,0.15)', text: 'var(--ice)' },
-  YV: { bg: 'rgba(126,179,212,0.15)', text: 'var(--ice)' },
-  A:  { bg: 'rgba(196,122,58,0.15)',  text: 'var(--accent)' },
+  MV: { bg: 'color-mix(in srgb, var(--accent) 15%, transparent)',  text: 'var(--accent)' },
+  B:  { bg: 'color-mix(in srgb, var(--danger) 15%, transparent)',   text: 'var(--danger)' },
+  MF: { bg: 'color-mix(in srgb, var(--success) 15%, transparent)',   text: 'var(--success)' },
+  YH: { bg: 'color-mix(in srgb, var(--ice) 15%, transparent)', text: 'var(--ice)' },
+  YV: { bg: 'color-mix(in srgb, var(--ice) 15%, transparent)', text: 'var(--ice)' },
+  A:  { bg: 'color-mix(in srgb, var(--accent) 15%, transparent)',  text: 'var(--accent)' },
 }
 
 export function PositionTag({ position, size = 'md' }: PositionTagProps) {

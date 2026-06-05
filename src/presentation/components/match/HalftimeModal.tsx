@@ -203,8 +203,8 @@ export function HalftimeModal({
               onClick={() => setter(o.val)}
               style={{
                 flex: 1, padding: '7px 4px', fontSize: 11, fontWeight: 700,
-                background: current === o.val ? 'var(--accent)' : 'rgba(196,122,58,0.08)',
-                border: `1px solid ${current === o.val ? 'var(--accent)' : 'rgba(196,122,58,0.2)'}`,
+                background: current === o.val ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 8%, transparent)',
+                border: `1px solid ${current === o.val ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 20%, transparent)'}`,
                 borderRadius: 6,
                 color: current === o.val ? 'var(--text-light)' : 'var(--text-secondary)',
                 cursor: 'pointer',
@@ -231,7 +231,7 @@ export function HalftimeModal({
     }}>
       <div style={{
         background: 'var(--bg)',
-        border: isBigMatch ? '1px solid rgba(196,122,58,0.4)' : '1px solid var(--border)',
+        border: isBigMatch ? '1px solid color-mix(in srgb, var(--accent) 40%, transparent)' : '1px solid var(--border)',
         borderRadius: 'var(--radius)',
         textAlign: 'center', minWidth: 260, maxWidth: 330, width: '90%',
         marginBottom: 24,
@@ -269,7 +269,7 @@ export function HalftimeModal({
                 onClick={() => setActiveTab(tab.id)}
                 style={{
                   flex: 1, padding: '7px 4px', fontSize: 10, fontWeight: 700,
-                  background: activeTab === tab.id ? 'rgba(196,122,58,0.12)' : 'transparent',
+                  background: activeTab === tab.id ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
                   border: 'none', borderRadius: 6,
                   color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
                   cursor: 'pointer', letterSpacing: '0.5px',
@@ -303,9 +303,9 @@ export function HalftimeModal({
                       style={{
                         width: '100%', padding: '10px 12px', borderRadius: 8,
                         fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer',
-                        background: isSelected ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
+                        background: isSelected ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-elevated)',
                         color: isSelected ? 'var(--accent)' : 'var(--text-primary)',
-                        border: `1px solid ${isSelected ? 'rgba(196,122,58,0.4)' : 'var(--border)'}`,
+                        border: `1px solid ${isSelected ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'var(--border)'}`,
                         fontFamily: 'var(--font-body)',
                       }}
                     >
@@ -347,7 +347,7 @@ export function HalftimeModal({
               </div>
             </div>
             {bestPlayerName && (
-              <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(196,122,58,0.06)', borderRadius: 8, border: '1px solid rgba(196,122,58,0.15)' }}>
+              <div style={{ marginBottom: 14, padding: '8px 12px', background: 'color-mix(in srgb, var(--accent) 6%, transparent)', borderRadius: 8, border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)' }}>
                 <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare hittills</p>
                 <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{bestPlayerName}</p>
                 {bestPlayer?.position && <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(bestPlayer.position)}</p>}

@@ -142,7 +142,7 @@ export function SlotLineupView({
                 style={{
                   padding: '10px 12px',
                   fontSize: 13,
-                  background: f === formation ? 'rgba(196,122,58,0.08)' : 'var(--bg-elevated)',
+                  background: f === formation ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'var(--bg-elevated)',
                   color: f === formation ? 'var(--accent)' : 'var(--text-primary)',
                   fontWeight: f === formation ? 700 : 400,
                   borderBottom: '1px solid var(--border)',
@@ -181,15 +181,15 @@ export function SlotLineupView({
                   padding: '6px 8px',
                   marginBottom: 4,
                   background: player ? 'var(--bg-elevated)' : 'transparent',
-                  border: player ? '1px solid var(--border)' : '1.5px dashed rgba(196,122,58,0.35)',
+                  border: player ? '1px solid var(--border)' : '1.5px dashed color-mix(in srgb, var(--accent) 35%, transparent)',
                   borderRadius: 'var(--radius-sm)',
                 }}
               >
                 {/* Slot badge */}
                 <div style={{
                   width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-                  background: player ? 'rgba(196,122,58,0.15)' : 'rgba(196,122,58,0.06)',
-                  border: `1px solid ${player ? 'rgba(196,122,58,0.4)' : 'rgba(196,122,58,0.2)'}`,
+                  background: player ? 'color-mix(in srgb, var(--accent) 15%, transparent)' : 'color-mix(in srgb, var(--accent) 6%, transparent)',
+                  border: `1px solid ${player ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'color-mix(in srgb, var(--accent) 20%, transparent)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 8, fontWeight: 800, color: 'var(--accent)',
                 }}>
@@ -226,7 +226,7 @@ export function SlotLineupView({
                     onClick={() => handleSlotTap(slot)}
                     style={{ flex: 1, cursor: 'pointer' }}
                   >
-                    <p style={{ fontSize: 12, color: 'rgba(196,122,58,0.6)', fontStyle: 'italic' }}>
+                    <p style={{ fontSize: 12, color: 'color-mix(in srgb, var(--accent) 60%, transparent)', fontStyle: 'italic' }}>
                       välj spelare ›
                     </p>
                   </div>
@@ -271,7 +271,7 @@ export function SlotLineupView({
           onClick={onAutoFill}
           style={{
             padding: '8px 16px', fontSize: 13, fontWeight: 700,
-            background: 'rgba(196,122,58,0.08)', border: '1.5px solid var(--accent)',
+            background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1.5px solid var(--accent)',
             color: 'var(--accent)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
           }}
         >

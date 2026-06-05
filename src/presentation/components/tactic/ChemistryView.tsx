@@ -15,7 +15,7 @@ interface ChemistryViewProps {
 function PitchLines() {
   return (
     <>
-      <rect width="280" height="400" fill="rgba(196,122,58,0.04)" />
+      <rect width="280" height="400" fill="color-mix(in srgb, var(--accent) 4%, transparent)" />
       <line x1="0" y1="200" x2="280" y2="200" stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3,3" />
       <circle cx="140" cy="200" r="35" fill="none" stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3,3" />
       <rect x="90" y="0" width="100" height="28" fill="none" stroke="var(--border)" strokeWidth="0.5" />

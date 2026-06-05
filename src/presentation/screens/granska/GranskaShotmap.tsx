@@ -144,8 +144,8 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
                   <circle
                     cx={d.x} cy={d.y}
                     r={d.kind === 'goal' ? 6 : d.kind === 'save' ? 3 : 2}
-                    fill={d.kind === 'goal' ? 'rgba(90,154,74,0.85)' : d.kind === 'save' ? 'rgba(196,122,58,0.7)' : 'rgba(0,0,0,0.15)'}
-                    stroke={d.kind === 'goal' ? 'rgba(90,154,74,1)' : d.kind === 'save' ? 'rgba(196,122,58,1)' : 'rgba(0,0,0,0.3)'}
+                    fill={d.kind === 'goal' ? 'color-mix(in srgb, var(--success) 85%, transparent)' : d.kind === 'save' ? 'color-mix(in srgb, var(--accent) 70%, transparent)' : 'rgba(0,0,0,0.15)'}
+                    stroke={d.kind === 'goal' ? 'var(--success)' : d.kind === 'save' ? 'var(--accent)' : 'rgba(0,0,0,0.3)'}
                     strokeWidth="1"
                   />
                   {showLabel && d.label && (() => {
@@ -168,8 +168,8 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
                 key={`opp-${i}`}
                 cx={d.x} cy={d.y}
                 r={(d.kind === 'goal' ? 5 : d.kind === 'save' ? 2.5 : 2) * oppDotScale}
-                fill={d.kind === 'goal' ? 'rgba(176,80,64,0.6)' : d.kind === 'save' ? 'rgba(196,122,58,0.4)' : 'rgba(0,0,0,0.1)'}
-                stroke={d.kind === 'goal' ? 'rgba(176,80,64,0.9)' : 'rgba(0,0,0,0.25)'}
+                fill={d.kind === 'goal' ? 'color-mix(in srgb, var(--danger) 60%, transparent)' : d.kind === 'save' ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'rgba(0,0,0,0.1)'}
+                stroke={d.kind === 'goal' ? 'color-mix(in srgb, var(--danger) 90%, transparent)' : 'rgba(0,0,0,0.25)'}
                 strokeWidth="1"
                 opacity={oppDotOpacity}
               />
@@ -182,7 +182,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
       <div style={{ marginBottom: 8 }}>
         {[
           { name: managedClub?.shortName ?? 'Vi', goal: scoredCount, save: savedCount, miss: missCount, goalColor: 'var(--success)' },
-          { name: oppClub?.shortName ?? 'De', goal: oppGoals, save: oppSavedByUs, miss: oppMissCount, goalColor: 'rgba(176,80,64,0.8)' },
+          { name: oppClub?.shortName ?? 'De', goal: oppGoals, save: oppSavedByUs, miss: oppMissCount, goalColor: 'color-mix(in srgb, var(--danger) 80%, transparent)' },
         ].map((row, ri) => (
           <div key={ri} style={{ display: 'flex', alignItems: 'center', gap: 7, justifyContent: 'center', marginBottom: 3 }}>
             <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', minWidth: 44, textAlign: 'right', letterSpacing: '0.3px' }}>
@@ -292,7 +292,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
           insight = `${totalShots} skott och ${scoredCount} mål. Motståndaren sköt ${oppShots} gånger och sköt ${oppGoals} mål.`
         }
         return (
-          <div style={{ marginTop: 6, padding: '8px 10px', background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.2)', borderRadius: 6 }}>
+          <div style={{ marginTop: 6, padding: '8px 10px', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 6 }}>
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', color: 'var(--accent)', marginBottom: 4 }}>💡 INSIKT</p>
             <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{insight}</p>
           </div>

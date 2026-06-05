@@ -89,7 +89,7 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
           </text>
         ))}
         {/* Line */}
-        <polyline points={points} fill="none" stroke="rgba(196,122,58,0.7)" strokeWidth="1.8" strokeLinejoin="round" />
+        <polyline points={points} fill="none" stroke="color-mix(in srgb, var(--accent) 70%, transparent)" strokeWidth="1.8" strokeLinejoin="round" />
         {/* Dots + season labels */}
         {chronological.map((s, i) => {
           const cx = xOf(i)
@@ -98,8 +98,8 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
           return (
             <g key={s.season}>
               <circle cx={cx} cy={cy} r={isChamp ? 5 : 3.5}
-                fill={isChamp ? 'rgba(196,122,58,0.9)' : 'var(--bg-elevated)'}
-                stroke={isChamp ? 'rgba(196,122,58,1)' : 'rgba(196,122,58,0.6)'}
+                fill={isChamp ? 'color-mix(in srgb, var(--accent) 90%, transparent)' : 'var(--bg-elevated)'}
+                stroke={isChamp ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 60%, transparent)'}
                 strokeWidth="1.5" />
               <text x={cx} y={H - 4} textAnchor="middle"
                 fontSize="6.5" fill="var(--text-muted)" fontFamily="system-ui,sans-serif">
@@ -304,7 +304,7 @@ export function HistoryScreen() {
           onClick={() => shareSeasonImage(summaries[0])}
           style={{
             width: '100%', padding: '13px', marginBottom: 8,
-            background: 'transparent', border: '1px solid rgba(196,122,58,0.4)',
+            background: 'transparent', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
             borderRadius: 12, color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
           }}
         >
@@ -330,8 +330,8 @@ export function HistoryScreen() {
                 key={s.season}
                 className={`card-sharp card-stagger-${Math.min(i + 1, 6)}`}
                 style={{
-                  background: isGold ? 'linear-gradient(135deg, rgba(196,122,58,0.12), rgba(196,122,58,0.04))' : undefined,
-                  border: isGold ? '1px solid rgba(196,122,58,0.4)' : undefined,
+                  background: isGold ? 'linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent), color-mix(in srgb, var(--accent) 4%, transparent))' : undefined,
+                  border: isGold ? '1px solid color-mix(in srgb, var(--accent) 40%, transparent)' : undefined,
                   padding: '10px 14px',
                 }}
               >
@@ -405,8 +405,8 @@ export function HistoryScreen() {
                           return (
                             <div key={row.clubId} style={{
                               display: 'flex', alignItems: 'center', gap: 6,
-                              padding: '3px 0', borderBottom: '1px solid rgba(26,26,24,0.06)',
-                              background: isManaged ? 'rgba(196,122,58,0.06)' : 'transparent',
+                              padding: '3px 0', borderBottom: '1px solid color-mix(in srgb, var(--ink) 6%, transparent)',
+                              background: isManaged ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
                             }}>
                               <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 16, textAlign: 'right' }}>{row.position}.</span>
                               <span style={{ fontSize: 11, flex: 1, color: isManaged ? 'var(--accent)' : 'var(--text-secondary)', fontWeight: isManaged ? 700 : 400 }}>
@@ -434,7 +434,7 @@ export function HistoryScreen() {
           <p style={{
             fontSize: 8, fontWeight: 700, letterSpacing: '2px',
             textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,
-            borderBottom: '1px solid rgba(196,122,58,0.25)', paddingBottom: 10,
+            borderBottom: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)', paddingBottom: 10,
           }}>
             ── Rekord ──
           </p>
@@ -470,7 +470,7 @@ export function HistoryScreen() {
         <p style={{
           fontSize: 8, fontWeight: 700, letterSpacing: '2px',
           textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,
-          borderBottom: '1px solid rgba(196,122,58,0.25)', paddingBottom: 10,
+          borderBottom: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)', paddingBottom: 10,
         }}>
           ── Hall of Fame ──
         </p>

@@ -201,7 +201,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
         ] as const).map(({ mode, icon, label, desc }) => (
           <button key={mode} onClick={() => onSetMatchMode(mode)} style={{
             flex: 1, padding: '10px 6px',
-            background: matchMode === mode ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
+            background: matchMode === mode ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-elevated)',
             border: `2px solid ${matchMode === mode ? 'var(--accent)' : 'var(--border)'}`,
             borderRadius: 'var(--radius)', cursor: 'pointer',
           }}>
@@ -213,7 +213,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
       </div>
 
       {lineupError && (
-        <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', fontSize: 12, color: 'var(--danger)', marginBottom: 12 }}>
+        <div style={{ background: 'color-mix(in srgb, var(--danger) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 25%, transparent)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', fontSize: 12, color: 'var(--danger)', marginBottom: 12 }}>
           {lineupError}
         </div>
       )}

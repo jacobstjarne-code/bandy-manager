@@ -10,12 +10,12 @@ interface NotesViewProps {
 }
 
 const TAG_STYLES: Record<NoteTag, { bg: string; color: string; label: string }> = {
-  'trött':     { bg: 'rgba(176,80,64,0.15)',  color: 'var(--danger)',  label: 'TRÖTT' },
-  'glödande':  { bg: 'rgba(90,154,74,0.15)',  color: 'var(--success)', label: 'GLÖDANDE' },
-  'missnöjd':  { bg: 'rgba(196,122,58,0.15)', color: 'var(--accent)',  label: 'MISSNÖJD' },
-  'skottform': { bg: 'rgba(126,179,212,0.2)', color: 'var(--ice)', label: 'SKOTTFORM' },
-  'vill-mer':  { bg: 'rgba(196,122,58,0.15)', color: 'var(--accent)',  label: 'VILL MER' },
-  'sviktande': { bg: 'rgba(176,80,64,0.15)',  color: 'var(--danger)',  label: 'SVIKTANDE' },
+  'trött':     { bg: 'color-mix(in srgb, var(--danger) 15%, transparent)',  color: 'var(--danger)',  label: 'TRÖTT' },
+  'glödande':  { bg: 'color-mix(in srgb, var(--success) 15%, transparent)',  color: 'var(--success)', label: 'GLÖDANDE' },
+  'missnöjd':  { bg: 'color-mix(in srgb, var(--accent) 15%, transparent)', color: 'var(--accent)',  label: 'MISSNÖJD' },
+  'skottform': { bg: 'color-mix(in srgb, var(--ice) 20%, transparent)', color: 'var(--ice)', label: 'SKOTTFORM' },
+  'vill-mer':  { bg: 'color-mix(in srgb, var(--accent) 15%, transparent)', color: 'var(--accent)',  label: 'VILL MER' },
+  'sviktande': { bg: 'color-mix(in srgb, var(--danger) 15%, transparent)',  color: 'var(--danger)',  label: 'SVIKTANDE' },
 }
 
 const POSITION_COLORS: Record<string, string> = {

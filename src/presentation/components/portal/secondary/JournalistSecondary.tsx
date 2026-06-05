@@ -43,9 +43,9 @@ export function JournalistSecondary({ game }: CardRenderProps) {
         textTransform: 'uppercase' as const,
         padding: '2px 6px',
         borderRadius: 3,
-        background: 'rgba(140, 110, 58, 0.15)',
+        background: 'color-mix(in srgb, var(--warm) 15%, transparent)',
         color: 'var(--warm-light)',
-        border: '1px solid rgba(140, 110, 58, 0.35)',
+        border: '1px solid color-mix(in srgb, var(--warm) 35%, transparent)',
       }
 
   const fillStyle: React.CSSProperties = isCold

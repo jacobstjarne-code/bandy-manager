@@ -31,7 +31,7 @@ export function PlayerLink({ playerId, name, style }: PlayerLinkProps) {
         fontSize: 'inherit',
         cursor: 'pointer',
         textDecoration: 'underline',
-        textDecorationColor: 'rgba(196,122,58,0.4)',
+        textDecorationColor: 'color-mix(in srgb, var(--accent) 40%, transparent)',
         textUnderlineOffset: 3,
         ...style,
         color: style?.color ?? 'var(--accent)',
