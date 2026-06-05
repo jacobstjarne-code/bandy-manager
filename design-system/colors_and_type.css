@@ -25,6 +25,12 @@
   --bg-portal-elevated: #2a241e;
   --accent-portal:      #C47A3A;  /* = --accent (höst/vinter-default) */
 
+  /* ── Scen-bakgrunder (statiska, ej portal-tonade) ──── */
+  /* DB-7: spegel-synkad mot global.css 2026-06-05. Radial-scen-atmosfär =
+     enda sanktionerade yt-gradienten (se DESIGN-DECISIONS.md DB-8). */
+  --bg-scene:       #1a1612;
+  --bg-scene-deep:  #08060a;
+
   /* ── Severity (journalist-relation, signaturer) ──── */
   --cold: #4a6680;  /* kall blå — neg severity, cold_winter-signatur */
   --cold-light: #7095b8;  /* ljusare cold — text/tag inom severity-domän */
@@ -158,7 +164,9 @@
   --shadow-menu:    0 4px 16px rgba(0,0,0,0.15);
 
   /* ── Z-index scale ───────────────────────────────── */
+  --z-sticky:       50;   /* sticky-footer */
   --z-dropdown:    100;
+  --z-header:      200;   /* persistent app-header */
   --z-modal:       300;
   --z-overlay:     400;
   --z-interaction: 500;
@@ -184,12 +192,12 @@
 .h-body-sm  { font-family: var(--font-body); font-size: 11px; font-weight: 400; line-height: 1.45; color: var(--text-secondary); }
 .h-body-xs  { font-family: var(--font-body); font-size: 10px; font-weight: 400; line-height: 1.45; color: var(--text-muted); }
 
-/* Section label — emoji + UPPERCASE letter-spaced */
+/* Section label — emoji + UPPERCASE letter-spaced (9/2.5 ratificerad 2026-06-05) */
 .h-label {
   font-family: var(--font-body);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 4px 0;

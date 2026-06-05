@@ -106,6 +106,7 @@
 
   /* Shape */
   --radius:    14px;
+  --radius-md:  8px;   /* DB-9: sharp cards, buttons (fanns i spegeln, saknades här) */
   --radius-sm:  3px;
 
   /* Layout */
@@ -175,7 +176,9 @@
   --font-mono:    ui-monospace, 'Courier New', monospace;
 
   /* Z-index scale */
+  --z-sticky:       50;   /* sticky-footer (under innehållslagren) */
   --z-dropdown:    100;
+  --z-header:      200;   /* persistent app-header */
   --z-modal:       300;
   --z-overlay:     400;
   --z-interaction: 500;
@@ -883,12 +886,13 @@ a {
 .h-body-sm { font-family: var(--font-body); font-size: 11px; font-weight: 400; line-height: 1.45; color: var(--text-secondary); }
 .h-body-xs { font-family: var(--font-body); font-size: 10px; font-weight: 400; line-height: 1.45; color: var(--text-muted); }
 
-/* Section label — 8px / 600 / +2px letter-spacing / UPPERCASE / emoji-prefix */
+/* Section label — 9px / 600 / +2.5px letter-spacing / UPPERCASE / emoji-prefix
+   (ratificerad 2026-06-05: ~30 ytor använde redan 9/2.5 inline — rollen var avvikaren) */
 .h-label {
   font-family: var(--font-body);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 4px 0;

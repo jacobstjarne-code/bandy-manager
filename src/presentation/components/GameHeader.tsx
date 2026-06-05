@@ -222,7 +222,7 @@ export function GameHeader() {
           background: 'var(--bg-surface)', border: '1px solid var(--border)',
           borderRadius: 8, padding: '4px 0',
           boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-          zIndex: 200, minWidth: 160,
+          zIndex: 'var(--z-header)', minWidth: 160,  // var 200 = oförändrat
         }}>
           {[
             { label: '💾 Spara spel', action: handleSaveGame },

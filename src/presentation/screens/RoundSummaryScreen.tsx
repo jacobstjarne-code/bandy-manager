@@ -481,7 +481,7 @@ export function RoundSummaryScreen() {
         width: '100%', maxWidth: 430, padding: '12px 20px',
         paddingBottom: 'calc(12px + var(--safe-bottom, 0px))',
         background: 'linear-gradient(to top, var(--bg) 80%, transparent)',
-        zIndex: 50, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',
+        zIndex: 'var(--z-sticky)', opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',  // var 50 = oförändrat
       }}>
         <button onClick={handleContinue} className="btn btn-primary" style={{
           width: '100%', letterSpacing: '2px', textTransform: 'uppercase',

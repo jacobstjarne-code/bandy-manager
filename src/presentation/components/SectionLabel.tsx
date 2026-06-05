@@ -11,20 +11,13 @@ export function SectionLabel({ children, emoji, style, right }: SectionLabelProp
   if (right) {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-        <p style={{
-          fontSize: 8, fontWeight: 600, letterSpacing: '2px',
-          textTransform: 'uppercase', color: 'var(--text-muted)',
-          fontFamily: 'var(--font-body)', margin: 0, ...style,
-        }}>{emoji && `${emoji} `}{children}</p>
+        {/* .h-label-roll (9/2.5); margin:0-override pga tät kontext (ratificerat 2026-06-05) */}
+        <p className="h-label" style={{ margin: 0, ...style }}>{emoji && `${emoji} `}{children}</p>
         <div>{right}</div>
       </div>
     )
   }
   return (
-    <p style={{
-      fontSize: 8, fontWeight: 600, letterSpacing: '2px',
-      textTransform: 'uppercase', color: 'var(--text-muted)',
-      fontFamily: 'var(--font-body)', margin: 0, ...style,
-    }}>{emoji && `${emoji} `}{children}</p>
+    <p className="h-label" style={{ margin: 0, ...style }}>{emoji && `${emoji} `}{children}</p>
   )
 }

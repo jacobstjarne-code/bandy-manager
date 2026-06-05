@@ -175,7 +175,8 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       <SectionCard title="💰 Kassaöversikt" stagger={1}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: kassaHistory.length >= MIN_POINTS ? 8 : 10, marginBottom: kassaHistory.length >= MIN_POINTS ? 8 : 10, borderBottom: '1px solid var(--border)' }}>
           <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Saldo</span>
-          <span style={{ fontSize: 18, fontWeight: 800, color: club.finances < 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
+          {/* DB-4: pengar = Georgia (.h-display-sm), sans-bold tillbakadraget; färg-override behålls */}
+          <span className="h-display-sm" style={{ color: club.finances < 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
             {formatCurrency(club.finances)}
           </span>
         </div>
