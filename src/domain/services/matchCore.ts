@@ -143,6 +143,16 @@ export const PROFILE_GOAL_MODS: Record<MatchProfile, number> = {
 // Boost 1.19 ger exakt 54.3% share (1.19/2.19). Var 1.25 → för högt totalt.
 const SECOND_HALF_BOOST = 1.19
 
+// Post-paus-urgency (Fas 2, kalibrering mot struktur).
+// Mekanism, ej fittad kurva: det jagande laget kommer ut ur halvtidspausen med
+// förhöjd urgency (taktikjustering + friska ben) som klingar av över de första
+// ~10 minuterna av 2:a halvlek (steg 30→40, minut 45→60). Detta är ORSAKEN bakom
+// det verkliga post-paus-comebackfönstret (Finding 051: 27% i minut 51–55 mot
+// 13,3% basfrekvens). En transient som höjer BÅDE basfrekvensen (tidiga
+// reduceringar kaskaderar) OCH fönstret (urgencyn är koncentrerad dit) — inte en
+// punktbump i minut 51–55. Magnitud kalibrerad mot comeback-basfrekvens.
+const POST_PAUS_URGENCY = 0.45
+
 // Deterministic profile selection from seed — both halves receive the same
 // profile without needing to pass state between generators.
 export function pickMatchProfileFromSeed(
@@ -766,6 +776,16 @@ function* simulateMatchCore(
       awayModeFoulMult   = awayModeFx.foul
       homeModeCornerMult = homeModeFx.corner
       awayModeCornerMult = awayModeFx.corner
+
+      // Post-paus-urgency: transient för jagande lag, avtar steg 30→40.
+      // Modellerar halvtidsåterställningen (orsaken), ej en minut-51-bump.
+      const postPausUrgency = (mode: SecondHalfMode): number => {
+        if (mode !== 'chasing' || step < 30 || step > 40) return 1.0
+        const decay = (40 - step) / 10  // 1.0 vid steg 30 → 0 vid steg 40
+        return 1 + POST_PAUS_URGENCY * decay
+      }
+      homeModeAttackMult *= postPausUrgency(homeMode)
+      awayModeAttackMult *= postPausUrgency(awayMode)
     }
 
     // Global second-half boost — only in second half (emitFullTime = true), not overtime

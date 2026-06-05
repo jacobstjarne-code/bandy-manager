@@ -62,3 +62,37 @@ Denna körning använde defaulttaktik för alla lag, så stil-spridningen (clust
 Hörnmålsandelen (17 vs 22 %) hanteras lämpligen i marginalkalibreringen, inte som rent strukturmål. Stil-kontinuumet behöver en egen mätkörning med varierad taktik innan det kan bedömas.
 
 **Fas 2 körs separat** efter denna rapport — ett mål i taget, klustringen är redan nära så post-paus-reset först, med marginalverifiering (047–050) efter varje ändring.
+
+---
+
+# Fas 2 — kalibrering (logg)
+
+## Steg 1: Post-paus-reset (PRIO 2) — DELVIS, mekanism-baserad
+
+**Mekanism (ej fittad kurva):** `POST_PAUS_URGENCY = 0.45` i matchCore.ts. Det jagande laget (chasing-mode, underläge ≥1) får en transient attack-urgency som avtar linjärt över steg 30→40 (minut 45→60) — modellerar halvtidsåterställningen, inte en punktbump i minut 51–55.
+
+**Resultat:**
+| Mått | Före | Efter | Mål |
+|------|------|-------|-----|
+| Comeback basfrekvens | 7,6 % | 8,6 % | 13,3 % |
+| Fönster 51–55 | 8,7 % | 10,3 % | 27 % |
+| Målklustring (regression-test) | 0,754 | 0,754 | — (oförändrad ✅) |
+| Mål/match (marginal) | 9,04 | 9,05 | 9,08 ✅ |
+| 1078 enhetstester | grönt | grönt | ✅ |
+
+**Båda metrikerna rörde sig tillsammans** (bas + fönster), vilket är rätt signatur — inte en fittad fönster-bump. Regressionsregeln klarad: klustring oförändrad, marginaler oförändrade (homeWin/draw-felen är pre-existerande v1.2.0-gap, identiska vid urgency=0), alla tester gröna.
+
+**Varför bara delvis — diagnos:** Attack-multiplikatorn saturerar. 0,45→1,0 flyttade comeback bara 8,6→9,0 %, eftersom multiplikatorn späds av initiativ-ratiot (`homeWeight/(homeWeight+awayWeight)`). Att kranka vidare vore att fitta mot en mättad lever.
+
+Comeback per HT-marginal (motor vs verkligt):
+- +1: **15,0 % vs 24 %** ← största gapet, här sitter problemet
+- +2: 6,9 % vs 11,5 %
+- +3+: 1,8 % vs 2,2 % ✅
+
+HT-marginalfördelning bidrar marginellt (motor +1=36 % vs verkligt 41 % — något för få återhämtningsbara enmålsunderlägen).
+
+**Slutsats:** Det villkorade +1-återhämtandet (15 % vs 24 %) går inte att stänga via chasing-lagets attack-multiplikator — den är mättad. Full stängning kräver en strukturändring i 2:a-halvlek-initiativmodellen (hur ledningar konverteras till utfall), vilket är en större och riskablare ändring än en konstant. Den modesta mekanism-baserade vinsten (0,45) behålls; djupare ingrepp flaggas för beslut snarare än överfittas nu.
+
+## Steg 2–3 (ej körda denna omgång)
+- **Hemmafördel (PRIO 4):** motorns hemmavinst 39,5 % mot mål 50,2 % är det kända v1.2.0-gapet (Finding 050, kräver v1.3.0 — explicit hemmaplansvikt). Specens frekvens-shift-ansats hör hit. Ej påbörjad — egen verifieringsrunda.
+- **Hörnandel (PRIO 3):** 17 % vs 22 %, ren marginal-rekalibrering, sist enligt prioritet.

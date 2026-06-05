@@ -10,22 +10,22 @@
       "namn": "Målklustring (kluster/lag-match)",
       "prioritet": 1,
       "verkligt": "0,80 (liga) — 0,61–1,27 per stil",
-      "motor": "0.754",
-      "gap": "motor 0.75 vs liga 0,80"
+      "motor": "0.757",
+      "gap": "motor 0.76 vs liga 0,80"
     },
     {
       "namn": "Post-paus comeback (basfrekvens)",
       "prioritet": 2,
       "verkligt": "13,3%",
-      "motor": "7.6%",
-      "gap": "-5.7pp"
+      "motor": "9.0%",
+      "gap": "-4.3pp"
     },
     {
       "namn": "Post-paus fönster 51-55",
       "prioritet": 2,
       "verkligt": "27%",
-      "motor": "8.7%",
-      "gap": "-18.3pp",
+      "motor": "10.1%",
+      "gap": "-16.9pp",
       "n": 149
     },
     {
@@ -39,15 +39,15 @@
       "namn": "Lagspecifik hemmafördel (gap)",
       "prioritet": 4,
       "verkligt": "Villa +0,2 / Sirius/snittlag varierar; liga +12,5pp",
-      "motor": "stark 6.5pp / mitt 6.8pp",
+      "motor": "stark 7.6pp / mitt 6.6pp",
       "gap": "se not"
     },
     {
       "namn": "Mål/match (marginal-kontroll)",
       "prioritet": 0,
       "verkligt": "9,08",
-      "motor": "9.04",
-      "gap": "-0.04"
+      "motor": "9.07",
+      "gap": "-0.01"
     }
   ],
   "goal_minute_buckets": {
@@ -55,30 +55,30 @@
     "10": 765,
     "20": 965,
     "30": 1074,
-    "40": 973,
+    "40": 974,
     "50": 1177,
-    "60": 925,
-    "70": 984,
-    "80": 1282
+    "60": 937,
+    "70": 987,
+    "80": 1294
   },
   "raw": {
-    "goalsPM": 9.044,
-    "cornerShare": 0.17038920831490492,
-    "clusterFreq": 0.7545,
-    "cbRate": 0.0759651307596513,
-    "win5155": 0.087248322147651,
+    "goalsPM": 9.072,
+    "cornerShare": 0.16997354497354497,
+    "clusterFreq": 0.757,
+    "cbRate": 0.0896637608966376,
+    "win5155": 0.10067114093959731,
     "win5155N": 149,
-    "strongGap": 6.479008466439728,
-    "midGap": 6.752519596864498,
+    "strongGap": 7.636379505978875,
+    "midGap": 6.602143657014875,
     "tierRec": {
       "strong": {
-        "hw": 199,
+        "hw": 197,
         "hn": 335,
-        "aw": 181,
+        "aw": 175,
         "an": 342
       },
       "mid": {
-        "hw": 244,
+        "hw": 243,
         "hn": 665,
         "aw": 197,
         "an": 658
