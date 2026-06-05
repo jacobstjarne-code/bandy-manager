@@ -161,8 +161,8 @@ Verifierad 2026-06-02.
 ## 7. Kända begränsningar
 
 - **Skottdata kraftigt underrapporterad:** ~10,5 skott/match i Bandygrytan mot ~28 i Bandypuls. All skottnivåanalys är handikappad.
-- **`fouls[].duration` ej extraherat** — alla fouls är `None`, inte 10 (den gamla felaktiga defaulten). Kräver ny Firebase-körning för att extrahera.
-- **`fouls[].info` (orsak) ej extraherat** — finns i källan, kräver ny körning.
+- **`fouls[].duration` + `fouls[].reason`/`reason_norm` extraherade (schemaVersion 5, 2026-06-03).** Källästa bakåt till 2019 (100% täckning). 7,7% 5-min, 92,1% 10-min i hela datasetet.
+- **Klubbnamn normaliserade (2026-06-03).** Renderingsvarianter (Villa Lidköping BK / Villa-Lidköping BK, Sandvikens AIK / AIK/BK, Edsbyn-varianter m.fl.) slås ihop via `scripts/pipeline/club_names.py` + `docs/data/club_name_map.json`. Aldrig olika klubbar (Lidköpings AIK ≠ Villa-Lidköping). 33→23 herr, 22→14 dam kanoniska namn.
 - **Grovt matchstraff (typ 5, 60 min) ej extraherat.**
 - **Lagvarning (typ 7) ej extraherat.**
 - **Missad straff (typ 19), Missad hörna (typ 20), Timeout (typ 6) ej extraherade.**

@@ -1,8 +1,8 @@
 {
   "_meta": {
     "description": "Matchup-temperatur per klubbpar, Elitserien herr 2019-2026",
-    "n_matchups_total": 284,
-    "n_matchups_n6plus": 95,
+    "n_matchups_total": 183,
+    "n_matchups_n6plus": 101,
     "league_avg_fouls": 3.78,
     "league_avg_goals": 9.08,
     "league_avg_corners": 17.78
@@ -41,7 +41,7 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Bollnäs GOIF BF",
+      "team_a": "Bollnäs GoIF",
       "team_b": "IF Boltic",
       "n": 2,
       "avg_fouls": 9.5,
@@ -105,7 +105,7 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "GripenTrollhättan BK",
+      "team_a": "Gripen Trollhättan BK",
       "team_b": "IFK Rättvik",
       "n": 2,
       "avg_fouls": 8.0,
@@ -167,38 +167,6 @@
       "b_home_n": 1,
       "b_home_win_pct": 0.0,
       "asymmetry": 0.0
-    },
-    {
-      "team_a": "Gripen BK Trollhättan",
-      "team_b": "Sandvikens AIK",
-      "n": 1,
-      "avg_fouls": 8.0,
-      "ci_fouls": [
-        8.0,
-        8.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 12.0,
-      "ci_goals": [
-        12.0,
-        12.0
-      ],
-      "avg_corners": 15.0,
-      "ci_corners": [
-        15.0,
-        15.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.21,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 0,
-      "b_home_win_pct": null,
-      "asymmetry": null
     },
     {
       "team_a": "Hammarby IF",
@@ -393,39 +361,7 @@
       "asymmetry": 0.67
     },
     {
-      "team_a": "GripenTrollhättan BK",
-      "team_b": "Hammarby Bandy",
-      "n": 2,
-      "avg_fouls": 7.0,
-      "ci_fouls": [
-        4.0,
-        10.0
-      ],
-      "std_fouls": 3.0,
-      "avg_goals": 8.0,
-      "ci_goals": [
-        7.0,
-        9.0
-      ],
-      "avg_corners": 17.5,
-      "ci_corners": [
-        17.0,
-        18.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "GripenTrollhättan BK",
+      "team_a": "Gripen Trollhättan BK",
       "team_b": "IFK Kungälv",
       "n": 2,
       "avg_fouls": 7.0,
@@ -489,7 +425,7 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Broberg/Söderhamn BIF",
+      "team_a": "Broberg/Söderhamn",
       "team_b": "IF Boltic",
       "n": 2,
       "avg_fouls": 7.0,
@@ -519,38 +455,6 @@
       "b_home_n": 1,
       "b_home_win_pct": 0.0,
       "asymmetry": 1.0
-    },
-    {
-      "team_a": "IFK Vänersborg",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 8,
-      "avg_fouls": 6.75,
-      "ci_fouls": [
-        5.12,
-        8.38
-      ],
-      "std_fouls": 2.33,
-      "avg_goals": 7.12,
-      "ci_goals": [
-        5.38,
-        8.62
-      ],
-      "avg_corners": 18.88,
-      "ci_corners": [
-        16.5,
-        21.38
-      ],
-      "home_win_pct": 0.38,
-      "home_win_ci": [
-        0.14,
-        0.69
-      ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.25,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.25
     },
     {
       "team_a": "IFK Rättvik",
@@ -585,39 +489,7 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Gripen BK Trollhättan",
-      "team_b": "IFK Vänersborg",
-      "n": 2,
-      "avg_fouls": 6.5,
-      "ci_fouls": [
-        3.0,
-        10.0
-      ],
-      "std_fouls": 3.5,
-      "avg_goals": 9.5,
-      "ci_goals": [
-        8.0,
-        11.0
-      ],
-      "avg_corners": 16.5,
-      "ci_corners": [
-        16.0,
-        17.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandyförening",
+      "team_a": "Edsbyns IF",
       "team_b": "Ljusdals BK",
       "n": 2,
       "avg_fouls": 6.5,
@@ -649,100 +521,68 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Gripen Trollhättan BK",
-      "team_b": "Västerås SK",
-      "n": 2,
-      "avg_fouls": 6.5,
+      "team_a": "IFK Vänersborg",
+      "team_b": "Sandvikens AIK/BK",
+      "n": 12,
+      "avg_fouls": 6.33,
       "ci_fouls": [
-        6.0,
-        7.0
+        5.17,
+        7.67
       ],
-      "std_fouls": 0.5,
-      "avg_goals": 9.5,
+      "std_fouls": 2.21,
+      "avg_goals": 8.33,
       "ci_goals": [
-        8.0,
-        11.0
+        6.75,
+        9.67
       ],
-      "avg_corners": 17.5,
+      "avg_corners": 19.75,
       "ci_corners": [
-        16.0,
-        19.0
+        17.42,
+        22.42
       ],
-      "home_win_pct": 1.0,
+      "home_win_pct": 0.25,
       "home_win_ci": [
-        0.34,
-        1.0
+        0.09,
+        0.53
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "Frillesås BK",
-      "n": 4,
-      "avg_fouls": 6.25,
-      "ci_fouls": [
-        3.0,
-        9.5
-      ],
-      "std_fouls": 3.49,
-      "avg_goals": 6.25,
-      "ci_goals": [
-        5.5,
-        7.0
-      ],
-      "avg_corners": 18.0,
-      "ci_corners": [
-        16.5,
-        19.5
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
+      "draw_pct": 0.17,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.33,
+      "asymmetry": 0.17
     },
     {
       "team_a": "Broberg/Söderhamn",
       "team_b": "IK Sirius",
-      "n": 10,
-      "avg_fouls": 6.2,
+      "n": 14,
+      "avg_fouls": 6.0,
       "ci_fouls": [
-        4.6,
-        7.7
+        4.79,
+        7.21
       ],
-      "std_fouls": 2.6,
-      "avg_goals": 9.1,
+      "std_fouls": 2.42,
+      "avg_goals": 8.36,
       "ci_goals": [
-        7.9,
-        10.5
+        7.0,
+        9.71
       ],
-      "avg_corners": 17.9,
+      "avg_corners": 17.36,
       "ci_corners": [
-        15.7,
-        20.1
+        15.43,
+        19.14
       ],
-      "home_win_pct": 0.7,
+      "home_win_pct": 0.64,
       "home_win_ci": [
-        0.4,
-        0.89
+        0.39,
+        0.84
       ],
       "draw_pct": 0.0,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.6,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.8,
-      "asymmetry": 0.2
+      "a_home_n": 7,
+      "a_home_win_pct": 0.57,
+      "b_home_n": 7,
+      "b_home_win_pct": 0.71,
+      "asymmetry": 0.14
     },
     {
       "team_a": "Hammarby IF",
@@ -806,70 +646,6 @@
       "a_home_win_pct": 1.0,
       "b_home_n": 1,
       "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "GripenTrollhättan BK",
-      "team_b": "IK Sirius",
-      "n": 2,
-      "avg_fouls": 6.0,
-      "ci_fouls": [
-        6.0,
-        6.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 6.5,
-      "ci_goals": [
-        6.0,
-        7.0
-      ],
-      "avg_corners": 16.5,
-      "ci_corners": [
-        16.0,
-        17.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.66
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Gripen Trollhättan BK",
-      "team_b": "Hammarby IF",
-      "n": 3,
-      "avg_fouls": 6.0,
-      "ci_fouls": [
-        3.0,
-        8.0
-      ],
-      "std_fouls": 2.16,
-      "avg_goals": 8.33,
-      "ci_goals": [
-        6.0,
-        10.0
-      ],
-      "avg_corners": 17.67,
-      "ci_corners": [
-        14.0,
-        23.0
-      ],
-      "home_win_pct": 0.67,
-      "home_win_ci": [
-        0.21,
-        0.94
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
       "asymmetry": 1.0
     },
     {
@@ -971,129 +747,65 @@
     {
       "team_a": "Broberg/Söderhamn",
       "team_b": "IFK Vänersborg",
-      "n": 8,
+      "n": 12,
       "avg_fouls": 5.75,
       "ci_fouls": [
-        4.38,
-        7.62
+        4.58,
+        7.0
       ],
-      "std_fouls": 2.33,
-      "avg_goals": 7.5,
+      "std_fouls": 2.24,
+      "avg_goals": 8.25,
       "ci_goals": [
-        5.75,
-        9.12
+        6.75,
+        9.58
       ],
-      "avg_corners": 17.62,
+      "avg_corners": 18.83,
       "ci_corners": [
-        15.38,
-        20.12
+        16.33,
+        21.75
       ],
-      "home_win_pct": 0.38,
+      "home_win_pct": 0.42,
       "home_win_ci": [
-        0.14,
-        0.69
+        0.19,
+        0.68
       ],
-      "draw_pct": 0.25,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.75,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.75
+      "draw_pct": 0.17,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.67,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.17,
+      "asymmetry": 0.5
     },
     {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "IFK Vänersborg",
-      "n": 4,
-      "avg_fouls": 5.75,
+      "team_a": "Gripen Trollhättan BK",
+      "team_b": "Hammarby IF",
+      "n": 6,
+      "avg_fouls": 5.67,
       "ci_fouls": [
-        4.0,
-        7.75
+        3.67,
+        8.0
       ],
-      "std_fouls": 2.05,
-      "avg_goals": 9.75,
+      "std_fouls": 2.87,
+      "avg_goals": 7.67,
       "ci_goals": [
-        8.5,
-        11.25
+        6.17,
+        9.0
       ],
-      "avg_corners": 21.25,
+      "avg_corners": 18.0,
       "ci_corners": [
-        16.0,
-        26.5
+        15.83,
+        20.5
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.15,
-        0.85
+        0.19,
+        0.81
       ],
       "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "Gripen Trollhättan BK",
-      "n": 3,
-      "avg_fouls": 5.67,
-      "ci_fouls": [
-        5.0,
-        6.0
-      ],
-      "std_fouls": 0.47,
-      "avg_goals": 8.0,
-      "ci_goals": [
-        6.0,
-        11.0
-      ],
-      "avg_corners": 20.67,
-      "ci_corners": [
-        20.0,
-        21.0
-      ],
-      "home_win_pct": 0.33,
-      "home_win_ci": [
-        0.06,
-        0.79
-      ],
-      "draw_pct": 0.33,
-      "a_home_n": 2,
+      "a_home_n": 3,
       "a_home_win_pct": 0.0,
-      "b_home_n": 1,
+      "b_home_n": 3,
       "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Gripen Trollhättan BK",
-      "n": 3,
-      "avg_fouls": 5.67,
-      "ci_fouls": [
-        3.0,
-        10.0
-      ],
-      "std_fouls": 3.09,
-      "avg_goals": 11.0,
-      "ci_goals": [
-        8.0,
-        13.0
-      ],
-      "avg_corners": 21.33,
-      "ci_corners": [
-        20.0,
-        22.0
-      ],
-      "home_win_pct": 0.33,
-      "home_win_ci": [
-        0.06,
-        0.79
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
       "asymmetry": 1.0
     },
     {
@@ -1193,196 +905,68 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "GripenTrollhättan BK",
+      "team_a": "Gripen Trollhättan BK",
       "team_b": "Sandvikens AIK/BK",
-      "n": 2,
-      "avg_fouls": 5.5,
+      "n": 9,
+      "avg_fouls": 5.33,
       "ci_fouls": [
-        4.0,
-        7.0
+        4.11,
+        6.56
       ],
-      "std_fouls": 1.5,
-      "avg_goals": 5.5,
+      "std_fouls": 1.89,
+      "avg_goals": 8.78,
       "ci_goals": [
-        3.0,
-        8.0
+        6.67,
+        10.89
       ],
       "avg_corners": 18.0,
       "ci_corners": [
-        11.0,
-        25.0
+        15.22,
+        20.89
       ],
-      "home_win_pct": 0.5,
+      "home_win_pct": 0.78,
       "home_win_ci": [
-        0.09,
-        0.91
+        0.45,
+        0.94
       ],
       "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
+      "a_home_n": 5,
+      "a_home_win_pct": 0.8,
+      "b_home_n": 4,
+      "b_home_win_pct": 0.75,
+      "asymmetry": 0.05
     },
     {
-      "team_a": "GripenTrollhättan BK",
-      "team_b": "Villa Lidköping BK",
-      "n": 2,
-      "avg_fouls": 5.5,
-      "ci_fouls": [
-        5.0,
-        6.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 10.0,
-      "ci_goals": [
-        6.0,
-        14.0
-      ],
-      "avg_corners": 17.5,
-      "ci_corners": [
-        14.0,
-        21.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "IK Sirius",
-      "n": 4,
-      "avg_fouls": 5.5,
-      "ci_fouls": [
-        3.75,
-        7.25
-      ],
-      "std_fouls": 1.8,
-      "avg_goals": 6.5,
-      "ci_goals": [
-        4.0,
-        9.0
-      ],
-      "avg_corners": 16.0,
-      "ci_corners": [
-        13.0,
-        19.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "IFK Vänersborg",
-      "team_b": "Sandvikens AIK",
-      "n": 4,
-      "avg_fouls": 5.5,
-      "ci_fouls": [
-        4.0,
-        7.0
-      ],
-      "std_fouls": 1.66,
-      "avg_goals": 10.75,
-      "ci_goals": [
-        10.0,
-        11.5
-      ],
-      "avg_corners": 21.5,
-      "ci_corners": [
-        16.0,
-        27.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.49
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Hammarby IF",
-      "team_b": "Sandvikens AIK/BK",
+      "team_a": "Broberg/Söderhamn",
+      "team_b": "Gripen Trollhättan BK",
       "n": 6,
       "avg_fouls": 5.17,
       "ci_fouls": [
-        3.17,
-        7.33
+        4.5,
+        5.83
       ],
-      "std_fouls": 2.79,
-      "avg_goals": 12.67,
+      "std_fouls": 0.9,
+      "avg_goals": 8.5,
       "ci_goals": [
-        9.83,
-        15.33
+        7.17,
+        9.83
       ],
-      "avg_corners": 17.0,
+      "avg_corners": 19.17,
       "ci_corners": [
-        14.33,
-        19.5
-      ],
-      "home_win_pct": 0.83,
-      "home_win_ci": [
-        0.44,
-        0.97
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.67,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.33
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Edsbyns IF Bandyförening",
-      "n": 8,
-      "avg_fouls": 5.12,
-      "ci_fouls": [
-        3.38,
-        7.12
-      ],
-      "std_fouls": 2.71,
-      "avg_goals": 8.12,
-      "ci_goals": [
-        6.38,
-        10.0
-      ],
-      "avg_corners": 20.12,
-      "ci_corners": [
-        18.75,
-        21.25
+        16.5,
+        21.5
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.22,
-        0.78
+        0.19,
+        0.81
       ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.25,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.75,
-      "asymmetry": 0.5
+      "draw_pct": 0.33,
+      "a_home_n": 3,
+      "a_home_win_pct": 0.0,
+      "b_home_n": 3,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 1.0
     },
     {
       "team_a": "AIK Bandy",
@@ -1417,39 +1001,39 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Bollnäs GIF",
+      "team_a": "Bollnäs GoIF",
       "team_b": "Sandvikens AIK/BK",
-      "n": 8,
+      "n": 12,
       "avg_fouls": 5.0,
       "ci_fouls": [
-        3.62,
-        6.12
+        4.08,
+        5.92
       ],
-      "std_fouls": 1.73,
-      "avg_goals": 9.12,
+      "std_fouls": 1.63,
+      "avg_goals": 9.33,
       "ci_goals": [
-        7.75,
+        8.17,
         10.5
       ],
-      "avg_corners": 19.62,
+      "avg_corners": 19.42,
       "ci_corners": [
-        16.62,
-        22.75
+        16.42,
+        22.0
       ],
-      "home_win_pct": 0.5,
+      "home_win_pct": 0.42,
       "home_win_ci": [
-        0.22,
-        0.78
+        0.19,
+        0.68
       ],
-      "draw_pct": 0.25,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 4,
+      "draw_pct": 0.17,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.33,
+      "b_home_n": 6,
       "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
+      "asymmetry": 0.17
     },
     {
-      "team_a": "Bollnäs GIF",
+      "team_a": "Bollnäs GoIF",
       "team_b": "Örebro SK Bandy",
       "n": 2,
       "avg_fouls": 5.0,
@@ -1481,164 +1065,36 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Edsbyns IF Bandy",
-      "team_b": "GripenTrollhättan BK",
-      "n": 2,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        4.0,
-        6.0
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 5.5,
-      "ci_goals": [
-        4.0,
-        7.0
-      ],
-      "avg_corners": 19.5,
-      "ci_corners": [
-        18.0,
-        21.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "GripenTrollhättan BK",
-      "n": 2,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        4.0,
-        6.0
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 9.5,
-      "ci_goals": [
-        9.0,
-        10.0
-      ],
-      "avg_corners": 15.0,
-      "ci_corners": [
-        14.0,
-        16.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "GripenTrollhättan BK",
-      "team_b": "Åby/Tjureda IF",
-      "n": 2,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        4.0,
-        6.0
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 9.5,
-      "ci_goals": [
-        9.0,
-        10.0
-      ],
-      "avg_corners": 14.5,
-      "ci_corners": [
-        12.0,
-        17.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "IK Sirius",
-      "n": 7,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        3.71,
-        6.14
-      ],
-      "std_fouls": 1.77,
-      "avg_goals": 9.86,
-      "ci_goals": [
-        6.86,
-        12.57
-      ],
-      "avg_corners": 17.14,
-      "ci_corners": [
-        14.57,
-        20.14
-      ],
-      "home_win_pct": 0.43,
-      "home_win_ci": [
-        0.16,
-        0.75
-      ],
-      "draw_pct": 0.29,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.67,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.25,
-      "asymmetry": 0.42
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "Edsbyns IF Bandyförening",
+      "team_a": "Gripen Trollhättan BK",
+      "team_b": "IFK Vänersborg",
       "n": 6,
       "avg_fouls": 5.0,
       "ci_fouls": [
-        3.67,
-        6.5
+        3.0,
+        7.17
       ],
-      "std_fouls": 1.83,
-      "avg_goals": 10.83,
+      "std_fouls": 2.77,
+      "avg_goals": 7.5,
       "ci_goals": [
-        8.83,
-        12.67
+        5.33,
+        9.5
       ],
-      "avg_corners": 18.83,
+      "avg_corners": 17.83,
       "ci_corners": [
-        17.17,
-        20.67
+        16.0,
+        19.67
       ],
-      "home_win_pct": 0.33,
+      "home_win_pct": 0.5,
       "home_win_ci": [
-        0.1,
-        0.7
+        0.19,
+        0.81
       ],
-      "draw_pct": 0.17,
+      "draw_pct": 0.0,
       "a_home_n": 3,
-      "a_home_win_pct": 0.0,
+      "a_home_win_pct": 0.33,
       "b_home_n": 3,
       "b_home_win_pct": 0.67,
-      "asymmetry": 0.67
+      "asymmetry": 0.33
     },
     {
       "team_a": "Frillesås BK",
@@ -1673,166 +1129,6 @@
       "asymmetry": 0.0
     },
     {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Broberg/Söderhamn BIF",
-      "n": 4,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        3.5,
-        6.5
-      ],
-      "std_fouls": 1.58,
-      "avg_goals": 10.0,
-      "ci_goals": [
-        6.5,
-        13.5
-      ],
-      "avg_corners": 17.25,
-      "ci_corners": [
-        14.25,
-        20.5
-      ],
-      "home_win_pct": 0.75,
-      "home_win_ci": [
-        0.3,
-        0.95
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "Vetlanda BK",
-      "n": 4,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        3.5,
-        6.5
-      ],
-      "std_fouls": 1.41,
-      "avg_goals": 12.5,
-      "ci_goals": [
-        8.0,
-        17.0
-      ],
-      "avg_corners": 19.25,
-      "ci_corners": [
-        15.5,
-        23.0
-      ],
-      "home_win_pct": 0.25,
-      "home_win_ci": [
-        0.05,
-        0.7
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Vetlanda BK",
-      "n": 4,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        2.75,
-        7.75
-      ],
-      "std_fouls": 2.55,
-      "avg_goals": 10.0,
-      "ci_goals": [
-        7.5,
-        13.25
-      ],
-      "avg_corners": 19.0,
-      "ci_corners": [
-        18.0,
-        20.25
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.49
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Sandvikens AIK",
-      "n": 4,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        3.5,
-        6.5
-      ],
-      "std_fouls": 1.41,
-      "avg_goals": 9.75,
-      "ci_goals": [
-        7.5,
-        12.0
-      ],
-      "avg_corners": 19.0,
-      "ci_corners": [
-        12.25,
-        23.25
-      ],
-      "home_win_pct": 0.25,
-      "home_win_ci": [
-        0.05,
-        0.7
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Gripen Trollhättan BK",
-      "team_b": "Villa-Lidköping BK",
-      "n": 6,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        3.17,
-        6.83
-      ],
-      "std_fouls": 2.38,
-      "avg_goals": 10.0,
-      "ci_goals": [
-        7.0,
-        13.17
-      ],
-      "avg_corners": 21.33,
-      "ci_corners": [
-        18.5,
-        24.33
-      ],
-      "home_win_pct": 0.33,
-      "home_win_ci": [
-        0.1,
-        0.7
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.67,
-      "asymmetry": 0.67
-    },
-    {
       "team_a": "IF Boltic",
       "team_b": "Åby/Tjureda IF",
       "n": 2,
@@ -1865,40 +1161,8 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Gripen Trollhättan BK",
-      "team_b": "Vetlanda BK",
-      "n": 2,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        3.0,
-        7.0
-      ],
-      "std_fouls": 2.0,
-      "avg_goals": 7.5,
-      "ci_goals": [
-        7.0,
-        8.0
-      ],
-      "avg_corners": 21.5,
-      "ci_corners": [
-        20.0,
-        23.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
       "team_a": "IF Boltic",
-      "team_b": "Sandvikens AIK",
+      "team_b": "Sandvikens AIK/BK",
       "n": 2,
       "avg_fouls": 5.0,
       "ci_fouls": [
@@ -1961,230 +1225,6 @@
       "asymmetry": 0.17
     },
     {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Vetlanda BK",
-      "n": 8,
-      "avg_fouls": 4.88,
-      "ci_fouls": [
-        4.0,
-        5.75
-      ],
-      "std_fouls": 1.27,
-      "avg_goals": 9.62,
-      "ci_goals": [
-        8.5,
-        10.75
-      ],
-      "avg_corners": 18.62,
-      "ci_corners": [
-        16.0,
-        20.75
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.38,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.25,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.75,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Hammarby IF",
-      "team_b": "IK Sirius",
-      "n": 14,
-      "avg_fouls": 4.86,
-      "ci_fouls": [
-        4.14,
-        5.79
-      ],
-      "std_fouls": 1.64,
-      "avg_goals": 7.71,
-      "ci_goals": [
-        6.64,
-        8.79
-      ],
-      "avg_corners": 17.64,
-      "ci_corners": [
-        15.86,
-        19.36
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.27,
-        0.73
-      ],
-      "draw_pct": 0.07,
-      "a_home_n": 7,
-      "a_home_win_pct": 0.43,
-      "b_home_n": 7,
-      "b_home_win_pct": 0.57,
-      "asymmetry": 0.14
-    },
-    {
-      "team_a": "IK Sirius",
-      "team_b": "Västerås SK/BK",
-      "n": 6,
-      "avg_fouls": 4.83,
-      "ci_fouls": [
-        4.17,
-        5.83
-      ],
-      "std_fouls": 1.07,
-      "avg_goals": 9.33,
-      "ci_goals": [
-        7.33,
-        11.33
-      ],
-      "avg_corners": 16.83,
-      "ci_corners": [
-        14.17,
-        19.5
-      ],
-      "home_win_pct": 0.33,
-      "home_win_ci": [
-        0.1,
-        0.7
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.33,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Gripen Trollhättan BK",
-      "team_b": "Sandvikens AIK",
-      "n": 6,
-      "avg_fouls": 4.83,
-      "ci_fouls": [
-        3.5,
-        6.33
-      ],
-      "std_fouls": 1.77,
-      "avg_goals": 9.33,
-      "ci_goals": [
-        7.33,
-        11.5
-      ],
-      "avg_corners": 18.5,
-      "ci_corners": [
-        15.5,
-        20.67
-      ],
-      "home_win_pct": 0.83,
-      "home_win_ci": [
-        0.44,
-        0.97
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.67,
-      "asymmetry": 0.33
-    },
-    {
-      "team_a": "Sandvikens AIK/BK",
-      "team_b": "Vetlanda BK",
-      "n": 11,
-      "avg_fouls": 4.82,
-      "ci_fouls": [
-        3.64,
-        6.36
-      ],
-      "std_fouls": 2.29,
-      "avg_goals": 9.55,
-      "ci_goals": [
-        7.73,
-        11.45
-      ],
-      "avg_corners": 18.27,
-      "ci_corners": [
-        16.45,
-        20.0
-      ],
-      "home_win_pct": 0.45,
-      "home_win_ci": [
-        0.21,
-        0.72
-      ],
-      "draw_pct": 0.18,
-      "a_home_n": 6,
-      "a_home_win_pct": 0.67,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.2,
-      "asymmetry": 0.47
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Villa-Lidköping BK",
-      "n": 4,
-      "avg_fouls": 4.75,
-      "ci_fouls": [
-        3.5,
-        6.25
-      ],
-      "std_fouls": 1.48,
-      "avg_goals": 12.25,
-      "ci_goals": [
-        10.25,
-        15.5
-      ],
-      "avg_corners": 14.0,
-      "ci_corners": [
-        13.0,
-        15.25
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Åby/Tjureda IF",
-      "n": 4,
-      "avg_fouls": 4.75,
-      "ci_fouls": [
-        2.75,
-        6.5
-      ],
-      "std_fouls": 1.79,
-      "avg_goals": 8.0,
-      "ci_goals": [
-        6.5,
-        9.5
-      ],
-      "avg_corners": 17.75,
-      "ci_corners": [
-        13.0,
-        22.5
-      ],
-      "home_win_pct": 0.25,
-      "home_win_ci": [
-        0.05,
-        0.7
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.5
-    },
-    {
       "team_a": "IK Sirius",
       "team_b": "Vetlanda BK",
       "n": 14,
@@ -2217,68 +1257,196 @@
       "asymmetry": 0.43
     },
     {
+      "team_a": "Broberg/Söderhamn",
+      "team_b": "Vetlanda BK",
+      "n": 12,
+      "avg_fouls": 4.67,
+      "ci_fouls": [
+        3.83,
+        5.5
+      ],
+      "std_fouls": 1.55,
+      "avg_goals": 9.75,
+      "ci_goals": [
+        8.83,
+        10.75
+      ],
+      "avg_corners": 18.33,
+      "ci_corners": [
+        16.58,
+        20.0
+      ],
+      "home_win_pct": 0.5,
+      "home_win_ci": [
+        0.25,
+        0.75
+      ],
+      "draw_pct": 0.33,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.83,
+      "asymmetry": 0.67
+    },
+    {
       "team_a": "Sandvikens AIK/BK",
-      "team_b": "Västerås SK/BK",
+      "team_b": "Vetlanda BK",
+      "n": 15,
+      "avg_fouls": 4.67,
+      "ci_fouls": [
+        3.67,
+        5.73
+      ],
+      "std_fouls": 2.18,
+      "avg_goals": 9.93,
+      "ci_goals": [
+        8.47,
+        11.53
+      ],
+      "avg_corners": 18.93,
+      "ci_corners": [
+        16.53,
+        21.4
+      ],
+      "home_win_pct": 0.47,
+      "home_win_ci": [
+        0.25,
+        0.7
+      ],
+      "draw_pct": 0.2,
+      "a_home_n": 8,
+      "a_home_win_pct": 0.5,
+      "b_home_n": 7,
+      "b_home_win_pct": 0.43,
+      "asymmetry": 0.07
+    },
+    {
+      "team_a": "Gripen Trollhättan BK",
+      "team_b": "IK Sirius",
+      "n": 6,
+      "avg_fouls": 4.67,
+      "ci_fouls": [
+        3.17,
+        5.83
+      ],
+      "std_fouls": 1.8,
+      "avg_goals": 6.33,
+      "ci_goals": [
+        5.33,
+        7.33
+      ],
+      "avg_corners": 17.83,
+      "ci_corners": [
+        16.17,
+        20.83
+      ],
+      "home_win_pct": 0.17,
+      "home_win_ci": [
+        0.03,
+        0.56
+      ],
+      "draw_pct": 0.5,
+      "a_home_n": 3,
+      "a_home_win_pct": 0.0,
+      "b_home_n": 3,
+      "b_home_win_pct": 0.33,
+      "asymmetry": 0.33
+    },
+    {
+      "team_a": "Gripen Trollhättan BK",
+      "team_b": "Villa-Lidköping BK",
       "n": 10,
       "avg_fouls": 4.6,
       "ci_fouls": [
-        3.6,
-        5.5
+        3.2,
+        6.1
       ],
-      "std_fouls": 1.56,
-      "avg_goals": 8.6,
+      "std_fouls": 2.42,
+      "avg_goals": 9.6,
       "ci_goals": [
-        7.1,
-        9.9
+        7.3,
+        12.1
       ],
-      "avg_corners": 19.0,
+      "avg_corners": 19.3,
       "ci_corners": [
-        17.0,
-        21.1
+        16.5,
+        22.2
       ],
-      "home_win_pct": 0.3,
+      "home_win_pct": 0.4,
       "home_win_ci": [
-        0.11,
-        0.6
+        0.17,
+        0.69
       ],
-      "draw_pct": 0.2,
+      "draw_pct": 0.0,
       "a_home_n": 5,
-      "a_home_win_pct": 0.4,
+      "a_home_win_pct": 0.0,
       "b_home_n": 5,
-      "b_home_win_pct": 0.2,
-      "asymmetry": 0.2
+      "b_home_win_pct": 0.8,
+      "asymmetry": 0.8
     },
     {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 11,
-      "avg_fouls": 4.55,
+      "team_a": "Bollnäs GoIF",
+      "team_b": "Vetlanda BK",
+      "n": 12,
+      "avg_fouls": 4.58,
       "ci_fouls": [
-        3.36,
-        5.82
+        3.5,
+        5.75
       ],
-      "std_fouls": 2.15,
-      "avg_goals": 9.45,
+      "std_fouls": 2.02,
+      "avg_goals": 8.58,
       "ci_goals": [
-        8.09,
-        10.64
+        7.17,
+        10.25
       ],
-      "avg_corners": 17.45,
+      "avg_corners": 19.25,
       "ci_corners": [
-        14.91,
-        19.82
+        18.33,
+        20.33
       ],
-      "home_win_pct": 0.55,
+      "home_win_pct": 0.33,
       "home_win_ci": [
-        0.28,
-        0.79
+        0.14,
+        0.61
       ],
-      "draw_pct": 0.27,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.4,
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.5,
       "b_home_n": 6,
-      "b_home_win_pct": 0.67,
-      "asymmetry": 0.27
+      "b_home_win_pct": 0.17,
+      "asymmetry": 0.33
+    },
+    {
+      "team_a": "Hammarby IF",
+      "team_b": "IK Sirius",
+      "n": 16,
+      "avg_fouls": 4.56,
+      "ci_fouls": [
+        3.75,
+        5.44
+      ],
+      "std_fouls": 1.8,
+      "avg_goals": 7.81,
+      "ci_goals": [
+        6.69,
+        8.94
+      ],
+      "avg_corners": 17.44,
+      "ci_corners": [
+        15.81,
+        19.12
+      ],
+      "home_win_pct": 0.56,
+      "home_win_ci": [
+        0.33,
+        0.77
+      ],
+      "draw_pct": 0.06,
+      "a_home_n": 8,
+      "a_home_win_pct": 0.5,
+      "b_home_n": 8,
+      "b_home_win_pct": 0.62,
+      "asymmetry": 0.12
     },
     {
       "team_a": "Frillesås BK",
@@ -2311,38 +1479,6 @@
       "b_home_n": 5,
       "b_home_win_pct": 0.4,
       "asymmetry": 0.4
-    },
-    {
-      "team_a": "IFK Vänersborg",
-      "team_b": "Västerås SK/BK",
-      "n": 6,
-      "avg_fouls": 4.5,
-      "ci_fouls": [
-        3.33,
-        5.67
-      ],
-      "std_fouls": 1.5,
-      "avg_goals": 8.67,
-      "ci_goals": [
-        7.67,
-        9.67
-      ],
-      "avg_corners": 19.17,
-      "ci_corners": [
-        15.5,
-        23.17
-      ],
-      "home_win_pct": 0.17,
-      "home_win_ci": [
-        0.03,
-        0.56
-      ],
-      "draw_pct": 0.67,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.33
     },
     {
       "team_a": "IFK Motala",
@@ -2441,38 +1577,6 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Hammarby Bandy",
-      "team_b": "IFK Vänersborg",
-      "n": 2,
-      "avg_fouls": 4.5,
-      "ci_fouls": [
-        3.0,
-        6.0
-      ],
-      "std_fouls": 1.5,
-      "avg_goals": 6.5,
-      "ci_goals": [
-        5.0,
-        8.0
-      ],
-      "avg_corners": 23.5,
-      "ci_corners": [
-        23.0,
-        24.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.66
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
       "team_a": "IFK Kungälv",
       "team_b": "Åby/Tjureda IF",
       "n": 2,
@@ -2505,70 +1609,6 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Gripen BK Trollhättan",
-      "team_b": "IK Sirius",
-      "n": 2,
-      "avg_fouls": 4.5,
-      "ci_fouls": [
-        4.0,
-        5.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 6.5,
-      "ci_goals": [
-        6.0,
-        7.0
-      ],
-      "avg_corners": 16.5,
-      "ci_corners": [
-        16.0,
-        17.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.66
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Vetlanda BK",
-      "team_b": "Villa-Lidköping BK",
-      "n": 4,
-      "avg_fouls": 4.5,
-      "ci_fouls": [
-        2.0,
-        7.0
-      ],
-      "std_fouls": 2.6,
-      "avg_goals": 12.5,
-      "ci_goals": [
-        8.0,
-        17.5
-      ],
-      "avg_corners": 19.0,
-      "ci_corners": [
-        17.0,
-        22.25
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
-    },
-    {
       "team_a": "Hammarby IF",
       "team_b": "Ljusdals BK",
       "n": 2,
@@ -2597,38 +1637,6 @@
       "a_home_n": 1,
       "a_home_win_pct": 0.0,
       "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Hammarby IF",
-      "team_b": "Västerås SK",
-      "n": 4,
-      "avg_fouls": 4.5,
-      "ci_fouls": [
-        4.0,
-        5.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 10.5,
-      "ci_goals": [
-        7.5,
-        15.0
-      ],
-      "avg_corners": 20.25,
-      "ci_corners": [
-        18.0,
-        22.5
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.49
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
       "b_home_win_pct": 0.0,
       "asymmetry": 0.0
     },
@@ -2697,100 +1705,36 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Gripen Trollhättan BK",
-      "team_b": "IFK Vänersborg",
-      "n": 2,
-      "avg_fouls": 4.5,
-      "ci_fouls": [
-        2.0,
-        7.0
-      ],
-      "std_fouls": 2.5,
-      "avg_goals": 6.5,
-      "ci_goals": [
-        3.0,
-        10.0
-      ],
-      "avg_corners": 20.5,
-      "ci_corners": [
-        20.0,
-        21.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.66
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Vetlanda BK",
-      "n": 8,
-      "avg_fouls": 4.38,
-      "ci_fouls": [
-        3.38,
-        5.5
-      ],
-      "std_fouls": 1.65,
-      "avg_goals": 7.88,
-      "ci_goals": [
-        6.12,
-        9.75
-      ],
-      "avg_corners": 19.38,
-      "ci_corners": [
-        18.0,
-        20.88
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.75,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.25,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "IK Sirius",
+      "team_a": "Broberg/Söderhamn",
       "team_b": "Sandvikens AIK/BK",
-      "n": 8,
-      "avg_fouls": 4.38,
+      "n": 15,
+      "avg_fouls": 4.47,
       "ci_fouls": [
-        3.12,
-        5.62
+        3.6,
+        5.53
       ],
       "std_fouls": 1.93,
-      "avg_goals": 8.5,
+      "avg_goals": 9.8,
       "ci_goals": [
-        6.62,
-        10.12
+        8.6,
+        10.8
       ],
-      "avg_corners": 18.75,
+      "avg_corners": 19.13,
       "ci_corners": [
-        14.75,
-        21.5
+        17.07,
+        21.47
       ],
-      "home_win_pct": 0.38,
+      "home_win_pct": 0.47,
       "home_win_ci": [
-        0.14,
-        0.69
+        0.25,
+        0.7
       ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.75,
-      "asymmetry": 0.75
+      "draw_pct": 0.2,
+      "a_home_n": 7,
+      "a_home_win_pct": 0.43,
+      "b_home_n": 8,
+      "b_home_win_pct": 0.5,
+      "asymmetry": 0.07
     },
     {
       "team_a": "AIK Bandy",
@@ -2825,36 +1769,36 @@
       "asymmetry": 0.07
     },
     {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Västerås SK/BK",
-      "n": 6,
+      "team_a": "IK Sirius",
+      "team_b": "Sandvikens AIK/BK",
+      "n": 12,
       "avg_fouls": 4.33,
       "ci_fouls": [
-        3.0,
-        5.67
+        3.33,
+        5.33
       ],
-      "std_fouls": 1.6,
-      "avg_goals": 10.33,
+      "std_fouls": 1.84,
+      "avg_goals": 8.5,
       "ci_goals": [
-        8.17,
-        13.0
+        7.08,
+        9.75
       ],
-      "avg_corners": 16.5,
+      "avg_corners": 18.0,
       "ci_corners": [
-        14.17,
-        18.67
+        15.42,
+        20.25
       ],
-      "home_win_pct": 0.5,
+      "home_win_pct": 0.42,
       "home_win_ci": [
         0.19,
-        0.81
+        0.68
       ],
-      "draw_pct": 0.17,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
       "b_home_win_pct": 0.67,
-      "asymmetry": 0.33
+      "asymmetry": 0.5
     },
     {
       "team_a": "IFK Vänersborg",
@@ -2889,68 +1833,36 @@
       "asymmetry": 0.67
     },
     {
-      "team_a": "Frillesås BK",
+      "team_a": "Bollnäs GoIF",
       "team_b": "Gripen Trollhättan BK",
-      "n": 3,
+      "n": 6,
       "avg_fouls": 4.33,
       "ci_fouls": [
-        3.0,
-        5.0
+        2.83,
+        6.83
       ],
-      "std_fouls": 0.94,
-      "avg_goals": 9.33,
+      "std_fouls": 2.62,
+      "avg_goals": 8.33,
       "ci_goals": [
-        8.0,
+        5.83,
         11.0
       ],
-      "avg_corners": 20.0,
+      "avg_corners": 21.33,
       "ci_corners": [
-        13.0,
-        25.0
+        19.67,
+        22.67
       ],
-      "home_win_pct": 0.67,
+      "home_win_pct": 0.17,
       "home_win_ci": [
-        0.21,
-        0.94
+        0.03,
+        0.56
       ],
-      "draw_pct": 0.33,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Villa-Lidköping BK",
-      "team_b": "Västerås SK",
-      "n": 7,
-      "avg_fouls": 4.29,
-      "ci_fouls": [
-        2.71,
-        5.71
-      ],
-      "std_fouls": 2.05,
-      "avg_goals": 11.0,
-      "ci_goals": [
-        8.71,
-        13.29
-      ],
-      "avg_corners": 18.71,
-      "ci_corners": [
-        15.29,
-        22.43
-      ],
-      "home_win_pct": 0.57,
-      "home_win_ci": [
-        0.25,
-        0.84
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 4,
-      "a_home_win_pct": 1.0,
+      "draw_pct": 0.17,
+      "a_home_n": 3,
+      "a_home_win_pct": 0.33,
       "b_home_n": 3,
       "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
+      "asymmetry": 0.33
     },
     {
       "team_a": "Broberg/Söderhamn",
@@ -2986,327 +1898,135 @@
     },
     {
       "team_a": "Frillesås BK",
-      "team_b": "GripenTrollhättan BK",
-      "n": 4,
+      "team_b": "Gripen Trollhättan BK",
+      "n": 8,
       "avg_fouls": 4.25,
       "ci_fouls": [
-        1.5,
-        7.0
+        2.88,
+        5.62
       ],
-      "std_fouls": 2.77,
-      "avg_goals": 6.0,
+      "std_fouls": 2.05,
+      "avg_goals": 7.62,
       "ci_goals": [
-        4.0,
-        8.0
+        6.0,
+        9.25
       ],
-      "avg_corners": 17.25,
+      "avg_corners": 18.75,
       "ci_corners": [
-        16.5,
-        18.0
+        16.25,
+        21.25
       ],
-      "home_win_pct": 0.75,
+      "home_win_pct": 0.62,
       "home_win_ci": [
-        0.3,
-        0.95
+        0.31,
+        0.86
       ],
       "draw_pct": 0.25,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
+      "a_home_n": 4,
+      "a_home_win_pct": 0.25,
+      "b_home_n": 4,
       "b_home_win_pct": 1.0,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "Vetlanda BK",
-      "n": 4,
-      "avg_fouls": 4.25,
-      "ci_fouls": [
-        2.0,
-        5.75
-      ],
-      "std_fouls": 1.92,
-      "avg_goals": 10.0,
-      "ci_goals": [
-        8.5,
-        12.0
-      ],
-      "avg_corners": 17.75,
-      "ci_corners": [
-        15.75,
-        19.5
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Sandvikens AIK",
-      "team_b": "Åby/Tjureda IF",
-      "n": 4,
-      "avg_fouls": 4.25,
-      "ci_fouls": [
-        3.0,
-        6.0
-      ],
-      "std_fouls": 1.64,
-      "avg_goals": 10.75,
-      "ci_goals": [
-        9.0,
-        12.5
-      ],
-      "avg_corners": 19.25,
-      "ci_corners": [
-        17.0,
-        22.25
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "IK Sirius",
-      "team_b": "Sandvikens AIK",
-      "n": 4,
-      "avg_fouls": 4.25,
-      "ci_fouls": [
-        3.0,
-        6.0
-      ],
-      "std_fouls": 1.64,
-      "avg_goals": 8.5,
-      "ci_goals": [
-        6.5,
-        10.5
-      ],
-      "avg_corners": 16.5,
-      "ci_corners": [
-        13.5,
-        19.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "IFK Vänersborg",
-      "team_b": "Villa-Lidköping BK",
-      "n": 4,
-      "avg_fouls": 4.25,
-      "ci_fouls": [
-        2.75,
-        5.5
-      ],
-      "std_fouls": 1.48,
-      "avg_goals": 14.25,
-      "ci_goals": [
-        10.75,
-        16.5
-      ],
-      "avg_corners": 14.5,
-      "ci_corners": [
-        12.5,
-        17.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Sandvikens AIK",
-      "team_b": "Vetlanda BK",
-      "n": 4,
-      "avg_fouls": 4.25,
-      "ci_fouls": [
-        2.5,
-        6.0
-      ],
-      "std_fouls": 1.79,
-      "avg_goals": 11.0,
-      "ci_goals": [
-        9.0,
-        12.5
-      ],
-      "avg_corners": 20.75,
-      "ci_corners": [
-        12.25,
-        27.5
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "Sandvikens AIK",
-      "n": 4,
-      "avg_fouls": 4.25,
-      "ci_fouls": [
-        3.25,
-        5.5
-      ],
-      "std_fouls": 1.09,
-      "avg_goals": 10.75,
-      "ci_goals": [
-        9.5,
-        12.0
-      ],
-      "avg_corners": 23.75,
-      "ci_corners": [
-        22.5,
-        25.0
-      ],
-      "home_win_pct": 0.25,
-      "home_win_ci": [
-        0.05,
-        0.7
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "Västerås SK",
-      "n": 4,
-      "avg_fouls": 4.25,
-      "ci_fouls": [
-        2.5,
-        6.25
-      ],
-      "std_fouls": 1.79,
-      "avg_goals": 10.75,
-      "ci_goals": [
-        9.25,
-        13.0
-      ],
-      "avg_corners": 17.5,
-      "ci_corners": [
-        17.0,
-        18.0
-      ],
-      "home_win_pct": 0.75,
-      "home_win_ci": [
-        0.3,
-        0.95
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Edsbyns IF Bandy",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 5,
-      "avg_fouls": 4.2,
-      "ci_fouls": [
-        2.0,
-        6.4
-      ],
-      "std_fouls": 2.56,
-      "avg_goals": 8.4,
-      "ci_goals": [
-        7.2,
-        9.4
-      ],
-      "avg_corners": 14.8,
-      "ci_corners": [
-        12.6,
-        17.2
-      ],
-      "home_win_pct": 0.6,
-      "home_win_ci": [
-        0.23,
-        0.88
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.33,
-      "asymmetry": 0.67
+      "asymmetry": 0.75
     },
     {
       "team_a": "Hammarby IF",
       "team_b": "IFK Vänersborg",
-      "n": 10,
-      "avg_fouls": 4.1,
+      "n": 12,
+      "avg_fouls": 4.17,
       "ci_fouls": [
-        3.1,
-        5.2
+        3.25,
+        5.17
       ],
-      "std_fouls": 1.7,
-      "avg_goals": 8.4,
+      "std_fouls": 1.67,
+      "avg_goals": 8.08,
       "ci_goals": [
-        7.3,
-        9.8
+        6.92,
+        9.25
       ],
-      "avg_corners": 18.4,
+      "avg_corners": 19.25,
       "ci_corners": [
-        16.3,
-        20.6
+        17.08,
+        21.33
       ],
-      "home_win_pct": 0.5,
+      "home_win_pct": 0.42,
       "home_win_ci": [
-        0.24,
-        0.76
+        0.19,
+        0.68
       ],
-      "draw_pct": 0.1,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.8,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.2,
-      "asymmetry": 0.6
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.67,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.17,
+      "asymmetry": 0.5
+    },
+    {
+      "team_a": "Gripen Trollhättan BK",
+      "team_b": "Västerås SK",
+      "n": 6,
+      "avg_fouls": 4.17,
+      "ci_fouls": [
+        2.67,
+        5.67
+      ],
+      "std_fouls": 1.95,
+      "avg_goals": 9.17,
+      "ci_goals": [
+        7.33,
+        11.33
+      ],
+      "avg_corners": 17.17,
+      "ci_corners": [
+        14.33,
+        20.33
+      ],
+      "home_win_pct": 0.83,
+      "home_win_ci": [
+        0.44,
+        0.97
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 3,
+      "a_home_win_pct": 0.67,
+      "b_home_n": 3,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 0.33
+    },
+    {
+      "team_a": "Sandvikens AIK/BK",
+      "team_b": "Västerås SK",
+      "n": 16,
+      "avg_fouls": 4.12,
+      "ci_fouls": [
+        3.44,
+        4.81
+      ],
+      "std_fouls": 1.49,
+      "avg_goals": 9.0,
+      "ci_goals": [
+        7.81,
+        10.19
+      ],
+      "avg_corners": 18.88,
+      "ci_corners": [
+        17.06,
+        20.69
+      ],
+      "home_win_pct": 0.44,
+      "home_win_ci": [
+        0.23,
+        0.67
+      ],
+      "draw_pct": 0.12,
+      "a_home_n": 8,
+      "a_home_win_pct": 0.38,
+      "b_home_n": 8,
+      "b_home_win_pct": 0.5,
+      "asymmetry": 0.12
     },
     {
       "team_a": "AIK Bandy",
-      "team_b": "Västerås SK/BK",
+      "team_b": "Västerås SK",
       "n": 11,
       "avg_fouls": 4.09,
       "ci_fouls": [
@@ -3337,36 +2057,68 @@
       "asymmetry": 0.07
     },
     {
-      "team_a": "Bollnäs GIF",
-      "team_b": "IFK Vänersborg",
-      "n": 8,
+      "team_a": "IK Sirius",
+      "team_b": "Västerås SK",
+      "n": 12,
+      "avg_fouls": 4.08,
+      "ci_fouls": [
+        3.0,
+        5.17
+      ],
+      "std_fouls": 2.02,
+      "avg_goals": 9.0,
+      "ci_goals": [
+        7.25,
+        10.5
+      ],
+      "avg_corners": 17.67,
+      "ci_corners": [
+        15.75,
+        19.33
+      ],
+      "home_win_pct": 0.42,
+      "home_win_ci": [
+        0.19,
+        0.68
+      ],
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.33,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.5,
+      "asymmetry": 0.17
+    },
+    {
+      "team_a": "Broberg/Söderhamn",
+      "team_b": "Västerås SK",
+      "n": 12,
       "avg_fouls": 4.0,
       "ci_fouls": [
-        2.88,
-        5.38
+        3.17,
+        4.92
       ],
-      "std_fouls": 1.87,
-      "avg_goals": 6.75,
+      "std_fouls": 1.68,
+      "avg_goals": 10.25,
       "ci_goals": [
-        5.75,
-        7.62
+        8.92,
+        11.75
       ],
-      "avg_corners": 16.5,
+      "avg_corners": 17.08,
       "ci_corners": [
-        13.0,
-        19.62
+        15.83,
+        18.42
       ],
-      "home_win_pct": 0.75,
+      "home_win_pct": 0.5,
       "home_win_ci": [
-        0.41,
-        0.93
+        0.25,
+        0.75
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.75,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.75,
-      "asymmetry": 0.0
+      "draw_pct": 0.17,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.33,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.67,
+      "asymmetry": 0.33
     },
     {
       "team_a": "AIK Bandy",
@@ -3434,7 +2186,7 @@
     },
     {
       "team_a": "AIK Bandy",
-      "team_b": "Villa Lidköping BK",
+      "team_b": "Villa-Lidköping BK",
       "n": 10,
       "avg_fouls": 4.0,
       "ci_fouls": [
@@ -3463,6 +2215,70 @@
       "b_home_n": 6,
       "b_home_win_pct": 0.83,
       "asymmetry": 0.58
+    },
+    {
+      "team_a": "Sandvikens AIK/BK",
+      "team_b": "Åby/Tjureda IF",
+      "n": 6,
+      "avg_fouls": 4.0,
+      "ci_fouls": [
+        3.17,
+        5.33
+      ],
+      "std_fouls": 1.41,
+      "avg_goals": 10.67,
+      "ci_goals": [
+        9.33,
+        12.0
+      ],
+      "avg_corners": 17.33,
+      "ci_corners": [
+        13.17,
+        20.83
+      ],
+      "home_win_pct": 0.5,
+      "home_win_ci": [
+        0.19,
+        0.81
+      ],
+      "draw_pct": 0.33,
+      "a_home_n": 3,
+      "a_home_win_pct": 0.67,
+      "b_home_n": 3,
+      "b_home_win_pct": 0.33,
+      "asymmetry": 0.33
+    },
+    {
+      "team_a": "Hammarby IF",
+      "team_b": "Sandvikens AIK/BK",
+      "n": 12,
+      "avg_fouls": 4.0,
+      "ci_fouls": [
+        2.67,
+        5.58
+      ],
+      "std_fouls": 2.68,
+      "avg_goals": 11.5,
+      "ci_goals": [
+        10.0,
+        13.08
+      ],
+      "avg_corners": 18.75,
+      "ci_corners": [
+        16.83,
+        20.5
+      ],
+      "home_win_pct": 0.67,
+      "home_win_ci": [
+        0.39,
+        0.86
+      ],
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.67,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.67,
+      "asymmetry": 0.0
     },
     {
       "team_a": "IK Sirius",
@@ -3529,7 +2345,7 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Villa Lidköping BK",
+      "team_a": "Villa-Lidköping BK",
       "team_b": "Örebro SK Bandy",
       "n": 2,
       "avg_fouls": 4.0,
@@ -3625,7 +2441,7 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "GripenTrollhättan BK",
+      "team_a": "Gripen Trollhättan BK",
       "team_b": "IFK Motala",
       "n": 2,
       "avg_fouls": 4.0,
@@ -3657,135 +2473,7 @@
       "asymmetry": 0.0
     },
     {
-      "team_a": "Vetlanda BK",
-      "team_b": "Västerås SK",
-      "n": 14,
-      "avg_fouls": 4.0,
-      "ci_fouls": [
-        3.14,
-        4.93
-      ],
-      "std_fouls": 1.81,
-      "avg_goals": 10.0,
-      "ci_goals": [
-        8.64,
-        11.57
-      ],
-      "avg_corners": 18.43,
-      "ci_corners": [
-        16.43,
-        20.64
-      ],
-      "home_win_pct": 0.71,
-      "home_win_ci": [
-        0.45,
-        0.88
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 7,
-      "a_home_win_pct": 0.43,
-      "b_home_n": 7,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.57
-    },
-    {
-      "team_a": "GripenTrollhättan BK",
-      "team_b": "Vetlanda BK",
-      "n": 2,
-      "avg_fouls": 4.0,
-      "ci_fouls": [
-        3.0,
-        5.0
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 5.0,
-      "ci_goals": [
-        5.0,
-        5.0
-      ],
-      "avg_corners": 16.5,
-      "ci_corners": [
-        15.0,
-        18.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "GripenTrollhättan BK",
-      "team_b": "IFK Vänersborg",
-      "n": 2,
-      "avg_fouls": 4.0,
-      "ci_fouls": [
-        3.0,
-        5.0
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 6.5,
-      "ci_goals": [
-        5.0,
-        8.0
-      ],
-      "avg_corners": 16.5,
-      "ci_corners": [
-        14.0,
-        19.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Hammarby Bandy",
-      "team_b": "Vetlanda BK",
-      "n": 6,
-      "avg_fouls": 4.0,
-      "ci_fouls": [
-        2.83,
-        5.67
-      ],
-      "std_fouls": 1.91,
-      "avg_goals": 12.33,
-      "ci_goals": [
-        9.67,
-        15.0
-      ],
-      "avg_corners": 14.5,
-      "ci_corners": [
-        12.83,
-        16.17
-      ],
-      "home_win_pct": 0.67,
-      "home_win_ci": [
-        0.3,
-        0.9
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.67
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
+      "team_a": "Broberg/Söderhamn",
       "team_b": "Ljusdals BK",
       "n": 2,
       "avg_fouls": 4.0,
@@ -3815,134 +2503,6 @@
       "b_home_n": 1,
       "b_home_win_pct": 0.0,
       "asymmetry": 1.0
-    },
-    {
-      "team_a": "Hammarby IF",
-      "team_b": "Sandvikens AIK",
-      "n": 4,
-      "avg_fouls": 4.0,
-      "ci_fouls": [
-        3.0,
-        5.25
-      ],
-      "std_fouls": 1.22,
-      "avg_goals": 10.25,
-      "ci_goals": [
-        9.0,
-        11.5
-      ],
-      "avg_corners": 19.5,
-      "ci_corners": [
-        18.0,
-        21.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "Åby/Tjureda IF",
-      "n": 4,
-      "avg_fouls": 4.0,
-      "ci_fouls": [
-        2.25,
-        6.75
-      ],
-      "std_fouls": 2.35,
-      "avg_goals": 9.5,
-      "ci_goals": [
-        7.25,
-        11.5
-      ],
-      "avg_corners": 21.25,
-      "ci_corners": [
-        19.0,
-        23.25
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "Gripen BK Trollhättan",
-      "n": 1,
-      "avg_fouls": 4.0,
-      "ci_fouls": [
-        4.0,
-        4.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 8.0,
-      "ci_goals": [
-        8.0,
-        8.0
-      ],
-      "avg_corners": 23.0,
-      "ci_corners": [
-        23.0,
-        23.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.21,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 0,
-      "a_home_win_pct": null,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": null
-    },
-    {
-      "team_a": "Gripen BK Trollhättan",
-      "team_b": "Västerås SK",
-      "n": 2,
-      "avg_fouls": 4.0,
-      "ci_fouls": [
-        3.0,
-        5.0
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 10.5,
-      "ci_goals": [
-        7.0,
-        14.0
-      ],
-      "avg_corners": 14.5,
-      "ci_corners": [
-        11.0,
-        18.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
     },
     {
       "team_a": "IK Sirius",
@@ -3975,38 +2535,6 @@
       "b_home_n": 1,
       "b_home_win_pct": 0.0,
       "asymmetry": 1.0
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Gripen BK Trollhättan",
-      "n": 1,
-      "avg_fouls": 4.0,
-      "ci_fouls": [
-        4.0,
-        4.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 9.0,
-      "ci_goals": [
-        9.0,
-        9.0
-      ],
-      "avg_corners": 21.0,
-      "ci_corners": [
-        21.0,
-        21.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.79
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 0,
-      "b_home_win_pct": null,
-      "asymmetry": null
     },
     {
       "team_a": "IF Boltic",
@@ -4073,36 +2601,36 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Sandvikens AIK/BK",
-      "team_b": "Villa Lidköping BK",
-      "n": 12,
+      "team_a": "Bollnäs GoIF",
+      "team_b": "Villa-Lidköping BK",
+      "n": 24,
       "avg_fouls": 3.92,
       "ci_fouls": [
         2.92,
-        4.75
+        4.92
       ],
-      "std_fouls": 1.71,
-      "avg_goals": 8.25,
+      "std_fouls": 2.45,
+      "avg_goals": 10.58,
       "ci_goals": [
-        6.67,
-        9.83
+        9.17,
+        11.83
       ],
-      "avg_corners": 17.42,
+      "avg_corners": 16.92,
       "ci_corners": [
-        15.5,
-        19.25
+        15.21,
+        18.67
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.25,
-        0.75
+        0.31,
+        0.69
       ],
-      "draw_pct": 0.25,
-      "a_home_n": 6,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 6,
-      "b_home_win_pct": 0.67,
-      "asymmetry": 0.33
+      "draw_pct": 0.0,
+      "a_home_n": 12,
+      "a_home_win_pct": 0.25,
+      "b_home_n": 12,
+      "b_home_win_pct": 0.75,
+      "asymmetry": 0.5
     },
     {
       "team_a": "Frillesås BK",
@@ -4137,8 +2665,72 @@
       "asymmetry": 0.5
     },
     {
+      "team_a": "Hammarby IF",
+      "team_b": "Vetlanda BK",
+      "n": 16,
+      "avg_fouls": 3.88,
+      "ci_fouls": [
+        3.0,
+        4.94
+      ],
+      "std_fouls": 1.9,
+      "avg_goals": 10.56,
+      "ci_goals": [
+        9.06,
+        12.12
+      ],
+      "avg_corners": 15.44,
+      "ci_corners": [
+        13.69,
+        17.19
+      ],
+      "home_win_pct": 0.56,
+      "home_win_ci": [
+        0.33,
+        0.77
+      ],
+      "draw_pct": 0.06,
+      "a_home_n": 8,
+      "a_home_win_pct": 0.38,
+      "b_home_n": 8,
+      "b_home_win_pct": 0.75,
+      "asymmetry": 0.38
+    },
+    {
+      "team_a": "Vetlanda BK",
+      "team_b": "Västerås SK",
+      "n": 20,
+      "avg_fouls": 3.85,
+      "ci_fouls": [
+        3.15,
+        4.65
+      ],
+      "std_fouls": 1.77,
+      "avg_goals": 10.05,
+      "ci_goals": [
+        8.95,
+        11.25
+      ],
+      "avg_corners": 17.65,
+      "ci_corners": [
+        15.9,
+        19.55
+      ],
+      "home_win_pct": 0.65,
+      "home_win_ci": [
+        0.43,
+        0.82
+      ],
+      "draw_pct": 0.05,
+      "a_home_n": 10,
+      "a_home_win_pct": 0.4,
+      "b_home_n": 10,
+      "b_home_win_pct": 0.9,
+      "asymmetry": 0.5
+    },
+    {
       "team_a": "AIK Bandy",
-      "team_b": "Bollnäs GIF",
+      "team_b": "Bollnäs GoIF",
       "n": 6,
       "avg_fouls": 3.83,
       "ci_fouls": [
@@ -4169,132 +2761,100 @@
       "asymmetry": 0.33
     },
     {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Hammarby IF",
-      "n": 6,
-      "avg_fouls": 3.83,
+      "team_a": "Broberg/Söderhamn",
+      "team_b": "Edsbyns IF",
+      "n": 14,
+      "avg_fouls": 3.79,
       "ci_fouls": [
-        2.5,
-        5.17
+        2.86,
+        4.79
       ],
-      "std_fouls": 1.77,
-      "avg_goals": 8.5,
+      "std_fouls": 1.93,
+      "avg_goals": 9.14,
       "ci_goals": [
-        7.17,
-        10.0
+        7.57,
+        10.64
       ],
-      "avg_corners": 16.83,
+      "avg_corners": 18.36,
       "ci_corners": [
-        12.83,
-        21.0
+        16.57,
+        19.93
       ],
-      "home_win_pct": 0.33,
+      "home_win_pct": 0.57,
       "home_win_ci": [
-        0.1,
-        0.7
+        0.33,
+        0.79
       ],
-      "draw_pct": 0.33,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.33,
-      "asymmetry": 0.0
+      "draw_pct": 0.07,
+      "a_home_n": 7,
+      "a_home_win_pct": 0.29,
+      "b_home_n": 7,
+      "b_home_win_pct": 0.86,
+      "asymmetry": 0.57
     },
     {
-      "team_a": "Hammarby IF",
-      "team_b": "IFK Motala",
-      "n": 6,
-      "avg_fouls": 3.83,
-      "ci_fouls": [
-        2.5,
-        5.17
-      ],
-      "std_fouls": 1.77,
-      "avg_goals": 7.17,
-      "ci_goals": [
-        5.33,
-        8.67
-      ],
-      "avg_corners": 17.17,
-      "ci_corners": [
-        14.67,
-        19.67
-      ],
-      "home_win_pct": 0.67,
-      "home_win_ci": [
-        0.3,
-        0.9
-      ],
-      "draw_pct": 0.17,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.67,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.67,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Hammarby IF",
-      "team_b": "Vetlanda BK",
-      "n": 10,
-      "avg_fouls": 3.8,
-      "ci_fouls": [
-        2.7,
-        5.0
-      ],
-      "std_fouls": 1.89,
-      "avg_goals": 9.5,
-      "ci_goals": [
-        8.2,
-        11.0
-      ],
-      "avg_corners": 16.0,
-      "ci_corners": [
-        13.2,
-        18.4
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.24,
-        0.76
-      ],
-      "draw_pct": 0.1,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.4,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.6,
-      "asymmetry": 0.2
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Villa Lidköping BK",
-      "n": 20,
+      "team_a": "Bollnäs GoIF",
+      "team_b": "Åby/Tjureda IF",
+      "n": 8,
       "avg_fouls": 3.75,
       "ci_fouls": [
-        2.65,
-        4.85
+        2.12,
+        5.62
       ],
-      "std_fouls": 2.57,
-      "avg_goals": 10.25,
+      "std_fouls": 2.49,
+      "avg_goals": 8.12,
       "ci_goals": [
-        8.85,
-        11.7
+        7.25,
+        8.88
       ],
-      "avg_corners": 17.5,
+      "avg_corners": 16.88,
       "ci_corners": [
-        15.65,
-        19.55
+        12.88,
+        20.38
+      ],
+      "home_win_pct": 0.25,
+      "home_win_ci": [
+        0.07,
+        0.59
+      ],
+      "draw_pct": 0.38,
+      "a_home_n": 4,
+      "a_home_win_pct": 0.5,
+      "b_home_n": 4,
+      "b_home_win_pct": 0.0,
+      "asymmetry": 0.5
+    },
+    {
+      "team_a": "Bollnäs GoIF",
+      "team_b": "Edsbyns IF",
+      "n": 16,
+      "avg_fouls": 3.75,
+      "ci_fouls": [
+        2.56,
+        5.25
+      ],
+      "std_fouls": 2.73,
+      "avg_goals": 7.5,
+      "ci_goals": [
+        6.38,
+        8.81
+      ],
+      "avg_corners": 18.75,
+      "ci_corners": [
+        17.12,
+        20.25
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.3,
-        0.7
+        0.28,
+        0.72
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 10,
-      "a_home_win_pct": 0.3,
-      "b_home_n": 10,
-      "b_home_win_pct": 0.7,
-      "asymmetry": 0.4
+      "draw_pct": 0.12,
+      "a_home_n": 8,
+      "a_home_win_pct": 0.25,
+      "b_home_n": 8,
+      "b_home_win_pct": 0.75,
+      "asymmetry": 0.5
     },
     {
       "team_a": "Frillesås BK",
@@ -4361,102 +2921,6 @@
       "asymmetry": 0.5
     },
     {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "Västerås SK",
-      "n": 4,
-      "avg_fouls": 3.75,
-      "ci_fouls": [
-        2.0,
-        5.0
-      ],
-      "std_fouls": 1.64,
-      "avg_goals": 11.75,
-      "ci_goals": [
-        10.0,
-        13.0
-      ],
-      "avg_corners": 21.5,
-      "ci_corners": [
-        17.5,
-        25.5
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "IK Sirius",
-      "n": 4,
-      "avg_fouls": 3.75,
-      "ci_fouls": [
-        3.25,
-        4.0
-      ],
-      "std_fouls": 0.43,
-      "avg_goals": 8.75,
-      "ci_goals": [
-        6.0,
-        12.75
-      ],
-      "avg_corners": 17.5,
-      "ci_corners": [
-        15.5,
-        19.75
-      ],
-      "home_win_pct": 0.75,
-      "home_win_ci": [
-        0.3,
-        0.95
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Sandvikens AIK",
-      "team_b": "Västerås SK",
-      "n": 4,
-      "avg_fouls": 3.75,
-      "ci_fouls": [
-        3.0,
-        4.5
-      ],
-      "std_fouls": 0.83,
-      "avg_goals": 10.5,
-      "ci_goals": [
-        7.75,
-        13.75
-      ],
-      "avg_corners": 18.5,
-      "ci_corners": [
-        13.25,
-        23.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
       "team_a": "Frillesås BK",
       "team_b": "IFK Vänersborg",
       "n": 12,
@@ -4521,6 +2985,38 @@
       "asymmetry": 0.17
     },
     {
+      "team_a": "Hammarby IF",
+      "team_b": "IFK Motala",
+      "n": 8,
+      "avg_fouls": 3.62,
+      "ci_fouls": [
+        2.75,
+        4.88
+      ],
+      "std_fouls": 1.58,
+      "avg_goals": 7.25,
+      "ci_goals": [
+        5.75,
+        8.5
+      ],
+      "avg_corners": 17.75,
+      "ci_corners": [
+        15.62,
+        20.0
+      ],
+      "home_win_pct": 0.75,
+      "home_win_ci": [
+        0.41,
+        0.93
+      ],
+      "draw_pct": 0.12,
+      "a_home_n": 4,
+      "a_home_win_pct": 0.75,
+      "b_home_n": 4,
+      "b_home_win_pct": 0.75,
+      "asymmetry": 0.0
+    },
+    {
       "team_a": "IFK Motala",
       "team_b": "IFK Vänersborg",
       "n": 10,
@@ -4551,6 +3047,102 @@
       "b_home_n": 5,
       "b_home_win_pct": 0.8,
       "asymmetry": 0.2
+    },
+    {
+      "team_a": "Edsbyns IF",
+      "team_b": "IK Sirius",
+      "n": 20,
+      "avg_fouls": 3.6,
+      "ci_fouls": [
+        2.75,
+        4.45
+      ],
+      "std_fouls": 1.83,
+      "avg_goals": 9.0,
+      "ci_goals": [
+        7.45,
+        10.7
+      ],
+      "avg_corners": 18.55,
+      "ci_corners": [
+        16.85,
+        20.4
+      ],
+      "home_win_pct": 0.55,
+      "home_win_ci": [
+        0.34,
+        0.74
+      ],
+      "draw_pct": 0.2,
+      "a_home_n": 10,
+      "a_home_win_pct": 0.8,
+      "b_home_n": 10,
+      "b_home_win_pct": 0.3,
+      "asymmetry": 0.5
+    },
+    {
+      "team_a": "IFK Vänersborg",
+      "team_b": "Västerås SK",
+      "n": 12,
+      "avg_fouls": 3.58,
+      "ci_fouls": [
+        2.75,
+        4.42
+      ],
+      "std_fouls": 1.61,
+      "avg_goals": 9.58,
+      "ci_goals": [
+        8.58,
+        10.67
+      ],
+      "avg_corners": 19.92,
+      "ci_corners": [
+        17.0,
+        22.75
+      ],
+      "home_win_pct": 0.33,
+      "home_win_ci": [
+        0.14,
+        0.61
+      ],
+      "draw_pct": 0.5,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.5,
+      "asymmetry": 0.33
+    },
+    {
+      "team_a": "Edsbyns IF",
+      "team_b": "Sandvikens AIK/BK",
+      "n": 18,
+      "avg_fouls": 3.56,
+      "ci_fouls": [
+        2.72,
+        4.5
+      ],
+      "std_fouls": 1.92,
+      "avg_goals": 7.61,
+      "ci_goals": [
+        6.39,
+        8.78
+      ],
+      "avg_corners": 18.39,
+      "ci_corners": [
+        16.39,
+        20.44
+      ],
+      "home_win_pct": 0.44,
+      "home_win_ci": [
+        0.25,
+        0.66
+      ],
+      "draw_pct": 0.11,
+      "a_home_n": 9,
+      "a_home_win_pct": 0.78,
+      "b_home_n": 9,
+      "b_home_win_pct": 0.11,
+      "asymmetry": 0.67
     },
     {
       "team_a": "AIK Bandy",
@@ -4585,130 +3177,98 @@
       "asymmetry": 0.55
     },
     {
-      "team_a": "Vetlanda BK",
-      "team_b": "Västerås SK/BK",
-      "n": 6,
+      "team_a": "Bollnäs GoIF",
+      "team_b": "IFK Vänersborg",
+      "n": 12,
       "avg_fouls": 3.5,
       "ci_fouls": [
-        2.17,
-        4.67
+        2.42,
+        4.58
       ],
-      "std_fouls": 1.61,
-      "avg_goals": 10.17,
+      "std_fouls": 1.89,
+      "avg_goals": 8.08,
       "ci_goals": [
-        8.83,
-        11.83
+        6.5,
+        10.5
       ],
-      "avg_corners": 15.83,
+      "avg_corners": 17.0,
       "ci_corners": [
-        13.83,
-        17.67
+        14.17,
+        19.67
       ],
-      "home_win_pct": 0.5,
+      "home_win_pct": 0.67,
       "home_win_ci": [
-        0.19,
-        0.81
+        0.39,
+        0.86
       ],
-      "draw_pct": 0.17,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.67,
+      "draw_pct": 0.0,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.83,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.5,
       "asymmetry": 0.33
     },
     {
       "team_a": "Hammarby IF",
-      "team_b": "Västerås SK/BK",
-      "n": 6,
+      "team_b": "Västerås SK",
+      "n": 12,
       "avg_fouls": 3.5,
       "ci_fouls": [
-        1.67,
-        5.83
+        2.42,
+        4.75
       ],
-      "std_fouls": 2.63,
-      "avg_goals": 6.33,
+      "std_fouls": 2.14,
+      "avg_goals": 8.75,
       "ci_goals": [
-        4.83,
-        8.0
+        6.92,
+        10.83
       ],
-      "avg_corners": 17.0,
+      "avg_corners": 18.08,
       "ci_corners": [
-        14.33,
-        19.67
+        16.17,
+        20.0
       ],
-      "home_win_pct": 0.5,
+      "home_win_pct": 0.42,
       "home_win_ci": [
         0.19,
-        0.81
+        0.68
       ],
       "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.67,
+      "asymmetry": 0.5
     },
     {
-      "team_a": "Sandvikens AIK/BK",
-      "team_b": "Åby/Tjureda IF",
-      "n": 2,
+      "team_a": "Edsbyns IF",
+      "team_b": "Frillesås BK",
+      "n": 12,
       "avg_fouls": 3.5,
       "ci_fouls": [
-        3.0,
-        4.0
+        2.0,
+        5.33
       ],
-      "std_fouls": 0.5,
-      "avg_goals": 10.5,
+      "std_fouls": 2.96,
+      "avg_goals": 7.33,
       "ci_goals": [
-        9.0,
-        12.0
+        6.58,
+        8.25
       ],
-      "avg_corners": 13.5,
+      "avg_corners": 19.08,
       "ci_corners": [
-        8.0,
-        19.0
+        17.67,
+        20.67
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.09,
-        0.91
+        0.25,
+        0.75
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
+      "draw_pct": 0.08,
+      "a_home_n": 6,
       "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Villa Lidköping BK",
-      "team_b": "Åby/Tjureda IF",
-      "n": 2,
-      "avg_fouls": 3.5,
-      "ci_fouls": [
-        3.0,
-        4.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 15.5,
-      "ci_goals": [
-        10.0,
-        21.0
-      ],
-      "avg_corners": 12.0,
-      "ci_corners": [
-        11.0,
-        13.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
+      "b_home_n": 6,
       "b_home_win_pct": 0.0,
       "asymmetry": 1.0
     },
@@ -4745,7 +3305,7 @@
       "asymmetry": 0.5
     },
     {
-      "team_a": "Bollnäs GIF",
+      "team_a": "Bollnäs GoIF",
       "team_b": "IK Tellus",
       "n": 4,
       "avg_fouls": 3.5,
@@ -4873,7 +3433,7 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Bollnäs GIF",
+      "team_a": "Bollnäs GoIF",
       "team_b": "IFK Rättvik",
       "n": 2,
       "avg_fouls": 3.5,
@@ -4937,70 +3497,6 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Hammarby Bandy",
-      "n": 2,
-      "avg_fouls": 3.5,
-      "ci_fouls": [
-        2.0,
-        5.0
-      ],
-      "std_fouls": 1.5,
-      "avg_goals": 7.5,
-      "ci_goals": [
-        4.0,
-        11.0
-      ],
-      "avg_corners": 17.0,
-      "ci_corners": [
-        16.0,
-        18.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "GripenTrollhättan BK",
-      "n": 2,
-      "avg_fouls": 3.5,
-      "ci_fouls": [
-        3.0,
-        4.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 6.5,
-      "ci_goals": [
-        5.0,
-        8.0
-      ],
-      "avg_corners": 23.0,
-      "ci_corners": [
-        22.0,
-        24.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.66
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
       "team_a": "Frillesås BK",
       "team_b": "IFK Kungälv",
       "n": 2,
@@ -5031,70 +3527,6 @@
       "b_home_n": 1,
       "b_home_win_pct": 0.0,
       "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Västerås SK",
-      "n": 4,
-      "avg_fouls": 3.5,
-      "ci_fouls": [
-        3.0,
-        4.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 9.25,
-      "ci_goals": [
-        7.5,
-        11.0
-      ],
-      "avg_corners": 22.25,
-      "ci_corners": [
-        15.75,
-        27.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "Hammarby IF",
-      "n": 4,
-      "avg_fouls": 3.5,
-      "ci_fouls": [
-        2.5,
-        4.5
-      ],
-      "std_fouls": 1.12,
-      "avg_goals": 9.75,
-      "ci_goals": [
-        7.0,
-        12.5
-      ],
-      "avg_corners": 19.5,
-      "ci_corners": [
-        14.5,
-        23.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
     },
     {
       "team_a": "Ljusdals BK",
@@ -5130,7 +3562,7 @@
     },
     {
       "team_a": "Ljusdals BK",
-      "team_b": "Sandvikens AIK",
+      "team_b": "Sandvikens AIK/BK",
       "n": 2,
       "avg_fouls": 3.5,
       "ci_fouls": [
@@ -5193,7 +3625,7 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Edsbyns IF Bandyförening",
+      "team_a": "Edsbyns IF",
       "team_b": "IF Boltic",
       "n": 2,
       "avg_fouls": 3.5,
@@ -5225,100 +3657,68 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Gripen Trollhättan BK",
-      "team_b": "IK Sirius",
-      "n": 2,
-      "avg_fouls": 3.5,
+      "team_a": "Sandvikens AIK/BK",
+      "team_b": "Villa-Lidköping BK",
+      "n": 16,
+      "avg_fouls": 3.44,
       "ci_fouls": [
-        1.0,
-        6.0
+        2.56,
+        4.38
       ],
-      "std_fouls": 2.5,
-      "avg_goals": 6.0,
+      "std_fouls": 1.8,
+      "avg_goals": 8.94,
       "ci_goals": [
-        4.0,
-        8.0
+        7.56,
+        10.31
       ],
-      "avg_corners": 20.5,
+      "avg_corners": 17.81,
       "ci_corners": [
-        16.0,
-        25.0
+        16.06,
+        19.38
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Edsbyns IF",
-      "team_b": "IFK Vänersborg",
-      "n": 11,
-      "avg_fouls": 3.45,
-      "ci_fouls": [
-        2.55,
-        4.64
-      ],
-      "std_fouls": 1.88,
-      "avg_goals": 6.82,
-      "ci_goals": [
-        5.0,
-        8.55
-      ],
-      "avg_corners": 18.73,
-      "ci_corners": [
-        16.73,
-        20.82
-      ],
-      "home_win_pct": 0.55,
-      "home_win_ci": [
         0.28,
-        0.79
+        0.72
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 6,
-      "a_home_win_pct": 0.83,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.2,
-      "asymmetry": 0.63
+      "draw_pct": 0.19,
+      "a_home_n": 8,
+      "a_home_win_pct": 0.25,
+      "b_home_n": 8,
+      "b_home_win_pct": 0.75,
+      "asymmetry": 0.5
     },
     {
-      "team_a": "Edsbyns IF",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 9,
-      "avg_fouls": 3.44,
+      "team_a": "IFK Vänersborg",
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
+      "avg_fouls": 3.42,
       "ci_fouls": [
-        2.67,
-        4.33
+        2.5,
+        4.58
       ],
-      "std_fouls": 1.34,
-      "avg_goals": 6.44,
+      "std_fouls": 1.85,
+      "avg_goals": 11.25,
       "ci_goals": [
-        4.89,
-        7.89
+        9.08,
+        13.58
       ],
-      "avg_corners": 18.11,
+      "avg_corners": 15.75,
       "ci_corners": [
-        15.89,
-        20.56
+        13.67,
+        17.83
       ],
-      "home_win_pct": 0.44,
+      "home_win_pct": 0.42,
       "home_win_ci": [
         0.19,
-        0.73
+        0.68
       ],
-      "draw_pct": 0.22,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.8,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.8
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.83,
+      "asymmetry": 0.83
     },
     {
       "team_a": "Frillesås BK",
@@ -5353,164 +3753,132 @@
       "asymmetry": 0.5
     },
     {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Edsbyns IF",
-      "n": 6,
-      "avg_fouls": 3.33,
+      "team_a": "Bollnäs GoIF",
+      "team_b": "IK Sirius",
+      "n": 12,
+      "avg_fouls": 3.42,
       "ci_fouls": [
-        2.33,
-        4.5
+        2.75,
+        4.17
       ],
-      "std_fouls": 1.37,
+      "std_fouls": 1.32,
       "avg_goals": 8.17,
       "ci_goals": [
-        6.67,
-        9.83
+        6.75,
+        9.92
       ],
-      "avg_corners": 17.67,
+      "avg_corners": 17.0,
       "ci_corners": [
-        14.67,
-        20.33
+        14.92,
+        18.92
       ],
       "home_win_pct": 0.67,
       "home_win_ci": [
-        0.3,
-        0.9
+        0.39,
+        0.86
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.67
-    },
-    {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Hammarby IF",
-      "n": 6,
-      "avg_fouls": 3.33,
-      "ci_fouls": [
-        1.17,
-        5.5
-      ],
-      "std_fouls": 2.81,
-      "avg_goals": 11.17,
-      "ci_goals": [
-        8.83,
-        13.33
-      ],
-      "avg_corners": 16.33,
-      "ci_corners": [
-        14.33,
-        18.5
-      ],
-      "home_win_pct": 0.67,
-      "home_win_ci": [
-        0.3,
-        0.9
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
+      "draw_pct": 0.08,
+      "a_home_n": 6,
       "a_home_win_pct": 0.67,
-      "b_home_n": 3,
+      "b_home_n": 6,
       "b_home_win_pct": 0.67,
       "asymmetry": 0.0
     },
     {
-      "team_a": "IK Sirius",
-      "team_b": "Västerås SK",
-      "n": 6,
+      "team_a": "Bollnäs GoIF",
+      "team_b": "Hammarby IF",
+      "n": 12,
       "avg_fouls": 3.33,
       "ci_fouls": [
-        1.67,
-        5.5
+        2.5,
+        4.25
       ],
-      "std_fouls": 2.43,
-      "avg_goals": 8.67,
+      "std_fouls": 1.55,
+      "avg_goals": 8.58,
       "ci_goals": [
-        6.33,
-        10.83
+        7.25,
+        9.75
       ],
-      "avg_corners": 18.5,
+      "avg_corners": 17.25,
       "ci_corners": [
-        16.0,
-        20.5
+        14.83,
+        19.58
       ],
-      "home_win_pct": 0.5,
+      "home_win_pct": 0.33,
       "home_win_ci": [
-        0.19,
-        0.81
+        0.14,
+        0.61
       ],
-      "draw_pct": 0.17,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.67,
+      "draw_pct": 0.25,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.5,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.17,
       "asymmetry": 0.33
     },
     {
       "team_a": "Broberg/Söderhamn",
-      "team_b": "Frillesås BK",
-      "n": 8,
-      "avg_fouls": 3.25,
-      "ci_fouls": [
-        2.38,
-        4.12
-      ],
-      "std_fouls": 1.39,
-      "avg_goals": 9.0,
-      "ci_goals": [
-        7.12,
-        10.75
-      ],
-      "avg_corners": 17.0,
-      "ci_corners": [
-        13.75,
-        20.38
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 4,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "IK Sirius",
-      "n": 8,
-      "avg_fouls": 3.25,
+      "team_b": "Hammarby IF",
+      "n": 12,
+      "avg_fouls": 3.33,
       "ci_fouls": [
         2.25,
-        4.38
+        4.5
       ],
-      "std_fouls": 1.56,
-      "avg_goals": 7.88,
+      "std_fouls": 2.09,
+      "avg_goals": 9.92,
       "ci_goals": [
-        6.38,
-        9.62
+        8.17,
+        11.58
       ],
-      "avg_corners": 16.75,
+      "avg_corners": 17.42,
       "ci_corners": [
-        13.5,
-        19.75
+        15.25,
+        19.42
       ],
-      "home_win_pct": 0.62,
+      "home_win_pct": 0.58,
       "home_win_ci": [
-        0.31,
-        0.86
+        0.32,
+        0.81
       ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.75,
-      "b_home_n": 4,
+      "draw_pct": 0.25,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.67,
+      "b_home_n": 6,
       "b_home_win_pct": 0.5,
-      "asymmetry": 0.25
+      "asymmetry": 0.17
+    },
+    {
+      "team_a": "Broberg/Söderhamn",
+      "team_b": "Frillesås BK",
+      "n": 12,
+      "avg_fouls": 3.25,
+      "ci_fouls": [
+        2.5,
+        3.92
+      ],
+      "std_fouls": 1.36,
+      "avg_goals": 9.0,
+      "ci_goals": [
+        7.42,
+        10.58
+      ],
+      "avg_corners": 17.08,
+      "ci_corners": [
+        14.75,
+        19.33
+      ],
+      "home_win_pct": 0.58,
+      "home_win_ci": [
+        0.32,
+        0.81
+      ],
+      "draw_pct": 0.17,
+      "a_home_n": 6,
+      "a_home_win_pct": 1.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.17,
+      "asymmetry": 0.83
     },
     {
       "team_a": "AIK Bandy",
@@ -5545,164 +3913,36 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Frillesås BK",
-      "n": 4,
-      "avg_fouls": 3.25,
+      "team_a": "Edsbyns IF",
+      "team_b": "IFK Vänersborg",
+      "n": 17,
+      "avg_fouls": 3.24,
       "ci_fouls": [
-        2.0,
-        5.0
+        2.47,
+        4.12
       ],
-      "std_fouls": 1.64,
-      "avg_goals": 12.0,
+      "std_fouls": 1.8,
+      "avg_goals": 8.65,
       "ci_goals": [
-        9.0,
-        15.0
+        6.71,
+        10.82
       ],
-      "avg_corners": 17.25,
+      "avg_corners": 19.18,
       "ci_corners": [
-        15.0,
-        19.5
+        17.59,
+        20.71
       ],
-      "home_win_pct": 0.5,
+      "home_win_pct": 0.59,
       "home_win_ci": [
-        0.15,
-        0.85
+        0.36,
+        0.78
       ],
       "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Sandvikens AIK",
-      "n": 4,
-      "avg_fouls": 3.25,
-      "ci_fouls": [
-        2.25,
-        4.5
-      ],
-      "std_fouls": 1.09,
-      "avg_goals": 10.25,
-      "ci_goals": [
-        8.5,
-        12.0
-      ],
-      "avg_corners": 21.25,
-      "ci_corners": [
-        18.5,
-        24.0
-      ],
-      "home_win_pct": 0.75,
-      "home_win_ci": [
-        0.3,
-        0.95
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "Åby/Tjureda IF",
-      "n": 4,
-      "avg_fouls": 3.25,
-      "ci_fouls": [
-        1.5,
-        5.0
-      ],
-      "std_fouls": 1.92,
-      "avg_goals": 8.5,
-      "ci_goals": [
-        7.0,
-        10.0
-      ],
-      "avg_corners": 16.0,
-      "ci_corners": [
-        14.5,
-        18.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "Frillesås BK",
-      "n": 4,
-      "avg_fouls": 3.25,
-      "ci_fouls": [
-        1.75,
-        4.0
-      ],
-      "std_fouls": 1.3,
-      "avg_goals": 9.0,
-      "ci_goals": [
-        6.25,
-        11.75
-      ],
-      "avg_corners": 17.25,
-      "ci_corners": [
-        14.5,
-        19.0
-      ],
-      "home_win_pct": 0.75,
-      "home_win_ci": [
-        0.3,
-        0.95
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "Villa-Lidköping BK",
-      "n": 5,
-      "avg_fouls": 3.2,
-      "ci_fouls": [
-        2.0,
-        4.4
-      ],
-      "std_fouls": 1.33,
-      "avg_goals": 10.4,
-      "ci_goals": [
-        7.8,
-        13.0
-      ],
-      "avg_corners": 20.8,
-      "ci_corners": [
-        18.2,
-        23.6
-      ],
-      "home_win_pct": 0.4,
-      "home_win_ci": [
-        0.12,
-        0.77
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.67,
-      "asymmetry": 0.67
+      "a_home_n": 9,
+      "a_home_win_pct": 0.89,
+      "b_home_n": 8,
+      "b_home_win_pct": 0.25,
+      "asymmetry": 0.64
     },
     {
       "team_a": "IK Sirius",
@@ -5735,6 +3975,70 @@
       "b_home_n": 3,
       "b_home_win_pct": 0.0,
       "asymmetry": 1.0
+    },
+    {
+      "team_a": "Broberg/Söderhamn",
+      "team_b": "Åby/Tjureda IF",
+      "n": 6,
+      "avg_fouls": 3.17,
+      "ci_fouls": [
+        2.0,
+        4.5
+      ],
+      "std_fouls": 1.57,
+      "avg_goals": 7.83,
+      "ci_goals": [
+        5.67,
+        9.67
+      ],
+      "avg_corners": 16.0,
+      "ci_corners": [
+        14.33,
+        17.83
+      ],
+      "home_win_pct": 0.5,
+      "home_win_ci": [
+        0.19,
+        0.81
+      ],
+      "draw_pct": 0.33,
+      "a_home_n": 3,
+      "a_home_win_pct": 0.67,
+      "b_home_n": 3,
+      "b_home_win_pct": 0.33,
+      "asymmetry": 0.33
+    },
+    {
+      "team_a": "Frillesås BK",
+      "team_b": "Sandvikens AIK/BK",
+      "n": 12,
+      "avg_fouls": 3.17,
+      "ci_fouls": [
+        2.42,
+        4.0
+      ],
+      "std_fouls": 1.4,
+      "avg_goals": 8.92,
+      "ci_goals": [
+        7.5,
+        10.25
+      ],
+      "avg_corners": 19.08,
+      "ci_corners": [
+        17.5,
+        20.75
+      ],
+      "home_win_pct": 0.58,
+      "home_win_ci": [
+        0.32,
+        0.81
+      ],
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 0.83
     },
     {
       "team_a": "IFK Motala",
@@ -5801,71 +4105,135 @@
       "asymmetry": 0.67
     },
     {
-      "team_a": "Edsbyns IF Bandy",
-      "team_b": "Västerås SK",
-      "n": 12,
+      "team_a": "Edsbyns IF",
+      "team_b": "Åby/Tjureda IF",
+      "n": 6,
       "avg_fouls": 3.17,
       "ci_fouls": [
-        2.5,
-        4.0
+        1.83,
+        5.33
       ],
-      "std_fouls": 1.34,
-      "avg_goals": 7.0,
+      "std_fouls": 2.27,
+      "avg_goals": 11.0,
       "ci_goals": [
-        6.5,
-        7.58
+        8.67,
+        13.67
       ],
-      "avg_corners": 18.42,
+      "avg_corners": 19.83,
       "ci_corners": [
-        16.67,
-        20.67
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.76,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 5,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 7,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 8,
-      "avg_fouls": 3.12,
-      "ci_fouls": [
-        2.0,
-        4.25
-      ],
-      "std_fouls": 1.54,
-      "avg_goals": 8.25,
-      "ci_goals": [
-        6.5,
-        10.0
-      ],
-      "avg_corners": 18.0,
-      "ci_corners": [
-        16.38,
-        19.5
+        18.0,
+        21.83
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.22,
-        0.78
+        0.19,
+        0.81
       ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 1.0,
+      "draw_pct": 0.0,
+      "a_home_n": 3,
+      "a_home_win_pct": 1.0,
+      "b_home_n": 3,
+      "b_home_win_pct": 0.0,
       "asymmetry": 1.0
     },
     {
-      "team_a": "Bollnäs GIF",
+      "team_a": "Edsbyns IF",
+      "team_b": "Gripen Trollhättan BK",
+      "n": 6,
+      "avg_fouls": 3.17,
+      "ci_fouls": [
+        1.67,
+        4.67
+      ],
+      "std_fouls": 1.86,
+      "avg_goals": 7.83,
+      "ci_goals": [
+        5.33,
+        10.33
+      ],
+      "avg_corners": 19.67,
+      "ci_corners": [
+        17.5,
+        21.83
+      ],
+      "home_win_pct": 0.67,
+      "home_win_ci": [
+        0.3,
+        0.9
+      ],
+      "draw_pct": 0.33,
+      "a_home_n": 3,
+      "a_home_win_pct": 1.0,
+      "b_home_n": 3,
+      "b_home_win_pct": 0.33,
+      "asymmetry": 0.67
+    },
+    {
+      "team_a": "Gripen Trollhättan BK",
+      "team_b": "Vetlanda BK",
+      "n": 6,
+      "avg_fouls": 3.17,
+      "ci_fouls": [
+        1.33,
+        5.0
+      ],
+      "std_fouls": 2.34,
+      "avg_goals": 7.67,
+      "ci_goals": [
+        5.83,
+        10.0
+      ],
+      "avg_corners": 19.67,
+      "ci_corners": [
+        17.5,
+        21.5
+      ],
+      "home_win_pct": 0.67,
+      "home_win_ci": [
+        0.3,
+        0.9
+      ],
+      "draw_pct": 0.17,
+      "a_home_n": 3,
+      "a_home_win_pct": 0.67,
+      "b_home_n": 3,
+      "b_home_win_pct": 0.67,
+      "asymmetry": 0.0
+    },
+    {
+      "team_a": "Edsbyns IF",
+      "team_b": "Vetlanda BK",
+      "n": 15,
+      "avg_fouls": 3.13,
+      "ci_fouls": [
+        2.07,
+        4.07
+      ],
+      "std_fouls": 2.0,
+      "avg_goals": 10.73,
+      "ci_goals": [
+        8.93,
+        12.93
+      ],
+      "avg_corners": 20.67,
+      "ci_corners": [
+        19.13,
+        22.07
+      ],
+      "home_win_pct": 0.53,
+      "home_win_ci": [
+        0.3,
+        0.75
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 8,
+      "a_home_win_pct": 0.75,
+      "b_home_n": 7,
+      "b_home_win_pct": 0.29,
+      "asymmetry": 0.46
+    },
+    {
+      "team_a": "Bollnäs GoIF",
       "team_b": "IFK Motala",
       "n": 8,
       "avg_fouls": 3.12,
@@ -5895,6 +4263,38 @@
       "b_home_n": 4,
       "b_home_win_pct": 0.25,
       "asymmetry": 0.25
+    },
+    {
+      "team_a": "Edsbyns IF",
+      "team_b": "Västerås SK",
+      "n": 22,
+      "avg_fouls": 3.09,
+      "ci_fouls": [
+        2.45,
+        3.77
+      ],
+      "std_fouls": 1.53,
+      "avg_goals": 8.64,
+      "ci_goals": [
+        7.55,
+        9.77
+      ],
+      "avg_corners": 19.32,
+      "ci_corners": [
+        17.77,
+        20.86
+      ],
+      "home_win_pct": 0.68,
+      "home_win_ci": [
+        0.47,
+        0.84
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 10,
+      "a_home_win_pct": 0.7,
+      "b_home_n": 12,
+      "b_home_win_pct": 0.67,
+      "asymmetry": 0.03
     },
     {
       "team_a": "Frillesås BK",
@@ -5961,70 +4361,6 @@
       "asymmetry": 0.4
     },
     {
-      "team_a": "Hammarby IF",
-      "team_b": "Villa Lidköping BK",
-      "n": 6,
-      "avg_fouls": 3.0,
-      "ci_fouls": [
-        1.0,
-        5.17
-      ],
-      "std_fouls": 2.65,
-      "avg_goals": 8.67,
-      "ci_goals": [
-        6.5,
-        11.33
-      ],
-      "avg_corners": 15.33,
-      "ci_corners": [
-        13.17,
-        17.67
-      ],
-      "home_win_pct": 0.67,
-      "home_win_ci": [
-        0.3,
-        0.9
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.67
-    },
-    {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Åby/Tjureda IF",
-      "n": 2,
-      "avg_fouls": 3.0,
-      "ci_fouls": [
-        3.0,
-        3.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 6.5,
-      "ci_goals": [
-        3.0,
-        10.0
-      ],
-      "avg_corners": 16.0,
-      "ci_corners": [
-        13.0,
-        19.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
       "team_a": "IFK Motala",
       "team_b": "Åby/Tjureda IF",
       "n": 2,
@@ -6057,100 +4393,36 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Edsbyns IF",
-      "team_b": "IFK Motala",
+      "team_a": "Villa-Lidköping BK",
+      "team_b": "Åby/Tjureda IF",
       "n": 6,
       "avg_fouls": 3.0,
       "ci_fouls": [
-        1.67,
-        4.33
+        2.33,
+        3.67
       ],
-      "std_fouls": 1.91,
-      "avg_goals": 8.17,
+      "std_fouls": 0.82,
+      "avg_goals": 13.83,
       "ci_goals": [
-        6.33,
-        9.83
+        10.67,
+        17.17
       ],
-      "avg_corners": 15.5,
+      "avg_corners": 16.5,
       "ci_corners": [
-        14.17,
-        16.67
+        13.33,
+        19.0
       ],
-      "home_win_pct": 0.33,
+      "home_win_pct": 0.5,
       "home_win_ci": [
-        0.1,
-        0.7
+        0.19,
+        0.81
       ],
       "draw_pct": 0.0,
       "a_home_n": 3,
-      "a_home_win_pct": 0.67,
+      "a_home_win_pct": 1.0,
       "b_home_n": 3,
       "b_home_win_pct": 0.0,
-      "asymmetry": 0.67
-    },
-    {
-      "team_a": "IFK Vänersborg",
-      "team_b": "Villa Lidköping BK",
-      "n": 8,
-      "avg_fouls": 3.0,
-      "ci_fouls": [
-        1.88,
-        4.5
-      ],
-      "std_fouls": 1.87,
-      "avg_goals": 9.75,
-      "ci_goals": [
-        7.5,
-        12.12
-      ],
-      "avg_corners": 16.38,
-      "ci_corners": [
-        13.38,
-        19.25
-      ],
-      "home_win_pct": 0.38,
-      "home_win_ci": [
-        0.14,
-        0.69
-      ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.75,
-      "asymmetry": 0.75
-    },
-    {
-      "team_a": "Edsbyns IF",
-      "team_b": "IK Sirius",
-      "n": 11,
-      "avg_fouls": 3.0,
-      "ci_fouls": [
-        2.18,
-        3.73
-      ],
-      "std_fouls": 1.41,
-      "avg_goals": 9.27,
-      "ci_goals": [
-        7.64,
-        11.0
-      ],
-      "avg_corners": 19.55,
-      "ci_corners": [
-        17.18,
-        22.09
-      ],
-      "home_win_pct": 0.64,
-      "home_win_ci": [
-        0.35,
-        0.85
-      ],
-      "draw_pct": 0.18,
-      "a_home_n": 6,
-      "a_home_win_pct": 0.83,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.4,
-      "asymmetry": 0.43
+      "asymmetry": 1.0
     },
     {
       "team_a": "Falu BS Bandy",
@@ -6282,7 +4554,7 @@
     },
     {
       "team_a": "IFK Rättvik",
-      "team_b": "Villa Lidköping BK",
+      "team_b": "Villa-Lidköping BK",
       "n": 2,
       "avg_fouls": 3.0,
       "ci_fouls": [
@@ -6314,7 +4586,7 @@
     },
     {
       "team_a": "IFK Rättvik",
-      "team_b": "Västerås SK/BK",
+      "team_b": "Västerås SK",
       "n": 2,
       "avg_fouls": 3.0,
       "ci_fouls": [
@@ -6377,164 +4649,36 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Hammarby Bandy",
-      "n": 2,
+      "team_a": "Gripen Trollhättan BK",
+      "team_b": "Åby/Tjureda IF",
+      "n": 6,
       "avg_fouls": 3.0,
       "ci_fouls": [
-        3.0,
-        3.0
+        1.67,
+        4.33
       ],
-      "std_fouls": 0.0,
-      "avg_goals": 6.5,
+      "std_fouls": 1.73,
+      "avg_goals": 9.33,
       "ci_goals": [
-        4.0,
-        9.0
-      ],
-      "avg_corners": 16.5,
-      "ci_corners": [
-        15.0,
-        18.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandy",
-      "team_b": "Frillesås BK",
-      "n": 2,
-      "avg_fouls": 3.0,
-      "ci_fouls": [
-        2.0,
-        4.0
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 6.5,
-      "ci_goals": [
-        6.0,
-        7.0
-      ],
-      "avg_corners": 22.0,
-      "ci_corners": [
-        19.0,
-        25.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandy",
-      "team_b": "Hammarby Bandy",
-      "n": 2,
-      "avg_fouls": 3.0,
-      "ci_fouls": [
-        2.0,
-        4.0
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 10.5,
-      "ci_goals": [
-        10.0,
-        11.0
-      ],
-      "avg_corners": 16.0,
-      "ci_corners": [
-        14.0,
-        18.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Hammarby Bandy",
-      "team_b": "IFK Motala",
-      "n": 2,
-      "avg_fouls": 3.0,
-      "ci_fouls": [
-        3.0,
-        3.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 7.5,
-      "ci_goals": [
-        6.0,
-        9.0
-      ],
-      "avg_corners": 19.5,
-      "ci_corners": [
-        17.0,
-        22.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "Sandvikens AIK",
-      "n": 4,
-      "avg_fouls": 3.0,
-      "ci_fouls": [
-        1.5,
-        5.0
-      ],
-      "std_fouls": 1.87,
-      "avg_goals": 9.25,
-      "ci_goals": [
-        7.0,
+        7.17,
         11.5
       ],
-      "avg_corners": 23.5,
+      "avg_corners": 18.5,
       "ci_corners": [
-        21.75,
-        24.75
+        15.0,
+        22.17
       ],
-      "home_win_pct": 0.25,
+      "home_win_pct": 0.33,
       "home_win_ci": [
-        0.05,
+        0.1,
         0.7
       ],
       "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
+      "a_home_n": 3,
+      "a_home_win_pct": 0.67,
+      "b_home_n": 3,
       "b_home_win_pct": 0.0,
-      "asymmetry": 0.5
+      "asymmetry": 0.67
     },
     {
       "team_a": "Ljusdals BK",
@@ -6601,200 +4745,104 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Gripen BK Trollhättan",
-      "team_b": "Åby/Tjureda IF",
-      "n": 2,
-      "avg_fouls": 3.0,
-      "ci_fouls": [
-        3.0,
-        3.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 12.5,
-      "ci_goals": [
-        12.0,
-        13.0
-      ],
-      "avg_corners": 18.5,
-      "ci_corners": [
-        15.0,
-        22.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "IFK Vänersborg",
-      "n": 4,
-      "avg_fouls": 3.0,
-      "ci_fouls": [
-        1.5,
-        4.5
-      ],
-      "std_fouls": 1.58,
-      "avg_goals": 14.25,
-      "ci_goals": [
-        11.5,
-        17.25
-      ],
-      "avg_corners": 19.25,
-      "ci_corners": [
-        17.0,
-        23.0
-      ],
-      "home_win_pct": 0.75,
-      "home_win_ci": [
-        0.3,
-        0.95
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Västerås SK",
-      "n": 6,
-      "avg_fouls": 2.83,
-      "ci_fouls": [
-        2.0,
-        3.67
-      ],
-      "std_fouls": 1.21,
-      "avg_goals": 11.0,
-      "ci_goals": [
-        7.67,
-        13.33
-      ],
-      "avg_corners": 20.5,
-      "ci_corners": [
-        18.67,
-        22.5
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.19,
-        0.81
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Hammarby IF",
-      "n": 10,
-      "avg_fouls": 2.8,
-      "ci_fouls": [
-        1.6,
-        4.1
-      ],
-      "std_fouls": 2.04,
-      "avg_goals": 8.4,
-      "ci_goals": [
-        6.8,
-        10.0
-      ],
-      "avg_corners": 17.5,
-      "ci_corners": [
-        15.3,
-        19.4
-      ],
-      "home_win_pct": 0.6,
-      "home_win_ci": [
-        0.31,
-        0.83
-      ],
-      "draw_pct": 0.2,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.4,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.8,
-      "asymmetry": 0.4
-    },
-    {
       "team_a": "Edsbyns IF",
-      "team_b": "Villa Lidköping BK",
-      "n": 9,
-      "avg_fouls": 2.78,
+      "team_b": "Villa-Lidköping BK",
+      "n": 16,
+      "avg_fouls": 2.88,
       "ci_fouls": [
-        1.89,
-        3.67
+        2.25,
+        3.56
       ],
-      "std_fouls": 1.4,
-      "avg_goals": 7.11,
+      "std_fouls": 1.32,
+      "avg_goals": 8.12,
       "ci_goals": [
-        6.22,
-        8.11
+        7.0,
+        9.5
       ],
       "avg_corners": 20.56,
       "ci_corners": [
-        18.44,
-        22.78
-      ],
-      "home_win_pct": 0.11,
-      "home_win_ci": [
-        0.02,
-        0.44
-      ],
-      "draw_pct": 0.22,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.25,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.25
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Åby/Tjureda IF",
-      "n": 4,
-      "avg_fouls": 2.75,
-      "ci_fouls": [
-        0.5,
-        5.5
-      ],
-      "std_fouls": 2.68,
-      "avg_goals": 8.25,
-      "ci_goals": [
-        8.0,
-        8.75
-      ],
-      "avg_corners": 16.0,
-      "ci_corners": [
-        10.75,
-        20.5
+        19.19,
+        22.06
       ],
       "home_win_pct": 0.25,
       "home_win_ci": [
-        0.05,
-        0.7
+        0.1,
+        0.49
       ],
-      "draw_pct": 0.25,
-      "a_home_n": 2,
+      "draw_pct": 0.19,
+      "a_home_n": 7,
+      "a_home_win_pct": 0.14,
+      "b_home_n": 9,
+      "b_home_win_pct": 0.33,
+      "asymmetry": 0.19
+    },
+    {
+      "team_a": "Bollnäs GoIF",
+      "team_b": "Broberg/Söderhamn",
+      "n": 15,
+      "avg_fouls": 2.87,
+      "ci_fouls": [
+        1.93,
+        3.87
+      ],
+      "std_fouls": 1.89,
+      "avg_goals": 9.0,
+      "ci_goals": [
+        7.6,
+        10.53
+      ],
+      "avg_corners": 18.13,
+      "ci_corners": [
+        16.27,
+        20.0
+      ],
+      "home_win_pct": 0.53,
+      "home_win_ci": [
+        0.3,
+        0.75
+      ],
+      "draw_pct": 0.07,
+      "a_home_n": 8,
       "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.5
+      "b_home_n": 7,
+      "b_home_win_pct": 0.57,
+      "asymmetry": 0.07
+    },
+    {
+      "team_a": "Edsbyns IF",
+      "team_b": "IFK Motala",
+      "n": 8,
+      "avg_fouls": 2.75,
+      "ci_fouls": [
+        1.5,
+        4.0
+      ],
+      "std_fouls": 1.71,
+      "avg_goals": 8.12,
+      "ci_goals": [
+        6.75,
+        9.5
+      ],
+      "avg_corners": 16.25,
+      "ci_corners": [
+        14.88,
+        17.75
+      ],
+      "home_win_pct": 0.38,
+      "home_win_ci": [
+        0.14,
+        0.69
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 4,
+      "a_home_win_pct": 0.5,
+      "b_home_n": 4,
+      "b_home_win_pct": 0.25,
+      "asymmetry": 0.25
     },
     {
       "team_a": "IK Tellus",
-      "team_b": "Västerås SK/BK",
+      "team_b": "Västerås SK",
       "n": 4,
       "avg_fouls": 2.75,
       "ci_fouls": [
@@ -6825,132 +4873,36 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Västerås SK",
-      "team_b": "Åby/Tjureda IF",
-      "n": 4,
-      "avg_fouls": 2.75,
+      "team_a": "Bollnäs GoIF",
+      "team_b": "Västerås SK",
+      "n": 17,
+      "avg_fouls": 2.71,
       "ci_fouls": [
-        0.75,
-        4.5
+        2.18,
+        3.18
       ],
-      "std_fouls": 1.79,
-      "avg_goals": 11.5,
+      "std_fouls": 1.07,
+      "avg_goals": 8.82,
       "ci_goals": [
-        9.0,
-        16.5
+        7.82,
+        9.82
       ],
-      "avg_corners": 20.25,
+      "avg_corners": 19.24,
       "ci_corners": [
-        19.25,
-        21.5
+        17.35,
+        21.18
       ],
-      "home_win_pct": 0.5,
+      "home_win_pct": 0.35,
       "home_win_ci": [
-        0.15,
-        0.85
+        0.17,
+        0.59
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Villa-Lidköping BK",
-      "n": 4,
-      "avg_fouls": 2.75,
-      "ci_fouls": [
-        2.0,
-        3.5
-      ],
-      "std_fouls": 0.83,
-      "avg_goals": 12.25,
-      "ci_goals": [
-        10.5,
-        14.0
-      ],
-      "avg_corners": 17.75,
-      "ci_corners": [
-        14.0,
-        21.5
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Villa-Lidköping BK",
-      "team_b": "Åby/Tjureda IF",
-      "n": 4,
-      "avg_fouls": 2.75,
-      "ci_fouls": [
-        2.0,
-        3.5
-      ],
-      "std_fouls": 0.83,
-      "avg_goals": 13.0,
-      "ci_goals": [
-        10.25,
-        15.75
-      ],
-      "avg_corners": 18.75,
-      "ci_corners": [
-        17.5,
-        20.25
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "IK Sirius",
-      "team_b": "Villa-Lidköping BK",
-      "n": 4,
-      "avg_fouls": 2.75,
-      "ci_fouls": [
-        2.25,
-        3.0
-      ],
-      "std_fouls": 0.43,
-      "avg_goals": 8.5,
-      "ci_goals": [
-        7.0,
-        10.0
-      ],
-      "avg_corners": 17.75,
-      "ci_corners": [
-        14.5,
-        21.25
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.51,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
+      "draw_pct": 0.18,
+      "a_home_n": 8,
+      "a_home_win_pct": 0.25,
+      "b_home_n": 9,
+      "b_home_win_pct": 0.44,
+      "asymmetry": 0.19
     },
     {
       "team_a": "Hammarby IF",
@@ -6985,99 +4937,163 @@
       "asymmetry": 0.67
     },
     {
-      "team_a": "IFK Vänersborg",
-      "team_b": "Västerås SK",
+      "team_a": "Vetlanda BK",
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
+      "avg_fouls": 2.67,
+      "ci_fouls": [
+        1.58,
+        4.0
+      ],
+      "std_fouls": 2.13,
+      "avg_goals": 10.67,
+      "ci_goals": [
+        9.0,
+        13.08
+      ],
+      "avg_corners": 20.83,
+      "ci_corners": [
+        18.17,
+        23.5
+      ],
+      "home_win_pct": 0.5,
+      "home_win_ci": [
+        0.25,
+        0.75
+      ],
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.83,
+      "asymmetry": 0.67
+    },
+    {
+      "team_a": "Västerås SK",
+      "team_b": "Åby/Tjureda IF",
       "n": 6,
       "avg_fouls": 2.67,
       "ci_fouls": [
-        1.83,
-        3.5
+        1.33,
+        3.83
       ],
-      "std_fouls": 1.11,
-      "avg_goals": 10.5,
+      "std_fouls": 1.49,
+      "avg_goals": 10.67,
       "ci_goals": [
-        9.0,
-        11.83
+        8.0,
+        14.5
       ],
-      "avg_corners": 20.67,
+      "avg_corners": 20.0,
       "ci_corners": [
-        16.67,
-        24.83
+        18.67,
+        21.33
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
         0.19,
         0.81
       ],
-      "draw_pct": 0.33,
+      "draw_pct": 0.0,
       "a_home_n": 3,
-      "a_home_win_pct": 0.0,
+      "a_home_win_pct": 1.0,
       "b_home_n": 3,
-      "b_home_win_pct": 1.0,
+      "b_home_win_pct": 0.0,
       "asymmetry": 1.0
     },
     {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Västerås SK/BK",
-      "n": 11,
-      "avg_fouls": 2.64,
+      "team_a": "Villa-Lidköping BK",
+      "team_b": "Västerås SK",
+      "n": 26,
+      "avg_fouls": 2.65,
       "ci_fouls": [
-        2.09,
-        3.09
+        1.92,
+        3.46
       ],
-      "std_fouls": 0.88,
-      "avg_goals": 8.91,
+      "std_fouls": 1.96,
+      "avg_goals": 9.62,
       "ci_goals": [
-        7.64,
-        10.27
+        8.62,
+        10.77
       ],
-      "avg_corners": 18.0,
+      "avg_corners": 18.65,
       "ci_corners": [
-        16.09,
-        19.91
+        16.62,
+        20.73
+      ],
+      "home_win_pct": 0.65,
+      "home_win_ci": [
+        0.46,
+        0.81
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 15,
+      "a_home_win_pct": 0.87,
+      "b_home_n": 11,
+      "b_home_win_pct": 0.36,
+      "asymmetry": 0.5
+    },
+    {
+      "team_a": "Bollnäs GoIF",
+      "team_b": "Frillesås BK",
+      "n": 14,
+      "avg_fouls": 2.57,
+      "ci_fouls": [
+        1.93,
+        3.36
+      ],
+      "std_fouls": 1.29,
+      "avg_goals": 8.14,
+      "ci_goals": [
+        6.21,
+        10.14
+      ],
+      "avg_corners": 15.43,
+      "ci_corners": [
+        13.86,
+        16.93
       ],
       "home_win_pct": 0.36,
       "home_win_ci": [
-        0.15,
-        0.65
+        0.16,
+        0.61
       ],
-      "draw_pct": 0.18,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.2,
-      "b_home_n": 6,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.3
+      "draw_pct": 0.29,
+      "a_home_n": 7,
+      "a_home_win_pct": 0.71,
+      "b_home_n": 7,
+      "b_home_win_pct": 0.0,
+      "asymmetry": 0.71
     },
     {
-      "team_a": "Edsbyns IF",
-      "team_b": "Västerås SK/BK",
-      "n": 6,
+      "team_a": "Frillesås BK",
+      "team_b": "Hammarby IF",
+      "n": 12,
       "avg_fouls": 2.5,
       "ci_fouls": [
-        1.33,
-        3.83
+        1.42,
+        3.75
       ],
-      "std_fouls": 1.61,
-      "avg_goals": 9.83,
+      "std_fouls": 2.02,
+      "avg_goals": 8.83,
       "ci_goals": [
-        7.0,
-        12.33
+        7.33,
+        10.17
       ],
-      "avg_corners": 19.67,
+      "avg_corners": 17.08,
       "ci_corners": [
-        17.83,
-        21.5
+        15.08,
+        18.92
       ],
-      "home_win_pct": 0.17,
+      "home_win_pct": 0.67,
       "home_win_ci": [
-        0.03,
-        0.56
+        0.39,
+        0.86
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.0,
+      "draw_pct": 0.17,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.5,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.83,
       "asymmetry": 0.33
     },
     {
@@ -7113,103 +5129,71 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "IFK Motala",
-      "team_b": "Västerås SK/BK",
-      "n": 6,
+      "team_a": "IK Sirius",
+      "team_b": "Villa-Lidköping BK",
+      "n": 18,
       "avg_fouls": 2.5,
       "ci_fouls": [
-        1.33,
-        3.67
+        1.94,
+        3.06
       ],
-      "std_fouls": 1.61,
-      "avg_goals": 6.0,
+      "std_fouls": 1.17,
+      "avg_goals": 9.67,
       "ci_goals": [
-        3.83,
-        8.33
+        8.83,
+        10.5
       ],
-      "avg_corners": 16.33,
+      "avg_corners": 15.94,
       "ci_corners": [
-        14.83,
-        17.83
-      ],
-      "home_win_pct": 0.33,
-      "home_win_ci": [
-        0.1,
-        0.7
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.67,
-      "asymmetry": 0.67
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Edsbyns IF",
-      "n": 6,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        1.0,
-        4.0
-      ],
-      "std_fouls": 1.89,
-      "avg_goals": 7.5,
-      "ci_goals": [
-        6.33,
-        8.83
-      ],
-      "avg_corners": 17.33,
-      "ci_corners": [
-        14.17,
-        20.33
+        14.33,
+        17.61
       ],
       "home_win_pct": 0.67,
       "home_win_ci": [
-        0.3,
-        0.9
+        0.44,
+        0.84
       ],
       "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
+      "a_home_n": 8,
+      "a_home_win_pct": 0.25,
+      "b_home_n": 10,
       "b_home_win_pct": 1.0,
-      "asymmetry": 0.67
+      "asymmetry": 0.75
     },
     {
-      "team_a": "Västerås SK/BK",
-      "team_b": "Åby/Tjureda IF",
-      "n": 2,
+      "team_a": "Frillesås BK",
+      "team_b": "Västerås SK",
+      "n": 12,
       "avg_fouls": 2.5,
       "ci_fouls": [
-        2.0,
-        3.0
+        1.83,
+        3.17
       ],
-      "std_fouls": 0.5,
-      "avg_goals": 9.0,
+      "std_fouls": 1.26,
+      "avg_goals": 10.25,
       "ci_goals": [
-        6.0,
-        12.0
+        8.25,
+        11.92
       ],
-      "avg_corners": 19.5,
+      "avg_corners": 17.67,
       "ci_corners": [
-        17.0,
-        22.0
+        15.5,
+        20.0
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.09,
-        0.91
+        0.25,
+        0.75
       ],
       "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 1.0,
       "asymmetry": 1.0
     },
     {
-      "team_a": "Västerås SK/BK",
+      "team_a": "Västerås SK",
       "team_b": "Örebro SK Bandy",
       "n": 2,
       "avg_fouls": 2.5,
@@ -7305,263 +5289,7 @@
       "asymmetry": 0.0
     },
     {
-      "team_a": "Hammarby Bandy",
-      "team_b": "IK Sirius",
-      "n": 2,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        1.0,
-        4.0
-      ],
-      "std_fouls": 1.5,
-      "avg_goals": 8.5,
-      "ci_goals": [
-        5.0,
-        12.0
-      ],
-      "avg_corners": 16.0,
-      "ci_corners": [
-        13.0,
-        19.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandy",
-      "team_b": "IFK Vänersborg",
-      "n": 2,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        1.0,
-        4.0
-      ],
-      "std_fouls": 1.5,
-      "avg_goals": 7.5,
-      "ci_goals": [
-        6.0,
-        9.0
-      ],
-      "avg_corners": 21.5,
-      "ci_corners": [
-        21.0,
-        22.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Västerås SK",
-      "n": 2,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        2.0,
-        3.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 9.0,
-      "ci_goals": [
-        8.0,
-        10.0
-      ],
-      "avg_corners": 18.0,
-      "ci_corners": [
-        16.0,
-        20.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.66
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandy",
-      "team_b": "Villa Lidköping BK",
-      "n": 2,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        2.0,
-        3.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 7.0,
-      "ci_goals": [
-        6.0,
-        8.0
-      ],
-      "avg_corners": 20.0,
-      "ci_corners": [
-        19.0,
-        21.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Sandvikens AIK/BK",
-      "team_b": "Västerås SK",
-      "n": 2,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        2.0,
-        3.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 8.0,
-      "ci_goals": [
-        8.0,
-        8.0
-      ],
-      "avg_corners": 19.0,
-      "ci_corners": [
-        18.0,
-        20.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandy",
-      "team_b": "Vetlanda BK",
-      "n": 2,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        1.0,
-        4.0
-      ],
-      "std_fouls": 1.5,
-      "avg_goals": 7.0,
-      "ci_goals": [
-        6.0,
-        8.0
-      ],
-      "avg_corners": 20.5,
-      "ci_corners": [
-        19.0,
-        22.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Hammarby IF",
-      "team_b": "Villa-Lidköping BK",
-      "n": 4,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        1.0,
-        4.0
-      ],
-      "std_fouls": 1.66,
-      "avg_goals": 12.5,
-      "ci_goals": [
-        10.25,
-        14.0
-      ],
-      "avg_corners": 14.0,
-      "ci_corners": [
-        9.0,
-        19.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Hammarby IF",
-      "n": 4,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        2.0,
-        3.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 9.25,
-      "ci_goals": [
-        7.0,
-        10.75
-      ],
-      "avg_corners": 18.0,
-      "ci_corners": [
-        13.75,
-        21.25
-      ],
-      "home_win_pct": 0.25,
-      "home_win_ci": [
-        0.05,
-        0.7
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Gripen BK Trollhättan",
+      "team_a": "Gripen Trollhättan BK",
       "team_b": "Ljusdals BK",
       "n": 2,
       "avg_fouls": 2.5,
@@ -7593,376 +5321,88 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "Hammarby IF",
-      "n": 4,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        2.0,
-        3.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 8.75,
-      "ci_goals": [
-        6.0,
-        11.25
-      ],
-      "avg_corners": 18.5,
-      "ci_corners": [
-        14.75,
-        22.25
-      ],
-      "home_win_pct": 0.75,
-      "home_win_ci": [
-        0.3,
-        0.95
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Gripen BK Trollhättan",
+      "team_a": "Hammarby IF",
       "team_b": "Villa-Lidköping BK",
-      "n": 2,
-      "avg_fouls": 2.5,
+      "n": 12,
+      "avg_fouls": 2.42,
       "ci_fouls": [
-        0.0,
-        5.0
-      ],
-      "std_fouls": 2.5,
-      "avg_goals": 8.0,
-      "ci_goals": [
-        5.0,
-        11.0
-      ],
-      "avg_corners": 15.0,
-      "ci_corners": [
-        10.0,
-        20.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "IFK Vänersborg",
-      "n": 4,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        0.75,
+        1.25,
         3.75
       ],
-      "std_fouls": 1.5,
-      "avg_goals": 10.75,
+      "std_fouls": 2.29,
+      "avg_goals": 10.08,
       "ci_goals": [
-        7.0,
-        15.25
+        8.17,
+        11.92
       ],
-      "avg_corners": 18.0,
+      "avg_corners": 15.25,
       "ci_corners": [
-        13.25,
-        21.75
+        13.0,
+        17.58
       ],
-      "home_win_pct": 0.5,
+      "home_win_pct": 0.58,
       "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "Gripen Trollhättan BK",
-      "n": 2,
-      "avg_fouls": 2.5,
-      "ci_fouls": [
-        2.0,
-        3.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 8.0,
-      "ci_goals": [
-        4.0,
-        12.0
-      ],
-      "avg_corners": 19.5,
-      "ci_corners": [
-        16.0,
-        23.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Edsbyns IF",
-      "team_b": "Vetlanda BK",
-      "n": 9,
-      "avg_fouls": 2.44,
-      "ci_fouls": [
-        1.33,
-        3.67
-      ],
-      "std_fouls": 1.77,
-      "avg_goals": 10.78,
-      "ci_goals": [
-        8.89,
-        13.22
-      ],
-      "avg_corners": 21.33,
-      "ci_corners": [
-        19.78,
-        22.89
-      ],
-      "home_win_pct": 0.67,
-      "home_win_ci": [
-        0.35,
-        0.88
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 5,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.25,
-      "asymmetry": 0.75
-    },
-    {
-      "team_a": "IK Sirius",
-      "team_b": "Villa Lidköping BK",
-      "n": 14,
-      "avg_fouls": 2.43,
-      "ci_fouls": [
-        1.86,
-        3.14
-      ],
-      "std_fouls": 1.29,
-      "avg_goals": 10.0,
-      "ci_goals": [
-        9.14,
-        10.86
-      ],
-      "avg_corners": 15.43,
-      "ci_corners": [
-        13.64,
-        17.21
-      ],
-      "home_win_pct": 0.57,
-      "home_win_ci": [
-        0.33,
-        0.79
+        0.32,
+        0.81
       ],
       "draw_pct": 0.0,
       "a_home_n": 6,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 8,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
       "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Villa Lidköping BK",
-      "team_b": "Västerås SK/BK",
-      "n": 16,
-      "avg_fouls": 2.31,
-      "ci_fouls": [
-        1.56,
-        3.06
-      ],
-      "std_fouls": 1.53,
-      "avg_goals": 9.38,
-      "ci_goals": [
-        8.31,
-        10.56
-      ],
-      "avg_corners": 18.94,
-      "ci_corners": [
-        16.5,
-        21.5
-      ],
-      "home_win_pct": 0.75,
-      "home_win_ci": [
-        0.51,
-        0.9
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 9,
-      "a_home_win_pct": 0.89,
-      "b_home_n": 7,
-      "b_home_win_pct": 0.57,
-      "asymmetry": 0.32
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Frillesås BK",
-      "n": 10,
-      "avg_fouls": 2.3,
-      "ci_fouls": [
-        1.7,
-        2.9
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 6.6,
-      "ci_goals": [
-        5.0,
-        8.4
-      ],
-      "avg_corners": 14.7,
-      "ci_corners": [
-        12.7,
-        16.6
-      ],
-      "home_win_pct": 0.3,
-      "home_win_ci": [
-        0.11,
-        0.6
-      ],
-      "draw_pct": 0.4,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.6,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.6
+      "asymmetry": 0.83
     },
     {
       "team_a": "Edsbyns IF",
       "team_b": "Hammarby IF",
-      "n": 6,
-      "avg_fouls": 2.17,
+      "n": 12,
+      "avg_fouls": 2.42,
       "ci_fouls": [
-        1.0,
+        1.67,
+        3.17
+      ],
+      "std_fouls": 1.32,
+      "avg_goals": 8.83,
+      "ci_goals": [
+        7.0,
+        10.67
+      ],
+      "avg_corners": 17.92,
+      "ci_corners": [
+        15.92,
+        20.17
+      ],
+      "home_win_pct": 0.58,
+      "home_win_ci": [
+        0.32,
+        0.81
+      ],
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 1.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.17,
+      "asymmetry": 0.83
+    },
+    {
+      "team_a": "IFK Motala",
+      "team_b": "Västerås SK",
+      "n": 8,
+      "avg_fouls": 2.38,
+      "ci_fouls": [
+        1.25,
         3.5
       ],
-      "std_fouls": 1.67,
-      "avg_goals": 8.33,
+      "std_fouls": 1.73,
+      "avg_goals": 6.12,
       "ci_goals": [
-        5.17,
-        11.83
+        4.25,
+        8.12
       ],
-      "avg_corners": 18.17,
-      "ci_corners": [
-        15.5,
-        21.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.19,
-        0.81
-      ],
-      "draw_pct": 0.17,
-      "a_home_n": 3,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Västerås SK/BK",
-      "n": 6,
-      "avg_fouls": 2.17,
-      "ci_fouls": [
-        1.17,
-        3.0
-      ],
-      "std_fouls": 1.21,
-      "avg_goals": 9.5,
-      "ci_goals": [
-        7.67,
-        11.17
-      ],
-      "avg_corners": 14.83,
-      "ci_corners": [
-        12.17,
-        17.67
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.19,
-        0.81
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Broberg/Söderhamn",
-      "n": 11,
-      "avg_fouls": 2.09,
-      "ci_fouls": [
-        1.36,
-        2.82
-      ],
-      "std_fouls": 1.31,
-      "avg_goals": 8.64,
-      "ci_goals": [
-        7.36,
-        10.09
-      ],
-      "avg_corners": 18.45,
-      "ci_corners": [
-        16.09,
-        20.91
-      ],
-      "home_win_pct": 0.45,
-      "home_win_ci": [
-        0.21,
-        0.72
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 6,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.6,
-      "asymmetry": 0.27
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Villa Lidköping BK",
-      "n": 8,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        0.88,
-        3.0
-      ],
-      "std_fouls": 1.58,
-      "avg_goals": 9.88,
-      "ci_goals": [
-        8.0,
-        11.62
-      ],
-      "avg_corners": 17.38,
+      "avg_corners": 16.0,
       "ci_corners": [
         14.75,
-        20.5
+        17.12
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
@@ -7971,8 +5411,40 @@
       ],
       "draw_pct": 0.0,
       "a_home_n": 4,
-      "a_home_win_pct": 0.0,
+      "a_home_win_pct": 0.25,
       "b_home_n": 4,
+      "b_home_win_pct": 0.75,
+      "asymmetry": 0.5
+    },
+    {
+      "team_a": "Frillesås BK",
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
+      "avg_fouls": 2.25,
+      "ci_fouls": [
+        1.42,
+        3.08
+      ],
+      "std_fouls": 1.42,
+      "avg_goals": 10.67,
+      "ci_goals": [
+        9.17,
+        12.25
+      ],
+      "avg_corners": 17.5,
+      "ci_corners": [
+        15.33,
+        19.92
+      ],
+      "home_win_pct": 0.5,
+      "home_win_ci": [
+        0.25,
+        0.75
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.0,
+      "b_home_n": 6,
       "b_home_win_pct": 1.0,
       "asymmetry": 1.0
     },
@@ -8105,7 +5577,7 @@
       "asymmetry": 0.0
     },
     {
-      "team_a": "Bollnäs GIF",
+      "team_a": "Bollnäs GoIF",
       "team_b": "Lidköpings AIK",
       "n": 2,
       "avg_fouls": 2.0,
@@ -8137,263 +5609,7 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "IFK Motala",
-      "team_b": "Västerås SK",
-      "n": 2,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        0.0,
-        4.0
-      ],
-      "std_fouls": 2.0,
-      "avg_goals": 6.5,
-      "ci_goals": [
-        4.0,
-        9.0
-      ],
-      "avg_corners": 15.0,
-      "ci_corners": [
-        15.0,
-        15.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandy",
-      "team_b": "IK Sirius",
-      "n": 2,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        2.0,
-        2.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 4.5,
-      "ci_goals": [
-        4.0,
-        5.0
-      ],
-      "avg_corners": 18.0,
-      "ci_corners": [
-        12.0,
-        24.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Edsbyns IF Bandy",
-      "n": 2,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        0.0,
-        4.0
-      ],
-      "std_fouls": 2.0,
-      "avg_goals": 5.0,
-      "ci_goals": [
-        2.0,
-        8.0
-      ],
-      "avg_corners": 17.5,
-      "ci_corners": [
-        16.0,
-        19.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.66
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Edsbyns IF Bandy",
-      "team_b": "IFK Motala",
-      "n": 2,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        2.0,
-        2.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 8.0,
-      "ci_goals": [
-        7.0,
-        9.0
-      ],
-      "avg_corners": 18.5,
-      "ci_corners": [
-        17.0,
-        20.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "GripenTrollhättan BK",
-      "team_b": "Västerås SK",
-      "n": 2,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        2.0,
-        2.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 7.5,
-      "ci_goals": [
-        7.0,
-        8.0
-      ],
-      "avg_corners": 19.5,
-      "ci_corners": [
-        15.0,
-        24.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Gripen BK Trollhättan",
-      "n": 1,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        2.0,
-        2.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 4.0,
-      "ci_goals": [
-        4.0,
-        4.0
-      ],
-      "avg_corners": 18.0,
-      "ci_corners": [
-        18.0,
-        18.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.79
-      ],
-      "draw_pct": 1.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 0,
-      "b_home_win_pct": null,
-      "asymmetry": null
-    },
-    {
-      "team_a": "Edsbyns IF Bandyförening",
-      "team_b": "Gripen BK Trollhättan",
-      "n": 2,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        0.0,
-        4.0
-      ],
-      "std_fouls": 2.0,
-      "avg_goals": 10.0,
-      "ci_goals": [
-        9.0,
-        11.0
-      ],
-      "avg_corners": 20.0,
-      "ci_corners": [
-        17.0,
-        23.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn BIF",
-      "team_b": "Villa-Lidköping BK",
-      "n": 4,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        1.0,
-        3.25
-      ],
-      "std_fouls": 1.22,
-      "avg_goals": 12.75,
-      "ci_goals": [
-        11.25,
-        15.0
-      ],
-      "avg_corners": 18.75,
-      "ci_corners": [
-        16.5,
-        22.25
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GOIF BF",
+      "team_a": "Bollnäs GoIF",
       "team_b": "Ljusdals BK",
       "n": 2,
       "avg_fouls": 2.0,
@@ -8422,70 +5638,6 @@
       "a_home_win_pct": 1.0,
       "b_home_n": 1,
       "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Gripen BK Trollhättan",
-      "team_b": "Hammarby IF",
-      "n": 1,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        2.0,
-        2.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 5.0,
-      "ci_goals": [
-        5.0,
-        5.0
-      ],
-      "avg_corners": 20.0,
-      "ci_corners": [
-        20.0,
-        20.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.79
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 0,
-      "b_home_win_pct": null,
-      "asymmetry": null
-    },
-    {
-      "team_a": "Sandvikens AIK",
-      "team_b": "Villa-Lidköping BK",
-      "n": 4,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        1.0,
-        3.25
-      ],
-      "std_fouls": 1.22,
-      "avg_goals": 11.0,
-      "ci_goals": [
-        9.5,
-        13.0
-      ],
-      "avg_corners": 19.0,
-      "ci_corners": [
-        15.5,
-        22.5
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.15,
-        0.85
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 2,
-      "b_home_win_pct": 1.0,
       "asymmetry": 1.0
     },
     {
@@ -8521,40 +5673,40 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Edsbyns IF",
-      "team_b": "Frillesås BK",
-      "n": 6,
+      "team_a": "Broberg/Söderhamn",
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
       "avg_fouls": 1.83,
       "ci_fouls": [
-        1.0,
-        2.67
+        1.17,
+        2.5
       ],
-      "std_fouls": 1.07,
-      "avg_goals": 8.33,
+      "std_fouls": 1.21,
+      "avg_goals": 11.33,
       "ci_goals": [
-        7.17,
-        9.5
+        9.67,
+        12.75
       ],
-      "avg_corners": 18.83,
+      "avg_corners": 18.25,
       "ci_corners": [
-        16.5,
-        20.5
+        16.83,
+        19.83
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.19,
-        0.81
+        0.25,
+        0.75
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.83,
+      "asymmetry": 0.67
     },
     {
       "team_a": "IFK Motala",
-      "team_b": "Villa Lidköping BK",
+      "team_b": "Villa-Lidköping BK",
       "n": 11,
       "avg_fouls": 1.82,
       "ci_fouls": [
@@ -8583,102 +5735,6 @@
       "b_home_n": 6,
       "b_home_win_pct": 0.83,
       "asymmetry": 0.83
-    },
-    {
-      "team_a": "Vetlanda BK",
-      "team_b": "Villa Lidköping BK",
-      "n": 8,
-      "avg_fouls": 1.75,
-      "ci_fouls": [
-        1.12,
-        2.38
-      ],
-      "std_fouls": 0.97,
-      "avg_goals": 9.75,
-      "ci_goals": [
-        8.88,
-        10.75
-      ],
-      "avg_corners": 21.75,
-      "ci_corners": [
-        18.0,
-        25.12
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Villa Lidköping BK",
-      "n": 8,
-      "avg_fouls": 1.75,
-      "ci_fouls": [
-        1.0,
-        2.62
-      ],
-      "std_fouls": 1.2,
-      "avg_goals": 10.62,
-      "ci_goals": [
-        8.5,
-        12.5
-      ],
-      "avg_corners": 18.0,
-      "ci_corners": [
-        16.38,
-        19.75
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.25,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.75,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Edsbyns IF",
-      "team_b": "Åby/Tjureda IF",
-      "n": 2,
-      "avg_fouls": 1.5,
-      "ci_fouls": [
-        1.0,
-        2.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 14.0,
-      "ci_goals": [
-        11.0,
-        17.0
-      ],
-      "avg_corners": 17.0,
-      "ci_corners": [
-        17.0,
-        17.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
     },
     {
       "team_a": "IK Sirius",
@@ -8714,7 +5770,7 @@
     },
     {
       "team_a": "IK Tellus",
-      "team_b": "Villa Lidköping BK",
+      "team_b": "Villa-Lidköping BK",
       "n": 4,
       "avg_fouls": 1.5,
       "ci_fouls": [
@@ -8807,294 +5863,6 @@
       "b_home_n": 1,
       "b_home_win_pct": 1.0,
       "asymmetry": 0.0
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Västerås SK",
-      "n": 2,
-      "avg_fouls": 1.5,
-      "ci_fouls": [
-        0.0,
-        3.0
-      ],
-      "std_fouls": 1.5,
-      "avg_goals": 7.5,
-      "ci_goals": [
-        6.0,
-        9.0
-      ],
-      "avg_corners": 20.0,
-      "ci_corners": [
-        19.0,
-        21.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.66
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Edsbyns IF Bandy",
-      "n": 2,
-      "avg_fouls": 1.5,
-      "ci_fouls": [
-        1.0,
-        2.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 7.0,
-      "ci_goals": [
-        3.0,
-        11.0
-      ],
-      "avg_corners": 19.0,
-      "ci_corners": [
-        16.0,
-        22.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Hammarby Bandy",
-      "team_b": "Västerås SK",
-      "n": 2,
-      "avg_fouls": 1.5,
-      "ci_fouls": [
-        1.0,
-        2.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 12.5,
-      "ci_goals": [
-        11.0,
-        14.0
-      ],
-      "avg_corners": 17.0,
-      "ci_corners": [
-        15.0,
-        19.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Hammarby Bandy",
-      "n": 2,
-      "avg_fouls": 1.0,
-      "ci_fouls": [
-        0.0,
-        2.0
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 11.0,
-      "ci_goals": [
-        10.0,
-        12.0
-      ],
-      "avg_corners": 15.0,
-      "ci_corners": [
-        13.0,
-        17.0
-      ],
-      "home_win_pct": 1.0,
-      "home_win_ci": [
-        0.34,
-        1.0
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Gripen Trollhättan BK",
-      "team_b": "Åby/Tjureda IF",
-      "n": 2,
-      "avg_fouls": 1.0,
-      "ci_fouls": [
-        1.0,
-        1.0
-      ],
-      "std_fouls": 0.0,
-      "avg_goals": 6.0,
-      "ci_goals": [
-        6.0,
-        6.0
-      ],
-      "avg_corners": 22.5,
-      "ci_corners": [
-        19.0,
-        26.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.66
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
-    },
-    {
-      "team_a": "Villa Lidköping BK",
-      "team_b": "Västerås SK",
-      "n": 3,
-      "avg_fouls": 0.67,
-      "ci_fouls": [
-        0.0,
-        1.0
-      ],
-      "std_fouls": 0.47,
-      "avg_goals": 7.67,
-      "ci_goals": [
-        5.0,
-        9.0
-      ],
-      "avg_corners": 17.0,
-      "ci_corners": [
-        12.0,
-        23.0
-      ],
-      "home_win_pct": 0.33,
-      "home_win_ci": [
-        0.06,
-        0.79
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 2,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.5
-    },
-    {
-      "team_a": "Hammarby Bandy",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 2,
-      "avg_fouls": 0.5,
-      "ci_fouls": [
-        0.0,
-        1.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 10.5,
-      "ci_goals": [
-        10.0,
-        11.0
-      ],
-      "avg_corners": 22.5,
-      "ci_corners": [
-        20.0,
-        25.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Hammarby Bandy",
-      "team_b": "Villa Lidköping BK",
-      "n": 2,
-      "avg_fouls": 0.5,
-      "ci_fouls": [
-        0.0,
-        1.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 9.5,
-      "ci_goals": [
-        7.0,
-        12.0
-      ],
-      "avg_corners": 17.5,
-      "ci_corners": [
-        14.0,
-        21.0
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.09,
-        0.91
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Gripen BK Trollhättan",
-      "team_b": "Vetlanda BK",
-      "n": 2,
-      "avg_fouls": 0.5,
-      "ci_fouls": [
-        0.0,
-        1.0
-      ],
-      "std_fouls": 0.5,
-      "avg_goals": 10.5,
-      "ci_goals": [
-        8.0,
-        13.0
-      ],
-      "avg_corners": 21.0,
-      "ci_corners": [
-        20.0,
-        22.0
-      ],
-      "home_win_pct": 0.0,
-      "home_win_ci": [
-        0.0,
-        0.66
-      ],
-      "draw_pct": 0.5,
-      "a_home_n": 1,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 1,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.0
     }
   ],
   "top_warm": [
@@ -9133,66 +5901,66 @@
     {
       "team_a": "IFK Vänersborg",
       "team_b": "Sandvikens AIK/BK",
-      "n": 8,
-      "avg_fouls": 6.75,
+      "n": 12,
+      "avg_fouls": 6.33,
       "ci_fouls": [
-        5.12,
-        8.38
+        5.17,
+        7.67
       ],
-      "std_fouls": 2.33,
-      "avg_goals": 7.12,
+      "std_fouls": 2.21,
+      "avg_goals": 8.33,
       "ci_goals": [
-        5.38,
-        8.62
+        6.75,
+        9.67
       ],
-      "avg_corners": 18.88,
+      "avg_corners": 19.75,
       "ci_corners": [
-        16.5,
-        21.38
+        17.42,
+        22.42
       ],
-      "home_win_pct": 0.38,
+      "home_win_pct": 0.25,
       "home_win_ci": [
-        0.14,
-        0.69
+        0.09,
+        0.53
       ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.25,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.25
+      "draw_pct": 0.17,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.33,
+      "asymmetry": 0.17
     },
     {
       "team_a": "Broberg/Söderhamn",
       "team_b": "IK Sirius",
-      "n": 10,
-      "avg_fouls": 6.2,
+      "n": 14,
+      "avg_fouls": 6.0,
       "ci_fouls": [
-        4.6,
-        7.7
+        4.79,
+        7.21
       ],
-      "std_fouls": 2.6,
-      "avg_goals": 9.1,
+      "std_fouls": 2.42,
+      "avg_goals": 8.36,
       "ci_goals": [
-        7.9,
-        10.5
+        7.0,
+        9.71
       ],
-      "avg_corners": 17.9,
+      "avg_corners": 17.36,
       "ci_corners": [
-        15.7,
-        20.1
+        15.43,
+        19.14
       ],
-      "home_win_pct": 0.7,
+      "home_win_pct": 0.64,
       "home_win_ci": [
-        0.4,
-        0.89
+        0.39,
+        0.84
       ],
       "draw_pct": 0.0,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.6,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.8,
-      "asymmetry": 0.2
+      "a_home_n": 7,
+      "a_home_win_pct": 0.57,
+      "b_home_n": 7,
+      "b_home_win_pct": 0.71,
+      "asymmetry": 0.14
     },
     {
       "team_a": "AIK Bandy",
@@ -9261,98 +6029,130 @@
     {
       "team_a": "Broberg/Söderhamn",
       "team_b": "IFK Vänersborg",
-      "n": 8,
+      "n": 12,
       "avg_fouls": 5.75,
       "ci_fouls": [
-        4.38,
-        7.62
+        4.58,
+        7.0
       ],
-      "std_fouls": 2.33,
-      "avg_goals": 7.5,
+      "std_fouls": 2.24,
+      "avg_goals": 8.25,
       "ci_goals": [
-        5.75,
-        9.12
+        6.75,
+        9.58
       ],
-      "avg_corners": 17.62,
+      "avg_corners": 18.83,
       "ci_corners": [
-        15.38,
-        20.12
+        16.33,
+        21.75
       ],
-      "home_win_pct": 0.38,
+      "home_win_pct": 0.42,
       "home_win_ci": [
-        0.14,
-        0.69
+        0.19,
+        0.68
       ],
-      "draw_pct": 0.25,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.75,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.75
-    },
-    {
-      "team_a": "Hammarby IF",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 6,
-      "avg_fouls": 5.17,
-      "ci_fouls": [
-        3.17,
-        7.33
-      ],
-      "std_fouls": 2.79,
-      "avg_goals": 12.67,
-      "ci_goals": [
-        9.83,
-        15.33
-      ],
-      "avg_corners": 17.0,
-      "ci_corners": [
-        14.33,
-        19.5
-      ],
-      "home_win_pct": 0.83,
-      "home_win_ci": [
-        0.44,
-        0.97
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
+      "draw_pct": 0.17,
+      "a_home_n": 6,
       "a_home_win_pct": 0.67,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.33
+      "b_home_n": 6,
+      "b_home_win_pct": 0.17,
+      "asymmetry": 0.5
     },
     {
-      "team_a": "Bollnäs GOIF BF",
-      "team_b": "Edsbyns IF Bandyförening",
-      "n": 8,
-      "avg_fouls": 5.12,
+      "team_a": "Gripen Trollhättan BK",
+      "team_b": "Hammarby IF",
+      "n": 6,
+      "avg_fouls": 5.67,
       "ci_fouls": [
-        3.38,
-        7.12
+        3.67,
+        8.0
       ],
-      "std_fouls": 2.71,
-      "avg_goals": 8.12,
+      "std_fouls": 2.87,
+      "avg_goals": 7.67,
       "ci_goals": [
-        6.38,
-        10.0
+        6.17,
+        9.0
       ],
-      "avg_corners": 20.12,
+      "avg_corners": 18.0,
       "ci_corners": [
-        18.75,
-        21.25
+        15.83,
+        20.5
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.22,
-        0.78
+        0.19,
+        0.81
       ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.25,
+      "draw_pct": 0.0,
+      "a_home_n": 3,
+      "a_home_win_pct": 0.0,
+      "b_home_n": 3,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 1.0
+    },
+    {
+      "team_a": "Gripen Trollhättan BK",
+      "team_b": "Sandvikens AIK/BK",
+      "n": 9,
+      "avg_fouls": 5.33,
+      "ci_fouls": [
+        4.11,
+        6.56
+      ],
+      "std_fouls": 1.89,
+      "avg_goals": 8.78,
+      "ci_goals": [
+        6.67,
+        10.89
+      ],
+      "avg_corners": 18.0,
+      "ci_corners": [
+        15.22,
+        20.89
+      ],
+      "home_win_pct": 0.78,
+      "home_win_ci": [
+        0.45,
+        0.94
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 5,
+      "a_home_win_pct": 0.8,
       "b_home_n": 4,
       "b_home_win_pct": 0.75,
-      "asymmetry": 0.5
+      "asymmetry": 0.05
+    },
+    {
+      "team_a": "Broberg/Söderhamn",
+      "team_b": "Gripen Trollhättan BK",
+      "n": 6,
+      "avg_fouls": 5.17,
+      "ci_fouls": [
+        4.5,
+        5.83
+      ],
+      "std_fouls": 0.9,
+      "avg_goals": 8.5,
+      "ci_goals": [
+        7.17,
+        9.83
+      ],
+      "avg_corners": 19.17,
+      "ci_corners": [
+        16.5,
+        21.5
+      ],
+      "home_win_pct": 0.5,
+      "home_win_ci": [
+        0.19,
+        0.81
+      ],
+      "draw_pct": 0.33,
+      "a_home_n": 3,
+      "a_home_win_pct": 0.0,
+      "b_home_n": 3,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 1.0
     },
     {
       "team_a": "AIK Bandy",
@@ -9385,108 +6185,12 @@
       "b_home_n": 3,
       "b_home_win_pct": 0.0,
       "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 8,
-      "avg_fouls": 5.0,
-      "ci_fouls": [
-        3.62,
-        6.12
-      ],
-      "std_fouls": 1.73,
-      "avg_goals": 9.12,
-      "ci_goals": [
-        7.75,
-        10.5
-      ],
-      "avg_corners": 19.62,
-      "ci_corners": [
-        16.62,
-        22.75
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.5,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.5,
-      "asymmetry": 0.0
     }
   ],
   "top_cold": [
     {
-      "team_a": "Vetlanda BK",
-      "team_b": "Villa Lidköping BK",
-      "n": 8,
-      "avg_fouls": 1.75,
-      "ci_fouls": [
-        1.12,
-        2.38
-      ],
-      "std_fouls": 0.97,
-      "avg_goals": 9.75,
-      "ci_goals": [
-        8.88,
-        10.75
-      ],
-      "avg_corners": 21.75,
-      "ci_corners": [
-        18.0,
-        25.12
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Villa Lidköping BK",
-      "n": 8,
-      "avg_fouls": 1.75,
-      "ci_fouls": [
-        1.0,
-        2.62
-      ],
-      "std_fouls": 1.2,
-      "avg_goals": 10.62,
-      "ci_goals": [
-        8.5,
-        12.5
-      ],
-      "avg_corners": 18.0,
-      "ci_corners": [
-        16.38,
-        19.75
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.25,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.75,
-      "asymmetry": 0.5
-    },
-    {
       "team_a": "IFK Motala",
-      "team_b": "Villa Lidköping BK",
+      "team_b": "Villa-Lidköping BK",
       "n": 11,
       "avg_fouls": 1.82,
       "ci_fouls": [
@@ -9517,68 +6221,36 @@
       "asymmetry": 0.83
     },
     {
-      "team_a": "Edsbyns IF",
-      "team_b": "Frillesås BK",
-      "n": 6,
+      "team_a": "Broberg/Söderhamn",
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
       "avg_fouls": 1.83,
       "ci_fouls": [
-        1.0,
-        2.67
+        1.17,
+        2.5
       ],
-      "std_fouls": 1.07,
-      "avg_goals": 8.33,
+      "std_fouls": 1.21,
+      "avg_goals": 11.33,
       "ci_goals": [
-        7.17,
-        9.5
+        9.67,
+        12.75
       ],
-      "avg_corners": 18.83,
+      "avg_corners": 18.25,
       "ci_corners": [
-        16.5,
-        20.5
+        16.83,
+        19.83
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.19,
-        0.81
+        0.25,
+        0.75
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Villa Lidköping BK",
-      "n": 8,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        0.88,
-        3.0
-      ],
-      "std_fouls": 1.58,
-      "avg_goals": 9.88,
-      "ci_goals": [
-        8.0,
-        11.62
-      ],
-      "avg_corners": 17.38,
-      "ci_corners": [
-        14.75,
-        20.5
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.83,
+      "asymmetry": 0.67
     },
     {
       "team_a": "AIK Bandy",
@@ -9613,135 +6285,263 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Broberg/Söderhamn",
-      "n": 11,
-      "avg_fouls": 2.09,
+      "team_a": "Frillesås BK",
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
+      "avg_fouls": 2.25,
       "ci_fouls": [
-        1.36,
-        2.82
+        1.42,
+        3.08
       ],
-      "std_fouls": 1.31,
-      "avg_goals": 8.64,
+      "std_fouls": 1.42,
+      "avg_goals": 10.67,
       "ci_goals": [
-        7.36,
-        10.09
+        9.17,
+        12.25
       ],
-      "avg_corners": 18.45,
+      "avg_corners": 17.5,
       "ci_corners": [
-        16.09,
-        20.91
+        15.33,
+        19.92
       ],
-      "home_win_pct": 0.45,
+      "home_win_pct": 0.5,
       "home_win_ci": [
-        0.21,
-        0.72
+        0.25,
+        0.75
       ],
       "draw_pct": 0.0,
       "a_home_n": 6,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.6,
-      "asymmetry": 0.27
+      "a_home_win_pct": 0.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 1.0
+    },
+    {
+      "team_a": "IFK Motala",
+      "team_b": "Västerås SK",
+      "n": 8,
+      "avg_fouls": 2.38,
+      "ci_fouls": [
+        1.25,
+        3.5
+      ],
+      "std_fouls": 1.73,
+      "avg_goals": 6.12,
+      "ci_goals": [
+        4.25,
+        8.12
+      ],
+      "avg_corners": 16.0,
+      "ci_corners": [
+        14.75,
+        17.12
+      ],
+      "home_win_pct": 0.5,
+      "home_win_ci": [
+        0.22,
+        0.78
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 4,
+      "a_home_win_pct": 0.25,
+      "b_home_n": 4,
+      "b_home_win_pct": 0.75,
+      "asymmetry": 0.5
+    },
+    {
+      "team_a": "Hammarby IF",
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
+      "avg_fouls": 2.42,
+      "ci_fouls": [
+        1.25,
+        3.75
+      ],
+      "std_fouls": 2.29,
+      "avg_goals": 10.08,
+      "ci_goals": [
+        8.17,
+        11.92
+      ],
+      "avg_corners": 15.25,
+      "ci_corners": [
+        13.0,
+        17.58
+      ],
+      "home_win_pct": 0.58,
+      "home_win_ci": [
+        0.32,
+        0.81
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 0.83
     },
     {
       "team_a": "Edsbyns IF",
       "team_b": "Hammarby IF",
-      "n": 6,
-      "avg_fouls": 2.17,
+      "n": 12,
+      "avg_fouls": 2.42,
       "ci_fouls": [
-        1.0,
-        3.5
+        1.67,
+        3.17
       ],
-      "std_fouls": 1.67,
-      "avg_goals": 8.33,
+      "std_fouls": 1.32,
+      "avg_goals": 8.83,
       "ci_goals": [
-        5.17,
-        11.83
+        7.0,
+        10.67
       ],
-      "avg_corners": 18.17,
+      "avg_corners": 17.92,
+      "ci_corners": [
+        15.92,
+        20.17
+      ],
+      "home_win_pct": 0.58,
+      "home_win_ci": [
+        0.32,
+        0.81
+      ],
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 1.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.17,
+      "asymmetry": 0.83
+    },
+    {
+      "team_a": "Frillesås BK",
+      "team_b": "Hammarby IF",
+      "n": 12,
+      "avg_fouls": 2.5,
+      "ci_fouls": [
+        1.42,
+        3.75
+      ],
+      "std_fouls": 2.02,
+      "avg_goals": 8.83,
+      "ci_goals": [
+        7.33,
+        10.17
+      ],
+      "avg_corners": 17.08,
+      "ci_corners": [
+        15.08,
+        18.92
+      ],
+      "home_win_pct": 0.67,
+      "home_win_ci": [
+        0.39,
+        0.86
+      ],
+      "draw_pct": 0.17,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.5,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.83,
+      "asymmetry": 0.33
+    },
+    {
+      "team_a": "IK Sirius",
+      "team_b": "Villa-Lidköping BK",
+      "n": 18,
+      "avg_fouls": 2.5,
+      "ci_fouls": [
+        1.94,
+        3.06
+      ],
+      "std_fouls": 1.17,
+      "avg_goals": 9.67,
+      "ci_goals": [
+        8.83,
+        10.5
+      ],
+      "avg_corners": 15.94,
+      "ci_corners": [
+        14.33,
+        17.61
+      ],
+      "home_win_pct": 0.67,
+      "home_win_ci": [
+        0.44,
+        0.84
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 8,
+      "a_home_win_pct": 0.25,
+      "b_home_n": 10,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 0.75
+    },
+    {
+      "team_a": "Frillesås BK",
+      "team_b": "Västerås SK",
+      "n": 12,
+      "avg_fouls": 2.5,
+      "ci_fouls": [
+        1.83,
+        3.17
+      ],
+      "std_fouls": 1.26,
+      "avg_goals": 10.25,
+      "ci_goals": [
+        8.25,
+        11.92
+      ],
+      "avg_corners": 17.67,
       "ci_corners": [
         15.5,
-        21.0
+        20.0
+      ],
+      "home_win_pct": 0.5,
+      "home_win_ci": [
+        0.25,
+        0.75
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 1.0
+    }
+  ],
+  "top_goals": [
+    {
+      "team_a": "Villa-Lidköping BK",
+      "team_b": "Åby/Tjureda IF",
+      "n": 6,
+      "avg_fouls": 3.0,
+      "ci_fouls": [
+        2.33,
+        3.67
+      ],
+      "std_fouls": 0.82,
+      "avg_goals": 13.83,
+      "ci_goals": [
+        10.67,
+        17.17
+      ],
+      "avg_corners": 16.5,
+      "ci_corners": [
+        13.33,
+        19.0
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
         0.19,
         0.81
       ],
-      "draw_pct": 0.17,
+      "draw_pct": 0.0,
       "a_home_n": 3,
       "a_home_win_pct": 1.0,
       "b_home_n": 3,
       "b_home_win_pct": 0.0,
       "asymmetry": 1.0
     },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Västerås SK/BK",
-      "n": 6,
-      "avg_fouls": 2.17,
-      "ci_fouls": [
-        1.17,
-        3.0
-      ],
-      "std_fouls": 1.21,
-      "avg_goals": 9.5,
-      "ci_goals": [
-        7.67,
-        11.17
-      ],
-      "avg_corners": 14.83,
-      "ci_corners": [
-        12.17,
-        17.67
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.19,
-        0.81
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Bollnäs GIF",
-      "team_b": "Frillesås BK",
-      "n": 10,
-      "avg_fouls": 2.3,
-      "ci_fouls": [
-        1.7,
-        2.9
-      ],
-      "std_fouls": 1.0,
-      "avg_goals": 6.6,
-      "ci_goals": [
-        5.0,
-        8.4
-      ],
-      "avg_corners": 14.7,
-      "ci_corners": [
-        12.7,
-        16.6
-      ],
-      "home_win_pct": 0.3,
-      "home_win_ci": [
-        0.11,
-        0.6
-      ],
-      "draw_pct": 0.4,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.6,
-      "b_home_n": 5,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.6
-    }
-  ],
-  "top_goals": [
     {
       "team_a": "IK Sirius",
       "team_b": "Åby/Tjureda IF",
@@ -9773,38 +6573,6 @@
       "b_home_n": 3,
       "b_home_win_pct": 0.0,
       "asymmetry": 1.0
-    },
-    {
-      "team_a": "Hammarby IF",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 6,
-      "avg_fouls": 5.17,
-      "ci_fouls": [
-        3.17,
-        7.33
-      ],
-      "std_fouls": 2.79,
-      "avg_goals": 12.67,
-      "ci_goals": [
-        9.83,
-        15.33
-      ],
-      "avg_corners": 17.0,
-      "ci_corners": [
-        14.33,
-        19.5
-      ],
-      "home_win_pct": 0.83,
-      "home_win_ci": [
-        0.44,
-        0.97
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.67,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.33
     },
     {
       "team_a": "AIK Bandy",
@@ -9839,68 +6607,100 @@
       "asymmetry": 0.0
     },
     {
-      "team_a": "Hammarby Bandy",
-      "team_b": "Vetlanda BK",
-      "n": 6,
+      "team_a": "Hammarby IF",
+      "team_b": "Sandvikens AIK/BK",
+      "n": 12,
       "avg_fouls": 4.0,
       "ci_fouls": [
-        2.83,
-        5.67
+        2.67,
+        5.58
       ],
-      "std_fouls": 1.91,
-      "avg_goals": 12.33,
+      "std_fouls": 2.68,
+      "avg_goals": 11.5,
       "ci_goals": [
-        9.67,
-        15.0
+        10.0,
+        13.08
       ],
-      "avg_corners": 14.5,
+      "avg_corners": 18.75,
       "ci_corners": [
-        12.83,
-        16.17
+        16.83,
+        20.5
       ],
       "home_win_pct": 0.67,
       "home_win_ci": [
-        0.3,
-        0.9
+        0.39,
+        0.86
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.33,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 0.67
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.67,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.67,
+      "asymmetry": 0.0
     },
     {
       "team_a": "Broberg/Söderhamn",
-      "team_b": "Hammarby IF",
-      "n": 6,
-      "avg_fouls": 3.33,
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
+      "avg_fouls": 1.83,
       "ci_fouls": [
         1.17,
-        5.5
+        2.5
       ],
-      "std_fouls": 2.81,
-      "avg_goals": 11.17,
+      "std_fouls": 1.21,
+      "avg_goals": 11.33,
       "ci_goals": [
-        8.83,
-        13.33
+        9.67,
+        12.75
       ],
-      "avg_corners": 16.33,
+      "avg_corners": 18.25,
       "ci_corners": [
-        14.33,
-        18.5
+        16.83,
+        19.83
       ],
-      "home_win_pct": 0.67,
+      "home_win_pct": 0.5,
       "home_win_ci": [
-        0.3,
-        0.9
+        0.25,
+        0.75
       ],
-      "draw_pct": 0.0,
-      "a_home_n": 3,
-      "a_home_win_pct": 0.67,
-      "b_home_n": 3,
-      "b_home_win_pct": 0.67,
-      "asymmetry": 0.0
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.83,
+      "asymmetry": 0.67
+    },
+    {
+      "team_a": "IFK Vänersborg",
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
+      "avg_fouls": 3.42,
+      "ci_fouls": [
+        2.5,
+        4.58
+      ],
+      "std_fouls": 1.85,
+      "avg_goals": 11.25,
+      "ci_goals": [
+        9.08,
+        13.58
+      ],
+      "avg_corners": 15.75,
+      "ci_corners": [
+        13.67,
+        17.83
+      ],
+      "home_win_pct": 0.42,
+      "home_win_ci": [
+        0.19,
+        0.68
+      ],
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.83,
+      "asymmetry": 0.83
     },
     {
       "team_a": "AIK Bandy",
@@ -9967,24 +6767,24 @@
       "asymmetry": 1.0
     },
     {
-      "team_a": "Frillesås BK",
-      "team_b": "Västerås SK",
+      "team_a": "Edsbyns IF",
+      "team_b": "Åby/Tjureda IF",
       "n": 6,
-      "avg_fouls": 2.83,
+      "avg_fouls": 3.17,
       "ci_fouls": [
-        2.0,
-        3.67
+        1.83,
+        5.33
       ],
-      "std_fouls": 1.21,
+      "std_fouls": 2.27,
       "avg_goals": 11.0,
       "ci_goals": [
-        7.67,
-        13.33
+        8.67,
+        13.67
       ],
-      "avg_corners": 20.5,
+      "avg_corners": 19.83,
       "ci_corners": [
-        18.67,
-        22.5
+        18.0,
+        21.83
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
@@ -9993,38 +6793,6 @@
       ],
       "draw_pct": 0.0,
       "a_home_n": 3,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 3,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Villa-Lidköping BK",
-      "team_b": "Västerås SK",
-      "n": 7,
-      "avg_fouls": 4.29,
-      "ci_fouls": [
-        2.71,
-        5.71
-      ],
-      "std_fouls": 2.05,
-      "avg_goals": 11.0,
-      "ci_goals": [
-        8.71,
-        13.29
-      ],
-      "avg_corners": 18.71,
-      "ci_corners": [
-        15.29,
-        22.43
-      ],
-      "home_win_pct": 0.57,
-      "home_win_ci": [
-        0.25,
-        0.84
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 4,
       "a_home_win_pct": 1.0,
       "b_home_n": 3,
       "b_home_win_pct": 0.0,
@@ -10065,168 +6833,232 @@
   ],
   "most_asymmetric": [
     {
-      "team_a": "Vetlanda BK",
-      "team_b": "Villa Lidköping BK",
-      "n": 8,
-      "avg_fouls": 1.75,
-      "ci_fouls": [
-        1.12,
-        2.38
-      ],
-      "std_fouls": 0.97,
-      "avg_goals": 9.75,
-      "ci_goals": [
-        8.88,
-        10.75
-      ],
-      "avg_corners": 21.75,
-      "ci_corners": [
-        18.0,
-        25.12
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
       "team_a": "Frillesås BK",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 8,
-      "avg_fouls": 3.12,
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
+      "avg_fouls": 2.25,
       "ci_fouls": [
-        2.0,
-        4.25
+        1.42,
+        3.08
       ],
-      "std_fouls": 1.54,
-      "avg_goals": 8.25,
+      "std_fouls": 1.42,
+      "avg_goals": 10.67,
       "ci_goals": [
-        6.5,
-        10.0
+        9.17,
+        12.25
       ],
-      "avg_corners": 18.0,
+      "avg_corners": 17.5,
       "ci_corners": [
-        16.38,
-        19.5
+        15.33,
+        19.92
       ],
       "home_win_pct": 0.5,
       "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Frillesås BK",
-      "team_b": "Villa Lidköping BK",
-      "n": 8,
-      "avg_fouls": 2.0,
-      "ci_fouls": [
-        0.88,
-        3.0
-      ],
-      "std_fouls": 1.58,
-      "avg_goals": 9.88,
-      "ci_goals": [
-        8.0,
-        11.62
-      ],
-      "avg_corners": 17.38,
-      "ci_corners": [
-        14.75,
-        20.5
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.0,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 1.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "Broberg/Söderhamn",
-      "team_b": "Frillesås BK",
-      "n": 8,
-      "avg_fouls": 3.25,
-      "ci_fouls": [
-        2.38,
-        4.12
-      ],
-      "std_fouls": 1.39,
-      "avg_goals": 9.0,
-      "ci_goals": [
-        7.12,
-        10.75
-      ],
-      "avg_corners": 17.0,
-      "ci_corners": [
-        13.75,
-        20.38
-      ],
-      "home_win_pct": 0.5,
-      "home_win_ci": [
-        0.22,
-        0.78
-      ],
-      "draw_pct": 0.25,
-      "a_home_n": 4,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 1.0
-    },
-    {
-      "team_a": "IK Sirius",
-      "team_b": "Villa Lidköping BK",
-      "n": 14,
-      "avg_fouls": 2.43,
-      "ci_fouls": [
-        1.86,
-        3.14
-      ],
-      "std_fouls": 1.29,
-      "avg_goals": 10.0,
-      "ci_goals": [
-        9.14,
-        10.86
-      ],
-      "avg_corners": 15.43,
-      "ci_corners": [
-        13.64,
-        17.21
-      ],
-      "home_win_pct": 0.57,
-      "home_win_ci": [
-        0.33,
-        0.79
+        0.25,
+        0.75
       ],
       "draw_pct": 0.0,
       "a_home_n": 6,
       "a_home_win_pct": 0.0,
-      "b_home_n": 8,
+      "b_home_n": 6,
       "b_home_win_pct": 1.0,
       "asymmetry": 1.0
     },
     {
+      "team_a": "Frillesås BK",
+      "team_b": "Västerås SK",
+      "n": 12,
+      "avg_fouls": 2.5,
+      "ci_fouls": [
+        1.83,
+        3.17
+      ],
+      "std_fouls": 1.26,
+      "avg_goals": 10.25,
+      "ci_goals": [
+        8.25,
+        11.92
+      ],
+      "avg_corners": 17.67,
+      "ci_corners": [
+        15.5,
+        20.0
+      ],
+      "home_win_pct": 0.5,
+      "home_win_ci": [
+        0.25,
+        0.75
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 1.0
+    },
+    {
+      "team_a": "Edsbyns IF",
+      "team_b": "Frillesås BK",
+      "n": 12,
+      "avg_fouls": 3.5,
+      "ci_fouls": [
+        2.0,
+        5.33
+      ],
+      "std_fouls": 2.96,
+      "avg_goals": 7.33,
+      "ci_goals": [
+        6.58,
+        8.25
+      ],
+      "avg_corners": 19.08,
+      "ci_corners": [
+        17.67,
+        20.67
+      ],
+      "home_win_pct": 0.5,
+      "home_win_ci": [
+        0.25,
+        0.75
+      ],
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 1.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.0,
+      "asymmetry": 1.0
+    },
+    {
+      "team_a": "Hammarby IF",
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
+      "avg_fouls": 2.42,
+      "ci_fouls": [
+        1.25,
+        3.75
+      ],
+      "std_fouls": 2.29,
+      "avg_goals": 10.08,
+      "ci_goals": [
+        8.17,
+        11.92
+      ],
+      "avg_corners": 15.25,
+      "ci_corners": [
+        13.0,
+        17.58
+      ],
+      "home_win_pct": 0.58,
+      "home_win_ci": [
+        0.32,
+        0.81
+      ],
+      "draw_pct": 0.0,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 0.83
+    },
+    {
+      "team_a": "Frillesås BK",
+      "team_b": "Sandvikens AIK/BK",
+      "n": 12,
+      "avg_fouls": 3.17,
+      "ci_fouls": [
+        2.42,
+        4.0
+      ],
+      "std_fouls": 1.4,
+      "avg_goals": 8.92,
+      "ci_goals": [
+        7.5,
+        10.25
+      ],
+      "avg_corners": 19.08,
+      "ci_corners": [
+        17.5,
+        20.75
+      ],
+      "home_win_pct": 0.58,
+      "home_win_ci": [
+        0.32,
+        0.81
+      ],
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 0.17,
+      "b_home_n": 6,
+      "b_home_win_pct": 1.0,
+      "asymmetry": 0.83
+    },
+    {
+      "team_a": "Edsbyns IF",
+      "team_b": "Hammarby IF",
+      "n": 12,
+      "avg_fouls": 2.42,
+      "ci_fouls": [
+        1.67,
+        3.17
+      ],
+      "std_fouls": 1.32,
+      "avg_goals": 8.83,
+      "ci_goals": [
+        7.0,
+        10.67
+      ],
+      "avg_corners": 17.92,
+      "ci_corners": [
+        15.92,
+        20.17
+      ],
+      "home_win_pct": 0.58,
+      "home_win_ci": [
+        0.32,
+        0.81
+      ],
+      "draw_pct": 0.08,
+      "a_home_n": 6,
+      "a_home_win_pct": 1.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.17,
+      "asymmetry": 0.83
+    },
+    {
+      "team_a": "Broberg/Söderhamn",
+      "team_b": "Frillesås BK",
+      "n": 12,
+      "avg_fouls": 3.25,
+      "ci_fouls": [
+        2.5,
+        3.92
+      ],
+      "std_fouls": 1.36,
+      "avg_goals": 9.0,
+      "ci_goals": [
+        7.42,
+        10.58
+      ],
+      "avg_corners": 17.08,
+      "ci_corners": [
+        14.75,
+        19.33
+      ],
+      "home_win_pct": 0.58,
+      "home_win_ci": [
+        0.32,
+        0.81
+      ],
+      "draw_pct": 0.17,
+      "a_home_n": 6,
+      "a_home_win_pct": 1.0,
+      "b_home_n": 6,
+      "b_home_win_pct": 0.17,
+      "asymmetry": 0.83
+    },
+    {
       "team_a": "IFK Motala",
-      "team_b": "Villa Lidköping BK",
+      "team_b": "Villa-Lidköping BK",
       "n": 11,
       "avg_fouls": 1.82,
       "ci_fouls": [
@@ -10257,132 +7089,68 @@
       "asymmetry": 0.83
     },
     {
-      "team_a": "Edsbyns IF",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 9,
-      "avg_fouls": 3.44,
+      "team_a": "IFK Vänersborg",
+      "team_b": "Villa-Lidköping BK",
+      "n": 12,
+      "avg_fouls": 3.42,
       "ci_fouls": [
-        2.67,
-        4.33
+        2.5,
+        4.58
       ],
-      "std_fouls": 1.34,
-      "avg_goals": 6.44,
+      "std_fouls": 1.85,
+      "avg_goals": 11.25,
       "ci_goals": [
-        4.89,
-        7.89
+        9.08,
+        13.58
       ],
-      "avg_corners": 18.11,
+      "avg_corners": 15.75,
       "ci_corners": [
-        15.89,
-        20.56
+        13.67,
+        17.83
       ],
-      "home_win_pct": 0.44,
+      "home_win_pct": 0.42,
       "home_win_ci": [
         0.19,
-        0.73
+        0.68
       ],
-      "draw_pct": 0.22,
-      "a_home_n": 5,
-      "a_home_win_pct": 0.8,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.0,
-      "asymmetry": 0.8
-    },
-    {
-      "team_a": "IK Sirius",
-      "team_b": "Sandvikens AIK/BK",
-      "n": 8,
-      "avg_fouls": 4.38,
-      "ci_fouls": [
-        3.12,
-        5.62
-      ],
-      "std_fouls": 1.93,
-      "avg_goals": 8.5,
-      "ci_goals": [
-        6.62,
-        10.12
-      ],
-      "avg_corners": 18.75,
-      "ci_corners": [
-        14.75,
-        21.5
-      ],
-      "home_win_pct": 0.38,
-      "home_win_ci": [
-        0.14,
-        0.69
-      ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
+      "draw_pct": 0.08,
+      "a_home_n": 6,
       "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.75,
-      "asymmetry": 0.75
+      "b_home_n": 6,
+      "b_home_win_pct": 0.83,
+      "asymmetry": 0.83
     },
     {
-      "team_a": "IFK Vänersborg",
-      "team_b": "Villa Lidköping BK",
-      "n": 8,
-      "avg_fouls": 3.0,
+      "team_a": "Gripen Trollhättan BK",
+      "team_b": "Villa-Lidköping BK",
+      "n": 10,
+      "avg_fouls": 4.6,
       "ci_fouls": [
-        1.88,
-        4.5
+        3.2,
+        6.1
       ],
-      "std_fouls": 1.87,
-      "avg_goals": 9.75,
+      "std_fouls": 2.42,
+      "avg_goals": 9.6,
       "ci_goals": [
-        7.5,
-        12.12
+        7.3,
+        12.1
       ],
-      "avg_corners": 16.38,
+      "avg_corners": 19.3,
       "ci_corners": [
-        13.38,
-        19.25
+        16.5,
+        22.2
       ],
-      "home_win_pct": 0.38,
+      "home_win_pct": 0.4,
       "home_win_ci": [
-        0.14,
+        0.17,
         0.69
-      ],
-      "draw_pct": 0.12,
-      "a_home_n": 4,
-      "a_home_win_pct": 0.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.75,
-      "asymmetry": 0.75
-    },
-    {
-      "team_a": "Edsbyns IF",
-      "team_b": "Vetlanda BK",
-      "n": 9,
-      "avg_fouls": 2.44,
-      "ci_fouls": [
-        1.33,
-        3.67
-      ],
-      "std_fouls": 1.77,
-      "avg_goals": 10.78,
-      "ci_goals": [
-        8.89,
-        13.22
-      ],
-      "avg_corners": 21.33,
-      "ci_corners": [
-        19.78,
-        22.89
-      ],
-      "home_win_pct": 0.67,
-      "home_win_ci": [
-        0.35,
-        0.88
       ],
       "draw_pct": 0.0,
       "a_home_n": 5,
-      "a_home_win_pct": 1.0,
-      "b_home_n": 4,
-      "b_home_win_pct": 0.25,
-      "asymmetry": 0.75
+      "a_home_win_pct": 0.0,
+      "b_home_n": 5,
+      "b_home_win_pct": 0.8,
+      "asymmetry": 0.8
     }
   ]
 }

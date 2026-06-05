@@ -25,7 +25,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <div class="key-number">
         <span class="key-number__value">2,1×</span>
         <span class="key-number__label">Skillnad i målklustring mellan ytterpolerna</span>
-        <span class="key-number__note">1,18 mot 0,57 målkluster per match</span>
+        <span class="key-number__note">1,27 mot 0,61 målkluster per match</span>
       </div>
       <div class="key-number">
         <span class="key-number__value">0,23 → 0,24</span>
@@ -33,9 +33,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <span class="key-number__note">Axeln är inte ett kvalitetsartefakt</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">Villa &amp; Edsbyn</span>
+        <span class="key-number__value">Villa &amp; Västerås</span>
         <span class="key-number__label">Ankrar omställning/öppet spel-änden</span>
-        <span class="key-number__note">Båda 4/4 säsonger i samma ände</span>
+        <span class="key-number__note">Båda 100 % av sina säsonger i samma ände</span>
       </div>
     </div>
 
@@ -66,25 +66,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <div class="finding-section prose">
       <p class="finding-section-label">Vad vi fann</p>
 
-      <p><strong>Stil bildar inte skarpa kluster.</strong> Silhouette stannade på 0,23 — under tumregeln 0,30. Den fotbollslika dikotomin mellan omställningsspel och bollinnehav finns alltså inte som <em>diskreta typer</em> i Elitserien. Antingen är uppdelningen gradvis snarare än kategorisk, eller så är datasetet (64 klubb-säsonger) för litet för att separera den.</p>
+      <p><strong>Stil bildar inte skarpa kluster.</strong> Silhouette stannade på 0,23 — under tumregeln 0,30. Den fotbollslika dikotomin mellan omställningsspel och bollinnehav finns alltså inte som <em>diskreta typer</em> i Elitserien. Antingen är uppdelningen gradvis snarare än kategorisk, eller så är datasetet (79 klubb-säsonger) för litet för att separera den.</p>
 
-      <p><strong>Men en reell kontinuerlig axel finns.</strong> Den starkaste separatorn är målklustring. I ena änden faller målen i tätare sekvenser — 1,18 målkluster per match — mot 0,57 i den andra. En faktor 2,1, vilket är en verklig skillnad, inte brus. Samma ände har också lägre hörnmålsandel (19,3 % mot 23,6 %) och högre andel mål i öppet spel. Det ser ut som en omställnings-/öppet spel-profil i ena änden och en hörnberoende profil i den andra.</p>
+      <p><strong>Men en reell kontinuerlig axel finns.</strong> Den starkaste separatorn är målklustring. I ena änden faller målen i tätare sekvenser — 1,27 målkluster per match — mot 0,61 i den andra. En faktor 2,1, vilket är en verklig skillnad, inte brus. Samma ände har också lägre hörnmålsandel (19,8 % mot 24,3 %) och högre andel mål i öppet spel. Det ser ut som en omställnings-/öppet spel-profil i ena änden och en hörnberoende profil i den andra.</p>
 
       <table>
-        <thead><tr><th>Stilmarkör</th><th>Kluster 0 (n=26)</th><th>Kluster 1 (n=38)</th></tr></thead>
+        <thead><tr><th>Stilmarkör</th><th>Kluster 0 (n=29)</th><th>Kluster 1 (n=50)</th></tr></thead>
         <tbody>
-          <tr><td>Kluster-frekvens (≥2 mål inom 5 min)</td><td>1,18/match</td><td>0,57/match</td></tr>
-          <tr><td>Hörnmålsandel</td><td>19,3 %</td><td>23,6 %</td></tr>
-          <tr><td>Öppet spel-andel</td><td>75,9 %</td><td>71,4 %</td></tr>
-          <tr><td>Hörnor/match</td><td>9,5</td><td>8,3</td></tr>
-          <tr><td>Hörnor/mål</td><td>1,72</td><td>2,21</td></tr>
-          <tr><td>Utvisningar/match</td><td>1,59</td><td>2,00</td></tr>
+          <tr><td>Kluster-frekvens (≥2 mål inom 5 min)</td><td>1,27/match</td><td>0,61/match</td></tr>
+          <tr><td>Hörnmålsandel</td><td>19,8 %</td><td>24,3 %</td></tr>
+          <tr><td>Öppet spel-andel</td><td>75,6 %</td><td>70,9 %</td></tr>
+          <tr><td>Hörnor/match</td><td>9,7</td><td>8,6</td></tr>
+          <tr><td>Hörnor/mål</td><td>1,70</td><td>2,20</td></tr>
+          <tr><td>Utvisningar/match</td><td>1,60</td><td>1,97</td></tr>
         </tbody>
       </table>
 
-      <p><strong>Kluster 0 (omställning/öppet spel)</strong> ankras av Edsbyn, Villa och Västerås SK — alla 100 % av sina säsonger — med Broberg/Söderhamn (75 %) och AIK (67 %). <strong>Kluster 1 (hörnberoende, mer fysiskt)</strong> rymmer IFK Motala, Frillesås, Åby/Tjureda, IFK Vänersborg och Bollnäs GIF (alla 100 %) samt IK Sirius (83 %). Värt att notera: Sirius hamnar i den hörnberoende, fysiska änden — inte i den öppet spelande — vilket motsäger en vanlig intuition om laget.</p>
+      <p><strong>Kluster 0 (omställning/öppet spel)</strong> ankras av Villa och Västerås SK — båda 100 % av sina säsonger — med Edsbyn och AIK (67 %). <strong>Kluster 1 (hörnberoende, mer fysiskt)</strong> rymmer IFK Motala, Frillesås, Åby/Tjureda, IFK Vänersborg, Gripen Trollhättan och IK Sirius (alla 100 %) samt Bollnäs GoIF och Sandvikens AIK/BK (83 %). Värt att notera: Sirius hamnar i den hörnberoende, fysiska änden — inte i den öppet spelande — vilket motsäger en vanlig intuition om laget.</p>
 
-      <p><strong>Axeln är inte kvalitet i förklädnad.</strong> När kvalitet residualiseras bort ändras silhouette bara marginellt, 0,23 → 0,24. Stilaxeln överlever alltså kvalitetskontrollen — den är åtminstone delvis frikopplad från hur bra laget är. Det var precis det omgång 1 inte kunde visa.</p>
+      <p><strong>Axeln är inte kvalitet i förklädnad.</strong> När kvalitet residualiseras bort ändras silhouette bara marginellt. Stilaxeln överlever alltså kvalitetskontrollen — den är åtminstone delvis frikopplad från hur bra laget är. Det var precis det omgång 1 inte kunde visa.</p>
+
+      <p>Klubbnamnen är normaliserade (renderingsvarianter som Sandvikens AIK / AIK/BK slås ihop till en klubb), vilket ökade underlaget från 64 till 79 klubb-säsonger. Klusterbilden står sig — samma två ändar, samma ankarklubbar.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -103,7 +105,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <p class="finding-section-label">Begränsningar</p>
       <ul>
         <li>Silhouette under 0,30 i båda omgångarna — stil bildar inte skarpa kluster. Slutsatserna gäller en kontinuerlig axel, inte diskreta typer.</li>
-        <li>64 klubb-säsonger är ett litet underlag för klustring; en verklig stiluppdelning kan finnas men kräva mer data för att separeras.</li>
+        <li>79 klubb-säsonger är ett litet underlag för klustring; en verklig stiluppdelning kan finnas men kräva mer data för att separeras.</li>
         <li>Features fångar utfallsmått, inte possession, pressintensitet, formationer eller spelarmaterial.</li>
         <li>Säsong 2023–24 saknas i datasetet.</li>
         <li>"Omställning" och "winback" är tolkningar av ett matematiskt mönster (målklustring). Om mekanismen verkligen är winback är en videofråga, inte en statistisk — och just den sortens fråga en bandykunnig kan bedöma.</li>

@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "description": "Kanonisk klubbnamns-karta, Bandygrytan. Verifierad 2026-06-03 via säsongsmönster.",
+    "principle": "Slå bara ihop varianter av samma klubb. Aldrig två olika klubbar."
+  },
+  "canonical_map": {
+    "Bollnäs GIF": "Bollnäs GoIF",
+    "Bollnäs GOIF BF": "Bollnäs GoIF",
+    "Broberg/Söderhamn BIF": "Broberg/Söderhamn",
+    "Edsbyns IF Bandy": "Edsbyns IF",
+    "Edsbyns IF Bandyförening": "Edsbyns IF",
+    "Gripen BK Trollhättan": "Gripen Trollhättan BK",
+    "GripenTrollhättan BK": "Gripen Trollhättan BK",
+    "Hammarby Bandy": "Hammarby IF",
+    "Sandvikens AIK": "Sandvikens AIK/BK",
+    "Villa Lidköping BK": "Villa-Lidköping BK",
+    "Västerås SK/BK": "Västerås SK",
+    "Hammarby IF Dam": "Hammarby IF",
+    "Mölndal BK": "Mölndal Bandy",
+    "Sandvikens AIK Dam": "Sandvikens AIK/BK",
+    "Skirö AIK Dam": "Skirö AIK",
+    "Uppsala BOIS": "Uppsala BoIS"
+  },
+  "do_not_merge": [
+    "IF Boltic",
+    "Lidköpings AIK"
+  ],
+  "review_recommended": [
+    {
+      "variants": [
+        "Bollnäs GIF",
+        "Bollnäs GOIF BF"
+      ],
+      "canonical": "Bollnäs GoIF",
+      "note": "GIF vs GoIF skiljer en bokstav i akronymen. Säsongsmönster (2019-23 vs 2024-26) + enda Bollnäs-bandyklubben i elit → samma klubb."
+    },
+    {
+      "variants": [
+        "Mölndal BK",
+        "Mölndal Bandy"
+      ],
+      "canonical": "Mölndal Bandy",
+      "note": "BK vs Bandy. Samma ort, enda Mölndal-klubben. Säsongsmönster stödjer."
+    },
+    {
+      "variants": [
+        "Västerås SK",
+        "Västerås SK/BK"
+      ],
+      "canonical": "Västerås SK",
+      "note": "SK vs SK/BK. Kontinuerlig elitnärvaro, ingen parallell Västerås-klubb."
+    }
+  ]
+}

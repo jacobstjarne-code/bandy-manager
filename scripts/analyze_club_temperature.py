@@ -22,11 +22,19 @@ from analysis_helpers import bootstrap_ci, wilson_ci
 DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "docs", "data", "bandygrytan_detailed.json")
 OUT_PATH  = os.path.join(os.path.dirname(__file__), "..", "docs", "data", "klubb_temperatur.json")
 
+import sys as _sys
+_sys.path.insert(0, os.path.join(os.path.dirname(__file__), "pipeline"))
+from club_names import normalize_club
+
 with open(DATA_PATH, encoding="utf-8") as f:
     raw = json.load(f)
 
 matches = raw["herr"]["matches"]
-print(f"Laddade {len(matches)} herrmatchar")
+# Normalisera klubbnamn vid laddning
+for _m in matches:
+    _m["homeTeam"] = normalize_club(_m.get("homeTeam", ""))
+    _m["awayTeam"] = normalize_club(_m.get("awayTeam", ""))
+print(f"Laddade {len(matches)} herrmatchar (klubbnamn normaliserade)")
 
 
 # ── Bygg matchup-index ────────────────────────────────────────────────────────

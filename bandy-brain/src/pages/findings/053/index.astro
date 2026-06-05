@@ -33,9 +33,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <span class="key-number__note">Elitserien herr 2019–2026, n=1 321 matcher</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">95</span>
+        <span class="key-number__value">101</span>
         <span class="key-number__label">Matchups med ≥6 möten</span>
-        <span class="key-number__note">Av 284 unika par i datasetet</span>
+        <span class="key-number__note">Av 183 unika par (klubbnamn normaliserade)</span>
       </div>
     </div>
 
@@ -50,7 +50,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Datan</p>
-      <p>Analysen bygger på 1 321 herrmatchar i Elitserien herr från säsongerna 2019–20 till 2025–26 (exklusive 2023–24 som saknas ur datasetet). Varje matchup — ett kanoniserat par av klubbar, oavsett vilken som spelar hemma — krävde minst 6 möten för att inkluderas. 95 av 284 unika par uppfyller kriteriet. Fouls-data är direkt från Bandygrytans Firebase med fullt lag-attributionsstöd.</p>
+      <p>Analysen bygger på 1 321 herrmatchar i Elitserien herr från säsongerna 2019–20 till 2025–26 (exklusive 2023–24 som saknas ur datasetet). Varje matchup — ett kanoniserat par av klubbar, oavsett vilken som spelar hemma — krävde minst 6 möten för att inkluderas. 101 av 183 unika par uppfyller kriteriet. Fouls-data är direkt från Bandygrytans Firebase med fullt lag-attributionsstöd.</p>
+      <p>Klubbnamnen är normaliserade: Bandygrytan renderar samma klubb olika över säsonger (Villa Lidköping BK / Villa-Lidköping BK, Västerås SK / SK/BK, och så vidare). En kanonisk namnkarta slår ihop renderingsvarianter av samma klubb men aldrig två olika klubbar — Lidköpings AIK hålls skild från Villa-Lidköping. Före normaliseringen låg t.ex. Sirius–Villa splittrat i två poster med olika mönster; nu är det ett möte med 18 matcher.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -63,15 +64,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <thead><tr><th>Matchup</th><th>n</th><th>Fouls/match</th><th>95 % CI</th></tr></thead>
         <tbody>
           <tr><td>Vetlanda BK – Åby/Tjureda IF</td><td>6</td><td>7,0</td><td>[5,5 – 8,3]</td></tr>
-          <tr><td>IFK Vänersborg – Sandvikens AIK/BK</td><td>8</td><td>6,75</td><td>[5,1 – 8,4]</td></tr>
-          <tr><td>Broberg/Söderhamn – IK Sirius</td><td>10</td><td>6,2</td><td>[4,6 – 7,7]</td></tr>
+          <tr><td>IFK Vänersborg – Sandvikens AIK/BK</td><td>12</td><td>6,33</td><td>[5,2 – 7,7]</td></tr>
+          <tr><td>Broberg/Söderhamn – IK Sirius</td><td>14</td><td>6,0</td><td>[4,8 – 7,2]</td></tr>
           <tr><td>AIK Bandy – Vetlanda BK</td><td>6</td><td>5,83</td><td>[3,3 – 8,7]</td></tr>
           <tr><td>AIK Bandy – Hammarby IF</td><td>6</td><td>5,83</td><td>[3,8 – 8,2]</td></tr>
-          <tr><td>Broberg/Söderhamn – IFK Vänersborg</td><td>8</td><td>5,75</td><td>[4,4 – 7,6]</td></tr>
-          <tr><td>Hammarby IF – Sandvikens AIK/BK</td><td>6</td><td>5,17</td><td>[3,2 – 7,3]</td></tr>
-          <tr><td>Bollnäs GOIF BF – Edsbyns IF</td><td>8</td><td>5,12</td><td>[3,4 – 7,1]</td></tr>
+          <tr><td>Broberg/Söderhamn – IFK Vänersborg</td><td>12</td><td>5,75</td><td>[4,6 – 7,0]</td></tr>
+          <tr><td>Gripen Trollhättan BK – Hammarby IF</td><td>6</td><td>5,67</td><td>[3,7 – 8,0]</td></tr>
+          <tr><td>Gripen Trollhättan BK – Sandvikens AIK/BK</td><td>9</td><td>5,33</td><td>[4,1 – 6,6]</td></tr>
+          <tr><td>Broberg/Söderhamn – Gripen Trollhättan BK</td><td>6</td><td>5,17</td><td>[4,5 – 5,8]</td></tr>
           <tr><td>AIK Bandy – IK Sirius</td><td>6</td><td>5,0</td><td>[3,3 – 6,5]</td></tr>
-          <tr><td>Bollnäs GIF – Sandvikens AIK/BK</td><td>8</td><td>5,0</td><td>[3,6 – 6,1]</td></tr>
         </tbody>
       </table>
 
@@ -79,16 +80,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <table>
         <thead><tr><th>Matchup</th><th>n</th><th>Fouls/match</th></tr></thead>
         <tbody>
-          <tr><td>Vetlanda BK – Villa-Lidköping BK</td><td>8</td><td>1,75</td></tr>
-          <tr><td>Broberg/Söderhamn – Villa-Lidköping BK</td><td>8</td><td>1,75</td></tr>
           <tr><td>IFK Motala – Villa-Lidköping BK</td><td>11</td><td>1,82</td></tr>
-          <tr><td>Edsbyns IF – Frillesås BK</td><td>6</td><td>1,83</td></tr>
-          <tr><td>Frillesås BK – Villa-Lidköping BK</td><td>8</td><td>2,0</td></tr>
+          <tr><td>Broberg/Söderhamn – Villa-Lidköping BK</td><td>12</td><td>1,83</td></tr>
           <tr><td>AIK Bandy – Frillesås BK</td><td>6</td><td>2,0</td></tr>
-          <tr><td>Bollnäs GIF – Broberg/Söderhamn</td><td>11</td><td>2,09</td></tr>
-          <tr><td>Edsbyns IF – Hammarby IF</td><td>6</td><td>2,17</td></tr>
-          <tr><td>Frillesås BK – Västerås SK/BK</td><td>6</td><td>2,17</td></tr>
-          <tr><td>Bollnäs GIF – Frillesås BK</td><td>10</td><td>2,3</td></tr>
+          <tr><td>Frillesås BK – Villa-Lidköping BK</td><td>12</td><td>2,25</td></tr>
+          <tr><td>IFK Motala – Västerås SK</td><td>8</td><td>2,38</td></tr>
+          <tr><td>Hammarby IF – Villa-Lidköping BK</td><td>12</td><td>2,42</td></tr>
+          <tr><td>Edsbyns IF – Hammarby IF</td><td>12</td><td>2,42</td></tr>
+          <tr><td>Frillesås BK – Hammarby IF</td><td>12</td><td>2,5</td></tr>
+          <tr><td>IK Sirius – Villa-Lidköping BK</td><td>18</td><td>2,5</td></tr>
+          <tr><td>Frillesås BK – Västerås SK</td><td>12</td><td>2,5</td></tr>
         </tbody>
       </table>
 
