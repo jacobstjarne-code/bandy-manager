@@ -1,0 +1,125 @@
+---
+import Base from '../../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 056 — Dam och herr: samma sport, tre äkta strukturskillnader"
+  description="Mål/match, hemmavinst och utvisningsfrekvens är nästan identiska. Men damserien har nästan ingen hemmaplansfördel, färre oavgjorda och lägre hörnberoende. Reglerna är identiska — skillnaderna är äkta."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 056 · 5 juni 2026</p>
+    <h1 class="finding-title">Dam och herr: samma sport,<br>tre äkta strukturskillnader</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">+0,2 pp</span>
+        <span class="key-number__label">Hemmaplansfördel dam</span>
+        <span class="key-number__note">Herr: +12,5 pp. Dam-fördelen är borta.</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">4,0 %</span>
+        <span class="key-number__label">Oavgjorda dam</span>
+        <span class="key-number__note">Herr: 10,7 %. CI:erna överlappar inte.</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">15,2 %</span>
+        <span class="key-number__label">Hörnmålsandel dam</span>
+        <span class="key-number__note">Herr: 21,9 %. Dam förlitar sig mindre på hörnor.</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">9,08 / 8,93</span>
+        <span class="key-number__label">Mål/match herr / dam</span>
+        <span class="key-number__note">Nästan identiskt — samma målrika sport.</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Dam och herr spelar efter identiska regler — samma planmått, samma offside, samma utvisningar (se regelreferensen). Skiljer sig spelet ändå strukturellt? Och i så fall var? Eftersom regelverket är detsamma är varje äkta skillnad ett genuint strukturellt fenomen, inte en regelartefakt. Jämförelsen görs symmetriskt: ingen sida är norm, ingen är avvikelse.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>1 321 herrmatchar och 428 dammatchar i Elitserien 2019–20 till 2025–26 (exklusive 2023–24). Klubbnamnen är normaliserade. Damdatasetet är mindre — för varje metrik anges konfidensintervall, och skillnader som ryms inom intervallen behandlas inte som skillnader.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad som är likt — validering</p>
+      <p>Det mesta är likt, vilket är det tråkiga men viktiga resultatet: damserien är inte en svagare kopia av herrserien, den är samma sport.</p>
+      <table>
+        <thead><tr><th>Metrik</th><th>Herr</th><th>Dam</th><th>Bedömning</th></tr></thead>
+        <tbody>
+          <tr><td>Mål/match</td><td>9,08</td><td>8,93</td><td>Likt</td></tr>
+          <tr><td>Hemmavinst %</td><td>50,9 % [48–54]</td><td>48,1 % [43–53]</td><td>CI överlappar</td></tr>
+          <tr><td>Utvisningar/match</td><td>3,78</td><td>3,64</td><td>Likt</td></tr>
+          <tr><td>Andel 5-min-utvisningar</td><td>7,9 %</td><td>7,0 %</td><td>Likt</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad som skiljer sig äkta</p>
+
+      <p><strong>1. Hemmaplansfördelen är borta i damserien.</strong> Herr vinner hemma 50,9 % och borta 38,4 % — ett gap på +12,5 procentenheter. Dam vinner hemma 48,1 % och borta 47,9 % — ett gap på +0,2 pp. I praktiken ingen hemmafördel alls. Detta är den tydligaste strukturskillnaden mellan serierna.</p>
+
+      <p><strong>2. Damserien har betydligt färre oavgjorda.</strong> 4,0 % [2,5–6,3] mot herrarnas 10,7 % [9,2–12,5]. Konfidensintervallen överlappar inte. Dammatcher får oftare en vinnare.</p>
+
+      <p><strong>3. Halvtidsledningar är mer avgörande i damserien — inte mindre.</strong> Ett lag som leder i halvtid vinner i 89,6 % [86–92] av dammatcherna mot 78,7 % [76–81] i herr. Följdriktigt är comebacks ovanligare i dam (7,2 % [5,0–10,3] mot 13,3 % [11,4–15,5]). De tre observationerna hänger ihop: dammatcher separerar tidigare och håller sig separerade. <em>Notering:</em> detta motsäger en tidigare arbetshypotes om att halvtidsledningens prediktiva kraft skulle vara svagare i damserien — datan visar det omvända.</p>
+
+      <p><strong>4. Damserien förlitar sig mindre på hörnmål.</strong> 15,2 % [14,1–16,4] av dammålen kommer på hörna mot 21,9 % [21,2–22,7] i herr. Konfidensintervallen överlappar inte — en stor och robust skillnad.</p>
+
+      <table>
+        <thead><tr><th>Strukturmetrik</th><th>Herr</th><th>Dam</th></tr></thead>
+        <tbody>
+          <tr><td>Hemma–borta-gap</td><td>+12,5 pp</td><td>+0,2 pp</td></tr>
+          <tr><td>Oavgjort %</td><td>10,7 %</td><td>4,0 %</td></tr>
+          <tr><td>HT-ledning → vinst %</td><td>78,7 %</td><td>89,6 %</td></tr>
+          <tr><td>Comeback %</td><td>13,3 %</td><td>7,2 %</td></tr>
+          <tr><td>Hörnmålsandel</td><td>21,9 %</td><td>15,2 %</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">För litet underlag för påstående</p>
+      <p>Post-paus-fönstret (reducering 6–10 minuter in i andra halvlek, Finding 051) ger i damserien 6 comebacks av 33 möjliga matcher = 18 %, mot herrarnas 27 % på n=159. Damtalet bygger på 33 matcher och har för brett konfidensintervall för att ställas mot herrtalet. Vi rapporterar det men drar ingen slutsats.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Damserien är sitt eget strukturella objekt, inte en avvikelse från en herr-norm. De fyra äkta skillnaderna formar en sammanhängande bild: matcherna avgörs mer av lagstyrka än av plan (ingen hemmafördel), de separerar tidigt och håller sig separerade (få oavgjorda, ledningar som håller, få comebacks), och målen kommer i lägre grad från fasta situationer (lägre hörnberoende). Samtidigt är den grundläggande målrikedomen, utvisningsnivån och den råa hemmavinst-frekvensen i nivå med herrserien.</p>
+      <p>Vad som orsakar skillnaderna — spelarmaterial, ligastorlek, spridning i lagstyrka, publikförhållanden — kan datan inte avgöra. Det är en fråga för någon som kan bandyn, inte för statistiken.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Damdatasetet (428 matcher) är ungefär en tredjedel av herr. Subgruppsanalyser (post-paus-fönstret) blir snabbt för tunna.</li>
+        <li>Hörnmålsandel bygger på en heuristik (hörnevent ≤2 min före mål), inte ett källattribut.</li>
+        <li>2023–24 saknas i båda serierna.</li>
+        <li>Inga kausala förklaringar — endast observerade mönster.</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>

@@ -1,0 +1,56 @@
+{
+  "herr": {
+    "n": 1321,
+    "goals_pm": 9.07570022710068,
+    "corner_goal_pct": 21.919283997679624,
+    "home_win_pct": 50.870552611657835,
+    "draw_pct": 10.749432248296745,
+    "fouls_pm": 3.7751703255109765,
+    "pct5": 7.920593543212353,
+    "pct10": 91.85883296571085,
+    "comeback_pct": 13.289349670122528,
+    "cb_n": 1061,
+    "cluster_freq": 0.8046934140802422,
+    "home_away_gap_pp": 12.5,
+    "bortavinst_pct": 38.4,
+    "ht_lead_win_pct": 78.7,
+    "window_51_55_comeback": "43/159=27%"
+  },
+  "dam": {
+    "n": 428,
+    "goals_pm": 8.932242990654206,
+    "corner_goal_pct": 15.18855656697009,
+    "home_win_pct": 48.13084112149533,
+    "draw_pct": 3.9719626168224296,
+    "fouls_pm": 3.6448598130841123,
+    "pct5": 6.987179487179487,
+    "pct10": 93.01282051282051,
+    "comeback_pct": 7.199999999999999,
+    "cb_n": 375,
+    "cluster_freq": 0.9626168224299065,
+    "home_away_gap_pp": 0.2,
+    "bortavinst_pct": 47.9,
+    "ht_lead_win_pct": 89.6,
+    "window_51_55_comeback": "6/33=18% (n liten)"
+  },
+  "_meta": {
+    "description": "Dam vs herr strukturjämförelse, normaliserade klubbnamn",
+    "date": "2026-06-05",
+    "real_differences": [
+      "hemmafördel-gap (+12.5 vs +0.2pp)",
+      "oavgjort (10.7 vs 4.0%)",
+      "HT-ledning→vinst (78.7 vs 89.6%)",
+      "comeback (13.3 vs 7.2%)",
+      "hörnmålsandel (21.9 vs 15.2%)"
+    ],
+    "similar": [
+      "mål/match",
+      "hemmavinst-rårate",
+      "utvisningar/match",
+      "5/10-split"
+    ],
+    "flagged_small_n": [
+      "post-paus-fönstret dam n=33"
+    ]
+  }
+}
