@@ -1,0 +1,88 @@
+{
+  "_meta": {
+    "description": "Motor-kalibrering Fas 1 scorecard — mätning, ej tuning",
+    "N": 1000,
+    "date": "2026-06-05",
+    "note": "Sim-minut: 2H=minut 45-90. Fönster 51-55 = 6-10 min in i 2H, jämförbart med Finding 051."
+  },
+  "metrics": [
+    {
+      "namn": "Målklustring (kluster/lag-match)",
+      "prioritet": 1,
+      "verkligt": "0,80 (liga) — 0,61–1,27 per stil",
+      "motor": "0.754",
+      "gap": "motor 0.75 vs liga 0,80"
+    },
+    {
+      "namn": "Post-paus comeback (basfrekvens)",
+      "prioritet": 2,
+      "verkligt": "13,3%",
+      "motor": "7.6%",
+      "gap": "-5.7pp"
+    },
+    {
+      "namn": "Post-paus fönster 51-55",
+      "prioritet": 2,
+      "verkligt": "27%",
+      "motor": "8.7%",
+      "gap": "-18.3pp",
+      "n": 149
+    },
+    {
+      "namn": "Hörnmålsandel",
+      "prioritet": 3,
+      "verkligt": "21,9%",
+      "motor": "17.0%",
+      "gap": "-4.9pp"
+    },
+    {
+      "namn": "Lagspecifik hemmafördel (gap)",
+      "prioritet": 4,
+      "verkligt": "Villa +0,2 / Sirius/snittlag varierar; liga +12,5pp",
+      "motor": "stark 6.5pp / mitt 6.8pp",
+      "gap": "se not"
+    },
+    {
+      "namn": "Mål/match (marginal-kontroll)",
+      "prioritet": 0,
+      "verkligt": "9,08",
+      "motor": "9.04",
+      "gap": "-0.04"
+    }
+  ],
+  "goal_minute_buckets": {
+    "0": 899,
+    "10": 765,
+    "20": 965,
+    "30": 1074,
+    "40": 973,
+    "50": 1177,
+    "60": 925,
+    "70": 984,
+    "80": 1282
+  },
+  "raw": {
+    "goalsPM": 9.044,
+    "cornerShare": 0.17038920831490492,
+    "clusterFreq": 0.7545,
+    "cbRate": 0.0759651307596513,
+    "win5155": 0.087248322147651,
+    "win5155N": 149,
+    "strongGap": 6.479008466439728,
+    "midGap": 6.752519596864498,
+    "tierRec": {
+      "strong": {
+        "hw": 199,
+        "hn": 335,
+        "aw": 181,
+        "an": 342
+      },
+      "mid": {
+        "hw": 244,
+        "hn": 665,
+        "aw": 197,
+        "an": 658
+      }
+    }
+  }
+}
