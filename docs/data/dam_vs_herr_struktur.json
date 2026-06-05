@@ -52,5 +52,21 @@
     "flagged_small_n": [
       "post-paus-fönstret dam n=33"
     ]
+  },
+  "variance_test": {
+    "description": "Måldiff-varians per lag-säsong (testar styrkespanns-hypotesen)",
+    "herr_std": 2.26,
+    "herr_range": [
+      -5.6,
+      5.0
+    ],
+    "herr_n_team_seasons": 85,
+    "dam_std": 5.42,
+    "dam_range": [
+      -12.7,
+      10.6
+    ],
+    "dam_n_team_seasons": 49,
+    "conclusion": "Dam styrkespann >2x herr — förenligt med gemensam orsak till de tre varians-skillnaderna"
   }
 }

@@ -4,15 +4,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <Base
-  title="Finding 056 — Dam och herr: samma sport, tre äkta strukturskillnader"
-  description="Mål/match, hemmavinst och utvisningsfrekvens är nästan identiska. Men damserien har nästan ingen hemmaplansfördel, färre oavgjorda och lägre hörnberoende. Reglerna är identiska — skillnaderna är äkta."
+  title="Finding 056 — Dam och herr: samma sport, skild struktur"
+  description="Mål/match, hemmavinst och utvisningsfrekvens är nästan identiska. Men damserien har nästan ingen hemmaplansfördel, färre oavgjorda och leder-som-håller — sannolikt samma sak: bredare styrkespann. Hörnberoendet är lägre och står separat."
 >
   <div class="finding-layout">
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
     <p class="finding-meta">Finding 056 · 5 juni 2026</p>
-    <h1 class="finding-title">Dam och herr: samma sport,<br>tre äkta strukturskillnader</h1>
+    <h1 class="finding-title">Dam och herr:<br>samma sport, skild struktur</h1>
 
     <hr class="finding-divider" />
 
@@ -105,8 +105,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>Damserien är sitt eget strukturella objekt, inte en avvikelse från en herr-norm. De fyra äkta skillnaderna formar en sammanhängande bild: matcherna avgörs mer av lagstyrka än av plan (ingen hemmafördel), de separerar tidigt och håller sig separerade (få oavgjorda, ledningar som håller, få comebacks), och målen kommer i lägre grad från fasta situationer (lägre hörnberoende). Samtidigt är den grundläggande målrikedomen, utvisningsnivån och den råa hemmavinst-frekvensen i nivå med herrserien.</p>
-      <p>Vad som orsakar skillnaderna — spelarmaterial, ligastorlek, spridning i lagstyrka, publikförhållanden — kan datan inte avgöra. Det är en fråga för någon som kan bandyn, inte för statistiken.</p>
+      <p><strong>Tre av de fyra skillnaderna är troligen samma sak.</strong> Ingen hemmafördel, färre oavgjorda och ledningar som håller pekar alla åt ett håll: dammatcher har lägre inommatch-varians — utfallet är mer bestämt på förhand. Den mest sparsamma förklaringen är inte tre separata fenomen utan en enda drivare: ett bredare styrkespann i damserien. När skillnaden mellan bästa och sämsta lag är stor avgörs matcherna av vem som är bäst, inte av plan eller paus — då sköljs hemmafördelen bort, oavgjorda blir sällsynta och den som leder i halvtid vinner.</p>
+      <p><strong>Detta är testbart — och testat.</strong> Spridningen i måldifferens per lag-säsong är mer än dubbelt så stor i damserien: standardavvikelse 5,4 mål/match mot herrarnas 2,3, med ett spann från −12,7 till +10,6 i dam mot −5,6 till +5,0 i herr. Styrkespannet är alltså påtagligt bredare, vilket är förenligt med att de tre skillnaderna har en gemensam orsak snarare än tre.</p>
+      <p><strong>Hörnberoendet står separat.</strong> Att en lägre andel av dammålen kommer på hörna (15,2 % mot 21,9 %) förklaras inte av styrkespann — det är en stilskillnad i hur mål skapas, oberoende av hur jämn serien är. Den hör inte ihop med varians-historien.</p>
+      <p>Damserien är sitt eget strukturella objekt, inte en svagare kopia av herrserien. Grundläggande målrikedom, utvisningsnivå och rå hemmavinst-frekvens ligger i nivå med herr.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -117,7 +119,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <li>Damdatasetet (428 matcher) är ungefär en tredjedel av herr. Subgruppsanalyser (post-paus-fönstret) blir snabbt för tunna.</li>
         <li>Hörnmålsandel bygger på en heuristik (hörnevent ≤2 min före mål), inte ett källattribut.</li>
         <li>2023–24 saknas i båda serierna.</li>
-        <li>Inga kausala förklaringar — endast observerade mönster.</li>
+        <li><strong>Styrkespanns-drivaren är en hypotes, inte belagd.</strong> Variansmåttet (måldiff-spridning 5,4 mot 2,3) är förenligt med att de tre skillnaderna har en gemensam orsak, men bevisar inte den. Att bredare spann <em>orsakar</em> den lägre inommatch-variansen är en rimlig mekanism, inte ett fastställt orsakssamband.</li>
       </ul>
     </div>
 
