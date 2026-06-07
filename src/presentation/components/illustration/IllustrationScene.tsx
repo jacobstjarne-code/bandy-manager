@@ -25,6 +25,8 @@ interface Props {
   /** innehåll (text) som renderas över scrimen */
   children?: React.ReactNode
   style?: React.CSSProperties
+  /** yta band/header fadar ned mot (default portal-mörk; t.ex. --bg-portal-surface i anslag-kort) */
+  fadeTo?: string
 }
 
 const MODE_BOX: Record<IllustrationMode, React.CSSProperties> = {
@@ -39,10 +41,11 @@ const OBJECT_POS: Record<IllustrationMode, string> = {
   header: 'center 40%',
 }
 
-const SINGLE_SCRIM: Record<'band' | 'header', string> = {
-  band: 'linear-gradient(180deg, transparent 55%, var(--bg-portal) 100%)',
-  header: 'linear-gradient(180deg, rgba(12,14,20,0.35) 0%, transparent 35%, transparent 60%, var(--bg-portal) 100%)',
-}
+// band/header fadar ned mot ytan de sitter på (default portal-mörk; override via fadeTo).
+const singleScrim = (mode: 'band' | 'header', fadeTo: string) =>
+  mode === 'band'
+    ? `linear-gradient(180deg, transparent 55%, ${fadeTo} 100%)`
+    : `linear-gradient(180deg, rgba(12,14,20,0.35) 0%, transparent 35%, transparent 60%, ${fadeTo} 100%)`
 
 export function IllustrationPlaceholder({ name, style }: { name: string; style?: React.CSSProperties }) {
   return (
@@ -62,13 +65,13 @@ export function IllustrationPlaceholder({ name, style }: { name: string; style?:
   )
 }
 
-export function IllustrationScene({ mode, name, src, alt, children, style }: Props) {
+export function IllustrationScene({ mode, name, src, alt, children, style, fadeTo = 'var(--bg-portal)' }: Props) {
   const [failed, setFailed] = useState(false)
   const resolvedSrc = src ?? `/assets/illustrations/${name}.jpg`
   const showImage = !!resolvedSrc && !failed
 
   return (
-    <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--bg-portal)', ...MODE_BOX[mode], ...style }}>
+    <div style={{ position: 'relative', overflow: 'hidden', background: fadeTo, ...MODE_BOX[mode], ...style }}>
       {showImage ? (
         <img
           src={resolvedSrc}
@@ -87,7 +90,7 @@ export function IllustrationScene({ mode, name, src, alt, children, style }: Pro
           <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '62%', background: 'linear-gradient(180deg, transparent 0%, rgba(16,18,24,0.55) 45%, rgba(12,14,20,0.92) 100%)', pointerEvents: 'none' }} />
         </>
       ) : (
-        <div style={{ position: 'absolute', inset: 0, background: SINGLE_SCRIM[mode], pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: singleScrim(mode, fadeTo), pointerEvents: 'none' }} />
       )}
 
       {children && <div style={{ position: 'relative', zIndex: 1, height: '100%' }}>{children}</div>}

@@ -15,6 +15,7 @@ import { PortalEventSlot } from '../components/portal/PortalEventSlot'
 import { PortalQueueRail } from '../components/portal/PortalQueueRail'
 import { PortalInboxCounter } from '../components/portal/PortalInboxCounter'
 import { AnslagOverlay } from '../components/anslag/AnslagOverlay'
+import { IllustrationScene } from '../components/illustration/IllustrationScene'
 import { computeNextAnslag } from '../../domain/services/anslagService'
 import { getActiveDecisionCount } from '../../domain/services/decisionBudgetService'
 import { PlayoffRound, PendingScreen } from '../../domain/enums'
@@ -253,6 +254,11 @@ export function PortalScreen() {
           paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 72px)',
         }}
       >
+        {/* Finalhelg-portal: ceremoniellt header-band (final.jpg, fallback tills bilden droppas).
+            Edge-to-edge via negativ marginal ut ur card-stackens 14px-padding. */}
+        {isSmFinal && (
+          <IllustrationScene mode="header" name="final" alt="SM-finalhelg" style={{ margin: '-14px -14px 14px' }} />
+        )}
         <SituationCard game={game} />
         <PortalPhaseMark game={game} />
         <PortalUpptakt game={game} />

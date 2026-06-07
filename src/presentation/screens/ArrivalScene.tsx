@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { getStureLine } from '../../domain/data/arrivalDialogue'
 import { BoardObjectivesList } from '../components/portal/secondary/BoardObjectivesList'
+import { IllustrationScene } from '../components/illustration/IllustrationScene'
 import type { BoardObjective } from '../../domain/entities/Community'
 
 type Phase = 'setting' | 'margareta' | 'sture' | 'objectives' | 'cta'
@@ -58,6 +59,9 @@ function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: Arrival
 
   return (
     <div className="arrival-scene">
+      {/* Fullbleed säsongsstart-illustration (intro.jpg) som scen-bakgrund — fallback-gradient
+          + stämpel tills bilden droppas. Scrim ger textläsbarhet; lamp-overlay + innehåll ovanpå. */}
+      <IllustrationScene mode="fullbleed" name="intro" alt="" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
       <div className="arrival-lamp-overlay" />
 
       <button className="scene-skip" aria-label="Hoppa över introduktionen" onClick={onComplete}>Hoppa över ↘</button>

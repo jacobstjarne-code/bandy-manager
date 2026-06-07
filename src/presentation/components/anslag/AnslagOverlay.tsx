@@ -1,6 +1,13 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { AnslagKey } from '../../../domain/services/anslagService'
 import { pickAnslagVariant, getAnslagData, isClubDirektkvalad, buildBoardReportText } from '../../../domain/services/anslagService'
+import { IllustrationScene } from '../illustration/IllustrationScene'
+
+// Anslag som bär en hero-band-illustration (band-läge). Bilden droppas i public/; tills
+// dess fallback-gradient + stämpel. Fler anslag (derby, nedflyttning) läggs till här.
+const ANSLAG_BAND_IMAGE: Record<string, string> = {
+  league_midwinter: 'annandagen',
+}
 
 interface AnslagOverlayProps {
   game: SaveGame
@@ -110,6 +117,14 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
   return (
     <div className="anslag-overlay" onClick={onDismiss}>
       <div className={`anslag-card${isWinner ? ' winner' : ''}`} onClick={e => e.stopPropagation()}>
+        {ANSLAG_BAND_IMAGE[anslagKey] && (
+          <IllustrationScene
+            mode="band"
+            name={ANSLAG_BAND_IMAGE[anslagKey]}
+            fadeTo="var(--bg-portal-surface)"
+            style={{ height: 140, margin: '-28px -24px 20px', borderRadius: 'var(--radius-md) var(--radius-md) 0 0' }}
+          />
+        )}
         <div className="anslag-chapter">{anslag.chapter}</div>
         <div
           className="anslag-text"
