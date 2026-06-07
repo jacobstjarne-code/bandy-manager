@@ -172,3 +172,50 @@ Det är en separat mekanism från momentum-efter-kvittering och ska inte krankas
 ## Status
 - **Levererat:** post-paus (steg 1) + momentum-efter-kvittering (steg 2). Comeback 7,6 → 9,2 %, fönster 8,7 → 11,0 %, klustring 0,754 → 0,758 (mot mål 0,80). Regressionssäkert.
 - **Öppet:** draw/hemvinst-gapet. Kopplingshistorien är ofullständig — draws faller inte av momentum-efter-kvittering. Nästa mekanism: decisiveness i jämna sena lägen, separat spec.
+
+---
+
+# Fas 2 steg 3 — decisiveness i jämna sena lägen
+
+## Mekanism (tillståndsändring, ej konstant)
+`lateFactor` rampar 0→1 över steg 44→56 (minut 66→84). I jämna/sena lägen löses tillståndet upp i stället för att vägas:
+- **even_battle** öppnar upp sent (attack +0,60·lateFactor) — högvarians, någon faller ut som vinnare. Symmetriskt → comeback-neutralt.
+- **controlling** (ledaren) öppnar upp sent (attack 0,88 → 1,28) — pressar för att avgöra i stället för att sitta. Comeback-neutralt (rör ledaren, ej chasern).
+- **chasing** mild taper sent (1,22 → 1,10) — låter sena ledningar hålla till minimal comeback-kostnad.
+
+Momentum-efter-kvittering (steg 2) ligger kvar och avgör *vem* som vinner upplösningen.
+
+## Före/efter — fem mått + marginaler + tester
+
+| Mått | Steg 2 | **Steg 3** | Verkligt |
+|------|--------|-----------|----------|
+| Oavgjorda (calibrate) | 0,170 ❌ | **0,125 ✅** | 0,116 |
+| Oavgjorda (struktur-harness) | 18,5 % | **13,8 %** | 10,7 % |
+| Hemvinst (calibrate) | 0,395 | **0,435** | 0,502 |
+| Hemvinst (struktur) | 44,4 % | **46,7 %** | 50,9 % |
+| Bortavinst (struktur) | 37,1 % | **39,5 %** | 38,4 % |
+| HT-ledare: oavgjort | 17,0 % | **12,1 %** | ~8 % |
+| HT-ledare: vinst | 74,3 % | **79,9 %** | 78,7 % |
+| HT-ledare: förlust | 8,6 % | 8,0 % | ~13 % |
+| Comeback bas | 9,2 % | 9,0 % | 13,3 % |
+| Målklustring | 0,758 | 0,758 | 0,80 |
+| Mål/match | 9,05 | 8,99 | 9,08 |
+| Marginaler 047–050 | — | drawRate nu ✅, övriga oförändrade | — |
+| Tester | 1078/1078 | **1078/1078** | — |
+
+## Framgångssignaturen: UPPFYLLD (för draws/hemvinst)
+
+**Draws föll och hemvinsten reste sig av sig själv — utan att hemmafördelens magnitud rördes.** Exakt det spec:en vaktade. drawRate gick från ❌ till ✅ på calibrate-harnessen (0,170 → 0,125). Hemvinsten självkorrigerade ~4pp (0,395 → 0,435 / 44,4 → 46,7 %). Bortavinsten landade på 39,5 % mot verkligt 38,4 %. HT-ledarens fördelning rörde sig mot verkligheten (oavgjort 17 → 12 %, vinst 74 → 80 % = verkligt 78,7 %).
+
+## Residual (ärligt rapporterat)
+
+Upplösningen gick mest **draw → ledarvinst**, inte draw → comeback. HT-ledarens förlustandel (comeback emot) står kvar på 8,0 % mot verkligt ~13 % — den rörde sig inte. Det är väntat: att göra sena lägen decisiva gynnar den som redan är före (oftast ledaren). Comeback-basen nickade ner ~0,2pp (9,2 → 9,0 %, inom brus men marginellt under vakt-punkten) p.g.a. den milda chasing-tapern.
+
+**Testade alternativ (förkastade, ingen epicykel):**
+- Tyngre chasing-taper (−0,34): draws 16,0 % men comeback 8,8 % — bröt vakt-punkten.
+- Ingen chasing-taper: draws 15,1 %, comeback 8,8 % — sämre på båda (sena kvitteringar utan upplösning).
+- −0,12 är bästa gemensamma punkten: max draw-fall till min comeback-kostnad.
+
+## Status efter steg 3
+
+Tre av fem mål i hamn eller nära: draws (✅ calibrate), hemvinst (självkorrigerad, närmar sig), HT-ledarfördelning (mot verkligheten). Klustring + marginaler + tester intakta. **Kvarstående residual:** comeback-basen (9,0 % vs 13,3 %) och HT-ledarens förlustandel (8 % vs 13 %) — comebacks som fullbordas är fortfarande för få. Det är den ursprungliga PRIO 2-resten; den kräver att fler kvitteringar fortsätter till vändning utan att återskapa draws, vilket är en finare avvägning än vad en enda spak når. Landar här per anti-överfit — ingen andra epicykel för att tvinga comeback exakt.

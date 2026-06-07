@@ -781,10 +781,22 @@ function* simulateMatchCore(
       const homeMode = getSecondHalfMode(homeScore, awayScore, step, matchPhase)
       const awayMode = getSecondHalfMode(awayScore, homeScore, step, matchPhase)
 
+      // Fas 2 steg 3 — decisiveness i jämna sena lägen.
+      // lateFactor: 0 fram till steg 50 (minut 75), → 1 vid steg 56 (minut 84).
+      // Slutskedet ska AVGÖRAS, inte vägas: even_battle öppnar upp (högre varians,
+      // någon faller ut som vinnare) och chasing tonas ner (en sen ledning håller).
+      // Comeback bevaras — tapern träffar bara slutminuterna; verkliga comebacks
+      // sker tidigt i 2H (Finding 051). Hjälper inte underläge MER (chasing ner),
+      // rör inte hemmafördelen (hemvinst självkorrigerar när draws faller).
+      const lateFactor = step <= 44 ? 0 : Math.min(1, (step - 44) / 12)
       const applyMode = (mode: SecondHalfMode, td: number): { attack: number; foul: number; corner: number } => {
-        if (mode === 'chasing')     return { attack: 1.22, foul: 1.25, corner: 1.0 }
-        if (mode === 'controlling') return { attack: 0.88, foul: 1.0 + (1.0 - td) * 0.25, corner: 1.0 }
-        if (mode === 'even_battle') return { attack: step >= 50 ? 1.04 : 1.0, foul: 1.10, corner: 1.0 }
+        // chasing: mild taper sent — låter sena ledningar hålla (draws ner) till
+        // minimal comeback-kostnad; tyngre taper testat och förkastat (dödade comeback)
+        if (mode === 'chasing')     return { attack: 1.22 - 0.12 * lateFactor, foul: 1.25, corner: 1.0 }
+        // controlling: ledaren öppnar upp sent (pressar för att avgöra) — comeback-neutralt
+        if (mode === 'controlling') return { attack: 0.88 + 0.40 * lateFactor, foul: 1.0 + (1.0 - td) * 0.25, corner: 1.0 }
+        // even_battle: öppna upp sent (högvarians, någon faller ut) — symmetriskt, comeback-neutralt
+        if (mode === 'even_battle') return { attack: (step >= 50 ? 1.04 : 1.0) + 0.60 * lateFactor, foul: 1.10, corner: 1.0 }
         // cruise — 0.92→0.86 (Fynd 3-fix, bästa av 3 iter), corner 0.90 (Fynd 3 B)
         // AW% i −2 HT-bucket: 78.6% (target 83–95%) — partiellt löst.
         // Rotorsak kvarstår i 'controlling'-mode och SECOND_HALF_BOOST, inte cruise.

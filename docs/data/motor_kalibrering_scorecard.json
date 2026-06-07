@@ -17,8 +17,8 @@
       "namn": "Post-paus comeback (basfrekvens)",
       "prioritet": 2,
       "verkligt": "13,3%",
-      "motor": "9.2%",
-      "gap": "-4.1pp"
+      "motor": "9.0%",
+      "gap": "-4.3pp"
     },
     {
       "namn": "Post-paus fönster 51-55",
@@ -39,7 +39,7 @@
       "namn": "Lagspecifik hemmafördel (gap)",
       "prioritet": 4,
       "verkligt": "Villa +0,2 / Sirius/snittlag varierar; liga +12,5pp",
-      "motor": "stark 8.5pp / mitt 6.9pp",
+      "motor": "stark 6.8pp / mitt 7.6pp",
       "gap": "se not"
     },
     {
@@ -58,29 +58,29 @@
     "40": 975,
     "50": 1167,
     "60": 930,
-    "70": 988,
-    "80": 1287
+    "70": 982,
+    "80": 1292
   },
   "raw": {
-    "goalsPM": 9.05,
-    "cornerShare": 0.16972375690607736,
+    "goalsPM": 9.049,
+    "cornerShare": 0.17007404133053375,
     "clusterFreq": 0.758,
-    "cbRate": 0.0921544209215442,
+    "cbRate": 0.0896637608966376,
     "win5155": 0.1095890410958904,
     "win5155N": 146,
-    "strongGap": 8.531901894038574,
-    "midGap": 6.9044952807550795,
+    "strongGap": 6.8386139478048396,
+    "midGap": 7.643577027675574,
     "tierRec": {
       "strong": {
-        "hw": 200,
+        "hw": 210,
         "hn": 335,
-        "aw": 175,
+        "aw": 191,
         "an": 342
       },
       "mid": {
-        "hw": 244,
+        "hw": 257,
         "hn": 665,
-        "aw": 196,
+        "aw": 204,
         "an": 658
       }
     }
