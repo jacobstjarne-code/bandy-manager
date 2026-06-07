@@ -1,46 +1,19 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   colors_and_type.css — GENERERAD ur src/styles/global.css. REDIGERA INTE FÖR HAND.
+   Kör: node scripts/generate-color-mirror.mjs  (FIDELITY §4 — spegeln kan inte ljuga)
+   Innehåll: :root-tokens + typografi-roller (.h-* / .text-quote). Komponent-CSS
+   (.btn/.tag/.card/...) bor enbart i global.css.
+   ───────────────────────────────────────────────────────────────────────── */
+
 /* ═══════════════════════════════════════════════════════════
-   BANDY MANAGER — Design Tokens
-   "Heritage Bandy" palette. Warm stone/paper backgrounds,
-   copper accent, ice-blue cool, Georgia display + system body.
-   Source: bandy-manager/src/styles/global.css
+   DESIGN TOKENS — Heritage Bandy Palette
    ═══════════════════════════════════════════════════════════ */
-
 :root {
-  /* ── Backgrounds (light) ─────────────────────────── */
-  --bg:              #EDE8DF;  /* warm paper */
-  --bg-surface:      #FAF8F4;  /* card */
-  --bg-elevated:     #FFFFFF;
+  /* Backgrounds */
+  --bg:               #EDE8DF;
+  --bg-surface:       #FAF8F4;
 
-  /* ── Backgrounds (dark / leather) ────────────────── */
-  --bg-dark:         #0E0D0B;
-  --bg-dark-surface: #1E1D19;
-  --bg-dark-elevated:#2C2A24;
-  --bg-leather:      #3D3A32;  /* header strips */
-
-  /* ── Portal (mörka dashboard-tokens) ─────────────── */
-  /* Default-värden. PortalScreen.tsx useEffect skriver över dessa per månad via
-     document.documentElement.style.setProperty — se D-ST1 i DESIGN-DECISIONS.md. */
-  --bg-portal:          #1a1612;
-  --bg-portal-surface:  #221d18;
-  --bg-portal-elevated: #2a241e;
-  --accent-portal:      #C47A3A;  /* = --accent (höst/vinter-default) */
-
-  /* ── Scen-bakgrunder (statiska, ej portal-tonade) ──── */
-  /* DB-7: spegel-synkad mot global.css 2026-06-05. Radial-scen-atmosfär =
-     enda sanktionerade yt-gradienten (se DESIGN-DECISIONS.md DB-8). */
-  --bg-scene:       #1a1612;
-  --bg-scene-deep:  #08060a;
-
-  /* ── Severity (journalist-relation, signaturer) ──── */
-  --cold: #4a6680;  /* kall blå — neg severity, cold_winter-signatur */
-  --cold-light: #7095b8;  /* ljusare cold — text/tag inom severity-domän */
-  --warm: #8c6e3a;  /* varm guld — injury_curve, warm severity */
-  --warm-light: #c8a058;  /* ljusare warm — text/tag inom severity-domän */
-  --gold: #E8B95C;  /* cup-vinnare / specialanslag */
-  --gold-deep: #B88838;
-  --shadow-gold: 0 3px 12px rgba(232, 185, 92, 0.32);
-
-  /* ── Seasonal skies (dashboard) ──────────────────── */
+  /* Seasonal backgrounds — NARR-002 */
   --bg-october:  linear-gradient(180deg, #E8E4DC 0%, #EDE8DF 100%);
   --bg-november: linear-gradient(180deg, #D8D4CC 0%, #E8E4DC 100%);
   --bg-december: linear-gradient(180deg, #F0ECE4 0%, #E8DCCC 100%);
@@ -48,39 +21,42 @@
   --bg-february: linear-gradient(180deg, #E8E4DC 0%, #F0ECE4 100%);
   --bg-march:    linear-gradient(180deg, #F0E0DC 0%, #EDE8DF 100%);
   --bg-april:    linear-gradient(180deg, #E8F0E4 0%, #F0F5EC 100%);
+  --bg-elevated:      #FFFFFF;
+  --bg-dark:          #0E0D0B;
+  --bg-dark-surface:  #1E1D19;
+  --bg-dark-elevated: #2C2A24;
+  --bg-leather:       #3D3A32;
 
-  /* ── Borders ─────────────────────────────────────── */
-  --border:      #DDD7CC;
-  --border-dark: #C4BAA8;
+  /* Borders */
+  --border:           #DDD7CC;
+  --border-dark:      #C4BAA8;
 
-  /* ── Text on light ───────────────────────────────── */
-  --text-primary:   #1A1A18;
-  --text-secondary: #6B6760;
-  --text-muted:     #8A857A;
+  /* Text — light surfaces */
+  --text-primary:     #1A1A18;
+  --text-secondary:   #6B6760;
+  --text-muted:       #8A857A;
 
-  /* ── Text on dark ────────────────────────────────── */
+  /* Text — dark surfaces */
   --text-light:           #F5F1EB;
   --text-light-secondary: #C4BAA8;
   --header-undertext:     #C9B89A;  /* GameHeader undertext på läderyta */
 
-  /* ── Accent — copper / terracotta ────────────────── */
-  --accent:      #C47A3A;
-  --accent-dark: #A25828;
-  --accent-deep: #8B4820;  /* deepest — CTA end stop */
+  /* Accent — copper/terracotta */
+  --accent:       #C47A3A;
+  --accent-dark:  #A25828;
+  --accent-deep:  #8B4820;
 
-  /* ── Semantic ────────────────────────────────────── */
-  --success:       #5A9A4A;
-  --success-light: #4A6A3A;
-  --success-muted: rgba(74, 124, 89, 0.7);   /* dämpad — ljus yta score-block stripe */
-  --warning:       #C47A3A;
-  --danger:        #B05040;
-  --danger-dark:   #8B3E30;
-  --danger-text:   #8B3E30;
-  --danger-muted:  rgba(168, 74, 74, 0.7);   /* dämpad — ljus yta score-block stripe */
-  --ice:           #7EB3D4;  /* away, weather, cool info */
-  --ice-dark:      #5A7A8A;
+  /* Semantic */
+  --success:        #5A9A4A;
+  --success-light:  #4A6A3A;
+  --warning:        #C47A3A;
+  --danger:         #B05040;
+  --danger-dark:    #8B3E30;
+  --danger-text:    #8B3E30;
+  --ice:            #7EB3D4;
+  --ice-dark:       #5A7A8A;
 
-  /* ── LED scoreboard ──────────────────────────────── */
+  /* LED scoreboard */
   --led-bg:          #0A0A0A;
   --led-border:      #1A1A1A;
   --led-score:       #FF1A1A;
@@ -88,33 +64,83 @@
   --led-time:        #CCFF00;
   --led-warn:        #FF6644;
 
-  /* ── Match atmosphere (weather-tinted leather) ──── */
+  /* Archetype badge colors */
+  --arch-finisher:    #c0392b;
+  --arch-playmaker:   #2563EB;
+  --arch-defensive:   #1a5e3a;
+  --arch-twoway:      #5a2d7a;
+  --arch-reflexgk:    #8B6914;
+  --arch-posgk:       #7b5a14;
+  --arch-dribbler:    #1a5e8a;
+  --arch-corner:      #4a3a8a;
+  --arch-raw:         #2d6e2d;
+  --arch-default:     #1e4d8c;
+
+  /* NextMatchCard atmosphere */
   --match-bg-default: #3D3520;
   --match-bg-rain:    #2A2418;
   --match-bg-snow:    #322E22;
   --match-bg-cold:    #3D3228;
   --match-bg-fog:     #2A3228;
   --match-bg-wind:    #32301E;
+  --match-text-light: #F5F1EB;
   --match-gold:       #D4B860;
   --match-warn:       #E8A090;
   --match-positive:   #A0C890;
   --match-copper:     #D4A850;
   --match-home-bg:    #F0EDE6;
 
-  /* ── Archetype (squad badges) ────────────────────── */
-  --arch-finisher:  #c0392b;
-  --arch-playmaker: #2563EB;
-  --arch-defensive: #1a5e3a;
-  --arch-twoway:    #5a2d7a;
-  --arch-reflexgk:  #8B6914;
-  --arch-posgk:     #7b5a14;
-  --arch-dribbler:  #1a5e8a;
-  --arch-corner:    #4a3a8a;
-  --arch-raw:       #2d6e2d;
-  --arch-default:   #1e4d8c;
+  /* Legacy aliases (keep for backward compat until screens migrated) */
+  --accent-dim:         #A25828;
+  --color-primary:      #C47A3A;
+  --color-accent:       #C47A3A;
+  --color-accent-dim:   #A25828;
+  --color-bg-deep:      #0E0D0B;
+  --color-bg-card:      #FAF8F4;
+  --color-text:         #1A1A18;
+  --color-text-secondary: #6B6760;
+
+  /* Typography */
+  --font-display: 'Georgia', 'Times New Roman', serif;
+  --font-body:    system-ui, -apple-system, sans-serif;
+  --font:         system-ui, -apple-system, sans-serif;
+
+  /* Shape */
+  --radius:    14px;
+  --radius-md:  8px;   /* DB-9: sharp cards, buttons (fanns i spegeln, saknades här) */
+  --radius-sm:  3px;
+
+  /* Layout */
+  --bottom-nav-height: 60px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Portal seasonal tone — dark defaults, overridden by getSeasonalTone() */
+  --bg-portal:          #1a1612;
+  --bg-portal-surface:  #221d18;
+  --bg-portal-elevated: #2a241e;
+  --accent-portal:      #b8884c;
+
+  /* Scene backgrounds — statiska, påverkas inte av portal-tonalitet */
+  --bg-scene:       #1a1612;
+  --bg-scene-deep:  #08060a;
+
+  /* Journalist relation severity */
+  --cold:       #4a6680;
+  --cold-light: #7095b8;  /* ljusare cold — text/tag inom severity-domän */
+  --warm:       #8c6e3a;
+  --warm-light: #c8a058;  /* ljusare warm — text/tag inom severity-domän */
+  --gold:       #E8B95C;  /* cup-vinnare / specialanslag */
+  --gold-deep:  #B88838;
+  --shadow-gold: 0 3px 12px rgba(232, 185, 92, 0.32);
+
+  --scroll-padding-bottom: 120px;
 
   /* ── Stålvallen — match-bundle ───────────────────── */
   --panel:         #0A0908;
+  --panel-edge:    #050402;
+  --bezel-top:     #3a3632;
+  --bezel-mid:     #2a2622;
+  --bezel-bot:     #15130f;
   --bg-leather-dk: #1d1b18;
   --paper-warm:    #F5F1EB;
   --paper-edge:    #DCD3C3;
@@ -126,11 +152,15 @@
   --ink-soft:      #6B6760;
   --ink-mute:      #8A857A;
   --ink-faint:     #B8B0A2;
+
+  /* LED — bara i match-bundle */
   --led-red:      #FF2A18;
   --led-red-dim:  rgba(255, 42, 24, 0.07);
   --led-red-glow: rgba(255, 42, 24, 0.55);
   --led-amber:    #FFAA00;
   --led-green:    #66FF33;
+
+  /* Scoreboard tidslinje */
   --line-bg:      rgba(255, 255, 255, 0.04);
   --line-stroke:  rgba(255, 255, 255, 0.12);
   --line-tick:    rgba(255, 255, 255, 0.18);
@@ -138,62 +168,64 @@
   --home-mark:    var(--copper);
   --away-mark:    var(--steel);
   --now-mark:     #FFB347;
+
+  /* Match Report betyg */
   --rate-bad:     #B33A2E;
   --rate-mid:     #C9881F;
   --rate-good:    #4F8C3A;
+
   --font-mono:    ui-monospace, 'Courier New', monospace;
 
-  /* ── Typography ──────────────────────────────────── */
-  --font-display: 'Georgia', 'Times New Roman', serif;
-  --font-body:    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-
-  /* ── Shape ───────────────────────────────────────── */
-  --radius:    14px;   /* round cards (narrative) */
-  --radius-md:  8px;   /* sharp cards, buttons */
-  --radius-sm:  3px;
-
-  /* ── Layout (mobile 375–430px) ───────────────────── */
-  --bottom-nav-height: 60px;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-
-  /* ── Elevation (soft, copper-tinted on primary) ─── */
-  --shadow-card:    0 1px 3px rgba(0,0,0,0.05);
-  --shadow-btn:     0 2px 5px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-primary: 0 3px 5px rgba(162,88,40,0.38);
-  --shadow-danger:  0 3px 10px rgba(176,80,64,0.40);
-  --shadow-menu:    0 4px 16px rgba(0,0,0,0.15);
-
-  /* ── Z-index scale ───────────────────────────────── */
-  --z-sticky:       50;   /* sticky-footer */
+  /* Z-index scale */
+  --z-sticky:       50;   /* sticky-footer (under innehållslagren) */
   --z-dropdown:    100;
   --z-header:      200;   /* persistent app-header */
   --z-modal:       300;
   --z-overlay:     400;
   --z-interaction: 500;
   --z-toast:       600;
+
+  /* Shadows + dämpade severity-toner (global.css är sanning; portade från spegeln.
+     --shadow-card användes i stalvallen-portal.css men saknades här → latent bug fixad) */
+  --shadow-card:    0 1px 3px rgba(0,0,0,0.05);
+  --shadow-btn:     0 2px 5px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-primary: 0 3px 5px rgba(162,88,40,0.38);
+  --shadow-danger:  0 3px 10px rgba(176,80,64,0.40);
+  --shadow-menu:    0 4px 16px rgba(0,0,0,0.15);
+  --success-muted:  rgba(74, 124, 89, 0.7);   /* dämpad — ljus yta score-block stripe */
+  --danger-muted:   rgba(168, 74, 74, 0.7);   /* dämpad — ljus yta score-block stripe */
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SEMANTIC TYPE ROLES
+   SEMANTIC TYPE ROLES (synced from design-system/colors_and_type.css)
    ═══════════════════════════════════════════════════════════ */
 
 /* Display / numeric (Georgia) — poäng, score, position */
 .h-display-xl { font-family: var(--font-display); font-size: 44px; font-weight: 800; line-height: 1; }
-.h-display-lg { font-family: var(--font-display); font-size: 36px; font-weight: 800; line-height: 1; }
-.h-display-md { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1.1; }
-.h-display-sm { font-family: var(--font-display); font-size: 22px; font-weight: 700; line-height: 1.15; }
-.h-display-hero { font-family: var(--font-display); font-size: 52px; font-weight: 900; line-height: 1; letter-spacing: -1px; }  /* R2-1 seger-hjälte */
 
-/* Card titles (body, heavy) */
-.h-card     { font-family: var(--font-body); font-size: 14px; font-weight: 700; line-height: 1.3; }
-.h-card-sm  { font-family: var(--font-body); font-size: 13px; font-weight: 600; line-height: 1.3; }
+.h-display-lg { font-family: var(--font-display); font-size: 36px; font-weight: 800; line-height: 1; }
+
+.h-display-md { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1.1; }
+
+.h-display-sm { font-family: var(--font-display); font-size: 22px; font-weight: 700; line-height: 1.15; }
+
+/* R2-1: ceremoniell seger-hjälte — endast säsongsslut/seger/cup (DB-3-anda) */
+.h-display-hero { font-family: var(--font-display); font-size: 52px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+
+/* Card titles */
+.h-card    { font-family: var(--font-body); font-size: 14px; font-weight: 700; line-height: 1.3; }
+
+.h-card-sm { font-family: var(--font-body); font-size: 13px; font-weight: 600; line-height: 1.3; }
 
 /* Body copy */
-.h-body     { font-family: var(--font-body); font-size: 12px; font-weight: 400; line-height: 1.45; color: var(--text-primary); }
-.h-body-sm  { font-family: var(--font-body); font-size: 11px; font-weight: 400; line-height: 1.45; color: var(--text-secondary); }
-.h-body-xs  { font-family: var(--font-body); font-size: 10px; font-weight: 400; line-height: 1.45; color: var(--text-muted); }
+.h-body    { font-family: var(--font-body); font-size: 12px; font-weight: 400; line-height: 1.45; color: var(--text-primary); }
 
-/* Section label — emoji + UPPERCASE letter-spaced (9/2.5 ratificerad 2026-06-05) */
+.h-body-sm { font-family: var(--font-body); font-size: 11px; font-weight: 400; line-height: 1.45; color: var(--text-secondary); }
+
+.h-body-xs { font-family: var(--font-body); font-size: 10px; font-weight: 400; line-height: 1.45; color: var(--text-muted); }
+
+/* Section label — 9px / 600 / +2.5px letter-spacing / UPPERCASE / emoji-prefix
+   (ratificerad 2026-06-05: ~30 ytor använde redan 9/2.5 inline — rollen var avvikaren) */
 .h-label {
   font-family: var(--font-body);
   font-size: 9px;
@@ -204,7 +236,7 @@
   margin: 0 0 4px 0;
 }
 
-/* R2-1: eyebrow 11/3px accent — skild från .h-label */
+/* R2-1: eyebrow 11/3px accent — skild från .h-label (9/2.5px) */
 .h-eyebrow {
   font-family: var(--font-body);
   font-size: 11px;
@@ -232,11 +264,17 @@
   text-transform: uppercase;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SCENE TYPOGRAPHY — dark-bg context (--bg-scene / --bg-portal)
-   ═══════════════════════════════════════════════════════════ */
+/* Italic för citat */
+.text-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
 
-/* Genre label — "⬩ ANKOMSTEN ⬩" / "⬩ I DETTA ÖGONBLICK ⬩" */
+/* ═══ SCENE TYPOGRAPHY — dark-bg context ══════════════════════════════════ */
+
+/* Genre label — "⬩ ANKOMSTEN ⬩" */
 .h-scene-genre {
   font-family: var(--font-body);
   font-size: 9px;
@@ -249,7 +287,7 @@
   margin-bottom: 10px;
 }
 
-/* Scene title — Georgia 28px, center, tight */
+/* Scene title — Georgia 28px */
 .h-scene-title {
   font-family: Georgia, serif;
   font-size: 28px;
@@ -261,7 +299,7 @@
   margin-bottom: 6px;
 }
 
-/* Helper / subtitle — Georgia italic, muted */
+/* Helper / subtitle — Georgia italic muted */
 .h-scene-helper {
   font-family: Georgia, serif;
   font-style: italic;
@@ -271,7 +309,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Setting prolog — Georgia italic, centered */
+/* Setting prolog — legacy class kept for other scenes */
 .h-scene-setting {
   font-family: Georgia, serif;
   font-style: italic;
@@ -283,6 +321,7 @@
   margin: 0 auto;
   transition: opacity 0.5s ease;
 }
+
 .h-scene-setting strong {
   font-style: normal;
   color: var(--text-light);
@@ -301,9 +340,10 @@
   color: var(--accent);
   text-transform: uppercase;
   opacity: 0.85;
+  margin-bottom: 5px;
 }
 
-/* Dialog quote — Georgia, full light */
+/* Dialog quote — Georgia full light */
 .h-scene-quote {
   font-family: Georgia, serif;
   font-size: 14px;
@@ -311,7 +351,7 @@
   line-height: 1.55;
 }
 
-/* Replica wrapper */
+/* Legacy replica wrapper — kept for other scenes */
 .h-scene-replica {
   display: flex;
   flex-direction: column;
@@ -319,41 +359,3 @@
   padding-left: 2px;
   transition: opacity 0.5s ease;
 }
-
-/* Dimmed state modifier — setting/replicas that have been passed */
-.scene-dimmed { opacity: 0.4; transition: opacity 0.5s ease; }
-
-/* Scene CTA — dark-bg outline button */
-.btn-scene-cta {
-  width: 100%;
-  padding: 14px;
-  background: var(--bg-dark-elevated);
-  color: var(--text-light);
-  border: 1px solid var(--bg-leather);
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.btn-scene-cta:hover {
-  background: var(--accent-deep);
-  border-color: var(--accent);
-}
-.btn-scene-cta:disabled {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Scene ghost — back/link button on dark bg */
-.btn-scene-ghost {
-  background: none;
-  border: none;
-  font-size: 11px;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-family: var(--font-body);
-  padding: 4px 0;
-}
-.btn-scene-ghost:hover { color: var(--text-light); }

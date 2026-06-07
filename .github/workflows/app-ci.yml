@@ -26,3 +26,5 @@ jobs:
         run: npm test
       - name: Design tokens (lint:design)
         run: npm run lint:design
+      - name: Color-mirror i synk med global.css
+        run: npm run mirror:check
