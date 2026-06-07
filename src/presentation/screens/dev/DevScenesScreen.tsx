@@ -26,9 +26,10 @@ import { EkonomiTab } from '../../components/club/EkonomiTab'
 import { PlayerCard } from '../../components/PlayerCard'
 import { ScoreBlock as ScoreBlockComp } from '../../components/primitives/ScoreBlock'
 import { Sparkline as SparklineComp } from '../../components/primitives/Sparkline'
+import { MiljoHeader } from '../../components/environment/MiljoHeader'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-nov' | 'miljoheader-jan'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -50,6 +51,8 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'season-a',     label: 'SeasonSummary A (mästare → gold)' },
   { id: 'season-b',     label: 'SeasonSummary B (topp 3 → win)' },
   { id: 'season-c',     label: 'SeasonSummary C (mittfält → subtle)' },
+  { id: 'miljoheader-nov', label: 'MiljöHeader (nov-fallback)' },
+  { id: 'miljoheader-jan', label: 'MiljöHeader (jan-fallback)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -414,7 +417,11 @@ const boardGameB = makeGame(makeLeagueFixtures(), { currentSeason: 3, boardPerso
 const boardGameC = makeGame(makeLeagueFixtures(), { currentSeason: 3, boardPersonalities, boardObjectives: newGoalsSet, boardObjectiveHistory: histC, seasonStartFinances: 120000 })
 
 export function DevScenesScreen() {
-  const [scene, setScene] = useState<SceneId>('cup-victory')
+  // ?scene=<id> för deterministisk headless-capture (scripts/capture-scenes.mjs)
+  const initialScene = (typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('scene')
+    : null) as SceneId | null
+  const [scene, setScene] = useState<SceneId>(initialScene ?? 'cup-victory')
   const storeReady = useGameStore(s => s.game?.lastCompletedFixtureId === 'fx-granska')
 
   // Seed the store so all screens that call useGameStore() work
@@ -520,6 +527,18 @@ export function DevScenesScreen() {
                 <EfterklangSecondary game={v.game} />
               </div>
             ))}
+          </div>
+        )}
+
+        {(scene === 'miljoheader-nov' || scene === 'miljoheader-jan') && (
+          <div style={{ background: 'var(--bg)', minHeight: 'calc(100vh - 40px)' }}>
+            {/* Fallback-rendering (bruksort-header.jpg finns inte än) — säsongstonad gradient
+                + dev-stämpel. Nov vs jan visar säsongstinten. */}
+            <MiljoHeader date={scene === 'miljoheader-nov' ? '2026-11-15' : '2027-01-20'} mode="portal" />
+            <div style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-secondary)' }}>
+              ⬩ Vardagskropp under bandet (kort i ljust papper). Bandet är "vyn ut".
+            </div>
+            <MiljoHeader date={scene === 'miljoheader-nov' ? '2026-11-15' : '2027-01-20'} mode="inner" />
           </div>
         )}
 

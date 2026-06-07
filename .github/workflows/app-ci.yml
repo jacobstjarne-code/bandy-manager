@@ -28,3 +28,29 @@ jobs:
         run: npm run lint:design
       - name: Color-mirror i synk med global.css
         run: npm run mirror:check
+
+  # ◉ syn-audit: fångar alla /dev/scenes-ytor headless och laddar upp som artefakt
+  # (review-bilaga per PR, inte strikt pixel-diff — font-rendering skiljer sig cross-OS,
+  # så strikt baseline-diff vore flaky. Mac-bilagan i screenshots/audit/ är referensen
+  # Jacob godkänner; denna laddar upp Linux-captures för granskning). Separat job → blockar
+  # inte merge om browsern strular.
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Preview-server + capture
+        run: |
+          npx vite preview --port 5173 &
+          npx wait-on http://localhost:5173 || sleep 8
+          BASE_URL=http://localhost:5173 npm run audit:scenes
+      - uses: actions/upload-artifact@v4
+        with:
+          name: syn-audit-screenshots
+          path: screenshots/audit

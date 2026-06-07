@@ -12,6 +12,7 @@
     "lint:design": "node scripts/check-design-tokens.mjs",
     "mirror:generate": "node scripts/generate-color-mirror.mjs",
     "mirror:check": "node scripts/generate-color-mirror.mjs --check",
+    "audit:scenes": "node scripts/capture-scenes.mjs",
     "stress": "node_modules/.bin/vite-node scripts/stress-test.ts",
     "analyze-stress": "node_modules/.bin/vite-node scripts/analyze-stress.ts",
     "warehouse:generate": "node_modules/.bin/vite-node scripts/data-warehouse/generate.ts",
