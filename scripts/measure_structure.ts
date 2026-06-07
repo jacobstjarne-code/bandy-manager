@@ -58,6 +58,7 @@ function clusterCount(goalMins: number[]): number {
 
 const N = 1000
 let totalGoals=0, cornerGoals=0
+let aggHW=0, aggDR=0, aggAW=0
 let clusterTot=0, clusterMatchN=0
 // post-paus window: comeback by 2H first-reduction window
 let cbElig=0, cb=0, win5155N=0, win5155cb=0
@@ -82,6 +83,7 @@ for(let i=0;i<N;i++){
   const f=res.fixture
   const hs=f.homeScore??0, as_=f.awayScore??0
   totalGoals+=hs+as_
+  if(hs>as_) aggHW++; else if(hs===as_) aggDR++; else aggAW++
 
   // goal events per club + minutes
   const homeMins:number[]=[], awayMins:number[]=[]
@@ -140,6 +142,7 @@ writeFileSync('docs/data/motor_kalibrering_scorecard.json', JSON.stringify(score
 
 console.log(`\n=== MOTOR FAS 1 SCORECARD (${N} matcher) ===\n`)
 console.log(`Mål/match:              motor ${goalsPM.toFixed(2)}  | verkligt 9,08   (marginal-kontroll)`)
+console.log(`Hemvinst/oavgj/borta:   motor ${(aggHW/N*100).toFixed(1)}% / ${(aggDR/N*100).toFixed(1)}% / ${(aggAW/N*100).toFixed(1)}% | verkligt 50,9 / 10,7 / 38,4`)
 console.log(`Hörnmålsandel:          motor ${(cornerShare*100).toFixed(1)}% | verkligt 21,9%`)
 console.log(`\n── STRUKTUR ──`)
 console.log(`Målklustring/lag-match: motor ${clusterFreq.toFixed(3)} | verkligt 0,80 (liga), 0,61–1,27 per stil   [PRIO 1]`)

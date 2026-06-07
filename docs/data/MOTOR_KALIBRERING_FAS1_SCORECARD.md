@@ -96,3 +96,31 @@ HT-marginalfördelning bidrar marginellt (motor +1=36 % vs verkligt 41 % — nå
 ## Steg 2–3 (ej körda denna omgång)
 - **Hemmafördel (PRIO 4):** motorns hemmavinst 39,5 % mot mål 50,2 % är det kända v1.2.0-gapet (Finding 050, kräver v1.3.0 — explicit hemmaplansvikt). Specens frekvens-shift-ansats hör hit. Ej påbörjad — egen verifieringsrunda.
 - **Hörnandel (PRIO 3):** 17 % vs 22 %, ren marginal-rekalibrering, sist enligt prioritet.
+
+## Steg 2: Hemmafördel/draws (PRIO 4) — ROTORSAK: kopplad till comeback
+
+**Omdiagnos.** Med ren harness (2000 matcher) är hemmafördelens *magnitud* nästan rätt: lika-CA-gap +11,3pp mot verkligt +12,5pp. Det verkliga felet är **för många oavgjorda**: 18,7% (varierad CA) mot verkligt 10,7%. De ~8 överflödiga draw-procenten trycker ner hemvinsten (43,4% mot 50,9%). Hemvinst-gapet är alltså ett **draw-gap**, inte ett hemmafördels-gap.
+
+**Försök (förkastat):** Eskalerande even_battle-attack sent i level-matcher (1,04 → 1,12/1,22). Effekt på draws: 18,7 → 18,1% — försumbart. Boosten är symmetrisk (båda lagen), så den adderar mål utan att bryta lika. Återställd (ingen verkningslös konstant kvar i motorn).
+
+**Rotorsak — de två gapen är kopplade.** Draw-överskottet kommer från 2H:s lead-konverteringsdynamik: det jagande laget boostas (chasing) samtidigt som ledaren bromsas (controlling/cruise) → trailing kvitterar ofta till 0 → båda lagen hamnar i even_battle → matchen fastnar lika. Det skapar en attraktor vid jämnt resultat.
+
+Det betyder att **comeback-gapet (PRIO 2) och draw/hemvinst-gapet (PRIO 4) drar åt motsatt håll genom samma mekanism:**
+- Stärk comebacks (mer chasing-boost / mindre ledar-broms) → fler kvitteringar → FLER draws.
+- Minska draws (mindre chasing-boost / mer ledar-broms) → leder håller → FÄRRE comebacks.
+
+Constant-tuning kan därför inte stänga båda samtidigt — varje justering byter ett gap mot ett annat. Det är en strukturell egenskap hos 2H-initiativmodellen, inte en feljusterad konstant.
+
+## Slutsats Fas 2
+
+**Levererat:** Post-paus-urgency (mekanism-baserad, +1pp comeback, regression-säker, committad).
+
+**Rotorsaksfynd:** Hemvinst-gapet är ett draw-gap, och draw-gapet är kopplat till comeback-gapet via en "dragning mot lika" i 2H-modellen. De kan inte stängas oberoende med konstanter.
+
+**Rekommendation (design, ej tuning):** En 2H-modell som bryter lika-attraktorn utan att döda comebacks. Två kandidatmekanismer att designa:
+1. **Asymmetrisk sluttids-varians i level-matcher** — när jämnt och sent, höj konverterings-*variansen* (inte symmetrisk attack) så att en sida drar ifrån. Bryter draws utan att röra comeback-dynamiken.
+2. **Frikoppla kvittering från stall** — låt ett nyss kvitterat lag behålla momentum (fortsatt lätt boost) i stället för att direkt falla till even_battle, så att kvitteringar oftare blir vändningar i stället för draws. Stänger comeback-gapet OCH draw-gapet i samma riktning.
+
+Kandidat 2 adresserar båda gapen samtidigt och är därför den rekommenderade designvägen. Den kräver en ny tillstånds-variabel (nyligen-kvitterat) i 2H-loopen — en modelländring, som bör specas och verifieras mot klustring + marginaler + comeback + draws i ett svep, inte krankas live.
+
+**Hörnandel (PRIO 3):** 17% vs 22%, ren marginal-rekalibrering, orörd — lägst prioritet, hör till marginal-passet inte strukturpasset.
