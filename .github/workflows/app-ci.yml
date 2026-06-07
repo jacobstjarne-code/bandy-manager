@@ -1,0 +1,28 @@
+name: app-ci
+
+# Bandy Manager-appens CI. (De befintliga workflows är för bandy-brain.)
+# Designsystemets efterlevnads-grind (lint:design) körs i warn-läge: error-reglerna
+# (tailwind-rgb, radius-6) är grep-rent och fäller bygget vid återfall; warn-reglerna
+# ratchas till error allt eftersom skulden städas (se scripts/check-design-tokens.mjs).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Type-check (tsc)
+        run: npx tsc --noEmit
+      - name: Tests (vitest)
+        run: npm test
+      - name: Design tokens (lint:design)
+        run: npm run lint:design
