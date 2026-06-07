@@ -37,8 +37,8 @@ const SCENES = [
   ['season-a', 'SeasonSummary A (R2-1 hero + R2-2 btn-hero)'],
   ['season-b', 'SeasonSummary B'],
   ['season-c', 'SeasonSummary C'],
-  ['miljoheader-nov', 'MiljöHeader (nov-fallback)'],
-  ['miljoheader-jan', 'MiljöHeader (jan-fallback)'],
+  ['miljoheader-karlsborg', 'MiljöHeader — Karlsborg (arctic_coast, mörkast/blåast)'],
+  ['miljoheader-rogle', 'MiljöHeader — Rögle (scanian_coast, mildast/ljusast)'],
 ]
 
 rmSync(OUT, { recursive: true, force: true })

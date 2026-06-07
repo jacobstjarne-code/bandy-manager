@@ -122,14 +122,14 @@ Regenerera: starta servern + `node scripts/capture-scenes.mjs`.
 
 ![season-c](./season-c.png)
 
-### MiljöHeader (nov-fallback)
+### MiljöHeader — Karlsborg (arctic_coast, mörkast/blåast)
 
-`miljoheader-nov`
+`miljoheader-karlsborg`
 
-![miljoheader-nov](./miljoheader-nov.png)
+![miljoheader-karlsborg](./miljoheader-karlsborg.png)
 
-### MiljöHeader (jan-fallback)
+### MiljöHeader — Rögle (scanian_coast, mildast/ljusast)
 
-`miljoheader-jan`
+`miljoheader-rogle`
 
-![miljoheader-jan](./miljoheader-jan.png)
+![miljoheader-rogle](./miljoheader-rogle.png)

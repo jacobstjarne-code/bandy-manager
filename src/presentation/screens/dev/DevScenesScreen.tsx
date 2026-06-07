@@ -29,7 +29,7 @@ import { Sparkline as SparklineComp } from '../../components/primitives/Sparklin
 import { MiljoHeader } from '../../components/environment/MiljoHeader'
 import { useGameStore } from '../../store/gameStore'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-nov' | 'miljoheader-jan'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -51,8 +51,8 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'season-a',     label: 'SeasonSummary A (mästare → gold)' },
   { id: 'season-b',     label: 'SeasonSummary B (topp 3 → win)' },
   { id: 'season-c',     label: 'SeasonSummary C (mittfält → subtle)' },
-  { id: 'miljoheader-nov', label: 'MiljöHeader (nov-fallback)' },
-  { id: 'miljoheader-jan', label: 'MiljöHeader (jan-fallback)' },
+  { id: 'miljoheader-karlsborg', label: 'MiljöHeader — Karlsborg (arctic_coast, mörkast)' },
+  { id: 'miljoheader-rogle', label: 'MiljöHeader — Rögle (scanian_coast, mildast)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -530,17 +530,23 @@ export function DevScenesScreen() {
           </div>
         )}
 
-        {(scene === 'miljoheader-nov' || scene === 'miljoheader-jan') && (
-          <div style={{ background: 'var(--bg)', minHeight: 'calc(100vh - 40px)' }}>
-            {/* Fallback-rendering (bruksort-header.jpg finns inte än) — säsongstonad gradient
-                + dev-stämpel. Nov vs jan visar säsongstinten. */}
-            <MiljoHeader date={scene === 'miljoheader-nov' ? '2026-11-15' : '2027-01-20'} mode="portal" />
-            <div style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-secondary)' }}>
-              ⬩ Vardagskropp under bandet (kort i ljust papper). Bandet är "vyn ut".
+        {(scene === 'miljoheader-karlsborg' || scene === 'miljoheader-rogle') && (() => {
+          // Fallback-rendering (bruksort-header.jpg finns inte än): säsongstonad gradient +
+          // klimateArchetype-tint + ClubBadge-vattenstämpel + dev-stämpel. Samma datum (djup
+          // vinter) för båda → skillnaden är ren per-klubb-tint (arctic mörk/blå vs scanian mild/ljus).
+          const club = scene === 'miljoheader-karlsborg'
+            ? { id: 'club_karlsborg', name: 'Karlsborg' }
+            : { id: 'club_rogle', name: 'Rögle' }
+          return (
+            <div style={{ background: 'var(--bg)', minHeight: 'calc(100vh - 40px)' }}>
+              <MiljoHeader date="2027-01-20" club={club} mode="portal" />
+              <div style={{ padding: '14px 16px', fontSize: 12, color: 'var(--text-secondary)' }}>
+                ⬩ Vardagskropp under bandet (kort i ljust papper). Bandet är "vyn ut".
+              </div>
+              <MiljoHeader date="2027-01-20" club={club} mode="inner" />
             </div>
-            <MiljoHeader date={scene === 'miljoheader-nov' ? '2026-11-15' : '2027-01-20'} mode="inner" />
-          </div>
-        )}
+          )
+        })()}
 
         {scene === 'squad' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
