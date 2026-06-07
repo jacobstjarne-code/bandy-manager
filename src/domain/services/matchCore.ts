@@ -161,6 +161,13 @@ const POST_PAUS_URGENCY = 0.45
 const EQUALIZE_MOMENTUM = 0.30     // attack-boost direkt efter kvittering
 const EQUALIZE_MOMENTUM_STEPS = 4  // avtar över 4 steg (~6 min)
 
+// Hot-hand burst (Fas 3, stil/disposition). Efter mål får laget en boost skalad
+// av dispositionsfaktorn (0 konservativt → 1 aggressivt). Vidgar klustringsspannet
+// monotont med taktisk aggressivitet, frikopplat från lagstyrka. Magnitud
+// kalibrerad mot verkligt spann 0,57–1,18 (Finding 054).
+const HOT_HAND_BOOST = 0.90   // max attack-boost (vid disposition=1)
+const HOT_HAND_STEPS = 2      // avtar över 2 steg (~3 min)
+
 // Deterministic profile selection from seed — both halves receive the same
 // profile without needing to pass state between generators.
 export function pickMatchProfileFromSeed(
@@ -416,6 +423,29 @@ function* simulateMatchCore(
   const awayTacticalDiscipline = awayEval.tacticalDiscipline / 100
   const awayCornerRecovery     = awayEval.cornerRecoveryScore / 100
 
+  // Dispositionell burst-faktor (Fas 3, stil). Ett aggressivt lag spelar i skurar
+  // AV KARAKTÄR, oberoende av ställning — den dispositionsingång som saknades till
+  // burst-mekaniken (klustringen var bara situationell). Skala 0 (konservativt) →
+  // 1 (aggressivt) ur tempo/passningsrisk/mentalitet. Frikopplad från lagstyrka:
+  // det är taktiken, inte CA, som ska differentiera rytmen.
+  const dispositionFactor = (t: import('../entities/Club').Tactic): number => {
+    const tempo  = t.tempo === 'high' ? 1 : t.tempo === 'normal' ? 0.5 : 0
+    const risk   = t.passingRisk === 'direct' ? 1 : t.passingRisk === 'mixed' ? 0.5 : 0
+    const ment   = t.mentality === 'offensive' ? 1 : t.mentality === 'balanced' ? 0.5 : 0
+    // cornerStrategy inverst och TYNGST viktad — den är den starkaste proxyn för
+    // omställning↔hörnberoende-axeln (säkra hörnor = omställning, aggressiva =
+    // metodiskt set-piece). Krävs för monotonicitet: hörn-aggressiva lag scorar
+    // fler hörnmål (som bunkrar), så de behöver kraftigare anti-hot för att hamna
+    // under balanserad i klustring, som verkligheten kräver.
+    const corner = t.cornerStrategy === 'safe' ? 1 : t.cornerStrategy === 'standard' ? 0.5 : 0
+    return 0.5 * corner + 0.5 * (tempo + risk + ment) / 3
+  }
+  // Centrera på default-taktikens disposition (standard-hörna/normal/safe/balanced
+  // → 0,417) så standardlaget får neutral hot-hand och aggregat (~0,758) bevaras.
+  const DISPOSITION_CENTER = 0.417
+  const homeDisposition = dispositionFactor(homeLineup.tactic)
+  const awayDisposition = dispositionFactor(awayLineup.tactic)
+
   // Weather modifiers
   let weatherGoalMod = 1.0
   if (weather?.condition !== undefined) {
@@ -492,6 +522,14 @@ function* simulateMatchCore(
   let equalizeMomentumTeam: 'home' | 'away' | null = null
   let equalizeMomentumTimer = 0
   let prevScoreDiff = (input.initialHomeScore ?? 0) - (input.initialAwayScore ?? 0)
+
+  // Hot-hand burst (Fas 3, dispositionell): efter att ett lag gjort mål får det en
+  // kort, avtagande boost SKALAD AV sin dispositionsfaktor — aggressiva lag rider
+  // vidare på skuren, konservativa inte. Samma maskineri som comeback-momentum,
+  // men ingången är lagets identitet, inte matchens tillstånd.
+  let homeHotTimer = 0, awayHotTimer = 0
+  let prevHomeScoreHH = input.initialHomeScore ?? 0
+  let prevAwayScoreHH = input.initialAwayScore ?? 0
 
   // Momentum tracking (full mode only)
   const recentHomeShots: number[] = []
@@ -777,6 +815,20 @@ function* simulateMatchCore(
       prevScoreDiff = curDiff
     }
 
+    // Hot-hand: detektera mål sedan föregående steg, sätt timer per lag.
+    // Körs hela matchen (dispositionell, ej knuten till 2H-tillstånd).
+    if (homeScore > prevHomeScoreHH) homeHotTimer = HOT_HAND_STEPS
+    if (awayScore > prevAwayScoreHH) awayHotTimer = HOT_HAND_STEPS
+    prevHomeScoreHH = homeScore
+    prevAwayScoreHH = awayScore
+    // Centrerad kring balanserad (disposition 0,5): aggressivt → boost (rider skuren),
+    // konservativt → anti-hot (sprider målen), balanserad → 0 (aggregatet ~0,758
+    // bevaras, regressionsvakt). Vidgar spannet symmetriskt utan att flytta mitten.
+    const homeHotMult = homeHotTimer > 0 ? 1 + HOT_HAND_BOOST * (homeDisposition - DISPOSITION_CENTER) * (homeHotTimer / HOT_HAND_STEPS) : 1
+    const awayHotMult = awayHotTimer > 0 ? 1 + HOT_HAND_BOOST * (awayDisposition - DISPOSITION_CENTER) * (awayHotTimer / HOT_HAND_STEPS) : 1
+    if (homeHotTimer > 0) homeHotTimer--
+    if (awayHotTimer > 0) awayHotTimer--
+
     if (step >= 30) {
       const homeMode = getSecondHalfMode(homeScore, awayScore, step, matchPhase)
       const awayMode = getSecondHalfMode(awayScore, homeScore, step, matchPhase)
@@ -866,12 +918,13 @@ function* simulateMatchCore(
     const awayTrailBoost = trailingBoost(awayScore - homeScore)
     const homeLeadBrake  = leadingBrake(homeScore - awayScore)
     const awayLeadBrake  = leadingBrake(awayScore - homeScore)
+    // Hot-hand (dispositionell) appliceras hela matchen, även 1H.
     const effectiveHomeAttack = step >= 30
-      ? clamp(homeAttack * (1 + homeTrailBoost) * (1 - homeLeadBrake) * homeModeAttackMult, 0, 1)
-      : homeAttack
+      ? clamp(homeAttack * (1 + homeTrailBoost) * (1 - homeLeadBrake) * homeModeAttackMult * homeHotMult, 0, 1)
+      : clamp(homeAttack * homeHotMult, 0, 1)
     const effectiveAwayAttack = step >= 30
-      ? clamp(awayAttack * (1 + awayTrailBoost) * (1 - awayLeadBrake) * awayModeAttackMult, 0, 1)
-      : awayAttack
+      ? clamp(awayAttack * (1 + awayTrailBoost) * (1 - awayLeadBrake) * awayModeAttackMult * awayHotMult, 0, 1)
+      : clamp(awayAttack * awayHotMult, 0, 1)
 
     const homeWeight = effectiveHomeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor * homePowerplayBoost
     const awayWeight = effectiveAwayAttack * (1 + awayMods.pressModifier * 0.2) * awayPenaltyFactor * awayPowerplayBoost

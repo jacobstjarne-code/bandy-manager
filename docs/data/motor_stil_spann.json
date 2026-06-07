@@ -20,15 +20,15 @@
   "profiles": [
     {
       "namn": "Omställning/öppet (max)",
-      "cluster_freq": 0.979,
-      "corner_goal_pct": 11.9,
-      "open_play_pct": 78.6
+      "cluster_freq": 1.043,
+      "corner_goal_pct": 12.3,
+      "open_play_pct": 78.2
     },
     {
       "namn": "Offensiv",
-      "cluster_freq": 0.931,
-      "corner_goal_pct": 12.6,
-      "open_play_pct": 78.8
+      "cluster_freq": 0.961,
+      "corner_goal_pct": 12.7,
+      "open_play_pct": 78.7
     },
     {
       "namn": "Balanserad",
@@ -38,15 +38,15 @@
     },
     {
       "namn": "Hörnlutande",
-      "cluster_freq": 0.899,
-      "corner_goal_pct": 24.2,
-      "open_play_pct": 69.3
+      "cluster_freq": 0.862,
+      "corner_goal_pct": 23.2,
+      "open_play_pct": 70.2
     },
     {
       "namn": "Hörnberoende (max)",
-      "cluster_freq": 0.662,
-      "corner_goal_pct": 26.4,
-      "open_play_pct": 68.2
+      "cluster_freq": 0.584,
+      "corner_goal_pct": 25.3,
+      "open_play_pct": 69
     }
   ]
 }

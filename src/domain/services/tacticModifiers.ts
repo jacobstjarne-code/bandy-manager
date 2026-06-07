@@ -173,7 +173,7 @@ export function getTacticModifiers(tactic: Tactic): TacticModifiers {
     defenseModifier: round3(clamp(defense, 0.75, 1.25)),
     tempoModifier: round3(clamp(tempo, 0.80, 1.20)),
     pressModifier: round3(clamp(press, 0.80, 1.20)),
-    cornerModifier: round3(clamp(corner, 0.80, 1.20)),
+    cornerModifier: round3(clamp(corner, 0.88, 1.10)),  // Fas 3 Fix 2: smalare ändlock — komprimerar bara ytterlägen (mittprofiler ligger inom 0,95–1,07), så maxprofiler inte skjuter förbi verkligt hörnmål-spann 19,3–23,6 %
     disciplineModifier: round3(clamp(discipline, 1.00, 1.40)),
     fatigueRate: round3(clamp(fatigue, 0.80, 1.30)),
   }

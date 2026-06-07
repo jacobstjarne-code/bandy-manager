@@ -257,3 +257,49 @@ Mät-körning med varierad taktik (spelets faktiska taktik-dimensioner), 600 mat
 Detta är en spel-design-signal, inte bara en kalibreringssiffra. Lag känns olika på **hörnberoende** (kanske rentav lite för olika i extremfallen) men för lika på **momentum/burst** — den dimension som verkligheten gör mest skillnad på. En spelare som möter ett "omställningslag" och ett "hörnlag" märker skillnad i hur målen kommer (hörnor vs spel) men för lite skillnad i *rytmen* (skurar vs jämnt).
 
 **Åtgärdsriktning (design, ej i detta mät-uppdrag):** ge tempo/passingRisk/mentality mer hävstång på klustrings-mekaniken (momentum-byggandet) så att offensiva, högtempo-direkta lag faktiskt producerar fler målskurar — och dämpa cornerStrategy-spakens ytterlägen något så maxade hörnprofiler inte blir karikatyrer. Två motriktade justeringar, var och en med marginal- och klustringsverifiering.
+
+---
+
+# Fas 3 — stilkalibrering (klustring dispositionell + hörnextremer komprimerade)
+
+## Fix 1 — Dispositionell hot-hand (klustring)
+Ny tillståndsvariabel `homeHotTimer/awayHotTimer`: efter mål får laget en kort, avtagande attack-boost **skalad av en dispositionsfaktor** (tempo+passningsrisk+mentalitet + cornerStrategy inverst, tyngst viktad). Centrerad på default-taktiken (0,417) → standardlaget neutralt, aggregatet bevaras. Aggressivt lag → boost (rider skuren); konservativt → anti-hot (sprider målen). Samma maskineri som comeback-momentum, men ingången är lagets identitet, inte matchens tillstånd. Frikopplad från lagstyrka (gäller oavsett CA).
+
+## Fix 2 — Komprimerade hörnextremer
+cornerModifier-klampen smalnad 0,80–1,20 → 0,88–1,10. Rör bara ytterlägen (mittprofiler ligger inom 0,95–1,07); maxprofiler skjuter inte längre lika långt förbi verkligt hörnmål-spann.
+
+## Resultat per axel
+
+| Profil | Kluster | Hörnmål % |
+|--------|---------|-----------|
+| Omställning/öppet (max) | 1,04 | 12,3 % |
+| Offensiv | 0,96 | 12,7 % |
+| Balanserad | 0,73 | 17,8 % |
+| Hörnlutande | 0,86 | 23,2 % |
+| Hörnberoende (max) | 0,58 | 25,3 % |
+
+| Axel | Före Fas 3 | Efter | Verkligt |
+|------|-----------|-------|----------|
+| Kluster-spann | 0,66–0,98 (1,5×) | **0,58–1,04 (1,8×)** | 0,57–1,18 (2,1×) |
+| Hörnmål-spann | 11,9–26,4 % | **12,3–25,3 %** | 19,3–23,6 % |
+
+## Är klustringen nu monoton med taktisk aggressivitet?
+
+**Delvis.** Extremerna är monotona: omställning (1,04) > offensiv (0,96) > balanserad (0,73) > hörnberoende max (0,58). **Ett brott kvarstår:** hörnlutande (0,86) klustrar mer än balanserad (0,73) trots lägre disposition. Orsak: hörn-aggressiva lag scorar fler hörnmål, och **hörnmål bunkrar av corner-mekaniken** (hörnflurries) oberoende av attack-raten — något dispositionens anti-hot inte når. Det är en separat mekanik, inte en svaghet i dispositionsspaken. Den dispositionsdrivna klustringen (tempo/passning/mentalitet) ÄR monoton; corner-bunkringen lägger en oberoende puckel på corner-aggressiva profiler.
+
+## Magnitud
+Spannet vidgades materiellt (1,5× → 1,8×, mot 2,1×). Konservativa änden matchar nu verkligheten (0,58 ≈ 0,57). Aggressiva änden är fortfarande kort (1,04 vs 1,18) — spaken är centrerad och symmetrisk, så att trycka toppen högre skulle skjuta botten under 0,57. Per anti-överfit landar jag här: botten exakt, toppen kort, spannet materiellt bredare.
+
+## Regressionsvakt — allt håller
+- Aggregerad klustring **0,758 oförändrad** ✅
+- Comeback 9,0 %, draws 13,8 %, hemvinst 46,7 % — strukturgapen oförändrade ✅
+- Marginaler: mål/match 8,99, drawRate 0,125 ✅, secondHalfShare ✅ (cornerGoalShare/homeWin pre-existerande, oförändrade)
+- 1078/1078 tester gröna ✅
+
+## Vad det betyder för spelet
+Ett omställningslag och ett hörnlag känns nu olika i **både** hur målen kommer (öppet spel vs hörnor) **och** rytmen (kluster-spannet vidgat från 1,5× till 1,8×) — den dimension som tidigare var för smal. Skillnaden är ännu inte full (2,1×) och corner-aggressiva lag har en kvarstående set-piece-puckel, men lagidentiteten differentierar nu rytmen, inte bara måltypen. Hörnberoende profiler skjuter inte längre förbi verkligt hörnmål-tak.
+
+## Kvarstående (flaggat, ej överfittat)
+- Aggressiva kluster-toppen (1,04 vs 1,18): kräver en asymmetrisk spak (lyft toppen utan att sänka botten) — inte en centrerad konstant.
+- Hörnmål-golvet (12,3 % vs 19,3 %): säkra-hörn-profiler scorar för få hörnmål; klampgolvet räcker inte. Separat marginalfråga.
+- Corner-bunkringen som bryter monotonicitet: kräver att hörnmålens tidsfördelning jämnas ut — en separat corner-mekanik-ändring.
