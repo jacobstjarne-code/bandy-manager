@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Lock } from 'lucide-react'
+import { X, Lock, Circle } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 
 import { useGameStore } from '../store/gameStore'
@@ -245,9 +245,11 @@ export function TransfersScreen() {
 
       <div className="transfers-scout-budget">
         <span className="transfers-scout-label">Scoutbudget:</span>
-        <span style={{ fontSize: 12, letterSpacing: 1 }}>
+        <span style={{ display: 'inline-flex', gap: 2, alignItems: 'center' }}>
+          {/* Q3: chrome-meter ● → Lucide Circle (solid dot) */}
           {Array.from({ length: 10 }, (_, i) => (
-            <span key={i} style={{ color: i < scoutBudget ? 'var(--accent)' : 'var(--border)' }}>●</span>
+            <Circle key={i} size={8} strokeWidth={0} fill="currentColor"
+              style={{ color: i < scoutBudget ? 'var(--accent)' : 'var(--border)' }} />
           ))}
         </span>
         <span style={{ fontSize: 11, color: scoutBudget > 3 ? 'var(--text-muted)' : 'var(--danger)', fontWeight: 600 }}>

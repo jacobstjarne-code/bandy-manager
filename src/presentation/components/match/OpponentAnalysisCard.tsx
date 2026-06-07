@@ -1,3 +1,4 @@
+import { Circle } from 'lucide-react'
 import type { Club } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
@@ -115,9 +116,11 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
             🔎 Fördjupad analys (1 budget)
           </span>
-          <span style={{ fontSize: 10, letterSpacing: 0.5 }}>
+          <span style={{ display: 'inline-flex', gap: 2, alignItems: 'center' }}>
+            {/* Q3: chrome-meter ● → Lucide Circle (solid dot) */}
             {Array.from({ length: 10 }, (_, i) => (
-              <span key={i} style={{ color: i < game.scoutBudget ? 'var(--accent)' : 'var(--border)' }}>●</span>
+              <Circle key={i} size={7} strokeWidth={0} fill="currentColor"
+                style={{ color: i < game.scoutBudget ? 'var(--accent)' : 'var(--border)' }} />
             ))}
           </span>
         </div>
