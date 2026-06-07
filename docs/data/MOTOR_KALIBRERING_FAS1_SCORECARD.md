@@ -219,3 +219,41 @@ Upplösningen gick mest **draw → ledarvinst**, inte draw → comeback. HT-leda
 ## Status efter steg 3
 
 Tre av fem mål i hamn eller nära: draws (✅ calibrate), hemvinst (självkorrigerad, närmar sig), HT-ledarfördelning (mot verkligheten). Klustring + marginaler + tester intakta. **Kvarstående residual:** comeback-basen (9,0 % vs 13,3 %) och HT-ledarens förlustandel (8 % vs 13 %) — comebacks som fullbordas är fortfarande för få. Det är den ursprungliga PRIO 2-resten; den kräver att fler kvitteringar fortsätter till vändning utan att återskapa draws, vilket är en finare avvägning än vad en enda spak når. Landar här per anti-överfit — ingen andra epicykel för att tvinga comeback exakt.
+
+---
+
+# Fas 1 testfall 5 (uppskjutet) — stil-kontinuumet
+
+Mät-körning med varierad taktik (spelets faktiska taktik-dimensioner), 600 matcher/profil, ingen motoändring. Aggregerad klustring (balanserad profil 0,73 ≈ aggregat 0,758) och marginaler intakta per konstruktion (inga baskonstanter rörda).
+
+## Spann per profil
+
+| Profil | Kluster/match | Hörnmål % | Öppet spel % |
+|--------|--------------|-----------|--------------|
+| Omställning/öppet (max) | 0,98 | 11,9 % | 78,6 % |
+| Offensiv | 0,93 | 12,6 % | 78,8 % |
+| Balanserad | 0,73 | 17,8 % | 75,7 % |
+| Hörnlutande | 0,90 | 24,2 % | 69,3 % |
+| Hörnberoende (max) | 0,66 | 26,4 % | 68,2 % |
+
+| Axel | Motor-spann | Verkligt (Finding 054) | Bedömning |
+|------|-------------|------------------------|-----------|
+| Hörnmålsandel | 11,9–26,4 % | 19,3–23,6 % | **För BRED** |
+| Kluster-frekvens | 0,66–0,98 (faktor 1,5×) | 0,57–1,18 (faktor 2,1×) | **För SMAL** |
+| Öppet spel-andel | 68,2–78,6 % | 71,4–75,9 % | För bred |
+
+## Dom: riktning rätt, magnituder fel åt olika håll
+
+**Riktningen validerar lag-identitetssystemet.** Omställningsprofiler producerar fler målkluster och färre hörnmål; hörnprofiler tvärtom. Olika taktik ger olika spelsätt på rätt sätt — systemet fungerar kvalitativt.
+
+**Men de två axlarna är felkalibrerade åt motsatta håll:**
+
+1. **Hörnberoendet är överdeterminerat (för brett).** Motorns ytterprofiler (11,9 % och 26,4 %) skjuter förbi det verkliga intervallet (19,3–23,6 %). cornerStrategy-spaken (safe −0,10 / aggressive +0,15 på cornerModifier, plus width och attackingFocus) är för stark — maxade hörnprofiler blir karikatyrer. Mittprofilerna (balanserad 17,8 %, hörnlutande 24,2 %) ringar dock in verkligheten väl; det är bara extremerna som överdriver.
+
+2. **Kluster/momentum är underdeterminerat (för smalt) — och det är den viktiga axeln.** Motorns kluster-spann är faktor 1,5× mot verklighetens 2,1×. Finding 054 visade att kluster-frekvensen är den starkaste verkliga stilseparatorn — det som gör att lag *känns* olika att möta. Där har taktiken för svag hävstång: ett omställningslag (0,98) och ett hörnlag (0,66) skiljer sig mindre i burst-karaktär än verkliga ytterpoler. Spridningen är också icke-monoton (balanserad 0,73 < hörnlutande 0,90), vilket tyder på att taktiken knappt styr klustringen alls — den drivs mer av lagstyrka/slump än av inställning.
+
+## Vad det betyder för spelet (design-signal)
+
+Detta är en spel-design-signal, inte bara en kalibreringssiffra. Lag känns olika på **hörnberoende** (kanske rentav lite för olika i extremfallen) men för lika på **momentum/burst** — den dimension som verkligheten gör mest skillnad på. En spelare som möter ett "omställningslag" och ett "hörnlag" märker skillnad i hur målen kommer (hörnor vs spel) men för lite skillnad i *rytmen* (skurar vs jämnt).
+
+**Åtgärdsriktning (design, ej i detta mät-uppdrag):** ge tempo/passingRisk/mentality mer hävstång på klustrings-mekaniken (momentum-byggandet) så att offensiva, högtempo-direkta lag faktiskt producerar fler målskurar — och dämpa cornerStrategy-spakens ytterlägen något så maxade hörnprofiler inte blir karikatyrer. Två motriktade justeringar, var och en med marginal- och klustringsverifiering.
