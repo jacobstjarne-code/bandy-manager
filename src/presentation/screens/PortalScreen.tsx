@@ -285,7 +285,7 @@ export function PortalScreen() {
         bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 8px)',
         left: 14,
         right: 14,
-        zIndex: 200,
+        zIndex: 'var(--z-header)',  // persistent botten-chrome (ej modal) — var 200 = oförändrat
         display: 'flex',
         flexDirection: 'column',
         gap: 6,

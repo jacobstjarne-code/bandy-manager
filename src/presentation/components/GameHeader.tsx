@@ -209,7 +209,7 @@ export function GameHeader() {
           position: 'absolute', top: 50, left: '50%', transform: 'translateX(-50%)',
           background: saveToast.ok ? 'var(--success)' : 'var(--danger)',
           color: 'var(--text-light)',
-          padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, zIndex: 201,
+          padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, zIndex: 'var(--z-toast)',  // save-toast → toast-nivå (var 201)
         }}>
           {saveToast.text}
         </div>

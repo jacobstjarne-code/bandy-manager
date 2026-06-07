@@ -88,7 +88,7 @@ export function MatchDoneOverlay({
       position: 'fixed', inset: 0,
       background: 'rgba(0,0,0,0.65)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      zIndex: 200,
+      zIndex: 'var(--z-overlay)',  // helskärms-overlay efter match (var 200→400)
     }}>
       <div className="card-sharp" style={{
         padding: '24px 20px',

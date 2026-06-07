@@ -18,7 +18,7 @@ export function HelpOverlay({ onClose, onRestartCoachMarks }: HelpOverlayProps) 
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-        zIndex: 250, display: 'flex', alignItems: 'flex-start',
+        zIndex: 'var(--z-overlay)', display: 'flex', alignItems: 'flex-start',  // hjälp-overlay (var 250→400, över modaler)
         justifyContent: 'center', paddingTop: 60, overflowY: 'auto',
       }}
     >
