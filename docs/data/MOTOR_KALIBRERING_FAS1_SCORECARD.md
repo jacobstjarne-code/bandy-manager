@@ -124,3 +124,51 @@ Constant-tuning kan därför inte stänga båda samtidigt — varje justering by
 Kandidat 2 adresserar båda gapen samtidigt och är därför den rekommenderade designvägen. Den kräver en ny tillstånds-variabel (nyligen-kvitterat) i 2H-loopen — en modelländring, som bör specas och verifieras mot klustring + marginaler + comeback + draws i ett svep, inte krankas live.
 
 **Hörnandel (PRIO 3):** 17% vs 22%, ren marginal-rekalibrering, orörd — lägst prioritet, hör till marginal-passet inte strukturpasset.
+
+---
+
+# Fas 2 steg 2 — lika-attraktorn (momentum-efter-kvittering)
+
+## Mekanismen (tillståndsvariabel, ej konstant)
+`equalizeMomentumTeam` + `equalizeMomentumTimer` i 2H-loopen. När ett lag går från underläge till lika (detekterat via `prevScoreDiff`) får det en avtagande attack-boost (`EQUALIZE_MOMENTUM=0.30`, 4 steg ≈ 6 min) i stället för att direkt falla till even_battle. Modellerar att ett nyss kvitterat lag rider på trycket. Half-flagga genomgående; ingen `minute>=46`.
+
+## Före/efter (alla fyra metriker + marginaler + tester)
+
+| Mått | Baseline (ingen Fas 2) | Post-paus (steg 1) | + momentum (steg 2) | Verkligt |
+|------|------------------------|--------------------|--------------------|----------|
+| Comeback bas | 7,6 % | 8,6 % | **9,2 %** | 13,3 % |
+| Fönster 51–55 | 8,7 % | 10,3 % | **11,0 %** | 27 % |
+| Oavgjorda | 18,7 % | 18,5 % | **18,5 %** | 10,7 % |
+| Hemvinst | 43,4 % | 44,4 % | **44,4 %** | 50,9 % |
+| Målklustring | 0,754 | 0,754 | **0,758** | 0,80 |
+| Mål/match | 9,04 | 9,05 | 9,05 | 9,08 |
+| Marginaler 047–050 | ✅ | ✅ | ✅ (oförändrade) | — |
+| Tester | 1078/1078 | 1078/1078 | **1078/1078** | — |
+
+## Framgångssignaturen: EJ uppfylld — rapporteras som resultat
+
+Spec:ens kvitto var: *draws faller → hemvinst självkorrigerar mot ~51 %.* **Det hände inte.** Draws står kvar på 18,5 %, hemvinst på 44,4 %. Comeback rörde sig materiellt åt rätt håll, draws rörde sig inte alls.
+
+Per spec:ens egen anti-överfit-regel ("en momentum-parameter ska flytta BÅDE comeback och draws — det bevisar att det är rätt spak") är momentum-efter-kvittering **rätt spak för comeback men inte för draws.** Jag krankade inte vidare (0,30→0,60 gav comeback 10,0 % men draws 19,0 % — fortfarande platt; en starkare ratt köper bara mer comeback, aldrig färre draws). Landade på modesta 0,30 — fångar comeback-vinsten utan att jaga ett mål som inte rör sig.
+
+## Dig-in: varför draws inte faller
+
+Dekomponering av motorns draws (n=383): **71 % är "ledde vid HT men slutade lika"** — exakt populationen mekanismen riktar in sig på. Ren born-even-stall är 1 %. Så mekanismen träffar rätt population men löser inte problemet.
+
+HT-ledningens utfall avslöjar varför:
+
+| HT-ledning → | Motor | Verkligt |
+|--------------|-------|----------|
+| vinst | 74,3 % | 78,7 % |
+| **oavgjort** | **17,0 %** | **~8 %** |
+| förlust (comeback emot) | 8,6 % | ~13 % |
+
+Motorns HT-ledare **slutar lika dubbelt så ofta** som i verkligheten (17 % vs 8 %) och förlorar för sällan (8,6 % vs 13 %). Momentum-efter-kvittering konverterar en del kvittering→draw till kvittering→vinst (därför stiger comeback), men post-paus + momentum hjälper samtidigt FLER underlägeslag att nå lika — inflödet till "kvitterat"-tillståndet växer i takt med utflödet till "vinst". Netto noll på draws.
+
+**Rotorsaken ligger ett steg upp:** motorn upplöser inte jämna sena lägen decisivt nog. Verkligheten skiljer HT-ledare i vinst/förlust (mer avgörande); motorn parkerar dem på lika. Att stänga draw-gapet kräver en mekanism som gör jämna sena lägen mer avgörande (varians/decisiveness i slutskedet) — INTE mer hjälp till underlägeslag, som bara skapar fler kvitteringar.
+
+Det är en separat mekanism från momentum-efter-kvittering och ska inte krankas in som en andra epicykel här. Hemmafördelens magnitud lämnades orörd (rätt — den är inte problemet).
+
+## Status
+- **Levererat:** post-paus (steg 1) + momentum-efter-kvittering (steg 2). Comeback 7,6 → 9,2 %, fönster 8,7 → 11,0 %, klustring 0,754 → 0,758 (mot mål 0,80). Regressionssäkert.
+- **Öppet:** draw/hemvinst-gapet. Kopplingshistorien är ofullständig — draws faller inte av momentum-efter-kvittering. Nästa mekanism: decisiveness i jämna sena lägen, separat spec.

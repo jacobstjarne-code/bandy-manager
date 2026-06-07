@@ -10,23 +10,23 @@
       "namn": "Målklustring (kluster/lag-match)",
       "prioritet": 1,
       "verkligt": "0,80 (liga) — 0,61–1,27 per stil",
-      "motor": "0.757",
+      "motor": "0.758",
       "gap": "motor 0.76 vs liga 0,80"
     },
     {
       "namn": "Post-paus comeback (basfrekvens)",
       "prioritet": 2,
       "verkligt": "13,3%",
-      "motor": "9.0%",
-      "gap": "-4.3pp"
+      "motor": "9.2%",
+      "gap": "-4.1pp"
     },
     {
       "namn": "Post-paus fönster 51-55",
       "prioritet": 2,
       "verkligt": "27%",
-      "motor": "10.1%",
-      "gap": "-16.9pp",
-      "n": 149
+      "motor": "11.0%",
+      "gap": "-16.0pp",
+      "n": 146
     },
     {
       "namn": "Hörnmålsandel",
@@ -39,15 +39,15 @@
       "namn": "Lagspecifik hemmafördel (gap)",
       "prioritet": 4,
       "verkligt": "Villa +0,2 / Sirius/snittlag varierar; liga +12,5pp",
-      "motor": "stark 7.6pp / mitt 6.6pp",
+      "motor": "stark 8.5pp / mitt 6.9pp",
       "gap": "se not"
     },
     {
       "namn": "Mål/match (marginal-kontroll)",
       "prioritet": 0,
       "verkligt": "9,08",
-      "motor": "9.07",
-      "gap": "-0.01"
+      "motor": "9.05",
+      "gap": "-0.03"
     }
   ],
   "goal_minute_buckets": {
@@ -55,32 +55,32 @@
     "10": 765,
     "20": 965,
     "30": 1074,
-    "40": 974,
-    "50": 1177,
-    "60": 937,
-    "70": 987,
-    "80": 1294
+    "40": 975,
+    "50": 1167,
+    "60": 930,
+    "70": 988,
+    "80": 1287
   },
   "raw": {
-    "goalsPM": 9.072,
-    "cornerShare": 0.16997354497354497,
-    "clusterFreq": 0.757,
-    "cbRate": 0.0896637608966376,
-    "win5155": 0.10067114093959731,
-    "win5155N": 149,
-    "strongGap": 7.636379505978875,
-    "midGap": 6.602143657014875,
+    "goalsPM": 9.05,
+    "cornerShare": 0.16972375690607736,
+    "clusterFreq": 0.758,
+    "cbRate": 0.0921544209215442,
+    "win5155": 0.1095890410958904,
+    "win5155N": 146,
+    "strongGap": 8.531901894038574,
+    "midGap": 6.9044952807550795,
     "tierRec": {
       "strong": {
-        "hw": 197,
+        "hw": 200,
         "hn": 335,
         "aw": 175,
         "an": 342
       },
       "mid": {
-        "hw": 243,
+        "hw": 244,
         "hn": 665,
-        "aw": 197,
+        "aw": 196,
         "an": 658
       }
     }

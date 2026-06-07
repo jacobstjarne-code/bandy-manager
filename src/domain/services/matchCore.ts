@@ -153,6 +153,14 @@ const SECOND_HALF_BOOST = 1.19
 // punktbump i minut 51–55. Magnitud kalibrerad mot comeback-basfrekvens.
 const POST_PAUS_URGENCY = 0.45
 
+// Kvitterings-momentum (Fas 2, struktur). När ett lag kvitterar från underläge
+// till lika får det en avtagande momentum-boost i stället för att direkt återgå
+// till even_battle. Modellerar att ett lag som just kvitterat rider på trycket
+// i stället för att lugna ner sig — bryter "dragningen mot lika" i 2H och stänger
+// comeback- och draw-gapet i SAMMA riktning (rotorsak, scorecard Fas 2).
+const EQUALIZE_MOMENTUM = 0.30     // attack-boost direkt efter kvittering
+const EQUALIZE_MOMENTUM_STEPS = 4  // avtar över 4 steg (~6 min)
+
 // Deterministic profile selection from seed — both halves receive the same
 // profile without needing to pass state between generators.
 export function pickMatchProfileFromSeed(
@@ -477,6 +485,14 @@ function* simulateMatchCore(
   let interactiveFreeKicksUsed = 0
   let lastMinutePressTriggered = false
 
+  // Kvitterings-momentum (Fas 2, struktur): när ett lag kvitterar från underläge
+  // till lika behåller det momentum i stället för att direkt falla till
+  // even_battle (den "dragning mot lika" som överproducerade oavgjorda och
+  // ströp comebacks). Bryter lika-attraktorn: kvitteringar blir oftare vändningar.
+  let equalizeMomentumTeam: 'home' | 'away' | null = null
+  let equalizeMomentumTimer = 0
+  let prevScoreDiff = (input.initialHomeScore ?? 0) - (input.initialAwayScore ?? 0)
+
   // Momentum tracking (full mode only)
   const recentHomeShots: number[] = []
   const recentAwayShots: number[] = []
@@ -753,6 +769,14 @@ function* simulateMatchCore(
     let homeModeCornerMult = 1.0
     let awayModeCornerMult = 1.0
 
+    // Detektera kvittering sedan föregående steg (underläge → lika).
+    if (step >= 30) {
+      const curDiff = homeScore - awayScore
+      if (curDiff === 0 && prevScoreDiff < 0) { equalizeMomentumTeam = 'home'; equalizeMomentumTimer = EQUALIZE_MOMENTUM_STEPS }
+      else if (curDiff === 0 && prevScoreDiff > 0) { equalizeMomentumTeam = 'away'; equalizeMomentumTimer = EQUALIZE_MOMENTUM_STEPS }
+      prevScoreDiff = curDiff
+    }
+
     if (step >= 30) {
       const homeMode = getSecondHalfMode(homeScore, awayScore, step, matchPhase)
       const awayMode = getSecondHalfMode(awayScore, homeScore, step, matchPhase)
@@ -786,6 +810,16 @@ function* simulateMatchCore(
       }
       homeModeAttackMult *= postPausUrgency(homeMode)
       awayModeAttackMult *= postPausUrgency(awayMode)
+
+      // Kvitterings-momentum: avtagande boost för laget som just kvitterat,
+      // så lika-läget oftare bryts till vändning i stället för att stanna lika.
+      if (equalizeMomentumTimer > 0 && equalizeMomentumTeam) {
+        const decay = equalizeMomentumTimer / EQUALIZE_MOMENTUM_STEPS  // 1.0 → 0
+        const boost = 1 + EQUALIZE_MOMENTUM * decay
+        if (equalizeMomentumTeam === 'home') homeModeAttackMult *= boost
+        else awayModeAttackMult *= boost
+        equalizeMomentumTimer--
+      }
     }
 
     // Global second-half boost — only in second half (emitFullTime = true), not overtime
