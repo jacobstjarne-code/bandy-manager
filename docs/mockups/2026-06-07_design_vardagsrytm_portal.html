@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Vardagsrytm & tystnad — portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --accent: #C47A3A; --accent-deep: #8B4820;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --gold: #E8B95C; --gold-deep: #B88838; --danger: #B05040; --success: #5A9A4A;
+    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 28px 16px 80px; }
+  .head { max-width: 1500px; margin: 0 auto 22px; }
+  .head h1 { font-family: var(--font-display); font-size: 23px; margin-bottom: 6px; }
+  .head p { font-size: 12.5px; color: rgba(245,241,235,0.72); line-height: 1.6; max-width: 880px; }
+  .head p strong { color: var(--accent); }
+  .head p + p { margin-top: 6px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 24px; max-width: 1500px; margin: 0 auto; align-items: start; }
+  .col { background: var(--bg-portal); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 26px rgba(0,0,0,0.32); width: 100%; max-width: 392px; justify-self: center; }
+  .ch { padding: 11px 15px; background: var(--bg-leather-dk); border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .ch .id { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; padding: 2px 7px; border-radius: 3px; }
+  .ch .id.ref { color: var(--text-muted); background: rgba(245,241,235,0.05); }
+  .ch .id.new { color: var(--success); background: rgba(90,154,74,0.15); }
+  .ch .id.gram { color: var(--cold-light); background: rgba(74,102,128,0.15); }
+  .ch .t { font-family: var(--font-display); font-size: 15px; margin-top: 7px; }
+  .ch .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }
+  .body { padding: 12px 0 16px; }
+
+  /* header strip */
+  .hdr { height: 38px; background: var(--bg-leather-dk); display: flex; align-items: center; padding: 0 14px; gap: 8px; border-bottom: 1px solid rgba(196,122,58,0.3); }
+  .hdr .logo { width: 16px; height: 16px; border-radius: 3px; background: var(--accent); }
+  .hdr .club { font-family: var(--font-display); font-size: 12px; font-weight: 700; }
+  .hdr .season { font-family: var(--font-mono); font-size: 8px; color: var(--text-muted); margin-left: auto; }
+
+  /* situation */
+  .sit { margin: 12px 14px 10px; padding: 9px 11px; color: var(--text-light-secondary); font-family: var(--font-display); font-style: italic; font-size: 12px; line-height: 1.4; border-left: 1px dashed rgba(196,122,58,0.3); opacity: 0.85; }
+  .sit strong { font-style: normal; font-family: var(--font-body); font-weight: 600; color: var(--text-light); display: block; margin-bottom: 2px; font-size: 10.5px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  /* dense reference cards */
+  .dc { margin: 0 14px 7px; padding: 9px 11px; background: var(--bg-portal-surface); border-left: 2px solid var(--accent); border-radius: 0 6px 6px 0; }
+  .dc.cold { border-left-color: var(--cold); } .dc.warm { border-left-color: var(--warm); }
+  .dc-l { font-size: 7.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light-secondary); font-weight: 600; margin-bottom: 4px; display: flex; gap: 5px; }
+  .dc-b { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light); line-height: 1.4; opacity: 0.88; }
+  .dc-prim { background: var(--bg-portal-elevated); border: 1px solid rgba(196,122,58,0.18); border-left: 1px solid rgba(196,122,58,0.18); border-radius: 6px; padding: 11px; }
+  .dc-prim .pt { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+  .dc-prim .pb { font-size: 10.5px; color: var(--text-light-secondary); }
+
+  /* ── BREATH ROW (andningsrad) — full bleed, no card chrome ── */
+  .breath { padding: 22px 22px; text-align: center; position: relative; }
+  .breath::before { content: '⬩'; display: block; color: var(--accent); opacity: 0.5; font-size: 11px; margin-bottom: 12px; letter-spacing: 6px; }
+  .breath-line { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--text-light); line-height: 1.55; max-width: 280px; margin: 0 auto; }
+  .breath-sub { font-family: var(--font-body); font-size: 10px; color: var(--text-muted); margin-top: 10px; letter-spacing: 0.5px; }
+
+  /* ── PATIENT CARD (tålamodskort) — the buried slow thing, elevated ── */
+  .patient { margin: 6px 14px 14px; padding: 15px 15px 14px; background: linear-gradient(180deg, rgba(74,102,128,0.07) 0%, var(--bg-portal-surface) 70%); border-radius: 10px; border: 1px solid rgba(74,102,128,0.2); position: relative; }
+  .patient-eye { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--cold-light); font-weight: 700; margin-bottom: 9px; display: flex; align-items: center; gap: 6px; }
+  .patient-eye .lucide { width: 12px; height: 12px; }
+  .patient-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .patient-portrait { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #5a2d7a, #7B4A9F); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 17px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
+  .patient-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text-light); line-height: 1.15; }
+  .patient-meta { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); letter-spacing: 0.5px; margin-top: 2px; }
+  .patient-body { font-family: var(--font-display); font-style: italic; font-size: 12.5px; color: var(--text-light); line-height: 1.55; margin-bottom: 12px; opacity: 0.92; }
+  .patient-spark { display: flex; align-items: center; gap: 9px; padding-top: 10px; border-top: 1px dashed rgba(74,102,128,0.22); }
+  .patient-spark-l { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+  .patient-spark svg { flex: 1; height: 22px; }
+  .patient-spark-v { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--cold-light); }
+
+  /* calm primary */
+  .calm-prim { margin: 0 14px 14px; padding: 14px; background: var(--bg-portal-elevated); border: 1px solid rgba(196,122,58,0.16); border-radius: 8px; }
+  .calm-prim-eye { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 8px; display: flex; gap: 6px; }
+  .calm-prim-eye .meta { margin-left: auto; font-family: var(--font-mono); font-size: 9px; color: var(--text-light-secondary); opacity: 0.7; text-transform: uppercase; }
+  .calm-prim-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--text-light); line-height: 1.15; margin-bottom: 5px; }
+  .calm-prim-body { font-size: 11px; color: var(--text-light-secondary); line-height: 1.45; }
+
+  /* single quiet secondary */
+  .quiet-sec { margin: 0 14px 0; padding: 11px 13px; background: var(--bg-portal-surface); border-left: 2px solid var(--warm); border-radius: 0 8px 8px 0; }
+  .quiet-sec-l { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--warm-light); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .quiet-sec-l .lucide { width: 11px; height: 11px; }
+  .quiet-sec-b { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--text-light); line-height: 1.5; opacity: 0.9; }
+
+  /* grammar diagram */
+  .gram-row { display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid rgba(245,241,235,0.06); align-items: flex-start; }
+  .gram-row:last-child { border-bottom: none; }
+  .gram-when { font-family: var(--font-mono); font-size: 9px; color: var(--cold-light); width: 90px; flex-shrink: 0; line-height: 1.4; letter-spacing: 0.5px; }
+  .gram-what { font-size: 11.5px; color: var(--text-light-secondary); line-height: 1.5; }
+  .gram-what b { color: var(--text-light); font-weight: 600; }
+
+  /* Q3 context test */
+  .ctx-row { margin: 0 0 9px; padding: 10px 12px; background: var(--bg-portal-surface); border-left: 2px solid var(--warm); border-radius: 0 6px 6px 0; }
+  .ctx-l { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--warm-light); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .ctx-b { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--text-light); line-height: 1.5; }
+  .ctx-tag { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; padding: 1px 6px; border-radius: 3px; margin-left: auto; }
+  .ctx-tag.ok { color: var(--success); background: color-mix(in srgb, var(--success) 14%, transparent); }
+  .ctx-tag.no { color: #E8A090; background: color-mix(in srgb, var(--danger) 14%, transparent); }
+  .lucide { display: inline-block; vertical-align: middle; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+  .notes { max-width: 1500px; margin: 32px auto 0; padding: 22px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.6; font-size: 12.5px; }
+  .notes h3 { font-family: var(--font-display); font-size: 16px; color: var(--text-light); margin-bottom: 10px; }
+  .notes h4 { font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 14px 0 5px; }
+  .notes ul { margin: 4px 0 6px 16px; } .notes li { margin-bottom: 4px; }
+  .notes code { font-family: var(--font-mono); font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 4px; border-radius: 2px; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Vardagsrytm & tystnad — portalen djup</h1>
+  <p>Audit #1 + #3, omtag. Illustrationerna löste ögonblicken; <strong>vardagen är fortfarande vägg-till-vägg kort utan rytm</strong> — och den ser spelaren tusen gånger oftare än en final. Tystnaden är inte tom: <strong>en lugn vecka är när det tålmodiga får sin scen</strong> — den unge som utvecklas tyst, kontraktet som tickar, bygden som lever. Inversen av story-slot: istället för att dramat stiger, får det långsamma en plats det aldrig annars får.</p>
+  <p>Två nya grepp: <strong>andningsrad</strong> (full-bredd, ingen kort-krom — bryter väggen) och <strong>tålamodskort</strong> (det begravda långsamma, lyft till fokus). Plus Q3-Lucide testat <em>i kontext</em>, inte på vit spec-yta.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 1 · CALM WEEK TODAY (problem) -->
+  <div class="col">
+    <div class="ch">
+      <span class="id ref">1 · IDAG</span>
+      <div class="t">Lugn vecka, nuvarande</div>
+      <span class="sub">Inget brinner — men portalen visar samma kort-vägg som en stressig vecka, bara tunnare. Resultat: känns tom snarare än lugn. Det tålmodiga (Henrikssons utveckling, kontrakt) syns inte alls.</span>
+    </div>
+    <div class="body">
+      <div class="hdr"><div class="logo"></div><div class="club">Forsbacka</div><div class="season">S3 · Omg 9</div></div>
+      <div class="sit"><strong>Tisdag · Omg 9</strong>Träning igår. Inget på gång till lördag.</div>
+      <div class="dc"><div class="dc-l">📋 Styrelsens krav</div><div class="dc-b">Topp 8 — vi ligger 6:a.</div></div>
+      <div class="dc cold"><div class="dc-l">📊 Tabell</div><div class="dc-b">6:a · 14 poäng efter 8.</div></div>
+      <div class="dc"><div class="dc-l">💰 Ekonomi</div><div class="dc-b">96 tkr. Stadigt.</div></div>
+      <div class="dc-prim" style="margin:0 14px 7px;"><div class="dc-l">🏒 Nästa match</div><div class="pt">Forsbacka — Heros</div><div class="pb">Lördag 14:00. Hemma.</div></div>
+      <div class="dc warm"><div class="dc-l">☕ Kafferummet</div><div class="dc-b">Magnus bytte kaffebryggare.</div></div>
+      <p style="font-family:var(--font-display); font-style:italic; font-size:10.5px; color:var(--text-light-secondary); margin:14px 14px 0; opacity:0.7; line-height:1.5;">Fem tunna kort. Ingen rytm, ingen riktning. "Lugnt" ser ut som "lite".</p>
+    </div>
+  </div>
+
+  <!-- 2 · CALM WEEK REDESIGNED -->
+  <div class="col">
+    <div class="ch">
+      <span class="id new">2 · TYSTNAD</span>
+      <div class="t">Lugn vecka, ny rytm</div>
+      <span class="sub">Andningsrad bryter väggen. Tålamodskortet lyfter det begravda — Henrikssons tysta utveckling blir veckans fokus. Färre kort, mer luft, men <em>inte</em> tomt: det patienta får scenen.</span>
+    </div>
+    <div class="body">
+      <div class="hdr"><div class="logo"></div><div class="club">Forsbacka</div><div class="season">S3 · Omg 9</div></div>
+
+      <div class="sit"><strong>Tisdag · Omg 9</strong>November har lagt sig över bygden. Stilla vecka.</div>
+
+      <!-- breath row -->
+      <div class="breath">
+        <div class="breath-line">Inget skriker den här veckan. Det är då man hör det andra.</div>
+        <div class="breath-sub">Tre dagar till nästa match</div>
+      </div>
+
+      <!-- patient card — the buried thing rises -->
+      <div class="patient">
+        <div class="patient-eye">
+          <svg class="lucide" viewBox="0 0 24 24" width="12" height="12"><path d="M7 20V10M12 20V4M17 20v-6"/></svg>
+          I tysthet
+        </div>
+        <div class="patient-top">
+          <div class="patient-portrait">H</div>
+          <div>
+            <div class="patient-name">Henriksson</div>
+            <div class="patient-meta">MF · 17 år · P19→A</div>
+          </div>
+        </div>
+        <div class="patient-body">Han har tränat med A-laget i sex veckor utan att säga mycket. Styrkan kryper uppåt — ingen har riktigt märkt det än.</div>
+        <div class="patient-spark">
+          <span class="patient-spark-l">Styrka · 8 omg</span>
+          <svg viewBox="0 0 180 22" preserveAspectRatio="none"><polyline fill="none" stroke="var(--cold-light)" stroke-width="1.4" stroke-linecap="round" points="3,18 25,16 48,15 70,12 92,11 115,8 138,6 160,4 177,3"/><circle cx="177" cy="3" r="2.5" fill="var(--gold)"/></svg>
+          <span class="patient-spark-v">68</span>
+        </div>
+      </div>
+
+      <!-- calm primary -->
+      <div class="calm-prim">
+        <div class="calm-prim-eye"><span>🏒 Nästa match</span><span class="meta">Lö 14:00</span></div>
+        <div class="calm-prim-title">Forsbacka — Heros</div>
+        <div class="calm-prim-body">Hemma. Mittenmöte, inga poäng på spel utöver de tre.</div>
+      </div>
+
+      <!-- one quiet secondary, Lucide in context -->
+      <div class="quiet-sec">
+        <div class="quiet-sec-l">
+          <svg class="lucide" viewBox="0 0 24 24" width="11" height="11"><path d="M16 2v4M8 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+          Kontrakt
+        </div>
+        <div class="quiet-sec-b">Sundströms avtal löper ut till våren. Ingen brådska — men det är värt en tanke innan andra hör av sig.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 3 · RHYTHM GRAMMAR -->
+  <div class="col">
+    <div class="ch">
+      <span class="id gram">3 · GRAMMATIK</span>
+      <div class="t">Rytm-regel</div>
+      <span class="sub">När bryter en andningsrad kort-väggen, och vad lyfter tålamodskortet? Generaliserbart till trupp + granska sen.</span>
+    </div>
+    <div class="body" style="padding:14px;">
+      <h4 style="font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:10px;">Andningsrad triggas när</h4>
+      <div class="gram-row"><span class="gram-when">lugn vecka<br>(0 event)</span><span class="gram-what"><b>Övre andningsrad</b> ersätter beat. Full bredd, italic, generös luft. "Det är då man hör det andra."</span></div>
+      <div class="gram-row"><span class="gram-when">sektions-<br>övergång</span><span class="gram-what"><b>Tunn andningsrad</b> mellan kort-grupper (max 1/skärm) — bara när stacken &gt; 5 kort, annars onödig.</span></div>
+      <div class="gram-row"><span class="gram-when">stressig vecka<br>(3+ event)</span><span class="gram-what">Ingen andningsrad. <b>Kort-väggen är rätt</b> när det faktiskt händer — täthet förtjänad.</span></div>
+
+      <h4 style="font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin:16px 0 10px;">Tålamodskort lyfter (1, vald)</h4>
+      <div class="gram-row"><span class="gram-when">utveckling</span><span class="gram-what">Ung spelare vars CA stiger tyst, ingen event. Sparkline berättar.</span></div>
+      <div class="gram-row"><span class="gram-when">tickande</span><span class="gram-what">Kontrakt/lån som löper, ej akut — men värt blicken nu.</span></div>
+      <div class="gram-row"><span class="gram-when">simmrande</span><span class="gram-what">Rivalitet, relation, bygd som rör sig långsamt.</span></div>
+      <div class="gram-row"><span class="gram-when">nära</span><span class="gram-what">Veteran inför milstolpe, akademist på gränsen.</span></div>
+
+      <p style="font-family:var(--font-display); font-style:italic; font-size:11px; color:var(--text-light-secondary); margin-top:12px; padding:10px 12px; background:rgba(74,102,128,0.06); border-left:2px solid var(--cold); border-radius:0 4px 4px 0; line-height:1.5;">Inversen av story-slot: den lyfter <b>drama</b> när det finns. Tålamodskortet lyfter <b>det långsamma</b> när dramat tiger. Samma slot-mekanik, motsatt urval.</p>
+    </div>
+  </div>
+
+  <!-- 4 · Q3 IN CONTEXT -->
+  <div class="col">
+    <div class="ch">
+      <span class="id gram">4 · Q3 I KONTEXT</span>
+      <div class="t">Lucide intill Georgia</div>
+      <span class="sub">Opus varning: stroke-1.8 Lucide kan kallna en varm Georgia-produkt. Testat i riktig rad, inte på vit spec-yta. Verdikt per ikon.</span>
+    </div>
+    <div class="body" style="padding:14px;">
+
+      <div class="ctx-row">
+        <div class="ctx-l">
+          <svg class="lucide" viewBox="0 0 24 24" width="11" height="11"><path d="M16 2v4M8 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+          Kontrakt
+          <span class="ctx-tag ok">håller</span>
+        </div>
+        <div class="ctx-b">Sundströms avtal löper ut till våren.</div>
+      </div>
+
+      <div class="ctx-row">
+        <div class="ctx-l">
+          <svg class="lucide" viewBox="0 0 24 24" width="11" height="11"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
+          Form
+          <span class="ctx-tag ok">håller</span>
+        </div>
+        <div class="ctx-b">Lindqvist på väg ned tre matcher i rad.</div>
+      </div>
+
+      <div class="ctx-row" style="border-left-color:var(--cold);">
+        <div class="ctx-l" style="color:var(--cold-light);">
+          <span style="font-size:13px;">📣</span>
+          Klacken
+          <span class="ctx-tag ok">behåll emoji</span>
+        </div>
+        <div class="ctx-b">Norra läktaren övar en ny sång.</div>
+      </div>
+
+      <div class="ctx-row" style="border-left-color:var(--warm);">
+        <div class="ctx-l">
+          <svg class="lucide" viewBox="0 0 24 24" width="11" height="11" style="stroke:#E8A090;"><path d="M12 21s-8-5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 1.5-.5 2.9-1.3 4.1"/><path d="M16 16l4 4M20 16l-4 4"/></svg>
+          Rivalförsäljning
+          <span class="ctx-tag no">för kallt</span>
+        </div>
+        <div class="ctx-b">Lindqvist hälsar inte längre.</div>
+      </div>
+
+      <p style="font-family:var(--font-display); font-style:italic; font-size:11px; color:var(--text-light-secondary); margin-top:12px; line-height:1.55;"><b style="font-style:normal; color:var(--accent);">Verdikt:</b> funktionella Lucide (kalender, trend) sitter fint — de ÄR verktyg, det är ärligt. Men <code>HeartCrack</code> intill "hälsar inte längre" känns kliniskt mot den varma raden. <b>Känslo-laddade begrepp behåller emoji eller går textlöst.</b> Q3-axeln håller, men med ett undantag: diegetiskt OCH känslo-laddat → emoji vinner även om det "är data".</p>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Vardagsrytm & tystnad — beslut</h3>
+
+  <h4>Andningsrad (rytm-grammatik)</h4>
+  <ul>
+    <li>Full-bredd, ingen kort-krom, italic Georgia, generös padding (22px). Ⓜ⬩-prick som enda ornament.</li>
+    <li><b>Triggas:</b> lugn vecka (ersätter beat, övre läge) · sektionsövergång (tunn, max 1, bara vid &gt;5 kort). <b>Aldrig</b> stressig vecka — täthet är förtjänad då.</li>
+    <li>Det är rytm-elementet som bryter vägg-till-vägg. Inte ett kort — en paus.</li>
+  </ul>
+
+  <h4>Tålamodskort (tystnadens fokus)</h4>
+  <ul>
+    <li>Inversen av story-slot. Story-slot lyfter drama; tålamodskortet lyfter det <b>långsamma</b> när inget drama finns.</li>
+    <li>Urval: utveckling (CA stiger tyst) · tickande (kontrakt/lån) · simmrande (rivalitet/relation/bygd) · nära (milstolpe). Picka 1, vikta på "ratio: betydelse / synlighet-hittills" — det som förtjänar blick men aldrig får den.</li>
+    <li>Cold-tonad (lugn, ej tryck — DB-Q2). Sparkline berättar den tysta kurvan (DB-Q1: riktning ÄR informationen, berättigad).</li>
+    <li>Löser "tight vs airy": vardagen är inte tom, den är <b>patient</b>. Färre kort, men det som finns har tyngd.</li>
+  </ul>
+
+  <h4>Q3 i kontext — justering</h4>
+  <ul>
+    <li>Funktionella Lucide (kalender, trend-pil) håller intill Georgia — de är ärliga verktyg.</li>
+    <li><b>Undantag upptäckt:</b> känslo-laddade diegetiska begrepp (rivalförsäljning, hjärta) → Lucide kallnar dem. Behåll emoji ELLER gå textlöst.</li>
+    <li>Reviderad Q3-regel: diegetiskt → emoji. Chrome/data → Lucide. <b>Men diegetiskt OCH känslo-laddat → emoji vinner</b>, även om det tekniskt är "data". Testa alltid i varm rad, aldrig på spec-yta.</li>
+  </ul>
+
+  <h4>Generalisering (nästa steg, efter portal landat)</h4>
+  <ul>
+    <li><b>Trupp:</b> lugn lista → tålamodskort-logik lyfter en spelare värd blicken (tyst utveckling) överst; andningsrad mellan position-grupper.</li>
+    <li><b>Granska:</b> efter en odramatisk match → andningsrad istället för att tränga in fler resultat-kort; det lugna efterspelet får luft.</li>
+  </ul>
+
+  <h4>Öppna frågor</h4>
+  <ul>
+    <li>Tålamodskort-frekvens: varje lugn vecka, eller bara när urvalet är genuint intressant (annars risk att "i tysthet" blir rutin)? Föreslag: bara vid stark kandidat — tomt är bättre än tvingat.</li>
+    <li>Andningsrad-copy: Opus-pool per kontext (väder/säsong/läge) eller härledd? Föreslag: pool, ~15 rader, bandysvensk.</li>
+    <li>HeartCrack-undantaget: bekräfta reviderad Q3-regel (diegetiskt+känsla → emoji) eller hålla hårda axeln och acceptera kylan?</li>
+  </ul>
+</div>
+
+</body>
+</html>

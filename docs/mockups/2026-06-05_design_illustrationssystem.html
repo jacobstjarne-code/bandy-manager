@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Illustrationssystem — integration</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #EDE8DF; --bg-surface: #FAF8F4;
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --text-primary: #1A1A18; --text-secondary: #6B6760;
+    --accent: #C47A3A; --accent-deep: #8B4820; --gold: #E8B95C; --gold-deep: #B88838;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --ill-navy: #1f3a4d; --ill-ice: #c8dae8; --ill-slate: #4a6680;
+    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 28px 16px 80px; }
+  .head { max-width: 1500px; margin: 0 auto 22px; }
+  .head h1 { font-family: var(--font-display); font-size: 23px; margin-bottom: 6px; }
+  .head p { font-size: 12.5px; color: rgba(245,241,235,0.72); line-height: 1.6; max-width: 880px; }
+  .head p strong { color: var(--accent); }
+  .head p + p { margin-top: 6px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 26px; max-width: 1500px; margin: 0 auto; align-items: start; }
+  .col { background: var(--bg-portal); border-radius: 14px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.35); width: 100%; max-width: 390px; justify-self: center; }
+  .ch { padding: 11px 15px; background: var(--bg-leather-dk); border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .ch .id { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; color: var(--accent); background: rgba(196,122,58,0.12); padding: 2px 7px; border-radius: 3px; }
+  .ch .t { font-family: var(--font-display); font-size: 15px; margin-top: 7px; }
+  .ch .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }
+
+  /* phone screen */
+  .scr { position: relative; aspect-ratio: 390 / 720; overflow: hidden; background: var(--bg-portal); }
+  .scr img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  /* intro — full-bleed illustration + bottom scrim + text */
+  .scrim-bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 62%; background: linear-gradient(180deg, transparent 0%, rgba(16,18,24,0.55) 45%, rgba(12,14,20,0.92) 100%); }
+  .scrim-top { position: absolute; left: 0; right: 0; top: 0; height: 22%; background: linear-gradient(180deg, rgba(12,14,20,0.55) 0%, transparent 100%); }
+  .intro-text { position: absolute; left: 22px; right: 22px; bottom: 26px; }
+  .intro-genre { font-family: var(--font-body); font-size: 9px; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; opacity: 0.92; }
+  .intro-title { font-family: var(--font-display); font-size: 30px; font-weight: 700; color: var(--text-light); line-height: 1.08; margin-bottom: 8px; letter-spacing: -0.3px; }
+  .intro-setting { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--text-light-secondary); line-height: 1.55; }
+  .intro-cta { margin-top: 16px; padding: 13px; border: 1px solid rgba(245,241,235,0.25); border-radius: 8px; text-align: center; font-size: 12px; letter-spacing: 1px; color: var(--text-light); background: rgba(0,0,0,0.25); backdrop-filter: blur(2px); }
+
+  /* status bar fake */
+  .statusbar { position: absolute; top: 0; left: 0; right: 0; height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-family: var(--font-mono); font-size: 10px; color: var(--text-light); z-index: 3; }
+
+  /* annandagen — anslag overlay (illustration as hero band) */
+  .anslag-screen { background: var(--bg-portal); display: flex; flex-direction: column; }
+  .anslag-hero { position: relative; height: 50%; overflow: hidden; }
+  .anslag-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+  .anslag-hero-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, var(--bg-portal) 100%); }
+  .anslag-body { flex: 1; padding: 4px 20px 22px; text-align: center; }
+  .anslag-genre { font-family: var(--font-body); font-size: 9px; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .anslag-title { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text-light); margin-bottom: 10px; line-height: 1.15; }
+  .anslag-quote { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--text-light-secondary); line-height: 1.55; max-width: 280px; margin: 0 auto 16px; }
+  .anslag-meta { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px; }
+  .anslag-dismiss { display: inline-block; padding: 9px 20px; border: 1px solid rgba(245,241,235,0.2); border-radius: 6px; font-size: 11px; letter-spacing: 1px; color: var(--text-light-secondary); }
+
+  /* finalhelg — portal header band + cards below */
+  .fh-screen { background: var(--bg-portal); }
+  .fh-band { position: relative; height: 200px; overflow: hidden; }
+  .fh-band img { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
+  .fh-band-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(12,14,20,0.35) 0%, transparent 35%, transparent 60%, var(--bg-portal) 100%); }
+  .fh-band-mark { position: absolute; left: 16px; right: 16px; bottom: 14px; text-align: center; }
+  .fh-mark-eye { font-family: var(--font-body); font-size: 8px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+  .fh-mark-q { font-family: var(--font-display); font-style: italic; font-size: 14px; color: var(--text-light); text-shadow: 0 1px 6px rgba(0,0,0,0.7); }
+  .fh-body { padding: 12px 14px 16px; }
+  .pcard { padding: 13px 13px 12px; border-radius: 8px; border: 1px solid rgba(232,185,92,0.55); background: linear-gradient(180deg, rgba(232,185,92,0.1) 0%, var(--bg-portal-elevated) 42%); box-shadow: 0 0 0 1px rgba(232,185,92,0.18); margin-bottom: 10px; }
+  .pc-eye { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 7px; display: flex; gap: 6px; }
+  .pc-eye .meta { margin-left: auto; font-family: var(--font-mono); font-size: 9px; color: var(--text-light-secondary); opacity: 0.75; text-transform: uppercase; }
+  .pc-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-light); line-height: 1.15; margin-bottom: 5px; }
+  .pc-body { font-size: 11px; color: var(--text-light-secondary); line-height: 1.45; }
+  .pc-body strong { color: var(--text-light); }
+  .cta-gold { width: 100%; margin-top: 10px; padding: 12px; border: none; border-radius: 12px; background: linear-gradient(180deg, var(--gold) 0%, var(--gold-deep) 100%); color: var(--bg-portal); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+
+  /* treatment guide */
+  .guide-body { padding: 14px; }
+  .pal-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .pal { flex: 1; height: 40px; border-radius: 4px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 3px; font-family: var(--font-mono); font-size: 7px; color: rgba(255,255,255,0.85); }
+  .lbl { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin: 14px 0 7px; }
+  .lbl:first-child { margin-top: 0; }
+  .rule { font-size: 11.5px; color: var(--text-light-secondary); line-height: 1.55; margin-bottom: 7px; }
+  .rule b { color: var(--warm-light); }
+  .rule code { font-family: var(--font-mono); font-size: 10px; background: rgba(245,241,235,0.07); padding: 1px 4px; border-radius: 2px; color: var(--gold); }
+
+  .notes { max-width: 1500px; margin: 32px auto 0; padding: 22px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.6; font-size: 12.5px; }
+  .notes h3 { font-family: var(--font-display); font-size: 16px; color: var(--text-light); margin-bottom: 10px; }
+  .notes h4 { font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 14px 0 5px; }
+  .notes ul { margin: 4px 0 6px 16px; } .notes li { margin-bottom: 4px; }
+  .notes code { font-family: var(--font-mono); font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 4px; border-radius: 2px; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Illustrationssystem — integration + behandlingsguide</h1>
+  <p>Tre illustrationer harmonierar redan med Heritage Bandy: <strong>navy-slate-ice-palett, koppar-accent (tegelbruk, upplysta fönster), bruksort-själ</strong>. De är inte dekoration — de är atmosfär vid <em>ögonblick</em>: ankomst, ceremoni, final. Mocken visar var var och en sitter + en behandlingsguide så framtida illustrationer kan beställas konsekvent.</p>
+  <p>Princip: <strong>illustration vid ögonblick, kort vid vardag.</strong> De bryter kort-monotonin (audit #1) och ger spelet sin första riktiga bild (audit #2) — utan att tävla med portal-flödets täthet.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 1 · INTRO -->
+  <div class="col">
+    <div class="ch">
+      <span class="id">1 · ANKOMST</span>
+      <div class="t">Intro / ArrivalScene</div>
+      <span class="sub">Full-bleed illustration, bottenscrim, text nederst. Managern står på höjden och ser bruksorten — spelarens första ögonblick.</span>
+    </div>
+    <div class="scr">
+      <img src="../assets/illustrations/intro.jpg" alt="intro">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+      <div class="scrim-top"></div>
+      <div class="scrim-bottom"></div>
+      <div class="intro-text">
+        <div class="intro-genre">⬩ Ankomsten ⬩</div>
+        <div class="intro-title">Forsbacka väntar</div>
+        <div class="intro-setting">Storstadsklubbarna räknar inte med er. Inte förrän isen ligger.</div>
+        <div class="intro-cta">Stig in i klubblokalen →</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 · ANNANDAGEN -->
+  <div class="col">
+    <div class="ch">
+      <span class="id">2 · CEREMONI</span>
+      <div class="t">Annandagen-anslag</div>
+      <span class="sub">Illustration som hero-band (övre halvan), scrim ned i portal-mörk, text under. Anslag-overlay vid särskild speldag — woodcut-folkfest.</span>
+    </div>
+    <div class="scr anslag-screen">
+      <div class="anslag-hero">
+        <img src="../assets/illustrations/annandagen.jpg" alt="annandagen">
+        <div class="anslag-hero-scrim"></div>
+      </div>
+      <div class="anslag-body">
+        <div class="anslag-genre">⬩ Annandagsbandyn ⬩</div>
+        <div class="anslag-title">Hela bygden är på benen</div>
+        <div class="anslag-quote">Det är 26 december. Klacken kom redan i gryningen. Trumman har inte slutat.</div>
+        <div class="anslag-meta">Omg 14 · Hemma mot Skutskär</div>
+        <div class="anslag-dismiss">Fortsätt →</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 · FINAL -->
+  <div class="col">
+    <div class="ch">
+      <span class="id">3 · FINAL</span>
+      <div class="t">Finalhelg-portal</div>
+      <span class="sub">Illustration som portal-header-band (200px), gold-PhaseMark över scrim, gold-primary-card under. Final-estetiken får sin bild — Uppsala, domkyrkan, slottet.</span>
+    </div>
+    <div class="scr fh-screen">
+      <div class="fh-band">
+        <img src="../assets/illustrations/final.jpg" alt="final">
+        <div class="fh-band-scrim"></div>
+        <div class="fh-band-mark">
+          <div class="fh-mark-eye">⬩ SM-Final ⬩</div>
+          <div class="fh-mark-q">"Hela landet tittar nu."</div>
+        </div>
+      </div>
+      <div class="fh-body">
+        <div class="pcard">
+          <div class="pc-eye"><span>⚔️ SM-Final · G5</span><span class="meta">Studenternas IP</span></div>
+          <div class="pc-title">Forsbacka — Karlsborg</div>
+          <div class="pc-body"><strong>2–2 i serien.</strong> En match till guldet. Utsålt sedan tre veckor.</div>
+          <button class="cta-gold">Spela SM-Final G5 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 · TREATMENT GUIDE -->
+  <div class="col">
+    <div class="ch">
+      <span class="id">4 · GUIDE</span>
+      <div class="t">Behandlingsguide</div>
+      <span class="sub">Hur illustrationer används + spec för att beställa fler som harmonierar. Palett extraherad ur de tre.</span>
+    </div>
+    <div class="guide-body">
+      <div class="lbl">Illustrations-palett (matchar tokens)</div>
+      <div class="pal-row">
+        <div class="pal" style="background:#1f3a4d;">navy</div>
+        <div class="pal" style="background:#4a6680;">slate</div>
+        <div class="pal" style="background:#7095b8;">ice-blå</div>
+        <div class="pal" style="background:#c8dae8;color:#1a1a18;">is-vit</div>
+        <div class="pal" style="background:#b5532e;">tegel</div>
+        <div class="pal" style="background:#e8b95c;color:#1a1a18;">ljus</div>
+      </div>
+      <div class="rule">Sammanfaller med <code>--cold</code>/<code>--cold-light</code> (slate/ice) + <code>--accent</code>/<code>--gold</code> (tegel/upplysta fönster). <b>Inga främmande färger</b> — illustrationerna lever i samma palett som UI:t.</div>
+
+      <div class="lbl">Var illustration får synas</div>
+      <div class="rule">✓ <b>Ögonblick:</b> ankomst, säsongsstart, ceremoniella speldagar (annandagen, nyårsbandy), final, seger.</div>
+      <div class="rule">✗ <b>Aldrig vardag:</b> ingen illustration bakom portal-flödet, trupp, transfers. Kort äger vardagen.</div>
+
+      <div class="lbl">Text-över-bild = alltid scrim</div>
+      <div class="rule">Bottenscrim <code>linear-gradient(180deg, transparent, rgba(12,14,20,0.92))</code> — sanktionerad gradient (DB-8: läsbarhet). Text aldrig direkt på bild utan scrim.</div>
+
+      <div class="lbl">Tre kompositionslägen</div>
+      <div class="rule"><b>Full-bleed</b> (intro) · <b>hero-band 50%</b> (anslag) · <b>header-band 200px</b> (portal). Samma bild kan beskäras olika per läge — <code>object-position</code> styr.</div>
+
+      <div class="lbl">Beställningsspec för fler</div>
+      <div class="rule">• Vertikal ~1436×2550 (porträtt, telefonsäker).<br>• Platt vektor-look, woodcut/risograf-kant, ingen fotorealism.<br>• Navy-natt ELLER ice-dag — ej mellanlägen.<br>• En koppar/varm accent per bild (tegel, fönsterljus, flagga).<br>• Bruksort-skala: plan + bygd + natur. Människor som silhuetter, ej porträtt.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Illustrationssystem — beslut & spec</h3>
+
+  <h4>Vad de tre löser (från min audit)</h4>
+  <ul>
+    <li><b>#1 Rytm:</b> illustrationer bryter kort-monotonin vid ögonblick. Vardagen förblir tät (rätt) — men ankomst/ceremoni/final får andas.</li>
+    <li><b>#2 Riktig bild:</b> spelets första icke-typografiska visuella. Bruksorten får ett ansikte.</li>
+    <li><b>#7 Tonal säsongsvariation:</b> intro=navy-natt, annandagen=is-dag, final=klarblå storstad. Tre tonlägen redan i materialet — framtida illustrationer kan tinta per säsong.</li>
+  </ul>
+
+  <h4>Tre användningslägen</h4>
+  <ul>
+    <li><b>Full-bleed scene</b> (intro): illustration fyller skärmen, text i bottenscrim. ArrivalScene + säsongsstart.</li>
+    <li><b>Anslag hero-band</b> (annandagen): övre 50% bild, scrim ned i portal-mörk, ceremoni-text under. Återanvänder ElimAnslag/anslag-overlay-strukturen — byt solid topp mot illustration.</li>
+    <li><b>Portal header-band</b> (final): 200px bild-band överst i portalvyn, gold-PhaseMark över scrim, gold-primary under. Endast finalhelg — bygger på R3+/C-SD2 gold-eskalering.</li>
+  </ul>
+
+  <h4>Scrim = sanktionerad gradient (DB-8)</h4>
+  <p>All text över illustration ligger på en scrim-gradient — det är DB-8:s tillåtna "läsbarhets-gradient", inte dekorativ yt-fyllning. Bottenscrim för full-bleed, fade-till-portal för band. Text aldrig naken på bild.</p>
+
+  <h4>Domängräns (som guld, DB-2)</h4>
+  <p>Illustration reserveras för <b>ögonblick</b>: ankomst, säsongsstart, ceremoniella speldagar, slutspel/final, seger. Aldrig bakom vardagsflöde. Samma disciplin som guld — späd inte ut genom att lägga bild överallt, då tappar ögonblicken sin vikt.</p>
+
+  <h4>Beställningsspec — för att hålla harmonin</h4>
+  <ul>
+    <li>Vertikal ~1436×2550, telefonsäker komposition (viktigt motiv i mitten-övre tredjedel så scrim-text nedtill inte täcker det).</li>
+    <li>Platt vektor/woodcut/risograf — ingen fotorealism, ingen 3D, inga gradient-himlar utöver platt tonad.</li>
+    <li>Två tonlägen: <b>navy-natt</b> (intro-typ) eller <b>is-dag</b> (annandagen/final-typ). Inga sepia/höst-mellanlägen — bryter palettens svalka.</li>
+    <li>Exakt EN varm accent per bild (tegelbruk, fönsterljus, flagga, koppartak). Det är bildens "copper-moment" — speglar UI:ts en-accent-regel.</li>
+    <li>Människor som silhuetter/små figurer, aldrig porträtt — porträtt hör till portrait-systemet (separat projekt).</li>
+    <li>Bruksort-skala obligatorisk: plan + bygd + natur i samma bild. Aldrig bara en arena utan sin ort.</li>
+  </ul>
+
+  <h4>Kandidater för fler illustrationer (om vi gör fler)</h4>
+  <ul>
+    <li><b>Nyårsbandy</b> — fyrverkeri över plan, is-natt (par till annandagen).</li>
+    <li><b>Vårsol / säsongsslut</b> — smältande is, april, par till intro fast dag.</li>
+    <li><b>Kafferummet</b> — interiör, tre koppar, fönster mot snö (det enda inomhus-motivet — för audit #1:s kafferums-känsla).</li>
+    <li><b>Derby</b> — två bygders klackar möts, fackelljus.</li>
+    <li><b>Nedflyttning / mörk vinter</b> — tom läktare, januari-grått (motvikt till final).</li>
+  </ul>
+
+  <h4>Implementation</h4>
+  <ul>
+    <li>Filer i <code>assets/illustrations/</code>: <code>intro.jpg</code>, <code>final.jpg</code>, <code>annandagen.jpg</code> (kopierade in).</li>
+    <li>Ny komponent <code>&lt;IllustrationScene mode="fullbleed|band|header" src=... /&gt;</code> med inbyggd scrim per läge.</li>
+    <li>ArrivalScene: byt nuvarande bakgrund mot <code>intro.jpg</code> full-bleed.</li>
+    <li>Anslag-overlay: lägg hero-band-läge, koppla annandagen/nyår till sina bilder via speldag.</li>
+    <li>PortalScreen: finalhelg-state får header-band (gated på <code>getPlayoffSeriesContext().round === Final</code>).</li>
+  </ul>
+
+  <h4>Öppna frågor till dig / Opus</h4>
+  <ul>
+    <li>Vill ni att jag specificerar de fem kandidat-illustrationerna som beställningsbriefer (motiv + komposition + tonläge per styck)?</li>
+    <li>Final-bilden är tydligt Uppsala (domkyrka + slott). Ska finalen alltid spelas på neutral storstadsarena (då funkar en generisk final-bild), eller behövs flera final-orter? Föreslag: en generisk "storstadsfinal" räcker — finalen är alltid bortaplan-känsla för en bruksort.</li>
+    <li>Annandagen-bilden är ljus folkfest — passar perfekt. Ska den tintas mörkare om managed-klubben har kris den ronden, eller hålls ceremoni-bilden alltid ljus? Föreslag: alltid ljus — ceremonin tillhör bygden, inte tabelläget.</li>
+  </ul>
+</div>
+
+</body>
+</html>

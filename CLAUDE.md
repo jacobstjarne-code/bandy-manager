@@ -39,6 +39,8 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 **D. UI-ARBETE:**
 - `design-system/CODE-OPUS-INSTRUCTION.md` (auktoritativ, `docs/DESIGN_SYSTEM.md` är arkiverad)
 - Senaste mock om finns i `docs/mockups/`
+- **Leverans-ingång (juni 2026):** `docs/mockups/CODE-LEVERANS-2026-06-07.md` — enda startpunkten för konsekvens/R2/Q-arbetet + illustration + efterlevnad. Listar byggordning och de fem försoningarna som vinner över äldre dokument. Beslut i `design-system/DESIGN-DECISIONS.md`.
+- **Design-efterlevnad (före UI-commit):** inga råa `rgba()`/hex/off-scale-radie i `src/` — bara tokens (`color-mix(in srgb, var(--token) N%, transparent)`, radie 14/8/3, z-skala). Citera DB:t du konformar mot. När `npm run lint:design` finns: kör den och låt den vara grön innan commit. Tokens är enda API:t mot paletten — råvärden är en bugg, inte en genväg.
 
 **E. THE_BOMB-FRÅGOR:**
 - `docs/THE_BOMB.md` (vision)
@@ -46,6 +48,14 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 
 **F. ARKITEKTUR / KEY FILES / BANDY-REGLER (slå-upp-vid-behov):**
 - `CLAUDE_REFERENCE.md` — läsbar referensfil med arkitektur-overview, bandy-specifika regler, key files, kalibreringsdata, Bandy-Brain-kunskapsbasen. För dessa: läs `CLAUDE_REFERENCE.md` istället för att grep:a `CLAUDE.md`.
+
+**G. BANDY-ANALYS / DATA / BRAIN / RESONEMANG OM SPORTEN — OBLIGATORISK KUNSKAPSBAS:**
+Innan du resonerar om bandyns regler, tolkar matchhändelser, eller drar slutsatser ur Bandygrytan-datan — läs:
+- `docs/kunskapsbas/REGLER.md` — bandyns regler (stabil referens). Utvisningar, straffar, hörnor, förlängning, dam-undantag.
+- `docs/kunskapsbas/DATA.md` — vad Bandygrytan-datan faktiskt innehåller, fält för fält. Särskilt: minute-konventionen och half-flaggan.
+- `docs/kunskapsbas/LAGET.md` — nuläget i svensk bandy (FÖRÅLDRAS — kolla datumstämpeln, verifiera med web-sökning om gammal).
+
+**Gissa aldrig om en bandyregel eller ett datafält — slå upp i kunskapsbasen först.** Tre felkällor (minute-konventionen, foul-team-attributionen, foul-duration) uppstod i maj 2026 just genom att gissa utifrån fältnamn istället för att verifiera. Kunskapsbasen är försvaret mot den klassen av fel.
 
 ### Backlog & historik — orientering:
 
@@ -739,7 +749,7 @@ Verifieringsskript: `scripts/calibrate.ts` (varierad lagstyrka, 200 matcher).
 Säsongsanalys: `scripts/analyze-stress.ts` — jämför stress-test-loggen mot bandygrytan-targets (säsongsnivå, inte per-match).
 
 - **Offside FINNS i bandy** — ta aldrig bort offside-kommentarer
-- **Inga gula kort** — bandy har 10 min utvisning, inte gula/röda kort
+- **Kort i UI (designval):** Bandy Manager visar inte gula/röda kort i gränssnittet — modellera utvisningar (5/10 min) + matchstraff. OBS: bandy HAR gult kort (= varning) och rött kort (= matchstraff) i verkligheten, se `docs/kunskapsbas/REGLER.md` §3. Reformen "våga visa rött" handlar om just röda kort — säg aldrig att bandy saknar kort.
 - **2 poäng för vinst** — inte 3 som i fotboll
 - **Termer:** "avslag" (inte avspark), "brytning" (inte tackling), "frislag" (inte frispark), "vaden" (inte vadden)
 - **Positioner:** MV, DEF (backar), HALF (halvbackar), FWD (forwards). Midfielder = Half i bandy.

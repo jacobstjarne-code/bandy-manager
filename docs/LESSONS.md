@@ -936,3 +936,17 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 **Fix:** Om en uppgift är väldefinierad och Code har verktygen — genomför direkt. Parkera bara om: (a) uppgiften beror på något som inte finns ännu, (b) Jacob explicit ber om att parkera, eller (c) specen är ofullständig och behöver Opus-runda.
 
 **Känn igen:** "Det här kan göras senare" utan konkret beroende. "Tas i nästa sprint" utan förklaring.
+
+---
+
+## 39. Normer i dokument upprätthåller sig inte själva — grind > checklista, en sanningskälla
+
+**Mönster:** Designsystemet dokumenteras (DESIGN-DECISIONS, mockar, referens) men uttrycket glider ändå isär — hårdkodad rgba, off-scale-radie, guld-creep återkommer. En konsekvens-audit städar en gång, men utan stående spärr startar driften om. Två handgjorda "sanningskällor" (referens-mock + besluts-logg) hinner säga emot varandra inom en session.
+
+**Rotorsak:** En Definition-of-Done ("grep-rent vid block-stängning") är en engångskontroll, inte en stående egenskap. Och två parallellt handunderhållna artefakter med samma värden driver alltid isär. Drift uppstår när Code tolkar prosa/tal i stället för att läsa en token.
+
+**Fix:** (1) Lyft grep-villkoren till en stående CI-grind (`scripts/check-design-tokens.mjs` + `npm run lint:design` i GitHub Actions på appen), ratchet: error först efter att baslinjen är grep-rent. (2) Generera spegeln (`colors_and_type.css`) ur `global.css` — handsynk desyncar (hände med `--radius-md` + scen-tokens juni 2026). (3) En sanktionerad sanningskälla per sak: tokens i `global.css` för värden, `DESIGN-DECISIONS.md` för beslut. Mockar är illustrativa, inte sanning. (4) Tokens är enda API:t mot paletten; råvärden är en bugg.
+
+**Känn igen:** "Klart när checklistan är grön" (vem kör checklistan om åtta veckor?). En referens-mock som anges som "enda sanningskällan" men inte är maskinläsbar. Ett värde som lever på två ställen.
+
+**Historik (2026-06-07):** Konsekvens-auditen (DB-1…9 + R2 + Q1–4) städade uttrycket, men appen hade ingen lint och ingen app-CI — bara `tsc`+`vitest` lokalt. Designs implementations-referens-mock, tänkt som pixel-sanningskälla, motsäger redan besluts-loggen på glow (40 vs 35%), pill-alpha (8/40 vs 6/30) och hjälte-CTA-mått — på de exakta värden som eskalerats för beslut. Bevis för att parallella handgjorda källor driver. Försoning samlad i `docs/mockups/CODE-LEVERANS-2026-06-07.md §1`; efterlevnads-grinden specad där §4.

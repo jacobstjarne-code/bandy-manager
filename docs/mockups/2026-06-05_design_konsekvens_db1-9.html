@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Konsekvens-unifiering DB-1…DB-9</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #EDE8DF; --bg-surface: #FAF8F4; --bg-elevated: #FFFFFF;
+    --bg-dark: #0E0D0B; --bg-dark-surface: #1E1D19;
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --border: #DDD7CC; --border-dark: #C4BAA8;
+    --text-primary: #1A1A18; --text-secondary: #6B6760; --text-muted: #8A857A;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8;
+    --accent: #C47A3A; --accent-dark: #A25828; --accent-deep: #8B4820;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --gold: #E8B95C; --gold-deep: #B88838; --danger: #B05040; --success: #5A9A4A;
+    --ice: #7EB3D4;
+    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 28px 16px 80px; }
+  .head { max-width: 1500px; margin: 0 auto 22px; }
+  .head h1 { font-family: var(--font-display); font-size: 23px; margin-bottom: 6px; }
+  .head p { font-size: 12.5px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 860px; }
+  .head p strong { color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; max-width: 1500px; margin: 0 auto; align-items: start; }
+  .card { background: var(--bg-portal); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 26px rgba(0,0,0,0.32); width: 100%; max-width: 412px; justify-self: center; }
+  .ch { padding: 11px 15px; background: var(--bg-leather-dk); border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .ch .id { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; color: var(--accent); background: rgba(196,122,58,0.12); padding: 2px 7px; border-radius: 3px; }
+  .ch .t { font-family: var(--font-display); font-size: 15px; color: var(--text-light); margin-top: 7px; }
+  .ch .rule { display: block; font-size: 11.5px; color: var(--text-light-secondary); margin-top: 6px; line-height: 1.5; }
+  .ch .rule b { color: var(--warm-light); font-weight: 600; }
+  .body { padding: 14px; }
+  .body.light { background: var(--bg); color: var(--text-primary); }
+  .lbl { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin: 12px 0 7px; }
+  .lbl:first-child { margin-top: 0; }
+  .light .lbl { color: var(--text-secondary); }
+
+  /* DB-1 alpha steps */
+  .alpha-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .alpha-sw { width: 42px; height: 28px; border-radius: 4px; flex-shrink: 0; }
+  .alpha-meta { font-family: var(--font-mono); font-size: 10px; color: var(--text-light-secondary); line-height: 1.4; }
+  .alpha-meta b { color: var(--text-light); }
+  .tint-bg { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .tint-border { background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+  .tint-fill { background: color-mix(in srgb, var(--accent) 55%, transparent); }
+  .tint-glow { background: var(--bg-portal-surface); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .tint-div { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+
+  /* DB-2 gold demo */
+  .gold-chip { display: inline-block; padding: 3px 9px; border-radius: 99px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; margin: 0 4px 4px 0; }
+  .ok { background: color-mix(in srgb, var(--gold) 14%, transparent); color: var(--gold); border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); }
+  .no { background: color-mix(in srgb, var(--danger) 10%, transparent); color: #E8A090; border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent); text-decoration: line-through; }
+
+  /* score demos */
+  .hero-score { font-family: var(--font-display); font-weight: 800; font-size: 44px; line-height: 1; color: var(--text-light); letter-spacing: -1px; }
+  .hero-score .sep { color: var(--accent); margin: 0 4px; }
+  .hero-score.gold { color: var(--gold); }
+  .sb { display: inline-flex; flex-direction: column; align-items: center; background: var(--bg-portal-elevated); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-left: 3px solid var(--success); border-radius: 2px; padding: 6px 11px 5px; }
+  .sb .n { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--success); font-variant-numeric: tabular-nums; }
+  .sb .l { font-size: 7px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin-top: 2px; }
+
+  /* DB-4 money matrix */
+  .mtx { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .mtx td, .mtx th { padding: 7px 8px; border-bottom: 1px solid rgba(245,241,235,0.08); text-align: left; vertical-align: top; }
+  .mtx th { font-size: 8px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); }
+  .mtx .ex { font-family: var(--font-mono); }
+  .money-georgia { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--text-light); }
+  .money-num { font-variant-numeric: tabular-nums; }
+
+  /* DB-5 squad row */
+  .srow { display: grid; grid-template-columns: 38px 1fr auto; gap: 10px; padding: 9px 11px; background: var(--bg-surface); border-radius: 8px; border-left: 3px solid transparent; margin-bottom: 7px; align-items: center; }
+  .srow.peak { border-left-color: var(--success); }
+  .srow.injured { border-left-color: var(--danger); background: color-mix(in srgb, var(--danger) 4%, var(--bg-surface)); }
+  .srow.contract { border-left-color: var(--warm); }
+  .srow.young { border-left-color: var(--cold); }
+  .sp { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-dark), var(--accent)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; color: rgba(255,255,255,0.9); font-size: 14px; }
+  .si { min-width: 0; }
+  .sn { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .schips { display: flex; gap: 4px; margin-top: 3px; flex-wrap: wrap; }
+  .sc { font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 99px; border: 1px solid; }
+  .sc.inj { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, transparent); background: color-mix(in srgb, var(--danger) 6%, transparent); }
+  .sc.con { color: var(--warm); border-color: color-mix(in srgb, var(--warm) 40%, transparent); background: color-mix(in srgb, var(--warm) 7%, transparent); }
+  .sc.nat { color: var(--gold-deep); border-color: color-mix(in srgb, var(--gold) 40%, transparent); background: color-mix(in srgb, var(--gold) 7%, transparent); }
+  .sca { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-primary); }
+
+  /* DB-6 dark variants */
+  .dual { display: flex; gap: 10px; }
+  .dual > div { flex: 1; border-radius: 8px; padding: 11px; }
+  .vlight { background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border); }
+  .vdark { background: var(--bg-portal-elevated); color: var(--text-light); border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent); }
+  .vlight .vt, .vdark .vt { font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+  .vlight .vb { font-size: 10px; color: var(--text-secondary); margin-top: 3px; }
+  .vdark .vb { font-size: 10px; color: var(--text-light-secondary); margin-top: 3px; }
+  .vtag { font-family: var(--font-mono); font-size: 7px; letter-spacing: 1px; text-transform: uppercase; margin-top: 8px; display: block; opacity: 0.7; }
+
+  /* DB-7 scene */
+  .scene-demo { background: radial-gradient(120% 90% at 50% 0%, #2a241e 0%, var(--bg-portal) 60%); border-radius: 8px; padding: 20px 14px; text-align: center; }
+  .sg-genre { font-size: 9px; letter-spacing: 4px; color: var(--accent); opacity: 0.7; text-transform: uppercase; margin-bottom: 9px; }
+  .sg-title { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--text-light); line-height: 1.1; margin-bottom: 6px; }
+  .sg-help { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-muted); }
+
+  /* DB-8 gradient */
+  .gd-ok { background: linear-gradient(180deg, transparent, rgba(0,0,0,0.55)); border-radius: 6px; height: 54px; display: flex; align-items: flex-end; padding: 8px 10px; font-size: 10px; color: var(--text-light); }
+  .gd-no { background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 12%, transparent), color-mix(in srgb, var(--accent) 4%, transparent)); border-radius: 6px; height: 40px; display: flex; align-items: center; padding: 0 10px; font-size: 10px; opacity: 0.7; }
+  .gd-fix { background: var(--bg-portal-surface); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; height: 40px; display: flex; align-items: center; padding: 0 10px; font-size: 10px; }
+
+  /* DB-9 radius */
+  .rad-demo { display: flex; gap: 8px; align-items: flex-end; }
+  .rad-box { background: var(--bg-portal-elevated); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); width: 60px; height: 48px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-light-secondary); }
+
+  .verdict { margin-top: 12px; padding: 9px 11px; background: color-mix(in srgb, var(--success) 8%, transparent); border-left: 2px solid var(--success); border-radius: 0 4px 4px 0; font-size: 11px; line-height: 1.5; color: var(--text-light); }
+  .light .verdict { color: var(--text-primary); }
+  .verdict b { color: var(--success); }
+
+  .notes { max-width: 1500px; margin: 32px auto 0; padding: 22px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.6; font-size: 12.5px; }
+  .notes h3 { font-family: var(--font-display); font-size: 16px; color: var(--text-light); margin-bottom: 10px; }
+  .notes h4 { font-family: var(--font-body); font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 14px 0 5px; }
+  .notes code { font-family: var(--font-mono); font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 4px; border-radius: 2px; color: var(--gold); }
+  .notes ul { margin: 4px 0 6px 16px; } .notes li { margin-bottom: 3px; }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Konsekvens-unifiering — DB-1…DB-9</h1>
+  <p>Nio visuella systembeslut i ett svep. Varje kort: <strong>regel</strong> (försvarbar mot DESIGN-DECISIONS.md) + mobil demo. Master-beslutet DB-1 (alpha via <code>color-mix</code>) låser upp Codes mekaniska städning. Inga svar förskrivna — valda och motiverade.</p>
+</div>
+
+<div class="grid">
+
+  <!-- DB-1 -->
+  <div class="card">
+    <div class="ch">
+      <span class="id">DB-1 · MASTER</span>
+      <div class="t">Alpha-/tint-systemet</div>
+      <span class="rule"><b>Ratificera <code style="color:var(--gold)">color-mix(in srgb, var(--token) N%, transparent)</code></b> som enda teknik. Fem kanoniska steg per semantisk färg. Hårdkodad rgba() → mekanisk konvertering (Code).</span>
+    </div>
+    <div class="body">
+      <div class="lbl">Kanonisk skala — per semantisk färg</div>
+      <div class="alpha-row"><div class="alpha-sw tint-bg"></div><div class="alpha-meta"><b>6%</b> · tint-bg (kort-fyllning, oläst-rad)</div></div>
+      <div class="alpha-row"><div class="alpha-sw tint-div"></div><div class="alpha-meta"><b>18%</b> · divider / svag linje</div></div>
+      <div class="alpha-row"><div class="alpha-sw tint-border"></div><div class="alpha-meta"><b>30%</b> · border / chip-kant</div></div>
+      <div class="alpha-row"><div class="alpha-sw tint-glow"></div><div class="alpha-meta"><b>35%</b> · glow (box-shadow, sparsamt)</div></div>
+      <div class="alpha-row"><div class="alpha-sw tint-fill"></div><div class="alpha-meta"><b>55%</b> · halv-fyllning (sällsynt)</div></div>
+      <div class="verdict"><b>5 steg:</b> 6 / 18 / 30 / 35 / 55 %. Ersätter floran 0.04–0.4. Tailwind-rgb (34,197,94 / 239,68,68) tas bort — ej kanoniseras. <code>--success</code> / <code>--danger</code> ersätter.</div>
+    </div>
+  </div>
+
+  <!-- DB-2 -->
+  <div class="card">
+    <div class="ch">
+      <span class="id">DB-2</span>
+      <div class="t">Guld-domänens gräns</div>
+      <span class="rule"><b>Guld = fullbordad seger + bekräftad landslagsmerit.</b> Aldrig för aspiration eller pågående tillstånd.</span>
+    </div>
+    <div class="body">
+      <div class="lbl">Tillåtet</div>
+      <span class="gold-chip ok">SM-guld</span><span class="gold-chip ok">Cupseger</span><span class="gold-chip ok">🇸🇪 Landslag (uttagen)</span>
+      <div class="lbl">Förbjudet</div>
+      <span class="gold-chip no">Kontrakt utgår</span><span class="gold-chip no">Stretch-mål</span><span class="gold-chip no">BoardMeeting B-läge</span>
+      <div class="verdict"><b>Gränsfall avgjorda:</b> kontrakt-stripe → <code>--warm</code> (DB-5). B-läge → accent, inte guld. Stretch-mål → accent. Guld stannar prestation som <em>hänt</em>, aldrig hopp.</div>
+    </div>
+  </div>
+
+  <!-- DB-3 -->
+  <div class="card">
+    <div class="ch">
+      <span class="id">DB-3</span>
+      <div class="t">Hero-/egen-match-score</div>
+      <span class="rule"><b>ScoreBlock hero-variant</b> för alla resultat (en primitiv, en sanning). Ceremoniell Georgia-siffra <b>endast</b> i segerscener (SM/cup).</span>
+    </div>
+    <div class="body">
+      <div class="lbl">Hero-score · ScoreBlock-variant (Granska, Säsongssammanf, Tabell-cup)</div>
+      <div style="text-align:center; padding:8px 0;">
+        <div class="sb" style="border-left-width:4px; padding:10px 18px 8px;">
+          <span class="n" style="font-size:30px;">4–2</span>
+          <span class="l">Hemma · vinst</span>
+        </div>
+      </div>
+      <div class="lbl">Ceremoniell hjälte · endast segerscen</div>
+      <div style="text-align:center; padding:6px 0;"><span class="hero-score gold">4<span class="sep">–</span>2</span></div>
+      <div class="verdict"><b>Två behandlingar, klar gräns:</b> ScoreBlock-hero överallt resultat visas i UI-flöde. Georgia-hjälte bara i den pixel-låsta segerscenen. Slutar bespoke-Georgia på varje yta.</div>
+    </div>
+  </div>
+
+  <!-- DB-4 -->
+  <div class="card">
+    <div class="ch">
+      <span class="id">DB-4</span>
+      <div class="t">Numerisk behandling — matris</div>
+      <span class="rule"><b>Pengar = Georgia.</b> Score = ScoreBlock/mono. Statistik = mono. Placering = Georgia display. Tre sanningar → en.</span>
+    </div>
+    <div class="body">
+      <table class="mtx">
+        <tr><th>Typ</th><th>Font</th><th>Exempel</th></tr>
+        <tr><td>Pengar</td><td>Georgia 700</td><td><span class="money-georgia money-num">96 000 kr</span></td></tr>
+        <tr><td>Score</td><td>mono / ScoreBlock</td><td><span class="ex" style="color:var(--success);font-weight:700;">4–2</span></td></tr>
+        <tr><td>Statistik</td><td>mono tabular</td><td><span class="ex" style="color:var(--text-light-secondary);">14 M · 8 G</span></td></tr>
+        <tr><td>Placering</td><td>Georgia display</td><td><span style="font-family:var(--font-display);font-weight:800;color:var(--gold);">2:a</span></td></tr>
+      </table>
+      <div class="verdict"><b>Pengar landar på Georgia</b> — det är paletten ("almanacka, ej kalkylblad"). Mono i BoardMeeting + sans-bold i EkonomiTab dras tillbaka till Georgia.</div>
+    </div>
+  </div>
+
+  <!-- DB-5 -->
+  <div class="card">
+    <div class="ch">
+      <span class="id">DB-5</span>
+      <div class="t">Squad-radens state-kodning</div>
+      <span class="rule"><b>Stripe = en prioriterad state.</b> Övriga states → chips. Reserverade <code>--cold</code>/<code>--warm</code> tillåtna i squad-domänen (dokumenterat undantag).</span>
+    </div>
+    <div class="body light">
+      <div class="srow injured">
+        <div class="sp">A</div>
+        <div class="si"><div class="sn">A. Johansson</div><div class="schips"><span class="sc inj">🩹 Skadad</span><span class="sc con">Kontrakt ut</span></div></div>
+        <div class="sca" style="color:var(--text-muted);">62</div>
+      </div>
+      <div class="srow contract">
+        <div class="sp" style="background:linear-gradient(135deg,#c0392b,#e74c3c);">S</div>
+        <div class="si"><div class="sn">S. Sundström</div><div class="schips"><span class="sc con">📋 Kontrakt ut</span><span class="sc nat">🇸🇪 Landslag</span></div></div>
+        <div class="sca">74</div>
+      </div>
+      <div class="srow young">
+        <div class="sp" style="background:linear-gradient(135deg,#5a2d7a,#7B4A9F);">H</div>
+        <div class="si"><div class="sn">H. Henriksson</div><div class="schips"><span class="sc" style="color:var(--cold);border-color:color-mix(in srgb,var(--cold) 40%,transparent);">🌱 Ung</span></div></div>
+        <div class="sca" style="color:var(--success);">68</div>
+      </div>
+      <div class="verdict"><b>Stripe-prioritet:</b> skada/avstängd &gt; moral/lobby &gt; kontrakt &gt; ung/peak. Guld <b>aldrig</b> i stripen (DB-2) — landslag blir chip. Inga Tailwind-glows.</div>
+    </div>
+  </div>
+
+  <!-- DB-6 -->
+  <div class="card">
+    <div class="ch">
+      <span class="id">DB-6</span>
+      <div class="t">Mörk-yta-varianter</div>
+      <span class="rule"><b>Delade kort får en riktig portal-variant</b> (<code>.card--portal</code>) — inte inline token-override. Slutar token-skuggning.</span>
+    </div>
+    <div class="body">
+      <div class="lbl">NextMatchCard — två riktiga varianter</div>
+      <div class="dual">
+        <div class="vlight">
+          <div class="vt">Forsbacka</div>
+          <div class="vb">Hemma · Lö 14:00</div>
+          <span class="vtag">.card (ljus)</span>
+        </div>
+        <div class="vdark">
+          <div class="vt">Forsbacka</div>
+          <div class="vb">Hemma · Lö 14:00</div>
+          <span class="vtag">.card--portal</span>
+        </div>
+      </div>
+      <div class="verdict"><b>En modifier-klass</b> sätter portal-ytans tokens via CSS — ingen inline-override av <code>--text-muted</code> osv. per render. Komponenten väljer variant på <code>context</code>-prop.</div>
+    </div>
+  </div>
+
+  <!-- DB-7 -->
+  <div class="card">
+    <div class="ch">
+      <span class="id">DB-7</span>
+      <div class="t">Scen-typografi + atmosfär</div>
+      <span class="rule"><b>(a)</b> <code>.h-scene-*</code> är kanon — inline-reimpl dras tillbaka. <b>(b)</b> Scen-atmosfär = sanktionerat undantag via <code>--bg-scene-*</code>-tokens.</span>
+    </div>
+    <div class="body">
+      <div class="scene-demo">
+        <div class="sg-genre">⬩ Säsongens slut ⬩</div>
+        <div class="sg-title">SM-guld</div>
+        <div class="sg-help">Forsbacka — Karlsborg 4–2</div>
+      </div>
+      <div class="verdict"><b>(a)</b> ja — <code>.h-scene-title</code> 28px, ej inline-23. <b>(b)</b> tokenisera atmosfären: lägg <code>--bg-scene-deep</code> + <code>--bg-scene</code> i <code>colors_and_type.css</code> (saknas i spegeln — <b>synka spegel mot global.css</b>). Radial-gradient i scener = enda sanktionerade yt-gradient.</div>
+    </div>
+  </div>
+
+  <!-- DB-8 -->
+  <div class="card">
+    <div class="ch">
+      <span class="id">DB-8</span>
+      <div class="t">Gradient-policy</div>
+      <span class="rule"><b>Scrim/fade JA</b> (läsbarhet). <b>Dekorativ yt-fyllning NEJ.</b> Undantag: scen-atmosfär (DB-7).</span>
+    </div>
+    <div class="body">
+      <div class="lbl" style="color:var(--success);">✓ Tillåtet — scrim (läsbarhet)</div>
+      <div class="gd-ok">Text över foto · sticky-footer-fade</div>
+      <div class="lbl" style="color:#E8A090;">✗ Förbjudet — dekorativ yt-gradient</div>
+      <div class="gd-no">Tabell-header-strip · "Årets match"-kort</div>
+      <div class="lbl">→ Ersättning</div>
+      <div class="gd-fix">Solid <code style="font-size:9px;">--bg-portal-surface</code> + accent-stripe</div>
+      <div class="verdict"><b>Regel:</b> gradient endast när den tjänar läsbarhet (scrim) eller är sanktionerad scen-atmosfär. Dekorativa ytor → solid yta + stripe/border.</div>
+    </div>
+  </div>
+
+  <!-- DB-9 -->
+  <div class="card">
+    <div class="ch">
+      <span class="id">DB-9</span>
+      <div class="t">Radie-ruling</div>
+      <span class="rule"><b>Normalisera till <code>--radius-md</code> (8px).</b> Off-scale 6px dras in. Skalan förblir 14 / 8 / 3.</span>
+    </div>
+    <div class="body">
+      <div class="rad-demo">
+        <div class="rad-box" style="border-radius:14px;">14</div>
+        <div class="rad-box" style="border-radius:8px; border-color:var(--success);">8 ✓</div>
+        <div class="rad-box" style="border-radius:6px; opacity:0.5;">6 ✗</div>
+        <div class="rad-box" style="border-radius:3px;">3</div>
+      </div>
+      <div class="verdict"><b>6 → 8.</b> Portal-kort + Tabell-tabbar snäpps till <code>--radius-md</code>. Ingen ny token för en 2px-avvikelse. Tre-stegsskalan hålls ren.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Beslut i sammandrag — för DESIGN-DECISIONS.md</h3>
+  <h4>Pass A — system</h4>
+  <ul>
+    <li><b>DB-1:</b> <code>color-mix(in srgb, var(--token) N%, transparent)</code>, steg <b>6/18/30/35/55%</b> (tint-bg/divider/border/glow/fill). Tailwind-rgb bort.</li>
+    <li><b>DB-4:</b> Pengar=Georgia · Score=ScoreBlock/mono · Statistik=mono · Placering=Georgia display.</li>
+    <li><b>DB-8:</b> Scrim/fade ja, dekorativ yt-gradient nej, scen-atmosfär sanktionerat undantag.</li>
+    <li><b>DB-9:</b> 6px→8px (<code>--radius-md</code>). Skala 14/8/3 oförändrad.</li>
+  </ul>
+  <h4>Pass B — semantik & score</h4>
+  <ul>
+    <li><b>DB-2:</b> Guld = fullbordad seger + bekräftad landslagsmerit. Ej aspiration/pågående. Kontrakt→warm, B-läge/stretch→accent.</li>
+    <li><b>DB-3:</b> ScoreBlock hero-variant överallt i UI-flöde; ceremoniell Georgia-siffra endast segerscen.</li>
+  </ul>
+  <h4>Pass C — komponent & yta</h4>
+  <ul>
+    <li><b>DB-5:</b> Stripe=en prioriterad state (skada&gt;moral/lobby&gt;kontrakt&gt;ålder), övrigt chips. Guld aldrig i stripe.</li>
+    <li><b>DB-6:</b> Riktig <code>.card--portal</code>-modifier, ej inline token-override.</li>
+    <li><b>DB-7:</b> (a) <code>.h-scene-*</code> kanon; (b) <code>--bg-scene-deep</code>/<code>--bg-scene</code> tokeniseras — synka spegel mot global.css.</li>
+  </ul>
+  <h4>Gap-ytor (mockade på text)</h4>
+  <ul>
+    <li><b>TabellScreen:</b> header/managed-rad-gradient → solid + accent-stripe (DB-8). Zon-stripe 11+ från Tailwind-röd → <code>--danger</code> (DB-1). Cup-bracket-score → ScoreBlock hero (DB-3). Tabbar 6→8 (DB-9).</li>
+    <li><b>InboxScreen:</b> <code>${color}18</code> hex-append → <code>color-mix … 6%</code> (DB-1). Oläst-stripe behålls (sanktionerad).</li>
+    <li><b>SimSummaryScreen:</b> Fortsätt-knapp bespoke → <code>.btn .btn-primary</code>. ScoreBlock-listan redan rätt.</li>
+  </ul>
+  <h4>Öppna flaggor till Opus</h4>
+  <ul>
+    <li>DB-7: <code>--bg-scene-deep</code>/<code>--bg-scene</code> finns i global.css men ej i colors_and_type-spegeln — spegeln behöver synkas (governance).</li>
+    <li>DB-1: glow-steget (35%) är det enda som kräver öga vid konvertering — Code bör flagga varje box-shadow för review, ej auto-konvertera.</li>
+    <li>DB-4: EkonomiTab stora saldo (sans-18/800 idag) → Georgia display-storlek eller Georgia-700 body? Föreslår display-sm (22px) för hero-saldo, 700 för inline.</li>
+  </ul>
+</div>
+
+</body>
+</html>

@@ -306,4 +306,70 @@ Mockernas alternativ-förslag (bakgrunds-tint på oläst, zone-dividers i tabell
 
 ---
 
-*Senast uppdaterad: 2026-05-25 — D-ST1 seasonal tone-tokens dokumenterat*
+### Konsekvens-unifiering — DB-1…DB-9 (designkonsekvens-audit)
+**Datum:** 2026-06-05
+**Var:** brief `design-system/briefs/DESIGN-BRIEF-KONSEKVENS-2026-06-04.md` · mock `docs/mockups/2026-06-05_design_konsekvens_db1-9.html` · Code-mekanik `docs/CODE-KONSEKVENS-MEKANIK-2026-06-04.md`
+**Bakgrund:** Designuttrycket hade glidit isär över många sessioner (mock + direkt-kod). Nio visuella systembeslut fattade i ett svep för att dra tillbaka uttrycket. Opus-diagnos → Design-beslut → inskrivning här.
+
+**Beslut:**
+- **DB-1 · Alpha/tint (master).** Enda tekniken för alpha ovanpå paletten är `color-mix(in srgb, var(--token) N%, transparent)`. Fem kanoniska steg per semantisk färg: **6%** tint-bg · **18%** divider · **30%** border/chip-kant · **35%** glow (box-shadow, sparsamt) · **55%** halv-fyllning (sällsynt). Hårdkodad `rgba()` och hex-append (`${color}18`) fasas ut → mekanisk konvertering. Tailwind-rgb (`34,197,94` / `239,68,68`) tas bort, ersätts av `--success` / `--danger`.
+- **DB-2 · Guld-gräns.** Guld (`--gold`) = **fullbordad seger + bekräftad landslagsmerit (uttagen)**. Aldrig aspiration eller pågående tillstånd. Gränsfall: kontrakt-utgår → `--warm`; BoardMeeting B-läge → `--accent`; stretch-mål → `--accent`. Guld får aldrig bäras av en squad-rad-stripe (DB-5) — landslag blir chip.
+- **DB-3 · Hero-score.** En primitiv: `ScoreBlock` hero-variant för alla resultat i UI-flöde (Granska, Säsongssammanfattning, Tabell-cup). Ceremoniell Georgia-siffra **endast** i de pixel-låsta segerscenerna (SM/cup). Slutar bespoke-Georgia per yta.
+- **DB-4 · Numerisk behandling.** Pengar = **Georgia 700** ("almanacka, ej kalkylblad"). Score = ScoreBlock/**mono**. Statistik = **mono tabular**. Placering = **Georgia display**. Mono i BoardMeeting + sans-bold i EkonomiTab dras tillbaka till Georgia.
+- **DB-5 · Squad-rad.** Vänster-stripe bär **en prioriterad state**: skada/avstängd > moral/lobby > kontrakt > ålder. Övriga states → chips. `--cold`/`--warm` tillåtna i squad-domänen som **dokumenterat undantag** (utöver journalist/säsongssignatur). Guld aldrig i stripe; landslag = chip.
+- **DB-6 · Mörk-variant.** Delade kort får en riktig `.card--portal`-modifier som sätter portal-ytans tokens via CSS. Slutar inline token-override per render (t.ex. `NextMatchPrimary`). Komponenten väljer variant på `context`-prop.
+- **DB-7 · Scen-typografi + atmosfär.** (a) `.h-scene-*` är kanon — inline-reimplementering dras tillbaka. (b) Scen-atmosfär tokeniseras via `--bg-scene` / `--bg-scene-deep` (radial-gradient i scener = enda sanktionerade yt-gradienten, se DB-8). Spegeln `colors_and_type.css` synkad mot `global.css` (scen-tokens tillagda 2026-06-05).
+- **DB-8 · Gradient-policy.** Scrim/fade JA (läsbarhet — sticky-footer, text över foto). Dekorativ yt-fyllnads-gradient NEJ (Tabell header-strip + managed-rad, "Årets match"-kort → solid yta + accent-stripe). Undantag: scen-atmosfär (DB-7).
+- **DB-9 · Radie.** Off-scale `6px` → `--radius-md` (8px). Skalan 14 / 8 / 3 oförändrad. **Obs:** `--radius-md` finns i spegeln men saknas i `global.css` :root — Code lägger till `--radius-md: 8px` i global.css före snäppning.
+
+**Konsekvens:** Mekaniken körs via `docs/CODE-KONSEKVENS-MEKANIK-2026-06-04.md` — Tier 1 oberoende, Tier 2 nu avgrindad (alla DB beslutade). Gap-ytor (Tabell/Inbox/SimSummary) har konkreta fixar i mock-noterna.
+
+**Avgjorda flaggor:** spegel-synk klar (scen-tokens); glow-steget (35%) konverteras **inte** automatiskt — varje box-shadow flaggas för manuell review; EkonomiTab hero-saldo → `.h-display-sm` (Georgia 22), inline-belopp Georgia 700; mock-demos använder ungefärliga %-värden (4/7/14) — Code snäpper till de fem kanoniska stegen.
+
+**Uppföljning 2026-06-05 — Tier 1-flaggor avgjorda (Code-rapport, commit 3605904):**
+- **`.h-label` ratificeras till 9px / letter-spacing 2.5px** (var 8px/2px). ~30 platser använde redan 9/2.5 självständigt — rollen var avvikaren, inte instanserna. En token-edit gör dem rena swaps; redan bytta SimSummary/QFSummary växer 1px (försumbart). *Live `global.css` av Code (bygg+test); spegeln re-synkas efter.*
+- **Z-skalan utökas med `--z-header` (200) och `--z-sticky` (50)** — persistent header resp. sticky-footer saknade nivåer. Code mappar kvarvarande literaler (Portal 288, GameHeader 200/201, MatchDone 91, Help 250, RoundSummary 50) till skalan med uttalad staplingsordning för Jacobs godkännande — ingen blind snäppning.
+- **SectionLabel:** `.h-label` förblir typ + 4px marginal; SectionLabel använder klassen och override:ar `margin:0` explicit där tätt behövs (avvikelsen blir avsiktlig, ej tyst reimplementering).
+- **Kvar till Design (runda 2):** display/scen-rubrik-kalibrering, hjälte-CTA-variant (löser radius-12 + Dela/Historik), åldersband-taggar. Brief: `design-system/briefs/DESIGN-BRIEF-KONSEKVENS-R2-2026-06-05.md`.
+
+**Runda 2 — R2-1…R2-3 avgjorda (Design-mock `docs/mockups/2026-06-05_design_konsekvens_r2.html`):**
+- **R2-1 · Rubrik-kalibrering.** Instanser konformar till befintliga roller — ingen storleks-flora. EN ny roll: `.h-display-hero` = Georgia 52px / 900 / letter-spacing −1px, **endast** säsongsavslut + seger-hjälte (ceremoniell, DB-3-anda). Ny `.h-eyebrow` = 11px / letter-spacing 3px / uppercase / accent (skild från `.h-label` 8/2px) för återkommande "ÅRSBOK"-eyebrow. SeasonSummary h1 900 → `.h-display-hero`; BoardMeeting 23→28 + 12.5→13 (`.h-scene-*`).
+- **R2-2 · Hjälte-CTA.** Sanktionera `.btn--hero`: radius 14, padding 17×22, 16px/800, glow. `.btn--hero.gold` för SM/cup-seger. Domängräns (DB-2-anda): **endast** säsongsslut/seger/cup — aldrig vardags-CTA (förblir `.btn-primary`). Stänger radius-12 (hero→14, allt annat→8) och Dela/Historik → `.btn-outline` (accent; Historik slutar vara grå).
+- **R2-3 · Åldersband (DB-5-familjen).** En chip-form: radius 99, `color-mix`-fyllning, Utvecklas=`--cold`, Peak=`--success`, Avtar=`--text-muted`. `--ice` + radius-4 + grå-fyllning dras tillbaka. Guld aldrig (DB-2). Åldersband är chip, inte stripe (stripen bär actionable state).
+
+**Avgjorda flaggor (Opus):**
+- **Georgia 900-fallback:** ratificerad som best-effort. Georgia har bara 400/700 — 900 syntetiseras/klampas på de flesta OS. Hjälten bärs av **storlek (52) + letter-spacing −1px**; vikten är bonus där den finns. Ingen webfont (PWA-lätthet väger tyngre). Deklarera `font-weight: 900` som intent, acceptera bold-render där 900 saknas.
+- **Pill-alpha:** **dra till DB-1-kanon (6% fyllning / 30% kant)** — inget pill-undantag. 8/40 återöppnar floran DB-1 stängde; full-färgad text+ikon bär läsbarheten, inte kanten. Samma regel gäller `.btn--hero`-glowen → kanon-glowsteget **35%**, inte 40%.
+
+**Kvalitet Q1–Q3 — form-audit-svar (Design-mock `docs/mockups/2026-06-05_design_kvalitet_q1-3.html`, handover `docs/mockups/CODE-OVERLAMNING-DESIGNPAKET-2026-06-05.md`):**
+Designs form-audit lyfte sju observationer; #4–#6 är omvandlade till beslut här. #1 (rytm i vardagen) och #3 (tomma/lugna tillstånd) kvarstår som öppen riktning; #2 (bild) och #7 (säsongston) hanteras av illustrationssystemet nedan.
+- **Q1 · Sparkline-disciplin (audit #4).** Sparkline endast när riktningen i sig är info — inte default-dekoration. Max 1/kort, ~4/skärm. Squad-radens CA → tal + delta; sparkline endast i PlayerCard-modalen.
+- **Q2 · `--warm`-semantik (audit #5).** `--warm` betyder **tilltagande mänskligt tryck** — en betydelse, inte sex. Åldersband "avtar" → `--text-muted`; vardagskafferum → `--cold`. (Skärper squad-undantaget i DB-5/R2-3.)
+- **Q3 · Emoji vs Lucide (audit #6).** Emoji = diegetiskt (klacken, kafferum, närvaro), Lucide = chrome (status, riktning). Konvertera `▾ ● 🌱 🔥 💔` → Lucide (TrendingDown/Circle/Sprout/Flame/HeartCrack, stroke 1.8). Behåll `🏒 📣 ☕ 🩺 🇸🇪` + kategori-set + ★ rating.
+
+**Illustrationssystem — form-audit #2/#7 (mock `docs/mockups/2026-06-05_design_illustrationssystem.html`, briefer `BESTALLNINGSBRIEFER-ILLUSTRATIONER-2026-06-05.md`):**
+- **Domnäregel (som guldet):** illustration **endast vid ögonblick** — ankomst, säsongsstart, ceremoniella speldagar, slutspel/final, seger, kris. **Aldrig bakom vardagsflöde** (portal, trupp, transfers). Kort äger vardagen. Späd inte ut — då tappar ögonblicken sin vikt.
+- **Komponent:** `<IllustrationScene mode src alt>` med tre lägen (`fullbleed` / `band` / `header`) + inbyggd scrim (DB-8-sanktionerad gradient — text aldrig naken på bild). Placeholder-yta (`--bg-portal-surface` + accent-ram + mono-label) tills bilden finns; ingen trasig img.
+- **Bildbank:** `public/assets/illustrations/` (parallellt med `public/assets/portraits/`), refererad `/assets/illustrations/{namn}.jpg`. **OBS:** handover-paketet skrev `src/assets/` — fel för det här projektet; statiska bilder ligger i `public/`. Tre finns (intro/annandagen/final), fem beställda (nyarsbandy/varsol/kafferummet/derby/nedflyttning).
+- **Konstanter:** vertikal ~1436×2550, platt woodcut, navy-natt eller is-dag, **en** varm accent per bild, bruksort-skala, silhuetter ej porträtt. Finalen alltid Uppsala. Ceremoni-bilder (annandagen/nyår) alltid ljusa oavsett tabelläge.
+
+**Q4 · Vardagsrytm & tystnad — form-audit #1/#3 (mock `docs/mockups/2026-06-07_design_vardagsrytm_portal.html`):**
+Form-auditens #1 (vardagen saknar rytm) och #3 (tystnaden odesignad) är samma problem sett från två håll — löses som ett spår. C-N1 (stiltje) generaliseras från en specifik vy till en princip för hela vardagen.
+- **Tystnad är inte "mindre" — det är en annan prioriteringsyta.** En lugn vecka är när det tålmodiga, icke-tidskritiska får sin scen: den unge som utvecklas tyst, kontraktet som tickar, bygden som lever på. Inversen av story-slot — samma slot, motsatt urval: story-slot lyfter drama, tålamodskortet lyfter det långsamma när dramat tiger.
+- **Mekanik:** `andningsrad` (full-bredds atmosfärisk rad) bryter kort-väggen; `tålamodskort` lyfter veckans tysta fokus. Löser "tight vs airy" — vardagen är inte tom, den är tålmodig.
+- **Omfång:** portalen djup först (mest sedd), trupp + granska generaliseras därifrån.
+- **Öppet:** tålamodskort endast vid stark kandidat — tomt är bättre än tvingat "i tysthet" som rutin.
+
+**Q3-precisering (i kontext, upptäckt i vardagsrytm-arbetet):** diegetiskt → emoji, chrome → Lucide, **men diegetiskt OCH känslo-laddat → emoji vinner även om det tekniskt är data.** `💔` ("hälsar inte längre") stannar emoji — HeartCrack-Lucide kallnar den varma raden. Funktionella Lucide (kalender, trend) sitter fint intill Georgia. Konverteras: `▾ ● 🌱`. Stannar: `💔` (+ `🔥` när det markerar burnout/känsla, ej ren streak-statistik). Verifieras i varm rad, ej på spec-yta.
+
+---
+
+**Implementations-noter (2026-06-07, Code-rapport — 8f99981 infra, 72982c6 DB-1):**
+- **DB-1 körd i två faser (ratificerat).** Code separerade DB-1:s två mål: (1) *tekniken* — all hårdkodad palett-`rgba()` → `color-mix(var(--token) N%)`, **exakt-alpha bevarad** (0.08→8%), 231 konv./50 filer, noll visuell ändring. Strukturmålet nått: tokens/säsongston styr färgen, ingen hårdkodad palett-RGB kvar. **Klart.** (2) *kanon-snäppningen* till 5 steg = en *visuell* ändring (mockens egen CSS använder mellansteg 7/8/12/14/25/40 — snäpp skiftar alphas synligt). **Skjuts till eget visuellt pass med playtest (BACKLOG: DB-1 Fas 2).** Alpha-floran lever kvar tokeniserad tills dess — medvetet. Hård-snäppa INTE nu.
+- **z-staplingsordning godkänd:** PortalScreen-modal 288→`--z-modal`, GameHeader save-toast 201→`--z-toast`, HelpOverlay 250→`--z-overlay`, MatchDoneOverlay 91→`--z-overlay` (91 var dessutom under dropdown — latent bugg, nu rätt). MatchDone+Help delar 400 (samexisterar aldrig — ok). Playtest-koll: toasten flyttar 201→600, dvs över modaler — semantiskt rätt, men verifiera att inget ska dölja den.
+- **Två luckor att stänga:** (a) `74,102,128` i SeasonArcCard = `--cold`, missades i token-mappen — konvertera (ej glow, ej uppskjuten). (b) SquadScreen CA-glow/fitness (Tailwind-grön/röd i text-shadow) är både Tailwind-rgb *och* glow — blockerar gate-villkoret "Tailwind-rgb borta" tills glow-passet kört. Gate→error först efter glow-passet (ratchet håller).
+- **DB-4 bekräftat:** ScoreBlock var redan mono; EkonomiTab saldo → `.h-display-sm`. Infrastruktur (`.h-label` 9/2.5, z-tokens, `--radius-md` — fixade en latent radie-bugg där `var(--radius-md)` löstes till intet — SectionLabel) klar.
+
+---
+
+*Senast uppdaterad: 2026-06-07 — DB-1 tvåfas + z-stapling + infra inskrivna (Code-rapport)*

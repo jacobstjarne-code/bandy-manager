@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Implementations-referens — kanoniska värden</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #EDE8DF; --bg-surface: #FAF8F4;
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --border: #DDD7CC; --border-dark: #C4BAA8;
+    --text-primary: #1A1A18; --text-secondary: #6B6760; --text-muted: #8A857A;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8;
+    --accent: #C47A3A; --accent-deep: #8B4820;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --gold: #E8B95C; --gold-deep: #B88838; --danger: #B05040; --success: #5A9A4A;
+    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 28px 18px 80px; }
+  .head { max-width: 1200px; margin: 0 auto 22px; }
+  .head h1 { font-family: var(--font-display); font-size: 23px; margin-bottom: 6px; }
+  .head p { font-size: 12.5px; color: rgba(245,241,235,0.72); line-height: 1.6; max-width: 800px; }
+  .head p b { color: var(--accent); }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  .sec { background: var(--bg-portal); border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 8px 22px rgba(0,0,0,0.28); }
+  .sec-h { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; padding-bottom: 7px; border-bottom: 1px solid rgba(196,122,58,0.25); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid rgba(245,241,235,0.06); vertical-align: middle; }
+  th { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
+  td.k { font-family: var(--font-mono); font-size: 10.5px; color: var(--gold); white-space: nowrap; }
+  td.v { color: var(--text-light-secondary); }
+  .sw { display: inline-block; width: 60px; height: 22px; border-radius: 4px; vertical-align: middle; border: 1px solid rgba(255,255,255,0.1); }
+  .chip { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; border: 1px solid; }
+  .ab-young { color: var(--cold); border-color: color-mix(in srgb, var(--cold) 30%, transparent); background: color-mix(in srgb, var(--cold) 6%, transparent); }
+  .ab-peak { color: var(--success); border-color: color-mix(in srgb, var(--success) 30%, transparent); background: color-mix(in srgb, var(--success) 6%, transparent); }
+  .ab-fade { color: var(--text-muted); border-color: color-mix(in srgb, var(--text-muted) 30%, transparent); background: color-mix(in srgb, var(--text-muted) 6%, transparent); }
+  .btn-hero { border: none; border-radius: 14px; padding: 17px 22px; font-size: 16px; font-weight: 800; color: var(--text-light); background: linear-gradient(180deg, #DD9555, #8B4820); box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .btn-hero.gold { background: linear-gradient(180deg, var(--gold), var(--gold-deep)); color: var(--bg-portal); }
+  .h-hero { font-family: var(--font-display); font-weight: 900; font-size: 40px; letter-spacing: -1px; color: var(--gold); line-height: 1; }
+  .h-eyebrow { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); }
+  .h-label { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+  .scoreblock { display: inline-flex; flex-direction: column; align-items: center; padding: 4px 9px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--success) 30%, transparent); background: color-mix(in srgb, var(--success) 6%, transparent); }
+  .scoreblock .n { font-family: var(--font-mono); font-weight: 700; font-size: 14px; color: var(--success); }
+  .scoreblock .l { font-size: 7px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+  .radius-demo { display: inline-block; width: 40px; height: 28px; background: var(--bg-portal-elevated); border: 1px solid var(--accent); }
+  .note { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light-secondary); margin-top: 10px; opacity: 0.85; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .two { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Implementations-referens — kanoniska värden</h1>
+  <p>Den enda sanningskällan. När en handoff säger "radius 14" eller "tint 6%" — <b>här är det exakta värdet renderat</b>. Code läser detta, inte prosan. Mock och app glider aldrig isär om båda läser samma tal.</p>
+</div>
+
+<div class="wrap">
+
+  <div class="sec">
+    <div class="sec-h">DB-1 · Alpha-steg (color-mix)</div>
+    <table>
+      <tr><th>Roll</th><th>Procent</th><th>Syntax</th><th>Prov</th></tr>
+      <tr><td class="v">Tint-bakgrund</td><td class="k">6%</td><td class="k">color-mix(in srgb, var(--accent) 6%, transparent)</td><td><span class="sw" style="background:color-mix(in srgb, var(--accent) 6%, var(--bg-portal))"></span></td></tr>
+      <tr><td class="v">Divider</td><td class="k">18%</td><td class="k">… 18%, transparent</td><td><span class="sw" style="background:color-mix(in srgb, var(--accent) 18%, var(--bg-portal))"></span></td></tr>
+      <tr><td class="v">Border</td><td class="k">30%</td><td class="k">… 30%, transparent</td><td><span class="sw" style="background:color-mix(in srgb, var(--accent) 30%, var(--bg-portal))"></span></td></tr>
+      <tr><td class="v">Glow (flaggas)</td><td class="k">35%</td><td class="k">box-shadow → Design-review</td><td><span class="sw" style="background:color-mix(in srgb, var(--accent) 35%, var(--bg-portal))"></span></td></tr>
+      <tr><td class="v">Fill</td><td class="k">55%</td><td class="k">… 55%, transparent</td><td><span class="sw" style="background:color-mix(in srgb, var(--accent) 55%, var(--bg-portal))"></span></td></tr>
+    </table>
+    <div class="note">Tailwind-rgb (34,197,94 / 239,68,68) → ersätts av var(--success)/var(--danger). Inga råa rgba kvar utom scrim + flaggad glow.</div>
+  </div>
+
+  <div class="two">
+    <div class="sec">
+      <div class="sec-h">DB-9 · Radie-skala</div>
+      <table>
+        <tr><th>Token</th><th>px</th><th>Var</th><th></th></tr>
+        <tr><td class="v">sm (chip-inre)</td><td class="k">3</td><td class="k">--radius-sm</td><td><span class="radius-demo" style="border-radius:3px"></span></td></tr>
+        <tr><td class="v">md (kort/knapp)</td><td class="k">8</td><td class="k">--radius-md</td><td><span class="radius-demo" style="border-radius:8px"></span></td></tr>
+        <tr><td class="v">hero-CTA</td><td class="k">14</td><td class="k">--radius (round)</td><td><span class="radius-demo" style="border-radius:14px"></span></td></tr>
+        <tr><td class="v">pill</td><td class="k">99</td><td class="k">99px</td><td><span class="radius-demo" style="border-radius:99px"></span></td></tr>
+      </table>
+      <div class="note">6px → 8 (--radius-md). 12px → 14 (hero) eller 8.</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h">R2-3 · Åldersband (en form)</div>
+      <table>
+        <tr><th>Band</th><th>Färg</th><th>Chip</th></tr>
+        <tr><td class="v">Utvecklas</td><td class="k">--cold</td><td><span class="chip ab-young">🌱 Utvecklas</span></td></tr>
+        <tr><td class="v">Peak</td><td class="k">--success</td><td><span class="chip ab-peak">● Peak</span></td></tr>
+        <tr><td class="v">Avtar</td><td class="k">--text-muted</td><td><span class="chip ab-fade">▾ Avtar</span></td></tr>
+      </table>
+      <div class="note">radius 99 · fyll 6% · kant 30%. (▾●🌱 → Lucide per DB-Q3; 💔 stannar emoji.)</div>
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="sec">
+      <div class="sec-h">R2-1 · Typografi-roller</div>
+      <table>
+        <tr><th>Klass</th><th>Spec</th><th>Prov</th></tr>
+        <tr><td class="k">.h-display-hero</td><td class="v">Georgia 52/900</td><td><span class="h-hero">Mästare</span></td></tr>
+        <tr><td class="k">.h-eyebrow</td><td class="v">11/3px caps</td><td><span class="h-eyebrow">⬩ Årsbok ⬩</span></td></tr>
+        <tr><td class="k">.h-label</td><td class="v">8/2px caps</td><td><span class="h-label">Styrelsens krav</span></td></tr>
+      </table>
+      <div class="note">Hero endast seger/säsongsslut. Eyebrow ≠ label.</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h">R2-2 · Hjälte-CTA</div>
+      <div style="display:flex; flex-direction:column; gap:9px;">
+        <button class="btn-hero">Starta säsong 4 →</button>
+        <button class="btn-hero gold">Lyft pokalen →</button>
+      </div>
+      <div class="note">radius 14 · padding 17×22 · 16/800 · glow 35%. Endast höjdpunkt. .gold = SM/cup.</div>
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="sec">
+      <div class="sec-h">DB-3 · ScoreBlock</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span class="scoreblock"><span class="n">4–2</span><span class="l">Vinst</span></span>
+        <span class="scoreblock" style="border-color:color-mix(in srgb,var(--danger) 30%,transparent);background:color-mix(in srgb,var(--danger) 6%,transparent)"><span class="n" style="color:var(--danger)">1–3</span><span class="l">Förlust</span></span>
+        <span class="scoreblock" style="border-color:color-mix(in srgb,var(--gold) 35%,transparent);background:color-mix(in srgb,var(--gold) 8%,transparent)"><span class="n" style="color:var(--gold)">2–3</span><span class="l">SM-Final</span></span>
+      </div>
+      <div class="note">Alla UI-resultatflöden. Ceremoniell Georgia-siffra endast segerscen.</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h">DB-Q2 · Warm-domän</div>
+      <table>
+        <tr><th>Använd warm</th><th>Använd INTE</th></tr>
+        <tr><td class="v">severity-tryck</td><td class="v">ålder "avtar" → muted</td></tr>
+        <tr><td class="v">lobby/missnöje</td><td class="v">vardagskafferum → cold</td></tr>
+        <tr><td class="v">burnout/upptakt</td><td class="v">statiska tillstånd</td></tr>
+        <tr><td class="v">kontrakt-deadline</td><td class="v"></td></tr>
+      </table>
+      <div class="note">Warm = "stigande mänskligt tryck". En betydelse.</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h">DB-2 · Guld-domän (som illustration)</div>
+    <table>
+      <tr><th>Guld TILLÅTET</th><th>Guld FÖRBJUDET</th></tr>
+      <tr><td class="v">Fullbordad seger (SM/cup-final vunnen)</td><td class="v">Kontrakt-stripe (→ warm)</td></tr>
+      <tr><td class="v">Bekräftad landslagsmerit</td><td class="v">B-läge / stretch-mål (→ accent)</td></tr>
+      <tr><td class="v">SM-final-portal (round===Final)</td><td class="v">Vardags-CTA, vanlig primary</td></tr>
+    </table>
+    <div class="note">Guld = den sällsynta höjdpunkten. Späd ut → tappar vikt. Samma disciplin som illustration: endast ögonblick.</div>
+  </div>
+
+</div>
+
+</body>
+</html>
