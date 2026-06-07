@@ -258,7 +258,7 @@ export function GranskaScreen() {
                   background: isActive ? 'var(--accent)' : 'transparent',
                   cursor: 'pointer',
                   opacity: isVisited ? 0.55 : 1,
-                  boxShadow: isVisited ? 'none' : (isActive ? '0 2px 6px rgba(196,122,58,0.35)' : 'none'),
+                  boxShadow: isVisited ? 'none' : (isActive ? '0 2px 6px color-mix(in srgb, var(--accent) 35%, transparent)' : 'none'),
                   position: 'relative',
                 }}
               >

@@ -107,7 +107,7 @@ export function LineupFormationView({
                   color: isEmpty ? 'color-mix(in srgb, var(--ink) 40%, transparent)' : 'var(--text-primary)',
                   transition: 'background 120ms, border-color 120ms, transform 120ms',
                   transform: isSelected ? 'scale(1.18)' : 'scale(1)',
-                  boxShadow: isSelected ? '0 0 8px rgba(196,122,58,0.5)' : 'none',
+                  boxShadow: isSelected ? '0 0 8px color-mix(in srgb, var(--accent) 35%, transparent)' : 'none',
                   fontFamily: 'system-ui, sans-serif',
                 }}>
                   {player

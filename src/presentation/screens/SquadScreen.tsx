@@ -191,7 +191,7 @@ function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversar
     allChips.push(<span key="corner" style={chipStyle('var(--accent)', 'color-mix(in srgb, var(--accent) 5%, transparent)', 'color-mix(in srgb, var(--accent) 30%, transparent)')}>📐 Hörnspec.</span>)
   }
   if (player.promotedFromAcademy) {
-    allChips.push(<span key="academy" style={chipStyle('var(--cold-light)', 'color-mix(in srgb, var(--ice) 5%, transparent)', 'color-mix(in srgb, var(--ice) 30%, transparent)')}>◆ Akademi</span>)
+    allChips.push(<span key="academy" style={chipStyle('var(--cold-light)', 'color-mix(in srgb, var(--cold) 5%, transparent)', 'color-mix(in srgb, var(--cold) 30%, transparent)')}>◆ Akademi</span>)  // Q2: squad-domän → --cold, ej --ice
   }
   if (player.isFullTimePro) {
     allChips.push(<span key="pro" style={chipStyle('var(--bg)', 'var(--accent)', 'var(--accent)')}>⭐ Proffs</span>)

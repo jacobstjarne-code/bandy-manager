@@ -15,8 +15,8 @@ export function GoldConfetti() {
           100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
         @keyframes goldPulse {
-          0%, 100% { text-shadow: 0 0 20px rgba(196,122,58,0.4); }
-          50% { text-shadow: 0 0 40px rgba(196,122,58,0.8), 0 0 60px rgba(196,122,58,0.4); }
+          0%, 100% { text-shadow: 0 0 20px color-mix(in srgb, var(--accent) 40%, transparent); }
+          50% { text-shadow: 0 0 40px color-mix(in srgb, var(--accent) 80%, transparent), 0 0 60px color-mix(in srgb, var(--accent) 40%, transparent); }
         }
       `}</style>
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>

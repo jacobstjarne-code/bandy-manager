@@ -72,7 +72,7 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
                     width: 9, height: 9, borderRadius: '50%',
                     background: isLatest ? 'var(--warm)' : 'var(--bg-portal-elevated)',
                     border: '1.5px solid var(--warm)',
-                    boxShadow: isLatest ? '0 0 6px rgba(140,110,58,0.5)' : 'none',
+                    boxShadow: isLatest ? '0 0 6px color-mix(in srgb, var(--warm) 35%, transparent)' : 'none',
                     boxSizing: 'border-box',
                   }} />
                   <div style={{

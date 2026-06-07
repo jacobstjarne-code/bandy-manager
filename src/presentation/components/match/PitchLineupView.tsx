@@ -168,7 +168,7 @@ export function PitchLineupView({
                         ? `color-mix(in srgb, var(--accent) 60%, transparent)`
                         : `color-mix(in srgb, ${ringColor} 50%, transparent)`,
                     border: isEmpty
-                      ? `1.5px dashed rgba(26,26,24,${isTarget ? '0.7' : '0.3'})`
+                      ? `1.5px dashed color-mix(in srgb, var(--ink) ${isTarget ? '70' : '30'}%, transparent)`
                       : isSelected
                         ? '2px solid var(--accent)'
                         : `1.5px solid color-mix(in srgb, ${ringColor} 75%, transparent)`,
@@ -180,7 +180,7 @@ export function PitchLineupView({
                     color: isEmpty ? 'var(--text-secondary)' : 'var(--text-primary)',
                     transition: 'background 120ms, border-color 120ms, transform 120ms',
                     transform: isSelected ? 'scale(1.18)' : isTarget ? 'scale(1.05)' : 'scale(1)',
-                    boxShadow: isSelected ? '0 0 8px rgba(196,122,58,0.5)' : 'none',
+                    boxShadow: isSelected ? '0 0 8px color-mix(in srgb, var(--accent) 35%, transparent)' : 'none',
                     fontFamily: 'system-ui, sans-serif',
                     flexShrink: 0,
                   }}>

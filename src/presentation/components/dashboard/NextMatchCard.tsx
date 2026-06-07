@@ -115,7 +115,7 @@ export function NextMatchCard({
   // ── Act-based glow (statisk, ej pulserande) ──
   const act = getCurrentAct(nextFixture.roundNumber)
   const actGlow: React.CSSProperties = act >= 3 && !isFinal && !isPlayoff
-    ? { boxShadow: `0 0 ${act === 4 ? 12 : 6}px rgba(196,122,58,${act === 4 ? 0.15 : 0.08})` }
+    ? { boxShadow: `0 0 ${act === 4 ? 12 : 6}px color-mix(in srgb, var(--accent) ${act === 4 ? 15 : 8}%, transparent)` }
     : {}
 
   // ── Card border & tint per variant (playoff uses primary-card CSS class) ──

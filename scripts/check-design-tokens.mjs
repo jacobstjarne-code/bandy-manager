@@ -49,8 +49,8 @@ const RULES = [
     files: f => f.endsWith('.tsx'),
   },
   {
-    id: 'palette-rgba', db: 'DB-1', severity: 'warn', // → 'error' när glow-passet + ternär-ink är klara
-    desc: 'hårdkodad palett-rgba → color-mix(var(--token) N%) (undantag: glow/scrim, flaggade)',
+    id: 'palette-rgba', db: 'DB-1', severity: 'error', // ratchad 2026-06-07: glow-passet klart, all palett-rgba → color-mix
+    desc: 'hårdkodad palett-rgba → color-mix(var(--token) N%)',
     re: /rgba\(\s*(?:196,\s*122,\s*58|176,\s*80,\s*64|140,\s*110,\s*58|90,\s*154,\s*74|126,\s*179,\s*212|26,\s*26,\s*24)/,
     files: f => f.endsWith('.tsx'),
   },
@@ -61,7 +61,7 @@ const RULES = [
     files: f => f.endsWith('.tsx'),
   },
   {
-    id: 'ice-in-squad', db: 'Q2/R2-3', severity: 'warn', // → 'error' när academy-chip → --cold
+    id: 'ice-in-squad', db: 'Q2/R2-3', severity: 'error', // ratchad 2026-06-07: academy-chip → --cold
     desc: 'squad-domänen använder --cold/--warm, inte --ice',
     re: /var\(--ice\)/,
     files: f => f.includes('/components/squad/') || f.endsWith('/SquadScreen.tsx'),
