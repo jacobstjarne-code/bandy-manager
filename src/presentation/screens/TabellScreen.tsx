@@ -195,7 +195,7 @@ export function TabellScreen() {
         letterSpacing: '0.6px',
         color: 'var(--text-muted)',
         marginBottom: 4,
-        background: 'linear-gradient(90deg, var(--bg-dark), var(--bg-dark-surface), var(--bg-dark))',
+        background: 'var(--bg-dark-surface)',
         borderRadius: 'var(--radius-md)',
       }}>
         <span>#</span>
@@ -272,7 +272,7 @@ export function TabellScreen() {
                   borderTop: i === 0 ? 'none' : '1px solid var(--border)',
                   borderLeft: `3px solid ${hasLeagueStarted ? getRowBorderColor(row.position) : 'transparent'}`,
                   background: isManaged
-                    ? 'linear-gradient(90deg, color-mix(in srgb, var(--accent) 12%, transparent) 0%, color-mix(in srgb, var(--accent) 4%, transparent) 100%)'
+                    ? 'color-mix(in srgb, var(--accent) 8%, transparent)'  // DB-8: gradient → solid + (befintlig) vänster-stripe
                     : isTop3
                     ? 'color-mix(in srgb, var(--accent) 5%, transparent)'
                     : hasLeagueStarted && row.position >= 11

@@ -196,21 +196,15 @@ export function RoundSummaryScreen() {
                 <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>›</span>
               </div>
 
-              {/* Score */}
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <div style={{ textAlign: 'center', flex: 1 }}>
-                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 2 }}>{homeClub?.shortName ?? homeClub?.name}</p>
-                  <span style={{ fontSize: 24, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)' }}>
-                    {lastFixture.homeScore}
-                  </span>
-                </div>
-                <span style={{ fontSize: 18, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
-                <div style={{ textAlign: 'center', flex: 1 }}>
-                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 2 }}>{awayClub?.shortName ?? awayClub?.name}</p>
-                  <span style={{ fontSize: 24, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)' }}>
-                    {lastFixture.awayScore}
-                  </span>
-                </div>
+              {/* Score — DB-3: hero-score → ScoreBlock, lagnamn flankerar */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: 'right' }}>{homeClub?.shortName ?? homeClub?.name}</span>
+                <ScoreBlock
+                  score={`${lastFixture.homeScore}–${lastFixture.awayScore}`}
+                  variant={won ? 'win' : lost ? 'loss' : 'draw'}
+                  size="hero"
+                />
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: 'left' }}>{awayClub?.shortName ?? awayClub?.name}</span>
               </div>
 
               {/* Flavor + scorers */}

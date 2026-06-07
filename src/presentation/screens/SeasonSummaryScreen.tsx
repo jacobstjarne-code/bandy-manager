@@ -286,7 +286,7 @@ export function SeasonSummaryScreen() {
           })()
           return (
             <div style={{
-              background: 'linear-gradient(180deg, var(--bg-elevated) 0%, color-mix(in srgb, var(--accent) 6%, transparent) 100%)',
+              background: 'var(--bg-elevated)',  // DB-8: dekorativ yt-gradient → solid (accent-ramen är cuen)
               border: '2px solid var(--accent)',
               borderRadius: 8,
               padding: '20px 18px',
@@ -312,9 +312,12 @@ export function SeasonSummaryScreen() {
                 <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: h.isHome ? 'var(--accent)' : 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
                   {homeLabel}
                 </span>
-                <span style={{ fontSize: 40, fontWeight: 400, color: 'var(--accent)', lineHeight: 1, letterSpacing: 4, fontFamily: 'var(--font-display)' }}>
-                  {h.homeScore}–{h.awayScore}
-                </span>
+                {/* DB-3: hero-score → ScoreBlock */}
+                {(() => {
+                  const my = h.isHome ? h.homeScore : h.awayScore
+                  const opp = h.isHome ? h.awayScore : h.homeScore
+                  return <ScoreBlock score={`${h.homeScore}–${h.awayScore}`} variant={my > opp ? 'win' : my < opp ? 'loss' : 'draw'} size="hero" />
+                })()}
                 <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: !h.isHome ? 'var(--accent)' : 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
                   {awayLabel}
                 </span>

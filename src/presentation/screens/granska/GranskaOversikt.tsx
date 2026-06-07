@@ -124,10 +124,13 @@ export function GranskaOversikt({
               <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: 'right' }}>{awayClub?.shortName ?? awayClub?.name}</span>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginBottom: 8 }}>
-              <span style={{ fontSize: 36, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)', lineHeight: 1 }}>{fixture.homeScore}</span>
-              <span style={{ fontSize: 24, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
-              <span style={{ fontSize: 36, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)', lineHeight: 1 }}>{fixture.awayScore}</span>
+            {/* DB-3: hero-score → ScoreBlock (en primitiv för alla resultat i UI-flöde) */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+              <ScoreBlock
+                score={`${fixture.homeScore}–${fixture.awayScore}`}
+                variant={won ? 'win' : lost ? 'loss' : 'draw'}
+                size="hero"
+              />
             </div>
 
             {(fixture.wentToOvertime || penResult) && (
