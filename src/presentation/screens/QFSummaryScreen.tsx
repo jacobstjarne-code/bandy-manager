@@ -116,7 +116,7 @@ export function QFSummaryScreen() {
                   padding: '6px 8px',
                   background: isManaged ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'var(--bg-elevated)',
                   border: isManaged ? '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' : 'none',
-                  borderRadius: 6,
+                  borderRadius: 'var(--radius-md)',
                 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, flex: 1, color: isManaged && series.homeClubId === g.managedClubId ? 'var(--accent)' : 'var(--text-primary)' }}>{home}</span>
                   <span style={{ fontSize: 10, color: isManaged ? 'var(--accent)' : 'var(--text-muted)' }}>vs</span>

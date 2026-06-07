@@ -96,7 +96,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
               onClick={() => onChangeFocus({ type, intensity: focus.intensity })}
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
-                padding: '5px 8px', borderRadius: 6,
+                padding: '5px 8px', borderRadius: 'var(--radius-md)',
                 background: isActive ? 'color-mix(in srgb, var(--accent) 15%, transparent)' : 'var(--bg-elevated)',
                 border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
                 color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
@@ -124,7 +124,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
               key={intensity}
               onClick={() => onChangeFocus({ type: focus.type, intensity })}
               style={{
-                flex: 1, padding: '7px 4px', borderRadius: 6,
+                flex: 1, padding: '7px 4px', borderRadius: 'var(--radius-md)',
                 background: active ? `${color}22` : 'transparent',
                 border: active ? `1px solid ${color}` : '1px solid transparent',
                 color: active ? color : 'var(--text-muted)',

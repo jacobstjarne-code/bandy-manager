@@ -152,7 +152,7 @@ function PlayerRowAnimated({ player, index, onClick, fixtures, clubs, managedClu
 function stripeColor(player: Player, currentSeason: number): string {
   if (player.isInjured || player.suspensionGamesRemaining > 0) return 'var(--danger)'
   if (player.morale < 45 || player.availability === 'unhappy' || player.availability === 'want_to_leave') return 'var(--warm)'
-  if (player.contractUntilSeason <= currentSeason) return 'var(--gold)'
+  if (player.contractUntilSeason <= currentSeason) return 'var(--warm)'  // DB-2: kontrakt-utgår = warm, aldrig guld i stripe
   if (player.age < 24) return 'var(--cold)'
   if (player.age <= 30) return 'var(--success)'
   return 'var(--text-muted)'
@@ -296,10 +296,12 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
               fontSize: 15,
               fontWeight: 800,
               color: caColor(player.currentAbility),
+              // DB-1 glow-pass: Tailwind-färg → token (alpha bevarad; 40/30 flaggat för
+              // Design om de ska snäppas till kanon-glow 35%)
               textShadow: player.currentAbility >= 75
-                ? '0 0 8px rgba(34,197,94,0.4)'
+                ? '0 0 8px color-mix(in srgb, var(--success) 40%, transparent)'
                 : player.currentAbility < 40
-                  ? '0 0 8px rgba(239,68,68,0.3)'
+                  ? '0 0 8px color-mix(in srgb, var(--danger) 30%, transparent)'
                   : undefined,
             }}>
               {Math.round(player.currentAbility)}

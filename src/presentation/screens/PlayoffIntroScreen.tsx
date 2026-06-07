@@ -155,7 +155,7 @@ export function PlayoffIntroScreen() {
                     padding: '6px 8px',
                     background: isManaged ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'var(--bg-elevated)',
                     border: isManaged ? '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' : 'none',
-                    borderRadius: 6,
+                    borderRadius: 'var(--radius-md)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

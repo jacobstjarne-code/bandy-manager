@@ -17,7 +17,7 @@ const MODE_LABELS: Record<PeriodisationMode, string> = {
 const FLAG_STYLE: Record<string, React.CSSProperties> = {
   warn: { color: 'var(--accent-dark)', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 35%, transparent)' },
   good: { color: '#4A6A3A', background: 'color-mix(in srgb, var(--success) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 40%, transparent)' },
-  rust: { color: 'var(--cold)', background: 'rgba(74,102,128,.08)', border: '1px solid rgba(74,102,128,.35)' },
+  rust: { color: 'var(--cold)', background: 'color-mix(in srgb, var(--cold) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--cold) 35%, transparent)' },
   ovr:  { color: 'var(--text-muted)', background: 'transparent', border: '1px dashed var(--border-dark)' },
 }
 
@@ -275,7 +275,7 @@ function ReactionRow({ player, reaction, hasOverride, onSetOverride }: ReactionR
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 6px', borderRadius: 'var(--radius-md, 8px)' }}>
       {/* pos chip */}
-      <div style={{ width: 24, flexShrink: 0, textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 0' }}>
+      <div style={{ width: 24, flexShrink: 0, textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '3px 0' }}>
         {positionShort(player.position)}
       </div>
       {/* name + meta */}
@@ -303,19 +303,19 @@ function ReactionRow({ player, reaction, hasOverride, onSetOverride }: ReactionR
         <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
           <button
             onClick={() => onSetOverride('hall')}
-            style={{ fontSize: 10, padding: '3px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', color: 'var(--text-secondary)' }}
+            style={{ fontSize: 10, padding: '3px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-secondary)' }}
             title="Håll undantag"
           >H</button>
           <button
             onClick={() => onSetOverride('vila')}
-            style={{ fontSize: 10, padding: '3px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', color: 'var(--text-secondary)' }}
+            style={{ fontSize: 10, padding: '3px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-secondary)' }}
             title="Vila undantag"
           >V</button>
         </div>
       ) : (
         <button
           onClick={() => onSetOverride(null)}
-          style={{ fontSize: 10, padding: '3px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', color: 'var(--text-muted)', flexShrink: 0 }}
+          style={{ fontSize: 10, padding: '3px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-muted)', flexShrink: 0 }}
           title="Följ truppen"
         >↩</button>
       )}

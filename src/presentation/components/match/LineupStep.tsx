@@ -225,7 +225,7 @@ export function LineupStep({
             color: 'var(--text-primary)',
             fontSize: 11,
             fontWeight: 600,
-            borderRadius: 6,
+            borderRadius: 'var(--radius-md)',
             padding: '5px 8px',
             cursor: 'pointer',
           }}

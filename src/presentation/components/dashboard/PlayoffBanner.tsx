@@ -22,7 +22,7 @@ function SeriesRow({ series, game, compact }: { series: PlayoffSeries; game: Sav
       display: 'flex', alignItems: 'center', gap: 6,
       padding: compact ? '4px 8px' : '6px 10px',
       background: isManaged ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
-      borderRadius: 6,
+      borderRadius: 'var(--radius-md)',
       border: isManaged ? '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' : '1px solid var(--border)',
       marginBottom: 4,
     }}>

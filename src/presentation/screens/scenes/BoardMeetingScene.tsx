@@ -18,7 +18,8 @@ interface Props {
   onComplete: () => void
 }
 
-const GENRE_COLOR = { A: 'var(--accent)', B: 'var(--gold)', C: 'var(--cold-light)' } as const
+// DB-2: B-läge är aspiration, inte fullbordad seger → accent, inte guld
+const GENRE_COLOR = { A: 'var(--accent)', B: 'var(--accent)', C: 'var(--cold-light)' } as const
 
 const TYPE_ICON: Record<string, string> = {
   sporting: '📊', academy: '🎓', economic: '💰', community: '🏠', identity: '🏒',
@@ -152,11 +153,11 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
                 display: 'flex', gap: 10, alignItems: 'flex-start',
                 background: 'var(--bg-portal-surface)', borderRadius: 8,
                 padding: '9px 12px', marginBottom: 6,
-                borderLeft: `2px solid ${stretch ? 'var(--gold)' : 'var(--border-dark)'}`,
+                borderLeft: `2px solid ${stretch ? 'var(--accent)' : 'var(--border-dark)'}`,
               }}>
                 <span style={{ fontSize: 15, lineHeight: 1.3, flexShrink: 0 }}>{TYPE_ICON[obj.type] ?? '📋'}</span>
                 <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: stretch ? 'var(--gold)' : 'var(--text-light)' }}>{obj.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: stretch ? 'var(--accent)' : 'var(--text-light)' }}>{obj.label}</span>
                   <span style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', lineHeight: 1.4 }}>{goalMotivation(obj, i)}</span>
                 </span>
               </div>
@@ -165,12 +166,12 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
         </div>
       )}
 
-      {/* CTA — gold ENDAST vid B */}
+      {/* CTA — DB-2: aldrig guld här (B-läge = aspiration → accent/default) */}
       <div style={{ marginTop: 16 }}>
         <SceneCTA
           label={`Till säsong ${game.currentSeason} →`}
           onClick={onComplete}
-          variant={state === 'B' ? 'gold' : 'default'}
+          variant="default"
         />
       </div>
     </div>

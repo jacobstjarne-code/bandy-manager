@@ -113,7 +113,7 @@ export function TranareTab({ game }: Props) {
         )}
 
         {burnoutTriggered && (
-          <div style={{ marginTop: 10, padding: '8px 10px', background: 'color-mix(in srgb, var(--danger) 6%, transparent)', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--danger) 20%, transparent)' }}>
+          <div style={{ marginTop: 10, padding: '8px 10px', background: 'color-mix(in srgb, var(--danger) 6%, transparent)', borderRadius: 'var(--radius-md)', border: '1px solid color-mix(in srgb, var(--danger) 20%, transparent)' }}>
             <p style={{ fontSize: 11, color: 'var(--danger)', fontStyle: 'italic', margin: 0 }}>
               "{burnoutQuote}"
             </p>

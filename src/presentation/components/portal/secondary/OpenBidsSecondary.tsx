@@ -22,7 +22,7 @@ export function OpenBidsSecondary({ game }: CardRenderProps) {
       style={{
         background: 'var(--bg-portal-surface)',
         border: '1px solid var(--bg-leather)',
-        borderRadius: 6,
+        borderRadius: 'var(--radius-md)',
         padding: '8px 10px',
         cursor: 'pointer',
       }}

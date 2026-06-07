@@ -528,7 +528,7 @@ export function PlayerCard({
                   alignItems: 'center',
                   padding: '4px 8px',
                   background: 'rgba(255,255,255,0.04)',
-                  borderRadius: 6,
+                  borderRadius: 'var(--radius-md)',
                   border: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)',
                 }}>
                   <span style={{ fontSize: 10, color: 'var(--text-secondary)', letterSpacing: '0.3px' }}>{stat.label}</span>
@@ -541,7 +541,7 @@ export function PlayerCard({
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px' }}>
               {['A', 'B', 'C', 'D'].map(k => (
-                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid rgba(138,155,176,0.1)' }}>
+                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(138,155,176,0.1)' }}>
                   <span style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.3px' }}>—</span>
                   <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-muted)' }}>?</span>
                 </div>
@@ -670,7 +670,7 @@ export function PlayerCard({
                 {onExtendContract && currentSeason !== undefined && player.contractUntilSeason <= currentSeason + 1 && (
                   <button
                     onClick={e => { e.stopPropagation(); onExtendContract() }}
-                    style={{ marginLeft: 8, padding: '2px 8px', borderRadius: 6, background: 'color-mix(in srgb, var(--accent) 15%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', color: 'var(--accent)', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
+                    style={{ marginLeft: 8, padding: '2px 8px', borderRadius: 'var(--radius-md)', background: 'color-mix(in srgb, var(--accent) 15%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', color: 'var(--accent)', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
                   >
                     Förläng →
                   </button>

@@ -21,7 +21,7 @@ export function PortalBeat({ game }: Props) {
       marginBottom: 10,
       padding: '8px 12px',
       background: 'var(--bg-portal-surface)',
-      borderRadius: 6,
+      borderRadius: 'var(--radius-md)',
       display: 'flex',
       alignItems: 'flex-start',
       gap: 10,

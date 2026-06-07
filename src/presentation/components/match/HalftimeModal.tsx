@@ -205,7 +205,7 @@ export function HalftimeModal({
                 flex: 1, padding: '7px 4px', fontSize: 11, fontWeight: 700,
                 background: current === o.val ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 8%, transparent)',
                 border: `1px solid ${current === o.val ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 20%, transparent)'}`,
-                borderRadius: 6,
+                borderRadius: 'var(--radius-md)',
                 color: current === o.val ? 'var(--text-light)' : 'var(--text-secondary)',
                 cursor: 'pointer',
               }}
@@ -270,7 +270,7 @@ export function HalftimeModal({
                 style={{
                   flex: 1, padding: '7px 4px', fontSize: 10, fontWeight: 700,
                   background: activeTab === tab.id ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
-                  border: 'none', borderRadius: 6,
+                  border: 'none', borderRadius: 'var(--radius-md)',
                   color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
                   cursor: 'pointer', letterSpacing: '0.5px',
                 }}
@@ -404,7 +404,7 @@ export function HalftimeModal({
 
             {/* Queued subs */}
             {htSubs.map((sub, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '5px 8px', background: 'var(--bg-elevated)', borderRadius: 6 }}>
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '5px 8px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
                 <span style={{ fontSize: 11, color: 'var(--text-primary)' }}>
                   <span style={{ color: 'var(--danger)' }}>{getPlayerLabel(sub.outId)}</span>
                   <span style={{ color: 'var(--text-muted)', margin: '0 4px' }}>→</span>

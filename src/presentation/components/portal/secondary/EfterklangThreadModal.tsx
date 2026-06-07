@@ -46,7 +46,7 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
             onClick={onClose}
             style={{
               background: 'transparent', border: '1px solid var(--bg-leather)',
-              borderRadius: 6, color: 'var(--text-muted)', fontSize: 12,
+              borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: 12,
               padding: '4px 10px', cursor: 'pointer',
             }}
           >

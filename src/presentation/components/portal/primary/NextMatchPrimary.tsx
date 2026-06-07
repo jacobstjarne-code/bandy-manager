@@ -1,4 +1,3 @@
-import type React from 'react'
 import type { CardRenderProps } from '../portalTypes'
 import { NextMatchCard } from '../../dashboard/NextMatchCard'
 import { getPlayoffSeriesContext } from '../../../../domain/services/portal/playoffSeriesContext'
@@ -81,20 +80,10 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
   // C-SD2 4:e axeln — warm primary-vikt på semi + upptakt (null = behåll befintlig)
   const primaryWeightClass = getEscalationPrimaryWeightClass(game) ?? undefined
 
-  // Override light-theme tokens — NextMatchCard was built for Dashboard (light bg, dark text).
-  // Portal uses a dark background. Text overrides use direct hex values (not var() references)
-  // to avoid var-in-var resolution issues in inline styles across React renders.
+  // NextMatchCard byggdes för Dashboard (ljus bg, mörk text). Portal är mörk →
+  // .card--portal scopar om light-theme-tokens till portal-värden (DB-6, ej inline-hack).
   return (
-    <div style={{
-      '--bg-surface':    'var(--bg-portal-surface)',
-      '--bg-leather':    'var(--bg-portal-elevated)',
-      '--border':        'var(--bg-portal-elevated)',
-      '--border-dark':   'var(--bg-portal-elevated)',
-      '--text-primary':  'var(--text-light)',
-      '--text-secondary':'var(--text-light-secondary)',
-      '--text-muted':    'rgba(196,186,168,0.55)',
-      '--match-home-bg': 'var(--bg-portal-elevated)',
-    } as React.CSSProperties}>
+    <div className="card--portal">
       {specialDateLabel && (
         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
           {specialDateLabel}

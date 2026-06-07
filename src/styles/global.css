@@ -406,6 +406,19 @@ a {
   box-shadow: 0 4px 16px color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
+/* DB-6: portal-kontext token-override — ersätter inline-override-block (NextMatchPrimary).
+   Komponenter inuti renderar mörkt utan egna token-hacks. */
+.card--portal {
+  --bg-surface:     var(--bg-portal-surface);
+  --bg-leather:     var(--bg-portal-elevated);
+  --border:         var(--bg-portal-elevated);
+  --border-dark:    var(--bg-portal-elevated);
+  --text-primary:   var(--text-light);
+  --text-secondary: var(--text-light-secondary);
+  --text-muted:     rgba(196,186,168,0.55);
+  --match-home-bg:  var(--bg-portal-elevated);
+}
+
 .btn-secondary {
   background: var(--accent);
   color: #fff;

@@ -527,7 +527,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
                       </button>
                     </div>
                     {isExpanded && (
-                      <div style={{ marginTop: 8, padding: '8px 10px', background: 'var(--surface-raised)', borderRadius: 6 }}>
+                      <div style={{ marginTop: 8, padding: '8px 10px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-md)' }}>
                         <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 8 }}>
                           {proj.description}
                         </p>

@@ -88,7 +88,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
         <div style={{
           background: 'rgba(0,0,0,0.06)',
           padding: '10px 12px',
-          borderRadius: 6,
+          borderRadius: 'var(--radius-md)',
           marginBottom: 8,
         }}>
           <div style={{ fontSize: 9, letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase' }}>VÄDER</div>

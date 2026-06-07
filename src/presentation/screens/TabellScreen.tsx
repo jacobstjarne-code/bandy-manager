@@ -78,7 +78,7 @@ export function TabellScreen() {
               flex: 1, padding: '8px 0',
               background: activeTab === tab ? 'var(--accent)' : 'transparent',
               color: activeTab === tab ? 'var(--text-light)' : 'var(--text-muted)',
-              border: 'none', borderRadius: 6, outline: 'none',
+              border: 'none', borderRadius: 'var(--radius-md)', outline: 'none',
               fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase',
               cursor: 'pointer',
             }}
@@ -196,7 +196,7 @@ export function TabellScreen() {
         color: 'var(--text-muted)',
         marginBottom: 4,
         background: 'linear-gradient(90deg, var(--bg-dark), var(--bg-dark-surface), var(--bg-dark))',
-        borderRadius: 6,
+        borderRadius: 'var(--radius-md)',
       }}>
         <span>#</span>
         <span></span>

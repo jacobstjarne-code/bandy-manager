@@ -292,7 +292,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
           insight = `${totalShots} skott och ${scoredCount} mål. Motståndaren sköt ${oppShots} gånger och sköt ${oppGoals} mål.`
         }
         return (
-          <div style={{ marginTop: 6, padding: '8px 10px', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 6 }}>
+          <div style={{ marginTop: 6, padding: '8px 10px', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 'var(--radius-md)' }}>
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', color: 'var(--accent)', marginBottom: 4 }}>💡 INSIKT</p>
             <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{insight}</p>
           </div>

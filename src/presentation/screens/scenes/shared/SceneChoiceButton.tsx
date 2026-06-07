@@ -31,7 +31,7 @@ export function SceneChoiceButton({ choice, onClick }: Props) {
         border: `1px solid ${hover ? 'var(--accent)' : 'var(--bg-leather)'}`,
         color: hover ? 'var(--text-light)' : 'var(--text-light-secondary)',
         padding: '12px 14px',
-        borderRadius: 6,
+        borderRadius: 'var(--radius-md)',
         textAlign: 'left',
         cursor: 'pointer',
         fontSize: 12,

@@ -15,7 +15,7 @@ export function PortalMinimalBar({ cards, game }: PortalMinimalBarProps) {
       display: 'flex',
       background: 'var(--bg-portal-surface)',
       border: '1px solid var(--bg-leather)',
-      borderRadius: 6,
+      borderRadius: 'var(--radius-md)',
       marginBottom: 14,
       padding: '8px 10px',
       justifyContent: 'space-around',
