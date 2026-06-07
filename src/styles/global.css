@@ -291,6 +291,18 @@ a {
   color: var(--text-light-secondary);
 }
 
+/* R2-3: åldersband-chip (DB-5-familjen). En form: radius 99, color-mix 6% fyll / 30% kant
+   (DESIGN-DECISIONS 2026-06-05 — ej mockens 8/40, "8/40 återöppnar floran DB-1 stängde").
+   Utvecklas=cold, Peak=success, Avtar=muted. Guld aldrig (DB-2). */
+.ageband {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 9.5px; font-weight: 600;
+  padding: 2px 8px; border-radius: 99px; border: 1px solid transparent;
+}
+.ab-young { color: var(--cold); border-color: color-mix(in srgb, var(--cold) 30%, transparent); background: color-mix(in srgb, var(--cold) 6%, transparent); }
+.ab-peak  { color: var(--success); border-color: color-mix(in srgb, var(--success) 30%, transparent); background: color-mix(in srgb, var(--success) 6%, transparent); }
+.ab-fade  { color: var(--text-muted); border-color: color-mix(in srgb, var(--text-muted) 30%, transparent); background: color-mix(in srgb, var(--text-muted) 6%, transparent); }
+
 /* ── Buttons: interactive, tappable (rect, shadow) ── */
 .btn {
   display: inline-flex;
@@ -372,6 +384,26 @@ a {
   opacity: 0.5;
   box-shadow: none;
   cursor: not-allowed;
+}
+
+/* R2-2: ceremoniell hjälte-CTA — endast säsongsslut/seger/cup, aldrig vardags-CTA.
+   Glow = kanon-steg 35% (DESIGN-DECISIONS 2026-06-05, ej mockens 40%). */
+.btn-hero {
+  border-radius: 14px;
+  padding: 17px 22px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-light);
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,0.35) 0%, transparent 50%),
+    linear-gradient(to bottom, #DD9555, #8B4820);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.btn-hero.gold {
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-deep) 100%);
+  color: var(--bg-portal);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
 .btn-secondary {
@@ -876,6 +908,8 @@ a {
 .h-display-lg { font-family: var(--font-display); font-size: 36px; font-weight: 800; line-height: 1; }
 .h-display-md { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1.1; }
 .h-display-sm { font-family: var(--font-display); font-size: 22px; font-weight: 700; line-height: 1.15; }
+/* R2-1: ceremoniell seger-hjälte — endast säsongsslut/seger/cup (DB-3-anda) */
+.h-display-hero { font-family: var(--font-display); font-size: 52px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
 
 /* Card titles */
 .h-card    { font-family: var(--font-body); font-size: 14px; font-weight: 700; line-height: 1.3; }
@@ -896,6 +930,16 @@ a {
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 4px 0;
+}
+
+/* R2-1: eyebrow 11/3px accent — skild från .h-label (9/2.5px) */
+.h-eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
 /* Quote / narrative (italic Georgia) */

@@ -317,14 +317,15 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>Styrka</span>
+            {/* R2-3: åldersband-chip-familjen — Utvecklas=cold, Peak=success, Avtar=muted */}
             {player.age < 24 && (
-              <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--ice)', background: 'color-mix(in srgb, var(--ice) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--ice) 25%, transparent)', borderRadius: 4, padding: '1px 4px' }}>Utvecklas</span>
+              <span className="ageband ab-young">Utvecklas</span>
             )}
             {player.age >= 24 && player.age <= 30 && (
-              <span className="tag tag-copper" style={{ fontSize: 9, fontWeight: 700, padding: '1px 4px' }}>Peak</span>
+              <span className="ageband ab-peak">Peak</span>
             )}
             {player.age > 30 && (
-              <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', background: 'rgba(138,133,122,0.1)', border: '1px solid rgba(138,133,122,0.3)', borderRadius: 4, padding: '1px 4px' }}>Avtar</span>
+              <span className="ageband ab-fade">Avtar</span>
             )}
           </div>
         </div>

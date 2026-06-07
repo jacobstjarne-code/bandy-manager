@@ -73,20 +73,13 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
         ⬩ Styrelsemöte ⬩
       </div>
 
-      {/* Setting — rumsprolog */}
-      <div style={{
-        fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 12.5,
-        color: 'var(--text-light-secondary)', textAlign: 'center',
-        maxWidth: 280, margin: '0 auto 20px', lineHeight: 1.55,
-      }}>
+      {/* Setting — rumsprolog (R2-1: 12.5→13 via .h-scene-setting) */}
+      <div className="h-scene-setting" style={{ marginBottom: 20 }}>
         {setting}
       </div>
 
-      {/* Title */}
-      <div style={{
-        fontFamily: 'Georgia, serif', fontSize: 23, fontWeight: 700,
-        color: 'var(--text-light)', textAlign: 'center', marginBottom: 18, lineHeight: 1.25,
-      }}>
+      {/* Title (R2-1: 23→28 via .h-scene-title) */}
+      <div className="h-scene-title" style={{ marginBottom: 18 }}>
         {title}
       </div>
 

@@ -175,14 +175,15 @@ export function SeasonSummaryScreen() {
         }}>
           <button onClick={() => navigate(-1)} style={{ position: 'absolute', top: 16, left: 0, background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 22, cursor: 'pointer' }}>←</button>
 
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+          {/* R2-1: ÅRSBOK → .h-eyebrow (11/3px accent). h1 → .h-display-hero (ceremoniell 52/900). */}
+          <p className="h-eyebrow" style={{ marginBottom: 8 }}>
             ÅRSBOK
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
             <ClubBadge clubId={summary.clubId} name={summary.clubName} size={56} />
           </div>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 4 }}>{summary.clubName}</p>
-          <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: '3px', color: 'var(--text-primary)', marginBottom: 8, fontFamily: 'var(--font-display)' }}>
+          <h1 className="h-display-hero" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>
             SÄSONG {summary.season}/{summary.season + 1}
           </h1>
 
@@ -764,43 +765,27 @@ export function SeasonSummaryScreen() {
         {/* NEXT SEASON BUTTON (only if not historical view) */}
         {!isHistorical && (
           <div style={{ padding: '0 0 20px' }}>
+            {/* R2-2: Dela/Historik → .btn-outline (accent; Historik slutar vara grå).
+               Starta säsong → .btn-hero (ceremoniell, radius 14, glow). Radius-12 eliminerad. */}
             <button
               onClick={handleShare}
               disabled={sharing}
-              style={{
-                width: '100%', padding: '13px', marginBottom: 10,
-                background: 'transparent', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
-                borderRadius: 12, color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              }}
+              className="btn btn-outline"
+              style={{ width: '100%', marginBottom: 10 }}
             >
               {sharing ? 'Genererar bild...' : '📤 Dela din säsong'}
             </button>
             <button
               onClick={() => navigate('/game/history')}
-              style={{
-                width: '100%', padding: '13px', marginBottom: 10,
-                background: 'transparent', border: '1px solid var(--border)',
-                borderRadius: 12, color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              }}
+              className="btn btn-outline"
+              style={{ width: '100%', marginBottom: 10 }}
             >
               📖 Se hela karriärhistoriken
             </button>
             <button
               onClick={handleNextSeason}
-              style={{
-                width: '100%',
-                padding: '17px',
-                background: 'var(--accent)',
-                color: 'var(--text-light)',
-                borderRadius: 12,
-                fontSize: 16,
-                fontWeight: 800,
-                letterSpacing: '1.5px',
-                textTransform: 'uppercase',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 4px 20px rgba(196,122,58,0.3)',
-              }}
+              className="btn btn-hero"
+              style={{ width: '100%' }}
             >
               Starta säsong {summary.season + 1} →
             </button>
