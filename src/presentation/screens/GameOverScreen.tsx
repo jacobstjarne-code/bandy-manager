@@ -55,7 +55,7 @@ export function GameOverScreen() {
       <div style={{
         background: 'var(--bg)',
         border: '1px solid color-mix(in srgb, var(--danger) 30%, transparent)',
-        borderRadius: 12,
+        borderRadius: 'var(--radius)',
         padding: '32px 24px',
         width: '100%',
         maxWidth: 390,

@@ -80,7 +80,7 @@ export function CoachMarks({ onDone }: Props) {
         left: targetRect.left - pad,
         width: targetRect.width + pad * 2,
         height: targetRect.height + pad * 2,
-        borderRadius: 12,
+        borderRadius: 'var(--radius-md)',
         boxShadow: '0 0 0 4000px rgba(0,0,0,0.65)',
         zIndex: 1,
         animation: 'coachPulse 2s ease-in-out infinite',

@@ -13,7 +13,7 @@ const introBtn: React.CSSProperties = {
   padding: '14px 32px',
   background: 'var(--accent)',
   border: 'none',
-  borderRadius: 12,
+  borderRadius: 'var(--radius)',
   color: 'var(--bg-dark)',
   fontSize: 15,
   fontWeight: 700,
@@ -25,7 +25,7 @@ const startBtn: React.CSSProperties = {
   padding: '16px',
   background: 'var(--accent)',
   border: 'none',
-  borderRadius: 12,
+  borderRadius: 'var(--radius)',
   color: 'var(--bg-dark)',
   fontSize: 16,
   fontWeight: 800,
@@ -158,7 +158,7 @@ export function FinalIntroScreen({
           <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
             <div style={{
               flex: 1, background: 'color-mix(in srgb, var(--accent) 6%, transparent)',
-              border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
+              border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 'var(--radius)', padding: '16px 12px', textAlign: 'center',
             }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-light)', marginBottom: 8 }}>
                 {truncate(homeClubName, 14)}
@@ -172,7 +172,7 @@ export function FinalIntroScreen({
             </div>
             <div style={{
               flex: 1, background: 'color-mix(in srgb, var(--accent) 6%, transparent)',
-              border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
+              border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 'var(--radius)', padding: '16px 12px', textAlign: 'center',
             }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-light)', marginBottom: 8 }}>
                 {truncate(awayClubName, 14)}

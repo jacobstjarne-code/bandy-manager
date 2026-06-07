@@ -74,7 +74,7 @@ export function PlayoffBanner({ game, playoffInfo }: PlayoffBannerProps) {
     <div style={{
       background: 'linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent), color-mix(in srgb, var(--accent) 4%, transparent))',
       border: '2px solid color-mix(in srgb, var(--accent) 35%, transparent)',
-      borderRadius: 12,
+      borderRadius: 'var(--radius)',
       padding: '16px 14px',
       marginBottom: 10,
     }}>

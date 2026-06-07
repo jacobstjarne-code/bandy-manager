@@ -105,7 +105,7 @@ export function CeremonyCupFinal({
             )}
             <button
               onClick={onNavigate}
-              style={{ padding: '14px 32px', background: 'var(--accent)', border: 'none', borderRadius: 12, color: 'var(--bg-dark)', fontSize: 15, fontWeight: 700, cursor: 'pointer', letterSpacing: '1px' }}
+              style={{ padding: '14px 32px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--radius)', color: 'var(--bg-dark)', fontSize: 15, fontWeight: 700, cursor: 'pointer', letterSpacing: '1px' }}
             >
               Cupfest! →
             </button>
@@ -120,7 +120,7 @@ export function CeremonyCupFinal({
             <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 32 }}>Ni kom ändå långt.</p>
             <button
               onClick={onNavigate}
-              style={{ padding: '14px 32px', background: 'var(--bg-dark-surface)', border: '1px solid rgba(196,186,168,0.15)', borderRadius: 12, color: 'var(--text-light)', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}
+              style={{ padding: '14px 32px', background: 'var(--bg-dark-surface)', border: '1px solid rgba(196,186,168,0.15)', borderRadius: 'var(--radius)', color: 'var(--text-light)', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}
             >
               Fortsätt →
             </button>

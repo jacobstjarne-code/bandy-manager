@@ -106,7 +106,7 @@ export function CeremonySmFinal({
           <button
             onClick={onAdvance}
             style={{
-              padding: '14px 32px', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer',
+              padding: '14px 32px', border: 'none', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 700, cursor: 'pointer',
               background: managedWon ? 'var(--accent)' : 'var(--bg-dark-surface)',
               color: managedWon ? 'var(--bg-dark)' : 'var(--text-light)',
             }}
@@ -152,7 +152,7 @@ export function CeremonySmFinal({
         </p>
         <button
           onClick={onNavigate}
-          style={{ padding: '16px 32px', background: 'var(--accent)', border: 'none', borderRadius: 12, color: 'var(--bg-dark)', fontSize: 16, fontWeight: 800, cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}
+          style={{ padding: '16px 32px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--radius)', color: 'var(--bg-dark)', fontSize: 16, fontWeight: 800, cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}
         >
           Säsongsavslutning →
         </button>

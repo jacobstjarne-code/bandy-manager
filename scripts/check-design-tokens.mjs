@@ -55,8 +55,8 @@ const RULES = [
     files: f => f.endsWith('.tsx'),
   },
   {
-    id: 'radius-12', db: 'R2-2/DB-9', severity: 'warn', // → 'error' när radius-12 → 8/14 städat
-    desc: 'off-scale borderRadius 12 → 8 (övrigt) eller .btn-hero radius 14',
+    id: 'radius-12', db: 'R2-2/DB-9', severity: 'error', // ratchad 2026-06-07: städat → 14 (ceremoni) / 8 (övrigt)
+    desc: 'off-scale borderRadius 12 → var(--radius) (ceremoni) eller var(--radius-md) (övrigt)',
     re: /border-?[Rr]adius:\s*'?12(?:px)?'?(?![0-9.])/,
     files: f => f.endsWith('.tsx'),
   },

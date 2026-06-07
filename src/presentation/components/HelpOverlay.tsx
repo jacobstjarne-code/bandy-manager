@@ -25,7 +25,7 @@ export function HelpOverlay({ onClose, onRestartCoachMarks }: HelpOverlayProps) 
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'var(--bg)', borderRadius: 12,
+          background: 'var(--bg)', borderRadius: 'var(--radius-md)',
           padding: '20px 18px', maxWidth: 380, width: '90%',
           maxHeight: 'calc(100vh - 100px)', overflowY: 'auto',
           boxShadow: '0 8px 40px rgba(0,0,0,0.3)',

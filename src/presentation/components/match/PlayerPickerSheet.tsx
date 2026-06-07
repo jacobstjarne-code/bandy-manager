@@ -51,7 +51,7 @@ export function PlayerPickerSheet({
         onClick={e => e.stopPropagation()}
         style={{
           background: 'var(--bg)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-md)',
           maxWidth: 380,
           maxHeight: '85vh',
           display: 'flex',

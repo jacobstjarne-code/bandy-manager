@@ -305,7 +305,7 @@ export function HistoryScreen() {
           style={{
             width: '100%', padding: '13px', marginBottom: 8,
             background: 'transparent', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
-            borderRadius: 12, color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            borderRadius: 'var(--radius-md)', color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
           }}
         >
           📤 Dela senaste säsongen
