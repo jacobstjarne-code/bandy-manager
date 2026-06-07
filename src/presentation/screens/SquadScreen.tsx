@@ -4,12 +4,10 @@ import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore } 
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
 import type { LoanDeal } from '../../domain/entities/Academy'
-import type { Tactic, Club } from '../../domain/entities/Club'
-import type { Fixture } from '../../domain/entities/Fixture'
+import type { Tactic } from '../../domain/entities/Club'
 import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
 import { getRecentMatchRatings } from '../components/playerCardUtils'
-import { Sparkline } from '../components/primitives/Sparkline'
 import { positionShort, POSITION_ORDER } from '../utils/formatters'
 import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
@@ -74,9 +72,6 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 interface PlayerRowProps {
   player: Player
   onClick: () => void
-  fixtures: Fixture[]
-  clubs: Club[]
-  managedClubId: string
   currentSeason: number
   captainPlayerId: string | undefined
   anniversaries: ActiveAnniversary[]
@@ -86,9 +81,6 @@ interface PlayerRowAnimatedProps {
   player: Player
   index: number
   onClick: () => void
-  fixtures: Fixture[]
-  clubs: Club[]
-  managedClubId: string
   currentSeason: number
   captainPlayerId: string | undefined
   anniversaries: ActiveAnniversary[]
@@ -139,26 +131,27 @@ function anniversaryEkoText(ann: ActiveAnniversary): string {
 
 
 
-function PlayerRowAnimated({ player, index, onClick, fixtures, clubs, managedClubId, currentSeason, captainPlayerId, anniversaries }: PlayerRowAnimatedProps) {
+function PlayerRowAnimated({ player, index, onClick, currentSeason, captainPlayerId, anniversaries }: PlayerRowAnimatedProps) {
   return (
     <div style={{
       animation: index < 8 ? `fadeInUp 250ms ease-out ${index * 40}ms both` : 'none',
     }}>
-      <PlayerRow player={player} onClick={onClick} fixtures={fixtures} clubs={clubs} managedClubId={managedClubId} currentSeason={currentSeason} captainPlayerId={captainPlayerId} anniversaries={anniversaries} />
+      <PlayerRow player={player} onClick={onClick} currentSeason={currentSeason} captainPlayerId={captainPlayerId} anniversaries={anniversaries} />
     </div>
   )
 }
 
+// DB-5: stripen bär EN prioriterad actionable state (skada/avstängd > moral/lobby >
+// kontrakt). Ålder är inte actionable → chip (R2-3 ageband), inte stripe. Guld aldrig.
+// Ingen actionable state → transparent (raden behåller 3px-geometrin utan färgcue).
 function stripeColor(player: Player, currentSeason: number): string {
   if (player.isInjured || player.suspensionGamesRemaining > 0) return 'var(--danger)'
   if (player.morale < 45 || player.availability === 'unhappy' || player.availability === 'want_to_leave') return 'var(--warm)'
-  if (player.contractUntilSeason <= currentSeason) return 'var(--warm)'  // DB-2: kontrakt-utgår = warm, aldrig guld i stripe
-  if (player.age < 24) return 'var(--cold)'
-  if (player.age <= 30) return 'var(--success)'
-  return 'var(--text-muted)'
+  if (player.contractUntilSeason <= currentSeason) return 'var(--warm)'
+  return 'transparent'
 }
 
-function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSeason, captainPlayerId, anniversaries }: PlayerRowProps) {
+function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversaries }: PlayerRowProps) {
   const isCaptain = player.id === captainPlayerId
 
   const playerAnniversary = anniversaries
@@ -166,16 +159,6 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
     .sort((a, b) => b.significance - a.significance)[0] ?? null
 
   const stripe = stripeColor(player, currentSeason)
-
-  const recentRatings = useMemo(
-    () => getRecentMatchRatings(fixtures, clubs, player.id, managedClubId, 5).map(r => r.rating),
-    [fixtures, clubs, player.id, managedClubId],
-  )
-  const sparkStroke: 'success' | 'danger' | 'cold' = recentRatings.length >= 2
-    ? (recentRatings[recentRatings.length - 1] > recentRatings[0] + 0.3 ? 'success'
-      : recentRatings[recentRatings.length - 1] < recentRatings[0] - 0.3 ? 'danger'
-      : 'cold')
-    : 'cold'
 
   const chipStyle = (color: string, bg: string, borderColor: string): React.CSSProperties => ({
     display: 'inline-flex', alignItems: 'center', gap: 3,
@@ -342,12 +325,9 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
         }}>›</button>
       </div>
 
-      {/* Bottom row: sparkline + fitness bar + chips */}
+      {/* Bottom row: fitness bar + chips. Q1: form-sparkline flyttad till PlayerCard-modal
+          (sparkline endast när riktning = info; en lista med rader → tal/bar, ej linje-flora). */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 50 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, width: 60 }}>
-          <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>Form</p>
-          <Sparkline points={recentRatings} stroke={sparkStroke} height={12} minPoints={2} />
-        </div>
         <div style={{ width: 50, flexShrink: 0 }}>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>Kond</p>
           <StatBar value={player.fitness} color={barColor(player.fitness)} height={5} />
@@ -782,9 +762,6 @@ export function SquadScreen() {
               player={player}
               index={index}
               onClick={() => setSelectedPlayerId(player.id)}
-              fixtures={game?.fixtures ?? []}
-              clubs={game?.clubs ?? []}
-              managedClubId={game?.managedClubId ?? ''}
               currentSeason={game?.currentSeason ?? 0}
               captainPlayerId={game?.captainPlayerId}
               anniversaries={activeAnniversaries}
