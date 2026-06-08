@@ -4,7 +4,7 @@ Genererad av `scripts/capture-scenes.mjs` ur /dev/scenes (deterministisk fingera
 Jacob godkänner det visuella svepet via denna bilaga — ingen live-session krävs.
 Regenerera: starta servern + `node scripts/capture-scenes.mjs`.
 
-21 ytor.
+28 ytor.
 
 ---
 
@@ -133,3 +133,45 @@ Regenerera: starta servern + `node scripts/capture-scenes.mjs`.
 `miljoheader-rogle`
 
 ![miljoheader-rogle](./miljoheader-rogle.png)
+
+### RoundSummary (DB-3 hero-score → ScoreBlock)
+
+`roundsummary`
+
+![roundsummary](./roundsummary.png)
+
+### Tabell (DB-8 solid header + managed-rad)
+
+`tabell`
+
+![tabell](./tabell.png)
+
+### SeasonSummary header (DB-3 + R2-1 hero-titel + R2-2 btn-hero)
+
+`season-header`
+
+![season-header](./season-header.png)
+
+### Finalhelg-portal (IllustrationScene header-band)
+
+`finalhelg`
+
+![finalhelg](./finalhelg.png)
+
+### Annandagen-anslag (IllustrationScene band)
+
+`annandagen`
+
+![annandagen](./annandagen.png)
+
+### ArrivalScene (IllustrationScene fullbleed-bakgrund)
+
+`arrival`
+
+![arrival](./arrival.png)
+
+### SquadScreen — TRUPP-flik (DB-5 stripe + R2-3 chips)
+
+`squad-trupp`
+
+![squad-trupp](./squad-trupp.png)

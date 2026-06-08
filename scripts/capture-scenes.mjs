@@ -39,6 +39,14 @@ const SCENES = [
   ['season-c', 'SeasonSummary C'],
   ['miljoheader-karlsborg', 'MiljöHeader — Karlsborg (arctic_coast, mörkast/blåast)'],
   ['miljoheader-rogle', 'MiljöHeader — Rögle (scanian_coast, mildast/ljusast)'],
+  // Full-täckning (audit-spec task #1) — riktiga skärmar headless
+  ['roundsummary', 'RoundSummary (DB-3 hero-score → ScoreBlock)'],
+  ['tabell', 'Tabell (DB-8 solid header + managed-rad)'],
+  ['season-header', 'SeasonSummary header (DB-3 + R2-1 hero-titel + R2-2 btn-hero)'],
+  ['finalhelg', 'Finalhelg-portal (IllustrationScene header-band)'],
+  ['annandagen', 'Annandagen-anslag (IllustrationScene band)'],
+  ['arrival', 'ArrivalScene (IllustrationScene fullbleed-bakgrund)'],
+  ['squad-trupp', 'SquadScreen — TRUPP-flik (DB-5 stripe + R2-3 chips)', 'button:has-text("👥 TRUPP")'],
 ]
 
 rmSync(OUT, { recursive: true, force: true })
@@ -49,10 +57,14 @@ const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, de
 const page = await ctx.newPage()
 
 const rows = []
-for (const [id, label] of SCENES) {
+for (const [id, label, clickText] of SCENES) {
   try {
     await page.goto(`${BASE}/dev/scenes?scene=${id}`, { waitUntil: 'networkidle', timeout: 15000 })
     await page.waitForTimeout(700) // fade-in/konfetti-animationer
+    if (clickText) { // t.ex. byt till TRUPP-fliken före screenshot
+      await page.click(clickText, { timeout: 3000 }).catch(() => {})
+      await page.waitForTimeout(400)
+    }
     await page.screenshot({ path: join(OUT, `${id}.png`), fullPage: true })
     rows.push(`### ${label}\n\n\`${id}\`\n\n![${id}](./${id}.png)\n`)
     console.log(`✓ ${id}`)

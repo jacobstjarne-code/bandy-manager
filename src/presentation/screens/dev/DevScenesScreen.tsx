@@ -20,6 +20,11 @@ import { PortalScreen } from '../PortalScreen'
 import { TranareTab } from '../../components/club/TranareTab'
 import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
 import { GranskaScreen } from '../granska/GranskaScreen'
+import { RoundSummaryScreen } from '../RoundSummaryScreen'
+import { TabellScreen } from '../TabellScreen'
+import { SeasonSummaryScreen } from '../SeasonSummaryScreen'
+import { ArrivalScene } from '../ArrivalScene'
+import { AnslagOverlay } from '../../components/anslag/AnslagOverlay'
 import { PortalUpptakt } from '../../components/portal/PortalUpptakt'
 import { NextMatchPrimary } from '../../components/portal/primary/NextMatchPrimary'
 import { EkonomiTab } from '../../components/club/EkonomiTab'
@@ -30,6 +35,7 @@ import { MiljoHeader } from '../../components/environment/MiljoHeader'
 import { useGameStore } from '../../store/gameStore'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
+  | 'roundsummary' | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -53,6 +59,13 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'season-c',     label: 'SeasonSummary C (mittfält → subtle)' },
   { id: 'miljoheader-karlsborg', label: 'MiljöHeader — Karlsborg (arctic_coast, mörkast)' },
   { id: 'miljoheader-rogle', label: 'MiljöHeader — Rögle (scanian_coast, mildast)' },
+  { id: 'roundsummary',  label: 'RoundSummary (DB-3 hero-score)' },
+  { id: 'tabell',        label: 'Tabell (DB-8 header + managed-rad)' },
+  { id: 'season-header', label: 'SeasonSummary header (DB-3 + R2 hero-titel)' },
+  { id: 'finalhelg',     label: 'Finalhelg-portal (IllustrationScene header)' },
+  { id: 'annandagen',    label: 'Annandagen-anslag (IllustrationScene band)' },
+  { id: 'arrival',       label: 'ArrivalScene (IllustrationScene fullbleed)' },
+  { id: 'squad-trupp',   label: 'SquadScreen — TRUPP-flik' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -376,6 +389,18 @@ function makeSeasonSummary(overrides: Record<string, unknown>) {
 const seasonSumChampion = makeSeasonSummary({ finalPosition: 1, playoffResult: 'champion', expectedVerdict: 'exceeded', expectationVerdict: 'exceeded' as const })
 const seasonSumTopThree = makeSeasonSummary({ finalPosition: 2, playoffResult: 'finalist', expectationVerdict: 'met' as const })
 const seasonSumMidtable = makeSeasonSummary({ finalPosition: 6, playoffResult: 'quarterfinal', expectationVerdict: 'met' as const, formTrend: 'stable' as const })
+
+// Full-täcknings-scener (audit-spec task #1) — renderar riktiga skärmar headless.
+// SeasonSummary läser game.seasonSummaries (sista) → hela skärmen inkl. ÅRSBOK/hero-titel/CTA.
+const seasonHeaderGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumChampion] })
+// Finalhelg: playoffBracket med managed i en pågående final (winnerId null) → isSmFinal.
+const finalhelgGame = makeGame(makeLeagueFixtures(), {
+  playoffBracket: {
+    season: 8, status: 'final', champion: null,
+    quarterFinals: [], semiFinals: [],
+    final: { id: 'pf-final', round: 'final', homeClubId: HOME_ID, awayClubId: AWAY_ID, fixtures: [], homeWins: 1, awayWins: 1, winnerId: null, loserId: null },
+  },
+})
 const seasonGameA = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumChampion] })
 const seasonGameB = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumTopThree] })
 const seasonGameC = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumMidtable] })
@@ -423,6 +448,8 @@ export function DevScenesScreen() {
     : null) as SceneId | null
   const [scene, setScene] = useState<SceneId>(initialScene ?? 'cup-victory')
   const storeReady = useGameStore(s => s.game?.lastCompletedFixtureId === 'fx-granska')
+  const seasonReady = useGameStore(s => (s.game?.seasonSummaries?.length ?? 0) > 0)
+  const finalReady = useGameStore(s => !!s.game?.playoffBracket?.final)
 
   // Seed the store so all screens that call useGameStore() work
   useEffect(() => {
@@ -439,6 +466,10 @@ export function DevScenesScreen() {
       : scene === 'season-a' ? seasonGameA
       : scene === 'season-b' ? seasonGameB
       : scene === 'season-c' ? seasonGameC
+      : scene === 'roundsummary' || scene === 'tabell' ? granskaGame
+      : scene === 'season-header' ? seasonHeaderGame
+      : scene === 'finalhelg' ? finalhelgGame
+      : scene === 'arrival' || scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
       : portalGame
     useGameStore.setState({ game: g, roundSummary: scene === 'granska' ? granskaRoundSummary : null } as never)
   }, [scene])
@@ -557,6 +588,43 @@ export function DevScenesScreen() {
         {scene === 'portal' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <PortalScreen />
+          </div>
+        )}
+
+        {/* Full-täcknings-scener (audit-spec task #1) */}
+        {scene === 'roundsummary' && storeReady && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <RoundSummaryScreen />
+          </div>
+        )}
+        {scene === 'tabell' && storeReady && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <TabellScreen />
+          </div>
+        )}
+        {scene === 'season-header' && seasonReady && (
+          <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
+            <SeasonSummaryScreen />
+          </div>
+        )}
+        {scene === 'finalhelg' && finalReady && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <PortalScreen />
+          </div>
+        )}
+        {scene === 'arrival' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <ArrivalScene />
+          </div>
+        )}
+        {scene === 'squad-trupp' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <SquadScreen />
+          </div>
+        )}
+        {scene === 'annandagen' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <AnslagOverlay game={squadGame} anslagKey={'league_midwinter' as never} onDismiss={() => {}} />
           </div>
         )}
 
