@@ -1,4 +1,5 @@
 import type { MatchStep } from '../../../domain/services/matchSimulator'
+import { BRYTPUNKT } from '../../../domain/data/matchLiveText'
 
 /**
  * MomentumBar — ÄRLIG mot motortillståndet (DESIGN-BRIEF-MOTORKANSLA §2/§4.1).
@@ -33,15 +34,18 @@ export function MomentumBar({ step, homeShort, awayShort, history = [] }: Moment
   const bandLeft = Math.max(0, Math.min(100 - bandW, pct - bandW / 2))
 
   // Brytpunkt — ärlig: visas medan respektive motordynamik faktiskt är aktiv.
+  // Copy ur BRYTPUNKT (Opus, matchLiveText.ts), {lag} interpolerat. Ingen variabel-tag.
   const chasing = step.homeScore < step.awayScore ? homeShort
     : step.awayScore < step.homeScore ? awayShort : null
+  const equalizerShort = step.postEqualizerTeam === 'home' ? homeShort
+    : step.postEqualizerTeam === 'away' ? awayShort : null
   const bp: { variant: string; icon: string; text: string } | null =
-    (step.postEqualizerMomentum ?? 0) > 0 && step.postEqualizerTeam
-      ? { variant: 'amber', icon: '⟳', text: 'Kvitteringen vände momentumet' }
+    (step.postEqualizerMomentum ?? 0) > 0 && equalizerShort
+      ? { variant: 'amber', icon: '⟳', text: BRYTPUNKT.kvittering.replace('{lag}', equalizerShort) }
       : (step.postBreakUrgency ?? 0) > 0 && chasing
-        ? { variant: 'accent', icon: '▲', text: `Andra halvlek — ${chasing} trycker på` }
+        ? { variant: 'accent', icon: '▲', text: BRYTPUNKT.postPaus.replace('{lag}', chasing) }
         : (step.lateFactor ?? 0) >= 0.34
-          ? { variant: 'steel', icon: '◇', text: 'Det öppnar upp' }
+          ? { variant: 'steel', icon: '◇', text: BRYTPUNKT.sent }
           : null
 
   // Liten kadens-historik (homeInitiative över tid) — strukturen, inte bruset.
