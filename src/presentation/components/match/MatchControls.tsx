@@ -8,6 +8,9 @@ interface MatchControlsProps {
   matchDone: boolean
   muted: boolean
   currentMatchStep: MatchStep | null
+  homeShort?: string
+  awayShort?: string
+  momentumHistory?: number[]
   onTogglePause: () => void
   onToggleFastForward: () => void
   onOpenSubModal: () => void
@@ -22,6 +25,9 @@ export function MatchControls({
   matchDone,
   muted,
   currentMatchStep,
+  homeShort = 'HEM',
+  awayShort = 'BOR',
+  momentumHistory = [],
   onTogglePause,
   onToggleFastForward,
   onOpenSubModal,
@@ -85,9 +91,10 @@ export function MatchControls({
 
       {currentMatchStep && (
         <MomentumBar
-          homeActions={currentMatchStep.shotsHome + currentMatchStep.cornersHome}
-          awayActions={currentMatchStep.shotsAway + currentMatchStep.cornersAway}
-          intensity={currentMatchStep.intensity}
+          step={currentMatchStep}
+          homeShort={homeShort}
+          awayShort={awayShort}
+          history={momentumHistory}
         />
       )}
       {currentMatchStep && (

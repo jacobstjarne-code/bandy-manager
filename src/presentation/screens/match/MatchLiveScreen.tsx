@@ -1093,6 +1093,8 @@ export function MatchLiveScreen() {
 
   const currentMatchStep = currentStep >= 0 && currentStep < steps.length ? steps[currentStep] : null
   const displayedSteps = currentStep >= 0 ? steps.slice(0, currentStep + 1) : []
+  // MomentumBar (ärlig): homeInitiative-kadens från visade steg (homeShort/awayShort finns nedan)
+  const momentumHistory = displayedSteps.map(s => s.homeInitiative ?? 0.5)
   // Score läses från reducer-state — EN sanning (steg 4)
   const homeScore = matchState.homeScore
   const awayScore = matchState.awayScore
@@ -1335,6 +1337,9 @@ export function MatchLiveScreen() {
         matchDone={matchDone}
         muted={muted}
         currentMatchStep={currentMatchStep}
+        homeShort={homeShort}
+        awayShort={awayShort}
+        momentumHistory={momentumHistory}
         onTogglePause={() => setIsPaused(prev => !prev)}
         onToggleFastForward={handleToggleFastForward}
         onOpenSubModal={() => { setIsPaused(true); setShowSubModal(true) }}
