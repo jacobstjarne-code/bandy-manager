@@ -13,38 +13,23 @@ const OPTIONS = [
 
 export function TacticChangeModal({ changesLeft, onChoose, onClose }: TacticChangeModalProps) {
   return (
-    <div style={{
-      position: 'fixed', bottom: 70, left: 16, right: 16,
-      background: 'var(--bg-surface)', border: '1px solid var(--border)',
-      borderRadius: 14, padding: '14px 16px', zIndex: 'var(--z-modal)',
-      boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-        <span style={{ fontSize: 12, fontWeight: 600 }}>⚙️ Snabbändring</span>
-        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-          {changesLeft} kvar
-        </span>
+    <div className="match-modal-dock match-modal-panel">
+      <div className="match-modal-head">
+        <span className="match-modal-title">⚙️ Snabbändring</span>
+        <span className="match-modal-meta">{changesLeft} kvar</span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+      <div className="match-modal-grid">
         {OPTIONS.map(opt => (
           <button
             key={opt.id}
-            className="btn btn-ghost"
-            style={{ padding: 10, fontSize: 12 }}
+            className="match-modal-btn"
             onClick={() => onChoose(opt.id)}
           >
             {opt.label}
           </button>
         ))}
       </div>
-      <button
-        onClick={onClose}
-        style={{
-          width: '100%', marginTop: 8, padding: 8,
-          background: 'none', border: 'none',
-          color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer',
-        }}
-      >
+      <button className="match-modal-cancel" onClick={onClose}>
         Avbryt
       </button>
     </div>
