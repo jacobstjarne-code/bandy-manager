@@ -17,6 +17,7 @@ interface MatchControlsProps {
   onToggleMute: () => void
   onOpenTacticQuick?: () => void
   tacticChangesLeft?: number
+  tacticGlow?: boolean
 }
 
 export function MatchControls({
@@ -34,6 +35,7 @@ export function MatchControls({
   onToggleMute,
   onOpenTacticQuick,
   tacticChangesLeft,
+  tacticGlow,
 }: MatchControlsProps) {
   return (
     <div className="match-controls-stalvallen">
@@ -71,7 +73,7 @@ export function MatchControls({
         {!matchDone && onOpenTacticQuick && (tacticChangesLeft ?? 0) > 0 && (
           <button
             onClick={onOpenTacticQuick}
-            className="match-control-btn match-control-tactic"
+            className={`match-control-btn match-control-tactic${tacticGlow ? ' spak-b-glow' : ''}`}
             title="Taktikjustering"
           >
             ⚙️

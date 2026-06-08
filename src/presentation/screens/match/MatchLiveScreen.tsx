@@ -24,6 +24,7 @@ import { PhaseOverlay } from '../../components/match/PhaseOverlay'
 import { FinalIntroScreen } from '../../components/match/FinalIntroScreen'
 import { HalftimeModal } from '../../components/match/HalftimeModal'
 import type { PauseLean } from '../../components/match/HalftimeModal'
+import { SentValCard } from '../../components/match/SentValCard'
 import { PAUSSNACK } from '../../../domain/data/matchLiveText'
 import type { MatchSituation } from '../../../domain/data/matchLiveText'
 import { CeremonyCupFinal } from '../../components/match/CeremonyCupFinal'
@@ -133,6 +134,9 @@ export function MatchLiveScreen() {
   const [showTacticQuick, setShowTacticQuick] = useState(false)
   const [tacticChangesUsed, setTacticChangesUsed] = useState(0)
   const MAX_TACTIC_CHANGES = 3
+  // Spak B — sent matchningsval (tänds en gång, sent i jämnt läge)
+  const [spakBState, setSpakBState] = useState<'idle' | 'active' | 'done'>('idle')
+  const [spakBAppearStep, setSpakBAppearStep] = useState<number | null>(null)
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
   const [pauseLean, setPauseLean] = useState<PauseLean | null>(null)
   const [showSubModal, setShowSubModal] = useState(false)
@@ -1057,6 +1061,33 @@ export function MatchLiveScreen() {
     setIsPaused(false)
   }
 
+  // Spak B — gate: tänds EN gång, sent (lateFactor) i jämnt läge, om taktikbyte finns kvar.
+  // Pressbar → no-op undviks genom att kräva creditsLeft i gaten.
+  useEffect(() => {
+    if (spakBState !== 'idle' || matchDone) return
+    const cs = currentStep >= 0 && currentStep < steps.length ? steps[currentStep] : null
+    if (!cs) return
+    const late = (cs.lateFactor ?? 0) >= 0.5
+    const even = Math.abs(cs.homeScore - cs.awayScore) <= 1
+    const creditsLeft = tacticChangesUsed < MAX_TACTIC_CHANGES
+    if (late && even && creditsLeft) {
+      setSpakBState('active')
+      setSpakBAppearStep(currentStep)
+    }
+  }, [currentStep, steps, matchDone, spakBState, tacticChangesUsed])
+
+  // Spak B — lämnar feeden efter N steg om spelaren inte rör det (resolvar passivt).
+  useEffect(() => {
+    if (spakBState === 'active' && spakBAppearStep !== null && currentStep > spakBAppearStep + 4) {
+      setSpakBState('done')
+    }
+  }, [currentStep, spakBState, spakBAppearStep])
+
+  function handleSpakB(choice: 'push' | 'shut') {
+    setSpakBState('done')
+    applyQuickTactic(choice === 'push' ? 'attack' : 'defend')
+  }
+
   if (!fixture || !homeLineup || !awayLineup) {
     return <div style={{ padding: 20, color: 'var(--text-secondary)' }}>Ingen matchdata tillgänglig.</div>
   }
@@ -1359,6 +1390,7 @@ export function MatchLiveScreen() {
         onToggleMute={() => { toggleMute(); setMuted(isMuted()) }}
         onOpenTacticQuick={() => { setIsFastForward(false); setIsPaused(true); setShowTacticQuick(true) }}
         tacticChangesLeft={MAX_TACTIC_CHANGES - tacticChangesUsed}
+        tacticGlow={spakBState === 'active'}
       />
 
       {showTacticQuick && !matchDone && (
@@ -1435,6 +1467,14 @@ export function MatchLiveScreen() {
             />
           )}
         </div>
+      )}
+
+      {spakBState === 'active' && currentMatchStep && !matchDone && (
+        <SentValCard
+          minute={currentMatchStep.minute}
+          onPush={() => handleSpakB('push')}
+          onShut={() => handleSpakB('shut')}
+        />
       )}
 
       <CommentaryFeedStalvallen

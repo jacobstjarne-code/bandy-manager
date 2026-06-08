@@ -51,7 +51,7 @@ export const commentary = {
     "Den sitter! {player} pangar in bollen vid bortre stolpen. {score}!",
     "MÅÅÅL FÖR {team}! {player} är iskall och sätter dit den! {score}!",
     "MÅÅÅL! Vilken match! {player} sätter dit {score}!",
-    "{player} kommer sopren med målvakten och gör inga misstag. {score}!",
+    "{player} kommer ensam med målvakten och gör inga misstag. {score}!",
     "Den sitter! {player} med ett fint avslut efter en snabb omställning. {score}.",
     "MÅÅÅL! {player} står för en drömmatch! {score}!",
     "Det går snabbt i bandy. {player} bryter uppspel och gör {score}!",
@@ -84,8 +84,8 @@ export const commentary = {
     "{player} KVITTERAR! {team} är tillbaka i matchen! {score}!",
     "DÄR KOM DEN! {player} jämnar ut för {team}! {score}!",
     "Lika igen! {player} med en kvittering ur ingenstans! {score}!",
-    "{player} suger åt sig dödläget och slår tillbaka! {score}!",
-    "Återgick till ruta ett! {player} kvitterar! {score}!",
+    "{player} vägrar ge sig och slår tillbaka! {score}!",
+    "Tillbaka till ruta ett! {player} kvitterar! {score}!",
   ],
   goalReducing: [
     "{player} dundrar in reducering! Plötsligt liv i matchen! {score}!",
@@ -106,7 +106,7 @@ export const commentary = {
     "{player} utökar ledningen! {score}, nu känns det under kontroll!",
     "MÅÅÅL! {player} skapar andrum för {team}! {score}!",
     "{team} drar ifrån! {player} med {score}!",
-    "{player} hammar in spiken! {team} drar ifrån! {score}!",
+    "{player} hamrar in spiken! {team} drar ifrån! {score}!",
     "MÅÅÅL! {player} sätter dit ett lugnande mål! {score}!",
     "{player} ger {team} marginal! {score}!",
     "Andrum! {player} sätter dit ett betydelsefullt mål! {score}!",
@@ -121,7 +121,7 @@ export const commentary = {
     "HÖRNMÅL! {player} missar nästan bollen, men den sitter ändå! {score}!",
     "MÅÅÅL! Lång hörna på {player} som drar in den. {score}!",
     "{team} utnyttjar hörnan. {player} med ett ruggigt skott. {score}!",
-    "HÖRNMÅL! Den hade man inte velat haft i bröstet. {player} gör {score}!",
+    "HÖRNMÅL! Den hade man inte velat ha i bröstet. {player} gör {score}!",
   ],
 
   save: [
@@ -130,7 +130,7 @@ export const commentary = {
     "NEJ! {goalkeeper} står i vägen!",
     "{goalkeeper} styr ut bollen nere vid stolproten. Det är inte möjligt!",
     "Räddning! {goalkeeper} väljer rätt håll. Den där hade han räknat med.",
-    "Alla lösa går om, skrockar {goalkeeper} och kastar ut bollen igen.",
+    "{goalkeeper} plockar den lösa bollen, nästan road, och kastar ut den igen.",
     "Strålande insats av {goalkeeper}. Han höll {team} kvar i matchen där!",
     "JÄTTERÄDDNING! {goalkeeper} stoppar friläge. Publikens favorit i dag.",
     "{goalkeeper} med en reflexräddning! Det där gick undan.",
@@ -196,7 +196,7 @@ export const commentary = {
     "Fajt på mitten. Ingen vill ge bort bollen.",
     "{team} håller bollen, vänder ur och söker öppningar.",
     "Intensivt mittfältsspel. Det är tätt här.",
-    "Bra drag på publiken idag Det ekar över isen.",
+    "Bra drag på publiken i dag. Det ekar över isen.",
     "{opponent} pressar högt och {team} stressas.",
     "{team} vänder ur för att hitta ett nytt angreppssätt.",
     "Spelet flödar fram och tillbaka utan att något konkret uppstår.",
@@ -251,7 +251,7 @@ export const commentary = {
   ],
   weather_clear: [
     "Stjärnklart och knivskarpt. Perfekt bandyväder.",
-    "Strålkastarna lyser upp en kall, stjärnklar kväll. Det är ruta.",
+    "Strålkastarna lyser upp en kall, stjärnklar kväll. Så här ska det vara.",
     "Kyligt och klart. Precis som det ska vara.",
   ],
 
@@ -330,7 +330,7 @@ export const commentary = {
   ],
 
   final_kickoff: [
-    "SM-FINALEN! Det här är vad alla har väntat på. Sveriges Superbowl.",
+    "SM-FINALEN! Det här är vad alla har väntat på. Hela bandysverige tittar.",
     "Domaren blåser igång SM-finalen! Vilken stämning!",
     "Det största ögonblicket i svensk idrott. SM-final i bandy. Avslag!",
   ],
@@ -651,7 +651,7 @@ export const commentary = {
   ],
 
   context_captain_moment: [
-    'Kaptenen kliver fram. © på armen, ansvar i blicken.',
+    'Kaptenen kliver fram. Bindeln på armen, ansvar i blicken.',
     'Det är därför han har bindeln. {player} gör det som krävs.',
     'Kaptensmål! {player} tar ansvar när det behövs som mest.',
   ],
@@ -757,7 +757,7 @@ export const commentary = {
   referee_lenient: [
     'Domaren viftar vidare. Den gick igenom — men det var nära.',
     'Ingen pipa. Domaren låter spelet flöda. Det uppskattas på planen.',
-    'Fri duell. Domaren låter det hållas. Spelarna tack.',
+    'Fri duell. Domaren låter det hållas. Spelarna uppskattar det.',
   ],
 
   referee_inconsistent: [
@@ -952,7 +952,7 @@ export function getTraitCommentary(
     ],
     lokal: [
       `Hemmapubliken tystnar. ${name} åker ut och laget spelar numerärt underlägset.`,
-      `${name} låter känslorna ta överhanden. Tokalt onödigt.`,
+      `${name} låter känslorna ta överhanden. Totalt onödigt.`,
       `Det var inte så lokalhjälten ville skriva in sig i kväll. ${name} ut.`,
     ],
     ledare: [
