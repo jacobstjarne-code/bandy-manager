@@ -66,8 +66,15 @@ for (const [id, label, clickText] of SCENES) {
       await page.waitForTimeout(400)
     }
     await page.screenshot({ path: join(OUT, `${id}.png`), fullPage: true })
-    rows.push(`### ${label}\n\n\`${id}\`\n\n![${id}](./${id}.png)\n`)
-    console.log(`✓ ${id}`)
+    // Error-boundary-detektering — ✓ ska betyda RENDERAD, inte bara "ingen Playwright-throw"
+    const errored = await page.locator('text=Något gick fel').count().catch(() => 0)
+    if (errored > 0) {
+      rows.push(`### ${label}\n\n\`${id}\` — **ERROR BOUNDARY (renderade "Något gick fel")**\n\n![${id}](./${id}.png)\n`)
+      console.log(`✗ ${id}: error boundary`)
+    } else {
+      rows.push(`### ${label}\n\n\`${id}\`\n\n![${id}](./${id}.png)\n`)
+      console.log(`✓ ${id}`)
+    }
   } catch (e) {
     rows.push(`### ${label}\n\n\`${id}\` — **CAPTURE FAILED:** ${e.message}\n`)
     console.log(`✗ ${id}: ${e.message}`)

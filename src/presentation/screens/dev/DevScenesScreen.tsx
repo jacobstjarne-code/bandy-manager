@@ -471,7 +471,7 @@ export function DevScenesScreen() {
       : scene === 'finalhelg' ? finalhelgGame
       : scene === 'arrival' || scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
       : portalGame
-    useGameStore.setState({ game: g, roundSummary: scene === 'granska' ? granskaRoundSummary : null } as never)
+    useGameStore.setState({ game: g, roundSummary: (scene === 'granska' || scene === 'roundsummary') ? granskaRoundSummary : null } as never)
   }, [scene])
 
   return (
@@ -623,7 +623,9 @@ export function DevScenesScreen() {
           </div>
         )}
         {scene === 'annandagen' && (
-          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+          // transform → containing block, så AnslagOverlays position:fixed ramas in i scenen
+          // (annars escapar overlayn till viewporten och fångas dåligt i fullPage-screenshot).
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
             <AnslagOverlay game={squadGame} anslagKey={'league_midwinter' as never} onDismiss={() => {}} />
           </div>
         )}
