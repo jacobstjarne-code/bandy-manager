@@ -153,6 +153,18 @@ const SECOND_HALF_BOOST = 1.19
 // punktbump i minut 51–55. Magnitud kalibrerad mot comeback-basfrekvens.
 const POST_PAUS_URGENCY = 0.45
 
+// Spak A — pausvalets lut (SPEC-SPAK-AB A1, auktoriserad motortouch 2026-06-08).
+// Pausvalet modulerar det managed-lagets (push) eller motståndarens (calm) attack i
+// post-paus-fönstret (steg 31→40, avtar). Bounded — det LUTAR baren, vänder den aldrig.
+// SAMMA faktor driver previewn i UI och sim:en (§2, ärlighet). Default (ingen lean) =
+// no-op, så 1078-sviten och baskalibreringen är oförändrade. Kalibrerat mot att en
+// jagande spelares comeback-frekvens rör sig mot ~13% utan overshoot.
+export const PAUSE_LEAN_FACTOR: Record<'push' | 'calm' | 'hold', number> = {
+  push: 1.25,  // höjer ert post-paus-tryck (mitten av spec:ens ±20–25%)
+  calm: 0.80,  // dämpar deras post-paus-svall
+  hold: 1.0,
+}
+
 // Kvitterings-momentum (Fas 2, struktur). När ett lag kvitterar från underläge
 // till lika får det en avtagande momentum-boost i stället för att direkt återgå
 // till even_battle. Modellerar att ett lag som just kvitterat rider på trycket
@@ -226,6 +238,9 @@ function getIceHardnessMod(month: number): number {
 export interface MatchCoreInput extends StepByStepInput {
   /** 'full': commentary + interactions (MatchLiveScreen). 'fast': events only (matchEngine). */
   mode?: 'full' | 'fast'
+  /** Spak A — managed-lagets pausval. Modulerar post-paus-fönstret (SPEC-SPAK-AB A1).
+   *  Kräver managedIsHome satt. Default odefinierat = no-op (baskalibrering orörd). */
+  pauseLean?: 'push' | 'calm' | 'hold'
 }
 
 // ── Match situation helpers ───────────────────────────────────────────────────
@@ -342,6 +357,7 @@ function* simulateMatchCore(
     rivalry,
     fanMood,
     managedIsHome,
+    pauseLean,
   } = input
 
   const phaseConst = PHASE_CONSTANTS[matchPhase]
@@ -874,6 +890,22 @@ function* simulateMatchCore(
       }
       homeModeAttackMult *= postPausUrgency(homeMode)
       awayModeAttackMult *= postPausUrgency(awayMode)
+
+      // Spak A — pausvalets lut på post-paus-fönstret (steg 31→40, avtar mot 0).
+      // push → managed-lagets attack upp; calm → motståndarens attack ner. Bounded
+      // (PAUSE_LEAN_FACTOR), additivt ovanpå urgencyn ovan. Default no-op.
+      if (pauseLean && pauseLean !== 'hold' && managedIsHome !== undefined && step >= 31 && step <= 40) {
+        const leanDecay = (40 - step) / 9  // 1.0 vid steg 31 → 0 vid steg 40
+        const full = PAUSE_LEAN_FACTOR[pauseLean]
+        const f = 1 + (full - 1) * leanDecay  // avtar mot 1.0 över fönstret
+        if (pauseLean === 'push') {
+          if (managedIsHome) homeModeAttackMult *= f
+          else awayModeAttackMult *= f
+        } else { // 'calm' — dämpa motståndarens svall
+          if (managedIsHome) awayModeAttackMult *= f
+          else homeModeAttackMult *= f
+        }
+      }
 
       // Kvitterings-momentum: avtagande boost för laget som just kvitterat,
       // så lika-läget oftare bryts till vändning i stället för att stanna lika.
