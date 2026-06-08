@@ -402,3 +402,15 @@ Mellan varje delsprint: mät via analyze-stress, läs rapporten, avgör om näst
 **Alternativ övervägt:** Skapa ny dedikerad vy. Avvisat — PortalScreen är nu permanent entry point; en separat vy skulle ge samma dead-code-risk igen.
 
 **Konsekvens:** När en skärm raderas som dead code ska dess unika CTA:er och handlerfunktioner inventeras mot den nya entry pointen INNAN radering. En funktion kan dö tyst även när dess handler lever kvar i storen. Lärdom tillagd i LESSONS.md.
+
+---
+
+## 2026-06-08 — Spak B förbrukar ett av tre taktikbyten (gatad)
+
+**Problem:** Spak B (sent matchningsval, feed-kort) applicerar en sen hållning via samma `applyQuickTactic`-väg som det manuella taktikbytet. Frågan: ska den ha en egen budget eller dela de tre manuella bytena?
+
+**Beslut (Jacob, 2026-06-08):** Delar budgeten — Spak B förbrukar ett av tre taktikbyten. Kortet gatas så det bara tänds när minst ett byte finns kvar (`tacticChangesUsed < MAX_TACTIC_CHANGES`), så knappen aldrig no-op:ar. Amber-glow på taktik-knappen behålls när kortet är tänt (B3) — taktikskifte ÄR det relevanta handtaget sent (brief §3).
+
+**Alternativ övervägt:** Egen budget för Spak B (separat från de tre manuella). Avvisat — återanvänder mentality-vägen rakt av, ingen ny budget-state, och kopplar det sena valet till samma resurs som manuella skiften (en sen hållning ÄR ett taktikbyte).
+
+**Konsekvens:** Spak B är en auto-framtvingad variant av det manuella taktikbytet, inte en gratis extra-spak. Om det känns snålt att en prompt äter ett manuellt byte är justeringen att ge Spak B egen budget — inte att ta bort gaten (gaten skyddar mot tyst no-op).
