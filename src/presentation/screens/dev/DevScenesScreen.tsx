@@ -32,10 +32,16 @@ import { PlayerCard } from '../../components/PlayerCard'
 import { ScoreBlock as ScoreBlockComp } from '../../components/primitives/ScoreBlock'
 import { Sparkline as SparklineComp } from '../../components/primitives/Sparkline'
 import { MiljoHeader } from '../../components/environment/MiljoHeader'
+import { MomentumBar } from '../../components/match/MomentumBar'
+import { TacticChangeModal } from '../../components/match/TacticChangeModal'
+import { SubstitutionModal } from '../../components/match/SubstitutionModal'
+import { SentValCard } from '../../components/match/SentValCard'
+import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'roundsummary' | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
+  | 'momentumbar' | 'tacticmodal' | 'submodal' | 'spakb'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -66,6 +72,10 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'annandagen',    label: 'Annandagen-anslag (IllustrationScene band)' },
   { id: 'arrival',       label: 'ArrivalScene (IllustrationScene fullbleed)' },
   { id: 'squad-trupp',   label: 'SquadScreen — TRUPP-flik' },
+  { id: 'momentumbar',   label: 'MomentumBar (ärlig — kvitterings-läge)' },
+  { id: 'tacticmodal',   label: 'TacticChangeModal (🟥 mörk panel)' },
+  { id: 'submodal',      label: 'SubstitutionModal (🟥 mörk panel)' },
+  { id: 'spakb',         label: 'Spak B — sent matchningsval (feed-kort)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -715,6 +725,53 @@ export function DevScenesScreen() {
                 <div style={{ padding: '0 14px' }}><NextMatchPrimary game={g} /></div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Spår A — MatchLive-ytor (deterministisk fingerad state) */}
+        {scene === 'momentumbar' && (() => {
+          const devStep = {
+            step: 50, minute: 67, homeScore: 2, awayScore: 2,
+            shotsHome: 9, shotsAway: 7, cornersHome: 4, cornersAway: 3, intensity: 'high',
+            homeInitiative: 0.63, postBreakUrgency: 0, postEqualizerMomentum: 0.5,
+            postEqualizerTeam: 'home', lateFactor: 0.5, matchProfile: 'open_game', events: [],
+          } as unknown as MatchStep
+          const history = [0.5, 0.52, 0.48, 0.45, 0.5, 0.58, 0.63]
+          return (
+            <div style={{ background: 'var(--bg-deepdark)', minHeight: '812px', padding: '40px 12px' }}>
+              <MomentumBar step={devStep} homeShort="EBK" awayShort="BGF" history={history} />
+            </div>
+          )
+        })()}
+
+        {scene === 'tacticmodal' && (
+          <div style={{ background: 'var(--bg-deepdark)', minHeight: '812px', transform: 'translateZ(0)', position: 'relative' }}>
+            <TacticChangeModal changesLeft={2} onChoose={() => {}} onClose={() => {}} />
+          </div>
+        )}
+
+        {scene === 'submodal' && (() => {
+          const P = PlayerPosition
+          const starters = [
+            makePlayer('s1', 'Erik', 'Lund', 27, P.Goalkeeper, 68, { fitness: 82 }),
+            makePlayer('s2', 'Johan', 'Berg', 24, P.Defender, 64, { fitness: 71 }),
+            makePlayer('s3', 'Anton', 'Sjö', 29, P.Half, 66, { fitness: 58 }),
+            makePlayer('s4', 'Nils', 'Holm', 22, P.Forward, 70, { fitness: 44 }),
+          ] as never[]
+          const bench = [
+            makePlayer('b1', 'Olle', 'Ek', 20, P.Forward, 61, { fitness: 90 }),
+            makePlayer('b2', 'Sven', 'Dahl', 31, P.Half, 63, { fitness: 88 }),
+          ] as never[]
+          return (
+            <div style={{ background: 'var(--bg-deepdark)', minHeight: '812px', transform: 'translateZ(0)', position: 'relative' }}>
+              <SubstitutionModal starters={starters} bench={bench} onConfirm={() => {}} onClose={() => {}} />
+            </div>
+          )
+        })()}
+
+        {scene === 'spakb' && (
+          <div style={{ background: 'var(--bg-deepdark)', minHeight: '812px', padding: '40px 0' }}>
+            <SentValCard minute={79} onPush={() => {}} onShut={() => {}} />
           </div>
         )}
       </div>

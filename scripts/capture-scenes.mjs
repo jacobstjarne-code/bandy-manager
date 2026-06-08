@@ -47,6 +47,10 @@ const SCENES = [
   ['annandagen', 'Annandagen-anslag (IllustrationScene band)'],
   ['arrival', 'ArrivalScene (IllustrationScene fullbleed-bakgrund)'],
   ['squad-trupp', 'SquadScreen — TRUPP-flik (DB-5 stripe + R2-3 chips)', 'button:has-text("👥 TRUPP")'],
+  ['momentumbar', 'MomentumBar (ärlig — kvitterings-läge, nål=homeInitiative)'],
+  ['tacticmodal', 'TacticChangeModal (🟥 → mörk Stålvallen-panel)'],
+  ['submodal', 'SubstitutionModal (🟥 → mörk Stålvallen-panel)'],
+  ['spakb', 'Spak B — sent matchningsval (feed-kort, amber)'],
 ]
 
 rmSync(OUT, { recursive: true, force: true })

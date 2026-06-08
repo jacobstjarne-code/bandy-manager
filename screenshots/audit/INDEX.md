@@ -4,7 +4,7 @@ Genererad av `scripts/capture-scenes.mjs` ur /dev/scenes (deterministisk fingera
 Jacob godkänner det visuella svepet via denna bilaga — ingen live-session krävs.
 Regenerera: starta servern + `node scripts/capture-scenes.mjs`.
 
-28 ytor.
+32 ytor.
 
 ---
 
@@ -175,3 +175,27 @@ Regenerera: starta servern + `node scripts/capture-scenes.mjs`.
 `squad-trupp`
 
 ![squad-trupp](./squad-trupp.png)
+
+### MomentumBar (ärlig — kvitterings-läge, nål=homeInitiative)
+
+`momentumbar`
+
+![momentumbar](./momentumbar.png)
+
+### TacticChangeModal (🟥 → mörk Stålvallen-panel)
+
+`tacticmodal`
+
+![tacticmodal](./tacticmodal.png)
+
+### SubstitutionModal (🟥 → mörk Stålvallen-panel)
+
+`submodal`
+
+![submodal](./submodal.png)
+
+### Spak B — sent matchningsval (feed-kort, amber)
+
+`spakb`
+
+![spakb](./spakb.png)
