@@ -54,3 +54,35 @@ jobs:
         with:
           name: syn-audit-screenshots
           path: screenshots/audit
+
+  # Visuell regression: jämför /dev/scenes mot Linux-seedade baselines (samma OS →
+  # pixelstabilt, till skillnad från Mac-vs-Linux). Baselines seedas via
+  # visual-baselines.yml (workflow_dispatch). Innan de finns hoppar jobbet över
+  # jämförelsen (ingen falsk röd). Separat job → blockar inte övriga checks.
+  visual-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - id: baselines
+        name: Finns Linux-baselines?
+        run: |
+          if ls tests/visual/__snapshots__/*-linux.png >/dev/null 2>&1; then
+            echo "exist=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exist=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Inga Linux-baselines ännu — kör workflow visual-baselines för att seeda."
+          fi
+      - if: steps.baselines.outputs.exist == 'true'
+        run: npx playwright install --with-deps chromium
+      - if: steps.baselines.outputs.exist == 'true'
+        run: npm run test:visual
+      - if: ${{ failure() && steps.baselines.outputs.exist == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-report
+          path: playwright-report

@@ -27,3 +27,9 @@ docs/data/INTERNAL_reform_effect_complete.md
 docs/data/INTERNAL_MINUTE_CONVENTION.md
 docs/data/INTERNAL_DATA_NOTES.md
 docs/data/INTERNAL_referee_timing_profiles.json
+
+# Playwright visuell regression — transient + icke-Linux-baselines (Linux seedas i CI)
+test-results/
+playwright-report/
+tests/visual/__snapshots__/*-darwin.png
+tests/visual/__snapshots__/*-win32.png

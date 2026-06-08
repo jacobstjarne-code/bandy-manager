@@ -5,7 +5,7 @@
  * Add a scene: extend SCENES, create fingered game via makeGame(), render below.
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Club } from '../../../domain/entities/Club'
 import { PlayerPosition } from '../../../domain/enums'
@@ -461,8 +461,10 @@ export function DevScenesScreen() {
   const seasonReady = useGameStore(s => (s.game?.seasonSummaries?.length ?? 0) > 0)
   const finalReady = useGameStore(s => !!s.game?.playoffBracket?.final)
 
-  // Seed the store so all screens that call useGameStore() work
-  useEffect(() => {
+  // Seed the store so all screens that call useGameStore() work.
+  // useMemo (ej useEffect) → körs UNDER render, före barnen, så t.ex. PortalScreen
+  // aldrig renderar först med null-game och sedan med game (→ "Rendered more hooks").
+  useMemo(() => {
     const g = scene === 'cup-victory' ? cupGame
       : scene === 'sm-victory' ? smGame
       : scene === 'season-arc' ? arcGame
@@ -482,6 +484,7 @@ export function DevScenesScreen() {
       : scene === 'arrival' || scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
       : portalGame
     useGameStore.setState({ game: g, roundSummary: (scene === 'granska' || scene === 'roundsummary') ? granskaRoundSummary : null } as never)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene])
 
   return (
@@ -515,7 +518,7 @@ export function DevScenesScreen() {
       </div>
 
       {/* ── Scene output — 375 px mobile viewport ── */}
-      <div style={{ maxWidth: 375, margin: '0 auto' }}>
+      <div data-scene-content style={{ maxWidth: 375, margin: '0 auto' }}>
 
         {scene === 'cup-victory' && (
           <CupFinalVictoryScene game={cupGame} onComplete={() => {}} />

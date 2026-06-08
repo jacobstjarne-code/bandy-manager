@@ -9,6 +9,6 @@ export default defineConfig({
         url: 'http://localhost',
       },
     },
-    exclude: ['**/node_modules/**', '**/dist/**', '.claude/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', '.claude/**', 'tests/visual/**'],
   },
 })
