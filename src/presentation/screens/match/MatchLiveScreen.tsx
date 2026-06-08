@@ -23,6 +23,9 @@ import { playSound, isMuted, toggleMute } from '../../audio/soundEffects'
 import { PhaseOverlay } from '../../components/match/PhaseOverlay'
 import { FinalIntroScreen } from '../../components/match/FinalIntroScreen'
 import { HalftimeModal } from '../../components/match/HalftimeModal'
+import type { PauseLean } from '../../components/match/HalftimeModal'
+import { PAUSSNACK } from '../../../domain/data/matchLiveText'
+import type { MatchSituation } from '../../../domain/data/matchLiveText'
 import { CeremonyCupFinal } from '../../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../../components/match/CeremonySmFinal'
 import { SubstitutionModal } from '../../components/match/SubstitutionModal'
@@ -131,7 +134,7 @@ export function MatchLiveScreen() {
   const [tacticChangesUsed, setTacticChangesUsed] = useState(0)
   const MAX_TACTIC_CHANGES = 3
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
-  const [halftimeChoice, setHalftimeChoice] = useState<'calm' | 'angry' | 'tactical' | null>(null)
+  const [pauseLean, setPauseLean] = useState<PauseLean | null>(null)
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => (isSmFinal || !!isCupFinal) ? 1 : 0)
@@ -915,9 +918,18 @@ export function MatchLiveScreen() {
     let homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
     let awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
 
-    if (halftimeChoice === 'calm' || halftimeChoice === 'angry') {
-      const moraleDelta = halftimeChoice === 'calm' ? 5 : -3
-      const sharpnessDelta = halftimeChoice === 'angry' ? 8 : 0
+    // Spak A — pausvalets effekt. effectiveLean = spelarens val, annars lägets default (index 0).
+    const htHome = halftimeStep?.homeScore ?? 0
+    const htAway = halftimeStep?.awayScore ?? 0
+    const managedDiff = managedIsHome ? htHome - htAway : htAway - htHome
+    const htSituation: MatchSituation = managedDiff < 0 ? 'behind' : managedDiff === 0 ? 'level' : 'leading'
+    const effectiveLean: PauseLean = pauseLean ?? PAUSSNACK[htSituation][0].lean
+
+    // Morale/sharpness — den osynliga delen (behålls additivt, SPEC A1). Den synliga
+    // delen (postBreakUrgency-luten) ligger i pauseLean nedan.
+    {
+      const moraleDelta = effectiveLean === 'calm' ? 5 : 2
+      const sharpnessDelta = effectiveLean === 'push' ? 8 : 0
       const applyBoost = (players: typeof homePlayers) =>
         players.map(p => ({
           ...p,
@@ -947,6 +959,7 @@ export function MatchLiveScreen() {
       initialAwaySuspensions: halftimeStep?.activeSuspensions.awayCount ?? 0,
       substitutions: htSubs.length > 0 ? htSubs.map(s => ({ outId: s.outId, inId: s.inId })) : undefined,
       managedIsHome,
+      pauseLean: effectiveLean,
       storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     })
     const firstHalf = steps.slice(0, 31)
@@ -1460,8 +1473,8 @@ export function MatchLiveScreen() {
           allPlayers={game?.players ?? []}
           onApplyTactic={handleApplyTactic}
           onContinue={handleApplyTactic}
-          halftimeChoice={halftimeChoice}
-          onHalftimeChoice={setHalftimeChoice}
+          pauseLean={pauseLean}
+          onPauseLean={setPauseLean}
         />
       )}
 

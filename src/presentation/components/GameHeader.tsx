@@ -6,6 +6,7 @@ import { TownSilhouette } from './TownSilhouette'
 import { HelpOverlay } from './HelpOverlay'
 import { Logo } from './Logo'
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
+import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 
 /** Handritad SVG-kuvert-glyph i koppar. Ersätter 🔔-emoji. */
 function EnvelopeIcon({ size = 18, color = 'currentColor' }: { size?: number; color?: string }) {
@@ -132,7 +133,7 @@ export function GameHeader() {
           overflow: 'hidden',
           textOverflow: 'ellipsis',
         }}>
-          {game.managerName} · {game.currentSeason}/{game.currentSeason + 1}
+          {game.managerName} · {seasonSpanLabel(game.currentSeason)}
         </p>
       </div>
 

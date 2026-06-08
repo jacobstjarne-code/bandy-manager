@@ -844,6 +844,186 @@
   margin-bottom: 12px;
 }
 
+/* HalftimeModal — mörk LED-panel (SPEC-SPAK-AB A4, mock 2026-06-07_design_match_modaler).
+   Återanvänder .match-modal-overlay + panel-grunden; mock-gradienten → solid var(--panel)
+   för konsekvens med de två 🟥-modalerna + token-renhet (inga råa hex). */
+.ht-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: calc(100dvh - 80px);
+  text-align: center;
+  width: 90%;
+  min-width: 260px;
+  max-width: 330px;
+  padding: 0;
+}
+.ht-head { padding: 18px 18px 0; flex-shrink: 0; }
+.ht-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--led-amber);
+  margin-bottom: 10px;
+}
+.ht-score { margin-bottom: 12px; }
+.ht-score .led {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--led-red);
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--led-red) 50%, transparent);
+}
+.ht-score .pd {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--led-amber);
+  margin-top: 3px;
+}
+.ht-tabs {
+  display: flex;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  margin-bottom: 12px;
+}
+.ht-tab {
+  flex: 1;
+  padding: 9px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  text-align: center;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.ht-tab.on { color: var(--accent); border-bottom-color: var(--accent); }
+.ht-body { flex: 1; overflow-y: auto; padding: 0 18px; }
+.ht-analysis {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-light-secondary);
+  text-align: center;
+  line-height: 1.5;
+  padding: 10px 8px;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+  margin-bottom: 12px;
+}
+.ht-best {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 14px;
+}
+.ht-best b { color: var(--accent); }
+.ht-stats {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-light-secondary);
+  margin-bottom: 14px;
+  text-align: left;
+}
+.ht-stats > div { display: flex; justify-content: space-between; line-height: 1.9; }
+/* Spak A — paussnack */
+.pep-l {
+  font-family: var(--font-body);
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+  text-align: left;
+}
+.pep { display: flex; flex-direction: column; gap: 7px; margin-bottom: 4px; }
+.pep-opt {
+  text-align: left;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--panel) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.pep-opt.sel {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.pep-t {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-light);
+  margin-bottom: 3px;
+}
+.pep-e {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: var(--text-light-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.pep-e .up { color: var(--led-amber); }
+.pep-e .dn { color: var(--steel); }
+.pep-tactic-link {
+  background: none;
+  border: none;
+  padding: 8px 0 2px;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-align: center;
+  cursor: pointer;
+}
+/* Spak A — preview (.prev) */
+.prev {
+  margin-top: 10px;
+  margin-bottom: 8px;
+  padding: 9px 11px;
+  background: color-mix(in srgb, var(--panel) 50%, transparent);
+  border-radius: 6px;
+  border-left: 2px solid var(--led-amber);
+}
+.prev-l {
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-align: left;
+}
+.prev-bar {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--steel);
+  position: relative;
+  overflow: hidden;
+}
+.prev-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--accent);
+  border-radius: 4px 0 0 4px;
+  transition: width 250ms ease;
+}
+.prev-arrow {
+  position: absolute;
+  top: -9px;
+  font-size: 9px;
+  color: var(--accent);
+  transform: translateX(-50%);
+  transition: left 250ms ease;
+}
+
 /* StatsFooter */
 .stats-footer-stalvallen {
   display: grid;

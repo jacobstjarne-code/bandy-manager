@@ -110,7 +110,7 @@ export function MatchLiveScreen() {
   const [tacticChangesUsed, setTacticChangesUsed] = useState(0)
   const MAX_TACTIC_CHANGES = 3
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
-  const [halftimeChoice, setHalftimeChoice] = useState<'calm' | 'angry' | 'tactical' | null>(null)
+  const [halftimeChoice] = useState<'calm' | 'angry' | 'tactical' | null>(null)
   const [liveSubs, setLiveSubs] = useState<{ outId: string; inId: string; minute: number }[]>([])
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
@@ -1155,8 +1155,8 @@ export function MatchLiveScreen() {
           allPlayers={game?.players ?? []}
           onApplyTactic={handleApplyTactic}
           onContinue={handleApplyTactic}
-          halftimeChoice={halftimeChoice}
-          onHalftimeChoice={setHalftimeChoice}
+          pauseLean={null}
+          onPauseLean={() => {}}
         />
       )}
 

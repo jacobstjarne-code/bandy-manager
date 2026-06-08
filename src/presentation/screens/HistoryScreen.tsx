@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { PlayerLink } from '../components/PlayerLink'
 import { ordinal } from '../utils/formatters'
+import { seasonSpanLabel, seasonStartYear, seasonChampionYear } from '../../domain/utils/seasonYear'
 import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
 import { shareSeasonImage } from '../utils/seasonShareImage'
 import { loadTeamPhoto, listTeamPhotoSeasons } from '../../infrastructure/teamPhotoStorage'
@@ -103,7 +104,7 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
                 strokeWidth="1.5" />
               <text x={cx} y={H - 4} textAnchor="middle"
                 fontSize="6.5" fill="var(--text-muted)" fontFamily="system-ui,sans-serif">
-                {s.season}
+                {String(seasonStartYear(s.season)).slice(-2)}
               </text>
             </g>
           )
@@ -215,7 +216,7 @@ export function HistoryScreen() {
             [...(game.bandyLetters ?? [])].reverse().map(letter => (
               <div key={letter.id} className="card-sharp" style={{ padding: '12px 14px' }}>
                 <p style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 700, letterSpacing: '1px', marginBottom: 6 }}>
-                  ✉️ {letter.senderName} — Säsong {letter.season}
+                  ✉️ {letter.senderName} — Säsong {seasonSpanLabel(letter.season)}
                 </p>
                 <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: letter.playerReply ? 10 : 0 }}>
                   {letter.text}
@@ -244,7 +245,7 @@ export function HistoryScreen() {
             [...(game.schoolAssignmentArchive ?? [])].reverse().map((record, i) => (
               <div key={i} className="card-sharp" style={{ padding: '12px 14px' }}>
                 <p style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 700, letterSpacing: '1px', marginBottom: 6 }}>
-                  📚 {record.youngPlayerName} — Säsong {record.season}
+                  📚 {record.youngPlayerName} — Säsong {seasonSpanLabel(record.season)}
                 </p>
                 <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{record.choiceLabel}</p>
                 <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)' }}>{record.archiveText}</p>
@@ -277,7 +278,7 @@ export function HistoryScreen() {
                       color: photoSeason === s ? 'var(--text-primary)' : 'var(--text-secondary)',
                     }}
                   >
-                    {s}/{s + 1}
+                    {seasonSpanLabel(s)}
                   </button>
                 ))}
               </div>
@@ -340,7 +341,7 @@ export function HistoryScreen() {
                   textTransform: 'uppercase', color: isGold ? 'var(--accent)' : 'var(--text-muted)',
                   marginBottom: 10,
                 }}>
-                  ── Säsong {s.season} ──
+                  ── Säsong {seasonSpanLabel(s.season)} ──
                 </p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -439,25 +440,25 @@ export function HistoryScreen() {
             ── Rekord ──
           </p>
           {game.allTimeRecords.bestFinish && (
-            <RecordRow label="Bästa tabellplacering" value={`${ordinal(game.allTimeRecords.bestFinish.position)} plats`} sub={`Säsong ${game.allTimeRecords.bestFinish.season}`} />
+            <RecordRow label="Bästa tabellplacering" value={`${ordinal(game.allTimeRecords.bestFinish.position)} plats`} sub={`Säsong ${seasonSpanLabel(game.allTimeRecords.bestFinish.season)}`} />
           )}
           {game.allTimeRecords.mostGoalsSeason && (
-            <RecordRow label="Flest mål en säsong" value={`${game.allTimeRecords.mostGoalsSeason.goals} mål`} sub={`${game.allTimeRecords.mostGoalsSeason.playerName} · ${game.allTimeRecords.mostGoalsSeason.season}`} />
+            <RecordRow label="Flest mål en säsong" value={`${game.allTimeRecords.mostGoalsSeason.goals} mål`} sub={`${game.allTimeRecords.mostGoalsSeason.playerName} · ${seasonSpanLabel(game.allTimeRecords.mostGoalsSeason.season)}`} />
           )}
           {game.allTimeRecords.mostAssistsSeason && (
-            <RecordRow label="Flest assist en säsong" value={`${game.allTimeRecords.mostAssistsSeason.assists} assist`} sub={`${game.allTimeRecords.mostAssistsSeason.playerName} · ${game.allTimeRecords.mostAssistsSeason.season}`} />
+            <RecordRow label="Flest assist en säsong" value={`${game.allTimeRecords.mostAssistsSeason.assists} assist`} sub={`${game.allTimeRecords.mostAssistsSeason.playerName} · ${seasonSpanLabel(game.allTimeRecords.mostAssistsSeason.season)}`} />
           )}
           {game.allTimeRecords.highestRatingSeason && (
-            <RecordRow label="Högst snittbetyg en säsong" value={`${game.allTimeRecords.highestRatingSeason.rating.toFixed(1)}`} sub={`${game.allTimeRecords.highestRatingSeason.playerName} · ${game.allTimeRecords.highestRatingSeason.season}`} />
+            <RecordRow label="Högst snittbetyg en säsong" value={`${game.allTimeRecords.highestRatingSeason.rating.toFixed(1)}`} sub={`${game.allTimeRecords.highestRatingSeason.playerName} · ${seasonSpanLabel(game.allTimeRecords.highestRatingSeason.season)}`} />
           )}
           {game.allTimeRecords.biggestWin && (
-            <RecordRow label="Största seger" value={game.allTimeRecords.biggestWin.score} sub={`vs ${game.allTimeRecords.biggestWin.opponent} · ${game.allTimeRecords.biggestWin.season}`} />
+            <RecordRow label="Största seger" value={game.allTimeRecords.biggestWin.score} sub={`vs ${game.allTimeRecords.biggestWin.opponent} · ${seasonSpanLabel(game.allTimeRecords.biggestWin.season)}`} />
           )}
           {game.allTimeRecords.championSeasons.length > 0 && (
-            <RecordRow label="SM-guld" value={`${game.allTimeRecords.championSeasons.length}×`} sub={game.allTimeRecords.championSeasons.join(', ')} />
+            <RecordRow label="SM-guld" value={`${game.allTimeRecords.championSeasons.length}×`} sub={game.allTimeRecords.championSeasons.map(seasonChampionYear).join(', ')} />
           )}
           {(game.allTimeRecords.cupWinSeasons ?? []).length > 0 && (
-            <RecordRow label="Cupsegrar" value={`${game.allTimeRecords.cupWinSeasons!.length}×`} sub={game.allTimeRecords.cupWinSeasons!.join(', ')} isLast />
+            <RecordRow label="Cupsegrar" value={`${game.allTimeRecords.cupWinSeasons!.length}×`} sub={game.allTimeRecords.cupWinSeasons!.map(seasonStartYear).join(', ')} isLast />
           )}
           {game.allTimeRecords.championSeasons.length === 0 && (game.allTimeRecords.cupWinSeasons ?? []).length === 0 && (
             <RecordRow label="Titlar" value="—" sub="Inga titlar ännu" isLast />

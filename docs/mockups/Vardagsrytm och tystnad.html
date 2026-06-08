@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Vardagsrytm &amp; tystnad — portal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1612; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    #__bundler_loading { position: fixed; bottom: 20px; right: 20px; font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; color: #666; background: #fff; padding: 8px 14px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); z-index: 10000; }
+    #__bundler_thumbnail { position: fixed; inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #1a1612; z-index: 9999; }
+    #__bundler_thumbnail svg { width: 100%; height: 100%; object-fit: contain; }
+    #__bundler_placeholder { color: #999; font-size: 14px; }
+  </style>
+  <noscript>
+    <style>#__bundler_loading { display: none; }</style>
+    <div style="position:fixed;bottom:12px;left:12px;font:13px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;color:#999;background:rgba(255,255,255,0.9);padding:6px 12px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);z-index:10000;">
+      This page requires JavaScript to display.
+    </div>
+  </noscript>
+</head>
+<body>
+  <div id="__bundler_thumbnail">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#1a1612"></rect>
+    <rect x="360" y="300" width="480" height="3" fill="#C47A3A" opacity="0.5"></rect>
+    <text x="600" y="420" font-family="Georgia, serif" font-style="italic" font-size="58" fill="#F5F1EB" text-anchor="middle">tystnad</text>
+    <circle cx="600" cy="510" r="5" fill="#C47A3A"></circle>
+  </svg>
+</div>
+  <div id="__bundler_loading">Unpacking...</div>
+
+  <script>
+    
+document.addEventListener('DOMContentLoaded', async function() {
+  const loading = document.getElementById('__bundler_loading');
+  function setStatus(msg) { if (loading) loading.textContent = msg; }
+
+  // Error sink persists across replaceWith since it's on window, not the DOM.
+  window.addEventListener('error', function(e) {
+    var p = document.body || document.documentElement;
+    var d = document.getElementById('__bundler_err') || p.appendChild(document.createElement('div'));
+    d.id = '__bundler_err';
+    d.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;font:12px/1.4 ui-monospace,monospace;background:#2a1215;color:#ff8a80;padding:10px 14px;border-radius:8px;border:1px solid #5c2b2e;z-index:99999;white-space:pre-wrap;max-height:40vh;overflow:auto';
+    d.textContent = (d.textContent ? d.textContent + String.fromCharCode(10) : '') +
+      '[bundle] ' + (e.message || e.type) +
+      (e.filename ? ' (' + e.filename.slice(0, 60) + ':' + e.lineno + ')' : '');
+  }, true);
+
+  try {
+    const manifestEl = document.querySelector('script[type="__bundler/manifest"]');
+    const templateEl = document.querySelector('script[type="__bundler/template"]');
+    if (!manifestEl || !templateEl) {
+      setStatus('Error: missing bundle data');
+      console.error('[bundler] Missing script tags — manifestEl:', !!manifestEl, 'templateEl:', !!templateEl);
+      return;
+    }
+
+    const manifest = JSON.parse(manifestEl.textContent);
+    let template = JSON.parse(templateEl.textContent);
+
+    const uuids = Object.keys(manifest);
+    setStatus('Unpacking ' + uuids.length + ' assets...');
+
+    const blobUrls = {};
+    await Promise.all(uuids.map(async (uuid) => {
+      const entry = manifest[uuid];
+      try {
+        const binaryStr = atob(entry.data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+
+        let finalBytes = bytes;
+        if (entry.compressed) {
+          if (typeof DecompressionStream !== 'undefined') {
+            const ds = new DecompressionStream('gzip');
+            const writer = ds.writable.getWriter();
+            const reader = ds.readable.getReader();
+            writer.write(bytes);
+            writer.close();
+            const chunks = [];
+            let totalLen = 0;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+              totalLen += value.length;
+            }
+            finalBytes = new Uint8Array(totalLen);
+            let offset = 0;
+            for (const chunk of chunks) { finalBytes.set(chunk, offset); offset += chunk.length; }
+          } else {
+            console.warn('DecompressionStream not available, asset ' + uuid + ' may not render');
+          }
+        }
+
+        blobUrls[uuid] = URL.createObjectURL(new Blob([finalBytes], { type: entry.mime }));
+      } catch (err) {
+        console.error('Failed to decode asset ' + uuid + ':', err);
+        blobUrls[uuid] = URL.createObjectURL(new Blob([], { type: entry.mime }));
+      }
+    }));
+
+    const extResEl = document.querySelector('script[type="__bundler/ext_resources"]');
+    const extResources = extResEl ? JSON.parse(extResEl.textContent) : [];
+    const resourceMap = {};
+    for (const entry of extResources) {
+      if (blobUrls[entry.uuid]) resourceMap[entry.id] = blobUrls[entry.uuid];
+    }
+
+    setStatus('Rendering...');
+    for (const uuid of uuids) template = template.split(uuid).join(blobUrls[uuid]);
+
+    // Strip integrity + crossorigin — blob URLs from a file:// document inherit
+    // a null origin, so crossorigin forces a CORS fetch that SRI then rejects.
+    // The manifest bytes are ours; SRI protects against CDN compromise, not this.
+    template = template.replace(/\s+integrity="[^"]*"/gi, '').replace(/\s+crossorigin="[^"]*"/gi, '');
+
+    const resourceScript = '<script>window.__resources = ' +
+      JSON.stringify(resourceMap).split('</' + 'script>').join('<\\/' + 'script>') +
+      ';</' + 'script>';
+    // Inject after <head> so the DOCTYPE stays first; prepending the script
+    // would push the parser into quirks mode. DOMParser always emits a <head>
+    // (synthesizing one if the source HTML omitted it) but may carry
+    // attributes through, so match the full opening tag. slice() rather than
+    // replace() keeps us clear of $-pattern substitution in resourceScript.
+    const headOpen = template.match(/<head[^>]*>/i);
+    if (headOpen) {
+      const i = headOpen.index + headOpen[0].length;
+      template = template.slice(0, i) + resourceScript + template.slice(i);
+    }
+
+    // Parse the template and swap the root element. Scripts inserted via
+    // DOMParser/replaceWith are inert per spec — re-create each with
+    // createElement so they execute, awaiting onload for src scripts to
+    // preserve ordering (React before ReactDOM before Babel before text/babel).
+    const doc = new DOMParser().parseFromString(template, 'text/html');
+    document.documentElement.replaceWith(doc.documentElement);
+    const dead = Array.from(document.scripts);
+    for (const old of dead) {
+      const s = document.createElement('script');
+      for (const a of old.attributes) s.setAttribute(a.name, a.value);
+      s.textContent = old.textContent;
+      // text/babel scripts with a src: fetch and inline. transformScriptTags
+      // does XHR against the src, but blob:null/ from a file:// origin is
+      // silently dropped. Inlining makes it a plain inline babel script,
+      // which transformScriptTags handles unconditionally.
+      if ((s.type === 'text/babel' || s.type === 'text/jsx') && s.src) {
+        const r = await fetch(s.src);
+        s.textContent = await r.text();
+        s.removeAttribute('src');
+      }
+      const p = s.src ? new Promise(function(r) { s.onload = s.onerror = r; }) : null;
+      old.replaceWith(s);
+      if (p) await p;
+    }
+    // Babel standalone auto-transforms type=text/babel on DOMContentLoaded,
+    // which fired before we swapped the document. Trigger manually if present.
+    if (window.Babel && typeof window.Babel.transformScriptTags === 'function') {
+      window.Babel.transformScriptTags();
+    }
+  } catch (err) {
+    setStatus('Error unpacking: ' + err.message);
+    console.error('Bundle unpack error:', err);
+  }
+});
+
+  </script>
+
+  <script type="__bundler/manifest">
+{}
+  </script>
+
+  <script type="__bundler/ext_resources">
+[]
+  </script>
+
+  <script type="__bundler/template">
+"<!DOCTYPE html>\n<html lang=\"sv\"><head>\n<meta charset=\"utf-8\">\n<title>Vardagsrytm &amp; tystnad — portal<\u002Ftitle>\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<style>\n  :root {\n    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;\n    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;\n    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;\n    --accent: #C47A3A; --accent-deep: #8B4820;\n    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;\n    --gold: #E8B95C; --gold-deep: #B88838; --danger: #B05040; --success: #5A9A4A;\n    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;\n  }\n  * { box-sizing: border-box; margin: 0; padding: 0; }\n  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 28px 16px 80px; }\n  .head { max-width: 1500px; margin: 0 auto 22px; }\n  .head h1 { font-family: var(--font-display); font-size: 23px; margin-bottom: 6px; }\n  .head p { font-size: 12.5px; color: rgba(245,241,235,0.72); line-height: 1.6; max-width: 880px; }\n  .head p strong { color: var(--accent); }\n  .head p + p { margin-top: 6px; }\n\n  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 24px; max-width: 1500px; margin: 0 auto; align-items: start; }\n  .col { background: var(--bg-portal); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 26px rgba(0,0,0,0.32); width: 100%; max-width: 392px; justify-self: center; }\n  .ch { padding: 11px 15px; background: var(--bg-leather-dk); border-bottom: 1px solid rgba(255,255,255,0.06); }\n  .ch .id { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; padding: 2px 7px; border-radius: 3px; }\n  .ch .id.ref { color: var(--text-muted); background: rgba(245,241,235,0.05); }\n  .ch .id.new { color: var(--success); background: rgba(90,154,74,0.15); }\n  .ch .id.gram { color: var(--cold-light); background: rgba(74,102,128,0.15); }\n  .ch .t { font-family: var(--font-display); font-size: 15px; margin-top: 7px; }\n  .ch .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }\n  .body { padding: 12px 0 16px; }\n\n  /* header strip */\n  .hdr { height: 38px; background: var(--bg-leather-dk); display: flex; align-items: center; padding: 0 14px; gap: 8px; border-bottom: 1px solid rgba(196,122,58,0.3); }\n  .hdr .logo { width: 16px; height: 16px; border-radius: 3px; background: var(--accent); }\n  .hdr .club { font-family: var(--font-display); font-size: 12px; font-weight: 700; }\n  .hdr .season { font-family: var(--font-mono); font-size: 8px; color: var(--text-muted); margin-left: auto; }\n\n  /* situation */\n  .sit { margin: 12px 14px 10px; padding: 9px 11px; color: var(--text-light-secondary); font-family: var(--font-display); font-style: italic; font-size: 12px; line-height: 1.4; border-left: 1px dashed rgba(196,122,58,0.3); opacity: 0.85; }\n  .sit strong { font-style: normal; font-family: var(--font-body); font-weight: 600; color: var(--text-light); display: block; margin-bottom: 2px; font-size: 10.5px; letter-spacing: 0.5px; text-transform: uppercase; }\n\n  /* dense reference cards */\n  .dc { margin: 0 14px 7px; padding: 9px 11px; background: var(--bg-portal-surface); border-left: 2px solid var(--accent); border-radius: 0 6px 6px 0; }\n  .dc.cold { border-left-color: var(--cold); } .dc.warm { border-left-color: var(--warm); }\n  .dc-l { font-size: 7.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light-secondary); font-weight: 600; margin-bottom: 4px; display: flex; gap: 5px; }\n  .dc-b { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light); line-height: 1.4; opacity: 0.88; }\n  .dc-prim { background: var(--bg-portal-elevated); border: 1px solid rgba(196,122,58,0.18); border-left: 1px solid rgba(196,122,58,0.18); border-radius: 6px; padding: 11px; }\n  .dc-prim .pt { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 3px; }\n  .dc-prim .pb { font-size: 10.5px; color: var(--text-light-secondary); }\n\n  /* ── BREATH ROW (andningsrad) — full bleed, no card chrome ── */\n  .breath { padding: 22px 22px; text-align: center; position: relative; }\n  .breath::before { content: '⬩'; display: block; color: var(--accent); opacity: 0.5; font-size: 11px; margin-bottom: 12px; letter-spacing: 6px; }\n  .breath-line { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--text-light); line-height: 1.55; max-width: 280px; margin: 0 auto; }\n  .breath-sub { font-family: var(--font-body); font-size: 10px; color: var(--text-muted); margin-top: 10px; letter-spacing: 0.5px; }\n\n  /* ── PATIENT CARD (tålamodskort) — the buried slow thing, elevated ── */\n  .patient { margin: 6px 14px 14px; padding: 15px 15px 14px; background: linear-gradient(180deg, rgba(74,102,128,0.07) 0%, var(--bg-portal-surface) 70%); border-radius: 10px; border: 1px solid rgba(74,102,128,0.2); position: relative; }\n  .patient-eye { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--cold-light); font-weight: 700; margin-bottom: 9px; display: flex; align-items: center; gap: 6px; }\n  .patient-eye .lucide { width: 12px; height: 12px; }\n  .patient-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }\n  .patient-portrait { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #5a2d7a, #7B4A9F); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 17px; color: rgba(255,255,255,0.9); flex-shrink: 0; }\n  .patient-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text-light); line-height: 1.15; }\n  .patient-meta { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); letter-spacing: 0.5px; margin-top: 2px; }\n  .patient-body { font-family: var(--font-display); font-style: italic; font-size: 12.5px; color: var(--text-light); line-height: 1.55; margin-bottom: 12px; opacity: 0.92; }\n  .patient-spark { display: flex; align-items: center; gap: 9px; padding-top: 10px; border-top: 1px dashed rgba(74,102,128,0.22); }\n  .patient-spark-l { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }\n  .patient-spark svg { flex: 1; height: 22px; }\n  .patient-spark-v { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--cold-light); }\n\n  /* calm primary */\n  .calm-prim { margin: 0 14px 14px; padding: 14px; background: var(--bg-portal-elevated); border: 1px solid rgba(196,122,58,0.16); border-radius: 8px; }\n  .calm-prim-eye { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 8px; display: flex; gap: 6px; }\n  .calm-prim-eye .meta { margin-left: auto; font-family: var(--font-mono); font-size: 9px; color: var(--text-light-secondary); opacity: 0.7; text-transform: uppercase; }\n  .calm-prim-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--text-light); line-height: 1.15; margin-bottom: 5px; }\n  .calm-prim-body { font-size: 11px; color: var(--text-light-secondary); line-height: 1.45; }\n\n  /* single quiet secondary */\n  .quiet-sec { margin: 0 14px 0; padding: 11px 13px; background: var(--bg-portal-surface); border-left: 2px solid var(--warm); border-radius: 0 8px 8px 0; }\n  .quiet-sec-l { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--warm-light); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }\n  .quiet-sec-l .lucide { width: 11px; height: 11px; }\n  .quiet-sec-b { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--text-light); line-height: 1.5; opacity: 0.9; }\n\n  /* grammar diagram */\n  .gram-row { display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid rgba(245,241,235,0.06); align-items: flex-start; }\n  .gram-row:last-child { border-bottom: none; }\n  .gram-when { font-family: var(--font-mono); font-size: 9px; color: var(--cold-light); width: 90px; flex-shrink: 0; line-height: 1.4; letter-spacing: 0.5px; }\n  .gram-what { font-size: 11.5px; color: var(--text-light-secondary); line-height: 1.5; }\n  .gram-what b { color: var(--text-light); font-weight: 600; }\n\n  /* Q3 context test */\n  .ctx-row { margin: 0 0 9px; padding: 10px 12px; background: var(--bg-portal-surface); border-left: 2px solid var(--warm); border-radius: 0 6px 6px 0; }\n  .ctx-l { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--warm-light); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }\n  .ctx-b { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--text-light); line-height: 1.5; }\n  .ctx-tag { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; padding: 1px 6px; border-radius: 3px; margin-left: auto; }\n  .ctx-tag.ok { color: var(--success); background: color-mix(in srgb, var(--success) 14%, transparent); }\n  .ctx-tag.no { color: #E8A090; background: color-mix(in srgb, var(--danger) 14%, transparent); }\n  .lucide { display: inline-block; vertical-align: middle; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }\n\n  .notes { max-width: 1500px; margin: 32px auto 0; padding: 22px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.6; font-size: 12.5px; }\n  .notes h3 { font-family: var(--font-display); font-size: 16px; color: var(--text-light); margin-bottom: 10px; }\n  .notes h4 { font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 14px 0 5px; }\n  .notes ul { margin: 4px 0 6px 16px; } .notes li { margin-bottom: 4px; }\n  .notes code { font-family: var(--font-mono); font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 4px; border-radius: 2px; color: var(--gold); }\n<\u002Fstyle>\n<\u002Fhead>\n<body>\n\n<div class=\"head\">\n  <h1>Vardagsrytm &amp; tystnad — portalen djup<\u002Fh1>\n  <p>Audit #1 + #3, omtag. Illustrationerna löste ögonblicken; <strong>vardagen är fortfarande vägg-till-vägg kort utan rytm<\u002Fstrong> — och den ser spelaren tusen gånger oftare än en final. Tystnaden är inte tom: <strong>en lugn vecka är när det tålmodiga får sin scen<\u002Fstrong> — den unge som utvecklas tyst, kontraktet som tickar, bygden som lever. Inversen av story-slot: istället för att dramat stiger, får det långsamma en plats det aldrig annars får.<\u002Fp>\n  <p>Två nya grepp: <strong>andningsrad<\u002Fstrong> (full-bredd, ingen kort-krom — bryter väggen) och <strong>tålamodskort<\u002Fstrong> (det begravda långsamma, lyft till fokus). Plus Q3-Lucide testat <em>i kontext<\u002Fem>, inte på vit spec-yta.<\u002Fp>\n<\u002Fdiv>\n\n<div class=\"grid\">\n\n  <!-- 1 · CALM WEEK TODAY (problem) -->\n  <div class=\"col\">\n    <div class=\"ch\">\n      <span class=\"id ref\">1 · IDAG<\u002Fspan>\n      <div class=\"t\">Lugn vecka, nuvarande<\u002Fdiv>\n      <span class=\"sub\">Inget brinner — men portalen visar samma kort-vägg som en stressig vecka, bara tunnare. Resultat: känns tom snarare än lugn. Det tålmodiga (Henrikssons utveckling, kontrakt) syns inte alls.<\u002Fspan>\n    <\u002Fdiv>\n    <div class=\"body\">\n      <div class=\"hdr\"><div class=\"logo\"><\u002Fdiv><div class=\"club\">Forsbacka<\u002Fdiv><div class=\"season\">S3 · Omg 9<\u002Fdiv><\u002Fdiv>\n      <div class=\"sit\"><strong>Tisdag · Omg 9<\u002Fstrong>Träning igår. Inget på gång till lördag.<\u002Fdiv>\n      <div class=\"dc\"><div class=\"dc-l\">📋 Styrelsens krav<\u002Fdiv><div class=\"dc-b\">Topp 8 — vi ligger 6:a.<\u002Fdiv><\u002Fdiv>\n      <div class=\"dc cold\"><div class=\"dc-l\">📊 Tabell<\u002Fdiv><div class=\"dc-b\">6:a · 14 poäng efter 8.<\u002Fdiv><\u002Fdiv>\n      <div class=\"dc\"><div class=\"dc-l\">💰 Ekonomi<\u002Fdiv><div class=\"dc-b\">96 tkr. Stadigt.<\u002Fdiv><\u002Fdiv>\n      <div class=\"dc-prim\" style=\"margin:0 14px 7px;\"><div class=\"dc-l\">🏒 Nästa match<\u002Fdiv><div class=\"pt\">Forsbacka — Heros<\u002Fdiv><div class=\"pb\">Lördag 14:00. Hemma.<\u002Fdiv><\u002Fdiv>\n      <div class=\"dc warm\"><div class=\"dc-l\">☕ Kafferummet<\u002Fdiv><div class=\"dc-b\">Magnus bytte kaffebryggare.<\u002Fdiv><\u002Fdiv>\n      <p style=\"font-family:var(--font-display); font-style:italic; font-size:10.5px; color:var(--text-light-secondary); margin:14px 14px 0; opacity:0.7; line-height:1.5;\">Fem tunna kort. Ingen rytm, ingen riktning. \"Lugnt\" ser ut som \"lite\".<\u002Fp>\n    <\u002Fdiv>\n  <\u002Fdiv>\n\n  <!-- 2 · CALM WEEK REDESIGNED -->\n  <div class=\"col\">\n    <div class=\"ch\">\n      <span class=\"id new\">2 · TYSTNAD<\u002Fspan>\n      <div class=\"t\">Lugn vecka, ny rytm<\u002Fdiv>\n      <span class=\"sub\">Andningsrad bryter väggen. Tålamodskortet lyfter det begravda — Henrikssons tysta utveckling blir veckans fokus. Färre kort, mer luft, men <em>inte<\u002Fem> tomt: det patienta får scenen.<\u002Fspan>\n    <\u002Fdiv>\n    <div class=\"body\">\n      <div class=\"hdr\"><div class=\"logo\"><\u002Fdiv><div class=\"club\">Forsbacka<\u002Fdiv><div class=\"season\">S3 · Omg 9<\u002Fdiv><\u002Fdiv>\n\n      <div class=\"sit\"><strong>Tisdag · Omg 9<\u002Fstrong>November har lagt sig över bygden. Stilla vecka.<\u002Fdiv>\n\n      <!-- breath row -->\n      <div class=\"breath\">\n        <div class=\"breath-line\">Inget skriker den här veckan. Det är då man hör det andra.<\u002Fdiv>\n        <div class=\"breath-sub\">Tre dagar till nästa match<\u002Fdiv>\n      <\u002Fdiv>\n\n      <!-- patient card — the buried thing rises -->\n      <div class=\"patient\">\n        <div class=\"patient-eye\">\n          <svg class=\"lucide\" viewBox=\"0 0 24 24\" width=\"12\" height=\"12\"><path d=\"M7 20V10M12 20V4M17 20v-6\"><\u002Fpath><\u002Fsvg>\n          I tysthet\n        <\u002Fdiv>\n        <div class=\"patient-top\">\n          <div class=\"patient-portrait\">H<\u002Fdiv>\n          <div>\n            <div class=\"patient-name\">Henriksson<\u002Fdiv>\n            <div class=\"patient-meta\">MF · 17 år · P19→A<\u002Fdiv>\n          <\u002Fdiv>\n        <\u002Fdiv>\n        <div class=\"patient-body\">Han har tränat med A-laget i sex veckor utan att säga mycket. Styrkan kryper uppåt — ingen har riktigt märkt det än.<\u002Fdiv>\n        <div class=\"patient-spark\">\n          <span class=\"patient-spark-l\">Styrka · 8 omg<\u002Fspan>\n          <svg viewBox=\"0 0 180 22\" preserveAspectRatio=\"none\"><polyline fill=\"none\" stroke=\"var(--cold-light)\" stroke-width=\"1.4\" stroke-linecap=\"round\" points=\"3,18 25,16 48,15 70,12 92,11 115,8 138,6 160,4 177,3\"><\u002Fpolyline><circle cx=\"177\" cy=\"3\" r=\"2.5\" fill=\"var(--gold)\"><\u002Fcircle><\u002Fsvg>\n          <span class=\"patient-spark-v\">68<\u002Fspan>\n        <\u002Fdiv>\n      <\u002Fdiv>\n\n      <!-- calm primary -->\n      <div class=\"calm-prim\">\n        <div class=\"calm-prim-eye\"><span>🏒 Nästa match<\u002Fspan><span class=\"meta\">Lö 14:00<\u002Fspan><\u002Fdiv>\n        <div class=\"calm-prim-title\">Forsbacka — Heros<\u002Fdiv>\n        <div class=\"calm-prim-body\">Hemma. Mittenmöte, inga poäng på spel utöver de tre.<\u002Fdiv>\n      <\u002Fdiv>\n\n      <!-- one quiet secondary, Lucide in context -->\n      <div class=\"quiet-sec\">\n        <div class=\"quiet-sec-l\">\n          <svg class=\"lucide\" viewBox=\"0 0 24 24\" width=\"11\" height=\"11\"><path d=\"M16 2v4M8 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z\"><\u002Fpath><\u002Fsvg>\n          Kontrakt\n        <\u002Fdiv>\n        <div class=\"quiet-sec-b\">Sundströms avtal löper ut till våren. Ingen brådska — men det är värt en tanke innan andra hör av sig.<\u002Fdiv>\n      <\u002Fdiv>\n\n    <\u002Fdiv>\n  <\u002Fdiv>\n\n  <!-- 3 · RHYTHM GRAMMAR -->\n  <div class=\"col\">\n    <div class=\"ch\">\n      <span class=\"id gram\">3 · GRAMMATIK<\u002Fspan>\n      <div class=\"t\">Rytm-regel<\u002Fdiv>\n      <span class=\"sub\">När bryter en andningsrad kort-väggen, och vad lyfter tålamodskortet? Generaliserbart till trupp + granska sen.<\u002Fspan>\n    <\u002Fdiv>\n    <div class=\"body\" style=\"padding:14px;\">\n      <h4 style=\"font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:10px;\">Andningsrad triggas när<\u002Fh4>\n      <div class=\"gram-row\"><span class=\"gram-when\">lugn vecka<br>(0 event)<\u002Fspan><span class=\"gram-what\"><b>Övre andningsrad<\u002Fb> ersätter beat. Full bredd, italic, generös luft. \"Det är då man hör det andra.\"<\u002Fspan><\u002Fdiv>\n      <div class=\"gram-row\"><span class=\"gram-when\">sektions-<br>övergång<\u002Fspan><span class=\"gram-what\"><b>Tunn andningsrad<\u002Fb> mellan kort-grupper (max 1/skärm) — bara när stacken &gt; 5 kort, annars onödig.<\u002Fspan><\u002Fdiv>\n      <div class=\"gram-row\"><span class=\"gram-when\">stressig vecka<br>(3+ event)<\u002Fspan><span class=\"gram-what\">Ingen andningsrad. <b>Kort-väggen är rätt<\u002Fb> när det faktiskt händer — täthet förtjänad.<\u002Fspan><\u002Fdiv>\n\n      <h4 style=\"font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin:16px 0 10px;\">Tålamodskort lyfter (1, vald)<\u002Fh4>\n      <div class=\"gram-row\"><span class=\"gram-when\">utveckling<\u002Fspan><span class=\"gram-what\">Ung spelare vars CA stiger tyst, ingen event. Sparkline berättar.<\u002Fspan><\u002Fdiv>\n      <div class=\"gram-row\"><span class=\"gram-when\">tickande<\u002Fspan><span class=\"gram-what\">Kontrakt/lån som löper, ej akut — men värt blicken nu.<\u002Fspan><\u002Fdiv>\n      <div class=\"gram-row\"><span class=\"gram-when\">simmrande<\u002Fspan><span class=\"gram-what\">Rivalitet, relation, bygd som rör sig långsamt.<\u002Fspan><\u002Fdiv>\n      <div class=\"gram-row\"><span class=\"gram-when\">nära<\u002Fspan><span class=\"gram-what\">Veteran inför milstolpe, akademist på gränsen.<\u002Fspan><\u002Fdiv>\n\n      <p style=\"font-family:var(--font-display); font-style:italic; font-size:11px; color:var(--text-light-secondary); margin-top:12px; padding:10px 12px; background:rgba(74,102,128,0.06); border-left:2px solid var(--cold); border-radius:0 4px 4px 0; line-height:1.5;\">Inversen av story-slot: den lyfter <b>drama<\u002Fb> när det finns. Tålamodskortet lyfter <b>det långsamma<\u002Fb> när dramat tiger. Samma slot-mekanik, motsatt urval.<\u002Fp>\n    <\u002Fdiv>\n  <\u002Fdiv>\n\n  <!-- 4 · Q3 IN CONTEXT -->\n  <div class=\"col\">\n    <div class=\"ch\">\n      <span class=\"id gram\">4 · Q3 I KONTEXT<\u002Fspan>\n      <div class=\"t\">Lucide intill Georgia<\u002Fdiv>\n      <span class=\"sub\">Opus varning: stroke-1.8 Lucide kan kallna en varm Georgia-produkt. Testat i riktig rad, inte på vit spec-yta. Verdikt per ikon.<\u002Fspan>\n    <\u002Fdiv>\n    <div class=\"body\" style=\"padding:14px;\">\n\n      <div class=\"ctx-row\">\n        <div class=\"ctx-l\">\n          <svg class=\"lucide\" viewBox=\"0 0 24 24\" width=\"11\" height=\"11\"><path d=\"M16 2v4M8 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z\"><\u002Fpath><\u002Fsvg>\n          Kontrakt\n          <span class=\"ctx-tag ok\">håller<\u002Fspan>\n        <\u002Fdiv>\n        <div class=\"ctx-b\">Sundströms avtal löper ut till våren.<\u002Fdiv>\n      <\u002Fdiv>\n\n      <div class=\"ctx-row\">\n        <div class=\"ctx-l\">\n          <svg class=\"lucide\" viewBox=\"0 0 24 24\" width=\"11\" height=\"11\"><path d=\"M3 17l6-6 4 4 8-8\"><\u002Fpath><path d=\"M17 7h4v4\"><\u002Fpath><\u002Fsvg>\n          Form\n          <span class=\"ctx-tag ok\">håller<\u002Fspan>\n        <\u002Fdiv>\n        <div class=\"ctx-b\">Lindqvist på väg ned tre matcher i rad.<\u002Fdiv>\n      <\u002Fdiv>\n\n      <div class=\"ctx-row\" style=\"border-left-color:var(--cold);\">\n        <div class=\"ctx-l\" style=\"color:var(--cold-light);\">\n          <span style=\"font-size:13px;\">📣<\u002Fspan>\n          Klacken\n          <span class=\"ctx-tag ok\">behåll emoji<\u002Fspan>\n        <\u002Fdiv>\n        <div class=\"ctx-b\">Norra läktaren övar en ny sång.<\u002Fdiv>\n      <\u002Fdiv>\n\n      <div class=\"ctx-row\" style=\"border-left-color:var(--warm);\">\n        <div class=\"ctx-l\">\n          <svg class=\"lucide\" viewBox=\"0 0 24 24\" width=\"11\" height=\"11\" style=\"stroke:#E8A090;\"><path d=\"M12 21s-8-5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 1.5-.5 2.9-1.3 4.1\"><\u002Fpath><path d=\"M16 16l4 4M20 16l-4 4\"><\u002Fpath><\u002Fsvg>\n          Rivalförsäljning\n          <span class=\"ctx-tag no\">för kallt<\u002Fspan>\n        <\u002Fdiv>\n        <div class=\"ctx-b\">Lindqvist hälsar inte längre.<\u002Fdiv>\n      <\u002Fdiv>\n\n      <p style=\"font-family:var(--font-display); font-style:italic; font-size:11px; color:var(--text-light-secondary); margin-top:12px; line-height:1.55;\"><b style=\"font-style:normal; color:var(--accent);\">Verdikt:<\u002Fb> funktionella Lucide (kalender, trend) sitter fint — de ÄR verktyg, det är ärligt. Men <code>HeartCrack<\u002Fcode> intill \"hälsar inte längre\" känns kliniskt mot den varma raden. <b>Känslo-laddade begrepp behåller emoji eller går textlöst.<\u002Fb> Q3-axeln håller, men med ett undantag: diegetiskt OCH känslo-laddat → emoji vinner även om det \"är data\".<\u002Fp>\n\n    <\u002Fdiv>\n  <\u002Fdiv>\n\n<\u002Fdiv>\n\n<div class=\"notes\">\n  <h3>Vardagsrytm &amp; tystnad — beslut<\u002Fh3>\n\n  <h4>Andningsrad (rytm-grammatik)<\u002Fh4>\n  <ul>\n    <li>Full-bredd, ingen kort-krom, italic Georgia, generös padding (22px). Ⓜ⬩-prick som enda ornament.<\u002Fli>\n    <li><b>Triggas:<\u002Fb> lugn vecka (ersätter beat, övre läge) · sektionsövergång (tunn, max 1, bara vid &gt;5 kort). <b>Aldrig<\u002Fb> stressig vecka — täthet är förtjänad då.<\u002Fli>\n    <li>Det är rytm-elementet som bryter vägg-till-vägg. Inte ett kort — en paus.<\u002Fli>\n  <\u002Ful>\n\n  <h4>Tålamodskort (tystnadens fokus)<\u002Fh4>\n  <ul>\n    <li>Inversen av story-slot. Story-slot lyfter drama; tålamodskortet lyfter det <b>långsamma<\u002Fb> när inget drama finns.<\u002Fli>\n    <li>Urval: utveckling (CA stiger tyst) · tickande (kontrakt/lån) · simmrande (rivalitet/relation/bygd) · nära (milstolpe). Picka 1, vikta på \"ratio: betydelse / synlighet-hittills\" — det som förtjänar blick men aldrig får den.<\u002Fli>\n    <li>Cold-tonad (lugn, ej tryck — DB-Q2). Sparkline berättar den tysta kurvan (DB-Q1: riktning ÄR informationen, berättigad).<\u002Fli>\n    <li>Löser \"tight vs airy\": vardagen är inte tom, den är <b>patient<\u002Fb>. Färre kort, men det som finns har tyngd.<\u002Fli>\n  <\u002Ful>\n\n  <h4>Q3 i kontext — justering<\u002Fh4>\n  <ul>\n    <li>Funktionella Lucide (kalender, trend-pil) håller intill Georgia — de är ärliga verktyg.<\u002Fli>\n    <li><b>Undantag upptäckt:<\u002Fb> känslo-laddade diegetiska begrepp (rivalförsäljning, hjärta) → Lucide kallnar dem. Behåll emoji ELLER gå textlöst.<\u002Fli>\n    <li>Reviderad Q3-regel: diegetiskt → emoji. Chrome/data → Lucide. <b>Men diegetiskt OCH känslo-laddat → emoji vinner<\u002Fb>, även om det tekniskt är \"data\". Testa alltid i varm rad, aldrig på spec-yta.<\u002Fli>\n  <\u002Ful>\n\n  <h4>Generalisering (nästa steg, efter portal landat)<\u002Fh4>\n  <ul>\n    <li><b>Trupp:<\u002Fb> lugn lista → tålamodskort-logik lyfter en spelare värd blicken (tyst utveckling) överst; andningsrad mellan position-grupper.<\u002Fli>\n    <li><b>Granska:<\u002Fb> efter en odramatisk match → andningsrad istället för att tränga in fler resultat-kort; det lugna efterspelet får luft.<\u002Fli>\n  <\u002Ful>\n\n  <h4>Öppna frågor<\u002Fh4>\n  <ul>\n    <li>Tålamodskort-frekvens: varje lugn vecka, eller bara när urvalet är genuint intressant (annars risk att \"i tysthet\" blir rutin)? Föreslag: bara vid stark kandidat — tomt är bättre än tvingat.<\u002Fli>\n    <li>Andningsrad-copy: Opus-pool per kontext (väder/säsong/läge) eller härledd? Föreslag: pool, ~15 rader, bandysvensk.<\u002Fli>\n    <li>HeartCrack-undantaget: bekräfta reviderad Q3-regel (diegetiskt+känsla → emoji) eller hålla hårda axeln och acceptera kylan?<\u002Fli>\n  <\u002Ful>\n<\u002Fdiv>\n\n\n\n<\u002Fbody><\u002Fhtml>"
+  </script>
+</body>
+</html>

@@ -14,6 +14,7 @@ import { pickSeasonElimText } from '../../domain/data/seasonSummaryElimText'
 import type { SeasonEliminationContext } from '../../domain/data/seasonSummaryElimText'
 import { ScoreBlock } from '../components/primitives/ScoreBlock'
 import { Sparkline, MIN_POINTS } from '../components/primitives/Sparkline'
+import { seasonSpanLabel, seasonStartYear } from '../../domain/utils/seasonYear'
 
 function getSignatureEmojiFromRubric(rubric: string): string {
   if (rubric.includes('köldvintern')) return '🌨'
@@ -106,7 +107,7 @@ export function SeasonSummaryScreen() {
 
     return pickSeasonElimText(context, summary!.season, summary!.clubId)
       .replace('{motståndare}', opponentName)
-      .replace('{season}', String(summary!.season))
+      .replace('{season}', seasonSpanLabel(summary!.season))
   }
 
   function smWinnerSentence(r: SeasonSummary['playoffResult']): string {
@@ -184,7 +185,7 @@ export function SeasonSummaryScreen() {
           </div>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 4 }}>{summary.clubName}</p>
           <h1 className="h-display-hero" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>
-            SÄSONG {summary.season}/{summary.season + 1}
+            SÄSONG {seasonSpanLabel(summary.season)}
           </h1>
 
           {/* Position — ScoreBlock (C-SY2 Våg 4). gold=mästare/cup, win=topp3, subtle=övrigt) */}
@@ -538,7 +539,7 @@ export function SeasonSummaryScreen() {
                 {summary.cupResult === 'winner' ? 'CUPVINNARE!' : summary.cupResult === 'finalist' ? 'Cupfinalist' : summary.cupResult === 'semifinal' ? 'Cupsemifinalist' : 'Cupkvartsfinalist'}
               </p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                Svenska Cupen {summary.season}/{summary.season + 1}
+                Svenska Cupen {seasonStartYear(summary.season)}
               </p>
             </div>
           </div>
@@ -790,7 +791,7 @@ export function SeasonSummaryScreen() {
               className="btn btn-hero"
               style={{ width: '100%' }}
             >
-              Starta säsong {summary.season + 1} →
+              Starta säsong {seasonSpanLabel(summary.season + 1)} →
             </button>
           </div>
         )}

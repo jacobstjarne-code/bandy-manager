@@ -1,4 +1,5 @@
 import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
+import { seasonSpanLabel, seasonStartYear } from '../../domain/utils/seasonYear'
 
 const W = 1080
 const H = 1350
@@ -63,7 +64,7 @@ export async function generateSeasonShareImage(summary: SeasonSummary): Promise<
     ctx.font = `600 44px -apple-system, system-ui, sans-serif`
     ctx.fillStyle = 'rgba(245,241,235,0.55)'
     ctx.letterSpacing = '4px'
-    ctx.fillText(`SÄSONG ${summary.season}/${summary.season + 1}`, W / 2, y)
+    ctx.fillText(`SÄSONG ${seasonSpanLabel(summary.season)}`, W / 2, y)
     y += 100
 
     // Divider
@@ -215,7 +216,7 @@ export async function shareSeasonImage(summary: SeasonSummary): Promise<void> {
   const blob = await generateSeasonShareImage(summary)
   if (!blob) return
 
-  const fileName = `bandy-${summary.season}-${summary.clubName.replace(/\s/g, '_')}.png`
+  const fileName = `bandy-${seasonStartYear(summary.season)}-${summary.clubName.replace(/\s/g, '_')}.png`
 
   // Web Share API (mobile)
   if (navigator.share && navigator.canShare) {
@@ -224,7 +225,7 @@ export async function shareSeasonImage(summary: SeasonSummary): Promise<void> {
       try {
         await navigator.share({
           files: [file],
-          title: `${summary.clubName} — Säsong ${summary.season}/${summary.season + 1}`,
+          title: `${summary.clubName} — Säsong ${seasonSpanLabel(summary.season)}`,
         })
         return
       } catch {

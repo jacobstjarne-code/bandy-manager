@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal:#1a1612; --bg-leather-dk:#1d1b18; --panel:#0e0d0b; --bg-surface:#FAF8F4; --border:#DDD7CC;
+    --paper-warm:#F5F1EB; --text-light:#F5F1EB; --text-light-secondary:#C4BAA8; --text-muted:#8A857A;
+    --copper:#C47A3A; --steel:#6B7F8E; --led-red:#FF2A18; --led-amber:#FFAA00; --led-green:#66FF33;
+    --font-display:Georgia,serif; --font-body:system-ui,sans-serif; --font-mono:ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#3D3A32;color:var(--text-light);font-family:var(--font-body);padding:28px 16px 60px}
+  .head{max-width:1100px;margin:0 auto 20px}
+  .head h1{font-family:var(--font-display);font-size:21px;margin-bottom:5px}
+  .head p{font-size:12.5px;color:rgba(245,241,235,0.72);line-height:1.6;max-width:860px}
+  .head p strong{color:var(--copper)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,360px));gap:24px;max-width:1100px;margin:0 auto;justify-content:center;align-items:start}
+  .clabel{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light-secondary);margin-bottom:9px;text-align:center}
+  .clabel b{color:var(--copper)}
+  .caption{font-family:var(--font-display);font-style:italic;font-size:10.5px;color:var(--text-light-secondary);margin-top:10px;line-height:1.5;text-align:center;opacity:.85}
+  .phone{background:var(--bg-portal);border-radius:20px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.42);border:5px solid #0d0c0a}
+
+  /* fold hint */
+  .fold{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;background:var(--panel);border-bottom:1px solid rgba(196,122,58,.18)}
+  .fold-arrow{color:var(--led-amber);font-size:9px;animation:bob 1.4s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+  .fold-lbl{font-family:var(--font-mono);font-size:8px;letter-spacing:2px;color:var(--led-amber)}
+
+  .panel{background:linear-gradient(180deg,#161412,#0e0d0b);padding:0 0 12px}
+  /* head */
+  .ihead{display:flex;align-items:center;gap:10px;padding:11px 14px}
+  .led-tag{width:30px;height:30px;border-radius:4px;background:rgba(255,170,0,.12);border:1px solid rgba(255,170,0,.4);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .ititle{font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:1.5px;color:var(--paper-warm)}
+  .iminute{font-family:var(--font-mono);font-size:11px;color:var(--led-amber);margin-left:6px}
+  .titlerow{flex:1}
+  .timer{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--led-amber);background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.25);border-radius:3px;padding:3px 7px}
+  /* stats strip */
+  .stats-strip{display:flex;justify-content:space-around;padding:6px 14px;background:rgba(0,0,0,.3);font-family:var(--font-mono);font-size:8.5px;color:var(--text-muted);border-top:1px solid rgba(196,122,58,.1);border-bottom:1px solid rgba(196,122,58,.1)}
+  .stats-strip b{color:var(--paper-warm);font-family:var(--font-display);font-size:12px}
+  /* pitch */
+  .pitch{padding:10px 14px}
+  /* sub-choices */
+  .subs{display:flex;gap:7px;padding:0 14px;margin-top:4px}
+  .sub-btn{flex:1;padding:9px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:1px;border-radius:4px;background:rgba(0,0,0,.3);border:1px solid rgba(196,122,58,.25);color:rgba(245,241,235,.6)}
+  .sub-btn.sel{background:rgba(102,255,51,.1);border-color:var(--led-green);color:var(--led-green)}
+  /* coach tip */
+  .coach{display:flex;gap:9px;align-items:center;padding:9px 14px;margin:8px 14px 0;background:rgba(0,0,0,.25);border-radius:6px;border-left:2px solid var(--copper)}
+  .coach-av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#3D3A32,#8B4820);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+  .coach-txt{font-family:var(--font-display);font-style:italic;font-size:11.5px;color:var(--text-light-secondary);line-height:1.4}
+  /* CTA */
+  .cta{margin:10px 14px 0;width:calc(100% - 28px);padding:12px;border:none;border-radius:8px;background:linear-gradient(180deg,#DD9555,#8B4820);color:var(--paper-warm);font-family:var(--font-body);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+
+  /* OLD modals — light paper */
+  .old-modal{background:var(--bg-surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:40px 14px;box-shadow:0 -4px 20px rgba(0,0,0,.15);color:#1A1A18}
+  .old-modal-h{display:flex;justify-content:space-between;margin-bottom:10px}
+  .old-modal-h span:first-child{font-size:12px;font-weight:600}
+  .old-modal-h span:last-child{font-size:11px;color:var(--text-muted)}
+  .old-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .old-btn{padding:10px;font-size:12px;background:none;border:1px solid var(--border);border-radius:8px;color:#1A1A18}
+  .old-cancel{width:100%;margin-top:8px;padding:8px;background:none;border:none;color:var(--text-muted);font-size:12px}
+
+  .verdict{max-width:1100px;margin:28px auto 0;padding:20px;background:rgba(245,241,235,.04);border-radius:8px;line-height:1.6;font-size:12.5px;color:rgba(245,241,235,.85)}
+  .verdict h3{font-family:var(--font-display);font-size:16px;color:var(--text-light);margin-bottom:10px}
+  .verdict h4{font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--copper);margin:14px 0 5px}
+  .verdict ul{margin:4px 0 8px 16px}.verdict li{margin-bottom:5px}
+  .verdict code{font-family:var(--font-mono);font-size:11px;background:rgba(245,241,235,.07);padding:1px 5px;border-radius:2px;color:#E8B95C}
+</style></head><body>
+
+<div class="head">
+  <h1>Event-ytor & modaler — faktisk rendering, granskad</h1>
+  <p>Inte props-läsning: hörna-interaktionen <strong>återskapad pixel för pixel</strong> ur den verkliga SVG-koden, bredvid de två gamla ljusa modalerna. Dom för att döma med ögat om eventen "rätt" — eller om de bara såg rätt ut i koden.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 1 · CORNER faithful -->
+  <div>
+    <div class="clabel"><b>1</b> · HÖRNA — faktisk rendering</div>
+    <div class="phone">
+      <div class="fold"><span class="fold-arrow">▲</span><span class="fold-lbl">HÄNDELSE KRÄVER SVAR</span></div>
+      <div class="panel">
+        <div class="ihead">
+          <div class="led-tag">🚩</div>
+          <div class="titlerow"><span class="ititle">HÖRNA</span><span class="iminute">63'</span></div>
+          <div class="timer">4s</div>
+        </div>
+        <div class="stats-strip"><span>SKOTT <b>11</b></span><span>HÖRN <b>5·4</b></span><span>xG <b>1.2</b></span></div>
+        <div class="pitch">
+          <svg viewBox="0 0 220 130" style="width:100%;display:block">
+            <defs>
+              <linearGradient id="ice" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1A2628"/><stop offset="100%" stop-color="#0E1518"/></linearGradient>
+              <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#66FF33"/></marker>
+            </defs>
+            <rect width="220" height="130" fill="url(#ice)" rx="3"/>
+            <path d="M70,0 A70,65 0 0,1 70,130" fill="none" stroke="rgba(180,200,210,0.18)" stroke-width="0.7"/>
+            <rect x="0" y="46" width="5" height="38" fill="none" stroke="rgba(180,200,210,0.55)" stroke-width="1.5"/>
+            <circle cx="14" cy="65" r="5" fill="#0A0A0A" stroke="#6FB6E8" stroke-width="1.4"/>
+            <text x="14" y="67.5" text-anchor="middle" font-size="5" fill="#6FB6E8" font-family="monospace" font-weight="700">MV</text>
+            <circle cx="16" cy="48" r="3" fill="#FF3B0F" opacity="0.85"/><circle cx="16" cy="58" r="3" fill="#FF3B0F" opacity="0.85"/><circle cx="22" cy="72" r="3" fill="#FF3B0F" opacity="0.85"/><circle cx="22" cy="82" r="3" fill="#FF3B0F" opacity="0.85"/>
+            <!-- zones -->
+            <g><rect x="30" y="14" width="40" height="28" rx="2" fill="rgba(180,200,210,0.04)" stroke="rgba(180,200,210,0.25)" stroke-width="0.8" stroke-dasharray="3,2"/><text x="50" y="25" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.45)" font-family="monospace" font-weight="700" letter-spacing="1">NÄRA</text><text x="50" y="35" text-anchor="middle" font-size="5.5" fill="rgba(180,200,210,0.4)" font-family="monospace">38%</text></g>
+            <g><rect x="30" y="48" width="40" height="34" rx="2" fill="rgba(102,255,51,0.12)" stroke="#66FF33" stroke-width="1.5"/><text x="50" y="61" text-anchor="middle" font-size="6" fill="#66FF33" font-family="monospace" font-weight="700" letter-spacing="1">MITT</text><text x="50" y="71" text-anchor="middle" font-size="5.5" fill="#66FF33" font-family="monospace">45%</text></g>
+            <g><rect x="30" y="88" width="40" height="28" rx="2" fill="rgba(180,200,210,0.04)" stroke="rgba(180,200,210,0.25)" stroke-width="0.8" stroke-dasharray="3,2"/><text x="50" y="99" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.45)" font-family="monospace" font-weight="700" letter-spacing="1">BORTRE</text><text x="50" y="109" text-anchor="middle" font-size="5.5" fill="rgba(180,200,210,0.4)" font-family="monospace">31%</text></g>
+            <!-- corner flag -->
+            <line x1="5" y1="5" x2="5" y2="13" stroke="#FFAA00" stroke-width="1.2"/><polygon points="5,13 11,10 5,7" fill="#FFAA00"/>
+            <!-- pass arrow -->
+            <path d="M5,5 Q24,35 30,65" fill="none" stroke="#66FF33" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+            <!-- rush lines -->
+            <line x1="140" y1="20" x2="74" y2="20" stroke="#FFAA00" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.7"/><circle cx="140" cy="20" r="4" fill="#FFAA00" opacity="0.85"/>
+            <line x1="150" y1="65" x2="74" y2="65" stroke="#FFAA00" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.7"/><circle cx="150" cy="65" r="4" fill="#FFAA00" opacity="0.85"/>
+            <line x1="160" y1="102" x2="74" y2="102" stroke="#FFAA00" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.7"/><circle cx="160" cy="102" r="4" fill="#FFAA00" opacity="0.85"/>
+            <text x="215" y="12" text-anchor="end" font-size="6" fill="#FFAA00" font-family="monospace" font-weight="700" opacity="0.7">HÅRT</text>
+          </svg>
+        </div>
+        <div class="subs">
+          <button class="sub-btn sel">HÅRT</button><button class="sub-btn">LÅGT</button><button class="sub-btn">KORT</button>
+        </div>
+        <div class="coach">
+          <div class="coach-av">RH</div>
+          <span class="coach-txt">"Mitten är öppen. Slå hårt och lågt så når vi den."</span>
+        </div>
+        <button class="cta">SLÅ HÖRNAN →</button>
+      </div>
+    </div>
+    <div class="caption">Mörk LED-panel, isplan i blå-grön palett, amber-timer, mono-knappar, coach med avatar. Detta är <strong>rätt</strong> — Stålvallen-konsistent.</div>
+  </div>
+
+  <!-- 2 · TacticChangeModal OLD -->
+  <div>
+    <div class="clabel"><b>2</b> · TAKTIK-MODAL — som idag 🟥</div>
+    <div class="phone">
+      <div style="height:240px;background:linear-gradient(180deg,#161412,#0e0d0b);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-family:var(--font-mono);font-size:9px;letter-spacing:1px">[ mörk matchvy bakom ]</div>
+      <div class="old-modal" style="margin:0 14px">
+        <div class="old-modal-h"><span>⚙️ Snabbändring</span><span>2 kvar</span></div>
+        <div class="old-grid">
+          <button class="old-btn">Höj tempot</button><button class="old-btn">Sänk tempot</button>
+          <button class="old-btn">Anfallspress</button><button class="old-btn">Parkera bussen</button>
+        </div>
+        <button class="old-cancel">Avbryt</button>
+      </div>
+      <div style="height:80px;background:linear-gradient(180deg,#1d1b18,#211e1a)"></div>
+    </div>
+    <div class="caption">Ljus pappersmodal mitt i mörk LED-matchvy. <strong>Bryter helheten</strong> — det enda som faktiskt sticker ut.</div>
+  </div>
+
+  <!-- 3 · TacticChangeModal NEW -->
+  <div>
+    <div class="clabel"><b>3</b> · TAKTIK-MODAL — förslag ✅</div>
+    <div class="phone">
+      <div style="height:240px;background:linear-gradient(180deg,#161412,#0e0d0b);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-family:var(--font-mono);font-size:9px;letter-spacing:1px">[ mörk matchvy bakom ]</div>
+      <div style="margin:0 14px;background:linear-gradient(180deg,#1f1c18,#16130f);border:1px solid rgba(196,122,58,.35);border-radius:10px;padding:13px 14px;box-shadow:0 -4px 22px rgba(0,0,0,.4)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+          <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--copper)">⚙ SNABBÄNDRING</span>
+          <span style="font-family:var(--font-mono);font-size:9px;color:var(--led-amber)">2 KVAR</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+          <button class="sub-btn" style="flex:none">HÖJ TEMPO</button>
+          <button class="sub-btn" style="flex:none">SÄNK TEMPO</button>
+          <button class="sub-btn sel" style="flex:none">ANFALLSPRESS</button>
+          <button class="sub-btn" style="flex:none">PARKERA</button>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:8px;color:var(--text-muted);text-align:center;margin-top:10px">påverkar tempo + mentality direkt</div>
+      </div>
+      <div style="height:80px;background:linear-gradient(180deg,#1d1b18,#211e1a)"></div>
+    </div>
+    <div class="caption">Mörk Stålvallen-panel, mono-knappar, copper-accent. Samma språk som event-ytorna och scoreboard.</div>
+  </div>
+
+</div>
+
+<div class="verdict">
+  <h3>Granskning med ögat — inte props</h3>
+
+  <h4>✅ Event-interaktionerna ÄR rätt (rörs ej)</h4>
+  <p>Återskapad hörna bekräftar: <code>InteractionShell</code>-ytorna är genuint Stålvallen-konsistenta. Mörk LED-panel, isplan i autentisk blå-grön rink-palett, amber-timer som tickar, mono-LED-knappar (HÅRT/LÅGT/KORT), grön vald-zon, coach-avatar. Straff/frislag/breakaway/counter delar samma shell — alla rätt. <strong>Mekaniken orörd, designen klar. Inget att göra.</strong> Min tidigare bedömning höll vid visuell granskning.</p>
+
+  <h4>🟥 De två gamla modalerna bryter — bekräftat med ögat</h4>
+  <p>Spalt 2 visar problemet konkret: en ljus <code>--bg-surface</code>-pappersmodal poppar upp mitt i den mörka LED-matchvyn. Det är inte en nyans — det är ett helt annat designsystem som krockar. <code>TacticChangeModal</code> och <code>SubstitutionModal</code> är de enda match-ytorna kvar på det gamla språket.</p>
+
+  <h4>Åtgärd (minimal, hög effekt)</h4>
+  <ul>
+    <li><strong>TacticChangeModal</strong> → mörk panel + mono-knappar (spalt 3). ~30 min Code. Återanvänder <code>.interaction-sub-btn</code>-klasserna som redan finns.</li>
+    <li><strong>SubstitutionModal</strong> → samma behandling, mörk kontext.</li>
+    <li><strong>HalftimeModal</strong> → mörkanpassning + Spak A-wiring (bar-preview). Separat, större.</li>
+  </ul>
+  <p>Inget annat i match-vyn rörs. Eventen var rätt — du hade rätt att be mig kolla, och de klarade granskningen.</p>
+</div>
+
+</body></html>

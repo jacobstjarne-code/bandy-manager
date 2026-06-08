@@ -14,6 +14,7 @@ import { VictoryTrophy } from './shared/VictoryTrophy'
 import { VictoryScore } from './shared/VictoryScore'
 import { VictoryQuote } from './shared/VictoryQuote'
 import { useSMFinalData } from './shared/useSMFinalData'
+import { seasonChampionYear } from '../../../domain/utils/seasonYear'
 
 interface Props {
   game: SaveGame
@@ -23,7 +24,7 @@ interface Props {
 export function SMFinalVictoryScene({ game, onComplete }: Props) {
   const data = useSMFinalData(game)
   const meta = SM_FINAL_VICTORY_TEMPLATES.meta
-  const titleText = meta.titleText.replace('{season}', String(game.currentSeason))
+  const titleText = meta.titleText.replace('{year}', String(seasonChampionYear(game.currentSeason)))
   const dateText = meta.dateText.replace('{finalArena}', data.finalArena)
   const confettiSeed = game.currentSeason * 9301 + 33
 

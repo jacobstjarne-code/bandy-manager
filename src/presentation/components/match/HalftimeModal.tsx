@@ -5,6 +5,11 @@ import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { MatchEventType, TacticMentality, TacticTempo, TacticPress } from '../../../domain/enums'
 import { truncate, positionShort } from '../../utils/formatters'
 import { computePlayerRatings } from '../../utils/matchRatings'
+import { PAUSSNACK, PAUSSNACK_EYEBROW, PAUSSNACK_PREVIEW_LABEL } from '../../../domain/data/matchLiveText'
+import type { MatchSituation } from '../../../domain/data/matchLiveText'
+import { PAUSE_LEAN_FACTOR } from '../../../domain/services/matchCore'
+
+export type PauseLean = 'push' | 'calm' | 'hold'
 
 interface HalftimeModalProps {
   fixture: Fixture
@@ -34,8 +39,8 @@ interface HalftimeModalProps {
 
   onApplyTactic: () => void
   onContinue: () => void
-  halftimeChoice: 'calm' | 'angry' | 'tactical' | null
-  onHalftimeChoice: (c: 'calm' | 'angry' | 'tactical') => void
+  pauseLean: PauseLean | null
+  onPauseLean: (l: PauseLean) => void
 }
 
 export function HalftimeModal({
@@ -63,8 +68,8 @@ export function HalftimeModal({
   allPlayers,
   onApplyTactic,
   onContinue,
-  halftimeChoice,
-  onHalftimeChoice,
+  pauseLean,
+  onPauseLean,
 }: HalftimeModalProps) {
   const halftimeStep = steps.find(s => s.step === 30)
   const htSteps = steps.slice(0, 31)
@@ -84,6 +89,16 @@ export function HalftimeModal({
   const managedGoals = managedIsHome ? htHomeGoals : htAwayGoals
   const oppGoals = managedIsHome ? htAwayGoals : htHomeGoals
   const diff = managedGoals - oppGoals
+
+  // Spak A — paussnack per läge. Index 0 default-markerat. (SPEC-SPAK-AB A2/A3)
+  const situation: MatchSituation = diff < 0 ? 'behind' : diff === 0 ? 'level' : 'leading'
+  const pepOptions = PAUSSNACK[situation]
+  const selectedLean: PauseLean = pauseLean ?? pepOptions[0].lean
+  // Preview: förväntad bar-riktning ur SAMMA faktor som sim:en (§2). Riktning + grov
+  // magnitud, aldrig siffra. push/calm lutar mot managed-sidan; hold = mitten.
+  const leanFactor = PAUSE_LEAN_FACTOR[selectedLean]
+  const leanShift = Math.abs(leanFactor - 1) * 60 // 0.25→15%, 0.20→12%, hold→0
+  const previewHomePct = Math.max(8, Math.min(92, 50 + (managedIsHome ? 1 : -1) * leanShift))
   const HT_WIN_BIG = [
     'Ledningen hade vi i en match förra året på samma plan, och vi tappade den.',
     'De har inte gett upp en match hela hösten, så vi spelar likadant i andra halvlek.',
@@ -195,7 +210,7 @@ export function HalftimeModal({
   ) {
     return (
       <div style={{ marginBottom: 14 }}>
-        <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6, fontWeight: 600 }}>{label}</p>
+        <p style={{ fontSize: 11, color: 'var(--text-light-secondary)', marginBottom: 6, fontWeight: 600, textAlign: 'left' }}>{label}</p>
         <div style={{ display: 'flex', gap: 6 }}>
           {options.map(o => (
             <button
@@ -206,7 +221,7 @@ export function HalftimeModal({
                 background: current === o.val ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 8%, transparent)',
                 border: `1px solid ${current === o.val ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 20%, transparent)'}`,
                 borderRadius: 'var(--radius-md)',
-                color: current === o.val ? 'var(--text-light)' : 'var(--text-secondary)',
+                color: current === o.val ? 'var(--text-light)' : 'var(--text-light-secondary)',
                 cursor: 'pointer',
               }}
             >{o.label}</button>
@@ -223,146 +238,84 @@ export function HalftimeModal({
   ]
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'rgba(0,0,0,0.6)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
-      paddingTop: '40px', zIndex: 'var(--z-modal)',
-    }}>
-      <div style={{
-        background: 'var(--bg)',
-        border: isBigMatch ? '1px solid color-mix(in srgb, var(--accent) 40%, transparent)' : '1px solid var(--border)',
-        borderRadius: 'var(--radius)',
-        textAlign: 'center', minWidth: 260, maxWidth: 330, width: '90%',
-        marginBottom: 24,
-        display: 'flex', flexDirection: 'column',
-        maxHeight: 'calc(100dvh - 80px)',
-        overflow: 'hidden',
-      }}>
+    <div className="match-modal-overlay">
+      <div
+        className="match-modal-panel ht-panel"
+        style={isBigMatch ? { borderColor: 'color-mix(in srgb, var(--accent) 45%, transparent)' } : undefined}
+      >
         {/* Header — fixed, non-scrollable */}
-        <div style={{ padding: '20px 20px 0', flexShrink: 0 }}>
-          <p style={{
-            fontSize: isBigMatch ? 13 : 11, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '1px', color: isBigMatch ? 'var(--accent)' : 'var(--text-muted)', marginBottom: 10,
-          }}>
+        <div className="ht-head">
+          <p className="ht-eyebrow">
             {isSmFinal ? '⏸ HALVTID · SM-FINALEN' : isCupFinal ? '⏸ HALVTID · CUPFINALEN' : '⏸ HALVTID'}
           </p>
 
-          {/* Score */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(homeClubName, 12)}</p>
-              <span style={{ fontSize: 40, fontWeight: 800 }}>{htHomeGoals}</span>
-            </div>
-            <span style={{ fontSize: 24, color: 'var(--text-muted)' }}>—</span>
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(awayClubName, 12)}</p>
-              <span style={{ fontSize: 40, fontWeight: 800 }}>{htAwayGoals}</span>
-            </div>
+          {/* LED score */}
+          <div className="ht-score">
+            <div className="led">{htHomeGoals}—{htAwayGoals}</div>
+            <div className="pd">{truncate(homeClubName, 10)} · {truncate(awayClubName, 10)}</div>
           </div>
 
           {/* Tab bar */}
-          <div style={{ display: 'flex', gap: 4, marginBottom: 12, background: 'var(--bg-elevated)', borderRadius: 8, padding: 3 }}>
+          <div className="ht-tabs">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                style={{
-                  flex: 1, padding: '7px 4px', fontSize: 10, fontWeight: 700,
-                  background: activeTab === tab.id ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
-                  border: 'none', borderRadius: 'var(--radius-md)',
-                  color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
-                  cursor: 'pointer', letterSpacing: '0.5px',
-                }}
+                className={`ht-tab${activeTab === tab.id ? ' on' : ''}`}
               >{tab.label}</button>
             ))}
           </div>
         </div>
 
         {/* Tab content — scrollable */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
+        <div className="ht-body">
 
         {/* ÖVERSIKT tab */}
         {activeTab === 'oversikt' && (
           <>
-            {/* Halvtidsbeslut */}
+            {/* Spak A — paussnack + preview */}
             <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10, textAlign: 'center' }}>
-                {diff >= 0 ? 'Ni är framme. Vad gör du?' : 'Ni ligger under. Laget ser slagna ut. Vad gör du?'}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {([
-                  { id: 'calm' as const, label: diff >= 0 ? 'Lugn genomgång' : 'Håll ihop', effect: 'Moral +5 för alla' },
-                  { id: 'angry' as const, label: diff >= 0 ? 'Kräv mer' : 'Skäll ut dem', effect: 'Skärpa +8, Moral −3' },
-                ] as const).map(choice => {
-                  const isSelected = halftimeChoice === choice.id
-                  return (
-                    <button
-                      key={choice.id}
-                      onClick={() => onHalftimeChoice(choice.id)}
-                      style={{
-                        width: '100%', padding: '10px 12px', borderRadius: 8,
-                        fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer',
-                        background: isSelected ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-elevated)',
-                        color: isSelected ? 'var(--accent)' : 'var(--text-primary)',
-                        border: `1px solid ${isSelected ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'var(--border)'}`,
-                        fontFamily: 'var(--font-body)',
-                      }}
-                    >
-                      {choice.label}
-                      <span style={{ display: 'block', fontSize: 10, fontWeight: 400, color: isSelected ? 'var(--accent)' : 'var(--text-muted)', marginTop: 2 }}>
-                        {choice.effect}
-                      </span>
-                    </button>
-                  )
-                })}
-                <button
-                  onClick={() => {
-                    onHalftimeChoice('tactical')
-                    setActiveTab('taktik')
-                  }}
-                  style={{
-                    background: 'none', border: 'none', padding: '6px 0', cursor: 'pointer',
-                    fontSize: 11, color: halftimeChoice === 'tactical' ? 'var(--accent)' : 'var(--text-muted)',
-                    fontFamily: 'var(--font-body)', textDecoration: 'underline', textAlign: 'center',
-                    width: '100%',
-                  }}
-                >
-                  Taktikjustering →
-                </button>
+              <p className="pep-l">{PAUSSNACK_EYEBROW[situation]}</p>
+              <div className="pep">
+                {pepOptions.map(opt => (
+                  <button
+                    key={opt.lean}
+                    onClick={() => onPauseLean(opt.lean)}
+                    className={`pep-opt${opt.lean === selectedLean ? ' sel' : ''}`}
+                  >
+                    <div className="pep-t">{opt.line}</div>
+                    <div className="pep-e">{opt.effect}</div>
+                  </button>
+                ))}
               </div>
+              {/* Preview — förväntad bar-riktning (samma faktor som sim, §2) */}
+              <div className="prev">
+                <p className="prev-l">{PAUSSNACK_PREVIEW_LABEL}</p>
+                <div className="prev-bar">
+                  <div className="prev-fill" style={{ width: `${previewHomePct}%` }} />
+                  <div className="prev-arrow" style={{ left: `${previewHomePct}%` }}>▲</div>
+                </div>
+              </div>
+              <button className="pep-tactic-link" onClick={() => setActiveTab('taktik')}>
+                Taktikjustering →
+              </button>
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, textAlign: 'left', lineHeight: 1.8 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Skott:</span>
-                <span>{halftimeStep?.shotsHome ?? 0} — {halftimeStep?.shotsAway ?? 0}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Hörnor:</span>
-                <span>{halftimeStep?.cornersHome ?? 0} — {halftimeStep?.cornersAway ?? 0}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Utvisningar:</span>
-                <span>{htHomeSuspensions} — {htAwaySuspensions}</span>
-              </div>
+            <div className="ht-stats">
+              <div><span>Skott</span><span>{halftimeStep?.shotsHome ?? 0} — {halftimeStep?.shotsAway ?? 0}</span></div>
+              <div><span>Hörnor</span><span>{halftimeStep?.cornersHome ?? 0} — {halftimeStep?.cornersAway ?? 0}</span></div>
+              <div><span>Utvisningar</span><span>{htHomeSuspensions} — {htAwaySuspensions}</span></div>
             </div>
             {bestPlayerName && (
-              <div style={{ marginBottom: 14, padding: '8px 12px', background: 'color-mix(in srgb, var(--accent) 6%, transparent)', borderRadius: 8, border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)' }}>
-                <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare hittills</p>
-                <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{bestPlayerName}</p>
-                {bestPlayer?.position && <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(bestPlayer.position)}</p>}
-              </div>
+              <p className="ht-best">⭐ Matchens spelare: <b>{bestPlayerName}</b>{bestPlayer?.position ? ` · ${positionShort(bestPlayer.position)}` : ''}</p>
             )}
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: isSmFinal || isCupFinal ? 10 : 0, lineHeight: 1.5 }}>
-              💬 "{analysis}"
-            </p>
+            <p className="ht-analysis">"{analysis}"</p>
             {isSmFinal && (
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: 0, lineHeight: 1.5 }}>
+              <p className="ht-analysis" style={{ borderTop: 'none' }}>
                 Laget samlas i omklädningsrummet. Det är 45 minuter kvar till SM-guld.
               </p>
             )}
             {isCupFinal && !isSmFinal && (
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: 0, lineHeight: 1.5 }}>
+              <p className="ht-analysis" style={{ borderTop: 'none' }}>
                 Laget samlas i omklädningsrummet. Det är 45 minuter kvar till cuptiteln.
               </p>
             )}
@@ -404,8 +357,8 @@ export function HalftimeModal({
 
             {/* Queued subs */}
             {htSubs.map((sub, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '5px 8px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-primary)' }}>
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '5px 8px', background: 'color-mix(in srgb, var(--panel) 55%, transparent)', borderRadius: 'var(--radius-md)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-light)' }}>
                   <span style={{ color: 'var(--danger)' }}>{getPlayerLabel(sub.outId)}</span>
                   <span style={{ color: 'var(--text-muted)', margin: '0 4px' }}>→</span>
                   <span style={{ color: 'var(--success)' }}>{getPlayerLabel(sub.inId)}</span>
@@ -426,7 +379,7 @@ export function HalftimeModal({
                 </p>
 
                 {/* Starters sorted by fitness */}
-                <p style={{ fontSize: 10, color: 'var(--text-secondary)', marginBottom: 4, fontWeight: 600 }}>Startande (sorterat på form)</p>
+                <p style={{ fontSize: 10, color: 'var(--text-light-secondary)', marginBottom: 4, fontWeight: 600 }}>Startande (sorterat på form)</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
                   {sortedStarters.map(id => {
                     const isOut = pendingOutId === id
@@ -436,9 +389,9 @@ export function HalftimeModal({
                         onClick={() => handleStarterClick(id)}
                         style={{
                           padding: '6px 8px', textAlign: 'left', fontSize: 11,
-                          background: isOut ? 'rgba(248,113,113,0.15)' : 'var(--bg-elevated)',
-                          border: `1px solid ${isOut ? 'rgba(248,113,113,0.5)' : 'var(--border)'}`,
-                          borderRadius: 5, color: isOut ? 'var(--danger)' : 'var(--text-secondary)',
+                          background: isOut ? 'color-mix(in srgb, var(--danger) 15%, transparent)' : 'color-mix(in srgb, var(--panel) 55%, transparent)',
+                          border: `1px solid ${isOut ? 'color-mix(in srgb, var(--danger) 50%, transparent)' : 'color-mix(in srgb, var(--accent) 18%, transparent)'}`,
+                          borderRadius: 5, color: isOut ? 'var(--danger)' : 'var(--text-light-secondary)',
                           cursor: 'pointer', fontWeight: isOut ? 700 : 400,
                         }}
                       >
@@ -449,7 +402,7 @@ export function HalftimeModal({
                 </div>
 
                 {/* Bench */}
-                <p style={{ fontSize: 10, color: 'var(--text-secondary)', marginBottom: 4, fontWeight: 600 }}>Bänk</p>
+                <p style={{ fontSize: 10, color: 'var(--text-light-secondary)', marginBottom: 4, fontWeight: 600 }}>Bänk</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {effectiveBench.map(id => {
                     const canSelect = !!pendingOutId
@@ -460,8 +413,8 @@ export function HalftimeModal({
                         disabled={!canSelect}
                         style={{
                           padding: '6px 8px', textAlign: 'left', fontSize: 11,
-                          background: canSelect ? 'rgba(74,222,128,0.10)' : 'var(--bg-elevated)',
-                          border: `1px solid ${canSelect ? 'rgba(74,222,128,0.35)' : 'var(--border)'}`,
+                          background: canSelect ? 'color-mix(in srgb, var(--success) 12%, transparent)' : 'color-mix(in srgb, var(--panel) 55%, transparent)',
+                          border: `1px solid ${canSelect ? 'color-mix(in srgb, var(--success) 35%, transparent)' : 'color-mix(in srgb, var(--accent) 18%, transparent)'}`,
                           borderRadius: 5,
                           color: canSelect ? 'var(--success)' : 'var(--text-muted)',
                           cursor: canSelect ? 'pointer' : 'default',

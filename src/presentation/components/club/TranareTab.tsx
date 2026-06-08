@@ -69,7 +69,7 @@ export function TranareTab({ game }: Props) {
             <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>
               {profile.age} år · {profile.hometown}
             </p>
-            <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0' }}>Säsong {profile.seasonsAtClub} vid klubben</p>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0' }}>Säsong {profile.seasonsAtClub} i klubben</p>
           </div>
         </div>
 

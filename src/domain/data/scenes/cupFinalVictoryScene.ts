@@ -42,7 +42,7 @@ export const CUP_FINAL_VICTORY_TEMPLATES = {
 
   meta: {
     genreLabel: 'POKALEN',
-    titleText: 'Cupmästare {season}',
+    titleText: 'Cupmästare {year}',
     dateText: '{cupFinalDate} · {finalArena}',
     arenaCapacity: '{arenaCapacity} ÅSKÅDARE',
     cta: 'Pokalen står i klubbhuset →',

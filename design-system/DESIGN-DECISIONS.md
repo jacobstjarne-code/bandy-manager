@@ -27,6 +27,14 @@ Hur Code arbetar mot detta: se `HANDOFF.md` § "Enda designsystemet är detta pr
 
 ## ✅ Godkända beslut
 
+### Säsongsnamngivning — bandyår (display)
+**Var:** `src/domain/utils/seasonYear.ts` · `SeasonSummaryScreen` · `SMFinalVictoryScene` · `CupFinalVictoryScene`
+**Beslut:** Absoluta säsongsreferenser — vilken säsong i tiden det är — visas som **bandyår** (spann, t.ex. "2033/34"), aldrig som ordningstal ("8/9" eller "8"). SM-final/mästare benämns med året finalen spelas (mars = andra året i spannet, t.ex. 2034); Svenska Cupen med höståret den avgörs (startåret, t.ex. 2033). **Varaktigheter och antal** (säsonger-i-klubben, "8:e säsongen") förblir ordningstal — de räknar, de pekar inte ut en tidpunkt. Basår: säsong 1 = 2026/27, styrt av en enda konstant `SEASON_BASE_YEAR` (= 2025; 25/26 är färdigspelad, spelet startar inte i det förflutna).
+**Konsekvens:** Inga "Säsong N"-strängar för tidpunkter direkt i komponenter — gå via `seasonSpanLabel`/`seasonStartYear`/`seasonChampionYear`. Variabelnamn visas aldrig. Datum-mattan i `scheduleGenerator` (som använder säsongsnumret som räkne-år för veckodag/dag/månad) är skild med flit och får inte läsas för visning. Övriga "Säsong N"-ytor (history, portal, dashboard) ska svepas mot helpern — **pågående**.
+**Verifierat i kod:** `src/domain/utils/seasonYear.ts`, wirat i SeasonSummary (header/cup/elim/starta-knapp) + båda victory-scenerna 2026-06-08.
+
+---
+
 ### Portal är dynamiskt, inte statiskt
 **Var:** `README.md` § "Portal — dynamiskt dashboard"
 **Beslut:** Portal beskrivs alltid som **byggblock + varianter + skift-parametrar**, aldrig som en fast vy. Varje mock måste ha anteckning som listar frusna parametrar (säsong, signatur, primary-variant, situation, journalist-severity). Tokens som styr: månadsfamilj `--bg-october`…`--bg-april`, portal-mörka `--bg-portal*`, severity `--cold` / `--warm`.
@@ -364,12 +372,33 @@ Form-auditens #1 (vardagen saknar rytm) och #3 (tystnaden odesignad) är samma p
 
 ---
 
+## Visuell rikedom — tre lager, skild frekvens (2026-06-07)
+
+Reserv-principen (guld, hjälte, ceremoni-illustration sällsynt) vaktar mot *inflation* men sa inget om *svält*: en klubb som aldrig når finalen ska inte mötas av enbart text och ramar. Det är inte reserv, det är fattigdom. Lösningen är att skilja **ceremoni** (händelse) från **grundvärdighet** (textur) — två olika saker vi felaktigt buntat ihop.
+
+Tre lager med medvetet skild frekvens:
+1. **Ceremoni** (full-scen-illustration, guld, hjälte-typ) — *sällsynt*, avbryter, stoppar dig. Reserven gäller här, oförändrat.
+2. **Miljö** (konstant bruksort-header) — *konstant*, rik, omger varje vardagsyta, tävlar aldrig om fokus. Lika rik som ceremonin men återkommande i stället för sällsynt.
+3. **Innehåll** (kort, text) — informerar.
+
+De konkurrerar inte: ceremoni avbryter, miljö omger, innehåll informerar. Mörk-rik header mot ljust pappers-kropp ger ljus-mörk-rytm — headern är vyn ut, korten liggaren på bordet.
+
+**Regler som håller alla tre intakta:**
+- Miljö-lagret får vara *vackert* men måste *recedera* — neutralt, stillsamt, header-band, fade mot papper. Test: går ögat till innehållet, inte till miljön. "Ambient = konstant närvarande, inte blekt" — men aldrig fokus.
+- Miljö-lagret lånar aldrig ceremonins vokabulär: inget guld, ingen hjälte-typ, ingen fullbleed-takeover, ingen laddad händelse. Plats, inte scen.
+- Miljö-lagret är billigt/återanvändbart: en bas-bild, tintad i kod per säsong/väder, aldrig per-tillfälle. Per-klubb-identitet bärs av billigt overlay (märke + klubbton + namn), inte av 12 målningar.
+- **Vakt mot motsatt creep:** börjar miljö-lagret använda guld, fullbleed eller laddade händelser har vi inflaterat på nytt. Ceremonin måste fortsätta skilja sig *i art* — en laddad händelse med fokus, miljön en stilla plats utan. När vardagen också är målad kommer ceremonins kraft från att den *avbryter lugnet*, inte från måleri-mot-text. Ceremoni-bilderna får därför luta hårdare åt att vara *händelser* (människor, drama, ögonblick) för att stå ut mot den stilla headern.
+
+Grundvärdighet är inte polish — bruksort-vardagen ÄR USP:n. Mest atmosfär-investering hör hemma i vardagen, inte i den sällsynta finalen.
+
+---
+
 **Implementations-noter (2026-06-07, Code-rapport — 8f99981 infra, 72982c6 DB-1):**
 - **DB-1 körd i två faser (ratificerat).** Code separerade DB-1:s två mål: (1) *tekniken* — all hårdkodad palett-`rgba()` → `color-mix(var(--token) N%)`, **exakt-alpha bevarad** (0.08→8%), 231 konv./50 filer, noll visuell ändring. Strukturmålet nått: tokens/säsongston styr färgen, ingen hårdkodad palett-RGB kvar. **Klart.** (2) *kanon-snäppningen* till 5 steg = en *visuell* ändring (mockens egen CSS använder mellansteg 7/8/12/14/25/40 — snäpp skiftar alphas synligt). **Skjuts till eget visuellt pass med playtest (BACKLOG: DB-1 Fas 2).** Alpha-floran lever kvar tokeniserad tills dess — medvetet. Hård-snäppa INTE nu.
-- **z-staplingsordning godkänd:** PortalScreen-modal 288→`--z-modal`, GameHeader save-toast 201→`--z-toast`, HelpOverlay 250→`--z-overlay`, MatchDoneOverlay 91→`--z-overlay` (91 var dessutom under dropdown — latent bugg, nu rätt). MatchDone+Help delar 400 (samexisterar aldrig — ok). Playtest-koll: toasten flyttar 201→600, dvs över modaler — semantiskt rätt, men verifiera att inget ska dölja den.
+- **z-staplingsordning applicerad (`e9aa268`), med en kontext-korrigering:** PortalScreen:288 var INTE en modal (tidiga scanningen fel) utan den sticky botten-CTA:n ovanför BottomNav (persistent chrome) — `--z-modal` hade lyft den över modaler, så den mappades rätt till `--z-header` (under modaler, över innehåll). GameHeader save-toast 201→`--z-toast`, HelpOverlay 250→`--z-overlay`, MatchDoneOverlay 91→`--z-overlay` (91 var latent under-dropdown-bugg). MatchDone+Help delar 400 (samexisterar aldrig). Playtest-koll: toasten 201→600 (över modaler, rätt); och att botten-CTA:n på header-nivå (200, över dropdowns 100) inte hamnar framför något som ska täcka den.
 - **Två luckor att stänga:** (a) `74,102,128` i SeasonArcCard = `--cold`, missades i token-mappen — konvertera (ej glow, ej uppskjuten). (b) SquadScreen CA-glow/fitness (Tailwind-grön/röd i text-shadow) är både Tailwind-rgb *och* glow — blockerar gate-villkoret "Tailwind-rgb borta" tills glow-passet kört. Gate→error först efter glow-passet (ratchet håller).
 - **DB-4 bekräftat:** ScoreBlock var redan mono; EkonomiTab saldo → `.h-display-sm`. Infrastruktur (`.h-label` 9/2.5, z-tokens, `--radius-md` — fixade en latent radie-bugg där `var(--radius-md)` löstes till intet — SectionLabel) klar.
 
 ---
 
-*Senast uppdaterad: 2026-06-07 — DB-1 tvåfas + z-stapling + infra inskrivna (Code-rapport)*
+*Senast uppdaterad: 2026-06-07 — tre-lager visuell rikedom (ceremoni/miljö/innehåll) inskriven; DB-1 tvåfas + z-stapling + infra*

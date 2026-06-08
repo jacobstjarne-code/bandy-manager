@@ -15,6 +15,7 @@ import { VictoryTrophy } from './shared/VictoryTrophy'
 import { VictoryScore } from './shared/VictoryScore'
 import { VictoryQuote } from './shared/VictoryQuote'
 import { useCupFinalData } from './shared/useCupFinalData'
+import { seasonStartYear } from '../../../domain/utils/seasonYear'
 
 interface Props {
   game: SaveGame
@@ -24,7 +25,7 @@ interface Props {
 export function CupFinalVictoryScene({ game, onComplete }: Props) {
   const data = useCupFinalData(game)
   const meta = CUP_FINAL_VICTORY_TEMPLATES.meta
-  const titleText = meta.titleText.replace('{season}', String(game.currentSeason))
+  const titleText = meta.titleText.replace('{year}', String(seasonStartYear(game.currentSeason)))
   const dateText = meta.dateText.replace('{finalArena}', data.finalArena).replace('{cupFinalDate}', 'Cupfinalen')
   const confettiSeed = game.currentSeason * 9301 + 77
 

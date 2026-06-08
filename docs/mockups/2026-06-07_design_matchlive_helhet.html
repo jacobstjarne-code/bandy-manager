@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>MatchLive-helhet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18; --panel: #0e0d0b;
+    --paper-warm: #F5F1EB; --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --copper: #C47A3A; --accent: #C47A3A; --accent-deep: #8B4820;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --gold: #E8B95C; --danger: #B05040; --success: #5A9A4A;
+    --home: #C47A3A; --away: #6B7F8E;
+    --led-red: #FF2A18; --led-amber: #FFAA00; --led-green: #66FF33;
+    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 28px 16px 80px; }
+  .head { max-width: 1280px; margin: 0 auto 22px; }
+  .head h1 { font-family: var(--font-display); font-size: 23px; margin-bottom: 6px; }
+  .head p { font-size: 12.5px; color: rgba(245,241,235,0.72); line-height: 1.6; max-width: 900px; }
+  .head p strong { color: var(--copper); }
+  .head p + p { margin-top: 6px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 340px)); gap: 26px; max-width: 1280px; margin: 0 auto; justify-content: center; align-items: start; }
+  .col { width: 100%; }
+  .clabel { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light-secondary); margin-bottom: 9px; text-align: center; }
+  .clabel b { color: var(--copper); }
+  .caption { font-family: var(--font-display); font-style: italic; font-size: 10.5px; color: var(--text-light-secondary); margin-top: 10px; line-height: 1.5; text-align: center; opacity: 0.85; }
+
+  /* phone shell */
+  .phone { background: var(--bg-portal); border-radius: 22px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,0.42); border: 5px solid #0d0c0a; }
+  .scr { display: flex; flex-direction: column; height: 660px; }
+
+  /* ── SCOREBOARD (Stålvallen 5-modul board) ── */
+  .board { background: var(--panel); border: 1px solid rgba(196,122,58,0.35); border-radius: 4px; margin: 8px 8px 0; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.5); }
+  /* module 1: main score + center clock */
+  .m-main { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 11px 10px 10px; background: linear-gradient(180deg, #161412, #0c0b0a); }
+  .tcol { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .tcode { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+  .tcol.home .tcode { color: var(--copper); } .tcol.away .tcode { color: var(--away); }
+  .tscore { font-family: var(--font-mono); font-size: 40px; font-weight: 700; line-height: 0.9; letter-spacing: 2px; }
+  .tcol.home .tscore { color: var(--copper); text-shadow: 0 0 12px rgba(196,122,58,0.55); }
+  .tcol.away .tscore { color: var(--away); text-shadow: 0 0 12px rgba(107,127,142,0.5); }
+  /* center clock block — the big real-estate piece */
+  .clk { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 16px; min-width: 96px; }
+  .clk-period { font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; color: var(--led-amber); text-shadow: 0 0 6px rgba(255,170,0,0.45); }
+  .clk-time { font-family: var(--font-mono); font-size: 30px; font-weight: 700; letter-spacing: 3px; color: var(--led-red); text-shadow: 0 0 10px rgba(255,42,24,0.55); line-height: 1; }
+  /* module 2: penalty strip */
+  .m-pen { display: grid; grid-template-columns: 1fr 1px 1fr; background: #0a0908; border-top: 1px solid rgba(196,122,58,0.18); min-height: 22px; }
+  .pen-slot { display: flex; align-items: center; gap: 5px; padding: 3px 10px; font-family: var(--font-mono); font-size: 8.5px; }
+  .pen-slot.away { justify-content: flex-end; }
+  .pen-slot.empty::before { content: '—'; color: rgba(245,241,235,0.12); }
+  .pen-mark { color: var(--led-amber); font-size: 8px; }
+  .pen-num { color: var(--led-amber); font-weight: 700; }
+  .pen-name { color: var(--text-light-secondary); }
+  .pen-time { color: var(--led-amber); font-weight: 700; text-shadow: 0 0 4px rgba(255,170,0,0.4); }
+  .pen-div { background: rgba(196,122,58,0.18); }
+  /* module 4: timeline */
+  .m-line { background: #0a0908; border-top: 1px solid rgba(196,122,58,0.18); padding: 5px 10px 7px; }
+  .line-head { font-family: var(--font-mono); font-size: 7px; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 4px; }
+  .tl { position: relative; height: 8px; background: rgba(255,255,255,0.04); border-radius: 2px; }
+  .tl-half { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(245,241,235,0.18); }
+  .tl-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(245,241,235,0.1); }
+  .tl-goal { position: absolute; top: -1px; width: 3px; height: 10px; border-radius: 1px; transform: translateX(-1px); }
+  .tl-goal.home { background: var(--copper); box-shadow: 0 0 4px rgba(196,122,58,0.6); }
+  .tl-goal.away { background: var(--away); box-shadow: 0 0 4px rgba(107,127,142,0.6); }
+  .tl-pen { position: absolute; top: 2px; height: 4px; background: rgba(255,170,0,0.4); border-radius: 1px; }
+  .tl-now { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--led-green); box-shadow: 0 0 5px rgba(102,255,51,0.6); }
+
+  /* ── MOMENTUM BAR (new, honest) ── */
+  .mb { background: var(--bg-leather-dk); padding: 9px 12px 10px; border-bottom: 1px solid rgba(196,122,58,0.18); }
+  .mb-teams { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-family: var(--font-mono); font-size: 8px; letter-spacing: 1px; }
+  .mb-teams .h { color: var(--home); } .mb-teams .a { color: var(--away); }
+  .mb-teams .tag { color: var(--led-amber); }
+  .mb-bar { height: 8px; border-radius: 5px; background: var(--away); position: relative; overflow: hidden; }
+  .mb-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--home); border-radius: 5px 0 0 5px; }
+  .mb-band { position: absolute; top: -1px; bottom: -1px; background: rgba(245,241,235,0.16); border-radius: 2px; }
+  .mb-center { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(245,241,235,0.22); }
+  .mb-needle { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text-light); box-shadow: 0 0 4px rgba(245,241,235,0.6); border-radius: 1px; }
+  .mb-hist { height: 26px; margin-top: 6px; position: relative; }
+  .mb-hist svg { width: 100%; height: 100%; display: block; }
+  .mb-bp { margin-top: 7px; display: flex; gap: 6px; align-items: flex-start; padding: 5px 8px; background: rgba(0,0,0,0.3); border-left: 2px solid var(--led-amber); border-radius: 0 4px 4px 0; }
+  .mb-bp.steel { border-left-color: var(--away); }
+  .mb-bp.copper { border-left-color: var(--copper); }
+  .mb-bp-i { font-size: 10px; }
+  .mb-bp-t { font-family: var(--font-body); font-size: 9.5px; color: var(--text-light); line-height: 1.35; }
+  .mb-bp-t b { color: var(--led-amber); } .mb-bp.steel .mb-bp-t b { color: var(--cold-light); } .mb-bp.copper .mb-bp-t b { color: var(--copper); }
+  .mb-bp-v { display: block; font-family: var(--font-mono); font-size: 7.5px; color: var(--text-muted); margin-top: 2px; }
+  .mb-bp-v span { color: var(--gold); }
+
+  /* ── CONTROLS ── */
+  .ctrl { background: var(--bg-leather-dk); display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-bottom: 1px solid rgba(196,122,58,0.18); }
+  .ctrl-lbl { font-family: var(--font-mono); font-size: 8px; letter-spacing: 2px; color: var(--copper); margin-right: auto; }
+  .ctrl-btn { background: rgba(0,0,0,0.3); border: 1px solid rgba(196,122,58,0.22); border-radius: 3px; padding: 5px 9px; font-size: 12px; color: rgba(245,241,235,0.7); font-family: var(--font-mono); }
+  .ctrl-btn.active { background: rgba(196,122,58,0.18); border-color: var(--copper); color: var(--copper); }
+  .ctrl-btn.amber { border-color: rgba(255,170,0,0.5); color: var(--led-amber); position: relative; }
+  .ctrl-btn.amber::after { content: ''; position: absolute; inset: -2px; border-radius: 4px; border: 1px solid rgba(255,170,0,0.4); animation: none; }
+
+  /* ── STATS FOOTER ── */
+  .stats { background: var(--panel); display: flex; justify-content: space-around; padding: 6px 10px; border-bottom: 1px solid rgba(196,122,58,0.12); font-family: var(--font-mono); font-size: 8px; }
+  .stats .s { text-align: center; color: var(--text-muted); }
+  .stats .s b { display: block; font-family: var(--font-display); font-size: 13px; color: var(--text-light); }
+  .stats .s.h b { color: var(--home); } .stats .s.a b { color: var(--away); }
+
+  /* ── COMMENTARY FEED ── */
+  .feed { flex: 1; overflow: hidden; padding: 8px 0; position: relative; }
+  .feed-row { display: flex; gap: 8px; padding: 6px 12px; align-items: baseline; }
+  .feed-min { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); width: 22px; flex-shrink: 0; }
+  .feed-txt { font-family: var(--font-display); font-size: 11.5px; color: var(--text-light-secondary); line-height: 1.4; }
+  .feed-row.goal .feed-txt { color: var(--text-light); font-weight: 600; }
+  .feed-row.goal .feed-min { color: var(--led-red); }
+  .feed-row.goal { background: linear-gradient(90deg, rgba(255,42,24,0.06), transparent); }
+  .feed-txt b { color: var(--copper); font-weight: 600; font-style: normal; }
+  .feed-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 40px; background: linear-gradient(transparent, var(--bg-portal)); pointer-events: none; }
+
+  /* ── LATE CHOICE overlay (state) ── */
+  .late { position: relative; }
+  .late-card { margin: 8px 12px; padding: 11px; background: var(--bg-portal); border: 1.5px solid rgba(255,170,0,0.4); border-radius: 9px; position: relative; overflow: hidden; }
+  .late-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(255,170,0,0.08), transparent 65%); pointer-events: none; }
+  .late-eye { font-family: var(--font-body); font-size: 8px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--led-amber); margin-bottom: 5px; position: relative; }
+  .late-q { font-family: var(--font-display); font-size: 14px; font-weight: 700; margin-bottom: 9px; position: relative; }
+  .late-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; position: relative; }
+  .late-opt { padding: 9px 8px; background: rgba(0,0,0,0.25); border: 1.5px solid rgba(196,122,58,0.3); border-radius: 6px; text-align: center; }
+  .late-opt.push { border-color: var(--copper); }
+  .late-opt.shut { border-color: var(--away); }
+  .late-opt-t { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--text-light); margin-bottom: 2px; }
+  .late-opt-e { font-family: var(--font-mono); font-size: 7.5px; color: var(--text-light-secondary); line-height: 1.3; }
+  .late-gate { font-family: var(--font-mono); font-size: 7.5px; color: var(--text-muted); text-align: center; margin-top: 8px; position: relative; }
+  .late-gate b { color: var(--led-amber); }
+
+  .notes { max-width: 1280px; margin: 30px auto 0; padding: 22px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.6; font-size: 12.5px; }
+  .notes h3 { font-family: var(--font-display); font-size: 16px; color: var(--text-light); margin-bottom: 10px; }
+  .notes h4 { font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--copper); margin: 15px 0 6px; }
+  .notes ul { margin: 4px 0 8px 16px; } .notes li { margin-bottom: 5px; }
+  .notes p { margin-bottom: 8px; max-width: 920px; }
+  .notes code { font-family: var(--font-mono); font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>MatchLive — helheten med ny MomentumBar inkomponerad</h1>
+  <p>Den rikare baren och det sena valet <strong>i sin faktiska stack</strong>, inte löst bredvid: ScoreboardStålvallen → MomentumBar (ny) → controls → stats → commentary-feed. Verifierar att baren får luft utan att tränga ut feeden, och att Spak B tänds som ett <em>läge i feeden</em> snarare än en ny skärm.</p>
+  <p>Tre tillstånd: <strong>tidigt lugnt</strong> (bar ambient, feeden dominerar) · <strong>post-paus-tryck</strong> (bar sväller, brytpunkt) · <strong>sent val tänt</strong> (Spak B i feed-flödet).</p>
+</div>
+
+<div class="grid">
+
+  <!-- STATE 1 · early calm -->
+  <div class="col">
+    <div class="clabel"><b>1</b> · Tidigt · baren ambient</div>
+    <div class="phone"><div class="scr">
+      <div class="board">
+        <div class="m-main">
+          <div class="tcol home"><span class="tcode">FOR</span><span class="tscore">1</span></div>
+          <div class="clk"><span class="clk-period">HL1</span><span class="clk-time">38:12</span></div>
+          <div class="tcol away"><span class="tcode">HER</span><span class="tscore">1</span></div>
+        </div>
+        <div class="m-pen">
+          <div class="pen-slot home empty"></div>
+          <div class="pen-div"></div>
+          <div class="pen-slot away"><span class="pen-mark">▲</span><span class="pen-num">#7</span><span class="pen-name">Ahl</span><span class="pen-time">7:12</span></div>
+        </div>
+        <div class="m-line">
+          <div class="line-head">MATCHEN</div>
+          <div class="tl">
+            <span class="tl-half"></span>
+            <span class="tl-tick" style="left:16.7%"></span><span class="tl-tick" style="left:33.3%"></span><span class="tl-tick" style="left:66.7%"></span>
+            <span class="tl-goal home" style="left:21%"></span>
+            <span class="tl-goal away" style="left:38%"></span>
+            <span class="tl-pen" style="left:40%;width:8%"></span>
+            <span class="tl-now" style="left:42%"></span>
+          </div>
+        </div>
+      </div>
+      <div class="mb">
+        <div class="mb-teams"><span class="h">FORSBACKA</span><span class="tag">· LUGNT</span><span class="a">HEROS</span></div>
+        <div class="mb-bar">
+          <div class="mb-fill" style="width:53%"></div>
+          <div class="mb-band" style="left:47%;width:12%"></div>
+          <div class="mb-center"></div><div class="mb-needle" style="left:53%"></div>
+        </div>
+        <div class="mb-hist"><svg viewBox="0 0 300 26" preserveAspectRatio="none"><line x1="0" y1="13" x2="300" y2="13" stroke="rgba(245,241,235,0.08)"/><polyline fill="none" stroke="#C47A3A" stroke-width="1.3" points="2,13 30,12 60,14 90,11 120,15 150,12 180,13 210,11 240,14 270,12 298,13"/></svg></div>
+      </div>
+      <div class="ctrl">
+        <span class="ctrl-lbl">🏛️ MATCH</span>
+        <span class="ctrl-btn active">⏸</span><span class="ctrl-btn">⏩</span><span class="ctrl-btn">🔄</span><span class="ctrl-btn">🔊</span>
+      </div>
+      <div class="stats">
+        <span class="s h">SKOTT<b>7</b></span><span class="s">HÖRN<b>3·2</b></span><span class="s a">SKOTT<b>5</b></span>
+      </div>
+      <div class="feed">
+        <div class="feed-row"><span class="feed-min">38'</span><span class="feed-txt">Lindqvist vinner en boll i mittzonen, vänder upp.</span></div>
+        <div class="feed-row goal"><span class="feed-min">34'</span><span class="feed-txt"><b>Mål Heros.</b> Pålsson kvitterar från distans.</span></div>
+        <div class="feed-row"><span class="feed-min">30'</span><span class="feed-txt">Hörna Forsbacka, rensas undan.</span></div>
+        <div class="feed-row"><span class="feed-min">26'</span><span class="feed-txt">Tempot går ner. Lagen känner på varandra.</span></div>
+        <div class="feed-fade"></div>
+      </div>
+    </div></div>
+    <div class="caption">Baren tar minimal höjd, feeden dominerar. Ambient — ingen brytpunkts-pill när inget händer.</div>
+  </div>
+
+  <!-- STATE 2 · post-break swell -->
+  <div class="col">
+    <div class="clabel"><b>2</b> · Post-paus · baren sväller</div>
+    <div class="phone"><div class="scr">
+      <div class="board">
+        <div class="m-main">
+          <div class="tcol home"><span class="tcode">FOR</span><span class="tscore">1</span></div>
+          <div class="clk"><span class="clk-period">HL2</span><span class="clk-time">54:30</span></div>
+          <div class="tcol away"><span class="tcode">HER</span><span class="tscore">2</span></div>
+        </div>
+        <div class="m-pen">
+          <div class="pen-slot home empty"></div>
+          <div class="pen-div"></div>
+          <div class="pen-slot away empty"></div>
+        </div>
+        <div class="m-line">
+          <div class="line-head">MATCHEN</div>
+          <div class="tl">
+            <span class="tl-half"></span>
+            <span class="tl-tick" style="left:16.7%"></span><span class="tl-tick" style="left:33.3%"></span><span class="tl-tick" style="left:66.7%"></span>
+            <span class="tl-goal home" style="left:21%"></span>
+            <span class="tl-goal away" style="left:38%"></span>
+            <span class="tl-goal away" style="left:52%"></span>
+            <span class="tl-now" style="left:60%"></span>
+          </div>
+        </div>
+      </div>
+      <div class="mb">
+        <div class="mb-teams"><span class="h">FORSBACKA</span><span class="tag">⚡ AKTIVT</span><span class="a">HEROS</span></div>
+        <div class="mb-bar">
+          <div class="mb-fill" style="width:66%"></div>
+          <div class="mb-band" style="left:58%;width:14%"></div>
+          <div class="mb-center"></div><div class="mb-needle" style="left:66%"></div>
+        </div>
+        <div class="mb-hist"><svg viewBox="0 0 300 26" preserveAspectRatio="none"><line x1="0" y1="13" x2="300" y2="13" stroke="rgba(245,241,235,0.08)"/><polyline fill="none" stroke="#C47A3A" stroke-width="1.3" points="2,14 40,13 80,14 120,13 150,12 165,11 185,9 210,7 240,6 270,5 298,4"/><line x1="150" y1="2" x2="150" y2="24" stroke="rgba(255,170,0,0.4)" stroke-dasharray="2 2"/></svg></div>
+        <div class="mb-bp">
+          <span class="mb-bp-i">▲</span>
+          <span class="mb-bp-t"><b>Andra halvlek — Forsbacka trycker på.</b> Det jagande laget får luft.
+            <span class="mb-bp-v">speglar <span>postBreakUrgency</span> · ramp 45'→60'</span></span>
+        </div>
+      </div>
+      <div class="ctrl">
+        <span class="ctrl-lbl">🏛️ MATCH</span>
+        <span class="ctrl-btn active">⏸</span><span class="ctrl-btn">⏩</span><span class="ctrl-btn">🔄</span><span class="ctrl-btn">🔊</span>
+      </div>
+      <div class="stats">
+        <span class="s h">SKOTT<b>13</b></span><span class="s">HÖRN<b>6·3</b></span><span class="s a">SKOTT<b>7</b></span>
+      </div>
+      <div class="feed">
+        <div class="feed-row"><span class="feed-min">54'</span><span class="feed-txt">Forsbacka pressar högt nu, Heros får inte ut bollen.</span></div>
+        <div class="feed-row"><span class="feed-min">52'</span><span class="feed-txt">Sundström nära! Skottet styrs över ribban.</span></div>
+        <div class="feed-row"><span class="feed-min">48'</span><span class="feed-txt">Andra halvlek igång. Forsbacka börjar med energi.</span></div>
+        <div class="feed-fade"></div>
+      </div>
+    </div></div>
+    <div class="caption">Baren sväller mot 60', brytpunkts-pill med variabel-tag. Feeden bekräftar i ord vad baren visar i form.</div>
+  </div>
+
+  <!-- STATE 3 · late choice lit -->
+  <div class="col">
+    <div class="clabel"><b>3</b> · Sent · Spak B tänds i feeden</div>
+    <div class="phone"><div class="scr">
+      <div class="board">
+        <div class="m-main">
+          <div class="tcol home"><span class="tcode">FOR</span><span class="tscore">2</span></div>
+          <div class="clk"><span class="clk-period">HL2</span><span class="clk-time">79:05</span></div>
+          <div class="tcol away"><span class="tcode">HER</span><span class="tscore">2</span></div>
+        </div>
+        <div class="m-pen">
+          <div class="pen-slot home"><span class="pen-mark">▲</span><span class="pen-num">#4</span><span class="pen-name">Johansson</span><span class="pen-time">1:48</span></div>
+          <div class="pen-div"></div>
+          <div class="pen-slot away empty"></div>
+        </div>
+        <div class="m-line">
+          <div class="line-head">MATCHEN</div>
+          <div class="tl">
+            <span class="tl-half"></span>
+            <span class="tl-tick" style="left:16.7%"></span><span class="tl-tick" style="left:33.3%"></span><span class="tl-tick" style="left:66.7%"></span>
+            <span class="tl-goal home" style="left:21%"></span>
+            <span class="tl-goal away" style="left:38%"></span>
+            <span class="tl-goal away" style="left:52%"></span>
+            <span class="tl-goal home" style="left:68%"></span>
+            <span class="tl-pen" style="left:85%;width:6%"></span>
+            <span class="tl-now" style="left:88%"></span>
+          </div>
+        </div>
+      </div>
+      <div class="mb">
+        <div class="mb-teams"><span class="h">FORSBACKA</span><span class="tag">🔥 INTENSIVT</span><span class="a">HEROS</span></div>
+        <div class="mb-bar">
+          <div class="mb-fill" style="width:47%"></div>
+          <div class="mb-band" style="left:32%;width:32%;background:rgba(245,241,235,0.2)"></div>
+          <div class="mb-center"></div><div class="mb-needle" style="left:47%"></div>
+        </div>
+        <div class="mb-hist"><svg viewBox="0 0 300 26" preserveAspectRatio="none"><line x1="0" y1="13" x2="300" y2="13" stroke="rgba(245,241,235,0.08)"/><polyline fill="none" stroke="#C47A3A" stroke-width="1.3" points="2,13 40,12 80,14 120,11 150,14 170,8 185,18 205,7 225,19 245,9 265,17 285,11 298,15"/><line x1="150" y1="2" x2="150" y2="24" stroke="rgba(255,170,0,0.35)" stroke-dasharray="2 2"/></svg></div>
+        <div class="mb-bp steel">
+          <span class="mb-bp-i">⇋</span>
+          <span class="mb-bp-t"><b>Det öppnar upp.</b> Svängningarna vidgas — matchen vill avgöras.
+            <span class="mb-bp-v">speglar <span>lateFactor</span> · volatilitet upp</span></span>
+        </div>
+      </div>
+      <div class="ctrl">
+        <span class="ctrl-lbl">🏛️ MATCH</span>
+        <span class="ctrl-btn active">⏸</span><span class="ctrl-btn">⏩</span><span class="ctrl-btn">🔄</span>
+        <span class="ctrl-btn amber">⚙</span>
+      </div>
+      <!-- late choice card sits AT THE TOP OF THE FEED, in flow -->
+      <div class="feed late">
+        <div class="late-card">
+          <div class="late-eye">⬩ 79' · jämnt · det öppnar upp ⬩</div>
+          <div class="late-q">Gå på vinsten, eller stäng igen?</div>
+          <div class="late-opts">
+            <div class="late-opt push"><div class="late-opt-t">Gå på</div><div class="late-opt-e">↑ chans · ↑ risk</div></div>
+            <div class="late-opt shut"><div class="late-opt-t">Stäng igen</div><div class="late-opt-e">säkra poängen</div></div>
+          </div>
+          <div class="late-gate">tänds bara när <b>lateFactor</b> stiger i jämnt läge</div>
+        </div>
+        <div class="feed-row"><span class="feed-min">78'</span><span class="feed-txt">Det vrider och vänder. Båda lagen vill ha trean.</span></div>
+        <div class="feed-row"><span class="feed-min">75'</span><span class="feed-txt">Heros byter, friskt blod på kanten.</span></div>
+        <div class="feed-fade"></div>
+      </div>
+    </div></div>
+    <div class="caption">Spak B är <strong>ingen ny skärm</strong> — den tänds som ett kort överst i feeden, i flödet. Brett volatilitetsband + intensivt-tag + amber taktik-knapp samspelar.</div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Komponerings-beslut</h3>
+
+  <h4>Stacken, uppifrån ner</h4>
+  <ul>
+    <li><strong>Scoreboard</strong> (oförändrad) — LED-score, klocka, lagnamn. Matchens fakta.</li>
+    <li><strong>MomentumBar (ny)</strong> — sitter direkt under scoreboard där gamla baren satt, men rikare: nål + historik + brytpunkts-pill. Tar ~3 rader när en dynamik är aktiv, ~2 när ambient. Krymper inte feeden nämnvärt.</li>
+    <li><strong>Controls</strong> (oförändrad rad) — pause/ff/sub/taktik/mute. Taktik-knappen får amber-glow när Spak B-läge är aktivt (signalerar att taktikskifte är det relevanta handtaget sent).</li>
+    <li><strong>StatsFooter</strong> (oförändrad) — skott/hörn. Numerisk sanning bredvid baren.</li>
+    <li><strong>CommentaryFeed</strong> — får mest höjd. Det är fortfarande matchens hjärta.</li>
+  </ul>
+
+  <h4>Nyckelbeslut: Spak B lever I feeden, inte som overlay</h4>
+  <p>Det sena valet tänds som ett <strong>kort överst i commentary-feeden</strong>, i flödet — inte en modal som avbryter, inte en ny skärm. Skäl: (1) feeden är redan där spelaren tittar sent i en jämn match; (2) det undviker en ny in-match-interaktionspunkt som bryter rytmen; (3) det läser som "ögonblicket i matchen" snarare än "en meny". Svarar på Opus-fråga 2 (Jacob: behåll Spak B) med en konkret placering — <strong>inte fristående tänd-knapp, utan feed-kort</strong>. Bekräfta att det är rätt instinkt.</p>
+
+  <h4>Vad som INTE ändras</h4>
+  <p>Scoreboard, controls-rad, stats-footer, feed-mekanik — allt behålls. Detta är en <em>inkomponering</em> av den nya baren + Spak B, inte en omdesign av MatchLive. Stålvallen-vokabulären (LED-färger, copper/steel, mono-data, dot-textur) är intakt.</p>
+
+  <h4>Höjdbudget (660px referens)</h4>
+  <p>Scoreboard ~62px · MomentumBar 52–78px (växer med brytpunkt) · controls 36px · stats 28px · feed resten (~400px+). Baren äter aldrig mer än ~12% av höjden ens med pill. Feeden behåller sin dominans.</p>
+
+  <h4>Öppna frågor till Opus</h4>
+  <ul>
+    <li><strong>Spak B-placering:</strong> feed-kort (denna mock) vs fristående knapp (förra mocken §B). Jag förordar feed-kort — bekräfta.</li>
+    <li><strong>Amber taktik-glow sent:</strong> OK att låna taktik-knappen som "det enda handtaget på kvitterings-momentumet"? Det är ärligt (taktikskifte ÄR den svaga spaken §3) men lägger vikt på en knapp som annars är passiv.</li>
+    <li><strong>Brytpunkts-pill i feeden vs i baren:</strong> nu sitter pillen i bar-blocket. Alternativ: injicera den som en feed-rad ("⚡ Forsbacka trycker på"). Föreslag: behåll i baren — feeden är spelhändelser, baren är meta. Men flaggas.</li>
+  </ul>
+</div>
+
+</body>
+</html>

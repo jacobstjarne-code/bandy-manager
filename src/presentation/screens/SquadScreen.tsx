@@ -471,7 +471,7 @@ export function SquadScreen() {
       {!dismissed.includes('squad') && (
         <FirstVisitHint
           screenId="squad"
-          text="Dra spelare till positioner. Grön ring = rätt plats. Gul = kan funka. Utan lineup kan du inte spela."
+          text="Dra spelare till positioner. Grön ring = rätt plats. Gul = kan funka. Utan laguppställning kan du inte spela."
           onDismiss={() => dismissHint('squad')}
         />
       )}
@@ -614,7 +614,7 @@ export function SquadScreen() {
             marginBottom: 12,
             animation: 'fadeInUp 300ms ease-out both',
           }}>
-            💡 Välj 11 startspelare och 5 avbytare. Tryck på en spelare för att lägga till dem i laget.
+            💡 Välj 11 startspelare och 5 avbytare. Tryck på en spelare för att lägga till den i laget.
           </div>
         )}
 

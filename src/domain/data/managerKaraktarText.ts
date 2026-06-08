@@ -16,7 +16,7 @@ export const BIO_OPENERS: string[] = [
   '{hemort}-grabb som aldrig riktigt lämnade bandyn. Tog tränarvägen när spelarbenen tog slut.',
   'Halva livet i {hemort}, andra halvan i hallar runt om i landet. Det här är inte hans första jobb, men han pratar om det som om det vore.',
   'Spelade aldrig högst, men läste spelet bättre än de flesta. Det är därför han står vid sargen i dag.',
-  'Kommer från {hemort}, en bandyort av den gamla sorten. Bär den med sig vare sig han vill eller inte.',
+  'Kommer från {hemort}. Bandyn fanns där före allt annat, och har följt honom sedan.',
 ]
 
 export const BIO_FAMILY_LINES: string[] = [

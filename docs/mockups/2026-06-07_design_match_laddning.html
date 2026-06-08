@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Match-laddning — pre-match-beat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --accent: #C47A3A; --accent-deep: #8B4820;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --gold: #E8B95C; --gold-deep: #B88838; --danger: #B05040; --success: #5A9A4A;
+    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 28px 16px 80px; }
+  .head { max-width: 1500px; margin: 0 auto 22px; }
+  .head h1 { font-family: var(--font-display); font-size: 23px; margin-bottom: 6px; }
+  .head p { font-size: 12.5px; color: rgba(245,241,235,0.72); line-height: 1.6; max-width: 880px; }
+  .head p strong { color: var(--accent); }
+  .head p + p { margin-top: 6px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; max-width: 1500px; margin: 0 auto; align-items: start; }
+  .col { width: 100%; max-width: 340px; justify-self: center; }
+  .label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light-secondary); margin-bottom: 8px; text-align: center; }
+  .label b { color: var(--accent); }
+  .label.lite b { color: var(--warm-light); }
+  .label.none b { color: var(--text-muted); }
+
+  /* phone */
+  .phone { background: var(--bg-portal); border-radius: 26px; overflow: hidden; box-shadow: 0 14px 34px rgba(0,0,0,0.4); border: 5px solid #0d0c0a; aspect-ratio: 320/620; position: relative; }
+  .scr { position: absolute; inset: 0; display: flex; flex-direction: column; }
+
+  /* ── FULL SCENE beat (fullbleed illustration) ── */
+  .scene { flex: 1; position: relative; overflow: hidden; }
+  .scene img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .scene-ph { position: absolute; inset: 0; background: var(--bg-portal-surface); display:flex; align-items:center; justify-content:center; }
+  .scene-ph span { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; color: var(--text-muted); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); padding: 8px 14px; border-radius: 4px; }
+  .scrim-top { position: absolute; top: 0; left: 0; right: 0; height: 26%; background: linear-gradient(180deg, rgba(12,14,20,0.6), transparent); }
+  .scrim-bot { position: absolute; left: 0; right: 0; bottom: 0; height: 70%; background: linear-gradient(180deg, transparent 0%, rgba(16,18,24,0.55) 42%, rgba(12,14,20,0.94) 100%); }
+  .statusbar { position: absolute; top: 0; left: 0; right: 0; height: 26px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-family: var(--font-mono); font-size: 9px; color: var(--text-light); z-index: 3; }
+  .scene-text { position: absolute; left: 18px; right: 18px; bottom: 78px; z-index: 2; }
+  .eyebrow { font-family: var(--font-body); font-size: 9px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 9px; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+  .eyebrow.derby { color: var(--warm-light); }
+  .matchup { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--text-light); line-height: 1.1; margin-bottom: 4px; text-shadow: 0 1px 8px rgba(0,0,0,0.7); letter-spacing: -0.4px; }
+  .relation { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-light-secondary); letter-spacing: 0.5px; margin-bottom: 12px; text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
+  .charge { font-family: var(--font-display); font-style: italic; font-size: 13.5px; color: var(--text-light); line-height: 1.5; text-shadow: 0 1px 6px rgba(0,0,0,0.7); max-width: 270px; }
+  .stake { margin-top: 11px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; background: color-mix(in srgb, var(--warm) 18%, transparent); border: 1px solid color-mix(in srgb, var(--warm) 45%, transparent); font-family: var(--font-body); font-size: 10px; color: var(--warm-light); font-weight: 600; }
+
+  /* CTA fixed bottom of scene */
+  .scene-cta { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 3; }
+  .btn { width: 100%; padding: 13px; border: none; border-radius: 12px; font-family: var(--font-body); font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .btn-gold { background: linear-gradient(180deg, var(--gold), var(--gold-deep)); color: var(--bg-portal); box-shadow: 0 3px 12px color-mix(in srgb, var(--gold) 32%, transparent); }
+  .btn-copper { background: linear-gradient(180deg, #DD9555, #8B4820); color: var(--text-light); box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 38%, transparent); }
+  .btn-ghost { background: rgba(0,0,0,0.3); border: 1px solid rgba(245,241,235,0.2); color: var(--text-light); backdrop-filter: blur(2px); }
+
+  /* ── SLIM BAND beat (no image, above lineup) ── */
+  .band-scr { background: var(--bg-portal); }
+  .band-hdr { height: 30px; background: var(--bg-leather-dk); display: flex; align-items: center; padding: 0 13px; gap: 7px; border-bottom: 1px solid rgba(196,122,58,0.25); }
+  .band-hdr .logo { width: 13px; height: 13px; border-radius: 3px; background: var(--warm); }
+  .band-hdr .t { font-family: var(--font-display); font-size: 11px; font-weight: 700; }
+  .band-hdr .r { font-family: var(--font-mono); font-size: 8px; color: var(--text-muted); margin-left: auto; }
+  .band { margin: 14px 13px 0; padding: 13px 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--warm) 10%, var(--bg-portal-surface)) 0%, var(--bg-portal-surface) 100%); border-left: 3px solid var(--warm); border-radius: 0 8px 8px 0; }
+  .band-eye { font-family: var(--font-body); font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm-light); font-weight: 700; margin-bottom: 7px; }
+  .band-match { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text-light); margin-bottom: 3px; }
+  .band-rel { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); margin-bottom: 9px; }
+  .band-charge { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--text-light); line-height: 1.5; opacity: 0.94; }
+  /* lineup peeking below the band — proves band sits ON the lineup */
+  .lineup-peek { margin: 12px 13px 0; }
+  .lp-h { font-family: var(--font-body); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .lp-row { display: flex; align-items: center; gap: 9px; padding: 7px 10px; background: var(--bg-portal-surface); border-radius: 6px; margin-bottom: 5px; }
+  .lp-pos { font-family: var(--font-mono); font-size: 9px; color: var(--accent); width: 20px; }
+  .lp-name { font-family: var(--font-display); font-size: 12px; font-weight: 600; }
+  .lp-ca { margin-left: auto; font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-light-secondary); }
+
+  /* ── CONTRAST: no beat, straight to lineup ── */
+  .contrast-scr { background: var(--bg-portal); }
+  .contrast-note { margin: 14px 13px; padding: 9px 11px; border: 1px dashed color-mix(in srgb, var(--text-muted) 40%, transparent); border-radius: 6px; font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-muted); line-height: 1.5; text-align: center; }
+
+  .caption { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--text-light-secondary); margin-top: 12px; line-height: 1.5; text-align: center; opacity: 0.85; }
+
+  .notes { max-width: 1500px; margin: 32px auto 0; padding: 22px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.6; font-size: 12.5px; }
+  .notes h3 { font-family: var(--font-display); font-size: 16px; color: var(--text-light); margin-bottom: 10px; }
+  .notes h4 { font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 14px 0 5px; }
+  .notes ul { margin: 4px 0 6px 16px; } .notes li { margin-bottom: 4px; }
+  .notes code { font-family: var(--font-mono); font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 4px; border-radius: 2px; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Match-laddning — pre-match-beat (A3)</h1>
+  <p>Ögonblicket mellan "Spela omgång X" och uppställningen, <strong>för de få matcher som förtjänar laddning</strong>. Reserv-principen styr: en beat på varje match vore ceremoni-inflation. Tre representativa beats + <strong>kontrast-raden som bevisar att vanliga matcher går rakt in i uppställningen utan beat</strong>.</p>
+  <p>Två nivåer: <strong>full scen</strong> (illustration, störst) för final/annandagen/derby/premiär · <strong>slimmat band</strong> ovanpå uppställningen för sviterna. Beat:en sitter <em>före</em> lagvalet så tillfället ramar in valet.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 1 · ANNANDAGEN full scene -->
+  <div class="col">
+    <div class="label"><b>FULL SCEN</b> · annandagsbandy · illustration</div>
+    <div class="phone"><div class="scr">
+      <div class="scene">
+        <img src="../assets/illustrations/annandagen.jpg" alt="annandagen">
+        <div class="scrim-top"></div><div class="scrim-bot"></div>
+        <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+        <div class="scene-text">
+          <div class="eyebrow">⬩ Annandagen ⬩</div>
+          <div class="matchup">Forsbacka — Skutskär</div>
+          <div class="relation">Hemma · Upplandsderbyt · 26 dec</div>
+          <div class="charge">Fullt på läktaren, oavsett tabell. Så har annandagen alltid sett ut.</div>
+        </div>
+        <div class="scene-cta"><button class="btn btn-copper">Sätt laget →</button></div>
+      </div>
+    </div></div>
+    <div class="caption">Ceremoniella ytterligheten. Bild bär stämningen, texten laddar, ingen stat-dump.</div>
+  </div>
+
+  <!-- 2 · DERBY mid-table (no stake row) -->
+  <div class="col">
+    <div class="label"><b>FULL SCEN</b> · derby · mittfältsläge · ingen insats</div>
+    <div class="phone"><div class="scr">
+      <div class="scene">
+        <div class="scene-ph"><span>⬩ DERBY ⬩ (derby.jpg beställd)</span></div>
+        <div class="scrim-top"></div><div class="scrim-bot"></div>
+        <div class="statusbar"><span>9:41</span><span>▮▮▮</span></div>
+        <div class="scene-text">
+          <div class="eyebrow derby">⬩ Derby ⬩</div>
+          <div class="matchup">Söderfors — Forsbacka</div>
+          <div class="relation">Borta · Två bruk, en älv emellan</div>
+          <div class="charge">Man bygger inte upp sånt på en säsong — läktaren har räknat åren.</div>
+          <!-- NO stake row: mid-table derby manufactures no table drama -->
+        </div>
+        <div class="scene-cta"><button class="btn btn-copper">Sätt laget →</button></div>
+      </div>
+    </div></div>
+    <div class="caption">Ingen insats-rad — traditionen bär ensam. Mittfältsläge hittar aldrig på tabellspänning (C-SD2).</div>
+  </div>
+
+  <!-- 3 · LOSING STREAK slim band -->
+  <div class="col">
+    <div class="label lite"><b>SLIMMAT BAND</b> · förlustsvit · ingen bild</div>
+    <div class="phone"><div class="scr contrast-scr">
+      <div class="band-hdr"><div class="logo"></div><div class="t">Förbered</div><div class="r">Omg 16</div></div>
+      <div class="band">
+        <div class="band-eye">⬩ Tre raka ⬩</div>
+        <div class="band-match">Forsbacka — Heros</div>
+        <div class="band-rel">Hemma · Ingen vinst på tre</div>
+        <div class="band-charge">Det har inte lossnat på ett tag. Någonstans vänder det — lika gärna här.</div>
+      </div>
+      <div class="lineup-peek">
+        <div class="lp-h">Startelva</div>
+        <div class="lp-row"><span class="lp-pos">MV</span><span class="lp-name">Ek</span><span class="lp-ca">71</span></div>
+        <div class="lp-row"><span class="lp-pos">B</span><span class="lp-name">Johansson</span><span class="lp-ca">62</span></div>
+        <div class="lp-row"><span class="lp-pos">A</span><span class="lp-name">Lindqvist</span><span class="lp-ca">78</span></div>
+      </div>
+    </div></div>
+    <div class="caption">Lätta nivån. Band <em>ovanpå</em> uppställningen, ingen takeover. Sviterna förtjänar en markering, inte en scen.</div>
+  </div>
+
+  <!-- 4 · CONTRAST: ordinary match, no beat -->
+  <div class="col">
+    <div class="label none"><b>INGEN BEAT</b> · vanlig mittenmatch · reserven</div>
+    <div class="phone"><div class="scr contrast-scr">
+      <div class="band-hdr"><div class="logo" style="background:var(--accent)"></div><div class="t">Förbered</div><div class="r">Omg 11</div></div>
+      <div class="contrast-note">Vanlig ligamatch. Ingen beat — rakt in i uppställningen, som i dag.</div>
+      <div class="lineup-peek" style="margin-top:4px;">
+        <div class="lp-h">Startelva · Forsbacka — Gagnef</div>
+        <div class="lp-row"><span class="lp-pos">MV</span><span class="lp-name">Ek</span><span class="lp-ca">71</span></div>
+        <div class="lp-row"><span class="lp-pos">B</span><span class="lp-name">Johansson</span><span class="lp-ca">62</span></div>
+        <div class="lp-row"><span class="lp-pos">B</span><span class="lp-name">Sjöberg</span><span class="lp-ca">64</span></div>
+        <div class="lp-row"><span class="lp-pos">YH</span><span class="lp-name">Pålsson</span><span class="lp-ca">69</span></div>
+        <div class="lp-row"><span class="lp-pos">MF</span><span class="lp-name">Henriksson</span><span class="lp-ca">68</span></div>
+        <div class="lp-row"><span class="lp-pos">A</span><span class="lp-name">Lindqvist</span><span class="lp-ca">78</span></div>
+      </div>
+    </div></div>
+    <div class="caption"><strong>Raden som avgör om principen håller.</strong> Om laddningen klistrades på allt vore den meningslös. Den vanliga matchen ska kännas harmlös att hoppa förbi — och gör det.</div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Svar på §8 + struktur-beslut</h3>
+
+  <h4>§8 fråga 1 — En nivå eller två? → TVÅ, men med skarp gräns</h4>
+  <ul>
+    <li><b>Full scen</b> (illustration-takeover, CTA "Sätt laget →"): final, annandagen, derby, premiär, cup-dag, nyår. De har en <em>bild eller förtjänar en</em> — bilden ÄR motiveringen till full scen.</li>
+    <li><b>Slimmat band</b> (ovanpå uppställningen, ingen bild): vinstsvit, förlustsvit. De är <em>tillstånds-markeringar</em>, inte tillfällen — de förtjänar en rad, inte en scen.</li>
+    <li>Bandet är inte en halvmesyr: det gör <em>reserven granulär</em>. "Hur mycket laddning" har tre lägen (scen / band / inget), inte två. En svit som fick full scen vore inflation; en svit som fick inget vore en missad markering. Bandet är exakt rätt mellanting.</li>
+    <li><b>Regel:</b> har tillfället en illustration (eller förtjänar en) → scen. Är det ett tillstånd över flera matcher → band. Annars → inget.</li>
+  </ul>
+
+  <h4>§8 fråga 2 — Scen före, eller band ovanpå? → BÅDA, per nivå</h4>
+  <ul>
+    <li><b>Full scen sitter FÖRE</b> uppställningen — eget steg, takeover. Du vet att det är annandagen mot rivalen innan du sätter laget; det gör lagvalet tyngre. CTA "Sätt laget →" leder in i StartStep.</li>
+    <li><b>Slimmat band sitter PÅ</b> uppställningen — sektionens topp (spalt 3 visar uppställningen sticka fram under). Ingen extra klick-friktion för den lätta nivån; sviten är inte värd ett eget steg.</li>
+    <li>Det löser tyngd-gradering i själva navigeringen: stora tillfället kostar en skärm, det lilla kostar inget extra.</li>
+  </ul>
+
+  <h4>Innehållsslots (låsta för Opus textpool)</h4>
+  <ul>
+    <li><code>eyebrow</code> — tillfälle, gold (scen) / warm-light (band/derby). DERBY · ANNANDAGEN · CUPEN · PREMIÄR · FINAL · TRE RAKA · FJÄRDE RAKA.</li>
+    <li><code>matchup</code> — Georgia display, Hemmalag — Bortalag.</li>
+    <li><code>relation</code> — mono, plats + relations-fäste ("Två bruk, en älv emellan" / "Upplandsderbyt" / "Ingen vinst på tre").</li>
+    <li><code>charge</code> — italic Georgia, EN laddningsrad, tillfällets ton. Aldrig analys.</li>
+    <li><code>stake</code> — <b>villkorlig</b> warm-pill, ENDAST om seasonContext ger insats. Utelämnas i mittfältsläge (spalt 2 bevisar). Aldrig påhittad.</li>
+  </ul>
+
+  <h4>Illustration = beat:ens hem (knyter A3 till bild-beställningarna)</h4>
+  <ul>
+    <li>annandagen.jpg + final.jpg: filade, används direkt. derby.jpg + nyarsbandy.jpg: beställda — placeholder tills de droppas (spalt 2 visar placeholder-läget, inget hoppar när bilden landar).</li>
+    <li>Premiär/cup/sviter: bildlösa → band utan bild (eller full scen utan bild för premiär/cup om Opus vill — men min lutning: bildlösa tillfällen får band, bild-tillfällen får scen. Det binder "scen = bild" som enkel mental regel).</li>
+    <li><code>&lt;IllustrationScene mode="fullbleed"&gt;</code> med DB-8-scrim bär scenerna. Ingen ny komponent — beat:en ÄR illustrationssystemets reserverade hem.</li>
+  </ul>
+
+  <h4>Reserv-principen — den bevisande raden</h4>
+  <p>Spalt 4 är mockens viktigaste ruta. Om annandagen känns laddad <em>och</em> Gagnef-matchen känns harmlös att klicka förbi, håller principen. Beat:en är till för att de få stora ska resa sig — inte för att lägga vikt på var match. <code>post_loss</code> är medvetet utesluten ur grinden (för frekvent — hör hemma i portal-tonen, inte i en beat).</p>
+
+  <h4>Öppna frågor tillbaka till Opus</h4>
+  <ul>
+    <li>Premiär + cup-dag: scen eller band? De saknar bild men är "tillfällen" inte "tillstånd". Min lutning: <b>band</b> (bildlöst → band), men de är gränsfall — premiären kanske förtjänar scen trots avsaknad av bild. Säg.</li>
+    <li>Bandet på sviter: sitter det kvar om spelaren backar och kommer tillbaka till uppställningen, eller visas en gång? Föreslag: en gång per match-ingång (som en beat, inte ett permanent kort).</li>
+  </ul>
+</div>
+
+</body>
+</html>

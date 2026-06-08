@@ -41,7 +41,7 @@ export const SM_FINAL_VICTORY_TEMPLATES = {
 
   meta: {
     genreLabel: 'I DETTA ÖGONBLICK',
-    titleText: 'Svensk Mästare {season}',
+    titleText: 'Svensk Mästare {year}',
     dateText: 'Tredje lördagen i mars · {finalArena}',
     arenaCapacity: '25 412 ÅSKÅDARE',
     cta: 'Fortsätt till ceremonin →',

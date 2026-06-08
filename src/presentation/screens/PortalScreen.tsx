@@ -116,7 +116,7 @@ export function PortalScreen() {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduled.length === 0) {
       if (phase === 'season_done') return 'Avsluta säsongen →'
-      if (phase === 'playoff_spectator') return 'Säsong klar →'
+      if (phase === 'playoff_spectator') return 'Säsong över →'
       if (phase === 'regular_done') {
         const s = game.standings.find(s => s.clubId === game.managedClubId)
         return s && s.position <= 8 ? 'Starta slutspel →' : 'Avsluta grundserien →'

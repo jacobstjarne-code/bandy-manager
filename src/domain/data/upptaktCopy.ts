@@ -15,12 +15,12 @@ export interface PhaseMarkVariant {
 
 export const UPPTAKT_PHASEMARKS: Record<UpptaktSubState, PhaseMarkVariant[]> = {
   sakrat: [
-    { eyebrow: '⬩ Slutspelet är klart ⬩', quote: 'Nu är det placeringen som ska avgöras.', helper: 'Slutspelsplatsen säkrad — seedningen kämpar vi för.' },
-    { eyebrow: '⬩ Placeringen avgör ⬩', quote: 'Slutspelet väntar. Frågan är var vi möter vem.', helper: 'Tre omgångar avgör hur högt vi seedar.' },
+    { eyebrow: '⬩ Slutspelet är klart ⬩', quote: 'Nu är det placeringen som ska avgöras.', helper: 'Platsen är säkrad — nu om var vi hamnar i slutspelet.' },
+    { eyebrow: '⬩ Placeringen avgör ⬩', quote: 'Slutspelet väntar. Frågan är var vi möter vem.', helper: 'Tre omgångar avgör hur högt vi slutar.' },
     { eyebrow: '⬩ Inräknade i slutspelet ⬩', quote: 'Det är klart att vi spelar. Inte var.', helper: 'Hemmaplan i kvart kostar tre poäng mer.' },
-    { eyebrow: '⬩ Placering att jaga ⬩', quote: 'Slutspelet är säkrat. Nästa fråga är seedning.', helper: 'Hög seedning ger lättare motstånd i kvart.' },
-    { eyebrow: '⬩ Slutspelet garanterat ⬩', quote: 'Tre omgångar för att klippa placeringen.', helper: 'Toppen är inte färdigplockad än.' },
-    { eyebrow: '⬩ Säkrade — men inte färdiga ⬩', quote: 'Vi har en plats. Inte den vi vill ha.', helper: 'Slutspelets seedning hänger på vad vi gör nu.' },
+    { eyebrow: '⬩ Placering att jaga ⬩', quote: 'Slutspelet är säkrat. Nästa fråga är hur högt.', helper: 'En högre placering ger lättare motstånd i kvarten.' },
+    { eyebrow: '⬩ Slutspelet garanterat ⬩', quote: 'Tre omgångar att klättra på.', helper: 'Toppen är inte avgjord än.' },
+    { eyebrow: '⬩ Säkrade — men inte färdiga ⬩', quote: 'Vi har en plats. Inte den vi vill ha.', helper: 'Var vi hamnar hänger på de här tre.' },
   ],
   farozon: [
     { eyebrow: '⬩ Slutstriden närmar sig ⬩', quote: 'Tre omgångar. Sen avgörs allt.', helper: 'Slutspelsplatsen är inom räckhåll — men inte säkrad.' },
@@ -42,11 +42,11 @@ export const UPPTAKT_PHASEMARKS: Record<UpptaktSubState, PhaseMarkVariant[]> = {
 
 export const UPPTAKT_COUNTDOWN: Record<UpptaktSubState, string[]> = {
   sakrat: [
-    '{N} omgångar kvar — till seedningen.',
+    '{N} omgångar kvar — hur högt vi slutar.',
     '{N} till spel — placeringen avgörs.',
     '{N} kvar — slutspelsplaceringen klar efter sista omgången.',
-    '{N} omgångar för att klippa seedningen.',
-    '{N} kvar — toppen inte färdigplockad än.',
+    '{N} omgångar att klättra på.',
+    '{N} kvar — toppen inte avgjord än.',
   ],
   farozon: [
     '{N} omgångar kvar — till slutspelet eller hemfärd.',

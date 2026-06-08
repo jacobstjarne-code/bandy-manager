@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Motorkänsla — MomentumBar + spakar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18; --panel: #0e0d0b;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --accent: #C47A3A; --accent-deep: #8B4820;
+    --cold: #4a6680; --cold-light: #7095b8; --warm: #8c6e3a; --warm-light: #c8a058;
+    --gold: #E8B95C; --danger: #B05040; --success: #5A9A4A;
+    --home: #C47A3A;        /* managed/home — copper */
+    --away: #6B7F8E;        /* opponent — steel */
+    --led-amber: #FFAA00;
+    --font-display: Georgia, serif; --font-body: system-ui, sans-serif; --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 28px 16px 80px; }
+  .head { max-width: 1560px; margin: 0 auto 22px; }
+  .head h1 { font-family: var(--font-display); font-size: 23px; margin-bottom: 6px; }
+  .head p { font-size: 12.5px; color: rgba(245,241,235,0.72); line-height: 1.6; max-width: 940px; }
+  .head p strong { color: var(--accent); }
+  .head p + p { margin-top: 6px; }
+  .head .var { font-family: var(--font-mono); font-size: 11px; color: var(--gold); background: rgba(232,185,92,0.08); padding: 1px 5px; border-radius: 2px; }
+
+  /* ── the live momentum bar component ── */
+  .mbar-wrap { background: var(--panel); border: 1px solid rgba(196,122,58,0.18); border-radius: 8px; padding: 11px 12px 10px; }
+  .mbar-teams { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; }
+  .mbar-teams .h { color: var(--home); } .mbar-teams .a { color: var(--away); }
+  .mbar-teams .score { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-light); letter-spacing: 1px; }
+  .mbar-teams .min { color: var(--text-muted); font-size: 8.5px; }
+  /* the bar itself — a split fill, home from left, away from right */
+  .mbar { height: 9px; border-radius: 5px; background: var(--away); position: relative; overflow: hidden; }
+  .mbar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--home); border-radius: 5px 0 0 5px; }
+  /* center reference tick */
+  .mbar-center { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(245,241,235,0.25); }
+  /* the "needle" — current momentum point, sits at fill edge */
+  .mbar-needle { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text-light); box-shadow: 0 0 4px rgba(245,241,235,0.6); border-radius: 1px; }
+  /* volatility band — a translucent swing-range around needle, widens late */
+  .mbar-band { position: absolute; top: -1px; bottom: -1px; background: rgba(245,241,235,0.14); border-radius: 2px; }
+
+  /* sparkline history of momentum over minutes (the engine cadence, honest) */
+  .mhist { margin-top: 8px; height: 38px; position: relative; }
+  .mhist svg { width: 100%; height: 100%; display: block; }
+  .mhist-axis { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(245,241,235,0.08); }
+  .mhist-lbl { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 7.5px; color: var(--text-muted); margin-top: 2px; }
+
+  /* breakpoint annotation pill */
+  .bp { margin-top: 9px; display: flex; align-items: flex-start; gap: 7px; padding: 6px 9px; background: var(--bg-portal-surface); border-left: 2px solid var(--accent); border-radius: 0 5px 5px 0; }
+  .bp.amber { border-left-color: var(--led-amber); }
+  .bp.steel { border-left-color: var(--away); }
+  .bp-icon { font-size: 11px; line-height: 1.3; }
+  .bp-txt { font-family: var(--font-body); font-size: 10.5px; color: var(--text-light); line-height: 1.4; }
+  .bp-txt b { color: var(--accent); font-weight: 700; }
+  .bp.amber .bp-txt b { color: var(--led-amber); }
+  .bp.steel .bp-txt b { color: var(--cold-light); }
+  /* the honesty tag — which variable this movement reflects */
+  .bp-var { display: block; font-family: var(--font-mono); font-size: 8px; color: var(--text-muted); margin-top: 3px; letter-spacing: 0.5px; }
+  .bp-var span { color: var(--gold); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; max-width: 1560px; margin: 0 auto; align-items: start; }
+  .col { width: 100%; max-width: 360px; justify-self: center; }
+  .clabel { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light-secondary); margin-bottom: 9px; text-align: center; }
+  .clabel b { color: var(--accent); }
+  .caption { font-family: var(--font-display); font-style: italic; font-size: 10.5px; color: var(--text-light-secondary); margin-top: 10px; line-height: 1.5; text-align: center; opacity: 0.85; }
+
+  /* match-context frame (dark, in-match — NOT ceremony) */
+  .matchframe { background: var(--bg-portal); border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); padding: 12px; box-shadow: 0 10px 26px rgba(0,0,0,0.35); }
+
+  /* halftime modal */
+  .htm { background: var(--bg-portal-elevated); border: 1px solid rgba(196,122,58,0.2); border-radius: 10px; padding: 14px; }
+  .htm-eye { font-family: var(--font-body); font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .htm-state { font-family: var(--font-display); font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .htm-sub { font-size: 10.5px; color: var(--text-light-secondary); margin-bottom: 12px; line-height: 1.4; }
+  .pep { display: flex; flex-direction: column; gap: 7px; }
+  .pep-opt { text-align: left; padding: 10px 12px; background: var(--bg-portal-surface); border: 1px solid rgba(196,122,58,0.2); border-radius: 7px; cursor: pointer; }
+  .pep-opt.sel { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--bg-portal-surface)); }
+  .pep-t { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-light); margin-bottom: 3px; }
+  .pep-eff { font-family: var(--font-mono); font-size: 9px; color: var(--text-light-secondary); display: flex; align-items: center; gap: 5px; }
+  .pep-arrow { color: var(--accent); font-weight: 700; }
+  .pep-eff .down { color: var(--cold-light); }
+  /* predicted effect on bar — small preview */
+  .pep-preview { margin-top: 9px; padding-top: 9px; border-top: 1px dashed rgba(196,122,58,0.18); }
+  .pep-preview-l { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; }
+  .mini-bar { height: 6px; border-radius: 3px; background: var(--away); position: relative; overflow: hidden; }
+  .mini-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--home); }
+  .mini-arrow { position: absolute; top: -8px; font-size: 9px; color: var(--accent); }
+
+  /* late choice */
+  .late { background: var(--bg-portal-elevated); border: 1px solid rgba(255,170,0,0.3); border-radius: 10px; padding: 13px; position: relative; overflow: hidden; }
+  .late::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(255,170,0,0.08), transparent 60%); pointer-events: none; }
+  .late-eye { font-family: var(--font-body); font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--led-amber); margin-bottom: 6px; position: relative; }
+  .late-q { font-family: var(--font-display); font-size: 14px; font-weight: 700; margin-bottom: 4px; position: relative; }
+  .late-sub { font-size: 10px; color: var(--text-light-secondary); margin-bottom: 12px; line-height: 1.4; position: relative; }
+  .late-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; position: relative; }
+  .late-opt { padding: 11px 9px; background: var(--bg-portal-surface); border: 1.5px solid rgba(196,122,58,0.3); border-radius: 7px; text-align: center; cursor: pointer; }
+  .late-opt.push { border-color: var(--accent); }
+  .late-opt.shut { border-color: var(--away); }
+  .late-opt-t { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-light); margin-bottom: 3px; }
+  .late-opt-e { font-family: var(--font-mono); font-size: 8.5px; color: var(--text-light-secondary); line-height: 1.4; }
+  .late-gate { font-family: var(--font-mono); font-size: 8px; color: var(--text-muted); margin-top: 10px; text-align: center; position: relative; }
+  .late-gate b { color: var(--led-amber); }
+
+  /* taktik readout */
+  .tak { background: var(--bg-portal-surface); border-radius: 8px; padding: 12px; }
+  .tak-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(245,241,235,0.06); }
+  .tak-row:last-child { border-bottom: none; }
+  .tak-name { font-family: var(--font-display); font-size: 12px; font-weight: 700; width: 64px; flex-shrink: 0; }
+  .tak-dots { display: flex; gap: 3px; }
+  .tak-dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--accent); }
+  .tak-dot.on { background: var(--accent); }
+  .tak-conseq { font-family: var(--font-body); font-size: 10px; color: var(--text-light-secondary); line-height: 1.35; flex: 1; }
+  .tak-conseq b { color: var(--accent); }
+
+  .notes { max-width: 1560px; margin: 32px auto 0; padding: 22px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.6; font-size: 12.5px; }
+  .notes h3 { font-family: var(--font-display); font-size: 16px; color: var(--text-light); margin-bottom: 10px; }
+  .notes h4 { font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 16px 0 6px; }
+  .notes ul { margin: 4px 0 8px 16px; } .notes li { margin-bottom: 5px; }
+  .notes p { margin-bottom: 8px; max-width: 940px; }
+  .notes code { font-family: var(--font-mono); font-size: 11px; background: rgba(245,241,235,0.07); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+  .notes table { border-collapse: collapse; margin: 8px 0; font-size: 11.5px; width: 100%; max-width: 920px; }
+  .notes th, .notes td { text-align: left; padding: 6px 10px; border-bottom: 1px solid rgba(245,241,235,0.08); vertical-align: top; }
+  .notes th { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); }
+  .notes .v { font-family: var(--font-mono); color: var(--gold); font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Motorkänsla — MomentumBar + spakar (A: perception, B: agens)</h1>
+  <p>Ärlighetsprincipen (§2) styr varje pixel: under varje rörelse står <span class="var">motorvariabeln</span> den speglar. Ingen rörelse utan variabel — finns ingen koppling är den dekoration och struken. Detta är <strong>match-kontext</strong> (mörk, in-match), inte ceremoni: ingen guld, ingen hjälte-typ, stillsam och läsbar.</p>
+  <p>MomentumBaren visar variabeln i <strong>motorns egen kadens</strong> (dess decay-takt) plus diskreta annoterade brytpunkter — spelaren läser <em>struktur</em>, inte brus. Fyra tillstånd visar de tre tvingande beteendena från §4.1.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 1 · CALM 1H -->
+  <div class="col">
+    <div class="clabel"><b>1</b> · Lugn första halvlek</div>
+    <div class="matchframe">
+      <div class="mbar-wrap">
+        <div class="mbar-teams">
+          <span class="h">FORSBACKA</span>
+          <span class="score">1 — 1 <span class="min">· 38'</span></span>
+          <span class="a">HEROS</span>
+        </div>
+        <div class="mbar">
+          <div class="mbar-fill" style="width:54%"></div>
+          <div class="mbar-band" style="left:48%; width:12%"></div>
+          <div class="mbar-center"></div>
+          <div class="mbar-needle" style="left:54%"></div>
+        </div>
+        <div class="mhist">
+          <div class="mhist-axis"></div>
+          <svg viewBox="0 0 320 38" preserveAspectRatio="none">
+            <polyline fill="none" stroke="#C47A3A" stroke-width="1.4" stroke-linejoin="round"
+              points="2,20 20,18 40,21 60,17 80,22 100,19 120,16 140,20 160,18 180,21 200,17 220,19 240,16 260,20 280,18 300,19 318,17"/>
+          </svg>
+        </div>
+        <div class="mhist-lbl"><span>0'</span><span>38'</span></div>
+      </div>
+    </div>
+    <div class="caption">Småsvängningar runt mitten. Smal volatilitetsband. Inget tryck åt något håll än — baren är ambient, ärligt.</div>
+  </div>
+
+  <!-- 2 · POST-PAUS SWELL -->
+  <div class="col">
+    <div class="clabel"><b>2</b> · Post-paus-svällning (45→60')</div>
+    <div class="matchframe">
+      <div class="mbar-wrap">
+        <div class="mbar-teams">
+          <span class="h">FORSBACKA</span>
+          <span class="score">1 — 2 <span class="min">· 54'</span></span>
+          <span class="a">HEROS</span>
+        </div>
+        <div class="mbar">
+          <div class="mbar-fill" style="width:67%"></div>
+          <div class="mbar-band" style="left:59%; width:14%"></div>
+          <div class="mbar-center"></div>
+          <div class="mbar-needle" style="left:67%"></div>
+        </div>
+        <div class="mhist">
+          <div class="mhist-axis"></div>
+          <svg viewBox="0 0 320 38" preserveAspectRatio="none">
+            <!-- flat-ish 1H then a clear directional swell after the 45' mark -->
+            <polyline fill="none" stroke="#C47A3A" stroke-width="1.4" stroke-linejoin="round"
+              points="2,20 30,19 60,21 90,18 120,20 150,19 165,18 180,16 200,13 220,11 240,9 260,8 280,7 300,7 318,6"/>
+            <!-- 45' marker -->
+            <line x1="165" y1="2" x2="165" y2="36" stroke="rgba(255,170,0,0.4)" stroke-width="1" stroke-dasharray="2 2"/>
+          </svg>
+        </div>
+        <div class="mhist-lbl"><span>0'</span><span>45'·paus</span><span>54'</span></div>
+      </div>
+      <div class="bp amber">
+        <span class="bp-icon">▲</span>
+        <span class="bp-txt"><b>Andra halvlek — Forsbacka trycker på.</b> Det jagande laget får luft.
+          <span class="bp-var">speglar <span>postBreakUrgency</span> · ramp 45'→60', riktning ej blink</span>
+        </span>
+      </div>
+    </div>
+    <div class="caption">Baren <em>glider</em> mot det jagande laget och sväller mot 60' — en riktning, inte en blink. Bandet vidgas något.</div>
+  </div>
+
+  <!-- 3 · EQUALIZER JERK + HOLD -->
+  <div class="col">
+    <div class="clabel"><b>3</b> · Kvittering — ryck och håll</div>
+    <div class="matchframe">
+      <div class="mbar-wrap">
+        <div class="mbar-teams">
+          <span class="h">FORSBACKA</span>
+          <span class="score">2 — 2 <span class="min">· 61'</span></span>
+          <span class="a">HEROS</span>
+        </div>
+        <div class="mbar">
+          <div class="mbar-fill" style="width:71%"></div>
+          <div class="mbar-band" style="left:63%; width:14%"></div>
+          <div class="mbar-center"></div>
+          <div class="mbar-needle" style="left:71%"></div>
+        </div>
+        <div class="mhist">
+          <div class="mhist-axis"></div>
+          <svg viewBox="0 0 320 38" preserveAspectRatio="none">
+            <polyline fill="none" stroke="#C47A3A" stroke-width="1.4" stroke-linejoin="round"
+              points="2,24 40,22 80,20 120,18 150,16 175,14 195,12 205,9 215,7 240,8 260,7 280,8 300,7 318,7"/>
+            <!-- goal marker at the jerk -->
+            <line x1="205" y1="2" x2="205" y2="36" stroke="rgba(232,185,92,0.5)" stroke-width="1"/>
+            <circle cx="205" cy="9" r="2.4" fill="#E8B95C"/>
+          </svg>
+        </div>
+        <div class="mhist-lbl"><span>0'</span><span>61'·mål</span></div>
+      </div>
+      <div class="bp">
+        <span class="bp-icon">⬤</span>
+        <span class="bp-txt"><b>Kvitteringen vände momentumet.</b> Forsbacka behåller farten — ingen återställning.
+          <span class="bp-var">speglar <span>postEqualizerMomentum</span> · INGEN nollning till 50/50</span>
+        </span>
+      </div>
+    </div>
+    <div class="caption">Den vanligaste lögnen undviks: baren <strong>nollas inte</strong> vid mål. Nålen rycker till målskytten och <em>stannar</em> — för motorn gör det.</div>
+  </div>
+
+  <!-- 4 · LATE WIDENING -->
+  <div class="col">
+    <div class="clabel"><b>4</b> · Nervöst sent läge (66→84')</div>
+    <div class="matchframe">
+      <div class="mbar-wrap">
+        <div class="mbar-teams">
+          <span class="h">FORSBACKA</span>
+          <span class="score">2 — 2 <span class="min">· 78'</span></span>
+          <span class="a">HEROS</span>
+        </div>
+        <div class="mbar">
+          <div class="mbar-fill" style="width:44%"></div>
+          <!-- wide volatility band — the openness -->
+          <div class="mbar-band" style="left:30%; width:34%; background:rgba(245,241,235,0.2)"></div>
+          <div class="mbar-center"></div>
+          <div class="mbar-needle" style="left:44%"></div>
+        </div>
+        <div class="mhist">
+          <div class="mhist-axis"></div>
+          <svg viewBox="0 0 320 38" preserveAspectRatio="none">
+            <!-- swings widen toward the end -->
+            <polyline fill="none" stroke="#C47A3A" stroke-width="1.4" stroke-linejoin="round"
+              points="2,20 40,19 80,21 120,18 150,20 175,15 190,24 205,11 220,27 235,9 250,28 265,12 280,26 295,14 310,24 318,16"/>
+            <line x1="175" y1="2" x2="175" y2="36" stroke="rgba(255,170,0,0.35)" stroke-width="1" stroke-dasharray="2 2"/>
+          </svg>
+        </div>
+        <div class="mhist-lbl"><span>0'</span><span>66'</span><span>78'</span></div>
+      </div>
+      <div class="bp steel">
+        <span class="bp-icon">⇋</span>
+        <span class="bp-txt"><b>Det öppnar upp.</b> Svängningarna vidgas — matchen vill avgöras, inte plana ut.
+          <span class="bp-var">speglar <span>lateFactor</span> · volatilitet upp, ej mot mitten</span>
+        </span>
+      </div>
+    </div>
+    <div class="caption">Sent och jämnt: bandet <strong>vidgas</strong> i stället för att plana mot mitten. Baren känns nervösare sent — för spelet öppnar sig.</div>
+  </div>
+
+</div>
+
+<div style="height: 26px;"></div>
+
+<div class="grid">
+
+  <!-- LEVER A: HALFTIME -->
+  <div class="col">
+    <div class="clabel">SPAK A · Paussnacket <span style="color:var(--text-muted)">(modulerar post-paus-urgency)</span></div>
+    <div class="matchframe">
+      <div class="htm">
+        <div class="htm-eye">⬩ Paus · 1—2 underläge ⬩</div>
+        <div class="htm-state">Ni jagar.</div>
+        <div class="htm-sub">Andra halvleken öppnar med ett fönster. Hur du laddar dem styr hur stort.</div>
+        <div class="pep">
+          <div class="pep-opt sel">
+            <div class="pep-t">"Tänd dem. Nu går vi."</div>
+            <div class="pep-eff"><span class="pep-arrow">↑</span> post-paus-tryck · <span class="down">↑ varians</span></div>
+          </div>
+          <div class="pep-opt">
+            <div class="pep-t">"Lugnt. Spela ert spel."</div>
+            <div class="pep-eff">→ neutralt · stabilt tempo</div>
+          </div>
+        </div>
+        <div class="pep-preview">
+          <div class="pep-preview-l">Förväntad riktning på baren i 2H</div>
+          <div class="mini-bar">
+            <div class="mini-fill" style="width:64%"></div>
+            <div class="mini-arrow" style="left:60%">▶</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Valet har en <strong>synlig, förutsägbar riktning</strong> på baren efteråt — inte ett slumpartat "kanske hjälpte". Loopen: val i pausen → konsekvens i 2H-baren.</div>
+  </div>
+
+  <!-- LEVER B: LATE CHOICE (concept) -->
+  <div class="col">
+    <div class="clabel">SPAK B · Sent matchnings-val <span style="color:var(--led-amber)">(NY · koncept)</span></div>
+    <div class="matchframe">
+      <div class="late">
+        <div class="late-eye">⬩ 79' · jämnt · det öppnar upp ⬩</div>
+        <div class="late-q">Gå på vinsten, eller stäng igen?</div>
+        <div class="late-sub">Slutminuterna avgör hellre än driver mot oavgjort. Ta hävstång på det.</div>
+        <div class="late-opts">
+          <div class="late-opt push">
+            <div class="late-opt-t">Gå på vinsten</div>
+            <div class="late-opt-e">↑ chans · ↑ risk att släppa in</div>
+          </div>
+          <div class="late-opt shut">
+            <div class="late-opt-t">Stäng igen</div>
+            <div class="late-opt-e">säkra poängen · färre lägen</div>
+          </div>
+        </div>
+        <div class="late-gate">Tänds bara när <b>lateFactor</b> stiger i jämnt läge — försvinner annars</div>
+      </div>
+    </div>
+    <div class="caption">Koncept, ej färdig integration. Knappen <em>tänds</em> bara i rätt skede — agens på det öppnande slutet i stället för att passivt åka med. Utfall kopplas tillbaka till baren.</div>
+  </div>
+
+  <!-- LEVER C: TAKTIK READOUT -->
+  <div class="col">
+    <div class="clabel">SPAK C · Taktik som rytm-konsekvens <span style="color:var(--text-muted)">(efter stilkalibrering)</span></div>
+    <div class="matchframe">
+      <div class="tak">
+        <div class="tak-row">
+          <span class="tak-name">Tempo</span>
+          <span class="tak-dots"><i class="tak-dot on"></i><i class="tak-dot on"></i><i class="tak-dot on"></i><i class="tak-dot"></i></span>
+          <span class="tak-conseq"><b>Högt</b> → fler målskurar, högre varians</span>
+        </div>
+        <div class="tak-row">
+          <span class="tak-name">Passning</span>
+          <span class="tak-dots"><i class="tak-dot on"></i><i class="tak-dot"></i><i class="tak-dot"></i><i class="tak-dot"></i></span>
+          <span class="tak-conseq"><b>Säker</b> → färre chanser, stadigare</span>
+        </div>
+        <div class="tak-row">
+          <span class="tak-name">Mentalitet</span>
+          <span class="tak-dots"><i class="tak-dot on"></i><i class="tak-dot on"></i><i class="tak-dot on"></i><i class="tak-dot"></i></span>
+          <span class="tak-conseq"><b>Offensiv</b> → fler lägen, öppnare bak</span>
+        </div>
+        <div class="tak-row">
+          <span class="tak-name">Hörnor</span>
+          <span class="tak-dots"><i class="tak-dot on"></i><i class="tak-dot on"></i><i class="tak-dot"></i><i class="tak-dot"></i></span>
+          <span class="tak-conseq">Måttligt hörnberoende</span>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Inte namnlösa reglage — <strong>beskrivna rytm-konsekvenser</strong>. Spelaren förstår att hög intensitet ger målskurar. Eftermatch: stilen läses tillbaka mot matchens faktiska rytm.</div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Designval & ärlighets-spårning</h3>
+
+  <h4>Den lösta spänningen — ärlig mot motorn OCH läsbar</h4>
+  <p>Briefen pekar ut konflikten: rå momentum-variabel är skälvig, en bar som darrar för syns skull ljuger lika mycket som en som glättar. <strong>Lösningen i mocken:</strong> två separata visuella spår. <code>(1)</code> Nålen + fyllnaden visar nuvärdet i motorns egen decay-takt — den rör sig som variabeln rör sig, inte jämnglidande. <code>(2)</code> Historik-sparklinen under visar formen över tid så spelaren läser <em>struktur</em>. <code>(3)</code> Annoterade brytpunkter översätter struktur till språk de första gångerna. Ingen konstgjord jämnhet, ingen darr — motorns kadens, kurerad till läsbarhet.</p>
+
+  <h4>Varje rörelse → variabel (ärlighetsprincipen §2)</h4>
+  <table>
+    <tr><th>Visuell rörelse</th><th>Motorvariabel</th><th>Beteende</th></tr>
+    <tr><td>Glidning mot jagande lag, svällning mot 60'</td><td class="v">postBreakUrgency</td><td>Riktning, ej blink (§4.1·1)</td></tr>
+    <tr><td>Nål rycker till målskytt & stannar</td><td class="v">postEqualizerMomentum</td><td>Ingen 50/50-nollning (§4.1·2)</td></tr>
+    <tr><td>Volatilitetsband vidgas sent</td><td class="v">lateFactor</td><td>Volatilitet upp, ej mot mitt (§4.1·3)</td></tr>
+    <tr><td>Nålens nuläge + decay-takt</td><td class="v">momentum</td><td>Motorns kadens, ej glättad</td></tr>
+    <tr><td>Paussnack → bar-riktning i 2H</td><td class="v">postBreakUrgency (moduleras)</td><td>Spak A, synlig riktning</td></tr>
+    <tr><td>Sent val tänds/utfall</td><td class="v">lateFactor (gate + hävstång)</td><td>Spak B, koncept</td></tr>
+  </table>
+  <p>Volatilitetsbandet (den translucenta zonen runt nålen) är mockens enda nya visuella idé utöver källan — och den är ärlig: den ritar <code>lateFactor</code>:s breddning direkt. Smalt tidigt, brett sent. Om Code inte exponerar en swing-range kan bandet härledas från momentum-variansen senaste N ticks. <strong>Säg till om variabeln inte finns — då stryker jag bandet hellre än fejkar det.</strong></p>
+
+  <h4>Den tre-stegs onboarding (lär spelaren läsa baren)</h4>
+  <ul>
+    <li>De <strong>första</strong> gångerna varje dynamik inträffar: full brytpunkts-pill med text + variabel-tag.</li>
+    <li>Efter ~3 exponeringar: pillen krymper till bara ikon + kort etikett (▲ "trycker på").</li>
+    <li>När spelaren läser baren flytande: bara den lilla minut-markören kvar (45'-streck, mål-prick). Baren har gått från dekor till instrument.</li>
+  </ul>
+
+  <h4>Balanssvaret §5 — pekar ytan tillbaka på ett val?</h4>
+  <p>Test per yta: tappar spelaren en ledning, pekar ytan på ett val? <strong>Ja:</strong> post-paus-svällningen (kol. 2) följer direkt på paussnacket (Spak A) — en tappad ledning läses som "jag lugnade dem inte i pausen". Det sena läget (kol. 4) paras med Spak B — "jag skulle stängt igen". Bara kvitterings-momentumet (kol. 3) saknar spak <strong>och förstärks därför inte</strong> — bandet växer inte extra där, ingen låtsasknapp. Kännbar, ej uppblåst till orättvisa.</p>
+
+  <h4>Match-kontext, inte ceremoni (§6)</h4>
+  <p>Mörk panel, copper/steel lag-färger (befintliga <code>--home</code>/<code>--away</code>-vokabulär från Stålvallen-bundlen), mono för data, Georgia bara för lag/state-rubriker. Inget guld utom mål-pricken (en datapunkt, inte ceremoni). Inga fullbleed, ingen hjälte-typ. LED-amber lånas från scoreboard-systemet för "akut/sent"-markörer — konsekvent med matchvyns egen palett.</p>
+
+  <h4>Öppna frågor till Opus</h4>
+  <ul>
+    <li><strong>Volatilitetsbandet:</strong> exponerar motorn en swing-range / momentum-varians, eller ska jag härleda den från senaste N ticks? Om ingendera finns: stryk bandet, behåll bara nål + historik (fortfarande ärligt, mindre rikt).</li>
+    <li><strong>Spak B (sent val):</strong> en in-match-knapp som tänds, eller ett snabbval i en redan existerande paus/timeout-yta? Mocken visar fristående tänd-knapp. Om matchflödet inte har en naturlig in-match-interaktionspunkt blir det en ny sådan — bekräfta att det är önskat innan Code bygger.</li>
+    <li><strong>Decay-takt:</strong> behöver jag motorns faktiska decay-konstant för att rita nålens rörelse trovärdigt, eller räcker "rör sig i steg, ej jämnt"? För spec till Code vill jag ha den verkliga takten så animationen matchar simuleringen.</li>
+  </ul>
+</div>
+
+</body>
+</html>

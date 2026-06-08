@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg-portal:#1a1612;--bg-leather-dk:#1d1b18;--panel:#0e0d0b;
+    --paper-warm:#F5F1EB;--text-light:#F5F1EB;--text-light-secondary:#C4BAA8;--text-muted:#8A857A;
+    --copper:#C47A3A;--steel:#6B7F8E;--led-red:#FF2A18;--led-amber:#FFAA00;--led-green:#66FF33;
+    --success:#5A9A4A;--warning:#C47A3A;--danger:#B05040;
+    --font-display:Georgia,serif;--font-body:system-ui,sans-serif;--font-mono:ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#3D3A32;color:var(--text-light);font-family:var(--font-body);padding:28px 16px 60px}
+  .head{max-width:1200px;margin:0 auto 20px}
+  .head h1{font-family:var(--font-display);font-size:21px;margin-bottom:5px}
+  .head p{font-size:12.5px;color:rgba(245,241,235,.72);line-height:1.6;max-width:880px}
+  .head p strong{color:var(--copper)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,360px));gap:24px;max-width:1200px;margin:0 auto;justify-content:center;align-items:start}
+  .clabel{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light-secondary);margin-bottom:9px;text-align:center}
+  .clabel b{color:var(--copper)}
+  .caption{font-family:var(--font-display);font-style:italic;font-size:10.5px;color:var(--text-light-secondary);margin-top:10px;line-height:1.5;text-align:center;opacity:.85}
+  .phone{background:var(--bg-portal);border-radius:20px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.42);border:5px solid #0d0c0a;min-height:560px;position:relative}
+  .behind{position:absolute;inset:0;background:linear-gradient(180deg,#161412,#0e0d0b);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-family:var(--font-mono);font-size:9px;letter-spacing:1px}
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+  .modal{position:absolute;left:12px;right:12px;top:24px;bottom:24px;background:linear-gradient(180deg,#1f1c18,#14110d);border:1px solid rgba(196,122,58,.35);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden}
+  .modal.sheet{top:auto;bottom:14px;border-radius:12px}
+
+  /* shared bits */
+  .m-bar{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid rgba(196,122,58,.2);background:var(--panel)}
+  .m-bar .t{font-family:var(--font-mono);font-size:11px;letter-spacing:2px;color:var(--copper)}
+  .m-bar .x{font-family:var(--font-mono);font-size:9px;color:var(--led-amber)}
+  .sub-btn{padding:9px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.5px;border-radius:4px;background:rgba(0,0,0,.3);border:1px solid rgba(196,122,58,.25);color:rgba(245,241,235,.62);cursor:pointer;text-align:center}
+  .sub-btn.sel{background:rgba(102,255,51,.1);border-color:var(--led-green);color:var(--led-green)}
+  .sub-btn.copper-sel{background:rgba(196,122,58,.16);border-color:var(--copper);color:var(--copper)}
+
+  /* HALFTIME tabs */
+  .tabs{display:flex;background:var(--panel);border-bottom:1px solid rgba(196,122,58,.18)}
+  .tab{flex:1;padding:9px;font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text-muted);text-align:center;border-bottom:2px solid transparent;cursor:pointer}
+  .tab.on{color:var(--copper);border-bottom-color:var(--copper)}
+  .m-body{flex:1;overflow-y:auto;padding:13px 14px}
+  /* HT score line */
+  .ht-score{text-align:center;margin-bottom:12px}
+  .ht-score .led{font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--led-red);letter-spacing:3px;text-shadow:0 0 10px rgba(255,42,24,.5)}
+  .ht-score .pd{font-family:var(--font-mono);font-size:8px;letter-spacing:2px;color:var(--led-amber);margin-top:3px}
+  .ht-analysis{font-family:var(--font-display);font-style:italic;font-size:12px;color:var(--text-light-secondary);text-align:center;line-height:1.5;padding:10px 8px;border-top:1px solid rgba(196,122,58,.12);border-bottom:1px solid rgba(196,122,58,.12);margin-bottom:12px}
+  .ht-best{font-family:var(--font-mono);font-size:9px;color:var(--text-muted);text-align:center;margin-bottom:14px}
+  .ht-best b{color:var(--copper)}
+  /* pep choices */
+  .pep-l{font-family:var(--font-body);font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px}
+  .pep{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+  .pep-opt{text-align:left;padding:10px 12px;background:rgba(0,0,0,.25);border:1px solid rgba(196,122,58,.22);border-radius:7px;cursor:pointer}
+  .pep-opt.sel{border-color:var(--copper);background:rgba(196,122,58,.1)}
+  .pep-t{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text-light);margin-bottom:3px}
+  .pep-e{font-family:var(--font-mono);font-size:8.5px;color:var(--text-light-secondary);display:flex;align-items:center;gap:5px}
+  .pep-e .up{color:var(--led-amber)}.pep-e .dn{color:var(--steel)}
+  /* bar preview — Spak A wiring */
+  .prev{margin-top:10px;padding:9px 11px;background:rgba(0,0,0,.3);border-radius:6px;border-left:2px solid var(--led-amber)}
+  .prev-l{font-family:var(--font-mono);font-size:7.5px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+  .prev-bar{height:7px;border-radius:4px;background:var(--steel);position:relative;overflow:hidden}
+  .prev-fill{position:absolute;left:0;top:0;bottom:0;background:var(--copper)}
+  .prev-arrow{position:absolute;top:-8px;font-size:9px;color:var(--copper)}
+  .prev-v{font-family:var(--font-mono);font-size:7px;color:var(--text-muted);margin-top:5px}
+  .prev-v span{color:#E8B95C}
+  .m-cta{padding:11px 14px;border-top:1px solid rgba(196,122,58,.18);background:var(--panel)}
+  .cta{width:100%;padding:12px;border:none;border-radius:8px;background:linear-gradient(180deg,#DD9555,#8B4820);color:var(--paper-warm);font-family:var(--font-body);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+
+  /* SUB picker rows */
+  .pick-row{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:rgba(0,0,0,.25);border:1px solid rgba(196,122,58,.2);border-radius:6px;margin-bottom:5px;cursor:pointer}
+  .pick-row.in{border-color:var(--copper)}
+  .pick-row.sel-out{border-color:var(--led-amber);background:rgba(255,170,0,.06)}
+  .pick-name{font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--text-light)}
+  .pick-pos{font-family:var(--font-mono);font-size:9px;color:var(--text-muted);margin-left:6px}
+  .pick-meta{display:flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:10px}
+  .pick-ca{color:var(--text-light-secondary)}
+  .pick-fit{font-weight:700}
+  .pick-back{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:4px 0;margin-bottom:8px}
+  .pick-hd{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text-light-secondary);margin-bottom:9px}
+
+  .verdict{max-width:1200px;margin:28px auto 0;padding:20px;background:rgba(245,241,235,.04);border-radius:8px;line-height:1.6;font-size:12.5px;color:rgba(245,241,235,.85)}
+  .verdict h3{font-family:var(--font-display);font-size:16px;color:var(--text-light);margin-bottom:10px}
+  .verdict h4{font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--copper);margin:14px 0 5px}
+  .verdict ul{margin:4px 0 8px 16px}.verdict li{margin-bottom:5px}
+  .verdict code{font-family:var(--font-mono);font-size:11px;background:rgba(245,241,235,.07);padding:1px 5px;border-radius:2px;color:#E8B95C}
+</style></head><body>
+
+<div class="head">
+  <h1>Tre match-modaler — Stålvallen-konsistent</h1>
+  <p>De sista ytorna som låg kvar på det ljusa pappers-systemet, ombyggda i match-vyns mörka LED-språk. <strong>Halvtidsmodalen</strong> får dessutom Spak A inwirad: paussnacket visar förväntad riktning på 2H-MomentumBaren. Mekanik + flöde orört — bara designspråket byts.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 1 · HALFTIME -->
+  <div>
+    <div class="clabel"><b>1</b> · HALVTID — översikt + Spak A</div>
+    <div class="phone">
+      <div class="behind">[ matchvy pausad ]</div><div class="scrim"></div>
+      <div class="modal">
+        <div class="tabs"><span class="tab on">ÖVERSIKT</span><span class="tab">TAKTIK</span><span class="tab">BYTEN</span></div>
+        <div class="m-body">
+          <div class="ht-score"><div class="led">1—2</div><div class="pd">HALVTID · STÅLVALLEN</div></div>
+          <div class="ht-analysis">"Ett mål skiljer — och vi har spelat sämre matcher där vi vunnit."</div>
+          <div class="ht-best">Bäst hittills: <b>Lindqvist</b> 7.4</div>
+          <div class="pep-l">⬩ Paussnack · ni jagar ⬩</div>
+          <div class="pep">
+            <div class="pep-opt sel"><div class="pep-t">"Tänd dem. Nu går vi."</div><div class="pep-e"><span class="up">↑</span> post-paus-tryck · <span class="dn">↑ varians</span></div></div>
+            <div class="pep-opt"><div class="pep-t">"Lugnt. Spela ert spel."</div><div class="pep-e">→ neutralt · stabilt tempo</div></div>
+          </div>
+          <div class="prev">
+            <div class="prev-l">Förväntad riktning på baren i 2H</div>
+            <div class="prev-bar"><div class="prev-fill" style="width:64%"></div><div class="prev-arrow" style="left:60%">▶</div></div>
+            <div class="prev-v">modulerar <span>postBreakUrgency</span> · synlig riktning, ej slump</div>
+          </div>
+        </div>
+        <div class="m-cta"><button class="cta">Andra halvlek →</button></div>
+      </div>
+    </div>
+    <div class="caption">Mörk LED-panel, tabbar i mono. Spak A: valet visar bar-preview — loop val→konsekvens. Var ljust papper.</div>
+  </div>
+
+  <!-- 2 · SUBSTITUTION -->
+  <div>
+    <div class="clabel"><b>2</b> · SPELARBYTE — välj ut</div>
+    <div class="phone">
+      <div class="behind">[ matchvy pausad ]</div><div class="scrim"></div>
+      <div class="modal">
+        <div class="m-bar"><span class="t">🔄 VÄLJ UT-SPELARE</span><span class="x">✕</span></div>
+        <div class="m-body">
+          <div class="pick-hd">STARTELVA · sorterad på kondition</div>
+          <div class="pick-row sel-out"><div><span class="pick-name">Johansson</span><span class="pick-pos">B</span></div><div class="pick-meta"><span class="pick-ca">62</span><span class="pick-fit" style="color:var(--danger)">⚡ 34</span></div></div>
+          <div class="pick-row"><div><span class="pick-name">Sjöberg</span><span class="pick-pos">B</span></div><div class="pick-meta"><span class="pick-ca">64</span><span class="pick-fit" style="color:var(--warning)">⚡ 51</span></div></div>
+          <div class="pick-row"><div><span class="pick-name">Pålsson</span><span class="pick-pos">YH</span></div><div class="pick-meta"><span class="pick-ca">69</span><span class="pick-fit" style="color:var(--warning)">⚡ 58</span></div></div>
+          <div class="pick-row"><div><span class="pick-name">Henriksson</span><span class="pick-pos">MF</span></div><div class="pick-meta"><span class="pick-ca">68</span><span class="pick-fit" style="color:var(--success)">⚡ 77</span></div></div>
+          <div class="pick-row"><div><span class="pick-name">Lindqvist</span><span class="pick-pos">A</span></div><div class="pick-meta"><span class="pick-ca">78</span><span class="pick-fit" style="color:var(--success)">⚡ 81</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Konditionsfärg behålls (röd/amber/grön) men på mörk panel. Vald ut-spelare amber-ramad. Samma två-stegsflöde.</div>
+  </div>
+
+  <!-- 3 · SUB step 2 -->
+  <div>
+    <div class="clabel"><b>3</b> · SPELARBYTE — välj in</div>
+    <div class="phone">
+      <div class="behind">[ matchvy pausad ]</div><div class="scrim"></div>
+      <div class="modal">
+        <div class="m-bar"><span class="t">🔄 VÄLJ IN-SPELARE</span><span class="x">✕</span></div>
+        <div class="m-body">
+          <button class="pick-back">← Tillbaka</button>
+          <div class="pick-hd">BÄNKEN · Johansson ut</div>
+          <div class="pick-row in"><div><span class="pick-name">Eriksson</span><span class="pick-pos">B</span></div><div class="pick-meta"><span class="pick-ca">66</span><span class="pick-fit" style="color:var(--success)">⚡ 92</span></div></div>
+          <div class="pick-row in"><div><span class="pick-name">Wikström</span><span class="pick-pos">B</span></div><div class="pick-meta"><span class="pick-ca">61</span><span class="pick-fit" style="color:var(--success)">⚡ 88</span></div></div>
+          <div class="pick-row in"><div><span class="pick-name">Ahl</span><span class="pick-pos">YH</span></div><div class="pick-meta"><span class="pick-ca">59</span><span class="pick-fit" style="color:var(--success)">⚡ 95</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">In-spelare copper-ramade (positiv åtgärd). Skadade/avstängda filtreras bort — som idag.</div>
+  </div>
+
+  <!-- 4 · TACTIC QUICK sheet -->
+  <div>
+    <div class="clabel"><b>4</b> · TAKTIK SNABBÄNDRING — sheet</div>
+    <div class="phone">
+      <div class="behind">[ matchvy pågår ]</div>
+      <div class="modal sheet" style="top:auto;height:auto">
+        <div class="m-bar"><span class="t">⚙ SNABBÄNDRING</span><span class="x">2 KVAR</span></div>
+        <div style="padding:13px 14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+            <button class="sub-btn">HÖJ TEMPO</button>
+            <button class="sub-btn">SÄNK TEMPO</button>
+            <button class="sub-btn copper-sel">ANFALLSPRESS</button>
+            <button class="sub-btn">PARKERA</button>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:8px;color:var(--text-muted);text-align:center;margin-top:11px">påverkar tempo + mentality direkt · syns i matchrytmen</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Bottom-sheet (tänds från taktik-knappen). Mörk panel, mono-knappar. Vald = copper-fylld. Var ljus grid förut.</div>
+  </div>
+
+</div>
+
+<div class="verdict">
+  <h3>Tre ytor, ett språk</h3>
+  <h4>Vad som ändras</h4>
+  <ul>
+    <li><strong>HalftimeModal</strong> — ljust <code>--bg</code>-kort → mörk LED-panel. Tabbar (ÖVERSIKT/TAKTIK/BYTEN) behålls, nu i mono. LED-score i topp. <strong>Spak A inwirad:</strong> paussnacket visar bar-preview (<code>postBreakUrgency</code>-riktning) — det enda funktionella tillägget, resten är språkbyte.</li>
+    <li><strong>SubstitutionModal</strong> — två-stegsflöde orört. Konditionsfärger (röd/amber/grön) behålls, nu på mörk panel. Ut amber-ramad, in copper-ramad.</li>
+    <li><strong>TacticChangeModal</strong> — ljus grid → mörk bottom-sheet, mono-knappar, copper-vald. Återanvänder <code>.sub-btn</code>-klasserna från InteractionShell.</li>
+  </ul>
+  <h4>Vad som INTE ändras</h4>
+  <p>All mekanik: halvtidsval-logiken, sub-flödet (max 3, skade-filter), taktik-options. Bara <code>--bg</code>/<code>--bg-surface</code>/<code>.btn-ghost</code> → Stålvallen-tokens. Match-vyn är nu konsistent hela vägen: scoreboard → MomentumBar → controls → event-interaktioner → modaler.</p>
+  <h4>Estimat</h4>
+  <p>TacticChangeModal ~30 min · SubstitutionModal ~45 min · HalftimeModal ~1.5h (mörkanpassning + Spak A-wiring med bar-preview). Spak A kräver att <code>postBreakUrgency</code>-riktningen är härledbar från valet — samma öppna fråga som motorkänsla-mocken.</p>
+</div>
+
+</body></html>

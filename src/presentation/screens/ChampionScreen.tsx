@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore, useManagedClub } from '../store/gameStore'
 import { PlayoffRound } from '../../domain/enums'
 import { ScoreBlock } from '../components/primitives'
+import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 
 interface ConfettiParticle {
   id: number
@@ -130,7 +131,7 @@ export function ChampionScreen() {
               {club.name}
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 24 }}>
-              Säsong {game.currentSeason}/{game.currentSeason + 1}
+              Säsong {seasonSpanLabel(game.currentSeason)}
             </p>
           </>
         ) : (() => {
@@ -147,10 +148,10 @@ export function ChampionScreen() {
               {title}
             </h1>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>
-              {champion?.name ?? 'Motståndet'} tog SM-guldet säsong {game.currentSeason}/{game.currentSeason + 1}.
+              {champion?.name ?? 'Motståndet'} tog SM-guldet säsong {seasonSpanLabel(game.currentSeason)}.
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
-              {club.name} · Säsong {game.currentSeason}/{game.currentSeason + 1}
+              {club.name} · Säsong {seasonSpanLabel(game.currentSeason)}
             </p>
           </>
         )})()}
