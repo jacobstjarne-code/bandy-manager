@@ -274,6 +274,14 @@ export interface MatchStep {
   freeKickInteractionData?: import('./freeKickInteractionService').FreeKickInteractionData
   // Last-minute press (automatic when trailing by 1 at step >= 55)
   lastMinutePressData?: import('./lastMinutePressService').LastMinutePressData
+  // Motortillstånd per steg (Spår A, steg 0) — exponerat för ärlig MomentumBar (DESIGN-BRIEF-
+  // MOTORKANSLA §8). Surfacing av redan beräknade motorvärden; INGEN dynamik-ändring.
+  homeInitiative?: number          // reell initiativ-andel homeWeight/(homeWeight+awayWeight) — INTE skott-proxyn
+  postBreakUrgency?: number        // 0..1 jagande-lagets post-paus-fönster (steg 30→40, minut 45→60)
+  postEqualizerMomentum?: number   // 0..1 kvar av kvitterings-momentum (avtar 4 steg)
+  postEqualizerTeam?: 'home' | 'away' | null  // laget som bär kvitterings-momentumet
+  lateFactor?: number              // 0..1 sen-decisiveness-ramp (steg 44→56)
+  matchProfile?: 'defensive_battle' | 'standard' | 'open_game' | 'chaotic'  // matchens inneboende öppenhet
   // Overtime/penalty metadata
   phase?: 'regular' | 'overtime' | 'penalties'
   penaltyRound?: PenaltyRound

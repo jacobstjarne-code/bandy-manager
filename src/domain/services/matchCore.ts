@@ -1785,6 +1785,15 @@ function* simulateMatchCore(
       counterInteractionData,
       freeKickInteractionData,
       lastMinutePressData,
+      // Spår A steg 0 — motortillstånd exponerat för ärlig MomentumBar (§8). Surfacing, ej
+      // dynamik: homeInitiative/equalizeMomentum* läses ur motorns egna i-scope-variabler;
+      // lateFactor/postBreakUrgency är rena step-funktioner (speglar rad 843 resp. 868-873).
+      homeInitiative,
+      postBreakUrgency: (step >= 30 && step <= 40) ? (40 - step) / 10 : 0,
+      postEqualizerMomentum: equalizeMomentumTimer > 0 ? equalizeMomentumTimer / EQUALIZE_MOMENTUM_STEPS : 0,
+      postEqualizerTeam: equalizeMomentumTimer > 0 ? equalizeMomentumTeam : null,
+      lateFactor: step <= 44 ? 0 : Math.min(1, (step - 44) / 12),
+      matchProfile: profile,
     }
   } // end main loop
 
