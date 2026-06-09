@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --paper:#ece4d4;--paper-hi:#f4eee1;--ink:#1f1c16;--ink-soft:#5c554a;--ink-faint:#8a8270;
+    --rule:#d8cdb6;--rule-strong:#c2b598;--copper:#A25828;--copper-br:#C47A3A;--stamp:#9a4a28;
+    --green:#4f7a3a;--red:#a8432f;--cold:#42627c;--gold:#b8893a;
+    --serif:Georgia,serif;--sans:system-ui,sans-serif;--mono:'Courier New',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#2b2823;color:#e8e0d0;font-family:var(--sans);padding:26px 16px 70px}
+  .head{max-width:1640px;margin:0 auto 6px}
+  .head h1{font-family:var(--serif);font-size:22px;margin-bottom:5px}
+  .head p{font-size:12px;color:rgba(232,224,208,.72);line-height:1.6;max-width:1040px}
+  .head p strong{color:var(--copper-br)}
+  .row{display:flex;gap:16px;max-width:1640px;margin:16px auto 0;flex-wrap:wrap}
+  .col{width:250px;display:flex;flex-direction:column}
+  .clabel{font-family:var(--mono);font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:#c4baa8;margin-bottom:7px;display:flex;align-items:baseline;gap:6px;min-height:14px}
+  .clabel b{color:var(--copper-br);font-size:10px}
+  .caption{font-family:var(--serif);font-style:italic;font-size:9px;color:#c4baa8;margin-top:7px;line-height:1.4;opacity:.84}
+  .phone{border-radius:13px;overflow:hidden;box-shadow:0 8px 18px rgba(0,0,0,.42);border:4px solid #0d0c0a}
+  .scr{height:560px;overflow:hidden;position:relative}
+  .ledger{height:100%;background:var(--paper);position:relative}
+  /* CANONICAL CHROME — identical for every screen */
+  .medge{position:absolute;left:0;top:0;bottom:0;width:16px;background:linear-gradient(90deg,#e3d9c5,#ece4d4);border-right:1.5px solid var(--copper);z-index:2}
+  .perf{position:absolute;left:4px;width:6px;height:6px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 1px rgba(154,74,40,.28)}
+  .page{position:absolute;left:16px;right:0;top:0;bottom:0;overflow:hidden}
+  .mw-chrome{display:flex;align-items:center;gap:6px;padding:6px 9px;background:#0e0d0b}
+  .mw-crest{width:17px;height:17px;border-radius:50%;background:#3D3A32;border:1px solid rgba(196,122,58,.4);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:7px}
+  .mw-nm{flex:1;line-height:1.05}.mw-nm b{font-family:var(--serif);font-size:9.5px;color:#e8e0d0}.mw-nm s{display:block;font-family:var(--mono);font-size:6px;color:#8a8270;text-decoration:none}
+  .mw-omg{font-family:var(--mono);font-size:6.5px;color:var(--copper-br);border:1px solid rgba(196,122,58,.4);border-radius:2px;padding:1px 4px}
+  .rps{display:flex;align-items:center;justify-content:center;gap:5px;padding:5px;background:#1a1714;border-bottom:2px solid var(--copper);font-family:var(--mono);font-size:6.5px;letter-spacing:.8px}
+  .rps span{color:#8a8270}.rps .on{color:var(--copper-br);font-weight:700}.rps .ok{color:rgba(196,122,58,.5)}.rps .d{color:rgba(255,255,255,.12)}
+  .pg{padding:8px 10px}
+  .sh{font-family:var(--mono);font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:var(--copper);padding-bottom:3px;margin:0 0 5px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline}
+  .sh .r{color:var(--ink-faint);font-size:6.5px}
+  .stampbtn{position:absolute;bottom:8px;left:24px;right:8px;padding:8px;border:2px solid var(--copper);background:var(--copper);color:var(--paper-hi);font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;border-radius:3px;text-align:center}
+  .gtab{position:absolute;bottom:40px;left:16px;right:0;display:flex;background:var(--paper-hi);border-top:1px solid var(--ink)}
+  .gt{flex:1;text-align:center;font-family:var(--mono);font-size:5.5px;padding:4px 1px;color:var(--ink-faint);letter-spacing:.3px}.gt.on{color:var(--copper);border-top:2px solid var(--copper);margin-top:-1px}
+  /* content bits */
+  .big{font-family:var(--serif);font-size:34px;font-weight:700;color:var(--ink);text-align:center;line-height:1;letter-spacing:1px}
+  .big s{font-size:9px;display:block;font-family:var(--mono);color:var(--ink-faint);text-decoration:none;letter-spacing:1px;margin-top:4px;text-transform:uppercase}
+  .li{display:flex;justify-content:space-between;padding:4px 2px;border-bottom:1px solid var(--rule);font-family:var(--serif);font-size:10px;color:var(--ink-soft)}.li:last-child{border:none}.li b{color:var(--ink);font-weight:700}.li .v{font-family:var(--serif);font-weight:700}.li .v.hi{color:var(--green)}.li .v.lo{color:var(--red)}
+  .flav{font-family:var(--serif);font-style:italic;font-size:9px;color:var(--ink-faint);padding:5px 2px;line-height:1.4}
+  .chip{display:inline-block;font-family:var(--mono);font-size:6.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--copper);border:1px solid var(--rule-strong);border-radius:2px;padding:1px 5px;margin:2px 2px 0 0}
+  .prow{display:flex;align-items:center;gap:6px;padding:3px 2px;border-bottom:1px solid var(--rule)}.prow:last-child{border:none}
+  .pav{width:16px;height:16px;border-radius:50%;background:#e3d9c5;border:1px solid var(--rule-strong);flex-shrink:0}
+  .pnm{flex:1;font-family:var(--serif);font-size:9px;font-weight:600;color:var(--ink)}.pnm s{display:block;font-family:var(--mono);font-size:5.5px;color:var(--ink-faint);text-decoration:none}
+  .prate{font-family:var(--serif);font-size:12px;font-weight:700;width:24px;text-align:right}.prate.hi{color:var(--green)}.prate.mid{color:var(--ink-soft)}.prate.lo{color:var(--red)}
+  .smap{background:var(--paper-hi);border:1px solid var(--rule-strong);border-radius:4px;overflow:hidden;margin-bottom:5px}
+  .smap-half svg{width:100%;height:54px;display:block}
+  .smap-div{display:flex;justify-content:space-between;padding:2px 6px;font-family:var(--mono);font-size:5.5px;letter-spacing:.5px;color:var(--ink-faint);background:var(--paper);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .sblock{border-left:2px solid var(--copper);padding:4px 6px;margin-bottom:4px;background:rgba(162,88,40,.04);border-radius:0 3px 3px 0}.sblock.ins{border-left-color:var(--gold);background:rgba(184,137,58,.05)}
+  .sblock-l{font-family:var(--mono);font-size:6px;letter-spacing:1px;text-transform:uppercase;color:var(--copper);margin-bottom:2px}.sblock.ins .sblock-l{color:var(--gold)}
+  .sblock-t{font-family:var(--serif);font-size:8px;color:var(--ink-soft);line-height:1.35}.sblock-t b{color:var(--ink);font-weight:700}
+  .quote{border-left:2px solid var(--copper);padding:4px 7px;margin-bottom:5px}.quote-l{font-family:var(--mono);font-size:6px;letter-spacing:.5px;color:var(--copper);text-transform:uppercase;margin-bottom:2px}.quote-t{font-family:var(--serif);font-style:italic;font-size:9px;color:var(--ink-soft);line-height:1.4}
+  .tl-row{display:flex;align-items:center;gap:5px;padding:1px 0;font-family:var(--serif);font-size:8px}.tl-row.a{justify-content:flex-end;text-align:right}.tl-m{font-family:var(--mono);font-size:6px;color:var(--ink-faint);width:14px}.tl-nm{color:var(--ink);font-weight:600}.tl-row.opp .tl-nm{color:var(--red)}
+  /* match live (Spela) */
+  .scoreboard{background:#0e0d0b;margin:0 -10px 6px;padding:8px;text-align:center}
+  .sb-led{font-family:var(--mono);font-size:30px;font-weight:700;color:#e8503a;letter-spacing:3px;text-shadow:0 0 8px rgba(232,80,58,.5)}
+  .sb-nm{display:flex;justify-content:space-between;font-family:var(--serif);font-size:8px;color:#c4baa8;margin-top:2px;padding:0 4px}
+  .sb-clock{font-family:var(--mono);font-size:8px;color:#d4b860;margin-top:3px}
+  .commentary{font-family:var(--serif);font-size:9px;color:var(--ink-soft);line-height:1.4;padding:4px 2px;border-bottom:1px solid var(--rule)}.commentary b{color:var(--ink)}
+  .momentum{height:6px;background:var(--rule);border-radius:3px;overflow:hidden;margin:4px 0}.momentum i{display:block;height:100%;background:linear-gradient(90deg,var(--copper),var(--copper-br));width:62%}
+  /* förbered tactic */
+  .pitch{background:linear-gradient(180deg,#dfe6d8,#d4ddc8);border:1px solid var(--rule-strong);border-radius:4px;height:120px;position:relative;margin-bottom:6px}
+  .pdot{position:absolute;width:13px;height:13px;border-radius:50%;background:var(--copper);border:1.5px solid var(--paper-hi);transform:translate(-50%,-50%);font-family:var(--mono);font-size:5px;color:#fff;display:flex;align-items:center;justify-content:center}
+  .verdict{max-width:1640px;margin:30px auto 0;padding:20px;background:rgba(245,241,235,.04);border-radius:8px;line-height:1.6;font-size:12px;color:rgba(232,224,208,.85)}
+  .verdict h3{font-family:var(--serif);font-size:16px;color:#e8e0d0;margin-bottom:10px}.verdict h4{font-weight:700;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--copper-br);margin:13px 0 5px}
+  .verdict ul{margin:4px 0 8px 16px}.verdict li{margin-bottom:5px}.verdict code{font-family:var(--mono);font-size:10.5px;background:rgba(245,241,235,.07);padding:1px 5px;border-radius:2px;color:#E8B95C}
+  .verdict table{border-collapse:collapse;width:100%;max-width:900px;margin:8px 0;font-size:11px}
+  .verdict td,.verdict th{text-align:left;padding:5px 9px;border-bottom:1px solid rgba(232,224,208,.12);vertical-align:top}
+  .verdict th{font-family:var(--mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--copper-br)}
+  .fix{color:#7fae6a;font-weight:700}
+</style></head><body>
+
+<div class="head">
+  <h1>Liggar-flödet — unison-svep (6 skärmar, en canvas)</h1>
+  <p>Hela rond-flödet i delad chrome-CSS så avvikelser inte kan gömma sig: <strong>Förbered (taktik)</strong> · <strong>Spela (match live)</strong> · <strong>Granska × 4 (Översikt · Spelare · Shotmap · Analys)</strong>. Samma masthead, samma RPS-strip, samma marginal-perforering, samma sektionsrubrik, samma stämpel-knapp. Det jag rättade i svepet listas i verdict.</p>
+</div>
+
+<div class="row">
+
+  <!-- 1 · FÖRBERED -->
+  <div class="col">
+    <div class="clabel"><b>1</b> Förbered · taktik</div>
+    <div class="phone"><div class="scr"><div class="ledger">
+      <div class="medge"><div class="perf" style="top:92px"></div><div class="perf" style="top:152px"></div><div class="perf" style="top:212px"></div><div class="perf" style="top:272px"></div><div class="perf" style="top:332px"></div><div class="perf" style="top:392px"></div><div class="perf" style="top:452px"></div></div>
+      <div class="page">
+        <div class="mw-chrome"><div class="mw-crest">🏒</div><div class="mw-nm"><b>Hälleforsnäs</b><s>Jacob · 4051/52</s></div><span class="mw-omg">Omg 1</span></div>
+        <div class="rps"><span class="on">⬡ FÖRBERED</span><span class="d">—</span><span>SPELA</span><span class="d">—</span><span>GRANSKA</span></div>
+        <div class="pg">
+          <div class="sh">Uppställning <span class="r">3-3-4</span></div>
+          <div class="pitch">
+            <div class="pdot" style="left:50%;top:88%">MV</div>
+            <div class="pdot" style="left:25%;top:66%">B</div><div class="pdot" style="left:50%;top:70%">B</div><div class="pdot" style="left:75%;top:66%">B</div>
+            <div class="pdot" style="left:30%;top:44%">HM</div><div class="pdot" style="left:70%;top:44%">HM</div><div class="pdot" style="left:50%;top:38%">MF</div>
+            <div class="pdot" style="left:22%;top:18%">F</div><div class="pdot" style="left:42%;top:14%">F</div><div class="pdot" style="left:60%;top:14%">F</div><div class="pdot" style="left:80%;top:18%">F</div>
+          </div>
+          <div class="sh">Inställning</div>
+          <div class="flav">Lesjöfors borta. Bruksderbyt — det sitter djupt.</div>
+          <div><span class="chip">Tempo · normalt</span><span class="chip">Press · hög</span><span class="chip">Hörnor · Sandberg</span></div>
+        </div>
+        <div class="stampbtn">Rapportera till styrelsen →</div>
+      </div>
+    </div></div></div>
+    <div class="caption">Plan på blekgrön yta, formationsprickar i copper. Taktik-val som stämpel-chips. CTA = "Rapportera till styrelsen".</div>
+  </div>
+
+  <!-- 2 · SPELA -->
+  <div class="col">
+    <div class="clabel"><b>2</b> Spela · match live</div>
+    <div class="phone"><div class="scr"><div class="ledger">
+      <div class="medge"><div class="perf" style="top:92px"></div><div class="perf" style="top:152px"></div><div class="perf" style="top:212px"></div><div class="perf" style="top:272px"></div><div class="perf" style="top:332px"></div><div class="perf" style="top:392px"></div><div class="perf" style="top:452px"></div></div>
+      <div class="page">
+        <div class="mw-chrome"><div class="mw-crest">🏒</div><div class="mw-nm"><b>Hälleforsnäs</b><s>Jacob · 4051/52</s></div><span class="mw-omg">Omg 1</span></div>
+        <div class="rps"><span class="ok">✓ FÖRBERED</span><span class="d">—</span><span class="on">⬡ SPELA</span><span class="d">—</span><span>GRANSKA</span></div>
+        <div class="pg">
+          <div class="scoreboard">
+            <div class="sb-led">2 — 3</div>
+            <div class="sb-nm"><span>HÄL</span><span>LES</span></div>
+            <div class="sb-clock">▸ 2:A HALVLEK · 77:14</div>
+          </div>
+          <div class="sh">Tryck <span class="r">Lesjöfors leder</span></div>
+          <div class="momentum"><i></i></div>
+          <div class="sh">Referat</div>
+          <div class="commentary"><b>77'</b> Hagberg trycker in 3-2 för Lesjöfors. Bortaklacken vaknar.</div>
+          <div class="commentary"><b>62'</b> Utvisning Moberg — 10 min.</div>
+          <div class="commentary"><b>59'</b> Eriksson tar emot rött. Ni spelar en man kort.</div>
+        </div>
+        <div class="stampbtn">Paussnack →</div>
+      </div>
+    </div></div></div>
+    <div class="caption">LED-scoreboard (Stålvallen-tavlan) på svart, infälld i papperet. MomentumBar i copper. Referat som protokoll-rader. Detta är kontrasten — LED möter liggare.</div>
+  </div>
+
+  <!-- 3 · GRANSKA ÖVERSIKT -->
+  <div class="col">
+    <div class="clabel"><b>3</b> Granska · Översikt</div>
+    <div class="phone"><div class="scr"><div class="ledger">
+      <div class="medge"><div class="perf" style="top:92px"></div><div class="perf" style="top:152px"></div><div class="perf" style="top:212px"></div><div class="perf" style="top:272px"></div><div class="perf" style="top:332px"></div><div class="perf" style="top:392px"></div><div class="perf" style="top:452px"></div></div>
+      <div class="page">
+        <div class="mw-chrome"><div class="mw-crest">🏒</div><div class="mw-nm"><b>Hälleforsnäs</b><s>Jacob · 4051/52</s></div><span class="mw-omg">Omg 1</span></div>
+        <div class="rps"><span class="ok">✓ FÖRBERED</span><span class="d">—</span><span class="ok">✓ SPELA</span><span class="d">—</span><span class="on">⬡ GRANSKA</span></div>
+        <div class="pg">
+          <div class="sh">Matchen</div>
+          <div class="big">2 — 3<s>Förlust · Lesjöfors borta</s></div>
+          <div class="flav" style="text-align:center;border-top:1px solid var(--rule);margin-top:6px;padding-top:5px">🔥 Bruksderby. Det tar aldrig riktigt slut mellan er.</div>
+          <div class="sh" style="margin-top:6px">Tabell <span class="r">efter omg 1</span></div>
+          <div class="li"><span><b>7.</b> Hälleforsnäs</span><span class="v">0 p</span></div>
+          <div class="li"><span><b>3.</b> Lesjöfors</span><span class="v hi">3 p</span></div>
+          <div class="sh">Form</div>
+          <div class="li"><span>Senaste 5</span><span class="v lo">F</span></div>
+        </div>
+        <div class="gtab"><span class="gt on">🎯 Översikt</span><span class="gt">👥 Spelare</span><span class="gt">📈 Shotmap</span><span class="gt">🎓 Analys</span></div>
+        <div class="stampbtn">Klar — nästa omgång →</div>
+      </div>
+    </div></div></div>
+    <div class="caption">Resultat-hero i Georgia. Flavor-raden ryms nu UNDER score (var klippt i appen). Tabell + form som protokoll. Flikrad nere.</div>
+  </div>
+
+  <!-- 4 · GRANSKA SPELARE -->
+  <div class="col">
+    <div class="clabel"><b>4</b> Granska · Spelare</div>
+    <div class="phone"><div class="scr"><div class="ledger">
+      <div class="medge"><div class="perf" style="top:92px"></div><div class="perf" style="top:152px"></div><div class="perf" style="top:212px"></div><div class="perf" style="top:272px"></div><div class="perf" style="top:332px"></div><div class="perf" style="top:392px"></div><div class="perf" style="top:452px"></div></div>
+      <div class="page">
+        <div class="mw-chrome"><div class="mw-crest">🏒</div><div class="mw-nm"><b>Hälleforsnäs</b><s>Jacob · 4051/52</s></div><span class="mw-omg">Omg 1</span></div>
+        <div class="rps"><span class="ok">✓ FÖRBERED</span><span class="d">—</span><span class="ok">✓ SPELA</span><span class="d">—</span><span class="on">⬡ GRANSKA</span></div>
+        <div class="pg">
+          <div class="sh">Startelva — betyg</div>
+          <div class="prow"><div class="pav"></div><div class="pnm">P. Sandberg<s>forward · 1 mål</s></div><div class="prate hi">8.0</div></div>
+          <div class="prow"><div class="pav"></div><div class="pnm">H. Berglund<s>forward · 1 mål</s></div><div class="prate hi">8.0</div></div>
+          <div class="prow"><div class="pav"></div><div class="pnm">S. Lindberg<s>goalkeeper</s></div><div class="prate mid">6.5</div></div>
+          <div class="prow"><div class="pav"></div><div class="pnm">U. Engberg<s>midfielder</s></div><div class="prate mid">6.5</div></div>
+          <div class="prow"><div class="pav"></div><div class="pnm">J. Gran<s>defender</s></div><div class="prate mid">6.5</div></div>
+          <div class="prow"><div class="pav"></div><div class="pnm">S. Dahlberg<s>defender</s></div><div class="prate mid">6.5</div></div>
+          <div class="prow"><div class="pav"></div><div class="pnm">M. Sandberg<s>half</s></div><div class="prate mid">6.5</div></div>
+          <div class="prow"><div class="pav"></div><div class="pnm">H. Ros<s>forward</s></div><div class="prate mid">6.5</div></div>
+          <div class="prow"><div class="pav"></div><div class="pnm">O. Eriksson<s>midfielder · 🟥</s></div><div class="prate lo">5.0</div></div>
+        </div>
+        <div class="gtab"><span class="gt">🎯 Översikt</span><span class="gt on">👥 Spelare</span><span class="gt">📈 Shotmap</span><span class="gt">🎓 Analys</span></div>
+        <div class="stampbtn">Klar — nästa omgång →</div>
+      </div>
+    </div></div></div>
+    <div class="caption">Hela elvan, avatar + position + mål/kort-not, betyg i färg. Radavdelare. (9 syns, scroll för resten.)</div>
+  </div>
+
+  <!-- 5 · GRANSKA SHOTMAP -->
+  <div class="col">
+    <div class="clabel"><b>5</b> Granska · Shotmap</div>
+    <div class="phone"><div class="scr"><div class="ledger">
+      <div class="medge"><div class="perf" style="top:92px"></div><div class="perf" style="top:152px"></div><div class="perf" style="top:212px"></div><div class="perf" style="top:272px"></div><div class="perf" style="top:332px"></div><div class="perf" style="top:392px"></div><div class="perf" style="top:452px"></div></div>
+      <div class="page">
+        <div class="mw-chrome"><div class="mw-crest">🏒</div><div class="mw-nm"><b>Hälleforsnäs</b><s>Jacob · 4051/52</s></div><span class="mw-omg">Omg 1</span></div>
+        <div class="rps"><span class="ok">✓ FÖRBERED</span><span class="d">—</span><span class="ok">✓ SPELA</span><span class="d">—</span><span class="on">⬡ GRANSKA</span></div>
+        <div class="pg">
+          <div class="sh">Skottbild</div>
+          <div class="smap">
+            <div class="smap-half"><svg viewBox="0 0 230 54"><rect x="90" y="2" width="50" height="7" fill="none" stroke="var(--rule-strong)"/><circle cx="108" cy="20" r="6" fill="var(--green)"/><circle cx="95" cy="32" r="5" fill="var(--copper-br)"/><circle cx="150" cy="24" r="3" fill="none" stroke="var(--ink-faint)"/><circle cx="175" cy="36" r="3" fill="none" stroke="var(--ink-faint)"/><circle cx="78" cy="24" r="3" fill="none" stroke="var(--ink-faint)"/></svg></div>
+            <div class="smap-div"><span>↑ VI ANFALLER</span><span>DE ↓</span></div>
+            <div class="smap-half"><svg viewBox="0 0 230 54"><rect x="90" y="45" width="50" height="7" fill="none" stroke="var(--rule-strong)"/><circle cx="115" cy="34" r="7" fill="var(--red)"/><circle cx="100" cy="38" r="5" fill="var(--copper-br)"/><circle cx="150" cy="28" r="3" fill="none" stroke="var(--ink-faint)"/></svg></div>
+          </div>
+          <div class="sblock"><div class="sblock-l">🎯 Ditt skottmönster</div><div class="sblock-t"><b>15 skott · 6 på mål · 33%</b></div></div>
+          <div class="sblock"><div class="sblock-l">Lesjöfors</div><div class="sblock-t">9 / 8 · MV <b>5 räddn · 63%</b></div></div>
+          <div class="sblock ins"><div class="sblock-l">💡 Insikt</div><div class="sblock-t">15 skott, 2 mål. Sök lägen nära mål.</div></div>
+        </div>
+        <div class="gtab"><span class="gt">🎯 Översikt</span><span class="gt">👥 Spelare</span><span class="gt on">📈 Shotmap</span><span class="gt">🎓 Analys</span></div>
+        <div class="stampbtn">Klar — nästa omgång →</div>
+      </div>
+    </div></div></div>
+    <div class="caption">Tvådelad skottkarta på papper. Mål fyllda, räddade copper, miss tomma. Tre score-block.</div>
+  </div>
+
+  <!-- 6 · GRANSKA ANALYS -->
+  <div class="col">
+    <div class="clabel"><b>6</b> Granska · Analys</div>
+    <div class="phone"><div class="scr"><div class="ledger">
+      <div class="medge"><div class="perf" style="top:92px"></div><div class="perf" style="top:152px"></div><div class="perf" style="top:212px"></div><div class="perf" style="top:272px"></div><div class="perf" style="top:332px"></div><div class="perf" style="top:392px"></div><div class="perf" style="top:452px"></div></div>
+      <div class="page">
+        <div class="mw-chrome"><div class="mw-crest">🏒</div><div class="mw-nm"><b>Hälleforsnäs</b><s>Jacob · 4051/52</s></div><span class="mw-omg">Omg 1</span></div>
+        <div class="rps"><span class="ok">✓ FÖRBERED</span><span class="d">—</span><span class="ok">✓ SPELA</span><span class="d">—</span><span class="on">⬡ GRANSKA</span></div>
+        <div class="pg">
+          <div class="quote"><div class="quote-l">SL · Sven Lindqvist · assistent</div><div class="quote-t">"En match är en match. Taktiskt finns det saker att analysera."</div></div>
+          <div class="sh">Tidslinje</div>
+          <div class="tl-row a opp"><span class="tl-nm">Moberg</span><span>⚽</span><span class="tl-m">8'</span></div>
+          <div class="tl-row"><span class="tl-m">21'</span><span>⚽</span><span class="tl-nm">Sandberg</span></div>
+          <div class="tl-row"><span class="tl-m">38'</span><span>⚽</span><span class="tl-nm">Berglund</span></div>
+          <div class="tl-row"><span class="tl-m">59'</span><span>🟥</span><span class="tl-nm">Eriksson</span></div>
+          <div class="tl-row a opp"><span class="tl-nm">Hagberg</span><span>⚽</span><span class="tl-m">77'</span></div>
+          <div class="sh">Nyckelinsikter</div>
+          <div class="sblock-t" style="padding:2px 0">· Ineffektivt — 15 skott, 2 mål.</div>
+          <div class="sblock-t" style="padding:2px 0">· 11 hörnor — kontinuerligt tryck.</div>
+          <div class="sblock-t" style="padding:2px 0">· Moberg matchens bästa.</div>
+        </div>
+        <div class="gtab"><span class="gt">🎯 Översikt</span><span class="gt">👥 Spelare</span><span class="gt">📈 Shotmap</span><span class="gt on">🎓 Analys</span></div>
+        <div class="stampbtn">Klar — nästa omgång →</div>
+      </div>
+    </div></div></div>
+    <div class="caption">Assistent-citat, tidslinje (hemma/borta runt mitt), nyckelinsikter. Hela analysen.</div>
+  </div>
+
+</div>
+
+<div class="verdict">
+  <h3>Unison-svep — kanonisk chrome låst, slarv rättat</h3>
+
+  <h4>Den kanoniska chromen — identisk på alla 6</h4>
+  <table>
+    <tr><th>Element</th><th>Kanonisk regel</th></tr>
+    <tr><td>Masthead</td><td>Svart <code>#0e0d0b</code>, crest 17px + klubbnamn (Georgia 9.5) + "Jacob · 4051/52" (mono 6) + Omg-badge (mono, copper-border). Identisk höjd, identiskt innehåll varje skärm.</td></tr>
+    <tr><td>RPS-strip</td><td>Mörk <code>#1a1714</code>, 2px copper underkant. Aktiv fas <code>⬡</code> copper-fet, klar fas <code>✓</code> halvtonad copper, kommande fas grå. Separator <code>—</code>.</td></tr>
+    <tr><td>Marginal</td><td>16px, copper-högerlinje 1.5px, 7 perforeringar på fasta y-positioner (92/152/212/272/332/392/452).</td></tr>
+    <tr><td>Sektionsrubrik</td><td>Mono 7.5px, 2px letter-spacing, copper, 1px regel under. Valfri höger-not i ink-faint.</td></tr>
+    <tr><td>Stämpel-CTA</td><td>Copper fylld, mono 9px fet, versal, 2px copper-ram, fast botten. Aldrig dekorativ — alltid den enda framåt-handlingen.</td></tr>
+    <tr><td>Flikrad (endast Granska)</td><td>Ljus <code>#f4eee1</code>, ink-överkant. Aktiv flik copper + 2px copper-topplinje. Ovanför stämpeln.</td></tr>
+  </table>
+
+  <h4>Slarv jag fångade och rättade i svepet</h4>
+  <ul>
+    <li><span class="fix">Säsongsformat</span> — Granska-flikmocken hade "4051/52", de tidigare hade ibland bara "Omg 1" utan säsong. Nu identiskt "Jacob · 4051/52" + Omg-badge på alla sex.</li>
+    <li><span class="fix">RPS-tillstånd</span> — Förbered visar nu <code>⬡ FÖRBERED</code> aktiv (de andra två kommande), Spela visar Förbered <code>✓</code> klar, Granska visar båda <code>✓</code>. Progressionen är nu konsekvent läsbar tvärs flödet — tidigare var Förbered-skärmen byggd med fel aktivt läge.</li>
+    <li><span class="fix">Perforering</span> — varierade mellan 16px/18px marginal och olika y-positioner. Låst till 16px + fasta positioner överallt.</li>
+    <li><span class="fix">Sektionsrubrik-storlek</span> — Granska-flikmocken körde 8px, de andra 7.5px. Låst till 7.5px / 2px-spacing.</li>
+    <li><span class="fix">Stämpel-placering</span> — Granska har flikrad OVANFÖR stämpeln; jag verifierade att stämpeln sitter på samma botten-offset med och utan flikrad så CTA:n inte hoppar mellan flikar och övriga skärmar.</li>
+    <li><span class="fix">Flavor-radens klippning</span> — "🔥 Bruksderby"-raden ligger nu under score med egen topp-regel, ryms helt (var det ursprungliga buggrapporterade brottet).</li>
+  </ul>
+
+  <h4>Medvetna skillnader (INTE slarv)</h4>
+  <ul>
+    <li><strong>Spela har LED-scoreboard på svart</strong> — det är den enda skärmen som bryter papperet med en mörk yta. Avsiktligt: Stålvallen-tavlan ÄR kontrasten (LED möter liggare), spelets tydligaste princip-2-moment. Övriga skärmar är rent papper.</li>
+    <li><strong>Bara Granska har flikrad</strong> — Förbered och Spela är enskärms-flöden, Granska är fyrdelad. Flikraden hör bara dit.</li>
+    <li><strong>CTA-text varierar per fas</strong> — "Rapportera till styrelsen" / "Paussnack" / "Klar — nästa omgång". Stämpel-formen är identisk, texten är fasens faktiska handling.</li>
+  </ul>
+
+  <h4>Avgränsning som håller (från förra diskussionen)</h4>
+  <ul>
+    <li>Liggaren gäller dessa dokument-ytor (rond-flödet). Portal/Trupp/Transfers förblir listor/dashboards — tvingas INTE in i blanketten.</li>
+    <li>Stämpel = funktionell status (fas-handling, START/SLUT), aldrig dekoration ("NY!"/"VIKTIG").</li>
+    <li>Inga nya tokens — samma copper/paper/Georgia/mono/LED som resten av systemet.</li>
+  </ul>
+
+  <p>Sex skärmar, en chrome. Vill du att jag fäller in detta i en samlad handoff till Code med den kanoniska chrome-specen som en återanvändbar <code>&lt;LedgerFrame&gt;</code>-komponent (masthead + RPS + marginal + stämpel som wrapper, innehållet som children)? Då bygger Code chromen en gång och kan aldrig spreta.</p>
+</div>
+
+</body></html>
