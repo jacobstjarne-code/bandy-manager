@@ -355,84 +355,11 @@ export function resolveEvent(
       break
     }
     case 'patronHappiness': {
-      // Dual-system: 'patronHappiness' serves both the legacy singular `patron` and the multi-mecenat
-      // `mecenater` array. The same effect type is reused because both share the happiness/isActive
-      // contract. Event ID prefix distinguishes the sub-case:
-      //   event_mecenat_intro_<id>  → activate or decline a pending mecenat
-      //   event_alliance_<id1>_<id2> → update both mecenater in an alliance event
-      //   event_*_<mecenatId>_*     → update a single active mecenat by ID match
-      //   anything else              → only the legacy patron is updated (if present)
-
-      // Update singular patron
-      if (updatedGame.patron?.isActive) {
-        const newHappiness = Math.max(0, Math.min(100, (updatedGame.patron.happiness ?? 50) + (effect.amount ?? 0)))
-        const stillActive = newHappiness > 0
-        updatedGame = {
-          ...updatedGame,
-          patron: { ...updatedGame.patron, happiness: newHappiness, isActive: stillActive },
-        }
-      }
-      // Mecenat intro event: event_mecenat_intro_<id> — activate or remove the pending mecenat
-      if (eventId.startsWith('event_mecenat_intro_') && updatedGame.mecenater?.length) {
-        const mecenatId = eventId.replace('event_mecenat_intro_', '')
-        const pendingMec = updatedGame.mecenater.find(m => m.id === mecenatId && !m.isActive)
-        if (pendingMec) {
-          const isDecline = (effect.amount ?? 0) === 0
-          if (isDecline) {
-            // Decline: remove the pending mecenat
-            updatedGame = {
-              ...updatedGame,
-              mecenater: updatedGame.mecenater.filter(m => m.id !== mecenatId),
-            }
-          } else {
-            // Welcome / cautious: activate with initial happiness
-            const completedFixtures = (updatedGame.fixtures ?? []).filter(f => (f.status as string) === 'completed')
-            const currentMatchday = completedFixtures.length > 0
-              ? Math.max(...completedFixtures.map(f => f.matchday))
-              : 0
-            const initialHappiness = Math.min(100, 50 + (effect.amount ?? 0))
-            updatedGame = {
-              ...updatedGame,
-              mecenater: updatedGame.mecenater.map(m =>
-                m.id === mecenatId
-                  ? { ...m, isActive: true, happiness: initialHappiness, lastInteractionRound: currentMatchday }
-                  : m
-              ),
-            }
-          }
-        }
-      }
-      // Update matching active mecenat(s) — alliance events (event_alliance_<id1>_<id2>) update both
-      if (updatedGame.mecenater?.length && !eventId.startsWith('event_mecenat_intro_')) {
-        const completedFixtures = (updatedGame.fixtures ?? []).filter(f => (f.status as string) === 'completed')
-        const currentMatchday = completedFixtures.length > 0
-          ? Math.max(...completedFixtures.map(f => f.matchday))
-          : 0
-        const isAllianceEvent = eventId.startsWith('event_alliance_')
-        if (isAllianceEvent) {
-          // Uppdatera alla aktiva mecenater vars ID finns i event-ID
-          updatedGame = {
-            ...updatedGame,
-            mecenater: updatedGame.mecenater.map(m => {
-              if (!m.isActive || !eventId.includes(m.id)) return m
-              const mNewHappiness = Math.max(0, Math.min(100, m.happiness + (effect.amount ?? 0)))
-              return { ...m, happiness: mNewHappiness, isActive: mNewHappiness > 0, lastInteractionRound: currentMatchday }
-            }),
-          }
-        } else {
-          const matchedMec = updatedGame.mecenater.find(m => m.isActive && eventId.includes(m.id))
-          if (matchedMec) {
-            const mNewHappiness = Math.max(0, Math.min(100, matchedMec.happiness + (effect.amount ?? 0)))
-            updatedGame = {
-              ...updatedGame,
-              mecenater: updatedGame.mecenater.map(m =>
-                m.id === matchedMec.id
-                  ? { ...m, happiness: mNewHappiness, isActive: mNewHappiness > 0, lastInteractionRound: currentMatchday }
-                  : m
-              ),
-            }
-          }
-        }
+      if (!updatedGame.patron?.isActive) break
+      const newHappiness = Math.max(0, Math.min(100, (updatedGame.patron.happiness ?? 50) + (effect.amount ?? 0)))
+      updatedGame = {
+        ...updatedGame,
+        patron: { ...updatedGame.patron, happiness: newHappiness, isActive: newHappiness > 0 },
       }
       break
     }
@@ -535,22 +462,40 @@ export function resolveEvent(
       break
     }
     case 'mecenatHappiness': {
-      if (effect.targetMecenatId && updatedGame.mecenater) {
-        const delta = effect.amount ?? 0
-        const costKr = effect.value ?? 0
+      if (!effect.targetMecenatId || !updatedGame.mecenater) break
+      const targetId = effect.targetMecenatId
+      const delta = effect.amount ?? 0
+      const costKr = effect.value ?? 0
+      const target = updatedGame.mecenater.find(m => m.id === targetId)
+      if (!target) break
+      if (!target.isActive) {
+        // Intro activation — pending mecenat accepts relationship
+        const completedFixtures = (updatedGame.fixtures ?? []).filter(f => (f.status as string) === 'completed')
+        const currentMatchday = completedFixtures.length > 0
+          ? Math.max(...completedFixtures.map(f => f.matchday))
+          : 0
         updatedGame = {
           ...updatedGame,
           mecenater: updatedGame.mecenater.map(m =>
-            m.id === effect.targetMecenatId
+            m.id === targetId
+              ? { ...m, isActive: true, happiness: Math.min(100, 50 + delta), lastInteractionRound: currentMatchday }
+              : m
+          ),
+        }
+      } else {
+        updatedGame = {
+          ...updatedGame,
+          mecenater: updatedGame.mecenater.map(m =>
+            m.id === targetId
               ? { ...m, happiness: Math.max(0, Math.min(100, m.happiness + delta)) }
               : m
           ),
         }
-        if (costKr !== 0) {
-          updatedGame = {
-            ...updatedGame,
-            clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, costKr),
-          }
+      }
+      if (costKr !== 0) {
+        updatedGame = {
+          ...updatedGame,
+          clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, costKr),
         }
       }
       break
