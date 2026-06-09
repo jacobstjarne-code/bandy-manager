@@ -12,7 +12,7 @@ export function PortalActiveBudget({ game }: Props) {
   const activeCount = getActiveDecisionCount(game)
   if (activeCount === 0) return null
 
-  const isSeason1Round1 = game.currentSeason === 1 && game.currentMatchday === 1
+  const isSeason1Round1 = (game.seasonSummaries?.length ?? 0) === 0 && game.currentMatchday === 1
   const eyebrow = activeCount === 1 ? 'Veckans fråga' : 'Veckans frågor'
 
   return (

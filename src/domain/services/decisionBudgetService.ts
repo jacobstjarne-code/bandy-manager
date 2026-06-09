@@ -32,7 +32,7 @@ export function getActiveDecisionCount(game: SaveGame): number {
  * Season 1 Round 1 has a stricter limit of 1 active decision.
  */
 export function canAddDecision(game: SaveGame, nextRound: number): boolean {
-  const limit = (game.currentSeason === 1 && nextRound === 1)
+  const limit = ((game.seasonSummaries?.length ?? 0) === 0 && nextRound === 1)
     ? MAX_ACTIVE_SEASON_1_ROUND_1
     : MAX_ACTIVE_DECISIONS
   return getActiveDecisionCount(game) < limit

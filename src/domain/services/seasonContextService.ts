@@ -4,7 +4,7 @@ import { FixtureStatus } from '../enums'
 export type SeasonContext = 'firstSeason' | 'relegationFight' | 'topRace' | 'midTable'
 
 export function getSeasonContext(game: SaveGame): SeasonContext {
-  if (game.currentSeason === 1) return 'firstSeason'
+  if ((game.seasonSummaries?.length ?? 0) === 0) return 'firstSeason'
 
   const completedLeague = game.fixtures.filter(
     f => f.status === FixtureStatus.Completed && !f.isCup &&

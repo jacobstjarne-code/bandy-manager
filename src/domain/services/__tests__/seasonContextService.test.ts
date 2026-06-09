@@ -66,14 +66,15 @@ function makeCompletedLeagueFixtures(count: number, managedClubId = 'managed') {
 }
 
 describe('getSeasonContext', () => {
-  it('returns firstSeason for season 1', () => {
-    const game = makeGame({ currentSeason: 1 })
+  it('returns firstSeason when no prior seasonSummaries', () => {
+    const game = makeGame({ seasonSummaries: [] })
     expect(getSeasonContext(game)).toBe('firstSeason')
   })
 
   it('returns midTable when fewer than 8 matches played (season > 1)', () => {
     const game = makeGame({
       currentSeason: 2,
+      seasonSummaries: [{ season: 1 } as never],
       fixtures: makeCompletedLeagueFixtures(5),
       standings: [
         { clubId: 'managed', position: 9, played: 5, won: 2, drawn: 1, lost: 2, goalsFor: 5, goalsAgainst: 6, points: 5 },
@@ -85,6 +86,7 @@ describe('getSeasonContext', () => {
   it('returns relegationFight when position >= 9 and >= 8 matches played', () => {
     const game = makeGame({
       currentSeason: 2,
+      seasonSummaries: [{ season: 1 } as never],
       fixtures: makeCompletedLeagueFixtures(10),
       standings: [
         { clubId: 'managed', position: 10, played: 10, won: 2, drawn: 1, lost: 7, goalsFor: 10, goalsAgainst: 25, points: 5 },
@@ -96,6 +98,7 @@ describe('getSeasonContext', () => {
   it('returns topRace when position <= 3 and >= 8 matches played', () => {
     const game = makeGame({
       currentSeason: 2,
+      seasonSummaries: [{ season: 1 } as never],
       fixtures: makeCompletedLeagueFixtures(10),
       standings: [
         { clubId: 'managed', position: 2, played: 10, won: 8, drawn: 1, lost: 1, goalsFor: 30, goalsAgainst: 10, points: 17 },
@@ -107,6 +110,7 @@ describe('getSeasonContext', () => {
   it('returns midTable as default when position is 4-8 and >= 8 matches played', () => {
     const game = makeGame({
       currentSeason: 2,
+      seasonSummaries: [{ season: 1 } as never],
       fixtures: makeCompletedLeagueFixtures(10),
       standings: [
         { clubId: 'managed', position: 6, played: 10, won: 4, drawn: 2, lost: 4, goalsFor: 15, goalsAgainst: 18, points: 10 },
