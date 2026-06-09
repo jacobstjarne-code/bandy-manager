@@ -159,10 +159,10 @@ const POST_PAUS_URGENCY = 0.45
 // SAMMA faktor driver previewn i UI och sim:en (§2, ärlighet). Default (ingen lean) =
 // no-op, så 1078-sviten och baskalibreringen är oförändrade. Kalibrerat mot att en
 // jagande spelares comeback-frekvens rör sig mot ~13% utan overshoot.
-export const PAUSE_LEAN_FACTOR: Record<'push' | 'calm' | 'hold', number> = {
+export const PAUSE_LEAN_FACTOR: Record<'push' | 'calm', number> = {
   push: 1.25,  // höjer ert post-paus-tryck (mitten av spec:ens ±20–25%)
   calm: 0.80,  // dämpar deras post-paus-svall
-  hold: 1.0,
+  // 'hold' utelämnat — motorns tidiga guard (pauseLean !== 'hold') gör att faktorn aldrig läses
 }
 
 // Kvitterings-momentum (Fas 2, struktur). När ett lag kvitterar från underläge

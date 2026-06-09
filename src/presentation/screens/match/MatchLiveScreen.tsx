@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useReducer, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useGameStore } from '../../store/gameStore'
+import { useGameStore, useManagedClub } from '../../store/gameStore'
 import { simulateSecondHalf, simulateFromMidMatch } from '../../../domain/services/matchSimulator'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { MATCH_GOAL_DIFFERENCE_CAP, MATCH_TOTAL_GOAL_CAP } from '../../../domain/services/matchCore'
@@ -1345,10 +1345,10 @@ export function MatchLiveScreen() {
     return `${arena}${omg}`
   })()
 
-  const managedClub = game?.clubs.find(c => c.id === game?.managedClubId)
+  const managedClub = useManagedClub()
   const spelStamp = (() => {
     if (matchDone) return { label: 'TILL GRANSKNING →', onClick: () => navigate('/game/review', { replace: true }) }
-    if (showHalftime) return { label: 'PAUSSNACK →', onClick: () => setShowHalftime(true) }
+    if (showHalftime) return { label: 'PAUSSNACK →', onClick: () => {} } // modal täcker stampen; onClick når aldrig spelaren
     return null
   })()
 

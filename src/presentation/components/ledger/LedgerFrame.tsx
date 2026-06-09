@@ -33,6 +33,9 @@ const PHASES: { key: LedgerPhase; label: string }[] = [
   { key: 'granska', label: 'GRANSKA' },
 ]
 
+const PHASE_INDEX: Record<LedgerPhase, number> = { forbered: 0, spela: 1, granska: 2 }
+const PERF_DOTS = Array.from({ length: 12 })
+
 export function LedgerFrame({
   clubId,
   clubName,
@@ -45,7 +48,7 @@ export function LedgerFrame({
   children,
   style,
 }: LedgerFrameProps) {
-  const phaseIdx = PHASES.findIndex(p => p.key === phase)
+  const phaseIdx = PHASE_INDEX[phase]
 
   return (
     <div className="lf-root" style={style}>
@@ -88,7 +91,7 @@ export function LedgerFrame({
       {/* ── Body: marginal + innehåll ── */}
       <div className="lf-body">
         <div className="lf-margin" aria-hidden="true">
-          {Array.from({ length: 12 }).map((_, i) => (
+          {PERF_DOTS.map((_, i) => (
             <div key={i} className="lf-perf" />
           ))}
         </div>

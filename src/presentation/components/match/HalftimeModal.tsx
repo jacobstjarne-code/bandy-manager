@@ -96,8 +96,7 @@ export function HalftimeModal({
   const selectedLean: PauseLean = pauseLean ?? pepOptions[0].lean
   // Preview: förväntad bar-riktning ur SAMMA faktor som sim:en (§2). Riktning + grov
   // magnitud, aldrig siffra. push/calm lutar mot managed-sidan; hold = mitten.
-  const leanFactor = PAUSE_LEAN_FACTOR[selectedLean]
-  const leanShift = Math.abs(leanFactor - 1) * 60 // 0.25→15%, 0.20→12%, hold→0
+  const leanShift = selectedLean === 'hold' ? 0 : Math.abs(PAUSE_LEAN_FACTOR[selectedLean] - 1) * 60 // push→15%, calm→12%
   const previewHomePct = Math.max(8, Math.min(92, 50 + (managedIsHome ? 1 : -1) * leanShift))
   const HT_WIN_BIG = [
     'Ledningen hade vi i en match förra året på samma plan, och vi tappade den.',
