@@ -1,6 +1,6 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { AnslagKey } from '../../../domain/services/anslagService'
-import { pickAnslagVariant, getAnslagData, isClubDirektkvalad, buildBoardReportText } from '../../../domain/services/anslagService'
+import { pickAnslagVariant, getAnslagData, isClubDirektkvalad } from '../../../domain/services/anslagService'
 import { IllustrationScene } from '../illustration/IllustrationScene'
 
 // Anslag som bär en hero-band-illustration (band-läge). Bilden droppas i public/; tills
@@ -56,23 +56,6 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
       variantBody = variantBody
         .replace('{vsLabel}', vsLabel)
         .replace('{motståndare}', motståndare)
-    }
-  }
-
-  // Template-variable resolution for season_kickoff (board anslag)
-  if (anslagKey === 'season_kickoff' && club) {
-    const board = club.board
-    if (board) {
-      const reportText = buildBoardReportText(game)
-      variantBody = variantBody
-        .replace(/{clubhouse}/g, club.clubhouse ?? 'klubbhuset')
-        .replace(/{chairmanFirstName}/g, board.chairman.firstName)
-        .replace(/{chairmanLastName}/g, board.chairman.lastName)
-        .replace(/{treasurerFirstName}/g, board.treasurer.firstName)
-        .replace(/{treasurerLastName}/g, board.treasurer.lastName)
-        .replace(/{memberFirstName}/g, board.member.firstName)
-        .replace(/{memberLastName}/g, board.member.lastName)
-        .replace(/{reportText}/g, reportText)
     }
   }
 

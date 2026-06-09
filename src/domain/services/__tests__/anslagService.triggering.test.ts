@@ -227,60 +227,6 @@ describe('computeNextAnslag — prioritet', () => {
   })
 })
 
-describe('computeNextAnslag — season_kickoff', () => {
-  it('triggas vid säsong 2, matchday 0, inga matcher spelade', () => {
-    const game = makeGame({
-      currentSeason: 2,
-      currentMatchday: 0,
-      fixtures: [],
-      seenAnslag: [],
-    })
-    expect(computeNextAnslag(game)).toBe('season_kickoff')
-  })
-
-  it('triggas INTE vid säsong 1', () => {
-    const game = makeGame({
-      currentSeason: 1,
-      currentMatchday: 0,
-      fixtures: [],
-      seenAnslag: [],
-    })
-    expect(computeNextAnslag(game)).not.toBe('season_kickoff')
-  })
-
-  it('triggas INTE om season_kickoff redan sett', () => {
-    const game = makeGame({
-      currentSeason: 2,
-      currentMatchday: 0,
-      fixtures: [],
-      seenAnslag: ['season_kickoff'],
-    })
-    expect(computeNextAnslag(game)).not.toBe('season_kickoff')
-  })
-
-  it('triggas INTE om matcher redan spelats', () => {
-    const game = makeGame({
-      currentSeason: 2,
-      currentMatchday: 1,
-      fixtures: [
-        makeFixture({ id: 'f1', status: FixtureStatus.Completed }),
-      ],
-      seenAnslag: [],
-    })
-    expect(computeNextAnslag(game)).not.toBe('season_kickoff')
-  })
-
-  it('triggas vid säsong 3 också', () => {
-    const game = makeGame({
-      currentSeason: 3,
-      currentMatchday: 0,
-      fixtures: [],
-      seenAnslag: [],
-    })
-    expect(computeNextAnslag(game)).toBe('season_kickoff')
-  })
-})
-
 describe('computeNextAnslag — cup_first_match', () => {
   function makeCupFixture(overrides: Partial<Fixture> = {}): Fixture {
     return makeFixture({

@@ -7,14 +7,12 @@ import type { CupAnslagKey } from '../data/anslag/cupAnslag'
 import { CUP_ANSLAG } from '../data/anslag/cupAnslag'
 import type { LeagueAnslagKey } from '../data/anslag/leagueAnslag'
 import { LEAGUE_ANSLAG } from '../data/anslag/leagueAnslag'
-import type { BoardAnslagKey } from '../data/anslag/boardAnslag'
-import { BOARD_ANSLAG } from '../data/anslag/boardAnslag'
 import type { PlayoffAnslagKey } from '../data/anslag/playoffAnslag'
 import { PLAYOFF_ANSLAG } from '../data/anslag/playoffAnslag'
 import { FixtureStatus, PlayoffRound } from '../enums'
 import { getSeasonEndPhase } from '../data/seasonEndPhase'
 
-export type AnslagKey = CupAnslagKey | LeagueAnslagKey | BoardAnslagKey | PlayoffAnslagKey
+export type AnslagKey = CupAnslagKey | LeagueAnslagKey | PlayoffAnslagKey
 
 // ── Variant picker ────────────────────────────────────────────────
 
@@ -52,42 +50,8 @@ export function pickAnslagVariant(
 export function getAnslagData(key: AnslagKey): AnslagText {
   if (key in CUP_ANSLAG) return CUP_ANSLAG[key as CupAnslagKey]
   if (key in LEAGUE_ANSLAG) return LEAGUE_ANSLAG[key as LeagueAnslagKey]
-  if (key in BOARD_ANSLAG) return BOARD_ANSLAG[key as BoardAnslagKey]
   if (key in PLAYOFF_ANSLAG) return PLAYOFF_ANSLAG[key as PlayoffAnslagKey]
   throw new Error(`Unknown anslag key: ${key}`)
-}
-
-// ── Board helpers ─────────────────────────────────────────────────
-
-function expiringContractsCount(squadPlayerIds: string[], players: SaveGame['players'], currentSeason: number): number {
-  return players.filter(
-    p => squadPlayerIds.includes(p.id) && p.contractUntilSeason === currentSeason
-  ).length
-}
-
-function formatTkr(amount: number): string {
-  return Math.round(amount / 1000).toString()
-}
-
-/**
- * Bygger kassörens lägesrapport-text dynamiskt från game state.
- * Används som {reportText}-variabel i season_kickoff-anslaget.
- */
-export function buildBoardReportText(game: SaveGame): string {
-  const club = game.clubs.find(c => c.id === game.managedClubId)
-  if (!club) return ''
-
-  const squadSize = club.squadPlayerIds.length
-  const expiring = expiringContractsCount(club.squadPlayerIds, game.players, game.currentSeason)
-  const cash = formatTkr(club.finances)
-  const transferBudget = formatTkr(club.transferBudget)
-
-  const sentences: string[] = [`Truppen är ${squadSize}.`]
-  if (expiring > 0) {
-    sentences.push(`${expiring} kontrakt går ut i vår.`)
-  }
-  sentences.push(`Kassa ${cash} tkr, transferbudget ${transferBudget}.`)
-  return sentences.join(' ')
 }
 
 // ── Cup helpers ───────────────────────────────────────────────────
@@ -165,17 +129,6 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
   const seen = game.seenAnslag ?? []
   const club = game.managedClubId
   const bracket = game.cupBracket
-
-  // ── Board/season priority (highest — runs before cup) ─────────
-  // season_kickoff — säsong 2+, matchday 0, inga matcher spelade
-  if (
-    game.currentSeason >= 2 &&
-    game.currentMatchday === 0 &&
-    !game.fixtures.some(f => f.status === FixtureStatus.Completed) &&
-    !seen.includes('season_kickoff')
-  ) {
-    return 'season_kickoff'
-  }
 
   // ── Cup priority ──────────────────────────────────────────────
   if (bracket) {
