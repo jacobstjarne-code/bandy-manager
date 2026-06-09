@@ -28,7 +28,7 @@ const BIG_WIN_HEADLINES: Record<Persona, SimplePool> = {
   sensationalist: [
     'Målfest mot {opp}',
     'Krossade {opp} totalt',
-    'Drömkväll — sex mål och förlossning',
+    'Drömkväll — sex mål och förlösning',
     'Sju–ett. Inget mer behöver sägas',
     'Hela arenan reste sig — {opp} stod handfallna',
   ],
@@ -115,7 +115,7 @@ const LOSS_HEADLINES: Record<Persona, Cell> = {
     'Tung förlust efter god kamp',
     'Kom till korta — men kämpade in i slutet',
     'Försvann inte fast resultatet bet',
-    'Marginalerna fanns inte idag',
+    'Marginalerna fanns inte i dag',
     'Förlust där allt nästan stämde',
   ],
   sensationalist: {
@@ -166,7 +166,7 @@ const BIG_LOSS_HEADLINES: Record<Persona, Cell> = {
   supportive: [
     'Tung dag — försök glömma',
     'Förlust som hela klubben känner',
-    'Inget gick laget i händer idag',
+    'Inget gick laget i händer i dag',
     'Hela laget vill snabbt vidare till nästa',
     'En sån här match gör man inte om',
   ],
@@ -189,7 +189,7 @@ const BIG_LOSS_HEADLINES: Record<Persona, Cell> = {
       'Lagdelarna föll isär efter andra baklängesmålet',
       'Defensivstatistik säsongens sämsta',
       'Bortaplanen blev övermäktig redan i första halvlek',
-      'Mittfältsspelet upphörde att fungera efter pauspodiet',
+      'Mittfältsspelet upphörde att fungera efter paus',
       'Truppdjupet räckte inte när skadeläget tärde',
     ],
     prevLoss: [

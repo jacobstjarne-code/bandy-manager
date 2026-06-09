@@ -47,7 +47,7 @@ export const AWAY_ROUTINE_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
 
 /** Lineup-rotation (jämfört med förra matchen) → energi vs rytm. */
 export const LINEUP_ROTATION_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
-  good: ['Rotationen gav energi — {spelare} avgjorde.', 'De vilade benen orkade hela vägen.'],
+  good: ['Rotationen gav energi — {spelare} avgjorde.', 'De utvilade benen orkade hela vägen.'],
   bad: ['Rotationen störde rytmen och kemin uteblev.', 'De invalda kom aldrig in i matchen.'],
   neutral: ['Rotationen syntes varken på gott eller ont.'],
 }

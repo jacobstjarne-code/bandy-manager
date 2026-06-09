@@ -37,7 +37,7 @@ export const STILLNESS_BEATS: StillnessBeat[] = [
     weather: 'snow',
   },
   {
-    body: 'Snön lägger sig tyst på orten. Inga matchljud från hallen idag.',
+    body: 'Snön lägger sig tyst på orten. Inga matchljud från hallen i dag.',
     weather: 'snow',
     proximity: 'rest',
   },
@@ -84,7 +84,7 @@ export const STILLNESS_BEATS: StillnessBeat[] = [
 
   // ── Matchnärhet ──────────────────────────────────────────────────────
   {
-    body: 'Imorgon är det match. Idag handlar om att inte spänna sig för hårt.',
+    body: 'I morgon är det match. I dag handlar om att inte spänna sig för hårt.',
     proximity: 'eve',
   },
   {

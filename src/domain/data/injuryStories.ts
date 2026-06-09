@@ -29,16 +29,16 @@ export const INJURY_CONTEXTS: Record<string, string[]> = {
   ],
   huvud: [
     'Fick en armbåge mot tinningen. Lätt hjärnskakning — vila och mörkrum.',
-    'Kollision med målvakten. Protokollet är sträng: inga träningar innan läkaren godkänner.',
+    'Kollision med målvakten. Protokollet är strängt: inga träningar innan läkaren godkänner.',
     'Svimlade en sekund efter en närkamp. Allt är okej men försiktighetsprincipen gäller.',
   ],
   rygg: [
     'Ryggskott under uppvärmningen. Stelt men inget strukturellt skadat.',
-    'Bur sin rygg under ett tryck mot sargen. Sjukgymnasterna pratar om muskelspänning.',
+    'Vred till ryggen under ett tryck mot sargen. Sjukgymnasterna pratar om muskelspänning.',
     'Gammal ryggproblematik blossade upp. Behandling och lätta övningar.',
   ],
   hamstring: [
-    'Kände ett nagg i sprinthastighet. Klassisk hamstringsskada — veckors vila.',
+    'Kände ett hugg i sprinthastighet. Klassisk hamstringsskada — veckors vila.',
     'Körde för hårt i det sista sprintpasset. Muskelfiber sönder.',
     'Magkände att det var fel men försökte ändå. Nu är det stopp.',
   ],

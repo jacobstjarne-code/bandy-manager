@@ -19,7 +19,7 @@ const LOST_KAFFERUM: string[] = [
   'Förlusten kom på tal igen. Kort, sen bytte de ämne. Sånt gör man här.',
   '"Ett år sen nu", sa någon. Alla visste vad. Ingen behövde säga mer.',
   'De nämnde finalen som gick åt skogen. Sture rörde om i koppen lite för länge.',
-  'Tystare än vanligt vid bordet idag. Det var den här veckan det small, i fjol.',
+  'Tystare än vanligt vid bordet i dag. Det var den här veckan det small, i fjol.',
 ]
 
 const NEUTRAL_KAFFERUM: string[] = [

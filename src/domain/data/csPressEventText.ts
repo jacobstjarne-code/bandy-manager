@@ -23,7 +23,7 @@ export type PressChoice = 'individual' | 'team' | 'system' | 'silent'
  */
 export const CS_PRESS_QUESTIONS: Record<PressSeverity, readonly string[]> = {
   provocative: [
-    `Var det helt enkelt tur idag, eller är något på riktigt på väg att hända?`,
+    `Var det helt enkelt tur i dag, eller är något på riktigt på väg att hända?`,
     `Tre noll mot ett lag som inte är direkt världsklass. Är vi imponerade?`,
     `Vad krävs för att det här ska räknas på riktigt? Just nu känns det tunt.`,
     `{NAME} höll noll. Men ni har varit svaga försvarsmässigt hela hösten. Bluff eller vändning?`,
@@ -41,7 +41,7 @@ export const CS_PRESS_QUESTIONS: Record<PressSeverity, readonly string[]> = {
     `Tre poäng utan baklängesmål. Det är vad som krävs i nedflyttningsstriden, eller?`,
     `Vad ser du som mest givande just nu — försvarsspelet, formen eller stämningen?`,
     `Du har sagt förut att försvaret kommer i form sent. Är det det vi ser nu?`,
-    `Hur viktigt är det att {NAME} får det här erkännandet just idag?`,
+    `Hur viktigt är det att {NAME} får det här erkännandet just i dag?`,
   ],
 }
 

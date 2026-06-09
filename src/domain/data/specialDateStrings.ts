@@ -109,7 +109,7 @@ export const ANNANDAGSBANDY_COMMENTARY: string[] = [
 
 export const ANNANDAGSBANDY_COMMENTARY_LORE: string[] = [
   'På Sävstaås 2000 satte Bollnäs publikrekord på annandagen. 8 151 åskådare. Det rekordet ligger som ett spöke över varje annandagsmatch som spelas i bandysverige.',
-  'Annandagsbandy är inte vilket schemaläggning som helst. Det är dagen då folk som inte ens följer bandyn under året plötsligt sitter på läktaren.',
+  'Annandagsbandy är inte vilken schemaläggning som helst. Det är dagen då folk som inte ens följer bandyn under året plötsligt sitter på läktaren.',
 ]
 
 export const ANNANDAGSBANDY_BRIEFING: string[] = [
@@ -165,7 +165,7 @@ export const FINALDAG_COMMENTARY_SPECTATOR: string[] = [
 export const FINALDAG_COMMENTARY_LORE: string[] = [
   'Studenternas IP. Invigd 21 mars 1909. 23 SM-finaler har avgjorts på den här isen. Den 24:e startar nu.',
   'Vi står på samma is där Daniel "Zeke" Eriksson sköt SAIK till guld 2011 — i sin allra sista match. Frislag, sudden death, drömavslut. Alla finaler har sin historia.',
-  'På den här planen vann Hammarby sitt första SM-guld på 105 år. Det var 2010. Snön vräkte ner. Matchen spelades i 3×30 minuter — den enda SM-finalen någonsin i det formatet. Idag är det åtminstone klart väder.',
+  'På den här planen vann Hammarby sitt första SM-guld på 105 år. Det var 2010. Snön vräkte ner. Matchen spelades i 3×30 minuter — den enda SM-finalen någonsin i det formatet. I dag är det åtminstone klart väder.',
   'Stadsträdgården åt höger, Fyrisån åt vänster. Studan. Det är på de här fem hektaren bandysveriges hela historia ryms.',
 ]
 
@@ -178,14 +178,14 @@ export const FINALDAG_COMMENTARY_3X30: string[] = [
 export const FINALDAG_BRIEFING_PLAYING: string[] = [
   '🏆 SM-FINAL. {opponentName}, {arenaName}, klockan 13:15. Hela säsongen är det här.',
   '🏆 Finaldagen. Det finns inte mycket att säga. Spelarna vet vad det är.',
-  '🏆 Idag är det final. Bygden har bussat hit. Halva orten är på plats.',
+  '🏆 I dag är det final. Bygden har bussat hit. Halva orten är på plats.',
 ]
 
 // Spectator: utökad pool 2026-05-08 — endast 1 variant gav garanterad repetition
 export const FINALDAG_BRIEFING_SPECTATOR: string[] = [
   '🏆 SM-finalen i dag: {homeClubName} mot {awayClubName}. Vi är inte där. Inte i år.',
   '🏆 Finaldagen. {homeClubName} mot {awayClubName} på Studan. Säsongen är slut för oss — finalen påminner.',
-  '🏆 Studenternas idag. {homeClubName} mot {awayClubName}. Inte vår final, men finalen.',
+  '🏆 Studenternas i dag. {homeClubName} mot {awayClubName}. Inte vår final, men finalen.',
   '🏆 SM-final klockan 13:15. Vi tittar — som tre fjärdedelar av bandysverige.',
   '🏆 Det är finaldag. Inte vår, men finaldag. Klacken kommer ändå att sjunga någonstans.',
 ]

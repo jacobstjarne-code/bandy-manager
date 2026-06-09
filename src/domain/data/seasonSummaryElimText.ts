@@ -18,7 +18,7 @@ export const SEASON_SUMMARY_ELIM_TEXT: Record<SeasonEliminationContext, SeasonEl
       body: 'Kvartsfinalen mot {motståndare} blev slutpunkten. Det är där berättelsen om {season} fortfarande skaver.',
     },
     {
-      body: 'Vi åkte ut i kvartsfinalen. {motståndare} stod kvar när det vara över. Sånt händer — men det är inte vad vi ville.',
+      body: 'Vi åkte ut i kvartsfinalen. {motståndare} stod kvar när det var över. Sånt händer — men det är inte vad vi ville.',
     },
   ],
   sf: [

@@ -59,7 +59,7 @@ export const PERSONALITY_ACCEPTANCE: Record<PersonalityType, string[]> = {
   ],
   ambitious: [
     'Han skrev på direkt. Sa "äntligen" till sin agent.',
-    'Det här är vad han väntat på. Han åker imorgon.',
+    'Det här är vad han väntat på. Han åker i morgon.',
     'Han packade samma kväll. Det märks att han redan flyttat i huvudet.',
   ],
   family: [
@@ -84,7 +84,7 @@ export const PERSONALITY_ACCEPTANCE: Record<PersonalityType, string[]> = {
  * Magisk ton. Ett ögonblick av "drömmen kommer på riktigt".
  */
 export const DREAM_CLUB_MAGIC: string[] = [
-  'Han väntat på det här samtalet. Det märks i tystnaden innan han svarar.',
+  'Han har väntat på det här samtalet. Det märks i tystnaden innan han svarar.',
   'Han säger "tack" tre gånger på två minuter. Det är inte tränaren han tackar.',
   'Han packade redan när nyheten kom. Han hade ridit på det.',
 ]

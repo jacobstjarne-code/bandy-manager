@@ -1026,6 +1026,23 @@ a {
   72%      { opacity: 0.95; }
 }
 
+/* Läsbarhetsscrim — mörklägger fullbleed-illustrationen så ljus scen-text läser.
+   Ligger över IllustrationScene (z0), under lamp-overlay + innehåll. Mörkast i
+   topp (narrativ) och botten (CTA); illustrationen andas i mitten. */
+.arrival-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 6, 10, 0.82) 0%,
+    rgba(8, 6, 10, 0.55) 30%,
+    rgba(8, 6, 10, 0.50) 54%,
+    rgba(8, 6, 10, 0.78) 100%
+  );
+}
+
 /* Skip link — top right (ARRIVAL-06) */
 .scene-skip {
   position: absolute;
@@ -1073,6 +1090,7 @@ a {
   text-align: center;
   text-transform: uppercase;
   margin-bottom: 10px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
 }
 
 /* Scene title — Georgia 28px */
@@ -1125,6 +1143,7 @@ a {
   font-size: 14px;
   line-height: 1.65;
   color: var(--text-light);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.75), 0 1px 3px rgba(0, 0, 0, 0.6);
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 1.2s ease-out, transform 1.2s ease-out;
@@ -1160,6 +1179,7 @@ a {
   text-transform: uppercase;
   opacity: 0.85;
   margin-bottom: 5px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Dialog quote — Georgia full light */
@@ -1168,6 +1188,7 @@ a {
   font-size: 14px;
   color: var(--text-light);
   line-height: 1.55;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.55);
 }
 
 /* Legacy replica wrapper — kept for other scenes */

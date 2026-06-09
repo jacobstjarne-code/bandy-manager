@@ -1,5 +1,5 @@
 /**
- * Styrelsemötet — intro-scen vid säsongsstart säsong 1.
+ * Styrelsemötet — intro-scen vid säsongsstart från och med säsong 2 (säsong 1 = ArrivalScene).
  * Ordförande, kassör och ledamot presenterar läget.
  * Siffrorna flätas in dynamiskt från game state.
  *
@@ -82,8 +82,10 @@ Och håll bygden med oss. Tomma läktare är dåligt för bandyn och dåligt fö
 }
 
 export function shouldTriggerBoardMeeting(game: SaveGame): boolean {
-  // Triggar vid säsongsstart från och med säsong 2. Säsong 1 hanteras av ArrivalScene.
-  if (game.currentSeason === 1) return false
+  // Triggar vid säsongsstart från och med andra säsongen. Första säsongen
+  // hanteras av ArrivalScene. currentSeason är ett kalenderår (2026, 2027, …),
+  // inte ett ordningstal — "första säsongen" = inga avslutade säsonger än.
+  if ((game.seasonSummaries?.length ?? 0) === 0) return false
   if ((game.shownScenes ?? []).includes('board_meeting')) return false
   // Guard: scenen är redan aktiv — undviker re-trigger om onComplete aldrig kallades
   if (game.pendingScene?.sceneId === 'board_meeting') return false

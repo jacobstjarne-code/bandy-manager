@@ -4,7 +4,7 @@
  * Lättviktiga narrativa nedslag — visas en gång i portalen, kan stängas.
  * Inte fullskärmsscener. Lever inom portalen, bryter inte flödet.
  *
- * Texterna är placeholder — Opus fyller dem med slutliga meningar.
+ * Texterna är Opus-satta och slutliga.
  */
 
 import type { SaveGame } from '../entities/SaveGame'
@@ -121,7 +121,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
   {
     id: 'last_league_round',
     emoji: '◯',
-    text: 'Sista omgången. Vad som än händer idag — det är allt det blir av grundserien.',
+    text: 'Sista omgången. Vad som än händer i dag — det är allt det blir av grundserien.',
     trigger: (g) => completedLeagueCount(g) === 21,
     oncePerSeason: true,
   },

@@ -228,7 +228,7 @@ export function PortalScreen() {
   const Primary = layout.primary.Component
   const StorySlotComponent = layout.storySlot?.Component ?? null
 
-  const isSeason1Round1 = game.currentSeason === 1 && game.currentMatchday === 1
+  const isSeason1Round1 = (game.seasonSummaries?.length ?? 0) === 0 && game.currentMatchday === 1
   const playoffCtx = getPlayoffSeriesContext(game)
   const isSmFinal = playoffCtx?.round === PlayoffRound.Final
   // C-SD2: warm CTA på kvart/semi + upptakt-fönstret (ej final → gold)

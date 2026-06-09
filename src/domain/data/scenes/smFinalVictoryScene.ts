@@ -34,7 +34,7 @@ export const SM_FINAL_VICTORY_TEMPLATES = {
     },
     {
       quote:
-        'Jag har hängt på den där läktaren i 22 år. Idag fattar jag varför jag aldrig slutade.',
+        'Jag har hängt på den där läktaren i 22 år. I dag fattar jag varför jag aldrig slutade.',
       attribution: 'Birger Karlsson, klackledare',
     },
   ] as BirgerQuote[],

@@ -50,7 +50,7 @@ export const STURE_PER_CLUB: Record<string, string> = {
   'club_skutskar': 'Banan byggde vi själva. Vi sopar den fortfarande själva.',
 
   // Heros — Smedjebacken, Norra Barkens strand, dimma från sjön
-  'club_heros': 'Det dimper från sjön kvart i sju. Folk vänjer sig.',
+  'club_heros': 'Dimman kommer in från sjön kvart i sju. Folk vänjer sig.',
 }
 
 // Generisk fallback om en klubb saknar specifik replik (defense-in-depth

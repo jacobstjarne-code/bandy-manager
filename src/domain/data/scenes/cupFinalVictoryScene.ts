@@ -18,14 +18,14 @@ export const CUP_FINAL_VICTORY_TEMPLATES = {
 
   // Fallback om ingen akademi-callback finns för avgörande målet.
   fallbackBodyText:
-    'Slutsignalen gick. Pokalen lyftes på isen. Klacken sjöng den där ramsan ni hört tvåtusen gånger — fast idag tio minuter efter slutsignal. <em>Idag stannade ni och lyssnade.</em>',
+    'Slutsignalen gick. Pokalen lyftes på isen. Klacken sjöng den där ramsan ni hört tvåtusen gånger — fast i dag tio minuter efter slutsignal. <em>I dag stannade ni och lyssnade.</em>',
 
   // Birger-citat — slumpas från en pool baserat på säsongs-seed.
   // Annat register än SM-citaten: konkretare, vardagligare, mer hemma.
   birgerQuotes: [
     {
       quote:
-        'Jag har sett kanske trettio cup-finaler i tv. Aldrig vår klubb i någon av dem. Idag är det vi.',
+        'Jag har sett kanske trettio cup-finaler i tv. Aldrig vår klubb i någon av dem. I dag är det vi.',
       attribution: 'Birger Karlsson, klackledare',
     },
     {

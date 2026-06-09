@@ -16,10 +16,10 @@ export function getInjuryText(days: number, playerId: string): string {
   if (days === 1) {
     return pick([
       'En dag till.',
-      'Tillbaka imorgon om det håller.',
+      'Tillbaka i morgon om det håller.',
       'Sista dagen på bänken.',
       'Ett dygn till. Hoppas.',
-      'Imorgon ska han vara med på lätt löpning.',
+      'I morgon ska han vara med på lätt löpning.',
       'Sista dagen. Sjukvården nickar.',
       'En till och så är han tillbaka.',
       'Räknar dagar nu. En kvar.',

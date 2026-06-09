@@ -9,7 +9,7 @@ export const SMALL_ABSURDITIES: SmallAbsurdity[] = [
     id: 'bandy_klubba_buss',
     newspaperHeadline: '"Vapen" på buss var bandyklubba',
     coffeeRoomExchange: [
-      { speaker: 'Kioskvakten', line: 'Polisen drog vapen i Linköping igår.' },
+      { speaker: 'Kioskvakten', line: 'Polisen drog vapen i Linköping i går.' },
       { speaker: 'Vaktmästaren', line: 'Mot vad?' },
       { speaker: 'Kioskvakten', line: 'En bandyklubba.' },
     ],

@@ -48,7 +48,7 @@ function buildOutlookText(journalist: Journalist): string {
     return 'Tre presskonferenser till med ärligt svar — då vänder det.'
   }
   if (rel >= 75) {
-    return 'Stark relation. Lokaltidningens rubriker har dragit upp orten — fortsätt prata med henne.'
+    return 'Hon är på er sida nu. Det håller så länge du möter henne lika öppet.'
   }
   return 'Fortsätt svara ärligt. Relationen håller.'
 }

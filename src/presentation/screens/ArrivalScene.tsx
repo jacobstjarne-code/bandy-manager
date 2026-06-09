@@ -5,6 +5,7 @@ import { getStureLine } from '../../domain/data/arrivalDialogue'
 import { BoardObjectivesList } from '../components/portal/secondary/BoardObjectivesList'
 import { IllustrationScene } from '../components/illustration/IllustrationScene'
 import type { BoardObjective } from '../../domain/entities/Community'
+import type { ClubBoard } from '../../domain/entities/Club'
 
 type Phase = 'setting' | 'margareta' | 'sture' | 'objectives' | 'cta'
 
@@ -17,11 +18,12 @@ function phaseGte(current: Phase, target: Phase): boolean {
 interface ArrivalSceneInnerProps {
   clubId: string
   clubName: string
+  board: ClubBoard
   objectives: BoardObjective[]
   onComplete: () => void
 }
 
-function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: ArrivalSceneInnerProps) {
+function ArrivalSceneInner({ clubId, clubName, board, objectives, onComplete }: ArrivalSceneInnerProps) {
   const [phase, setPhase] = useState<Phase>('setting')
   const [settingIn, setSettingIn] = useState(false)
 
@@ -46,8 +48,10 @@ function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: Arrival
     return () => clearTimeout(t)
   }, [phase])
 
-  const stureQuote = getStureLine(clubId)
-  const margaretaQuote = `"Det här är en gammal klubb. Vi förväntar oss inte mirakel — men vi förväntar oss att det syns att du bryr dig. Tre kontrakt löper ut. Snacka med dom tidigt."`
+  const treasurer = board.treasurer  // kassör
+  const member = board.member        // ledamot — byns röst
+  const memberLine = getStureLine(clubId)
+  const treasurerLine = `"Det här är en gammal klubb. Vi förväntar oss inte mirakel — men vi förväntar oss att det syns att du bryr dig. Tre kontrakt löper ut. Snacka med dom tidigt."`
 
   // Dot i is lit when we've entered that phase: dot 0 = settingIn, 1–3 = phase > that dot's phase
   const dotLit = [
@@ -62,6 +66,7 @@ function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: Arrival
       {/* Fullbleed säsongsstart-illustration (intro.jpg) som scen-bakgrund — fallback-gradient
           + stämpel tills bilden droppas. Scrim ger textläsbarhet; lamp-overlay + innehåll ovanpå. */}
       <IllustrationScene mode="fullbleed" name="intro" alt="" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
+      <div className="arrival-scrim" />
       <div className="arrival-lamp-overlay" />
 
       <button className="scene-skip" aria-label="Hoppa över introduktionen" onClick={onComplete}>Hoppa över ↘</button>
@@ -87,6 +92,19 @@ function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: Arrival
         flexDirection: 'column',
         gap: 20,
       }}>
+        {/* Narrativ-panel — mörk backing så texten blir läsbar mot den ljusa
+            illustrationen, även när tidigare repliker dimmats. */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 18,
+          background: 'rgba(10,8,12,0.80)',
+          border: '1px solid rgba(245,241,235,0.06)',
+          borderRadius: 12,
+          padding: '20px 18px',
+          backdropFilter: 'blur(3px)',
+          WebkitBackdropFilter: 'blur(3px)',
+        }}>
         {/* Setting */}
         <div className={[
           'scene-setting',
@@ -94,7 +112,7 @@ function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: Arrival
           phaseGte(phase, 'margareta') && 'dimmed',
         ].filter(Boolean).join(' ')}>
           <strong>{clubName}.</strong>
-          {` Onsdag kväll. Lampan vid klubbhuset lyser. De väntar dig där inne. Margareta Lindqvist. Sture ${clubName}. Två kaffekoppar redan på bordet.`}
+          {` Onsdag kväll. Lampan vid klubbhuset lyser. De väntar dig där inne. ${treasurer.firstName} ${treasurer.lastName}. ${member.firstName} ${member.lastName}. Två kaffekoppar redan på bordet.`}
         </div>
 
         {/* Margareta */}
@@ -103,8 +121,8 @@ function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: Arrival
           phaseGte(phase, 'margareta') && 'in',
           phaseGte(phase, 'sture') && 'dimmed',
         ].filter(Boolean).join(' ')}>
-          <div className="h-scene-speaker">Margareta · Kassör</div>
-          <div className="h-scene-quote">{margaretaQuote}</div>
+          <div className="h-scene-speaker">{treasurer.firstName} · Kassör</div>
+          <div className="h-scene-quote">{treasurerLine}</div>
         </div>
 
         {/* Sture */}
@@ -113,8 +131,9 @@ function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: Arrival
           phaseGte(phase, 'sture') && 'in',
           phaseGte(phase, 'objectives') && 'dimmed',
         ].filter(Boolean).join(' ')}>
-          <div className="h-scene-speaker">Sture · Ledamot</div>
-          <div className="h-scene-quote">"{stureQuote}"</div>
+          <div className="h-scene-speaker">{member.firstName} · Ledamot</div>
+          <div className="h-scene-quote">"{memberLine}"</div>
+        </div>
         </div>
 
         {/* BoardObjectives — full opacity, never dimmed */}
@@ -152,11 +171,17 @@ export function ArrivalScene() {
     navigate('/', { replace: true })
     return null
   }
+  if (!managedClub.board) {
+    // Defensiv: genererade klubbar har alltid styrelse. Hoppa hellre intro än krascha.
+    navigate('/game/dashboard', { replace: true })
+    return null
+  }
 
   return (
     <ArrivalSceneInner
       clubId={managedClub.id}
       clubName={managedClub.name}
+      board={managedClub.board}
       objectives={game.boardObjectives ?? []}
       onComplete={() => navigate('/game/dashboard', { replace: true })}
     />

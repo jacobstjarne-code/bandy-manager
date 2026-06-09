@@ -75,15 +75,15 @@ export const RETIREMENT_RESPONSES: Record<string, string[]> = {
 export const FAREWELL_MATCH_STRINGS = [
   '"{player} spelar sin sista match. {members} i klacken har förberett sig."',
   '"{player}s avskedsmatch. Publiken vet. Stämningen är extra laddad."',
-  '"Den sista avslaget för {player}. Det är mer i luften än bandy idag."',
+  '"Det sista avslaget för {player}. Det är mer i luften än bandy i dag."',
   '"Hemmaplan. {player}s sista match. {leader} och klacken håller i det."',
 ]
 
 // Legacy exports (kept for forward compatibility)
 export const FAREWELL_MATCH_ATMOSPHERE = [
-  'Avskedsmatch idag. Klubbhuset gjorde i ordning kaffe extra. Klacken har målat banderoll.',
+  'Avskedsmatch i dag. Klubbhuset gjorde i ordning kaffe extra. Klacken har målat banderoll.',
   'Sista matchen för en av oss. Det märks på läktarna.',
-  'Hela bygden visste innan söndagen kom. Idag står de där.',
+  'Hela bygden visste innan söndagen kom. I dag står de där.',
 ]
 
 export const FAREWELL_MATCH_KLACK = [

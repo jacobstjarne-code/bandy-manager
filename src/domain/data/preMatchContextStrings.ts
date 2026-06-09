@@ -53,7 +53,7 @@ export function positionWord(pos: number): string {
 const POOLS: Record<PreMatchTrigger, string[]> = {
   derby: [
     '{rivalry}.',
-    '{rivalry} idag.',
+    '{rivalry} i dag.',
     'Derbyt. {opp}.',
     '{opp}. Halva byn vet redan vad de hoppas på.',
     '{rivalry}. Ingen behöver förklara vad det betyder.',
@@ -62,11 +62,11 @@ const POOLS: Record<PreMatchTrigger, string[]> = {
     '{nword} raka. Håll det.',
     '{nword} på rad. Tro inte att det är slumpen.',
     '{nword} raka vinster. Folk börjar tro på det.',
-    '{nword} på rad. Sture log på Konsum igår.',
+    '{nword} på rad. Sture log på Konsum i går.',
     '{nword} raka. Ingen vågar säga det högt än.',
   ],
   loss_streak: [
-    '{nword} raka förluster. Det måste få ett slut idag.',
+    '{nword} raka förluster. Det måste få ett slut i dag.',
     '{nword} på rad åt fel håll.',
     '{nword} raka. Bryt det.',
     '{nword} matcher utan poäng. Något måste lossna.',

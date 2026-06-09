@@ -45,7 +45,7 @@ export const LEAGUE_ANSLAG: Record<LeagueAnslagKey, AnslagText> = {
         body: `Halva serien spelad. Lika många matcher kvar.<br><br>Tabellen börjar betyda något nu. I november var den en lista. Nu är det positionerna man räknar med, marginalerna man oroar sig över. Var det nere på sju poäng vi ville vara? Det var det.<br><br>Det är inte cupen. Det är inte slutspelet. Det är det här — den långa biten där man får det man förtjänar. Ungefär.`,
       },
       {
-        body: `Halva ligan spelad. Träningskvällarna är nu vana, inte uppstart. Skadorna börjar märkas. Krångliga relationer mellan vissa spelare också.<br><br>Tabellen står där den står. Man kan inte gnälla över halva sträckan. Det är resultatet.<br><br>Halv vägen kvar. Det är fortfarande spelat.`,
+        body: `Halva ligan spelad. Träningskvällarna är nu vana, inte uppstart. Skadorna börjar märkas. Krångliga relationer mellan vissa spelare också.<br><br>Tabellen står där den står. Man kan inte gnälla över halva sträckan. Det är resultatet.<br><br>Halva vägen kvar. Resten är ospelad.`,
       },
       {
         body: `Det är inte längre en ny säsong, men inte heller slutet. Vi är där vi alltid hamnar — i bandyårets långa mitt.<br><br>Tabellen är realitet nu. Förra månaden hoppades vi. Nästa månad räknar vi.<br><br>Halva ligan kvar.`,

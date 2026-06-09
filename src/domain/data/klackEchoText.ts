@@ -48,7 +48,7 @@ export const KLACK_ECHO: Record<NotableEventType, EchoPool> = {
     klack: [
       'Oavgjort i derby är som att inte få äta den sista skinkmackan. Inget fel — bara inte allt.',
       'Vi sjöng glatt sen sex-sex. Vi tystnade när det blev sex-sju. Vi började igen vid sju-sju.',
-      'Andralaget i serietabellen idag. Som de var igår också.',
+      'Andralaget i serietabellen i dag. Som de var i går också.',
     ],
     kafferum: [
       '"Oavgjort är inte förlust." "Nej. Men det är inte seger heller."',

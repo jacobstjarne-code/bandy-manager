@@ -25,7 +25,7 @@ const WON_MARKS: Omit<AnniversaryMarkCopy, 'eyebrow'>[] = [
 ]
 
 const LOST_MARKS: Omit<AnniversaryMarkCopy, 'eyebrow'>[] = [
-  { quote: 'Finalen vi förlorade. Idag, fast då.', helper: 'Sånt sätter sig. Det vet alla här.' },
+  { quote: 'Finalen vi förlorade. I dag, fast då.', helper: 'Sånt sätter sig. Det vet alla här.' },
   { quote: 'Här tog det slut förra året. Samma vecka.', helper: 'Vi bär det med oss, vare sig vi vill eller inte.' },
   { quote: 'Förlusten som blev kvar i väggarna.', helper: 'Klacken pratar om den fortfarande.' },
 ]
