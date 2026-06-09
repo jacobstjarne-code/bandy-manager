@@ -57,6 +57,8 @@ import { simulateMatchStepByStep } from '../../../domain/services/matchSimulator
 import { matchReducer, initialMatchState } from './matchReducer'
 import { generateMatchStory } from '../../../domain/utils/matchStory'
 import { formatArenaName } from '../../../domain/utils/arenaName'
+import { LedgerFrame } from '../../components/ledger/LedgerFrame'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 
 interface LocationState {
   fixture: Fixture
@@ -1343,12 +1345,24 @@ export function MatchLiveScreen() {
     return `${arena}${omg}`
   })()
 
+  const managedClub = game?.clubs.find(c => c.id === game?.managedClubId)
+  const spelStamp = (() => {
+    if (matchDone) return { label: 'TILL GRANSKNING →', onClick: () => navigate('/game/review', { replace: true }) }
+    if (showHalftime) return { label: 'PAUSSNACK →', onClick: () => setShowHalftime(true) }
+    return null
+  })()
+
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', height: '100%',
-      background: 'var(--bg)', overflow: 'hidden', position: 'relative',
-      animation: postIntroFade ? 'fadeIn 300ms ease-out both' : undefined,
-    }}>
+    <LedgerFrame
+      clubId={managedClub?.id ?? ''}
+      clubName={managedClub?.name ?? ''}
+      managerName={game?.managerName ?? ''}
+      season={seasonSpanLabel(game?.currentSeason ?? fixture.season)}
+      round={fixture.roundNumber}
+      phase="spela"
+      stamp={spelStamp}
+      style={postIntroFade ? { animation: 'fadeIn 300ms ease-out both' } : undefined}
+    >
       {showSubModal && (
         <SubstitutionModal
           starters={managedStarterPlayers}
@@ -1565,6 +1579,6 @@ export function MatchLiveScreen() {
           onNavigate={() => navigate('/game/champion', { replace: true })}
         />
       )}
-    </div>
+    </LedgerFrame>
   )
 }
