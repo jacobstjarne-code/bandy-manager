@@ -1143,6 +1143,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     ...game,
     captainPlayerId: nextCaptainPlayerId,
     currentSeason: nextSeason,
+    currentMatchday: 0,
     currentDate: `${nextSeason}-10-01`,
     seasonCalendar: nextSeasonCalendar,
     clubs: clubsAfterLicense,
