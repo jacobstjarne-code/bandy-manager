@@ -402,3 +402,37 @@ Grundvärdighet är inte polish — bruksort-vardagen ÄR USP:n. Mest atmosfär-
 ---
 
 *Senast uppdaterad: 2026-06-07 — tre-lager visuell rikedom (ceremoni/miljö/innehåll) inskriven; DB-1 tvåfas + z-stapling + infra*
+
+---
+
+## LedgerFrame — liggare-kromen (2026-06-09)
+
+**Beslut: `<LedgerFrame>` som enda chrome-komponent för rond-flödet.**
+
+Rond-flödet (Förbered / Spela / Granska) renderas som en kommunal liggare — masthead i läder, perforerad marginal, RPS-statusstrip i copper, copper-stämpel som enda framåt-handling. Chromen byggs EN gång och alla tre faser är barn — ingen drift mellan pass.
+
+### Avgränsning — låst
+
+**§LF-1 Var liggaren gäller:** rond-flödet (Förbered/Spela/Granska) + dokument-aktiga ytor i andra vågen (Historik, Klubbminne, Säsongssammanfattning). **INTE** Portal/Trupp/Transfers — de är listor/dashboards, inte blanketter.
+
+**§LF-2 Stämpel = funktionell status** (fas-handling, START/SLUT på scoreboard). Aldrig dekoration. Stämpeln speglar data som redan finns — inget nytt tillstånd läggs i stämpeln.
+
+**§LF-3 LED-tavlan = enda mörka ytan** i flödet. Stålvallen-scoreboardet bryter papperet (§2-kontrasten). Ingenting annat bryter papperet i liggaren.
+
+**§LF-4 Inga nya tokens.** Hela ramen bygger på befintlig copper/paper/Georgia/mono/LED-palett. Tokenavvikelser mot handoffen flaggade i `ledger.css` (fyra stycken, alla < 5% visuell diff, inga nya variabler skapade).
+
+**§LF-5 Säsongsetikett alltid via `seasonSpanLabel(currentSeason)`** — aldrig hårdkodad sträng, aldrig ordningstalsberäkning. `currentSeason` är startåret (2026 = "2026/27"). Felets historia: handoffen hade `"25/26"` som placeholder, en tidig implementation av Code producerade "4051/52".
+
+### Förbered och Granska — HÅLLNA
+
+Förbered-children: gaffel wizard vs tabbar Trupp|Taktik — väntar på Design-mock av Trupp-fliken vid riktig densitet + Jacobs beslut.
+
+Granska-children: gaffel konsolidera två ytor vs ledgra bara rapporten — väntar på Design-flödesbeslut + Jacobs beslut.
+
+Ramen accepterar båda via `children`/`tabs`-prop utan omarbetning när besluten fattas.
+
+### Implementationsnoter
+
+- `src/presentation/components/ledger/LedgerFrame.tsx` — chrome-komponent
+- `src/presentation/styles/ledger.css` — CSS, inga raw rgba/hex
+- MatchLiveScreen wrappas i `<LedgerFrame phase="spela">`. Stamp: null under aktiv speltid, "PAUSSNACK →" vid halvtid, "TILL GRANSKNING →" vid fulltid. Stämpeln återanvänder befintliga navigate-/setShowHalftime-handlers — inga nya kontroller.
