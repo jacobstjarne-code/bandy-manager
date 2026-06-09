@@ -66,7 +66,7 @@ export function resolveBoardMeetingState(game: SaveGame): BoardMeetingData {
 
   // State-resolver
   let state: BoardMeetingState
-  if (game.currentSeason <= 2 || fulfillmentPct < 0) {
+  if ((game.seasonSummaries?.length ?? 0) <= 1 || fulfillmentPct < 0) {
     state = 'A'
   } else if (fulfillmentPct >= 80) {
     state = 'B'
