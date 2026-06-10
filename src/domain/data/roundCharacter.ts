@@ -59,3 +59,28 @@ export function getRoundCharacter(game: SaveGame): RoundCharacter {
 
   return 'standard'
 }
+
+/** Returns the length of the current consecutive win or loss streak (0 if no streak). */
+export function getStreakLength(game: SaveGame): number {
+  const managedId = game.managedClubId
+  const recent = game.fixtures
+    .filter(f => f.status === 'completed' &&
+      (f.homeClubId === managedId || f.awayClubId === managedId))
+    .sort((a, b) => b.matchday - a.matchday)
+
+  let winStreak = 0
+  let lossStreak = 0
+  for (const f of recent) {
+    const r = outcome(f, managedId)
+    if (r === 'win') {
+      if (lossStreak > 0) break
+      winStreak++
+    } else if (r === 'loss') {
+      if (winStreak > 0) break
+      lossStreak++
+    } else {
+      break
+    }
+  }
+  return Math.max(winStreak, lossStreak)
+}

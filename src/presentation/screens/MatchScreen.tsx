@@ -33,16 +33,40 @@ import { MatchHeader } from '../components/match/MatchHeader'
 import { calcAttendance } from '../../domain/services/economyService'
 import { getMatchMood } from '../../domain/services/matchMoodService'
 import { getRitualText } from '../../domain/services/supporterRituals'
+import { computeLaddningBeat, type LaddningBeat } from '../../domain/data/matchLaddningGrind'
+import { MatchLaddningScene } from '../components/match/MatchLaddningScene'
+import { MatchLaddningBand } from '../components/match/MatchLaddningBand'
 
 export function MatchScreen() {
-  const { game, setPlayerLineup, advance, updateTactic, updateMatchMode } = useGameStore()
+  const { game, setPlayerLineup, advance, updateTactic, updateMatchMode, updateMatchLaddningBand } = useGameStore()
   const location = useLocation()
   const navigate = useNavigate()
   const lastCompletedFixtureFromStore = useLastCompletedFixture()
 
   const showReport = !!(location.state as { showReport?: boolean } | null)?.showReport
   const completedFixture: Fixture | null = showReport ? lastCompletedFixtureFromStore : null
-  const [matchStep, setMatchStep] = useState<'lineup' | 'tactic' | 'start'>('lineup')
+  const [matchStep, setMatchStep] = useState<'laddning' | 'lineup' | 'tactic' | 'start'>(() => {
+    if (!game) return 'lineup'
+    const mid = game.managedClubId
+    const bracket = game.playoffBracket
+    const allSeries = bracket ? [
+      ...(bracket.quarterFinals ?? []),
+      ...(bracket.semiFinals ?? []),
+      ...(bracket.final ? [bracket.final] : []),
+    ] : []
+    const isElim = allSeries.some(s => s.loserId === mid)
+    const fixture = game.fixtures
+      .filter(f => {
+        if (f.status !== 'scheduled') return false
+        if (f.homeClubId !== mid && f.awayClubId !== mid) return false
+        if (isElim && f.matchday > 26 && !f.isCup) return false
+        return true
+      })
+      .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0]
+    if (!fixture) return 'lineup'
+    const beat = computeLaddningBeat(game, fixture)
+    return beat.tier !== 'none' ? 'laddning' : 'lineup'
+  })
   const matchMode = game?.preferredMatchMode ?? 'full'
 
   useEffect(() => {
@@ -173,6 +197,22 @@ export function MatchScreen() {
       return true
     })
     .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0] ?? null
+
+  // A3 — Compute beat once; will be consumed by early return below.
+  const beat: LaddningBeat = nextFixture ? computeLaddningBeat(game, nextFixture) : { tier: 'none' }
+
+  // Persist band tracking on first render of laddning step (active streak only — broken clears on dismiss)
+  useEffect(() => {
+    if (matchStep !== 'laddning') return
+    if (beat.tier !== 'band' || beat.isBroken) return
+    updateMatchLaddningBand({
+      matchday: game.currentMatchday,
+      streakLength: beat.streakLength,
+      stateType: beat.state,
+    })
+  // Only fire once when laddning mounts (nextFixture.id anchors the round)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchStep, nextFixture?.id])
 
   const rivalry = nextFixture ? getRivalry(nextFixture.homeClubId, nextFixture.awayClubId) : null
 
@@ -468,6 +508,43 @@ export function MatchScreen() {
     )
   }
 
+  // A3 — Laddning beat: full screen before lineup step
+  if (matchStep === 'laddning' && nextFixture) {
+    const oppId = nextFixture.homeClubId === managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId
+    const opp = game.clubs.find(c => c.id === oppId) ?? null
+
+    if (beat.tier === 'scene') {
+      return (
+        <MatchLaddningScene
+          occasion={beat.occasion}
+          isFinal={beat.isFinal}
+          game={game}
+          opponent={opp}
+          nextFixture={nextFixture}
+          onContinue={() => setMatchStep('lineup')}
+        />
+      )
+    }
+    if (beat.tier === 'band') {
+      return (
+        <MatchLaddningBand
+          state={beat.state}
+          streakLength={beat.streakLength}
+          isBroken={beat.isBroken}
+          game={game}
+          opponent={opp}
+          nextFixture={nextFixture}
+          onContinue={() => {
+            if (beat.isBroken) updateMatchLaddningBand(null)
+            setMatchStep('lineup')
+          }}
+        />
+      )
+    }
+    // Beat resolved to 'none' (shouldn't happen if grind is correct) — fall through to lineup
+    setMatchStep('lineup')
+  }
+
   // ── Match header data ──────────────────────────────────────────────
   const isPlayoffRound = nextFixture.roundNumber > 22
   const playoffBracket = game.playoffBracket
@@ -516,7 +593,7 @@ export function MatchScreen() {
               opponentName={opponent?.name ?? 'Okänd'}
               isHome={isHome}
               weather={(game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)}
-              step={matchStep}
+              step={matchStep === 'laddning' ? 'lineup' : matchStep}
               tactic={matchStep === 'start' ? tacticState : undefined}
             />
           </div>

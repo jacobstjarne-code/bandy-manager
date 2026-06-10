@@ -104,6 +104,7 @@ interface GameState {
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
   markAnniversaryAcknowledged: (eventId: string) => void
   resolveAnnandagsVal: (val: 'A' | 'B' | 'C' | 'D') => void
+  updateMatchLaddningBand: (data: { matchday: number; streakLength: number; stateType: 'winning_streak' | 'losing_streak' } | null) => void
 }
 
 const indexedDBStorage = {
@@ -750,6 +751,12 @@ export const useGameStore = create<GameState>()(
             },
           }
         })
+      },
+
+      updateMatchLaddningBand: (data) => {
+        const { game } = get()
+        if (!game) return
+        set({ game: { ...game, matchLaddningBandShown: data ?? undefined } })
       },
 
       recordPortalShown: (cardIds, storySlotKind) => {

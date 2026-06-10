@@ -461,4 +461,11 @@ export interface SaveGame {
 
   // C-MK1 — Manager som karaktär (Fas 1)
   managerProfile?: import('./ManagerProfile').ManagerProfile
+
+  // A3 — Match-laddning svit-förändrings-markör
+  matchLaddningBandShown?: {
+    matchday: number
+    streakLength: number
+    stateType: 'winning_streak' | 'losing_streak'
+  }
 }
