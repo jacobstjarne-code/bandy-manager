@@ -14,6 +14,7 @@ import { getSeasonEndPhase } from '../data/seasonEndPhase'
 import { shouldTriggerBoardMeeting as boardMeetingCheck } from '../data/scenes/boardMeetingScene'
 
 const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
+const COFFEE_ROOM_OVERRIDE_COOLDOWN = 2
 
 /**
  * Avgör om en scen ska triggas för aktuellt game-state.
@@ -140,14 +141,17 @@ export function shouldTriggerCoffeeRoom(game: SaveGame): boolean {
   if (sinceLast < 1) return false
 
   if (sinceLast >= COFFEE_ROOM_COOLDOWN_ROUNDS) return true
-  // Override-triggers: streak ≥3, derby win, scandal — låt cooldown vara kortare
-  if (hasOverrideTrigger(game)) return true
+  // Override-triggers: streak exakt 3, färsk skandal — kräver sinceLast ≥ 2 (aldrig back-to-back)
+  if (sinceLast >= COFFEE_ROOM_OVERRIDE_COOLDOWN && hasOverrideTrigger(game)) return true
   return false
 }
 
 function hasOverrideTrigger(game: SaveGame): boolean {
-  // Streak ≥3 (vinst eller förlust)
-  const recent = game.fixtures
+  const currentMatchday = game.currentMatchday ?? 0
+
+  // Streak exakt 3 — avfyras när streaken FORMAS, inte vid varje efterföljande vinst/förlust.
+  // Tar 4 matcher: last3 samma resultat + 4:e annorlunda (eller saknas → exakt 3 i rad).
+  const recent4 = game.fixtures
     .filter(
       f =>
         f.status === FixtureStatus.Completed &&
@@ -155,21 +159,28 @@ function hasOverrideTrigger(game: SaveGame): boolean {
         (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId),
     )
     .sort((a, b) => b.matchday - a.matchday)
-    .slice(0, 3)
-  if (recent.length >= 3) {
-    const results = recent.map(f => {
+    .slice(0, 4)
+  if (recent4.length >= 3) {
+    const results = recent4.map(f => {
       const isHome = f.homeClubId === game.managedClubId
       const my = isHome ? f.homeScore : f.awayScore
       const their = isHome ? f.awayScore : f.homeScore
       return my > their ? 'win' : my < their ? 'loss' : 'draw'
     })
-    if (results.every(r => r === 'win') || results.every(r => r === 'loss')) {
+    const streakResult = results[0]
+    const last3Same = results.slice(0, 3).every(r => r === streakResult)
+    const fourthDifferent = recent4.length < 4 || results[3] !== streakResult
+    if (last3Same && fourthDifferent && (streakResult === 'win' || streakResult === 'loss')) {
       return true
     }
   }
-  // Aktiv skandal denna säsong
+
+  // Skandal inom ~2 omgångar — triggerRound finns på Scandal-interfacet
   const recentScandal = (game.scandalHistory ?? []).some(
-    s => s.season === game.currentSeason && s.type !== 'small_absurdity',
+    s =>
+      s.season === game.currentSeason &&
+      s.type !== 'small_absurdity' &&
+      s.triggerRound >= currentMatchday - 2,
   )
   return recentScandal
 }
