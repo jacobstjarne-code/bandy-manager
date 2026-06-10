@@ -1,3 +1,5 @@
+export const PATRON_EMERGE_CS = 60
+
 export const PATRON_PROFILES = [
   { first: 'Göran', last: 'Hedlund', biz: 'Hedlunds Skog & Timber AB', backstory: 'Hedlunds Skog & Timber äger 1 200 hektar i tre kommuner. Göran tog över av fadern 1998 och fördubblat volymen sedan dess. Exporterar till sju länder, men åker fortfarande hem till orten varje helg.' },
   { first: 'Lars-Erik', last: 'Nordin', biz: 'Nordins Sågverk', backstory: 'Nordins Sågverk är en av de sista familjestyrda sågarna i regionen. Lars-Erik kämpar mot prispress och importkonkurrens — och vinner, hittills. Har sagt nej till tre bud från industrigrupper i söder.' },

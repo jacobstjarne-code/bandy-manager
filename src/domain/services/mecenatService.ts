@@ -488,19 +488,37 @@ export function generateMecenatConflictEvent(
         id: 'side_mec1',
         label: `Stöd ${mec1.name}`,
         subtitle: `🤝 ${mec1.name} +15 · ${mec2.name} -10`,
-        effect: { type: 'mecenatHappiness', targetMecenatId: mec1.id, amount: 15 },
+        effect: {
+          type: 'multiEffect',
+          subEffects: JSON.stringify([
+            { type: 'mecenatHappiness', targetMecenatId: mec1.id, amount: 15 },
+            { type: 'mecenatHappiness', targetMecenatId: mec2.id, amount: -10 },
+          ]),
+        },
       },
       {
         id: 'side_mec2',
         label: `Stöd ${mec2.name}`,
         subtitle: `🤝 ${mec2.name} +15 · ${mec1.name} -10`,
-        effect: { type: 'mecenatHappiness', targetMecenatId: mec2.id, amount: 15 },
+        effect: {
+          type: 'multiEffect',
+          subEffects: JSON.stringify([
+            { type: 'mecenatHappiness', targetMecenatId: mec2.id, amount: 15 },
+            { type: 'mecenatHappiness', targetMecenatId: mec1.id, amount: -10 },
+          ]),
+        },
       },
       {
         id: 'neutral',
         label: 'Medla — hitta en kompromiss',
         subtitle: '🤝 Båda +3 · ingen blir riktigt nöjd',
-        effect: { type: 'mecenatHappiness', targetMecenatId: mec1.id, amount: 3 },
+        effect: {
+          type: 'multiEffect',
+          subEffects: JSON.stringify([
+            { type: 'mecenatHappiness', targetMecenatId: mec1.id, amount: 3 },
+            { type: 'mecenatHappiness', targetMecenatId: mec2.id, amount: 3 },
+          ]),
+        },
       },
     ],
     resolved: false,
@@ -524,13 +542,25 @@ export function generateMecenatAllianceEvent(
         id: 'accept',
         label: 'Fantastiskt — tack!',
         subtitle: '💰 projekt finansieras · 🤝 +10 båda',
-        effect: { type: 'mecenatHappiness', targetMecenatId: mec1.id, amount: 10 },
+        effect: {
+          type: 'multiEffect',
+          subEffects: JSON.stringify([
+            { type: 'mecenatHappiness', targetMecenatId: mec1.id, amount: 10 },
+            { type: 'mecenatHappiness', targetMecenatId: mec2.id, amount: 10 },
+          ]),
+        },
       },
       {
         id: 'decline',
         label: 'Vi klarar oss själva',
         subtitle: '🤝 -5 båda',
-        effect: { type: 'mecenatHappiness', targetMecenatId: mec1.id, amount: -5 },
+        effect: {
+          type: 'multiEffect',
+          subEffects: JSON.stringify([
+            { type: 'mecenatHappiness', targetMecenatId: mec1.id, amount: -5 },
+            { type: 'mecenatHappiness', targetMecenatId: mec2.id, amount: -5 },
+          ]),
+        },
       },
     ],
     resolved: false,

@@ -24,7 +24,7 @@ export interface EventProcessorResult {
   wageBudgetOverrunRounds: number
   wageBudgetWarningSent: boolean
   riskySponsorOfferSentThisSeason: number | undefined
-  patronWithdrawnSeason: number | undefined
+  mecenatWithdrawnSeason: number | undefined
   // Beslutsekonomi
   lastEventQueueRound: number | undefined
 }
@@ -141,7 +141,7 @@ export function processGameEvents(
   localRand: () => number,
 ): EventProcessorResult {
   const inboxItems: InboxItem[] = []
-  let patronWithdrawnSeason: number | undefined = game.patronWithdrawnSeason
+  let mecenatWithdrawnSeason: number | undefined = game.mecenatWithdrawnSeason
 
   const newEvents = generatePostAdvanceEvents(game, newBids, nextMatchday, localRand, justCompletedManagedFixture ?? undefined)
 
@@ -283,7 +283,7 @@ export function processGameEvents(
         updatedMecenater = updatedMecenater.map((m, idx) =>
           idx === i ? { ...m, isActive: false, happiness: 0 } : m,
         )
-        patronWithdrawnSeason = game.currentSeason
+        mecenatWithdrawnSeason = game.currentSeason
       }
     }
   }
@@ -394,7 +394,7 @@ export function processGameEvents(
     wageBudgetOverrunRounds,
     wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason,
-    patronWithdrawnSeason,
+    mecenatWithdrawnSeason,
     lastEventQueueRound,
   }
 }
@@ -418,7 +418,7 @@ export function applyMecenatSpawn(
     return { updatedMecenater, newEvents: [] }
   }
   // 2C: Lock out new mecenater for 2 seasons after a patron withdrawal
-  const withdrawnSeason = game.patronWithdrawnSeason
+  const withdrawnSeason = game.mecenatWithdrawnSeason
   if (withdrawnSeason !== undefined && game.currentSeason <= withdrawnSeason + 2) {
     return { updatedMecenater, newEvents: [] }
   }

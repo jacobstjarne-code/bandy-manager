@@ -1,6 +1,6 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
-import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS } from '../../data/patronData'
+import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS, PATRON_PROFILES } from '../../data/patronData'
 
 export function generatePatronEvents(
   game: SaveGame,
@@ -233,4 +233,64 @@ export function generatePatronEvents(
   }
 
   return events
+}
+
+export function generatePatronEmergenceEvent(
+  game: SaveGame,
+  rand: () => number,
+): GameEvent | null {
+  // Only one emergence per season
+  const emergeId = `patron_emerge_${game.currentSeason}`
+  if ((game.pendingEvents ?? []).some(e => e.id === emergeId)) return null
+
+  const profile = PATRON_PROFILES[Math.floor(rand() * PATRON_PROFILES.length)]
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const reputation = managedClub?.reputation ?? 50
+  const influence = 40 + Math.floor(rand() * 50)
+  const contribution = Math.round(
+    (influence * 500 + reputation * 300 + rand() * 30000) / 1000
+  ) * 1000
+  const wantsStyle: string | undefined = rand() < 0.5
+    ? (rand() < 0.5 ? 'attacking' : 'physical')
+    : undefined
+
+  const patronData = {
+    name: `${profile.first} ${profile.last}`,
+    business: profile.biz,
+    influence,
+    contribution,
+    wantsStyle: wantsStyle ?? null,
+    backstory: profile.backstory ?? null,
+  }
+
+  const tkr = Math.round(contribution / 1000)
+
+  return {
+    id: emergeId,
+    type: 'patronEvent' as const,
+    title: `${patronData.name} kliver fram`,
+    sender: { name: patronData.name, role: patronData.business },
+    body: `${patronData.backstory ?? 'En stillsam figur i bygden har följt klubbens resa.'}\n\n"Jag har sett vad ni byggt. Jag vill stötta er vidare — ${tkr} tkr/säsong."`,
+    choices: [
+      {
+        id: 'welcome',
+        label: 'Välkommen',
+        subtitle: `💰 +${tkr} tkr/säsong · Relation startar`,
+        effect: { type: 'spawnPatron' as const, sponsorData: JSON.stringify(patronData), amount: 20 },
+      },
+      {
+        id: 'cautious',
+        label: 'Vi tar det försiktigt',
+        subtitle: 'Relation startar försiktigt',
+        effect: { type: 'spawnPatron' as const, sponsorData: JSON.stringify(patronData), amount: 5 },
+      },
+      {
+        id: 'decline',
+        label: 'Inte nu',
+        subtitle: 'Patronen väntar',
+        effect: { type: 'noOp' as const },
+      },
+    ],
+    resolved: false,
+  }
 }

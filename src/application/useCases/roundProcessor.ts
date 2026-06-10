@@ -73,6 +73,8 @@ import {
   SNUB_SCENE_LINES,
 } from '../../domain/data/landslagText'
 import { updateManagerBurnout, updateH2HRecord } from '../../domain/services/managerProfileService'
+import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
+import { PATRON_EMERGE_CS } from '../../domain/data/patronData'
 
 export type { AdvanceResult }
 
@@ -1265,6 +1267,26 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   const newClubEra = calculateClubEra(game)
 
+  // Del 1: Patron emergence — triggers when era ≥ fotfäste, CS threshold met, no active patron, not in cooldown
+  if (
+    newClubEra !== 'survival' &&
+    !game.patron?.isActive &&
+    (game.communityStanding ?? 50) >= PATRON_EMERGE_CS
+  ) {
+    const patronCooldownOk = !game.patronWithdrawnSeason ||
+      game.currentSeason > game.patronWithdrawnSeason + 2
+    if (patronCooldownOk) {
+      const emergeId = `patron_emerge_${game.currentSeason}`
+      const alreadyQueued = (game.pendingEvents ?? []).some(e => e.id === emergeId) ||
+        game.inbox.some(i => i.id === emergeId) ||
+        allNewEvents.some(e => e.id === emergeId)
+      if (!alreadyQueued) {
+        const emergeEvent = generatePatronEmergenceEvent(game, localRand)
+        if (emergeEvent) allNewEvents.push(emergeEvent)
+      }
+    }
+  }
+
   // M15: merge ripple-derived field changes via centralized function
   const rippleMerged = mergeRippleDeltas(game, gameAfterRipples, {
     fanMoodBase: newFanMood,
@@ -1406,7 +1428,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     wageBudgetOverrunRounds: eventResult.wageBudgetOverrunRounds,
     wageBudgetWarningSent: eventResult.wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason: eventResult.riskySponsorOfferSentThisSeason,
-    patronWithdrawnSeason: eventResult.patronWithdrawnSeason,
+    mecenatWithdrawnSeason: eventResult.mecenatWithdrawnSeason,
     // P1 — Annandagen val-state
     pendingAnnandagsVal,
     pendingAnnandagsGratisentreVal: clearAnnandagsGratisentreVal ? false : (game.pendingAnnandagsGratisentreVal ?? false),

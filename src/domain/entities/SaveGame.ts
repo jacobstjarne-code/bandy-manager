@@ -384,7 +384,8 @@ export interface SaveGame {
     season: number
   }
   riskySponsorOfferSentThisSeason?: number  // season when last offer was generated
-  patronWithdrawnSeason?: number       // managed club mecenat locked until this season + 2
+  patronWithdrawnSeason?: number       // patron re-emergence cooldown: blocks new patron for 2 seasons after patron withdrawal
+  mecenatWithdrawnSeason?: number       // lock new mecenat spawn for 2 seasons after a mecenat withdrawal
 
   // F1 Stage 2 — per-source cooldowns (shown on SourceSecondaryCard)
   sourceCooldowns?: Partial<Record<string, { roundsLeft: number; totalRounds: number }>>

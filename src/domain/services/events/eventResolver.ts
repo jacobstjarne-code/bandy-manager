@@ -1,4 +1,5 @@
 import type { SaveGame, Sponsor, CommunityActivities } from '../../entities/SaveGame'
+import type { GameEvent } from '../../entities/GameEvent'
 import type { DinnerScene } from '../mecenatDinnerService'
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
@@ -356,11 +357,68 @@ export function resolveEvent(
     }
     case 'patronHappiness': {
       if (!updatedGame.patron?.isActive) break
-      const newHappiness = Math.max(0, Math.min(100, (updatedGame.patron.happiness ?? 50) + (effect.amount ?? 0)))
+      const patronBeforeUpdate = updatedGame.patron
+      const newHappiness = Math.max(0, Math.min(100, (patronBeforeUpdate.happiness ?? 50) + (effect.amount ?? 0)))
       updatedGame = {
         ...updatedGame,
-        patron: { ...updatedGame.patron, happiness: newHappiness, isActive: newHappiness > 0 },
+        patron: { ...patronBeforeUpdate, happiness: newHappiness, isActive: newHappiness > 0 },
       }
+      if (newHappiness === 0) {
+        // Patron withdrawal kris-event
+        const withdrawalId = `patron_withdrawal_${updatedGame.currentSeason}`
+        const alreadyQueued = (updatedGame.pendingEvents ?? []).some(e => e.id === withdrawalId)
+        if (!alreadyQueued) {
+          const patronName = patronBeforeUpdate.name
+          const contribution = patronBeforeUpdate.contribution
+          const tkr = Math.round(contribution / 1000)
+          const withdrawalEvent: GameEvent = {
+            id: withdrawalId,
+            type: 'patronWithdrawal',
+            title: `${patronName} drar sig ur`,
+            body: `${patronName} har bestämt sig. Det grundläggande bidraget — ${tkr} tkr/säsong — upphör. Klubben tappar sin dolda grundpelare.`,
+            choices: [
+              {
+                id: 'acknowledge',
+                label: 'Noterat',
+                effect: { type: 'patronWithdrawn' },
+              },
+            ],
+            resolved: false,
+          }
+          updatedGame = {
+            ...updatedGame,
+            pendingEvents: [...(updatedGame.pendingEvents ?? []), withdrawalEvent],
+          }
+        }
+      }
+      break
+    }
+    case 'spawnPatron': {
+      if (!effect.sponsorData) break
+      try {
+        const p = JSON.parse(effect.sponsorData)
+        updatedGame = {
+          ...updatedGame,
+          patron: {
+            name: p.name,
+            business: p.business,
+            influence: p.influence ?? 50,
+            happiness: Math.min(100, 60 + (effect.amount ?? 0)),
+            contribution: p.contribution ?? 0,
+            wantsStyle: p.wantsStyle ?? undefined,
+            isActive: true,
+            hasBeenWarned: false,
+            backstory: p.backstory ?? undefined,
+            patience: 80,
+            totalContributed: 0,
+            demands: [],
+          },
+        }
+      } catch { /* ignore parse errors */ }
+      break
+    }
+    case 'patronWithdrawn': {
+      updatedGame = { ...updatedGame, patronWithdrawnSeason: updatedGame.currentSeason }
       break
     }
     case 'politicianRelationship': {
@@ -511,7 +569,7 @@ export function resolveEvent(
       // subEffects is a JSON array of EventEffect objects
       if (effect.subEffects) {
         try {
-          const subList: Array<{ type: string; amount?: number; value?: number; targetPlayerId?: string }> = JSON.parse(effect.subEffects)
+          const subList: Array<{ type: string; amount?: number; value?: number; targetPlayerId?: string; targetMecenatId?: string }> = JSON.parse(effect.subEffects)
           for (const sub of subList) {
             if (sub.type === 'income') {
               updatedGame = {
@@ -576,6 +634,16 @@ export function resolveEvent(
                     influence: Math.max(0, Math.min(100, (updatedGame.patron.influence ?? 30) + (sub.amount ?? 0))),
                   },
                 }
+              }
+            } else if (sub.type === 'mecenatHappiness' && sub.targetMecenatId && updatedGame.mecenater) {
+              const delta = sub.amount ?? 0
+              updatedGame = {
+                ...updatedGame,
+                mecenater: updatedGame.mecenater.map(m =>
+                  m.id === sub.targetMecenatId
+                    ? { ...m, happiness: Math.max(0, Math.min(100, m.happiness + delta)) }
+                    : m
+                ),
               }
             }
           }

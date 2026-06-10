@@ -273,38 +273,6 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
         )}
       </SectionCard>
 
-      {/* Patron (äldre system) */}
-      {game.patron?.isActive && (() => {
-        const p = game.patron!
-        const happColor = (p.happiness ?? 50) > 60 ? 'var(--success)' : (p.happiness ?? 50) > 40 ? 'var(--accent)' : 'var(--danger)'
-        return (
-          <SectionCard title="👤 Patron" stagger={2}>
-            <div style={{ padding: '8px 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <p style={{ fontSize: 13, fontWeight: 600 }}>{p.name}</p>
-                <span style={{ fontSize: 11, fontWeight: 600, color: happColor }}>
-                  {(p.happiness ?? 50) > 60 ? '🤝 Nöjd' : (p.happiness ?? 50) > 40 ? '😐 Neutral' : '😤 Missnöjd'}
-                </span>
-              </div>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{p.business}</p>
-              {p.backstory && (
-                <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 6 }}>
-                  {p.backstory}
-                </p>
-              )}
-              <div style={{ marginTop: 6, marginBottom: 2 }}>
-                <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${p.happiness ?? 50}%`, background: happColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
-                </div>
-              </div>
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
-                Bidrag: {Math.round((p.contribution ?? 0) / 1000)} tkr/säsong
-              </p>
-            </div>
-          </SectionCard>
-        )
-      })()}
-
       {/* Mecenater */}
       <SectionCard title="👥 Mecenater" stagger={2} id="section-sponsors">
         {(game.mecenater ?? []).filter(m => m.isActive).length === 0 ? (
