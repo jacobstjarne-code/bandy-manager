@@ -22,7 +22,7 @@ import { PlayoffRound, PendingScreen } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 import { PortalRoundMark } from '../components/portal/PortalRoundMark'
 import { PortalUpptakt } from '../components/portal/PortalUpptakt'
-import { shouldShowUpptakt } from '../../application/services/portalEscalationResolver'
+import { getEscalationSubState } from '../../application/services/portalEscalationResolver'
 import { AnnandagsValEvent } from '../components/portal/AnnandagsValEvent'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
@@ -232,9 +232,10 @@ export function PortalScreen() {
   const isSeason1Round1 = (game.seasonSummaries?.length ?? 0) === 0 && game.currentMatchday === 1
   const playoffCtx = getPlayoffSeriesContext(game)
   const isSmFinal = playoffCtx?.round === PlayoffRound.Final
+  const escalationSubState = getEscalationSubState(game)
   // C-SD2: warm CTA på kvart/semi + upptakt-fönstret (ej final → gold)
   // !isSmFinal garanterar redan att en ev. playoffCtx inte är final
-  const isCtaWarm = !isSmFinal && (playoffCtx != null || shouldShowUpptakt(game))
+  const isCtaWarm = !isSmFinal && (playoffCtx != null || (escalationSubState !== null && escalationSubState !== 'mittfalt'))
   const activeCount = getActiveDecisionCount(game)
 
   return (
@@ -262,7 +263,7 @@ export function PortalScreen() {
         )}
         <SituationCard game={game} />
         <PortalPhaseMark game={game} />
-        <PortalUpptakt game={game} />
+        <PortalUpptakt game={game} subState={escalationSubState} />
         <PortalSpectatorMark game={game} />
         <PortalAnniversaryMark game={game} />
         <PortalBeat game={game} />
@@ -279,7 +280,7 @@ export function PortalScreen() {
         )}
         <PortalObjectiveAlert game={game} />
         <PortalEventSlot game={game} />
-        <Primary game={game} />
+        <Primary game={game} playoffCtx={playoffCtx} escalationSubState={escalationSubState} />
         {StorySlotComponent && <StorySlotComponent game={game} />}
         <PortalQueueRail game={game} />
         <PortalSecondarySection cards={layout.secondary} game={game} />

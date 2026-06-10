@@ -1,10 +1,9 @@
 import type { CardRenderProps } from '../portalTypes'
 import { NextMatchCard } from '../../dashboard/NextMatchCard'
 import { getPlayoffSeriesContext } from '../../../../domain/services/portal/playoffSeriesContext'
-import { getEscalationPrimaryWeightClass } from '../../../../application/services/portalEscalationResolver'
 import { PlayoffRound } from '../../../../domain/enums'
 
-export function NextMatchPrimary({ game }: CardRenderProps) {
+export function NextMatchPrimary({ game, playoffCtx: playoffCtxFromParent, escalationSubState }: CardRenderProps) {
   const managedId = game.managedClubId
 
   const bracket = game.playoffBracket
@@ -65,8 +64,12 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
   )
   const hasPendingLineup = !!(game.managedClubPendingLineup) && hasPreviousMatch
 
-  // R3+ — series context for weight-based styling
-  const ctx = isPlayoffFixture ? getPlayoffSeriesContext(game) : null
+  // Compute playoff context once — either from parent (PortalScreen pre-computed) or fresh call.
+  // Used for both series data and weight class to avoid duplicate getPlayoffSeriesContext calls.
+  const playoffCtx = playoffCtxFromParent !== undefined ? playoffCtxFromParent : getPlayoffSeriesContext(game)
+
+  // R3+ — series context for weight-based styling (only when next fixture is playoff)
+  const ctx = isPlayoffFixture ? playoffCtx : null
   const seriesWeight = ctx?.weight
   const critTagLabel = ctx && ctx.criticality !== 'open'
     ? (ctx.criticality === 'decisive' ? 'Avgörande' : 'Matchpuck')
@@ -77,8 +80,13 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
       : undefined)
     : undefined
 
-  // C-SD2 4:e axeln — warm primary-vikt på semi + upptakt (null = behåll befintlig)
-  const primaryWeightClass = getEscalationPrimaryWeightClass(game) ?? undefined
+  // C-SD2 4:e axeln — warm primary-vikt på semi + upptakt (null = behåll befintlig).
+  // Inlined from getEscalationPrimaryWeightClass to avoid double call.
+  const primaryWeightClass = (() => {
+    if (playoffCtx != null) return playoffCtx.round === PlayoffRound.SemiFinal ? 'primary-weight-2-warm' : null
+    const s = escalationSubState
+    return s !== null && s !== undefined && s !== 'mittfalt' ? 'primary-weight-2-warm' : null
+  })() ?? undefined
 
   // NextMatchCard byggdes för Dashboard (ljus bg, mörk text). Portal är mörk →
   // .card--portal scopar om light-theme-tokens till portal-värden (DB-6, ej inline-hack).

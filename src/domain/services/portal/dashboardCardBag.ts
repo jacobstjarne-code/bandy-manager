@@ -1,13 +1,21 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { ComponentType } from 'react'
 import type { SeasonPhase } from '../../data/seasonPhases'
+import type { PlayoffSeriesContext } from './playoffSeriesContext'
 
 export type CardTier = 'primary' | 'secondary' | 'minimal'
 
 export type TriggerFn = (game: SaveGame) => boolean
 
+/** String-union mirrors portalEscalationResolver.EscalationSubState — kept here to avoid application→domain import. */
+type EscalationSubState = 'sakrat' | 'farozon' | 'mittfalt' | 'bottenstrid' | null
+
 export interface CardRenderProps {
   game: SaveGame
+  /** Pre-computed by PortalScreen — avoids repeated getPlayoffSeriesContext calls. */
+  playoffCtx?: PlayoffSeriesContext | null
+  /** Pre-computed by PortalScreen — avoids repeated getEscalationSubState calls. */
+  escalationSubState?: EscalationSubState | null
 }
 
 export interface DashboardCard {

@@ -10,13 +10,13 @@
  */
 
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { getEscalationSubState, getRemainingRegularRounds } from '../../../application/services/portalEscalationResolver'
+import { getEscalationSubState, getRemainingRegularRounds, type EscalationSubState } from '../../../application/services/portalEscalationResolver'
 import { pickUpptaktPhaseMark, pickCountdownText, type UpptaktSubState } from '../../../domain/data/upptaktCopy'
 
-interface Props { game: SaveGame }
+interface Props { game: SaveGame; subState?: EscalationSubState | null }
 
-export function PortalUpptakt({ game }: Props) {
-  const subState = getEscalationSubState(game)
+export function PortalUpptakt({ game, subState: subStateFromParent }: Props) {
+  const subState = subStateFromParent !== undefined ? subStateFromParent : getEscalationSubState(game)
   if (subState === null || subState === 'mittfalt') return null
   const state = subState as UpptaktSubState
 
