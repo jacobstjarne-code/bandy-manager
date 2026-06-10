@@ -76,6 +76,7 @@ export function MatchLiveScreen() {
   const navigate = useNavigate()
   const { game, saveLiveMatchResult, advance, markMatchStarted } = useGameStore()
   const dismissHint = useGameStore(s => s.dismissHint)
+  const managedClub = useManagedClub()
 
   const state = location.state as LocationState | null
   const fixture = state?.fixture
@@ -1345,7 +1346,6 @@ export function MatchLiveScreen() {
     return `${arena}${omg}`
   })()
 
-  const managedClub = useManagedClub()
   const spelStamp = (() => {
     if (matchDone) return { label: 'TILL GRANSKNING →', onClick: () => navigate('/game/review', { replace: true }) }
     if (showHalftime) return { label: 'PAUSSNACK →', onClick: () => {} } // modal täcker stampen; onClick når aldrig spelaren
