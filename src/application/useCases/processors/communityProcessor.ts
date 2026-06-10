@@ -242,6 +242,17 @@ export function processCommunity(
     }
   }
 
+  // Drift volunteerMorale toward communityStanding (CS-mean-reversion pattern, 3% per round)
+  const csPulse = game.communityStanding ?? 50
+  const VOLUNTEER_DRIFT_STRENGTH = 0.03
+  for (const name of volunteers) {
+    const current = volunteerMorale[name] ?? 70
+    const drift = Math.round((csPulse - current) * VOLUNTEER_DRIFT_STRENGTH)
+    if (drift !== 0) {
+      volunteerMorale[name] = Math.min(100, Math.max(0, current + drift))
+    }
+  }
+
   // Attrition: remove volunteers with morale <= 10
   const quitters = volunteers.filter(name => (volunteerMorale[name] ?? 70) <= 10)
   const updatedVolunteers = volunteers.filter(name => (volunteerMorale[name] ?? 70) > 10)

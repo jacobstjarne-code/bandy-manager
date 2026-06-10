@@ -2,12 +2,15 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
 import { RIVALRY_WARNING_PER_INTENSITY } from '../../../domain/data/transferResponseText'
+import '../../styles/ledger.css'
 
 function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
   if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
   return `${v} kr`
 }
+
+const PERF_DOTS = Array.from({ length: 8 })
 
 interface BidModalProps {
   player: Player
@@ -26,58 +29,69 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
 
   return (
     <div onClick={onClose} className="transfers-modal-overlay">
-      <div onClick={e => e.stopPropagation()} className="transfers-modal-box">
-        <div className="transfers-modal-header-sm">
+      <div
+        onClick={e => e.stopPropagation()}
+        className="transfers-modal-box"
+        style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+      >
+        <div className="transfers-modal-header-sm" style={{ padding: '16px 12px 12px' }}>
           <div>
             <h3 className="transfers-modal-title">Lägg bud</h3>
             <p className="transfers-modal-player-name">{player.firstName} {player.lastName}</p>
           </div>
           <button onClick={onClose} className="btn btn-ghost transfers-close-btn"><X size={16} /></button>
         </div>
-        <div className="transfers-info-box">
-          Marknadsvärde: {formatValue(player.marketValue ?? 0)} · Transferbudget: {formatValue(managedClub.transferBudget)}
-        </div>
-        <div className="transfers-form-group">
-          <label className="transfers-label">Budsumma (kr)</label>
-          <input type="number" value={offerAmount} onChange={e => setOfferAmount(Number(e.target.value))} step={5000}
-            className="transfers-input" />
-        </div>
-        <div className="transfers-form-group">
-          <label className="transfers-label">Erbjuden lön (kr/mån)</label>
-          <input type="number" value={offeredSalary} onChange={e => setOfferedSalary(Number(e.target.value))} step={1000}
-            className="transfers-input" />
-        </div>
-        <div className="transfers-form-group transfers-form-group--lg">
-          <label className="transfers-label transfers-label--lg">Kontraktslängd</label>
-          <div className="transfers-year-btns">
-            {[1, 2, 3].map(y => (
-              <button
-                key={y}
-                onClick={() => setContractYears(y)}
-                className={`btn ${contractYears === y ? 'btn-copper' : 'btn-outline'} transfers-year-btn`}
-              >
-                {y} år
-              </button>
-            ))}
+        <div style={{ display: 'flex', flex: 1, minHeight: 0, overflowY: 'auto' }}>
+          <div className="lf-margin" aria-hidden="true">
+            {PERF_DOTS.map((_, i) => <div key={i} className="lf-perf" />)}
+          </div>
+          <div style={{ flex: 1, padding: '4px 12px 16px 10px' }}>
+            <div className="transfers-info-box">
+              Marknadsvärde: {formatValue(player.marketValue ?? 0)} · Transferbudget: {formatValue(managedClub.transferBudget)}
+            </div>
+            <div className="transfers-form-group">
+              <label className="transfers-label">Budsumma (kr)</label>
+              <input type="number" value={offerAmount} onChange={e => setOfferAmount(Number(e.target.value))} step={5000}
+                className="transfers-input" />
+            </div>
+            <div className="transfers-form-group">
+              <label className="transfers-label">Erbjuden lön (kr/mån)</label>
+              <input type="number" value={offeredSalary} onChange={e => setOfferedSalary(Number(e.target.value))} step={1000}
+                className="transfers-input" />
+            </div>
+            <div className="transfers-form-group transfers-form-group--lg">
+              <label className="transfers-label transfers-label--lg">Kontraktslängd</label>
+              <div className="transfers-year-btns">
+                {[1, 2, 3].map(y => (
+                  <button
+                    key={y}
+                    onClick={() => setContractYears(y)}
+                    className={`btn ${contractYears === y ? 'btn-copper' : 'btn-outline'} transfers-year-btn`}
+                  >
+                    {y} år
+                  </button>
+                ))}
+              </div>
+            </div>
+            {rivalry && (
+              <div className="transfers-rivalry-warning">
+                {(() => {
+                  const pool = RIVALRY_WARNING_PER_INTENSITY[rivalry.intensity as 1 | 2 | 3]
+                  return pool ? pool[0] : null
+                })()}
+              </div>
+            )}
+            {managedClub.transferBudget < offerAmount && <p className="transfers-error-text">Otillräcklig transferbudget</p>}
+            {managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount < -100000 && <p className="transfers-error-text">Budet skulle föra kassan under −100 000 kr</p>}
           </div>
         </div>
-        {rivalry && (
-          <div className="transfers-rivalry-warning">
-            {(() => {
-              const pool = RIVALRY_WARNING_PER_INTENSITY[rivalry.intensity as 1 | 2 | 3]
-              return pool ? pool[0] : null
-            })()}
-          </div>
-        )}
-        {managedClub.transferBudget < offerAmount && <p className="transfers-error-text">Otillräcklig transferbudget</p>}
-        {managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount < -100000 && <p className="transfers-error-text">Budet skulle föra kassan under −100 000 kr</p>}
         <button
           onClick={() => canAfford && onConfirm(player.id, offerAmount, offeredSalary, contractYears)}
           disabled={!canAfford}
-          className={`btn ${canAfford ? 'btn-copper' : 'btn-ghost'} transfers-cta-btn`}
+          className="lf-stamp"
           style={{ cursor: canAfford ? 'pointer' : 'not-allowed', opacity: canAfford ? 1 : 0.5 }}
         >
-          Lägg bud
+          Lägg bud →
         </button>
       </div>
     </div>
