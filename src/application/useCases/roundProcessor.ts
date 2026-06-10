@@ -48,6 +48,7 @@ import { generateAwayTrip } from '../../domain/services/awayTripService'
 import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
+import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
 import { processGameEvents, applyMecenatSpawn, processScandals } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas } from '../../domain/services/rippleEffectService'
@@ -497,6 +498,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       }
     }
   }
+
+  // ── Mid-season triggers — Halvtidsrapport + 6 andra milstolpar ──────
+  // Anropas med uppdaterade standings + allFixtures så lastMatchday och placering är aktuella.
+  newInboxItems.push(...checkMidSeasonEvents({ ...game, standings, fixtures: allFixtures }))
 
   // ── C-K1: Landslagsuttagning — VM-uppehåll vid omgång 14 ─────────────
   // calendarSlot here uses same logic as the one declared below; resolved early for national team trigger

@@ -5,7 +5,6 @@ import { generateMediaHeadlines, generateTrendArticles, generateAbsurdityArticle
 import { generatePostMatchHeadline } from '../../../domain/services/journalistService'
 import { generateTransferRumor } from '../../../domain/services/rumorService'
 import { canAddDecision } from '../../../domain/services/decisionBudgetService'
-import { checkMidSeasonEvents } from '../../../domain/services/midSeasonEventService'
 import { checkReputationMilestones, milestonesToInbox } from '../../../domain/services/reputationMilestoneService'
 import { generateDeadlineBids, generateDiscountOffer, deadlineBidToInbox, deadlineOfferToInbox } from '../../../domain/services/transferDeadlineService'
 
@@ -92,10 +91,6 @@ export function processMedia(
       lastRumorRound = nextMatchday
     }
   }
-
-  // Mid-season events
-  const midSeasonItems = checkMidSeasonEvents(game)
-  inboxItems.push(...midSeasonItems)
 
   // Reputation milestones — starts at league round 8
   if (currentLeagueRound !== null && currentLeagueRound >= 8 && !isSecondPassForManagedMatch) {
