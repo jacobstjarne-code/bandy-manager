@@ -84,3 +84,33 @@ export function getStreakLength(game: SaveGame): number {
   }
   return Math.max(winStreak, lossStreak)
 }
+
+/**
+ * Returns streak length + type (≥3 only) regardless of cup/derby precedence in getRoundCharacter.
+ * Use this instead of relying on getRoundCharacter for band/broken-state detection.
+ */
+export function getStreakState(game: SaveGame): { length: number; type: 'winning_streak' | 'losing_streak' } | null {
+  const managedId = game.managedClubId
+  const recent = game.fixtures
+    .filter(f => f.status === 'completed' &&
+      (f.homeClubId === managedId || f.awayClubId === managedId))
+    .sort((a, b) => b.matchday - a.matchday)
+
+  let winStreak = 0
+  let lossStreak = 0
+  for (const f of recent) {
+    const r = outcome(f, managedId)
+    if (r === 'win') {
+      if (lossStreak > 0) break
+      winStreak++
+    } else if (r === 'loss') {
+      if (winStreak > 0) break
+      lossStreak++
+    } else {
+      break
+    }
+  }
+  if (winStreak >= 3) return { length: winStreak, type: 'winning_streak' }
+  if (lossStreak >= 3) return { length: lossStreak, type: 'losing_streak' }
+  return null
+}

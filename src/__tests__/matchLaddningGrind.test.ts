@@ -137,8 +137,40 @@ describe('computeLaddningBeat — tier none', () => {
 describe('computeLaddningBeat — tier scene', () => {
 
   it('isFinaldag → scene:final, isFinal=true', () => {
-    const game = makeGame()
+    // Fix must be in game.fixtures — nextMatchIsSMFinal uses getNextManagedFixture internally
     const fix = makeFixture({ isFinaldag: true })
+    const game = makeGame({ fixtures: [fix] })
+    const beat = computeLaddningBeat(game, fix)
+    expect(beat.tier).toBe('scene')
+    if (beat.tier === 'scene') {
+      expect(beat.occasion).toBe('final')
+      expect(beat.isFinal).toBe(true)
+    }
+  })
+
+  it('playoff bracket final (no isFinaldag) → scene:final via bracket fallback', () => {
+    const fix = makeFixture({ id: 'final_fix', isNeutralVenue: true, isKnockout: true })
+    const game = makeGame({
+      fixtures: [fix],
+      playoffBracket: {
+        season: 2026,
+        status: 'inProgress' as never,
+        quarterFinals: [],
+        semiFinals: [],
+        final: {
+          id: 'series_final',
+          round: 'final' as never,
+          homeClubId: 'club_home',
+          awayClubId: 'club_away',
+          fixtures: ['final_fix'],
+          homeWins: 0,
+          awayWins: 0,
+          winnerId: null,
+          loserId: null,
+        },
+        champion: null,
+      },
+    })
     const beat = computeLaddningBeat(game, fix)
     expect(beat.tier).toBe('scene')
     if (beat.tier === 'scene') {
@@ -197,14 +229,32 @@ describe('computeLaddningBeat — tier scene', () => {
   })
 
   it('final takes priority over isAnnandagen when both set', () => {
-    const game = makeGame()
     const fix = makeFixture({ isFinaldag: true, isAnnandagen: true })
+    const game = makeGame({ fixtures: [fix] })
     const beat = computeLaddningBeat(game, fix)
     expect(beat.tier).toBe('scene')
     if (beat.tier === 'scene') {
       expect(beat.occasion).toBe('final')
       expect(beat.isFinal).toBe(true)
     }
+  })
+
+  it('derby day + active winning streak ≥3 → scene:derby (band hidden by occasion tier)', () => {
+    const derbyFix = makeFixture({ homeClubId: 'club_soderfors', awayClubId: 'club_skutskar', matchday: 5 })
+    const completedWins: Fixture[] = [1, 2, 3].map(i => completedFixture({
+      id: `fix_w${i}`, matchday: i, roundNumber: i,
+      homeClubId: 'club_soderfors', awayClubId: 'club_away', homeScore: 3, awayScore: 0,
+    }))
+    const game = makeGame({
+      managedClubId: 'club_soderfors',
+      currentMatchday: 5,
+      standings: [{ clubId: 'club_soderfors', played: 3, won: 3, drawn: 0, lost: 0, goalsFor: 9, goalsAgainst: 0, points: 6, position: 1 }],
+      fixtures: [...completedWins, derbyFix],
+    })
+    const beat = computeLaddningBeat(game, derbyFix)
+    // Occasion tier wins — derby scene, not streak band
+    expect(beat.tier).toBe('scene')
+    if (beat.tier === 'scene') expect(beat.occasion).toBe('derby')
   })
 
 })
@@ -352,8 +402,8 @@ describe('computeLaddningBeat — tier band (broken streak)', () => {
 describe('§9.1 eyebrow color contract', () => {
 
   it('final → isFinal=true (component must render gold eyebrow)', () => {
-    const game = makeGame()
     const fix = makeFixture({ isFinaldag: true })
+    const game = makeGame({ fixtures: [fix] })
     const beat = computeLaddningBeat(game, fix)
     expect(beat.tier).toBe('scene')
     if (beat.tier === 'scene') expect(beat.isFinal).toBe(true)

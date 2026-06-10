@@ -4,7 +4,8 @@
 
 import type { SaveGame } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
-import { getRoundCharacter, getStreakLength, type RoundCharacter } from './roundCharacter'
+import { getRoundCharacter, getStreakState } from './roundCharacter'
+import { nextMatchIsSMFinal } from '../services/portal/triggers/matchTriggers'
 import type { LaddningOccasion, LaddningState } from './matchLaddningText'
 
 // Band shows on: first reach ≥3, deepens to a milestone, or breaks.
@@ -16,34 +17,41 @@ export type LaddningBeat =
   | { tier: 'none' }
 
 export function computeLaddningBeat(game: SaveGame, nextFixture: Fixture): LaddningBeat {
-  const char = getRoundCharacter(game)
+  // Final wins all — use bracket-backed check, not just isFinaldag flag.
+  // A final that is also a derby must not fall through to pre_derby.
+  if (nextMatchIsSMFinal(game)) return { tier: 'scene', occasion: 'final', isFinal: true }
 
-  // Occasion tier — highest priority, maps to full scene
-  if (nextFixture.isFinaldag === true) return { tier: 'scene', occasion: 'final', isFinal: true }
+  // Fixture-flag occasions
   if (nextFixture.isAnnandagen === true) return { tier: 'scene', occasion: 'annandagen', isFinal: false }
   if (nextFixture.isNyarsbandy === true) return { tier: 'scene', occasion: 'nyar', isFinal: false }
+
+  // getRoundCharacter for cup / derby / premiere (no fixture flag for these)
+  const char = getRoundCharacter(game)
   if (nextFixture.isCup === true || char === 'cup_day') return { tier: 'scene', occasion: 'cup', isFinal: false }
   if (char === 'pre_derby') return { tier: 'scene', occasion: 'derby', isFinal: false }
   if (char === 'premiere') return { tier: 'scene', occasion: 'premiar', isFinal: false }
 
+  // Read streak independently — getRoundCharacter hides it behind cup/derby precedence.
+  const streakInfo = getStreakState(game)
+
   // Broken streak beat — round immediately after streak ends
-  const brokenState = getJustBrokenState(game, char)
+  const brokenState = getJustBrokenState(game, streakInfo)
   if (brokenState !== null) return { tier: 'band', state: brokenState, streakLength: 0, isBroken: true }
 
   // Active streak band — only on change-marker (≥3 / milestone / first)
-  if (char === 'winning_streak' || char === 'losing_streak') {
-    const state: LaddningState = char === 'winning_streak' ? 'winning_streak' : 'losing_streak'
-    const streakLen = getStreakLength(game)
-    if (shouldShowStreakBand(game, state, streakLen)) {
-      return { tier: 'band', state, streakLength: streakLen, isBroken: false }
-    }
+  if (streakInfo !== null && shouldShowStreakBand(game, streakInfo.type, streakInfo.length)) {
+    return { tier: 'band', state: streakInfo.type, streakLength: streakInfo.length, isBroken: false }
   }
 
   return { tier: 'none' }
 }
 
-function getJustBrokenState(game: SaveGame, char: RoundCharacter): LaddningState | null {
-  if (char === 'winning_streak' || char === 'losing_streak') return null
+function getJustBrokenState(
+  game: SaveGame,
+  streakInfo: { length: number; type: 'winning_streak' | 'losing_streak' } | null,
+): LaddningState | null {
+  // Still in a streak — not broken
+  if (streakInfo !== null) return null
   const saved = game.matchLaddningBandShown
   if (!saved || saved.streakLength < 3) return null
   if (saved.matchday >= game.currentMatchday) return null
