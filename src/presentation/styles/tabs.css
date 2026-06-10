@@ -1,0 +1,71 @@
+/* ── Shared TabBar ── */
+
+.tab-bar {
+  position: relative;
+  background: var(--bg-surface);
+}
+
+.tab-bar-scroll {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tab-bar-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-bar-btn {
+  padding: 6px 10px;
+  white-space: nowrap;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.tab-bar-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.tab-bar-fade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24px;
+  height: 100%;
+  background: linear-gradient(to left, var(--bg-surface), transparent);
+  pointer-events: none;
+}
+
+/* ── Screen-level tab wrappers ── */
+
+.tab-bar-host {
+  flex-shrink: 0;
+}
+
+.tab-bar-host-borderless .tab-bar-scroll {
+  border-bottom: none;
+}
+
+/* ── Tab content description ── */
+
+.tab-bar-desc {
+  padding: 4px 12px 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  margin: 0;
+  border-bottom: 1px solid var(--border);
+}

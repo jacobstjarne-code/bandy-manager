@@ -17,6 +17,7 @@ import { ActiveBidsList } from '../components/transfers/ActiveBidsList'
 import { FreeAgentList } from '../components/transfers/FreeAgentList'
 import { WageOverrunWarning } from '../components/transfers/WageOverrunWarning'
 import '../styles/transfers.css'
+import { TabBar } from '../components/shared/TabBar'
 
 function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
@@ -92,6 +93,7 @@ export function TransfersScreen() {
   const scoutBudget = game.scoutBudget ?? 10
 
   const currentRound = game.fixtures.filter(f => f.status === 'scheduled').sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 1
+  const incomingBids = (game.transferBids ?? []).filter(b => b.direction === 'incoming' && b.status === 'pending')
 
   function handleRenew(playerId: string, newSalary: number, years: number) {
     if (!game) return
@@ -257,35 +259,17 @@ export function TransfersScreen() {
         </span>
       </div>
 
-      {(() => {
-        const incomingBids = (game.transferBids ?? []).filter(b => b.direction === 'incoming' && b.status === 'pending')
-        const tabs = [
-          { key: 'marknad' as const, label: 'Marknad', dot: incomingBids.length > 0 ? 'accent' : null },
-          { key: 'scouting' as const, label: 'Scouting', dot: null },
-          { key: 'contracts' as const, label: 'Kontrakt', dot: expiringPlayers.length > 0 ? 'danger' : null },
-          { key: 'freeagents' as const, label: 'Fria', dot: freeAgents.length > 0 && windowOpen ? 'accent' : null },
-          { key: 'sell' as const, label: 'Sälj', dot: null },
-        ]
-        return (
-          <div className="transfers-tab-bar">
-            <div className="transfers-tab-scroll">
-              {tabs.map(tab => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`btn ${activeTab === tab.key ? 'btn-copper' : 'btn-ghost'} transfers-tab-btn`}
-                >
-                  {tab.label}
-                  {tab.dot && (
-                    <span className="transfers-tab-dot" style={{ background: tab.dot === 'danger' ? 'var(--danger)' : 'var(--accent)' }} />
-                  )}
-                </button>
-              ))}
-            </div>
-            <div className="transfers-tab-fade" />
-          </div>
-        )
-      })()}
+      <TabBar
+        tabs={[
+          { id: 'marknad', label: 'Marknad', dot: incomingBids.length > 0 ? 'accent' : null },
+          { id: 'scouting', label: 'Scouting', dot: null },
+          { id: 'contracts', label: 'Kontrakt', dot: expiringPlayers.length > 0 ? 'danger' : null },
+          { id: 'freeagents', label: 'Fria', dot: freeAgents.length > 0 && windowOpen ? 'accent' : null },
+          { id: 'sell', label: 'Sälj', dot: null },
+        ]}
+        activeId={activeTab}
+        onSelect={(id) => setActiveTab(id as typeof activeTab)}
+      />
 
       {({
         marknad: 'Spelare som är tillgängliga för transfer just nu.',

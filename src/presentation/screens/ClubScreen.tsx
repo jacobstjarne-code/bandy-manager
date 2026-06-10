@@ -10,6 +10,7 @@ import { AkademiTab } from '../components/club/AkademiTab'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 import { ClubMemoryView } from '../components/clubmemory/ClubMemoryView'
 import { TranareTab } from '../components/club/TranareTab'
+import { TabBar } from '../components/shared/TabBar'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ export function ClubScreen() {
     { key: 'ekonomi', label: 'Ekonomi' },
     { key: 'orten', label: 'Orten' },
     { key: 'akademi', label: 'Akademi' },
-    { key: 'minne', label: '📖 Minne' },
+    { key: 'minne', label: 'Minne' },
     { key: 'tranare', label: 'Tränare' },
   ]
 
@@ -84,48 +85,17 @@ export function ClubScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Tab bar */}
-      <div style={{
-        display: 'flex',
-        background: 'var(--bg-surface)',
-        borderBottom: '1px solid var(--border)',
-        padding: '0',
-        flexShrink: 0,
-      }}>
-        {TAB_LABELS.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key)}
-            style={{
-              flex: 1,
-              padding: '10px 4px',
-              background: 'none',
-              border: 'none',
-              borderBottom: activeTab === key ? '2px solid var(--accent)' : '2px solid transparent',
-              color: activeTab === key ? 'var(--accent)' : 'var(--text-muted)',
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: '0.8px',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-              transition: 'color 0.15s',
-            }}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="tab-bar-host">
+        <TabBar
+          tabs={TAB_LABELS.map(({ key, label }) => ({ id: key, label }))}
+          activeId={activeTab}
+          onSelect={(id) => setActiveTab(id as ClubTab)}
+        />
       </div>
 
-      {/* Tab description — integrated as subtle text, no border */}
+      {/* Tab description */}
       {tabDescriptions[activeTab] && (
-        <p style={{
-          padding: '4px 12px 6px',
-          fontSize: 10,
-          color: 'var(--text-muted)',
-          fontFamily: 'var(--font-body)',
-          margin: 0,
-        }}>
-          {tabDescriptions[activeTab]}
-        </p>
+        <p className="tab-bar-desc">{tabDescriptions[activeTab]}</p>
       )}
 
       {/* Scrollable content */}

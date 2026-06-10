@@ -18,6 +18,7 @@ import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
 import { SeasonArcCard } from '../components/squad/SeasonArcCard'
 import { StillnessSection } from '../components/squad/StillnessSection'
 import { getRecommendedFormation, FORMATION_META } from '../../domain/entities/Formation'
+import { TabBar } from '../components/shared/TabBar'
 import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from '../../domain/data/squadNuStrings'
 import { findActiveAnniversaries } from '../../domain/services/clubMemoryService'
 import type { ActiveAnniversary } from '../../domain/services/clubMemoryService'
@@ -476,27 +477,16 @@ export function SquadScreen() {
         />
       )}
       {/* Screen tabs */}
-      <div style={{ display: 'flex', gap: 6, padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)', flexShrink: 0 }}>
-        {([
-          { key: 'nu' as const, label: '⚡ NU' },
-          { key: 'trupp' as const, label: '👥 TRUPP' },
-          { key: 'taktik' as const, label: '📋 TAKTIK' },
-        ]).map(t => (
-          <button
-            key={t.key}
-            onClick={() => setScreenTab(t.key)}
-            style={{
-              flex: 1, padding: '7px 4px', fontSize: 11, fontWeight: 700,
-              letterSpacing: '1.2px', borderRadius: 4,
-              color: screenTab === t.key ? 'var(--text-light)' : 'var(--text-muted)',
-              background: screenTab === t.key ? 'var(--accent)' : 'transparent',
-              border: screenTab === t.key ? 'none' : '1px solid var(--border)',
-              cursor: 'pointer',
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="tab-bar-host">
+        <TabBar
+          tabs={[
+            { id: 'nu', label: 'Nu' },
+            { id: 'trupp', label: 'Trupp' },
+            { id: 'taktik', label: 'Taktik' },
+          ]}
+          activeId={screenTab}
+          onSelect={(id) => setScreenTab(id as typeof screenTab)}
+        />
       </div>
       {screenTab === 'taktik' && club && game?.assistantCoach && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
