@@ -224,7 +224,7 @@ export function TransfersScreen() {
       )}
 
       {scoutMessage && (
-        <div className="card-sharp transfers-state-copper-dim" style={{ padding: '10px 14px', marginBottom: 12, fontSize: 13, color: 'var(--accent)' }}>
+        <div className="card-sharp transfers-state-copper-dim">
           {scoutMessage}
         </div>
       )}
@@ -233,14 +233,14 @@ export function TransfersScreen() {
         const target = game.players.find(p => p.id === activeAssignment.targetPlayerId)
         const targetClub = game.clubs.find(c => c.id === activeAssignment.targetClubId)
         return (
-          <div className="card-sharp transfers-state-copper" style={{ padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+          <div className="card-sharp transfers-state-copper">
             Scouting pågår: <strong>{target?.firstName} {target?.lastName}</strong> ({targetClub?.name ?? '?'}) · {activeAssignment.roundsRemaining} omgång{activeAssignment.roundsRemaining !== 1 ? 'ar' : ''} kvar
           </div>
         )
       })()}
 
       {game.activeTalentSearch && !activeAssignment && (
-        <div className="card-sharp transfers-state-copper" style={{ padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+        <div className="card-sharp transfers-state-copper">
           Scouten är ute på talangspaning. Klar om {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''}.
         </div>
       )}

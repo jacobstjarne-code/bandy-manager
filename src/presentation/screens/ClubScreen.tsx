@@ -83,7 +83,7 @@ export function ClubScreen() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="screen-col-layout">
       {/* Tab bar */}
       <div className="tab-bar-host">
         <TabBar

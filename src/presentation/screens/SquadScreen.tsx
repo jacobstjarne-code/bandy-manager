@@ -19,6 +19,7 @@ import { SeasonArcCard } from '../components/squad/SeasonArcCard'
 import { StillnessSection } from '../components/squad/StillnessSection'
 import { getRecommendedFormation, FORMATION_META } from '../../domain/entities/Formation'
 import { TabBar } from '../components/shared/TabBar'
+import '../styles/squad.css'
 import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from '../../domain/data/squadNuStrings'
 import { findActiveAnniversaries } from '../../domain/services/clubMemoryService'
 import type { ActiveAnniversary } from '../../domain/services/clubMemoryService'
@@ -357,20 +358,20 @@ function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversar
 
       {/* Fas 2: Storyline row */}
       {lastStoryline && (
-        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--text-secondary)', paddingLeft: 50 }}>
+        <div className="squad-trait-quote">
           {lastStoryline.text}
         </div>
       )}
 
       {player.managerNote && (
-        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--text-secondary)', paddingLeft: 50 }}>
+        <div className="squad-trait-quote">
           ✎ {player.managerNote}
         </div>
       )}
 
       {/* VÄNTAR PÅ C-K1: Landslags-chip */}
       {playerAnniversary && (
-        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--gold)', paddingLeft: 50 }}>
+        <div className="squad-trait-quote-gold">
           ✦ {anniversaryEkoText(playerAnniversary)}
         </div>
       )}
@@ -468,7 +469,7 @@ export function SquadScreen() {
   const dismissed = game?.dismissedHints ?? []
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}>
+    <div className="screen-col-layout" style={{ background: 'var(--bg)' }}>
       {!dismissed.includes('squad') && (
         <FirstVisitHint
           screenId="squad"
@@ -513,7 +514,7 @@ export function SquadScreen() {
         const latestPulse = (game.teamFitnessHistory ?? []).slice(-1)[0]
         const injuryDanger = (latestPulse?.injuryCount ?? 0) >= 2
         const moralDanger = (latestPulse?.avgMorale ?? 100) < 55
-        const nuEmpty = { fontFamily: 'Georgia, serif', fontStyle: 'italic' as const, fontSize: 12, color: 'var(--text-muted)', padding: '8px 0', textAlign: 'center' as const }
+        const nuEmpty = 'squad-empty'
         const playerRow = (p: typeof players[0], statusColor: string, statusText: string) => (
           <div
             key={p.id}
@@ -539,30 +540,30 @@ export function SquadScreen() {
                 <div style={{ marginBottom: 12, ...(injuryDanger ? { borderLeft: '3px solid var(--danger)', paddingLeft: 10 } : {}) }}>
                   <div className="h-label" style={{ marginBottom: 8 }}>🚑 SKADADE</div>
                   {injured.length === 0
-                    ? <div style={nuEmpty}>Inga skadade just nu.</div>
+                    ? <div className={nuEmpty}>Inga skadade just nu.</div>
                     : injured.map(p => playerRow(p, 'var(--danger)', getInjuryText(p.injuryDaysRemaining, p.id)))}
                 </div>
                 <div style={{ marginBottom: 12 }}>
                   <div className="h-label" style={{ marginBottom: 8 }}>🟥 AVSTÄNGDA</div>
                   {suspended.length === 0
-                    ? <div style={nuEmpty}>Ingen avstängd.</div>
+                    ? <div className={nuEmpty}>Ingen avstängd.</div>
                     : suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id, p.suspensionCause)))}
                 </div>
                 <div style={{ marginBottom: 12, ...(moralDanger ? { borderLeft: '3px solid var(--danger)', paddingLeft: 10 } : {}) }}>
                   <div className="h-label" style={{ marginBottom: 8 }}>😟 LÅG MORAL</div>
                   {lowMorale.length > 0 && (
-                    <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--text-secondary)', marginBottom: 8, lineHeight: 1.45 }}>
+                    <div className="squad-section-note">
                       Låg moral i längden tär på formen, och det är formen som märks på isen. Ett samtal i tid brukar räcka för att vända det.
                     </div>
                   )}
                   {lowMorale.length === 0
-                    ? <div style={nuEmpty}>Truppen är på topp.</div>
+                    ? <div className={nuEmpty}>Truppen är på topp.</div>
                     : lowMorale.map(p => playerRow(p, 'var(--warning)', getMoraleText(p.morale, p.lowMoraleDays, p.id)))}
                 </div>
                 <div style={{ marginBottom: 12 }}>
                   <div className="h-label" style={{ marginBottom: 8 }}>📄 KONTRAKT UTGÅR</div>
                   {expiringContracts.length === 0
-                    ? <div style={nuEmpty}>Inga kontrakt löper ut den här säsongen.</div>
+                    ? <div className={nuEmpty}>Inga kontrakt löper ut den här säsongen.</div>
                     : expiringContracts.map(p => playerRow(p, p.contractUntilSeason < game.currentSeason ? 'var(--danger)' : 'var(--warning)', getContractText(p.contractUntilSeason, game.currentSeason, p.id)))}
                 </div>
                 {/* Stiltje-lagren stannar men tonas ned när något brinner */}

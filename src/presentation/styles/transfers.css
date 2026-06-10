@@ -20,6 +20,9 @@
 .transfers-state-copper {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
 }
 
 .transfers-state-copper-strong {
@@ -30,6 +33,10 @@
 .transfers-state-copper-dim {
   background: color-mix(in srgb, var(--accent) 4%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--accent);
 }
 
 .transfers-state-scouted-bg {

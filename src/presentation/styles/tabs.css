@@ -69,3 +69,23 @@
   margin: 0;
   border-bottom: 1px solid var(--border);
 }
+
+/* ── Screen-layout helpers (shared by Club/Squad/etc.) ── */
+
+.screen-col-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.screen-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.screen-scroll-padded {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  padding-bottom: calc(var(--bottom-nav-height, 60px) + 16px);
+}
