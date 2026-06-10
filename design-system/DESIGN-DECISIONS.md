@@ -401,7 +401,26 @@ Grundvärdighet är inte polish — bruksort-vardagen ÄR USP:n. Mest atmosfär-
 
 ---
 
-*Senast uppdaterad: 2026-06-07 — tre-lager visuell rikedom (ceremoni/miljö/innehåll) inskriven; DB-1 tvåfas + z-stapling + infra*
+*Senast uppdaterad: 2026-06-10 — typroll-vakt inskriven; LedgerFrame-krom tillagd*
+
+---
+
+## Typroll-vakt — ratchet för inline-reimplementering (2026-06-10)
+
+**Beslut:** Typrollerna har nu en grep-baserad ratchet på paritet med hex-vakten (`check-design-tokens.mjs`). Vakten stoppar stratumet från att återväxa FÖRE migreringen.
+
+**Script:** `scripts/ds-guard.mjs` · Baslinje: `scripts/ds-guard-baseline.json`
+**Körs via:** `npm run lint:design-guard`
+
+Tre mönster räknas i `src/presentation/**/*.tsx` (exkl. `DevScenesScreen.tsx`, `__tests__/`, `// ds-exempt`):
+- `fontSize: 9` — ska vara `.h-label` / `.h-eyebrow` / `.h-scene-genre` — baslinje: 165
+- `fontFamily: 'var(--font-display)'` — ska vara `.h-quote` / `.h-display-*` — baslinje: 128
+- `borderRadius:` med numeriskt värde ∉ {3, 8, 14, 99} — ska vara radie-skalan — baslinje: 78
+
+Stripes (`borderLeft: 'Npx solid var(--accent)'`) räknas aldrig — sanktionerat mönster.
+Antal > baslinje → exit 1 (fil + rad namnges). Antal < baslinje → info om sänkbar ratchet, exit 0.
+
+**Konsekvens:** Migreringen (Stratum A+B) väntar på Designs steg-3-regler. Vakten håller tills dess.
 
 ---
 

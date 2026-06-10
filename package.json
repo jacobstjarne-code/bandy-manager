@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint:design": "node scripts/check-design-tokens.mjs",
+    "lint:design-guard": "node scripts/ds-guard.mjs",
     "mirror:generate": "node scripts/generate-color-mirror.mjs",
     "mirror:check": "node scripts/generate-color-mirror.mjs --check",
     "audit:scenes": "node scripts/capture-scenes.mjs",
