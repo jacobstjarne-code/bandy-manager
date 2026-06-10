@@ -13,6 +13,7 @@ import { pickStillnessBeat, pickStillnessMicro, computeTeamPulse, buildStillness
 import { findActiveAnniversaries } from '../../../domain/services/clubMemoryService'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 import { Sparkline } from '../primitives/Sparkline'
+import { seasonTrendStroke } from '../../utils/formatters'
 import { TrainingType } from '../../../domain/enums'
 
 const TRAINING_LABEL: Record<string, string> = {
@@ -68,7 +69,7 @@ export function StillnessSection({ game, receded = false }: Props) {
   })
 
   const containerOpacity = receded ? 0.62 : 1
-  const pulseStroke = pulse.length >= 2 && pulse[pulse.length - 1] >= pulse[0] ? 'success' : 'cold'
+  const pulseStroke = seasonTrendStroke(pulse, { neutral: 'cold' })
 
   return (
     <div style={{ opacity: containerOpacity, transition: 'opacity 0.3s ease' }}>

@@ -68,6 +68,15 @@ export function trendStroke(last: number, prev: number): 'success' | 'danger' | 
   return last > prev ? 'success' : last < prev ? 'danger' : 'accent'
 }
 
+/** Season-level trend: last point vs first point. Used for kassa/puls sparklines. */
+export function seasonTrendStroke(
+  points: number[],
+  options?: { neutral?: 'accent' | 'cold' | 'warm' | 'danger' },
+): 'success' | 'accent' | 'cold' | 'warm' | 'danger' {
+  if (points.length < 2) return options?.neutral ?? 'danger'
+  return points[points.length - 1] >= points[0] ? 'success' : (options?.neutral ?? 'danger')
+}
+
 export function attributeLabel(key: string): string {
   const map: Record<string, string> = {
     skating: 'Skridskoåkning', acceleration: 'Acceleration', stamina: 'Kondition',

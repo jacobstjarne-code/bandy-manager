@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
-import { formatCurrency, formatFinance } from '../../utils/formatters'
+import { formatCurrency, formatFinance, seasonTrendStroke } from '../../utils/formatters'
 import { calcRoundIncome, deriveKassaHistory } from '../../../domain/services/economyService'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import '../../styles/economy.css'
@@ -74,8 +74,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
 
   // C-SY2 Våg 4: kassa-trend härledd ur transaktionsloggen. Stroke = riktning (success/danger).
   const kassaHistory = deriveKassaHistory(game.financeLog ?? [], club.finances)
-  const kassaStroke: 'success' | 'danger' = kassaHistory.length >= 2 && kassaHistory[kassaHistory.length - 1] >= kassaHistory[0]
-    ? 'success' : 'danger'
+  const kassaStroke = seasonTrendStroke(kassaHistory)
 
   interface CommunityRow {
     icon: string; name: string; active: boolean; status: string
