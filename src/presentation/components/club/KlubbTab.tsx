@@ -3,7 +3,6 @@ import type { NavigateFunction } from 'react-router-dom'
 import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { ClubExpectation, ClubStyle } from '../../../domain/enums'
-import { StatBar } from '../StatBar'
 import { SectionCard } from '../SectionCard'
 import { InfoRow } from '../primitives'
 import { csColor } from '../../utils/formatters'
@@ -11,6 +10,7 @@ import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteSe
 import { getAvailableProjects } from '../../../domain/services/facilityService'
 import { OrtenMap } from './OrtenMap'
 import { generateVolunteerRoster, getActiveVolunteerBonus } from '../../../domain/services/volunteerService'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {
@@ -36,13 +36,11 @@ function styleLabel(s: ClubStyle): string {
 
 
 function FacilityRow({ label, value }: { label: string; value: number }) {
+  const col = value >= 70 ? 'var(--success)' : value >= 45 ? 'var(--accent)' : 'var(--text-muted)'
   return (
-    <div style={{ marginBottom: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-        <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{label}</span>
-        <span style={{ fontSize: 14, fontWeight: 600 }}>{value}</span>
-      </div>
-      <StatBar value={value} color='var(--accent)' height={5} />
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid var(--border)' }}>
+      <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: col }}>{value}</span>
     </div>
   )
 }
@@ -103,7 +101,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
             arena: 'section-facilities',
             skola: 'section-youth',
             kommunen: 'section-politician',
-            sponsorer: 'section-sponsors',
+            mecenater: 'section-sponsors',
             frivilliga: 'section-volunteers',
           }
           const el = document.getElementById(sectionMap[id] ?? '')
@@ -113,9 +111,19 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
 
       {/* Bygdens puls */}
       <SectionCard title="🏠 Bygdens puls" stagger={1}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
-          <span style={{ fontSize: 32, fontWeight: 400, color: csColor(cs), fontFamily: 'var(--font-display)' }}>{cs}</span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/ 100</span>
+        {/* Puls-hero med trendpil */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <span style={{ fontSize: 40, fontWeight: 300, color: csColor(cs), fontFamily: 'var(--font-display)', lineHeight: 1 }}>{cs}</span>
+          {(() => {
+            const delta = game.communityStandingDelta ?? 0
+            if (delta > 0) return <span style={{ fontSize: 20, color: 'var(--success)' }}>▲</span>
+            if (delta < 0) return <span style={{ fontSize: 20, color: 'var(--danger)' }}>▼</span>
+            return <span style={{ fontSize: 20, color: 'var(--text-muted)' }}>—</span>
+          })()}
+          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>SÄSONG</p>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>{seasonSpanLabel(game.currentSeason)}</p>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 2, marginBottom: 10 }}>
           <div style={{ flex: cs, height: 7, background: csColor(cs), borderRadius: '4px 0 0 4px' }} />
@@ -178,8 +186,8 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
       {/* Lokaltidningen */}
       {game.journalist && (() => {
         const j = game.journalist
-        const relColor = j.relationship >= 70 ? 'var(--success)' : j.relationship >= 40 ? 'var(--accent)' : 'var(--danger)'
-        const relLabel = j.relationship >= 70 ? '😊 Positiv' : j.relationship >= 40 ? '😐 Neutral' : '😤 Kritisk'
+        const relColor = j.relationship >= 70 ? 'var(--success)' : j.relationship >= 40 ? 'var(--text-muted)' : 'var(--danger)'
+        const relLabel = j.relationship >= 70 ? '😊 Positiv' : j.relationship < 40 ? '😤 Kritisk' : null
         const recentMemories = [...(j.memory ?? [])].reverse().slice(0, 2)
         return (
           <SectionCard title="📰 Lokaltidningen" stagger={2}>
@@ -188,7 +196,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
                 <p style={{ fontSize: 13, fontWeight: 600 }}>{j.name}</p>
                 <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{j.outlet}</p>
               </div>
-              <span style={{ fontSize: 11, fontWeight: 600, color: relColor }}>{relLabel}</span>
+              {relLabel && <span style={{ fontSize: 11, fontWeight: 600, color: relColor }}>{relLabel}</span>}
             </div>
             <div style={{ height: 6, borderRadius: 2, background: 'var(--border)', overflow: 'hidden', marginBottom: 8 }}>
               <div style={{ height: '100%', width: `${j.relationship}%`, background: relColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
@@ -226,24 +234,26 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
       <SectionCard title="👥 Frivilliga" stagger={2} id="section-volunteers">
         {activeVolunteers.length > 0 && (
           <div style={{ marginBottom: 10 }}>
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--success)', marginBottom: 6 }}>
-              {activeVolunteers.length} aktiva · +{Math.round(volunteerBonus.weeklyIncome / 1000)} tkr/omg · +{volunteerBonus.csBoostPerRound.toFixed(1)} puls/omg
-            </p>
-            {activeVolunteers.map((name, i) => {
-              const morale = (game.volunteerMorale ?? {})[name] ?? 70
-              const moraleColor = morale >= 60 ? 'var(--success)' : morale >= 35 ? 'var(--accent)' : 'var(--danger)'
-              return (
-                <div key={i} style={{ marginBottom: 6 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600 }}>{name}</span>
-                    <span style={{ fontSize: 10, color: moraleColor }}>{morale >= 60 ? '😊' : morale >= 35 ? '😐' : '😤'} {morale}</span>
+            {/* Aggregate bar — total frivilliga-styrka */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--success)' }}>{activeVolunteers.length}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>frivilliga</span>
+              <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)' }}>
+                +{Math.round(volunteerBonus.weeklyIncome / 1000)} tkr · +{volunteerBonus.csBoostPerRound.toFixed(1)} puls/omg
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 2, marginBottom: 8 }}>
+              {activeVolunteers.map((name, i) => {
+                const morale = (game.volunteerMorale ?? {})[name] ?? 70
+                const moraleColor = morale >= 60 ? 'var(--success)' : morale >= 35 ? 'var(--accent)' : 'var(--danger)'
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 0' }}>
+                    <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{name}</span>
+                    <span style={{ fontSize: 10, color: moraleColor, marginLeft: 6 }}>{morale}</span>
                   </div>
-                  <div style={{ height: 3, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${morale}%`, background: moraleColor, borderRadius: 2 }} />
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         )}
         <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
@@ -374,10 +384,44 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
                 <div style={{ height: '100%', width: `${rel}%`, background: relColor, borderRadius: 3, transition: 'width 0.5s ease' }} />
               </div>
             </div>
-            <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.4, marginBottom: 6 }}>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.4, marginBottom: 4 }}>
               {agendaText[polData.agenda] ?? ''}
             </p>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            {/* Agenda-hint: vilka aktiviteter räknas (Fable-fynd 2) */}
+            {(() => {
+              const agendaActivityHints: Partial<Record<string, { key: string; label: string }[]>> = {
+                youth: [
+                  { key: 'bandyplay', label: 'Bandyskola (gratis)' },
+                  { key: 'bandySchool', label: 'Bandyskola avancerad' },
+                  { key: 'skolbesok', label: 'Skolbesök' },
+                ],
+                inclusion: [
+                  { key: 'functionaries', label: 'Matchvärdar' },
+                  { key: 'pensionarskaffe', label: 'Pensionärskaffe' },
+                  { key: 'soppkvall', label: 'Soppkväll' },
+                  { key: 'skolbesok', label: 'Skolbesök' },
+                ],
+              }
+              const hints = agendaActivityHints[polData.agenda]
+              if (!hints) return null
+              const caAny = (ca as unknown) as Record<string, unknown> | undefined
+              const active = hints.filter(h => !!caAny?.[h.key])
+              const inactive = hints.filter(h => !caAny?.[h.key])
+              return (
+                <div style={{ padding: '6px 8px', background: 'color-mix(in srgb, var(--accent) 6%, transparent)', borderRadius: 6, marginBottom: 6 }}>
+                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>RÄKNAS FÖR AGENDАН</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {active.map(h => (
+                      <span key={h.key} style={{ fontSize: 10, color: 'var(--success)', fontWeight: 600 }}>✓ {h.label}</span>
+                    ))}
+                    {inactive.map(h => (
+                      <span key={h.key} style={{ fontSize: 10, color: 'var(--text-muted)' }}>○ {h.label}</span>
+                    ))}
+                  </div>
+                </div>
+              )
+            })()}
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
               Kommunbidrag: {Math.round((polData.kommunBidrag ?? 0) / 1000)} tkr/säsong
               {polData.mandatExpires && ` · Nästa val: säs. ${polData.mandatExpires}`}
             </p>
@@ -387,6 +431,8 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
               {polFeedback.ok ? '✓' : '✗'} {polFeedback.text}
             </p>
           )}
+          {/* Copper-ram runt knapp-blocket */}
+          <div style={{ border: '1px solid var(--accent)', borderRadius: 'var(--radius-md)', padding: 8, opacity: 0.95 }}>
           {(() => {
             const li = game.politicianLastInteraction ?? {}
             const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
@@ -425,6 +471,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
           </div>
             )
           })()}
+          </div>
         </SectionCard>
         )
       })()}
