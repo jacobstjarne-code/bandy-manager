@@ -59,11 +59,6 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   const kommunBidrag = politician?.kommunBidrag ?? 0
   const wagePressure = actualMonthlyWages > club.wageBudget
   const licenseReview = game.licenseReview
-  const licenseIcon = licenseReview?.status === 'approved' ? '✅'
-    : licenseReview?.status === 'warning' ? '⚠️'
-    : licenseReview?.status === 'continued_review' ? '🔴'
-    : licenseReview?.status === 'denied' ? '❌'
-    : '✅'
   const licenseLabel = licenseReview?.status === 'approved' ? 'Godkänd'
     : licenseReview?.status === 'warning' ? 'Varning'
     : licenseReview?.status === 'continued_review' ? 'Fortsatt granskning'
@@ -211,7 +206,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, marginTop: 8, borderTop: '1px solid var(--border)' }}>
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Licensstatus</span>
           <span style={{ fontSize: 12, fontWeight: 700, color: licenseColor }}>
-            {licenseIcon} {licenseLabel}
+            {licenseLabel}
           </span>
         </div>
         <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4, lineHeight: 1.4 }}>

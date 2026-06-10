@@ -1,5 +1,5 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { Sparkline } from '../primitives'
+import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import { ManagerPortrait } from '../squad/ManagerPortrait'
 import {
   getManagerBio,
@@ -100,15 +100,15 @@ export function TranareTab({ game }: Props) {
           <span style={{ fontSize: 12, fontWeight: 700, color: zoneColor }}>{zoneLabel}</span>
         </div>
 
-        {profile.burnoutHistory.length >= 3 ? (
+        {profile.burnoutHistory.length >= MIN_POINTS ? (
           <Sparkline
             points={profile.burnoutHistory}
             stroke={zone === 'hog' ? 'danger' : zone === 'markbar' ? 'warm' : 'success'}
             height={32}
           />
         ) : (
-          <div style={{ height: 20, fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-            Data byggs upp under säsongen.
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+            {zoneLabel} · Ingen belastningshistorik ännu.
           </div>
         )}
 

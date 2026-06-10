@@ -22,7 +22,6 @@ export function ClubScreen() {
   const setTraining = useGameStore(s => s.setTraining)
   const activateCommunity = useGameStore(s => s.activateCommunity)
   const upgradeAcademy = useGameStore(s => s.upgradeAcademy)
-  const upgradeFacilities = useGameStore(s => s.upgradeFacilities)
   const promoteYouthPlayer = useGameStore(s => s.promoteYouthPlayer)
   const assignMentor = useGameStore(s => s.assignMentor)
   const removeMentor = useGameStore(s => s.removeMentor)
@@ -77,9 +76,12 @@ export function ClubScreen() {
   ]
 
   const tabDescriptions: Record<string, string> = {
+    training: 'Träningsfokus och intensitet inför nästa omgång.',
     ekonomi: 'Klubbkassa, budget, intäkter och utgifter.',
     orten: 'Lokalstöd, mecenater, kommun och föreningsaktiviteter.',
     akademi: 'Ungdomslag, talangutveckling och intag.',
+    minne: 'Klubbens historia, legender och minnesvärda ögonblick.',
+    tranare: 'Din tränar­profil, belastning och rivaliteter.',
   }
 
   return (
@@ -155,7 +157,6 @@ export function ClubScreen() {
             club={club}
             game={game}
             upgradeAcademy={upgradeAcademy}
-            upgradeFacilities={upgradeFacilities}
             promoteYouthPlayer={promoteYouthPlayer}
             assignMentor={assignMentor}
             removeMentor={removeMentor}

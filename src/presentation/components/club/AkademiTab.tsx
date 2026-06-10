@@ -10,7 +10,6 @@ interface AkademiTabProps {
   club: Club
   game: SaveGame
   upgradeAcademy: () => { error?: string }
-  upgradeFacilities: () => { success: boolean; error?: string }
   promoteYouthPlayer: (id: string) => { success: boolean; error?: string; timing?: string }
   assignMentor: (seniorId: string, youthId: string) => { error?: string }
   removeMentor: (youthId: string) => void
@@ -18,9 +17,8 @@ interface AkademiTabProps {
   recallLoan: (playerId: string) => void
 }
 
-export function AkademiTab({ club, game, upgradeAcademy, upgradeFacilities, promoteYouthPlayer, assignMentor, removeMentor, loanOutPlayer, recallLoan }: AkademiTabProps) {
+export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, assignMentor, removeMentor, loanOutPlayer, recallLoan }: AkademiTabProps) {
   const [upgradeMsg, setUpgradeMsg] = useState<string | null>(null)
-  const [facilityMsg, setFacilityMsg] = useState<string | null>(null)
   const [promotionMsg, setPromotionMsg] = useState<string | null>(null)
   const [mentorMsg, setMentorMsg] = useState<string | null>(null)
   const [selectedMentorSeniorId, setSelectedMentorSeniorId] = useState<string>('')
@@ -92,6 +90,10 @@ export function AkademiTab({ club, game, upgradeAcademy, upgradeFacilities, prom
           )}
 
           {/* Player list */}
+          <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 8 }}>
+            ★ = potential · CA = nuläge
+          </p>
+
           {[
             { label: 'Redo för uppkallning', players: readyPlayers, canPromote: true },
             { label: 'Utvecklas', players: almostReady, canPromote: true },
@@ -178,7 +180,7 @@ export function AkademiTab({ club, game, upgradeAcademy, upgradeFacilities, prom
         )}
       </SectionCard>
 
-      {/* Facility upgrade */}
+      {/* Facility — read-only, owned by Orten */}
       <SectionCard title="🏗️ Anläggning" stagger={3}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
           <span style={{ fontSize: 14, fontWeight: 600 }}>Nivå {club.facilities}/100</span>
@@ -186,25 +188,12 @@ export function AkademiTab({ club, game, upgradeAcademy, upgradeFacilities, prom
             <span style={{ fontSize: 11, color: 'var(--success)' }}>Uppgraderad denna säsong</span>
           )}
         </div>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, lineHeight: 1.4 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, lineHeight: 1.4 }}>
           Bättre anläggning ger bättre träning, spelarutveckling och möjlighet att uppgradera akademin.
         </p>
-        {facilityMsg && (
-          <p style={{ fontSize: 12, color: facilityMsg.startsWith('✓') ? 'var(--success)' : 'var(--danger)', marginBottom: 8 }}>{facilityMsg}</p>
-        )}
-        {club.facilities < 100 && (game.facilityUpgradeSeason ?? 0) < game.currentSeason && (
-          <button
-            className="btn btn-outline"
-            onClick={() => {
-              const result = upgradeFacilities()
-              setFacilityMsg(result.error ? result.error : `✓ Anläggning uppgraderad till ${Math.min(100, club.facilities + 15)}/100`)
-              setTimeout(() => setFacilityMsg(null), 4000)
-            }}
-            style={{ maxWidth: 200 }}
-          >
-            Uppgradera (+15) — 200 tkr
-          </button>
-        )}
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+          Uppgraderas via Orten-fliken.
+        </p>
       </SectionCard>
 
       {/* Mentorskap */}
