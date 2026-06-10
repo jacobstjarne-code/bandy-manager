@@ -72,6 +72,9 @@
 .score-block.light.gold  { border-left-color: var(--gold); background: rgba(232, 185, 92, 0.10); }
 /* gold-siffra bevaras på ljus yta — ceremoniell SM-final */
 .score-block.light.gold .score-block-num { color: var(--gold); }
+/* vinst/förlust: dämpade färger mot papper (full --success/--danger är för hårt på vit yta) */
+.score-block.light.win  .score-block-num { color: var(--success-muted, rgba(74, 124, 89, 0.85)); }
+.score-block.light.loss .score-block-num { color: var(--danger-muted, rgba(168, 74, 74, 0.85)); }
 
 /* ── Hero (segerscener: SM-final, Cup-final) ─────────────────────────────
    Ingen border-left — siffran är inte ett element i en lista, den är ensam.

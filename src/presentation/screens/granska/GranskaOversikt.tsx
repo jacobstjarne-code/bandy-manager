@@ -130,6 +130,7 @@ export function GranskaOversikt({
                 score={`${fixture.homeScore}–${fixture.awayScore}`}
                 variant={won ? 'win' : lost ? 'loss' : 'draw'}
                 size="hero"
+                light
               />
             </div>
 
