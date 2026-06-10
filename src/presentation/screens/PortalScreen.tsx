@@ -28,6 +28,7 @@ import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSer
 import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
 import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
+import { PortalObjectiveAlert } from '../components/portal/PortalObjectiveAlert'
 
 // Initialisera bag-of-cards en gång vid modulimport
 initCardBag()
@@ -276,6 +277,7 @@ export function PortalScreen() {
         {game.pendingAnnandagsVal && (
           <AnnandagsValEvent game={game} />
         )}
+        <PortalObjectiveAlert game={game} />
         <PortalEventSlot game={game} />
         <Primary game={game} />
         {StorySlotComponent && <StorySlotComponent game={game} />}
