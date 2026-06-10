@@ -33,6 +33,25 @@ Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 →
 
 ---
 
+## AKTUELLT LÄGE (2026-06-10) — Session tech-debt + A3 match-laddning
+
+**Pushat av Code 2026-06-10 (commits `b1c7ca3` → `b5e845e`):**
+- ✅ **Ledger-vocab i modaler** — `BidModal` + `RenewContractModal` använder LedgerFrame CSS-vokabulär; `volunteerMorale`-puls med CS mean-reversion drift (commit `b1c7ca3`)
+- ✅ **Tech-debt E-SC1** — `seededPick`/`seededPickNoRepeat` konsoliderade i `random.ts`, 5 duplikat borta (commit `f7901b4`)
+- ✅ **Tech-debt E-SC3** — `seasonTrendStroke` helper i `roundCharacter.ts`, ersätter inline last-vs-first (commit `fedd663`)
+- ✅ **Tech-debt E-SC2** — Portal-eskalering/playoff-kontext förberäknad en gång i `PortalScreen` (commit `aa5569f`)
+- ✅ **A3 Match-laddning beat** — `computeLaddningBeat` (grind), `MatchLaddningScene` (fullbleed tillfälle-tier), `MatchLaddningBand` (slim tillstånd-tier), wiring i `MatchScreen` som nytt `'laddning'`-steg, 20 grind-tester (commit `b5e845e`)
+
+**Verifiering:**
+- TSC clean, 1092/1093 passed (1 pre-existing boardMeetingScene)
+- Audit: `docs/sprints/SPRINT_A3_MATCH_LADDNING_AUDIT.md`
+
+**Manuell playtest återstår:**
+- Visuell rendering av scen/band mot mock (pixel-jämförelse kräver levande app)
+- IllustrationPlaceholder-fallback för derby/cup/premiar/nyår
+
+---
+
 ## AKTUELLT LÄGE (2026-05-24) — Sprint 2026-05-24 + trupp-redesign Fas 1+2 + manager-anteckning
 
 **Pushat av Code 2026-05-24 (commits `1e1e05b` → `da071ff`):**
