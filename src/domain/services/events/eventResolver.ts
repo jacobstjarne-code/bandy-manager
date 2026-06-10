@@ -364,6 +364,8 @@ export function resolveEvent(
         patron: { ...patronBeforeUpdate, happiness: newHappiness, isActive: newHappiness > 0 },
       }
       if (newHappiness === 0) {
+        // Set cooldown immediately so it holds across season boundaries even if withdrawal event goes unacknowledged
+        updatedGame = { ...updatedGame, patronWithdrawnSeason: updatedGame.currentSeason }
         // Patron withdrawal kris-event
         const withdrawalId = `patron_withdrawal_${updatedGame.currentSeason}`
         const alreadyQueued = (updatedGame.pendingEvents ?? []).some(e => e.id === withdrawalId)

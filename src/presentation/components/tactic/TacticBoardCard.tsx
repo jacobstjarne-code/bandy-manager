@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { AssistantCoach } from '../../../domain/entities/AssistantCoach'
-import { TabBar } from '../TabBar'
+import { TabBar } from '../shared/TabBar'
 import { FormationView } from './FormationView'
 import { ChemistryView } from './ChemistryView'
 import { NotesView } from './NotesView'
@@ -37,12 +37,12 @@ export function TacticBoardCard({
       {/* Tabs */}
       <TabBar
         tabs={[
-          { id: 'formation' as TacticTab, label: 'FORMATION' },
-          { id: 'chemistry' as TacticTab, label: 'KEMI' },
-          { id: 'notes' as TacticTab, label: 'ANTECKNINGAR' },
+          { id: 'formation', label: 'Formation' },
+          { id: 'chemistry', label: 'Kemi' },
+          { id: 'notes', label: 'Anteckningar' },
         ]}
-        active={tab}
-        onChange={setTab}
+        activeId={tab}
+        onSelect={(id) => setTab(id as TacticTab)}
       />
 
       {/* Tab description */}
