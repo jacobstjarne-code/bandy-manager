@@ -394,9 +394,10 @@ export function resolveEvent(
       break
     }
     case 'spawnPatron': {
-      if (!effect.sponsorData) break
+      const rawPatron = effect.patronData ?? effect.sponsorData  // patronData preferred, sponsorData for legacy saves
+      if (!rawPatron) break
       try {
-        const p = JSON.parse(effect.sponsorData)
+        const p = JSON.parse(rawPatron)
         updatedGame = {
           ...updatedGame,
           patron: {

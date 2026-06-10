@@ -107,7 +107,8 @@ export interface EventEffect {
   targetClubId?: string
   targetMecenatId?: string
   bidId?: string
-  sponsorData?: string
+  sponsorData?: string  // commercial sponsor data (riskySponsorOffer)
+  patronData?: string   // patron emergence data (spawnPatron)
   mediaQuote?: string
   communityKey?: string
   communityValue?: string

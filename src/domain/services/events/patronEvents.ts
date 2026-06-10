@@ -276,13 +276,13 @@ export function generatePatronEmergenceEvent(
         id: 'welcome',
         label: 'Välkommen',
         subtitle: `💰 +${tkr} tkr/säsong · Relation startar`,
-        effect: { type: 'spawnPatron' as const, sponsorData: JSON.stringify(patronData), amount: 20 },
+        effect: { type: 'spawnPatron' as const, patronData: JSON.stringify(patronData), amount: 20 },
       },
       {
         id: 'cautious',
         label: 'Vi tar det försiktigt',
         subtitle: 'Relation startar försiktigt',
-        effect: { type: 'spawnPatron' as const, sponsorData: JSON.stringify(patronData), amount: 5 },
+        effect: { type: 'spawnPatron' as const, patronData: JSON.stringify(patronData), amount: 5 },
       },
       {
         id: 'decline',
