@@ -13,7 +13,7 @@ import { RenewContractModal } from '../components/transfers/RenewContractModal'
 import { BidModal } from '../components/transfers/BidModal'
 import { getRivalry } from '../../domain/data/rivalries'
 import { TransferPlayerCard } from '../components/transfers/TransferPlayerCard'
-import { ActiveBidsList } from '../components/transfers/ActiveBidsList'
+import { ScoutingTab } from '../components/transfers/ScoutingTab'
 import { FreeAgentList } from '../components/transfers/FreeAgentList'
 import { WageOverrunWarning } from '../components/transfers/WageOverrunWarning'
 import '../styles/transfers.css'
@@ -377,7 +377,7 @@ export function TransfersScreen() {
 
       {/* Scouting tab */}
       {activeTab === 'scouting' && (
-        <ActiveBidsList
+        <ScoutingTab
           game={game}
           scoutReports={scoutReports}
           scoutBudget={scoutBudget}
