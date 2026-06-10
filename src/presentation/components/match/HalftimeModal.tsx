@@ -248,9 +248,9 @@ export function HalftimeModal({
             {isSmFinal ? '⏸ HALVTID · SM-FINALEN' : isCupFinal ? '⏸ HALVTID · CUPFINALEN' : '⏸ HALVTID'}
           </p>
 
-          {/* LED score */}
+          {/* Score — Georgia (paper-numerals), not LED (tavlans reservat) */}
           <div className="ht-score">
-            <div className="led">{htHomeGoals}—{htAwayGoals}</div>
+            <div className="h-display-lg" style={{ color: 'var(--text-primary)' }}>{htHomeGoals}—{htAwayGoals}</div>
             <div className="pd">{truncate(homeClubName, 10)} · {truncate(awayClubName, 10)}</div>
           </div>
 

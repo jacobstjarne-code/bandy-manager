@@ -57,6 +57,8 @@ export function GameShell() {
     location.pathname === '/game/review'
   const isReviewRoute = location.pathname === '/game/review'
   const isPressConferenceRoute = location.pathname.includes('/press-conference')
+  // match/live owns its own chrome via LedgerFrame — suppress GameHeader + PhaseStrip on that route only
+  const isLedgerOwnedChrome = location.pathname.includes('/match/live')
   const shouldShowEventOverlay =
     attention.kind === 'event' &&
     (attention.event.priority ?? getEventPriority(attention.event.type)) === 'critical' &&
@@ -66,8 +68,8 @@ export function GameShell() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <GameHeader />
-      <PhaseIndicatorAuto />
+      {!isLedgerOwnedChrome && <GameHeader />}
+      {!isLedgerOwnedChrome && <PhaseIndicatorAuto />}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: sceneActive ? 0 : `calc(var(--bottom-nav-height) + var(--safe-bottom))` }}>
         <div key={location.pathname} className="screen-enter" style={{ minHeight: '100%' }}>
           <Outlet />
