@@ -5,6 +5,7 @@ import { SectionCard } from '../SectionCard'
 import { formatCurrency, formatFinance } from '../../utils/formatters'
 import { calcRoundIncome, deriveKassaHistory } from '../../../domain/services/economyService'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
+import '../../styles/economy.css'
 
 interface EkonomiTabProps {
   club: Club
@@ -168,7 +169,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
     <>
       {/* Kassaöversikt */}
       <SectionCard title="💰 Kassaöversikt" stagger={1}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: kassaHistory.length >= MIN_POINTS ? 8 : 10, marginBottom: kassaHistory.length >= MIN_POINTS ? 8 : 10, borderBottom: '1px solid var(--border)' }}>
+        <div className="eco-row" style={{ paddingBottom: kassaHistory.length >= MIN_POINTS ? 8 : 10, marginBottom: kassaHistory.length >= MIN_POINTS ? 8 : 10, borderBottom: '1px solid var(--border)' }}>
           <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Saldo</span>
           {/* DB-4: pengar = Georgia (.h-display-sm), sans-bold tillbakadraget; färg-override behålls */}
           <span className="h-display-sm" style={{ color: club.finances < 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
@@ -182,11 +183,11 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
             <Sparkline points={kassaHistory} stroke={kassaStroke} height={28} />
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div className="eco-row-mb">
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Intäkter / omg</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(weeklyIncome)}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div className="eco-row-mb">
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lönekostnader / omg</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: wagePressure ? 'var(--danger)' : 'var(--text-primary)' }}>
             -{formatCurrency(weeklyWages)}
@@ -197,13 +198,13 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
             ⚠️ Lönekostnader överstiger lönebudget ({formatCurrency(club.wageBudget)}/mån)
           </p>
         )}
-        <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+        <div className="eco-row-top-border">
           <span style={{ fontSize: 13, fontWeight: 700 }}>Netto / omg</span>
           <span style={{ fontSize: 14, fontWeight: 800, color: netPerRound >= 0 ? 'var(--success)' : 'var(--danger)' }}>
             {netPerRound >= 0 ? '+' : ''}{formatCurrency(netPerRound)}
           </span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, marginTop: 8, borderTop: '1px solid var(--border)' }}>
+        <div className="eco-row-total">
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Licensstatus</span>
           <span style={{ fontSize: 12, fontWeight: 700, color: licenseColor }}>
             {licenseLabel}
@@ -213,7 +214,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           Licensnämnden granskar ekonomin varje säsong. Negativ kassa eller svag ungdomsverksamhet kan ge varning — som i sin tur skrämmer sponsorer.
         </p>
         {communityStanding !== undefined && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 6, marginTop: 6, borderTop: '1px solid var(--border)' }}>
+          <div className="eco-row-total" style={{ paddingTop: 6, marginTop: 6 }}>
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Lokal ställning</span>
             <span style={{ fontSize: 12, fontWeight: 700, color: communityStanding > 70 ? 'var(--success)' : communityStanding > 40 ? 'var(--text-primary)' : 'var(--danger)' }}>
               {communityStanding}/100
@@ -245,7 +246,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
 
       {/* Sponsorer */}
       <SectionCard title="🤝 Sponsorer" stagger={2}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <div className="eco-row" style={{ marginBottom: 12 }}>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
             {activeSponsors.length} av {maxSponsors} platser
           </span>
@@ -256,7 +257,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           )}
         </div>
         {activeSponsors.map((sponsor, i) => (
-          <div key={sponsor.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < activeSponsors.length - 1 ? '1px solid var(--border)' : 'none' }}>
+          <div key={sponsor.id} className="eco-sponsor-row" style={{ borderBottom: i < activeSponsors.length - 1 ? '1px solid var(--border)' : 'none' }}>
             <div>
               <span style={{ fontSize: 13, fontWeight: 600 }}>{sponsor.name}</span>
               <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{sponsor.category}</span>
@@ -274,7 +275,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                 {sponsorFeedback}
               </p>
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="eco-row">
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                 {maxSponsors - activeSponsors.length}/{maxSponsors} platser lediga
               </span>
@@ -306,12 +307,11 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           </p>
         )}
         {communityRows.map((row, i) => (
-          <div key={row.name} style={{
-            padding: '8px 0',
+          <div key={row.name} className="eco-community-row" style={{
             borderBottom: i < communityRows.length - 1 ? '1px solid var(--border)' : 'none',
             opacity: row.active || !row.noAction ? 1 : 0.4,
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: (row.actionKey || row.upgradeKey) ? 6 : 0 }}>
+            <div className="eco-community-inner" style={{ marginBottom: (row.actionKey || row.upgradeKey) ? 6 : 0 }}>
               <div>
                 <span style={{ fontSize: 13, opacity: row.active ? 1 : 0.6 }}>{row.icon} {row.name}</span>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{row.status}</span>
@@ -343,7 +343,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           </div>
         ))}
         {communityTotal > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 2, borderTop: '1px solid var(--border)' }}>
+          <div className="eco-row-top-border" style={{ paddingTop: 10, marginTop: 2 }}>
             <span style={{ fontSize: 13, fontWeight: 700 }}>Totalt / hemmamatch</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--success)' }}>~+{Math.round(communityTotal / 1000)} tkr</span>
           </div>
@@ -355,7 +355,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
         <SectionCard title="🏦 Övriga intäkter" stagger={4}>
           {activeMecenater.map((m, i) => (
             <div key={m.id} style={{ marginBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? 10 : 0, paddingBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? 10 : 0, borderBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? '1px solid var(--border)' : 'none' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div className="eco-mecenat-row">
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Mecenat — {m.name}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(m.contribution)}/sä</span>
               </div>
@@ -364,7 +364,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           ))}
           {kommunBidrag > 0 && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div className="eco-mecenat-row">
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag{politician ? ` — ${politician.name}` : ''}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(kommunBidrag)}/sä</span>
               </div>
@@ -390,7 +390,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           const sliderDisabled = club.finances <= 0
           return (
             <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div className="eco-row" style={{ marginBottom: 10 }}>
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Avsatt budget</span>
                 <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent)' }}>
                   {formatFinance(currentTransferBudget)}
@@ -411,7 +411,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                     onChange={e => setPendingTransferBudget(Number(e.target.value))}
                     style={{ width: '100%', accentColor: 'var(--accent)', marginBottom: 10 }}
                   />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div className="eco-row-mb" style={{ marginBottom: 12 }}>
                     <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>0 tkr</span>
                     <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{formatFinance(Math.round(sliderMax / 10000) * 10000)}</span>
                   </div>
@@ -440,9 +440,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       {(game.financeLog ?? []).length > 0 && (
         <SectionCard title="📋 Transaktionshistorik" stagger={6}>
           {[...(game.financeLog ?? [])].reverse().slice(0, 12).map((entry, i, arr) => (
-            <div key={i} style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '6px 0',
+            <div key={i} className="eco-txn-row" style={{
               borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
             }}>
               <div>
@@ -465,7 +463,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           const scoutMaxReached = scoutBudget >= 30
           return (
             <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div className="eco-row" style={{ marginBottom: 10 }}>
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Scoutronder kvar</span>
                 <span style={{
                   fontSize: 20, fontWeight: 800,

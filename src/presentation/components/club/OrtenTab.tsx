@@ -45,7 +45,7 @@ function FacilityRow({ label, value }: { label: string; value: number }) {
   )
 }
 
-interface KlubbTabProps {
+interface OrtenTabProps {
   club: Club
   game: SaveGame
   navigate: NavigateFunction
@@ -55,7 +55,7 @@ interface KlubbTabProps {
   activateCommunity?: (key: string, level: string) => { success: boolean; error?: string }
 }
 
-export function KlubbTab({ club, game, navigate, interactWithPolitician, startFacilityProject, recruitVolunteer, activateCommunity }: KlubbTabProps) {
+export function OrtenTab({ club, game, navigate, interactWithPolitician, startFacilityProject, recruitVolunteer, activateCommunity }: OrtenTabProps) {
   const [polFeedback, setPolFeedback] = useState<{ text: string; ok: boolean } | null>(null)
   const [activityFeedback, setActivityFeedback] = useState<{ text: string; ok: boolean } | null>(null)
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null)

@@ -1,0 +1,69 @@
+/* ── EkonomiTab layout helpers ── */
+
+/* Flex row: space-between + items-center */
+.eco-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Flex row with 6px bottom margin (income/expense lines) */
+.eco-row-mb {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+/* Totals row: top border + padding */
+.eco-row-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* Section divider row: top border, no margin */
+.eco-row-top-border {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* Sponsor list item */
+.eco-sponsor-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+}
+
+/* Community activity row */
+.eco-community-row {
+  padding: 8px 0;
+}
+
+/* Inner flex row inside community row */
+.eco-community-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Transaction history row */
+.eco-txn-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+/* Mecenat / kommunbidrag row */
+.eco-mecenat-row {
+  display: flex;
+  justify-content: space-between;
+}

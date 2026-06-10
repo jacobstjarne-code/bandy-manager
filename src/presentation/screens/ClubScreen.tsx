@@ -5,7 +5,7 @@ import { TrainingType, TrainingIntensity } from '../../domain/enums'
 import { TrainingProjectsCard } from '../components/club/TrainingProjectsCard'
 import { TrainingSection } from '../components/club/TrainingSection'
 import { EkonomiTab } from '../components/club/EkonomiTab'
-import { KlubbTab } from '../components/club/KlubbTab'
+import { OrtenTab } from '../components/club/OrtenTab'
 import { AkademiTab } from '../components/club/AkademiTab'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 import { ClubMemoryView } from '../components/clubmemory/ClubMemoryView'
@@ -148,7 +148,7 @@ export function ClubScreen() {
 
         {/* ── Tab 3: Klubb ── */}
         {activeTab === 'orten' && (
-          <KlubbTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} startFacilityProject={startFacilityProject} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} />
+          <OrtenTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} startFacilityProject={startFacilityProject} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} />
         )}
 
         {/* ── Tab 4: Akademi ── */}
