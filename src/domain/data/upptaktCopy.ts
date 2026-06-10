@@ -69,26 +69,16 @@ export const MUSTWIN_CRIT_TAGS: string[] = [
   'Strecket avgörs', 'Plats på spel',
 ]
 
-/** Deterministiskt val med no-repeat: hoppar index som finns i `seen`. */
-function pickNoRepeat<T>(pool: T[], seed: number, seen: Set<number>): { item: T; index: number } {
-  if (pool.length === 0) throw new Error('pickNoRepeat: empty pool')
-  let idx = Math.abs(seed) % pool.length
-  let step = 0
-  while (seen.has(idx) && step < pool.length) {
-    idx = (idx + 1) % pool.length
-    step++
-  }
-  return { item: pool[idx], index: idx }
-}
+import { seededPickNoRepeat } from '../utils/random'
 
 export function pickUpptaktPhaseMark(state: UpptaktSubState, seed: number, seen: Set<number>): PhaseMarkVariant {
-  const { item, index } = pickNoRepeat(UPPTAKT_PHASEMARKS[state], seed, seen)
+  const { item, index } = seededPickNoRepeat(UPPTAKT_PHASEMARKS[state], seed, seen)
   seen.add(index)
   return item
 }
 
 export function pickCountdownText(state: UpptaktSubState, remainingRounds: number, seed: number, seen: Set<number>): string {
-  const { item, index } = pickNoRepeat(UPPTAKT_COUNTDOWN[state], seed, seen)
+  const { item, index } = seededPickNoRepeat(UPPTAKT_COUNTDOWN[state], seed, seen)
   seen.add(index)
   return item.replace('{N}', String(remainingRounds))
 }

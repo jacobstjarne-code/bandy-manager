@@ -99,16 +99,7 @@ export const CS_PRESS_MEMORY_TEMPLATES: Record<PressChoice, string> = {
  * Pick-funktioner enligt mönstret i eventCardInlineStrings.ts.
  * Deterministisk seed så samma matchspel ger samma fråga vid återbesök.
  */
-function pickVariant<T extends string>(
-  variants: readonly T[],
-  seedString: string,
-): T {
-  let hash = 0
-  for (let i = 0; i < seedString.length; i++) {
-    hash = (hash * 31 + seedString.charCodeAt(i)) | 0
-  }
-  return variants[Math.abs(hash) % variants.length]
-}
+import { seededPick } from '../utils/random'
 
 export function getSeverityFromRelationship(relationship: number): PressSeverity {
   if (relationship <= 33) return 'provocative'
@@ -122,7 +113,7 @@ export function pickCSPressQuestion(
   relationship: number,
 ): string {
   const severity = getSeverityFromRelationship(relationship)
-  const variant = pickVariant(CS_PRESS_QUESTIONS[severity], `${player.id}_${fixtureId}`)
+  const variant = seededPick(CS_PRESS_QUESTIONS[severity], `${player.id}_${fixtureId}`)
   return variant.replace(/\{NAME\}/g, `${player.firstName} ${player.lastName}`)
 }
 
@@ -133,7 +124,7 @@ export function pickCSPressPublishedQuote(
   journalist: { firstName: string; lastName: string; outlet: string },
   fixtureId: string,
 ): string {
-  const variant = pickVariant(
+  const variant = seededPick(
     CS_PRESS_PUBLISHED_QUOTES[choice],
     `${choice}_${fixtureId}`,
   )

@@ -1,3 +1,34 @@
+/** 31-polynomial string hash — preserves the hash used by pickVariant in eventCardInlineStrings + csPressEventText. */
+function hashString(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0
+  return h
+}
+
+/** Deterministiskt val ur en array via numerisk eller sträng-seed. */
+export function seededPick<T>(arr: readonly T[], seed: number | string): T {
+  if (arr.length === 0) throw new Error('seededPick: empty array')
+  const n = typeof seed === 'string' ? hashString(seed) : seed
+  return arr[Math.abs(n) % arr.length]
+}
+
+/** Deterministiskt val med no-repeat: hoppar index som finns i `seen`. */
+export function seededPickNoRepeat<T>(
+  arr: readonly T[],
+  seed: number | string,
+  seen: Set<number>,
+): { item: T; index: number } {
+  if (arr.length === 0) throw new Error('seededPickNoRepeat: empty array')
+  const n = typeof seed === 'string' ? hashString(seed) : seed
+  let idx = Math.abs(n) % arr.length
+  let step = 0
+  while (seen.has(idx) && step < arr.length) {
+    idx = (idx + 1) % arr.length
+    step++
+  }
+  return { item: arr[idx], index: idx }
+}
+
 /**
  * Deterministic seed from a fixture ID string.
  * Hashes the string into a 32-bit integer — avoids Date.now() as a fallback seed.

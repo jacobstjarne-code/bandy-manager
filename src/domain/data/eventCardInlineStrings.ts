@@ -24,23 +24,14 @@ export const CAPTAIN_SPEECH_VARIANTS: readonly string[] = [
   `{CAPTAIN} står kvar när alla andra gått hem. Klubban i handen.\n\n"Jag tar några ord på fredag. Bara så du vet."\n\nLaget har förlorat tre raka.`,
 ]
 
-function pickVariant<T extends string>(
-  variants: readonly T[],
-  seedString: string,
-): T {
-  let hash = 0
-  for (let i = 0; i < seedString.length; i++) {
-    hash = (hash * 31 + seedString.charCodeAt(i)) | 0
-  }
-  return variants[Math.abs(hash) % variants.length]
-}
+import { seededPick } from '../utils/random'
 
 export function pickStarPerformanceText(
   player: { id: string; firstName: string; lastName: string },
   rating: number,
   roundNumber: number,
 ): string {
-  const variant = pickVariant(STAR_PERFORMANCE_VARIANTS, `${player.id}_${roundNumber}`)
+  const variant = seededPick(STAR_PERFORMANCE_VARIANTS, `${player.id}_${roundNumber}`)
   return variant
     .replace(/\{NAME\}/g, `${player.firstName} ${player.lastName}`)
     .replace(/\{RATING\}/g, rating.toFixed(1))
@@ -50,7 +41,7 @@ export function pickPlayerPraiseText(
   praiser: { id: string; firstName: string; lastName: string },
   praised: { id: string; firstName: string; lastName: string },
 ): string {
-  const variant = pickVariant(PLAYER_PRAISE_VARIANTS, `${praiser.id}_${praised.id}`)
+  const variant = seededPick(PLAYER_PRAISE_VARIANTS, `${praiser.id}_${praised.id}`)
   return variant
     .replace(/\{A\}/g, `${praiser.firstName} ${praiser.lastName}`)
     .replace(/\{B\}/g, `${praised.firstName} ${praised.lastName}`)
@@ -61,6 +52,6 @@ export function pickCaptainSpeechText(
   captain: { id: string; firstName: string; lastName: string },
   season: number,
 ): string {
-  const variant = pickVariant(CAPTAIN_SPEECH_VARIANTS, `${captain.id}_s${season}`)
+  const variant = seededPick(CAPTAIN_SPEECH_VARIANTS, `${captain.id}_s${season}`)
   return variant.replace(/\{CAPTAIN\}/g, `${captain.firstName} ${captain.lastName}`)
 }

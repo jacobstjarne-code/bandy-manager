@@ -10,7 +10,8 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { BoardObjective } from '../../../domain/entities/Community'
 import { resolveBoardMeetingState } from '../../../application/services/boardMeetingStateResolver'
-import { BOARD_MEETING_COPY, GOAL_MOTIVATIONS, pickFromPool } from '../../../domain/data/boardMeetingCopy'
+import { BOARD_MEETING_COPY, GOAL_MOTIVATIONS } from '../../../domain/data/boardMeetingCopy'
+import { seededPick } from '../../../domain/utils/random'
 import { SceneCTA } from './shared/SceneCTA'
 
 interface Props {
@@ -35,14 +36,14 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
   const pool = BOARD_MEETING_COPY[state]
   const seed = game.currentSeason * 9301 + game.managedClubId.length * 7
 
-  const setting = pickFromPool(pool.settings, seed)
-  const title = pickFromPool(pool.titles, seed + 1)
-  const speakerLine = pickFromPool(pool.speakerLines, seed + 2)
+  const setting = seededPick(pool.settings, seed)
+  const title = seededPick(pool.titles, seed + 1)
+  const speakerLine = seededPick(pool.speakerLines, seed + 2)
 
   const goalMotivation = (obj: BoardObjective, i: number): string => {
     const key = `${state}:${obj.type}`
     const motivs = GOAL_MOTIVATIONS[key]
-    if (motivs && motivs.length > 0) return pickFromPool(motivs, seed + 3 + i)
+    if (motivs && motivs.length > 0) return seededPick(motivs, seed + 3 + i)
     return obj.description
   }
 

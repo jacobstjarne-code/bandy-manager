@@ -169,8 +169,3 @@ export const GOAL_MOTIVATIONS: Record<string, string[]> = {
   'C:identity': ['Tillbaka till basics. En enkel spelidé som håller.'],
 }
 
-/** Deterministiskt val ur en pool via seed (ingen Date.now/Math.random). */
-export function pickFromPool<T>(pool: T[], seed: number): T {
-  if (pool.length === 0) throw new Error('pickFromPool: empty pool')
-  return pool[Math.abs(seed) % pool.length]
-}
