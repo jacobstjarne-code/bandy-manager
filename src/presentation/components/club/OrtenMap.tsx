@@ -8,6 +8,7 @@ interface MapNode {
   x: number
   y: number
   value: number   // 0-100
+  subLabel: string  // shown below value in node
 }
 
 function nodeColor(v: number): string {
@@ -27,18 +28,61 @@ export function OrtenMap({ club, game, onNodeClick }: OrtenMapProps) {
   const facilities = club.facilities ?? 50
   const youthQuality = club.youthQuality ?? 50
   const polRelation = game.localPolitician?.relationship ?? 50
-  const sponsorMood = game.sponsorNetworkMood ?? (game.sponsors?.length > 0 ? 60 : 40)
+  const polNextElection = game.localPolitician?.mandatExpires
+
+  // Mecenater (Beslut B: noden representerar det publika nätverket, ej kommersiella sponsorer)
+  const activeMecenater = (game.mecenater ?? []).filter(m => m.isActive)
+  const mecenatValue = activeMecenater.length === 0
+    ? 30
+    : Math.round(activeMecenater.reduce((sum, m) => sum + m.happiness, 0) / activeMecenater.length)
+  const mecenatSub = activeMecenater.length === 0 ? 'Inga' : `${activeMecenater.length} aktiva`
+
   const volunteerCount = game.volunteers?.length ?? 0
   const volunteerStrength = volunteerCount > 0
     ? Math.min(100, 40 + volunteerCount * 10)
     : (game.communityActivities?.functionaries ? 55 : 35)
 
   const nodes: MapNode[] = [
-    { id: 'arena',      label: 'Arena',     emoji: '🏟️', x: 140, y: 40,  value: facilities },
-    { id: 'skola',      label: 'Skola',     emoji: '🏫', x: 240, y: 80,  value: youthQuality },
-    { id: 'kommunen',   label: 'Kommunen',  emoji: '🏛️', x: 60,  y: 100, value: polRelation },
-    { id: 'sponsorer',  label: 'Sponsorer', emoji: '💼', x: 210, y: 150, value: sponsorMood },
-    { id: 'frivilliga', label: 'Frivilliga',emoji: '🤝', x: 90,  y: 155, value: volunteerStrength },
+    {
+      id: 'arena',
+      label: 'Arena',
+      emoji: '🏟️',
+      x: 140, y: 40,
+      value: facilities,
+      subLabel: `Niv. ${Math.floor(facilities / 20) + 1}`,
+    },
+    {
+      id: 'skola',
+      label: 'Skola',
+      emoji: '🏫',
+      x: 240, y: 80,
+      value: youthQuality,
+      subLabel: `Kval. ${youthQuality}`,
+    },
+    {
+      id: 'kommunen',
+      label: 'Kommunen',
+      emoji: '🏛️',
+      x: 60, y: 100,
+      value: polRelation,
+      subLabel: polNextElection ? `Val s.${polNextElection}` : `Rel. ${polRelation}`,
+    },
+    {
+      id: 'mecenater',
+      label: 'Mecenater',
+      emoji: '🤝',
+      x: 210, y: 150,
+      value: mecenatValue,
+      subLabel: mecenatSub,
+    },
+    {
+      id: 'frivilliga',
+      label: 'Frivilliga',
+      emoji: '🫂',
+      x: 90, y: 155,
+      value: volunteerStrength,
+      subLabel: volunteerCount > 0 ? `${volunteerCount} pers.` : 'Inga ännu',
+    },
   ]
 
   const W = 300
@@ -48,13 +92,12 @@ export function OrtenMap({ club, game, onNodeClick }: OrtenMapProps) {
     ['arena', 'skola'],
     ['arena', 'kommunen'],
     ['kommunen', 'frivilliga'],
-    ['sponsorer', 'frivilliga'],
-    ['arena', 'sponsorer'],
+    ['mecenater', 'frivilliga'],
+    ['arena', 'mecenater'],
   ]
 
   const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]))
 
-  // Pulse animation via SVG animate
   const pulseRadius = cs >= 70 ? 90 : cs >= 45 ? 80 : 70
   const pulseColor = cs >= 70 ? 'var(--success)' : cs >= 45 ? 'var(--accent)' : 'var(--danger)'
 
@@ -112,8 +155,12 @@ export function OrtenMap({ club, game, onNodeClick }: OrtenMapProps) {
                     <animate attributeName="stroke-opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite" />
                   </circle>
                 )}
-                <text x={n.x} y={n.y - 5} textAnchor="middle" fontSize={13}>{n.emoji}</text>
-                <text x={n.x} y={n.y + 9} textAnchor="middle" fontSize={7} fill={col} fontWeight="700">{n.value}</text>
+                <text x={n.x} y={n.y - 6} textAnchor="middle" fontSize={12}>{n.emoji}</text>
+                <text x={n.x} y={n.y + 7} textAnchor="middle" fontSize={7} fill={col} fontWeight="700">{n.value}</text>
+                {/* Sub-label inside node */}
+                <text x={n.x} y={n.y + 16} textAnchor="middle" fontSize={5.5} fill="var(--text-muted)" fontFamily="system-ui,sans-serif">{n.subLabel}</text>
+                {/* Status dot — top-right of circle */}
+                <circle cx={n.x + 16} cy={n.y - 16} r={4} fill={col} opacity={0.9} />
               </g>
             )
           })}
