@@ -1358,7 +1358,7 @@ export function MatchLiveScreen() {
       clubName={managedClub?.name ?? ''}
       managerName={game?.managerName ?? ''}
       season={seasonSpanLabel(game?.currentSeason ?? fixture.season)}
-      round={fixture.roundNumber}
+      round={fixture.matchday}
       phase="spela"
       stamp={spelStamp}
       style={postIntroFade ? { animation: 'fadeIn 300ms ease-out both' } : undefined}
