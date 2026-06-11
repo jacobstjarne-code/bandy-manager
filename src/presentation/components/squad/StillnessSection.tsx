@@ -115,7 +115,15 @@ export function StillnessSection({ game, receded = false }: Props) {
       {/* Lager 3 — Stämningskurva (alltid) */}
       {pulse.length >= 2 && (
         <div className="card-sharp" style={{ padding: '12px 14px', marginBottom: 12 }}>
-          <div className="h-label" style={{ marginBottom: 8 }}>📈 STÄMNINGSKURVA</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+            <div className="h-label">📈 STÄMNINGSKURVA</div>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+              {Math.round(pulse[pulse.length - 1])}
+            </span>
+          </div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6 }}>
+            Senaste {pulse.length} omgångar
+          </div>
           <Sparkline points={pulse} stroke={pulseStroke} height={28} minPoints={2} />
         </div>
       )}

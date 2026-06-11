@@ -101,11 +101,21 @@ export function TranareTab({ game }: Props) {
         </div>
 
         {profile.burnoutHistory.length >= MIN_POINTS ? (
-          <Sparkline
-            points={profile.burnoutHistory}
-            stroke={zone === 'hog' ? 'danger' : zone === 'markbar' ? 'warm' : 'success'}
-            height={32}
-          />
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: zoneColor }}>
+                {Math.round(profile.burnoutHistory[profile.burnoutHistory.length - 1])}
+              </span>
+              <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>
+                Senaste {profile.burnoutHistory.length} omg.
+              </span>
+            </div>
+            <Sparkline
+              points={profile.burnoutHistory}
+              stroke={zone === 'hog' ? 'danger' : zone === 'markbar' ? 'warm' : 'success'}
+              height={32}
+            />
+          </>
         ) : (
           <div style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
             {zoneLabel} · Ingen belastningshistorik ännu.

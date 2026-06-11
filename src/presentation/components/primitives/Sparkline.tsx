@@ -52,8 +52,10 @@ export function normalize(points: number[], height: number, yInverted: boolean):
 export function Sparkline({ points, markers, stroke = 'accent', height = 28, yInverted = false, label, areaFill = false, minPoints }: SparklineProps) {
   if (points.length < (minPoints ?? MIN_POINTS)) {
     return (
-      <div className="sparkline-empty" style={{ height }}>
-        —
+      <div className="sparkline-empty" style={{ height, display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontStyle: 'italic', fontSize: 10, color: 'var(--text-muted)' }}>
+          {label ?? 'Samlar data…'}
+        </span>
       </div>
     )
   }
