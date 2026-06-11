@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#EDE8DF;--bg-surface:#FAF8F4;--border:#DDD7CC;--border-dark:#C4BAA8;
+    --text-primary:#1A1A18;--text-secondary:#6B6760;--text-muted:#8A857A;
+    --accent:#C47A3A;--accent-dark:#A25828;--success:#5A9A4A;--danger:#B05040;--danger-text:#8B3E30;--warning:#C47A3A;
+    --serif:Georgia,serif;--sans:system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#2b2823;color:#e8e0d0;font-family:var(--sans);padding:26px 16px 70px}
+  .head{max-width:980px;margin:0 auto 16px;text-align:center}
+  .head h1{font-family:var(--serif);font-size:21px;margin-bottom:5px}
+  .head p{font-size:12px;color:rgba(232,224,208,.72);line-height:1.55;max-width:740px;margin:0 auto}
+  .head p strong{color:#C47A3A}
+  .cols{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+  .phone{width:394px;border-radius:16px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);border:5px solid #0d0c0a;background:var(--bg);flex-shrink:0}
+  .gh{display:flex;align-items:center;gap:9px;padding:0 12px;height:44px;background:#0E0D0B;border-bottom:2px solid var(--accent)}
+  .gh .logo{width:24px;height:24px;border-radius:50%;background:#3D3A32;display:flex;align-items:center;justify-content:center;font-size:10px}
+  .gh .nm{flex:1;line-height:1.15}.gh .nm b{font-family:var(--serif);font-size:13px;color:#F5F1EB;display:block}.gh .nm s{font-size:8px;color:#8a8270;text-decoration:none;letter-spacing:.5px}
+  .pg{padding:10px 12px 24px;color:var(--text-primary)}
+  .top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  .top h2{font-family:var(--serif);font-size:16px;white-space:nowrap}
+  .top a{font-size:10px;color:var(--accent-dark);font-weight:600}
+  .sec{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin:10px 0 4px;display:flex;align-items:center;gap:5px}
+  .sec .d{width:7px;height:7px;border-radius:50%}
+  .sec .cnt{margin-left:auto;font-family:var(--serif);font-size:10px;color:var(--text-secondary);letter-spacing:0}
+  .card{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:6px}
+  .row{display:flex;align-items:center;gap:9px;padding:8px 11px;border-bottom:1px solid var(--border);position:relative}
+  .row:last-child{border-bottom:none}
+  .row .ic{width:26px;height:26px;border-radius:6px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:var(--text-secondary)}
+  .row .bd{flex:1;min-width:0}
+  .row .ti{font-size:11.5px;font-weight:600;color:var(--text-primary);line-height:1.3}
+  .row .su{font-size:9.5px;color:var(--text-muted);margin-top:1px}
+  .row .dt{font-size:9px;color:var(--text-muted);white-space:nowrap;align-self:flex-start;margin-top:2px}
+  .row.unread::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent)}
+  .dl{font-size:8.5px;padding:2px 7px;border-radius:99px;background:rgba(176,80,64,.12);color:var(--danger-text);font-weight:600;white-space:nowrap}
+  .agg{font-family:var(--serif);font-style:italic;font-size:10.5px;color:var(--text-secondary)}
+  .chev{color:var(--accent);font-size:13px;flex-shrink:0}
+  .panel{width:430px;flex-shrink:0;background:rgba(245,241,235,.04);border-radius:8px;padding:18px;font-size:12px;line-height:1.6;color:rgba(232,224,208,.85)}
+  .panel h3{font-family:var(--serif);font-size:15px;color:#e8e0d0;margin-bottom:8px}
+  .panel h4{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C47A3A;margin:13px 0 4px}
+  .panel ul{margin:2px 0 6px 16px}.panel li{margin-bottom:4px}
+  .panel code{font-family:ui-monospace,monospace;font-size:10.5px;background:rgba(245,241,235,.07);padding:1px 4px;border-radius:2px;color:#E8B95C}
+</style></head><body>
+
+<div class="head">
+  <h1>Inkorgen — recut · severity-dots + notis-diet</h1>
+  <p>Design-halvan av A8. Semafor-emoji → <strong>severity-skalans CSS-dots</strong> · en ikon per rad · träningsrapporter <strong>aggregeras</strong> till en rad · beslutsnotiser bär <strong>deadline-pill</strong> · oläst = 2px copper-kant, inte fler markörer. Diet-reglerna (vad som inte alls skapas) ligger hos Opus.</p>
+</div>
+
+<div class="cols">
+<div class="phone">
+  <div class="gh"><div class="logo">🏒</div><div class="nm"><b>Hälleforsnäs IF</b><s>Jacob · 2026/27</s></div></div>
+  <div class="pg">
+    <div class="top"><h2>Inkorg</h2><a>Markera alla som lästa</a></div>
+
+    <div class="sec"><span class="d" style="background:var(--danger)"></span>KRÄVER SVAR<span class="cnt">2</span></div>
+    <div class="card">
+      <div class="row unread">
+        <div class="ic">⧖</div>
+        <div class="bd"><div class="ti">Utse kapten — styrelsen väntar</div><div class="su">Leif Leifsson föreslagen</div></div>
+        <span class="dl">svar senast omg 9</span><span class="chev">›</span>
+      </div>
+      <div class="row unread">
+        <div class="ic">⇄</div>
+        <div class="bd"><div class="ti">Bud på Hallgren — 110 tkr</div><div class="su">Söderfors IF</div></div>
+        <span class="dl">svar senast omg 8</span><span class="chev">›</span>
+      </div>
+    </div>
+
+    <div class="sec"><span class="d" style="background:var(--warning)"></span>NYHETER<span class="cnt">3</span></div>
+    <div class="card">
+      <div class="row unread">
+        <div class="ic">📰</div>
+        <div class="bd"><div class="ti">"Förlust som inte borde överraska någon"</div><div class="su">Folkbladet · Helena Wikström</div></div>
+        <span class="dt">Omg 7</span>
+      </div>
+      <div class="row unread">
+        <div class="ic">🏛</div>
+        <div class="bd"><div class="ti">Kommunen öppnar för bidragssamtal</div><div class="su">Relation 52 — agenda: ungdomssatsning</div></div>
+        <span class="dt">Omg 7</span>
+      </div>
+      <div class="row">
+        <div class="ic">👥</div>
+        <div class="bd"><div class="ti">Spekulationer kring Kronqvists framtid</div><div class="su">Kontraktet går ut i vår</div></div>
+        <span class="dt">Omg 6</span>
+      </div>
+    </div>
+
+    <div class="sec"><span class="d" style="background:var(--border-dark)"></span>RAPPORTER<span class="cnt">2</span></div>
+    <div class="card">
+      <div class="row">
+        <div class="ic">🏋</div>
+        <div class="bd"><div class="ti agg">Träning omg 3–6: Fysik — inga incidenter.</div><div class="su">4 veckorapporter, sammanslagna</div></div>
+        <span class="chev">›</span>
+      </div>
+      <div class="row">
+        <div class="ic">🎓</div>
+        <div class="bd"><div class="ti">Akademirapport: Mäkinen flyttas upp i träning</div><div class="su">Akademin · november</div></div>
+        <span class="dt">Omg 6</span>
+      </div>
+    </div>
+
+    <p style="font-family:var(--serif);font-style:italic;font-size:10.5px;color:var(--text-muted);text-align:center;margin-top:14px">Resultat och matchhändelser bor i Granska — inte här.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <h3>DESIGN-DECISIONS-not — Inkorgen recut</h3>
+  <h4>Struktur</h4>
+  <ul>
+    <li><b>Grupper per severity, inte per typ:</b> KRÄVER SVAR (danger-dot) · NYHETER (copper-dot) · RAPPORTER (neutral-dot). Severity-skalans kanon (<code>preview/rules-severity-skala.html</code>) — 🔴🟡⚪ utgår.</li>
+    <li><b>KRÄVER SVAR ligger alltid överst</b> och töms — det är inkorgens jobb. Deadline-pill (<code>expiresRound</code>) på varje beslutsrad; utan deadline får beslut inte ligga här (gameplay-regel till Opus).</li>
+    <li><b>En ikon per rad</b> — typikonen i rutan. Inline-emoji i titel-strängar rensas ur copy-poolen. (Ikonerna här är platshållare — byts till Lucide i samma stroke som BottomNav.)</li>
+    <li><b>Oläst = 2px copper vänsterkant.</b> Inga ytterligare dots/bollar per rad.</li>
+  </ul>
+  <h4>Diet (Opus äger — designens förväntan)</h4>
+  <ul>
+    <li>Träningsrapporter aggregeras: <i>"Träning omg 3–6: Fysik — inga incidenter."</i> EN rad, kursiv (= ingenting hände). Incident → egen rad med severity.</li>
+    <li>Egna matchresultat skapas inte som notiser (upplevs i Granska). Repetitiva pressklipp slås ihop per omgång.</li>
+    <li>Arkivera vid säsongsskifte — 59 olästa följer inte med till nästa år.</li>
+    <li>Mål: ≤ 2–3 notiser/omgång i normalfallet. Inkorgen är "det jag kan ha missat", inte loggen.</li>
+  </ul>
+  <h4>Övrigt</h4>
+  <ul>
+    <li>RPS-strip renderas inte på Inkorgen (icke-fas-yta, Del 6 §6).</li>
+    <li>"Kronologiskt"-togglen utgår — severity-grupperingen ÄR sorteringen; inom grupp: nyast först.</li>
+  </ul>
+</div>
+</div>
+
+</body></html>

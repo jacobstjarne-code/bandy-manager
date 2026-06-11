@@ -381,9 +381,14 @@ Westerstrands F-serie (1970-tal): en horisontell stålbalk-monterad tavla, ~3× 
 
 Two parallel systems, used for different purposes:
 
-### 1. Emoji — for *categories*
+### 1. Emoji — for *categories* (ny domängräns, ratificerad 2026-06-11)
 
-Every section label has an emoji. The set is closed (see table under **Content fundamentals**). Treat emoji as a typographic element — they render at 8 px alongside the SECTION LABEL text. **Never mix** two emoji on one label. **Never use emoji decoratively** (no 🎉 confetti on the champion screen; that's what CSS particles are for).
+**Tre domäner, hårda gränser (B3):**
+1. **Emoji = domänkategorier** — sektionsetiketter på ÖVERSIKTSYTOR (Portal, Klubb-flikar, Trupp-översikt, Inkorg-grupper). Kartan är stängd (se tabell under Content fundamentals). Aldrig på data-sektioner inuti rapporter/listor.
+2. **Lucide = chrome** — knappar, flikar, väljare, funktionsikoner, severity-dots. ALDRIG emoji på knapp, flik eller väljare.
+3. **Inget prefix = data-sektioner** inuti rapporter/listor (Granska-flikarna, statistiklistor). Den emoji-fria norm Granska-generationen etablerade är kanon.
+
+Treat emoji as a typographic element — they render at 8 px alongside the SECTION LABEL text. **Never mix** two emoji on one label. **Never use emoji decoratively** (no 🎉 confetti on the champion screen; that's what CSS particles are for).
 
 ### 2. Lucide React — for *chrome*
 
@@ -410,7 +415,7 @@ When adding a new icon, pick from Lucide first and match the existing stroke wei
 ### App icons & logos (in `assets/`)
 
 - `bandymanager-logo.png` — primary wordmark (light-on-dark). 1048×1086 with heavy transparent padding; use at ~26 px tall in the header.
-- `buryfen-logo.png` — deprecated alt logo from an earlier concept. Kept for reference.
+- `buryfen-logo.png` — studio-märket ("Bury Fen presenterar"). INTE deprecated. Ratificerad på TVÅ platser: intro-splashens vinjett + namn-skärmens footer. Ingen annanstans (B6).
 - `icon.svg`, `icon-192.png`, `icon-512.png` — PWA app icons.
 - `intro-bg.jpg` — floodlit arena (871×1080) used as the full-bleed intro-sequence background.
 
@@ -445,6 +450,11 @@ None — the system uses `Georgia` and `system-ui`. Both ship with every OS. If 
 8. **Modals are centered, not bottom-sheets.** `rgba(0,0,0,0.6)` backdrop, 380 px max card, no blur.
 9. **Mobile max-width 430 px.** No desktop layout.
 10. **Swedish copy only.**
+11. **Tal & enheter.** Pengar = tkr heltal ("425 tkr"). Lön = tkr/mån heltal. MV = målvakt (aldrig marknadsvärde). Styrka/CA = heltal. Betyg = en decimal. Procent = bara ork. Tid = "omg N", säsong = `seasonSpanLabel()`. Se `preview/rules-tal-enheter.html`.
+12. **Tomma kort renderas inte — eller talar.** Tom struktur förbjuden. Antingen: renderas inte alls, eller: kursiv status-rad som berättar NÄR innehåll kommer. Aldrig "—" eller noll-rad-card.
+13. **Semantisk färg kräver nyckel.** Färg som bär betydelse (status-ringar, namnfärger) måste ha en mikro-legend på samma yta. Ingen legend → ingen färgsemantik.
+14. **En graf förankras.** Varje graf/sparkline visar aktuellt värde (Georgia) + periodangivelse + helst en läsning. Under MIN_POINTS datapunkter → status-rad, aldrig tom graf. Se `preview/rules-severity-skala.html`.
+15. **Disabled-state = en mekanism (B8).** Disabled = samma färgfamilj @ `--disabled-opacity` (0.4) + `pointer-events: none`. Aldrig en separat "grå" färg.
 
 ---
 

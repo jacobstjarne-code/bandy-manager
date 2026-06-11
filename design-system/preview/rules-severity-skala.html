@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Colors" name="Severity-skalan (urgency)" subtitle="Lugn → Uppmärksamhet → Brådska → Kris · ratificerad 2026-06-11" viewport="760x520" -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css"></head>
+<body style="width:760px;background:var(--bg);padding:14px">
+<p class="label8" style="margin-bottom:8px">SEVERITY · URGENCY-SKALAN — FYRA NIVÅER, FASTA UTTRYCK</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+  <!-- 0 Lugn -->
+  <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+    <p style="font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">0 · LUGN — INGEN MARKÖR</p>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0">
+      <span style="font-size:12px;font-weight:600;color:var(--text-primary)">Helena Wikström · Folkbladet</span>
+    </div>
+    <p style="font-size:9.5px;color:var(--text-muted);font-style:italic">Tystnad = neutralt. "Neutral"-taggar renderas inte.</p>
+  </div>
+  <!-- 1 Uppmärksamhet -->
+  <div style="background:var(--bg-surface);border:1px solid var(--border);border-left:2px solid var(--warning);border-radius:8px;padding:10px 12px">
+    <p style="font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent-dark);margin-bottom:6px">1 · UPPMÄRKSAMHET — COPPER</p>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--warning);flex-shrink:0"></span>
+      <span style="font-size:12px;font-weight:600;color:var(--text-primary)">Kontraktet går ut — Kronqvist</span>
+      <span style="margin-left:auto;font-size:9px;padding:2px 8px;border-radius:99px;background:rgba(196,122,58,0.12);color:var(--accent-dark);font-weight:600">omg 9</span>
+    </div>
+    <p style="font-size:9.5px;color:var(--text-muted);font-style:italic">2px stripe · copper dot/tag. Actionabelt men inte akut.</p>
+  </div>
+  <!-- 2 Brådska -->
+  <div style="background:var(--bg-surface);border:1px solid var(--border);border-left:2px solid var(--danger);border-radius:8px;padding:10px 12px">
+    <p style="font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--danger-text);margin-bottom:6px">2 · BRÅDSKA — DANGER</p>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--danger);flex-shrink:0"></span>
+      <span style="font-size:12px;font-weight:600;color:var(--text-primary)">Budet på Hallgren — svar senast omg 3</span>
+    </div>
+    <p style="font-size:9.5px;color:var(--text-muted);font-style:italic">2px stripe · danger dot/tag. Deadline eller risk nu.</p>
+  </div>
+  <!-- 3 Kris -->
+  <div style="background:var(--bg-scene);border:1px solid var(--danger);border-radius:8px;padding:10px 12px;color:var(--text-light)">
+    <p style="font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--danger);margin-bottom:6px">3 · KRIS — BAND PÅ MÖRK YTA</p>
+    <p style="font-size:12px;font-weight:700">JACOB BERGSTRÖM ÄR TRÖTT</p>
+    <p style="font-family:var(--font-display);font-style:italic;font-size:11px;color:var(--text-light-secondary);margin-top:3px">"Han glömde namnet på sin egen back i intervjun."</p>
+    <p style="font-size:9.5px;color:var(--text-muted);font-style:italic;margin-top:5px">Enda nivån som tar egen plats (burnout-bandet = kanon).</p>
+  </div>
+</div>
+
+<p style="margin-top:10px;font-size:10px;color:var(--text-muted);line-height:1.55">
+  <strong>Urgency ≠ relation:</strong> <code>--cold</code>/<code>--warm</code> (se "Colors — Severity (cold/warm)") är RELATIONS-dimensionen — blandas aldrig med denna skala.
+  <strong>Ersätter:</strong> semafor-emoji (🔴🟡⚪), amber siffer-färgning utan nyckel, ad-hoc "Neutral"-taggar. Severity-dots är CSS, aldrig emoji. Full text i <code>DESIGN-DECISIONS.md</code>.
+</p>
+</body></html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Type" name="Tal & enheter — bindande" subtitle="Pengar tkr · lön /mån · heltal · betyg en decimal · ratificerad 2026-06-11" viewport="760x460" -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css"></head>
+<body style="width:760px;background:var(--bg);padding:14px">
+<p class="label8" style="margin-bottom:8px">TAL & ENHETER · GÄLLER HELA APPEN</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+  <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+    <p style="font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">PENGAR & LÖN</p>
+    <p style="font-size:11px;line-height:1.7;color:var(--text-primary)">
+      ✓ <span style="font-family:var(--font-display);font-weight:700">425 tkr</span> &nbsp;·&nbsp; ✓ <span style="font-family:var(--font-display);font-weight:700">Lön 16 tkr/mån</span> &nbsp;·&nbsp; ✓ <span style="font-family:var(--font-display);font-weight:700">Värde 45 tkr</span><br>
+      <span style="color:var(--danger)">✗ 15 666 kr</span> · <span style="color:var(--danger)">✗ 6 tkr/säsong</span> · <span style="color:var(--danger)">✗ "MV 35 tkr"</span> <span style="color:var(--text-muted)">(MV = målvakt, inget annat)</span>
+    </p>
+  </div>
+  <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+    <p style="font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">SPELARVÄRDEN</p>
+    <p style="font-size:11px;line-height:1.7;color:var(--text-primary)">
+      Styrka/CA: ✓ <span style="font-family:var(--font-display);font-weight:700">46</span> <span style="color:var(--danger)">✗ 46.1</span> &nbsp;·&nbsp; Betyg: ✓ <span style="font-family:var(--font-display);font-weight:700">7,5</span> (en decimal)<br>
+      Procent ENDAST ork, alltid etiketterad: ✓ <span style="font-family:var(--font-display);font-weight:700">ork 71%</span> <span style="color:var(--danger)">✗ "form" om ork</span>
+    </p>
+  </div>
+  <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+    <p style="font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">TID</p>
+    <p style="font-size:11px;line-height:1.7;color:var(--text-primary)">
+      Inom säsong: ✓ <span style="font-family:var(--font-display);font-weight:700">omg 14</span> &nbsp;·&nbsp; Säsong: ✓ <span style="font-family:var(--font-display);font-weight:700">2026/27</span> via <code style="font-size:10px">seasonSpanLabel()</code><br>
+      <span style="color:var(--danger)">✗ "Säsong 2026"</span> · <span style="color:var(--danger)">✗ 4051/52</span> · <span style="color:var(--text-muted)">serieomgång är spelets språk — motorns matchnummer visas aldrig</span>
+    </p>
+  </div>
+  <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+    <p style="font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">FORM</p>
+    <p style="font-size:11px;line-height:1.7;color:var(--text-primary)">
+      Alla numeraler i <span style="font-family:var(--font-display);font-weight:700">Georgia</span>. En enhet per rad — aldrig två format för samma sak på samma yta. Implementeras i EN delad formatter (Code).
+    </p>
+  </div>
+</div>
+
+<p style="margin-top:10px;font-size:10px;color:var(--text-muted);line-height:1.5">Bakgrund: auditens mest repetitiva fyndklass (Del 11–14) var enhets-divergens — tkr/säsong vs kr/mån, decimal-styrka, MV-kollision, "Säsong 2026". Regeln är bindande; full text i <code>DESIGN-DECISIONS.md</code> § Tal & enheter.</p>
+</body></html>

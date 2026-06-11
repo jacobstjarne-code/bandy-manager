@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#EDE8DF;--bg-surface:#FAF8F4;--border:#DDD7CC;
+    --text-primary:#1A1A18;--text-secondary:#6B6760;--text-muted:#8A857A;
+    --accent:#C47A3A;--accent-dark:#A25828;--success:#5A9A4A;--danger:#B05040;--ice:#7EB3D4;
+    --serif:Georgia,serif;--sans:system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#2b2823;color:#e8e0d0;font-family:var(--sans);padding:26px 16px 70px}
+  .head{max-width:980px;margin:0 auto 16px;text-align:center}
+  .head h1{font-family:var(--serif);font-size:21px;margin-bottom:5px}
+  .head p{font-size:12px;color:rgba(232,224,208,.72);line-height:1.55;max-width:720px;margin:0 auto}
+  .head p strong{color:#C47A3A}
+  .cols{display:flex;gap:24px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+  .col{width:340px}
+  .col-lbl{text-align:center;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(232,224,208,.55);margin-bottom:8px}
+  .col-lbl b{color:#C47A3A}
+  .card{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text-primary)}
+  .sl{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+  /* BEFORE pitch */
+  .pitch-old{position:relative;height:300px;border-radius:6px;background:#F2EEE5;border:1px solid #E5DFD2}
+  .pitch-old .line{position:absolute;background:#E0DACB}
+  /* AFTER pitch — is-tonad */
+  .pitch-new{position:relative;height:300px;border-radius:6px;background:linear-gradient(180deg,#DCE8EE,#D2E0E8);border:1px solid #B8CCD8;box-shadow:inset 0 1px 4px rgba(90,122,138,.12)}
+  .pitch-new .line{position:absolute;background:rgba(90,122,138,.4)}
+  .lm{left:0;right:0;height:1.5px;top:50%}
+  .lc{width:70px;height:70px;border-radius:50%;border:1.5px solid;left:50%;top:50%;transform:translate(-50%,-50%);background:transparent !important}
+  .pitch-old .lc{border-color:#E0DACB}
+  .pitch-new .lc{border-color:rgba(90,122,138,.4)}
+  .gk-zone{position:absolute;left:50%;transform:translateX(-50%);width:90px;height:34px;border:1.5px solid;border-radius:4px}
+  .pitch-old .gk-zone{border-color:#E0DACB}
+  .pitch-new .gk-zone{border-color:rgba(90,122,138,.4)}
+  .pl{position:absolute;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;transform:translate(-50%,-50%)}
+  .pl s{position:absolute;top:36px;font-size:7.5px;font-weight:600;color:var(--text-secondary);text-decoration:none;white-space:nowrap;text-shadow:0 1px 2px rgba(255,255,255,.7)}
+  .pl.ok{background:radial-gradient(circle at 35% 30%,#6BAA5A,#4A8A3A);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .pl.warn{background:radial-gradient(circle at 35% 30%,#C46A5A,#A04030);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .pl.old{border:none;box-shadow:none}
+  .legend{display:flex;gap:12px;margin-top:8px;font-size:9px;color:var(--text-secondary);align-items:center}
+  .legend .d{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:3px;vertical-align:-1px}
+  .panel{max-width:980px;margin:22px auto 0;padding:18px;background:rgba(245,241,235,.04);border-radius:8px;font-size:12px;line-height:1.6;color:rgba(232,224,208,.85)}
+  .panel h3{font-family:var(--serif);font-size:15px;color:#e8e0d0;margin-bottom:8px}
+  .panel ul{margin:4px 0 0 16px}.panel li{margin-bottom:4px}
+  .panel code{font-family:ui-monospace,monospace;font-size:10.5px;background:rgba(245,241,235,.07);padding:1px 4px;border-radius:2px;color:#E8B95C}
+</style></head><body>
+
+<div class="head">
+  <h1>Taktik-pitchen — kontrastfix · is-ton</h1>
+  <p>Planen är nästan samma valör som papperet idag — cirklarna flyter i tomma intet. Fixen: <strong>is-tonad yta</strong> (det ÄR is), linjer i is-mörk, cirklar med vit kant + skugga, och ring-legenden <strong>permanent vid planen</strong> (idag gömd i en stängbar hint). Princip 2-bonus: papper runt is — samma kontrast som liggaren runt LED-tavlan.</p>
+</div>
+
+<div class="cols">
+  <div class="col">
+    <p class="col-lbl"><b>FÖRE</b> — build 050bb22</p>
+    <div class="card">
+      <p class="sl">FORMATION · 4-4-2</p>
+      <div class="pitch-old">
+        <div class="line lm"></div><div class="line lc"></div>
+        <div class="gk-zone" style="bottom:8px"></div>
+        <span class="pl old" style="left:50%;bottom:22px;top:auto;transform:translateX(-50%);background:#8FBF80">MV</span>
+        <span class="pl old" style="left:22%;top:70%;background:#8FBF80">B</span>
+        <span class="pl old" style="left:50%;top:72%;background:#C49088">B</span>
+        <span class="pl old" style="left:78%;top:70%;background:#8FBF80">B</span>
+        <span class="pl old" style="left:30%;top:45%;background:#8FBF80">MF</span>
+        <span class="pl old" style="left:70%;top:45%;background:#C49088">MF</span>
+        <span class="pl old" style="left:38%;top:20%;background:#8FBF80">A</span>
+        <span class="pl old" style="left:62%;top:20%;background:#8FBF80">A</span>
+      </div>
+      <p style="font-size:9px;color:var(--text-muted);margin-top:8px;font-style:italic">Plan #F2EEE5 mot kort #FAF8F4 — Δ nästan noll. Ring-färgernas betydelse bor i en stängbar 💡-hint.</p>
+    </div>
+  </div>
+
+  <div class="col">
+    <p class="col-lbl"><b>EFTER</b> — is-tonad + förankrad legend</p>
+    <div class="card">
+      <p class="sl">FORMATION · 4-4-2</p>
+      <div class="pitch-new">
+        <div class="line lm"></div><div class="line lc"></div>
+        <div class="gk-zone" style="bottom:8px"></div>
+        <span class="pl ok" style="left:50%;bottom:22px;top:auto;transform:translateX(-50%)">MV<s>Lindqvist</s></span>
+        <span class="pl ok" style="left:22%;top:70%">B<s>Hage</s></span>
+        <span class="pl warn" style="left:50%;top:72%">B<s>Virtanen</s></span>
+        <span class="pl ok" style="left:78%;top:70%">B<s>Ros</s></span>
+        <span class="pl ok" style="left:30%;top:45%">MF<s>Nilsson</s></span>
+        <span class="pl warn" style="left:70%;top:45%">MF<s>Holm</s></span>
+        <span class="pl ok" style="left:38%;top:20%">A<s>Sandberg</s></span>
+        <span class="pl ok" style="left:62%;top:20%">A<s>Berglund</s></span>
+      </div>
+      <div class="legend">
+        <span><span class="d" style="background:#4A8A3A"></span>Rätt plats</span>
+        <span><span class="d" style="background:#A04030"></span>Fel position / låg ork</span>
+        <span style="margin-left:auto;font-style:italic;color:var(--text-muted)">Dra för att byta</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <h3>DESIGN-DECISIONS-not</h3>
+  <ul>
+    <li><b>Is-ytan:</b> ljus is-gradient (~#DCE8EE→#D2E0E8, härledd ur <code>--ice</code>-familjen) + linjer i <code>--ice-dark</code> @ 40%. Planen läser som PLAN på en armlängd — och tematiskt: bandy spelas på is, inte på papper.</li>
+    <li><b>Cirklarna:</b> 2px vit kant + mjuk skugga = förankring mot ytan. Status-färgerna (grön/röd) följer severity-tänket; namn under cirkeln (7.5px) — planen blir läsbar utan tap.</li>
+    <li><b>Legenden permanent</b> under planen (regel 13: semantisk färg kräver nyckel). 💡-drag-hinten utgår; "Dra för att byta" står i legendraden. Löser Del 2 §3 + Del 7 §2 samtidigt.</li>
+    <li><b>Gäller båda ytorna:</b> Förbered-planen och Taktiktavlan (TAKTIK-fliken) — samma pitch-komponent. Kemi-linjerna (TAKTIK) ritas i <code>--accent</code>/<code>--danger</code> ovanpå is-ytan — kontrasten bär dem bättre än papperet.</li>
+    <li><b>Förståelse-rundan</b> (vad kemi/formation GÖR — konsekvensraden) är parkerad separat per Jacobs beslut; detta är enbart kontrast/läsbarhet.</li>
+  </ul>
+</div>
+
+</body></html>

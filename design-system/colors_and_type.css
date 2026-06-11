@@ -63,6 +63,16 @@
   --led-score-flash: #FF9900;
   --led-time:        #CCFF00;
   --led-warn:        #FF6644;
+  /* Vi/dom-kodning — ratificerad 2026-06-11 (skördad ur build 050bb22).
+     --led-us = managed klubb (amber), --led-them = motståndare (is-LED).
+     Gäller poäng + lagkodad statistik på tavlan. Tid/period förblir --led-score.
+     Hela LED-paletten är FORTSATT reserverad för tavlan — aldrig annan chrome. */
+  --led-us:          #FFB033;
+  --led-them:        #6FC0E8;
+
+  /* ── Disabled (ratificerad 2026-06-11, B8) ─────── */
+  /* Disabled-knapp = samma färgfamilj @ 40% opacity. Aldrig egen färg. */
+  --disabled-opacity: 0.4;
 
   /* Archetype badge colors */
   --arch-finisher:    #c0392b;

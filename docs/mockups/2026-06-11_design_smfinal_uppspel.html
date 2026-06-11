@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg-scene:#1a1612;--bg-portal-surface:#221d18;--bg-portal-elevated:#2a241e;
+    --text-light:#F5F1EB;--text-light-secondary:#C4BAA8;--text-muted:#8A857A;
+    --accent:#C47A3A;--accent-dark:#A25828;--gold:#D4B860;--gold-deep:#b8893a;
+    --ice:#7EB3D4;--danger:#B05040;
+    --serif:Georgia,serif;--sans:system-ui,sans-serif;--mono:'Courier New',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#2b2823;color:#e8e0d0;font-family:var(--sans);padding:26px 16px 70px}
+  .head{max-width:1240px;margin:0 auto 18px;text-align:center}
+  .head h1{font-family:var(--serif);font-size:21px;margin-bottom:5px}
+  .head p{font-size:12px;color:rgba(232,224,208,.72);line-height:1.55;max-width:760px;margin:0 auto}
+  .head p strong{color:#C47A3A}
+  .flow{display:flex;gap:18px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+  .step{width:300px;flex-shrink:0}
+  .step-lbl{text-align:center;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(232,224,208,.55);margin-bottom:8px}
+  .step-lbl b{color:#C47A3A}
+  .phone{border-radius:14px;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,.5);border:4px solid #0d0c0a;background:var(--bg-scene)}
+  .scr{height:600px;position:relative;display:flex;flex-direction:column;overflow:hidden}
+  .arrow{align-self:center;margin-top:280px;font-size:18px;color:rgba(232,224,208,.4);flex-shrink:0}
+  /* shared scene chrome */
+  .eyebrow{font-size:8px;font-weight:600;letter-spacing:4px;text-transform:uppercase;text-align:center;color:var(--accent);opacity:.8}
+  .eyebrow.gold{color:var(--gold)}
+  .stripe-l{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent)}
+  .stripe-l.gold{background:linear-gradient(180deg,var(--gold),var(--gold-deep))}
+  /* 1: portal ref */
+  .mini-mast{display:flex;align-items:center;gap:7px;padding:8px 11px;background:#0E0D0B;border-bottom:2px solid var(--accent);flex-shrink:0}
+  .mini-crest{width:20px;height:20px;border-radius:50%;background:#3D3A32;font-size:8px;display:flex;align-items:center;justify-content:center}
+  .mini-nm{flex:1;line-height:1.1}.mini-nm b{font-family:var(--serif);font-size:11px;color:#e8e0d0}.mini-nm s{display:block;font-size:7px;color:#8a8270;text-decoration:none}
+  .pcard{margin:10px;border:1px solid rgba(212,184,96,.45);border-radius:10px;background:var(--bg-portal-elevated);padding:12px;box-shadow:0 2px 14px rgba(212,184,96,.12)}
+  .pcard .pe{font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);text-align:center}
+  .pcard h3{font-family:var(--serif);font-size:17px;color:var(--text-light);text-align:center;margin-top:6px}
+  .pcard .pm{font-size:9px;color:var(--text-light-secondary);text-align:center;margin-top:4px}
+  .gold-cta{display:block;margin:12px 10px;padding:12px;text-align:center;background:linear-gradient(135deg,#E8C97A,#b8893a);border-radius:12px;color:#241c08;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 3px 14px rgba(212,184,96,.35)}
+  .dim-cards{margin:0 10px;display:flex;flex-direction:column;gap:5px;opacity:.35}
+  .dim-card{height:34px;border-radius:8px;background:var(--bg-portal-surface);border:1px solid rgba(255,255,255,.05)}
+  /* 2: uppspel — med final-illustration */
+  .illu{position:relative;height:290px;flex-shrink:0;overflow:hidden}
+  .illu img{width:100%;height:100%;object-fit:cover;object-position:center 38%;display:block}
+  .illu::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,12,9,.45) 0%,rgba(14,12,9,0) 20%,rgba(26,22,18,0) 45%,rgba(26,22,18,.55) 78%,#1a1612 100%)}
+  .illu .eyebrow{position:absolute;left:0;right:0;top:14px;z-index:2;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+  .upp{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:0 20px;position:relative;margin-top:-30px;z-index:2}
+  .upp h2{font-family:var(--serif);font-size:23px;font-weight:700;color:var(--text-light);text-align:center;line-height:1.2;text-shadow:0 1px 8px rgba(0,0,0,.55)}
+  .upp .ing{font-family:var(--serif);font-style:italic;font-size:12.5px;color:var(--text-light-secondary);text-align:center;line-height:1.55;margin-top:10px}
+  .statrow{display:flex;justify-content:center;gap:22px;margin-top:18px;padding-top:14px;border-top:.5px solid rgba(212,184,96,.3)}
+  .stat{text-align:center}
+  .stat b{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--text-light);display:block}
+  .stat s{font-size:7.5px;letter-spacing:1px;color:var(--text-light-secondary);text-transform:uppercase;text-decoration:none}
+  .scene-cta{align-self:center;margin:0 0 26px;padding:11px 26px;border:1.5px solid var(--gold);border-radius:8px;color:var(--text-light);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:transparent}
+  /* 3: lagpresentation */
+  .lag{flex:1;display:flex;flex-direction:column;padding:22px 18px 0;position:relative}
+  .matchup{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:16px}
+  .shield{width:54px;height:60px;border-radius:8px 8px 50% 50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:800;font-size:17px;color:#fff}
+  .sh-home{background:radial-gradient(circle at 38% 30%,#7a4a28,#4a2c16);border:1.5px solid var(--accent)}
+  .sh-away{background:radial-gradient(circle at 38% 30%,#3a5a78,#1e3448);border:1.5px solid var(--ice)}
+  .vs{font-family:var(--mono);font-size:10px;color:var(--text-muted)}
+  .club-col{text-align:center;width:104px}
+  .club-col h4{font-family:var(--serif);font-size:13px;color:var(--text-light);margin-top:7px}
+  .club-col .mer{font-size:8.5px;color:var(--text-light-secondary);margin-top:3px;line-height:1.5}
+  .formrow{display:flex;justify-content:center;gap:3px;margin-top:5px}
+  .fd{width:7px;height:7px;border-radius:2px}
+  .fd.v{background:#5A9A4A}.fd.f{background:var(--danger)}.fd.o{background:var(--accent)}
+  .keyline{margin-top:16px;padding:10px 12px;background:var(--bg-portal-surface);border-radius:8px;border-left:2px solid var(--gold-deep)}
+  .keyline p{font-family:var(--serif);font-style:italic;font-size:11px;color:var(--text-light-secondary);line-height:1.5}
+  .keyline s{display:block;font-size:8px;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;text-decoration:none;margin-top:4px}
+  .venue{text-align:center;font-family:var(--mono);font-size:8.5px;letter-spacing:1px;color:var(--text-muted);margin-top:14px;text-transform:uppercase}
+  /* notes */
+  .note{max-width:1240px;margin:24px auto 0;padding:18px;background:rgba(245,241,235,.04);border-radius:8px;font-size:12px;line-height:1.6;color:rgba(232,224,208,.85)}
+  .note h3{font-family:var(--serif);font-size:15px;color:#e8e0d0;margin-bottom:8px}
+  .note ul{margin:4px 0 8px 16px}.note li{margin-bottom:4px}
+  .note code{font-family:var(--mono);font-size:10.5px;background:rgba(245,241,235,.07);padding:1px 4px;border-radius:2px;color:#E8B95C}
+</style></head><body>
+
+<div class="head">
+  <h1>A3 · SM-final: uppspel → lagpresentation — typografiska scenen i sekvens</h1>
+  <p>Ersätter 🏆-emoji + konfetti-före-avspark + tom lagpresentation. <strong>Ingen bild, ingen emoji, ingen konfetti</strong> — konfetti är segerns vokabulär och kommer först vid vunnen titel. Gold används som accent (eyebrow, stripe, statlinje), inte som yta. Illustration kan ERSÄTTA steg 2:s övre halva när final-bilden finns — strukturen är byggd för det.</p>
+</div>
+
+<div class="flow">
+  <div class="step">
+    <p class="step-lbl"><b>1 · REFERENS</b> — gold-portalen (finns, oförändrad)</p>
+    <div class="phone"><div class="scr">
+      <div class="mini-mast"><div class="mini-crest">🏒</div><div class="mini-nm"><b>Hälleforsnäs</b><s>Jacob · 2026/27</s></div></div>
+      <div class="pcard">
+        <p class="pe">⬩ SM-FINAL · AVGÖRANDE ⬩</p>
+        <h3>Hälleforsnäs — Rogle</h3>
+        <p class="pm">Annandagen · Studenternas IP, Uppsala · −7°, klart</p>
+      </div>
+      <a class="gold-cta">REDO — SPELA SM-FINAL →</a>
+      <div class="dim-cards"><div class="dim-card"></div><div class="dim-card"></div><div class="dim-card"></div></div>
+    </div></div>
+  </div>
+
+  <div class="arrow">→</div>
+
+  <div class="step">
+    <p class="step-lbl"><b>2 · UPPSPELET</b> — typografisk scen (NY)</p>
+    <div class="phone"><div class="scr">
+      <div class="stripe-l gold"></div>
+      <div class="illu">
+        <img src="../assets/illustrations/final.jpg" alt="Studenternas IP, Uppsala — annandagsfinal">
+        <p class="eyebrow gold">⬩ SM-FINAL ⬩</p>
+      </div>
+      <div class="upp">
+        <h2>Annandagsbandy<br>på Studenternas</h2>
+        <p class="ing">Femtontusen på läktarna. Minus sju.<br>Det här är matchen alla i Hälleforsnäs<br>kommer att minnas — åt ena hållet<br>eller det andra.</p>
+        <div class="statrow">
+          <div class="stat"><b>2:a</b><s>Serien</s></div>
+          <div class="stat"><b>7–1</b><s>Slutspelet</s></div>
+          <div class="stat"><b>1924</b><s>Senaste titeln</s></div>
+        </div>
+      </div>
+      <button class="scene-cta">LAGEN →</button>
+    </div></div>
+  </div>
+
+  <div class="arrow">→</div>
+
+  <div class="step">
+    <p class="step-lbl"><b>3 · LAGPRESENTATION</b> — komponerad (NY)</p>
+    <div class="phone"><div class="scr">
+      <div class="stripe-l gold"></div>
+      <div class="lag">
+        <p class="eyebrow gold">⬩ LAGEN ⬩</p>
+        <div class="matchup">
+          <div class="club-col">
+            <div class="shield sh-home" style="margin:0 auto">H</div>
+            <h4>Hälleforsnäs</h4>
+            <p class="mer">2:a i serien<br>Cupmästare 2026</p>
+            <div class="formrow"><span class="fd v"></span><span class="fd v"></span><span class="fd v"></span><span class="fd o"></span><span class="fd v"></span></div>
+          </div>
+          <span class="vs">MOT</span>
+          <div class="club-col">
+            <div class="shield sh-away" style="margin:0 auto">R</div>
+            <h4>Rogle</h4>
+            <p class="mer">1:a i serien<br>3 raka finaler</p>
+            <div class="formrow"><span class="fd v"></span><span class="fd v"></span><span class="fd f"></span><span class="fd v"></span><span class="fd v"></span></div>
+          </div>
+        </div>
+        <div class="keyline">
+          <p>"De har rutinen. Vi har ingenting att förlora. Jag vet vilket jag hellre har i en final."</p>
+          <s>Mats Brodén · Assisterande tränare</s>
+        </div>
+        <div class="venue">Studenternas IP · Uppsala · Annandagen 14:00</div>
+      </div>
+      <button class="scene-cta" style="border-color:var(--gold)">TILL AVSPARK →</button>
+    </div></div>
+  </div>
+</div>
+
+<div class="note">
+  <h3>DESIGN-DECISIONS-not — vad som ändras vs build 050bb22</h3>
+  <ul>
+    <li><b>UT:</b> jätte-🏆-emoji (README-brott), konfetti före avspark (segerns vokabulär), "NÄSTA →"-pill, "Säsong 2026", tomrummet i lagpresentationen.</li>
+    <li><b>IN:</b> typografiska scenen MED final-illustrationen (<code>assets/illustrations/final.jpg</code> — finns redan): bilden är uppspelets övre halva, tonas ner i <code>--bg-scene</code>, eyebrow ligger PÅ bilden, hero/ingress/statrad under. Lagpresentationen förblir typografisk (matchup + meriter + MB-replik) — en bild per sekvens räcker.</li>
+    <li><b>Gold-disciplin:</b> gold = eyebrow/stripe/CTA-border i scenerna. Portal-CTA:n (steg 1) är den enda gold-fyllda ytan — oförändrad per R3+.</li>
+    <li><b>Illustration-disciplin:</b> finalen är ett ratificerat bild-ögonblick — därför bild här. Kvarts/semi får INGEN bild (copper-typografisk scen per R3-graderingen) — graderingens topp ÄR att bilden tillkommer. Komponenten tar illustration som optional prop.</li>
+    <li><b>Casing:</b> scen-CTA:er uppercase + letterspaced ("LAGEN →", "TILL AVSPARK →") — inte sentence-pill.</li>
+    <li>Samma sekvensstruktur gäller nedskalad för kvarts/semi (copper istället för gold, per R3-graderingen) — bygg EN komponent med tier-prop.</li>
+  </ul>
+</div>
+
+</body></html>

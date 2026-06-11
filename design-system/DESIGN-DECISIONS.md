@@ -401,7 +401,7 @@ Grundvärdighet är inte polish — bruksort-vardagen ÄR USP:n. Mest atmosfär-
 
 ---
 
-*Senast uppdaterad: 2026-06-10 — typroll-vakt inskriven; LedgerFrame-krom tillagd*
+*Senast uppdaterad: 2026-06-11 — Systempatch: B1–B8 + typografiska scenen + Tal & enheter + severity-skalan + delade primitiver ratificerade*
 
 ---
 
@@ -454,4 +454,89 @@ Ramen accepterar båda via `children`/`tabs`-prop utan omarbetning när besluten
 
 - `src/presentation/components/ledger/LedgerFrame.tsx` — chrome-komponent
 - `src/presentation/styles/ledger.css` — CSS, inga raw rgba/hex
+
+---
+
+## ✅ Systempatch 2026-06-11 — ratificerat efter visuell-konsekvens-auditen (Del 1–14, build 050bb22)
+
+> Underlag: `audits/FORSONINGSKARTA-KONSOLIDERAD-2026-06-10.md` + `audits/DESIGNSLUTSATSER-STEG3-2026-06-11.md`. B-besluten togs av Jacob 2026-06-11. Allt nedan är bindande.
+
+### B1 · Scoreboard: vi/dom-färgkodning ratificerad
+**Beslut:** As-built-kodningen skördas som kanon: `--led-us` (amber) = managed klubb, `--led-them` (is-LED) = motståndare — på poäng och lagkodad statistik. Tid + period förblir `--led-score` (röd). Goal-flash oförändrad.
+**Står fast oavsett:** Georgia 800-klubbnamn OVANPÅ LED-rutan (aldrig trunkerade mono-namn i den), horisontell layout, LED-paletten reserverad för tavlan.
+**Konsekvens:** `preview/scoreboard-stalvallen.html`-kanon läses med denna färgrevision. Halvtidsmodalens röda siffror är INTE täckta av detta — siffror utanför tavlan är Georgia.
+
+### B2 · Beat-overlays: scrim, aldrig blur
+**Beslut:** Beats (Helgen, Pokalen, Halvvägs, Sommaren m.fl.) använder `rgba(0,0,0,0.6)`-scrim — `backdrop-filter` tas bort. No-blur-regeln gäller överallt, utan undantag.
+
+### B3 · Emoji-regeln (ny domängräns) — ersätter den gamla "alltid emoji-prefix"
+**Beslut:** Tre domäner, hårda gränser:
+1. **Emoji = domänkategorier i sektionsetiketter på ÖVERSIKTSYTOR** (Portal, Klubb-flikar, Trupp-översikt, Inkorg-grupper). Kartan är stängd — inga nya emoji.
+2. **Lucide = chrome.** Knappar, flikar, väljare, funktionsikoner, status-dots. ALDRIG emoji på en knapp, flik eller väljare (✨🔄💡🎥⚡😡-klassen utgår). Severity-markörer = CSS-dots i token-färg, aldrig 🔴🟡⚪.
+3. **Inget prefix = data-sektioner inuti rapporter/listor** (Granska-flikarna, statistiklistor, byteslistor). Den emoji-fria norm Granska-generationen etablerade är härmed kanon.
+**Oförändrat:** Tags aldrig emoji · 🏒 aldrig ⚽ · aldrig två emoji per etikett · aldrig dekorativ emoji (🏆-hero förbjuden — se Typografiska scenen).
+
+### B5 · In-match-panelen (dockad) ratificerad
+**Beslut:** Under pågående match får snabbval (SNABBÄNDRING, byten) använda en **dockad bottenpanel** — tavlan och flödet ska förbli synliga. Detta är en EGEN komponentklass ("matchpanel"), inte en modal. Utanför pågående match gäller centrerade modaler (380 px, scrim, no blur) som förut.
+
+### B6 · Bury Fen — studio-vinjett
+**Beslut:** `buryfen-logo.png` är INTE deprecated — den är studio-märket ("Bury Fen presenterar", bandyns födelseplats). Ratificerad på TVÅ platser: intro-splashens vinjett (animeras in) + namn-skärmens footer. Ingen annanstans.
+
+### B7 · Knappar är alltid sans
+**Beslut:** Georgia förblir numeraler/ceremoniellt/citat. Knappar — inklusive lägesknappar (Bygg/Håll/Toppa/Vila) — är `--font-body`.
+
+### B8 · Disabled-state — en mekanism
+**Beslut:** Disabled-knapp = ordinarie utseende @ `--disabled-opacity` (0.4) + `pointer-events: none`. Samma färgfamilj, ALDRIG en egen "urtvättad" färg. Gäller alla knappklasser inkl. `.btn-cta`.
+
+### Typografiska scenen — tredje ceremoninivån
+**Var:** `preview/components-scene-typographic.html` (kanon-kort)
+**Beslut:** Mellan kort (vardag) och illustration (höjdpunkt) finns en tredje nivå för ögonblick som är för stora för ett kort och för små för en bild: **⤴-eyebrow + Georgia-hero + kopparstripe + max ETT strukturelement** (bracket, matchup, lista) på mörk yta (`--bg-scene`). Inga bilder, ingen emoji, ingen konfetti. Hem för: uppspel, lagpresentation, fas-mellanskärmar, "Grundserien avklarad".
+**Scen-eyebrows differentieras:** etiketten speglar innehållets vikt — guldet får "⤴ SVENSK MÄSTARE ⤴", vardagsscener "⤴ I DETTA ÖGONBLICK ⤴". Samma eyebrow får inte bära både karriärens höjdpunkt och en tisdagsfika.
+**Konfetti:** ENDAST vid vunnen titel. Aldrig före avspark.
+
+### Tal & enheter (bindande — hela appen)
+**Var:** `preview/rules-tal-enheter.html` (kanon-kort)
+1. **Pengar:** tkr, heltal — "425 tkr". Aldrig kronprecision ("15 666 kr" förbjudet).
+2. **Lön:** alltid **tkr/mån**, heltal. Aldrig /säsong, aldrig blandat.
+3. **Marknadsvärde:** skrivs "Värde N tkr" — förkortningen **MV är reserverad för målvakt**.
+4. **Styrka/CA:** heltal. Aldrig decimaler (46, inte 46.1).
+5. **Betyg:** en decimal (7,5).
+6. **Procent:** endast ork/energi, alltid med etikett ("ork 71%"). "Form" = säsongsformvärdet — får aldrig användas om ork.
+7. **Tid inom säsong:** "omg N". Säsongsetikett: `seasonSpanLabel()` → "2026/27" — överallt, även Minne/Karriärresa. Omgångsbegrepp: SERIEOMGÅNG är spelets språk; motorns matchnummer visas aldrig.
+8. Georgia för numeraler står fast.
+
+### Severity-skalan (urgency — kompletterar cold/warm som är relation)
+**Var:** `preview/rules-severity-skala.html` (kanon-kort)
+**Fyra nivåer, fasta uttryck per komponentklass:**
+| Nivå | Färg | Stripe | Dot/Tag |
+|---|---|---|---|
+| 0 Lugn | ingen markör | — | — (tystnad = neutralt; "Neutral"-taggar renderas inte) |
+| 1 Uppmärksamhet | `--warning` (copper) | 2 px | copper dot/tag |
+| 2 Brådska | `--danger` | 2 px | danger dot/tag |
+| 3 Kris | `--danger` + mörk band-yta | band | enda nivån som får ta egen plats (burnout-bandet är kanon) |
+**Konsekvens:** Inkorgens 🔴🟡⚪ ersätts av denna skala. `--cold`/`--warm` förblir relations-dimensionen — blandas aldrig med urgency.
+
+### "Ett kort utan innehåll renderas inte — eller talar"
+**Beslut:** Tom struktur (kort/sektion/rad med "—" eller noll rader) är förbjuden. Två tillåtna utfall: (a) elementet renderas inte; (b) en kursiv status-rad som säger något — helst NÄR innehåll kommer.
+**Kanon-exempel:** "Ingen reagerar. Hela truppen följer Håll." · "Fria agenter dyker upp vid säsongsslut." · "Kräver 3 spelade matcher — kommer i omg 3."
+
+### "Semantisk färg kräver nyckel"
+**Beslut:** Färg som bär betydelse (status-ringar, namnfärger, värdefärger) måste ha en mikro-legend på samma yta, i stil med tabellens eller shotmapens. Ingen legend → ingen färgsemantik.
+
+### "En graf förankras: värde + period + läsning"
+**Beslut:** Varje graf/sparkline visar aktuellt värde (Georgia), periodangivelse och helst en läsning ("Stigande form"). **Kanon:** PlayerCard-betygsgrafen. **< MIN_POINTS datapunkter → status-rad istället för tom graf.** Sparklines förtjänas — aldrig i stats-footerrader (där gäller numeraler).
+
+### Cooldown-kortet — skördat som komponent
+**Beslut:** Vilande system (kommun/mecenat/journalist m.fl.) visas som: kursiv vilo-rad + "N OMGÅNGAR KVAR" + dot-räknare. Redan konsekvent i build — härmed kanon för ALLA cooldowns.
+
+### Delade primitiver — divergensens rot (byggs av Code, en gång)
+1. `positionLabel()` — MV/B/YH/MF/A överallt (tre strata idag: engelska, GOA/DEF/HAL)
+2. Tal/valuta-formatter — implementerar Tal & enheter
+3. `<TabBar>` — pill-stilen (Klubb/Transfers/Tabell har den; sista avvikare ersätts)
+4. Decision-card — EN komponent (Portal-variantens hierarki: primär fylld + outline), både Portal och Granska
+5. Severity-dots — ersätter semafor-emoji
+6. Disabled-state — B8-mekanismen i `.btn`-basen
+
+### Illustrations-katalogen — öppen tills v1 är komplett
+**Beslut:** Listan hålls öppen tills v1-uppsättningen är levererad och inkopplad. DÄREFTER prövas låsning (reservprincipen). Domänregeln gäller redan nu: bild vid ögonblick, aldrig i vardagsytor. Köade behållningar från auditen: guld-trofé/SM-uppspel, kris-scen, lagfoto.
 - MatchLiveScreen wrappas i `<LedgerFrame phase="spela">`. Stamp: null under aktiv speltid, "PAUSSNACK →" vid halvtid, "TILL GRANSKNING →" vid fulltid. Stämpeln återanvänder befintliga navigate-/setShowHalftime-handlers — inga nya kontroller.

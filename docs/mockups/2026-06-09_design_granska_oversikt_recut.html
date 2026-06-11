@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --paper:#ece4d4;--paper-hi:#f4eee1;--ink:#1f1c16;--ink-soft:#5c554a;--ink-faint:#8a8270;
+    --rule:#d8cdb6;--rule-strong:#c2b598;--copper:#A25828;--copper-br:#C47A3A;
+    --green:#4f7a3a;--red:#a8432f;--cold:#42627c;--gold:#b8893a;
+    --serif:Georgia,serif;--sans:system-ui,sans-serif;--mono:'Courier New',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#2b2823;color:#e8e0d0;font-family:var(--sans);padding:26px 16px 70px}
+  .head{max-width:900px;margin:0 auto 16px;text-align:center}
+  .head h1{font-family:var(--serif);font-size:21px;margin-bottom:5px}
+  .head p{font-size:12px;color:rgba(232,224,208,.72);line-height:1.55;max-width:720px;margin:0 auto}
+  .head p strong{color:var(--copper-br)}
+  .wrap{display:flex;justify-content:center}
+  .phone{width:394px;border-radius:16px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);border:5px solid #0d0c0a}
+  .scr{height:760px;overflow:hidden;position:relative;background:var(--paper);display:flex;flex-direction:column}
+  /* real LedgerFrame chrome */
+  .mast{display:flex;align-items:center;gap:9px;padding:9px 13px;background:#0e0d0b;flex-shrink:0}
+  .crest{width:24px;height:24px;border-radius:50%;background:#3D3A32;border:1px solid rgba(196,122,58,.4);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px}
+  .mast-nm{flex:1;line-height:1.1}.mast-nm b{font-family:var(--serif);font-size:13px;color:#e8e0d0}.mast-nm s{display:block;font-family:var(--mono);font-size:7.5px;color:#8a8270;text-decoration:none}
+  .mast-omg{font-family:var(--mono);font-size:8px;color:var(--copper-br);border:1px solid rgba(196,122,58,.4);border-radius:2px;padding:2px 6px}
+  .rps{display:flex;align-items:center;justify-content:center;gap:9px;padding:7px;background:#1a1714;border-bottom:2px solid var(--copper);font-family:var(--mono);font-size:8.5px;letter-spacing:1px;flex-shrink:0}
+  .rps span{color:#8a8270}.rps .on{color:var(--copper-br);font-weight:700}.rps .ok{color:rgba(196,122,58,.55)}.rps .d{color:rgba(255,255,255,.12)}
+  .tabs{display:flex;background:var(--paper-hi);border-bottom:1px solid var(--ink);flex-shrink:0}
+  .tab{flex:1;text-align:center;font-family:var(--mono);font-size:8px;padding:7px 2px;color:var(--ink-faint);letter-spacing:.5px}
+  .tab.on{color:var(--copper);border-bottom:2px solid var(--copper);margin-bottom:-1px;font-weight:700}
+  .body{flex:1;overflow:hidden;position:relative}
+  .medge{position:absolute;left:0;top:0;bottom:0;width:20px;background:linear-gradient(90deg,#e3d9c5,#ece4d4);border-right:1.5px solid var(--copper);z-index:2}
+  .perf{position:absolute;left:6px;width:7px;height:7px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 1px rgba(154,74,40,.3)}
+  .page{position:absolute;left:20px;right:0;top:0;bottom:0;overflow:hidden;padding:14px 14px 0}
+  /* hero */
+  .h-eyebrow{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--copper);text-align:center;margin-bottom:6px}
+  .h-teams{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--ink-faint);text-align:center;text-transform:uppercase;margin-bottom:4px}
+  .h-score{font-family:var(--serif);font-size:52px;font-weight:700;color:var(--ink);text-align:center;line-height:1;letter-spacing:1px}
+  .h-verdict{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;text-align:center;margin-top:8px;font-weight:700}
+  .h-verdict.win{color:var(--green)}.h-verdict.draw{color:var(--ink-soft)}.h-verdict.loss{color:var(--red)}
+  .h-flavor{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--copper);text-align:center;line-height:1.45;margin-top:7px;padding:0 10px}
+  .rule{height:1px;background:var(--rule);margin:14px 0}
+  .rule-strong{height:1.5px;background:var(--rule-strong);margin:14px 0}
+  .sh{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--copper);margin-bottom:7px}
+  /* scorers */
+  .scorer{display:flex;align-items:baseline;gap:8px;padding:3px 0;font-family:var(--serif);font-size:12px}
+  .scorer.home{justify-content:flex-start}.scorer.away{justify-content:flex-end;text-align:right}
+  .scorer .min{font-family:var(--mono);font-size:8px;color:var(--ink-faint);width:20px}
+  .scorer .nm{color:var(--ink);font-weight:600}.scorer.away .nm{color:var(--red)}
+  .scorer .ic{font-size:9px}
+  .scorers-split{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .scol-l{border-right:1px solid var(--rule);padding-right:12px}
+  .scol-head{font-family:var(--mono);font-size:7px;letter-spacing:1px;color:var(--ink-faint);text-transform:uppercase;margin-bottom:4px}
+  .scol-head.r{text-align:right}
+  /* keyfacts */
+  .kf{display:flex;justify-content:space-around;text-align:center;padding:4px 0}
+  .kf-item{flex:1}
+  .kf-num{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--ink);line-height:1}
+  .kf-lbl{font-family:var(--mono);font-size:7px;letter-spacing:1px;color:var(--ink-faint);text-transform:uppercase;margin-top:3px}
+  .kf-note{font-family:var(--serif);font-style:italic;font-size:10px;color:var(--ink-soft);text-align:center;margin-top:8px;line-height:1.4}
+  .stampbtn{flex-shrink:0;margin:10px 14px 13px;padding:13px;border:2px solid var(--copper);background:var(--copper);color:var(--paper-hi);font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:4px;text-align:center}
+  .note{max-width:900px;margin:22px auto 0;padding:18px;background:rgba(245,241,235,.04);border-radius:8px;line-height:1.6;font-size:12px;color:rgba(232,224,208,.85)}
+  .note h3{font-family:var(--serif);font-size:15px;color:#e8e0d0;margin-bottom:9px}
+  .note ul{margin:4px 0 8px 16px}.note li{margin-bottom:5px}
+  .note code{font-family:var(--mono);font-size:10.5px;background:rgba(245,241,235,.07);padding:1px 5px;border-radius:2px;color:#E8B95C}
+  .note .out{color:var(--red)}.note .in{color:#8fbf6f}
+</style></head><body>
+
+<div class="head">
+  <h1>Granska · Översikt — recut mot låst fork</h1>
+  <p>Bara flik 1 ritas om. Tabell + form + ekonomi UT (bor i RoundSummary-svepet utanför liggaren). Översikt = ren matchrapport-hjälte. Real LedgerFrame-krom, säsong <strong>2026/27</strong>, stämpel <strong>"Klar →"</strong>. Spelare/Shotmap/Analys oförändrade (06-08).</p>
+</div>
+
+<div class="wrap">
+  <div class="phone"><div class="scr">
+    <div class="mast"><div class="crest">🏒</div><div class="mast-nm"><b>Hälleforsnäs</b><s>Jacob · 2026/27</s></div><span class="mast-omg">Omg 1</span></div>
+    <div class="rps"><span class="ok">✓ FÖRBERED</span><span class="d">—</span><span class="ok">✓ SPELA</span><span class="d">—</span><span class="on">⬡ GRANSKA</span></div>
+    <div class="tabs"><span class="tab on">Översikt</span><span class="tab">Spelare</span><span class="tab">Shotmap</span><span class="tab">Analys</span></div>
+    <div class="body">
+      <div class="medge"><div class="perf" style="top:40px"></div><div class="perf" style="top:104px"></div><div class="perf" style="top:168px"></div><div class="perf" style="top:232px"></div><div class="perf" style="top:296px"></div><div class="perf" style="top:360px"></div><div class="perf" style="top:424px"></div><div class="perf" style="top:488px"></div><div class="perf" style="top:552px"></div></div>
+      <div class="page">
+        <div class="h-eyebrow">⬩ Matchrapport ⬩</div>
+        <div class="h-teams">Hälleforsnäs — Lesjöfors</div>
+        <div class="h-score">2 – 4</div>
+        <div class="h-verdict loss">Förlust</div>
+        <div class="h-flavor">"Andra halvlek rann ifrån er i kylan. Lesjöfors var hungrigare när det avgjordes."</div>
+
+        <div class="rule-strong"></div>
+
+        <div class="sh">Målskyttar</div>
+        <div class="scorers-split">
+          <div class="scol-l">
+            <div class="scol-head">Hälleforsnäs</div>
+            <div class="scorer home"><span class="min">21'</span><span class="ic">⚽</span><span class="nm">P. Sandberg</span></div>
+            <div class="scorer home"><span class="min">38'</span><span class="ic">⚽</span><span class="nm">H. Berglund</span></div>
+          </div>
+          <div>
+            <div class="scol-head r">Lesjöfors</div>
+            <div class="scorer away"><span class="nm">S. Moberg</span><span class="ic">⚽</span><span class="min">8'</span></div>
+            <div class="scorer away"><span class="nm">S. Moberg</span><span class="ic">⚽</span><span class="min">62'</span></div>
+            <div class="scorer away"><span class="nm">R. Hagberg</span><span class="ic">⚽</span><span class="min">77'</span></div>
+            <div class="scorer away"><span class="nm">R. Heikkinen</span><span class="ic">⚽</span><span class="min">84'</span></div>
+          </div>
+        </div>
+
+        <div class="rule"></div>
+
+        <div class="sh">Nyckelsiffror</div>
+        <div class="kf">
+          <div class="kf-item"><div class="kf-num">412</div><div class="kf-lbl">Publik</div></div>
+          <div class="kf-item"><div class="kf-num">15</div><div class="kf-lbl">Skott</div></div>
+          <div class="kf-item"><div class="kf-num">11</div><div class="kf-lbl">Hörnor</div></div>
+        </div>
+        <div class="kf-note">Fullsatt läktare trots kylan — bygden kom. 15 skott men bara 2 mål: lägena fanns, avsluten inte.</div>
+      </div>
+    </div>
+    <div class="stampbtn">Klar →</div>
+  </div></div>
+</div>
+
+<div class="note">
+  <h3>DESIGN-DECISIONS — vad ändrades vs 06-08</h3>
+  <ul>
+    <li><span class="out">UT:</span> ligatabell (<code>.tline/.pos/.me</code>), formprickar (<code>.formdots</code>), ekonomi — flyttat till RoundSummary-svepet, utanför liggaren.</li>
+    <li><span class="in">IN:</span> ren matchrapport-hjälte — slutställning 52px serif, utlåtande-rad (mono, färgad efter utfall), flavor-rad (kursiv copper).</li>
+    <li><span class="in">Säsongsetikett:</span> <code>seasonSpanLabel(currentSeason)</code> → "2026/27". Aldrig 4051/52.</li>
+    <li><span class="in">Stämpel:</span> "Klar →" (stänger rapport tillbaka till svepet). Svepet behåller "Nästa omgång →". Två parallella CTA, ingen konsolidering.</li>
+    <li><span class="in">Krom:</span> real LedgerFrame (masthead #0E0D0B, crest #3D3A32, RPS-strip, perforerad marginal, copper-stämpel) — inte den driftade fristående HTML-kromen.</li>
+    <li>Granska = papper, ingen LED-tavla (mörk-yta-principen gäller bara Spela). Stämpeln funktionell, ej dekoration. Inga nya tokens.</li>
+  </ul>
+  <p style="margin-top:8px">Spelare / Shotmap / Analys: oförändrade från <code>2026-06-08_design_granska_flikar_liggare.html</code> — endast säsongsetikett + krom-token att stämma av vid wiring, ingen omritning.</p>
+</div>
+
+</body></html>
