@@ -187,10 +187,9 @@ export function PlayoffIntroScreen() {
       <div style={{ padding: '0 16px calc(24px + env(safe-area-inset-bottom, 0px))', marginTop: 'auto' }}>
         <button
           onClick={handleContinue}
-          className="btn btn-primary"
-          style={{ width: '100%', letterSpacing: '2px', textTransform: 'uppercase' }}
+          className="btn btn-primary btn-cta"
         >
-          {qualified ? 'Starta slutspelet →' : 'Stäng säsongen →'}
+          {qualified ? 'STARTA SLUTSPELET →' : 'STÄNG SÄSONGEN →'}
         </button>
       </div>
     </div>

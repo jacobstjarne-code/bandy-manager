@@ -227,10 +227,9 @@ export function SimSummaryScreen() {
         <div style={{ padding: '4px 0' }}>
           <button
             onClick={() => navigate('/game/dashboard', { replace: true })}
-            className="btn btn-primary"
-            style={{ width: '100%', letterSpacing: '2px', textTransform: 'uppercase' }}
+            className="btn btn-primary btn-cta"
           >
-            Tillbaka till dashboard →
+            TILLBAKA TILL DASHBOARD →
           </button>
         </div>
 

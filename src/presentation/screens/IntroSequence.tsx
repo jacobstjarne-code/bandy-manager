@@ -192,9 +192,8 @@ export function IntroSequence() {
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22 }}>
           <button
             onClick={() => navigate('/new-game')}
-            className="btn btn-primary"
+            className="btn btn-primary btn-cta"
             style={{
-              width: '100%',
               maxWidth: 300,
               animation: s1 ? 'pulseCTA 2.5s ease-in-out infinite' : 'none',
               opacity: s1 ? 1 : 0,

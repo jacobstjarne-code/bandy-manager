@@ -147,7 +147,6 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
         </div>
       </div>
 
-      {/* CTA row — §9.2: standard-primary + radius 14, not .btn--hero */}
       <div style={{
         padding: '12px 16px',
         paddingBottom: 'max(16px, calc(var(--safe-bottom, 0px) + 12px))',
@@ -155,11 +154,10 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
         zIndex: 3,
       }}>
         <button
-          className="btn btn-primary"
-          style={{ borderRadius: 14, width: '100%' }}
+          className="btn btn-primary btn-cta"
           onClick={onContinue}
         >
-          Sätt laget →
+          SÄTT LAGET →
         </button>
       </div>
     </div>

@@ -93,17 +93,15 @@ export function MatchLaddningBand({ state, streakLength, isBroken, game, opponen
         </div>
       </div>
 
-      {/* CTA — §9.2: standard-primary + radius 8 */}
       <div style={{
         padding: '12px 16px',
         paddingBottom: 'max(16px, calc(var(--safe-bottom, 0px) + 12px))',
       }}>
         <button
-          className="btn btn-primary"
-          style={{ borderRadius: 8, width: '100%' }}
+          className="btn btn-primary btn-cta"
           onClick={onContinue}
         >
-          Sätt laget →
+          SÄTT LAGET →
         </button>
       </div>
     </div>

@@ -143,10 +143,9 @@ export function QFSummaryScreen() {
       <div style={{ padding: '0 16px calc(24px + env(safe-area-inset-bottom, 0px))', marginTop: 'auto' }}>
         <button
           onClick={handleContinue}
-          className="btn btn-primary"
-          style={{ width: '100%', letterSpacing: '2px', textTransform: 'uppercase' }}
+          className="btn btn-primary btn-cta"
         >
-          {managedAdvanced ? 'Starta semifinalerna →' : 'Stäng →'}
+          {managedAdvanced ? 'STARTA SEMIFINALERNA →' : 'STÄNG →'}
         </button>
       </div>
     </div>
