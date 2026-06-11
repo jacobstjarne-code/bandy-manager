@@ -67,6 +67,7 @@ export function computeCardStaleTracking(
   const next: StaleTracking = { ...currentTracking }
   for (const id of shownCardIds) {
     const existing = next[id]
+    if (existing?.lastShownAt === currentMatchday) continue  // same round — navigation doesn't re-register
     const isSequential = existing?.lastShownAt === currentMatchday - 1
     const firstShownAt = !existing
       ? currentMatchday

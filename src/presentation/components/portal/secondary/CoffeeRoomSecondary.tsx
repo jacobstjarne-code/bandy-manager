@@ -12,8 +12,8 @@ export function CoffeeRoomSecondary({ game }: CardRenderProps) {
   const scene = getCoffeeRoomScene(game)
   if (!scene || scene.exchanges.length === 0) return null
 
-  // Use meta.subtitle as teaser — first exchange text appears verbatim in the full scene
-  const previewText = scene.meta.subtitle ?? scene.exchanges.at(-1)?.[1] ?? scene.exchanges[0][1]
+  // First exchange reply as teaser — varies per matchday via scene seed
+  const previewText = scene.exchanges[0][1]
   const truncated = previewText.length > 90 ? previewText.slice(0, 88) + '…' : previewText
 
   return (
