@@ -55,8 +55,8 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
     return 'SLUTSPEL'
   })()
 
-  const homeCode = (homeClub?.shortName ?? homeClub?.name ?? 'HEM').substring(0, 4).toUpperCase()
-  const awayCode = (awayClub?.shortName ?? awayClub?.name ?? 'BOR').substring(0, 4).toUpperCase()
+  const homeCode = (homeClub?.shortName ?? homeClub?.name ?? 'HEM').toUpperCase()
+  const awayCode = (awayClub?.shortName ?? awayClub?.name ?? 'BOR').toUpperCase()
 
   const storyText = generateMatchStory(fixture, game)
   const is00 = fixture.homeScore === 0 && fixture.awayScore === 0

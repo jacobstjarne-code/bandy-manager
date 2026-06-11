@@ -24,7 +24,6 @@ export function ClubListItem({ name, isSelected, alignment, onClick }: Props) {
         onClick={onClick}
         style={{
           background: isSelected ? 'var(--bg-dark-elevated)' : 'var(--bg-dark-surface)',
-          backdropFilter: 'blur(4px)',
           border: `1px solid ${isSelected ? 'var(--match-gold)' : 'var(--bg-leather)'}`,
           borderRadius: 'var(--radius-md)',
           padding: '7px 14px',

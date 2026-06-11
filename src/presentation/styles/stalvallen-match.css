@@ -93,9 +93,10 @@
 .team-col.away { text-align: left; }
 .team-code {
   display: block;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 3px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
   color: rgba(255, 215, 195, 0.9);
   margin-bottom: 6px;
   text-shadow: 0 0 4px rgba(255, 100, 75, 0.35);

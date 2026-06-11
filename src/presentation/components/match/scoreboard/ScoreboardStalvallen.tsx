@@ -81,8 +81,8 @@ export function ScoreboardStalvallen({
     }
   }, [homeScore, awayScore])
 
-  const homeColor = managedSide === 'home' ? 'var(--copper)' : 'var(--steel)'
-  const awayColor = managedSide === 'away' ? 'var(--copper)' : 'var(--steel)'
+  const homeColor = managedSide === 'home' ? 'var(--led-us)' : 'var(--led-them)'
+  const awayColor = managedSide === 'away' ? 'var(--led-us)' : 'var(--led-them)'
 
   const homePens = penalties.filter(p => p.team === 'home')
   const awayPens = penalties.filter(p => p.team === 'away')

@@ -102,8 +102,6 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, onComplete }: 
           border: '1px solid rgba(245,241,235,0.06)',
           borderRadius: 12,
           padding: '20px 18px',
-          backdropFilter: 'blur(3px)',
-          WebkitBackdropFilter: 'blur(3px)',
         }}>
         {/* Setting */}
         <div className={[

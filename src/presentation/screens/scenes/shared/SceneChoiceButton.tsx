@@ -37,8 +37,6 @@ export function SceneChoiceButton({ choice, onClick }: Props) {
         fontSize: 12,
         fontFamily: 'Georgia, serif',
         lineHeight: 1.4,
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
         width: '100%',
         transition: 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease',
       }}

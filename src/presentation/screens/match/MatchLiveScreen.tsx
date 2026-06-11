@@ -1148,8 +1148,8 @@ export function MatchLiveScreen() {
 
   const homeClub = fixture ? game?.clubs.find(c => c.id === fixture.homeClubId) : undefined
   const awayClub = fixture ? game?.clubs.find(c => c.id === fixture.awayClubId) : undefined
-  const homeShort = (homeClub?.shortName ?? homeClubName).substring(0, 6)
-  const awayShort = (awayClub?.shortName ?? awayClubName).substring(0, 6)
+  const homeShort = (homeClub?.shortName ?? homeClubName).toUpperCase()
+  const awayShort = (awayClub?.shortName ?? awayClubName).toUpperCase()
 
   function handleLiveSub(_outId: string, _inId: string) {
     setShowSubModal(false)
