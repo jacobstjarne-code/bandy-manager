@@ -45,7 +45,7 @@ export function SubstitutionModal({ starters, bench, onConfirm, onClose }: Subst
       >
         <div className="match-modal-head">
           <span className="match-modal-title">
-            🔄 {outId ? 'Välj in-spelare' : 'Välj ut-spelare'}
+            {outId ? 'Välj in-spelare' : 'Välj ut-spelare'}
           </span>
           <button className="match-modal-close" onClick={onClose}>×</button>
         </div>

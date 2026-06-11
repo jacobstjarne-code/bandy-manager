@@ -275,7 +275,7 @@ export function SlotLineupView({
             color: 'var(--accent)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
           }}
         >
-          ✨ Generera bästa elvan
+          Generera bästa elvan
         </button>
       </div>
 

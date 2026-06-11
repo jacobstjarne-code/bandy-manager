@@ -812,7 +812,7 @@ export function PlayerCard({
               {([
                 { id: 'encourage' as const, label: '😊 Uppmuntra' },
                 { id: 'demand' as const, label: '💪 Ställ krav' },
-                { id: 'future' as const, label: '🔮 Framtid' },
+                { id: 'future' as const, label: 'Framtid' },
               ]).map(opt => (
                 <button
                   key={opt.id}

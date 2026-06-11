@@ -1,6 +1,7 @@
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { StatsFooter, calculateLiveStats } from './StatsFooter'
 import { MomentumBar } from './MomentumBar'
+import { ArrowLeftRight } from 'lucide-react'
 
 interface MatchControlsProps {
   isPaused: boolean
@@ -66,7 +67,7 @@ export function MatchControls({
             className="match-control-btn"
             title="Byten"
           >
-            🔄
+            <ArrowLeftRight size={16} />
           </button>
         )}
 

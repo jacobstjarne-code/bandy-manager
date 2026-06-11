@@ -61,7 +61,6 @@ export function HalftimeModal({
   onSetMentality,
   onSetTempo,
   onSetPress,
-  tacticChanged,
   htSubs,
   onHtSubsChange,
   managedLineup,
@@ -438,7 +437,7 @@ export function HalftimeModal({
             className="btn btn-cta btn-primary"
             style={{ width: '100%' }}
           >
-            {tacticChanged || htSubs.length > 0 ? '🔄 ' : ''}{isSmFinal || isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
+            ANDRA HALVLEK →
           </button>
         </div>
       </div>
