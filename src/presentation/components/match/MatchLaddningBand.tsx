@@ -45,13 +45,13 @@ export function MatchLaddningBand({ state, streakLength, isBroken, game, opponen
 
   return (
     <div style={{
-      height: '100dvh',
+      position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number,
       background: 'var(--bg-portal)',
       display: 'flex',
       flexDirection: 'column',
     }}>
-      {/* Band card — left-border warm, gradient bg (mock: .band) */}
-      <div style={{ flex: 1, padding: '20px 13px 0', overflow: 'hidden' }}>
+      {/* Band card — centered vertically so slim card reads as intentional stillness */}
+      <div style={{ flex: 1, padding: '20px 13px 0', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{
           padding: '13px 14px',
           background: 'linear-gradient(180deg, color-mix(in srgb, var(--warm) 10%, var(--bg-portal-surface)) 0%, var(--bg-portal-surface) 100%)',

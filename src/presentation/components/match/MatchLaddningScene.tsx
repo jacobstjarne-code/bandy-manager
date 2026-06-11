@@ -53,11 +53,10 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
   return (
     <div style={{
-      height: '100dvh',
+      position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number,
       background: 'var(--bg-portal)',
       display: 'flex',
       flexDirection: 'column',
-      position: 'relative',
       overflow: 'hidden',
     }}>
       {/* Scene area — fills everything above the CTA row */}
@@ -90,9 +89,9 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
           pointerEvents: 'none',
         }} />
 
-        {/* Text overlay — positioned at bottom of scene (above CTA row) */}
+        {/* Text overlay — bottomed with breathing room above CTA */}
         <div style={{
-          position: 'absolute', left: 18, right: 18, bottom: 16, zIndex: 2,
+          position: 'absolute', left: 18, right: 18, bottom: 44, zIndex: 2,
         }}>
           <p style={{
             fontFamily: 'var(--font-body)',
