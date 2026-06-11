@@ -30,7 +30,7 @@
 .club-memory-empty-title {
   font-family: var(--font-display);
   font-size: 16px;
-  color: var(--text-light-secondary);
+  color: var(--text-secondary);
   margin-bottom: 10px;
   font-weight: 400;
 }
@@ -61,7 +61,7 @@
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-light);
+  color: var(--text-primary);
 }
 
 .club-memory-season-ongoing-badge {
@@ -189,7 +189,7 @@
 .memory-row-text {
   font-family: var(--font-display);
   font-size: 12.5px;
-  color: var(--text-light);
+  color: var(--text-primary);
 }
 
 /* ── Legender-block ──────────────────────────────────────────── */
@@ -287,7 +287,7 @@
 .club-memory-record-value {
   font-family: var(--font-display);
   font-size: 13px;
-  color: var(--text-light);
+  color: var(--text-primary);
   line-height: 1.3;
 }
 

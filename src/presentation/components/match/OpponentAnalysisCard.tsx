@@ -5,6 +5,8 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { useGameStore } from '../../store/gameStore'
 import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { getCupRoundLabel } from '../../../domain/services/cupService'
+import { positionShort } from '../../utils/formatters'
+import type { PlayerPosition } from '../../../domain/enums'
 // ordinal removed — no longer used in combined card
 
 interface OpponentAnalysisCardProps {
@@ -85,7 +87,7 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>Nyckelspelare:</p>
           {displayAnalysis.keyPlayers.map((kp, i) => (
             <div key={i} style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
-              {kp.name} ({kp.position.slice(0, 3).toUpperCase()}) · Styrka ~{kp.estimatedCA}
+              {kp.name} ({positionShort(kp.position as PlayerPosition)}) · Styrka ~{kp.estimatedCA}
             </div>
           ))}
         </div>

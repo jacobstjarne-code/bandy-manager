@@ -5,7 +5,8 @@ import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { ClubBadge } from '../components/ClubBadge'
 import { SectionLabel } from '../components/SectionLabel'
-import { csColor, formatCurrency } from '../utils/formatters'
+import { csColor, formatCurrency, positionShort } from '../utils/formatters'
+import type { PlayerPosition } from '../../domain/enums'
 import { shareSeasonImage } from '../utils/seasonShareImage'
 import { collectSeasonDecisions } from '../../domain/services/seasonDecisionsService'
 import { generateTeamPhotoSvg } from '../utils/teamPhotoGenerator'
@@ -650,7 +651,7 @@ export function SeasonSummaryScreen() {
                 <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 4 }}>BÄSTA PROSPEKT</p>
                 <p style={{ fontSize: 14, fontWeight: 700 }}>{summary.bestYouthProspect.name}</p>
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                  {summary.bestYouthProspect.position} · Potential: {summary.bestYouthProspect.potential}
+                  {positionShort(summary.bestYouthProspect.position as PlayerPosition)} · Potential: {summary.bestYouthProspect.potential}
                 </p>
               </div>
             )}
@@ -700,7 +701,7 @@ export function SeasonSummaryScreen() {
                       {p.isLegend ? '🎖️ ' : '👋 '}{p.name}
                     </span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
-                      {p.age} år · {p.position}
+                      {p.age} år · {positionShort(p.position as PlayerPosition)}
                     </span>
                   </div>
                   <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>

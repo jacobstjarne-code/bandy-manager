@@ -1,13 +1,5 @@
 import type { Player } from '../../../domain/entities/Player'
-import { PlayerPosition } from '../../../domain/enums'
-
-const POS_SHORT: Partial<Record<string, string>> = {
-  [PlayerPosition.Goalkeeper]: 'MV',
-  [PlayerPosition.Defender]: 'B',
-  [PlayerPosition.Half]: 'YH',
-  [PlayerPosition.Midfielder]: 'MF',
-  [PlayerPosition.Forward]: 'A',
-}
+import { positionShort } from '../../utils/formatters'
 
 interface PlayerPillProps {
   player: Player
@@ -54,7 +46,7 @@ export function PlayerPill({ player, isSelected, onTap }: PlayerPillProps) {
         {player.lastName}
       </span>
       <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.3px' }}>
-        {POS_SHORT[player.position] ?? player.position.toUpperCase()}
+        {positionShort(player.position)}
       </span>
       <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
         {Math.round(player.currentAbility)}

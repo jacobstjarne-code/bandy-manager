@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import type { AssistantCoach } from '../../../domain/entities/AssistantCoach'
 import { generatePlayerNotes, type NoteTag } from '../../../domain/services/playerNotesService'
+import { positionShort } from '../../utils/formatters'
 
 interface NotesViewProps {
   coach: AssistantCoach
@@ -93,7 +94,7 @@ export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
                 flexShrink: 0, opacity: 0.85,
               }}>
                 <span style={{ color: 'var(--text-light)', fontSize: 9, fontWeight: 700 }}>
-                  {p.position.slice(0, 2).toUpperCase()}
+                  {positionShort(p.position)}
                 </span>
               </div>
               <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--text-primary)' }}>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import { getPortraitSvg } from '../../../domain/services/portraitService'
+import { positionShort } from '../../utils/formatters'
 
 interface Props {
   players: Player[]
@@ -24,7 +25,7 @@ function PlayerRow({ player, isCaptain, section, onClick }: {
 
   const meta: string[] = []
   if (isCaptain) meta.push('Kapten')
-  meta.push(player.position)
+  meta.push(positionShort(player.position))
   meta.push(`${player.age} år`)
   if (player.dayJob?.title) meta.push(player.dayJob.title)
 
