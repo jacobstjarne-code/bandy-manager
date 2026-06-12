@@ -38,7 +38,7 @@ export function generateMatchStory(fixture: Fixture, game: SaveGame): string {
 
   if (myScore > theirScore) {
     if (wasTrailing) {
-      sentences.push(`Seger efter vändning — ni låg under men tog tre poäng till slut.`)
+      sentences.push(`Seger efter vändning — ni låg under men tog två poäng till slut.`)
     } else if (myScore - theirScore >= 4) {
       sentences.push(`Övertygande seger mot ${oppClub?.shortName ?? 'motståndet'}.`)
     } else {

@@ -121,7 +121,7 @@ const RESULT_EXCHANGES: Record<'win' | 'loss' | 'draw', Array<[string, string]>>
   win: [
     ['Kioskvakten', 'Vi sålde dubbelt idag. Seger säljer.'],
     ['Vaktmästaren', 'Publiken sjöng hela vägen ut. Länge sen sist.'],
-    ['Kassören', 'Tre poäng och plusresultat. Jag sover gott.'],
+    ['Kassören', 'Två poäng och plusresultat. Jag sover gott.'],
   ],
   loss: [
     ['Kioskvakten', 'Tyst vid kiosken efteråt. Ingen ville ha korv.'],

@@ -343,7 +343,7 @@ const PRESS_WIN_QUOTES: Record<CoachPersonality, string[]> = {
   jovial: [
     'Fantastisk insats! Laget spelade med hjärtat idag!',
     'Vi är jättenöjda! Det här är vad vi tränar för!',
-    'Tre poäng och god stämning — det är bandyn vi älskar!',
+    'Två poäng och god stämning — det är bandyn vi älskar!',
   ],
   grumpy: [
     'Vi vann. Det är vad vi ska göra. Inga stora ord om det.',

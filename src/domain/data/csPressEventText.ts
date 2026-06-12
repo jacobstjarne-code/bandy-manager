@@ -38,7 +38,7 @@ export const CS_PRESS_QUESTIONS: Record<PressSeverity, readonly string[]> = {
   ],
   friendly: [
     `{NAME} stänger ned ett bra anfallslag. Hur mycket av det är hans förtjänst?`,
-    `Tre poäng utan baklängesmål. Det är vad som krävs i nedflyttningsstriden, eller?`,
+    `Två poäng utan baklängesmål. Det är vad som krävs i nedflyttningsstriden, eller?`,
     `Vad ser du som mest givande just nu — försvarsspelet, formen eller stämningen?`,
     `Du har sagt förut att försvaret kommer i form sent. Är det det vi ser nu?`,
     `Hur viktigt är det att {NAME} får det här erkännandet just i dag?`,

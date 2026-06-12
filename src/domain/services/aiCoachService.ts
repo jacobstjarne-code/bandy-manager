@@ -25,7 +25,7 @@ const STYLE_QUOTES: Record<CoachStyle, string[]> = {
     'Vi anfaller tills det är klart.',
   ],
   pragmatic: [
-    'Tre poäng — hur som helst.',
+    'Två poäng — hur som helst.',
     'Resultatet räknas. Inget annat.',
     'Vi anpassar oss till varje match.',
     'Pragmatism vinner ligor.',

@@ -17,11 +17,11 @@ export const PLAYER_PRAISE_VARIANTS: readonly string[] = [
 ]
 
 export const CAPTAIN_SPEECH_VARIANTS: readonly string[] = [
-  `{CAPTAIN} knackar på dörren. Vattenflaska i handen.\n\n"Är det okej om jag säger något till killarna före matchen? Inget längre."\n\nLaget har förlorat tre raka.`,
-  `{CAPTAIN} ställer sig vid dörrposten. Tar av sig kepsen.\n\n"Jag har funderat. Det är dags."\n\nLaget har förlorat tre raka.`,
-  `{CAPTAIN} sätter sig i stolen mittemot. Sitter tyst en stund.\n\n"Vi behöver vända det här. Jag tänkte säga något i omklädningsrummet. Du får säga ifrån om det är fel."\n\nLaget har förlorat tre raka.`,
-  `{CAPTAIN} kommer förbi efter morgonträningen.\n\n"Grabbarna behöver höra det från någon i laget. Är det okej om det blir jag?"\n\nLaget har förlorat tre raka.`,
-  `{CAPTAIN} står kvar när alla andra gått hem. Klubban i handen.\n\n"Jag tar några ord på fredag. Bara så du vet."\n\nLaget har förlorat tre raka.`,
+  `{CAPTAIN} knackar på dörren. Vattenflaska i handen.\n\n"Är det okej om jag säger något till killarna före matchen? Inget längre."\n\nFörlusterna har börjat stapla sig.`,
+  `{CAPTAIN} ställer sig vid dörrposten. Tar av sig kepsen.\n\n"Jag har funderat. Det är dags."\n\nFörlusterna har börjat stapla sig.`,
+  `{CAPTAIN} sätter sig i stolen mittemot. Sitter tyst en stund.\n\n"Vi behöver vända det här. Jag tänkte säga något i omklädningsrummet. Du får säga ifrån om det är fel."\n\nFörlusterna har börjat stapla sig.`,
+  `{CAPTAIN} kommer förbi efter morgonträningen.\n\n"Grabbarna behöver höra det från någon i laget. Är det okej om det blir jag?"\n\nFörlusterna har börjat stapla sig.`,
+  `{CAPTAIN} står kvar när alla andra gått hem. Klubban i handen.\n\n"Jag tar några ord på fredag. Bara så du vet."\n\nFörlusterna har börjat stapla sig.`,
 ]
 
 import { seededPick } from '../utils/random'
