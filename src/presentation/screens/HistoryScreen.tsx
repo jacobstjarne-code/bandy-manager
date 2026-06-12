@@ -6,6 +6,7 @@ import { ordinal } from '../utils/formatters'
 import { seasonSpanLabel, seasonStartYear, seasonChampionYear } from '../../domain/utils/seasonYear'
 import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
 import { shareSeasonImage } from '../utils/seasonShareImage'
+import { Swords } from 'lucide-react'
 import { loadTeamPhoto, listTeamPhotoSeasons } from '../../infrastructure/teamPhotoStorage'
 
 function RecordRow({ label, value, sub, isLast }: { label: string; value: string; sub: string; isLast?: boolean }) {
@@ -351,14 +352,14 @@ export function HistoryScreen() {
                     {s.finalPosition <= 3 && <span style={{ marginLeft: 6 }}>{['🥇','🥈','🥉'][s.finalPosition - 1]}</span>}
                   </p>
                   <p style={{ fontSize: 14 }}>
-                    🏒 SM: <span style={{ color: isGold ? 'var(--accent)' : 'var(--text-primary)', fontWeight: isGold ? 700 : 500 }}>
+                    🏆 SM: <span style={{ color: isGold ? 'var(--accent)' : 'var(--text-primary)', fontWeight: isGold ? 700 : 500 }}>
                       {playoffLabel(s.playoffResult)}
                     </span>
                   </p>
                   {cup && <p style={{ fontSize: 14 }}>🏆 Cup: {cup}</p>}
                   {s.topScorer && (
                     <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                      🏒 Toppskytt:{' '}
+                      🥅 Toppskytt:{' '}
                       <PlayerLink playerId={s.topScorer.playerId} name={s.topScorer.name} />
                       {' '}({s.topScorer.goals} mål)
                     </p>
@@ -494,7 +495,7 @@ export function HistoryScreen() {
         {topByGames.length > 0 && (
           <div style={{ marginBottom: 20 }}>
             <p style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 8 }}>
-              🏒 Flest matcher
+              <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}Flest matcher
             </p>
             {topByGames.map((p, i) => (
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid var(--border)' }}>

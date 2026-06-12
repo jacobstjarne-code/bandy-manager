@@ -58,7 +58,7 @@ export function CareerJourney({ player, currentSeason }: CareerJourneyProps) {
   return (
     <div style={{ marginTop: 12, marginBottom: 4 }}>
       <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>
-        🏒 KARRIÄRRESA
+        ⛸️ KARRIÄRRESA
       </p>
       {sortedSeasons.map(season => {
         const entries = entriesBySeason.get(season) ?? []

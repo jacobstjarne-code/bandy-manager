@@ -216,7 +216,7 @@ export function SimSummaryScreen() {
 
               {topScorer && topScorer.goals >= 2 && (
                 <div style={{ fontSize: 12, fontFamily: 'var(--font-body)', color: 'var(--text-secondary)' }}>
-                  🏒 <strong>{topScorer.firstName} {topScorer.lastName}</strong> — {topScorer.goals} mål under perioden
+                  🥅 <strong>{topScorer.firstName} {topScorer.lastName}</strong> — {topScorer.goals} mål under perioden
                 </div>
               )}
             </div>

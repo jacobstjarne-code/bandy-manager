@@ -1,5 +1,6 @@
 import type { Fixture } from '../../../domain/entities/Fixture'
 import { FormSquares } from '../FormDots'
+import { Swords } from 'lucide-react'
 import type { FormResult } from '../../utils/formUtils'
 
 interface LastResultCardProps {
@@ -52,7 +53,7 @@ export function LastResultCard({
       <div style={{ padding: '12px 12px 10px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
-            🏒 Senast
+            <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}Senast
           </p>
           <button style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 4, flexShrink: 0, background: 'transparent', border: '1px solid var(--border)', color: 'var(--accent)', fontSize: 12, lineHeight: 1, boxShadow: '0 1px 2px rgba(0,0,0,0.03)', cursor: 'pointer' }}>›</button>
         </div>
