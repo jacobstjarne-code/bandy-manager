@@ -1,13 +1,14 @@
 // A3 — Match-laddning full scene (tillfälle-tier).
 // Visas för: annandagen, derby, cup, premiär, final, nyår.
 // §9: eyebrow --accent (eller --warm-light för derby); guld ENDAST på final.
-// §9: CTA = btn btn-primary + border-radius 14 (ej .btn--hero, ej .btn-copper).
 // Mock: docs/mockups/2026-06-07_design_match_laddning.html
+// SM-final uppspel mock: docs/incoming/2026-06-11_design_smfinal_uppspel.html
 
+import { useState } from 'react'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Club } from '../../../domain/entities/Club'
-import { SCENE_TEXT, STAKE_TEXT, type LaddningOccasion } from '../../../domain/data/matchLaddningText'
+import { SCENE_TEXT, STAKE_TEXT, FINAL_LAGPRESENTATION_QUOTES, type LaddningOccasion } from '../../../domain/data/matchLaddningText'
 import { getSeasonContext } from '../../../domain/services/seasonContextService'
 import { seededPick } from '../../../domain/utils/random'
 import { IllustrationPlaceholder } from '../illustration/IllustrationScene'
@@ -29,7 +30,71 @@ interface Props {
   onContinue: () => void
 }
 
+// ── SM-final helpers ────────────────────────────────────────────
+
+type FormResult = 'V' | 'O' | 'F'
+
+function getClubForm(game: SaveGame, clubId: string): FormResult[] {
+  const completed = game.fixtures
+    .filter(f => f.status === 'completed' && (f.homeClubId === clubId || f.awayClubId === clubId))
+    .sort((a, b) => b.matchday - a.matchday)
+    .slice(0, 5)
+  return completed.map(f => {
+    const isHome = f.homeClubId === clubId
+    const myScore = isHome ? f.homeScore : f.awayScore
+    const theirScore = isHome ? f.awayScore : f.homeScore
+    if (myScore > theirScore) return 'V'
+    if (myScore < theirScore) return 'F'
+    return 'O'
+  }).reverse()
+}
+
+function getLeaguePosition(game: SaveGame, clubId: string): number {
+  type Row = { clubId: string; pts: number; gd: number; gf: number }
+  const rows: Record<string, Row> = {}
+  for (const f of game.fixtures) {
+    if (f.status !== 'completed' || f.isCup || f.isKnockout) continue
+    for (const cid of [f.homeClubId, f.awayClubId]) {
+      if (!rows[cid]) rows[cid] = { clubId: cid, pts: 0, gd: 0, gf: 0 }
+    }
+    const hpts = f.homeScore > f.awayScore ? 2 : f.homeScore === f.awayScore ? 1 : 0
+    const apts = f.awayScore > f.homeScore ? 2 : f.homeScore === f.awayScore ? 1 : 0
+    rows[f.homeClubId].pts += hpts
+    rows[f.awayClubId].pts += apts
+    rows[f.homeClubId].gd += (f.homeScore - f.awayScore)
+    rows[f.awayClubId].gd += (f.awayScore - f.homeScore)
+    rows[f.homeClubId].gf += f.homeScore
+    rows[f.awayClubId].gf += f.awayScore
+  }
+  const sorted = Object.values(rows).sort((a, b) =>
+    b.pts !== a.pts ? b.pts - a.pts : b.gd !== a.gd ? b.gd - a.gd : b.gf - a.gf,
+  )
+  const idx = sorted.findIndex(r => r.clubId === clubId)
+  return idx >= 0 ? idx + 1 : 0
+}
+
+function getPlayoffRecord(game: SaveGame, clubId: string): string {
+  const bracket = game.playoffBracket
+  if (!bracket) return '–'
+  let wins = 0
+  const allSeries = [...(bracket.quarterFinals ?? []), ...(bracket.semiFinals ?? []), ...(bracket.final ? [bracket.final] : [])]
+  for (const s of allSeries) {
+    if (s.winnerId === clubId) wins++
+  }
+  return wins > 0 ? `${wins}–0` : '–'
+}
+
+function ordPos(n: number): string {
+  if (n === 1) return '1:a'
+  if (n === 2) return '2:a'
+  return `${n}:e`
+}
+
+// ── Component ───────────────────────────────────────────────────
+
 export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixture, onContinue }: Props) {
+  const [finalStep, setFinalStep] = useState<'uppspel' | 'lagpresentation'>('uppspel')
+
   const texts = SCENE_TEXT[occasion]
   const seed = game.currentSeason * 97 + game.currentMatchday * 31
   const charge = seededPick(texts.charge, seed)
@@ -51,6 +116,256 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
       ? 'var(--warm-light)'
       : 'var(--accent)'
 
+  const goldStripe = isFinal
+    ? 'linear-gradient(180deg, var(--gold), var(--gold-deep))'
+    : undefined
+
+  // ── SM-final: steg 2 — Uppspel ──────────────────────────────
+  if (isFinal && finalStep === 'uppspel') {
+    const myPos = getLeaguePosition(game, game.managedClubId)
+    const playoffRec = getPlayoffRecord(game, game.managedClubId)
+
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number,
+        background: 'var(--bg-scene)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      }}>
+        {/* Gold stripe */}
+        {goldStripe && (
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: goldStripe, zIndex: 3 }} />
+        )}
+
+        {/* Illustration block — fixed height */}
+        <div style={{ position: 'relative', height: 290, flexShrink: 0 }}>
+          {assetName ? (
+            <img
+              src={`/assets/illustrations/${assetName}.jpg`}
+              alt={texts.eyebrow}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 38%', display: 'block' }}
+            />
+          ) : (
+            <IllustrationPlaceholder name={texts.eyebrow.toLowerCase()} />
+          )}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(180deg, rgba(14,12,9,.45) 0%, rgba(14,12,9,0) 20%, rgba(26,22,18,0) 45%, rgba(26,22,18,.55) 78%, var(--bg-scene) 100%)',
+          }} />
+          <p style={{
+            position: 'absolute', left: 0, right: 0, top: 14, zIndex: 2,
+            textAlign: 'center', fontFamily: 'var(--font-body)',
+            fontSize: 8, fontWeight: 600, letterSpacing: '4px', textTransform: 'uppercase',
+            color: eyebrowColor, textShadow: '0 1px 6px rgba(0,0,0,.6)',
+          }}>
+            ⬩ SM-FINAL ⬩
+          </p>
+        </div>
+
+        {/* Content below image */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '0 20px', marginTop: -30, zIndex: 2, position: 'relative' }}>
+          <h2 style={{
+            fontFamily: 'var(--font-display)', fontSize: 23, fontWeight: 700,
+            color: 'var(--text-light)', textAlign: 'center', lineHeight: 1.2,
+            textShadow: '0 1px 8px rgba(0,0,0,.55)',
+          }}>
+            {relation}
+          </h2>
+          <p style={{
+            fontFamily: 'var(--font-display)', fontStyle: 'italic',
+            fontSize: 12.5, color: 'var(--text-light-secondary)',
+            textAlign: 'center', lineHeight: 1.55, marginTop: 10,
+          }}>
+            {charge}
+          </p>
+
+          {myPos > 0 && (
+            <div style={{
+              display: 'flex', justifyContent: 'center', gap: 22, marginTop: 18,
+              paddingTop: 14, borderTop: '0.5px solid color-mix(in srgb, var(--gold) 30%, transparent)',
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-light)', display: 'block' }}>
+                  {ordPos(myPos)}
+                </span>
+                <span style={{ fontSize: 7.5, letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>Serien</span>
+              </div>
+              {playoffRec !== '–' && (
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-light)', display: 'block' }}>
+                    {playoffRec}
+                  </span>
+                  <span style={{ fontSize: 7.5, letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>Slutspelet</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div style={{
+          padding: '12px 16px',
+          paddingBottom: 'max(16px, calc(var(--safe-bottom, 0px) + 12px))',
+          background: 'rgba(12,14,20,0.96)', zIndex: 3,
+        }}>
+          <button
+            style={{
+              width: '100%', padding: '11px 26px',
+              border: '1.5px solid var(--gold)', borderRadius: 8,
+              color: 'var(--text-light)', fontSize: 11, fontWeight: 700,
+              letterSpacing: '1.5px', textTransform: 'uppercase' as const,
+              background: 'transparent', cursor: 'pointer',
+            }}
+            onClick={() => setFinalStep('lagpresentation')}
+          >
+            LAGEN →
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── SM-final: steg 3 — Lagpresentation ──────────────────────
+  if (isFinal && finalStep === 'lagpresentation') {
+    const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+    const homeClub = isHome ? managedClub : opponent
+    const awayClub = isHome ? opponent : managedClub
+    const homeForm = homeClub ? getClubForm(game, homeClub.id) : []
+    const awayForm = awayClub ? getClubForm(game, awayClub.id) : []
+    const myPos = getLeaguePosition(game, game.managedClubId)
+    const oppPos = opponent ? getLeaguePosition(game, opponent.id) : 0
+    const coach = game.assistantCoach
+    const keyline = seededPick(FINAL_LAGPRESENTATION_QUOTES, seed + 41)
+
+    const FormDots = ({ form }: { form: FormResult[] }) => (
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 3, marginTop: 5 }}>
+        {form.map((r, i) => (
+          <div key={i} style={{
+            width: 7, height: 7, borderRadius: 2,
+            background: r === 'V' ? 'var(--success)' : r === 'F' ? 'var(--danger)' : 'var(--accent)',
+          }} />
+        ))}
+      </div>
+    )
+
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number,
+        background: 'var(--bg-scene)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      }}>
+        {/* Gold stripe */}
+        {goldStripe && (
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: goldStripe, zIndex: 3 }} />
+        )}
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '22px 18px 0', position: 'relative' }}>
+          <p style={{
+            fontFamily: 'var(--font-body)', fontSize: 8, fontWeight: 600,
+            letterSpacing: '4px', textTransform: 'uppercase', textAlign: 'center',
+            color: eyebrowColor,
+          }}>
+            ⬩ LAGEN ⬩
+          </p>
+
+          {/* Matchup shields */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginTop: 16 }}>
+            {/* Home */}
+            <div style={{ textAlign: 'center', width: 104 }}>
+              <div style={{
+                width: 54, height: 60, borderRadius: '8px 8px 50% 50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: '#fff',
+                background: 'radial-gradient(circle at 38% 30%, #7a4a28, #4a2c16)',
+                border: '1.5px solid var(--led-us, var(--accent))',
+                margin: '0 auto',
+              }}>
+                {(homeClub?.shortName ?? homeClub?.name ?? 'H')[0].toUpperCase()}
+              </div>
+              <h4 style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--text-light)', marginTop: 7 }}>
+                {homeClub?.shortName ?? homeClub?.name ?? '?'}
+              </h4>
+              {myPos > 0 && (
+                <p style={{ fontSize: 8.5, color: 'var(--text-light-secondary)', marginTop: 3, lineHeight: 1.5 }}>
+                  {isHome ? ordPos(myPos) : (oppPos > 0 ? ordPos(oppPos) : '')} i serien
+                </p>
+              )}
+              <FormDots form={homeForm} />
+            </div>
+
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' }}>MOT</span>
+
+            {/* Away */}
+            <div style={{ textAlign: 'center', width: 104 }}>
+              <div style={{
+                width: 54, height: 60, borderRadius: '8px 8px 50% 50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: '#fff',
+                background: 'radial-gradient(circle at 38% 30%, #3a5a78, #1e3448)',
+                border: '1.5px solid var(--led-them, var(--ice))',
+                margin: '0 auto',
+              }}>
+                {(awayClub?.shortName ?? awayClub?.name ?? 'B')[0].toUpperCase()}
+              </div>
+              <h4 style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--text-light)', marginTop: 7 }}>
+                {awayClub?.shortName ?? awayClub?.name ?? '?'}
+              </h4>
+              {(isHome ? (oppPos > 0 ? ordPos(oppPos) : '') : (myPos > 0 ? ordPos(myPos) : '')) && (
+                <p style={{ fontSize: 8.5, color: 'var(--text-light-secondary)', marginTop: 3, lineHeight: 1.5 }}>
+                  {isHome ? (oppPos > 0 ? ordPos(oppPos) : '') : (myPos > 0 ? ordPos(myPos) : '')} i serien
+                </p>
+              )}
+              <FormDots form={awayForm} />
+            </div>
+          </div>
+
+          {/* Keyline */}
+          {coach && (
+            <div style={{
+              marginTop: 16, padding: '10px 12px',
+              background: 'var(--bg-portal-surface)',
+              borderRadius: 8, borderLeft: '2px solid var(--gold-deep, var(--accent))',
+            }}>
+              <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 11, color: 'var(--text-light-secondary)', lineHeight: 1.5, margin: 0 }}>
+                {keyline}
+              </p>
+              <span style={{ display: 'block', fontSize: 8, letterSpacing: '1px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 4 }}>
+                {coach.name} · Assisterande tränare
+              </span>
+            </div>
+          )}
+
+          {/* Venue */}
+          <p style={{
+            textAlign: 'center', fontFamily: 'var(--font-mono)',
+            fontSize: 8.5, letterSpacing: '1px', color: 'var(--text-muted)',
+            marginTop: 14, textTransform: 'uppercase',
+          }}>
+            Studenternas IP · Uppsala
+          </p>
+        </div>
+
+        <div style={{
+          padding: '12px 16px',
+          paddingBottom: 'max(16px, calc(var(--safe-bottom, 0px) + 12px))',
+          background: 'rgba(12,14,20,0.96)', zIndex: 3,
+        }}>
+          <button
+            style={{
+              width: '100%', padding: '11px 26px',
+              border: '1.5px solid var(--gold)', borderRadius: 8,
+              color: 'var(--text-light)', fontSize: 11, fontWeight: 700,
+              letterSpacing: '1.5px', textTransform: 'uppercase' as const,
+              background: 'transparent', cursor: 'pointer',
+            }}
+            onClick={onContinue}
+          >
+            TILL AVSPARK →
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Standard single-step scene (non-final or other occasions) ──
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number,

@@ -133,6 +133,14 @@ export const STREAK_BROKEN_CHARGE: Record<LaddningState, string[]> = {
   ],
 }
 
+/** Lagpresentation-keylines (assisterande tränare, step 3 SM-final). */
+export const FINAL_LAGPRESENTATION_QUOTES: string[] = [
+  '"De har rutinen. Vi har ingenting att förlora. Jag vet vilket jag hellre har i en final."',
+  '"Alla vet att vi inte borde vara här. Det är precis det som gör det svårare för dem."',
+  '"En av dessa klubbar vinner sitt första SM-guld på länge. Kanske mycket länge."',
+  '"I en final spelar man inte mot formen från i förra veckan. Man spelar mot historieboken."',
+]
+
 /** VILLKORLIG warm-pill. ENDAST om seasonContext ger insats. Kort. Aldrig i mittfält. */
 export const STAKE_TEXT: Record<SeasonStake, string[]> = {
   relegationFight: ['Bottenstrid', 'Nedflyttning hotar', 'Kvalstrecket nära'],

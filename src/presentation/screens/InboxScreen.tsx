@@ -1,3 +1,8 @@
+// Inkorg — severity-groups + notisdiet.
+// Mock: docs/incoming/2026-06-11_design_inkorg_recut.html
+// Groups: KRÄVER SVAR (danger) / NYHETER (copper) / RAPPORTER (neutral)
+// Unread = 2px copper left border only. No inline dots. No chrono toggle.
+
 import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { InboxItemType } from '../../domain/enums'
@@ -5,102 +10,107 @@ import type { InboxItem, SaveGame } from '../../domain/entities/SaveGame'
 import { Check } from 'lucide-react'
 import { PlayerLink } from '../components/PlayerLink'
 
+// ── Icon per type ────────────────────────────────────────────────
+
 function inboxTypeIcon(type: InboxItemType): string {
   switch (type) {
-    case InboxItemType.MatchResult: return '🏒'
-    case InboxItemType.Injury: return '🩹'
-    case InboxItemType.Recovery: return '💪'
-    case InboxItemType.Suspension: return '🚫'
-    case InboxItemType.TransferOffer: return '💰'
-    case InboxItemType.ContractExpiring: return '📋'
-    case InboxItemType.YouthIntake: return '🌱'
-    case InboxItemType.PlayerDevelopment: return '📈'
-    case InboxItemType.BoardFeedback: return '🏛️'
-    case InboxItemType.Training: return '🏋️'
-    case InboxItemType.Playoff: return '🏆'
-    case InboxItemType.Derby: return '🔥'
-    case InboxItemType.ScoutReport: return '🔍'
-    case InboxItemType.YouthP17: return '📋'
-    default: return '📬'
+    case InboxItemType.TransferBidReceived:
+    case InboxItemType.TransferOffer:       return '⇄'
+    case InboxItemType.ContractExpiring:
+    case InboxItemType.LicenseReview:
+    case InboxItemType.BoardFeedback:       return '⧖'
+    case InboxItemType.Injury:              return '🩹'
+    case InboxItemType.Recovery:            return '💪'
+    case InboxItemType.Suspension:          return '🚫'
+    case InboxItemType.Media:
+    case InboxItemType.MediaEvent:          return '📰'
+    case InboxItemType.YouthIntake:
+    case InboxItemType.YouthP17:            return '🎓'
+    case InboxItemType.Training:            return '🏋'
+    case InboxItemType.KommunBidrag:
+    case InboxItemType.Community:           return '🏛'
+    case InboxItemType.ScoutReport:         return '🔍'
+    case InboxItemType.Transfer:
+    case InboxItemType.TransferBidResult:   return '⇄'
+    case InboxItemType.PlayerDevelopment:
+    case InboxItemType.ReputationMilestone: return '📈'
+    case InboxItemType.Scandal:             return '⚠'
+    case InboxItemType.EconomicCrisis:      return '💸'
+    default:                                return '📬'
   }
 }
 
-function inboxTypeColor(type: InboxItemType): string {
-  switch (type) {
-    case InboxItemType.Injury: return 'var(--danger)'
-    case InboxItemType.Suspension: return 'var(--danger)'
-    case InboxItemType.MatchResult: return 'var(--accent)'
-    case InboxItemType.Playoff: return 'var(--accent)'
-    case InboxItemType.Derby: return 'var(--danger)'
-    case InboxItemType.ScoutReport: return 'var(--accent)'
-    case InboxItemType.YouthIntake: return 'var(--success)'
-    case InboxItemType.Recovery: return 'var(--success)'
-    case InboxItemType.PlayerDevelopment: return 'var(--success)'
-    case InboxItemType.YouthP17: return 'var(--success)'
-    default: return 'var(--text-muted)'
-  }
-}
+// ── Severity grouping ────────────────────────────────────────────
 
-type InboxCategory = 'important' | 'news' | 'reports'
+type InboxGroup = 'kräver-svar' | 'nyheter' | 'rapporter'
 
-function getCategory(item: InboxItem, game: SaveGame): InboxCategory {
+function getGroup(item: InboxItem, game: SaveGame): InboxGroup {
   switch (item.type) {
     case InboxItemType.BoardFeedback:
     case InboxItemType.LicenseReview:
     case InboxItemType.ContractExpiring:
     case InboxItemType.Injury:
     case InboxItemType.Suspension:
-      return 'important'
-    case InboxItemType.TransferOffer:
-    case InboxItemType.TransferBidReceived: {
+    case InboxItemType.EconomicCrisis:
+    case InboxItemType.Scandal:
+      return 'kräver-svar'
+    case InboxItemType.TransferBidReceived:
+    case InboxItemType.TransferOffer: {
       const hasOpenBid = game.transferBids.some(
         b => b.playerId === item.relatedPlayerId &&
              b.direction === 'incoming' &&
              b.status === 'pending',
       )
-      return hasOpenBid ? 'important' : 'news'
+      return hasOpenBid ? 'kräver-svar' : 'nyheter'
     }
-    case InboxItemType.MatchResult:
-    case InboxItemType.Playoff:
-    case InboxItemType.Derby:
-    case InboxItemType.Transfer:
-    case InboxItemType.TransferBidResult:
     case InboxItemType.Media:
     case InboxItemType.MediaEvent:
+    case InboxItemType.Transfer:
+    case InboxItemType.TransferBidResult:
     case InboxItemType.Community:
-    case InboxItemType.PatronInfluence:
     case InboxItemType.KommunBidrag:
+    case InboxItemType.PatronInfluence:
     case InboxItemType.YouthIntake:
     case InboxItemType.Recovery:
-      return 'news'
+    case InboxItemType.Derby:
+    case InboxItemType.Playoff:
+    case InboxItemType.ReputationMilestone:
+    case InboxItemType.SponsorNetwork:
+    case InboxItemType.BandyLetter:
+      return 'nyheter'
     default:
-      return 'reports'
+      return 'rapporter'
   }
 }
 
-const CATEGORY_META: Record<InboxCategory, { label: string; color: string; dot: string }> = {
-  important: { label: 'VIKTIGT', color: 'var(--danger)', dot: '🔴' },
-  news: { label: 'NYHETER', color: 'var(--accent)', dot: '🟡' },
-  reports: { label: 'RAPPORTER', color: 'var(--text-muted)', dot: '⚪' },
+const GROUP_META: Record<InboxGroup, { label: string; dotColor: string }> = {
+  'kräver-svar': { label: 'KRÄVER SVAR',  dotColor: 'var(--danger)' },
+  'nyheter':     { label: 'NYHETER',       dotColor: 'var(--accent)' },
+  'rapporter':   { label: 'RAPPORTER',     dotColor: 'var(--border-dark, #c4b9a8)' },
 }
 
-function formatDate(iso: string): string {
-  const months = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
-  const [, m, d] = iso.split('-')
-  return `${parseInt(d)} ${months[parseInt(m) - 1]}`
+const GROUP_ORDER: InboxGroup[] = ['kräver-svar', 'nyheter', 'rapporter']
+
+// ── Helpers ──────────────────────────────────────────────────────
+
+function formatRound(matchday?: number): string {
+  if (!matchday) return ''
+  return `Omg ${matchday}`
 }
 
-interface InboxItemRowProps {
+// ── Row ──────────────────────────────────────────────────────────
+
+interface RowProps {
   item: InboxItem
   onRead: (id: string) => void
   index: number
   playerName?: string
+  expiresRound?: number
 }
 
-function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
-  const color = inboxTypeColor(item.type)
+function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
   const [expanded, setExpanded] = useState(false)
-  const hasBody = item.body && item.body.trim().length > 5
+  const hasBody = Boolean(item.body?.trim())
   const isCoach = item.tone === 'coach'
 
   function handleClick() {
@@ -112,133 +122,141 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
     <div
       onClick={handleClick}
       style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 8,
-        padding: '7px 12px',
+        display: 'flex', alignItems: 'center', gap: 9,
+        padding: '8px 11px',
         borderBottom: '1px solid var(--border)',
-        borderLeft: item.isRead ? '3px solid transparent' : '3px solid var(--accent)',
-        background: item.isRead ? undefined : 'color-mix(in srgb, var(--accent) 6%, transparent)',
-        cursor: hasBody ? 'pointer' : (item.isRead ? 'default' : 'pointer'),
+        // Unread: 2px copper left border only — no background tint
+        borderLeft: item.isRead ? '2px solid transparent' : '2px solid var(--accent)',
+        cursor: hasBody || !item.isRead ? 'pointer' : 'default',
         animation: `fadeInUp 200ms ease-out ${Math.min(index, 14) * 30}ms both`,
+        position: 'relative',
       }}
     >
-      {/* Avatar — initials circle for coach tone, icon circle otherwise */}
-      {isCoach ? (
-        <div style={{
-          width: 28,
-          height: 28,
-          borderRadius: '50%',
-          background: 'var(--accent-dark)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          marginTop: 1,
+      {/* Icon */}
+      <div style={{
+        width: 26, height: 26, borderRadius: 6,
+        background: 'var(--bg)',
+        border: '1px solid var(--border)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0, fontSize: 11, color: 'var(--text-secondary)',
+      }}>
+        {isCoach
+          ? <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--accent)' }}>{item.coachInitials ?? '?'}</span>
+          : inboxTypeIcon(item.type)
+        }
+      </div>
+
+      {/* Body */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{
+          fontSize: 11.5, fontWeight: item.isRead ? 400 : 600,
+          color: item.isRead ? 'var(--text-secondary)' : 'var(--text-primary)',
+          lineHeight: 1.3,
+          ...(expanded ? {} : { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }),
+          fontFamily: isCoach ? 'var(--font-display)' : undefined,
+          fontStyle: isCoach ? 'italic' : undefined,
         }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-light)', fontFamily: 'var(--font-display)' }}>
-            {item.coachInitials ?? '?'}
-          </span>
-        </div>
-      ) : (
-        <div style={{
-          width: 22,
-          height: 22,
-          borderRadius: '50%',
-          background: `${color}18`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 11,
-          flexShrink: 0,
-          marginTop: 1,
+          {item.title}
+        </p>
+        {item.body && !expanded && (
+          <p style={{
+            fontSize: 9.5, color: 'var(--text-muted)', marginTop: 1,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {item.body}
+          </p>
+        )}
+        {expanded && hasBody && (
+          <p style={{
+            fontSize: 12, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.5,
+            fontFamily: isCoach ? 'var(--font-display)' : undefined,
+            fontStyle: isCoach ? 'italic' : undefined,
+            whiteSpace: 'pre-wrap',
+          }}>
+            {item.body}
+          </p>
+        )}
+        {playerName && item.relatedPlayerId && (
+          <PlayerLink playerId={item.relatedPlayerId} name={playerName} style={{ fontSize: 11, marginTop: 3, display: 'inline-block' }} />
+        )}
+      </div>
+
+      {/* Deadline pill (KRÄVER SVAR items with expiry) */}
+      {expiresRound != null && (
+        <span style={{
+          fontSize: 8.5, padding: '2px 7px', borderRadius: 99,
+          background: 'color-mix(in srgb, var(--danger) 12%, transparent)',
+          color: 'var(--danger)',
+          fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
         }}>
-          {inboxTypeIcon(item.type)}
-        </div>
+          svar senast omg {expiresRound}
+        </span>
       )}
 
+      {/* Round label (nyheter/rapporter) */}
+      {expiresRound == null && item.createdMatchday != null && (
+        <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, alignSelf: 'flex-start', marginTop: 2 }}>
+          {formatRound(item.createdMatchday)}
+        </span>
+      )}
+
+      {/* Chevron for expandable */}
+      {hasBody && (
+        <span style={{ color: 'var(--accent)', fontSize: 13, flexShrink: 0 }}>›</span>
+      )}
+    </div>
+  )
+}
+
+// ── Aggregated training row ───────────────────────────────────────
+
+function TrainingAggRow({ items }: { items: InboxItem[] }) {
+  const rounds = items.map(i => i.createdMatchday ?? 0).filter(Boolean)
+  const minR = Math.min(...rounds)
+  const maxR = Math.max(...rounds)
+  const rangeStr = minR === maxR ? `omg ${minR}` : `omg ${minR}–${maxR}`
+  // Detect if any item has an incident (body mentions something non-trivial)
+  const hasIncident = items.some(i => i.body && !/inga incidenter/i.test(i.body) && i.body.trim().length > 2)
+  const text = hasIncident
+    ? `Träning ${rangeStr}: se detaljer nedan.`
+    : `Träning ${rangeStr}: inga incidenter.`
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 9,
+      padding: '8px 11px',
+      borderBottom: '1px solid var(--border)',
+      borderLeft: '2px solid transparent',
+    }}>
+      <div style={{
+        width: 26, height: 26, borderRadius: 6,
+        background: 'var(--bg)', border: '1px solid var(--border)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0, fontSize: 11,
+      }}>
+        🏋
+      </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        {isCoach ? (
-          /* Coach-tone layout */
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6 }}>
-              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-                {item.title} · {item.fromRole ?? 'ASSISTENTTRÄNARE'}
-              </span>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>
-                {formatDate(item.date)}
-              </span>
-            </div>
-            {expanded && hasBody && (
-              <p style={{
-                fontSize: 12,
-                fontFamily: 'var(--font-display)',
-                fontStyle: 'italic',
-                color: 'var(--text-secondary)',
-                marginTop: 4,
-                lineHeight: 1.6,
-              }}>
-                "{item.body}"
-              </p>
-            )}
-            {!expanded && (
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {item.body}
-              </p>
-            )}
-          </>
-        ) : (
-          /* Standard layout */
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6 }}>
-              <p style={{
-                fontSize: 13,
-                fontWeight: item.isRead ? 400 : 700,
-                color: item.isRead ? 'var(--text-secondary)' : 'var(--text-primary)',
-                lineHeight: 1.3,
-                ...(expanded ? {} : {
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }),
-              }}>
-                {!item.isRead && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', marginRight: 5, verticalAlign: 'middle' }} />}
-                {item.title}
-              </p>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>
-                {formatDate(item.date)}
-              </span>
-            </div>
-            {expanded && hasBody && (
-              <p style={{
-                fontSize: 12,
-                color: 'var(--text-secondary)',
-                marginTop: 4,
-                lineHeight: 1.5,
-                whiteSpace: 'pre-wrap',
-              }}>
-                {item.body}
-              </p>
-            )}
-            {playerName && item.relatedPlayerId && (
-              <PlayerLink
-                playerId={item.relatedPlayerId}
-                name={playerName}
-                style={{ fontSize: 11, marginTop: 3, display: 'inline-block' }}
-              />
-            )}
-          </>
-        )}
+        <p style={{
+          fontFamily: 'var(--font-display)', fontStyle: 'italic',
+          fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.4,
+        }}>
+          {text}
+        </p>
+        <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>
+          {items.length} veckorapporter, sammanslagna
+        </p>
       </div>
     </div>
   )
 }
 
+// ── Screen ───────────────────────────────────────────────────────
+
 export function InboxScreen() {
   const game = useGameStore(s => s.game)
   const markInboxRead = useGameStore(s => s.markInboxRead)
   const markAllInboxRead = useGameStore(s => s.markAllInboxRead)
-  const [viewMode, setViewMode] = useState<'grouped' | 'chrono'>('grouped')
 
   if (!game) return null
 
@@ -248,44 +266,45 @@ export function InboxScreen() {
     return p ? `${p.firstName} ${p.lastName}` : undefined
   }
 
+  function getExpiresRound(item: InboxItem): number | undefined {
+    if (item.type !== InboxItemType.TransferBidReceived && item.type !== InboxItemType.TransferOffer) return undefined
+    const bid = game!.transferBids.find(
+      b => b.playerId === item.relatedPlayerId && b.direction === 'incoming' && b.status === 'pending',
+    )
+    return bid?.expiresRound ?? undefined
+  }
+
   const sorted = [...game.inbox].sort((a, b) => b.date.localeCompare(a.date))
   const unreadCount = sorted.filter(i => !i.isRead).length
 
-  // Group by category
-  const grouped: Record<InboxCategory, InboxItem[]> = { important: [], news: [], reports: [] }
-  for (const item of sorted) {
-    grouped[getCategory(item, game)].push(item)
-  }
+  // Separate training items for aggregation
+  const trainingItems = sorted.filter(i => i.type === InboxItemType.Training)
+  const nonTraining = sorted.filter(i => i.type !== InboxItemType.Training)
 
-  const categoryOrder: InboxCategory[] = ['important', 'news', 'reports']
+  // Group non-training by severity
+  const grouped: Record<InboxGroup, InboxItem[]> = { 'kräver-svar': [], nyheter: [], rapporter: [] }
+  for (const item of nonTraining) {
+    grouped[getGroup(item, game)].push(item)
+  }
+  // Training goes into rapporter (as aggregated)
+  // (handled separately in render)
+
+  const hasTraining = trainingItems.length > 0
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Toolbar */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '8px 12px',
-        borderBottom: '1px solid var(--border)',
-        flexShrink: 0,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '8px 12px', borderBottom: '1px solid var(--border)', flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 12, color: unreadCount > 0 ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600 }}>
-            {/* TODO(FAS 1): byt mot piktogram · inkorg · se ICON-BRIEF.md */}
-            📬 INKORG{unreadCount > 0 ? ` · ${unreadCount} olästa` : ''}
-          </span>
-          <button
-            onClick={() => setViewMode(v => v === 'grouped' ? 'chrono' : 'grouped')}
-            style={{ fontSize: 11, color: 'var(--text-muted)', background: 'none', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}
-          >
-            {viewMode === 'grouped' ? 'Kronologiskt' : 'Grupperat'}
-          </button>
-        </div>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16 }}>
+          Inkorg{unreadCount > 0 ? <span style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600, marginLeft: 8 }}>{unreadCount} olästa</span> : null}
+        </h2>
         {unreadCount > 0 && (
           <button
             onClick={markAllInboxRead}
-            style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ fontSize: 10, color: 'var(--accent-dark)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
           >
             Markera alla som lästa
           </button>
@@ -293,56 +312,93 @@ export function InboxScreen() {
       </div>
 
       {/* List */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px 24px' }}>
         {sorted.length === 0 ? (
           <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '60px 20px',
-            gap: 12,
-            color: 'var(--text-muted)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', padding: '60px 20px', gap: 12, color: 'var(--text-muted)',
           }}>
             <Check size={40} strokeWidth={1.5} />
             <p style={{ fontSize: 15 }}>Lugnt i korridorerna — för tillfället</p>
           </div>
-        ) : viewMode === 'chrono' ? (
-          <>
-            {sorted.map((item, index) => (
-              <InboxItemRow key={item.id} item={item} onRead={markInboxRead} index={index} playerName={getPlayerName(item.relatedPlayerId)} />
-            ))}
-          </>
         ) : (
           <>
-            {categoryOrder.map(cat => {
-              const items = grouped[cat]
-              if (items.length === 0) return null
-              const meta = CATEGORY_META[cat]
-              const unreadInCat = items.filter(i => !i.isRead).length
+            {GROUP_ORDER.map(group => {
+              const items = grouped[group]
+              const isRapporter = group === 'rapporter'
+              if (items.length === 0 && !(isRapporter && hasTraining)) return null
+              const meta = GROUP_META[group]
+              const unreadInGroup = items.filter(i => !i.isRead).length
+
               return (
-                <div key={cat}>
+                <div key={group}>
+                  {/* Section header */}
                   <div style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '8px 12px 4px',
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    margin: '10px 0 4px',
                     position: 'sticky', top: 0,
-                    background: 'var(--bg)',
-                    zIndex: 1,
+                    background: 'var(--bg)', zIndex: 1,
                   }}>
-                    <span style={{ fontSize: 10 }}>{meta.dot}</span>
-                    <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: meta.color, textTransform: 'uppercase' }}>
+                    <div style={{
+                      width: 7, height: 7, borderRadius: '50%',
+                      background: meta.dotColor, flexShrink: 0,
+                    }} />
+                    <span style={{
+                      fontSize: 8, fontWeight: 600, letterSpacing: '2px',
+                      textTransform: 'uppercase', color: 'var(--text-muted)',
+                    }}>
                       {meta.label}
                     </span>
-                    {unreadInCat > 0 && (
-                      <span style={{ fontSize: 10, color: meta.color, fontWeight: 600 }}>({unreadInCat})</span>
-                    )}
+                    <span style={{
+                      marginLeft: 'auto',
+                      fontFamily: 'var(--font-display)', fontSize: 10,
+                      color: 'var(--text-secondary)', letterSpacing: 0,
+                    }}>
+                      {items.length + (isRapporter && hasTraining ? 1 : 0)}
+                      {unreadInGroup > 0 && <span style={{ color: meta.dotColor, marginLeft: 4 }}>({unreadInGroup})</span>}
+                    </span>
                   </div>
-                  {items.map((item, index) => (
-                    <InboxItemRow key={item.id} item={item} onRead={markInboxRead} index={index} playerName={getPlayerName(item.relatedPlayerId)} />
-                  ))}
+
+                  {/* Card container */}
+                  <div style={{
+                    background: 'var(--bg-elevated)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 8, overflow: 'hidden', marginBottom: 6,
+                  }}>
+                    {/* Training aggregation row — at top of RAPPORTER */}
+                    {isRapporter && hasTraining && (
+                      trainingItems.length >= 2
+                        ? <TrainingAggRow items={trainingItems} />
+                        : <InboxRow
+                            key={trainingItems[0].id}
+                            item={trainingItems[0]}
+                            onRead={markInboxRead}
+                            index={0}
+                            playerName={getPlayerName(trainingItems[0].relatedPlayerId)}
+                          />
+                    )}
+                    {items.map((item, index) => (
+                      <InboxRow
+                        key={item.id}
+                        item={item}
+                        onRead={markInboxRead}
+                        index={index}
+                        playerName={getPlayerName(item.relatedPlayerId)}
+                        expiresRound={getExpiresRound(item)}
+                      />
+                    ))}
+                  </div>
                 </div>
               )
             })}
+
+            <p style={{
+              fontFamily: 'var(--font-display)', fontStyle: 'italic',
+              fontSize: 10.5, color: 'var(--text-muted)',
+              textAlign: 'center', marginTop: 14,
+            }}>
+              Resultat och matchhändelser bor i Granska — inte här.
+            </p>
           </>
         )}
       </div>
