@@ -26,7 +26,7 @@ export const BOARD_MEETING_COPY: Record<BoardMeetingState, StatePool> = {
       'Bygdens samlingssal. Stolarna är de gamla från 80-talet. Ordföranden plockar fram en mapp.',
       'Klubbstugans bakre rum. Lukt av nymålat. Någon har ställt fram glas och vatten.',
       'Klubbhusets kontor, vid skrivbordet. Det är torsdag eftermiddag, allt är lugnt.',
-      'Ordförandens kök. Hon har plockat fram tre stolar runt köksbordet. Kaffe på spisen.',
+      'Ordförandens kök. Tre stolar framplockade runt köksbordet. Kaffe på spisen.',
       'Hembygdsgården. Ordföranden ber alla skriva under deltagarlistan innan de börjar.',
       'Klubbstugan, andra våningen. Genom fönstret syns isbanan, helt tom.',
       'Skolans matsal — uthyrd för kvällen. Trasmattor på golvet, korkstolar runt bordet.',

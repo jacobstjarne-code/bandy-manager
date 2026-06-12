@@ -97,7 +97,7 @@ export const BOARD_QUOTES: BoardQuote[] = [
   { character: 'rune', situation: 'investment', quote: "Vi byggde om klubbhuset 1987. Det räckte då, borde räcka nu." },
   { character: 'rune', situation: 'investment', quote: "Det låter som pengar jag inte sett förrän jag sett dem." },
   { character: 'rune', situation: 'investment', quote: "Jag har inget emot nya idéer. Jag har sett dom förut." },
-  { character: 'rune', situation: 'general', quote: "Jag spelade för klubben när hemmamatch betydde att man gick till hallen." },
+  { character: 'rune', situation: 'general', quote: "Jag spelade för klubben när hemmamatch betydde att man gick till vallen." },
 
   // === TOMMY — supporter-rep ===
 

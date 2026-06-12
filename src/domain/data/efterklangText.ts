@@ -42,8 +42,8 @@ export const EFTERKLANG_ECHO: Record<EfterklangType, string[]> = {
     'Den där sången hörs än, när det vänder rätt.',
   ],
   journalist: [
-    '{journalist} ringde efter den matchen. Hon minns bättre än du tror.',
-    '{journalist} skrev om det då. Hon har inte glömt.',
+    '{journalist} ringde efter den matchen. Minnet på redaktionen är längre än du tror.',
+    '{journalist} skrev om det då. Det är inte glömt.',
   ],
   followUp: [
     'Brevet ligger fortfarande obesvarat i högen.',

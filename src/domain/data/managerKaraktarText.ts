@@ -22,7 +22,7 @@ export const BIO_OPENERS: string[] = [
 export const BIO_FAMILY_LINES: string[] = [
   'Familjen är kvar i {hemort} — pendling varje vecka.',
   'Familjen flyttade hit till slut. Pendlingen blev för mycket.',
-  'Bor ensam nära hallen. Säger att det passar honom, och kanske gör det det.',
+  'Bor ensam nära vallen. Säger att det passar honom, och kanske gör det det.',
 ]
 
 // ── Burnout (mjuk konsekvens, Portal-ritual) ───────────────────────────────────

@@ -11,7 +11,7 @@
     "type": "quote",
     "tags": ["post_match_win"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Det satt där det skulle. Tre poäng."
+    "body": "Det satt där det skulle. Två poäng."
   },
   {
     "id": "quote_post_win_003",
@@ -39,7 +39,7 @@
     "type": "quote",
     "tags": ["post_match_win"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Tre poäng."
+    "body": "Två poäng."
   },
   {
     "id": "quote_post_win_007",
@@ -109,7 +109,7 @@
     "type": "quote",
     "tags": ["post_match_win"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Tre poäng till oss, en lugn kväll till för oss."
+    "body": "Två poäng till oss, en lugn kväll till för oss."
   },
   {
     "id": "quote_post_win_017",
@@ -172,7 +172,7 @@
     "type": "quote",
     "tags": ["post_match_win"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Tre poäng är tre poäng. Värre matcher kommer."
+    "body": "Två poäng är två poäng. Värre matcher kommer."
   },
   {
     "id": "quote_post_win_026",
@@ -200,7 +200,7 @@
     "type": "quote",
     "tags": ["post_match_win"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Vi kunde ha vunnit större. Tre poäng räcker."
+    "body": "Vi kunde ha vunnit större. Två poäng räcker."
   },
   {
     "id": "quote_post_win_030",

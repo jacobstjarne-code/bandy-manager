@@ -25,7 +25,7 @@
     "type": "quote",
     "tags": ["post_match_loss"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Tre poäng till dem, en träningsvecka till för oss."
+    "body": "Två poäng till dem, en träningsvecka till för oss."
   },
   {
     "id": "quote_post_loss_005",
@@ -109,7 +109,7 @@
     "type": "quote",
     "tags": ["post_match_loss"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Aldrig riktigt med, tre poäng i gåva till {motståndare}."
+    "body": "Aldrig riktigt med, två poäng i gåva till {motståndare}."
   },
   {
     "id": "quote_post_loss_017",

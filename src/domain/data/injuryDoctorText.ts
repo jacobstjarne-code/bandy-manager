@@ -89,7 +89,7 @@ export type DoctorSecondaryTone = 'lovande' | 'kampigt' | 'beslut'
 export const DOCTOR_SECONDARY_LINES: Record<DoctorSecondaryTone, string[]> = {
   lovande: [
     '{spelare} sprang utanför banan på morgonen. Det är ett bra tecken.',
-    '{spelare} var först till hallen i dag. Kroppen börjar lita på sig själv igen.',
+    '{spelare} var först till träningen i dag. Kroppen börjar lita på sig själv igen.',
     '{spelare} bad om att få träna med laget i förtid. Jag sa nej, men det säger något om benen.',
   ],
   kampigt: [
