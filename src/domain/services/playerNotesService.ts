@@ -48,6 +48,7 @@ export function generatePlayerNotes(
       type: 'player-note',
       tag,
       playerName: p.firstName,
+      playerId: p.id,
     })
 
     notes.push({

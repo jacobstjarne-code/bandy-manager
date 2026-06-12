@@ -23,6 +23,7 @@ import '../styles/squad.css'
 import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from '../../domain/data/squadNuStrings'
 import { findActiveAnniversaries } from '../../domain/services/clubMemoryService'
 import type { ActiveAnniversary } from '../../domain/services/clubMemoryService'
+import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -411,6 +412,15 @@ export function SquadScreen() {
     [game?.currentMatchday, game?.currentSeason],
   )
 
+  const nextOpponentName = useMemo(() => {
+    if (!game) return undefined
+    const nf = getNextManagedFixture(game)
+    if (!nf) return undefined
+    const oppId = nf.homeClubId === game.managedClubId ? nf.awayClubId : nf.homeClubId
+    const opp = game.clubs.find(c => c.id === oppId)
+    return opp?.shortName ?? opp?.name
+  }, [game])
+
   function handleTalk(playerId: string, choice: 'encourage' | 'demand' | 'future') {
     const result = talkToPlayer(playerId, choice, currentRound)
     setTalkFeedback({ text: result.feedback, moraleChange: result.moraleChange, formChange: result.formChange })
@@ -498,6 +508,8 @@ export function SquadScreen() {
             captainPlayerId={game.captainPlayerId}
             chemistryStats={game.chemistryStats ?? {}}
             onTacticChange={(tactic: Tactic) => updateTactic(tactic)}
+            matchday={game.currentMatchday}
+            nextOpponentName={nextOpponentName}
           />
         </div>
       )}

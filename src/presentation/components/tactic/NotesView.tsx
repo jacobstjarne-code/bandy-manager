@@ -3,11 +3,20 @@ import type { Player } from '../../../domain/entities/Player'
 import type { AssistantCoach } from '../../../domain/entities/AssistantCoach'
 import { generatePlayerNotes, type NoteTag } from '../../../domain/services/playerNotesService'
 import { positionShort } from '../../utils/formatters'
+import { seededPick } from '../../../domain/utils/random'
+
+const TROTT_AGGREGATION = [
+  'Ytterligare {n} i samma läge — rotera mot {opp}.',
+  '{n} till med tunga ben. Bänken finns av en anledning.',
+  'Samma visa för {n} till. En omgångs vila nu sparar tre i januari.',
+] as const
 
 interface NotesViewProps {
   coach: AssistantCoach
   players: Player[]
   captainPlayerId: string | undefined
+  matchday?: number
+  nextOpponentName?: string
 }
 
 const TAG_STYLES: Record<NoteTag, { bg: string; color: string; label: string }> = {
@@ -39,11 +48,24 @@ function NoteTagBadge({ tag }: { tag: NoteTag }) {
   )
 }
 
-export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
+export function NotesView({ coach, players, captainPlayerId, matchday, nextOpponentName }: NotesViewProps) {
   const notes = useMemo(
     () => generatePlayerNotes(players, coach, captainPlayerId),
     [players, coach, captainPlayerId],
   )
+
+  const trottNotes = notes.filter(n => n.tag === 'trött')
+  const otherNotes = notes.filter(n => n.tag !== 'trött')
+  const visibleTrott = trottNotes.slice(0, 3)
+  const overflowCount = trottNotes.length - visibleTrott.length
+  const visibleNotes = [...visibleTrott, ...otherNotes]
+
+  const aggregationText = useMemo(() => {
+    if (overflowCount <= 0) return null
+    const opp = nextOpponentName ?? 'nästa motståndare'
+    const template = seededPick(TROTT_AGGREGATION, matchday ?? 0)
+    return template.replace('{n}', String(overflowCount)).replace('{opp}', opp)
+  }, [overflowCount, matchday, nextOpponentName])
 
   return (
     <>
@@ -77,7 +99,7 @@ export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
       </div>
 
       {/* Notes list */}
-      {notes.map(note => {
+      {visibleNotes.map(note => {
         const p = players.find(pl => pl.id === note.playerId)
         if (!p) return null
         const posColor = POSITION_COLORS[p.position] ?? 'var(--accent)'
@@ -114,6 +136,32 @@ export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
           </div>
         )
       })}
+
+      {/* Aggregation row: >3 tired players collapsed into one coach voice line */}
+      {aggregationText && (
+        <div style={{
+          padding: '8px 12px', border: '0.5px solid var(--border)',
+          borderRadius: 'var(--radius-md)', marginBottom: 8, background: 'var(--bg-surface)',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: '50%',
+            background: 'var(--bg-leather)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            <span style={{ color: 'var(--text-light)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)' }}>
+              {coach.initials}
+            </span>
+          </div>
+          <p style={{
+            fontFamily: 'var(--font-display)', fontSize: 11, fontStyle: 'italic',
+            color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5,
+          }}>
+            "{aggregationText}"
+          </p>
+        </div>
+      )}
     </>
   )
 }

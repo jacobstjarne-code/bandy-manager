@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore, useManagedClub, useManagedPlayers } from '../store/gameStore'
 import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
 import type { Tactic } from '../../domain/entities/Club'
+import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
 
 export function TaktikScreen() {
   const navigate = useNavigate()
@@ -11,6 +12,15 @@ export function TaktikScreen() {
   const updateTactic = useGameStore(s => s.updateTactic)
   const coach = game?.assistantCoach
   const captainPlayerId = game?.captainPlayerId
+
+  const nextOpponentName = (() => {
+    if (!game) return undefined
+    const nf = getNextManagedFixture(game)
+    if (!nf) return undefined
+    const oppId = nf.homeClubId === game.managedClubId ? nf.awayClubId : nf.homeClubId
+    const opp = game.clubs.find(c => c.id === oppId)
+    return opp?.shortName ?? opp?.name
+  })()
 
   if (!game || !club || !coach) {
     return (
@@ -59,6 +69,8 @@ export function TaktikScreen() {
           captainPlayerId={captainPlayerId}
           chemistryStats={game.chemistryStats ?? {}}
           onTacticChange={handleTacticChange}
+          matchday={game.currentMatchday}
+          nextOpponentName={nextOpponentName}
         />
       </div>
     </div>

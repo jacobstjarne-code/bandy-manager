@@ -4,6 +4,7 @@ import type { Fixture } from '../entities/Fixture'
 import { ClubExpectation, FixtureStatus, MatchEventType, PlayoffRound } from '../enums'
 import { getRivalry } from '../data/rivalries'
 import { summarizeSignature } from './seasonSignatureService'
+import { seededPick, fixtureSeed } from '../utils/random'
 
 function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
   const managedClubId = game.managedClubId
@@ -71,6 +72,49 @@ function computeKeyMoments(
 ): NonNullable<SeasonSummary['keyMoments']> {
   const moments: MomentWithScore[] = []
 
+  const BIG_WIN_POOL = [
+    (margin: number, _opp: string) => `Två poäng och ${margin} mål tillgodo. En sån kväll.`,
+    (_margin: number, opp: string) => `${opp} hängde med en halvlek. Sen inte.`,
+    (_margin: number, _opp: string) => 'Allt satt. Hörnorna, kontringarna, humöret på läktaren.',
+    (margin: number, _opp: string) => `Sådana marginaler vänjer man sig aldrig vid. ${margin} mål.`,
+  ] as const
+
+  const BIG_LOSS_POOL = [
+    (margin: number, _opp: string) => `${margin} mål åt fel håll. Tyst i omklädningsrummet efteråt.`,
+    (_margin: number, _opp: string) => 'Det gick sönder tidigt och lagade sig aldrig.',
+    (_margin: number, opp: string) => `Inte mycket att säga. ${opp} var bättre på det mesta.`,
+  ] as const
+
+  const COMEBACK_POOL = [
+    (_opp: string) => 'Underläge i paus, två poäng vid slutsignal. Sånt bär långt in i veckan.',
+    (opp: string) => `${opp} ledde och trodde på det. Sen vände det.`,
+    (_opp: string) => 'Vändningen kom när den behövdes. Läktaren glömmer inte sånt.',
+  ] as const
+
+  const LATE_WINNER_POOL = [
+    (name: string) => `${name} avgjorde när klockan nästan gått ut. Sånt minns en läktare.`,
+    (name: string) => `Sent, sent — och sen satt den. ${name}.`,
+    (name: string) => `Matchen var på väg mot ett kryss. ${name} hade andra planer.`,
+  ] as const
+
+  const HAT_TRICK_POOL = [
+    (name: string, goals: number) => `${goals} mål av en och samma man. ${name}s kväll.`,
+    (name: string, goals: number) => `${name} satte ${goals}. Bollen åkte hem med honom, enligt traditionen.`,
+    (name: string, _goals: number) => `Hattrick av ${name}. Vissa kvällar väljer en spelare.`,
+  ] as const
+
+  const DERBY_WIN_POOL = [
+    (_opp: string, _score: string) => 'Derbyt. Vårt, den här gången.',
+    (_opp: string, _score: string) => 'Halva byn såg det. Andra halvan får höra om det ett tag framöver.',
+    (_opp: string, score: string) => `${score} — det räcker som beskrivning häromkring.`,
+  ] as const
+
+  const DERBY_LOSS_POOL = [
+    (opp: string) => `${opp} tog derbyt. Det kommer på tal på Konsum ett tag.`,
+    (_opp: string) => 'Förlorat derby. Vissa matcher väger mer än två poäng.',
+    (_opp: string) => 'Tyst efteråt, tyst på måndagen. Derbyn gör så.',
+  ] as const
+
   for (const f of clubFixtures) {
     const isHome = f.homeClubId === game.managedClubId
     const myScore = isHome ? f.homeScore : f.awayScore
@@ -82,34 +126,40 @@ function computeKeyMoments(
     const scoreStr = isHome ? `${myScore}–${theirScore}` : `${theirScore}–${myScore}`
     const rivalry = getRivalry(f.homeClubId, f.awayClubId)
     const isDerby = !!rivalry
+    const seed = fixtureSeed(f.id)
+    const roundLabel = `Omgång ${String(f.roundNumber).padStart(2, '0')}`
 
     // Big win (3+ goal margin)
     if (margin >= 3) {
+      const fn = seededPick(BIG_WIN_POOL, seed)
       moments.push({ round: f.roundNumber, type: 'bigWin', fixtureId: f.id,
         headline: `Stor seger mot ${oppName} (${scoreStr})`,
-        body: `Omgång ${f.roundNumber}: En övertygande seger med ${margin} måls marginal. Laget visade klass.`,
+        body: `${roundLabel}: ${fn(margin, oppName)}`,
         score: margin * 10 + (isDerby ? 20 : 0) })
     }
 
     // Big loss (3+ goal margin)
     if (margin <= -3) {
+      const fn = seededPick(BIG_LOSS_POOL, seed)
       moments.push({ round: f.roundNumber, type: 'bigLoss', fixtureId: f.id,
         headline: `Tung förlust mot ${oppName} (${scoreStr})`,
-        body: `Omgång ${f.roundNumber}: En svår dag på plan. ${Math.abs(margin)} måls förlust var svår att smälta.`,
+        body: `${roundLabel}: ${fn(Math.abs(margin), oppName)}`,
         score: Math.abs(margin) * 8 + (isDerby ? 20 : 0) })
     }
 
     // Derby result
     if (isDerby && margin !== 0) {
       if (margin > 0) {
+        const fn = seededPick(DERBY_WIN_POOL, seed)
         moments.push({ round: f.roundNumber, type: 'derbyWin', fixtureId: f.id,
           headline: `Derbyvinst! ${rivalry!.name} (${scoreStr})`,
-          body: `Omgång ${f.roundNumber}: En seger som laget och supportrarna länge minns. Derbyt vann vi.`,
+          body: `${roundLabel}: ${fn(oppName, scoreStr)}`,
           score: 35 + margin * 5 })
       } else {
+        const fn = seededPick(DERBY_LOSS_POOL, seed)
         moments.push({ round: f.roundNumber, type: 'derbyLoss', fixtureId: f.id,
           headline: `Derbyförlust — ${rivalry!.name} (${scoreStr})`,
-          body: `Omgång ${f.roundNumber}: Ett derby vi gärna glömmer. Rivalen vann och fansen var besvikna.`,
+          body: `${roundLabel}: ${fn(oppName)}`,
           score: 25 })
       }
     }
@@ -125,9 +175,10 @@ function computeKeyMoments(
       if (goals >= 3) {
         const p = managedPlayers.find(pl => pl.id === pid)
         const name = p ? `${p.firstName} ${p.lastName}` : 'Okänd'
+        const fn = seededPick(HAT_TRICK_POOL, seed)
         moments.push({ round: f.roundNumber, type: 'hatTrick', fixtureId: f.id, relatedPlayerId: pid,
           headline: `Hattrick — ${name} mot ${oppName}`,
-          body: `Omgång ${f.roundNumber}: ${name} satte ${goals} mål. En prestation att minnas länge.`,
+          body: `${roundLabel}: ${fn(name, goals)}`,
           score: 30 + (goals - 3) * 10 })
         break
       }
@@ -140,9 +191,11 @@ function computeKeyMoments(
       if (lateGoals.length > 0) {
         const scorer = lateGoals[lateGoals.length - 1]
         const p = scorer.playerId ? managedPlayers.find(pl => pl.id === scorer.playerId) : null
+        const scorerName = p ? `${p.firstName} ${p.lastName}` : 'Avslutning'
+        const fn = seededPick(LATE_WINNER_POOL, seed)
         moments.push({ round: f.roundNumber, type: 'lateWinner', fixtureId: f.id, relatedPlayerId: scorer.playerId,
           headline: `Sent avgörande mot ${oppName} (${scoreStr})`,
-          body: `Omgång ${f.roundNumber}: ${p ? `${p.firstName} ${p.lastName}` : 'Avslutning'} satte avgörande sent. Tre poäng trots allt.`,
+          body: `${roundLabel}: ${fn(scorerName)}`,
           score: 25 + (isDerby ? 20 : 0) })
       }
     }
@@ -151,9 +204,10 @@ function computeKeyMoments(
     if (margin > 0) {
       const firstGoal = f.events.find(e => e.type === MatchEventType.Goal)
       if (firstGoal && firstGoal.clubId !== game.managedClubId) {
+        const fn = seededPick(COMEBACK_POOL, seed)
         moments.push({ round: f.roundNumber, type: 'comeback', fixtureId: f.id,
           headline: `Comeback mot ${oppName} (${scoreStr})`,
-          body: `Omgång ${f.roundNumber}: Laget vände ett underläge och tog tre poäng. Mental styrka.`,
+          body: `${roundLabel}: ${fn(oppName)}`,
           score: 28 + margin * 5 })
       }
     }

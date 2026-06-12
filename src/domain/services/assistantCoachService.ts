@@ -1,5 +1,6 @@
 import type { AssistantCoach, CoachPersonality, CoachBackground } from '../entities/AssistantCoach'
 import type { NoteTag } from './playerNotesService'
+import { seededPick } from '../utils/random'
 
 // Svenska förnamn + efternamn — speglar aiCoachService
 const FIRST_NAMES = ['Leif', 'Björn', 'Håkan', 'Stefan', 'Per', 'Johan', 'Anders', 'Mikael', 'Lars', 'Gunnar', 'Ulf', 'Rolf', 'Kent', 'Peter', 'Sven']
@@ -46,12 +47,12 @@ export type QuoteContext =
   | { type: 'counter'; sub: 'fast-runner' | 'outnumbered' | 'default'; playerName?: string }
   | { type: 'freekick'; sub: 'wall-small' | 'distance-long' | 'default' }
   | { type: 'last-minute'; sub: 'leading' | 'chasing' | 'tied'; margin: number }
-  | { type: 'player-note'; tag: NoteTag; playerName: string }
+  | { type: 'player-note'; tag: NoteTag; playerName: string; playerId: string }
 
 const WIN_QUOTES: Record<CoachPersonality, string[]> = {
   calm: [
     'Bra jobbat. Det är sådana prestationer vi ska bygga på.',
-    'Tre poäng. Vi fortsätter på samma linje.',
+    'Två poäng. Vi fortsätter på samma linje.',
     'Bra match. Laget gör det vi tränar på.',
   ],
   sharp: [
@@ -62,7 +63,7 @@ const WIN_QUOTES: Record<CoachPersonality, string[]> = {
   jovial: [
     'Fantastiskt! Laget spelade med hjärtat idag — det syns!',
     'Det är nu det händer! Bra kämpat, allihopa.',
-    'Tre poäng och bra stämning — vad mer kan man be om?',
+    'Två poäng och bra stämning — vad mer kan man be om?',
   ],
   grumpy: [
     'Bra. Men vi hade vunnit mer komfortabelt med bättre disciplin.',
@@ -93,7 +94,7 @@ const DRAW_QUOTES: Record<CoachPersonality, string[]> = {
     'Oavgjort. Huvudet upp — nästa match är vår.',
   ],
   grumpy: [
-    'En poäng när vi behövde tre. Det är problematiskt.',
+    'En poäng när vi behövde två. Det är problematiskt.',
     'Det här är inte bra nog. Vi behöver prata.',
     'Oavgjort hemma. Det duger inte i längden.',
   ],
@@ -179,7 +180,7 @@ const HALFTIME_TRAILING_QUOTES: Record<CoachPersonality, string[]> = {
   grumpy: [
     'Det är skamligt. Jag förväntar mig mer.',
     'Vi diskuterade det här i veckan. Det borde inte hända.',
-    'Ni är bättre än det här. Bevis det i andra halvlek.',
+    'Ni är bättre än det här. Bevisa det i andra halvlek.',
   ],
   philosophical: [
     'Underläge är inte slutet — det är en inbjudan att höja sig.',
@@ -228,9 +229,9 @@ const TACTIC_MINOR_QUOTES: Record<CoachPersonality, string[]> = {
     'Exakt det vi behövde förändra.',
   ],
   jovial: [
-    'Liten tweak, stor skillnad — det är min förhoppning!',
+    'Liten ändring, stor skillnad — det är min förhoppning!',
     'Finjusteringar. Vi håller formen och pressar på.',
-    'Smarta justeringar. Laget är varm på det här.',
+    'Smarta justeringar. Laget hänger med i svängarna.',
   ],
   grumpy: [
     'Det borde ha gjorts tidigare. Men bättre sent än aldrig.',
@@ -296,7 +297,7 @@ const SEASON_SUMMARY_OVER_EXPECTATION: Record<CoachPersonality, string[]> = {
   philosophical: [
     'Att överstiga förväntningar säger mer om ambition än om tur.',
     'Vi höjde oss. Det är vad en säsong bör ge.',
-    'Resultatet är ett bevis. Nu vet vi vad det är möjligt.',
+    'Resultatet är ett bevis. Nu vet vi vad som är möjligt.',
   ],
 }
 
@@ -307,7 +308,7 @@ const SEASON_SUMMARY_UNDER_EXPECTATION: Record<CoachPersonality, string[]> = {
     'Under förväntan. Det är inte nöjsamt, men vi vet vad vi behöver göra.',
   ],
   sharp: [
-    'Vi underpresterarde. Det är oacceptabelt och vi vet det alla.',
+    'Vi underpresterade. Det är oacceptabelt och alla vet det.',
     'Under målet. Det är oroande. Vi behöver göra förändringar.',
     'Inte bra nog. Det måste vi ta med oss in i nästa förberedelse.',
   ],
@@ -331,8 +332,8 @@ const SEASON_SUMMARY_UNDER_EXPECTATION: Record<CoachPersonality, string[]> = {
 const PRESS_WIN_QUOTES: Record<CoachPersonality, string[]> = {
   calm: [
     'Vi är nöjda med insatsen. Nu fokuserar vi på nästa match.',
-    'Tre poäng. Det är vad vi kom hit för.',
-    'Bra prestations av laget. Vi fortsätter arbeta.',
+    'Två poäng. Det är vad vi kom hit för.',
+    'Bra prestation av laget. Vi fortsätter arbeta.',
   ],
   sharp: [
     'Vi levererade det vi förberett oss för. Bra genomfört.',
@@ -347,11 +348,11 @@ const PRESS_WIN_QUOTES: Record<CoachPersonality, string[]> = {
   grumpy: [
     'Vi vann. Det är vad vi ska göra. Inga stora ord om det.',
     'Seger. Men pressen kan vänta på ett mer imponerande resultat.',
-    'Tre poäng. Vi tar dom och går vidare.',
+    'Två poäng. Vi tar dom och går vidare.',
   ],
   philosophical: [
     'Segern är ett bevis på något djupare — lagets tillit till varandra.',
-    'Resultatet speglar arbetet bakom scen. Det är glädjande.',
+    'Resultatet speglar arbetet ingen ser. Det är glädjande.',
     'En seger välförtjänt av ett lag som förstår sitt syfte.',
   ],
 }
@@ -517,7 +518,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
         sharp: 'Kort approach, hård avslutning.',
         jovial: 'Stämningen är elektrisk! Välj ett hörn och kör!',
         grumpy: 'Slösa inte det här.',
-        philosophical: 'Straffsparkens enkelhet är dess svårighet.',
+        philosophical: 'Straffens enkelhet är dess svårighet.',
       }
       return MAP[p]
     }
@@ -548,7 +549,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
         sharp: 'Snabbt beslut — tveka inte.',
         jovial: 'Det är nu det händer! Välj!',
         grumpy: 'Välj nu.',
-        philosophical: 'Kontringen är fotbollens rent distillerade essens.',
+        philosophical: 'Kontringen är bandyns renaste ögonblick.',
       }
       return MAP[p]
     }
@@ -587,7 +588,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
         const MAP: Record<CoachPersonality, string> = {
           calm: `Vi leder med ${context.margin}. Håll ihop. Disciplin vinner.`,
           sharp: `${context.margin} måls försprång. Låt dem inte tillbaka.`,
-          jovial: `Vi leder! Håll kvar det — men go hard!`,
+          jovial: `Vi leder! Håll i det nu — hela vägen!`,
           grumpy: `Förstör inte det nu.`,
           philosophical: `Segern är nära — men den kräver vaksamhet till sista visslingen.`,
         }
@@ -604,7 +605,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
         return MAP[p]
       }
       const MAP: Record<CoachPersonality, string> = {
-        calm: 'Jämnt. Välj rätt och ta tre poäng.',
+        calm: 'Jämnt. Välj rätt och ta två poäng.',
         sharp: 'Lika. Nu avgörs det.',
         jovial: 'Allt att vinna! Kör på!',
         grumpy: 'Jämnt. Äckligt.',
@@ -614,51 +615,71 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
     }
     case 'player-note': {
       const n = context.playerName
-      const PLAYER_NOTE_QUOTES: Record<NoteTag, Record<CoachPersonality, string>> = {
+      const PLAYER_NOTE_QUOTES: Record<NoteTag, Record<CoachPersonality, string[]>> = {
         'trött': {
-          calm: `${n} är sliten. Rekommenderar vila om det finns utrymme.`,
-          sharp: `${n} är slut. Ta honom från spel nu.`,
-          jovial: `${n} ger allt men behöver återhämtning snabbt.`,
-          grumpy: `${n} är slut. Jag sa det för matcher sedan.`,
-          philosophical: `${n} behöver vila — det är ingen skam i det.`,
+          calm: [
+            `${n} är sliten. Rekommenderar vila om det finns utrymme.`,
+            `${n} har gått på reserverna ett tag. En omgång vid sidan räcker långt.`,
+            `Benen är tunga på ${n}. Inget dramatiskt — men vila nu, inte sen.`,
+          ],
+          sharp: [
+            `${n} är slut. Ta honom från spel nu.`,
+            `${n} tappar yta i varje byte. Vila honom.`,
+            `Siffrorna ljuger inte — ${n} behöver stå över en match.`,
+          ],
+          jovial: [
+            `${n} ger allt men behöver återhämtning snabbt.`,
+            `${n} springer på vilja nu. Ge honom helgen — han kommer tillbaka som ny!`,
+            `Trött? ${n}? Ja, faktiskt. Till och med han behöver en paus ibland.`,
+          ],
+          grumpy: [
+            `${n} är slut. Jag sa det för matcher sedan.`,
+            `${n} släpar sig runt på isen. Det ser ingen annan, tydligen.`,
+            `Vila ${n}. Eller låt bli, det brukar ju bli som det blir.`,
+          ],
+          philosophical: [
+            `${n} behöver vila — det är ingen skam i det.`,
+            `${n} har burit mycket den här hösten. Även det starka behöver ligga i träda.`,
+            `Trötthet är kroppens sätt att säga sanningen. ${n} bör lyssna.`,
+          ],
         },
         'glödande': {
-          calm: `${n} är i strålande form just nu. Ge honom speltid.`,
-          sharp: `${n} levererar. Utnyttja det.`,
-          jovial: `${n} flammar! Ge honom friheten att avgöra!`,
-          grumpy: `${n} spelar bra. Sällsynt, men sant.`,
-          philosophical: `${n} har hittat sitt flöde. Störs det inte.`,
+          calm:          [`${n} är i strålande form just nu. Ge honom speltid.`],
+          sharp:         [`${n} levererar. Utnyttja det.`],
+          jovial:        [`${n} flammar! Ge honom friheten att avgöra!`],
+          grumpy:        [`${n} spelar bra. Sällsynt, men sant.`],
+          philosophical: [`${n} har hittat sitt flöde. Störs det inte.`],
         },
         'missnöjd': {
-          calm: `${n} verkar inte nöjd. Vi kanske bör ha ett samtal.`,
-          sharp: `${n} är missnöjd. Det påverkar laget. Ta tag i det.`,
-          jovial: `${n} mår inte bra. Han behöver känna sig sedd.`,
-          grumpy: `${n} klagar igen. Men han har en poäng.`,
-          philosophical: `${n}s missnöje är en signal. Lyssna innan det eskalerar.`,
+          calm:          [`${n} verkar inte nöjd. Vi kanske bör ha ett samtal.`],
+          sharp:         [`${n} är missnöjd. Det påverkar laget. Ta tag i det.`],
+          jovial:        [`${n} mår inte bra. Han behöver känna sig sedd.`],
+          grumpy:        [`${n} klagar igen. Men han har en poäng.`],
+          philosophical: [`${n}s missnöje är en signal. Lyssna innan det eskalerar.`],
         },
         'skottform': {
-          calm: `${n} gör mål just nu. Ge honom fler lägen.`,
-          sharp: `${n} sitter inne. Se till att han kommer till avslut.`,
-          jovial: `${n} är varm! Sätt honom i position så ordnar det sig!`,
-          grumpy: `${n} gör mål. Hoppas det håller i sig.`,
-          philosophical: `Momentum är flyktigt. ${n} bär det just nu — bygg runt det.`,
+          calm:          [`${n} gör mål just nu. Ge honom fler lägen.`],
+          sharp:         [`${n} sitter inne. Se till att han kommer till avslut.`],
+          jovial:        [`${n} är varm! Sätt honom i position så ordnar det sig!`],
+          grumpy:        [`${n} gör mål. Hoppas det håller i sig.`],
+          philosophical: [`Momentum är flyktigt. ${n} bär det just nu — bygg runt det.`],
         },
         'vill-mer': {
-          calm: `${n} behöver matchminuter. Talangen finns där.`,
-          sharp: `${n} vill spela. Ge honom chansen eller förlora honom.`,
-          jovial: `${n} hungrar! Det är ett gott tecken — sätt in honom!`,
-          grumpy: `${n} vill spela mer. Underförstått — jag håller med.`,
-          philosophical: `Hunger är en resurs. ${n} har det. Använd det.`,
+          calm:          [`${n} behöver matchminuter. Talangen finns där.`],
+          sharp:         [`${n} vill spela. Ge honom chansen eller förlora honom.`],
+          jovial:        [`${n} hungrar! Det är ett gott tecken — sätt in honom!`],
+          grumpy:        [`${n} vill spela mer. Underförstått — jag håller med.`],
+          philosophical: [`Hunger är en resurs. ${n} har det. Använd det.`],
         },
         'sviktande': {
-          calm: `${n} är inte i sin bästa form. Han behöver stöd.`,
-          sharp: `${n} underpresterar. Ta ett snack med honom.`,
-          jovial: `${n} har en tuff period. Vi stöttar honom.`,
-          grumpy: `${n} levererar inte. Någon måste säga det rakt ut.`,
-          philosophical: `Svackor tillhör spelets natur. ${n} hittar tillbaka.`,
+          calm:          [`${n} är inte i sin bästa form. Han behöver stöd.`],
+          sharp:         [`${n} underpresterar. Ta ett snack med honom.`],
+          jovial:        [`${n} har en tuff period. Vi stöttar honom.`],
+          grumpy:        [`${n} levererar inte. Någon måste säga det rakt ut.`],
+          philosophical: [`Svackor tillhör spelets natur. ${n} hittar tillbaka.`],
         },
       }
-      return PLAYER_NOTE_QUOTES[context.tag][p]
+      return seededPick(PLAYER_NOTE_QUOTES[context.tag][p], context.playerId)
     }
     default:
       quotes = WIN_QUOTES[p]

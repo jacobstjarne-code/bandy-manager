@@ -16,10 +16,12 @@ interface TacticBoardCardProps {
   captainPlayerId: string | undefined
   chemistryStats: Record<string, number>
   onTacticChange: (tactic: Tactic) => void
+  matchday?: number
+  nextOpponentName?: string
 }
 
 export function TacticBoardCard({
-  club, players, coach, captainPlayerId, chemistryStats, onTacticChange,
+  club, players, coach, captainPlayerId, chemistryStats, onTacticChange, matchday, nextOpponentName,
 }: TacticBoardCardProps) {
   const [tab, setTab] = useState<TacticTab>('formation')
 
@@ -75,6 +77,8 @@ export function TacticBoardCard({
             coach={coach}
             players={squadPlayers}
             captainPlayerId={captainPlayerId}
+            matchday={matchday}
+            nextOpponentName={nextOpponentName}
           />
         )}
       </div>

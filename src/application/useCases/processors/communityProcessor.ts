@@ -242,14 +242,13 @@ export function processCommunity(
     }
   }
 
-  // Drift volunteerMorale toward communityStanding (CS-mean-reversion pattern, 3% per round)
+  // Drift volunteerMorale toward communityStanding (mean-reversion, ±3 cap)
   const csPulse = game.communityStanding ?? 50
-  const VOLUNTEER_DRIFT_STRENGTH = 0.03
   for (const name of volunteers) {
     const current = volunteerMorale[name] ?? 70
-    const drift = Math.round((csPulse - current) * VOLUNTEER_DRIFT_STRENGTH)
-    if (drift !== 0) {
-      volunteerMorale[name] = Math.min(100, Math.max(0, current + drift))
+    const drift = Math.max(-3, Math.min(3, (csPulse - current) * 0.15))
+    if (Math.abs(drift) >= 0.5) {
+      volunteerMorale[name] = Math.min(100, Math.max(0, Math.round(current + drift)))
     }
   }
 

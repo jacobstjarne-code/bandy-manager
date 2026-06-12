@@ -10,6 +10,12 @@ import { getTransferWindowStatus } from '../../../domain/services/transferWindow
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { PERSONALITY_REFUSAL, PERSONALITY_ACCEPTANCE, DREAM_CLUB_MAGIC, PLAYER_REACTION_RIVAL_SALE } from '../../../domain/data/transferResponseText'
+import { seededPick } from '../../../domain/utils/random'
+
+const BUD_WITHDRAWN_POOL = [
+  (klubb: string, namn: string) => `${klubb} drog tillbaka budet på ${namn}. De tröttnade på att vänta.`,
+  (klubb: string, namn: string) => `Budet på ${namn} gick ut. ${klubb} har gått vidare.`,
+] as const
 
 export interface TransferProcessorResult {
   resolvedBids: TransferBid[]
@@ -141,6 +147,26 @@ export function processTransferBids(
       type: InboxItemType.Media,
       title: `📰 Rykten: ${target.firstName} ${target.lastName} på väg?`,
       body: `Det florera rykten om att ${target.firstName} ${target.lastName} från ${sellingClub.name} kan vara på väg mot en ny utmaning. Inga officiella kommentarer ännu.`,
+      isRead: false,
+    })
+  }
+
+  // Incoming bid expiry notifications (budWithdrawn)
+  for (const bid of resolvedBids) {
+    if (bid.direction !== 'incoming') continue
+    if (bid.status !== 'expired') continue
+    const wasPending = existingBids.find(b => b.id === bid.id)?.status === 'pending'
+    if (!wasPending) continue
+    const target = preEventGame.players.find(p => p.id === bid.playerId)
+    const buyingClub = preEventGame.clubs.find(c => c.id === bid.buyingClubId)
+    if (!target || !buyingClub) continue
+    const fn = seededPick(BUD_WITHDRAWN_POOL, bid.id)
+    inboxItems.push({
+      id: `inbox_bid_withdrawn_${bid.id}`,
+      date: newDate,
+      type: InboxItemType.TransferBidResult,
+      title: `Bud på ${target.firstName} ${target.lastName} drogs tillbaka`,
+      body: fn(buyingClub.name, `${target.firstName} ${target.lastName}`),
       isRead: false,
     })
   }
