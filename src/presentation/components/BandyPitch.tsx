@@ -15,8 +15,8 @@ export function BandyPitch({ width = '100%', height, children }: BandyPitchProps
   const penW = 80    // penalty area width centered
   const cornerR = 4  // corner arc radius
 
-  const lineStyle = { stroke: 'rgba(196,186,168,0.4)', strokeWidth: 0.8, fill: 'none' }
-  const goalStyle = { stroke: 'rgba(196,186,168,0.3)', strokeWidth: 1, fill: 'rgba(196,186,168,0.1)' }
+  const lineStyle = { stroke: 'rgba(90,122,138,0.4)', strokeWidth: 0.8, fill: 'none' }
+  const goalStyle = { stroke: 'rgba(90,122,138,0.3)', strokeWidth: 1, fill: 'rgba(90,122,138,0.1)' }
 
   return (
     <svg
@@ -28,9 +28,9 @@ export function BandyPitch({ width = '100%', height, children }: BandyPitchProps
     >
       <defs>
         <linearGradient id="pitchGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#F5F1EB" />
-          <stop offset="50%" stopColor="#FAFAF8" />
-          <stop offset="100%" stopColor="#F0ECE4" />
+          <stop offset="0%" stopColor="#DCE8EE" />
+          <stop offset="50%" stopColor="#D8E5EC" />
+          <stop offset="100%" stopColor="#D2E0E8" />
         </linearGradient>
       </defs>
 

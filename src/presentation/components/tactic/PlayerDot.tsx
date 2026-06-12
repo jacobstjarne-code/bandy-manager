@@ -14,6 +14,9 @@ export function PlayerDot({ slot, player, onClick, readOnly, isSelected }: Playe
   const cy = slot.y * 4
   const r = 14
 
+  const isWarn = player != null && (player.fitness < 40 || player.position !== slot.position)
+  const dotFill = player ? (isWarn ? 'url(#dot-warn)' : 'url(#dot-ok)') : 'var(--bg-dark-elevated)'
+
   return (
     <g
       onClick={!readOnly ? onClick : undefined}
@@ -23,20 +26,15 @@ export function PlayerDot({ slot, player, onClick, readOnly, isSelected }: Playe
       {isSelected && (
         <circle cx={cx} cy={cy} r={r + 4} fill="none" stroke="var(--accent)" strokeWidth="2" opacity="0.8" />
       )}
-      {/* C-FT1: trötthetsring — visas bara för trötta spelare (warm 40-69, danger <40) */}
-      {player && player.fitness < 70 && (
-        <circle cx={cx} cy={cy} r={r + 2.5} fill="none"
-          stroke={player.fitness < 40 ? 'var(--danger)' : 'var(--warm)'}
-          strokeWidth="2" opacity="0.9" />
-      )}
-      {/* Main circle */}
+      {/* Main circle — green (ok) or red (wrong position / low fitness) */}
       <circle
         cx={cx} cy={cy} r={r}
-        fill={player ? 'var(--accent)' : 'var(--bg-dark-elevated)'}
-        stroke={player ? 'rgba(255,255,255,0.6)' : 'var(--border)'}
-        strokeWidth="1.5"
+        fill={dotFill}
+        stroke={player ? 'white' : 'var(--border)'}
+        strokeWidth={player ? 2 : 1.5}
+        filter={player ? 'url(#dot-shadow)' : undefined}
       />
-      {/* Player name or slot label */}
+      {/* Position label inside circle */}
       <text
         x={cx} y={cy + 1}
         textAnchor="middle"
@@ -46,18 +44,20 @@ export function PlayerDot({ slot, player, onClick, readOnly, isSelected }: Playe
         fill={player ? 'white' : 'var(--text-muted)'}
         style={{ pointerEvents: 'none', userSelect: 'none' }}
       >
-        {player ? player.lastName.slice(0, 6) : slot.label}
-      </text>
-      {/* Position label below */}
-      <text
-        x={cx} y={cy + r + 8}
-        textAnchor="middle"
-        fontSize="7"
-        fill="var(--text-muted)"
-        style={{ pointerEvents: 'none', userSelect: 'none' }}
-      >
         {slot.label}
       </text>
+      {/* Player last name below circle */}
+      {player && (
+        <text
+          x={cx} y={cy + r + 7}
+          textAnchor="middle"
+          fontSize="7.5"
+          fill="var(--text-secondary)"
+          style={{ pointerEvents: 'none', userSelect: 'none' }}
+        >
+          {player.lastName.slice(0, 7)}
+        </text>
+      )}
     </g>
   )
 }

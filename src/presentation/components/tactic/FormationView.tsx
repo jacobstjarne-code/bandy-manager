@@ -28,16 +28,27 @@ const PRESS_LABELS: Record<string, string> = {
 function PitchLines() {
   return (
     <>
-      {/* Outer rect fill */}
-      <rect width="280" height="400" fill="color-mix(in srgb, var(--accent) 4%, transparent)" />
+      <defs>
+        <radialGradient id="dot-ok" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stopColor="#6BAA5A"/>
+          <stop offset="100%" stopColor="#4A8A3A"/>
+        </radialGradient>
+        <radialGradient id="dot-warn" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stopColor="#C46A5A"/>
+          <stop offset="100%" stopColor="#A04030"/>
+        </radialGradient>
+        <filter id="dot-shadow" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.25"/>
+        </filter>
+      </defs>
       {/* Center line */}
-      <line x1="0" y1="200" x2="280" y2="200" stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3,3" />
+      <line x1="0" y1="200" x2="280" y2="200" stroke="rgba(90,122,138,.4)" strokeWidth="0.5" strokeDasharray="3,3" />
       {/* Center circle */}
-      <circle cx="140" cy="200" r="35" fill="none" stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3,3" />
+      <circle cx="140" cy="200" r="35" fill="none" stroke="rgba(90,122,138,.4)" strokeWidth="0.5" strokeDasharray="3,3" />
       {/* Own goal area (top) */}
-      <rect x="90" y="0" width="100" height="28" fill="none" stroke="var(--border)" strokeWidth="0.5" />
+      <rect x="90" y="0" width="100" height="28" fill="none" stroke="rgba(90,122,138,.4)" strokeWidth="0.5" />
       {/* Opponent goal area (bottom) */}
-      <rect x="90" y="372" width="100" height="28" fill="none" stroke="var(--border)" strokeWidth="0.5" />
+      <rect x="90" y="372" width="100" height="28" fill="none" stroke="rgba(90,122,138,.4)" strokeWidth="0.5" />
     </>
   )
 }
@@ -264,7 +275,7 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
       </div>
 
       {/* Pitch SVG */}
-      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', display: 'block', maxHeight: 240 }}>
+      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'linear-gradient(180deg, #DCE8EE, #D2E0E8)', border: '1px solid #B8CCD8', boxShadow: 'inset 0 1px 4px rgba(90,122,138,.12)', borderRadius: 'var(--radius-md)', display: 'block', maxHeight: 240 }}>
         <PitchLines />
         {template.slots.map(slot => {
           const playerId = lineupSlots[slot.id]
@@ -324,9 +335,17 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
         </div>
       </div>
 
-      <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 8 }}>
-        Tryck på en position för att byta. Formation påverkar nästa match.
-      </p>
+      <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 9, color: 'var(--text-secondary)', alignItems: 'center' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#4A8A3A', display: 'inline-block' }}/>
+          Rätt plats
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#A04030', display: 'inline-block' }}/>
+          Fel position / låg ork
+        </span>
+        <span style={{ marginLeft: 'auto', fontStyle: 'italic', color: 'var(--text-muted)' }}>Dra för att byta</span>
+      </div>
     </>
   )
 }
