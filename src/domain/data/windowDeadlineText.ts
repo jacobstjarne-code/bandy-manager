@@ -9,7 +9,7 @@ export const DEADLINE_PORTAL_TEXT: Record<SeasonContext, string[]> = {
   relegationFight: [
     'Transferfönstret stänger 18:00. Är truppen tillräcklig?',
     'Sista chansen att förstärka. Fönstret stänger klockan 18.',
-    'Klockan tickar. Tre poäng ner till strecket. Vad mer behövs?',
+    'Klockan tickar. Det är tätt ner till strecket. Vad mer behövs?',
   ],
   topRace: [
     'Fönstret stänger 18:00. Konkurrenterna rör sig. Håll koll.',

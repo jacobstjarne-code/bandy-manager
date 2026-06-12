@@ -114,7 +114,7 @@ export const ANNANDAGSBANDY_COMMENTARY_LORE: string[] = [
 
 export const ANNANDAGSBANDY_BRIEFING: string[] = [
   '🎄 Annandagen. {arenaName} ska gå varm i dag.',
-  '🎄 26 december. Derbyt mot {opponentName} klockan 13:15. Plogen har gått sedan klockan sex i morse.',
+  '🎄 26 december. Mötet med {opponentName} klockan 13:15. Plogen har gått sedan klockan sex i morse.',
   '🎄 Annandagsbandy mot {opponentName}. Hela bygden samlas, även de som inte brukar gå på match.',
   '🎄 Det är annandag jul. {arenaName} fylls av folk som behöver komma ut ur sina hem.',
   '🎄 Annandagen — {rivalryName}. Året ska ha en till topp innan det är över.',
@@ -127,7 +127,7 @@ export function annandagsbandyInbox(ctx: SpecialDateContext): { subject: string;
     : `borta i ${ctx.venueCity}`
   return {
     subject: `Annandagsbandy mot ${opponent}`,
-    body: `Den traditionella annandagsmatchen spelas ${venue} klockan 13:15. ${ctx.rivalryName ?? 'Derbyt'} drar i år förmodligen mer folk än vanlig omgångsmatch — räkna med kaffekö i pausen och tidig parkering. Plogen är beställd från klockan sex.`,
+    body: `Den traditionella annandagsmatchen spelas ${venue} klockan 13:15. ${ctx.rivalryName ?? 'Matchen'} drar i år förmodligen mer folk än vanlig omgångsmatch — räkna med kaffekö i pausen och tidig parkering. Plogen är beställd från klockan sex.`,
   }
 }
 
@@ -163,16 +163,16 @@ export const FINALDAG_COMMENTARY_SPECTATOR: string[] = [
 ]
 
 export const FINALDAG_COMMENTARY_LORE: string[] = [
-  'Studenternas IP. Invigd 21 mars 1909. 23 SM-finaler har avgjorts på den här isen. Den 24:e startar nu.',
+  'Studenternas IP. Invigd 21 mars 1909. Fler SM-finaler än på någon annan nutida arena har avgjorts på den här isen. Nästa startar nu.',
   'Vi står på samma is där Daniel "Zeke" Eriksson sköt SAIK till guld 2011 — i sin allra sista match. Frislag, sudden death, drömavslut. Alla finaler har sin historia.',
-  'På den här planen vann Hammarby sitt första SM-guld på 105 år. Det var 2010. Snön vräkte ner. Matchen spelades i 3×30 minuter — den enda SM-finalen någonsin i det formatet. I dag är det åtminstone klart väder.',
+  'På den här planen vann Hammarby sitt första SM-guld på 105 år. Det var 2010. Snön vräkte ner. Matchen spelades i 3×30 minuter — den enda SM-finalen någonsin i det formatet.',
   'Stadsträdgården åt höger, Fyrisån åt vänster. Studan. Det är på de här fem hektaren bandysveriges hela historia ryms.',
 ]
 
 // 3×30-trigger — BARA för SM-final med weather.matchFormat === '3x30'
 export const FINALDAG_COMMENTARY_3X30: string[] = [
   'Andra gången någonsin. Hammarby–Bollnäs 2010 var den första SM-finalen i 3×30 minuter — snöfallet då tvingade fram det. Idag är vi där igen. Studan, snöfall, regelbokens andra utväg.',
-  '3×30 minuter i en SM-final. Det har bara hänt en gång förut. På den här planen, för 16 år sedan. Bollen rullade knappt i snön. "Grisbandy", sa kommentatorerna. Vi får se vad det blir i dag.',
+  '3×30 minuter i en SM-final. Det har bara hänt en gång förut. På den här planen. Bollen rullade knappt i snön. "Grisbandy", sa kommentatorerna. Vi får se vad det blir i dag.',
 ]
 
 export const FINALDAG_BRIEFING_PLAYING: string[] = [

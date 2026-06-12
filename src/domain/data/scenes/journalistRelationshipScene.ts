@@ -29,17 +29,18 @@ function sentimentClass(s: number): 'positive' | 'neutral' | 'negative' {
   return 'neutral'
 }
 
-function buildStatusText(relationship: number): string {
-  if (relationship <= 20) return 'Mycket kylig. Hon skriver inte om er längre.'
-  if (relationship <= 30) return 'Kylig. Hon ringer mer sällan nu.'
-  if (relationship >= 90) return 'Utmärkt. Hon är en ambassadör för klubben.'
-  if (relationship >= 75) return 'Stark relation. Lokaltidningens rubriker har dragit upp orten — fortsätt prata med henne.'
-  return 'Varm. Hon skriver om er nästan varje vecka.'
+function buildStatusText(relationship: number, lastName: string): string {
+  if (relationship <= 20) return `Mycket kylig. ${lastName} skriver inte om er längre.`
+  if (relationship <= 30) return `Kylig. ${lastName} ringer mer sällan nu.`
+  if (relationship >= 90) return `Utmärkt. ${lastName} är klubbens ambassadör i spalterna.`
+  if (relationship >= 75) return `Stark relation. Lokaltidningens rubriker har dragit upp orten — fortsätt prata med ${lastName}.`
+  return `Varm. ${lastName} skriver om er nästan varje vecka.`
 }
 
 function buildOutlookText(journalist: Journalist): string {
   const rel = journalist.relationship
   const refusals = journalist.pressRefusals ?? 0
+  const lastName = journalist.name.split(' ').pop() ?? journalist.name
   if (rel <= 20) {
     if (refusals >= 3) return 'Tre nekade presskonferenser. Det syns i rubrikerna.'
     return 'Relationen är bruten. Det krävs tid och ärlighet för att vända.'
@@ -48,7 +49,7 @@ function buildOutlookText(journalist: Journalist): string {
     return 'Tre presskonferenser till med ärligt svar — då vänder det.'
   }
   if (rel >= 75) {
-    return 'Hon är på er sida nu. Det håller så länge du möter henne lika öppet.'
+    return `${lastName} är på er sida nu. Det håller så länge du är lika öppen tillbaka.`
   }
   return 'Fortsätt svara ärligt. Relationen håller.'
 }
@@ -56,6 +57,7 @@ function buildOutlookText(journalist: Journalist): string {
 export function buildJournalistSceneData(journalist: Journalist, _currentSeason: number): JournalistRelationshipSceneData {
   const rel = journalist.relationship
   const severity: 'cold' | 'warm' = rel >= 70 ? 'warm' : 'cold'
+  const lastName = journalist.name.split(' ').pop() ?? journalist.name
 
   const memories: JournalistSceneMemoryEntry[] = journalist.memory
     .slice(-5)
@@ -72,7 +74,7 @@ export function buildJournalistSceneData(journalist: Journalist, _currentSeason:
     outlet: journalist.outlet,
     relationship: rel,
     severity,
-    statusText: buildStatusText(rel),
+    statusText: buildStatusText(rel, lastName),
     memories,
     outlookText: buildOutlookText(journalist),
   }

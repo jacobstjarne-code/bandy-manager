@@ -25,7 +25,7 @@ export interface StillnessBeat {
 export const STILLNESS_BEATS: StillnessBeat[] = [
   // ── Väder ────────────────────────────────────────────────────────────
   {
-    body: 'Isen lade sig i natt. Hallen luktar mer skrapa än vanligt.',
+    body: 'Isen lade sig i natt. Det luktar skrapa och nyspolat vid vallen.',
     weather: 'cold',
   },
   {
@@ -37,7 +37,7 @@ export const STILLNESS_BEATS: StillnessBeat[] = [
     weather: 'snow',
   },
   {
-    body: 'Snön lägger sig tyst på orten. Inga matchljud från hallen i dag.',
+    body: 'Snön lägger sig tyst på orten. Inga matchljud från vallen i dag.',
     weather: 'snow',
     proximity: 'rest',
   },
@@ -48,11 +48,11 @@ export const STILLNESS_BEATS: StillnessBeat[] = [
 
   // ── Säsongstid ───────────────────────────────────────────────────────
   {
-    body: 'Säsongen är sex omgångar gammal. För tidigt att veta vad den är.',
+    body: 'Säsongen är några omgångar gammal. För tidigt att veta vad den är.',
     seasonTime: 'early',
   },
   {
-    body: 'Tabellen börjar säga något på riktigt. Tolv omgångar in, ingen kan skylla på slump.',
+    body: 'Tabellen börjar säga något på riktigt. Såhär långt in kan ingen skylla på slump.',
     seasonTime: 'mid',
   },
   {
@@ -60,13 +60,13 @@ export const STILLNESS_BEATS: StillnessBeat[] = [
     seasonTime: 'late',
   },
   {
-    body: 'Grundserien är borta. Nu handlar det om bäst av fem.',
+    body: 'Grundserien är borta. Nu börjar allt om från noll.',
     seasonTime: 'playoff',
   },
 
   // ── Form ─────────────────────────────────────────────────────────────
   {
-    body: 'Tre raka segrar. Siffrorna stämmer med känslan — det är sällan det händer.',
+    body: 'Segrarna har börjat stapla sig. Siffrorna stämmer med känslan — det är sällan det händer.',
     form: 'good',
   },
   {
@@ -74,7 +74,7 @@ export const STILLNESS_BEATS: StillnessBeat[] = [
     form: 'good',
   },
   {
-    body: 'Fyra matcher utan poäng. Det börjar inte synas i ansiktena ännu, men det är på väg.',
+    body: 'Det har varit magert ett tag nu. Det syns inte i ansiktena ännu, men det är på väg.',
     form: 'poor',
   },
   {
@@ -92,7 +92,7 @@ export const STILLNESS_BEATS: StillnessBeat[] = [
     proximity: 'day_after',
   },
   {
-    body: 'Tolv dagar utan match. Truppen börjar bli lite rastlös, vilket är bättre än det låter.',
+    body: 'Ingen match på ett tag. Truppen börjar bli lite rastlös, vilket är bättre än det låter.',
     proximity: 'rest',
   },
 ]

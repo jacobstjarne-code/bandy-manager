@@ -58,13 +58,13 @@ export const COACH_RIVALRY_QUOTES: Record<CoachPersonality, string[]> = {
     '{manager} skickade ett kort när min far gick bort. Sånt glömmer man inte.',
   ],
   kall: [
-    'Aldrig förlorat mot honom. Han ringer aldrig först.',
+    'Jag brukar inte förlora mot honom. Han ringer aldrig först.',
     'Jag har inget otalt med {manager}. Jag har inget tal med honom alls.',
     'Vi hälsar. Det räcker. Bandy är ingen kafferepskväll.',
     '{manager} sköter sitt, jag sköter mitt. Vi möts på isen. Det får räcka.',
   ],
   passiv_aggressiv: [
-    'Han har slagit mig fyra av sju gånger. Det är inte personligt. Inte än.',
+    'Han har slagit mig fler gånger än jag vill räkna. Det är inte personligt. Inte än.',
     '{manager} har haft tur mot mig. Tur tar slut.',
     'Bra lag {manager} har byggt. Med den budgeten borde det vara det.',
     'Vi var lagkamrater förr. Han glömmer inte att jag avgjorde när det gällde.',

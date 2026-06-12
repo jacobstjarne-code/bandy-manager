@@ -70,5 +70,5 @@ export const SUNDAY_TRAINING_META = {
   // {arena} ersätts med klubbens arenaName vid render
   date: '4 oktober · −2°C · {arena}',
   headline: 'Sex spelare på isen.',
-  subtitle: 'Ingen tvingad. Frivillig morgonpass.',
+  subtitle: 'Ingen tvingad. Frivilligt morgonpass.',
 }

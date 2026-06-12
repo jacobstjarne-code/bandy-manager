@@ -46,16 +46,24 @@ export function useSMFinalData(game: SaveGame): SMFinalData {
     const promoted = (player as { promotedFromAcademy?: boolean }).promotedFromAcademy
     const promotionSeason = (player as { promotionSeason?: number }).promotionSeason
     if (!promoted || !promotionSeason) return null
+    const matchEvents = finalFixture.events ?? []
+    const goalEvent = matchEvents.find(
+      e => (e as { playerId?: string; type?: string }).playerId === player.id &&
+        (e as { type?: string }).type === 'goal',
+    )
+    const minute = (goalEvent as { minute?: number } | undefined)?.minute ?? null
     return {
       lastName: player.lastName,
       promotionSeason,
       yearsAgo: Math.max(1, game.currentSeason - promotionSeason),
+      minute,
     }
   }, [finalFixture, game.players, game.currentSeason])
 
   const bodyText = academyHero
     ? SM_FINAL_VICTORY_TEMPLATES.bodyText
-        .replace('Henriksson', academyHero.lastName)
+        .replace(/{playerName}/g, academyHero.lastName)
+        .replace('{minute}', String(academyHero.minute ?? '?'))
         .replace('{promotionSeason}', String(academyHero.promotionSeason))
         .replace('{yearsAgo}', String(academyHero.yearsAgo))
     : SM_FINAL_VICTORY_TEMPLATES.fallbackBodyText
@@ -73,8 +81,11 @@ export function useSMFinalData(game: SaveGame): SMFinalData {
     homeName: homeClub?.name ?? 'Hemmaklubben',
     awayName: awayClub?.name ?? 'Bortaklubben',
     arenaCapacity: finalFixture?.attendance
-      ? `${finalFixture.attendance.toLocaleString('sv-SE')} ÅSKÅDARE`
-      : SM_FINAL_VICTORY_TEMPLATES.meta.arenaCapacity,
+      ? SM_FINAL_VICTORY_TEMPLATES.meta.arenaCapacity.replace(
+          '{arenaCapacity}',
+          finalFixture.attendance.toLocaleString('sv-SE'),
+        )
+      : '',
     finalArena: finalFixture?.arenaName ?? 'Studenternas IP',
     bodyText,
     birgerQuote: birger.quote,

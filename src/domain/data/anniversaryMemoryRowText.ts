@@ -6,7 +6,7 @@ import type { ActiveAnniversary } from '../services/clubMemoryService'
  */
 
 export function anniversaryRowLabel(echo: ActiveAnniversary): string {
-  if (echo.yearsAgo === 1) return 'Eko · i år igen'
+  if (echo.yearsAgo === 1) return 'Eko · ett år sedan'
   return `Eko · ${echo.yearsAgo} år sedan`
 }
 

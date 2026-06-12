@@ -17,7 +17,7 @@ export const UPPTAKT_PHASEMARKS: Record<UpptaktSubState, PhaseMarkVariant[]> = {
   sakrat: [
     { eyebrow: '⬩ Slutspelet är klart ⬩', quote: 'Nu är det placeringen som ska avgöras.', helper: 'Platsen är säkrad — nu om var vi hamnar i slutspelet.' },
     { eyebrow: '⬩ Placeringen avgör ⬩', quote: 'Slutspelet väntar. Frågan är var vi möter vem.', helper: 'Tre omgångar avgör hur högt vi slutar.' },
-    { eyebrow: '⬩ Inräknade i slutspelet ⬩', quote: 'Det är klart att vi spelar. Inte var.', helper: 'Hemmaplan i kvart kostar tre poäng mer.' },
+    { eyebrow: '⬩ Inräknade i slutspelet ⬩', quote: 'Det är klart att vi spelar. Inte var.', helper: 'Hemmaplan i kvarten avgörs av placeringen.' },
     { eyebrow: '⬩ Placering att jaga ⬩', quote: 'Slutspelet är säkrat. Nästa fråga är hur högt.', helper: 'En högre placering ger lättare motstånd i kvarten.' },
     { eyebrow: '⬩ Slutspelet garanterat ⬩', quote: 'Tre omgångar att klättra på.', helper: 'Toppen är inte avgjord än.' },
     { eyebrow: '⬩ Säkrade — men inte färdiga ⬩', quote: 'Vi har en plats. Inte den vi vill ha.', helper: 'Var vi hamnar hänger på de här tre.' },
@@ -53,7 +53,7 @@ export const UPPTAKT_COUNTDOWN: Record<UpptaktSubState, string[]> = {
     '{N} till spel som avgör säsongen.',
     '{N} matcher kvar. Marginalen tål inte slarv.',
     '{N} omgångar att hålla isär det här.',
-    '{N} kvar. Sex poäng räcker — slipper vi misstag.',
+    '{N} kvar. Full pott räcker — slipper vi misstag.',
   ],
   bottenstrid: [
     '{N} omgångar kvar — för att hålla oss ifrån kvalet.',

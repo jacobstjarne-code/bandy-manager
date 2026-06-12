@@ -7,14 +7,14 @@ import type { ActiveAnniversary } from '../services/clubMemoryService'
 
 const WON_KLACK: string[] = [
   'Klacken rullade ut en banderoll: "VI MINNS GULDET".',
-  'Från ståplats: "Ett år sen — och vi sjunger om det än."',
+  'Från ståplats: "Vi sjunger om det än."',
   'Banderoll på kortsidan: "DET ÄR VÅRT, FÖR ALLTID".',
 ]
 
 const LOST_KLACK: string[] = [
   'Klacken teg en minut. Sen kom sången, trotsigare än vanligt.',
   'Banderoll: "VI GLÖMMER INTE. VI KOMMER TILLBAKA."',
-  'Från läktaren: "Förra året tog det slut här. Inte i år."',
+  'Från läktaren: "Här tog det slut då. Inte i år."',
 ]
 
 const NEUTRAL_KLACK: string[] = [

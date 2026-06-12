@@ -41,7 +41,7 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
         'Kylan biter. Men vi är kvar. Det är det som räknas.',
         'Folk pratar mer om hockeyn nu. Det irriterar mig.',
         'Glöggrekord i år. Positivt. Annars är det tungt.',
-        'Det är omgång tolv. Halvleken. Nu börjar det på riktigt.',
+        'Det är halvvägs ungefär. Nu börjar det på riktigt.',
       ],
       vinterkris: [
         'Jag säger ingenting. Men jag har sett sämre lag vända.',
@@ -51,12 +51,12 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
       ],
       våroffensiv: [
         'Februari. Nu avgörs det. Folk på läktaren vet det.',
-        'Sju omgångar kvar. Varje poäng väger dubbelt nu.',
+        'Några omgångar kvar. Varje poäng väger dubbelt nu.',
         'Isen är bäst nu. Kall och fast. Perfekt bandyis.',
         'Kan lukta slutspel. Har luktat det förut. Smakar bättre när man vinner.',
       ],
       slutspurt: [
-        'Tre omgångar kvar. Det är som en finale varje gång nu.',
+        'Sista omgångarna nu. Det är som en final varje gång.',
         'Hela orten pratar om det. Det har inte hänt på länge.',
         'Har jobbat kiosken i fjorton år. Har aldrig känt såhär.',
         'Nu eller aldrig. Det är bandyns natur.',
@@ -127,7 +127,7 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
         'P19 vann också igår. Bra dag för klubben.',
       ],
       afterLoss: [
-        'Håller ungdomarna borta från löparsniack. Det hjälper ingen.',
+        'Håller ungdomarna borta från läktarsnacket. Det hjälper ingen.',
         'Pojkarna frågar mig varför. Jag säger: det händer. Fortsätt träna.',
       ],
     },
@@ -149,7 +149,7 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
       ],
       vinter: [
         'Halvtid. Styrelsen bedömer läget löpande.',
-        'Ekonomin är stabil. Det är mer än vi vågades hoppas i somras.',
+        'Ekonomin är stabil. Det är mer än vi vågade hoppas i somras.',
         'Hör vad folk säger i butiken. Förväntningarna är höga.',
       ],
       vinterkris: [
@@ -165,7 +165,7 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
       slutspurt: [
         'Det är nu. Styrelsen är enad. Kör.',
         'Kommunen ringer mer nu. Det är ett gott tecken.',
-        'Tre omgångar kvar. Allt är möjligt. Styrelsen tror det.',
+        'Slutspurten. Allt är möjligt. Styrelsen tror det.',
       ],
     },
     quotesByCondition: {

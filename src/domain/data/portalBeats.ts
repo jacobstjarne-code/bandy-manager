@@ -43,7 +43,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
   // ── Ispremiär (omg 1, ingen match spelad) ─────────────────────
   {
     id: 'season_opener',
-    emoji: '🏒',
+    emoji: '⛸️',
     text: 'Ispremiär. Wienerbröd på morgonen, isen är stenhård. Det är säsong nu.',
     trigger: (g) => {
       if (completedLeagueCount(g) !== 0) return false

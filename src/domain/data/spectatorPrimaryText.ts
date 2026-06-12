@@ -54,7 +54,7 @@ export const SPECTATOR_PRIMARY_TEXT: Record<SpectatorFocusType, SpectatorFocusVa
       cta: 'Akademi →',
     },
     {
-      headline: 'Magnus vill ha besked',
+      headline: 'Ungdomsledaren vill ha besked',
       body: '{count} unga som kan kliva upp till nästa säsong. Beslutet kommer ändå.',
       cta: 'Akademi →',
     },

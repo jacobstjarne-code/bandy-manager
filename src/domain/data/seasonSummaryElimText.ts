@@ -23,7 +23,7 @@ export const SEASON_SUMMARY_ELIM_TEXT: Record<SeasonEliminationContext, SeasonEl
   ],
   sf: [
     {
-      body: 'Semifinalen mot {motståndare} — så långt kom vi. Två matcher till finalen, två som vi inte fick spela.',
+      body: 'Semifinalen mot {motståndare} — så långt kom vi. Finalen fick andra spela.',
     },
     {
       body: '{motståndare} tog semifinalen. Vi var nära finalen — det blir den närheten som biter i {season}.',

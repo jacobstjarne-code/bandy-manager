@@ -19,20 +19,20 @@ function yearLabel(yearsAgo: number): string {
 }
 
 const WON_MARKS: Omit<AnniversaryMarkCopy, 'eyebrow'>[] = [
-  { quote: 'Guldet. Samma vecka, förra säsongen.', helper: 'Klacken minns. Spelarna också.' },
-  { quote: 'SM-guldet känns längre bort än så här.', helper: 'Bilderna hänger kvar i klubbhuset.' },
+  { quote: 'Vi vann. Samma vecka, ett annat år.', helper: 'Klacken minns. Spelarna också.' },
+  { quote: 'Guldet känns längre bort än så här.', helper: 'Bilderna hänger kvar i klubbhuset.' },
   { quote: 'Vi stod överst. Det var den här veckan.', helper: 'Sånt glöms inte i en bruksort.' },
 ]
 
 const LOST_MARKS: Omit<AnniversaryMarkCopy, 'eyebrow'>[] = [
   { quote: 'Finalen vi förlorade. I dag, fast då.', helper: 'Sånt sätter sig. Det vet alla här.' },
-  { quote: 'Här tog det slut förra året. Samma vecka.', helper: 'Vi bär det med oss, vare sig vi vill eller inte.' },
+  { quote: 'Här tog det slut. Samma vecka, då.', helper: 'Vi bär det med oss, vare sig vi vill eller inte.' },
   { quote: 'Förlusten som blev kvar i väggarna.', helper: 'Klacken pratar om den fortfarande.' },
 ]
 
 const NEUTRAL_MARKS: Omit<AnniversaryMarkCopy, 'eyebrow'>[] = [
-  { quote: '{subject} spelade sin sista match den här veckan, i fjol.', helper: 'Tröjan hänger i klubbhuset nu.' },
-  { quote: 'Ett år sedan {subject} la av. Tiden går fort.', helper: 'Killarna nämner honom ibland.' },
+  { quote: '{subject} spelade sin sista match den här veckan, ett annat år.', helper: 'Tröjan hänger i klubbhuset nu.' },
+  { quote: '{subject} la av den här veckan. Tiden går fort.', helper: 'Killarna nämner honom ibland.' },
 ]
 
 const FALLBACK: AnniversaryMarkCopy = {

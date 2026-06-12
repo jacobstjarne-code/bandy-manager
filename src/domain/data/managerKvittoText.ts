@@ -29,7 +29,7 @@ export const HALFTIME_OUTCOMES: Record<'lugna' | 'pressa' | 'prata', Record<Kvit
   pressa: {
     good: ['Ni höjde tempot och de svarade inte.', 'Pressen gav utdelning direkt efter pausen.'],
     bad: ['Pressen öppnade bakåt och kontringarna straffade.', 'Ni gick på för hårt och tappade balansen.'],
-    neutral: ['Högre tempo, men kvitterat på båda håll.'],
+    neutral: ['Högre tempo, men det jämnade ut sig.'],
   },
   prata: {
     good: ['Det individuella snacket landade — rätt spelare vaknade.', 'Någon behövde höra det enskilt. Det syntes.'],
@@ -40,7 +40,7 @@ export const HALFTIME_OUTCOMES: Record<'lugna' | 'pressa' | 'prata', Record<Kvit
 
 /** Bortarutin (awayTrip.mikrobeslut) → fräschhet sent i matchen. */
 export const AWAY_ROUTINE_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
-  good: ['Truppen var fräsch vid första avslag.', 'Resan satt — inga tunga ben i slutperioden.'],
+  good: ['Truppen var fräsch vid första avslag.', 'Resan satt — inga tunga ben i slutskedet.'],
   bad: ['Ni reste för sent och det märktes i benen mot slutet.', 'Logistiken skavde och laget kom aldrig in i det.'],
   neutral: ['Resan gick som vanligt, varken till hjälp eller hinder.'],
 }
@@ -55,7 +55,7 @@ export const LINEUP_ROTATION_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
 /** Startade en trött spelare (started_tired) → höll benen eller inte. Egen pool — detta är INTE rotering/vila, så LINEUP_ROTATION_OUTCOMES passar inte här. */
 export const STARTED_TIRED_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
   good: ['{spelare} höll trots tunga ben.', 'Tröttheten syntes inte — {spelare} bar matchen ändå.'],
-  bad: ['De tunga benen syntes. {spelare} räckte inte hela vägen.', '{spelare} var tom redan i andra perioden.'],
+  bad: ['De tunga benen syntes. {spelare} räckte inte hela vägen.', '{spelare} var tom redan tidigt i andra halvlek.'],
   neutral: ['{spelare} gjorde sitt, varken mer eller mindre.'],
 }
 

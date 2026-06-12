@@ -44,7 +44,7 @@ export const STURE_PER_CLUB: Record<string, string> = {
   'club_rogle': 'Hockeyfolket skrattar fortfarande. Det är okej.',
 
   // Slottsbron — vid Vänern, sen is, dimma och storm
-  'club_slottsbron': 'Stormen från sjön ligger redan på. Det blir spritt på östra läktaren.',
+  'club_slottsbron': 'Stormen från sjön ligger redan på. Det blir glest på östra läktaren.',
 
   // Skutskär — Dalälvens mynning vid Bottenhavet, banan byggd med egna händer
   'club_skutskar': 'Banan byggde vi själva. Vi sopar den fortfarande själva.',

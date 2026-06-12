@@ -33,7 +33,7 @@ export const AGENDA_QUOTES = {
   prestige: [
     '"Fantastisk säsong! Kommunen är stolt."',
     '"Vi renoverar bandyvallen. Ni förtjänar det."',
-    '"Borgmästaren vill komma på nästa match."',
+    '"Hela fullmäktige vill komma på nästa match."',
     '"Ni sätter orten på kartan. Värt varje krona."',
     '"Kommunens julkort har en bild från bandyplanen i år."',
     '"Vi marknadsför kommunen med er som flaggskepp."',

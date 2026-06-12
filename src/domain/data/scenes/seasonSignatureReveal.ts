@@ -20,14 +20,14 @@ export const SIGNATURE_REVEAL_DATA: Record<SeasonSignatureId, SignatureRevealDat
     emoji: '🌨',
     title: 'KÖLDVINTERN',
     subtitle: 'Vintern ser ut att bli kallare än vanligt.',
-    body: 'Långtidsprognosen pekar på minusgrader långt in i mars. Tre-gånger-trettio är att vänta. Klubborna har redan beställt fler klubbor.',
+    body: 'Långtidsprognosen pekar på minusgrader långt in i mars. Veckor av tjugo minus är att vänta. Klubbarna har redan beställt fler klubbor.',
     ctaText: 'Då kör vi',
   },
   scandal_season: {
     emoji: '📰',
     title: 'SKANDALSÄSONGEN',
     subtitle: 'Förbundet är skakat innan säsongen börjat.',
-    body: 'Fyra klubbar har redan haft offentliga gräl i sommar. Lokaltidningarna kommer skriva om allt utom bandyn. Fokusera på spelet.',
+    body: 'Flera klubbar har redan haft offentliga gräl i sommar. Lokaltidningarna kommer skriva om allt utom bandyn. Fokusera på spelet.',
     ctaText: 'Vi håller oss utanför',
   },
   hot_transfer_market: {

@@ -25,10 +25,10 @@ export const HALL_NEWS_NEGATIVE = [
 ]
 
 export const HALL_NEWS_OUTDOOR_PRIDE = [
-  'Ni drog 1 400 åskådare i snöstorm. {hallclub} hade 290 i sin hall.',
+  'Ni drog storpublik i snöstorm. {hallclub} hade 290 i sin hall.',
   'Utomhusmatchen mot {opponent} beskrivs som "årets upplevelse" i {paper}.',
   '"Riktig bandy spelas utomhus" — insändare i {paper} efter er seger.',
-  'Floodlight, snöfall och 4-1-seger. Publiken gick hem med röda kinder och leenden.',
+  'Strålkastarljus, snöfall och två poäng. Publiken gick hem med röda kinder och leenden.',
   'Er match är den mest sedda på Bandyplay den här veckan. "Atmosfären!" kommenterar tittarna.',
   '"Den här kvällen är anledningen till att jag älskar bandy" — supporter på sociala medier.',
   '{paper}: "Utomhusbandyn lever — {club} bevisar det match efter match."',
@@ -52,7 +52,7 @@ export interface HallDebateEvent {
 
 export const HALL_DEBATE_EVENTS = {
   kommunenFrågar: {
-    title: '🏛️ Kommunen utreder hallfrågan',
+    title: 'Kommunen utreder hallfrågan',
     bodyVariants: [
       '{politiker}: "Andra kommuner bygger hallar. Borde inte vi åtminstone utreda frågan?"',
       '{politiker}: "Vi har fått in en motion om bandyhall. Vad tycker föreningen?"',
@@ -81,7 +81,7 @@ export const HALL_DEBATE_EVENTS = {
   } as HallDebateEvent,
 
   styrelseSplittrad: {
-    title: '🏒 Styrelsemöte: hallfrågan',
+    title: 'Styrelsemöte: hallfrågan',
     bodyVariants: [
       '"Vi tappar spelare till hallklubbarna. De kan träna året runt — vi kan inte."',
       '"Ungdomarna fryser. Föräldrarna klagar. Vi måste göra något."',
@@ -92,7 +92,7 @@ export const HALL_DEBATE_EVENTS = {
       '"I 80 år har vi spelat här. Det tänker jag inte ändra."',
       '"De som inte klarar kylan spelar inte bandy."',
       '"Min farfar stod här i minus 25. Och han klagade inte."',
-      '"Har du sett hallklubbens publik? 300 pers i en hal för 4000. Nej tack."',
+      '"Har du sett hallklubbens publik? 300 pers i en hall för 4000. Nej tack."',
     ],
     choices: [
       { id: 'side_modern', label: 'Modernisten har en poäng', effects: 'fanMood -2' },
@@ -102,7 +102,7 @@ export const HALL_DEBATE_EVENTS = {
   } as HallDebateEvent,
 
   spelarePerspektiv: {
-    title: '🏋️ Spelare vill prata',
+    title: 'Spelare vill prata',
     bodyVariants: [
       'En av spelarna: "Jag älskar utomhusbandy. Men vi kunde inte träna tre veckor i december."',
       'En av spelarna: "Min kompis i hallklubben tränar varje dag. Jag skottar is."',
@@ -134,7 +134,7 @@ export const BOARD_HALL_QUOTES = {
   supporter: [
     '"Jag vill ha publik. Publik kommer utomhus, inte i hallar."',
     '"Har du känt stämningen en snökväll med 1 500 på planen? Det kan ingen hall ge."',
-    '"Jag tar hellre 2 000 utomhus än 300 i en hal."',
+    '"Jag tar hellre 2 000 utomhus än 300 i en hall."',
   ],
   ekonom: [
     '"En hall kostar 120-200 miljoner. Vi har 350 000 i kassan. Nej."',
