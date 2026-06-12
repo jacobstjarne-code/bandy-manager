@@ -9,6 +9,7 @@ import { FixtureStatus, InboxItemType } from '../../domain/enums'
 import { getRivalry } from '../../domain/data/rivalries'
 import { getCurrentLeaguePosition } from '../../domain/services/standingsService'
 import { ScoreBlock } from '../components/primitives/ScoreBlock'
+import { Swords } from 'lucide-react'
 
 export function RoundSummaryScreen() {
   const navigate = useNavigate()
@@ -191,7 +192,7 @@ export function RoundSummaryScreen() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 {/* TODO(FAS 1): byt mot piktogram · sport · se ICON-BRIEF.md */}
                 <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
-                  🏒 {lastFixture.isCup ? 'CUPMATCH' : 'MATCHEN'}
+                  <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}{lastFixture.isCup ? 'CUPMATCH' : 'MATCHEN'}
                 </p>
                 <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>›</span>
               </div>
@@ -228,7 +229,7 @@ export function RoundSummaryScreen() {
         ) : (
           <div className="card-sharp" style={{ margin: '0 0 8px', padding: '10px 14px', ...fadeIn(1) }}>
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
-              🏒 MATCHEN
+              <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}MATCHEN
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Ingen match denna omgång</p>
           </div>
@@ -389,7 +390,7 @@ export function RoundSummaryScreen() {
           <div className="card-sharp" style={{ margin: '0 0 8px', padding: '10px 14px', ...fadeIn(7) }}>
             {/* TODO(FAS 1): byt mot piktogram · sport · se ICON-BRIEF.md */}
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
-              🏒 ANDRA MATCHER
+              <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}ANDRA MATCHER
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {otherResults.map(f => {

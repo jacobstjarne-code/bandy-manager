@@ -15,6 +15,7 @@ import { SectionLabel } from '../../components/SectionLabel'
 import { ScoreBlock } from '../../components/primitives'
 import { generateSilentMatchReport } from '../../../domain/services/silentMatchReportService'
 import { generateQuickSummary, choiceStyle } from './helpers'
+import { Swords } from 'lucide-react'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
 import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, LEADERSHIP_OUTCOMES, STARTED_TIRED_OUTCOMES } from '../../../domain/data/managerKvittoText'
@@ -117,7 +118,7 @@ export function GranskaOversikt({
         <div className="card-sharp card-tap" onClick={onOpenReport} style={{ margin: '0 0 3px', position: 'relative', cursor: 'pointer', ...fadeIn(0) }}>
           <span style={{ position: 'absolute', top: 13, right: 14, fontSize: 16, color: 'var(--accent)' }}>›</span>
           <div style={{ padding: '16px 14px 16px', textAlign: 'center' }}>
-            <SectionLabel style={{ marginBottom: 10 }}>🏒 MATCHEN</SectionLabel>
+            <SectionLabel style={{ marginBottom: 10 }}><Swords size={12} />{' '}MATCHEN</SectionLabel>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: 'left' }}>{homeClub?.shortName ?? homeClub?.name}</span>
@@ -619,7 +620,7 @@ export function GranskaOversikt({
         const rivalClubId = game.clubs.filter(c => c.id !== game.managedClubId).find(c => getRivalry(game.managedClubId, c.id))?.id ?? null
         return (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-            <SectionLabel style={{ marginBottom: 6 }}>🏒 ANDRA MATCHER</SectionLabel>
+            <SectionLabel style={{ marginBottom: 6 }}><Swords size={12} />{' '}ANDRA MATCHER</SectionLabel>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {otherResults.map(f => {
                 const homeWon = (f.homeScore ?? 0) > (f.awayScore ?? 0)

@@ -6,6 +6,7 @@ import { isRivalryMatch } from '../../domain/data/rivalries'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { FormDots } from '../components/FormDots'
 import { getFormResults } from '../utils/formUtils'
+import { Target } from 'lucide-react'
 
 export function TabellScreen() {
   const game = useGameStore(s => s.game)
@@ -145,7 +146,7 @@ export function TabellScreen() {
         return (
           <div>
             <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 12 }}>Ligans toppskyttar, assistkungar och betyg.</p>
-            <StatTable title="🏒 Toppskytt" players={topScorers} value={p => p.seasonStats.goals} unit=" mål" />
+            <StatTable title="🥅 Toppskytt" players={topScorers} value={p => p.seasonStats.goals} unit=" mål" />
             <StatTable title="🎯 Flest assist" players={topAssisters} value={p => p.seasonStats.assists} unit=" ast" />
             <StatTable title="🔄 Flest hörnmål" players={topCornerGoals} value={p => p.seasonStats.cornerGoals} unit=" hörn" />
             <StatTable title="⭐ Bäst snittbetyg (min 3 matcher)" players={topRated} value={p => p.seasonStats.averageRating.toFixed(1)} />
@@ -635,7 +636,7 @@ export function TabellScreen() {
               return (
                 <div style={{ marginBottom: 14 }}>
                   <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
-                    🏒 CUPENS SKYTTEKUNGAR
+                    <Target size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}CUPENS SKYTTEKUNGAR
                   </p>
                   <div className="card-sharp" style={{ overflow: 'hidden' }}>
                     {cupScorers.map((p, i) => {

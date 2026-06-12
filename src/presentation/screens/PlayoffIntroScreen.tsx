@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { FixtureStatus } from '../../domain/enums'
+import { Swords } from 'lucide-react'
 
 export function PlayoffIntroScreen() {
   const navigate = useNavigate()
@@ -136,7 +137,7 @@ export function PlayoffIntroScreen() {
       {bracket && qfMatchups.length > 0 && (
         <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 6 }}>
           <p className="h-label" style={{ marginBottom: 8 }}>
-            🏒 KVARTSFINALER — BÄST AV 5
+            <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}KVARTSFINALER — BÄST AV 5
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {qfMatchups.map((series) => {

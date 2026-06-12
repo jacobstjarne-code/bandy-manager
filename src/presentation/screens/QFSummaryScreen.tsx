@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { ScoreBlock } from '../components/primitives'
+import { Swords } from 'lucide-react'
 
 export function QFSummaryScreen() {
   const navigate = useNavigate()
@@ -52,7 +53,7 @@ export function QFSummaryScreen() {
       {/* ── QF-RESULTAT ── */}
       <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 6 }}>
         <p className="h-label" style={{ marginBottom: 8 }}>
-          🏒 KVARTSFINALER — RESULTAT
+          <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}KVARTSFINALER — RESULTAT
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           {qfMatchups.map((series, i) => {
