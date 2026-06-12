@@ -540,3 +540,8 @@ Ramen accepterar båda via `children`/`tabs`-prop utan omarbetning när besluten
 ### Illustrations-katalogen — öppen tills v1 är komplett
 **Beslut:** Listan hålls öppen tills v1-uppsättningen är levererad och inkopplad. DÄREFTER prövas låsning (reservprincipen). Domänregeln gäller redan nu: bild vid ögonblick, aldrig i vardagsytor. Köade behållningar från auditen: guld-trofé/SM-uppspel, kris-scen, lagfoto.
 - MatchLiveScreen wrappas i `<LedgerFrame phase="spela">`. Stamp: null under aktiv speltid, "PAUSSNACK →" vid halvtid, "TILL GRANSKNING →" vid fulltid. Stämpeln återanvänder befintliga navigate-/setShowHalftime-handlers — inga nya kontroller.
+
+### Emoji-domslut (Jacobs beslut 2026-06-12 — stänger 🟧#9:s domängräns)
+**(a) Innehåll BEHÅLLS:** emojis i klack-/supporterkommentarernas text (🎵📣📯 i matchCommentary) är röst, inte chrome.
+**(b) Emoji-ikonografi är UNDANTAG:** `EFTERKLANG_TYPE_ICON` och `PORTAL_BEATS.emoji` behålls — medvetna undantag, inte glömska. Svepet gäller övrig UI-chrome (→ Lucide per B3-domängränsen `8610fbb`).
+**(c) 🏒 förbjuden överallt** — fel sport. portalBeats → ⛸️ (Opus 06-12). Code: repo-grep `🏒`. Fable: K2 i B1-mocken.

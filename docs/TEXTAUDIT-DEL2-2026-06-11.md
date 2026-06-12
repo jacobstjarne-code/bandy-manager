@@ -27,7 +27,7 @@
 6. Påminnelse DEL 1: grep-svepet "tre poäng" (inkl. "Tre poäng i gåva" → "Två poäng i gåva", Jacobs beslut).
 
 ## §3 Jacob-kön
-1. **Emojis i textinnehåll och som ikonografi:** (a) klack-kommentarernas 🎵📣📯 — innehåll, min lutning behåll; (b) `EFTERKLANG_TYPE_ICON` (📅⚔️💸...) och `PORTAL_BEATS.emoji` — ren UI-ikonografi, bör in i emoji-svepets domslut; (c) **season_opener-beatet använder 🏒 — ISHOCKEYKLUBBA i ett bandyspel.** Oavsett emoji-beslut ska den bort.
+1. **Emojis — LÖST (Jacobs beslut 2026-06-12):** (a) innehåll behålls, (b) ikonografin (EFTERKLANG_TYPE_ICON, PORTAL_BEATS.emoji) är undantag från svepet, (c) 🏒 bort överallt — portalBeats → ⛸️ (fixat), Code grep:ar resten. Inskrivet i DESIGN-DECISIONS.
 2. **"Ingen har tagit poäng på deras is i år"** (preMatch, opp_home_unbeaten): guldstandard-citat, men triggern garanterar bara obesegrad (kryss = poäng tappade). Behåll som poetisk licens eller villkora? Jag lämnade den orörd.
 3. **"Bandypuls"** i `PLAYER_PRAISE_VARIANTS` — verkligt mediavarumärke (Aftonbladet). Spelets övriga medier är fiktiva. Byta till fiktivt namn eller behålla som verklighetsförankring?
 
