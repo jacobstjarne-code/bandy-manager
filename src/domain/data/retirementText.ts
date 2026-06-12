@@ -57,7 +57,7 @@ export const RETIREMENT_RESPONSES: Record<string, string[]> = {
   respect_continued: [
     '"Jag väljer att fortsätta. Det finns mer att ge."',
     '"En säsong till. Sedan ser vi."',
-    '"Det är ett svar du väntade dig kanske inte. Men det är mitt."',
+    '"Kanske inte svaret du väntade dig. Men det är mitt."',
   ],
   invite_continued: [
     '"En säsong till. Det låter rätt."',
@@ -87,8 +87,8 @@ export const FAREWELL_MATCH_ATMOSPHERE = [
 ]
 
 export const FAREWELL_MATCH_KLACK = [
-  'Tjugotvå år. Hela sin karriär här. Det glöms inte.',
+  'Hela karriären här. Det glöms inte.',
   'Hela klacken sjöng hans namn i halvtid. Han stod kvar och tittade på oss.',
   'Vi har sett honom göra mål mot var och en av de stora. Idag är den sista.',
-  'Sista handen från honom mot klacken. Vi var där första spelet i 04.',
+  'En sista vinkning mot klacken. Vi var där när han spelade sin första.',
 ]

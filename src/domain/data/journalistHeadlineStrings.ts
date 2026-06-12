@@ -19,29 +19,29 @@ function isSplit(c: Cell): c is SplitPool {
 
 const BIG_WIN_HEADLINES: Record<Persona, SimplePool> = {
   supportive: [
-    'Övertygande hemmaseger — laget hade dagen',
+    'Övertygande seger — laget hade dagen',
     'Klar seger när allt klaffade',
     '{opp} fick stryka på foten',
-    'Sex mål — hela truppen bidrog',
+    'Målrik kväll — hela truppen bidrog',
     'Solid afton från första avslag',
   ],
   sensationalist: [
     'Målfest mot {opp}',
     'Krossade {opp} totalt',
-    'Drömkväll — sex mål och förlösning',
-    'Sju–ett. Inget mer behöver sägas',
+    'Drömkväll — målfest och förlösning',
+    '{scoreline}. Inget mer behöver sägas',
     'Hela arenan reste sig — {opp} stod handfallna',
   ],
   analytical: [
-    'Hemmaplansfaktorn höll hela vägen',
-    'Tre mål i första kvarten avgjorde',
+    'Övertaget höll hela vägen',
+    'Tidiga mål avgjorde',
     'Skotteffektiviteten talade sitt språk',
     '{opp} höll inte tempot efter halvtid',
     'Truppdjup avgjorde när minuter rann ut',
   ],
   critical: [
     'Stor vinst — men resultatet döljer ojämnheter',
-    'Sex mål mot tabellsvagt motstånd',
+    'Storseger mot tabellsvagt motstånd',
     'Räkna inte med samma marginal nästa vecka',
     'Lätt motstånd. Ska bli intressant mot starkare lag',
     'Vann med besked, men mot vem',
@@ -51,24 +51,24 @@ const BIG_WIN_HEADLINES: Record<Persona, SimplePool> = {
 const WIN_HEADLINES: Record<Persona, SimplePool> = {
   supportive: [
     'Två poäng efter god kamp',
-    'Hemmaseger som betalde sig',
+    'Arbetsseger som betalde sig',
     'Ortens lag bröt isen',
     'Knapp men förtjänt seger',
     'Gick i mål när det krävdes',
   ],
   sensationalist: [
-    'Sen avgörare — två poäng till {opp}',
+    'Sen avgörare — två poäng mot {opp}',
     'Slutspurt fixade segern',
     'Drama in i sista sekunden',
-    'Vände matchen efter 0–1',
+    'Vände matchen efter tidigt underläge',
     'Räddade hem segern med minuter kvar',
   ],
   analytical: [
     'Disciplinerad andra halvlek räckte',
-    'Effektiviteten avgjorde — fyra skott på mål, två i kassen',
+    'Effektiviteten avgjorde matchen',
     'Kontringsspel gav resultat',
     'Försvarslinjen stod pall vid tryck',
-    'Hemmastatistiken håller — seger nummer fyra',
+    'Formkurvan håller — ny seger',
   ],
   critical: [
     'Vann trots ojämn insats — mer krävs framöver',
@@ -85,13 +85,13 @@ const DRAW_HEADLINES: Record<Persona, SimplePool> = {
     'Delade poäng efter god match',
     'Oavgjort som inte ska skämmas för',
     'En poäng är en poäng',
-    'Slutminutsmål gav den välbehövda poängen',
+    'En poäng som satt långt inne',
   ],
   sensationalist: [
-    'Drama till sista sekund — slutade 2–2',
-    'Vände 0–2 till oavgjort',
-    'Hjärtstillestånd på läktaren — kvitterade i 89:e',
-    'Tappade ledning — men räddade en poäng',
+    'Drama till sista sekund — slutade {scoreline}',
+    'Kämpade sig till poängdelning',
+    'Hjärtstillestånd på läktaren in i det sista',
+    'Nära två poäng — fick nöja sig med en',
     'Vild slutkvart — båda lagen jagade segern',
   ],
   analytical: [
@@ -99,14 +99,14 @@ const DRAW_HEADLINES: Record<Persona, SimplePool> = {
     'Statistiken jämn — resultatet följer',
     'En poäng som speglar matchen — ingen förtjänade mer',
     'Få farligheter — oavgjort är logiskt',
-    'Läktaren såg defensivt spel — siffran bekräftar',
+    'Jämnt över nittio minuter — siffran bekräftar',
   ],
   critical: [
     'En poäng räcker inte i längden',
     'Oavgjort mot bottenlag — frågetecken kvarstår',
     'En tappad poäng — så ska det räknas',
     'Slätstruken poäng — inget byggs av såna här matcher',
-    'Hemma och oavgjort — inte vad som ska levereras',
+    'Poängdelning — inte vad som ska levereras',
   ],
 }
 
@@ -121,20 +121,20 @@ const LOSS_HEADLINES: Record<Persona, Cell> = {
   sensationalist: {
     fresh: [
       'Mörk eftermiddag — föll mot {opp}',
-      'Sista-minuten-mål sänkte hemmaplanen',
-      'Bortaplanen blev en mardröm',
-      'Tappade ledning — och poäng',
+      'Föll tungt när det avgjordes',
+      'Kvällen blev en mardröm',
+      'Tomhänta efter nittio minuter',
       'Bittert nederlag i nyckelmatch',
     ],
     prevLoss: [
-      'Andra raka — mörkret tätnar',
+      'Ännu en rak förlust — mörkret tätnar',
       'Nedförsbacke utan broms — förlust på förlust',
-      'Tre raka utan poäng — det här blir en kris',
+      'Förlusterna staplas — det här börjar likna kris',
     ],
   },
   analytical: {
     fresh: [
-      'Skotteffektiviteten räckte inte — sex skott på mål, ett mål',
+      'Skotteffektiviteten räckte inte den här gången',
       'Mittfältsspelet bröt samman efter halvtid',
       'För få farligheter framåt — för många bakåt',
       '{opp} kontrollerade tempot från första kvarten',
@@ -142,7 +142,7 @@ const LOSS_HEADLINES: Record<Persona, Cell> = {
     ],
     prevLoss: [
       'Mönstret upprepar sig — andra halvlek faller samman igen',
-      'Tredje förlusten på rad bekräftar formfrågan',
+      'Ny förlust i raden — formfrågan bekräftad',
       'Samma svaghet, samma resultat — något måste justeras',
     ],
   },
@@ -155,7 +155,7 @@ const LOSS_HEADLINES: Record<Persona, Cell> = {
       'Hade kunnat — men gjorde det inte',
     ],
     prevLoss: [
-      'Inte ens lärdomar denna gång — andra raka utan svar',
+      'Inte ens lärdomar denna gång — ännu en förlust utan svar',
       'Smärtsamt återfall i samma mönster',
       'Svit utan lösningar — ledning behöver förklara',
     ],
@@ -172,30 +172,30 @@ const BIG_LOSS_HEADLINES: Record<Persona, Cell> = {
   ],
   sensationalist: {
     fresh: [
-      'Kollapsen — sönderspelade på hemmaplan',
-      'Mardrömskväll — sex mål bakåt',
-      'Förödmjukade av {opp} — förnedring framför hemmapubliken',
+      'Kollapsen — sönderspelade och svarslösa',
+      'Mardrömskväll från start till slut',
+      'Förödmjukade av {opp} — förnedring inför publik',
       'Skämmig kväll — laget aldrig med',
       'Total kollaps — slutade {scoreline}',
     ],
     prevLoss: [
-      'Bottennapp på bottennapp — tre raka och i fritt fall',
-      'Mörkret blev mörkare — andra storförlusten i rad',
-      'Krisen är ett faktum — fyra raka utan poäng',
+      'Bottennapp på bottennapp — fritt fall nu',
+      'Mörkret blev mörkare — storförlust ovanpå förlust',
+      'Krisen är ett faktum — poängen uteblir',
     ],
   },
   analytical: {
     fresh: [
       'Lagdelarna föll isär efter andra baklängesmålet',
-      'Defensivstatistik säsongens sämsta',
-      'Bortaplanen blev övermäktig redan i första halvlek',
+      'Defensiven föll ihop fullständigt',
+      '{opp} övermäktiga redan i första halvlek',
       'Mittfältsspelet upphörde att fungera efter paus',
-      'Truppdjupet räckte inte när skadeläget tärde',
+      'Truppdjupet räckte inte mot det här',
     ],
     prevLoss: [
-      'Strukturella problem — bekräftade i andra storförlusten',
+      'Strukturella problem — den här matchen bekräftade dem',
       'Datan pekar otvetydigt mot grundläggande lagbalansfråga',
-      'Tredje matchen i rad där samma mönster återupprepas',
+      'Samma mönster upprepas — match efter match',
     ],
   },
   critical: {
@@ -208,7 +208,7 @@ const BIG_LOSS_HEADLINES: Record<Persona, Cell> = {
     ],
     prevLoss: [
       'Inte längre fråga om form — fråga om förmåga',
-      'Tredje raka — och varje gång värre. Något är fundamentalt fel',
+      'Förlust igen — och varje gång värre. Något är fundamentalt fel',
       'Snart obekvämt att fortsätta tala om enskilda matcher',
     ],
   },

@@ -662,7 +662,7 @@ export const useGameStore = create<GameState>()(
               date: game.currentDate,
               type: InboxItemType.KommunBidrag,
               title: `${pol.name} på besök`,
-              body: `${pol.name} tack at ja till inbjudan och såg matchen. "Imponerande engagemang från publiken." Relationen stärktes.`,
+              body: `${pol.name} tackade ja till inbjudan och såg matchen. "Imponerande engagemang från publiken." Relationen stärktes.`,
               isRead: false,
             }, ...game.inbox],
           }})

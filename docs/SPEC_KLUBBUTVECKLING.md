@@ -1,5 +1,7 @@
 # Klubbutveckling — säsong 2 och framåt
 
+> **REVISION 2026-06-10 — strävan korrigerad. Gällande dokument: `docs/B1-SPRINTORDNING-KLUBBUTVECKLING-2026-06-10.md`.** Hallframningen nedan är vänd: (1) konstis är *baseline*, inte ett bygge — ta bort som projekt i §2. (2) Lägg in **träningshall** som accepterat mellansteg i §2 (ungdom/åretrunt-träning, ingen publikdöden). (3) Matchhallen är **inte** slutmålet/drömmen — §4 vänds: en laddad gaffel med publikdöden-pris, effekt åt båda håll, aldrig ett mål. Mekaniken nedan (sponsorer, löneeskalering, säsongsrytm, verksamhetsbeslut) gäller fortfarande.
+
 Kärnproblem: säsong 1 och säsong 5 känns likadana ekonomiskt. Du tjänar samma pengar, har samma möjligheter, fattar samma typ av beslut. Klubben UTVECKLAS inte.
 
 Kompletterar `docs/THE_BOMB.md` som täcker narrativ, atmosfär, korsreferenser och känslomässiga höjdpunkter. Tillsammans definierar de två dokumenten vad som gör spelet värt att spela i 5+ säsonger.

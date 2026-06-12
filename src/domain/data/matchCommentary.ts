@@ -37,7 +37,7 @@ export const commentary = {
     "Det är slut! {score} — {team} tar med sig {result} hem.",
     "Domaren blåser. Matchen är över. {score} efter 90 rafflande minuter.",
     "SLUT! En dramatisk match är nu färdigspelad. {score}.",
-    "Det var det hela! {score}. Spelarna skakar näve efter en tuff match.",
+    "Det var det hela! {score}. Spelarna skakar hand efter en tuff match.",
     "FULLTID! En match som gav publiken det de kom för. {score}.",
     "Domaren blåser av. Det är klart. {score}. Spelarna tackar varandra.",
     "Slutspelat. {team} kan andas ut. {score}. Nu är det färdigt.",
@@ -58,13 +58,13 @@ export const commentary = {
   ],
 
   goalOpener: [
-    "1–0! Dagens första mål görs av {player} för {team}!",
+    "{score}! Dagens första mål görs av {player} för {team}!",
     "Nollan är bruten! {player} sätter dit det första målet! {score}!",
     "LEDNING! {player} levererar första målet med ett vasst avslut! {score}!",
     "DAGENS FÖRSTA! {player} bryter dödläget! {score}!",
     "Och så är det igång på riktigt! {player} öppnar målskyttet! {score}!",
     "{player} för {team} — nollan är borta! {score}!",
-    "1–0! Det första målet är alltid speciellt — {player} signerade det!",
+    "{score}! Det första målet är alltid speciellt — {player} signerade det!",
     "MÅÅÅL! {player} bryter mark! Dagens första! {score}!",
   ],
   goalLead: [
@@ -141,7 +141,7 @@ export const commentary = {
     "OOOOUUH! Bollen går över ribban. En bra chans, ändå.",
     "Skott strax utanför stolpen. Nära nu för {team}.",
     "Avslut som går precis utanför. Vi är centimetrar från ett mål.",
-    "I STOLPEN! Bollen studsar ut. {team} hade tur.",
+    "I STOLPEN! Bollen studsar ut. Så nära det kan bli.",
     "Inte riktigt nära med det avslutet. Målvakten får börja om.",
     "I RIBBAN! Frustrerat nu i {team}.",
     "Bollen seglar lååååångt över. Inte spelarens bästa dag, direkt.",
@@ -332,7 +332,7 @@ export const commentary = {
   final_kickoff: [
     "SM-FINALEN! Det här är vad alla har väntat på. Hela bandysverige tittar.",
     "Domaren blåser igång SM-finalen! Vilken stämning!",
-    "Det största ögonblicket i svensk idrott. SM-final i bandy. Avslag!",
+    "En av de stora dagarna i svensk idrott. SM-final i bandy. Avslag!",
   ],
 
   semifinal_goal: [
@@ -394,7 +394,7 @@ export const commentary = {
   cup_final_kickoff: [
     "Domaren blåser. {team} mot {opponent}. Cupfinalen.",
     "Avslag. Bollnäs. En match. Inget omspel.",
-    "Om 90 minuter har pokalen hittat hem.",
+    "Om 90 minuter har pokalen en ägare.",
     "Cupfinal. Två lag. En match. Vinnaren tar allt.",
   ],
 
@@ -407,7 +407,7 @@ export const commentary = {
 
   cup_final_fullTime_win: [
     "Slutsignal. {team} tar hem pokalen. {score}.",
-    "Det är klart. {team} vinner cupen. Inte den främsta pokalen — men den första vi vunnit på länge.",
+    "Det är klart. {team} vinner cupen. Inte den främsta pokalen — men en pokal.",
     "Domaren blåser. {team} är cupmästare. {score}.",
     "Slutspelat. Pokalen är vår. Lite blank. Lite lätt.",
   ],
@@ -601,7 +601,7 @@ export const commentary = {
 
   context_season_opener: [
     'Säsongspremiär. Ny termos, nya förhoppningar, samma gamla läktare.',
-    'Första matchen. Alla lag är lika bra i september. Sen visar verkligheten sig.',
+    'Första matchen. Alla lag är lika bra i premiären. Sen visar verkligheten sig.',
     'Premiärnerverna märks. Ingen har kommit in i säsongsrytmen ännu.',
   ],
 
@@ -638,9 +638,9 @@ export const commentary = {
   // ── Spelarkontext ─────────────────────────────────────────────────────────
 
   context_player_hot_streak: [
-    '{player} igen! Tredje målet på två matcher. Han kan inte sluta göra mål.',
+    '{player} igen! Målen bara kommer för honom just nu.',
     '{player} — den hetaste spelaren i serien just nu.',
-    'Ingen kan stoppa {player}. Det är fjärde omgången i rad med poäng.',
+    'Ingen kan stoppa {player}. Omgång efter omgång levererar han.',
     '{player} är i en zon. Allt han rör sitter.',
   ],
 
@@ -729,12 +729,12 @@ export const commentary = {
     'Fåglarna har slutat sjunga. Det är bara bandy nu.',
     'Vaktmästaren nickar nöjt från sin bänk. Isen håller.',
     'Ljuset från strålkastarna glittrar i isen. Det är vackert.',
-    'Kosan luktar choklad och kyla. Äkta bandykväll.',
+    'Kåsan luktar choklad och kyla. Äkta bandykväll.',
   ],
 
   offside_call: [
-    'Offside! Flaggan går upp. {team} ville ha frispark men domaren säger nej.',
-    'Linjedomaren flaggar. Offside. {player} var steget för tidigt.',
+    'Offside. Anfallet bryts och domaren pekar åt andra hållet.',
+    'Offside. {player} var steget för tidigt.',
     'Offside. Bra bevakning av {opponent}. Backlinjen sitter.',
     'Anfallet bryts. Offside — men det var en fin rörelse av {player}.',
   ],
@@ -761,7 +761,7 @@ export const commentary = {
   ],
 
   referee_inconsistent: [
-    'Domaren blåser FÖR? Den verkade ren. Spelarna förstår inte.',
+    'Domaren blåser? Den verkade ren. Spelarna förstår inte.',
     'Ibland pipa, ibland inte. Inkonsekvent linje idag.',
     'Spelarna vet inte vad som gäller. Domarens linje är svår att läsa.',
   ],
@@ -923,7 +923,7 @@ export function getTraitCommentary(
     ],
     ledare: [
       `Kaptenen kliver fram! ${name} tar ansvar när det behövs.`,
-      `${name} leder med handling, inte bara armband.`,
+      `${name} leder med handling, inte bara bindel.`,
       `Ledaren ${name} visar att ord inte räcker — det krävs mål.`,
     ],
   }
@@ -935,7 +935,7 @@ export function getTraitCommentary(
       `${name} med en tackling ingen förstår. Domaren blåser. Solklart.`,
       `Karaktäristiskt ${name}. Genialitet och utvisning samma kvart.`,
       `${name} ut. Han skrattar. Det är värre.`,
-      `Tio minuter för ${name}. Han kommer tillbaka och göra något galet ändå.`,
+      `Tio minuter för ${name}. Han kommer tillbaka och gör något galet ändå.`,
     ],
     hungrig: [
       `Frustrationen kokar över. ${name} åker ut efter en onödig tackling.`,
@@ -943,7 +943,7 @@ export function getTraitCommentary(
       `10 minuter. ${name} ville för mycket — det är sällan bra i bandy.`,
       `${name} kastar sig in i en duell han inte kunde vinna. Tio minuter att fundera på det.`,
       `Det syntes komma. ${name} har gått på överväxel hela halvleken. Domaren hade fått nog.`,
-      `${name} står upp i bänken med handskarna i sargen. För hård vilja, fel ögonblick.`,
+      `${name} slår klubban i sargen på väg ut. För hård vilja, fel ögonblick.`,
     ],
     veteran: [
       `${name} borde veta bättre. Erfarenheten räckte inte den här gången.`,

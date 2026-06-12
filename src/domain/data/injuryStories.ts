@@ -13,24 +13,24 @@ export const FAMILY_CONTEXTS: string[] = [
 
 export const INJURY_CONTEXTS: Record<string, string[]> = {
   knä: [
-    'Tog smällen sent i onsdagens träning. Ortopeden säger ledbandet är stukat men hel.',
-    'Vred till knäet under en långsam pass. Ibland är det små rörelser som tar längst tid.',
+    'Tog smällen sent i onsdagens träning. Ortopeden säger att ledbandet är sträckt men helt.',
+    'Vred till knäet under ett lugnt träningspass. Ibland är det små rörelser som tar längst tid.',
     'Kraschade i en hörnsituation mot motståndaren. MR:n visade ödem men inget allvarligt.',
   ],
   axel: [
-    'Tacklas mot sargen. Axeln gick ur led men sitter på plats efter sjukhusbesöket.',
+    'Tacklades mot sargen. Axeln gick ur led men sitter på plats efter sjukhusbesöket.',
     'Klarade av matchen men kunde inte lyfta armen dagen efter. Röntgen nästa vecka.',
-    'Föll olyckligt i mittzonen. Rotatorkuffen är drabbad — kan dra ut på tiden.',
+    'Föll olyckligt på mittplan. Rotatorkuffen är drabbad — kan dra ut på tiden.',
   ],
   vrist: [
     'Landade snett efter ett hopp i hörnsituationen. Vristen är svullen men röntgen visade inget brutet.',
-    'Halka på is — klassiskt. Ligament sträckt, inte sönder.',
-    'Trampade på en back och vred om foten. Stödja men inte belasta är ordningen.',
+    'Skäret släppte i en kurva — klassiskt. Ligament sträckt, inte sönder.',
+    'Fick en klubba under skridskon och vred om foten. Stödja, inte belasta — det är ordningen.',
   ],
   huvud: [
     'Fick en armbåge mot tinningen. Lätt hjärnskakning — vila och mörkrum.',
     'Kollision med målvakten. Protokollet är strängt: inga träningar innan läkaren godkänner.',
-    'Svimlade en sekund efter en närkamp. Allt är okej men försiktighetsprincipen gäller.',
+    'Var borta en sekund efter en närkamp. Allt är okej men försiktighetsprincipen gäller.',
   ],
   rygg: [
     'Ryggskott under uppvärmningen. Stelt men inget strukturellt skadat.',
@@ -38,9 +38,9 @@ export const INJURY_CONTEXTS: Record<string, string[]> = {
     'Gammal ryggproblematik blossade upp. Behandling och lätta övningar.',
   ],
   hamstring: [
-    'Kände ett hugg i sprinthastighet. Klassisk hamstringsskada — veckors vila.',
-    'Körde för hårt i det sista sprintpasset. Muskelfiber sönder.',
-    'Magkände att det var fel men försökte ändå. Nu är det stopp.',
+    'Kände ett hugg i full sprint. Klassisk hamstringsskada — veckors vila.',
+    'Körde för hårt i sista sprintpasset. Fibrer av.',
+    'Kände på sig att det var fel men försökte ändå. Nu är det stopp.',
   ],
 }
 

@@ -310,6 +310,20 @@ Batch 3 levererad med dubbel-mönster ("X men Y", "X fast Y") trots att Lärdom 
 
 ---
 
+### #8 — Tvåpoängssystemet + "dela på poängen" (2026-06-11, Jacobs beslut)
+
+Spelet använder bandyns 2-poängssystem (vinst 2, oavgjort 1, förlust 0) sedan 2026-05-25. ALL text som nämner poängsumma för seger skriver "två poäng" — aldrig "tre poäng" (fotbollsreflex). "En poäng när vi behövde två", inte "behövde tre".
+
+Godkänd trop: **"dela på poängen"** — äkta bandyspråk eftersom oavgjort ger en poäng var ("delade poäng", "poängdelning", "en delad pott"). Använd gärna för kryss — den bär både fakta och ton.
+
+### #9 — Poolsträngar får inte hitta på fakta (2026-06-11, textauditen)
+
+En sträng i en slumpad pool får bara hävda det som (a) triggern garanterar, eller (b) interpoleras ur data via token. Allt annat är påhittad fakta som förr eller senare motsäger skärmen bredvid.
+
+Felexempel ur auditen: "Sju–ett. Inget mer behöver sägas" (resultatet var något annat) · "Hörde du om Henriksson?" (sålda spelaren hette annat) · "Silvret sitter i" (B-state = måluppfyllelse, inte silver) · "Tjugotvå år. Hela sin karriär här" (spelarens karriär okänd) · "Tre raka utan poäng" (flaggan vet bara ≥1).
+
+Testet per sträng: *kan detta vara falskt i något save där poolen triggas?* Om ja — generalisera, eller begär en token. Specificitet är värdefull ("konkret bild"-regeln står fast) — men den ska vara UPPDIKTAD VARDAG (altanen, termosen, Konsum) eller DATABACKAD ({score}, {lastName}, {totalGoals}), aldrig påhittad spelfakta.
+
 ## När den här filen uppdateras
 
 - Vid varje feedback-runda från Jacob där han pekar ut nytt mönster

@@ -86,7 +86,7 @@ export const PERSONALITY_ACCEPTANCE: Record<PersonalityType, string[]> = {
 export const DREAM_CLUB_MAGIC: string[] = [
   'Han har väntat på det här samtalet. Det märks i tystnaden innan han svarar.',
   'Han säger "tack" tre gånger på två minuter. Det är inte tränaren han tackar.',
-  'Han packade redan när nyheten kom. Han hade ridit på det.',
+  'Han packade redan när nyheten kom. Han hade anat det länge.',
 ]
 
 /**
@@ -108,7 +108,7 @@ export const RIVALRY_WARNING_PER_INTENSITY: Record<RivalryIntensity, string[]> =
   ],
   3: [
     'Det är den klubben. Klacken kommer inte att glömma.',
-    'Banderoller blir måleri i veckan. Han blir ihågkommen.',
+    'Det målas banderoller i veckan. Han blir ihågkommen.',
     'Det stannar i klubben i tio år. Sture pratar fortfarande om Lindgren-affären 02.',
   ],
 }
@@ -128,7 +128,7 @@ export const PLAYER_REACTION_RIVAL_SALE: string[] = [
  * kafferumssystemet plockar från denna pool nästa omgång.
  */
 export const RIVAL_SALE_KAFFERUM: string[] = [
-  '"Hörde du om Henriksson?" "Hörde det." Sen drack de kaffe.',
+  '"Hörde du?" "Hörde det." Sen drack de kaffe.',
   'Birger sa inget. Han stod bara och rörde i koppen i tio minuter.',
   'Magnus sa "det är affärer". Ingen trodde honom.',
   'Tre gubbar gick hem tidigare än vanligt. Det är väl vad det är.',
@@ -153,7 +153,7 @@ export const RIVAL_SALE_KLACK: string[] = [
  * att någon snusar på vår spelare. Oro under ytan, ingen erkänner den.
  */
 export const INCOMING_BID_KAFFERUM: string[] = [
-  '"Någon har hört av sig om Lundberg." "Jag vet." Sen blev det tyst en stund.',
+  '"Någon har hört av sig om honom." "Jag vet." Sen blev det tyst en stund.',
   'Birger sa att det bara är prat. Han sa det två gånger.',
   'Ingen vet hur mycket de bjudit. Alla har en siffra ändå.',
   '"De får inte honom." "Det bestämmer inte vi." Kaffet kallnade.',

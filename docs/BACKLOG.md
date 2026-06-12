@@ -25,6 +25,23 @@
 
 ## A. AKTIVA SPRINTAR (Code arbetar eller väntar Code-start)
 
+### FÖRSONINGSSPRINTEN — AKTIV (Design-rundan landade 2026-06-11)
+
+Arbetsorder: `docs/RELA-FORSONINGSSPRINT-2026-06-11.md` (Fable). Domen (`docs/DESIGNSLUTSATSER-STEG3-2026-06-11.md`): designen är *bevisat rätt* — städsprint, inte omdesign. Konsoliderad audit: `docs/DESIGNOMGANGEN-KOMPLETT-2026-06-11.md` (16 kap). Systempatch ratificerad av Jacob 2026-06-11.
+
+- **§1 sync** — 6 systempatch-filer in i `design-system/` (DESIGN-DECISIONS, colors_and_type.css, README m. hårda regler 11–15, 3 kanon-kort). Före all kod. Code committar.
+- **§2 A1 wiring-redovisning — KORTAD (Jacobs beslut 2026-06-11).** Dubbelkromen fixad (`b4b30bc`), ytorna ersätts ändå — full arkeologi avförd. Kvar: EN redovisningsfråga i nästa Code-session-prompt: "vilken commit påstods wira LedgerFrame-Förbered, och vad rörde den faktiskt?" Felmoden namngiven (INT-2), spaken beslutad (commit-hash + skärmdump per fix).
+- **§3 fix-ordning** 🟥→🟧→🟨 — **= D3 inline-stratum-migreringen** (pill-CTA→.btn-cta, positionLabel, emoji-svep, tomma kort, delade primitiver, LED vi/dom) med ratificerade regler. Mest standard-Code.
+- **§4 Opus-lott — KLAR 2026-06-11:** notisdiet + `expiresRound` + kondition-0 → `CODE_UPPDRAG_NOTISDIET_EXPIRES_2026-06-11.md` · story-slot-rotation verifierad (FELATTRIBUTION: rotationen aktiv; repetitionen var coffee_room_card-secondaryts konstanta preview + scene-autotrigg, den senare fixad `97fa59d`; fix-relä för preview + stale-guard skickat) · copy-pooler ('trött' ×5 personligheter, årsbokens 7 moment-typer, notisdiet-konsekvenser) + frivillig-moral BESLUT B (moral följer puls, ingen knapp) → `CODE_UPPDRAG_FORSONING_OPUS_TEXT_2026-06-11.md`.
+- **§5 verifiering** — Jacob fotar om, Design re-auditar (grön/kvarstår), 5 nya hårda regler in i `_adherence`-lint.
+
+**Modellallokering (Fable, bekräftad):** standard-Code ~70% (svepen är entydiga efter systempatchen), Opus 3 punkter (A1/dubbelkrom-arkeologi · LedgerFrame-children-wiring · decision-card-konsolidering), INTE Fable-i-Code (designomdömet är redan utövat). Riktiga spaken: commit-hash + skärmdump per fix — felmoden var processdisciplin (A1), inte modellstyrka.
+
+**Fem designförbättringar (DESIGNSLUTSATSER §II — post-försoning, Fables ordning §IV):** (1) typografiska scenen = tredje ceremoninivån (2) Tal & enheter (3) severity-skalan (4) illustrations-katalogen låst ~10 + STÄNGD (5) konsekvensraden = förståelsedjupet, **överlappar B1:s D1**. #2+#3 är billiga/skrivbara härnäst. **Rör INTE (§III):** fler kortvarianter, mörkt läge, mer animation, rösten.
+
+**B1** följer EFTER försoningen (som settlar designen B1:s UI ska stå på). Datamodellen (B-tabellen) är klar att köra i valfri Code-glugg — ingen design-grind.
+
+
 **Samlat Code-uppdrag:** `docs/CODE_SAMLAT_2026-05-21.md` — allt byggbart nu, buntat efter backlog-rensning 2026-05-21. Princip: ingen byggtids-begränsning, så allt som är tillräckligt specat byggs nu — bara det som genuint väntar på Design eller Opus-text parkeras.
 
 | # | Paket | Spec | Status |
@@ -41,7 +58,7 @@
 
 | # | Vad | Spec | Beroenden |
 |---|---|---|---|
-| B1 | **Klubbutvecklingspaketet (Riktning 1)** — facility-träd, säsongsplanering, löneeskalering, kontextuella sponsorer, halvårsrapport, halldebatt som flersäsongsprocess. **Inkluderar i scope:** C-T3 (akademi-flik), C-T4 (First Cap-event), C-T5 (externa akademier scoutbara), C-T6 (akademi-skolsamarbete). | `docs/SPEC_KLUBBUTVECKLING.md` | **Startar de facto via P1 (annandan).** Resten efter playtest. |
+| B1 | **Klubbutvecklingspaketet (Riktning 1)** — facility-träd, säsongsplanering, löneeskalering, kontextuella sponsorer, halvårsrapport, halldebatt som flersäsongsprocess. **Inkluderar i scope:** C-T3 (akademi-flik), C-T4 (First Cap-event), C-T5 (externa akademier scoutbara), C-T6 (akademi-skolsamarbete). | `docs/SPEC_KLUBBUTVECKLING.md` | **Strävan LÅST 2026-06-10** (gällande dok: `B1-SPRINTORDNING-KLUBBUTVECKLING-2026-06-10.md`): beständighet av det riktiga utomhusspelet — full läktare, akademi, klubben består som sig själv; hallen = laddad gaffel, INTE mål; konstis = baseline; träningshall = accepterat steg. **Beroende-uppdelat (INTE ”efter playtest”):** (0) SPEC-kirurgi §2/§4 = Opus, KLAR via revisionsnot 2026-06-10. (1) facility-trädets domänmodell = INGET beroende, redo för Code (relay finns i B1-doken). (2) PreSeason-beslutets UI + resten = bygg i tur efter (1), INGEN extern grind. Erik+Jacob har redan spelat igenom — den externa playtest-signalen finns att mina, inte en framtida grind. Design-mockups för nya planeringsytan = hjälp, inte grind. **Design-brief skriven:** `design-system/briefs/DESIGN-BRIEF-B1-KLUBBUTVECKLING-YTOR-2026-06-11.md` (utbyggnadsträd · PreSeason-valet · matchhall-gaffeln + konsekvensraden #5). Trigger: Design mockar när försoningen satt systemet; specen ligger klar. **PLACERING (Opus-svar till Fable 2026-06-11):** trädet BOR i Orten — ersätter den komprimerade Anläggning-raden (chevron-expand per recuten) och öppnas som egen yta därifrån, INGEN ny flik; OrtenMap-nodens deep-link pekar dit. TVÅ ingångar, ETT träd: PreSeason-valet = samma träd i VÄLJ-läge (där beslutet sker), Orten = BETRAKTA-läge (progress, max ett aktivt bygge, dependencies). Matchhall-noden öppnar gaffel-processen, aldrig direktköp. (3) sprint 2–5 = i tur efter (1). |
 
 *(B2 + B4 verifierade mot kod 2026-05-21 → flyttade till A som P1-P3. B2 ej byggd; B4 design-del ej gjord sedan auditen.)*
 
@@ -146,6 +163,17 @@ Mest konkreta buggar Code kan ta direkt (ej Design). Opus hann EJ lokalisera all
 
 Tomt. Alla rester levererade. Vidare THE_BOMB-arbete väntar nya design-rundor.
 
+### Integration-haltning (genomspelning Jacob+Erik 2026-06-10)
+
+Genomspelningen gav en STRUKTURELL signal, inte en känslo-signal — spelet avbröts av buggar + final-krasch + osatt design, och känslan går inte att läsa förrän designen sitter OCH spelet inte avbryts. Två fynd, coarse (Jacob kan inte specificera mer):
+
+| # | Fynd | Vad det är | Approach |
+|---|---|---|---|
+| INT-1 | **De stora bågarna saknas.** | = B1 lång-loopen. Genomspelningen bekräftar auditen på känslo-nivå: ingen dragning framåt över säsonger. | Bygg B1 (se B-tabellen). |
+| INT-2 | **En hel del system haltar i sin integration.** | Byggda system som inte wirar/koherar — samma klass som halvtidsrapporten (byggd, aldrig anropad, fixad `6a9dc70`). | Integrations-/renderingsyte-inventering: för varje system som producerar spelarvänt innehåll, verifiera att det avfyrar MED RÄTT DATA och når skärmen — inte bara att en call-site finns. Trigger: parallellt med B1 / efter Design-rundan. |
+
+**Känslan är inte en grind på bygget — den är valideringen efter.** Ordning: buggar borta (mestadels klart) + design satt (Design-rundan) + stora bågen byggd (B1) + integration lagad → ren oavbruten genomspelning → DÅ känslan som säger om strävan landar.
+
 ---
 
 ## D. PARKERADE (kräver beslut, omtag eller naturlig trigger)
@@ -156,6 +184,8 @@ Tomt. Alla rester levererade. Vidare THE_BOMB-arbete väntar nya design-rundor.
 | A1.5++ | **Rotorsak: varför genererar matchSimulator/matchEngine Goal/RedCard/Save-events med tomt `commentary`?** A1.5+ fixar UI-symptomet med fallback-pipeline. Permanent fix vid källan så fallback i `deriveEventText` blir död kod istället för kritisk grind. | Väntar på rotorsaksutredning av text-generatorn | **→ AKTIVERAD i CODE_SAMLAT P5 (2026-05-21).** Inte längre "vänta på playtest" — utreds nu. |
 | C-N1 | ~~NU-fliken konstruktivt innehåll vid stabilt läge~~ | **LEVERERAD `d608cee` 2026-06-01.** Fem stiltje-lager ersätter "Allt är lugnt"-fallback: stillness-beat + veckans rytm + stämningskurva + mikrohändelser + heritage. `stillnessService.ts` + `StillnessSection.tsx`. Stämningskurva läser befintlig teamFitnessHistory (ej nytt teamPulseHistory). Heritage återanvänder findActiveAnniversaries. | — |
 | D-ST1 | **seasonalTone → design tokens.** B11 enade seasonalTone:s TIDSBAS med kalendern, men tonen har fortfarande egna hex-värden vid sidan av token-systemet. Ska tonen bli riktiga design tokens? Token-arkitekturfråga. | Token-systemets djup behöver bestämmas | Design-session lördag |
+| D3 | **Inline-stratum-migrering** (typroll-reimplementering → kanoniska roller: label/eyebrow/quote/radie/btn). Vakten (ds-guard ratchet `4e1a6c5`) + kartan (`AUDIT-INLINE-STRATUM-KARTA-2026-06-10.md`) finns; migreringen driver ratchet mot noll. | Designs visuella-konsekvens-audit kan ändra scope (de två system-klasserna: tom struktur, färg utan legend) | **Trigger: Design-auditen landar → steg-3-regler.** Kör migreringen i ETT pass då. Bulk (icke-system-klass-filer) kan börja även innan — inte hela paketet gated. |
+| D4 | **Portal-orienteringen / första-gången-rampen** (onboarding). Brief skriven: `design-system/briefs/DESIGN-BRIEF-PORTAL-ORIENTERING-2026-06-10.md`. | Design-uppgift (rendered ramp); Design upptagen med nuvarande audit | **Trigger: Design fri efter nuvarande audit.** Djupet gated på målbeslut (a/b/c); formen kan Design föreslå oavsett. |
 
 ---
 

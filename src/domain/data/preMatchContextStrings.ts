@@ -75,7 +75,7 @@ const POOLS: Record<PreMatchTrigger, string[]> = {
   table_above: [
     '{n} poäng upp till {posword}.',
     '{posword} är inom räckhåll.',
-    '{n} poäng från {posword} plats.',
+    '{n} poäng från {posword}.',
     '{posword} ligger {n} poäng bort.',
   ],
   table_below: [
@@ -85,19 +85,19 @@ const POOLS: Record<PreMatchTrigger, string[]> = {
     '{n} poängs marginal ner till nedflyttning.',
   ],
   opp_hot: [
-    '{opp} har vunnit fyra raka.',
+    '{opp} har vunnit det mesta på sistone.',
     '{opp} kommer i form.',
-    '{opp} har inte tappat poäng på en månad.',
+    '{opp} har knappt tappat poäng på en månad.',
     '{opp} är på gång. Det vet alla utom dem själva.',
   ],
   opp_home_unbeaten: [
     '{opp} har inte förlorat hemma på {n} matcher.',
-    'Hemma har {opp} inte tappat poäng den här säsongen.',
+    'Hemma har {opp} inte förlorat på länge.',
     '{n} raka hemma utan förlust för {opp}.',
     'Ingen har tagit poäng på deras is i år.',
   ],
   opp_cold: [
-    '{opp} har förlorat fyra av fem.',
+    '{opp} har förlorat mer än de vunnit på sistone.',
     '{opp} är skakade.',
     '{opp} kommer hit slitna.',
     '{opp} har gått sönder någonstans i höst.',
