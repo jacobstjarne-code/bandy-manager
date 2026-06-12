@@ -1,11 +1,6 @@
 import { ClubExpectation } from '../enums'
-
-function ordinal(n: number): string {
-  if (n === 1) return '1:a'
-  if (n === 2) return '2:a'
-  return `${n}:e`
-}
 import type { StandingRow } from '../entities/SaveGame'
+import { ordinal } from '../utils/numberFormat'
 import type { Club } from '../entities/Club'
 
 export interface BoardEvaluation {

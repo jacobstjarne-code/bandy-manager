@@ -5,6 +5,7 @@ import { ClubExpectation, FixtureStatus, MatchEventType, PlayoffRound } from '..
 import { getRivalry } from '../data/rivalries'
 import { summarizeSignature } from './seasonSignatureService'
 import { seededPick, fixtureSeed } from '../utils/random'
+import { ordinal } from '../utils/numberFormat'
 
 function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
   const managedClubId = game.managedClubId
@@ -226,12 +227,6 @@ function computeKeyMoments(
     .slice(0, 5)
     .sort((a, b) => a.round - b.round)
     .map(({ score: _s, ...rest }) => rest)
-}
-
-function ordinal(n: number): string {
-  if (n === 1) return '1:a'
-  if (n === 2) return '2:a'
-  return `${n}:e`
 }
 
 export type { SeasonSummary }

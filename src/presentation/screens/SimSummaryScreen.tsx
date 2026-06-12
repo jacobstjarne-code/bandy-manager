@@ -4,6 +4,7 @@ import { Fixture } from '../../domain/entities/Fixture'
 import { getRivalry } from '../../domain/data/rivalries'
 import { ScoreBlock } from '../components/primitives'
 import { MatchEventType } from '../../domain/enums'
+import { ordinal } from '../utils/formatters'
 
 interface SimSummaryState {
   simulatedFixtures: Fixture[]
@@ -13,10 +14,6 @@ interface SimSummaryState {
   pointsAfter: number
 }
 
-
-function ordinal(n: number): string {
-  return `${n}:a`
-}
 
 export function SimSummaryScreen() {
   const navigate = useNavigate()
