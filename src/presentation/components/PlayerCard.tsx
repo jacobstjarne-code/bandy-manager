@@ -439,8 +439,14 @@ export function PlayerCard({
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 10, marginTop: 6, color: player.isInjured ? 'var(--danger)' : player.suspensionGamesRemaining > 0 ? 'var(--warning)' : 'var(--success)' }}>
-            {player.isInjured ? `🩹 Skadad` : player.suspensionGamesRemaining > 0 ? `🚫 Avstängd ${player.suspensionGamesRemaining} match${player.suspensionGamesRemaining > 1 ? 'er' : ''}` : '🩹 Frisk · Tillgänglig'}
+          <p style={{ fontSize: 10, marginTop: 6, color: player.isInjured ? 'var(--danger)' : player.suspensionGamesRemaining > 0 ? 'var(--warning)' : player.fitness < 15 ? 'var(--accent)' : 'var(--success)' }}>
+            {player.isInjured
+              ? `🩹 Skadad`
+              : player.suspensionGamesRemaining > 0
+                ? `🚫 Avstängd ${player.suspensionGamesRemaining} match${player.suspensionGamesRemaining > 1 ? 'er' : ''}`
+                : player.fitness < 15
+                  ? 'SLUT — behöver vila'
+                  : '🩹 Frisk · Tillgänglig'}
           </p>
           {/* DREAM-012: injury narrative */}
           {player.isInjured && player.injuryNarrative && (

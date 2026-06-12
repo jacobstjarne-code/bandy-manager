@@ -370,19 +370,16 @@ describe('roundProcessor — executeTransfer consistency', () => {
 // ── Group 7: Inbox after round ────────────────────────────────────────────────
 
 describe('roundProcessor — inbox after round', () => {
-  it('inbox gets a match result item after advancing to the first liga round', () => {
-    // Cup rounds (matchdays 1-4) come before liga. Advance past cup to liga R1 (matchday 5).
+  // A1 — Notisdiet: egna matchresultat skapas INTE i inkorgen (spelaren ser resultatet i Granska).
+  it('inbox does NOT get a match result item after own liga round (A1 notisdiet)', () => {
     let game = makeGame()
     for (let i = 1; i <= 5; i++) {
       game = advanceWithLineup(game, i).game
     }
+    const matchResultItems = game.inbox.filter(item => item.type === InboxItemType.MatchResult)
+    expect(matchResultItems.length).toBe(0)
 
-    const matchResultItems = game.inbox.filter(
-      item => item.type === InboxItemType.MatchResult
-    )
-    expect(matchResultItems.length).toBeGreaterThanOrEqual(1)
-
-    // There should be a completed liga fixture involving the managed club
+    // Managed club's fixture must still be completed (diet rule doesn't affect simulation)
     const managedFixture = game.fixtures.find(
       f =>
         (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
@@ -392,47 +389,12 @@ describe('roundProcessor — inbox after round', () => {
     expect(managedFixture).toBeTruthy()
   })
 
-  it('inbox has at least one match result per liga round for the managed club', () => {
-    // Advance past cup rounds (matchdays 1-4) to liga R1 (matchday 5)
+  it('inbox accumulates no match result items across multiple rounds (A1 notisdiet)', () => {
     let game = makeGame()
-    for (let i = 1; i <= 5; i++) {
-      game = advanceWithLineup(game, i).game
-    }
-
-    const matchResultItems = game.inbox.filter(
-      item => item.type === InboxItemType.MatchResult
-    )
-    // Managed club has played: 0-3 cup matches + 1 liga match = at least 1
-    expect(matchResultItems.length).toBeGreaterThanOrEqual(1)
-  })
-
-  it('inbox accumulates match result items across multiple rounds', () => {
-    let game = makeGame()
-    let totalManagedMatches = 0
-
-    // Advance 5 matchdays and count how many the managed club actually played
     for (let r = 1; r <= 5; r++) {
-      const before = game.fixtures.filter(
-        f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-          && f.status === FixtureStatus.Scheduled
-      )
       game = advanceWithLineup(game, r).game
-      const completed = game.fixtures.filter(
-        f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-          && f.status === FixtureStatus.Completed
-      )
-      // If a managed fixture moved from scheduled to completed this round, count it
-      const newlyCompleted = completed.filter(cf =>
-        before.some(bf => bf.id === cf.id)
-      )
-      totalManagedMatches += newlyCompleted.length
     }
-
-    const matchResultItems = game.inbox.filter(
-      item => item.type === InboxItemType.MatchResult
-    )
-    // Inbox should have exactly as many MatchResult items as matches the managed club played
-    expect(matchResultItems.length).toBe(totalManagedMatches)
-    expect(totalManagedMatches).toBeGreaterThan(0)
+    const matchResultItems = game.inbox.filter(item => item.type === InboxItemType.MatchResult)
+    expect(matchResultItems.length).toBe(0)
   })
 })

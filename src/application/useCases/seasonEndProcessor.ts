@@ -1151,7 +1151,19 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     fixtures: newFixtures,
     league: newLeague,
     standings: calculateStandings(updatedClubs.map(c => c.id), []),
-    inbox: [...game.inbox, ...newInboxItems, ...retirementMessages, ...contractExpiryInbox, ...(contractInboxItem ? [contractInboxItem] : [])].slice(-75),
+    // A5 — Notisdiet: arkivera olästa från föregående säsong (markera som lästa).
+    // Decision-items med levande expiresRound följer med orörd.
+    inbox: [
+      ...game.inbox.map(i => {
+        if (i.isRead) return i
+        if (i.expiresRound != null) return i  // levande beslut följer med
+        return { ...i, isRead: true }
+      }),
+      ...newInboxItems,
+      ...retirementMessages,
+      ...contractExpiryInbox,
+      ...(contractInboxItem ? [contractInboxItem] : []),
+    ].slice(-75),
     managerProfile: updatedManagerProfile,
     transferState: {
       ...game.transferState,

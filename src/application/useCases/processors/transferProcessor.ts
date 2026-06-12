@@ -109,6 +109,7 @@ export function processTransferBids(
       title: `Inkommande bud — ${target.firstName} ${target.lastName}`,
       body: `${buyingClub.name} lägger ett bud på ${target.firstName} ${target.lastName}. Erbjuder ${bid.offerAmount.toLocaleString('sv-SE')} kr. Du har tre omgångar på dig att svara.`,
       isRead: false,
+      expiresRound: bid.expiresRound ?? nextMatchday + 2,  // B2: deadline-pill
     })
   }
 

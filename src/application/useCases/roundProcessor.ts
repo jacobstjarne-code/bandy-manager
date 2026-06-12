@@ -10,7 +10,6 @@ import { getRivalry } from '../../domain/data/rivalries'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
 import {
-  createMatchResultItem,
   createInjuryItem,
   createSuspensionItem,
   createRecoveryItem,
@@ -421,17 +420,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     )
   }
 
-  // Match results for managed club
-  for (const fixture of simulatedFixtures) {
-    if (
-      fixture.homeClubId === game.managedClubId ||
-      fixture.awayClubId === game.managedClubId
-    ) {
-      newInboxItems.push(
-        createMatchResultItem(fixture, game.managedClubId, game.currentDate, game.clubs),
-      )
-    }
-  }
+  // A1 — Notisdiet: egna matchresultat skapas INTE i inkorgen.
+  // Spelaren har just upplevt matchen och ser allt i Granska.
 
   // Injury notifications + DREAM-003 star injury ripple
   let gameAfterRipples = game
@@ -985,7 +975,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     localRand,
     { skipSideEffects: isSecondPassForManagedMatch, hasPressConference: simResult.pressEvent !== null },
   )
-  newInboxItems.push(...mediaResult.inboxItems)
+  // A3 — Notisdiet: max ett pressklipp per omgång. Håll det högst prioriterade (managed-subject > övriga).
+  const mediaInbox = mediaResult.inboxItems
+  const pressTypes = new Set([InboxItemType.Media, InboxItemType.MediaEvent])
+  const pressItems = mediaInbox.filter(i => pressTypes.has(i.type))
+  const nonPressItems = mediaInbox.filter(i => !pressTypes.has(i.type))
+  const cappedPress = pressItems.length > 0 ? [pressItems[0]] : []
+  newInboxItems.push(...nonPressItems, ...cappedPress)
   const rumorScoutReports = { ...game.scoutReports, ...mediaResult.scoutReportUpdates }
   const reputationResolvedIds = mediaResult.resolvedEventIds
   // Apply reputation delta from milestones
@@ -1006,7 +1002,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // Stamp new inbox items with creation matchday for cleanup
-  const stampedNewInboxItems = newInboxItems.map(i =>
+  // A4 — Notisdiet: dedup on id — same (kind+subject+round) must not create two items
+  const existingIds = new Set(game.inbox.map(i => i.id))
+  const dedupedNewItems = newInboxItems.filter(i => !existingIds.has(i.id))
+  const stampedNewInboxItems = dedupedNewItems.map(i =>
     i.createdMatchday === undefined ? { ...i, createdMatchday: nextMatchday } : i
   )
 

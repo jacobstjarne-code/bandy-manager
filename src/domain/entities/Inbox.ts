@@ -17,4 +17,6 @@ export interface InboxItem {
   coachInitials?: string
   // C-T1 — player refused transfer after club accepted
   bidRejectedByPlayer?: boolean
+  // Decision items: expiry round (required on decision-bearing items per B1 spec)
+  expiresRound?: number
 }

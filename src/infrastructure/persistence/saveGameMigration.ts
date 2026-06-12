@@ -358,6 +358,17 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     }
   }
 
+  // ── B5: expiresRound migration — backfill open TransferBidReceived without deadline ─────
+  if (Array.isArray(data.inbox)) {
+    const currentRound = (data.currentMatchday as number | undefined) ?? 0
+    data.inbox = (data.inbox as Record<string, unknown>[]).map(item => {
+      if (item.type === 'transferBidReceived' && item.expiresRound == null) {
+        return { ...item, expiresRound: currentRound + 2 }
+      }
+      return item
+    })
+  }
+
   // ── version stamp ────────────────────────────────────────────────────────
   data.version = CURRENT_SAVE_VERSION
 

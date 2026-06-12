@@ -222,17 +222,13 @@ describe('advanceToNextEvent', () => {
     }
   })
 
-  it('managed club gets inbox item of matchResult type after liga round', () => {
-    // Cup rounds (matchdays 1-4) may not produce MatchResult for clubs with byes.
-    // Advance past cup to liga R1 (matchday 5) which always produces a match result.
+  // A1 — Notisdiet: egna matchresultat skapas INTE i inkorgen (spelaren ser resultatet i Granska).
+  it('managed club does NOT get inbox item of matchResult type after liga round (A1 notisdiet)', () => {
     let game = makeGame()
     for (let i = 1; i <= 5; i++) {
       game = advanceWithLineup(game, i).game
     }
-
-    const matchResultItems = game.inbox.filter(
-      item => item.type === InboxItemType.MatchResult,
-    )
-    expect(matchResultItems.length).toBeGreaterThanOrEqual(1)
+    const matchResultItems = game.inbox.filter(item => item.type === InboxItemType.MatchResult)
+    expect(matchResultItems.length).toBe(0)
   })
 })

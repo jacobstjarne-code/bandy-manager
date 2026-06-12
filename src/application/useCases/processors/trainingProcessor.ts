@@ -50,16 +50,22 @@ export function applyRoundTraining(
     )
     trainingPlayers = trainingResult.updatedPlayers
 
-    // Inbox for managed club injuries from training
+    // A2 — Notisdiet: träningsrapport skapas ENBART vid avvikelse (skada, fokusbyte).
+    // Rutinrapporten "Träning omg N: Fysik, inga incidenter" skapas aldrig.
     if (isManaged) {
       const injuredInTraining = trainingResult.injuredPlayerIds
         .map(id => trainingPlayers.find(p => p.id === id))
         .filter((p): p is Player => p !== undefined)
 
-      newInboxItems.push(
-        createTrainingItem(focus, nextRound, injuredInTraining, game.currentDate),
-      )
+      const prevSession = (game.trainingHistory ?? []).at(-1)
+      const focusChanged = prevSession &&
+        (prevSession.focus.type !== focus.type || prevSession.focus.intensity !== focus.intensity)
 
+      if (injuredInTraining.length > 0 || focusChanged) {
+        newInboxItems.push(
+          createTrainingItem(focus, nextRound, injuredInTraining, game.currentDate),
+        )
+      }
       // Record training session in history
     }
   }
