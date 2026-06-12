@@ -30,7 +30,7 @@ const STEPS: CoachStep[] = [
     title: 'Klacken och hörnorna',
     body: 'Fyra personer med åsikter. De sjunger, bråkar och älskar laget. Håll dem glada — de ger hemmabonus.\n\nI bandy avgörs matcher vid hörnor. Du får välja zon och leverans.',
     footnote: 'Birger trummar redan. Dags att börja.',
-    lastStepLabel: 'Kör igång! 🏒',
+    lastStepLabel: 'Kör igång!',
   },
 ]
 

@@ -122,7 +122,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       id: 'training_corners_vs_matchprep',
       category: 'training',
       question: 'Bara tid för ett: extra hörnträning eller matchförberedelse?',
-      optionA: { label: '🏒 Hörnor', effect: '+hörnskicklighet', effectColor: 'success' },
+      optionA: { label: 'Hörnor', effect: '+hörnskicklighet', effectColor: 'success' },
       optionB: { label: '📋 Matchprep', effect: '+positionering', effectColor: 'success' },
     },
     {

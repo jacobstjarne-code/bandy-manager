@@ -134,7 +134,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, startFa
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
           {([
             { key: 'functionaries', levels: [{ id: 'active', label: '🤝 Matchvärdar (2 tkr)', cost: 2000 }], current: ca?.functionaries ? 'active' : 'none', isEnum: false },
-            { key: 'bandyplay',     levels: [{ id: 'active', label: '🏒 Bandyskola för barn (gratis)', cost: 0 }], current: ca?.bandyplay ? 'active' : 'none', isEnum: false },
+            { key: 'bandyplay',     levels: [{ id: 'active', label: '⛸️ Bandyskola för barn (gratis)', cost: 0 }], current: ca?.bandyplay ? 'active' : 'none', isEnum: false },
             { key: 'bandySchool',   levels: [{ id: 'active', label: '🏫 Bandyskola avancerad (5 tkr)', cost: 5000 }], current: ca?.bandySchool ? 'active' : 'none', isEnum: false },
             { key: 'pensionarskaffe', levels: [{ id: 'active', label: '☕ Pensionärskaffe (gratis)', cost: 0 }], current: ca?.pensionarskaffe ? 'active' : 'none', isEnum: false },
             { key: 'soppkvall',     levels: [{ id: 'active', label: '🍲 Soppkväll med laget (1 tkr)', cost: 1000 }], current: ca?.soppkvall ? 'active' : 'none', isEnum: false },

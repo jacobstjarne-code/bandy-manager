@@ -545,7 +545,7 @@ export function GranskaOversikt({
               const isHomeEvent = e.clubId === fixture?.homeClubId
               const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
               const scorerName = scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'
-              const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🏒') : '⏱️'
+              const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🥅') : '⏱️'
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: isHomeEvent ? 'flex-start' : 'flex-end', gap: 5 }}>
                   {isHomeEvent && <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 24, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>}

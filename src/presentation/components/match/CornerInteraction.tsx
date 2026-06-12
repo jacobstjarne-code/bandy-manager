@@ -242,7 +242,7 @@ export function CornerInteraction({ data, outcome, onChoose, coach }: CornerInte
           margin: 0,
           letterSpacing: outcome.type === 'goal' ? '0.5px' : undefined,
         }}>
-          {outcome.type === 'goal' ? '🏒 MÅL! ' : ''}{outcome.description}
+          {outcome.type === 'goal' ? 'MÅL! ' : ''}{outcome.description}
         </p>
       ) : null}
       onTimeout={() => handleConfirm('near', 'hard')}

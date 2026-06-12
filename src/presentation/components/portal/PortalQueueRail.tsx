@@ -14,7 +14,7 @@ const SOURCE_META: Record<string, { icon: string; label: string }> = {
   sponsorOffer:       { icon: '💼', label: 'Sponsor' },
   academyEvent:       { icon: '🎓', label: 'Akademin' },
   supporterEvent:     { icon: '📣', label: 'Klacken' },
-  weeklyDecision:     { icon: '🏒', label: 'Veckans beslut' },
+  weeklyDecision:     { icon: '📋', label: 'Veckans beslut' },
 }
 
 function getAgedClass(age: number): string {

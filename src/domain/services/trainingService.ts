@@ -232,7 +232,7 @@ export function trainingIntensityLabel(intensity: TrainingIntensity): string {
 export function trainingTypeEmoji(type: TrainingType): string {
   const map: Record<TrainingType, string> = {
     [TrainingType.Skating]:     '⛸',
-    [TrainingType.BallControl]: '🏒',
+    [TrainingType.BallControl]: '🟠',
     [TrainingType.Passing]:     '🎯',
     [TrainingType.Shooting]:    '💥',
     [TrainingType.Defending]:   '🛡',

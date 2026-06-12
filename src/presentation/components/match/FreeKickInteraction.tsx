@@ -205,7 +205,7 @@ export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKick
           fontFamily: outcome.type !== 'goal' ? 'var(--font-display)' : 'var(--font-mono)',
           margin: 0,
         }}>
-          {outcome.type === 'goal' ? '🏒 MÅL! ' : ''}{outcome.description}
+          {outcome.type === 'goal' ? 'MÅL! ' : ''}{outcome.description}
         </p>
       ) : null}
       onTimeout={() => handleConfirm('shoot')}

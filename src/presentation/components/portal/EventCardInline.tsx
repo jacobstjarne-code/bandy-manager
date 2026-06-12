@@ -33,7 +33,7 @@ function getEventTypeLabel(event: GameEvent): string {
     case 'playerMediaComment':
       return '📰 LOKALTIDNINGEN'
     case 'captainSpeech':
-      return '🏒 KAPTENEN'
+      return 'Ⓒ KAPTENEN'
     case 'bandyLetter':
       return '✉️ INSÄNDARE'
     case 'academyEvent':

@@ -117,7 +117,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.2 }}>
                   {isCap && <span style={{ marginRight: 2 }}>⭐</span>}
-                  {isPOTM && <span style={{ marginRight: 2 }}>🏒</span>}
+                  {isPOTM && <span style={{ marginRight: 2 }}>⭐</span>}
                   {p.firstName[0]}. {p.lastName}
                 </p>
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>

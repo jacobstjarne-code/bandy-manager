@@ -61,7 +61,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
             {allEvents.map((e, i) => {
               const isHomeEvent = e.clubId === fixture?.homeClubId
               const isManagedEvent = isHome ? isHomeEvent : !isHomeEvent
-              const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🏒')
+              const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🥅')
                 : e.type === MatchEventType.Corner ? '🔄'
                 : e.type === MatchEventType.Penalty ? '🎯'
                 : '🟥'

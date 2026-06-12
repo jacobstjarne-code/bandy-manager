@@ -380,7 +380,7 @@ export function SeasonSummaryScreen() {
               : m.type === 'bigLoss' ? '❌'
               : m.type === 'comeback' ? '💪'
               : m.type === 'lateWinner' ? '⚡'
-              : '🏒'
+              : '⛸️'
             const relatedPlayer = m.relatedPlayerId ? game.players.find(p => p.id === m.relatedPlayerId) : null
             items.push({
               round: m.round,
@@ -528,7 +528,7 @@ export function SeasonSummaryScreen() {
             <SectionLabel>SVENSKA CUPEN</SectionLabel>
             <div style={{ textAlign: 'center', padding: '8px 0' }}>
               <span style={{ fontSize: summary.cupResult === 'winner' ? 32 : 24 }}>
-                {summary.cupResult === 'winner' ? '🏆' : summary.cupResult === 'finalist' ? '🥈' : '🏒'}
+                {summary.cupResult === 'winner' ? '🏆' : summary.cupResult === 'finalist' ? '🥈' : '🏆'}
               </span>
               <p style={{
                 fontSize: summary.cupResult === 'winner' ? 16 : 14,

@@ -102,7 +102,7 @@ export function generateHallDebateEvents(
     events.push({
       id: annandagsId,
       type: 'communityEvent',
-      title: '🏒 Annandagsbandyn',
+      title: '⛸️ Annandagsbandyn',
       body: `Annandagsbandyn är årets mest välbesökta match. Traditionsenlig kamp med hela orten på läktaren${opponent ? ` mot ${opponent.name}` : ''}. Hur vill du ta emot publiken?`,
       choices: [
         {

@@ -95,7 +95,7 @@ export function StillnessSection({ game, receded = false }: Props) {
             }}>
               <div style={{ fontSize: 8, letterSpacing: '0.5px', color: d.isMatch ? 'var(--text-light)' : 'var(--text-muted)' }}>{d.label}</div>
               <div style={{ fontSize: 11, marginTop: 2, color: d.isMatch ? 'var(--text-light)' : d.isToday ? 'var(--accent)' : 'var(--text-muted)' }}>
-                {d.isMatch ? '🏒' : d.isToday ? '●' : '·'}
+                {d.isMatch ? '⛸️' : d.isToday ? '●' : '·'}
               </div>
             </div>
           ))}

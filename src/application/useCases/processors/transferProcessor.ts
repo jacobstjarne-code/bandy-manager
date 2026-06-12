@@ -334,7 +334,7 @@ export function processLoans(
           id: `inbox_loan_return_${deal.playerId}_${nextMatchday}`,
           date: newDate,
           type: InboxItemType.YouthIntake,
-          title: `🏒 ${returnedPlayer.firstName} ${returnedPlayer.lastName} är tillbaka från lån`,
+          title: `${returnedPlayer.firstName} ${returnedPlayer.lastName} är tillbaka från lån`,
           body: `${returnedPlayer.firstName} ${returnedPlayer.lastName} återvänder från ${deal.destinationClubName}. Han ${confStr}.${caBoost > 0 ? ` CA +${caBoost}.` : ''}`,
           isRead: false,
         })
