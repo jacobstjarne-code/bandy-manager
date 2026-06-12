@@ -200,6 +200,8 @@ export function MatchScreen() {
 
   // A3 — Compute beat once; will be consumed by early return below.
   const beat: LaddningBeat = nextFixture ? computeLaddningBeat(game, nextFixture) : { tier: 'none' }
+  const effectiveStep =
+    matchStep === 'laddning' && beat.tier === 'none' ? 'lineup' : matchStep
 
   // Persist band tracking on first render of laddning step (active streak only — broken clears on dismiss)
   useEffect(() => {
@@ -509,7 +511,7 @@ export function MatchScreen() {
   }
 
   // A3 — Laddning beat: full screen before lineup step
-  if (matchStep === 'laddning' && nextFixture) {
+  if (effectiveStep === 'laddning' && nextFixture) {
     const oppId = nextFixture.homeClubId === managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId
     const opp = game.clubs.find(c => c.id === oppId) ?? null
 
@@ -541,8 +543,6 @@ export function MatchScreen() {
         />
       )
     }
-    // Beat resolved to 'none' (shouldn't happen if grind is correct) — fall through to lineup
-    setMatchStep('lineup')
   }
 
   // ── Match header data ──────────────────────────────────────────────
@@ -593,8 +593,8 @@ export function MatchScreen() {
               opponentName={opponent?.name ?? 'Okänd'}
               isHome={isHome}
               weather={(game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)}
-              step={matchStep === 'laddning' ? 'lineup' : matchStep}
-              tactic={matchStep === 'start' ? tacticState : undefined}
+              step={effectiveStep === 'laddning' ? 'lineup' : effectiveStep}
+              tactic={effectiveStep === 'start' ? tacticState : undefined}
             />
           </div>
         )}
@@ -625,8 +625,8 @@ export function MatchScreen() {
         <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0 8px', gap: 0 }}>
           {(['lineup', 'tactic', 'start'] as const).map((s, i) => {
             const labels = ['Välj trupp', 'Välj taktik', 'Starta']
-            const isActive = matchStep === s
-            const isDone = (matchStep === 'tactic' && s === 'lineup') || (matchStep === 'start' && s !== 'start')
+            const isActive = effectiveStep === s
+            const isDone = (effectiveStep === 'tactic' && s === 'lineup') || (effectiveStep === 'start' && s !== 'start')
             return (
               <div key={s} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -654,7 +654,7 @@ export function MatchScreen() {
         </div>
       </div>
 
-      {matchStep === 'lineup' && (
+      {effectiveStep === 'lineup' && (
         <LineupStep
           opponent={opponent ?? null}
           nextFixture={nextFixture}
@@ -729,7 +729,7 @@ export function MatchScreen() {
         />
       )}
 
-      {matchStep === 'tactic' && (
+      {effectiveStep === 'tactic' && (
         <TacticStep
           tacticState={tacticState}
           matchWeatherData={matchWeatherData}
@@ -743,7 +743,7 @@ export function MatchScreen() {
         />
       )}
 
-      {matchStep === 'start' && (
+      {effectiveStep === 'start' && (
         <StartStep
           startingIds={startingIds}
           tacticState={tacticState}

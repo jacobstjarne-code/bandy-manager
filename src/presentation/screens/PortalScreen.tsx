@@ -57,20 +57,15 @@ export function PortalScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Run once on mount — advance() navigates away, re-mount after return handles any remaining rounds
 
-  if (!game) return (
-    <div style={{ padding: 20 }}>
-      <div className="shimmer" style={{ height: 160, borderRadius: 3, marginBottom: 10 }} />
-      <div className="shimmer" style={{ height: 80, borderRadius: 3, marginBottom: 10 }} />
-      <div className="shimmer" style={{ height: 80, borderRadius: 3 }} />
-    </div>
+  const seed = game ? makeSeed(game) : 0
+  const layout = useMemo(
+    () => (game ? buildPortal(game, seed) : null),
+    [game, seed],
   )
-
-  const seed = makeSeed(game)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const layout = useMemo(() => buildPortal(game, seed), [game, seed])
 
   // Registrera visade kort för stale-bias-beräkning nästa omgång
   useEffect(() => {
+    if (!layout) return
     const shownIds = [
       layout.primary.id,
       ...(layout.storySlot ? [layout.storySlot.id] : []),
@@ -78,14 +73,11 @@ export function PortalScreen() {
       ...layout.minimal.map(c => c.id),
     ]
     recordPortalShown(shownIds, layout.storySlot?.kind)
-  // Bara layout-objektet är relevant — seed och game refereras indirekt
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layout])
-
-  const nextAnslag = computeNextAnslag(game)
+  }, [layout, recordPortalShown])
 
   // Sätt CSS-vars för seasonal tone
   useEffect(() => {
+    if (!game) return
     const tone = getSeasonalTone(game.currentDate)
     document.documentElement.style.setProperty('--bg-portal', tone.bgPrimary)
     document.documentElement.style.setProperty('--bg-portal-surface', tone.bgSurface)
@@ -99,7 +91,17 @@ export function PortalScreen() {
       document.documentElement.style.removeProperty('--accent-portal')
       document.body.style.background = ''
     }
-  }, [game.currentDate])
+  }, [game?.currentDate])
+
+  if (!game || !layout) return (
+    <div style={{ padding: 20 }}>
+      <div className="shimmer" style={{ height: 160, borderRadius: 3, marginBottom: 10 }} />
+      <div className="shimmer" style={{ height: 80, borderRadius: 3, marginBottom: 10 }} />
+      <div className="shimmer" style={{ height: 80, borderRadius: 3 }} />
+    </div>
+  )
+
+  const nextAnslag = computeNextAnslag(game)
 
   // ── CTA logic ────────────────────────────────────────────────────
   const bracket = game.playoffBracket

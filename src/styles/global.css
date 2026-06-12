@@ -62,6 +62,11 @@
   --led-score-flash: #FF9900;
   --led-time:        #CCFF00;
   --led-warn:        #FF6644;
+  /* Vi/dom-kodning ratificerad 2026-06-11 — managed klubb (amber) / motståndare (is-LED) */
+  --led-us:          #FFB033;
+  --led-them:        #6FC0E8;
+  /* Disabled-state B8: samma färgfamilj @ 40% opacity */
+  --disabled-opacity: 0.4;
 
   /* Archetype badge colors */
   --arch-finisher:    #c0392b;
