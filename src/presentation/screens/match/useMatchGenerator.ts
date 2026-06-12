@@ -91,7 +91,7 @@ export function useMatchGenerator(setup: GeneratorSetup) {
         decayPerRound: game.klackEcho.decayPerRound,
         resultMatchday: game.klackEcho.resultMatchday,
       } : undefined,
-      anniversaryBigEko: (game.activeAnniversaries ?? []).some(a => a.echoSize === 'big'),
+      anniversaryBigEko: (game.activeAnniversaries ?? []).find(a => a.echoSize === 'big'),
     })
 
     const allSteps: MatchStep[] = []

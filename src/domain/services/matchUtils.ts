@@ -320,7 +320,7 @@ export interface StepByStepInput {
   }
   ownScandalThisSeason?: boolean  // for supporter_scandal_recent commentary
   klackEcho?: { type: import('../data/klackEchoText').NotableEventType; currentWeight: number; decayPerRound: number; resultMatchday?: number } // C-B2 (resultMatchday: C-SY1 cause-prefix)
-  anniversaryBigEko?: boolean     // B6 — big anniversary eko aktiv denna matchdag
+  anniversaryBigEko?: import('./clubMemoryService').ActiveAnniversary  // B6 — big anniversary eko; carries outcome for filtered klack pick
   lastRivalSaleMatchday?: number  // C-T9 — recent rival sale for klack commentary
   currentMatchday?: number        // C-T9 — needed to check if sale is recent
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
