@@ -280,6 +280,10 @@ export const commentary = {
     "Strålande bandyväder. Isen ligger som ett golv.",
     "Fint väder, bra is — inga ursäkter idag.",
   ],
+
+  // Två vädersystem — båda avsiktliga:
+  // weatherCold/Snow/Mild/Fog/Good = situationella; används av pickWeatherCommentary() i matchUtils
+  // weather_goal_*/weather_miss_* = event-specifika; triggas av matchCore vid mål/miss i dåligt väder
   weather_miss_heavySnow: [
     "Bollen slirar bort i snön — avslutet hamnar helt fel.",
     "Omöjligt att sikta i det här! Skottet flyger iväg.",
