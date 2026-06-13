@@ -3,6 +3,13 @@ import type { StandingRow } from '../entities/SaveGame'
 import { ordinal } from '../utils/numberFormat'
 import type { Club } from '../entities/Club'
 
+export const BOARD_EXPECTATION_TEXT: Record<ClubExpectation, string> = {
+  [ClubExpectation.AvoidBottom]: 'undvika botten av tabellen',
+  [ClubExpectation.MidTable]: 'hålla oss i mitten av tabellen',
+  [ClubExpectation.ChallengeTop]: 'utmana om topplaceringar',
+  [ClubExpectation.WinLeague]: 'vinna ligan',
+}
+
 export interface BoardEvaluation {
   satisfaction: 'delighted' | 'satisfied' | 'concerned' | 'unhappy'
   message: string
@@ -226,12 +233,7 @@ export function generatePreSeasonMessage(
     else if (club.boardExpectation === ClubExpectation.ChallengeTop) newExpectation = ClubExpectation.MidTable
   }
 
-  const expectationText: Record<ClubExpectation, string> = {
-    [ClubExpectation.AvoidBottom]: 'undvika botten av tabellen',
-    [ClubExpectation.MidTable]: 'hålla oss i mitten av tabellen',
-    [ClubExpectation.ChallengeTop]: 'utmana om topplaceringar',
-    [ClubExpectation.WinLeague]: 'vinna ligan',
-  }
+  const expectationText = BOARD_EXPECTATION_TEXT
 
   const expectationChanged = newExpectation !== club.boardExpectation
 

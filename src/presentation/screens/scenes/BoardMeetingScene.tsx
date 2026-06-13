@@ -11,6 +11,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { BoardObjective } from '../../../domain/entities/Community'
 import { resolveBoardMeetingState } from '../../../application/services/boardMeetingStateResolver'
 import { BOARD_MEETING_COPY, GOAL_MOTIVATIONS } from '../../../domain/data/boardMeetingCopy'
+import { BOARD_EXPECTATION_TEXT } from '../../../domain/services/boardService'
 import { seededPick } from '../../../domain/utils/random'
 import { SceneCTA } from './shared/SceneCTA'
 
@@ -33,6 +34,7 @@ function isStretch(obj: BoardObjective): boolean {
 export function BoardMeetingScene({ game, onComplete }: Props) {
   const data = resolveBoardMeetingState(game)
   const { state } = data
+  const club = game.clubs.find(c => c.id === game.managedClubId)
   const pool = BOARD_MEETING_COPY[state]
   const seed = game.currentSeason * 9301 + game.managedClubId.length * 7
 
@@ -96,6 +98,11 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
         <div style={{ fontFamily: 'Georgia, serif', fontSize: 14.5, color: 'var(--text-light)', lineHeight: 1.55 }}>
           {speakerLine}
         </div>
+        {club?.boardExpectation && (
+          <div style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 10, fontStyle: 'italic' }}>
+            Målet i år: att {BOARD_EXPECTATION_TEXT[club.boardExpectation]}. Inget mer behöver sägas om saken.
+          </div>
+        )}
       </div>
 
       {/* Eval — måluppfyllelse förra säsongen */}
