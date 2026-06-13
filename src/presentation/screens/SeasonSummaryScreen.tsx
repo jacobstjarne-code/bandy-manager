@@ -198,6 +198,7 @@ export function SeasonSummaryScreen() {
                 : summary.finalPosition <= 3 ? 'win'
                 : 'subtle'}
               label="plats"
+              light
             />
             <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{summary.points} poäng</p>
           </div>
@@ -551,9 +552,9 @@ export function SeasonSummaryScreen() {
           <SectionLabel>STATISTIK</SectionLabel>
           {/* C-SY2 Våg 4: W-D-L som tre kompakta ScoreBlocks sida vid sida */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-            <ScoreBlock score={String(summary.wins)} variant="win" label="V" compact />
-            <ScoreBlock score={String(summary.draws)} variant="draw" label="O" compact />
-            <ScoreBlock score={String(summary.losses)} variant="loss" label="F" compact />
+            <ScoreBlock score={String(summary.wins)} variant="win" label="V" compact light />
+            <ScoreBlock score={String(summary.draws)} variant="draw" label="O" compact light />
+            <ScoreBlock score={String(summary.losses)} variant="loss" label="F" compact light />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
             <div>
