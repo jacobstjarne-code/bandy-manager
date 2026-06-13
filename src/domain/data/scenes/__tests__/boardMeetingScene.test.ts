@@ -101,7 +101,7 @@ function makeGame(overrides: {
     scoutReports: {},
     activeScoutAssignment: null,
     scoutBudget: 0,
-    seasonSummaries: [],
+    seasonSummaries: Array.from({ length: Math.max(0, season - 1) }, (_, i) => ({ season: season - 1 - i } as never)),
     version: '0.2.0',
     lastSavedAt: '2026-10-04T00:00:00Z',
     shownScenes: (overrides.shownScenes ?? []) as never,

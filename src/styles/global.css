@@ -348,6 +348,11 @@ a {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+.btn:disabled {
+  opacity: var(--disabled-opacity);
+  pointer-events: none;
+  cursor: not-allowed;
+}
 
 .btn-copper {
   background:
@@ -395,10 +400,7 @@ a {
   filter: brightness(0.95);
 }
 .btn-primary:disabled {
-  background: #B8A48C;
-  opacity: 0.5;
   box-shadow: none;
-  cursor: not-allowed;
 }
 
 /* R2-2: ceremoniell hjälte-CTA — endast säsongsslut/seger/cup, aldrig vardags-CTA.
@@ -473,10 +475,7 @@ a {
 }
 
 .btn-cta:disabled {
-  background: #B8A48C;
-  opacity: 0.5;
   box-shadow: none;
-  cursor: not-allowed;
   animation: none;
 }
 

@@ -441,7 +441,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, startFa
             const applyUsed = li.applySeason === game.currentSeason
             return (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button className="btn btn-ghost" disabled={inviteCooldown > 0} style={{ flex: 1, padding: '8px 6px', fontSize: 11, opacity: inviteCooldown > 0 ? 0.5 : 1 }}
+            <button className="btn btn-ghost" disabled={inviteCooldown > 0} style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
               onClick={() => {
                 if (!interactWithPolitician) return
                 const r = interactWithPolitician('invite')
@@ -450,7 +450,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, startFa
               }}>
               {inviteCooldown > 0 ? `📋 Omg ${currentRound + inviteCooldown}` : '📋 Bjud in'}
             </button>
-            <button className="btn btn-ghost" disabled={budgetUsed} style={{ flex: 1, padding: '8px 6px', fontSize: 11, opacity: budgetUsed ? 0.5 : 1 }}
+            <button className="btn btn-ghost" disabled={budgetUsed} style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
               onClick={() => {
                 if (!interactWithPolitician) return
                 const r = interactWithPolitician('budget')
@@ -459,7 +459,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, startFa
               }}>
               {budgetUsed ? '📊 Gjort' : '📊 Budget'}
             </button>
-            <button className="btn btn-ghost" disabled={applyUsed || polData.relationship < 50} style={{ flex: 1, padding: '8px 6px', fontSize: 11, opacity: (applyUsed || polData.relationship < 50) ? 0.5 : 1 }}
+            <button className="btn btn-ghost" disabled={applyUsed || polData.relationship < 50} style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
               onClick={() => {
                 if (!interactWithPolitician) return
                 const r = interactWithPolitician('apply')
