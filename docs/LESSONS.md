@@ -950,3 +950,17 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 **Känn igen:** "Klart när checklistan är grön" (vem kör checklistan om åtta veckor?). En referens-mock som anges som "enda sanningskällan" men inte är maskinläsbar. Ett värde som lever på två ställen.
 
 **Historik (2026-06-07):** Konsekvens-auditen (DB-1…9 + R2 + Q1–4) städade uttrycket, men appen hade ingen lint och ingen app-CI — bara `tsc`+`vitest` lokalt. Designs implementations-referens-mock, tänkt som pixel-sanningskälla, motsäger redan besluts-loggen på glow (40 vs 35%), pill-alpha (8/40 vs 6/30) och hjälte-CTA-mått — på de exakta värden som eskalerats för beslut. Bevis för att parallella handgjorda källor driver. Försoning samlad i `docs/mockups/CODE-LEVERANS-2026-06-07.md §1`; efterlevnads-grinden specad där §4.
+
+---
+
+## 40. Ingen Math.random() i spellogik — bara seedad rand
+
+**Mönster:** `Math.random()` smuglar sig in i spellogikfiler (processors, services) och bryter determinism-kontraktet: samma seed ger olika utfall vid repris.
+
+**Rotorsak:** Enkel reflex — `Math.random() < 0.02` är kortare att skriva än att ta in `localRand` ur scope. Felet är osynligt tills man försöker reproducera ett scenario.
+
+**Fix:** Alla spellogikfiler (processors, matchSim, services) använder `mulberry32`-seedad rand eller `localRand` från yttre scope. `Math.random()` är tillåtet BARA i UI/kosmetik (inbox-id-generering, UI-text utan speleffekt). Lägg till `seededPick` / `mulberry32` vid filskapande; aldrig `Math.random()` för game-state.
+
+**Känn igen:** Ny kod i `src/domain/services/` eller `src/application/useCases/processors/` som innehåller `Math.random()`. Grep-check: `grep -rn "Math.random" src/domain/services src/application/useCases/processors --include="*.ts"`.
+
+**Historik (2026-06-12):** Kartfynd (PRIO 1) identifierade 4 determinism-brott i simulationskedjan: `playerStateProcessor`, `statsProcessor`, `transferProcessor`, `weeklyDecisionService`. Alla ersatta med seedad rand.
