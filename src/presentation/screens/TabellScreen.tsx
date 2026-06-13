@@ -7,6 +7,7 @@ import { calculateStandings } from '../../domain/services/standingsService'
 import { FormDots } from '../components/FormDots'
 import { getFormResults } from '../utils/formUtils'
 import { Target } from 'lucide-react'
+import { TabBar } from '../components/shared/TabBar'
 
 export function TabellScreen() {
   const game = useGameStore(s => s.game)
@@ -68,32 +69,24 @@ export function TabellScreen() {
   const ptToLeader = leaderPoints - myPoints
 
   return (
-    <div style={{ padding: '0 12px', paddingTop: 8, overflowY: 'auto', height: '100%' }}>
-      {/* Tab switcher */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 10, background: 'var(--bg-elevated)', borderRadius: 8, padding: 4 }}>
-        {(['tabell', 'statistik', 'cupen'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              flex: 1, padding: '8px 0',
-              background: activeTab === tab ? 'var(--accent)' : 'transparent',
-              color: activeTab === tab ? 'var(--text-light)' : 'var(--text-muted)',
-              border: 'none', borderRadius: 'var(--radius-md)', outline: 'none',
-              fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase',
-              cursor: 'pointer',
-            }}
-          >
-            {tab === 'tabell' ? 'TABELL' : tab === 'statistik' ? 'STATISTIK' : 'CUPEN'}
-          </button>
-        ))}
+    <div className="screen-col-layout">
+      <div className="tab-bar-host">
+        <TabBar
+          tabs={[
+            { id: 'tabell', label: 'TABELL' },
+            { id: 'statistik', label: 'STATISTIK' },
+            { id: 'cupen', label: 'CUPEN' },
+          ]}
+          activeId={activeTab}
+          onSelect={(id) => setActiveTab(id as typeof activeTab)}
+        />
+        {(['tabell', 'statistik'] as const).includes(activeTab as 'tabell' | 'statistik') && (
+          <p className="tab-bar-desc">
+            {activeTab === 'tabell' ? 'Aktuell tabell med form och målskillnad.' : 'Ligans toppskytt, assist och betyg.'}
+          </p>
+        )}
       </div>
-
-      {(['tabell', 'statistik'] as const).includes(activeTab as 'tabell' | 'statistik') && (
-        <p style={{ padding: '6px 16px 10px', fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', borderBottom: '1px solid var(--border)', marginBottom: 10 }}>
-          {activeTab === 'tabell' ? 'Aktuell tabell med form och målskillnad.' : activeTab === 'statistik' ? 'Ligans toppskytt, assist och betyg.' : ''}
-        </p>
-      )}
+      <div className="screen-scroll" style={{ padding: '8px 12px' }}>
 
       {activeTab === 'statistik' && (() => {
         const allPlayers = game!.players.filter(p => p.seasonStats.gamesPlayed > 0)
@@ -670,6 +663,7 @@ export function TabellScreen() {
           </div>
         )
       })()}
+      </div>
     </div>
   )
 }
