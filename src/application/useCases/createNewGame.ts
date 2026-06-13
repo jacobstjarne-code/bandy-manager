@@ -382,6 +382,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
       players.filter(p => p.clubId === input.clubId),
       input.seed ?? 42,
       CLUB_TEMPLATES.find(t => t.id === input.clubId)?.supporterGroupName,
+      'Birger',
     ),
     namedCharacters: [
       ...(() => {

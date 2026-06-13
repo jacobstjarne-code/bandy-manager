@@ -40,6 +40,7 @@ export function generateSupporterGroup(
   players: Player[],
   seed: number,
   overrideName?: string,
+  overrideLeaderName?: string,
 ): SupporterGroup {
   const h = hashStr(clubId) + seed
 
@@ -56,7 +57,7 @@ export function generateSupporterGroup(
     founded: season,
     members: 15 + (Math.abs(h * 7) % 50),
     mood: 60,
-    leader:  makeChar('leader',  0),
+    leader:  overrideLeaderName ? { ...makeChar('leader', 0), name: overrideLeaderName } : makeChar('leader', 0),
     veteran: makeChar('veteran', 1),
     youth:   makeChar('youth',   2),
     family:  makeChar('family',  3),
