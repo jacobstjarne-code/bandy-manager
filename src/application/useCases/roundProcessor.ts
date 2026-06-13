@@ -912,15 +912,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         const sponsorName = game.sponsors?.find(s => s.id === rc.sponsorId)?.name ?? 'Sponsorn'
         const riskConsequences = [
           {
-            title: `🚨 ${sponsorName}: Skatteverket-granskning publik`,
+            title: `${sponsorName}: Skatteverket-granskning publik`,
             body: `Skatteverket har gripit in mot ${sponsorName}. Företagets bankmedel är frysta och avtal med tredje part avslutas. {KLUBB} förlorar sponsorn i förtid och måste betala tillbaka del av redan utbetalda medel. Anseendet tar en törn.`,
           },
           {
-            title: `🚨 ${sponsorName}: Försatt i konkurs`,
+            title: `${sponsorName}: Försatt i konkurs`,
             body: `${sponsorName} har försatts i konkurs. Det fanns inget att granska — företaget hade inga riktiga kunder. {KLUBB}s avtal är värdelöst. Pengarna som kommit in betalas tillbaka till konkursboet.`,
           },
           {
-            title: `🚨 ${sponsorName} i lokaltidningen`,
+            title: `${sponsorName} i lokaltidningen`,
             body: `Lokaltidningen har börjat skriva om ${sponsorName}. Reportagen handlar om okända ägare, suspekta bolagsstrukturer och kopplingar till en tidigare brottsmisstänkt person. {KLUBB} avslutar avtalet före det blir värre.`,
           },
         ]
@@ -1548,7 +1548,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           id: `inbox_fu_${fu.id}`,
           date: updatedGame.currentDate,
           type: InboxItemType.BoardFeedback,
-          title: '📬 Uppföljning',
+          title: 'Uppföljning',
           body: text,
           isRead: false,
         })

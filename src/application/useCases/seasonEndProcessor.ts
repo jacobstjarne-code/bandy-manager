@@ -171,7 +171,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         date: game.currentDate,
         type: InboxItemType.LicenseReview,
         title: 'LICENSNÄMNDEN: LICENS NEKAD — TVÅNGSNEDFLYTTNING',
-        body: `Licensnämnden nekar ${managedClubForLicense.name} licens för elitbandyn. Klubben tvingas ta konsekvenserna. Tre spelare lämnar pga elitserieklausul. Majoriteten av sponsorerna drar sig ur. Styrelsen beslutar att tränaren stannar — men under hårt tryck.`,
+        body: `Licensnämnden beslutar om nedflyttning för ${managedClubForLicense.name}. Efter överläggning beviljas respit — klubben får spela kvar, mot hårda villkor. Tre spelare lämnar via elitserieklausul. Majoriteten av sponsorerna drar sig ur. Styrelsen låter tränaren stanna. Under hårt tryck.`,
         isRead: false,
       } as InboxItem)
     }
@@ -510,7 +510,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         id: `inbox_legend_${player.id}_${nextSeason}`,
         date: game.currentDate,
         type: InboxItemType.BoardFeedback,
-        title: `🎖️ ${player.firstName} ${player.lastName} — en legend tackar för sig`,
+        title: `${player.firstName} ${player.lastName} — en legend tackar för sig`,
         body: `${seasonsInClub} säsonger, ${player.careerStats?.totalGoals ?? 0} mål. ${storyline ? `"${storyline.displayText}"` : 'En spelare som betydde mycket.'} Fansen: "Tack för allt!"`,
         isRead: false,
       } as InboxItem)
@@ -520,7 +520,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       retirementCeremonyEvents.push({
         id: `retirement_ceremony_${player.id}_${nextSeason}`,
         type: 'retirementCeremony',
-        title: `🎖️ Pensionsceremoni — ${playerName}`,
+        title: `Pensionsceremoni — ${playerName}`,
         body: `${playerName} lägger bandyn på hyllan efter ${seasonsInClub} säsonger. Vill du erbjuda en roll i föreningen?`,
         relatedPlayerId: player.id,
         resolved: false,
@@ -874,7 +874,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       id: `inbox_boardobj_end_${obj.id}_${game.currentSeason}`,
       date: game.currentDate,
       type: InboxItemType.BoardFeedback,
-      title: finalStatus === 'met' ? `✅ ${obj.label} — uppfyllt` : `❌ ${obj.label} — misslyckat`,
+      title: finalStatus === 'met' ? `${obj.label} — uppfyllt` : `${obj.label} — misslyckat`,
       body: finalStatus === 'met' ? obj.successReward : obj.failureConsequence,
       isRead: false,
     } as InboxItem)
@@ -951,7 +951,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
-  // ── Funktionärsdöd (2%/säsong vid age >= 65) ──────────────────────────────
+  // ── Funktionärsdöd (2%/säsong vid age >= 65) ──────────────────────────
+  // OBS (design, bekräftad av Jacob 2026-06-12): communityStanding +3 vid dödsfall
+  // är AVSIKTLIG — "orten samlas i sorgen": begravningen fyller kyrkan, föreningen
+  // sluter led. Inte ett teckenfel. Ändra inte utan nytt designbeslut.
   const deathRand = mulberry32((seed ?? 42) + game.currentSeason * 31337)
   let updatedNamedCharacters = (game.namedCharacters ?? []).map(c => ({ ...c }))
   let communityStandingDelta = 0

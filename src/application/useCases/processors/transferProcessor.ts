@@ -127,7 +127,7 @@ export function processTransferBids(
       id: sagaRumourId,
       date: newDate,
       type: InboxItemType.Media,
-      title: `📰 Spekulationer kring ${target.firstName} ${target.lastName}`,
+      title: `Spekulationer kring ${target.firstName} ${target.lastName}`,
       body: `Medierna skriver om budet från ${buyingClub.name}. ${target.firstName} ${target.lastName} är tyst men omgivningen märker av oro i laget. Affären är ännu olöst.`,
       isRead: false,
     })
@@ -146,7 +146,7 @@ export function processTransferBids(
       id: `inbox_rumour_${bid.id}`,
       date: newDate,
       type: InboxItemType.Media,
-      title: `📰 Rykten: ${target.firstName} ${target.lastName} på väg?`,
+      title: `Rykten: ${target.firstName} ${target.lastName} på väg?`,
       body: `Det florera rykten om att ${target.firstName} ${target.lastName} från ${sellingClub.name} kan vara på väg mot en ny utmaning. Inga officiella kommentarer ännu.`,
       isRead: false,
     })

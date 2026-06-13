@@ -304,6 +304,8 @@ export function simulateRound(
 
     const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
     const isManagedHome = fixture.homeClubId === game.managedClubId
+    // Inomhushall sänker hemmafördelen 15 % (0.85x) — avsiktlig Själ-kostnad:
+    // kontrollerat klimat dämpar hemma-energin som öppen plan skapar.
     const baseAdv = homeClub?.hasIndoorArena ? 0.19 * 0.85 : 0.19
     const communityBonus = isManagedHome
       ? ((game.communityStanding ?? 50) - 50) / 50 * 0.02

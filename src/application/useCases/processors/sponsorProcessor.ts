@@ -44,7 +44,7 @@ export function processSponsors(
       id: `inbox_sponsor_expire_${leaving.id}_${nextMatchday}`,
       date: newDate,
       type: InboxItemType.SponsorNetwork,
-      title: `📋 ${leaving.name} avslutar`,
+      title: `${leaving.name} avslutar`,
       body: `Sponsoravtalet med ${leaving.name} har löpt ut. Intäkten på ${Math.round(leaving.weeklyIncome / 1000)} tkr/omg försvinner.`,
       isRead: false,
     } as InboxItem)

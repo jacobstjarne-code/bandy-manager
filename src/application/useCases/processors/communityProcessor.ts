@@ -88,7 +88,7 @@ export function processCommunity(
         id: `inbox_pol_match_${nextMatchday}_${game.currentSeason}`,
         date: game.currentDate,
         type: InboxItemType.BoardFeedback,
-        title: `🏛️ ${pol.name} noterade segern`,
+        title: `${pol.name} noterade segern`,
         body: `Kommunalrådet ${pol.name} skickade ett meddelande: "Bra match mot ${opponent?.name ?? 'motståndaren'}. Fortsätt så."`,
         isRead: false,
       } as InboxItem)
@@ -110,7 +110,7 @@ export function processCommunity(
           id: milestoneId,
           date: game.currentDate,
           type: InboxItemType.KommunBidrag,
-          title: `🏛️ Stärkt relation med ${pol.name}`,
+          title: `Stärkt relation med ${pol.name}`,
           body: milestoneTexts[milestone] ?? '',
           isRead: false,
         } as InboxItem)
@@ -129,7 +129,7 @@ export function processCommunity(
         id: `inbox_kommun_bidrag_${nextMatchday}_${game.currentSeason}`,
         date: game.currentDate,
         type: InboxItemType.KommunBidrag,
-        title: `🏛️ Kommunbidraget ${direction}`,
+        title: `Kommunbidraget ${direction}`,
         body: `Kommunen har ${direction} bidraget till klubben (${diffStr} kr/månad). Nytt bidrag: ${pol.kommunBidrag} kr.`,
         isRead: false,
       } as InboxItem)
@@ -145,7 +145,7 @@ export function processCommunity(
         id: `inbox_mec_unhappy_${mec.id}_${nextMatchday}`,
         date: game.currentDate,
         type: InboxItemType.PatronInfluence,
-        title: `👥 ${mec.name} är missnöjd`,
+        title: `${mec.name} är missnöjd`,
         body: `${mec.name} från ${mec.business} uttrycker oro. "Jag hade hoppats på bättre resultat."`,
         isRead: false,
       } as InboxItem)
@@ -157,7 +157,7 @@ export function processCommunity(
           id: critId,
           date: game.currentDate,
           type: InboxItemType.PatronInfluence,
-          title: `⚠️ ${mec.name} överväger att lämna`,
+          title: `${mec.name} överväger att lämna`,
           body: `${mec.name} är allvarligt missnöjd. "Om inget förändras snart får ni klara er utan mig."`,
           isRead: false,
         } as InboxItem)
@@ -170,7 +170,7 @@ export function processCommunity(
           id: happyId,
           date: game.currentDate,
           type: InboxItemType.PatronInfluence,
-          title: `🤝 ${mec.name} är nöjd`,
+          title: `${mec.name} är nöjd`,
           body: `${mec.name} från ${mec.business} är mycket nöjd med klubbens utveckling. "Det här är precis vad jag ville se."`,
           isRead: false,
         } as InboxItem)
@@ -187,7 +187,7 @@ export function processCommunity(
           id: arrivalId,
           date: game.currentDate,
           type: InboxItemType.PatronInfluence,
-          title: `💰 Ny mecenat: ${mec.name}`,
+          title: `Ny mecenat: ${mec.name}`,
           body: `${mec.name} (${mec.business}) vill stötta klubben ekonomiskt. Bidrag: ${mec.contribution} kr/månad.`,
           isRead: false,
         } as InboxItem)
@@ -261,7 +261,7 @@ export function processCommunity(
       id: `inbox_volunteer_quit_${name.replace(/\s/g, '_')}_r${nextMatchday}`,
       date: game.currentDate,
       type: InboxItemType.BoardFeedback,
-      title: `👥 ${name} slutar som frivillig`,
+      title: `${name} slutar som frivillig`,
       body: `${name} har tröttnat och drar sig tillbaka. Dåliga resultat på sistone har tagit på humöret.`,
       isRead: false,
     } as InboxItem)

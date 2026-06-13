@@ -45,7 +45,7 @@ export function applyPostRoundFlags(
             id: `inbox_finance_${finStatus.status}_${updatedGame.currentSeason}_${nextMatchday}`,
             date: updatedGame.currentDate,
             type: InboxItemType.EconomicCrisis,
-            title: isCritical ? '🚨 KRITISK: Licensen i fara' : '⚠️ Ekonomisk varning',
+            title: isCritical ? 'KRITISK: Licensen i fara' : 'Ekonomisk varning',
             body: isCritical
               ? `Kassan är ${managedClubCurrent.finances.toLocaleString('sv-SE')} kr. Klubben riskerar att förlora licensen. Nödåtgärder krävs omedelbart.`
               : `Kassan är ${managedClubCurrent.finances.toLocaleString('sv-SE')} kr. Klubben närmar sig farlig nivå. Kontrollera utgifterna.`,
@@ -69,7 +69,7 @@ export function applyPostRoundFlags(
           id: `inbox_rec_formation_${updatedGame.currentSeason}_${nextMatchday}`,
           date: updatedGame.currentDate,
           type: InboxItemType.Training,
-          title: '📋 Coachen byter rekommendation',
+          title: 'Coachen byter rekommendation',
           body: `Truppen har förändrats. Coachen rekommenderar nu ${newRec} istället för ${prevRec}.`,
           isRead: false,
         }],

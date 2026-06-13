@@ -166,7 +166,7 @@ export function processGameEvents(
         id: warnId,
         date: game.currentDate,
         type: InboxItemType.BoardFeedback,
-        title: '⚠️ Ekonomisk varning',
+        title: 'Ekonomisk varning',
         body: `Kassan är på ${managedClub.finances.toLocaleString('sv-SE')} kr. Om vi når -100k kan licensnämnden agera.`,
         isRead: false,
       })
@@ -237,7 +237,7 @@ export function processGameEvents(
           id: demandId,
           date: game.currentDate,
           type: InboxItemType.PatronInfluence,
-          title: `📋 ${mec.name} påminner`,
+          title: `${mec.name} påminner`,
           body: `${mec.name} har fortfarande önskemål som inte hanterats: ${demandTexts}.`,
           isRead: false,
         } as InboxItem)
@@ -309,7 +309,7 @@ export function processGameEvents(
             id: warnId,
             date: game.currentDate,
             type: InboxItemType.LicenseReview,
-            title: `⚠️ ${fillL2Tokens(wt.title, { KLUBB: wageClubName })}`,
+            title: fillL2Tokens(wt.title, { KLUBB: wageClubName }),
             body: fillL2Tokens(wt.body, { KLUBB: wageClubName }),
             isRead: false,
           } as InboxItem)
@@ -324,7 +324,7 @@ export function processGameEvents(
             id: deductId,
             date: game.currentDate,
             type: InboxItemType.LicenseReview,
-            title: `🚨 ${fillL2Tokens(dt.title, { KLUBB: wageClubName })}`,
+            title: fillL2Tokens(dt.title, { KLUBB: wageClubName }),
             body: fillL2Tokens(dt.body, { KLUBB: wageClubName }),
             isRead: false,
           } as InboxItem)

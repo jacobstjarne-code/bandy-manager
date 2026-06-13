@@ -69,7 +69,7 @@ export function processYouth(
       id: `inbox_p17_r${nextMatchday}_${game.currentSeason}`,
       date: newDate,
       type: InboxItemType.YouthP17,
-      title: `📋 P19 ${resultStr} mot ${matchResult.opponentName} ${scoreStr}`,
+      title: `P19 ${resultStr} mot ${matchResult.opponentName} ${scoreStr}`,
       body: `Pojklaget ${resultStr} mot ${matchResult.opponentName} med ${scoreStr}.${scorerStr}${bestStr}\n${tableStr}${scoutNote}`,
       isRead: false,
     } as InboxItem)

@@ -51,7 +51,7 @@ export function processCupRound(
         id: directQualId,
         date: currentDate,
         type: InboxItemType.BoardFeedback,
-        title: '🏆 Svenska Cupen',
+        title: 'Svenska Cupen',
         body: `Baserat på er ranking (${standing}:a) är ni direktkvalificerade till ${getCupRoundName(firstManagedRound)}.`,
         isRead: false,
       } as InboxItem)
@@ -104,7 +104,7 @@ export function processCupRound(
               id: `inbox_cup_winner_${game.currentSeason}`,
               date: currentDate,
               type: InboxItemType.Playoff,
-              title: '🏆 CUPVINNARE!',
+              title: 'CUPVINNARE!',
               body: `${winnerClub?.name} vinner Svenska Cupen ${game.currentSeason}! En fantastisk bedrift!`,
               isRead: false,
             } as InboxItem)
