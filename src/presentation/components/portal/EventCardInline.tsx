@@ -39,7 +39,7 @@ function getEventTypeLabel(event: GameEvent): string {
     case 'academyEvent':
       return '🎓 AKADEMIN'
     case 'refereeMeeting':
-      return '🟡 DOMAREN'
+      return '⚖️ DOMAREN'
     case 'journalistExclusive':
       return '📰 LOKALTIDNINGEN'
     case 'politicianEvent':
