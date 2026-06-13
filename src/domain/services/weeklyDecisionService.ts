@@ -2,6 +2,7 @@ import type { SaveGame, ClubEra } from '../entities/SaveGame'
 import { PlayerPosition } from '../enums'
 import { getCharacterName } from './supporterService'
 import { calculateClubEra } from './clubEraService'
+import { mulberry32 } from '../utils/random'
 
 export type WeeklyDecisionCategory = 'player' | 'supporter' | 'training' | 'community'
 
@@ -261,7 +262,7 @@ export function resolveWeeklyDecision(
       if (choice === 'A')
         return [{ type: 'supporterMood', delta: 5 }]
       // 50/50
-      return [{ type: 'supporterMood', delta: Math.random() < 0.5 ? 3 : -4 }]
+      return [{ type: 'supporterMood', delta: mulberry32(game.currentMatchday * 9301 + decision.id.length * 37)() < 0.5 ? 3 : -4 }]
 
     case 'reporter_klacken':
       if (choice === 'A')

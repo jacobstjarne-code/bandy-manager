@@ -470,7 +470,7 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
       const buyerC = game.clubs.find(c => c.id === bid.buyingClubId)
       const rivalry = sellerC && buyerC ? getRivalry(sellerC.id, buyerC.id) : null
       if (rivalry) {
-        const rivalText = PLAYER_REACTION_RIVAL_SALE[Math.floor(Math.random() * PLAYER_REACTION_RIVAL_SALE.length)]
+        const rivalText = seededPick(PLAYER_REACTION_RIVAL_SALE, bid.id + String(nextMatchday))
         const tp = players.find(p => p.id === bid.playerId)
         moments.push({
           id: `moment_rival_sale_${bid.playerId}_${nextMatchday}`,

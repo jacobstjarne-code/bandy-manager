@@ -2,6 +2,7 @@ import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { Player, CareerMilestone, PlayerSeasonStats } from '../../../domain/entities/Player'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import { FixtureStatus, MatchEventType, InboxItemType } from '../../../domain/enums'
+import { mulberry32 } from '../../../domain/utils/random'
 
 /** A5: tom säsongsstatistik (för cup-grenen innan första cupmatchen). */
 function emptySeasonStats(): PlayerSeasonStats {
@@ -259,7 +260,8 @@ export function updatePlayerMatchStats(
       if (allStarters.includes(benchId)) continue
       const idx = finalPlayers.findIndex(p => p.id === benchId)
       if (idx === -1) continue
-      const benchMinutes = 30 + Math.floor(Math.random() * 11)  // 30-40 min
+      const benchRand = mulberry32(nextRound * 7919 + benchId.charCodeAt(0) * 31 + benchId.charCodeAt(benchId.length - 1))
+      const benchMinutes = 30 + Math.floor(benchRand() * 11)  // 30-40 min
       const benchPlayer = finalPlayers[idx]
       const benchTarget = isCupFixture ? (benchPlayer.seasonCupStats ?? emptySeasonStats()) : benchPlayer.seasonStats
       const benchUpdated = { ...benchTarget, minutesPlayed: benchTarget.minutesPlayed + benchMinutes, gamesPlayed: benchTarget.gamesPlayed + 1 }
