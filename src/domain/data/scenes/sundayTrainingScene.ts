@@ -4,9 +4,13 @@
  * spelarens första kontakt med truppen.
  *
  * All svensk text lever här. Inget hårdkodas i komponenten.
+ * Namen är tokens — {earliest}/{phone}/{cold} — löses ut i ScenComponent.
  */
 
+export type SundayTrainingCastKey = 'earliest' | 'phone' | 'cold' | 'group'
+
 export interface SundayTrainingPlayer {
+  castKey: SundayTrainingCastKey
   initial: string
   name: string
   /** Innehåller HTML — em för citat, strong för betoning. */
@@ -21,41 +25,45 @@ export interface SundayTrainingChoice {
 
 export const SUNDAY_TRAINING_PLAYERS: SundayTrainingPlayer[] = [
   {
-    initial: 'H',
-    name: 'Henriksson',
-    text: 'skrinnar varv. <em>"Han kommer alltid först,"</em> säger Vaktmästaren. <em>"Han började åtta i morse."</em>',
+    castKey: 'earliest',
+    initial: '{earliest}',
+    name: '{earliest}',
+    text: 'skrinnar varv. <em>"Den där kommer alltid först,"</em> säger Vaktmästaren. <em>"Var på isen åtta i morse."</em>',
   },
   {
-    initial: 'L',
-    name: 'Lindberg',
-    text: 'står på läktaren och pratar i telefonen. <em>Han har inte ens skridskorna på.</em>',
+    castKey: 'phone',
+    initial: '{phone}',
+    name: '{phone}',
+    text: 'står på läktaren och pratar i telefon. <em>Skridskorna är inte ens på.</em>',
   },
   {
+    castKey: 'group',
     initial: 'A',
     name: 'Andersson, Eriksson, Karlsson',
     text: 'skjuter på mål utan målvakt. <em>De skrattar varje gång någon träffar stolpen.</em>',
   },
   {
-    initial: 'B',
-    name: 'Bergström',
+    castKey: 'cold',
+    initial: '{cold}',
+    name: '{cold}',
     text: 'sitter på avbytarbänken. Fryser. <em>Mössan ner över ögonen.</em>',
   },
 ]
 
 export const SUNDAY_TRAINING_CHOICES: SundayTrainingChoice[] = [
   {
-    id: 'greet_henriksson',
-    label: 'Gå ut och säg hej till Henriksson',
+    id: 'greet_{earliest}',
+    label: 'Gå ut och säg hej till {earliest}',
     effectDescription: 'Bygger relation till en lojal spelare',
   },
   {
-    id: 'disturb_lindberg',
-    label: 'Stör Lindberg',
+    id: 'disturb_{phone}',
+    label: 'Stör {phone}',
     effectDescription: 'Sätter ton — men på vilket sätt?',
   },
   {
-    id: 'ask_bergstrom',
-    label: 'Fråga Bergström varför han sitter där',
+    id: 'ask_{cold}',
+    label: 'Fråga {cold} varför',
     effectDescription: 'Lyssna in',
   },
   {

@@ -11,6 +11,7 @@ import {
   SUNDAY_TRAINING_CHOICES,
   SUNDAY_TRAINING_META,
 } from '../../../domain/data/scenes/sundayTrainingScene'
+import { PlayerPosition } from '../../../domain/enums'
 import { SceneHeader } from './shared/SceneHeader'
 import { SceneChoiceButton } from './shared/SceneChoiceButton'
 import { SnowParticles } from './shared/SnowParticles'
@@ -26,6 +27,46 @@ export function SundayTrainingScene({ game, onComplete }: Props) {
   const arena = club?.arenaName ?? 'klubbarenan'
   const dateText = SUNDAY_TRAINING_META.date.replace('{arena}', arena)
   const seed = game.currentSeason * 9301 + game.managedClubId.length * 49297 + 1
+
+  // Trait-based casting — texts describe character traits, casting must match
+  const squadPlayers = game.players.filter(
+    p => p.clubId === game.managedClubId && p.position !== PlayerPosition.Goalkeeper
+  )
+  const castNames: Record<string, string> = {}
+  const castIds: Record<string, string> = {}
+  if (squadPlayers.length >= 3) {
+    const profScore = (p: typeof squadPlayers[0]) =>
+      (p.attributes.workRate + (p.loyaltyScore ?? 5) * 10) / 2
+
+    const earliest = [...squadPlayers].sort((a, b) => profScore(b) - profScore(a))[0]
+    const remaining1 = squadPlayers.filter(p => p.id !== earliest.id)
+    const phone = [...remaining1].sort((a, b) => a.attributes.workRate - b.attributes.workRate)[0]
+    const remaining2 = remaining1.filter(p => p.id !== phone.id)
+    const cold = [...remaining2].sort((a, b) => a.morale - b.morale)[0]
+
+    castNames['{earliest}'] = earliest.lastName
+    castIds['{earliest}'] = earliest.id
+    castNames['{phone}'] = phone.lastName
+    castIds['{phone}'] = phone.id
+    castNames['{cold}'] = cold.lastName
+    castIds['{cold}'] = cold.id
+  }
+
+  function resolveToken(s: string): string {
+    return s.replace(/\{earliest\}|\{phone\}|\{cold\}/g, m => castNames[m] ?? m)
+  }
+
+  const resolvedPlayers = SUNDAY_TRAINING_PLAYERS.map(p => {
+    if (p.castKey === 'group') return p
+    const name = resolveToken(p.name)
+    return { ...p, initial: name[0] ?? p.initial, name }
+  })
+
+  const resolvedChoices = SUNDAY_TRAINING_CHOICES.map(c => ({
+    ...c,
+    id: c.id.replace(/\{earliest\}|\{phone\}|\{cold\}/g, m => castIds[m] ?? m),
+    label: resolveToken(c.label),
+  }))
 
   return (
     <div
@@ -78,7 +119,7 @@ export function SundayTrainingScene({ game, onComplete }: Props) {
           {SUNDAY_TRAINING_META.subtitle}
         </div>
 
-        <SundayTrainingPlayerList players={SUNDAY_TRAINING_PLAYERS} />
+        <SundayTrainingPlayerList players={resolvedPlayers} />
 
         {/* Val */}
         <div
@@ -89,7 +130,7 @@ export function SundayTrainingScene({ game, onComplete }: Props) {
             marginTop: 30,
           }}
         >
-          {SUNDAY_TRAINING_CHOICES.map(c => (
+          {resolvedChoices.map(c => (
             <SceneChoiceButton key={c.id} choice={c} onClick={onComplete} />
           ))}
         </div>
