@@ -147,6 +147,8 @@ export interface Player {
   // C-K1 — Landslagsuttagning
   nationalTeamCallups?: number       // total career callups
   lastNationalTeamCallup?: number    // season of last callup
+
+  freeAgentSince?: number            // season when player entered free-agent pool (for gallring)
 }
 
 export type PlayerAvailability =

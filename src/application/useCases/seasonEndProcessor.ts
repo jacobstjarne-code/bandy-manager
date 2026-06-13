@@ -1171,8 +1171,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     transferState: {
       ...game.transferState,
       freeAgents: [
-        ...(game.transferState?.freeAgents ?? []),
-        ...playersAfterLicense.filter(p => contractExpiredIds.has(p.id)),
+        ...(game.transferState?.freeAgents ?? []).filter(p =>
+          p.age < 37 &&
+          game.currentSeason - (p.freeAgentSince ?? game.currentSeason) < 2
+        ),
+        ...playersAfterLicense
+          .filter(p => contractExpiredIds.has(p.id))
+          .map(p => ({ ...p, freeAgentSince: game.currentSeason })),
       ],
     },
     youthIntakeHistory: youthRecords,

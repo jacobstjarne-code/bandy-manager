@@ -13,6 +13,7 @@ import { generateMatchWeather } from '../../../domain/services/weatherService'
 import { calcAttendance } from '../../../domain/services/economyService'
 import { generatePressConference } from '../../../domain/services/pressConferenceService'
 import { mulberry32 } from '../../../domain/utils/random'
+import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../../domain/data/playerNames'
 import { pickRefereeForMatch, shouldTriggerRefereeMeeting, updateRefereeRelation, REFEREE_MEETING_QUOTES, getRefereeDisplayName, generateReferees } from '../../../domain/services/refereeService'
 import type { Referee } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
@@ -38,7 +39,9 @@ function createRegenPlayer(club: Club, index: number, rand: () => number): Playe
   const attrs = { skating: 40, acceleration: 40, stamina: 40, ballControl: 40, passing: 40, shooting: 40, dribbling: 40, vision: 40, decisions: 40, workRate: 50, positioning: 40, defending: 40, cornerSkill: 30, goalkeeping: 10, cornerRecovery: 50 }
   return {
     id: `regen_${club.id}_${index}_${Math.floor(rand() * 99999)}`,
-    firstName: 'Regen', lastName: 'Spelare', age: 20 + Math.floor(rand() * 10),
+    firstName: PLAYER_FIRST_NAMES[Math.floor(rand() * PLAYER_FIRST_NAMES.length)],
+    lastName: PLAYER_LAST_NAMES[Math.floor(rand() * PLAYER_LAST_NAMES.length)],
+    age: 20 + Math.floor(rand() * 10),
     nationality: 'svenska', clubId: club.id, isHomegrown: false,
     position: pos, archetype: PlayerArchetype.TwoWaySkater,
     salary: 3000, contractUntilSeason: 9999, marketValue: 10000,

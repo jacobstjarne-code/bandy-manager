@@ -46,31 +46,10 @@ export function derivePreRoundContext(
 
   const nextMatchday = Math.min(...scheduledFixtures.map(f => f.matchday))
 
-  // Diagnostic logging (verbatim from roundProcessor)
-  if (typeof window !== 'undefined') {
-    console.log('[ADVANCE] nextMatchday:', nextMatchday,
-      'scheduled:', scheduledFixtures.slice(0, 8).map(f => ({ md: f.matchday, isCup: !!f.isCup, r: f.roundNumber })))
-  }
-
-  // Guard: detect matchday skips (diagnostic for omgångshopp bug)
-  const lastPlayedMatchday = game.fixtures
-    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-    .reduce((max, f) => Math.max(max, f.matchday ?? f.roundNumber), 0)
-  if (nextMatchday > lastPlayedMatchday + 2 && lastPlayedMatchday > 0) {
-    console.warn(`[MATCHDAY SKIP] last=${lastPlayedMatchday} next=${nextMatchday} — possible scheduling gap`)
-  }
-
   const roundFixtures = game.fixtures.filter(f =>
     f.matchday === nextMatchday &&
     (f.status === FixtureStatus.Scheduled || f.status === FixtureStatus.Completed)
   )
-
-  // Guard: detect cup+league collision on same matchday
-  const hasCupCheck = roundFixtures.some(f => f.isCup)
-  const hasLeagueCheck = roundFixtures.some(f => !f.isCup && f.roundNumber <= 22)
-  if (hasCupCheck && hasLeagueCheck) {
-    console.error(`[MATCHDAY CONFLICT] md${nextMatchday} has both cup and league fixtures!`)
-  }
 
   const isCupRound = roundFixtures.some(f => f.isCup)
   const isPlayoffRound = !isCupRound && game.playoffBracket !== null && nextMatchday > 26
