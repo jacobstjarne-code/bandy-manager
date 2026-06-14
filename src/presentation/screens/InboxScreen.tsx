@@ -274,7 +274,13 @@ export function InboxScreen() {
     return bid?.expiresRound ?? undefined
   }
 
-  const sorted = [...game.inbox].sort((a, b) => b.date.localeCompare(a.date))
+  // MatchResult items stay in game.inbox (inboxToPortal uses them) but aren't shown here —
+  // Granska is the authoritative match result surface.
+  const visible = [...game.inbox]
+    .filter(i => i.type !== InboxItemType.MatchResult)
+    .sort((a, b) => b.date.localeCompare(a.date))
+
+  const sorted = visible  // alias for downstream refs
   const unreadCount = sorted.filter(i => !i.isRead).length
 
   // Separate training items for aggregation
