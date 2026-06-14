@@ -1,13 +1,7 @@
 import type { Player } from '../../../domain/entities/Player'
 import type { Club } from '../../../domain/entities/Club'
 import type { ScoutReport } from '../../../domain/entities/Scouting'
-import { positionShort } from '../../utils/formatters'
-
-function formatValue(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
-  if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
-  return `${v} kr`
-}
+import { positionShort, formatValue } from '../../utils/formatters'
 
 interface TransferPlayerCardProps {
   player: Player

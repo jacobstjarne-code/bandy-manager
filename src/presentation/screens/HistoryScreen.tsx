@@ -285,6 +285,7 @@ export function HistoryScreen() {
               </div>
               {photoSvg && (
                 <div
+                  className="lagfoto-frame"
                   style={{ borderRadius: 8, overflow: 'hidden', cursor: 'pointer' }}
                   onClick={() => {
                     const blob = new Blob([photoSvg], { type: 'image/svg+xml' })

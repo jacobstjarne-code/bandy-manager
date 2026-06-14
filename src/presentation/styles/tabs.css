@@ -59,6 +59,13 @@
   border-bottom: none;
 }
 
+/* ── Lagfoto responsive frame (BUG-8: SVG 900px klipps på smal skärm) ── */
+.lagfoto-frame svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* ── Tab content description ── */
 
 .tab-bar-desc {

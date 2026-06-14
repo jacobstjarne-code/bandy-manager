@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
-import { formatCurrency } from '../../utils/formatters'
+import { formatSalary } from '../../utils/formatters'
 import '../../styles/ledger.css'
 
 const PERF_DOTS = Array.from({ length: 8 })
@@ -40,10 +40,10 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
           <div style={{ flex: 1, padding: '4px 12px 16px 10px' }}>
             <div className="transfers-info-box" style={{ marginBottom: 20 }}>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                Nuvarande: {formatCurrency(player.salary)}/mån · kontrakt t.o.m. säsong {player.contractUntilSeason}
+                Nuvarande: {formatSalary(player.salary)} · kontrakt t.o.m. säsong {player.contractUntilSeason}
               </p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                Lägsta acceptabelt: {formatCurrency(minSalary)}/mån
+                Lägsta acceptabelt: {formatSalary(minSalary)}
               </p>
             </div>
             <div style={{ marginBottom: 16 }}>

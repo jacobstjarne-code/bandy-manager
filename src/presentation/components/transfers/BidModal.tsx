@@ -2,13 +2,8 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
 import { RIVALRY_WARNING_PER_INTENSITY } from '../../../domain/data/transferResponseText'
+import { formatValue } from '../../utils/formatters'
 import '../../styles/ledger.css'
-
-function formatValue(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
-  if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
-  return `${v} kr`
-}
 
 const PERF_DOTS = Array.from({ length: 8 })
 

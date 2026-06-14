@@ -10,7 +10,7 @@ import { getPlayerVoice } from '../../domain/services/playerVoiceService'
 import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
 import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
-import { formatCurrency } from '../utils/formatters'
+import { formatSalary } from '../utils/formatters'
 
 export interface PlayerCardProps {
   player: Player
@@ -686,7 +686,7 @@ export function PlayerCard({
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>💰</span>
-              <span style={{ color: 'var(--text-secondary)' }}>Lön: <strong>{formatCurrency(player.salary)}/mån</strong></span>
+              <span style={{ color: 'var(--text-secondary)' }}>Lön: <strong>{formatSalary(player.salary)}</strong></span>
             </div>
           </div>
         </div>

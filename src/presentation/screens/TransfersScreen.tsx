@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
-import { formatCurrency, positionShort } from '../utils/formatters'
+import { formatCurrency, positionShort, formatValue, formatSalary } from '../utils/formatters'
 import { SectionLabel } from '../components/SectionLabel'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 
@@ -18,12 +18,6 @@ import { FreeAgentList } from '../components/transfers/FreeAgentList'
 import { WageOverrunWarning } from '../components/transfers/WageOverrunWarning'
 import '../styles/transfers.css'
 import { TabBar } from '../components/shared/TabBar'
-
-function formatValue(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
-  if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
-  return `${v} kr`
-}
 
 export function TransfersScreen() {
   const game = useGameStore(s => s.game)
@@ -107,7 +101,7 @@ export function TransfersScreen() {
       ? currentPlayer.currentAbility * 200 * 0.80
       : currentPlayer.currentAbility * 80 * 0.80) / 500) * 500
     if (newSalary < minSalary) {
-      setRenewError(`${currentPlayer.firstName} avslår — kräver minst ${formatCurrency(minSalary)}/mån`)
+      setRenewError(`${currentPlayer.firstName} avslår — kräver minst ${formatSalary(minSalary)}`)
       return
     }
     if (newSalary === minSalary) {
@@ -117,7 +111,7 @@ export function TransfersScreen() {
       if ((currentPlayer.potentialAbility ?? 0) > 70) rejectChance += 0.15
       if (Math.random() < rejectChance) {
         const counterSalary = Math.round(minSalary * 1.15 / 500) * 500
-        setRenewError(`${currentPlayer.firstName} avvisar erbjudandet — vill ha minst ${formatCurrency(counterSalary)}/mån`)
+        setRenewError(`${currentPlayer.firstName} avvisar erbjudandet — vill ha minst ${formatSalary(counterSalary)}`)
         return
       }
     }
@@ -133,7 +127,7 @@ export function TransfersScreen() {
         return
       }
       if (result.wageWarning) {
-        setWageWarning(`OBS: Lönekostnaderna överstiger budgeten med ${formatCurrency(result.wageWarning)}/mån`)
+        setWageWarning(`OBS: Lönekostnaderna överstiger budgeten med ${formatSalary(result.wageWarning)}`)
       }
       setRenewingPlayerId(null)
       setRenewError(null)
@@ -424,7 +418,7 @@ export function TransfersScreen() {
                       {player.firstName} {player.lastName}
                     </p>
                     <p className="transfers-list-meta">
-                      {positionShort(player.position)} · {formatValue(player.marketValue)} · {formatCurrency(player.salary)}/mån · t.o.m. {player.contractUntilSeason}
+                      {positionShort(player.position)} · {formatValue(player.marketValue)} · {formatSalary(player.salary)} · t.o.m. {player.contractUntilSeason}
                     </p>
                   </div>
                   <button onClick={() => setRenewingPlayerId(player.id)} className="btn btn-outline" style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, fontWeight: 600 }}>

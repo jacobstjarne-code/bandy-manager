@@ -1,6 +1,6 @@
 import type { Player } from '../../../domain/entities/Player'
 import type { ScoutReport } from '../../../domain/entities/Scouting'
-import { positionShort, formatCurrency } from '../../utils/formatters'
+import { positionShort, formatSalary } from '../../utils/formatters'
 
 interface FreeAgentListProps {
   freeAgents: Player[]
@@ -27,7 +27,7 @@ export function FreeAgentList({ freeAgents, windowOpen, scoutReports, onSign }: 
               {agent.firstName} {agent.lastName}
             </p>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-              {positionShort(agent.position)} · Styrka {scoutReports[agent.id] ? `~${scoutReports[agent.id].estimatedCA}` : '?'} · {formatCurrency(agent.salary)}/mån
+              {positionShort(agent.position)} · Styrka {scoutReports[agent.id] ? `~${scoutReports[agent.id].estimatedCA}` : '?'} · {formatSalary(agent.salary)}
             </p>
           </div>
           <button

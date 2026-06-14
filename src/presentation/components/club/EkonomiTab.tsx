@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
-import { formatCurrency, formatFinance, seasonTrendStroke } from '../../utils/formatters'
+import { formatCurrency, formatFinance, formatSalary, seasonTrendStroke } from '../../utils/formatters'
 import { calcRoundIncome, deriveKassaHistory } from '../../../domain/services/economyService'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import '../../styles/economy.css'
@@ -194,7 +194,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
         </div>
         {wagePressure && (
           <p style={{ fontSize: 11, color: 'var(--danger)', marginBottom: 6 }}>
-            ⚠️ Lönekostnader överstiger lönebudget ({formatCurrency(club.wageBudget)}/mån)
+            ⚠️ Lönekostnader överstiger lönebudget ({formatSalary(club.wageBudget)})
           </p>
         )}
         <div className="eco-row-top-border">
