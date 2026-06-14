@@ -188,7 +188,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
         const relLabel = j.relationship >= 70 ? '😊 Positiv' : j.relationship < 40 ? '😤 Kritisk' : null
         const recentMemories = [...(j.memory ?? [])].reverse().slice(0, 2)
         return (
-          <SectionCard title="📰 Lokaltidningen" stagger={2}>
+          <SectionCard title="📰 Lokaltidningen" stagger={2} collapsible defaultCollapsed>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <div>
                 <p style={{ fontSize: 13, fontWeight: 600 }}>{j.name}</p>
@@ -500,7 +500,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
         </button>
       </SectionCard>
 
-      <SectionCard title="🎯 Förväntan & profil" stagger={3}>
+      <SectionCard title="🎯 Förväntan & profil" stagger={3} collapsible defaultCollapsed>
         {/* WEAK-012: Reputation */}
         {(() => {
           const r = club.reputation
@@ -553,7 +553,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
 
 
       {game.seasonSummaries && game.seasonSummaries.length > 0 && (
-        <SectionCard title="📅 Säsongshistorik" stagger={4}>
+        <SectionCard title="📅 Säsongshistorik" stagger={4} collapsible defaultCollapsed>
           {[...game.seasonSummaries].reverse().map(s => {
             const posColor = s.finalPosition <= 3 ? 'var(--accent)' : s.finalPosition >= 10 ? 'var(--danger)' : 'var(--text-primary)'
             let playoffLabel = ''

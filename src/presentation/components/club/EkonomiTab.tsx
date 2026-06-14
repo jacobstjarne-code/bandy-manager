@@ -437,7 +437,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
 
       {/* Transaktionshistorik */}
       {(game.financeLog ?? []).length > 0 && (
-        <SectionCard title="📋 Transaktionshistorik" stagger={6}>
+        <SectionCard title="📋 Transaktionshistorik" stagger={6} collapsible defaultCollapsed>
           {[...(game.financeLog ?? [])].reverse().slice(0, 12).map((entry, i, arr) => (
             <div key={i} className="eco-txn-row" style={{
               borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',

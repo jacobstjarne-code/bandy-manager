@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 interface SectionCardProps {
@@ -8,9 +9,13 @@ interface SectionCardProps {
   action?: ReactNode
   style?: React.CSSProperties
   id?: string
+  collapsible?: boolean
+  defaultCollapsed?: boolean
 }
 
-export function SectionCard({ title, children, variant = 'sharp', stagger, action, style, id }: SectionCardProps) {
+export function SectionCard({ title, children, variant = 'sharp', stagger, action, style, id, collapsible, defaultCollapsed }: SectionCardProps) {
+  const [collapsed, setCollapsed] = useState(collapsible ? (defaultCollapsed ?? false) : false)
+
   const cardClass = [
     variant === 'sharp' ? 'card-sharp' : 'card-round',
     stagger ? `card-stagger-${stagger}` : '',
@@ -23,7 +28,7 @@ export function SectionCard({ title, children, variant = 'sharp', stagger, actio
       style={{ margin: '0 0 8px', overflow: 'hidden', ...style }}
     >
       <div style={{ padding: '10px 14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: collapsed ? 0 : 6 }}>
           <span style={{
             color: 'var(--text-muted)',
             fontSize: 9,
@@ -34,9 +39,22 @@ export function SectionCard({ title, children, variant = 'sharp', stagger, actio
           }}>
             {title}
           </span>
-          {action && <div>{action}</div>}
+          {collapsible ? (
+            <button
+              onClick={() => setCollapsed(c => !c)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: 10, color: 'var(--accent)', fontFamily: 'var(--font-body)',
+                padding: '0 0 0 8px', lineHeight: 1,
+              }}
+            >
+              {collapsed ? 'Visa allt →' : 'Dölj ↑'}
+            </button>
+          ) : (
+            action && <div>{action}</div>
+          )}
         </div>
-        {children}
+        {!collapsed && children}
       </div>
     </div>
   )
