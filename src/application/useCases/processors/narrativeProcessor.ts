@@ -196,7 +196,7 @@ export function processNarrative(
           id: `inbox_nemesis_${playerId}_${game.currentSeason}`,
           date: game.currentDate,
           type: InboxItemType.BoardFeedback,
-          title: `⚠️ Nemesis: ${opponentPlayer.firstName} ${opponentPlayer.lastName}`,
+          title: `Nemesis: ${opponentPlayer.firstName} ${opponentPlayer.lastName}`,
           body: `${opponentPlayer.firstName} ${opponentPlayer.lastName} (${nemesisClub?.name ?? 'motst.'}) har nu gjort ${newTotal} mål mot oss. Är det dags att värva honom istället?`,
           relatedPlayerId: playerId,
           isRead: false,
@@ -281,7 +281,7 @@ export function processUpcomingDerbyNotification(
     id: `inbox_derby_${upcomingManagedFixture.id}`,
     date: game.currentDate,
     type: InboxItemType.Derby,
-    title: `🔥 Derby nästa omgång! ${derbyRivalry.name}`,
+    title: `Derby nästa omgång — ${derbyRivalry.name}`,
     body: `${managedClub?.name ?? 'Ni'} möter ${opponentClub?.name ?? 'motståndaren'} i ${derbyRivalry.name}. Intensiteten kommer vara hög.`,
     isRead: false,
   })
