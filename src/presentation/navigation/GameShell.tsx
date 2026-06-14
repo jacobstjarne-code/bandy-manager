@@ -49,6 +49,22 @@ export function GameShell() {
   // coffee_room is a modal over dashboard — BottomNav stays visible (FIX-41)
   const sceneActive = attention.kind === 'scene' && game.pendingScene?.sceneId !== 'coffee_room'
 
+  // Routes that own their own CTA chrome — BottomNav would overlap it
+  const HIDDEN_PATHS = new Set([
+    '/game/match',
+    '/game/match/live',
+    '/game/review',
+    '/game/playoff-intro',
+    '/game/qf-summary',
+    '/game/sim-summary',
+    '/game/half-time-summary',
+    '/game/champion',
+    '/game/season-summary',
+  ])
+  const hideBottomNav = sceneActive ||
+    HIDDEN_PATHS.has(location.pathname) ||
+    location.pathname.startsWith('/game/season-summary/')
+
   // EventOverlay visas INTE när en scen väntar — scenen har prioritet
   // EventOverlay visas INTE under live-match, match-setup, resultat eller granskning
   // EventOverlay visas BARA för kritiska events — medium/atmospheric visas av PortalEventSlot
@@ -70,12 +86,12 @@ export function GameShell() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {!isLedgerOwnedChrome && <GameHeader />}
       {!isLedgerOwnedChrome && <PhaseIndicatorAuto />}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: sceneActive ? 0 : `calc(var(--bottom-nav-height) + var(--safe-bottom))` }}>
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: hideBottomNav ? 0 : `calc(var(--bottom-nav-height) + var(--safe-bottom))` }}>
         <div key={location.pathname} className="screen-enter" style={{ minHeight: '100%' }}>
           <Outlet />
         </div>
       </div>
-      {!sceneActive && <BottomNav />}
+      {!hideBottomNav && <BottomNav />}
       <DoctorFAB />
       {shouldShowEventOverlay && <EventOverlay event={attention.event} />}
     </div>
