@@ -1330,7 +1330,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: trimmedBids,
     pendingEvents: [
-      ...(game.pendingEvents ?? []).filter(e => !e.resolved && !allNewEvents.some(n => n.id === e.id)),
+      ...(game.pendingEvents ?? []).filter(e =>
+        !e.resolved &&
+        !allNewEvents.some(n => n.id === e.id) &&
+        !playoffResult.staleEventIds.includes(e.id)
+      ),
       ...allNewEvents,
     ],
     sponsors: updatedSponsors,

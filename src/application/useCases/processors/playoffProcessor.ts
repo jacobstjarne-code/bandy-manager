@@ -18,6 +18,7 @@ export interface PlayoffProcessorResult {
   gameEvents: GameEvent[]
   cancelledFixtureIds: string[]
   triggerQFSummary: boolean
+  staleEventIds: string[]
 }
 
 /**
@@ -46,6 +47,7 @@ export function processPlayoffRound(
     gameEvents: [],
     cancelledFixtureIds: [],
     triggerQFSummary: false,
+    staleEventIds: [],
   }
 
   if (result.updatedBracket === null) return result
@@ -136,9 +138,10 @@ export function processPlayoffRound(
 
   if (currentPhaseComplete) {
     const wasQFPhase = result.updatedBracket!.status === PlayoffStatus.QuarterFinals
+    const wasSFPhase = result.updatedBracket!.status === PlayoffStatus.SemiFinals
     const nextRoundStart =
       wasQFPhase ? 28
-      : result.updatedBracket!.status === PlayoffStatus.SemiFinals ? 33
+      : wasSFPhase ? 33
       : 36
     const currentMaxMatchday = Math.max(0, ...allFixtures.map(f => f.matchday ?? 0))
     const nextMatchdayStart = currentMaxMatchday + 1
@@ -153,6 +156,12 @@ export function processPlayoffRound(
     if (wasQFPhase && game.pendingScreen !== PendingScreen.QFSummary) {
       result.triggerQFSummary = true
     }
+
+    // Clear stale playoff event for the phase that just completed — prevents
+    // old "Fokusera"-kort from persisting into the next phase's portal
+    if (wasQFPhase) result.staleEventIds.push(`playoff_qf_${game.currentSeason}`)
+    else if (wasSFPhase) result.staleEventIds.push(`playoff_sf_${game.currentSeason}`)
+
     // Narrative event for managed club advancing to next round
     const managedInNewBracket = [
       ...newBracket.semiFinals,
