@@ -9,6 +9,7 @@ import { InboxItemType } from '../../domain/enums'
 import type { InboxItem, SaveGame } from '../../domain/entities/SaveGame'
 import { Check } from 'lucide-react'
 import { PlayerLink } from '../components/PlayerLink'
+import { Dot, dotColor, type DotColor } from '../components/shared/Dot'
 
 // ── Icon per type ────────────────────────────────────────────────
 
@@ -83,10 +84,10 @@ function getGroup(item: InboxItem, game: SaveGame): InboxGroup {
   }
 }
 
-const GROUP_META: Record<InboxGroup, { label: string; dotColor: string }> = {
-  'kräver-svar': { label: 'KRÄVER SVAR',  dotColor: 'var(--danger)' },
-  'nyheter':     { label: 'NYHETER',       dotColor: 'var(--accent)' },
-  'rapporter':   { label: 'RAPPORTER',     dotColor: 'var(--border-dark, #c4b9a8)' },
+const GROUP_META: Record<InboxGroup, { label: string; dot: DotColor }> = {
+  'kräver-svar': { label: 'KRÄVER SVAR',  dot: 'danger' },
+  'nyheter':     { label: 'NYHETER',       dot: 'accent' },
+  'rapporter':   { label: 'RAPPORTER',     dot: 'neutral' },
 }
 
 const GROUP_ORDER: InboxGroup[] = ['kräver-svar', 'nyheter', 'rapporter']
@@ -345,10 +346,7 @@ export function InboxScreen() {
                     position: 'sticky', top: 0,
                     background: 'var(--bg)', zIndex: 1,
                   }}>
-                    <div style={{
-                      width: 7, height: 7, borderRadius: '50%',
-                      background: meta.dotColor, flexShrink: 0,
-                    }} />
+                    <Dot color={meta.dot} />
                     <span style={{
                       fontSize: 8, fontWeight: 600, letterSpacing: '2px',
                       textTransform: 'uppercase', color: 'var(--text-muted)',
@@ -361,7 +359,7 @@ export function InboxScreen() {
                       color: 'var(--text-secondary)', letterSpacing: 0,
                     }}>
                       {items.length + (isRapporter && hasTraining ? 1 : 0)}
-                      {unreadInGroup > 0 && <span style={{ color: meta.dotColor, marginLeft: 4 }}>({unreadInGroup})</span>}
+                      {unreadInGroup > 0 && <span style={{ color: dotColor(meta.dot), marginLeft: 4 }}>({unreadInGroup})</span>}
                     </span>
                   </div>
 

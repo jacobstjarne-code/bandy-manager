@@ -42,11 +42,20 @@
 .tab-bar-fade {
   position: absolute;
   top: 0;
-  right: 0;
-  width: 24px;
+  width: 28px;
   height: 100%;
-  background: linear-gradient(to left, var(--bg-surface), transparent);
   pointer-events: none;
+  z-index: 2;
+}
+
+.tab-bar-fade-right {
+  right: 0;
+  background: linear-gradient(to left, var(--bg-surface), transparent);
+}
+
+.tab-bar-fade-left {
+  left: 0;
+  background: linear-gradient(to right, var(--bg-surface), transparent);
 }
 
 /* ── Screen-level tab wrappers ── */
