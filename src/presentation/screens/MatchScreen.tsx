@@ -428,6 +428,8 @@ export function MatchScreen() {
           isFinal: nextFixture.roundNumber > 22 && game!.playoffBracket?.final?.fixtures.includes(nextFixture.id),
           isSemiFinal: nextFixture.roundNumber > 22 && game!.playoffBracket?.semiFinals.some(s => s.fixtures.includes(nextFixture.id)),
           isAnnandagen: nextFixture.isAnnandagen === true,
+          weatherAttendanceModifier: liveMatchWeather?.effects.attendanceModifier,
+          hasIndoorArena: homeClub.hasIndoorArena,
         }) : undefined
         navigate('/game/match/live', {
           state: {
@@ -759,6 +761,7 @@ export function MatchScreen() {
           expectedAttendance={nextFixture ? (() => {
             const homeClub = game.clubs.find(c => c.id === nextFixture.homeClubId)
             if (!homeClub) return undefined
+            const mw = (game.matchWeathers ?? []).find(w => w.fixtureId === nextFixture.id)
             return calcAttendance({
               club: homeClub,
               fanMood: game.fanMood ?? 50,
@@ -768,6 +771,8 @@ export function MatchScreen() {
               isDerby: false,
               isFinal: nextFixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(nextFixture.id),
               isSemiFinal: nextFixture.roundNumber > 22 && game.playoffBracket?.semiFinals.some(s => s.fixtures.includes(nextFixture.id)),
+              weatherAttendanceModifier: mw?.effects.attendanceModifier,
+              hasIndoorArena: homeClub.hasIndoorArena,
             })
           })() : undefined}
           arenaName={(() => {

@@ -430,6 +430,7 @@ export function simulateRound(
     const homeClubForAttendance = game.clubs.find(c => c.id === fixture.homeClubId)
     const isFinalFixture = fixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(fixture.id)
     const isSemiFixture = fixture.roundNumber > 22 && game.playoffBracket?.semiFinals.some(s => s.fixtures.includes(fixture.id))
+    const fixtureWeather = game.matchWeathers?.find(mw => mw.fixtureId === fixture.id)
     const attendance = homeClubForAttendance ? calcAttendance({
       club: homeClubForAttendance,
       fanMood: game.fanMood ?? 50,
@@ -441,6 +442,8 @@ export function simulateRound(
       isSemiFinal: isSemiFixture || (fixture.isCup && fixture.roundNumber === 3),
       isAnnandagen: !!currentCalendarSlot?.isAnnandagen,
       fixtureMonth: new Date(game.currentDate).getMonth() + 1,
+      weatherAttendanceModifier: fixtureWeather?.effects.attendanceModifier,
+      hasIndoorArena: homeClubForAttendance.hasIndoorArena,
     }) : undefined
     simulatedFixtures.push({ ...result.fixture, attendance, refereeId: referee.id })
   }

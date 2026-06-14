@@ -7,6 +7,7 @@ import { FixtureStatus } from '../../../domain/enums'
 import {
   calcRoundIncome,
   applyFinanceChange,
+  effectiveWeatherAttendance,
 } from '../../../domain/services/economyService'
 import { getJournalistAttendanceModifier } from '../../../domain/services/journalistVisibilityService'
 import type { FinanceEntry } from '../../../domain/services/economyService'
@@ -73,6 +74,11 @@ export function processEconomy(
     isFirstRound: nextMatchday === 1,
     legendSalaryCost,
     journalistAttendanceModifier: getJournalistAttendanceModifier(game),
+    weatherAttendanceModifier: effectiveWeatherAttendance(
+      game.matchWeathers?.find(mw => mw.fixtureId === managedHomeMatch?.id)?.effects.attendanceModifier,
+      managedClub.hasIndoorArena,
+      Boolean(managedHomeMatch?.isFinaldag || managedHomeMatch?.isAnnandagen || (managedHomeMatch?.matchday ?? 0) > 22),
+    ),
   })
 
   if (managedIncome.weeklyBase !== 0) {
