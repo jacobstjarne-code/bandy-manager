@@ -3,12 +3,7 @@ import type { GameEvent, EventChoice, TransferBid } from '../../entities/GameEve
 import type { Player } from '../../entities/Player'
 import type { Mecenat } from '../../entities/Mecenat'
 import { pickPlayerPraiseText, pickCaptainSpeechText } from '../../data/eventCardInlineStrings'
-
-export function formatValue(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
-  if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
-  return `${v} kr`
-}
+import { formatValue, formatSalary } from '../../format'
 
 // ── Transfer drama events ──────────────────────────────────────────────────
 export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
@@ -215,7 +210,7 @@ export function generateDayJobConflictEvent(player: Player, roundNumber: number)
       },
       {
         id: 'goPro',
-        label: `Erbjud heltidskontrakt (lön ×1.5 → ${Math.round(player.salary * 1.5).toLocaleString('sv-SE')} kr/mån)`,
+        label: `Erbjud heltidskontrakt (lön ×1.5 → ${formatSalary(player.salary * 1.5)})`,
         subtitle: `💰 +${Math.round((player.salary * 0.5) / 1000)} tkr/mån · +15 moral · ⭐ bättre träningseffekt`,
         effect: {
           type: 'makeFullTimePro',

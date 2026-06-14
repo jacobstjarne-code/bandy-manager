@@ -3,18 +3,10 @@
 
 import type { Club } from '../../domain/entities/Club'
 import type { Player } from '../../domain/entities/Player'
+import { positionShort } from '../../domain/format'
 
 function escape(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-}
-
-function posAbbr(pos: string): string {
-  if (pos === 'goalkeeper') return 'MV'
-  if (pos === 'defender') return 'B'
-  if (pos === 'half') return 'YH'
-  if (pos === 'midfielder') return 'MF'
-  if (pos === 'forward') return 'FW'
-  return pos.slice(0, 2).toUpperCase()
 }
 
 export function generateTeamPhotoSvg(
@@ -41,7 +33,7 @@ export function generateTeamPhotoSvg(
       const y = ROW_Y[ri]
       const rating = p.seasonStats.averageRating > 0 ? p.seasonStats.averageRating.toFixed(1) : ''
       const name = escape(`${p.firstName.slice(0, 1)}. ${p.lastName}`)
-      const pos = posAbbr(p.position)
+      const pos = positionShort(p.position)
       return `
         <circle cx="${x}" cy="${y - 24}" r="22" fill="rgba(245,241,235,0.08)" stroke="rgba(245,241,235,0.15)" stroke-width="1"/>
         <text x="${x}" y="${y - 18}" text-anchor="middle" font-size="11" fill="#C47A3A" font-family="Georgia, serif" font-weight="700">${pos}</text>

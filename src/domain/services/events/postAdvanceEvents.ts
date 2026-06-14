@@ -19,8 +19,8 @@ import {
   generateCaptainSpeechEvent,
   generateMecenatInterventionEvent,
   generateJournalistExclusiveEvent,
-  formatValue,
 } from './eventFactories'
+import { formatValue } from '../../format'
 import { findEmployerForJob } from '../../data/localEmployers'
 import { generateSilentShoutEvent, generateMecenatConflictEvent, generateMecenatAllianceEvent } from '../mecenatService'
 

@@ -1,7 +1,7 @@
 import type { Player } from '../../domain/entities/Player'
 import type { ScoutReport } from '../../domain/entities/Scouting'
 import type { SaveGame } from '../../domain/entities/SaveGame'
-import { PlayerArchetype, PlayerPosition } from '../../domain/enums'
+import { PlayerArchetype } from '../../domain/enums'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { canUseLeadershipAction, type LeadershipAction } from '../../domain/services/leadershipService'
 import { ClubBadge } from './ClubBadge'
@@ -10,7 +10,7 @@ import { getPlayerVoice } from '../../domain/services/playerVoiceService'
 import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
 import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
-import { formatSalary } from '../utils/formatters'
+import { formatSalary, positionLong } from '../utils/formatters'
 
 export interface PlayerCardProps {
   player: Player
@@ -45,17 +45,6 @@ function archetypeColor(arch: PlayerArchetype): string {
     [PlayerArchetype.RawTalent]: 'var(--arch-raw)',
   }
   return map[arch] ?? 'var(--arch-default)'
-}
-
-function positionFullLabel(pos: PlayerPosition): string {
-  const map: Record<PlayerPosition, string> = {
-    [PlayerPosition.Goalkeeper]: 'Målvakt',
-    [PlayerPosition.Defender]: 'Back',
-    [PlayerPosition.Half]: 'Ytterhalv',
-    [PlayerPosition.Midfielder]: 'Mittfältare',
-    [PlayerPosition.Forward]: 'Anfallare',
-  }
-  return map[pos] ?? pos
 }
 
 const STAT_LABELS: Partial<Record<keyof Player['attributes'], string>> = {
@@ -302,7 +291,7 @@ export function PlayerCard({
 
   const archColor = archetypeColor(player.archetype)
   const fullName = `${player.firstName} ${player.lastName}`.toUpperCase()
-  const posLabel = positionFullLabel(player.position).toUpperCase()
+  const posLabel = positionLong(player.position).toUpperCase()
 
   const idNum = parseInt(player.id.replace(/\D/g, '').slice(-2) || '10', 10)
   const jerseyNum = (idNum % 98) + 1

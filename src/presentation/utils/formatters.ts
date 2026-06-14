@@ -1,18 +1,12 @@
 import { PlayerPosition, MatchEventType } from '../../domain/enums'
 
+// Kanoniska positionsetiketter + pengar bor i domain/format (delas med domänlagret,
+// som inte får importera presentation). Re-exporteras här så befintliga import-ställen
+// (positionShort/formatValue/formatSalary från '../utils/formatters') är oförändrade.
+export { positionShort, positionLong, formatValue, formatSalary } from '../../domain/format'
+
 export function truncate(s: string, n: number): string {
   return s.length > n ? s.slice(0, n) + '…' : s
-}
-
-export function positionShort(pos: PlayerPosition): string {
-  const map: Record<PlayerPosition, string> = {
-    [PlayerPosition.Goalkeeper]: 'MV',
-    [PlayerPosition.Defender]: 'B',
-    [PlayerPosition.Half]: 'YH',
-    [PlayerPosition.Midfielder]: 'MF',
-    [PlayerPosition.Forward]: 'A',
-  }
-  return map[pos] ?? pos
 }
 
 export const POSITION_ORDER: Record<PlayerPosition, number> = {
@@ -31,18 +25,6 @@ export function ordinal(n: number): string {
 
 export function formatCurrency(n: number): string {
   return n.toLocaleString('sv-SE') + ' kr'
-}
-
-// Market value: mkr/tkr without sign, e.g. "1.2 mkr" or "450 tkr"
-export function formatValue(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
-  if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
-  return `${v} kr`
-}
-
-// Monthly salary: whole tkr with suffix, e.g. "15 tkr/mån"
-export function formatSalary(n: number): string {
-  return `${Math.round(n / 1000)} tkr/mån`
 }
 
 // mkr/tkr format with sign, e.g. "+1.2 mkr" or "-450 tkr"

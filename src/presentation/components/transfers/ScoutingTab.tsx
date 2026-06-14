@@ -4,15 +4,15 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { ScoutAssignment, ScoutReport } from '../../../domain/entities/Scouting'
 import { PlayerPosition } from '../../../domain/enums'
 import { getScoutReportAge } from '../../../domain/services/scoutingService'
-import { positionShort, formatValue } from '../../utils/formatters'
+import { positionShort, positionLong, formatValue } from '../../utils/formatters'
 import { SectionLabel } from '../SectionLabel'
 
-const POSITION_GROUPS: { position: PlayerPosition; label: string }[] = [
-  { position: PlayerPosition.Goalkeeper, label: 'Målvakt' },
-  { position: PlayerPosition.Defender, label: 'Back' },
-  { position: PlayerPosition.Half, label: 'Ytterhalv' },
-  { position: PlayerPosition.Midfielder, label: 'Mittfält' },
-  { position: PlayerPosition.Forward, label: 'Anfallare' },
+const POSITION_GROUPS: PlayerPosition[] = [
+  PlayerPosition.Goalkeeper,
+  PlayerPosition.Defender,
+  PlayerPosition.Half,
+  PlayerPosition.Midfielder,
+  PlayerPosition.Forward,
 ]
 
 const GROUP_CAP = 8
@@ -112,11 +112,9 @@ export function ScoutingTab({
                 className="transfers-select"
               >
                 <option value="any">Alla positioner</option>
-                <option value="forward">Anfallare</option>
-                <option value="midfielder">Mittfältare</option>
-                <option value="half">Ytterhalv</option>
-                <option value="defender">Back</option>
-                <option value="goalkeeper">Målvakt</option>
+                {[...POSITION_GROUPS].reverse().map(pos => (
+                  <option key={pos} value={pos}>{positionLong(pos)}</option>
+                ))}
               </select>
             </div>
             <div style={{ marginBottom: 12 }}>
@@ -303,16 +301,16 @@ export function ScoutingTab({
           </span>
         }>Spelare att utvärdera</SectionLabel>
 
-        {POSITION_GROUPS.map(group => {
-          const groupPlayers = scoutablePlayers.filter(p => p.position === group.position)
+        {POSITION_GROUPS.map(pos => {
+          const groupPlayers = scoutablePlayers.filter(p => p.position === pos)
           if (groupPlayers.length === 0) return null
-          const isExpanded = expandedGroups.has(group.position)
+          const isExpanded = expandedGroups.has(pos)
           const visible = isExpanded ? groupPlayers : groupPlayers.slice(0, GROUP_CAP)
           const hidden = groupPlayers.length - GROUP_CAP
 
           return (
-            <div key={group.position} style={{ marginBottom: 16 }}>
-              <SectionLabel>{group.label}</SectionLabel>
+            <div key={pos} style={{ marginBottom: 16 }}>
+              <SectionLabel>{positionLong(pos)}</SectionLabel>
               <div className="card-sharp" style={{ overflow: 'hidden' }}>
                 {visible.map((player, index) => {
                   const report = scoutReports[player.id]
@@ -383,10 +381,10 @@ export function ScoutingTab({
               {!isExpanded && hidden > 0 && (
                 <button
                   className="btn btn-ghost"
-                  onClick={() => setExpandedGroups(prev => new Set([...prev, group.position]))}
+                  onClick={() => setExpandedGroups(prev => new Set([...prev, pos]))}
                   style={{ marginTop: 4, fontSize: 11, padding: '4px 10px', width: '100%' }}
                 >
-                  + {hidden} fler {group.label.toLowerCase()}
+                  + {hidden} fler {positionLong(pos).toLowerCase()}
                 </button>
               )}
             </div>

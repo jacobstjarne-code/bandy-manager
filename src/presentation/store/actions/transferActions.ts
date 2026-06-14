@@ -4,6 +4,7 @@ import { createOutgoingBid } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { bidReceivedEvent } from '../../../domain/services/events/eventFactories'
+import { formatSalary } from '../../../domain/format'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -47,7 +48,7 @@ export function transferActions(get: Get, set: Set) {
 
       const isFullTimePro = !player.dayJob
       const minSalary = Math.round((isFullTimePro ? player.currentAbility * 200 * 0.80 : player.currentAbility * 80 * 0.80) / 500) * 500
-      if (newSalary < minSalary) return { success: false, error: `${player.firstName} avslår — kräver minst ${minSalary} kr/mån` }
+      if (newSalary < minSalary) return { success: false, error: `${player.firstName} avslår — kräver minst ${formatSalary(minSalary)}` }
 
       const currentWageBill = game.players
         .filter(p => p.clubId === game.managedClubId)

@@ -8,6 +8,18 @@ Syftet är inte formalism. Syftet är att om 6 månader ha ett svar på "varför
 
 ---
 
+## 2026-06-14 — Delade presentationsprimitiver bor i `domain/format.ts`
+
+**Problem:** Positionsetiketter och pengaformat hade tre+ kopior var (MV/B/YH/MF/**A** i `formatters.ts` vs MV/B/YH/MF/**FW** i `teamPhotoGenerator`; Målvakt/Back/… i 3 lokala långform-maps + en trasig prosa-variant i `rumorService` som alltid returnerade "spelare"; `formatValue` definierad både i `formatters.ts` och `eventFactories.ts`). Detta är samma klass som determinism-buggen: varje lokal kopia var rimlig, men tillsammans bröt de "en representation"-invarianten. Designs eget mönster ("global svep sitter halvgjort där route:n rörts") bekräftar att route-för-route degraderar.
+
+**Beslut:** Kanoniska, rena primitiver (`positionShort`, `positionLong`, `formatValue`, `formatSalary`) bor i `src/domain/format.ts`. `presentation/utils/formatters.ts` re-exporterar dem så de ~19 befintliga import-ställena är oförändrade.
+
+**Alternativ övervägt:** Behålla dem i `presentation/utils/formatters.ts`. Avvisat — domänen (`rumorService`, `eventFactories`) behöver dem och får ALDRIG importera presentation; enda stället en delad sanning kan bo som båda lagren når är domänlagret.
+
+**Konsekvens:** Nya positions-/pengaformat ska aldrig definieras lokalt — importera från `domain/format` (eller re-exporten i `formatters`). En ny lokal map är en regression. LineupStep behåller medvetet sin PLURAL-map (section-headers: Backar/Ytterhalvar) — distinkt lexikal form, inte en konkurrerande stratum.
+
+---
+
 ## 2026-05-06 — Stripes och klammer som genomgående visuellt språk
 
 **Problem:** SPRINT_B2_STRIPES_AUDIT implementerade Mock 1 (ta bort 6 stripes, ersätt med tint/tag/🔥). Beslutet reverterades samma dag: stripes-borttagning skapade inkonsekvent visuellt språk och Mock 2 visade att stripes + kompletterande signaler fungerar bättre än antingen-eller.

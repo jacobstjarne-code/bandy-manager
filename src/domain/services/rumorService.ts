@@ -2,11 +2,12 @@ import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
 import type { ScoutReport } from '../entities/Scouting'
 import { InboxItemType } from '../enums'
+import { positionLong } from '../format'
 
 const RUMOR_TEMPLATES = [
   (p: Player, club: string) => `Uppgifter om att ${club} försöker värva ${p.firstName} ${p.lastName}.`,
   (p: Player, club: string) => `${p.firstName} ${p.lastName} uppges vara missnöjd i ${club} — kan vara tillgänglig.`,
-  (p: Player, club: string) => `Rykten om att ${club} letar efter en ny ${posLabel(p.position)} — ${p.firstName} ${p.lastName} nämns.`,
+  (p: Player, club: string) => `Rykten om att ${club} letar efter en ny ${positionLong(p.position).toLowerCase()} — ${p.firstName} ${p.lastName} nämns.`,
   (p: Player, _club: string) => `${p.firstName} ${p.lastName} ska ha fått anbud från en division 1-klubb.`,
   (_p: Player, club: string) => `${club} ska vara på jakt efter förstärkning inför slutspelet.`,
 ]
@@ -18,16 +19,6 @@ const ATMOSPHERE_RUMORS = [
   'Lokaltidningen rapporterar om ökat intresse för bandy bland ungdomar i regionen.',
   'En tidigare landslagsspelare ska vara på väg tillbaka till allsvenskan.',
 ]
-
-function posLabel(pos: string): string {
-  switch (pos) {
-    case 'GK': return 'målvakt'
-    case 'DEF': return 'back'
-    case 'HALF': return 'halvback'
-    case 'FWD': return 'forward'
-    default: return 'spelare'
-  }
-}
 
 export interface RumorResult {
   inboxItem: InboxItem
