@@ -163,7 +163,8 @@ export function matchActions(get: Get, set: Set) {
       const { game } = get()
       if (!game) return
       const fixture = game.fixtures.find(f => f.id === fixtureId)
-      if (!fixture || !fixture.homeLineup || !fixture.awayLineup) return
+      if (!fixture || fixture.status === 'completed') return  // idempotent
+      if (!fixture.homeLineup || !fixture.awayLineup) return
 
       const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
       const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
@@ -215,6 +216,7 @@ export function matchActions(get: Get, set: Set) {
         ...game,
         fixtures: updatedFixtures,
         standings,
+        lastCompletedFixtureId: fixtureId,
         inbox: [inboxItem, ...game.inbox],
       }})
     },

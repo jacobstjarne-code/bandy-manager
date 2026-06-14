@@ -74,7 +74,7 @@ interface LocationState {
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { game, saveLiveMatchResult, advance, markMatchStarted } = useGameStore()
+  const { game, saveLiveMatchResult, advance, markMatchStarted, simulateAbandonedMatch } = useGameStore()
   const dismissHint = useGameStore(s => s.dismissHint)
   const managedClub = useManagedClub()
 
@@ -175,22 +175,15 @@ export function MatchLiveScreen() {
       navigate('/game', { replace: true })
       return
     }
+    // Övergiven match (started i tidigare session, aldrig slutförd — t.ex. reload mitt i):
+    // återställ via assistenten, bryt soft-lock-loopen.
     if (liveFixture?.matchStartedAt && liveFixture.status === 'scheduled') {
-      navigate('/game', { replace: true })
+      simulateAbandonedMatch(fixture.id)
+      navigate('/game/review', { replace: true })
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    // DEBUG steg 1 — verifiera att simulation-effekten triggas
-    console.log('[MatchLiveScreen] simulation useEffect trigger', {
-      fixtureId: fixture?.id,
-      hasHomeLineup: !!homeLineup,
-      hasAwayLineup: !!awayLineup,
-      homeStarterCount: homeLineup?.startingPlayerIds?.length ?? 0,
-      awayStarterCount: awayLineup?.startingPlayerIds?.length ?? 0,
-      hasGame: !!game,
-      alreadySimulated: hasSimulated.current,
-    })
     if (hasSimulated.current) return
     if (!fixture || !homeLineup || !awayLineup || !game) return
     hasSimulated.current = true
