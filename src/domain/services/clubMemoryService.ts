@@ -242,6 +242,7 @@ export function getClubMemory(game: SaveGame): ClubMemoryView {
       eraName = snapshotEra && snapshotEra !== 'unknown' ? snapshotEra : undefined
     }
 
+    if (events.length === 0 && !isOngoing) continue
     seasons.push({
       season, isOngoing, finishPosition: position, events,
       eraName,

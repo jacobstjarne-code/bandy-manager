@@ -68,14 +68,27 @@ describe('getClubMemory', () => {
   })
 
   it('sorts seasons newest first', () => {
-    const game = makeMinimalGame({ currentSeason: 4 })
+    // Season 3 must have an event to appear (pre-career empty seasons are filtered)
+    const game = makeMinimalGame({
+      currentSeason: 4,
+      scandalHistory: [{ id: 's1', season: 3, triggerRound: 5, type: 'match_fixing', affectedClubId: MANAGED_CLUB_ID, isResolved: true }],
+    } as Partial<SaveGame>)
     const result = getClubMemory(game)
     expect(result.seasons[0].season).toBe(4)
     expect(result.seasons[result.seasons.length - 1].season).toBeLessThan(4)
   })
 
-  it('shows at most 5 seasons', () => {
-    const game = makeMinimalGame({ currentSeason: 10 })
+  it('shows at most 5 seasons and filters empty pre-career seasons', () => {
+    // Season 5 is outside the 5-season window (firstSeason = 10-4 = 6)
+    // Seasons 7-9 have no events — they should be filtered out
+    // Seasons 6 and 10 have events (or are ongoing) — they should appear
+    const game = makeMinimalGame({
+      currentSeason: 10,
+      scandalHistory: [
+        { id: 's6', season: 6, triggerRound: 5, type: 'match_fixing', affectedClubId: MANAGED_CLUB_ID, isResolved: true },
+        { id: 's5', season: 5, triggerRound: 5, type: 'match_fixing', affectedClubId: MANAGED_CLUB_ID, isResolved: true }, // outside window
+      ],
+    } as Partial<SaveGame>)
     const result = getClubMemory(game)
     expect(result.seasons.length).toBeLessThanOrEqual(5)
     expect(result.seasons[0].season).toBe(10)

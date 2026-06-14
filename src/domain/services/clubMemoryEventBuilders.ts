@@ -41,8 +41,8 @@ export function buildEventFromFixture(
     }
   }
 
-  // Cup-final (isCup + isCupFinalhelgen + matchday >= 19)
-  if (fixture.isCup && fixture.isCupFinalhelgen) {
+  // Cup-final: only roundNumber === 4 is the actual final (round 3 = semi, falls through to big_win/loss)
+  if (fixture.isCup && fixture.roundNumber === 4) {
     const type: MemoryEventType = 'cup_final'
     const significance = won ? 80 : 70
     const text = won
