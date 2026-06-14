@@ -28,9 +28,9 @@ export function BandyPitch({ width = '100%', height, children }: BandyPitchProps
     >
       <defs>
         <linearGradient id="pitchGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#DCE8EE" />
-          <stop offset="50%" stopColor="#D8E5EC" />
-          <stop offset="100%" stopColor="#D2E0E8" />
+          <stop offset="0%" stopColor="#C4D9E8" />
+          <stop offset="50%" stopColor="#BAD2E3" />
+          <stop offset="100%" stopColor="#B0CADC" />
         </linearGradient>
       </defs>
 

@@ -128,7 +128,7 @@ export function inboxItemToCardCandidate(
       const isHighSig = !item.body.toLowerCase().includes('hattrick')
       tier = isHighSig ? 'primary' : 'secondary'
       weight = isHighSig ? 85 : 60
-      stripe = 'gold'
+      stripe = isHighSig ? 'gold' : 'accent'
     } else if (item.title.startsWith('⚠️ Nemesis:') || item.title === 'Nemesis lägger av') {
       kind = 'nemesis'
       tier = 'secondary'

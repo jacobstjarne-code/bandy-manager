@@ -58,7 +58,6 @@ export function MomentumBar({ step, homeShort, awayShort, history = [] }: Moment
     <div className="mbar-wrap">
       <div className="mbar-teams">
         <span className="h">{homeShort}</span>
-        <span className="score">{step.homeScore}–{step.awayScore} <span className="min">{step.minute}'</span></span>
         <span className="a">{awayShort}</span>
       </div>
       <div className="mbar">

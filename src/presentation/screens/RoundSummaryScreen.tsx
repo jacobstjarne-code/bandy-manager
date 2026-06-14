@@ -261,7 +261,10 @@ export function RoundSummaryScreen() {
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
                 📈 FORM
               </p>
-              <FormSquares results={recentForm} size={22} />
+              {recentForm.length > 0
+                ? <FormSquares results={recentForm} size={22} />
+                : <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>
+              }
             </div>
           </div>
         )}

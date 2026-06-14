@@ -275,7 +275,7 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
       </div>
 
       {/* Pitch SVG */}
-      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'linear-gradient(180deg, #DCE8EE, #D2E0E8)', border: '1px solid #B8CCD8', boxShadow: 'inset 0 1px 4px rgba(90,122,138,.12)', borderRadius: 'var(--radius-md)', display: 'block', maxHeight: 240 }}>
+      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'linear-gradient(180deg, color-mix(in srgb, var(--ice) 38%, var(--bg-elevated)), color-mix(in srgb, var(--ice) 28%, var(--bg-elevated)))', border: '1px solid color-mix(in srgb, var(--ice-dark) 50%, transparent)', boxShadow: 'inset 0 1px 4px color-mix(in srgb, var(--ice-dark) 15%, transparent)', borderRadius: 'var(--radius-md)', display: 'block', maxHeight: 240 }}>
         <PitchLines />
         {template.slots.map(slot => {
           const playerId = lineupSlots[slot.id]
