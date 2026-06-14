@@ -7,6 +7,8 @@ import { getJournalistCommunityModifier } from '../../../domain/services/journal
 
 export interface CommunityProcessorResult {
   csBoost: number
+  /** Klack-matchreaktion (kartfynd 8a): mood-delta för supporterGroup, egen profil skild från pulsen. Appliceras i roundProcessor. */
+  klackMoodDelta: number
   inboxItems: InboxItem[]
   updatedFacilityProjects: FacilityProject[]
   updatedFacilityState: FacilityState | undefined
@@ -37,6 +39,10 @@ export function processCommunity(
 
   // ── Community standing boost ───────────────────────────────────────────────
   let csBoost = playoffCsBoost
+  // Klack-matchreaktion (kartfynd 8a): klacken lever med laget, inte bara med relationen.
+  // Egen profil — mindre än pulsen på rena resultat (de hängivna överger inte laget på en
+  // förlust lika lätt), MER än pulsen på derby (derbyt ÄR klackens identitet). Appliceras i roundProcessor.
+  let klackMoodDelta = 0
   if (justCompletedManagedFixture) {
     const isHomeCs = justCompletedManagedFixture.homeClubId === game.managedClubId
     const myScoreCs = isHomeCs ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
@@ -52,6 +58,15 @@ export function processCommunity(
     const matchRivalryCs = getRivalry(justCompletedManagedFixture.homeClubId, justCompletedManagedFixture.awayClubId)
     if (matchRivalryCs && wonCs) csBoost += 2
     if (matchRivalryCs && lostCs) csBoost -= 2
+
+    // Klack-profil (skild magnitud från pulsens ±2/±4/±5/±6 ovan)
+    if (bigWinCs) klackMoodDelta = 4
+    else if (wonCs) klackMoodDelta = 2
+    else if (bigLossCs) klackMoodDelta = -5
+    else if (lostCs) klackMoodDelta = -3
+    // Derby väger tungt för klacken — dubbel vikt mot pulsens ±2
+    if (matchRivalryCs && wonCs) klackMoodDelta += 4
+    if (matchRivalryCs && lostCs) klackMoodDelta -= 4
   }
   const csActivities = game.communityActivities
   if (csActivities?.kiosk && csActivities.kiosk !== 'none') csBoost += 0.08
@@ -291,5 +306,5 @@ export function processCommunity(
   const diminishingFactor = currentCS > 85 ? 0.25 : currentCS > 70 ? 0.5 : currentCS > 55 ? 0.75 : 1.0
   csBoost = positiveBoost * diminishingFactor + negativeBoost
 
-  return { csBoost, inboxItems, updatedFacilityProjects, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
+  return { csBoost, klackMoodDelta, inboxItems, updatedFacilityProjects, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
 }

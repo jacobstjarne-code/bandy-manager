@@ -1610,6 +1610,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // Klack-matchreaktion (kartfynd 8a): mata supporterGroup.mood med matchutfallet.
+  // Delta beräknas i communityProcessor (egen profil, skild från pulsen). Appliceras på den
+  // narrativ-uppdaterade gruppen så medlems-/favoritändringar därifrån bevaras. Ingen mean
+  // reversion (klacken har inget naturligt mitten — tänd eller sur); setter:n klamrar 0–100.
+  if (updatedGame.supporterGroup && communityResult.klackMoodDelta !== 0) {
+    updatedGame = {
+      ...updatedGame,
+      supporterGroup: adjustSupporterMood(updatedGame.supporterGroup, communityResult.klackMoodDelta),
+    }
+  }
+
   // P1 — Annandagen klack-reaktion konsekvens (val B/C/D triggar omg+2 → supporterGroup.mood boost)
   if (updatedGame.pendingAnnandagsKlack && nextMatchday >= updatedGame.pendingAnnandagsKlack.triggerRound) {
     const { val } = updatedGame.pendingAnnandagsKlack
