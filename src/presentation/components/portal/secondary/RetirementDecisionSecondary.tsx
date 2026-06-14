@@ -13,6 +13,7 @@ export function RetirementDecisionSecondary({ game }: CardRenderProps) {
   const resolveRetirementDecision = useGameStore(s => s.resolveRetirementDecision)
   const [chosen, setChosen] = useState<RetirementChoice | null>(null)
   const [response, setResponse] = useState<string | null>(null)
+  const [hoveredBtn, setHoveredBtn] = useState<RetirementChoice | null>(null)
 
   const decision = game.pendingRetirementDecision
   if (!decision) return null
@@ -42,17 +43,12 @@ export function RetirementDecisionSecondary({ game }: CardRenderProps) {
             <button
               key={key}
               onClick={() => handleChoice(key)}
-              className="btn"
-              style={{
-                textAlign: 'left',
-                padding: '8px 10px',
-                fontSize: 11,
-                background: 'transparent',
-                border: '1px solid var(--border)',
-              }}
+              onMouseEnter={() => setHoveredBtn(key)}
+              onMouseLeave={() => setHoveredBtn(null)}
+              className={`weekly-decision-option-btn ${hoveredBtn === key ? 'weekly-decision-option-btn-hover' : 'weekly-decision-option-btn-idle'}`}
             >
-              <span style={{ fontWeight: 600 }}>{label}</span>
-              <span style={{ color: 'var(--text-muted)', marginLeft: 6 }}>{effect}</span>
+              <span className="weekly-decision-option-label">{label}</span>
+              <span className="weekly-decision-option-effect">{effect}</span>
             </button>
           ))}
         </div>
