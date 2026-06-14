@@ -1133,6 +1133,10 @@ export function MatchLiveScreen() {
 
   const currentMatchStep = currentStep >= 0 && currentStep < steps.length ? steps[currentStep] : null
   const displayedSteps = currentStep >= 0 ? steps.slice(0, currentStep + 1) : []
+  const penaltyFinalScore = (() => {
+    const penStep = displayedSteps.find(s => s.penaltyDone && s.penaltyFinalResult)
+    return penStep?.penaltyFinalResult ?? undefined
+  })()
   // MomentumBar (ärlig): homeInitiative-kadens från visade steg (homeShort/awayShort finns nedan)
   const momentumHistory = displayedSteps.map(s => s.homeInitiative ?? 0.5)
   // Score läses från reducer-state — EN sanning (steg 4)
@@ -1380,6 +1384,7 @@ export function MatchLiveScreen() {
         isPlayoffFinal={matchPhase === 'final'}
         finalTier={finalTier}
         showNowMarker={!matchDone}
+        penaltyFinalScore={penaltyFinalScore}
       />
 
       <MatchControls

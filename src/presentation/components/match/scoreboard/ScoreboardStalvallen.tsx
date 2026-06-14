@@ -36,6 +36,7 @@ export interface ScoreboardStalvallenProps {
   isPlayoffFinal?: boolean
   finalTier?: string
   showNowMarker?: boolean
+  penaltyFinalScore?: { home: number; away: number }
 }
 
 function pad2(n: number): string {
@@ -57,6 +58,7 @@ export function ScoreboardStalvallen({
   isPlayoffFinal,
   finalTier,
   showNowMarker = true,
+  penaltyFinalScore,
 }: ScoreboardStalvallenProps) {
   // Score-flash state — triggers on score change
   const [flashSide, setFlashSide] = useState<'home' | 'away' | null>(null)
@@ -109,6 +111,12 @@ export function ScoreboardStalvallen({
 
         {/* Module 1: Main score — V1 layout: klocka mitten */}
         <div className={`module-main${flashSide ? ` score-flash-${flashSide}` : ''}`}>
+          {penaltyFinalScore && (period === 'FT' || period === 'FT · ETT') && (
+            <div className="penalty-final-row">
+              <span className="penalty-final-label">STRAFF</span>
+              <span className="penalty-final-score">{penaltyFinalScore.home}–{penaltyFinalScore.away}</span>
+            </div>
+          )}
           <div className="main-row">
             {/* Home */}
             <div className="team-col home">
