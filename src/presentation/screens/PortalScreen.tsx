@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore, useCanAdvance } from '../store/gameStore'
 import { buildPortal, makeSeed } from '../../domain/services/portal/portalBuilder'
@@ -37,6 +37,7 @@ export function PortalScreen() {
   const { game, advance, simulateRemainingStep, markAnslagSeen, recordPortalShown } = useGameStore()
   const canAdvance = useCanAdvance()
   const navigate = useNavigate()
+  const [isAdvancing, setIsAdvancing] = useState(false)
 
   // Auto-skip rounds where managed team has no fixture (e.g. cup R1 for bye-teams,
   // or cup rounds after elimination). The advance() auto-loop handles chaining,
@@ -172,11 +173,16 @@ export function PortalScreen() {
     return 'Fortsätt →'
   })()
 
-  const handleAdvance = () => {
+  const handleAdvance = useCallback(() => {
+    if (isAdvancing) return
     playSound('click')
     const scheduledFixtures = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduledFixtures.length === 0) {
-      try { advance() } catch (err) { console.error('advance() failed:', err) }
+      setIsAdvancing(true)
+      requestAnimationFrame(() => {
+        try { advance() } catch (err) { console.error('advance() failed:', err) }
+        setIsAdvancing(false)
+      })
       return
     }
     const nextSimEff = Math.min(...scheduledFixtures.map(f => f.matchday))
@@ -190,8 +196,12 @@ export function PortalScreen() {
       f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId
     )
     if (hasPendingManagedWithoutLineup) { navigate('/game/match'); return }
-    try { advance() } catch (err) { console.error('advance() failed:', err) }
-  }
+    setIsAdvancing(true)
+    requestAnimationFrame(() => {
+      try { advance() } catch (err) { console.error('advance() failed:', err) }
+      setIsAdvancing(false)
+    })
+  }, [isAdvancing, game, advance, navigate])
 
   const playedLeagueRounds = game.fixtures.filter(
     f => f.status === 'completed' &&
@@ -313,10 +323,10 @@ export function PortalScreen() {
         <button
           data-coach-id="cta-button"
           onClick={handleAdvance}
-          disabled={!canClickAdvance}
-          className={`btn btn-primary btn-cta${canClickAdvance ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
+          disabled={!canClickAdvance || isAdvancing}
+          className={`btn btn-primary btn-cta${canClickAdvance && !isAdvancing ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
         >
-          {advanceButtonText}
+          {isAdvancing ? '···' : advanceButtonText}
         </button>
       </div>
     </>
