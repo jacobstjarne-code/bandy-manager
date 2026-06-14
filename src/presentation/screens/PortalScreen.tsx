@@ -250,7 +250,7 @@ export function PortalScreen() {
         />
       )}
       <div
-        className="screen-enter texture-wood card-stack"
+        className="texture-wood card-stack"
         style={{
           background: 'var(--bg-portal)',
           padding: '14px',
