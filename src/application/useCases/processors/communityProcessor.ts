@@ -1,16 +1,18 @@
-import type { SaveGame, InboxItem, FacilityProject, StandingRow } from '../../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem, FacilityProject, FacilityState, StandingRow } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import { InboxItemType } from '../../../domain/enums'
 import { getRivalry } from '../../../domain/data/rivalries'
-import { checkProjectCompletion } from '../../../domain/services/facilityService'
+import { checkProjectCompletion, advanceFacilityState } from '../../../domain/services/facilityService'
 import { getJournalistCommunityModifier } from '../../../domain/services/journalistVisibilityService'
 
 export interface CommunityProcessorResult {
   csBoost: number
   inboxItems: InboxItem[]
   updatedFacilityProjects: FacilityProject[]
+  updatedFacilityState: FacilityState | undefined
   /** Total facilities bonus from newly completed projects this round */
   facilityBonusTotal: number
+  facilityCapacityBonus: number
   updatedVolunteers: string[]
   updatedVolunteerMorale: Record<string, number>
 }
@@ -196,14 +198,28 @@ export function processCommunity(
   }
 
   // ── Facility project completion ────────────────────────────────────────────
+  // New model (B1): use FacilityState if present
+  let updatedFacilityState: FacilityState | undefined
+  let facilityBonusTotal = 0
+  let facilityCapacityBonus = 0
+
+  if (game.facilityState) {
+    const advanced = advanceFacilityState(game.facilityState, nextMatchday, game.currentSeason)
+    updatedFacilityState = advanced.state
+    facilityBonusTotal = advanced.facilitiesBonus
+    facilityCapacityBonus = advanced.capacityBonus
+  }
+
+  // Legacy model: keep running for old saves without facilityState
   const updatedFacilityProjects = (game.facilityProjects ?? []).map(p => checkProjectCompletion(p, nextMatchday, game.currentSeason))
   const oldFacilityProjects = game.facilityProjects ?? []
-  let facilityBonusTotal = 0
-  for (const up of updatedFacilityProjects) {
-    if (up.status === 'completed') {
-      const old = oldFacilityProjects.find(o => o.id === up.id)
-      if (old && old.status === 'in_progress') {
-        facilityBonusTotal += up.facilitiesBonus
+  if (!game.facilityState) {
+    for (const up of updatedFacilityProjects) {
+      if (up.status === 'completed') {
+        const old = oldFacilityProjects.find(o => o.id === up.id)
+        if (old && old.status === 'in_progress') {
+          facilityBonusTotal += up.facilitiesBonus
+        }
       }
     }
   }
@@ -275,5 +291,5 @@ export function processCommunity(
   const diminishingFactor = currentCS > 85 ? 0.25 : currentCS > 70 ? 0.5 : currentCS > 55 ? 0.75 : 1.0
   csBoost = positiveBoost * diminishingFactor + negativeBoost
 
-  return { csBoost, inboxItems, updatedFacilityProjects, facilityBonusTotal, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
+  return { csBoost, inboxItems, updatedFacilityProjects, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
 }

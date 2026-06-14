@@ -7,7 +7,7 @@ import { SectionCard } from '../SectionCard'
 import { InfoRow } from '../primitives'
 import { csColor } from '../../utils/formatters'
 import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
-import { getAvailableProjects } from '../../../domain/services/facilityService'
+import { FACILITY_NODE_DEFS } from '../../../domain/services/facilityService'
 import { OrtenMap } from './OrtenMap'
 import { generateVolunteerRoster, getActiveVolunteerBonus } from '../../../domain/services/volunteerService'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
@@ -55,11 +55,9 @@ interface OrtenTabProps {
   activateCommunity?: (key: string, level: string) => { success: boolean; error?: string }
 }
 
-export function OrtenTab({ club, game, navigate, interactWithPolitician, startFacilityProject, recruitVolunteer, activateCommunity }: OrtenTabProps) {
+export function OrtenTab({ club, game, navigate, interactWithPolitician, recruitVolunteer, activateCommunity }: OrtenTabProps) {
   const [polFeedback, setPolFeedback] = useState<{ text: string; ok: boolean } | null>(null)
   const [activityFeedback, setActivityFeedback] = useState<{ text: string; ok: boolean } | null>(null)
-  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null)
-  const [facilityFeedback, setFacilityFeedback] = useState<{ text: string; ok: boolean } | null>(null)
 
   function handleActivity(key: string, level: string) {
     if (!activateCommunity) return
@@ -482,127 +480,24 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, startFa
         <FacilityRow label="Ungdomskvalitet" value={club.youthQuality} />
         <FacilityRow label="Ungdomsrekrytering" value={club.youthRecruitment} />
         <FacilityRow label="Ungdomsutveckling" value={club.youthDevelopment} />
-        {(game.facilityProjects ?? []).filter(p => p.status === 'in_progress').map(proj => (
-          <div key={proj.id} style={{ padding: '8px 0' }}>
-            <p style={{ fontSize: 12, fontWeight: 600 }}>🚧 {proj.name}</p>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{proj.description}</p>
-          </div>
-        ))}
-        {(game.facilityProjects ?? []).filter(p => p.status === 'in_progress').length === 0 && (
-          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>Starta ett projekt för att utveckla anläggningen.</p>
-        )}
-        {facilityFeedback && (
-          <p style={{ fontSize: 11, color: facilityFeedback.ok ? 'var(--success)' : 'var(--danger)', marginBottom: 8, fontWeight: 600 }}>
-            {facilityFeedback.ok ? '✓' : '✗'} {facilityFeedback.text}
-          </p>
-        )}
-        {/* Available projects */}
-        {(() => {
-          const available = getAvailableProjects(club.facilities, game.facilityProjects ?? [])
-          if (available.length === 0) return null
-          const pol = game.localPolitician
-          const activeMecenat = (game.mecenater ?? []).find(m => m.isActive && m.wealth >= 3 && m.happiness >= 50)
+        {game.facilityState?.activeProject && (() => {
+          const ap = game.facilityState!.activeProject!
+          const def = FACILITY_NODE_DEFS.find(d => d.id === ap.nodeId)
           return (
-            <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
-              <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
-                TILLGÄNGLIGA PROJEKT
-              </p>
-              {available.map(proj => {
-                const isExpanded = expandedProjectId === proj.id
-                const kommunShare = proj.kommunCostShare
-                const mecenatShare = activeMecenat ? Math.min(0.3, activeMecenat.wealth * 0.06) : 0
-                const costKommun = Math.round(proj.cost * (1 - kommunShare))
-                const costMecenat = Math.round(proj.cost * (1 - kommunShare - mecenatShare))
-                const canKommun = proj.requiresKommun && !!pol && pol.relationship >= 40
-                const canMecenat = proj.requiresKommun && !!activeMecenat && canKommun
-
-                function doStart(mode: 'club' | 'kommun' | 'mecenat') {
-                  if (!startFacilityProject) return
-                  const r = startFacilityProject(proj.id, mode)
-                  setFacilityFeedback({ text: r.error ?? `${proj.name} påbörjat!`, ok: r.success })
-                  setExpandedProjectId(null)
-                  setTimeout(() => setFacilityFeedback(null), 4000)
-                }
-
-                return (
-                  <div key={proj.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
-                        <p style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{proj.name}</p>
-                        <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                          {Math.round(proj.cost / 1000)} tkr · {proj.duration} omg{proj.facilitiesBonus > 0 ? ` · +${proj.facilitiesBonus} anl.` : ''}
-                        </p>
-                      </div>
-                      <button
-                        className="btn btn-ghost"
-                        style={{ padding: '5px 10px', fontSize: 11, flexShrink: 0 }}
-                        onClick={() => setExpandedProjectId(isExpanded ? null : proj.id)}
-                      >
-                        {isExpanded ? 'Stäng' : 'Starta'}
-                      </button>
-                    </div>
-                    {isExpanded && (
-                      <div style={{ marginTop: 8, padding: '8px 10px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-md)' }}>
-                        <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 8 }}>
-                          {proj.description}
-                        </p>
-                        {proj.otherEffects.length > 0 && (
-                          <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 8 }}>
-                            {proj.otherEffects.join(' · ')}
-                          </p>
-                        )}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          {/* Betala allt själv */}
-                          <button
-                            className="btn btn-ghost"
-                            disabled={club.finances < proj.cost}
-                            style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, opacity: club.finances < proj.cost ? 0.5 : 1 }}
-                            onClick={() => doStart('club')}
-                          >
-                            <span style={{ fontWeight: 600 }}>Betala allt själv</span>
-                            <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: 10 }}>
-                              {Math.round(proj.cost / 1000)} tkr ur kassan · oberoende
-                            </span>
-                          </button>
-                          {/* Kommunstöd */}
-                          {proj.requiresKommun && (
-                            <button
-                              className="btn btn-ghost"
-                              disabled={!canKommun || club.finances < costKommun}
-                              style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, opacity: (!canKommun || club.finances < costKommun) ? 0.5 : 1 }}
-                              onClick={() => doStart('kommun')}
-                            >
-                              <span style={{ fontWeight: 600 }}>Acceptera kommunens erbjudande</span>
-                              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: 10 }}>
-                                {canKommun
-                                  ? `Klubben ${Math.round(costKommun / 1000)} tkr · kommunen ${Math.round(proj.cost * kommunShare / 1000)} tkr · relation +10`
-                                  : pol ? `Kräver relation 40+ (nu ${pol.relationship})` : 'Ingen kommunföreträdare'}
-                              </span>
-                            </button>
-                          )}
-                          {/* Mecenat-bidrag */}
-                          {proj.requiresKommun && activeMecenat && (
-                            <button
-                              className="btn btn-ghost"
-                              disabled={!canMecenat || club.finances < costMecenat}
-                              style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, opacity: (!canMecenat || club.finances < costMecenat) ? 0.5 : 1 }}
-                              onClick={() => doStart('mecenat')}
-                            >
-                              <span style={{ fontWeight: 600 }}>Acceptera {activeMecenat.name}s erbjudande</span>
-                              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: 10 }}>
-                                Klubben {Math.round(costMecenat / 1000)} tkr · kommunen {Math.round(proj.cost * kommunShare / 1000)} tkr · {activeMecenat.name} {Math.round(proj.cost * mecenatShare / 1000)} tkr · silentShout +10
-                              </span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+            <div style={{ padding: '8px 0', borderTop: '1px solid var(--border)' }}>
+              <p style={{ fontSize: 11, fontWeight: 600 }}>🚧 {def?.label ?? ap.nodeId}</p>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>Klar omgång {ap.etaMatchday}</p>
             </div>
           )
         })()}
+        <button
+          className="btn btn-ghost"
+          style={{ width: '100%', textAlign: 'left', marginTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', fontSize: 12 }}
+          onClick={() => navigate('/game/facility')}
+        >
+          <span>Visa trädet</span>
+          <span style={{ color: 'var(--text-muted)' }}>›</span>
+        </button>
       </SectionCard>
 
       <SectionCard title="🎯 Förväntan & profil" stagger={3}>

@@ -94,6 +94,52 @@ export interface FacilityProject {
   mecenatCostShare?: number    // faktisk mecenat-andel (0–1) som tillämpades
 }
 
+// ── B1 Facility tree — ny modell ──────────────────────────────────────────
+
+export type FacilityGren = 'anlaggning' | 'verksamhet' | 'akademi'
+
+export interface FacilityConsequence {
+  dim: 'publik' | 'ekonomi' | 'ungdom' | 'sjal'
+  dir: 'upp' | 'ned' | 'noll'
+  label: string
+}
+
+export interface FacilityNodeDef {
+  id: string
+  gren: FacilityGren
+  label: string
+  cost: number
+  buildRounds: number
+  requires: string[]
+  consequences: FacilityConsequence[]
+  isHall?: boolean
+  facilitiesBonus: number    // applys to club.facilities on completion (backward compat)
+  capacityBonus?: number     // added to audience capacity on completion
+}
+
+// Derived view type — never saved, computed from FacilityState
+export type FacilityNodeStatus = 'built' | 'ongoing' | 'available' | 'locked'
+
+export interface FacilityNodeView {
+  def: FacilityNodeDef
+  status: FacilityNodeStatus
+  completedSeason?: number
+  etaMatchday?: number
+  cooldownTotal?: number
+  cooldownFilled?: number
+}
+
+// Saved state — replaces FacilityProject[] for new saves
+export interface FacilityState {
+  builtNodeIds: string[]
+  activeProject?: {
+    nodeId: string
+    startedMatchday: number
+    etaMatchday: number
+    completedSeason?: number
+  }
+}
+
 export interface BoardObjective {
   id: string
   type: 'economic' | 'academy' | 'identity' | 'community' | 'sporting'

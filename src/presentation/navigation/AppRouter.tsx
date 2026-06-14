@@ -33,6 +33,7 @@ import { InboxScreen } from '../screens/InboxScreen'
 import { GameOverScreen } from '../screens/GameOverScreen'
 import { GranskaScreen } from '../screens/granska/GranskaScreen'
 import { TaktikScreen } from '../screens/TaktikScreen'
+import FacilityScreen from '../screens/FacilityScreen'
 
 import { HistoryScreen } from '../screens/HistoryScreen'
 import { HalfTimeSummaryScreen } from '../screens/HalfTimeSummaryScreen'
@@ -132,6 +133,7 @@ export function AppRouter() {
           <Route path="sim-summary" element={<SimSummaryScreen />} />
           <Route path="taktik" element={<TaktikScreen />} />
           <Route path="review" element={<GranskaScreen />} />
+          <Route path="facility" element={<FacilityScreen />} />
         </Route>
         <Route element={<GameGuard />}>
           <Route path="/game/round-summary" element={<RoundSummaryScreen />} />

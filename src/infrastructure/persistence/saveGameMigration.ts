@@ -92,6 +92,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.pendingFollowUps === undefined) data.pendingFollowUps = []
   if (data.mecenater === undefined) data.mecenater = []
   if (data.facilityProjects === undefined) data.facilityProjects = []
+  if (data.facilityState === undefined) data.facilityState = { builtNodeIds: [] }
   if (data.boardObjectives === undefined) data.boardObjectives = []
   if (data.boardObjectiveHistory === undefined) data.boardObjectiveHistory = []
   if (data.boardPersonalities === undefined) data.boardPersonalities = defaultBoardPersonalities(data.managedClubId as string ?? '')
