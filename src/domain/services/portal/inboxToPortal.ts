@@ -126,9 +126,11 @@ export function inboxItemToCardCandidate(
     if (item.title.startsWith('Karriärsmilstolpe:')) {
       kind = 'playerMilestone'
       const isHighSig = !item.body.toLowerCase().includes('hattrick')
+      // DB-2: guld reserverat för MÄSTERSKAP. Karriärsmilstolpar (100 matcher, målrekord etc.)
+      // är milstolpar, inte mästerskap → koppar. Signifikansen bärs av tier/weight, inte färg.
       tier = isHighSig ? 'primary' : 'secondary'
       weight = isHighSig ? 85 : 60
-      stripe = isHighSig ? 'gold' : 'accent'
+      stripe = 'accent'
     } else if (item.title.startsWith('⚠️ Nemesis:') || item.title === 'Nemesis lägger av') {
       kind = 'nemesis'
       tier = 'secondary'
