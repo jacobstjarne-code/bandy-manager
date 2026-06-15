@@ -6,7 +6,7 @@ const BORDER_COLOR: Record<SeasonSignatureId, string> = {
   calm_season:         'var(--accent)',
   cold_winter:         'var(--cold)',
   scandal_season:      'var(--danger)',
-  hot_transfer_market: 'var(--gold)',
+  hot_transfer_market: 'var(--accent)',
   injury_curve:        'var(--warm)',
   dream_round:         'var(--accent-glow)',
 }
