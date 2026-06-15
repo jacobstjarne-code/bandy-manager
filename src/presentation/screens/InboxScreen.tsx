@@ -135,7 +135,7 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
     >
       {/* Icon */}
       <div style={{
-        width: 26, height: 26, borderRadius: 6,
+        width: 26, height: 26, borderRadius: 'var(--radius-md)',
         background: 'var(--bg)',
         border: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -230,7 +230,7 @@ function TrainingAggRow({ items }: { items: InboxItem[] }) {
       borderLeft: '2px solid transparent',
     }}>
       <div style={{
-        width: 26, height: 26, borderRadius: 6,
+        width: 26, height: 26, borderRadius: 'var(--radius-md)',
         background: 'var(--bg)', border: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0, fontSize: 11,

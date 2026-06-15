@@ -100,7 +100,7 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, onComplete }: 
           gap: 18,
           background: 'rgba(10,8,12,0.80)',
           border: '1px solid rgba(245,241,235,0.06)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius)',
           padding: '20px 18px',
         }}>
         {/* Setting */}

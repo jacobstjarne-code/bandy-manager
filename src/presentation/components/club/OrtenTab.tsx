@@ -406,7 +406,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
               const active = hints.filter(h => !!caAny?.[h.key])
               const inactive = hints.filter(h => !caAny?.[h.key])
               return (
-                <div style={{ padding: '6px 8px', background: 'color-mix(in srgb, var(--accent) 6%, transparent)', borderRadius: 6, marginBottom: 6 }}>
+                <div style={{ padding: '6px 8px', background: 'color-mix(in srgb, var(--accent) 6%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 6 }}>
                   <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>RÄKNAS FÖR AGENDАН</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                     {active.map(h => (
