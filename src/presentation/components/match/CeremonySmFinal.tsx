@@ -5,6 +5,7 @@ import { truncate } from '../../utils/formatters'
 import { computePlayerRatings } from '../../utils/matchRatings'
 import { GoldConfetti } from './GoldConfetti'
 import { Z } from '../../utils/zIndices'
+import { Trophy, Medal } from 'lucide-react'
 
 interface CeremonySmFinalProps {
   slide: 1 | 2 | 3
@@ -82,7 +83,7 @@ export function CeremonySmFinal({
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 24px' }}>
           {managedWon ? (
             <>
-              <div style={{ fontSize: 80, marginBottom: 16 }}>🏆</div>
+              <div style={{ marginBottom: 16, color: 'var(--gold)', animation: 'goldPulse 2s ease-in-out infinite' }}><Trophy size={80} strokeWidth={1.5} /></div>
               <h1 style={{
                 fontSize: 28, fontWeight: 900, color: 'var(--accent)', letterSpacing: '2px',
                 textTransform: 'uppercase', marginBottom: 12,
@@ -95,7 +96,7 @@ export function CeremonySmFinal({
             </>
           ) : (
             <>
-              <div style={{ fontSize: 60, marginBottom: 16 }}>🥈</div>
+              <div style={{ marginBottom: 16, color: 'var(--text-light-secondary)' }}><Medal size={60} strokeWidth={1.5} /></div>
               <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-light-secondary)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 12 }}>
                 SILVER
               </h1>

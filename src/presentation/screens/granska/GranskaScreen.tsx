@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Target, Users, LineChart, GraduationCap, type LucideIcon } from 'lucide-react'
 import { useGameStore } from '../../store/gameStore'
 import { playSound } from '../../audio/soundEffects'
 import { MatchEventType } from '../../../domain/enums'
@@ -12,11 +13,11 @@ import { GranskaAnalys } from './GranskaAnalys'
 
 type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'analys'
 
-const STEPS: { id: GranskaStep; icon: string; label: string }[] = [
-  { id: 'oversikt', icon: '🎯', label: 'Översikt' },
-  { id: 'spelare', icon: '👥', label: 'Spelare' },
-  { id: 'shotmap', icon: '📈', label: 'Shotmap' },
-  { id: 'analys', icon: '🎓', label: 'Analys' },
+const STEPS: { id: GranskaStep; Icon: LucideIcon; label: string }[] = [
+  { id: 'oversikt', Icon: Target, label: 'Översikt' },
+  { id: 'spelare', Icon: Users, label: 'Spelare' },
+  { id: 'shotmap', Icon: LineChart, label: 'Shotmap' },
+  { id: 'analys', Icon: GraduationCap, label: 'Analys' },
 ]
 
 export function GranskaScreen() {
@@ -262,7 +263,7 @@ export function GranskaScreen() {
                   position: 'relative',
                 }}
               >
-                <span style={{ fontSize: 20 }}>{s.icon}</span>
+                <s.Icon size={18} color={isActive ? 'var(--text-light)' : 'var(--accent)'} />
                 <span style={{ fontSize: 8, color: isActive ? 'var(--text-light)' : 'var(--accent)', letterSpacing: '0.5px', fontWeight: 600 }}>{s.label}</span>
               </button>
             )

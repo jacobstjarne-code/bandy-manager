@@ -1,7 +1,8 @@
 /**
- * VictoryTrophy — pulsande trofé-emoji för SM-finalsegern.
+ * VictoryTrophy — pulsande trofé för SM-finalsegern (Lucide, B3: ingen emoji på ceremoninivå).
  * Pixel-värden från victory-mockup. Justera inte.
  */
+import { Trophy } from 'lucide-react'
 
 const TROPHY_KEYFRAMES = `
 @keyframes scene-trophy-glow {
@@ -22,13 +23,13 @@ export function VictoryTrophy() {
       <style>{TROPHY_KEYFRAMES}</style>
       <div
         style={{
-          fontSize: 72,
           marginBottom: 16,
           lineHeight: 1,
+          color: 'var(--gold)',
           animation: 'scene-trophy-glow 3s ease-in-out infinite',
         }}
       >
-        {'\u{1F3C6}'}
+        <Trophy size={72} strokeWidth={1.5} />
       </div>
     </>
   )

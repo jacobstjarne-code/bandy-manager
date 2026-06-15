@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Trophy, Medal, Award, Dumbbell } from 'lucide-react'
 import { useGameStore, useManagedClub } from '../store/gameStore'
 import { PlayoffRound } from '../../domain/enums'
 import { ScoreBlock } from '../components/primitives'
@@ -112,8 +113,8 @@ export function ChampionScreen() {
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 360, width: '100%' }}>
         {isChampion ? (
           <>
-            <div style={{ fontSize: 80, marginBottom: 16 }}>
-              <span role="img" aria-label="trophy">🏆</span>
+            <div style={{ marginBottom: 16, color: 'var(--gold)' }}>
+              <Trophy size={80} strokeWidth={1.5} />
             </div>
             <h1 style={{
               fontSize: 28,
@@ -137,12 +138,12 @@ export function ChampionScreen() {
         ) : (() => {
           const lostInFinal = bracket.final?.loserId === game.managedClubId
           const lostInSemi = bracket.semiFinals.some(s => s.loserId === game.managedClubId)
-          const icon = lostInFinal ? '🥈' : lostInSemi ? '🏅' : '🏋️'
+          const HeroIcon = lostInFinal ? Medal : lostInSemi ? Award : Dumbbell
           const title = lostInFinal ? 'Silvermedaljör' : lostInSemi ? 'Semifinalist' : 'Säsongen är slut'
           return (
           <>
-            <div style={{ fontSize: 60, marginBottom: 16 }}>
-              <span role="img" aria-label="medal">{icon}</span>
+            <div style={{ marginBottom: 16, color: 'var(--text-secondary)' }}>
+              <HeroIcon size={60} strokeWidth={1.5} />
             </div>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8, fontFamily: 'var(--font-display)' }}>
               {title}

@@ -5,6 +5,7 @@ import { truncate } from '../../utils/formatters'
 import { getCupJourney } from '../../utils/finalJourneys'
 import { GoldConfetti } from './GoldConfetti'
 import { Z } from '../../utils/zIndices'
+import { Trophy, Medal } from 'lucide-react'
 
 interface CeremonyCupFinalProps {
   slide: 1 | 2
@@ -89,7 +90,7 @@ export function CeremonyCupFinal({
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 24px' }}>
         {managedWon ? (
           <>
-            <div style={{ fontSize: 64, marginBottom: 16 }}>🏆</div>
+            <div style={{ marginBottom: 16, color: 'var(--gold)' }}><Trophy size={64} strokeWidth={1.5} /></div>
             <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
               CUPVINNARE!
             </h1>
@@ -112,7 +113,7 @@ export function CeremonyCupFinal({
           </>
         ) : (
           <>
-            <div style={{ fontSize: 56, marginBottom: 16 }}>🥈</div>
+            <div style={{ marginBottom: 16, color: 'var(--text-light-secondary)' }}><Medal size={56} strokeWidth={1.5} /></div>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-light-secondary)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 12 }}>
               Cupfinalförlust
             </h1>

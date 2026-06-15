@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FastForward } from 'lucide-react'
 import { useGameStore, useCanAdvance } from '../store/gameStore'
 import { buildPortal, makeSeed } from '../../domain/services/portal/portalBuilder'
 import { getSeasonalTone } from '../../domain/services/portal/seasonalTone'
@@ -315,9 +316,9 @@ export function PortalScreen() {
           <button
             onClick={handleSimulateRemaining}
             className="btn btn-ghost"
-            style={{ fontSize: 12 }}
+            style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
           >
-            ⏩ Simulera resterande säsong
+            <FastForward size={13} /> Simulera resterande säsong
           </button>
         )}
         <button
