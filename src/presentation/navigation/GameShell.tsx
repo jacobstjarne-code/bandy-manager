@@ -60,6 +60,11 @@ export function GameShell() {
     '/game/half-time-summary',
     '/game/champion',
     '/game/season-summary',
+    // Rad B-komplettering: fullskärms-ytor med egen ut-navigering (back-nav/ceremoni),
+    // ej BottomNav-destinationer — nav skulle överlappa egen chrome.
+    '/game/taktik',       // pushad taktik-editor, ← Tillbaka
+    '/game/facility',     // B1 push-vy (spec: push, ej flik), ← Tillbaka
+    '/game/game-over',    // fixed ceremoni, ut till huvudmenyn
   ])
   const hideBottomNav = sceneActive ||
     HIDDEN_PATHS.has(location.pathname) ||
