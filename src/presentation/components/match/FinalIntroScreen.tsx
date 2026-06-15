@@ -223,7 +223,7 @@ export function FinalIntroScreen({
             ))}
           </div>
         </div>
-        <button onClick={onStart} style={startBtn}>⚡ SPELA CUPFINALEN</button>
+        <button onClick={onStart} style={startBtn}>SPELA CUPFINALEN</button>
       </div>
     )
   }
@@ -268,7 +268,7 @@ export function FinalIntroScreen({
           ))}
         </div>
       </div>
-      <button onClick={onStart} style={startBtn}>⚡ SPELA FINALEN</button>
+      <button onClick={onStart} style={startBtn}>SPELA FINALEN</button>
     </div>
   )
 }
