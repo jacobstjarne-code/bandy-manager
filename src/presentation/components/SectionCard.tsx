@@ -28,7 +28,7 @@ export function SectionCard({ title, children, variant = 'sharp', stagger, actio
       style={{ margin: '0 0 8px', overflow: 'hidden', ...style }}
     >
       <div style={{ padding: '10px 14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: collapsed ? 0 : 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: collapsed ? 4 : 6 }}>
           <span style={{
             color: 'var(--text-muted)',
             fontSize: 9,
@@ -54,7 +54,20 @@ export function SectionCard({ title, children, variant = 'sharp', stagger, actio
             action && <div>{action}</div>
           )}
         </div>
-        {!collapsed && children}
+        {/* Peek-kollaps: kollapsad sektion visar en glimt (~en rad) med fade-ut nedåt
+            så spelaren ser ATT innehåll finns — en helt dold sektion läses som tomt kort. */}
+        {collapsible && collapsed ? (
+          <div style={{ position: 'relative', maxHeight: 'var(--peek-height, 32px)', overflow: 'hidden' }}>
+            {children}
+            <div style={{
+              position: 'absolute', left: 0, right: 0, bottom: 0, height: 24,
+              background: 'linear-gradient(to bottom, transparent, var(--bg-surface))',
+              pointerEvents: 'none',
+            }} />
+          </div>
+        ) : (
+          children
+        )}
       </div>
     </div>
   )
