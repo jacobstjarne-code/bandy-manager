@@ -267,3 +267,45 @@ describe('buildPortal — stale-bias', () => {
     expect(layout.secondary[0].id).toBe('fresh')
   })
 })
+
+// ─── C1: endgame-kurering ───────────────────────────────────────────────────
+describe('buildPortal — C1 endgame-kurering', () => {
+  const ENDGAME_BAG: DashboardCard[] = [
+    { id: 'next_match', tier: 'primary', weight: 10, triggers: [() => true], Component: MockPrimary as never },
+    // match-/slutspelsrelevanta — ska överleva
+    { id: 'opponent_form', tier: 'secondary', weight: 80, triggers: [() => true], Component: MockSecondary1 as never },
+    { id: 'tabell', tier: 'secondary', weight: 70, triggers: [() => true], Component: MockSecondary2 as never },
+    // distraktioner med HÖGRE weight — utan kurering skulle de annars vinna platserna
+    { id: 'coffee_room_card', tier: 'secondary', weight: 95, triggers: [() => true], Component: MockSecondary3 as never },
+    { id: 'ekonomi', tier: 'secondary', weight: 90, triggers: [() => true], Component: MockSecondary4 as never },
+    { id: 'squad_status', tier: 'minimal', weight: 60, triggers: [() => true], Component: MockMinimal1 as never },
+    { id: 'klacken_mood_minimal', tier: 'minimal', weight: 90, triggers: [() => true], Component: MockMinimal2 as never },
+  ]
+  const completedLeague = (round: number) =>
+    ({ id: `f${round}`, status: 'completed', isCup: false, roundNumber: round, homeClubId: 'club_a', awayClubId: 'club_b' })
+
+  beforeEach(() => setCardBag(ENDGAME_BAG))
+
+  it('slutspurt (omg ≥20): döljer icke-match-secondary, behåller match-relevanta trots lägre weight', () => {
+    const game = makeGame({ fixtures: [completedLeague(20)] as never })
+    const ids = buildPortal(game, makeSeed(game)).secondary.map(c => c.id)
+    expect(ids).toContain('opponent_form')
+    expect(ids).toContain('tabell')
+    expect(ids).not.toContain('coffee_room_card')
+    expect(ids).not.toContain('ekonomi')
+  })
+
+  it('endgame: döljer icke-match-minimal (klack-pill) trots högre weight', () => {
+    const game = makeGame({ fixtures: [completedLeague(21)] as never })
+    const ids = buildPortal(game, makeSeed(game)).minimal.map(c => c.id)
+    expect(ids).toContain('squad_status')
+    expect(ids).not.toContain('klacken_mood_minimal')
+  })
+
+  it('utanför endgame (omg 7): distraktioner visas normalt (weight styr)', () => {
+    const game = makeGame({ fixtures: [completedLeague(7)] as never })
+    const ids = buildPortal(game, makeSeed(game)).secondary.map(c => c.id)
+    expect(ids).toContain('coffee_room_card')
+    expect(ids).toContain('ekonomi')
+  })
+})

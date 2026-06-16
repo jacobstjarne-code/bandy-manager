@@ -8,6 +8,14 @@ import type { InboxKind } from './inboxToPortal'
 import { getRoundCharacter } from '../../data/roundCharacter'
 import type { RoundCharacter } from '../../data/roundCharacter'
 
+// C1: endgame-kurering (R3-specen). I avgörande matchfönster (slutspel + slutspurt
+// omg ≥20) är portalen EN sak: matchen. Dessa secondary/minimal-kort ÖVERLEVER —
+// de är match-/slutspelsrelevanta. Allt annat (kafferum, journalist, signatur, nemesis,
+// burnout, mecenat/kommun-cooldown, efterklang, veckobeslut/sponsorbastu, ekonomi,
+// klack, styrelsemål, bud, arcs) hård-döljs. Inte dämpas.
+const ENDGAME_KEEP_SECONDARY = new Set(['opponent_form', 'tabell', 'watch_others', 'injury_status', 'landslag_franvaro'])
+const ENDGAME_KEEP_MINIMAL = new Set(['squad_status', 'form_status'])
+
 // B9 T2: shownCount tillagt för frekvensgolv (optional för migration-säkerhet)
 type StaleEntry = { firstShownAt: number; lastShownAt: number; shownCount?: number }
 type StaleTracking = Record<string, StaleEntry>
@@ -107,6 +115,12 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
   const phase = getSeasonPhase(currentLigaRound, isPlayoff, isSpectator)
   const character = getRoundCharacter(game)
 
+  // C1: endgame-kurering — gäller de avgörande matchfönstren (slutspel + slutspurt
+  // omg ≥20). Smalare än fas 'endgame' (som är hela omg 12+); här handlar det om att
+  // när pucken är avgörande ska portalen vara EN sak. Säsong-2-start lämnas medvetet
+  // utanför (otydlig detektion, risk att gömma relevanta säsongsstart-kort) — flaggad.
+  const isEndgameCuration = isPlayoff || currentLigaRound >= 20
+
   // Steg 1: Filtrera bagen — suppress-kort för current phase + triggers
   const staleTracking = game.cardStaleTracking
   const eligible = CARD_BAG
@@ -175,11 +189,21 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
     undefined,
   )?.card ?? null
 
+  // C1: i endgame hård-filtreras secondary/minimal till match-relevanta kort, och
+  // story-sloten (inbox-distraktioner: kafferum/journalist/milstolpe/nemesis/media)
+  // döljs helt. Primary lämnas orörd — den ÄR matchen (eller ett kritiskt event).
+  const finalSecondary = isEndgameCuration
+    ? secondary.filter(c => ENDGAME_KEEP_SECONDARY.has(c.id))
+    : secondary
+  const finalMinimal = isEndgameCuration
+    ? minimal.filter(c => ENDGAME_KEEP_MINIMAL.has(c.id))
+    : minimal
+
   return {
     primary: primaryCard,
-    storySlot,
-    secondary: secondary.slice(0, 3),
-    minimal: minimal.slice(0, 4),
+    storySlot: isEndgameCuration ? null : storySlot,
+    secondary: finalSecondary.slice(0, 3),
+    minimal: finalMinimal.slice(0, 4),
   }
 }
 
