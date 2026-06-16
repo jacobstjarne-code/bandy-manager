@@ -258,12 +258,34 @@ function checkSaveGameSize(game: SaveGame): InvariantFinding[] {
   return []
 }
 
+// 4.13 noNaN — T2: NaN i finances/mätare. KRITISKT: NaN klarar alla tröskel-
+// jämförelser tyst (NaN < x === false, NaN > x === false), så ett beräkningsfel
+// som producerar NaN syns aldrig i finance/threshold-invarianterna. Måste fångas separat.
+function checkNoNaN(game: SaveGame): InvariantFinding[] {
+  const findings: InvariantFinding[] = []
+  const meters: [string, number | undefined][] = [
+    ['communityStanding', game.communityStanding],
+    ['fanMood', game.fanMood],
+    ['supporterMood', game.supporterGroup?.mood],
+  ]
+  for (const [name, v] of meters) {
+    if (v != null && Number.isNaN(v)) {
+      findings.push({ name: 'noNaN', severity: 'crash', message: `Mätare ${name}=NaN (beräkningsfel)` })
+    }
+  }
+  for (const club of game.clubs) {
+    if (Number.isNaN(club.finances)) findings.push({ name: 'noNaN', severity: 'crash', message: `${club.name}: finances=NaN` })
+    if (Number.isNaN(club.reputation)) findings.push({ name: 'noNaN', severity: 'crash', message: `${club.name}: reputation=NaN` })
+  }
+  return findings
+}
+
 // ── Sammanslagen export ──────────────────────────────────────────────────────
 
 export const INVARIANT_NAMES = [
   'tableSum', 'fixtureCount', 'playerAges', 'squadSize', 'positionCoverage',
   'finance', 'cupBracket', 'playoffBracket', 'noUndefined', 'matchdayMonotonic',
-  'pendingScreenConsistency', 'saveGameSize',
+  'pendingScreenConsistency', 'saveGameSize', 'noNaN',
 ] as const
 
 export function checkInvariants(game: SaveGame): InvariantFinding[] {
@@ -280,5 +302,6 @@ export function checkInvariants(game: SaveGame): InvariantFinding[] {
     ...checkMatchdayMonotonic(game),
     ...checkPendingScreenConsistency(game),
     ...checkSaveGameSize(game),
+    ...checkNoNaN(game),
   ]
 }
