@@ -29,6 +29,27 @@ import { computeCardStaleTracking } from '../../domain/services/portal/portalBui
 
 type SaveActionResult = { success: boolean; error?: string }
 
+// GAP-1: ErrorBoundary "Till huvudmenyn" sätter denna flagga (synkront, localStorage) före
+// full reload. Vid nästa boot rensar onRehydrateStorage de UI-drivande pending-fälten så att
+// ett save-state-inducerat renderingsfel inte återkommer i en loop. Synkron localStorage =
+// ingen IndexedDB-write-race mot reload.
+export const RECOVER_PENDING_FLAG = 'bandy-recover-pending'
+
+function clearPendingFlows(game: SaveGame): SaveGame {
+  return {
+    ...game,
+    pendingScreen: null,
+    pendingScene: undefined,
+    pendingEvents: [],
+    pendingFollowUps: undefined,
+    pendingWeeklyDecision: undefined,
+    pendingPressConference: undefined,
+    pendingCSPress: undefined,
+    pendingRefereeMeeting: undefined,
+    pendingRetirementDecision: undefined,
+  }
+}
+
 interface GameState {
   game: SaveGame | null
   isLoading: boolean
@@ -792,6 +813,14 @@ export const useGameStore = create<GameState>()(
         if (error) {
           console.warn('persist rehydration misslyckades, återställer till tomt spel', error)
         }
+        // GAP-1: kraschåterställning — om ErrorBoundary bad om det, rensa pending-flöden
+        // INNAN spelet renderas, så ett save-inducerat renderingsfel inte loopar.
+        try {
+          if (localStorage.getItem(RECOVER_PENDING_FLAG)) {
+            if (state?.game) state.game = clearPendingFlows(state.game)
+            localStorage.removeItem(RECOVER_PENDING_FLAG)
+          }
+        } catch { /* localStorage otillgänglig — hoppa över */ }
         // One-time migration: move old localStorage Zustand save to IndexedDB
         if (!state?.game) {
           migrateLocalStorageIfNeeded().catch(() => {})

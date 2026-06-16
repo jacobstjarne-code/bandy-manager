@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Outlet, Navigate, useLocation } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
+import { RouteBoundary } from '../components/RouteBoundary'
 import { GameHeader } from '../components/GameHeader'
 import { EventOverlay } from '../components/EventOverlay'
 import { PhaseIndicatorAuto } from '../components/PhaseIndicator'
@@ -93,7 +94,9 @@ export function GameShell() {
       {!isLedgerOwnedChrome && <PhaseIndicatorAuto />}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: hideBottomNav ? 0 : `calc(var(--bottom-nav-height) + var(--safe-bottom))` }}>
         <div key={location.pathname} className="screen-enter" style={{ minHeight: '100%' }}>
-          <Outlet />
+          <RouteBoundary>
+            <Outlet />
+          </RouteBoundary>
         </div>
       </div>
       {!hideBottomNav && <BottomNav />}

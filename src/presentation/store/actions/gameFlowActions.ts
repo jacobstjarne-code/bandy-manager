@@ -49,6 +49,11 @@ export function gameFlowActions(get: Get, set: Set) {
       const { game } = get()
       if (!game) return null
 
+      // GAP-1(b): auto-spara pre-advance-state INNAN riskoperationen (round-advance/season-end
+      // är de tyngsta vägarna). Kraschar advance så kostar det aldrig mer än omgången som just
+      // påbörjades — det senast sparade är giltigt pre-advance-state.
+      void persistAutosave(game, 'pre-advance')
+
       const managedClubBefore = game.clubs.find(c => c.id === game.managedClubId)
       const financesBefore = managedClubBefore?.finances ?? 0
       const communityStandingBefore = game.communityStanding ?? 50
