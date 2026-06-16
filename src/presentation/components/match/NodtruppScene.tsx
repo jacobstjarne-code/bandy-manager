@@ -1,0 +1,129 @@
+import { useNavigate } from 'react-router-dom'
+import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { PlayerPosition } from '../../../domain/enums'
+import { useGameStore } from '../../store/gameStore'
+import { positionShort, positionLong } from '../../utils/formatters'
+
+/**
+ * CODE_ORDER_NODTRUPP — soft-lock-skydd: visas FÖRE lineup när managed klubb har
+ * < 11 spelklara, istället för LineupSteps disablade vägg. Tre lager (akademi
+ * primärt → fri agent → walkover som sista utväg). Blockerar aldrig: så länge
+ * akademin eller fri-agent-poolen har någon kan spelaren alltid nå elva, och
+ * walkover finns som absolut backstop. När truppen når 11 spelklara faller
+ * MatchScreen igenom till lineup automatiskt (denna vy avmonteras).
+ */
+
+const MIN_PLAYABLE = 11
+
+interface Props {
+  game: SaveGame
+  availableCount: number
+  nextFixtureId: string
+}
+
+export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
+  const navigate = useNavigate()
+  const promoteYouthPlayer = useGameStore(s => s.promoteYouthPlayer)
+  const signFreeAgent = useGameStore(s => s.signFreeAgent)
+  const concedeWalkover = useGameStore(s => s.concedeWalkover)
+
+  const squad = game.players.filter(p => p.clubId === game.managedClubId)
+  const injured = squad.filter(p => p.isInjured).length
+  const suspended = squad.filter(p => p.suspensionGamesRemaining > 0).length
+  const need = Math.max(0, MIN_PLAYABLE - availableCount)
+
+  // Positionsbrist: hur många spelklara per position (för att prioritera rätt junior).
+  const availByPos = (pos: PlayerPosition) =>
+    squad.filter(p => p.position === pos && !p.isInjured && p.suspensionGamesRemaining <= 0).length
+  const posDeficit = (pos: PlayerPosition) => (pos === ('goalkeeper' as PlayerPosition) ? 1 : 2) - availByPos(pos)
+
+  const youth = [...(game.youthTeam?.players ?? [])].sort((a, b) => {
+    const d = posDeficit(b.position) - posDeficit(a.position)
+    return d !== 0 ? d : b.currentAbility - a.currentAbility
+  })
+  const freeAgents = [...(game.transferState?.freeAgents ?? [])]
+    .sort((a, b) => b.currentAbility - a.currentAbility)
+    .slice(0, 6)
+
+  const deadEnd = youth.length === 0 && freeAgents.length === 0
+
+  function handleWalkover() {
+    concedeWalkover(nextFixtureId)
+    navigate('/game/dashboard', { replace: true })
+  }
+
+  return (
+    <div style={{ height: '100%', overflowY: 'auto', background: 'var(--bg)', padding: '24px 16px 90px' }}>
+      <div style={{ maxWidth: 440, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Läget */}
+        <div className="card-round" style={{ padding: '16px 18px' }}>
+          <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--danger-text)', marginBottom: 6 }}>
+            Nödläge i truppen
+          </div>
+          <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
+            {availableCount} spelklara. Det krävs elva.
+          </p>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            {injured > 0 ? `${injured} skadade` : ''}{injured > 0 && suspended > 0 ? ', ' : ''}{suspended > 0 ? `${suspended} avstängda` : ''}
+            {(injured > 0 || suspended > 0) ? '. ' : ''}
+            Du behöver kalla in {need} till innan ni kan spela.
+          </p>
+        </div>
+
+        {/* Lager 1 — akademin */}
+        {youth.length > 0 && (
+          <div className="card-sharp" style={{ padding: '12px 14px' }}>
+            <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+              Kalla upp från akademin
+            </div>
+            {youth.map(y => (
+              <div key={y.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', minWidth: 22 }}>{positionShort(y.position)}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{y.firstName} {y.lastName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{y.age} år · {positionLong(y.position)} · styrka ~{y.currentAbility}</div>
+                </div>
+                <button className="btn btn-copper" style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }} onClick={() => promoteYouthPlayer(y.id)}>
+                  Kalla upp
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Lager 2 — fri agent */}
+        {freeAgents.length > 0 && (
+          <div className="card-sharp" style={{ padding: '12px 14px' }}>
+            <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+              Nödvärva fri agent
+            </div>
+            {freeAgents.map(a => (
+              <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', minWidth: 22 }}>{positionShort(a.position)}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{a.firstName} {a.lastName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.age} år · {positionLong(a.position)} · styrka ~{a.currentAbility}</div>
+                </div>
+                <button className="btn btn-outline" style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }} onClick={() => signFreeAgent(a.id)}>
+                  Ring in
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Lager 3 — walkover (sista utväg, bara vid äkta återvändsgränd) */}
+        {deadEnd && (
+          <div className="card-sharp" style={{ padding: '12px 14px' }}>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10, lineHeight: 1.5 }}>
+              Akademin är tom och inga fria agenter svarar. Då återstår bara att lämna matchen.
+            </p>
+            <button className="btn btn-outline" style={{ width: '100%', fontSize: 13, color: 'var(--danger-text)' }} onClick={handleWalkover}>
+              Lämna walkover — förlust 0–5
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

@@ -79,6 +79,7 @@ interface GameState {
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number) => void
   markMatchStarted: (fixtureId: string, homeLineup?: import('../../domain/entities/Fixture').TeamSelection, awayLineup?: import('../../domain/entities/Fixture').TeamSelection) => void
   simulateAbandonedMatch: (fixtureId: string) => void
+  concedeWalkover: (fixtureId: string) => void
   clearSeasonSummary: () => void
   clearBoardMeeting: () => void
   requestDetailedAnalysis: (opponentClubId: string, fixtureId: string) => { success: boolean; error?: string }

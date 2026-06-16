@@ -221,6 +221,79 @@ export function matchActions(get: Get, set: Set) {
       }})
     },
 
+    // Nödtrupp lager 3 (CODE_ORDER_NODTRUPP): sista utväg när managed klubb inte kan
+    // ställa elva spelklara OCH akademi + fria agenter är tomma. Forfeit-förlust 0–5.
+    // EXTREMT sällsynt — finns bara så spelet aldrig kan låsa sig.
+    concedeWalkover: (fixtureId: string) => {
+      const { game } = get()
+      if (!game) return
+      const fixture = game.fixtures.find(f => f.id === fixtureId)
+      if (!fixture || fixture.status === FixtureStatus.Completed) return
+
+      const managedIsHome = fixture.homeClubId === game.managedClubId
+      const homeScore = managedIsHome ? 0 : 5
+      const awayScore = managedIsHome ? 5 : 0
+      const completed = { ...fixture, homeScore, awayScore, events: [], status: FixtureStatus.Completed }
+
+      const updatedFixtures = game.fixtures.map(f => f.id === fixtureId ? completed : f)
+      const completedLeague = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+      const standings = calculateStandings(game.league.teamIds, completedLeague)
+
+      let updatedCupBracket = game.cupBracket ?? null
+      if (fixture.isCup && updatedCupBracket && !updatedCupBracket.completed) {
+        updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, [completed])
+        const finalMatch = updatedCupBracket.matches.find(m => m.round === 4 && m.winnerId)
+        if (finalMatch) updatedCupBracket = { ...updatedCupBracket, winnerId: finalMatch.winnerId, completed: true }
+      }
+
+      // Playoff: spegla saveLiveMatchResults serieuppdatering + fasframskridning (korrekt bracket)
+      let updatedPlayoffBracket = game.playoffBracket
+      if (completed.isKnockout && !completed.isCup && updatedPlayoffBracket) {
+        updatedPlayoffBracket = {
+          ...updatedPlayoffBracket,
+          quarterFinals: updatedPlayoffBracket.quarterFinals.map(s => s.fixtures.includes(fixtureId) ? updateSeriesAfterMatch(s, completed) : s),
+          semiFinals: updatedPlayoffBracket.semiFinals.map(s => s.fixtures.includes(fixtureId) ? updateSeriesAfterMatch(s, completed) : s),
+          final: updatedPlayoffBracket.final && updatedPlayoffBracket.final.fixtures.includes(fixtureId)
+            ? updateSeriesAfterMatch(updatedPlayoffBracket.final, completed) : updatedPlayoffBracket.final,
+        }
+        const phaseComplete =
+          updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals ? updatedPlayoffBracket.quarterFinals.every(s => s.winnerId !== null)
+          : updatedPlayoffBracket.status === PlayoffStatus.SemiFinals ? updatedPlayoffBracket.semiFinals.every(s => s.winnerId !== null)
+          : updatedPlayoffBracket.status === PlayoffStatus.Final ? updatedPlayoffBracket.final?.winnerId !== null
+          : false
+        if (phaseComplete) {
+          const nextRoundStart = updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals ? 26
+            : updatedPlayoffBracket.status === PlayoffStatus.SemiFinals ? 29 : 32
+          const currentMaxMatchday = Math.max(0, ...updatedFixtures.map(f => f.matchday ?? 0))
+          const { bracket: advancedBracket, newFixtures } = advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, nextRoundStart, currentMaxMatchday + 1)
+          updatedPlayoffBracket = advancedBracket
+          if (newFixtures.length > 0) updatedFixtures.push(...newFixtures)
+        }
+      }
+
+      const opp = game.clubs.find(c => c.id === (managedIsHome ? fixture.awayClubId : fixture.homeClubId))
+      const walkoverItem: InboxItem = {
+        id: `inbox_walkover_${fixtureId}`,
+        date: game.currentDate,
+        type: InboxItemType.MatchResult,
+        title: 'Walkover',
+        body: `Vi kunde inte ställa elva spelklara mot ${opp?.name ?? 'motståndaren'}. Matchen gick till motståndaren, ${managedIsHome ? '0–5' : '5–0'}. Det får inte hända igen.`,
+        relatedFixtureId: fixtureId,
+        isRead: false,
+      }
+
+      set({ game: {
+        ...game,
+        fixtures: updatedFixtures,
+        standings,
+        cupBracket: updatedCupBracket,
+        playoffBracket: updatedPlayoffBracket,
+        managedClubPendingLineup: undefined,
+        lastCompletedFixtureId: fixtureId,
+        inbox: [walkoverItem, ...game.inbox],
+      }})
+    },
+
     markMatchStarted: (fixtureId: string, homeLineup?: TeamSelection, awayLineup?: TeamSelection) => {
       const { game } = get()
       if (!game) return
