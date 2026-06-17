@@ -9,6 +9,7 @@ import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysis
 import { getConditionLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
 import { FORMATIONS, type FormationType } from '../../../domain/entities/Formation'
 import { LineupFormationView } from './LineupFormationView'
+import { Settings, AlertTriangle } from 'lucide-react'
 import { PitchLineupView } from './PitchLineupView'
 import { OpponentAnalysisCard } from './OpponentAnalysisCard'
 
@@ -212,8 +213,8 @@ export function LineupStep({
 
       {/* 5. Formation dropdown — lifted from sub-components */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', marginBottom: 10 }}>
-        <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-          ⚙ Formation
+        <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <Settings size={11} /> Formation
         </span>
         <select
           value={tacticState.formation ?? '3-3-4'}
@@ -336,13 +337,13 @@ export function LineupStep({
         <div style={{ margin: '0 14px 8px', background: 'color-mix(in srgb, var(--danger) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 25%, transparent)', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--danger)', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {startingIds.length !== 11 && <span>Välj exakt 11 startspelare (du har {startingIds.length})</span>}
           {injuredInStarting.map(p => (
-            <span key={p.id}>⚠️ {p.firstName} {p.lastName} {p.isInjured ? 'är skadad' : `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`}</span>
+            <span key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><AlertTriangle size={12} style={{ flexShrink: 0 }} /> {p.firstName} {p.lastName} {p.isInjured ? 'är skadad' : `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`}</span>
           ))}
         </div>
       )}
       {canPlay && !startingIds.some(id => squadPlayers.find(p => p.id === id)?.position === PlayerPosition.Goalkeeper) && (
-        <div style={{ margin: '0 14px 8px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--warning)' }}>
-          ⚠️ Ingen målvakt i startelvan — en utespelare får gå i mål.
+        <div style={{ margin: '0 14px 8px', background: 'color-mix(in srgb, var(--warning) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--warning) 30%, transparent)', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <AlertTriangle size={13} style={{ flexShrink: 0 }} /> Ingen målvakt i startelvan — en utespelare får gå i mål.
         </div>
       )}
 
