@@ -3,6 +3,9 @@ import type { FacilityNodeDef } from '../entities/Community'
 // B1 — Utbyggnadsträd: tre grenar, statisk katalog
 // Konstis = baseline (inte en nod). Matchhall = kall avfart, isHall=true.
 // Ordning inom gren = visningsordning.
+// financing (B1 §1/§8): kommun gated på politician.relationship (+ ev. communityStanding),
+// mecenat på aktiv villig mecenat. Egen kassa alltid implicit (full cost). Lägre tröskel
+// ju mindre/mer ungdomsinriktad noden är. Matchhall saknar financing (prövningsspec/patron-borgen).
 
 export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
   // ── ANLÄGGNING ──────────────────────────────────────────────────────────
@@ -15,6 +18,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     requires: [],
     facilitiesBonus: 5,
     capacityBonus: 1000,
+    financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
     consequences: [
       { dim: 'publik', dir: 'upp', label: 'Folk stannar längre' },
       { dim: 'sjal',   dir: 'upp', label: 'Kaffe i kylan — en del av ritualerna' },
@@ -30,6 +34,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     requires: ['varmestuga'],
     facilitiesBonus: 10,
     capacityBonus: 400,
+    financing: { kommun: { share: 0.3, minRelation: 55, minStanding: 50 }, mecenat: { share: 0.4 } },
     consequences: [
       { dim: 'publik',  dir: 'upp', label: '+400 platser, fler på plats' },
       { dim: 'ekonomi', dir: 'upp', label: 'Mer billettintäkt' },
@@ -44,6 +49,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     buildRounds: 6,
     requires: [],
     facilitiesBonus: 5,
+    financing: { kommun: { share: 0.4, minRelation: 45 }, mecenat: { share: 0.4 } },
     consequences: [
       { dim: 'ungdom',  dir: 'upp',  label: 'Nattträningar möjliga' },
       { dim: 'publik',  dir: 'noll', label: 'Inga effekter på läktaren' },
@@ -78,10 +84,43 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     buildRounds: 4,
     requires: [],
     facilitiesBonus: 3,
+    financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
     consequences: [
       { dim: 'publik',  dir: 'upp', label: 'Folk stannar under paus' },
       { dim: 'ekonomi', dir: 'upp', label: 'Försäljningsintäkter' },
       { dim: 'ekonomi', dir: 'ned', label: 'Kassa −80 tkr' },
+    ],
+  },
+  {
+    // B1 §8 — portad från gamla modellen (strålkastare, +10% sponsor)
+    id: 'stralkastare',
+    gren: 'verksamhet',
+    label: 'Strålkastare',
+    cost: 80000,
+    buildRounds: 5,
+    requires: [],
+    facilitiesBonus: 5,
+    financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
+    consequences: [
+      { dim: 'ekonomi', dir: 'upp', label: '+10% sponsorintäkt' },
+      { dim: 'publik',  dir: 'upp', label: 'Kvällsmatcher i bättre ljus' },
+      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −80 tkr' },
+    ],
+  },
+  {
+    // B1 §8 — portad från gamla modellen (gym, +15% träningseffekt)
+    id: 'gym',
+    gren: 'verksamhet',
+    label: 'Gym',
+    cost: 150000,
+    buildRounds: 8,
+    requires: [],
+    facilitiesBonus: 8,
+    financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
+    consequences: [
+      { dim: 'ungdom',  dir: 'upp', label: '+15% träningseffekt' },
+      { dim: 'sjal',    dir: 'upp', label: 'Spelarna kan bygga styrka året om' },
+      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −150 tkr' },
     ],
   },
   {
@@ -92,6 +131,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     buildRounds: 14,
     requires: [],
     facilitiesBonus: 8,
+    financing: { kommun: { share: 0.4, minRelation: 50 }, mecenat: { share: 0.5 } },
     consequences: [
       { dim: 'ungdom',  dir: 'upp', label: 'Inomhusträning hela året' },
       { dim: 'sjal',    dir: 'upp', label: 'Ungdomarna väljer att stanna' },
@@ -108,6 +148,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     buildRounds: 8,
     requires: ['kiosk'],
     facilitiesBonus: 5,
+    financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.5 } },
     consequences: [
       { dim: 'ungdom', dir: 'upp', label: 'Strukturerat ungdomsprogram' },
       { dim: 'sjal',   dir: 'upp', label: 'Egna spelare i framtiden' },
@@ -122,6 +163,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     buildRounds: 12,
     requires: ['traningshall', 'akademi_2'],
     facilitiesBonus: 8,
+    financing: { kommun: { share: 0.4, minRelation: 55 }, mecenat: { share: 0.5 } },
     consequences: [
       { dim: 'ungdom', dir: 'upp', label: '↑↑ Elitakademi' },
       { dim: 'sjal',   dir: 'upp', label: 'Orten ger egna spelare' },

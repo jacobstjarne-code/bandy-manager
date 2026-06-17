@@ -1,10 +1,65 @@
-import type { FacilityProject } from '../entities/Community'
+import type { FacilityProject, FacilityFinancingMode } from '../entities/Community'
 import type { FacilityState, FacilityNodeView, FacilityNodeDef, FacilityGren } from '../entities/Community'
 import { FACILITY_NODE_DEFS } from '../data/facilityNodes'
 
 // ── B1 Facility tree — new model ─────────────────────────────────────────
 
 export { FACILITY_NODE_DEFS }
+
+// ── B1 §2 — finansieringsval ──────────────────────────────────────────────
+
+export interface FinancingContext {
+  relationship: number                          // politician.relationship (0 om ingen)
+  standing: number                              // communityStanding
+  mecenat?: { name: string; willing: boolean }  // aktiv mecenat + om den vill bidra
+}
+
+export interface FinancingOption {
+  mode: FacilityFinancingMode   // 'club' | 'kommun' | 'mecenat'
+  available: boolean
+  clubCost: number              // vad klubben drar ur kassan
+  contribution: number          // vad den externa källan står för
+  contributorName?: string      // mecenatens namn (för konsekvensraden §4)
+  reason?: string               // varför otillgänglig
+}
+
+/**
+ * B1 §2 — tillgängliga finansieringskällor för en nod givet nuläget. Egen kassa
+ * alltid; kommun gated på relation (+ ev. standing); mecenat på villig aktiv mecenat.
+ * Driver välj-mode-UI, gaten i bygg-actionen, och den dynamiska konsekvensraden (§4).
+ */
+export function getFinancingOptions(def: FacilityNodeDef, ctx: FinancingContext): FinancingOption[] {
+  const options: FinancingOption[] = [
+    { mode: 'club', available: true, clubCost: def.cost, contribution: 0 },
+  ]
+  const fin = def.financing
+  if (fin?.kommun) {
+    const { share, minRelation, minStanding } = fin.kommun
+    const relOk = ctx.relationship >= minRelation
+    const standingOk = minStanding == null || ctx.standing >= minStanding
+    options.push({
+      mode: 'kommun',
+      available: relOk && standingOk,
+      clubCost: Math.round(def.cost * (1 - share)),
+      contribution: Math.round(def.cost * share),
+      reason: !relOk ? `Kommunrelation ${ctx.relationship}/${minRelation}`
+        : !standingOk ? `Lokalt stöd ${ctx.standing}/${minStanding}` : undefined,
+    })
+  }
+  if (fin?.mecenat) {
+    const { share } = fin.mecenat
+    const willing = ctx.mecenat?.willing ?? false
+    options.push({
+      mode: 'mecenat',
+      available: willing,
+      clubCost: Math.round(def.cost * (1 - share)),
+      contribution: Math.round(def.cost * share),
+      contributorName: ctx.mecenat?.name,
+      reason: !willing ? 'Ingen villig mecenat' : undefined,
+    })
+  }
+  return options
+}
 
 /** Derive the view state of all nodes from saved FacilityState. */
 export function getFacilityNodeViews(

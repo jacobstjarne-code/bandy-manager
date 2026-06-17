@@ -6,6 +6,7 @@ import {
   startFacilityBuild,
   advanceFacilityState,
   getPreSeasonChoices,
+  getFinancingOptions,
   FACILITY_NODE_DEFS,
 } from '../facilityService'
 import type { FacilityState } from '../../entities/Community'
@@ -192,5 +193,43 @@ describe('matchhall node definition', () => {
   })
   it('requires laktare_ostra', () => {
     expect(hallDef.requires).toContain('laktare_ostra')
+  })
+})
+
+// ── B1 §2 — getFinancingOptions ──────────────────────────────────────────────
+describe('getFinancingOptions', () => {
+  const kiosk = FACILITY_NODE_DEFS.find(d => d.id === 'kiosk')!   // 80k, kommun 0.3/40, mecenat 0.4
+  const laktare = FACILITY_NODE_DEFS.find(d => d.id === 'laktare_ostra')!  // 300k, kommun 0.3/55 +standing50
+
+  it('egen kassa alltid tillgänglig, full cost', () => {
+    const club = getFinancingOptions(kiosk, { relationship: 0, standing: 0 }).find(o => o.mode === 'club')!
+    expect(club.available).toBe(true)
+    expect(club.clubCost).toBe(80000)
+    expect(club.contribution).toBe(0)
+  })
+
+  it('kommun gated på relation; klubben drar cost×(1−share)', () => {
+    const low = getFinancingOptions(kiosk, { relationship: 39, standing: 50 }).find(o => o.mode === 'kommun')!
+    expect(low.available).toBe(false)
+    const ok = getFinancingOptions(kiosk, { relationship: 40, standing: 50 }).find(o => o.mode === 'kommun')!
+    expect(ok.available).toBe(true)
+    expect(ok.clubCost).toBe(56000)       // 80k × 0.7
+    expect(ok.contribution).toBe(24000)   // 80k × 0.3
+  })
+
+  it('kommun-nod med minStanding kräver både relation och standing', () => {
+    const noStanding = getFinancingOptions(laktare, { relationship: 60, standing: 49 }).find(o => o.mode === 'kommun')!
+    expect(noStanding.available).toBe(false)
+    const ok = getFinancingOptions(laktare, { relationship: 60, standing: 50 }).find(o => o.mode === 'kommun')!
+    expect(ok.available).toBe(true)
+  })
+
+  it('mecenat bara med villig aktiv mecenat; bär namnet för konsekvensraden', () => {
+    const none = getFinancingOptions(kiosk, { relationship: 0, standing: 0 }).find(o => o.mode === 'mecenat')!
+    expect(none.available).toBe(false)
+    const ok = getFinancingOptions(kiosk, { relationship: 0, standing: 0, mecenat: { name: 'Birger', willing: true } }).find(o => o.mode === 'mecenat')!
+    expect(ok.available).toBe(true)
+    expect(ok.clubCost).toBe(48000)       // 80k × 0.6
+    expect(ok.contributorName).toBe('Birger')
   })
 })

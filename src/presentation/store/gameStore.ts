@@ -17,7 +17,8 @@ import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysis
 import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded, saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import { applyFinanceChange } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
-import { getAvailableProjects, startFacilityProject as startFacProj } from '../../domain/services/facilityService'
+import { getAvailableProjects, startFacilityProject as startFacProj, canStartBuild, startFacilityBuild, getFinancingOptions, FACILITY_NODE_DEFS, type FinancingContext } from '../../domain/services/facilityService'
+import type { FacilityFinancingMode } from '../../domain/entities/Community'
 
 import { matchActions } from './actions/matchActions'
 import { trainingActions } from './actions/trainingActions'
@@ -100,6 +101,7 @@ interface GameState {
   buyScoutRounds: () => void
   recruitVolunteer: (name: string) => void
   startFacilityProject: (projectId: string, mode?: 'club' | 'kommun' | 'mecenat') => { success: boolean; error?: string }
+  startFacilityBuildNode: (nodeId: string, mode?: FacilityFinancingMode) => { success: boolean; error?: string }
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
   upgradeAcademy: () => { success: boolean; error?: string }
   upgradeFacilities: () => { success: boolean; error?: string }
@@ -650,6 +652,49 @@ export const useGameStore = create<GameState>()(
           mecenater: updatedMecenater,
         }})
         return { success: true, error: undefined }
+      },
+
+      // B1 §2/§3 — nya modellens bygg-action MED finansiering. Drar kostnaden ur kassan
+      // (buggen i nuvarande kod: ingen caller drog den). Löpande tillgänglig.
+      startFacilityBuildNode: (nodeId: string, mode: FacilityFinancingMode = 'club') => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel' }
+        const club = game.clubs.find(c => c.id === game.managedClubId)
+        if (!club) return { success: false, error: 'Ingen klubb' }
+        const state = game.facilityState ?? { builtNodeIds: [] }
+        const can = canStartBuild(nodeId, state)
+        if (!can.ok) return { success: false, error: can.reason ?? 'Kan inte byggas' }
+        const def = FACILITY_NODE_DEFS.find(d => d.id === nodeId)
+        if (!def) return { success: false, error: 'Okänd nod' }
+
+        const pol = game.localPolitician
+        const activeMecenat = (game.mecenater ?? []).find(m => m.isActive && m.wealth >= 3 && m.happiness >= 50)
+        const ctx: FinancingContext = {
+          relationship: pol?.relationship ?? 0,
+          standing: game.communityStanding ?? 50,
+          mecenat: activeMecenat ? { name: activeMecenat.name, willing: true } : undefined,
+        }
+        const chosen = getFinancingOptions(def, ctx).find(o => o.mode === mode)
+        if (!chosen || !chosen.available) return { success: false, error: chosen?.reason ?? 'Finansiering ej tillgänglig' }
+        if (club.finances < chosen.clubCost) return { success: false, error: `Otillräcklig kassa (kräver ${Math.round(chosen.clubCost / 1000)} tkr ur kassan)` }
+
+        const currentMatchday = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
+        const newState = startFacilityBuild(nodeId, state, currentMatchday)
+        const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -chosen.clubCost)
+
+        let updatedPol = pol
+        if (mode === 'kommun' && pol) updatedPol = { ...pol, relationship: Math.min(100, pol.relationship + 8) }
+        let updatedMecenater = game.mecenater ?? []
+        if (mode === 'mecenat' && activeMecenat) {
+          updatedMecenater = updatedMecenater.map(m =>
+            m.id === activeMecenat.id
+              ? { ...m, silentShout: Math.min(100, (m.silentShout ?? 0) + 10), totalContributed: (m.totalContributed ?? 0) + chosen.contribution }
+              : m
+          )
+        }
+
+        set({ game: { ...game, facilityState: newState, clubs: updatedClubs, localPolitician: updatedPol ?? game.localPolitician, mecenater: updatedMecenater } })
+        return { success: true }
       },
 
       interactWithPolitician: (action: 'invite' | 'budget' | 'apply'): { success: boolean; message: string } => {

@@ -104,6 +104,12 @@ export interface FacilityConsequence {
   label: string
 }
 
+// B1 §1 — finansieringskällor per nod. Egen kassa är alltid implicit (full cost).
+export interface NodeFinancing {
+  kommun?: { share: number; minRelation: number; minStanding?: number }
+  mecenat?: { share: number }   // bara om en aktiv, villig mecenat finns
+}
+
 export interface FacilityNodeDef {
   id: string
   gren: FacilityGren
@@ -115,6 +121,7 @@ export interface FacilityNodeDef {
   isHall?: boolean
   facilitiesBonus: number    // applys to club.facilities on completion (backward compat)
   capacityBonus?: number     // added to audience capacity on completion
+  financing?: NodeFinancing  // B1 §1 — kommun/mecenat-medfinansiering
 }
 
 // Derived view type — never saved, computed from FacilityState

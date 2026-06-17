@@ -28,12 +28,12 @@ import type { PendingScene, SceneId } from './Scene'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'
-import type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
+import type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
 import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord } from './Narrative'
 
 // ── Re-exports so existing `import from '../entities/SaveGame'` still works ──
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
-export type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
+export type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
 export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord }
 export type { StandingRow }
 export type { InboxItem }
