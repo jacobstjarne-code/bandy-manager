@@ -48,6 +48,25 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, onComplete }: 
     return () => clearTimeout(t)
   }, [phase])
 
+  // Säkerhetsnät: oavsett om mellanstegens timers fyrar (StrictMode-cleanup,
+  // bakgrundad flik som pausar timers, remount) ska CTA:n ALLTID bli nåbar.
+  // Garanterad övergång till 'cta' efter total sekvenstid. Utan detta kan en
+  // missad timer låsa scenen utan väg vidare utom "Hoppa över".
+  useEffect(() => {
+    const t = setTimeout(() => setPhase('cta'), 7600)
+    return () => clearTimeout(t)
+  }, [])
+
+  // Tap-to-advance: ett klick var som helst hoppar till nästa fas (eller rakt
+  // till 'cta'). Tar bort allt timer-beroende — den som läst klart trycker vidare.
+  const advancePhase = () => {
+    setPhase(p => {
+      const i = PHASE_ORDER.indexOf(p)
+      return i < PHASE_ORDER.length - 1 ? PHASE_ORDER[i + 1] : p
+    })
+    setSettingIn(true)
+  }
+
   const treasurer = board.treasurer  // kassör
   const member = board.member        // ledamot — byns röst
   const memberLine = getStureLine(clubId)
@@ -62,7 +81,7 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, onComplete }: 
   ]
 
   return (
-    <div className="arrival-scene">
+    <div className="arrival-scene" onClick={phase !== 'cta' ? advancePhase : undefined}>
       {/* Fullbleed säsongsstart-illustration (intro.jpg) som scen-bakgrund — fallback-gradient
           + stämpel tills bilden droppas. Scrim ger textläsbarhet; lamp-overlay + innehåll ovanpå. */}
       <IllustrationScene mode="fullbleed" name="intro" alt="" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
@@ -147,9 +166,10 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, onComplete }: 
         </div>
       </div>
 
-      {/* CTA — absolute bottom, fades in at cta phase */}
+      {/* CTA — absolute bottom, fades in at cta phase. stopPropagation så knappen
+          inte fångas av scenens tap-to-advance. */}
       <div className={['scene-cta-area', phase === 'cta' && 'in'].filter(Boolean).join(' ')}>
-        <button className="btn btn-primary btn-cta" onClick={onComplete}>Sätt igång →</button>
+        <button className="btn btn-primary btn-cta" onClick={(e) => { e.stopPropagation(); onComplete() }}>Sätt igång →</button>
       </div>
     </div>
   )
