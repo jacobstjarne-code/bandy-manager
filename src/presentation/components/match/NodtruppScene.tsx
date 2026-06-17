@@ -42,6 +42,7 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
     return d !== 0 ? d : b.currentAbility - a.currentAbility
   })
   const freeAgents = [...(game.transferState?.freeAgents ?? [])]
+    .filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)   // bara spelklara — annars löser de inte nödläget
     .sort((a, b) => b.currentAbility - a.currentAbility)
     .slice(0, 6)
 
