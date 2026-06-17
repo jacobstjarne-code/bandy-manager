@@ -56,16 +56,11 @@ export function BottomNav() {
   const effectivelyLocked = locked || isOnMatchLive
   const lockReason = reason ?? (isOnMatchLive ? 'Match pågår — spela klart' : null)
 
-  // Hide nav entirely on ceremonial transition screens — full-screen flows
-  // där nav inte har någon funktion och bara skapar förvirring.
-  const HIDDEN_PATHS = [
-    '/game/season-summary',
-    '/game/playoff-intro',
-    '/game/qf-summary',
-    '/game/champion',
-    '/game/game-over',
-  ]
-  const isHiddenScreen = HIDDEN_PATHS.some(p => location.pathname.startsWith(p))
+  // NAV-PRINCIP (2026-06-15): GameShell äger DÖLJ/VISA (ceremonier), BottomNav äger
+  // SPÄRR (match/live via effectivelyLocked). Tidigare hade BottomNav en EGEN
+  // dölj-lista som överlappade GameShells — därav att navet "hoppade" från två håll.
+  // Den är borttagen: GameShell renderar inte ens BottomNav på ceremoni-ytor, så
+  // den koden nås aldrig där. En ansvarsfördelning, inte två sanningar.
 
   useEffect(() => {
     if (location.pathname !== lastActive) {
@@ -73,8 +68,6 @@ export function BottomNav() {
       setBounceKey(prev => ({ ...prev, [location.pathname]: (prev[location.pathname] ?? 0) + 1 }))
     }
   }, [location.pathname, lastActive])
-
-  if (isHiddenScreen) return null
 
   const matchBadge = 0  // Removed: showed 1 when lineup was SET (not needed), dashboard CTA handles match flow
   const windowStatus = currentDate ? getTransferWindowStatus(currentDate).status : 'closed'

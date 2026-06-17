@@ -50,25 +50,24 @@ export function GameShell() {
   // coffee_room is a modal over dashboard — BottomNav stays visible (FIX-41)
   const sceneActive = attention.kind === 'scene' && game.pendingScene?.sceneId !== 'coffee_room'
 
-  // Routes that own their own CTA chrome — BottomNav would overlap it
-  const HIDDEN_PATHS = new Set([
-    '/game/match',
-    '/game/match/live',
-    '/game/review',
+  // NAV-PRINCIP (2026-06-15): navet är spelarens fasta referenspunkt (topp+botten).
+  // Det ska INTE hoppa in/ut på vanliga vyer — det SPÄRRAS (useNavigationLock:
+  // syns men går ej att trampa, med skäl) under match/live. Det DÖLJS bara på de
+  // genuint filmiska helskärms-ceremonierna nedan, där ett gråtonat nav vore en
+  // främmande list på guldögonblicket. Taktik/facility togs medvetet UR listan —
+  // de är vanliga push-vyer, inte ceremonier; navet stannar (tillbaka-pil får
+  // samexistera). Single source of truth — BottomNav speglar samma lista.
+  const CEREMONY_PATHS = new Set([
     '/game/playoff-intro',
     '/game/qf-summary',
     '/game/sim-summary',
     '/game/half-time-summary',
     '/game/champion',
     '/game/season-summary',
-    // Rad B-komplettering: fullskärms-ytor med egen ut-navigering (back-nav/ceremoni),
-    // ej BottomNav-destinationer — nav skulle överlappa egen chrome.
-    '/game/taktik',       // pushad taktik-editor, ← Tillbaka
-    '/game/facility',     // B1 push-vy (spec: push, ej flik), ← Tillbaka
-    '/game/game-over',    // fixed ceremoni, ut till huvudmenyn
+    '/game/game-over',
   ])
   const hideBottomNav = sceneActive ||
-    HIDDEN_PATHS.has(location.pathname) ||
+    CEREMONY_PATHS.has(location.pathname) ||
     location.pathname.startsWith('/game/season-summary/')
 
   // EventOverlay visas INTE när en scen väntar — scenen har prioritet
