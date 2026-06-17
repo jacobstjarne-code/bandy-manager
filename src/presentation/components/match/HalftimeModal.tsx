@@ -247,9 +247,11 @@ export function HalftimeModal({
             {isSmFinal ? '⏸ HALVTID · SM-FINALEN' : isCupFinal ? '⏸ HALVTID · CUPFINALEN' : '⏸ HALVTID'}
           </p>
 
-          {/* Score — Georgia (paper-numerals), not LED (tavlans reservat) */}
+          {/* Score — Georgia (paper-numerals), not LED (tavlans reservat).
+              --text-light (ljus) för den mörka modalpanelen; --text-primary är mörk
+              och gav oläslig grå mot panelen. */}
           <div className="ht-score">
-            <div className="h-display-lg" style={{ color: 'var(--text-primary)' }}>{htHomeGoals}—{htAwayGoals}</div>
+            <div className="h-display-lg" style={{ color: 'var(--text-light)' }}>{htHomeGoals}—{htAwayGoals}</div>
             <div className="pd">{truncate(homeClubName, 10)} · {truncate(awayClubName, 10)}</div>
           </div>
 
