@@ -52,6 +52,26 @@ Arbetsorder: `docs/RELA-FORSONINGSSPRINT-2026-06-11.md` (Fable). Domen (`docs/DE
 
 *(Alla CODE_SAMLAT-paket P1–P5 levererade.)*
 
+### SESSIONSFYND 2026-06-16 — kvar/att verifiera (gap-audit)
+
+Efter NU2/grind/SEN-blocket/B1-bygget — det som sagts men inte är helt slutfört, så det inte tappas:
+
+| Vad | Status | Nästa |
+|-----|--------|-------|
+| **B1 §6 textpooler** | Datamodell byggd (`56a1c2af`); copy ej skriven | **Opus NÄST** — kommun/mecenat-förhandling + konsekvensrader, platshållare `{politician.name}`/`{mecenat.namn}` |
+| **B1 §5 utfasning + migration** | Gamla `getAvailableProjects`/`FacilityProject` lever parallellt (spärr håller) | Code EFTER §6 — ta bort gamla vägen + mappa gamla saves `facilityProjects`→`builtNodeIds` |
+| **B1 PreSeason Valet-ingång** | Ej wirad (`getPreSeasonChoices` finns, ingen scen) | "TVÅ ingångar, ETT träd" (B1-raden) — andra ingången saknas; bara löpande FacilityScreen-välj-mode finns |
+| **B1 financing-kalibrering** | Spec-värden använda, ej balanstestade | Verifiera trösklar/andelar mot ekonomimodellen (spec bad Code flagga) |
+| **Nödtrupp soft-lock** (`62394aa4`) | Byggt, mekaniken spårad + portar gröna | **Playtest-verifiering:** dev-skada 3 → nödtrupp-kort → kalla upp → spelbar; + walkover-dead-end |
+| **Ceremoni-heron emoji→Lucide** (`b9624b6`) | Byggt | Perception-tung — glans-titt vid genomspelning (kunde ej headless-screenshotas) |
+| **C1 säsong-2-start** | Endgame-kurering byggd för slutspel + omg≥20; säsong-2-start medvetet UTANFÖR | Beslut: inkludera säsong-2-start i kurering eller ej (otydlig detektion, risk att gömma relevanta säsongsstart-kort) |
+
+**Kodaudit-fynd 2026-06-16 (B1 gjorde två förbefintliga luckor LEVANDE — ej regressioner från financing-commiten):**
+| Vad | Rot | Fix |
+|-----|-----|-----|
+| **Facility capacityBonus appliceras aldrig** | `communityProcessor` beräknar+returnerar `facilityCapacityBonus` (advanceFacilityState), men `roundProcessor:1157`-destrukturen utelämnar det → en byggd värmestugas "+1000 platser" når aldrig `club.arenaCapacity`. Förbefintligt (capacity-returen + advanceFacilityState fanns innan), men mina noder är nu byggbara → luckan är live. | Applicera `facilityCapacityBonus` på `club.arenaCapacity` i roundProcessor. KRÄVER kapacitetsmodell-beslut: frys arenaCapacity (= derived+bonus, slutar växa med reputation) eller separat additiv-lager. Inte säker drive-by — hör till facility-completion-wiringen / §5. |
+| **Migration orphanar pågående legacy-bygge** | `saveGameMigration` sätter `facilityState={builtNodeIds:[]}` ovillkorligt; `communityProcessor:231` kör legacy `checkProjectCompletion` bara `if (!game.facilityState)`. Ett save mitt i ett legacy-bygge → facilityState finns → legacy-completion hoppas → bygget stallar, spelaren betalade. | I §5-migrationen: seeda bara facilityState när inget legacy-projekt är `in_progress`, eller migrera in-progress → `facilityState.activeProject`. |
+
 ---
 
 ## B. SPECCAT KLART, VÄNTAR BYGGE
