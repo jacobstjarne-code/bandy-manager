@@ -1,9 +1,38 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
-import type { BoardMember, BoardPersonality, BoardRole } from '../../domain/entities/Community'
+import type { BoardMember, BoardPersonality, BoardRole, FacilityState } from '../../domain/entities/Community'
 import { PendingScreen } from '../../domain/enums'
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 import { CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
 import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
+import { FACILITY_NODE_DEFS } from '../../domain/services/facilityService'
+
+// B1 §5 — migrera gamla facilityProjects → ny facilityState. SJÄLVSTÄNDIG legacy-shape
+// (importerar inte den borttagna FacilityProject-typen) så den överlever utfasningen.
+interface LegacyFacilityProject { id: string; status: string; startedMatchday?: number }
+const LEGACY_NODE_MAP: Record<string, string> = {
+  stralkastare: 'stralkastare',      // samma id i nya trädet (§8 portad)
+  gym: 'gym',                        // samma id i nya trädet (§8 portad)
+  varmestuga_legacy: 'varmestuga',
+  laktare_legacy: 'laktare_ostra',
+  ny_arena: 'matchhall',
+  // omkladningsrum: släppt (§8 — ingen motsvarande nod, ingen förlust värd en nod)
+}
+function migrateFacilityState(legacy: LegacyFacilityProject[]): FacilityState {
+  const builtNodeIds = legacy
+    .filter(p => p.status === 'completed')
+    .map(p => LEGACY_NODE_MAP[p.id])
+    .filter((id): id is string => !!id)
+  // Orphan-fix: pågående gammalt bygge får INTE försvinna — fullföljs i nya modellen
+  // som activeProject med kvarvarande omgångar (advanceFacilityState slutför + ger bonusen).
+  const inProgress = legacy.find(p => p.status === 'in_progress' && LEGACY_NODE_MAP[p.id])
+  if (inProgress) {
+    const nodeId = LEGACY_NODE_MAP[inProgress.id]
+    const def = FACILITY_NODE_DEFS.find(d => d.id === nodeId)
+    const started = inProgress.startedMatchday ?? 0
+    return { builtNodeIds, activeProject: { nodeId, startedMatchday: started, etaMatchday: started + (def?.buildRounds ?? 8) } }
+  }
+  return { builtNodeIds }
+}
 
 function strHash(s: string): number {
   let h = 0
@@ -91,8 +120,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.financeLog === undefined) data.financeLog = []
   if (data.pendingFollowUps === undefined) data.pendingFollowUps = []
   if (data.mecenater === undefined) data.mecenater = []
-  if (data.facilityProjects === undefined) data.facilityProjects = []
-  if (data.facilityState === undefined) data.facilityState = { builtNodeIds: [] }
+  if (data.facilityState === undefined) data.facilityState = migrateFacilityState((data.facilityProjects as LegacyFacilityProject[] | undefined) ?? [])
   if (data.boardObjectives === undefined) data.boardObjectives = []
   if (data.boardObjectiveHistory === undefined) data.boardObjectiveHistory = []
   if (data.boardPersonalities === undefined) data.boardPersonalities = defaultBoardPersonalities(data.managedClubId as string ?? '')
