@@ -625,7 +625,7 @@ export function generatePressConference(
     question = { text: 'Publiken sviker. Hur påverkar det laget?', preferIds: question.preferIds }
   } else if (newMecenat && rand() < 0.25) {
     question = { text: `Ni har fått ${newMecenat.name}s stöd. Gör det skillnad i omklädningsrummet?`, preferIds: question.preferIds }
-  } else if ((game.facilityProjects ?? []).some(p => p.status === 'in_progress') && round >= 8 && rand() < 0.20) {
+  } else if (game.facilityState?.activeProject != null && round >= 8 && rand() < 0.20) {
     question = { text: 'Det byggs vid arenan. Hur påverkar det koncentrationen?', preferIds: question.preferIds }
   } else if (game.players.some(p => p.clubId === game.managedClubId && p.promotedFromAcademy && p.age <= 20) && round >= 4 && rand() < 0.20) {
     const youngStar = game.players.find(p => p.clubId === game.managedClubId && p.promotedFromAcademy && p.age <= 20)

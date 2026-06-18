@@ -118,14 +118,9 @@ function collectSeasonEvents(game: SaveGame, season: number, managedClubId: stri
     })
   }
 
-  // Facility built
-  for (const p of (game.facilityProjects ?? [])) {
-    if (p.status !== 'completed' || p.completedSeason !== season) continue
-    events.push({
-      type: 'facility_built', season, matchday: p.completedMatchday ?? 22,
-      text: `${p.name} stod klart.`, emoji: '🏟️', significance: 50,
-    })
-  }
+  // Facility built: utelämnat efter B1 §5-utfasningen — nya facilityState.builtNodeIds saknar
+  // per-nod completedSeason, så händelsen kan inte säsongsförankras. Återställs om en
+  // completion-logg (builtLog {nodeId,season,matchday}) läggs till i FacilityState (flaggat till Opus).
 
   // Storylines
   for (const sl of (game.storylines ?? [])) {

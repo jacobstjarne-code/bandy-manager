@@ -341,8 +341,8 @@ export function evaluateObjective(
       return { value: 0, status: allDerbiesPlayed ? 'failed' : 'active' }
     }
     case 'improveFacilities': {
-      const projects = game.facilityProjects ?? []
-      const started = projects.filter(p => p.status === 'in_progress' || p.status === 'completed').length
+      const fs = game.facilityState
+      const started = (fs?.builtNodeIds.length ?? 0) + (fs?.activeProject ? 1 : 0)
       return { value: started, status: started >= 1 ? 'met' : 'active' }
     }
     case 'improveYouth': {

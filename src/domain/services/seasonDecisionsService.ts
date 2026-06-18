@@ -1,4 +1,5 @@
 import type { SaveGame } from '../entities/SaveGame'
+import { FACILITY_NODE_DEFS } from './facilityService'
 
 export interface SeasonDecision {
   icon: string
@@ -49,11 +50,11 @@ export function collectSeasonDecisions(game: SaveGame): SeasonDecision[] {
     })
   }
 
-  // Facility projects
-  for (const proj of game.facilityProjects ?? []) {
-    if (proj.status === 'completed' || proj.status === 'in_progress') {
-      decisions.push({ icon: '🏗️', text: `Startade projekt: ${proj.name}` })
-    }
+  // Facility — pågående bygge (nya modellen; completedSeason saknas → bara aktivt bygge visas)
+  const ap = game.facilityState?.activeProject
+  if (ap) {
+    const def = FACILITY_NODE_DEFS.find(d => d.id === ap.nodeId)
+    decisions.push({ icon: '🏗️', text: `Bygger: ${def?.label ?? ap.nodeId}` })
   }
 
   return decisions.sort((a, b) => (a.round ?? 99) - (b.round ?? 99)).slice(0, 8)

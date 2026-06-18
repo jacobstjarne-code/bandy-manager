@@ -33,7 +33,6 @@ export function ClubScreen() {
   const setTransferBudget = useGameStore(s => s.setTransferBudget)
   const buyScoutRounds = useGameStore(s => s.buyScoutRounds)
   const interactWithPolitician = useGameStore(s => s.interactWithPolitician)
-  const startFacilityProject = useGameStore(s => s.startFacilityProject)
   const recruitVolunteer = useGameStore(s => s.recruitVolunteer)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const dismissHint = useGameStore(s => s.dismissHint)
@@ -148,7 +147,7 @@ export function ClubScreen() {
 
         {/* ── Tab 3: Klubb ── */}
         {activeTab === 'orten' && (
-          <OrtenTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} startFacilityProject={startFacilityProject} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} />
+          <OrtenTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} />
         )}
 
         {/* ── Tab 4: Akademi ── */}

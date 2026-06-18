@@ -1154,7 +1154,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nextMatchday,
   )
   newInboxItems.push(...communityResult.inboxItems)
-  let { csBoost, updatedFacilityProjects, updatedFacilityState, facilityBonusTotal, updatedVolunteers, updatedVolunteerMorale } = communityResult
+  let { csBoost, updatedFacilityState, facilityBonusTotal, updatedVolunteers, updatedVolunteerMorale } = communityResult
 
   // Sprint 26: mean reversion — puls driftar mot 60 med 3% per omgång.
   // Tillämpas INNAN övriga puls-ändringar så att matchresultat/aktiviteter aktivt motverkar driften.
@@ -1357,7 +1357,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     clubLegends: game.clubLegends ?? [],
     boardObjectives: updatedBoardObjectives,
     boardObjectiveHistory: game.boardObjectiveHistory ?? [],
-    facilityProjects: updatedFacilityProjects,
     facilityState: updatedFacilityState ?? game.facilityState,
     volunteers: updatedVolunteers,
     volunteerMorale: updatedVolunteerMorale,

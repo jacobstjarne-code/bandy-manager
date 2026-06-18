@@ -338,7 +338,6 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     boardObjectiveHistory: [],
     onboardingStep: 0,
     mecenater: initialMecenater,
-    facilityProjects: [],
     facilityState: { builtNodeIds: [] },
     previousMarketValues: {},
     scoutReports: {},

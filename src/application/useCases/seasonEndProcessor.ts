@@ -1228,7 +1228,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     rivalryHistory: game.rivalryHistory ?? {},
     clubLegends: newLegends,
     mecenater: ageMecenater((game.mecenater ?? []).map(m => m.isActive ? updateSilentShout(m) : m)),
-    facilityProjects: game.facilityProjects ?? [],
     facilityState: game.facilityState,
     storylines: game.storylines ?? [],
     boardObjectives: newSeasonObjectives,

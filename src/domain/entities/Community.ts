@@ -76,24 +76,6 @@ export interface PoliticianInteractionLog {
 
 export type FacilityFinancingMode = 'club' | 'kommun' | 'mecenat'
 
-export interface FacilityProject {
-  id: string
-  name: string
-  description: string
-  cost: number
-  duration: number
-  facilitiesBonus: number
-  otherEffects: string[]
-  requiresKommun: boolean
-  kommunCostShare: number
-  status: 'available' | 'in_progress' | 'completed'
-  startedMatchday?: number
-  completedSeason?: number
-  completedMatchday?: number
-  financingMode?: FacilityFinancingMode
-  mecenatCostShare?: number    // faktisk mecenat-andel (0–1) som tillämpades
-}
-
 // ── B1 Facility tree — ny modell ──────────────────────────────────────────
 
 export type FacilityGren = 'anlaggning' | 'verksamhet' | 'akademi'
@@ -136,7 +118,7 @@ export interface FacilityNodeView {
   cooldownFilled?: number
 }
 
-// Saved state — replaces FacilityProject[] for new saves
+// Saved state för facility-trädet (B1)
 export interface FacilityState {
   builtNodeIds: string[]
   activeProject?: {

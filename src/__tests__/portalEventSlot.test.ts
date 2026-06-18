@@ -59,7 +59,6 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     financeLog: [],
     pendingFollowUps: [],
     mecenater: [],
-    facilityProjects: [],
     boardObjectives: [],
     boardObjectiveHistory: [],
     version: '0.2.0',

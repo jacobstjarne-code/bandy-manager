@@ -1,8 +1,8 @@
-import type { SaveGame, InboxItem, FacilityProject, FacilityState, StandingRow } from '../../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem, FacilityState, StandingRow } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import { InboxItemType } from '../../../domain/enums'
 import { getRivalry } from '../../../domain/data/rivalries'
-import { checkProjectCompletion, advanceFacilityState } from '../../../domain/services/facilityService'
+import { advanceFacilityState } from '../../../domain/services/facilityService'
 import { getJournalistCommunityModifier } from '../../../domain/services/journalistVisibilityService'
 
 export interface CommunityProcessorResult {
@@ -10,7 +10,6 @@ export interface CommunityProcessorResult {
   /** Klack-matchreaktion (kartfynd 8a): mood-delta för supporterGroup, egen profil skild från pulsen. Appliceras i roundProcessor. */
   klackMoodDelta: number
   inboxItems: InboxItem[]
-  updatedFacilityProjects: FacilityProject[]
   updatedFacilityState: FacilityState | undefined
   /** Total facilities bonus from newly completed projects this round */
   facilityBonusTotal: number
@@ -225,20 +224,6 @@ export function processCommunity(
     facilityCapacityBonus = advanced.capacityBonus
   }
 
-  // Legacy model: keep running for old saves without facilityState
-  const updatedFacilityProjects = (game.facilityProjects ?? []).map(p => checkProjectCompletion(p, nextMatchday, game.currentSeason))
-  const oldFacilityProjects = game.facilityProjects ?? []
-  if (!game.facilityState) {
-    for (const up of updatedFacilityProjects) {
-      if (up.status === 'completed') {
-        const old = oldFacilityProjects.find(o => o.id === up.id)
-        if (old && old.status === 'in_progress') {
-          facilityBonusTotal += up.facilitiesBonus
-        }
-      }
-    }
-  }
-
   // ── Frivillig moral + attrition ───────────────────────────────────────────
   const volunteers = game.volunteers ?? []
   let volunteerMorale = { ...(game.volunteerMorale ?? {}) }
@@ -306,5 +291,5 @@ export function processCommunity(
   const diminishingFactor = currentCS > 85 ? 0.25 : currentCS > 70 ? 0.5 : currentCS > 55 ? 0.75 : 1.0
   csBoost = positiveBoost * diminishingFactor + negativeBoost
 
-  return { csBoost, klackMoodDelta, inboxItems, updatedFacilityProjects, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
+  return { csBoost, klackMoodDelta, inboxItems, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
 }

@@ -50,7 +50,6 @@ interface OrtenTabProps {
   game: SaveGame
   navigate: NavigateFunction
   interactWithPolitician?: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
-  startFacilityProject?: (projectId: string, mode?: 'club' | 'kommun' | 'mecenat') => { success: boolean; error?: string }
   recruitVolunteer?: (name: string) => void
   activateCommunity?: (key: string, level: string) => { success: boolean; error?: string }
 }
