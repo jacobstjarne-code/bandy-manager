@@ -29,7 +29,13 @@ export function processNarrative(
 
   // ── Fan mood + supporter group ──────────────────────────────────────────
   const currentFanMood = game.fanMood ?? 50
-  let fanMood = currentFanMood
+  // 8b §B: drift mot 50 varje omgång (3 %) — reversion mot grundstämning, oavsett match.
+  // Tillämpas FÖRE match-/transfer-deltan så resultat aktivt motverkar driften (speglar
+  // communityProcessor-pulsen). Driften ligger här, inte i roundProcessor, eftersom fanMood
+  // beräknas här (ny absolut nivå) — inte som en delta-ackumulator som communityStanding.
+  const FANMOOD_DRIFT_TARGET = 50
+  const FANMOOD_DRIFT_STRENGTH = 0.03
+  let fanMood = Math.max(0, Math.min(100, currentFanMood + (FANMOOD_DRIFT_TARGET - currentFanMood) * FANMOOD_DRIFT_STRENGTH))
   let supporterGroup = game.supporterGroup
   if (justCompletedManagedFixture) {
     const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
@@ -39,8 +45,15 @@ export function processNarrative(
     const lost = (myScore ?? 0) < (theirScore ?? 0)
     const bigWin = won && (myScore ?? 0) >= (theirScore ?? 0) + 3
     const bigLoss = lost && (theirScore ?? 0) >= (myScore ?? 0) + 3
-    const fanDelta = bigWin ? 8 : won ? 4 : bigLoss ? -8 : lost ? -4 : 1
-    fanMood = Math.max(0, Math.min(100, currentFanMood + fanDelta))
+    // Oavgjort ger 0 (var +1) — en oavgjord match ska inte långsamt lyfta fanMood.
+    let fanDelta = bigWin ? 8 : won ? 4 : bigLoss ? -8 : lost ? -4 : 0
+    // Diminishing returns på POSITIVT delta (speglar communityProcessor): högre nivå → mindre lyft.
+    // Negativa delta opåverkade — besvikelse biter alltid fullt.
+    if (fanDelta > 0) {
+      const dim = fanMood > 85 ? 0.25 : fanMood > 70 ? 0.5 : fanMood > 55 ? 0.75 : 1.0
+      fanDelta *= dim
+    }
+    fanMood = Math.max(0, Math.min(100, fanMood + fanDelta))
     if (isHome && supporterGroup) {
       supporterGroup = updateSupporterMembers(supporterGroup, won, localRand)
     }
