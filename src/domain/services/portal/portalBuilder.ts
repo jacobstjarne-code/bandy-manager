@@ -120,6 +120,10 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
   // när pucken är avgörande ska portalen vara EN sak. Säsong-2-start lämnas medvetet
   // utanför (otydlig detektion, risk att gömma relevanta säsongsstart-kort) — flaggad.
   const isEndgameCuration = isPlayoff || currentLigaRound >= 20
+  // C1 close-out: storySlot-släckningen gatas på LEVANDE INSATS (kvar i slutspelsrace /
+  // spelar match), inte rå omg≥20. En utslagen åskådar-klubb (isSpectator) vid omg≥20
+  // behåller story-sloten — utslagningen är precis när reflektionen hör hemma.
+  const liveStake = isPlayoff || (currentLigaRound >= 20 && !isSpectator)
 
   // Steg 1: Filtrera bagen — suppress-kort för current phase + triggers
   const staleTracking = game.cardStaleTracking
@@ -201,7 +205,7 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
 
   return {
     primary: primaryCard,
-    storySlot: isEndgameCuration ? null : storySlot,
+    storySlot: liveStake ? null : storySlot,
     secondary: finalSecondary.slice(0, 3),
     minimal: finalMinimal.slice(0, 4),
   }

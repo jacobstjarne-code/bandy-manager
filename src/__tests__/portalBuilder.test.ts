@@ -3,6 +3,7 @@ import { buildPortal, makeSeed, computeCardStaleTracking } from '../domain/servi
 import { setCardBag } from '../domain/services/portal/dashboardCardBag'
 import type { DashboardCard } from '../domain/services/portal/dashboardCardBag'
 import type { SaveGame } from '../domain/entities/SaveGame'
+import { InboxItemType, PlayoffStatus } from '../domain/enums'
 
 // ─── Mock komponenter ─────────────────────────────────────────────────────────
 const MockPrimary = () => null
@@ -307,5 +308,35 @@ describe('buildPortal — C1 endgame-kurering', () => {
     const ids = buildPortal(game, makeSeed(game)).secondary.map(c => c.id)
     expect(ids).toContain('coffee_room_card')
     expect(ids).toContain('ekonomi')
+  })
+})
+
+// ── C1 close-out: storySlot live-stake-gate ──────────────────────────────────
+describe('buildPortal — C1 storySlot live-stake-gate', () => {
+  beforeEach(() => setCardBag([
+    { id: 'next_match', tier: 'primary', weight: 10, triggers: [() => true], Component: MockPrimary as never },
+  ]))
+
+  const mediaInbox = [{ id: 'm1', type: InboxItemType.MediaEvent, date: '2026-10-15', title: 'Rubrik', body: 'Text', isRead: false }]
+  const completedLeague22 = { id: 'f22', status: 'completed', isCup: false, roundNumber: 22, homeClubId: 'club_a', awayClubId: 'club_b' }
+
+  it('contender omg≥20 (spelar match): storySlot släckt — matchfokus', () => {
+    const game = makeGame({ fixtures: [completedLeague22] as never, inbox: mediaInbox as never })
+    expect(buildPortal(game, makeSeed(game)).storySlot).toBeNull()
+  })
+
+  it('utslagen åskådare omg≥20: storySlot behålls (reflektion)', () => {
+    // managed (club_a) är INTE med i bracketen → spectator; annan serie har schemalagd match
+    const playoffBracket = {
+      status: PlayoffStatus.QuarterFinals,
+      quarterFinals: [{ homeClubId: 'club_b', awayClubId: 'club_c', fixtures: ['pf1'], winnerId: null, loserId: null, homeWins: 0, awayWins: 0 }],
+      semiFinals: [],
+      final: null,
+    }
+    const fixtures = [completedLeague22, { id: 'pf1', status: 'scheduled', isCup: false, isKnockout: true, roundNumber: 27, homeClubId: 'club_b', awayClubId: 'club_c' }]
+    const game = makeGame({ fixtures: fixtures as never, inbox: mediaInbox as never, playoffBracket: playoffBracket as never })
+    const layout = buildPortal(game, makeSeed(game))
+    expect(layout.storySlot).not.toBeNull()
+    expect(layout.storySlot?.kind).toBe('journalistHot')
   })
 })

@@ -1154,7 +1154,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nextMatchday,
   )
   newInboxItems.push(...communityResult.inboxItems)
-  let { csBoost, updatedFacilityState, facilityBonusTotal, updatedVolunteers, updatedVolunteerMorale } = communityResult
+  let { csBoost, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, updatedVolunteers, updatedVolunteerMorale } = communityResult
 
   // Sprint 26: mean reversion — puls driftar mot 60 med 3% per omgång.
   // Tillämpas INNAN övriga puls-ändringar så att matchresultat/aktiviteter aktivt motverkar driften.
@@ -1164,10 +1164,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const driftDelta = (DRIFT_TARGET - currentCs) * DRIFT_STRENGTH
   csBoost += driftDelta
 
-  if (facilityBonusTotal > 0) {
+  if (facilityBonusTotal > 0 || facilityCapacityBonus > 0) {
     postTransferClubs = postTransferClubs.map(c =>
       c.id === game.managedClubId
-        ? { ...c, facilities: Math.min(100, c.facilities + facilityBonusTotal) }
+        ? {
+            ...c,
+            facilities: Math.min(100, c.facilities + facilityBonusTotal),
+            // B1 §3 (close-out): en byggd anläggning höjer kapacitetstaket PERMANENT, engång
+            // vid completion. arenaCapacity = lagrad bas + Σ facility-bonusar (init från
+            // reputation-deriverad bas om ostörd). Närvaron cappas dynamiskt mot taket.
+            ...(facilityCapacityBonus > 0
+              ? { arenaCapacity: (c.arenaCapacity ?? Math.round(c.reputation * 7 + 150)) + facilityCapacityBonus }
+              : {}),
+          }
         : c
     )
   }
