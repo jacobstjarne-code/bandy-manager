@@ -3,6 +3,7 @@ import { useGameStore } from '../store/gameStore'
 import { useNavigate } from 'react-router-dom'
 import { FacilityTree } from '../components/club/FacilityTree'
 import { FACILITY_NODE_DEFS, getFinancingOptions, type FinancingContext, type FinancingOption } from '../../domain/services/facilityService'
+import { financingFlavor } from '../../domain/data/facilityFinancingStrings'
 
 const tkr = (n: number) => `${Math.round(n / 1000)} tkr`
 
@@ -127,6 +128,17 @@ export default function FacilityScreen() {
                 <span style={{ fontSize: 11, color: o.available ? 'var(--text-secondary)' : 'var(--text-muted)' }}>
                   {o.available ? optionSub(o) : o.reason}
                 </span>
+                {(() => {
+                  const flavor = financingFlavor(
+                    o.mode,
+                    o.available,
+                    { politician: pol?.name, mecenat: ctx.mecenat?.name },
+                    `${selectedDef.id}:${o.mode}:${facilityState.builtNodeIds.length}`,
+                  )
+                  return flavor
+                    ? <span style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', marginTop: 1 }}>{flavor}</span>
+                    : null
+                })()}
               </button>
             ))}
             {error && <p style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</p>}
