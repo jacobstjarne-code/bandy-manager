@@ -5,7 +5,7 @@ import { PlayerArchetype } from '../../domain/enums'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { canUseLeadershipAction, type LeadershipAction } from '../../domain/services/leadershipService'
 import { ClubBadge } from './ClubBadge'
-import { getPortraitSvg } from '../../domain/services/portraitService'
+import { getPortraitImagePath } from '../../domain/services/portraitService'
 import { getPlayerVoice } from '../../domain/services/playerVoiceService'
 import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
@@ -280,8 +280,8 @@ export function PlayerCard({
     : scoutReport ? 'fresh' : null
   const isStale = reportAge === 'stale'
   const effectiveReport = isStale ? undefined : scoutReport
-  // TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md
-  const portraitSvg = getPortraitSvg(player.id, player.age, player.position)
+  // Genomgång II A: illustrerat hjälteporträtt (PNG-arketyp), ålder → tier → seedat val.
+  const portraitImg = getPortraitImagePath(player.id, player.age)
 
   const topStats = isOwned
     ? getTopStats(player)
@@ -364,10 +364,15 @@ export function PlayerCard({
         padding: '8px 0 4px',
         background: 'linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)',
       }}>
-        <div
-          style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent)', background: 'var(--bg-surface)' }}
-          dangerouslySetInnerHTML={{ __html: portraitSvg }}
-        />
+        <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent)', background: 'var(--bg-surface)' }}>
+          <img
+            src={portraitImg}
+            alt=""
+            width={72}
+            height={72}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        </div>
       </div>
 
       {/* Gold divider */}
