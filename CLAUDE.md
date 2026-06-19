@@ -10,6 +10,8 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 
 2. **Workspace-check:** kör `tool_search` för att se vilka filsystem-verktyg som är tillgängliga i sessionen (read/write/edit/list). Olika sessioner har olika åtkomst — verifiera, anta inte.
 
+3. **BYGGT-MEN-OSYNLIGT — läs FÖRE du spårar kod.** Öppna `docs/BACKLOG.md` och läs (a) listan "BYGGT MEN OSYNLIGT/ONÅBART" överst och (b) sektion A (aktiva sprintar + sessionsfynd). Detta är obligatoriskt, inte orientering-vid-behov. **Hård regel:** om Jacob frågar om något kan vara byggt-men-osynligt, parkerat, halvfärdigt, eller "finns det redan?" — sök svaret i BACKLOG.md FÖRST, innan du grep:ar koden. Koden visar vad som finns; BACKLOG visar vad vi *vet* om vad som finns och varför det ser ut som det gör. Att spåra fram ett svar ur koden som redan står i BACKLOG är det dyraste felet i det här projektet — det får Jacob att tro att en sak är bortglömd när den är loggad, och tvärtom. Verifiera mot koden EFTER att du läst BACKLOG, inte istället för.
+
 ### Innan du börjar arbeta — välj uppgiftstyp:
 
 **A. PLAYTEST-PATCH (bugg från användarrapport):**
@@ -59,7 +61,7 @@ Innan du resonerar om bandyns regler, tolkar matchhändelser, eller drar slutsat
 
 ### Backlog & historik — orientering:
 
-- `docs/BACKLOG.md` — ENDA SANNING för "specat men ej byggt" + "idéer som ska bli spec" (etablerad 2026-05-17). När något parkeras (Opus säger "framtid" eller "senare") skrivs det in här SAMMA session, inte vid tillfälle. Vid stor sprint-start scannas BACKLOG för relaterade idéer som kan packas samman.
+- `docs/BACKLOG.md` — ENDA SANNING för "specat men ej byggt" + "idéer som ska bli spec" (etablerad 2026-05-17). Läses vid sessionsstart (steg 3 ovan), inte bara vid behov. När något parkeras (Opus säger "framtid" eller "senare") skrivs det in här SAMMA session, inte vid tillfälle. **När något byggs som domän-utan-yta (logik finns, ingen scen/route/vy läser den) eller medvetet skjuts upp — skriv en rad i "BYGGT MEN OSYNLIGT/ONÅBART"-listan överst i BACKLOG samma session, med vad/varför/stäng-villkor/ägare.** En parkering utan rad i den listan finns inte — den är bara bortglömd, och då springer Jacob på den av en slump månader senare. Vid stor sprint-start scannas BACKLOG för relaterade idéer som kan packas samman.
 - `docs/KVAR.md` — historisk logg av leveranser (kronologisk). KVAR är vad SOM HÄNT, BACKLOG är vad som ska göras. Inte samma sak.
 - Senaste `docs/HANDOVER_YYYY-MM-DD.md` — dagsläge från föregående session.
 - Aktuell sprintfil i `docs/sprints/`.

@@ -12,6 +12,21 @@
 
 ---
 
+## ⚠️ BYGGT MEN OSYNLIGT / ONÅBART — LÄS FÖRST
+
+**Vad detta är:** system där logiken finns i kod men ingen yta visar den, ELLER där en yta finns men är så begravd att en spelare aldrig når den. Detta är den farligaste klassen — den ser ut som "klart" i varje commit och test, men spelaren ser den aldrig. Skild från vanlig backlog: detta är inte "ej byggt", det är "byggt men når inte fram".
+
+**Regel:** när du bygger domän-utan-yta eller medvetet skjuter upp en wiring — lägg en rad HÄR samma session. När ytan wiras klart — ta bort raden (CHANGELOG bär historiken). **Om listan växer förbi ~5 rader är det en signal att något ska byggas färdigt eller dödas — inte sparas.** Kort av design.
+
+| Vad | Status (byggt) | Varför osynligt | Stäng-villkor | Ägare |
+|-----|----------------|-----------------|---------------|-------|
+| **B1 PreSeason "Valet"** | `getPreSeasonChoices()` i `facilityService.ts` — full domänlogik | Ingen scen/route/vy anropar den. Ingen PreSeasonScreen finns. Medvetet sekvenserad (B1 Sprint 1 byggde "ingen UI ännu"). | Valet-UI byggs ("TVÅ ingångar, ETT träd" — välj-läget vid säsongsstart). Väntar A3-layout + Erik-playtest enligt sprintordning. | Code bygger UI efter Design-mock; mock = Opus-brief (finns) |
+| **B1 Matchhall-gaffeln (upplevelse)** | Trade-off-datan finns i facility-noden (publik/moral/ekonomi åt båda håll) | `hallDebateData.ts` halvbyggd — vägvals-dramat (förankring→krav→kommun→bygge) är inte byggt. Sprint 4, ej påbörjad. | Bygg om `hallDebateData.ts` från "dröm" till "vägval med pris" + gaffel-process-UI. | Opus text + Code UI, efter Design-mock |
+| **Facility capacityBonus** | `advanceFacilityState` beräknar+returnerar `facilityCapacityBonus` | `roundProcessor`-destrukturen utelämnar fältet — en byggd värmestugas "+1000 platser" når aldrig `club.arenaCapacity`. Spelaren betalar, får inget. | Applicera bonusen på `club.arenaCapacity` i roundProcessor. KRÄVER kapacitetsmodell-beslut (frys vs additivt lager) — se kodaudit-fynd i sektion A. | Code, hör till facility-completion-wiring/§5 |
+
+---
+
+
 ## PROCESS-REGLER (etablerade 2026-05-17)
 
 1. **När vi parkerar en idé eller spec — Opus skriver in den i `BACKLOG.md` SAMMA session**, inte "vid tillfälle"
@@ -66,6 +81,20 @@ Efter NU2/grind/SEN-blocket/B1-bygget — det som sagts men inte är helt slutf�
 | **Ceremoni-heron emoji→Lucide** (`b9624b6`) | Byggt | Perception-tung — glans-titt vid genomspelning (kunde ej headless-screenshotas) |
 | **C1 säsong-2-start** | Endgame-kurering byggd för slutspel + omg≥20; säsong-2-start medvetet UTANFÖR | Beslut: inkludera säsong-2-start i kurering eller ej (otydlig detektion, risk att gömma relevanta säsongsstart-kort) |
 | **B1 §5 clubMemory facility_built** | builtNodeIds saknar per-nod completedSeason → "X stod klart [säsong]" kan ej säsongsförankras (Code-flagga 2026-06-18, §5 utelämnade händelsen) | Liten enrichment: `builtLog {nodeId, season, matchday}` i FacilityState. Minor narrativ-förlust tills dess — ej brådskande. |
+| **Pitchfärg drev grön-beige→blå** | ÅTGÄRDAD 2026-06-19: båda pitcharna bytta till is-grå (`#F4F6F5→#E0E6E6`). `BandyPitch.tsx` (Förbered Lista+Plan) hade hårdkodad himmelsblå utanför tokens; `FormationView.tsx` (Taktik) hade `--ice`-uttryck. KVAR: två separata pitch-implementationer i kodbasen — inte längre en färgfråga, en strukturfråga. | Code-städning: slå ihop `BandyPitch` + `FormationView`-pitchen till EN delad komponent. Liten, lågprio. (Sidonot: `FormationView`-pitchen har redan kemilager `chem?.topPairs` inbyggt — relevant för taktik-kemi toggle/lager-beslutet.) |
+
+### INCOMING-GENOMGÅNG (påbörjad 2026-06-19) — en fil i taget mot kod
+
+`docs/incoming/` hade 27 filer trots tomhetsregeln. Genomgång: läs varje, avgör mot KÄLLAN (ej minne) om implementerad → flytta till rätt plats / skriv spec / logga avvikelse. Tracker så genomgången själv inte tappas:
+
+| Fil | Dom | Åtgärd |
+|-----|-----|--------|
+| `2026-06-09_design_forbered_trupp_slots.html` | IMPLEMENTERAD (Lista/Plan-toggle, plan identisk i båda — Jacob bekräftade) | Flyttad → `docs/mockups/` 2026-06-19 |
+| `2026-06-09_design_granska_oversikt_recut.html` | **EJ IMPLEMENTERAD — medvetet övergiven.** Mocken (06-09) = ren matchrapport-hjälte, tabell/form/ekonomi UT. Koden gick rikare väg (06-01 IA `52fd322` + senare manager-kvitto/score/reaktioner) — Jacob 2026-06-19: behåll det rikare, mockens förenkling skulle kasta värdefull funktion. | Flyttad → `docs/mockups/` 2026-06-19 (arkiverad som överspelad mock). |
+
+---
+
+**Code:s tre strukturbeslut (rapport 2026-06-19, `b3630a9a` — VÄNTAR JACOBS VAL, ej i kod ännu):** Code:s pixel-audit lät tre avvikelser stå för att de kräver designval, inte fix. (1) **Spelarkortets Översikt** avviker mest från mocken — koden visar full SÄSONG-sektion + Prata/Ledarskap utfällda inline; mockens Översikt är lugn (3-cellsgrid mål/assist/betyg + kontraktsrad + Prata/Ledarskap som knappar-som-öppnar). **Opus-rekommendation 2026-06-19:** konforma till mocken, men flytta marknadsvärde+dynamiska celler till Säsong/Karriär-fliken (kasta inte). (2) **Porträttform** cirkel vs fyrkant — **AVGJORT:** cirkel är rätt mot `CHARACTER-BRIEF.md` (36px kortavatar i cirkel); mocken som visar fyrkant är den som avviker, inte koden. Stilbytet (platt 70-talsporträtt) är FAS 5, ej byggt. (3) **Taktik-kemi toggle vs lager** — mocken vill ha kemilinjer som opacity-lager PÅ formationen; koden har separat ChemistryView (verifierat: ritar SAMMA plan, samma viewBox/PlayerDot/koordinater). **Opus-rekommendation:** bygg lagret nu, inte uppföljning — `FormationView` har REDAN `chem?.topPairs`-rendering inbyggd (se pitch-raden ovan), så hopslagningen är liten. | Jacob väljer: (1) konforma Översikt eller behåll rikare; (3) bygg kemilager nu eller lämna toggle. (2) klar. |
 
 **Kodaudit-fynd 2026-06-16 (B1 gjorde två förbefintliga luckor LEVANDE — ej regressioner från financing-commiten):**
 | Vad | Rot | Fix |
