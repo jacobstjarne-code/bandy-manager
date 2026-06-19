@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, Users, Swords, Table2, Building2, Hammer } from 'lucide-react'
+import { Home, Users, Swords, Table2, Building2, Hammer, ArrowLeftRight } from 'lucide-react'
 import { useInjuredInLineup, useGameStore, useNavigationLock } from '../store/gameStore'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
@@ -72,6 +72,13 @@ export function BottomNav() {
   const windowStatus = currentDate ? getTransferWindowStatus(currentDate).status : 'closed'
   const transferWindowOpen = windowStatus !== 'closed'
 
+  // B1-nav Fas 3: Värvning (marknaden) eleveras till nav-flik BARA när fönstret är öppet.
+  // Tillfälligt sjunde mål under fönstret är ett medvetet undantag (Design) — ingen
+  // utträngningslogik. När stängt nås marknaden via Trupp → Värvning.
+  const navTabs = transferWindowOpen
+    ? [...tabs, { to: '/game/transfers', label: 'Värvning', Icon: ArrowLeftRight }]
+    : tabs
+
   // B1-nav: expiringContracts-badgen flyttar med kontrakt till Trupp/Värvning (Fas 2).
   const badges: Record<string, number> = {
     '/game/squad': injuredInLineup,
@@ -122,7 +129,7 @@ export function BottomNav() {
         pointerEvents: effectivelyLocked ? 'none' : 'auto',
         transition: 'opacity 0.2s',
       }}>
-        {tabs.map(({ to, label, Icon }) => (
+        {navTabs.map(({ to, label, Icon }) => (
           <NavLink
             key={to}
             to={to}

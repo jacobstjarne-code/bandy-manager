@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { X, ArrowRight } from 'lucide-react'
 import { useGameStore } from '../../store/gameStore'
 import { positionShort, formatValue, formatSalary } from '../../utils/formatters'
 import { SectionLabel } from '../SectionLabel'
@@ -18,6 +19,7 @@ interface ContractsTabProps {
 // så det finns EN sanning för kontraktsförlängning. TransfersScreens egen wage-overrun
 // behålls för bud — samma delade WageOverrunWarning-komponent, separat per-yta-state.
 export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: ContractsTabProps) {
+  const navigate = useNavigate()
   const game = useGameStore(s => s.game)
   const renewContract = useGameStore(s => s.renewContract)
 
@@ -111,6 +113,21 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
           <button onClick={() => setWageWarning(null)} className="transfers-wage-warning-close"><X size={12} /></button>
         </div>
       )}
+      {/* B1-nav Fas 3: ingång till transfermarknaden (säsongstabbarna bor på /game/transfers,
+          som bara är permanent i navet när fönstret är öppet). */}
+      <button
+        onClick={() => navigate('/game/transfers')}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+          padding: '10px 12px', marginBottom: 12, borderRadius: 'var(--radius-md)',
+          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+          color: 'var(--text-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)',
+        }}
+      >
+        <span>Transfermarknaden — marknad, scouting, fria, sälj</span>
+        <ArrowRight size={15} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+      </button>
+
       <SectionLabel>Utgående kontrakt</SectionLabel>
       {expiringPlayers.length === 0 ? (
         <p style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 0' }}>Inga kontrakt utgår snart.</p>
