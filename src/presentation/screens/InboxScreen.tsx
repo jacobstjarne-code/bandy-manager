@@ -12,9 +12,10 @@ import { Check } from 'lucide-react'
 import { PlayerLink } from '../components/PlayerLink'
 import { Dot, dotColor, type DotColor } from '../components/shared/Dot'
 
-// ── Fynd 12: agerbara poster routar till sin handlingsyta ─────────
-// Transfer-notiser hör hemma på Övergångar. Returnerar undefined för
-// poster utan egen yta (de expanderar i inkorgen i stället).
+// ── Fynd 12 + PC-5: agerbara poster routar till sin handlingsyta ──
+// Förfrågningar MED egen yta länkas dit (Övergångar, Trupp, Klubb) i stället för
+// att bara kunna kvitteras. Poster utan egen yta får undefined (expanderar/kvitteras
+// i inkorgen). KRÄVER SVAR-gruppen lovar handling — den ska gå att nå härifrån.
 function inboxActionRoute(type: InboxItemType): string | undefined {
   switch (type) {
     case InboxItemType.TransferBidReceived:
@@ -22,9 +23,25 @@ function inboxActionRoute(type: InboxItemType): string | undefined {
     case InboxItemType.TransferBidResult:
     case InboxItemType.Transfer:
       return '/game/transfers'
+    case InboxItemType.ContractExpiring:
+    case InboxItemType.Injury:
+    case InboxItemType.Suspension:
+      return '/game/squad'
+    case InboxItemType.BoardFeedback:
+    case InboxItemType.LicenseReview:
+    case InboxItemType.EconomicCrisis:
+      return '/game/club'
     default:
       return undefined
   }
+}
+
+// Etikett för CTA:n ("Gå till Trupp →"), härledd ur destinationen.
+function inboxActionLabel(route: string): string {
+  if (route === '/game/transfers') return 'Övergångar'
+  if (route === '/game/squad') return 'Trupp'
+  if (route === '/game/club') return 'Klubb'
+  return 'Öppna'
 }
 
 // ── Icon per type ────────────────────────────────────────────────
@@ -224,10 +241,14 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
         </span>
       )}
 
-      {/* Chevron — expanderbar eller routar till en handlingsyta (fynd 12) */}
-      {(hasBody || isActionable) && (
+      {/* Routar till en handlingsyta → explicit CTA ("Gå till Trupp →"). PC-5/fynd 12. */}
+      {actionRoute ? (
+        <span style={{ color: 'var(--accent)', fontSize: 9.5, fontWeight: 700, letterSpacing: '0.3px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+          {inboxActionLabel(actionRoute)} ›
+        </span>
+      ) : hasBody ? (
         <span style={{ color: 'var(--accent)', fontSize: 13, flexShrink: 0 }}>›</span>
-      )}
+      ) : null}
     </div>
   )
 }
