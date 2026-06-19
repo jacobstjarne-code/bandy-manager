@@ -9,10 +9,11 @@
  * Tillståndet lever i FacilityState.hallProcess (Community.ts).
  * Effekter skickas via EventEffect { type: 'hallProcess', hallProcessData: string }.
  *
- * TEXTSTATUS (2026-06-19): Fas-text = Opus-runda EFTER att tillståndsmaskinen finns
- * att skriva mot. Befintlig HALL_DEBATE_EVENTS-text återanvänds i Fas 1 (förankring)
- * eftersom den matchar innehållet. Fas 2+3 har '[Opus]' i bodyVariants — Opus skriver
- * dem separat. Spec §"Vad Code INTE bygger": scentexten skrivs av Opus.
+ * TEXTSTATUS (2026-06-19): Fas-text KLAR. Fas 1 (förankring) återanvänder befintlig
+ * HALL_DEBATE_EVENTS-text. Fas 2 (krav), Fas 3 (kommun) och retry (nekad) skrivna av
+ * Opus direkt på plats 2026-06-19 — mot den färdiga tillståndsmaskinen, ej gissad. Inga
+ * '[Opus]'-platshållare kvar. Vals-subtitles bär mekaniken (deltas/multiplikatorer),
+ * label:arna bär tonen (bruksort, understatement, tvåpoäng).
  */
 
 import type { SaveGame } from '../../entities/SaveGame'
@@ -163,7 +164,7 @@ function buildKravEvent(
   const choices: EventChoice[] = [
     {
       id: 'minimum',
-      label: '[Opus]',  // Minsta godkända standard
+      label: 'Bygg det förbundet kräver — inte mer',
       subtitle: 'Kostnadsmultiplikator ×1.0 — grundstandard',
       effect: {
         type: 'hallProcess',
@@ -172,7 +173,7 @@ function buildKravEvent(
     },
     {
       id: 'standard',
-      label: '[Opus]',  // Rimlig standard
+      label: 'Ta i lite mer medan vi ändå bygger',
       subtitle: 'Kostnadsmultiplikator ×1.2 — framtidssäkrad',
       effect: {
         type: 'hallProcess',
@@ -181,7 +182,7 @@ function buildKravEvent(
     },
     {
       id: 'premium',
-      label: '[Opus]',  // Premiumstandard
+      label: 'Bygg för det orten kan bli, inte det den är',
       subtitle: 'Kostnadsmultiplikator ×1.4 — fullt kapacitetsutnyttjande',
       effect: {
         type: 'hallProcess',
@@ -193,14 +194,42 @@ function buildKravEvent(
   return {
     id: eid,
     type: 'hallProcess',
-    title: '[Opus]',
-    body: '[Opus]',
+    title: 'Förbundet har synpunkter',
+    body: 'Ett papper från förbundet ligger på bordet. Ska en hall godkännas för seriespel finns krav på is, sikt och säkerhet. Inget oväntat — men inget gratis heller. Hur mycket bygger vi?',
     choices,
     resolved: false,
   }
 }
 
 // ── Fas 3 — Kommunförhandling ─────────────────────────────────────────────
+
+/**
+ * Kontinuerlig kommunandels-formel (B1 §5 fix, ersätter platt 2×2-tabell).
+ * Exporterad för testbarhet.
+ *
+ * Utfall 0.10–0.50; koefficienterna kalibrerade mot:
+ *   Ideal (infrastructure, g=90, standing=80, rel=90) → ~0.549 → clampad till 0.50
+ *   Fientlig (savings, g=25, standing=40, rel=30)     → ~0.173
+ */
+export function calcMaxKommunAndel(
+  politician: Pick<import('../../entities/Community').LocalPolitician, 'agenda' | 'relationship' | 'generosity'>,
+  communityStanding: number,
+): number {
+  // Basandel per agenda-klass
+  const agendaBas =
+    (politician.agenda === 'infrastructure' || politician.agenda === 'prestige') ? 0.34
+    : (politician.agenda === 'youth' || politician.agenda === 'inclusion') ? 0.24
+    : 0.16  // savings (och övrigt)
+
+  // Kontinuerliga moddar — politikerns karaktär + klubbens anseende
+  const generosityMod = 0.7 + ((politician.generosity ?? 60) / 100) * 0.6  // 0.82–1.24
+  const standingMod   = 0.7 + Math.min(Math.max(communityStanding / 50, 0), 2) * 0.3 / 2  // 0.70–1.00
+
+  // Relation som glidande term — ingen klippkant vid 70
+  const relTerm = (politician.relationship / 100) * 0.15
+
+  return Math.min(0.50, Math.max(0.10, agendaBas * generosityMod + relTerm * standingMod))
+}
 
 function buildKommunEvent(
   game: SaveGame,
@@ -215,10 +244,8 @@ function buildKommunEvent(
   if (alreadyQueued.has(eid)) return null
   if (!isCooldownPassed(hallProcess, currentRound)) return null
 
-  // Beräkna vad kommunen MAX kan bidra med givet agenda + relationer
-  const agendaFriendly = politician.agenda === 'infrastructure' || politician.agenda === 'prestige'
-  const highRelation = politician.relationship > 70
-  const maxKommunAndel = agendaFriendly ? (highRelation ? 0.50 : 0.35) : (highRelation ? 0.25 : 0.15)
+  // Kontinuerlig formel — agenda-bas × generosity + glidande relationsterm
+  const maxKommunAndel = calcMaxKommunAndel(politician, game.communityStanding ?? 50)
   const currentAndel = hallProcess.kommunAndel
 
   // Kontrollera om kommunen+patron kan täcka glappet → godkänd
@@ -228,7 +255,7 @@ function buildKommunEvent(
   const choices: EventChoice[] = [
     {
       id: 'negotiate_standard',
-      label: '[Opus]',
+      label: 'Förhandla rakt — vad kan kommunen stå för?',
       subtitle: `Kommunen bidrar med ~${Math.round(maxKommunAndel * 50)}% · kommunStöd +15`,
       effect: {
         type: 'hallProcess',
@@ -240,7 +267,7 @@ function buildKommunEvent(
     },
     {
       id: 'offer_naming_rights',
-      label: '[Opus]',  // Namnrättigheter som eftergift
+      label: 'Erbjud namnet på hallen i utbyte',
       subtitle: 'Kommunen bidrar mer · kommunAndel +' + Math.round(maxKommunAndel * 30) + '% · Identitet −',
       effect: {
         type: 'hallProcess',
@@ -252,7 +279,7 @@ function buildKommunEvent(
     },
     ...(activeMecenat && !hallProcess.patronBorgen ? [{
       id: 'ask_patron_borgen',
-      label: '[Opus]',  // Be patronen gå i borgen
+      label: `Be ${activeMecenat.name} gå i borgen`,
       subtitle: `${activeMecenat.name} garanterar glappet — binder patronens resurser`,
       effect: {
         type: 'hallProcess' as const,
@@ -261,7 +288,7 @@ function buildKommunEvent(
     }] : []),
     ...(canGodkanna ? [{
       id: 'finalize',
-      label: '[Opus]',  // Avsluta förhandlingen — finansieringen räcker
+      label: 'Skriv under — vi har det vi behöver',
       subtitle: 'Prövningen godkänd — hallen kan börja byggas',
       effect: {
         type: 'hallProcess' as const,
@@ -270,7 +297,7 @@ function buildKommunEvent(
     }] : []),
     {
       id: 'pause_negotiations',
-      label: '[Opus]',  // Vänta på bättre läge
+      label: 'Inte i dag — låt det mogna',
       subtitle: 'Förhandlingarna fortsätter nästa tillfälle',
       effect: {
         type: 'hallProcess' as const,
@@ -284,7 +311,7 @@ function buildKommunEvent(
   if (isHostile && !activeMecenat) {
     choices.push({
       id: 'accept_rejection',
-      label: '[Opus]',
+      label: 'Ta nejet — för den här gången',
       subtitle: 'Prövningen nekad — kan återupptas nästa säsong',
       effect: {
         type: 'hallProcess',
@@ -296,8 +323,8 @@ function buildKommunEvent(
   return {
     id: eid,
     type: 'hallProcess',
-    title: '[Opus]',
-    body: '[Opus]',
+    title: 'Det förhandlas i stadshuset',
+    body: `Kraven är uppfyllda. Nu sitter ${politician.name} på andra sidan bordet, och det är kommunens pengar som avgör om det blir något. Vad lägger vi på bordet?`,
     choices,
     resolved: false,
   }
@@ -324,12 +351,12 @@ function maybeRetryNekad(
   return {
     id: eid,
     type: 'hallProcess',
-    title: '[Opus]',
-    body: '[Opus]',
+    title: 'Hallfrågan lever igen',
+    body: 'Det blev inget förra gången. Men läget har ändrats — nya ansikten i stadshuset, eller en relation som töat. Tar vi upp den igen?',
     choices: [
       {
         id: 'retry',
-        label: '[Opus]',
+        label: 'Ja — vi tar det från början',
         subtitle: 'Starta om förankringsprocessen',
         effect: {
           type: 'hallProcess',
@@ -338,7 +365,7 @@ function maybeRetryNekad(
       },
       {
         id: 'skip',
-        label: '[Opus]',
+        label: 'Låt den vila ett år till',
         subtitle: 'Vänta ett till år',
         effect: { type: 'noOp' },
       },
