@@ -504,7 +504,7 @@ export function SquadScreen() {
             { id: 'nu', label: 'Nu' },
             { id: 'trupp', label: 'Trupp' },
             { id: 'taktik', label: 'Taktik' },
-            { id: 'värvning', label: 'Värvning', dot: expiringCount > 0 ? 'danger' : null },
+            { id: 'värvning', label: 'Kontrakt', dot: expiringCount > 0 ? 'danger' : null },
           ]}
           activeId={screenTab}
           onSelect={(id) => setScreenTab(id as typeof screenTab)}
