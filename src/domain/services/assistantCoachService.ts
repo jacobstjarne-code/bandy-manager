@@ -665,11 +665,31 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           philosophical: [`Momentum är flyktigt. ${n} bär det just nu — bygg runt det.`],
         },
         'vill-mer': {
-          calm:          [`${n} behöver matchminuter. Talangen finns där.`],
-          sharp:         [`${n} vill spela. Ge honom chansen eller förlora honom.`],
-          jovial:        [`${n} hungrar! Det är ett gott tecken — sätt in honom!`],
-          grumpy:        [`${n} vill spela mer. Underförstått — jag håller med.`],
-          philosophical: [`Hunger är en resurs. ${n} har det. Använd det.`],
+          calm: [
+            `${n} behöver matchminuter. Talangen finns där.`,
+            `${n} har inte fått en minut än. Ung, men redo för mer.`,
+            `Ge ${n} ett läge när det tillåter. Han är sugen på speltid.`,
+          ],
+          sharp: [
+            `${n} vill spela. Ge honom chansen eller förlora honom.`,
+            `${n} sitter på bänken omgång efter omgång. Slöseri.`,
+            `Ung och oanvänd. ${n} behöver minuter, inte fler träningar.`,
+          ],
+          jovial: [
+            `${n} hungrar! Det är ett gott tecken — sätt in honom!`,
+            `${n} står och stampar. Ge grabben en chans, han förtjänar det!`,
+            `Ung och sugen! ${n} väntar bara på att få visa vad han går för.`,
+          ],
+          grumpy: [
+            `${n} vill spela mer. Underförstått — jag håller med.`,
+            `${n} har inte spelat en minut. Det märks på humöret.`,
+            `Ung spelare på bänken. ${n} lär inte stanna om det fortsätter så.`,
+          ],
+          philosophical: [
+            `Hunger är en resurs. ${n} har det. Använd det.`,
+            `${n} väntar på sin tur. Tålamod är en dygd — men bara till en gräns.`,
+            `Ungdom vill spela, inte titta på. ${n} är inget undantag.`,
+          ],
         },
         'sviktande': {
           calm:          [`${n} är inte i sin bästa form. Han behöver stöd.`],

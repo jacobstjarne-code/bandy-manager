@@ -30,15 +30,48 @@ export const BIO_FAMILY_LINES: string[] = [
 /** Sparkline-zonens etikett (matchar mockens höger-label). */
 export const BURNOUT_ZONE_LABELS = { frisk: 'Frisk', markbar: 'Märkbar', hog: 'Hög' }
 
-/** BurnoutMark i Portal — danger-tonad, 1×/säsong vid trigger. */
+/** BurnoutMark i Portal — danger-tonad. Eskaleringskurva: burnout fördjupas
+ *  över säsongen → zonen stiger (Märkbar → Hög), och citaten med den.
+ *  Code: välj ur quotesByZone[aktuell zon] + helpersByZone[zon] med no-repeat inom
+ *  säsongen (samma mönster som övriga pooler). De platta `quotes`/`helpers` är
+ *  fallback tills plockaren migrerats — ta bort dem då. Märkbar = trött men på
+ *  benen; Hög = verkligt slut, sen säsong. */
 export const BURNOUT_MARK = {
   eyebrow: '⬩ {manager} är trött ⬩',
+  quotesByZone: {
+    markbar: [
+      'Lite tungt i kroppen den här veckan. Det går över.',
+      'Sover sämre än jag borde. Inget att orda om.',
+      'Många sena kvällar vid isen nu. Det tär lite.',
+      'Det tar längre tid att komma igång på mornarna.',
+      'Trött i veckan. Det hör bandyhösten till.',
+    ],
+    hog: [
+      'Jag undrar hur länge jag orkar köra så här.',
+      'Matcherna är det enkla — det är allt annat som tär.',
+      'Det är inte bandyn längre. Det är allt runtomkring.',
+      'Satt kvar i bilen utanför hallen en bra stund i morse. Orkade inte gå in.',
+      'Folk på Konsum har börjat fråga om jag mår bra. Det säger väl något.',
+    ],
+  },
+  helpersByZone: {
+    markbar: [
+      'Det syns på honom. En tystare vecka skulle göra gott.',
+      'Inget akut än. Men en paus vore inte fel.',
+    ],
+    hog: [
+      'Klacken märker. Spelarna märker. Han behöver vila — på riktigt.',
+      'Det här går inte att köra hur länge som helst. Något måste lätta.',
+    ],
+  },
+  // @deprecated — platt fallback tills BurnoutMark.tsx läser quotesByZone/helpersByZone. Code tar bort.
   quotes: [
     'Jag måste tänka klart över helgen.',
     'Jag har inte sovit ordentligt på en vecka.',
     'Matcherna är det enkla. Det är allt runtomkring som tär.',
     'Jag undrar hur länge jag orkar köra så här.',
   ],
+  // @deprecated — fallback
   helpers: [
     'Klacken märker. Spelarna märker. Du behöver en paus.',
     'Det syns på honom. En tystare vecka skulle göra gott.',

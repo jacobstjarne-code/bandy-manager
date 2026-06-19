@@ -190,8 +190,8 @@ export const commentary = {
 
   neutral: [
     "Trevande spel från alla håll. Båda lagen söker öppningar.",
-    "{team} vänder ur. Och vänder ur. Och vänder ur.",
-    "Högt tempo just nu. Lite hawaii över detta.",
+    "{team} vänder ur gång på gång. {opponent} står tätt, inget släpper.",
+    "Det går undan nu. Öppet åt båda håll.",
     "Fint spel av {team}, men {opponent} ligger bra i sin defensiv.",
     "Fajt på mitten. Ingen vill ge bort bollen.",
     "{team} håller bollen, vänder ur och söker öppningar.",
