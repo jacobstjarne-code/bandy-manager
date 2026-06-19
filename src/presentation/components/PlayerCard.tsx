@@ -271,6 +271,8 @@ export function PlayerCard({
 
   // Genomgång II A: tre etiketterade lägen — inget gömt, allt ett klick bort.
   const [mode, setMode] = useState<'oversikt' | 'attribut' | 'karriar'>('oversikt')
+  // Översikt: Prata/Ledarskap är knappar som öppnar sin panel (mock genomgång II).
+  const [openAction, setOpenAction] = useState<'prata' | 'ledarskap' | null>(null)
 
   // Hjälteblock: rösten + känsloläget + säsongsbågen lyfts till toppen (led med människan).
   const heroVoice = isOwned && game ? getPlayerVoice(player, game) : null
@@ -446,6 +448,49 @@ export function PlayerCard({
         </div>
       )}
 
+      {/* ═══ ÖVERSIKT — lugn sammanfattning: nyckeltal + kontrakt + handlingsknappar ═══ */}
+      {isOwned && showOversikt && (
+        <div style={{ padding: '4px 13px 12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 6 }}>
+            {[
+              { label: 'MÅL', value: String(player.seasonStats.goals), color: 'var(--text-primary)' },
+              { label: 'ASSIST', value: String(player.seasonStats.assists), color: 'var(--text-primary)' },
+              { label: 'BETYG', value: player.seasonStats.averageRating > 0 ? player.seasonStats.averageRating.toFixed(1) : '–', color: player.seasonStats.averageRating >= 7 ? 'var(--success)' : 'var(--text-primary)' },
+            ].map(c => (
+              <div key={c.label} style={{ textAlign: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 'var(--radius-md)', padding: '7px 2px' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 16, color: c.color }}>{c.value}</div>
+                <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>{c.label}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 9, borderTop: '1px solid var(--border)', fontSize: 10, color: 'var(--text-secondary)' }}>
+            <span>📋 Kontrakt t.o.m. {player.contractUntilSeason + 1}</span>
+            {onExtendContract && currentSeason !== undefined && player.contractUntilSeason <= currentSeason + 1 && (
+              <button onClick={e => { e.stopPropagation(); onExtendContract() }}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-dark)', fontWeight: 700, fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                Förläng →
+              </button>
+            )}
+          </div>
+          {(onTalkToPlayer || leadershipAvailable) && (
+            <div style={{ display: 'flex', gap: 6, marginTop: 9 }}>
+              {onTalkToPlayer && (
+                <button onClick={e => { e.stopPropagation(); setOpenAction(a => a === 'prata' ? null : 'prata') }}
+                  style={{ flex: 1, padding: '9px 8px', borderRadius: 'var(--radius-md)', background: openAction === 'prata' ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-surface)', border: '1px solid var(--border)', fontSize: 11, color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                  🗣 Prata
+                </button>
+              )}
+              {leadershipAvailable && (
+                <button onClick={e => { e.stopPropagation(); setOpenAction(a => a === 'ledarskap' ? null : 'ledarskap') }}
+                  style={{ flex: 1, padding: '9px 8px', borderRadius: 'var(--radius-md)', background: openAction === 'ledarskap' ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-surface)', border: '1px solid var(--border)', fontSize: 11, color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                  👑 Ledarskap
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ═══ ① STATUS → Attribut & status ═══ */}
       {isOwned && showAttribut && (
         <div style={SECTION_STYLE}>
@@ -618,8 +663,8 @@ export function PlayerCard({
       </div>
       )}
 
-      {/* ═══ ⑤ SÄSONG → Översikt ═══ */}
-      {showOversikt && (
+      {/* ═══ ⑤ SÄSONG (marknadsvärde + dynamiska celler) → Karriär ═══ */}
+      {showKarriar && (
       <div style={SECTION_STYLE}>
         {!isOwned && effectiveReport && (
           <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
@@ -759,8 +804,8 @@ export function PlayerCard({
         </div>
       )}
 
-      {/* ═══ ⑨ LEDARSKAP → Översikt ═══ */}
-      {isOwned && showOversikt && leadershipAvailable && (
+      {/* ═══ ⑨ LEDARSKAP → öppnas av Översikt-knappen ═══ */}
+      {isOwned && showOversikt && openAction === 'ledarskap' && leadershipAvailable && (
         <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)' }}>
           <p style={{ ...LABEL_STYLE, marginBottom: 8 }}>👑 LEDARSKAP</p>
           {leadershipFeedback ? (
@@ -805,8 +850,8 @@ export function PlayerCard({
         </div>
       )}
 
-      {/* ═══ ⑩ PRATA → Översikt ═══ */}
-      {isOwned && showOversikt && onTalkToPlayer && (
+      {/* ═══ ⑩ PRATA → öppnas av Översikt-knappen ═══ */}
+      {isOwned && showOversikt && openAction === 'prata' && onTalkToPlayer && (
         <div style={{
           padding: '10px 14px',
           borderTop: '1px solid var(--border)',
