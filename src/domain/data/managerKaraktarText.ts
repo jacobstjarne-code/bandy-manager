@@ -64,18 +64,6 @@ export const BURNOUT_MARK = {
       'Det här går inte att köra hur länge som helst. Något måste lätta.',
     ],
   },
-  // @deprecated — platt fallback tills BurnoutMark.tsx läser quotesByZone/helpersByZone. Code tar bort.
-  quotes: [
-    'Jag måste tänka klart över helgen.',
-    'Jag har inte sovit ordentligt på en vecka.',
-    'Matcherna är det enkla. Det är allt runtomkring som tär.',
-    'Jag undrar hur länge jag orkar köra så här.',
-  ],
-  // @deprecated — fallback
-  helpers: [
-    'Klacken märker. Spelarna märker. Du behöver en paus.',
-    'Det syns på honom. En tystare vecka skulle göra gott.',
-  ],
 }
 
 // ── Coach-rivalry-citat ────────────────────────────────────────────────────────

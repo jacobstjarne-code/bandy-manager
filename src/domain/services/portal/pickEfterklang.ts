@@ -2,6 +2,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import { EFTERKLANG_ECHO, ECONOMIC_SCAR_AFTERMATH, type EfterklangType } from '../../data/efterklangText'
 import { mulberry32 } from '../../utils/random'
 import { FixtureStatus } from '../../enums'
+import { getNextManagedFixture } from './triggers/matchTriggers'
 
 const JOURNALIST_EVENT_LABEL: Record<string, string> = {
   refused_press: 'Refuserade pressen',
@@ -178,9 +179,14 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     })
   }
 
-  // Nemesis
+  // Nemesis — visa bara när nästa motståndare ÄR nemesisen, annars hänger ekot i
+  // luften ("Slottsbron igen" ska vara sant: du möter dem nu). Playtest-fynd 9.
+  const nextFixture = getNextManagedFixture(game)
+  const nextOpponentId = nextFixture
+    ? (nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId)
+    : undefined
   const nemeses = Object.values(game.nemesisTracker ?? {})
-    .filter(n => !n.signedBy && n.goalsAgainstUs >= 2)
+    .filter(n => !n.signedBy && n.goalsAgainstUs >= 2 && n.clubId === nextOpponentId)
     .sort((a, b) => b.goalsAgainstUs - a.goalsAgainstUs)
   if (nemeses.length > 0) {
     const n = nemeses[0]

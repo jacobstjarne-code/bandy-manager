@@ -97,7 +97,12 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
   const texts = SCENE_TEXT[occasion]
   const seed = game.currentSeason * 97 + game.currentMatchday * 31
-  const charge = seededPick(texts.charge, seed)
+  // Playtest-fynd 4: säsong 1 har ingen historik — laddnings-rader som åberopar
+  // "i höstas" (förra säsongen) får inte visas premiärsäsongen.
+  const chargePool = game.currentSeason <= 1
+    ? texts.charge.filter(c => !c.includes('höstas'))
+    : texts.charge
+  const charge = seededPick(chargePool, seed)
   const relation = seededPick(texts.relation, seed + 7)
 
   const seasonCtx = getSeasonContext(game)

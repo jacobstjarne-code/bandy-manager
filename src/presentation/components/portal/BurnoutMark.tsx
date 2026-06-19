@@ -1,4 +1,4 @@
-import { shouldShowBurnoutMark } from '../../../domain/services/managerProfileService'
+import { shouldShowBurnoutMark, getBurnoutZone } from '../../../domain/services/managerProfileService'
 import { BURNOUT_MARK } from '../../../domain/data/managerKaraktarText'
 import type { CardRenderProps } from '../../../domain/services/portal/dashboardCardBag'
 
@@ -7,9 +7,16 @@ export function BurnoutMark({ game }: CardRenderProps) {
   if (!profile) return null
   if (!shouldShowBurnoutMark(profile)) return null
 
-  const seed = game.currentSeason * 997 + game.currentMatchday * 13
-  const quote = BURNOUT_MARK.quotes[seed % BURNOUT_MARK.quotes.length]
-  const helper = BURNOUT_MARK.helpers[seed % BURNOUT_MARK.helpers.length]
+  // Playtest-fynd 2: zon-tonade citat (Märkbar → Hög) i stället för en platt pool.
+  // Eskaleringen följer burnoutScore; matchdagen roterar genom zonens pool så
+  // varje ny visning ger en ny rad (no-repeat tills poolen cyklar).
+  const zone = getBurnoutZone(profile.burnoutScore)
+  if (zone === 'frisk') return null
+  const quotes = BURNOUT_MARK.quotesByZone[zone]
+  const helpers = BURNOUT_MARK.helpersByZone[zone]
+  const round = game.currentMatchday
+  const quote = quotes[round % quotes.length]
+  const helper = helpers[round % helpers.length]
   const eyebrow = BURNOUT_MARK.eyebrow.replace('{manager}', `${profile.firstName} ${profile.lastName}`)
 
   return (

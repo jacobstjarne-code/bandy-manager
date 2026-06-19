@@ -326,7 +326,10 @@ export function InboxScreen() {
             justifyContent: 'center', padding: '60px 20px', gap: 12, color: 'var(--text-muted)',
           }}>
             <Check size={40} strokeWidth={1.5} />
-            <p style={{ fontSize: 15 }}>Lugnt i korridorerna — för tillfället</p>
+            {/* Playtest-fynd 7: scen-röst (font-display italic), konsekvent med "Resultat bor i Granska". */}
+            <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 14, lineHeight: 1.5, textAlign: 'center', color: 'var(--text-secondary)' }}>
+              Lugnt i korridorerna — för tillfället.
+            </p>
           </div>
         ) : (
           <>

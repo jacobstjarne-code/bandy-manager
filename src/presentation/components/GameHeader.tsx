@@ -228,7 +228,6 @@ export function GameHeader() {
           {[
             { label: '💾 Spara spel', action: handleSaveGame },
             { label: '📂 Ladda spel', action: () => navigate('/') },
-            { label: '📖 Spelguide', action: () => setShowHelp(true) },
           ].map((item, i) => (
             <button key={i} onClick={() => { void item.action(); setShowMenu(false) }}
               style={{
@@ -246,7 +245,9 @@ export function GameHeader() {
       {showHelp && (
         <HelpOverlay
           onClose={() => setShowHelp(false)}
-          onRestartCoachMarks={restartCoachMarks}
+          /* Playtest-fynd 6: CoachMarks mountas på dashboard — navigera hem först,
+             annars saknas targets när hjälpen startas från t.ex. Inkorgen. */
+          onRestartCoachMarks={() => { navigate('/game/dashboard'); restartCoachMarks() }}
         />
       )}
     </div>
