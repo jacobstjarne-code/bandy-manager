@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
+import { injuryContextLine } from '../../../../domain/data/injuryContextText'
 
 /** Secondary-kort: skadeläge med namn + veckor kvar per spelare. */
 export function InjuryStatusSecondary({ game }: CardRenderProps) {
@@ -19,12 +20,14 @@ export function InjuryStatusSecondary({ game }: CardRenderProps) {
 
   // Stjärnspelaren bland skadade (högst form + ability)
   const topPlayer = injured[0]
-  const isKeyPlayer = topPlayer && ((topPlayer.form ?? 50) + (topPlayer.currentAbility ?? 50)) > 130
-  const contextLine = isKeyPlayer
-    ? `${topPlayer.lastName} är en av era bästa — det märks.`
-    : injured.length >= 4
-    ? `${injured.length} borta är för många.`
-    : null
+  const isKeyPlayer = !!topPlayer && ((topPlayer.form ?? 50) + (topPlayer.currentAbility ?? 50)) > 130
+  const contextLine = injuryContextLine({
+    lastName: topPlayer.lastName,
+    daysRemaining: topPlayer.injuryDaysRemaining,
+    injuredCount: injured.length,
+    isKeyPlayer,
+    seedId: topPlayer.id,
+  })
 
   return (
     <div
