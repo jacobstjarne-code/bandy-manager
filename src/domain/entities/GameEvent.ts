@@ -12,6 +12,7 @@ export type GameEventType =
   | 'patronEvent'
   | 'politicianEvent'
   | 'hallDebate'
+  | 'hallProcess'
   | 'licenseHandlingsplan'
   | 'kommunMote'
   | 'gentjanst'
@@ -100,6 +101,7 @@ export interface EventEffect {
     | 'scoutBudget'
     | 'refereeRelationship'
     | 'setLegendRole'
+    | 'hallProcess'
   value?: number
   refereeId?: string
   amount?: number
@@ -120,6 +122,8 @@ export interface EventEffect {
   crisisPhase?: string
   removePlayerId?: string
   legendRole?: string
+  /** B1 §5: JSON-serialiserad HallProcessUpdate för hallProcess-effekten. */
+  hallProcessData?: string
 }
 
 export type EventPriority = 'critical' | 'high' | 'normal' | 'low'
@@ -135,6 +139,7 @@ export function getEventPriority(type: GameEventType): EventPriority {
     case 'politicianEvent':
     case 'kommunMote':
     case 'hallDebate':
+    case 'hallProcess':
     case 'mecenatDinner':
       return 'high'
     case 'criticalEconomy':

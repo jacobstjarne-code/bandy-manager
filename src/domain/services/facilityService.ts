@@ -128,7 +128,7 @@ export function canStartBuild(
   const def = FACILITY_NODE_DEFS.find(d => d.id === nodeId)
   if (!def) return { ok: false, reason: 'okänd_nod' }
   if (state.builtNodeIds.includes(nodeId)) return { ok: false, reason: 'redan_byggd' }
-  if (def.isHall) return { ok: false, reason: 'hall_kräver_prövning' }
+  if (def.isHall && state.hallProcess?.phase !== 'godkand') return { ok: false, reason: 'hall_kräver_prövning' }
   const built = new Set(state.builtNodeIds)
   if (!def.requires.every(r => built.has(r))) return { ok: false, reason: 'krav_saknas' }
   return { ok: true }

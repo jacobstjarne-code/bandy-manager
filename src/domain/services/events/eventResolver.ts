@@ -1,4 +1,5 @@
 import type { SaveGame, Sponsor, CommunityActivities } from '../../entities/SaveGame'
+import type { HallProcess, HallProcessPhase } from '../../entities/Community'
 import type { GameEvent } from '../../entities/GameEvent'
 import type { DinnerScene } from '../mecenatDinnerService'
 import { InboxItemType } from '../../enums'
@@ -663,6 +664,54 @@ export function resolveEvent(
             mood: Math.max(0, Math.min(100, updatedGame.supporterGroup.mood + (effect.amount ?? 0))),
           },
         }
+      }
+      break
+    }
+    case 'hallProcess': {
+      // B1 §5: uppdatera FacilityState.hallProcess utifrån JSON-payload i hallProcessData.
+      // Payload-format: HallProcessUpdate (se hallProcessService.ts).
+      const rawData = effect.hallProcessData
+      if (rawData) {
+        try {
+          const update = JSON.parse(rawData) as {
+            phase?: HallProcessPhase
+            klackStottaDelta?: number
+            styrelseStottaDelta?: number
+            kommunStottaDelta?: number
+            kommunAndelDelta?: number
+            patronBorgen?: boolean
+            kravMultiplikator?: number
+            init?: HallProcess
+          }
+          const currentProcess = updatedGame.facilityState?.hallProcess
+          const lastRound = updatedGame.fixtures
+            .filter(f => f.status === 'completed')
+            .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0)
+          let newProcess: HallProcess
+          if (update.init) {
+            newProcess = update.init
+          } else if (currentProcess) {
+            newProcess = {
+              ...currentProcess,
+              phase: update.phase ?? currentProcess.phase,
+              klackStotta: Math.max(0, Math.min(100, currentProcess.klackStotta + (update.klackStottaDelta ?? 0))),
+              styrelseStotta: Math.max(0, Math.min(100, currentProcess.styrelseStotta + (update.styrelseStottaDelta ?? 0))),
+              kommunStotta: Math.max(0, Math.min(100, currentProcess.kommunStotta + (update.kommunStottaDelta ?? 0))),
+              kommunAndel: Math.max(0, Math.min(1, currentProcess.kommunAndel + (update.kommunAndelDelta ?? 0))),
+              patronBorgen: update.patronBorgen ?? currentProcess.patronBorgen,
+              kravMultiplikator: update.kravMultiplikator ?? currentProcess.kravMultiplikator,
+              lastStepRound: lastRound,
+              lastStepSeason: updatedGame.currentSeason,
+            }
+          } else break
+          updatedGame = {
+            ...updatedGame,
+            facilityState: {
+              ...(updatedGame.facilityState ?? { builtNodeIds: [] }),
+              hallProcess: newProcess,
+            },
+          }
+        } catch { /* malformed payload — silently ignore */ }
       }
       break
     }

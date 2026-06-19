@@ -130,6 +130,32 @@ export interface FacilityState {
   /** B1 portal-beat: satt av advanceFacilityState när ett bygge blir klart. Beat-triggern
    *  kontrollerar matchday === game.currentMatchday för att visa beatet DENNA omgång. */
   lastCompleted?: { nodeId: string; matchday: number }
+  /** B1 §5: matchhall-prövningens flerfas-process. undefined = ej påbörjad (ingen migration).
+   *  Faserna är sekventiella med gaffel i varje — se hallProcessService.ts. */
+  hallProcess?: HallProcess
+}
+
+export type HallProcessPhase = 'forankring' | 'krav' | 'kommun' | 'godkand' | 'nekad'
+
+export interface HallProcess {
+  phase: HallProcessPhase
+  startedSeason: number
+  /** Klackens/Västra Sidans stöd 0-100. Påverkar själ-kostnaden vid bygge. */
+  klackStotta: number
+  /** Styrelsens stöd 0-100. Tröskel 60 krävs för att gå vidare till krav-fasen. */
+  styrelseStotta: number
+  /** Kommunens vilja 0-100. Byggs i kommun-fasen via relationer och eftergifter. */
+  kommunStotta: number
+  /** Kommunens utlovade finansieringsandel 0-1 av hallkostnad. */
+  kommunAndel: number
+  /** Patron som gått i borgen — täcker glappet om kommunen inte räcker. */
+  patronBorgen: boolean
+  /** Kravmultiplikator satt i krav-fasen (1.0-1.4). Ändrar effektiv hallkostnad. */
+  kravMultiplikator: number
+  /** Matchday för senaste steg — cooldown-baserat. */
+  lastStepRound: number
+  /** Säsong för senaste steg (för cross-säsong tracking). */
+  lastStepSeason: number
 }
 
 export interface BoardObjective {

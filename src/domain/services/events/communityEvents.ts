@@ -6,8 +6,7 @@ import { generatePatronEvents } from './patronEvents'
 import { generatePoliticianEvents } from './politicianEvents'
 import { generateSponsorEvents } from './sponsorEvents'
 import { generateSupporterEvents } from './supporterEvents'
-import { generateHallDebateEvent } from './hallDebateService'
-import { isInCooldown } from '../sourceCooldownService'
+import { generateHallProcessEvent } from './hallProcessService'
 // ── generateEvents ─────────────────────────────────────────────────────────
 export function generateEvents(
   game: SaveGame,
@@ -19,9 +18,9 @@ export function generateEvents(
     ...(game.resolvedEventIds ?? []),
   ])
 
-  const hallEvent = !isInCooldown(game.sourceCooldowns ?? {}, 'kommunen')
-    ? generateHallDebateEvent(game, currentRound, alreadyQueued)
-    : null
+  // B1 §5: hallDebateService ersatt av hallProcessService (fas-maskin med tillstånd).
+  // Cooldown-gate tas bort — processen har sin egen cooldown via hallProcess.lastStepRound.
+  const hallEvent = generateHallProcessEvent(game, currentRound, alreadyQueued)
 
   return [
     ...generateCommunityActivitiesEvents(game, currentRound, alreadyQueued, rand),
