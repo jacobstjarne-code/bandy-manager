@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react'
-import { X, Lock, Circle } from 'lucide-react'
+import { Lock, Circle } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 
 import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
-import { formatCurrency, positionShort, formatValue, formatSalary } from '../utils/formatters'
+import { formatCurrency, positionShort, formatValue } from '../utils/formatters'
 import { SectionLabel } from '../components/SectionLabel'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 
-import { RenewContractModal } from '../components/transfers/RenewContractModal'
 import { BidModal } from '../components/transfers/BidModal'
 import { getRivalry } from '../../domain/data/rivalries'
 import { TransferPlayerCard } from '../components/transfers/TransferPlayerCard'
@@ -23,7 +22,6 @@ export function TransfersScreen() {
   const game = useGameStore(s => s.game)
   const startEvaluation = useGameStore(s => s.startEvaluation)
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
-  const renewContract = useGameStore(s => s.renewContract)
   const signFreeAgent = useGameStore(s => s.signFreeAgent)
   const listPlayerForSale = useGameStore(s => s.listPlayerForSale)
   const startTalentSearch = useGameStore(s => s.startTalentSearch)
@@ -31,30 +29,24 @@ export function TransfersScreen() {
   const dismissHint = useGameStore(s => s.dismissHint)
   useEffect(() => { markScreenVisited('transfers') }, [])
 
-  const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
-  const [renewError, setRenewError] = useState<string | null>(null)
-  const [renewConfirmText, setRenewConfirmText] = useState<string | null>(null)
-  const [wageWarning, setWageWarning] = useState<string | null>(null)
+  // B1-nav Fas 2: renew-state + contracts-tabben flyttade till ContractsTab (Trupp → Värvning).
+  // pendingAction/overrunPct stannar — buden använder dem (egen wage-overrun-instans per yta).
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
   const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [overrunPct, setOverrunPct] = useState(0)
-  const [activeTab, setActiveTab] = useState<'marknad' | 'scouting' | 'contracts' | 'freeagents' | 'sell'>('marknad')
+  const [activeTab, setActiveTab] = useState<'marknad' | 'scouting' | 'freeagents' | 'sell'>('marknad')
   const [spaningPosition, setSpanningPosition] = useState<string>('any')
   const [spaningMaxAge, setSpanningMaxAge] = useState<number>(30)
   const [spaningMaxSalary, setSpanningMaxSalary] = useState<number>(16000)
   const location = useLocation()
 
   useEffect(() => {
-    const state = location.state as { tab?: string; renewPlayerId?: string; highlightPlayer?: string } | null
+    const state = location.state as { tab?: string; highlightPlayer?: string } | null
     const highlightId = state?.highlightPlayer
     const tabOverride = state?.tab as typeof activeTab | undefined
-    const renewId = state?.renewPlayerId as string | undefined
     if (tabOverride) {
       setActiveTab(tabOverride)
-    }
-    if (renewId) {
-      setRenewingPlayerId(renewId)
     }
     if (highlightId && game) {
       const player = game.players.find(p => p.id === highlightId)
@@ -63,7 +55,7 @@ export function TransfersScreen() {
         setActiveTab('scouting')
       }
     }
-    if (highlightId || tabOverride || renewId) {
+    if (highlightId || tabOverride) {
       window.history.replaceState({ ...window.history.state, usr: {} }, '')
     }
   }, [location.state])
@@ -73,14 +65,9 @@ export function TransfersScreen() {
   const managedClubPlayers = game.players.filter(p => p.clubId === game.managedClubId)
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
 
-  const expiringPlayers = managedClubPlayers
-    .filter(p => p.contractUntilSeason <= game.currentSeason)
-    .sort((a, b) => a.contractUntilSeason - b.contractUntilSeason)
-
   const freeAgents = game.transferState.freeAgents
   const windowInfo = getTransferWindowStatus(game.currentDate)
   const windowOpen = windowInfo.status !== 'closed'
-  const renewingPlayer = renewingPlayerId ? game.players.find(p => p.id === renewingPlayerId) ?? null : null
 
   const scoutReports = game.scoutReports ?? {}
   const activeAssignment = game.activeScoutAssignment ?? null
@@ -88,61 +75,6 @@ export function TransfersScreen() {
 
   const currentRound = game.fixtures.filter(f => f.status === 'scheduled').sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 1
   const incomingBids = (game.transferBids ?? []).filter(b => b.direction === 'incoming' && b.status === 'pending')
-
-  function handleRenew(playerId: string, newSalary: number, years: number) {
-    if (!game) return
-    const club = game.clubs.find(c => c.id === game.managedClubId)
-    if (!club) return
-    const squadPlayers = game.players.filter(p => p.clubId === game.managedClubId)
-    const currentPlayer = squadPlayers.find(p => p.id === playerId)
-    if (!currentPlayer) return
-    const isFullTimePro = !currentPlayer.dayJob
-    const minSalary = Math.round((isFullTimePro
-      ? currentPlayer.currentAbility * 200 * 0.80
-      : currentPlayer.currentAbility * 80 * 0.80) / 500) * 500
-    if (newSalary < minSalary) {
-      setRenewError(`${currentPlayer.firstName} avslår — kräver minst ${formatSalary(minSalary)}`)
-      return
-    }
-    if (newSalary === minSalary) {
-      let rejectChance = 0
-      if (currentPlayer.currentAbility > 60) rejectChance += 0.40
-      if (currentPlayer.form > 65) rejectChance += 0.20
-      if ((currentPlayer.potentialAbility ?? 0) > 70) rejectChance += 0.15
-      if (Math.random() < rejectChance) {
-        const counterSalary = Math.round(minSalary * 1.15 / 500) * 500
-        setRenewError(`${currentPlayer.firstName} avvisar erbjudandet — vill ha minst ${formatSalary(counterSalary)}`)
-        return
-      }
-    }
-    const currentWageBill = squadPlayers.reduce((sum, p) => sum + p.salary, 0)
-    const projectedWageBill = currentWageBill - currentPlayer.salary + newSalary
-    const weeklyEquiv = Math.round(projectedWageBill / 4)
-    const wouldExceed = weeklyEquiv > club.wageBudget
-
-    const doRenew = () => {
-      const result = renewContract(playerId, newSalary, years)
-      if (!result.success) {
-        setRenewError(result.error ?? 'Kunde inte förlänga kontraktet')
-        return
-      }
-      if (result.wageWarning) {
-        setWageWarning(`OBS: Lönekostnaderna överstiger budgeten med ${formatSalary(result.wageWarning)}`)
-      }
-      setRenewingPlayerId(null)
-      setRenewError(null)
-      setRenewConfirmText(`Kontrakt förlängt till ${game.currentSeason + years}`)
-      setTimeout(() => setRenewConfirmText(null), 2000)
-    }
-
-    if (wouldExceed) {
-      const pct = Math.round(((weeklyEquiv - club.wageBudget) / club.wageBudget) * 100)
-      setOverrunPct(pct)
-      setPendingAction(() => doRenew)
-    } else {
-      doRenew()
-    }
-  }
 
   function handleSignFreeAgent(agentId: string) {
     if (!game) return
@@ -257,7 +189,6 @@ export function TransfersScreen() {
         tabs={[
           { id: 'marknad', label: 'Marknad', dot: incomingBids.length > 0 ? 'accent' : null },
           { id: 'scouting', label: 'Scouting', dot: null },
-          { id: 'contracts', label: 'Kontrakt', dot: expiringPlayers.length > 0 ? 'danger' : null },
           { id: 'freeagents', label: 'Fria', dot: freeAgents.length > 0 && windowOpen ? 'accent' : null },
           { id: 'sell', label: 'Sälj', dot: null },
         ]}
@@ -268,7 +199,6 @@ export function TransfersScreen() {
       {({
         marknad: 'Spelare som är tillgängliga för transfer just nu.',
         scouting: 'Utvärdera spelare eller sök nya talanger.',
-        contracts: 'Förläng avtal med dina spelare.',
         freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
         sell: 'Sälj spelare från din trupp.',
       } as Record<string, string>)[activeTab] && (
@@ -276,8 +206,7 @@ export function TransfersScreen() {
           {({
             marknad: 'Spelare som är tillgängliga för transfer just nu.',
             scouting: 'Utvärdera spelare eller sök nya talanger.',
-            contracts: 'Förläng avtal med dina spelare.',
-            freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
+                freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
             sell: 'Sälj spelare från din trupp.',
           } as Record<string, string>)[activeTab]}
         </p>
@@ -393,43 +322,7 @@ export function TransfersScreen() {
       )}
 
       {/* Contracts tab */}
-      {activeTab === 'contracts' && (
-        <div className="card-stagger-2" style={{ marginBottom: 24 }}>
-          {renewConfirmText && (
-            <div className="transfers-state-success-strong transfers-renew-confirm">
-              <p className="transfers-renew-confirm-text">{renewConfirmText}</p>
-            </div>
-          )}
-          {wageWarning && (
-            <div className="transfers-state-copper-strong transfers-wage-warning">
-              <p className="transfers-wage-warning-text">⚠️ {wageWarning}</p>
-              <button onClick={() => setWageWarning(null)} className="transfers-wage-warning-close"><X size={12} /></button>
-            </div>
-          )}
-          <SectionLabel>Utgående kontrakt</SectionLabel>
-          {expiringPlayers.length === 0 ? (
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 0' }}>Inga kontrakt utgår snart.</p>
-          ) : (
-            <div className="card-sharp" style={{ overflow: 'hidden' }}>
-              {expiringPlayers.map((player, index) => (
-                <div key={player.id} className="transfers-list-row" style={{ borderBottom: index < expiringPlayers.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                  <div className="transfers-list-content">
-                    <p className="transfers-list-name">
-                      {player.firstName} {player.lastName}
-                    </p>
-                    <p className="transfers-list-meta">
-                      {positionShort(player.position)} · {formatValue(player.marketValue)} · {formatSalary(player.salary)} · t.o.m. {player.contractUntilSeason}
-                    </p>
-                  </div>
-                  <button onClick={() => setRenewingPlayerId(player.id)} className="btn btn-outline" style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, fontWeight: 600 }}>
-                    Förläng
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Kontrakt-tabben flyttad till Trupp → Värvning (ContractsTab), B1-nav Fas 2 */}
 
       {/* Free agents tab */}
       {activeTab === 'freeagents' && (
@@ -487,23 +380,6 @@ export function TransfersScreen() {
           </div>
         </div>
       )}
-
-      {renewingPlayer && (() => {
-        const isFullTimePro = !renewingPlayer.dayJob
-        const minSalary = Math.round((isFullTimePro
-          ? renewingPlayer.currentAbility * 200 * 0.80
-          : renewingPlayer.currentAbility * 80 * 0.80) / 500) * 500
-        return (
-          <RenewContractModal
-            player={renewingPlayer}
-            currentSeason={game.currentSeason}
-            minSalary={minSalary}
-            error={renewError}
-            onClose={() => { setRenewingPlayerId(null); setRenewError(null) }}
-            onConfirm={handleRenew}
-          />
-        )
-      })()}
 
       {biddingPlayerId && managedClub && (() => {
         const biddingPlayer = game.players.find(p => p.id === biddingPlayerId)

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore } from '../store/gameStore'
+import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore, useExpiringContracts } from '../store/gameStore'
+import { ContractsTab } from '../components/transfers/ContractsTab'
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
 import type { LoanDeal } from '../../domain/entities/Academy'
@@ -394,7 +395,10 @@ export function SquadScreen() {
   const dismissHint = useGameStore(s => s.dismissHint)
   useEffect(() => { markScreenVisited('squad') }, [])
   const updateTactic = useGameStore(s => s.updateTactic)
-  const [screenTab, setScreenTab] = useState<'nu' | 'trupp' | 'taktik'>('nu')
+  const expiringCount = useExpiringContracts()
+  const [screenTab, setScreenTab] = useState<'nu' | 'trupp' | 'taktik' | 'värvning'>('nu')
+  // B1-nav Fas 2: deep-link från PlayerCard "Förläng" → öppna Värvning + renew-modal.
+  const [renewDeepLinkId, setRenewDeepLinkId] = useState<string | null>(null)
   const [sort, setSort] = useState<SortKey>('position')
   const [filter, setFilter] = useState<FilterKey>('all')
   const [lineupTab, setLineupTab] = useState<'startelva' | 'bank' | 'reserv'>('startelva')
@@ -436,9 +440,15 @@ export function SquadScreen() {
   }
 
   useEffect(() => {
-    const highlightId = (location.state as { highlightPlayer?: string } | null)?.highlightPlayer
+    const state = location.state as { highlightPlayer?: string; tab?: string; renewPlayerId?: string } | null
+    const highlightId = state?.highlightPlayer
     if (highlightId) {
       setSelectedPlayerId(highlightId)
+    }
+    // B1-nav Fas 2: PlayerCard "Förläng" landar här på Värvning med renew-modalen öppen.
+    if (state?.tab === 'värvning') setScreenTab('värvning')
+    if (state?.renewPlayerId) setRenewDeepLinkId(state.renewPlayerId)
+    if (highlightId || state?.tab || state?.renewPlayerId) {
       // Clear state so back/forward nav doesn't re-open
       window.history.replaceState({ ...window.history.state, usr: {} }, '')
     }
@@ -494,6 +504,7 @@ export function SquadScreen() {
             { id: 'nu', label: 'Nu' },
             { id: 'trupp', label: 'Trupp' },
             { id: 'taktik', label: 'Taktik' },
+            { id: 'värvning', label: 'Värvning', dot: expiringCount > 0 ? 'danger' : null },
           ]}
           activeId={screenTab}
           onSelect={(id) => setScreenTab(id as typeof screenTab)}
@@ -510,6 +521,15 @@ export function SquadScreen() {
             onTacticChange={(tactic: Tactic) => updateTactic(tactic)}
             matchday={game.currentMatchday}
             nextOpponentName={nextOpponentName}
+          />
+        </div>
+      )}
+      {/* Värvning — kontraktsförlängning (B1-nav Fas 2) */}
+      {screenTab === 'värvning' && (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
+          <ContractsTab
+            initialRenewPlayerId={renewDeepLinkId}
+            onConsumedDeepLink={() => setRenewDeepLinkId(null)}
           />
         </div>
       )}
@@ -846,7 +866,7 @@ export function SquadScreen() {
             onClick={undefined}
             currentSeason={game?.currentSeason}
             storylines={(game?.storylines ?? []).filter(s => s.playerId === selectedPlayer.id && s.resolved)}
-            onExtendContract={() => navigate('/game/transfers', { state: { tab: 'contracts', renewPlayerId: selectedPlayer.id } })}
+            onExtendContract={() => { setSelectedPlayerId(null); setScreenTab('värvning'); setRenewDeepLinkId(selectedPlayer.id) }}
             onClose={() => setSelectedPlayerId(null)}
             game={game ?? undefined}
             recentRatings={game ? getRecentMatchRatings(game.fixtures, game.clubs, selectedPlayer.id, game.managedClubId, 5) : undefined}
