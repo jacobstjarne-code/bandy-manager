@@ -43,6 +43,12 @@ const RULES = [
     files: f => f.endsWith('.tsx'),
   },
   {
+    id: 'ice-rink-hex', db: 'DB-1', severity: 'error',
+    desc: 'hårdkodad plan-is-hex (#F4F6F5/#EAEEEE/#E0E6E6) → var(--ice-rink) / var(--ice-rink-deep)',
+    re: /#(?:F4F6F5|EAEEEE|E0E6E6)\b/i,
+    files: f => f.endsWith('.tsx'),
+  },
+  {
     id: 'radius-6', db: 'DB-9', severity: 'error',
     desc: 'off-scale borderRadius 6 → var(--radius-md) (skala 14/8/3)',
     re: /border-?[Rr]adius:\s*'?6(?:px)?'?(?![0-9.])/,

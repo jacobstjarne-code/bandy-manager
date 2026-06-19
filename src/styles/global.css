@@ -54,6 +54,8 @@
   --danger-text:    #8B3E30;
   --ice:            #7EB3D4;
   --ice-dark:       #5A7A8A;
+  --ice-rink:       #F4F6F5;  /* plan-is, ljust stopp (match-plan + taktiktavla) */
+  --ice-rink-deep:  #E0E6E6;  /* plan-is, mörkt stopp; mid = color-mix av de två */
 
   /* LED scoreboard */
   --led-bg:          #0A0A0A;

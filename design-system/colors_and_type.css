@@ -55,6 +55,8 @@
   --danger-text:    #8B3E30;
   --ice:            #7EB3D4;
   --ice-dark:       #5A7A8A;
+  --ice-rink:       #F4F6F5;  /* plan-is, ljust stopp (match-plan + taktiktavla) */
+  --ice-rink-deep:  #E0E6E6;  /* plan-is, mörkt stopp; mid = color-mix av de två */
 
   /* LED scoreboard */
   --led-bg:          #0A0A0A;
@@ -63,15 +65,10 @@
   --led-score-flash: #FF9900;
   --led-time:        #CCFF00;
   --led-warn:        #FF6644;
-  /* Vi/dom-kodning — ratificerad 2026-06-11 (skördad ur build 050bb22).
-     --led-us = managed klubb (amber), --led-them = motståndare (is-LED).
-     Gäller poäng + lagkodad statistik på tavlan. Tid/period förblir --led-score.
-     Hela LED-paletten är FORTSATT reserverad för tavlan — aldrig annan chrome. */
+  /* Vi/dom-kodning ratificerad 2026-06-11 — managed klubb (amber) / motståndare (is-LED) */
   --led-us:          #FFB033;
   --led-them:        #6FC0E8;
-
-  /* ── Disabled (ratificerad 2026-06-11, B8) ─────── */
-  /* Disabled-knapp = samma färgfamilj @ 40% opacity. Aldrig egen färg. */
+  /* Disabled-state B8: samma färgfamilj @ 40% opacity */
   --disabled-opacity: 0.4;
 
   /* Archetype badge colors */
@@ -295,6 +292,7 @@
   text-align: center;
   text-transform: uppercase;
   margin-bottom: 10px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
 }
 
 /* Scene title — Georgia 28px */
@@ -351,6 +349,7 @@
   text-transform: uppercase;
   opacity: 0.85;
   margin-bottom: 5px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Dialog quote — Georgia full light */
@@ -359,6 +358,7 @@
   font-size: 14px;
   color: var(--text-light);
   line-height: 1.55;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.55);
 }
 
 /* Legacy replica wrapper — kept for other scenes */

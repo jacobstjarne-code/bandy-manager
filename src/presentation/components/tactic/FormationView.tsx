@@ -299,7 +299,7 @@ export function FormationView({ tactic, players, onChange, showChemistry = false
       </div>
 
       {/* Pitch SVG */}
-      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'linear-gradient(180deg, #F4F6F5, #E0E6E6)', border: '1px solid color-mix(in srgb, var(--ice-dark) 50%, transparent)', boxShadow: 'inset 0 1px 4px color-mix(in srgb, var(--ice-dark) 15%, transparent)', borderRadius: 'var(--radius-md)', display: 'block', maxHeight: 240 }}>
+      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'linear-gradient(180deg, var(--ice-rink), var(--ice-rink-deep))', border: '1px solid color-mix(in srgb, var(--ice-dark) 50%, transparent)', boxShadow: 'inset 0 1px 4px color-mix(in srgb, var(--ice-dark) 15%, transparent)', borderRadius: 'var(--radius-md)', display: 'block', maxHeight: 240 }}>
         <PitchLines />
 
         {/* Kemi-lager: linjer mellan inspelta/svaga par, under spelarprickarna */}
