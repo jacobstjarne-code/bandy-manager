@@ -50,8 +50,18 @@ export function MatchLaddningBand({ state, streakLength, isBroken, game, opponen
       display: 'flex',
       flexDirection: 'column',
     }}>
+      {/* Scen-konst Del 3: svag ortssiluett vid horisonten — bruksortens tak i scen-
+          paletten, ~12 % opacitet. Gör stillheten avsiktlig ("ett tyst ögonblick på en
+          plats") utan att konkurrera med det slimmade kortet. Token-only (--ice). */}
+      <svg viewBox="0 0 390 120" preserveAspectRatio="xMidYMax meet" aria-hidden
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%', height: 120, opacity: 0.12, pointerEvents: 'none' }}>
+        <path
+          d="M0,120 L0,84 L38,84 L38,64 L68,64 L68,84 L116,84 L116,52 L126,52 L126,28 L132,28 L132,52 L148,52 L148,84 L208,84 L208,66 L240,52 L272,66 L272,84 L322,84 L322,72 L360,72 L360,84 L390,84 L390,120 Z"
+          style={{ fill: 'var(--ice)' }}
+        />
+      </svg>
       {/* Band card — centered vertically so slim card reads as intentional stillness */}
-      <div style={{ flex: 1, padding: '20px 13px 0', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <div style={{ position: 'relative', zIndex: 1, flex: 1, padding: '20px 13px 0', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{
           padding: '13px 14px',
           background: 'linear-gradient(180deg, color-mix(in srgb, var(--warm) 10%, var(--bg-portal-surface)) 0%, var(--bg-portal-surface) 100%)',

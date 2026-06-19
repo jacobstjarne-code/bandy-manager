@@ -48,18 +48,31 @@ const singleScrim = (mode: 'band' | 'header', fadeTo: string) =>
     : `linear-gradient(180deg, rgba(12,14,20,0.35) 0%, transparent 35%, transparent 60%, ${fadeTo} 100%)`
 
 export function IllustrationPlaceholder({ name, style }: { name: string; style?: React.CSSProperties }) {
+  // Scen-konst Del 2: fonden är avsiktlig, inte en trasig ruta. En kall is/strålkastar-
+  // antydan + svag rink-båge i scen-paletten, så tomrummet läser som "scenen är riggad,
+  // bilden kommer" — inte "något saknas". Dimensioner oförändrade (inget hoppar när
+  // assetet landar). Token-only (color-mix mot --ice/--bg-portal-surface).
   return (
     <div
       style={{
-        position: 'absolute', inset: 0,
-        background: 'var(--bg-portal-surface)',
-        border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        position: 'absolute', inset: 0, overflow: 'hidden',
+        background: 'radial-gradient(ellipse 120% 80% at 50% 32%, color-mix(in srgb, var(--ice) 10%, var(--bg-portal-surface)) 0%, var(--bg-portal-surface) 68%)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
         ...style,
       }}
     >
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '1px', color: 'var(--text-muted)' }}>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+        <ellipse cx="50" cy="64" rx="46" ry="30" fill="none"
+          style={{ stroke: 'color-mix(in srgb, var(--ice) 22%, transparent)', strokeWidth: 0.4 }} />
+        <line x1="50" y1="34" x2="50" y2="94"
+          style={{ stroke: 'color-mix(in srgb, var(--ice) 14%, transparent)', strokeWidth: 0.3 }} />
+      </svg>
+      <span style={{ position: 'relative', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '1px', color: 'var(--text-muted)' }}>
         ⬩ {name.toUpperCase()} ⬩
+      </span>
+      <span style={{ position: 'relative', fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.5px', color: 'color-mix(in srgb, var(--text-muted) 65%, transparent)' }}>
+        illustration på väg
       </span>
     </div>
   )
