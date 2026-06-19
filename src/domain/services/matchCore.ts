@@ -92,6 +92,7 @@ import { RIVAL_SALE_KLACK } from '../data/transferResponseText'
 import { pickAnniversaryKlack } from '../data/anniversaryKlackText'
 import { pickSpecialDateCommentary } from './specialDateService'
 import type { SpecialDateContext } from '../data/specialDateStrings'
+import { HALL_ATMOSPHERE } from '../data/hallProvningData'
 import { getConditionLabel, getIceQualityLabel } from './weatherService'
 import {
   clamp, randRange, weightedPick, pickWeightedPlayer,
@@ -1601,6 +1602,8 @@ function* simulateMatchCore(
           else commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand, commentaryHistory), templateVars)
         } else if (fixture.isCup && rand() < 0.40) {
           commentaryText = pickCommentary(commentary.cup_atmosphere, rand, commentaryHistory)
+        } else if (input.hallInomhus) {
+          commentaryText = pickCommentary(HALL_ATMOSPHERE, rand, commentaryHistory)
         } else {
           commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand, commentaryHistory), templateVars)
         }

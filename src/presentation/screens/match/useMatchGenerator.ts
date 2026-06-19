@@ -85,6 +85,7 @@ export function useMatchGenerator(setup: GeneratorSetup) {
       isAnnandagen: !!liveSlot?.isAnnandagen,
       isNyarsbandy: !!liveSlot?.isNyarsbandy,
       isCupFinalhelgen: !!liveSlot?.isCupFinalhelgen,
+      hallInomhus: game.facilityState?.hallTrial?.stage === 'klar' && fixture.homeClubId === game.managedClubId,
       klackEcho: game.klackEcho ? {
         type: game.klackEcho.type,
         currentWeight: game.klackEcho.currentWeight,

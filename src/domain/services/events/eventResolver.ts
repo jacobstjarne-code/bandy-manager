@@ -1,5 +1,5 @@
 import type { SaveGame, Sponsor, CommunityActivities } from '../../entities/SaveGame'
-import type { HallProcess, HallProcessPhase } from '../../entities/Community'
+import type { HallTrial, HallTrialStage } from '../../entities/Community'
 import type { GameEvent } from '../../entities/GameEvent'
 import type { DinnerScene } from '../mecenatDinnerService'
 import { InboxItemType } from '../../enums'
@@ -668,48 +668,51 @@ export function resolveEvent(
       break
     }
     case 'hallProcess': {
-      // B1 §5: uppdatera FacilityState.hallProcess utifrån JSON-payload i hallProcessData.
-      // Payload-format: HallProcessUpdate (se hallProcessService.ts).
+      // B1 §5 (06-12-modellen): uppdatera FacilityState.hallTrial.
       const rawData = effect.hallProcessData
       if (rawData) {
         try {
           const update = JSON.parse(rawData) as {
-            phase?: HallProcessPhase
-            klackStottaDelta?: number
-            styrelseStottaDelta?: number
-            kommunStottaDelta?: number
-            kommunAndelDelta?: number
-            patronBorgen?: boolean
-            kravMultiplikator?: number
-            init?: HallProcess
+            init?: HallTrial
+            stage?: HallTrialStage
+            stageStartedRound?: number
+            supportDelta?: number
+            finansiering?: 'egen' | 'kommun' | 'patron'
+            cooldownUntilSeason?: number
+            selfNedlagd?: boolean
           }
-          const currentProcess = updatedGame.facilityState?.hallProcess
-          const lastRound = updatedGame.fixtures
-            .filter(f => f.status === 'completed')
-            .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0)
-          let newProcess: HallProcess
+          const currentTrial = updatedGame.facilityState?.hallTrial
+          let newTrial: HallTrial
           if (update.init) {
-            newProcess = update.init
-          } else if (currentProcess) {
-            newProcess = {
-              ...currentProcess,
-              phase: update.phase ?? currentProcess.phase,
-              klackStotta: Math.max(0, Math.min(100, currentProcess.klackStotta + (update.klackStottaDelta ?? 0))),
-              styrelseStotta: Math.max(0, Math.min(100, currentProcess.styrelseStotta + (update.styrelseStottaDelta ?? 0))),
-              kommunStotta: Math.max(0, Math.min(100, currentProcess.kommunStotta + (update.kommunStottaDelta ?? 0))),
-              kommunAndel: Math.max(0, Math.min(1, currentProcess.kommunAndel + (update.kommunAndelDelta ?? 0))),
-              patronBorgen: update.patronBorgen ?? currentProcess.patronBorgen,
-              kravMultiplikator: update.kravMultiplikator ?? currentProcess.kravMultiplikator,
-              lastStepRound: lastRound,
-              lastStepSeason: updatedGame.currentSeason,
+            newTrial = update.init
+          } else if (currentTrial) {
+            newTrial = {
+              ...currentTrial,
+              ...(update.stage !== undefined && { stage: update.stage }),
+              ...(update.stageStartedRound !== undefined && { stageStartedRound: update.stageStartedRound }),
+              ...(update.supportDelta !== undefined && {
+                support: Math.max(0, Math.min(100, (currentTrial.support ?? 50) + update.supportDelta)),
+              }),
+              ...(update.finansiering !== undefined && { finansiering: update.finansiering }),
+              ...(update.cooldownUntilSeason !== undefined && { cooldownUntilSeason: update.cooldownUntilSeason }),
             }
           } else break
           updatedGame = {
             ...updatedGame,
             facilityState: {
               ...(updatedGame.facilityState ?? { builtNodeIds: [] }),
-              hallProcess: newProcess,
+              hallTrial: newTrial,
             },
+          }
+          // Avbryta-val: liten klackMood-vinst ("han lyssnade")
+          if (update.selfNedlagd && updatedGame.supporterGroup) {
+            updatedGame = {
+              ...updatedGame,
+              supporterGroup: {
+                ...updatedGame.supporterGroup,
+                mood: Math.min(100, updatedGame.supporterGroup.mood + 3),
+              },
+            }
           }
         } catch { /* malformed payload — silently ignore */ }
       }

@@ -1,372 +1,427 @@
 /**
- * hallProcessService — matchhall-prövningens fas-maskin (B1 §5).
+ * hallProcessService — matchhall-prövningens FSM (06-12-modellen).
  *
- * Ersätter hallDebateService.ts (noOp-händelser utan process-minne) och
- * hall-delen av hallDebateEvents.ts (fast-runda händelser, även de konsekvensfria).
- * Annandagsbandyn i hallDebateEvents.ts är orelaterad — rör den inte.
+ * EN support-axel (ersätter tre stötta-axlar), tre förankrings-decisions,
+ * checklist-krav (kravStatus beräknas live, lagras ej), kommunförhandling via
+ * politicianData, Själ-priset via HALL_ATMOSPHERE när stage === 'klar'.
  *
- * Faserna: forankring → krav → kommun → godkand/nekad.
- * Tillståndet lever i FacilityState.hallProcess (Community.ts).
- * Effekter skickas via EventEffect { type: 'hallProcess', hallProcessData: string }.
- *
- * TEXTSTATUS (2026-06-19): Fas-text KLAR. Fas 1 (förankring) återanvänder befintlig
- * HALL_DEBATE_EVENTS-text. Fas 2 (krav), Fas 3 (kommun) och retry (nekad) skrivna av
- * Opus direkt på plats 2026-06-19 — mot den färdiga tillståndsmaskinen, ej gissad. Inga
- * '[Opus]'-platshållare kvar. Vals-subtitles bär mekaniken (deltas/multiplikatorer),
- * label:arna bär tonen (bruksort, understatement, tvåpoäng).
+ * Textkälla: TEXTPOOLER_PROVNING_2026-06-12.md (Opus) — integrerad ordagrant.
  */
 
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent, EventChoice } from '../../entities/GameEvent'
-import type { HallProcess } from '../../entities/Community'
-import { HALL_DEBATE_EVENTS } from '../../data/hallDebateData'
+import type { HallTrial, HallTrialStage } from '../../entities/Community'
+import {
+  PROVNING_DECISIONS_FORANKRING,
+  PROVNING_DECISIONS_FORHANDLING,
+  PROVNING_EVENT_FORDYRING,
+} from '../../data/hallProvningData'
+import { getRivalry } from '../../data/rivalries'
 
-const PROCESS_COOLDOWN = 5   // omgångar mellan fas-steg
-const INIT_KLACK_STOTTA = 55
-const INIT_STYRELSE_STOTTA = 25
-const STYRELSE_THRESHOLD = 60  // tröskel för att gå vidare till krav-fasen
+// ── Trigger ───────────────────────────────────────────────────────────────
 
-// ── Trigger-check ─────────────────────────────────────────────────────────
-
-/**
- * Ska hall-processen triggas nu? Sann om:
- * - laktare_ostra byggd (hallens requires)
- * - minst en rival har hall (hasIndoorRival)
- * - säsong 2+
- * - ingen hallProcess ännu (undefined)
- * - inget aktivt bygge
- */
-function shouldStartHallProcess(game: SaveGame): boolean {
+export function shouldStartHallTrial(game: SaveGame): boolean {
   const fs = game.facilityState
   if (!fs) return false
-  if (fs.hallProcess) return false
   if (fs.activeProject) return false
   if (game.currentSeason < 2) return false
   if (!fs.builtNodeIds.includes('laktare_ostra')) return false
   const hasIndoorRival = game.clubs.some(c => c.id !== game.managedClubId && c.hasIndoorArena === true)
-  return hasIndoorRival
-}
+  if (!hasIndoorRival) return false
 
-function isCooldownPassed(hallProcess: HallProcess, currentRound: number): boolean {
-  return currentRound - hallProcess.lastStepRound >= PROCESS_COOLDOWN
-}
-
-// ── Hjälp-funktion: bygg HallProcess init-payload ────────────────────────
-
-function buildInitPayload(game: SaveGame, currentRound: number): string {
-  const init: HallProcess = {
-    phase: 'forankring',
-    startedSeason: game.currentSeason,
-    klackStotta: INIT_KLACK_STOTTA,
-    styrelseStotta: INIT_STYRELSE_STOTTA,
-    kommunStotta: 0,
-    kommunAndel: 0,
-    patronBorgen: false,
-    kravMultiplikator: 1.0,
-    lastStepRound: currentRound,
-    lastStepSeason: game.currentSeason,
+  const trial = fs.hallTrial
+  if (!trial) return true
+  if (trial.stage === 'bordlagd' || trial.stage === 'nedlagd') {
+    return game.currentSeason >= (trial.cooldownUntilSeason ?? 0)
   }
-  return JSON.stringify({ init })
+  return false
 }
 
-// ── Fas 1 — Förankring ────────────────────────────────────────────────────
+// ── Stödformel ───────────────────────────────────────────────────────────
+
+function calcInitialSupport(game: SaveGame, prevSupport?: number): number {
+  if (prevSupport !== undefined) {
+    // Bordlagd restart: startvärde = slutvärde − 5
+    return Math.max(15, prevSupport - 5)
+  }
+  const klackMood = game.supporterGroup?.mood ?? 50
+  const puls = game.communityStanding ?? 50
+  const raw = 40 + (klackMood - 50) * 0.4 + (puls - 50) * 0.3
+  return Math.round(Math.max(15, Math.min(70, raw)))
+}
+
+// ── Krav-check (beräknas live, lagras ej) ────────────────────────────────
+
+export function computeKravStatus(game: SaveGame): { kapital: boolean; underlag: boolean; styrelse: boolean } {
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const hasActivePatron = (game.mecenater ?? []).some(m => m.isActive && m.happiness >= 50)
+  const kapital = (managedClub?.finances ?? 0) >= 1_200_000 || hasActivePatron
+
+  const currentAvg = game.averageAttendance ?? 0
+  const historicalHomeFixtures = game.fixtures.filter(f =>
+    f.season < game.currentSeason &&
+    f.status === 'completed' &&
+    f.homeClubId === game.managedClubId &&
+    f.attendance != null
+  )
+  const last33 = historicalHomeFixtures.slice(-33)
+  const hist3Avg = last33.length >= 11
+    ? last33.reduce((s, f) => s + (f.attendance ?? 0), 0) / last33.length
+    : currentAvg  // ingen historik → sätt ribban till nuläge (passerar ej +10%)
+  const underlag = hist3Avg > 0 ? currentAvg >= hist3Avg * 1.1 : false
+
+  const prevHistory = (game.boardObjectiveHistory ?? []).filter(h => h.season === game.currentSeason - 1)
+  const styrelse = prevHistory.length === 0
+    ? true
+    : prevHistory.filter(h => h.result === 'met').length / prevHistory.length >= 0.5
+
+  return { kapital, underlag, styrelse }
+}
+
+// ── Passiva förankrings-effekter ─────────────────────────────────────────
+
+function calcPassiveSupportDelta(game: SaveGame, trial: HallTrial, currentRound: number): number {
+  const managedId = game.managedClubId
+  const relevantFixtures = game.fixtures.filter(f =>
+    f.status === 'completed' &&
+    f.season === game.currentSeason &&
+    (f.matchday ?? 0) >= trial.stageStartedRound &&
+    (f.matchday ?? 0) < currentRound &&
+    (f.homeClubId === managedId || f.awayClubId === managedId)
+  )
+
+  let delta = 0
+  for (const f of relevantFixtures) {
+    if (!getRivalry(f.homeClubId, f.awayClubId)) continue
+    const isHome = f.homeClubId === managedId
+    const ours = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
+    const theirs = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
+    if (ours > theirs) delta += 3
+    else if (ours < theirs) delta -= 3
+  }
+
+  const lastThree = relevantFixtures.slice(-3)
+  if (lastThree.length === 3 && lastThree.every(f => {
+    const isHome = f.homeClubId === managedId
+    const ours = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
+    const theirs = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
+    return ours < theirs
+  })) {
+    delta -= 5
+  }
+
+  return delta
+}
+
+// ── Avbryt-val (alltid tillgängligt under förankring) ────────────────────
+
+function avbrytaChoice(season: number): EventChoice {
+  return {
+    id: 'avbryta',
+    label: 'Lägg ner frågan',
+    subtitle: 'Klacken noterar det. Cooldown 1 säsong.',
+    effect: {
+      type: 'hallProcess',
+      hallProcessData: JSON.stringify({ stage: 'nedlagd', cooldownUntilSeason: season + 1, selfNedlagd: true }),
+    },
+  }
+}
+
+// ── Förankrings-decisions ────────────────────────────────────────────────
 
 function buildForankringEvent(
   game: SaveGame,
   currentRound: number,
-  hallProcess: HallProcess,
+  trial: HallTrial,
   alreadyQueued: Set<string>,
 ): GameEvent | null {
-  const eid = `hallprocess_forankring_s${game.currentSeason}_r${currentRound}`
-  if (alreadyQueued.has(eid)) return null
-  if (!isCooldownPassed(hallProcess, currentRound)) return null
+  const s = game.currentSeason
+  const { stageStartedRound } = trial
+  const d1Id = `hallprocess_d1_s${s}`
+  const d2Id = `hallprocess_d2_s${s}`
+  const d3Id = `hallprocess_d3_s${s}`
+  const resId = `hallprocess_res_s${s}`
 
-  const politician = game.localPolitician
-  const boardPatience = game.boardPatience ?? 70
+  // Resolution at stageStartedRound + 10
+  if (currentRound >= stageStartedRound + 10 && !alreadyQueued.has(resId)) {
+    const passiveDelta = calcPassiveSupportDelta(game, trial, currentRound)
+    const finalSupport = Math.max(0, Math.min(100, (trial.support ?? 50) + passiveDelta))
 
-  // Välj event-pool ur HALL_DEBATE_EVENTS (samma logik som gamla hallDebateService)
-  let poolKey: keyof typeof HALL_DEBATE_EVENTS
-  if (politician?.agenda === 'infrastructure' || politician?.agenda === 'prestige') {
-    poolKey = 'kommunenFrågar'
-  } else if (boardPatience <= 40) {
-    poolKey = 'styrelseSplittrad'
-  } else {
-    const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
-    const hasEnoughYoung = managedPlayers.filter(p => p.age < 23).length >= 2
-    const hasInjured = managedPlayers.some(p => p.isInjured)
-    poolKey = (hasEnoughYoung || hasInjured || (currentRound + game.currentSeason) % 2 === 0)
-      ? 'spelarePerspektiv' : 'styrelseSplittrad'
+    let nextStage: HallTrialStage
+    let cooldown: number | undefined
+    let body: string
+
+    if (finalSupport >= 60) {
+      nextStage = 'krav'
+      body = 'Röstlängden är räknad. Det blev ja.'
+    } else if (finalSupport >= 40) {
+      nextStage = 'bordlagd'
+      cooldown = s + 1
+      body = 'Medlemsmötet sköt på frågan. Den ligger kvar i en pärm i klubbhuset — och i bakhuvudet på alla.'
+    } else {
+      nextStage = 'nedlagd'
+      cooldown = s + 2
+      body = 'Hallfrågan föll. Birger bjöd på kaffe efteråt. Han var storsint nog att inte le.'
+    }
+
+    const payload: Record<string, unknown> = { stage: nextStage, supportDelta: passiveDelta }
+    if (cooldown !== undefined) payload.cooldownUntilSeason = cooldown
+    if (nextStage === 'krav') payload.stageStartedRound = currentRound
+
+    return {
+      id: resId,
+      type: 'hallProcess',
+      title: 'Röstningen är klar',
+      body,
+      choices: [{ id: 'ok', label: 'Noterat', subtitle: '', effect: { type: 'hallProcess', hallProcessData: JSON.stringify(payload) } }],
+      resolved: false,
+    }
   }
 
-  const debateData = HALL_DEBATE_EVENTS[poolKey]
-  const variantIdx = (currentRound + game.currentSeason * 13) % debateData.bodyVariants.length
-  const body = debateData.bodyVariants[variantIdx]
-    .replace('{politiker}', politician?.name ?? 'Kommunalrådet')
+  // Decision 3 (enkaten) at +8, after d1 and d2 resolved
+  if (currentRound >= stageStartedRound + 8 &&
+      !alreadyQueued.has(d1Id) && !alreadyQueued.has(d2Id) && !alreadyQueued.has(d3Id)) {
+    const def = PROVNING_DECISIONS_FORANKRING[2]
+    const support = trial.support ?? 50
+    return {
+      id: d3Id,
+      type: 'hallProcess',
+      title: def.title,
+      body: def.body,
+      choices: [
+        { id: 'oppenhet',  label: def.choiceA.label, subtitle: def.choiceA.hint,
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ supportDelta: 5 }) } },
+        { id: 'ligg_laat', label: def.choiceB.label, subtitle: def.choiceB.hint,
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ supportDelta: support < 45 ? -5 : 0 }) } },
+        avbrytaChoice(s),
+      ],
+      resolved: false,
+    }
+  }
 
-  const styrelse = hallProcess.styrelseStotta
+  // Decision 2 (birger_mote) at +6, after d1 resolved
+  if (currentRound >= stageStartedRound + 6 &&
+      !alreadyQueued.has(d1Id) && !alreadyQueued.has(d2Id)) {
+    const def = PROVNING_DECISIONS_FORANKRING[1]
+    return {
+      id: d2Id,
+      type: 'hallProcess',
+      title: def.title,
+      body: def.body,
+      choices: [
+        { id: 'ta_motet',  label: def.choiceA.label, subtitle: def.choiceA.hint,
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ supportDelta: 6 }) } },
+        { id: 'skjut_upp', label: def.choiceB.label, subtitle: def.choiceB.hint,
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ supportDelta: -8 }) } },
+        avbrytaChoice(s),
+      ],
+      resolved: false,
+    }
+  }
 
-  const choices: EventChoice[] = [
-    {
-      id: 'push_forward',
-      label: debateData.choices.find(c => c.id === 'support')?.label ?? 'Driva frågan vidare',
-      subtitle: styrelse >= STYRELSE_THRESHOLD
-        ? 'Styrelsen är redo — processen går vidare till kravstadiet'
-        : `💼 Styrelsesstöd +12 · 💛 Klacken −5`,
-      effect: {
-        type: 'hallProcess',
-        hallProcessData: styrelse + 12 >= STYRELSE_THRESHOLD
-          ? JSON.stringify({ phase: 'krav', styrelseStottaDelta: 12, klackStottaDelta: -5 })
-          : JSON.stringify({ styrelseStottaDelta: 12, klackStottaDelta: -5 }),
-      },
-    },
-    {
-      id: 'defend_outdoor',
-      label: debateData.choices.find(c => c.id === 'defend_outdoor')?.label ?? 'Vi spelar utomhus — det är vår identitet',
-      subtitle: '💛 Klacken +8 · 💼 Styrelsesstöd −5',
-      effect: {
-        type: 'hallProcess',
-        hallProcessData: JSON.stringify({ styrelseStottaDelta: -5, klackStottaDelta: 8 }),
-      },
-    },
-    {
-      id: 'neutral',
-      label: debateData.choices.find(c => c.id === 'neutral')?.label ?? 'Vi har inga starka åsikter just nu',
-      subtitle: 'Ingen förändring — frågan vilar',
-      effect: {
-        type: 'hallProcess',
-        hallProcessData: JSON.stringify({}),
-      },
-    },
-  ]
+  // Decision 1 (medlemsmotet) at +3
+  if (currentRound >= stageStartedRound + 3 && !alreadyQueued.has(d1Id)) {
+    const def = PROVNING_DECISIONS_FORANKRING[0]
+    // 60/40-viktad mot klackMood: högre mood = högre chans att "ta ordet" funkar
+    const klackMood = game.supporterGroup?.mood ?? 50
+    const successRate = 0.4 + (klackMood / 100) * 0.4
+    const seed = (s * 17 + trial.stageStartedRound * 7) % 100
+    const overtygaOk = seed < successRate * 100
+    return {
+      id: d1Id,
+      type: 'hallProcess',
+      title: def.title,
+      body: def.body,
+      choices: [
+        { id: 'lyssna',   label: def.choiceA.label, subtitle: def.choiceA.hint,
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ supportDelta: 8 }) } },
+        { id: 'overtala', label: def.choiceB.label, subtitle: def.choiceB.hint,
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ supportDelta: overtygaOk ? 14 : -10 }) } },
+        avbrytaChoice(s),
+      ],
+      resolved: false,
+    }
+  }
+
+  return null
+}
+
+// ── Krav-advancement ─────────────────────────────────────────────────────
+
+function buildKravAdvancement(
+  game: SaveGame,
+  currentRound: number,
+  alreadyQueued: Set<string>,
+): GameEvent | null {
+  const eid = `hallprocess_krav_adv_s${game.currentSeason}`
+  if (alreadyQueued.has(eid)) return null
+
+  const krav = computeKravStatus(game)
+  if (!krav.kapital || !krav.underlag || !krav.styrelse) return null
 
   return {
     id: eid,
     type: 'hallProcess',
-    title: debateData.title,
-    body,
-    choices,
+    title: 'Kraven är uppfyllda',
+    body: 'Förbundet har granskat. Kassa, publik och styrelsebeslut — allt är på plats. Nu är det kommunens tur.',
+    choices: [{
+      id: 'ga_vidare',
+      label: 'Gå vidare till förhandlingen',
+      subtitle: 'Kommunförhandlingen inleds',
+      effect: {
+        type: 'hallProcess',
+        hallProcessData: JSON.stringify({ stage: 'forhandling', stageStartedRound: currentRound }),
+      },
+    }],
     resolved: false,
   }
 }
 
-// ── Fas 2 — Krav (förbundet) ──────────────────────────────────────────────
+// ── Förhandlings-decisions ────────────────────────────────────────────────
 
-function buildKravEvent(
+function buildForhandlingEvent(
   game: SaveGame,
   currentRound: number,
-  hallProcess: HallProcess,
+  trial: HallTrial,
   alreadyQueued: Set<string>,
 ): GameEvent | null {
-  const eid = `hallprocess_krav_s${game.currentSeason}`
+  const s = game.currentSeason
+  const { stageStartedRound } = trial
+  const fh1Id = `hallprocess_fh1_s${s}`
+  const fh2Id = `hallprocess_fh2_s${s}`
+  const fhNejId = `hallprocess_fhnej_s${s}`
+
+  // Patron-erbjudande at +6 (fallback om kommunvägen inte löst sig)
+  if (currentRound >= stageStartedRound + 6 && !alreadyQueued.has(fh1Id)) {
+    // fh1 resolved (not in queue) — check if patron available
+    const activePatron = (game.mecenater ?? []).find(m => m.isActive && m.happiness >= 50)
+    if (activePatron && !alreadyQueued.has(fh2Id)) {
+      const def = PROVNING_DECISIONS_FORHANDLING[1]
+      const title = def.title.replace('{patron}', activePatron.name)
+      return {
+        id: fh2Id,
+        type: 'hallProcess',
+        title,
+        body: def.body,
+        choices: [
+          { id: 'borgen',    label: def.choiceA.label, subtitle: def.choiceA.hint,
+            effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'patron', stage: 'bygge', stageStartedRound: currentRound }) } },
+          { id: 'tacka_nej', label: def.choiceB.label, subtitle: def.choiceB.hint,
+            effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'egen', stage: 'bygge', stageStartedRound: currentRound }) } },
+        ],
+        resolved: false,
+      }
+    }
+    // Ingen patron och kommunvägen inte löst — avsluta
+    if (!activePatron && !alreadyQueued.has(fhNejId)) {
+      return {
+        id: fhNejId,
+        type: 'hallProcess',
+        title: 'Förhandlingen avslutas',
+        body: 'Kommunen passade. Ingen patron att falla tillbaka på. Hallfrågan får vänta.',
+        choices: [{
+          id: 'noterat',
+          label: 'Noterat',
+          subtitle: '',
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ stage: 'nedlagd', cooldownUntilSeason: s + 2 }) },
+        }],
+        resolved: false,
+      }
+    }
+  }
+
+  // Kommunens villkor at +2
+  if (currentRound >= stageStartedRound + 2 && !alreadyQueued.has(fh1Id)) {
+    const politician = game.localPolitician
+    if (!politician) return null
+    const def = PROVNING_DECISIONS_FORHANDLING[0]
+    return {
+      id: fh1Id,
+      type: 'hallProcess',
+      title: def.title,
+      body: def.body,
+      choices: [
+        { id: 'ungdomstimmar', label: def.choiceA.label, subtitle: def.choiceA.hint,
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'kommun', stage: 'bygge', stageStartedRound: currentRound }) } },
+        { id: 'delad_drift',   label: def.choiceB.label, subtitle: def.choiceB.hint,
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'kommun', stage: 'bygge', stageStartedRound: currentRound }) } },
+      ],
+      resolved: false,
+    }
+  }
+
+  return null
+}
+
+// ── Bygge: fördyrings-event ───────────────────────────────────────────────
+
+function buildFordyringEvent(
+  game: SaveGame,
+  currentRound: number,
+  trial: HallTrial,
+  alreadyQueued: Set<string>,
+): GameEvent | null {
+  if (currentRound < trial.stageStartedRound + 11) return null
+  const eid = `hallprocess_fordyring_s${game.currentSeason}`
   if (alreadyQueued.has(eid)) return null
-  if (!isCooldownPassed(hallProcess, currentRound)) return null
 
-  const choices: EventChoice[] = [
-    {
-      id: 'minimum',
-      label: 'Bygg det förbundet kräver — inte mer',
-      subtitle: 'Kostnadsmultiplikator ×1.0 — grundstandard',
-      effect: {
-        type: 'hallProcess',
-        hallProcessData: JSON.stringify({ phase: 'kommun', kravMultiplikator: 1.0 }),
-      },
-    },
-    {
-      id: 'standard',
-      label: 'Ta i lite mer medan vi ändå bygger',
-      subtitle: 'Kostnadsmultiplikator ×1.2 — framtidssäkrad',
-      effect: {
-        type: 'hallProcess',
-        hallProcessData: JSON.stringify({ phase: 'kommun', kravMultiplikator: 1.2 }),
-      },
-    },
-    {
-      id: 'premium',
-      label: 'Bygg för det orten kan bli, inte det den är',
-      subtitle: 'Kostnadsmultiplikator ×1.4 — fullt kapacitetsutnyttjande',
-      effect: {
-        type: 'hallProcess',
-        hallProcessData: JSON.stringify({ phase: 'kommun', kravMultiplikator: 1.4 }),
-      },
-    },
-  ]
+  // 25 % risk, deterministiskt seedat
+  const seed = (game.currentSeason * 31 + trial.stageStartedRound * 13) % 100
+  if (seed >= 25) return null
 
+  const def = PROVNING_EVENT_FORDYRING
   return {
     id: eid,
     type: 'hallProcess',
-    title: 'Förbundet har synpunkter',
-    body: 'Ett papper från förbundet ligger på bordet. Ska en hall godkännas för seriespel finns krav på is, sikt och säkerhet. Inget oväntat — men inget gratis heller. Hur mycket bygger vi?',
-    choices,
+    title: def.title,
+    body: def.body,
+    choices: [
+      { id: 'skjut_till', label: def.choiceA.label, subtitle: def.choiceA.hint,
+        effect: { type: 'finance', value: -360_000 } },  // −20 % av 1 800 000
+      { id: 'pausa',      label: def.choiceB.label, subtitle: def.choiceB.hint,
+        effect: { type: 'noOp' } },
+    ],
     resolved: false,
   }
 }
 
-// ── Fas 3 — Kommunförhandling ─────────────────────────────────────────────
+// ── Start-event (vilande → förankring) ───────────────────────────────────
 
-/**
- * Kontinuerlig kommunandels-formel (B1 §5 fix, ersätter platt 2×2-tabell).
- * Exporterad för testbarhet.
- *
- * Utfall 0.10–0.50; koefficienterna kalibrerade mot:
- *   Ideal (infrastructure, g=90, standing=80, rel=90) → ~0.549 → clampad till 0.50
- *   Fientlig (savings, g=25, standing=40, rel=30)     → ~0.173
- */
-export function calcMaxKommunAndel(
-  politician: Pick<import('../../entities/Community').LocalPolitician, 'agenda' | 'relationship' | 'generosity'>,
-  communityStanding: number,
-): number {
-  // Basandel per agenda-klass
-  const agendaBas =
-    (politician.agenda === 'infrastructure' || politician.agenda === 'prestige') ? 0.34
-    : (politician.agenda === 'youth' || politician.agenda === 'inclusion') ? 0.24
-    : 0.16  // savings (och övrigt)
-
-  // Kontinuerliga moddar — politikerns karaktär + klubbens anseende
-  const generosityMod = 0.7 + ((politician.generosity ?? 60) / 100) * 0.6  // 0.82–1.24
-  const standingMod   = 0.7 + Math.min(Math.max(communityStanding / 50, 0), 2) * 0.3 / 2  // 0.70–1.00
-
-  // Relation som glidande term — ingen klippkant vid 70
-  const relTerm = (politician.relationship / 100) * 0.15
-
-  return Math.min(0.50, Math.max(0.10, agendaBas * generosityMod + relTerm * standingMod))
-}
-
-function buildKommunEvent(
+function buildStartEvent(
   game: SaveGame,
   currentRound: number,
-  hallProcess: HallProcess,
   alreadyQueued: Set<string>,
 ): GameEvent | null {
-  const politician = game.localPolitician
-  if (!politician) return null  // Ingen politiker = inga förhandlingar
-
-  const eid = `hallprocess_kommun_s${game.currentSeason}_r${currentRound}`
+  const eid = `hallprocess_start_s${game.currentSeason}`
   if (alreadyQueued.has(eid)) return null
-  if (!isCooldownPassed(hallProcess, currentRound)) return null
 
-  // Kontinuerlig formel — agenda-bas × generosity + glidande relationsterm
-  const maxKommunAndel = calcMaxKommunAndel(politician, game.communityStanding ?? 50)
-  const currentAndel = hallProcess.kommunAndel
+  const prevTrial = game.facilityState?.hallTrial
+  const prevSupport = prevTrial?.stage === 'bordlagd' ? prevTrial.support : undefined
+  const initSupport = calcInitialSupport(game, prevSupport)
 
-  // Kontrollera om kommunen+patron kan täcka glappet → godkänd
-  const activeMecenat = (game.mecenater ?? []).find(m => m.isActive && m.wealth >= 3 && m.happiness >= 50)
-  const canGodkanna = currentAndel + (hallProcess.patronBorgen ? 0.30 : 0) >= 0.30  // minst 30% täckt = genomförbart
-
-  const choices: EventChoice[] = [
-    {
-      id: 'negotiate_standard',
-      label: 'Förhandla rakt — vad kan kommunen stå för?',
-      subtitle: `Kommunen bidrar med ~${Math.round(maxKommunAndel * 50)}% · kommunStöd +15`,
-      effect: {
-        type: 'hallProcess',
-        hallProcessData: JSON.stringify({
-          kommunStottaDelta: 15,
-          kommunAndelDelta: maxKommunAndel * 0.5,
-        }),
-      },
-    },
-    {
-      id: 'offer_naming_rights',
-      label: 'Erbjud namnet på hallen i utbyte',
-      subtitle: 'Kommunen bidrar mer · kommunAndel +' + Math.round(maxKommunAndel * 30) + '% · Identitet −',
-      effect: {
-        type: 'hallProcess',
-        hallProcessData: JSON.stringify({
-          kommunStottaDelta: 25,
-          kommunAndelDelta: maxKommunAndel * 0.8,
-        }),
-      },
-    },
-    ...(activeMecenat && !hallProcess.patronBorgen ? [{
-      id: 'ask_patron_borgen',
-      label: `Be ${activeMecenat.name} gå i borgen`,
-      subtitle: `${activeMecenat.name} garanterar glappet — binder patronens resurser`,
-      effect: {
-        type: 'hallProcess' as const,
-        hallProcessData: JSON.stringify({ patronBorgen: true }),
-      },
-    }] : []),
-    ...(canGodkanna ? [{
-      id: 'finalize',
-      label: 'Skriv under — vi har det vi behöver',
-      subtitle: 'Prövningen godkänd — hallen kan börja byggas',
-      effect: {
-        type: 'hallProcess' as const,
-        hallProcessData: JSON.stringify({ phase: 'godkand' }),
-      },
-    }] : []),
-    {
-      id: 'pause_negotiations',
-      label: 'Inte i dag — låt det mogna',
-      subtitle: 'Förhandlingarna fortsätter nästa tillfälle',
-      effect: {
-        type: 'hallProcess' as const,
-        hallProcessData: JSON.stringify({}),
-      },
-    },
-  ]
-
-  // Om kommunen är mot (savings-agenda, låg relation) och ingen patron → nekad-path
-  const isHostile = politician.agenda === 'savings' && politician.relationship < 40
-  if (isHostile && !activeMecenat) {
-    choices.push({
-      id: 'accept_rejection',
-      label: 'Ta nejet — för den här gången',
-      subtitle: 'Prövningen nekad — kan återupptas nästa säsong',
-      effect: {
-        type: 'hallProcess',
-        hallProcessData: JSON.stringify({ phase: 'nekad' }),
-      },
-    })
+  const init: HallTrial = {
+    stage: 'forankring',
+    support: initSupport,
+    startedSeason: game.currentSeason,
+    stageStartedRound: currentRound,
   }
 
   return {
     id: eid,
     type: 'hallProcess',
-    title: 'Det förhandlas i stadshuset',
-    body: `Kraven är uppfyllda. Nu sitter ${politician.name} på andra sidan bordet, och det är kommunens pengar som avgör om det blir något. Vad lägger vi på bordet?`,
-    choices,
-    resolved: false,
-  }
-}
-
-// ── Retry nekad ──────────────────────────────────────────────────────────
-
-function maybeRetryNekad(
-  game: SaveGame,
-  currentRound: number,
-  hallProcess: HallProcess,
-  alreadyQueued: Set<string>,
-): GameEvent | null {
-  // Kan återupptas om politiker byttes (ny mandatperiod) eller relation förbättrats
-  const politician = game.localPolitician
-  if (!politician) return null
-  const relationImproved = politician.relationship > 60 && hallProcess.kommunStotta < 50
-  const newSeason = game.currentSeason > hallProcess.lastStepSeason
-  if (!relationImproved && !newSeason) return null
-
-  const eid = `hallprocess_retry_s${game.currentSeason}`
-  if (alreadyQueued.has(eid)) return null
-
-  return {
-    id: eid,
-    type: 'hallProcess',
-    title: 'Hallfrågan lever igen',
-    body: 'Det blev inget förra gången. Men läget har ändrats — nya ansikten i stadshuset, eller en relation som töat. Tar vi upp den igen?',
+    title: 'Hallfrågan är här',
+    body: 'Rivalerna spelar inomhus. Orten har frågat sig om det. Nu har du ett val: inled förankringen — eller låt vallens vinter vara.',
     choices: [
       {
-        id: 'retry',
-        label: 'Ja — vi tar det från början',
-        subtitle: 'Starta om förankringsprocessen',
-        effect: {
-          type: 'hallProcess',
-          hallProcessData: buildInitPayload(game, currentRound),
-        },
+        id: 'inled',
+        label: 'Inled förankringen',
+        subtitle: `Startvärde stöd: ${initSupport}`,
+        effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ init }) },
       },
       {
-        id: 'skip',
-        label: 'Låt den vila ett år till',
-        subtitle: 'Vänta ett till år',
+        id: 'inte_nu',
+        label: 'Inte nu — orten trivs utomhus',
+        subtitle: 'Processen startar inte den här säsongen',
         effect: { type: 'noOp' },
       },
     ],
@@ -374,11 +429,11 @@ function maybeRetryNekad(
   }
 }
 
-// ── Huvud-export ──────────────────────────────────────────────────────────
+// ── Huvud-export ─────────────────────────────────────────────────────────
 
 /**
- * Genererar nästa hall-process-händelse om villkoren är uppfyllda.
- * Ersätter generateHallDebateEvent i communityEvents.ts.
+ * Genererar nästa hall-prövnings-händelse om villkoren är uppfyllda.
+ * Anropas av communityEvents.ts varje omgång.
  */
 export function generateHallProcessEvent(
   game: SaveGame,
@@ -388,57 +443,27 @@ export function generateHallProcessEvent(
   const fs = game.facilityState
   if (!fs) return null
 
-  // Fas 1-start: inga hallProcess ännu
-  if (!fs.hallProcess && shouldStartHallProcess(game)) {
-    const eid = `hallprocess_start_s${game.currentSeason}`
-    if (alreadyQueued.has(eid)) return null
-    // Skapa init-event (initierar hallProcess + visar första förankrings-text)
-    const politician = game.localPolitician
-    const debateData = HALL_DEBATE_EVENTS['kommunenFrågar']
-    const variantIdx = (currentRound + game.currentSeason * 13) % debateData.bodyVariants.length
-    const body = debateData.bodyVariants[variantIdx]
-      .replace('{politiker}', politician?.name ?? 'Kommunalrådet')
-
-    return {
-      id: eid,
-      type: 'hallProcess',
-      title: debateData.title,
-      body,
-      choices: [
-        {
-          id: 'start_process',
-          label: 'Ja, vi startar utredningen',
-          subtitle: 'Förankringsprocessen inleds — styrelsesstöd 0/60',
-          effect: {
-            type: 'hallProcess',
-            hallProcessData: buildInitPayload(game, currentRound),
-          },
-        },
-        {
-          id: 'not_yet',
-          label: 'Inte nu — orten trivs utomhus',
-          subtitle: 'Processen startar inte den här säsongen',
-          effect: { type: 'noOp' },
-        },
-      ],
-      resolved: false,
-    }
+  // Start-event: villkoren är uppfyllda men inget aktivt trial
+  if (shouldStartHallTrial(game)) {
+    return buildStartEvent(game, currentRound, alreadyQueued)
   }
 
-  const hallProcess = fs.hallProcess
-  if (!hallProcess) return null
+  const trial = fs.hallTrial
+  if (!trial) return null
 
-  switch (hallProcess.phase) {
+  switch (trial.stage) {
     case 'forankring':
-      return buildForankringEvent(game, currentRound, hallProcess, alreadyQueued)
+      return buildForankringEvent(game, currentRound, trial, alreadyQueued)
     case 'krav':
-      return buildKravEvent(game, currentRound, hallProcess, alreadyQueued)
-    case 'kommun':
-      return buildKommunEvent(game, currentRound, hallProcess, alreadyQueued)
-    case 'godkand':
-      return null  // Hall låst upp — inga fler prövnings-händelser
-    case 'nekad':
-      return maybeRetryNekad(game, currentRound, hallProcess, alreadyQueued)
+      return buildKravAdvancement(game, currentRound, alreadyQueued)
+    case 'forhandling':
+      return buildForhandlingEvent(game, currentRound, trial, alreadyQueued)
+    case 'bygge':
+      return buildFordyringEvent(game, currentRound, trial, alreadyQueued)
+    case 'klar':
+    case 'nedlagd':
+    case 'bordlagd':
+    case 'vilande':
     default:
       return null
   }

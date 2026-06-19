@@ -223,6 +223,7 @@ export function MatchLiveScreen() {
       isAnnandagen: !!liveSlot?.isAnnandagen,
       isNyarsbandy: !!liveSlot?.isNyarsbandy,
       isCupFinalhelgen: !!liveSlot?.isCupFinalhelgen,
+      hallInomhus: game.facilityState?.hallTrial?.stage === 'klar' && fixture.homeClubId === game.managedClubId,
       lastRivalSaleMatchday: game.lastRivalSaleMatchday,
       currentMatchday: game.currentMatchday,
     })
