@@ -349,7 +349,7 @@ export function PlayerCard({
 
       {/* ═══ HJÄLTE: porträtt + namn + röst + känsloläge (led med människan) ═══ */}
       <div style={{
-        padding: '14px 14px 12px',
+        padding: '14px 13px 12px',
         background: 'linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)',
         borderBottom: '1px solid var(--border)',
       }}>
@@ -358,14 +358,14 @@ export function PlayerCard({
             <img src={portraitImg} alt="" width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 17, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.3px', lineHeight: 1.1, textTransform: 'uppercase' }}>
+            <p style={{ fontSize: 16, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.3px', lineHeight: 1.05, textTransform: 'uppercase' }}>
               {fullName}
             </p>
-            <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.5px', marginTop: 3, textTransform: 'uppercase' }}>
+            <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent-dark)', letterSpacing: '0.5px', marginTop: 3, textTransform: 'uppercase' }}>
               {posLabel} · {player.age} ÅR · #{jerseyNum}{isCaptain ? ' · © KAPTEN' : ''}
             </p>
             {isOwned && (
-              <div style={{ display: 'flex', gap: 5, marginTop: 6, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
                 {player.trait === 'hungrig' && <span className="tag" style={{ borderColor: 'var(--success)', color: 'var(--success)' }}>🔥 Hungrig</span>}
                 {player.trait === 'veteran' && <span className="tag" style={{ borderColor: 'var(--text-muted)', color: 'var(--text-muted)' }}>🏅 Veteran</span>}
                 {player.trait === 'joker' && <span className="tag" style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>🎭 Joker</span>}
@@ -377,7 +377,7 @@ export function PlayerCard({
         </div>
         {heroVoice && (
           <div style={{ marginTop: 11, paddingLeft: 11, borderLeft: '2px solid var(--accent)' }}>
-            <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+            <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
               {heroVoice}
             </p>
             {heroMood && (
@@ -391,7 +391,7 @@ export function PlayerCard({
 
       {/* ═══ MOOD-STRIP: kompakt status, alltid synlig ═══ */}
       {isOwned && (
-        <div style={{ padding: '9px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)' }}>
+        <div style={{ padding: '9px 13px', borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, textAlign: 'center' }}>
             {[
               { label: 'Form', value: player.form },
@@ -410,37 +410,39 @@ export function PlayerCard({
 
       {/* ═══ SÄSONGENS BÅGE: form + resultat ur loggen ═══ */}
       {seasonArc && (
-        <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
+        <div style={{ padding: '10px 13px', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
           <p style={{ ...LABEL_STYLE, marginBottom: 4 }}>SÄSONGENS BÅGE</p>
-          <p style={{ fontFamily: 'var(--font-display)', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
             {seasonArc}
           </p>
         </div>
       )}
 
-      {/* ═══ SEGMENTERAD NAV: tre lägen — inget gömt, allt ett klick bort ═══ */}
+      {/* ═══ SEGMENTERAD NAV: tre lägen (.seg-mönstret) — inget gömt, allt ett klick bort ═══ */}
       {isOwned && (
-        <div style={{ display: 'flex', gap: 4, padding: '11px 14px 6px' }}>
-          {([
-            { id: 'oversikt' as const, label: 'Översikt' },
-            { id: 'attribut' as const, label: 'Attribut & status' },
-            { id: 'karriar' as const, label: 'Karriär' },
-          ]).map(seg => (
-            <button
-              key={seg.id}
-              onClick={e => { e.stopPropagation(); setMode(seg.id) }}
-              style={{
-                flex: 1, padding: '7px 4px', borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border)',
-                background: mode === seg.id ? 'var(--accent)' : 'transparent',
-                color: mode === seg.id ? 'var(--text-light)' : 'var(--text-muted)',
-                fontSize: 10, fontWeight: 700, letterSpacing: '0.3px',
-                cursor: 'pointer', fontFamily: 'var(--font-body)',
-              }}
-            >
-              {seg.label}
-            </button>
-          ))}
+        <div style={{ padding: '11px 13px 6px' }}>
+          <div style={{ display: 'flex', gap: 0, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+            {([
+              { id: 'oversikt' as const, label: 'Översikt' },
+              { id: 'attribut' as const, label: 'Attribut & status' },
+              { id: 'karriar' as const, label: 'Karriär' },
+            ]).map((seg, i, arr) => (
+              <button
+                key={seg.id}
+                onClick={e => { e.stopPropagation(); setMode(seg.id) }}
+                style={{
+                  flex: 1, textAlign: 'center', padding: '7px 4px',
+                  fontSize: 9, fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase',
+                  cursor: 'pointer', fontFamily: 'var(--font-body)',
+                  border: 'none', borderRight: i === arr.length - 1 ? 'none' : '1px solid var(--border)',
+                  background: mode === seg.id ? 'var(--accent)' : 'transparent',
+                  color: mode === seg.id ? 'var(--text-light)' : 'var(--text-muted)',
+                }}
+              >
+                {seg.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

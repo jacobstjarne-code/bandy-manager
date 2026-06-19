@@ -45,20 +45,21 @@ export function TacticBoardCard({
     <div className="card-sharp" style={{ padding: 0, overflow: 'hidden', marginBottom: 8 }}>
       {/* SPELSTIL — en sanningskälla, samma som matchförberedelsen */}
       <div style={{ padding: '10px 12px 8px' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>
+        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5 }}>
           Spelstil · samma som i matchförberedelsen
         </p>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {SPELSTIL.map(s => (
+        <div style={{ display: 'flex', gap: 0, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+          {SPELSTIL.map((s, i) => (
             <button
               key={s.id}
               onClick={() => setMentality(s.id)}
               style={{
-                flex: 1, padding: '8px 4px', borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border)',
+                flex: 1, textAlign: 'center', padding: '7px 4px',
+                fontSize: 9, fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase',
+                cursor: 'pointer', fontFamily: 'var(--font-body)',
+                border: 'none', borderRight: i === SPELSTIL.length - 1 ? 'none' : '1px solid var(--border)',
                 background: mentality === s.id ? 'var(--accent)' : 'transparent',
                 color: mentality === s.id ? 'var(--text-light)' : 'var(--text-muted)',
-                fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)',
               }}
             >
               {s.label}
@@ -70,25 +71,25 @@ export function TacticBoardCard({
       {/* Planen + kemi-lager (toggle) */}
       <div style={{ padding: '4px 12px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
             📋 Planen · {club.activeTactic.formation ?? '3-3-4'}
           </p>
           <button
             onClick={() => setShowChemistry(v => !v)}
             style={{
               display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none',
-              cursor: 'pointer', fontSize: 10, fontWeight: 600,
+              cursor: 'pointer', fontSize: 9, fontWeight: 600, letterSpacing: '0.5px',
               color: showChemistry ? 'var(--accent)' : 'var(--text-muted)', fontFamily: 'var(--font-body)',
             }}
           >
             Kemi
             <span style={{
-              width: 28, height: 16, borderRadius: 99, padding: 2,
+              width: 26, height: 14, borderRadius: 99, padding: 2,
               background: showChemistry ? 'var(--accent)' : 'var(--border)',
               display: 'inline-flex', justifyContent: showChemistry ? 'flex-end' : 'flex-start',
               transition: 'all 0.15s',
             }}>
-              <span style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--bg-elevated)' }} />
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--bg-elevated)' }} />
             </span>
           </button>
         </div>
@@ -110,14 +111,14 @@ export function TacticBoardCard({
           />
         )}
         {/* Så spelar det — härlett ur spelstil + faktisk kemi */}
-        <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 11, color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.45, marginTop: 10 }}>
+        <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 10.5, color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.45, marginTop: 8 }}>
           {feel}
         </p>
       </div>
 
       {/* Anteckningar — som kort under, inte en egen flik */}
-      <div style={{ padding: '10px 12px 12px', borderTop: '0.5px solid var(--border)' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>
+      <div style={{ margin: '8px 12px 0', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 11px' }}>
+        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>
           🗒 Assistentens anteckningar
         </p>
         <NotesView

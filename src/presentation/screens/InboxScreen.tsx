@@ -227,7 +227,7 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
         <span style={{
           fontSize: 8.5, padding: '2px 7px', borderRadius: 99,
           background: 'color-mix(in srgb, var(--danger) 12%, transparent)',
-          color: 'var(--danger)',
+          color: 'var(--danger-text)',
           fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
         }}>
           svar senast omg {expiresRound}
@@ -241,11 +241,14 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
         </span>
       )}
 
-      {/* Routar till en handlingsyta → explicit CTA ("Gå till Trupp →"). PC-5/fynd 12. */}
-      {actionRoute ? (
+      {/* Routar till en handlingsyta → explicit CTA ("Gå till Trupp →"). PC-5/fynd 12.
+          Med deadline-pill: bar chevron i stället (pill + ord-CTA trängs på 394px-telefon). */}
+      {actionRoute && expiresRound == null ? (
         <span style={{ color: 'var(--accent)', fontSize: 9.5, fontWeight: 700, letterSpacing: '0.3px', flexShrink: 0, whiteSpace: 'nowrap' }}>
           {inboxActionLabel(actionRoute)} ›
         </span>
+      ) : actionRoute && expiresRound != null ? (
+        <span style={{ color: 'var(--accent)', fontSize: 13, flexShrink: 0 }}>›</span>
       ) : hasBody ? (
         <span style={{ color: 'var(--accent)', fontSize: 13, flexShrink: 0 }}>›</span>
       ) : null}
@@ -412,7 +415,7 @@ export function InboxScreen() {
 
                   {/* Card container */}
                   <div style={{
-                    background: 'var(--bg-elevated)',
+                    background: 'var(--bg-surface)',
                     border: '1px solid var(--border)',
                     borderRadius: 8, overflow: 'hidden', marginBottom: 6,
                   }}>
