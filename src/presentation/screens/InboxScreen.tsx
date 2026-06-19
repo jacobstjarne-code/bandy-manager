@@ -4,12 +4,28 @@
 // Unread = 2px copper left border only. No inline dots. No chrono toggle.
 
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { InboxItemType } from '../../domain/enums'
 import type { InboxItem, SaveGame } from '../../domain/entities/SaveGame'
 import { Check } from 'lucide-react'
 import { PlayerLink } from '../components/PlayerLink'
 import { Dot, dotColor, type DotColor } from '../components/shared/Dot'
+
+// ── Fynd 12: agerbara poster routar till sin handlingsyta ─────────
+// Transfer-notiser hör hemma på Övergångar. Returnerar undefined för
+// poster utan egen yta (de expanderar i inkorgen i stället).
+function inboxActionRoute(type: InboxItemType): string | undefined {
+  switch (type) {
+    case InboxItemType.TransferBidReceived:
+    case InboxItemType.TransferOffer:
+    case InboxItemType.TransferBidResult:
+    case InboxItemType.Transfer:
+      return '/game/transfers'
+    default:
+      return undefined
+  }
+}
 
 // ── Icon per type ────────────────────────────────────────────────
 
@@ -110,13 +126,20 @@ interface RowProps {
 }
 
 function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
+  const navigate = useNavigate()
   const [expanded, setExpanded] = useState(false)
   const hasBody = Boolean(item.body?.trim())
   const isCoach = item.tone === 'coach'
+  const actionRoute = inboxActionRoute(item.type)
+  const isActionable = actionRoute != null
+  // En post ser klickbar ut bara om den faktiskt gör något: routar, expanderar,
+  // eller är oläst (klick = kvittera). Rena lästa rubriker blir inert (fynd 12).
+  const isInteractive = isActionable || hasBody || !item.isRead
 
   function handleClick() {
-    if (hasBody) setExpanded(e => !e)
     if (!item.isRead) setTimeout(() => onRead(item.id), 300)
+    if (actionRoute) { navigate(actionRoute); return }
+    if (hasBody) setExpanded(e => !e)
   }
 
   return (
@@ -128,7 +151,7 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
         borderBottom: '1px solid var(--border)',
         // Unread: 2px copper left border only — no background tint
         borderLeft: item.isRead ? '2px solid transparent' : '2px solid var(--accent)',
-        cursor: hasBody || !item.isRead ? 'pointer' : 'default',
+        cursor: isInteractive ? 'pointer' : 'default',
         animation: `fadeInUp 200ms ease-out ${Math.min(index, 14) * 30}ms both`,
         position: 'relative',
       }}
@@ -201,8 +224,8 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
         </span>
       )}
 
-      {/* Chevron for expandable */}
-      {hasBody && (
+      {/* Chevron — expanderbar eller routar till en handlingsyta (fynd 12) */}
+      {(hasBody || isActionable) && (
         <span style={{ color: 'var(--accent)', fontSize: 13, flexShrink: 0 }}>›</span>
       )}
     </div>
