@@ -10,7 +10,7 @@ export function getActiveBeat(game: SaveGame): PortalBeat | null {
   const season = game.currentSeason
 
   for (const beat of PORTAL_BEATS) {
-    const key = beat.oncePerSeason ? `${beat.id}_${season}` : beat.id
+    const key = getBeatKey(beat, season, game)
     if (shown.includes(key)) continue
     if (beat.trigger(game)) return beat
   }
@@ -18,6 +18,7 @@ export function getActiveBeat(game: SaveGame): PortalBeat | null {
 }
 
 /** Returnerar den nyckel som ska läggas till i game.shownBeats. */
-export function getBeatKey(beat: PortalBeat, season: number): string {
+export function getBeatKey(beat: PortalBeat, season: number, game?: SaveGame): string {
+  if (beat.keyFn && game) return beat.keyFn(game)
   return beat.oncePerSeason ? `${beat.id}_${season}` : beat.id
 }

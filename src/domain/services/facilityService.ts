@@ -166,6 +166,7 @@ export function advanceFacilityState(
   const newState: FacilityState = {
     builtNodeIds: [...state.builtNodeIds, activeProject.nodeId],
     activeProject: undefined,
+    lastCompleted: { nodeId: activeProject.nodeId, matchday: currentMatchday },
   }
   return {
     state: newState,

@@ -10,15 +10,23 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { getRivalry } from './rivalries'
 import { nextManagedFixture } from '../services/situationFragments'
+import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from './facilityPortalBeats'
+import { FACILITY_NODE_DEFS } from './facilityNodes'
 
 export interface PortalBeat {
   id: string
   emoji: string
-  text: string
+  text: string | ((game: SaveGame) => string)
   /** Returnerar true om beatet ska visas givet game-state. */
   trigger: (game: SaveGame) => boolean
   /** true = visas max en gång per säsong, false = en gång totalt */
   oncePerSeason: boolean
+  /** B1: etikett-rad ovanför texten ("Bygget"). Copper-stripe variant. */
+  kicker?: string
+  /** B1: navigerar hit vid klick på beatet (inte dismiss-knappen). */
+  route?: string
+  /** B1: om satt, genereras dismiss-nyckeln av denna funktion istf statisk id/säsong-logik. */
+  keyFn?: (game: SaveGame) => string
 }
 
 function nextManagedLeagueFixture(game: SaveGame) {
@@ -124,5 +132,26 @@ export const PORTAL_BEATS: PortalBeat[] = [
     text: 'Sista omgången. Vad som än händer i dag — det är allt det blir av grundserien.',
     trigger: (g) => completedLeagueCount(g) === 21,
     oncePerSeason: true,
+  },
+
+  // ── B1: Bygge klart (per-nod, copper-stripe, navigerar till Bygget) ──────
+  {
+    id: 'facility_completed',
+    emoji: '🏟️',
+    kicker: 'Bygget',
+    route: '/game/bygget',
+    text: (game: SaveGame) => {
+      const nodeId = game.facilityState?.lastCompleted?.nodeId ?? ''
+      const label = FACILITY_NODE_DEFS.find(d => d.id === nodeId)?.label ?? nodeId
+      return FACILITY_COMPLETED_BEATS[nodeId] ?? FACILITY_COMPLETED_FALLBACK(label)
+    },
+    // Triggar BARA den runda bygget stod klart (övergångstriggern, regel 01 "bara på state-change").
+    trigger: (game: SaveGame) => {
+      const last = game.facilityState?.lastCompleted
+      return last != null && last.matchday === game.currentMatchday
+    },
+    // Unik per nod-byggnad — dismiss-nyckeln bär med nodeId så framtida byggen triggar nytt beat.
+    keyFn: (game: SaveGame) => `facility_completed_${game.facilityState?.lastCompleted?.nodeId ?? 'unknown'}`,
+    oncePerSeason: false,
   },
 ]

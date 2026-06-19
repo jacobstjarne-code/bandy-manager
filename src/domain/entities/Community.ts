@@ -127,6 +127,9 @@ export interface FacilityState {
     etaMatchday: number
     completedSeason?: number
   }
+  /** B1 portal-beat: satt av advanceFacilityState när ett bygge blir klart. Beat-triggern
+   *  kontrollerar matchday === game.currentMatchday för att visa beatet DENNA omgång. */
+  lastCompleted?: { nodeId: string; matchday: number }
 }
 
 export interface BoardObjective {
