@@ -12,6 +12,7 @@ import { getCoffeeRoomScene } from './coffeeRoomService'
 import { shouldTriggerCupFinalIntro } from '../data/scenes/cupFinalIntroScene'
 import { getSeasonEndPhase } from '../data/seasonEndPhase'
 import { shouldTriggerBoardMeeting as boardMeetingCheck } from '../data/scenes/boardMeetingScene'
+import { shouldTriggerValet } from '../data/scenes/valetScene'
 
 const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
 const COFFEE_ROOM_OVERRIDE_COOLDOWN = 2
@@ -33,6 +34,7 @@ export function detectSceneTrigger(game: SaveGame): SceneId | null {
   if (shouldTriggerCupFinalVictory(game)) return 'cup_final_victory'
   if (shouldTriggerSMFinalVictory(game)) return 'sm_final_victory'
   if (boardMeetingCheck(game)) return 'board_meeting'
+  if (shouldTriggerValet(game)) return 'valet'
   if (shouldTriggerSundayTraining(game)) return 'sunday_training'
   if (shouldTriggerCupFinalIntro(game)) return 'cup_final_intro'
   if (shouldTriggerCupIntro()) return 'cup_intro'

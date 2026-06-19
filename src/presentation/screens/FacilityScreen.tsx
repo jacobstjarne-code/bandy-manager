@@ -34,6 +34,9 @@ export default function FacilityScreen() {
 
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   const facilityState = game.facilityState ?? { builtNodeIds: [] }
+  // S1-lås: säsong 1 visas trädet som ASPIRATION (betrakta-läge), bygge låst tills säsong 2.
+  // Valet-ceremonin fyrar ej i S1 — Bygget-fliken är den enda vägen, och ska även den vara låst.
+  const isSeason1 = (game.seasonSummaries?.length ?? 0) === 0
 
   const selectedDef = selectedNodeId ? FACILITY_NODE_DEFS.find(d => d.id === selectedNodeId) ?? null : null
 
@@ -78,7 +81,7 @@ export default function FacilityScreen() {
           {managedClub?.name ?? 'Anläggningen'}
         </span>
         {/* B1 §3 — välj-mode löpande (när som helst, inte bara PreSeason) */}
-        {!facilityState.activeProject && (
+        {!facilityState.activeProject && !isSeason1 && (
           <button
             onClick={() => { setMode(m => m === 'valj' ? 'betrakta' : 'valj'); setSelectedNodeId(null); setError(null) }}
             className={`btn ${mode === 'valj' ? 'btn-copper' : 'btn-outline'}`}
@@ -86,6 +89,11 @@ export default function FacilityScreen() {
           >
             {mode === 'valj' ? 'Avbryt' : 'Bygg ut'}
           </button>
+        )}
+        {isSeason1 && (
+          <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+            Valet öppnar nästa säsong
+          </span>
         )}
       </div>
 

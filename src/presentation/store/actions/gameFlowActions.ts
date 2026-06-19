@@ -11,6 +11,7 @@ import { getNextManagedFixture } from '../../../domain/services/portal/triggers/
 import { RETIREMENT_RESPONSES } from '../../../domain/data/retirementText'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
+import { canStartBuild, startFacilityBuild, FACILITY_NODE_DEFS } from '../../../domain/services/facilityService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
 import { getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
@@ -565,6 +566,21 @@ export function gameFlowActions(get: Get, set: Set) {
       } else if (sceneId === 'season_signature_reveal') {
         // Track per-season with dedicated field (not SceneId[] — needs season number)
         updatedGame.shownSeasonSignatureRevealSeason = updatedGame.currentSeason
+      } else if (sceneId === 'valet') {
+        // B1 — per-säsong-stämpel (recurring, shownScenes duger ej — det är engång/spel)
+        updatedGame.valetShownSeason = updatedGame.currentSeason
+        // choiceId är nodeId vid val, 'decline' eller undefined vid avstå
+        if (choiceId && choiceId !== 'decline') {
+          const facilityState = updatedGame.facilityState ?? { builtNodeIds: [] }
+          const can = canStartBuild(choiceId, facilityState)
+          if (can.ok) {
+            const def = FACILITY_NODE_DEFS.find(d => d.id === choiceId)
+            if (def) {
+              updatedGame.clubs = applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, -def.cost)
+              updatedGame.facilityState = startFacilityBuild(choiceId, facilityState, updatedGame.currentMatchday)
+            }
+          }
+        }
       } else {
         updatedGame.shownScenes = [...(updatedGame.shownScenes ?? []), sceneId]
       }

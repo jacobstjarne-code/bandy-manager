@@ -17,6 +17,7 @@ import { BoardMeetingScene } from './BoardMeetingScene'
 import { CupIntroScene } from './CupIntroScene'
 import { CupFinalIntroScene } from './CupFinalIntroScene'
 import { CupFinalVictoryScene } from './CupFinalVictoryScene'
+import { ValetScene } from './ValetScene'
 
 export function SceneScreen() {
   const game = useGameStore(s => s.game)
@@ -49,6 +50,8 @@ export function SceneScreen() {
       return <CupFinalIntroScene game={game} onComplete={() => handleComplete()} />
     case 'cup_final_victory':
       return <CupFinalVictoryScene game={game} onComplete={() => handleComplete()} />
+    case 'valet':
+      return <ValetScene game={game} onComplete={(choiceId) => handleComplete(choiceId)} />
     default:
       return <Navigate to="/game/dashboard" replace />
   }
