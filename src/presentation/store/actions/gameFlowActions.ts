@@ -383,11 +383,23 @@ export function gameFlowActions(get: Get, set: Set) {
             ),
           }
         } else if (effect.type === 'morale') {
+          // PC-1: moral-effekten ska träffa p.morale, inte p.form (buggen gjorde att
+          // "+5 moral" felaktigt höjde formen). Bara player_weekend_off använder denna gren.
           updatedGame = {
             ...updatedGame,
             players: updatedGame.players.map(p =>
               p.id === effect.playerId
-                ? { ...p, form: Math.max(0, Math.min(100, p.form + effect.delta)) }
+                ? { ...p, morale: Math.max(0, Math.min(100, p.morale + effect.delta)) }
+                : p
+            ),
+          }
+        } else if (effect.type === 'fitness') {
+          // PC-1: kondition-deltat saknades helt (labeln lovade "−1 kondition").
+          updatedGame = {
+            ...updatedGame,
+            players: updatedGame.players.map(p =>
+              p.id === effect.playerId
+                ? { ...p, fitness: Math.max(0, Math.min(100, p.fitness + effect.delta)) }
                 : p
             ),
           }

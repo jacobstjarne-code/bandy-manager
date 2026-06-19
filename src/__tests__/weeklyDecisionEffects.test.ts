@@ -13,6 +13,16 @@ const decision = (id: string): WeeklyDecision =>
   ({ id, question: '', category: 'training', optionA: { label: '', effect: '' }, optionB: { label: '', effect: '' } } as WeeklyDecision)
 
 describe('Fynd 11 — veckans beslut-effekter', () => {
+  it('PC-1: player_weekend_off A → moral +5 OCH kondition −1 (inte form)', () => {
+    // wearyPlayer = en spelare med form < 40; injicera en.
+    const g = { ...game, players: game.players.map((p, i) => i === 0 ? { ...p, form: 30 } : p) }
+    const effects = resolveWeeklyDecision(g, decision('player_weekend_off'), 'A')
+    expect(effects).toContainEqual({ type: 'morale', playerId: g.players[0].id, delta: 5 })
+    expect(effects).toContainEqual({ type: 'fitness', playerId: g.players[0].id, delta: -1 })
+    // ingen effekt rör form-fältet
+    expect(effects.every(e => e.type !== 'cornerSkill')).toBe(true)
+  })
+
   it('scout_opponent_corners A → scoutNextOpponent (ingen mer no-op/proxy)', () => {
     const effects = resolveWeeklyDecision(game, decision('scout_opponent_corners'), 'A')
     expect(effects).toEqual([{ type: 'scoutNextOpponent' }])

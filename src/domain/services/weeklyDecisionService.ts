@@ -25,6 +25,7 @@ export type WeeklyDecisionEffect =
   | { type: 'cornerSkill'; playerId: string; delta: number }
   | { type: 'cornerRecovery'; playerId: string; delta: number }
   | { type: 'morale'; playerId: string; delta: number }
+  | { type: 'fitness'; playerId: string; delta: number }
   | { type: 'finances'; delta: number }
   | { type: 'supporterMood'; delta: number }
   | { type: 'communityStanding'; delta: number }
@@ -165,7 +166,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'player',
       requiredEra: ['legacy'],
       question: `En regional TV-kanal vill sända er akademimatchen. ${leader} vill att ni ställer upp.`,
-      optionA: { label: 'Ställ upp', effect: '+rekrytering · +kommunstatus', effectColor: 'success' },
+      optionA: { label: 'Ställ upp', effect: '+kommunstatus', effectColor: 'success' },
       optionB: { label: 'Inte nu', effect: 'Ingen effekt', effectColor: 'muted' },
     },
 
@@ -209,11 +210,21 @@ export function generateWeeklyDecision(game: SaveGame, round: number): WeeklyDec
   const resolved = game.resolvedWeeklyDecisions ?? []
   const currentEra = game.currentEra ?? calculateClubEra(game)
 
-  // Filter out already-resolved decisions and era-incompatible ones
-  const available = pool.filter(d =>
-    !resolved.includes(`${d.id}_${game.currentSeason}`) &&
-    (!d.requiredEra || d.requiredEra.includes(currentEra)),
+  // PC-2: corner-besluten kräver en cornerCandidate (cornerSkill > 60) för att ge effekt —
+  // annars blir A-valet en silent noop trots att labeln lovar effekt. Dölj dem då.
+  const hasCornerCandidate = game.players.some(p =>
+    p.clubId === game.managedClubId && p.position !== PlayerPosition.Goalkeeper && p.attributes.cornerSkill > 60,
   )
+
+  // Filter out already-resolved decisions, era-incompatible ones, och beslut vars
+  // utlovade effekt inte kan realiseras (PC-2 corner, PC-3 scout utan budget).
+  const available = pool.filter(d => {
+    if (resolved.includes(`${d.id}_${game.currentSeason}`)) return false
+    if (d.requiredEra && !d.requiredEra.includes(currentEra)) return false
+    if ((d.id === 'corner_extra_training' || d.id === 'training_corners_vs_matchprep') && !hasCornerCandidate) return false
+    if (d.id === 'scout_opponent_corners' && (game.scoutBudget ?? 0) === 0) return false
+    return true
+  })
   if (available.length === 0) return null
 
   // Pick deterministically by round + season
@@ -249,8 +260,9 @@ export function resolveWeeklyDecision(
       return [{ type: 'noop' }]
 
     case 'player_weekend_off':
+      // PC-1: A lovar "−1 kondition · +5 moral" — returnera båda (kondition saknades).
       if (choice === 'A' && wearyPlayer)
-        return [{ type: 'morale', playerId: wearyPlayer.id, delta: 5 }]
+        return [{ type: 'morale', playerId: wearyPlayer.id, delta: 5 }, { type: 'fitness', playerId: wearyPlayer.id, delta: -1 }]
       if (choice === 'B' && wearyPlayer)
         return [{ type: 'morale', playerId: wearyPlayer.id, delta: -3 }]
       return [{ type: 'noop' }]
