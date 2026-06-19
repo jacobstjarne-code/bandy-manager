@@ -65,6 +65,7 @@ Efter NU2/grind/SEN-blocket/B1-bygget — det som sagts men inte är helt slutf�
 | **Nödtrupp soft-lock** (`62394aa4`) | Byggt, mekaniken spårad + portar gröna | **Playtest-verifiering:** dev-skada 3 → nödtrupp-kort → kalla upp → spelbar; + walkover-dead-end |
 | **Ceremoni-heron emoji→Lucide** (`b9624b6`) | Byggt | Perception-tung — glans-titt vid genomspelning (kunde ej headless-screenshotas) |
 | **C1 säsong-2-start** | Endgame-kurering byggd för slutspel + omg≥20; säsong-2-start medvetet UTANFÖR | Beslut: inkludera säsong-2-start i kurering eller ej (otydlig detektion, risk att gömma relevanta säsongsstart-kort) |
+| **B1 §5 clubMemory facility_built** | builtNodeIds saknar per-nod completedSeason → "X stod klart [säsong]" kan ej säsongsförankras (Code-flagga 2026-06-18, §5 utelämnade händelsen) | Liten enrichment: `builtLog {nodeId, season, matchday}` i FacilityState. Minor narrativ-förlust tills dess — ej brådskande. |
 
 **Kodaudit-fynd 2026-06-16 (B1 gjorde två förbefintliga luckor LEVANDE — ej regressioner från financing-commiten):**
 | Vad | Rot | Fix |
@@ -193,6 +194,25 @@ Genomspelningen gav en STRUKTURELL signal, inte en känslo-signal — spelet avb
 | INT-2 | **En hel del system haltar i sin integration.** | Byggda system som inte wirar/koherar — samma klass som halvtidsrapporten (byggd, aldrig anropad, fixad `6a9dc70`). | Integrations-/renderingsyte-inventering: för varje system som producerar spelarvänt innehåll, verifiera att det avfyrar MED RÄTT DATA och når skärmen — inte bara att en call-site finns. Trigger: parallellt med B1 / efter Design-rundan. |
 
 **Känslan är inte en grind på bygget — den är valideringen efter.** Ordning: buggar borta (mestadels klart) + design satt (Design-rundan) + stora bågen byggd (B1) + integration lagad → ren oavbruten genomspelning → DÅ känslan som säger om strävan landar.
+
+---
+
+## KF. SYSTEMKARTANS FYND (infällda 2026-06-18)
+
+Systemkartan (`SYSTEMKARTA_DEL1_2026-06-12.md`, 13 kartfynd) spårades separat från denna backlog — en parallell sanning, vilket gjorde "vad är öppet?" omöjligt att svara på från ETT ställe. Infällt här. **Byggda kartfynd** (1 väder→publik, 2 Birger-kanon, 5 licensrubrik, 6 funktionärsdöd, 10 Math.random-determinism + grep-svepet §8b–§8g) är levererade — historik i `CODE_ORDRAR_KARTFYND_2026-06-12.md`, inga rader här (process-regel 4). **Öppna:**
+
+| # | Vad | Status | Nästa |
+|---|---|---|---|
+| KF8 | **fanMood → egen mätare i orten-klass.** Schablon utan mean reversion/diminishing returns + oavgjort-bias (+1) som ratchetar mot taket. | **BESLUTAT 2026-06-18** (se DECISIONS) — egen mätare, EJ sammanslagen; Genomgång I omdesign C nedlagd. Genomspelning gjord → grinden passerad. | **Opus specar** reverteringskurvan mot genomspelningsrapporten (gissa ej — pulsen löste det empiriskt). Sen 3 rader i `narrativeProcessor` (reversion + diminishing + oavgjort→0). Klack (8a) redan byggd. |
+| KF3 | **Beslutsbudget över ALLA kanaler.** Trycket är sekventiellt; 7 kanaler kan avbryta samma omgång obudgeterat. interruptClassifier byggt 05-21, oanvänt ("changes nothing until Design decides" — beslutet togs aldrig). | Väg 2, instrument klart | **Överlappar Genomgång I omdesign B (Veckans bord)** — samma classifier. Policybeslut + wira. Korsa mot genomspelningens "för mycket samtidigt". Blockerar B-mocken. |
+| KF4 | **Styrelse-persongalleri dubblerat.** club.board (gender, scen-beats) vs boardPersonalities (personality, citat) — ordföranden kan heta olika på olika ytor. | Väg 2 | Grep §7.9 avgör vilka ytor läser vilken → ETT galleri (club.board + personality-fält flyttat dit). |
+| KF7 | **Free-agent-poolen gallras aldrig** — växer obegränsat, fylls av 38-åringar. | Lågprio, år-3-relevant | Code: gallring i seasonEndProcessor (bort efter 2 säsonger som fri ELLER ålder ≥37). |
+| KF9b | **Lager 2-copy bor inline i eventProcessor** (WAGE_OVERRUN, RISKY_SPONSOR ×4, MECENAT_WITHDRAWAL ×3). Grep-auditen gjord; flytten kvarstår. | Lågprio | Code: flytta till `src/domain/data/`. |
+| KF11 | **Hall sänker hemmafördel 15 %** (`0.19×0.85`) — avsiktlig Själ-kostnad, ej bugg. | Saknar kodkommentar | Code: kommentar så den inte "städas bort". |
+| KF12 | **preRound/playoff-loggning läcker** — preRoundContext loggar ALLTID i browser (även prod). | Lågprio | Code: gate bakom DEBUG-flagga eller ta bort. |
+| KF-M3 | **Politikerns corruption/oppositionStrength/popularitet** genereras men läses aldrig — döda mätare (samma klass som hasArtificialIce, §7#5). | Väg 2 låg | Wira (korruption→bidrag-event, opposition→kommunvalsosäkerhet, popularitet→omvalsodds) ELLER stryk ur typen. |
+
+**Copy-rester (Opus-lane, 2026-06-18):** spelarnotis-poolen i `assistantCoachService.ts` har bara ETT citat per tränarpersonlighet för taggarna `glödande`/`missnöjd`/`skottform`/`sviktande` (`vill-mer` åtgärdat 06-18). `seededPick` ger då identisk rad för två spelare med samma tagg — samma klass som anteckningsrepeten rapporten såg. Bredda till tre per personlighet (som `trött`/`vill-mer`): fyra taggar × fem personligheter, eget copy-block per tagg (lärdom #7, max 10/block). Opus skriver, ej Code.
 
 ---
 

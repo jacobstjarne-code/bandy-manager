@@ -8,6 +8,54 @@ Syftet är inte formalism. Syftet är att om 6 månader ha ett svar på "varför
 
 ---
 
+## 2026-06-18 — Efterklang nemesis grindas till nästa motståndare
+
+**Problem:** Efterklang-kortets nemesis-kandidat (spelare med ≥2 mål mot oss) väljs oavsett vem vi möter härnäst. Playtest: Robert Bergqvist (Slottsbron, 2 mål i cupen) visades före en Hälleforsnäs-match med ekot "Slottsbron igen. Det tar visst aldrig riktigt slut mellan er" — rématch-röst utan rématch. Ytan lovar något systemet inte håller.
+
+**Beslut (Jacob):** Grinda nemesis-ekot så det bara visas när `n.clubId` är lagets nästa motståndare. Då blir "igen/mellan er" sant.
+
+**Alternativ övervägt:** Behålla ambient (som journalist-/klack-ekona) och skriva om texten till minnesröst. Avvisat — nemesis biter mest som återmatch-eko, och grindning gör befintlig copy ärlig.
+
+**Konsekvens:** Code-logik. Andra motståndares nemeser tystnar tills man möter dem. Hör ihop med promise↔consequence-principen (LESSONS 2026-06-18).
+
+---
+
+## 2026-06-18 — Veckans beslut: stubbarna byggs klart, skrotas inte
+
+**Problem:** Veckans-beslut-etiketter lovar effekter motorn inte ger: `scout_opponent_corners` "−1 scout · +taktikinsikt" ger i koden bara `boardPatience +2` (kommentar: "No direct field for tactic insight, use proxy"); matchprep "+positionering" är en `noop`. Etiketterna är stubbar, inte beslut.
+
+**Beslut (Jacob):** Bygg klart. taktikinsikt kopplas till det befintliga `opponentAnalyses`-systemet (detailed-tier via `generateDetailedAnalysis` för nästa motståndare) + faktisk scout-kostnad. positionering = enmatchs-effekt via `leadershipActions`-mönstret (`effect{stat,delta}` + `expiresRound`). Synlig effekt-kvittens.
+
+**Alternativ övervägt:** Ometikettera ner till de verkliga effekterna (+boardpatience), eller skrota besluten. Avvisat — det vore att anpassa ner till stubben; mekaniken finns redan (opponentAnalysis), den blev bara aldrig kopplad.
+
+**Konsekvens:** Code bygger + bekräftar (a) att detailed-analys är gated bakom scoutning, (b) att motorn läser leadershipActions under match. Opus skriver om etiketterna när effekterna är satta.
+
+---
+
+## 2026-06-18 — PortalBeat är flavor, inte handlingsyta
+
+**Problem:** "Fönstret öppet"-beaten (`transfer_window_open`) var kryptisk ("vilket fönster?") och bara stängbar — playtest läste den som en död notis som borde länka till Transfers.
+
+**Beslut:** Copyn namnger fönstret ("Transferfönstret öppet"). PortalBeat-kontraktet förblir text-bart + stängbart (flavor, inte action) — beats lovar inte handling, de sätter stämning. Att länka beaten kräver antingen ett nytt länk-fält i beat-systemet eller att notisen promotas till ett kort = systembeslut.
+
+**Alternativ övervägt:** Lägga en Transfers-länk direkt på beaten. Avvisat tills vidare — bryter beat-kontraktet; med namnet på plats är "vilket fönster?" redan löst.
+
+**Konsekvens:** #14 i ordern står som öppet beslut. Copy-fixen är gjord (portalBeats.ts).
+
+---
+
+## 2026-06-18 — fanMood blir egen mätare uppbyggd till orten-nivå (ej sammanslagen med pulsen)
+
+**Problem:** fanMood är en schablon bredvid pulsens konstverk — enkel matchdelta (+8/+4/+1/−4/−8) + transfer-deltan (avvisat bud −5, rivalförsäljning −20), klamp 0–100, ingen mean reversion, inga diminishing returns, och oavgjort ger +1 (uppåtbias som ratchetar mot taket). Kartfynd 8 (fanMood-omarbetning) parkerades 2026-06-12 i väntan på Jacobs genomspelningsdata. Genomspelningen är nu gjord och rapporterad.
+
+**Beslut (Jacob, 2026-06-18):** fanMood förblir en EGEN mätare och byggs upp till orten-paritet — mean reversion + diminishing returns, och oavgjort-deltat görs om från +1 till 0. Tre distinkta signaler behålls: orten (communityStanding), klack (supporterGroup.mood), fan (fanMood). Kartfynd 8 avparkeras.
+
+**Alternativ övervägt:** Genomgång I:s omdesign C — fäll in fanMood som långsam "grundstämning"-undertext under pulsen, en mätare i stället för två. AVVISAT av Jacob — han vill ha de tre signalerna distinkta, inte sammanslagna.
+
+**Konsekvens:** Reverteringskurvans siffror specas mot genomspelningsrapporten — gissa inte, pulsen löste det empiriskt och samma disciplin gäller här. Klacken (kartfynd 8a) är redan byggd; detta gäller fanMood (8b). Genomgång I redesign C läggs ned. Spec-arbetet är Opus näst, när rapporten är inläst. Reverteringen + diminishing returns + oavgjort-0 är tre rader i `narrativeProcessor`, lågt pris.
+
+---
+
 ## 2026-06-14 — Delade presentationsprimitiver bor i `domain/format.ts`
 
 **Problem:** Positionsetiketter och pengaformat hade tre+ kopior var (MV/B/YH/MF/**A** i `formatters.ts` vs MV/B/YH/MF/**FW** i `teamPhotoGenerator`; Målvakt/Back/… i 3 lokala långform-maps + en trasig prosa-variant i `rumorService` som alltid returnerade "spelare"; `formatValue` definierad både i `formatters.ts` och `eventFactories.ts`). Detta är samma klass som determinism-buggen: varje lokal kopia var rimlig, men tillsammans bröt de "en representation"-invarianten. Designs eget mönster ("global svep sitter halvgjort där route:n rörts") bekräftar att route-för-route degraderar.

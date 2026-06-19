@@ -33,6 +33,65 @@ Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 →
 
 ---
 
+## AKTUELLT LÄGE (2026-06-19) — Promise⇔consequence-audit klar
+
+**Promise⇔consequence-audit:** Rapport: `docs/AUDIT_PROMISE_CONSEQUENCE_2026-06-19.md`.
+
+**Opus-directa copy-fixar (gjorda direkt på disk):**
+- `tifo_contribution` label A: "+hemmabonus" → "+supporterstämning"
+- `reporter_klacken` label B: "Journalisten tappar förtroende" → "−3 kommunstatus"
+- `ismaskin_offer` label A: "+iskvalitet" → "+kommunstatus"
+- `survival_wage_freeze` label A: "+budget · −spelarförtroende" → "+styrelsens tålamod · −supporterstämning"
+- `lower_tempo` label: "Vila nästa match" → "Minska belastningen" (PlayerCard.tsx)
+- `followUp` eko: handlingsimperativen borttagen (efterklangText.ts)
+
+**Öppet — Code:**
+- `player_weekend_off` bug: `morale`-effect-type appliceras på `form` (inte `morale`) i gameFlowActions + `kondition`-delta saknas helt. Fixas i gameFlowActions.ts + lägg till `fitness`-delta.
+- `corner_extra_training` + `training_corners_vs_matchprep`: silent noop om candidate saknas — dölj beslut om ingen spelare uppfyller villkoret.
+- `scout_opponent_corners`: dölj/grona alt A om `scoutBudget = 0`.
+- `legacy_youth_showcase`: stryk `+rekrytering` från label (Opus) eller bygg rekryteringseffekt (Code).
+- `mentor`-action: ingen downstream — bygg mentorship-effekt (CA-tillväxtbonus för youngPlayer i endOfSeason).
+- Inkorg "KRÄVER SVAR" utan action-path: navigations-CTA per item-typ (ör #12-familjens logik).
+
+**Öppet — pass 2 (egna nästa session):**
+- TacticBoardCard.tsx: "Så spelar det"-raden
+- gameStore.ts `talkToPlayer`: state-persistens verifiering
+- gameStore.ts `useLeadershipAction`: public_praise jealousy-delta
+
+**legacy_youth_showcase copy** (Opus, väntar Code-beslut om rekryteringseffekt byggs): om inte — ändra label A till "+kommunstatus" direkt.
+
+---
+
+
+
+Full handover: `docs/HANDOVER_2026-06-18.md`. Order (1–15): `docs/CODE_DESIGN_ORDER_SPELKANSLE_PLAYTEST_2026-06-18.md`.
+
+**Klart:**
+- A (spelarkort) + B (taktik) byggt/committat c78a22df..f85acb5d, 1144 tester gröna. A fixade röst-determinism (Math.random bröt determinism + hjälteplacering).
+- Opus copy/kort-fixar i trädet (ocommittade tills Code tar dem): portalBeats "Transferfönstret öppet", injuryContextText.ts + InjuryStatusSecondary-wiring, burnout/hawaii/vänder-ur/vill-mer.
+- #10 efterklang-grind (playedLeague<5) finns i trädet (visades fel i den gamla builden c78a22d).
+
+**Öppet — Code (prio #8, #9 först):**
+- #8 CTA under nav (match-laddning/ankomst/band ej i CEREMONY_PATHS) — tyngst, återkom gång på gång.
+- #9 efterklang grinda nemesis till nästa motståndare.
+- #11 veckans beslut bygg klart (taktikinsikt→opponentAnalyses detailed-tier + scout-kostnad; positionering→leadershipActions-mönstret).
+- #12 inkorg agerbarhet (Frida-tifo → beslut/inline; Helena body/ej klickbar).
+- #2 burnout-picker, #3 pressrubrik-seed, #4 match-laddning säsong-1, #5 Spelguide-dubblett, #6 coachmarks→Home, #7 inkorg empty-state-röst.
+- Committa #1 (Opus träd-edits) + tsc/lint.
+
+**Öppet — Design:**
+- #13 scen-konst: `docs/DESIGN_SPEC_SCEN_KONST_2026-06-18.md` (cup/derby/premiär/nyår-JPG + placeholder "illustration på väg" + band-fond).
+
+**Öppet — Opus:**
+- #11-etiketter efter att Code satt de riktiga effekterna.
+- REKOMMENDERAD nästa stora kvot-körning: promise↔consequence-audit (egen färsk session) — varje spelar-vänd yta (veckans beslut, efterklang, inkorg, beats, kafferum, klack, journalist, "så spelar det", ledarskap/samtal), kolla att löftet backas.
+
+**Öppna beslut:** #14 beat-länk (bryter beat-kontraktet, systembeslut), #15 PNG-thumbnails överallt? / äkta kemi-overlay?
+
+**Jacob väntar med att spela tills Code är klar (för mycket återkommande fel i mellanläget).**
+
+---
+
 ## AKTUELLT LÄGE (2026-06-10) — Session tech-debt + A3 match-laddning
 
 **Pushat av Code 2026-06-10 (commits `b1c7ca3` → `b5e845e`):**

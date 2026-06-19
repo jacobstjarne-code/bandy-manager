@@ -14,6 +14,10 @@ Använd Ctrl-F på numret för att hoppa.
 **Designbeslut / migrationsprocess:**
 - 37. Exkludering är en designdom — riv med pixlar, inte argument
 - 38. Slentrianparkera inte väldefinierade uppgifter
+- 39. Normer i dokument upprätthåller sig inte själva — grind > checklista
+- 40. Ingen Math.random() i spellogik — bara seedad rand
+- 41. Ytan får inte lova vad systemet inte håller (promise↔consequence)
+- 42. Playtesta och audita mot HEAD-byggd, inte en stale build
 
 **React / UI:**
 - 1. SVG width/height skriver över container
@@ -964,3 +968,31 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 **Känn igen:** Ny kod i `src/domain/services/` eller `src/application/useCases/processors/` som innehåller `Math.random()`. Grep-check: `grep -rn "Math.random" src/domain/services src/application/useCases/processors --include="*.ts"`.
 
 **Historik (2026-06-12):** Kartfynd (PRIO 1) identifierade 4 determinism-brott i simulationskedjan: `playerStateProcessor`, `statsProcessor`, `transferProcessor`, `weeklyDecisionService`. Alla ersatta med seedad rand.
+
+---
+
+## 41. Ytan får inte lova vad systemet inte håller (promise↔consequence)
+
+**Mönster:** En spelar-vänd yta — etikett, citat, förfrågan, notis — utlovar eller antyder en effekt/relation som systemet inte levererar. Playtesten möter det som "det här makes no sense" eller "vad händer om jag klickar?", en bugg i taget.
+
+**Rotorsak:** Ytan skrivs mot en avsedd mekanik som aldrig byggdes klart (stub), eller mot fel kontext (eko i rématch-röst på en ambient yta). Varje enskild yta är rimlig; tillsammans bryter de kontraktet "det jag ser betyder något".
+
+**Fix:** Varje löfte spelaren ser måste backas av en riktig, läsbar konsekvens. Stub-etiketter byggs klart, inte ometiketteras ner eller skrotas (DECISIONS 2026-06-18). Citat som antyder kontext (rématch, närhet) grindas mot att kontexten faktiskt råder. Notiser som ber om handling får en handlingsyta eller routar dit. Kör en promise↔consequence-audit systematiskt i stället för att vänta på att playtesten matar fram dem.
+
+**Känn igen:** "+taktikinsikt" utan taktikinsikt-mekanik. "Slottsbron igen" före en match mot någon annan. En förfrågan i inkorgen utan svarsknapp. En etikett vars effekt-fält har en kommentar som "use proxy".
+
+**Historik (2026-06-18):** Playtest ytade fyra på en session — efterklang i rématch-röst utan rématch, veckans-beslut "+taktikinsikt"/"+positionering" som noop/boardpatience-proxy, Frida-tifo som förfrågan utan action, "Fönstret öppet" utan referent/länk. Samma klass, namngiven som lärdom #9 för interaktion.
+
+---
+
+## 42. Playtesta och audita mot HEAD-byggd, inte en stale build
+
+**Mönster:** En diagnos läggs på en bugg som redan är fixad i arbetsträdet — den syns bara för att den spelade/auditerade builden ligger bakom HEAD. Tid bränns på att felsöka det som redan är löst, och man drar fel slutsats om koden.
+
+**Rotorsak:** Builden som körs (deployad eller lokalt byggd) är inte densamma som trädet. Diagnos mot körningen blandar ihop "fel i koden" med "fel i den gamla builden".
+
+**Fix:** Notera alltid build-hash vs HEAD vid playtest/audit. Diagnostisera mot KÄLLAN (läs filen), inte bara mot den körande builden. När en stor pass (Code-runda) är på väg att ändra många filer — playtesta/audita EFTER att den landat och byggts om, inte mot mellanläget. Kör inte stora Design-audits/genomspel mot en build som strax ändras.
+
+**Känn igen:** Footer/version visar en hash äldre än senaste commit. En "bugg" som inte finns när du läser källan. En grind/gate som finns i koden men inte i beteendet.
+
+**Historik (2026-06-18):** Spelkänsle-playtesten kördes mot c78a22d, bakom arbetsträdet. Efterklang-grinden (playedLeague<5) fanns redan i trädet men visades i builden; flera copy-fixar var redan inne. Diagnoserna höll mot källan men byggstatusen måste alltid noteras.

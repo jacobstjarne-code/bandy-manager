@@ -247,6 +247,32 @@ Detta är ett en-utvecklare-spel. Jacob är beta-testare, dev-team och release-m
 
 ---
 
+## DEPLOY (Vercel-MCP) — AUTOMATISK STATUS, HALVAUTOMATISK FIX
+
+Vercel-MCP är ansluten (claude.ai-integrationen, `https://mcp.vercel.com`). Code kan deploya och läsa build-/runtime-loggar direkt — ingen manuell dashboard-koll, ingen copy-paste av felmeddelanden.
+
+### Det som ALLTID är automatiskt
+- Efter en RC-relevant push: deploya till en **preview**-URL, läs build-loggen, rapportera URL + build-status + hash. Detta är ren vinst och kräver inget go.
+- Vid grön build: rapportera URL, klart.
+
+### Vid FAILAD build — EN diagnostiserad retry, sen STANNA (hård regel)
+En auto-fix-loop på byggfel har en känd failure-mode: modellen ser ett fel, gissar en fix, deployar om, ser ett nytt fel, gissar igen — och kan snurra flera deploys djupt på en feldiagnos. Värre: en "fix" som får bygget grönt är inte garanterat rätt (en `as any`, en bortkommenterad import tystar symptomet, löser inte orsaken — samma klass som Math.random-buggen: lokalt grönt, globalt fel). Därför:
+
+1. Build failar → läs felmeddelandet via MCP, formulera rotorsaken i EN mening (samma krav som ROTORSAK FÖRE FIX).
+2. Om rotorsaken är trivial och säker (glömd import, saknat tomt-värde, typfel med uppenbar fix): gör fixen, deploya OM **en gång**.
+3. Om andra deployen också failar — eller om rotorsaken inte är trivial/säker — **STANNA**. Rapportera båda felen + din rotorsaksanalys till Jacob (eller Opus för diagnos). Gräv inte djupare på egen hand.
+4. Tysta ALDRIG ett byggfel för att få grönt (`as any`, bortkommenterad kod, borttaget test). Ett grönt bygge som döljer ett riktigt fel är värre än ett rött.
+
+Regeln i en mening: **deploya + läs status alltid automatiskt; vid fail, en diagnostiserad retry, sen stanna och rapportera.**
+
+### Production-deploy KRÄVER Jacobs go
+Code deployar **preview** fritt. **Production-deploy kräver Jacobs explicita ja** — en production-URL är vad externa testare får, det är ett releasebeslut, inte ett byggsteg. Vercel-account/domän-inställningar är Jacobs bord, inte Code:s.
+
+### Runtime-loggar vid distansfelsökning (när extern RC är ute)
+När en testare rapporterar via GAP-2-knappen (build-hash + skärm + fritext): matcha hash mot deploy, läs runtime-loggen för den sessionen. Rapport + logg = rotorsak utan repro-gissning.
+
+---
+
 ## DESIGNPRINCIPER — LÄS FÖRE SPEC
 
 Dessa fyra principer adresserar ett mönster vi observerat 2026-04: vi har bra dokumentation av *det som hänt*, men beslutsögonblicken (innan kod skrivs, innan spec klubbas) är otillräckligt strukturerade. Det är där missarna sker.
@@ -644,6 +670,24 @@ MatchHeader. Väder ska inte renderas i MatchHeader
 OCH StartStep. Hitta dubbleringen INNAN du skriver
 specen — att skapa en spec som INTE adresserar
 dubblering är ett misslyckande.
+
+### 5. SUPERSEDE-DISCIPLIN (dokument) — när du skriver en ny sanning, döda den gamla SAMMA TUR
+
+Detta adresserar en återkommande Opus-miss: att skriva en ny version (V2-spec, "allt byggt"-status) men lämna den gamla kvar utan att peka framåt från den. En annan instans öppnar då den gamla och bygger på fel sanning. Alla fyra dokumentmissar 2026-06-16 var detta mönster.
+
+Missen sker ALLTID i exakt två ögonblick. När du är i ettdera — stanna och gör följdhandlingen SAMMA tur, inte "vid tillfälle":
+
+**A. När du skapar en V2/omskrivning som ersätter en tidigare fil:**
+1. Toppa den GAMLA filen med en obsolet-rubrik: `# ⛔ ERSATT AV [ny fil] — BYGG INTE PÅ DENNA` + en rad om VAD som ändrats (särskilt om en spärr/ett antagande vänts).
+2. Greppa repo efter den gamla filens namn (`grep -rn "GAMMAL_FIL" docs/`) och uppdatera VARJE referens till att peka på den nya. En stale pekare i körlistan är lika illa som den gamla filen själv.
+
+**B. När du markerar något KLART eller en grind PASSERAD:**
+1. Uppdatera statusen i `KORLISTA_CODE_RC.md` (eller den utpekade statusfilen) — ALDRIG i en sidofil.
+2. Om en order-/spec-fil har grind-språk ("Jacob spelar inte förrän...", "PRIO 1–4 är grinden") som nu är inaktuellt → toppa den med `✅ HISTORISK — status i körlistan`. Lämna inte två filer som säger olika om vad som är gjort.
+
+**Den bärande regeln (båda fallen):** det finns EN statusfil (`KORLISTA_CODE_RC.md`). Allt annat är antingen (a) en order/spec som pekar PÅ statusfilen, eller (b) historik som SÄGER att den är historik. En fil får aldrig tyst motsäga statusfilen — den måste antingen peka dit eller dödmarkera sig själv. Om du inte hinner göra följdhandlingen samma tur: gör den ändå. "Vid tillfälle" är hur drift uppstår.
+
+**Självkontroll innan du avslutar en tur där du skrev en ny sanning:** "Skapade jag just en version 2 eller markerade något klart? Finns det en gammal fil eller en referens som nu ljuger? Döda den nu."
 
 ---
 

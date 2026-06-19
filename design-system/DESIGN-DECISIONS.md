@@ -545,3 +545,25 @@ Ramen accepterar båda via `children`/`tabs`-prop utan omarbetning när besluten
 **(a) Innehåll BEHÅLLS:** emojis i klack-/supporterkommentarernas text (🎵📣📯 i matchCommentary) är röst, inte chrome.
 **(b) Emoji-ikonografi är UNDANTAG:** `EFTERKLANG_TYPE_ICON` och `PORTAL_BEATS.emoji` behålls — medvetna undantag, inte glömska. Svepet gäller övrig UI-chrome (→ Lucide per B3-domängränsen `8610fbb`).
 **(c) 🏒 förbjuden överallt** — fel sport. portalBeats → ⛸️ (Opus 06-12). Code: repo-grep `🏒`. Fable: K2 i B1-mocken.
+
+---
+
+## Nav-principen — fast referenspunkt, spärras inte döljs (2026-06-15)
+
+**Var:** `GameShell.tsx` (äger dölj/visa) · `BottomNav.tsx` (äger spärr) · commit `459ea41b`
+**Bakgrund:** genomspelnings-fynd — BottomNav hoppade in/ut på många vyer (två överlappande HIDDEN_PATHS-listor i GameShell + BottomNav, var sin sanning). Jacobs bil-metafor avgjorde: *en bil drar inte tillbaka bromspedalen för att du inte behöver bromsa just nu.*
+
+**Beslut:** Navet är spelarens fasta referenspunkt (topp + botten på appen). Det ska INTE hoppa in/ut på vanliga vyer.
+- **Vanliga vyer** (taktik, facility, squad, tabell, transfers, klubb, prep, review): navet finns, ospärrat. Tillbaka-pil får samexistera — dubbel utväg är förlåtligt, en hoppande referenspunkt är det inte.
+- **Match/live**: navet SPÄRRAS (befintliga `useNavigationLock` → opacity 0.4 + `pointer-events:none` + skäl-rad "Match pågår"). Syns men går ej att trampa — bromspedalen sitter kvar.
+- **Rena ceremonier** (champion, season-summary, game-over, playoff-intro, qf-summary, sim-summary, half-time-summary): navet DÖLJS — där är helskärm rätt och ett gråtonat nav vore en främmande list på guldögonblicket.
+**Ansvarsfördelning (single source of truth):** GameShell äger DÖLJ/VISA (CEREMONY_PATHS + sceneActive), BottomNav äger SPÄRR (effectivelyLocked). ALDRIG två överlappande dölj-listor — det var rotorsaken till hoppigheten.
+
+---
+
+## Peek-kollaps — kollapsad sektion talar, är aldrig tom (2026-06-15)
+
+**Var:** `SectionCard.tsx` · commit `85d5b6dd`
+**Bakgrund:** genomspelnings-fynd — sektionskollapsen (klubbflikarna) dölde ALLT innehåll, så en ovan spelare såg bara rubrik + "Visa allt →" och fattade inte att innehåll fanns. Detta är en direkt tillämpning av "Ett kort utan innehåll renderas inte — eller talar": en helt döld sektion ÄR ett tomt kort ur spelarens synvinkel.
+**Beslut:** Kollapsat läge döljer inte allt — det visar en glimt (~en rads höjd, CSS-höjdklamp) med mjuk fade-ut nedåt. Faden signalerar "mer finns nedanför" starkare än en textrad. Tekniken är yt-agnostisk (funkar oavsett vad `children` innehåller) — därför CSS-klamp, inte en "första-raden"-prop per call-site.
+**Konsekvens:** kollaps som *döljer allt* är en regression mot tom-struktur-regeln. Gradientens slutfärg måste matcha kortets faktiska bakgrund.
