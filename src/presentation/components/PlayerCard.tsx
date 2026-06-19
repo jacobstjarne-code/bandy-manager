@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Player } from '../../domain/entities/Player'
 import type { ScoutReport } from '../../domain/entities/Scouting'
 import type { SaveGame } from '../../domain/entities/SaveGame'
@@ -6,7 +7,7 @@ import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { canUseLeadershipAction, type LeadershipAction } from '../../domain/services/leadershipService'
 import { ClubBadge } from './ClubBadge'
 import { getPortraitImagePath } from '../../domain/services/portraitService'
-import { getPlayerVoice } from '../../domain/services/playerVoiceService'
+import { getPlayerVoice, getPlayerMoodLine, getSeasonArc } from '../../domain/services/playerVoiceService'
 import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
 import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
@@ -30,21 +31,6 @@ export interface PlayerCardProps {
   talkFeedback?: { text: string; moraleChange: number; formChange: number } | null
   onLeadershipAction?: (action: LeadershipAction) => { feedback: string } | null
   leadershipFeedback?: string | null
-}
-
-function archetypeColor(arch: PlayerArchetype): string {
-  const map: Partial<Record<PlayerArchetype, string>> = {
-    [PlayerArchetype.Finisher]: 'var(--arch-finisher)',
-    [PlayerArchetype.Playmaker]: 'var(--arch-playmaker)',
-    [PlayerArchetype.DefensiveWorker]: 'var(--arch-defensive)',
-    [PlayerArchetype.TwoWaySkater]: 'var(--arch-twoway)',
-    [PlayerArchetype.ReflexGoalkeeper]: 'var(--arch-reflexgk)',
-    [PlayerArchetype.PositionalGoalkeeper]: 'var(--arch-posgk)',
-    [PlayerArchetype.Dribbler]: 'var(--arch-dribbler)',
-    [PlayerArchetype.CornerSpecialist]: 'var(--arch-corner)',
-    [PlayerArchetype.RawTalent]: 'var(--arch-raw)',
-  }
-  return map[arch] ?? 'var(--arch-default)'
 }
 
 const STAT_LABELS: Partial<Record<keyof Player['attributes'], string>> = {
@@ -283,13 +269,24 @@ export function PlayerCard({
   // Genomgång II A: illustrerat hjälteporträtt (PNG-arketyp), ålder → tier → seedat val.
   const portraitImg = getPortraitImagePath(player.id, player.age)
 
+  // Genomgång II A: tre etiketterade lägen — inget gömt, allt ett klick bort.
+  const [mode, setMode] = useState<'oversikt' | 'attribut' | 'karriar'>('oversikt')
+
+  // Hjälteblock: rösten + känsloläget + säsongsbågen lyfts till toppen (led med människan).
+  const heroVoice = isOwned && game ? getPlayerVoice(player, game) : null
+  const heroMood = isOwned && game ? getPlayerMoodLine(player, game) : null
+  const seasonArc = isOwned ? getSeasonArc(player, recentRatings) : null
+
   const topStats = isOwned
     ? getTopStats(player)
     : effectiveReport
       ? getTopStats({ ...player, attributes: { ...player.attributes, ...effectiveReport.revealedAttributes } })
       : null
 
-  const archColor = archetypeColor(player.archetype)
+  // Läges-flaggor: en scoutad (ej ägd) spelare har ingen nav — visar sina sektioner rakt av.
+  const showOversikt = !isOwned || mode === 'oversikt'
+  const showAttribut = !isOwned || mode === 'attribut'
+  const showKarriar = !isOwned || mode === 'karriar'
   const fullName = `${player.firstName} ${player.lastName}`.toUpperCase()
   const posLabel = positionLong(player.position).toUpperCase()
 
@@ -329,12 +326,9 @@ export function PlayerCard({
         gap: 8,
       }}>
         <ClubBadge clubId={player.clubId} name={clubName} size={32} />
-        <div style={{ flex: 1, textAlign: onClose ? 'center' : 'right' }}>
-          <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, letterSpacing: '1px' }}>
-            #{jerseyNum}
-          </p>
-          <p style={{ fontSize: 10, color: 'var(--text-secondary)', letterSpacing: '1px', textTransform: 'uppercase' }}>
-            {posLabel}
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
+            {clubName.toUpperCase()}
           </p>
         </div>
         {onClose && (
@@ -353,67 +347,105 @@ export function PlayerCard({
         )}
       </div>
 
-      {/* Gold divider */}
-      <div style={{ height: 1, background: 'color-mix(in srgb, var(--accent) 30%, transparent)', margin: '0 14px' }} />
-
-      {/* ═══ PORTRAIT ═══ */}
+      {/* ═══ HJÄLTE: porträtt + namn + röst + känsloläge (led med människan) ═══ */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '8px 0 4px',
+        padding: '14px 14px 12px',
         background: 'linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)',
+        borderBottom: '1px solid var(--border)',
       }}>
-        <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent)', background: 'var(--bg-surface)' }}>
-          <img
-            src={portraitImg}
-            alt=""
-            width={72}
-            height={72}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        </div>
-      </div>
-
-      {/* Gold divider */}
-      <div style={{ height: 1, background: 'color-mix(in srgb, var(--accent) 50%, transparent)', margin: '0 14px' }} />
-
-      {/* ═══ NAME + CLUB + BADGES ═══ */}
-      <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--border)' }}>
-        <p style={{
-          fontSize: 17,
-          fontWeight: 900,
-          color: 'var(--text-primary)',
-          letterSpacing: '-0.3px',
-          lineHeight: 1.1,
-          textTransform: 'uppercase',
-        }}>
-          {fullName}
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: '1px', textTransform: 'uppercase' }}>
-            {clubName.toUpperCase()}
-          </span>
-          <span style={{ color: 'var(--border)', fontSize: 12 }}>·</span>
-          <div style={{ padding: '2px 6px', borderRadius: 4, background: archColor, fontSize: 10, fontWeight: 700, color: 'var(--text-light)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-            {posLabel}
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent)', background: 'var(--bg-surface)', flexShrink: 0 }}>
+            <img src={portraitImg} alt="" width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 17, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.3px', lineHeight: 1.1, textTransform: 'uppercase' }}>
+              {fullName}
+            </p>
+            <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.5px', marginTop: 3, textTransform: 'uppercase' }}>
+              {posLabel} · {player.age} ÅR · #{jerseyNum}{isCaptain ? ' · © KAPTEN' : ''}
+            </p>
+            {isOwned && (
+              <div style={{ display: 'flex', gap: 5, marginTop: 6, flexWrap: 'wrap' }}>
+                {player.trait === 'hungrig' && <span className="tag" style={{ borderColor: 'var(--success)', color: 'var(--success)' }}>🔥 Hungrig</span>}
+                {player.trait === 'veteran' && <span className="tag" style={{ borderColor: 'var(--text-muted)', color: 'var(--text-muted)' }}>🏅 Veteran</span>}
+                {player.trait === 'joker' && <span className="tag" style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>🎭 Joker</span>}
+                {player.trait === 'lokal' && <span className="tag" style={{ borderColor: 'var(--ice)', color: 'var(--ice)' }}>🏘️ Lokal</span>}
+                {player.trait === 'ledare' && <span className="tag" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>🦁 Ledare</span>}
+              </div>
+            )}
           </div>
         </div>
-        {/* Trait + captain badges */}
-        {isOwned && (
-          <div style={{ display: 'flex', gap: 5, marginTop: 6, flexWrap: 'wrap' }}>
-            {isCaptain && <span className="tag tag-fill">© KAPTEN</span>}
-            {player.trait === 'hungrig' && <span className="tag" style={{ borderColor: 'var(--success)', color: 'var(--success)' }}>🔥 Hungrig</span>}
-            {player.trait === 'veteran' && <span className="tag" style={{ borderColor: 'var(--text-muted)', color: 'var(--text-muted)' }}>🏅 Veteran</span>}
-            {player.trait === 'joker' && <span className="tag" style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>🎭 Joker</span>}
-            {player.trait === 'lokal' && <span className="tag" style={{ borderColor: 'var(--ice)', color: 'var(--ice)' }}>🏘️ Lokal</span>}
-            {player.trait === 'ledare' && <span className="tag" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>🦁 Ledare</span>}
+        {heroVoice && (
+          <div style={{ marginTop: 11, paddingLeft: 11, borderLeft: '2px solid var(--accent)' }}>
+            <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+              {heroVoice}
+            </p>
+            {heroMood && (
+              <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 5, fontFamily: 'var(--font-display)', fontStyle: 'italic' }}>
+                {heroMood}
+              </p>
+            )}
           </div>
         )}
       </div>
 
-      {/* ═══ ① STATUS — owned only ═══ */}
+      {/* ═══ MOOD-STRIP: kompakt status, alltid synlig ═══ */}
       {isOwned && (
+        <div style={{ padding: '9px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, textAlign: 'center' }}>
+            {[
+              { label: 'Form', value: player.form },
+              { label: 'Moral', value: player.morale },
+              { label: 'Skärpa', value: player.sharpness },
+              { label: 'Kondition', value: player.fitness },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <div style={{ fontSize: 15, fontWeight: 800, fontFamily: 'var(--font-display)', color: barColor(value) }}>{Math.round(value)}</div>
+                <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ SÄSONGENS BÅGE: form + resultat ur loggen ═══ */}
+      {seasonArc && (
+        <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
+          <p style={{ ...LABEL_STYLE, marginBottom: 4 }}>SÄSONGENS BÅGE</p>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+            {seasonArc}
+          </p>
+        </div>
+      )}
+
+      {/* ═══ SEGMENTERAD NAV: tre lägen — inget gömt, allt ett klick bort ═══ */}
+      {isOwned && (
+        <div style={{ display: 'flex', gap: 4, padding: '11px 14px 6px' }}>
+          {([
+            { id: 'oversikt' as const, label: 'Översikt' },
+            { id: 'attribut' as const, label: 'Attribut & status' },
+            { id: 'karriar' as const, label: 'Karriär' },
+          ]).map(seg => (
+            <button
+              key={seg.id}
+              onClick={e => { e.stopPropagation(); setMode(seg.id) }}
+              style={{
+                flex: 1, padding: '7px 4px', borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)',
+                background: mode === seg.id ? 'var(--accent)' : 'transparent',
+                color: mode === seg.id ? 'var(--text-light)' : 'var(--text-muted)',
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.3px',
+                cursor: 'pointer', fontFamily: 'var(--font-body)',
+              }}
+            >
+              {seg.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ═══ ① STATUS → Attribut & status ═══ */}
+      {isOwned && showAttribut && (
         <div style={SECTION_STYLE}>
           <p style={{ ...LABEL_STYLE, marginBottom: 8 }}>💪 STATUS</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 14px' }}>
@@ -457,8 +489,8 @@ export function PlayerCard({
         </div>
       )}
 
-      {/* ═══ ② DUBBELLIV — owned only ═══ */}
-      {isOwned && (
+      {/* ═══ ② DUBBELLIV → Attribut & status ═══ */}
+      {isOwned && showAttribut && (
         <div style={SECTION_STYLE}>
           <p style={{ ...LABEL_STYLE, marginBottom: 6 }}>💼 DUBBELLIV</p>
           {player.isFullTimePro ? (
@@ -485,8 +517,8 @@ export function PlayerCard({
         </div>
       )}
 
-      {/* ═══ ③ SENASTE 5 MATCHER — owned only ═══ */}
-      {isOwned && recentRatings && recentRatings.length > 0 && (
+      {/* ═══ ③ SENASTE 5 MATCHER → Attribut & status ═══ */}
+      {isOwned && showAttribut && recentRatings && recentRatings.length > 0 && (
         <div style={SECTION_STYLE}>
           <p style={{ ...LABEL_STYLE, marginBottom: 6 }}>📈 SENASTE 5 MATCHER</p>
           {/* C-SY2 Våg 4: senaste matchrating som ScoreBlock (win ≥6.5 / loss ≤5.5 / subtle neutral) */}
@@ -506,7 +538,8 @@ export function PlayerCard({
         </div>
       )}
 
-      {/* ═══ ④ EGENSKAPER ═══ */}
+      {/* ═══ ④ EGENSKAPER → Attribut & status ═══ */}
+      {showAttribut && (
       <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
           <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)' }}>
@@ -581,8 +614,10 @@ export function PlayerCard({
           <CaSparkline history={player.caHistory ?? []} currentCa={player.currentAbility} />
         )}
       </div>
+      )}
 
-      {/* ═══ ⑤ SÄSONG ═══ */}
+      {/* ═══ ⑤ SÄSONG → Översikt ═══ */}
+      {showOversikt && (
       <div style={SECTION_STYLE}>
         {!isOwned && effectiveReport && (
           <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
@@ -640,9 +675,10 @@ export function PlayerCard({
           </>
         )}
       </div>
+      )}
 
-      {/* ═══ ⑥ RELATIONER — owned only ═══ */}
-      {isOwned && (
+      {/* ═══ ⑥ RELATIONER → Karriär ═══ */}
+      {isOwned && showKarriar && (
         <div style={SECTION_STYLE}>
           <p style={{ ...LABEL_STYLE, marginBottom: 6 }}>🤝 RELATIONER</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
@@ -686,24 +722,10 @@ export function PlayerCard({
         </div>
       )}
 
-      {/* ═══ ⑥b NARR-006: Spelarens röst ═══ */}
-      {isOwned && game && (() => {
-        const voice = getPlayerVoice(player, game)
-        if (!voice) return null
-        return (
-          <div style={{ margin: '0 0 8px', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-            <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 4 }}>
-              🗣 {player.firstName.toUpperCase()}
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', fontFamily: 'var(--font-display)', lineHeight: 1.5 }}>
-              {voice}
-            </p>
-          </div>
-        )
-      })()}
+      {/* Spelarens röst lyft till hjälteblocket (genomgång II A) — ingen egen sektion längre. */}
 
-      {/* ═══ ⑦ KARRIÄRRESA — owned only ═══ */}
-      {isOwned && (() => {
+      {/* ═══ ⑦ KARRIÄRRESA → Karriär ═══ */}
+      {isOwned && showKarriar && (() => {
         const bio = generateBio(player, clubName)
         const hasJourney = (player.narrativeLog?.length ?? 0) > 0 || (player.careerStats?.seasonsPlayed ?? 0) >= 2
         if (!bio && !hasJourney) return null
@@ -719,8 +741,8 @@ export function PlayerCard({
         )
       })()}
 
-      {/* ═══ ⑧ KARRIÄR-TABELL ═══ */}
-      {isOwned && (player.seasonHistory ?? []).length > 0 && (
+      {/* ═══ ⑧ KARRIÄR-TABELL → Karriär ═══ */}
+      {isOwned && showKarriar && (player.seasonHistory ?? []).length > 0 && (
         <div style={SECTION_STYLE}>
           <p style={{ ...LABEL_STYLE, marginBottom: 6 }}>📊 KARRIÄR</p>
           {[...(player.seasonHistory ?? [])].reverse().map(s => (
@@ -735,8 +757,8 @@ export function PlayerCard({
         </div>
       )}
 
-      {/* ═══ ⑨ LEDARSKAP — owned + onLeadershipAction only ═══ */}
-      {isOwned && leadershipAvailable && (
+      {/* ═══ ⑨ LEDARSKAP → Översikt ═══ */}
+      {isOwned && showOversikt && leadershipAvailable && (
         <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)' }}>
           <p style={{ ...LABEL_STYLE, marginBottom: 8 }}>👑 LEDARSKAP</p>
           {leadershipFeedback ? (
@@ -781,8 +803,8 @@ export function PlayerCard({
         </div>
       )}
 
-      {/* ═══ ⑩ PRATA — owned + onTalkToPlayer only ═══ */}
-      {isOwned && onTalkToPlayer && (
+      {/* ═══ ⑩ PRATA → Översikt ═══ */}
+      {isOwned && showOversikt && onTalkToPlayer && (
         <div style={{
           padding: '10px 14px',
           borderTop: '1px solid var(--border)',
