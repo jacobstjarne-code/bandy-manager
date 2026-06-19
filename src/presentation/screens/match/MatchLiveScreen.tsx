@@ -1107,6 +1107,8 @@ export function MatchLiveScreen() {
         clubs={game?.clubs ?? []}
         players={game?.players ?? []}
         fixture={fixture}
+        game={game ?? undefined}
+        tier="gold"
       />
     )
   }
