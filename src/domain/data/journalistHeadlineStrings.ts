@@ -231,6 +231,7 @@ export function pickHeadline(
   scoreline?: string,
   matchday = 0,
   isCup = false,
+  surface: 'inbox' | 'portal' | 'granska' = 'inbox',
 ): string {
   const cell = HEADLINES[bucket][persona]
 
@@ -249,7 +250,9 @@ export function pickHeadline(
   }
 
   // Include matchday in seed so consecutive rounds never repeat even if fixtureId hashes collide
-  const idx = hashSeed(`${fixtureId}_${bucket}_${persona}_md${matchday}`) % pool.length
+  // Fynd 3: surface-diskriminator i seeden → samma händelse får tre formuleringar
+  // (portal / inkorg / granska), så rubriken inte läser identiskt på tre ytor.
+  const idx = hashSeed(`${fixtureId}_${bucket}_${persona}_md${matchday}_${surface}`) % pool.length
   let text = pool[idx]
 
   if (oppName) text = text.replace(/\{opp\}/g, oppName)

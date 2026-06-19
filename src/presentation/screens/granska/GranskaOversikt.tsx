@@ -469,7 +469,8 @@ export function GranskaOversikt({
               </p>
             )}
             <p style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.4 }}>
-              {headlineItem.title}
+              {/* Fynd 3: granska-varianten av rubriken (samma händelse, egen formulering) */}
+              {headlineItem.mediaVariants?.granska ?? headlineItem.title}
             </p>
           </div>
         )

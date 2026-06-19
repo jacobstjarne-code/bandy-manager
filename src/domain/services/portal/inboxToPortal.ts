@@ -203,6 +203,12 @@ export function inboxItemToCardCandidate(
     return null
   }
 
+  // Fynd 3: portal-kortet visar pressrubrikens portal-variant (samma händelse, egen
+  // formulering) — bara för poster som bär mediaVariants (rubrik-items).
+  const displayItem = item.mediaVariants
+    ? { ...item, title: item.mediaVariants.portal }
+    : item
+
   return {
     id: `inbox_story_${item.id}`,
     tier,
@@ -210,6 +216,6 @@ export function inboxItemToCardCandidate(
     triggers: [() => true],
     kind,
     stripe,
-    Component: makeInboxStoryComponent(item, kind, stripe),
+    Component: makeInboxStoryComponent(displayItem, kind, stripe),
   }
 }

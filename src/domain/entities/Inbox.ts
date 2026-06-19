@@ -19,4 +19,7 @@ export interface InboxItem {
   bidRejectedByPlayer?: boolean
   // Decision items: expiry round (required on decision-bearing items per B1 spec)
   expiresRound?: number
+  // Fynd 3: pressrubrik-varianter per yta (samma händelse, olika formulering).
+  // title = inkorgs-varianten; portal/granska läser sina egna.
+  mediaVariants?: { portal: string; granska: string }
 }
