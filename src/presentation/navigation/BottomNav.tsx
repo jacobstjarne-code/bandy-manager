@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, Users, Swords, ArrowLeftRight, Table2, Building2 } from 'lucide-react'
-import { useInjuredInLineup, useExpiringContracts, useGameStore, useNavigationLock } from '../store/gameStore'
+import { Home, Users, Swords, Table2, Building2, Hammer } from 'lucide-react'
+import { useInjuredInLineup, useGameStore, useNavigationLock } from '../store/gameStore'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
 const tabs = [
@@ -13,8 +13,8 @@ const tabs = [
   { to: '/game/match', label: 'Match', Icon: Swords },
   // TODO(FAS 1): byt mot BottomNav-ikon "Tabell" · se ICON-BRIEF.md
   { to: '/game/tabell', label: 'Tabell', Icon: Table2 },
-  // TODO(FAS 1): byt mot BottomNav-ikon "Transfers" · se ICON-BRIEF.md
-  { to: '/game/transfers', label: 'Transfers', Icon: ArrowLeftRight },
+  // B1-nav 2026-06-19: Bygget ersätter Transfers permanent plats (Transfers blir villkorad, Fas 3)
+  { to: '/game/bygget', label: 'Bygget', Icon: Hammer },
   // TODO(FAS 1): byt mot BottomNav-ikon "Klubb" · se ICON-BRIEF.md
   { to: '/game/club', label: 'Klubb', Icon: Building2 },
 ]
@@ -45,7 +45,6 @@ function Badge({ count }: { count: number }) {
 
 export function BottomNav() {
   const injuredInLineup = useInjuredInLineup()
-  const expiringContracts = useExpiringContracts()
   const currentDate = useGameStore(s => s.game?.currentDate ?? '')
   const { locked, reason } = useNavigationLock()
   const location = useLocation()
@@ -73,10 +72,10 @@ export function BottomNav() {
   const windowStatus = currentDate ? getTransferWindowStatus(currentDate).status : 'closed'
   const transferWindowOpen = windowStatus !== 'closed'
 
+  // B1-nav: expiringContracts-badgen flyttar med kontrakt till Trupp/Värvning (Fas 2).
   const badges: Record<string, number> = {
     '/game/squad': injuredInLineup,
     '/game/match': matchBadge,
-    '/game/transfers': expiringContracts,
   }
 
   return (

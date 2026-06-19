@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { FacilityTree } from '../components/club/FacilityTree'
 import { FACILITY_NODE_DEFS, getFinancingOptions, type FinancingContext, type FinancingOption } from '../../domain/services/facilityService'
 import { financingFlavor } from '../../domain/data/facilityFinancingStrings'
@@ -24,6 +24,8 @@ export default function FacilityScreen() {
   const game = useGameStore(s => s.game)
   const startFacilityBuildNode = useGameStore(s => s.startFacilityBuildNode)
   const navigate = useNavigate()
+  // B1-nav: Bygget är en flik-destination (ingen tillbaka-pil); facility-routen är push (deep-link) → pil kvar.
+  const isTab = useLocation().pathname === '/game/bygget'
   const [mode, setMode] = useState<'betrakta' | 'valj'>('betrakta')
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -65,11 +67,13 @@ export default function FacilityScreen() {
         padding: '0 12px', height: 44, flexShrink: 0,
         borderBottom: '1px solid var(--border)', background: 'var(--bg)',
       }}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{ background: 'none', border: 'none', padding: '4px 2px', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: 18, lineHeight: 1 }}
-          aria-label="Tillbaka"
-        >←</button>
+        {!isTab && (
+          <button
+            onClick={() => navigate(-1)}
+            style={{ background: 'none', border: 'none', padding: '4px 2px', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: 18, lineHeight: 1 }}
+            aria-label="Tillbaka"
+          >←</button>
+        )}
         <span style={{ fontFamily: 'Georgia,serif', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
           {managedClub?.name ?? 'Anläggningen'}
         </span>

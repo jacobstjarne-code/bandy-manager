@@ -133,6 +133,8 @@ export function AppRouter() {
           <Route path="sim-summary" element={<SimSummaryScreen />} />
           <Route path="taktik" element={<TaktikScreen />} />
           <Route path="review" element={<GranskaScreen />} />
+          {/* Bygget = kanonisk flik-destination; facility behålls för deep-links (push) */}
+          <Route path="bygget" element={<FacilityScreen />} />
           <Route path="facility" element={<FacilityScreen />} />
         </Route>
         <Route element={<GameGuard />}>
