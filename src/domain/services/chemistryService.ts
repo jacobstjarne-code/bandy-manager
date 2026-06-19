@@ -1,5 +1,7 @@
 import type { Player } from '../entities/Player'
 import type { FormationSlot } from '../entities/Formation'
+import type { Tactic } from '../entities/Club'
+import { TacticMentality } from '../enums'
 
 export interface PairChemistry {
   playerId1: string
@@ -120,4 +122,42 @@ export function findWeakZones(
   }
 
   return zones
+}
+
+// ── "Så spelar det": en mening om hur taktiken känns, härledd ur spelstil +
+//    faktisk kemi i startelvan (inte canned). Genomgång II B. Opus-text. ────────
+
+export function getTacticFeel(
+  tactic: Tactic,
+  players: Player[],
+  chemistryStats: Record<string, number>,
+): string {
+  const mentalityPart =
+    tactic.mentality === TacticMentality.Offensive ? 'Tyngdpunkten ligger framåt'
+    : tactic.mentality === TacticMentality.Defensive ? 'Laget sitter djupt och tätt'
+    : 'Balans mellan att hålla och att trycka på'
+
+  const lineupSlots = tactic.lineupSlots ?? {}
+  const starters = Object.values(lineupSlots)
+    .map(id => players.find(p => p.id === id))
+    .filter((p): p is Player => !!p)
+
+  if (starters.length < 6) {
+    return `${mentalityPart}. Sätt en startelva för att läsa kemin.`
+  }
+
+  const pairs = calculateLineupChemistry(starters, chemistryStats)
+  const weakest = pairs.filter(p => p.strength < -0.15).sort((a, b) => a.strength - b.strength)[0]
+  if (weakest) {
+    const p1 = starters.find(p => p.id === weakest.playerId1)
+    const p2 = starters.find(p => p.id === weakest.playerId2)
+    const zone = p1 && p2 ? inferZoneLabel(p1.position, p2.position) : 'en koppling'
+    return `${mentalityPart}, men ${zone} saknar kemi — sårbar på omställning.`
+  }
+
+  const strongest = pairs.filter(p => p.strength > 0.3).sort((a, b) => b.strength - a.strength)[0]
+  if (strongest) {
+    return `${mentalityPart}. Inspelta par håller ihop laget.`
+  }
+  return `${mentalityPart}. Truppen är ny ihop — kemin får växa fram.`
 }
