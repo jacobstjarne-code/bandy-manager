@@ -127,13 +127,13 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'training',
       question: 'Bara tid för ett: extra hörnträning eller matchförberedelse?',
       optionA: { label: 'Hörnor', effect: '+hörnskicklighet', effectColor: 'success' },
-      optionB: { label: '📋 Matchprep', effect: '+hörnförsvar', effectColor: 'success' },
+      optionB: { label: '📋 Matchprep', effect: '+hörnförsvar (sårbar back)', effectColor: 'success' },
     },
     {
       id: 'scout_opponent_corners',
       category: 'training',
       question: 'Scouten vill studera motståndarens hörnförsvar inför helgen.',
-      optionA: { label: 'Ja', effect: '−1 scout · +taktikinsikt', effectColor: 'success' },
+      optionA: { label: 'Ja', effect: '−1 scout · analys av nästa motståndare', effectColor: 'success' },
       optionB: { label: 'Spara scouten', effect: 'Ingen effekt', effectColor: 'muted' },
     },
     // — Community decisions —
