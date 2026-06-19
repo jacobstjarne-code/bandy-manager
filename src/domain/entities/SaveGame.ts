@@ -308,6 +308,7 @@ export interface SaveGame {
     fromRound: number
     expiresRound: number
     effect: { stat: string; delta: number }
+    mentoredPlayerId?: string   // PC-6: mentor-åtgärden länkar mentorn till en ung spelare (CA-bonus medan aktiv)
   }>
 
   // Sprint 9 — Away trip microdecision (WEAK-019)

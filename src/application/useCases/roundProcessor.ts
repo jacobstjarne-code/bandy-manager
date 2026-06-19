@@ -417,6 +417,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       playedIds,
       starterIds,
       ratings,
+      game.leadershipActions,
+      nextMatchday,
     )
   }
 

@@ -313,9 +313,20 @@ function calculateRoundDevelopment(
   return clamp(baseDelta, -0.3, 0.5)
 }
 
+// PC-6: CA-tillväxtbonus per omgång för en spelare som mentoreras av en lagkamrat
+// (leadership-åtgärden 'mentor'). Bonusen är additiv ovanpå den normala utvecklingen och
+// verkar bara när baseDelta redan är positiv — mentorskap accelererar tillväxt, vänder inte
+// nedgång. Magnitud i nivå med en stark match (wasStarter + högt betyg) så effekten märks
+// över mentor-fönstret utan att skäna kalibreringen.
+const MENTOR_CA_BONUS = 0.06
+
 /**
  * Apply per-round development to managed club players based on match context and training.
  * AI club players are handled separately by developPlayers (generic, every 2 rounds).
+ *
+ * PC-6: om leadershipActions + currentRound skickas in får spelare som är aktivt mentorerade
+ * (en mentor-entry med matchande mentoredPlayerId och expiresRound > currentRound) en additiv
+ * CA-bonus ovanpå sin normala positiva utveckling.
  */
 export function applyRoundDevelopment(
   players: Player[],
@@ -325,7 +336,19 @@ export function applyRoundDevelopment(
   playedPlayerIds: Set<string>,
   starterPlayerIds: Set<string>,
   playerRatings: Record<string, number>,
+  leadershipActions?: Array<{ action: string; expiresRound: number; mentoredPlayerId?: string }>,
+  currentRound?: number,
 ): Player[] {
+  // Vilka spelare är aktivt mentorerade just nu?
+  const mentoredIds = new Set<string>()
+  if (leadershipActions && currentRound !== undefined) {
+    for (const a of leadershipActions) {
+      if (a.action === 'mentor' && a.mentoredPlayerId && a.expiresRound > currentRound) {
+        mentoredIds.add(a.mentoredPlayerId)
+      }
+    }
+  }
+
   return players.map(player => {
     if (player.clubId !== managedClubId) return player
     if (player.isInjured) return player
@@ -338,7 +361,14 @@ export function applyRoundDevelopment(
       trainingIntensity,
     }
 
-    const caChange = calculateRoundDevelopment(player, context)
+    let caChange = calculateRoundDevelopment(player, context)
+    // PC-6: mentorskap accelererar bara tillväxt (additivt när utvecklingen redan är positiv).
+    if (caChange > 0 && mentoredIds.has(player.id)) {
+      const gap = player.potentialAbility - player.currentAbility
+      // Respektera potential-taket: samma dämpning nära PA som basutvecklingen använder.
+      const bonus = gap <= 2 ? MENTOR_CA_BONUS * 0.1 : gap <= 5 ? MENTOR_CA_BONUS * 0.5 : MENTOR_CA_BONUS
+      caChange = Math.min(0.5, caChange + bonus)
+    }
     if (Math.abs(caChange) < 0.001) return player
 
     const newCA = clamp(player.currentAbility + caChange, 15, player.potentialAbility)

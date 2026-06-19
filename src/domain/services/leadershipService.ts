@@ -75,10 +75,21 @@ export function applyLeadershipAction(
         .sort((a, b) => a.age - b.age)[0]
 
       const targetName = youngPlayer ? `${youngPlayer.firstName} ${youngPlayer.lastName}` : 'ett ungt proffs'
+      // PC-6: mentorskapet ska ge en verklig konsekvens — den unge spelaren får en
+      // CA-utvecklingsbonus medan mentorskapet är aktivt (läses av applyRoundDevelopment).
+      // Fönstret är längre än cooldown: mentorskap verkar över 8 omgångar, inte bara 3.
+      const MENTOR_EFFECT_WINDOW = 8
       return {
         playerUpdates: {},
-        feedback: `${player.firstName} tar ${targetName} under sina vingar. Bra för stämningen i omklädningsrummet.`,
-        leadershipEntry: { playerId, action, fromRound: currentRound, expiresRound, effect: { stat: 'mentorship', delta: 1 } },
+        feedback: youngPlayer
+          ? `${player.firstName} tar ${targetName} under sina vingar. Den unge utvecklas snabbare med en rutinare bredvid sig.`
+          : `${player.firstName} vill axla en mentorroll — men det finns ingen ung spelare att ta hand om just nu.`,
+        leadershipEntry: {
+          playerId, action, fromRound: currentRound,
+          expiresRound: currentRound + MENTOR_EFFECT_WINDOW,
+          effect: { stat: 'mentorship', delta: 1 },
+          mentoredPlayerId: youngPlayer?.id,
+        },
       }
     }
 
