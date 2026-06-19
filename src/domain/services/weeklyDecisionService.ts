@@ -23,11 +23,13 @@ export interface WeeklyDecision {
 
 export type WeeklyDecisionEffect =
   | { type: 'cornerSkill'; playerId: string; delta: number }
+  | { type: 'cornerRecovery'; playerId: string; delta: number }
   | { type: 'morale'; playerId: string; delta: number }
   | { type: 'finances'; delta: number }
   | { type: 'supporterMood'; delta: number }
   | { type: 'communityStanding'; delta: number }
   | { type: 'boardPatience'; delta: number }
+  | { type: 'scoutNextOpponent' }
   | { type: 'noop' }
 
 export interface WeeklyDecisionResolution {
@@ -124,7 +126,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'training',
       question: 'Bara tid för ett: extra hörnträning eller matchförberedelse?',
       optionA: { label: 'Hörnor', effect: '+hörnskicklighet', effectColor: 'success' },
-      optionB: { label: '📋 Matchprep', effect: '+positionering', effectColor: 'success' },
+      optionB: { label: '📋 Matchprep', effect: '+hörnförsvar', effectColor: 'success' },
     },
     {
       id: 'scout_opponent_corners',
@@ -235,6 +237,11 @@ export function resolveWeeklyDecision(
   const wearyPlayer = game.players
     .filter(p => p.clubId === game.managedClubId && p.form < 40 && p.position !== PlayerPosition.Goalkeeper)[0]
 
+  // Mest motanfalls-sårbara backen (lägst cornerRecovery) — matchprep-beslutets mål.
+  const weakRecoveryDefender = game.players
+    .filter(p => p.clubId === game.managedClubId && p.position !== PlayerPosition.Goalkeeper)
+    .sort((a, b) => (a.attributes.cornerRecovery ?? 50) - (b.attributes.cornerRecovery ?? 50))[0]
+
   switch (decision.id) {
     case 'corner_extra_training':
       if (choice === 'A' && cornerCandidate)
@@ -272,13 +279,21 @@ export function resolveWeeklyDecision(
     case 'training_corners_vs_matchprep':
       if (choice === 'A' && cornerCandidate)
         return [{ type: 'cornerSkill', playerId: cornerCandidate.id, delta: 2 }]
-      // choice B: small positioning boost — no direct field, use noop
+      // Fynd 11: B = matchprep → hörnförsvar. Höj cornerRecovery på den mest
+      // motanfalls-sårbara backen (matchCore läser cornerRecovery direkt på
+      // post-corner-kontringen). Permanent +2, symmetriskt med A:s +cornerSkill —
+      // INTE en leadershipActions-effekt, för motorn läser inte leadershipActions
+      // under match (skulle bli en no-op).
+      if (choice === 'B' && weakRecoveryDefender)
+        return [{ type: 'cornerRecovery', playerId: weakRecoveryDefender.id, delta: 2 }]
       return [{ type: 'noop' }]
 
     case 'scout_opponent_corners':
-      // No direct field for "tactic insight", use communityStanding as proxy
+      // Fynd 11: A = scouta nästa motståndare. Detaljerad analys är gated bakom
+      // scoutbudget (requestDetailedAnalysis) — beslutet drar en scout och genererar
+      // analysen, som dyker upp på matchförberedelsen. Appliceras i gameFlowActions.
       if (choice === 'A')
-        return [{ type: 'boardPatience', delta: 2 }]
+        return [{ type: 'scoutNextOpponent' }]
       return [{ type: 'noop' }]
 
     case 'ismaskin_offer':

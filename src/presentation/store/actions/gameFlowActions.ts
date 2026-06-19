@@ -6,6 +6,8 @@ import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, type Sea
 import { shouldShowUpptakt } from '../../../application/services/portalEscalationResolver'
 import { clamp } from '../../../domain/utils/clamp'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
+import { generateDetailedAnalysis } from '../../../domain/services/opponentAnalysisService'
+import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 import { RETIREMENT_RESPONSES } from '../../../domain/data/retirementText'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
@@ -388,6 +390,32 @@ export function gameFlowActions(get: Get, set: Set) {
                 ? { ...p, form: Math.max(0, Math.min(100, p.form + effect.delta)) }
                 : p
             ),
+          }
+        } else if (effect.type === 'cornerRecovery') {
+          updatedGame = {
+            ...updatedGame,
+            players: updatedGame.players.map(p =>
+              p.id === effect.playerId
+                ? { ...p, attributes: { ...p.attributes, cornerRecovery: Math.min(100, (p.attributes.cornerRecovery ?? 50) + effect.delta) } }
+                : p
+            ),
+          }
+        } else if (effect.type === 'scoutNextOpponent') {
+          // Fynd 11: drar en scout och genererar detaljerad analys av nästa motståndare
+          // (samma logik som requestDetailedAnalysis). Surfas på matchförberedelsen.
+          const nextFixture = getNextManagedFixture(updatedGame)
+          const oppId = nextFixture
+            ? (nextFixture.homeClubId === updatedGame.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId)
+            : undefined
+          const opponent = oppId ? updatedGame.clubs.find(c => c.id === oppId) : undefined
+          if (opponent && nextFixture && (updatedGame.scoutBudget ?? 0) > 0) {
+            const oppPlayers = updatedGame.players.filter(p => p.clubId === opponent.id)
+            const analysis = generateDetailedAnalysis(opponent, oppPlayers, updatedGame.standings, updatedGame.fixtures, nextFixture.id)
+            updatedGame = {
+              ...updatedGame,
+              scoutBudget: updatedGame.scoutBudget - 1,
+              opponentAnalyses: { ...(updatedGame.opponentAnalyses ?? {}), [opponent.id]: analysis },
+            }
           }
         }
       }
