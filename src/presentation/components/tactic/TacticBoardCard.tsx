@@ -5,7 +5,6 @@ import type { AssistantCoach } from '../../../domain/entities/AssistantCoach'
 import { TacticMentality } from '../../../domain/enums'
 import { getTacticFeel } from '../../../domain/services/chemistryService'
 import { FormationView } from './FormationView'
-import { ChemistryView } from './ChemistryView'
 import { NotesView } from './NotesView'
 
 interface TacticBoardCardProps {
@@ -95,21 +94,15 @@ export function TacticBoardCard({
         </div>
       </div>
 
-      {/* Plan-yta: formation som default, kemi-lager när toggeln är på */}
+      {/* Plan-yta: kemin är ett LAGER på samma plan (toggle), inte en egen vy */}
       <div style={{ padding: '0 12px 4px' }}>
-        {showChemistry ? (
-          <ChemistryView
-            tactic={club.activeTactic}
-            players={squadPlayers}
-            chemistryStats={chemistryStats}
-          />
-        ) : (
-          <FormationView
-            tactic={club.activeTactic}
-            players={squadPlayers}
-            onChange={onTacticChange}
-          />
-        )}
+        <FormationView
+          tactic={club.activeTactic}
+          players={squadPlayers}
+          onChange={onTacticChange}
+          showChemistry={showChemistry}
+          chemistryStats={chemistryStats}
+        />
         {/* Så spelar det — härlett ur spelstil + faktisk kemi */}
         <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 10.5, color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.45, marginTop: 8 }}>
           {feel}
