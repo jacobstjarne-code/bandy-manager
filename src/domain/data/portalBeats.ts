@@ -109,7 +109,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
   {
     id: 'transfer_window_open',
     emoji: '📞',
-    text: 'Fönstret öppet. Telefonen har redan börjat ringa hos någon — bara inte hos er än.',
+    text: 'Transferfönstret öppet. Telefonen har redan börjat ringa hos någon — bara inte hos er än.',
     trigger: (g) => {
       const played = completedLeagueCount(g)
       return played >= 5 && played <= 7

@@ -103,8 +103,8 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       id: 'tifo_contribution',
       category: 'supporter',
       question: `${youth} vill arrangera tifo till nästa hemmamatch. Bidra med 2 000 kr?`,
-      optionA: { label: 'Bidra', effect: '−2 tkr · +hemmabonus', effectColor: 'success' },
-      optionB: { label: 'Neka', effect: '−5 klack-stämning', effectColor: 'danger' },
+      optionA: { label: 'Bidra', effect: '−2 tkr · +supporterstämning', effectColor: 'success' },
+      optionB: { label: 'Neka', effect: '−5 supporterstämning', effectColor: 'danger' },
     },
     {
       id: 'supporter_conflict_mediate',
@@ -118,7 +118,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'supporter',
       question: `Tidningen vill göra ett reportage om ${groupName}. ${leader} säger ja — men frågar om du godkänner.`,
       optionA: { label: 'Tillåt', effect: '+3 kommunstatus', effectColor: 'success' },
-      optionB: { label: 'Neka', effect: 'Journalisten tappar förtroende', effectColor: 'danger' },
+      optionB: { label: 'Neka', effect: '−3 kommunstatus', effectColor: 'danger' },
     },
     // — Training decisions —
     {
@@ -140,7 +140,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       id: 'ismaskin_offer',
       category: 'community',
       question: 'Kommunen erbjuder en begagnad ismaskin till rabatterat pris (15 000 kr).',
-      optionA: { label: 'Köp den', effect: '−15 tkr · +iskvalitet', effectColor: 'success' },
+      optionA: { label: 'Köp den', effect: '−15 tkr · +kommunstatus', effectColor: 'success' },
       optionB: { label: 'Tacka nej', effect: 'Ingen effekt', effectColor: 'muted' },
     },
     {
@@ -175,7 +175,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'player',
       requiredEra: ['survival'],
       question: 'Kassören föreslår lönestopp — inga nya kontrakt under månaden för att täcka underskott.',
-      optionA: { label: 'Godkänn', effect: '+budget · −spelarförtroende', effectColor: 'danger' },
+      optionA: { label: 'Godkänn', effect: '+styrelsens tålamod · −supporterstämning', effectColor: 'danger' },
       optionB: { label: 'Neka', effect: '−boardpatience · spelarna trygga', effectColor: 'muted' },
     },
     {

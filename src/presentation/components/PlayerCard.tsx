@@ -773,7 +773,7 @@ export function PlayerCard({
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {([
-                { id: 'lower_tempo' as LeadershipAction, label: '😮‍💨 Vila nästa match' },
+                { id: 'lower_tempo' as LeadershipAction, label: '😮‍💨 Minska belastningen' },
                 { id: 'mentor' as LeadershipAction, label: '🎓 Sätt som mentor' },
                 { id: 'private_talk' as LeadershipAction, label: '🤫 Privat samtal' },
                 { id: 'public_praise' as LeadershipAction, label: '📣 Offentlig beröm' },

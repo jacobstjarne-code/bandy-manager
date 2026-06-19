@@ -46,8 +46,8 @@ export const EFTERKLANG_ECHO: Record<EfterklangType, string[]> = {
     '{journalist} skrev om det då. Det är inte glömt.',
   ],
   followUp: [
-    'Brevet ligger fortfarande obesvarat i högen.',
-    'Den där frågan hänger kvar. Någon väntar än på svar.',
+    'Det brevet kom från någon som bryr sig på riktigt. Inte alla gör det.',
+    'Den sortens fan som skriver har sett era säsonger. Det märks på varje rad.',
   ],
   boardObjective: [
     'Styrelsens löfte från i höstas hänger kvar i rummet.',
