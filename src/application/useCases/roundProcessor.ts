@@ -27,6 +27,7 @@ import { detectSceneTrigger } from '../../domain/services/sceneTriggerService'
 import { applyPlayerStateUpdates } from './processors/playerStateProcessor'
 import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
+import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { processPlayoffRound } from './processors/playoffProcessor'
 import { processCupRound } from './processors/cupProcessor'
 import { appendFinanceLog } from '../../domain/services/economyService'
@@ -420,6 +421,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       game.leadershipActions,
       nextMatchday,
     )
+
+    // Mentor effect for A-team adepts (P19 is handled in youthProcessor — no overlap)
+    const youthPlayerIds = new Set((game.youthTeam?.players ?? []).map(p => p.id))
+    for (const m of (game.mentorships ?? []).filter(ms => ms.isActive)) {
+      if (youthPlayerIds.has(m.youthPlayerId)) continue
+      const mentor = finalPlayers.find(p => p.id === m.seniorPlayerId)
+      if (!mentor || mentor.form < MENTOR_FORM_THRESHOLD) continue
+      const devBoost = mentor.discipline / 20
+      finalPlayers = finalPlayers.map(p => p.id === m.youthPlayerId
+        ? { ...p, developmentRate: Math.min(100, p.developmentRate + devBoost * 0.1) }
+        : p
+      )
+    }
   }
 
   // A1 — Notisdiet: egna matchresultat skapas INTE i inkorgen.

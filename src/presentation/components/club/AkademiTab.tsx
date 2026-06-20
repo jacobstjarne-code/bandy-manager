@@ -49,7 +49,12 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
   const activeMentorships = (game.mentorships ?? []).filter(m => m.isActive)
   const managedPlayers = game.players.filter(p => p.clubId === club.id)
   const mentorCandidates = managedPlayers.filter(p => p.age >= 25 && p.discipline > 60)
-  const youthForMentor = (youthTeam?.players ?? []).map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (P19)` }))
+  const youthForMentor = [
+    ...(youthTeam?.players ?? []).map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (P19)` })),
+    ...managedPlayers
+      .filter(p => p.age <= 21 && !activeMentorships.some(m => m.youthPlayerId === p.id))
+      .map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (A-lag)` })),
+  ]
 
   const activeLoanDeals = game.loanDeals ?? []
   const loanablePlayers = managedPlayers.filter(p => p.age <= 23 && !p.isOnLoan)
