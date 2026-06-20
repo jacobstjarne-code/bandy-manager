@@ -13,13 +13,16 @@ export function TaktikScreen() {
   const coach = game?.assistantCoach
   const captainPlayerId = game?.captainPlayerId
 
-  const nextOpponentName = (() => {
-    if (!game) return undefined
+  const { nextOpponentName, nextOpponentAnalysis } = (() => {
+    if (!game) return { nextOpponentName: undefined, nextOpponentAnalysis: undefined }
     const nf = getNextManagedFixture(game)
-    if (!nf) return undefined
+    if (!nf) return { nextOpponentName: undefined, nextOpponentAnalysis: undefined }
     const oppId = nf.homeClubId === game.managedClubId ? nf.awayClubId : nf.homeClubId
     const opp = game.clubs.find(c => c.id === oppId)
-    return opp?.shortName ?? opp?.name
+    return {
+      nextOpponentName: opp?.shortName ?? opp?.name,
+      nextOpponentAnalysis: game.opponentAnalyses?.[oppId],
+    }
   })()
 
   if (!game || !club || !coach) {
@@ -71,6 +74,7 @@ export function TaktikScreen() {
           onTacticChange={handleTacticChange}
           matchday={game.currentMatchday}
           nextOpponentName={nextOpponentName}
+          opponentAnalysis={nextOpponentAnalysis}
         />
       </div>
     </div>

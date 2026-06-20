@@ -3,7 +3,8 @@ import type { Player } from '../../../domain/entities/Player'
 import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { AssistantCoach } from '../../../domain/entities/AssistantCoach'
 import { TacticMentality } from '../../../domain/enums'
-import { getTacticFeel } from '../../../domain/services/chemistryService'
+import { getTacticConsequence } from '../../../domain/services/chemistryService'
+import type { OpponentAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { FormationView } from './FormationView'
 import { NotesView } from './NotesView'
 
@@ -16,6 +17,7 @@ interface TacticBoardCardProps {
   onTacticChange: (tactic: Tactic) => void
   matchday?: number
   nextOpponentName?: string
+  opponentAnalysis?: OpponentAnalysis
 }
 
 const SPELSTIL: Array<{ id: TacticMentality; label: string }> = [
@@ -28,13 +30,13 @@ const SPELSTIL: Array<{ id: TacticMentality; label: string }> = [
 // är samma sanningskälla (club.activeTactic) som matchförberedelsen skriver till;
 // kemin är ett lager på planen (toggle), anteckningarna ett kort under.
 export function TacticBoardCard({
-  club, players, coach, captainPlayerId, chemistryStats, onTacticChange, matchday, nextOpponentName,
+  club, players, coach, captainPlayerId, chemistryStats, onTacticChange, matchday, nextOpponentName, opponentAnalysis,
 }: TacticBoardCardProps) {
   const [showChemistry, setShowChemistry] = useState(false)
 
   const squadPlayers = players.filter(p => p.clubId === club.id)
   const mentality = club.activeTactic.mentality
-  const feel = getTacticFeel(club.activeTactic, squadPlayers, chemistryStats)
+  const feel = getTacticConsequence(club.activeTactic, squadPlayers, chemistryStats, opponentAnalysis, matchday ?? 0)
 
   function setMentality(m: TacticMentality) {
     onTacticChange({ ...club.activeTactic, mentality: m })

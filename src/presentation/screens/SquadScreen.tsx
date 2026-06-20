@@ -416,13 +416,16 @@ export function SquadScreen() {
     [game?.currentMatchday, game?.currentSeason],
   )
 
-  const nextOpponentName = useMemo(() => {
-    if (!game) return undefined
+  const { nextOpponentName, nextOpponentAnalysis } = useMemo(() => {
+    if (!game) return { nextOpponentName: undefined, nextOpponentAnalysis: undefined }
     const nf = getNextManagedFixture(game)
-    if (!nf) return undefined
+    if (!nf) return { nextOpponentName: undefined, nextOpponentAnalysis: undefined }
     const oppId = nf.homeClubId === game.managedClubId ? nf.awayClubId : nf.homeClubId
     const opp = game.clubs.find(c => c.id === oppId)
-    return opp?.shortName ?? opp?.name
+    return {
+      nextOpponentName: opp?.shortName ?? opp?.name,
+      nextOpponentAnalysis: game.opponentAnalyses?.[oppId],
+    }
   }, [game])
 
   function handleTalk(playerId: string, choice: 'encourage' | 'demand' | 'future') {
@@ -521,6 +524,7 @@ export function SquadScreen() {
             onTacticChange={(tactic: Tactic) => updateTactic(tactic)}
             matchday={game.currentMatchday}
             nextOpponentName={nextOpponentName}
+            opponentAnalysis={nextOpponentAnalysis}
           />
         </div>
       )}

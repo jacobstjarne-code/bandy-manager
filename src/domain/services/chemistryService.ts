@@ -1,7 +1,8 @@
 import type { Player } from '../entities/Player'
 import type { FormationSlot } from '../entities/Formation'
 import type { Tactic } from '../entities/Club'
-import { TacticMentality } from '../enums'
+import type { OpponentAnalysis } from './opponentAnalysisService'
+import { TacticMentality, TacticPress } from '../enums'
 
 export interface PairChemistry {
   playerId1: string
@@ -160,4 +161,58 @@ export function getTacticFeel(
     return `${mentalityPart}. Inspelta par håller ihop laget.`
   }
   return `${mentalityPart}. Truppen är ny ihop — kemin får växa fram.`
+}
+
+function formationBias(formation: string | undefined): 'attack' | 'defense' | null {
+  if (formation === '2-3-2-3') return 'attack'
+  if (formation === '4-3-3' || formation === '4-2-4') return 'defense'
+  return null
+}
+
+// Wrapper around getTacticFeel that adds a motrelativ konsekvensrad when a clear
+// tactic/opponent edge exists. Falls back to getTacticFeel (silence rule) when
+// no edge is detectable. Seed picks deterministically between pool strings.
+export function getTacticConsequence(
+  tactic: Tactic,
+  players: Player[],
+  chemistryStats: Record<string, number>,
+  opponent?: OpponentAnalysis,
+  seed = 0,
+): string {
+  if (opponent) {
+    const isOffensive = tactic.mentality === TacticMentality.Offensive
+    const isDefensive = tactic.mentality === TacticMentality.Defensive
+    const isHighPress = tactic.press === TacticPress.High
+    const hasWeakDefense = opponent.weaknesses.includes('Sårbart försvar')
+    const hasWeakMidfield = opponent.weaknesses.includes('Svag halvlinje')
+    const hasStrongAttack = opponent.strengths.includes('Stark anfallslinje')
+
+    if ((isOffensive || isHighPress) && hasWeakDefense) {
+      const pool = [
+        'Offensivt mot deras sårbara försvar — rätt match att trycka på.',
+        'De läcker bakåt. Spelar ni framåt kan det lossna tidigt.',
+      ]
+      return pool[seed % pool.length]
+    }
+    if (isHighPress && hasWeakMidfield) {
+      return 'Hög press mot deras svaga mittfält — där vinns matchen om någonstans.'
+    }
+    if (isDefensive && hasStrongAttack) {
+      return 'Ni sitter djupt mot deras farliga forwards. Klokt — men ni måste ta era få lägen.'
+    }
+    if (isOffensive && hasStrongAttack) {
+      return 'Öppet mot deras anfall blir en målrik kväll åt båda håll. Säkert? Nej. Kul? Ja.'
+    }
+    const ownBias = formationBias(tactic.formation)
+    const oppBias = formationBias(opponent.formation)
+    if (ownBias !== null && oppBias !== null && ownBias !== oppBias) {
+      const ownF = tactic.formation ?? ''
+      const oppF = opponent.formation ?? ''
+      if (ownBias === 'attack') {
+        return `${ownF} mot deras ${oppF}: fler ytor framåt — fler omställningar.`
+      }
+      return `${ownF} mot deras ${oppF}: tryggare bakåt — färre omställningar.`
+    }
+  }
+  return getTacticFeel(tactic, players, chemistryStats)
 }

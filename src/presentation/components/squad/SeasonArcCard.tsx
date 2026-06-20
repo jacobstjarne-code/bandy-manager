@@ -1,5 +1,6 @@
 import { useGameStore } from '../../store/gameStore'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { Player } from '../../../domain/entities/Player'
 import {
   getEffectiveMode,
   getReaction,
@@ -9,6 +10,57 @@ import {
 import type { PeriodisationMode } from '../../../domain/services/periodisationService'
 import { positionShort } from '../../utils/formatters'
 import { PlayerPosition } from '../../../domain/enums'
+
+export function getPhaseConsequence(
+  mode: PeriodisationMode,
+  starters: Player[],
+  roundsInMode: number,
+  currentAvg: number,
+): string | null {
+  const proj = projectSeasonForm(currentAvg, mode, roundsInMode)
+  const isFlat = Math.abs((proj[proj.length - 1] ?? currentAvg) - currentAvg) < 3
+
+  const warnPlayers = starters.filter(p => {
+    const eff = getEffectiveMode(p, mode)
+    const r = getReaction(p, eff)
+    return r?.type === 'warn' || r?.type === 'rust'
+  })
+
+  if (mode === 'hall') {
+    if (isFlat && warnPlayers.length === 0) return null
+    return 'Håll håller läget. Ingen vinst, ingen kostnad — rätt mellan tunga matcher.'
+  }
+
+  if (mode === 'toppa') {
+    const warnPlayer = starters.find(p => p.age >= 33)
+    if (warnPlayer) {
+      return `Toppa nu: tre matcher upp, sen faller formen. ${warnPlayer.firstName} (${warnPlayer.age}) orkar inte spiken.`
+    }
+    return 'Toppa nu: tre matcher upp, sen faller formen.'
+  }
+
+  if (mode === 'bygg') {
+    const warnPlayer = starters.find(p => p.age >= 33 || p.attributes.stamina < 40)
+    if (warnPlayer) {
+      return `Bygg lyfter formen sakta — men kostar fysik och ökar skaderisken. ${warnPlayer.firstName} (${warnPlayer.age}) tål det inte.`
+    }
+    const youngCount = starters.filter(p => p.age <= 20).length
+    if (youngCount >= 3) {
+      return 'Bygg passar en ung trupp. De yngsta lyfter snabbast.'
+    }
+    return 'Bygg lyfter formen sakta — men kostar fysik och ökar skaderisken.'
+  }
+
+  if (mode === 'vila') {
+    const warnPlayer = starters.find(p => p.age <= 20 || (p.sharpness >= 75 && p.currentAbility >= 70))
+    if (warnPlayer) {
+      return `Vila ger ben tillbaka men formen sjunker. ${warnPlayer.firstName} rostar av att stå still.`
+    }
+    return 'Vila ger ben tillbaka men formen sjunker.'
+  }
+
+  return null
+}
 
 const MODE_LABELS: Record<PeriodisationMode, string> = {
   bygg: 'Bygg', hall: 'Håll', toppa: 'Toppa', vila: 'Vila',
@@ -153,6 +205,15 @@ export function SeasonArcCard({ game }: Props) {
 
   const warnCount = reactingPlayers.filter(r => r.reaction.type === 'warn' && !r.hasOverride).length
 
+  // Consequence line: wired to getPhaseConsequence using starters from active lineup
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const lineupSlots = managedClub?.activeTactic?.lineupSlots ?? {}
+  const starterIds = new Set(Object.values(lineupSlots).filter((id): id is string => !!id))
+  const starters = managedPlayers.filter(p => starterIds.has(p.id))
+  const historyEntries = game.teamFitnessHistory ?? []
+  const currentAvg = historyEntries.length > 0 ? (historyEntries[historyEntries.length - 1].avgSeasonForm ?? 60) : 60
+  const consequenceLine = getPhaseConsequence(mode, starters.length > 0 ? starters : managedPlayers.slice(0, 11), roundsInMode, currentAvg)
+
   return (
     <>
       {/* ── Säsongsbåge card ── */}
@@ -219,6 +280,15 @@ export function SeasonArcCard({ game }: Props) {
             </button>
           ))}
         </div>
+
+        {/* Konsekvensrad — en mening om vad valet faktiskt gör, eller ingenting */}
+        {consequenceLine && (
+          <div style={{ padding: '0 13px 12px' }}>
+            <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.45, margin: 0 }}>
+              {consequenceLine}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ── Reagerar på läget ── */}
