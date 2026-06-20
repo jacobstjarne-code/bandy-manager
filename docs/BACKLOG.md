@@ -297,7 +297,7 @@ Systemkartan (`SYSTEMKARTA_DEL1_2026-06-12.md`, 13 kartfynd) spårades separat f
 
 | # | Vad | Plats |
 |---|---|---|
-| E-SC1 | **Delad seedad picker.** `pickVariant` (specialDateService, SpectatorPrimary) + inline `seed % pool.length` (6 datafiler + eventProcessor:s `pickByIndex`) → `seededPick` från domain/utils/random. | domain/utils/random.ts |
+| ~~E-SC1~~ | ~~Delad seedad picker~~ | **LÖST `a9077d4e` 2026-06-20** — 6 datafiler + eventProcessor:s `pickByIndex` → `seededPick`. Kvar: `pickVariant` i specialDateService (annan signatur, eget idiom) + SpectatorPrimary (lokal, trivial). |
 | E-SC2 | **Eskalering recompute per render.** `getEscalationSubState`/`computeManagedStanding` körs ~3–4× per Portal-render (PortalUpptakt + NextMatchPrimary + isCtaWarm). Billiga ops (12-rads-loop) men kan tråda ett beräknat värde via props. `getPlayoffSeriesContext` dubbelanropas i NextMatchPrimary. | PortalScreen-trädet |
 | ~~E-SC3~~ | ~~trendStroke last-vs-first~~ | **LÖST 2026-06-20** — EkonomiTab + StillnessSection använder redan `seasonTrendStroke`. |
 

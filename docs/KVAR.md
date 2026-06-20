@@ -72,8 +72,8 @@ Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 →
 - E-SC3 verifierad KLAR (EkonomiTab använder `seasonTrendStroke`, StillnessSection importerar + anropar `seasonTrendStroke`).
 
 **Nästa:**
-- E-SC1: migrera `pool[seed % pool.length]`-mönstret (6 datafiler + eventProcessor:s `pickByIndex`) → `seededPick` från domain/utils/random.
-- D3 inline-stratum-migreringe (§3 FÖRSONINGSSPRINTEN): pill-CTA/positionLabel/emoji-svep/tomma kort/delade primitiver/LED.
+- E-SC1 LÖST `a9077d4e` — 6 datafiler + eventProcessor:s `pickByIndex` → `seededPick`. (pickVariant i specialDateService/SpectatorPrimary har annan signatur — separat pass vid behov.)
+- D3 inline-stratum-migreringen (§3 FÖRSONINGSSPRINTEN): pill-CTA/positionLabel/emoji-svep/tomma kort/delade primitiver/LED.
 
 ---
 
