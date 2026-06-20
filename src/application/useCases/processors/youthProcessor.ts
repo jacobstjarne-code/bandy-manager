@@ -5,6 +5,7 @@ import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { InboxItemType } from '../../../domain/enums'
 import { simulateYouthMatch } from '../../../domain/services/academyService'
 import { mulberry32 } from '../../../domain/utils/random'
+import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConstants'
 
 export interface YouthProcessorResult {
   updatedYouthTeam: YouthTeam | undefined
@@ -82,7 +83,7 @@ export function processYouth(
     const mentor = availabilityUpdatedPlayers.find(p => p.id === m.seniorPlayerId)
     if (!mentor) continue
     const youthIdx = mentorUpdatedYouthPlayers.findIndex(p => p.id === m.youthPlayerId)
-    if (youthIdx >= 0 && mentor.form >= 40) {
+    if (youthIdx >= 0 && mentor.form >= MENTOR_FORM_THRESHOLD) {
       const devBoost = mentor.discipline / 20
       mentorUpdatedYouthPlayers = mentorUpdatedYouthPlayers.map((p, i) => i === youthIdx ? {
         ...p,

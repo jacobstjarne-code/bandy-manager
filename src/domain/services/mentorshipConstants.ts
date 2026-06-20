@@ -1,0 +1,1 @@
+export const MENTOR_FORM_THRESHOLD = 40

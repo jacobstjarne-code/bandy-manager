@@ -12,6 +12,8 @@ import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
 import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
 import { formatSalary, positionShort } from '../utils/formatters'
+import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
+import { mentorshipBondAdeptInForm, mentorshipBondAdeptResting } from '../../domain/data/mentorshipStrings'
 
 export interface PlayerCardProps {
   player: Player
@@ -308,6 +310,13 @@ export function PlayerCard({
   const canLeadership = (action: LeadershipAction) =>
     leadershipAvailable && canUseLeadershipAction(game!, player.id, action, currentRound)
 
+  const asAdept = game
+    ? (game.mentorships ?? []).find(m => m.youthPlayerId === player.id && m.isActive)
+    : undefined
+  const asMentor = game
+    ? (game.mentorships ?? []).filter(m => m.seniorPlayerId === player.id && m.isActive)
+    : []
+
   return (
     <div
       onClick={onClick}
@@ -373,6 +382,7 @@ export function PlayerCard({
                 {player.trait === 'joker' && <span className="tag" style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>🎭 Joker</span>}
                 {player.trait === 'lokal' && <span className="tag" style={{ borderColor: 'var(--ice)', color: 'var(--ice)' }}>🏘️ Lokal</span>}
                 {player.trait === 'ledare' && <span className="tag" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>🦁 Ledare</span>}
+                {asMentor.length > 0 && <span className="tag" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>🎓 Mentor</span>}
               </div>
             )}
           </div>
@@ -729,6 +739,57 @@ export function PlayerCard({
         <div style={SECTION_STYLE}>
           <p style={{ ...LABEL_STYLE, marginBottom: 6 }}>🤝 RELATIONER</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
+            {/* Mentor-band — adept-raden */}
+            {asAdept && game && (() => {
+              const mentor = game.players.find(p => p.id === asAdept.seniorPlayerId)
+              if (!mentor) return null
+              const mentorName = `${mentor.firstName} ${mentor.lastName}`
+              const isActive = mentor.form >= MENTOR_FORM_THRESHOLD
+              return (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>🎓</span>
+                    <span style={{ color: 'var(--text-secondary)', flex: 1 }}>
+                      Mentoreras av <strong>{mentorName}</strong> · sedan omg {asAdept.startRound}
+                    </span>
+                    <span className="tag" style={{ borderColor: isActive ? 'var(--success)' : 'var(--ice)', color: isActive ? 'var(--success)' : 'var(--ice)', fontSize: 9 }}>
+                      {isActive ? 'Aktiv' : 'Vilar'}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 10, fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-secondary)', marginTop: 2, marginLeft: 16, lineHeight: 1.4 }}>
+                    {isActive ? mentorshipBondAdeptInForm() : mentorshipBondAdeptResting(mentorName)}
+                  </p>
+                </div>
+              )
+            })()}
+            {/* Mentor-band — mentor-raden */}
+            {asMentor.length > 0 && game && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 1 }}>🎓</span>
+                  <div style={{ flex: 1 }}>
+                    {asMentor.map(m => {
+                      const adept = (game.youthTeam?.players ?? []).find(p => p.id === m.youthPlayerId)
+                        ?? game.players.find(p => p.id === m.youthPlayerId)
+                      const adeptName = adept && 'firstName' in adept
+                        ? `${(adept as { firstName: string; lastName: string }).firstName} ${(adept as { firstName: string; lastName: string }).lastName}`
+                        : '?'
+                      const isActive = player.form >= MENTOR_FORM_THRESHOLD
+                      return (
+                        <div key={m.youthPlayerId} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                          <span style={{ color: 'var(--text-secondary)', flex: 1 }}>
+                            Mentor åt <strong>{adeptName}</strong>
+                          </span>
+                          <span className="tag" style={{ borderColor: isActive ? 'var(--success)' : 'var(--ice)', color: isActive ? 'var(--success)' : 'var(--ice)', fontSize: 9 }}>
+                            {isActive ? 'Aktiv' : 'Vilar'}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
             {lastTalked !== -Infinity && (() => {
               const roundsSince = currentRound - Number(lastTalked)
               return (

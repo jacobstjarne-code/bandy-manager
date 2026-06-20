@@ -4,6 +4,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
 import { positionShort } from '../../utils/formatters'
 import { mentorshipPreview, mentorshipActiveInForm, mentorshipActiveOutOfForm } from '../../../domain/data/mentorshipStrings'
+import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConstants'
 
 const LOAN_CLUBS = ['Skutskärs IF', 'Tillberga IK', 'Bollnäs GIF', 'Delsbo IF', 'Norrby IF']
 
@@ -210,15 +211,22 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
                 ?? managedPlayers.find(p => p.id === m.youthPlayerId)
               if (!mentor || !youth) return null
               const youthName = 'firstName' in youth ? `${youth.firstName} ${youth.lastName}` : ''
-              const consequenceText = mentor.form >= 40
+              const isActive = mentor.form >= MENTOR_FORM_THRESHOLD
+              const consequenceText = isActive
                 ? mentorshipActiveInForm(mentor.firstName + ' ' + mentor.lastName, mentor.discipline, youthName)
                 : mentorshipActiveOutOfForm(mentor.firstName + ' ' + mentor.lastName, youthName)
               return (
                 <div key={m.youthPlayerId} style={{ padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 13 }}>
-                      {mentor.firstName} {mentor.lastName} → {youthName}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                      <span style={{ fontSize: 13 }}>
+                        {mentor.firstName} {mentor.lastName} → {youthName}
+                      </span>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>· sedan omg {m.startRound}</span>
+                      <span className="tag" style={{ borderColor: isActive ? 'var(--success)' : 'var(--ice)', color: isActive ? 'var(--success)' : 'var(--ice)', fontSize: 9 }}>
+                        {isActive ? 'Aktiv' : 'Vilar'}
+                      </span>
+                    </div>
                     <button
                       onClick={() => {
                         removeMentor(m.youthPlayerId)
