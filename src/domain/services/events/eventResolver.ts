@@ -698,28 +698,16 @@ export function resolveEvent(
               ...(update.cooldownUntilSeason !== undefined && { cooldownUntilSeason: update.cooldownUntilSeason }),
             }
           } else break
+          const baseFacState = updatedGame.facilityState ?? { builtNodeIds: [] }
+          const shouldStartBuild = newTrial.stage === 'bygge'
+            && !baseFacState.activeProject
+            && !baseFacState.builtNodeIds.includes('matchhall')
+          const resolvedFacState = shouldStartBuild
+            ? startFacilityBuild('matchhall', baseFacState, updatedGame.currentMatchday)
+            : baseFacState
           updatedGame = {
             ...updatedGame,
-            facilityState: {
-              ...(updatedGame.facilityState ?? { builtNodeIds: [] }),
-              hallTrial: newTrial,
-            },
-          }
-          // Led A — starta facility-bygget när förhandlingen ger klartecken
-          if (
-            newTrial.stage === 'bygge'
-            && !updatedGame.facilityState?.activeProject
-            && !(updatedGame.facilityState?.builtNodeIds ?? []).includes('matchhall')
-          ) {
-            const newFacState = startFacilityBuild(
-              'matchhall',
-              updatedGame.facilityState ?? { builtNodeIds: [] },
-              updatedGame.currentMatchday,
-            )
-            updatedGame = {
-              ...updatedGame,
-              facilityState: { ...newFacState, hallTrial: newTrial },
-            }
+            facilityState: { ...resolvedFacState, hallTrial: newTrial },
           }
           // Avbryta-val: liten klackMood-vinst ("han lyssnade")
           if (update.selfNedlagd && updatedGame.supporterGroup) {

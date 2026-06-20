@@ -164,6 +164,7 @@ export function advanceFacilityState(
   }
   const def = FACILITY_NODE_DEFS.find(d => d.id === activeProject.nodeId)
   const newState: FacilityState = {
+    ...state,
     builtNodeIds: [...state.builtNodeIds, activeProject.nodeId],
     activeProject: undefined,
     lastCompleted: { nodeId: activeProject.nodeId, matchday: currentMatchday },

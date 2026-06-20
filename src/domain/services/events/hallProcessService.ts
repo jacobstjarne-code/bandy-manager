@@ -17,6 +17,7 @@ import {
   PROVNING_EVENT_FORDYRING,
 } from '../../data/hallProvningData'
 import { getRivalry } from '../../data/rivalries'
+import { clamp } from '../../utils/clamp'
 
 // ── Trigger ───────────────────────────────────────────────────────────────
 
@@ -47,7 +48,7 @@ function calcInitialSupport(game: SaveGame, prevSupport?: number): number {
   const klackMood = game.supporterGroup?.mood ?? 50
   const puls = game.communityStanding ?? 50
   const raw = 40 + (klackMood - 50) * 0.4 + (puls - 50) * 0.3
-  return Math.round(Math.max(15, Math.min(70, raw)))
+  return Math.round(clamp(raw, 15, 70))
 }
 
 // ── Krav-check (beräknas live, lagras ej) ────────────────────────────────
@@ -145,7 +146,7 @@ function buildForankringEvent(
   // Resolution at stageStartedRound + 10
   if (currentRound >= stageStartedRound + 10 && !alreadyQueued.has(resId)) {
     const passiveDelta = calcPassiveSupportDelta(game, trial, currentRound)
-    const finalSupport = Math.max(0, Math.min(100, (trial.support ?? 50) + passiveDelta))
+    const finalSupport = clamp((trial.support ?? 50) + passiveDelta, 0, 100)
 
     let nextStage: HallTrialStage
     let cooldown: number | undefined
@@ -164,9 +165,12 @@ function buildForankringEvent(
       body = 'Hallfrågan föll. Birger bjöd på kaffe efteråt. Han var storsint nog att inte le.'
     }
 
-    const payload: Record<string, unknown> = { stage: nextStage, supportDelta: passiveDelta }
-    if (cooldown !== undefined) payload.cooldownUntilSeason = cooldown
-    if (nextStage === 'krav') payload.stageStartedRound = currentRound
+    const payload = {
+      stage: nextStage,
+      supportDelta: passiveDelta,
+      ...(cooldown !== undefined && { cooldownUntilSeason: cooldown }),
+      ...(nextStage === 'krav' && { stageStartedRound: currentRound }),
+    }
 
     return {
       id: resId,
@@ -311,9 +315,8 @@ function buildForhandlingEvent(
         ],
         resolved: false,
       }
-    }
-    // Ingen patron och kommunvägen inte löst — avsluta
-    if (!activePatron && !alreadyQueued.has(fhNejId)) {
+    } else if (!alreadyQueued.has(fhNejId)) {
+      // Ingen patron och kommunvägen inte löst — avsluta
       return {
         id: fhNejId,
         type: 'hallProcess',
