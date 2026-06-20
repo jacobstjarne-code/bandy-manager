@@ -29,3 +29,17 @@ export function mentorshipActiveInForm(mentorName: string, disciplin: number, ad
 export function mentorshipActiveOutOfForm(mentorName: string, adeptName: string): string {
   return `${mentorName} är för dåligt däckad själv för att föregå med exempel just nu. ${adeptName} står stilla tills formen kommer tillbaka.`
 }
+
+// ── Spelarkort, RELATIONER-bond (kortare än AkademiTabs konsekvensrad) ──
+// Adept-sidan: "Mentoreras av {X} · sedan omg {startRound}" + en av dessa. Framing
+// är ALLTID "sedan omg N", aldrig nedräkning — Mentorship bär startRound, inte expiresRound.
+
+/** Adeptens kort, mentorn i form (båndet verkar). Namnlös — raden ovanför namnger mentorn. */
+export function mentorshipBondAdeptInForm(): string {
+  return 'Växer snabbare med en rutinare bredvid sig.'
+}
+
+/** Adeptens kort, mentorn UR form (<40) — vilande-tillståndet gjort läsbart. */
+export function mentorshipBondAdeptResting(mentorName: string): string {
+  return `${mentorName} är i svacka — formen för låg för att leda. Växten pausar tills han hittar tillbaka.`
+}
