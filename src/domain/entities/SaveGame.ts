@@ -66,6 +66,7 @@ export interface SaveGame {
   // Scene-system (SPEC_SCENES_FAS_1 + SPEC_KAFFERUMMET_FAS_1)
   pendingScene?: PendingScene          // Sätts av sceneTriggerService
   shownScenes?: SceneId[]              // Permanent historik (gäller ej recurring coffee_room)
+  valetShownSeason?: number            // B1 — säsong då Valet-ceremonin visades (engångs/säsong, idiom som upptaktPhaseMarkSeenSeason). shownScenes duger ej — Valet är recurring per säsong från säsong 2.
   sceneChoices?: Record<string, string> // Spelarens val per sceneId
   lastCoffeeSceneRound?: number        // Round när senaste coffee_room visades
   lastCoffeeSceneIndices?: number[]    // B9 T1 — index i GENERIC_EXCHANGES som visades senast (undviks i nästa scen)
