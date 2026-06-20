@@ -1,5 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { ActiveAnniversary } from '../services/clubMemoryService'
+import { seededPick } from '../utils/random'
 
 interface AnniversaryMarkCopy {
   eyebrow: string
@@ -53,7 +54,7 @@ export function pickAnniversaryMarkCopy(
   if (pool.length === 0) return FALLBACK
 
   const seed = echo.originalSeason + echo.matchday + game.managedClubId.charCodeAt(0)
-  const picked = pool[seed % pool.length]
+  const picked = seededPick(pool, seed)
 
   return {
     eyebrow: `⬩ ${yearLabel(echo.yearsAgo)} ⬩`,

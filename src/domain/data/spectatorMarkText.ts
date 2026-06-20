@@ -1,5 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { isManagedClubSpectator } from './seasonPhases'
+import { seededPick } from '../utils/random'
 
 interface SpectatorMarkCopy {
   eyebrow: string
@@ -63,5 +64,5 @@ export function pickSpectatorMarkCopy(game: SaveGame): SpectatorMarkCopy {
 
   const pool = managedInBracket ? VARIANTS_ELIMINATED : VARIANTS_NEVER_IN_PLAYOFF
   const seed = game.currentSeason + game.managedClubId.charCodeAt(0)
-  return pool[seed % pool.length]
+  return seededPick(pool, seed)
 }

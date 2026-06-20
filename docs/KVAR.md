@@ -62,6 +62,21 @@ Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 →
 
 ---
 
+## AKTUELLT LÄGE (2026-06-20) — Konsekvensraden + backlog-rensning
+
+**Klart (`b2cfa121`..`f3785368`):**
+- Konsekvensraden Surface A+B (Förbättring 5): `getTacticConsequence` + `getPhaseConsequence`, 13 tester, 1188/1188 gröna.
+- formatCurrency residual (Förb 2): borttagen från formatters.ts + migrerad i TransfersScreen/SeasonSummaryScreen/EkonomiTab (`58b5d7ce`).
+- KF9b: 10 Lager 2-konstanter ur eventProcessor → `eventProcessorStrings.ts` (`e3a1025a`).
+- KF7 verifierad KLAR (seasonEndProcessor:1173–1181 befintlig gallring), KF11 verifierad KLAR (kommentar i matchSimProcessor:310), KF12 verifierad KLAR (NODE_ENV-gate).
+- E-SC3 verifierad KLAR (EkonomiTab använder `seasonTrendStroke`, StillnessSection importerar + anropar `seasonTrendStroke`).
+
+**Nästa:**
+- E-SC1: migrera `pool[seed % pool.length]`-mönstret (6 datafiler + eventProcessor:s `pickByIndex`) → `seededPick` från domain/utils/random.
+- D3 inline-stratum-migreringe (§3 FÖRSONINGSSPRINTEN): pill-CTA/positionLabel/emoji-svep/tomma kort/delade primitiver/LED.
+
+---
+
 
 
 Full handover: `docs/HANDOVER_2026-06-18.md`. Order (1–15): `docs/CODE_DESIGN_ORDER_SPELKANSLE_PLAYTEST_2026-06-18.md`.

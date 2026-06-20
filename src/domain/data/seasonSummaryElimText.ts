@@ -6,6 +6,8 @@
  * inget melodrama. Template-variabler {motståndare} och {season}.
  */
 
+import { seededPick } from '../utils/random'
+
 export type SeasonEliminationContext = 'kf' | 'sf' | 'smf' | 'no_playoff'
 
 interface SeasonElimVariant {
@@ -57,5 +59,5 @@ export function pickSeasonElimText(
 ): string {
   const pool = SEASON_SUMMARY_ELIM_TEXT[context]
   const seed = season + clubId.charCodeAt(0)
-  return pool[seed % pool.length].body
+  return seededPick(pool, seed).body
 }

@@ -1,4 +1,5 @@
 import type { ActiveAnniversary } from '../services/clubMemoryService'
+import { seededPick } from '../utils/random'
 
 /**
  * Klack-banderol vid big eko. Kort, högt, från läktaren.
@@ -29,7 +30,7 @@ export function pickAnniversaryKlack(echo: ActiveAnniversary): string {
     NEUTRAL_KLACK
 
   const seed = echo.originalSeason + echo.matchday + echo.yearsAgo
-  return pool[seed % pool.length]
+  return seededPick(pool, seed)
 }
 
 // matchCore plockar direkt med rand() — inga template-vars kan resolvas där.

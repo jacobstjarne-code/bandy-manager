@@ -1,4 +1,5 @@
 import type { ActiveAnniversary } from '../services/clubMemoryService'
+import { seededPick } from '../utils/random'
 
 /**
  * Kafferum-rader när ett eko är aktivt. En mening + datum-känsla.
@@ -35,7 +36,7 @@ export function pickAnniversaryKafferum(echo: ActiveAnniversary): string {
     NEUTRAL_KAFFERUM
 
   const seed = echo.originalSeason + echo.matchday
-  return pool[seed % pool.length]
+  return seededPick(pool, seed)
 }
 
 // coffeeRoomService importerar ANNIVERSARY_KAFFERUM som 4-tupel-array

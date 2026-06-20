@@ -21,6 +21,7 @@ import {
   MECENAT_WITHDRAWAL_TEXT,
   MECENAT_WITHDRAWAL_FALLBACK,
 } from '../../../domain/data/eventProcessorStrings'
+import { seededPick } from '../../../domain/utils/random'
 
 export interface EventProcessorResult {
   gameEvents: GameEvent[]
@@ -37,9 +38,6 @@ export interface EventProcessorResult {
 }
 
 
-function pickByIndex<T>(arr: T[], seed: number): T {
-  return arr[seed % arr.length]
-}
 
 function fillL2Tokens(text: string, tokens: Record<string, string>): string {
   let result = text
@@ -173,7 +171,7 @@ export function processGameEvents(
 
         const withdrawalTemplate =
           MECENAT_WITHDRAWAL_TEXT[mec.personality] ??
-          pickByIndex(MECENAT_WITHDRAWAL_FALLBACK, game.currentSeason)
+          seededPick(MECENAT_WITHDRAWAL_FALLBACK, game.currentSeason)
         const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'Klubben'
         const withdrawalTitle = fillL2Tokens(withdrawalTemplate.title, { MECENAT: mec.name, KLUBB: clubName })
         const withdrawalBody = fillL2Tokens(withdrawalTemplate.body, { MECENAT: mec.name, KLUBB: clubName })
@@ -220,7 +218,7 @@ export function processGameEvents(
         wageBudgetWarningSent = true
         const warnId = `inbox_wage_overrun_warn_${game.currentSeason}`
         if (!game.inbox.some(i => i.id === warnId)) {
-          const wt = pickByIndex(WAGE_OVERRUN_WARNING_TEXT, game.currentSeason)
+          const wt = seededPick(WAGE_OVERRUN_WARNING_TEXT, game.currentSeason)
           inboxItems.push({
             id: warnId,
             date: game.currentDate,
@@ -235,7 +233,7 @@ export function processGameEvents(
       if (wageBudgetOverrunRounds >= 10) {
         const deductId = `inbox_wage_deduct_${game.currentSeason}`
         if (!game.inbox.some(i => i.id === deductId)) {
-          const dt = pickByIndex(WAGE_OVERRUN_DEDUCTION_TEXT, game.currentSeason + 1)
+          const dt = seededPick(WAGE_OVERRUN_DEDUCTION_TEXT, game.currentSeason + 1)
           inboxItems.push({
             id: deductId,
             date: game.currentDate,
@@ -261,7 +259,7 @@ export function processGameEvents(
   if (triggerRiskyOffer) {
     riskySponsorOfferSentThisSeason = game.currentSeason
     const offerId = `risky_sponsor_${game.currentSeason}_${nextMatchday}`
-    const offerVariant = pickByIndex(RISKY_SPONSOR_OFFERS, game.currentSeason + nextMatchday)
+    const offerVariant = seededPick(RISKY_SPONSOR_OFFERS, game.currentSeason + nextMatchday)
     const offerClubName = managedClub?.name ?? 'Klubben'
     const riskySponsor = {
       id: offerId,

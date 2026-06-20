@@ -29,6 +29,7 @@ import type { Fixture } from '../../entities/Fixture'
 import type { MatchWeather } from '../../entities/Weather'
 import type { CoachPersonality } from '../../entities/AssistantCoach'
 import { getConditionLabel } from '../../services/weatherService'
+import { seededPick } from '../../utils/random'
 
 export type FinalTier = 'gold' | 'copper'  // gold = SM-final, copper = kvarts/semi
 
@@ -115,7 +116,7 @@ export function getFinalIntroScene(
   const personality: CoachPersonality = coach?.personality ?? 'calm'
   const pool = KEYLINE_POOL[personality]
   const seed = fixture.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  const quote = pool[seed % pool.length]
+  const quote = seededPick(pool, seed)
   const speaker = coach ? `${coach.name} · Assisterande tränare` : 'Assisterande tränaren'
 
   return {
