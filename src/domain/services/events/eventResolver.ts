@@ -5,6 +5,7 @@ import type { DinnerScene } from '../mecenatDinnerService'
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
 import { applyFinanceChange } from '../economyService'
+import { startFacilityBuild } from '../facilityService'
 import { recordInteraction, recordPressRefusal, generateCriticalArticle } from '../journalistService'
 import { pickCSPressPublishedQuote, buildCSPressMemoryEntry } from '../../data/csPressEventText'
 import type { PressChoice } from '../../data/csPressEventText'
@@ -703,6 +704,22 @@ export function resolveEvent(
               ...(updatedGame.facilityState ?? { builtNodeIds: [] }),
               hallTrial: newTrial,
             },
+          }
+          // Led A — starta facility-bygget när förhandlingen ger klartecken
+          if (
+            newTrial.stage === 'bygge'
+            && !updatedGame.facilityState?.activeProject
+            && !(updatedGame.facilityState?.builtNodeIds ?? []).includes('matchhall')
+          ) {
+            const newFacState = startFacilityBuild(
+              'matchhall',
+              updatedGame.facilityState ?? { builtNodeIds: [] },
+              updatedGame.currentMatchday,
+            )
+            updatedGame = {
+              ...updatedGame,
+              facilityState: { ...newFacState, hallTrial: newTrial },
+            }
           }
           // Avbryta-val: liten klackMood-vinst ("han lyssnade")
           if (update.selfNedlagd && updatedGame.supporterGroup) {

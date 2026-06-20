@@ -116,6 +116,30 @@ describe('shouldStartHallTrial', () => {
   })
 })
 
+// ── hallInomhus-villkoret (Led C) ─────────────────────────────────────────
+
+describe('hallInomhus-villkoret', () => {
+  // Speglar matchSimProcessor: hallInomhus = isManagedHome && (homeClub?.hasIndoorArena ?? false)
+  const check = (isManagedHome: boolean, hasIndoorArena: boolean) =>
+    isManagedHome && hasIndoorArena
+
+  it('sant när managed-klubb har hall och spelar hemma', () => {
+    expect(check(true, true)).toBe(true)
+  })
+
+  it('falskt vid bortamatch även om hall finns', () => {
+    expect(check(false, true)).toBe(false)
+  })
+
+  it('falskt vid hemmamatch utan hall', () => {
+    expect(check(true, false)).toBe(false)
+  })
+
+  it('falskt vid borta och ingen hall', () => {
+    expect(check(false, false)).toBe(false)
+  })
+})
+
 // ── computeKravStatus ─────────────────────────────────────────────────────
 
 describe('computeKravStatus', () => {

@@ -14,6 +14,8 @@ export interface CommunityProcessorResult {
   /** Total facilities bonus from newly completed projects this round */
   facilityBonusTotal: number
   facilityCapacityBonus: number
+  /** nodeId for any facility project that completed this round, null if none */
+  completedNodeId: string | null
   updatedVolunteers: string[]
   updatedVolunteerMorale: Record<string, number>
 }
@@ -217,11 +219,13 @@ export function processCommunity(
   let facilityBonusTotal = 0
   let facilityCapacityBonus = 0
 
+  let completedNodeId: string | null = null
   if (game.facilityState) {
     const advanced = advanceFacilityState(game.facilityState, nextMatchday, game.currentSeason)
     updatedFacilityState = advanced.state
     facilityBonusTotal = advanced.facilitiesBonus
     facilityCapacityBonus = advanced.capacityBonus
+    completedNodeId = advanced.completedNodeId
   }
 
   // ── Frivillig moral + attrition ───────────────────────────────────────────
@@ -291,5 +295,5 @@ export function processCommunity(
   const diminishingFactor = currentCS > 85 ? 0.25 : currentCS > 70 ? 0.5 : currentCS > 55 ? 0.75 : 1.0
   csBoost = positiveBoost * diminishingFactor + negativeBoost
 
-  return { csBoost, klackMoodDelta, inboxItems, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
+  return { csBoost, klackMoodDelta, inboxItems, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, completedNodeId, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
 }

@@ -1189,6 +1189,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     )
   }
 
+  // ── Matchhall completion: stage → 'klar' + hasIndoorArena ─────────────────
+  if (communityResult.completedNodeId === 'matchhall' && updatedFacilityState?.hallTrial) {
+    updatedFacilityState = {
+      ...updatedFacilityState,
+      hallTrial: { ...updatedFacilityState.hallTrial, stage: 'klar' },
+    }
+    postTransferClubs = postTransferClubs.map(c =>
+      c.id === game.managedClubId ? { ...c, hasIndoorArena: true } : c
+    )
+  }
+
   // ── Scandals (Lager 1 — Världshändelser) ──────────────────────────────────
   const scandalResult = processScandals(preEventGame, nextMatchday, localRand, { skipSideEffects: isSecondPassForManagedMatch })
   newInboxItems.push(...scandalResult.inboxItems)

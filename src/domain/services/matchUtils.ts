@@ -87,6 +87,7 @@ export interface SimulateMatchInput {
   underdogBoost?: number  // dream_round signature: boosts weaker team's attack
   homeChemistry?: import('./chemistryService').PairChemistry[]
   awayChemistry?: import('./chemistryService').PairChemistry[]
+  hallInomhus?: boolean
 }
 
 export function computeWeatherEffects(w: Weather) {

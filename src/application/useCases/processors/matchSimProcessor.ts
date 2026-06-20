@@ -356,6 +356,7 @@ export function simulateRound(
       underdogBoost: game.currentSeasonSignature?.modifiers.underdogBoost,
       homeChemistry: isManagedHome ? managedChem : undefined,
       awayChemistry: !isManagedHome ? managedChem : undefined,
+      hallInomhus: isManagedHome && (homeClub?.hasIndoorArena ?? false),
     })
 
     // Post-match: referee meeting check (managed fixture only)
