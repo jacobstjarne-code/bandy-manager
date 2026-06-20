@@ -37,8 +37,8 @@ export function TranareTab({ game }: Props) {
     : 'var(--success)'
 
   const record = `${profile.careerWins}V ${profile.careerDraws}O ${profile.careerLosses}F`
-  const quotePool = BURNOUT_MARK.quotesByZone[zone === 'frisk' ? 'markbar' : zone]
-  const burnoutQuote = quotePool[seed % quotePool.length]
+  const burnoutZone = zone === 'frisk' ? null : zone
+  const burnoutQuote = burnoutZone ? BURNOUT_MARK.quotesByZone[burnoutZone][seed % BURNOUT_MARK.quotesByZone[burnoutZone].length] : ''
   const contractText = getContractStatusText(profile, game.currentSeason)
   const seasonsLeft = profile.contractUntilSeason - game.currentSeason
   const contractColor = seasonsLeft <= 1 ? 'var(--warm)' : 'var(--text-muted)'
