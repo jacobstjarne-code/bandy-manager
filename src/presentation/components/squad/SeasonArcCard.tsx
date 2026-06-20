@@ -270,7 +270,7 @@ export function SeasonArcCard({ game }: Props) {
               }}
             >
               <div style={{
-                fontFamily: 'var(--font-display)',
+                fontFamily: 'var(--font-body)',
                 fontSize: 14,
                 fontWeight: 700,
                 color: m === mode ? 'var(--accent-dark)' : 'var(--text-primary)',

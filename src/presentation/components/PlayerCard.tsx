@@ -838,7 +838,7 @@ export function PlayerCard({
                       fontSize: 11, color: avail ? 'var(--text-primary)' : 'var(--text-muted)',
                       cursor: avail ? 'pointer' : 'not-allowed',
                       fontFamily: 'var(--font-body)',
-                      opacity: avail ? 1 : 0.5,
+                      opacity: avail ? 1 : 0.4,
                     }}
                   >
                     {opt.label}
@@ -895,7 +895,7 @@ export function PlayerCard({
                     fontSize: 11, color: canTalk ? 'var(--text-primary)' : 'var(--text-muted)',
                     cursor: canTalk ? 'pointer' : 'not-allowed',
                     fontFamily: 'var(--font-body)',
-                    opacity: canTalk ? 1 : 0.5,
+                    opacity: canTalk ? 1 : 0.4,
                   }}
                 >
                   {opt.label}
