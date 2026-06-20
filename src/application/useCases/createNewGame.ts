@@ -113,8 +113,6 @@ function generatePolitician(rand: () => number): LocalPolitician {
     campaignPromise: promisePool[Math.floor(rand() * promisePool.length)],
     personalInterest: interests[Math.floor(rand() * interests.length)],
     mediaProfile: mediaProfiles[Math.floor(rand() * mediaProfiles.length)],
-    oppositionStrength: Math.round(30 + rand() * 50),
-    popularitet: Math.round(40 + rand() * 40),
   }
 }
 

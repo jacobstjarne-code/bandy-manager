@@ -133,8 +133,6 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     const pol = data.localPolitician as Record<string, unknown>
     if (pol.mediaProfile === undefined) pol.mediaProfile = 'tystlåten'
     if (pol.personalInterest === undefined) pol.personalInterest = 'ingenting'
-    if (pol.oppositionStrength === undefined) pol.oppositionStrength = 40
-    if (pol.popularitet === undefined) pol.popularitet = 55
   }
 
   // ── players: ensure each player has newer optional fields ──────────────

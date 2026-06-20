@@ -7,7 +7,6 @@ import { SectionCard } from '../SectionCard'
 import { InfoRow } from '../primitives'
 import { csColor } from '../../utils/formatters'
 import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
-import { FACILITY_NODE_DEFS } from '../../../domain/services/facilityService'
 import { OrtenMap } from './OrtenMap'
 import { generateVolunteerRoster, getActiveVolunteerBonus } from '../../../domain/services/volunteerService'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
@@ -34,16 +33,6 @@ function styleLabel(s: ClubStyle): string {
 }
 
 
-
-function FacilityRow({ label, value }: { label: string; value: number }) {
-  const col = value >= 70 ? 'var(--success)' : value >= 45 ? 'var(--accent)' : 'var(--text-muted)'
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid var(--border)' }}>
-      <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 700, color: col }}>{value}</span>
-    </div>
-  )
-}
 
 interface OrtenTabProps {
   club: Club
@@ -94,8 +83,8 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
       {/* Ortskarta */}
       <SectionCard title="🗺️ Ortskartan" stagger={1}>
         <OrtenMap club={club} game={game} onNodeClick={(id) => {
+          if (id === 'arena') { navigate('/game/bygget'); return }
           const sectionMap: Record<string, string> = {
-            arena: 'section-facilities',
             skola: 'section-youth',
             kommunen: 'section-politician',
             mecenater: 'section-sponsors',
@@ -472,32 +461,6 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
         </SectionCard>
         )
       })()}
-
-      {/* Anläggning + Faciliteter (merged) */}
-      <SectionCard title="🏟️ Anläggning & faciliteter" stagger={2} id="section-facilities">
-        <FacilityRow label="Anläggningar" value={club.facilities} />
-        <FacilityRow label="Ungdomskvalitet" value={club.youthQuality} />
-        <FacilityRow label="Ungdomsrekrytering" value={club.youthRecruitment} />
-        <FacilityRow label="Ungdomsutveckling" value={club.youthDevelopment} />
-        {game.facilityState?.activeProject && (() => {
-          const ap = game.facilityState!.activeProject!
-          const def = FACILITY_NODE_DEFS.find(d => d.id === ap.nodeId)
-          return (
-            <div style={{ padding: '8px 0', borderTop: '1px solid var(--border)' }}>
-              <p style={{ fontSize: 11, fontWeight: 600 }}>🚧 {def?.label ?? ap.nodeId}</p>
-              <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>Klar omgång {ap.etaMatchday}</p>
-            </div>
-          )
-        })()}
-        <button
-          className="btn btn-ghost"
-          style={{ width: '100%', textAlign: 'left', marginTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', fontSize: 12 }}
-          onClick={() => navigate('/game/facility')}
-        >
-          <span>Visa trädet</span>
-          <span style={{ color: 'var(--text-muted)' }}>›</span>
-        </button>
-      </SectionCard>
 
       <SectionCard title="🎯 Förväntan & profil" stagger={3} collapsible defaultCollapsed>
         {/* WEAK-012: Reputation */}

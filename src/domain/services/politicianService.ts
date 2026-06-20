@@ -66,8 +66,6 @@ export function generateNewPolitician(seed: number, currentSeason: number): Loca
   const corruption = Math.round(rand() * 80)
   const mediaProfile = mediaProfiles[Math.floor(rand() * mediaProfiles.length)]
   const personalInterest = interests[Math.floor(rand() * interests.length)]
-  const oppositionStrength = Math.round(30 + rand() * 50)
-  const popularitet = Math.round(40 + rand() * 40)
   const promisePool = CAMPAIGN_PROMISES[agenda] ?? []
   const campaignPromise = promisePool[Math.floor(rand() * promisePool.length)]
 
@@ -84,7 +82,5 @@ export function generateNewPolitician(seed: number, currentSeason: number): Loca
     campaignPromise,
     personalInterest,
     mediaProfile,
-    oppositionStrength,
-    popularitet,
   }
 }

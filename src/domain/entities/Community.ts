@@ -62,8 +62,6 @@ export interface LocalPolitician {
   campaignPromise?: string     // "Bygg en ishall senast 2028"
   personalInterest?: PersonalInterest
   mediaProfile?: MediaProfile
-  oppositionStrength?: number  // 0-100, hur stark opposition
-  popularitet?: number         // 0-100
 }
 
 export interface PoliticianInteractionLog {
