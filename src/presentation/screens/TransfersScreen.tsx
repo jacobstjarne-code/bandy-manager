@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
-import { formatCurrency, positionShort, formatValue } from '../utils/formatters'
+import { formatFinanceAbs, positionShort, formatValue } from '../utils/formatters'
 import { SectionLabel } from '../components/SectionLabel'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 
@@ -352,7 +352,7 @@ export function TransfersScreen() {
                     {player.firstName} {player.lastName}
                   </p>
                   <p className="transfers-list-meta">
-                    {positionShort(player.position)} · Styrka {Math.round(player.currentAbility)} · MV {formatCurrency(player.marketValue ?? 0)}
+                    {positionShort(player.position)} · Styrka {Math.round(player.currentAbility)} · MV {formatFinanceAbs(player.marketValue ?? 0)}
                     {(() => {
                       const bidsForPlayer = (game.transferBids ?? []).filter(b => b.playerId === player.id && b.direction === 'incoming')
                       return bidsForPlayer.length > 0

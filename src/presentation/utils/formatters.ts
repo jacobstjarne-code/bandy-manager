@@ -23,10 +23,6 @@ export function ordinal(n: number): string {
   return `${n}:e`
 }
 
-export function formatCurrency(n: number): string {
-  return n.toLocaleString('sv-SE') + ' kr'
-}
-
 // mkr/tkr format with sign, e.g. "+1.2 mkr" or "-450 tkr"
 export function formatFinance(n: number): string {
   const abs = Math.abs(n)

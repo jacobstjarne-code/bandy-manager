@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
-import { formatCurrency, formatFinance, formatSalary, seasonTrendStroke } from '../../utils/formatters'
+import { formatFinanceAbs, formatFinance, formatSalary, seasonTrendStroke } from '../../utils/formatters'
 import { calcRoundIncome, deriveKassaHistory } from '../../../domain/services/economyService'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import '../../styles/economy.css'
@@ -172,7 +172,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Saldo</span>
           {/* DB-4: pengar = Georgia (.h-display-sm), sans-bold tillbakadraget; färg-override behålls */}
           <span className="h-display-sm" style={{ color: club.finances < 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
-            {formatCurrency(club.finances)}
+            {formatFinanceAbs(club.finances)}
           </span>
         </div>
         {/* Kassa-trend över säsongen — Sparkline, stroke per riktning */}
@@ -184,12 +184,12 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
         )}
         <div className="eco-row-mb">
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Intäkter / omg</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(weeklyIncome)}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatFinanceAbs(weeklyIncome)}</span>
         </div>
         <div className="eco-row-mb">
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lönekostnader / omg</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: wagePressure ? 'var(--danger)' : 'var(--text-primary)' }}>
-            -{formatCurrency(weeklyWages)}
+            -{formatFinanceAbs(weeklyWages)}
           </span>
         </div>
         {wagePressure && (
@@ -200,7 +200,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
         <div className="eco-row-top-border">
           <span style={{ fontSize: 13, fontWeight: 700 }}>Netto / omg</span>
           <span style={{ fontSize: 14, fontWeight: 800, color: netPerRound >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-            {netPerRound >= 0 ? '+' : ''}{formatCurrency(netPerRound)}
+            {netPerRound >= 0 ? '+' : ''}{formatFinanceAbs(netPerRound)}
           </span>
         </div>
         <div className="eco-row-total">
@@ -251,7 +251,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           </span>
           {weeklySponsors > 0 && (
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>
-              +{formatCurrency(weeklySponsors)}/omg
+              +{formatFinanceAbs(weeklySponsors)}/omg
             </span>
           )}
         </div>
@@ -262,7 +262,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
               <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{sponsor.category}</span>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(sponsor.weeklyIncome)}/omg</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatFinanceAbs(sponsor.weeklyIncome)}/omg</div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sponsor.contractRounds} omg kvar</div>
             </div>
           </div>
@@ -283,7 +283,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                 onClick={() => {
                   const result = seekSponsor()
                   if (result.success && result.sponsor) {
-                    setSponsorFeedback(`✅ ${result.sponsor.name} tecknade avtal! +${formatCurrency(result.sponsor.weeklyIncome)}/omg`)
+                    setSponsorFeedback(`✅ ${result.sponsor.name} tecknade avtal! +${formatFinanceAbs(result.sponsor.weeklyIncome)}/omg`)
                   } else {
                     setSponsorFeedback(`Ingen intresserad just nu. (2,5 tkr avdraget)`)
                   }
@@ -356,7 +356,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
             <div key={m.id} style={{ marginBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? 10 : 0, paddingBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? 10 : 0, borderBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? '1px solid var(--border)' : 'none' }}>
               <div className="eco-mecenat-row">
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Mecenat — {m.name}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(m.contribution)}/sä</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatFinanceAbs(m.contribution)}/sä</span>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{m.business}</p>
             </div>
@@ -365,7 +365,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
             <div>
               <div className="eco-mecenat-row">
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag{politician ? ` — ${politician.name}` : ''}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(kommunBidrag)}/sä</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatFinanceAbs(kommunBidrag)}/sä</span>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>Baseras på lokal ställning och ungdomsverksamhet.</p>
             </div>
@@ -447,7 +447,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                 <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>omg {entry.round}</span>
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, color: entry.amount >= 0 ? 'var(--success)' : 'var(--danger)', whiteSpace: 'nowrap', marginLeft: 12 }}>
-                {entry.amount >= 0 ? '+' : ''}{formatCurrency(entry.amount)}
+                {entry.amount >= 0 ? '+' : ''}{formatFinanceAbs(entry.amount)}
               </span>
             </div>
           ))}

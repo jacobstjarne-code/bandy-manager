@@ -5,7 +5,7 @@ import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { ClubBadge } from '../components/ClubBadge'
 import { SectionLabel } from '../components/SectionLabel'
-import { csColor, formatCurrency, positionShort } from '../utils/formatters'
+import { csColor, formatFinanceAbs, positionShort } from '../utils/formatters'
 import type { PlayerPosition } from '../../domain/enums'
 import { shareSeasonImage } from '../utils/seasonShareImage'
 import { collectSeasonDecisions } from '../../domain/services/seasonDecisionsService'
@@ -752,18 +752,18 @@ export function SeasonSummaryScreen() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Vid säsongsstart</p>
-              <p style={{ fontSize: 16, fontWeight: 700 }}>{formatCurrency(summary.startFinances)}</p>
+              <p style={{ fontSize: 16, fontWeight: 700 }}>{formatFinanceAbs(summary.startFinances)}</p>
             </div>
             <span style={{ fontSize: 20, color: summary.financialChange >= 0 ? 'var(--success)' : 'var(--danger)' }}>
               →
             </span>
             <div style={{ textAlign: 'right' }}>
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Vid säsongsslut</p>
-              <p style={{ fontSize: 16, fontWeight: 700 }}>{formatCurrency(summary.endFinances)}</p>
+              <p style={{ fontSize: 16, fontWeight: 700 }}>{formatFinanceAbs(summary.endFinances)}</p>
             </div>
           </div>
           <p style={{ fontSize: 13, fontWeight: 600, color: summary.financialChange >= 0 ? 'var(--success)' : 'var(--danger)', marginTop: 8, textAlign: 'center' }}>
-            {summary.financialChange >= 0 ? '+' : ''}{formatCurrency(Math.abs(summary.financialChange))}
+            {summary.financialChange >= 0 ? '+' : ''}{formatFinanceAbs(Math.abs(summary.financialChange))}
           </p>
         </div>
 
