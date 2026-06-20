@@ -45,7 +45,7 @@ export function MatchLaddningBand({ state, streakLength, isBroken, game, opponen
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number,
+      position: 'fixed', inset: 0, zIndex: 300,
       background: 'var(--bg-portal)',
       display: 'flex',
       flexDirection: 'column',

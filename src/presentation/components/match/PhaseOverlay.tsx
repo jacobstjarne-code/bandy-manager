@@ -7,7 +7,7 @@ export function PhaseOverlay({ phase, onContinue }: PhaseOverlayProps) {
   const isOT = phase === 'overtime'
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number,
+      position: 'fixed', inset: 0, zIndex: 300,
       background: 'rgba(0,0,0,0.65)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
     }}>
