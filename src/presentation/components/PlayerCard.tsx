@@ -11,7 +11,7 @@ import { getPlayerVoice, getPlayerMoodLine, getSeasonArc } from '../../domain/se
 import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
 import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
-import { formatSalary, positionLong } from '../utils/formatters'
+import { formatSalary, positionShort } from '../utils/formatters'
 
 export interface PlayerCardProps {
   player: Player
@@ -290,7 +290,7 @@ export function PlayerCard({
   const showAttribut = !isOwned || mode === 'attribut'
   const showKarriar = !isOwned || mode === 'karriar'
   const fullName = `${player.firstName} ${player.lastName}`.toUpperCase()
-  const posLabel = positionLong(player.position).toUpperCase()
+  const posLabel = positionShort(player.position)
 
   const idNum = parseInt(player.id.replace(/\D/g, '').slice(-2) || '10', 10)
   const jerseyNum = (idNum % 98) + 1

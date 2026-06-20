@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { InboxItemType } from '../../domain/enums'
 import type { InboxItem, SaveGame } from '../../domain/entities/SaveGame'
-import { Check } from 'lucide-react'
+import { Check, ArrowLeftRight, Clock, Zap, Activity, Ban, Newspaper, GraduationCap, Dumbbell, Building2, Search, LineChart, AlertTriangle, Banknote, Mail, type LucideIcon } from 'lucide-react'
 import { PlayerLink } from '../components/PlayerLink'
 import { Dot, dotColor, type DotColor } from '../components/shared/Dot'
 
@@ -46,32 +46,34 @@ function inboxActionLabel(route: string): string {
 
 // ── Icon per type ────────────────────────────────────────────────
 
-function inboxTypeIcon(type: InboxItemType): string {
-  switch (type) {
-    case InboxItemType.TransferBidReceived:
-    case InboxItemType.TransferOffer:       return '⇄'
-    case InboxItemType.ContractExpiring:
-    case InboxItemType.LicenseReview:
-    case InboxItemType.BoardFeedback:       return '⧖'
-    case InboxItemType.Injury:              return '🩹'
-    case InboxItemType.Recovery:            return '💪'
-    case InboxItemType.Suspension:          return '🚫'
-    case InboxItemType.Media:
-    case InboxItemType.MediaEvent:          return '📰'
-    case InboxItemType.YouthIntake:
-    case InboxItemType.YouthP17:            return '🎓'
-    case InboxItemType.Training:            return '🏋'
-    case InboxItemType.KommunBidrag:
-    case InboxItemType.Community:           return '🏛'
-    case InboxItemType.ScoutReport:         return '🔍'
-    case InboxItemType.Transfer:
-    case InboxItemType.TransferBidResult:   return '⇄'
-    case InboxItemType.PlayerDevelopment:
-    case InboxItemType.ReputationMilestone: return '📈'
-    case InboxItemType.Scandal:             return '⚠'
-    case InboxItemType.EconomicCrisis:      return '💸'
-    default:                                return '📬'
-  }
+const INBOX_ICON: Partial<Record<InboxItemType, LucideIcon>> = {
+  [InboxItemType.TransferBidReceived]:   ArrowLeftRight,
+  [InboxItemType.TransferOffer]:         ArrowLeftRight,
+  [InboxItemType.Transfer]:              ArrowLeftRight,
+  [InboxItemType.TransferBidResult]:     ArrowLeftRight,
+  [InboxItemType.ContractExpiring]:      Clock,
+  [InboxItemType.LicenseReview]:         Clock,
+  [InboxItemType.BoardFeedback]:         Clock,
+  [InboxItemType.Injury]:                Zap,
+  [InboxItemType.Recovery]:              Activity,
+  [InboxItemType.Suspension]:            Ban,
+  [InboxItemType.Media]:                 Newspaper,
+  [InboxItemType.MediaEvent]:            Newspaper,
+  [InboxItemType.YouthIntake]:           GraduationCap,
+  [InboxItemType.YouthP17]:              GraduationCap,
+  [InboxItemType.Training]:              Dumbbell,
+  [InboxItemType.KommunBidrag]:          Building2,
+  [InboxItemType.Community]:             Building2,
+  [InboxItemType.ScoutReport]:           Search,
+  [InboxItemType.PlayerDevelopment]:     LineChart,
+  [InboxItemType.ReputationMilestone]:   LineChart,
+  [InboxItemType.Scandal]:               AlertTriangle,
+  [InboxItemType.EconomicCrisis]:        Banknote,
+}
+
+function InboxTypeIcon({ type }: { type: InboxItemType }) {
+  const Icon = INBOX_ICON[type] ?? Mail
+  return <Icon size={13} />
 }
 
 // ── Severity grouping ────────────────────────────────────────────
@@ -183,7 +185,7 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
       }}>
         {isCoach
           ? <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--accent)' }}>{item.coachInitials ?? '?'}</span>
-          : inboxTypeIcon(item.type)
+          : <InboxTypeIcon type={item.type} />
         }
       </div>
 
@@ -280,9 +282,9 @@ function TrainingAggRow({ items }: { items: InboxItem[] }) {
         width: 26, height: 26, borderRadius: 'var(--radius-md)',
         background: 'var(--bg)', border: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, fontSize: 11,
+        flexShrink: 0, fontSize: 11, color: 'var(--text-secondary)',
       }}>
-        🏋
+        <Dumbbell size={13} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{
