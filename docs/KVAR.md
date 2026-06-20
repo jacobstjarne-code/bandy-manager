@@ -71,9 +71,9 @@ Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 →
 - KF7 verifierad KLAR (seasonEndProcessor:1173–1181 befintlig gallring), KF11 verifierad KLAR (kommentar i matchSimProcessor:310), KF12 verifierad KLAR (NODE_ENV-gate).
 - E-SC3 verifierad KLAR (EkonomiTab använder `seasonTrendStroke`, StillnessSection importerar + anropar `seasonTrendStroke`).
 
-**Nästa:**
-- E-SC1 LÖST `a9077d4e` — 6 datafiler + eventProcessor:s `pickByIndex` → `seededPick`. (pickVariant i specialDateService/SpectatorPrimary har annan signatur — separat pass vid behov.)
-- D3 inline-stratum-migreringen (§3 FÖRSONINGSSPRINTEN): pill-CTA/positionLabel/emoji-svep/tomma kort/delade primitiver/LED.
+**Nästa (2026-06-20 — D3 avslutad):**
+- E-SC1 LÖST `a9077d4e` — 6 datafiler + eventProcessor:s `pickByIndex` → `seededPick`.
+- D3 Code-delar KLARA `34c2ab41` + `c31607b4`: positionLabel (PlayerCard), emoji-svep (InboxScreen → Lucide INBOX_ICON-map), tomma kort (GranskaOversikt + RoundSummaryScreen + MatchDayProgram "—"→kursiv). Kvar: decision-card-konsolidering = Opus.
 
 ---
 
