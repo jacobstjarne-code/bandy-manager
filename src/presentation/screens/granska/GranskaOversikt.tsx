@@ -4,7 +4,6 @@ import type { Fixture, MatchEvent } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { Club } from '../../../domain/entities/Club'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
-import type { EventChoice } from '../../../domain/entities/GameEvent'
 import { MatchEventType, InboxItemType, TrainingType } from '../../../domain/enums'
 import { formatArenaName } from '../../../domain/utils/arenaName'
 import { csColor, formatFinance } from '../../utils/formatters'
@@ -14,7 +13,8 @@ import { getFormResults } from '../../utils/formUtils'
 import { SectionLabel } from '../../components/SectionLabel'
 import { ScoreBlock } from '../../components/primitives'
 import { generateSilentMatchReport } from '../../../domain/services/silentMatchReportService'
-import { generateQuickSummary, choiceStyle } from './helpers'
+import { generateQuickSummary } from './helpers'
+import { DecisionChoices } from '../../components/DecisionChoices'
 import { Swords } from 'lucide-react'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
@@ -294,14 +294,11 @@ export function GranskaOversikt({
                             {relatedClub && <span style={{ fontSize: 11, background: 'color-mix(in srgb, var(--ice) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--ice) 25%, transparent)', borderRadius: 20, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>{relatedClub.name}</span>}
                           </div>
                         )}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                          {event.choices.map((choice: EventChoice) => (
-                            <button key={choice.id} onClick={() => onChoice(event.id, choice.id, choice.label)}
-                              style={{ position: 'relative', zIndex: 1, width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
-                              {choice.label}
-                            </button>
-                          ))}
-                        </div>
+                        <DecisionChoices
+                          choices={event.choices}
+                          onChoose={(id, label) => onChoice(event.id, id, label)}
+                          layout="stack"
+                        />
                       </>
                     )}
                   </div>
@@ -347,15 +344,11 @@ export function GranskaOversikt({
                 <>
                   {pcTitle && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{pcTitle}</p>}
                   <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{pc.body}</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {pc.choices.map((choice: EventChoice) => (
-                      <button key={choice.id} onClick={() => onChoice(pc.id, choice.id, choice.label)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
-                        {choice.label}
-                        {choice.subtitle && <span style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>{choice.subtitle}</span>}
-                      </button>
-                    ))}
-                  </div>
+                  <DecisionChoices
+                    choices={pc.choices}
+                    onChoose={(id, label) => onChoice(pc.id, id, label)}
+                    layout="stack"
+                  />
                 </>
               )}
             </div>
@@ -392,14 +385,11 @@ export function GranskaOversikt({
                     </p>
                   )}
                   <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{cp.body}</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {cp.choices.map((choice: EventChoice) => (
-                      <button key={choice.id} onClick={() => onChoice(cp.id, choice.id, choice.label)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
-                        {choice.label}
-                      </button>
-                    ))}
-                  </div>
+                  <DecisionChoices
+                    choices={cp.choices}
+                    onChoose={(id, label) => onChoice(cp.id, id, label)}
+                    layout="stack"
+                  />
                 </>
               )}
             </div>
@@ -426,14 +416,11 @@ export function GranskaOversikt({
                 <>
                   <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>{rm.sender?.name}</p>
                   <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{rm.body}</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {rm.choices.map((choice: EventChoice) => (
-                      <button key={choice.id} onClick={() => onChoice(rm.id, choice.id, choice.label)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
-                        {choice.label}
-                      </button>
-                    ))}
-                  </div>
+                  <DecisionChoices
+                    choices={rm.choices}
+                    onChoose={(id, label) => onChoice(rm.id, id, label)}
+                    layout="stack"
+                  />
                 </>
               )}
             </div>

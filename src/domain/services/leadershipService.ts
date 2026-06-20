@@ -1,12 +1,11 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
 
-export type LeadershipAction = 'lower_tempo' | 'mentor' | 'private_talk' | 'public_praise'
+export type LeadershipAction = 'lower_tempo' | 'private_talk' | 'public_praise'
 
 // Cooldowns in matchdays
 const COOLDOWNS: Record<LeadershipAction, number> = {
   lower_tempo: 2,
-  mentor: 3,
   private_talk: 3,
   public_praise: 5,
 }
@@ -65,31 +64,6 @@ export function applyLeadershipAction(
         playerUpdates: { fitness: Math.min(100, (player.fitness ?? 100) + fitnessGain) },
         feedback: `${player.firstName} nickar och andas ut. Kanske tar det ner trycket lite.`,
         leadershipEntry: { playerId, action, fromRound: currentRound, expiresRound, effect: { stat: 'fitness', delta: fitnessGain } },
-      }
-    }
-
-    case 'mentor': {
-      // Find youngest squad player under 22 to mentor
-      const youngPlayer = game.players
-        .filter(p => p.clubId === game.managedClubId && p.id !== playerId && p.age < 22)
-        .sort((a, b) => a.age - b.age)[0]
-
-      const targetName = youngPlayer ? `${youngPlayer.firstName} ${youngPlayer.lastName}` : 'ett ungt proffs'
-      // PC-6: mentorskapet ska ge en verklig konsekvens — den unge spelaren får en
-      // CA-utvecklingsbonus medan mentorskapet är aktivt (läses av applyRoundDevelopment).
-      // Fönstret är längre än cooldown: mentorskap verkar över 8 omgångar, inte bara 3.
-      const MENTOR_EFFECT_WINDOW = 8
-      return {
-        playerUpdates: {},
-        feedback: youngPlayer
-          ? `${player.firstName} tar ${targetName} under sina vingar. Den unge utvecklas snabbare med en rutinare bredvid sig.`
-          : `${player.firstName} vill axla en mentorroll — men det finns ingen ung spelare att ta hand om just nu.`,
-        leadershipEntry: {
-          playerId, action, fromRound: currentRound,
-          expiresRound: currentRound + MENTOR_EFFECT_WINDOW,
-          effect: { stat: 'mentorship', delta: 1 },
-          mentoredPlayerId: youngPlayer?.id,
-        },
       }
     }
 

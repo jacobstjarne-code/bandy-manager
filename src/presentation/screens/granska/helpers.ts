@@ -2,10 +2,6 @@ import { MatchEventType } from '../../../domain/enums'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 
-export function choiceStyle(_choiceId: string): React.CSSProperties {
-  return { background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }
-}
-
 export function generateQuickSummary(fixture: Fixture, managedIsHome: boolean, players: Player[]): string {
   const homeScore = fixture.homeScore
   const awayScore = fixture.awayScore

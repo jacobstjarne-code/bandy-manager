@@ -3,6 +3,7 @@ import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
 import { positionShort } from '../../utils/formatters'
+import { mentorshipPreview, mentorshipActiveInForm, mentorshipActiveOutOfForm } from '../../../domain/data/mentorshipStrings'
 
 const LOAN_CLUBS = ['Skutskärs IF', 'Tillberga IK', 'Bollnäs GIF', 'Delsbo IF', 'Norrby IF']
 
@@ -47,10 +48,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
   const activeMentorships = (game.mentorships ?? []).filter(m => m.isActive)
   const managedPlayers = game.players.filter(p => p.clubId === club.id)
   const mentorCandidates = managedPlayers.filter(p => p.age >= 25 && p.discipline > 60)
-  const youthForMentor = [
-    ...(youthTeam?.players ?? []).map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (P19)` })),
-    ...managedPlayers.filter(p => p.promotedFromAcademy).map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (A-lag)` })),
-  ]
+  const youthForMentor = (youthTeam?.players ?? []).map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (P19)` }))
 
   const activeLoanDeals = game.loanDeals ?? []
   const loanablePlayers = managedPlayers.filter(p => p.age <= 23 && !p.isOnLoan)
@@ -211,22 +209,31 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
               const youth = youthTeam?.players.find(p => p.id === m.youthPlayerId)
                 ?? managedPlayers.find(p => p.id === m.youthPlayerId)
               if (!mentor || !youth) return null
+              const youthName = 'firstName' in youth ? `${youth.firstName} ${youth.lastName}` : ''
+              const consequenceText = mentor.form >= 40
+                ? mentorshipActiveInForm(mentor.firstName + ' ' + mentor.lastName, mentor.discipline, youthName)
+                : mentorshipActiveOutOfForm(mentor.firstName + ' ' + mentor.lastName, youthName)
               return (
-                <div key={m.youthPlayerId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ fontSize: 13 }}>
-                    {mentor.firstName} {mentor.lastName} → {'firstName' in youth ? `${youth.firstName} ${youth.lastName}` : ''}
-                  </span>
-                  <button
-                    onClick={() => {
-                      removeMentor(m.youthPlayerId)
-                      setMentorMsg('Mentorskap avslutat.')
-                      setTimeout(() => setMentorMsg(null), 3000)
-                    }}
-                    className="btn btn-ghost"
-                    style={{ padding: '3px 8px', fontSize: 11, color: 'var(--danger)' }}
-                  >
-                    Ta bort
-                  </button>
+                <div key={m.youthPlayerId} style={{ padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 13 }}>
+                      {mentor.firstName} {mentor.lastName} → {youthName}
+                    </span>
+                    <button
+                      onClick={() => {
+                        removeMentor(m.youthPlayerId)
+                        setMentorMsg('Mentorskap avslutat.')
+                        setTimeout(() => setMentorMsg(null), 3000)
+                      }}
+                      className="btn btn-ghost"
+                      style={{ padding: '3px 8px', fontSize: 11, color: 'var(--danger)' }}
+                    >
+                      Ta bort
+                    </button>
+                  </div>
+                  <p style={{ fontSize: 10.5, fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-secondary)', margin: '3px 0 0', lineHeight: 1.4 }}>
+                    {consequenceText}
+                  </p>
                 </div>
               )
             })}
@@ -271,6 +278,21 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
                 Tilldela
               </button>
             </div>
+            {selectedMentorSeniorId && selectedMentorYouthId && (() => {
+              const senior = mentorCandidates.find(p => p.id === selectedMentorSeniorId)
+              const youth = youthForMentor.find(y => y.id === selectedMentorYouthId)
+              if (!senior || !youth) return null
+              const previewText = mentorshipPreview(
+                `${senior.firstName} ${senior.lastName}`,
+                senior.discipline,
+                youth.name.replace(' (P19)', ''),
+              )
+              return (
+                <p style={{ fontSize: 10.5, fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-secondary)', margin: '6px 0 0', lineHeight: 1.4 }}>
+                  {previewText}
+                </p>
+              )
+            })()}
           </div>
         )}
         {mentorCandidates.length === 0 && (

@@ -1,12 +1,13 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
-import type { GameEvent, EventChoice } from '../../../domain/entities/GameEvent'
+import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { MatchEventType } from '../../../domain/enums'
 import { SectionLabel } from '../../components/SectionLabel'
 import { getPortraitSvg } from '../../../domain/services/portraitService'
-import { ratingColor, choiceStyle } from './helpers'
+import { ratingColor } from './helpers'
 import { classifyEventNature } from '../../../domain/services/granskaEventClassifier'
+import { DecisionChoices } from '../../components/DecisionChoices'
 
 interface GranskaSpelareProps {
   game: SaveGame
@@ -73,14 +74,11 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                     <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
                   </div>
                 ) : event.choices?.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {event.choices.map((choice: EventChoice) => (
-                      <button key={choice.id} onClick={() => onChoice(event.id, choice.id, choice.label)}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
-                        {choice.label}
-                      </button>
-                    ))}
-                  </div>
+                  <DecisionChoices
+                    choices={event.choices}
+                    onChoose={(id, label) => onChoice(event.id, id, label)}
+                    layout="stack"
+                  />
                 )}
               </div>
             )

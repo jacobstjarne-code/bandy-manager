@@ -821,7 +821,6 @@ export function PlayerCard({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {([
                 { id: 'lower_tempo' as LeadershipAction, label: '😮‍💨 Minska belastningen' },
-                { id: 'mentor' as LeadershipAction, label: '🎓 Sätt som mentor' },
                 { id: 'private_talk' as LeadershipAction, label: '🤫 Privat samtal' },
                 { id: 'public_praise' as LeadershipAction, label: '📣 Offentlig beröm' },
               ]).map(opt => {
@@ -833,12 +832,13 @@ export function PlayerCard({
                     disabled={!avail}
                     style={{
                       padding: '9px 8px', borderRadius: 8,
-                      background: avail ? 'var(--bg-elevated)' : 'rgba(0,0,0,0.04)',
+                      background: 'var(--bg-elevated)',
                       border: '1px solid var(--border)',
-                      fontSize: 11, color: avail ? 'var(--text-primary)' : 'var(--text-muted)',
+                      fontSize: 11, color: 'var(--text-primary)',
                       cursor: avail ? 'pointer' : 'not-allowed',
                       fontFamily: 'var(--font-body)',
                       opacity: avail ? 1 : 0.4,
+                      pointerEvents: avail ? undefined : 'none',
                     }}
                   >
                     {opt.label}
@@ -890,12 +890,13 @@ export function PlayerCard({
                   disabled={!canTalk}
                   style={{
                     flex: 1, padding: '10px 8px', borderRadius: 8,
-                    background: canTalk ? 'var(--bg-elevated)' : 'rgba(0,0,0,0.04)',
+                    background: 'var(--bg-elevated)',
                     border: '1px solid var(--border)',
-                    fontSize: 11, color: canTalk ? 'var(--text-primary)' : 'var(--text-muted)',
+                    fontSize: 11, color: 'var(--text-primary)',
                     cursor: canTalk ? 'pointer' : 'not-allowed',
                     fontFamily: 'var(--font-body)',
                     opacity: canTalk ? 1 : 0.4,
+                    pointerEvents: canTalk ? undefined : 'none',
                   }}
                 >
                   {opt.label}

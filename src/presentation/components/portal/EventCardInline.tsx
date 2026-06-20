@@ -13,6 +13,7 @@
 import { useGameStore } from '../../store/gameStore'
 import { getActionsForEvent } from '../../../domain/services/eventActions'
 import { getItemAge } from '../../../domain/services/decisionFatigueService'
+import { DecisionChoices } from '../DecisionChoices'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 
 interface Props {
@@ -116,17 +117,12 @@ export function EventCardInline({ event, currentMatchday }: Props) {
       </p>
 
       {/* Knapprad — första action primär, övriga outline */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {actions.map((action, idx) => (
-          <button
-            key={action.choiceId}
-            onClick={() => handleAction(action.choiceId)}
-            className={idx === 0 ? 'btn btn-primary' : 'btn btn-outline'}
-          >
-            {action.label}
-          </button>
-        ))}
-      </div>
+      <DecisionChoices
+        choices={actions.map(a => ({ id: a.choiceId, label: a.label }))}
+        onChoose={(id) => handleAction(id)}
+        layout="inline"
+        primaryChoiceId={actions[0]?.choiceId}
+      />
 
     </div>
   )
