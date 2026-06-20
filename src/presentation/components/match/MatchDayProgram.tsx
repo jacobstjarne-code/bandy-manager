@@ -124,11 +124,11 @@ export function MatchDayProgram({ fixture, opponent, managedClub, game, myPlayer
             </p>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', gap: 4 }}>
-                {myForm.length > 0 ? myForm.map((r, i) => <FormDot key={i} result={r} />) : <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>}
+                {myForm.length > 0 ? myForm.map((r, i) => <FormDot key={i} result={r} />) : <span style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>ny</span>}
               </div>
               <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>vs</span>
               <div style={{ display: 'flex', gap: 4, flexDirection: 'row-reverse' }}>
-                {oppForm.length > 0 ? oppForm.map((r, i) => <FormDot key={i} result={r} />) : <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>}
+                {oppForm.length > 0 ? oppForm.map((r, i) => <FormDot key={i} result={r} />) : <span style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>ny</span>}
               </div>
             </div>
           </div>

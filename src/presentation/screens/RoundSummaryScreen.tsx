@@ -263,7 +263,7 @@ export function RoundSummaryScreen() {
               </p>
               {recentForm.length > 0
                 ? <FormSquares results={recentForm} size={22} />
-                : <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>
+                : <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>Inga matcher ännu</span>
               }
             </div>
           </div>

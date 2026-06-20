@@ -224,7 +224,7 @@ export function GranskaOversikt({
               <SectionLabel style={{ marginBottom: 7 }}>📈 FORM</SectionLabel>
               <div style={{ display: 'flex', gap: 4 }}>
                 {form.length === 0
-                  ? <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>
+                  ? <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>Inga matcher ännu</span>
                   : form.map((r, i) => (
                     <span key={i} style={{ width: 16, height: 16, borderRadius: 4, background: dotColor(r.result), color: 'var(--text-light)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{r.result}</span>
                   ))}
