@@ -394,12 +394,12 @@ export function checkInObjectives(
       })
     } else if (newStatus === 'at_risk' && obj.status === 'active') {
       inboxMessages.push({
-        title: `⚠️ ${obj.ownerId}: Varning`,
+        title: `${obj.ownerId}: Varning`,
         body: `${obj.label} — vi är inte i fas. Nuvarande: ${result.value}.`,
       })
     } else if (newStatus === 'failed' && obj.status !== 'failed') {
       inboxMessages.push({
-        title: `🔴 ${obj.ownerId}: Misslyckat`,
+        title: `${obj.ownerId}: Misslyckat`,
         body: obj.failureConsequence,
       })
     }
