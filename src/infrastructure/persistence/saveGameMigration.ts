@@ -1,8 +1,10 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
-import type { BoardMember, BoardPersonality, BoardRole, FacilityState } from '../../domain/entities/Community'
+import type { BoardMember, BoardPersonality, BoardRole } from '../../domain/entities/Club'
+import type { FacilityState } from '../../domain/entities/Community'
 import { PendingScreen } from '../../domain/enums'
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 import { CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
+import type { ClubBoardTemplate } from '../../domain/services/worldGenerator'
 import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { FACILITY_NODE_DEFS } from '../../domain/services/facilityService'
 
@@ -40,18 +42,78 @@ function strHash(s: string): number {
   return h
 }
 
-function defaultBoardPersonalities(clubId: string): BoardMember[] {
+// KF4 (2026-06-21): deterministisk personlighet per roll (oförändrad seedning).
+function defaultPersonalities(clubId: string): Record<BoardRole, BoardPersonality> {
   const personalities: BoardPersonality[] = ['supporter', 'ekonom', 'traditionalist', 'modernist']
-  const roles: [BoardRole, string][] = [['ordförande', 'Ordföranden'], ['kassör', 'Kassören'], ['ledamot', 'Ledamoten']]
+  const roles: BoardRole[] = ['ordförande', 'kassör', 'ledamot']
   const seed = strHash(clubId)
-  return roles.map(([role, name], i) => ({
-    name,
-    role,
-    personality: personalities[(seed + i * 7) % personalities.length],
-  }))
+  const out = {} as Record<BoardRole, BoardPersonality>
+  roles.forEach((role, i) => { out[role] = personalities[(seed + i * 7) % personalities.length] })
+  return out
 }
 
-export const CURRENT_SAVE_VERSION = '0.3.1'
+// KF4 (2026-06-21): bygg en full game.board[] (EN modell) av template-namn + deterministisk
+// personlighet. Används som seed när en gammal save helt saknar styrelse-data.
+function defaultBoard(clubId: string): BoardMember[] {
+  const template = CLUB_TEMPLATES.find(t => t.id === clubId)?.board
+  const pers = defaultPersonalities(clubId)
+  const fallback = { firstName: 'Okänd', lastName: 'Styrelseledamot', age: 55, gender: 'm' as const }
+  const chair = template?.chairman ?? { ...fallback, firstName: 'Ordföranden', lastName: '' }
+  const treasurer = template?.treasurer ?? { ...fallback, firstName: 'Kassören', lastName: '' }
+  const member = template?.member ?? { ...fallback, firstName: 'Ledamoten', lastName: '' }
+  return [
+    { id: 'ordforande-0', ...chair, role: 'ordförande', personality: pers['ordförande'] },
+    { id: 'kassor-0', ...treasurer, role: 'kassör', personality: pers['kassör'] },
+    { id: 'ledamot-0', ...member, role: 'ledamot', personality: pers['ledamot'] },
+  ]
+}
+
+// KF4 (2026-06-21): slå ihop gammal club.board (namn/kön/ålder) + gammal boardPersonalities
+// (personlighet, ev. extra ledamöter) per roll → EN game.board[]. Template-namn vinner.
+interface LegacyBoardPersonality { name?: string; role?: BoardRole; personality?: BoardPersonality }
+function mergeLegacyBoard(
+  clubId: string,
+  legacyClubBoard: ClubBoardTemplate | undefined,
+  legacyPersonalities: LegacyBoardPersonality[] | undefined,
+): BoardMember[] {
+  const template = CLUB_TEMPLATES.find(t => t.id === clubId)?.board
+  const board = legacyClubBoard ?? template
+  const pers = defaultPersonalities(clubId)
+  const persByRole = (role: BoardRole): BoardPersonality =>
+    legacyPersonalities?.find(p => p.role === role)?.personality ?? pers[role]
+
+  const fallback = { firstName: 'Okänd', lastName: 'Styrelseledamot', age: 55, gender: 'm' as const }
+  const chair = board?.chairman ?? { ...fallback, firstName: 'Ordföranden', lastName: '' }
+  const treasurer = board?.treasurer ?? { ...fallback, firstName: 'Kassören', lastName: '' }
+  const member = board?.member ?? { ...fallback, firstName: 'Ledamoten', lastName: '' }
+
+  const result: BoardMember[] = [
+    { id: 'ordforande-0', ...chair, role: 'ordförande', personality: persByRole('ordförande') },
+    { id: 'kassor-0', ...treasurer, role: 'kassör', personality: persByRole('kassör') },
+    { id: 'ledamot-0', ...member, role: 'ledamot', personality: persByRole('ledamot') },
+  ]
+
+  // Extra ledamöter i boardPersonalities (eventResolver-tillägg, t.ex. 'Okänd Investerare').
+  // Första ledamot-personligheten har redan konsumerats ovan; resten blir egna poster.
+  const extraLedamoter = (legacyPersonalities ?? []).filter(p => p.role === 'ledamot')
+  for (let i = 1; i < extraLedamoter.length; i++) {
+    const ex = extraLedamoter[i]
+    const nameParts = (ex.name ?? 'Okänd Investerare').split(' ')
+    const firstName = nameParts[0] ?? 'Okänd'
+    const lastName = nameParts.slice(1).join(' ') || 'Investerare'
+    result.push({
+      id: `ledamot-${i}`,
+      firstName, lastName,
+      age: 50, gender: 'm',
+      role: 'ledamot',
+      personality: ex.personality ?? 'modernist',
+    })
+  }
+
+  return result
+}
+
+export const CURRENT_SAVE_VERSION = '0.3.2'
 
 export function migrateSaveGame(raw: unknown): SaveGame {
   const data = raw as Record<string, unknown>
@@ -123,7 +185,24 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.facilityState === undefined) data.facilityState = migrateFacilityState((data.facilityProjects as LegacyFacilityProject[] | undefined) ?? [])
   if (data.boardObjectives === undefined) data.boardObjectives = []
   if (data.boardObjectiveHistory === undefined) data.boardObjectiveHistory = []
-  if (data.boardPersonalities === undefined) data.boardPersonalities = defaultBoardPersonalities(data.managedClubId as string ?? '')
+  // KF4 (2026-06-21): konsolidera styrelsen till EN game.board[]. Slå ihop gammal
+  // club.board (namn/kön/ålder, från managed-klubben) + gammal boardPersonalities
+  // (personlighet + ev. extra ledamöter) per roll. Template-namn vinner. Sedan raderas
+  // de gamla fälten. Saknas allt → defaultBoard från CLUB_TEMPLATES.
+  if (data.board === undefined) {
+    const clubId = (data.managedClubId as string) ?? ''
+    const legacyPersonalities = data.boardPersonalities as LegacyBoardPersonality[] | undefined
+    const managedRaw = Array.isArray(data.clubs)
+      ? (data.clubs as Record<string, unknown>[]).find(c => c.id === clubId)
+      : undefined
+    const legacyClubBoard = managedRaw?.board as ClubBoardTemplate | undefined
+    if (legacyClubBoard || legacyPersonalities) {
+      data.board = mergeLegacyBoard(clubId, legacyClubBoard, legacyPersonalities)
+    } else {
+      data.board = defaultBoard(clubId)
+    }
+  }
+  delete data.boardPersonalities
   if (data.trainerArc === undefined) data.trainerArc = { current: 'established', history: [], seasonCount: 1, bestFinish: 6, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 0, boardWarningGiven: false }
   // V1.0 — Journalist character (created on-demand if missing)
   if (data.journalist === undefined) data.journalist = null
@@ -281,16 +360,16 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     data.pendingScene = null
   }
 
-  // ── SPEC_INLEDNING_FAS_2 — board + clubhouse på varje klubb ─────────────
+  // ── clubhouse på varje klubb (KF4: club.board utgår — styrelsen lever på game.board) ──
+  // Tidigare seedades även club.board här (SPEC_INLEDNING_FAS_2). KF4 konsoliderade
+  // styrelsen till game.board ovan; ev. kvarvarande stale club.board på gamla saves rensas.
   if (Array.isArray(data.clubs)) {
     data.clubs = (data.clubs as Record<string, unknown>[]).map(c => {
-      if (c.board === undefined || c.clubhouse === undefined) {
+      if (c.clubhouse === undefined) {
         const template = CLUB_TEMPLATES.find(t => t.id === c.id)
-        if (template) {
-          if (c.board === undefined) c.board = template.board
-          if (c.clubhouse === undefined) c.clubhouse = template.clubhouse
-        }
+        if (template) c.clubhouse = template.clubhouse
       }
+      delete c.board
       return c
     })
   }

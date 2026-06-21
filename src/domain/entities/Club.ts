@@ -1,17 +1,22 @@
 import type { ClubExpectation, ClubStyle, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../enums'
 import type { FormationType } from './Formation'
 
+// KF4 (2026-06-21): EN styrelsemodell. Tidigare fanns club.board (ClubBoard-trippel,
+// namn/kön/ålder) OCH game.boardPersonalities (BoardMember med name/role/personality) —
+// två okopplade källor som gav ordföranden två namn. Nu bär varje medlem allt:
+// namn/kön/ålder (från CLUB_TEMPLATES, handskrivna namn vinner) + roll + personlighet.
+// Bor på game.board: BoardMember[]. ClubBoard utgår; Community.BoardMember raderad.
+export type BoardRole = 'ordförande' | 'kassör' | 'ledamot'
+export type BoardPersonality = 'supporter' | 'ekonom' | 'traditionalist' | 'modernist'
+
 export interface BoardMember {
+  id: string           // stabil: `${role}-${index}`, t.ex. 'ordforande-0'
   firstName: string
   lastName: string
   age: number          // ålder vid spelstart (säsong 1)
   gender: 'm' | 'f'    // för pronomen i beats
-}
-
-export interface ClubBoard {
-  chairman: BoardMember   // ordförande
-  treasurer: BoardMember  // kassör
-  member: BoardMember     // ledamot
+  role: BoardRole
+  personality: BoardPersonality
 }
 
 export interface Tactic {
@@ -58,6 +63,5 @@ export interface Club {
     persona: 'confident' | 'defensive' | 'cryptic' | 'professorial'
     yearsAtClub: number
   }
-  board?: ClubBoard
   clubhouse?: string
 }

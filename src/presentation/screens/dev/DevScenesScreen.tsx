@@ -424,9 +424,11 @@ const granskaRoundSummary = {
 }
 
 // BoardMeeting fingered state — season 2+, prev-season objective history + new goals
-const boardPersonalities = [
-  { name: 'Margareta Sahlin', role: 'ordförande', personality: 'traditionalist' },
-  { name: 'Bengt Ek', role: 'kassör', personality: 'ekonom' },
+// KF4 (2026-06-21): EN styrelsemodell — full BoardMember[] på game.board (find-by-role).
+const board = [
+  { id: 'ordforande-0', firstName: 'Margareta', lastName: 'Sahlin', age: 61, gender: 'f' as const, role: 'ordförande' as const, personality: 'traditionalist' as const },
+  { id: 'kassor-0', firstName: 'Bengt', lastName: 'Ek', age: 58, gender: 'm' as const, role: 'kassör' as const, personality: 'ekonom' as const },
+  { id: 'ledamot-0', firstName: 'Sture', lastName: 'Almqvist', age: 67, gender: 'm' as const, role: 'ledamot' as const, personality: 'supporter' as const },
 ]
 const newGoalsSet = [
   { id: 'g-sport', type: 'sporting', label: 'Topp 6', description: 'Ett steg upp', ownerId: 'b1', ownerPersonality: 'traditionalist', targetValue: 6, currentValue: 0, measureFn: 'placement', status: 'active', assignedSeason: 3, successReward: '', failureConsequence: '', carryOver: false },
@@ -447,9 +449,9 @@ const histC = [
   { season: 2, objectiveId: 'b', result: 'failed' as const, ownerReaction: '', label: 'Undvik kvalstrid' },
   { season: 2, objectiveId: 'c', result: 'met' as const, ownerReaction: '', label: 'Egenfostrad i startelva' },
 ]
-const boardGameA = makeGame(makeLeagueFixtures(), { currentSeason: 2, boardPersonalities, boardObjectives: newGoalsSet, boardObjectiveHistory: histA, seasonStartFinances: 62000 })
-const boardGameB = makeGame(makeLeagueFixtures(), { currentSeason: 3, boardPersonalities, boardObjectives: stretchGoalsSet, boardObjectiveHistory: histB, seasonStartFinances: 40000 })
-const boardGameC = makeGame(makeLeagueFixtures(), { currentSeason: 3, boardPersonalities, boardObjectives: newGoalsSet, boardObjectiveHistory: histC, seasonStartFinances: 120000 })
+const boardGameA = makeGame(makeLeagueFixtures(), { currentSeason: 2, board, boardObjectives: newGoalsSet, boardObjectiveHistory: histA, seasonStartFinances: 62000 })
+const boardGameB = makeGame(makeLeagueFixtures(), { currentSeason: 3, board, boardObjectives: stretchGoalsSet, boardObjectiveHistory: histB, seasonStartFinances: 40000 })
+const boardGameC = makeGame(makeLeagueFixtures(), { currentSeason: 3, board, boardObjectives: newGoalsSet, boardObjectiveHistory: histC, seasonStartFinances: 120000 })
 
 export function DevScenesScreen() {
   // ?scene=<id> för deterministisk headless-capture (scripts/capture-scenes.mjs)

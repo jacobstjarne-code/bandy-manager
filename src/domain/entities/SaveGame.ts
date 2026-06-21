@@ -3,7 +3,7 @@ import type { MatchdaySlot } from '../services/scheduleGenerator'
 import type { NotableEventType } from '../data/klackEchoText'
 import type { SeasonPhase } from '../data/seasonPhases'
 import type { SeasonSignature } from './SeasonSignature'
-import type { Club } from './Club'
+import type { Club, BoardMember, BoardRole, BoardPersonality } from './Club'
 import type { Player } from './Player'
 import type { League } from './League'
 import type { Fixture, TeamSelection } from './Fixture'
@@ -28,12 +28,13 @@ import type { PendingScene, SceneId } from './Scene'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'
-import type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
+import type { CommunityActivities, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
 import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord } from './Narrative'
 
 // ── Re-exports so existing `import from '../entities/SaveGame'` still works ──
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
-export type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
+export type { CommunityActivities, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
+export type { BoardMember, BoardRole, BoardPersonality }
 export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord }
 export type { StandingRow }
 export type { InboxItem }
@@ -167,7 +168,7 @@ export interface SaveGame {
   localPolitician?: LocalPolitician
   previousKommunBidrag?: number
   politicianLastInteraction?: PoliticianInteractionLog
-  boardPersonalities?: BoardMember[]
+  board?: BoardMember[]   // KF4: EN styrelsemodell (ersätter boardPersonalities + club.board)
   hallDebateCount?: number
   lastHallDebateRound?: number
   lastEconomicStressRound?: number

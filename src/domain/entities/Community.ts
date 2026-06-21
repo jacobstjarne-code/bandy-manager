@@ -1,3 +1,5 @@
+import type { BoardPersonality } from './Club'
+
 export interface CommunityActivities {
   kiosk: 'none' | 'basic' | 'upgraded'
   lottery: 'none' | 'basic' | 'intensive'
@@ -13,14 +15,8 @@ export interface CommunityActivities {
   skolbesok?: boolean         // Skolbesök — nästa generations supportrar
 }
 
-export type BoardPersonality = 'supporter' | 'ekonom' | 'traditionalist' | 'modernist'
-export type BoardRole = 'ordförande' | 'kassör' | 'ledamot'
-
-export interface BoardMember {
-  name: string
-  role: BoardRole
-  personality: BoardPersonality
-}
+// KF4 (2026-06-21): BoardMember, BoardRole, BoardPersonality bor nu i Club.ts (EN modell).
+// BoardPersonality används i BoardObjective.ownerPersonality (importeras överst).
 
 export type PatronPersonality = 'selfless' | 'controlling' | 'strategic' | 'nostalgic'
 

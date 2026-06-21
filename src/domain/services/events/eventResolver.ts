@@ -1015,11 +1015,23 @@ export function resolveEvent(
   }
 
   // Special: spoksponsor accept — add board member modernist
+  // KF4 (2026-06-21): EN styrelsemodell — bygg full BoardMember på game.board.
+  // Namn behålls som 'Okänd Investerare' (uppdelat), kön/ålder deterministisk default.
   if (event.type === 'spoksponsor' && choiceId === 'accept') {
-    const newMember = { name: 'Okänd Investerare', role: 'ledamot' as const, personality: 'modernist' as const }
+    const existing = updatedGame.board ?? []
+    const ledamotCount = existing.filter(m => m.role === 'ledamot').length
+    const newMember = {
+      id: `ledamot-${ledamotCount}`,
+      firstName: 'Okänd',
+      lastName: 'Investerare',
+      age: 50,
+      gender: 'm' as const,
+      role: 'ledamot' as const,
+      personality: 'modernist' as const,
+    }
     updatedGame = {
       ...updatedGame,
-      boardPersonalities: [...(updatedGame.boardPersonalities ?? []), newMember],
+      board: [...existing, newMember],
     }
   }
 

@@ -3,7 +3,7 @@ import { getBoardMeetingBeats, shouldTriggerBoardMeeting } from '../boardMeeting
 import { migrateSaveGame } from '../../../../infrastructure/persistence/saveGameMigration'
 import { CLUB_TEMPLATES } from '../../../services/worldGenerator'
 import type { SaveGame } from '../../../entities/SaveGame'
-import type { Club } from '../../../entities/Club'
+import type { Club, BoardMember } from '../../../entities/Club'
 
 // ─── Minimal Club factory ──────────────────────────────────────────────────
 
@@ -29,10 +29,21 @@ function makeClub(overrides: Partial<Club> = {}): Club {
     activeTactic: {} as never,
     squadPlayerIds: [],
     arenaName: 'Slagghögen',
-    board: template.board,
     clubhouse: template.clubhouse,
     ...overrides,
   }
+}
+
+// KF4 (2026-06-21): styrelsen lever på game.board (EN modell). Bygg den från template-namn
+// + en personlighet per roll, precis som createNewGame/migration gör.
+function makeBoard(clubId: string): BoardMember[] {
+  const tb = CLUB_TEMPLATES.find(t => t.id === clubId)?.board
+    ?? CLUB_TEMPLATES[0].board
+  return [
+    { id: 'ordforande-0', ...tb.chairman, role: 'ordförande', personality: 'supporter' },
+    { id: 'kassor-0', ...tb.treasurer, role: 'kassör', personality: 'ekonom' },
+    { id: 'ledamot-0', ...tb.member, role: 'ledamot', personality: 'traditionalist' },
+  ]
 }
 
 // ─── Minimal SaveGame factory ──────────────────────────────────────────────
@@ -59,7 +70,6 @@ function makeGame(overrides: {
     transferBudget: overrides.transferBudget ?? 65000,
     squadPlayerIds: Array.from({ length: squadSize }, (_, i) => `p${i}`),
     arenaName: template?.arenaName,
-    board: template?.board,
     clubhouse: template?.clubhouse,
   })
 
@@ -77,6 +87,7 @@ function makeGame(overrides: {
     currentSeason: season,
     currentMatchday: overrides.matchday ?? 0,
     clubs: [club],
+    board: makeBoard(clubId),
     players: players as never,
     fixtures: [],
     standings: [],
@@ -173,10 +184,9 @@ describe('BoardMeetingScene — getBoardMeetingBeats', () => {
     expect(beats[1].body).toContain('3 kontrakt går ut i vår')
   })
 
-  it('returnerar tom array om board saknas på klubb', () => {
+  it('returnerar tom array om game.board saknas', () => {
     const game = makeGame()
-    const clubWithoutBoard = { ...game.clubs[0], board: undefined }
-    const gameWithoutBoard = { ...game, clubs: [clubWithoutBoard] }
+    const gameWithoutBoard = { ...game, board: undefined }
     const beats = getBoardMeetingBeats(gameWithoutBoard as never)
     expect(beats).toHaveLength(0)
   })
@@ -202,10 +212,10 @@ describe('shouldTriggerBoardMeeting — trigger-villkor', () => {
   })
 })
 
-// ─── Club migration ──────────────────────────────────────────────────────
+// ─── Club migration (KF4: club.board → game.board) ─────────────────────────
 
-describe('Club migration — board + clubhouse', () => {
-  it('lägger till board och clubhouse på saves som saknar dem', () => {
+describe('Board migration — game.board + clubhouse', () => {
+  it('seedar game.board och clubhouse på saves som saknar styrelse-data', () => {
     const oldSave = {
       id: 'old',
       managerName: 'Test',
@@ -249,13 +259,16 @@ describe('Club migration — board + clubhouse', () => {
     }
 
     const migrated = migrateSaveGame(oldSave)
+    const chair = migrated.board?.find(m => m.role === 'ordförande')
+    expect(chair?.firstName).toBe('Lars')
+    expect(chair?.lastName).toBe('Berglund')
     const club = migrated.clubs.find(c => c.id === 'club_forsbacka')
-    expect(club?.board?.chairman.firstName).toBe('Lars')
-    expect(club?.board?.chairman.lastName).toBe('Berglund')
     expect(club?.clubhouse).toBe('klubbhuset vid Slagghögen')
+    // KF4: club.board ska vara borta (konsoliderat till game.board)
+    expect((club as Record<string, unknown> | undefined)?.board).toBeUndefined()
   })
 
-  it('bevarar befintliga board-värden — skriver inte över', () => {
+  it('bevarar befintliga club.board-namn — template skriver inte över egna namn', () => {
     const existingBoard = {
       chairman: { firstName: 'Befintlig', lastName: 'Chef', age: 50, gender: 'm' as const },
       treasurer: { firstName: 'Befintlig', lastName: 'Kassör', age: 45, gender: 'f' as const },
@@ -305,8 +318,10 @@ describe('Club migration — board + clubhouse', () => {
     }
 
     const migrated = migrateSaveGame(saveWithBoard)
+    const chair = migrated.board?.find(m => m.role === 'ordförande')
+    expect(chair?.firstName).toBe('Befintlig')
+    expect(chair?.lastName).toBe('Chef')
     const club = migrated.clubs.find(c => c.id === 'club_forsbacka')
-    expect(club?.board?.chairman.firstName).toBe('Befintlig')
     expect(club?.clubhouse).toBe('mitt befintliga klubbhus')
   })
 })

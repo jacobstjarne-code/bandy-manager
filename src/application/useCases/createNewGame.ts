@@ -116,41 +116,44 @@ function generatePolitician(rand: () => number): LocalPolitician {
   }
 }
 
-function generateBoardMembers(rand: () => number): BoardMember[] {
-  const ordforanden = BOARD_PROFILES.filter(p => p.role === 'ordförande')
-  const kassorer = BOARD_PROFILES.filter(p => p.role === 'kassör')
-  const ledamoter = BOARD_PROFILES.filter(p => p.role === 'ledamot')
+// KF4 (2026-06-21): EN styrelsemodell. Namn/kön/ålder kommer från den managed klubbens
+// CLUB_TEMPLATES.board (handskrivna namn vinner). Personlighet slumpas in med samma
+// diversitets-logik som tidigare (kassör ≠ ordf, ledamot helst ny). BOARD_PROFILES
+// degraderad till ren personlighetspool — dess namn visas inte längre.
+function generateBoardMembers(clubId: string, rand: () => number): BoardMember[] {
+  const template = CLUB_TEMPLATES.find(t => t.id === clubId)?.board
 
-  // Pick chair first
-  const chair = pickRandom(ordforanden, rand)
+  // Personlighetspool per roll (från BOARD_PROFILES, namnen ignoreras nu)
+  const ordfPers = BOARD_PROFILES.filter(p => p.role === 'ordförande').map(p => p.personality)
+  const kassPers = BOARD_PROFILES.filter(p => p.role === 'kassör').map(p => p.personality)
+  const ledaPers = BOARD_PROFILES.filter(p => p.role === 'ledamot').map(p => p.personality)
 
-  // Treasurer must have DIFFERENT personality than chair
-  const treasurerCandidates = kassorer.filter(p => p.personality !== chair.personality)
-  const treasurer = treasurerCandidates.length > 0
+  const chairPersonality = pickRandom(ordfPers, rand)
+
+  // Kassör: annan personlighet än ordförande om möjligt
+  const treasurerCandidates = kassPers.filter(p => p !== chairPersonality)
+  const treasurerPersonality = treasurerCandidates.length > 0
     ? pickRandom(treasurerCandidates, rand)
-    : pickRandom(kassorer, rand)
+    : pickRandom(kassPers, rand)
 
-  // Pick 1-3 ledamöter, ensuring personality diversity
-  const usedPersonalities = new Set([chair.personality, treasurer.personality])
-  const memberCount = 1 + Math.floor(rand() * 2) // 1-2 members
+  // Ledamot: helst en personlighet som inte redan används
+  const used = new Set([chairPersonality, treasurerPersonality])
+  const diverse = ledaPers.filter(p => !used.has(p))
+  const memberPersonality = diverse.length > 0
+    ? pickRandom(diverse, rand)
+    : pickRandom(ledaPers, rand)
 
-  // First member: prefer a personality not yet used
-  const diverseCandidates = ledamoter.filter(p => !usedPersonalities.has(p.personality))
-  const firstMember = diverseCandidates.length > 0
-    ? pickRandom(diverseCandidates, rand)
-    : pickRandom(ledamoter, rand)
+  // Namn/kön/ålder från template. Fallback (defensivt — alla klubbar har template):
+  const fallback = { firstName: 'Okänd', lastName: 'Styrelseledamot', age: 55, gender: 'm' as const }
+  const chair = template?.chairman ?? fallback
+  const treasurer = template?.treasurer ?? fallback
+  const member = template?.member ?? fallback
 
-  const members = [firstMember]
-  if (memberCount > 1) {
-    const remaining = ledamoter.filter(p => p.first !== firstMember.first || p.last !== firstMember.last)
-    members.push(pickRandom(remaining, rand))
-  }
-
-  return [chair, treasurer, ...members].map(p => ({
-    name: `${p.first} ${p.last}`,
-    role: p.role,
-    personality: p.personality,
-  }))
+  return [
+    { id: 'ordforande-0', firstName: chair.firstName, lastName: chair.lastName, age: chair.age, gender: chair.gender, role: 'ordförande' as const, personality: chairPersonality },
+    { id: 'kassor-0', firstName: treasurer.firstName, lastName: treasurer.lastName, age: treasurer.age, gender: treasurer.gender, role: 'kassör' as const, personality: treasurerPersonality },
+    { id: 'ledamot-0', firstName: member.firstName, lastName: member.lastName, age: member.age, gender: member.gender, role: 'ledamot' as const, personality: memberPersonality },
+  ]
 }
 
 export interface CreateNewGameInput {
@@ -271,7 +274,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const initialMecenater = rand() < 0.5 ? [generateMecenat(input.clubId, input.season ?? 2025, rand)] : []
   const patron = generatePatron(managedClub.reputation, managedPlayers, rand)
   const localPolitician = generatePolitician(rand)
-  const boardPersonalities = generateBoardMembers(rand)
+  const board = generateBoardMembers(input.clubId, rand)
 
   const communityActivities: CommunityActivities = {
     kiosk: 'none',
@@ -332,7 +335,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     storylines: [],
     clubLegends: [],
     trainerArc: createTrainerArc(),
-    boardObjectives: generateBoardObjectives(managedClub, { players, clubs: clubsFixed, rivalryHistory: {}, fanMood: 50, currentSeason: season, boardObjectiveHistory: [] }, boardPersonalities, rand),
+    boardObjectives: generateBoardObjectives(managedClub, { players, clubs: clubsFixed, rivalryHistory: {}, fanMood: 50, currentSeason: season, boardObjectiveHistory: [] }, board, rand),
     boardObjectiveHistory: [],
     onboardingStep: 0,
     mecenater: initialMecenater,
@@ -360,7 +363,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     journalist,
     patron,
     localPolitician,
-    boardPersonalities,
+    board,
     hallDebateCount: 0,
     lastHallDebateRound: 0,
     youthTeam: generateYouthTeam(managedClub, 'basic', season, (input.seed ?? 42) + 77777),

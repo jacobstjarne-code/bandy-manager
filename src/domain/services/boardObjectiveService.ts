@@ -13,6 +13,12 @@ interface BoardObjectiveGameContext {
 
 // ── Objective factories ─────────────────────────────────────────────────────
 
+// KF4 (2026-06-21): BoardMember bär firstName/lastName (inte längre .name).
+// ownerId behåller visningsnamnet (renderas i OrtenTab/BoardObjectivesList/inbox-titlar).
+function displayName(m: BoardMember): string {
+  return `${m.firstName} ${m.lastName}`
+}
+
 function makeObjective(
   id: string, type: BoardObjective['type'], label: string, description: string,
   owner: BoardMember, measureFn: string, targetValue: number,
@@ -21,7 +27,7 @@ function makeObjective(
 ): BoardObjective {
   return {
     id, type, label, description,
-    ownerId: owner.name,
+    ownerId: displayName(owner),
     ownerPersonality: owner.personality,
     targetValue, currentValue: 0, measureFn,
     status: 'active',
@@ -38,14 +44,14 @@ const BALANCE_DESCRIPTIONS = [
 ]
 
 function balanceBudget(owner: BoardMember, season: number): BoardObjective {
-  const desc = `${owner.name}: "${BALANCE_DESCRIPTIONS[season % BALANCE_DESCRIPTIONS.length]}"`
+  const desc = `${displayName(owner)}: "${BALANCE_DESCRIPTIONS[season % BALANCE_DESCRIPTIONS.length]}"`
   return makeObjective(
     'balanceBudget', 'economic',
     'Håll ekonomin i balans',
     desc,
     owner, 'balanceBudget', 0,
-    `${owner.name}: "Tack. Klokt hanterat."`,
-    `${owner.name}: "Minus igen. Jag noterar mitt missnöje."`,
+    `${displayName(owner)}: "Tack. Klokt hanterat."`,
+    `${displayName(owner)}: "Minus igen. Jag noterar mitt missnöje."`,
     true, season,
   )
 }
@@ -54,10 +60,10 @@ function growFinances(owner: BoardMember, season: number): BoardObjective {
   return makeObjective(
     'growFinances', 'economic',
     'Öka klubbkassan med 100 tkr',
-    `${owner.name}: "Ekonomin är stabil men vi kan bättre. Jag vill se 100 000 mer vid säsongsslut."`,
+    `${displayName(owner)}: "Ekonomin är stabil men vi kan bättre. Jag vill se 100 000 mer vid säsongsslut."`,
     owner, 'growFinances', 100000,
-    `${owner.name}: "Imponerande. Kassan växer."`,
-    `${owner.name}: "Vi nådde inte målet. Men vi överlevde."`,
+    `${displayName(owner)}: "Imponerande. Kassan växer."`,
+    `${displayName(owner)}: "Vi nådde inte målet. Men vi överlevde."`,
     false, season,
   )
 }
@@ -70,14 +76,14 @@ const HOMEGROWN_DESCRIPTIONS = [
 ]
 
 function playHomegrown(owner: BoardMember, season: number): BoardObjective {
-  const desc = `${owner.name}: "${HOMEGROWN_DESCRIPTIONS[season % HOMEGROWN_DESCRIPTIONS.length]}"`
+  const desc = `${displayName(owner)}: "${HOMEGROWN_DESCRIPTIONS[season % HOMEGROWN_DESCRIPTIONS.length]}"`
   return makeObjective(
     'playHomegrown', 'academy',
     'Minst 3 egenfostrade i startelvan',
     desc,
     owner, 'playHomegrown', 3,
-    `${owner.name}: "Så ska det se ut. Pojkarna från orten i startelvan."`,
-    `${owner.name}: "Inte en enda egenforstrad i startelvan. Det tar jag personligt."`,
+    `${displayName(owner)}: "Så ska det se ut. Pojkarna från orten i startelvan."`,
+    `${displayName(owner)}: "Inte en enda egenforstrad i startelvan. Det tar jag personligt."`,
     true, season,
   )
 }
@@ -86,10 +92,10 @@ function growFanbase(owner: BoardMember, season: number): BoardObjective {
   return makeObjective(
     'growFanbase', 'community',
     'Klackens humör ska nå 70',
-    `${owner.name}: "Publiken måste tillbaka. Vi behöver stämning på läktarna. Humöret uppe i 70 — det är målet."`,
+    `${displayName(owner)}: "Publiken måste tillbaka. Vi behöver stämning på läktarna. Humöret uppe i 70 — det är målet."`,
     owner, 'growFanbase', 70,
-    `${owner.name}: "Stämningen är tillbaka! Bra jobbat."`,
-    `${owner.name}: "Läktarna är fortfarande halvtomma. Vi måste hitta vägen tillbaka."`,
+    `${displayName(owner)}: "Stämningen är tillbaka! Bra jobbat."`,
+    `${displayName(owner)}: "Läktarna är fortfarande halvtomma. Vi måste hitta vägen tillbaka."`,
     false, season,
   )
 }
@@ -98,10 +104,10 @@ function cupRun(owner: BoardMember, season: number): BoardObjective {
   return makeObjective(
     'cupRun', 'sporting',
     'Gå långt i cupen',
-    `${owner.name}: "Semifinal — det är allt jag ber om. Ge oss en cupresa att minnas."`,
+    `${displayName(owner)}: "Semifinal — det är allt jag ber om. Ge oss en cupresa att minnas."`,
     owner, 'cupRun', 3,
-    `${owner.name}: "SEMIFINAL! Jag har väntat 15 år på det här!"`,
-    `${owner.name}: "Cupen blev en besvikelse. Men ligan är viktigast."`,
+    `${displayName(owner)}: "SEMIFINAL! Jag har väntat 15 år på det här!"`,
+    `${displayName(owner)}: "Cupen blev en besvikelse. Men ligan är viktigast."`,
     false, season,
   )
 }
@@ -110,10 +116,10 @@ function improveFacilities(owner: BoardMember, season: number): BoardObjective {
   return makeObjective(
     'improveFacilities', 'community',
     'Förbättra anläggningen',
-    `${owner.name}: "Anläggningen är under all kritik. Starta minst ett projekt den här säsongen."`,
+    `${displayName(owner)}: "Anläggningen är under all kritik. Starta minst ett projekt den här säsongen."`,
     owner, 'improveFacilities', 1,
-    `${owner.name}: "Bra! Äntligen händer det något."`,
-    `${owner.name}: "Ingenting gjort med anläggningen. Igen."`,
+    `${displayName(owner)}: "Bra! Äntligen händer det något."`,
+    `${displayName(owner)}: "Ingenting gjort med anläggningen. Igen."`,
     true, season,
   )
 }
@@ -127,10 +133,10 @@ function improveYouth(owner: BoardMember, season: number): BoardObjective {
   return makeObjective(
     'improveYouth', 'academy',
     'Lyft en spelare från akademin',
-    `${owner.name}: "${descs[season % descs.length]}"`,
+    `${displayName(owner)}: "${descs[season % descs.length]}"`,
     owner, 'improveYouth', 1,
-    `${owner.name}: "Bra — akademin levererar."`,
-    `${owner.name}: "Ingen ny spelare från akademin. Vad gör vi egentligen där nere?"`,
+    `${displayName(owner)}: "Bra — akademin levererar."`,
+    `${displayName(owner)}: "Ingen ny spelare från akademin. Vad gör vi egentligen där nere?"`,
     false, season,
   )
 }
@@ -144,10 +150,10 @@ function reduceInjuries(owner: BoardMember, season: number): BoardObjective {
   return makeObjective(
     'reduceInjuries', 'sporting',
     'Max 5 skador under säsongen',
-    `${owner.name}: "${descs[season % descs.length]}"`,
+    `${displayName(owner)}: "${descs[season % descs.length]}"`,
     owner, 'reduceInjuries', 5,
-    `${owner.name}: "Friska spelare, bra säsong. Så enkelt är det."`,
-    `${owner.name}: "Skadeläget blev för dåligt. Vi måste se över träningen."`,
+    `${displayName(owner)}: "Friska spelare, bra säsong. Så enkelt är det."`,
+    `${displayName(owner)}: "Skadeläget blev för dåligt. Vi måste se över träningen."`,
     false, season,
   )
 }
@@ -161,10 +167,10 @@ function topHalfFinish(owner: BoardMember, season: number): BoardObjective {
   return makeObjective(
     'topHalf', 'sporting',
     'Sluta topp 6',
-    `${owner.name}: "${descs[season % descs.length]}"`,
+    `${displayName(owner)}: "${descs[season % descs.length]}"`,
     owner, 'topHalf', 6,
-    `${owner.name}: "Topp 6! Vi är på rätt väg."`,
-    `${owner.name}: "Under nedre halvan. Inte godkänt."`,
+    `${displayName(owner)}: "Topp 6! Vi är på rätt väg."`,
+    `${displayName(owner)}: "Under nedre halvan. Inte godkänt."`,
     false, season,
   )
 }
@@ -173,10 +179,10 @@ function beatRival(owner: BoardMember, rivalName: string, season: number): Board
   return makeObjective(
     'beatRival', 'sporting',
     `Slå ${rivalName}`,
-    `${owner.name}: "Vi MÅSTE slå ${rivalName} den här säsongen. Jag vet inte vad jag ska säga till grabbarna på jobbet annars."`,
+    `${displayName(owner)}: "Vi MÅSTE slå ${rivalName} den här säsongen. Jag vet inte vad jag ska säga till grabbarna på jobbet annars."`,
     owner, 'beatRival', 1,
-    `${owner.name}: "Vi slog ${rivalName}! Det räcker för hela säsongen."`,
-    `${owner.name}: "Vi förlorade derbyt. Igen. Tungt."`,
+    `${displayName(owner)}: "Vi slog ${rivalName}! Det räcker för hela säsongen."`,
+    `${displayName(owner)}: "Vi förlorade derbyt. Igen. Tungt."`,
     false, season,
   )
 }

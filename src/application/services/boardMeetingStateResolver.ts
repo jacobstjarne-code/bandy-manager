@@ -100,12 +100,12 @@ export function resolveBoardMeetingState(game: SaveGame): BoardMeetingData {
   // Nya mål (denna säsong)
   const newGoals = game.boardObjectives ?? []
 
-  // Ordförande — game.boardPersonalities (name/role) prioriteras, annars club.board.chairman (firstName/lastName)
-  const personality = game.boardPersonalities?.find(m => m.role === 'ordförande')
-  const boardChairman = club?.board?.chairman
-  const chairmanName = personality?.name
-    ?? (boardChairman ? `${boardChairman.firstName} ${boardChairman.lastName}` : 'Margareta')
-  const chairmanRole = personality?.role ?? 'ordförande'
+  // Ordförande — KF4 (2026-06-21): EN källa, game.board (find-by-role). Samma källa som
+  // boardMeetingScene-beats → dubbelnamnet är borta. Efter migration finns game.board alltid;
+  // fallback-strängen är död kod men behålls som defensiv sista-utväg.
+  const chair = game.board?.find(m => m.role === 'ordförande')
+  const chairmanName = chair ? `${chair.firstName} ${chair.lastName}` : 'Ordföranden'
+  const chairmanRole = chair?.role ?? 'ordförande'
 
   return {
     state,

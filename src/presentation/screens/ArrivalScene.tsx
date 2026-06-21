@@ -5,7 +5,7 @@ import { getStureLine } from '../../domain/data/arrivalDialogue'
 import { BoardObjectivesList } from '../components/portal/secondary/BoardObjectivesList'
 import { IllustrationScene } from '../components/illustration/IllustrationScene'
 import type { BoardObjective } from '../../domain/entities/Community'
-import type { ClubBoard } from '../../domain/entities/Club'
+import type { BoardMember } from '../../domain/entities/Club'
 
 type Phase = 'setting' | 'margareta' | 'sture' | 'objectives' | 'cta'
 
@@ -18,7 +18,7 @@ function phaseGte(current: Phase, target: Phase): boolean {
 interface ArrivalSceneInnerProps {
   clubId: string
   clubName: string
-  board: ClubBoard
+  board: BoardMember[]
   objectives: BoardObjective[]
   onComplete: () => void
 }
@@ -67,8 +67,9 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, onComplete }: 
     setSettingIn(true)
   }
 
-  const treasurer = board.treasurer  // kassör
-  const member = board.member        // ledamot — byns röst
+  // KF4 (2026-06-21): styrelsen är en BoardMember[] — kassör/ledamot via roll.
+  const treasurer = board.find(m => m.role === 'kassör')!  // kassör
+  const member = board.find(m => m.role === 'ledamot')!    // ledamot — byns röst
   const memberLine = getStureLine(clubId)
   const treasurerLine = `"Det här är en gammal klubb. Vi förväntar oss inte mirakel — men vi förväntar oss att det syns att du bryr dig. Tre kontrakt löper ut. Snacka med dom tidigt."`
 
@@ -189,8 +190,10 @@ export function ArrivalScene() {
     navigate('/', { replace: true })
     return null
   }
-  if (!managedClub.board) {
-    // Defensiv: genererade klubbar har alltid styrelse. Hoppa hellre intro än krascha.
+  // KF4 (2026-06-21): styrelsen bor på game.board (EN modell), inte club.board.
+  const board = game.board
+  if (!board || board.length === 0) {
+    // Defensiv: nya spel + migrerade saves har alltid styrelse. Hoppa hellre intro än krascha.
     navigate('/game/dashboard', { replace: true })
     return null
   }
@@ -199,7 +202,7 @@ export function ArrivalScene() {
     <ArrivalSceneInner
       clubId={managedClub.id}
       clubName={managedClub.name}
-      board={managedClub.board}
+      board={board}
       objectives={game.boardObjectives ?? []}
       onComplete={() => navigate('/game/dashboard', { replace: true })}
     />

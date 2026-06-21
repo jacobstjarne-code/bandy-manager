@@ -30,9 +30,15 @@ function formatTkr(amount: number): string {
 
 export function getBoardMeetingBeats(game: SaveGame): BoardMeetingBeat[] {
   const club = game.clubs.find(c => c.id === game.managedClubId)
-  if (!club || !club.board) return []
+  if (!club) return []
 
-  const { chairman, treasurer, member } = club.board
+  // KF4 (2026-06-21): styrelsen läses från game.board (EN modell) via roll, inte club.board.
+  // Body-texten läser nu samma källa som resolvern → ordförandenamnet är konsekvent.
+  const chairman = game.board?.find(m => m.role === 'ordförande')
+  const treasurer = game.board?.find(m => m.role === 'kassör')
+  const member = game.board?.find(m => m.role === 'ledamot')
+  if (!chairman || !treasurer || !member) return []
+
   const clubhouse = club.clubhouse ?? 'klubbhuset'
   const squadSize = club.squadPlayerIds.length
   const expiring = expiringContractsCount(club.squadPlayerIds, game.players, game.currentSeason)

@@ -1,4 +1,4 @@
-import type { Club, Tactic, ClubBoard } from '../entities/Club'
+import type { Club, Tactic } from '../entities/Club'
 import { generateOpponentManager } from './opponentManagerService'
 import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats, PlayerDayJob, SuspensionProfile } from '../entities/Player'
 import {
@@ -123,8 +123,23 @@ interface ClubTemplate {
   preferredStyle: ClubStyle
   arenaName: string
   supporterGroupName: string
-  board: ClubBoard
+  board: ClubBoardTemplate
   clubhouse: string
+}
+
+// KF4 (2026-06-21): namesource-shape för CLUB_TEMPLATES. Tidigare ClubBoard på Club-entiteten
+// (nu borttagen). Lever kvar HÄR som ren namnkälla — createNewGame seedar game.board[] från denna,
+// migration läser den för befintliga saves. Klubbar bär inte längre någon board-trippel själva.
+interface ClubBoardMemberTemplate {
+  firstName: string
+  lastName: string
+  age: number
+  gender: 'm' | 'f'
+}
+export interface ClubBoardTemplate {
+  chairman: ClubBoardMemberTemplate   // ordförande
+  treasurer: ClubBoardMemberTemplate  // kassör
+  member: ClubBoardMemberTemplate     // ledamot
 }
 
 export const CLUB_TEMPLATES: ClubTemplate[] = [
@@ -825,7 +840,6 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     arenaCapacity: Math.round((t.reputation * 7 + 150) / 50) * 50,
     arenaName: t.arenaName,
     opponentManager: generateOpponentManager(rng.next),
-    board: t.board,
     clubhouse: t.clubhouse,
   }))
 

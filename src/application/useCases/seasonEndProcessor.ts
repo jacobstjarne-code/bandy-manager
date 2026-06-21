@@ -907,8 +907,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   const objRand = mulberry32((seed ?? 42) + game.currentSeason * 777)
   const managedClubForObj = updatedClubs.find(c => c.id === game.managedClubId)
-  const newSeasonObjectives = managedClubForObj && game.boardPersonalities
-    ? generateBoardObjectives(managedClubForObj, game, game.boardPersonalities, objRand)
+  const newSeasonObjectives = managedClubForObj && game.board
+    ? generateBoardObjectives(managedClubForObj, game, game.board, objRand)
     : []
 
   // ── Bandygalan ────────────────────────────────────────────────────────────
