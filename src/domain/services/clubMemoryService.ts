@@ -291,7 +291,7 @@ function calcWeight(source: ActiveMemorySource, memoryMatchday: number, currentM
   return SOURCE_BASE_WEIGHTS[source] * recencyFactor
 }
 
-function momentKind(source: MomentSource): ActiveMemoryKind {
+export function momentKind(source: MomentSource): ActiveMemoryKind {
   switch (source) {
     case 'derby_win':
     case 'sponsor_positive':
