@@ -14,6 +14,7 @@ import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
 import { formatSalary, positionShort } from '../utils/formatters'
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { mentorshipBondAdeptInForm, mentorshipBondAdeptResting } from '../../domain/data/mentorshipStrings'
+import { MessageCircle, Crown, Wind, MessageSquare, Megaphone, Smile, Flame } from 'lucide-react'
 
 export interface PlayerCardProps {
   player: Player
@@ -237,7 +238,7 @@ function MatchSparkline({ ratings }: { ratings: RecentMatchRating[] }) {
         })}
       </svg>
       <p style={{ fontSize: 9, color: trending ? 'var(--success)' : 'var(--danger)', textAlign: 'center', marginTop: 2 }}>
-        {trending ? '📈 Stigande form' : '📉 Vikande form'}
+        {trending ? '↑ Stigande form' : '↓ Vikande form'}
       </p>
     </div>
   )
@@ -487,13 +488,13 @@ export function PlayerCard({
               {onTalkToPlayer && (
                 <button onClick={e => { e.stopPropagation(); setOpenAction(a => a === 'prata' ? null : 'prata') }}
                   style={{ flex: 1, padding: '9px 8px', borderRadius: 'var(--radius-md)', background: openAction === 'prata' ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-surface)', border: '1px solid var(--border)', fontSize: 11, color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
-                  🗣 Prata
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><MessageCircle size={13} />Prata</span>
                 </button>
               )}
               {leadershipAvailable && (
                 <button onClick={e => { e.stopPropagation(); setOpenAction(a => a === 'ledarskap' ? null : 'ledarskap') }}
                   style={{ flex: 1, padding: '9px 8px', borderRadius: 'var(--radius-md)', background: openAction === 'ledarskap' ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-surface)', border: '1px solid var(--border)', fontSize: 11, color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
-                  👑 Ledarskap
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Crown size={13} />Ledarskap</span>
                 </button>
               )}
             </div>
@@ -802,7 +803,7 @@ export function PlayerCard({
                   </div>
                   {roundsSince >= 5 && (
                     <p style={{ fontSize: 10, color: 'var(--warning)', fontStyle: 'italic' }}>
-                      💬 Det var ett tag sen ni pratades vid.
+                      Det var ett tag sen ni pratades vid.
                     </p>
                   )}
                 </>
@@ -881,9 +882,9 @@ export function PlayerCard({
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {([
-                { id: 'lower_tempo' as LeadershipAction, label: '😮‍💨 Minska belastningen' },
-                { id: 'private_talk' as LeadershipAction, label: '🤫 Privat samtal' },
-                { id: 'public_praise' as LeadershipAction, label: '📣 Offentlig beröm' },
+                { id: 'lower_tempo' as LeadershipAction, icon: <Wind size={13} />, text: 'Minska belastningen' },
+                { id: 'private_talk' as LeadershipAction, icon: <MessageSquare size={13} />, text: 'Privat samtal' },
+                { id: 'public_praise' as LeadershipAction, icon: <Megaphone size={13} />, text: 'Offentlig beröm' },
               ]).map(opt => {
                 const avail = canLeadership(opt.id)
                 return (
@@ -900,9 +901,10 @@ export function PlayerCard({
                       fontFamily: 'var(--font-body)',
                       opacity: avail ? 1 : 0.4,
                       pointerEvents: avail ? undefined : 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                     }}
                   >
-                    {opt.label}
+                    {opt.icon}{opt.text}
                   </button>
                 )
               })}
@@ -941,9 +943,9 @@ export function PlayerCard({
           ) : (
             <div style={{ display: 'flex', gap: 6 }}>
               {([
-                { id: 'encourage' as const, label: '😊 Uppmuntra' },
-                { id: 'demand' as const, label: '💪 Ställ krav' },
-                { id: 'future' as const, label: 'Framtid' },
+                { id: 'encourage' as const, icon: <Smile size={13} />, text: 'Uppmuntra' },
+                { id: 'demand' as const, icon: <Flame size={13} />, text: 'Ställ krav' },
+                { id: 'future' as const, icon: null, text: 'Framtid' },
               ]).map(opt => (
                 <button
                   key={opt.id}
@@ -958,9 +960,10 @@ export function PlayerCard({
                     fontFamily: 'var(--font-body)',
                     opacity: canTalk ? 1 : 0.4,
                     pointerEvents: canTalk ? undefined : 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                   }}
                 >
-                  {opt.label}
+                  {opt.icon}{opt.text}
                 </button>
               ))}
             </div>

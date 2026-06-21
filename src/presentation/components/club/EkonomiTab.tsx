@@ -194,7 +194,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
         </div>
         {wagePressure && (
           <p style={{ fontSize: 11, color: 'var(--danger)', marginBottom: 6 }}>
-            ⚠️ Lönekostnader överstiger lönebudget ({formatSalary(club.wageBudget)})
+            Lönekostnader överstiger lönebudget ({formatSalary(club.wageBudget)})
           </p>
         )}
         <div className="eco-row-top-border">

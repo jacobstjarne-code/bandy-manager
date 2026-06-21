@@ -866,7 +866,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const delta = p.marketValue - prev
     const pct = prev > 0 ? Math.abs(delta) / prev : 0
     if (pct >= 0.15 && Math.abs(delta) >= 10000) {
-      const arrow = delta > 0 ? '📈' : '📉'
+      const arrow = delta > 0 ? '↑' : '↓'
       const sign = delta > 0 ? '+' : ''
       marketValueInbox.push({
         id: `mv_${p.id}_${nextMatchday}`,
