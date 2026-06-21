@@ -22,7 +22,7 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): GameE
     return {
       id: eventId,
       type: 'criticalEconomy',
-      title: '🔴 Styrelsen ringer — krismöte',
+      title: 'Styrelsen ringer — krismöte',
       body: `Anders Lindgren (styrelsen) ringer klockan 22:17.\n\n"Jag har sett siffrorna. Vi är på ${managedClub.finances.toLocaleString('sv-SE')} kr. Det här är inte ett sponsorproblem — det är ett strukturellt problem. Jag vill träffa dig. I morgon. Inte på klubbkontoret. På Stadshotellet. Jag bjuder."`,
       sender: { name: 'Anders Lindgren', role: 'Styrelsens ordförande' },
       choices: [
@@ -81,7 +81,7 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): GameE
     return {
       id: eventId,
       type: 'criticalEconomy',
-      title: '🔴 Två vägar ur krisen',
+      title: 'Två vägar ur krisen',
       body: `Ekonomichefen har räknat. Det finns tre vägar:\n\n**A. Sälj ${bestName}.** Budet ligger på 350 000 kr. Det löser skulden men laget försvagas.\n\n**B. Kommunlån.** 300 000 kr över tre år. Räntan äter hälften av intäkterna. Politiskt känsligt.\n\n**C. Be mecenaten om hjälp.** Om ni har en aktiv mecenat kan han täcka 200 000 kr. Men det kostar i lojalitet.`,
       sender: { name: 'Johan Bergstedt', role: 'Ekonomichef' },
       relatedPlayerId: bestPlayer?.id,

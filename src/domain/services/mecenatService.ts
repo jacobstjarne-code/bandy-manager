@@ -448,7 +448,7 @@ export function generateSilentShoutEvent(
     return {
       id: `event_shout_threat_${mecenat.id}_${Date.now()}`,
       type: 'mecenatEvent',
-      title: `🔴 ${mecenat.name} hotar`,
+      title: `${mecenat.name} hotar`,
       sender: { name: mecenat.name, role: mecenat.business },
       body: `${mecenat.name}: "Om det inte blir ändringar överväger jag att dra mig tillbaka. Styrelsen borde lyssna."`,
       choices: [
