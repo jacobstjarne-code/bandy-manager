@@ -8,6 +8,18 @@ Syftet är inte formalism. Syftet är att om 6 månader ha ett svar på "varför
 
 ---
 
+## 2026-06-21 — Styrelsen konsolideras till en modell (KF4)
+
+**Problem:** Styrelsen lever på två oberoende ställen som beskriver samma tre personer men aldrig länkas: `club.board` (`ClubBoard` = chairman/treasurer/member, var och en `{firstName, lastName, age, gender}`, från CLUB_TEMPLATES) och `game.boardPersonalities` (`BoardMember[]` = `{name, role, personality}`, slumpas från BOARD_PROFILES). Följder: (1) ordföranden har två olika namn beroende på kodväg — ArrivalScene/boardMeetingScene visar template-namnet, resolver visar boardPersonalities-namnet med `?? 'Margareta'`; (2) två typer heter `BoardMember`; (3) kön och personlighet kan inte användas ihop utan join-by-role, och kardinaliteten divergerar (eventResolver lägger ledamot på boardPersonalities, club.board är fast trippel).
+
+**Beslut (Jacob):** Konsolidera till EN modell. `game.board: BoardMember[]` där varje medlem bär `{ id, firstName, lastName, age, gender, role, personality }`. Namn/kön/ålder seedas från managed-klubbens CLUB_TEMPLATES.board vid skapande (handskrivna namn vinner — de är narrativa tillgångar), personlighet slumpas in då. `boardPersonalities` och `ClubBoard`-trippeln utgår. Array stödjer eventResolvers tillägg naturligt. Spec: `docs/SPEC_KF4_STYRELSE_KONSOLIDERING_2026-06-21.md`.
+
+**Alternativ övervägt:** Behålla två källor men länka med delad `id`. Avvisat — löser inte typnamnskollisionen eller dubbelnamnet, och tvingar varje läsare att joina. Berika `club.board`-trippeln med personlighet (behåll trippel-formen). Avvisat — trippeln klarar inte eventResolvers dynamiska fjärde ledamot.
+
+**Konsekvens:** ~6 filer + migration + objektiv-signaturändring. BOARD_PROFILES degraderas till personlighetspool (namnen där slutar visas). Framtida styrelsekod läser `game.board`, aldrig `club.board` eller `boardPersonalities`. Implementeras av Code (iteration-tungt: migration av befintliga saves + stress-test).
+
+---
+
 ## 2026-06-18 — Efterklang nemesis grindas till nästa motståndare
 
 **Problem:** Efterklang-kortets nemesis-kandidat (spelare med ≥2 mål mot oss) väljs oavsett vem vi möter härnäst. Playtest: Robert Bergqvist (Slottsbron, 2 mål i cupen) visades före en Hälleforsnäs-match med ekot "Slottsbron igen. Det tar visst aldrig riktigt slut mellan er" — rématch-röst utan rématch. Ytan lovar något systemet inte håller.
