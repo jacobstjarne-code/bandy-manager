@@ -18,7 +18,7 @@ interface EkonomiTabProps {
 }
 
 export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTransferBudget, buyScoutRounds, onNavigateTab }: EkonomiTabProps) {
-  const [sponsorFeedback, setSponsorFeedback] = useState<string | null>(null)
+  const [sponsorFeedback, setSponsorFeedback] = useState<{ success: boolean; text: string } | null>(null)
   const [communityMsg, setCommunityMsg] = useState<{ key: string; text: string; ok: boolean } | null>(null)
   const [pendingTransferBudget, setPendingTransferBudget] = useState<number | null>(null)
   const [savedFeedback, setSavedFeedback] = useState(false)
@@ -270,8 +270,8 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
         {activeSponsors.length < maxSponsors && (
           <div style={{ marginTop: activeSponsors.length > 0 ? 10 : 0, paddingTop: activeSponsors.length > 0 ? 10 : 0, borderTop: activeSponsors.length > 0 ? '1px solid var(--border)' : 'none' }}>
             {sponsorFeedback && (
-              <p style={{ fontSize: 12, color: sponsorFeedback.startsWith('✅') ? 'var(--success)' : 'var(--text-muted)', marginBottom: 8 }}>
-                {sponsorFeedback}
+              <p style={{ fontSize: 12, color: sponsorFeedback.success ? 'var(--success)' : 'var(--text-muted)', marginBottom: 8 }}>
+                {sponsorFeedback.text}
               </p>
             )}
             <div className="eco-row">
@@ -283,9 +283,9 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                 onClick={() => {
                   const result = seekSponsor()
                   if (result.success && result.sponsor) {
-                    setSponsorFeedback(`✅ ${result.sponsor.name} tecknade avtal! +${formatFinanceAbs(result.sponsor.weeklyIncome)}/omg`)
+                    setSponsorFeedback({ success: true, text: `${result.sponsor.name} tecknade avtal! +${formatFinanceAbs(result.sponsor.weeklyIncome)}/omg` })
                   } else {
-                    setSponsorFeedback(`Ingen intresserad just nu. (2,5 tkr avdraget)`)
+                    setSponsorFeedback({ success: false, text: 'Ingen intresserad just nu. (2,5 tkr avdraget)' })
                   }
                   setTimeout(() => setSponsorFeedback(null), 4000)
                 }}
