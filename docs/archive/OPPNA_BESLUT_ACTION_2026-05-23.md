@@ -1,3 +1,9 @@
+# ⛔ HISTORISK — status i `docs/BACKLOG.md`. BYGG INTE PÅ DENNA.
+
+**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** 05-23 action-tracker (portal-kurering, öppna trådar, trupp-systemet, C-K1). Portal-kureringen är levererad; B-trådarna (kafferum-funktion, målmotor-stress, kafferum-seed) konsumerade (motorn kalibrerad <1%); trupp-arbetet (KORT/SYSTEM player card 2.0 + taktik) byggt. Ev. genuint obyggt: C-K1 landslag (eget framtidsspår) + trupp-POLISH-densitetsbeslutet — designunderlaget lever i `HANDOFF-C-K1-LANDSLAG` resp. `HANDOFF-TRUPP-POLISH` (mockups/arkiv), inte i denna tracker. Om något av dem ska byggas: spåret börjar i handoffen, inte här. **Statusfilen är `docs/BACKLOG.md`.** Lämnad som historik.
+
+---
+
 # ÖPPNA BESLUT — action-tracker (2026-05-23)
 
 **Av:** Opus. **Syfte:** Jacobs instruktion — samla det öppna OCH se till att det

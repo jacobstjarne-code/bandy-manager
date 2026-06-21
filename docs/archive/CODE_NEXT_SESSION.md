@@ -1,3 +1,9 @@
+# ⛔ HISTORISK — arbetsmetod ersatt. SE `docs/BACKLOG.md` + `CLAUDE.md`.
+
+**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** Detta beskriver den GAMLA arbetsmetoden: 14 sprintar mot public beta mot `ATGARDSBANK.md`/`SPRINT_INDEX.md` (76-punktsbanken). Den ersattes av tre-Claude-workflowen (Opus spec/körorder → Code bygger → Fable audit) med `docs/BACKLOG.md` som enda statusfil och CLAUDE.md som regelkanon. Code-disciplinreglerna här ("verifiera i kontext ej isolerat", "håll dig inom scope", "gissa inte") lever vidare i CLAUDE.md + Jacobs stående instruktioner — inget tappat. Sprintlistan (SPRINT_01–14) är död. Lämnad som historik.
+
+---
+
 # CODE — NÄSTA SESSION
 
 **Workflow:** Du arbetar genom 14 sprints mot public beta. Ett sprint i taget.

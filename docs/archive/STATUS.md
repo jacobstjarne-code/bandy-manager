@@ -1,3 +1,9 @@
+# ⛔ HISTORISK — status i `docs/BACKLOG.md`. BYGG INTE PÅ DENNA.
+
+**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** Status-bild från **27 april 2026** — två månader och hela RC-arc:en, B1, mentorskap, score-systemet (Våg 1–4), försoningssprinten och spelkänsle-sprinten före nuläget. Den beskriver spelet vid Sprint 22–28 och gör explicit anspråk på "enda sanning" — sant i april, inte nu. "AKTIVA DOCS"-tabellen längst ned listar gamla filer som "Aktuell"; lita inte på den. Kalibrerings-/kunskapsdata den refererar (bandygrytan, SCORELINE_REFERENCE, kunskapsbasen) lever i sina egna filer, inte här. **Statusfilen är `docs/BACKLOG.md`.** Lämnad som historik (snapshot av spelets form i april).
+
+---
+
 # BANDY MANAGER — STATUS
 
 **Uppdaterad:** 27 april 2026  
