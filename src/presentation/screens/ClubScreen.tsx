@@ -147,7 +147,7 @@ export function ClubScreen() {
 
         {/* ── Tab 3: Klubb ── */}
         {activeTab === 'orten' && (
-          <OrtenTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} />
+          <OrtenTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} onNavigateTab={(tab) => setActiveTab(tab as ClubTab)} />
         )}
 
         {/* ── Tab 4: Akademi ── */}

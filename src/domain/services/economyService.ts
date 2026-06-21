@@ -164,7 +164,7 @@ export interface CalcRoundIncomeParams {
  *   communityMatchIncome — events tied to a home match (kiosk, VIP-tält, etc.)
  *   communityRoundIncome — per-round regardless of home/away (lottery, bandySchool, socialMedia)
  *
- * bandyplay appears in both: per-match participant income + per-round streaming cost.
+ * bandyplay appears in both: per-match deltagaravgifter + per-round bandyskola-drift.
  * This matches the existing roundProcessor behaviour and is preserved intentionally.
  */
 export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreakdown {

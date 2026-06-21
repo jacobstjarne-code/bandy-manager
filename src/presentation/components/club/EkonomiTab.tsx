@@ -107,12 +107,12 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           : {}),
     },
     {
-      icon: '📺', name: 'Streamingavtal',
+      icon: '⛸️', name: 'Bandyskola för barn',
       active: !!ca?.bandyplay,
-      status: ca?.bandyplay ? 'Aktiv' : club.reputation < 40 ? 'Ingen intresserad ännu' : 'Möjligt',
+      status: ca?.bandyplay ? 'Aktiv' : 'Ej startad',
       income: ca?.bandyplay ? '~1 500/match' : '—',
       ...(!ca?.bandyplay
-        ? { actionKey: 'bandyplay', actionLevel: 'active', actionCost: 0, actionLabel: 'Teckna avtal — gratis' }
+        ? { actionKey: 'bandyplay', actionLevel: 'active', actionCost: 0, actionLabel: 'Starta — gratis' }
         : {}),
     },
     {

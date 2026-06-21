@@ -196,7 +196,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
           Bättre anläggning ger bättre träning, spelarutveckling och möjlighet att uppgradera akademin.
         </p>
         <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-          Uppgraderas via Orten-fliken.
+          Uppgraderas via Bygget-fliken.
         </p>
       </SectionCard>
 

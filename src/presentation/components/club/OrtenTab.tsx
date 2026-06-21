@@ -41,9 +41,10 @@ interface OrtenTabProps {
   interactWithPolitician?: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
   recruitVolunteer?: (name: string) => void
   activateCommunity?: (key: string, level: string) => { success: boolean; error?: string }
+  onNavigateTab?: (tab: string) => void
 }
 
-export function OrtenTab({ club, game, navigate, interactWithPolitician, recruitVolunteer, activateCommunity }: OrtenTabProps) {
+export function OrtenTab({ club, game, navigate, interactWithPolitician, recruitVolunteer, activateCommunity, onNavigateTab }: OrtenTabProps) {
   const [polFeedback, setPolFeedback] = useState<{ text: string; ok: boolean } | null>(null)
   const [activityFeedback, setActivityFeedback] = useState<{ text: string; ok: boolean } | null>(null)
 
@@ -118,20 +119,40 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
         {/* Samhällsaktiviteter — påverkar bygdens puls, inte inkomst */}
         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>ENGAGEMANG</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
+          {/* EkonomiTab äger aktivering — read-only status här */}
           {([
-            { key: 'functionaries', levels: [{ id: 'active', label: '🤝 Matchvärdar (2 tkr)', cost: 2000 }], current: ca?.functionaries ? 'active' : 'none', isEnum: false },
-            { key: 'bandyplay',     levels: [{ id: 'active', label: '⛸️ Bandyskola för barn (gratis)', cost: 0 }], current: ca?.bandyplay ? 'active' : 'none', isEnum: false },
-            { key: 'bandySchool',   levels: [{ id: 'active', label: '🏫 Bandyskola avancerad (5 tkr)', cost: 5000 }], current: ca?.bandySchool ? 'active' : 'none', isEnum: false },
-            { key: 'pensionarskaffe', levels: [{ id: 'active', label: '☕ Pensionärskaffe (gratis)', cost: 0 }], current: ca?.pensionarskaffe ? 'active' : 'none', isEnum: false },
-            { key: 'soppkvall',     levels: [{ id: 'active', label: '🍲 Soppkväll med laget (1 tkr)', cost: 1000 }], current: ca?.soppkvall ? 'active' : 'none', isEnum: false },
-            { key: 'skolbesok',     levels: [{ id: 'active', label: '🎒 Skolbesök (gratis)', cost: 0 }], current: ca?.skolbesok ? 'active' : 'none', isEnum: false },
+            { key: 'bandyplay' as const,     label: '⛸️ Bandyskola för barn', active: !!ca?.bandyplay },
+            { key: 'functionaries' as const,  label: '🏋️ Funktionärer',         active: !!ca?.functionaries },
+            { key: 'bandySchool' as const,    label: '🏫 Bandyskola avancerad', active: !!ca?.bandySchool },
+          ]).map(({ key, label, active }) => (
+            <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 12, color: active ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                {label}
+                {active && <span style={{ color: 'var(--success)', marginLeft: 4, fontSize: 10 }}>✓</span>}
+              </span>
+              {!active && onNavigateTab && (
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => onNavigateTab('ekonomi')}
+                  style={{ padding: '3px 8px', fontSize: 10, flexShrink: 0, color: 'var(--text-muted)' }}
+                >
+                  Ekonomi →
+                </button>
+              )}
+            </div>
+          ))}
+          {/* Orten äger dessa — knappar finns här */}
+          {([
+            { key: 'pensionarskaffe' as const, levels: [{ id: 'active', label: '☕ Pensionärskaffe', cost: 0 }], current: ca?.pensionarskaffe ? 'active' : 'none' },
+            { key: 'soppkvall' as const,       levels: [{ id: 'active', label: '🍲 Soppkväll med laget', cost: 1000 }], current: ca?.soppkvall ? 'active' : 'none' },
+            { key: 'skolbesok' as const,       levels: [{ id: 'active', label: '🎒 Skolbesök', cost: 0 }], current: ca?.skolbesok ? 'active' : 'none' },
           ] as const).map(({ key, levels, current }) => {
             const nextLevel = levels.find(l => l.id !== current)
             const isActive = current !== 'none'
             return (
               <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 12, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)' }}>
-                  {isActive ? levels.find(l => l.id === current)?.label.split('(')[0].trim() ?? key : levels[0].label.split('(')[0].trim()}
+                  {levels[0].label}
                   {isActive && <span style={{ color: 'var(--success)', marginLeft: 4, fontSize: 10 }}>✓</span>}
                 </span>
                 {nextLevel && (
@@ -167,7 +188,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
         </p>
       </SectionCard>
 
-      {/* Faciliteter moved to combined Anläggning section below */}
+      {/* Anläggning bor i FacilityScreen (/game/bygget) sedan Orten-rensningen eb2cf013 — arena-noden i Ortskartan deep-linkar dit. */}
 
       {/* Lokaltidningen */}
       {game.journalist && (() => {
