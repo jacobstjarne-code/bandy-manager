@@ -1290,6 +1290,9 @@ function* simulateMatchCore(
       const foulProb = attDiscipline * 0.4 + defDiscipline * 0.3
       const r        = rand()
       const activeFoulMult = isHomeAttacking ? homeModeFoulMult : awayModeFoulMult
+      // refStyle påverkar INTE foulThreshold — intentional tona-ned (D-MOTOR 2026-06-22).
+      // refStyle styr commentary (referee_strict/lenient) men inte foulfrekvensen.
+      // En refStyle-term i foulThreshold vore en kalibreringsrunda; billigare som presentation.
       const foulThreshold = foulProb * 1.46 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult  // Sprint 25b.2.2: was 1.25 (0.55 pre-25b.2)
 
       if (r < foulThreshold) {
