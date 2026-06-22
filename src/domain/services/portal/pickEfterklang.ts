@@ -89,7 +89,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   }
 
   // Klack echo
-  if (game.klackEcho && game.klackEcho.currentWeight > 20) {
+  if (game.klackEcho && game.klackEcho.currentWeight > 0.20) {
     const echo = pickEcho('klackEcho', seed + 1)
     // B4 — premiss på currentWeight
     const w = game.klackEcho.currentWeight

@@ -127,7 +127,7 @@ export interface RoundIncomeBreakdown {
   matchRevenue: number           // ticket/gate revenue for a home match (0 if away/no match)
   communityMatchIncome: number   // kiosk/vipTent/functionaries/bandyplay per home match, net
   communityRoundIncome: number   // lottery/bandySchool/socialMedia per round, net
-  volunteerIncome: number        // active volunteers × 600 per round
+  volunteerIncome: number        // active volunteers, role-based income (avg 340/vol) per round
   kommunBidrag: number           // reputation × communityStanding-based bidrag (once at round 1)
   weeklyWages: number            // monthly salary total / 4
   weeklyArenaCost: number        // arenaCapacity × 5 per round

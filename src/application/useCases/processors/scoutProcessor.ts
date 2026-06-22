@@ -42,7 +42,7 @@ export function processScouts(
     if (updatedScoutAssignment.roundsRemaining <= 0) {
       const target = finalPlayers.find(p => p.id === updatedScoutAssignment!.targetPlayerId)
       if (target) {
-        const scoutAccuracy = 70
+        const scoutAccuracy = Math.min(95, 50 + (game.scoutBudget ?? 10) * 2)
         const scoutSeed = baseSeed + nextMatchday * 17 + target.id.charCodeAt(0)
         const report: ScoutReport = processScoutAssignment(
           updatedScoutAssignment,

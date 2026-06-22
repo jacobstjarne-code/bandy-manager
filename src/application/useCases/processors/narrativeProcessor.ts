@@ -200,7 +200,7 @@ export function processNarrative(
         goalsAgainstUs: 0,
       }
       const newTotal = prev.goalsAgainstUs + matchGoals
-      const shouldSendInbox = newTotal >= 3 && (prev.inboxSentAt == null || prev.inboxSentAt < 3)
+      const shouldSendInbox = newTotal >= 2 && (prev.inboxSentAt == null || prev.inboxSentAt < 2)
       nemesisTracker[playerId] = { ...prev, goalsAgainstUs: newTotal, clubId: opponentClubId }
       if (shouldSendInbox) {
         nemesisTracker[playerId].inboxSentAt = newTotal

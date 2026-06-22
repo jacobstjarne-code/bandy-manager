@@ -44,10 +44,21 @@ export function generateVolunteerRoster(seed: number, count = 5): Volunteer[] {
   return result
 }
 
-export function getActiveVolunteerBonus(volunteers: string[]): { weeklyIncome: number; csBoostPerRound: number } {
-  const count = volunteers.length
+export function getActiveVolunteerBonus(
+  volunteerNames: string[],
+  roster?: Volunteer[],
+): { weeklyIncome: number; csBoostPerRound: number } {
+  if (roster && roster.length > 0) {
+    const active = roster.filter(v => volunteerNames.includes(v.name))
+    return {
+      weeklyIncome: active.reduce((sum, v) => sum + v.weeklyContrib, 0),
+      csBoostPerRound: Math.min(1.5, active.reduce((sum, v) => sum + v.csBoost / 10, 0)),
+    }
+  }
+  // Flat fallback: corrected averages from VOLUNTEER_ROLES (income 340, csBoost 0.32)
+  const count = volunteerNames.length
   return {
-    weeklyIncome: count * 600,
-    csBoostPerRound: Math.min(1.5, count * 0.3),
+    weeklyIncome: count * 340,
+    csBoostPerRound: Math.min(1.5, count * 0.32),
   }
 }

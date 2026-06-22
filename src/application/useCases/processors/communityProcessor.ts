@@ -4,6 +4,7 @@ import { InboxItemType } from '../../../domain/enums'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { advanceFacilityState } from '../../../domain/services/facilityService'
 import { getJournalistCommunityModifier } from '../../../domain/services/journalistVisibilityService'
+import { generateVolunteerRoster } from '../../../domain/services/volunteerService'
 
 export interface CommunityProcessorResult {
   csBoost: number
@@ -80,10 +81,17 @@ export function processCommunity(
   if (csActivities?.soppkvall) csBoost += 0.08
   if (csActivities?.skolbesok) csBoost += 0.12
   // ── Frivilligbonus (puls) ─────────────────────────────────────────────────
-  // Sprint 26: cap på +1.5/omg oavsett antal volontärer (ekonomiskt bidrag cappas ej)
-  const volunteerCount = (game.volunteers ?? []).length
-  if (volunteerCount > 0) {
-    csBoost += Math.min(1.5, volunteerCount * 0.3)
+  // Roster-baserat: regenerera från seed (samma som OrtenTab) → sum csBoost/10 per roll.
+  // Kioskvakt=0.2, Matchvärd=0.4, Bandyskoleledare=0.5 etc. Cap +1.5/omg.
+  const activeVolunteers = game.volunteers ?? []
+  if (activeVolunteers.length > 0) {
+    const seedNum = game.managedClubId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + game.currentSeason * 17
+    const roster = generateVolunteerRoster(seedNum, 4)
+    const rosterCsBoost = activeVolunteers.reduce((sum, name) => {
+      const v = roster.find(r => r.name === name)
+      return sum + (v ? v.csBoost / 10 : 0.32)
+    }, 0)
+    csBoost += Math.min(1.5, rosterCsBoost)
   }
 
   const csPos = standings.find(s => s.clubId === game.managedClubId)?.position ?? 6

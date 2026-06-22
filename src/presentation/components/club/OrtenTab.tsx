@@ -66,7 +66,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
   const seedNum = game.managedClubId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + game.currentSeason * 17
   const volunteerRoster = generateVolunteerRoster(seedNum, 4)
   const activeVolunteers = game.volunteers ?? []
-  const volunteerBonus = getActiveVolunteerBonus(activeVolunteers)
+  const volunteerBonus = getActiveVolunteerBonus(activeVolunteers, volunteerRoster)
 
   // Journalist persona labels
   function personaLabel(p: string): string {
