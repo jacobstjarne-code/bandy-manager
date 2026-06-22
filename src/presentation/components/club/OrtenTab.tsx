@@ -403,7 +403,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
                   { key: 'skolbesok', label: 'Skolbesök' },
                 ],
                 inclusion: [
-                  { key: 'functionaries', label: 'Matchvärdar' },
+                  { key: 'functionaries', label: 'Funktionärer' },
                   { key: 'pensionarskaffe', label: 'Pensionärskaffe' },
                   { key: 'soppkvall', label: 'Soppkväll' },
                   { key: 'skolbesok', label: 'Skolbesök' },
