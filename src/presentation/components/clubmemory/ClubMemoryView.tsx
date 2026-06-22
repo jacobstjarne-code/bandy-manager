@@ -44,7 +44,7 @@ export function ClubMemoryView({ game }: Props) {
       )}
 
       {clubMemory.totalEventsAcrossSeasons < 3 ? (
-        <ClubMemoryEmpty />
+        recentMoments.length === 0 && <ClubMemoryEmpty />
       ) : (
         <>
           {clubMemory.seasons.map(seasonMemory => (
