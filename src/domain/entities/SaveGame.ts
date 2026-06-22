@@ -70,7 +70,7 @@ export interface SaveGame {
   valetShownSeason?: number            // B1 — säsong då Valet-ceremonin visades (engångs/säsong, idiom som upptaktPhaseMarkSeenSeason). shownScenes duger ej — Valet är recurring per säsong från säsong 2.
   sceneChoices?: Record<string, string> // Spelarens val per sceneId
   lastCoffeeSceneRound?: number        // Round när senaste coffee_room visades
-  lastCoffeeSceneIndices?: number[]    // B9 T1 — index i GENERIC_EXCHANGES som visades senast (undviks i nästa scen)
+  lastCoffeeSceneIndices?: number[]    // rullande-12 historik av visade pool-index (undviks i nästa scen)
 
   // Portal-beats (lättviktiga engångsmoment)
   shownBeats?: string[]                // Beat-nycklar som visats (format: beatId eller beatId_season)

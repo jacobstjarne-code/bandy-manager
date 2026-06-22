@@ -8,6 +8,13 @@ import { RIVAL_SALE_KAFFERUM, INCOMING_BID_KAFFERUM } from '../data/transferResp
 import { ANNIVERSARY_KAFFERUM } from '../data/anniversaryKafferumText'
 import { getFatigueState } from './decisionFatigueService'
 
+function hashSeed(n: number): number {
+  let x = (n ^ 0x9e3779b9) >>> 0
+  x = Math.imul(x ^ (x >>> 16), 0x45d9f3b) >>> 0
+  x = Math.imul(x ^ (x >>> 16), 0x45d9f3b) >>> 0
+  return (x ^ (x >>> 16)) >>> 0
+}
+
 interface CoffeeQuote {
   speaker?: string
   text: string
@@ -518,7 +525,7 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     const pool = pressure === 'hot' ? FATIGUE_HOT_EXCHANGES : FATIGUE_WARM_EXCHANGES
     const matchday = game.currentMatchday ?? 1
     const seed = matchday * 17 + game.currentSeason * 29
-    const idx = Math.abs(seed) % pool.length
+    const idx = hashSeed(seed) % pool.length
     return {
       exchanges: [pool[idx]],
       pickedIndices: [idx],
@@ -579,7 +586,7 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   const pickedIndices: number[] = []
   const exchanges: Array<[string, string, string, string]> = []
   for (let i = 0; i < count; i++) {
-    let idx = Math.abs(seed * (i + 7)) % pool.length
+    let idx = hashSeed(seed * 1000 + i) % pool.length
     let guard = 0
     // Hoppa över index som redan valts ELLER som visades senast, om poolen tillåter det
     while (

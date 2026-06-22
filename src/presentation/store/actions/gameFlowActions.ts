@@ -561,7 +561,7 @@ export function gameFlowActions(get: Get, set: Set) {
         // B9 T1B — spara visade index så nästa scen kan undvika dem
         const coffeeScene = getCoffeeRoomScene(updatedGame)
         if (coffeeScene) {
-          updatedGame.lastCoffeeSceneIndices = coffeeScene.pickedIndices
+          updatedGame.lastCoffeeSceneIndices = [...(updatedGame.lastCoffeeSceneIndices ?? []), ...coffeeScene.pickedIndices].slice(-12)
         }
       } else if (sceneId === 'season_signature_reveal') {
         // Track per-season with dedicated field (not SceneId[] — needs season number)
