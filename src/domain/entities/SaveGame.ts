@@ -126,7 +126,7 @@ export interface SaveGame {
   sponsors: Sponsor[]
   fanMood?: number  // 0-100, starts 50
   lastRivalSaleMatchday?: number  // C-T9 — matchday of most recent rival sale
-  lastRivalSaleInfo?: { soldPlayerName: string; buyerClubName: string }  // B1 — för Efterklang-premiss
+  lastRivalSaleInfo?: { soldPlayerName: string; buyerClubName: string; buyerClubId: string }  // B1 — för Efterklang-premiss + Callback-beat
   lastIncomingBidMatchday?: number  // C-O2 — matchday when AI last bid on managed club's player
 
   boardPatience?: number         // 0–100, starts 70

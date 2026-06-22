@@ -1176,7 +1176,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const soldP = postTransferPlayers.find(p => p.id === rivalSaleMoment.subjectPlayerId)
     const buyerC = postTransferClubs.find(c => c.id === rivalSaleMoment.subjectClubId)
     if (soldP && buyerC) {
-      lastRivalSaleInfo = { soldPlayerName: `${soldP.firstName} ${soldP.lastName}`, buyerClubName: buyerC.name }
+      lastRivalSaleInfo = { soldPlayerName: `${soldP.firstName} ${soldP.lastName}`, buyerClubName: buyerC.name, buyerClubId: buyerC.id }
     }
   }
 

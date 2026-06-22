@@ -66,6 +66,153 @@ function completedLeagueCount(game: SaveGame): number {
 }
 
 export const PORTAL_BEATS: PortalBeat[] = [
+  // ── Board-rewards: misslyckande-ultimatum (eskalerande sev 1→2→3) ──────────
+  {
+    id: 'board_failure',
+    emoji: '📋',
+    kicker: 'Styrelsen',
+    severity: (g) => {
+      const hasFailed = (g.boardObjectives ?? []).some(o => o.status === 'failed')
+      if (!hasFailed) return 0
+      const patience = g.boardPatience ?? 70
+      if (patience < 30) return 3
+      if (patience < 50) return 2
+      return 1
+    },
+    trigger: (g) => (g.boardObjectives ?? []).some(o => o.status === 'failed'),
+    text: (g) => {
+      const patience = g.boardPatience ?? 70
+      const sev = patience < 30 ? 3 : patience < 50 ? 2 : 1
+      const failedObj = (g.boardObjectives ?? []).find(
+        o => o.status === 'failed' && (o.type === 'sporting' || o.type === 'economic')
+      ) ?? (g.boardObjectives ?? []).find(o => o.status === 'failed')
+      const owner = failedObj?.ownerId ?? 'Styrelsen'
+      const mål = failedObj?.label ?? 'målet'
+      if (sev === 3) return `${owner}: "Jag har försvarat dig så länge jag kan. Nästa gång gör jag det inte."`
+      if (sev === 2) return `${owner}: "Det är andra gången nu. Jag börjar få frågor jag inte vill ha på årsmötet."`
+      return `${owner}: "Vi nådde inte ${mål}. Jag säger inget mer om det. Den här gången."`
+    },
+    keyFn: (g) => {
+      const patience = g.boardPatience ?? 70
+      const sev = patience < 30 ? 3 : patience < 50 ? 2 : 1
+      return `board_fail_sev${sev}_s${g.currentSeason}`
+    },
+    oncePerSeason: false,
+  },
+
+  // ── Callback: H2H-streak — inför match mot klubb med svit ─────────────────
+  {
+    id: 'callback_streak',
+    emoji: '📊',
+    severity: (g) => {
+      const next = nextManagedFixture(g)
+      if (!next) return 0
+      const opp = next.homeClubId === g.managedClubId ? next.awayClubId : next.homeClubId
+      return (g.rivalryHistory?.[opp]?.currentStreak ?? 0) <= -2 ? 1 : 0
+    },
+    trigger: (g) => firesBeforeNextFixture(g, (_fx, opp) =>
+      Math.abs(g.rivalryHistory?.[opp]?.currentStreak ?? 0) >= 2
+    ),
+    text: (g) => {
+      const next = nextManagedFixture(g)
+      const opp = next ? (next.homeClubId === g.managedClubId ? next.awayClubId : next.homeClubId) : ''
+      const oppClub = g.clubs.find(c => c.id === opp)
+      const streak = g.rivalryHistory?.[opp]?.currentStreak ?? 0
+      const n = Math.abs(streak)
+      if (streak <= -2) return `${n} raka mot ${oppClub?.name ?? 'dem'} nu. Någon gång ska det vändas.`
+      return `${oppClub?.name ?? 'De'} har inte tagit dig på ${n} möten. De vet om det.`
+    },
+    keyFn: (g) => {
+      const next = nextManagedFixture(g)
+      const opp = next ? (next.homeClubId === g.managedClubId ? next.awayClubId : next.homeClubId) : 'unknown'
+      return `callback_streak_${opp}_s${g.currentSeason}`
+    },
+    oncePerSeason: false,
+  },
+
+  // ── Callback: Derby-minne — senaste resultat inför derby ──────────────────
+  {
+    id: 'callback_derby_memory',
+    emoji: '🔥',
+    kicker: 'Derby',
+    severity: () => 1,
+    trigger: (g) => firesBeforeNextFixture(g, (_fx, opp) => {
+      if (!getRivalry(g.managedClubId, opp)) return false
+      return g.fixtures.some(f =>
+        f.status === 'completed' && !f.isCup &&
+        ((f.homeClubId === g.managedClubId && f.awayClubId === opp) ||
+         (f.awayClubId === g.managedClubId && f.homeClubId === opp))
+      )
+    }),
+    text: (g) => {
+      const next = nextManagedFixture(g)
+      const opp = next ? (next.homeClubId === g.managedClubId ? next.awayClubId : next.homeClubId) : ''
+      const oppClub = g.clubs.find(c => c.id === opp)
+      const pastDerby = g.fixtures
+        .filter(f =>
+          f.status === 'completed' && !f.isCup &&
+          ((f.homeClubId === g.managedClubId && f.awayClubId === opp) ||
+           (f.awayClubId === g.managedClubId && f.homeClubId === opp))
+        )
+        .sort((a, b) => b.matchday - a.matchday)[0]
+      if (!pastDerby) return `Derbyt mot ${oppClub?.name ?? 'rivalen'}. Klacken minns.`
+      const managedHome = pastDerby.homeClubId === g.managedClubId
+      const ourGoals = managedHome ? pastDerby.homeScore : pastDerby.awayScore
+      const theirGoals = managedHome ? pastDerby.awayScore : pastDerby.homeScore
+      return `Förra derbyt mot ${oppClub?.name ?? 'rivalen'}: ${ourGoals}–${theirGoals}. Klacken har inte glömt.`
+    },
+    keyFn: (g) => {
+      const next = nextManagedFixture(g)
+      const opp = next ? (next.homeClubId === g.managedClubId ? next.awayClubId : next.homeClubId) : 'unknown'
+      return `callback_derby_${opp}_s${g.currentSeason}`
+    },
+    oncePerSeason: false,
+  },
+
+  // ── Callback: Landslagssnubb — spelaren med något att bevisa ─────────────
+  {
+    id: 'callback_snub',
+    emoji: '📞',
+    kicker: 'Landslaget',
+    severity: () => 1,
+    trigger: (g) => {
+      const snub = g.lastNationalSnub
+      if (!snub || snub.season !== g.currentSeason) return false
+      const player = g.players.find(p => p.id === snub.playerId)
+      return !!(player && player.clubId === g.managedClubId && !player.isInjured)
+    },
+    text: (g) => {
+      const snub = g.lastNationalSnub
+      const player = snub ? g.players.find(p => p.id === snub.playerId) : undefined
+      const name = player ? `${player.firstName} ${player.lastName}` : 'Spelaren'
+      return `${name} förbigicks i landslaget. Han har något att säga i kväll.`
+    },
+    keyFn: (g) => `callback_snub_${g.lastNationalSnub?.playerId ?? 'unknown'}_s${g.currentSeason}`,
+    oncePerSeason: false,
+  },
+
+  // ── Callback: Rival-sale-återförening — första mötet med köparklubben ─────
+  {
+    id: 'callback_sale',
+    emoji: '🤝',
+    kicker: 'Rivalförsäljning',
+    severity: () => 1,
+    trigger: (g) => {
+      const info = g.lastRivalSaleInfo
+      if (!info?.buyerClubId) return false
+      return firesBeforeNextFixture(g, (_fx, opp) => opp === info.buyerClubId)
+    },
+    text: (g) => {
+      const info = g.lastRivalSaleInfo
+      return `Första mötet med ${info?.buyerClubName ?? 'dem'} sedan ${info?.soldPlayerName ?? 'spelaren'} gick dit. Det blir laddat.`
+    },
+    keyFn: (g) => {
+      const info = g.lastRivalSaleInfo
+      return `callback_sale_s${g.currentSeason}_${info?.buyerClubId ?? 'unknown'}`
+    },
+    oncePerSeason: false,
+  },
+
   // ── Ispremiär (omg 1, ingen match spelad) ─────────────────────
   {
     id: 'season_opener',
@@ -150,46 +297,6 @@ export const PORTAL_BEATS: PortalBeat[] = [
     text: 'Sista omgången. Vad som än händer i dag — det är allt det blir av grundserien.',
     trigger: (g) => completedLeagueCount(g) === 21,
     oncePerSeason: true,
-  },
-
-  // ── Board-rewards: misslyckande-ultimatum (eskalerande sev 1→2→3) ──────────
-  {
-    id: 'board_failure',
-    emoji: '📋',
-    kicker: 'Styrelsen',
-    severity: (g) => {
-      const hasFailed = (g.boardObjectives ?? []).some(o => o.status === 'failed')
-      if (!hasFailed) return 0
-      const patience = g.boardPatience ?? 70
-      if (patience < 30) return 3
-      if (patience < 50) return 2
-      return 1
-    },
-    trigger: (g) => {
-      const hasFailed = (g.boardObjectives ?? []).some(o => o.status === 'failed')
-      if (!hasFailed) return false
-      const patience = g.boardPatience ?? 70
-      return patience < 30 || patience < 50 || hasFailed
-    },
-    text: (g) => {
-      const patience = g.boardPatience ?? 70
-      const sev = patience < 30 ? 3 : patience < 50 ? 2 : 1
-      const failedObj = (g.boardObjectives ?? []).find(
-        o => o.status === 'failed' && (o.type === 'sporting' || o.type === 'economic')
-      ) ?? (g.boardObjectives ?? []).find(o => o.status === 'failed')
-      const owner = failedObj?.ownerId ?? 'Styrelsen'
-      const mål = failedObj?.label ?? 'målet'
-      if (sev === 3) return `${owner}: "Jag har försvarat dig så länge jag kan. Nästa gång gör jag det inte."`
-      if (sev === 2) return `${owner}: "Det är andra gången nu. Jag börjar få frågor jag inte vill ha på årsmötet."`
-      return `${owner}: "Vi nådde inte ${mål}. Jag säger inget mer om det. Den här gången."`
-    },
-    // Varje severity-steg surfar en gång; en vänd säsong nollställer streaken → trigger false
-    keyFn: (g) => {
-      const patience = g.boardPatience ?? 70
-      const sev = patience < 30 ? 3 : patience < 50 ? 2 : 1
-      return `board_fail_sev${sev}_s${g.currentSeason}`
-    },
-    oncePerSeason: false,
   },
 
   // ── B1: Bygge klart (per-nod, copper-stripe, navigerar till Bygget) ──────
