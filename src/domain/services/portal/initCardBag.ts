@@ -52,6 +52,7 @@ import { ActiveArcsSecondary } from '../../../presentation/components/portal/sec
 import { BoardObjectivesSecondary } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
 import { WatchOthersSecondary } from '../../../presentation/components/portal/secondary/WatchOthersSecondary'
 import { LandslagsFranvaroSecondary } from '../../../presentation/components/portal/secondary/LandslagsFranvaroSecondary'
+import { DeferredQueueSecondary } from '../../../presentation/components/portal/secondary/DeferredQueueSecondary'
 import { BurnoutMark } from '../../../presentation/components/portal/BurnoutMark'
 import { EfterklangSecondary } from '../../../presentation/components/portal/secondary/EfterklangSecondary'
 import { pickEfterklang } from '../portal/pickEfterklang'
@@ -290,6 +291,15 @@ const PORTAL_CARDS: DashboardCard[] = [
       return game.players.some(p => camp.playerIds.includes(p.id) && p.clubId === game.managedClubId)
     }],
     Component: LandslagsFranvaroSecondary,
+  },
+
+  // §D avbrottsbudget — beslut i kö, synliggörs på portalen
+  {
+    id: 'deferred_queue',
+    tier: 'secondary',
+    weight: 45,
+    triggers: [(game) => (game.deferredDecisions?.length ?? 0) > 0],
+    Component: DeferredQueueSecondary,
   },
 
   // ── MINIMAL TIER ──────────────────────────────────────────────

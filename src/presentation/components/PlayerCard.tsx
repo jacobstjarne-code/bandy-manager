@@ -462,16 +462,16 @@ export function PlayerCard({
       {/* ═══ ÖVERSIKT — lugn sammanfattning: nyckeltal + kontrakt + handlingsknappar ═══ */}
       {isOwned && showOversikt && (
         <div style={{ padding: '4px 13px 12px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 6 }}>
+          <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
             {[
-              { label: 'MÅL', value: String(player.seasonStats.goals), color: 'var(--text-primary)' },
-              { label: 'ASSIST', value: String(player.seasonStats.assists), color: 'var(--text-primary)' },
-              { label: 'BETYG', value: player.seasonStats.averageRating > 0 ? player.seasonStats.averageRating.toFixed(1) : '–', color: player.seasonStats.averageRating >= 7 ? 'var(--success)' : 'var(--text-primary)' },
+              { label: 'MÅL', value: String(player.seasonStats.goals) },
+              { label: 'AST', value: String(player.seasonStats.assists) },
+              { label: 'BGT', value: player.seasonStats.averageRating > 0 ? player.seasonStats.averageRating.toFixed(1) : '–' },
             ].map(c => (
-              <div key={c.label} style={{ textAlign: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 'var(--radius-md)', padding: '7px 2px' }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 16, color: c.color }}>{c.value}</div>
-                <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>{c.label}</div>
-              </div>
+              <span key={c.label} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 11, background: 'transparent' }}>
+                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{c.value}</span>
+                <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>{c.label}</span>
+              </span>
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 9, borderTop: '1px solid var(--border)', fontSize: 10, color: 'var(--text-secondary)' }}>

@@ -26,7 +26,7 @@ function makeEvent(id: string): GameEvent {
     title: `Event ${id}`,
     body: 'Test event',
     date: '2026-10-01',
-    choices: [],
+    choices: [{ id: 'c1', text: 'Ja' }],
   } as unknown as GameEvent
 }
 
@@ -82,7 +82,7 @@ describe('tryQueueDecision', () => {
     expect(result.deferredDecisions).toHaveLength(0)
   })
 
-  it('lägger event i pendingEvents när 1 aktiv av max 2', () => {
+  it('lägger event i pendingEvents när 1 aktiv av max 3', () => {
     const existing = makeEvent('existing')
     const game = makeGame({
       pendingEvents: [{ ...existing, resolved: false }] as never,
@@ -94,17 +94,18 @@ describe('tryQueueDecision', () => {
     expect(result.deferredDecisions).toHaveLength(0)
   })
 
-  it('lägger event i deferredDecisions när budget är full (2 aktiva)', () => {
+  it('lägger event i deferredDecisions när budget är full (3 aktiva)', () => {
     const game = makeGame({
       pendingEvents: [
         { ...makeEvent('a'), resolved: false },
         { ...makeEvent('b'), resolved: false },
+        { ...makeEvent('c'), resolved: false },
       ] as never,
       deferredDecisions: [],
     })
     const event = makeEvent('evt3')
     const result = tryQueueDecision(game, event)
-    expect(result.pendingEvents).toHaveLength(2)
+    expect(result.pendingEvents).toHaveLength(3)
     expect(result.deferredDecisions).toContainEqual({ ...event, deferredAt: game.currentMatchday ?? 1 })
   })
 
@@ -131,6 +132,7 @@ describe('tryQueueDecision — cap vid 10', () => {
       pendingEvents: [
         { ...makeEvent('a'), resolved: false },
         { ...makeEvent('b'), resolved: false },
+        { ...makeEvent('c'), resolved: false },
       ] as never,
       deferredDecisions: existingDeferred,
     })

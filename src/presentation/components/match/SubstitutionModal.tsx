@@ -37,38 +37,32 @@ export function SubstitutionModal({ starters, bench, onConfirm, onClose }: Subst
   const availableBench = bench.filter(p => !p.isInjured && (p.suspensionGamesRemaining ?? 0) <= 0)
 
   return (
-    <div className="match-modal-overlay" onClick={onClose}>
-      <div
-        className="match-modal-panel"
-        onClick={e => e.stopPropagation()}
-        style={{ width: '90%', maxWidth: 330, minWidth: 260, marginBottom: 24 }}
-      >
-        <div className="match-modal-head">
-          <span className="match-modal-title">
-            {outId ? 'Välj in-spelare' : 'Välj ut-spelare'}
-          </span>
-          <button className="match-modal-close" onClick={onClose}>×</button>
-        </div>
-        {!outId ? (
-          <div className="match-modal-list">
-            {starters.map(p => (
-              <PlayerRow key={p.id} player={p} onClick={() => setOutId(p.id)} />
-            ))}
-          </div>
-        ) : availableBench.length === 0 ? (
-          <div>
-            <p className="match-modal-empty">Ingen tillgänglig på bänken.</p>
-            <button className="match-modal-back" onClick={() => setOutId(null)}>← Tillbaka</button>
-          </div>
-        ) : (
-          <div className="match-modal-list">
-            <button className="match-modal-back" style={{ marginBottom: 4 }} onClick={() => setOutId(null)}>← Tillbaka</button>
-            {availableBench.map(p => (
-              <PlayerRow key={p.id} player={p} isPick onClick={() => onConfirm(outId, p.id)} />
-            ))}
-          </div>
-        )}
+    <div className="match-modal-dock match-modal-panel">
+      <div className="match-modal-head">
+        <span className="match-modal-title">
+          {outId ? 'Välj in-spelare' : 'Välj ut-spelare'}
+        </span>
+        <button className="match-modal-close" onClick={onClose}>×</button>
       </div>
+      {!outId ? (
+        <div className="match-modal-list" style={{ overflowY: 'auto', maxHeight: 'calc(65vh - 70px)' }}>
+          {starters.map(p => (
+            <PlayerRow key={p.id} player={p} onClick={() => setOutId(p.id)} />
+          ))}
+        </div>
+      ) : availableBench.length === 0 ? (
+        <div>
+          <p className="match-modal-empty">Ingen tillgänglig på bänken.</p>
+          <button className="match-modal-back" onClick={() => setOutId(null)}>← Tillbaka</button>
+        </div>
+      ) : (
+        <div className="match-modal-list" style={{ overflowY: 'auto', maxHeight: 'calc(65vh - 70px)' }}>
+          <button className="match-modal-back" style={{ marginBottom: 4 }} onClick={() => setOutId(null)}>← Tillbaka</button>
+          {availableBench.map(p => (
+            <PlayerRow key={p.id} player={p} isPick onClick={() => onConfirm(outId, p.id)} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

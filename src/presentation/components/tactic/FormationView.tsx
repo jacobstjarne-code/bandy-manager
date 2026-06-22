@@ -7,14 +7,10 @@ import type { Tactic } from '../../../domain/entities/Club'
 import { PlayerDot } from './PlayerDot'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
-import { getPairExpandText } from './chemistryPairText'
-
 interface FormationViewProps {
   tactic: Tactic
   players: Player[]  // entire squad
   onChange: (tactic: Tactic) => void
-  // Genomgång II B: kemin är ett lager på samma plan, inte en egen vy.
-  showChemistry?: boolean
   chemistryStats?: Record<string, number>
 }
 
@@ -58,10 +54,9 @@ function PitchLines() {
   )
 }
 
-export function FormationView({ tactic, players, onChange, showChemistry = false, chemistryStats = {} }: FormationViewProps) {
+export function FormationView({ tactic, players, onChange, chemistryStats = {} }: FormationViewProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [autoFillMsg, setAutoFillMsg] = useState<string | null>(null)
-  const [expandedPairKey, setExpandedPairKey] = useState<string | null>(null)
   const autoFillTimerRef = useRef<number | null>(null)
   const navigate = useNavigate()
 
@@ -177,10 +172,8 @@ export function FormationView({ tactic, players, onChange, showChemistry = false
     [starterIds, players, tactic],
   )
 
-  // Genomgång II B: kemi-lagret — samma koordinater (x*2.8, y*4) som dot-mappningen,
-  // beräknas bara när lagret är på.
+  // Genomgång II B: kemi-lagret — alltid beräknat, linjer alltid synliga på planen.
   const chem = useMemo(() => {
-    if (!showChemistry) return null
     const slotPlayers = template.slots.map(slot => ({
       slot,
       player: lineupSlots[slot.id] ? (players.find(p => p.id === lineupSlots[slot.id]) ?? null) : null,
@@ -193,7 +186,7 @@ export function FormationView({ tactic, players, onChange, showChemistry = false
       .filter(c => Math.abs(c.strength) >= 0.25)
       .sort((a, b) => Math.abs(b.strength) - Math.abs(a.strength))
     return { chemistry, playerToSlot, topPairs }
-  }, [showChemistry, template, lineupSlots, players, chemistryStats])
+  }, [template, lineupSlots, players, chemistryStats])
 
   return (
     <>
@@ -336,81 +329,6 @@ export function FormationView({ tactic, players, onChange, showChemistry = false
           )
         })}
       </svg>
-
-      {/* Kemi-lagret: legend + interaktiv par-lista under planen (genomgång II B) */}
-      {showChemistry && chem && (
-        <>
-          <div style={{ marginTop: 10, padding: '8px 10px', background: 'var(--bg-elevated)', borderRadius: 4, border: '0.5px solid var(--border)' }}>
-            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: 6 }}>
-              KEMIN I LAGET
-            </p>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <div style={{ width: 20, height: 2, background: 'var(--success)', flexShrink: 0 }} />
-                <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Stark koppling</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <div style={{ width: 20, height: 2, background: 'var(--danger)', flexShrink: 0, borderBottom: '1px dashed var(--danger)' }} />
-                <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Svag koppling</span>
-              </div>
-            </div>
-          </div>
-
-          {chem.chemistry.filter(c => Math.abs(c.strength) >= 0.25).sort((a, b) => Math.abs(b.strength) - Math.abs(a.strength)).slice(0, 4).map((pair, idx) => {
-            const p1 = players.find(p => p.id === pair.playerId1)
-            const p2 = players.find(p => p.id === pair.playerId2)
-            if (!p1 || !p2) return null
-            const pairKey = `${pair.playerId1}-${pair.playerId2}`
-            const isExpanded = expandedPairKey === pairKey
-            const isPositive = pair.strength > 0
-            const strength: 'strong' | 'weak' | 'neutral' =
-              pair.strength > 0.4 ? 'strong' : pair.strength < -0.2 ? 'weak' : 'neutral'
-            const slotA = chem.playerToSlot.get(pair.playerId1)
-            const slotB = chem.playerToSlot.get(pair.playerId2)
-            const expandText = (isExpanded && slotA && slotB)
-              ? getPairExpandText(p1, p2, slotA, slotB, strength, idx)
-              : null
-            return (
-              <div key={pairKey}>
-                <div
-                  onClick={() => setExpandedPairKey(isExpanded ? null : pairKey)}
-                  style={{
-                    padding: '6px 10px', fontSize: 11, borderBottom: '0.5px solid var(--border)',
-                    display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
-                    background: isExpanded ? 'var(--bg-elevated)' : 'transparent',
-                  }}
-                >
-                  <span style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
-                    {p1.lastName} × {p2.lastName}
-                  </span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>
-                    {pair.reasons.join(' · ')}
-                  </span>
-                  <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, color: isPositive ? 'var(--success)' : 'var(--danger)' }}>
-                    {isPositive ? '↑' : '↓'}
-                  </span>
-                </div>
-                {isExpanded && expandText && (
-                  <div style={{
-                    padding: '8px 12px', fontSize: 11,
-                    color: 'var(--text-secondary)', fontFamily: 'var(--font-display)',
-                    background: 'var(--bg-elevated)', borderBottom: '0.5px solid var(--border)',
-                    lineHeight: 1.5,
-                  }}>
-                    💡 {expandText}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-
-          {chem.chemistry.every(c => Math.abs(c.strength) < 0.25) && (
-            <p style={{ textAlign: 'center', padding: '12px 0', color: 'var(--text-muted)', fontSize: 11, fontStyle: 'italic' }}>
-              Laget har inte spelat nog ihop för att kemi ska synas.
-            </p>
-          )}
-        </>
-      )}
 
       {/* C-FT1: Lagstyrka — ärlig magnitud, samma evaluateSquad som motorn */}
       {styrka.utvilat > 0 && (

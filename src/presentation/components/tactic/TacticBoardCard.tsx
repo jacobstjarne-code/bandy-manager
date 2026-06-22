@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { AssistantCoach } from '../../../domain/entities/AssistantCoach'
@@ -26,14 +25,12 @@ const SPELSTIL: Array<{ id: TacticMentality; label: string }> = [
   { id: TacticMentality.Offensive, label: 'Offensiv' },
 ]
 
-// Genomgång II B: en taktik-hemvist, platt. Slut på pillrad-i-pillrad. Spelstilen
-// är samma sanningskälla (club.activeTactic) som matchförberedelsen skriver till;
-// kemin är ett lager på planen (toggle), anteckningarna ett kort under.
+// Genomgång II B: en taktik-hemvist, platt. Spelstilen är samma sanningskälla
+// (club.activeTactic) som matchförberedelsen skriver till; kemin är ett alltid-synligt
+// lager på planen, anteckningarna ett kort under.
 export function TacticBoardCard({
   club, players, coach, captainPlayerId, chemistryStats, onTacticChange, matchday, nextOpponentName, opponentAnalysis,
 }: TacticBoardCardProps) {
-  const [showChemistry, setShowChemistry] = useState(false)
-
   const squadPlayers = players.filter(p => p.clubId === club.id)
   const mentality = club.activeTactic.mentality
   const feel = getTacticConsequence(club.activeTactic, squadPlayers, chemistryStats, opponentAnalysis, matchday ?? 0)
@@ -69,40 +66,18 @@ export function TacticBoardCard({
         </div>
       </div>
 
-      {/* Planen + kemi-lager (toggle) */}
+      {/* Planen + kemi-lager (alltid synligt) */}
       <div style={{ padding: '4px 12px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-            📋 Planen · {club.activeTactic.formation ?? '3-3-4'}
-          </p>
-          <button
-            onClick={() => setShowChemistry(v => !v)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none',
-              cursor: 'pointer', fontSize: 9, fontWeight: 600, letterSpacing: '0.5px',
-              color: showChemistry ? 'var(--accent)' : 'var(--text-muted)', fontFamily: 'var(--font-body)',
-            }}
-          >
-            Kemi
-            <span style={{
-              width: 26, height: 14, borderRadius: 99, padding: 2,
-              background: showChemistry ? 'var(--accent)' : 'var(--border)',
-              display: 'inline-flex', justifyContent: showChemistry ? 'flex-end' : 'flex-start',
-              transition: 'all 0.15s',
-            }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--bg-elevated)' }} />
-            </span>
-          </button>
-        </div>
+        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>
+          📋 Planen · {club.activeTactic.formation ?? '3-3-4'}
+        </p>
       </div>
 
-      {/* Plan-yta: kemin är ett LAGER på samma plan (toggle), inte en egen vy */}
       <div style={{ padding: '0 12px 4px' }}>
         <FormationView
           tactic={club.activeTactic}
           players={squadPlayers}
           onChange={onTacticChange}
-          showChemistry={showChemistry}
           chemistryStats={chemistryStats}
         />
         {/* Så spelar det — härlett ur spelstil + faktisk kemi */}
