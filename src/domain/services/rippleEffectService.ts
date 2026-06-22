@@ -1,7 +1,7 @@
 // DREAM-003: Spridningseffekter
 // Systemkorsningar: stjärna skadad, derby-seger, mecenat lämnar.
 
-import type { SaveGame } from '../entities/SaveGame'
+import type { SaveGame, RippleChain, RippleChainStep } from '../entities/SaveGame'
 
 // M15: fields that ripple effects can modify — used for targeted merging
 export const RIPPLE_AFFECTED_FIELDS = [
@@ -46,6 +46,29 @@ export function mergeRippleDeltas(
       ? rippled.supporterGroup
       : (overrides.supporterGroupFallback ?? base.supporterGroup),
   }
+}
+
+/** Diffar before/after på de ripple-påverkade fälten → en beskrivande dominokedja. */
+export function describeRippleChain(
+  before: SaveGame,
+  after: SaveGame,
+  trigger: RippleChain['trigger'],
+  subjectName: string | undefined,
+  round: number,
+  season: number,
+): RippleChain {
+  const steps: RippleChainStep[] = []
+  const fanD = (after.fanMood ?? 50) - (before.fanMood ?? 50)
+  if (fanD !== 0) steps.push({ label: 'Stämningen', dir: fanD > 0 ? 'up' : 'down' })
+  const klackD = (after.supporterGroup?.mood ?? 50) - (before.supporterGroup?.mood ?? 50)
+  if (klackD !== 0) steps.push({ label: 'Klacken', dir: klackD > 0 ? 'up' : 'down' })
+  const csD = (after.communityStanding ?? 50) - (before.communityStanding ?? 50)
+  if (csD !== 0) steps.push({ label: 'Orten', dir: csD > 0 ? 'up' : 'down' })
+  const boardD = (after.boardPatience ?? 70) - (before.boardPatience ?? 70)
+  if (boardD !== 0) steps.push({ label: 'Styrelsen', dir: boardD > 0 ? 'up' : 'down' })
+  const sponsD = (after.sponsorNetworkMood ?? 50) - (before.sponsorNetworkMood ?? 50)
+  if (sponsD !== 0) steps.push({ label: 'Sponsorerna', dir: sponsD > 0 ? 'up' : 'down' })
+  return { trigger, subjectName, round, season, steps }
 }
 
 export type RippleTrigger =

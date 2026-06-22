@@ -7,7 +7,7 @@
  * Texterna är Opus-satta och slutliga.
  */
 
-import type { SaveGame } from '../entities/SaveGame'
+import type { SaveGame, RippleChain } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import { getRivalry } from './rivalries'
 import { nextManagedFixture } from '../services/situationFragments'
@@ -65,6 +65,31 @@ function completedLeagueCount(game: SaveGame): number {
   ).length
 }
 
+const STEP_VERBS: Record<string, { up: string; down: string }> = {
+  'Stämningen':   { up: 'stämningen lyfter',            down: 'stämningen sjunker' },
+  'Klacken':      { up: 'klacken tänds',                down: 'klacken oroas' },
+  'Orten':        { up: 'orten reser sig',               down: 'orten känner det' },
+  'Styrelsen':    { up: 'styrelsen nickar',              down: 'styrelsen tappar tålamod' },
+  'Sponsorerna':  { up: 'sponsorerna hör av sig',        down: 'sponsorerna drar öronen åt sig' },
+}
+
+const TRIGGER_CLAUSE: Record<RippleChain['trigger'], (name?: string) => string> = {
+  star_injured:  (n) => `${n ?? 'Spelaren'} är borta ett tag.`,
+  big_derby_win: () => 'Derbysegern sitter kvar.',
+  mecenat_left:  (n) => `${n ?? 'Mecenaten'} drog sig ur.`,
+}
+
+function renderChain(c: RippleChain | undefined): string {
+  if (!c) return ''
+  const clause = TRIGGER_CLAUSE[c.trigger](c.subjectName)
+  if (c.steps.length === 0) return clause
+  const verbs = c.steps.slice(0, 3).map(s => {
+    const pair = STEP_VERBS[s.label]
+    return pair ? pair[s.dir] : s.label
+  })
+  return `${clause} ${verbs.join(', ')}.`
+}
+
 export const PORTAL_BEATS: PortalBeat[] = [
   // ── Board-rewards: misslyckande-ultimatum (eskalerande sev 1→2→3) ──────────
   {
@@ -97,6 +122,24 @@ export const PORTAL_BEATS: PortalBeat[] = [
       const sev = patience < 30 ? 3 : patience < 50 ? 2 : 1
       return `board_fail_sev${sev}_s${g.currentSeason}`
     },
+    oncePerSeason: false,
+  },
+
+  // ── Legibel konsekvens: dominokedjan i ögonblicket ───────────────────────
+  {
+    id: 'ripple_consequence',
+    emoji: '⛓️',
+    kicker: 'Konsekvens',
+    severity: (g) => {
+      const c = g.pendingRippleChain
+      if (!c) return 0
+      if (c.trigger === 'big_derby_win') return 0
+      if (c.trigger === 'mecenat_left') return 2
+      return c.steps.some(s => s.label === 'Styrelsen') ? 2 : 1
+    },
+    trigger: (g) => !!g.pendingRippleChain && g.pendingRippleChain.round === g.currentMatchday,
+    text: (g) => renderChain(g.pendingRippleChain),
+    keyFn: (g) => `ripple_${g.pendingRippleChain?.trigger ?? 'unknown'}_${g.pendingRippleChain?.round ?? 0}_s${g.pendingRippleChain?.season ?? 0}`,
     oncePerSeason: false,
   },
 

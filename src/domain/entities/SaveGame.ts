@@ -31,6 +31,16 @@ import type { Referee, RefereeRelation } from './Referee'
 import type { CommunityActivities, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
 import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord } from './Narrative'
 
+// ── Legibel konsekvens — domino-kedje-typer (används av rippleEffectService + portalBeats) ──
+export interface RippleChainStep { label: string; dir: 'up' | 'down' }
+export interface RippleChain {
+  trigger: 'star_injured' | 'big_derby_win' | 'mecenat_left'
+  subjectName?: string
+  round: number
+  season: number
+  steps: RippleChainStep[]
+}
+
 // ── Re-exports so existing `import from '../entities/SaveGame'` still works ──
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
 export type { CommunityActivities, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
@@ -303,6 +313,9 @@ export interface SaveGame {
   // C-K1 — Landslagsuttagning
   activeNationalTeamCamp?: { startRound: number; endRound: number; playerIds: string[] }
   lastNationalSnub?: { playerId: string; season: number; round: number }
+
+  // Legibel konsekvens — transient, rensas varje omgång
+  pendingRippleChain?: RippleChain
 
   // Sprint 11 — Truppledarskap (NARR-005)
   leadershipActions?: Array<{

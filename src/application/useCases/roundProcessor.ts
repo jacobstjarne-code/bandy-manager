@@ -50,7 +50,8 @@ import { processMedia } from './processors/mediaProcessor'
 import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
 import { processGameEvents, applyMecenatSpawn, processScandals } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
-import { applyRipples, mergeRippleDeltas } from '../../domain/services/rippleEffectService'
+import { applyRipples, mergeRippleDeltas, describeRippleChain } from '../../domain/services/rippleEffectService'
+import type { RippleChain } from '../../domain/entities/SaveGame'
 import { applyMatchInjury, generateInjuryInboxItem } from '../../domain/services/matchInjuryService'
 import {
   annandagsbandyInbox,
@@ -440,11 +441,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Injury notifications + DREAM-003 star injury ripple
   let gameAfterRipples = game
+  const roundRippleChains: RippleChain[] = []
   for (const { player, days } of newlyInjured) {
     const clubId = player.clubId
     if (clubId === game.managedClubId) {
       newInboxItems.push(createInjuryItem(player, days, game.currentDate))
+      const beforeStarRipple = gameAfterRipples
       gameAfterRipples = applyRipples(gameAfterRipples, { type: 'star_injured', playerId: player.id })
+      roundRippleChains.push(describeRippleChain(beforeStarRipple, gameAfterRipples, 'star_injured',
+        `${player.firstName} ${player.lastName}`, nextMatchday, game.currentSeason))
       if (player.currentAbility >= 65) {
         newMoments.push({
           id: `moment_injury_${player.id}_${nextMatchday}`,
@@ -667,8 +672,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const managedScore = managedIsHome ? (justCompletedManagedFixture.homeScore ?? 0) : (justCompletedManagedFixture.awayScore ?? 0)
       const oppScore = managedIsHome ? (justCompletedManagedFixture.awayScore ?? 0) : (justCompletedManagedFixture.homeScore ?? 0)
       if (managedScore > oppScore) {
-        gameAfterRipples = applyRipples(gameAfterRipples, { type: 'big_derby_win', fixtureId: justCompletedManagedFixture.id })
         const rivalClub = game.clubs.find(c => c.id === (justCompletedManagedFixture.homeClubId === game.managedClubId ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId))
+        const beforeDerbyRipple = gameAfterRipples
+        gameAfterRipples = applyRipples(gameAfterRipples, { type: 'big_derby_win', fixtureId: justCompletedManagedFixture.id })
+        roundRippleChains.push(describeRippleChain(beforeDerbyRipple, gameAfterRipples, 'big_derby_win',
+          rivalClub?.name, nextMatchday, game.currentSeason))
         newMoments.push({
           id: `moment_derby_${justCompletedManagedFixture.id}`,
           source: 'derby_win',
@@ -933,6 +941,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const allNewEvents = [...eventResult.gameEvents, ...playoffResult.gameEvents]
   let updatedMecenater = eventResult.updatedMecenater
   newInboxItems.push(...eventResult.inboxItems)
+
+  // Legibel konsekvens: mecenat_left ripple (VILANDE i eventProcessor, wiras här)
+  const previousActiveIds = new Set((game.mecenater ?? []).filter(m => m.isActive).map(m => m.id))
+  for (const m of updatedMecenater) {
+    if (!m.isActive && previousActiveIds.has(m.id)) {
+      const beforeMecRipple = gameAfterRipples
+      gameAfterRipples = applyRipples(gameAfterRipples, { type: 'mecenat_left', mecenatId: m.id })
+      roundRippleChains.push(describeRippleChain(beforeMecRipple, gameAfterRipples, 'mecenat_left',
+        m.name, nextMatchday, game.currentSeason))
+    }
+  }
 
   // ── 2B: Risky sponsor risk maturation check ───────────────────────────────
   if (game.riskySponsorContract && game.riskySponsorContract.season === game.currentSeason) {
@@ -1321,6 +1340,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // Legibel konsekvens: välj mest signifikant kedja (mecenat_left > skada+styrelse > skada > derby)
+  function chainSignificance(c: RippleChain): number {
+    if (c.trigger === 'mecenat_left') return 4
+    if (c.trigger === 'star_injured' && c.steps.some(s => s.label === 'Styrelsen')) return 3
+    if (c.trigger === 'star_injured') return 2
+    return 1
+  }
+  const pendingRippleChain = roundRippleChains.length > 0
+    ? roundRippleChains.reduce((best, c) => chainSignificance(c) > chainSignificance(best) ? c : best)
+    : undefined
+
   // M15: merge ripple-derived field changes via centralized function
   const rippleMerged = mergeRippleDeltas(game, gameAfterRipples, {
     fanMoodBase: newFanMood,
@@ -1388,6 +1418,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     boardObjectives: updatedBoardObjectives,
     boardTrust: Math.max(0, (game.boardTrust ?? 0) + boardObjTrustDelta),
     boardObjectiveHistory: game.boardObjectiveHistory ?? [],
+    pendingRippleChain,
     facilityState: updatedFacilityState ?? game.facilityState,
     volunteers: updatedVolunteers,
     volunteerMorale: updatedVolunteerMorale,
