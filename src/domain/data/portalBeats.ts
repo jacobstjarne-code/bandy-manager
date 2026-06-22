@@ -8,6 +8,7 @@
  */
 
 import type { SaveGame } from '../entities/SaveGame'
+import type { Fixture } from '../entities/Fixture'
 import { getRivalry } from './rivalries'
 import { nextManagedFixture } from '../services/situationFragments'
 import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from './facilityPortalBeats'
@@ -21,12 +22,29 @@ export interface PortalBeat {
   trigger: (game: SaveGame) => boolean
   /** true = visas max en gång per säsong, false = en gång totalt */
   oncePerSeason: boolean
-  /** B1: etikett-rad ovanför texten ("Bygget"). Copper-stripe variant. */
+  /** Etikett-rad ovanför texten. Visas vid severity ≥ 1. */
   kicker?: string
-  /** B1: navigerar hit vid klick på beatet (inte dismiss-knappen). */
+  /** Navigerar hit vid klick på beatet (inte dismiss-knappen). */
   route?: string
-  /** B1: om satt, genereras dismiss-nyckeln av denna funktion istf statisk id/säsong-logik. */
+  /** Om satt, genereras dismiss-nyckeln av denna funktion istf statisk id/säsong-logik. */
   keyFn?: (game: SaveGame) => string
+  /** Förbättring 3 severity-skalan. 0/undefined=plain, 1=copper (kicker), 2=danger, 3=kris-band mörk yta.
+   *  Funktion → kan eskalera på game-state. Bakåtkompatibelt: beats utan severity → kicker?1:0. */
+  severity?: (game: SaveGame) => 0 | 1 | 2 | 3
+}
+
+/**
+ * Returnerar true om nästa managed-fixture (cup ELLER liga) matchar predikatet.
+ * Garanterar att beatet surfar FÖRE den relevanta matchen och inte medan en annan match ligger emellan.
+ */
+export function firesBeforeNextFixture(
+  game: SaveGame,
+  predicate: (fixture: Fixture, opponentId: string) => boolean,
+): boolean {
+  const next = nextManagedFixture(game)
+  if (!next) return false
+  const opponentId = next.homeClubId === game.managedClubId ? next.awayClubId : next.homeClubId
+  return predicate(next, opponentId)
 }
 
 function nextManagedLeagueFixture(game: SaveGame) {
@@ -132,6 +150,46 @@ export const PORTAL_BEATS: PortalBeat[] = [
     text: 'Sista omgången. Vad som än händer i dag — det är allt det blir av grundserien.',
     trigger: (g) => completedLeagueCount(g) === 21,
     oncePerSeason: true,
+  },
+
+  // ── Board-rewards: misslyckande-ultimatum (eskalerande sev 1→2→3) ──────────
+  {
+    id: 'board_failure',
+    emoji: '📋',
+    kicker: 'Styrelsen',
+    severity: (g) => {
+      const hasFailed = (g.boardObjectives ?? []).some(o => o.status === 'failed')
+      if (!hasFailed) return 0
+      const patience = g.boardPatience ?? 70
+      if (patience < 30) return 3
+      if (patience < 50) return 2
+      return 1
+    },
+    trigger: (g) => {
+      const hasFailed = (g.boardObjectives ?? []).some(o => o.status === 'failed')
+      if (!hasFailed) return false
+      const patience = g.boardPatience ?? 70
+      return patience < 30 || patience < 50 || hasFailed
+    },
+    text: (g) => {
+      const patience = g.boardPatience ?? 70
+      const sev = patience < 30 ? 3 : patience < 50 ? 2 : 1
+      const failedObj = (g.boardObjectives ?? []).find(
+        o => o.status === 'failed' && (o.type === 'sporting' || o.type === 'economic')
+      ) ?? (g.boardObjectives ?? []).find(o => o.status === 'failed')
+      const owner = failedObj?.ownerId ?? 'Styrelsen'
+      const mål = failedObj?.label ?? 'målet'
+      if (sev === 3) return `${owner}: "Jag har försvarat dig så länge jag kan. Nästa gång gör jag det inte."`
+      if (sev === 2) return `${owner}: "Det är andra gången nu. Jag börjar få frågor jag inte vill ha på årsmötet."`
+      return `${owner}: "Vi nådde inte ${mål}. Jag säger inget mer om det. Den här gången."`
+    },
+    // Varje severity-steg surfar en gång; en vänd säsong nollställer streaken → trigger false
+    keyFn: (g) => {
+      const patience = g.boardPatience ?? 70
+      const sev = patience < 30 ? 3 : patience < 50 ? 2 : 1
+      return `board_fail_sev${sev}_s${g.currentSeason}`
+    },
+    oncePerSeason: false,
   },
 
   // ── B1: Bygge klart (per-nod, copper-stripe, navigerar till Bygget) ──────
