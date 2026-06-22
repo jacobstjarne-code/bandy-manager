@@ -38,13 +38,6 @@ export const HALFTIME_OUTCOMES: Record<'lugna' | 'pressa' | 'prata', Record<Kvit
   },
 }
 
-/** Bortarutin (awayTrip.mikrobeslut) → fräschhet sent i matchen. */
-export const AWAY_ROUTINE_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
-  good: ['Truppen var fräsch vid första avslag.', 'Resan satt — inga tunga ben i slutskedet.'],
-  bad: ['Ni reste för sent och det märktes i benen mot slutet.', 'Logistiken skavde och laget kom aldrig in i det.'],
-  neutral: ['Resan gick som vanligt, varken till hjälp eller hinder.'],
-}
-
 /** Lineup-rotation (jämfört med förra matchen) → energi vs rytm. */
 export const LINEUP_ROTATION_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
   good: ['Rotationen gav energi — {spelare} avgjorde.', 'De utvilade benen orkade hela vägen.'],

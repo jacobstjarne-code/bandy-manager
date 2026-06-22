@@ -216,6 +216,7 @@ export interface SaveGame {
 
   // V1.0 — Board objectives (secondary goals)
   boardObjectives?: BoardObjective[]
+  boardTrust?: number               // 0-N; increments per met objective, förtroendepott fires at ≥2 via consecutive flagships
   boardObjectiveHistory?: Array<{
     season: number
     objectiveId: string
@@ -312,15 +313,6 @@ export interface SaveGame {
     effect: { stat: string; delta: number }
     mentoredPlayerId?: string   // PC-6: mentor-åtgärden länkar mentorn till en ung spelare (CA-bonus medan aktiv)
   }>
-
-  // Sprint 9 — Away trip microdecision (WEAK-019)
-  awayTrip?: {
-    fixtureId: string
-    hotel: 'pensionat' | 'mellanklass' | 'nice'
-    extraMeal: boolean
-    weatherWarning?: string
-    mikrobeslut: 'stay_home' | 'book_nice' | 'ask_foundation' | null
-  }
 
   // DREAM-010 — Bandybrev till klubben
   bandyLetters?: BandyLetter[]

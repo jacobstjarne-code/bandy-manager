@@ -12,6 +12,7 @@ import {
 import { getJournalistAttendanceModifier } from '../../../domain/services/journalistVisibilityService'
 import type { FinanceEntry } from '../../../domain/services/economyService'
 import { getRivalry } from '../../../domain/data/rivalries'
+import { generateVolunteerRoster } from '../../../domain/services/volunteerService'
 
 export interface EconomyProcessorResult {
   updatedClubs: Club[]
@@ -55,12 +56,16 @@ export function processEconomy(
   const isHomeMatch = !!managedHomeMatch
   const legendSalaryCost = ((game.clubLegends ?? [])
     .filter(l => l.role === 'youth_coach' || l.role === 'scout').length) * 500
+  const volunteerSeedNum = game.managedClubId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + game.currentSeason * 17
+  const volunteerRoster = generateVolunteerRoster(volunteerSeedNum, 4)
   const managedIncome = calcRoundIncome({
     club: managedClub,
     players: managedClubPlayers,
     sponsors: game.sponsors ?? [],
     communityActivities: game.communityActivities,
     volunteers: game.volunteers ?? [],
+    volunteerRoster,
+    sponsorNetworkMood: game.sponsorNetworkMood,
     fanMood: currentFanMood,
     isHomeMatch,
     matchIsKnockout: managedHomeMatch?.isKnockout ?? false,

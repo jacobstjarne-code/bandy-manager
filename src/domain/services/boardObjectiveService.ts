@@ -378,8 +378,19 @@ export function evaluateObjective(
 export function checkInObjectives(
   objectives: BoardObjective[],
   game: SaveGame,
-): { updated: BoardObjective[]; inboxMessages: Array<{ title: string; body: string }> } {
+): {
+  updated: BoardObjective[]
+  inboxMessages: Array<{ title: string; body: string }>
+  sponsorNetworkMoodDelta: number
+  boardTrustDelta: number
+  foretroendepottAmount: number
+} {
   const inboxMessages: Array<{ title: string; body: string }> = []
+  let sponsorNetworkMoodDelta = 0
+  let boardTrustDelta = 0
+  let foretroendepottAmount = 0
+  let flagshipMetThisCheckIn = false
+
   const updated = objectives.map(obj => {
     const result = evaluateObjective(obj, game)
     const newStatus = result.status === 'met' ? 'met' as const
@@ -388,6 +399,10 @@ export function checkInObjectives(
       : 'active' as const
 
     if (newStatus === 'met' && obj.status !== 'met') {
+      const isFlagship = obj.type === 'sporting' || obj.type === 'economic'
+      sponsorNetworkMoodDelta += isFlagship ? 6 : 3
+      boardTrustDelta += 1
+      if (isFlagship) flagshipMetThisCheckIn = true
       inboxMessages.push({
         title: `📋 ${obj.ownerId}: Uppfyllt!`,
         body: obj.successReward,
@@ -398,6 +413,7 @@ export function checkInObjectives(
         body: `${obj.label} — vi är inte i fas. Nuvarande: ${result.value}.`,
       })
     } else if (newStatus === 'failed' && obj.status !== 'failed') {
+      sponsorNetworkMoodDelta -= 4
       inboxMessages.push({
         title: `${obj.ownerId}: Misslyckat`,
         body: obj.failureConsequence,
@@ -406,5 +422,14 @@ export function checkInObjectives(
 
     return { ...obj, currentValue: result.value, status: newStatus }
   })
-  return { updated, inboxMessages }
+
+  // Förtroendepott: fires when two consecutive flagship seasons are met
+  // boardTrust ≥ 1 means last season's flagship was met; flagship met again → pott
+  if (flagshipMetThisCheckIn && (game.boardTrust ?? 0) >= 1) {
+    foretroendepottAmount = 62500  // 50–75 tkr kapat belopp (midpoint)
+    // Net boardTrust stays at 1 (not 2) after pott fires
+    boardTrustDelta = 1 - (game.boardTrust ?? 0)
+  }
+
+  return { updated, inboxMessages, sponsorNetworkMoodDelta, boardTrustDelta, foretroendepottAmount }
 }

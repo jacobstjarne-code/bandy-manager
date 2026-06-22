@@ -71,10 +71,27 @@ function applyStarInjuryRipples(game: SaveGame, playerId: string): SaveGame {
   // Only ripple for managed-club stars (CA ≥ 60)
   if (player.clubId !== game.managedClubId || player.currentAbility < 60) return game
 
-  return {
+  const weeksOut = Math.ceil((player.injuryDaysRemaining ?? 0) / 7)
+  const isFranchise = player.id === game.captainPlayerId || player.currentAbility >= 78
+
+  // Bas — varje stjärnskada (oavsett längd): oro i leden
+  let updated: SaveGame = {
     ...game,
-    fanMood: Math.max(0, (game.fanMood ?? 50) - 5),
+    fanMood: Math.max(0, (game.fanMood ?? 50) - 4),
   }
+  if (updated.supporterGroup) {
+    updated = { ...updated, supporterGroup: {
+      ...updated.supporterGroup,
+      mood: Math.max(0, (updated.supporterGroup.mood ?? 50) - 3),
+    }}
+  }
+
+  // Eskalering — endast långtidsskada (≥4 v) PÅ en franchise-spelare rör styrelsen
+  if (weeksOut >= 4 && isFranchise) {
+    updated = { ...updated, boardPatience: Math.max(0, (updated.boardPatience ?? 70) - 4) }
+  }
+
+  return updated
 }
 
 function applyBigDerbyWinRipples(game: SaveGame): SaveGame {

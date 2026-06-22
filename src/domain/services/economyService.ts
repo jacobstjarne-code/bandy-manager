@@ -2,6 +2,7 @@ import type { CommunityActivities, Sponsor, StandingRow } from '../entities/Save
 import type { Club } from '../entities/Club'
 import type { Player } from '../entities/Player'
 import { getActiveVolunteerBonus } from './volunteerService'
+import type { Volunteer } from './volunteerService'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
 
@@ -141,6 +142,8 @@ export interface CalcRoundIncomeParams {
   sponsors: Sponsor[]
   communityActivities: CommunityActivities | undefined
   volunteers?: string[]
+  volunteerRoster?: Volunteer[]    // role-based roster (same seed as OrtenTab); falls back to flat avg
+  sponsorNetworkMood?: number      // 0-100; multiplies sponsor income: 1 + (mood - 50) * 0.004
   fanMood: number
   isHomeMatch: boolean
   matchIsKnockout: boolean
@@ -168,7 +171,8 @@ export interface CalcRoundIncomeParams {
  * This matches the existing roundProcessor behaviour and is preserved intentionally.
  */
 export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreakdown {
-  const { club, players, sponsors, communityActivities, volunteers, fanMood, isHomeMatch,
+  const { club, players, sponsors, communityActivities, volunteers, volunteerRoster,
+    sponsorNetworkMood, fanMood, isHomeMatch,
     matchIsKnockout, matchIsCup, matchHasRivalry, standing, rand,
     communityStanding, isFirstRound, legendSalaryCost, journalistAttendanceModifier,
     weatherAttendanceModifier } = params
@@ -182,9 +186,10 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   const weeklyBase = Math.round(3000 + club.reputation * 50)
 
   // ── Sponsors ──────────────────────────────────────────────────────────────
-  const sponsorIncome = sponsors
+  const sponsorMoodMultiplier = 1 + ((sponsorNetworkMood ?? 50) - 50) * 0.004
+  const sponsorIncome = Math.round(sponsors
     .filter(s => s.contractRounds > 0)
-    .reduce((sum, s) => sum + s.weeklyIncome, 0)
+    .reduce((sum, s) => sum + s.weeklyIncome, 0) * sponsorMoodMultiplier)
 
   // ── Match revenue (home only) ─────────────────────────────────────────────
   let matchRevenue = 0
@@ -248,7 +253,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     }
   }
 
-  const volunteerIncome = getActiveVolunteerBonus(volunteers ?? []).weeklyIncome
+  const volunteerIncome = getActiveVolunteerBonus(volunteers ?? [], volunteerRoster).weeklyIncome
 
   // ── Arena-underhåll (fast kostnad per omgång) ─────────────────────────────
   const arenaCapacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)

@@ -44,7 +44,6 @@ import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService
 import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
-import { generateAwayTrip } from '../../domain/services/awayTripService'
 import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
@@ -840,10 +839,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // ── Board objectives check-in (round 7, 14, 22) ──────────────────────
   const leagueRound = currentLeagueRound ?? 0
   let updatedBoardObjectives = game.boardObjectives ?? []
+  let boardObjSponsorDelta = 0
+  let boardObjTrustDelta = 0
+  let boardObjForetroendepott = 0
   if ([7, 14, 22].includes(leagueRound) && updatedBoardObjectives.length > 0) {
     const gameForEval = { ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings }
-    const { updated, inboxMessages } = checkInObjectives(updatedBoardObjectives, gameForEval)
+    const { updated, inboxMessages, sponsorNetworkMoodDelta: objSponsorDelta, boardTrustDelta, foretroendepottAmount } = checkInObjectives(updatedBoardObjectives, gameForEval)
     updatedBoardObjectives = updated
+    boardObjSponsorDelta = objSponsorDelta
+    boardObjTrustDelta = boardTrustDelta
+    boardObjForetroendepott = foretroendepottAmount
     for (const msg of inboxMessages) {
       newInboxItems.push({
         id: `inbox_boardobj_${leagueRound}_${msg.title.slice(0, 10)}_${game.currentSeason}`,
@@ -851,6 +856,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         type: InboxItemType.BoardFeedback,
         title: msg.title,
         body: msg.body,
+        isRead: false,
+      })
+    }
+    if (foretroendepottAmount > 0) {
+      newInboxItems.push({
+        id: `inbox_foretroendepott_${game.currentSeason}_${leagueRound}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: 'Styrelsens förtroendepott',
+        body: `Två raka säsonger med uppfyllt flaggskeppsmål. Styrelsen tillskjuter 62 500 kr som anläggnings- eller transferkredit.`,
         isRead: false,
       })
     }
@@ -1124,6 +1139,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   let postTransferClubs = transferExecResult.clubs
   updatedNemesisTracker = transferExecResult.nemesisTracker
   let sponsorNetworkMoodDelta = transferExecResult.sponsorNetworkMoodDelta
+  // Drift sponsorNetworkMood toward 50 (3%/round) — speglar FANMOOD_DRIFT i narrativeProcessor
+  sponsorNetworkMoodDelta += (50 - (game.sponsorNetworkMood ?? 50)) * 0.03
+  // Board objective deltas (only non-zero at rounds 7, 14, 22)
+  sponsorNetworkMoodDelta += boardObjSponsorDelta
   newMoments.push(...transferExecResult.moments)
 
   // C-T1/T9 — Transfer consequence fan mood deltas
@@ -1248,31 +1267,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     allNewEvents.push(...mecenatResult.newEvents)
   }
 
-  // ── WEAK-019: Away trip microdecision — generate for upcoming away fixture ──
-  const upcomingAwayFixture = finalAllFixtures
-    .filter(f => f.status === FixtureStatus.Scheduled && f.awayClubId === game.managedClubId)
-    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
-  const nextManagedFixtureForTrip = finalAllFixtures
-    .filter(f => f.status === FixtureStatus.Scheduled && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
-  const isNextAway = nextManagedFixtureForTrip?.awayClubId === game.managedClubId
-  const awayTripUpdate = (() => {
-    // Clear if we just played away (trip consumed)
-    if (justCompletedManagedFixture && justCompletedManagedFixture.awayClubId === game.managedClubId) {
-      return undefined
-    }
-    // Keep existing trip if it's for the same upcoming fixture and already has a decision
-    if (game.awayTrip && isNextAway && nextManagedFixtureForTrip && game.awayTrip.fixtureId === nextManagedFixtureForTrip.id) {
-      return game.awayTrip
-    }
-    // Generate new trip if next managed fixture is away
-    if (isNextAway && nextManagedFixtureForTrip && upcomingAwayFixture) {
-      const tripWeather = trimmedWeathers.find(mw => mw.fixtureId === nextManagedFixtureForTrip.id)
-      return generateAwayTrip(nextManagedFixtureForTrip, tripWeather)
-    }
-    return undefined
-  })()
-
   // ── B3/B4: Cap low-priority (atmospheric) events per round ───────────────
   // Maksimalt MAX_ATMOSPHERIC_PER_ROUND låg-prio events per omgång visas i kön.
   // Överskjutande events sparas i inboxen (inte kasseras).
@@ -1392,6 +1386,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     storylines: game.storylines ?? [],
     clubLegends: game.clubLegends ?? [],
     boardObjectives: updatedBoardObjectives,
+    boardTrust: Math.max(0, (game.boardTrust ?? 0) + boardObjTrustDelta),
     boardObjectiveHistory: game.boardObjectiveHistory ?? [],
     facilityState: updatedFacilityState ?? game.facilityState,
     volunteers: updatedVolunteers,
@@ -1437,7 +1432,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       }
     })(),
     resolvedEventIds: reputationResolvedIds,
-    awayTrip: awayTripUpdate,
     pendingVictoryEcho,
     victoryEchoExpires,
     recentMoments: (() => {
@@ -1613,6 +1607,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         pendingEvents: [...nonActionable, ...surface],
         deferredDecisions: newDeferred.slice(0, MAX_DEFERRED_DECISIONS),
       }
+    }
+  }
+
+  // ── Förtroendepott — apply club finance bonus if earned this check-in ──────
+  if (boardObjForetroendepott > 0) {
+    updatedGame = {
+      ...updatedGame,
+      clubs: updatedGame.clubs.map(c =>
+        c.id === game.managedClubId ? { ...c, finances: c.finances + boardObjForetroendepott } : c
+      ),
     }
   }
 
