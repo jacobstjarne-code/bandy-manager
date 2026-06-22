@@ -13,7 +13,7 @@ import type { PlayoffBracket } from './Playoff'
 import type { CupBracket } from './Cup'
 import type { SeasonSummary } from './SeasonSummary'
 import type { ScoutReport, ScoutAssignment } from './Scouting'
-import type { YouthTeam, Mentorship, LoanDeal, AcademyLevel } from './Academy'
+import type { YouthTeam, Mentorship, MentorshipRecord, LoanDeal, AcademyLevel } from './Academy'
 import type { GameEvent, TransferBid } from './GameEvent'
 import type { OpponentAnalysis } from '../services/opponentAnalysisService'
 import type { StandingRow } from './Standing'
@@ -166,6 +166,7 @@ export interface SaveGame {
   academyUpgradeSeason?: number
   facilityUpgradeSeason?: number
   mentorships: Mentorship[]
+  mentorshipHistory?: MentorshipRecord[]
   loanDeals: LoanDeal[]
   version: string
   lastSavedAt: string   // ISO datetime

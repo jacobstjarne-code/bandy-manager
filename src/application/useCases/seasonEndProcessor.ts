@@ -517,11 +517,22 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
       // Retirement ceremony event with choices
       const playerName = `${player.firstName} ${player.lastName}`
+      const farewellQuote = generateFarewellQuote(player)
+      // Blodslinje: find youth players this legend mentored
+      const mentorProtégés = (game.mentorshipHistory ?? []).filter(r => r.seniorPlayerId === player.id)
+      const protégéLine = (() => {
+        const living = mentorProtégés
+          .map(r => game.players.find(p => p.id === r.youthPlayerId))
+          .filter(Boolean)
+        if (living.length === 0) return ''
+        const p = living[0]!
+        return ` Fostrade ${p.firstName} ${p.lastName}, ${p.age} år — som bär stafettpinnen en dag.`
+      })()
       retirementCeremonyEvents.push({
         id: `retirement_ceremony_${player.id}_${nextSeason}`,
         type: 'retirementCeremony',
         title: `Pensionsceremoni — ${playerName}`,
-        body: `${playerName} lägger bandyn på hyllan efter ${seasonsInClub} säsonger. Vill du erbjuda en roll i föreningen?`,
+        body: `${farewellQuote}${protégéLine} Vill du erbjuda en roll i föreningen?`,
         relatedPlayerId: player.id,
         resolved: false,
         sender: { name: playerName, role: 'Avgående spelare' },
@@ -1113,14 +1124,35 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
           else if (ms < os) sLosses++
           else sDraws++
         }
+        const CAREER_WIN_MILESTONES = [10, 25, 50, 100, 200]
+        const SEASONS_MILESTONES = [3, 5, 10]
+        const newTotalWins = profile.careerWins + sWins
+        const newTotalSeasons = profile.seasonsAtClub + 1
+        const crossedWinMilestone = CAREER_WIN_MILESTONES.find(
+          m => profile.careerWins < m && newTotalWins >= m)
+        const crossedSeasonsMilestone = SEASONS_MILESTONES.find(
+          m => profile.seasonsAtClub < m && newTotalSeasons >= m)
+        let updatedLog = profile.narrativeLog ?? []
+        if (crossedWinMilestone) {
+          updatedLog = [...updatedLog, {
+            season: game.currentSeason, matchday: game.currentMatchday,
+            type: 'milestone' as const, text: '// OPUS_COPY',
+          }]
+        } else if (crossedSeasonsMilestone) {
+          updatedLog = [...updatedLog, {
+            season: game.currentSeason, matchday: game.currentMatchday,
+            type: 'milestone' as const, text: '// OPUS_COPY',
+          }]
+        }
         return {
           ...profile,
           age: profile.age + 1,
-          seasonsAtClub: profile.seasonsAtClub + 1,
-          careerWins: profile.careerWins + sWins,
+          seasonsAtClub: newTotalSeasons,
+          careerWins: newTotalWins,
           careerDraws: profile.careerDraws + sDraws,
           careerLosses: profile.careerLosses + sLosses,
-        }
+          narrativeLog: updatedLog,
+        } as import('../../domain/entities/ManagerProfile').ManagerProfile
       })()
     : undefined
 
@@ -1268,6 +1300,15 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     academyUpgradeInProgress: game.academyUpgradeSeason === nextSeason ? false : game.academyUpgradeInProgress,
     academyUpgradeSeason: game.academyUpgradeSeason === nextSeason ? undefined : game.academyUpgradeSeason,
     mentorships: [],
+    mentorshipHistory: (() => {
+      // Close open records: graduated = youth player now in main players array
+      const mainPlayerIds = new Set(game.players.map(p => p.id))
+      return (game.mentorshipHistory ?? []).map(r =>
+        !r.endSeason && mainPlayerIds.has(r.youthPlayerId)
+          ? { ...r, endSeason: game.currentSeason, outcome: 'graduated' as const }
+          : r
+      )
+    })(),
     loanDeals: [],
     // V0.9 fields
     licenseReview,

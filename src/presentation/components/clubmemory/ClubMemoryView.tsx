@@ -4,6 +4,8 @@ import { ClubMemorySeasonSection } from './ClubMemorySeasonSection'
 import { ClubMemoryLegendsBlock } from './ClubMemoryLegendsBlock'
 import { ClubMemoryRecordsBlock } from './ClubMemoryRecordsBlock'
 import { ClubMemoryEmpty } from './ClubMemoryEmpty'
+import { Spine } from '../shared/Spine'
+import type { SpineItem } from '../shared/Spine'
 
 const KIND_LABEL: Record<string, string> = {
   triumph: 'Triumf',
@@ -16,9 +18,35 @@ interface Props {
   game: SaveGame
 }
 
+function buildBlodslinje(game: SaveGame): SpineItem[] {
+  const history = game.mentorshipHistory ?? []
+  if (history.length === 0) return []
+  const legends = game.clubLegends ?? []
+  const items: SpineItem[] = []
+  for (const record of history) {
+    const seniorLegend = legends.find(l => l.playerId === record.seniorPlayerId)
+    const seniorPlayer = game.players.find(p => p.id === record.seniorPlayerId)
+    const seniorName = seniorPlayer
+      ? `${seniorPlayer.firstName} ${seniorPlayer.lastName}`
+      : seniorLegend?.name ?? 'Okänd'
+    const juniorPlayer = game.players.find(p => p.id === record.youthPlayerId)
+    const juniorName = juniorPlayer ? `${juniorPlayer.firstName} ${juniorPlayer.lastName}` : null
+    if (!juniorName) continue
+    const label = seniorName
+    const text = record.outcome === 'graduated'
+      ? `${juniorName} tog steget upp.`
+      : record.outcome === 'ended'
+      ? `${juniorName} och ${seniorName} gick skilda vägar.`
+      : `${juniorName} är ${seniorName}s adept.`
+    items.push({ label, season: record.endSeason ?? game.currentSeason, text, dimmed: record.outcome === 'ended' })
+  }
+  return items
+}
+
 export function ClubMemoryView({ game }: Props) {
   const clubMemory = getClubMemory(game)
   const recentMoments = game.recentMoments ?? []
+  const blodslinjeItems = buildBlodslinje(game)
 
   return (
     <div className="club-memory-container">
@@ -57,6 +85,15 @@ export function ClubMemoryView({ game }: Props) {
 
           {clubMemory.legends.length > 0 && (
             <ClubMemoryLegendsBlock legends={clubMemory.legends} />
+          )}
+
+          {blodslinjeItems.length > 0 && (
+            <div className="card-sharp" style={{ padding: '14px 16px', margin: '0 12px' }}>
+              <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12 }}>
+                🩸 BLODSLINJE
+              </div>
+              <Spine items={blodslinjeItems} />
+            </div>
           )}
 
           {clubMemory.records && (

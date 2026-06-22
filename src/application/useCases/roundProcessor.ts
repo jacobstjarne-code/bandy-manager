@@ -73,7 +73,7 @@ import {
   CALLUP_NOTICE_LINES,
   SNUB_SCENE_LINES,
 } from '../../domain/data/landslagText'
-import { updateManagerBurnout, updateH2HRecord } from '../../domain/services/managerProfileService'
+import { updateManagerBurnout, updateH2HRecord, getBurnoutZone } from '../../domain/services/managerProfileService'
 import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
 import { PATRON_EMERGE_CS } from '../../domain/data/patronData'
 
@@ -1894,13 +1894,39 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const newStreak = pressure === 'hot' ? prevStreak + 1 : 0
     updatedGame = { ...updatedGame, fatigueHistory: newHistory, fatigueHotStreak: newStreak }
 
-    // Manager burnout sampling
+    // Manager burnout sampling + narrative log (burnout_peak, era_shift)
+    const prevBurnoutZone = getBurnoutZone(updatedGame.managerProfile?.burnoutScore ?? 0)
+    const eraChanged = !!(game.currentEra && game.currentEra !== newClubEra)
     const updatedManagerProfile = updateManagerBurnout(updatedGame)
     if (updatedManagerProfile) {
-      updatedGame = { ...updatedGame, managerProfile: updatedManagerProfile }
+      let enrichedProfile = updatedManagerProfile
+      const newBurnoutZone = getBurnoutZone(enrichedProfile.burnoutScore)
+      const zoneRose = (prevBurnoutZone === 'frisk' && newBurnoutZone !== 'frisk') ||
+                       (prevBurnoutZone === 'markbar' && newBurnoutZone === 'hog')
+      if (zoneRose) {
+        const alreadyLogged = (enrichedProfile.narrativeLog ?? []).some(
+          e => e.type === 'burnout_peak' && e.season === game.currentSeason)
+        if (!alreadyLogged) {
+          enrichedProfile = { ...enrichedProfile, narrativeLog: [
+            ...(enrichedProfile.narrativeLog ?? []),
+            { season: game.currentSeason, matchday: nextMatchday, type: 'burnout_peak' as const, text: '// OPUS_COPY' },
+          ]}
+        }
+      }
+      if (eraChanged) {
+        const alreadyLogged = (enrichedProfile.narrativeLog ?? []).some(
+          e => e.type === 'era_shift' && e.season === game.currentSeason)
+        if (!alreadyLogged) {
+          enrichedProfile = { ...enrichedProfile, narrativeLog: [
+            ...(enrichedProfile.narrativeLog ?? []),
+            { season: game.currentSeason, matchday: nextMatchday, type: 'era_shift' as const, text: '// OPUS_COPY' },
+          ]}
+        }
+      }
+      updatedGame = { ...updatedGame, managerProfile: enrichedProfile }
     }
 
-    // H2H rivalry update after managed match result
+    // H2H rivalry update after managed match result + rivalry narrative log
     if (
       justCompletedManagedFixture &&
       justCompletedManagedFixture.homeScore !== undefined &&
@@ -1911,7 +1937,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const mScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
       const oScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
       const opponentClubId = isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId
-      const profileWithH2H = updateH2HRecord(updatedGame.managerProfile, opponentClubId, mScore, oScore)
+      let profileWithH2H = updateH2HRecord(updatedGame.managerProfile, opponentClubId, mScore, oScore)
+      // Log rivalry once when a clear nemesis emerges (3+ losses, losses > wins)
+      const existingRivalryLog = (profileWithH2H.narrativeLog ?? []).some(e => e.type === 'rivalry')
+      if (!existingRivalryLog) {
+        const nemesisCandidate = (profileWithH2H.coachRivalries ?? [])
+          .find(r => r.h2hLosses >= 3 && r.h2hLosses > r.h2hWins)
+        if (nemesisCandidate) {
+          profileWithH2H = { ...profileWithH2H, narrativeLog: [
+            ...(profileWithH2H.narrativeLog ?? []),
+            { season: game.currentSeason, matchday: nextMatchday, type: 'rivalry' as const, text: '// OPUS_COPY' },
+          ]}
+        }
+      }
       updatedGame = { ...updatedGame, managerProfile: profileWithH2H }
     }
 

@@ -416,8 +416,13 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
       const nameParts = input.managerName.trim().split(/\s+/)
       const firstName = nameParts[0] ?? base.firstName
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : base.lastName
-      return { ...base, firstName, lastName, coachRivalries: generateCoachRivalries(opponentIds, (input.seed ?? 42) + 88002) }
+      return {
+        ...base, firstName, lastName,
+        coachRivalries: generateCoachRivalries(opponentIds, (input.seed ?? 42) + 88002),
+        narrativeLog: [{ season, matchday: 0, type: 'arrival' as const, text: '// OPUS_COPY' }],
+      }
     })(),
+    mentorshipHistory: [],
   }
 
   const playersWithAvailability = updatePlayerAvailability(game)

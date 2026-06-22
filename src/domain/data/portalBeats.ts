@@ -9,6 +9,7 @@
 
 import type { SaveGame, RippleChain } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
+import type { CoachRivalry } from '../entities/ManagerProfile'
 import { getRivalry } from './rivalries'
 import { nextManagedFixture } from '../services/situationFragments'
 import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from './facilityPortalBeats'
@@ -55,6 +56,16 @@ function nextManagedLeagueFixture(game: SaveGame) {
       (f.homeClubId === id || f.awayClubId === id)
     )
     .sort((a, b) => a.matchday - b.matchday)[0] ?? null
+}
+
+function _nemesisScore(r: CoachRivalry): number {
+  return (r.h2hWins + r.h2hDraws + r.h2hLosses) * Math.max(0, r.h2hLosses - r.h2hWins)
+}
+
+function _deriveNemesis(rivalries: CoachRivalry[]): CoachRivalry | null {
+  return rivalries
+    .filter(r => _nemesisScore(r) > 0)
+    .sort((a, b) => _nemesisScore(b) - _nemesisScore(a))[0] ?? null
 }
 
 function completedLeagueCount(game: SaveGame): number {
@@ -197,7 +208,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
           ((f.homeClubId === g.managedClubId && f.awayClubId === opp) ||
            (f.awayClubId === g.managedClubId && f.homeClubId === opp))
         )
-        .sort((a, b) => b.matchday - a.matchday)[0]
+        .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))[0]
       if (!pastDerby) return `Derbyt mot ${oppClub?.name ?? 'rivalen'}. Klacken minns.`
       const managedHome = pastDerby.homeClubId === g.managedClubId
       const ourGoals = managedHome ? pastDerby.homeScore : pastDerby.awayScore
@@ -254,6 +265,145 @@ export const PORTAL_BEATS: PortalBeat[] = [
       return `callback_sale_s${g.currentSeason}_${info?.buyerClubId ?? 'unknown'}`
     },
     oncePerSeason: false,
+  },
+
+  // ── Callback: Nemesis — inför match mot tränaren du aldrig slår ──────────
+  {
+    id: 'callback_nemesis',
+    emoji: '🎯',
+    kicker: 'Rivalen',
+    severity: () => 1,
+    trigger: (g) => {
+      const profile = g.managerProfile
+      if (!profile) return false
+      const nemesis = _deriveNemesis(profile.coachRivalries)
+      if (!nemesis) return false
+      return firesBeforeNextFixture(g, (_f, opp) => opp === nemesis.clubId)
+    },
+    text: (g) => {
+      const profile = g.managerProfile
+      if (!profile) return ''
+      const nemesis = _deriveNemesis(profile.coachRivalries)
+      if (!nemesis) return ''
+      const coachName = g.aiCoaches?.[nemesis.clubId]?.name
+      const clubName = g.clubs.find(c => c.id === nemesis.clubId)?.name ?? 'rivalen'
+      const record = `${nemesis.h2hWins}V ${nemesis.h2hDraws}O ${nemesis.h2hLosses}F`
+      return coachName
+        ? `// OPUS_COPY [${coachName}, ${clubName}, ${record}]`
+        : `// OPUS_COPY [${clubName}, ${record}]`
+    },
+    keyFn: (g) => {
+      const profile = g.managerProfile
+      const nemesis = profile ? _deriveNemesis(profile.coachRivalries) : null
+      return `callback_nemesis_${nemesis?.clubId ?? 'none'}_s${g.currentSeason}`
+    },
+    oncePerSeason: true,
+  },
+
+  // ── Legend-callback: lärlingen bär bindeln ────────────────────────────────
+  {
+    id: 'callback_legend_mentor',
+    emoji: '🎗️',
+    kicker: 'Blodslinje',
+    severity: () => 1,
+    trigger: (g) => {
+      const captainId = g.captainPlayerId
+      if (!captainId) return false
+      return (g.mentorshipHistory ?? []).some(r => r.youthPlayerId === captainId)
+    },
+    text: (g) => {
+      const captainId = g.captainPlayerId ?? ''
+      const record = (g.mentorshipHistory ?? []).find(r => r.youthPlayerId === captainId)
+      if (!record) return ''
+      const mentor = g.players.find(p => p.id === record.seniorPlayerId)
+        ?? g.clubLegends?.find(l => l.playerId === record.seniorPlayerId)
+      const captain = g.players.find(p => p.id === captainId)
+      if (!captain) return ''
+      const mentorName = mentor ? ('firstName' in mentor ? `${mentor.firstName} ${mentor.lastName}` : mentor.name) : 'En legend'
+      return `// OPUS_COPY [kapten: ${captain.firstName} ${captain.lastName}, mentor: ${mentorName}]`
+    },
+    keyFn: (g) => `callback_legend_mentor_${g.captainPlayerId ?? 'none'}_s${g.currentSeason}`,
+    oncePerSeason: true,
+  },
+
+  // ── Legend-callback: lärlingen debuterar ─────────────────────────────────
+  {
+    id: 'callback_legend_debut',
+    emoji: '⭐',
+    kicker: 'Genombrott',
+    severity: () => 0,
+    trigger: (g) => {
+      const mentored = new Set((g.mentorshipHistory ?? []).map(r => r.youthPlayerId))
+      return g.players.some(p =>
+        mentored.has(p.id) && p.clubId === g.managedClubId &&
+        (p.careerStats?.totalGames ?? 0) >= 1 && (p.careerStats?.totalGames ?? 0) <= 3
+      )
+    },
+    text: (g) => {
+      const mentored = new Set((g.mentorshipHistory ?? []).map(r => r.youthPlayerId))
+      const debutant = g.players.find(p =>
+        mentored.has(p.id) && p.clubId === g.managedClubId &&
+        (p.careerStats?.totalGames ?? 0) >= 1 && (p.careerStats?.totalGames ?? 0) <= 3
+      )
+      if (!debutant) return ''
+      const record = (g.mentorshipHistory ?? []).find(r => r.youthPlayerId === debutant.id)
+      const mentor = record ? g.players.find(p => p.id === record.seniorPlayerId) ?? g.clubLegends?.find(l => l.playerId === record.seniorPlayerId) : null
+      const mentorName = mentor ? ('firstName' in mentor ? `${mentor.firstName} ${mentor.lastName}` : mentor.name) : null
+      return `// OPUS_COPY [debutant: ${debutant.firstName} ${debutant.lastName}, ${debutant.age} år${mentorName ? `, mentor: ${mentorName}` : ''}]`
+    },
+    keyFn: (g) => {
+      const mentored = new Set((g.mentorshipHistory ?? []).map(r => r.youthPlayerId))
+      const debutant = g.players.find(p =>
+        mentored.has(p.id) && p.clubId === g.managedClubId &&
+        (p.careerStats?.totalGames ?? 0) >= 1 && (p.careerStats?.totalGames ?? 0) <= 3
+      )
+      return `callback_legend_debut_${debutant?.id ?? 'none'}_s${g.currentSeason}`
+    },
+    oncePerSeason: false,
+  },
+
+  // ── Legend-callback: legendens rekord nära ────────────────────────────────
+  {
+    id: 'callback_legend_record',
+    emoji: '🏆',
+    kicker: 'Historien väntar',
+    severity: () => 1,
+    trigger: (g) => {
+      const legends = g.clubLegends ?? []
+      if (legends.length === 0) return false
+      return g.players.some(p =>
+        p.clubId === g.managedClubId &&
+        legends.some(l =>
+          (l.totalGoals > 0 && Math.abs((p.careerStats?.totalGoals ?? 0) - l.totalGoals) <= 5 && (p.careerStats?.totalGoals ?? 0) < l.totalGoals) ||
+          (l.seasons > 0 && Math.abs((p.careerStats?.seasonsPlayed ?? 0) - l.seasons) <= 1 && (p.careerStats?.seasonsPlayed ?? 0) < l.seasons)
+        )
+      )
+    },
+    text: (g) => {
+      const legends = g.clubLegends ?? []
+      for (const p of g.players.filter(pl => pl.clubId === g.managedClubId)) {
+        for (const l of legends) {
+          const goalsDiff = l.totalGoals - (p.careerStats?.totalGoals ?? 0)
+          if (l.totalGoals > 0 && goalsDiff > 0 && goalsDiff <= 5) {
+            return `// OPUS_COPY [${p.firstName} ${p.lastName} är ${goalsDiff} mål från ${l.name}:s rekord (${l.totalGoals} mål)]`
+          }
+        }
+      }
+      return ''
+    },
+    keyFn: (g) => {
+      const legends = g.clubLegends ?? []
+      for (const p of g.players.filter(pl => pl.clubId === g.managedClubId)) {
+        for (const l of legends) {
+          const goalsDiff = l.totalGoals - (p.careerStats?.totalGoals ?? 0)
+          if (l.totalGoals > 0 && goalsDiff > 0 && goalsDiff <= 5) {
+            return `callback_legend_record_${p.id}_${l.playerId ?? l.name}_s${g.currentSeason}`
+          }
+        }
+      }
+      return `callback_legend_record_none_s${g.currentSeason}`
+    },
+    oncePerSeason: true,
   },
 
   // ── Ispremiär (omg 1, ingen match spelad) ─────────────────────

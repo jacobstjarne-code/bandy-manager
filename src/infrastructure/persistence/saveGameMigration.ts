@@ -311,6 +311,11 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.handledContractPlayerIds === undefined) data.handledContractPlayerIds = []
   if (data.matchWeathers === undefined) data.matchWeathers = []
   if (data.mentorships === undefined) data.mentorships = []
+  if (data.mentorshipHistory === undefined) data.mentorshipHistory = []
+  if (data.managerProfile && typeof data.managerProfile === 'object') {
+    const mp = data.managerProfile as Record<string, unknown>
+    if (!mp.narrativeLog) mp.narrativeLog = []
+  }
   if (data.loanDeals === undefined) data.loanDeals = []
   if (data.talentSearchResults === undefined) data.talentSearchResults = []
   if (data.youthIntakeHistory === undefined) data.youthIntakeHistory = []

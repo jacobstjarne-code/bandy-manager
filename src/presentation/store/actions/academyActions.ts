@@ -1,5 +1,5 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import type { LoanDeal } from '../../../domain/entities/Academy'
+import type { LoanDeal, MentorshipRecord } from '../../../domain/entities/Academy'
 import { PlayerPosition, InboxItemType } from '../../../domain/enums'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 
@@ -306,7 +306,11 @@ export function academyActions(get: Get, set: Set) {
         .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 
       const mentorship = { seniorPlayerId, youthPlayerId, startRound: currentRound, isActive: true }
-      set({ game: { ...game, mentorships: [...(game.mentorships ?? []), mentorship] } })
+      const historyRecord: MentorshipRecord = { seniorPlayerId, youthPlayerId, startRound: currentRound }
+      set({ game: { ...game,
+        mentorships: [...(game.mentorships ?? []), mentorship],
+        mentorshipHistory: [...(game.mentorshipHistory ?? []), historyRecord],
+      } })
       return { success: true }
     },
 
@@ -316,7 +320,12 @@ export function academyActions(get: Get, set: Set) {
       const updatedMentorships = (game.mentorships ?? []).map(m =>
         m.youthPlayerId === youthPlayerId && m.isActive ? { ...m, isActive: false } : m
       )
-      set({ game: { ...game, mentorships: updatedMentorships } })
+      const updatedMentorshipHistory = (game.mentorshipHistory ?? []).map(r =>
+        r.youthPlayerId === youthPlayerId && !r.endSeason
+          ? { ...r, endSeason: game.currentSeason, outcome: 'ended' as const }
+          : r
+      )
+      set({ game: { ...game, mentorships: updatedMentorships, mentorshipHistory: updatedMentorshipHistory } })
     },
 
     loanOutPlayer: (playerId: string, destinationClubName: string, rounds: number) => {

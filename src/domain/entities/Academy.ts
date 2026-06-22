@@ -45,6 +45,14 @@ export interface Mentorship {
   isActive: boolean
 }
 
+export interface MentorshipRecord {
+  seniorPlayerId: string
+  youthPlayerId: string
+  startRound: number
+  endSeason?: number
+  outcome?: 'graduated' | 'ended'
+}
+
 export interface LoanReport {
   round: number
   played: boolean

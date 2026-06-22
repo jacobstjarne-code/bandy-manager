@@ -1,4 +1,5 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { CoachRivalry } from '../../../domain/entities/ManagerProfile'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import { ManagerPortrait } from '../squad/ManagerPortrait'
 import {
@@ -9,6 +10,18 @@ import {
 } from '../../../domain/services/managerProfileService'
 import { BURNOUT_ZONE_LABELS, BURNOUT_MARK, COACH_RIVALRY_QUOTES } from '../../../domain/data/managerKaraktarText'
 import { SectionLabel } from '../SectionLabel'
+import { Spine } from '../shared/Spine'
+import type { SpineItem } from '../shared/Spine'
+
+function nemesisScore(r: CoachRivalry): number {
+  return (r.h2hWins + r.h2hDraws + r.h2hLosses) * Math.max(0, r.h2hLosses - r.h2hWins)
+}
+
+function deriveNemesis(rivalries: CoachRivalry[]): CoachRivalry | null {
+  return rivalries
+    .filter(r => nemesisScore(r) > 0)
+    .sort((a, b) => nemesisScore(b) - nemesisScore(a))[0] ?? null
+}
 
 interface Props {
   game: SaveGame
@@ -49,6 +62,21 @@ export function TranareTab({ game }: Props) {
     .filter(r => h2hTotal(r) > 0)
     .sort((a, b) => h2hTotal(b) - h2hTotal(a))
     .slice(0, 3)
+
+  const TYPE_LABEL: Record<string, string> = {
+    arrival: 'Ankomst',
+    burnout_peak: 'Belastningstopp',
+    era_shift: 'Ny era',
+    rivalry: 'Rivalitet',
+    milestone: 'Milstolpe',
+  }
+  const narrativeItems: SpineItem[] = (profile.narrativeLog ?? [])
+    .filter(e => e.text !== '// OPUS_COPY')
+    .map(e => ({ label: TYPE_LABEL[e.type] ?? e.type, season: e.season, text: e.text }))
+
+  const nemesis = deriveNemesis(profile.coachRivalries)
+  const nemesisClub = nemesis ? game.clubs.find(c => c.id === nemesis.clubId) : null
+  const nemesisCoach = nemesis ? game.aiCoaches?.[nemesis.clubId] : null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -163,6 +191,33 @@ export function TranareTab({ game }: Props) {
               )
             })}
           </div>
+        </div>
+      )}
+
+      {/* Nemesis — utpekad rival ur coachRivalries */}
+      {nemesis && nemesisClub && nemesisCoach && (
+        <div className="card-sharp" style={{ padding: '12px 14px', borderLeft: '3px solid color-mix(in srgb, var(--danger) 40%, transparent)' }}>
+          <SectionLabel style={{ marginBottom: 8 }}>🎯 NEMESIS</SectionLabel>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+            <div>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{nemesisCoach.name}</span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{nemesisClub.name}</span>
+            </div>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+              {nemesis.h2hWins}V {nemesis.h2hDraws}O {nemesis.h2hLosses}F
+            </span>
+          </div>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+            // OPUS_COPY
+          </p>
+        </div>
+      )}
+
+      {/* Tenure-arc — tränarens berättelse */}
+      {narrativeItems.length > 0 && (
+        <div className="card-sharp" style={{ padding: '12px 14px' }}>
+          <SectionLabel style={{ marginBottom: 12 }}>📖 BANAN</SectionLabel>
+          <Spine items={narrativeItems} />
         </div>
       )}
     </div>

@@ -8,6 +8,13 @@ export interface CoachRivalry {
   h2hLosses: number
 }
 
+export interface ManagerNarrativeEntry {
+  season: number
+  matchday: number
+  type: 'arrival' | 'burnout_peak' | 'era_shift' | 'rivalry' | 'milestone'
+  text: string
+}
+
 export interface ManagerProfile {
   firstName: string
   lastName: string
@@ -22,4 +29,5 @@ export interface ManagerProfile {
   contractUntilSeason: number
   monthlySalary: number      // tkr/month
   coachRivalries: CoachRivalry[]
+  narrativeLog?: ManagerNarrativeEntry[]
 }
