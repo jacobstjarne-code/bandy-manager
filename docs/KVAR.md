@@ -1,3 +1,17 @@
+# ⛔ HISTORISK — status & parkerat i `docs/BACKLOG.md`. BYGG INTE PÅ DENNA.
+
+**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** KVAR var den andra levande statusfilen vid sidan av BACKLOG — båda fick uppdateringar in i juni (06-19/06-20-entries här dubblerar BACKLOG: Konsekvensraden, KF9b, D3, promise⇔consequence). Två filer som tyst sa olika om samma sak är precis driften genomgången rättar. **Statusen OCH det parkerade äger `docs/BACKLOG.md` nu** (sektion A = aktivt, D = parkerat).
+
+**Vad som lever vidare — och var (inget tappat):**
+- **Tekn. skuld (TS-4…TS-10, TS-2/TS-3)** → `docs/SPEC_TEKNISK_SKULD.md` (full spec per åtgärd) + BACKLOG §E. TS-8 (SaveGame-tillväxt) = GAP-5, nu BACKLOG **D-RC**.
+- **Promise⇔consequence-rester** (player_weekend_off-bugg, corner-noop, scout-gate, legacy_youth_showcase-label, pass-2-trippeln) → `docs/AUDIT_PROMISE_CONSEQUENCE_2026-06-19.md` + `docs/CODE_ORDER_PROMISE_CONSEQUENCE_2026-06-19.md` (mentor-action där = sedan byggd, mentorskap-kanon).
+- **Långsiktigt/THE_BOMB** (ortens kalender, mecenat-middag, kommunval, taktikdjup) → `docs/THE_BOMB.md`.
+- **Nisch-datajobb** (allsvenskan-scraping shot/save/freestroke/offside, FREDAGSJOBB-sektionen) ligger kvar som referens här — sannolikt obsolet då motorn nu är kalibrerad <1%.
+
+Resten är kronologisk leveranshistorik (KLART IDAG-tabellerna april→juni) — värdefull som journal, **inte** status. Öppna inte för "vad är parkerat/näst"; det står i BACKLOG.
+
+---
+
 # BANDY MANAGER — KVAR
 
 **Datum:** 2026-05-16

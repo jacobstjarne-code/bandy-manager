@@ -644,25 +644,85 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           ],
         },
         'glödande': {
-          calm:          [`${n} är i strålande form just nu. Ge honom speltid.`],
-          sharp:         [`${n} levererar. Utnyttja det.`],
-          jovial:        [`${n} flammar! Ge honom friheten att avgöra!`],
-          grumpy:        [`${n} spelar bra. Sällsynt, men sant.`],
-          philosophical: [`${n} har hittat sitt flöde. Störs det inte.`],
+          calm: [
+            `${n} är i strålande form just nu. Ge honom speltid.`,
+            `${n} går som tåget nu, så låt honom spela medan det sitter.`,
+            `Just nu sitter allt för ${n}.`,
+          ],
+          sharp: [
+            `${n} levererar. Utnyttja det.`,
+            `${n} är glödhet, bygg spelet runt honom.`,
+            `${n} avgör matcher nu — se till att han är på isen.`,
+          ],
+          jovial: [
+            `${n} flammar! Ge honom friheten att avgöra!`,
+            `${n} är på hugget och honom vill man ha på planen.`,
+            `Det lossnar för ${n} — härligt att se.`,
+          ],
+          grumpy: [
+            `${n} spelar bra. Sällsynt, men sant.`,
+            `${n} håller måttet för tillfället, vi får njuta så länge det varar.`,
+            `${n} levererar nu, fråga mig inte hur länge.`,
+          ],
+          philosophical: [
+            `${n} har hittat sitt flöde. Störs det inte.`,
+            `${n} bär formen lätt just nu, sånt rör man inte i.`,
+            `Det går i vågor, och ${n} är på toppen av sin.`,
+          ],
         },
         'missnöjd': {
-          calm:          [`${n} verkar inte nöjd. Vi kanske bör ha ett samtal.`],
-          sharp:         [`${n} är missnöjd. Det påverkar laget. Ta tag i det.`],
-          jovial:        [`${n} mår inte bra. Han behöver känna sig sedd.`],
-          grumpy:        [`${n} klagar igen. Men han har en poäng.`],
-          philosophical: [`${n}s missnöje är en signal. Lyssna innan det eskalerar.`],
+          calm: [
+            `${n} verkar inte nöjd. Vi kanske bör ha ett samtal.`,
+            `Något skaver hos ${n}, värt ett samtal innan det växer.`,
+            `${n} går tyst omkring, och det brukar betyda något.`,
+          ],
+          sharp: [
+            `${n} är missnöjd. Det påverkar laget. Ta tag i det.`,
+            `${n} drar ner stämningen, prata med honom nu.`,
+            `Det skaver kring ${n} — lös det innan det sprider sig.`,
+          ],
+          jovial: [
+            `${n} mår inte bra. Han behöver känna sig sedd.`,
+            `${n} är lite sur i kanten, ett samtal brukar räta upp det.`,
+            `${n} behöver höra att han hör hit.`,
+          ],
+          grumpy: [
+            `${n} klagar igen. Men han har en poäng.`,
+            `${n} muttrar i omklädningsrummet, inte första gången.`,
+            `${n} är inte nöjd, och det blir sällan bättre av att vänta.`,
+          ],
+          philosophical: [
+            `${n}s missnöje är en signal. Lyssna innan det eskalerar.`,
+            `Missnöje gror i tystnad — ${n} säger mer med blicken än med orden.`,
+            `${n} bär på något som inte löser sig av sig självt.`,
+          ],
         },
         'skottform': {
-          calm:          [`${n} gör mål just nu. Ge honom fler lägen.`],
-          sharp:         [`${n} sitter inne. Se till att han kommer till avslut.`],
-          jovial:        [`${n} är varm! Sätt honom i position så ordnar det sig!`],
-          grumpy:        [`${n} gör mål. Hoppas det håller i sig.`],
-          philosophical: [`Momentum är flyktigt. ${n} bär det just nu — bygg runt det.`],
+          calm: [
+            `${n} gör mål just nu. Ge honom fler lägen.`,
+            `Bollen vill in för ${n} nu, så mata honom framför mål.`,
+            `${n} träffar rätt, spela fram honom i straffområdet.`,
+          ],
+          sharp: [
+            `${n} sitter inne. Se till att han kommer till avslut.`,
+            `${n} sätter sina chanser — skapa fler.`,
+            `${n} är kall framför mål, få fram honom i lägena.`,
+          ],
+          jovial: [
+            `${n} är varm! Sätt honom i position så ordnar det sig!`,
+            `${n} hittar nät på nät, servera honom i farliga lägen!`,
+            `Det sitter för ${n} nu!`,
+          ],
+          grumpy: [
+            `${n} gör mål. Hoppas det håller i sig.`,
+            `${n} träffar rätt nu, passa på medan det står sig.`,
+            `${n} gör mål för tillfället, sånt brukar inte vara.`,
+          ],
+          philosophical: [
+            `Momentum är flyktigt. ${n} bär det just nu — bygg runt det.`,
+            `En målform kommer och går, och ${n} är inne i sin.`,
+            `${n} har siktet inställt — sånt ifrågasätter man inte.`,
+          ],
         },
         'vill-mer': {
           calm: [
@@ -692,11 +752,31 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           ],
         },
         'sviktande': {
-          calm:          [`${n} är inte i sin bästa form. Han behöver stöd.`],
-          sharp:         [`${n} underpresterar. Ta ett snack med honom.`],
-          jovial:        [`${n} har en tuff period. Vi stöttar honom.`],
-          grumpy:        [`${n} levererar inte. Någon måste säga det rakt ut.`],
-          philosophical: [`Svackor tillhör spelets natur. ${n} hittar tillbaka.`],
+          calm: [
+            `${n} är inte i sin bästa form. Han behöver stöd.`,
+            `Formen viker för ${n}, ge honom tid att hitta tillbaka.`,
+            `${n} har det motigt nu — tålamod och stöd, inte press.`,
+          ],
+          sharp: [
+            `${n} underpresterar. Ta ett snack med honom.`,
+            `${n} tappar det, ta tag i det innan det sätter sig.`,
+            `${n} är inte med — ett rakt samtal, sen vidare.`,
+          ],
+          jovial: [
+            `${n} har en tuff period. Vi stöttar honom.`,
+            `${n} sliter i motvind och behöver känna att vi tror på honom.`,
+            `${n} har det tungt nu.`,
+          ],
+          grumpy: [
+            `${n} levererar inte. Någon måste säga det rakt ut.`,
+            `${n} sjunker, och ingen vågar säga det — så jag gör det.`,
+            `Formen är borta för ${n}, frågan är om han vet om det själv.`,
+          ],
+          philosophical: [
+            `Svackor tillhör spelets natur. ${n} hittar tillbaka.`,
+            `${n} är i nedförsbacke just nu, och sånt möts med tålamod.`,
+            `${n} har tappat något på vägen som går att hitta igen.`,
+          ],
         },
       }
       return seededPick(PLAYER_NOTE_QUOTES[context.tag][p], context.playerId)

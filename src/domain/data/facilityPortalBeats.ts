@@ -33,10 +33,12 @@
  *      (etikett), eller rendera bygg-beats via en egen liten variant. Klick på beatet
  *      (eller pilen) → navigate(beat.route). Dismiss-beteendet behålls.
  *
- * Tills båda finns: texterna nedan är färdiga men INTE wirade. Detta är medvetet —
- * hellre flaggad lucka än falskt grönt. Beatet hör till B1-navbygget, EFTER att
- * Code-navordern (CODE_UPPDRAG_B1_NAVIGERING) byggt Bygget-fliken (routen måste finnas
- * att navigera till).
+ * WIRAT 2026-06-20: båda beroendena uppfyllda. (1) lastCompleted sätts i
+ * advanceFacilityState (facilityService.ts). (2) PortalBeat.tsx bär route/kicker/›.
+ * Beatet 'facility_completed' lever i PORTAL_BEATS (portalBeats.ts) med övergångstrigger
+ * (lastCompleted.matchday === currentMatchday). buildFacilityCompletedBeat nedan är SUPERSEDED
+ * — portalBeats.ts inlinear text-uppslaget (FACILITY_COMPLETED_BEATS/FALLBACK); funktionen är
+ * död kod och kan tas bort av Code (verifiera ingen importör + typecheck).
  * ─────────────────────────────────────────────────────────────────────────────
  */
 

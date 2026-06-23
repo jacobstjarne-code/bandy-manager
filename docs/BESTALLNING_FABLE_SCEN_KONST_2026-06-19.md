@@ -1,5 +1,7 @@
 # Beställning till Fable — fyra scen-illustrationer (match-laddning)
 
+> **STATUS 2026-06-22 — IN PROGRESS (Erik).** Setet i `public/assets/illustrations/`: `annandagen` · `final` · `intro` finns; `cup` · `derby` · `premiar` · `nyar` ej landade. Komponenten faller på den avsiktliga placeholdern (`528ac266`) tills dess. Stängs + arkiveras till `completed-june/` när de fyra JPG:erna ligger på plats.
+
 **Av:** Code · **Datum:** 2026-06-19 · **Grund:** `DESIGN_SPEC_SCEN_KONST_2026-06-18.md` Del 1.
 Löser order-punkt #13. Del 2 (placeholder) + Del 3 (band-fond) är redan byggda i kod
 (commit 528ac266) — det här är bild-assetsen som återstår.

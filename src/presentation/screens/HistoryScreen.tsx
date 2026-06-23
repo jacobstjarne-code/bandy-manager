@@ -213,9 +213,8 @@ export function HistoryScreen() {
           return (
             <div className="card-sharp" style={{ padding: '30px 16px', textAlign: 'center', color: 'var(--text-muted)', marginBottom: 32 }}>
               <p style={{ fontSize: 20, marginBottom: 8 }}>🩸</p>
-              {/* // OPUS_COPY — tom-tillstånd blodslinje */}
               <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Inga mentorband ännu</p>
-              <p style={{ fontSize: 12 }}>Sätt en senior spelare som mentor för en akademiungdom för att börja bygga klubbens blodslinje.</p>
+              <p style={{ fontSize: 12 }}>Låt en senior spelare ta hand om en ungdom från akademin. Det är så stafetten börjar.</p>
             </div>
           )
         }
@@ -226,8 +225,7 @@ export function HistoryScreen() {
                 fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
                 color: 'var(--text-muted)', marginBottom: 16,
               }}>
-                {/* // OPUS_COPY — blodslinje-rubrik */}
-                BLODSLINJE
+                STAFETTEN
               </p>
               <Spine items={blodslinjeItems} />
             </div>

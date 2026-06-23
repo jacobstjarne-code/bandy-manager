@@ -4,13 +4,15 @@
 
 Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessionsstart-läsning. Vid sessionsstart läser du minimum nedan, sedan vidare beroende på uppgiftstyp.
 
-### Varje session, alltid (2 steg):
+### Varje session, alltid (4 steg):
 
 1. **Tid:** `web_search "current time Stockholm"` följt av `web_fetch` på en sida i resultaten där datum/tid renderas i HTML (time.io, timeanddate.com fungerar). Försök inte gissa API-URL:er — `web_fetch` accepterar bara URL:er som dykt upp i sökresultat eller angetts av Jacob. Skriv överst: `2026-04-22, onsdag morgon (09:41 CEST)`. Om tids-sidan inte svarar — fråga Jacob. Förhåll dig till timestampen när du refererar till tid.
 
 2. **Workspace-check:** kör `tool_search` för att se vilka filsystem-verktyg som är tillgängliga i sessionen (read/write/edit/list). Olika sessioner har olika åtkomst — verifiera, anta inte.
 
 3. **BYGGT-MEN-OSYNLIGT — läs FÖRE du spårar kod.** Öppna `docs/BACKLOG.md` och läs (a) listan "BYGGT MEN OSYNLIGT/ONÅBART" överst och (b) sektion A (aktiva sprintar + sessionsfynd). Detta är obligatoriskt, inte orientering-vid-behov. **Hård regel:** om Jacob frågar om något kan vara byggt-men-osynligt, parkerat, halvfärdigt, eller "finns det redan?" — sök svaret i BACKLOG.md FÖRST, innan du grep:ar koden. Koden visar vad som finns; BACKLOG visar vad vi *vet* om vad som finns och varför det ser ut som det gör. Att spåra fram ett svar ur koden som redan står i BACKLOG är det dyraste felet i det här projektet — det får Jacob att tro att en sak är bortglömd när den är loggad, och tvärtom. Verifiera mot koden EFTER att du läst BACKLOG, inte istället för.
+
+4. **Incoming-koll.** `docs/incoming/` är drop-zon, inte arkiv. Lista den. Baslinje = `README.md` (mappens manual) + `2026-06-11_design_b1_klubbutveckling.html` (aktiv visuell referens). Allt ANNAT triageras SAMMA session till sitt hem: mock → `docs/mockups/`, design-brief/handoff → `design-system/briefs/`, analys/flödesgenomgång → `docs/`, dubblett/äldre snapshot → `docs/incoming/_RADERAS/` (Opus saknar delete; Jacob kör `git rm` på _RADERAS). **Batcha aldrig.** En hög på 27 filer kostade en vecka i verifiera-mot-källan-arkeologi (2026-06-20); vid drop-tillfället är samma bedömning 30 sekunder för att kontexten är färsk. Nya drops filas vid drop-tillfället, inte "senare". Avgör mot KÄLLAN (är det byggt/stale/konsumerat?), inte mot minnet.
 
 ### Innan du börjar arbeta — välj uppgiftstyp:
 
@@ -684,10 +686,10 @@ Missen sker ALLTID i exakt två ögonblick. När du är i ettdera — stanna och
 2. Greppa repo efter den gamla filens namn (`grep -rn "GAMMAL_FIL" docs/`) och uppdatera VARJE referens till att peka på den nya. En stale pekare i körlistan är lika illa som den gamla filen själv.
 
 **B. När du markerar något KLART eller en grind PASSERAD:**
-1. Uppdatera statusen i `KORLISTA_CODE_RC.md` (eller den utpekade statusfilen) — ALDRIG i en sidofil.
+1. Uppdatera statusen i `docs/BACKLOG.md` (den utpekade statusfilen) — ALDRIG i en sidofil.
 2. Om en order-/spec-fil har grind-språk ("Jacob spelar inte förrän...", "PRIO 1–4 är grinden") som nu är inaktuellt → toppa den med `✅ HISTORISK — status i körlistan`. Lämna inte två filer som säger olika om vad som är gjort.
 
-**Den bärande regeln (båda fallen):** det finns EN statusfil (`KORLISTA_CODE_RC.md`). Allt annat är antingen (a) en order/spec som pekar PÅ statusfilen, eller (b) historik som SÄGER att den är historik. En fil får aldrig tyst motsäga statusfilen — den måste antingen peka dit eller dödmarkera sig själv. Om du inte hinner göra följdhandlingen samma tur: gör den ändå. "Vid tillfälle" är hur drift uppstår.
+**Den bärande regeln (båda fallen):** det finns EN statusfil (`docs/BACKLOG.md` — KORLISTA_CODE_RC.md dödmarkerad 2026-06-21, den var en RC-moment-frysning). Allt annat är antingen (a) en order/spec som pekar PÅ statusfilen, eller (b) historik som SÄGER att den är historik. En fil får aldrig tyst motsäga statusfilen — den måste antingen peka dit eller dödmarkera sig själv. Om du inte hinner göra följdhandlingen samma tur: gör den ändå. "Vid tillfälle" är hur drift uppstår.
 
 **Självkontroll innan du avslutar en tur där du skrev en ny sanning:** "Skapade jag just en version 2 eller markerade något klart? Finns det en gammal fil eller en referens som nu ljuger? Döda den nu."
 

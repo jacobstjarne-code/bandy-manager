@@ -59,7 +59,7 @@ export function CeremonyRetirement({ game, event }: Props) {
         color: 'var(--text-light)', lineHeight: 1.7, textAlign: 'center',
         maxWidth: 320, marginBottom: 8,
       }}>
-        {/* // OPUS_COPY — en rad om vad spelaren lämnar efter sig i klacken */}
+        Läktaren reser sig en sista gång. Den platsen blir aldrig riktigt någon annans.
       </p>
 
       {/* Farewell quote from game event */}

@@ -208,7 +208,7 @@ export function TranareTab({ game }: Props) {
             </span>
           </div>
           <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
-            // OPUS_COPY
+            "Det är inte serien som sätter dig på prov. Det är han."
           </p>
         </div>
       )}

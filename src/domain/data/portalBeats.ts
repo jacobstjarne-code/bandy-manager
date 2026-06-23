@@ -289,8 +289,8 @@ export const PORTAL_BEATS: PortalBeat[] = [
       const clubName = g.clubs.find(c => c.id === nemesis.clubId)?.name ?? 'rivalen'
       const record = `${nemesis.h2hWins}V ${nemesis.h2hDraws}O ${nemesis.h2hLosses}F`
       return coachName
-        ? `// OPUS_COPY [${coachName}, ${clubName}, ${record}]`
-        : `// OPUS_COPY [${clubName}, ${record}]`
+        ? `${coachName} står där igen. ${record} mot honom. Han ler redan.`
+        : `Det blir ${clubName} igen. ${record} i böckerna. Den här gången, då.`
     },
     keyFn: (g) => {
       const profile = g.managerProfile
@@ -320,7 +320,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
       const captain = g.players.find(p => p.id === captainId)
       if (!captain) return ''
       const mentorName = mentor ? ('firstName' in mentor ? `${mentor.firstName} ${mentor.lastName}` : mentor.name) : 'En legend'
-      return `// OPUS_COPY [kapten: ${captain.firstName} ${captain.lastName}, mentor: ${mentorName}]`
+      return `${captain.firstName} ${captain.lastName} bär bindeln nu. Det var ${mentorName} som visade honom hur man gör.`
     },
     keyFn: (g) => `callback_legend_mentor_${g.captainPlayerId ?? 'none'}_s${g.currentSeason}`,
     oncePerSeason: true,
@@ -349,7 +349,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
       const record = (g.mentorshipHistory ?? []).find(r => r.youthPlayerId === debutant.id)
       const mentor = record ? g.players.find(p => p.id === record.seniorPlayerId) ?? g.clubLegends?.find(l => l.playerId === record.seniorPlayerId) : null
       const mentorName = mentor ? ('firstName' in mentor ? `${mentor.firstName} ${mentor.lastName}` : mentor.name) : null
-      return `// OPUS_COPY [debutant: ${debutant.firstName} ${debutant.lastName}, ${debutant.age} år${mentorName ? `, mentor: ${mentorName}` : ''}]`
+      return `${debutant.firstName} ${debutant.lastName} gör debut, ${debutant.age} år.${mentorName ? ` ${mentorName} såg det innan någon annan.` : ''}`
     },
     keyFn: (g) => {
       const mentored = new Set((g.mentorshipHistory ?? []).map(r => r.youthPlayerId))
@@ -385,7 +385,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
         for (const l of legends) {
           const goalsDiff = l.totalGoals - (p.careerStats?.totalGoals ?? 0)
           if (l.totalGoals > 0 && goalsDiff > 0 && goalsDiff <= 5) {
-            return `// OPUS_COPY [${p.firstName} ${p.lastName} är ${goalsDiff} mål från ${l.name}:s rekord (${l.totalGoals} mål)]`
+            return `${p.firstName} ${p.lastName} är ${goalsDiff} mål från ${l.name}:s rekord. Det har stått sig längre än någon trott.`
           }
         }
       }

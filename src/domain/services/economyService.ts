@@ -143,7 +143,7 @@ export interface CalcRoundIncomeParams {
   communityActivities: CommunityActivities | undefined
   volunteers?: string[]
   volunteerRoster?: Volunteer[]    // role-based roster (same seed as OrtenTab); falls back to flat avg
-  sponsorNetworkMood?: number      // 0-100; multiplies sponsor income: 1 + (mood - 50) * 0.004
+  sponsorNetworkMood?: number      // 0-100; multiplies sponsor income: 1 + (mood - 50) * 0.0086
   fanMood: number
   isHomeMatch: boolean
   matchIsKnockout: boolean
@@ -186,7 +186,9 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   const weeklyBase = Math.round(3000 + club.reputation * 50)
 
   // ── Sponsors ──────────────────────────────────────────────────────────────
-  const sponsorMoodMultiplier = 1 + ((sponsorNetworkMood ?? 50) - 50) * 0.004
+  // 0.0086 ratificerat 2026-06-23 (Opus-balansbeslut): flaggskepp×3 ≈ +5% säsongsintäkt,
+  // miss×3 ≈ −3.3% — kännbart men inneslutet. Mät-script: scripts/mat-sponsorgunst.ts.
+  const sponsorMoodMultiplier = 1 + ((sponsorNetworkMood ?? 50) - 50) * 0.0086
   const sponsorIncome = Math.round(sponsors
     .filter(s => s.contractRounds > 0)
     .reduce((sum, s) => sum + s.weeklyIncome, 0) * sponsorMoodMultiplier)

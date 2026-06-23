@@ -48,7 +48,7 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
     ],
   },
   cup_finalweekend_pre: {
-    chapter: '⬩ Helgen ⬩',
+    chapter: '⬩ Cuphelgen ⬩',
     variants: [
       {
         body: `Nu samlas det som finns kvar. Fyra lag, två dagar, en helg där bandysverige för första gången på året får se varandra på samma plats.<br><br>Det är inte ligan. Det är inte finalen. Men för dem som varit med länge är det här den helg där säsongen bestäms — inte i resultat, utan i självbild.`,
