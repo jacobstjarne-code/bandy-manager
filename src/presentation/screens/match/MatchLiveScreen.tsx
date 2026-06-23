@@ -1234,51 +1234,75 @@ export function MatchLiveScreen() {
 
   // ── Feed rows for CommentaryFeedStalvallen ───────────────────────────────
   const feedPlayers = game?.players ?? []
-  const feedRows: FeedRow[] = displayedSteps
-    .filter(s =>
-      s.commentary?.trim() ||
-      s.events.some(e =>
-        e.type === MatchEventType.Goal ||
-        e.type === MatchEventType.Suspension ||
-        e.type === MatchEventType.Save
-      )
-    )
+
+  // M7: penalty shootout rows — one row per round, newest-first after reversing
+  const penaltyFeedRows: FeedRow[] = displayedSteps
+    .filter(s => s.phase === 'penalties' && s.penaltyRound)
     .map(s => {
-      const goalEvent = s.events.find(e => e.type === MatchEventType.Goal)
-      if (goalEvent) {
-        const team = goalEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
-        return {
-          kind: 'event' as const,
-          tag: (goalEvent.isPenaltyGoal ? 'penalty' : 'goal') as 'penalty' | 'goal',
-          minute: s.minute,
-          team,
-          text: deriveEventText(s.commentary, goalEvent, 'Mål', feedPlayers),
-        }
+      const pr = s.penaltyRound!
+      const homeLast = pr.homeShooterName.split(' ').pop() ?? pr.homeShooterName
+      const awayLast = pr.awayShooterName.split(' ').pop() ?? pr.awayShooterName
+      const homeIcon = pr.homeScored ? '✅' : '❌'
+      const awayIcon = pr.awayScored ? '✅' : '❌'
+      const total = `${s.penaltyHomeTotal ?? 0}–${s.penaltyAwayTotal ?? 0}`
+      return {
+        kind: 'event' as const,
+        tag: 'penalty' as const,
+        minute: s.minute,
+        text: `Omg. ${pr.round}: ${homeLast} ${homeIcon} · ${awayLast} ${awayIcon} — ${total}`,
       }
-      const suspEvent = s.events.find(e => e.type === MatchEventType.Suspension)
-      if (suspEvent) {
-        const team = suspEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
-        return {
-          kind: 'event' as const,
-          tag: 'suspension' as const,
-          minute: s.minute,
-          team,
-          text: deriveEventText(s.commentary, suspEvent, 'Utvisning', feedPlayers),
+    })
+
+  const feedRows: FeedRow[] = [
+    ...displayedSteps
+      .filter(s =>
+        s.phase !== 'penalties' && (
+          s.commentary?.trim() ||
+          s.events.some(e =>
+            e.type === MatchEventType.Goal ||
+            e.type === MatchEventType.Suspension ||
+            e.type === MatchEventType.Save
+          )
+        )
+      )
+      .map(s => {
+        const goalEvent = s.events.find(e => e.type === MatchEventType.Goal)
+        if (goalEvent) {
+          const team = goalEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
+          return {
+            kind: 'event' as const,
+            tag: (goalEvent.isPenaltyGoal ? 'penalty' : 'goal') as 'penalty' | 'goal',
+            minute: s.minute,
+            team,
+            text: deriveEventText(s.commentary, goalEvent, 'Mål', feedPlayers),
+          }
         }
-      }
-      const saveEvent = s.events.find(e => e.type === MatchEventType.Save)
-      if (saveEvent) {
-        const team = saveEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
-        return {
-          kind: 'event' as const,
-          tag: 'save' as const,
-          minute: s.minute,
-          team,
-          text: deriveEventText(s.commentary, saveEvent, 'Räddning', feedPlayers),
+        const suspEvent = s.events.find(e => e.type === MatchEventType.Suspension)
+        if (suspEvent) {
+          const team = suspEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
+          return {
+            kind: 'event' as const,
+            tag: 'suspension' as const,
+            minute: s.minute,
+            team,
+            text: deriveEventText(s.commentary, suspEvent, 'Utvisning', feedPlayers),
+          }
         }
-      }
-      return { kind: 'atmosphere' as const, text: s.commentary ?? '' }
-    }).reverse()
+        const saveEvent = s.events.find(e => e.type === MatchEventType.Save)
+        if (saveEvent) {
+          const team = saveEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
+          return {
+            kind: 'event' as const,
+            tag: 'save' as const,
+            minute: s.minute,
+            team,
+            text: deriveEventText(s.commentary, saveEvent, 'Räddning', feedPlayers),
+          }
+        }
+        return { kind: 'atmosphere' as const, text: s.commentary ?? '' }
+      }),
+    ...penaltyFeedRows,
+  ].reverse()
 
   // FIX-36: atmospheric ticker — weather, attendance, recent events, other results
   const atmosphericTicker: string[] = (() => {
