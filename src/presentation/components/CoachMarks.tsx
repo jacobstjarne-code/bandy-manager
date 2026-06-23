@@ -41,6 +41,7 @@ interface Props {
 export function CoachMarks({ onDone }: Props) {
   const [step, setStep] = useState(0)
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
+  const [done, setDone] = useState(false)
 
   const current = STEPS[step]
   const isLast = step === STEPS.length - 1
@@ -56,10 +57,12 @@ export function CoachMarks({ onDone }: Props) {
   }, [step, current.targetId])
 
   function handleNext() {
-    if (isLast) { onDone(); return }
+    if (isLast) { setDone(true); onDone(); return }
     setTargetRect(null)
     setStep(s => s + 1)
   }
+
+  if (done) return null
 
   if (!targetRect) {
     return (
