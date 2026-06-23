@@ -65,7 +65,7 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
     chapter: '⬩ Cupfinalen ⬩',
     variants: [
       {
-        body: `Cupfinal.<br><br>Två lag kvar. Inget omspel. {vsLabel} {motståndare}.<br><br>Det här är inget träningstillfälle. En match. Sen är det över.`,
+        body: `Två lag kvar. Inget omspel. {vsLabel} {motståndare}.<br><br>Det här är inget träningstillfälle. En match. Sen är det över.`,
       },
     ],
   },
