@@ -258,6 +258,157 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
   )
 }
 
+// ── M12: Thin news row (Nyheter) ─────────────────────────────────
+
+function InboxThinRow({ item, onRead, index }: { item: InboxItem; onRead: (id: string) => void; index: number }) {
+  const navigate = useNavigate()
+  const actionRoute = inboxActionRoute(item.type)
+
+  function handleClick() {
+    if (!item.isRead) setTimeout(() => onRead(item.id), 200)
+    if (actionRoute) navigate(actionRoute)
+  }
+
+  const isRead = item.isRead
+  return (
+    <div
+      onClick={handleClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '6px 4px',
+        borderBottom: '1px solid var(--border)',
+        cursor: actionRoute ? 'pointer' : 'default',
+        animation: `fadeInUp 180ms ease-out ${Math.min(index, 14) * 25}ms both`,
+      }}
+    >
+      {/* Icon */}
+      <div style={{
+        width: 16, textAlign: 'center', fontSize: 10,
+        color: 'var(--text-muted)', flexShrink: 0,
+      }}>
+        <InboxTypeIcon type={item.type} />
+      </div>
+      {/* Title */}
+      <span style={{
+        flex: 1, minWidth: 0,
+        fontSize: 10.5,
+        color: isRead ? 'var(--text-muted)' : 'var(--text-secondary)',
+        fontWeight: isRead ? 400 : 600,
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+      }}>
+        {item.title}
+      </span>
+      {/* Round */}
+      {item.createdMatchday != null && (
+        <span style={{ fontSize: 8, color: 'var(--text-muted)', flexShrink: 0 }}>
+          {formatRound(item.createdMatchday)}
+        </span>
+      )}
+    </div>
+  )
+}
+
+// ── M12: Grouped roll-up row ──────────────────────────────────────
+
+function InboxGroupRow({
+  count, label, onExpand,
+}: { count: number; label: string; onExpand: () => void }) {
+  return (
+    <div
+      onClick={onExpand}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '7px 9px',
+        background: 'color-mix(in srgb, var(--accent) 5%, var(--bg-surface))',
+        border: '1px dashed var(--border-dark)',
+        borderRadius: 7,
+        marginBottom: 6,
+        cursor: 'pointer',
+      }}
+    >
+      <div style={{
+        width: 20, height: 20, borderRadius: 6,
+        background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
+        color: 'var(--accent-dark)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 10, fontWeight: 800, flexShrink: 0,
+      }}>
+        {count}
+      </div>
+      <span style={{ flex: 1, fontSize: 10.5, color: 'var(--text-primary)', fontWeight: 600 }}>
+        {label}
+      </span>
+      <span style={{ fontSize: 9, color: 'var(--accent-dark)', fontWeight: 700 }}>
+        Visa ›
+      </span>
+    </div>
+  )
+}
+
+// ── M12: Grouping logic for Nyheter ──────────────────────────────
+
+type NewsRenderItem =
+  | { kind: 'single'; item: InboxItem }
+  | { kind: 'group'; count: number; label: string; items: InboxItem[] }
+
+function groupNyheter(items: InboxItem[]): NewsRenderItem[] {
+  // 1. Nemesis items (title starts with '⚠️ Nemesis:')
+  const nemesisItems = items.filter(i => i.title.startsWith('⚠️ Nemesis:'))
+  const nonNemesis = items.filter(i => !i.title.startsWith('⚠️ Nemesis:'))
+
+  // 2. Media items grouped by outlet name (extracted from body)
+  const mediaTypes = new Set([InboxItemType.Media, InboxItemType.MediaEvent])
+  const mediaItems = nonNemesis.filter(i => mediaTypes.has(i.type))
+  const nonMedia = nonNemesis.filter(i => !mediaTypes.has(i.type))
+
+  // Group media by outlet (body often contains "Journalist · Outlet")
+  const mediaByOutlet = new Map<string, InboxItem[]>()
+  for (const item of mediaItems) {
+    // Try to extract outlet from body or title
+    const outlet = item.body?.match(/·\s*(.+)$/m)?.[1]?.trim() ?? 'Media'
+    const list = mediaByOutlet.get(outlet) ?? []
+    list.push(item)
+    mediaByOutlet.set(outlet, list)
+  }
+
+  // 3. Same-title duplicates in remaining items
+  const titleGroups = new Map<string, InboxItem[]>()
+  for (const item of nonMedia) {
+    const list = titleGroups.get(item.title) ?? []
+    list.push(item)
+    titleGroups.set(item.title, list)
+  }
+
+  const result: NewsRenderItem[] = []
+
+  // Nemesis group
+  if (nemesisItems.length >= 2) {
+    result.push({ kind: 'group', count: nemesisItems.length, label: 'Nemesis-uppdateringar', items: nemesisItems })
+  } else {
+    for (const item of nemesisItems) result.push({ kind: 'single', item })
+  }
+
+  // Media groups
+  for (const [outlet, outletItems] of mediaByOutlet) {
+    if (outletItems.length >= 2) {
+      result.push({ kind: 'group', count: outletItems.length, label: `Mediaröster · ${outlet}`, items: outletItems })
+    } else {
+      for (const item of outletItems) result.push({ kind: 'single', item })
+    }
+  }
+
+  // Same-title groups
+  for (const [title, titleItems] of titleGroups) {
+    if (titleItems.length >= 2) {
+      result.push({ kind: 'group', count: titleItems.length, label: `${titleItems.length}× ${title}`, items: titleItems })
+    } else {
+      for (const item of titleItems) result.push({ kind: 'single', item })
+    }
+  }
+
+  return result
+}
+
 // ── Aggregated training row ───────────────────────────────────────
 
 function TrainingAggRow({ items }: { items: InboxItem[] }) {
@@ -307,6 +458,8 @@ export function InboxScreen() {
   const game = useGameStore(s => s.game)
   const markInboxRead = useGameStore(s => s.markInboxRead)
   const markAllInboxRead = useGameStore(s => s.markAllInboxRead)
+  // M12: track which grouped roll-ups are expanded (by label key)
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
   if (!game) return null
 
@@ -415,35 +568,79 @@ export function InboxScreen() {
                     </span>
                   </div>
 
-                  {/* Card container */}
-                  <div style={{
-                    background: 'var(--bg-surface)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 8, overflow: 'hidden', marginBottom: 6,
-                  }}>
-                    {/* Training aggregation row — at top of RAPPORTER */}
-                    {isRapporter && hasTraining && (
-                      trainingItems.length >= 2
-                        ? <TrainingAggRow items={trainingItems} />
-                        : <InboxRow
-                            key={trainingItems[0].id}
-                            item={trainingItems[0]}
-                            onRead={markInboxRead}
-                            index={0}
-                            playerName={getPlayerName(trainingItems[0].relatedPlayerId)}
-                          />
-                    )}
-                    {items.map((item, index) => (
-                      <InboxRow
-                        key={item.id}
-                        item={item}
-                        onRead={markInboxRead}
-                        index={index}
-                        playerName={getPlayerName(item.relatedPlayerId)}
-                        expiresRound={getExpiresRound(item)}
-                      />
-                    ))}
-                  </div>
+                  {/* Card container — Kräver svar + Rapporter: full InboxRow cards */}
+                  {/* Nyheter: thin rows + grouped roll-ups */}
+                  {group !== 'nyheter' ? (
+                    <div style={{
+                      background: 'var(--bg-surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 8, overflow: 'hidden', marginBottom: 6,
+                    }}>
+                      {/* Training aggregation row — at top of RAPPORTER */}
+                      {isRapporter && hasTraining && (
+                        trainingItems.length >= 2
+                          ? <TrainingAggRow items={trainingItems} />
+                          : <InboxRow
+                              key={trainingItems[0].id}
+                              item={trainingItems[0]}
+                              onRead={markInboxRead}
+                              index={0}
+                              playerName={getPlayerName(trainingItems[0].relatedPlayerId)}
+                            />
+                      )}
+                      {items.map((item, index) => (
+                        <InboxRow
+                          key={item.id}
+                          item={item}
+                          onRead={markInboxRead}
+                          index={index}
+                          playerName={getPlayerName(item.relatedPlayerId)}
+                          expiresRound={getExpiresRound(item)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    /* M12: Nyheter — thin rows + grouped roll-ups */
+                    <div style={{ marginBottom: 6 }}>
+                      {groupNyheter(items).map((renderItem, idx) => {
+                        if (renderItem.kind === 'single') {
+                          return (
+                            <InboxThinRow
+                              key={renderItem.item.id}
+                              item={renderItem.item}
+                              onRead={markInboxRead}
+                              index={idx}
+                            />
+                          )
+                        }
+                        // Group roll-up
+                        const groupKey = renderItem.label
+                        const isExpanded = expandedGroups.has(groupKey)
+                        return (
+                          <div key={groupKey}>
+                            <InboxGroupRow
+                              count={renderItem.count}
+                              label={renderItem.label}
+                              onExpand={() => setExpandedGroups(prev => {
+                                const next = new Set(prev)
+                                if (isExpanded) next.delete(groupKey)
+                                else next.add(groupKey)
+                                return next
+                              })}
+                            />
+                            {isExpanded && renderItem.items.map((item, i) => (
+                              <InboxThinRow
+                                key={item.id}
+                                item={item}
+                                onRead={markInboxRead}
+                                index={i}
+                              />
+                            ))}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               )
             })}

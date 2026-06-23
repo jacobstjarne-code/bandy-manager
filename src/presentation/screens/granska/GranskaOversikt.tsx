@@ -18,7 +18,7 @@ import { DecisionChoices } from '../../components/DecisionChoices'
 import { Swords } from 'lucide-react'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
-import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, LEADERSHIP_OUTCOMES, STARTED_TIRED_OUTCOMES } from '../../../domain/data/managerKvittoText'
+import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_TIRED_OUTCOMES } from '../../../domain/data/managerKvittoText'
 import type { KvittoOutcomeDir } from '../../../domain/data/managerKvittoText'
 
 const TRAINING_LABEL: Record<string, string> = {
@@ -464,16 +464,25 @@ export function GranskaOversikt({
       })()}
 
       {/* Manager kvitto — val → utfall */}
+      {/* M15 — Dina val: utfallsrader (stripe + beslut + spelare + utfall + siffra) */}
       {(() => {
         const log = fixture?.report?.managerChoiceLog
         if (!log || log.length === 0) return null
         const kvittoDir: KvittoOutcomeDir = won ? 'good' : lost ? 'bad' : 'neutral'
         const seed = (fixture?.homeScore ?? 0) + (fixture?.awayScore ?? 0)
-        const lines: { label: string; text: string }[] = []
+        type OutcomeRow = {
+          stripe: 'good' | 'neutral' | 'bad'
+          heading: string
+          playerName: string
+          outcome: string
+          value: string
+          valueLabel: string
+        }
+        const rows: OutcomeRow[] = []
         const findPlayer = (id?: string) => id ? game.players.find(p => p.id === id) : undefined
 
         for (const entry of log) {
-          const i = lines.length
+          const i = rows.length
           if (i >= 4) break
           if (entry.type === 'halftime_tactic') {
             const key = entry.detail === 'lowered_tempo' ? 'lugna'
@@ -482,12 +491,25 @@ export function GranskaOversikt({
               : null
             if (!key) continue
             const pool = HALFTIME_OUTCOMES[key][kvittoDir]
-            lines.push({ label: HALFTIME_LABELS[key], text: pool[(seed + i) % pool.length] })
+            const stripe: OutcomeRow['stripe'] = kvittoDir === 'good' ? 'good' : kvittoDir === 'bad' ? 'bad' : 'neutral'
+            rows.push({
+              stripe, heading: HALFTIME_LABELS[key], playerName: '',
+              outcome: pool[(seed + i) % pool.length],
+              value: kvittoDir === 'good' ? '✓' : kvittoDir === 'bad' ? '✗' : '—',
+              valueLabel: kvittoDir === 'good' ? 'gav effekt' : kvittoDir === 'bad' ? 'backade' : 'neutral',
+            })
           } else if (entry.type === 'captain' && entry.playerId) {
             const player = findPlayer(entry.playerId)
             if (!player) continue
-            const pool = LEADERSHIP_OUTCOMES[kvittoDir]
-            lines.push({ label: `Kapten: ${player.lastName}`, text: pool[(seed + i) % pool.length] })
+            // Captain: spec M15 — always green, ✓ "gav effekt"
+            rows.push({
+              stripe: 'good',
+              heading: 'Kapten',
+              playerName: player.lastName,
+              outcome: 'Ledarorden satte sig i omklädningsrummet.',
+              value: '✓',
+              valueLabel: 'gav effekt',
+            })
           } else if (entry.type === 'started_tired' && entry.playerId) {
             const player = findPlayer(entry.playerId)
             if (!player) continue
@@ -495,30 +517,97 @@ export function GranskaOversikt({
             const dir: KvittoOutcomeDir = rating !== undefined ? (rating >= 7 ? 'good' : rating <= 5 ? 'bad' : 'neutral') : kvittoDir
             const cond = entry.detail.startsWith('condition_') ? entry.detail.slice(10) : entry.detail
             const pool = STARTED_TIRED_OUTCOMES[dir]
-            lines.push({ label: `Startade trött: ${player.lastName} (${cond}%)`, text: pool[(seed + i) % pool.length].replace('{spelare}', player.lastName) })
+            // Rotate deterministically: 3 sentences, avoid same in sequence
+            const sentences = [
+              'Klarade matchen utan att sjunka.',
+              'Höll måttet, ingen påverkan.',
+              'Gjorde sitt, varken mer eller mindre.',
+            ]
+            const outcomeText = dir === 'bad'
+              ? pool[(seed + i) % pool.length].replace('{spelare}', player.lastName)
+              : sentences[(seed + i) % sentences.length]
+            rows.push({
+              stripe: dir,
+              heading: 'Startade trött',
+              playerName: player.lastName,
+              outcome: outcomeText,
+              value: `${cond}%`,
+              valueLabel: 'trötthet',
+            })
           } else if (entry.type === 'bench_fit' && entry.playerId) {
             const player = findPlayer(entry.playerId)
             if (!player) continue
             const pool = LINEUP_ROTATION_OUTCOMES[kvittoDir]
-            lines.push({ label: `Vilad: ${player.lastName}`, text: pool[(seed + i) % pool.length].replace('{spelare}', player.lastName) })
+            const stripe: OutcomeRow['stripe'] = kvittoDir === 'good' ? 'good' : kvittoDir === 'bad' ? 'bad' : 'neutral'
+            rows.push({
+              stripe,
+              heading: 'Vilad',
+              playerName: player.lastName,
+              outcome: pool[(seed + i) % pool.length].replace('{spelare}', player.lastName),
+              value: kvittoDir === 'good' ? '✓' : kvittoDir === 'bad' ? '✗' : '—',
+              valueLabel: kvittoDir === 'good' ? 'bra val' : kvittoDir === 'bad' ? 'backade' : 'neutral',
+            })
           }
         }
 
-        if (lines.length === 0) return null
+        if (rows.length === 0) return null
+
+        const stripeColor: Record<OutcomeRow['stripe'], string> = {
+          good: 'var(--success)',
+          neutral: 'var(--text-muted)',
+          bad: 'var(--danger)',
+        }
+        const valueColor: Record<OutcomeRow['stripe'], string> = {
+          good: 'var(--success)',
+          neutral: 'var(--text-secondary)',
+          bad: 'var(--danger-text)',
+        }
+
         return (
-          <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(7) }}>
-            <SectionLabel style={{ marginBottom: 4 }}>📋 DINA VAL</SectionLabel>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 8 }}>
-              Dina beslut den här matchen, och hur de föll ut.
-            </p>
-            {lines.map((line, i) => (
-              <div key={i} style={{ marginBottom: i < lines.length - 1 ? 8 : 0 }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>
-                  {line.label}
-                </p>
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.4 }}>
-                  {line.text}
-                </p>
+          <div style={{ margin: '0 0 3px', ...fadeIn(7) }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
+              <SectionLabel>📋 DINA VAL · UTFALL</SectionLabel>
+            </div>
+            {rows.map((row, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 9,
+                padding: '9px 10px',
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--bg-surface)',
+                marginBottom: 6,
+              }}>
+                {/* Stripe */}
+                <div style={{
+                  width: 6, alignSelf: 'stretch', borderRadius: 3, flexShrink: 0,
+                  background: stripeColor[row.stripe],
+                }} />
+                {/* Body */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                    {row.heading}
+                  </div>
+                  {row.playerName && (
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', marginTop: 1 }}>
+                      {row.playerName}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 9.5, color: 'var(--text-secondary)', marginTop: 2 }}>
+                    {row.outcome}
+                  </div>
+                </div>
+                {/* Value */}
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{
+                    fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, lineHeight: 1,
+                    color: valueColor[row.stripe],
+                  }}>
+                    {row.value}
+                  </div>
+                  <div style={{ fontSize: 7, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: 2 }}>
+                    {row.valueLabel}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
