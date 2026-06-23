@@ -2,7 +2,8 @@ import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { MatchEvent, TeamSelection, MatchReport, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
 import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../../domain/enums'
 import { calculateStandings } from '../../../domain/services/standingsService'
-import { updateCupBracketAfterRound } from '../../../domain/services/cupService'
+import { updateCupBracketAfterRound, generateNextCupRound } from '../../../domain/services/cupService'
+import { stampFixturesFromCalendar } from '../../../domain/services/scheduleGenerator'
 import { updateSeriesAfterMatch, advancePlayoffRound } from '../../../domain/services/playoffService'
 import { simulateMatch } from '../../../domain/services/matchEngine'
 import { fixtureSeed } from '../../../domain/utils/random'
@@ -106,13 +107,24 @@ export function matchActions(get: Get, set: Set) {
       if (completedCupFixture && updatedCupBracket && !updatedCupBracket.completed) {
         updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, [completedCupFixture])
 
-        // Check if cup final (round 4) is now decided → set winnerId + completed
-        const finalMatch = updatedCupBracket.matches.find(m => m.round === 4 && m.winnerId)
-        if (finalMatch) {
-          updatedCupBracket = {
-            ...updatedCupBracket,
-            winnerId: finalMatch.winnerId,
-            completed: true,
+        const playedMatch = updatedCupBracket.matches.find(m => m.fixtureId === completedCupFixture.id)
+        const round = playedMatch?.round ?? 0
+
+        if (round === 4) {
+          // Cup final decided
+          const finalMatch = updatedCupBracket.matches.find(m => m.round === 4 && m.winnerId)
+          if (finalMatch) {
+            updatedCupBracket = { ...updatedCupBracket, winnerId: finalMatch.winnerId, completed: true }
+          }
+        } else if (round > 0) {
+          // Non-final round: if all matches in this round have a winner, generate next round inline.
+          // Mirrors playoff branch logic so nextMatchday sees cup-R(n+1) before liga fixtures.
+          const roundMatches = updatedCupBracket.matches.filter(m => m.round === round)
+          if (roundMatches.every(m => m.winnerId)) {
+            const { updatedBracket, newFixtures } = generateNextCupRound(updatedCupBracket, round, game.currentSeason)
+            const stamped = stampFixturesFromCalendar(newFixtures, game.seasonCalendar ?? [])
+            updatedCupBracket = updatedBracket
+            if (stamped.length > 0) updatedFixtures.push(...stamped)
           }
         }
       }
@@ -242,8 +254,20 @@ export function matchActions(get: Get, set: Set) {
       let updatedCupBracket = game.cupBracket ?? null
       if (fixture.isCup && updatedCupBracket && !updatedCupBracket.completed) {
         updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, [completed])
-        const finalMatch = updatedCupBracket.matches.find(m => m.round === 4 && m.winnerId)
-        if (finalMatch) updatedCupBracket = { ...updatedCupBracket, winnerId: finalMatch.winnerId, completed: true }
+        const playedMatch = updatedCupBracket.matches.find(m => m.fixtureId === completed.id)
+        const round = playedMatch?.round ?? 0
+        if (round === 4) {
+          const finalMatch = updatedCupBracket.matches.find(m => m.round === 4 && m.winnerId)
+          if (finalMatch) updatedCupBracket = { ...updatedCupBracket, winnerId: finalMatch.winnerId, completed: true }
+        } else if (round > 0) {
+          const roundMatches = updatedCupBracket.matches.filter(m => m.round === round)
+          if (roundMatches.every(m => m.winnerId)) {
+            const { updatedBracket, newFixtures } = generateNextCupRound(updatedCupBracket, round, game.currentSeason)
+            const stamped = stampFixturesFromCalendar(newFixtures, game.seasonCalendar ?? [])
+            updatedCupBracket = updatedBracket
+            if (stamped.length > 0) updatedFixtures.push(...stamped)
+          }
+        }
       }
 
       // Playoff: spegla saveLiveMatchResults serieuppdatering + fasframskridning (korrekt bracket)
