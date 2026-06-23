@@ -744,6 +744,9 @@
   border-radius: 14px;
   padding: 16px;
   box-shadow: 0 -4px 24px color-mix(in srgb, var(--panel) 45%, transparent);
+  width: 90%;
+  max-width: 430px;
+  margin-inline: auto;
 }
 .match-modal-dock {
   position: fixed;
