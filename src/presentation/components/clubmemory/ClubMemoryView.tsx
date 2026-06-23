@@ -18,7 +18,7 @@ interface Props {
   game: SaveGame
 }
 
-function buildBlodslinje(game: SaveGame): SpineItem[] {
+export function buildBlodslinje(game: SaveGame): SpineItem[] {
   const history = game.mentorshipHistory ?? []
   if (history.length === 0) return []
   const legends = game.clubLegends ?? []

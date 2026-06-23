@@ -8,6 +8,8 @@ import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
 import { shareSeasonImage } from '../utils/seasonShareImage'
 import { Swords } from 'lucide-react'
 import { loadTeamPhoto, listTeamPhotoSeasons } from '../../infrastructure/teamPhotoStorage'
+import { buildBlodslinje } from '../components/clubmemory/ClubMemoryView'
+import { Spine } from '../components/shared/Spine'
 
 function RecordRow({ label, value, sub, isLast }: { label: string; value: string; sub: string; isLast?: boolean }) {
   return (
@@ -115,7 +117,7 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
   )
 }
 
-type ArchiveTab = 'seasons' | 'letters' | 'school' | 'photos'
+type ArchiveTab = 'seasons' | 'letters' | 'school' | 'photos' | 'blodslinje'
 
 export function HistoryScreen() {
   const navigate = useNavigate()
@@ -182,8 +184,8 @@ export function HistoryScreen() {
 
       {/* Archive tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 14, overflowX: 'auto' }}>
-        {(['seasons', 'letters', 'school', 'photos'] as ArchiveTab[]).map(tab => {
-          const labels: Record<ArchiveTab, string> = { seasons: '📅 Säsonger', letters: '✉️ Brev', school: '📚 Skoluppgifter', photos: '📷 Lagfoton' }
+        {(['seasons', 'letters', 'school', 'photos', 'blodslinje'] as ArchiveTab[]).map(tab => {
+          const labels: Record<ArchiveTab, string> = { seasons: '📅 Säsonger', letters: '✉️ Brev', school: '📚 Skoluppgifter', photos: '📷 Lagfoton', blodslinje: '🩸 Blodslinje' }
           return (
             <button
               key={tab}
@@ -201,8 +203,37 @@ export function HistoryScreen() {
         })}
       </div>
 
-      {activeTab !== 'seasons' && <div style={{ display: 'none' }}><JourneyGraph summaries={[]} /></div>}
+      {activeTab !== 'seasons' && activeTab !== 'blodslinje' && <div style={{ display: 'none' }}><JourneyGraph summaries={[]} /></div>}
       {activeTab === 'seasons' && <JourneyGraph summaries={game.seasonSummaries ?? []} />}
+
+      {/* Blodslinje — mentorkedjor */}
+      {activeTab === 'blodslinje' && (() => {
+        const blodslinjeItems = buildBlodslinje(game)
+        if (blodslinjeItems.length === 0) {
+          return (
+            <div className="card-sharp" style={{ padding: '30px 16px', textAlign: 'center', color: 'var(--text-muted)', marginBottom: 32 }}>
+              <p style={{ fontSize: 20, marginBottom: 8 }}>🩸</p>
+              {/* // OPUS_COPY — tom-tillstånd blodslinje */}
+              <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Inga mentorband ännu</p>
+              <p style={{ fontSize: 12 }}>Sätt en senior spelare som mentor för en akademiungdom för att börja bygga klubbens blodslinje.</p>
+            </div>
+          )
+        }
+        return (
+          <div style={{ marginBottom: 32 }}>
+            <div className="card-sharp" style={{ padding: '14px 16px' }}>
+              <p style={{
+                fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
+                color: 'var(--text-muted)', marginBottom: 16,
+              }}>
+                {/* // OPUS_COPY — blodslinje-rubrik */}
+                BLODSLINJE
+              </p>
+              <Spine items={blodslinjeItems} />
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Letters archive */}
       {activeTab === 'letters' && (

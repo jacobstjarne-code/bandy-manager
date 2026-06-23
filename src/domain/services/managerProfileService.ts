@@ -41,6 +41,7 @@ export function generateManagerProfile(seed: number, startSeason: number = 1): M
     contractUntilSeason: startSeason + 3,
     monthlySalary: 15 + Math.floor(r() * 26),  // 15–40 tkr/month
     coachRivalries: [],
+    narrativeLog: [],
   }
 }
 

@@ -12,6 +12,7 @@
 import { getCurrentAttention } from '../../../domain/services/attentionRouter'
 import { getEventPriority } from '../../../domain/entities/GameEvent'
 import { EventCardInline } from './EventCardInline'
+import { CeremonyRetirement } from './CeremonyRetirement'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 interface Props {
@@ -33,6 +34,11 @@ export function PortalEventSlot({ game }: Props) {
   // Suppressa community-events under cup-finalhelgen (tonalt fel att visa bandyskola under finalen)
   const currentSlot = (game.seasonCalendar ?? []).find(s => s.matchday === game.currentMatchday)
   if (currentSlot?.isCupFinalhelgen && event.type === 'communityEvent') return null
+
+  // Retirement ceremony gets full-screen chrome (legend farewell)
+  if (event.type === 'retirementCeremony') {
+    return <CeremonyRetirement game={game} event={event} />
+  }
 
   return (
     <EventCardInline event={event} currentMatchday={game.currentMatchday} />
