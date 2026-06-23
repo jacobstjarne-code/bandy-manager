@@ -381,6 +381,16 @@ Lösningen är att flytta visuella beslut till mock-stadiet, när de kan diskute
 - 2026-04-27 Portal/inledning/moments. Tre HTML-mocks producerades innan specer skrevs. Mocks användes både för att få Jacobs feedback på designen *innan* kod (innehålls-iteration på vågor, Sverige-bakgrund vs karta, klubbpiller-format) och för att ge Code en konkret målbild att implementera mot. Före detta hade visuella beslut tagits i konversation och drift från målbild observerats i flera sprintar.
 - 2026-04-27 Scene-leverans. Code levererade scen-systemet med felaktiga CSS-tokens på mörka bakgrunder (ljusa tokens som `--bg-elevated`, `--text-secondary` användes på svart bakgrund — komponenter blev oläsbara). Pixel-jämförelse hade fångat felet men gjordes inte. Fixades i efterhand av Jacob med Opus-granskning. Detta motiverar de förstärkta reglerna ovan: en komponent åt gången, dark-token-disciplin, pixel-jämförelse som commit-blocker.
 
+### 5. MOCK = OMDESIGN, ALDRIG RADERING
+
+En mock av en BEFINTLIG yta ändrar ytans UTSEENDE — den tar aldrig bort ytan eller dess innehåll. En before/after-mock är ett omdesignförslag av något som redan finns och ska fortsätta finnas. "Strukturera om Dina val / konsekvens-sektionen" betyder applicera den nya stilen på det BEFINTLIGA innehållet — aldrig ta bort sektionen. En mock av X ändrar X:s utseende; den raderar aldrig X.
+
+**Hård regel (Code):** När en mock visar en omarbetad version av en befintlig vy/sektion — behåll allt innehåll (fält, data, rader), applicera bara den nya formen. Om mocken verkar sakna något som finns idag är det en stiländring av det, inte en strykning. Tveka → fråga Opus, radera inte.
+
+**Vem gör vad om det ändå stryks:** Opus flaggar regressionen med exakt vad som ströks + var det ska återställas. Code återställer innehållet och applicerar enbart den nya stilen. Jacob verifierar i playtest att både innehåll och form finns.
+
+**Historik:** 2026-06-23 (KORRVANDA3) — beställningen var att styla om konsekvens-/"Dina val"-sektionen i matchsammanfattningen (M15-mock). Istället togs hela sektionen bort. Mocken var omdesign av en befintlig sektion, aldrig "radera den". (B3 i KORRVANDA-3B.)
+
 ---
 
 ## VERIFIERINGSPROTOKOLL — OBLIGATORISKT
@@ -692,6 +702,16 @@ Missen sker ALLTID i exakt två ögonblick. När du är i ettdera — stanna och
 **Den bärande regeln (båda fallen):** det finns EN statusfil (`docs/BACKLOG.md` — KORLISTA_CODE_RC.md dödmarkerad 2026-06-21, den var en RC-moment-frysning). Allt annat är antingen (a) en order/spec som pekar PÅ statusfilen, eller (b) historik som SÄGER att den är historik. En fil får aldrig tyst motsäga statusfilen — den måste antingen peka dit eller dödmarkera sig själv. Om du inte hinner göra följdhandlingen samma tur: gör den ändå. "Vid tillfälle" är hur drift uppstår.
 
 **Självkontroll innan du avslutar en tur där du skrev en ny sanning:** "Skapade jag just en version 2 eller markerade något klart? Finns det en gammal fil eller en referens som nu ljuger? Döda den nu."
+
+### 6. VEM GÖR VAD — ALDRIG BARA FILOSOFI
+
+Varje fynd, diagnos, princip eller regel Opus skriver ska AVSLUTAS med en explicit körorder: VEM (Opus / Code / Jacob) gör VAD, formulerat så mottagaren kan agera utan mellansteg. Sluta aldrig i "man kan", "man bör", "det vore bra att", eller en princip utan ägare och handling. En princip utan körorder är filosofi, och filosofi blir inte gjord.
+
+**Konkret:** en diagnos slutar med "Code: ändra X i fil Y till Z, verifiera A". En designregel slutar med vem som upptäcker brottet, vem som åtgärdar, vem som verifierar. En parkering slutar med ägare + stäng-villkor (redan BACKLOG-regel). Märker du att du skriver om vad som "skulle kunna" göras utan att namnge utföraren — det är signalen att du inte är klar.
+
+**Self-check innan du avslutar en tur:** "Sa jag VEM som gör VAD härnäst, eller beskrev jag bara ett tillstånd eller en möjlighet?" Om det senare — lägg till körordern innan du skickar.
+
+**Rotorsak:** Opus återkommande failure-mode (juni 2026) — leverera analys + principer + "saker som kan göras" och sluta där, så att Jacob får text istället för actions. Körordern är inte en artighet på slutet; den är leveransen.
 
 ---
 
