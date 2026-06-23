@@ -117,7 +117,7 @@
 
 .transfers-select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 7px 10px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -399,6 +399,7 @@
 .transfers-list-name {
   font-size: 13px;
   font-weight: 600;
+  font-family: var(--font-display);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
