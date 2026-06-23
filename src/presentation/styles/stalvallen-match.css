@@ -874,7 +874,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  max-height: calc(100dvh - 80px);
+  max-height: calc(100dvh - var(--bottom-nav-height) - 28px);
   text-align: center;
   width: 90%;
   min-width: 260px;
