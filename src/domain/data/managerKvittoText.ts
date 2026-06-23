@@ -58,3 +58,85 @@ export const LEADERSHIP_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
   bad: ['Ingen tog kommandot när det krävdes.', 'Beskedet bet inte på den här gruppen.'],
   neutral: ['Det togs upp, men gruppen var redan där.'],
 }
+
+/**
+ * Kaptenraden i manager-kvittot — kontextspecifika pooler (Opus-text 2026-06-23).
+ * Ersätter den hårdkodade alltid-gröna kaptenraden i GranskaOversikt
+ * (se docs/DIAGNOS-DINA-VAL-LOGG-2026-06-23.md, D2). Skild från LEADERSHIP_OUTCOMES
+ * ovan (den hör till leadership-action-systemet) — denna är specifik för "Dina val · Utfall".
+ *
+ * Riktning härleds ur kaptenens matchrating, exakt som started_tired:
+ *   rating >= 7 → 'good', <= 5 → 'bad', annars 'neutral'. Saknas rating: falla på resultatet.
+ * Kontext väljs av Code ur fixturen, i denna prioordning:
+ *   final    → isNeutralVenue (SM-final) ELLER cup-final
+ *   slutspel → isKnockout && inte final (kvarts/semi, även cup-semi)
+ *   derby    → getRivalry(home, away) träffar och matchen ej redan är final/slutspel
+ *   vardag   → allt annat (ligaomgång, tidiga cuprundor)
+ * Raderna är namnlösa med flit: kaptenens efternamn visas på egen rad ovanför utfallet.
+ */
+export type CaptainContext = 'final' | 'slutspel' | 'derby' | 'vardag'
+
+export const CAPTAIN_OUTCOMES: Record<CaptainContext, Record<KvittoOutcomeDir, string[]>> = {
+  final: {
+    good: [
+      'På den scenen växte bindeln. Laget tittade dit och fick svar.',
+      'Kaptenen bar finalnerverna åt de yngre. Det syntes på isen.',
+      'När det vägde tyngst var det kaptenen som höll i taktpinnen.',
+    ],
+    bad: [
+      'Finaltrycket blev för stort. Bindeln syntes aldrig när den behövdes.',
+      'Kaptenen försvann i det stora, och laget letade efter någon att följa.',
+      'Det var ingen som tog finalen i sin hand.',
+    ],
+    neutral: [
+      'Kaptenen gjorde sitt, men finalen avgjordes på annat håll.',
+      'Bindeln drunknade lite i bruset, varken till skada eller nytta.',
+    ],
+  },
+  slutspel: {
+    good: [
+      'Kaptenen tog seriejobbet på sina axlar och laget orkade hela vägen.',
+      'I pressen som bara slutspel ger var bindeln den lugnaste på isen.',
+    ],
+    bad: [
+      'Slutspelsnerverna nådde ända in i bindeln, och laget kände det.',
+      'Kaptenen räckte inte till när serien stramades åt.',
+    ],
+    neutral: [
+      'Kaptenen gjorde sitt i en jämn serie, inget mer att säga om den saken.',
+      'Bindeln störde inte, men drog inte heller laget framåt.',
+    ],
+  },
+  derby: {
+    good: [
+      'I hettan höll kaptenen huvudet kallt och tog ner rätt spelare i varv.',
+      'Derbyt krävde någon som inte tappade det. Bindeln tog den rollen.',
+      'När det puttrade som värst var det kaptenen som höll ihop laget.',
+    ],
+    bad: [
+      'Kaptenen åkte med i derbyhettan i stället för att dämpa den.',
+      'Bindeln tappade humöret först av alla, och det spred sig.',
+      'Ingen kylde ner det när derbyt började koka.',
+    ],
+    neutral: [
+      'Kaptenen red ut derbyt utan att vare sig tända eller släcka.',
+      'Hettan tog över planen. Bindeln blev en i mängden.',
+    ],
+  },
+  vardag: {
+    good: [
+      'Kaptenen tog tag i det och laget följde.',
+      'En vanlig omgång, men bindeln höll ihop det när det small till.',
+      'Ledarorden satte sig i omklädningsrummet.',
+    ],
+    bad: [
+      'Ingen tog kommandot när det krävdes.',
+      'Bindeln gick på tomgång, och laget med den.',
+      'Beskedet bet inte på den här gruppen.',
+    ],
+    neutral: [
+      'Det togs upp, men gruppen var redan där.',
+      'En dag på jobbet för kaptenen. Inget som stack ut.',
+    ],
+  },
+}

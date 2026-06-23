@@ -18,8 +18,8 @@ import { DecisionChoices } from '../../components/DecisionChoices'
 import { Swords } from 'lucide-react'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
-import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_TIRED_OUTCOMES } from '../../../domain/data/managerKvittoText'
-import type { KvittoOutcomeDir } from '../../../domain/data/managerKvittoText'
+import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_TIRED_OUTCOMES, CAPTAIN_OUTCOMES } from '../../../domain/data/managerKvittoText'
+import type { KvittoOutcomeDir, CaptainContext } from '../../../domain/data/managerKvittoText'
 
 const TRAINING_LABEL: Record<string, string> = {
   [TrainingType.Skating]: 'Skridskoteknik', [TrainingType.BallControl]: 'Bollkontroll',
@@ -501,14 +501,28 @@ export function GranskaOversikt({
           } else if (entry.type === 'captain' && entry.playerId) {
             const player = findPlayer(entry.playerId)
             if (!player) continue
-            // Captain: spec M15 — always green, ✓ "gav effekt"
+            // D2: kontext + riktning ur kaptenens matchrating (som started_tired).
+            // Kontext: final → slutspel → derby → vardag (prioordning per diagnosen).
+            // isNeutralVenue = SM-final (neutral plan). Alla andra knockout = slutspel.
+            const captainContext: CaptainContext =
+              fixture?.isNeutralVenue ? 'final'
+              : fixture?.isKnockout ? 'slutspel'
+              : getRivalry(fixture?.homeClubId ?? '', fixture?.awayClubId ?? '') ? 'derby'
+              : 'vardag'
+            const captainRating = fixture?.report?.playerRatings[entry.playerId]
+            const captainDir: KvittoOutcomeDir =
+              captainRating !== undefined
+                ? (captainRating >= 7 ? 'good' : captainRating <= 5 ? 'bad' : 'neutral')
+                : kvittoDir
+            const captainPool = CAPTAIN_OUTCOMES[captainContext][captainDir]
+            const captainStripe: OutcomeRow['stripe'] = captainDir === 'good' ? 'good' : captainDir === 'bad' ? 'bad' : 'neutral'
             rows.push({
-              stripe: 'good',
+              stripe: captainStripe,
               heading: 'Kapten',
               playerName: player.lastName,
-              outcome: 'Ledarorden satte sig i omklädningsrummet.',
-              value: '✓',
-              valueLabel: 'gav effekt',
+              outcome: captainPool[(seed + i) % captainPool.length],
+              value: captainDir === 'good' ? '✓' : captainDir === 'bad' ? '✗' : '—',
+              valueLabel: captainDir === 'good' ? 'bar laget' : captainDir === 'bad' ? 'räckte ej' : 'neutral',
             })
           } else if (entry.type === 'started_tired' && entry.playerId) {
             const player = findPlayer(entry.playerId)

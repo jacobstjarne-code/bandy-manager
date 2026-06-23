@@ -142,6 +142,7 @@ export function MatchLiveScreen() {
   const [spakBAppearStep, setSpakBAppearStep] = useState<number | null>(null)
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
   const [pauseLean, setPauseLean] = useState<PauseLean | null>(null)
+  const [halftimeDecisionForLog, setHalftimeDecisionForLog] = useState<'lugna' | 'pressa' | 'prata' | null>(null)
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => (isSmFinal || !!isCupFinal) ? 1 : 0)
@@ -328,7 +329,7 @@ export function MatchLiveScreen() {
     saveLiveMatchResult(
       fixture.id, lastStep.homeScore, lastStep.awayScore,
       allEvents, report, homeLineup, awayLineup, overtimeResult, penaltyResult,
-      fixture.attendance,
+      fixture.attendance, halftimeDecisionForLog ?? undefined,
     )
     advance(true)
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -925,6 +926,15 @@ export function MatchLiveScreen() {
     const managedDiff = managedIsHome ? htHome - htAway : htAway - htHome
     const htSituation: MatchSituation = managedDiff < 0 ? 'behind' : managedDiff === 0 ? 'level' : 'leading'
     const effectiveLean: PauseLean = pauseLean ?? PAUSSNACK[htSituation][0].lean
+
+    // T3: derive halftime decision string for managerChoiceLog in saveLiveMatchResult
+    {
+      const htLogDecision: 'lugna' | 'pressa' | 'prata' =
+        htTempo === TacticTempo.Low ? 'lugna'
+        : (htPress === TacticPress.High || htMentality === TacticMentality.Offensive) ? 'pressa'
+        : 'prata'
+      setHalftimeDecisionForLog(htLogDecision)
+    }
 
     // Morale/sharpness — den osynliga delen (behålls additivt, SPEC A1). Den synliga
     // delen (postBreakUrgency-luten) ligger i pauseLean nedan.

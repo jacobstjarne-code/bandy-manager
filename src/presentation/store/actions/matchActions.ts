@@ -26,21 +26,22 @@ export function matchActions(get: Get, set: Set) {
       overtimeResult?: 'home' | 'away',
       penaltyResult?: { home: number; away: number },
       attendance?: number,
+      halftimeDecision?: 'lugna' | 'pressa' | 'prata',
     ) => {
       const { game } = get()
       if (!game) return
 
       // ── T3: managerChoiceLog ────────────────────────────────────────────────
-      // Build log from lineup + stored halftime decision. Raw data only — no
+      // Build log from lineup + halftime decision. Raw data only — no
       // player text, no rendering. After-match receipt (Ticket #4) will consume.
       const managedClubId = game.managedClubId
       const isHome = game.fixtures.find(f => f.id === fixtureId)?.homeClubId === managedClubId
       const myLineup = isHome ? homeLineup : awayLineup
       const choiceLog: ManagerChoiceEntry[] = []
 
-      // captain
-      if (myLineup?.captainPlayerId) {
-        choiceLog.push({ type: 'captain', playerId: myLineup.captainPlayerId, detail: myLineup.captainPlayerId })
+      // captain — read from game.captainPlayerId (same field the engine uses)
+      if (game.captainPlayerId) {
+        choiceLog.push({ type: 'captain', playerId: game.captainPlayerId, detail: game.captainPlayerId })
       }
 
       // started_tired: starters with condition < 40
@@ -67,8 +68,9 @@ export function matchActions(get: Get, set: Set) {
         }
       }
 
-      // halftime_tactic: stored by applyHalftimeDecision
-      if (game.lastHalftimeDecision) {
+      // halftime_tactic: prefer threaded param (live path sets it); fall back to store field (non-live path)
+      const htDecision = halftimeDecision ?? game.lastHalftimeDecision
+      if (htDecision) {
         const detailMap = {
           lugna: 'lowered_tempo',
           pressa: 'increased_pressure',
@@ -76,7 +78,7 @@ export function matchActions(get: Get, set: Set) {
         } as const
         choiceLog.push({
           type: 'halftime_tactic',
-          detail: detailMap[game.lastHalftimeDecision],
+          detail: detailMap[htDecision],
         })
       }
 

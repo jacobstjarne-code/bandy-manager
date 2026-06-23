@@ -2,7 +2,7 @@ import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
 import { getEventPriority } from '../../domain/entities/GameEvent'
 import type { Moment } from '../../domain/entities/Moment'
 import type { Player } from '../../domain/entities/Player'
-import type { Fixture } from '../../domain/entities/Fixture'
+import type { Fixture, ManagerChoiceEntry } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { FixtureStatus, MatchEventType, InboxItemType, PendingScreen, PlayoffStatus, TrainingType, TrainingIntensity } from '../../domain/enums'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
@@ -658,11 +658,42 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   //   snabbsim — added by simulateMatch at line 403 of matchSimProcessor
   //   live     — already Completed before advance(); pushed unchanged at line 197-198 of matchSimProcessor
   // matchday === nextMatchday is the correct discriminator for both paths.
-  const justCompletedManagedFixture = simulatedFixtures.find(
+  let justCompletedManagedFixture = simulatedFixtures.find(
     f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
          f.status === FixtureStatus.Completed &&
          f.matchday === nextMatchday
   )
+
+  // D1: snabbsim-vägen har inget T3-block (saveLiveMatchResult körs ej). Bygg managerChoiceLog här
+  // om det saknas — kapten + started_tired + bench_fit. Halvtid utgår (matchen spelades ej live).
+  if (justCompletedManagedFixture && !justCompletedManagedFixture.report?.managerChoiceLog) {
+    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const lineup = isHome ? justCompletedManagedFixture.homeLineup : justCompletedManagedFixture.awayLineup
+    const choiceLog: ManagerChoiceEntry[] = []
+    if (game.captainPlayerId) {
+      choiceLog.push({ type: 'captain', playerId: game.captainPlayerId, detail: game.captainPlayerId })
+    }
+    for (const pid of (lineup?.startingPlayerIds ?? [])) {
+      const player = game.players.find(p => p.id === pid)
+      if (player && (player.fitness ?? 100) < 40) {
+        choiceLog.push({ type: 'started_tired', playerId: pid, detail: `condition_${Math.round(player.fitness ?? 0)}` })
+      }
+    }
+    for (const pid of (lineup?.benchPlayerIds ?? [])) {
+      const player = game.players.find(p => p.id === pid)
+      if (player && (player.fitness ?? 100) > 80) {
+        choiceLog.push({ type: 'bench_fit', playerId: pid, detail: `condition_${Math.round(player.fitness ?? 0)}` })
+      }
+    }
+    if (choiceLog.length > 0) {
+      const enriched = {
+        ...justCompletedManagedFixture,
+        report: { ...justCompletedManagedFixture.report!, managerChoiceLog: choiceLog },
+      }
+      justCompletedManagedFixture = enriched
+      allFixtures = allFixtures.map(f => f.id === enriched.id ? enriched : f)
+    }
+  }
 
   // DREAM-003: derby win ripple — big margin win in a derby gives cross-system boosts
   if (justCompletedManagedFixture) {
