@@ -125,7 +125,7 @@ export function CupFinalIntroScene({ game, onComplete }: Props) {
       </div>
 
       {!currentBeat.autoAdvance && currentBeat.cta && (
-        <div style={{ padding: '16px 24px 32px', position: 'relative', zIndex: 1 }}>
+        <div style={{ padding: '16px 24px calc(var(--bottom-nav-height, 68px) + var(--safe-bottom, 0px) + 12px)', position: 'relative', zIndex: 1 }}>
           <SceneCTA label={currentBeat.cta} onClick={handleCTA} />
         </div>
       )}
