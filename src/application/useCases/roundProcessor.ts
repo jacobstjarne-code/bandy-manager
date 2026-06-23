@@ -1909,7 +1909,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         if (!alreadyLogged) {
           enrichedProfile = { ...enrichedProfile, narrativeLog: [
             ...(enrichedProfile.narrativeLog ?? []),
-            { season: game.currentSeason, matchday: nextMatchday, type: 'burnout_peak' as const, text: '// OPUS_COPY' },
+            { season: game.currentSeason, matchday: nextMatchday, type: 'burnout_peak' as const, text: newBurnoutZone === 'hog' ? 'Den säsongen tog nästan slut på dig. Du stannade ändå.' : 'Det började ta på dig den säsongen. Du sa inget om det.' },
           ]}
         }
       }
@@ -1919,7 +1919,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         if (!alreadyLogged) {
           enrichedProfile = { ...enrichedProfile, narrativeLog: [
             ...(enrichedProfile.narrativeLog ?? []),
-            { season: game.currentSeason, matchday: nextMatchday, type: 'era_shift' as const, text: '// OPUS_COPY' },
+            { season: game.currentSeason, matchday: nextMatchday, type: 'era_shift' as const, text: newClubEra === 'establishment' ? 'Klubben reste sig under dig. Orten började tro igen.' : newClubEra === 'legacy' ? 'Det blev mer än bandy under dig. Det blev ortens identitet.' : 'Tunga tider kom. Det var nu det gällde.' },
           ]}
         }
       }
@@ -1946,7 +1946,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         if (nemesisCandidate) {
           profileWithH2H = { ...profileWithH2H, narrativeLog: [
             ...(profileWithH2H.narrativeLog ?? []),
-            { season: game.currentSeason, matchday: nextMatchday, type: 'rivalry' as const, text: '// OPUS_COPY' },
+            { season: game.currentSeason, matchday: nextMatchday, type: 'rivalry' as const, text: `${game.clubs.find(c => c.id === nemesisCandidate.clubId)?.name ?? 'rivalen'} blev din nemesis. Det satte sig i kroppen, det här.` },
           ]}
         }
       }

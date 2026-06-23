@@ -61,11 +61,13 @@ export interface LocalPolitician {
 }
 
 export interface PoliticianInteractionLog {
-  invite?: number         // last round invited
-  budget?: number         // last round presented budget
-  budgetSeason?: number   // season of last budget presentation
-  apply?: number          // last round applied for grant
-  applySeason?: number    // season of last grant application
+  invite?: number              // last round invited (stored as round number, may be 0)
+  inviteSeasonStart?: number   // season when invite-count started
+  inviteCountThisSeason?: number // how many invites used this season (cap: 2)
+  budget?: number              // last round presented budget
+  budgetSeason?: number        // season of last budget presentation
+  apply?: number               // last round applied for grant
+  applySeason?: number         // season of last grant application
 }
 
 export type FacilityFinancingMode = 'club' | 'kommun' | 'mecenat'

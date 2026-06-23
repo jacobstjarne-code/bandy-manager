@@ -654,9 +654,14 @@ export const useGameStore = create<GameState>()(
           .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 
         if (action === 'invite') {
-          // Cooldown: 5 rounds between invites
-          if (lastInteraction.invite && currentRound - lastInteraction.invite < 5) {
+          // Cooldown: 5 rounds between invites. Note: invite stored as round number (may be 0)
+          if (lastInteraction.invite !== undefined && currentRound - lastInteraction.invite < 5) {
             return { success: false, message: `Vänta till omgång ${lastInteraction.invite + 5}.` }
+          }
+          // Seasonal cap: max 2 invites per season
+          const invitesThisSeason = lastInteraction.inviteCountThisSeason ?? 0
+          if (lastInteraction.inviteSeasonStart === game.currentSeason && invitesThisSeason >= 2) {
+            return { success: false, message: 'Bjudit in maximalt antal gånger den här säsongen.' }
           }
           let boost = 5 + Math.floor(Math.random() * 4)
           // Agenda-bonus
@@ -665,10 +670,18 @@ export const useGameStore = create<GameState>()(
           if (pol.agenda === 'youth' && game.communityActivities?.bandySchool) boost += 2
           const newRel = Math.min(100, pol.relationship + boost)
           const updatedPol = { ...pol, relationship: newRel }
+          const newInviteCount = lastInteraction.inviteSeasonStart === game.currentSeason
+            ? (lastInteraction.inviteCountThisSeason ?? 0) + 1
+            : 1
           set({ game: {
             ...game,
             localPolitician: updatedPol,
-            politicianLastInteraction: { ...lastInteraction, invite: currentRound },
+            politicianLastInteraction: {
+              ...lastInteraction,
+              invite: currentRound,
+              inviteSeasonStart: game.currentSeason,
+              inviteCountThisSeason: newInviteCount,
+            },
             inbox: [{
               id: `inbox_pol_invite_${currentRound}_${game.currentSeason}`,
               date: game.currentDate,

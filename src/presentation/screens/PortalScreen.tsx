@@ -25,6 +25,7 @@ import { PortalRoundMark } from '../components/portal/PortalRoundMark'
 import { PortalUpptakt } from '../components/portal/PortalUpptakt'
 import { getEscalationSubState } from '../../application/services/portalEscalationResolver'
 import { AnnandagsValEvent } from '../components/portal/AnnandagsValEvent'
+import { CoachMarks } from '../components/CoachMarks'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
 import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
@@ -35,7 +36,7 @@ import { PortalObjectiveAlert } from '../components/portal/PortalObjectiveAlert'
 initCardBag()
 
 export function PortalScreen() {
-  const { game, advance, simulateRemainingStep, markAnslagSeen, recordPortalShown } = useGameStore()
+  const { game, advance, simulateRemainingStep, markAnslagSeen, recordPortalShown, markCoachMarksSeen } = useGameStore()
   const canAdvance = useCanAdvance()
   const navigate = useNavigate()
   const [isAdvancing, setIsAdvancing] = useState(false)
@@ -259,6 +260,9 @@ export function PortalScreen() {
           anslagKey={nextAnslag}
           onDismiss={() => markAnslagSeen(nextAnslag)}
         />
+      )}
+      {!game.coachMarksSeen && (
+        <CoachMarks onDone={() => markCoachMarksSeen()} />
       )}
       <div
         className="texture-wood card-stack"

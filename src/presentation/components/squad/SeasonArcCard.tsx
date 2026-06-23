@@ -263,7 +263,7 @@ export function SeasonArcCard({ game }: Props) {
                 background: m === mode ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-elevated)',
                 border: m === mode ? '1px solid var(--accent)' : '1px solid var(--border)',
                 borderRadius: 'var(--radius-md, 8px)',
-                padding: '9px 4px',
+                padding: '8px 4px 7px',
                 cursor: 'pointer',
                 textAlign: 'center',
                 transition: 'border-color .15s, background .15s',
@@ -276,6 +276,15 @@ export function SeasonArcCard({ game }: Props) {
                 color: m === mode ? 'var(--accent-dark)' : 'var(--text-primary)',
               }}>
                 {MODE_LABELS[m]}
+              </div>
+              <div style={{
+                fontSize: 9,
+                color: m === mode ? 'var(--accent-dark)' : 'var(--text-muted)',
+                marginTop: 3,
+                lineHeight: 1.3,
+              }}>
+                {/* // OPUS_COPY — mikro-effekt per läge */}
+                {m === 'bygg' ? '+form / –ben' : m === 'hall' ? 'neutralt' : m === 'toppa' ? '+3 omg / fall' : 'vila / –form'}
               </div>
             </button>
           ))}
@@ -373,21 +382,18 @@ function ReactionRow({ player, reaction, hasOverride, onSetOverride }: ReactionR
         <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
           <button
             onClick={() => onSetOverride('hall')}
-            style={{ fontSize: 10, padding: '3px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-secondary)' }}
-            title="Håll undantag"
-          >H</button>
+            style={{ fontSize: 9, padding: '3px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}
+          >Håll</button>
           <button
             onClick={() => onSetOverride('vila')}
-            style={{ fontSize: 10, padding: '3px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-secondary)' }}
-            title="Vila undantag"
-          >V</button>
+            style={{ fontSize: 9, padding: '3px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}
+          >Vila</button>
         </div>
       ) : (
         <button
           onClick={() => onSetOverride(null)}
-          style={{ fontSize: 10, padding: '3px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-muted)', flexShrink: 0 }}
-          title="Följ truppen"
-        >↩</button>
+          style={{ fontSize: 9, padding: '3px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}
+        >Följ truppen</button>
       )}
     </div>
   )

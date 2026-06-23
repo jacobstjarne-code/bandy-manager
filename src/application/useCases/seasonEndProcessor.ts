@@ -1136,12 +1136,14 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         if (crossedWinMilestone) {
           updatedLog = [...updatedLog, {
             season: game.currentSeason, matchday: game.currentMatchday,
-            type: 'milestone' as const, text: '// OPUS_COPY',
+            type: 'milestone' as const,
+            text: `${crossedWinMilestone} segrar i karriären. Du räknar dem inte, men någon annan gör det.`,
           }]
         } else if (crossedSeasonsMilestone) {
           updatedLog = [...updatedLog, {
             season: game.currentSeason, matchday: game.currentMatchday,
-            type: 'milestone' as const, text: '// OPUS_COPY',
+            type: 'milestone' as const,
+            text: `${crossedSeasonsMilestone} säsonger i klubben. Du har blivit en del av inventarierna.`,
           }]
         }
         return {

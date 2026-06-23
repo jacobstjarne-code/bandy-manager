@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { NavigateFunction } from 'react-router-dom'
 import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
@@ -42,11 +42,27 @@ interface OrtenTabProps {
   recruitVolunteer?: (name: string) => void
   activateCommunity?: (key: string, level: string) => { success: boolean; error?: string }
   onNavigateTab?: (tab: string) => void
+  /** Deep-link: scrolla till specifik sektion vid mount */
+  scrollToSection?: string
 }
 
-export function OrtenTab({ club, game, navigate, interactWithPolitician, recruitVolunteer, activateCommunity, onNavigateTab }: OrtenTabProps) {
+export function OrtenTab({ club, game, navigate, interactWithPolitician, recruitVolunteer, activateCommunity, onNavigateTab, scrollToSection }: OrtenTabProps) {
   const [polFeedback, setPolFeedback] = useState<{ text: string; ok: boolean } | null>(null)
   const [activityFeedback, setActivityFeedback] = useState<{ text: string; ok: boolean } | null>(null)
+
+  useEffect(() => {
+    if (!scrollToSection) return
+    const sectionIds: Record<string, string> = {
+      klack: 'section-supporter',
+      supporter: 'section-supporter',
+      skola: 'section-youth',
+      kommunen: 'section-politician',
+      mecenater: 'section-sponsors',
+      frivilliga: 'section-volunteers',
+    }
+    const el = document.getElementById(sectionIds[scrollToSection] ?? scrollToSection)
+    if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150)
+  }, [scrollToSection])
 
   function handleActivity(key: string, level: string) {
     if (!activateCommunity) return
@@ -90,6 +106,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
             kommunen: 'section-politician',
             mecenater: 'section-sponsors',
             frivilliga: 'section-volunteers',
+            klack: 'section-supporter',
           }
           const el = document.getElementById(sectionMap[id] ?? '')
           el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -443,7 +460,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
           {(() => {
             const li = game.politicianLastInteraction ?? {}
             const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
-            const inviteCooldown = li.invite ? Math.max(0, li.invite + 8 - currentRound) : 0
+            const inviteCooldown = li.invite !== undefined ? Math.max(0, li.invite + 5 - currentRound) : 0
             const budgetUsed = li.budgetSeason === game.currentSeason
             const applyUsed = li.applySeason === game.currentSeason
             return (
@@ -568,6 +585,29 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
         </SectionCard>
       )}
 
+
+      {/* Klacken / Supporter */}
+      {game.supporterGroup && (() => {
+        const sg = game.supporterGroup!
+        const moodColor = sg.mood >= 70 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)'
+        const chars = [sg.leader, sg.veteran, sg.youth, sg.family]
+        return (
+          <SectionCard title={`📯 ${sg.name}`} stagger={4} id="section-supporter">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: moodColor }}>Stämning {sg.mood}/100</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sg.members} medlemmar</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {chars.map((c, i) => (
+                <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', minWidth: 90 }}>{c.name}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{c.role}</span>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        )
+      })()}
 
     </>
   )

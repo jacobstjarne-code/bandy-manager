@@ -39,7 +39,8 @@ export function ClubScreen() {
   const navigate = useNavigate()
   const location = useLocation()
   const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'akademi', 'minne', 'tranare']
-  const rawTab = (location.state as { tab?: string } | null)?.tab
+  const rawTab = (location.state as { tab?: string; section?: string } | null)?.tab
+  const rawSection = (location.state as { tab?: string; section?: string } | null)?.section
   const [activeTab, setActiveTab] = useState<ClubTab>(
     rawTab && VALID_TABS.includes(rawTab as ClubTab) ? (rawTab as ClubTab) : 'training'
   )
@@ -147,7 +148,7 @@ export function ClubScreen() {
 
         {/* ── Tab 3: Klubb ── */}
         {activeTab === 'orten' && (
-          <OrtenTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} onNavigateTab={(tab) => setActiveTab(tab as ClubTab)} />
+          <OrtenTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} onNavigateTab={(tab) => setActiveTab(tab as ClubTab)} scrollToSection={rawSection} />
         )}
 
         {/* ── Tab 4: Akademi ── */}

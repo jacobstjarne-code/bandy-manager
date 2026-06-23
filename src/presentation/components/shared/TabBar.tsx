@@ -12,12 +12,12 @@ interface TabBarProps {
   tabs: TabDef[]
   activeId: string
   onSelect: (id: string) => void
+  /** 'segment' (default) = equal-width underline-aktiv (≤5 flikar). 'pills' = scrollande pill-rad. */
+  variant?: 'segment' | 'pills'
 }
 
-export function TabBar({ tabs, activeId, onSelect }: TabBarProps) {
+export function TabBar({ tabs, activeId, onSelect, variant = 'segment' }: TabBarProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
-  // Fade-affordans visas BARA i den riktning där det finns mer innehåll att scrolla
-  // (statisk fade ljög: visade gradient även när inget mer fanns). DEL F: "klipps utan affordans".
   const [fade, setFade] = useState({ left: false, right: false })
 
   const updateFade = useCallback(() => {
@@ -41,6 +41,27 @@ export function TabBar({ tabs, activeId, onSelect }: TabBarProps) {
       window.removeEventListener('resize', updateFade)
     }
   }, [updateFade, tabs.length])
+
+  if (variant === 'segment') {
+    return (
+      <div className="tab-bar tab-bar-segment" role="tablist">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            role="tab"
+            aria-selected={activeId === tab.id}
+            onClick={() => onSelect(tab.id)}
+            className={`tab-bar-seg-btn${activeId === tab.id ? ' tab-bar-seg-btn-active' : ''}`}
+          >
+            {tab.label}
+            {tab.dot && (
+              <span className="tab-bar-dot" style={{ background: dotColor(tab.dot) }} />
+            )}
+          </button>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="tab-bar" role="tablist">

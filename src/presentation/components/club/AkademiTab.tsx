@@ -177,7 +177,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
           <button
             className="btn btn-outline"
             onClick={handleUpgrade}
-            style={{ maxWidth: 200 }}
+            style={{ maxWidth: 220, whiteSpace: 'nowrap' }}
           >
             Uppgradera till {nextLevelLabel}
           </button>

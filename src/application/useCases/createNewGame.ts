@@ -419,7 +419,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
       return {
         ...base, firstName, lastName,
         coachRivalries: generateCoachRivalries(opponentIds, (input.seed ?? 42) + 88002),
-        narrativeLog: [{ season, matchday: 0, type: 'arrival' as const, text: '// OPUS_COPY' }],
+        narrativeLog: [{ season, matchday: 0, type: 'arrival' as const, text: `Du tog över ${managedClub.name}. Ingen visste riktigt vad du skulle med det till — inte du heller.` }],
       }
     })(),
     mentorshipHistory: [],

@@ -1,5 +1,6 @@
 import type { FacilityNodeView, FacilityState, FacilityNodeDef } from '../../../domain/entities/SaveGame'
 import { getFacilityTreeByGren } from '../../../domain/services/facilityService'
+import { FACILITY_DESC, FACILITY_INTRO } from '../../../domain/data/facilityDescriptions'
 
 interface FacilityTreeProps {
   facilityState: FacilityState
@@ -75,24 +76,38 @@ function NodeCard({ view, mode, selected, onSelect }: {
     if (isHall) return `1.5px solid var(--cold, #4a6680)`
     if (status === 'built') return '2px solid var(--success)'
     if (status === 'ongoing') return '2px solid var(--accent)'
-    if (status === 'available') return '1.5px dashed var(--border-dark, #C4BAA8)'
+    if (status === 'available') return '1.5px solid var(--border-dark, #C4BAA8)'
     return '1px solid var(--border)'
   })()
 
-  const bg = isHall
-    ? 'color-mix(in srgb, var(--cold, #4a6680) 5%, var(--bg-surface))'
-    : 'var(--bg-surface)'
+  const bg = (() => {
+    if (isHall) return 'color-mix(in srgb, var(--cold, #4a6680) 5%, var(--bg-surface))'
+    if (status === 'available') return 'var(--bg-elevated, #FFFFFF)'
+    return 'var(--bg-surface)'
+  })()
 
   const nameColor = isHall ? 'var(--cold, #4a6680)' : 'var(--text-primary)'
+
+  const lockLabel = (() => {
+    const r = def.requires[0]
+    if (!r) return null
+    const labels: Record<string, string> = {
+      traningshall: 'Träningshall',
+      laktare_ostra: 'Läktare',
+      varmestuga: 'Värmestuga',
+      gym: 'Gym',
+      belysning: 'Belysning',
+      kiosk: 'Kiosk',
+    }
+    return labels[r] ?? r
+  })()
 
   const tagText = (() => {
     if (isHall) return 'Prövning'
     if (status === 'built') return view.completedSeason ? `Byggd ${view.completedSeason}` : 'Byggd'
     if (status === 'ongoing') return 'Pågår'
     if (status === 'available') return 'Möjlig'
-    return def.requires.map(r =>
-      r === 'traningshall' ? 'Kräver träningshall' : r === 'laktare_ostra' ? 'Kräver läktare' : `Kräver ${r}`
-    )[0] ?? 'Låst'
+    return lockLabel ? `🔒 ${lockLabel}` : '🔒 Låst'
   })()
 
   const tagColor = (() => {
@@ -109,7 +124,7 @@ function NodeCard({ view, mode, selected, onSelect }: {
     return 'transparent'
   })()
 
-  const opacity = status === 'locked' ? 0.45 : 1
+  const opacity = status === 'locked' ? 0.35 : 1
   const clickable = mode === 'valj' && (status === 'available') && !isHall && !!onSelect
 
   const marginLeft = isHall ? 18 : 0
@@ -174,6 +189,12 @@ function NodeCard({ view, mode, selected, onSelect }: {
           {def.consequences.find(c => c.dim === 'publik' || c.dim === 'sjal')?.label ?? ''}
         </div>
       )}
+
+      {FACILITY_DESC[def.id] && (
+        <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>
+          {FACILITY_DESC[def.id]}
+        </p>
+      )}
     </div>
   )
 }
@@ -197,6 +218,11 @@ export function FacilityTree({
           <span style={{ fontSize: 8, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block', marginTop: 2 }}>
             Betrakta · val görs i säsongsstarten
           </span>
+          {FACILITY_INTRO && (
+            <p style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>
+              {FACILITY_INTRO}
+            </p>
+          )}
         </div>
       )}
 

@@ -1,5 +1,35 @@
 /* ── Shared TabBar ── */
 
+/* Segment variant: equal-width, underline-aktiv */
+.tab-bar-segment {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.tab-bar-seg-btn {
+  flex: 1;
+  padding: 10px 4px 8px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  position: relative;
+  transition: color .12s, border-color .12s;
+}
+
+.tab-bar-seg-btn-active {
+  color: var(--accent-dark);
+  border-bottom-color: var(--accent);
+}
+
 .tab-bar {
   position: relative;
   background: var(--bg-surface);

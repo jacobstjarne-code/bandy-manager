@@ -63,7 +63,7 @@ export function CoachMarks({ onDone }: Props) {
 
   if (!targetRect) {
     return (
-      <div style={{ position: 'fixed', inset: 0, zIndex: Z.coachmarks, background: 'rgba(0,0,0,0.65)' }} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: Z.coachmarks, background: 'rgba(0,0,0,0.55)' }} />
     )
   }
 
@@ -72,7 +72,7 @@ export function CoachMarks({ onDone }: Props) {
   const pad = 8
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: Z.coachmarks }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: Z.coachmarks, cursor: 'default' }}>
       {/* Spotlight med box-shadow som dim */}
       <div style={{
         position: 'absolute',
@@ -81,7 +81,7 @@ export function CoachMarks({ onDone }: Props) {
         width: targetRect.width + pad * 2,
         height: targetRect.height + pad * 2,
         borderRadius: 'var(--radius-md)',
-        boxShadow: '0 0 0 4000px rgba(0,0,0,0.65)',
+        boxShadow: '0 0 0 4000px rgba(0,0,0,0.55)',
         zIndex: 1,
         animation: 'coachPulse 2s ease-in-out infinite',
       }} />

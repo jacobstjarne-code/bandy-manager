@@ -76,6 +76,13 @@ export function TransfersScreen() {
   const currentRound = game.fixtures.filter(f => f.status === 'scheduled').sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 1
   const incomingBids = (game.transferBids ?? []).filter(b => b.direction === 'incoming' && b.status === 'pending')
 
+  const availablePlayersForDot = game.players.filter(p =>
+    p.clubId !== game.managedClubId &&
+    p.clubId !== 'free_agent' &&
+    p.availability && p.availability !== 'unavailable'
+  )
+  const marknadHasDot = incomingBids.length > 0 || availablePlayersForDot.length > 0
+
   function handleSignFreeAgent(agentId: string) {
     if (!game) return
     const agent = game.transferState.freeAgents.find(p => p.id === agentId)
@@ -187,7 +194,7 @@ export function TransfersScreen() {
 
       <TabBar
         tabs={[
-          { id: 'marknad', label: 'Marknad', dot: incomingBids.length > 0 ? 'accent' : null },
+          { id: 'marknad', label: 'Marknad', dot: marknadHasDot ? 'accent' : null },
           { id: 'scouting', label: 'Scouting', dot: null },
           { id: 'freeagents', label: 'Fria', dot: freeAgents.length > 0 && windowOpen ? 'accent' : null },
           { id: 'sell', label: 'Sälj', dot: null },
@@ -269,8 +276,25 @@ export function TransfersScreen() {
         return (
           <div style={{ marginBottom: 24 }}>
             {groups.length === 0 ? (
-              <div className="card-sharp" style={{ padding: '20px 16px', textAlign: 'center' }}>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Inga spelare tillgängliga på marknaden just nu.</p>
+              <div className="card-sharp" style={{ padding: '24px 18px', textAlign: 'center' }}>
+                <p style={{ fontSize: 22, marginBottom: 10 }}>🔍</p>
+                {/* // OPUS_COPY — guide-rubrik och förklaringstext för tom marknad */}
+                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+                  Marknaden är stängd eller tom
+                </p>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.55, marginBottom: 16 }}>
+                  Inga spelare är tillgängliga för transfer just nu. Spana in talanger via Scouting — då ser du dem här när de väl blir tillgängliga.
+                </p>
+                <button
+                  onClick={() => setActiveTab('scouting')}
+                  style={{
+                    padding: '10px 18px', background: 'var(--accent)', border: 'none',
+                    borderRadius: 'var(--radius-md)', color: 'var(--bg-dark)',
+                    fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                  }}
+                >
+                  Gå till Scouting →
+                </button>
               </div>
             ) : groups.map(group => (
               <div key={group.key} style={{ marginBottom: 16 }}>

@@ -33,7 +33,7 @@ export function KlackenSecondary({ game }: CardRenderProps) {
         borderRadius: '0 6px 6px 0',
         cursor: 'pointer',
       }}
-      onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
+      onClick={() => navigate('/game/club', { state: { tab: 'orten', section: 'klack' } })}
     >
       <div style={{
         fontSize: 8,
