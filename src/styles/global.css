@@ -191,6 +191,9 @@
   --z-interaction: 500;
   --z-toast:       600;
 
+  /* M11: Anslag/scen-modal backdrop — EN delad token, alla pre-portal-scener lika mörka */
+  --anslag-backdrop: rgba(14, 13, 11, 0.75);
+
   /* Shadows + dämpade severity-toner (global.css är sanning; portade från spegeln.
      --shadow-card användes i stalvallen-portal.css men saknades här → latent bug fixad) */
   --shadow-card:    0 1px 3px rgba(0,0,0,0.05);
@@ -1265,7 +1268,7 @@ a {
 .anslag-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(14, 13, 11, 0.6);
+  background: var(--anslag-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;

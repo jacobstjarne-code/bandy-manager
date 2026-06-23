@@ -48,7 +48,10 @@ export function GameShell() {
 
   const attention = getCurrentAttention(game)
   // coffee_room is a modal over dashboard — BottomNav stays visible (FIX-41)
-  const sceneActive = attention.kind === 'scene' && game.pendingScene?.sceneId !== 'coffee_room'
+  // cup_final_victory keeps the nav visible (M10): header is visible, nav should match (FIX-M10)
+  const sceneActive = attention.kind === 'scene' &&
+    game.pendingScene?.sceneId !== 'coffee_room' &&
+    game.pendingScene?.sceneId !== 'cup_final_victory'
 
   // NAV-PRINCIP (2026-06-15): navet är spelarens fasta referenspunkt (topp+botten).
   // Det ska INTE hoppa in/ut på vanliga vyer — det SPÄRRAS (useNavigationLock:
