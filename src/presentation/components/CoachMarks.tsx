@@ -46,9 +46,15 @@ export function CoachMarks({ onDone }: Props) {
   const current = STEPS[step]
   const isLast = step === STEPS.length - 1
 
+  const [centered, setCentered] = useState(false)
+
   useEffect(() => {
+    setCentered(false)
     const el = document.querySelector(`[data-coach-id="${current.targetId}"]`)
-    if (!el) return
+    if (!el) {
+      const fallback = setTimeout(() => setCentered(true), 50)
+      return () => clearTimeout(fallback)
+    }
     el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     const timer = setTimeout(() => {
       setTargetRect(el.getBoundingClientRect())
@@ -63,6 +69,37 @@ export function CoachMarks({ onDone }: Props) {
   }
 
   if (done) return null
+
+  // Target not found — show centered tooltip without spotlight
+  if (centered && !targetRect) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, zIndex: Z.coachmarks, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
+        <div style={{
+          background: 'var(--bg)', border: '1px solid var(--border)',
+          borderRadius: 14, padding: '16px 18px', width: '100%', maxWidth: 380,
+          boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
+        }}>
+          <span style={{ fontSize: 28, marginBottom: 8, display: 'block' }}>{current.emoji}</span>
+          <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, fontFamily: 'var(--font-display)' }}>{current.title}</p>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: current.footnote ? 6 : 14, whiteSpace: 'pre-line' }}>{current.body}</p>
+          {current.footnote && <p style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', marginBottom: 14 }}>{current.footnote}</p>}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {STEPS.map((_, i) => (
+                <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: i === step ? 'var(--accent)' : 'transparent', border: `1px solid ${i === step ? 'var(--accent)' : 'var(--border)'}` }} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              {!isLast && <button onClick={onDone} style={{ fontSize: 10, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Hoppa över</button>}
+              <button onClick={handleNext} style={{ padding: isLast ? '10px 28px' : '8px 20px', borderRadius: 8, fontSize: isLast ? 13 : 12, fontWeight: 600, border: 'none', background: 'var(--accent)', color: 'var(--text-light)', cursor: 'pointer' }}>
+                {isLast ? (current.lastStepLabel ?? 'Klar!') : 'Nästa →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!targetRect) {
     return (

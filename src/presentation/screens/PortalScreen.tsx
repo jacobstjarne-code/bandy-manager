@@ -297,7 +297,9 @@ export function PortalScreen() {
         )}
         <PortalObjectiveAlert game={game} />
         <PortalEventSlot game={game} />
-        <Primary game={game} playoffCtx={playoffCtx} escalationSubState={escalationSubState} />
+        <div data-coach-id="klacken-card">
+          <Primary game={game} playoffCtx={playoffCtx} escalationSubState={escalationSubState} />
+        </div>
         {StorySlotComponent && <StorySlotComponent game={game} />}
         <PortalQueueRail game={game} />
         <PortalSecondarySection cards={layout.secondary} game={game} />
