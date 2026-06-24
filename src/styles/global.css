@@ -1011,13 +1011,18 @@ a {
 
 /* Full-viewport dark container, no GameHeader, no BottomNav */
 .arrival-scene {
-  position: relative;
-  height: 100%;
+  position: fixed;
+  inset: 0;
   background: var(--bg-scene);
   color: var(--text-light);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Arrival has no BottomNav — strip the reserved nav gap from the shared CTA area */
+.arrival-scene .scene-cta-area {
+  padding-bottom: max(calc(var(--safe-bottom, 0px) + 24px), 24px);
 }
 
 /* Lamp overlay — warm pulsing glow at top (ARRIVAL-07) */

@@ -11,7 +11,7 @@ export interface InboxItem {
   relatedFixtureId?: string
   isRead: boolean
   createdMatchday?: number  // For inbox cleanup: gallra read informative items after 2 rounds
-  createdRound?: number     // Liga-omgångsnummer för UI-etiketten (≠ matchday vid cup-offset)
+  createdRound?: number | null  // Liga-omgångsnummer för UI-etiketten; null = cup/slutspelsomgång → "Cupen"
   // Sprint 18 — coach tone
   tone?: 'coach'
   fromRole?: string

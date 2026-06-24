@@ -1088,7 +1088,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const dedupedNewItems = newInboxItems.filter(i => !existingIds.has(i.id))
   const stampedNewInboxItems = dedupedNewItems.map(i =>
     i.createdMatchday === undefined
-      ? { ...i, createdMatchday: nextMatchday, createdRound: currentLeagueRound ?? undefined }
+      ? { ...i, createdMatchday: nextMatchday, createdRound: currentLeagueRound ?? null }
       : i
   )
 
