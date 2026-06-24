@@ -297,6 +297,7 @@ export interface SaveGame {
     name: string
     clubId: string
     goalsAgainstUs: number
+    matchesScoredIn: number   // distinct matches with ≥1 goal (match-spärr, BUG-2)
     inboxSentAt?: number  // goalsAgainstUs count when inbox was last sent
     signedBy?: string     // our clubId if signed
   }>

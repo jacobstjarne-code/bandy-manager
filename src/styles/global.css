@@ -1012,7 +1012,7 @@ a {
 /* Full-viewport dark container, no GameHeader, no BottomNav */
 .arrival-scene {
   position: relative;
-  min-height: 100vh;
+  height: 100%;
   background: var(--bg-scene);
   color: var(--text-light);
   display: flex;

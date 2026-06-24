@@ -1087,7 +1087,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const existingIds = new Set(game.inbox.map(i => i.id))
   const dedupedNewItems = newInboxItems.filter(i => !existingIds.has(i.id))
   const stampedNewInboxItems = dedupedNewItems.map(i =>
-    i.createdMatchday === undefined ? { ...i, createdMatchday: nextMatchday } : i
+    i.createdMatchday === undefined
+      ? { ...i, createdMatchday: nextMatchday, createdRound: currentLeagueRound ?? undefined }
+      : i
   )
 
   const INBOX_GALLRING_ROUNDS = 2

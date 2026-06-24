@@ -129,9 +129,9 @@ const GROUP_ORDER: InboxGroup[] = ['kräver-svar', 'nyheter', 'rapporter']
 
 // ── Helpers ──────────────────────────────────────────────────────
 
-function formatRound(matchday?: number): string {
-  if (!matchday) return ''
-  return `Omg ${matchday}`
+function formatRound(round?: number): string {
+  if (!round) return ''
+  return `Omg ${round}`
 }
 
 // ── Row ──────────────────────────────────────────────────────────
@@ -239,7 +239,7 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
       {/* Round label (nyheter/rapporter) */}
       {expiresRound == null && item.createdMatchday != null && (
         <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, alignSelf: 'flex-start', marginTop: 2 }}>
-          {formatRound(item.createdMatchday)}
+          {formatRound(item.createdRound ?? item.createdMatchday)}
         </span>
       )}
 
@@ -301,7 +301,7 @@ function InboxThinRow({ item, onRead, index }: { item: InboxItem; onRead: (id: s
       {/* Round */}
       {item.createdMatchday != null && (
         <span style={{ fontSize: 8, color: 'var(--text-muted)', flexShrink: 0 }}>
-          {formatRound(item.createdMatchday)}
+          {formatRound(item.createdRound ?? item.createdMatchday)}
         </span>
       )}
     </div>

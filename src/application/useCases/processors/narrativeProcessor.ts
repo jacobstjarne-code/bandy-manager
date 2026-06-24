@@ -198,10 +198,13 @@ export function processNarrative(
         name: `${opponentPlayer.firstName} ${opponentPlayer.lastName}`,
         clubId: opponentClubId,
         goalsAgainstUs: 0,
+        matchesScoredIn: 0,
       }
       const newTotal = prev.goalsAgainstUs + matchGoals
-      const shouldSendInbox = newTotal >= 2 && (prev.inboxSentAt == null || prev.inboxSentAt < 2)
-      nemesisTracker[playerId] = { ...prev, goalsAgainstUs: newTotal, clubId: opponentClubId }
+      const newMatches = (prev.matchesScoredIn ?? 0) + 1
+      // Match-spärr: kräver mål i ≥2 separata matcher + ≥3 totalt
+      const shouldSendInbox = newMatches >= 2 && newTotal >= 3 && (prev.inboxSentAt == null || prev.inboxSentAt < newTotal)
+      nemesisTracker[playerId] = { ...prev, goalsAgainstUs: newTotal, matchesScoredIn: newMatches, clubId: opponentClubId }
       if (shouldSendInbox) {
         nemesisTracker[playerId].inboxSentAt = newTotal
         const nemesisClub = game.clubs.find(c => c.id === opponentClubId)
