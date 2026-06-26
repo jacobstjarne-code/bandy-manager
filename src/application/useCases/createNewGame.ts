@@ -330,6 +330,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     seasonSummaries: [],
     pendingScreen: null,
     coachMarksSeen: false,
+    onboardingComplete: false,
     seasonStartFinances: managedClub.finances,
     financeLog: [],
     storylines: [],

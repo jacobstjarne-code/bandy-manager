@@ -66,6 +66,7 @@ interface GameState {
   setTraining: (focus: TrainingFocus) => void
   markCoachMarksSeen: () => Promise<SaveActionResult>
   restartCoachMarks: () => void
+  markOnboardingComplete: () => Promise<SaveActionResult>
   saveGame: () => Promise<SaveActionResult>
   dismissHint: (screenId: string) => void
   updateMatchMode: (mode: 'full' | 'commentary' | 'quicksim' | 'silent') => Promise<SaveActionResult>
@@ -285,6 +286,14 @@ export const useGameStore = create<GameState>()(
         const { game } = get()
         if (!game) return
         set({ game: { ...game, coachMarksSeen: false } })
+      },
+
+      markOnboardingComplete: async () => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        const updated = { ...game, onboardingComplete: true }
+        set({ game: updated })
+        return persistGameSnapshot(updated)
       },
 
       saveGame: async () => {

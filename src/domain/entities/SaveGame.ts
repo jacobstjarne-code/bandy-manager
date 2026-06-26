@@ -113,7 +113,8 @@ export interface SaveGame {
   trainingProjects?: TrainingProject[]
 
   tutorialSeen?: boolean          // deprecated — migration: if true, skip coachMarksSeen
-  coachMarksSeen?: boolean
+  coachMarksSeen?: boolean         // deprecated — pensioneras med CoachMarks, ersatt av Tillträdet
+  onboardingComplete?: boolean     // Tillträdet-flödet slutfört (sätts vid F4)
   dismissedHints?: string[]
   lastCompletedFixtureId?: string   // id of most recently completed managed-club fixture
   chemistryStats?: Record<string, number>  // key = sortedId1|sortedId2, value = shared minutes
