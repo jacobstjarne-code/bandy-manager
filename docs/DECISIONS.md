@@ -8,6 +8,18 @@ Syftet är inte formalism. Syftet är att om 6 månader ha ett svar på "varför
 
 ---
 
+## 2026-06-26 — Typografi-kanon: siffer-roll + citatvariant + ljus-på-mörk (konsolidering)
+
+**Problem:** ~346 inline-siter konvergerar mot samma typografiska avsikt med småskilda värden (194 × `fontSize:9`, 152 × `fontFamily:display`). `ds-guard`-ratchetn fångade driften (+29/+24 över baslinjen) men guarden körs inte i build, så den drev tyst. Två luckor i designsystemet drev fram inline-värden: (1) sifferskalan hoppar från body 14px direkt till `.h-display-sm` 22px — score/kassa/portal-tal på 12–18px Georgia tabular saknade roll; (2) citat driftar 11/12/13px utan tät variant; (3) ingen ljus-på-mörk-variant för label/quote på läder/scen. Underlag: `design-system/briefs/Typografi-kanon-2026-06-26.html` (Designs sign-off-dokument).
+
+**Beslut (Jacob, via kanon-underlaget):** `.h-label` = praxis **9/600/2.5px** (redan i kod — ingen ändring, emoji ligger som syskon-element inte i rollen). NY siffer-roll: `.h-num-sm` (12/700), `.h-num` (15/700), `.h-num-lg` (18/700), alla display + `tabular-nums`; **färgen sätts inline** (data: vi/dom, upp/ned, severity) — aldrig i klassen. `.h-quote-sm` (11px) som tät citatvariant. Ljus-på-mörk-modifierare `.h-label-light` (`--text-light-secondary`) + `.h-quote-light` (nytt token `--text-quote-light` #E6DDD0). Tillagt i `global.css` (sanning) + regenererad spegel.
+
+**Alternativ övervägt:** Exakt-match-klass per inline-kombination (~23 nästan-identiska klasser) — avvisat, värre designsystem-skräp än inline. Svepande migrering per värde — avvisat, alla 9px är inte labels (mono-meta, tidsstämplar, tickers bor där också); mappning sker per ROLL.
+
+**Konsekvens:** Klasserna är additiva (noll regressionsrisk; inget använder dem ännu). Site-migreringen (346 siter) är ett koordinerat pixel-pass, sammanflätat med MatchLive-omdesignen — mappa per roll, ljus-på-mörk från start, dynamisk färg/LED/live-tickers/badge-färger förblir inline. Lås-steg efteråt: sänk `ds-guard`-baslinjen, koppla in guarden i build. Implementeras av Code (iteration-tungt + pixel-verifiering).
+
+---
+
 ## 2026-06-21 — Styrelsen konsolideras till en modell (KF4)
 
 **Problem:** Styrelsen lever på två oberoende ställen som beskriver samma tre personer men aldrig länkas: `club.board` (`ClubBoard` = chairman/treasurer/member, var och en `{firstName, lastName, age, gender}`, från CLUB_TEMPLATES) och `game.boardPersonalities` (`BoardMember[]` = `{name, role, personality}`, slumpas från BOARD_PROFILES). Följder: (1) ordföranden har två olika namn beroende på kodväg — ArrivalScene/boardMeetingScene visar template-namnet, resolver visar boardPersonalities-namnet med `?? 'Margareta'`; (2) två typer heter `BoardMember`; (3) kön och personlighet kan inte användas ihop utan join-by-role, och kardinaliteten divergerar (eventResolver lägger ledamot på boardPersonalities, club.board är fast trippel).

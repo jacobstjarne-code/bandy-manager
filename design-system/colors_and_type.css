@@ -39,6 +39,7 @@
   /* Text — dark surfaces */
   --text-light:           #F5F1EB;
   --text-light-secondary: #C4BAA8;
+  --text-quote-light:     #E6DDD0;  /* citat på läder/scen (typografi-kanon 2026-06-26) */
   --header-undertext:     #C9B89A;  /* GameHeader undertext på läderyta */
 
   /* Accent — copper/terracotta */
@@ -192,6 +193,9 @@
   --z-interaction: 500;
   --z-toast:       600;
 
+  /* M11: Anslag/scen-modal backdrop — EN delad token, alla pre-portal-scener lika mörka */
+  --anslag-backdrop: rgba(14, 13, 11, 0.75);
+
   /* Shadows + dämpade severity-toner (global.css är sanning; portade från spegeln.
      --shadow-card användes i stalvallen-portal.css men saknades här → latent bug fixad) */
   --shadow-card:    0 1px 3px rgba(0,0,0,0.05);
@@ -261,6 +265,29 @@
   color: var(--text-secondary);
   line-height: 1.4;
 }
+
+/* Typografi-kanon 2026-06-26 — siffer-roll: display Georgia + tabular-nums.
+   Fyller luckan body 14px → .h-display-sm 22px (score, kassa, portal-tal, live-stats).
+   FÄRGEN ÄR DATA — sätts alltid inline per användning (vi/dom, upp/ned, severity), aldrig i klassen. */
+.h-num-sm { font-family: var(--font-display); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.h-num    { font-family: var(--font-display); font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.h-num-lg { font-family: var(--font-display); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Tät citatvariant — konvergens av 11/12/13px-drift; 11px för trånga lägen. */
+.h-quote-sm {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Ljus-på-mörk-modifierare (läder/scen) — används TILLSAMMANS med .h-label / .h-quote */
+.h-label-light { color: var(--text-light-secondary); }
+
+.h-quote-light { color: var(--text-quote-light); }
 
 /* CTA text — uppercase, letter-spaced */
 .h-cta {
