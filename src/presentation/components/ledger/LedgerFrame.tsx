@@ -23,6 +23,9 @@ interface LedgerFrameProps {
   stamp: { label: string; onClick: () => void } | null
   /** Valfri flikrad — bara Granska skickar detta */
   tabs?: LedgerTab[]
+  /** Grepp 4: under spel ersätts masthead + RPS-strip av en tunn live-rad.
+   *  Bara phase='spela' skickar detta — annars full masthead. */
+  liveScore?: { homeName: string; awayName: string; homeScore: number; awayScore: number }
   children: ReactNode
   style?: CSSProperties
 }
@@ -45,48 +48,63 @@ export function LedgerFrame({
   phase,
   stamp,
   tabs,
+  liveScore,
   children,
   style,
 }: LedgerFrameProps) {
   const phaseIdx = PHASE_INDEX[phase]
+  // Grepp 4: under spel viker masthead + RPS ihop till en tunn orienteringsrad.
+  const slim = phase === 'spela' && liveScore != null
 
   return (
     <div className="lf-root" style={style}>
-      {/* ── Masthead ── */}
-      <div className="lf-masthead">
-        <div className="lf-crest">
-          <ClubBadge
-            clubId={clubId}
-            name={clubName}
-            size={22}
-            strokeColor="color-mix(in srgb, var(--copper) 40%, transparent)"
-          />
+      {slim ? (
+        /* ── Slim live-rad (grepp 4) ── */
+        <div className="lf-masthead-slim">
+          <span className="lf-slim-score">
+            {liveScore.homeName} <b>{liveScore.homeScore}–{liveScore.awayScore}</b> {liveScore.awayName}
+          </span>
+          <span className="lf-slim-meta">OMG.&nbsp;{round} · SPELA</span>
         </div>
-        <div className="lf-club">
-          <span className="lf-club-name">{clubName}</span>
-          <span className="lf-club-sub">{managerName} · {season}</span>
-        </div>
-        <div className="lf-round">OMG.&nbsp;{round}</div>
-      </div>
+      ) : (
+        <>
+          {/* ── Masthead ── */}
+          <div className="lf-masthead">
+            <div className="lf-crest">
+              <ClubBadge
+                clubId={clubId}
+                name={clubName}
+                size={22}
+                strokeColor="color-mix(in srgb, var(--copper) 40%, transparent)"
+              />
+            </div>
+            <div className="lf-club">
+              <span className="lf-club-name">{clubName}</span>
+              <span className="lf-club-sub">{managerName} · {season}</span>
+            </div>
+            <div className="lf-round">OMG.&nbsp;{round}</div>
+          </div>
 
-      {/* ── RPS-strip ── */}
-      <div className="lf-rps">
-        {PHASES.map((p, i) => {
-          const isDone = i < phaseIdx
-          const isActive = i === phaseIdx
-          const cls = isActive ? 'active' : isDone ? 'done' : 'pending'
-          return (
-            <span key={p.key} className={`lf-rps-item ${cls}`}>
-              {isDone && <span className="lf-rps-icon">✓</span>}
-              {isActive && <span className="lf-rps-icon">⬡</span>}
-              {p.label}
-              {i < PHASES.length - 1 && (
-                <span className="lf-rps-sep" aria-hidden="true"> — </span>
-              )}
-            </span>
-          )
-        })}
-      </div>
+          {/* ── RPS-strip ── */}
+          <div className="lf-rps">
+            {PHASES.map((p, i) => {
+              const isDone = i < phaseIdx
+              const isActive = i === phaseIdx
+              const cls = isActive ? 'active' : isDone ? 'done' : 'pending'
+              return (
+                <span key={p.key} className={`lf-rps-item ${cls}`}>
+                  {isDone && <span className="lf-rps-icon">✓</span>}
+                  {isActive && <span className="lf-rps-icon">⬡</span>}
+                  {p.label}
+                  {i < PHASES.length - 1 && (
+                    <span className="lf-rps-sep" aria-hidden="true"> — </span>
+                  )}
+                </span>
+              )
+            })}
+          </div>
+        </>
+      )}
 
       {/* ── Body: marginal + innehåll ── */}
       <div className="lf-body">

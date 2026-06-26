@@ -87,6 +87,43 @@
   white-space: nowrap;
 }
 
+/* ── Slim masthead (grepp 4 — phase=spela) ──
+   Under spel ersätts masthead + RPS-strip av en tunn orienteringsrad:
+   "Forsbacka 3–2 Skutskär · OMG. 2 · SPELA". Frigör ~30px till feeden. */
+.lf-masthead-slim {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-dark);
+  border-bottom: 2px solid var(--copper);
+  flex-shrink: 0;
+}
+.lf-slim-score {
+  font-family: Georgia, serif;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.lf-slim-score b {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.lf-slim-meta {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--copper);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* ── RPS-strip ── */
 .lf-rps {
   display: flex;

@@ -1395,6 +1395,12 @@ export function MatchLiveScreen() {
       round={fixture.matchday}
       phase="spela"
       stamp={spelStamp}
+      liveScore={{
+        homeName: homeClub?.name ?? homeClubName,
+        awayName: awayClub?.name ?? awayClubName,
+        homeScore,
+        awayScore,
+      }}
       style={postIntroFade ? { animation: 'fadeIn 300ms ease-out both' } : undefined}
     >
       {showSubModal && (
