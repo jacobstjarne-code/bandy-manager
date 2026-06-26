@@ -52,22 +52,6 @@ export function processPlayoffRound(
 
   if (result.updatedBracket === null) return result
 
-  // DIAGNOSTIC: Log playoff state for debugging match-skip bug
-  if (process.env.NODE_ENV !== 'production') {
-    const managedSeries = [
-      ...result.updatedBracket.quarterFinals,
-      ...result.updatedBracket.semiFinals,
-      ...(result.updatedBracket.final ? [result.updatedBracket.final] : []),
-    ].find(s => s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId)
-    if (managedSeries) {
-      console.log(
-        `[PLAYOFF] Series ${managedSeries.id}: ${managedSeries.homeWins}-${managedSeries.awayWins}, ` +
-        `winnerId=${managedSeries.winnerId}, completedThisRound: ` +
-        completedThisRound.filter(f => managedSeries.fixtures.includes(f.id)).map(f => f.id).join(','),
-      )
-    }
-  }
-
   // Update series with NEWLY completed fixtures only (dedup live-played managed fixtures
   // whose series was already updated by matchActions → updateSeriesAfterMatch)
   const newlyCompletedThisRound = simulatedFixtures.filter(
@@ -91,21 +75,6 @@ export function processPlayoffRound(
     quarterFinals: result.updatedBracket.quarterFinals.map(updateSeries),
     semiFinals: result.updatedBracket.semiFinals.map(updateSeries),
     final: result.updatedBracket.final ? updateSeries(result.updatedBracket.final) : null,
-  }
-
-  // DIAGNOSTIC: Log series state after update
-  if (process.env.NODE_ENV !== 'production') {
-    const managedSeriesAfter = [
-      ...result.updatedBracket.quarterFinals,
-      ...result.updatedBracket.semiFinals,
-      ...(result.updatedBracket.final ? [result.updatedBracket.final] : []),
-    ].find(s => s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId)
-    if (managedSeriesAfter) {
-      console.log(
-        `[PLAYOFF AFTER] ${managedSeriesAfter.id}: ${managedSeriesAfter.homeWins}-${managedSeriesAfter.awayWins}, ` +
-        `winnerId=${managedSeriesAfter.winnerId}, loserId=${managedSeriesAfter.loserId}`,
-      )
-    }
   }
 
   // Cancel game 3 fixtures for decided series
