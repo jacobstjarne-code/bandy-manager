@@ -211,7 +211,7 @@ export function GranskaOversikt({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '0 0 3px', ...fadeIn(1) }}>
             <div className="card-sharp card-tap" onClick={() => navigate('/game/tabell')} style={{ padding: '10px 12px', cursor: 'pointer' }}>
               <SectionLabel style={{ marginBottom: 7 }}>📊 TABELL</SectionLabel>
-              <span style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+              <span className="h-num-lg" style={{ color: 'var(--text-primary)' }}>
                 {leaguePosition ?? '—'}{leaguePosition ? ':a' : ''}
               </span>
               {standingBefore && leaguePosition && standingBefore !== leaguePosition && (
@@ -225,7 +225,7 @@ export function GranskaOversikt({
               <div style={{ display: 'flex', gap: 4 }}>
                 {form.length === 0
                   ? <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>Inga matcher ännu</span>
-                  : form.map((r, i) => (
+                  : form.map((r, i) => ( // ds-exempt: V/O/F-bokstav i dynamiskt färgad form-dot
                     <span key={i} style={{ width: 16, height: 16, borderRadius: 4, background: dotColor(r.result), color: 'var(--text-light)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{r.result}</span>
                   ))}
               </div>
@@ -250,7 +250,7 @@ export function GranskaOversikt({
               <div key={stat.label} style={{ marginBottom: 6 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
                   <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>{stat.home}{stat.suffix ?? ''}</span>
-                  <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '1px' }}>{stat.label.toUpperCase()}</span>
+                  <span className="h-label" style={{ marginBottom: 0 }}>{stat.label.toUpperCase()}</span>
                   <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>{stat.away}{stat.suffix ?? ''}</span>
                 </div>
                 <div style={{ display: 'flex', height: 3, borderRadius: 2, overflow: 'hidden', gap: 1 }}>
@@ -343,7 +343,7 @@ export function GranskaOversikt({
               ) : (
                 <>
                   {pcTitle && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{pcTitle}</p>}
-                  <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{pc.body}</p>
+                  <p className="h-quote" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>{pc.body}</p>
                   <DecisionChoices
                     choices={pc.choices}
                     onChoose={(id, label) => onChoice(pc.id, id, label)}
@@ -384,7 +384,7 @@ export function GranskaOversikt({
                       {journalist.name} · {journalist.outlet}
                     </p>
                   )}
-                  <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{cp.body}</p>
+                  <p className="h-quote" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>{cp.body}</p>
                   <DecisionChoices
                     choices={cp.choices}
                     onChoose={(id, label) => onChoice(cp.id, id, label)}
@@ -415,7 +415,7 @@ export function GranskaOversikt({
               ) : (
                 <>
                   <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>{rm.sender?.name}</p>
-                  <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{rm.body}</p>
+                  <p className="h-quote" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>{rm.body}</p>
                   <DecisionChoices
                     choices={rm.choices}
                     onChoose={(id, label) => onChoice(rm.id, id, label)}
@@ -455,7 +455,7 @@ export function GranskaOversikt({
                 {journalist.name} · {journalist.outlet}{personaLabel ? ` · ${personaLabel}` : ''}
               </p>
             )}
-            <p style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.4 }}>
+            <p className="h-quote" style={{ color: 'var(--text-primary)' }}>
               {/* Fynd 3: granska-varianten av rubriken (samma händelse, egen formulering) */}
               {headlineItem.mediaVariants?.granska ?? headlineItem.title}
             </p>
@@ -606,13 +606,14 @@ export function GranskaOversikt({
                       {row.playerName}
                     </div>
                   )}
-                  <div style={{ fontSize: 9.5, color: 'var(--text-secondary)', marginTop: 2 }}>
+                  <div className="h-micro" style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
                     {row.outcome}
                   </div>
                 </div>
                 {/* Value */}
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{
+                    // ds-exempt: bespoke 18/800/lh1-emfasvärde, utanför .h-num-skalan (700)
                     fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, lineHeight: 1,
                     color: valueColor[row.stripe],
                   }}>
