@@ -28,6 +28,9 @@ interface Props {
   timerSeconds?: number
   // New API — structured timer with ring support for last-minute
   timer?: TimerConfig
+  // Explicit opt-out: ingen tidspress (övningsläge). Default = false → timern kör
+  // som vanligt. "timer saknas = av" undviks medvetet (skulle tyst släcka live-paneler).
+  untimed?: boolean
   stats?: ReactNode
   pitch: ReactNode
   coachTip?: string
@@ -86,7 +89,7 @@ export function InteractionShell({
   timer,
   stats, pitch, coachTip, coach, actions,
   subChoices, readout, riskRow, cta,
-  phase, outcome, onTimeout,
+  phase, outcome, onTimeout, untimed,
 }: Props) {
   // Resolve timer config — timer prop takes precedence over legacy timerSeconds
   const totalSeconds = timer?.seconds ?? timerSeconds ?? 5
@@ -99,9 +102,9 @@ export function InteractionShell({
   const onTimeoutRef = useRef(onTimeout)
   useEffect(() => { onTimeoutRef.current = onTimeout }, [onTimeout])
 
-  // Timer — only runs in 'choosing' phase (Lærdom #3 pattern)
+  // Timer — only runs in 'choosing' phase (Lærdom #3 pattern). untimed = övningsläge: kör aldrig.
   useEffect(() => {
-    if (phase !== 'choosing') {
+    if (phase !== 'choosing' || untimed) {
       if (timerRef.current) clearInterval(timerRef.current)
       return
     }
@@ -122,7 +125,7 @@ export function InteractionShell({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [phase, totalSeconds])
+  }, [phase, totalSeconds, untimed])
 
   const timerFraction = timeLeft / totalSeconds
 
@@ -154,8 +157,8 @@ export function InteractionShell({
             </div>
           </div>
 
-          {/* Timer — tag or ring */}
-          {phase === 'choosing' && (
+          {/* Timer — tag or ring. Släckt i untimed (övningsläge). */}
+          {phase === 'choosing' && !untimed && (
             timerStyle === 'ring' ? (
               <CountDownRing timeLeft={timeLeft} total={totalSeconds} />
             ) : (

@@ -22,6 +22,9 @@ interface CornerInteractionProps {
   outcome: CornerOutcome | null
   onChoose: (zone: CornerZone, delivery: CornerDelivery) => void
   coach?: AssistantCoach
+  /** Övningsläge (Tillträdet F3): släck 5s-timern — spelaren får all tid.
+   *  Konsekvens-suppression sköts av harnesset (onChoose), inte här. */
+  practice?: boolean
 }
 
 const DELIVERY_OPTIONS: { key: CornerDelivery; label: string }[] = [
@@ -152,7 +155,7 @@ function CornerPitchSVG({
   )
 }
 
-export function CornerInteraction({ data, outcome, onChoose, coach }: CornerInteractionProps) {
+export function CornerInteraction({ data, outcome, onChoose, coach, practice }: CornerInteractionProps) {
   const [zone, setZone] = useState<CornerZone>('center')
   const [delivery, setDelivery] = useState<CornerDelivery>('hard')
   const [phase, setPhase] = useState<InteractionPhase>('choosing')
@@ -210,6 +213,7 @@ export function CornerInteraction({ data, outcome, onChoose, coach }: CornerInte
       title="HÖRNA"
       minute={data.minute}
       timer={{ seconds: 5, style: 'tag' }}
+      untimed={practice}
       pitch={
         <CornerPitchSVG
           zone={zone}

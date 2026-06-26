@@ -1,6 +1,17 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
+import { CornerInteraction } from '../components/match/CornerInteraction'
+import {
+  buildCornerInteractionData,
+  resolveCorner,
+  type CornerZone,
+  type CornerDelivery,
+  type CornerOutcome,
+} from '../../domain/services/cornerInteractionService'
+import { PlayerPosition } from '../../domain/enums'
+import { mulberry32 } from '../../domain/utils/random'
+import type { Player } from '../../domain/entities/Player'
 
 /**
  * Tillträdet — engångs-onboardingflöde efter ArrivalScene (styrelsebesöket).
@@ -22,6 +33,19 @@ export function TilltradeScreen() {
   const game = useGameStore(s => s.game)
   const markOnboardingComplete = useGameStore(s => s.markOnboardingComplete)
   const [step, setStep] = useState<Step>(1)
+  const [cornerOutcome, setCornerOutcome] = useState<CornerOutcome | null>(null)
+
+  // F3 — öva-hörnan mot ett sparring-lag. Byggs en gång; resolvas lokalt utan store-mutation.
+  const practiceCorner = useMemo(() => {
+    if (!game) return null
+    const attackers = game.players.filter(p => p.clubId === game.managedClubId)
+    if (attackers.length === 0) return null
+    const cornerTaker = [...attackers].sort((a, b) => b.attributes.cornerSkill - a.attributes.cornerSkill)[0]
+    const sparring = game.clubs.find(c => c.id !== game.managedClubId)
+    const defenders = sparring ? game.players.filter(p => p.clubId === sparring.id) : []
+    const data = buildCornerInteractionData(cornerTaker, attackers, defenders, true, game.supporterGroup?.mood ?? 50, 1, 0, 0)
+    return { data, attackers, defenders }
+  }, [game])
 
   if (!game) {
     navigate('/', { replace: true })
@@ -46,6 +70,24 @@ export function TilltradeScreen() {
   async function finish() {
     await markOnboardingComplete()
     navigate('/game/dashboard', { replace: true })
+  }
+
+  // F3 övningsläge: resolva utfallet lokalt (samma motor som live), ingen store-mutation.
+  function handlePracticeCorner(zone: CornerZone, delivery: CornerDelivery) {
+    if (!game || !practiceCorner) return
+    const { attackers, defenders, data } = practiceCorner
+    const taker = attackers.find(p => p.id === data.cornerTakerId) ?? attackers[0]
+    const rushers = data.rusherIds.map(id => attackers.find(p => p.id === id)).filter(Boolean) as Player[]
+    const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
+    const defOutfield = defenders.filter(p => p.position !== PlayerPosition.Goalkeeper)
+    const outcome = resolveCorner(
+      { zone, delivery },
+      taker, rushers, defOutfield, gk,
+      data.opponentPenaltyKill, data.isHome,
+      game.supporterGroup?.mood ?? 50,
+      mulberry32(Date.now()),
+    )
+    setCornerOutcome(outcome)
   }
 
   return (
@@ -107,23 +149,46 @@ export function TilltradeScreen() {
           </div>
         )}
 
-        {/* F3 — WIP: ska driva RIKTIGA CornerInteraction i övningsläge (ingen state-mutation),
-            coachtips ur generateCoachQuote(coach, {type:'corner', sub:'default'}).
-            Framing: "En hörna innan det gäller. Du väljer var den läggs och hur hårt. Titta på zonerna." */}
+        {/* F3 Öva en hörna — driver RIKTIGA CornerInteraction i övningsläge (practice):
+            timern släckt, utfallet resolvas lokalt, ingen matchkonsekvens. */}
         {step === 3 && (
-          <div style={{
-            display: 'flex', flexDirection: 'column', gap: 14,
-            background: 'rgba(10,8,12,0.80)',
-            border: '1px solid rgba(245,241,235,0.06)',
-            borderRadius: 'var(--radius)',
-            padding: '20px 18px',
-          }}>
-            <div className="h-scene-speaker">{firstName} · Öva en hörna</div>
-            <div className="h-scene-quote">
-              "En hörna innan det gäller. Du väljer var den läggs och hur hårt. Titta på zonerna."
+          <>
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: 14,
+              background: 'rgba(10,8,12,0.80)',
+              border: '1px solid rgba(245,241,235,0.06)',
+              borderRadius: 'var(--radius)',
+              padding: '20px 18px',
+            }}>
+              <div className="h-scene-speaker">{firstName} · Öva en hörna</div>
+              <div className="h-scene-quote">
+                "En hörna innan det gäller. Du väljer var den läggs och hur hårt. Titta på zonerna."
+              </div>
             </div>
-            <div className="h-scene-helper">[WIP: wiras mot riktig CornerInteraction i nästa pass]</div>
-          </div>
+
+            {practiceCorner && (
+              <CornerInteraction
+                data={practiceCorner.data}
+                outcome={cornerOutcome}
+                onChoose={handlePracticeCorner}
+                coach={coach}
+                practice
+              />
+            )}
+
+            {cornerOutcome && (
+              <div style={{
+                background: 'rgba(10,8,12,0.80)',
+                border: '1px solid rgba(245,241,235,0.06)',
+                borderRadius: 'var(--radius)',
+                padding: '20px 18px',
+              }}>
+                <div className="h-scene-quote">
+                  "Så funkar det. Under match får du fem sekunder. Nu fick du så lång tid du ville."
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {step === 4 && (
@@ -142,10 +207,15 @@ export function TilltradeScreen() {
         )}
       </div>
 
-      {/* CTA per steg */}
+      {/* CTA per steg. F3: ingen scen-CTA förrän hörnan slagits (panelen äger handlingen);
+          om practice-data saknas (edge) faller den tillbaka till en vanlig Vidare. */}
       <div className="scene-cta-area in">
         {step === 4 ? (
           <button className="btn btn-primary btn-cta" onClick={finish}>Första omgången →</button>
+        ) : step === 3 ? (
+          (cornerOutcome || !practiceCorner) ? (
+            <button className="btn-scene-cta" onClick={() => setStep(4)}>Vidare</button>
+          ) : null
         ) : (
           <button
             className="btn-scene-cta"
