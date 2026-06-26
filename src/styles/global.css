@@ -1005,9 +1005,18 @@ a {
   line-height: 1.4;
 }
 
-/* Ljus-på-mörk-modifierare (läder/scen) — används TILLSAMMANS med .h-label / .h-quote */
+/* Ljus-på-mörk-modifierare (läder/scen) — används TILLSAMMANS med .h-label / .h-quote.
+   Roller som lämnar färg inline (.h-name/.h-num/.h-micro) behöver ingen -light: färgen sätts ändå inline. */
 .h-label-light { color: var(--text-light-secondary); }
 .h-quote-light { color: var(--text-quote-light); }
+
+/* Namn-roll (Ruling 1, 2026-06-26) — display Georgia för NAMN/RUBRIKER som inte är tal.
+   En roll, inte en skala: 15px ±3px drift. ≥20px → .h-display-*. Färgen sätts inline. */
+.h-name { font-family: var(--font-display); font-size: 15px; font-weight: 700; line-height: 1.2; }
+
+/* Mikrotext-roll (Ruling 2, 2026-06-26) — 9px body, ingen versal, ingen spacing. Största bucketen.
+   VIKT + FÄRG sätts inline. Mono-meta hör INTE hit → // ds-exempt (ingen --font-mono-token ännu). */
+.h-micro { font-family: var(--font-body); font-size: 9px; }
 
 /* CTA text — uppercase, letter-spaced */
 .h-cta {
