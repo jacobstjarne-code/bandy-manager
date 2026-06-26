@@ -25,7 +25,7 @@ export function ManagerPortrait({ firstName, lastName, seasonsAtClub, burnoutSco
           width: ringSize, height: ringSize,
           borderRadius: '50%',
           border: `2px solid ${isLegend ? 'var(--gold)' : 'color-mix(in srgb, var(--accent) 55%, transparent)'}`,
-          boxShadow: isLegend ? '0 0 8px rgba(201,168,76,0.45)' : 'none',
+          boxShadow: isLegend ? '0 0 8px color-mix(in srgb, var(--gold) 45%, transparent)' : 'none',
           zIndex: 0,
           pointerEvents: 'none',
         }} />

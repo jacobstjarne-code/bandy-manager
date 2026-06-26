@@ -329,7 +329,7 @@ function InboxGroupRow({
       }}
     >
       <div style={{
-        width: 20, height: 20, borderRadius: 6,
+        width: 20, height: 20, borderRadius: 'var(--radius-md)',
         background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
         color: 'var(--accent-dark)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
