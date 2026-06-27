@@ -96,6 +96,7 @@ export function ChampionScreen() {
       justifyContent: 'flex-start',
       overflowY: 'auto',
       padding: 'max(24px, 5vh) 20px 24px',
+      animation: 'championFadeIn 300ms ease-out',
     }}>
       <style>{`
         @keyframes confettiFall {
@@ -105,6 +106,10 @@ export function ChampionScreen() {
         @keyframes goldPulse {
           0%, 100% { text-shadow: 0 0 20px color-mix(in srgb, var(--accent) 40%, transparent); }
           50% { text-shadow: 0 0 40px color-mix(in srgb, var(--accent) 80%, transparent), 0 0 60px color-mix(in srgb, var(--accent) 40%, transparent); }
+        }
+        @keyframes championFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
       `}</style>
 
