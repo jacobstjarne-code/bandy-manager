@@ -17,18 +17,91 @@ import type { Player } from '../../domain/entities/Player'
 
 /**
  * Tillträdet — engångs-onboardingflöde efter ArrivalScene (styrelsebesöket).
- * Den assisterande tränaren (game.assistantCoach, genererad) lär ut det praktiska:
  * F1 Ankomst → F2 Sätt elvan → F3 Öva hörna → F4 Klart → Portal.
- *
- * Instruktion: docs/CODE_INSTRUKTION_TILLTRADET_KLUBBPARMEN_2026-06-26.md
- * Texten är Opus-skriven och godkänd — Code templatear bara coach-namnet.
- *
- * F2/F3 wiras mot de RIKTIGA komponenterna (lineup-ytan resp. CornerInteraction
- * i övningsläge) i nästa pass — markerade WIP nedan. Reroute från ArrivalScene
- * flippas först när hela flödet står (main-koherens).
+ * Mock: docs/incoming/Intro & Guide - Tillträdet + Klubbpärmen (fristående).html
  */
 
 type Step = 1 | 2 | 3 | 4
+
+const STEP_TITLES = ['Ankomst', 'Startelva', 'Hörnan', 'Klart']
+
+/** Shield-märke med klubbinitial — F1 mock: 64×76px, margin 20px auto 16px */
+function ClubShield({ initial }: { initial: string }) {
+  return (
+    <svg
+      width="64" height="76" viewBox="0 0 64 76" fill="none"
+      style={{ display: 'block', margin: '20px auto 16px' }}
+      aria-hidden="true"
+    >
+      <path
+        d="M32 3L61 13V36C61 58 32 73 32 73C32 73 3 58 3 36V13Z"
+        fill="var(--copper)" fillOpacity="0.06"
+        stroke="var(--copper)" strokeWidth="1.5" strokeOpacity="0.55"
+      />
+      <text
+        x="32" y="46"
+        textAnchor="middle"
+        fontFamily="Georgia, serif"
+        fontSize="24"
+        fontWeight="800"
+        fill="var(--copper)"
+        fillOpacity="0.85"
+      >{initial}</text>
+    </svg>
+  )
+}
+
+/** Beat-progress — horisontella staplar.
+ *  lg = F1/F4 (18×3px, gap 7), sm = F2/F3 header (14×3px, gap 5).
+ *  Kumulativ: alla steg ≤ current lyser i koppar. */
+function BeatBars({ step, size }: { step: number; size: 'lg' | 'sm' }) {
+  const w = size === 'lg' ? 18 : 14
+  const gap = size === 'lg' ? 7 : 5
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', gap, marginTop: size === 'lg' ? 10 : 0 }}>
+      {[1, 2, 3, 4].map(i => (
+        <span key={i} style={{
+          display: 'inline-block', width: w, height: 3, borderRadius: 2,
+          background: i <= step
+            ? 'var(--accent)'
+            : 'color-mix(in srgb, var(--accent) 25%, transparent)',
+        }} />
+      ))}
+    </div>
+  )
+}
+
+/** Coach-framing med monogrammcirkel — F2/F3-stil (9px header) */
+function CoachFraming({ initial, quote }: { initial: string; quote: string }) {
+  return (
+    <div style={{
+      margin: '12px 16px',
+      background: 'rgba(0,0,0,0.3)',
+      borderLeft: '2px solid var(--copper)',
+      borderRadius: '0 8px 8px 0',
+      padding: '9px 12px',
+      display: 'flex', gap: 9, alignItems: 'center',
+    }}>
+      <span style={{
+        flexShrink: 0,
+        width: 22, height: 22, borderRadius: '50%',
+        background: 'var(--bg-leather)',
+        border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: 'ui-monospace, monospace', fontSize: 8, fontWeight: 700,
+        color: 'var(--accent)',
+      }}>
+        {initial}
+      </span>
+      <span style={{
+        fontFamily: 'Georgia, serif', fontStyle: 'italic',
+        fontSize: 12, color: 'var(--text-quote-light)', lineHeight: 1.35,
+      }}>
+        {quote}
+      </span>
+    </div>
+  )
+}
 
 export function TilltradeScreen() {
   const navigate = useNavigate()
@@ -37,11 +110,11 @@ export function TilltradeScreen() {
   const [step, setStep] = useState<Step>(1)
   const [cornerOutcome, setCornerOutcome] = useState<CornerOutcome | null>(null)
 
-  // F2 — useLineupEditor anropas ovillkorligt (hooks-regel) — game/managedClub kan vara undefined
+  // F2 — useLineupEditor ovillkorligt (hooks-regel)
   const managedClub = game?.clubs.find(c => c.id === game?.managedClubId)
   const lineupEditor = useLineupEditor(game, managedClub)
 
-  // F3 — öva-hörnan mot ett sparring-lag. Byggs en gång; resolvas lokalt utan store-mutation.
+  // F3 — öva-hörna, byggs en gång
   const practiceCorner = useMemo(() => {
     if (!game) return null
     const attackers = game.players.filter(p => p.clubId === game.managedClubId)
@@ -53,32 +126,21 @@ export function TilltradeScreen() {
     return { data, attackers, defenders }
   }, [game])
 
-  if (!game) {
-    navigate('/', { replace: true })
-    return null
-  }
-  // Redan klar (nått hit av misstag) → hoppa rakt in.
-  if (game.onboardingComplete) {
-    navigate('/game/dashboard', { replace: true })
-    return null
-  }
-  // Defensivt: saknas tränare, hoppa hellre Tillträdet än krascha (samma mönster
-  // som ArrivalScene har för game.board).
+  if (!game) { navigate('/', { replace: true }); return null }
+  if (game.onboardingComplete) { navigate('/game/dashboard', { replace: true }); return null }
   const coach = game.assistantCoach
-  if (!coach) {
-    navigate('/game/dashboard', { replace: true })
-    return null
-  }
+  if (!coach) { navigate('/game/dashboard', { replace: true }); return null }
 
   const firstName = coach.name.split(' ')[0]
   const lastName = coach.name.split(' ')[1] ?? ''
+  const coachInitials = `${firstName[0] ?? ''}${lastName[0] ?? ''}`
+  const clubInitial = managedClub?.name?.[0]?.toUpperCase() ?? '?'
 
   async function finish() {
     await markOnboardingComplete()
     navigate('/game/dashboard', { replace: true })
   }
 
-  // F3 övningsläge: resolva utfallet lokalt (samma motor som live), ingen store-mutation.
   function handlePracticeCorner(zone: CornerZone, delivery: CornerDelivery) {
     if (!game || !practiceCorner) return
     const { attackers, defenders, data } = practiceCorner
@@ -96,105 +158,158 @@ export function TilltradeScreen() {
     setCornerOutcome(outcome)
   }
 
+  /* ── F1 / F4: ankomst-layout med sköld + achievement-lista ─────── */
+  if (step === 1 || step === 4) {
+    return (
+      <div className="arrival-scene">
+        <div className="arrival-lamp-overlay" />
+
+        <div style={{
+          position: 'relative', zIndex: 2,
+          flex: 1, display: 'flex', flexDirection: 'column',
+          padding: '32px 24px 20px',
+        }}>
+          {/* Genre + bars */}
+          <div style={{ textAlign: 'center' }}>
+            <div className="h-scene-genre">
+              {step === 1 ? '⬩  Tillträdet  ⬩' : '⬩  Klart för avspark  ⬩'}
+            </div>
+            <BeatBars step={step} size="lg" />
+          </div>
+
+          {step === 1 && (
+            <>
+              <ClubShield initial={clubInitial} />
+              <p style={{
+                fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700,
+                color: 'var(--text-light)', textAlign: 'center', margin: '0 0 20px',
+              }}>
+                {managedClub?.name}
+              </p>
+            </>
+          )}
+
+          {step === 4 && (
+            <div style={{ margin: '18px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                'Startelva klar',
+                'Hörna övad',
+                'Säsongen väntar',
+              ].map((text, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  background: 'color-mix(in srgb, var(--success) 10%, transparent)',
+                  border: '1px solid color-mix(in srgb, var(--success) 30%, transparent)',
+                  borderRadius: 8, padding: '11px 14px',
+                }}>
+                  <span style={{ color: 'var(--success)', fontSize: 14 }}>✓</span>
+                  <span style={{ fontFamily: 'system-ui', fontSize: 12, color: 'var(--text-light)' }}>{text}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Coach framing — F1/F4 stil: bredare padding, ingen cirkel */}
+          <div style={{
+            background: 'rgba(0,0,0,0.25)',
+            borderLeft: '2px solid var(--copper)',
+            borderRadius: '0 8px 8px 0',
+            padding: '12px 14px',
+            marginTop: 'auto',
+          }}>
+            <div className="h-scene-speaker">{firstName} {lastName} · Assisterande tränare</div>
+            <div className="h-scene-quote">
+              {step === 1
+                ? '"Styrelsen gav dig målet. Jag ger dig laget. Två saker innan första matchen — sätt elvan, och lär dig hur vi slår en hörna. Sen är du igång."'
+                : '"Det var allt jag har. Resten lär du dig på vägen. Du vet vad styrelsen vill ha. Jag vet vad laget tål. Däremellan spelas säsongen."'}
+            </div>
+          </div>
+        </div>
+
+        <div className="scene-cta-area in">
+          {step === 1
+            ? <button className="btn-scene-cta" onClick={() => setStep(2)}>Visa mig</button>
+            : <button className="btn btn-primary btn-cta" onClick={finish}>Första omgången →</button>}
+        </div>
+      </div>
+    )
+  }
+
+  /* ── F2 / F3: steg-header + innehåll ─────────────────────────── */
   return (
     <div className="arrival-scene">
       <div className="arrival-lamp-overlay" />
 
-      {/* Beat-prickar: fyra steg */}
-      <div style={{ position: 'relative', zIndex: 2, padding: '32px 24px 0', textAlign: 'center' }}>
-        <div className="h-scene-genre">⬩ &nbsp;Tillträdet&nbsp; ⬩</div>
-        <div className="beat-progress" style={{ marginTop: 14 }}>
-          {[1, 2, 3, 4].map(i => (
-            <span key={i} className={`dot${i === step ? ' active' : ''}`} />
-          ))}
+      {/* Steg-header */}
+      <div style={{
+        padding: '12px 18px 10px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        borderBottom: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)',
+        flexShrink: 0, position: 'relative', zIndex: 2,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{
+            fontFamily: 'system-ui', fontSize: 9, fontWeight: 600,
+            letterSpacing: '2.5px', textTransform: 'uppercase',
+            color: 'var(--text-light-secondary)',
+          }}>
+            Uppgift {step} / 4 · {STEP_TITLES[step - 1]}
+          </span>
+          {step === 3 && (
+            <span style={{
+              fontFamily: 'ui-monospace, monospace', fontSize: 9, fontWeight: 700,
+              letterSpacing: '2px', color: 'var(--accent)',
+              background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
+              borderRadius: 3, padding: '3px 8px',
+            }}>ÖVNING</span>
+          )}
         </div>
+        <BeatBars step={step} size="sm" />
       </div>
 
-      {/* Innehåll per steg */}
+      {/* Innehåll */}
       <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        position: 'relative',
-        zIndex: 1,
-        padding: '28px 24px 16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 20,
+        flex: 1, overflowY: 'auto', position: 'relative', zIndex: 1,
+        display: 'flex', flexDirection: 'column',
       }}>
-        {step === 1 && (
-          <div style={{
-            display: 'flex', flexDirection: 'column', gap: 14,
-            background: 'rgba(10,8,12,0.80)',
-            border: '1px solid rgba(245,241,235,0.06)',
-            borderRadius: 'var(--radius)',
-            padding: '20px 18px',
-          }}>
-            <div className="h-scene-speaker">{firstName} {lastName} · Assisterande tränare</div>
-            <div className="h-scene-quote">
-              "Styrelsen gav dig målet. Jag ger dig laget. Två saker innan första matchen — sätt elvan, och lär dig hur vi slår en hörna. Sen är du igång."
-            </div>
-          </div>
-        )}
+        {/* Coach-framing med monogrammcirkel */}
+        <CoachFraming
+          initial={coachInitials}
+          quote={step === 2
+            ? '"Här är truppen. Elva på isen. Du bestämmer — jag säger till om något skaver."'
+            : '"En hörna innan det gäller. Du väljer var den läggs och hur hårt. Titta på zonerna."'}
+        />
 
-        {/* F2 — riktig lineup-yta med coach-framing ovan */}
         {step === 2 && (
-          <>
-            <div style={{
-              display: 'flex', flexDirection: 'column', gap: 14,
-              background: 'rgba(10,8,12,0.80)',
-              border: '1px solid rgba(245,241,235,0.06)',
-              borderRadius: 'var(--radius)',
-              padding: '20px 18px',
-            }}>
-              <div className="h-scene-speaker">{firstName} · Sätt din elva</div>
-              <div className="h-scene-quote">
-                "Här är truppen. Elva på isen. Du bestämmer — jag säger till om något skaver."
-              </div>
-            </div>
-            <LineupStep
-              opponent={null}
-              nextFixture={null}
-              game={game}
-              squadPlayers={lineupEditor.squadPlayers}
-              groupedPlayers={lineupEditor.groupedPlayers}
-              startingIds={lineupEditor.startingIds}
-              benchIds={lineupEditor.benchIds}
-              captainId={lineupEditor.captainId ?? null}
-              selectedSlotId={lineupEditor.selectedSlotId}
-              tacticState={lineupEditor.tacticState}
-              canPlay={lineupEditor.canPlay}
-              injuredInStarting={lineupEditor.injuredInStarting}
-              onTogglePlayer={lineupEditor.togglePlayer}
-              onSetCaptain={lineupEditor.setCaptain}
-              onAutoFill={lineupEditor.handleAutoFill}
-              onSlotClick={lineupEditor.onSlotClick}
-              onFormationChange={lineupEditor.onFormationChange}
-              onAssignPlayer={lineupEditor.assignPlayerToSlot}
-              onSwapPlayers={lineupEditor.swapSlots}
-              onRemovePlayer={lineupEditor.removePlayer}
-              onError={lineupEditor.setLineupError}
-              onNext={() => { lineupEditor.commitLineup(); setStep(3) }}
-            />
-          </>
+          <LineupStep
+            opponent={null}
+            nextFixture={null}
+            game={game}
+            squadPlayers={lineupEditor.squadPlayers}
+            groupedPlayers={lineupEditor.groupedPlayers}
+            startingIds={lineupEditor.startingIds}
+            benchIds={lineupEditor.benchIds}
+            captainId={lineupEditor.captainId ?? null}
+            selectedSlotId={lineupEditor.selectedSlotId}
+            tacticState={lineupEditor.tacticState}
+            canPlay={lineupEditor.canPlay}
+            injuredInStarting={lineupEditor.injuredInStarting}
+            onTogglePlayer={lineupEditor.togglePlayer}
+            onSetCaptain={lineupEditor.setCaptain}
+            onAutoFill={lineupEditor.handleAutoFill}
+            onSlotClick={lineupEditor.onSlotClick}
+            onFormationChange={lineupEditor.onFormationChange}
+            onAssignPlayer={lineupEditor.assignPlayerToSlot}
+            onSwapPlayers={lineupEditor.swapSlots}
+            onRemovePlayer={lineupEditor.removePlayer}
+            onError={lineupEditor.setLineupError}
+            onNext={() => { lineupEditor.commitLineup(); setStep(3) }}
+          />
         )}
 
-        {/* F3 Öva en hörna — driver RIKTIGA CornerInteraction i övningsläge (practice):
-            timern släckt, utfallet resolvas lokalt, ingen matchkonsekvens. */}
         {step === 3 && (
           <>
-            <div style={{
-              display: 'flex', flexDirection: 'column', gap: 14,
-              background: 'rgba(10,8,12,0.80)',
-              border: '1px solid rgba(245,241,235,0.06)',
-              borderRadius: 'var(--radius)',
-              padding: '20px 18px',
-            }}>
-              <div className="h-scene-speaker">{firstName} · Öva en hörna</div>
-              <div className="h-scene-quote">
-                "En hörna innan det gäller. Du väljer var den läggs och hur hårt. Titta på zonerna."
-              </div>
-            </div>
-
             {practiceCorner && (
               <CornerInteraction
                 data={practiceCorner.data}
@@ -204,56 +319,32 @@ export function TilltradeScreen() {
                 practice
               />
             )}
-
             {cornerOutcome && (
               <div style={{
-                background: 'rgba(10,8,12,0.80)',
-                border: '1px solid rgba(245,241,235,0.06)',
-                borderRadius: 'var(--radius)',
-                padding: '20px 18px',
+                margin: '0 16px 16px',
+                background: 'rgba(0,0,0,0.3)',
+                borderLeft: '2px solid var(--copper)',
+                borderRadius: '0 8px 8px 0',
+                padding: '9px 12px',
               }}>
-                <div className="h-scene-quote">
+                <span style={{
+                  fontFamily: 'Georgia, serif', fontStyle: 'italic',
+                  fontSize: 12, color: 'var(--text-quote-light)', lineHeight: 1.35,
+                }}>
                   "Så funkar det. Under match får du fem sekunder. Nu fick du så lång tid du ville."
-                </div>
+                </span>
               </div>
             )}
           </>
         )}
-
-        {step === 4 && (
-          <div style={{
-            display: 'flex', flexDirection: 'column', gap: 14,
-            background: 'rgba(10,8,12,0.80)',
-            border: '1px solid rgba(245,241,235,0.06)',
-            borderRadius: 'var(--radius)',
-            padding: '20px 18px',
-          }}>
-            <div className="h-scene-speaker">{firstName} {lastName} · Assisterande tränare</div>
-            <div className="h-scene-quote">
-              "Det var allt jag har. Resten lär du dig på vägen. Du vet vad styrelsen vill ha. Jag vet vad laget tål. Däremellan spelas säsongen."
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* CTA per steg. F3: ingen scen-CTA förrän hörnan slagits (panelen äger handlingen);
-          om practice-data saknas (edge) faller den tillbaka till en vanlig Vidare. */}
-      <div className="scene-cta-area in">
-        {step === 4 ? (
-          <button className="btn btn-primary btn-cta" onClick={finish}>Första omgången →</button>
-        ) : step === 3 ? (
-          (cornerOutcome || !practiceCorner) ? (
-            <button className="btn-scene-cta" onClick={() => setStep(4)}>Vidare</button>
-          ) : null
-        ) : step === 2 ? null /* LineupStep renderar sin egen CTA */ : (
-          <button
-            className="btn-scene-cta"
-            onClick={() => setStep(s => (Math.min(4, s + 1) as Step))}
-          >
-            Visa mig
-          </button>
-        )}
-      </div>
+      {/* F3 CTA — dyker upp efter att hörnan slagits */}
+      {step === 3 && (cornerOutcome || !practiceCorner) && (
+        <div className="scene-cta-area in">
+          <button className="btn-scene-cta" onClick={() => setStep(4)}>Vidare</button>
+        </div>
+      )}
     </div>
   )
 }

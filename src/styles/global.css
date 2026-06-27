@@ -26,6 +26,12 @@
   --bg-dark-elevated: #2C2A24;
   --bg-leather:       #3D3A32;
 
+  /* Klubbpärm — light overlay-specifika tokens */
+  --bg-parm-tabs:     #E2DCD1;
+  --border-parm:      #D2CABB;
+  --text-parm-locked: #B0A99B;
+  --bg-parm-locked:   #F2EEE6;
+
   /* Borders */
   --border:           #DDD7CC;
   --border-dark:      #C4BAA8;
