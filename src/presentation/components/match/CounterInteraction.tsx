@@ -162,7 +162,7 @@ export function CounterInteraction({ data, outcome, onChoose, coach }: CounterIn
       readout={{ label: choiceLabels[choice], pct: Math.round(rates[choice] * 100) }}
       coachTip={coachTip}
       coach={coach}
-      cta={{ label: 'Kör kontringen →', variant: 'copper', onClick: () => handleConfirm() }}
+      cta={{ label: 'Kör kontringen', variant: 'copper', onClick: () => handleConfirm() }}
       phase={phase}
       outcome={outcome ? (
         <p style={{

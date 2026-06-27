@@ -195,7 +195,7 @@ export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyIn
       readout={{ label: `${dirLabels[dir]} · ${height === 'low' ? 'LÅGT' : 'HÖGT'}`, pct: Math.round(combinedRate(dir, height) * 100) }}
       coachTip={coachTip}
       coach={coach}
-      cta={{ label: 'Skjut straffen →', variant: 'danger', onClick: () => handleConfirm() }}
+      cta={{ label: 'Skjut straffen', variant: 'danger', onClick: () => handleConfirm() }}
       phase={phase}
       outcome={outcome ? (
         <p style={{

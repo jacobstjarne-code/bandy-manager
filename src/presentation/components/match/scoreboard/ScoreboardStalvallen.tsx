@@ -31,7 +31,7 @@ export interface ScoreboardStalvallenProps {
   minute: number
   second: number
   penalties: PenaltyEntry[]
-  ticker: string[]
+  ticker?: string[]
   events: ScoreboardEvent[]
   isPlayoffFinal?: boolean
   finalTier?: string
@@ -184,15 +184,17 @@ export function ScoreboardStalvallen({
         </div>
 
         {/* Module 3: Rolling LED text — CSS animation, no JS interval */}
-        <div className="module-text">
-          <div className="module-text-track">
-            {ticker.map((segment, i) => (
-              <span key={i} className={i % 2 === 1 ? 'dim' : ''}>
-                {segment}
-              </span>
-            ))}
+        {ticker && ticker.length > 0 && (
+          <div className="module-text">
+            <div className="module-text-track">
+              {ticker.map((segment, i) => (
+                <span key={i} className={i % 2 === 1 ? 'dim' : ''}>
+                  {segment}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Module 4: Timeline */}
         <div className="module-line">

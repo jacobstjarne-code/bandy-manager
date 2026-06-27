@@ -234,7 +234,7 @@ export function CornerInteraction({ data, outcome, onChoose, coach, practice }: 
       readout={{ label: zoneLabel, pct: Math.round(zoneRate * 100) }}
       coachTip={coachTip}
       coach={coach}
-      cta={{ label: 'Slå hörnan →', variant: 'copper', onClick: () => handleConfirm() }}
+      cta={{ label: 'Slå hörnan', variant: 'copper', onClick: () => handleConfirm() }}
       phase={phase}
       outcome={outcome ? (
         <p style={{

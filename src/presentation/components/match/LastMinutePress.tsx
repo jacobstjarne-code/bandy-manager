@@ -172,7 +172,7 @@ export function LastMinutePress({ data, onChoose, coach }: LastMinutePressProps)
       riskRow={RISK_ROW}
       coachTip={coachTip}
       coach={coach}
-      cta={{ label: 'Spräng igenom →', variant: 'danger', onClick: () => handleConfirm() }}
+      cta={{ label: 'Spräng igenom', variant: 'danger', onClick: () => handleConfirm() }}
       phase={phase}
       outcome={
         phase === 'revealed' ? (

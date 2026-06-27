@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Settings } from 'lucide-react'
+import { Settings, BookOpen } from 'lucide-react'
 import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/gameStore'
 import { TownSilhouette } from './TownSilhouette'
-import { HelpOverlay } from './HelpOverlay'
+import { KlubbparmOverlay } from './KlubbparmOverlay'
 import { Logo } from './Logo'
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
@@ -33,7 +33,6 @@ function EnvelopeIcon({ size = 18, color = 'currentColor' }: { size?: number; co
 export function GameHeader() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
-  const restartCoachMarks = useGameStore(s => s.restartCoachMarks)
   const saveGame = useGameStore(s => s.saveGame)
   const club = useManagedClub()
   const unreadInbox = useUnreadInboxCount()
@@ -43,7 +42,7 @@ export function GameHeader() {
     ok: true,
     text: '',
   })
-  const [showHelp, setShowHelp] = useState(false)
+  const [showKlubbparm, setShowKlubbparm] = useState(false)
 
   async function handleSaveGame() {
     const result = await saveGame()
@@ -157,17 +156,18 @@ export function GameHeader() {
           </div>
         )}
 
-        {/* Hjälp */}
+        {/* Klubbpärmen */}
         <button
-          onClick={() => setShowHelp(true)}
+          onClick={() => setShowKlubbparm(true)}
           style={{
-            width: 22, height: 22, borderRadius: '50%',
-            border: 'none',
-            background: 'transparent', color: 'var(--text-muted)',
-            fontSize: 11, fontWeight: 700, cursor: 'pointer',
+            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            color: 'rgba(245,241,235,0.45)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
-        >?</button>
+          aria-label="Klubbpärmen"
+        >
+          <BookOpen size={16} strokeWidth={2} />
+        </button>
 
         {/* Kuvert-notifikation — SVG-glyph, inte emoji */}
         <button
@@ -242,13 +242,8 @@ export function GameHeader() {
         </div>
       )}
 
-      {showHelp && (
-        <HelpOverlay
-          onClose={() => setShowHelp(false)}
-          /* Playtest-fynd 6: CoachMarks mountas på dashboard — navigera hem först,
-             annars saknas targets när hjälpen startas från t.ex. Inkorgen. */
-          onRestartCoachMarks={() => { navigate('/game/dashboard'); restartCoachMarks() }}
-        />
+      {showKlubbparm && game && (
+        <KlubbparmOverlay game={game} onClose={() => setShowKlubbparm(false)} />
       )}
     </div>
   )

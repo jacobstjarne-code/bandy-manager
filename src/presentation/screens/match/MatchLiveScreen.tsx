@@ -1263,7 +1263,47 @@ export function MatchLiveScreen() {
       }
     })
 
+  // Grepp 2: atmosfäriska rader i feeden (inte ticker på scoreboarden).
+  // recentGoals utelämnas — de är redan goal-events i feedRows.
+  const atmosphereFeedRows: FeedRow[] = (() => {
+    const rows: FeedRow[] = []
+    const w = matchWeather?.weather
+    if (w) {
+      const condLabel: Record<string, string> = {
+        clear: 'Klart', overcast: 'Mulet', lightSnow: 'Snöfall',
+        heavySnow: 'Snöoväder', fog: 'Dimma', thaw: 'Töväder',
+      }
+      const cond = condLabel[w.condition] ?? ''
+      const wind = w.windStrength >= 3 ? `, vind ${w.windStrength} m/s` : ''
+      const temp = `${w.temperature > 0 ? '+' : ''}${w.temperature}°`
+      const attendance = fixture.attendance
+        ? ` · Publik ${fixture.attendance.toLocaleString('sv-SE')}` : ''
+      rows.push({ kind: 'atmosphere', text: `${temp} · ${cond}${wind}${attendance}` })
+    } else if (fixture.attendance) {
+      rows.push({ kind: 'atmosphere', text: `Publik ${fixture.attendance.toLocaleString('sv-SE')}` })
+    }
+    const otherResults = (game?.fixtures ?? [])
+      .filter(f =>
+        f.id !== fixture.id &&
+        !f.isCup &&
+        f.roundNumber === fixture.roundNumber &&
+        f.homeScore !== undefined && f.awayScore !== undefined &&
+        f.status === 'completed'
+      )
+      .slice(0, 3)
+      .map(f => {
+        const h = game?.clubs.find(c => c.id === f.homeClubId)?.shortName ?? '?'
+        const a = game?.clubs.find(c => c.id === f.awayClubId)?.shortName ?? '?'
+        return `${h} ${f.homeScore}–${f.awayScore} ${a}`
+      })
+    if (otherResults.length > 0) {
+      rows.push({ kind: 'atmosphere', text: otherResults.join(' · ') })
+    }
+    return rows
+  })()
+
   const feedRows: FeedRow[] = [
+    ...atmosphereFeedRows,
     ...displayedSteps
       .filter(s =>
         s.phase !== 'penalties' && (
@@ -1313,53 +1353,6 @@ export function MatchLiveScreen() {
       }),
     ...penaltyFeedRows,
   ].reverse()
-
-  // FIX-36: atmospheric ticker — weather, attendance, recent events, other results
-  const atmosphericTicker: string[] = (() => {
-    const parts: string[] = []
-    const w = matchWeather?.weather
-    if (w) {
-      const condLabel: Record<string, string> = {
-        clear: 'KLART', overcast: 'MULET', lightSnow: 'SNÖFALL',
-        heavySnow: 'SNÖOVÄDER', fog: 'DIMMA', thaw: 'TÖVÄDER',
-      }
-      const cond = condLabel[w.condition] ?? ''
-      const wind = w.windStrength >= 3 ? ` · VIND ${w.windStrength}M/S` : ''
-      parts.push(`${w.temperature > 0 ? '+' : ''}${w.temperature}° · ${cond}${wind}`)
-    }
-    if (fixture.attendance) {
-      parts.push(`PUBLIK ${fixture.attendance.toLocaleString('sv-SE')}`)
-    }
-    const recentGoals = displayedSteps
-      .flatMap(s => s.events
-        .filter(e => e.type === MatchEventType.Goal)
-        .map(e => {
-          const clubShort = e.clubId === fixture.homeClubId ? homeShort : awayShort
-          const scorerLast = e.playerId
-            ? (game?.players.find(p => p.id === e.playerId)?.lastName ?? '')
-            : ''
-          return `${s.minute}' ${scorerLast ? scorerLast.toUpperCase() + ' ' : ''}MÅL ${clubShort}`
-        })
-      )
-      .slice(-3)
-    for (const g of recentGoals) parts.push(g)
-    const otherResults = (game?.fixtures ?? [])
-      .filter(f =>
-        f.id !== fixture.id &&
-        !f.isCup &&
-        f.roundNumber === fixture.roundNumber &&
-        f.homeScore !== undefined && f.awayScore !== undefined &&
-        f.status === 'completed'
-      )
-      .slice(0, 3)
-      .map(f => {
-        const h = game?.clubs.find(c => c.id === f.homeClubId)?.shortName ?? '?'
-        const a = game?.clubs.find(c => c.id === f.awayClubId)?.shortName ?? '?'
-        return `${h} ${f.homeScore}–${f.awayScore} ${a}`
-      })
-    for (const r of otherResults) parts.push(r)
-    return parts.length > 0 ? parts : [`${homeShort} ${homeScore} – ${awayScore} ${awayShort}`]
-  })()
 
   // FIX-48: FeedEndRow data
   const savedFixture = (matchDone && game && fixture)
@@ -1422,7 +1415,6 @@ export function MatchLiveScreen() {
         minute={displayedMinute}
         second={0}
         penalties={scoreboardPenalties}
-        ticker={atmosphericTicker}
         events={scoreboardEvents}
         isPlayoffFinal={matchPhase === 'final'}
         finalTier={finalTier}

@@ -194,7 +194,7 @@ export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKick
       readout={{ label: choiceLabels[choice], pct: Math.round(rates[choice] * 100) }}
       coachTip={coachTip}
       coach={coach}
-      cta={{ label: 'Slå frislaget →', variant: 'copper', onClick: () => handleConfirm() }}
+      cta={{ label: 'Slå frislaget', variant: 'copper', onClick: () => handleConfirm() }}
       phase={phase}
       outcome={outcome ? (
         <p style={{
