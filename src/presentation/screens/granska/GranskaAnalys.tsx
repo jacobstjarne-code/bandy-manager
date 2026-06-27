@@ -50,7 +50,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
           <div className="card-sharp" style={{ margin: '0 0 6px', overflow: 'hidden' }}>
             <div style={{ background: 'var(--accent)', height: 22, display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
               <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--accent-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-light)' }}>{coach.initials}</span>
+                <span className="h-micro" style={{ fontWeight: 700, color: 'var(--text-light)' }}>{coach.initials}</span>
               </div>
               <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', color: 'var(--text-light)' }}>{coach.name.toUpperCase()} · ASSISTENTTRÄNARE</span>
             </div>
@@ -83,7 +83,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     {isHomeEvent && (
                       <>
-                        <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, minWidth: 18 }}>{e.minute}'</span>
+                        <span className="h-micro" style={{ color: 'var(--text-muted)', flexShrink: 0, minWidth: 18 }}>{e.minute}'</span>
                         <span style={{ fontSize: 11 }}>{icon}</span>
                         <span style={{ fontSize: 11, color: textColor }}>{name}</span>
                       </>
@@ -94,7 +94,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
                       <>
                         <span style={{ fontSize: 11, color: textColor }}>{name}</span>
                         <span style={{ fontSize: 11 }}>{icon}</span>
-                        <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, minWidth: 18, textAlign: 'right' }}>{e.minute}'</span>
+                        <span className="h-micro" style={{ color: 'var(--text-muted)', flexShrink: 0, minWidth: 18, textAlign: 'right' }}>{e.minute}'</span>
                       </>
                     )}
                   </div>
@@ -128,7 +128,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
               return (
                 <div key={id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
                   <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{p.firstName[0]}. {p.lastName}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)', color: r >= 7 ? 'var(--success)' : 'var(--text-primary)' }}>{r.toFixed(1)}</span>
+                  <span className="h-num-sm" style={{ color: r >= 7 ? 'var(--success)' : 'var(--text-primary)' }}>{r.toFixed(1)}</span>
                 </div>
               )
             })}
@@ -138,7 +138,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
               return (
                 <div key={id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>Svagaste länken: {p.firstName[0]}. {p.lastName}</span>
-                  <span style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--danger)' }}>{r.toFixed(1)}</span>
+                  <span className="h-num-sm" style={{ color: 'var(--danger)' }}>{r.toFixed(1)}</span>
                 </div>
               )
             })}
