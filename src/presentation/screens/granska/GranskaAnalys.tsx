@@ -1,9 +1,11 @@
+import { useNavigate } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import { MatchEventType } from '../../../domain/enums'
 import { SectionLabel } from '../../components/SectionLabel'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
+import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 
 interface GranskaAnalysProps {
   game: SaveGame
@@ -17,7 +19,15 @@ interface GranskaAnalysProps {
 }
 
 export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, theirScore, potm }: GranskaAnalysProps) {
+  const navigate = useNavigate()
   const coach = game.assistantCoach
+
+  const nextFixture = getNextManagedFixture(game)
+  const nextOpponent = nextFixture
+    ? game.clubs.find(c => c.id !== game.managedClubId &&
+        (c.id === nextFixture.homeClubId || c.id === nextFixture.awayClubId))
+    : null
+  const nextOpponentName = nextOpponent?.shortName ?? nextOpponent?.name ?? null
   const coachItem = game.inbox
     .filter(i => i.tone === 'coach')
     .sort((a, b) => b.date.localeCompare(a.date))[0]
@@ -162,6 +172,26 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
           </div>
         )
       })()}
+
+      {/* Brygga → Taktik — bara när nästa managed fixture finns */}
+      {nextOpponentName && (
+        <button
+          className="btn btn-outline"
+          style={{ width: '100%', marginTop: 8 }}
+          onClick={() => navigate('/game/taktik')}
+        >
+          Ställ laget mot {nextOpponentName} →
+        </button>
+      )}
+      {nextFixture && !nextOpponentName && (
+        <button
+          className="btn btn-outline"
+          style={{ width: '100%', marginTop: 8 }}
+          onClick={() => navigate('/game/taktik')}
+        >
+          Förbered nästa match →
+        </button>
+      )}
     </>
   )
 }
