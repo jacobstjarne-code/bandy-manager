@@ -567,3 +567,29 @@ Ramen accepterar båda via `children`/`tabs`-prop utan omarbetning när besluten
 **Bakgrund:** genomspelnings-fynd — sektionskollapsen (klubbflikarna) dölde ALLT innehåll, så en ovan spelare såg bara rubrik + "Visa allt →" och fattade inte att innehåll fanns. Detta är en direkt tillämpning av "Ett kort utan innehåll renderas inte — eller talar": en helt döld sektion ÄR ett tomt kort ur spelarens synvinkel.
 **Beslut:** Kollapsat läge döljer inte allt — det visar en glimt (~en rads höjd, CSS-höjdklamp) med mjuk fade-ut nedåt. Faden signalerar "mer finns nedanför" starkare än en textrad. Tekniken är yt-agnostisk (funkar oavsett vad `children` innehåller) — därför CSS-klamp, inte en "första-raden"-prop per call-site.
 **Konsekvens:** kollaps som *döljer allt* är en regression mot tom-struktur-regeln. Gradientens slutfärg måste matcha kortets faktiska bakgrund.
+
+---
+
+## Typografi-kanon — Ruling 1–3 (Opus 2026-06-26, klöver kartans tre luckor)
+
+**Var:** `design-system/global.css` (roller) · underlag `MAP-TYPOGRAFI-MIGRERING-2026-06-26.md` · kanon `Typografi-kanon-2026-06-26.html`
+**Bakgrund:** 8 agenter klassificerade alla 346 inline-siter i kontext. ~98 gick inte att placera i kanonens roller (`.h-label`/`.h-num-*`/`.h-quote`) — de föll i tre luckor kanonen inte täcker. Passet (steg 3) kan inte bli rent förrän målklassen för dem är låst. Härmed låst.
+
+### Ruling 1 — `.h-name` (ny roll, ~25 siter)
+Display-font som är **namn/rubrik, inte tal**: spelar-/motståndar-/klubb-/patron-/arenanamn, modal- och skärmtitlar under display-skalan. `.h-num-*` är fel (tabular, för siffror).
+**Beslut:** ny roll `.h-name` — `var(--font-display)`, 700, **15px**, line-height 1.2, **ingen** `tabular-nums`, **färg inline**. Täcker display-namn/smårubriker i bandet 11–18px. ≥ 20px → befintliga `.h-display-sm/md` (avrunda: 20→22, 26→28). En roll, inte en skala — samma disciplin som `.h-label` (194 siter → ett värde); ±3px drift accepteras. Skärmtitel i 16–20-bandet som känns för liten på 15 får ta `.h-display-sm` per site — men det är undantaget, inte regeln.
+
+### Ruling 2 — `.h-micro` (ny roll, ~73 siter, största bucketen)
+9px **non-label statisk** mikrotext: minutmarkörer, tidsstämplar/`OMG {n}`, positionskoder, legender, hints, meta-rader, mikro-kontrolltext. Kanonen förutsade den här bucketen (Sektion A:s förbehåll) men skapade ingen roll.
+**Beslut:** ny roll `.h-micro` — `var(--font-body)`, **9px**, line-height 1.4, **ingen** versal, **ingen** letter-spacing, **vikt + färg inline** (meta spänner 400–600, ljus/mörk varierar). `// ds-exempt` gäller BARA: text/siffror inne i färgade chips/badges, dynamiskt färgade värden, och **mono-meta** (medveten `ui-monospace`, ~7 siter, ingen mono-token ännu — fläggat: tokenisera `--font-mono` + `.h-micro-mono` om bucketen växer, inte nu).
+
+### Ruling 3 — dynamisk-färg-konventionen (bekräftad)
+**Beslut (som kartan skrev):** roll-formad site med dynamisk färg → applicera roll-klassen, **behåll `color` inline**. Klassen tar bort `fontSize`/`fontFamily`-literalen så guarden slutar räkna siten — **inget `// ds-exempt`**. Exempt gäller bara siter där ingen roll passar och de stannar helt inline: LED-glyfer, live-count-up, rena dynamiska värden utan rollform. Krymper exempt-bucketen rejält.
+
+### Princip som faller ut — vem som behöver `-light`
+Roller som **bakar in färg** behöver en `-light`-syskonklass för mörk bg: `.h-label` (muted → dör på läder) → `.h-label-light`, `.h-quote` (text-secondary) → `.h-quote-light`. Roller som **lämnar färg inline** — `.h-num`, `.h-name`, `.h-micro` — behöver INGEN `-light`: sätt bara `color` inline (text-light / text-light-secondary). Det löser kartans `.h-X .h-X-light`-notation: dubbelklass bara för label/quote, annars inline-färg.
+
+### Återkommande mekanik i passet
+Emoji ut ur den stylade spanen till syskon-textnod (💰/📋/🎯/⭐ m.fl.) — redan kanon (emoji-domslut 2026-06-12 + kanonens Sektion A), gäller varje `.h-label`-site med emoji. Bonus-tokenbrott att städa samtidigt: rå `rgba()` i `MatchLiveScreen:1469`, `TacticPreview:90/97`, `LastMinutePress:183`.
+
+**Konsekvens:** kartans ~98 oklassade är nu placerade — ~25 `.h-name`, ~73 `.h-micro` (minus mono-meta + chip-interna till exempt). Passet kan köras rent per skärm-ordningen. Code lägger `.h-name` + `.h-micro` i `global.css` före första skärm-passet.

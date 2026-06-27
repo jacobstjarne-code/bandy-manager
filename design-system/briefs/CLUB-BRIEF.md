@@ -1,6 +1,8 @@
 # CLUB-BRIEF · Bandy Manager
 *Klubbidentitet för de 12 bruksorterna. Drivs i FAS 4.*
 
+> **Not 2026-06-23 (Opus + Jacob):** Produktionen påbörjad. Forsbacka klar på två lager (märke + scen, Nano Banana) — se `assets/clubs/forsbacka/`. Process och mall ligger i `design-system/SCENE_STYLE.md` (klubbscener + märke). **Färgerna i `CLUB_BADGES` (ClubBadge.tsx) är legacy-placeholders och ska INTE litas på** — den låsta paletten per klubb bor i `assets/clubs/{slug}/palette.ts` och hämtas ur denna briefs per-klubb-riktning. Forsbacka är mörkröd/creme/järnsvart, inte blå som CLUB_BADGES påstår. Ersätt klubb för klubb.
+
 ---
 
 ## 🎯 Uppdraget
