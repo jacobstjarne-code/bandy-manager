@@ -37,19 +37,14 @@ import { CommentaryFeedStalvallen } from '../../components/match/commentary/Comm
 import type { FeedRow } from '../../components/match/commentary/CommentaryFeedStalvallen'
 import { resolveCorner } from '../../../domain/services/cornerInteractionService'
 import type { CornerZone, CornerDelivery } from '../../../domain/services/cornerInteractionService'
-import { CornerInteraction } from '../../components/match/CornerInteraction'
 import { resolvePenalty, resolveAIPenaltyKeeperDive } from '../../../domain/services/penaltyInteractionService'
 import type { PenaltyDirection, PenaltyHeight } from '../../../domain/services/penaltyInteractionService'
-import { PenaltyInteraction } from '../../components/match/PenaltyInteraction'
 import { deriveEventText } from './deriveEventText'
 import { resolveCounter } from '../../../domain/services/counterAttackInteractionService'
 import type { CounterChoice } from '../../../domain/services/counterAttackInteractionService'
-import { CounterInteraction } from '../../components/match/CounterInteraction'
 import { resolveFreeKick } from '../../../domain/services/freeKickInteractionService'
 import type { FreeKickChoice } from '../../../domain/services/freeKickInteractionService'
-import { FreeKickInteraction } from '../../components/match/FreeKickInteraction'
 import type { PressChoice } from '../../../domain/services/lastMinutePressService'
-import { LastMinutePress } from '../../components/match/LastMinutePress'
 import { TacticChangeModal } from '../../components/match/TacticChangeModal'
 import { mulberry32 } from '../../../domain/utils/random'
 import { FirstVisitHint } from '../../components/FirstVisitHint'
@@ -60,6 +55,7 @@ import { formatArenaName } from '../../../domain/utils/arenaName'
 import { LedgerFrame } from '../../components/ledger/LedgerFrame'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
+import { InteraktionsDock } from '../../components/match/InteraktionsDock'
 
 interface LocationState {
   fixture: Fixture
@@ -1398,14 +1394,33 @@ export function MatchLiveScreen() {
       }}
       style={postIntroFade ? { animation: 'fadeIn 300ms ease-out both' } : undefined}
       dock={
-        <SiffrorDrawer
-          open={siffrorOpen}
-          onClose={() => setSiffrorOpen(false)}
-          currentMatchStep={currentMatchStep}
-          momentumHistory={momentumHistory}
-          homeShort={homeShort}
-          awayShort={awayShort}
-        />
+        <>
+          <SiffrorDrawer
+            open={siffrorOpen}
+            onClose={() => setSiffrorOpen(false)}
+            currentMatchStep={currentMatchStep}
+            momentumHistory={momentumHistory}
+            homeShort={homeShort}
+            awayShort={awayShort}
+          />
+          <InteraktionsDock
+            activeCorner={activeCorner}
+            cornerOutcome={cornerOutcome}
+            onCorner={handleCornerChoice}
+            activePenalty={activePenalty}
+            penaltyOutcome={penaltyOutcome}
+            onPenalty={handlePenaltyChoice}
+            activeCounter={activeCounter}
+            counterOutcome={counterOutcome}
+            onCounter={handleCounterChoice}
+            activeFreeKick={activeFreeKick}
+            freeKickOutcome={freeKickOutcome}
+            onFreeKick={handleFreeKickChoice}
+            activeLastMinutePress={activeLastMinutePress}
+            onLastMinutePress={handleLastMinutePressChoice}
+            coach={game?.assistantCoach ?? undefined}
+          />
+        </>
       }
     >
       {showSubModal && (
@@ -1480,50 +1495,8 @@ export function MatchLiveScreen() {
         )
       })()}
 
-      {/* Active interaction panels — shown above feed when active */}
-      {(activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress) && (
-        <div style={{ padding: '0 12px 8px', flexShrink: 0 }}>
-          {activeCorner && (
-            <CornerInteraction
-              data={activeCorner}
-              outcome={cornerOutcome}
-              onChoose={handleCornerChoice}
-              coach={game?.assistantCoach ?? undefined}
-            />
-          )}
-          {!activeCorner && activePenalty && (
-            <PenaltyInteraction
-              data={activePenalty}
-              outcome={penaltyOutcome}
-              onChoose={handlePenaltyChoice}
-              coach={game?.assistantCoach ?? undefined}
-            />
-          )}
-          {!activeCorner && !activePenalty && activeCounter && (
-            <CounterInteraction
-              data={activeCounter}
-              outcome={counterOutcome}
-              onChoose={handleCounterChoice}
-              coach={game?.assistantCoach ?? undefined}
-            />
-          )}
-          {!activeCorner && !activePenalty && !activeCounter && activeFreeKick && (
-            <FreeKickInteraction
-              data={activeFreeKick}
-              outcome={freeKickOutcome}
-              onChoose={handleFreeKickChoice}
-              coach={game?.assistantCoach ?? undefined}
-            />
-          )}
-          {!activeCorner && !activePenalty && !activeCounter && !activeFreeKick && activeLastMinutePress && (
-            <LastMinutePress
-              data={activeLastMinutePress}
-              onChoose={handleLastMinutePressChoice}
-              coach={game?.assistantCoach ?? undefined}
-            />
-          )}
-        </div>
-      )}
+      {/* Interaktionspaneler — dockade (InteraktionsDock i dock-sloten), inte inline.
+          Flyttade ut ur feed-flödet så hörnor m.fl. inte reflowar feeden. */}
 
       {spakBState === 'active' && currentMatchStep && !matchDone && (
         <SentValCard
