@@ -301,3 +301,83 @@
   letter-spacing: 0;
   text-transform: none;
 }
+
+/* ── Botten-dock (BottomDock) ──────────────────────────────────────────────
+   Primitiv för SIFFROR-lådan (peek) och interaktionspaneler (block).
+   Positioneras absolut i .lf-root { position: relative } — stannar i
+   430px-kolumnen, spiller inte ut till hela viewporten (ej fixed).
+   z-skala: peek = 400 (--z-overlay), block = 500 (--z-interaction).
+   Slide: translateY(100%) → translateY(0), 220ms ease-out.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.lf-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transform: translateY(100%);
+  transition: transform 220ms ease-out;
+  background: var(--bg-dark-surface);
+  border-top: 1px solid color-mix(in srgb, var(--copper) 25%, transparent);
+  border-radius: var(--radius) var(--radius) 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.lf-dock.open {
+  transform: translateY(0);
+}
+
+.lf-dock--peek {
+  z-index: var(--z-overlay); /* 400 */
+}
+
+.lf-dock--block {
+  z-index: var(--z-interaction); /* 500 */
+}
+
+/* Pull-handtag — peek only */
+.lf-dock-handle {
+  display: block;
+  width: 100%;
+  padding: 10px 0 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.lf-dock-handle::after {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 4px;
+  background: color-mix(in srgb, var(--copper) 35%, transparent);
+  border-radius: 2px;
+  margin: 0 auto;
+}
+
+/* Scrollbart innehåll med safe-bottom padding */
+.lf-dock-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: var(--safe-bottom);
+  min-height: 0;
+}
+
+/* Fokus-dim för block-varianten — z 499, precis under docken */
+.lf-dock-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 499;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease-out;
+}
+
+.lf-dock-scrim.open {
+  opacity: 1;
+  pointer-events: auto;
+}
