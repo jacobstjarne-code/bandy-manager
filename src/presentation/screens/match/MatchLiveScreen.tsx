@@ -59,7 +59,7 @@ import { generateMatchStory } from '../../../domain/utils/matchStory'
 import { formatArenaName } from '../../../domain/utils/arenaName'
 import { LedgerFrame } from '../../components/ledger/LedgerFrame'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
-import { BottomDock } from '../../components/match/BottomDock'
+import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
 
 interface LocationState {
   fixture: Fixture
@@ -149,9 +149,7 @@ export function MatchLiveScreen() {
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => (isSmFinal || !!isCupFinal) ? 1 : 0)
   const [postIntroFade, setPostIntroFade] = useState(false)
   const [hintVisible, setHintVisible] = useState(() => !(game?.dismissedHints ?? []).includes('matchLive'))
-  // DEBUG — BottomDock playtest. Ta bort efter godkänt playtest.
-  const [debugPeekOpen, setDebugPeekOpen] = useState(false)
-  const [debugBlockOpen, setDebugBlockOpen] = useState(false)
+  const [siffrorOpen, setSiffrorOpen] = useState(false)
   const prevHomeScore = useRef(0)
   const prevAwayScore = useRef(0)
 
@@ -1399,6 +1397,16 @@ export function MatchLiveScreen() {
         awayScore,
       }}
       style={postIntroFade ? { animation: 'fadeIn 300ms ease-out both' } : undefined}
+      dock={
+        <SiffrorDrawer
+          open={siffrorOpen}
+          onClose={() => setSiffrorOpen(false)}
+          currentMatchStep={currentMatchStep}
+          momentumHistory={momentumHistory}
+          homeShort={homeShort}
+          awayShort={awayShort}
+        />
+      }
     >
       {showSubModal && (
         <SubstitutionModal
@@ -1431,14 +1439,11 @@ export function MatchLiveScreen() {
         isFastForward={isFastForward}
         matchDone={matchDone}
         muted={muted}
-        currentMatchStep={currentMatchStep}
-        homeShort={homeShort}
-        awayShort={awayShort}
-        momentumHistory={momentumHistory}
         onTogglePause={() => setIsPaused(prev => !prev)}
         onToggleFastForward={handleToggleFastForward}
         onOpenSubModal={() => { setIsPaused(true); setShowSubModal(true) }}
         onToggleMute={() => { toggleMute(); setMuted(isMuted()) }}
+        onOpenSiffror={() => setSiffrorOpen(true)}
         onOpenTacticQuick={() => { setIsFastForward(false); setIsPaused(true); setShowTacticQuick(true) }}
         tacticChangesLeft={MAX_TACTIC_CHANGES - tacticChangesUsed}
         tacticGlow={spakBState === 'active'}
@@ -1617,28 +1622,6 @@ export function MatchLiveScreen() {
         />
       )}
 
-      {/* DEBUG — BottomDock playtest. Trigga peek/block, verifiera slide + z-lager + feed-scroll.
-          Ta bort dessa tre block (knappar + båda <BottomDock>) efter godkänt playtest. */}
-      <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 600, display: 'flex', gap: 4 }}>
-        <button
-          onClick={() => setDebugPeekOpen(o => !o)}
-          style={{ fontSize: 9, padding: '3px 6px', background: 'var(--copper)', color: 'var(--bg-dark)', border: 'none', borderRadius: 3, cursor: 'pointer' }}
-        >PEEK</button>
-        <button
-          onClick={() => setDebugBlockOpen(o => !o)}
-          style={{ fontSize: 9, padding: '3px 6px', background: 'var(--accent)', color: 'var(--bg-dark)', border: 'none', borderRadius: 3, cursor: 'pointer' }}
-        >BLOCK</button>
-      </div>
-      <BottomDock open={debugPeekOpen} variant="peek" onClose={() => setDebugPeekOpen(false)} height={280}>
-        <div style={{ padding: 20, color: 'var(--text-light)', fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-          PEEK debug — SIFFROR-lådan hamnar här
-        </div>
-      </BottomDock>
-      <BottomDock open={debugBlockOpen} variant="block" onClose={() => setDebugBlockOpen(false)}>
-        <div style={{ padding: 20, color: 'var(--text-light)', fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-          BLOCK debug — interaktionspaneler hamnar här
-        </div>
-      </BottomDock>
     </LedgerFrame>
   )
 }

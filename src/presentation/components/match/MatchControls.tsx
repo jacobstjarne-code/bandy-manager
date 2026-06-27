@@ -1,6 +1,3 @@
-import type { MatchStep } from '../../../domain/services/matchSimulator'
-import { StatsFooter, calculateLiveStats } from './StatsFooter'
-import { MomentumBar } from './MomentumBar'
 import { ArrowLeftRight } from 'lucide-react'
 
 interface MatchControlsProps {
@@ -8,14 +5,11 @@ interface MatchControlsProps {
   isFastForward: boolean
   matchDone: boolean
   muted: boolean
-  currentMatchStep: MatchStep | null
-  homeShort?: string
-  awayShort?: string
-  momentumHistory?: number[]
   onTogglePause: () => void
   onToggleFastForward: () => void
   onOpenSubModal: () => void
   onToggleMute: () => void
+  onOpenSiffror: () => void
   onOpenTacticQuick?: () => void
   tacticChangesLeft?: number
   tacticGlow?: boolean
@@ -26,14 +20,11 @@ export function MatchControls({
   isFastForward,
   matchDone,
   muted,
-  currentMatchStep,
-  homeShort = 'HEM',
-  awayShort = 'BOR',
-  momentumHistory = [],
   onTogglePause,
   onToggleFastForward,
   onOpenSubModal,
   onToggleMute,
+  onOpenSiffror,
   onOpenTacticQuick,
   tacticChangesLeft,
   tacticGlow,
@@ -90,19 +81,15 @@ export function MatchControls({
         >
           {muted ? '🔇' : '🔊'}
         </button>
-      </div>
 
-      {currentMatchStep && (
-        <MomentumBar
-          step={currentMatchStep}
-          homeShort={homeShort}
-          awayShort={awayShort}
-          history={momentumHistory}
-        />
-      )}
-      {currentMatchStep && (
-        <StatsFooter stats={calculateLiveStats(currentMatchStep)} />
-      )}
+        <button
+          onClick={onOpenSiffror}
+          className="match-control-btn"
+          title="Siffror"
+        >
+          〰
+        </button>
+      </div>
     </div>
   )
 }
