@@ -204,7 +204,7 @@ export function ArrivalScene() {
       clubName={managedClub.name}
       board={board}
       objectives={game.boardObjectives ?? []}
-      onComplete={() => navigate('/game/dashboard', { replace: true })}
+      onComplete={() => navigate('/tilltrade', { replace: true })}
     />
   )
 }

@@ -78,6 +78,9 @@ function DashboardOrPortal() {
 
   if (!game) return <PortalScreen />
 
+  // Ny spelare som ännu inte kört Tillträdet-onboarding (strict false — old saves saknar flaggan och ska slippa)
+  if (game.onboardingComplete === false) return <Navigate to="/tilltrade" replace />
+
   // coffee_room renders as modal over dashboard — other scenes are full-screen (FIX-41)
   if (attention.kind === 'scene' && game.pendingScene?.sceneId === 'coffee_room') {
     return (
