@@ -4,6 +4,7 @@ import { useGameStore } from '../store/gameStore'
 import { useLineupEditor } from '../hooks/useLineupEditor'
 import { LineupStep } from '../components/match/LineupStep'
 import { CornerInteraction } from '../components/match/CornerInteraction'
+import { IllustrationScene } from '../components/illustration/IllustrationScene'
 import {
   buildCornerInteractionData,
   resolveCorner,
@@ -25,12 +26,12 @@ type Step = 1 | 2 | 3 | 4
 
 const STEP_TITLES = ['Ankomst', 'Startelva', 'Hörnan', 'Klart']
 
-/** Shield-märke med klubbinitial — F1 mock: 64×76px, margin 20px auto 16px */
+/** Shield-märke med klubbinitial — F1 mock: 64×76px */
 function ClubShield({ initial }: { initial: string }) {
   return (
     <svg
       width="64" height="76" viewBox="0 0 64 76" fill="none"
-      style={{ display: 'block', margin: '20px auto 16px' }}
+      style={{ display: 'block', margin: '8px auto 4px' }}
       aria-hidden="true"
     >
       <path
@@ -158,10 +159,12 @@ export function TilltradeScreen() {
     setCornerOutcome(outcome)
   }
 
-  /* ── F1 / F4: ankomst-layout med sköld + achievement-lista ─────── */
+  /* ── F1 / F4: ankomst-layout — illustration + centrerad narrativ panel ── */
   if (step === 1 || step === 4) {
     return (
       <div className="arrival-scene">
+        <IllustrationScene mode="fullbleed" name="intro" alt="" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
+        <div className="arrival-scrim" />
         <div className="arrival-lamp-overlay" />
 
         <div style={{
@@ -172,56 +175,68 @@ export function TilltradeScreen() {
           {/* Genre + bars */}
           <div style={{ textAlign: 'center' }}>
             <div className="h-scene-genre">
-              {step === 1 ? '⬩  Tillträdet  ⬩' : '⬩  Klart för avspark  ⬩'}
+              {step === 1 ? '⬩  Tillträdet  ⬩' : '⬩  Klart för avspark  ⬩'}
             </div>
             <BeatBars step={step} size="lg" />
           </div>
 
-          {step === 1 && (
-            <>
-              <ClubShield initial={clubInitial} />
-              <p style={{
-                fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700,
-                color: 'var(--text-light)', textAlign: 'center', margin: '0 0 20px',
-              }}>
-                {managedClub?.name}
-              </p>
-            </>
-          )}
+          {/* Narrativ panel — centrerad mot illustrationen, ingen fri luft i mitten */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: 8 }}>
+            <div style={{
+              background: 'rgba(10,8,12,0.80)',
+              border: '1px solid rgba(245,241,235,0.06)',
+              borderRadius: 'var(--radius)',
+              padding: '18px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: 14,
+            }}>
+              {step === 1 && (
+                <>
+                  <ClubShield initial={clubInitial} />
+                  <p style={{
+                    fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700,
+                    color: 'var(--text-light)', textAlign: 'center', margin: 0,
+                  }}>
+                    {managedClub?.name}
+                  </p>
+                </>
+              )}
 
-          {step === 4 && (
-            <div style={{ margin: '18px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[
-                'Startelva klar',
-                'Hörna övad',
-                'Säsongen väntar',
-              ].map((text, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  background: 'color-mix(in srgb, var(--success) 10%, transparent)',
-                  border: '1px solid color-mix(in srgb, var(--success) 30%, transparent)',
-                  borderRadius: 8, padding: '11px 14px',
-                }}>
-                  <span style={{ color: 'var(--success)', fontSize: 14 }}>✓</span>
-                  <span style={{ fontFamily: 'system-ui', fontSize: 12, color: 'var(--text-light)' }}>{text}</span>
+              {step === 4 && (
+                <div style={{ alignSelf: 'stretch', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    'Startelva klar',
+                    'Hörna övad',
+                    'Säsongen väntar',
+                  ].map((text, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      background: 'color-mix(in srgb, var(--success) 10%, transparent)',
+                      border: '1px solid color-mix(in srgb, var(--success) 30%, transparent)',
+                      borderRadius: 8, padding: '11px 14px',
+                    }}>
+                      <span style={{ color: 'var(--success)', fontSize: 14 }}>✓</span>
+                      <span style={{ fontFamily: 'system-ui', fontSize: 12, color: 'var(--text-light)' }}>{text}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
+              )}
 
-          {/* Coach framing — F1/F4 stil: bredare padding, ingen cirkel */}
-          <div style={{
-            background: 'rgba(0,0,0,0.25)',
-            borderLeft: '2px solid var(--copper)',
-            borderRadius: '0 8px 8px 0',
-            padding: '12px 14px',
-            marginTop: 'auto',
-          }}>
-            <div className="h-scene-speaker">{firstName} {lastName} · Assisterande tränare</div>
-            <div className="h-scene-quote">
-              {step === 1
-                ? '"Styrelsen gav dig målet. Jag ger dig laget. Två saker innan första matchen — sätt elvan, och lär dig hur vi slår en hörna. Sen är du igång."'
-                : '"Det var allt jag har. Resten lär du dig på vägen. Du vet vad styrelsen vill ha. Jag vet vad laget tål. Däremellan spelas säsongen."'}
+              {/* Coach framing — ingen cirkel, hel bredd inuti narrativ-panelen */}
+              <div style={{
+                alignSelf: 'stretch',
+                background: 'rgba(0,0,0,0.25)',
+                borderLeft: '2px solid var(--copper)',
+                borderRadius: '0 8px 8px 0',
+                padding: '12px 14px',
+              }}>
+                <div className="h-scene-speaker">{firstName} {lastName} · Assisterande tränare</div>
+                <div className="h-scene-quote">
+                  {step === 1
+                    ? '“Styrelsen gav dig målet. Jag ger dig laget. Två saker innan första matchen — sätt elvan, och lär dig hur vi slår en hörna. Sen är du igång.”'
+                    : '“Det var allt jag har. Resten lär du dig på vägen. Du vet vad styrelsen vill ha. Jag vet vad laget tål. Däremellan spelas säsongen.”'}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -238,6 +253,8 @@ export function TilltradeScreen() {
   /* ── F2 / F3: steg-header + innehåll ─────────────────────────── */
   return (
     <div className="arrival-scene">
+      <IllustrationScene mode="fullbleed" name="intro" alt="" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
+      <div className="arrival-scrim" />
       <div className="arrival-lamp-overlay" />
 
       {/* Steg-header */}
@@ -268,44 +285,58 @@ export function TilltradeScreen() {
         <BeatBars step={step} size="sm" />
       </div>
 
-      {/* Innehåll */}
+      {/* Innehåll — F2 binder scrollen i ljust inset, F3 scrollar fritt */}
       <div style={{
-        flex: 1, overflowY: 'auto', position: 'relative', zIndex: 1,
+        flex: 1, overflow: step === 2 ? 'hidden' : 'auto',
+        position: 'relative', zIndex: 1,
         display: 'flex', flexDirection: 'column',
       }}>
         {/* Coach-framing med monogrammcirkel */}
         <CoachFraming
           initial={coachInitials}
           quote={step === 2
-            ? '"Här är truppen. Elva på isen. Du bestämmer — jag säger till om något skaver."'
-            : '"En hörna innan det gäller. Du väljer var den läggs och hur hårt. Titta på zonerna."'}
+            ? '“Här är truppen. Elva på isen. Du bestämmer — jag säger till om något skaver.”'
+            : '“En hörna innan det gäller. Du väljer var den läggs och hur hårt. Titta på zonerna.”'}
         />
 
         {step === 2 && (
-          <LineupStep
-            opponent={null}
-            nextFixture={null}
-            game={game}
-            squadPlayers={lineupEditor.squadPlayers}
-            groupedPlayers={lineupEditor.groupedPlayers}
-            startingIds={lineupEditor.startingIds}
-            benchIds={lineupEditor.benchIds}
-            captainId={lineupEditor.captainId ?? null}
-            selectedSlotId={lineupEditor.selectedSlotId}
-            tacticState={lineupEditor.tacticState}
-            canPlay={lineupEditor.canPlay}
-            injuredInStarting={lineupEditor.injuredInStarting}
-            onTogglePlayer={lineupEditor.togglePlayer}
-            onSetCaptain={lineupEditor.setCaptain}
-            onAutoFill={lineupEditor.handleAutoFill}
-            onSlotClick={lineupEditor.onSlotClick}
-            onFormationChange={lineupEditor.onFormationChange}
-            onAssignPlayer={lineupEditor.assignPlayerToSlot}
-            onSwapPlayers={lineupEditor.swapSlots}
-            onRemovePlayer={lineupEditor.removePlayer}
-            onError={lineupEditor.setLineupError}
-            onNext={() => { lineupEditor.commitLineup(); setStep(3) }}
-          />
+          /* Ljus inset — laguppställnings-lappen på det mörka bordet */
+          <div style={{
+            flex: 1, margin: '0 12px 12px',
+            background: 'var(--bg-surface)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border)',
+            overflow: 'hidden',
+            display: 'flex', flexDirection: 'column',
+            minHeight: 0,
+          }}>
+            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+              <LineupStep
+                opponent={null}
+                nextFixture={null}
+                game={game}
+                squadPlayers={lineupEditor.squadPlayers}
+                groupedPlayers={lineupEditor.groupedPlayers}
+                startingIds={lineupEditor.startingIds}
+                benchIds={lineupEditor.benchIds}
+                captainId={lineupEditor.captainId ?? null}
+                selectedSlotId={lineupEditor.selectedSlotId}
+                tacticState={lineupEditor.tacticState}
+                canPlay={lineupEditor.canPlay}
+                injuredInStarting={lineupEditor.injuredInStarting}
+                onTogglePlayer={lineupEditor.togglePlayer}
+                onSetCaptain={lineupEditor.setCaptain}
+                onAutoFill={lineupEditor.handleAutoFill}
+                onSlotClick={lineupEditor.onSlotClick}
+                onFormationChange={lineupEditor.onFormationChange}
+                onAssignPlayer={lineupEditor.assignPlayerToSlot}
+                onSwapPlayers={lineupEditor.swapSlots}
+                onRemovePlayer={lineupEditor.removePlayer}
+                onError={lineupEditor.setLineupError}
+                onNext={() => { lineupEditor.commitLineup(); setStep(3) }}
+              />
+            </div>
+          </div>
         )}
 
         {step === 3 && (
@@ -331,7 +362,7 @@ export function TilltradeScreen() {
                   fontFamily: 'Georgia, serif', fontStyle: 'italic',
                   fontSize: 12, color: 'var(--text-quote-light)', lineHeight: 1.35,
                 }}>
-                  "Så funkar det. Under match får du fem sekunder. Nu fick du så lång tid du ville."
+                  “Så funkar det. Under match får du fem sekunder. Nu fick du så lång tid du ville.”
                 </span>
               </div>
             )}
