@@ -26,6 +26,10 @@ interface LedgerFrameProps {
   /** Grepp 4: under spel ersätts masthead + RPS-strip av en tunn live-rad.
    *  Bara phase='spela' skickar detta — annars full masthead. */
   liveScore?: { homeName: string; awayName: string; homeScore: number; awayScore: number }
+  /** Dedikerad slot för botten-dock(ar). Renderas direkt i .lf-root, UTANFÖR
+   *  .lf-content { overflow: hidden } — så en absolut-positionerad dock aldrig klipps.
+   *  BottomDock(ar) skickas hit, inte som children. */
+  dock?: ReactNode
   children: ReactNode
   style?: CSSProperties
 }
@@ -49,6 +53,7 @@ export function LedgerFrame({
   stamp,
   tabs,
   liveScore,
+  dock,
   children,
   style,
 }: LedgerFrameProps) {
@@ -137,6 +142,11 @@ export function LedgerFrame({
           {stamp.label}
         </button>
       )}
+
+      {/* ── Botten-dock-slot ──
+          Direkt i .lf-root (position: relative, overflow: hidden) — utanför
+          .lf-content, så dockens slide-up aldrig klipps av .lf-content overflow. */}
+      {dock}
     </div>
   )
 }
