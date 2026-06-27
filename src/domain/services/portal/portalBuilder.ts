@@ -203,10 +203,23 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
     ? minimal.filter(c => ENDGAME_KEEP_MINIMAL.has(c.id))
     : minimal
 
+  // Slinga 1 / anti-soft-lock: när ett veckobeslut väntar MÅSTE beslutskortet synas,
+  // annars kan PortalScreen grinda avancera-CTA:n mot ett kort som inte renderas (hard
+  // soft-lock). Två hål täcks: (1) kortet kan tryckas ur topp-3 av högre-viktade kort,
+  // (2) endgame-kureringen hård-filtrerar bort det. Förce-inkludera det först (dedupe),
+  // så grinden i PortalScreen alltid har ett synligt beslut att peka på.
+  const secondaryTop3 = finalSecondary.slice(0, 3)
+  const withForcedDecision = game.pendingWeeklyDecision && !secondaryTop3.some(c => c.id === 'weekly_decision')
+    ? [
+        ...secondary.filter(c => c.id === 'weekly_decision'),
+        ...secondaryTop3,
+      ].slice(0, 4)
+    : secondaryTop3
+
   return {
     primary: primaryCard,
     storySlot: liveStake ? null : storySlot,
-    secondary: finalSecondary.slice(0, 3),
+    secondary: withForcedDecision,
     minimal: finalMinimal.slice(0, 4),
   }
 }

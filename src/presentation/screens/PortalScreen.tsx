@@ -250,6 +250,9 @@ export function PortalScreen() {
   // !isSmFinal garanterar redan att en ev. playoffCtx inte är final
   const isCtaWarm = !isSmFinal && (playoffCtx != null || (escalationSubState !== null && escalationSubState !== 'mittfalt'))
   const activeCount = getActiveDecisionCount(game)
+  // Slinga 1: grinda avancera-CTA:n tills veckans beslut hanterats (anti-autopilot).
+  // buildPortal garanterar att beslutskortet syns när detta är satt — ingen soft-lock.
+  const weeklyDecisionPending = game.pendingWeeklyDecision != null
 
   return (
     <>
@@ -326,10 +329,10 @@ export function PortalScreen() {
         <button
           data-coach-id="cta-button"
           onClick={handleAdvance}
-          disabled={!canClickAdvance || isAdvancing}
-          className={`btn btn-primary btn-cta${canClickAdvance && !isAdvancing ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
+          disabled={!canClickAdvance || isAdvancing || weeklyDecisionPending}
+          className={`btn btn-primary btn-cta${canClickAdvance && !isAdvancing && !weeklyDecisionPending ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
         >
-          {isAdvancing ? '···' : advanceButtonText}
+          {isAdvancing ? '···' : weeklyDecisionPending ? 'Hantera veckans beslut först' : advanceButtonText}
         </button>
       </div>
     </>
