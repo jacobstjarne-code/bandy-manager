@@ -28,7 +28,7 @@ import { gameFlowActions } from './actions/gameFlowActions'
 import { periodisationActions } from './actions/periodisationActions'
 import { computeCardStaleTracking } from '../../domain/services/portal/portalBuilder'
 
-type SaveActionResult = { success: boolean; error?: string }
+export type SaveActionResult = { success: boolean; error?: string }
 
 // GAP-1: ErrorBoundary "Till huvudmenyn" sätter denna flagga (synkront, localStorage) före
 // full reload. Vid nästa boot rensar onRehydrateStorage de UI-drivande pending-fälten så att

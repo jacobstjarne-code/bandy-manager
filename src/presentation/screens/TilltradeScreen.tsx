@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
+import { useLineupEditor } from '../hooks/useLineupEditor'
+import { LineupStep } from '../components/match/LineupStep'
 import { CornerInteraction } from '../components/match/CornerInteraction'
 import {
   buildCornerInteractionData,
@@ -34,6 +36,10 @@ export function TilltradeScreen() {
   const markOnboardingComplete = useGameStore(s => s.markOnboardingComplete)
   const [step, setStep] = useState<Step>(1)
   const [cornerOutcome, setCornerOutcome] = useState<CornerOutcome | null>(null)
+
+  // F2 — useLineupEditor anropas ovillkorligt (hooks-regel) — game/managedClub kan vara undefined
+  const managedClub = game?.clubs.find(c => c.id === game?.managedClubId)
+  const lineupEditor = useLineupEditor(game, managedClub)
 
   // F3 — öva-hörnan mot ett sparring-lag. Byggs en gång; resolvas lokalt utan store-mutation.
   const practiceCorner = useMemo(() => {
@@ -130,23 +136,46 @@ export function TilltradeScreen() {
           </div>
         )}
 
-        {/* F2 — WIP: ska driva den RIKTIGA lineup-komponenten med tutorial-lager
-            (highlight tomt MV-slot, gated CTA tills elvan giltig). game.managedClubPendingLineup.
-            Framing: "Här är truppen. Elva på isen. Du bestämmer — jag säger till om något skaver." */}
+        {/* F2 — riktig lineup-yta med coach-framing ovan */}
         {step === 2 && (
-          <div style={{
-            display: 'flex', flexDirection: 'column', gap: 14,
-            background: 'rgba(10,8,12,0.80)',
-            border: '1px solid rgba(245,241,235,0.06)',
-            borderRadius: 'var(--radius)',
-            padding: '20px 18px',
-          }}>
-            <div className="h-scene-speaker">{firstName} · Sätt din elva</div>
-            <div className="h-scene-quote">
-              "Här är truppen. Elva på isen. Du bestämmer — jag säger till om något skaver."
+          <>
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: 14,
+              background: 'rgba(10,8,12,0.80)',
+              border: '1px solid rgba(245,241,235,0.06)',
+              borderRadius: 'var(--radius)',
+              padding: '20px 18px',
+            }}>
+              <div className="h-scene-speaker">{firstName} · Sätt din elva</div>
+              <div className="h-scene-quote">
+                "Här är truppen. Elva på isen. Du bestämmer — jag säger till om något skaver."
+              </div>
             </div>
-            <div className="h-scene-helper">[WIP: wiras mot riktig lineup-yta i nästa pass]</div>
-          </div>
+            <LineupStep
+              opponent={null}
+              nextFixture={null}
+              game={game}
+              squadPlayers={lineupEditor.squadPlayers}
+              groupedPlayers={lineupEditor.groupedPlayers}
+              startingIds={lineupEditor.startingIds}
+              benchIds={lineupEditor.benchIds}
+              captainId={lineupEditor.captainId ?? null}
+              selectedSlotId={lineupEditor.selectedSlotId}
+              tacticState={lineupEditor.tacticState}
+              canPlay={lineupEditor.canPlay}
+              injuredInStarting={lineupEditor.injuredInStarting}
+              onTogglePlayer={lineupEditor.togglePlayer}
+              onSetCaptain={lineupEditor.setCaptain}
+              onAutoFill={lineupEditor.handleAutoFill}
+              onSlotClick={lineupEditor.onSlotClick}
+              onFormationChange={lineupEditor.onFormationChange}
+              onAssignPlayer={lineupEditor.assignPlayerToSlot}
+              onSwapPlayers={lineupEditor.swapSlots}
+              onRemovePlayer={lineupEditor.removePlayer}
+              onError={lineupEditor.setLineupError}
+              onNext={() => { lineupEditor.commitLineup(); setStep(3) }}
+            />
+          </>
         )}
 
         {/* F3 Öva en hörna — driver RIKTIGA CornerInteraction i övningsläge (practice):
@@ -216,12 +245,12 @@ export function TilltradeScreen() {
           (cornerOutcome || !practiceCorner) ? (
             <button className="btn-scene-cta" onClick={() => setStep(4)}>Vidare</button>
           ) : null
-        ) : (
+        ) : step === 2 ? null /* LineupStep renderar sin egen CTA */ : (
           <button
             className="btn-scene-cta"
             onClick={() => setStep(s => (Math.min(4, s + 1) as Step))}
           >
-            {step === 1 ? 'Visa mig' : 'Vidare'}
+            Visa mig
           </button>
         )}
       </div>

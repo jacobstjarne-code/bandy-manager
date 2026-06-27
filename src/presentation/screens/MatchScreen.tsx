@@ -1,23 +1,12 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore, useLastCompletedFixture } from '../store/gameStore'
-import { spelklarhet, buildNudgeLineup } from '../utils/lineupNudge'
 import {
   PlayerPosition,
   FixtureStatus,
-  TacticMentality,
-  TacticTempo,
-  TacticPress,
-  TacticPassingRisk,
-  TacticWidth,
-  TacticAttackingFocus,
-  CornerStrategy,
-  PenaltyKillStyle,
   PlayoffRound,
 } from '../../domain/enums'
-import type { Tactic } from '../../domain/entities/Club'
-import { FORMATIONS, autoAssignFormation } from '../../domain/entities/Formation'
-import { POSITION_ORDER } from '../utils/formatters'
+import { useLineupEditor } from '../hooks/useLineupEditor'
 import { formatArenaName } from '../../domain/utils/arenaName'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
@@ -39,7 +28,7 @@ import { MatchLaddningScene } from '../components/match/MatchLaddningScene'
 import { MatchLaddningBand } from '../components/match/MatchLaddningBand'
 
 export function MatchScreen() {
-  const { game, setPlayerLineup, advance, updateTactic, updateMatchMode, updateMatchLaddningBand } = useGameStore()
+  const { game, advance, updateMatchMode, updateMatchLaddningBand } = useGameStore()
   const location = useLocation()
   const navigate = useNavigate()
   const lastCompletedFixtureFromStore = useLastCompletedFixture()
@@ -78,109 +67,18 @@ export function MatchScreen() {
 
   const managedClubId = game?.managedClubId ?? ''
   const managedClub = game?.clubs.find(c => c.id === managedClubId)
-  const squadPlayers = useMemo(() => {
-    if (!game) return []
-    return game.players
-      .filter(p => p.clubId === managedClubId)
-      .sort((a, b) => POSITION_ORDER[a.position] - POSITION_ORDER[b.position])
-  }, [game, managedClubId])
-
-  const defaultStarting = useMemo(() => {
-    return [...squadPlayers]
-      .filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
-      .sort((a, b) => b.currentAbility - a.currentAbility)
-      .slice(0, 11)
-      .map(p => p.id)
-  }, [squadPlayers])
-
-  const savedLineup = game?.managedClubPendingLineup
-
-  // ── Nudge-lineup: förfyll PREFILL_COUNT, lämna EMPTY_SLOTS tomma (B10 T2) ──
-  // Beräknas bara när ingen savedLineup finns. Seedat på nästa fixtures ID.
-  const nudgeData = useMemo<{ starterIds: string[]; lineupSlots: Record<string, string | null> } | null>(() => {
-    if (savedLineup) return null
-    if (!game) return null
-    // Hitta nästa schemalagda match (samma logik som nextFixture nedan)
-    const pendingFixture = game.fixtures
-      .filter(f =>
-        f.status === FixtureStatus.Scheduled &&
-        (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
-      )
-      .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0]
-    if (!pendingFixture) return null
-    const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
-    const formationName = (managedClub?.activeTactic?.formation ?? '5-3-2') as import('../../domain/entities/Formation').FormationType
-    const template = FORMATIONS[formationName]
-    return buildNudgeLineup(available, template, pendingFixture.id)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Avsiktligt tom dep-array — beräknas EN gång vid mount
-
-  const [startingIds, setStartingIds] = useState<string[]>(() =>
-    savedLineup?.startingPlayerIds ?? nudgeData?.starterIds ?? defaultStarting
-  )
-  const [benchIds, setBenchIds] = useState<string[]>(() =>
-    savedLineup?.benchPlayerIds ??
-    squadPlayers.filter(p => !defaultStarting.includes(p.id)).slice(0, 5).map(p => p.id)
-  )
-  const [captainId, setCaptainId] = useState<string | undefined>(() =>
-    savedLineup?.captainPlayerId ?? (savedLineup ? defaultStarting[0] : nudgeData?.starterIds[0] ?? defaultStarting[0])
-  )
-  const [lineupError, setLineupError] = useState<string | null>(null)
-  const [tacticState, setTacticState] = useState<Tactic>(() => {
-    const base = managedClub?.activeTactic ?? {
-      mentality: TacticMentality.Balanced,
-      tempo: TacticTempo.Normal,
-      press: TacticPress.Medium,
-      passingRisk: TacticPassingRisk.Mixed,
-      width: TacticWidth.Normal,
-      attackingFocus: TacticAttackingFocus.Mixed,
-      cornerStrategy: CornerStrategy.Standard,
-      penaltyKillStyle: PenaltyKillStyle.Active,
-    }
-    const baseWithFormation = { ...base, formation: base.formation ?? '5-3-2' }
-    // Injicera nudge-slots om ingen savedLineup finns (B10 T2)
-    if (!savedLineup && nudgeData?.lineupSlots) {
-      return { ...baseWithFormation, lineupSlots: nudgeData.lineupSlots }
-    }
-    return baseWithFormation
-  })
-  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
-
-  // Persist default formation to store on mount (so it's available across sessions)
-  useEffect(() => {
-    if (!managedClub?.activeTactic?.formation) {
-      updateTactic(tacticState)
-    }
-  }, [])
-
-  useEffect(() => {
-    // Tvångsfyll bara vid verkligt trasigt state — skadade/avstängda i startelvan,
-    // eller fullständig inkonsistens (slots pekar på spelare som inte är i startarnas lista).
-    // Avsiktligt tomma nudge-slots (< 11 men ingen savedLineup) triggar INTE auto-fill.
-    const hasInvalid = startingIds.some(id => {
-      const p = squadPlayers.find(pl => pl.id === id)
-      return !p || p.isInjured || p.suspensionGamesRemaining > 0
-    })
-    const slotPlayerIds = new Set(
-      Object.values(tacticState.lineupSlots ?? {}).filter((v): v is string => v !== null)
-    )
-    // Inkonsistent = spelare i startarnas lista saknar en slot-plats
-    const isInconsistent = startingIds.length > 0 && startingIds.some(id => !slotPlayerIds.has(id))
-
-    // Bara om verkligen trasigt (inte om ofullständigt av design = nudge-läge)
-    const isTrulyBroken = hasInvalid || (savedLineup && isInconsistent)
-    if (isTrulyBroken) {
-      handleAutoFill()
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const editor = useLineupEditor(game, managedClub)
 
   if (!game || !managedClub) return null
 
-  const injuredInStarting = startingIds
-    .map(id => squadPlayers.find(p => p.id === id))
-    .filter((p): p is Player => !!p && (p.isInjured || p.suspensionGamesRemaining > 0))
-
-  const canPlay = startingIds.length === 11 && injuredInStarting.length === 0
+  // Lineup-redigeringens state-maskin bor i useLineupEditor (F2-extraktion).
+  // Destrukturera till samma namn → nedströmskod oförändrad.
+  const {
+    squadPlayers, groupedPlayers, startingIds, benchIds, captainId, tacticState,
+    selectedSlotId, lineupError, setLineupError, injuredInStarting, canPlay,
+    togglePlayer, handleAutoFill, assignPlayerToSlot, swapSlots, handleTacticChange,
+    setCaptain, onSlotClick, onFormationChange, removePlayer, commitLineup,
+  } = editor
 
   const eliminatedBracket = game.playoffBracket
   const eliminatedSeries = eliminatedBracket ? [
@@ -225,128 +123,6 @@ export function MatchScreen() {
       f.status === FixtureStatus.Completed
     )
     .sort((a, b) => b.matchday - a.matchday)[0] ?? null
-
-  function togglePlayer(playerId: string) {
-    const player = squadPlayers.find(p => p.id === playerId)
-    if (!player || player.isInjured || player.suspensionGamesRemaining > 0) return
-    if (selectedSlotId) {
-      assignPlayerToSlot(playerId, selectedSlotId)
-      return
-    }
-    if (startingIds.includes(playerId)) {
-      // Remove from starting — also clear their slot
-      const current = { ...(tacticState.lineupSlots ?? {}) }
-      for (const sid of Object.keys(current)) {
-        if (current[sid] === playerId) current[sid] = null
-      }
-      const newTactic = { ...tacticState, lineupSlots: current }
-      setTacticState(newTactic)
-      updateTactic(newTactic)
-      setStartingIds(prev => prev.filter(id => id !== playerId))
-      setBenchIds(prev => [...prev, playerId])
-    } else if (benchIds.includes(playerId)) {
-      setBenchIds(prev => prev.filter(id => id !== playerId))
-    } else {
-      if (startingIds.length < 11) {
-        setStartingIds(prev => [...prev, playerId])
-      } else {
-        setBenchIds(prev => [...prev, playerId])
-      }
-    }
-  }
-
-  function handleAutoFill() {
-    // Fyll bästa elvan — sorterar på spelklarhet (ability*0.7 + form*0.2 + fitness*0.1).
-    // Ger meningsfull "Fyll bästa elvan"-knapp för nudge-läge (B10 T2).
-    const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
-    const sorted = [...available].sort((a, b) => spelklarhet(b) - spelklarhet(a))
-    const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
-    const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
-    const starters: Player[] = gkPool.length > 0 ? [gkPool[0]] : []
-    for (const p of outfieldPool) {
-      if (starters.length >= 11) break
-      starters.push(p)
-    }
-    for (const p of gkPool.slice(1)) {
-      if (starters.length >= 11) break
-      starters.push(p)
-    }
-    const starterIds = starters.map(p => p.id)
-    const starterSet = new Set(starterIds)
-    const bench = sorted.filter(p => !starterSet.has(p.id)).slice(0, 5)
-    const formation = tacticState.formation ?? '5-3-2'
-    const template = FORMATIONS[formation]
-    const newLineupSlots = autoAssignFormation(template, starters)
-    const newTactic = { ...tacticState, lineupSlots: newLineupSlots }
-    setTacticState(newTactic)
-    updateTactic(newTactic)
-    setStartingIds(starterIds)
-    setBenchIds(bench.map(p => p.id))
-    setCaptainId(starterIds[0])
-    setSelectedSlotId(null)
-    setLineupError(null)
-  }
-
-  const assignPlayerToSlot = useCallback((playerId: string, slotId: string) => {
-    const formation = tacticState.formation ?? '5-3-2'
-    const slotExists = FORMATIONS[formation].slots.some(s => s.id === slotId)
-    if (!slotExists) return
-    const current = { ...(tacticState.lineupSlots ?? {}) }
-    // Clear any slot that already has this player
-    for (const sid of Object.keys(current)) {
-      if (current[sid] === playerId) current[sid] = null
-    }
-    // Read previous occupant before overwriting
-    const previousPid = current[slotId] ?? null
-    current[slotId] = playerId
-    const newTactic = { ...tacticState, lineupSlots: current }
-    setTacticState(newTactic)
-    updateTactic(newTactic)
-
-    // Update starting/bench atomically using functional updaters (always fresh prev)
-    setStartingIds(prev => {
-      const isAlreadyStarting = prev.includes(playerId)
-      let next = [...prev]
-      // Remove previous occupant from starting
-      if (previousPid && previousPid !== playerId) {
-        next = next.filter(id => id !== previousPid)
-      }
-      // Add new player to starting if not already there
-      if (!isAlreadyStarting) {
-        next.push(playerId)
-      }
-      return next
-    })
-
-    setBenchIds(prev => {
-      let next = [...prev]
-      // Move previous occupant to bench if they're not already there
-      if (previousPid && previousPid !== playerId && !next.includes(previousPid)) {
-        next.push(previousPid)
-      }
-      // Remove new player from bench
-      next = next.filter(id => id !== playerId)
-      return next
-    })
-
-    setSelectedSlotId(null)
-  }, [tacticState, updateTactic])
-
-  const swapSlots = useCallback((fromSlotId: string, toSlotId: string) => {
-    const current = { ...(tacticState.lineupSlots ?? {}) }
-    const tmp = current[fromSlotId] ?? null
-    current[fromSlotId] = current[toSlotId] ?? null
-    current[toSlotId] = tmp
-    const newTactic = { ...tacticState, lineupSlots: current }
-    setTacticState(newTactic)
-    updateTactic(newTactic)
-  }, [tacticState, updateTactic])
-
-  function handleTacticChange<K extends keyof Tactic>(key: K, value: Tactic[K]) {
-    const newTactic = { ...tacticState, [key]: value }
-    setTacticState(newTactic)
-    updateTactic(newTactic)
-  }
 
   function generateAiLineupForOpponent(): import('../../domain/entities/Fixture').TeamSelection {
     const opponentClubId = nextFixture
@@ -402,7 +178,7 @@ export function MatchScreen() {
     }
     setLineupError(null)
     try {
-      const lineupResult = setPlayerLineup(startingIds, benchIds, captainId)
+      const lineupResult = commitLineup()
       if (!lineupResult.success) {
         setLineupError(lineupResult.error ?? 'Ogiltig uppställning')
         return
@@ -468,17 +244,6 @@ export function MatchScreen() {
     : null
   const opponent = opponentId ? game.clubs.find(c => c.id === opponentId) ?? null : null
   const isHome = nextFixture?.homeClubId === managedClubId
-
-  const groupedPlayers = [
-    PlayerPosition.Goalkeeper,
-    PlayerPosition.Defender,
-    PlayerPosition.Half,
-    PlayerPosition.Midfielder,
-    PlayerPosition.Forward,
-  ].map(pos => ({
-    position: pos,
-    players: squadPlayers.filter(p => p.position === pos),
-  })).filter(g => g.players.length > 0)
 
   if (showReport && completedFixture) {
     return (
@@ -680,61 +445,13 @@ export function MatchScreen() {
           canPlay={canPlay}
           injuredInStarting={injuredInStarting}
           onTogglePlayer={togglePlayer}
-          onSetCaptain={id => setCaptainId(id)}
+          onSetCaptain={setCaptain}
           onAutoFill={handleAutoFill}
-          onSlotClick={slotId => setSelectedSlotId(prev => prev === slotId ? null : slotId)}
-          onFormationChange={newTactic => {
-            // Migrate: preserve players whose slotId exists in the new formation
-            const newFormation = newTactic.formation ?? '5-3-2'
-            const newSlotIds = new Set(FORMATIONS[newFormation].slots.map(s => s.id))
-            const oldSlots = tacticState.lineupSlots ?? {}
-            const migrated: Record<string, string | null> = {}
-            // Initialise all new slots to null
-            for (const slotId of newSlotIds) migrated[slotId] = null
-            // Keep assignments whose slotId still exists in the new formation
-            const keptPids = new Set<string>()
-            for (const [slotId, pid] of Object.entries(oldSlots)) {
-              if (newSlotIds.has(slotId) && pid) {
-                migrated[slotId] = pid
-                keptPids.add(pid)
-              }
-            }
-            // Auto-assign remaining starters into empty slots
-            const unplacedStarters = startingIds
-              .map(id => squadPlayers.find(p => p.id === id))
-              .filter((p): p is Player => !!p && !keptPids.has(p.id))
-            const emptySlots = FORMATIONS[newFormation].slots.filter(s => !migrated[s.id])
-            const usedInFill = new Set<string>()
-            for (const slot of emptySlots) {
-              const best = unplacedStarters
-                .filter(p => !usedInFill.has(p.id) && p.position === slot.position)
-                .sort((a, b) => b.currentAbility - a.currentAbility)[0]
-                ?? unplacedStarters
-                  .filter(p => !usedInFill.has(p.id))
-                  .sort((a, b) => b.currentAbility - a.currentAbility)[0]
-              if (best) {
-                migrated[slot.id] = best.id
-                usedInFill.add(best.id)
-              }
-            }
-            const merged = { ...newTactic, lineupSlots: migrated }
-            setTacticState(merged)
-            updateTactic(merged)
-            setSelectedSlotId(null)
-          }}
+          onSlotClick={onSlotClick}
+          onFormationChange={onFormationChange}
           onAssignPlayer={assignPlayerToSlot}
           onSwapPlayers={swapSlots}
-          onRemovePlayer={(playerId) => {
-            const current = { ...(tacticState.lineupSlots ?? {}) }
-            for (const sid of Object.keys(current)) {
-              if (current[sid] === playerId) current[sid] = null
-            }
-            const newTactic = { ...tacticState, lineupSlots: current }
-            setTacticState(newTactic)
-            updateTactic(newTactic)
-            setStartingIds(prev => prev.filter(id => id !== playerId))
-            setBenchIds(prev => [...prev, playerId])
-          }}
+          onRemovePlayer={removePlayer}
           onError={setLineupError}
           onNext={() => canPlay && setMatchStep('tactic')}
         />
