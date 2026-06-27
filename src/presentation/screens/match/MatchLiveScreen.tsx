@@ -1488,7 +1488,7 @@ export function MatchLiveScreen() {
         if (!referee) return null
         return (
           <div style={{ padding: '4px 14px', background: 'var(--bg-leather-dk)', borderBottom: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}>
-            <span style={{ fontSize: 9, color: 'rgba(245,241,235,0.4)', fontFamily: 'var(--font-mono)', letterSpacing: '1px' }}>
+            <span className="h-micro" style={{ color: 'color-mix(in srgb, var(--ink-muted) 60%, transparent)' }}>
               DOMARE: {referee.firstName} {referee.lastName} ({referee.homeTown})
             </span>
           </div>
