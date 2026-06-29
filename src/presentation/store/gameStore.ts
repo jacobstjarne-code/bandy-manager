@@ -64,8 +64,6 @@ interface GameState {
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
   updateTactic: (tactic: Tactic) => void
   setTraining: (focus: TrainingFocus) => void
-  markCoachMarksSeen: () => Promise<SaveActionResult>
-  restartCoachMarks: () => void
   markOnboardingComplete: () => Promise<SaveActionResult>
   saveGame: () => Promise<SaveActionResult>
   dismissHint: (screenId: string) => void
@@ -272,20 +270,6 @@ export const useGameStore = create<GameState>()(
           c.id === game.managedClubId ? { ...c, activeTactic: tactic } : c
         )
         set({ game: { ...game, clubs: updatedClubs } })
-      },
-
-      markCoachMarksSeen: async () => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-        const updated = { ...game, coachMarksSeen: true }
-        set({ game: updated })
-        return persistGameSnapshot(updated)
-      },
-
-      restartCoachMarks: () => {
-        const { game } = get()
-        if (!game) return
-        set({ game: { ...game, coachMarksSeen: false } })
       },
 
       markOnboardingComplete: async () => {
