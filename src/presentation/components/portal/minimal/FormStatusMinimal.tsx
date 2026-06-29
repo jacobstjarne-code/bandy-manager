@@ -29,12 +29,7 @@ export function FormStatusMinimal({ game }: CardRenderProps) {
       }}>
         Form
       </div>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        color: formColor,
-        fontSize: 13,
-        fontWeight: 600,
-      }}>
+      <div className="h-num-sm" style={{ color: formColor }}>
         {avgForm}
       </div>
       {snapForm.length >= MIN_POINTS && (

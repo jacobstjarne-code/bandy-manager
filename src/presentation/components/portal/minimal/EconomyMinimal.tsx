@@ -17,12 +17,7 @@ export function EconomyMinimal({ game }: CardRenderProps) {
       }}>
         Kassa
       </div>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        color: finances < 0 ? 'var(--danger)' : 'var(--text-light)',
-        fontSize: 13,
-        fontWeight: 600,
-      }}>
+      <div className="h-num-sm" style={{ color: finances < 0 ? 'var(--danger)' : 'var(--text-light)' }}>
         {formatFinanceAbs(finances)}
       </div>
     </div>

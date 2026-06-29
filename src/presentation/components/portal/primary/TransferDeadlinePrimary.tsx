@@ -51,24 +51,10 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      <div style={{
-        fontSize: 9,
-        letterSpacing: '2px',
-        textTransform: 'uppercase',
-        fontWeight: 700,
-        marginBottom: 8,
-        color: 'var(--warning)',
-      }}>
+      <div className="h-label" style={{ marginBottom: 8, color: 'var(--warning)' }}>
         ⏱ DEADLINE · {roundsLeft} OMGÅNG{roundsLeft !== 1 ? 'AR' : ''} KVAR
       </div>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 22,
-        fontWeight: 700,
-        lineHeight: 1.2,
-        color: 'var(--text-light)',
-        marginBottom: 6,
-      }}>
+      <div className="h-display-sm" style={{ color: 'var(--text-light)', marginBottom: 6 }}>
         Transferfönstret stänger
       </div>
       <div style={{

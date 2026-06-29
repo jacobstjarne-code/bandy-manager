@@ -56,19 +56,19 @@ export function InjuryStatusSecondary({ game }: CardRenderProps) {
             <span style={{ fontSize: 11, color: 'var(--text-light)', fontWeight: 500 }}>
               {p.lastName}
             </span>
-            <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 6 }}>
+            <span className="h-micro" style={{ color: 'var(--text-muted)', marginLeft: 6 }}>
               {weeksLeft(p.injuryDaysRemaining)}
             </span>
           </div>
         ))}
         {injured.length > 3 && (
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>
+          <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 1 }}>
             +{injured.length - 3} till →
           </div>
         )}
       </div>
       {contextLine && (
-        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 6, fontStyle: 'italic', lineHeight: 1.4 }}>
+        <div className="h-quote-sm h-quote-light" style={{ marginTop: 6, lineHeight: 1.4 }}>
           {contextLine}
         </div>
       )}

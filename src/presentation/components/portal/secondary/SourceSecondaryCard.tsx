@@ -44,11 +44,7 @@ export function SourceSecondaryCard({ source, game }: Props) {
       <div className="portal-card-eyebrow">
         {config.icon} {config.label.toUpperCase()}
       </div>
-      <p style={{
-        fontFamily: 'var(--font-display)',
-        fontStyle: 'italic',
-        fontSize: 13,
-        color: 'var(--text-light-secondary)',
+      <p className="h-quote h-quote-light" style={{
         lineHeight: 1.5,
         margin: '0 0 10px',
       }}>

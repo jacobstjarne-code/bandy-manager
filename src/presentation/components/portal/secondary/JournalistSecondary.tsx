@@ -114,13 +114,7 @@ export function JournalistSecondary({ game }: CardRenderProps) {
         }}>
           <div style={{ ...fillStyle, width: fillPct }} />
         </div>
-        <span style={{
-          fontSize: 9,
-          color: 'var(--text-muted)',
-          fontFamily: 'Georgia, serif',
-          minWidth: 18,
-          textAlign: 'right',
-        }}>
+        <span className="h-num-sm" style={{ color: 'var(--text-muted)', minWidth: 18, textAlign: 'right' }}>
           {data.relationship}
         </span>
       </div>

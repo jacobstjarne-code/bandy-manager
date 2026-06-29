@@ -65,14 +65,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
         🏆 SM-FINAL · IMORGON
         {critTagLabel && <span className="primary-crit-tag">{critTagLabel}</span>}
       </div>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 22,
-        fontWeight: 700,
-        lineHeight: 1.2,
-        color: 'var(--text-light)',
-        marginBottom: 6,
-      }}>
+      <div className="h-display-sm" style={{ color: 'var(--text-light)', marginBottom: 6 }}>
         {arenaName}
       </div>
       <div style={{
@@ -91,7 +84,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
           borderRadius: 'var(--radius-md)',
           marginBottom: 8,
         }}>
-          <div style={{ fontSize: 9, letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase' }}>VÄDER</div>
+          <div className="h-label" style={{ color: 'var(--text-muted)', marginBottom: 4 }}>VÄDER</div>
           <div style={{ fontSize: 11, color: 'var(--text-light-secondary)' }}>{weatherStr}</div>
         </div>
       )}

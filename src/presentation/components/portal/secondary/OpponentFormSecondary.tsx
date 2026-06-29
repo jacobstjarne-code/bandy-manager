@@ -61,7 +61,7 @@ export function OpponentFormSecondary({ game }: CardRenderProps) {
         ))}
       </div>
       {opponentLeaguePosition !== null && (
-        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 6 }}>
+        <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 6 }}>
           {opponentLeaguePosition}:a · {game.standings.find(s => s.clubId === opponentId)?.points ?? 0}p
         </div>
       )}

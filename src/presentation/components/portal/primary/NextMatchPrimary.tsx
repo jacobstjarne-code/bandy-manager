@@ -93,7 +93,7 @@ export function NextMatchPrimary({ game, playoffCtx: playoffCtxFromParent, escal
   return (
     <div className="card--portal">
       {specialDateLabel && (
-        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
+        <p className="h-label" style={{ color: 'var(--accent)', marginBottom: 8 }}>
           {specialDateLabel}
         </p>
       )}

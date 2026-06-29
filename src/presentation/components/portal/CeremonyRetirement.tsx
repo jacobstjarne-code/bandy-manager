@@ -40,11 +40,7 @@ export function CeremonyRetirement({ game, event }: Props) {
       </p>
 
       {/* Name */}
-      <h1 style={{
-        fontSize: 26, fontWeight: 900, color: 'var(--text-light)',
-        fontFamily: 'var(--font-display)', textAlign: 'center',
-        letterSpacing: '1px', marginBottom: 4,
-      }}>
+      <h1 className="h-display-md" style={{ color: 'var(--text-light)', textAlign: 'center', letterSpacing: '1px', marginBottom: 4 }}>
         {playerName}
       </h1>
 

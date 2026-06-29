@@ -115,16 +115,10 @@ export function TabellSecondary({ game }: CardRenderProps) {
       </div>
       {standing ? (
         <>
-          <div style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 22,
-            fontWeight: 700,
-            color: 'var(--text-light)',
-            lineHeight: 1.1,
-          }}>
+          <div className="h-display-sm" style={{ color: 'var(--text-light)', lineHeight: 1.1 }}>
             {posLabel(standing.position)}
           </div>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 3 }}>
+          <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 3 }}>
             {standing.points}p · {standing.wins}V {standing.draws}O {standing.losses}F
           </div>
           {recentForm.length > 0 && (
@@ -148,11 +142,11 @@ export function TabellSecondary({ game }: CardRenderProps) {
             </div>
           )}
           {contextLine ? (
-            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 5, fontStyle: 'italic', lineHeight: 1.4 }}>
+            <div className="h-quote-sm h-quote-light" style={{ marginTop: 5, lineHeight: 1.4 }}>
               {contextLine}
             </div>
           ) : ptsDiff ? (
-            <div style={{ fontSize: 9, color: inPlayoffZone ? 'var(--success)' : 'var(--warning)', marginTop: 4 }}>
+            <div style={{ fontSize: 9, color: inPlayoffZone ? 'var(--success)' : 'var(--warning)', marginTop: 4 }}> {/* ds-exempt: ptsDiff success/warning ternary */}
               {ptsDiff}
             </div>
           ) : null}

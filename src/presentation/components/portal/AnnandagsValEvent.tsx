@@ -108,14 +108,7 @@ export function AnnandagsValEvent({ game }: Props) {
       </div>
 
       {/* Body */}
-      <p style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 13,
-        fontStyle: 'italic',
-        color: 'var(--text-light)',
-        lineHeight: 1.6,
-        marginBottom: 12,
-      }}>
+      <p className="h-quote h-quote-light" style={{ lineHeight: 1.6, marginBottom: 12 }}>
         Annandagen är årets största dag på vallen. Folk som inte sett en match sedan förra annandagen kommer ändå. Hur vill ni ta emot dem?
       </p>
 

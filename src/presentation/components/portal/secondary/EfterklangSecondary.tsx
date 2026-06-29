@@ -38,7 +38,7 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
           <span style={{ fontSize: 8, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--warm-light)', fontWeight: 700 }}>
             ⬩ Efterklang ⬩
           </span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text-muted)', letterSpacing: '1px' }}>
+          <span className="h-micro" style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', letterSpacing: '1px' }}> {/* ds-exempt: intentional ui-monospace metadata */}
             {countLabel}
           </span>
         </div>
@@ -62,7 +62,7 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
               {/* Vem-rad: ikon + namn (mono-uppercase mini-eyebrow) + chevron */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                 <span style={{ fontSize: 12, lineHeight: 1 }}>{EFTERKLANG_TYPE_ICON[mem.type]}</span>
-                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: nameColor(mem.type) }}>
+                <span className="h-label" style={{ color: nameColor(mem.type) }}>
                   {mem.objectName}
                 </span>
                 <span style={{ marginLeft: 'auto', color: 'var(--warm)', opacity: 0.55, fontSize: 13, lineHeight: 1 }}>›</span>
@@ -76,7 +76,7 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
               )}
 
               {/* Eko — italic Georgia payoff */}
-              <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 12.5, color: 'var(--text-light)', lineHeight: 1.45, margin: 0 }}>
+              <p className="h-quote-sm h-quote-light" style={{ lineHeight: 1.45, margin: 0 }}>
                 “{mem.echo}”
               </p>
 

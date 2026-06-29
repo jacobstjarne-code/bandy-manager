@@ -75,10 +75,7 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
                     boxShadow: isLatest ? '0 0 6px color-mix(in srgb, var(--warm) 35%, transparent)' : 'none',
                     boxSizing: 'border-box',
                   }} />
-                  <div style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '1px',
-                    color: isLatest ? 'var(--warm-light)' : 'var(--text-muted)', marginBottom: 2,
-                  }}>
+                  <div className="h-micro" style={{ fontFamily: 'var(--font-mono)', letterSpacing: '1px', color: isLatest ? 'var(--warm-light)' : 'var(--text-muted)', marginBottom: 2 }}> {/* ds-exempt: mono, dynamic color */}
                     OMG {entry.matchday}{isLatest ? ' · senast' : ''}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-light-secondary)', lineHeight: 1.4 }}>

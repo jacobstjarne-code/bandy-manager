@@ -64,11 +64,7 @@ export function EkonomiSecondary({ game }: CardRenderProps) {
       >
         {formatFinanceAbs(finances)}
       </div>
-      <div style={{
-        fontSize: 9,
-        color: netPerRound >= 0 ? 'var(--success)' : 'var(--danger)',
-        marginTop: 2,
-      }}>
+      <div style={{ fontSize: 9, color: netPerRound >= 0 ? 'var(--success)' : 'var(--danger)', marginTop: 2 }}> {/* ds-exempt: netStr success/danger ternary */}
         {netStr}
       </div>
     </div>

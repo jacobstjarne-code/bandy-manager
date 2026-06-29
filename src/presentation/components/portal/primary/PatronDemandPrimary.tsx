@@ -29,34 +29,13 @@ export function PatronDemandPrimary({ game }: CardRenderProps) {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      <div style={{
-        fontSize: 9,
-        letterSpacing: '2px',
-        textTransform: 'uppercase',
-        fontWeight: 700,
-        marginBottom: 8,
-        color: 'var(--danger)',
-      }}>
+      <div className="h-label" style={{ marginBottom: 8, color: 'var(--danger)' }}>
         👤 PATRON KRÄVER
       </div>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 22,
-        fontWeight: 700,
-        lineHeight: 1.2,
-        color: 'var(--text-light)',
-        marginBottom: 6,
-      }}>
+      <div className="h-display-sm" style={{ color: 'var(--text-light)', marginBottom: 6 }}>
         {patron.name}
       </div>
-      <div style={{
-        fontSize: 12,
-        color: 'var(--text-light-secondary)',
-        lineHeight: 1.5,
-        marginBottom: 10,
-        fontFamily: 'var(--font-display)',
-        fontStyle: 'italic',
-      }}>
+      <div className="h-quote h-quote-light" style={{ lineHeight: 1.5, marginBottom: 10 }}>
         "{demand}"
       </div>
       <div style={{

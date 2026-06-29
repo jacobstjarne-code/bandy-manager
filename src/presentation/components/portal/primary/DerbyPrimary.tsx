@@ -60,24 +60,10 @@ export function DerbyPrimary({ game }: CardRenderProps) {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      <div style={{
-        fontSize: 9,
-        letterSpacing: '2px',
-        textTransform: 'uppercase',
-        fontWeight: 700,
-        marginBottom: 8,
-        color: 'var(--danger)',
-      }}>
+      <div className="h-label" style={{ marginBottom: 8, color: 'var(--danger)' }}>
         🔥 {rivalryName} · IMORGON
       </div>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 22,
-        fontWeight: 700,
-        lineHeight: 1.2,
-        color: 'var(--text-light)',
-        marginBottom: 6,
-      }}>
+      <div className="h-display-sm" style={{ color: 'var(--text-light)', marginBottom: 6 }}>
         {opponent.name} · {isHome ? 'Hemma' : 'Borta'}
       </div>
       <div style={{

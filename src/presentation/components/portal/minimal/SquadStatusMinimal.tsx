@@ -28,13 +28,13 @@ export function SquadStatusMinimal({ game }: CardRenderProps) {
       </div>
       {hasSparkline ? (
         <>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
+          <div className="h-num" style={{ color: 'var(--text-primary)', lineHeight: 1 }}>
             {Math.round(latestFitness)}
           </div>
           <Sparkline points={fitnessPoints} stroke={strokeColor} height={20} areaFill />
         </>
       ) : (
-        <div style={{ fontFamily: 'var(--font-display)', color: injuredCount > 0 ? 'var(--warning)' : 'var(--text-light)', fontSize: 13, fontWeight: 600 }}>
+        <div className="h-num-sm" style={{ color: injuredCount > 0 ? 'var(--warning)' : 'var(--text-light)' }}>
           {readyCount}/{squadPlayers.length}
         </div>
       )}

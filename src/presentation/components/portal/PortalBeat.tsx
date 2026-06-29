@@ -112,13 +112,7 @@ export function PortalBeat({ game }: Props) {
               {beat.kicker}
             </div>
           )}
-          <div style={{
-            fontSize: 12,
-            color: styles.textColor,
-            lineHeight: 1.55,
-            fontStyle: 'italic',
-            fontFamily: 'var(--font-display)',
-          }}>
+          <div className="h-quote" style={{ color: styles.textColor, lineHeight: 1.55 }}>
             {beatText}
           </div>
         </div>

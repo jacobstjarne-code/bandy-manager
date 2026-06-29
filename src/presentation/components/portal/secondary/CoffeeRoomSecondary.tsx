@@ -41,18 +41,10 @@ export function CoffeeRoomSecondary({ game }: CardRenderProps) {
       >
         ☕ Kafeterian
       </div>
-      <div
-        style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 12,
-          color: 'var(--text-light-secondary)',
-          fontStyle: 'italic',
-          lineHeight: 1.5,
-        }}
-      >
+      <div className="h-quote h-quote-light" style={{ lineHeight: 1.5 }}>
         "{truncated}"
       </div>
-      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>
+      <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 4 }}>
         Klicka för att lyssna →
       </div>
     </div>

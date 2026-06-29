@@ -26,12 +26,7 @@ export function KlackenMoodMinimal({ game }: CardRenderProps) {
       }}>
         Klacken
       </div>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        color: moodColor,
-        fontSize: 13,
-        fontWeight: 600,
-      }}>
+      <div className="h-num-sm" style={{ color: moodColor }}>
         {moodLabel}
       </div>
     </div>

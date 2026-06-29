@@ -46,7 +46,7 @@ export function OpenBidsSecondary({ game }: CardRenderProps) {
       }}>
         {player ? player.lastName : '—'} · {amountTkr} tkr
       </div>
-      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>
+      <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2 }}>
         {buyingClub?.name ?? 'Okänd klubb'} · svar krävs
       </div>
     </div>

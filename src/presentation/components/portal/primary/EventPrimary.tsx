@@ -37,24 +37,10 @@ export function EventPrimary({ game }: CardRenderProps) {
       padding: 16,
       marginBottom: 14,
     }}>
-      <div style={{
-        fontSize: 9,
-        letterSpacing: '2px',
-        textTransform: 'uppercase',
-        fontWeight: 700,
-        marginBottom: 8,
-        color: 'var(--danger)',
-      }}>
+      <div className="h-label" style={{ marginBottom: 8, color: 'var(--danger)' }}>
         {emoji} HÄNDELSE KRÄVER SVAR
       </div>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 20,
-        fontWeight: 700,
-        lineHeight: 1.2,
-        color: 'var(--text-light)',
-        marginBottom: 8,
-      }}>
+      <div className="h-display-sm" style={{ color: 'var(--text-light)', marginBottom: 8 }}>
         {title}
       </div>
       <div style={{

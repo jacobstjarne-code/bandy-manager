@@ -26,13 +26,7 @@ export function SituationCard({ game }: Props) {
       }}>
         {label}
       </div>
-      <div style={{
-        fontSize: 13,
-        color: 'var(--text-light-secondary)',
-        fontStyle: 'italic',
-        lineHeight: 1.65,
-        fontFamily: 'var(--font-display)',
-      }}>
+      <div className="h-quote h-quote-light" style={{ lineHeight: 1.65 }}>
         {body}
       </div>
     </div>

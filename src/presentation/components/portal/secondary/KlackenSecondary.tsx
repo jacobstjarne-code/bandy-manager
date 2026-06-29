@@ -45,16 +45,10 @@ export function KlackenSecondary({ game }: CardRenderProps) {
       }}>
         📯 {sg.name}
       </div>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 12,
-        color: 'var(--text-light-secondary)',
-        fontStyle: 'italic',
-        lineHeight: 1.5,
-      }}>
+      <div className="h-quote h-quote-light" style={{ lineHeight: 1.5 }}>
         {klack.type === 'mood' ? klack.body : klack.type === 'event' ? klack.body : (klack as { quote?: string }).quote ?? ''}
       </div>
-      <div style={{ fontSize: 9, color: moodColor, marginTop: 4 }}>
+      <div className="h-micro" style={{ color: moodColor, marginTop: 4 }}> {/* ds-exempt: moodColor dynamisk */}
         mood {sg.mood} · {sg.members} medlemmar
       </div>
     </div>
