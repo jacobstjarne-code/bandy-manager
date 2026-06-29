@@ -1,0 +1,26 @@
+{
+  "clubId": "club_malilla",
+  "name": "Målilla BK",
+  "devis": "Malet och klart.",
+  "supportergrupp": "Kvarnklacken",
+  "derby": null,
+  "klimateArchetype": "sm_highland_extreme",
+  "arenaNote": "Konstfrusen sedan 1934. En av landets äldsta banor.",
+  "briefDescription": "Småländska höglandet med extrema temperaturer. Termometern på torget mäter allt — och klacken är alltid här.",
+  "industri": "Inte bruksort — jordbrukssamhälle (Målilla Hembygdspark, speedway/Dackarna).",
+  "symbol": "termometer (vald över briefens kvarnhjul — kylan är Målillas själ och unik bland klubbarna; rund medalj)",
+  "symbolNot": "Briefens förslag var kvarnhjul + 'Malet och klart'-vits. Termometern valdes 2026-06-23 eftersom 'termometern på torget' ÄR klubbens identitet i clubExtendedInfo och inget annat klubbmärke har den. Devisen behålls ändå.",
+  "badgeForm": "rund medalj (formvariation mot Forsbackas rektangulära skylt)",
+  "palette": {
+    "primary": "#1f5c34",
+    "secondary": "#E8B23A",
+    "outline": "#14100e",
+    "cream": "#E8DCC8"
+  },
+  "scenNote": "Småländsk granskog som tränger in mot rinken (INTE öppet fjäll — sm_highland_extreme = skog på höglandet, inte kalfjäll). Termometer på torget som motiv. Gul/grön banderoll fäst på sargen (permanent), upplyst.",
+  "assets": {
+    "badge": "badge.png (Nano Banana, raster — SVG-vektorisering enligt brief senare)",
+    "scene": "scene.png (Nano Banana, husstil)"
+  },
+  "verifiera": "Grundningsår, exakt arenanamn och derby-par mot worldGenerator.ts — ej påhittat här."
+}

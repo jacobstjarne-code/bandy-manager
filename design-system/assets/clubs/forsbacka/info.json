@@ -1,0 +1,23 @@
+{
+  "clubId": "club_forsbacka",
+  "name": "Forsbacka BK",
+  "devis": "Hårda bollar. Hårda tag.",
+  "supportergrupp": "Jernbärarna",
+  "derby": null,
+  "klimateArchetype": "bruk_lakeside",
+  "arenaNote": "Naturis bäddad bland furor. Köldhål vid sjön.",
+  "briefDescription": "Bruksort i skogslandskap vid Storsjöns utlopp. Klämd mellan stadsklubbarnas skuggor — men när isen ligger är det magiskt.",
+  "industri": "Forsbacka jernverk (ett av Sveriges äldsta järnbruk)",
+  "symbol": "masugn — stentorn med glödande öppning vid basen, gnistor upptill",
+  "badgeForm": "rektangulär bruksskylt med nitar",
+  "palette": {
+    "primary": "#7a1620",
+    "secondary": "#E8DCC8",
+    "outline": "#14100e"
+  },
+  "assets": {
+    "badge": "badge.png (Nano Banana, raster — SVG-vektorisering enligt brief är ett senare steg)",
+    "scene": "scene.png (Nano Banana, husstil, mörkröd banderoll som klubbfärgsaccent)"
+  },
+  "verifiera": "Grundningsår (badge säger platshållare 1924), exakt arenanamn och derby-par hämtas/verifieras mot worldGenerator.ts — ej påhittat här."
+}

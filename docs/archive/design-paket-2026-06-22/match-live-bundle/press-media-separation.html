@@ -1,0 +1,272 @@
+<!doctype html>
+<!-- @dsCard group="Components" name="Press · medieseparation" -->
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Press/Media · separation</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  body {
+    background: var(--bg-portal);
+    color: var(--text-light);
+    padding: 32px 20px 60px;
+    min-height: 100vh;
+  }
+  .page-head {
+    max-width: 920px; margin: 0 auto 32px;
+  }
+  .page-head h1 {
+    font-family: var(--font-display); font-size: 28px; font-weight: 700;
+    color: var(--text-light); margin-bottom: 6px;
+  }
+  .page-head .lede {
+    font-family: var(--font-display); font-style: italic; font-size: 14px;
+    color: var(--text-light-secondary); line-height: 1.5;
+  }
+  .grid {
+    max-width: 920px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+
+  /* Gemensam card-anatomi (samma som portal-secondary) */
+  .card {
+    position: relative;
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196,122,58,0.15);
+    border-radius: var(--radius-md);
+    padding: 14px 16px 14px 18px;
+    overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  }
+
+  /* PRESSKONFERENSEN — 3px warm (relations) */
+  .card.press::before {
+    width: 3px; background: var(--warm);
+  }
+  /* MEDIA — 2px accent (innehåll) */
+  .card.media::before {
+    width: 2px; background: var(--accent);
+  }
+
+  .card-label {
+    font-family: var(--font-body); font-size: 9px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 12px;
+  }
+  .card.press .card-label { color: var(--warm); }
+  .card.media .card-label { color: var(--accent); opacity: 0.85; }
+
+  /* ── PRESSKONFERENSEN body ─────────────────────── */
+  .press-setting {
+    font-family: var(--font-display); font-style: italic; font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    border-left: 2px solid rgba(180,140,90,0.3);
+    padding-left: 10px;
+  }
+  .press-q {
+    display: flex; gap: 8px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid rgba(196,122,58,0.12);
+  }
+  .press-q:last-child { border-bottom: none; }
+  .press-q .speaker {
+    flex-shrink: 0;
+    font-family: var(--font-body); font-size: 9px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--warm); opacity: 0.8;
+    width: 80px;
+    padding-top: 1px;
+  }
+  .press-q .quote {
+    flex: 1;
+    font-family: var(--font-display); font-style: italic; font-size: 13px;
+    line-height: 1.5; color: var(--text-light);
+  }
+
+  .press-options {
+    margin-top: 14px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .press-option {
+    padding: 10px 12px;
+    background: transparent;
+    border: 1px solid rgba(180,140,90,0.4);
+    border-radius: var(--radius-sm);
+    color: var(--text-light);
+    font-family: var(--font-display); font-style: italic; font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .press-option:hover { background: rgba(180,140,90,0.1); border-color: var(--warm); }
+
+  /* ── MEDIA body — Georgia REGULAR (inte italic) ─── */
+  .media-headline {
+    font-family: var(--font-display); font-style: normal; /* INTE italic */
+    font-size: 16px; font-weight: 700;
+    line-height: 1.3; color: var(--text-light);
+    margin-bottom: 6px;
+  }
+  .media-byline {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-body); font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .media-byline .source {
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    opacity: 0.75;
+  }
+  .media-byline .sep { opacity: 0.4; }
+  .media-deck {
+    font-family: var(--font-display); font-style: normal;
+    font-size: 13px; line-height: 1.55;
+    color: var(--text-light-secondary);
+    margin-bottom: 10px;
+  }
+  .media-row {
+    display: flex; gap: 10px;
+    padding: 8px 0;
+    border-top: 0.5px solid rgba(196,122,58,0.12);
+  }
+  .media-row:first-of-type { border-top: 1px solid rgba(196,122,58,0.18); margin-top: 4px; }
+  .media-row .source-tag {
+    flex-shrink: 0;
+    font-family: var(--font-body); font-size: 8px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); opacity: 0.7;
+    width: 76px;
+    padding-top: 3px;
+  }
+  .media-row .body {
+    flex: 1;
+  }
+  .media-row .head {
+    font-family: var(--font-display); font-style: normal;
+    font-size: 13px; font-weight: 600; line-height: 1.4;
+    color: var(--text-light);
+    margin-bottom: 2px;
+  }
+  .media-row .meta {
+    font-family: var(--font-body); font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  /* Notes */
+  .notes {
+    max-width: 920px; margin: 32px auto 0;
+    padding: 16px 20px;
+    background: rgba(196,122,58,0.05);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-family: var(--font-body); font-size: 11px; line-height: 1.6;
+    color: var(--text-light-secondary);
+  }
+  .notes strong { color: var(--accent); font-weight: 600; }
+  .notes h3 {
+    font-family: var(--font-display); font-size: 12px;
+    color: var(--accent); margin: 0 0 6px 0;
+    text-transform: uppercase; letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Press/Media · separation</h1>
+  <p class="lede">Två närbesläktade ytor, men <em>inte</em> samma sak. Presskonferensen är en <strong>relation</strong> du sitter i (du svarar). Media är <strong>innehåll</strong> som rapporteras om dig (du läser). Visuell separation via stripe-bredd, färg och typografi.</p>
+</div>
+
+<div class="grid">
+
+  <!-- PRESSKONFERENSEN · 3px warm · relations · italic Georgia -->
+  <div class="card press">
+    <div class="card-label">🎤 Presskonferensen</div>
+
+    <p class="press-setting">Mediarummet, måndag eftermiddag. Tre journalister, en bandspelare, doft av filterkaffe. Du sitter mitt emot.</p>
+
+    <div class="press-q">
+      <span class="speaker">Bygdens Puls</span>
+      <p class="quote">"Tre raka förluster nu. Är ni rädda?"</p>
+    </div>
+    <div class="press-q">
+      <span class="speaker">P4 Skara</span>
+      <p class="quote">"Sundström på bänken igen — taktiskt val eller nåt annat?"</p>
+    </div>
+
+    <div class="press-options">
+      <button class="press-option">"Vi är inte rädda. Vi är trötta. Det är inte samma sak."</button>
+      <button class="press-option">"Vi har tappat fokus. Det blir bättre. Ge oss två veckor."</button>
+      <button class="press-option">"Inga kommentarer på laguppställning."</button>
+    </div>
+  </div>
+
+  <!-- MEDIA · 2px accent · innehåll · Georgia regular (INTE italic) -->
+  <div class="card media">
+    <div class="card-label">📰 Media · senaste veckan</div>
+
+    <h2 class="media-headline">Stål föll igen — nu växer pressen på Forsbacka</h2>
+    <div class="media-byline">
+      <span class="source">Bygdens Puls</span>
+      <span class="sep">·</span>
+      <span>Lars Ek</span>
+      <span class="sep">·</span>
+      <span>Måndag</span>
+    </div>
+    <p class="media-deck">Stål gick på sin tredje raka förlust mot Vänersborg i lördags. Tränaren håller masken, men i klacken har frustrationen börjat ta plats.</p>
+
+    <div class="media-row">
+      <span class="source-tag">P4 Skara</span>
+      <div class="body">
+        <p class="head">"Sundström-frågan delar staden"</p>
+        <p class="meta">Lokal-radio · Söndag · Lyssnat 1.2k ggr</p>
+      </div>
+    </div>
+    <div class="media-row">
+      <span class="source-tag">Klacken.se</span>
+      <div class="body">
+        <p class="head">Forum: "Pelle ut?" — 89 inlägg</p>
+        <p class="meta">Supporter-forum · Pågår nu</p>
+      </div>
+    </div>
+    <div class="media-row">
+      <span class="source-tag">SkD</span>
+      <div class="body">
+        <p class="head">Notis: Stål 2 - 4 Vänersborg</p>
+        <p class="meta">Lördag · Sportbilaga sid 14</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <h3>⬩ Vad separationen gör ⬩</h3>
+
+  <p><strong>3 px warm vs 2 px accent.</strong> Stripe-bredden är inte slumpmässig: 3 px warm = "någon pratar med dig" (relation, persona, Klacken, Kafferum). 2 px accent = "system rapporterar något" (innehåll, statistik, listor). Press är relation. Media är innehåll. Två stripes, två logiker.</p>
+
+  <p style="margin-top: 8px;"><strong>Italic vs regular Georgia.</strong> Press = italic = någon talar. Media = regular = någon skriver. Det är samma typsnitt men italic gör citatet, regular gör rubriken. Tidigare body-copy hade italic på media-headlines och det förvirrade — det löste vi genom att ta bort italic på media.</p>
+
+  <p style="margin-top: 8px;"><strong>Speaker-färg.</strong> Press-citaten har <code>--warm</code> på speaker-koden ("BYGDENS PULS"), media har <code>--accent</code> på source-tag ("BYGDENS PULS"). Samma tidning, två olika färgkoder, för att signalera "är de här eller är de där borta".</p>
+
+  <p style="margin-top: 8px;"><strong>CTA-skillnad.</strong> Press har <em>knappar med dina svarsrepliker</em> (du gör ett val). Media har <em>klickbara rader till artikeln</em> (du läser). Aldrig blanda — om du vill svara på en media-rad öppnas presskonferens som ny scen.</p>
+
+  <p style="margin-top: 8px;"><strong>Setting-rader.</strong> Bara press har setting (kursiv, vänster-border) — Stural-vall i mediarummet, doft av kaffe. Media har ingen setting; det är inte teater, det är klipp.</p>
+
+  <p style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(196,122,58,0.15);">
+    <strong>Acceptanskriterier för Code:</strong><br>
+    ✓ Press-card använder <code>::before { width: 3px; background: var(--warm); }</code><br>
+    ✓ Media-card använder <code>::before { width: 2px; background: var(--accent); }</code><br>
+    ✓ Media-headlines är Georgia <strong>regular</strong>, inte italic. Italic på media = drift, ska fångas i lint.<br>
+    ✓ Press har <code>.press-setting</code> (italic + vänster-border), media har inte<br>
+    ✓ Press-CTA är 1–3 svarsrepliker som knappar; media är klickbara rader till källa
+  </p>
+</div>
+
+</body>
+</html>

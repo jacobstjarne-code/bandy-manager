@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg-scene:#1a1612;--bg-portal-surface:#221d18;--bg-portal-elevated:#2a241e;
+    --text-light:#F5F1EB;--text-light-secondary:#C4BAA8;--text-muted:#8A857A;
+    --accent:#C47A3A;--accent-dark:#A25828;--success:#5A9A4A;--danger:#B05040;--danger-text:#C9826E;
+    --cold:#4a6680;--cold-light:#7E9BB5;--warm:#8c6e3a;--warm-light:#C4A86A;
+    --serif:Georgia,serif;--sans:system-ui,sans-serif;--mono:'Courier New',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#2b2823;color:#e8e0d0;font-family:var(--sans);padding:26px 16px 70px}
+  .head{max-width:1240px;margin:0 auto 18px;text-align:center}
+  .head h1{font-family:var(--serif);font-size:21px;margin-bottom:5px}
+  .head p{font-size:12px;color:rgba(232,224,208,.72);line-height:1.55;max-width:780px;margin:0 auto}
+  .head p strong{color:#C47A3A}
+  .flow{display:flex;gap:18px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+  .step{width:300px;flex-shrink:0}
+  .step-lbl{text-align:center;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(232,224,208,.55);margin-bottom:8px}
+  .step-lbl b{color:#C47A3A}
+  .phone{border-radius:14px;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,.5);border:4px solid #0d0c0a;background:var(--bg-scene)}
+  .scr{min-height:620px;position:relative;display:flex;flex-direction:column;padding:0 0 18px}
+  .stripe-l{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--cold)}
+  .eyebrow{font-size:8px;font-weight:600;letter-spacing:4px;text-transform:uppercase;text-align:center;color:var(--cold-light);margin-top:22px}
+  .hero{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text-light);text-align:center;line-height:1.25;margin-top:10px;padding:0 18px}
+  .ing{font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--text-light-secondary);text-align:center;line-height:1.5;margin-top:8px;padding:0 22px}
+  /* stödmätare i konsekvensrad-stil */
+  .stod{margin:14px 14px 0;background:var(--bg-portal-elevated);border:1px solid rgba(126,155,181,.3);border-radius:8px;padding:10px 12px}
+  .stod-top{display:flex;align-items:baseline;justify-content:space-between}
+  .stod-lbl{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted)}
+  .stod-val{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--text-light)}
+  .stod-val s{font-size:10px;color:var(--text-muted);text-decoration:none;font-weight:400}
+  .stod-cons{display:flex;gap:8px;margin-top:6px;font-size:8.5px;font-weight:600}
+  .stod-cons span{white-space:nowrap}
+  .up{color:var(--success)}.down{color:var(--danger-text)}.neu{color:var(--text-muted)}
+  .stod-read{font-family:var(--serif);font-style:italic;font-size:10.5px;color:var(--text-light-secondary);margin-top:7px;line-height:1.45}
+  /* voice cards */
+  .voice{margin:10px 14px 0;background:var(--bg-portal-surface);border-radius:8px;padding:9px 12px;position:relative;border:1px solid rgba(255,255,255,.05)}
+  .voice.warm{border-left:2px solid var(--warm-light)}
+  .voice.cold{border-left:2px solid var(--cold-light)}
+  .voice p{font-family:var(--serif);font-style:italic;font-size:11px;color:var(--text-light-secondary);line-height:1.5}
+  .voice s{display:block;font-size:8px;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;text-decoration:none;margin-top:4px}
+  /* krav-checklist */
+  .krav{margin:10px 14px 0;background:var(--bg-portal-surface);border-radius:8px;padding:9px 12px;border:1px solid rgba(255,255,255,.05)}
+  .krav-lbl{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+  .krav-row{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:10.5px;color:var(--text-light-secondary)}
+  .krav-dot{width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0}
+  /* motbud */
+  .motbud{margin:10px 14px 0;background:var(--bg-portal-elevated);border:1px solid rgba(126,155,181,.3);border-radius:8px;padding:10px 12px}
+  .motbud-lbl{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--cold-light);margin-bottom:5px}
+  .motbud-cons{display:flex;gap:8px;font-size:8.5px;font-weight:600;margin-top:5px}
+  .motbud p{font-size:11px;color:var(--text-light);line-height:1.45}
+  /* teaser + knappar */
+  .teaser{margin:12px 14px 0;text-align:center;font-family:var(--mono);font-size:8.5px;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase}
+  .btns{display:flex;flex-direction:column;gap:6px;margin:10px 14px 0}
+  .btn-eq{padding:11px 6px;border:1.5px solid rgba(255,255,255,.25);border-radius:8px;background:transparent;color:var(--text-light);font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;text-align:center;white-space:nowrap}
+  /* decision-kort (weekly-decision-mönstret) */
+  .dec{margin:18px 14px 0;background:var(--bg-portal-elevated);border:1px solid rgba(196,122,58,.4);border-radius:10px;padding:14px;position:relative}
+  .dec-eyebrow{font-size:7.5px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);text-align:center}
+  .dec h3{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--text-light);text-align:center;margin-top:7px;line-height:1.25}
+  .dec-body{font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--text-light-secondary);line-height:1.55;margin-top:9px;text-align:center}
+  .dec-choices{display:flex;flex-direction:column;gap:7px;margin-top:13px}
+  .dec-choice{border:1.5px solid rgba(255,255,255,.25);border-radius:8px;padding:10px 12px;text-align:left}
+  .dec-choice b{display:block;font-size:11.5px;font-weight:700;color:var(--text-light);line-height:1.35}
+  .dec-choice s{display:block;font-family:var(--mono);font-size:8.5px;color:var(--text-muted);text-decoration:none;margin-top:4px;letter-spacing:.5px}
+  .ctx{margin:8px 14px 0;text-align:center;font-family:var(--serif);font-style:italic;font-size:10px;color:var(--text-muted);line-height:1.5}
+  /* notes */
+  .note{max-width:1240px;margin:24px auto 0;padding:18px;background:rgba(245,241,235,.04);border-radius:8px;font-size:12px;line-height:1.6;color:rgba(232,224,208,.85)}
+  .note h3{font-family:var(--serif);font-size:15px;color:#e8e0d0;margin-bottom:8px}
+  .note ul{margin:4px 0 8px 16px}.note li{margin-bottom:4px}
+  .note code{font-family:var(--mono);font-size:10.5px;background:rgba(245,241,235,.07);padding:1px 4px;border-radius:2px;color:#E8B95C}
+</style></head><body>
+
+<div class="head">
+  <h1>B1 · Prövningens processteg — gaffel-ytan som process-hub</h1>
+  <p>Samma yta som godkända gaffeln, nya lägen per <code>stage</code>. Cold stripe/eyebrow = hall-domänen. <strong>Röstprogressionen syns:</strong> förankring = Birger + medlemsmötets puls · förhandling = Birger + kommunalrådet. Stödet i konsekvensrad-stil — ingen ny mätartyp. All copy ordagrann ur <strong>TEXTPOOLER_PROVNING</strong>.</p>
+</div>
+
+<div class="flow">
+  <!-- 1: FÖRANKRING -->
+  <div class="step">
+    <p class="step-lbl"><b>1 · HUBBEN</b> — FÖRANKRING (stöd 54, omg 5 av 10)</p>
+    <div class="phone"><div class="scr">
+      <div class="stripe-l"></div>
+      <p class="eyebrow">⬩ PRÖVNINGEN · FÖRANKRING ⬩</p>
+      <p class="hero">Hallfrågan ligger<br>hos bygden</p>
+      <p class="ing">Tio omgångar av samtal. Sen röstar medlemsmötet.</p>
+
+      <div class="stod">
+        <div class="stod-top"><span class="stod-lbl">STÖD I BYGDEN</span><span class="stod-val">54 <s>/ 100</s></span></div>
+        <div class="stod-cons"><span class="up">Klacken ↑</span><span class="neu">Pulsen —</span><span class="down">Tre raka förluster ↓</span></div>
+        <p class="stod-read">Bygden väger fram och tillbaka. Inget är avgjort.</p>
+      </div>
+
+      <div class="voice warm">
+        <p>"Birger samlar Västra Sidan efter matchen. Ingen banderoll än — bara samtal."</p>
+        <s>Västra Sidan · klacken</s>
+      </div>
+      <div class="voice warm">
+        <p>"Kassören har börjat dricka kaffe med oss. Han har siffror med sig."</p>
+        <s>Kafferummet</s>
+      </div>
+
+      <p class="teaser">NÄSTA: MEDLEMSMÖTET · OMGÅNG 8</p>
+      <div class="btns">
+        <button class="btn-eq">LÄGG NER FRÅGAN</button>
+      </div>
+      <p class="ctx">Att lägga ner är alltid möjligt. Birger skulle notera det — på det bra sättet.</p>
+    </div></div>
+  </div>
+
+  <!-- 2: FÖRHANDLING -->
+  <div class="step">
+    <p class="step-lbl"><b>2 · HUBBEN</b> — FÖRHANDLING (omg 3 av 8)</p>
+    <div class="phone"><div class="scr">
+      <div class="stripe-l"></div>
+      <p class="eyebrow">⬩ PRÖVNINGEN · FÖRHANDLING ⬩</p>
+      <p class="hero">Det förhandlas<br>i stadshuset</p>
+      <p class="ing">Kraven är uppfyllda. Nu avgör kommunen — och villkoren.</p>
+
+      <div class="krav">
+        <div class="krav-lbl">KRAVEN · UPPFYLLDA</div>
+        <div class="krav-row"><span class="krav-dot"></span>Kapital — borgenär ordnad</div>
+        <div class="krav-row"><span class="krav-dot"></span>Underlag — publiksnitt +10%</div>
+        <div class="krav-row"><span class="krav-dot"></span>Styrelsebeslut — ja</div>
+      </div>
+
+      <div class="motbud">
+        <div class="motbud-lbl">KOMMUNENS MOTBUD</div>
+        <p>Medfinansiering mot ungdomstimmar</p>
+        <div class="motbud-cons"><span class="up">Ungdom ↑</span><span class="down">Drift −/säsong</span><span class="up">Ja-odds ↑</span></div>
+      </div>
+
+      <div class="voice cold">
+        <p>"Kommunalrådet var på matchen i lördags. Satt kvar hela andra halvlek. Folk noterade."</p>
+        <s>Kommunalrådet · {politician.name} ({politician.party})</s>
+      </div>
+      <div class="voice warm">
+        <p>"Västra Sidan har skickat ett eget brev till kommunen. Birger skrev under först."</p>
+        <s>Västra Sidan · klacken</s>
+      </div>
+
+      <p class="teaser">NÄSTA: KOMMUNENS VILLKOR · OMGÅNG 14</p>
+      <div class="btns">
+        <button class="btn-eq">AVBRYT FÖRHANDLINGEN</button>
+      </div>
+      <p class="ctx">Att avbryta nu kostar förtroende i stadshuset.</p>
+    </div></div>
+  </div>
+
+  <!-- 3: DECISION-KORTET -->
+  <div class="step">
+    <p class="step-lbl"><b>3 · DECISION</b> — Medlemsmötet (weekly-decision-mönstret)</p>
+    <div class="phone"><div class="scr">
+      <div class="stripe-l"></div>
+      <p class="eyebrow">⬩ PRÖVNINGEN · FÖRANKRING ⬩</p>
+
+      <div class="dec">
+        <p class="dec-eyebrow">BESLUT · OMGÅNG 8</p>
+        <h3>Medlemsmötet i klubbhuset</h3>
+        <p class="dec-body">Fullsatt i klubblokalen, kaffet räcker inte. Hallfrågan står sist på dagordningen men det är den alla väntat på. Ordet är ditt när du vill ta det.</p>
+        <div class="dec-choices">
+          <div class="dec-choice">
+            <b>Lyssna färdigt — låt medlemmarna äga kvällen</b>
+            <s>Tryggt. Stödet växer långsamt.</s>
+          </div>
+          <div class="dec-choice">
+            <b>Ta ordet — lägg fram hela kalkylen</b>
+            <s>Vågat. Kan vinna rummet eller tappa det.</s>
+          </div>
+        </div>
+      </div>
+
+      <p class="ctx">Mallen för alla sex prövnings-decisions: titel · kursiv body · två likvärdiga val med mono-hints. Ingen default. Ingen stödmätare — kortet är fokuserat på valet (K3).</p>
+    </div></div>
+  </div>
+</div>
+
+<div class="note">
+  <h3>HANDOFF-not — Prövningens processteg (B1 Sprint 4)</h3>
+  <ul>
+    <li><b>Samma yta, lägen per <code>stage</code>:</b> gaffel-kromen (cold stripe + ⬩-eyebrow) bär hela prövningen. Hero/ingress byts per steg; innehållsblocken nedan varierar.</li>
+    <li><b>Stödmätaren = konsekvensrad-stil, ingen ny mätartyp:</b> Georgia-värde + dimensionsrad (riktningar med faktorer som påverkat senast: klack ↑ / puls — / formsvacka ↓) + STOD_LABELS-rad ur §E som kursiv läsning. Regel 14 uppfylld: värde + kontext + läsning.</li>
+    <li><b>Röstprogressionen:</b> förankring = warm-voices (Birger/kafferum, §A-ambient som röstmaterial) · förhandling = kommunalrådets cold-voice (politicianData, porträttlös) + Birger kvar warm. Rösterna byts steg för steg — det ska SYNAS.</li>
+    <li><b>Krav-steget är ingen scen:</b> checklist-raden (severity-dots, tre gröna) visas i förhandlings-hubben som avklarad historik. Bygget = cooldown-kanon i trädet.</li>
+    <li><b>Likvärdiga utvägar:</b> "LÄGG NER FRÅGAN" / "AVBRYT FÖRHANDLINGEN" stående i staplade fullbredds-mönstret, med kursiv konsekvensrad under (egen nedläggning ≠ fall — §A resolution-copyn bär skillnaden).</li>
+    <li><b>Decision-kortet</b> följer weekly-decision-mönstret exakt: copper-ram, eyebrow, Georgia-titel, kursiv body, två val med mono-hints. Exempel = medlemsmotet ur §B ordagrant; samma mall för birger_mote, enkaten, kommunens_villkor, patronens_erbjudande, fordyringen. <b>Ingen stödmätare i decision-kortet</b> (K3) — den är hub-exklusiv, konkurrerar annars med valet.</li>
+    <li><b>K1 — kommunalrådet interpoleras:</b> <code>{politician.name} ({politician.party})</code> ur politicianService, ALDRIG hårdkodat. Mockens exempelnamn är platshållare — Code får aldrig skriva in ett namn i strängen (F2-fällan).</li>
+    <li><b>K2 — publiksnittskravet = +10%</b> (3-årssnitt × 1,1), inte +12%. Alternativt generiskt "publiksnitt godkänt" om siffran inte ska låsas i copy.</li>
+    <li><b>Copy:</b> allt ordagrant ur <code>TEXTPOOLER_PROVNING_2026-06-12.md</code>. Inget skavde — ingen flagga till Opus.</li>
+    <li><b>Inga emojis i chrome ✓ · inga nya tokens ✓</b> (cold/warm är relationsdimensionen, exakt dess jobb här).</li>
+  </ul>
+</div>
+
+</body></html>

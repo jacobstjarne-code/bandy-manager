@@ -1,0 +1,24 @@
+{
+  "clubId": "club_soderfors",
+  "name": "Söderfors BK",
+  "devis": "Ankrade i orten.",
+  "supportergrupp": "Ankarklacken",
+  "derby": null,
+  "klimateArchetype": "bruk_river_island",
+  "arenaNote": "Bruksort på ö i älven. Tidig is på smala armar.",
+  "briefDescription": "Ankarsmedjan vid Dalälven. Vägen till plan går alltid över en bro.",
+  "industri": "Söderfors bruk (järnmanufaktur, handsmidda fartygsankare i sekler)",
+  "symbol": "ankare med subtil vattenlinje under (älven)",
+  "badgeForm": "vapensköld (formvariation mot Forsbacka rektangulär, Målilla rund)",
+  "palette": {
+    "primary": "#3a5a78",
+    "secondary": "#E8DCC8",
+    "outline": "#14100e"
+  },
+  "scenNote": "Bandybyn på ön i älven, bron som leder över till rinken, järnbruket med skorsten på höjden. Natt (se SCEN-KOMPOSITIONER — väder ändrat från dag till natt). Stålblå banderoll med cremerand. Lärdom: konceptet ('bandybyn på ön, vägen över bron, mellansvensk bruksmiljö') slog den detaljerade element-listan — geografi med inre logik byggs bäst som helhet, inte som lista.",
+  "assets": {
+    "badge": "ÅTERSTÅR — ankaret ej genererat än (prompt klar). När klar: badge.png (Nano Banana, raster).",
+    "scene": "scene.png (Nano Banana, husstil, natt)"
+  },
+  "verifiera": "Grundningsår, exakt arenanamn och derby-par mot worldGenerator.ts — ej påhittat här."
+}

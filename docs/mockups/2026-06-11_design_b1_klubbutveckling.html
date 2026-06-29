@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#EDE8DF;--bg-surface:#FAF8F4;--border:#DDD7CC;--border-dark:#C4BAA8;
+    --bg-scene:#1a1612;--bg-portal-surface:#221d18;--bg-portal-elevated:#2a241e;
+    --text-primary:#1A1A18;--text-secondary:#6B6760;--text-muted:#8A857A;
+    --text-light:#F5F1EB;--text-light-secondary:#C4BAA8;
+    --accent:#C47A3A;--accent-dark:#A25828;--success:#5A9A4A;--danger:#B05040;--danger-text:#8B3E30;
+    --cold:#4a6680;--warm:#8c6e3a;--ice:#7EB3D4;
+    --serif:Georgia,serif;--sans:system-ui,sans-serif;--mono:'Courier New',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#2b2823;color:#e8e0d0;font-family:var(--sans);padding:26px 16px 70px}
+  .head{max-width:1300px;margin:0 auto 18px;text-align:center}
+  .head h1{font-family:var(--serif);font-size:21px;margin-bottom:5px}
+  .head p{font-size:12px;color:rgba(232,224,208,.72);line-height:1.55;max-width:780px;margin:0 auto}
+  .head p strong{color:#C47A3A}
+  .flow{display:flex;gap:20px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+  .step{width:320px;flex-shrink:0}
+  .step-lbl{text-align:center;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(232,224,208,.55);margin-bottom:8px}
+  .step-lbl b{color:#C47A3A}
+  .phone{border-radius:14px;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,.5);border:4px solid #0d0c0a}
+  .scr{height:660px;position:relative;display:flex;flex-direction:column;overflow:hidden}
+  /* ── 1: TRÄDET (Orten, betrakta-läge, papper) ── */
+  .scr.paper{background:var(--bg)}
+  .gh{display:flex;align-items:center;gap:8px;padding:0 11px;height:40px;background:#0E0D0B;border-bottom:2px solid var(--accent);flex-shrink:0}
+  .gh .logo{width:21px;height:21px;border-radius:50%;background:#3D3A32;display:flex;align-items:center;justify-content:center;font-size:9px}
+  .gh .nm{flex:1;line-height:1.1}.gh .nm b{font-family:var(--serif);font-size:11.5px;color:#F5F1EB;display:block}.gh .nm s{font-size:7.5px;color:#8a8270;text-decoration:none}
+  .tree{flex:1;overflow:hidden;padding:10px 12px;color:var(--text-primary)}
+  .t-head{margin-bottom:8px}
+  .t-head h2{font-family:var(--serif);font-size:15px}
+  .t-mode{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);display:block;margin-top:2px}
+  .gren{margin-bottom:9px}
+  .gren-lbl{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+  .nodes{position:relative;padding-left:14px}
+  .nodes::before{content:"";position:absolute;left:4px;top:8px;bottom:8px;width:1.5px;background:var(--border-dark)}
+  .node{position:relative;background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:7px 10px;margin-bottom:5px}
+  .node::before{content:"";position:absolute;left:-12px;top:50%;width:10px;height:1.5px;background:var(--border-dark)}
+  .node .nrow{display:flex;align-items:center;gap:7px}
+  .node .nname{font-size:11.5px;font-weight:600;flex:1}
+  .node .ntag{font-size:8px;padding:2px 7px;border-radius:99px;font-weight:600;white-space:nowrap}
+  .node.built{border-left:2px solid var(--success)}
+  .node.built .ntag{background:rgba(90,154,74,.12);color:var(--success)}
+  .node.ongoing{border-left:2px solid var(--accent)}
+  .node.ongoing .ntag{background:rgba(196,122,58,.12);color:var(--accent-dark)}
+  .node.avail{border:1.5px dashed var(--border-dark)}
+  .node.avail .ntag{background:none;border:1px solid var(--border-dark);color:var(--text-secondary)}
+  .node.locked{opacity:.45}
+  .node.locked .ntag{background:none;color:var(--text-muted)}
+  .node .nsub{font-size:9px;color:var(--text-muted);margin-top:2px}
+  .dots{display:inline-flex;gap:2px;margin-left:4px;vertical-align:1px}
+  .dots i{width:5px;height:5px;border-radius:50%;background:var(--border-dark)}
+  .dots i.on{background:var(--accent)}
+  /* matchhall: kall avfart */
+  .node.hall{border:1.5px solid var(--cold);background:#F2F4F6;margin-left:18px}
+  .node.hall::before{width:28px;left:-30px;background:var(--cold)}
+  .node.hall .nname{color:var(--cold)}
+  .node.hall .ntag{background:rgba(74,102,128,.12);color:var(--cold)}
+  .krad{display:flex;gap:8px;margin-top:4px;font-size:8.5px;font-weight:600}
+  .krad span{white-space:nowrap}
+  .k-ned{color:var(--danger-text)}.k-upp{color:var(--success)}.k-noll{color:var(--text-muted)}
+  .baseline{margin-top:6px;padding-top:7px;border-top:1px solid var(--border);font-family:var(--serif);font-style:italic;font-size:10px;color:var(--text-muted);text-align:center}
+  /* ── 2: PRESEASON (typografisk scen) ── */
+  .scr.scene{background:var(--bg-scene);color:var(--text-light)}
+  .stripe-l{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);z-index:2}
+  .eyebrow{font-size:8px;font-weight:600;letter-spacing:4px;text-transform:uppercase;text-align:center;color:var(--accent);opacity:.8}
+  .ps{flex:1;display:flex;flex-direction:column;padding:22px 16px 0}
+  .ps h2{font-family:var(--serif);font-size:21px;font-weight:700;text-align:center;line-height:1.25;margin-top:10px}
+  .ps .ing{font-family:var(--serif);font-style:italic;font-size:11px;color:var(--text-light-secondary);text-align:center;line-height:1.5;margin-top:7px}
+  .val{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+  .vkort{background:var(--bg-portal-surface);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:9px 11px}
+  .vkort .vrow{display:flex;align-items:baseline;gap:8px}
+  .vkort .vname{font-family:var(--serif);font-size:13px;font-weight:700;flex:1}
+  .vkort .vhor{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text-light-secondary);white-space:nowrap}
+  .vkort .krad{margin-top:5px}
+  .vkort .vsub{font-size:9px;color:var(--text-light-secondary);margin-top:3px;font-style:italic;font-family:var(--serif)}
+  .ps-note{font-family:var(--serif);font-style:italic;font-size:9.5px;color:var(--text-muted);text-align:center;margin-top:10px}
+  .scene-cta{align-self:center;margin:12px auto 20px;padding:10px 18px;border:1.5px solid var(--accent);border-radius:8px;color:var(--text-light);font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:transparent;white-space:nowrap}
+  /* ── 3: GAFFELN ── */
+  .stripe-l.cold{background:var(--cold)}
+  .gf{flex:1;display:flex;flex-direction:column;padding:22px 16px 0}
+  .gf h2{font-family:var(--serif);font-size:21px;font-weight:700;text-align:center;line-height:1.25;margin-top:10px}
+  .gf .ing{font-family:var(--serif);font-style:italic;font-size:11px;color:var(--text-light-secondary);text-align:center;line-height:1.5;margin-top:7px}
+  .voices{margin-top:13px;display:flex;flex-direction:column;gap:6px}
+  .voice{background:var(--bg-portal-surface);border-radius:8px;padding:9px 11px;position:relative}
+  .voice.vs-klack{border-left:2px solid var(--warm)}
+  .voice.vs-kassa{border-left:2px solid var(--cold)}
+  .voice p{font-family:var(--serif);font-style:italic;font-size:11px;line-height:1.5;color:var(--text-light-secondary)}
+  .voice s{display:block;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);text-decoration:none;margin-top:4px}
+  .gf-krad{margin-top:12px;background:var(--bg-portal-elevated);border:1px solid rgba(74,102,128,.4);border-radius:8px;padding:9px 11px}
+  .gf-krad .kl{font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px}
+  .gf-krad .krow{display:flex;justify-content:space-between;font-size:10px;padding:2.5px 0}
+  .gf-krad .krow b{font-weight:600;color:var(--text-light)}
+  .gf-btns{display:flex;flex-direction:column;gap:6px;margin-top:13px}
+  .gf-btn{padding:11px 6px;border:1.5px solid rgba(255,255,255,.25);border-radius:8px;background:transparent;color:var(--text-light);font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;text-align:center;white-space:nowrap}
+  .gf-foot{font-family:var(--serif);font-style:italic;font-size:9.5px;color:var(--text-muted);text-align:center;margin:11px 0 18px}
+  /* notes */
+  .note{max-width:1300px;margin:24px auto 0;padding:18px;background:rgba(245,241,235,.04);border-radius:8px;font-size:12px;line-height:1.6;color:rgba(232,224,208,.85)}
+  .note h3{font-family:var(--serif);font-size:15px;color:#e8e0d0;margin-bottom:8px}
+  .note h4{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C47A3A;margin:13px 0 4px}
+  .note ul{margin:2px 0 6px 16px}.note li{margin-bottom:4px}
+  .note code{font-family:var(--mono);font-size:10.5px;background:rgba(245,241,235,.07);padding:1px 4px;border-radius:2px;color:#E8B95C}
+</style></head><body>
+
+<div class="head">
+  <h1>B1 · Klubbutveckling — utbyggnadsträdet · Valet · matchhall-gaffeln</h1>
+  <p>Strävan: <strong>hålla det riktiga vid liv</strong> — inte glans. Konstis = given baseline (ingen nod). Matchhallen = kall avfart med pris-före-vinst, <strong>aldrig trädets topp</strong>. Konsekvensraden (publik · ekonomi · ungdom · själ) är konventionen som bär alla tre ytorna. Allt i ratificerad kanon — inga nya mönster.</p>
+</div>
+
+<div class="flow">
+
+  <!-- 1: TRÄDET -->
+  <div class="step">
+    <p class="step-lbl"><b>1 · TRÄDET</b> — Orten · betrakta-läge</p>
+    <div class="phone"><div class="scr paper">
+      <div class="gh"><div class="logo" style="font-family:Georgia,serif;font-size:8px;font-weight:700;letter-spacing:.5px;color:#C4BAA8">HIF</div><div class="nm"><b>Hälleforsnäs IF</b><s>Jacob · 2026/27</s></div></div>
+      <div class="tree">
+        <div class="t-head"><h2>Anläggningen</h2><span class="t-mode">Betrakta · val görs i säsongsstarten</span></div>
+
+        <div class="gren">
+          <div class="gren-lbl">ANLÄGGNING</div>
+          <div class="nodes">
+            <div class="node built"><div class="nrow"><span class="nname">Värmestuga</span><span class="ntag">Byggd 2025</span></div></div>
+            <div class="node ongoing">
+              <div class="nrow"><span class="nname">Läktare — östra</span><span class="ntag">Pågår</span></div>
+              <div class="nsub">Klar omg 14 <span class="dots"><i class="on"></i><i class="on"></i><i></i><i></i></span> · +400 platser</div>
+            </div>
+            <div class="node avail">
+              <div class="nrow"><span class="nname">Belysning träningsplan</span><span class="ntag">Möjlig</span></div>
+              <div class="krad"><span class="k-upp">Ungdom ↑</span><span class="k-noll">Publik —</span><span class="k-ned">Kassa −240 tkr</span></div>
+            </div>
+            <div class="node hall">
+              <div class="nrow"><span class="nname">Matchhall</span><span class="ntag">Prövning</span></div>
+              <div class="krad"><span class="k-ned">Publik ↓</span><span class="k-ned">Själ ↓</span><span class="k-upp">Ekonomi ↑</span><span class="k-upp">Ungdom ↑</span></div>
+              <div class="nsub">Öppnar prövningen — förankring krävs ›</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gren">
+          <div class="gren-lbl">VERKSAMHET</div>
+          <div class="nodes">
+            <div class="node built"><div class="nrow"><span class="nname">Kiosk &amp; servering</span><span class="ntag">Byggd</span></div></div>
+            <div class="node avail">
+              <div class="nrow"><span class="nname">Träningshall (ungdom)</span><span class="ntag">Möjlig</span></div>
+              <div class="krad"><span class="k-upp">Ungdom ↑</span><span class="k-upp">Själ ↑</span><span class="k-ned">Kassa −380 tkr</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gren">
+          <div class="gren-lbl">AKADEMI</div>
+          <div class="nodes">
+            <div class="node built"><div class="nrow"><span class="nname">Akademinivå 2</span><span class="ntag">Etablerad</span></div></div>
+            <div class="node locked">
+              <div class="nrow"><span class="nname">Akademinivå 3</span><span class="ntag">Kräver träningshall</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="baseline">Konstis sedan 1963 · Stålvallen, utomhus — det är så bandy spelas.</div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 2: PRESEASON -->
+  <div class="step">
+    <p class="step-lbl"><b>2 · VALET</b> — PreSeason · välj-läge (typografisk scen)</p>
+    <div class="phone"><div class="scr scene">
+      <div class="stripe-l"></div>
+      <div class="ps">
+        <p class="eyebrow">⬩ SÄSONGSSTART · VALET ⬩</p>
+        <h2>Vad bygger<br>Hälleforsnäs i år?</h2>
+        <p class="ing">Kassan räcker till en sak.<br>Styrelsen väntar på ditt besked.</p>
+        <div class="val">
+          <div class="vkort">
+            <div class="vrow"><span class="vname">Läktare — östra</span><span class="vhor">I år</span></div>
+            <div class="krad"><span class="k-upp">Publik ↑</span><span class="k-upp">Ekonomi ↑</span><span class="k-noll">Ungdom —</span></div>
+            <p class="vsub">Fler på plats redan i höst.</p>
+          </div>
+          <div class="vkort">
+            <div class="vrow"><span class="vname">Värmestuga</span><span class="vhor">I år</span></div>
+            <div class="krad"><span class="k-upp">Publik ↑</span><span class="k-upp">Själ ↑</span><span class="k-ned">Kassa −180 tkr</span></div>
+            <p class="vsub">Kylan biter mindre. Folk stannar.</p>
+          </div>
+          <div class="vkort">
+            <div class="vrow"><span class="vname">Träningshall</span><span class="vhor">1–2 säsonger</span></div>
+            <div class="krad"><span class="k-upp">Ungdom ↑</span><span class="k-upp">Själ ↑</span><span class="k-ned">Kassa −380 tkr</span></div>
+            <p class="vsub">Ungarna tränar i februari utan att frysa fast.</p>
+          </div>
+          <div class="vkort">
+            <div class="vrow"><span class="vname">Akademin</span><span class="vhor">Om tre säsonger</span></div>
+            <div class="krad"><span class="k-noll">I år —</span><span class="k-upp">Ungdom ↑↑</span><span class="k-upp">Själ ↑</span></div>
+            <p class="vsub">Ingenting nu. Egna spelare sen.</p>
+          </div>
+        </div>
+        <p class="ps-note">Inget val är förvalt. Du kan också vänta ett år.</p>
+      </div>
+      <button class="scene-cta">VÄLJ — RAPPORTERA TILL STYRELSEN →</button>
+    </div></div>
+  </div>
+
+  <!-- 3: GAFFELN -->
+  <div class="step">
+    <p class="step-lbl"><b>3 · GAFFELN</b> — matchhallen · prövningen</p>
+    <div class="phone"><div class="scr scene">
+      <div class="stripe-l cold"></div>
+      <div class="gf">
+        <p class="eyebrow" style="color:var(--cold)">⬩ MATCHHALLEN ⬩</p>
+        <h2>Tak över Stålvallen?</h2>
+        <p class="ing">Åretruntspel och tv-pengar.<br>Men ingen kväll under öppen himmel igen.</p>
+        <div class="voices">
+          <div class="voice vs-klack">
+            <p>"Vi har stått här i sjuttio år. I snön. Det är DET som är Hälleforsnäs. Bygg taket och vi blir vilka som helst."</p>
+            <s>Västra Sidan · klackledaren</s>
+          </div>
+          <div class="voice vs-kassa">
+            <p>"Tjugotvå hemmamatcher om året oavsett väder. Det är skillnaden mellan att överleva och att förvalta."</p>
+            <s>Kassören</s>
+          </div>
+        </div>
+        <div class="gf-krad">
+          <div class="kl">OM HALLEN BYGGS — BÅDA HÅLLEN, ÄRLIGT</div>
+          <div class="krow"><b>Publik</b><span class="k-ned">↓ klacken glesnar</span></div>
+          <div class="krow"><b>Själ</b><span class="k-ned">↓ Västra Sidan i öppet brott</span></div>
+          <div class="krow"><b>Ekonomi</b><span class="k-upp">↑ åretrunt + tv-avtal</span></div>
+          <div class="krow"><b>Ungdom</b><span class="k-upp">↑ träningstid året om</span></div>
+        </div>
+        <div class="gf-btns">
+          <button class="gf-btn">INLED FÖRANKRING →</button>
+          <button class="gf-btn">LÄGG NER FRÅGAN</button>
+        </div>
+        <p class="gf-foot">Prövningen tar flera säsonger: förankring → krav → kommunförhandling → bygge. Den kan avbrytas — och den kan misslyckas.</p>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<div class="note">
+  <h3>DESIGN-DECISIONS-not — B1-ytorna</h3>
+  <h4>Trädet (yta 1)</h4>
+  <ul>
+    <li><b>Två ingångar, ETT träd</b> (Opus 06-11): Orten = betrakta-läge (denna mock — inga CTA:er, status via cooldown-dots), PreSeason = välj-läge (yta 2). Samma komponent, <code>mode</code>-prop.</li>
+    <li><b>Nodstater:</b> byggd (grön kantstripe) · pågår (copper + dot-räknare, cooldown-kanon) · möjlig (streckad kant + konsekvensrad) · låst (dimmad + kravtext). Severity-skalans språk, inga nya mönster.</li>
+    <li><b>Matchhallen är en AVFART, inte en topp:</b> indragen åt sidan, kall (<code>--cold</code>) i ett varmt träd, enda noden med pris FÖRE vinst i konsekvensraden, taggen säger "Prövning" — den öppnar gaffeln (yta 3), aldrig direktköp.</li>
+    <li><b>Konstis = baseline-rad i trädets fot</b>, kursiv, given. Ingen nod, inget mål.</li>
+  </ul>
+  <h4>Valet (yta 2)</h4>
+  <ul>
+    <li>Typografiska scenen (D1: tyngre än rutinbeslut). Fyra likvärdiga kort — <b>inget förvalt</b> (knapp-likvärdighet), horisont-etikett per kort ("I år" / "Om tre säsonger"), konsekvensrad på varje. "Du kan också vänta ett år" — avstå är ett val.</li>
+    <li>Akademin-kortet är ärligt: <b>"I år —"</b> först. Det är hela vägvalet i tre tecken.</li>
+  </ul>
+  <h4>Gaffeln (yta 3)</h4>
+  <ul>
+    <li>Kall stripe + kall eyebrow — enda scenen i cold-familjen. Tyngden = två röster (warm-klack mot cold-kassa, severity-relationsspråket) + dubbelriktad konsekvensrad. Ingen yta säljer hallen som rent plus.</li>
+    <li><b>Båda knapparna likvärdiga</b> — "LÄGG NER FRÅGAN" är lika legitim som att inleda. Foot-raden lovar att processen kan avbrytas och misslyckas.</li>
+  </ul>
+  <h4>Konsekvensraden — konventionen (#5)</h4>
+  <ul>
+    <li><b>Anatomi:</b> dimension + riktning: <code>Publik ↑</code> / <code>Själ ↓</code> / <code>Ungdom —</code>. Fyra dimensioner max: publik · ekonomi · ungdom · själ. Kassakostnad skrivs i tkr (regel 11).</li>
+    <li><b>Färg = severity, inte dekoration:</b> ↑ <code>--success</code>, ↓ <code>--danger-text</code>, — <code>--text-muted</code>. Ordningen ärlig: det tyngsta först (matchhallen: priset först).</li>
+    <li>Konventionen gäller ALLA bygg-/vägvalskort framåt — inte bara B1. En svag konsekvensrad gör besluten till kvitton; en ärlig gör dem till val.</li>
+  </ul>
+  <h4>Öppet till Opus</h4>
+  <ul>
+    <li>"Själ" som dimensionsnamn — rätt ord? Alternativ: "Orten". Datamodellen avgör vad som faktiskt mäts (klack-mood? puls?).</li>
+    <li>Gaffelns röster: klackledaren + kassören valda här — ska patron/kommunen ha röst i senare processteg?</li>
+  </ul>
+</div>
+
+</body></html>
