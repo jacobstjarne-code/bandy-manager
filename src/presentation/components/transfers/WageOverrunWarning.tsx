@@ -41,7 +41,7 @@ export function WageOverrunWarning({ overrunPct, seasonSeed, onCancel, onConfirm
         className="transfers-modal-box"
         style={{ border: `1px solid ${variant === 'severe' ? 'var(--danger)' : 'var(--warning)'}` }}
       >
-        <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, fontFamily: 'var(--font-display)' }}>
+        <p className="h-name" style={{ marginBottom: 14 }}>
           {title}
         </p>
         <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: 24 }}>

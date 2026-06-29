@@ -36,7 +36,7 @@ export function TransferPlayerCard({
       style={{ borderBottom: isLast ? 'none' : '1px solid var(--border)' }}
     >
       <div className="transfers-list-content">
-        <p style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)' }}>
+        <p className="h-name">
           {player.firstName} {player.lastName}
           {isBargain && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--success)', fontWeight: 700 }}>⭐ Fynd</span>}
         </p>
