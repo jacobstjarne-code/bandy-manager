@@ -120,7 +120,7 @@ export default function FacilityScreen() {
             style={{ width: '100%', maxWidth: 440, background: 'var(--bg-surface)', borderRadius: 'var(--radius) var(--radius) 0 0', borderTop: '1px solid var(--border)', padding: '18px 16px 28px', display: 'flex', flexDirection: 'column', gap: 12 }}
           >
             <div>
-              <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>Finansiering</div>
+              <div className="h-label">Finansiering</div>
               <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedDef.label}</p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Full kostnad {tkr(selectedDef.cost)} · {selectedDef.buildRounds} omgångar att bygga</p>
             </div>

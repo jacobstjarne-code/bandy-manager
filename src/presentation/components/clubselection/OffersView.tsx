@@ -21,18 +21,7 @@ export function OffersView({ offers, onSelect, onShowAll }: Props) {
         }}
       />
       <div style={{ position: 'relative', zIndex: 2, padding: '28px 22px 22px' }}>
-        <div
-          style={{
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: 4,
-            textTransform: 'uppercase',
-            color: 'var(--accent)',
-            marginBottom: 10,
-            textAlign: 'center',
-            opacity: 0.7,
-          }}
-        >
+        <div className="h-label" style={{ color: 'var(--accent)', marginBottom: 10, textAlign: 'center', opacity: 0.7 }}>
           ⬩ &nbsp;TRE SAMTAL&nbsp; ⬩
         </div>
 

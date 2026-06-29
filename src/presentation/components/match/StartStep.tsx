@@ -109,15 +109,8 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
         <div className="card-round" style={{
           marginBottom: 12, padding: '8px 12px',
         }}>
-          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>📣 Pep-talk</p>
-          <p style={{
-            fontFamily: 'var(--font-display)',
-            fontStyle: 'italic',
-            fontSize: 14,
-            lineHeight: 1.6,
-            color: 'var(--text-secondary)',
-            margin: 0,
-          }}>
+          <p className="h-label" style={{ marginBottom: 8 }}>📣 Pep-talk</p>
+          <p className="h-quote" style={{ lineHeight: 1.6, margin: 0 }}>
             {atmosphere}
           </p>
         </div>
@@ -126,8 +119,8 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
       {/* Klacken ritual */}
       {ritualText && (
         <div className="card-round" style={{ marginBottom: 8, padding: '8px 12px' }}>
-          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>📯 KLACKEN</p>
-          <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 11, lineHeight: 1.5, color: 'var(--text-muted)', margin: 0 }}>{ritualText}</p>
+          <p className="h-label" style={{ marginBottom: 6 }}>📯 KLACKEN</p>
+          <p className="h-quote-sm" style={{ lineHeight: 1.5, margin: 0 }}>{ritualText}</p>
         </div>
       )}
 

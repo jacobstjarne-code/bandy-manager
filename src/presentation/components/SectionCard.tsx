@@ -29,14 +29,7 @@ export function SectionCard({ title, children, variant = 'sharp', stagger, actio
     >
       <div style={{ padding: '10px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: collapsed ? 4 : 6 }}>
-          <span style={{
-            color: 'var(--text-muted)',
-            fontSize: 9,
-            letterSpacing: '2.5px',
-            textTransform: 'uppercase',
-            fontFamily: 'var(--font-body)',
-            fontWeight: 600,
-          }}>
+          <span className="h-label">
             {title}
           </span>
           {collapsible ? (

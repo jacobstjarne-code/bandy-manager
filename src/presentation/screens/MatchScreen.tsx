@@ -381,7 +381,7 @@ export function MatchScreen() {
           if (!mood) return null
           return (
             <div className="card-round" style={{ margin: '0 12px 8px', padding: '8px 12px' }}>
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', margin: 0 }}>
+              <p className="h-quote-sm" style={{ lineHeight: 1.5, margin: 0 }}>
                 {mood}
               </p>
             </div>

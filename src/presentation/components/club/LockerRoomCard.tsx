@@ -110,7 +110,7 @@ export function LockerRoomCard({ players, captainId, onPlayerClick }: Props) {
     return (
       <div style={{ padding: '8px 12px 3px', background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color }}>{label}</span>
+          <span className="h-label" style={{ color }}>{label}</span>
           <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{count}</span>
         </div>
         <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>{description}</p>
@@ -121,7 +121,7 @@ export function LockerRoomCard({ players, captainId, onPlayerClick }: Props) {
   return (
     <div className="card-sharp" style={{ marginBottom: 12, overflow: 'hidden' }}>
       <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid var(--border)' }}>
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+        <span className="h-label">
           👥 OMKLÄDNINGSRUMMET
         </span>
       </div>

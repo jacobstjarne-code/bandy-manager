@@ -105,7 +105,7 @@ export function TabellScreen() {
           if (players.length === 0) return null
           return (
             <div style={{ marginBottom: 20 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>{title}</p>
+              <p className="h-label" style={{ marginBottom: 8 }}>{title}</p>
               <div className="card-sharp" style={{ overflow: 'hidden' }}>
                 {players.map((p, i) => {
                   const club = game!.clubs.find(c => c.id === p.clubId)
@@ -126,7 +126,7 @@ export function TabellScreen() {
                           {club?.shortName ?? club?.name ?? '?'} · {p.age} år
                         </span>
                       </div>
-                      <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent-dark)', fontFamily: 'var(--font-display)' }}>
+                      <span className="h-num" style={{ color: 'var(--accent-dark)' }}>
                         {value(p)}{unit ? <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>{unit}</span> : null}
                       </span>
                     </div>
@@ -219,18 +219,15 @@ export function TabellScreen() {
             <div key={row.clubId}>
               {/* Zone divider: after position 8 (top 8 to playoffs) */}
               {hasLeagueStarted && row.position === 9 && (
-                <div style={{
+                <div className="h-label" style={{
                   padding: '5px 10px',
                   borderTop: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
-                  fontSize: 9,
-                  fontWeight: 700,
-                  letterSpacing: '1px',
-                  textTransform: 'uppercase',
                   color: 'color-mix(in srgb, var(--accent) 60%, transparent)',
                   background: 'color-mix(in srgb, var(--accent) 3%, transparent)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
+                  margin: 0,
                 }}>
                   <span>━━</span><span>Slutspelsstrecket</span><span>━━</span>
                 </div>
@@ -238,18 +235,15 @@ export function TabellScreen() {
 
               {/* Zone divider: after position 10 */}
               {hasLeagueStarted && row.position === 11 && (
-                <div style={{
+                <div className="h-label" style={{
                   padding: '5px 10px',
                   borderTop: '1px solid color-mix(in srgb, var(--danger) 50%, transparent)',
-                  fontSize: 9,
-                  fontWeight: 700,
-                  letterSpacing: '1px',
-                  textTransform: 'uppercase',
                   color: 'color-mix(in srgb, var(--danger) 50%, transparent)',
                   background: 'color-mix(in srgb, var(--danger) 3%, transparent)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
+                  margin: 0,
                 }}>
                   <span>━━</span><span>Nedflyttning</span><span>━━</span>
                 </div>
@@ -500,6 +494,7 @@ export function TabellScreen() {
           <div>
             {/* Status */}
             <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 10 }}>
+              {/* ds-exempt: color dynamisk ternary på cupWinner/managedLost/cupCompletedByOther */}
               <p style={{ fontSize: 14, fontWeight: 700, color: statusColor, fontFamily: 'var(--font-display)' }}>
                 {statusText}
               </p>
@@ -508,7 +503,7 @@ export function TabellScreen() {
             {/* Dina cupmatcher */}
             {managedPlayed.length > 0 && (
               <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 10 }}>
-                <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+                <p className="h-label" style={{ marginBottom: 8 }}>
                   🏆 DINA CUPMATCHER
                 </p>
                 {managedPlayed.map(m => {
@@ -539,7 +534,7 @@ export function TabellScreen() {
             {/* Nästa cupmatch */}
             {nextCupFixture && (
               <div className="card-round" style={{ padding: '10px 14px', marginBottom: 10 }}>
-                <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 6 }}>
+                <p className="h-label" style={{ color: 'var(--accent)', marginBottom: 6 }}>
                   🏆 NÄSTA CUPMATCH
                 </p>
                 <p style={{ fontSize: 13, fontWeight: 600 }}>
@@ -560,7 +555,7 @@ export function TabellScreen() {
               const byeMatches = bracket.matches.filter(m => m.round === round && m.isBye)
               return (
                 <div key={round} style={{ marginBottom: 14 }}>
-                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+                  <p className="h-label" style={{ marginBottom: 6 }}>
                     {allUnplayed ? 'LOTTNING · ' : ''}{roundNames[round] ?? `RUNDA ${round}`}
                   </p>
                   <div className="card-sharp" style={{ overflow: 'hidden' }}>
@@ -590,7 +585,7 @@ export function TabellScreen() {
                               {homeManaged ? '★ ' : ''}{home}
                               {showTrophy && homeWon && <span style={{ marginLeft: 4 }}>🏆</span>}
                             </span>
-                            <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', minWidth: 40, textAlign: 'center' }}>
+                            <span className="h-num" style={{ minWidth: 40, textAlign: 'center' }}>
                               {played && fix ? `${fix.homeScore}–${fix.awayScore}` : 'vs'}
                             </span>
                             <span style={{
@@ -629,7 +624,7 @@ export function TabellScreen() {
               if (cupScorers.length === 0) return null
               return (
                 <div style={{ marginBottom: 14 }}>
-                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+                  <p className="h-label" style={{ marginBottom: 6 }}>
                     <Target size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}CUPENS SKYTTEKUNGAR
                   </p>
                   <div className="card-sharp" style={{ overflow: 'hidden' }}>
@@ -651,7 +646,7 @@ export function TabellScreen() {
                               {club?.shortName ?? club?.name ?? '?'}
                             </span>
                           </div>
-                          <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent-dark)', fontFamily: 'var(--font-display)' }}>
+                          <span className="h-num" style={{ color: 'var(--accent-dark)' }}>
                             {p.seasonCupStats!.goals}<span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}> mål</span>
                           </span>
                         </div>

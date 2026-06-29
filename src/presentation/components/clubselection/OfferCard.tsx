@@ -45,13 +45,11 @@ export function OfferCard({ offer, clubName, region, extendedInfo, quote, onSele
       </div>
 
       <div
+        className="h-quote"
         style={{
           borderLeft: '2px solid var(--accent)',
           padding: '8px 0 8px 12px',
           margin: '12px 0 10px',
-          fontFamily: 'var(--font-display)',
-          fontStyle: 'italic',
-          fontSize: 13,
           color: 'var(--text-light-secondary)',
           lineHeight: 1.55,
         }}

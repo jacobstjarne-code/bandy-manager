@@ -92,7 +92,7 @@ export function TranareTab({ game }: Props) {
             burnoutScore={profile.burnoutScore}
           />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', margin: 0 }}>
+            <p className="h-name" style={{ margin: 0 }}>
               {profile.firstName} {profile.lastName}
             </p>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>
@@ -132,10 +132,10 @@ export function TranareTab({ game }: Props) {
         {profile.burnoutHistory.length >= MIN_POINTS ? (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: zoneColor }}>
+              <span className="h-num" style={{ color: zoneColor }}>
                 {Math.round(profile.burnoutHistory[profile.burnoutHistory.length - 1])}
               </span>
-              <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>
+              <span className="h-micro" style={{ color: 'var(--text-muted)' }}>
                 Senaste {profile.burnoutHistory.length} omg.
               </span>
             </div>

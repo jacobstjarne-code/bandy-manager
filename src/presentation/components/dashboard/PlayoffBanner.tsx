@@ -95,7 +95,7 @@ export function PlayoffBanner({ game, playoffInfo }: PlayoffBannerProps) {
         {/* QF column */}
         {hasQF && (
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6 }}>
+            <p className="h-label">
               KF
             </p>
             {playoffInfo.quarterFinals.map(s => (
@@ -107,7 +107,7 @@ export function PlayoffBanner({ game, playoffInfo }: PlayoffBannerProps) {
         {/* SF column */}
         {hasSF && (
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6 }}>
+            <p className="h-label">
               SF
             </p>
             {playoffInfo.semiFinals.map(s => (
@@ -119,7 +119,7 @@ export function PlayoffBanner({ game, playoffInfo }: PlayoffBannerProps) {
         {/* Final column */}
         {hasFinal && playoffInfo.final && (
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6 }}>
+            <p className="h-label" style={{ color: 'var(--accent)' }}>
               Final
             </p>
             <SeriesRow series={playoffInfo.final} game={game} />

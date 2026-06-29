@@ -51,6 +51,7 @@ export function PhaseIndicator({ currentPhase }: PhaseIndicatorProps) {
                   </svg>
                 )}
               </div>
+              {/* ds-exempt: color + fontWeight båda dynamiska ternary på state (current/done/upcoming) */}
               <span style={{
                 fontSize: 9,
                 fontWeight: state === 'current' ? 700 : 400,

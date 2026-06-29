@@ -68,7 +68,7 @@ export function SeasonBarometer({ game }: Props) {
     <div className="card-sharp" style={{ margin: '0 0 8px' }}>
       <div style={{ padding: '10px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+          <p className="h-label" style={{ margin: 0 }}>
             {trendIcon} SÄSONGSBAROMETER
           </p>
           <span style={{ fontSize: 11, fontWeight: 700, color: trendColor }}>{trendText}</span>

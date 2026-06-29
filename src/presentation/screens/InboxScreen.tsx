@@ -204,8 +204,8 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
           {item.title}
         </p>
         {item.body && !expanded && (
-          <p style={{
-            fontSize: 9.5, color: 'var(--text-muted)', marginTop: 1,
+          <p className="h-micro" style={{
+            color: 'var(--text-muted)', marginTop: 1,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {item.body}
@@ -240,7 +240,7 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
 
       {/* Round label (nyheter/rapporter) */}
       {expiresRound == null && getRoundLabel(item) != null && (
-        <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, alignSelf: 'flex-start', marginTop: 2 }}>
+        <span className="h-micro" style={{ color: 'var(--text-muted)', flexShrink: 0, alignSelf: 'flex-start', marginTop: 2 }}>
           {getRoundLabel(item)}
         </span>
       )}
@@ -248,7 +248,7 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
       {/* Routar till en handlingsyta → explicit CTA ("Gå till Trupp →"). PC-5/fynd 12.
           Med deadline-pill: bar chevron i stället (pill + ord-CTA trängs på 394px-telefon). */}
       {actionRoute && expiresRound == null ? (
-        <span style={{ color: 'var(--accent)', fontSize: 9.5, fontWeight: 700, letterSpacing: '0.3px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+        <span className="h-micro" style={{ color: 'var(--accent)', fontWeight: 700, letterSpacing: '0.3px', flexShrink: 0, whiteSpace: 'nowrap' }}>
           {inboxActionLabel(actionRoute)} ›
         </span>
       ) : actionRoute && expiresRound != null ? (
@@ -340,7 +340,7 @@ function InboxGroupRow({
       <span style={{ flex: 1, fontSize: 10.5, color: 'var(--text-primary)', fontWeight: 600 }}>
         {label}
       </span>
-      <span style={{ fontSize: 9, color: 'var(--accent-dark)', fontWeight: 700 }}>
+      <span className="h-micro" style={{ color: 'var(--accent-dark)', fontWeight: 700 }}>
         Visa ›
       </span>
     </div>
@@ -440,13 +440,10 @@ function TrainingAggRow({ items }: { items: InboxItem[] }) {
         <Dumbbell size={13} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{
-          fontFamily: 'var(--font-display)', fontStyle: 'italic',
-          fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.4,
-        }}>
+        <p className="h-quote-sm">
           {text}
         </p>
-        <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>
+        <p className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 1 }}>
           {items.length} veckorapporter, sammanslagna
         </p>
       </div>
@@ -509,7 +506,7 @@ export function InboxScreen() {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         padding: '8px 12px', borderBottom: '1px solid var(--border)', flexShrink: 0,
       }}>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16 }}>
+        <h2 className="h-name">
           Inkorg{unreadCount > 0 ? <span style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600, marginLeft: 8 }}>{unreadCount} olästa</span> : null}
         </h2>
         {unreadCount > 0 && (
@@ -531,7 +528,7 @@ export function InboxScreen() {
           }}>
             <Check size={40} strokeWidth={1.5} />
             {/* Playtest-fynd 7: scen-röst (font-display italic), konsekvent med "Resultat bor i Granska". */}
-            <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 14, lineHeight: 1.5, textAlign: 'center', color: 'var(--text-secondary)' }}>
+            <p className="h-quote" style={{ lineHeight: 1.5, textAlign: 'center' }}>
               Lugnt i korridorerna — för tillfället.
             </p>
           </div>
@@ -554,16 +551,12 @@ export function InboxScreen() {
                     background: 'var(--bg)', zIndex: 1,
                   }}>
                     <Dot color={meta.dot} />
-                    <span style={{
-                      fontSize: 8, fontWeight: 600, letterSpacing: '2px',
-                      textTransform: 'uppercase', color: 'var(--text-muted)',
-                    }}>
+                    <span className="h-label" style={{ margin: 0 }}>
                       {meta.label}
                     </span>
-                    <span style={{
+                    <span className="h-num-sm" style={{
                       marginLeft: 'auto',
-                      fontFamily: 'var(--font-display)', fontSize: 10,
-                      color: 'var(--text-secondary)', letterSpacing: 0,
+                      color: 'var(--text-secondary)',
                     }}>
                       {items.length + (isRapporter && hasTraining ? 1 : 0)}
                       {unreadInGroup > 0 && <span style={{ color: dotColor(meta.dot), marginLeft: 4 }}>({unreadInGroup})</span>}
@@ -647,9 +640,8 @@ export function InboxScreen() {
               )
             })}
 
-            <p style={{
-              fontFamily: 'var(--font-display)', fontStyle: 'italic',
-              fontSize: 10.5, color: 'var(--text-muted)',
+            <p className="h-quote-sm" style={{
+              color: 'var(--text-muted)',
               textAlign: 'center', marginTop: 14,
             }}>
               Resultat och matchhändelser bor i Granska — inte här.

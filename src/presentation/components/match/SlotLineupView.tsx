@@ -162,11 +162,7 @@ export function SlotLineupView({
       {/* Slot groups */}
       {groupedSlots.map(group => (
         <div key={group.groupLabel} style={{ marginBottom: 8 }}>
-          <p style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: '1.5px',
-            textTransform: 'uppercase', color: 'var(--text-muted)',
-            marginBottom: 4,
-          }}>
+          <p className="h-label">
             {group.groupLabel}
           </p>
           {group.slots.map(slot => {
@@ -254,7 +250,7 @@ export function SlotLineupView({
       {/* Lagstyrka — ärlig magnitud, samma evaluateSquad som motorn, uppdateras live */}
       {styrka.utvilat > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Lagstyrka</span>
+          <span className="h-label">Lagstyrka</span>
           <span style={{ fontSize: 12 }}>
             <span style={{ fontWeight: 800, color: styrka.gap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrka.idag}</span>
             <span style={{ color: 'var(--text-muted)' }}> / {styrka.utvilat} utvilat</span>

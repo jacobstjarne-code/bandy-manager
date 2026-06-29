@@ -220,7 +220,7 @@ export function SeasonArcCard({ game }: Props) {
       <div className="card-sharp" style={{ marginBottom: 12, overflow: 'hidden' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'baseline', padding: '12px 13px 0', gap: 8 }}>
-          <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+          <span className="h-label" style={{ margin: 0 }}>
             Säsongsbåge
           </span>
           <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-secondary)' }}>
@@ -234,7 +234,7 @@ export function SeasonArcCard({ game }: Props) {
         <ArcSparkline history={game.teamFitnessHistory} mode={mode} roundsInMode={roundsInMode} />
 
         {/* Legend */}
-        <div style={{ display: 'flex', gap: 14, justifyContent: 'center', padding: '3px 12px 0', fontSize: 9.5, color: 'var(--text-muted)' }}>
+        <div className="h-micro" style={{ display: 'flex', gap: 14, justifyContent: 'center', padding: '3px 12px 0', color: 'var(--text-muted)' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
             <i style={{ width: 12, height: 2.5, borderRadius: 2, display: 'inline-block', background: '#C47A3A' }} />
             Grundform
@@ -277,8 +277,7 @@ export function SeasonArcCard({ game }: Props) {
               }}>
                 {MODE_LABELS[m]}
               </div>
-              <div style={{
-                fontSize: 9,
+              <div className="h-micro" style={{
                 color: m === mode ? 'var(--accent-dark)' : 'var(--text-muted)',
                 marginTop: 3,
                 lineHeight: 1.3,
@@ -293,7 +292,7 @@ export function SeasonArcCard({ game }: Props) {
         {/* Konsekvensrad — en mening om vad valet faktiskt gör, eller ingenting */}
         {consequenceLine && (
           <div style={{ padding: '0 13px 12px' }}>
-            <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.45, margin: 0 }}>
+            <p className="h-quote-sm" style={{ lineHeight: 1.45, margin: 0 }}>
               {consequenceLine}
             </p>
           </div>
@@ -303,17 +302,17 @@ export function SeasonArcCard({ game }: Props) {
       {/* ── Reagerar på läget ── */}
       <div className="card-sharp" style={{ marginBottom: 12 }}>
         <div style={{ padding: '11px 13px' }}>
-          <div style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div className="h-label" style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
             ⚙ Reagerar på {MODE_LABELS[mode]}
             {warnCount > 0 && (
-              <span style={{ marginLeft: 'auto', color: 'var(--accent-dark)', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 11 }}>
+              <span className="h-num-sm" style={{ marginLeft: 'auto', color: 'var(--accent-dark)' }}>
                 {warnCount}
               </span>
             )}
           </div>
 
           {reactingPlayers.length === 0 ? (
-            <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-muted)', fontSize: 12.5, padding: '4px 6px' }}>
+            <div className="h-quote" style={{ color: 'var(--text-muted)', padding: '4px 6px' }}>
               Ingen reagerar. Hela truppen följer {MODE_LABELS[mode]}.
             </div>
           ) : (
@@ -371,7 +370,7 @@ function ReactionRow({ player, reaction, hasOverride, onSetOverride }: ReactionR
         <div style={{ width: 30, height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
           <div style={{ display: 'block', height: '100%', borderRadius: 2, background: fitnessColor(player.fitness), width: `${player.fitness}%` }} />
         </div>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: 12, color: 'var(--text-secondary)', width: 18, textAlign: 'right' }}>{player.fitness}</span>
+        <span className="h-num-sm" style={{ color: 'var(--text-secondary)', width: 18, textAlign: 'right' }}>{player.fitness}</span>
       </div>
       {/* flag */}
       <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 600, padding: '3px 7px', borderRadius: 99, whiteSpace: 'nowrap', maxWidth: 122, overflow: 'hidden', textOverflow: 'ellipsis', ...FLAG_STYLE[flagType] }}>
@@ -382,17 +381,20 @@ function ReactionRow({ player, reaction, hasOverride, onSetOverride }: ReactionR
         <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
           <button
             onClick={() => onSetOverride('hall')}
-            style={{ fontSize: 9, padding: '3px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}
+            className="h-micro"
+            style={{ padding: '3px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}
           >Håll</button>
           <button
             onClick={() => onSetOverride('vila')}
-            style={{ fontSize: 9, padding: '3px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}
+            className="h-micro"
+            style={{ padding: '3px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}
           >Vila</button>
         </div>
       ) : (
         <button
           onClick={() => onSetOverride(null)}
-          style={{ fontSize: 9, padding: '3px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}
+          className="h-micro"
+          style={{ padding: '3px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}
         >Följ truppen</button>
       )}
     </div>

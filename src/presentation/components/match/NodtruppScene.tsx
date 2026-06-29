@@ -58,7 +58,7 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
       <div style={{ maxWidth: 440, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {/* Läget */}
         <div className="card-round" style={{ padding: '16px 18px' }}>
-          <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--danger-text)', marginBottom: 6 }}>
+          <div className="h-label" style={{ color: 'var(--danger-text)', marginBottom: 6 }}>
             Nödläge i truppen
           </div>
           <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
@@ -74,7 +74,7 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
         {/* Lager 1 — akademin */}
         {youth.length > 0 && (
           <div className="card-sharp" style={{ padding: '12px 14px' }}>
-            <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+            <div className="h-label" style={{ marginBottom: 8 }}>
               Kalla upp från akademin
             </div>
             {youth.map(y => (
@@ -95,7 +95,7 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
         {/* Lager 2 — fri agent */}
         {freeAgents.length > 0 && (
           <div className="card-sharp" style={{ padding: '12px 14px' }}>
-            <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+            <div className="h-label" style={{ marginBottom: 8 }}>
               Nödvärva fri agent
             </div>
             {freeAgents.map(a => (

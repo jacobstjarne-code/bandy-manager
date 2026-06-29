@@ -30,7 +30,7 @@ export function ReaktionerKort({ pendingEvents, onResolve }: ReaktionerKortProps
       {visible.map(event => (
         <div key={event.id} style={{ marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid var(--border)' }}>
           {event.sender && (
-            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.5px', color: 'var(--text-muted)', marginBottom: 2 }}>
+            <p className="h-label" style={{ marginBottom: 2 }}>
               {event.sender.name} · {event.sender.role}
             </p>
           )}

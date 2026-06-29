@@ -76,7 +76,7 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
 
   return (
     <div className="card-sharp" style={{ padding: '10px 14px 8px', marginBottom: 8 }}>
-      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+      <p className="h-label" style={{ marginBottom: 10 }}>
         Resan — tabellposition per säsong
       </p>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
@@ -175,7 +175,7 @@ export function HistoryScreen() {
           ←
         </button>
         <div>
-  <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>Klubbhistorik</h1>
+  <h1 className="h-display-sm">Klubbhistorik</h1>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
             {game.clubs.find(c => c.id === game.managedClubId)?.name}
           </p>
@@ -221,10 +221,7 @@ export function HistoryScreen() {
         return (
           <div style={{ marginBottom: 32 }}>
             <div className="card-sharp" style={{ padding: '14px 16px' }}>
-              <p style={{
-                fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
-                color: 'var(--text-muted)', marginBottom: 16,
-              }}>
+              <p className="h-label" style={{ marginBottom: 16 }}>
                 STAFETTEN
               </p>
               <Spine items={blodslinjeItems} />
@@ -509,7 +506,7 @@ export function HistoryScreen() {
 
         {topGoalScorers.length > 0 && (
           <div style={{ marginBottom: 20 }}>
-            <p style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 8 }}>
+            <p className="h-label" style={{ marginBottom: 8 }}>
               🎯 Flest mål i karriären
             </p>
             {topGoalScorers.map((p, i) => (
@@ -524,7 +521,7 @@ export function HistoryScreen() {
 
         {topByGames.length > 0 && (
           <div style={{ marginBottom: 20 }}>
-            <p style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 8 }}>
+            <p className="h-label" style={{ marginBottom: 8 }}>
               <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}Flest matcher
             </p>
             {topByGames.map((p, i) => (
@@ -539,7 +536,7 @@ export function HistoryScreen() {
 
         {topByRating.length > 0 && (
           <div>
-            <p style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 8 }}>
+            <p className="h-label" style={{ marginBottom: 8 }}>
               ⭐ Bästa snittbetyg (min 10 matcher)
             </p>
             {topByRating.map(({ p, avg }, i) => (

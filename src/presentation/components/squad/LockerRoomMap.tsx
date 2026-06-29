@@ -58,13 +58,13 @@ export function LockerRoomMap({ players, captainId, game, onPlayerClick }: Props
 
   return (
     <div className="card-sharp" style={{ padding: 12, marginBottom: 12 }}>
-      <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+      <p className="h-label" style={{ marginBottom: 8 }}>
         🚪 OMKLÄDNINGSRUMMET
       </p>
 
       <div style={{ position: 'relative', width: MAP_W, maxWidth: '100%', height: MAP_H, background: 'rgba(0,0,0,0.15)', border: '1px solid var(--border)', borderRadius: 4, overflow: 'visible', margin: '0 auto' }}>
         {/* Taktiktavla längst in */}
-        <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', fontSize: 9, color: 'var(--text-muted)', letterSpacing: '1.5px' }}>
+        <div className="h-label" style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
           📋 TAKTIKTAVLA
         </div>
 

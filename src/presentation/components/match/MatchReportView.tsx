@@ -110,6 +110,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
         {/* Story block */}
         <div className="report-story-block">
           <div className="report-section-label report-story-label">Matchens berättelse</div>
+          {/* ds-exempt: color + fontStyle båda dynamiska ternary på is00 */}
           <p style={{
             fontFamily: 'var(--font-display)',
             fontSize: 13, lineHeight: 1.6,

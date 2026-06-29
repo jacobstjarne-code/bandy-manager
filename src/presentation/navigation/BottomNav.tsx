@@ -88,7 +88,7 @@ export function BottomNav() {
   return (
     <>
       {lockReason && (
-        <div style={{
+        <div className="h-label" style={{
           position: 'fixed',
           bottom: `calc(var(--bottom-nav-height) + var(--safe-bottom))`,
           left: '50%',
@@ -97,15 +97,10 @@ export function BottomNav() {
           maxWidth: '430px',
           padding: '5px 16px',
           textAlign: 'center',
-          fontSize: 9,
-          fontWeight: 600,
-          letterSpacing: '1px',
-          textTransform: 'uppercase',
-          color: 'var(--text-muted)',
           background: 'var(--bg-elevated)',
           borderTop: '1px solid var(--border)',
-          fontFamily: 'var(--font-body)',
           zIndex: 99,
+          margin: 0,
         }}>
           {lockReason}
         </div>
@@ -136,6 +131,7 @@ export function BottomNav() {
             style={{ flex: 1, display: 'flex', textDecoration: 'none' }}
           >
             {({ isActive }) => (
+              /* ds-exempt: color/fontWeight/letterSpacing alla dynamiska ternary på isActive */
               <span style={{
                 flex: 1,
                 display: 'flex',

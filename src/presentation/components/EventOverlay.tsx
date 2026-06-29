@@ -102,14 +102,7 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
         boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
       }}>
         {/* Type badge */}
-        <p style={{
-          fontSize: 9,
-          fontWeight: 600,
-          letterSpacing: '2.5px',
-          textTransform: 'uppercase',
-          color: 'var(--text-muted)',
-          marginBottom: event.sender ? 6 : 12,
-        }}>
+        <p className="h-label" style={{ marginBottom: event.sender ? 6 : 12 }}>
           Händelse
         </p>
 
@@ -121,13 +114,7 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
         )}
 
         {/* Title */}
-        <h2 style={{
-          fontSize: 18,
-          fontWeight: 800,
-          color: 'var(--text-primary)',
-          marginBottom: 14,
-          lineHeight: 1.3,
-        }}>
+        <h2 className="h-display-sm" style={{ marginBottom: 14 }}>
           {event.title}
         </h2>
 

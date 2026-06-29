@@ -84,7 +84,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
       </div>
 
       {/* Step 1: Choose training type */}
-      <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+      <p className="h-label" style={{ marginBottom: 4 }}>
         TRÄNINGSOMRÅDE
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
@@ -112,7 +112,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
       </div>
 
       {/* Step 2: Choose intensity */}
-      <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+      <p className="h-label" style={{ marginBottom: 4 }}>
         INTENSITET
       </p>
       <div style={{ display: 'flex', gap: 3, background: 'var(--bg)', borderRadius: 8, padding: 3, marginBottom: 8 }}>

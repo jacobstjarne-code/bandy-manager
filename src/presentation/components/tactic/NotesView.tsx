@@ -39,8 +39,8 @@ const POSITION_COLORS: Record<string, string> = {
 function NoteTagBadge({ tag }: { tag: NoteTag }) {
   const s = TAG_STYLES[tag]
   return (
-    <span style={{
-      fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 3,
+    <span className="h-micro" style={{
+      padding: '2px 7px', borderRadius: 3,
       background: s.bg, color: s.color, letterSpacing: '1px', marginLeft: 'auto', flexShrink: 0,
     }}>
       {s.label}
@@ -81,15 +81,15 @@ export function NotesView({ coach, players, captainPlayerId, matchday, nextOppon
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <span style={{ color: 'var(--text-light)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)' }}>
+          <span className="h-num-sm" style={{ color: 'var(--text-light)' }}>
             {coach.initials}
           </span>
         </div>
         <div>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: 2 }}>
+          <p className="h-label" style={{ marginBottom: 2 }}>
             {coach.name.toUpperCase()} · ASSISTENT
           </p>
-          <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontStyle: 'italic', color: 'var(--text-primary)', lineHeight: 1.4 }}>
+          <p className="h-quote" style={{ color: 'var(--text-primary)' }}>
             {notes.length > 0
               ? `"${notes.length} spelare att hålla koll på inför nästa match."`
               : '"Inga särskilda anteckningar just nu. Gruppen är jämn."'
@@ -115,11 +115,11 @@ export function NotesView({ coach, players, captainPlayerId, matchday, nextOppon
                 background: posColor, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0, opacity: 0.85,
               }}>
-                <span style={{ color: 'var(--text-light)', fontSize: 9, fontWeight: 700 }}>
+                <span className="h-micro" style={{ color: 'var(--text-light)', fontWeight: 700 }}>
                   {positionShort(p.position)}
                 </span>
               </div>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--text-primary)' }}>
+              <span className="h-name">
                 {p.firstName} {p.lastName}
               </span>
               <NoteTagBadge tag={note.tag} />
@@ -127,10 +127,7 @@ export function NotesView({ coach, players, captainPlayerId, matchday, nextOppon
             <p style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 36, marginTop: 3 }}>
               {note.metadata}
             </p>
-            <p style={{
-              fontFamily: 'var(--font-display)', fontSize: 11, fontStyle: 'italic',
-              color: 'var(--text-secondary)', marginLeft: 36, marginTop: 6, lineHeight: 1.5,
-            }}>
+            <p className="h-quote-sm" style={{ marginLeft: 36, marginTop: 6, lineHeight: 1.5 }}>
               "{note.quote}"
             </p>
           </div>
@@ -150,14 +147,11 @@ export function NotesView({ coach, players, captainPlayerId, matchday, nextOppon
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
           }}>
-            <span style={{ color: 'var(--text-light)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)' }}>
+            <span className="h-num-sm" style={{ color: 'var(--text-light)' }}>
               {coach.initials}
             </span>
           </div>
-          <p style={{
-            fontFamily: 'var(--font-display)', fontSize: 11, fontStyle: 'italic',
-            color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5,
-          }}>
+          <p className="h-quote-sm" style={{ margin: 0, lineHeight: 1.5 }}>
             "{aggregationText}"
           </p>
         </div>

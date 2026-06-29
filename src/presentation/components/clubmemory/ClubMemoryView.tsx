@@ -89,7 +89,7 @@ export function ClubMemoryView({ game }: Props) {
 
           {blodslinjeItems.length > 0 && (
             <div className="card-sharp" style={{ padding: '14px 16px', margin: '0 12px' }}>
-              <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12 }}>
+              <div className="h-label" style={{ marginBottom: 12 }}>
                 🩸 BLODSLINJE
               </div>
               <Spine items={blodslinjeItems} />

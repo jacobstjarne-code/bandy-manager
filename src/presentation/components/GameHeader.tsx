@@ -140,17 +140,13 @@ export function GameHeader() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
         {/* Omgångs-sigill */}
         {roundChipLabel && (
-          <div style={{
+          <div className="h-label" style={{
             padding: '2px 7px',
             borderRadius: 3,
             border: '1px solid var(--accent)',
             background: 'rgba(201,122,58,0.10)',
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: '0.5px',
             color: 'var(--accent)',
             whiteSpace: 'nowrap',
-            lineHeight: 1.4,
           }}>
             {roundChipLabel}
           </div>

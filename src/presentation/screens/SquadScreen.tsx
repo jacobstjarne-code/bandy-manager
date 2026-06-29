@@ -257,11 +257,7 @@ function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversar
 
         {/* Name */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{
-            fontSize: 14,
-            fontWeight: 700,
-            color: 'var(--text-primary)',
-            fontFamily: 'var(--font-display)',
+          <p className="h-name" style={{
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -305,7 +301,7 @@ function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversar
             )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>Styrka</span>
+            <span className="h-micro" style={{ color: 'var(--text-muted)' }}>Styrka</span>
             {/* R2-3: åldersband-chip-familjen — Utvecklas=cold, Peak=success, Avtar=muted */}
             {player.age < 24 && (
               <span className="ageband ab-young">Utvecklas</span>

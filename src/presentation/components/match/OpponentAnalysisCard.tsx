@@ -34,10 +34,10 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
       {/* Header with name + position */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
         <div>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0, marginBottom: 4 }}>
+          <p className="h-label" style={{ margin: 0 }}>
             📋 MOTSTÅNDAREN
           </p>
-          <p style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>{opponent.name}</p>
+          <p className="h-name" style={{ margin: 0 }}>{opponent.name}</p>
         </div>
         {fixture.isCup ? (
           <div style={{ textAlign: 'center' }}>
@@ -48,7 +48,7 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
           </div>
         ) : opponentStanding ? (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-display)', margin: 0 }}>#{opponentStanding.position}</p>
+            <p className="h-num-lg" style={{ margin: 0 }}>#{opponentStanding.position}</p>
             <p style={{ fontSize: 8, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Tabell</p>
           </div>
         ) : null}

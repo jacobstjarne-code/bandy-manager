@@ -15,7 +15,7 @@ export function Spine({ items, title }: Props) {
   return (
     <div style={{ marginTop: 4 }}>
       {title && (
-        <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+        <div className="h-label" style={{ marginBottom: 10 }}>
           {title}
         </div>
       )}

@@ -43,7 +43,7 @@ export function TacticBoardCard({
     <div className="card-sharp" style={{ padding: 0, overflow: 'hidden', marginBottom: 8 }}>
       {/* SPELSTIL — en sanningskälla, samma som matchförberedelsen */}
       <div style={{ padding: '10px 12px 8px' }}>
-        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 5 }}>
+        <p className="h-label" style={{ marginBottom: 5 }}>
           Spelstil · samma som i matchförberedelsen
         </p>
         <div style={{ display: 'flex', gap: 0, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
@@ -68,7 +68,7 @@ export function TacticBoardCard({
 
       {/* Planen + kemi-lager (alltid synligt) */}
       <div style={{ padding: '4px 12px 0' }}>
-        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>
+        <p className="h-label" style={{ marginBottom: 6 }}>
           📋 Planen · {club.activeTactic.formation ?? '3-3-4'}
         </p>
       </div>
@@ -81,14 +81,14 @@ export function TacticBoardCard({
           chemistryStats={chemistryStats}
         />
         {/* Så spelar det — härlett ur spelstil + faktisk kemi */}
-        <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 10.5, color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.45, marginTop: 8 }}>
+        <p className="h-quote-sm" style={{ textAlign: 'center', lineHeight: 1.45, marginTop: 8 }}>
           {feel}
         </p>
       </div>
 
       {/* Anteckningar — som kort under, inte en egen flik */}
       <div style={{ margin: '8px 12px 0', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 11px' }}>
-        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>
+        <p className="h-label" style={{ marginBottom: 4 }}>
           🗒 Assistentens anteckningar
         </p>
         <NotesView

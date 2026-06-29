@@ -125,7 +125,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
             return <span style={{ fontSize: 20, color: 'var(--text-muted)' }}>—</span>
           })()}
           <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>SÄSONG</p>
+            <p className="h-label">SÄSONG</p>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>{seasonSpanLabel(game.currentSeason)}</p>
           </div>
         </div>
@@ -134,7 +134,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
           <div style={{ flex: 100 - cs, height: 7, background: 'var(--border-dark)', borderRadius: '0 4px 4px 0' }} />
         </div>
         {/* Samhällsaktiviteter — påverkar bygdens puls, inte inkomst */}
-        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>ENGAGEMANG</p>
+        <p className="h-label" style={{ marginBottom: 6 }}>ENGAGEMANG</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
           {/* EkonomiTab äger aktivering — read-only status här */}
           {([

@@ -168,7 +168,7 @@ function NodeCard({ view, mode, selected, onSelect }: {
       </div>
 
       {status === 'ongoing' && view.etaMatchday !== undefined && view.cooldownTotal !== undefined && (
-        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>
+        <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2 }}>
           Klar omg {view.etaMatchday}
           <CooldownDots total={view.cooldownTotal} filled={view.cooldownFilled ?? 0} />
         </div>
@@ -179,19 +179,19 @@ function NodeCard({ view, mode, selected, onSelect }: {
       )}
 
       {isHall && (
-        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>
+        <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2 }}>
           Öppnar prövningen — förankring krävs ›
         </div>
       )}
 
       {mode === 'valj' && status === 'available' && !isHall && (
-        <div style={{ fontSize: 9, fontStyle: 'italic', color: 'var(--text-secondary)', marginTop: 3, fontFamily: 'Georgia,serif' }}>
+        <div className="h-quote-sm" style={{ color: 'var(--text-secondary)', marginTop: 3 }}>
           {def.consequences.find(c => c.dim === 'publik' || c.dim === 'sjal')?.label ?? ''}
         </div>
       )}
 
       {FACILITY_DESC[def.id] && (
-        <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>
+        <p className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 4 }}>
           {FACILITY_DESC[def.id]}
         </p>
       )}
@@ -214,7 +214,7 @@ export function FacilityTree({
     <div style={{ color: 'var(--text-primary)' }}>
       {mode === 'betrakta' && (
         <div style={{ marginBottom: 8 }}>
-          <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 15 }}>Anläggningen</h2>
+          <h2 className="h-name">Anläggningen</h2>
           <span style={{ fontSize: 8, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block', marginTop: 2 }}>
             Betrakta · val görs i säsongsstarten
           </span>
@@ -266,9 +266,8 @@ export function FacilityTree({
       })}
 
       {/* Konstis-baseline */}
-      <div style={{
+      <div className="h-quote-sm" style={{
         marginTop: 6, paddingTop: 7, borderTop: '1px solid var(--border)',
-        fontFamily: 'Georgia,serif', fontStyle: 'italic', fontSize: 10,
         color: 'var(--text-muted)', textAlign: 'center',
       }}>
         {clubName

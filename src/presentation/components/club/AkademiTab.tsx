@@ -104,7 +104,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
             { label: 'Tidiga talanger', players: notReady, canPromote: false },
           ].map(group => group.players.length > 0 && (
             <div key={group.label} style={{ marginBottom: 10 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+              <p className="h-label" style={{ marginBottom: 4 }}>
                 {group.label}
               </p>
               {group.players.map(p => {
@@ -157,7 +157,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
           Akademin utvecklar unga spelare. Uppgradera nivån för bättre rekrytering och utveckling.
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-          <span style={{ fontSize: 15, fontWeight: 700 }}>{levelLabel}</span>
+          <span className="h-name">{levelLabel}</span>
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{(levelDrift / 1000)} tkr/omg</span>
         </div>
         {club.academyReputation !== undefined && (
@@ -244,7 +244,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
                       Ta bort
                     </button>
                   </div>
-                  <p style={{ fontSize: 10.5, fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-secondary)', margin: '3px 0 0', lineHeight: 1.4 }}>
+                  <p className="h-quote-sm" style={{ color: 'var(--text-secondary)', margin: '3px 0 0' }}>
                     {consequenceText}
                   </p>
                 </div>
@@ -301,7 +301,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
                 youth.name.replace(' (P19)', ''),
               )
               return (
-                <p style={{ fontSize: 10.5, fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-secondary)', margin: '6px 0 0', lineHeight: 1.4 }}>
+                <p className="h-quote-sm" style={{ color: 'var(--text-secondary)', margin: '6px 0 0' }}>
                   {previewText}
                 </p>
               )
@@ -323,7 +323,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
         )}
         {activeLoanDeals.length > 0 && (
           <div style={{ marginBottom: 12 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Aktiva lån</p>
+            <p className="h-label" style={{ marginBottom: 4 }}>Aktiva lån</p>
             {activeLoanDeals.map(deal => {
               const loanPlayer = game.players.find(p => p.id === deal.playerId)
               if (!loanPlayer) return null

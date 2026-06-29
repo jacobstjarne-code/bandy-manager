@@ -15,22 +15,10 @@ const TONE_COLORS: Record<NonNullable<StatBadgeProps['tone']>, string> = {
 export function StatBadge({ value, label, tone = 'neutral' }: StatBadgeProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-      <span style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 28,
-        lineHeight: 1,
-        color: TONE_COLORS[tone],
-      }}>
+      <span className="h-num-lg" style={{ lineHeight: 1, color: TONE_COLORS[tone] }}>
         {value}
       </span>
-      <span style={{
-        fontFamily: 'var(--font-body)',
-        fontSize: 9,
-        fontWeight: 600,
-        letterSpacing: '1.5px',
-        textTransform: 'uppercase',
-        color: 'var(--text-muted)',
-      }}>
+      <span className="h-label" style={{ margin: 0 }}>
         {label}
       </span>
     </div>
