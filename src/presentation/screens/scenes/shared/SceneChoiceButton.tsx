@@ -47,9 +47,10 @@ export function SceneChoiceButton({ choice, onClick }: Props) {
       </span>
       {choice.effectDescription && (
         <span
+          className="h-micro"
+          // ds-exempt: system-font override intentional (non-Georgia body)
           style={{
             display: 'block',
-            fontSize: 9,
             color: 'var(--text-muted)',
             marginTop: 3,
             fontFamily: '-apple-system, system-ui, sans-serif',

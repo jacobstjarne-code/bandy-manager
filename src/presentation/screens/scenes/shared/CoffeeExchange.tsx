@@ -57,15 +57,7 @@ function SpeakerRow({ initial, speakerName, text, align }: SpeakerRowProps) {
           gap: 2,
         }}
       >
-        <div
-          style={{
-            fontSize: 9,
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: 1.5,
-            fontWeight: 600,
-          }}
-        >
+        <div className="h-label h-label-light">
           {speakerName}
         </div>
         <div

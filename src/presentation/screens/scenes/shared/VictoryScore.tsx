@@ -27,10 +27,8 @@ export function VictoryScore({
       </div>
 
       <div
+        className="h-quote h-quote-light"
         style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 14,
-          color: 'var(--text-light-secondary)',
           marginBottom: 4,
         }}
       >

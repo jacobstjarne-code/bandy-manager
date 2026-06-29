@@ -35,15 +35,11 @@ export function JournalistRelationshipScene({ game, onComplete }: Props) {
 
       {/* 1. SceneHeader — genre tag + namn + outlet */}
       <div style={{ textAlign: 'center' }}>
-        <div style={{
+        <div className="h-label h-label-light" style={{
           textAlign: 'center',
           padding: '18px 0 8px',
-          fontSize: 9,
-          fontWeight: 600,
-          letterSpacing: 4,
           color: 'var(--accent)',
           opacity: 0.7,
-          textTransform: 'uppercase',
         }}>
           I DETTA ÖGONBLICK
         </div>
@@ -75,7 +71,7 @@ export function JournalistRelationshipScene({ game, onComplete }: Props) {
       {/* 2. Relations-block */}
       <div style={{ padding: '0px 24px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-          <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, textTransform: 'uppercase' }}>
+          <span className="h-label h-label-light">
             Relation
           </span>
           <span style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: 'var(--text-light)', fontWeight: 700 }}>
@@ -93,13 +89,7 @@ export function JournalistRelationshipScene({ game, onComplete }: Props) {
 
       {/* 3. Minneslista */}
       <div style={{ padding: '8px 24px 16px' }}>
-        <div style={{
-          fontSize: 9,
-          color: 'var(--text-muted)',
-          letterSpacing: 2,
-          textTransform: 'uppercase',
-          marginBottom: 12,
-        }}>
+        <div className="h-label h-label-light" style={{ marginBottom: 12 }}>
           Senast hörda
         </div>
         {data.memories.length === 0 && (

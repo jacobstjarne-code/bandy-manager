@@ -132,12 +132,10 @@ export function CupIntroScene({ game, onComplete }: Props) {
 
       {currentBeat.autoAdvance && (
         <div
+          className="h-quote-sm h-quote-light"
           style={{
             padding: '16px 24px 32px',
             textAlign: 'center',
-            color: 'var(--text-muted)',
-            fontSize: 11,
-            fontStyle: 'italic',
           }}
         >
           ...

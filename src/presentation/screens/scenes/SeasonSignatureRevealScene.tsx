@@ -48,15 +48,11 @@ export function SeasonSignatureRevealScene({ game, onComplete }: Props) {
       }} />
 
       {/* Genre tag */}
-      <div style={{
+      <div className="h-label h-label-light" style={{
         textAlign: 'center',
         padding: '28px 0 8px',
-        fontSize: 9,
-        fontWeight: 600,
-        letterSpacing: 4,
         color: 'var(--accent)',
         opacity: 0.7,
-        textTransform: 'uppercase',
         position: 'relative',
         zIndex: 1,
       }}>

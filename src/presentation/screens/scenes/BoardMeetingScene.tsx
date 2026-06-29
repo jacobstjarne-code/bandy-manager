@@ -69,8 +69,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
       animation: 'fadeIn 300ms ease both',
     }}>
       {/* Genre */}
-      <div style={{
-        fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase',
+      <div className="h-label h-label-light" style={{
         textAlign: 'center', color: GENRE_COLOR[state],
         opacity: state === 'A' ? 0.7 : 0.85, marginBottom: 14,
       }}>
@@ -89,10 +88,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
 
       {/* Speaker */}
       <div style={{ marginBottom: 16 }}>
-        <div style={{
-          fontSize: 9, textTransform: 'uppercase', letterSpacing: '2px',
-          color: 'var(--text-muted)', marginBottom: 5,
-        }}>
+        <div className="h-label h-label-light" style={{ marginBottom: 5 }}>
           {data.chairmanName} · {data.chairmanRole}
         </div>
         <div style={{ fontFamily: 'Georgia, serif', fontSize: 14.5, color: 'var(--text-light)', lineHeight: 1.55 }}>
@@ -112,7 +108,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
           padding: '13px 14px', marginBottom: 14,
           borderLeft: `2px solid ${evalStripe}`,
         }}>
-          <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: 8 }}>
+          <div className="h-label h-label-light" style={{ marginBottom: 8 }}>
             Förra säsongen · måluppfyllelse
           </div>
           {data.evalRows.map((row, i) => (
@@ -134,7 +130,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
       {/* Fin — kassa + budget */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
         <div style={{ background: 'var(--bg-portal-surface)', borderRadius: 8, padding: '11px 13px' }}>
-          <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: 4 }}>Kassa</div>
+          <div className="h-label h-label-light" style={{ marginBottom: 4 }}>Kassa</div>
           <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-mono)', color: finValColor }}>{fmtTkr(data.finance.finances)}</div>
           {deltaText && (
             <div style={{ fontSize: 10, color: delta && delta > 0 ? 'var(--success)' : delta && delta < 0 ? 'var(--danger)' : 'var(--text-muted)', marginTop: 2 }}>
@@ -143,7 +139,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
           )}
         </div>
         <div style={{ background: 'var(--bg-portal-surface)', borderRadius: 8, padding: '11px 13px' }}>
-          <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: 4 }}>Transferbudget</div>
+          <div className="h-label h-label-light" style={{ marginBottom: 4 }}>Transferbudget</div>
           <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-light)' }}>{fmtTkr(data.finance.transferBudget)}</div>
         </div>
       </div>
@@ -151,7 +147,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
       {/* Goals — nya mål */}
       {data.newGoals.length > 0 && (
         <div style={{ marginBottom: 'auto' }}>
-          <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: 8 }}>
+          <div className="h-label h-label-light" style={{ marginBottom: 8 }}>
             📋 Mål för säsong {game.currentSeason}
           </div>
           {data.newGoals.map((obj, i) => {

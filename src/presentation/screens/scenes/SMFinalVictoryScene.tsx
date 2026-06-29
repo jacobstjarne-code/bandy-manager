@@ -77,11 +77,8 @@ export function SMFinalVictoryScene({ game, onComplete }: Props) {
         </div>
 
         <div
+          className="h-quote-sm h-quote-light"
           style={{
-            fontSize: 11,
-            color: 'var(--text-muted)',
-            fontFamily: 'Georgia, serif',
-            fontStyle: 'italic',
             marginBottom: 36,
           }}
         >

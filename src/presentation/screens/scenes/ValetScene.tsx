@@ -45,11 +45,7 @@ export function ValetScene({ game, onComplete }: Props) {
       </div>
 
       {/* Fråga ovanför korten */}
-      <div style={{
-        fontSize: 12,
-        fontFamily: 'Georgia, serif',
-        fontStyle: 'italic',
-        color: 'var(--text-muted)',
+      <div className="h-quote h-quote-light" style={{
         textAlign: 'center',
         lineHeight: 1.55,
         marginBottom: 20,
@@ -113,10 +109,7 @@ export function ValetScene({ game, onComplete }: Props) {
           ))}
         </div>
       ) : (
-        <div style={{
-          fontSize: 12,
-          fontStyle: 'italic',
-          color: 'var(--text-muted)',
+        <div className="h-quote h-quote-light" style={{
           textAlign: 'center',
           marginBottom: 'auto',
           padding: '24px 0',
