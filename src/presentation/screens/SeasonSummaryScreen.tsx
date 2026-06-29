@@ -298,13 +298,11 @@ export function SeasonSummaryScreen() {
               marginBottom: 8,
             }}>
               {/* Pill label */}
-              <div style={{
+              <div className="h-label" style={{
                 position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
                 background: 'var(--accent)', color: 'var(--text-light)',
-                fontSize: 9, letterSpacing: '3px', fontWeight: 700,
                 padding: '4px 16px', borderRadius: 20,
-                fontFamily: 'var(--font-body)', textTransform: 'uppercase',
-                whiteSpace: 'nowrap',
+                whiteSpace: 'nowrap', marginBottom: 0,
               }}>⭐ SÄSONGENS MATCH</div>
 
               <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '6px 0 12px', letterSpacing: 1, fontFamily: 'var(--font-body)' }}>
@@ -326,7 +324,7 @@ export function SeasonSummaryScreen() {
                 </span>
               </div>
 
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55, margin: '12px 12px 14px', fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>
+              <p className="h-quote" style={{ lineHeight: 1.55, margin: '12px 12px 14px' }}>
                 {h.narrative}
               </p>
 
@@ -483,7 +481,7 @@ export function SeasonSummaryScreen() {
                   const player = s.playerId ? game.players.find(p => p.id === s.playerId) : null
                   const playerName = player ? `${player.firstName} ${player.lastName}` : null
                   return (
-                    <p key={i} style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', margin: 0 }}>
+                    <p key={i} className="h-quote-sm" style={{ lineHeight: 1.5, margin: 0 }}>
                       {playerName && (
                         <><span style={{ color: 'var(--accent)', fontWeight: 600, fontStyle: 'normal' }}>{playerName}</span> — </>
                       )}
@@ -531,13 +529,7 @@ export function SeasonSummaryScreen() {
               <span style={{ fontSize: summary.cupResult === 'winner' ? 32 : 24 }}>
                 {summary.cupResult === 'winner' ? '🏆' : summary.cupResult === 'finalist' ? '🥈' : '🏆'}
               </span>
-              <p style={{
-                fontSize: summary.cupResult === 'winner' ? 16 : 14,
-                fontWeight: 700,
-                color: summary.cupResult === 'winner' ? 'var(--accent)' : 'var(--text-primary)',
-                marginTop: 6,
-                fontFamily: 'var(--font-display)',
-              }}>
+              <p style={{ fontSize: summary.cupResult === 'winner' ? 16 : 14, fontWeight: 700, color: summary.cupResult === 'winner' ? 'var(--accent)' : 'var(--text-primary)', marginTop: 6, fontFamily: 'var(--font-display)' }}> {/* ds-exempt: fontSize + color ternary */}
                 {summary.cupResult === 'winner' ? 'CUPVINNARE!' : summary.cupResult === 'finalist' ? 'Cupfinalist' : summary.cupResult === 'semifinal' ? 'Cupsemifinalist' : 'Cupkvartsfinalist'}
               </p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>

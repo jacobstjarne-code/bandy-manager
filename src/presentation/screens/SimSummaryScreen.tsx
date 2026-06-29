@@ -104,7 +104,7 @@ export function SimSummaryScreen() {
         {/* ── Header ── */}
         <div className="card-sharp" style={{ padding: '10px 14px' }}>
           <p className="h-label" style={{ marginBottom: 6 }}>⏩ SIMULERINGSRESULTAT</p>
-          <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', margin: '0 0 2px' }}>
+          <p className="h-num-lg" style={{ color: 'var(--text-primary)', margin: '0 0 2px' }}>
             {sorted.length} matcher simulerade
           </p>
 

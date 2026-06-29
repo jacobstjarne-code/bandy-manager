@@ -65,23 +65,23 @@ export function HalfTimeSummaryScreen() {
           <p className="h-label" style={{ marginBottom: 10 }}>📊 TABELLÄGE</p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
             <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color: summary.position <= 8 ? 'var(--success)' : 'var(--text-primary)', lineHeight: 1 }}>
+              <p style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color: summary.position <= 8 ? 'var(--success)' : 'var(--text-primary)', lineHeight: 1 }}> {/* ds-exempt: fontSize:28 + color ternary */}
                 {summary.position}
               </p>
-              <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>plats</p>
+              <p className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2 }}>plats</p>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1 }}>
+              <p className="h-num-lg" style={{ fontSize: 28, color: 'var(--text-primary)', lineHeight: 1 }}>
                 {summary.points}
               </p>
-              <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>poäng</p>
+              <p className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2 }}>poäng</p>
             </div>
             {summary.pointsToTop8 > 0 && (
               <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--warning)', lineHeight: 1 }}>
+                <p className="h-num-lg" style={{ fontSize: 28, color: 'var(--warning)', lineHeight: 1 }}>
                   {summary.pointsToTop8}
                 </p>
-                <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>till topp 8</p>
+                <p className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2 }}>till topp 8</p>
               </div>
             )}
           </div>

@@ -191,7 +191,7 @@ export function RoundSummaryScreen() {
             <div style={{ padding: '12px 14px 10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 {/* TODO(FAS 1): byt mot piktogram · sport · se ICON-BRIEF.md */}
-                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+                <p className="h-label" style={{ margin: 0 }}>
                   <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}{lastFixture.isCup ? 'CUPMATCH' : 'MATCHEN'}
                 </p>
                 <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>›</span>
@@ -228,7 +228,7 @@ export function RoundSummaryScreen() {
           </div>
         ) : (
           <div className="card-sharp" style={{ margin: '0 0 8px', padding: '10px 14px', ...fadeIn(1) }}>
-            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+            <p className="h-label">
               <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}MATCHEN
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Ingen match denna omgång</p>
@@ -240,11 +240,11 @@ export function RoundSummaryScreen() {
           <div style={{ display: 'flex', gap: 8, margin: '0 0 8px', ...fadeIn(2) }}>
             <div className="card-sharp" style={{ flex: 1, padding: '10px 14px' }}>
               {/* TODO(FAS 1): byt mot piktogram · statistik · se ICON-BRIEF.md */}
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+              <p className="h-label" style={{ marginBottom: 6 }}>
                 📊 TABELL
               </p>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 24, fontWeight: 400, color: 'var(--accent-dark)', fontFamily: 'var(--font-display)' }}>
+                <span className="h-num-lg" style={{ fontSize: 24, fontWeight: 400, color: 'var(--accent-dark)' }}>
                   {leaguePosition ?? '—'}
                 </span>
                 {leaguePosition !== null && (
@@ -258,7 +258,7 @@ export function RoundSummaryScreen() {
             </div>
             <div className="card-sharp" style={{ flex: 1, padding: '10px 14px' }}>
               {/* TODO(FAS 1): byt mot piktogram · trend · se ICON-BRIEF.md */}
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+              <p className="h-label" style={{ marginBottom: 6 }}>
                 📈 FORM
               </p>
               {recentForm.length > 0
@@ -277,7 +277,7 @@ export function RoundSummaryScreen() {
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+              <p className="h-label">
                 🏋️ TRÄNING
               </p>
               <span style={{ fontSize: 13, fontWeight: 600 }}>
@@ -302,7 +302,7 @@ export function RoundSummaryScreen() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+                <p className="h-label">
                   🎓 AKADEMIN
                 </p>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>{youthMatchResult}</span>
@@ -320,11 +320,11 @@ export function RoundSummaryScreen() {
             style={{ flex: 1, padding: '10px 14px', cursor: 'pointer' }}
             onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
           >
-            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+            <p className="h-label" style={{ marginBottom: 6 }}>
               🏘️ ORTEN
             </p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 6 }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: csColor(cs), fontFamily: 'var(--font-display)' }}>{cs}</span>
+              <span style={{ fontSize: 18, fontWeight: 700, color: csColor(cs), fontFamily: 'var(--font-display)' }}>{cs}</span> {/* ds-exempt: csColor() dynamisk */}
               {csDelta !== 0 && (
                 <span style={{ fontSize: 11, fontWeight: 600, color: csDelta > 0 ? 'var(--success)' : 'var(--danger)' }}>
                   {csDelta > 0 ? `+${csDelta}` : String(csDelta)}
@@ -344,10 +344,10 @@ export function RoundSummaryScreen() {
             onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
           >
             {/* TODO(FAS 1): byt mot piktogram · ekonomi · se ICON-BRIEF.md */}
-            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+            <p className="h-label" style={{ marginBottom: 6 }}>
               💰 EKONOMI
             </p>
-            <span style={{ fontSize: 18, fontWeight: 700, color: financesAfter < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: financesAfter < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)' }}> {/* ds-exempt: finances ternary */}
               {formatFinanceAbs(financesAfter)}
             </span>
             {financesDelta !== 0 && (
@@ -392,7 +392,7 @@ export function RoundSummaryScreen() {
         {otherResults.length > 0 && (
           <div className="card-sharp" style={{ margin: '0 0 8px', padding: '10px 14px', ...fadeIn(7) }}>
             {/* TODO(FAS 1): byt mot piktogram · sport · se ICON-BRIEF.md */}
-            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+            <p className="h-label" style={{ marginBottom: 8 }}>
               <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}ANDRA MATCHER
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -437,7 +437,7 @@ export function RoundSummaryScreen() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               {/* TODO(FAS 1): byt mot piktogram · press · se ICON-BRIEF.md */}
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
+              <p className="h-label" style={{ margin: 0 }}>
                 📰 PRESSKLIPP
               </p>
               <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>›</span>
