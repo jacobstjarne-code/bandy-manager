@@ -44,7 +44,7 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
   const isResolved = !!resolvedInfo
 
   return (
-    <div className="portal-secondary-card">
+    <div className="portal-secondary-card" data-decision-anchor>
       {/* Left stripe */}
       <div className={`portal-card-stripe ${isSupporter ? 'portal-card-stripe-warm' : 'portal-card-stripe-copper-wide'}`} />
 

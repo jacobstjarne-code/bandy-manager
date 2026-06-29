@@ -496,6 +496,29 @@ a {
   animation: none;
 }
 
+/* Grind-läge (Slinga 1): låst tills veckans beslut hanterats. Inte "disabled" — ett
+   medvetet, läsbart tillstånd. Måste vara OGENOMSKINLIG: knappen är position:fixed
+   utan ogenomskinligt bakom sig, så generell :disabled-transparens (0.4) skulle
+   exponera flödet. Solid yta + full opacitet, klickbar (scrollar till beslutskortet). */
+.btn-cta-locked {
+  background: var(--bg-portal-elevated);
+  color: var(--text-light-secondary);
+  opacity: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  animation: none;
+  cursor: pointer;
+}
+
+/* Flash på beslutskortet när den låsta CTA:n scrollar dit — leder ögat. */
+.decision-flash {
+  animation: decisionFlash 1.2s ease-out;
+}
+@keyframes decisionFlash {
+  0%, 100% { box-shadow: none; }
+  30%      { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent); }
+}
+
 /* ── Icon-only buttons ── */
 .btn-icon {
   padding: 7px;

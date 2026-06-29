@@ -254,6 +254,17 @@ export function PortalScreen() {
   // buildPortal garanterar att beslutskortet syns när detta är satt — ingen soft-lock.
   const weeklyDecisionPending = game.pendingWeeklyDecision != null
 
+  // Grind-läget leder ögat: klick på den låsta CTA:n scrollar till beslutskortet
+  // istället för att vara en död spärr. Målet är WeeklyDecisionSecondary (data-decision-anchor).
+  const scrollToDecision = useCallback(() => {
+    const el = document.querySelector('[data-decision-anchor]')
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.classList.add('decision-flash')
+      setTimeout(() => el.classList.remove('decision-flash'), 1200)
+    }
+  }, [])
+
   return (
     <>
       {nextAnslag && (
@@ -328,11 +339,12 @@ export function PortalScreen() {
         )}
         <button
           data-coach-id="cta-button"
-          onClick={handleAdvance}
-          disabled={!canClickAdvance || isAdvancing || weeklyDecisionPending}
-          className={`btn btn-primary btn-cta${canClickAdvance && !isAdvancing && !weeklyDecisionPending ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
+          onClick={weeklyDecisionPending ? scrollToDecision : handleAdvance}
+          disabled={(!canClickAdvance || isAdvancing) && !weeklyDecisionPending}
+          aria-disabled={weeklyDecisionPending || undefined}
+          className={`btn btn-primary btn-cta${canClickAdvance && !isAdvancing && !weeklyDecisionPending ? ' btn-pulse' : ''}${weeklyDecisionPending ? ' btn-cta-locked' : isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
         >
-          {isAdvancing ? '···' : weeklyDecisionPending ? 'Hantera veckans beslut först' : advanceButtonText}
+          {isAdvancing ? '···' : weeklyDecisionPending ? 'Hantera veckans beslut först ↑' : advanceButtonText}
         </button>
       </div>
     </>

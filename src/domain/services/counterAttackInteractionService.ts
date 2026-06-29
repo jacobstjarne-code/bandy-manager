@@ -74,7 +74,7 @@ export function resolveCounter(
           type: 'goal',
           scorerId: support.id,
           scorerName: `${support.firstName} ${support.lastName}`,
-          description: `Tidig boll till ${support.firstName} ${support.lastName} som nickar in!`,
+          description: `Tidig boll till ${support.firstName} ${support.lastName} som styr in den direkt!`,
         }
       }
       return rand() < 0.55
