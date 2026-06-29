@@ -31,13 +31,12 @@ export function PhaseOverlay({ phase, onContinue }: PhaseOverlayProps) {
         <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
           {isOT ? 'Ytterligare 2 × 15 minuter spelas.' : 'Nu avgör straffarna!'}
         </p>
-        <button onClick={onContinue} style={{
+        <button onClick={onContinue} className="h-micro" style={{
           width: '100%', padding: '13px 0',
           background: isOT ? 'var(--accent)' : 'var(--danger)',
           color: isOT ? 'var(--bg)' : 'var(--text-on-dark)',
           border: 'none', borderRadius: 0, cursor: 'pointer',
           fontSize: 14, fontWeight: 700, letterSpacing: '1px',
-          fontFamily: 'var(--font-display)',
         }}>
           {isOT ? 'Spela förlängning →' : 'Påbörja straffläggning →'}
         </button>

@@ -93,11 +93,7 @@ export function MatchLaddningBand({ state, streakLength, isBroken, game, opponen
             {plats} · {relationText}
           </p>
 
-          <p style={{
-            fontFamily: 'var(--font-display)',
-            fontStyle: 'italic', fontSize: 12,
-            color: 'var(--text-light)', lineHeight: 1.5, opacity: 0.94,
-          }}>
+          <p className="h-quote-sm h-quote-light" style={{ lineHeight: 1.5, opacity: 0.94 }}>
             {charge}
           </p>
         </div>

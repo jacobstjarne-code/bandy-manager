@@ -197,21 +197,22 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
         background: 'var(--bg-elevated)', border: '0.5px solid var(--border)',
         marginBottom: 10, flexWrap: 'wrap',
       }}>
-        <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>
+        <span className="h-micro" style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
           {MENTALITY_LABELS[tactic.mentality] ?? tactic.mentality}
         </span>
-        <span style={{ fontSize: 9, color: 'var(--border)' }}>·</span>
-        <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>
+        <span className="h-micro" style={{ color: 'var(--border)' }}>·</span>
+        <span className="h-micro" style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
           Tempo: {TEMPO_LABELS[tactic.tempo] ?? tactic.tempo}
         </span>
-        <span style={{ fontSize: 9, color: 'var(--border)' }}>·</span>
-        <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>
+        <span className="h-micro" style={{ color: 'var(--border)' }}>·</span>
+        <span className="h-micro" style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
           Press: {PRESS_LABELS[tactic.press] ?? tactic.press}
         </span>
         <button
           onClick={() => navigate('/game/squad')}
+          className="h-micro"
           style={{
-            marginLeft: 'auto', fontSize: 9, color: 'var(--accent)', fontWeight: 400,
+            marginLeft: 'auto', color: 'var(--accent)', fontWeight: 400,
             background: 'none', border: 'none', cursor: 'pointer', padding: 0,
             textDecoration: 'underline',
           }}
@@ -282,13 +283,10 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
             <span key={tag} className="tag tag-ghost">{tag}</span>
           ))}
         </div>
-        <p style={{
-          fontFamily: 'var(--font-display)', fontSize: 11, fontStyle: 'italic',
-          color: 'var(--text-secondary)', lineHeight: 1.5,
-        }}>
+        <p className="h-quote-sm" style={{ lineHeight: 1.5 }}>
           "{meta.coachQuote}"
         </p>
-        <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>— Coachen</p>
+        <p className="h-micro" style={{ marginTop: 2 }}>— Coachen</p>
       </div>
 
       {/* Pitch SVG */}
@@ -333,7 +331,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
       {/* C-FT1: Lagstyrka — ärlig magnitud, samma evaluateSquad som motorn */}
       {styrka.utvilat > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8 }}>
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Lagstyrka</span>
+          <span className="h-label">Lagstyrka</span>
           <span style={{ fontSize: 12 }}>
             <span style={{ fontWeight: 800, color: styrka.gap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrka.idag}</span>
             <span style={{ color: 'var(--text-muted)' }}> / {styrka.utvilat} utvilat</span>
@@ -343,7 +341,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
 
       {/* Bench */}
       <div style={{ marginTop: 10 }}>
-        <p style={{ fontSize: 9, letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: 6 }}>
+        <p className="h-label" style={{ marginBottom: 6 }}>
           {selectedSlotId ? '▶ VÄLJ FRÅN BÄNKEN ELLER EN ANNAN POSITION' : 'BÄNKEN'}
         </p>
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
@@ -360,11 +358,11 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
                 cursor: selectedSlotId ? 'pointer' : 'default',
               }}
             >
-              <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)' }}>{p.position.slice(0, 3).toUpperCase()}</span>
+              <span className="h-label">{p.position.slice(0, 3).toUpperCase()}</span>
               <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', lineHeight: 1.2, maxWidth: 48, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {p.lastName}
               </span>
-              <span style={{ fontSize: 9, color: 'var(--text-secondary)' }}>{p.currentAbility}</span>
+              <span className="h-micro">{p.currentAbility}</span>
             </button>
           ))}
           {benchPlayers.length === 0 && (
@@ -373,7 +371,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 9, color: 'var(--text-secondary)', alignItems: 'center' }}>
+      <div className="h-micro" style={{ display: 'flex', gap: 12, marginTop: 8, color: 'var(--text-secondary)', alignItems: 'center' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
           <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#4A8A3A', display: 'inline-block' }}/>
           Rätt plats

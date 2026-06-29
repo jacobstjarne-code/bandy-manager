@@ -58,18 +58,14 @@ export function NameInputScreen() {
         }}>
           NYTT UPPDRAG
         </p>
-        <h2 style={{
-          fontSize: 28, fontWeight: 400, color: 'var(--text-primary)',
-          fontFamily: 'var(--font-display)', letterSpacing: '2px',
+        <h2 className="h-display-md" style={{
+          color: 'var(--text-primary)',
+          letterSpacing: '2px',
           textTransform: 'uppercase', marginBottom: 16, textAlign: 'center',
         }}>
           VEM ÄR DU?
         </h2>
-        <p style={{
-          fontSize: 13, fontFamily: 'var(--font-display)', fontStyle: 'italic',
-          color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.6,
-          marginBottom: 24, maxWidth: 280,
-        }}>
+        <p className="h-quote" style={{ textAlign: 'center', lineHeight: 1.6, marginBottom: 24, maxWidth: 280 }}>
           Bandyn behöver folk som dig. Som ställer upp en regnig tisdagkväll i december. Som vet att en hörna i 87:e kan vända allt.
         </p>
         <input
@@ -118,7 +114,7 @@ export function NameInputScreen() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
       }}>
-        <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2 }}>BURY FEN</span>
+        <span className="h-label" style={{ letterSpacing: 2 }}>BURY FEN</span>
       </footer>
     </div>
   )

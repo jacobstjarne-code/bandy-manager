@@ -121,15 +121,12 @@ export function ChampionScreen() {
             <div style={{ marginBottom: 16, color: 'var(--gold)' }}>
               <Trophy size={80} strokeWidth={1.5} />
             </div>
-            <h1 style={{
-              fontSize: 28,
-              fontWeight: 900,
+            <h1 className="h-display-md" style={{
               color: 'var(--accent)',
               letterSpacing: '2px',
               textTransform: 'uppercase',
               marginBottom: 8,
               animation: 'goldPulse 2s ease-in-out infinite',
-              fontFamily: 'var(--font-display)',
             }}>
               Svenska Mästare!
             </h1>
@@ -150,7 +147,7 @@ export function ChampionScreen() {
             <div style={{ marginBottom: 16, color: 'var(--text-secondary)' }}>
               <HeroIcon size={60} strokeWidth={1.5} />
             </div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8, fontFamily: 'var(--font-display)' }}>
+            <h1 className="h-display-sm" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>
               {title}
             </h1>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>

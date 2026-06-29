@@ -88,11 +88,8 @@ export function GameOverScreen() {
           Spelets slut
         </p>
 
-        <h1 style={{
-          fontSize: 26,
-          fontWeight: 900,
+        <h1 className="h-display-md" style={{
           color: 'var(--text-primary)',
-          fontFamily: 'var(--font-display)',
           marginBottom: 8,
           letterSpacing: '1px',
         }}>

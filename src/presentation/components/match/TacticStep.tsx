@@ -94,7 +94,7 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
           borderRadius: '0 8px 8px 0',
           display: 'flex', alignItems: 'center', gap: 10,
         }}>
-          <span style={{ fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>
+          <span className="h-label" style={{ flexShrink: 0 }}>
             {oppName}
           </span>
           <span style={{ flex: 1, fontSize: 12, color: 'var(--text-primary)' }}>
@@ -111,7 +111,7 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
           borderLeft: '2px solid var(--warm)',
           borderRadius: '0 8px 8px 0',
         }}>
-          <div style={{ fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--warm)', fontWeight: 600, marginBottom: 2 }}>
+          <div className="h-label" style={{ color: 'var(--warm)', marginBottom: 2 }}>
             Förslag mot {oppName}
           </div>
           <div style={{ fontSize: 11.5, color: 'var(--text-primary)', lineHeight: 1.4 }}>
@@ -122,7 +122,7 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
 
       {/* Nudge legend */}
       {Object.keys(recommendations).length > 0 && (
-        <div style={{ margin: '6px 14px 0', fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: 5, paddingLeft: 4 }}>
+        <div className="h-micro" style={{ margin: '6px 14px 0', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: 5, paddingLeft: 4 }}>
           <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--warm)', display: 'inline-block', flexShrink: 0 }} />
           = rekommenderat val
         </div>
@@ -139,7 +139,7 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
             borderLeft: '2px solid var(--accent)',
             borderRadius: '0 8px 8px 0',
           }}>
-            <p style={{ fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, marginBottom: 8 }}>
+            <p className="h-label" style={{ marginBottom: 8 }}>
               {group.label}
             </p>
             {rows.map(({ label, key, options }, ri) => {

@@ -168,18 +168,13 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
         {/* Content below image */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '0 20px', marginTop: -30, zIndex: 2, position: 'relative' }}>
-          <h2 style={{
-            fontFamily: 'var(--font-display)', fontSize: 23, fontWeight: 700,
+          <h2 className="h-display-sm" style={{
             color: 'var(--text-light)', textAlign: 'center', lineHeight: 1.2,
             textShadow: '0 1px 8px rgba(0,0,0,.55)',
           }}>
             {relation}
           </h2>
-          <p style={{
-            fontFamily: 'var(--font-display)', fontStyle: 'italic',
-            fontSize: 12.5, color: 'var(--text-light-secondary)',
-            textAlign: 'center', lineHeight: 1.55, marginTop: 10,
-          }}>
+          <p className="h-quote h-quote-light" style={{ textAlign: 'center', lineHeight: 1.55, marginTop: 10 }}>
             {charge}
           </p>
 
@@ -189,14 +184,14 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
               paddingTop: 14, borderTop: '0.5px solid color-mix(in srgb, var(--gold) 30%, transparent)',
             }}>
               <div style={{ textAlign: 'center' }}>
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-light)', display: 'block' }}>
+                <span className="h-num" style={{ color: 'var(--text-light)', display: 'block' }}>
                   {ordPos(myPos)}
                 </span>
                 <span style={{ fontSize: 7.5, letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>Serien</span>
               </div>
               {playoffRec !== '–' && (
                 <div style={{ textAlign: 'center' }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-light)', display: 'block' }}>
+                  <span className="h-num" style={{ color: 'var(--text-light)', display: 'block' }}>
                     {playoffRec}
                   </span>
                   <span style={{ fontSize: 7.5, letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>Slutspelet</span>
@@ -283,9 +278,10 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
                 border: '1.5px solid var(--led-us, var(--accent))',
                 margin: '0 auto',
               }}>
+                {/* ds-exempt: klubb-initial i per-klubb-färgad badge */}
                 {(homeClub?.shortName ?? homeClub?.name ?? 'H')[0].toUpperCase()}
               </div>
-              <h4 style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--text-light)', marginTop: 7 }}>
+              <h4 className="h-num-sm" style={{ color: 'var(--text-light)', marginTop: 7 }}>
                 {homeClub?.shortName ?? homeClub?.name ?? '?'}
               </h4>
               {myPos > 0 && (
@@ -308,9 +304,10 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
                 border: '1.5px solid var(--led-them, var(--ice))',
                 margin: '0 auto',
               }}>
+                {/* ds-exempt: klubb-initial i per-klubb-färgad badge */}
                 {(awayClub?.shortName ?? awayClub?.name ?? 'B')[0].toUpperCase()}
               </div>
-              <h4 style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--text-light)', marginTop: 7 }}>
+              <h4 className="h-num-sm" style={{ color: 'var(--text-light)', marginTop: 7 }}>
                 {awayClub?.shortName ?? awayClub?.name ?? '?'}
               </h4>
               {(isHome ? (oppPos > 0 ? ordPos(oppPos) : '') : (myPos > 0 ? ordPos(myPos) : '')) && (
@@ -329,7 +326,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
               background: 'var(--bg-portal-surface)',
               borderRadius: 8, borderLeft: '2px solid var(--gold-deep, var(--accent))',
             }}>
-              <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 11, color: 'var(--text-light-secondary)', lineHeight: 1.5, margin: 0 }}>
+              <p className="h-quote-sm h-quote-light" style={{ lineHeight: 1.5, margin: 0 }}>
                 {keyline}
               </p>
               <span style={{ display: 'block', fontSize: 8, letterSpacing: '1px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 4 }}>
@@ -413,19 +410,12 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
         <div style={{
           position: 'absolute', left: 18, right: 18, bottom: 44, zIndex: 2,
         }}>
-          <p style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase',
-            color: eyebrowColor, marginBottom: 9,
-            textShadow: '0 1px 4px rgba(0,0,0,0.6)',
-          }}>
+          <p className="h-label h-label-light" style={{ color: eyebrowColor, marginBottom: 9, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
             ⬩ {texts.eyebrow} ⬩
           </p>
 
           {opponent && (
-            <p style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 26, fontWeight: 700,
+            <p className="h-display-md" style={{
               color: 'var(--text-light)', lineHeight: 1.1, marginBottom: 4,
               textShadow: '0 1px 8px rgba(0,0,0,0.7)', letterSpacing: '-0.4px',
             }}>
@@ -433,21 +423,16 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
             </p>
           )}
 
-          <p style={{
+          <p className="h-micro" style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 9.5, color: 'var(--text-light-secondary)',
+            color: 'var(--text-light-secondary)',
             letterSpacing: '0.5px', marginBottom: 12,
             textShadow: '0 1px 4px rgba(0,0,0,0.7)',
           }}>
             {plats} · {relation}
           </p>
 
-          <p style={{
-            fontFamily: 'var(--font-display)',
-            fontStyle: 'italic', fontSize: 13.5,
-            color: 'var(--text-light)', lineHeight: 1.5,
-            textShadow: '0 1px 6px rgba(0,0,0,0.7)',
-          }}>
+          <p className="h-quote h-quote-light" style={{ lineHeight: 1.5, textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>
             {charge}
           </p>
 

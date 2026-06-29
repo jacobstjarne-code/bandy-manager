@@ -105,7 +105,7 @@ export function PlayoffIntroScreen() {
         </p>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
           <thead>
-            <tr style={{ color: 'var(--text-muted)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '2px' }}>
+            <tr className="h-label" style={{ textTransform: 'uppercase', letterSpacing: '2px' }}>
               <th style={{ textAlign: 'left', padding: '2px 0', fontWeight: 600 }}>#</th>
               <th style={{ textAlign: 'left', padding: '2px 0', fontWeight: 600 }}>Lag</th>
               <th style={{ textAlign: 'right', padding: '2px 0', fontWeight: 600 }}>P</th>
@@ -160,13 +160,13 @@ export function PlayoffIntroScreen() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 9, color: 'var(--text-muted)', width: 14 }}>{homeSeed}.</span>
+                    <span className="h-micro" style={{ color: 'var(--text-muted)', width: 14 }}>{homeSeed}.</span>
                     <span style={{ fontSize: 12, fontWeight: isManaged ? 700 : 600, color: isManaged ? 'var(--accent)' : 'var(--text-primary)' }}>{home}</span>
                   </div>
                   <span style={{ fontSize: 10, color: isManaged ? 'var(--accent)' : 'var(--text-muted)' }}>vs</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ fontSize: 12, fontWeight: isManaged ? 700 : 600, color: isManaged ? 'var(--accent)' : 'var(--text-primary)' }}>{away}</span>
-                    <span style={{ fontSize: 9, color: 'var(--text-muted)', width: 14, textAlign: 'right' }}>{awaySeed}.</span>
+                    <span className="h-micro" style={{ color: 'var(--text-muted)', width: 14, textAlign: 'right' }}>{awaySeed}.</span>
                   </div>
                 </div>
               )
