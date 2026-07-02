@@ -32,7 +32,7 @@ function ConsekvensRad({ consequences }: { consequences: FacilityNodeDef['conseq
         const color = c.dir === 'upp'
           ? 'var(--success)'
           : c.dir === 'ned'
-            ? 'var(--danger-text, #8B3E30)'
+            ? 'var(--danger-text)'
             : 'var(--text-muted)'
         const arrow = c.dir === 'upp' ? '↑' : c.dir === 'ned' ? '↓' : '—'
         return (
@@ -55,7 +55,7 @@ function CooldownDots({ total, filled }: { total: number; filled: number }) {
           key={i}
           style={{
             width: 5, height: 5, borderRadius: '50%', display: 'inline-block',
-            background: i < filledDots ? 'var(--accent)' : 'var(--border-dark, #C4BAA8)',
+            background: i < filledDots ? 'var(--accent)' : 'var(--border-dark)',
           }}
         />
       ))}
@@ -73,20 +73,20 @@ function NodeCard({ view, mode, selected, onSelect }: {
   const isHall = def.isHall
 
   const borderStyle = (() => {
-    if (isHall) return `1.5px solid var(--cold, #4a6680)`
+    if (isHall) return `1.5px solid var(--cold)`
     if (status === 'built') return '2px solid var(--success)'
     if (status === 'ongoing') return '2px solid var(--accent)'
-    if (status === 'available') return '1.5px solid var(--border-dark, #C4BAA8)'
+    if (status === 'available') return '1.5px solid var(--border-dark)'
     return '1px solid var(--border)'
   })()
 
   const bg = (() => {
-    if (isHall) return 'color-mix(in srgb, var(--cold, #4a6680) 5%, var(--bg-surface))'
-    if (status === 'available') return 'var(--bg-elevated, #FFFFFF)'
+    if (isHall) return 'color-mix(in srgb, var(--cold) 5%, var(--bg-surface))'
+    if (status === 'available') return 'var(--bg-elevated)'
     return 'var(--bg-surface)'
   })()
 
-  const nameColor = isHall ? 'var(--cold, #4a6680)' : 'var(--text-primary)'
+  const nameColor = isHall ? 'var(--cold)' : 'var(--text-primary)'
 
   const lockLabel = (() => {
     const r = def.requires[0]
@@ -111,14 +111,14 @@ function NodeCard({ view, mode, selected, onSelect }: {
   })()
 
   const tagColor = (() => {
-    if (isHall) return 'var(--cold, #4a6680)'
+    if (isHall) return 'var(--cold)'
     if (status === 'built') return 'var(--success)'
-    if (status === 'ongoing') return 'var(--accent-dark, #A25828)'
+    if (status === 'ongoing') return 'var(--accent-dark)'
     return 'var(--text-secondary)'
   })()
 
   const tagBg = (() => {
-    if (isHall) return 'color-mix(in srgb, var(--cold, #4a6680) 12%, transparent)'
+    if (isHall) return 'color-mix(in srgb, var(--cold) 12%, transparent)'
     if (status === 'built') return 'color-mix(in srgb, var(--success) 12%, transparent)'
     if (status === 'ongoing') return 'color-mix(in srgb, var(--accent) 12%, transparent)'
     return 'transparent'
@@ -150,7 +150,7 @@ function NodeCard({ view, mode, selected, onSelect }: {
           position: 'absolute',
           left: -30, top: '50%',
           width: 28, height: 1.5,
-          background: 'var(--cold, #4a6680)',
+          background: 'var(--cold)',
           transform: 'translateY(-50%)',
         }} />
       )}
@@ -161,7 +161,7 @@ function NodeCard({ view, mode, selected, onSelect }: {
         <span style={{
           fontSize: 8, padding: '2px 7px', borderRadius: 99, fontWeight: 600,
           whiteSpace: 'nowrap', color: tagColor, background: tagBg,
-          border: (status === 'available' || status === 'locked') && !isHall ? '1px solid var(--border-dark, #C4BAA8)' : undefined,
+          border: (status === 'available' || status === 'locked') && !isHall ? '1px solid var(--border-dark)' : undefined,
         }}>
           {tagText}
         </span>
@@ -238,7 +238,7 @@ export function FacilityTree({
               {/* Vertikal kopplningslinje */}
               <div style={{
                 position: 'absolute', left: 4, top: 8, bottom: 8,
-                width: 1.5, background: 'var(--border-dark, #C4BAA8)',
+                width: 1.5, background: 'var(--border-dark)',
               }} />
               {nodes.map(view => (
                 <div key={view.def.id} style={{ position: 'relative' }}>
@@ -249,7 +249,7 @@ export function FacilityTree({
                     top: '50%',
                     width: view.def.isHall ? 28 : 10,
                     height: 1.5,
-                    background: view.def.isHall ? 'var(--cold, #4a6680)' : 'var(--border-dark, #C4BAA8)',
+                    background: view.def.isHall ? 'var(--cold)' : 'var(--border-dark)',
                     transform: 'translateY(-50%)',
                   }} />
                   <NodeCard

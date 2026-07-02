@@ -147,7 +147,7 @@ export function HalfTimeSummaryScreen() {
                 display: 'flex', flexDirection: 'column', gap: 2,
                 ...(chosen === c.key ? {
                   background: 'var(--accent)',
-                  color: '#fff',
+                  color: 'var(--text-light)',
                   borderColor: 'var(--accent-dark)',
                 } : {}),
               }}

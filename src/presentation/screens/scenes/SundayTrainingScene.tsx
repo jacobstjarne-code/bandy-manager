@@ -83,7 +83,7 @@ export function SundayTrainingScene({ game, onComplete }: Props) {
           position: 'absolute',
           inset: 0,
           background:
-            'radial-gradient(ellipse 60% 30% at 50% 0%, rgba(184,136,76,0.10) 0%, transparent 70%), linear-gradient(180deg, #1a1410 0%, #15110d 60%, #0f0c09 100%)',
+            'radial-gradient(ellipse 60% 30% at 50% 0%, rgba(184,136,76,0.10) 0%, transparent 70%), linear-gradient(180deg, var(--bg-scene) 0%, color-mix(in srgb, var(--bg-scene) 50%, var(--bg-scene-deep) 50%) 60%, color-mix(in srgb, var(--bg-scene-deep) 70%, var(--bg-scene) 30%) 100%)',
         }}
       />
 

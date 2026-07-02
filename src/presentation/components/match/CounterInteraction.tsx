@@ -39,17 +39,17 @@ function CounterPitchSVG({
 }) {
   // Lane color by choice
   const laneColors: Record<CounterChoice, string> = {
-    sprint:    '#FF3B0F',
-    earlyBall: '#66FF33',
-    build:     '#FFAA00',
+    sprint:    'var(--led-attack)',
+    earlyBall: 'var(--led-green)',
+    build:     'var(--led-amber)',
   }
 
   return (
     <svg viewBox="0 0 260 120" style={{ width: '100%', display: 'block' }}>
       <defs>
         <linearGradient id="igCtr" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1A2628" />
-          <stop offset="100%" stopColor="#0E1518" />
+          <stop offset="0%" stopColor="var(--interaction-pitch-start)" />
+          <stop offset="100%" stopColor="var(--interaction-pitch-end)" />
         </linearGradient>
         <marker id="arrCtr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
           <path d="M0,0 L0,6 L6,3 z" fill={laneColors[choice]} />
@@ -65,23 +65,23 @@ function CounterPitchSVG({
       <rect x="100" y="2" width="60" height="14" fill="none" stroke="rgba(180,200,210,0.55)" strokeWidth="1.5" rx="2" />
 
       {/* GK */}
-      <circle cx="130" cy="12" r="5" fill="#0A0A0A" stroke="#6FB6E8" strokeWidth="1.4" />
-      <text x="130" y="14.5" textAnchor="middle" fontSize="5" fill="#6FB6E8" fontFamily="monospace" fontWeight="700">MV</text>
+      <circle cx="130" cy="12" r="5" fill="var(--led-bg)" stroke="var(--led-them)" strokeWidth="1.4" />
+      <text x="130" y="14.5" textAnchor="middle" fontSize="5" fill="var(--led-them)" fontFamily="monospace" fontWeight="700">MV</text>
 
       {/* Defenders — red LED (2 positioned to defend) */}
-      <circle cx="112" cy="34" r="6" fill="#FF3B0F" opacity="0.75" />
+      <circle cx="112" cy="34" r="6" fill="var(--led-attack)" opacity="0.75" />
       <text x="112" y="36.5" textAnchor="middle" fontSize="5" fill="rgba(255,255,255,0.8)" fontFamily="monospace" fontWeight="700">X</text>
-      <circle cx="148" cy="30" r="6" fill="#FF3B0F" opacity="0.75" />
+      <circle cx="148" cy="30" r="6" fill="var(--led-attack)" opacity="0.75" />
       <text x="148" y="32.5" textAnchor="middle" fontSize="5" fill="rgba(255,255,255,0.8)" fontFamily="monospace" fontWeight="700">X</text>
 
       {/* Runner — amber LED, pulsing */}
-      <circle cx="100" cy="70" r="8" fill="#FFAA00" stroke="rgba(255,255,255,0.4)" strokeWidth="2" className="pulse" />
-      <text x="100" y="86" textAnchor="middle" fontSize="6" fill="#FFAA00" fontFamily="monospace" fontWeight="700">
+      <circle cx="100" cy="70" r="8" fill="var(--led-amber)" stroke="rgba(255,255,255,0.4)" strokeWidth="2" className="pulse" />
+      <text x="100" y="86" textAnchor="middle" fontSize="6" fill="var(--led-amber)" fontFamily="monospace" fontWeight="700">
         {data.runnerName.split(' ').pop()}
       </text>
 
       {/* Support player */}
-      <circle cx="158" cy="80" r="6" fill="#FFAA00" opacity="0.6" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
+      <circle cx="158" cy="80" r="6" fill="var(--led-amber)" opacity="0.6" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
       <text x="158" y="94" textAnchor="middle" fontSize="6" fill="rgba(255,170,0,0.7)" fontFamily="monospace">
         {data.supportName.split(' ').pop()}
       </text>

@@ -121,8 +121,8 @@ export function CommentaryFeedStalvallen({ rows, autoScroll = true, matchDone, e
           return (
             <div key={i} className="commentary-row-atmosphere">
               <span className="commentary-row-atmosphere-min">—</span>
-              {/* FIX-38B: #E6DDD0 for regular row text, FIX-38C: font-body (sans-serif) */}
-              <span className="commentary-row-atmosphere-text" style={{ color: '#E6DDD0', fontFamily: 'var(--font-body)' }}>{row.text}</span>
+              {/* FIX-38B: --text-quote-light for regular row text, FIX-38C: font-body (sans-serif) */}
+              <span className="commentary-row-atmosphere-text" style={{ color: 'var(--text-quote-light)', fontFamily: 'var(--font-body)' }}>{row.text}</span>
             </div>
           )
         }
@@ -141,8 +141,8 @@ export function CommentaryFeedStalvallen({ rows, autoScroll = true, matchDone, e
                   <span className="commentary-event-meta">{row.meta}</span>
                 )}
               </div>
-              {/* FIX-38B: #E6DDD0 for regular row text, FIX-38C: font-body (sans-serif) */}
-              <div className="commentary-event-text" style={{ color: '#E6DDD0', fontFamily: 'var(--font-body)' }}>
+              {/* FIX-38B: --text-quote-light for regular row text, FIX-38C: font-body (sans-serif) */}
+              <div className="commentary-event-text" style={{ color: 'var(--text-quote-light)', fontFamily: 'var(--font-body)' }}>
                 {row.text}
               </div>
             </div>

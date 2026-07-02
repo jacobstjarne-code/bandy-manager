@@ -46,17 +46,17 @@ function FreeKickPitchSVG({
 
   // Lane endpoints based on choice
   const lanes: Record<FreeKickChoice, { x2: number; y2: number; color: string }> = {
-    shoot:    { x2: 130, y2: 14, color: '#FF3B0F' },
-    chipPass: { x2: 100, y2: 50, color: '#FFAA00' },
-    layOff:   { x2: 170, y2: 90, color: '#66FF33' },
+    shoot:    { x2: 130, y2: 14, color: 'var(--led-attack)' },
+    chipPass: { x2: 100, y2: 50, color: 'var(--led-amber)' },
+    layOff:   { x2: 170, y2: 90, color: 'var(--led-green)' },
   }
 
   return (
     <svg viewBox="0 0 260 150" style={{ width: '100%', display: 'block' }}>
       <defs>
         <linearGradient id="igF" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1A2628" />
-          <stop offset="100%" stopColor="#0E1518" />
+          <stop offset="0%" stopColor="var(--interaction-pitch-start)" />
+          <stop offset="100%" stopColor="var(--interaction-pitch-end)" />
         </linearGradient>
         <marker id="arrFK" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
           <path d="M0,0 L0,6 L6,3 z" fill={lanes[choice].color} />
@@ -71,14 +71,14 @@ function FreeKickPitchSVG({
       <rect x="77" y="6" width="106" height="16" fill="rgba(255,255,255,0.04)" />
 
       {/* GK */}
-      <circle cx="130" cy="16" r="6" fill="#0A0A0A" stroke="#6FB6E8" strokeWidth="1.4" />
-      <text x="130" y="18.5" textAnchor="middle" fontSize="5" fill="#6FB6E8" fontFamily="monospace" fontWeight="700">MV</text>
+      <circle cx="130" cy="16" r="6" fill="var(--led-bg)" stroke="var(--led-them)" strokeWidth="1.4" />
+      <text x="130" y="18.5" textAnchor="middle" fontSize="5" fill="var(--led-them)" fontFamily="monospace" fontWeight="700">MV</text>
 
       {/* Wall — red LED blocks */}
       <rect
         x={112} y="48"
         width={Math.max(12, data.wallSize * 9)} height="12"
-        rx="3" fill="#FF3B0F" opacity="0.75"
+        rx="3" fill="var(--led-attack)" opacity="0.75"
       />
       <text x="130" y="75" textAnchor="middle" fontSize="6" fill="rgba(180,200,210,0.4)" fontFamily="monospace">
         MUR · {data.wallSize} MAN
@@ -96,9 +96,9 @@ function FreeKickPitchSVG({
       />
 
       {/* Ball */}
-      <circle cx={ballX} cy={ballY} r="5" fill="#FFAA00" stroke="#fff" strokeWidth="1.5" />
+      <circle cx={ballX} cy={ballY} r="5" fill="var(--led-amber)" stroke="var(--text-light)" strokeWidth="1.5" />
       {/* Kicker name */}
-      <text x={ballX} y={ballY + 14} textAnchor="middle" fontSize="6" fill="#FFAA00" fontFamily="monospace" fontWeight="700">
+      <text x={ballX} y={ballY + 14} textAnchor="middle" fontSize="6" fill="var(--led-amber)" fontFamily="monospace" fontWeight="700">
         {data.kickerName.split(' ').pop()}
       </text>
 

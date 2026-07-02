@@ -74,11 +74,11 @@ function CornerPitchSVG({
     <svg viewBox="0 0 220 130" style={{ width: '100%', display: 'block' }}>
       <defs>
         <linearGradient id="iceCG" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1A2628" />
-          <stop offset="100%" stopColor="#0E1518" />
+          <stop offset="0%" stopColor="var(--interaction-pitch-start)" />
+          <stop offset="100%" stopColor="var(--interaction-pitch-end)" />
         </linearGradient>
         <marker id="arrCG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L6,3 z" fill="#66FF33" />
+          <path d="M0,0 L0,6 L6,3 z" fill="var(--led-green)" />
         </marker>
       </defs>
 
@@ -89,11 +89,11 @@ function CornerPitchSVG({
       {/* Goal */}
       <rect x="0" y="46" width="5" height="38" fill="none" stroke="rgba(180,200,210,0.55)" strokeWidth="1.5" />
       {/* GK */}
-      <circle cx="14" cy="65" r="5" fill="#0A0A0A" stroke="#6FB6E8" strokeWidth="1.4" />
-      <text x="14" y="67.5" textAnchor="middle" fontSize="5" fill="#6FB6E8" fontFamily="monospace" fontWeight="700">MV</text>
+      <circle cx="14" cy="65" r="5" fill="var(--led-bg)" stroke="var(--led-them)" strokeWidth="1.4" />
+      <text x="14" y="67.5" textAnchor="middle" fontSize="5" fill="var(--led-them)" fontFamily="monospace" fontWeight="700">MV</text>
       {/* 4 defenders — red LED */}
       {[48, 58, 72, 82].map((y, i) => (
-        <circle key={i} cx={i < 2 ? 16 : 22} cy={y} r="3" fill="#FF3B0F" opacity="0.85" />
+        <circle key={i} cx={i < 2 ? 16 : 22} cy={y} r="3" fill="var(--led-attack)" opacity="0.85" />
       ))}
 
       {/* 3 zones */}
@@ -105,21 +105,21 @@ function CornerPitchSVG({
             <rect
               x="30" y={y} width="40" height={h} rx="2"
               fill={isSelected ? 'rgba(102,255,51,0.12)' : 'rgba(180,200,210,0.04)'}
-              stroke={isSelected ? '#66FF33' : 'rgba(180,200,210,0.25)'}
+              stroke={isSelected ? 'var(--led-green)' : 'rgba(180,200,210,0.25)'}
               strokeWidth={isSelected ? 1.5 : 0.8}
               strokeDasharray={isSelected ? undefined : '3,2'}
             />
             <text
               x="50" y={y + (h / 2) - 3}
               textAnchor="middle" fontSize="6"
-              fill={isSelected ? '#66FF33' : 'rgba(180,200,210,0.45)'}
+              fill={isSelected ? 'var(--led-green)' : 'rgba(180,200,210,0.45)'}
               fontFamily="monospace" fontWeight="700" letterSpacing="1"
               style={{ pointerEvents: 'none' }}
             >{label}</text>
             <text
               x="50" y={y + (h / 2) + 7}
               textAnchor="middle" fontSize="5.5"
-              fill={isSelected ? '#66FF33' : 'rgba(180,200,210,0.4)'}
+              fill={isSelected ? 'var(--led-green)' : 'rgba(180,200,210,0.4)'}
               fontFamily="monospace"
               style={{ pointerEvents: 'none' }}
             >{formatRate(rate)}</text>
@@ -128,28 +128,28 @@ function CornerPitchSVG({
       })}
 
       {/* Corner flag */}
-      <line x1={cx} y1={cy} x2={cx} y2={cy + dir * 8} stroke="#FFAA00" strokeWidth="1.2" />
-      <polygon points={`${cx},${cy + dir * 8} ${cx + 6},${cy + dir * 5} ${cx},${cy + dir * 2}`} fill="#FFAA00" />
+      <line x1={cx} y1={cy} x2={cx} y2={cy + dir * 8} stroke="var(--led-amber)" strokeWidth="1.2" />
+      <polygon points={`${cx},${cy + dir * 8} ${cx + 6},${cy + dir * 5} ${cx},${cy + dir * 2}`} fill="var(--led-amber)" />
 
       {/* Pass arrow from corner to selected zone */}
       <path
         d={`M${cx},${cy} Q${cx + (70 - cx) * 0.3},${(cy + arrowTargetY) / 2} 30,${arrowTargetY}`}
-        fill="none" stroke="#66FF33" strokeWidth="1.5" strokeDasharray="4,3"
+        fill="none" stroke="var(--led-green)" strokeWidth="1.5" strokeDasharray="4,3"
         markerEnd="url(#arrCG)"
       />
 
       {/* Rush lines — 3 amber attacker dots */}
       {[20, 65, 102].map((y, i) => (
         <g key={i}>
-          <line x1={140 + i * 10} y1={y} x2="74" y2={y} stroke="#FFAA00" strokeWidth="0.8" strokeDasharray="3,2" opacity="0.7" />
-          <circle cx={140 + i * 10} cy={y} r="4" fill="#FFAA00" opacity="0.85" />
+          <line x1={140 + i * 10} y1={y} x2="74" y2={y} stroke="var(--led-amber)" strokeWidth="0.8" strokeDasharray="3,2" opacity="0.7" />
+          <circle cx={140 + i * 10} cy={y} r="4" fill="var(--led-amber)" opacity="0.85" />
         </g>
       ))}
 
       {/* Delivery hint top-right */}
       <text
         x="215" y="12" textAnchor="end" fontSize="6"
-        fill="#FFAA00" fontFamily="monospace" fontWeight="700" opacity="0.7"
+        fill="var(--led-amber)" fontFamily="monospace" fontWeight="700" opacity="0.7"
       >{delivery === 'hard' ? 'HÅRT' : delivery === 'low' ? 'LÅGT' : 'KORT'}</text>
     </svg>
   )

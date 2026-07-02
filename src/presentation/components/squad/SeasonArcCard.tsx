@@ -68,7 +68,7 @@ const MODE_LABELS: Record<PeriodisationMode, string> = {
 
 const FLAG_STYLE: Record<string, React.CSSProperties> = {
   warn: { color: 'var(--accent-dark)', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 35%, transparent)' },
-  good: { color: '#4A6A3A', background: 'color-mix(in srgb, var(--success) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 40%, transparent)' },
+  good: { color: 'var(--success-light)', background: 'color-mix(in srgb, var(--success) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 40%, transparent)' },
   rust: { color: 'var(--cold)', background: 'color-mix(in srgb, var(--cold) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--cold) 35%, transparent)' },
   ovr:  { color: 'var(--text-muted)', background: 'transparent', border: '1px dashed var(--border-dark)' },
 }
@@ -130,7 +130,7 @@ function ArcSparkline({ history, mode, roundsInMode }: ArcSparklineProps) {
         <polyline
           points={histPts(gf)}
           fill="none"
-          stroke="#C47A3A"
+          stroke="var(--accent)"
           strokeWidth="2.2"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -139,7 +139,7 @@ function ArcSparkline({ history, mode, roundsInMode }: ArcSparklineProps) {
         <polyline
           points={histPts(df)}
           fill="none"
-          stroke="#B88838"
+          stroke="var(--gold-deep)"
           strokeWidth="1.4"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -149,7 +149,7 @@ function ArcSparkline({ history, mode, roundsInMode }: ArcSparklineProps) {
         <path
           d={skPath}
           fill="none"
-          stroke="#4a6680"
+          stroke="var(--cold)"
           strokeWidth="1.4"
           strokeDasharray="4 3"
           strokeLinecap="round"
@@ -168,7 +168,7 @@ function ArcSparkline({ history, mode, roundsInMode }: ArcSparklineProps) {
           <polyline
             points={projPts}
             fill="none"
-            stroke="#C47A3A"
+            stroke="var(--accent)"
             strokeWidth="1.6"
             strokeDasharray="5 4"
             strokeLinejoin="round"
@@ -177,7 +177,7 @@ function ArcSparkline({ history, mode, roundsInMode }: ArcSparklineProps) {
           />
         </g>
         {/* Du är här dot on grundform */}
-        <circle cx={nowX} cy={curGfY} r="3.5" fill="#C47A3A" opacity="0.9" />
+        <circle cx={nowX} cy={curGfY} r="3.5" fill="var(--accent)" opacity="0.9" />
       </svg>
     </div>
   )
@@ -236,15 +236,15 @@ export function SeasonArcCard({ game }: Props) {
         {/* Legend */}
         <div className="h-micro" style={{ display: 'flex', gap: 14, justifyContent: 'center', padding: '3px 12px 0', color: 'var(--text-muted)' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <i style={{ width: 12, height: 2.5, borderRadius: 2, display: 'inline-block', background: '#C47A3A' }} />
+            <i style={{ width: 12, height: 2.5, borderRadius: 2, display: 'inline-block', background: 'var(--accent)' }} />
             Grundform
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <i style={{ width: 12, height: 2.5, borderRadius: 2, display: 'inline-block', background: '#B88838' }} />
+            <i style={{ width: 12, height: 2.5, borderRadius: 2, display: 'inline-block', background: 'var(--gold-deep)' }} />
             Dagsform
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <i style={{ width: 12, height: 0, display: 'inline-block', borderTop: '2px dashed #4a6680' }} />
+            <i style={{ width: 12, height: 0, display: 'inline-block', borderTop: '2px dashed var(--cold)' }} />
             Skärpa
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>

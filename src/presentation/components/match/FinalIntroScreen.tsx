@@ -124,7 +124,7 @@ function SmFinalUppspelet({
           {/* Gradient fade into bg-scene */}
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(180deg, rgba(14,12,9,.45) 0%, rgba(14,12,9,0) 20%, rgba(26,22,18,0) 45%, rgba(26,22,18,.55) 78%, #1a1612 100%)',
+            background: 'linear-gradient(180deg, rgba(14,12,9,.45) 0%, rgba(14,12,9,0) 20%, rgba(26,22,18,0) 45%, rgba(26,22,18,.55) 78%, var(--bg-scene) 100%)',
           }} />
           {/* Eyebrow on image */}
           <p style={{
@@ -278,9 +278,9 @@ function SmFinalLagpresentation({
               width: 54, height: 60,
               borderRadius: '8px 8px 50% 50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Georgia, serif', fontWeight: 800, fontSize: 17, color: '#fff',
+              fontFamily: 'Georgia, serif', fontWeight: 800, fontSize: 17, color: 'var(--text-light)',
               margin: '0 auto',
-              background: 'radial-gradient(circle at 38% 30%, #7a4a28, #4a2c16)',
+              background: 'radial-gradient(circle at 38% 30%, var(--badge-us-start), var(--badge-us-end))',
               border: '1.5px solid var(--accent)',
             }}>
               {homeInitial}
@@ -305,9 +305,9 @@ function SmFinalLagpresentation({
               width: 54, height: 60,
               borderRadius: '8px 8px 50% 50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Georgia, serif', fontWeight: 800, fontSize: 17, color: '#fff',
+              fontFamily: 'Georgia, serif', fontWeight: 800, fontSize: 17, color: 'var(--text-light)',
               margin: '0 auto',
-              background: 'radial-gradient(circle at 38% 30%, #3a5a78, #1e3448)',
+              background: 'radial-gradient(circle at 38% 30%, var(--badge-them-start), var(--badge-them-end))',
               border: '1.5px solid var(--ice)',
             }}>
               {awayInitial}

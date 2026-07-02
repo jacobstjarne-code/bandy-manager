@@ -101,7 +101,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
       <div style={{ marginBottom: 8 }}>
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 320, display: 'block', margin: '0 auto' }}>
           {/* ── TOP ZONE: våra skott → motståndarens mål (topp) ── */}
-          <rect x="0" y="0" width={W} height={TOP_MAX} fill="#fff" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" rx="3" />
+          <rect x="0" y="0" width={W} height={TOP_MAX} fill="var(--bg-elevated)" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" rx="3" />
           {/* Net hint + crossbar + posts */}
           <rect x={121} y={0} width={38} height={GT} fill="rgba(0,0,0,0.05)" />
           <line x1={120} y1={GT} x2={160} y2={GT} stroke="rgba(0,0,0,0.65)" strokeWidth="2.5" strokeLinecap="round" />
@@ -120,7 +120,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
           <text x="266" y="119" fontSize="8" fill="rgba(0,0,0,0.65)" textAnchor="end" fontWeight="700" letterSpacing="0.8">DE ANFALLER ↓</text>
 
           {/* ── BOTTOM ZONE: motståndarens skott → vårt mål (botten) ── */}
-          <rect x="0" y={BOT_MIN} width={W} height={H - BOT_MIN} fill="#fff" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" rx="3" />
+          <rect x="0" y={BOT_MIN} width={W} height={H - BOT_MIN} fill="var(--bg-elevated)" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" rx="3" />
           {/* Net hint + crossbar + posts */}
           <rect x={121} y={GB} width={38} height={H - GB} fill="rgba(0,0,0,0.05)" />
           <line x1={120} y1={GB} x2={160} y2={GB} stroke="rgba(0,0,0,0.65)" strokeWidth="2.5" strokeLinecap="round" />

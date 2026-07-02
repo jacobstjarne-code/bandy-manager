@@ -31,12 +31,12 @@ function PitchLines() {
     <>
       <defs>
         <radialGradient id="dot-ok" cx="35%" cy="30%" r="65%">
-          <stop offset="0%" stopColor="#6BAA5A"/>
-          <stop offset="100%" stopColor="#4A8A3A"/>
+          <stop offset="0%" stopColor="var(--tactic-dot-ok-start)"/>
+          <stop offset="100%" stopColor="var(--tactic-dot-ok-end)"/>
         </radialGradient>
         <radialGradient id="dot-warn" cx="35%" cy="30%" r="65%">
-          <stop offset="0%" stopColor="#C46A5A"/>
-          <stop offset="100%" stopColor="#A04030"/>
+          <stop offset="0%" stopColor="var(--tactic-dot-warn-start)"/>
+          <stop offset="100%" stopColor="var(--tactic-dot-warn-end)"/>
         </radialGradient>
         <filter id="dot-shadow" x="-40%" y="-40%" width="180%" height="180%">
           <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.25"/>
@@ -373,11 +373,11 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
 
       <div className="h-micro" style={{ display: 'flex', gap: 12, marginTop: 8, color: 'var(--text-secondary)', alignItems: 'center' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-          <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#4A8A3A', display: 'inline-block' }}/>
+          <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--tactic-dot-ok-end)', display: 'inline-block' }}/>
           Rätt plats
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-          <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#A04030', display: 'inline-block' }}/>
+          <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--tactic-dot-warn-end)', display: 'inline-block' }}/>
           Fel position / låg ork
         </span>
         <span style={{ marginLeft: 'auto', fontStyle: 'italic', color: 'var(--text-muted)' }}>Dra för att byta</span>

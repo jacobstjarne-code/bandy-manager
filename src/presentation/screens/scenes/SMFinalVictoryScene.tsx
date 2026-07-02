@@ -44,7 +44,7 @@ export function SMFinalVictoryScene({ game, onComplete }: Props) {
           position: 'absolute',
           inset: 0,
           background:
-            'radial-gradient(ellipse 80% 40% at 50% 100%, rgba(212,164,96,0.18) 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 20% 30%, rgba(184,136,76,0.08) 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 80% 30%, rgba(184,136,76,0.08) 0%, transparent 70%), linear-gradient(180deg, #08060a 0%, #0f0a08 100%)',
+            'radial-gradient(ellipse 80% 40% at 50% 100%, rgba(212,164,96,0.18) 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 20% 30%, rgba(184,136,76,0.08) 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 80% 30%, rgba(184,136,76,0.08) 0%, transparent 70%), linear-gradient(180deg, var(--bg-scene-deep) 0%, color-mix(in srgb, var(--bg-scene-deep) 70%, var(--bg-scene) 30%) 100%)',
         }}
       />
 

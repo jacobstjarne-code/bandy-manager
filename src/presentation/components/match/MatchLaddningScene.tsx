@@ -273,8 +273,8 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
               <div style={{
                 width: 54, height: 60, borderRadius: '8px 8px 50% 50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: '#fff',
-                background: 'radial-gradient(circle at 38% 30%, #7a4a28, #4a2c16)',
+                fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: 'var(--text-light)',
+                background: 'radial-gradient(circle at 38% 30%, var(--badge-us-start), var(--badge-us-end))',
                 border: '1.5px solid var(--led-us, var(--accent))',
                 margin: '0 auto',
               }}>
@@ -299,8 +299,8 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
               <div style={{
                 width: 54, height: 60, borderRadius: '8px 8px 50% 50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: '#fff',
-                background: 'radial-gradient(circle at 38% 30%, #3a5a78, #1e3448)',
+                fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: 'var(--text-light)',
+                background: 'radial-gradient(circle at 38% 30%, var(--badge-them-start), var(--badge-them-end))',
                 border: '1.5px solid var(--led-them, var(--ice))',
                 margin: '0 auto',
               }}>

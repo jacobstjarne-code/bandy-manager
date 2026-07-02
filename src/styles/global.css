@@ -77,6 +77,26 @@
   /* Disabled-state B8: samma färgfamilj @ 40% opacity */
   --disabled-opacity: 0.4;
 
+  /* Matchup-badge-gradienter (klubb-initial-cirklar i MatchLaddning/FinalIntro) — vi/dom-parad
+     med led-us/led-them, egen mörkare gradient-ton eftersom vit text ovanpå kräver kontrast. */
+  --badge-us-start:   #7a4a28;
+  --badge-us-end:     #4a2c16;
+  --badge-them-start: #3a5a78;
+  --badge-them-end:   #1e3448;
+
+  /* Interaction-pitch SVG-bakgrund (Corner/Counter/FreeKick/Penalty — identisk gradient i alla fyra) */
+  --interaction-pitch-start: #1A2628;
+  --interaction-pitch-end:   #0E1518;
+  /* Aggressiv/attack-markör i interaktions-SVG:er — samma semantik som led-red (LastMinutePress),
+     egen ton eftersom den renderas mindre/tätare i dessa diagram. */
+  --led-attack: #FF3B0F;
+
+  /* Taktiktavlans positions-dots (FormationView) — ok/varning-gradientpar + legend-swatch */
+  --tactic-dot-ok-start:   #6BAA5A;
+  --tactic-dot-ok-end:     #4A8A3A;
+  --tactic-dot-warn-start: #C46A5A;
+  --tactic-dot-warn-end:   #A04030;
+
   /* Archetype badge colors */
   --arch-finisher:    #c0392b;
   --arch-playmaker:   #2563EB;

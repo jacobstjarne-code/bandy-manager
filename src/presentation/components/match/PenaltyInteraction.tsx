@@ -58,11 +58,11 @@ function PenaltyPitchSVG({
     <svg viewBox="0 0 260 110" style={{ width: '100%', display: 'block' }}>
       <defs>
         <linearGradient id="iceP" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1A2628" />
-          <stop offset="100%" stopColor="#0E1518" />
+          <stop offset="0%" stopColor="var(--interaction-pitch-start)" />
+          <stop offset="100%" stopColor="var(--interaction-pitch-end)" />
         </linearGradient>
         <marker id="arrP" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L6,3 z" fill="#FF3B0F" />
+          <path d="M0,0 L0,6 L6,3 z" fill="var(--led-attack)" />
         </marker>
       </defs>
 
@@ -94,21 +94,21 @@ function PenaltyPitchSVG({
             <rect
               x={x} y={rectY} width={w} height={rh} rx="2"
               fill={isSelected ? 'rgba(102,255,51,0.14)' : 'rgba(180,200,210,0.04)'}
-              stroke={isSelected ? '#66FF33' : 'rgba(180,200,210,0.2)'}
+              stroke={isSelected ? 'var(--led-green)' : 'rgba(180,200,210,0.2)'}
               strokeWidth={isSelected ? 1.5 : 0.8}
               strokeDasharray={isSelected ? undefined : '3,2'}
             />
             <text
               x={x + w / 2} y={rectY + 16}
               textAnchor="middle" fontSize="11"
-              fill={isSelected ? '#66FF33' : 'rgba(180,200,210,0.45)'}
+              fill={isSelected ? 'var(--led-green)' : 'rgba(180,200,210,0.45)'}
               fontFamily="monospace" fontWeight="700"
               style={{ pointerEvents: 'none' }}
             >{label}</text>
             <text
               x={x + w / 2} y={rectY + 28}
               textAnchor="middle" fontSize="6"
-              fill={isSelected ? '#66FF33' : 'rgba(180,200,210,0.35)'}
+              fill={isSelected ? 'var(--led-green)' : 'rgba(180,200,210,0.35)'}
               fontFamily="monospace"
               style={{ pointerEvents: 'none' }}
             >{Math.round(combinedRate(d, height) * 100)}%</text>
@@ -117,18 +117,18 @@ function PenaltyPitchSVG({
       })}
 
       {/* GK — steel-blue, center blocking pose */}
-      <rect x="121" y="38" width="18" height="32" rx="4" fill="none" stroke="#6FB6E8" strokeWidth="1.5" opacity="0.7" />
-      <circle cx="130" cy="32" r="7" fill="none" stroke="#6FB6E8" strokeWidth="1.5" opacity="0.7" />
+      <rect x="121" y="38" width="18" height="32" rx="4" fill="none" stroke="var(--led-them)" strokeWidth="1.5" opacity="0.7" />
+      <circle cx="130" cy="32" r="7" fill="none" stroke="var(--led-them)" strokeWidth="1.5" opacity="0.7" />
       <text x="130" y="97" textAnchor="middle" fontSize="6" fill="rgba(111,182,232,0.5)" fontFamily="monospace" fontWeight="700">MV</text>
 
       {/* Shot lane */}
       <path
         d={`M130,102 Q${(130 + dirXCenter) / 2},${height === 'high' ? 40 : 90} ${dirXCenter},${zoneY}`}
-        fill="none" stroke="#FF3B0F" strokeWidth="1.5" strokeDasharray="2,1.5" opacity="0.8"
+        fill="none" stroke="var(--led-attack)" strokeWidth="1.5" strokeDasharray="2,1.5" opacity="0.8"
         markerEnd="url(#arrP)"
       />
       {/* Shooter dot */}
-      <circle cx="130" cy="102" r="4" fill="#FFAA00" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />
+      <circle cx="130" cy="102" r="4" fill="var(--led-amber)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />
     </svg>
   )
 }
