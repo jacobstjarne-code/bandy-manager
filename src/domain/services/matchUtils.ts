@@ -276,6 +276,10 @@ export interface MatchStep {
   freeKickInteractionData?: import('./freeKickInteractionService').FreeKickInteractionData
   // Last-minute press (automatic when trailing by 1 at step >= 55)
   lastMinutePressData?: import('./lastMinutePressService').LastMinutePressData
+  // Assistentens röstrad när denna step:s interaktion (corner/counter/frislag)
+  // löstes av assistenten under snabbspolning istället för spelarval. Renderas
+  // som en atmosfärrad FÖRE utfallsraden i commentary-feeden.
+  assistantVoiceLine?: string
   // Motortillstånd per steg (Spår A, steg 0) — exponerat för ärlig MomentumBar (DESIGN-BRIEF-
   // MOTORKANSLA §8). Surfacing av redan beräknade motorvärden; INGEN dynamik-ändring.
   homeInitiative?: number          // reell initiativ-andel homeWeight/(homeWeight+awayWeight) — INTE skott-proxyn

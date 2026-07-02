@@ -1,4 +1,5 @@
 import type { Player } from '../entities/Player'
+import type { AssistantCoach } from '../entities/AssistantCoach'
 
 export type CounterChoice = 'sprint' | 'build' | 'earlyBall'
 
@@ -33,6 +34,29 @@ export function counterChoiceSuccessRates(data: CounterInteractionData): Record<
 /** Formats a rate as %, rounded to nearest 5 */
 export function formatCounterRate(rate: number): string {
   return `${Math.round(rate * 20) * 5}%`
+}
+
+/**
+ * Assistentens val i snabbspolningsläge — argmax av oddsen
+ * (counterChoiceSuccessRates). Personlighet bryter bara lika/nära lägen
+ * (±2 procentenheter) — oddsen är annars entydiga nog på egen hand.
+ */
+export function assistantPickCounter(
+  data: CounterInteractionData,
+  coach: AssistantCoach | undefined,
+): CounterChoice {
+  const rates = counterChoiceSuccessRates(data)
+  const ranked = (Object.entries(rates) as [CounterChoice, number][]).sort((a, b) => b[1] - a[1])
+  const [best, second] = ranked
+  const isNearTie = !!second && (best[1] - second[1]) < 0.02
+  if (isNearTie) {
+    const preferred: CounterChoice =
+      coach?.personality === 'grumpy' ? 'sprint'
+      : coach?.personality === 'calm' ? 'build'
+      : 'earlyBall'
+    if (preferred === best[0] || preferred === second[0]) return preferred
+  }
+  return best[0]
 }
 
 export function resolveCounter(

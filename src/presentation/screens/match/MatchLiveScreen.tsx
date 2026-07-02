@@ -35,18 +35,20 @@ import type { ScoreboardEvent, PenaltyEntry } from '../../components/match/score
 import { MatchControls } from '../../components/match/MatchControls'
 import { CommentaryFeedStalvallen } from '../../components/match/commentary/CommentaryFeedStalvallen'
 import type { FeedRow } from '../../components/match/commentary/CommentaryFeedStalvallen'
-import { resolveCorner } from '../../../domain/services/cornerInteractionService'
+import { resolveCorner, assistantPickCorner } from '../../../domain/services/cornerInteractionService'
 import type { CornerZone, CornerDelivery } from '../../../domain/services/cornerInteractionService'
 import { resolvePenalty, resolveAIPenaltyKeeperDive } from '../../../domain/services/penaltyInteractionService'
 import type { PenaltyDirection, PenaltyHeight } from '../../../domain/services/penaltyInteractionService'
 import { deriveEventText } from './deriveEventText'
-import { resolveCounter } from '../../../domain/services/counterAttackInteractionService'
+import { resolveCounter, assistantPickCounter } from '../../../domain/services/counterAttackInteractionService'
 import type { CounterChoice } from '../../../domain/services/counterAttackInteractionService'
-import { resolveFreeKick } from '../../../domain/services/freeKickInteractionService'
+import { resolveFreeKick, assistantPickFreeKick } from '../../../domain/services/freeKickInteractionService'
 import type { FreeKickChoice } from '../../../domain/services/freeKickInteractionService'
 import type { PressChoice } from '../../../domain/services/lastMinutePressService'
 import { TacticChangeModal } from '../../components/match/TacticChangeModal'
 import { mulberry32 } from '../../../domain/utils/random'
+import { ASSISTANT_FF_LINES } from '../../../domain/data/assistantFFStrings'
+import { fillTemplate } from '../../../domain/data/matchCommentary'
 import { FirstVisitHint } from '../../components/FirstVisitHint'
 import { simulateMatchStepByStep } from '../../../domain/services/matchSimulator'
 import { matchReducer, initialMatchState } from './matchReducer'
@@ -417,6 +419,28 @@ export function MatchLiveScreen() {
         setCornerOutcome(null)
         return
       }
+      if (isFastForward) {
+        // C-fixens andra halva: rutin-interaktion — assistenten väljer istället för slumpen.
+        const cd = step.cornerInteractionData
+        const managedIsHome = fixture?.homeClubId === game?.managedClubId
+        const attackers = managedIsHome
+          ? (game?.players ?? []).filter(p => p.clubId === fixture?.homeClubId)
+          : (game?.players ?? []).filter(p => p.clubId === fixture?.awayClubId)
+        const defenders = managedIsHome
+          ? (game?.players ?? []).filter(p => p.clubId === fixture?.awayClubId)
+          : (game?.players ?? []).filter(p => p.clubId === fixture?.homeClubId)
+        const cornerTaker = attackers.find(p => p.id === cd.cornerTakerId)
+        const topRusher = attackers.find(p => p.id === cd.rusherIds[0])
+        const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
+        const setup = assistantPickCorner(cd, game?.assistantCoach, cornerTaker, topRusher, gk)
+        const pool = ASSISTANT_FF_LINES.corner
+        const voiceLine = pool.length > 0
+          ? fillTemplate(pool[Math.floor(Math.random() * pool.length)], { zone: setup.zone, delivery: setup.delivery })
+          : undefined
+        handleCornerChoice(setup.zone, setup.delivery, cd, voiceLine)
+        return
+      }
+      // commentary-mode (icke-interaktiv uppspelning) — ingen spelare väljer, oförändrat
       const zones: CornerZone[] = ['near', 'center', 'far']
       const deliveries: CornerDelivery[] = ['hard', 'low', 'short']
       handleCornerChoice(zones[Math.floor(Math.random() * 3)], deliveries[Math.floor(Math.random() * 3)], step.cornerInteractionData)
@@ -425,6 +449,15 @@ export function MatchLiveScreen() {
 
     if (step.penaltyInteractionData && !activePenalty) {
       if (!isFastForward && !isCommentaryMode) {
+        setActivePenalty(step.penaltyInteractionData)
+        setPenaltyOutcome(null)
+        return
+      }
+      // C-fix: straff är ett högvärt ögonblick — snabbspolning ska INTE slumpa det.
+      // Pausa FF och öppna panelen så spelaren väljer. (Commentary-mode saknar
+      // spelare som väljer → behåller auto-resolve.)
+      if (isFastForward && !isCommentaryMode) {
+        setIsFastForward(false)
         setActivePenalty(step.penaltyInteractionData)
         setPenaltyOutcome(null)
         return
@@ -441,6 +474,18 @@ export function MatchLiveScreen() {
         setCounterOutcome(null)
         return
       }
+      if (isFastForward) {
+        // C-fixens andra halva: rutin-interaktion — assistenten väljer istället för slumpen.
+        const cd = step.counterInteractionData
+        const choice = assistantPickCounter(cd, game?.assistantCoach)
+        const pool = ASSISTANT_FF_LINES.counter
+        const voiceLine = pool.length > 0
+          ? fillTemplate(pool[Math.floor(Math.random() * pool.length)], { choice })
+          : undefined
+        handleCounterChoice(choice, cd, voiceLine)
+        return
+      }
+      // commentary-mode (icke-interaktiv uppspelning) — ingen spelare väljer, oförändrat
       const choices: CounterChoice[] = ['sprint', 'build', 'earlyBall']
       handleCounterChoice(choices[Math.floor(Math.random() * 3)], step.counterInteractionData)
       return
@@ -452,12 +497,27 @@ export function MatchLiveScreen() {
         setFreeKickOutcome(null)
         return
       }
+      if (isFastForward) {
+        // C-fixens andra halva: rutin-interaktion — assistenten väljer istället för slumpen.
+        const fd = step.freeKickInteractionData
+        const choice = assistantPickFreeKick(fd, game?.assistantCoach)
+        const pool = ASSISTANT_FF_LINES.freekick
+        const voiceLine = pool.length > 0
+          ? fillTemplate(pool[Math.floor(Math.random() * pool.length)], { choice })
+          : undefined
+        handleFreeKickChoice(choice, fd, voiceLine)
+        return
+      }
+      // commentary-mode (icke-interaktiv uppspelning) — ingen spelare väljer, oförändrat
       const fkChoices: FreeKickChoice[] = ['shoot', 'chipPass', 'layOff']
       handleFreeKickChoice(fkChoices[Math.floor(Math.random() * 3)], step.freeKickInteractionData)
       return
     }
 
-    if (step.lastMinutePressData && !isFastForward && !activeLastMinutePress && !lastMinutePressResolved.current && !isCommentaryMode) {
+    if (step.lastMinutePressData && !activeLastMinutePress && !lastMinutePressResolved.current && !isCommentaryMode) {
+      // C-fix: sen press i jämnt läge är ett högvärt ögonblick. I FF hoppades den
+      // tidigare tyst över (gaten krävde !isFastForward) — pausa FF och öppna den istället.
+      if (isFastForward) setIsFastForward(false)
       setActiveLastMinutePress(step.lastMinutePressData)
       return
     }
@@ -581,7 +641,7 @@ export function MatchLiveScreen() {
     return Math.abs(newDiff) <= MATCH_GOAL_DIFFERENCE_CAP
   }
 
-  function handleCornerChoice(zone: CornerZone, delivery: CornerDelivery, inlineData?: import('../../../domain/services/cornerInteractionService').CornerInteractionData) {
+  function handleCornerChoice(zone: CornerZone, delivery: CornerDelivery, inlineData?: import('../../../domain/services/cornerInteractionService').CornerInteractionData, assistantVoiceLine?: string) {
     const cornerData = inlineData ?? activeCorner
     if (!cornerData || !game || !fixture) return
 
@@ -643,7 +703,8 @@ export function MatchLiveScreen() {
         const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
         return { ...s, cornerInteractionData: undefined, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
-          commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
+          commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'],
+          assistantVoiceLine }
       })
       if (outcome.type !== 'goal') return updatedCurrent
       const cur = updatedCurrent[currentStep]
@@ -734,7 +795,7 @@ export function MatchLiveScreen() {
     }, isFastForward ? 0 : 2500)
   }
 
-  function handleCounterChoice(choice: CounterChoice, inlineData?: import('../../../domain/services/counterAttackInteractionService').CounterInteractionData) {
+  function handleCounterChoice(choice: CounterChoice, inlineData?: import('../../../domain/services/counterAttackInteractionService').CounterInteractionData, assistantVoiceLine?: string) {
     const counterData = inlineData ?? activeCounter
     if (!counterData || !fixture || !game) return
     const managedIsHome = fixture.homeClubId === game.managedClubId
@@ -781,7 +842,8 @@ export function MatchLiveScreen() {
         const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
         return { ...s, counterInteractionData: undefined, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
-          commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
+          commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'],
+          assistantVoiceLine }
       })
       if (outcome.type !== 'goal') return updatedCurrent
       const cur = updatedCurrent[currentStep]
@@ -804,7 +866,7 @@ export function MatchLiveScreen() {
     }, isFastForward ? 0 : 2500)
   }
 
-  function handleFreeKickChoice(choice: FreeKickChoice, inlineData?: import('../../../domain/services/freeKickInteractionService').FreeKickInteractionData) {
+  function handleFreeKickChoice(choice: FreeKickChoice, inlineData?: import('../../../domain/services/freeKickInteractionService').FreeKickInteractionData, assistantVoiceLine?: string) {
     const fkData = inlineData ?? activeFreeKick
     if (!fkData || !fixture || !game) return
     const managedIsHome = fixture.homeClubId === game.managedClubId
@@ -850,7 +912,8 @@ export function MatchLiveScreen() {
         const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
         return { ...s, freeKickInteractionData: undefined, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
-          commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
+          commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'],
+          assistantVoiceLine }
       })
       if (outcome.type !== 'goal') return updatedCurrent
       const cur = updatedCurrent[currentStep]
@@ -1166,18 +1229,19 @@ export function MatchLiveScreen() {
 
   function handleToggleFastForward() {
     const newFF = !isFastForward
+    // C-fix: högvärda interaktioner (straff, sen press) får ALDRIG tyst-förkastas av FF.
+    // Är en sådan aktiv när spelaren slår på FF — vägra tända FF, låt panelen stå kvar.
+    if (newFF && (activePenalty || activeLastMinutePress)) {
+      return
+    }
     setIsFastForward(newFF)
-    if (newFF && (activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress)) {
+    if (newFF && (activeCorner || activeCounter || activeFreeKick)) {
       setActiveCorner(null)
       setCornerOutcome(null)
-      setActivePenalty(null)
-      setPenaltyOutcome(null)
       setActiveCounter(null)
       setCounterOutcome(null)
       setActiveFreeKick(null)
       setFreeKickOutcome(null)
-      setActiveLastMinutePress(null)
-      lastMinutePressResolved.current = true
       setCurrentStep(prev => prev + 1)
     }
   }
@@ -1313,41 +1377,48 @@ export function MatchLiveScreen() {
           )
         )
       )
-      .map(s => {
+      .flatMap((s): FeedRow[] => {
+        // Assistentens röstrad (FF-assisterade corner/counter/frislag) ska visas FÖRE
+        // utfallsraden. Ordningen här är avsiktligt [utfall, röstrad] — hela feedRows
+        // reverse:as längst ner (senaste överst), så den lokala ordningen speglas och
+        // röstraden hamnar ovanför/före utfallsraden i den slutliga renderingen.
+        const assistantRow = s.assistantVoiceLine
+          ? [{ kind: 'atmosphere' as const, text: s.assistantVoiceLine }]
+          : []
         const goalEvent = s.events.find(e => e.type === MatchEventType.Goal)
         if (goalEvent) {
           const team = goalEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
-          return {
+          return [{
             kind: 'event' as const,
             tag: (goalEvent.isPenaltyGoal ? 'penalty' : 'goal') as 'penalty' | 'goal',
             minute: s.minute,
             team,
             text: deriveEventText(s.commentary, goalEvent, 'Mål', feedPlayers),
-          }
+          }, ...assistantRow]
         }
         const suspEvent = s.events.find(e => e.type === MatchEventType.Suspension)
         if (suspEvent) {
           const team = suspEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
-          return {
+          return [{
             kind: 'event' as const,
             tag: 'suspension' as const,
             minute: s.minute,
             team,
             text: deriveEventText(s.commentary, suspEvent, 'Utvisning', feedPlayers),
-          }
+          }, ...assistantRow]
         }
         const saveEvent = s.events.find(e => e.type === MatchEventType.Save)
         if (saveEvent) {
           const team = saveEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
-          return {
+          return [{
             kind: 'event' as const,
             tag: 'save' as const,
             minute: s.minute,
             team,
             text: deriveEventText(s.commentary, saveEvent, 'Räddning', feedPlayers),
-          }
+          }, ...assistantRow]
         }
-        return { kind: 'atmosphere' as const, text: s.commentary ?? '' }
+        return [{ kind: 'atmosphere' as const, text: s.commentary ?? '' }, ...assistantRow]
       }),
     ...penaltyFeedRows,
   ].reverse()

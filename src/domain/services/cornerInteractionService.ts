@@ -1,4 +1,5 @@
 import type { Player } from '../entities/Player'
+import type { AssistantCoach } from '../entities/AssistantCoach'
 import { PlayerPosition, PlayerArchetype, CornerStrategy } from '../enums'
 
 export type CornerZone = 'near' | 'center' | 'far'
@@ -214,4 +215,25 @@ export function cornerZoneSuccessRates(
 /** Formats a rate as %, rounded to nearest 5 */
 export function formatRate(rate: number): string {
   return `${Math.round(rate * 20) * 5}%`
+}
+
+/**
+ * Assistentens hörnval i snabbspolningsläge — zon väljs som argmax av
+ * zonoddsen (cornerZoneSuccessRates), leverans styrs av tränarpersonlighet
+ * (delivery har ingen egen oddsformel, så personligheten avgör den helt).
+ */
+export function assistantPickCorner(
+  data: CornerInteractionData,
+  coach: AssistantCoach | undefined,
+  cornerTaker?: Player,
+  topRusher?: Player,
+  goalkeeper?: Player,
+): CornerSetup {
+  const rates = cornerZoneSuccessRates(data, cornerTaker, topRusher, goalkeeper)
+  const zone = (Object.entries(rates).sort((a, b) => b[1] - a[1])[0][0]) as CornerZone
+  const delivery: CornerDelivery =
+    coach?.personality === 'grumpy' ? 'hard'
+    : coach?.personality === 'calm' ? 'low'
+    : 'short'
+  return { zone, delivery }
 }

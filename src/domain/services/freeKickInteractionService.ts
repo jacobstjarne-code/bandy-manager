@@ -1,4 +1,5 @@
 import type { Player } from '../entities/Player'
+import type { AssistantCoach } from '../entities/AssistantCoach'
 
 export type FreeKickChoice = 'shoot' | 'chipPass' | 'layOff'
 
@@ -60,4 +61,53 @@ export function resolveFreeKick(
     return { type: 'goal', description: `Kort frislag, upplägg — och en välplacerad avslut tar vägen in!` }
   }
   return { type: 'wide', description: `Kort frislag men uppbyggnaden avslutas med ett skott utanför.` }
+}
+
+/**
+ * Uppskattad målchans per val (0–1), speglar resolveFreeKick:s formler.
+ * Ingen målvakts-term (till skillnad från resolveFreeKick) — data har bara
+ * kickerns egna attribut, samma förenkling som counterChoiceSuccessRates
+ * gör (odds-funktionerna är snabba UI-/assistent-uppskattningar, inte
+ * fullständig stokastisk upplösning).
+ */
+export function freeKickChoiceSuccessRates(data: FreeKickInteractionData): Record<FreeKickChoice, number> {
+  const shootingSkill = data.kickerShooting / 100
+  const passingSkill = data.kickerPassing / 100
+  const distancePenalty = (data.distanceMeters - 20) / 8 * 0.20
+  const wallFactor = (data.wallSize - 3) / 2 * 0.10
+  const wallHitChance = Math.max(0, Math.min(0.9, wallFactor + 0.10))
+
+  const shootGoal = Math.max(0.08, Math.min(0.55, 0.35 + (shootingSkill - 0.50) * 0.6 - distancePenalty)) * (1 - wallHitChance)
+  const passSuccess = Math.max(0.25, Math.min(0.70, 0.48 + (passingSkill - 0.50) * 0.5))
+  const chipGoal = passSuccess * Math.max(0.15, Math.min(0.50, 0.30 + (shootingSkill - 0.50) * 0.4))
+  const layOffGoal = Math.max(0.05, Math.min(0.30, 0.15 + (shootingSkill + passingSkill) / 2 * 0.25))
+
+  return {
+    shoot: Math.max(0.03, Math.min(0.50, shootGoal)),
+    chipPass: Math.max(0.05, Math.min(0.40, chipGoal)),
+    layOff: Math.max(0.03, Math.min(0.30, layOffGoal)),
+  }
+}
+
+/**
+ * Assistentens val i snabbspolningsläge — argmax av oddsen. Personlighet
+ * bryter bara lika/nära lägen (±2 procentenheter), samma mönster som
+ * assistantPickCounter.
+ */
+export function assistantPickFreeKick(
+  data: FreeKickInteractionData,
+  coach: AssistantCoach | undefined,
+): FreeKickChoice {
+  const rates = freeKickChoiceSuccessRates(data)
+  const ranked = (Object.entries(rates) as [FreeKickChoice, number][]).sort((a, b) => b[1] - a[1])
+  const [best, second] = ranked
+  const isNearTie = !!second && (best[1] - second[1]) < 0.02
+  if (isNearTie) {
+    const preferred: FreeKickChoice =
+      coach?.personality === 'grumpy' ? 'shoot'
+      : coach?.personality === 'calm' ? 'layOff'
+      : 'chipPass'
+    if (preferred === best[0] || preferred === second[0]) return preferred
+  }
+  return best[0]
 }
