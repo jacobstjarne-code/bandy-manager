@@ -1,5 +1,8 @@
 import type { SaveGame } from '../../../entities/SaveGame'
 
+/** Transferdeadline är omgång 15 (stänger efter omgång 15, januari-fönster). */
+export const TRANSFER_DEADLINE_ROUND = 15
+
 /**
  * Returnerar true om det finns inkommande bud som kräver svar
  * (status pending, riktade mot managed club).
@@ -15,7 +18,6 @@ export function hasOpenBids(game: SaveGame): boolean {
 
 /**
  * Returnerar true om transferfönstret stänger inom ≤3 omgångar.
- * Transferfönstret stänger omgång 15 (januari-fönster).
  */
 export function transferDeadlineWithin3Rounds(game: SaveGame): boolean {
   const currentRound = (() => {
@@ -27,8 +29,6 @@ export function transferDeadlineWithin3Rounds(game: SaveGame): boolean {
       : 0
   })()
 
-  // Transferdeadline är omgång 15 (stänger efter omgång 15)
-  const DEADLINE_ROUND = 15
-  const roundsLeft = DEADLINE_ROUND - currentRound
+  const roundsLeft = TRANSFER_DEADLINE_ROUND - currentRound
   return roundsLeft > 0 && roundsLeft <= 3
 }

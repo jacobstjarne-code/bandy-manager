@@ -14,6 +14,7 @@ import { getRivalry } from './rivalries'
 import { nextManagedFixture } from '../services/situationFragments'
 import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from './facilityPortalBeats'
 import { FACILITY_NODE_DEFS } from './facilityNodes'
+import { TRANSFER_DEADLINE_ROUND } from '../services/portal/triggers/transferTriggers'
 
 export interface PortalBeat {
   id: string
@@ -23,8 +24,8 @@ export interface PortalBeat {
   trigger: (game: SaveGame) => boolean
   /** true = visas max en gång per säsong, false = en gång totalt */
   oncePerSeason: boolean
-  /** Etikett-rad ovanför texten. Visas vid severity ≥ 1. */
-  kicker?: string
+  /** Etikett-rad ovanför texten. Visas vid severity ≥ 1. Funktion → kan tystas/variera på game-state. */
+  kicker?: string | ((game: SaveGame) => string | undefined)
   /** Navigerar hit vid klick på beatet (inte dismiss-knappen). */
   route?: string
   /** Om satt, genereras dismiss-nyckeln av denna funktion istf statisk id/säsong-logik. */
@@ -74,6 +75,12 @@ function completedLeagueCount(game: SaveGame): number {
     f => f.status === 'completed' && !f.isCup &&
       (f.homeClubId === id || f.awayClubId === id)
   ).length
+}
+
+/** Har transfer_window_open-beatet visats i en tidigare säsong? shownBeats
+ *  nollställs aldrig mellan säsonger, så en tidigare säsongs nyckel räcker. */
+function hasSeenTransferWindowBeatBefore(game: SaveGame): boolean {
+  return (game.shownBeats ?? []).some(k => k.startsWith('transfer_window_open_'))
 }
 
 const STEP_VERBS: Record<string, { up: string; down: string }> = {
@@ -472,10 +479,19 @@ export const PORTAL_BEATS: PortalBeat[] = [
   },
 
   // ── Transferfönster öppnar (omg 5-7) ────────────────────────────
+  // Drag 2 (2026-07-02): första gången i karriären förklaras fönstret
+  // (+ stänger-tag). Återkommande säsonger räcker den korta formen —
+  // spelaren vet redan. shownBeats är redan den persistenta "sedd"-
+  // flaggan (ingen ny SaveGame-fält behövs).
   {
     id: 'transfer_window_open',
     emoji: '📞',
-    text: 'Transferfönstret öppet. Telefonen har redan börjat ringa hos någon — bara inte hos er än.',
+    text: (game: SaveGame) => hasSeenTransferWindowBeatBefore(game)
+      ? 'Transferfönstret öppet. Telefonen har redan börjat ringa hos någon — bara inte hos er än.'
+      : `Transferfönstret är öppet — spelare kan köpas och säljas fram till omg ${TRANSFER_DEADLINE_ROUND}.`,
+    kicker: (game: SaveGame) => hasSeenTransferWindowBeatBefore(game)
+      ? undefined
+      : `Stänger omg ${TRANSFER_DEADLINE_ROUND}`,
     trigger: (g) => {
       const played = completedLeagueCount(g)
       return played >= 5 && played <= 7

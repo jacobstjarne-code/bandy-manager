@@ -53,9 +53,10 @@ export function PortalBeat({ game }: Props) {
   if (!beat) return null
 
   const beatText = typeof beat.text === 'function' ? beat.text(game) : beat.text
+  const kickerText = typeof beat.kicker === 'function' ? beat.kicker(game) : beat.kicker
   const sev: 0 | 1 | 2 | 3 = beat.severity
     ? beat.severity(game)
-    : beat.kicker ? 1 : 0
+    : kickerText ? 1 : 0
   const styles = getSeverityStyles(sev)
 
   const dismiss = (e: React.MouseEvent) => {
@@ -73,7 +74,7 @@ export function PortalBeat({ game }: Props) {
   }
 
   const isNavigable = !!beat.route
-  const showKicker = !!(beat.kicker && sev >= 1)
+  const showKicker = !!(kickerText && sev >= 1)
 
   return (
     <div
@@ -109,7 +110,7 @@ export function PortalBeat({ game }: Props) {
               color: styles.kickerColor,
               marginBottom: 3,
             }}>
-              {beat.kicker}
+              {kickerText}
             </div>
           )}
           <div className="h-quote" style={{ color: styles.textColor, lineHeight: 1.55 }}>
