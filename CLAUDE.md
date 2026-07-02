@@ -510,8 +510,22 @@ ALDRIG kommentera bort eller ta bort ett test för att det failar.
 För VARJE UI-ändring, gör denna checklista i terminalen:
 ```bash
 # 1. Inga hårdkodade färger
-grep -rn '#[0-9a-fA-F]\{3,8\}' src/ --include="*.tsx" | grep -v node_modules | grep -v ClubBadge | grep -v global.css | grep -v SVG
-# Ska returnera 0 relevanta resultat (exkludera badges, SVG, global.css)
+grep -rn '#[0-9a-fA-F]\{3,8\}' src/ --include="*.tsx" | grep -v node_modules \
+  | grep -v "components/ClubBadge.tsx" \
+  | grep -v "screens/dev/DevScenesScreen.tsx" \
+  | grep -v "scenes/shared/ConfettiParticles.tsx" \
+  | grep -v "components/KlubbparmOverlay.tsx"
+# Ska returnera 0. Fyra dokumenterade undantag inbyggda i kommandot (2026-07,
+# token-städ 2026-07-02): ClubBadge.tsx (12 klubbars unika heraldik — data,
+# inte design-system, kan aldrig tokeniseras generiskt), DevScenesScreen.tsx
+# (dev-only, spelaren ser aldrig ytan), ConfettiParticles.tsx (SPEC-LYDNAD:
+# "Pixel-värden från victory-mockup. Justera inte." — kommentaren i filen
+# är sanningen), KlubbparmOverlay.tsx (hex förekommer bara i en kommentar,
+# koden pekar redan på var(--bg)). Nytt undantag som INTE redan täcks här →
+# fixa till token istället för att lägga till en grep -v — se historik för
+# varför SVG-generisk-undantag togs bort: dolde riktiga brott (GranskaShotmap
+# fill="#fff" i en <svg> missades av grep -v SVG eftersom raden inte
+# innehöll ordet "SVG").
 
 # 2. Inga "rink" kvar
 grep -rni 'rink' src/ --include="*.ts" --include="*.tsx" | grep -v node_modules
