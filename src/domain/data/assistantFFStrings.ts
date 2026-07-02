@@ -15,19 +15,19 @@ export const ASSISTANT_FF_LINES = {
       'Han tog den nära — trängde ihop det vid första stolpen.',
     ],
     center: [
-      'Assistenten lyfte in den framför mål.',
-      'Rakt mot mittzonen. Assistenten valde luften.',
-      'Han slog den mot straffpunkten. Full pott framför kassen.',
+      'Assistenten slog ut den mot mitten. Skytten stod klar vid linjen.',
+      'Rakt ut till linjen — assistenten litade på skytten.',
+      'Han la den mot mitten. Direktskott eller inget.',
     ],
     far: [
       'Assistenten sökte bortre stolpen.',
-      'Lång båge mot bortre. Assistentens val.',
+      'Långt ut mot bortre. Assistentens val.',
       'Han la den på bakre — sökte den fria mannen där ute.',
     ],
   },
   counter: {
     sprint: [
-      'Assistenten vinkade fram löparen. Bara att springa.',
+      'Assistenten släppte iväg honom. Bara att åka.',
       'Full fart framåt — assistenten släppte loss honom.',
       'Han sa åt dem att dra. Rakt på mål.',
     ],
@@ -45,13 +45,13 @@ export const ASSISTANT_FF_LINES = {
   freekick: {
     shoot: [
       'Assistenten vinkade fram skytten. Direkt mot mål.',
-      'Skott. Assistenten litade på foten.',
+      'Skott. Assistenten litade på klubban.',
       'Han tog det själv, rakt på — inget krångel.',
     ],
     chipPass: [
       'Assistenten lyfte den över muren.',
-      'Boll bakom muren — assistenten sökte huvudet där inne.',
-      'Han chippade den. Sökte någon på bortre.',
+      'Boll bakom muren — assistenten sökte en klubba där inne.',
+      'Han lyfte den mjukt. Sökte någon på bortre.',
     ],
     layOff: [
       'Assistenten la av den kort. Byggde vidare.',
