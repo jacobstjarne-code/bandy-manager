@@ -717,8 +717,15 @@ Varje fynd, diagnos, princip eller regel Opus skriver ska AVSLUTAS med en explic
 
 ## ARBETSFÖRDELNING: OPUS vs CODE
 
-Opus (Claude 4 Opus, denna chat) drar mer kvot per turn än
-Code (Sonnet via Claude Code). Specielt vid iteration —
+> **Bemanning (konfigurationsnot, byts utan att reglerna skrivs om):**
+> Opus-rollen = chat-instansen (f.n. Claude Opus 4.8; Fable 5 punktvis för systemkoherens-revisioner).
+> Code-rollen = Claude Code i VS Code (f.n. Sonnet 5).
+> Design-rollen = Design-instans i VS Code (Fable/Design).
+> Reglerna nedan gäller ROLLERNA, oavsett vilken modell som bemannar dem.
+>
+> **Thinking-throttle per roll:** Code kör standard (låg) som default — grind/spec-lydnad/wiring vinner inget på extended thinking; eskalera ("think hard") endast vid rotorsaksdiagnos, motor-/kalibreringsarbete och refactors >5 filer. Design kör medium — perceptionsaudit är titta-jämför-lista; eskalera endast vid rulings/systembeslut som kaskaderar över många siter. Grind är alltid Code oavsett diffstorlek.
+
+Opus-rollen drar mer kvot per turn än Code-rollen. Specielt vid iteration —
 stress-test, build/test-loops, pixel-jämförelse mot mock —
 skalar Code-kostnaden bättre. Fördela arbete utifrån två frågor:
 
