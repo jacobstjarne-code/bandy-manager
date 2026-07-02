@@ -46,9 +46,8 @@ import { resolveFreeKick, assistantPickFreeKick } from '../../../domain/services
 import type { FreeKickChoice } from '../../../domain/services/freeKickInteractionService'
 import type { PressChoice } from '../../../domain/services/lastMinutePressService'
 import { TacticChangeModal } from '../../components/match/TacticChangeModal'
-import { mulberry32 } from '../../../domain/utils/random'
+import { mulberry32, seededPick } from '../../../domain/utils/random'
 import { ASSISTANT_FF_LINES } from '../../../domain/data/assistantFFStrings'
-import { fillTemplate } from '../../../domain/data/matchCommentary'
 import { FirstVisitHint } from '../../components/FirstVisitHint'
 import { simulateMatchStepByStep } from '../../../domain/services/matchSimulator'
 import { matchReducer, initialMatchState } from './matchReducer'
@@ -433,10 +432,8 @@ export function MatchLiveScreen() {
         const topRusher = attackers.find(p => p.id === cd.rusherIds[0])
         const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
         const setup = assistantPickCorner(cd, game?.assistantCoach, cornerTaker, topRusher, gk)
-        const pool = ASSISTANT_FF_LINES.corner
-        const voiceLine = pool.length > 0
-          ? fillTemplate(pool[Math.floor(Math.random() * pool.length)], { zone: setup.zone, delivery: setup.delivery })
-          : undefined
+        const pool = ASSISTANT_FF_LINES.corner[setup.zone]
+        const voiceLine = pool && pool.length > 0 ? seededPick(pool, Date.now()) : undefined
         handleCornerChoice(setup.zone, setup.delivery, cd, voiceLine)
         return
       }
@@ -478,10 +475,8 @@ export function MatchLiveScreen() {
         // C-fixens andra halva: rutin-interaktion — assistenten väljer istället för slumpen.
         const cd = step.counterInteractionData
         const choice = assistantPickCounter(cd, game?.assistantCoach)
-        const pool = ASSISTANT_FF_LINES.counter
-        const voiceLine = pool.length > 0
-          ? fillTemplate(pool[Math.floor(Math.random() * pool.length)], { choice })
-          : undefined
+        const pool = ASSISTANT_FF_LINES.counter[choice]
+        const voiceLine = pool && pool.length > 0 ? seededPick(pool, Date.now()) : undefined
         handleCounterChoice(choice, cd, voiceLine)
         return
       }
@@ -501,10 +496,8 @@ export function MatchLiveScreen() {
         // C-fixens andra halva: rutin-interaktion — assistenten väljer istället för slumpen.
         const fd = step.freeKickInteractionData
         const choice = assistantPickFreeKick(fd, game?.assistantCoach)
-        const pool = ASSISTANT_FF_LINES.freekick
-        const voiceLine = pool.length > 0
-          ? fillTemplate(pool[Math.floor(Math.random() * pool.length)], { choice })
-          : undefined
+        const pool = ASSISTANT_FF_LINES.freekick[choice]
+        const voiceLine = pool && pool.length > 0 ? seededPick(pool, Date.now()) : undefined
         handleFreeKickChoice(choice, fd, voiceLine)
         return
       }
