@@ -20,6 +20,8 @@ import { SeasonArcCard } from '../components/squad/SeasonArcCard'
 import { StillnessSection } from '../components/squad/StillnessSection'
 import { getRecommendedFormation, FORMATION_META } from '../../domain/entities/Formation'
 import { TabBar } from '../components/shared/TabBar'
+import { TabIntro } from '../components/shared/TabIntro'
+import { TAB_INTROS } from '../../domain/data/tabIntros'
 import '../styles/squad.css'
 import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from '../../domain/data/squadNuStrings'
 import { findActiveAnniversaries } from '../../domain/services/clubMemoryService'
@@ -509,6 +511,7 @@ export function SquadScreen() {
           onSelect={(id) => setScreenTab(id as typeof screenTab)}
         />
       </div>
+      <TabIntro entry={TAB_INTROS[screenTab]} />
       {screenTab === 'taktik' && club && game?.assistantCoach && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
           <TacticBoardCard

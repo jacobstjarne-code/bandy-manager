@@ -32,15 +32,15 @@ export function TransferPlayerCard({
 
   return (
     <div
-      className={`transfers-player-card ${isScouted ? 'transfers-player-card-scouted' : ''}`}
+      className={`transfers-list-row-lg ${isScouted ? 'transfers-state-scouted-bg' : ''}`}
       style={{ borderBottom: isLast ? 'none' : '1px solid var(--border)' }}
     >
       <div className="transfers-list-content">
-        <p className="h-name">
+        <p className="transfers-list-name-lg">
           {player.firstName} {player.lastName}
           {isBargain && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--success)', fontWeight: 700 }}>⭐ Fynd</span>}
         </p>
-        <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
           {positionShort(player.position)} · {player.age} år · {club?.shortName ?? '?'} · {isScouted ? `Styrka ~${estimatedCA}` : 'Styrka ?'} · MV {formatValue(player.marketValue)}
         </p>
       </div>

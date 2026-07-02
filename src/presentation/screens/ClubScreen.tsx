@@ -7,10 +7,11 @@ import { TrainingSection } from '../components/club/TrainingSection'
 import { EkonomiTab } from '../components/club/EkonomiTab'
 import { OrtenTab } from '../components/club/OrtenTab'
 import { AkademiTab } from '../components/club/AkademiTab'
-import { FirstVisitHint } from '../components/FirstVisitHint'
 import { ClubMemoryView } from '../components/clubmemory/ClubMemoryView'
 import { TranareTab } from '../components/club/TranareTab'
 import { TabBar } from '../components/shared/TabBar'
+import { TabIntro } from '../components/shared/TabIntro'
+import { TAB_INTROS } from '../../domain/data/tabIntros'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -35,7 +36,6 @@ export function ClubScreen() {
   const interactWithPolitician = useGameStore(s => s.interactWithPolitician)
   const recruitVolunteer = useGameStore(s => s.recruitVolunteer)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
-  const dismissHint = useGameStore(s => s.dismissHint)
   const navigate = useNavigate()
   const location = useLocation()
   const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'akademi', 'minne', 'tranare']
@@ -75,15 +75,6 @@ export function ClubScreen() {
     { key: 'tranare', label: 'Tränare' },
   ]
 
-  const tabDescriptions: Record<string, string> = {
-    training: 'Träningsfokus och intensitet inför nästa omgång.',
-    ekonomi: 'Klubbkassa, budget, intäkter och utgifter.',
-    orten: 'Lokalstöd, mecenater, kommun och föreningsaktiviteter.',
-    akademi: 'Ungdomslag, talangutveckling och intag.',
-    minne: 'Klubbens historia, legender och minnesvärda ögonblick.',
-    tranare: 'Din tränar­profil, belastning och rivaliteter.',
-  }
-
   return (
     <div className="screen-col-layout">
       {/* Tab bar */}
@@ -96,27 +87,10 @@ export function ClubScreen() {
       </div>
 
       {/* Tab description */}
-      {tabDescriptions[activeTab] && (
-        <p className="tab-bar-desc">{tabDescriptions[activeTab]}</p>
-      )}
+      <TabIntro entry={TAB_INTROS[activeTab]} />
 
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 90px', paddingTop: 12 }}>
-
-        {activeTab === 'orten' && !(game.dismissedHints ?? []).includes('orten') && (
-          <FirstVisitHint
-            screenId="orten"
-            text="Aktivera kiosken och bandyskolan. Frivilliga och kommunbidrag håller klubben vid liv."
-            onDismiss={() => dismissHint('orten')}
-          />
-        )}
-        {activeTab === 'ekonomi' && !(game.dismissedHints ?? []).includes('ekonomi') && (
-          <FirstVisitHint
-            screenId="ekonomi"
-            text="Klubbkassan är liten. Sponsorer + frivilliga + matchintäkter. Röda siffror = styrelsen agerar."
-            onDismiss={() => dismissHint('ekonomi')}
-          />
-        )}
 
         {/* ── Tab 1: Träning ── */}
         {activeTab === 'training' && (

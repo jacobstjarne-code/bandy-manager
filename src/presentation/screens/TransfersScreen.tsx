@@ -7,7 +7,6 @@ import type { Player } from '../../domain/entities/Player'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 import { formatFinanceAbs, positionShort, formatValue } from '../utils/formatters'
 import { SectionLabel } from '../components/SectionLabel'
-import { FirstVisitHint } from '../components/FirstVisitHint'
 
 import { BidModal } from '../components/transfers/BidModal'
 import { getRivalry } from '../../domain/data/rivalries'
@@ -17,6 +16,8 @@ import { FreeAgentList } from '../components/transfers/FreeAgentList'
 import { WageOverrunWarning } from '../components/transfers/WageOverrunWarning'
 import '../styles/transfers.css'
 import { TabBar } from '../components/shared/TabBar'
+import { TabIntro } from '../components/shared/TabIntro'
+import { TAB_INTROS } from '../../domain/data/tabIntros'
 
 export function TransfersScreen() {
   const game = useGameStore(s => s.game)
@@ -26,7 +27,6 @@ export function TransfersScreen() {
   const listPlayerForSale = useGameStore(s => s.listPlayerForSale)
   const startTalentSearch = useGameStore(s => s.startTalentSearch)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
-  const dismissHint = useGameStore(s => s.dismissHint)
   useEffect(() => { markScreenVisited('transfers') }, [])
 
   // B1-nav Fas 2: renew-state + contracts-tabben flyttade till ContractsTab (Trupp → Värvning).
@@ -148,14 +148,6 @@ export function TransfersScreen() {
   return (
     <div className="transfers-screen">
 
-      {!(game.dismissedHints ?? []).includes('transfers') && (
-        <FirstVisitHint
-          screenId="transfers"
-          text="Transferfönstret stänger omgång 15. Scouta billigt. Sälj dyrt. Akademin är gratis."
-          onDismiss={() => dismissHint('transfers')}
-        />
-      )}
-
       {scoutMessage && (
         <div className="card-sharp transfers-state-copper-dim">
           {scoutMessage}
@@ -203,21 +195,7 @@ export function TransfersScreen() {
         onSelect={(id) => setActiveTab(id as typeof activeTab)}
       />
 
-      {({
-        marknad: 'Spelare som är tillgängliga för transfer just nu.',
-        scouting: 'Utvärdera spelare eller sök nya talanger.',
-        freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
-        sell: 'Sälj spelare från din trupp.',
-      } as Record<string, string>)[activeTab] && (
-        <p className="transfers-section-desc">
-          {({
-            marknad: 'Spelare som är tillgängliga för transfer just nu.',
-            scouting: 'Utvärdera spelare eller sök nya talanger.',
-                freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
-            sell: 'Sälj spelare från din trupp.',
-          } as Record<string, string>)[activeTab]}
-        </p>
-      )}
+      <TabIntro entry={TAB_INTROS[activeTab]} />
 
       <div className={`card-sharp transfers-window-bar ${windowInfo.status === 'open' ? 'transfers-window-open' : windowInfo.status === 'winter' ? 'transfers-window-winter' : 'transfers-window-closed'}`}>
         <p className="transfers-window-status" style={{ color: windowInfo.status === 'open' ? 'var(--success)' : windowInfo.status === 'winter' ? 'var(--accent)' : 'var(--danger)' }}>
@@ -370,9 +348,9 @@ export function TransfersScreen() {
           )}
           <div className="card-sharp" style={{ overflow: 'hidden' }}>
             {managedClubPlayers.sort((a, b) => b.currentAbility - a.currentAbility).map((player, index) => (
-              <div key={player.id} className="transfers-list-row" style={{ borderBottom: index < managedClubPlayers.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              <div key={player.id} className="transfers-list-row-lg" style={{ borderBottom: index < managedClubPlayers.length - 1 ? '1px solid var(--border)' : 'none' }}>
                 <div className="transfers-list-content">
-                  <p className="transfers-list-name">
+                  <p className="transfers-list-name-lg">
                     {player.firstName} {player.lastName}
                   </p>
                   <p className="transfers-list-meta">
