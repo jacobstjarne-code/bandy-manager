@@ -133,7 +133,7 @@ export function StillnessSection({ game, receded = false }: Props) {
         <div style={{
           padding: '8px 12px', marginBottom: 12,
           borderLeft: '2px solid var(--gold)',
-          background: 'rgba(232,185,92,0.05)', borderRadius: '0 6px 6px 0',
+          background: 'color-mix(in srgb, var(--gold) 5%, transparent)', borderRadius: '0 6px 6px 0',
         }}>
           <div style={{ fontSize: 8, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--gold-deep)', marginBottom: 3 }}>
             ⬩ På dagen {heritage.yearsAgo} år sedan

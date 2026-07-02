@@ -40,6 +40,21 @@
 
 ## A. AKTIVA SPRINTAR (Code arbetar eller väntar Code-start)
 
+### TEXT-AUDITEN — AKTIV (Fable; domän 1 KLAR 2026-07-03, domän 2–4 kvar)
+
+ENDA detaljkälla: `docs/TEXT-AUDIT-PROTOKOLL.md` → tabellen **ÖPPNA ÄRENDEN**
+överst (supersede-disciplin — läs tabellen, inte LOGG:en).
+- **Code-kö NU (ordning):** (1) domän 1-commit (73 rättade rader, 18 filer;
+  order i protokollets LOGG 2026-07-02 kväll), (2)
+  `docs/SPEC_REGELBOKSANPASSNING_2026-07-03.md` — M1 förlängning 20 min +
+  M15 utvisning 5/10 + M16 landslagsuttag 0–2 (Jacob beslutade 2026-07-03),
+  (3) M9-grep · M12-fix.
+- **Fable-kö:** Del 4 i regelboksspecen (textbyte mot {minuter}-token) —
+  EFTER Codes Del 1–2.
+- **Jacob:** inget öppet just nu. M5–M7 godkända 2026-07-03.
+- **Kvar:** domän 2 (orten/röster, FÄRSK Fable-session, lärdom #4 först),
+  domän 3 (UI), domän 4 (väder/övrigt). Därefter text-guard-lint (Code).
+
 ### FÖRSONINGSSPRINTEN — AKTIV (Design-rundan landade 2026-06-11)
 
 Arbetsorder: `docs/RELA-FORSONINGSSPRINT-2026-06-11.md` (Fable). Domen (`docs/DESIGNSLUTSATSER-STEG3-2026-06-11.md`): designen är *bevisat rätt* — städsprint, inte omdesign. Konsoliderad audit: `docs/DESIGNOMGANGEN-KOMPLETT-2026-06-11.md` (16 kap). Systempatch ratificerad av Jacob 2026-06-11.
@@ -382,6 +397,7 @@ Systemkartan (`SYSTEMKARTA_DEL1_2026-06-12.md`, 13 kartfynd) spårades separat f
 | ~~E-SC2~~ | ~~**Eskalering recompute per render.**~~ | ~~PortalScreen-trädet~~ | **LÖST — redan optimerat, ingen ändring behövdes.** PortalScreen beräknar `escalationSubState`/`playoffCtx` EN gång (rad 246/248) och vidarebefordrar som props. PortalUpptakt + NextMatchPrimary har conditional guards (`subStateFromParent !== undefined ? subStateFromParent : recompute()`). Kod-verifierat 2026-06-20. |
 | ~~E-SC3~~ | ~~trendStroke last-vs-first~~ | **LÖST 2026-06-20** — EkonomiTab + StillnessSection använder redan `seasonTrendStroke`. |
 | E-SY1 | `game.currentSeason + 1` duplicerad istf `seasonChampionYear()` | `playoffProcessor.ts:219,228` + `bandyGalaService.ts:135,194` räknar SM-final-/gala-kalenderåret manuellt trots att `domain/utils/seasonYear.ts` har en dokumenterad, kanonisk `seasonChampionYear(season)` för exakt detta (kodifierad efter en tidigare felaktig ordningstals-tolkning 2026-06-08). Semantiken är korrekt idag (verifierat M11, 2026-07-02) — det är bara duplicerad logik, ingen bugg. Fixa opportunistiskt nästa gång någon av filerna ändå öppnas: byt ut de 4 `+ 1`-uträkningarna mot `seasonChampionYear(game.currentSeason)`. |
+| E-FS1 | "Serien"/"Slutspelet"-etiketter dubblerade | `MatchLaddningScene.tsx` (rad ~190/197, hårdkodad JSX-text) och `FinalIntroScreen.tsx` (rad ~187/195, `scene?.statLabels.serien/slutspel` med fallback-text) visar samma två ord från två helt separata källor — samma rotorsak som C-SP5 (SM-final-uppspelet renderas i två komponenter, en i Förbered/MatchLaddningScene och en i Spela/FinalIntroScreen). DS-konformans svep 2 (2026-07-03) flaggade bara typsnittsstorleken (7.5→`.h-micro`, åtgärdad); själva dubbleringen rördes inte för att fixen hade krävt att tråda `scene`/`statLabels` genom MatchLaddningScene (>1 fil utöver de två som redan ändrades — REFAKTOR-DISCIPLIN). Fixa när SM-final-uppspelets dubbelrendering ändå städas (samma ticket som C-SP5:s sidospår). |
 
 *(E-K1 cup-fixture mid-säsong-stamping levererad i commit `5d65ecb`, verifierad i granskning 2026-05-21. E-K2 `getRoundDate` i visningslagret levererad i P1-passet `7e2f...`.)*
 

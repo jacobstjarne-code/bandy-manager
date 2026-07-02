@@ -301,7 +301,7 @@ export function SeasonSummaryScreen() {
               <div className="h-label" style={{
                 position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
                 background: 'var(--accent)', color: 'var(--text-light)',
-                padding: '4px 16px', borderRadius: 20,
+                padding: '4px 16px', borderRadius: 99,
                 whiteSpace: 'nowrap', marginBottom: 0,
               }}>⭐ SÄSONGENS MATCH</div>
 

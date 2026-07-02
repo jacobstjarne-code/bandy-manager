@@ -62,7 +62,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                   </p>
                 )}
                 {relatedPlayer && (
-                  <span style={{ display: 'inline-block', fontSize: 11, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)', borderRadius: 20, padding: '2px 8px', color: 'var(--accent)', fontWeight: 600, marginBottom: 4 }}>
+                  <span style={{ display: 'inline-block', fontSize: 11, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)', borderRadius: 99, padding: '2px 8px', color: 'var(--accent)', fontWeight: 600, marginBottom: 4 }}>
                     {relatedPlayer.firstName} {relatedPlayer.lastName}
                   </span>
                 )}

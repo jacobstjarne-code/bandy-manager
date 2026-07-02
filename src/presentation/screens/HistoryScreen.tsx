@@ -191,7 +191,7 @@ export function HistoryScreen() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
-                padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                padding: '6px 12px', borderRadius: 99, border: 'none', cursor: 'pointer',
                 fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
                 background: activeTab === tab ? 'var(--accent)' : 'var(--bg-elevated)',
                 color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-secondary)',
@@ -299,7 +299,7 @@ export function HistoryScreen() {
                     key={s}
                     onClick={() => handlePhotoSelect(s)}
                     style={{
-                      padding: '5px 10px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                      padding: '5px 10px', borderRadius: 99, border: 'none', cursor: 'pointer',
                       fontSize: 11, fontWeight: 600,
                       background: photoSeason === s ? 'var(--accent)' : 'var(--bg-elevated)',
                       color: photoSeason === s ? 'var(--text-primary)' : 'var(--text-secondary)',

@@ -323,7 +323,7 @@ function InboxGroupRow({
         padding: '7px 9px',
         background: 'color-mix(in srgb, var(--accent) 5%, var(--bg-surface))',
         border: '1px dashed var(--border-dark)',
-        borderRadius: 7,
+        borderRadius: 'var(--radius-md)',
         marginBottom: 6,
         cursor: 'pointer',
       }}

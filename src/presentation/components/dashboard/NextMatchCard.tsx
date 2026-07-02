@@ -51,7 +51,7 @@ function SeriesBoxes({
           return (
             <div key={i} className={boxClass}>
               {b !== 'empty' && (
-                <span style={{ fontSize: 7, color: 'var(--text-light)', fontWeight: 700, fontFamily: 'var(--font-body)' }}>
+                <span className="h-micro" style={{ color: 'var(--text-light)', fontWeight: 700 }}>
                   {b === 'W' ? 'V' : 'F'}
                 </span>
               )}

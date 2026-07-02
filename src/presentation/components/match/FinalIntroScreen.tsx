@@ -184,7 +184,7 @@ function SmFinalUppspelet({
             <b style={{ fontFamily: 'Georgia, serif', fontSize: 16, fontWeight: 700, color: 'var(--text-light)', display: 'block' }}>
               {seriePos}
             </b>
-            <span style={{ fontSize: 7.5, letterSpacing: 1, color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>
+            <span className="h-micro" style={{ letterSpacing: 1, color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>
               {scene?.statLabels.serien ?? 'Serien'}
             </span>
           </div>
@@ -192,7 +192,7 @@ function SmFinalUppspelet({
             <b style={{ fontFamily: 'Georgia, serif', fontSize: 16, fontWeight: 700, color: 'var(--text-light)', display: 'block' }}>
               {slutspelRecord}
             </b>
-            <span style={{ fontSize: 7.5, letterSpacing: 1, color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>
+            <span className="h-micro" style={{ letterSpacing: 1, color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>
               {scene?.statLabels.slutspel ?? 'Slutspelet'}
             </span>
           </div>

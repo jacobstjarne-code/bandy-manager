@@ -633,7 +633,7 @@ export function SquadScreen() {
           <div className="card-stagger-1" style={{
             background: 'color-mix(in srgb, var(--accent) 8%, transparent)',
             border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)',
-            borderRadius: 10,
+            borderRadius: 'var(--radius-md)',
             padding: '10px 14px',
             fontSize: 13,
             color: 'var(--text-secondary)',
@@ -718,7 +718,7 @@ export function SquadScreen() {
             onClick={() => navigate('/game/club', { state: { tab: 'training' } })}
             style={{
               background: 'color-mix(in srgb, var(--danger) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 25%, transparent)',
-              borderRadius: 10, padding: '10px 14px', marginBottom: 12,
+              borderRadius: 'var(--radius-md)', padding: '10px 14px', marginBottom: 12,
               cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}
           >

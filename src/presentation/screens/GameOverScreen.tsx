@@ -104,7 +104,7 @@ export function GameOverScreen() {
         <div style={{
           background: 'color-mix(in srgb, var(--danger) 8%, transparent)',
           border: '1px solid color-mix(in srgb, var(--danger) 20%, transparent)',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-md)',
           padding: '10px 14px',
           marginBottom: 24,
           textAlign: 'left',

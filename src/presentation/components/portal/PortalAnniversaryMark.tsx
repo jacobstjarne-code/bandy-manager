@@ -72,9 +72,9 @@ export function PortalAnniversaryMark({ game }: Props) {
 
   const isTriumph = bigEcho.outcome === 'won'
   const accentColor = isTriumph ? 'var(--gold)' : 'var(--danger)'
-  const bgAlpha = isTriumph ? 'rgba(232, 185, 92, 0.06)' : 'color-mix(in srgb, var(--danger) 6%, transparent)'
-  const borderTopColor = isTriumph ? 'rgba(232, 185, 92, 0.35)' : 'color-mix(in srgb, var(--danger) 30%, transparent)'
-  const borderBottomColor = isTriumph ? 'rgba(232, 185, 92, 0.12)' : 'color-mix(in srgb, var(--danger) 10%, transparent)'
+  const bgAlpha = isTriumph ? 'color-mix(in srgb, var(--gold) 6%, transparent)' : 'color-mix(in srgb, var(--danger) 6%, transparent)'
+  const borderTopColor = isTriumph ? 'color-mix(in srgb, var(--gold) 35%, transparent)' : 'color-mix(in srgb, var(--danger) 30%, transparent)'
+  const borderBottomColor = isTriumph ? 'color-mix(in srgb, var(--gold) 12%, transparent)' : 'color-mix(in srgb, var(--danger) 10%, transparent)'
 
   return (
     <div

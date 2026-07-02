@@ -32,9 +32,9 @@ export function JournalistSecondary({ game }: CardRenderProps) {
         textTransform: 'uppercase' as const,
         padding: '2px 6px',
         borderRadius: 3,
-        background: 'rgba(74, 102, 128, 0.15)',
+        background: 'color-mix(in srgb, var(--cold) 15%, transparent)',
         color: 'var(--cold-light)',
-        border: '1px solid rgba(74, 102, 128, 0.3)',
+        border: '1px solid color-mix(in srgb, var(--cold) 30%, transparent)',
       }
     : {
         fontSize: 8,

@@ -210,7 +210,7 @@ export function IntroSequence() {
                 width: '100%', maxWidth: 300, padding: '14px 24px',
                 background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
                 border: '1.5px solid color-mix(in srgb, var(--accent) 50%, transparent)',
-                borderRadius: 10,
+                borderRadius: 'var(--radius-md)',
                 color: 'rgba(245,241,235,0.85)',
                 fontSize: 13, fontWeight: 600, letterSpacing: '2px',
                 textTransform: 'uppercase', cursor: 'pointer',

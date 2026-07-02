@@ -187,14 +187,14 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
                 <span className="h-num" style={{ color: 'var(--text-light)', display: 'block' }}>
                   {ordPos(myPos)}
                 </span>
-                <span style={{ fontSize: 7.5, letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>Serien</span>
+                <span className="h-micro" style={{ letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>Serien</span>
               </div>
               {playoffRec !== '–' && (
                 <div style={{ textAlign: 'center' }}>
                   <span className="h-num" style={{ color: 'var(--text-light)', display: 'block' }}>
                     {playoffRec}
                   </span>
-                  <span style={{ fontSize: 7.5, letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>Slutspelet</span>
+                  <span className="h-micro" style={{ letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>Slutspelet</span>
                 </div>
               )}
             </div>
