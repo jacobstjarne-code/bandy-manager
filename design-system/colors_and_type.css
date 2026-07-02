@@ -27,6 +27,12 @@
   --bg-dark-elevated: #2C2A24;
   --bg-leather:       #3D3A32;
 
+  /* Klubbpärm — light overlay-specifika tokens */
+  --bg-parm-tabs:     #E2DCD1;
+  --border-parm:      #D2CABB;
+  --text-parm-locked: #B0A99B;
+  --bg-parm-locked:   #F2EEE6;
+
   /* Borders */
   --border:           #DDD7CC;
   --border-dark:      #C4BAA8;
@@ -71,6 +77,26 @@
   --led-them:        #6FC0E8;
   /* Disabled-state B8: samma färgfamilj @ 40% opacity */
   --disabled-opacity: 0.4;
+
+  /* Matchup-badge-gradienter (klubb-initial-cirklar i MatchLaddning/FinalIntro) — vi/dom-parad
+     med led-us/led-them, egen mörkare gradient-ton eftersom vit text ovanpå kräver kontrast. */
+  --badge-us-start:   #7a4a28;
+  --badge-us-end:     #4a2c16;
+  --badge-them-start: #3a5a78;
+  --badge-them-end:   #1e3448;
+
+  /* Interaction-pitch SVG-bakgrund (Corner/Counter/FreeKick/Penalty — identisk gradient i alla fyra) */
+  --interaction-pitch-start: #1A2628;
+  --interaction-pitch-end:   #0E1518;
+  /* Aggressiv/attack-markör i interaktions-SVG:er — samma semantik som led-red (LastMinutePress),
+     egen ton eftersom den renderas mindre/tätare i dessa diagram. */
+  --led-attack: #FF3B0F;
+
+  /* Taktiktavlans positions-dots (FormationView) — ok/varning-gradientpar + legend-swatch */
+  --tactic-dot-ok-start:   #6BAA5A;
+  --tactic-dot-ok-end:     #4A8A3A;
+  --tactic-dot-warn-start: #C46A5A;
+  --tactic-dot-warn-end:   #A04030;
 
   /* Archetype badge colors */
   --arch-finisher:    #c0392b;
@@ -127,6 +153,35 @@
   --bg-portal-surface:  #221d18;
   --bg-portal-elevated: #2a241e;
   --accent-portal:      #b8884c;
+
+  /* D-ST1 (väg A, 2026-07-02): seasonalTone.ts:s fem keyframe-ANKARE — källan
+     seasonalTone.ts lerp:ar mellan, INTE direkt konsumerbara UI-tokens (de fyra
+     ovan är det, satta via document.documentElement.style vid render). Dessa
+     20 värden är den auditbara sanningen; seasonalTone.ts läser dem via
+     getComputedStyle vid första anropet och faller tillbaka till identiska
+     literaler i test-/SSR-miljö (ingen CSS-laddning i vitest). Ändra ALDRIG
+     bara här — spegla i SEASON_KEYFRAMES-fallbacken i seasonalTone.ts, annars
+     divergerar browser- och testbeteende. dayOfSeason (räknat från 1 nov): 0/55/90/130/180. */
+  --season-tone-nov-bg-primary:          #1a1612;
+  --season-tone-nov-bg-surface:          #221d18;
+  --season-tone-nov-bg-elevated:         #2a241e;
+  --season-tone-nov-accent:              #b8884c;
+  --season-tone-annandagen-bg-primary:   #161411;
+  --season-tone-annandagen-bg-surface:   #1d1813;
+  --season-tone-annandagen-bg-elevated:  #251f19;
+  --season-tone-annandagen-accent:       #a87c42;
+  --season-tone-djupvinter-bg-primary:   #13110f;
+  --season-tone-djupvinter-bg-surface:   #191613;
+  --season-tone-djupvinter-bg-elevated:  #201c17;
+  --season-tone-djupvinter-accent:       #9a7244;
+  --season-tone-slutspel-bg-primary:     #161210;
+  --season-tone-slutspel-bg-surface:     #1e1915;
+  --season-tone-slutspel-bg-elevated:    #26201b;
+  --season-tone-slutspel-accent:         #c89048;
+  --season-tone-sommar-bg-primary:       #1a1612;
+  --season-tone-sommar-bg-surface:       #221d18;
+  --season-tone-sommar-bg-elevated:      #2a241e;
+  --season-tone-sommar-accent:           #b0804a;
 
   /* Scene backgrounds — statiska, påverkas inte av portal-tonalitet */
   --bg-scene:       #1a1612;

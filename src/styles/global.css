@@ -153,6 +153,35 @@
   --bg-portal-elevated: #2a241e;
   --accent-portal:      #b8884c;
 
+  /* D-ST1 (väg A, 2026-07-02): seasonalTone.ts:s fem keyframe-ANKARE — källan
+     seasonalTone.ts lerp:ar mellan, INTE direkt konsumerbara UI-tokens (de fyra
+     ovan är det, satta via document.documentElement.style vid render). Dessa
+     20 värden är den auditbara sanningen; seasonalTone.ts läser dem via
+     getComputedStyle vid första anropet och faller tillbaka till identiska
+     literaler i test-/SSR-miljö (ingen CSS-laddning i vitest). Ändra ALDRIG
+     bara här — spegla i SEASON_KEYFRAMES-fallbacken i seasonalTone.ts, annars
+     divergerar browser- och testbeteende. dayOfSeason (räknat från 1 nov): 0/55/90/130/180. */
+  --season-tone-nov-bg-primary:          #1a1612;
+  --season-tone-nov-bg-surface:          #221d18;
+  --season-tone-nov-bg-elevated:         #2a241e;
+  --season-tone-nov-accent:              #b8884c;
+  --season-tone-annandagen-bg-primary:   #161411;
+  --season-tone-annandagen-bg-surface:   #1d1813;
+  --season-tone-annandagen-bg-elevated:  #251f19;
+  --season-tone-annandagen-accent:       #a87c42;
+  --season-tone-djupvinter-bg-primary:   #13110f;
+  --season-tone-djupvinter-bg-surface:   #191613;
+  --season-tone-djupvinter-bg-elevated:  #201c17;
+  --season-tone-djupvinter-accent:       #9a7244;
+  --season-tone-slutspel-bg-primary:     #161210;
+  --season-tone-slutspel-bg-surface:     #1e1915;
+  --season-tone-slutspel-bg-elevated:    #26201b;
+  --season-tone-slutspel-accent:         #c89048;
+  --season-tone-sommar-bg-primary:       #1a1612;
+  --season-tone-sommar-bg-surface:       #221d18;
+  --season-tone-sommar-bg-elevated:      #2a241e;
+  --season-tone-sommar-accent:           #b0804a;
+
   /* Scene backgrounds — statiska, påverkas inte av portal-tonalitet */
   --bg-scene:       #1a1612;
   --bg-scene-deep:  #08060a;
