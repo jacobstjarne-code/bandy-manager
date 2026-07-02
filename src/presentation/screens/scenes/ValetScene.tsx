@@ -15,8 +15,6 @@ interface Props {
   onComplete: (choiceId?: string) => void
 }
 
-const fmtTkr = (n: number) => `${Math.round(n / 1000)} tkr`
-
 export function ValetScene({ game, onComplete }: Props) {
   const scene = getValetScene(game)
 
@@ -83,21 +81,19 @@ export function ValetScene({ game, onComplete }: Props) {
               }}>
                 {card.label}
               </span>
-              <span style={{
-                fontSize: 11.5,
-                color: 'var(--text-light-secondary)',
-                lineHeight: 1.4,
-              }}>
-                {card.consequenceLine}
+              <span style={{ fontSize: 11.5, lineHeight: 1.4 }}>
+                {card.consequenceParts.map((part, i) => (
+                  <span key={i}>
+                    {i > 0 && <span style={{ color: 'var(--text-light-secondary)' }}> · </span>}
+                    <span style={{
+                      color: part.dir === 'upp' ? 'var(--success)' : part.dir === 'ned' ? 'var(--danger-text)' : 'var(--text-light-secondary)',
+                    }}>
+                      {part.text}
+                    </span>
+                  </span>
+                ))}
               </span>
               <div style={{ display: 'flex', gap: 10, marginTop: 2 }}>
-                <span style={{
-                  fontSize: 10,
-                  color: 'var(--text-muted)',
-                  fontFamily: 'var(--font-mono)',
-                }}>
-                  {fmtTkr(card.cost)}
-                </span>
                 <span style={{
                   fontSize: 10,
                   color: 'var(--text-muted)',

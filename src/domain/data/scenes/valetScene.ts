@@ -32,11 +32,19 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { FacilityNodeDef, FacilityConsequence } from '../../entities/Community'
 import { getPreSeasonChoices } from '../../services/facilityService'
 
+/** En färgkodad bit av konsekvensraden — dir avgör severity-färgen i presentationslagret. */
+export interface ConsequencePart {
+  text: string
+  dir: FacilityConsequence['dir']
+}
+
 export interface ValetChoiceCard {
   nodeId: string
   label: string
-  /** Konsekvensraden i klubbens ordning: vinsten först, kostnaden med (ärlighetsregeln). */
-  consequenceLine: string
+  /** Konsekvensraden i klubbens ordning: vinsten först, kostnaden med (ärlighetsregeln).
+   *  Strukturerad (inte en platt sträng) så presentationslagret kan färgkoda per dir —
+   *  konvention: färg = severity (samma som FacilityTree ConsekvensRad). */
+  consequenceParts: ConsequencePart[]
   /** Byggtid i omgångar — "klar om ~X omg". */
   buildRounds: number
   cost: number
@@ -75,17 +83,17 @@ const DIR_ARROW: Record<FacilityConsequence['dir'], string> = {
 /**
  * Bygg konsekvensraden i klubbens ordning: positiva/neutrala dimensioner först
  * (vinsten man bygger för), kostnaden sist (ärlighetsregeln — köp-val visar alltid
- * kassakostnaden). Format: "Publik ↑ · Själ ↑ · Kassa −120 tkr".
+ * kassakostnaden). Returnerar delar, inte en färdig sträng — N-1 (färg = severity,
+ * en platt sträng kan inte färgkodas i presentationslagret).
  */
-function buildConsequenceLine(def: FacilityNodeDef): string {
+function buildConsequenceParts(def: FacilityNodeDef): ConsequencePart[] {
   const gains = def.consequences.filter(c => c.dim !== 'ekonomi' || c.dir !== 'ned')
   const costs = def.consequences.filter(c => c.dim === 'ekonomi' && c.dir === 'ned')
-  const parts = [...gains, ...costs].map(c => {
+  return [...gains, ...costs].map(c => ({
     // Kostnadsraden bär redan sin egen etikett ("Kassa −120 tkr") — använd den rakt.
-    if (c.dim === 'ekonomi' && c.dir === 'ned') return c.label
-    return `${DIM_LABEL[c.dim]} ${DIR_ARROW[c.dir]}`
-  })
-  return parts.join(' · ')
+    text: c.dim === 'ekonomi' && c.dir === 'ned' ? c.label : `${DIM_LABEL[c.dim]} ${DIR_ARROW[c.dir]}`,
+    dir: c.dir,
+  }))
 }
 
 export function getValetScene(game: SaveGame): ValetScene {
@@ -95,7 +103,7 @@ export function getValetScene(game: SaveGame): ValetScene {
   const cards: ValetChoiceCard[] = choices.map(def => ({
     nodeId: def.id,
     label: def.label,
-    consequenceLine: buildConsequenceLine(def),
+    consequenceParts: buildConsequenceParts(def),
     buildRounds: def.buildRounds,
     cost: def.cost,
   }))

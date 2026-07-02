@@ -33,3 +33,5 @@ test-results/
 playwright-report/
 tests/visual/__snapshots__/*-darwin.png
 tests/visual/__snapshots__/*-win32.png
+.vercel
+.env*.local

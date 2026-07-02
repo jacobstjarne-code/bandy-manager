@@ -378,12 +378,14 @@
   min-height: 0;
 }
 
-/* Fokus-dim för block-varianten — z 499, precis under docken */
+/* K-2: z-skala tokeniserad, ingen hårdkodad siffra — z-index alltid ett uttryck
+   av --z-interaction/--z-overlay, aldrig ett fristående tal som kan glida ur
+   synk om skalan ändras. Fokus-dim för block-varianten, precis under docken. */
 .lf-dock-scrim {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.65);
-  z-index: 499;
+  z-index: calc(var(--z-interaction) - 1);
   opacity: 0;
   pointer-events: none;
   transition: opacity 220ms ease-out;
@@ -396,9 +398,9 @@
 
 /* B-1 (ratificerat 2026-06-11) — scoreboardet lyser kvar under block-interaktion.
    Tavlan (.scoreboard-root: sticky, egen stacking-context) lyfts över scrimmen
-   (499) i den delade contexten. :has() scopar det till öppen block-scrim, så
-   modaler (z-modal 300) fortsatt täcker tavlan. Ingen hårdkodad topp-pixel →
-   robust när tavlan växer (utvisningsraden). */
+   (--z-interaction - 1) i den delade contexten. :has() scopar det till öppen
+   block-scrim, så modaler (z-modal 300) fortsatt täcker tavlan. Ingen hårdkodad
+   topp-pixel → robust när tavlan växer (utvisningsraden). */
 .lf-root:has(.lf-dock-scrim.open) .scoreboard-root {
-  z-index: var(--z-interaction); /* 500 > scrim 499; block-docken (500) kvar överst via DOM-ordning */
+  z-index: var(--z-interaction); /* > scrim (z-interaction - 1); block-docken (z-interaction) kvar överst via DOM-ordning */
 }
