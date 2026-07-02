@@ -30,6 +30,7 @@ import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
 import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { PortalObjectiveAlert } from '../components/portal/PortalObjectiveAlert'
+import { getNextActionCue } from '../utils/nextActionCue'
 
 // Initialisera bag-of-cards en gång vid modulimport
 initCardBag()
@@ -337,6 +338,23 @@ export function PortalScreen() {
             <FastForward size={13} /> Simulera resterande säsong
           </button>
         )}
+        {/* Drag 3 (§11 punkt 6) — "Vad nu?"-affordansen. Bildtext på handlingen,
+            aldrig en tooltip/overlay. Färg = allvar: warning i grind-läge, annars
+            secondary. Kassörens röst — terse, ↳-prefix, pekar utan att peka. */}
+        {(() => {
+          const cue = getNextActionCue(game)
+          const cueColor = cue.tone === 'warning' ? 'var(--warning)' : 'var(--text-secondary)'
+          return (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, padding: '0 2px' }}>
+              <span style={{ color: cueColor, fontSize: 12, lineHeight: 1.3, flexShrink: 0 }}>
+                {cue.tone === 'warning' ? '⚠' : '↳'}
+              </span>
+              <span style={{ fontSize: 10.5, color: cueColor, lineHeight: 1.35 }}>
+                {cue.text}
+              </span>
+            </div>
+          )
+        })()}
         <button
           data-coach-id="cta-button"
           onClick={weeklyDecisionPending ? scrollToDecision : handleAdvance}
