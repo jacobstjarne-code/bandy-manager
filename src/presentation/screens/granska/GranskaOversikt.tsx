@@ -10,6 +10,8 @@ import { csColor, formatFinance } from '../../utils/formatters'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
 import { getFormResults } from '../../utils/formUtils'
+import { NEXT_MATCH_POINTER } from '../../../domain/data/nextMatchPointerText'
+import { seededPick } from '../../../domain/utils/random'
 import { SectionLabel } from '../../components/SectionLabel'
 import { ScoreBlock } from '../../components/primitives'
 import { generateSilentMatchReport } from '../../../domain/services/silentMatchReportService'
@@ -55,6 +57,37 @@ export function granskaFlavorText(args: {
     : totalGoals >= 8 ? '🎢 Dramatiskt kryss' : '🤝 Rättvis poängdelning'
   const flavorTail = won ? ` · ${isHome ? 'hemmaseger' : 'bortaseger'}` : ''
   return `${flavor}${flavorTail}`
+}
+
+/**
+ * §11.3 — väljer laddningstyp för Granska-slutets framåtpekare, prioordning
+ * derby > kalenderankare > motståndarform > tabellnärhet > neutral. Ren
+ * funktion → enhetstestbar. Tar redan uppslagna/beräknade värden (inte
+ * game/fixtures direkt) så testfallen slipper bygga upp full spelstate.
+ * oppFormLast5 måste vara EXAKT 5 element för att opp_hot/opp_cold ska
+ * kunna triggas — ett formpåstående får aldrig baseras på färre matcher
+ * än vad texten antyder ("senaste 5").
+ */
+export function selectNextMatchPointerType(args: {
+  isDerby: boolean
+  calendarFlag: 'annandag' | 'nyar' | 'cupfinalhelg' | null
+  oppFormLast5: Array<'V' | 'O' | 'F'>
+  managedPosition: number | null
+  oppPosition: number | null
+}): keyof typeof NEXT_MATCH_POINTER {
+  const { isDerby, calendarFlag, oppFormLast5, managedPosition, oppPosition } = args
+  if (isDerby) return 'derby'
+  if (calendarFlag) return calendarFlag
+  if (oppFormLast5.length === 5) {
+    const wins = oppFormLast5.filter(r => r === 'V').length
+    const losses = oppFormLast5.filter(r => r === 'F').length
+    if (wins >= 4) return 'opp_hot'
+    if (losses >= 4) return 'opp_cold'
+  }
+  if (managedPosition != null && oppPosition != null && Math.abs(managedPosition - oppPosition) <= 1) {
+    return 'tabell_nara'
+  }
+  return 'neutral'
 }
 
 /** Grupp-avdelare: ⬩ + label + hairline. */
@@ -747,6 +780,48 @@ export function GranskaOversikt({
               ))}
             </div>
           </div>
+        )
+      })()}
+
+      {/* §11.3 — Granska-slutets framåtpekare. Avslutande viskning, inget kort/rubrik. */}
+      {(() => {
+        const nextFixture = game.fixtures
+          .filter(f =>
+            f.status !== 'completed' &&
+            (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+          )
+          .sort((a, b) => a.matchday - b.matchday)[0]
+        if (!nextFixture) return null
+
+        const isNextHome = nextFixture.homeClubId === game.managedClubId
+        const oppId = isNextHome ? nextFixture.awayClubId : nextFixture.homeClubId
+        const venue = isNextHome ? 'hemma' : 'borta'
+
+        const nextSlot = (game.seasonCalendar ?? []).find(s => s.matchday === nextFixture.matchday)
+        const calendarFlag = nextSlot?.isAnnandagen ? 'annandag' as const
+          : nextSlot?.isNyarsbandy ? 'nyar' as const
+          : nextSlot?.isCupFinalhelgen ? 'cupfinalhelg' as const
+          : null
+        // Formkollen körs på MOTSTÅNDAREN, inte managed club.
+        const oppFormLast5 = getFormResults(oppId, game.fixtures, game.clubs, 5).map(r => r.result)
+        const oppPosition = getCurrentLeaguePosition(oppId, game)
+
+        const pointerType = selectNextMatchPointerType({
+          isDerby: getRivalry(game.managedClubId, oppId) !== null,
+          calendarFlag,
+          oppFormLast5,
+          managedPosition: leaguePosition,
+          oppPosition,
+        })
+
+        const line = seededPick(NEXT_MATCH_POINTER[pointerType], nextFixture.matchday)
+          .replaceAll('{opp}', getClubShort(oppId))
+          .replaceAll('{venue}', venue)
+
+        return (
+          <p style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', textAlign: 'center', marginTop: 14 }}>
+            {line}
+          </p>
         )
       })()}
     </>
