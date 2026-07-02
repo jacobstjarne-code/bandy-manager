@@ -21,7 +21,7 @@ export const commentary = {
   counter_after_corner_slow: [
     '{defenderName} hinner inte tillbaka! Öppen yta och motståndarna kontrar!',
     'Vår defensiv var uppflyttad på hörnan. Nu är vi exponerade.',
-    '{defenderName} springer för livet men det räcker inte — kontringen är ute på isen.',
+    '{defenderName} jagar hemåt för livet men det räcker inte — kontringen är ute på isen.',
   ],
 
   halfTime: [
@@ -65,7 +65,7 @@ export const commentary = {
     "Och så är det igång på riktigt! {player} öppnar målskyttet! {score}!",
     "{player} för {team} — nollan är borta! {score}!",
     "{score}! Det första målet är alltid speciellt — {player} signerade det!",
-    "MÅÅÅL! {player} bryter mark! Dagens första! {score}!",
+    "MÅÅÅL! {player} först på tavlan! Dagens första! {score}!",
   ],
   goalLead: [
     "LEDNING! {player} slår till! Vilket avslut! {score}!",
@@ -110,7 +110,7 @@ export const commentary = {
     "MÅÅÅL! {player} sätter dit ett lugnande mål! {score}!",
     "{player} ger {team} marginal! {score}!",
     "Andrum! {player} sätter dit ett betydelsefullt mål! {score}!",
-    "Klart utskott! {player} tar avstånd! {score}!",
+    "Marginalen växer! {player} tar avstånd! {score}!",
   ],
 
   cornerGoal: [
@@ -184,7 +184,7 @@ export const commentary = {
     "{team} utnyttjar utvisningen och trycker på nu.",
     "{team} styr spelet nu, men {opponent} försvarar sig bra.",
     "Utvisningen skapar lite mer utrymme. {team} försöker hitta läget.",
-    "{team} söker det avgörandet. {opponent} försvarar sig med näbbar och klor.",
+    "{team} söker avgörandet. {opponent} försvarar sig med näbbar och klor.",
     "{team} trycker på med en man mer!",
   ],
 
@@ -311,7 +311,7 @@ export const commentary = {
   weather_goal_thaw: [
     "PÅ DEN HÄR ISEN! {player} tvingar in den! {score}!",
     "Trots slushisen — {player} får in bollen! {score}!",
-    "Genom slasket! {player} trängde in den där en torr is hade gett en enklare boll. {score}!",
+    "Genom slasket! {player} tryckte in den där en torr is hade gett en enklare boll. {score}!",
     "Bollen kröp de sista metrarna — men över linjen. {player}! {score}!",
   ],
 
@@ -483,7 +483,7 @@ export const commentary = {
   ],
 
   cornerVariant: [
-    "VILKEN HÖRNVARIANT! Bollen kommer i brösthöjd och {player} nyper till på volley! {score}",
+    "VILKEN HÖRNVARIANT! Bollen kommer i brösthöjd och {player} nyper till på direkten! {score}",
     "Ny hörnvariant… och den funkar! {player} bryter tidigt och lägger in bollen!",
     "Det här har de tränat på hela veckan! Kort hörna, fint inspel, MÅL!",
     "Variant på hörnan! {player} kommer obevakad vid bortre! {score}!",
@@ -538,7 +538,7 @@ export const commentary = {
     '{team} pressar högt men det ser ändå ut att räcka för motståndarna.',
     'Inga mål men intensiteten är enorm. Publiken knappt andas.',
     'En brytning, kontra, avslutat — utanför stolpen. Dramatik.',
-    'Båda kedjor har gett allt. Det här kan inte hålla länge till.',
+    'Båda lagen har gett allt. Det här kan inte hålla länge till.',
     'Skott efter skott — men målvakten svarar varje gång.',
     'Isen börjar kännas tung under skridskorna.',
     'Straffarna väntar om ingen avgör snart.',
@@ -546,7 +546,7 @@ export const commentary = {
     'Hörnorna haglar — men fortfarande lika.',
     'Fri genombrytning — men skottet går en decimeter utanför.',
     'Spelet går fram och tillbaka. Ingen vill ge sig.',
-    '{team} har tryckt in motståndarna i sin zon — men fortfarande noll.',
+    '{team} har tryckt in motståndarna på deras egen halva — men fortfarande noll.',
     'Matchen är helt öppen. En detalj avgör.',
     'Spelarna kastar sig i varje läge. Inget är klart.',
     'Målvakterna är kyliga när spelarna inte är det. Båda håller.',
@@ -681,7 +681,7 @@ export const commentary = {
   ],
 
   context_shorthanded_surviving: [
-    '{team} överlever! 10 man i 10 minuter och nollan hålls!',
+    '{team} överlever! Tio man i tio minuter utan att släppa in!',
     '{player} är tillbaka. {team} andas ut — utvisningen kostade ingenting.',
     'Kollektiv insats av {team}. Inga insläppta i undertalet.',
   ],
@@ -696,7 +696,7 @@ export const commentary = {
 
   momentum_swing_home: [
     'Helt plötsligt är det {team}s match! Momentum har svängt!',
-    '{team} rullar! Tre raka chanser. {opponent} kan inte få stopp.',
+    '{team} rullar! Chans efter chans. {opponent} kan inte få stopp.',
     'Publiken reser sig. Något är på gång.',
     '{team} tar över. Det märks i varje situation.',
   ],
@@ -837,7 +837,7 @@ export const commentary = {
   legend_goal: [
     'Den där killen igen. {seasons} säsonger. Han har gjort det här tusen gånger.',
     '{lastName} hittar nätet. Som han alltid gjort.',
-    '{minute}:e minuten — och det är {lastName}. Naturligtvis.',
+    'Minut {minute} — och det är {lastName}. Naturligtvis.',
     'Klacken sjunger {lastName}s namn innan bollen ens lämnat klubban.',
     'Tröjan är gammal. Skotten är nya. {lastName} är fortfarande {lastName}.',
     'Han skulle ha slutat förra säsongen, sa de. {lastName} har annat på gång.',
@@ -859,11 +859,11 @@ export const commentary = {
   legend_gk_save: [
     '{lastName} står där. {seasons} säsonger på samma plats. Han vet vart bollen ska.',
     'Räddning av {lastName}. Klacken har sett tusen sådana. De jublar ändå.',
-    'Den räddningen — den var av en spelare som varit här länge. {lastName} läser spelet.',
+    'En sån räddning kommer med åren. {lastName} läser spelet.',
   ],
 
   legend_late: [
-    '{minute}:e minuten. Det är {lastName}. Det är så det ska vara.',
+    'Minut {minute}. Det är {lastName}. Det är så det ska vara.',
     'En match att minnas. {lastName} avgör — som han gjort sedan han var ung.',
     'Sista minuterna. {lastName} hittar utrymmet. Ingen är förvånad. Alla jublar ändå.',
   ],

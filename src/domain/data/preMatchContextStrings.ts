@@ -94,7 +94,7 @@ const POOLS: Record<PreMatchTrigger, string[]> = {
     '{opp} har inte förlorat hemma på {n} matcher.',
     'Hemma har {opp} inte förlorat på länge.',
     '{n} raka hemma utan förlust för {opp}.',
-    'Ingen har tagit poäng på deras is i år.',
+    'Ingen har vunnit på deras is på länge.',
   ],
   opp_cold: [
     '{opp} har förlorat mer än de vunnit på sistone.',

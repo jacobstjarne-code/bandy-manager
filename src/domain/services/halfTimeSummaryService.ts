@@ -82,7 +82,7 @@ export function generateHalfTimeSummary(game: SaveGame): HalfTimeSummary {
 
     // Late winner
     if (margin === 1 && findLateWinnerGoal(f, managedClubId, 80)) {
-      candidates.push({ emoji: '⏱️', headline: `Sent avgörande mot ${oppName}`, body: `${scoreStr} — målgång sent.`, round: f.roundNumber, score: 22 })
+      candidates.push({ emoji: '⏱️', headline: `Sent avgörande mot ${oppName}`, body: `${scoreStr} — avgörandet föll sent.`, round: f.roundNumber, score: 22 })
     }
   }
 
@@ -153,7 +153,7 @@ export function generateHalfTimeSummary(game: SaveGame): HalfTimeSummary {
   } else if (finances < 0) {
     coachTip = 'Kassan krymper. Se över lönekostnaderna eller leta efter ny sponsor inför våren.'
   } else {
-    coachTip = `Ni har ${points} poäng efter halva säsongen. En stabil grund att bygga vidare på.`
+    coachTip = `Ni har ${points} poäng efter halva säsongen. Våren får visa vad de är värda.`
   }
 
   return { position, points, pointsToTop8, pointsToLeader, tableText, moments, arcText, coachTip }

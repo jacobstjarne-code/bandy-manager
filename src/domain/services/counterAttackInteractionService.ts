@@ -73,7 +73,7 @@ export function resolveCounter(
   if (choice === 'sprint') {
     const offsideRisk = 0.18
     if (rand() < offsideRisk) {
-      return { type: 'offside', description: `${runner.firstName} ${runner.lastName} springer fritt men flaggan går upp — offside.` }
+      return { type: 'offside', description: `${runner.firstName} ${runner.lastName} åker fritt men domaren blåser — offside.` }
     }
     const goalChance = Math.max(0.20, Math.min(0.75, 0.45 + (runnerAtk - 0.50) * 0.8 - gkStrength * 0.25))
     if (rand() < goalChance) {
@@ -81,7 +81,7 @@ export function resolveCounter(
         type: 'goal',
         scorerId: runner.id,
         scorerName: `${runner.firstName} ${runner.lastName}`,
-        description: `${runner.firstName} ${runner.lastName} spurtar förbi sista man och sätter in det!`,
+        description: `${runner.firstName} ${runner.lastName} spurtar förbi sista man och sätter in den!`,
       }
     }
     return rand() < 0.5
@@ -103,9 +103,9 @@ export function resolveCounter(
       }
       return rand() < 0.55
         ? { type: 'saved', description: `${support.firstName} ${support.lastName} avslutar men målvakten är framme.` }
-        : { type: 'miss', description: `Bollen kommer bra men avslut går utanför.` }
+        : { type: 'miss', description: `Bollen kommer bra men avslutet går utanför.` }
     }
-    return { type: 'tackled', description: `Passprecisionen räcker inte — passet avbryts av försvaret.` }
+    return { type: 'tackled', description: `Passningen räcker inte hela vägen — försvaret bryter.` }
   }
 
   // build
@@ -116,7 +116,7 @@ export function resolveCounter(
       type: 'goal',
       scorerId: scorer.id,
       scorerName: `${scorer.firstName} ${scorer.lastName}`,
-      description: `Laget spelar av och hittar luckan — ${scorer.firstName} ${scorer.lastName} sätter in!`,
+      description: `Laget spelar sig fritt och hittar luckan — ${scorer.firstName} ${scorer.lastName} sätter in!`,
     }
   }
   return { type: 'tackled', description: `Uppspelet misslyckas. Försvaret hinner tillbaka och bryter kontringen.` }

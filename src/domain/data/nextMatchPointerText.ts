@@ -18,7 +18,7 @@ export const NEXT_MATCH_POINTER: Record<
   ],
   annandag: [
     'Härnäst: {opp}, {venue}. På annandagen. Hela orten kommer.',
-    'Sen är det annandagsbandy mot {opp}, {venue}. Året kokar ner till den.',
+    'Sen är det annandagsbandy mot {opp}, {venue}. Dit pekar hela december.',
   ],
   nyar: [
     'Härnäst: {opp}, {venue}. Nyårsbandy. Sent, kallt och värt det.',
@@ -37,7 +37,7 @@ export const NEXT_MATCH_POINTER: Record<
     'Sen är det {opp} {venue}. De har det tungt — men tunga lag biter ifrån.',
   ],
   tabell_nara: [
-    'Härnäst: {opp}, {venue}. Grannar i tabellen. Sex poäng i en match.',
+    'Härnäst: {opp}, {venue}. Grannar i tabellen. Fyra poäng i en match.',
     'Sen väntar {opp} {venue} — precis intill oss i tabellen. Den väger tungt.',
   ],
   neutral: [

@@ -18,7 +18,7 @@ interface ScoredFixture {
 function buildMatchNarrative(w: ScoredFixture, oppName: string, ourName: string): string {
   switch (w.category) {
     case 'late_winner':
-      return `${w.lateGoalMinute}:e minuten. Vi gav oss inte. ${ourName} ${w.ourScore}–${w.theirScore} ${oppName}.`
+      return `Minut ${w.lateGoalMinute}. Vi gav oss inte. ${ourName} ${w.ourScore}–${w.theirScore} ${oppName}.`
     case 'derby_win':
       return `Derbyt mot ${oppName} — ${w.ourScore}–${w.theirScore}. Orten pratade om den här matchen i veckor.`
     case 'cup_drama':
@@ -26,7 +26,7 @@ function buildMatchNarrative(w: ScoredFixture, oppName: string, ourName: string)
     case 'playoff_decisive':
       return `Slutspelsmatch. Vi gjorde det. ${w.ourScore}–${w.theirScore}.`
     case 'big_win':
-      return `${w.ourScore}–${w.theirScore}. ${oppName} visste aldrig vad som träffade dem.`
+      return `${w.ourScore}–${w.theirScore}. ${oppName} hade ingenting att sätta emot.`
     default:
       return `${ourName} ${w.ourScore}–${w.theirScore} ${oppName}.`
   }

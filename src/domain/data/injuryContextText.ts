@@ -36,7 +36,7 @@ const MEDIUM_LINES: string[] = [  // 2–3 veckor
 
 const LONG_LINES: string[] = [    // 4+ veckor
   'Borta länge. Det syns på träningarna innan det syns i tabellen.',
-  'Ute resten av hösten. Sånt sätter sig i ett lag.',
+  'Ute en månad eller mer. Sånt sätter sig i ett lag.',
 ]
 
 function seedFromId(id: string): number {

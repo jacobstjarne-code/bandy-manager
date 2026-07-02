@@ -129,7 +129,7 @@ export const STREAK_BROKEN_CHARGE: Record<LaddningState, string[]> = {
   ],
   winning_streak: [
     'Där tog sviten slut.',
-    'Första förlusten på länge. Nu syns det vad den var värd.',
+    'Sviten bröts till slut. Nu syns det vad den var värd.',
   ],
 }
 
@@ -138,7 +138,7 @@ export const FINAL_LAGPRESENTATION_QUOTES: string[] = [
   '"De har rutinen. Vi har ingenting att förlora. Jag vet vilket jag hellre har i en final."',
   '"Alla vet att vi inte borde vara här. Det är precis det som gör det svårare för dem."',
   '"En av dessa klubbar vinner sitt första SM-guld på länge. Kanske mycket länge."',
-  '"I en final spelar man inte mot formen från i förra veckan. Man spelar mot historieboken."',
+  '"I en final spelar man inte mot formen från förra veckan. Man spelar mot historieboken."',
 ]
 
 /** VILLKORLIG warm-pill. ENDAST om seasonContext ger insats. Kort. Aldrig i mittfält. */

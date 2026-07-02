@@ -63,13 +63,13 @@ export function resolvePenalty(
 
   if (rand() < goalChance) {
     const dirText = dir === 'left' ? 'vänstra hörnet'
-      : dir === 'right' ? 'högra hörnet' : 'rakt fram'
+      : dir === 'right' ? 'högra hörnet' : 'mitten'
     return { type: 'goal',
       description: `MÅL! Bollen i ${dirText}. Målvakten chanslös.`,
       shooterDirection: dir, keeperDive }
   }
 
   return { type: 'save',
-    description: 'Räddning! Målvakten läser skottet och parar.',
+    description: 'Räddning! Målvakten läser skottet och parerar.',
     shooterDirection: dir, keeperDive }
 }

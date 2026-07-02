@@ -18,7 +18,7 @@ export const INJURY_CONTEXTS: Record<string, string[]> = {
     'Kraschade i en hörnsituation mot motståndaren. MR:n visade ödem men inget allvarligt.',
   ],
   axel: [
-    'Tacklades mot sargen. Axeln gick ur led men sitter på plats efter sjukhusbesöket.',
+    'Föll i hög fart ute vid sargen. Axeln gick ur led men sitter på plats efter sjukhusbesöket.',
     'Klarade av matchen men kunde inte lyfta armen dagen efter. Röntgen nästa vecka.',
     'Föll olyckligt på mittplan. Rotatorkuffen är drabbad — kan dra ut på tiden.',
   ],
@@ -34,7 +34,7 @@ export const INJURY_CONTEXTS: Record<string, string[]> = {
   ],
   rygg: [
     'Ryggskott under uppvärmningen. Stelt men inget strukturellt skadat.',
-    'Vred till ryggen under ett tryck mot sargen. Sjukgymnasterna pratar om muskelspänning.',
+    'Vred till ryggen i en närkamp vid sargen. Sjukgymnasterna pratar om muskelspänning.',
     'Gammal ryggproblematik blossade upp. Behandling och lätta övningar.',
   ],
   hamstring: [

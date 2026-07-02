@@ -104,16 +104,16 @@ export function resolveCorner(
       type: 'goal', scorerId: bestRusher.player.id,
       scorerName: `${bestRusher.player.firstName[0]}. ${bestRusher.player.lastName}`,
       description: setup.delivery === 'hard'
-        ? `${bestRusher.player.lastName} mötte bollen i full fart — MÅLLL!`
+        ? `${bestRusher.player.lastName} mötte bollen i full fart — MÅÅÅL!`
         : setup.delivery === 'low'
-        ? `MÅL! Perfekt tajming — ${bestRusher.player.lastName} styrde in bollen vid ${setup.zone === 'near' ? 'nära stolpen' : setup.zone === 'far' ? 'bortre stolpen' : 'straffpunkten'}.`
+        ? `MÅL! Perfekt tajming — ${bestRusher.player.lastName} styrde in bollen vid ${setup.zone === 'near' ? 'främre stolpen' : setup.zone === 'far' ? 'bortre stolpen' : 'straffpunkten'}.`
         : `MÅL! Kort hörna — motståndaren överraskad! ${bestRusher.player.lastName} avslutade.`,
     }
   }
   if (roll < goalChance + 0.15) return { type: 'saved', description: `${bestRusher.player.lastName} nådde bollen men målvakten räddade.` }
   if (roll < goalChance + 0.30) return { type: 'wide', description: setup.delivery === 'hard' ? 'Hårt skott — ingen nådde fram.' : 'Tajmingen stämde inte.' }
   if (roll < goalChance + 0.55) return { type: 'cleared', description: 'Försvaret klarerade direkt.' }
-  return { type: 'rebound', description: 'Retur! Bollen studsade tillbaka — nytt spelmoment.' }
+  return { type: 'rebound', description: 'Retur! Bollen studsade tillbaka — het situation.' }
 }
 
 export function shouldBeInteractive(

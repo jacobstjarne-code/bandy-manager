@@ -42,7 +42,7 @@ export const ABSENCE_SECONDARY_LINES: string[] = [
  */
 export const RETURN_SCENE_LINES = {
   standard: [
-    '{spelare} är tillbaka från VM. Han säger inte mycket om det, men han bär sig lite rakare i veckan.',
+    '{spelare} är tillbaka från VM. Han säger inte mycket om det, men han går lite rakare i ryggen nu.',
     '{spelare} kom hem från landslaget i går. Något har satt sig i ryggraden — det syns på isen.',
   ],
   gold: [
