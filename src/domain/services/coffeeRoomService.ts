@@ -6,7 +6,9 @@ import { pickKlackEchoText } from '../data/klackEchoText'
 import { mulberry32 } from '../utils/random'
 import { RIVAL_SALE_KAFFERUM, INCOMING_BID_KAFFERUM } from '../data/transferResponseText'
 import { ANNIVERSARY_KAFFERUM } from '../data/anniversaryKafferumText'
+import { ANTICIPATION_KAFFERUM } from '../data/anticipationKafferumText'
 import { getFatigueState } from './decisionFatigueService'
+import { getUpcomingAnchor } from './calendarLookahead'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -530,6 +532,27 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
       exchanges: [pool[idx]],
       pickedIndices: [idx],
       meta: { title: 'Kafeterian', subtitle: 'Tisdag förmiddag · lite tyngre i lokalen' },
+    }
+  }
+
+  // §11.2: förväntans-ramp mot kalenderankare — egen sannolikhetsgrind (~40%,
+  // 2 av 5) så den kryddar snarare än dominerar. Ligger efter hotStreak (den
+  // är ett starkare, ovillkorat narrativt läge) men före den generiska poolen.
+  const anchor = getUpcomingAnchor(game)
+  if (anchor) {
+    const anchorMatchday = game.currentMatchday ?? 0
+    const anchorSeed = anchorMatchday * 41 + game.currentSeason * 13
+    if (hashSeed(anchorSeed) % 5 < 2) {
+      const proximity = anchor.matchdaysUntil <= 2 ? 'nara' : 'snart'
+      const pool = ANTICIPATION_KAFFERUM[anchor.kind][proximity]
+      if (pool.length > 0) {
+        const idx = hashSeed(anchorSeed * 7) % pool.length
+        return {
+          exchanges: [pool[idx]],
+          pickedIndices: [idx],
+          meta: { title: 'Kafeterian', subtitle: 'Tisdag förmiddag · någon har redan börjat räkna dagar' },
+        }
+      }
     }
   }
 
