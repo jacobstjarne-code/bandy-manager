@@ -36,17 +36,19 @@ function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
       triggers.push({
         type: 'hatTrickHero',
         headline: `Hattrick: ${hatTrickHero.firstName} ${hatTrickHero.lastName}`,
-        body: `${hatTrickHero.firstName} ${hatTrickHero.lastName} satte hattrick under säsongen — en prestation som går till historien.`,
+        body: `${hatTrickHero.firstName} ${hatTrickHero.lastName} satte hattrick under säsongen. Det pratas fortfarande om den kvällen.`,
         relatedPlayerId: hatTrickHero.id,
       })
     }
   }
 
-  // 3. Comeback king: was injured, came back, ≥5 goals, ≤15 games
+  // 3. Comeback king: was injured this season (actual narrativeLog entry,
+  // not injuryProneness — det är en benägenhets-egenskap, inte historik),
+  // came back, ≥5 goals, ≤15 games
   if (triggers.length < 3) {
     const comebackKing = managedPlayers.find(p =>
       p.isInjured === false &&
-      p.injuryProneness > 0 &&
+      (p.narrativeLog ?? []).some(e => e.type === 'injury' && e.season === game.currentSeason) &&
       p.seasonStats.goals >= 5 &&
       p.seasonStats.gamesPlayed <= 15 &&
       p.seasonStats.gamesPlayed > 0
@@ -95,7 +97,7 @@ function computeKeyMoments(
   const LATE_WINNER_POOL = [
     (name: string) => `${name} avgjorde när klockan nästan gått ut. Sånt minns en läktare.`,
     (name: string) => `Sent, sent — och sen satt den. ${name}.`,
-    (name: string) => `Matchen var på väg mot ett kryss. ${name} hade andra planer.`,
+    (name: string) => `Det satt långt inne. ${name} fick sista ordet.`,
   ] as const
 
   const HAT_TRICK_POOL = [
@@ -547,7 +549,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
 
   // Cup result in narrative
   if (cupResult === 'winner' && isChampion) {
-    narrative += ' Dessutom säkrades Svenska Cupen — en magnifik dubbel!'
+    narrative += ' Dessutom säkrades Svenska Cupen — dubbeln, inget mindre.'
   } else if (cupResult === 'winner') {
     narrative += ' Svenska Cupen vanns — en bedrift som lyser upp säsongen.'
   } else if (cupResult === 'finalist') {
