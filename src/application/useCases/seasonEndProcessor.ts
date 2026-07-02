@@ -1344,7 +1344,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         body: matchHighlight.narrative,
       },
       ...(game.recentMoments ?? [])
-    ].slice(0, 5) : (game.recentMoments ?? []),
+    ]
+      .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
+      .slice(0, 5) : (game.recentMoments ?? []),
     nemesisTracker: updatedNemesisTracker,
     resolvedEventIds: [
       ...(game.resolvedEventIds ?? []),
