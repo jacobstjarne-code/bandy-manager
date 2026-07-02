@@ -20,7 +20,7 @@ export const CALLUP_NOTICE_LINES = {
   ],
   multi: [
     '{spelare_lista} är uttagna till VM-truppen.',
-    '{spelare_lista} kallas till VM. Två från samma bygd — det händer inte ofta.',
+    '{spelare_lista} kallas till VM. Flera från samma bygd — det händer inte ofta.',
   ],
 }
 
@@ -80,6 +80,6 @@ export const LOBBY_PRESS = {
 
 /** MemoryEvent (klubbminne, sig 60) vid första uttagningen någonsin för en spelare. */
 export const FIRST_CALLUP_MEMORY_LINES: string[] = [
-  'Första {klubb}-spelaren i landslaget på mycket länge. {spelare} bar bygdens namn till VM.',
-  '{spelare} blev den förste på åratal att kallas till landslaget från {klubb}. Orten glömmer det inte.',
+  '{spelare}s första landslagsuttagning. Han bar bygdens namn till VM.',
+  '{spelare} kallades till landslaget för första gången. Orten glömmer det inte.',
 ]

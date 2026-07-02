@@ -1,5 +1,63 @@
 # TEXT-AUDIT — PROTOKOLL (Fable)
 
+## ÖPPNA ÄRENDEN — levande tabell (supersede-disciplin)
+
+**Regel:** Detta är ENDA sanningskällan för vad som är öppet. Varje session
+som rör textauditen börjar här och slutar här: nya ärenden läggs till,
+avgjorda flyttas till AVGJORT med datum. LOGG:en nedan är historik och läses
+aldrig för att hitta öppna ärenden. Code: kontrollera din sektion vid varje
+text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
+
+### JACOB BESLUTAR (motor/design — rekommendation i parentes)
+— tomt. M1/M15/M16 beslutade 2026-07-03 → se CODE GÖR.
+
+### JACOB BESLUTAR (smak)
+— tomt. M5–M7 godkända av Jacob 2026-07-03: "brottningen", "mittback" och
+"tre-fem-tvåa" står kvar som de är. Flaggas inte igen.
+
+### CODE GÖR
+- **SPEC_REGELBOKSANPASSNING_2026-07-03.md** — M1 (förlängning 20 min),
+  M15 (utvisning 5/10 diskret), M16 (landslagsuttag 0–2, förtjänstmodell).
+  Del 0 först: domän 1-textcommiten separat.
+- Commit domän 1: 73 rättade rader, 18 filer. Commit-order + regressions-
+  grep i LOGG 2026-07-02 kväll (utvidga grep med: storknar, prickern,
+  talent, underbara scener).
+- **M9** grep imports av injuryDoctorText — nås DIAGNOSIS_LINES för
+  träningsskador? ("andra halvlek"-raden får bara visas för matchskador.)
+- **M12** comebackKing-triggern: injuryProneness (egenskap) → faktisk
+  skadehistorik denna säsong.
+- Stilnoter: seasonChampionYear()-helpern i seasonSummaryService (inline
+  +1) · enum-jämförelse i attendance-isSnow (kodlukt, ej bugg).
+
+### FABLE GÖR (efter Codes Del 1–2)
+- **Del 4 i regelboksspecen:** textbyte "10 minuter"/"30 minuter"/"120
+  minuter" mot {minuter}-token resp. nya förlängningsrader. Kort riktad
+  session, input = Codes grep-listor.
+
+### VILANDE (låg prioritet)
+- **M14** "En av de största publiksiffrorna på länge" vid att>5000 —
+  väntar på publikhistorik som token.
+
+### NÄSTA AUDIT-PASS
+- **Domän 2** (orten/röster): FÄRSK session. Börja med anropsplatserna
+  (lärdom #4), grep/leta inline-pooler i services (fillistan missade
+  matchInjuryService i domän 1). Sen domän 3 (UI) och 4 (väder/övrigt).
+- text-guard-linten byggs av Code EFTER att alla fyra domäners termlista
+  är slutjusterad.
+
+### AVGJORT (referens, rör ej)
+- M1/M15/M16 BESLUTADE av Jacob 2026-07-03 (regelboksanpassa; landslags-
+  uttag 0–2) → spec: SPEC_REGELBOKSANPASSNING_2026-07-03.md. Flyttas hit
+  helt när Code committat + Fable kört Del 4.
+- M5–M7 godkända av Jacob 2026-07-03 — texterna står. (M7:s picker-
+  verifiering utgår; Jacob godkände texten som den är.)
+- Register-ruling (2026-07-02): två register är kanon — WRITING_GUIDELINES #10.
+- M10 strecket = nedflyttning (2026-07-02): fixat, termlistan uppdaterad.
+- M2/M4/M8: bekräftade buggar, fixade (kickoff, frislagsmur, landslags-
+  minne). M11/M13: falskpositiver, stängda. Domän 1: KOMPLETT 2026-07-03.
+
+---
+
 **Syfte:** hela spelets svenska textmassa auditerad mot (a) bandyverkligheten,
 (b) tonkanon, (c) intern konsistens. Grundregel: bedömning sker ALLTID i kontext.
 Regel 6 gäller: varje fynd slutar i vem som gör vad.
@@ -32,6 +90,13 @@ för evigt. Byggs av Code EFTER läspassets termlista är slutjusterad.
    är det fotbollsinternet som tog sökningen. (2026-07-02, flagg-frågan:
    webbsök gav fyra fotbollsträffar, regelboken gav svaret på en hämtning
    — Regel 10, sträckt arm, ingen flagga.)
+4. **Anropskoden före poolen.** Båda missarna i efterkontrollen 2026-07-02
+   satt i en pool dömd med färska ögon — men UTAN att anropet var läst
+   (ftVars: team = alltid hemmalaget, pool slumpas oavsett resultat).
+   Strängar med {team}/{opponent}/{result}/{score} slutdöms först när man
+   vet vad tokens FAKTISKT innehåller vid varje trigger. Läsordning per
+   pool: anropsplats → tokensemantik → strängar. (M2/M4/fullTime var alla
+   samma felklass: rätt svenska, fel verklighet.)
 
 ---
 
@@ -310,3 +375,99 @@ MISSTANKAR — döm i kontext, luta konservativt:
   getConditionLabel/getIceQualityLabel (weatherService → vädertext-passet),
   HALL_ATMOSPHERE (hallProvningData), specialDateStrings, klackEchoText,
   anniversaryKlackText, RIVAL_SALE_KLACK (→ domän 2, orten/röster).
+
+- 2026-07-02 (natt, efterkontroll): STICKPROV ~24 tidigare godkända
+  matchtext-strängar, långsam omdömning mot alla tre filter (obs: samma
+  session, inte färska ögon — Jacobs order).
+  UTFALL: 2 äkta missar + 1 gränsfall. BÅDA äkta satt i fullTime-poolen,
+  dömd i 1a när sessionen var FÄRSK — trötthetshypotesen föll, rotorsaken
+  var att ftVars-anropet (team = ALLTID hemmalaget, pool slumpas oavsett
+  resultat) inte var läst när poolen dömdes. LÄRDOM: pooler med {team}/
+  {result} kan inte slutdömas före anropskoden — 1a dömde strängar, 1c
+  läste anrop; ordningen ska vara anrop först.
+  RÄTTAT (2): "Slutspelat. {team} kan andas ut." (L#9: hemmaförlust 2–7
+  → "Villastaden kan andas ut") → struket · "{team} tar med sig {result}
+  hem" (hemmalaget tar inget hem från egen is) → "{result} för {team}".
+  M14 (låg): "En av de största publiksiffrorna på länge" triggas på
+  att>5000 — ljöger för klubbar som alltid drar stort. Tålbart tills
+  publikhistorik finns som token.
+  BEDÖMNING: matchCore-strängarna (1c, trötta passet) höll i stickprovet;
+  ingen full omaudit av 1c behövs. Domän 1 står.
+
+- 2026-07-03 (efter midnatt): MISSTANKE-VERIFIERING (lärdom #4 tillämpad
+  på den egna misstankelistan) + en oplanerad fil.
+
+  STÄNGDA SOM FALSKPOSITIVER:
+  · M13: WeatherCondition.HeavySnow = 'heavySnow' — attendance-grenens
+    strängjämförelse MATCHAR enumvärdet. Grenen lever. (Casten är kodlukt,
+    Code får gärna byta till enum-jämförelse, men ingen bugg.)
+  · M11: currentSeason ÄR kalenderstartåret (seasonYear.ts, verifierad
+    kanon 2026-06-08: 2026 = bandyåret 2026/27, mästare benämns med
+    finalåret). "SM-guldet ${currentSeason + 1}" = "SM-guldet 2027" —
+    KORREKT. Stilnot till Code: använd seasonChampionYear()-helpern i
+    seasonSummaryService i stället för inline +1.
+
+  NY MISSTANKE:
+  · M15 (motor+text+regelbok): utvisningstid. Motorn ger 3–6 steg × 1,5 =
+    4,5–9 min (enums-kommentaren bekräftar). ALL matchtext säger "10
+    minuter" ("10 man i 10 minuter", "får 10 minuter för bentackling").
+    Regelboken: 5 eller 10 min + matchstraff. Jacob väljer: (a) motorn
+    diskretiseras till 5/10 och texterna står, eller (b) texterna
+    neutraliseras ("utvisad", "på botbänken") utan minutangivelse.
+    (a) är regelboksvägen och ger dessutom gratis dramaturgi (5 vs 10 =
+    lindrig vs grov).
+
+  M9 PRECISERAD: sceneTriggerService har INGEN doktorsscen i prioritets-
+  kedjan — injuryDoctorText konsumeras på okänd plats. Code-order: grep
+  imports av injuryDoctorText, rapportera om DIAGNOSIS_LINES kan nås för
+  icke-matchskador (träningsskador finns — injuryStories har tränings-
+  kontexter). "Kände det redan i andra halvlek" får bara visas för
+  matchskador.
+
+  OPLANERAD AUDIT: matchInjuryService.ts — stod INTE på domän 1-fillistan
+  men är live-feed-matchtext (INJURY_COMMENTARY + INJURY_INBOX_BODY).
+  RÄTTAT (3): "STORKNAR av smärtan" (storkna = kvävas) → "Viker sig" ·
+  "Han är ung — kroppen läker" (L#9: spelaren kan vara 34) → struket,
+  omformulerat · "Gips i TRE veckor" vs weeksOut 2–4 (kunde motsäga
+  rubriken i SAMMA brev) → "ett par veckor". GODKÄNT i övrigt — hög
+  klass: hälsena som "den stora skadan i bandy" (kanon), galler, flygande
+  byten, Linnéstudien-kalibrering. FILLISTE-LÄRDOM: services med inline-
+  textpooler fångas inte av fillistans namn — domän 2-passet bör grep:a
+  efter strängpooler i services/, inte lita på listan.
+
+  LÄGE: Domän 1 komplett + verifierad. Öppna beställningar till Jacob:
+  M1 (förlängning 30→20 min), M15 (utvisningstid 5/10), M5–M7 (smak),
+  M12 (comebackKing-logik), M14 (låg). NÄSTA PASS: Domän 2, FÄRSK
+  session, börja med anropsplatserna (lärdom #4) och grep efter
+  inline-pooler.
+
+- 2026-07-03 (natt, sista svepet): domän 1 TÄTAD — M8 stängd + två
+  fillisteläckage kontrollerade.
+
+  M8 BEKRÄFTAD OCH FIXAD: nationalTeamService tar ut 3–5 spelare från
+  managed club VARJE säsong — klubben har konstant landslagsfolk, så
+  FIRST_CALLUP_MEMORY-strängarnas "första {klubb}-spelaren på mycket
+  länge"/"förste på åratal" var absurt falska. Omskrivna spelarcentrerat
+  (triggern ÄR spelarens första uttagning): "{spelare}s första landslags-
+  uttagning" / "kallades för första gången". BONUS i samma fil: multi-
+  notisens hårdkodade "Två från samma bygd" (kan vara 3–5) → "Flera".
+
+  NY MISSTANKE M16 (design, Jacob): nationalTeamService tar ALLTID ut
+  3–5 från managed club, oavsett klubbnivå och tabell. En bottenklubb
+  med 3–5 landslagsmän varje år underminerar hela "säsongens guldkorn"-
+  tonen i landslagText (och gör "det händer inte ofta" osann även efter
+  textfixen). Förslag: CALLUP_COUNT viktad mot klubbstyrka/CA-nivå,
+  0–2 för bruksklubbar. Motorändring — Jacobs beslut, Codes fix.
+
+  FILLISTELÄCKAGE KONTROLLERADE:
+  · lastMinutePressService — ren logik, noll text (knapptexterna bor i
+    presentation, domän 3). GODKÄNT (kod).
+  · weatherService — getConditionLabel/getIceQualityLabel GODKÄNDA rakt
+    av: SMHI-klass svenska (Ymnigt snöfall, Töväder, Godkänd is).
+
+  DOMÄN 1 SLUTSTATUS: 73 rättade rader i 18 filer · 16 misstankar
+  processade: 4 bekräftade & fixade (M2, M4, M8 + fullTime-klassen),
+  2 falskpositiver stängda (M11, M13), 1 rulad & fixad (M10), 4 motor-/
+  designbeslut hos Jacob (M1, M12, M15, M16), 3 smak hos Jacob (M5–M7),
+  2 Code-grep (M9, M14) · 4 metodlärdomar inskrivna · 5 falskpositiver
+  undvikna via källverifiering.

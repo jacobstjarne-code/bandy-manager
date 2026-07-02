@@ -62,7 +62,7 @@ const INJURY_COMMENTARY: Record<MatchInjuryType, string[]> = {
     'SPELAREN halkar i en vändning och tar emot sig med handen. Handleden sväller direkt.',
   ],
   larkaka: [
-    'SPELAREN tar emot ett skott med låret. Storknar av smärtan men reser sig, spelar vidare.',
+    'SPELAREN tar emot ett skott med låret. Viker sig av smärtan men reser sig, spelar vidare.',
     'SPELAREN blockerar med utsidan och haltar till nästa byte. Det kommer bli blått imorgon.',
   ],
   boll_i_ansiktet: [
@@ -159,8 +159,8 @@ export function applyMatchInjury(player: Player, event: MatchInjuryEvent): Playe
 // ── Inbox items ──────────────────────────────────────────────────────────────
 
 const INJURY_INBOX_BODY: Record<MatchInjuryType, string> = {
-  skenan: 'Ortopeden bekräftar: hälsenan är av. Det är den stora skadan i bandy och lika tung varje gång. Operation på måndag, sedan lång väg tillbaka. Han är ung — kroppen läker, men man ska vara ärlig: det blir inte samma spelare som kommer tillbaka.',
-  fall_pa_is: 'Röntgen visar en spricka i handleden. Gips i tre veckor, sedan rehab. Inget dramatiskt — men det tar sin tid, handleden används till allt.',
+  skenan: 'Ortopeden bekräftar: hälsenan är av. Det är den stora skadan i bandy och lika tung varje gång. Operation på måndag, sedan lång väg tillbaka. Kroppen läker, men man ska vara ärlig: det är inte alltid samma spelare som kommer tillbaka.',
+  fall_pa_is: 'Röntgen visar en spricka i handleden. Gips ett par veckor, sedan rehab. Inget dramatiskt — men det tar sin tid, handleden används till allt.',
   larkaka: 'Stor lårkaka efter blockerat skott. Det ser värre ut än det är — is och stretching ikväll, massage imorgon. Han borde vara tillbaka redan nästa match.',
   boll_i_ansiktet: 'Näsan är bruten. Tandläkare på lördag för att kolla de två framtänderna. Om allt ser bra ut är han tillbaka nästa omgång — med galler.',
   muskel_overbelastning: 'Klassisk överbelastning i ljumsken. Vila och is, inga genvägar. De som försöker komma tillbaka för tidigt får det värre andra gången.',

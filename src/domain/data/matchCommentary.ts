@@ -34,13 +34,13 @@ export const commentary = {
 
   fullTime: [
     "SLUTSIGNAL! Domaren blåser av matchen. Slutresultat: {score}.",
-    "Det är slut! {score} — {team} tar med sig {result} hem.",
+    "Det är slut! {score} — {result} för {team}.",
     "Domaren blåser. Matchen är över. {score} efter 90 rafflande minuter.",
     "SLUT! En dramatisk match är nu färdigspelad. {score}.",
     "Det var det hela! {score}. Spelarna skakar hand efter en tuff match.",
     "FULLTID! En match som gav publiken det de kom för. {score}.",
     "Domaren blåser av. Det är klart. {score}. Spelarna tackar varandra.",
-    "Slutspelat. {team} kan andas ut. {score}. Nu är det färdigt.",
+    "Slutspelat. {score}. Nu är det färdigt.",
   ],
 
   goal: [

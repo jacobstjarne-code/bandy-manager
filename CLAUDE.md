@@ -34,6 +34,10 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 - **Synlighetsregel:** första svaret i en spec-skrivande session börjar med en kort PRE-SPEC-rapport: "grep:ade på [X] i src/domain — fann [Y, Z]". Då ser Jacob om disciplinen följdes innan spec levererades.
 
 **C. SKRIVUPPGIFT (svensk text, textpool, brev, citat, ansökningar):**
+- `docs/TEXT-AUDIT-PROTOKOLL.md` — tabellen ÖPPNA ÄRENDEN överst (öppna
+  textbeslut, regelboksgrundad termlista, metodlärdomar 1–4). Rör du
+  speltext: kolla tabellen före, uppdatera den efter. Skriv aldrig ny
+  matchtext utan att ha läst termlistan + lärdom #4 (anropskod före pool).
 - `docs/WRITING_GUIDELINES_BANDY_MANAGER.md` — tonregler, max 10 citat per block (Lärdom #7)
 - `docs/STRINGS_POOL_INVENTORY.md` — vilka pools finns redan, återanvänd struktur
 - `docs/SPEC_CUP_ANSLAG_2026-05-08.md` om cup-relaterat
