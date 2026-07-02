@@ -713,11 +713,13 @@ export function MatchLiveScreen() {
 
     // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
     // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
+    // B-3: vid mål — linjera dismiss mot tavlans flash (4000ms, ScoreboardStalvallen)
+    // så panelen inte glider ner medan siffran fortfarande blinkar.
     setTimeout(() => {
       setActiveCorner(null)
       setCornerOutcome(null)
       if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
-    }, isFastForward ? 0 : 2500)
+    }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
   function handlePenaltyChoice(dir: PenaltyDirection, height: PenaltyHeight, inlineData?: import('../../../domain/services/penaltyInteractionService').PenaltyInteractionData) {
@@ -781,11 +783,13 @@ export function MatchLiveScreen() {
 
     // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
     // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
+    // B-3: vid mål — linjera dismiss mot tavlans flash (4000ms, ScoreboardStalvallen)
+    // så panelen inte glider ner medan siffran fortfarande blinkar.
     setTimeout(() => {
       setActivePenalty(null)
       setPenaltyOutcome(null)
       if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
-    }, isFastForward ? 0 : 2500)
+    }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
   function handleCounterChoice(choice: CounterChoice, inlineData?: import('../../../domain/services/counterAttackInteractionService').CounterInteractionData, assistantVoiceLine?: string) {
@@ -852,11 +856,13 @@ export function MatchLiveScreen() {
 
     // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
     // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
+    // B-3: vid mål — linjera dismiss mot tavlans flash (4000ms, ScoreboardStalvallen)
+    // så panelen inte glider ner medan siffran fortfarande blinkar.
     setTimeout(() => {
       setActiveCounter(null)
       setCounterOutcome(null)
       if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
-    }, isFastForward ? 0 : 2500)
+    }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
   function handleFreeKickChoice(choice: FreeKickChoice, inlineData?: import('../../../domain/services/freeKickInteractionService').FreeKickInteractionData, assistantVoiceLine?: string) {
@@ -922,11 +928,13 @@ export function MatchLiveScreen() {
 
     // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
     // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
+    // B-3: vid mål — linjera dismiss mot tavlans flash (4000ms, ScoreboardStalvallen)
+    // så panelen inte glider ner medan siffran fortfarande blinkar.
     setTimeout(() => {
       setActiveFreeKick(null)
       setFreeKickOutcome(null)
       if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
-    }, isFastForward ? 0 : 2500)
+    }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
   function handleLastMinutePressChoice(_choice: PressChoice) {

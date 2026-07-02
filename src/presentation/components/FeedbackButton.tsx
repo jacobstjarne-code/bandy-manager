@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 
 /**
@@ -7,6 +8,10 @@ import { useGameStore } from '../store/gameStore'
  * skärm + säsong/omgång + fritext. Ingen backend → export via urklipp + mailto
  * (testaren klistrar/skickar). Gör speltestdatan precis i stället för "det kändes
  * konstigt nån gång". RC-testchrome, ej spelyta.
+ *
+ * K-1 (dock-audit 2026-07-02): dold på MatchLive — raden landade ovanpå
+ * interaktionspanelernas CTA (z-9999 över både scrim 499 och block-docken 500).
+ * Matchen är en fokus-yta; mid-match-rapport nås ändå via paus-läget.
  */
 
 declare const __GIT_HASH__: string
@@ -22,10 +27,11 @@ export function FeedbackButton() {
   const [text, setText] = useState('')
   const [copied, setCopied] = useState(false)
   const game = useGameStore(s => s.game)
+  const location = useLocation()
+  const hiddenOnMatchLive = location.pathname.startsWith('/game/match/live')
 
   function buildReport(): string {
-    // window.location (ej useLocation) — komponenten ligger utanför Router-kontexten.
-    const route = window.location.hash || window.location.pathname
+    const route = location.pathname
     return [
       `build: ${buildHash()}`,
       `save:  ${game?.id ?? '—'}`,
@@ -49,6 +55,8 @@ export function FeedbackButton() {
     const body = encodeURIComponent(buildReport())
     window.location.href = `mailto:${REPORT_EMAIL}?subject=${subject}&body=${body}`
   }
+
+  if (hiddenOnMatchLive) return null
 
   return (
     <>

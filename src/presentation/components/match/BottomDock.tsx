@@ -35,6 +35,15 @@ export function BottomDock({ open, variant, onClose, height, children }: BottomD
         />
       )}
 
+      {/* P-1: tap-utanför stänger peek (peek har ingen scrim) */}
+      {variant === 'peek' && open && onClose && (
+        <div
+          className="lf-dock-catch"
+          aria-hidden="true"
+          onClick={onClose}
+        />
+      )}
+
       {/* Dock-panel */}
       <div
         className={`lf-dock lf-dock--${variant}${open ? ' open' : ''}`}

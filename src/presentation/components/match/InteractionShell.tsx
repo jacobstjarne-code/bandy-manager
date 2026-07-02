@@ -111,18 +111,23 @@ export function InteractionShell({
     timeLeftRef.current = totalSeconds
     setTimeLeft(totalSeconds)
     timedOut.current = false
-    timerRef.current = setInterval(() => {
-      timeLeftRef.current -= 1
-      setTimeLeft(timeLeftRef.current)
-      if (timeLeftRef.current <= 0) {
-        clearInterval(timerRef.current!)
-        if (!timedOut.current) {
-          timedOut.current = true
-          onTimeoutRef.current()
+    // B-2: starta nedräkningen EFTER inglidningen (220ms slide, se .lf-dock),
+    // så spelaren inte förlorar första sekunden på att panelen glider in.
+    const startDelay = setTimeout(() => {
+      timerRef.current = setInterval(() => {
+        timeLeftRef.current -= 1
+        setTimeLeft(timeLeftRef.current)
+        if (timeLeftRef.current <= 0) {
+          clearInterval(timerRef.current!)
+          if (!timedOut.current) {
+            timedOut.current = true
+            onTimeoutRef.current()
+          }
         }
-      }
-    }, 1000)
+      }, 1000)
+    }, 220)
     return () => {
+      clearTimeout(startDelay)
       if (timerRef.current) clearInterval(timerRef.current)
     }
   }, [phase, totalSeconds, untimed])
