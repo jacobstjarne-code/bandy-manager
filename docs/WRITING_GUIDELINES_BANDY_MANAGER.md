@@ -324,7 +324,24 @@ Felexempel ur auditen: "Sju–ett. Inget mer behöver sägas" (resultatet var n�
 
 Testet per sträng: *kan detta vara falskt i något save där poolen triggas?* Om ja — generalisera, eller begär en token. Specificitet är värdefull ("konkret bild"-regeln står fast) — men den ska vara UPPDIKTAD VARDAG (altanen, termosen, Konsum) eller DATABACKAD ({score}, {lastName}, {totalGoals}), aldrig påhittad spelfakta.
 
-## När den här filen uppdateras
+### #10 — Två register i matchtexten är kanon (2026-07-02, Jacobs beslut)
+
+Matchkommentaren har TVÅ medvetna röster, och de ska INTE dras mot varandra:
+
+- **Liga-/slutspelskommentatorn** är en egen röst: utropstecken, "MÅÅÅL!",
+  tempo, publikänergi. Den får vara exalterad — det är en kommentator som
+  jobbar, inte Sture. Anti-patterns gäller fortfarande (inga klyschor från
+  Del 3, inga anglicismer, ingen påhittad spelfakta) men utropsnivån är
+  registrets natur, inte ett tonbrott.
+- **Cup-poolerna (cup_*, cup_final_*, cup_atmosphere) är Sture-register:**
+  understatement, korta konstateranden, oktoberljus. "Det blev vad det blev."
+  En cup-sträng med utropskluster är ett registerbrott och rättas.
+
+Gränsen går på pool-prefix, inte på känsla. Nya matchtext-pooler deklarerar
+register i sin kommentar. Text-audit dömer varje sträng INOM sitt register
+(etablerat i domän 1a-passet; ruling här gör inferensen till beslut).
+
+### När den här filen uppdateras
 
 - Vid varje feedback-runda från Jacob där han pekar ut nytt mönster
 - Vid varje skrivuppgift där jag märker att jag drev mot AI-utfall trots intentions

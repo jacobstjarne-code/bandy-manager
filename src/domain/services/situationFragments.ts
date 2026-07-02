@@ -4,7 +4,7 @@
  * Pure fragment-builders. Var och en returnerar en kort mening (string) eller
  * null om fragmentet inte är relevant. getSituation() plockar ihop 1–3 fragment.
  *
- * Textinnehållet är placeholder-nivå — Opus fyller med slutliga meningar.
+ * Textinnehållet Opus-auditerat 2026-07-02 (domän 1b) — slutliga meningar.
  * Logiken (när ett fragment ska synas) ska vara klar och testbar.
  */
 
@@ -39,11 +39,11 @@ function opponentId(game: SaveGame, fixture: ReturnType<typeof nextManagedFixtur
   return fixture.homeClubId === id ? fixture.awayClubId : fixture.homeClubId
 }
 
+// Substantivform för tabellposition (etta/tvåa/trea/sjua/tolva) — alla 1–12
+// skrivs {n}:a. "Ligger 3:a" (trea) är idiomet; "ligger 3:e" är inte svenska
+// utan efterföljande "plats". Konsistent med halfTimeSummaryService.
 function ordinalSv(n: number): string {
-  if (n === 1) return '1:a'
-  if (n === 2) return '2:a'
-  if (n === 3) return '3:e'
-  return `${n}:e`
+  return `${n}:a`
 }
 
 // ── Fragment: motståndarens tabellposition ───────────────────────────────────
@@ -71,7 +71,7 @@ export function getOpponentStandingFragment(game: SaveGame): string | null {
   // "Sånt är inte gratis" är relevant bara när vi själva är i bottenstriden
   if (oppPos >= 10 && myPos >= 9) return `${name} ligger ${ordinalSv(oppPos)}. Bottenstriden avgörs inte av sig själv.`
   if (oppPos >= 10) return null
-  if (Math.abs(oppPos - myPos) <= 1) return `${name} och ni delar tabellgrannar — ${ordinalSv(oppPos)} mot ${ordinalSv(myPos)}.`
+  if (Math.abs(oppPos - myPos) <= 1) return `${name} och ni är tabellgrannar — ${ordinalSv(oppPos)} mot ${ordinalSv(myPos)}.`
   const posDiff = Math.abs(myPos - oppPos)
   if (oppPos < myPos) return posDiff <= 2 ? `${name} ligger ${ordinalSv(oppPos)} — över er.` : null
   return `${name} ligger ${ordinalSv(oppPos)} — under er.`
@@ -102,7 +102,7 @@ export function getLastMeetingFragment(game: SaveGame): string | null {
 
   if (scored > conceded) return `Senast ni möttes vann ni ${scored}–${conceded}. Det glömmer de inte.`
   if (scored < conceded) return `Senast: ${conceded}–${scored} till dem. Revanschchans.`
-  return `Senaste mötet ${scored}–${scored}. Aldrig avgjort, alltid jämnt.`
+  return `Senaste mötet ${scored}–${scored}. Delade poäng den gången.`
 }
 
 // ── Fragment: rivalry ────────────────────────────────────────────────────────
@@ -150,8 +150,8 @@ export function getPlayoffContextFragment(game: SaveGame): string | null {
 
   if (myPos <= 8) {
     const gap = myPts - eighth.points
-    if (gap === 0) return `Precis på strecket. En match är allt.`
-    if (gap <= 2) return `${gap}p över strecket. Inget marginal.`
+    if (gap === 0) return `Precis på slutspelsstrecket. En match är allt.`
+    if (gap <= 2) return `${gap}p över slutspelsstrecket. Ingen marginal.`
     return null
   }
 
@@ -176,7 +176,7 @@ export function getCupStakeFragment(game: SaveGame): string | null {
   if (!cupMatch) return null
 
   const round = cupMatch.round
-  if (round === 1) return `Avancemang till kvartsfinal vid vinst — fyra lag kvar.`
+  if (round === 1) return `Avancemang till kvartsfinal vid vinst.`
   if (round === 2) return `Avancemang till semi vid vinst.`
   if (round === 3) return `Avancemang till final vid vinst.`
   if (round === 4) return `Det här är finalen. Det finns inget mer.`

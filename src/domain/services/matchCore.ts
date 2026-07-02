@@ -60,8 +60,8 @@ export const ENGINE_VERSION = '1.2.0'
 const PENALTY_CAUSE_COMMENTARY: Array<(attacker: string) => string> = [
   (a) => `Straff! ${a} fälls i straffområdet — domaren tvekar inte.`,
   (a) => `Tydligt fall. ${a} hakas ner bakifrån. Straff.`,
-  (a) => `Där! Foul på ${a} inne i området. Domaren pekar på prickern.`,
-  () => `Domaren blåser — olaga hindrande i straffområdet. Straff.`,
+  (a) => `Där! Regelbrott mot ${a} inne i området. Domaren pekar på pricken.`,
+  () => `Domaren blåser — otillåtet hindrande i straffområdet. Straff.`,
   () => `Straff! Målvakten tog spelaren istället för bollen.`,
 ]
 
@@ -1271,7 +1271,7 @@ function* simulateMatchCore(
           scorerPlayerId = scorer.id
           goalScored = true
           trackGoal(scorer.id)
-          const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, description: `Halvchans av ${scorer.firstName} ${scorer.lastName}` }
+          const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, description: `Mål av ${scorer.firstName} ${scorer.lastName}` }
           stepEvents.push(ev); allEvents.push(ev)
         }
       } else if (shotResult < goalThreshold + 0.45) {
@@ -1495,9 +1495,9 @@ function* simulateMatchCore(
         } else if (input.storylines && rand() < 0.30) {
           const scorerStories = input.storylines.filter(s => s.playerId === scorerPlayerId)
           const storylineMap: Record<string, string> = {
-            rescued_from_unemployment: `MÅL! ${scorerName} — mannen som nästan förlorade allt. Nu gör han säsongens viktigaste mål!`,
+            rescued_from_unemployment: `MÅL! ${scorerName} — mannen som nästan förlorade allt. Vilket kvitto!`,
             went_fulltime_pro:         `MÅL! ${scorerName} har gått hela vägen från deltid till proffs — och levererar!`,
-            returned_to_club:          `MÅL! ${scorerName} — hemkomsten kunde inte ha börjat bättre!`,
+            returned_to_club:          `MÅL! ${scorerName} — hemkomsten betalar sig!`,
             captain_rallied_team:      `MÅL! Kaptenen visar vägen — ${scorerName} sätter den!`,
             gala_winner:               `MÅL! Galafavoriten ${scorerName} fortsätter imponera!`,
             underdog_season:           `MÅL! I underdogens säsong kliver ${scorerName} fram igen!`,
@@ -1513,7 +1513,7 @@ function* simulateMatchCore(
           let contextual: string | null = null
 
           if (scorerIsManaged && scorerPlayer?.promotedFromAcademy && scorerPlayer.age <= 22) {
-            contextual = `MÅL! ${scorerName} — egenodlad talent! Akademin levererar när det gäller!`
+            contextual = `MÅL! ${scorerName} — egenodlad talang! Akademin levererar när det gäller!`
           } else if (scorerIsManaged && captainPlayerId && scorerPlayerId === captainPlayerId) {
             contextual = `MÅL! Kaptenen kliver fram! Det är därför ${scorerName} bär bindeln!`
           } else if (scorerIsManaged && fanFavoritePlayerId && scorerPlayerId === fanFavoritePlayerId) {
@@ -1521,7 +1521,7 @@ function* simulateMatchCore(
           } else if (scorerIsManaged && scorerPlayer?.dayJob && !scorerPlayer.isFullTimePro) {
             contextual = `MÅL! ${scorerName} — ${scorerPlayer.dayJob.title} på dagarna, målskytt på kvällarna!`
           } else if (scorerIsManaged && minute >= 80 && currentMargin <= 1) {
-            contextual = `SLUTMINUTERNA! ${scorerName} slår till! Stämningen är ELEKTRISK!`
+            contextual = `SLUTMINUTERNA! ${scorerName} slår till! Läktaren kokar!`
           } else if (weather && (weather.condition === WeatherCondition.HeavySnow || weather.condition === WeatherCondition.Thaw) && rand() < 0.50) {
             contextual = fillTemplate(pickCommentary(
               weather.condition === WeatherCondition.HeavySnow ? commentary.weather_goal_heavySnow : commentary.weather_goal_thaw,
@@ -1743,11 +1743,11 @@ function* simulateMatchCore(
         const isCold  = weather && weather.temperature < -10
         const isSnow  = weather && (weather.condition as string) === 'heavySnow'
         if (isDerby) {
-          commentaryText = [`Publiksiffran annonseras: ${att} åskådare! Derbystämning på läktarna.`, `${att} åskådare har samlats för derbyt. Stämningen är elektrisk.`, `Det är derby — och ${att} har kommit för att se det. Underbara scener.`][Math.floor(rand() * 3)]
+          commentaryText = [`Publiksiffran annonseras: ${att} åskådare! Derbystämning på läktarna.`, `${att} åskådare har samlats för derbyt. Stämningen är elektrisk.`, `Det är derby — och ${att} har kommit för att se det. Som sig bör.`][Math.floor(rand() * 3)]
         } else if (att > 5000) {
           commentaryText = [`Lapp på luckan! ${att} åskådare — läktarna svämmar över.`, `${att} åskådare! Arenan sjuder.`, `Speaker meddelar: ${att} åskådare. En av de största publiksiffrorna på länge.`][Math.floor(rand() * 3)]
         } else if (att > 1000) {
-          commentaryText = [`Publiksiffran annonseras: ${att} åskådare. Fin uppslutning idag.`, `${att} har tagit sig till planen. Bandyintresset är starkt.`, `Speaker meddelar: ${att} åskådare. Det värmer.`][Math.floor(rand() * 3)]
+          commentaryText = [`Publiksiffran annonseras: ${att} åskådare. Fin uppslutning idag.`, `${att} har tagit sig till matchen. Bandyintresset är starkt.`, `Speaker meddelar: ${att} åskådare. Det värmer.`][Math.floor(rand() * 3)]
         } else if (isCold) {
           commentaryText = [`${att} tappra har vågat sig ut trots kylan. Respekt.`, `Publiksiffran annonseras: ${att} åskådare. Inte illa med ${weather!.temperature}°C.`, `${att} åskådare hukar bakom termosarna.`][Math.floor(rand() * 3)]
         } else if (isSnow) {
@@ -1755,7 +1755,7 @@ function* simulateMatchCore(
         } else if (att < 80) {
           commentaryText = [`Publiksiffran annonseras: ${att} åskådare. Tyst på läktarna idag.`, `${att} åskådare. Man önskar att det var fler. Men de som kom är lojala.`][Math.floor(rand() * 2)]
         } else {
-          commentaryText = [`Publiksiffran annonseras: ${att} åskådare på plats.`, `${att} har tagit sig till planen idag. Bra uppslutning.`, `Speaker meddelar: ${att} åskådare. Bandyintresset lever.`][Math.floor(rand() * 3)]
+          commentaryText = [`Publiksiffran annonseras: ${att} åskådare på plats.`, `${att} har tagit sig till matchen idag. Bra uppslutning.`, `Speaker meddelar: ${att} åskådare. Bandyintresset lever.`][Math.floor(rand() * 3)]
         }
       }
 

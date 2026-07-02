@@ -4,9 +4,9 @@ export type CommentaryTemplate = string
 
 export const commentary = {
   kickoff: [
-    "Domaren blåser igång matchen! {team} tar emot på hemmaplan.",
+    "Domaren blåser igång matchen! Bollen är i spel.",
     "Avslag! {team} möter {opponent} i kvällens match.",
-    "Och så drar det igång! {opponent} inleder matchen.",
+    "Och så drar det igång! {team} inleder matchen.",
     "Domaren blåser igång matchen. En hel säsong kan avgöras i kväll.",
     "Och vi är igång! Spelarna har värmt upp, publiken är på plats, nu kör vi.",
   ],
@@ -745,7 +745,7 @@ export const commentary = {
 
   freekick_danger: [
     'Frislag! {player} ställer sig vid bollen. 25 meter rakt in...',
-    'Farligt läge. Frislag strax utanför. {team} samlar sig i muren.',
+    'Farligt läge. Frislag strax utanför. {opponent} samlar sig i muren.',
     'Frislagschans! {player} slår — MEN rakt i muren. Inget mer.',
     'Frislag. {player} väljer att slå kort. Besvikna röster från klacken.',
     '{player} med frislag. Hög boll över muren — men utanför.',

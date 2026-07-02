@@ -45,7 +45,10 @@ maratonsessioner är bevisad (2026-07-02). **Aldrig** som svans på annan sessio
 2. TON — mot kanon: bandysvensk understatement, bruksortsprotokoll,
    personlighetsnycklad röst (Kioskvakten låter som Kioskvakten överallt),
    inga utropsteckenkluster, ingen hype, inga anglicismer, inget
-   managementspråk i kafferummet
+   managementspråk i kafferummet. OBS matchtext: TVÅ REGISTER är kanon
+   (WRITING_GUIDELINES #10, Jacobs ruling 2026-07-02) — liga-/slutspels-
+   kommentatorn får vara exalterad, cup_*-pooler är Sture. Döm inom
+   registret; utrop i ligapool är inte tonbrott, utrop i cuppool är det.
 3. KONSISTENS — samma sak heter samma sak (halvlek aldrig period,
    hörna/hörnslag, straff/straffslag, matchdag/omgång)
 
@@ -125,6 +128,9 @@ MISSTANKAR — döm i kontext, luta konservativt:
   domartecken; bandydomare bär ingen flagga — "flaggan går upp" är fotboll)
 - `bentackling` (officiellt bestraffningstecken), `inslag` (boll över sidlinje,
   officiellt domartecken)
+- `strecket` = ENBART nedflyttningslinjen (Jacobs ruling 2026-07-02, M10).
+  Slutspelslinjen skrivs alltid ut: "slutspelsstrecket". Ordet strecket
+  naket = nedflyttning, alltid.
 - `halvtidspaus` (max 20 min), `halvlek`
 
 ---
@@ -221,7 +227,86 @@ MISSTANKAR — döm i kontext, luta konservativt:
   på länge" vs trigger "första för spelaren" · M9 DIAGNOSIS_LINES mild antar
   matchskada ("kände det i andra halvlek") — triggas den av träningsskador?
 
-  KVAR I DOMÄN 1 (→ Domän 1b, FÄRSK session): matchCore commentary-pooler
-  (109 KB — störst, ta först), matchUtils/pickGoalCommentary + pickWeather-
-  Commentary, situationFragments, deriveEventText (lokalisera — ej i
-  domain/services-roten), seasonSummaryService.
+  KVAR I DOMÄN 1 (→ Domän 1c, FÄRSK session): ENDAST matchCore commentary-
+  pooler + inline-strängar (109 KB) samt deriveEventText-anropens fallback-
+  verb (lever i matchCore/MatchStep-flödet).
+
+- 2026-07-02 (sen kväll): DOMÄN 1b KLAR — situationFragments, deriveEventText,
+  matchUtils, seasonSummaryService. (matchCore återstår som 1c, Jacobs
+  "kör på" till trots — 109 KB döms inte trött.)
+
+  RÄTTAT (9 rader, 2 filer):
+  · situationFragments (6): ordinalSv — tabellposition som ordinal ("ligger
+    3:e") → substantivform ("ligger 3:a" = trea; alla 1–12 får :a),
+    konsistent med halfTimeSummary · "delar tabellgrannar"→"är tabellgrannar"
+    (bruten fras) · "Aldrig avgjort, alltid jämnt" (L#9: bara SENASTE mötet
+    känt)→"Delade poäng den gången" · "Inget marginal"→"Ingen" (genus) ·
+    cupstake R1 "kvartsfinal — fyra lag kvar" → ÅTTA lag kvar i kvarten;
+    räknefel struket · stale placeholder-kommentar i headern uppdaterad.
+  · seasonSummaryService (3): LATE_WINNER "på väg mot ett kryss" (L#9: falskt
+    när vi redan ledde före sista sena målet, t.ex. 3–2 med mål 82' + reducering
+    88')→"Det satt långt inne. {name} fick sista ordet." · "en magnifik
+    dubbel!" (superlativförbud)→"dubbeln, inget mindre." · hattrick "går till
+    historien" (klyscha)→"Det pratas fortfarande om den kvällen."
+
+  GODKÄNT: deriveEventText (kod; fallback-verb i anropen → 1c),
+  matchUtils (kod; straffmodell 5 + sudden death matchar regelboken).
+
+  GRAMMATIKNOT (skydd mot felätt "harmonisering"): ordinal() i numberFormat
+  (1:a/2:a/n:e) är KORREKT för "{n}:e plats"-konstruktionen (tredje plats);
+  substantivformen {n}:a (trea/nia) gäller "ligger {n}:a". Två olika
+  konstruktioner — båda rätt, blanda inte.
+
+  NYA MISSTANKAR:
+  M10 [RULED 2026-07-02: nedflyttning äger ordet. Slutspelslinjen skrivs ut
+  som "slutspelsstrecket" — fixat i situationFragments, termlistan uppdaterad.]
+  M11 narrative: "SM-guldet ${currentSeason + 1}" — är currentSeason ett
+  årtal eller ett index? Om index blir det "SM-guldet 2". Code verifierar
+  SaveGame.currentSeason-semantiken.
+  M12 comebackKing-triggern använder injuryProneness > 0 (EGENSKAP, inte
+  historik) — "Trots skadebekymmer kämpade sig tillbaka" kan vara falskt
+  för en aldrig-skadad bänkspelare. Code: trigga på faktisk skadehistorik
+  denna säsong.
+
+- 2026-07-02 (natt): DOMÄN 1c KLAR — matchCore genomläst i två block med
+  överlapp. DOMÄN 1 DÄRMED KOMPLETT.
+
+  BEKRÄFTADE BUGGAR (anropskod läst — misstankar uppgraderade och FIXADE):
+  · M2 BEKRÄFTAD: kickoff-poolen anropas med team = ANFALLANDE laget,
+    slumpat i steg 0 → "{team} tar emot på hemmaplan" ljög när bortalaget
+    attackerade. Fixad: "Bollen är i spel." BONUSBUGG i samma pool:
+    "{opponent} inleder matchen" — bakvänt (avslagslaget är {team}) →
+    "{team} inleder".
+  · M4 BEKRÄFTAD: freekick_danger får team = anfallaren → "{team} samlar
+    sig i muren" var perspektivinverterad. Fixad med tokenbyte: {opponent}.
+  · M1 PRECISERAD (kodverifierad): motorn ÄR sudden death (mål → return),
+    20 steg × 1,5 = 30 min. Enda regelboksavvikelsen är LÄNGDEN (30 vs
+    2×10 = 20 min). Fix om Jacob vill: loopgräns 62..~75 + minutmappning +
+    overtimeStart "30 minuter"→"20" + penaltyStart "120 minuter"→"110" +
+    omkalibrering av otGoalMod (tunad för 20 steg). Code + Jacob-beslut.
+
+  RÄTTAT matchCore.ts (10 inline-strängar):
+  · "Foul på X … pekar på PRICKERN" → "Regelbrott mot X … pekar på
+    pricken" (engelska + felform) · "OLAGA hindrande" (juridiksvenska) →
+    "otillåtet hindrande" · "egenodlad TALENT" → "talang" · "Stämningen är
+    ELEKTRISK!" (versalhype) → "Läktaren kokar!" · "säsongens viktigaste
+    mål" (L#9: kan vara 5–0 i omgång 3) → "Vilket kvitto!" · "hemkomsten
+    kunde inte ha börjat bättre" (L#9: målet kan komma sent på säsongen) →
+    "hemkomsten betalar sig" · "Underbara scener" (anglicism, wonderful
+    scenes) → "Som sig bör." · "tagit sig till PLANEN" ×2 (publiken är inte
+    på planen) → "till matchen" · "Halvchans av X" som MÅL-beskrivning i
+    feed → "Mål av X" (konsistens med övriga målevent).
+  GODKÄNT i matchCore: PENALTY_CAUSE övriga (straffområde/hakas ner/fälls =
+  regelboksäkta), publikpoolen i övrigt ("Lapp på luckan" äkta klassiker,
+  "hukar bakom termosarna" kanon), storyline/contextual-målen i övrigt
+  (deltidsproffs-raden är kanon), eventbeskrivningar (Omställningsmål äkta).
+
+  NYA MISSTANKAR:
+  M13 (Code, ej text): attendance-grenen isSnow jämför
+  (weather.condition as string) === 'heavySnow' — verifiera enumvärdet;
+  troligen död gren så snösträngen aldrig visas.
+
+  UTANFÖR DOMÄN 1 men konsumeras av matchCore (noteras för rätt domän):
+  getConditionLabel/getIceQualityLabel (weatherService → vädertext-passet),
+  HALL_ATMOSPHERE (hallProvningData), specialDateStrings, klackEchoText,
+  anniversaryKlackText, RIVAL_SALE_KLACK (→ domän 2, orten/röster).
