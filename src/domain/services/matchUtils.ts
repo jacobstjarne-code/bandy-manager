@@ -1,8 +1,9 @@
 import type { Player } from '../entities/Player'
 import type { Fixture, MatchEvent, TeamSelection } from '../entities/Fixture'
 import type { Weather } from '../entities/Weather'
-import { WeatherCondition, IceQuality, PlayerPosition } from '../enums'
+import { WeatherCondition, IceQuality, PlayerPosition, MatchEventType } from '../enums'
 import type { Rivalry } from '../data/rivalries'
+import { getRivalry } from '../data/rivalries'
 import { commentary, pickCommentary } from '../data/matchCommentary'
 
 // ── Match phase context ────────────────────────────────────────────────────
@@ -438,5 +439,66 @@ export function simulatePenalties(
   }
 
   return { rounds, homeGoals, awayGoals }
+}
+
+// ── Moment/highlight-detektion (delad av seasonSummaryService och
+// halfTimeSummaryService, extraherad 2026-07). Bara VILLKORS- och
+// UTFALLSDETEKTIONEN är delad här — poängkonstanterna skiljer sig
+// mellan tjänsterna (medvetet, olika tonvikt helår vs höst) och
+// hör hemma hos respektive caller, inte här. selectMatchOfTheSeason
+// (matchHighlightService) har en egen additiv enkel-vinnare-modell
+// med andra kategorier (cup_drama/playoff_decisive) och delar därför
+// inte denna primitiv.
+
+export interface FixtureOutcome {
+  isHome: boolean
+  ourScore: number
+  theirScore: number
+  margin: number
+  oppName: string
+  scoreStr: string
+  rivalry: Rivalry | null
+  isDerby: boolean
+}
+
+export function deriveFixtureOutcome(
+  f: Fixture,
+  managedClubId: string,
+  clubs: { id: string; shortName?: string; name: string }[],
+): FixtureOutcome {
+  const isHome = f.homeClubId === managedClubId
+  const ourScore = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
+  const theirScore = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
+  const margin = ourScore - theirScore
+  const opponentId = isHome ? f.awayClubId : f.homeClubId
+  const opponent = clubs.find(c => c.id === opponentId)
+  const oppName = opponent?.shortName ?? opponent?.name ?? '?'
+  const scoreStr = isHome ? `${ourScore}–${theirScore}` : `${theirScore}–${ourScore}`
+  const rivalry = getRivalry(f.homeClubId, f.awayClubId)
+  return { isHome, ourScore, theirScore, margin, oppName, scoreStr, rivalry, isDerby: !!rivalry }
+}
+
+export function countGoalsByPlayer(f: Fixture, managedClubId: string): Record<string, number> {
+  const goalsByPlayer: Record<string, number> = {}
+  for (const evt of f.events ?? []) {
+    if (evt.type === MatchEventType.Goal && evt.playerId && evt.clubId === managedClubId) {
+      goalsByPlayer[evt.playerId] = (goalsByPlayer[evt.playerId] ?? 0) + 1
+    }
+  }
+  return goalsByPlayer
+}
+
+/** Senaste målet av managed-laget från minMinute och framåt, eller undefined om inget sådant mål. */
+export function findLateWinnerGoal(f: Fixture, managedClubId: string, minMinute = 80): MatchEvent | undefined {
+  const lateGoals = (f.events ?? []).filter(e =>
+    e.type === MatchEventType.Goal && e.clubId === managedClubId && (e.minute ?? 0) >= minMinute)
+  return lateGoals[lateGoals.length - 1]
+}
+
+/** Sant om vi låg under (motståndaren gjorde första målet) men vann matchen. */
+export function isComeback(f: Fixture, managedClubId: string, margin: number): boolean {
+  if (margin <= 0) return false
+  const firstGoal = (f.events ?? []).find(e => e.type === MatchEventType.Goal)
+  return !!firstGoal && firstGoal.clubId !== managedClubId
 }
 

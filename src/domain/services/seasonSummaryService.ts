@@ -1,11 +1,11 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { SeasonSummary } from '../entities/SeasonSummary'
 import type { Fixture } from '../entities/Fixture'
-import { ClubExpectation, FixtureStatus, MatchEventType, PlayoffRound } from '../enums'
-import { getRivalry } from '../data/rivalries'
+import { ClubExpectation, FixtureStatus, PlayoffRound } from '../enums'
 import { summarizeSignature } from './seasonSignatureService'
 import { seededPick, fixtureSeed } from '../utils/random'
 import { ordinal } from '../utils/numberFormat'
+import { deriveFixtureOutcome, countGoalsByPlayer, findLateWinnerGoal, isComeback } from './matchUtils'
 
 function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
   const managedClubId = game.managedClubId
@@ -117,16 +117,7 @@ function computeKeyMoments(
   ] as const
 
   for (const f of clubFixtures) {
-    const isHome = f.homeClubId === game.managedClubId
-    const myScore = isHome ? f.homeScore : f.awayScore
-    const theirScore = isHome ? f.awayScore : f.homeScore
-    const margin = myScore - theirScore
-    const opponentId = isHome ? f.awayClubId : f.homeClubId
-    const opponent = game.clubs.find(c => c.id === opponentId)
-    const oppName = opponent?.shortName ?? opponent?.name ?? '?'
-    const scoreStr = isHome ? `${myScore}–${theirScore}` : `${theirScore}–${myScore}`
-    const rivalry = getRivalry(f.homeClubId, f.awayClubId)
-    const isDerby = !!rivalry
+    const { margin, oppName, scoreStr, rivalry, isDerby } = deriveFixtureOutcome(f, game.managedClubId, game.clubs)
     const seed = fixtureSeed(f.id)
     const roundLabel = `Omgång ${String(f.roundNumber).padStart(2, '0')}`
 
@@ -166,12 +157,7 @@ function computeKeyMoments(
     }
 
     // Hat trick: 3+ goals by one managed player
-    const goalsByPlayer: Record<string, number> = {}
-    for (const evt of f.events) {
-      if (evt.type === MatchEventType.Goal && evt.playerId && evt.clubId === game.managedClubId) {
-        goalsByPlayer[evt.playerId] = (goalsByPlayer[evt.playerId] ?? 0) + 1
-      }
-    }
+    const goalsByPlayer = countGoalsByPlayer(f, game.managedClubId)
     for (const [pid, goals] of Object.entries(goalsByPlayer)) {
       if (goals >= 3) {
         const p = managedPlayers.find(pl => pl.id === pid)
@@ -187,10 +173,8 @@ function computeKeyMoments(
 
     // Late winner: won by 1, scoring goal in minute >= 80
     if (margin === 1) {
-      const lateGoals = f.events.filter(e =>
-        e.type === MatchEventType.Goal && e.clubId === game.managedClubId && (e.minute ?? 0) >= 80)
-      if (lateGoals.length > 0) {
-        const scorer = lateGoals[lateGoals.length - 1]
+      const scorer = findLateWinnerGoal(f, game.managedClubId, 80)
+      if (scorer) {
         const p = scorer.playerId ? managedPlayers.find(pl => pl.id === scorer.playerId) : null
         const scorerName = p ? `${p.firstName} ${p.lastName}` : 'Avslutning'
         const fn = seededPick(LATE_WINNER_POOL, seed)
@@ -202,15 +186,12 @@ function computeKeyMoments(
     }
 
     // Comeback: we trailed (first goal was opponent's) but won
-    if (margin > 0) {
-      const firstGoal = f.events.find(e => e.type === MatchEventType.Goal)
-      if (firstGoal && firstGoal.clubId !== game.managedClubId) {
-        const fn = seededPick(COMEBACK_POOL, seed)
-        moments.push({ round: f.roundNumber, type: 'comeback', fixtureId: f.id,
-          headline: `Comeback mot ${oppName} (${scoreStr})`,
-          body: `${roundLabel}: ${fn(oppName)}`,
-          score: 28 + margin * 5 })
-      }
+    if (isComeback(f, game.managedClubId, margin)) {
+      const fn = seededPick(COMEBACK_POOL, seed)
+      moments.push({ round: f.roundNumber, type: 'comeback', fixtureId: f.id,
+        headline: `Comeback mot ${oppName} (${scoreStr})`,
+        body: `${roundLabel}: ${fn(oppName)}`,
+        score: 28 + margin * 5 })
     }
   }
 

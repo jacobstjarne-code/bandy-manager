@@ -1,6 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { MatchEventType } from '../enums'
-import { getRivalry } from '../data/rivalries'
+import { deriveFixtureOutcome, countGoalsByPlayer, findLateWinnerGoal, isComeback } from './matchUtils'
 
 export interface HalfTimeMoment {
   emoji: string
@@ -50,15 +50,7 @@ export function generateHalfTimeSummary(game: SaveGame): HalfTimeSummary {
   const candidates: ScoredMoment[] = []
 
   for (const f of autumnFixtures) {
-    const isHome = f.homeClubId === managedClubId
-    const myScore = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
-    const theirScore = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-    const margin = myScore - theirScore
-    const opponentId = isHome ? f.awayClubId : f.homeClubId
-    const opponent = game.clubs.find(c => c.id === opponentId)
-    const oppName = opponent?.shortName ?? opponent?.name ?? '?'
-    const scoreStr = isHome ? `${myScore}–${theirScore}` : `${theirScore}–${myScore}`
-    const rivalry = getRivalry(f.homeClubId, f.awayClubId)
+    const { margin, oppName, scoreStr, rivalry } = deriveFixtureOutcome(f, managedClubId, game.clubs)
 
     if (rivalry && margin > 0) {
       candidates.push({ emoji: '🏆', headline: `Derbyvinst mot ${oppName}`, body: `${scoreStr} i ${rivalry.name}.`, round: f.roundNumber, score: 40 })
@@ -73,12 +65,7 @@ export function generateHalfTimeSummary(game: SaveGame): HalfTimeSummary {
     }
 
     // Hat trick
-    const goalsByPlayer: Record<string, number> = {}
-    for (const evt of f.events ?? []) {
-      if (evt.type === MatchEventType.Goal && evt.playerId && evt.clubId === managedClubId) {
-        goalsByPlayer[evt.playerId] = (goalsByPlayer[evt.playerId] ?? 0) + 1
-      }
-    }
+    const goalsByPlayer = countGoalsByPlayer(f, managedClubId)
     for (const [pid, goals] of Object.entries(goalsByPlayer)) {
       if (goals >= 3) {
         const p = managedPlayers.find(pl => pl.id === pid)
@@ -89,21 +76,13 @@ export function generateHalfTimeSummary(game: SaveGame): HalfTimeSummary {
     }
 
     // Comeback
-    if (margin > 0) {
-      const firstGoal = (f.events ?? []).find(e => e.type === MatchEventType.Goal)
-      if (firstGoal && firstGoal.clubId !== managedClubId) {
-        candidates.push({ emoji: '💪', headline: `Comeback mot ${oppName}`, body: `Vände underläge till ${scoreStr}.`, round: f.roundNumber, score: 28 })
-      }
+    if (isComeback(f, managedClubId, margin)) {
+      candidates.push({ emoji: '💪', headline: `Comeback mot ${oppName}`, body: `Vände underläge till ${scoreStr}.`, round: f.roundNumber, score: 28 })
     }
 
     // Late winner
-    if (margin === 1) {
-      const lateGoals = (f.events ?? []).filter(e =>
-        e.type === MatchEventType.Goal && e.clubId === managedClubId && (e.minute ?? 0) >= 80
-      )
-      if (lateGoals.length > 0) {
-        candidates.push({ emoji: '⏱️', headline: `Sent avgörande mot ${oppName}`, body: `${scoreStr} — målgång sent.`, round: f.roundNumber, score: 22 })
-      }
+    if (margin === 1 && findLateWinnerGoal(f, managedClubId, 80)) {
+      candidates.push({ emoji: '⏱️', headline: `Sent avgörande mot ${oppName}`, body: `${scoreStr} — målgång sent.`, round: f.roundNumber, score: 22 })
     }
   }
 
