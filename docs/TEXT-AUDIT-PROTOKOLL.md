@@ -22,6 +22,16 @@ för evigt. Byggs av Code EFTER läspassets termlista är slutjusterad.
    "nickar in"-buggen rättats. Färska ögon + lista, inte känsla.
 2. Termkunskap måste regelboksgrundas åt BÅDA hållen: tekning såg ut som
    hockey men är en bandyregelbokterm (SvBF Regel 9, mål kan göras direkt).
+3. **Regelboken före webbsök vid termtvekan.** När en sökning kommer
+   tillbaka dominerad av fel sport är det inte ett skäl att skriva
+   agnostiskt runt frågan — det är signalen att gå direkt på regelbokens
+   PDF: `sbf-forening.fra1.digitaloceanspaces.com/uploads/SvBF-Regelbok-2023-2024.pdf`
+   (hela texten hämtbar via web_fetch). Minnesregel: i bandy blir man inte
+   tacklad mot sargen — man blir tacklad av planen. Faller man, så är det
+   isen som tog en. Samma sak med källor: står svaret inte i regelboken
+   är det fotbollsinternet som tog sökningen. (2026-07-02, flagg-frågan:
+   webbsök gav fyra fotbollsträffar, regelboken gav svaret på en hämtning
+   — Regel 10, sträckt arm, ingen flagga.)
 
 ---
 
@@ -109,7 +119,12 @@ MISSTANKAR — döm i kontext, luta konservativt:
 - `utvisning 5/10 min / matchstraff`, `utvisningsbås`
 - `offside` (gäller även fri-/straffslag/tekning/målkast)
 - målvakt som `boxar` (målvakten saknar klubba)
-- `sudden death`-förlängning 1×10 + 5 straffar (Elitserien)
+- `sudden death`-förlängning 2×10 min + straffar (SvBF Regel 4.4, regelboken
+  23/24; äldre serieregel 2020 sa 1×10 — regelboken gäller)
+- offside signaleras med domarens STRÄCKTA ARM, aldrig flagga (Regel 10 +
+  domartecken; bandydomare bär ingen flagga — "flaggan går upp" är fotboll)
+- `bentackling` (officiellt bestraffningstecken), `inslag` (boll över sidlinje,
+  officiellt domartecken)
 - `halvtidspaus` (max 20 min), `halvlek`
 
 ---
@@ -133,9 +148,9 @@ MISSTANKAR — döm i kontext, luta konservativt:
   NÄSTA: Domän 1 (matchtext) i färsk Fable-session.
 
 - 2026-07-02 (kväll): DOMÄN 1a KLAR — all data + interaktionstjänsterna.
-  Regelboksverifierat före dömning: (a) förlängning — seriespel Elitserien =
-  sudden death 1×10 + straffar (SvBF 2020), slutspel = 20 min förlängning +
-  straffar (SvBF tävlingsbest.); spelets "30 minuter" matchar INGETDERA →
+  Regelboksverifierat före dömning: (a) förlängning — SvBF Regel 4.4
+  (regelboken 23/24, läst i sin helhet samma kväll): sudden death 2×10 min +
+  straffar; spelets "30 minuter" icke-sudden matchar INTE regelboken →
   misstanke, ej texrättning. (b) "vända ur" = ÄKTA bandyspråk (Bollnäs-referat:
   "tvingas vända ur mot sargen") — falskpositiv undveken; även "förarsätet"
   och "bryter uppspel" bekräftade äkta i samma källa.
@@ -172,8 +187,9 @@ MISSTANKAR — döm i kontext, luta konservativt:
     tillkommer"→"det blir hörna" · "en välplacerad avslut tar vägen in"→
     "ett välplacerat avslut letar sig in".
   · counterAttackInteractionService (5): "springer fritt men flaggan går upp"
-    → "åker fritt men domaren blåser" (springa + fotbollsflagga; omskriven
-    flagg-agnostiskt) · "sätter in det"→"den" · "avslut går"→"avslutet" ·
+    → "åker fritt men armen går upp" (springa + FLAGGA ÄR FOTBOLL — Regel 10:
+    bandyoffside markeras med domarens sträckta arm, domarna bär ingen
+    flagga; verifierat i regelboken efter Jacobs fråga om fotbollskällorna) · "sätter in det"→"den" · "avslut går"→"avslutet" ·
     "passet avbryts"→"passningen … försvaret bryter" · "spelar av"→"spelar
     sig fritt".
   · penaltyInteractionService (2): "Bollen i rakt fram"→"i mitten" (grammatik)
@@ -192,7 +208,8 @@ MISSTANKAR — döm i kontext, luta konservativt:
   FALSKPOSITIVER undvekna (notera för kommande pass): "vända ur", "portfölj
   på läktaren" (bandyportföljen!), "ligger {pos}:a" (substantivform trea/nia,
   EJ ordinal — :a är rätt för alla tabellpositioner), "springer på bandet"
-  (rehab = löpband, inte is).
+  (rehab = löpband, inte is), "bentackling" och "inslag" (båda officiella i
+  regelbokens teckensektioner — flagga aldrig).
 
   MISSTANKAR → Jacob (M1–M9, motiveringar i sessionsleveransen 2026-07-02):
   M1 förlängningsformatet (motor+text) · M2 kickoff-poolens "tar emot på

@@ -73,7 +73,7 @@ export function resolveCounter(
   if (choice === 'sprint') {
     const offsideRisk = 0.18
     if (rand() < offsideRisk) {
-      return { type: 'offside', description: `${runner.firstName} ${runner.lastName} åker fritt men domaren blåser — offside.` }
+      return { type: 'offside', description: `${runner.firstName} ${runner.lastName} åker fritt men armen går upp — offside.` }
     }
     const goalChance = Math.max(0.20, Math.min(0.75, 0.45 + (runnerAtk - 0.50) * 0.8 - gkStrength * 0.25))
     if (rand() < goalChance) {
