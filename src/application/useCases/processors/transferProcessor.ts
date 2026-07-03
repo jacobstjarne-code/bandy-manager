@@ -464,26 +464,6 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
       }
     }
 
-    // C-T9 — rival sale moment
-    if (bid.direction === 'outgoing' && bid.status === 'accepted') {
-      const sellerC = game.clubs.find(c => c.id === bid.sellingClubId)
-      const buyerC = game.clubs.find(c => c.id === bid.buyingClubId)
-      const rivalry = sellerC && buyerC ? getRivalry(sellerC.id, buyerC.id) : null
-      if (rivalry) {
-        const rivalText = seededPick(PLAYER_REACTION_RIVAL_SALE, bid.id + String(nextMatchday))
-        const tp = players.find(p => p.id === bid.playerId)
-        moments.push({
-          id: `moment_rival_sale_${bid.playerId}_${nextMatchday}`,
-          source: 'rival_sale',
-          matchday: nextMatchday,
-          season: game.currentSeason,
-          title: `${tp ? `${tp.firstName} ${tp.lastName}` : 'Spelaren'} till fiendelaget`,
-          body: rivalText,
-          subjectPlayerId: bid.playerId,
-          subjectClubId: bid.buyingClubId,
-        })
-      }
-    }
   }
 
   for (const bid of resolvedBids) {
@@ -522,6 +502,30 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
           body: `Vår ${role} lämnar${buyerClub ? ` till ${buyerClub.name}` : ''}. Det är inte lätt att ta in.`,
           subjectPlayerId: bid.playerId,
           subjectClubId: buyerClub?.id,
+        })
+      }
+    }
+
+    // C-T9 — rival sale moment (M21, textaudit 2026-07-03: låg tidigare i
+    // outgoing-loopen ovan → triggade när VI KÖPTE en spelare FRÅN en rival,
+    // men titeln "{spelare} till fiendelaget" + PLAYER_REACTION_RIVAL_SALE
+    // ("Han bytte tröja men inte stad") beskriver att VÅR spelare lämnar
+    // TILL en rival. Hör hemma i denna incoming-accepted-loopen (vi sålt).
+    if (soldPlayer) {
+      const sellerC = game.clubs.find(c => c.id === bid.sellingClubId)
+      const buyerC = game.clubs.find(c => c.id === bid.buyingClubId)
+      const rivalry = sellerC && buyerC ? getRivalry(sellerC.id, buyerC.id) : null
+      if (rivalry) {
+        const rivalText = seededPick(PLAYER_REACTION_RIVAL_SALE, bid.id + String(nextMatchday))
+        moments.push({
+          id: `moment_rival_sale_${bid.playerId}_${nextMatchday}`,
+          source: 'rival_sale',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: `${soldPlayer.firstName} ${soldPlayer.lastName} till fiendelaget`,
+          body: rivalText,
+          subjectPlayerId: bid.playerId,
+          subjectClubId: bid.buyingClubId,
         })
       }
     }

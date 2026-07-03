@@ -1445,8 +1445,15 @@ function* simulateMatchCore(
           // C-T9: rival sale klack commentary
           commentaryText = RIVAL_SALE_KLACK[Math.floor(rand() * RIVAL_SALE_KLACK.length)]
         } else if (input.anniversaryBigEko && supporterCtx && rand() < 0.45) {
-          // B6: anniversary klack-banderol vid big eko — outcome-filtrerat
-          commentaryText = pickAnniversaryKlack(input.anniversaryBigEko)
+          // B6: anniversary klack-banderol vid big eko — outcome-filtrerat.
+          // M22 (textaudit 2026-07-03): NEUTRAL_KLACK-poolen innehåller
+          // {subject} men resolvades aldrig — spelaren såg det bokstavliga
+          // tokenet i klack-repliken.
+          const rawAnniversaryKlack = pickAnniversaryKlack(input.anniversaryBigEko)
+          const anniversarySubjectId = input.anniversaryBigEko.subjectPlayerId
+          commentaryText = anniversarySubjectId
+            ? fillTemplate(rawAnniversaryKlack, { subject: findPlayerName(anniversarySubjectId) })
+            : rawAnniversaryKlack
         } else if (input.klackEcho && supporterCtx && rand() < input.klackEcho.currentWeight * 0.5) {
           // C-B2: klack echo overrides normal pool with probability = currentWeight * 0.5
           // C-SY1 #2: cause-prefix-variant i 35% av fallen när orsaken är färsk

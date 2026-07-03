@@ -42,10 +42,3 @@ export function pickAnniversaryKlack(echo: ActiveAnniversary): string {
   return seededPick(pool, seed)
 }
 
-// matchCore plockar direkt med rand() — inga template-vars kan resolvas där.
-// NEUTRAL_KLACK innehåller {subject} och exkluderas; de visas bara via pickAnniversaryKlack()
-// som anropas med eko-kontext där subject är tillgänglig.
-export const ANNIVERSARY_KLACK: string[] = [
-  ...WON_KLACK,
-  ...LOST_KLACK,
-]

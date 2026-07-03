@@ -244,7 +244,12 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     // vill KÖPA en spelare av oss), inte en genomförd försäljning — säljtexterna
     // ("{name} lämnade", "Pengarna är inne") ljög om budet ännu inte accepterats.
     if (!soldItem && item.type === InboxItemType.Transfer) soldItem = item
-    if (!boughtItem && item.type === InboxItemType.TransferOffer && !item.isRead) boughtItem = item
+    // M18 (textaudit 2026-07-03): InboxItemType.TransferOffer skapas ALDRIG
+    // någonstans (grep-verifierat) — TRANSFER_BUY_EXCHANGES var död kod.
+    // Rätt signal för "vi köpte nyss" är ett accepterat utgående bud, som
+    // delar InboxItemType.TransferBidResult med avslag/tillbakadraget/mot-
+    // bud — id-prefixet (transferProcessor.ts) särskiljer just accepted.
+    if (!boughtItem && item.type === InboxItemType.TransferBidResult && item.id.startsWith('inbox_bid_accepted_') && !item.isRead) boughtItem = item
     if (soldItem && boughtItem) break
   }
   const deadlineRound = round >= 13 && round <= 15

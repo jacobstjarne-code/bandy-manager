@@ -44,15 +44,15 @@ function getWatchOthersContext(game: SaveGame): WatchOthersContext {
   const eliminatingSeries = allSeries.find(s => s.loserId === game.managedClubId)
   if (!eliminatingSeries) return 'never_in_playoff'
 
-  const beaterIsStillIn = allSeries.some(s =>
-    (s.homeClubId === eliminatingSeries.winnerId || s.awayClubId === eliminatingSeries.winnerId) &&
-    s.loserId !== eliminatingSeries.winnerId &&
-    s.fixtures.some((fid: string) => {
-      const f = game.fixtures.find(ff => ff.id === fid)
-      return f?.status === FixtureStatus.Scheduled
-    })
-  )
-  return beaterIsStillIn ? 'lost_to_finalist' : 'lost_to_other'
+  // M22 (textaudit 2026-07-03): kollade tidigare "vinnaren spelar i NÅGON
+  // kommande omgång" — kunde vara kvartsfinal/semifinal, medan texten
+  // ("{motståndare} står I FINALEN") specifikt hävdar finalplats. Kollar nu
+  // mot final-seriens faktiska deltagare (final är null tills semifinalerna
+  // är klara, så det här kan bara bli sant när laget verkligen är klart).
+  const finalSeries = game.playoffBracket.final
+  const beaterIsInFinal = !!finalSeries &&
+    (finalSeries.homeClubId === eliminatingSeries.winnerId || finalSeries.awayClubId === eliminatingSeries.winnerId)
+  return beaterIsInFinal ? 'lost_to_finalist' : 'lost_to_other'
 }
 
 function pickReflection(context: WatchOthersContext, seed: number) {
