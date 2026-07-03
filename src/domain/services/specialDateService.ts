@@ -68,8 +68,11 @@ export function buildSpecialDateContext(fixture: Fixture, game: SaveGame): Speci
     rivalryName: rivalry?.name,
     tipoffHour: '13:00',
     isPlayerInFinal: fixture.isFinaldag === true,
+    // M26 (textaudit 2026-07-03): jämförde vårt rykte mot ett fast 50-tal —
+    // rep 45 mot en finalmotståndare på rep 40 gav "Underläge på pappret"
+    // trots att vi var favoriter. Jämför mot finalmotståndarens faktiska rykte.
     isUnderdog: fixture.isFinaldag
-      ? (managedClub?.reputation ?? 50) < 50
+      ? (managedClub?.reputation ?? 50) < ((isHome ? awayClub : homeClub)?.reputation ?? 50)
       : undefined,
     hasJourneyToFinal: fixture.isCup
       ? (game.cupBracket?.matches.filter(m =>

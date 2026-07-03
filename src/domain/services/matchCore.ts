@@ -1554,7 +1554,7 @@ function* simulateMatchCore(
             contextual = `MÅL! ${scorerName} — ${scorerPlayer.dayJob.title} på dagarna, målskytt på kvällarna!`
           } else if (scorerIsManaged && minute >= 80 && currentMargin <= 1) {
             contextual = `SLUTMINUTERNA! ${scorerName} slår till! Läktaren kokar!`
-          } else if (weather && (weather.condition === WeatherCondition.HeavySnow || weather.condition === WeatherCondition.Thaw) && rand() < 0.50) {
+          } else if (!input.hallInomhus && weather && (weather.condition === WeatherCondition.HeavySnow || weather.condition === WeatherCondition.Thaw) && rand() < 0.50) {
             contextual = fillTemplate(pickCommentary(
               weather.condition === WeatherCondition.HeavySnow ? commentary.weather_goal_heavySnow : commentary.weather_goal_thaw,
               rand,
@@ -1621,7 +1621,7 @@ function* simulateMatchCore(
         const ppOpponent = awayActiveSuspensions > 0 ? awayTeamRef : homeTeamRef
         templateVars = { ...templateVars, team: ppTeam, opponent: ppOpponent }
         commentaryText = fillTemplate(pickCommentary(commentary.powerPlayGood, rand, commentaryHistory), templateVars)
-      } else if (weather && (step === 15 || step === 30 || step === 45)) {
+      } else if (!input.hallInomhus && weather && (step === 15 || step === 30 || step === 45)) {
         commentaryText = pickWeatherCommentary(weather, rand, commentaryHistory) ?? fillTemplate(pickCommentary(commentary.neutral, rand, commentaryHistory), templateVars)
       } else if (seqType === 'tactical_shift') {
         commentaryText = fillTemplate(pickCommentary(commentary.tactical_shift, rand, commentaryHistory), templateVars)
@@ -1654,7 +1654,7 @@ function* simulateMatchCore(
         if (rivalry && step % 10 === 0 && !goalScored && !saveOccurred && !suspensionOccurred && !cornerOccurred && rand() < 0.30) {
           commentaryText = fillTemplate(pickCommentary(commentary.derby_neutral, rand, commentaryHistory), { ...templateVars, rivalry: rivalry.name })
           isDerbyStep = true
-        } else if (weather && !goalScored && !saveOccurred && !cornerOccurred && rand() < 0.30) {
+        } else if (!input.hallInomhus && weather && !goalScored && !saveOccurred && !cornerOccurred && rand() < 0.30) {
           if (weather.condition === WeatherCondition.HeavySnow) {
             commentaryText = pickCommentary(commentary.weather_miss_heavySnow, rand, commentaryHistory)
           } else if (weather.condition === WeatherCondition.Thaw) {
@@ -1664,7 +1664,7 @@ function* simulateMatchCore(
           } else {
             commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand, commentaryHistory), templateVars)
           }
-        } else if (step === 31 && weather && !goalScored && !saveOccurred && !cornerOccurred && (weather.condition === WeatherCondition.HeavySnow || weather.condition === WeatherCondition.Thaw)) {
+        } else if (!input.hallInomhus && step === 31 && weather && !goalScored && !saveOccurred && !cornerOccurred && (weather.condition === WeatherCondition.HeavySnow || weather.condition === WeatherCondition.Thaw)) {
           commentaryText = weather.condition === WeatherCondition.HeavySnow
             ? pickCommentary(commentary.iceDeterioration_snow, rand, commentaryHistory)
             : pickCommentary(commentary.iceDeterioration_thaw, rand, commentaryHistory)
@@ -1772,8 +1772,11 @@ function* simulateMatchCore(
       if (step === attendanceStep && !goalScored && !suspensionOccurred && fixture.attendance) {
         const att    = fixture.attendance
         const isDerby = !!rivalry
-        const isCold  = weather && weather.temperature < -10
-        const isSnow  = weather && (weather.condition as string) === 'heavySnow'
+        // M27 (textaudit 2026-07-03): publiken "trotsar kylan/snöfallet" är fel
+        // för en publik i en uppvärmd hall — gate:at på !hallInomhus liksom
+        // övriga utomhusväder-kommentarer i denna funktion.
+        const isCold  = !input.hallInomhus && weather && weather.temperature < -10
+        const isSnow  = !input.hallInomhus && weather && (weather.condition as string) === 'heavySnow'
         if (isDerby) {
           commentaryText = [`Publiksiffran annonseras: ${att} åskådare! Derbystämning på läktarna.`, `${att} åskådare har samlats för derbyt. Stämningen är elektrisk.`, `Det är derby — och ${att} har kommit för att se det. Som sig bör.`][Math.floor(rand() * 3)]
         } else if (att > 5000) {
