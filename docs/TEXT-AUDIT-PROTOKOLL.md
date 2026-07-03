@@ -16,39 +16,94 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
 "tre-fem-tvåa" står kvar som de är. Flaggas inte igen.
 
 ### CODE GÖR
-- **SPEC_REGELBOKSANPASSNING_2026-07-03.md** — M1 (förlängning 20 min),
-  M15 (utvisning 5/10 diskret), M16 (landslagsuttag 0–2, förtjänstmodell).
-  Del 0 först: domän 1-textcommiten separat.
+- **DOMÄN 2-BUGGAR M17–M25 (2026-07-03, anropskodsverifierade — detaljer
+  och rotorsaker i LOGG samma datum):**
+  · **M17** coffeeRoomService: soldItem-villkoret inkluderar
+    InboxItemType.TransferBidReceived (= inkommande BUD, inget är sålt) →
+    säljtexterna ("{name} lämnade", "Pengarna är inne") ljuger. Fix: ta bort
+    TransferBidReceived ur villkoret. Bonus: Transfer-storyitemet i
+    executeTransfer saknar relatedPlayerId → {name} faller alltid tillbaka
+    till "spelaren"; lägg till relatedPlayerId.
+  · **M18** grep skapare av InboxItemType.TransferOffer — skapas INTE i
+    transferService/aiTransferService/inboxService. TRANSFER_BUY_EXCHANGES
+    är då död eller feltriggad; rätt trigger för köptexterna är genomfört
+    köp (outgoing TransferBidResult accepted / executeTransfer).
+  · **M19** klackEchoService storstad_loss: `|| oppPos <= 2` släpper in
+    bruksklubbar i storstadspoolen ("bandyn vi inte har", "pendlade till
+    storstan"). Fix: enbart STORSTAD_SHORT_NAMES-medlemskap; verifiera
+    samtidigt att SBK/VBK/FBK/HBK matchar worldGenerators shortNames.
+  · **M20** stillnessService: (a) matchesContext ignorerar weather-fältet →
+    snö-/kyl-/mildbeats visas oavsett faktiskt väder; fix: weather in i
+    StillnessContext + matchning. (b) buildStillnessContext producerar
+    aldrig 'day_after' → day_after-taggade beats/micro är oåtkomliga
+    (byggt-men-osynligt → även BACKLOG-rad); fix: day_after när senaste
+    managed fixture spelades föregående matchday.
+  · **M21** C-T9-riktningen: executeAcceptedTransfers-momentet triggas på
+    outgoing-accepted (= VI KÖPER från rival) men har säljperspektiv
+    ("till fiendelaget" + PLAYER_REACTION_RIVAL_SALE, vars docstring säger
+    sålt-till-rival). Grep även lastRivalSaleMatchday-settern (gameStore?)
+    och verifiera att RIVAL_SALE_KAFFERUM/KLACK bara triggas när VI SÅLT
+    till rival — texterna är skrivna för det.
+  · **M22** anniversary-konsumenter: (a) ANNIVERSARY_KLACK (flat WON+LOST)
+    i matchCore — verifiera outcome-gating; utan den kan "VI MINNS GULDET"
+    visas för ett förlorat eko. (b) grep konsumenter av
+    pickAnniversaryKafferum/pickAnniversaryKlack/pickAnniversaryMarkCopy +
+    att {subject} resolvas (Fables nya pooler förutsätter det). (c)
+    verifiera watchOthers-kontexten: lost_to_finalist ⇒ motståndaren står
+    i finalen (Fables nya rad hävdar det).
+  · **M23 (låg)** EFTERKLANG followUp-echo antar brev, men pendingFollowUps
+    innehåller även nemesis_diary — verifiera mappningen. ECONOMIC_SCAR
+    natural_recovery-echot antar sponsororsak — verifiera krisorsakerna.
+  · **M24 (låg)** coffeeRoomService deadlineRound hårdkodad 13–15 —
+    verifiera mot transferWindowService.
+  · **M25 (låg)** rep_academy-strängen "LANDSLAGET tittar på oss!" — grep
+    reputationMilestone-eventet och verifiera att det faktiskt handlar om
+    landslaget, inte förbunds-/scoutuppmärksamhet.
+- **SPEC_REGELBOKSANPASSNING_2026-07-03.md — Del 1-3 KLARA (Code), Del 4
+  väntar på Fable.** M1 förlängning 20 min (`ad9f97a1`), M15 utvisning 5/10
+  diskret (`d7a0315a`), M16 landslagsuttag 0–2 förtjänstmodell (`2ce3b4d0`).
+  Kalibrering körd + dokumenterad i respektive commit (OT-proportion,
+  utvisningsminuter/match, callup-Monte-Carlo mot worldGenerator-tiers).
+  Grep-listor till Fables Del 4 finns i Del 1- och Del 2-commiten.
 - Commit domän 1: 73 rättade rader, 18 filer. Commit-order + regressions-
   grep i LOGG 2026-07-02 kväll (utvidga grep med: storknar, prickern,
   talent, underbara scener).
 - **M9** grep imports av injuryDoctorText — nås DIAGNOSIS_LINES för
   träningsskador? ("andra halvlek"-raden får bara visas för matchskador.)
-- **M12** comebackKing-triggern: injuryProneness (egenskap) → faktisk
-  skadehistorik denna säsong.
 - Stilnoter: seasonChampionYear()-helpern i seasonSummaryService (inline
   +1) · enum-jämförelse i attendance-isSnow (kodlukt, ej bugg).
 
 ### FABLE GÖR (efter Codes Del 1–2)
-- **Del 4 i regelboksspecen:** textbyte "10 minuter"/"30 minuter"/"120
-  minuter" mot {minuter}-token resp. nya förlängningsrader. Kort riktad
-  session, input = Codes grep-listor.
+- **Del 4 i regelboksspecen (Code klar, väntar på detta):** textbyte
+  "10 minuter"/"30 minuter"/"120 minuter" mot {minuter}-token resp. nya
+  förlängningsrader. Kort riktad session, input = de kuraterade grep-
+  listorna i commit `d7a0315a` (M15, inkl. supporterRituals.ts:52 och den
+  ej-kopplade context_shorthanded_surviving-poolen) och `ad9f97a1` (M1).
 
 ### VILANDE (låg prioritet)
 - **M14** "En av de största publiksiffrorna på länge" vid att>5000 —
   väntar på publikhistorik som token.
 
 ### NÄSTA AUDIT-PASS
-- **Domän 2** (orten/röster): FÄRSK session. Börja med anropsplatserna
-  (lärdom #4), grep/leta inline-pooler i services (fillistan missade
-  matchInjuryService i domän 1). Sen domän 3 (UI) och 4 (väder/övrigt).
+- **Domän 2b** (resten av orten/röster): FÄRSK session. Kvar:
+  specialDateStrings (14 KB) + specialDateService · hallProvningData
+  (HALL_ATMOSPHERE — läs matchCore-anropet först) · patronData +
+  patronEvents/patronTriggers + mecenatService-pooler (31 KB) ·
+  politicianData + politicianService/politicianEvents · functionaries +
+  functionaryQuoteService · communityNames · localEmployers.
+  Inline-pool-kandidater (fillisteläckage): postVictoryNarrativeService
+  (pendingVictoryEcho.coffeeLine konsumeras av kafferummet!),
+  supporterRituals, klackPresenter, insandareService, rumorService,
+  communityProcessor. Sen domän 3 (UI) och 4 (väder/övrigt).
 - text-guard-linten byggs av Code EFTER att alla fyra domäners termlista
   är slutjusterad.
 
 ### AVGJORT (referens, rör ej)
-- M1/M15/M16 BESLUTADE av Jacob 2026-07-03 (regelboksanpassa; landslags-
-  uttag 0–2) → spec: SPEC_REGELBOKSANPASSNING_2026-07-03.md. Flyttas hit
-  helt när Code committat + Fable kört Del 4.
+- **M1/M15/M16 — Codes del KLAR 2026-07-03** (`ad9f97a1`/`d7a0315a`/`2ce3b4d0`).
+  Flyttas hit helt (inkl. Del 4-raden i FABLE GÖR ovan) när Fable kört
+  textbytet — tills dess står de kvar i CODE GÖR/FABLE GÖR som pekare.
+- **M12** comebackKing-triggern (injuryProneness → faktisk skadehistorik
+  denna säsong) — KLAR, `baa190f4`.
 - M5–M7 godkända av Jacob 2026-07-03 — texterna står. (M7:s picker-
   verifiering utgår; Jacob godkände texten som den är.)
 - Register-ruling (2026-07-02): två register är kanon — WRITING_GUIDELINES #10.
@@ -471,3 +526,78 @@ MISSTANKAR — döm i kontext, luta konservativt:
   designbeslut hos Jacob (M1, M12, M15, M16), 3 smak hos Jacob (M5–M7),
   2 Code-grep (M9, M14) · 4 metodlärdomar inskrivna · 5 falskpositiver
   undvikna via källverifiering.
+
+- 2026-07-03 (dag): DOMÄN 2a KLAR — kafferum/klack/anniversary/stillness/
+  spectator/efterklang-klustren. Läsordning per lärdom #4: anropskod före
+  pool (transferService, transferProcessor, inboxService, supporterService,
+  volunteerService, clubMemoryService + builders, klackEchoService,
+  stillnessService, playoffService lästa före dömning). Kvarvarande filer
+  → Domän 2b (se NÄSTA AUDIT-PASS).
+
+  RÄTTAT (≈55 rader, 13 filer):
+  · coffeeRoomService (7): "Sargen på kortsidan" → "En av sargbitarna"
+    (bandysargen löper längs långsidorna) · "lägger på för någon" → "lagt
+    bud på någon" · draw-poolens "Kryss igen" → "Kryss." (L#9: första
+    krysset) · "{KLUBB} ska skolas av kommunen" → "räddas" (typo; svaret
+    om mark att sälja hänger nu ihop) · hårdkodad "Kom igen nu, Sture" →
+    ${veteran} (veteranen heter ALDRIG Sture — Sture är leader-pool) ·
+    "Det var fin" → "Den var fin" · volunteer-speaker-overriden BORTTAGEN:
+    slumpat volontärsnamn fick rollskrivna repliker medan svaret i samma
+    sträng behöll rollnamnet (röstbrott); talare = alltid rollen, kommentar
+    i koden. Vill Jacob ha volontärer i kafferummet → egen pool (BACKLOG-idé).
+  · klackEchoText (17): "rinken" → "planen" · "Två tusen som inte ville se
+    andra halvlek" → "Halva läktaren" (kapacitet ≈200–700, två tusen
+    omöjligt) · "fika-rummet" → "kafferummet" + "väggar är samma" →
+    "desamma" · "storsegern" → "Segern" (top_team_win garanterar ingen
+    marginal) · alla precisa veckoräkningar ("Två/Tre veckor sedan X")
+    avpreciserade i både bas- och cause-poolen — visningsfönstret (delta
+    1–4 omg / decay) garanterar inte antalet och kalenderdatum syns i
+    spelet; cause-referensen behållen i varje rad · smågrammatik ("om och
+    om igen", "i den här veckan").
+  · anniversaryKafferumText (strukturell omskrivning): pickAnniversary-
+    Kafferum är nu typ-/subject-medveten — guldspråk enbart sm_final won,
+    generisk segerpool för derby/storseger/cup, finalförlustraden enbart
+    finaler, "Han som la av" enbart retirement, personpool kräver subject,
+    generisk neutralpool för skandal/serieetta. Rotorsak i filkommentar:
+    alla won-ekon fick guldspråk, alla neutrala fick pensioneringsspråk
+    med {subject} som läckte oresolverad för serieettan.
+  · anniversaryKlackText + anniversaryMarkText: ny SEASON_TOP-pool för
+    big-neutralt eko UTAN subject (= serieettan, sig 100, enda fallet) —
+    tidigare fick mästerskapsekot pensioneringstext med oresolverad
+    {subject}-token. WON_MARKS orörda (big+won = enbart sm_final →
+    guldspråket är KORREKT där). LOST_MARKS är död pool (inget lost-event
+    når sig ≥90) — lämnad, se M22c.
+  · anniversaryMemoryRowText: neutral-detail "värt att minnas" (fel för
+    skandaleko) → "Samma vecka som detta hände, ett annat år."
+  · spectatorMarkText: "Åttondeplats blev åttondeplats" → "Slutspels-
+    strecket låg där det låg" (8:an GÅR till slutspel — topp 8 av 12;
+    "slutspelsstrecket" utskrivet per M10-rulingen).
+  · spectatorPrimaryText (2): "Nu hinns det granska" → "Nu finns tiden att
+    granska" · trupp-poolens "Inga skador, ingen kris" → "Slutspelet är
+    inte vårt." (L#9: noll skador ej garanterat när fokus väljs).
+  · smallAbsurditiesData (3): "Hörndomaren" → "Domaren" (rollen finns inte
+    i bandy) · pizza-utbytets "Och dom var i Söderfors?" → "i Gagnef?"
+    (bortaresa ≠ hemma i Söderfors) · Vänersborg ×2 → Slottsbron
+    (förbjuden riktig klubb i klubbroll).
+  · stillnessMicroPool: "runt rinken" → "runt planen".
+  · efterklangText: anniversary-echot "Ett år sedan i dag. Samma
+    motstånd..." → "Samma vecka, ett annat år..." + "Ni stod här då
+    också..." (eko kan vara 1–5 år; motståndaren är inte samma).
+  · watchOthersReflectionText: "två matcher från pokalen" → "står i
+    finalen" (finalen är EN match på neutral arena; semi bäst-av-5).
+
+  GODKÄNT: ANNIVERSARY_KAFFERUM (4-tuplerna) · RIVAL_SALE_KAFFERUM,
+  RIVAL_SALE_KLACK, INCOMING_BID_KAFFERUM (texterna; triggrarna → M21) ·
+  stillnessText-beats och stillnessMicroPool i övrigt · spectatorMarkText
+  i övrigt · klackEchoService derby-logik · "Åtta lag spelade slutspel"
+  (verifierat: topp 8 av 12, playoffService).
+
+  METODNOTIS: workspace-MCP saknar content-grep — anropsverifiering kräver
+  riktad filläsning eller Code-grep (därav M17–M25 som grep-ordrar där
+  konsumenten inte kunde nås, t.ex. gameStore 45 KB, matchCore 109 KB).
+  edit_file är atomisk: en missad oldText rullar tillbaka HELA anropet —
+  läs filen omedelbart före redigering.
+
+  LÄGE: Domän 2a komplett. M17–M25 hos Code (grep + logikfixar).
+  Jacob-smak öppen: volontärer i kafferummet som egen pool (BACKLOG-idé),
+  M22c (död LOST_MARKS-pool). NÄSTA: Domän 2b i FÄRSK session.
