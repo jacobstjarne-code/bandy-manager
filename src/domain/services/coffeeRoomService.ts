@@ -9,6 +9,7 @@ import { ANNIVERSARY_KAFFERUM } from '../data/anniversaryKafferumText'
 import { ANTICIPATION_KAFFERUM } from '../data/anticipationKafferumText'
 import { getFatigueState } from './decisionFatigueService'
 import { getUpcomingAnchor } from './calendarLookahead'
+import { TRANSFER_DEADLINE_ROUND } from './portal/triggers/transferTriggers'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -252,7 +253,9 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     if (!boughtItem && item.type === InboxItemType.TransferBidResult && item.id.startsWith('inbox_bid_accepted_') && !item.isRead) boughtItem = item
     if (soldItem && boughtItem) break
   }
-  const deadlineRound = round >= 13 && round <= 15
+  // M24 (textaudit 2026-07-03): 13/15 var dubblerade magiska tal — refererar
+  // nu samma konstant som transferTriggers.ts:s deadline-logik.
+  const deadlineRound = round >= TRANSFER_DEADLINE_ROUND - 2 && round <= TRANSFER_DEADLINE_ROUND
 
   // Detect form streak (last 3 managed league matches)
   const recentManaged = game.fixtures
