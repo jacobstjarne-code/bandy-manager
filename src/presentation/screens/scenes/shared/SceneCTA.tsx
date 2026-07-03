@@ -32,8 +32,8 @@ export function SceneCTA({ label, onClick, variant = 'default' }: Props) {
           letterSpacing: 1.5,
           textTransform: 'uppercase',
           boxShadow: hover
-            ? '0 6px 30px rgba(212,164,96,0.45)'
-            : '0 4px 24px rgba(212,164,96,0.30)',
+            ? '0 6px 30px color-mix(in srgb, var(--match-gold) 45%, transparent)'
+            : '0 4px 24px color-mix(in srgb, var(--match-gold) 30%, transparent)',
           cursor: 'pointer',
           fontFamily: 'var(--font-body)',
           transition: 'box-shadow 0.2s ease, transform 0.15s ease',

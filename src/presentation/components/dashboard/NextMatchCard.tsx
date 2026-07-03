@@ -120,15 +120,15 @@ export function NextMatchCard({
 
   // ── Card border & tint per variant (playoff uses primary-card CSS class) ──
   const cardStyle: React.CSSProperties = isFinal
-    ? { border: '2px solid rgba(196,168,76,0.5)', background: 'rgba(196,168,76,0.06)', boxShadow: '0 0 20px rgba(196,168,76,0.10)' }
+    ? { border: '2px solid color-mix(in srgb, var(--match-gold) 50%, transparent)', background: 'color-mix(in srgb, var(--match-gold) 6%, transparent)', boxShadow: '0 0 20px color-mix(in srgb, var(--match-gold) 10%, transparent)' }
     : isPlayoff
     ? {}
     : derbyIntense
-    ? { border: '1.5px solid rgba(196,80,50,0.30)', background: 'rgba(196,80,50,0.03)' }
+    ? { border: '1.5px solid color-mix(in srgb, var(--match-warn) 30%, transparent)', background: 'color-mix(in srgb, var(--match-warn) 3%, transparent)' }
     : isDerby
     ? { border: '1.5px solid color-mix(in srgb, var(--accent) 30%, transparent)', background: 'color-mix(in srgb, var(--accent) 3%, transparent)' }
     : isAnnandagen
-    ? { border: '1.5px solid rgba(100,140,80,0.25)', background: 'rgba(100,140,80,0.03)' }
+    ? { border: '1.5px solid color-mix(in srgb, var(--match-positive) 25%, transparent)', background: 'color-mix(in srgb, var(--match-positive) 3%, transparent)' }
     : isCup
     ? { border: '1.5px solid color-mix(in srgb, var(--accent) 30%, transparent)', background: 'color-mix(in srgb, var(--accent) 3%, transparent)' }
     : { border: '1px solid var(--border)', background: 'var(--bg-surface)' }
@@ -156,12 +156,12 @@ export function NextMatchCard({
     headerIcon = '🏆'
     headerLabel = 'SM-FINAL'
     headerTagText = 'Studenternas IP'
-    headerTagStyle = { background: 'rgba(196,168,76,0.2)', color: 'var(--match-gold)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,168,76,0.3)' }
+    headerTagStyle = { background: 'color-mix(in srgb, var(--match-gold) 20%, transparent)', color: 'var(--match-gold)', fontSize: 8, padding: '2px 7px', border: '1px solid color-mix(in srgb, var(--match-gold) 30%, transparent)' }
   } else if (isPlayoff && playoffSeries) {
     headerIcon = '⚔️'
     headerLabel = getPlayoffLabel(playoffSeries.round)
     headerTagText = 'TOPP 8'
-    headerTagStyle = { background: 'rgba(196,168,76,0.15)', color: 'var(--match-gold)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,168,76,0.25)' }
+    headerTagStyle = { background: 'color-mix(in srgb, var(--match-gold) 15%, transparent)', color: 'var(--match-gold)', fontSize: 8, padding: '2px 7px', border: '1px solid color-mix(in srgb, var(--match-gold) 25%, transparent)' }
   } else if (isCup) {
     const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
     const roundLabel = cupMatch ? getCupRoundLabel(cupMatch.round) : 'Cup'
@@ -173,12 +173,12 @@ export function NextMatchCard({
     headerIcon = derbyIntense ? '🔥' : '⚔️'
     headerLabel = 'Nästa match'
     headerTagText = 'DERBY'
-    headerTagStyle = { background: 'rgba(196,80,50,0.2)', color: 'var(--match-warn)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,80,50,0.3)' }
+    headerTagStyle = { background: 'color-mix(in srgb, var(--match-warn) 20%, transparent)', color: 'var(--match-warn)', fontSize: 8, padding: '2px 7px', border: '1px solid color-mix(in srgb, var(--match-warn) 30%, transparent)' }
   } else if (isAnnandagen) {
     headerIcon = '🎄'
     headerLabel = 'Annandagsbandyn'
     headerTagText = '26 DEC'
-    headerTagStyle = { background: 'rgba(100,140,80,0.15)', color: 'var(--match-positive)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(100,140,80,0.25)' }
+    headerTagStyle = { background: 'color-mix(in srgb, var(--match-positive) 15%, transparent)', color: 'var(--match-positive)', fontSize: 8, padding: '2px 7px', border: '1px solid color-mix(in srgb, var(--match-positive) 25%, transparent)' }
   } else {
     // Normal: show home/away + round
     headerTagText = `${isHome ? 'HEMMA' : 'BORTA'} · Omg ${nextFixture.roundNumber}`

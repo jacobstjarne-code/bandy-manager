@@ -758,7 +758,7 @@ export function PlayerCard({
                     <span style={{ color: 'var(--text-secondary)', flex: 1 }}>
                       Mentoreras av <strong>{mentorName}</strong> · sedan omg {asAdept.startRound}
                     </span>
-                    <span className="tag" style={{ borderColor: isActive ? 'var(--success)' : 'var(--ice)', color: isActive ? 'var(--success)' : 'var(--ice)', fontSize: 9 }}>
+                    <span className={`tag ${isActive ? 'tag-green' : 'tag-ice'}`}>
                       {isActive ? 'Aktiv' : 'Vilar'}
                     </span>
                   </div>
@@ -786,7 +786,7 @@ export function PlayerCard({
                           <span style={{ color: 'var(--text-secondary)', flex: 1 }}>
                             Mentor åt <strong>{adeptName}</strong>
                           </span>
-                          <span className="tag" style={{ borderColor: isActive ? 'var(--success)' : 'var(--ice)', color: isActive ? 'var(--success)' : 'var(--ice)', fontSize: 9 }}>
+                          <span className={`tag ${isActive ? 'tag-green' : 'tag-ice'}`}>
                             {isActive ? 'Aktiv' : 'Vilar'}
                           </span>
                         </div>

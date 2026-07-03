@@ -228,7 +228,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
                         {mentor.firstName} {mentor.lastName} → {youthName}
                       </span>
                       <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>· sedan omg {m.startRound}</span>
-                      <span className="tag" style={{ borderColor: isActive ? 'var(--success)' : 'var(--ice)', color: isActive ? 'var(--success)' : 'var(--ice)', fontSize: 9 }}>
+                      <span className={`tag ${isActive ? 'tag-green' : 'tag-ice'}`}>
                         {isActive ? 'Aktiv' : 'Vilar'}
                       </span>
                     </div>

@@ -130,7 +130,7 @@ export function PlayoffBanner({ game, playoffInfo }: PlayoffBannerProps) {
       {playoffInfo.champion && (() => {
         const champ = game.clubs.find(c => c.id === playoffInfo.champion)
         return champ ? (
-          <div style={{ textAlign: 'center', marginTop: 10, padding: '8px', background: 'rgba(196,168,76,0.1)', borderRadius: 8, border: '1px solid rgba(196,168,76,0.3)' }}>
+          <div style={{ textAlign: 'center', marginTop: 10, padding: '8px', background: 'color-mix(in srgb, var(--match-gold) 10%, transparent)', borderRadius: 8, border: '1px solid color-mix(in srgb, var(--match-gold) 30%, transparent)' }}>
             <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>
               🥇 {champ.name} — Svenska Mästare!
             </p>

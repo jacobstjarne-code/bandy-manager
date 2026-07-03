@@ -13,13 +13,13 @@ const ATMOSPHERE_GRADIENTS: Record<SeasonSignatureId, string> = {
   cold_winter:
     'radial-gradient(ellipse at 30% 20%, rgba(74,102,128,0.10) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(74,102,128,0.08) 0%, transparent 60%)',
   scandal_season:
-    'radial-gradient(ellipse at 50% 30%, rgba(160,72,72,0.08) 0%, transparent 60%)',
+    'radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--danger) 8%, transparent) 0%, transparent 60%)',
   hot_transfer_market:
-    'radial-gradient(ellipse at 60% 40%, rgba(212,164,96,0.10) 0%, transparent 60%)',
+    'radial-gradient(ellipse at 60% 40%, color-mix(in srgb, var(--gold) 10%, transparent) 0%, transparent 60%)',
   injury_curve:
     'radial-gradient(ellipse at 40% 50%, rgba(184,136,76,0.06) 0%, transparent 70%)',
   dream_round:
-    'radial-gradient(ellipse at 50% 30%, rgba(212,164,96,0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 80%, rgba(184,136,76,0.08) 0%, transparent 60%)',
+    'radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--gold) 12%, transparent) 0%, transparent 50%), radial-gradient(ellipse at 50% 80%, rgba(184,136,76,0.08) 0%, transparent 60%)',
 }
 
 export function SeasonSignatureRevealScene({ game, onComplete }: Props) {
@@ -67,7 +67,7 @@ export function SeasonSignatureRevealScene({ game, onComplete }: Props) {
         opacity: 0.95,
         position: 'relative',
         zIndex: 1,
-        filter: 'drop-shadow(0 0 18px rgba(212,164,96,0.18))',
+        filter: 'drop-shadow(0 0 18px color-mix(in srgb, var(--gold) 18%, transparent))',
       }}>
         {data.emoji}
       </div>
