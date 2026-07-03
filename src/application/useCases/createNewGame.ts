@@ -73,6 +73,9 @@ function generatePatron(
   }
 }
 
+// M33 (textaudit 2026-07-03): V/MP/SD finns i POLITICIAN_PROFILES men saknar
+// vikt här — faller till den likformiga default-poolen nedan. Vilka agendor
+// de partierna ska vägas mot är en smakfråga för Jacob/Fable, inte en Code-gissning.
 const PARTY_AGENDA_WEIGHTS_CNG: Record<string, Array<'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'>> = {
   S:      ['youth', 'inclusion', 'youth', 'inclusion'],
   M:      ['savings', 'prestige', 'savings', 'prestige'],
@@ -90,9 +93,14 @@ const CAMPAIGN_PROMISES_CNG: Record<string, string[]> = {
   infrastructure: ['Bygg en modern idrottsanläggning senast 2028', 'Uppgradera kommunens sportinfrastruktur', 'Konstfryst is till alla utomhusanläggningar'],
 }
 
-function generatePolitician(rand: () => number): LocalPolitician {
+function generatePolitician(rand: () => number, currentSeason: number): LocalPolitician {
   const profile = pickRandom(POLITICIAN_PROFILES, rand)
-  const agendaPool = PARTY_AGENDA_WEIGHTS_CNG[profile.party] ?? ['youth', 'inclusion', 'prestige', 'savings', 'infrastructure']
+  // M33 (textaudit 2026-07-03): profile.party är parentiserat ("(S)") för visning
+  // i titeln, men PARTY_AGENDA_WEIGHTS_CNG är nyckelad på bara koden ("S") — lagrad
+  // party måste vara den strippade formen, annars matchar varken agendavikten här
+  // eller scandalService.ts:355 (som själv lägger på parenteser runt party-fältet).
+  const partyCode = profile.party.replace(/[()]/g, '')
+  const agendaPool = PARTY_AGENDA_WEIGHTS_CNG[partyCode] ?? ['youth', 'inclusion', 'prestige', 'savings', 'infrastructure']
   const agenda = agendaPool[Math.floor(rand() * agendaPool.length)] as 'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'
   const generosity = agenda === 'savings'
     ? Math.round(20 + rand() * 20)
@@ -102,13 +110,16 @@ function generatePolitician(rand: () => number): LocalPolitician {
   const promisePool = CAMPAIGN_PROMISES_CNG[agenda] ?? []
   return {
     name: `${profile.first} ${profile.last}`,
-    title: `${profile.title} ${profile.party}`,
-    party: profile.party,
+    title: `${profile.title} (${partyCode})`,
+    party: partyCode,
     agenda,
     relationship: 50,
     kommunBidrag: 50000 + Math.round(rand() * 100000),
     generosity,
-    mandatExpires: (new Date().getFullYear()) + 4,
+    // M33: new Date().getFullYear() bröt determinismen (samma seed gav olika
+    // mandatExpires beroende på VILKET ÅR SPELET KÖRDES) — säsongsbaserat som
+    // politicianService.ts:s ersättningsgenerator.
+    mandatExpires: currentSeason + 4,
     corruption: Math.round(rand() * 60),
     campaignPromise: promisePool[Math.floor(rand() * promisePool.length)],
     personalInterest: interests[Math.floor(rand() * interests.length)],
@@ -273,7 +284,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const journalist = createJournalist(localPaperName, rand)
   const initialMecenater = rand() < 0.5 ? [generateMecenat(input.clubId, input.season ?? 2025, rand)] : []
   const patron = generatePatron(managedClub.reputation, managedPlayers, rand)
-  const localPolitician = generatePolitician(rand)
+  const localPolitician = generatePolitician(rand, input.season ?? 2025)
   const board = generateBoardMembers(input.clubId, rand)
 
   const communityActivities: CommunityActivities = {

@@ -1,5 +1,6 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
+import { TacticMentality } from '../../enums'
 import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS, PATRON_PROFILES } from '../../data/patronData'
 
 export function generatePatronEvents(
@@ -100,8 +101,14 @@ export function generatePatronEvents(
     }
 
     // Patron style complaint — round 11–13, wantsStyle set, happiness 30–70
+    // M28 (textaudit 2026-07-03): PATRON_STYLE_COMPLAINTS klagar uteslutande
+    // på för defensivt spel ("Vi spelar för defensivt", "Jag saknar
+    // anfallsbandyn") — orimligt om laget redan spelar offensivt. Gatead på
+    // att den faktiska taktiken inte redan är offensiv.
+    const managedClubTactic = game.clubs.find(c => c.id === game.managedClubId)?.activeTactic
     if (
       patron.wantsStyle &&
+      managedClubTactic?.mentality !== TacticMentality.Offensive &&
       currentRound >= 11 && currentRound <= 13 &&
       (patron.happiness ?? 50) >= 30 && (patron.happiness ?? 50) <= 70
     ) {

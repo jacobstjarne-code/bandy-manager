@@ -1,5 +1,6 @@
 import type { Mecenat, MecenatType, MecenatPersonality, SocialEvent } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
+import { TacticMentality } from '../enums'
 
 // ── Region-based business templates ─────────────────────────────────────
 
@@ -373,6 +374,7 @@ export function generateSilentShoutEvent(
   mecenat: Mecenat,
   playerName: string | undefined,
   rand: () => number,
+  tacticMentality?: TacticMentality,
 ): GameEvent | null {
   const ss = mecenat.silentShout
 
@@ -418,7 +420,9 @@ export function generateSilentShoutEvent(
   }
 
   // 70+: Tactic pressure
-  if (ss >= 70 && ss < 90 && rand() < 0.15) {
+  // M28 (textaudit 2026-07-03): "Vi spelar för defensivt" är fast text
+  // oavsett vald taktik — gated på att laget inte redan spelar offensivt.
+  if (ss >= 70 && ss < 90 && tacticMentality !== TacticMentality.Offensive && rand() < 0.15) {
     return {
       id: `event_shout_tactic_${mecenat.id}_${Date.now()}`,
       type: 'mecenatEvent',

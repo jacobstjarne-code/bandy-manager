@@ -389,10 +389,11 @@ export function generatePostAdvanceEvents(
   if (events.length >= 2) return events
 
   // 5j. Silent shout events (mecenat influence thresholds)
+  const silentShoutTactic = game.clubs.find(c => c.id === game.managedClubId)?.activeTactic
   for (const mec of game.mecenater ?? []) {
     if (events.length >= 2) break
     if (!mec.isActive || mec.silentShout < 30) continue
-    const shoutEvent = generateSilentShoutEvent(mec, undefined, rand)
+    const shoutEvent = generateSilentShoutEvent(mec, undefined, rand, silentShoutTactic?.mentality)
     if (shoutEvent && !alreadyQueued.has(shoutEvent.id)) {
       events.push(shoutEvent)
     }

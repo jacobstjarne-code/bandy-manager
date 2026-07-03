@@ -50,7 +50,8 @@ export function generatePoliticianEvents(
               id: 'promise',
               label: 'Lova prioritera juniorverksamhet',
               subtitle: '🤝 +10 relation · politikern nöjd',
-              effect: { type: 'politicianRelationship', amount: 15 },
+              // M29 (textaudit 2026-07-03): effekten var +15, subtitlen lovade +10 — synkad mot subtitlen.
+              effect: { type: 'politicianRelationship', amount: 10 },
             },
             {
               id: 'decline',
@@ -86,7 +87,9 @@ export function generatePoliticianEvents(
               id: 'pushback',
               label: 'Ifrågasätt nedskärningarna',
               subtitle: '🤝 -5 relation',
-              effect: { type: 'kommunBidragChange', amount: -3000 },
+              // M29 (textaudit 2026-07-03): effekten ändrade bara kommunbidraget, subtitlen
+              // lovade en relationsförändring som aldrig skedde — synkad mot subtitlen.
+              effect: { type: 'politicianRelationship', amount: -5 },
             },
           ],
           resolved: false,
@@ -110,13 +113,19 @@ export function generatePoliticianEvents(
               id: 'welcome',
               label: 'Välkomna kommunens engagemang',
               subtitle: '🤝 +12 relation · ⭐ +5 reputation',
-              effect: { type: 'kommunBidragChange', amount: 8000 },
+              // M29 (textaudit 2026-07-03): effekten ändrade bara kommunbidraget (nämns inte
+              // i subtitlen) och gav varken relation eller reputation — synkad mot subtitlen.
+              effect: { type: 'multiEffect', subEffects: JSON.stringify([
+                { type: 'politicianRelationship', amount: 12 },
+                { type: 'reputation', amount: 5 },
+              ]) },
             },
             {
               id: 'independent',
               label: 'Behåll föreningens självständighet',
               subtitle: '🤝 -5 relation',
-              effect: { type: 'politicianRelationship', amount: -8 },
+              // M29 (textaudit 2026-07-03): effekten var -8, subtitlen lovade -5 — synkad mot subtitlen.
+              effect: { type: 'politicianRelationship', amount: -5 },
             },
           ],
           resolved: false,
@@ -190,7 +199,9 @@ export function generatePoliticianEvents(
               id: 'invite',
               label: 'Bjud in politikern till en match',
               subtitle: '🤝 +5-10 relation',
-              effect: { type: 'politicianRelationship', amount: 20 },
+              // M29 (textaudit 2026-07-03): effekten var +20, dubbelt så mycket som subtitlens
+              // övre gräns lovade — satt till intervallets topp (10).
+              effect: { type: 'politicianRelationship', amount: 10 },
             },
             {
               id: 'open_letter',

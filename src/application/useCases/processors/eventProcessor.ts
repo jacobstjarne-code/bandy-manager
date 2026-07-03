@@ -137,7 +137,8 @@ export function processGameEvents(
     if (mec.happiness < 30 || mec.silentShout >= 30) {
       const randomPlayer = game.players.find(p => p.clubId === game.managedClubId)
       const playerName = randomPlayer ? `${randomPlayer.firstName} ${randomPlayer.lastName}` : undefined
-      const shoutEvent = generateSilentShoutEvent(mec, playerName, localRand)
+      const managedTactic = game.clubs.find(c => c.id === game.managedClubId)?.activeTactic
+      const shoutEvent = generateSilentShoutEvent(mec, playerName, localRand, managedTactic?.mentality)
       if (shoutEvent) {
         gameEvents.push(shoutEvent)
       }

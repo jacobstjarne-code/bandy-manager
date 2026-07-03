@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { FUNCTIONARY_TEMPLATES } from '../data/functionaries'
 import { getFunctionaryPhase } from '../data/seasonPhases'
+import { nextManagedFixture } from './situationFragments'
 
 export interface FunctionaryQuote {
   name: string
@@ -30,11 +31,17 @@ export function getFunctionaryQuote(
     const isHome = lastFixture.homeClubId === game.managedClubId
     const myScore = isHome ? (lastFixture.homeScore ?? 0) : (lastFixture.awayScore ?? 0)
     const theirScore = isHome ? (lastFixture.awayScore ?? 0) : (lastFixture.homeScore ?? 0)
-    const oppId = isHome ? lastFixture.awayClubId : lastFixture.homeClubId
-    const isRival = !!(game.rivalryHistory?.[oppId])
-    if (isRival) condition = 'derby'
-    else if (myScore > theirScore) condition = 'afterWin'
+    if (myScore > theirScore) condition = 'afterWin'
     else if (myScore < theirScore) condition = 'afterLoss'
+  }
+  // M30 (textaudit 2026-07-03): derby-repliker ("Hela byn är på läktaren",
+  // "Orten vaknar till liv inför derbyt") är förberedande hype och ska visas
+  // FÖRE ett kommande derby — tidigare kollades lastFixture (redan spelad),
+  // så repliken kunde dyka upp EFTER matchen och äta win/loss-reaktionen.
+  const upcoming = nextManagedFixture(game)
+  if (upcoming) {
+    const upcomingOppId = upcoming.homeClubId === game.managedClubId ? upcoming.awayClubId : upcoming.homeClubId
+    if (game.rivalryHistory?.[upcomingOppId]) condition = 'derby'
   }
   if (!condition && (managedClub?.finances ?? 0) < 0) condition = 'lowFinances'
 

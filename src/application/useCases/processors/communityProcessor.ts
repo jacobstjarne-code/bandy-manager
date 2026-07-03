@@ -156,7 +156,9 @@ export function processCommunity(
         date: game.currentDate,
         type: InboxItemType.KommunBidrag,
         title: `Kommunbidraget ${direction}`,
-        body: `Kommunen har ${direction} bidraget till klubben (${diffStr} kr/månad). Nytt bidrag: ${pol.kommunBidrag} kr.`,
+        // M34 (textaudit 2026-07-03): kommunBidrag betalas ut en gång per säsong
+        // (economyService.ts: "once at round 1") — inte månadsvis.
+        body: `Kommunen har ${direction} bidraget till klubben (${diffStr} kr/säsong). Nytt bidrag: ${pol.kommunBidrag} kr.`,
         isRead: false,
       } as InboxItem)
     }
@@ -214,7 +216,9 @@ export function processCommunity(
           date: game.currentDate,
           type: InboxItemType.PatronInfluence,
           title: `Ny mecenat: ${mec.name}`,
-          body: `${mec.name} (${mec.business}) vill stötta klubben ekonomiskt. Bidrag: ${mec.contribution} kr/månad.`,
+          // M34 (textaudit 2026-07-03): mec.contribution läggs till totalContributed
+          // en gång per säsong (updateSilentShout) — inte månadsvis.
+          body: `${mec.name} (${mec.business}) vill stötta klubben ekonomiskt. Bidrag: ${mec.contribution} kr/säsong.`,
           isRead: false,
         } as InboxItem)
       }

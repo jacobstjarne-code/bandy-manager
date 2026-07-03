@@ -2,6 +2,7 @@ import type { LocalPolitician, MediaProfile, PersonalInterest } from '../entitie
 import type { Club } from '../entities/Club'
 import type { SaveGame } from '../entities/SaveGame'
 import { mulberry32 } from '../utils/random'
+import { POLITICIAN_PROFILES } from '../data/politicianData'
 
 export function calculateKommunBidrag(
   politician: LocalPolitician,
@@ -24,6 +25,9 @@ export function calculateKommunBidrag(
 }
 
 // Parti → typiska agendor (duplicerat = dubbel sannolikhet)
+// M33 (textaudit 2026-07-03): V/MP/SD finns i POLITICIAN_PROFILES men saknar
+// vikt här — faller till den likformiga default-poolen nedan. Vilka agendor
+// de partierna ska vägas mot är en smakfråga för Jacob/Fable, inte en Code-gissning.
 const PARTY_AGENDA_WEIGHTS: Record<string, Array<'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'>> = {
   S:      ['youth', 'inclusion', 'youth', 'inclusion'],
   M:      ['savings', 'prestige', 'savings', 'prestige'],
@@ -44,17 +48,16 @@ const CAMPAIGN_PROMISES: Record<string, string[]> = {
 
 export function generateNewPolitician(seed: number, currentSeason: number): LocalPolitician {
   const rand = mulberry32(seed)
-  const parties: Array<'S' | 'M' | 'C' | 'L' | 'KD' | 'lokalt'> = ['S', 'M', 'C', 'L', 'KD', 'lokalt']
-  const names = [
-    'Anna Lindgren', 'Erik Svensson', 'Maria Johansson', 'Lars Karlsson',
-    'Karin Nilsson', 'Per Andersson', 'Helena Berg', 'Magnus Eriksson',
-    'Birgitta Holm', 'Stefan Gustafsson', 'Lena Persson', 'Björn Olsson',
-  ]
   const mediaProfiles: MediaProfile[] = ['tystlåten', 'utåtriktad', 'populist']
   const interests: PersonalInterest[] = ['bandy', 'fotboll', 'kultur', 'ingenting']
 
-  const name = names[Math.floor(rand() * names.length)]
-  const party = parties[Math.floor(rand() * parties.length)]
+  // M33 (textaudit 2026-07-03): drog tidigare ur en egen, separat namnlista
+  // och satte alltid titeln 'Kommunalråd' — POLITICIAN_PROFILES (samma pool
+  // som spelets FÖRSTA politiker) ger rikare titlar och partier (inkl. V/MP/SD).
+  const profile = POLITICIAN_PROFILES[Math.floor(rand() * POLITICIAN_PROFILES.length)]
+  const name = `${profile.first} ${profile.last}`
+  const title = profile.title
+  const party = profile.party.replace(/[()]/g, '')
 
   // Parti-vägd agenda
   const agendaPool = PARTY_AGENDA_WEIGHTS[party] ?? ['youth', 'inclusion', 'prestige', 'savings', 'infrastructure']
@@ -71,7 +74,7 @@ export function generateNewPolitician(seed: number, currentSeason: number): Loca
 
   return {
     name,
-    title: 'Kommunalråd',
+    title,
     party,
     agenda,
     relationship: 40,
