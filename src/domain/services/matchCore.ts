@@ -1880,12 +1880,14 @@ function* simulateMatchCore(
     shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'overtime',
   }
 
-  // 20 overtime steps
-  const otGoalMod     = weatherGoalMod * profileGoalMod * 0.85
+  // 13 overtime steps (M1, regelboksanpassning 2026-07-03: 2×10 min = 19,5 min ≈ 20 min, ej 30)
+  // otGoalMod omkalibrerad (0.85→1.3): kortare loop gav färre chanser till FL-avgörande;
+  // höjd för att hålla FL-avgörande-andelen mot tidigare proportion (se commit).
+  const otGoalMod     = weatherGoalMod * profileGoalMod * 1.3
   const otHomeAttack  = homeAttack * 1.15
   const otAwayAttack  = awayAttack * 1.15
 
-  for (let step = 62; step < 82; step++) {
+  for (let step = 62; step < 75; step++) {
     const minute     = 91 + Math.round((step - 62) * 1.5)
     const stepEvents: MatchEvent[] = []
     const hPF        = homeActiveSuspensions > 0 ? 0.75 : 1.0
@@ -1932,8 +1934,8 @@ function* simulateMatchCore(
       otCommentary = otGoalScored ? otScoreStr : ''
     } else if (otGoalScored && otScorerPlayerId) {
       otCommentary = fillTemplate(pickCommentary(commentary.overtimeGoal, rand, commentaryHistory), { player: findPlayerName(otScorerPlayerId), score: otScoreStr, team: attackTeam, opponent: '', minute: String(minute), goalkeeper: '', rivalry: '', result: '' })
-    } else if (step === 81) {
-      otCommentary = fillTemplate(pickCommentary(commentary.overtimeEnd, rand, commentaryHistory), { score: otScoreStr, team: '', opponent: '', minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+    } else if (step === 74) {
+      otCommentary = fillTemplate(pickCommentary(commentary.overtimeEnd, rand, commentaryHistory), { score: otScoreStr, team: '', opponent: '', minute: '110', player: '', goalkeeper: '', rivalry: '', result: '' })
     } else {
       otCommentary = fillTemplate(pickCommentary(commentary.overtimeNoGoal, rand, commentaryHistory), { team: attackTeam, opponent: '', score: otScoreStr, minute: String(minute), player: '', goalkeeper: '', rivalry: '', result: '' })
     }
@@ -1949,7 +1951,7 @@ function* simulateMatchCore(
 
     if (otGoalScored) {
       yield {
-        step: 82, minute: 120, events: [], homeScore, awayScore,
+        step: 75, minute: 110, events: [], homeScore, awayScore,
         commentary: `Matchen är avgjord i förlängningen! ${homeScore}–${awayScore}.`,
         intensity: 'high',
         activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
@@ -1968,7 +1970,7 @@ function* simulateMatchCore(
   )
 
   yield {
-    step: 83, minute: 120, events: [], homeScore, awayScore,
+    step: 76, minute: 110, events: [], homeScore, awayScore,
     commentary: isFast ? 'Straffar' : pickCommentary(commentary.penaltyStart, rand, commentaryHistory),
     intensity: 'high',
     activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
@@ -1985,13 +1987,13 @@ function* simulateMatchCore(
       ? `${runningHome}-${runningAway}`
       : isLastRound
         ? (runningHome > runningAway
-          ? fillTemplate(pickCommentary(commentary.penaltyWinHome, rand, commentaryHistory), { team: homeTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: awayTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
-          : fillTemplate(pickCommentary(commentary.penaltyWinAway, rand, commentaryHistory), { team: awayTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: homeTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+          ? fillTemplate(pickCommentary(commentary.penaltyWinHome, rand, commentaryHistory), { team: homeTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: awayTeamRef, minute: '110', player: '', goalkeeper: '', rivalry: '', result: '' })
+          : fillTemplate(pickCommentary(commentary.penaltyWinAway, rand, commentaryHistory), { team: awayTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: homeTeamRef, minute: '110', player: '', goalkeeper: '', rivalry: '', result: '' })
         )
         : `Omgång ${penRound.round}: ${penRound.homeShooterName} ${penRound.homeScored ? '✅' : '❌'} · ${penRound.awayShooterName} ${penRound.awayScored ? '✅' : '❌'} — Straffar: ${runningHome}-${runningAway}`
 
     yield {
-      step: 84 + penRound.round - 1, minute: 120, events: [], homeScore, awayScore,
+      step: 77 + penRound.round - 1, minute: 110, events: [], homeScore, awayScore,
       commentary: penCommentary,
       intensity: isLastRound ? 'high' : 'medium',
       activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
