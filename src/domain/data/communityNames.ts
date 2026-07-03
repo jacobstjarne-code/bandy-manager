@@ -7,7 +7,7 @@ export const VOLUNTEER_FIRST_NAMES = [
   'Dagny', 'Åke', 'Elsa', 'Per-Olof', 'Hjördis',
   'Rolle', 'Berit', 'Hasse', 'Märta', 'Gunnar',
   'Lasse', 'Annika', 'Bosse', 'Carina', 'Tommy',
-  'Monica', 'Jansen', 'Ulla', 'Chransen', 'Kerstin',
+  'Monica', 'Sune', 'Ulla', 'Christer', 'Kerstin',
 ]
 
 export const LOCAL_PAPER_NAMES = [
@@ -41,7 +41,7 @@ export const KIOSK_FLAVORS = [
   'Kvällens bästa kommentar: "Eran kaffe är bättre än Pressbyrån."',
   'Det blev korvfest — {name} grillmästare som vanligt.',
   '{name2} fixade en ny termoskanna. Kapaciteten dubblades.',
-  '{name} räknade: 312 kr i enöringar i kassan. Tålamod.',
+  '{name} räknade: 312 kr i enkronor i kassan. Tålamod.',
   'Kylan bet i kinderna men korven var varm. Tack {name}.',
 ]
 
@@ -80,6 +80,6 @@ export const EVENT_FLAVORS = [
   '{name} byggde en liten isbana för barnen bredvid planen.',
   'Hembygdsföreningen ställde upp med tält. Samarbete fungerar.',
   'En fd spelare dök upp och signerade autografer. Kö runt hörnet.',
-  '{name2} stekta 14 kilo köttbullar. Allt gick åt.',
+  '{name2} stekte 14 kilo köttbullar. Allt gick åt.',
   'Lokaltidningen skickade en fotograf. Vi hamnade på löpsedeln.',
 ]

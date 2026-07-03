@@ -8,6 +8,10 @@ const FEMALE_FIRST_NAMES = new Set([
   'Malin', 'Elin', 'Sofia', 'Johanna', 'Katarina', 'Helena', 'Susanne',
   'Monica', 'Gunilla', 'Carina', 'Åsa', 'Marie', 'Ulrika', 'Jenny',
   'Camilla', 'Hanna', 'Cecilia', 'Louise', 'Therese', 'Sandra',
+  // Textaudit domän 2b (2026-07-03): bindestrecksnamn — Eva-Britt (politikerpoolen)
+  // fick 'Han' eftersom split(' ')[0] ger hela bindestrecksnamnet.
+  'Eva-Britt', 'Eva-Lena', 'Britt-Marie', 'Maj-Britt', 'Inga-Lill', 'Anne-Marie',
+  'Ann-Christin', 'Gun-Britt',
 ])
 
 function getPronouns(name: string) {

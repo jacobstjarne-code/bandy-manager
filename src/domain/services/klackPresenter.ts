@@ -71,7 +71,7 @@ function pickQuote(
       : lose
       ? [
           'Jag var där senast det var så här. Det vände. Det vänder igen.',
-          'Sture kom inte till matchen. Det säger allt om stämningen just nu.',
+          'Gamle Sigge kom inte till matchen. Det säger allt om stämningen just nu.',
           'Planen är tyst. Men vi kommer tillbaka. Vi har gjort det förut.',
         ]
       : sad
@@ -82,7 +82,7 @@ function pickQuote(
       : happy
       ? [
           'Det är därför vi åker dit match efter match. Just för det här.',
-          'Målburen behöver pinor. Jag har glas kvar hemma — kan göra en ny tifo till derbyt.',
+          'Jag har tyg kvar hemma sen förra fanan. Det kan bli en ny tifo till derbyt.',
         ]
       : [
           'Vi är inte nöjda, men vi är inte heller klara. Inte på långa vägar.',
@@ -93,17 +93,17 @@ function pickQuote(
     youth: win
       ? [
           'Det är alltså SÅ här det känns. Okej. Jag förstår nu varför folk aldrig slutar.',
-          'Jag målade en ny banderoll inatt. Elin sa det var för rött. Men det syns.',
+          'Jag målade en ny banderoll inatt. Gunvor sa det var för rött. Men det syns.',
         ]
       : lose
       ? [
           'Min kompis slutade komma. Jag förstår honom inte. Det här är ju det bästa.',
-          'Det här är min första kris som supportar. Elin säger att man inte glömmer den.',
+          'Det här är min första kris som supportar. Gunvor säger att man inte glömmer den.',
         ]
       : [
-          'Jag målar banderollerna. Elin tycker färgen suger men hon lär mig.',
+          'Jag målar banderollerna. Gunvor tycker färgen suger men hon lär mig.',
           'Nästa derby gör jag något som man kan se från planen.',
-          'Jag frågade Elin hur man sydde en fana. Hon visade mig utan att fråga varför.',
+          'Jag frågade Gunvor hur man sydde en fana. Hon visade mig utan att fråga varför.',
         ],
 
     leader: win
@@ -117,9 +117,9 @@ function pickQuote(
           'Stämningen är låg men vi tappar inte varandra. Det är det viktiga.',
         ]
       : [
-          'Järnkurvan är till för laget. Inte tvärtom.',
-          'Vi jobbar på ett nytt koreografi inför bortamatchen. Tre veckor kvar.',
-          'Femtiotre betalande i veckan. Det är vi stolta över.',
+          'Klacken är till för laget. Inte tvärtom.',
+          'Vi jobbar på en ny koreografi inför bortamatchen. Tre veckor kvar.',
+          'Varenda medlem betalar sin avgift. Det är vi stolta över.',
         ],
 
     family: win
@@ -164,7 +164,7 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
       groupName: sg.name,
       founded: sg.founded,
       title: 'Tifo inför derbyt',
-      body: `${sg.veteran.name} har jobbat i veckor. Igår hängde den från läktaren — svart-gul fana, texten "VI STANNAR". Hela truppen såg den.`,
+      body: `${sg.veteran.name} har jobbat i veckor. Igår hängde den från läktaren — en stor fana, texten "VI STANNAR". Hela truppen såg den.`,
       note: `+12 mood · ${sg.members} medlemmar`,
     }
   }
@@ -217,7 +217,7 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
 
   if (sg.mood >= 80) {
     const highTitles = [
-      'Järnkurvan brinner',
+      `${sg.name} brinner`,
       `${sg.leader.name} ropar upp ny koreografi`,
       'Orten lever',
     ]

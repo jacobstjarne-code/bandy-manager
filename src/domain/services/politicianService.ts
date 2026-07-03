@@ -39,7 +39,7 @@ const CAMPAIGN_PROMISES: Record<string, string[]> = {
   inclusion:      ['Idrott ska vara tillgängligt för alla oavsett plånbok', 'Avgiftsfria aktiviteter för barn under 16', 'Integrationsprojekt via föreningslivet'],
   prestige:       ['Sätt orten på kartan med toppklass-idrott', 'Bygga ett kommunalt varumärke vi kan vara stolta över', 'Attrahera regionalt intresse till vår ort'],
   savings:        ['Hålla kommunbudgeten i balans utan nya lån', 'Effektivisera alla kommunala bidrag', 'Varje skattekrona ska synas i resultaten'],
-  infrastructure: ['Bygg en modern idrottsanläggning senast 2028', 'Uppgradera kommunens sportinfrastruktur', 'Konstfryst is till alla utomhusanläggningar'],
+  infrastructure: ['Bygg en modern idrottsanläggning inom mandatperioden', 'Uppgradera kommunens sportinfrastruktur', 'Konstfryst is till alla utomhusanläggningar'],
 }
 
 export function generateNewPolitician(seed: number, currentSeason: number): LocalPolitician {

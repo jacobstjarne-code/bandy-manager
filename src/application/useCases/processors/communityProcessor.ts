@@ -290,7 +290,7 @@ export function processCommunity(
       date: game.currentDate,
       type: InboxItemType.BoardFeedback,
       title: `${name} slutar som frivillig`,
-      body: `${name} har tröttnat och drar sig tillbaka. Dåliga resultat på sistone har tagit på humöret.`,
+      body: `${name} har tröttnat och drar sig tillbaka. Det har varit tungt kring klubben på sistone, och det tar på humöret.`,
       isRead: false,
     } as InboxItem)
   }

@@ -149,10 +149,10 @@ export const commentary = {
   ],
 
   suspension: [
-    "{player} får 10 minuter för bentackling! {team} får spela med en man mindre.",
-    "Utvisning! Domaren lyfter armen. {player} får vila i 10 minuter.",
+    "{player} får {minuter} minuter för bentackling! {team} får spela med en man mindre.",
+    "Utvisning! Domaren lyfter armen. {player} får vila i {minuter} minuter.",
     "Sent brytningsförsök av {player}. Solklar utvisning!",
-    "{player} protesterar, men domaren är bestämd. Tio minuter.",
+    "{player} protesterar, men domaren är bestämd. {minuter} minuter.",
     "Hårt spelat. {player} skickas till botbänken. Kritiskt läge för {team}.",
     "Domaren hade inget val. {player} var inte i närheten av bollen. Utvisning.",
     "Tuffa tag kostar {team}. {player} får sätta sig på utvisningsbänken.",
@@ -509,7 +509,7 @@ export const commentary = {
   ],
 
   overtimeStart: [
-    'FÖRLÄNGNING! Ytterligare 30 minuter avgör. Spelarna samlar sig.',
+    'FÖRLÄNGNING! 20 minuter till — första målet avgör.',
     'Det blir förlängning! Benen är tunga men viljan finns där.',
     'Oavgjort efter ordinarie tid! Nu avgörs allt i förlängningen.',
   ],
@@ -522,7 +522,7 @@ export const commentary = {
 
   overtimeEnd: [
     'Förlängningen är slut. Fortfarande {score}.',
-    '30 minuter till — ingen lyckades avgöra. {score}.',
+    '20 minuter till — ingen lyckades avgöra. {score}.',
   ],
 
   overtimeNoGoal: [
@@ -556,7 +556,7 @@ export const commentary = {
   penaltyStart: [
     'STRAFFAR! Fortfarande oavgjort! Nu avgör straffarna!',
     'Det blir straffar! Nerverna är på sin yttersta spets.',
-    'Ingen lyckades avgöra på 120 minuter. Det slutliga avgörandet: straffar.',
+    'Ingen lyckades avgöra på 110 minuter. Det slutliga avgörandet: straffar.',
   ],
 
   penaltyWinHome: [
@@ -669,7 +669,7 @@ export const commentary = {
   // ── Utvisningskontext ─────────────────────────────────────────────────────
 
   context_suspension_frustration: [
-    '{player} kokar av frustration. 10 minuter — och det vid {score}.',
+    '{player} kokar av frustration. {minuter} minuter — och det vid {score}.',
     'Onödigt. Helt onödigt. {player} visas ut när laget behöver varenda man.',
     'Temperamentet tar över. {player} får betala priset.',
   ],
@@ -677,11 +677,11 @@ export const commentary = {
   context_suspension_tactical: [
     'Taktisk utvisning? {player} stoppade en farlig kontra. Värt priset, kanske.',
     '{player} tar straffet. Ibland måste man offra sig.',
-    'Kalkylerat av {player}. Stoppar anfallet — men betalar med 10 minuter.',
+    'Kalkylerat av {player}. Stoppar anfallet — men betalar med {minuter} minuter.',
   ],
 
   context_shorthanded_surviving: [
-    '{team} överlever! Tio man i tio minuter utan att släppa in!',
+    '{team} överlever! Hela utvisningen utan att släppa in!',
     '{player} är tillbaka. {team} andas ut — utvisningen kostade ingenting.',
     'Kollektiv insats av {team}. Inga insläppta i undertalet.',
   ],
@@ -936,24 +936,24 @@ export function getTraitCommentary(
   const traitSuspensions: Record<string, string[]> = {
     joker: [
       `${name} gör det igen. Briljant ena sekunden, utvisad nästa.`,
-      `10 minuter utanför. ${name}s temperament kostar laget.`,
+      `{minuter} minuter utanför. ${name}s temperament kostar laget.`,
       `${name} med en tackling ingen förstår. Domaren blåser. Solklart.`,
       `Karaktäristiskt ${name}. Genialitet och utvisning samma kvart.`,
       `${name} ut. Han skrattar. Det är värre.`,
-      `Tio minuter för ${name}. Han kommer tillbaka och gör något galet ändå.`,
+      `{minuter} minuter för ${name}. Han kommer tillbaka och gör något galet ändå.`,
     ],
     hungrig: [
       `Frustrationen kokar över. ${name} åker ut efter en onödig tackling.`,
       `${name} tappar kontrollen. Hungern att vinna blir hans fiende.`,
-      `10 minuter. ${name} ville för mycket — det är sällan bra i bandy.`,
-      `${name} kastar sig in i en duell han inte kunde vinna. Tio minuter att fundera på det.`,
+      `{minuter} minuter. ${name} ville för mycket — det är sällan bra i bandy.`,
+      `${name} kastar sig in i en duell han inte kunde vinna. {minuter} minuter att fundera på det.`,
       `Det syntes komma. ${name} har gått på överväxel hela halvleken. Domaren hade fått nog.`,
       `${name} slår klubban i sargen på väg ut. För hård vilja, fel ögonblick.`,
     ],
     veteran: [
       `${name} borde veta bättre. Erfarenheten räckte inte den här gången.`,
       `Oväntat av en veteran. ${name} åker ut — laget spelar i numerärt underläge.`,
-      `${name} med en tackling man inte trodde var hans. Tio minuter på bänken.`,
+      `${name} med en tackling man inte trodde var hans. {minuter} minuter på bänken.`,
     ],
     lokal: [
       `Hemmapubliken tystnar. ${name} åker ut och laget spelar numerärt underlägset.`,
@@ -976,8 +976,9 @@ export function getTraitCommentary(
     const pool = traitSuspensions[player.trait]
     if (!pool) return null
     const pick = pool[Math.floor(Math.random() * pool.length)]
-    // M15: {minuter}-token redo för Del 4:s textbyte (5|10 min, regelboksanpassning
-    // 2026-07-03) — no-op idag eftersom poolerna ovan ännu inte innehåller token.
+    // M15/Del 4 (2026-07-03): {minuter}-token nu inskriven i poolerna ovan —
+    // durationMinutes (5|10) resolvas här. Saknas värdet faller strängen
+    // tillbaka med synlig token; anropet SKA alltid skicka durationMinutes.
     return durationMinutes ? fillTemplate(pick, { minuter: String(durationMinutes) }) : pick
   }
   return null
