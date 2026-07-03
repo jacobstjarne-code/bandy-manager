@@ -59,12 +59,56 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
   · **M25 (låg)** rep_academy-strängen "LANDSLAGET tittar på oss!" — grep
     reputationMilestone-eventet och verifiera att det faktiskt handlar om
     landslaget, inte förbunds-/scoutuppmärksamhet.
-- **SPEC_REGELBOKSANPASSNING_2026-07-03.md — Del 1-3 KLARA (Code), Del 4
-  väntar på Fable.** M1 förlängning 20 min (`ad9f97a1`), M15 utvisning 5/10
-  diskret (`d7a0315a`), M16 landslagsuttag 0–2 förtjänstmodell (`2ce3b4d0`).
-  Kalibrering körd + dokumenterad i respektive commit (OT-proportion,
-  utvisningsminuter/match, callup-Monte-Carlo mot worldGenerator-tiers).
-  Grep-listor till Fables Del 4 finns i Del 1- och Del 2-commiten.
+- **DOMÄN 2b-BUGGAR M26–M32 (2026-07-03, rotorsaker i LOGG samma datum):**
+  · **M26** specialDateService: isUnderdog = reputation < 50 ABSOLUT — ska
+    jämföras mot finalmotståndarens reputation (rep 45 mot rep 40 är
+    favorit men får "Underläge på pappret"). Verifiera även att cupfinal-
+    fixturen sätter venueCity (spectator-briefingen interpolerar den).
+  · **M27** HALL_ATMOSPHERE-gating i matchCore: verifiera att poolen bara
+    visas när hallen är byggd (stage 'klar') OCH att utomhusväderpooler då
+    stängs av — annars kan "Utanför faller snön" samsas med snöfall på plan.
+  · **M28** stilklagomål ogatade mot faktisk taktik: patron_style-eventet
+    (patronEvents) och mecenat-silentShout-70-eventet säger "Vi spelar för
+    defensivt" oavsett vald taktik — gate på defensiv/balanserad taktik.
+  · **M29** politicianEvents subtitle↔effekt-mismatchar (UI-lögner):
+    youth promise "+10 relation"/effekt +15 · invite "+5-10"/effekt +20 ·
+    savings pushback "-5 relation"/effekt kommunBidrag −3000 (ingen
+    relationsändring) · prestige welcome "+12 relation · +5 reputation"/
+    effekt enbart kommunBidrag +8000. Synka åt något håll.
+  · **M30 (låg, smak)** functionaryQuoteService derby-condition triggas på
+    SPELAD fixture → förberedande derbyrepliker ("Hela byn är på läktaren")
+    visas EFTER derbyt och äter win/loss-reaktionen. Överväg nextFixture-
+    baserad derby-condition.
+  · **M31** localEmployers OMSKRIVEN av Fable (gamla regionsnycklarna
+    matchade en äldre klubblista → allt föll till default). Code
+    verifierar: (a) clubId-formatet club_{region} matchar nya nycklarna,
+    (b) dagjobbstitlar som försvann (Polis, Banarbetare, Forsknings-
+    assistent) hanteras där findEmployerForJob kan ge undefined,
+    (c) bygg + test.
+  · **M32** postVictoryNarrativeService: score-strängen byggs home-away
+    oavsett perspektiv → bortaseger 2–5 ger "2-5 mot {opponent}" i diary-
+    raderna (läses som förlust). Skicka in managedClubId till
+    generateVictoryEcho och skriv {my}-{their}.
+- **DOMÄN 2c-BUGGAR M33–M35 + M17-FÖRSTÄRKNING (2026-07-03):**
+  · **M17 SKARPARE ÄN BEDÖMT:** rumorService skapar RYKTES-inboxitems med
+    type InboxItemType.Transfer OCH relatedPlayerId (spelare i ANNAN
+    klubb) → coffeeRoomServices soldItem-detektion träffar dem →
+    kafferummet säger "{Namn} lämnade. Pengarna är inne" om en spelare
+    som bara ryktas. Fixen måste skilja rykte från genomförd affär
+    (egen InboxItemType för rykten är renast).
+  · **M33** politicianData.POLITICIAN_PROFILES ser ut att vara DÖD DATA —
+    generateNewPolitician (politicianService) har egen namnlista och sätter
+    alltid titeln Kommunalråd. Grep konsumenter; koppla in profilerna
+    (rikare titlar och partier, inkl. V/MP/SD som saknas i generatorns
+    PARTY_AGENDA_WEIGHTS) eller ta bort dem.
+  · **M34** enhetskaos bidragstexter: communityProcessor skriver
+    "kr/månad" (kommunbidrag + ny mecenat) medan mecenatService-intron
+    och patronEvents skriver "tkr/säsong" för samma contribution. Grep
+    appliceringen i economyProcessor och synka alla texter till den
+    faktiska periodiciteten.
+  · **M35** insandareService pick() använder Math.random trots att
+    servicen är designad deterministisk via fixtureHash → samma fixture
+    ger ny insändartext per render. Seeda pick med hash.
 - Commit domän 1: 73 rättade rader, 18 filer. Commit-order + regressions-
   grep i LOGG 2026-07-02 kväll (utvidga grep med: storknar, prickern,
   talent, underbara scener).
@@ -74,34 +118,29 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
   +1) · enum-jämförelse i attendance-isSnow (kodlukt, ej bugg).
 
 ### FABLE GÖR (efter Codes Del 1–2)
-- **Del 4 i regelboksspecen (Code klar, väntar på detta):** textbyte
-  "10 minuter"/"30 minuter"/"120 minuter" mot {minuter}-token resp. nya
-  förlängningsrader. Kort riktad session, input = de kuraterade grep-
-  listorna i commit `d7a0315a` (M15, inkl. supporterRituals.ts:52 och den
-  ej-kopplade context_shorthanded_surviving-poolen) och `ad9f97a1` (M1).
+— tomt. Del 4 KÖRD 2026-07-03 (se LOGG) — M1/M15/M16 helt avslutade.
 
 ### VILANDE (låg prioritet)
 - **M14** "En av de största publiksiffrorna på länge" vid att>5000 —
   väntar på publikhistorik som token.
 
 ### NÄSTA AUDIT-PASS
-- **Domän 2b** (resten av orten/röster): FÄRSK session. Kvar:
-  specialDateStrings (14 KB) + specialDateService · hallProvningData
-  (HALL_ATMOSPHERE — läs matchCore-anropet först) · patronData +
-  patronEvents/patronTriggers + mecenatService-pooler (31 KB) ·
-  politicianData + politicianService/politicianEvents · functionaries +
-  functionaryQuoteService · communityNames · localEmployers.
-  Inline-pool-kandidater (fillisteläckage): postVictoryNarrativeService
-  (pendingVictoryEcho.coffeeLine konsumeras av kafferummet!),
-  supporterRituals, klackPresenter, insandareService, rumorService,
-  communityProcessor. Sen domän 3 (UI) och 4 (väder/övrigt).
+- **Domän 3** (press/styrelse/beslut) i FÄRSK session. Fillista i
+  domänordningen nedan; transferResponseText delvis dömd i 2a
+  (RIVAL_SALE-/INCOMING_BID-poolerna klara, resten återstår).
+  Sen domän 4 (väder/ceremonier/facility/övrigt).
 - text-guard-linten byggs av Code EFTER att alla fyra domäners termlista
   är slutjusterad.
 
 ### AVGJORT (referens, rör ej)
-- **M1/M15/M16 — Codes del KLAR 2026-07-03** (`ad9f97a1`/`d7a0315a`/`2ce3b4d0`).
-  Flyttas hit helt (inkl. Del 4-raden i FABLE GÖR ovan) när Fable kört
-  textbytet — tills dess står de kvar i CODE GÖR/FABLE GÖR som pekare.
+- **M1/M15/M16 HELT KLARA 2026-07-03.** Code: `ad9f97a1` (förlängning 20
+  min), `d7a0315a` (utvisning 5/10 diskret), `2ce3b4d0` (landslagsuttag 0–2)
+  med kalibrering i respektive commit. Fable: Del 4-textbytet kört samma
+  dag — {minuter}-token i suspension-/context-/trait-pooler, 20/110-
+  siffrorna i OT-/straffpooler, supporterRituals-ropet neutraliserat.
+  Code verifierar vid nästa build att {minuter} resolvas i suspension-
+  poolens och context_suspension_*-poolernas vars-bygge i matchCore
+  (traitCommentary-vägen är bekräftad i koden).
 - **M12** comebackKing-triggern (injuryProneness → faktisk skadehistorik
   denna säsong) — KLAR, `baa190f4`.
 - M5–M7 godkända av Jacob 2026-07-03 — texterna står. (M7:s picker-
@@ -260,6 +299,9 @@ MISSTANKAR — döm i kontext, luta konservativt:
 1. **text-guard-lint:** banned-terms-grep (FEL-listans termer, slutjusterad
    efter läspasset) inkopplad i build som ds-guard. Whitelist-mekanism för
    legitima träffar (t.ex. "skalle" som regelbrott MOT spelare).
+   Regressionstermer från Del 4 (2026-07-03): `30 minuter` och `120 minuter`
+   bannade i matchtext (förlängningen är 20, totalen 110); `10 minuter`/
+   `tio minuter` hårdkodat i utvisningskontext (ska vara {minuter}-token).
 2. Committa rättningar per domän med rotorsak i meddelandet.
 
 ## LOGG
@@ -601,3 +643,137 @@ MISSTANKAR — döm i kontext, luta konservativt:
   LÄGE: Domän 2a komplett. M17–M25 hos Code (grep + logikfixar).
   Jacob-smak öppen: volontärer i kafferummet som egen pool (BACKLOG-idé),
   M22c (död LOST_MARKS-pool). NÄSTA: Domän 2b i FÄRSK session.
+
+- 2026-07-03 (dag, forts): DOMÄN 2b KLAR — specialdatum, hallprovning,
+  patron/mecenat, politiker, funktionärer, ortsnamn, arbetsgivare,
+  postVictoryNarrative. Körd i samma session på Jacobs order. Kvarvarande
+  servicefiler → Domän 2c (se NÄSTA AUDIT-PASS).
+
+  VÄRLDSREGEL FASTSLAGEN (efter självkorrigering): riktiga orter, kommuner,
+  tidningar (Gefle Dagblad, Arbetarbladet...), butikskedjor (Ica, Konsum,
+  Willys, Pressbyrån) och partier ((S)–(SD) i politicianData) är etablerad
+  VARDAGSFÄRG — tillåtna. Förbjudet: riktiga KLUBBAR i klubbroll, och
+  riktiga STORBOLAG ägda av fiktiva personer (StoraEnso-mecenaten
+  rättades; centerpartiet och ICA-Kungen återställdes efter förhastad
+  rättning). Arenalore (Studan/Sävstaås: Hammarby 2010, Zeke 2011,
+  Sirius-spöket) är medveten verklighistoria — rörs ej; faktauppgifterna
+  källverifierades INTE i detta pass (utanför audit-scope).
+
+  RÄTTAT (≈30 rader, 10 filer):
+  · specialDateStrings (10): perspektivfel i delade pooler — PLAYING-rader
+    pekade ut {homeClubName} ("är där"/"är här") fast vi kan vara bortalag
+    → "vi"; lore-radens "Vi står på samma is" (delas med spectator) →
+    neutral · finaldagInbox favoritroll "Inget att förlora?" (inverterad)
+    → "Allt att förlora." · "sensommar" i oktober-cupfinal → höst · "Tre
+    matcher har lett hit" (byes kan ge färre) → avpreciserad ·
+    julgransbarr · bandysanning · grammatik ×2.
+  · hallProvningData: GODKÄND RAKT AV — HALL_ATMOSPHERE är toppklass.
+  · patronData (3): "kom folk till planen" → "till matcherna" (publiken
+    är inte på planen) · TOKENLÄCKOR: {amount} och {rival} i UNHAPPY-
+    poolen substitueras ALDRIG av patronEvents → tokenfria omskrivningar
+    (Code kan återinföra med interpolation om önskat).
+  · patronEvents (4): trunkerad rubrik "om spelets" → "om spelstilen" ·
+    "han/hon lämnar" → "han" (alla PATRON_PROFILES är män) · subtitles
+    "mecenat-relation" ×2 → "relation" (patron- och mecenatsystemen är
+    två SEPARATA system; övriga subtitles säger redan bara relation).
+  · mecenatService (7): intro-citatets "— hon/han vill hjälpa till" —
+    mecenaten omtalade SIG SJÄLV i tredje person inne i sitt eget citat →
+    "jag" · StoraEnso Norra → Norrlandsmassa AB · "bandyhall"-backstory
+    motsade hallProvning-premissen → sporthall · "ett arvode" → "ett arv"
+    · genusfel miljöpris · vernissage "Min fru målar" (mecenat kan vara
+    kvinna; död pool i typmappningen men fällan desarmerad) → "Det målas
+    i familjen" · subtitle "+5 happiness" (engelska i UI) → "+5 relation".
+    Backstory-poolerna i övrigt: mycket hög klass.
+  · politicianEvents: Eva-Britt fick "Han" — bindestrecksnamn saknades i
+    FEMALE_FIRST_NAMES (split på mellanslag ger hela namnet) → åtta
+    bindestrecksnamn tillagda. Gentjänst-pronomenen visade sig KORREKTA
+    (systerdotter/brorson följer politikerns kön → barnpronomenet stämmer
+    i båda grenarna) — falskpositiv undviken.
+  · functionaries (2): "Är beställt" → "Har beställt" · hårdkodad "Kurt"
+    i citat när Kurt finns i samma namePool (Sture-buggens tvilling, 1/8
+    risk att tala om sig själv i tredje person) → "Sixten" (utanför alla
+    pooler). Kvoterna i övrigt: bland det bästa i spelet — GODKÄNDA.
+  · communityNames (3): "Jansen"/"Chransen" (efternamn/nonsens) i
+    FÖRNAMNSLISTAN → Sune/Christer · "enöringar" (avskaffade) → enkronor
+    · "stekta" → stekte.
+  · localEmployers: HELT OMSKRIVEN — regionsnycklarna (sandviken, edsbyn,
+    vasteras, sirius, broberg, falun) tillhörde en ÄLDRE klubblista;
+    spelets tolv orter träffade aldrig dem så alla spelare jobbade på
+    "Lokala bruket". Ny data för spelets tolv regioner, bolagsnamn synkade
+    mot mecenatService.REGION_BUSINESSES (patronens bruk = spelarnas
+    arbetsgivare), riktiga kommuner i vardagsroll. Verifiering → M31.
+  · postVictoryNarrativeService (2): "flaskor i sargarna" → "bakom
+    sargen" · ordförande-tempus. Score-perspektivbuggen → M32.
+
+  GODKÄNT: HALL_ATMOSPHERE + hela hallProvningData · STUDAN/SÄVSTAÅS-lore
+  · AGENDA_QUOTES + NEWSPAPER_HEADLINES (substitutionskedjan verifierad
+  komplett) · FUNCTIONARY-kvoterna · KIOSK/LOTTERY/EVENT_FLAVORS i övrigt
+  · mecenat-BACKSTORIES i övrigt · SOCIAL_BODIES (vernissage + segelbåt
+  döda i typmappningen, golf filtreras alltid — noterat, ofarligt).
+
+  LÄGE: Domän 2a+2b klara. M17–M32 hos Code. NÄSTA: Domän 2c (liten
+  servicerest, samordna supporterRituals med Del 4) som inledning på
+  domän 3-sessionen.
+
+- 2026-07-03 (dag, forts 2): DOMÄN 2c KLAR — supporterRituals,
+  klackPresenter, insandareService, rumorService, politicianService,
+  communityProcessor. DOMÄN 2 DÄRMED KOMPLETT (2a+2b+2c).
+
+  RÄTTAT (≈20 rader, 6 filer):
+  · supporterRituals (7): utvisningsropet "Tio minuter — tio minuter!"
+    (M15 gör 5/10 diskret → kunde motsäga matchtexten på samma skärm) →
+    "Skääms — skääms!" (tidsneutralt äkta läktarrop; supporterRituals-
+    raden i Del 4-greplistan är därmed AVKLARAD) · "höjer staven"
+    (obegriplig) → armarna · "melodi fyller planen" → vallen ·
+    "plankanten" → sargen · family-"säger hon" → han (family-poolen är
+    enbart män) · "Okänd sedan förut" (klackens kärngalleri känner
+    varandra) → omskriven · grammatik ×2 ("de siste", "klappa de").
+  · klackPresenter (8): tre hårdkodade "Elin" i youth-rösten när youth-
+    karaktären SJÄLV kan heta Elin → Gunvor (utanför alla pooler) ·
+    hårdkodad "Sture" hos veteranen (ledaren kan heta Sture) → Gamle
+    Sigge · hårdkodat gruppnamn "Järnkurvan" ×2 när gruppnamnet slumpas
+    ur tolv → "Klacken"/interpolerat ${sg.name} · "Målburen behöver
+    pinor. Jag har glas kvar hemma" (nonsens/korrupt rad) → koherent
+    tyg-till-tifo-rad · "Femtiotre betalande" (motsäger members-siffran
+    på SAMMA kort) → avpreciserad · "svart-gul fana" (hårdkodade färger
+    vs klubbens) → "stor fana" · "ett nytt koreografi" → en ny.
+  · insandareService (5 + signaturblock): SIGNATURES var Gästrike-/
+    Hälsingeorter (Järbo, Tierp, Edsbyn...) och visades för ALLA klubbar
+    inkl. Skåne → ortsneutrala kvarters-/bygdenamn (Bruket, Kyrkbyn,
+    Stationen...) · "målet i 87:e" (målminut ej garanterad) → struken ·
+    "Efter tre raka" (margin≥2 garanterar inga tre raka) → omskriven ·
+    "i sista svängen" (obegriplig) → längst bort på läktaren · grammatik.
+  · rumorService: "Från pressplätten" (plätt = pannkaka) → pressläktaren.
+    Div 1/allsvenskan som omvärld GODKÄNT (korrekt seriepyramid under
+    spelets Elitserie, kan inte motsägas). VIKTIGAST: rykten skapas som
+    InboxItemType.Transfer med relatedPlayerId → förstärker M17, se
+    CODE GÖR.
+  · politicianService: kampanjlöftet "senast 2028" (spelet kan pågå
+    2031) → "inom mandatperioden". POLITICIAN_PROFILES trol. död → M33.
+  · communityProcessor: volontäravhoppets "Dåliga resultat på sistone"
+    (moralen kan bottna via drift/skandal utan dåliga resultat) →
+    orsaksneutral. Notiser i övrigt GODKÄNDA; enhetskaoset kr/månad vs
+    tkr/säsong → M34.
+
+  DOMÄN 2 SLUTSTATUS: ~105 rättade rader i 29 filer över tre delpass ·
+  19 Code-ärenden (M17–M35) varav tre bekräftade tokenläckor, två
+  perspektivinversioner, en död regiondatafil omskriven · återkommande
+  felklasser: hårdkodade namn i egna namnpooler (Sture, Kurt, Elin,
+  Järnkurvan — fyra fall), publiken-på-planen (två fall efter domän 1),
+  subtitle-vs-effekt-lögner i eventkort. Kandidater till text-guard-
+  linten utöver termlistan: \{amount\}/\{rival\}-tokens utan substitute-
+  anrop, hårdkodade poolnamn i citatsträngar.
+
+- 2026-07-03 (dag, forts 3): DEL 4 KÖRD — M1/M15/M16 helt avslutade.
+  matchCommentary.ts: suspension-poolen (3 rader), context_suspension_
+  frustration/tactical, traitSuspensions joker/hungrig/veteran (5 rader)
+  → {minuter}-token (Del 2:s durationMinutes-plumbing bekräftad i
+  getTraitCommentary; no-op-kommentaren uppdaterad). overtimeStart
+  omskriven ("20 minuter till — första målet avgör" — sudden death-sant),
+  overtimeEnd 30→20, penaltyStart 120→110. context_shorthanded_surviving
+  "Tio man i tio minuter" → "Hela utvisningen utan att släppa in"
+  (poolen är ej kopplad till minutvärdet — tokenfri är enda säkra).
+  supporterRituals-ropet var redan fixat i 2c. Återstående Code-
+  verifiering: att {minuter} resolvas i matchCores vars-bygge för
+  suspension-/context-poolerna (se AVGJORT-noten). Text-guard-planen
+  uppdaterad med regressionstermerna.
