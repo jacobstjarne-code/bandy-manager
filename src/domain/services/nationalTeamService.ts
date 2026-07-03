@@ -1,45 +1,31 @@
 import type { SaveGame } from '../entities/SaveGame'
 
-const CALLUP_COUNT_MIN = 3
-const CALLUP_COUNT_MAX = 5
+// M16 (regelboksanpassning 2026-07-03): förtjänstmodell. Ersätter den tidigare
+// alltid-3-till-5-uttagna-logiken (underminerade "säsongens guldkorn"-premissen
+// i landslagText — varje bruksklubb fick garanterat flera landslagsspelare).
+// Bara spelare med currentAbility ≥ tröskeln kvalar. Tröskeln kalibrerad via
+// Monte Carlo mot samma tier/CA-fördelning som worldGenerator.ts genererar
+// (tierFromReputation: top ≥75 rep → CA 55-75 bas, mid 55-74 rep → CA 42-62
+// bas, under <55 rep → CA 30-52 bas, alla ±8 jitter): vid tröskel 66 får en
+// toppklubb (rep ≥75) konsekvent 2 uttagna (cap), en mittenklubb (rep 55-74,
+// "bruksklubb") i snitt 0,6-0,7 (dvs oftast 0, ibland 1), en klubb under 55
+// rep i praktiken aldrig. 0 uttagna är ett GILTIGT utfall — no-opas tyst av
+// anropskoden i roundProcessor.ts (calledUpIds.length > 0-grinden finns redan).
+export const LANDSLAGS_CA_TROSKEL = 66
+export const CALLUP_CAP = 2
 
 export function selectNationalTeam(game: SaveGame): string[] {
   // Only players from the managed club are tracked
   const squad = game.players.filter(p =>
     p.clubId === game.managedClubId && !p.isInjured && p.suspensionGamesRemaining === 0
   )
-  if (squad.length === 0) return []
 
-  // Sort by CA × form boost
-  const scored = squad
-    .map(p => ({
-      id: p.id,
-      score: p.currentAbility + (p.form > 65 ? 3 : 0),
-      position: p.position,
-      ca: p.currentAbility,
-    }))
+  const qualified = squad
+    .filter(p => p.currentAbility >= LANDSLAGS_CA_TROSKEL)
+    .map(p => ({ id: p.id, score: p.currentAbility + (p.form > 65 ? 3 : 0) }))
     .sort((a, b) => b.score - a.score)
 
-  // Pick top candidate per position, then fill to min count
-  const picked: string[] = []
-  const positions = Array.from(new Set(scored.map(s => s.position)))
-
-  for (const pos of positions) {
-    const best = scored.find(s => s.position === pos && !picked.includes(s.id))
-    if (best) picked.push(best.id)
-    if (picked.length >= CALLUP_COUNT_MAX) break
-  }
-
-  // Fill to min if needed
-  for (const s of scored) {
-    if (picked.length >= CALLUP_COUNT_MIN) break
-    if (!picked.includes(s.id)) picked.push(s.id)
-  }
-
-  // Seed-based: use season to make it deterministic per save
-  const seed = game.currentSeason * 997 + 23
-  const count = CALLUP_COUNT_MIN + (seed % (CALLUP_COUNT_MAX - CALLUP_COUNT_MIN + 1))
-  return picked.slice(0, count)
+  return qualified.slice(0, CALLUP_CAP).map(p => p.id)
 }
 
 export function applyCallupEffects(game: SaveGame, playerIds: string[]): SaveGame {

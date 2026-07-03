@@ -68,7 +68,7 @@ import { detectNotableResult, decayKlackEcho } from '../../domain/services/klack
 import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
 import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
 import { adjustSupporterMood } from '../../domain/services/supporterService'
-import { selectNationalTeam } from '../../domain/services/nationalTeamService'
+import { selectNationalTeam, LANDSLAGS_CA_TROSKEL, CALLUP_CAP } from '../../domain/services/nationalTeamService'
 import {
   CALLUP_NOTICE_LINES,
   SNUB_SCENE_LINES,
@@ -564,14 +564,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         endRound: nextMatchday + 1,
         playerIds: calledUpIds,
       }
+    }
 
-      // Snub mechanic — high-form, high-CA player not selected
+    // M16 (regelboksanpassning 2026-07-03): snub-mekaniken flyttad utanför
+    // calledUpIds.length > 0-grinden. Uttagningen är nu förtjänstgated (0-2,
+    // LANDSLAGS_CA_TROSKEL) — det dramaturgiskt sanna ögonblicket är bästa
+    // spelaren STRAX under tröskeln när 0 eller 1 tas ut, inte bara när någon
+    // redan tagits ut. Vid cap (2 uttagna) triggar inte snuben — klubben fick
+    // redan sin fulla tilldelning.
+    if (calledUpIds.length < CALLUP_CAP) {
       const snubCandidate = nationalTeamUpdatedPlayers
         .filter(p =>
           p.clubId === game.managedClubId &&
           !calledUpIds.includes(p.id) &&
-          p.form > 70 &&
-          p.currentAbility > 75
+          p.currentAbility < LANDSLAGS_CA_TROSKEL &&
+          p.currentAbility >= LANDSLAGS_CA_TROSKEL - 5
         )
         .sort((a, b) => b.currentAbility - a.currentAbility)[0]
 
