@@ -14,104 +14,25 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
 ### JACOB BESLUTAR (smak)
 — tomt. M5–M7 godkända av Jacob 2026-07-03: "brottningen", "mittback" och
 "tre-fem-tvåa" står kvar som de är. Flaggas inte igen.
+- **M33-restfråga (2026-07-03):** V och MP och SD saknar agenda-vikter i
+  `PARTY_AGENDA_WEIGHTS` (politicianService.ts + createNewGame.ts) — faller
+  till den likformiga default-poolen (alla fem agendor lika sannolika)
+  istf en partifärgad vikt som S/M/C/L/KD redan har. Kräver ett smakbeslut
+  om vad V/MP/SD ska profileras mot (t.ex. V→inclusion, MP→infrastructure/
+  inclusion, SD→prestige/savings) — Code avstod avsiktligt från att gissa
+  på politiska stereotyper. Låg prioritet: påverkar bara vilken agenda en
+  redan sällsynt förekommande politiker får, ingen bugg.
+- **M31-observation (2026-07-03):** 7 av 15 `DAY_JOB_TITLES` (IT-konsult,
+  Polis, Säljare, Lastbilsförare, Byggnadsarbetare, Ekonom, Personlig
+  tränare) matchar aldrig någon regional arbetsgivares `jobTitles` i den
+  omskrivna `localEmployers.ts` → spelare med de yrkena kan aldrig trigga
+  coworker-bond eller räknas i varsel-grupperingen. Smakfråga: antingen
+  bredda arbetsgivarnas jobTitles med vita-kragen-yrken, eller snäva
+  DAY_JOB_TITLES till bruksorts-yrken. Ingen krasch, bara tyst underdäckning.
 
 ### CODE GÖR
-- **DOMÄN 2-BUGGAR M17–M25 (2026-07-03, anropskodsverifierade — detaljer
-  och rotorsaker i LOGG samma datum):**
-  · **M17** coffeeRoomService: soldItem-villkoret inkluderar
-    InboxItemType.TransferBidReceived (= inkommande BUD, inget är sålt) →
-    säljtexterna ("{name} lämnade", "Pengarna är inne") ljuger. Fix: ta bort
-    TransferBidReceived ur villkoret. Bonus: Transfer-storyitemet i
-    executeTransfer saknar relatedPlayerId → {name} faller alltid tillbaka
-    till "spelaren"; lägg till relatedPlayerId.
-  · **M18** grep skapare av InboxItemType.TransferOffer — skapas INTE i
-    transferService/aiTransferService/inboxService. TRANSFER_BUY_EXCHANGES
-    är då död eller feltriggad; rätt trigger för köptexterna är genomfört
-    köp (outgoing TransferBidResult accepted / executeTransfer).
-  · **M19** klackEchoService storstad_loss: `|| oppPos <= 2` släpper in
-    bruksklubbar i storstadspoolen ("bandyn vi inte har", "pendlade till
-    storstan"). Fix: enbart STORSTAD_SHORT_NAMES-medlemskap; verifiera
-    samtidigt att SBK/VBK/FBK/HBK matchar worldGenerators shortNames.
-  · **M20** stillnessService: (a) matchesContext ignorerar weather-fältet →
-    snö-/kyl-/mildbeats visas oavsett faktiskt väder; fix: weather in i
-    StillnessContext + matchning. (b) buildStillnessContext producerar
-    aldrig 'day_after' → day_after-taggade beats/micro är oåtkomliga
-    (byggt-men-osynligt → även BACKLOG-rad); fix: day_after när senaste
-    managed fixture spelades föregående matchday.
-  · **M21** C-T9-riktningen: executeAcceptedTransfers-momentet triggas på
-    outgoing-accepted (= VI KÖPER från rival) men har säljperspektiv
-    ("till fiendelaget" + PLAYER_REACTION_RIVAL_SALE, vars docstring säger
-    sålt-till-rival). Grep även lastRivalSaleMatchday-settern (gameStore?)
-    och verifiera att RIVAL_SALE_KAFFERUM/KLACK bara triggas när VI SÅLT
-    till rival — texterna är skrivna för det.
-  · **M22** anniversary-konsumenter: (a) ANNIVERSARY_KLACK (flat WON+LOST)
-    i matchCore — verifiera outcome-gating; utan den kan "VI MINNS GULDET"
-    visas för ett förlorat eko. (b) grep konsumenter av
-    pickAnniversaryKafferum/pickAnniversaryKlack/pickAnniversaryMarkCopy +
-    att {subject} resolvas (Fables nya pooler förutsätter det). (c)
-    verifiera watchOthers-kontexten: lost_to_finalist ⇒ motståndaren står
-    i finalen (Fables nya rad hävdar det).
-  · **M23 (låg)** EFTERKLANG followUp-echo antar brev, men pendingFollowUps
-    innehåller även nemesis_diary — verifiera mappningen. ECONOMIC_SCAR
-    natural_recovery-echot antar sponsororsak — verifiera krisorsakerna.
-  · **M24 (låg)** coffeeRoomService deadlineRound hårdkodad 13–15 —
-    verifiera mot transferWindowService.
-  · **M25 (låg)** rep_academy-strängen "LANDSLAGET tittar på oss!" — grep
-    reputationMilestone-eventet och verifiera att det faktiskt handlar om
-    landslaget, inte förbunds-/scoutuppmärksamhet.
-- **DOMÄN 2b-BUGGAR M26–M32 (2026-07-03, rotorsaker i LOGG samma datum):**
-  · **M26** specialDateService: isUnderdog = reputation < 50 ABSOLUT — ska
-    jämföras mot finalmotståndarens reputation (rep 45 mot rep 40 är
-    favorit men får "Underläge på pappret"). Verifiera även att cupfinal-
-    fixturen sätter venueCity (spectator-briefingen interpolerar den).
-  · **M27** HALL_ATMOSPHERE-gating i matchCore: verifiera att poolen bara
-    visas när hallen är byggd (stage 'klar') OCH att utomhusväderpooler då
-    stängs av — annars kan "Utanför faller snön" samsas med snöfall på plan.
-  · **M28** stilklagomål ogatade mot faktisk taktik: patron_style-eventet
-    (patronEvents) och mecenat-silentShout-70-eventet säger "Vi spelar för
-    defensivt" oavsett vald taktik — gate på defensiv/balanserad taktik.
-  · **M29** politicianEvents subtitle↔effekt-mismatchar (UI-lögner):
-    youth promise "+10 relation"/effekt +15 · invite "+5-10"/effekt +20 ·
-    savings pushback "-5 relation"/effekt kommunBidrag −3000 (ingen
-    relationsändring) · prestige welcome "+12 relation · +5 reputation"/
-    effekt enbart kommunBidrag +8000. Synka åt något håll.
-  · **M30 (låg, smak)** functionaryQuoteService derby-condition triggas på
-    SPELAD fixture → förberedande derbyrepliker ("Hela byn är på läktaren")
-    visas EFTER derbyt och äter win/loss-reaktionen. Överväg nextFixture-
-    baserad derby-condition.
-  · **M31** localEmployers OMSKRIVEN av Fable (gamla regionsnycklarna
-    matchade en äldre klubblista → allt föll till default). Code
-    verifierar: (a) clubId-formatet club_{region} matchar nya nycklarna,
-    (b) dagjobbstitlar som försvann (Polis, Banarbetare, Forsknings-
-    assistent) hanteras där findEmployerForJob kan ge undefined,
-    (c) bygg + test.
-  · **M32** postVictoryNarrativeService: score-strängen byggs home-away
-    oavsett perspektiv → bortaseger 2–5 ger "2-5 mot {opponent}" i diary-
-    raderna (läses som förlust). Skicka in managedClubId till
-    generateVictoryEcho och skriv {my}-{their}.
-- **DOMÄN 2c-BUGGAR M33–M35 + M17-FÖRSTÄRKNING (2026-07-03):**
-  · **M17 SKARPARE ÄN BEDÖMT:** rumorService skapar RYKTES-inboxitems med
-    type InboxItemType.Transfer OCH relatedPlayerId (spelare i ANNAN
-    klubb) → coffeeRoomServices soldItem-detektion träffar dem →
-    kafferummet säger "{Namn} lämnade. Pengarna är inne" om en spelare
-    som bara ryktas. Fixen måste skilja rykte från genomförd affär
-    (egen InboxItemType för rykten är renast).
-  · **M33** politicianData.POLITICIAN_PROFILES ser ut att vara DÖD DATA —
-    generateNewPolitician (politicianService) har egen namnlista och sätter
-    alltid titeln Kommunalråd. Grep konsumenter; koppla in profilerna
-    (rikare titlar och partier, inkl. V/MP/SD som saknas i generatorns
-    PARTY_AGENDA_WEIGHTS) eller ta bort dem.
-  · **M34** enhetskaos bidragstexter: communityProcessor skriver
-    "kr/månad" (kommunbidrag + ny mecenat) medan mecenatService-intron
-    och patronEvents skriver "tkr/säsong" för samma contribution. Grep
-    appliceringen i economyProcessor och synka alla texter till den
-    faktiska periodiciteten.
-  · **M35** insandareService pick() använder Math.random trots att
-    servicen är designad deterministisk via fixtureHash → samma fixture
-    ger ny insändartext per render. Seeda pick med hash.
-- Commit domän 1: 73 rättade rader, 18 filer. Commit-order + regressions-
-  grep i LOGG 2026-07-02 kväll (utvidga grep med: storknar, prickern,
-  talent, underbara scener).
+— tomt. M17–M35 HELT AVKLARADE 2026-07-03 (fixade eller verifierade utan
+bugg) → se AVGJORT för utfall per ärende och commit-hashar.
 - **M9** grep imports av injuryDoctorText — nås DIAGNOSIS_LINES för
   träningsskador? ("andra halvlek"-raden får bara visas för matchskador.)
 - Stilnoter: seasonChampionYear()-helpern i seasonSummaryService (inline
@@ -138,9 +59,78 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
   med kalibrering i respektive commit. Fable: Del 4-textbytet kört samma
   dag — {minuter}-token i suspension-/context-/trait-pooler, 20/110-
   siffrorna i OT-/straffpooler, supporterRituals-ropet neutraliserat.
-  Code verifierar vid nästa build att {minuter} resolvas i suspension-
-  poolens och context_suspension_*-poolernas vars-bygge i matchCore
-  (traitCommentary-vägen är bekräftad i koden).
+  Code-verifiering KLAR: 300 simulerade matcher i mode 'full' (commentary
+  på) — suspension-poolens och context_suspension_*-poolernas {minuter}
+  resolvas till 5 eller 10 i varenda live-feed-rad, noll oresolvade tokens.
+- **M17–M35 HELT AVKLARADE 2026-07-03** (domän 2a/2b/2c, alla Code-ärenden
+  fixade eller verifierade utan bugg — commits `253c0cef`, `f26431f3`,
+  `140677ef`, `cb6e6b28`, `857c4c7d`):
+  · **M17** (skärpt version, rumorService-kopplingen) — FIXAD. Ny
+    `InboxItemType.TransferRumor` skiljer ryktes-inboxitems (rumorService)
+    från genomförda affärer; coffeeRoomServices soldItem-villkor förenklat
+    till enbart `Transfer`. `executeTransfer`s storyitem fick
+    `relatedPlayerId` (löste även den ursprungliga {name}→"spelaren"-buggen).
+  · **M18** — FIXAD (som en del av M17-committen). `TransferOffer` skapas
+    aldrig; coffeeRoomServices boughtItem-villkor bytt till
+    `TransferBidResult` + id-prefix-check istf den döda typen.
+  · **M19** — FIXAD. `STORSTAD_SHORT_NAMES` bytt till riktiga klubbar
+    (Forsbacka/Västanfors, rep ≥70) istf påhittade förkortningar som
+    matchade noll klubbar; `|| oppPos <= 2`-fallbacken borttagen.
+  · **M20** — FIXAD. `weather` in i `StillnessContext` + matchning;
+    `day_after` produceras nu när senaste managed fixture spelades
+    föregående matchday (var tidigare oåtkomlig).
+  · **M21** — FIXAD. `rival_sale`-momentet flyttat från outgoing- till
+    incoming-guardad loop i `executeAcceptedTransfers` (rätt håll:
+    triggas nu bara när VI SÅLT till en rival, inte när vi köpt).
+  · **M22** — FIXAD (a, c) + loggad (b). (a) `pickAnniversaryKlack`s
+    resultat körs nu genom `fillTemplate` med spelarnamn. (b) död,
+    ogated `ANNIVERSARY_KLACK`-export borttagen; `pickAnniversaryKafferum()`
+    bekräftad HELT UTAN konsumenter → ny BACKLOG-rad (byggt men osynligt).
+    (c) `WatchOthersSecondary` kollar nu specifikt `playoffBracket.final`
+    istf "någon kommande omgång" — "{motståndare} står i FINALEN" är nu sant.
+  · **M23 (låg)** — VERIFIERAD, INGEN BUGG. Efterklangs followUp läser
+    bara `bandyLetters`, aldrig `pendingFollowUps`/nemesis_diary (separat
+    kodväg). `natural_recovery` är enda nåbara utfallet för
+    `ECONOMIC_SCAR_AFTERMATH` (bara accept_loss-vägen ger det) — texten
+    "Sponsorn är borta" stämmer alltid.
+  · **M24 (låg)** — FIXAD. Hårdkodad `13-15` ersatt med
+    `TRANSFER_DEADLINE_ROUND - 2`…`TRANSFER_DEADLINE_ROUND` (importerad
+    konstant, en sanning).
+  · **M25 (låg)** — VERIFIERAD, INGEN BUGG. `rep_academy`-milstolpens
+    riktiga titel är "P19-landslagstränaren har noterat er" — genuin
+    landslagsreferens, ingen förväxling med scout/sponsor-triggers.
+  · **M32** — FIXAD. `generateVictoryEcho` tar nu `managedClubId`,
+    bygger `{my}-{their}` istf alltid `{home}-{away}` — bortaseger läses
+    inte längre som förlust i diary-raderna.
+  · **M33** — POLITICIAN_PROFILES var INTE död data (grep hittade två
+    konsumenter). Riktig bugg: `generateNewPolitician` (politicianService,
+    mandatperiodsbyte) kopplad till POLITICIAN_PROFILES för rikare
+    titlar/partier; `createNewGame.ts` lagrade `party` MED parenteser →
+    bröt både agenda-viktningen och gav dubbla parenteser i
+    scandalService.ts:s `{PARTI}`-mall. Strippat konsekvent. Bonus-fynd:
+    `mandatExpires` använde `new Date().getFullYear()` (determinism-brott)
+    → `currentSeason + 4`. V/MP/SD saknar fortfarande agenda-vikter —
+    smakfråga, ej löst (se JACOB BESLUTAR nedan om det ska tas upp).
+  · **M34** — FIXAD. `communityProcessor.ts`s "kr/månad" (kommunbidrag +
+    ny mecenat) bytt till "kr/säsong" — matchar den faktiska
+    engångsutbetalningen per säsong och `tkr/säsong`-texterna på övriga
+    ställen. Sponsors kr/vecka (separat, genuint veckovis system) orört.
+  · **M35** — FIXAD. `insandareService.pick()` seedas nu med `fixtureHash`
+    istf `Math.random()` — samma fixture ger samma insändartext igen.
+  · **Domän 2b/2c-verifieringar (Code, ingen kodändring):**
+    M26 FIXAD (isUnderdog relativ mot finalmotståndaren; venueCity
+    bekräftad satt för cup-/SM-final) · M27 FIXAD (6 textgrenar i
+    matchCore gated på `!hallInomhus` — mål/ambient/miss/isnedbrytning/
+    publikannonsering-kyla-snö; is-nedbrytnings-MEKANIKEN, rad ~808,
+    lämnad orörd som spelmekanik utanför textaudit-scope) · M28 FIXAD
+    (patron_style + mecenat-silentShout-tacticpress gated på att
+    activeTactic.mentality inte redan är Offensive) · M29 FIXAD (fem
+    subtitle↔effekt-mismatchar synkade) · M30 (låg, smak) FIXAD
+    (derby-condition kollar nu `nextManagedFixture` istf senast spelad
+    fixture) · M31 VERIFIERAD (clubId-format matchar 12/12 regioner;
+    `findEmployerForJob`-undefined redan guardat — ingen krasch; separat
+    observation loggad: 7/15 DAY_JOB_TITLES matchar aldrig en regional
+    arbetsgivare, smakfråga för Fable/Jacob).
 - **M12** comebackKing-triggern (injuryProneness → faktisk skadehistorik
   denna säsong) — KLAR, `baa190f4`.
 - M5–M7 godkända av Jacob 2026-07-03 — texterna står. (M7:s picker-
@@ -777,3 +767,32 @@ MISSTANKAR — döm i kontext, luta konservativt:
   verifiering: att {minuter} resolvas i matchCores vars-bygge för
   suspension-/context-poolerna (se AVGJORT-noten). Text-guard-planen
   uppdaterad med regressionstermerna.
+
+- 2026-07-03 (dag, forts 4, Code): M17–M35 KÖRDA I ORDNING, HELA LISTAN
+  AVKLARAD. Commits `253c0cef` (M17 rykte-typ/M19/M20/M32/M35), `f26431f3`
+  (M18/M21/M22), `140677ef` (M24 + M23/M25 verifierade utan bugg),
+  `cb6e6b28` (M26/M27), `857c4c7d` (M28/M29/M30/M31/M33/M34). Se AVGJORT
+  ovan för utfall per ärende.
+
+  Två fynd utöver ärendelistan, upptäckta under M33-grävandet: (1)
+  `createNewGame.ts`s `generatePolitician` lagrade `profile.party` MED
+  parenteser i `party`-fältet — bröt `PARTY_AGENDA_WEIGHTS_CNG`-uppslaget
+  tyst (alltid miss → uniform agenda-pool för spelets FÖRSTA politiker,
+  aldrig partivägd) och gav dubbla parenteser ("((S))") i
+  scandalService.ts:355s `{PARTI}`-mall vid skandaler om den egna
+  klubbens politiker. (2) samma funktions `mandatExpires` använde
+  `new Date().getFullYear()` — ett determinism-brott (samma seed gav
+  olika resultat beroende på det verkliga kalenderåret spelet kördes i,
+  samma felklass som M35s insandareService). Båda fixade i `857c4c7d`.
+
+  Build + test genom hela batchen: `npx tsc --noEmit` rent, `npm run
+  build` grönt, `npx vitest run` — 125 testfiler / 1238 tester gröna
+  efter varje commit.
+
+  LÄGE: TEXT-AUDIT-PROTOKOLL.mds CODE GÖR-sektion är tom (utöver M9 och
+  gamla stilnoter, oförändrade sedan tidigare). Två smakfrågor kvar i
+  JACOB BESLUTAR (V/MP/SD-agendavikter, DAY_JOB_TITLES-täckning) — ingen
+  brådska. NÄSTA: domän 3 (press/styrelse/beslut) när Fable startar en
+  färsk session, eller Överlämning 2-arbetet (Emoji→Lucide-pass,
+  Valet-scen N-3/N-6/S-1/S-2/A-1) som väntat sedan regelboksspecen och
+  M17–M35 kom in.
