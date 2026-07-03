@@ -42,7 +42,7 @@ export const STILLNESS_MICRO: StillnessMicro[] = [
   { body: 'Snön vräkte ner under natten. Halva styrelsen var ute och skottade läktaren innan frukost.', icon: '🧹', weather: 'snow' },
   { body: 'En gammal supporter lämnade in ett klippalbum från sjuttiotalet. Ingen vet riktigt var det ska förvaras.', icon: '📒' },
   { body: 'Ett par nya klubbor kom med posten. De låg kvar i kartongen i tre dagar innan någon öppnade.', icon: '📦' },
-  { body: 'Isteknikern gick åtta varv runt rinken och skakade på huvudet. Mildvädret vill inte ge sig.', icon: '🧊', weather: 'mild' },
+  { body: 'Isteknikern gick åtta varv runt planen och skakade på huvudet. Mildvädret vill inte ge sig.', icon: '🧊', weather: 'mild' },
   { body: 'Efter förlusten var kafferummet tomt vid lunch. Bara termosen stod kvar och pyste.', form: 'poor', proximity: 'day_after', subtle: true },
   { body: 'Någon hade glömt strålkastarna på över natten. Elräkningen lär bli en punkt på nästa styrelsemöte.', icon: '💡' },
 

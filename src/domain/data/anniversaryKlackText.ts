@@ -23,11 +23,20 @@ const NEUTRAL_KLACK: string[] = [
   'Banderoll med {subject}s namn. "EN AV OSS — ALLTID".',
 ]
 
+// Neutralt eko UTAN subject = serieettan (enda big-neutrala händelsen utan
+// spelare — season_finish pos 1, sig 100). {subject}-poolen skulle läcka
+// oresolverad token här. (Textaudit domän 2, 2026-07-03.)
+const SEASON_TOP_KLACK: string[] = [
+  'Banderoll på kortsidan: "VI STOD ÖVERST".',
+  'Från ståplats: "Vi minns det året. Hela vägen."',
+]
+
 export function pickAnniversaryKlack(echo: ActiveAnniversary): string {
   const pool =
     echo.outcome === 'won' ? WON_KLACK :
     echo.outcome === 'lost' ? LOST_KLACK :
-    NEUTRAL_KLACK
+    echo.subjectPlayerId ? NEUTRAL_KLACK :
+    SEASON_TOP_KLACK
 
   const seed = echo.originalSeason + echo.matchday + echo.yearsAgo
   return seededPick(pool, seed)

@@ -101,7 +101,7 @@ export interface SpecialDateContext {
 
 export const ANNANDAGSBANDY_COMMENTARY: string[] = [
   'Annandag jul. Klubbhuset doftar fortfarande av igårkvällens skinka.',
-  'Det är 26 december. Halva publiken har julgrans-barr på jackorna.',
+  'Det är 26 december. Halva publiken har julgransbarr på jackorna.',
   'Familjeråd före match: morfar tog tåget hit i morse, brorsan hade fått ledigt från jobbet i Stockholm. Hela släkten är på plats.',
   'Annandagsbandy. Termosen är fylld med kaffe från frukosten, smörgåsen ligger kvar i fickan från 11-fikat.',
   'Det luktar tända marschaller och pepparkaka. Klacken har dragit igång den första sången redan i kön till entrén.',
@@ -153,7 +153,7 @@ export const NYARSBANDY_BRIEFING: string[] = [
 
 export const FINALDAG_COMMENTARY_PLAYING: string[] = [
   'SM-final. Det är vad allt gått ut på. Hela säsongen samlas i de här 90 minuterna.',
-  'Tredje lördagen i mars. {arenaName} är finalplats och {homeClubName} är där. Det är inte en vanlig match. Det är inte ens en derby. Det är finalen.',
+  'Tredje lördagen i mars. {arenaName} är finalplats och vi är där. Det är inte en vanlig match. Det är inte ens en derby. Det är finalen.',
   'Det är finaldag. Något i benen vet det redan innan domaren blåser igång.',
 ]
 
@@ -164,9 +164,9 @@ export const FINALDAG_COMMENTARY_SPECTATOR: string[] = [
 
 export const FINALDAG_COMMENTARY_LORE: string[] = [
   'Studenternas IP. Invigd 21 mars 1909. Fler SM-finaler än på någon annan nutida arena har avgjorts på den här isen. Nästa startar nu.',
-  'Vi står på samma is där Daniel "Zeke" Eriksson sköt SAIK till guld 2011 — i sin allra sista match. Frislag, sudden death, drömavslut. Alla finaler har sin historia.',
+  'Samma is som när Daniel "Zeke" Eriksson sköt SAIK till guld 2011 — i sin allra sista match. Frislag, sudden death, drömavslut. Alla finaler har sin historia.',
   'På den här planen vann Hammarby sitt första SM-guld på 105 år. Det var 2010. Snön vräkte ner. Matchen spelades i 3×30 minuter — den enda SM-finalen någonsin i det formatet.',
-  'Stadsträdgården åt höger, Fyrisån åt vänster. Studan. Det är på de här fem hektaren bandysveriges hela historia ryms.',
+  'Stadsträdgården åt höger, Fyrisån åt vänster. Studan. På de här fem hektaren ryms bandysveriges hela historia.',
 ]
 
 // 3×30-trigger — BARA för SM-final med weather.matchFormat === '3x30'
@@ -192,7 +192,7 @@ export const FINALDAG_BRIEFING_SPECTATOR: string[] = [
 
 export function finaldagInboxPlaying(ctx: SpecialDateContext): { subject: string; body: string } {
   const opponent = ctx.isHomePlayer ? ctx.awayClubName : ctx.homeClubName
-  const role = ctx.isUnderdog ? 'Underläge på pappret. Allt att vinna.' : 'Favorit på pappret. Inget att förlora?'
+  const role = ctx.isUnderdog ? 'Underläge på pappret. Allt att vinna.' : 'Favorit på pappret. Allt att förlora.'
   return {
     subject: `SM-final mot ${opponent}`,
     body: `Tredje lördagen i mars. ${ctx.arenaName} är spelplats för bandyårets sista match. ${role} Det är finalen — det går inte att förbereda mer än man redan gjort.`,
@@ -209,9 +209,9 @@ export function finaldagInboxSpectator(ctx: SpecialDateContext): { subject: stri
 // ── CUP-FINALHELGEN ───────────────────────────────────────────────────────────
 
 export const CUPFINAL_COMMENTARY_PLAYING: string[] = [
-  'Cup-final. Säsongens första titel ligger på det här. Det doftar fortfarande sensommar i luften.',
-  'Det är oktober och {arenaName} står som finalarena. {homeClubName} är här — det är inte alla år man kan säga det.',
-  'Cup-finalen. Tre matcher har lett hit. Den fjärde avgör allt.',
+  'Cup-final. Säsongens första titel ligger på det här. Hösten ligger redan i luften.',
+  'Det är oktober och {arenaName} står som finalarena. Vi är här — det är inte alla år man kan säga det.',
+  'Cup-finalen. Rundorna är avklarade. Den sista matchen avgör allt.',
 ]
 
 export const CUPFINAL_COMMENTARY_SPECTATOR: string[] = [
@@ -223,8 +223,8 @@ export const CUPFINAL_COMMENTARY_LORE: string[] = [
   'Sävstaås IP. Invigd 1973, konstfryst 1984, Bollnäs hemmaplan i 48 år. Träläktarna doftar fortfarande av tre generationer cigarettrök och korv.',
   'På den här planen satte Bollnäs publikrekord på annandagen 2000. 8 151 åskådare. Den siffran ligger som ett spöke över varje match som spelas här.',
   'Sävstaås. Flames står på huvudläktaren med jumboflaggor på fyra meter. Innan inmarsch spelas Dans på Sävstaås. Nisses fyrverkerier smäller. Det är så det går till.',
-  'Sirius vann inte en bortamatch på den här planen i 35 år. 1983 till 2018. 23 raka förluster. "Sävstaås-spöket" är inget skämt — det är en bandyssanning.',
-  'Innan ishallen byggdes bredvid kunde du gå in mellan halvlekarna och värma fingrarna med en korv och en glögg. Den traditionen försvann inte — bara att hallen är större nu.',
+  'Sirius vann inte en bortamatch på den här planen på 35 år. 1983 till 2018. 23 raka förluster. "Sävstaås-spöket" är inget skämt — det är en bandysanning.',
+  'Innan ishallen byggdes bredvid kunde du gå in mellan halvlekarna och värma fingrarna med en korv och en glögg. Den traditionen försvann inte — hallen är bara större nu.',
 ]
 
 export const CUPFINAL_BRIEFING_PLAYING: string[] = [

@@ -20,7 +20,7 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
     namePool: ['Rolf', 'Kurt', 'Lennart', 'Göran', 'Börje', 'Arne', 'Stig', 'Benny'],
     quotesByPhase: {
       höststart: [
-        'Håller tummar. Är beställt extra korv i år.',
+        'Håller tummar. Har beställt extra korv i år.',
         'Alla är redo. Kiosken med. Nytt kylskåp äntligen.',
         'I år kör vi hårt. Jag har sett truppen. Det kan bli bra.',
         'Föreningens bästa tillgång är folket bakom kiosken. Det vet ni.',
@@ -47,7 +47,7 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
         'Jag säger ingenting. Men jag har sett sämre lag vända.',
         'Tabellen är vad den är. Men vi ger oss inte.',
         'Försäljningen i kiosken är ner. Stämningen märks.',
-        'Kurt sa att vi är klara. Jag sa åt Kurt att hålla käften.',
+        'Sixten sa att vi är klara. Jag sa åt Sixten att hålla käften.',
       ],
       våroffensiv: [
         'Februari. Nu avgörs det. Folk på läktaren vet det.',

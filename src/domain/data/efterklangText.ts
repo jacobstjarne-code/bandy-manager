@@ -33,9 +33,11 @@ export type EfterklangType =
 
 /** ↻-eko-raden per minnestyp. Kort, eftertänksam, kopplar då till nu. */
 export const EFTERKLANG_ECHO: Record<EfterklangType, string[]> = {
+  // Textaudit domän 2 (2026-07-03): anniversaries kan vara 1–5 år gamla och
+  // dagens motståndare är inte samma som då — inga årtals- eller motståndarclaims.
   anniversary: [
-    'Ett år sedan i dag. Samma motstånd, samma kyla.',
-    'För ett år sedan stod ni här. Det känns längre än så.',
+    'Samma vecka, ett annat år. Samma kyla.',
+    'Ni stod här då också. Det känns längre sedan än det är.',
   ],
   klackEcho: [
     'Klacken sjunger fortfarande om den kvällen.',

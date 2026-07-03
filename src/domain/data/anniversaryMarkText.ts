@@ -36,6 +36,14 @@ const NEUTRAL_MARKS: Omit<AnniversaryMarkCopy, 'eyebrow'>[] = [
   { quote: '{subject} la av den här veckan. Tiden går fort.', helper: 'Killarna nämner honom ibland.' },
 ]
 
+// Big-neutralt eko utan spelare = serieettan (season_finish pos 1, sig 100).
+// NEUTRAL_MARKS ({subject}-pensionering) skulle ljuga OCH läcka oresolverad
+// token för det ekot. (Textaudit domän 2, 2026-07-03.)
+const SEASON_TOP_MARKS: Omit<AnniversaryMarkCopy, 'eyebrow'>[] = [
+  { quote: 'Vi vann serien. Samma vecka, ett annat år.', helper: 'Tabellen från det året hänger i klubbhuset.' },
+  { quote: 'Serieettan säkrades den här veckan, då.', helper: 'Sånt glöms inte i en bruksort.' },
+]
+
 const FALLBACK: AnniversaryMarkCopy = {
   eyebrow: '⬩ Eko ⬩',
   quote: '',
@@ -49,7 +57,8 @@ export function pickAnniversaryMarkCopy(
   const pool =
     echo.outcome === 'won' ? WON_MARKS :
     echo.outcome === 'lost' ? LOST_MARKS :
-    NEUTRAL_MARKS
+    echo.subjectPlayerId ? NEUTRAL_MARKS :
+    SEASON_TOP_MARKS
 
   if (pool.length === 0) return FALLBACK
 

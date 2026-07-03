@@ -22,7 +22,7 @@ interface EchoPool {
 export const KLACK_ECHO: Record<NotableEventType, EchoPool> = {
   derby_win: {
     klack: [
-      'Förra veckan sjöng vi i en timme efter slutsignal. Det här minns vi om tio år.',
+      'Vi sjöng i en timme efter slutsignal. Det här minns vi om tio år.',
       'Min Birgitta lagar mat. Hon sa: ni har inte varit så här lugna sen 97.',
       'Det var inte bara segern. Det var sättet.',
     ],
@@ -39,7 +39,7 @@ export const KLACK_ECHO: Record<NotableEventType, EchoPool> = {
       'Vi sjöng kortare ramsan idag. Den långa kände vi inte för.',
     ],
     kafferum: [
-      'Två veckor sen söndag. Och två veckor till tystnad om det.',
+      'Det pratas inte om den söndagen. Inte på ett tag till.',
       'Min granne sa "det var orättvist". Jag sa inget. Det var inte orättvist.',
       'Gubbarna pratade om allt annat. Det är det säkraste tecknet.',
     ],
@@ -58,9 +58,9 @@ export const KLACK_ECHO: Record<NotableEventType, EchoPool> = {
   },
   heavy_home_loss: {
     klack: [
-      'Vi gick hem i halvtid. Två tusen som inte ville se andra halvlek.',
+      'Vi gick hem i halvtid. Halva läktaren ville inte se andra halvlek.',
       'Målen. Du minns dem genom hela veckan. Du räknar dem när du vaknar.',
-      'Klacken sjöng inte den ramsan i den här veckan. Skönt att den får vila.',
+      'Klacken sjöng inte den ramsan den här veckan. Skönt att den får vila.',
     ],
     kafferum: [
       'Magnus tände inte cigarillen efter matchen. Han bara stod där.',
@@ -77,7 +77,7 @@ export const KLACK_ECHO: Record<NotableEventType, EchoPool> = {
     kafferum: [
       '"Två poäng mot dem" — sa Birger sex gånger på söndagskvällen. Jag räknade.',
       'Min farbror ringde från Bollnäs. Han har inte ringt sen 14. Han var glad.',
-      'Klubbhusets väggar är samma. Men något känns annorlunda i fika-rummet idag.',
+      'Klubbhusets väggar är desamma. Men något känns annorlunda i kafferummet idag.',
     ],
   },
   storstad_loss: {
@@ -103,62 +103,62 @@ export const KLACK_ECHO: Record<NotableEventType, EchoPool> = {
 export const KLACK_ECHO_CAUSE_PREFIXED: Record<NotableEventType, EchoPool> = {
   derby_win: {
     klack: [
-      'Tre veckor sen derbyt — och min Birgitta säger fortfarande att jag är lugnare än vanligt.',
-      'Sedan derbyt går jag förbi rinken på vägen hem. Den glömmer jag inte.',
+      'Sen derbyt säger min Birgitta att jag är lugnare än vanligt. Fortfarande.',
+      'Sedan derbyt går jag förbi planen på vägen hem. Det glömmer jag inte.',
     ],
     kafferum: [
       'Sedan söndagen pratar gubbarna fortfarande om målet.',
-      'Tre veckor sedan derbyt. Det räcker fortfarande till lite skryt i affären.',
+      'Derbyt räcker fortfarande till lite skryt i affären.',
     ],
   },
   derby_loss: {
     klack: [
-      'Det är två veckor sedan derbyt. Jag har inte spelat in den senaste klacksången än.',
+      'Derbyt hänger kvar. Jag har inte spelat in den senaste klacksången än.',
       'Sedan vi tappade derbyt har det varit tystare än vanligt på söndagskvällarna.',
     ],
     kafferum: [
       'Min granne har inte frågat om bandy sedan derbyt. Det säger något.',
-      'Två veckor sen söndagen. Och två veckor av att tala om annat.',
+      'Sen den söndagen talar vi om annat. Bara annat.',
     ],
   },
   derby_draw: {
     klack: [
-      'Sedan derbykrysset räknar Birger målen om och om. Han räknar fel ibland.',
-      'Tre veckor sedan vi inte vann och inte heller förlorade. Lustig vecka.',
+      'Sedan derbykrysset räknar Birger målen om och om igen. Han räknar fel ibland.',
+      'Vi vann inte och förlorade inte heller. Lustig känsla, den sitter i.',
     ],
     kafferum: [
       'Sedan oavgjorda derbyt har gubbarna inte landat — varken i firande eller sorgesnack.',
-      'Två veckor sen krysset. Birger minns olika siffror varje gång.',
+      'Krysset sitter i. Birger minns olika siffror varje gång.',
     ],
   },
   heavy_home_loss: {
     klack: [
-      'Det är två veckor sedan smällen. Klacken börjar våga sjunga igen.',
+      'Ett tag sedan smällen nu. Klacken börjar våga sjunga igen.',
       'Sedan den kvällen har ingen sagt "minns du"-något. Det får vänta.',
     ],
     kafferum: [
-      'Tre veckor sedan den matchen. Magnus tänder cigarillen igen — men inte direkt efter slutsignal.',
+      'Sedan den matchen tänder Magnus cigarillen igen — men inte direkt efter slutsignal.',
       'Sedan smällen har gubbarna pratat om allt utom bandy. Det är välkomnande.',
     ],
   },
   top_team_win: {
     klack: [
-      'Tre veckor sen segern mot storstaden — och jag har fortfarande inte slutat berätta om den.',
+      'Segern mot storstaden — jag har fortfarande inte slutat berätta om den.',
       'Sedan vi slog dem hemma sjunger klacken den långa ramsan oftare.',
     ],
     kafferum: [
       'Min farbror har inte slutat ringa sedan segern. Han ringer fortfarande.',
-      'Tre veckor sen storsegern. Pojken frågar fortfarande om jag ska titta på inspelningen igen.',
+      'Segern lever kvar. Pojken frågar fortfarande om jag ska titta på inspelningen igen.',
     ],
   },
   storstad_loss: {
     klack: [
-      'Två veckor sedan storstaden. Vi vet vad det betyder — men det gör ont kvar.',
+      'Storstaden. Vi vet vad det betyder — men det gör fortfarande ont.',
       'Sedan storstadsförlusten har klacken sjungit kortare ramsor.',
     ],
     kafferum: [
       'Min granne pendlar till storstan — han säger fortfarande inget om matchen.',
-      'Tre veckor sedan storstaden. Inget nytt att säga. Det är som det alltid är.',
+      'Storstadsmatchen, ja. Inget nytt att säga. Det är som det alltid är.',
     ],
   },
 }

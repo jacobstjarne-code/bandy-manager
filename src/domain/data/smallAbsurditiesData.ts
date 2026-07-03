@@ -20,7 +20,7 @@ export const SMALL_ABSURDITIES: SmallAbsurdity[] = [
     coffeeRoomExchange: [
       { speaker: 'Kioskvakten', line: 'Den var ute i sju minuter.' },
       { speaker: 'Vaktmästaren', line: 'Vad gjorde den?' },
-      { speaker: 'Kioskvakten', line: 'Hörndomaren sa att den parerade ett skott.' },
+      { speaker: 'Kioskvakten', line: 'Domaren sa att den parerade ett skott.' },
     ],
   },
   {
@@ -37,7 +37,7 @@ export const SMALL_ABSURDITIES: SmallAbsurdity[] = [
     newspaperHeadline: 'Söderfors fick ingen mat på borta-resan — beställd till fel adress',
     coffeeRoomExchange: [
       { speaker: 'Kioskvakten', line: 'Pizzan kom till Söderhamn.' },
-      { speaker: 'Materialaren', line: 'Och dom var i Söderfors?' },
+      { speaker: 'Materialaren', line: 'Och dom var i Gagnef?' },
       { speaker: 'Kioskvakten', line: 'Det är 200 km.' },
     ],
   },
@@ -54,9 +54,9 @@ export const SMALL_ABSURDITIES: SmallAbsurdity[] = [
     id: 'bortglomda_matchbollar',
     newspaperHeadline: 'Materialaren glömde matchbollarna — fick låna av motståndaren',
     coffeeRoomExchange: [
-      { speaker: 'Vaktmästaren', line: 'Forsbacka åkte till Vänersborg utan bollar.' },
+      { speaker: 'Vaktmästaren', line: 'Forsbacka åkte till Slottsbron utan bollar.' },
       { speaker: 'Kioskvakten', line: 'Och?' },
-      { speaker: 'Vaktmästaren', line: 'Vänersborg lånade ut tre.' },
+      { speaker: 'Vaktmästaren', line: 'Slottsbron lånade ut tre.' },
     ],
   },
 ]

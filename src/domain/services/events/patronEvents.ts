@@ -56,13 +56,13 @@ export function generatePatronEvents(
             {
               id: 'promise',
               label: 'Lova att ta hänsyn',
-              subtitle: '🤝 +15 mecenat-relation',
+              subtitle: '🤝 +15 relation',
               effect: { type: 'patronHappiness', amount: 15 },
             },
             {
               id: 'refuse',
               label: 'Jag tar egna beslut',
-              subtitle: '🤝 -10 mecenat-relation',
+              subtitle: '🤝 -10 relation',
               effect: { type: 'patronHappiness', amount: -10 },
             },
           ],
@@ -89,7 +89,7 @@ export function generatePatronEvents(
             },
             {
               id: 'accept',
-              label: 'Acceptera att han/hon lämnar',
+              label: 'Acceptera att han lämnar',
               subtitle: '💰 förlorar bidrag',
               effect: { type: 'patronHappiness', amount: -50 },
             },
@@ -111,7 +111,7 @@ export function generatePatronEvents(
         events.push({
           id: eid,
           type: 'patronEvent',
-          title: `${patron.name} om spelets`,
+          title: `${patron.name} om spelstilen`,
           body: PATRON_STYLE_COMPLAINTS[quoteIdx],
           choices: [
             {

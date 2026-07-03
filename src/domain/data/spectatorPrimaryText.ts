@@ -40,7 +40,7 @@ export const SPECTATOR_PRIMARY_TEXT: Record<SpectatorFocusType, SpectatorFocusVa
   akademi: [
     {
       headline: 'Akademin är redo',
-      body: '{count} ungdomar närmar sig A-truppen. Nu hinns det granska dem ordentligt.',
+      body: '{count} ungdomar närmar sig A-truppen. Nu finns tiden att granska dem ordentligt.',
       cta: 'Akademi →',
     },
     {
@@ -62,7 +62,7 @@ export const SPECTATOR_PRIMARY_TEXT: Record<SpectatorFocusType, SpectatorFocusVa
   trupp: [
     {
       headline: 'Truppen finns kvar',
-      body: 'Inga skador, ingen kris. Bra läge att gå genom laget. Vad är vi om ett år?',
+      body: 'Slutspelet är inte vårt. Bra läge att gå genom laget. Vad är vi om ett år?',
       cta: 'Trupp →',
     },
     {

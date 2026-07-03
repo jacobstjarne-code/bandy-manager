@@ -21,7 +21,7 @@ export const WATCH_OTHERS_TEXT: Record<WatchOthersContext, WatchOthersReflection
     },
     {
       label: 'Finalvägen',
-      reflection: '{motståndare} är två matcher från pokalen. Och de gick förbi oss för att komma dit.',
+      reflection: '{motståndare} står i finalen. Och de gick förbi oss för att komma dit.',
     },
     {
       label: 'De som vann mot oss',

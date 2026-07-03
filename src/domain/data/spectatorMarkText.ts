@@ -37,7 +37,7 @@ const VARIANTS_NEVER_IN_PLAYOFF: SpectatorMarkCopy[] = [
   },
   {
     eyebrow: '⬩ Slutspelet för de andra ⬩',
-    quote: 'Åttondeplats blev åttondeplats.',
+    quote: 'Slutspelsstrecket låg där det låg.',
     helper: 'Det finns att lära av dem som står kvar.',
   },
 ]

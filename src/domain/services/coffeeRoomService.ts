@@ -58,7 +58,7 @@ const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
   // Samma ton: konkret bild, ingen förklaring, ellipsis över utrop. Sture-Forsbacka.
   ['Vaktmästaren', 'Spolade i går kväll. Det höll till morgonen.', 'Materialaren', 'Mer än man kan säga om förra veckan.'],
   ['Kioskvakten', 'Termosarna tog slut redan i första.', 'Kassören', 'Folk stannar när det går bra. Köp fler.'],
-  ['Materialaren', 'Sargen på kortsidan sitter löst igen.', 'Vaktmästaren', 'Jag tar den på lördag. Den håller till dess.'],
+  ['Materialaren', 'En av sargbitarna sitter löst igen.', 'Vaktmästaren', 'Jag tar den på lördag. Den håller till dess.'],
   ['Ordföranden', 'Kommunen ringde om hyran.', 'Kassören', 'Sa du något?'],
   ['Kassören', 'Vi gick plus på lottringen.', 'Ordföranden', 'Då fryser vi inte i pausen i alla fall.'],
   ['Vaktmästaren', 'Det snöade in genom taket på läktaren.', 'Materialaren', 'Samma hörn som alltid?'],
@@ -107,7 +107,7 @@ const TRANSFER_DEADLINE_EXCHANGES: Array<[string, string, string, string]> = [
 
 // Kafferums-snack när vi har ett aktivt väntande bud på en spelare (vi köper)
 const TRANSFER_PENDING_BID_EXCHANGES: Array<[string, string, string, string]> = [
-  ['Kioskvakten', 'Hörde att vi lägger på för någon utifrån.', 'Vaktmästaren', 'Bekräftat?" Kioskvakten: "Inte än. Men ryktena stämmer oftast.'],
+  ['Kioskvakten', 'Hörde att vi lagt bud på någon utifrån.', 'Vaktmästaren', 'Bekräftat?" Kioskvakten: "Inte än. Men ryktena stämmer oftast.'],
   ['Materialaren', 'Det pratas om en ny kille. Inget klart.', 'Kassören', 'Vänta tills det är skrivet.'],
   ['Kassören', 'Bud lagt. Nu är det bara att vänta.', 'Ordföranden', 'Det tar alltid längre tid än man tror.'],
   ['Vaktmästaren', 'Ingen vet vem det är. Alla gissar.', 'Kioskvakten', 'Det är det roligaste med transferfönstret.'],
@@ -138,7 +138,7 @@ const RESULT_EXCHANGES: Record<'win' | 'loss' | 'draw', Array<[string, string]>>
     ['Kassören', 'Vi behöver inte prata om det. Eller?'],
   ],
   draw: [
-    ['Kioskvakten', 'Kryss igen. Folket vet inte om de ska vara nöjda.'],
+    ['Kioskvakten', 'Kryss. Folket vet inte om de ska vara nöjda.'],
     ['Vaktmästaren', 'En poäng är en poäng. Isen klagade inte.'],
   ],
 }
@@ -183,7 +183,7 @@ const SCANDAL_DASHBOARD_OWN: Partial<Record<ScandalType, Array<[string, string, 
 const SCANDAL_DASHBOARD_OTHER: Partial<Record<ScandalType, Array<[string, string, string, string]>>> = {
   municipal_scandal: [
     ['Kioskvakten', 'Politiker bråkar om {KLUBB}-bidraget igen.', 'Vaktmästaren', 'Igen?" Kioskvakten: "Tredje gången på fem år.'],
-    ['Kassören', '{KLUBB} ska skolas av kommunen.', 'Ordföranden', 'Det skulle vi också." Kassören: "Vi har ingen mark att sälja.'],
+    ['Kassören', '{KLUBB} ska räddas av kommunen.', 'Ordföranden', 'Det skulle vi också." Kassören: "Vi har ingen mark att sälja.'],
     ['Materialaren', 'Hörde att {KLUBB} fick stryk i fullmäktige.', 'Vaktmästaren', 'Av vem?" Materialaren: "Alla.'],
   ],
   sponsor_collapse: [
@@ -389,11 +389,13 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     return { speaker, text }
   }
 
-  const volunteers = game.volunteers ?? []
   const exchange = pick(GENERIC_EXCHANGES)
-  const speakerName = volunteers.length > 0
-    ? volunteers[Math.abs(seed + 3) % volunteers.length]
-    : exchange[0]
+  // Röstregel (textaudit domän 2, 2026-07-03): repliken är rollskriven —
+  // talaren är alltid rollen. Tidigare byttes talare A mot ett slumpat
+  // volontärsnamn medan svaret i strängen behöll rollnamnet ("Karin
+  // Lindström: 'Ingen betalar 25 kr för en korv...' — Kassören: ...").
+  // Vill vi ha volontärer i kafferummet får de en egen pool.
+  const speakerName = exchange[0]
 
   // Resolve dynamic placeholders
   let text = `"${exchange[1]}" — ${exchange[2]}: "${exchange[3]}"`
@@ -460,14 +462,14 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
       return { speaker: youth, text: `"Såg ni? LANDSLAGET tittar på oss!" — ${leader}: "Jag vet. Det är stor grej."` }
     }
     if (resolvedIds.has(`rep_warning_${season}`)) {
-      return { speaker: veteran, text: `"Det var bättre förr. Och jag menar det den här gången." — ${family}: "Kom igen nu, Sture."` }
+      return { speaker: veteran, text: `"Det var bättre förr. Och jag menar det den här gången." — ${family}: "Kom igen nu, ${veteran}."` }
     }
 
     const supporterQuotes: Array<[string, string, string, string]> = [
       [leader, `${groupName} är med oavsett. Det är det enda som gäller.`, veteran, 'Det är vad vi alltid sagt.'],
       [youth,  `${favName} är den bäste just nu. Ingen pratar om det tillräckligt.`, leader, 'Jag vet. Han levererar.'],
       [veteran, `Jag har följt laget i trettio år. Det här laget har något.`, family, 'Barnen älskar matchdagarna.'],
-      [family, `${youth} hade med sig en ny banderoll. Det var fin.`, leader, 'Hon lägger ner mer tid än oss alla.'],
+      [family, `${youth} hade med sig en ny banderoll. Den var fin.`, leader, 'Hon lägger ner mer tid än oss alla.'],
       [youth,  `Bortaresan var bäst i år. Vi var nitton stycken.`, veteran, `${leader} förstår att organisera.`],
       [leader, `Klacken börjar växa. Folk märker det.`, family, 'Det syns när man sitter på läktaren.'],
       [veteran, `${favName} — den killen är orten igenom.`, youth, 'Alla älskar honom. Han är en av oss.'],

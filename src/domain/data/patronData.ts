@@ -42,7 +42,7 @@ export const PATRON_STYLE_COMPLAINTS = [
   '"Jag saknar anfallsbandyn. Vi brukade göra mål."',
   '"Det här defensiva spelet... publiken somnar."',
   '"Kan vi inte spela lite mer framåtlutat? Folk vill se action."',
-  '"Förr körde vi alltid offensivt. Då kom folk till planen."',
+  '"Förr körde vi alltid offensivt. Då kom det folk till matcherna."',
   '"Jag har inget emot förlust — men vi ska åtminstone underhålla."',
   '"Min fru somnade vid förra matchen. Det säger allt."',
   '"Vi spelar för defensivt. Det är inte bandyn jag växte upp med."',
@@ -60,9 +60,9 @@ export const PATRON_HAPPY_QUOTES = [
 
 export const PATRON_UNHAPPY_QUOTES = [
   '"Jag tycker inte det fungerar längre."',
-  '"Jag har lagt ner {amount} i den här klubben. Jag förväntar mig mer."',
+  '"Jag har lagt ner en förmögenhet i den här klubben. Jag förväntar mig mer."',
   '"Vi kanske tar en paus. Jag behöver tänka."',
-  '"Jag hörde att {rival} söker sponsor..."',
+  '"Jag hörde att andra klubbar söker sponsorer..."',
   '"Pengarna verkar inte göra skillnad."',
   '"Ring mig när ni har en plan."',
   '"Jag pratar med styrelsen direkt istället."',

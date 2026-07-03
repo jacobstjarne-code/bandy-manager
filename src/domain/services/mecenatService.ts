@@ -50,7 +50,7 @@ const REGION_BUSINESSES: Record<string, MecenatTemplate[]> = {
     { type: 'entrepreneur', businesses: ['Grums Entreprenad', 'Karlstads Bygg'] },
   ],
   skutskar: [
-    { type: 'brukspatron', businesses: ['Skutskärs Massafabrik', 'StoraEnso Norra'] },
+    { type: 'brukspatron', businesses: ['Skutskärs Massafabrik', 'Norrlandsmassa AB'] },
     { type: 'entrepreneur', businesses: ['Älvkarleby Bygg', 'Gävle Logistik'] },
   ],
   heros: [
@@ -96,8 +96,8 @@ const BACKSTORIES: Record<MecenatType, { male: string[]; female: string[] }> = {
       'Fem generationer av familjen har brukat mark i länet. Han är den som satte det i bolagsform. Lever på kalender och karta och tycker om det.',
     ],
     female: [
-      'Ärvde av mormodern — 400 hektar och ett arvode hon inte förstod priset på förrän tio år senare. Driver det nu som ett modernt skogsbolag med miljöcertifikat och vinst.',
-      'Utbildad biolog. Kombinerar naturvård med affärssinne på ett sätt som gör folk obekväma. Vann en regional miljöpris 2019. Pratar aldrig om det.',
+      'Ärvde av mormodern — 400 hektar och ett arv hon inte förstod värdet av förrän tio år senare. Driver det nu som ett modernt skogsbolag med miljöcertifikat och vinst.',
+      'Utbildad biolog. Kombinerar naturvård med affärssinne på ett sätt som gör folk obekväma. Vann ett regionalt miljöpris 2019. Pratar aldrig om det.',
       'Kände varenda träd på familjens mark som barn. Nu känner hon rättighetslagstiftningen lika väl. Ortens skogsägare respekterar henne, om än motvilligt.',
       'Sköter 600 hektar och vet exakt vad varje del är värd. Har sagt nej till tre bud från ett multinationellt bolag. Vill inte sälja det som familjen planterat.',
     ],
@@ -107,7 +107,7 @@ const BACKSTORIES: Record<MecenatType, { male: string[]; female: string[] }> = {
       'Sålde sitt analysprogram för logistik — 42 miljoner netto vid 34. Åkte hem till orten veckan efter. Letar fortfarande efter vad som ska komma härnäst.',
       'Byggt och sålt tre gånger. Aldrig bott mer än 15 mil från där han växte upp. Kapital saknar han aldrig — mening är en annan sak.',
       'Grundade sin startup i en källare i Uppsala. Sju år senare såldes bolaget till ett tyskt teknikföretag för en summa som inte publicerats, men ryktet stämmer.',
-      'Rik sedan tio år. Har finansierat en bandyhall, en förskola och ett bryggeri i orten. Funderar på att starta ett nytt bolag igen om han hittar rätt folk.',
+      'Rik sedan tio år. Har finansierat en sporthall, en förskola och ett bryggeri i orten. Funderar på att starta ett nytt bolag igen om han hittar rätt folk.',
     ],
     female: [
       'Byggde sin verksamhet från grunden i ett garage utanför samhället — mjukvara för regional transport. Tio år och trettio anställda senare sålde hon till ett PE-bolag. Stannade kvar på orten.',
@@ -261,7 +261,7 @@ export function generateMecenatIntroEvent(mecenat: Mecenat): GameEvent {
     type: 'mecenatEvent',
     title: `💼 ${mecenat.name} visar intresse`,
     sender: { name: mecenat.name, role: `${mecenat.business}` },
-    body: `${mecenat.name} från ${mecenat.business} har hört om er förening.\n\n"${pro.subj === 'Hon' ? 'Jag har alltid haft ett hjärta för bandyn' : 'Jag har alltid brunnit för bandy'}. Ni gör ett fantastiskt jobb — ${pro.subj.toLowerCase()} vill hjälpa till."`,
+    body: `${mecenat.name} från ${mecenat.business} har hört om er förening.\n\n"${pro.subj === 'Hon' ? 'Jag har alltid haft ett hjärta för bandyn' : 'Jag har alltid brunnit för bandy'}. Ni gör ett fantastiskt jobb — jag vill hjälpa till."`,
     choices: [
       {
         id: 'welcome',
@@ -307,7 +307,7 @@ const SOCIAL_BODIES: Record<SocialEvent['type'], (name: string) => string> = {
   vinkväll: (n) => `${n} arrangerar en vinprovning. "Jag har fått in ett parti Barolo. Du måste smaka."`,
   segelbåt: (n) => `${n} föreslår en dag på sjön. "Tar ut båten om vädret håller."`,
   hockeymatch: (n) => `${n} har biljetter till hockeyn ikväll. "Följ med, det blir kul."`,
-  vernissage: (n) => `${n} öppnar en utställning. "Min fru målar. Kom och visa er, det ser bra ut."`,
+  vernissage: (n) => `${n} öppnar en utställning. "Det målas i familjen. Kom och visa er, det ser bra ut."`,
 }
 
 export function generateSocialEvent(mecenat: Mecenat, season: number, matchday: number, rand: () => number): GameEvent {
@@ -624,7 +624,7 @@ export function checkMecenatRetirement(game: import('../entities/SaveGame').Save
       {
         id: 'offer_tribute',
         label: 'Erbjud jubileumsmatch (25k)',
-        subtitle: '+5 happiness, +3 orten',
+        subtitle: '+5 relation · +3 orten',
         effect: { type: 'mecenatHappiness', value: 5 },
       },
     ],
