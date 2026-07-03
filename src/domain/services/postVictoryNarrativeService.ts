@@ -33,15 +33,21 @@ export function generateVictoryEcho(
   type: VictoryType,
   fixture: Fixture,
   opponentName: string,
+  managedClubId: string,
 ): VictoryEcho {
-  const score = `${fixture.homeScore}-${fixture.awayScore}`
+  // M32 (textaudit 2026-07-03): var alltid hemma-borta oavsett perspektiv —
+  // en 2–5-bortaseger blev "2-5 mot {opponent}", läst som en förlust.
+  const isHome = fixture.homeClubId === managedClubId
+  const myScore = isHome ? fixture.homeScore : fixture.awayScore
+  const theirScore = isHome ? fixture.awayScore : fixture.homeScore
+  const score = `${myScore}-${theirScore}`
 
   switch (type) {
     case 'playoff_derby_win':
       return {
         diaryLine: `Triumfen över ${opponentName} ekar fortfarande i korridorerna. Ingen hade sovit ordentligt på tre dagar.`,
         coffeeLine: `Kioskvakten: "Jag sålde korv till fyra personer som grät. Dom bad inte om ursäkt."`,
-        boardMessage: `Ordföranden: "Det är sånt här som gör att jag satt mig i den här stolen. Tack."`,
+        boardMessage: `Ordföranden: "Det är för sånt här jag satte mig i den här stolen. Tack."`,
       }
     case 'playoff_win':
       return {
@@ -51,7 +57,7 @@ export function generateVictoryEcho(
     case 'big_derby_win':
       return {
         diaryLine: `${score} mot ${opponentName} är redan en berättelse. Det kommer pratas om den i fem år.`,
-        coffeeLine: `Materialaren: "Jag hittade fyra flaskor i sargarna. Två var tomma."`,
+        coffeeLine: `Materialaren: "Jag hittade fyra flaskor bakom sargen. Två var tomma."`,
       }
     case 'derby_win':
       return {

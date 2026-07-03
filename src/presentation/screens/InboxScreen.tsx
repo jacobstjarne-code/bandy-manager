@@ -22,6 +22,7 @@ function inboxActionRoute(type: InboxItemType): string | undefined {
     case InboxItemType.TransferOffer:
     case InboxItemType.TransferBidResult:
     case InboxItemType.Transfer:
+    case InboxItemType.TransferRumor:
       return '/game/transfers'
     case InboxItemType.ContractExpiring:
     case InboxItemType.Injury:
@@ -50,6 +51,7 @@ const INBOX_ICON: Partial<Record<InboxItemType, LucideIcon>> = {
   [InboxItemType.TransferBidReceived]:   ArrowLeftRight,
   [InboxItemType.TransferOffer]:         ArrowLeftRight,
   [InboxItemType.Transfer]:              ArrowLeftRight,
+  [InboxItemType.TransferRumor]:         Newspaper,
   [InboxItemType.TransferBidResult]:     ArrowLeftRight,
   [InboxItemType.ContractExpiring]:      Clock,
   [InboxItemType.LicenseReview]:         Clock,
@@ -102,6 +104,7 @@ function getGroup(item: InboxItem, game: SaveGame): InboxGroup {
     case InboxItemType.Media:
     case InboxItemType.MediaEvent:
     case InboxItemType.Transfer:
+    case InboxItemType.TransferRumor:
     case InboxItemType.TransferBidResult:
     case InboxItemType.Community:
     case InboxItemType.KommunBidrag:

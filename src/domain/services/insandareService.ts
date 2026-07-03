@@ -12,8 +12,11 @@ export interface Insandare {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function pick(arr: string[]): string {
-  return arr[Math.floor(Math.random() * arr.length)]
+// M35 (textaudit 2026-07-03): använde Math.random trots att servicen är
+// designad deterministisk via fixtureHash — samma fixture gav ny text per
+// render. Seedas nu med hash:en.
+function pick(arr: string[], seed: number): string {
+  return arr[seed % arr.length]
 }
 
 // Deterministic hash for fixture-based caching
@@ -24,9 +27,12 @@ function fixtureHash(fixtureId: string): number {
 }
 
 const SIGNATURES = [
-  'Lars-Erik, 64, Järbo', 'Birgit, 71, Centrum', 'Kjell-Olof, 58, Norrbyn',
-  'Gunilla, 69, Hillsta', 'Sigvard, 73, Älvkarleby', 'Margareta, 66, Tierp',
-  'Gunnar, 78, Hedesunda', 'Lennart, 55, Storvik', 'Ingvar, 61, Edsbyn',
+  // Textaudit domän 2c (2026-07-03): ortsneutrala signaturer — tidigare
+  // Gästrike-/Hälsingeorter (Järbo, Tierp, Edsbyn...) visades för ALLA
+  // klubbar, även Skåne. Kvarters-/bygdenamn funkar på varje ort.
+  'Lars-Erik, 64, Bruket', 'Birgit, 71, Centrum', 'Kjell-Olof, 58, Norra sidan',
+  'Gunilla, 69, Kyrkbyn', 'Sigvard, 73, Stationen', 'Margareta, 66, Villaområdet',
+  'Gunnar, 78, Åsen', 'Lennart, 55, Storgatan', 'Ingvar, 61, Landsvägen',
 ]
 
 // ── Generate insändare ────────────────────────────────────────────────────────
@@ -52,10 +58,10 @@ export function generateInsandare(game: SaveGame, lastFixture: Fixture): Insanda
       signature,
       sentiment: 'negative',
       text: pick([
-        `Jag har varit ${clubName}-anhängare i 38 år. Och det här är värst jag har sett på länge.`,
+        `Jag har varit ${clubName}-anhängare i 38 år. Och det här är det värsta jag sett på länge.`,
         'Spelarna gör sitt men var är viljan? Någon måste ställa frågor nu.',
         'Kan vi inte kräva att styrelsen förklarar vad som händer?',
-      ]),
+      ], hash),
     }
   }
   if (margin >= 3 && isDerby) {
@@ -65,8 +71,8 @@ export function generateInsandare(game: SaveGame, lastFixture: Fixture): Insanda
       text: pick([
         'Jag var där. Hela vägen. Den matchen berättar jag om när barnbarnen frågar om bandy.',
         'Tack till laget. Tack till klacken. Tack till orten. Det här är vad bandy handlar om.',
-        'Trettiosju år i publiken och jag glömmer aldrig det där målet i 87:e.',
-      ]),
+        'Trettiosju år i publiken och jag glömmer aldrig den här kvällen.',
+      ], hash),
     }
   }
   if (margin >= 2) {
@@ -75,9 +81,9 @@ export function generateInsandare(game: SaveGame, lastFixture: Fixture): Insanda
       sentiment: 'positive',
       text: pick([
         'Bra jobbat laget. Fortsätt så.',
-        'Efter tre raka — nu börjar det likna något.',
+        'Det där såg ut som ett lag i dag. Mer sånt.',
         'Kaptenen ledde idag. Det syns när det är någon som bär laget.',
-      ]),
+      ], hash),
     }
   }
   // Oavgjort eller knapp — reflektiv
@@ -87,7 +93,7 @@ export function generateInsandare(game: SaveGame, lastFixture: Fixture): Insanda
     text: pick([
       'En jämn match. Det är så det ska vara i serien. Vi är inte bäst, vi är inte sämst.',
       'Bandy är inte bara siffror. Det är lukten av kaffekoppen, kylan, människorna runt planen.',
-      'Tänk på ungdomslaget. De sitter alltid i sista svängen. De förtjänar bättre.',
-    ]),
+      'Tänk på ungdomslaget. De sitter alltid längst bort på läktaren. De förtjänar bättre.',
+    ], hash),
   }
 }

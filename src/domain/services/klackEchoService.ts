@@ -11,8 +11,13 @@ export interface KlackEchoEvent {
 }
 
 // High-reputation clubs (shortNames) that count as "storstad"
-// Clubs with reputation >= 70 from worldGenerator CLUB_TEMPLATES
-export const STORSTAD_SHORT_NAMES = ['SBK', 'VBK', 'FBK', 'HBK']
+// Clubs with reputation >= 70 från worldGenerator CLUB_TEMPLATES: Forsbacka
+// (85), Västanfors (78). M19 (textaudit 2026-07-03): föregående lista
+// ('SBK'/'VBK'/'FBK'/'HBK') matchade INGEN riktig klubbs shortName (riktiga
+// namnen är fullständiga ortsnamn, t.ex. 'Forsbacka') — mekaniken körde
+// hela tiden bara på || oppPos <= 2-fallbacken, som släppte in bruksklubbar
+// som råkade ligga topp 2.
+export const STORSTAD_SHORT_NAMES = ['Forsbacka', 'Västanfors']
 
 export function detectNotableResult(fixture: Fixture, game: SaveGame): KlackEchoEvent | null {
   const managedId = game.managedClubId
@@ -45,8 +50,10 @@ export function detectNotableResult(fixture: Fixture, game: SaveGame): KlackEcho
     return { type: 'top_team_win', resultMatchday: fixture.matchday, initialWeight: 1.0, decayPerRound: 0.33 }
   }
 
-  // storstad_loss: loss against a high-reputation club
-  const isStorstad = oppClub && (STORSTAD_SHORT_NAMES.includes(oppClub.shortName ?? '') || oppPos <= 2)
+  // storstad_loss: loss against a high-reputation club (M19: oppPos<=2-
+  // fallbacken borttagen — tabellplacering ≠ storstad, en bruksklubb kan
+  // ligga topp 2 en säsong utan att vara en storstadsklubb)
+  const isStorstad = oppClub && STORSTAD_SHORT_NAMES.includes(oppClub.shortName ?? '')
   if (myScore < theirScore && isStorstad) {
     return { type: 'storstad_loss', resultMatchday: fixture.matchday, initialWeight: 1.0, decayPerRound: 0.5 }
   }

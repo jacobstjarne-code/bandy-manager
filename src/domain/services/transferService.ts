@@ -294,6 +294,7 @@ export function executeTransfer(
       title: `${soldPlayer.firstName} ${soldPlayer.lastName} lämnar`,
       body: buildTransferStory(soldPlayer, { isCaptain, isFanFavorite, hasActiveArc, isLegend, isHomegrown }, buyerClub),
       isRead: false,
+      relatedPlayerId: soldPlayer.id,
     }]
   })()
 

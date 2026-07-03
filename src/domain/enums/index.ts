@@ -97,6 +97,11 @@ export enum InboxItemType {
   PatronInfluence = 'patronInfluence',
   MediaEvent = 'mediaEvent',
   Transfer = 'transfer',
+  /** M17 (textaudit 2026-07-03): rykten (rumorService) delade tidigare typ
+   *  med genomförda affärer (Transfer) → coffeeRoomServices soldItem-
+   *  detektion tolkade ett rykte om en spelare i annan klubb som "vi sålde
+   *  {name}". Egen typ håller isär rykte och avslutad affär. */
+  TransferRumor = 'transferRumor',
   ReputationMilestone = 'reputationMilestone',
   TransferDeadline = 'transferDeadline',
   BandyLetter = 'bandyLetter',

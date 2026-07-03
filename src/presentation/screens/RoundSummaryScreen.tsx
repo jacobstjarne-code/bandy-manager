@@ -145,7 +145,7 @@ export function RoundSummaryScreen() {
   // ── TRANSFER RUMORS from inbox ──
   const transferRumors = game.inbox.filter(item =>
     item.date === roundDate &&
-    (item.type === InboxItemType.Transfer || item.type === InboxItemType.TransferOffer || item.type === InboxItemType.TransferBidReceived || item.type === InboxItemType.TransferBidResult)
+    (item.type === InboxItemType.Transfer || item.type === InboxItemType.TransferRumor || item.type === InboxItemType.TransferOffer || item.type === InboxItemType.TransferBidReceived || item.type === InboxItemType.TransferBidResult)
   ).slice(0, 2)
 
   function handleContinue() {

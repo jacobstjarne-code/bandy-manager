@@ -240,7 +240,10 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   let soldItem: typeof game.inbox[number] | undefined
   let boughtItem: typeof game.inbox[number] | undefined
   for (const item of (game.inbox ?? []).slice(-10)) {
-    if (!soldItem && (item.type === InboxItemType.Transfer || item.type === InboxItemType.TransferBidReceived)) soldItem = item
+    // M17 (textaudit 2026-07-03): TransferBidReceived = inkommande bud (någon
+    // vill KÖPA en spelare av oss), inte en genomförd försäljning — säljtexterna
+    // ("{name} lämnade", "Pengarna är inne") ljög om budet ännu inte accepterats.
+    if (!soldItem && item.type === InboxItemType.Transfer) soldItem = item
     if (!boughtItem && item.type === InboxItemType.TransferOffer && !item.isRead) boughtItem = item
     if (soldItem && boughtItem) break
   }

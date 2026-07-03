@@ -81,7 +81,7 @@ export function generateTransferRumor(game: SaveGame, rand: () => number): Rumor
       inboxItem: {
         id: `rumor-${matchday}-${player.id}`,
         date: game.currentDate,
-        type: InboxItemType.Transfer,
+        type: InboxItemType.TransferRumor,
         title: '📰 Transferrykte',
         body: `${text}\n\n🔍 En grov scoutbild har lagts till — du kan nu lägga bud direkt eller scouta för mer detaljer.`,
         relatedPlayerId: player.id,
@@ -99,7 +99,7 @@ export function generateTransferRumor(game: SaveGame, rand: () => number): Rumor
       id: `rumor-atm-${matchday}`,
       date: game.currentDate,
       type: InboxItemType.Media,
-      title: '📰 Från pressplätten',
+      title: '📰 Från pressläktaren',
       body: text,
       isRead: false,
     },
