@@ -45,13 +45,16 @@
 
 ENDA detaljkälla: `docs/TEXT-AUDIT-PROTOKOLL.md` → tabellen **ÖPPNA ÄRENDEN**
 överst (supersede-disciplin — läs tabellen, inte LOGG:en).
-- **Code-kö NU (ordning):** (1) domän 1-commit (73 rättade rader, 18 filer;
-  order i protokollets LOGG 2026-07-02 kväll), (2)
-  `docs/SPEC_REGELBOKSANPASSNING_2026-07-03.md` — M1 förlängning 20 min +
-  M15 utvisning 5/10 + M16 landslagsuttag 0–2 (Jacob beslutade 2026-07-03),
-  (3) M9-grep · M12-fix.
-- **Fable-kö:** Del 4 i regelboksspecen (textbyte mot {minuter}-token) —
-  EFTER Codes Del 1–2.
+- **Code-kö — KLART 2026-07-03:** domän 1-commit (73 rättade rader, 18
+  filer) · `SPEC_REGELBOKSANPASSNING_2026-07-03.md` Del 1-3 (M1 förlängning
+  20 min `ad9f97a1`, M15 utvisning 5/10 `d7a0315a`, M16 landslagsuttag 0-2
+  `2ce3b4d0`, alla med kalibrering i commit) · M12-fix `baa190f4`.
+  **Kvar i Code-kön:** M9-grep (injuryDoctorText/DIAGNOSIS_LINES-anrop) ·
+  DOMÄN 2-BUGGAR M17-M25 (anropskodsverifierade rotorsaker, se ÖPPNA
+  ÄRENDEN → CODE GÖR i protokollet för detaljer per fynd).
+- **Fable-kö NU:** Del 4 i regelboksspecen (textbyte "10/30/120 minuter"
+  mot {minuter}-token/nya förlängningsrader) — grep-listorna finns i
+  `d7a0315a`/`ad9f97a1`.
 - **Jacob:** inget öppet just nu. M5–M7 godkända 2026-07-03.
 - **Kvar:** domän 2 (orten/röster, FÄRSK Fable-session, lärdom #4 först),
   domän 3 (UI), domän 4 (väder/övrigt). Därefter text-guard-lint (Code).
