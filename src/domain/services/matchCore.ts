@@ -7,6 +7,11 @@ export const MATCH_ENGINE_VERSION = '1.2.0'
 // och bas-rates gav 9.748 mål/match → GOAL_RATE_MOD = 9.12 / 9.748 = 0.936.
 const GOAL_RATE_MOD = 0.936
 
+// M15 (regelboksanpassning 2026-07-03): basfördelning 10-minutersutvisning vs
+// 5-minutersutvisning. Källa: docs/kunskapsbas/DATA.md §7 (schemaVersion 5,
+// 2019-2026, 100% täckning) — 7,7% 5-min / 92,1% 10-min över hela datasetet.
+const SUSPENSION_TEN_MIN_BASE = 0.921
+
 // Två oberoende grindar i canScore(): båda måste vara uppfyllda
 // för att en målscen ska kunna konvertera.
 //
@@ -998,6 +1003,7 @@ function* simulateMatchCore(
     let assisterPlayerId:  string | undefined
     let gkPlayerId:        string | undefined
     let suspendedPlayerId: string | undefined
+    let suspensionDurationMinutes: 5 | 10 | undefined
 
     // Interaction data (full mode only)
     let cornerInteractionData:   CornerInteractionData   | undefined
@@ -1293,7 +1299,10 @@ function* simulateMatchCore(
       // refStyle påverkar INTE foulThreshold — intentional tona-ned (D-MOTOR 2026-06-22).
       // refStyle styr commentary (referee_strict/lenient) men inte foulfrekvensen.
       // En refStyle-term i foulThreshold vore en kalibreringsrunda; billigare som presentation.
-      const foulThreshold = foulProb * 1.46 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult  // Sprint 25b.2.2: was 1.25 (0.55 pre-25b.2)
+      // M15 (regelboksanpassning 2026-07-03): 1.46→1.02. Diskreta 5/10-minutersutvisningar
+      // (var kontinuerligt 4,5-9 min) höjde snittlängden ~43% — sänkt frekvens kompenserar
+      // så att totala utvisningsminuter/match bevaras (se commit för mätning).
+      const foulThreshold = foulProb * 1.02 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult  // M15 2026-07-03: was 1.46 (1.25 pre-25b.2.2)
 
       if (r < foulThreshold) {
         const isAttackZoneFoul = rand() < 0.70
@@ -1325,7 +1334,22 @@ function* simulateMatchCore(
         if (suspPlayer) {
           suspendedPlayerId  = suspPlayer.id
           suspensionOccurred = true
-          const duration     = 3 + Math.floor(rand() * 4)
+          // M15 (regelboksanpassning 2026-07-03): utvisning är 5 ELLER 10 minuter,
+          // aldrig ett kontinuerligt spann (var 3-6 steg = 4,5-9 min). Fördelning
+          // kalibrerad mot docs/kunskapsbas/DATA.md §7 (schemaVersion 5, 2019-2026,
+          // 100% täckning): 7,7% 5-min / 92,1% 10-min — hela datasetet, inte bara
+          // 2025-26:s "Våga visa rött"-trend (37,5%/62,5%, 30-matchers spotcheck,
+          // för litet sampel för kalibrering). Grovvikt: suspensionProfile
+          // 'intensitet' + sen/jämn matchsituation (samma dimensioner som
+          // getDefendingPlayer redan väger på) → något oftare 10, en enkel
+          // multiplikator utan ny mekanik.
+          const margin       = Math.abs(attackScore - defendScore)
+          const isCloseOrLate = margin <= 1 || step >= 45
+          let tenMinProb     = SUSPENSION_TEN_MIN_BASE
+          if (suspPlayer.suspensionProfile === 'intensitet') tenMinProb = Math.min(0.97, tenMinProb * 1.03)
+          if (isCloseOrLate) tenMinProb = Math.min(0.97, tenMinProb * 1.02)
+          suspensionDurationMinutes = rand() < tenMinProb ? 10 : 5
+          const duration = Math.round(suspensionDurationMinutes / 1.5)  // steg (1,5 min/steg)
           if (isHomeAttacking) {
             awayActiveSuspensions++
             awaySuspensionTimers.push(duration)
@@ -1334,7 +1358,7 @@ function* simulateMatchCore(
             homeSuspensionTimers.push(duration)
           }
           trackRed(suspPlayer.id)
-          const ev: MatchEvent = { minute, type: MatchEventType.Suspension, clubId: defendingClubId, playerId: suspPlayer.id, description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}` }
+          const ev: MatchEvent = { minute, type: MatchEventType.Suspension, clubId: defendingClubId, playerId: suspPlayer.id, description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}`, durationMinutes: suspensionDurationMinutes }
           stepEvents.push(ev); allEvents.push(ev)
         }
       }
@@ -1366,6 +1390,7 @@ function* simulateMatchCore(
         intensity: 'intensiv',
         result:    homeScore > awayScore ? 'en seger' : homeScore < awayScore ? 'ingenting' : 'en poäng',
         rivalry:   rivalry?.name ?? '',
+        minuter:   suspensionDurationMinutes ? String(suspensionDurationMinutes) : '',
       }
 
       if (step === 0) {
@@ -1579,7 +1604,7 @@ function* simulateMatchCore(
           commentaryText = fillTemplate(pickCommentary(commentary.suspension, rand, commentaryHistory), templateVars)
         }
         if (rand() < 0.5) {
-          const tc = getTraitCommentary(suspendedPlayerId, 'suspension', allPlayers)
+          const tc = getTraitCommentary(suspendedPlayerId, 'suspension', allPlayers, suspensionDurationMinutes)
           if (tc) commentaryText = tc
         }
       } else if (cornerOccurred && !goalScored) {

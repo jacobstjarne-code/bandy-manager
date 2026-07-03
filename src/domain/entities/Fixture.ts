@@ -17,6 +17,8 @@ export interface MatchEvent {
   description: string
   isCornerGoal?: boolean
   isPenaltyGoal?: boolean
+  /** Utvisningens längd (5 eller 10 min) — sätts bara på MatchEventType.Suspension. */
+  durationMinutes?: 5 | 10
 }
 
 export interface ManagerChoiceEntry {

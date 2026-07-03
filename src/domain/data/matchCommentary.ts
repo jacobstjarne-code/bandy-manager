@@ -898,6 +898,7 @@ export function getTraitCommentary(
   playerId: string,
   eventType: 'goal' | 'assist' | 'suspension',
   players: Player[],
+  durationMinutes?: 5 | 10,
 ): string | null {
   const player = players.find(p => p.id === playerId)
   if (!player?.trait) return null
@@ -974,7 +975,10 @@ export function getTraitCommentary(
   if (eventType === 'suspension') {
     const pool = traitSuspensions[player.trait]
     if (!pool) return null
-    return pool[Math.floor(Math.random() * pool.length)]
+    const pick = pool[Math.floor(Math.random() * pool.length)]
+    // M15: {minuter}-token redo för Del 4:s textbyte (5|10 min, regelboksanpassning
+    // 2026-07-03) — no-op idag eftersom poolerna ovan ännu inte innehåller token.
+    return durationMinutes ? fillTemplate(pick, { minuter: String(durationMinutes) }) : pick
   }
   return null
 }
