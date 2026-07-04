@@ -13,6 +13,12 @@ interface PressQuestion {
   preferIds: string[]  // response IDs that directly answer this question
   minRound?: number    // earliest round this question makes sense
   minScandalThisSeason?: boolean  // requires at least one scandal this season
+  // M54 (textaudit 2026-07-04): kontextgates frågepoolen saknade, svarssystemet
+  // redan har (matchesContext). Alla opt-in — utelämnad flagga = ingen gate.
+  requireTrailedAtHalf?: boolean  // (a) "vände underläge till seger"
+  requireLateEqualizer?: boolean  // (b) "kvitterade sent"
+  requireDrawStreak3?: boolean    // (c) "oavgjort i tre raka"
+  requireHome?: boolean           // (d) {arenaName} är alltid managed clubs egen arena
 }
 
 const QUESTIONS: Record<string, PressQuestion[]> = {
@@ -22,7 +28,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Tidningarna pratar mer om ekonomi än bandy just nu. Hur landar det hos er?', preferIds: ['bw_d2', 'bw_h1', 'cl07'], minScandalThisSeason: true },
     { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['bw_h1', 'bw_d1', 'cl04'], minScandalThisSeason: true },
     { text: 'Tydlig seger. Var det er bästa match den här säsongen?', preferIds: ['bw_c1', 'bw_h2', 'cl01'], minRound: 6 },
-    { text: 'Laget spelade bra idag. Vad är skillnaden jämfört med tidigare omgångar?', preferIds: ['bw_c2', 'bw_h5', 'cl04'] },
+    { text: 'Laget spelade bra idag. Vad är skillnaden jämfört med tidigare omgångar?', preferIds: ['bw_c2', 'bw_h5', 'cl04'], minRound: 3 },
     { text: 'Klar seger idag — är det ett mönster eller en engångsgrej?', preferIds: ['bw_c3', 'bw_h4', 'cl02'] },
     { text: 'Ert anfallsspel ser ostoppbart ut. Fruktar du inte att bli läst av motståndarna?', preferIds: ['bw_c4', 'bw_h4', 'cl02'] },
     { text: 'Motståndarna verkade chockade av er intensitet. Avsiktlig taktik?', preferIds: ['bw_c5', 'bw_h5', 'bw_d1'] },
@@ -38,10 +44,10 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Två viktiga poäng. Hur påverkar det stämningen i laget?', preferIds: ['w_p2', 'w_h2', 'w_p4'] },
     { text: 'Vilken spelare stack ut idag?', preferIds: ['w_p3', 'w_h3', 'w_c3'] },
     { text: 'Hur håller ni den här formen uppe?', preferIds: ['w_c4', 'w_d4', 'cl03'], minRound: 3 },
-    { text: 'Ni vände underläge till seger. Vad hände i pausen?', preferIds: ['w_p5', 'w_h5', 'w_d5'] },
+    { text: 'Ni vände underläge till seger. Vad hände i pausen?', preferIds: ['w_p5', 'w_h5', 'w_d5'], requireTrailedAtHalf: true },
     { text: 'Två poäng till. Kan ni utmana toppen nu?', preferIds: ['w_c6', 'w_h6', 'cl08'], minRound: 5 },
     { text: 'Ni dominerade mittfältet idag. Är det er styrka just nu?', preferIds: ['w_c7', 'w_h7', 'bw_d2'] },
-    { text: 'Hur var stämningen på {arenaName} idag?', preferIds: ['w_p3', 'bw_p7'], minRound: 3 },
+    { text: 'Hur var stämningen på {arenaName} idag?', preferIds: ['w_p3', 'bw_p7'], minRound: 3, requireHome: true },
     { text: 'Kaptenen {captainName} — hur ser han på insatsen?', preferIds: ['w_p2', 'w_h3'], minRound: 3 },
   ],
   loss: [
@@ -74,11 +80,11 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Tidningarna pratar mer om ekonomi än bandy just nu. Hur landar det hos er?', preferIds: ['bw_d2', 'dr_h1', 'cl07'], minScandalThisSeason: true },
     { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['dr_c4', 'bw_d1', 'dr_h1'], minScandalThisSeason: true },
     { text: 'Oavgjort — nöjd eller besviken?', preferIds: ['dr_h1', 'dr_c1', 'dr_d1'] },
-    { text: 'Ni kvitterade sent. Vad säger det om lagets karaktär?', preferIds: ['dr_p2', 'dr_h2', 'dr_d1'] },
+    { text: 'Ni kvitterade sent. Vad säger det om lagets karaktär?', preferIds: ['dr_p2', 'dr_h2', 'dr_d1'], requireLateEqualizer: true },
     { text: 'En poäng på bortaplan — räknas det som bra?', preferIds: ['dr_c3', 'dr_h3', 'dr_d1'] },
     { text: 'Det satt i detaljerna idag. Vilken är viktigast att förbättra?', preferIds: ['dr_h4', 'dr_c4', 'dr_h6'] },
     { text: 'Ert spel var ojämnt idag. Vad berodde det på?', preferIds: ['dr_h5', 'dr_h4', 'dr_c4'] },
-    { text: 'Ni har oavgjort i tre raka. Är det en trend att oroa sig för?', preferIds: ['dr_c6', 'dr_h6', 'dr_h3'] },
+    { text: 'Ni har oavgjort i tre raka. Är det en trend att oroa sig för?', preferIds: ['dr_c6', 'dr_h6', 'dr_h3'], requireDrawStreak3: true },
   ],
   derbyWin: [
     { text: 'Derbyseger! Vad betyder det för laget?', preferIds: ['dw_p1', 'dw_c1', 'dw_p2'] },
@@ -255,7 +261,9 @@ const PLAYER_RESPONSES: ManagerResponse[] = [
   { id: 'cl22', tag: 'draw_away_top',label: '"Borta mot ett topplag och ta poäng — det köper jag. Det visar att vi hänger med."', moraleEffect: 4, mediaQuote: 'Tränaren: "Borta mot ett topplag och ta poäng — det köper jag. Vi hänger med."' },
   { id: 'cl23', tag: 'draw_boring',  label: '"Inte den vackraste matchen. Men ibland handlar bandy om att inte förlora. Det lyckades vi med."', moraleEffect: 2, mediaQuote: 'Tränaren: "Inte den vackraste matchen — men ibland handlar bandy om att inte förlora. Det lyckades vi med."' },
   { id: 'cl24', tag: 'playoff_win',  label: '"Nu börjar det på riktigt. Allt vi gjort i serien — det var bara uppvärmningen."', moraleEffect: 6, mediaQuote: 'Tränaren: "Nu börjar det på riktigt. Allt vi gjort i serien var bara uppvärmningen."' },
-  { id: 'cl25', tag: 'playoff_loss', label: '"Slutspelet är bäst av fem. En match bevisar ingenting. Vi kommer tillbaka starkare i nästa."', moraleEffect: 4, mediaQuote: 'Tränaren: "Bäst av fem. En match bevisar ingenting. Vi kommer tillbaka starkare."' },
+  // M54(g) (textaudit 2026-07-04): tag omdöpt — "bäst av fem, nästa match" ljuger
+  // om det VAR finalen (en enda match, ingen nästa i serien).
+  { id: 'cl25', tag: 'playoff_loss_not_final', label: '"Slutspelet är bäst av fem. En match bevisar ingenting. Vi kommer tillbaka starkare i nästa."', moraleEffect: 4, mediaQuote: 'Tränaren: "Bäst av fem. En match bevisar ingenting. Vi kommer tillbaka starkare."' },
   { id: 'cl26', tag: 'cup_win',      label: '"Cupen har sin egen magi. Allt kan hända. Idag hände det för oss."', moraleEffect: 5, mediaQuote: 'Tränaren: "Cupen har sin magi. Allt kan hända — idag hände det för oss."' },
   { id: 'cl27', tag: 'final_pre',    label: '"SM-finalen på Studenternas. Det är därför man spelar bandy. För de här dagarna."', moraleEffect: 7, mediaQuote: 'Tränaren: "SM-finalen på Studenternas. Det är därför man spelar bandy. För de här dagarna."' },
   { id: 'cl28', tag: 'any',          label: '"Det finns inga genvägar till framgång. Bara korta passningar och hårt arbete."', moraleEffect: 3, mediaQuote: 'Tränaren filosoferade: "Det finns inga genvägar till framgång. Bara korta passningar och hårt arbete."' },
@@ -279,11 +287,13 @@ interface PressContext {
   isFinal: boolean
   streak: number
   lossStreak: number
+  drawStreak: number
   opponentPosition: number
   position: number
   temperature?: number
   totalShots?: number
   trailedAtHalf: boolean
+  lateEqualizer: boolean
   youngsterScored: boolean
   rand: () => number
 }
@@ -319,18 +329,22 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
 
   let streak = 0
   let lossStreak = 0
+  let drawStreak = 0
   for (const f of completedManaged) {
     const fHome = f.homeClubId === game.managedClubId
     const my = fHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
     const their = fHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-    if (streak === 0 && lossStreak === 0) {
-      if (my > their) streak = 1
-      else if (my < their) lossStreak = 1
-      else break
+    const result = my > their ? 'win' : my < their ? 'loss' : 'draw'
+    if (streak === 0 && lossStreak === 0 && drawStreak === 0) {
+      if (result === 'win') streak = 1
+      else if (result === 'loss') lossStreak = 1
+      else drawStreak = 1
     } else if (streak > 0) {
-      if (my > their) streak++; else break
+      if (result === 'win') streak++; else break
+    } else if (lossStreak > 0) {
+      if (result === 'loss') lossStreak++; else break
     } else {
-      if (my < their) lossStreak++; else break
+      if (result === 'draw') drawStreak++; else break
     }
   }
 
@@ -343,6 +357,18 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
     if (e.clubId === game.managedClubId) htManaged++; else htOpp++
   }
   const trailedAtHalf = htOpp > htManaged
+
+  // M54(b) (textaudit 2026-07-04): sen kvittering — matchen slutade oavgjord
+  // OCH nivelleringen (samma antal mål båda lagen) skedde senast vid minut ≥75.
+  let lateEqualizer = false
+  if (draw) {
+    let runningMine = 0, runningTheirs = 0
+    for (const e of evts) {
+      if (e.type !== MatchEventType.Goal) continue
+      if (e.clubId === game.managedClubId) runningMine++; else runningTheirs++
+      if ((e.minute ?? 0) >= 75 && runningMine === runningTheirs) lateEqualizer = true
+    }
+  }
 
   // Young scorer (age ≤ 20)
   const youngsterScored = evts.some(e => {
@@ -362,8 +388,8 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
 
   return {
     won, lost, draw, margin, isDerby, isHome, isPlayoff, isCup, isFinal,
-    streak, lossStreak, opponentPosition, position,
-    temperature, totalShots, trailedAtHalf, youngsterScored, rand,
+    streak, lossStreak, drawStreak, opponentPosition, position,
+    temperature, totalShots, trailedAtHalf, lateEqualizer, youngsterScored, rand,
   }
 }
 
@@ -389,7 +415,7 @@ function matchesContext(tag: string, ctx: PressContext): boolean {
     case 'draw_away_top': return ctx.draw && !ctx.isHome && ctx.opponentPosition <= 3
     case 'draw_boring':   return ctx.draw && (ctx.totalShots ?? 99) < 10
     case 'playoff_win':   return ctx.won && ctx.isPlayoff
-    case 'playoff_loss':  return ctx.lost && ctx.isPlayoff
+    case 'playoff_loss_not_final': return ctx.lost && ctx.isPlayoff && !ctx.isFinal
     case 'cup_win':       return ctx.won && ctx.isCup
     case 'final_pre':     return ctx.isPlayoff && ctx.isFinal
     case 'winter':        return (ctx.temperature ?? 0) < -10
@@ -403,7 +429,9 @@ function matchesContext(tag: string, ctx: PressContext): boolean {
 function isGenericMatch(tag: string, won: boolean, lost: boolean, draw: boolean): boolean {
   if (tag === 'any') return true
   if (won && (tag.startsWith('win_') || tag === 'playoff_win' || tag === 'cup_win' || tag === 'final_pre')) return true
-  if (lost && (tag.startsWith('loss_') || tag === 'playoff_loss')) return true
+  // M54(g): playoff_loss_not_final medvetet UTESLUTEN här — cl25 ska inte
+  // slinka in via generic-fallbacken när matchen var finalen.
+  if (lost && tag.startsWith('loss_')) return true
   if (draw && tag.startsWith('draw_')) return true
   return false
 }
@@ -542,9 +570,18 @@ export function generatePressConference(
   const allQuestions = QUESTIONS[contextKey]
   if (!allQuestions || allQuestions.length === 0) return null
   const hasCurrentSeasonScandal = (game.scandalHistory ?? []).some(s => s.season === game.currentSeason)
+  // M54 (textaudit 2026-07-04): ctx flyttad hit (var tidigare byggd efter
+  // frågevalet) så frågepoolen kan gates mot samma kontext svarssystemet redan
+  // dömer mot — annars kan t.ex. "Ni vände underläge till seger" frågas efter
+  // en match som aldrig låg under.
+  const ctx = buildPressContext(fixture, game, rand)
   const questions = allQuestions.filter(q =>
     (!q.minRound || round >= q.minRound) &&
-    (!q.minScandalThisSeason || hasCurrentSeasonScandal)
+    (!q.minScandalThisSeason || hasCurrentSeasonScandal) &&
+    (!q.requireTrailedAtHalf || ctx.trailedAtHalf) &&
+    (!q.requireLateEqualizer || ctx.lateEqualizer) &&
+    (!q.requireDrawStreak3 || ctx.drawStreak >= 3) &&
+    (!q.requireHome || ctx.isHome)
   )
   const questionPool = questions.length > 0 ? questions : allQuestions
 
@@ -630,7 +667,11 @@ export function generatePressConference(
   }
 
   // WEAK-008 + DEV-006: check for follow-up question first (40% chance if journalist has negative memory)
-  if (game.journalist) {
+  // M54(f) (textaudit 2026-07-04): gated på !ctx.won — följdfrågorna antar att
+  // laget fortfarande kämpar ("Alla väntar på vändningen"); serverade tidigare
+  // förlust-svar ("Vi var inte tillräckligt bra idag") som enda alternativ
+  // efter en SEGER.
+  if (game.journalist && !ctx.won) {
     const followUp = findFollowUpQuestion(game.journalist, round, rand)
     if (followUp && rand() < 0.4) {
       question = followUp
@@ -654,7 +695,6 @@ export function generatePressConference(
     }
   }
 
-  const ctx = buildPressContext(fixture, game, rand)
   const responses = buildPressResponses(ctx, question.preferIds)
 
   if (responses.length === 0) return null
