@@ -6,6 +6,7 @@ import { summarizeSignature } from './seasonSignatureService'
 import { seededPick, fixtureSeed } from '../utils/random'
 import { ordinal } from '../utils/numberFormat'
 import { deriveFixtureOutcome, countGoalsByPlayer, findLateWinnerGoal, isComeback } from './matchUtils'
+import { formatRating } from '../format'
 
 function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
   const managedClubId = game.managedClubId
@@ -22,7 +23,7 @@ function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
     triggers.push({
       type: 'academyStarBorn',
       headline: `Akademistjärna: ${academyStar.firstName} ${academyStar.lastName}`,
-      body: `${academyStar.firstName} ${academyStar.lastName} klev fram ur akademin och spelade ${academyStar.seasonStats.gamesPlayed} matcher med ett snittbetyg på ${academyStar.seasonStats.averageRating.toFixed(1)}.`,
+      body: `${academyStar.firstName} ${academyStar.lastName} klev fram ur akademin och spelade ${academyStar.seasonStats.gamesPlayed} matcher med ett snittbetyg på ${formatRating(academyStar.seasonStats.averageRating)}.`,
       relatedPlayerId: academyStar.id,
     })
   }

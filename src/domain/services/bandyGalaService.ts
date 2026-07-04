@@ -2,6 +2,7 @@ import type { SaveGame, StorylineEntry } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import { InboxItemType } from '../enums'
 import type { InboxItem } from '../entities/SaveGame'
+import { formatRating } from '../format'
 
 // ── Awards ──────────────────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ export function generateNominations(game: SaveGame): GalaNomination[] {
       playerId: bestGK.id,
       playerName: `${bestGK.firstName} ${bestGK.lastName}`,
       clubName: club?.shortName ?? '?',
-      stat: `${bestGK.seasonStats.averageRating.toFixed(1)} betyg`,
+      stat: `${formatRating(bestGK.seasonStats.averageRating)} betyg`,
     })
   }
 
@@ -103,7 +104,7 @@ export function generateNominations(game: SaveGame): GalaNomination[] {
       playerId: bestVet.id,
       playerName: `${bestVet.firstName} ${bestVet.lastName}`,
       clubName: club?.shortName ?? '?',
-      stat: `${bestVet.seasonStats.averageRating.toFixed(1)} betyg`,
+      stat: `${formatRating(bestVet.seasonStats.averageRating)} betyg`,
     })
   }
 

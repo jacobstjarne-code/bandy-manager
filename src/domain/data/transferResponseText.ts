@@ -13,6 +13,18 @@ export type PersonalityType = 'homebound' | 'ambitious' | 'family' | 'dream_club
 export type RivalryIntensity = 1 | 2 | 3
 
 /**
+ * M49 (textaudit 2026-07-04): transferPersonality tilldelas hash-seedat vid
+ * worldGenerator-skapande, helt ålders-omedvetet — en 19-åring kan få
+ * personlighetstypen 'family'. Dessa två strängar i PERSONALITY_REFUSAL.family
+ * förutsätter ett barn i gymnasie-/skolålder och ska filtreras bort av
+ * anroparen (transferProcessor.ts) när spelaren är under 28.
+ */
+export const FAMILY_REFUSAL_REQUIRES_OLDER_PLAYER = new Set([
+  'Pojken börjar gymnasiet till hösten. Det blir inte nu.',
+  'Hans dotter har precis börjat skolan. Inte i år.',
+])
+
+/**
  * Vägran-strängar per personlighetstyp. Visas i TransferBidResult inbox-item
  * när spelaren tackat nej efter klubb-accept.
  */

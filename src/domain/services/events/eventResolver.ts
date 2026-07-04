@@ -1170,7 +1170,11 @@ export function resolveEvent(
       updatedGame = { ...updatedGame, pendingPressConference: undefined }
     }
     // DEV-013: critical article after 3 refusals
-    if (choiceId === 'refuse_press' && updatedGame.journalist && updatedGame.journalist.pressRefusals >= 3) {
+    // M36 (textaudit 2026-07-04): pressRefusals nollställs aldrig, så `>= 3` gav
+    // en ny kritisk artikel i inkorgen vid VARJE vägran från och med den tredje
+    // (varje refusal_id unik via räknaren) — oändlig spam. `=== 3` triggar exakt
+    // en gång, eftersom räknaren bara ökar.
+    if (choiceId === 'refuse_press' && updatedGame.journalist && updatedGame.journalist.pressRefusals === 3) {
       const managerName = updatedGame.managerName ?? 'Tränaren'
       const article = generateCriticalArticle(updatedGame.journalist, managerName, updatedGame.currentDate)
       const updatedJournalist = { ...updatedGame.journalist, style: 'provocative' as const }

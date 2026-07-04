@@ -43,9 +43,9 @@ export function positionLong(pos: PlayerPosition): string {
 
 // ── Pengar (regel 11: tkr heltal, lön tkr/mån heltal, aldrig kronprecision) ──
 
-/** Marknadsvärde: "1.2 mkr" / "450 tkr". Sub-tkr visas i kr (sällsynt). */
+/** Marknadsvärde: "1,2 mkr" / "450 tkr". Sub-tkr visas i kr (sällsynt). */
 export function formatValue(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
+  if (v >= 1_000_000) return `${formatDecimalComma(v / 1_000_000)} mkr`
   if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
   return `${v} kr`
 }
@@ -53,4 +53,17 @@ export function formatValue(v: number): string {
 /** Månadslön: heltal tkr, "15 tkr/mån". Aldrig "15 678 kr/mån". */
 export function formatSalary(n: number): string {
   return `${Math.round(n / 1000)} tkr/mån`
+}
+
+// ── Decimaltal (M46, textaudit 2026-07-04) ──────────────────────────
+// toFixed(1) ger punktdecimal ("8.2") — svensk speltext ska ha kommatecken.
+// Kanonisk källa så samma fel inte upprepas fil för fil.
+
+export function formatDecimalComma(n: number): string {
+  return n.toFixed(1).replace('.', ',')
+}
+
+/** Matchbetyg: "8,2". */
+export function formatRating(rating: number): string {
+  return formatDecimalComma(rating)
 }

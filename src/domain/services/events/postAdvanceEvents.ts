@@ -20,7 +20,7 @@ import {
   generateMecenatInterventionEvent,
   generateJournalistExclusiveEvent,
 } from './eventFactories'
-import { formatValue } from '../../format'
+import { formatValue, formatDecimalComma } from '../../format'
 import { findEmployerForJob } from '../../data/localEmployers'
 import { generateSilentShoutEvent, generateMecenatConflictEvent, generateMecenatAllianceEvent } from '../mecenatService'
 
@@ -607,7 +607,7 @@ export function generatePostAdvanceEvents(
         ? `${Math.round(offer.weeklyIncome / 1000)}k kr`
         : `${offer.weeklyIncome} kr`
       const totalFmt = totalValue >= 1000000
-        ? `${(totalValue / 1000000).toFixed(1)} mkr`
+        ? `${formatDecimalComma(totalValue / 1000000)} mkr`
         : totalValue >= 1000
         ? `${Math.round(totalValue / 1000)}k kr`
         : `${totalValue} kr`

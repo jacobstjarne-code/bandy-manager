@@ -41,6 +41,11 @@ export interface Mecenat {
   patience: number
   contribution: number
   totalContributed: number
+  // M48 (textaudit 2026-07-04): ALDRIG populerad någonstans i src/ — sätts till
+  // [] vid skapande (mecenatService.ts) och rörs aldrig igen. eventProcessor.ts:s
+  // påminnelse- och withdrawal-events (MECENAT_WITHDRAWAL_TEXT, tre rika
+  // personlighetsgated avsked-texter) kräver demands.length > 0/>= 3 — helt
+  // onåbara. Se BACKLOG.md "BYGGT MEN OSYNLIGT".
   demands: MecenatDemand[]
   socialExpectations: SocialEvent[]
   isActive: boolean

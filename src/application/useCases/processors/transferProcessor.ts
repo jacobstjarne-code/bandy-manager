@@ -9,7 +9,7 @@ import { resolveOutgoingBid, generateIncomingBids, getCounterOfferAmount, execut
 import { getTransferWindowStatus } from '../../../domain/services/transferWindowService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { getRivalry } from '../../../domain/data/rivalries'
-import { PERSONALITY_REFUSAL, PERSONALITY_ACCEPTANCE, DREAM_CLUB_MAGIC, PLAYER_REACTION_RIVAL_SALE } from '../../../domain/data/transferResponseText'
+import { PERSONALITY_REFUSAL, PERSONALITY_ACCEPTANCE, DREAM_CLUB_MAGIC, PLAYER_REACTION_RIVAL_SALE, FAMILY_REFUSAL_REQUIRES_OLDER_PLAYER } from '../../../domain/data/transferResponseText'
 import { seededPick } from '../../../domain/utils/random'
 
 const BUD_WITHDRAWN_POOL = [
@@ -220,7 +220,12 @@ export function processTransferBids(
       const wasPlayerRejection = resolvedBid?.bidRejectedByPlayer === true
       if (wasPlayerRejection) {
         const personality = target.transferPersonality ?? 'default'
-        const refusalStrings = PERSONALITY_REFUSAL[personality as keyof typeof PERSONALITY_REFUSAL] ?? PERSONALITY_REFUSAL.default
+        let refusalStrings = PERSONALITY_REFUSAL[personality as keyof typeof PERSONALITY_REFUSAL] ?? PERSONALITY_REFUSAL.default
+        // M49 (textaudit 2026-07-04): transferPersonality är ålders-omedveten —
+        // filtrera bort barn-specifika family-strängar för unga spelare.
+        if (personality === 'family' && target.age < 28) {
+          refusalStrings = refusalStrings.filter(s => !FAMILY_REFUSAL_REQUIRES_OLDER_PLAYER.has(s))
+        }
         const refusalText = refusalStrings[Math.floor(localRand() * refusalStrings.length)]
         inboxItems.push({
           id: `inbox_bid_rejected_${bid.id}`,

@@ -238,7 +238,11 @@ export function generatePreSeasonMessage(
   const expectationChanged = newExpectation !== club.boardExpectation
 
   let body = `Styrelsen har utvärderat säsongen. `
-  if (lastSeasonPosition <= 3) {
+  // M39 (textaudit 2026-07-04): "imponerade" triggade på position ≤3 oavsett
+  // boardExpectation — en WinLeague-styrelse (som redan kan ha gett ett lågt
+  // säsongsbetyg för just den placeringen) skulle ändå få höra att en 3:e
+  // plats imponerade. Gated mot att expectation inte redan ÄR WinLeague.
+  if (lastSeasonPosition <= 3 && club.boardExpectation !== ClubExpectation.WinLeague) {
     body += `Förra säsongens ${ordinal(lastSeasonPosition)} plats imponerade. `
   } else if (lastSeasonPosition >= 10) {
     body += `Förra säsongens ${ordinal(lastSeasonPosition)} plats var under förväntan. `

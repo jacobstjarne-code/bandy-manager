@@ -21,6 +21,13 @@ const EVENT_TO_SUMMARY: Record<string, string> = {
   'refused_press': 'Vägrade presskonferens',
   'good_answer':   'Svarade ärligt på presskonferensen',
   'bad_answer':    'Undvek frågan på presskonferensen',
+  // M37 (textaudit 2026-07-04): cs_press_*-nycklarna (eventResolver.ts) saknade
+  // etiketter helt — föll till råa slugs via `?? m.event`. Korta varianter av
+  // CS_PRESS_CHOICE_BUTTONS (csPressEventText.ts).
+  'cs_press_individual': 'Lyfte fram en spelare efter nollan',
+  'cs_press_team':       'Pekade på hela laget efter nollan',
+  'cs_press_system':     'Svarade systemiskt efter nollan',
+  'cs_press_silent':     'Avstod kommentar efter nollan',
 }
 
 function sentimentClass(s: number): 'positive' | 'neutral' | 'negative' {

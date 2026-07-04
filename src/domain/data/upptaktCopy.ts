@@ -33,7 +33,12 @@ export const UPPTAKT_PHASEMARKS: Record<UpptaktSubState, PhaseMarkVariant[]> = {
   bottenstrid: [
     { eyebrow: '⬩ Annat att spela för ⬩', quote: 'Slutspelet är utom räckhåll. Men det finns annat.', helper: 'Det som är kvar handlar om att hålla oss ifrån kvalet.' },
     { eyebrow: '⬩ Säsongens sista akt ⬩', quote: 'Inte slutspelet. Men inte heller över.', helper: 'Bottenkampen avgörs nu.' },
-    { eyebrow: '⬩ Strecket åt fel håll ⬩', quote: 'Vi spelar för att slippa kvalet.', helper: 'Två lag åker direkt. Vi ligger i farozonen.' },
+    // M53 (textaudit 2026-07-04): helper sa "Två lag åker direkt" (ingen kval)
+    // — motsäger både quoten på SAMMA rad ("slippa kvalet") och alla andra
+    // bottenstrid-rader i filen, som konsekvent refererar kvalet. Rättad
+    // till samma etablerade struktur (regelboken: kvalspel mellan seriernas
+    // sista/första plats, ingen automatisk nedflyttning).
+    { eyebrow: '⬩ Strecket åt fel håll ⬩', quote: 'Vi spelar för att slippa kvalet.', helper: 'Två lag möter kvalet. Vi ligger i farozonen.' },
     { eyebrow: '⬩ Slutspelet är borta ⬩', quote: 'Men ärligheten i de sista är allt.', helper: 'Vi måste hålla nivån — för truppen, för bygden, för nästa år.' },
     { eyebrow: '⬩ Lugnare men inte mindre viktigt ⬩', quote: 'Vi spelar för säsongen som kommer, inte den som var.', helper: 'Ett starkt avslut sätter tonen för sommarens fönster.' },
     { eyebrow: '⬩ Ingen lyx — bara plikt ⬩', quote: 'Sista matcherna. Slipp kvalet och visa nivå.', helper: 'Inget att vinna, mycket att förlora.' },

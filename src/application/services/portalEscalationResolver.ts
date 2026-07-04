@@ -16,7 +16,10 @@ import { PlayoffRound } from '../../domain/enums'
 export type EscalationSubState = 'sakrat' | 'farozon' | 'mittfalt' | 'bottenstrid' | null
 
 const PLAYOFF_CUTOFF = 8      // topp 8 till slutspel
-const RELEGATION_CUTOFF = 11  // plats 11–12 (av 12) till kval/nedflyttning
+// M53 (textaudit 2026-07-04): "kval", inte automatisk nedflyttning — matchar
+// regelboken (kvalspel mellan seriernas sista/första plats) och upptaktCopy.ts:s
+// egna, konsekventa "kvalet"-referenser i bottenstrid-poolen.
+const RELEGATION_CUTOFF = 11  // plats 11–12 (av 12) till kval
 const UPPTAKT_WINDOW = 3      // sista 3 omgångarna
 
 export function getEscalationSubState(game: SaveGame): EscalationSubState {

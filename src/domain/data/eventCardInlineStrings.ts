@@ -25,6 +25,7 @@ export const CAPTAIN_SPEECH_VARIANTS: readonly string[] = [
 ]
 
 import { seededPick } from '../utils/random'
+import { formatRating } from '../format'
 
 export function pickStarPerformanceText(
   player: { id: string; firstName: string; lastName: string },
@@ -34,7 +35,7 @@ export function pickStarPerformanceText(
   const variant = seededPick(STAR_PERFORMANCE_VARIANTS, `${player.id}_${roundNumber}`)
   return variant
     .replace(/\{NAME\}/g, `${player.firstName} ${player.lastName}`)
-    .replace(/\{RATING\}/g, rating.toFixed(1))
+    .replace(/\{RATING\}/g, formatRating(rating))
 }
 
 export function pickPlayerPraiseText(

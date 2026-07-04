@@ -14,13 +14,6 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
 ### JACOB BESLUTAR (smak)
 — tomt. M5–M7 godkända av Jacob 2026-07-03: "brottningen", "mittback" och
 "tre-fem-tvåa" står kvar som de är. Flaggas inte igen.
-- **M43 (2026-07-04, design):** vill Jacob ha kvinnliga tränare? Filkommentaren
-  i managerKaraktarText säger "Managern (Sture/Margareta)" men ALL bio-/
-  burnout-/rivaltext är maskulin ("{hemort}-grabb", "hans", "honom") — 1/12
-  saves fick genomgående genusfel. Fable tog bort Margareta ur
-  COACH_FIRST_NAMES (→ Sune) som minsta koherenta fix. Vill Jacob åt andra
-  hållet krävs könsneutralisering eller dubbling av ~15 strängar — Fable
-  skriver, säg bara till.
 - **M33-restfråga (2026-07-03):** V och MP och SD saknar agenda-vikter i
   `PARTY_AGENDA_WEIGHTS` (politicianService.ts + createNewGame.ts) — faller
   till den likformiga default-poolen (alla fem agendor lika sannolika)
@@ -38,71 +31,50 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
   DAY_JOB_TITLES till bruksorts-yrken. Ingen krasch, bara tyst underdäckning.
 
 ### CODE GÖR
-M17–M35 HELT AVKLARADE 2026-07-03 → se AVGJORT. Nya från domän 3
-(2026-07-04): M36–M42, M44–M49, M51–M53 nedan.
+M17–M53 HELT AVKLARADE 2026-07-04 (M36–M42/M44–M49/M51–M53 denna omgång,
+detaljer + utfall i AVGJORT) → se AVGJORT. Kvar: M9 (gammal, ej upptagen
+denna omgång) + M54–M58 (domän 3-svansens service-relevansskanning,
+tillkom UNDER denna omgångs körning — INTE ännu körda).
+- **M54** pressConferenceService: frågepooler saknar kontextgates som
+  svarssystemet redan har. Inför valfri gate per fråga (lätt pre-context
+  före frågevalet — buildPressContext-fälten finns): (a) 'Ni vände
+  underläge till seger' → gate trailedAtHalf; (b) 'Ni kvitterade sent'
+  → gate sen kvittering ur events (mål ≥75' som gjorde det lika);
+  (c) 'Ni har oavgjort i tre raka' → gate drawStreak ≥3 (streak-loopen
+  räknar idag bara W/L); (d) 'Hur var stämningen på {arenaName}' → gate
+  isHome (arenaName är ALLTID managed club — frågan ljuger på bortaplan);
+  (e) 'Laget spelade bra idag. Vad är skillnaden jämfört med tidigare
+  omgångar?' → minRound: 3; (f) follow-up-frågorna (findFollowUpQuestion)
+  → gate !won — preferIds kringgår matchesContext i slot 1–3, så en
+  follow-up efter SEGER serverar idag förlustsvar ("Vi var inte
+  tillräckligt bra idag") som enda alternativ; (g) cl25 playoff_loss
+  ("Bäst av fem. Vi kommer tillbaka i nästa.") → exkludera FINALEN
+  (isFinal) — finalen är EN match, det finns ingen nästa.
+- **M55** mediaService.generateTrendArticles: findIndex ger -1 när ALLA
+  fem senaste är W (eller L) → winStreak/lossStreak = -1 och artikeln
+  uteblir för just de starkaste sviterna. Fix: -1 → lastResults.length.
+- **M56 (låg)** 'Kafeterian' som inbox-titel i generateAbsurdityArticles
+  — kafferummet är kanontermen. Grep 'Kafeterian' (scandalService använder
+  samma format enligt kommentaren), enhetliggör: EN term, alla ställen.
+- **M57** silentMatchReportService: mål efter minut 90 etiketteras 'andra
+  halvlek' — lägg förlängningsgren (≤45 första, ≤90 andra, annars
+  'förlängningen').
+- **M58** opponentManagerService använder Math.random() i BÅDA quote-
+  pickarna (generatePreMatch + generatePostMatch) — determinism-brott,
+  M35-klassen → seeda med fixtureHash/rand. Samtidigt: verifiera
+  hasScandal-semantiken vid anropet — SCANDAL_AFFECTED-texterna antar att
+  skandalen berör MOTSTÅNDARLAGET ("mycket runtomkring oss", "läget vi är
+  i"); skickas en liga-/egen-klubbskandal in ljuger citaten.
 - **M9** grep imports av injuryDoctorText — nås DIAGNOSIS_LINES för
   träningsskador? ("andra halvlek"-raden får bara visas för matchskador.)
-- **M36** journalistService.generateCriticalArticle: "vägrat tre
-  presskonferenser I RAD" — men pressRefusals är kumulativ och nollställs
-  aldrig i filen. Grep anroparen: är triggern konsekutiv? Annars ändra
-  brevtexten till "gång på gång vägrat ställa upp".
-- **M37 (låg)** CS_PRESS_MEMORY_TEMPLATES är halvengelska ("Coach hyllade
-  {NAME} efter CS mot {OPPONENT}") — verifiera att journalist.memory
-  ALDRIG renderas verbatim i UI. Om det renderas: CS→nollan, Coach→Tränaren.
-- **M38** pickCSPressPublishedQuote förväntar journalist:{firstName,
-  lastName} men Journalist-entiteten (createJournalist) har ETT name-fält
-  → naiv anropare ger "undefined undefined" i publicerade citat. Grep
-  anroparen och verifiera vad som skickas.
-- **M39** generatePreSeasonMessage: "Förra säsongens {n} plats imponerade"
-  triggas på plats ≤3 OAVSETT expectation — en WinLeague-styrelse som just
-  gett betyg 3 för en tredjeplats "imponeras" inte. Gate mot expectation
-  eller säsongsbetyget.
-- **M40** boardData.BOARD_QUOTES (generiska poolen): verifiera gating.
-  Resultatpositiva supporterrader ("Vilken match igår!", "Vi behöver fler
-  sådana kvällar") och ekonom-doom ("Vi blöder pengar") kan motsäga
-  tabell/kassa på samma skärm om de plockas kontextblint — context-pooler
-  finns redan (BOARD_CONTEXT_QUOTES); rapportera hur valet görs.
-- **M41** boardMeetingCopy A-speakerline "Akademin har fått fart" + GOAL
-  'A:academy': verifiera gating mot akademi-existens (är akademin byggbar
-  facility eller finns den alltid?).
-- **M42 (system)** DUBBLA STYRELSESYSTEM: boardData (BOARD_PROFILES/
-  BOARD_QUOTES/BOARD_MEETING_OPENERS/CONTEXT_QUOTES) vs boardQuotes
-  (BOARD_CHARACTERS lennart/mikael/rune/tommy + eget BOARD_QUOTES +
-  MEETING_OPENERS). Överlappande innehåll (parkera om-öppnaren finns i
-  BÅDA, en interpolerad och en hårdkodad "Sandberg"), namnkollisionsrisk
-  (Lennart Dahlgren i båda; citaternas sponsor "Persson" vs profilernas
-  Anita Persson). Grep konsumenterna av båda, rapportera vilket som är
-  live; det döda dödmarkeras eller tas bort — EN SANNING, ETT STÄLLE.
-- **M44** LINEUP_ROTATION_OUTCOMES good: "Rotationen gav energi —
-  {spelare} avgjorde" — verifiera att {spelare} är avgöraren/målskytten,
-  inte godtycklig roterad spelare. Annars byt rad (Fable skriver).
-- **M45 (låg)** LEADERSHIP_OUTCOMES och CAPTAIN_OUTCOMES.vardag delar
-  identiska strängar — verifiera att båda inte kan rendera samtidigt på
-  MatchReportScreen (identisk rad två gånger på samma skärm).
-- **M46** eventCardInlineStrings: rating.toFixed(1) ger punktdecimal
-  ("8.2") i svensk speltext — byt till komma i interpolationen
-  (.replace('.', ',')).
-- **M47 (låg)** CAPTAIN_SPEECH_VARIANTS avslutar alla med "Förlusterna
-  har börjat stapla sig." — verifiera att triggern är förluststreak.
-- **M48** MECENAT_WITHDRAWAL kontrollfreak: "Du har ignorerat mig tre
-  gånger nu" — verifiera trigger = tre ignorerade interaktioner; annars
-  avprecisera ("gång på gång").
-- **M49** transferResponseText family-strängar ("Pojken börjar gymnasiet",
-  "jobbat sex år på bruket", "dottern har börjat skolan") är oåldersgatade
-  — en 19-åring kan få gymnasiebarn. Verifiera om personlighetstyp eller
-  strängval kan åldersgatas (≥28 för barnsträngarna).
-- **M51 (låg)** windowDeadlineText: "Fönstret stänger för säsongen"
-  förutsätter ETT fönster per säsong — verifiera mot transferWindowService.
-- **M52** DEADLINE_KAFFERUM_TEXT har hårdkodade gubbnamn (Rolf, Gunnar,
-  Bertil, Göte; Kurt redan utbytt → Sixten) — grep kafferummets
-  gubbnamnpool för kollision (Kurt-buggklassen).
-- **M53** upptaktCopy bottenstrid: "Två lag åker direkt" + kvalreferenser
-  — verifiera nedflyttningsstrukturen (två direkt + en kvalplats?) mot
-  seriemotorn.
-- Stilnoter: seasonChampionYear()-helpern i seasonSummaryService (inline
-  +1) · enum-jämförelse i attendance-isSnow (kodlukt, ej bugg) ·
-  playerNames.ts har dubbletter i båda listorna (Lindberg, Berglund,
-  Lundgren, Magnus m.fl. ×2) — ofarligt (bara vikter), städa vid tillfälle.
+- Stilnoter (ej rörda denna omgång): seasonChampionYear()-helpern i
+  seasonSummaryService (inline +1) · enum-jämförelse i attendance-isSnow
+  (kodlukt, ej bugg) · playerNames.ts har dubbletter i båda listorna
+  (Lindberg, Berglund, Lundgren, Magnus m.fl. ×2) — ofarligt (bara
+  vikter), städa vid tillfälle · pressConferenceService: 🎤 i eventtiteln
+  och 😤 i vägra-subtitlen står kvar trots filens egen kommentar "emojis
+  replaced with plain text" — hör till Emoji→Lucide-passet (Överlämning
+  2), tas där.
 
 ### FABLE GÖR (efter Codes Del 1–2)
 — tomt. Del 4 KÖRD 2026-07-03 (se LOGG) — M1/M15/M16 helt avslutade.
@@ -116,15 +88,114 @@ M17–M35 HELT AVKLARADE 2026-07-03 → se AVGJORT. Nya från domän 3
   meritskärm byggs. Aktiveras då.
 
 ### NÄSTA AUDIT-PASS
-- **Domän 3 datafiler KLARA 2026-07-04.** Kvar i domän 3: relevansskanning
-  av services med inline-pooler (pressConferenceService, mediaService,
-  silentMatchReportService, opponentManagerService) — körs som inledning
-  på domän 4-sessionen (fillistelärdomen från domän 1).
-- Sen domän 4 (väder/ceremonier/facility/övrigt) i FÄRSK session.
+- **DOMÄN 3 HELT KLAR 2026-07-04** (datafiler + service-relevansskanningen
+  pressConference/media/silentMatchReport/opponentManager, se LOGG).
+- Kvar: domän 4 (väder/ceremonier/facility/scener) enligt fillistan.
+  OBS hallProvningData och specialDateStrings redan dömda i domän 2b —
+  hoppa över. Misstankenumrering fortsätter från M59.
 - text-guard-linten byggs av Code EFTER att alla fyra domäners termlista
   är slutjusterad.
 
 ### AVGJORT (referens, rör ej)
+- **M43 AVGJORD 2026-07-04 (Jacob):** kvinnliga tränare JA, lågmält —
+  bandyvärlden är konservativ. Fable skrev om managerKaraktarText
+  könsneutralt samma dag (10 rader: bio-öppnare, familjerad,
+  burnout-helpers, rivalcitat — omskrivning, aldrig hen; "lagkamrater
+  förr" → "känner varandra sen spelaråren" eftersom bandy är
+  könsuppdelat) och återinsatte Margareta i COACH_FIRST_NAMES (1/12).
+  Principen gäller framåt: text om managern skrivs pronomenfri.
+  OBS opponentManagerService (oskannad, domän 4-inledningen) ska dömas
+  mot samma princip — rivaltränare kan också vara Margareta.
+- **M36–M42, M44–M49, M51–M53 HELT AVKLARADE 2026-07-04** (domän 3, Code):
+  · **M36** — FIXAD. `pressRefusals` bekräftat kumulativ (nollställs
+    aldrig) — texten sa "tre i rad", avpreciserad till "gång på gång".
+    BONUS-BUGG: triggervillkoret var `>= 3` (ingen enstaka-gång-spärr) →
+    en ny kritisk artikel i inkorgen vid VARJE vägran från och med den
+    tredje, oändlig spam. Ändrat till `=== 3` (räknaren ökar bara, så
+    detta triggar exakt en gång per spel).
+  · **M37** — VERIFIERAD, INGEN BUGG (+ angränsande bugg fixad).
+    `CS_PRESS_MEMORY_TEMPLATES`s text renderas aldrig (computed i
+    eventResolver.ts, sen `void`:ad — memory-arrayen lagrar bara
+    strukturerad data, ingen text). "Coach" var redan bytt till
+    "Tränaren". Angränsande fynd: `cs_press_*`-eventnycklarna saknade
+    HELT etikett i EVENT_TO_SUMMARY (journalistRelationshipScene.ts) och
+    OrtenTab.tsx:s inline-map → föll till råa slugs ("cs_press_individual")
+    i "senaste interaktioner"-listan. Fyra etiketter tillagda i båda.
+  · **M38** — VERIFIERAD, INGEN BUGG. Enda anropsstället
+    (eventResolver.ts:1254-1268) splittar redan `journalist.name` korrekt
+    till firstName/lastName innan anrop — ingen naiv anropare existerar.
+  · **M39** — FIXAD. "Förra säsongens N:a plats imponerade" gated nu på
+    att `boardExpectation !== WinLeague` — en titelförväntad styrelse ska
+    inte kalla en 2:a/3:e plats imponerande.
+  · **M40** — VERIFIERAD, INGEN BUGG (dödkod, se M42). `BOARD_QUOTES`/
+    `BOARD_CONTEXT_QUOTES` (boardData.ts) konsumeras aldrig → kontradiktion-
+    scenariot (resultatpositiv rad mot ekonomidoom samtidigt) kan inte
+    uppstå.
+  · **M41** — VERIFIERAD, INGEN BUGG. "Akademin" är INTE en byggbar B1-
+    facility — `youthTeam` genereras ovillkorligt för varje ny klubb
+    (createNewGame.ts:381). Ingen existens-gating behövs.
+  · **M42 (system)** — LÖST, STÖRRE FYND ÄN ÄRENDET ANTOG. Grep visar
+    TRE styrelsemöte-textsystem, inte två: `BOARD_PROFILES` (boardData.ts)
+    ÄR live (createNewGame.ts genererar styrelsen ur den), men BÅDA
+    filernas citat-/opener-poolar (boardQuotes.ts HELA filen; boardData.ts:s
+    BOARD_QUOTES/BOARD_CONTEXT_QUOTES/BOARD_MEETING_OPENERS) har NOLL
+    konsumenter. Det faktiskt live mötestext-systemet är en TREDJE fil,
+    `boardMeetingCopy.ts`, konsumerad av boardMeetingStateResolver.ts +
+    BoardMeetingScene.tsx. Namnkollisionen bekräftad (Lennart Dahlgren +
+    Mikael Sandberg i båda döda poolerna). Dödmarkerat med kommentar i
+    båda filerna (boardQuotes.ts förbjuder Code att ändra/utöka
+    INNEHÅLLET — kommentaren respekterar det). BACKLOG-rad tillagd.
+  · **M44** — FIXAD. `{spelare}`s "avgjorde"-rad borttagen ur
+    `LINEUP_ROTATION_OUTCOMES.good` — bindningen är till den
+    vilade/roterade spelaren, medan good/bad/neutral sätts av lagets
+    matchresultat, inte den spelarens faktiska bidrag.
+  · **M45** — VERIFIERAD, INGEN BUGG. `LEADERSHIP_OUTCOMES` har noll
+    konsumenter (bara `CAPTAIN_OUTCOMES` är wirad i GranskaOversikt.tsx)
+    — dubblettrendering kan inte uppstå.
+  · **M46** — FIXAD, UTVIDGAD TILL KANONISK HELPER. Ny
+    `formatRating`/`formatDecimalComma` i `domain/format.ts` (samma fil
+    som formatValue/formatSalary). Applicerad på eventCardInlineStrings.ts
+    (ärendets fil) + samma bugg bekräftad och fixad i narrativeService.ts
+    (×2), mediaService.ts, bandyGalaService.ts (×2), seasonSummaryService.ts,
+    postAdvanceEvents.ts — alla var samma "betyg X.Y i svensk prosa"-fel.
+    Lämnade ~20 rena UI-numeriska badges/tabeller (PlayerCard, SquadScreen,
+    HistoryScreen m.fl.) ORÖRDA — annan register-fråga (scoreboard-stil vs
+    prosa), inte samma bugg, kräver ett separat designbeslut om hela appens
+    siffervisning ska vara komma-decimal.
+  · **M47** — VERIFIERAD, INGEN BUGG. Triggern är genuint 3 raka förluster
+    (`recentResults.slice(0,3).every(loss)`), matchar texten exakt.
+  · **M48** — LÖST, STÖRRE FYND ÄN ÄRENDET ANTOG. `Mecenat.demands`
+    sätts till `[]` vid skapande och populeras ALDRIG någonstans i src/
+    — HELA withdrawal-systemet (påminnelse-notis + de tre rika
+    personlighetsgated avskedstexterna kontrollfreak/filantropen/
+    nostalgiker) är onåbart, oavsett happiness. Dödmarkerat i
+    Mecenat.ts, BACKLOG-rad tillagd.
+  · **M49** — FIXAD. Ny `FAMILY_REFUSAL_REQUIRES_OLDER_PLAYER`-lista i
+    transferResponseText.ts + åldersfilter i transferProcessor.ts —
+    de två barn-specifika family-strängarna ("Pojken börjar gymnasiet",
+    "dottern har börjat skolan") filtreras bort när target.age < 28.
+    `transferPersonality` bekräftat hash-seedat vid worldGenerator,
+    helt ålders-omedvetet.
+  · **M51** — VERIFIERAD, INGEN BUGG. Deadline-dag-fragmentet
+    (situationFragments.ts) triggar bara på fixture.isWindowDeadlineDay,
+    som scheduleGenerator.ts BARA sätter för 31 januari — "stänger för
+    säsongen" är korrekt eftersom augusti-fönstret aldrig får denna
+    narrativa deadline-behandling.
+  · **M52** — VERIFIERAD, INGEN BUGG. `DEADLINE_KAFFERUM_TEXT`
+    (gubbnamnen) har noll konsumenter — död kod, ingen kollisionsrisk.
+    Det faktiskt live deadline-kafferumsinnehållet
+    (`TRANSFER_DEADLINE_EXCHANGES`, coffeeRoomService.ts) använder
+    rollnamn (Kassören/Ordföranden/Materialaren), inte personnamn — hela
+    felklassen är strukturellt omöjlig där.
+  · **M53** — FIXAD. "Två lag åker direkt" i upptaktCopy.ts:s bottenstrid-
+    pool motsade BÅDE quoten på samma rad ("slippa kvalet") och alla
+    andra bottenstrid/countdown-rader i filen (alla refererar konsekvent
+    "kvalet") — samt regelboken (kvalspel mellan seriernas plats,
+    ingen automatisk nedflyttning). Rättad till "Två lag möter kvalet."
+    `portalEscalationResolver.ts`s `RELEGATION_CUTOFF`-kommentar
+    tydliggjord till samma "kval"-ram.
+  Verifiering: npx tsc --noEmit, npm run build, npx vitest run efter varje
+  ärende — 125 testfiler / 1238 tester gröna genom hela batchen.
 - **M1/M15/M16 HELT KLARA 2026-07-03.** Code: `ad9f97a1` (förlängning 20
   min), `d7a0315a` (utvisning 5/10 diskret), `2ce3b4d0` (landslagsuttag 0–2)
   med kalibrering i respektive commit. Fable: Del 4-textbytet kört samma
@@ -363,6 +434,18 @@ MISSTANKAR — döm i kontext, luta konservativt:
    Regressionstermer från Del 4 (2026-07-03): `30 minuter` och `120 minuter`
    bannade i matchtext (förlängningen är 20, totalen 110); `10 minuter`/
    `tio minuter` hårdkodat i utvisningskontext (ska vara {minuter}-token).
+   Regressionstermer från domän 3 M36–M53 (2026-07-04): `tre presskonferenser
+   i rad`/`tre gånger` hårdkodat i notistext bunden till en kumulativ
+   (aldrig nollställd) räknare — kräv att räknarens faktiska semantik
+   (kumulativ vs konsekutiv) verifieras innan ett hårdkodat tal skrivs in i
+   prosan; `.toFixed(1)` utan `.replace('.', ',')` i speltext (prosa-
+   sentenser, inte UI-badges/tabeller) — använd `formatRating`/
+   `formatDecimalComma` (domain/format.ts); `Två lag åker direkt` (eller
+   annan automatisk-nedflyttning-fras) i bandytext — regelboken har kval
+   mellan seriernas plats, inte automatisk nedflyttning; barn-specifika
+   familjesträngar ("börjar gymnasiet", "börjat skolan") kopplade till en
+   hash-seedad, ålders-omedveten personlighetstyp — kräv en ålderskoll vid
+   strängvalet, inte bara vid personlighetstilldelningen.
 2. Committa rättningar per domän med rotorsak i meddelandet.
 
 ## LOGG
@@ -1020,3 +1103,111 @@ MISSTANKAR — döm i kontext, luta konservativt:
   (inline-pooler) — inledning på domän 4-sessionen. LÄGE: domän 1+2
   kompletta, domän 3 datafiler kompletta. NÄSTA: Code kör M36–M53-
   grep-batchen; Fable kör service-skanning + domän 4 i färsk session.
+
+- 2026-07-04 (kväll): DOMÄN 3-SVANSEN KLAR — service-relevansskanningen
+  (pressConferenceService, mediaService, silentMatchReportService,
+  opponentManagerService). DOMÄN 3 DÄRMED KOMPLETT. Anropskod läst före
+  dömning i alla fyra (buildPressContext/matchesContext/
+  buildPressResponses, mediaServices svit-räknare, silent-reportens
+  opener-logik, opponentManager-pickarna).
+
+  RÄTTAT (≈33 rader, 4 filer):
+  · pressConferenceService (24): "ligan" ×3 i skandalfrågor →
+    bandysverige (regressionstermen) · "Tvåsiffrigt idag" (bigWin =
+    marginal ≥3, inte tio mål) → "Klar seger" · "Bortalaget" ×2 i
+    delade pooler när VI kan vara bortalag (perspektivinversion,
+    M4-klassen) → Motståndarna · "körde över er i perioder" (period-
+    doft + överdrift vid 1-målsförlust) → "långa stunder av övertag"
+    + genusfix "ert försvarsspel" · "Ni avancerar i tabellen" (ogatat)
+    → "Två poäng till." · "Ni hamnade efter tidigt" (L#9-tidsförlopp)
+    → förloppsneutral · "konverterade" (anglicism) → förvaltade ·
+    "Matchen avgjordes av detaljer" (oavgjord match avgörs inte) →
+    "Det satt i detaljerna" · "Laget såg trötta ut" → trött ·
+    derbyWin "Ni dominerade klart" (ogatat på marginal) → intentfråga ·
+    derbyLoss "fullständigt dominerade" → claimfri · TRE OGATADE
+    DUBBLETTER STRUKNA ur basfrågepoolerna (mecenat-, ung spelare-,
+    publiken sviker-, kommunen-frågorna påstår fakta som bara de
+    GATADE override-versionerna kan garantera — fyra rader bort) ·
+    follow-up-frågorna ×3: FABRICERADE tränarcitat ("sa du att
+    försvaret skulle hålla", "Du lovade vändning", "sa du att truppen
+    räcker" — journalist.memory lagrar sentiment, inte innehåll;
+    csPress-felklassen) → claimfria omskrivningar mot det minnet
+    faktiskt garanterar · storyline-frågans "Nu leder ni serien"
+    (ogatat på position) struket · "förra veckan" (kaptensfrågan,
+    avpreciseringsklassen) struket · "destiny" → framtid (+ "Ingen
+    derby" → Inget) · "extra speech" → "inga extra ord" · "De ska
+    göra" (trunkerad) → "De ska njuta" · cl29 "springer i shorts"
+    (man ÅKER) → åker ×2 · cl32 "18-åring" (gaten är ≤20) → "ung
+    grabb" ×2. GODKÄNT i övrigt: cl-poolens medvetna tränarklyschor
+    (register, w_d4 lampshadar själv), "tolfte man" (bandy är 11 mot
+    11), riktiga medier som vardagsfärg, "kliniska" (etablerad
+    sportsvenska), "cred" (SAOL).
+  · mediaService (4): "{n} raka segrar"/"Tredje raka förlusten" —
+    räknaren räknar vinster/förluster BLAND de fem senaste, inte
+    konsekutivt (W-L-W-W-W gav "4 raka") → "{n} segrar/förluster på
+    de fem senaste" (exakt siffra, alltid sann) · "klättrar laget i
+    tabellen" (ogatat — falskt för serieledaren) struket · "Styrelsen
+    är tyst" (kan motsägas av styrelseevent samma vecka) → "Frågorna
+    hopar sig". OBS: toFixed-punktdecimalen i POTM-rubriken visade sig
+    REDAN FIXAD på disk (formatRating-helper) — M46-klassen har fått
+    central lösning, M46 kan vara överspelad (Code verifierar).
+  · silentMatchReportService (3): "tog hem ett tungt nederlag" (man
+    tar inte HEM nederlag, särskilt inte på bortaplan) → "Det blev
+    {flavor} för X" · fallback "Matchen avgjordes av smådetaljer"
+    (visas när events SAKNAS — kan vara 6–1) → "Resultatet säger det
+    mesta om kvällen." · "En prestation att bygga vidare på" (Del 3-
+    förbjuden klyscha, tredje förekomsten i auditen) → "Det ger råg i
+    ryggen inför nästa omgång."
+  · opponentManagerService (5): M43-DÖMD — all tränartext verifierad
+    PRONOMENFRI (alla citat via mgr.name, "killarna" avser spelarna),
+    Margareta inlagd i MANAGER_FIRSTNAMES (1/13, lågmält per M43-
+    principen) · "Det underdriver det" (kalkerad anglicism) →
+    "Besviken är bara förnamnet." · "Förväntade seger" → Förväntad ·
+    "Xg-modellen visade +0.4" (fotbollsjargong + punktdecimal) →
+    "Modellen gav oss ett par tiondelar i övertag" (professorial-
+    personan behållen) · "Outlier" → "Ett avvikande utfall" ·
+    "Märkliga match" → Märklig.
+
+  MISSTANKAR: M54–M58 inlagda i CODE GÖR (frågegates, findIndex −1,
+  Kafeterian-termen, förlängningsgrenen, Math.random + hasScandal-
+  semantik). MCP-NOTIS: mediaService på disk skilde sig från sessionens
+  första läsning (formatRating fanns) — läs-omedelbart-före-edit-regeln
+  räddade batchen; en atomisk rollback inträffade och omapplicerades rent.
+
+  LÄGE: domän 1+2+3 KOMPLETTA. NÄSTA: domän 4 enligt fillistan (minus
+  hallProvningData + specialDateStrings, dömda i 2b), numrering från M59.
+
+- 2026-07-04 (Code): M36–M42/M44–M49/M51–M53 KÖRDA I ORDNING (M42+M38
+  prioriterade enligt Jacobs order), HELA BATCHEN AVKLARAD. Se AVGJORT
+  för utfall per ärende. Två fynd var STÖRRE än ärendet beskrev: M42
+  (tre styrelsemöte-textsystem, inte två — boardMeetingCopy.ts är den
+  faktiskt live, bekräftar Fables oberoende fynd i domän 3-svans-passet
+  ovan) och M48 (hela mecenat-withdrawal-systemet dött, inte bara
+  triggerräkningen oprecis — Mecenat.demands populeras aldrig). Båda
+  dödmarkerade i koden + loggade i BACKLOG.md:s "BYGGT MEN OSYNLIGT"-
+  tabell, som därmed är uppe i 6 aktiva rader — över den egna
+  ~5-radersgränsen. Föreslår en konsolideringsomgång innan nästa fynd
+  läggs till där.
+
+  M46 utvidgades avsiktligt bortom ärendets enda fil: samma
+  toFixed(1)-utan-komma-bugg fanns identisk i fem till (narrativeService,
+  mediaService, bandyGalaService, seasonSummaryService,
+  postAdvanceEvents) — alla i svensk PROSA, samma felklass, mekanisk
+  fix. Konsoliderade i en ny kanonisk formatRating/formatDecimalComma i
+  domain/format.ts (bekräftat redan på disk av Fables oberoende
+  domän-3-svans-läsning av mediaService, se ovan). Rörde INTE de ~20
+  rena UI-numeriska badges/tabeller (PlayerCard, SquadScreen,
+  HistoryScreen m.fl.) som också har toFixed(1) — annan registerfråga
+  (scoreboard-stil), inte samma bugg, kräver separat designbeslut.
+
+  Text-guard-planen uppdaterad med domän 3 M36–M53:s regressionstermer.
+
+  Build+test genom hela batchen: npx tsc --noEmit rent, npm run build
+  grönt, npx vitest run — 125 testfiler / 1238 tester gröna efter varje
+  ärende.
+
+  LÄGE: M17–M53 helt avklarade. Kvar i CODE GÖR: M9 (gammal) + M54–M58
+  (domän 3-svansen, se Fables entry ovan — INTE ännu körda). NÄSTA:
+  Code kör M54–M58 när Jacob/Fable ger klartecken; BACKLOG-
+  konsolideringen (ovan) kan göras när som helst innan dess.
+  Code kör M36–M58-batchen när som helst.

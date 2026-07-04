@@ -35,6 +35,12 @@ export const BOARD_PROFILES = [
 export type BoardPersonality = 'supporter' | 'ekonom' | 'traditionalist' | 'modernist'
 export type BoardRole = 'ordförande' | 'kassör' | 'ledamot'
 
+// M42 (textaudit 2026-07-04): BOARD_QUOTES/BOARD_CONTEXT_QUOTES/
+// BOARD_MEETING_OPENERS (denna fil) har noll konsumenter i src/ — samma
+// klass som hela boardQuotes.ts (se den filens headerkommentar). Det live
+// styrelsemöte-systemet är boardMeetingCopy.ts. BOARD_PROFILES ovan ÄR
+// live (createNewGame.ts genererar styrelsen ur den) — bara poolerna nedan
+// är döda. Opus/Jacob-beslut: radera eller väv in i BoardMeetingScene.
 export const BOARD_QUOTES: Record<BoardPersonality, string[]> = {
   supporter: [
     '"Vilken match igår! Publiken var fantastisk."',

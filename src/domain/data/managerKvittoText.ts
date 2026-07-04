@@ -38,9 +38,16 @@ export const HALFTIME_OUTCOMES: Record<'lugna' | 'pressa' | 'prata', Record<Kvit
   },
 }
 
-/** Lineup-rotation (jämfört med förra matchen) → energi vs rytm. */
+/**
+ * Lineup-rotation (jämfört med förra matchen) → energi vs rytm.
+ * M44 (textaudit 2026-07-04): "{spelare} avgjorde" borttagen — {spelare} binds
+ * till den vilade/roterade spelaren i GranskaOversikt.tsx, medan good/bad/
+ * neutral (kvittoDir) sätts av lagets matchresultat, inte den spelarens
+ * faktiska bidrag. Raden hävdade att den roterade spelaren avgjorde matchen
+ * varje gång laget vann — oavsett om det stämde.
+ */
 export const LINEUP_ROTATION_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
-  good: ['Rotationen gav energi — {spelare} avgjorde.', 'De utvilade benen orkade hela vägen.'],
+  good: ['De utvilade benen orkade hela vägen.'],
   bad: ['Rotationen störde rytmen och kemin uteblev.', 'De invalda kom aldrig in i matchen.'],
   neutral: ['Rotationen syntes varken på gott eller ont.'],
 }

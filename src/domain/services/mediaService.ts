@@ -3,6 +3,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { Journalist } from '../entities/SaveGame'
 import { FixtureStatus, InboxItemType } from '../enums'
 import { SMALL_ABSURDITIES } from '../data/smallAbsurditiesData'
+import { formatRating } from '../format'
 
 function buildByline(journalist: Journalist | undefined, suppressName?: boolean): string {
   if (!journalist) return ''
@@ -84,14 +85,14 @@ export function generateMediaHeadlines(
 
   if (myScore > theirScore && wins >= 4) {
     return [mediaItem(
-      `${myClub?.name} i strålande form — ${wins} raka segrar`,
+      `${myClub?.name} i strålande form — ${wins} segrar på de fem senaste`,
       game.currentDate, id, game, suppressJournalistName
     )]
   }
 
   if (theirScore > myScore && losses >= 3) {
     return [mediaItem(
-      `Kris i ${myClub?.name}? Tredje raka förlusten`,
+      `Kris i ${myClub?.name}? ${losses} förluster på de fem senaste`,
       game.currentDate, id, game, suppressJournalistName
     )]
   }
@@ -103,7 +104,7 @@ export function generateMediaHeadlines(
     const rating = managedFixture.report?.playerRatings?.[potmId]
     if (potm && rating && rating >= 8.0) {
       return [mediaItem(
-        `"Otrolig insats" — ${potm.firstName} ${potm.lastName} hyllas efter ${rating.toFixed(1)}-betyg`,
+        `"Otrolig insats" — ${potm.firstName} ${potm.lastName} hyllas efter ${formatRating(rating)}-betyg`,
         game.currentDate, id, game, suppressJournalistName
       )]
     }
@@ -151,7 +152,7 @@ export function generateTrendArticles(
       date: game.currentDate,
       type: InboxItemType.Media,
       title: `${club.shortName} på vinnarkurs — ${winStreak} raka segrar`,
-      body: `Det går som tåget för ${club.name}. Med ${winStreak} raka vinster i ryggen klättrar laget i tabellen och fansen börjar drömma stort.`,
+      body: `Det går som tåget för ${club.name}. Med ${winStreak} raka vinster i ryggen börjar fansen drömma stort.`,
       isRead: false,
     })
   } else if (lossStreak >= 3 && rand() < 0.6) {
@@ -178,7 +179,7 @@ export function generateTrendArticles(
       date: game.currentDate,
       type: InboxItemType.Media,
       title: `${club.shortName} kämpar — men räcker det?`,
-      body: `Plats ${position} efter ${roundNumber} omgångar. Nedflyttningshotet hänger tungt över ${club.name}. Styrelsen är tyst — men hur länge?`,
+      body: `Plats ${position} efter ${roundNumber} omgångar. Nedflyttningshotet hänger tungt över ${club.name}. Frågorna hopar sig.`,
       isRead: false,
     })
   }

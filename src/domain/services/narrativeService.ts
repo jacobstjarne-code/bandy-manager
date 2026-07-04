@@ -1,4 +1,5 @@
 import type { Player } from '../entities/Player'
+import { formatRating } from '../format'
 
 type NarrativeEntry = NonNullable<Player['narrativeLog']>[number]
 
@@ -81,13 +82,13 @@ export function generateGoodMatchEntry(rating: number, goals: number, opponent: 
   const goalText = goals > 0 ? ` Stod för ${goals} mål.` : ''
   return {
     season, matchday, type: 'form',
-    text: `Storspelad match mot ${opponent} (betyg ${rating.toFixed(1)}).${goalText}`,
+    text: `Storspelad match mot ${opponent} (betyg ${formatRating(rating)}).${goalText}`,
   }
 }
 
 export function generatePoorMatchEntry(rating: number, opponent: string, season: number, matchday: number): NarrativeEntry {
   return {
     season, matchday, type: 'form',
-    text: `Svår dag mot ${opponent} (betyg ${rating.toFixed(1)}). En match att lägga bakom sig.`,
+    text: `Svår dag mot ${opponent} (betyg ${formatRating(rating)}). En match att lägga bakom sig.`,
   }
 }

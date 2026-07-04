@@ -3,6 +3,17 @@
  * Skrivna manuellt för svensk bandy-Sverige-ton (parkeringar, understatement,
  * konkret vardag). Får EJ "förbättras", omformuleras eller utökas av Code.
  * Nya tillägg kommer från separat kurerings-session.
+ *
+ * M42 (textaudit 2026-07-04): HELA FILEN ÄR DÖD KOD — BOARD_CHARACTERS,
+ * BOARD_QUOTES och MEETING_OPENERS har noll konsumenter någonstans i src/.
+ * Det live styrelsemöte-systemet är `boardMeetingCopy.ts` (BOARD_MEETING_COPY
+ * + GOAL_MOTIVATIONS), konsumerat av boardMeetingStateResolver.ts +
+ * BoardMeetingScene.tsx — en TREDJE, separat datakälla från både denna fil
+ * och boardData.ts. Innehållet här är kvalitativt och rikt (namnkollision
+ * med boardData.ts: Lennart Dahlgren + Mikael Sandberg finns i båda filerna
+ * som olika personer/format) men når aldrig spelaren. Opus/Jacob-beslut:
+ * radera filen eller väva in BOARD_QUOTES/MEETING_OPENERS i BoardMeetingScene
+ * som ett komplement till boardMeetingCopy.ts — se BACKLOG.md.
  */
 
 export type BoardCharacterId = 'lennart' | 'mikael' | 'rune' | 'tommy'

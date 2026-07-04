@@ -239,6 +239,12 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
                       refused_press: 'Vägrade kommentera',
                       big_win: 'Stor seger',
                       crisis: 'Krisläge',
+                      // M37 (textaudit 2026-07-04): cs_press_*-nycklarna saknade etiketter
+                      // och föll till råa slugs via `?? m.event`.
+                      cs_press_individual: 'Lyfte fram en spelare efter nollan',
+                      cs_press_team: 'Pekade på hela laget efter nollan',
+                      cs_press_system: 'Svarade systemiskt efter nollan',
+                      cs_press_silent: 'Avstod kommentar efter nollan',
                     }[m.event] ?? m.event}</span>
                     <span style={{ color: m.sentiment >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>{m.sentiment >= 0 ? '+' : ''}{m.sentiment}</span>
                   </div>

@@ -192,7 +192,11 @@ export function generateCriticalArticle(journalist: Journalist, managerName: str
     id: `article_refusal_${journalist.pressRefusals}`,
     type: InboxItemType.MediaEvent,
     title: `${journalist.outlet}: "${managerName} duckar frågorna"`,
-    body: `Ledare i lokaltidningen: Klubbens ledning har nu vägrat tre presskonferenser i rad. Det är inte bara en fråga om PR — det är en fråga om respekt för orten, supportrarna och de som följer laget. ${managerName} behöver börja svara.`,
+    // M36 (textaudit 2026-07-04): "tre i rad" antydde konsekutiva vägringar, men
+    // pressRefusals är en kumulativ, aldrig nollställd räknare (recordPressRefusal
+    // ökar den, inget i journalistService nollställer den) — avprecisad till
+    // Fables föreslagna formulering.
+    body: `Ledare i lokaltidningen: Klubbens ledning har nu gång på gång vägrat ställa upp. Det är inte bara en fråga om PR — det är en fråga om respekt för orten, supportrarna och de som följer laget. ${managerName} behöver börja svara.`,
     date: currentDate,
     isRead: false,
   } as InboxItem
