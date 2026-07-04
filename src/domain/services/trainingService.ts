@@ -229,22 +229,6 @@ export function trainingIntensityLabel(intensity: TrainingIntensity): string {
   return map[intensity] ?? intensity
 }
 
-export function trainingTypeEmoji(type: TrainingType): string {
-  const map: Record<TrainingType, string> = {
-    [TrainingType.Skating]:     '⛸',
-    [TrainingType.BallControl]: '🟠',
-    [TrainingType.Passing]:     '🎯',
-    [TrainingType.Shooting]:    '💥',
-    [TrainingType.Defending]:   '🛡',
-    [TrainingType.CornerPlay]:  '📐',
-    [TrainingType.Physical]:    '💪',
-    [TrainingType.Tactical]:    '🧠',
-    [TrainingType.Recovery]:    '🛌',
-    [TrainingType.MatchPrep]:   '⚡',
-  }
-  return map[type] ?? '🔴'
-}
-
 export function trainingTypeDescription(type: TrainingType): string {
   const map: Record<TrainingType, string> = {
     [TrainingType.Skating]:     'Skridskoåkning +0.3, Acceleration +0.2',

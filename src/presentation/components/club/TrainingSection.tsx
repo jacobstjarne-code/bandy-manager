@@ -1,15 +1,31 @@
+import { Footprints, CircleDot, Target, Zap, Shield, CornerDownRight, Dumbbell, Brain, BedDouble, ClipboardCheck, type LucideIcon } from 'lucide-react'
 import { TrainingType, TrainingIntensity } from '../../../domain/enums'
 import {
   getTrainingEffects,
   trainingTypeLabel,
-  trainingTypeEmoji,
   trainingIntensityLabel,
 } from '../../../domain/services/trainingService'
 import type { TrainingFocus } from '../../../domain/entities/Training'
 import { attributeLabel } from '../../utils/formatters'
 import { SectionCard } from '../SectionCard'
+import { Icon } from '../primitives/Icon'
 
 const TRAINING_TYPES = Object.values(TrainingType)
+
+// Emoji→Lucide-svepet (2026-07-04): trainingTypeEmoji()-poolen (⛸🟠🎯💥🛡📐💪🧠🛌⚡)
+// ersatt av ikonkonsekvens — domän-emojin (🏋️) lever kvar på sektionsrubriken.
+const TRAINING_TYPE_ICON: Record<TrainingType, LucideIcon> = {
+  [TrainingType.Skating]:     Footprints,
+  [TrainingType.BallControl]: CircleDot,
+  [TrainingType.Passing]:     Target,
+  [TrainingType.Shooting]:    Zap,
+  [TrainingType.Defending]:   Shield,
+  [TrainingType.CornerPlay]:  CornerDownRight,
+  [TrainingType.Physical]:    Dumbbell,
+  [TrainingType.Tactical]:    Brain,
+  [TrainingType.Recovery]:    BedDouble,
+  [TrainingType.MatchPrep]:   ClipboardCheck,
+}
 const TRAINING_INTENSITIES = [
   TrainingIntensity.Light,
   TrainingIntensity.Normal,
@@ -69,7 +85,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
         padding: '6px 10px', borderRadius: 'var(--radius-sm)',
         background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)',
       }}>
-        <span style={{ fontSize: 18 }}>{trainingTypeEmoji(focus.type)}</span>
+        <Icon icon={TRAINING_TYPE_ICON[focus.type]} size={18} color="var(--accent)" />
         <div style={{ flex: 1 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>
             {trainingTypeLabel(focus.type)}
@@ -104,7 +120,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
                 cursor: 'pointer',
               }}
             >
-              <span style={{ fontSize: 13 }}>{trainingTypeEmoji(type)}</span>
+              <Icon icon={TRAINING_TYPE_ICON[type]} size={13} active={isActive} />
               {trainingTypeLabel(type)}
             </button>
           )
