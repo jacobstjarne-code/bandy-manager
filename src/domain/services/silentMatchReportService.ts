@@ -34,14 +34,14 @@ export function generateSilentMatchReport(
 
   const opener = diff === 0
     ? `${homeClubName} och ${awayClubName} delade på poängen i en jämn tillställning där lagen tog ut varandra väl.`
-    : `${homeClubName} ${home}–${away} ${awayClubName}. ${managedIsHome ? homeClubName : awayClubName} tog hem ${flavor} mot ${oppName}.`
+    : `${homeClubName} ${home}–${away} ${awayClubName}. Det blev ${flavor} för ${managedIsHome ? homeClubName : awayClubName} mot ${oppName}.`
 
   const middle = goalTexts.length > 0
     ? `Avgörande händelser: ${goalTexts.join(', ')}.`
-    : `Matchen avgjordes av smådetaljer snarare än stora chanser.`
+    : `Resultatet säger det mesta om kvällen.`
 
   const closer = result === 'seger'
-    ? `En prestation att bygga vidare på.`
+    ? `Det ger råg i ryggen inför nästa omgång.`
     : result === 'förlust'
     ? `Nu gäller det att hålla ihop och svara i nästa match.`
     : `Poängen kan visa sig värdefull i sluträkningen.`

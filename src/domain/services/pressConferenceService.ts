@@ -23,12 +23,11 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['bw_h1', 'bw_d1', 'cl04'], minScandalThisSeason: true },
     { text: 'Tydlig seger. Var det er bästa match den här säsongen?', preferIds: ['bw_c1', 'bw_h2', 'cl01'], minRound: 6 },
     { text: 'Laget spelade bra idag. Vad är skillnaden jämfört med tidigare omgångar?', preferIds: ['bw_c2', 'bw_h5', 'cl04'] },
-    { text: 'Tvåsiffrigt idag — är det ett mönster eller en engångsgrej?', preferIds: ['bw_c3', 'bw_h4', 'cl02'] },
+    { text: 'Klar seger idag — är det ett mönster eller en engångsgrej?', preferIds: ['bw_c3', 'bw_h4', 'cl02'] },
     { text: 'Ert anfallsspel ser ostoppbart ut. Fruktar du inte att bli läst av motståndarna?', preferIds: ['bw_c4', 'bw_h4', 'cl02'] },
-    { text: 'Bortalaget verkade chockade av er intensitet. Avsiktlig taktik?', preferIds: ['bw_c5', 'bw_h5', 'bw_d1'] },
+    { text: 'Motståndarna verkade chockade av er intensitet. Avsiktlig taktik?', preferIds: ['bw_c5', 'bw_h5', 'bw_d1'] },
     { text: 'Bra match. Hade ni kunnat vinna med ännu mer?', preferIds: ['bw_c6', 'bw_h6', 'bw_d2'] },
     { text: 'Publiken sjöng hela vägen. Hur mycket spelar fansen in i resultatet?', preferIds: ['bw_p7', 'bw_h7', 'cl07'] },
-    { text: 'Det pratas om er i hela kommunen. Är det press eller inspiration?', preferIds: ['w_h1', 'w_c1', 'cl01'], minRound: 5 },
   ],
   win: [
     { text: 'Bandysverige skakas av rubriker just nu — ni vinner ändå. Är det ett tecken på något?', preferIds: ['w_c7', 'w_h2', 'bw_d2'], minScandalThisSeason: true },
@@ -40,31 +39,28 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Vilken spelare stack ut idag?', preferIds: ['w_p3', 'w_h3', 'w_c3'] },
     { text: 'Hur håller ni den här formen uppe?', preferIds: ['w_c4', 'w_d4', 'cl03'], minRound: 3 },
     { text: 'Ni vände underläge till seger. Vad hände i pausen?', preferIds: ['w_p5', 'w_h5', 'w_d5'] },
-    { text: 'Ni avancerar i tabellen. Kan ni utmana toppen nu?', preferIds: ['w_c6', 'w_h6', 'cl08'], minRound: 5 },
+    { text: 'Två poäng till. Kan ni utmana toppen nu?', preferIds: ['w_c6', 'w_h6', 'cl08'], minRound: 5 },
     { text: 'Ni dominerade mittfältet idag. Är det er styrka just nu?', preferIds: ['w_c7', 'w_h7', 'bw_d2'] },
-    { text: 'Ni har fått en ny mecenats stöd. Gör det skillnad i omklädningsrummet?', preferIds: ['w_p2', 'w_h2', 'cl07'], minRound: 6 },
-    { text: 'Ni har en ung spelare som imponerar. Hur hanterar ni trycket?', preferIds: ['w_p3', 'w_h3', 'cl03'], minRound: 4 },
     { text: 'Hur var stämningen på {arenaName} idag?', preferIds: ['w_p3', 'bw_p7'], minRound: 3 },
     { text: 'Kaptenen {captainName} — hur ser han på insatsen?', preferIds: ['w_p2', 'w_h3'], minRound: 3 },
   ],
   loss: [
-    { text: 'Det rör om i ligan med skandaler den här säsongen. Påverkar det stämningen i omklädningsrummet?', preferIds: ['l_h9', 'l_p5', 'cl11'], minScandalThisSeason: true },
+    { text: 'Skandalerna rör om i bandysverige den här säsongen. Påverkar det stämningen i omklädningsrummet?', preferIds: ['l_h9', 'l_p5', 'cl11'], minScandalThisSeason: true },
     { text: 'Förbundet har sina händer fulla just nu. Stör det fokuset på matchen?', preferIds: ['l_h1', 'l_c2', 'bw_d1'], minScandalThisSeason: true },
     { text: 'Tidningarna pratar mer om ekonomi än bandy just nu. Hur landar det hos er?', preferIds: ['l_h9', 'bw_d2', 'cl11'], minScandalThisSeason: true },
     { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['l_c6', 'bw_d1', 'cl15'], minScandalThisSeason: true },
     { text: 'Tung förlust. Vad gick fel?', preferIds: ['l_h1', 'l_c2', 'cl11'] },
-    { text: 'Laget såg trötta ut i andra halvlek. Kondition?', preferIds: ['l_h2', 'l_h1', 'l_d1'] },
+    { text: 'Laget såg trött ut i andra halvlek. Kondition?', preferIds: ['l_h2', 'l_h1', 'l_d1'] },
     { text: 'Supportrarna är besvikna. Vad säger du till dem?', preferIds: ['l_p3', 'l_h3', 'cl14'] },
-    { text: 'Ni hamnade efter motståndarna tidigt. Vad gör ni annorlunda nästa match?', preferIds: ['l_h4', 'l_d1', 'l_c4'] },
+    { text: 'Det ville sig inte idag. Vad gör ni annorlunda nästa match?', preferIds: ['l_h4', 'l_d1', 'l_c4'] },
     { text: 'Vad säger du till spelarna i omklädningsrummet efter en sån här match?', preferIds: ['l_p5', 'l_h5', 'cl11'] },
     { text: 'Tappar ni tron på er spelstil nu?', preferIds: ['l_c6', 'l_h6', 'cl15'] },
-    { text: 'Ni hade chanser men konverterade inte. Stressar det er?', preferIds: ['l_c7', 'l_h7', 'cl16'] },
-    { text: 'Bortalaget körde över er i perioder. Vad händer med er försvarsspel?', preferIds: ['l_h8', 'l_h1', 'l_a1'] },
+    { text: 'Ni hade chanser men förvaltade dem inte. Stressar det er?', preferIds: ['l_c7', 'l_h7', 'cl16'] },
+    { text: 'Motståndarna hade långa stunder av övertag. Vad säger du om ert försvarsspel?', preferIds: ['l_h8', 'l_h1', 'l_a1'] },
     { text: 'Ni har det tufft just nu. Hur håller du moralen uppe?', preferIds: ['l_p9', 'l_h9', 'cl13'], minRound: 3 },
-    { text: 'Publiken sviker. Hur påverkar det laget?', preferIds: ['l_h1', 'l_c2', 'cl14'], minRound: 5 },
   ],
   bigLoss: [
-    { text: 'Det rör om i ligan med skandaler den här säsongen. Påverkar det stämningen i omklädningsrummet?', preferIds: ['bl_p3', 'bl_d2', 'cl13'], minScandalThisSeason: true },
+    { text: 'Skandalerna rör om i bandysverige den här säsongen. Påverkar det stämningen i omklädningsrummet?', preferIds: ['bl_p3', 'bl_d2', 'cl13'], minScandalThisSeason: true },
     { text: 'Förbundet har sina händer fulla just nu. Stör det fokuset på matchen?', preferIds: ['bl_h1', 'bl_p1', 'cl12'], minScandalThisSeason: true },
     { text: 'En mörk kväll. Hur tar ni er vidare härifrån?', preferIds: ['bl_h1', 'bl_p1', 'cl12'] },
     { text: 'Är du orolig för lagets form?', preferIds: ['bl_h2', 'bl_c2', 'cl13'] },
@@ -74,13 +70,13 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Behöver du ta in ny spetskompetens för att vända skutan?', preferIds: ['bl_c6', 'bl_c2', 'bl_p1'] },
   ],
   draw: [
-    { text: 'En match i en orolig säsong — för bandyn i stort. Vad säger du om läget i ligan?', preferIds: ['dr_h1', 'bw_d1', 'dr_d1'], minScandalThisSeason: true },
+    { text: 'En match i en orolig säsong — för bandyn i stort. Vad säger du om läget i bandysverige?', preferIds: ['dr_h1', 'bw_d1', 'dr_d1'], minScandalThisSeason: true },
     { text: 'Tidningarna pratar mer om ekonomi än bandy just nu. Hur landar det hos er?', preferIds: ['bw_d2', 'dr_h1', 'cl07'], minScandalThisSeason: true },
     { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['dr_c4', 'bw_d1', 'dr_h1'], minScandalThisSeason: true },
     { text: 'Oavgjort — nöjd eller besviken?', preferIds: ['dr_h1', 'dr_c1', 'dr_d1'] },
     { text: 'Ni kvitterade sent. Vad säger det om lagets karaktär?', preferIds: ['dr_p2', 'dr_h2', 'dr_d1'] },
     { text: 'En poäng på bortaplan — räknas det som bra?', preferIds: ['dr_c3', 'dr_h3', 'dr_d1'] },
-    { text: 'Matchen avgjordes av detaljer. Vilken detalj är viktigast att förbättra?', preferIds: ['dr_h4', 'dr_c4', 'dr_h6'] },
+    { text: 'Det satt i detaljerna idag. Vilken är viktigast att förbättra?', preferIds: ['dr_h4', 'dr_c4', 'dr_h6'] },
     { text: 'Ert spel var ojämnt idag. Vad berodde det på?', preferIds: ['dr_h5', 'dr_h4', 'dr_c4'] },
     { text: 'Ni har oavgjort i tre raka. Är det en trend att oroa sig för?', preferIds: ['dr_c6', 'dr_h6', 'dr_h3'] },
   ],
@@ -90,7 +86,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Hur förbereder man sig mentalt för ett derby jämfört med en vanlig match?', preferIds: ['dw_p3', 'dw_c3', 'cl07'] },
     { text: 'Fansen sjöng hela matchen. Spelade de in?', preferIds: ['dw_p4', 'dw_c4', 'bw_p7'] },
     { text: 'Rivaliteten är laddad. Hur hanterar du pressen inför den typen av match?', preferIds: ['dw_c5', 'dw_h2', 'dw_p3'] },
-    { text: 'Ni dominerade klart. Var det planerat att ta kommandot tidigt?', preferIds: ['dw_c6', 'dw_h6', 'dw_c3'] },
+    { text: 'Gick ni ut för att ta kommandot direkt?', preferIds: ['dw_c6', 'dw_h6', 'dw_c3'] },
     { text: 'Det här är ett resultat att fira. Hur länge tillåter du laget att njuta av det?', preferIds: ['dw_p7', 'dw_h2', 'dw_h6'] },
     { text: 'Vad säger den här segern om var ni befinner er som lag?', preferIds: ['dw_p8', 'dw_c8', 'dw_c2'] },
   ],
@@ -102,7 +98,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Er prestation höll inte måttet. Varför?', preferIds: ['dl_h5', 'dl_h1', 'dl_h7'] },
     { text: 'Det är tungt att förlora just det här derbyt. Hur lyfter du laget nu?', preferIds: ['dl_p6', 'dl_p1', 'dl_h2'] },
     { text: 'Taktiken fungerade inte idag. Vad gör du annorlunda nästa gång ni möts?', preferIds: ['dl_h7', 'dl_h5', 'dl_h2'] },
-    { text: 'Ni blir fullständigt dominerade av rivalerna. Är det ett psykologiskt problem?', preferIds: ['dl_h5', 'dl_p6', 'dl_p4'] },
+    { text: 'Att förlora mot just dem — är det ett psykologiskt problem?', preferIds: ['dl_h5', 'dl_p6', 'dl_p4'] },
   ],
 }
 
@@ -209,7 +205,7 @@ const PLAYER_RESPONSES: ManagerResponse[] = [
   { id: 'dw_p2', tag: 'win_derby', label: '"Det cementerar en identitet. Vi är ett lag."', moraleEffect: 8, mediaQuote: 'Tränaren: "Det cementerar vår identitet. Vi är ett lag."' },
   { id: 'dw_h2', tag: 'win_derby', label: '"Vi är glada, men fokuserar snabbt på nästa match."', moraleEffect: 4, mediaQuote: 'Tränaren höll fokus: "Vi är glada, men tänker redan på nästa match."' },
   { id: 'dw_c2', tag: 'win_derby', label: '"Det bekräftar att vi är på rätt väg."', moraleEffect: 5, mediaQuote: 'Tränaren: "Det bekräftar att vi är på rätt väg."' },
-  { id: 'dw_p3', tag: 'win_derby', label: '"Det behövs ingen förberedelse. Alla vet vad det handlar om."', moraleEffect: 7, mediaQuote: 'Tränaren: "Alla vet vad ett derby är. Det behövs ingen extra speech."' },
+  { id: 'dw_p3', tag: 'win_derby', label: '"Det behövs ingen förberedelse. Alla vet vad det handlar om."', moraleEffect: 7, mediaQuote: 'Tränaren: "Alla vet vad ett derby är. Det behövs inga extra ord."' },
   { id: 'dw_c3', tag: 'win_derby', label: '"Vi håller det professionellt. Derbykänslan tar hand om sig själv."', moraleEffect: 5, mediaQuote: 'Tränaren: "Vi håller det professionellt. Känslan tar hand om sig själv."' },
   { id: 'dw_p4', tag: 'win_derby', label: '"De bar oss när vi behövde det som mest."', moraleEffect: 8, mediaQuote: 'Tränaren: "Fansen bar oss när det behövdes som mest. Otroligt."' },
   { id: 'dw_c4', tag: 'win_derby', label: '"Vi levererade för dem. Det är det vi är till för."', moraleEffect: 6, mediaQuote: 'Tränaren: "Vi levererade för fansen. Det är det vi är till för."' },
@@ -228,9 +224,9 @@ const PLAYER_RESPONSES: ManagerResponse[] = [
   { id: 'dl_d2', tag: 'any', label: '"Fokus på nästa match. Det är det enda."', moraleEffect: 2, mediaQuote: 'Tränaren: "Fokus på nästa match. Det är det enda som gäller."' },
   { id: 'dl_h2', tag: 'loss_derby', label: '"Det svider, men vi lär oss av det."', moraleEffect: 2, mediaQuote: 'Tränaren: "Det svider, men vi lär oss av det."' },
   { id: 'dl_p3', tag: 'loss_derby', label: '"Jag förstår besvikelsen. Vi kämpade för er — och vi gör det igen."', moraleEffect: 4, mediaQuote: 'Tränaren till fansen: "Jag förstår besvikelsen. Vi kämpade för er och vi gör det igen."' },
-  { id: 'dl_p4', tag: 'loss_derby', label: '"De ska göra. Vi behöver det som motivation."', moraleEffect: 4, mediaQuote: 'Tränaren: "De ska njuta. Vi behöver det som motivation inför nästa derby."' },
+  { id: 'dl_p4', tag: 'loss_derby', label: '"De ska njuta. Vi behöver det som motivation."', moraleEffect: 4, mediaQuote: 'Tränaren: "De ska njuta. Vi behöver det som motivation inför nästa derby."' },
   { id: 'dl_h5', tag: 'loss_derby', label: '"Vi spelade rädda. Det är inte vi."', moraleEffect: 3, mediaQuote: 'Tränaren var självkritisk: "Vi spelade rädda. Det är inte vi. Det rättar vi."' },
-  { id: 'dl_p6', tag: 'loss_derby', label: '"Jag berättar att vi fortfarande styr vår egen destiny."', moraleEffect: 5, mediaQuote: 'Tränaren: "Jag påminner dem om att vi styr vår egen framtid. Ingen derby avgör säsongen."' },
+  { id: 'dl_p6', tag: 'loss_derby', label: '"Jag berättar att vi fortfarande styr vår egen framtid."', moraleEffect: 5, mediaQuote: 'Tränaren: "Jag påminner dem om att vi styr vår egen framtid. Inget derby avgör säsongen."' },
   { id: 'dl_h7', tag: 'loss_derby', label: '"Vi var för statiska. Mer dynamik krävs mot det här laget."', moraleEffect: 3, mediaQuote: 'Tränaren: "Vi var för statiska. Det laget kräver mer dynamik. Noterat."' },
   { id: 'dl_p8', tag: 'loss_derby', label: '"Nästa gång är annorlunda. Det lovar jag."', moraleEffect: 4, mediaQuote: 'Tränaren lovade: "Nästa gång är annorlunda. Det kan ni skriva upp."' },
 
@@ -263,10 +259,10 @@ const PLAYER_RESPONSES: ManagerResponse[] = [
   { id: 'cl26', tag: 'cup_win',      label: '"Cupen har sin egen magi. Allt kan hända. Idag hände det för oss."', moraleEffect: 5, mediaQuote: 'Tränaren: "Cupen har sin magi. Allt kan hända — idag hände det för oss."' },
   { id: 'cl27', tag: 'final_pre',    label: '"SM-finalen på Studenternas. Det är därför man spelar bandy. För de här dagarna."', moraleEffect: 7, mediaQuote: 'Tränaren: "SM-finalen på Studenternas. Det är därför man spelar bandy. För de här dagarna."' },
   { id: 'cl28', tag: 'any',          label: '"Det finns inga genvägar till framgång. Bara korta passningar och hårt arbete."', moraleEffect: 3, mediaQuote: 'Tränaren filosoferade: "Det finns inga genvägar till framgång. Bara korta passningar och hårt arbete."' },
-  { id: 'cl29', tag: 'winter',       label: '"Minus femton och vi springer runt i shorts. Det är bandy. Det är det finaste vi har."', moraleEffect: 3, mediaQuote: 'Tränaren log: "Minus femton och vi springer i shorts. Det är bandy. Det finaste vi har."' },
+  { id: 'cl29', tag: 'winter',       label: '"Minus femton och vi åker runt i shorts. Det är bandy. Det är det finaste vi har."', moraleEffect: 3, mediaQuote: 'Tränaren log: "Minus femton och vi åker i shorts. Det är bandy. Det finaste vi har."' },
   { id: 'cl30', tag: 'any',          label: '"Alla vill spela vacker bandy. Men vacker bandy utan poäng är bara konståkning."', moraleEffect: 2, mediaQuote: 'Tränaren: "Alla vill spela vacker bandy. Utan poäng är det bara konståkning."' },
   { id: 'cl31', tag: 'relegation',   label: '"Vi har balanserat på ett bananskal hela säsongen. Men vi har inte ramlat ännu."', moraleEffect: 3, mediaQuote: 'Tränaren: "Vi har balanserat på ett bananskal hela säsongen. Men vi har inte ramlat ännu."' },
-  { id: 'cl32', tag: 'youngster',    label: '"När en 18-åring gör mål i elitserien... då minns man varför man blev tränare."', moraleEffect: 5, mediaQuote: 'Tränaren: "När en 18-åring gör mål i elitserien — då minns man varför man blev tränare."' },
+  { id: 'cl32', tag: 'youngster',    label: '"När en ung grabb gör mål i elitserien... då minns man varför man blev tränare."', moraleEffect: 5, mediaQuote: 'Tränaren: "När en ung grabb gör mål i elitserien — då minns man varför man blev tränare."' },
 ]
 
 // ── PressContext ───────────────────────────────────────────────────────────────
@@ -501,17 +497,17 @@ function findFollowUpQuestion(journalist: import('../entities/SaveGame').Journal
 
   const followUps: PressQuestion[] = [
     {
-      text: `Förra mötet sa du att försvaret skulle hålla. Du har släppt in mål på löpande band. Vad säger du nu?`,
+      text: `Vi har stått här förut, du och jag. Sist var det inte muntert. Hur känns det idag?`,
       preferIds: ['cl15', 'l_h1'],
       minRound: lastNegative.matchday + 3,
     },
     {
-      text: `Du lovade vändning. Den har inte kommit. Hur mycket längre ska vi vänta?`,
+      text: `Alla väntar på vändningen. Hur mycket längre ska vi vänta?`,
       preferIds: ['l_c6', 'bl_p1'],
       minRound: lastNegative.matchday + 5,
     },
     {
-      text: `För ${roundsSince} omgångar sen sa du att truppen räcker. Gör den det?`,
+      text: `För ${roundsSince} omgångar sen var tongångarna dystra här inne. Räcker truppen?`,
       preferIds: ['l_h4', 'bl_c6'],
       minRound: lastNegative.matchday + 4,
     },
@@ -580,11 +576,11 @@ export function generatePressConference(
     const seasonStories = storylines.filter(s => s.season === game.currentSeason && s.resolved)
     const clubStanding = game.standings.find(s => s.clubId === game.managedClubId)
     if (myScore > theirScore && seasonStories.some(s => s.type === 'underdog_season')) {
-      question = { text: 'Ingen trodde på er i augusti. Nu leder ni serien. Vad säger du till tvivlarna?', preferIds: question.preferIds }
+      question = { text: 'Ingen trodde på er i augusti. Vad säger du till tvivlarna?', preferIds: question.preferIds }
     } else if (clubStanding && clubStanding.losses >= 3 && seasonStories.some(s => s.type === 'underdog_season')) {
       question = { text: 'Ingen trodde på er i augusti. Vad hände?', preferIds: question.preferIds }
     } else if (seasonStories.some(s => s.type === 'captain_rallied_team') && rand() < 0.5) {
-      question = { text: 'Kaptenen tog ton i omklädningsrummet förra veckan. Har det gett effekt?', preferIds: question.preferIds }
+      question = { text: 'Kaptenen tog ton i omklädningsrummet. Har det gett effekt?', preferIds: question.preferIds }
     } else if (seasonStories.some(s => s.type === 'rescued_from_unemployment') && rand() < 0.5) {
       const rescueStory = seasonStories.find(s => s.type === 'rescued_from_unemployment')
       const rescuePlayer = rescueStory?.playerId ? game.players.find(p => p.id === rescueStory.playerId) : null

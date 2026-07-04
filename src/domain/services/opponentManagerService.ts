@@ -2,7 +2,7 @@ import type { Club } from '../entities/Club'
 
 // DREAM-001 + WEAK-016: Opponent manager generation and quote system
 
-const MANAGER_FIRSTNAMES = ['Hans', 'Bengt', 'Lars', 'Ulf', 'Mats', 'Kenneth', 'Peter', 'Anders', 'Roger', 'Sven-Erik', 'Leif', 'Göran']
+const MANAGER_FIRSTNAMES = ['Hans', 'Bengt', 'Lars', 'Ulf', 'Mats', 'Kenneth', 'Peter', 'Anders', 'Roger', 'Sven-Erik', 'Leif', 'Göran', 'Margareta']
 const MANAGER_LASTNAMES = ['Nordin', 'Eklund', 'Holm', 'Sjögren', 'Friberg', 'Dahlström', 'Lundmark', 'Berg', 'Åhlén', 'Vikström']
 const PERSONAS: Array<'confident' | 'defensive' | 'cryptic' | 'professorial'> = ['confident', 'defensive', 'cryptic', 'professorial']
 
@@ -76,17 +76,17 @@ export function generatePostMatchOpponentQuote(opponentClub: Club, theyWon: bool
 
   const quotes: Record<string, string[]> = {
     confident: theyWon
-      ? [`${mgr.name}: "Vi visste att vi hade det i oss."`, `${mgr.name}: "Förväntade seger."` ]
-      : [`${mgr.name}: "Det här accepterar vi inte. Nästa gång."`, `${mgr.name}: "Jag är besviken. Det underdriver det."`],
+      ? [`${mgr.name}: "Vi visste att vi hade det i oss."`, `${mgr.name}: "Förväntad seger."` ]
+      : [`${mgr.name}: "Det här accepterar vi inte. Nästa gång."`, `${mgr.name}: "Besviken är bara förnamnet."`],
     defensive: theyWon
       ? [`${mgr.name}: "Bra defensivt arbete. Precis som vi ville."`, `${mgr.name}: "Laget levererade."` ]
       : [`${mgr.name}: "Vi gav inte upp. Men det räckte inte."`, `${mgr.name}: "Det är ett minusresultat."`],
     cryptic: theyWon
       ? [`${mgr.name}: "Bollen rullar inte alltid rätt. Idag rullade den."`, `${mgr.name}: "Inget att tillägga."`]
-      : [`${mgr.name}: "Märkliga match. Märkligt resultat."`, `${mgr.name}: "…"`],
+      : [`${mgr.name}: "Märklig match. Märkligt resultat."`, `${mgr.name}: "…"`],
     professorial: theyWon
-      ? [`${mgr.name}: "Xg-modellen visade +0.4 till oss. Den höll."`, `${mgr.name}: "Analytiskt sett en korrekt seger."`]
-      : [`${mgr.name}: "Modellerna missade något. Det ska vi titta på."`, `${mgr.name}: "Outlier. Det händer."`],
+      ? [`${mgr.name}: "Modellen gav oss ett par tiondelar i övertag. Den höll."`, `${mgr.name}: "Analytiskt sett en korrekt seger."`]
+      : [`${mgr.name}: "Modellerna missade något. Det ska vi titta på."`, `${mgr.name}: "Ett avvikande utfall. Det händer."`],
   }
 
   const pool = quotes[mgr.persona] ?? quotes.defensive
