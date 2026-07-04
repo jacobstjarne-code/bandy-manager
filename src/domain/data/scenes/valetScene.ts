@@ -51,7 +51,7 @@ export interface ValetChoiceCard {
 }
 
 export interface ValetScene {
-  /** Genre-etikett — "⬩ Valet ⬩". */
+  /** Genre-etikett — "⬩ Säsongsstart · Valet ⬩". */
   genre: string
   /** Inramning — den typografiska scenens hjälte. */
   heading: string
@@ -63,6 +63,8 @@ export interface ValetScene {
   /** Avstå-raden — att vänta är ett legitimt val, inte ett hopp över. */
   declineLabel: string
   declineNote: string
+  /** A-1 (Valet-scen-audit): knapp-likvärdighet — inget kort är förvalt. */
+  noPresetNote: string
   /** Om inga val finns (allt byggt, eller bygge pågår) — scenen ska inte ens triggas, men text finns för säkerhets skull. */
   emptyNote: string
 }
@@ -99,6 +101,7 @@ function buildConsequenceParts(def: FacilityNodeDef): ConsequencePart[] {
 export function getValetScene(game: SaveGame): ValetScene {
   const facilityState = game.facilityState
   const choices = facilityState ? getPreSeasonChoices(facilityState) : []
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
 
   const cards: ValetChoiceCard[] = choices.map(def => ({
     nodeId: def.id,
@@ -109,13 +112,14 @@ export function getValetScene(game: SaveGame): ValetScene {
   }))
 
   return {
-    genre: '⬩ Valet ⬩',
-    heading: 'Vad bygger vi i år?',
+    genre: '⬩ Säsongsstart · Valet ⬩',
+    heading: `Vad bygger ${managedClub?.name ?? 'klubben'} i år?`,
     prolog: `Snön ligger kvar på planen. Innan första matchen samlas det som ska bli årets arbete vid sidan av isen.`,
     question: 'Ett bygge ryms i år. Eller så väntar vi — pengarna gör mer nytta i kassan ett år till.',
     cards,
     declineLabel: 'Vi väntar i år',
     declineNote: 'Inget bygge den här säsongen. Kassan får vila — och nästa år kan valet vara ett annat.',
+    noPresetNote: 'Inget val är förvalt.',
     emptyNote: 'Inget att bygga just nu — antingen står ett bygge redan på gång, eller så är det som går att bygga redan byggt.',
   }
 }

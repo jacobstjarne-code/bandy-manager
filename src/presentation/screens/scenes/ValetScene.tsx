@@ -65,7 +65,7 @@ export function ValetScene({ game, onComplete }: Props) {
                 textAlign: 'left',
                 padding: '13px 14px',
                 background: 'var(--bg-portal-surface)',
-                border: '1px solid var(--border-dark)',
+                border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',
                 display: 'flex',
@@ -74,7 +74,8 @@ export function ValetScene({ game, onComplete }: Props) {
               }}
             >
               <span style={{
-                fontSize: 14,
+                fontFamily: 'Georgia, serif',
+                fontSize: 13,
                 fontWeight: 700,
                 color: 'var(--text-light)',
                 letterSpacing: '-0.1px',
@@ -111,6 +112,18 @@ export function ValetScene({ game, onComplete }: Props) {
           padding: '24px 0',
         }}>
           {scene.emptyNote}
+        </div>
+      )}
+
+      {/* A-1: knapp-likvärdighet — inget kort är förvalt */}
+      {scene.cards.length > 0 && (
+        <div style={{
+          fontSize: 10.5,
+          color: 'var(--text-muted)',
+          textAlign: 'center',
+          fontStyle: 'italic',
+        }}>
+          {scene.noPresetNote}
         </div>
       )}
 
