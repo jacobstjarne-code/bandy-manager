@@ -87,8 +87,8 @@ export const FAREWELL_MATCH_ATMOSPHERE = [
 ]
 
 export const FAREWELL_MATCH_KLACK = [
-  'Hela karriären här. Det glöms inte.',
+  'Det han gett oss glöms inte.',
   'Hela klacken sjöng hans namn i halvtid. Han stod kvar och tittade på oss.',
-  'Vi har sett honom göra mål mot var och en av de stora. Idag är den sista.',
-  'En sista vinkning mot klacken. Vi var där när han spelade sin första.',
+  'Vi har sett det mesta med honom. Idag är den sista.',
+  'En sista vinkning mot klacken. Ingen går hem riktigt än.',
 ]

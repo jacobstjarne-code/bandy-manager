@@ -77,14 +77,14 @@ function nodeLabel(nodeId: string): string | null {
 export const FACILITY_COMPLETED_BEATS: Record<string, string> = {
   // Nodspecifika — meningen bär nodens roll i klubblivet, inte dess bonus.
   varmestuga:    'Värmestugan står klar. Folk stannar kvar i kylan nu, pratar färdigt.',
-  laktare_ostra: 'Östra läktaren är rest. Fyrahundra platser till — och de syns från bron.',
-  belysning:     'Strålkastarna lyser över träningsplanen. Ungdomarna kan vara kvar efter mörkrets inbrott.',
+  laktare_ostra: 'Östra läktaren är rest. Fyrahundra platser till — och de syns från vägen.',
+  belysning:     'Ljuset är tänt över träningsplanen. Ungdomarna kan vara kvar efter mörkrets inbrott.',
   kiosk:         'Kiosken är öppen. Kaffe och korv i pausen — små pengar som blir stora över en säsong.',
   stralkastare:  'Strålkastarna är på plats. Kvällsmatcherna ser ut som matcher nu.',
   gym:           'Gymmet står färdigt. Spelarna kan bygga styrka även när isen ligger.',
   traningshall:  'Träningshallen är klar. Ungdomarna håller sig inomhus hela vintern nu.',
   akademi_2:     'Akademin har tagit ett steg. Det finns ett program för de unga nu, inte bara en plan.',
-  akademi_3:     'Elitakademin är på plats. Orten kan ge egna spelare — på riktigt den här gången.',
+  akademi_3:     'Elitakademin är på plats. Orten kan ge egna spelare på allvar nu.',
   matchhall:     'Hallen står klar. Inget blir sig likt — men isen ligger året om nu.',
 }
 
@@ -106,7 +106,7 @@ export const FACILITY_AVAILABLE_BEAT =
  * nedan är placeringshållare i rätt ton, färdigställs när stegen är specade.
  */
 export const HALL_PROCESS_BEATS: Record<string, string> = {
-  forankring:  'Snacket om hallen har börjat på allvar. Birger har en åsikt, så klart.',
+  forankring:  'Snacket om hallen har börjat på allvar. Alla har en åsikt, så klart.',
   krav:        'Förbundet har sagt sitt om hallen. Det ligger ett papper på bordet nu.',
   kommun:      'Kommunen har tagit i frågan om hallen. Inget löfte — men en dörr på glänt.',
 }

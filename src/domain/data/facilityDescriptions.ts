@@ -3,7 +3,7 @@ export const FACILITY_DESC: Record<string, string> = {
   varmestuga:    'Värmer publik och spelare en kall kväll. Folk stannar kvar, och kaffet blir en del av ritualen.',
   laktare_ostra: 'Fyrahundra platser till på östra sidan. Fler på läktaren, mer i biljettkassan.',
   belysning:     'Ljus över träningsplanen. Kvällsträning blir möjlig — framför allt för ungdomslaget.',
-  matchhall:     'Tak över isen — bandy året runt och tv-avtal. Men klacken glesnar och Västra Sidan ser det som ett svek mot utebandyn.',
+  matchhall:     'Tak över isen — bandy året runt och tv-avtal. Men klacken glesnar — de trognaste ser det som ett svek mot utebandyn.',
   kiosk:         'Korv och kaffe i pausen. Lite extra i kassan varje hemmamatch.',
   stralkastare:  'Bättre ljus på arenan. Kvällsmatcher syns bättre — och sponsorerna betalar mer för skylten.',
   gym:           'Eget gym vid arenan. Spelarna bygger styrka året runt, inte bara på säsong.',

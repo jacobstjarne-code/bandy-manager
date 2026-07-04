@@ -137,7 +137,7 @@ export const BOARD_HALL_QUOTES = {
     '"Jag tar hellre 2 000 utomhus än 300 i en hall."',
   ],
   ekonom: [
-    '"En hall kostar 120-200 miljoner. Vi har 350 000 i kassan. Nej."',
+    '"Vet du vad en hall kostar? Räkna. Sen säger du nej själv."',
     '"Driftskostnaderna för en hall: 3 miljoner per år. Minst."',
     '"Kommunen lovar alltid. Sen kommer besparingarna."',
     '"Gubbängens isbädd kostade 1,8 att lägga om. Och den håller max fem år."',
@@ -149,7 +149,7 @@ export const BOARD_HALL_QUOTES = {
     '"Vi har spelat här i 80 år. Jag tänker inte vara den som ger upp."',
   ],
   modernist: [
-    '"Tre av fyra semifinallag spelar i hall. Samband? Kanske."',
+    '"Hallklubbarna lockar med träningstider året om. Samband med att vi tappar folk? Kanske."',
     '"Ungdomarna slutar. De orkar inte frysa. Vi måste lyssna."',
     '"En hall ger oss träning 12 månader om året istället för 5."',
     '"Jag säger inte att hall är svaret. Men frågan måste ställas."',

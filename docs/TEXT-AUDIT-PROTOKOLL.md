@@ -14,6 +14,15 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
 ### JACOB BESLUTAR (smak)
 — tomt. M5–M7 godkända av Jacob 2026-07-03: "brottningen", "mittback" och
 "tre-fem-tvåa" står kvar som de är. Flaggas inte igen.
+- **M59 (låg, 2026-07-04):** arrivalDialogue — tre Sture-repliker daterar
+  sig till högvinter (Målilla "minus arton i natt", Lesjöfors "tjugotvå
+  minus i natt", Gagnef "Skidföret är bra i år") men ArrivalScene ligger
+  vid säsongsstart på hösten. Medveten ortsmytologi ("det orten alltid
+  säger om sig själv") eller höstjusteras? Dessutom: Söderfors "Halva ön
+  bor över bron" läser paradoxalt (öns folk bor då inte på ön) —
+  avsiktlig brukslogik eller ska det vara "Halva publiken bor över bron"?
+- **M62 (motor, låg, 2026-07-04):** facilityNodes varmestuga
+  capacityBonus 1000 — mer än dubbla östra läktarens 400. Avsiktligt?
 - **M33-restfråga (2026-07-03):** V och MP och SD saknar agenda-vikter i
   `PARTY_AGENDA_WEIGHTS` (politicianService.ts + createNewGame.ts) — faller
   till den likformiga default-poolen (alla fem agendor lika sannolika)
@@ -65,6 +74,23 @@ tillkom UNDER denna omgångs körning — INTE ännu körda).
   hasScandal-semantiken vid anropet — SCANDAL_AFFECTED-texterna antar att
   skandalen berör MOTSTÅNDARLAGET ("mycket runtomkring oss", "läget vi är
   i"); skickas en liga-/egen-klubbskandal in ljuger citaten.
+- **M60** tokenverifiering (patron-läckeklassen): (a) FAREWELL_MATCH_STRINGS
+  {player}/{members}/{leader} — grep anroparen, substitueras alla tre?
+  (b) SEASON_SUMMARY_ELIM_TEXT: pickSeasonElimText returnerar body MED
+  {motståndare}/{season} oresolverade — substitutionen MÅSTE ske hos
+  anroparen (SeasonSummaryScreen). Verifiera.
+- **M61 (VIKTIG)** hallDebateData: verifiera {hallclub}-källan — spelets
+  tolv Elitserieklubbar är UTOMHUSKLUBBAR (hallen är drömbyggnation);
+  substitueras {hallclub} med en serieklubb ljuger hela nyhetspoolen.
+  Ska vara omvärldsklubb (div 1/allsvenskan-klassen, rumorService-
+  precedent). Samtidigt: (a) {paper}/{opponent}/{club}/{politiker} — obs
+  token heter {politiker} här men {politician} i facilityFinancingStrings,
+  döm om det är två källor eller en inkonsistens; (b) OUTDOOR_PRIDE-
+  raderna bär resultat-/väder-/publikclaims ('er seger', 'två poäng',
+  'storpublik i snöstorm') — verifiera gating; (c) driftsiffrorna
+  (3/3,2 Mkr per år, 890 tkr el i januari) ska inte kunna motsägas av
+  motorns hall-drift när spelaren själv byggt — synka eller avprecisera
+  när hallens driftmodell finns.
 - **M9** grep imports av injuryDoctorText — nås DIAGNOSIS_LINES för
   träningsskador? ("andra halvlek"-raden får bara visas för matchskador.)
 - Stilnoter (ej rörda denna omgång): seasonChampionYear()-helpern i
@@ -88,11 +114,11 @@ tillkom UNDER denna omgångs körning — INTE ännu körda).
   meritskärm byggs. Aktiveras då.
 
 ### NÄSTA AUDIT-PASS
-- **DOMÄN 3 HELT KLAR 2026-07-04** (datafiler + service-relevansskanningen
-  pressConference/media/silentMatchReport/opponentManager, se LOGG).
-- Kvar: domän 4 (väder/ceremonier/facility/scener) enligt fillistan.
-  OBS hallProvningData och specialDateStrings redan dömda i domän 2b —
-  hoppa över. Misstankenumrering fortsätter från M59.
+- **DOMÄN 3 HELT KLAR 2026-07-04.** **DOMÄN 4a+4b KLARA 2026-07-04**
+  (ceremoni/säsong + facility, se LOGG).
+- Kvar: domän 4c–4e i FÄRSK session — scenes/ (10 filer) · anslag/
+  (leagueAnslag, playoffAnslag) · media/library/quotes/ (7 JSON).
+  Misstankenumrering fortsätter från M63.
 - text-guard-linten byggs av Code EFTER att alla fyra domäners termlista
   är slutjusterad.
 
@@ -1211,3 +1237,62 @@ MISSTANKAR — döm i kontext, luta konservativt:
   Code kör M54–M58 när Jacob/Fable ger klartecken; BACKLOG-
   konsolideringen (ovan) kan göras när som helst innan dess.
   Code kör M36–M58-batchen när som helst.
+
+- 2026-07-04 (kväll, forts): DOMÄN 4a+4b KLARA — ceremoni/säsongsklustret
+  (retirementText, mentorshipStrings, activeArcStrings, seasonEndPhase,
+  seasonPhases, seasonSummaryElimText, arrivalDialogue) + facilityklustret
+  (facilityDescriptions, facilityFinancingStrings, facilityNodes,
+  facilityPortalBeats, hallDebateData).
+
+  RÄTTAT (≈18 rader, 7 filer):
+  · retirementText (3): tre L#9-klackclaims i FAREWELL_MATCH_KLACK —
+    "Hela karriären här", "mål mot var och en av de stora", "Vi var där
+    när han spelade sin första" — veteranen kan vara nyvärvad och
+    målhistoriken är okänd → claimfria omskrivningar i samma ton.
+  · mentorshipStrings (1): "för dåligt däckad" (bruten svenska) →
+    "har inte formen att föregå med exempel".
+  · facilityDescriptions (1) + facilityNodes (1): "Västra Sidan"
+    hårdkodat klacknamn ×2 (klubbparm-buggens tvilling — supporterService
+    genererar namnet) → "de trognaste".
+  · facilityNodes (4 till): "billettintäkt" → biljettintäkt ·
+    "Nattträningar" (trippel-t + inkonsistens mot descens "kvällsträning")
+    → "Kvällsträning möjlig" · matchhall-konsekvensernas casing
+    normaliserad + "åretrunt" → "Bandy året om" · "↑↑ Elitakademi"
+    (dubbelsignal, dir bär riktningen) → "Elitakademi".
+  · facilityPortalBeats (4): belysnings-beatet öppnade med
+    "Strålkastarna" — kolliderar med strålkastare-NODENS beat (två olika
+    byggen, samma öppningsord på portalen) → "Ljuset är tänt" · "syns
+    från bron" (bron är Söderfors-geografi, klubben kan vara vilken som)
+    → "från vägen" · "på riktigt den här gången" (claimar tidigare
+    misslyckande) → "på allvar nu" · hårdkodad "Birger" i hall-
+    placeholdern (Kurt-buggklassen, ingen sådan pool finns) → "Alla".
+  · hallDebateData (2): ekonomens "En hall kostar 120-200 miljoner. Vi
+    har 350 000 i kassan" — DUBBELFEL: verklighetsskalans hallpris
+    motsäger trädets matchhall (1,8 Mkr) på grannskärmen OCH kassabeloppet
+    är hårdkodat (kassan är dynamisk) → sifferfri ekonomrad ·
+    modernistens "Tre av fyra semifinallag spelar i hall" — VÄRLDSFEL:
+    spelets semifinallag är fyra av de tolv utomhusklubbarna → omskriven
+    mot hallklubbarnas träningstider (konsistent med styrelseSplittrad-
+    premissen "vi tappar spelare till hallklubbarna").
+
+  GODKÄNT UTAN ANMÄRKNING: facilityFinancingStrings (Fable-skriven med
+  L#9-regler i filhuvudet — håller) · seasonSummaryElimText ("Silver.
+  Nära. Aldrig nära nog." är kanonklass) · seasonEndPhase/seasonPhases
+  (kod; fasnamnen annandagen/vinterkris/våroffensiv är fina) ·
+  activeArcStrings (emoji-ikonerna → Lucide-passet) · arrivalDialogue
+  i övrigt (STURE_PER_CLUB är toppklass; två smakfrågor → M59) ·
+  hallDebateData i övrigt ("Det finns ett ord för bandy inomhus. Det
+  heter innebandy." — kanon; Gubbängen-referensen godkänd som
+  omvärldsfärg per arenalore-rulingen).
+
+  MISSTANKAR: M59/M62 (Jacob smak/motor, låg) + M60/M61 (Code, M61
+  VIKTIG — {hallclub}-semantiken) inlagda i tabellen.
+
+  KVAR I DOMÄN 4 (→ 4c–4e, FÄRSK session per protokollets döms-inte-
+  trött-regel): scenes/ (10 filer, 33 KB — valetScene, finalIntroScene,
+  boardMeetingScene, journalistRelationshipScene, cupIntroScene,
+  sundayTrainingScene, cupFinalVictory/Intro, seasonSignatureReveal,
+  smFinalVictoryScene) · anslag/ (leagueAnslag, playoffAnslag —
+  cupAnslag är guldstandardreferensen, läses som ton, döms lätt) ·
+  media/library/quotes/ (7 JSON, 22 KB — batchskrivna med Jacobs
+  feedback, döms mot L#7-processen). Numrering från M63.

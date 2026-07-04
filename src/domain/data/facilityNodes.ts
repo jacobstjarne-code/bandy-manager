@@ -37,7 +37,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     financing: { kommun: { share: 0.3, minRelation: 55, minStanding: 50 }, mecenat: { share: 0.4 } },
     consequences: [
       { dim: 'publik',  dir: 'upp', label: '+400 platser, fler på plats' },
-      { dim: 'ekonomi', dir: 'upp', label: 'Mer billettintäkt' },
+      { dim: 'ekonomi', dir: 'upp', label: 'Mer biljettintäkt' },
       { dim: 'ekonomi', dir: 'ned', label: 'Kassa −300 tkr' },
     ],
   },
@@ -51,7 +51,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 5,
     financing: { kommun: { share: 0.4, minRelation: 45 }, mecenat: { share: 0.4 } },
     consequences: [
-      { dim: 'ungdom',  dir: 'upp',  label: 'Nattträningar möjliga' },
+      { dim: 'ungdom',  dir: 'upp',  label: 'Kvällsträning möjlig' },
       { dim: 'publik',  dir: 'noll', label: 'Inga effekter på läktaren' },
       { dim: 'ekonomi', dir: 'ned',  label: 'Kassa −240 tkr' },
     ],
@@ -68,10 +68,10 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     capacityBonus: 5000,
     isHall: true,
     consequences: [
-      { dim: 'publik',  dir: 'ned', label: 'klacken glesnar' },
-      { dim: 'sjal',    dir: 'ned', label: 'Västra Sidan i öppet brott' },
-      { dim: 'ekonomi', dir: 'upp', label: 'åretrunt + tv-avtal' },
-      { dim: 'ungdom',  dir: 'upp', label: 'träningstid året om' },
+      { dim: 'publik',  dir: 'ned', label: 'Klacken glesnar' },
+      { dim: 'sjal',    dir: 'ned', label: 'De trognaste i öppet brott' },
+      { dim: 'ekonomi', dir: 'upp', label: 'Bandy året om + tv-avtal' },
+      { dim: 'ungdom',  dir: 'upp', label: 'Träningstid året om' },
     ],
   },
 
@@ -165,7 +165,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 8,
     financing: { kommun: { share: 0.4, minRelation: 55 }, mecenat: { share: 0.5 } },
     consequences: [
-      { dim: 'ungdom', dir: 'upp', label: '↑↑ Elitakademi' },
+      { dim: 'ungdom', dir: 'upp', label: 'Elitakademi' },
       { dim: 'sjal',   dir: 'upp', label: 'Orten ger egna spelare' },
       { dim: 'ekonomi', dir: 'ned', label: 'Kassa −250 tkr' },
     ],

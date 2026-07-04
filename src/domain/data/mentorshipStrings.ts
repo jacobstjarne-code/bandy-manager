@@ -27,7 +27,7 @@ export function mentorshipActiveInForm(mentorName: string, disciplin: number, ad
 
 /** Aktiv paring, mentorn UR form (<40) — effekten pausad, grinden läsbar. */
 export function mentorshipActiveOutOfForm(mentorName: string, adeptName: string): string {
-  return `${mentorName} är för dåligt däckad själv för att föregå med exempel just nu. ${adeptName} står stilla tills formen kommer tillbaka.`
+  return `${mentorName} har inte formen att föregå med exempel just nu. ${adeptName} står stilla tills den kommer tillbaka.`
 }
 
 // ── Spelarkort, RELATIONER-bond (kortare än AkademiTabs konsekvensrad) ──
