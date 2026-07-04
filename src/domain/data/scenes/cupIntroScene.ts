@@ -47,12 +47,12 @@ Replik från klubbhuset. Ingen vet vem som sa det först.`,
       id: 'motstandare',
       body: `${isHome ? 'Hemma mot' : 'Borta mot'} ${opponentName}.
 
-Förstarundan brukar avgöras tidigt. Eller inte.`,
+Cupbandy brukar avgöras tidigt. Eller inte.`,
       cta: 'Och?',
     },
     {
       id: 'avslut',
-      body: `Vinst ger kvartsfinal. Förlust ger en söndag mer att träna.
+      body: `Vinst ger en runda till. Förlust ger en söndag mer att träna.
 
 Ingen kommer minnas matchen — utom om ni förlorar.`,
       cta: 'Då kör vi',

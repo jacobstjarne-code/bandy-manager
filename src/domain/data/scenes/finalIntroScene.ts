@@ -68,7 +68,7 @@ const KEYLINE_POOL: Record<CoachPersonality, string[]> = {
     'En final avgörs på detaljer. Vi har gått igenom deras. Frågan är om de gått igenom våra.',
   ],
   jovial: [
-    'Femtontusen på läktaren och is under skridskorna. Vad mer ska en gammal bandytok begära?',
+    'Halva bandysverige på läktarna och is under skridskorna. Vad mer ska en gammal bandytok begära?',
     'Killarna är spända. Bra. Spänd betyder att man bryr sig. Jag hade oroat mig om de gäspade.',
   ],
   grumpy: [
@@ -77,14 +77,43 @@ const KEYLINE_POOL: Record<CoachPersonality, string[]> = {
   ],
   philosophical: [
     'En final minns man hela livet. Åt ena hållet eller det andra. Det är det som gör den värd något.',
-    'Vi har rest hit på vårt sätt. De på sitt. Idag möts de två berättelserna. Bara en får sitt slut.',
+    'Vi har rest hit på vårt sätt. De på sitt. Idag möts de två berättelserna. Bara den ena får slutet den ville ha.',
+  ],
+}
+
+/**
+ * Copper-poolen — kvarts/semi, bäst av fem. Samma personligheter, ingen final-
+ * retorik, inget ödesspråk (serien fortsätter efter en förlust). 2 per personlighet
+ * (lärdom #7-golv).
+ */
+const COPPER_KEYLINE_POOL: Record<CoachPersonality, string[]> = {
+  calm: [
+    'Vinn, så spelar vi igen på lördag. Det är hela planen.',
+    'Slutspel är slutspel. Samma is, högre pris. Vi gör det vi brukar.',
+  ],
+  sharp: [
+    'De har tittat på oss i två dagar. Vi har tittat på dem i tre.',
+    'Serien är glömd nu. Det som räknas börjar vid avslaget.',
+  ],
+  jovial: [
+    'Slutspelsbandy! Det är nu det luktar riktig vinter om det.',
+    'Killarna sov dåligt i natt. Jag med. Det är så det ska kännas.',
+  ],
+  grumpy: [
+    'Slutspel. Folk gör det större än det är. Samma regler som i oktober.',
+    'Fem matcher, först till tre. Resten är prat.',
+  ],
+  philosophical: [
+    'Serier belönar tålamod. Slutspel belönar mod. Vi får se vilka vi är.',
+    'Allt sedan oktober var för att få stå här. Nu står vi här.',
   ],
 }
 
 function buildHero(tier: FinalTier): string {
-  // Ej hårdkodad annandag (se kanon-not). Finalen bär arenan; tier sätter vikten.
+  // Ej hårdkodad annandag (se kanon-not). Gold bär finalarenan; copper är kvarts/semi —
+  // spelas hos lagen (INTE Studenternas) och är bäst av fem, så ingen venue, inget ödesspråk.
   if (tier === 'gold') return `Final.\n${VENUE}.`
-  return `${VENUE}.\nIngen återvändo.`
+  return `Slutspel.\nFörst till tre.`
 }
 
 function buildIngress(
@@ -95,9 +124,9 @@ function buildIngress(
   const cond = weather ? getConditionLabel(weather.weather.condition).toLowerCase() : null
   const väder = cond ? `${cond}.` : 'Vinterljus över planen.'
   if (tier === 'gold') {
-    return `Fulla läktare. ${väder}\nDet här är matchen alla i ${managedClubName}\nkommer att minnas — åt ena hållet\neller det andra.`
+    return `Finaldag. ${väder}\nDet här är matchen alla i ${managedClubName}\nkommer att minnas — åt ena hållet\neller det andra.`
   }
-  return `${väder} Vinner man får man spela vidare.\nFörlorar man är säsongen slut.\nSå enkelt, så hårt.`
+  return `${väder} Bäst av fem.\nDet räcker inte att vinna en kväll —\ndet ska göras om, och om igen.`
 }
 
 export function getFinalIntroScene(
@@ -111,10 +140,11 @@ export function getFinalIntroScene(
   const coach = game.assistantCoach
   const eyebrow = tier === 'gold' ? '⬩ SM-FINAL ⬩' : '⬩ SLUTSPEL ⬩'
 
-  // MB-replik: pool nyckom personlighet, talaren = faktiska assistenttränaren.
+  // MB-replik: pool nyckom personlighet OCH tier — gold-poolen är finalskriven,
+  // copper (kvarts/semi, bäst av fem) har egen pool utan finalretorik.
   // seededPick på fixture.id så repliken är stabil för matchen men varierar mellan finaler.
   const personality: CoachPersonality = coach?.personality ?? 'calm'
-  const pool = KEYLINE_POOL[personality]
+  const pool = (tier === 'gold' ? KEYLINE_POOL : COPPER_KEYLINE_POOL)[personality]
   const seed = fixture.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   const quote = seededPick(pool, seed)
   const speaker = coach ? `${coach.name} · Assisterande tränare` : 'Assisterande tränaren'
@@ -126,6 +156,6 @@ export function getFinalIntroScene(
     statLabels: { serien: 'Serien', slutspel: 'Slutspelet' },
     keyline: { quote, speaker },
     ctaToLineup: 'LAGEN →',
-    ctaToKickoff: 'TILL AVSPARK →',
+    ctaToKickoff: 'TILL AVSLAG →',
   }
 }

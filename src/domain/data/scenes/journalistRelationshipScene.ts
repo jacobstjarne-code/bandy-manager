@@ -37,10 +37,10 @@ function sentimentClass(s: number): 'positive' | 'neutral' | 'negative' {
 }
 
 function buildStatusText(relationship: number, lastName: string): string {
-  if (relationship <= 20) return `Mycket kylig. ${lastName} skriver inte om er längre.`
+  if (relationship <= 20) return `Mycket kylig. ${lastName} skriver hellre om er än med er.`
   if (relationship <= 30) return `Kylig. ${lastName} ringer mer sällan nu.`
   if (relationship >= 90) return `Utmärkt. ${lastName} är klubbens ambassadör i spalterna.`
-  if (relationship >= 75) return `Stark relation. Lokaltidningens rubriker har dragit upp orten — fortsätt prata med ${lastName}.`
+  if (relationship >= 75) return `Stark relation. Rubrikerna har varit på er sida — fortsätt prata med ${lastName}.`
   return `Varm. ${lastName} skriver om er nästan varje vecka.`
 }
 
@@ -49,11 +49,11 @@ function buildOutlookText(journalist: Journalist): string {
   const refusals = journalist.pressRefusals ?? 0
   const lastName = journalist.name.split(' ').pop() ?? journalist.name
   if (rel <= 20) {
-    if (refusals >= 3) return 'Tre nekade presskonferenser. Det syns i rubrikerna.'
+    if (refusals >= 3) return `${refusals} nekade presskonferenser. Det syns i rubrikerna.`
     return 'Relationen är bruten. Det krävs tid och ärlighet för att vända.'
   }
   if (rel <= 30) {
-    return 'Tre presskonferenser till med ärligt svar — då vänder det.'
+    return 'Några ärliga svar i rad — då vänder det.'
   }
   if (rel >= 75) {
     return `${lastName} är på er sida nu. Det håller så länge du är lika öppen tillbaka.`

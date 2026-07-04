@@ -114,8 +114,8 @@ export function getValetScene(game: SaveGame): ValetScene {
   return {
     genre: '⬩ Säsongsstart · Valet ⬩',
     heading: `Vad bygger ${managedClub?.name ?? 'klubben'} i år?`,
-    prolog: `Snön ligger kvar på planen. Innan första matchen samlas det som ska bli årets arbete vid sidan av isen.`,
-    question: 'Ett bygge ryms i år. Eller så väntar vi — pengarna gör mer nytta i kassan ett år till.',
+    prolog: `Frosten ligger på planen om morgnarna. Innan första matchen samlas det som ska bli årets arbete vid sidan av isen.`,
+    question: 'Ett bygge ryms i år. Eller inget — att vänta är också ett val.',
     cards,
     declineLabel: 'Vi väntar i år',
     declineNote: 'Inget bygge den här säsongen. Kassan får vila — och nästa år kan valet vara ett annat.',

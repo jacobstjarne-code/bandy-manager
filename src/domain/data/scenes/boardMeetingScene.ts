@@ -50,7 +50,7 @@ export function getBoardMeetingBeats(game: SaveGame): BoardMeetingBeat[] {
   if (expiring > 0) {
     reportSentences.push(`${expiring} kontrakt går ut i vår.`)
   }
-  reportSentences.push(`Kassa ${cash} tkr, transferbudget ${transferBudget}.`)
+  reportSentences.push(`Kassa ${cash} tkr, transferbudget ${transferBudget} tkr.`)
   const reportText = reportSentences.join(' ')
 
   return [

@@ -14,7 +14,7 @@ export const CUP_FINAL_VICTORY_TEMPLATES = {
   // Mall — placeholders ersätts vid render baserat på matchdata.
   // Triggas om avgörande mål sattes av en akademispelare som kom upp.
   bodyText:
-    '{playerName} satte avgörande målet i {minute}:e. Samme {playerName} som kom upp från P19 säsongen {promotionSeason}. Pokalen i händerna <em>{yearsAgo} år senare</em>.',
+    '{playerName} satte avgörande målet i minut {minute}. Samme {playerName} som kom upp från P19 säsongen {promotionSeason}. Pokalen i händerna <em>{yearsAgo} år senare</em>.',
 
   // Fallback om ingen akademi-callback finns för avgörande målet.
   fallbackBodyText:
