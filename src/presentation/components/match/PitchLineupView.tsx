@@ -14,6 +14,17 @@ const ADJACENT_POS: Record<string, string[]> = {
   forward: ['midfielder'],
 }
 
+/** Position-fit — grön/gul/röd (DS-regel 13). Delad med LineupStep:s
+ * practice-läge (Tillträdet, Sätt elvan) för spotlight-fyndet av en fel-
+ * placerad spelare. */
+export type PositionFit = 'green' | 'amber' | 'red'
+
+export function getPositionFit(playerPosition: string, slotPosition: string): PositionFit {
+  if (playerPosition === slotPosition) return 'green'
+  if (ADJACENT_POS[playerPosition]?.includes(slotPosition)) return 'amber'
+  return 'red'
+}
+
 interface PitchLineupViewProps {
   tacticState: Tactic
   startingIds: string[]
@@ -21,6 +32,9 @@ interface PitchLineupViewProps {
   onAssignPlayer: (playerId: string, slotId: string) => void
   onRemovePlayer: (playerId: string) => void
   onSwapPlayers: (fromSlotId: string, toSlotId: string) => void
+  /** Practice-läge (Tillträdet, beat 3): dimma alla utom denna slot, som
+   * glödmarkeras. Rent visuellt — interaktionen är oförändrad på alla slots. */
+  spotlightSlotId?: string | null
 }
 
 type Selection =
@@ -35,6 +49,7 @@ export function PitchLineupView({
   onAssignPlayer,
   onRemovePlayer,
   onSwapPlayers,
+  spotlightSlotId,
 }: PitchLineupViewProps) {
   const [selection, setSelection] = useState<Selection>(null)
 
@@ -129,12 +144,11 @@ export function PitchLineupView({
               const leftPct = slot.x
 
               // Position-match color
-              let ringColor = 'var(--accent)'
-              if (player) {
-                if (player.position === slot.position) ringColor = 'var(--success)'
-                else if (ADJACENT_POS[player.position]?.includes(slot.position)) ringColor = 'var(--warning)'
-                else ringColor = 'var(--danger)'
-              }
+              const fit = player ? getPositionFit(player.position, slot.position) : null
+              const ringColor = fit === 'green' ? 'var(--success)' : fit === 'amber' ? 'var(--warning)' : fit === 'red' ? 'var(--danger)' : 'var(--accent)'
+
+              const isSpotlighted = spotlightSlotId === slot.id
+              const isDimmed = !!spotlightSlotId && !isSpotlighted
 
               return (
                 <div
@@ -152,6 +166,8 @@ export function PitchLineupView({
                     gap: 2,
                     cursor: 'pointer',
                     pointerEvents: 'auto',
+                    opacity: isDimmed ? 0.3 : 1,
+                    transition: 'opacity 220ms',
                     animation: isEmpty
                       ? 'pitchSlotPulse 1.2s ease-in-out infinite'
                       : 'none',
@@ -171,7 +187,7 @@ export function PitchLineupView({
                       ? `1.5px dashed color-mix(in srgb, var(--ink) ${isTarget ? '70' : '30'}%, transparent)`
                       : isSelected
                         ? '2px solid var(--accent)'
-                        : `1.5px solid color-mix(in srgb, ${ringColor} 75%, transparent)`,
+                        : `${isSpotlighted ? 2.4 : 1.5}px solid color-mix(in srgb, ${ringColor} 75%, transparent)`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -179,8 +195,12 @@ export function PitchLineupView({
                     fontWeight: 800,
                     color: isEmpty ? 'var(--text-secondary)' : 'var(--text-primary)',
                     transition: 'background 120ms, border-color 120ms, transform 120ms',
-                    transform: isSelected ? 'scale(1.18)' : isTarget ? 'scale(1.05)' : 'scale(1)',
-                    boxShadow: isSelected ? '0 0 8px color-mix(in srgb, var(--accent) 35%, transparent)' : 'none',
+                    transform: isSelected ? 'scale(1.18)' : isSpotlighted ? 'scale(1.16)' : isTarget ? 'scale(1.05)' : 'scale(1)',
+                    boxShadow: isSelected
+                      ? '0 0 8px color-mix(in srgb, var(--accent) 35%, transparent)'
+                      : isSpotlighted
+                        ? `0 0 11px color-mix(in srgb, ${ringColor} 65%, transparent)`
+                        : 'none',
                     fontFamily: 'system-ui, sans-serif',
                     flexShrink: 0,
                   }}>

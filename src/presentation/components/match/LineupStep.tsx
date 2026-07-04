@@ -4,15 +4,16 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { PlayerPosition } from '../../../domain/enums'
-import { positionShort } from '../../utils/formatters'
+import { positionShort, positionLong } from '../../utils/formatters'
 import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { getConditionLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
-import { FORMATIONS, type FormationType } from '../../../domain/entities/Formation'
+import { FORMATIONS, getRecommendedFormation, type FormationType } from '../../../domain/entities/Formation'
 import { LineupFormationView } from './LineupFormationView'
 import { Settings, AlertTriangle } from 'lucide-react'
 import { Icon } from '../primitives/Icon'
-import { PitchLineupView } from './PitchLineupView'
+import { PitchLineupView, getPositionFit } from './PitchLineupView'
 import { OpponentAnalysisCard } from './OpponentAnalysisCard'
+import { CoachFraming } from '../CoachFraming'
 
 interface GroupedPlayers {
   position: string
@@ -20,6 +21,11 @@ interface GroupedPlayers {
 }
 
 interface LineupStepProps {
+  /** Tillträdet, Uppgift 2/4 "Sätt elvan" — samma mönster som CornerInteractions
+   * practice-flagga. Autofyller + låser formationen till rekommenderad, döljer
+   * Lista/Plan-vyväxlaren, och avslöjar färgnyckel/spotlight/CTA i fyra beats.
+   * Matchdags-editorn (denna prop = false/utelämnad) är HELT oförändrad. */
+  practice?: boolean
   opponent: Club | null
   nextFixture: Fixture | null
   game: SaveGame
@@ -52,6 +58,20 @@ const GROUP_LABELS: Partial<Record<string, string>> = {
   [PlayerPosition.Forward]: 'Anfallare',
 }
 
+/** Mock: docs/incoming (Downloads) "Intro - Sätt elvan, omgjord sekvens" —
+ * fyra beats, coach-citat verbatim ur mocken utom beat 2 (interpolerat med
+ * riktig spelare/position istf mockens fiktiva "Holm"-exempel). */
+const PRACTICE_COACH_QUOTES = [
+  '”Här är truppen. Elva på isen, redan uppställda — du börjar inte från tomt.”',
+  '”Färgen säger om spelaren passar sin plats. Grönt är rätt, gult går an, rött skaver.”',
+  null, // beat 2 — interpoleras, se practiceSpotlightQuote()
+  '”Det var allt. Formen sköter jag; den ändrar du själv senare. Kör.”',
+] as const
+
+function practiceSpotlightQuote(player: Player, slotPosition: PlayerPosition): string {
+  return `”Ser du ringen som inte är grön? ${player.lastName} är ${positionLong(player.position).toLowerCase()} men står ${positionLong(slotPosition).toLowerCase()}. Tryck ringen om du vill byta — annars låter vi den stå.”`
+}
+
 const SPARKLE_SVG = (
   <svg width="11" height="11" viewBox="0 0 12 12" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" stroke="currentColor">
     <path d="M6 1.5 L7 4 L9.5 5 L7 6 L6 8.5 L5 6 L2.5 5 L5 4 Z"/>
@@ -60,6 +80,7 @@ const SPARKLE_SVG = (
 )
 
 export function LineupStep({
+  practice = false,
   opponent,
   nextFixture,
   game,
@@ -83,8 +104,9 @@ export function LineupStep({
   onError,
   onNext,
 }: LineupStepProps) {
-  const [viewMode, setViewMode] = useState<'list' | 'pitch'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'pitch'>(practice ? 'pitch' : 'list')
   const [justFilled, setJustFilled] = useState(false)
+  const [practiceBeat, setPracticeBeat] = useState(0)
 
   // Auto-fill when switching to pitch view with no lineupSlots at all (defensive fallback).
   // IMPORTANT: Only triggers when lineupSlots is undefined or has zero keys.
@@ -99,6 +121,23 @@ export function LineupStep({
       onAutoFill()
     }
   }, [viewMode]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Practice-läge (Tillträdet, Uppgift 2/4): lås formationen till den
+  // rekommenderade — sekvensen bygger på det, sedan autofyll när prop:en når fram.
+  const recommendedFormation = practice ? getRecommendedFormation(squadPlayers) : null
+  useEffect(() => {
+    if (!practice || !recommendedFormation) return
+    if (tacticState.formation !== recommendedFormation) {
+      onFormationChange({ ...tacticState, formation: recommendedFormation })
+    }
+  }, [practice]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!practice || !recommendedFormation) return
+    if (tacticState.formation === recommendedFormation && startingIds.length < 11) {
+      onAutoFill()
+    }
+  }, [practice, tacticState.formation]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Context-combined data
   const weather = nextFixture ? game.matchWeathers?.find(mw => mw.fixtureId === nextFixture.id)?.weather : null
@@ -121,6 +160,29 @@ export function LineupStep({
     ? (oppFormation ? `${oppAnalysis.recentForm} · ${oppFormation}` : oppAnalysis.recentForm)
     : (oppFormation ?? '—')
 
+  // Practice — beat 3 spotlight: första icke-gröna slotten (amber före röd).
+  const practiceSpotlight = (() => {
+    if (!practice || practiceBeat < 2) return null
+    const formationType = (tacticState.formation ?? '3-3-4') as FormationType
+    const template = FORMATIONS[formationType]
+    const fits = template.slots.map(slot => {
+      const pid = tacticState.lineupSlots?.[slot.id]
+      const player = pid ? squadPlayers.find(p => p.id === pid) ?? null : null
+      const fit = player ? getPositionFit(player.position, slot.position) : null
+      return { slot, player, fit }
+    })
+    const target = fits.find(f => f.fit === 'amber') ?? fits.find(f => f.fit === 'red')
+    return target?.player ? { slotId: target.slot.id, player: target.player, slotPosition: target.slot.position } : null
+  })()
+
+  const practiceCoach = game.assistantCoach
+  const practiceCoachInitials = practiceCoach
+    ? `${practiceCoach.name.split(' ')[0]?.[0] ?? ''}${practiceCoach.name.split(' ')[1]?.[0] ?? ''}`
+    : ''
+  const practiceQuote = practiceBeat === 2 && practiceSpotlight
+    ? practiceSpotlightQuote(practiceSpotlight.player, practiceSpotlight.slotPosition)
+    : (PRACTICE_COACH_QUOTES[practiceBeat] ?? PRACTICE_COACH_QUOTES[0])
+
   function handlePlayerClick(player: Player) {
     if (player.isInjured || player.suspensionGamesRemaining > 0) return
     if (selectedSlotId) {
@@ -132,6 +194,11 @@ export function LineupStep({
 
   return (
     <>
+      {/* 0. Practice — coach-quote, beat-baserad (ersätter TilltradeScreens statiska) */}
+      {practice && (
+        <CoachFraming initial={practiceCoachInitials} quote={practiceQuote} />
+      )}
+
       {/* 1. Context — two-column strip */}
       {nextFixture && (
         <div style={{
@@ -168,51 +235,71 @@ export function LineupStep({
         />
       )}
 
-      {/* 3. Tabs — always at top, same position in both modes */}
-      <div style={{ padding: '0 14px', marginBottom: 10 }}>
-        <div className="btn-segmented" style={{ display: 'flex', width: '100%' }}>
-          {(['list', 'pitch'] as const).map(mode => (
-            <button
-              key={mode}
-              onClick={() => setViewMode(mode)}
-              className={`btn${viewMode === mode ? ' active' : ''}`}
-              style={{ flex: 1, padding: '8px 4px', fontSize: 11, fontWeight: 600, letterSpacing: '0.5px' }}
-            >
-              {mode === 'list' ? 'Lista' : 'Plan'}
-            </button>
-          ))}
+      {/* 3. Tabs — always at top, same position in both modes. Practice: alltid Plan, ingen växlare. */}
+      {!practice && (
+        <div style={{ padding: '0 14px', marginBottom: 10 }}>
+          <div className="btn-segmented" style={{ display: 'flex', width: '100%' }}>
+            {(['list', 'pitch'] as const).map(mode => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`btn${viewMode === mode ? ' active' : ''}`}
+                style={{ flex: 1, padding: '8px 4px', fontSize: 11, fontWeight: 600, letterSpacing: '0.5px' }}
+              >
+                {mode === 'list' ? 'Lista' : 'Plan'}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* 4. Status + Auto-fyll — always same position */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 14px', marginBottom: 10, gap: 8 }}>
-        <span style={{ fontSize: 9, color: startingIds.length === 11 ? 'var(--success)' : 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
-          {startingIds.length} av 11 placerade
-        </span>
-        <button
-          onClick={() => {
-            onAutoFill()
-            setJustFilled(true)
-            setTimeout(() => setJustFilled(false), 1500)
-          }}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            padding: '5px 10px',
-            background: justFilled ? 'var(--success)' : 'transparent',
-            border: `1.5px solid ${justFilled ? 'var(--success)' : 'var(--accent)'}`,
-            color: justFilled ? 'var(--text-light)' : 'var(--accent-dark)',
-            fontSize: 11, fontWeight: 600,
-            borderRadius: 8,
-            cursor: 'pointer',
-            transition: 'background 0.15s, border-color 0.15s, color 0.15s',
-          }}
-        >
-          {justFilled ? '✓' : SPARKLE_SVG}
-          {justFilled ? 'Uppdaterad' : 'Fyll bästa elvan'}
-        </button>
-      </div>
+      {/* 4. Status + Auto-fyll — practice autofyller automatiskt, ingen manuell knapp */}
+      {!practice && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 14px', marginBottom: 10, gap: 8 }}>
+          <span style={{ fontSize: 9, color: startingIds.length === 11 ? 'var(--success)' : 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            {startingIds.length} av 11 placerade
+          </span>
+          <button
+            onClick={() => {
+              onAutoFill()
+              setJustFilled(true)
+              setTimeout(() => setJustFilled(false), 1500)
+            }}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '5px 10px',
+              background: justFilled ? 'var(--success)' : 'transparent',
+              border: `1.5px solid ${justFilled ? 'var(--success)' : 'var(--accent)'}`,
+              color: justFilled ? 'var(--text-light)' : 'var(--accent-dark)',
+              fontSize: 11, fontWeight: 600,
+              borderRadius: 8,
+              cursor: 'pointer',
+              transition: 'background 0.15s, border-color 0.15s, color 0.15s',
+            }}
+          >
+            {justFilled ? '✓' : SPARKLE_SVG}
+            {justFilled ? 'Uppdaterad' : 'Fyll bästa elvan'}
+          </button>
+        </div>
+      )}
 
-      {/* 5. Formation dropdown — lifted from sub-components */}
+      {/* 5. Formation — practice: låst till rekommenderad, ingen dropdown */}
+      {practice ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', marginBottom: 10 }}>
+          <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+            Planen
+          </span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
+            {FORMATIONS[(tacticState.formation ?? '3-3-4') as FormationType].label}
+          </span>
+          <span style={{ fontSize: 10, color: 'var(--success)', fontWeight: 600 }}>· rekommenderad</span>
+          <span style={{
+            marginLeft: 'auto', fontFamily: 'ui-monospace, monospace', fontSize: 8, letterSpacing: '1px',
+            color: 'var(--text-muted)', background: 'var(--bg)', border: '1px solid var(--border)',
+            borderRadius: 3, padding: '2px 6px',
+          }}>LÅST I INTRO</span>
+        </div>
+      ) : (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', marginBottom: 10 }}>
         <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
           <Icon icon={Settings} size={11} /> Formation
@@ -237,6 +324,26 @@ export function LineupStep({
           ))}
         </select>
       </div>
+      )}
+
+      {/* 5b. Practice — färgnyckel (beat ≥1) */}
+      {practice && practiceBeat >= 1 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
+          padding: '9px 12px', margin: '0 14px 10px',
+          background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8,
+        }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'var(--text-secondary)' }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--success)' }} />rätt position
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'var(--text-secondary)' }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--warning)' }} />går an
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'var(--text-secondary)' }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--danger)' }} />fel position
+          </span>
+        </div>
+      )}
 
       {/* 6. Pitch — viewMode determines component, same location */}
       {viewMode === 'list' ? (
@@ -255,7 +362,15 @@ export function LineupStep({
           onAssignPlayer={onAssignPlayer}
           onRemovePlayer={onRemovePlayer}
           onSwapPlayers={onSwapPlayers}
+          spotlightSlotId={practiceSpotlight?.slotId ?? null}
         />
+      )}
+
+      {/* 6b. Practice — hint (beat 3 exakt) */}
+      {practice && practiceBeat === 2 && practiceSpotlight && (
+        <p style={{ margin: '0 14px 8px', textAlign: 'center', fontSize: 11, color: 'var(--accent-dark)', fontWeight: 600 }}>
+          Tryck den glödande ringen för att byta spelare
+        </p>
       )}
 
       {/* 7. List-mode additions — player list */}
@@ -333,8 +448,8 @@ export function LineupStep({
         </div>
       )}
 
-      {/* Validation warnings */}
-      {!canPlay && (
+      {/* Validation warnings — practice autofyller alltid en giltig elva, döljs */}
+      {!practice && !canPlay && (
         <div style={{ margin: '0 14px 8px', background: 'color-mix(in srgb, var(--danger) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 25%, transparent)', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--danger)', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {startingIds.length !== 11 && <span>Välj exakt 11 startspelare (du har {startingIds.length})</span>}
           {injuredInStarting.map(p => (
@@ -342,22 +457,42 @@ export function LineupStep({
           ))}
         </div>
       )}
-      {canPlay && !startingIds.some(id => squadPlayers.find(p => p.id === id)?.position === PlayerPosition.Goalkeeper) && (
+      {!practice && canPlay && !startingIds.some(id => squadPlayers.find(p => p.id === id)?.position === PlayerPosition.Goalkeeper) && (
         <div style={{ margin: '0 14px 8px', background: 'color-mix(in srgb, var(--warning) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--warning) 30%, transparent)', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: 6 }}>
           <Icon icon={AlertTriangle} size={13} style={{ flexShrink: 0 }} /> Ingen målvakt i startelvan — en utespelare får gå i mål.
         </div>
       )}
 
-      {/* Footer CTA */}
+      {/* Footer CTA — practice: "Fortsätt" avancerar beat 0-2, "Vidare" (beat 3) går till nästa uppgift */}
       <div style={{ padding: '4px 14px 24px', borderTop: '0.5px solid var(--border)', marginTop: 4 }}>
-        <button
-          onClick={onNext}
-          disabled={!canPlay}
-          className="btn btn-cta btn-primary"
-          style={{ width: '100%', cursor: canPlay ? 'pointer' : 'not-allowed', opacity: canPlay ? 1 : 0.5 }}
-        >
-          Nästa: Taktik →
-        </button>
+        {practice ? (
+          practiceBeat < 3 ? (
+            <button
+              onClick={() => setPracticeBeat(b => Math.min(3, b + 1))}
+              className="btn btn-cta btn-primary"
+              style={{ width: '100%' }}
+            >
+              Fortsätt →
+            </button>
+          ) : (
+            <button
+              onClick={onNext}
+              className="btn btn-cta btn-primary"
+              style={{ width: '100%' }}
+            >
+              Vidare →
+            </button>
+          )
+        ) : (
+          <button
+            onClick={onNext}
+            disabled={!canPlay}
+            className="btn btn-cta btn-primary"
+            style={{ width: '100%', cursor: canPlay ? 'pointer' : 'not-allowed', opacity: canPlay ? 1 : 0.5 }}
+          >
+            Nästa: Taktik →
+          </button>
+        )}
       </div>
     </>
   )

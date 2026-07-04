@@ -5,6 +5,7 @@ import { useLineupEditor } from '../hooks/useLineupEditor'
 import { LineupStep } from '../components/match/LineupStep'
 import { CornerInteraction } from '../components/match/CornerInteraction'
 import { IllustrationScene } from '../components/illustration/IllustrationScene'
+import { CoachFraming } from '../components/CoachFraming'
 import {
   buildCornerInteractionData,
   resolveCorner,
@@ -68,38 +69,6 @@ function BeatBars({ step, size }: { step: number; size: 'lg' | 'sm' }) {
             : 'color-mix(in srgb, var(--accent) 25%, transparent)',
         }} />
       ))}
-    </div>
-  )
-}
-
-/** Coach-framing med monogrammcirkel — F2/F3-stil (9px header) */
-function CoachFraming({ initial, quote }: { initial: string; quote: string }) {
-  return (
-    <div style={{
-      margin: '12px 16px',
-      background: 'rgba(0,0,0,0.3)',
-      borderLeft: '2px solid var(--copper)',
-      borderRadius: '0 8px 8px 0',
-      padding: '9px 12px',
-      display: 'flex', gap: 9, alignItems: 'center',
-    }}>
-      <span style={{
-        flexShrink: 0,
-        width: 22, height: 22, borderRadius: '50%',
-        background: 'var(--bg-leather)',
-        border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'ui-monospace, monospace', fontSize: 8, fontWeight: 700,
-        color: 'var(--accent)',
-      }}>
-        {initial}
-      </span>
-      <span style={{
-        fontFamily: 'Georgia, serif', fontStyle: 'italic',
-        fontSize: 12, color: 'var(--text-quote-light)', lineHeight: 1.35,
-      }}>
-        {quote}
-      </span>
     </div>
   )
 }
@@ -291,13 +260,14 @@ export function TilltradeScreen() {
         position: 'relative', zIndex: 1,
         display: 'flex', flexDirection: 'column',
       }}>
-        {/* Coach-framing med monogrammcirkel */}
-        <CoachFraming
-          initial={coachInitials}
-          quote={step === 2
-            ? '“Här är truppen. Elva på isen. Du bestämmer — jag säger till om något skaver.”'
-            : '“En hörna innan det gäller. Du väljer var den läggs och hur hårt. Titta på zonerna.”'}
-        />
+        {/* Coach-framing med monogrammcirkel — F2 (Sätt elvan) renderar sin egen
+            beat-baserade quote inne i LineupStep (practice-läge), F3 (Hörnan) här. */}
+        {step === 3 && (
+          <CoachFraming
+            initial={coachInitials}
+            quote='“En hörna innan det gäller. Du väljer var den läggs och hur hårt. Titta på zonerna.”'
+          />
+        )}
 
         {step === 2 && (
           /* Ljus inset — laguppställnings-lappen på det mörka bordet */
@@ -312,6 +282,7 @@ export function TilltradeScreen() {
           }}>
             <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
               <LineupStep
+                practice
                 opponent={null}
                 nextFixture={null}
                 game={game}
