@@ -1,4 +1,5 @@
 import { ArrowLeftRight } from 'lucide-react'
+import { Icon } from '../primitives/Icon'
 
 interface MatchControlsProps {
   isPaused: boolean
@@ -58,7 +59,7 @@ export function MatchControls({
             className="match-control-btn"
             title="Byten"
           >
-            <ArrowLeftRight size={16} />
+            <Icon icon={ArrowLeftRight} size={16} />
           </button>
         )}
 

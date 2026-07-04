@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Settings, BookOpen } from 'lucide-react'
+import { Icon } from './primitives/Icon'
 import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/gameStore'
 import { TownSilhouette } from './TownSilhouette'
 import { KlubbparmOverlay } from './KlubbparmOverlay'
@@ -162,7 +163,7 @@ export function GameHeader() {
           }}
           aria-label="Klubbpärmen"
         >
-          <BookOpen size={16} strokeWidth={2} />
+          <Icon icon={BookOpen} size={16} />
         </button>
 
         {/* Kuvert-notifikation — SVG-glyph, inte emoji */}
@@ -196,7 +197,7 @@ export function GameHeader() {
             color: 'rgba(245,241,235,0.45)',
           }}
         >
-          <Settings size={16} strokeWidth={2} />
+          <Icon icon={Settings} size={16} />
         </button>
       </div>
 

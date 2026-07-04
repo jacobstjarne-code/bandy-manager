@@ -11,6 +11,7 @@ import { getPlayerVoice, getPlayerMoodLine, getSeasonArc } from '../../domain/se
 import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
 import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
+import { Icon } from './primitives/Icon'
 import { formatSalary, positionShort } from '../utils/formatters'
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { mentorshipBondAdeptInForm, mentorshipBondAdeptResting } from '../../domain/data/mentorshipStrings'
@@ -492,13 +493,13 @@ export function PlayerCard({
               {onTalkToPlayer && (
                 <button onClick={e => { e.stopPropagation(); setOpenAction(a => a === 'prata' ? null : 'prata') }}
                   style={{ flex: 1, padding: '9px 8px', borderRadius: 'var(--radius-md)', background: openAction === 'prata' ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-surface)', border: '1px solid var(--border)', fontSize: 11, color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><MessageCircle size={13} />Prata</span>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon icon={MessageCircle} size={13} />Prata</span>
                 </button>
               )}
               {leadershipAvailable && (
                 <button onClick={e => { e.stopPropagation(); setOpenAction(a => a === 'ledarskap' ? null : 'ledarskap') }}
                   style={{ flex: 1, padding: '9px 8px', borderRadius: 'var(--radius-md)', background: openAction === 'ledarskap' ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-surface)', border: '1px solid var(--border)', fontSize: 11, color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Crown size={13} />Ledarskap</span>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon icon={Crown} size={13} />Ledarskap</span>
                 </button>
               )}
             </div>
@@ -887,9 +888,9 @@ export function PlayerCard({
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {([
-                { id: 'lower_tempo' as LeadershipAction, icon: <Wind size={13} />, text: 'Minska belastningen' },
-                { id: 'private_talk' as LeadershipAction, icon: <MessageSquare size={13} />, text: 'Privat samtal' },
-                { id: 'public_praise' as LeadershipAction, icon: <Megaphone size={13} />, text: 'Offentlig beröm' },
+                { id: 'lower_tempo' as LeadershipAction, icon: <Icon icon={Wind} size={13} />, text: 'Minska belastningen' },
+                { id: 'private_talk' as LeadershipAction, icon: <Icon icon={MessageSquare} size={13} />, text: 'Privat samtal' },
+                { id: 'public_praise' as LeadershipAction, icon: <Icon icon={Megaphone} size={13} />, text: 'Offentlig beröm' },
               ]).map(opt => {
                 const avail = canLeadership(opt.id)
                 return (
@@ -948,8 +949,8 @@ export function PlayerCard({
           ) : (
             <div style={{ display: 'flex', gap: 6 }}>
               {([
-                { id: 'encourage' as const, icon: <Smile size={13} />, text: 'Uppmuntra' },
-                { id: 'demand' as const, icon: <Flame size={13} />, text: 'Ställ krav' },
+                { id: 'encourage' as const, icon: <Icon icon={Smile} size={13} />, text: 'Uppmuntra' },
+                { id: 'demand' as const, icon: <Icon icon={Flame} size={13} />, text: 'Ställ krav' },
                 { id: 'future' as const, icon: null, text: 'Framtid' },
               ]).map(opt => (
                 <button

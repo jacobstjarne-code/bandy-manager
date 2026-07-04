@@ -7,6 +7,7 @@ import { WeatherCondition } from '../../../domain/enums'
 // Weather display moved to MatchHeader
 import { getRivalry } from '../../../domain/data/rivalries'
 import { Film, Zap, MessageSquare } from 'lucide-react'
+import { Icon } from '../primitives/Icon'
 import { tacticRows } from '../../utils/tacticData'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 
@@ -189,17 +190,19 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
       <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>🎮 Spelläge</p>
       <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
         {([
-          { mode: 'full' as MatchMode, icon: <Film size={20} />, label: 'Full', desc: 'Alla interaktioner' },
-          { mode: 'commentary' as MatchMode, icon: <MessageSquare size={20} />, label: 'Kommentar', desc: 'Följ utan stopp' },
-          { mode: 'quicksim' as MatchMode, icon: <Zap size={20} />, label: 'Snabb', desc: 'Direkt resultat' },
-        ]).map(({ mode, icon, label, desc }) => (
+          { mode: 'full' as MatchMode, iconComp: Film, label: 'Full', desc: 'Alla interaktioner' },
+          { mode: 'commentary' as MatchMode, iconComp: MessageSquare, label: 'Kommentar', desc: 'Följ utan stopp' },
+          { mode: 'quicksim' as MatchMode, iconComp: Zap, label: 'Snabb', desc: 'Direkt resultat' },
+        ]).map(({ mode, iconComp, label, desc }) => (
           <button key={mode} onClick={() => onSetMatchMode(mode)} style={{
             flex: 1, padding: '10px 6px',
             background: matchMode === mode ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-elevated)',
             border: `2px solid ${matchMode === mode ? 'var(--accent)' : 'var(--border)'}`,
             borderRadius: 'var(--radius)', cursor: 'pointer',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 3, color: matchMode === mode ? 'var(--accent)' : 'var(--text-secondary)' }}>{icon}</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 3, color: matchMode === mode ? 'var(--accent)' : 'var(--text-secondary)' }}>
+              <Icon icon={iconComp} size={20} active={matchMode === mode} />
+            </div>
             <div style={{ fontSize: 12, fontWeight: matchMode === mode ? 700 : 500, color: matchMode === mode ? 'var(--accent)' : 'var(--text-secondary)' }}>{label}</div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{desc}</div>
           </button>

@@ -11,6 +11,7 @@ import type { InboxItem, SaveGame } from '../../domain/entities/SaveGame'
 import { Check, ArrowLeftRight, Clock, Zap, Activity, Ban, Newspaper, GraduationCap, Dumbbell, Building2, Search, LineChart, AlertTriangle, Banknote, Mail, type LucideIcon } from 'lucide-react'
 import { PlayerLink } from '../components/PlayerLink'
 import { Dot, dotColor, type DotColor } from '../components/shared/Dot'
+import { Icon } from '../components/primitives/Icon'
 
 // ── Fynd 12 + PC-5: agerbara poster routar till sin handlingsyta ──
 // Förfrågningar MED egen yta länkas dit (Övergångar, Trupp, Klubb) i stället för
@@ -74,8 +75,8 @@ const INBOX_ICON: Partial<Record<InboxItemType, LucideIcon>> = {
 }
 
 function InboxTypeIcon({ type }: { type: InboxItemType }) {
-  const Icon = INBOX_ICON[type] ?? Mail
-  return <Icon size={13} />
+  const IconComponent = INBOX_ICON[type] ?? Mail
+  return <Icon icon={IconComponent} size={13} />
 }
 
 // ── Severity grouping ────────────────────────────────────────────
@@ -440,7 +441,7 @@ function TrainingAggRow({ items }: { items: InboxItem[] }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0, fontSize: 11, color: 'var(--text-secondary)',
       }}>
-        <Dumbbell size={13} />
+        <Icon icon={Dumbbell} size={13} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p className="h-quote-sm">

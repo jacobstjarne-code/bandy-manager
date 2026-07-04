@@ -1,6 +1,7 @@
 import { useMemo, useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FastForward } from 'lucide-react'
+import { Icon } from '../components/primitives/Icon'
 import { useGameStore, useCanAdvance } from '../store/gameStore'
 import { buildPortal, makeSeed } from '../../domain/services/portal/portalBuilder'
 import { getSeasonalTone } from '../../domain/services/portal/seasonalTone'
@@ -335,7 +336,7 @@ export function PortalScreen() {
             className="btn btn-ghost"
             style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
           >
-            <FastForward size={13} /> Simulera resterande säsong
+            <Icon icon={FastForward} size={13} /> Simulera resterande säsong
           </button>
         )}
         {/* Drag 3 (§11 punkt 6) — "Vad nu?"-affordansen. Bildtext på handlingen,

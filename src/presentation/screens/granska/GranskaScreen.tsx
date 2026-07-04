@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Target, Users, LineChart, GraduationCap, type LucideIcon } from 'lucide-react'
+import { Icon } from '../../components/primitives/Icon'
 import { useGameStore } from '../../store/gameStore'
 import { playSound } from '../../audio/soundEffects'
 import { MatchEventType } from '../../../domain/enums'
@@ -263,7 +264,7 @@ export function GranskaScreen() {
                   position: 'relative',
                 }}
               >
-                <s.Icon size={18} color={isActive ? 'var(--text-light)' : 'var(--accent)'} />
+                <Icon icon={s.Icon} size={18} color={isActive ? 'var(--text-light)' : 'var(--accent)'} active={isActive} />
                 <span style={{ fontSize: 8, color: isActive ? 'var(--text-light)' : 'var(--accent)', letterSpacing: '0.5px', fontWeight: 600 }}>{s.label}</span>
               </button>
             )

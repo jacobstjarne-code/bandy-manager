@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Lock } from 'lucide-react'
+import { Icon } from './primitives/Icon'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { KLUBBPARM_CHAPTERS, chapterAwaitsText } from '../../domain/data/klubbparmContent'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
@@ -118,7 +119,7 @@ export function KlubbparmOverlay({ game, onClose }: KlubbparmOverlayProps) {
                 disabled={!unlocked}
                 style={style}
               >
-                {!unlocked && <Lock size={9} />}
+                {!unlocked && <Icon icon={Lock} size={9} />}
                 {ch.label}
               </button>
             )
