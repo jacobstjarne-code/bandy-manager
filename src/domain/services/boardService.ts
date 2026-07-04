@@ -7,7 +7,7 @@ export const BOARD_EXPECTATION_TEXT: Record<ClubExpectation, string> = {
   [ClubExpectation.AvoidBottom]: 'undvika botten av tabellen',
   [ClubExpectation.MidTable]: 'hålla oss i mitten av tabellen',
   [ClubExpectation.ChallengeTop]: 'utmana om topplaceringar',
-  [ClubExpectation.WinLeague]: 'vinna ligan',
+  [ClubExpectation.WinLeague]: 'vinna serien',
 }
 
 export interface BoardEvaluation {
@@ -192,7 +192,7 @@ export function generateSeasonVerdict(
   const ratingTexts: Record<number, { title: string; body: string }> = {
     5: {
       title: 'Styrelsebetyg: Utmärkt säsong',
-      body: `Styrelsen ger dig betyget 5 av 5. Säsongen överträffade förväntningarna på alla plan. Välgjort.`,
+      body: `Styrelsen ger dig betyget 5 av 5. Säsongen överträffade förväntningarna på alla plan. Det är noterat i protokollet.`,
     },
     4: {
       title: 'Styrelsebetyg: Bra säsong',
@@ -204,7 +204,7 @@ export function generateSeasonVerdict(
     },
     2: {
       title: 'Styrelsebetyg: Underkänd säsong',
-      body: `Styrelsen ger dig betyget 2 av 5. Resultaten nådde inte upp till vad vi förhandlade om inför säsongen.`,
+      body: `Styrelsen ger dig betyget 2 av 5. Resultaten nådde inte upp till vad vi kom överens om inför säsongen.`,
     },
     1: {
       title: 'Styrelsebetyg: Misslyckad säsong',
@@ -260,7 +260,7 @@ export function generatePreSeasonMessage(
 
   const title = expectationChanged
     ? `Styrelsemöte — Nya förväntningar inför säsongen`
-    : `Styrelsemöte — Säsongen ${club.name}`
+    : `Styrelsemöte inför säsongen`
 
   void standings
   return { title, body, newExpectation }

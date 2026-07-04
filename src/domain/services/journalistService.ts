@@ -191,7 +191,7 @@ export function generateCriticalArticle(journalist: Journalist, managerName: str
   return {
     id: `article_refusal_${journalist.pressRefusals}`,
     type: InboxItemType.MediaEvent,
-    title: `${journalist.outlet}: "${managerName} ducker frågorna"`,
+    title: `${journalist.outlet}: "${managerName} duckar frågorna"`,
     body: `Ledare i lokaltidningen: Klubbens ledning har nu vägrat tre presskonferenser i rad. Det är inte bara en fråga om PR — det är en fråga om respekt för orten, supportrarna och de som följer laget. ${managerName} behöver börja svara.`,
     date: currentDate,
     isRead: false,

@@ -23,12 +23,12 @@ export type KvittoOutcomeDir = 'good' | 'bad' | 'neutral'
 export const HALFTIME_OUTCOMES: Record<'lugna' | 'pressa' | 'prata', Record<KvittoOutcomeDir, string[]>> = {
   lugna: {
     good: ['Tempot sjönk och ni kontrollerade resten.', 'Laget tog ner det och höll undan.'],
-    bad: ['Det blev för passivt — de kröp tillbaka in i matchen.', 'Ni släppte initiativet och fick betala för det.'],
+    bad: ['Det blev för passivt — de fick ta över.', 'Ni släppte initiativet och fick betala för det.'],
     neutral: ['Lugnare efter pausen, men ingen avgörande skillnad.'],
   },
   pressa: {
-    good: ['Ni höjde tempot och de svarade inte.', 'Pressen gav utdelning direkt efter pausen.'],
-    bad: ['Pressen öppnade bakåt och kontringarna straffade.', 'Ni gick på för hårt och tappade balansen.'],
+    good: ['Ni höjde tempot och de svarade inte.', 'Pressen gav utdelning efter pausen.'],
+    bad: ['Pressen öppnade ytor bakåt — och de hittade dem.', 'Ni gick på för hårt och tappade balansen.'],
     neutral: ['Högre tempo, men det jämnade ut sig.'],
   },
   prata: {
@@ -48,7 +48,7 @@ export const LINEUP_ROTATION_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
 /** Startade en trött spelare (started_tired) → höll benen eller inte. Egen pool — detta är INTE rotering/vila, så LINEUP_ROTATION_OUTCOMES passar inte här. */
 export const STARTED_TIRED_OUTCOMES: Record<KvittoOutcomeDir, string[]> = {
   good: ['{spelare} höll trots tunga ben.', 'Tröttheten syntes inte — {spelare} bar matchen ändå.'],
-  bad: ['De tunga benen syntes. {spelare} räckte inte hela vägen.', '{spelare} var tom redan tidigt i andra halvlek.'],
+  bad: ['De tunga benen syntes. {spelare} räckte inte hela vägen.', '{spelare} hade inte benen med sig i dag.'],
   neutral: ['{spelare} gjorde sitt, varken mer eller mindre.'],
 }
 
@@ -95,15 +95,15 @@ export const CAPTAIN_OUTCOMES: Record<CaptainContext, Record<KvittoOutcomeDir, s
   },
   slutspel: {
     good: [
-      'Kaptenen tog seriejobbet på sina axlar och laget orkade hela vägen.',
+      'Kaptenen tog det tyngsta på sina axlar och laget orkade hela vägen.',
       'I pressen som bara slutspel ger var bindeln den lugnaste på isen.',
     ],
     bad: [
       'Slutspelsnerverna nådde ända in i bindeln, och laget kände det.',
-      'Kaptenen räckte inte till när serien stramades åt.',
+      'Kaptenen räckte inte till när det stramades åt.',
     ],
     neutral: [
-      'Kaptenen gjorde sitt i en jämn serie, inget mer att säga om den saken.',
+      'Kaptenen gjorde sitt i en jämn drabbning, inget mer att säga om den saken.',
       'Bindeln störde inte, men drog inte heller laget framåt.',
     ],
   },

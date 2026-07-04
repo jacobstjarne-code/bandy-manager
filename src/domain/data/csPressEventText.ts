@@ -24,23 +24,23 @@ export type PressChoice = 'individual' | 'team' | 'system' | 'silent'
 export const CS_PRESS_QUESTIONS: Record<PressSeverity, readonly string[]> = {
   provocative: [
     `Var det helt enkelt tur i dag, eller är något på riktigt på väg att hända?`,
-    `Tre noll mot ett lag som inte är direkt världsklass. Är vi imponerade?`,
+    `Hållen nolla, javisst. Men är vi imponerade?`,
     `Vad krävs för att det här ska räknas på riktigt? Just nu känns det tunt.`,
-    `{NAME} höll noll. Men ni har varit svaga försvarsmässigt hela hösten. Bluff eller vändning?`,
+    `Nollan hölls, den här gången. Bluff eller vändning?`,
     `Skulle du säga att klubben har fattat något, eller är det här bara väderomslag?`,
   ],
   neutral: [
     `Hur ska vi tolka det här? Är det här laget på riktigt, eller en bra dag?`,
-    `{NAME} höll noll mot ett gott motstånd. Är det en spelare som sticker ut just nu?`,
-    `Vad var skillnaden idag mot förra mötet?`,
-    `Ni har spelat enklare bandy de senaste veckorna. Är det en plan eller en följd?`,
+    `{NAME} stod för en stark insats där bak. Är det en spelare som sticker ut just nu?`,
+    `Vad var skillnaden i dag?`,
+    `Ni spelar enklare bandy nu. Är det en plan eller en följd?`,
     `Skulle du säga att försvarsspelet är där ni vill ha det?`,
   ],
   friendly: [
-    `{NAME} stänger ned ett bra anfallslag. Hur mycket av det är hans förtjänst?`,
-    `Två poäng utan baklängesmål. Det är vad som krävs i nedflyttningsstriden, eller?`,
+    `Ingenting gick in bakom {NAME} i dag. Hur mycket av det är hans förtjänst?`,
+    `Hållen nolla på hemmaplan. Hur mycket är den värd i omklädningsrummet?`,
     `Vad ser du som mest givande just nu — försvarsspelet, formen eller stämningen?`,
-    `Du har sagt förut att försvaret kommer i form sent. Är det det vi ser nu?`,
+    `Man brukar säga att försvar kommer i form sent. Är det det vi ser nu?`,
     `Hur viktigt är det att {NAME} får det här erkännandet just i dag?`,
   ],
 }
@@ -65,17 +65,17 @@ export const CS_PRESS_PUBLISHED_QUOTES: Record<PressChoice, readonly string[]> =
   individual: [
     `{NAME} är klubbens viktigaste spelare — {COACH_LASTNAME} i {OUTLET}`,
     `{COACH_LASTNAME} höjer {NAME}: "Han bär en stor del av det här."`,
-    `"Han ser det innan andra gör det." {COACH_LASTNAME} om {NAME} efter trepoängaren.`,
+    `"Han ser det innan andra gör det." {COACH_LASTNAME} om {NAME} efter nollan.`,
   ],
   team: [
     `{COACH_LASTNAME}: "Vi försvarar tillsammans." — kort om matchen i {OUTLET}`,
-    `Ingen enskild lyfts fram efter trepoängaren. Det är en plan, säger {COACH_LASTNAME}.`,
+    `Ingen enskild lyfts fram efter nollan. Det är en plan, säger {COACH_LASTNAME}.`,
     `{COACH_LASTNAME} fördelar äran: "Det är elva man som löser det här."`,
   ],
   system: [
     `{COACH_LASTNAME} talar systemiskt: "Det är inte personer. Det är hur vi spelar."`,
     `Klubbens tränare svarar {JOURNALIST} med taktik, inte med namn.`,
-    `"Strukturen håller. Det är det vi har byggt." {COACH_LASTNAME} efter trepoängaren.`,
+    `"Strukturen håller. Det är det vi har byggt." {COACH_LASTNAME} efter nollan.`,
   ],
   silent: [
     `{COACH_LASTNAME} avstod kommentar. Det är inte första gången.`,

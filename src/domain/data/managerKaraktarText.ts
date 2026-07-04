@@ -14,7 +14,7 @@
 export const BIO_OPENERS: string[] = [
   'Från {hemort} ursprungligen. Spelade {n} år som aktiv innan knäna sa ifrån, blev tränare strax därpå.',
   '{hemort}-grabb som aldrig riktigt lämnade bandyn. Tog tränarvägen när spelarbenen tog slut.',
-  'Halva livet i {hemort}, andra halvan i hallar runt om i landet. Det här är inte hans första jobb, men han pratar om det som om det vore.',
+  'Halva livet i {hemort}, andra halvan vid isar runt om i landet. Det här är inte hans första jobb, men han pratar om det som om det vore.',
   'Spelade aldrig högst, men läste spelet bättre än de flesta. Det är därför han står vid sargen i dag.',
   'Kommer från {hemort}. Bandyn fanns där före allt annat, och har följt honom sedan.',
 ]
@@ -50,7 +50,7 @@ export const BURNOUT_MARK = {
       'Jag undrar hur länge jag orkar köra så här.',
       'Matcherna är det enkla — det är allt annat som tär.',
       'Det är inte bandyn längre. Det är allt runtomkring.',
-      'Satt kvar i bilen utanför hallen en bra stund i morse. Orkade inte gå in.',
+      'Satt kvar i bilen utanför klubbstugan en bra stund i morse. Orkade inte gå in.',
       'Folk på Konsum har börjat fråga om jag mår bra. Det säger väl något.',
     ],
   },
@@ -79,19 +79,19 @@ export const COACH_RIVALRY_QUOTES: Record<CoachPersonality, string[]> = {
     '{manager} skickade ett kort när min far gick bort. Sånt glömmer man inte.',
   ],
   kall: [
-    'Jag brukar inte förlora mot honom. Han ringer aldrig först.',
+    'Vi räknar inte ihop åren, han och jag. Han ringer aldrig först.',
     'Jag har inget otalt med {manager}. Jag har inget tal med honom alls.',
     'Vi hälsar. Det räcker. Bandy är ingen kafferepskväll.',
     '{manager} sköter sitt, jag sköter mitt. Vi möts på isen. Det får räcka.',
   ],
   passiv_aggressiv: [
-    'Han har slagit mig fler gånger än jag vill räkna. Det är inte personligt. Inte än.',
-    '{manager} har haft tur mot mig. Tur tar slut.',
+    'Jag minns varje match mot honom. Det är inte personligt. Inte än.',
+    '{manager} har haft tur genom åren. Tur tar slut.',
     'Bra lag {manager} har byggt. Med den budgeten borde det vara det.',
     'Vi var lagkamrater förr. Han glömmer inte att jag avgjorde när det gällde.',
   ],
   odmjuk: [
-    '{manager} har lärt mig mer om den här ligan än någon annan. Jag säger det inte till honom.',
+    '{manager} har lärt mig mer om den här serien än någon annan. Jag säger det inte till honom.',
     'Jag har förlorat mot bättre, och {manager} är en av dem.',
     'När jag var ny tog han sig tid att prata. Det betydde något.',
     'Man blir inte sämre av att möta {manager}. Bara påmind om hur långt man har kvar.',
@@ -100,7 +100,7 @@ export const COACH_RIVALRY_QUOTES: Record<CoachPersonality, string[]> = {
 
 /** Namnpool för genererad rival-tränare (en per AI-klubb). Äldre garde, blandat. */
 export const COACH_FIRST_NAMES: string[] = [
-  'Lars', 'Mikael', 'Per-Erik', 'Lasse', 'Bengt', 'Roland', 'Kjell', 'Tommy', 'Hans', 'Stefan', 'Leif', 'Margareta',
+  'Lars', 'Mikael', 'Per-Erik', 'Lasse', 'Bengt', 'Roland', 'Kjell', 'Tommy', 'Hans', 'Stefan', 'Leif', 'Sune',
 ]
 export const COACH_LAST_NAMES: string[] = [
   'Holmgren', 'Bergström', 'Lindqvist', 'Engström', 'Eriksson', 'Sundin', 'Nyström', 'Forsberg', 'Wikström', 'Dahlén', 'Sjöberg', 'Hedlund',
@@ -110,7 +110,7 @@ export const COACH_LAST_NAMES: string[] = [
 
 export const CONTRACT_STATUS = {
   secure: 'Tränaravtal: {n} år kvar. {lon} tkr/månad.',
-  expiring: '{n} omgångar kvar på avtalet. Styrelsen har inte förlängt än.',
+  expiring: 'Sista avtalsåret. Styrelsen har inte förlängt än.',
   offer: 'Anbud från {klubb} enligt rykten. Styrelsen tiger om det.',
 }
 
