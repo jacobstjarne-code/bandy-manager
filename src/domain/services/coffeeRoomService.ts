@@ -544,7 +544,7 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     return {
       exchanges: [pool[idx]],
       pickedIndices: [idx],
-      meta: { title: 'Kafeterian', subtitle: 'Tisdag förmiddag · lite tyngre i lokalen' },
+      meta: { title: 'Kafferummet', subtitle: 'Tisdag förmiddag · lite tyngre i lokalen' },
     }
   }
 
@@ -563,7 +563,7 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
         return {
           exchanges: [pool[idx]],
           pickedIndices: [idx],
-          meta: { title: 'Kafeterian', subtitle: 'Tisdag förmiddag · någon har redan börjat räkna dagar' },
+          meta: { title: 'Kafferummet', subtitle: 'Tisdag förmiddag · någon har redan börjat räkna dagar' },
         }
       }
     }
@@ -641,7 +641,7 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     exchanges,
     pickedIndices,
     meta: {
-      title: 'Kafeterian',
+      title: 'Kafferummet',
       subtitle: 'Tisdag förmiddag · några stannade kvar efter mötet',
     },
   }

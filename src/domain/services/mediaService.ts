@@ -137,8 +137,13 @@ export function generateTrendArticles(
     return myScore > theirScore ? 'W' : myScore < theirScore ? 'L' : 'D'
   })
 
-  const winStreak = lastResults.findIndex(r => r !== 'W')
-  const lossStreak = lastResults.findIndex(r => r !== 'L')
+  // M55 (textaudit 2026-07-04): findIndex ger -1 (inte lastResults.length) när
+  // ALLA fem senaste är W/L — svitartikeln uteblev just för de starkaste
+  // sviterna eftersom -1 >= 3 alltid är falskt.
+  const winIdx = lastResults.findIndex(r => r !== 'W')
+  const winStreak = winIdx === -1 ? lastResults.length : winIdx
+  const lossIdx = lastResults.findIndex(r => r !== 'L')
+  const lossStreak = lossIdx === -1 ? lastResults.length : lossIdx
 
   const standing = game.standings?.find(s => s.clubId === managedClubId)
   const position = standing?.position ?? 6
@@ -227,7 +232,7 @@ export function generateAbsurdityArticles(
       id: `media_absurdity_cr_${scandal.id}`,
       date: game.currentDate,
       type: InboxItemType.Scandal,
-      title: 'Kafeterian',
+      title: 'Kafferummet',
       body: cafeBody,
       isRead: false,
     })

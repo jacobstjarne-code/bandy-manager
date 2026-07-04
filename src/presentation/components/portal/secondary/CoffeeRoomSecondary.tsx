@@ -39,7 +39,7 @@ export function CoffeeRoomSecondary({ game }: CardRenderProps) {
           marginBottom: 4,
         }}
       >
-        ☕ Kafeterian
+        ☕ Kafferummet
       </div>
       <div className="h-quote h-quote-light" style={{ lineHeight: 1.5 }}>
         "{truncated}"
