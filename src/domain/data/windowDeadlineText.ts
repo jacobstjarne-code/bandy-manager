@@ -26,8 +26,8 @@ export const DEADLINE_PORTAL_TEXT: Record<SeasonContext, string[]> = {
 export const DEADLINE_KAFFERUM_TEXT: string[] = [
   '"Jag hörde att de pratar med en back från Ljusdal." – Rolf',
   '"Transferdagen. Det enda jag vet är att ingen vet något." – Gunnar',
-  '"Har ni sett nyhetsflödet? Det ryker om fem affärer och inga av dem verkar stämma." – Bertil',
-  '"Sista dagen. Sedan vet vi vad vi har för vinter." – Kurt',
+  '"Har ni sett nyhetsflödet? Det ryktas om fem affärer och ingen av dem verkar stämma." – Bertil',
+  '"Sista dagen. Sedan vet vi vad vi har för vinter." – Sixten',
   '"Telefonen hos managern ringer hela dagen, tydligen." – Göte',
 ]
 

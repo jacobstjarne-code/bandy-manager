@@ -51,7 +51,7 @@ const MATCHEN: KlubbparmChapterContent = {
 
 const ORTEN: KlubbparmChapterContent = {
   paragraphs: [
-    'Bandy i en bruksort är aldrig bara laget. Det är frivilliga som spolar isen, kommunen som håller hallen öppen, mecenaten som skjuter till när det knakar — allt det runtomkring som håller en förening vid liv.',
+    'Bandy i en bruksort är aldrig bara laget. Det är frivilliga som spolar isen, kommunen som plogar parkeringen, mecenaten som skjuter till när det knakar — allt det runtomkring som håller en förening vid liv.',
     'Det samlas i pulsen: bygdens stöd, mätt. Hög puls fyller läktaren och gör hemmaisen till en fördel — motståndaren trivs sämre, och sponsorer syns hellre på en arena med liv.',
     'Pulsen sköter sig inte själv. Föreningsaktiviteter, hur det går på isen och hur du behandlar dem som ställer upp väger alla in. Tappar du bygden tar det lång tid att vinna tillbaka den.',
   ],
@@ -69,7 +69,7 @@ const KLACKEN: KlubbparmChapterContent = {
   paragraphs: [
     'Klacken är inte publik — det är dom som står kvar när det regnar och laget ligger under. Dom har ett namn, en ledare och en ramsa dom tar när det vänder. Och en favorit i laget, oftast den som avgör flest matcher.',
     'Humöret rör sig med resultaten. Hemmasegrar lyfter det, förluster tär. Står det högt fylls läktaren och hemmaisen blir en fördel — motståndaren trivs sämre i en full kurva. Faller det för länge glesnar leden, och en tom kurva tar tid att fylla.',
-    'Favoriten utser dom själva, och dom märker när han försvinner. Säljer du den klacken samlats kring får du höra det, på läktaren och i kassan. Sånt väger tyngre i en bruksort än en överföringssumma.',
+    'Favoriten utser dom själva, och dom märker när han försvinner. Säljer du den klacken samlats kring får du höra det, på läktaren och i kassan. Sånt väger tyngre i en bruksort än en övergångssumma.',
   ],
   tumregel: 'En klack vinner inga matcher åt dig. Men en tom läktare har aldrig hjälpt någon vinna heller.',
 }
@@ -78,7 +78,7 @@ const EKONOMI: KlubbparmChapterContent = {
   paragraphs: [
     'Kassan håller klubben igång. Intäkterna kommer från läktaren, kiosken och sponsorerna, och röda siffror tär på styrelsens tålamod och skrämmer dom som annars satt sitt namn på arenan.',
     'Med tiden bygger du klubben sten för sten — värmestuga, läktare, belysning, en hall. Varje bygge flyttar tre saker på en gång: publik, själ och ekonomi. Det som är låst kräver att du rest något annat först.',
-    'Allt kostar mer än pengar. Tak över isen ger bandy året runt och tv-avtal, men klacken glesnar och Västra Sidan ser det som ett svek mot utebandyn. Vad du bygger säger lika mycket om klubben som vad du köper till laget.',
+    'Allt kostar mer än pengar. Tak över isen ger bandy året runt och tv-avtal, men klacken glesnar — de trognaste ser tak som ett svek mot utebandyn. Vad du bygger säger lika mycket om klubben som vad du köper till laget.',
   ],
   tumregel: 'Bygg det orten vill ha, inte bara det tabellen vill ha.',
 }

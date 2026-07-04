@@ -103,7 +103,7 @@ export const CAPTAIN_OUTCOMES: Record<CaptainContext, Record<KvittoOutcomeDir, s
       'Kaptenen räckte inte till när det stramades åt.',
     ],
     neutral: [
-      'Kaptenen gjorde sitt i en jämn drabbning, inget mer att säga om den saken.',
+      'Kaptenen gjorde sitt, inget mer att säga om den saken.',
       'Bindeln störde inte, men drog inte heller laget framåt.',
     ],
   },

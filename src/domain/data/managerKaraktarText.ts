@@ -44,7 +44,7 @@ export const BURNOUT_MARK = {
       'Sover sämre än jag borde. Inget att orda om.',
       'Många sena kvällar vid isen nu. Det tär lite.',
       'Det tar längre tid att komma igång på mornarna.',
-      'Trött i veckan. Det hör bandyhösten till.',
+      'Trött i veckan. Det hör säsongen till.',
     ],
     hog: [
       'Jag undrar hur länge jag orkar köra så här.',
@@ -75,7 +75,7 @@ export const COACH_RIVALRY_QUOTES: Record<CoachPersonality, string[]> = {
   heders: [
     '{manager} är hederlig. Vi pratar alltid efter matchen — om vädret, inte om bandyn.',
     'Man vet var man har {manager}. Det är mer än man kan säga om de flesta.',
-    'Vi har slagits om poäng i tjugo år. Jag unnar honom faktiskt det mesta.',
+    'Vi har slagits om poäng i alla år. Jag unnar honom faktiskt det mesta.',
     '{manager} skickade ett kort när min far gick bort. Sånt glömmer man inte.',
   ],
   kall: [

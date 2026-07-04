@@ -72,7 +72,7 @@ export const TAB_INTROS = {
   värvning: {
     icon: '✍️',
     label: 'Kontrakt',
-    text: 'Spelarnas kontrakt. Förläng i tid — annars lämnar de som fria agenter.',
+    text: 'Spelarnas kontrakt. Förläng i tid — annars lämnar de gratis.',
   },
 
   // ── Värvning (TransfersScreen) ───────────────────────────────────────────

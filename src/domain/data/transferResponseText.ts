@@ -53,7 +53,7 @@ export const PERSONALITY_REFUSAL: Record<PersonalityType, string[]> = {
  */
 export const PERSONALITY_ACCEPTANCE: Record<PersonalityType, string[]> = {
   homebound: [
-    'Det är inte vad han ville. Men formen har vänt nedåt och han vet det.',
+    'Det är inte vad han ville. Han sa det själv, med blicken i golvet.',
     'Han skrev på i tystnad. Birgitta körde honom till stationen.',
     'Sista träningen var i tisdags. Han hängde lite kvar i omklädningsrummet.',
   ],
@@ -118,9 +118,9 @@ export const RIVALRY_WARNING_PER_INTENSITY: Record<RivalryIntensity, string[]> =
  * när spelare faktiskt såldes till rival. Annorlunda ton än vanliga acceptans.
  */
 export const PLAYER_REACTION_RIVAL_SALE: string[] = [
-  'Han bytte tröja men inte stad. Det blir avstånd ändå.',
-  'Han säger att det inte spelar någon roll. Klacken vet annorlunda.',
-  'Han åkte med sista bussen. Ingen vinkade från läktaren.',
+  'Han bytte sida. Det blir avstånd ändå.',
+  'Han säger att det inte spelar någon roll. Klacken vet bättre.',
+  'Han åkte med sista bussen. Ingen vinkade av honom.',
 ]
 
 /**

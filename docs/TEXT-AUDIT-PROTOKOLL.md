@@ -14,6 +14,13 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
 ### JACOB BESLUTAR (smak)
 — tomt. M5–M7 godkända av Jacob 2026-07-03: "brottningen", "mittback" och
 "tre-fem-tvåa" står kvar som de är. Flaggas inte igen.
+- **M43 (2026-07-04, design):** vill Jacob ha kvinnliga tränare? Filkommentaren
+  i managerKaraktarText säger "Managern (Sture/Margareta)" men ALL bio-/
+  burnout-/rivaltext är maskulin ("{hemort}-grabb", "hans", "honom") — 1/12
+  saves fick genomgående genusfel. Fable tog bort Margareta ur
+  COACH_FIRST_NAMES (→ Sune) som minsta koherenta fix. Vill Jacob åt andra
+  hållet krävs könsneutralisering eller dubbling av ~15 strängar — Fable
+  skriver, säg bara till.
 - **M33-restfråga (2026-07-03):** V och MP och SD saknar agenda-vikter i
   `PARTY_AGENDA_WEIGHTS` (politicianService.ts + createNewGame.ts) — faller
   till den likformiga default-poolen (alla fem agendor lika sannolika)
@@ -31,12 +38,71 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
   DAY_JOB_TITLES till bruksorts-yrken. Ingen krasch, bara tyst underdäckning.
 
 ### CODE GÖR
-— tomt. M17–M35 HELT AVKLARADE 2026-07-03 (fixade eller verifierade utan
-bugg) → se AVGJORT för utfall per ärende och commit-hashar.
+M17–M35 HELT AVKLARADE 2026-07-03 → se AVGJORT. Nya från domän 3
+(2026-07-04): M36–M42, M44–M49, M51–M53 nedan.
 - **M9** grep imports av injuryDoctorText — nås DIAGNOSIS_LINES för
   träningsskador? ("andra halvlek"-raden får bara visas för matchskador.)
+- **M36** journalistService.generateCriticalArticle: "vägrat tre
+  presskonferenser I RAD" — men pressRefusals är kumulativ och nollställs
+  aldrig i filen. Grep anroparen: är triggern konsekutiv? Annars ändra
+  brevtexten till "gång på gång vägrat ställa upp".
+- **M37 (låg)** CS_PRESS_MEMORY_TEMPLATES är halvengelska ("Coach hyllade
+  {NAME} efter CS mot {OPPONENT}") — verifiera att journalist.memory
+  ALDRIG renderas verbatim i UI. Om det renderas: CS→nollan, Coach→Tränaren.
+- **M38** pickCSPressPublishedQuote förväntar journalist:{firstName,
+  lastName} men Journalist-entiteten (createJournalist) har ETT name-fält
+  → naiv anropare ger "undefined undefined" i publicerade citat. Grep
+  anroparen och verifiera vad som skickas.
+- **M39** generatePreSeasonMessage: "Förra säsongens {n} plats imponerade"
+  triggas på plats ≤3 OAVSETT expectation — en WinLeague-styrelse som just
+  gett betyg 3 för en tredjeplats "imponeras" inte. Gate mot expectation
+  eller säsongsbetyget.
+- **M40** boardData.BOARD_QUOTES (generiska poolen): verifiera gating.
+  Resultatpositiva supporterrader ("Vilken match igår!", "Vi behöver fler
+  sådana kvällar") och ekonom-doom ("Vi blöder pengar") kan motsäga
+  tabell/kassa på samma skärm om de plockas kontextblint — context-pooler
+  finns redan (BOARD_CONTEXT_QUOTES); rapportera hur valet görs.
+- **M41** boardMeetingCopy A-speakerline "Akademin har fått fart" + GOAL
+  'A:academy': verifiera gating mot akademi-existens (är akademin byggbar
+  facility eller finns den alltid?).
+- **M42 (system)** DUBBLA STYRELSESYSTEM: boardData (BOARD_PROFILES/
+  BOARD_QUOTES/BOARD_MEETING_OPENERS/CONTEXT_QUOTES) vs boardQuotes
+  (BOARD_CHARACTERS lennart/mikael/rune/tommy + eget BOARD_QUOTES +
+  MEETING_OPENERS). Överlappande innehåll (parkera om-öppnaren finns i
+  BÅDA, en interpolerad och en hårdkodad "Sandberg"), namnkollisionsrisk
+  (Lennart Dahlgren i båda; citaternas sponsor "Persson" vs profilernas
+  Anita Persson). Grep konsumenterna av båda, rapportera vilket som är
+  live; det döda dödmarkeras eller tas bort — EN SANNING, ETT STÄLLE.
+- **M44** LINEUP_ROTATION_OUTCOMES good: "Rotationen gav energi —
+  {spelare} avgjorde" — verifiera att {spelare} är avgöraren/målskytten,
+  inte godtycklig roterad spelare. Annars byt rad (Fable skriver).
+- **M45 (låg)** LEADERSHIP_OUTCOMES och CAPTAIN_OUTCOMES.vardag delar
+  identiska strängar — verifiera att båda inte kan rendera samtidigt på
+  MatchReportScreen (identisk rad två gånger på samma skärm).
+- **M46** eventCardInlineStrings: rating.toFixed(1) ger punktdecimal
+  ("8.2") i svensk speltext — byt till komma i interpolationen
+  (.replace('.', ',')).
+- **M47 (låg)** CAPTAIN_SPEECH_VARIANTS avslutar alla med "Förlusterna
+  har börjat stapla sig." — verifiera att triggern är förluststreak.
+- **M48** MECENAT_WITHDRAWAL kontrollfreak: "Du har ignorerat mig tre
+  gånger nu" — verifiera trigger = tre ignorerade interaktioner; annars
+  avprecisera ("gång på gång").
+- **M49** transferResponseText family-strängar ("Pojken börjar gymnasiet",
+  "jobbat sex år på bruket", "dottern har börjat skolan") är oåldersgatade
+  — en 19-åring kan få gymnasiebarn. Verifiera om personlighetstyp eller
+  strängval kan åldersgatas (≥28 för barnsträngarna).
+- **M51 (låg)** windowDeadlineText: "Fönstret stänger för säsongen"
+  förutsätter ETT fönster per säsong — verifiera mot transferWindowService.
+- **M52** DEADLINE_KAFFERUM_TEXT har hårdkodade gubbnamn (Rolf, Gunnar,
+  Bertil, Göte; Kurt redan utbytt → Sixten) — grep kafferummets
+  gubbnamnpool för kollision (Kurt-buggklassen).
+- **M53** upptaktCopy bottenstrid: "Två lag åker direkt" + kvalreferenser
+  — verifiera nedflyttningsstrukturen (två direkt + en kvalplats?) mot
+  seriemotorn.
 - Stilnoter: seasonChampionYear()-helpern i seasonSummaryService (inline
-  +1) · enum-jämförelse i attendance-isSnow (kodlukt, ej bugg).
+  +1) · enum-jämförelse i attendance-isSnow (kodlukt, ej bugg) ·
+  playerNames.ts har dubbletter i båda listorna (Lindberg, Berglund,
+  Lundgren, Magnus m.fl. ×2) — ofarligt (bara vikter), städa vid tillfälle.
 
 ### FABLE GÖR (efter Codes Del 1–2)
 — tomt. Del 4 KÖRD 2026-07-03 (se LOGG) — M1/M15/M16 helt avslutade.
@@ -44,12 +110,17 @@ bugg) → se AVGJORT för utfall per ärende och commit-hashar.
 ### VILANDE (låg prioritet)
 - **M14** "En av de största publiksiffrorna på länge" vid att>5000 —
   väntar på publikhistorik som token.
+- **M50** clubOfferQuotes lore-meriter (Slottsbrons fyra SM-guld t.o.m. 41,
+  Skutskärs SM 1959 + dam-SM 2018, Hälleforsnäs SM-semi 70-tal, Västanfors
+  guldhylla) — får inte motsägas av spelets meritdata OM en trofé-/
+  meritskärm byggs. Aktiveras då.
 
 ### NÄSTA AUDIT-PASS
-- **Domän 3** (press/styrelse/beslut) i FÄRSK session. Fillista i
-  domänordningen nedan; transferResponseText delvis dömd i 2a
-  (RIVAL_SALE-/INCOMING_BID-poolerna klara, resten återstår).
-  Sen domän 4 (väder/ceremonier/facility/övrigt).
+- **Domän 3 datafiler KLARA 2026-07-04.** Kvar i domän 3: relevansskanning
+  av services med inline-pooler (pressConferenceService, mediaService,
+  silentMatchReportService, opponentManagerService) — körs som inledning
+  på domän 4-sessionen (fillistelärdomen från domän 1).
+- Sen domän 4 (väder/ceremonier/facility/övrigt) i FÄRSK session.
 - text-guard-linten byggs av Code EFTER att alla fyra domäners termlista
   är slutjusterad.
 
@@ -796,3 +867,156 @@ MISSTANKAR — döm i kontext, luta konservativt:
   färsk session, eller Överlämning 2-arbetet (Emoji→Lucide-pass,
   Valet-scen N-3/N-6/S-1/S-2/A-1) som väntat sedan regelboksspecen och
   M17–M35 kom in.
+
+- 2026-07-03/04 (kväll–natt + förmiddag): DOMÄN 3 DATAFILER KLARA —
+  press/styrelse/beslut, hela fillistan. Körd över två sessioner med
+  tre MCP-avbrott (edit-timeout → verifiering visade i samtliga fall
+  att editen ALDRIG landat → omapplicering i rent läge; arbetssättet
+  läs-före-edit + batchade edits höll). Anropskod läst före pool
+  genomgående: journalistService, csPressEventService, boardService,
+  managerProfileService lästa före sina pooler.
+
+  RÄTTAT (≈105 rader, 16 filer):
+  · journalistHeadlineStrings (25) + journalistService (1): systematisk
+    L#9-felklass — tidsförloppsclaims som granska-tidslinjen kan motsäga
+    ("Sen avgörare", "efter halvtid", "Vände efter tidigt underläge",
+    "från start till slut", "redan i första halvlek" m.fl. ×12) →
+    förloppsneutrala omskrivningar · tabellclaims ("tabellsvagt
+    motstånd", "mot bottenlag") strukna · "Hela arenan reste sig"
+    (arenaperspektiv i rubrik) · "Knapp seger" vid marginal 1–3 ·
+    sensationalist-WIN-poolen omskriven i sin helhet · "ducker"→"duckar".
+    GODKÄNT: "nittio minuter" (2×45 ✓), SENSATION!/KRIS!-prefix
+    (kvällstidningsregister per två-register-rulingen).
+  · csPressEventText (11): "trepoängaren" ×3 i publicerade citat —
+    DUBBELFEL: L#8 (tvåpoängssport) OCH triggern (hållen nolla hemma)
+    garanterar ingen vinst alls, 0–0 kvalar → "nollan" · "Tre noll"
+    (hårdkodat resultat, Sju–ett-felklassen) · påhittat tränarcitat
+    ("Du har sagt förut att...") → "Man brukar säga att..." ·
+    vinstantagande + nedflyttningsclaim i friendly-poolen · "{NAME}
+    höll noll" när spelaren i 45 % är utespelare → "där bak"-språk ·
+    "stänger ned" (anglicism) · "förra mötet"-claim (matchdag 1 säsong 1).
+  · boardService (4): titelbugg "Styrelsemöte — Säsongen {club.name}"
+    (renderade "Säsongen Forsbacka BK") → "inför säsongen" · "vinna
+    ligan"→serien · "Välgjort."→"Det är noterat i protokollet." ·
+    "förhandlade om"→"kom överens om". ordinal() för "{n}:e plats"
+    verifierad korrekt per grammatiknoten.
+  · boardData (11): riktiga klubbar i klubbroll (Sandviken som lag,
+    Edsbyns marknadsföring, Västerås analysstab — världsregelbrott) ·
+    SPELKLUBB hårdkodad i egen pool ("Forsbacka fick in tre sponsorer"
+    — självreferens när managed club ÄR Forsbacka) → grannklubbarna ·
+    hårdkodat årtal "Det är 2025" (spelet startar 2026) · "lovat frun"
+    (4/8 ordförande är kvinnor) · publiken-på-planen ("Stämningen på
+    planen") · "bufféar"→kiosken · två ogatade taktikclaims i generisk
+    pool (dubbletter av context-poolens gatade versioner) → neutrala ·
+    "Vi har aldrig köpt spelare" (motsägs av spelarens köp) → "Förr
+    fostrade vi dem själva".
+  · boardMeetingCopy (19): "Bekräfta att SILVRET inte var en
+    tillfällighet" — L#9-felexemplets tvilling (B-state = måluppfyllelse
+    ≥80 %, inte silver) → fjolåret · "Bygga vidare." (förbjuden klyscha,
+    Del 3) → "Nästa varv." · anglicismer "hitta foten"×2/"basics"×2/
+    "sikta på månen" · "Förbundskontoret" som klubbstyrelselokal
+    (världsfel) → Sparbanken/Biblioteket · "Margaretas mamma" (Margareta
+    Ek i egen ordförandepool) → Kassörens · "ler innan hon säger" (4/8
+    män) · L#9-claims "Yngste i truppen var bättre än vi trodde" och
+    "Vi sålde inte" · "Vi var nära" (kan ha vunnit allt) → "Vi vet var
+    ribban ligger" · titel/speaker-eko "Fjolåret sitter i" avdubblat ·
+    "Året två"→"År två" · "korkstolar"→stapelstolar · "pausad i prio".
+  · boardQuotes: GODKÄNT rakt av (kurerat bibliotek, Sture-kanon;
+    Kerstin/Bengtsson-lore = namn utanför pooler, säkra). Systemfråga
+    → M42 (dubbla styrelsesystem).
+  · managerKaraktarText (8): enhetsfel "{n} OMGÅNGAR kvar på avtalet"
+    när servicen stoppar in säsonger (0/1 → "1 omgångar") → tokenfri
+    "Sista avtalsåret." (Del 4-principen: tokenfri är enda säkra) ·
+    "hallar/hallen" ×2 (bandy utomhus; hallen är drömbyggnation) →
+    isar/klubbstugan · h2h-claims i rivalcitat ("Jag brukar inte
+    förlora mot honom", "Han har slagit mig fler gånger") när h2h
+    trackas från 0-0-0 i samma entitet → claimfria omskrivningar ·
+    "ligan"→serien · Margareta ur COACH_FIRST_NAMES (→ Sune; hela
+    textmassan maskulin) → M43 designfråga till Jacob.
+  · managerKvittoText (7): måltypsclaim ("kontringarna straffade") ·
+    timing ("direkt efter pausen", "tom redan tidigt i andra halvlek") ·
+    comeback-antagande ("kröp tillbaka in i matchen") · "serien"-språk
+    ×3 i slutspelskontext som täcker cupsemi (enmatch — "när serien
+    stramades åt" ljuger där; kvittot är dessutom per match, inte per
+    matchserie).
+  · eventCardInlineStrings (7): "Rating:" (engelska) → "Betyg:" ×6 ·
+    "ställde fram klubban i stället" → "ställde klubban i stället".
+    Sture-referenserna behållna (fast kafferumsfigur, kanon; playerNames
+    verifierad — ingen Sture/Kurt-kollision). Bandypuls = riktig media,
+    vardagsfärg ✓.
+  · eventProcessorStrings (6): "RF:s licensnämnd" — världsfel,
+    elitlicensen är FÖRBUNDETS (SvBF), inte Riksidrottsförbundets →
+    "Förbundets licensnämnd" · genusfel ×2 ("säger han" om ordföranden;
+    "Han ser äldre ut" om mecenat som kan vara kvinna → "Blicken är
+    äldre än vanligt") · "inga references" · "ett tre års marknadsavtal"
+    → treårigt · earmark-claim "pengar jag investerat i fastighetssidan"
+    → "skjutit till". GODKÄNT: RISKY_SPONSOR_OFFERS-matematiken
+    (weeklyIncome × 22 ≈ säsongsbeloppen, alla fyra konsistenta).
+  · transferResponseText (4, resten efter 2a): formclaim i homebound-
+    acceptans ("formen har vänt nedåt" — form trackas, kan vara på
+    topp) · "bytte tröja men inte stad" (rivaler är grannorter, en
+    klubb per ort) → "bytte sida" · "vet annorlunda" (anglicism) →
+    "vet bättre" · "vinkade från läktaren" åt en buss → "vinkade av
+    honom". GODKÄNT: Birgitta-frunamnet (medvetet per filhuvud),
+    Lindgren-affären 02 (efternamn återkommer naturligt över decennier
+    — lore-precedent), altanen-raden kanon.
+  · clubOfferQuotes (5): riktiga klubbar i klubbroll — "Brynäs har
+    sitt" → Gävle (ortnivå OK), "Västerås tar våra grabbar och vinner
+    SM" (SM:et är SPELETS slutspel, VSK finns inte i det) →
+    storklubbarna, "Sandviken vinner oftare" → andra · "Vi har kvalat
+    två gånger, inte gått upp" — Söderfors ÄR i Elitserien i spelet →
+    "åkt ur två gånger, kommit tillbaka båda" · VM-claimen "avgjordes"
+    → "spelades VM-bandy". I ÖVRIGT filens bästa hantverk: verklig
+    bandyhistoria per klubb källhållbar (Skutskär 28 848/1959 +
+    54-årsrekordet ✓, Slottsbrons fyra guld t.o.m. 41 ✓, Dalälven
+    börjar vid Gagnef ✓, Rögle-hockeyövergången självmedveten) → M50.
+  · windowDeadlineText (2): "Det ryker om fem affärer och inga av dem"
+    → ryktas/ingen · hårdkodad "– Kurt" (Kurt-buggklassen) → Sixten;
+    Rolf/Gunnar/Bertil/Göte → M52-grep.
+  · upptaktCopy (14): hårdkodat "tre omgångar" i TIO phasemark-varianter
+    — upptaktsfasen spänner sista tre omgångarna och phasemarks roterar
+    genom hela fasen → ljuger vid N=2/N=1 (countdown-poolen gör rätt
+    med {N}) → avnumrerade omskrivningar · "Sex-poängsmatch" →
+    Fyrapoängsmatch (L#8, domän 1-fixens tvilling) · "Måste-vinna" →
+    Måstematch · tabellclaims "Sex poäng räcker"/"Full pott räcker"/
+    "ligger i våra händer" (konkurrentberoende — grannvarianten säger
+    själv "våra resultat räcker inte alltid") → claimfria · "Sluta
+    starkt sätter tonen" ×2 → "Ett starkt avslut...".
+  · klubbparmContent (3): "kommunen som håller HALLEN öppen" i
+    Orten-kapitlet — intern motsägelse, Ekonomi-kapitlet i samma fil
+    listar hallen som framtida bygge → "plogar parkeringen" · "Västra
+    Sidan" hårdkodat klacknamn (supporterService genererar namnet —
+    Sture-buggklassen på klacknivå) → "de trognaste" ·
+    "överföringssumma" → övergångssumma. Slutspelskapitlet verifierat
+    mot playoffService (topp 8, 1v8, bäst av fem, neutral finalplan ✓).
+  · tabIntros (1): "lämnar som fria agenter" (NHL-import; grannfliken
+    heter redan "Fria") → "lämnar gratis". Motorfakta i övrigt
+    verifierade (bud→svar nästa omgång, övergångssumma).
+
+  GODKÄNT UTAN ANMÄRKNING: boardQuotes (text), hallProvnings-klassens
+  kvalitet återkommer i clubOfferQuotes och boardQuotes — de kurerade
+  biblioteken håller.
+
+  ÅTERKOMMANDE FELKLASSER (domän 3-facit, till text-guard-listan):
+  L#9-tidsförloppsclaims i rubrikpooler (största klassen, ~15 fall) ·
+  riktiga klubbar i klubbroll (5 fall — Sandviken ×2, Edsbyn, Västerås,
+  Brynäs) · hårdkodade namn i egna pooler (Forsbacka, Margareta ×2,
+  Kurt, Västra Sidan) · genusfel mot blandade pooler (4 fall) ·
+  fotbolls-/NHL-idiom (trepoängaren ×3, Sex-poängsmatch, fria agenter,
+  Måste-vinna) · hårdkodade tal som motsäger motorn ("tre omgångar"
+  ×10, "Tre noll", "{n} omgångar", "Det är 2025") · hallen-antaganden
+  (3 fall — hallen är drömbyggnation, inte nuläge).
+
+  REGRESSIONSGREP-TERMER (till text-guard utöver termlistan):
+  "trepoängaren"/"trepoängare" · "Rating:" · "ligan" i speltext ·
+  "RF:s licensnämnd" · "Sex-poäng" · "fria agenter" · "basics".
+
+  MISSTANKAR: M36–M53 inlagda i tabellen (M43 design/Jacob, M50
+  vilande, M36–M42/M44–M49/M51–M53 Code). Numrering fortsätter från
+  M54.
+
+  KVAR I DOMÄN 3: relevansskanning av pressConferenceService,
+  mediaService, silentMatchReportService, opponentManagerService
+  (inline-pooler) — inledning på domän 4-sessionen. LÄGE: domän 1+2
+  kompletta, domän 3 datafiler kompletta. NÄSTA: Code kör M36–M53-
+  grep-batchen; Fable kör service-skanning + domän 4 i färsk session.

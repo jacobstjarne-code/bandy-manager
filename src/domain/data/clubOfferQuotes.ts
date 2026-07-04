@@ -9,7 +9,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Brynäs har sitt. Sandviken har sitt. Vi har Slagghögen. Det räcker.',
+      text: 'Gävle har sitt. Sandviken har sitt. Vi har Slagghögen. Det räcker.',
 
     },
     {
@@ -39,7 +39,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Vi har kvalat två gånger. Inte gått upp någon. Jag tänker att det betyder att tredje gången är vår.',
+      text: 'Vi har åkt ur två gånger. Kommit tillbaka båda. Jag tänker att det betyder något.',
 
     },
     {
@@ -57,7 +57,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Västerås tar våra grabbar och vinner SM med dem. Sen får vi sjuttio personer som ringer och säger att vi borde varit stolta.',
+      text: 'Storklubbarna tar våra grabbar och vinner SM med dem. Sen får vi sjuttio personer som ringer och säger att vi borde varit stolta.',
 
     },
     {
@@ -207,7 +207,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'På Strandvallen avgjordes ett VM en gång. På Forsvallen avgörs det inte mycket nu. Sjön är densamma.',
+      text: 'På Strandvallen spelades VM-bandy en gång. På Forsvallen avgörs det inte mycket nu. Sjön är densamma.',
 
     },
     {
@@ -233,7 +233,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Vi vann SM 1959 inför 28 848 åskådare. Det rekordet stod i femtiofyra år. Sandviken vinner oftare numera.',
+      text: 'Vi vann SM 1959 inför 28 848 åskådare. Det rekordet stod i femtiofyra år. Andra vinner oftare numera.',
 
     },
     {

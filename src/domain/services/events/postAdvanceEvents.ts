@@ -66,7 +66,7 @@ export function generatePostAdvanceEvents(
         events.push({
           id: `event_bid_aiaccept_${bid.id}`,
           type: 'transferBidReceived',
-          title: `${clubName} accepterar din motbud`,
+          title: `${clubName} accepterar ditt motbud`,
           body: `${clubName} godkänner det höjda kravet på ${formatValue(bid.offerAmount)} för ${playerName}. Bekräfta försäljningen.`,
           choices: [{
             id: 'confirm',

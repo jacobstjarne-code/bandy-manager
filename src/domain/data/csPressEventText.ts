@@ -37,7 +37,7 @@ export const CS_PRESS_QUESTIONS: Record<PressSeverity, readonly string[]> = {
     `Skulle du säga att försvarsspelet är där ni vill ha det?`,
   ],
   friendly: [
-    `Ingenting gick in bakom {NAME} i dag. Hur mycket av det är hans förtjänst?`,
+    `Ingenting gick in i dag. Hur mycket av det är {NAME}s förtjänst?`,
     `Hållen nolla på hemmaplan. Hur mycket är den värd i omklädningsrummet?`,
     `Vad ser du som mest givande just nu — försvarsspelet, formen eller stämningen?`,
     `Man brukar säga att försvar kommer i form sent. Är det det vi ser nu?`,
@@ -89,10 +89,10 @@ export const CS_PRESS_PUBLISHED_QUOTES: Record<PressChoice, readonly string[]> =
  * referens av andra press-events. {OPPONENT} = motståndarens klubbnamn.
  */
 export const CS_PRESS_MEMORY_TEMPLATES: Record<PressChoice, string> = {
-  individual: 'Coach hyllade {NAME} efter CS mot {OPPONENT}',
-  team: 'Coach valde lagrespons om CS mot {OPPONENT}',
-  system: 'Coach gav systemiskt svar om CS mot {OPPONENT}',
-  silent: 'Coach avstod kommentar om CS mot {OPPONENT}',
+  individual: 'Tränaren hyllade {NAME} efter CS mot {OPPONENT}',
+  team: 'Tränaren valde lagrespons om CS mot {OPPONENT}',
+  system: 'Tränaren gav systemiskt svar om CS mot {OPPONENT}',
+  silent: 'Tränaren avstod kommentar om CS mot {OPPONENT}',
 }
 
 /**
