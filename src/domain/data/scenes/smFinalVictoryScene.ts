@@ -15,7 +15,7 @@ export interface BirgerQuote {
 export const SM_FINAL_VICTORY_TEMPLATES = {
   // Mall — placeholders ersätts vid render baserat på matchdata
   bodyText:
-    '{playerName} satte avgörande målet i {minute}:e. Samme {playerName} som kom upp från P19 säsongen {promotionSeason}. Som du gick ut till på söndagsträningen den där höstmorgonen <em>{yearsAgo} år sedan</em>.',
+    '{playerName} satte avgörande målet i minut {minute}. Samme {playerName} som kom upp från P19 säsongen {promotionSeason}. Guldet runt halsen <em>{yearsAgo} år senare</em>.',
 
   // Fallback om ingen akademi-callback finns för spelaren
   fallbackBodyText:

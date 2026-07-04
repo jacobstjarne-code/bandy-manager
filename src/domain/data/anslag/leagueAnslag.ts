@@ -14,10 +14,10 @@ export const LEAGUE_ANSLAG: Record<LeagueAnslagKey, AnslagText> = {
     chapter: '⬩ Helgen kommer ⬩',
     variants: [
       {
-        body: `Ligan börjar i helgen. 22 omgångar framför oss.<br><br>Cupen är cupen. Ligan är något annat — det är det som mäts på riktigt, det är vad folk minns en klubb för.<br><br>Det blir mörkare nu. Tisdagsträningarna får lampor på. Det här är säsongens långa parti.`,
+        body: `Serien börjar i helgen. 22 omgångar framför oss.<br><br>Cupen är cupen. Serien är något annat — det är det som mäts på riktigt, det är vad folk minns en klubb för.<br><br>Det blir mörkare nu. Tisdagsträningarna får lampor på. Det här är säsongens långa parti.`,
       },
       {
-        body: `November. Frosten ligger på allvar nu. Ispremiären ligger bakom oss.<br><br>Ligan börjar i helgen. 22 omgångar — och med det själva poängen med en bandysäsong. Cupen var uppvärmning. Det här är arbetet.<br><br>Spelarna vet det. Klacken vet det. Nu kör vi.`,
+        body: `November. Frosten ligger på allvar nu. Ispremiären ligger bakom oss.<br><br>Serien börjar i helgen. 22 omgångar — och med det själva poängen med en bandysäsong. Cupen var uppvärmning. Det här är arbetet.<br><br>Spelarna vet det. Klacken vet det. Nu kör vi.`,
       },
       {
         body: `22 omgångar. Lördagsmatcherna börjar. Annandagen och nyårsbandy någonstans i mitten. Sen slutspel om vi orkar dit.<br><br>Det är inte cupen. Det är inte en helg. Det är fyra månader.<br><br>Det börjar i helgen.`,
@@ -28,13 +28,13 @@ export const LEAGUE_ANSLAG: Record<LeagueAnslagKey, AnslagText> = {
     chapter: '⬩ Januari ⬩',
     variants: [
       {
-        body: `Det är mitten av januari. Halva ligan är kvar.<br><br>Ingen pratar om januari som om den var rolig — den är det inte. Mörkt över halva dagen, tisdagsträning i blöt vinter, helgmatcher där isen är mjuk i andra halvlek.<br><br>Det är ändå nu det avgörs. Inte när det är ljust och alla mår bra, utan när det är fyrtio dagar kvar till våren och ingen orkar längre. Bandy är bandy.`,
+        body: `Det är mitten av januari. Halva serien är kvar.<br><br>Ingen pratar om januari som om den var rolig — den är det inte. Mörkt över halva dagen, tisdagsträning i blöt vinter, helgmatcher där isen är mjuk i andra halvlek.<br><br>Det är ändå nu det avgörs. Inte när det är ljust och alla mår bra, utan när det är fyrtio dagar kvar till våren och ingen orkar längre. Bandy är bandy.`,
       },
       {
-        body: `Januari är inte rolig. Det är det inget lag som påstår.<br><br>Bilar startar inte. Spelare tappar tändning. Halva ledarstaben funderar på det de skulle gjort istället. Sen kommer lördagen, då spelar man bandy igen — och det är ändå anledningen till att vi finns.<br><br>Halva ligan är kvar. Det är där vi bestämmer vad vi är.`,
+        body: `Januari är inte rolig. Det är det inget lag som påstår.<br><br>Bilar startar inte. Spelare tappar tändning. Halva ledarstaben funderar på det de skulle gjort istället. Sen kommer lördagen, då spelar man bandy igen — och det är ändå anledningen till att vi finns.<br><br>Halva serien är kvar. Det är där vi bestämmer vad vi är.`,
       },
       {
-        body: `Det är mitten av januari. Solen kommer upp efter morgonträningen och går ner under eftermiddagsmötet. Däremellan finns ingen tid och ändå ska allt göras.<br><br>Vi spelar bandy ändå. Det är vad vi kan.<br><br>Halva ligan är kvar. Säsongen ligger där den ligger.`,
+        body: `Det är mitten av januari. Solen kommer upp efter morgonträningen och går ner under eftermiddagsmötet. Däremellan finns ingen tid och ändå ska allt göras.<br><br>Vi spelar bandy ändå. Det är vad vi kan.<br><br>Halva serien är kvar. Säsongen ligger där den ligger.`,
       },
     ],
   },
@@ -42,13 +42,13 @@ export const LEAGUE_ANSLAG: Record<LeagueAnslagKey, AnslagText> = {
     chapter: '⬩ Halvvägs ⬩',
     variants: [
       {
-        body: `Halva serien spelad. Lika många matcher kvar.<br><br>Tabellen börjar betyda något nu. I november var den en lista. Nu är det positionerna man räknar med, marginalerna man oroar sig över. Var det nere på sju poäng vi ville vara? Det var det.<br><br>Det är inte cupen. Det är inte slutspelet. Det är det här — den långa biten där man får det man förtjänar. Ungefär.`,
+        body: `Halva serien spelad. Lika många matcher kvar.<br><br>Tabellen börjar betyda något nu. I november var den en lista. Nu är det positionerna man räknar med, marginalerna man oroar sig över.<br><br>Det är inte cupen. Det är inte slutspelet. Det är det här — den långa biten där man får det man förtjänar. Ungefär.`,
       },
       {
-        body: `Halva ligan spelad. Träningskvällarna är nu vana, inte uppstart. Skadorna börjar märkas. Krångliga relationer mellan vissa spelare också.<br><br>Tabellen står där den står. Man kan inte gnälla över halva sträckan. Det är resultatet.<br><br>Halva vägen kvar. Resten är ospelad.`,
+        body: `Halva serien spelad. Träningskvällarna är nu vana, inte uppstart. Skadorna börjar märkas. Krångliga relationer mellan vissa spelare också.<br><br>Tabellen står där den står. Man kan inte gnälla över halva sträckan. Det är resultatet.<br><br>Halva vägen kvar. Resten är ospelad.`,
       },
       {
-        body: `Det är inte längre en ny säsong, men inte heller slutet. Vi är där vi alltid hamnar — i bandyårets långa mitt.<br><br>Tabellen är realitet nu. Förra månaden hoppades vi. Nästa månad räknar vi.<br><br>Halva ligan kvar.`,
+        body: `Det är inte längre en ny säsong, men inte heller slutet. Vi är där vi alltid hamnar — i bandyårets långa mitt.<br><br>Tabellen är realitet nu. Förra månaden hoppades vi. Nästa månad räknar vi.<br><br>Halva serien kvar.`,
       },
     ],
   },
@@ -56,13 +56,13 @@ export const LEAGUE_ANSLAG: Record<LeagueAnslagKey, AnslagText> = {
     chapter: '⬩ Marginaler ⬩',
     variants: [
       {
-        body: `Tre omgångar kvar. Tabellen är inte längre en lista — den är ett pussel.<br><br>De flesta vet redan om de är i eller ute. Några klubbar vet inte. De räknar varandras matcher, läser tabellen flera gånger om dagen, lyssnar på radio från andra orter. Vad mötte de? Vad behövde de?<br><br>Det är det här som är slutet på en grundserie. Marginaler.`,
+        body: `Tre omgångar kvar. Tabellen är inte längre en lista — den är ett pussel.<br><br>De flesta vet redan om de är i eller ute. Några klubbar vet inte. De räknar varandras matcher, läser tabellen flera gånger om dagen, lyssnar på radio från andra orter. Vilka mötte de? Vad behövde de?<br><br>Det är det här som är slutet på en grundserie. Marginaler.`,
       },
       {
         body: `Tre omgångar kvar. Spelarna räknar målskillnad i sömnen.<br><br>Det är ingen som spelar fritt nu. Det är spel där varje boll betyder något, varje förlorad sekund kostar. Tränaren skäller mer. Klacken klappar lite snabbare. Domarna är mer noggranna än vanligt.<br><br>Marginalsäsong. Det är nu det syns.`,
       },
       {
-        body: `Vi vet vart vi är. De andra vet vart de är. Tabellen lämnar inget åt fantasin med tre omgångar kvar.<br><br>Antingen är vi nästan där eller också är vi nästan inte. Det är skillnad mellan en plats högre och en plats lägre. Det är skillnad mellan en god säsong och en mindre god.<br><br>Det avgörs inte i kvart. Det avgörs här.`,
+        body: `Vi vet var vi är. De andra vet var de är. Tabellen lämnar inget åt fantasin med tre omgångar kvar.<br><br>Antingen är vi nästan där eller också är vi nästan inte. Det är skillnad mellan en plats högre och en plats lägre. Det är skillnad mellan en god säsong och en mindre god.<br><br>Det avgörs inte i kvarten. Det avgörs här.`,
       },
     ],
   },
