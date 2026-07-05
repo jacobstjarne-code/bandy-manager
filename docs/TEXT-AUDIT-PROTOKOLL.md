@@ -12,74 +12,18 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
 — tomt. M1/M15/M16 beslutade 2026-07-03 → se CODE GÖR.
 
 ### JACOB BESLUTAR (smak)
-— tomt. M5–M7 godkända av Jacob 2026-07-03: "brottningen", "mittback" och
-"tre-fem-tvåa" står kvar som de är. Flaggas inte igen.
-- **M59 (låg, 2026-07-04):** arrivalDialogue — tre Sture-repliker daterar
-  sig till högvinter (Målilla "minus arton i natt", Lesjöfors "tjugotvå
-  minus i natt", Gagnef "Skidföret är bra i år") men ArrivalScene ligger
-  vid säsongsstart på hösten. Medveten ortsmytologi ("det orten alltid
-  säger om sig själv") eller höstjusteras? Dessutom: Söderfors "Halva ön
-  bor över bron" läser paradoxalt (öns folk bor då inte på ön) —
-  avsiktlig brukslogik eller ska det vara "Halva publiken bor över bron"?
-- **M62 (motor, låg, 2026-07-04):** facilityNodes varmestuga
-  capacityBonus 1000 — mer än dubbla östra läktarens 400. Avsiktligt?
-- **M33-restfråga (2026-07-03):** V och MP och SD saknar agenda-vikter i
-  `PARTY_AGENDA_WEIGHTS` (politicianService.ts + createNewGame.ts) — faller
-  till den likformiga default-poolen (alla fem agendor lika sannolika)
-  istf en partifärgad vikt som S/M/C/L/KD redan har. Kräver ett smakbeslut
-  om vad V/MP/SD ska profileras mot (t.ex. V→inclusion, MP→infrastructure/
-  inclusion, SD→prestige/savings) — Code avstod avsiktligt från att gissa
-  på politiska stereotyper. Låg prioritet: påverkar bara vilken agenda en
-  redan sällsynt förekommande politiker får, ingen bugg.
-- **M31-observation (2026-07-03):** 7 av 15 `DAY_JOB_TITLES` (IT-konsult,
-  Polis, Säljare, Lastbilsförare, Byggnadsarbetare, Ekonom, Personlig
-  tränare) matchar aldrig någon regional arbetsgivares `jobTitles` i den
-  omskrivna `localEmployers.ts` → spelare med de yrkena kan aldrig trigga
-  coworker-bond eller räknas i varsel-grupperingen. Smakfråga: antingen
-  bredda arbetsgivarnas jobTitles med vita-kragen-yrken, eller snäva
-  DAY_JOB_TITLES till bruksorts-yrken. Ingen krasch, bara tyst underdäckning.
+— tomt 2026-07-05. M5–M7 godkända 2026-07-03 (flaggas inte igen).
+Jacobs beslutsomgång 2026-07-05: M59 ja, M65 ja, M67 delegerat (Fable
+körde rekommendationen), M62/M33/M31 delegerade ("fixa även det med
+låg prio") — Fable beslöt, se AVGJORT + CODE GÖR.
+
+
+
+
 
 ### CODE GÖR
-M17–M61 HELT AVKLARADE 2026-07-04/05 (M54–M58+M60–M61 denna omgång,
-detaljer + utfall i AVGJORT) → se AVGJORT. M59/M62 är Jacob/design-frågor
-(se JACOB BESLUTAR ovan), inte Code-ärenden. Kvar: M9 (gammal) +
-M63–M66 (tillkom UNDER denna omgångs körning — INTE ännu körda).
-- **M63** boardMeetingScene: ordförandens förväntan "Plats fem till åtta.
-  Inget kvalspel." är hårdkodad — scenen fyrar vid säsong 2-start oavsett
-  hur säsong 1 slutade (SM-guld → absurd replik). Koppla raden till
-  styrelsens faktiska förväntansnivå; Fable skriver 3–4 varianter när
-  Code exponerar nivån. 'Inget kvalspel' hänger dessutom på M53
-  (nedflyttningsstrukturen — overifierad).
-- **M64** sundayTrainingScene: (a) META.date hårdkodar '4 oktober · −2°C'
-  — kan motsäga spelets kalenderdatum och vädersystem på grannytor.
-  Tokenisera ({date}/{temp}) eller verifiera mot faktiska startdatumet.
-  (b) group-beatet namnger 'Andersson, Eriksson, Karlsson' (initial 'A')
-  — tre PÅHITTADE spelare bredvid tre riktiga tokens ({earliest}/{phone}/
-  {cold}); truppen kan sakna alla tre namnen. Tokenisera tre truppnamn
-  eller avnamna — Fable skriver om när formatet är valt.
-- **M65 (Jacob smak + Code grep)** 'Birger Karlsson, klackledare' ×6 i
-  smFinalVictoryScene + cupFinalVictoryScene — ROLLKOLLISION med
-  supporterServices genererade klackledare ({leader}-token, klackPresenter).
-  Två olika klackledare med olika namn på olika skärmar. Rekommendation:
-  behåll Birger som fast läktarfigur (citaten är bra och Birgitta-loren
-  hänger på honom) men byt attributionsrollen till något rollfritt
-  ('läktarveteran' e.d.). Alternativ: tokenisera mot ledaren. Kanonbeslut.
-- **M66** resolver-/städbatch: (a) sm/cupFinalVictory — verifiera att
-  bodyText (akademi-callbacken) bara väljs när avgörande målskytten HAR
-  promotionSeason, annars fallback (filhuvudet lovar det; resolvern
-  overifierad). (b) media/library/quotes: "role": "Coach" i ALLA ~90
-  attributions — engelska; sed till 'Tränare' (eller det UI:t förväntar).
-  (c) playoffAnslag: verifiera {motståndare}/{resultat}-substitutionen +
-  semantiken ({resultat} = avgörandematchens siffror, inte matchserien —
-  texterna antar matchsiffror). (d) cupFinalIntroScene är disabled sedan
-  2026-05-10, innehållet flyttat till cupAnslag (verifierat: arvet är
-  rentvättat där) — radera filen efter import-grep. (e) cupIntroScene +
-  cup_first_match-anslaget generaliserades textledes (bye-fallet: första
-  cupmatchen kan vara kvartsfinal) — ingen kodgate behövs längre, men
-  verifiera att direktkvalade FÅR cup_first_match-anslaget (annars är
-  bodyDirektkval enda vägen och generaliseringen överflödig men ofarlig).
-- **M9** grep imports av injuryDoctorText — nås DIAGNOSIS_LINES för
-  träningsskador? ("andra halvlek"-raden får bara visas för matchskador.)
+M17–M67a/M67c/M33/M31/M9 + BACKLOG-konsolideringen HELT AVKLARADE 2026-07-05
+→ se AVGJORT. Inget kvar i kön just nu.
 - Stilnoter (ej rörda denna omgång): seasonChampionYear()-helpern i
   seasonSummaryService (inline +1) · enum-jämförelse i attendance-isSnow
   (kodlukt, ej bugg) · playerNames.ts har dubbletter i båda listorna
@@ -101,15 +45,124 @@ M63–M66 (tillkom UNDER denna omgångs körning — INTE ännu körda).
   meritskärm byggs. Aktiveras då.
 
 ### NÄSTA AUDIT-PASS
-- **HELA TEXTAUDITEN KOMPLETT 2026-07-04** — domän 1, 2, 3 och 4 dömda
-  (domän 4c–4e: scenes/, anslag/ inkl cupAnslag-återbesök, media/quotes —
-  se LOGG). Kvar är ärendekön: M54–M58 + M60/M61/M63–M66 (Code),
-  M59/M62/M65 (Jacob), M33-restfrågan. Numrering fortsätter från M67
-  vid framtida punktinsatser (nya filer döms mot protokollet vid PR).
-- text-guard-linten byggs av Code EFTER att alla fyra domäners termlista
-  är slutjusterad.
+- **HELA TEXTAUDITEN + HELA ÄRENDEKÖN KOMPLETT 2026-07-05** — domän 1–4
+  dömda (se LOGG), M17–M66 + Jacobs beslutsomgångs uppföljning (M67a
+  wiring, M67c radering, M33 profilering, M31 breddning, M9-verifiering,
+  BACKLOG-konsolidering) alla körda och committade. Kön är tom. Kvar:
+  M67b (hall-poolerna, redan beslutat BEHÅLL dödmarkerade — ingen åtgärd
+  väntar), M14/M50 (VILANDE, väntar på funktioner som inte finns än).
+  Numrering fortsätter från M68 vid framtida punktinsatser (nya filer
+  döms mot protokollet vid PR).
+- **Termlistan är slutjusterad 2026-07-05** (se TERMLISTA v2 nedan — tre
+  termer tillagda: "avspark", "Coach", ":e"-ordinaler på minuttokens).
+  text-guard-linten byggd och grön, `scripts/text-guard-lint.mjs` + `npm
+  run lint:text-guard` (1 varning kvar, ingen error — se AVGJORT).
 
 ### AVGJORT (referens, rör ej)
+- **M59, M62, M65, M67 + M63-texten AVGJORDA OCH UTFÖRDA 2026-07-05**
+  (Jacobs beslutsomgång, Fable utförde):
+  · **M59 (ja)** — arrivalDialogue: Målilla → 'Snart visar termometern på
+    torget minus arton. Folk kommer ändå.' · Lesjöfors → 'I januari är
+    det tjugotvå minus här. Andra lag fryser fast då. Vi vaknar.' ·
+    Gagnef → 'Blir skidföret bra i vinter märks det på läktaren.' ·
+    Söderfors → 'Halva publiken bor över bron.' Flaggorna intakta,
+    tidsstämplarna borta — höstkompatibla per Codes klimatutredning.
+  · **M62 (delegerat → sänk)** — varmestuga capacityBonus 1000 → 100
+    (komfort/retention, inte platser; läktaren behåller 400 som största
+    kapacitetsnod). Kommentar med rotorsak vid raden. Eftertest KLART:
+    `facilityCapacity.test.ts` uppdaterat till 100, ingen annan test/
+    balansering antog 1000 (grep-verifierat).
+  · **M65 (ja)** — KANON: Birger Karlsson är fast LÄKTARFIGUR (inte
+    klackledare — den rollen ägs av supporterServices genererade ledare).
+    Attribution 'klackledare' → 'läktarveteran' ×6 (sm/cupFinalVictory).
+    Birgitta-loren och 22-årsraden är Birgers kanon framgent.
+  · **M67 (delegerat → rekommendationen)** — (a) farewell-texterna VÄVS
+    IN, (b) hall-poolerna BEHÅLLS dödmarkerade för B1, (c) boardQuotes/
+    boardData-poolerna RADERAS. (a)+(c) körda av Code, se nästa post.
+  · **M63-texten** — de fyra '[Opus]'-platshållarna i
+    BOARD_MEETING_EXPECTATION_LINE skrivna (AvoidBottom 'Håll oss ovanför
+    strecket...' · MidTable behåller originalrepliken 'Plats fem till
+    åtta. Inget kvalspel.' som nu är rätt gated · ChallengeTop 'Topp
+    fyra...' · WinLeague 'Guld. Det är sagt nu.'). M63 DÄRMED HELT KLAR.
+- **M67a, M67c, M33, M31, M9 + BACKLOG-konsolidering HELT AVKLARADE
+  2026-07-05** (Code, ren implementation av Jacobs beslutsomgång):
+  · **M67a** — FIXAD. `coffeeRoomService.getCoffeeRoomQuote`: ny gren,
+    samma prioritet som victory-echot. Aktiv `veteran_farewell`-arc +
+    arc-spelarens sista hemmafixture i säsongen matchar nästa schemalagda
+    (återanvänt `getNextManagedFixture`) → FAREWELL_MATCH_STRINGS med
+    {player}/{members}/{leader} substituerat. FAREWELL_MATCH_ATMOSPHERE/
+    FAREWELL_MATCH_KLACK (samma fil) förblir ONÅBARA — ociterad narratörs-
+    röst passar inte samma citerade kafferumsslot; kommentar uppdaterad,
+    kvarstår som eget Opus/Jacob-beslut (egen scen eller annan yta).
+    Regressionstest: `coffeeRoomQuote.farewell.test.ts` (3 tester).
+  · **M67c** — FIXAD. `boardQuotes.ts` raderad i sin helhet. `boardData.ts`
+    behåller `BOARD_PROFILES` (LIVE) + `BoardPersonality`/`BoardRole`-
+    typerna (använda i Club/SaveGame/Community/saveGameMigration) — bara
+    de tre döda citat-/opener-poolarna borttagna. Import-grep 0 träffar
+    före och efter.
+  · **M33** — FIXAD. `PARTY_AGENDA_WEIGHTS`/`PARTY_AGENDA_WEIGHTS_CNG`
+    (politicianService.ts + createNewGame.ts, duplicerad struktur) fick
+    V/MP/SD-poster i Jacobs vikt: V → inclusion (2:1) + infrastructure,
+    MP → infrastructure + inclusion (1:1), SD → prestige + savings (1:1).
+  · **M31** — FIXAD. `localEmployers.ts`: Ekonom+IT-konsult → alla Kommun-
+    arbetsgivare, Lastbilsförare → Transport-arbetsgivarna, Byggnadsarbetare
+    → Bygg-arbetsgivarna, Säljare → Handel-arbetsgivaren. Polis + Personlig
+    tränare fick två nya generiska arbetsgivare per region ('Polisen',
+    'Gymmet' — fiktivt, ingen kedja). Verifierat: alla 15 DAY_JOB_TITLES
+    matchar nu minst en arbetsgivare i varje region.
+  · **M9** — VERIFIERAD, STÖRRE FYND ÄN ÄRENDET ANTOG. HELA
+    `injuryDoctorText.ts` (alla sju exports) saknar konsumenter — samma
+    klass som M42/M48/M60/M61. Ärendets "andra halvlek"-gating-fråga är
+    moot, ingen kod läser filen. Dödmarkerad, ny BACKLOG-rad.
+  · **BACKLOG-konsolidering** — BYGGT MEN OSYNLIGT-tabellen ströks tillbaka
+    till 5 aktiva rader (B1 + boardQuotes-raderna struken/kompaktade,
+    injuryDoctorText tillagd). Sidofynd: "Kodaudit-fynd 2026-06-16"-tabellen
+    (facility capacityBonus + migration-orphan) var båda redan lösta i kod
+    men aldrig struken — samma commit.
+  Verifiering: npx tsc --noEmit, npm run build, npx vitest run, npm run
+  lint:text-guard efter varje ärende — 126 testfiler / 1243 tester gröna.
+- **M63–M66 HELT AVKLARADE 2026-07-05** (Code, tillkomna under M54–M61-
+  batchen):
+  · **M63** — FIXAD. `boardMeetingScene.ts` fick `BOARD_MEETING_EXPECTATION_LINE:
+    Record<ClubExpectation, string>`, alla fyra nycklar `'[Opus]'` (SVENSK
+    TEXT-regeln — Fable skriver de fyra ceremoniella varianterna). 'forvantningar'-
+    beatet läser nu `club.boardExpectation` istf hårdkodad "Plats fem till
+    åtta"-replik.
+  · **M64** — FIXAD, båda underpunkterna. (a) `SUNDAY_TRAINING_META.date`
+    tokeniserad till `'{date} · {temp} · {arena}'` — `{date}` löses mot
+    klubbens matchday-1-fixture (`toLocaleDateString('sv-SE')`, samma idiom
+    som RoundSummaryScreen/SeasonSummaryScreen), `{temp}` mot klubbens
+    regionala oktobersnitt (`getClimateForRegionAndMonth`) istf universellt
+    hårdkodat '4 oktober · −2°C'. (b) group-beatets tre påhittade efternamn
+    ersatta med `{group3}` — tre faktiska truppmedlemmar utöver
+    earliest/phone/cold, med den gamla texten kvar som säkerhetsnät om
+    truppen har färre än 6 fältspelare.
+  · **M65** — Code-grep KLAR, rollkollisionen bekräftad (se JACOB BESLUTAR
+    ovan för detaljer + kanonbeslut).
+  · **M66** — (a) VERIFIERAD, ingen bugg: academy-callback-gaten fungerar
+    exakt som filhuvudet lovar (`useSMFinalData.ts`/`useCupFinalData.ts`
+    kräver `promotedFromAcademy && promotionSeason`, annars fallbackBodyText).
+    (b) FIXAD — "Coach" → "Tränare" i alla 103 attributioner, 7 filer i
+    media/library/quotes/. Upptäckt under arbetet: hela poolen saknar
+    konsumenter i src/ (ingen import, ingen import.meta.glob) — samma
+    dödkod-mönster som M60/M61, radad i BACKLOG.md BYGGT MEN OSYNLIGT
+    (tabellen nu 6 rader, över eget ~5-tak, flaggat men ej konsoliderat).
+    (c) VERIFIERAD, ingen bugg: `{resultat}` visar redan den sista FÄRDIGSPELADE
+    matchens enskilda resultat (AnslagOverlay.tsx), vilket är rätt semantik
+    eftersom PlayoffSeries avgörs på homeWins/awayWins (matchvinster) —
+    "avgörandematchens siffror" är exakt vad koden ger. (d) FIXAD —
+    cupFinalIntroScene.ts + CupFinalIntroScene.tsx borttagna (disabled sedan
+    2026-05-10). Import-grep visade att borttagning krävde att även dra ut
+    wiring i SceneScreen.tsx, sceneTriggerService.ts och entities/Scene.ts
+    (SceneId-unionen) — annars byggfel. (e) BUGG, inte overifierad:
+    `anslagService.ts`s cup_first_match-gate krävde hårdkodat `roundNumber===1`
+    trots att texten redan generaliserats — direktkvalade klubbar
+    (`isClubDirektkvalad`, bye till kvarten) har ingen round-1-fixture och
+    fick därför ALDRIG anslaget. Gaten läser nu round 2 för direktkvalade
+    klubbar. Regressionstest tillagt (anslagService.triggering.test.ts).
+  Verifiering: npx tsc --noEmit, npm run build, npx vitest run efter varje
+  ärende — 125 testfiler / 1240 tester gröna (två nya regressionstester,
+  M66e).
 - **M43 AVGJORD 2026-07-04 (Jacob):** kvinnliga tränare JA, lågmält —
   bandyvärlden är konservativ. Fable skrev om managerKaraktarText
   könsneutralt samma dag (10 rader: bio-öppnare, familjerad,
@@ -446,6 +499,22 @@ FEL I BANDY — rätta på plats:
   hörnslag/hörna, frislag, straffslag/straff)
 - luft-inläggsbildspråk på hörna ("lyfte in framför mål", "valde luften",
   "mötte i luften") — bandyhörnan slås ut till skytt vid straffområdeslinjen
+- `avspark` — fotboll (bandy: avslag). Termlista-finaliseringen (2026-07-05)
+  hittade en levande instans i TilltradeScreen.tsx ('Klart för avspark' →
+  'Klart för avslag', fixad); resten av träffarna var kodkommentarer/en
+  test-assertion som aldrig matchar mot verklig kommentartext.
+- `"role": "Coach"` (engelska attributionsroller i speltext/JSON-data) —
+  ska vara `"Tränare"`. M66b (2026-07-05): 103 attributioner i
+  media/library/quotes/*.json fixade. OBS: träffar i kodkommentarer/
+  komponentnamn ("CoachFraming", "Coach recommendation") är INTE
+  speltext och ska inte flaggas — gäller bara citerad/renderad
+  spelartext.
+- ordinal-suffix på minuttokens hårdkodat till `:e` (t.ex. `${minute}:e
+  minuten`) — svenska ordinaler på tal som slutar på 1/2 (utom 11/12) tar
+  `:a` (21:a, 31:a, 41:a …), inte `:e`. Ingen levande instans hittad vid
+  termlista-finaliseringen, men bandymatcher (0–110 min) passerar flera
+  sådana minuttal per match — bannas preventivt innan någon skriver mot
+  mönstret.
 
 MISSTANKAR — döm i kontext, luta konservativt:
 - `slagskott` — hockeydoft; bandy: skott/dragskott
@@ -1446,3 +1515,57 @@ MISSTANKAR — döm i kontext, luta konservativt:
   för att inte växa tabellen ytterligare. En konsolideringsomgång är
   fortsatt rekommenderad innan nästa runda. NÄSTA: Code kör M63–M66 när
   Jacob/Fable ger klartecken.
+
+- 2026-07-05 (Fable, beslutsomgången): Jacob avgjorde/delegerade hela
+  restlistan i ett svep. Fable utförde direkt: M63-varianterna skrivna
+  (fyra förväntansrepliker, [Opus]-platshållarna borta — auditens SISTA
+  textleverans), M59-omskrivningarna (fyra Sture-repliker, flaggorna
+  intakta), M65-rollbytet (läktarveteran ×6, Birger-kanon fastslagen),
+  M62-sänkningen (1000→100 med rotorsakskommentar i facilityNodes),
+  M67-beslutet per rekommendation (a väv in / b behåll / c radera),
+  M33/M31-profileringarna beslutade. Tabellen: JACOB BESLUTAR tom,
+  CODE GÖR = M67a/M67c/M33/M31/M62-eftertest/M9 + BACKLOG-
+  konsolideringen — alla med fattade beslut, ren implementation.
+  När Code kört den batchen är textauditens hela ärendekö NOLL.
+
+- 2026-07-05 (Code, sista batchen): M63–M66 körda (M64 sundayTrainingScene
+  datum/temp/grupptokeniserat mot faktisk fixturdata + klimat, M66a/c
+  verifierade utan bugg, M66d cupFinalIntroScene raderad inkl. wiring i
+  tre filer, M66e en RIKTIG bugg — cup_first_match-gaten krävde hårdkodat
+  roundNumber===1 så direktkvalade klubbar fick aldrig anslaget, fixad +
+  regressionstest). Sedan Jacobs beslutsomgång kördes hela svansen:
+  M67a (FAREWELL_MATCH_STRINGS wirad i coffeeRoomService, egen gren +
+  regressionstest), M67c (boardQuotes.ts + två döda poolar i boardData.ts
+  raderade), M33 (V/MP/SD agenda-vikter, båda filerna), M31 (sju
+  föräldralösa DAY_JOB_TITLES fick hem — fem i befintliga arbetsgivare,
+  två via nya generiska 'Polisen'/'Gymmet'-poster per region), M9
+  (injuryDoctorText.ts verifierad HELT död, inte bara en gating-fråga —
+  samma mönster som M60/M61/M42/M48 denna session). BACKLOG-
+  konsolideringen körd i samma svep: BYGGT MEN OSYNLIGT tillbaka på 5
+  aktiva rader, plus en separat stale-fångst (Kodaudit-fynd 2026-06-16-
+  tabellen var redan löst i kod, aldrig struken).
+
+  Under samma pass byggdes text-guard-linten (`scripts/text-guard-lint.mjs`,
+  `npm run lint:text-guard`) — hela FEL I BANDY-listans lågtvetydiga
+  termer kodifierade som en ratchad grind (error/warn, samma stil som
+  check-design-tokens.mjs). Första körningen hittade 5 levande termbrott
+  UTANFÖR den redan avslutade M-kön (roundProcessor.ts "nedsläpp",
+  TilltradeScreen/FinalIntroScreen/MatchLaddningScene "avspark" i CTA-
+  knappar) — alla fixade samma commit. MISSTANKAR-listan kodifierades
+  medvetet INTE (för tvetydig för regex, protokollet säger "döm i
+  kontext").
+
+  Build+test genom hela batchen: npx tsc --noEmit rent, npm run build
+  grönt, npx vitest run — 126 testfiler / 1243 tester gröna (fem nya
+  regressionstester: cup_first_match direktkval ×2, coffeeRoomQuote
+  farewell ×3). npm run lint:text-guard grönt (1 känd warn, ingen error).
+
+  LÄGE: Textauditens hela ärendekö är NOLL. Kvar: M67b (beslutat BEHÅLL,
+  ingen åtgärd väntar), M14/M50 (VILANDE, väntar på funktioner som inte
+  finns än — publikhistorik-token respektive trofé-/meritskärm). Fyra
+  nya BYGGT MEN OSYNLIGT-kandidater identifierade denna session men EJ
+  åtgärdade (egna Opus/Jacob-beslut): nationalTeamService.ts döda
+  callup-funktioner, anniversaryKafferumText.ts:s rikare kafferumstext,
+  Mecenat.demands aldrig populerad, media/library/quotes/*.json (7 filer,
+  103 citat) helt onåbara. NÄSTA AUDIT-PASS: numrering fortsätter från
+  M68 vid framtida punktinsatser.
