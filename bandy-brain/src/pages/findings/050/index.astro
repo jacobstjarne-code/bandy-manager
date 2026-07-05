@@ -1,10 +1,12 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '050');
 ---
 
 <Base
-  title="Finding 050 — Takhöjning till 17 (motor v1.2.0): takeffekt löst, hemmafördel exponeras"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="MATCH_TOTAL_GOAL_CAP höjdes till 17 med GOAL_RATE_MOD=0.936. Takeffekten är löst (13-mål 5.1% mot 5.0%). Men cap-höjningen avslöjar att taket vid 13 kompenserade dolda kalibrerings-gap i hemmafördel och H2-balans."
 >
   <div class="finding-layout">

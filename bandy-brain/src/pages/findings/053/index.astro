@@ -1,10 +1,12 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '053');
 ---
 
 <Base
-  title="Finding 053 — Temperaturkartan: vilka matchups hettar upp Elitserien?"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="95 matchups analyserade. Varmaste mötet: 7,0 utvisningar/match. Kallaste: 1,75. Ligamedel: 3,8. Skillnaden mellan varmaste och kallaste överstiger 3× liganormen."
 >
   <div class="finding-layout">

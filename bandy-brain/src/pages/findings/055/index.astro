@@ -1,10 +1,12 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '055');
 ---
 
 <Base
-  title="Finding 055 — Reformens mekanism: lätta utvisningar, inte grova"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="Utvisningsökningen 25/26 är till 89 % femminutare. Grova tiominutare är oförändrade och våldsamt slag minskade 30 %. Reformen sanktionerar tekniska förseelser, inte fysiskt våld."
 >
   <div class="finding-layout">

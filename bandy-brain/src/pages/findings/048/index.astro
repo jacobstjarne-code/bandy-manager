@@ -1,10 +1,12 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '048');
 ---
 
 <Base
-  title="Finding 048 — Penalty-prob-fix: straffmålsandel från 3,6 % till 5,4 % (motor v1.1.0)"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="penProb justerades från 0,13 till 0,19 i matchCore.ts. Straffmålsandelen träffar nu Elitseriens 5,4 % exakt. Övriga nio mätvärden rör sig inom ±0,3 pp."
 >
   <div class="finding-layout">

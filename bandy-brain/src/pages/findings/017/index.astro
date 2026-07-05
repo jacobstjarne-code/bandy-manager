@@ -1,11 +1,13 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 import { factHref } from '../../../lib/facts';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '017');
 ---
 
 <Base
-  title="Finding 017 — Comebacks startar tidigare i andra halvlek"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="Lag som vänder matcher gör det första målet i andra halvlek snitt 6 minuter tidigare än icke-comeback-lag."
 >
   <div class="finding-layout">

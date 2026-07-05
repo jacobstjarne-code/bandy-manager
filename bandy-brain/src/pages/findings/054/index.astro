@@ -1,10 +1,12 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '054');
 ---
 
 <Base
-  title="Finding 054 — Spelstil eller kvalitet? En klusteranalys i två omgångar"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="Första klustringen fångade kvalitet, inte stil — topplag, mittfält, botten. En kvalitetsneutral omkörning visar att stil inte bildar skarpa typer, men att en reell omställning-mot-hörnberoende-axel finns, oberoende av hur bra laget är."
 >
   <div class="finding-layout">

@@ -1,10 +1,12 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '047');
 ---
 
 <Base
-  title="Finding 047 — Motorkalibrering mot Elitserien: sex mätvärden nära, tre med gap"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="Bandy Managers matchmotor jämförd mot 1 124 Elitseriematcher. Halvtidsmönster, hörn och utvisningar träffar väl. Hemmafördel, straffmål och målfördelning har kvarvarande gap."
 >
   <div class="finding-layout">

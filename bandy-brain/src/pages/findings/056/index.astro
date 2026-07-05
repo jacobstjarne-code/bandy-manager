@@ -1,10 +1,12 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '056');
 ---
 
 <Base
-  title="Finding 056 — Dam och herr: samma sport, skild struktur"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="Mål/match, hemmavinst och utvisningsfrekvens är nästan identiska. Men damserien har nästan ingen hemmaplansfördel, färre oavgjorda och leder-som-håller — sannolikt samma sak: bredare styrkespann. Hörnberoendet är lägre och står separat."
 >
   <div class="finding-layout">

@@ -1,9 +1,11 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 import BarChart from '../../../components/BarChart.astro';
 import { factHref, getGoalTimeDistribution } from '../../../lib/facts';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '005');
 const td = getGoalTimeDistribution();
 const deciles = td.byDecile;
 
@@ -15,7 +17,7 @@ const bars = deciles.map(d => ({
 ---
 
 <Base
-  title="Finding 005 — Mål faller inte jämnt"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="Två kluster sticker ut i Elitseriematchernas målfördelning: minuterna 40–50 och 80–90. Resten av matchen är anmärkningsvärt jämn."
 >
   <div class="finding-layout">

@@ -1,10 +1,12 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '049');
 ---
 
 <Base
-  title="Finding 049 — Parametrisering av canScore-grindar och empirisk data inför takhöjning"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="MATCH_TOTAL_GOAL_CAP och MATCH_GOAL_DIFFERENCE_CAP extraherades som namngivna konstanter. Empirisk Elitseriedata: 99:e percentilen är 17, max 25. Kalibreringstest avslöjar att attack-multiplier ensam inte räcker — takhöjning kräver global GOAL_RATE_MOD."
 >
   <div class="finding-layout">

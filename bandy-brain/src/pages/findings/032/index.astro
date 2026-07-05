@@ -1,11 +1,13 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
 import { factHref } from '../../../lib/facts';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '032');
 ---
 
 <Base
-  title="Finding 032 — Målminutsfördelning per division: ingen data tillgänglig"
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
   description="Analys av målminutsfördelning uppdelat på divisioner kunde inte genomföras — källdatan saknar serieinformation."
 >
   <div class="finding-layout">
