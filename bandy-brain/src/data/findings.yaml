@@ -3,6 +3,11 @@
 # Renderas av src/data/findings.ts → findings/index.astro + pages/index.astro.
 # Lägg nya findings här; sidorna genereras.
 
+- num: '059'
+  title: 'Power play: överläget höjer måltempot 40 %'
+  date: '10 juni 2026'
+  status: active
+
 - num: '058'
   title: 'Straffen i bandy: 65 % i mål — och en dam–herr-skillnad'
   date: '10 juni 2026'

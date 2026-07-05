@@ -39,3 +39,27 @@ for lbl, ms in [('herr', d['herr']['matches']), ('dam', d['dam']['matches'])]:
     pg = sum(1 for m in ms for g in (m.get('goals') or []) if g.get('type') == 'penalty')
     lo, hi = wilson_ci(pg / pa, pa)
     print(f"  {lbl}: {pg}/{pa} = {pg/pa*100:.1f}% [{lo*100:.0f}–{hi*100:.0f}]")
+
+# ── Finding 059: power play-effektivitet (rate-matchat) ──
+def pp_rate(matches, label):
+    ppg=esg=ppm=esm=0
+    for m in matches:
+        home_pp=[False]*95; away_pp=[False]*95
+        for f in (m.get('fouls') or []):
+            dur=f.get('duration')
+            if dur not in (5,10): continue
+            pen=f.get('team'); fm=f.get('minute',0)
+            for mm in range(fm+1, min(95, fm+dur+1)):
+                if pen=='home': away_pp[mm]=True
+                else: home_pp[mm]=True
+        for mm in range(1,91):
+            ppm+= (1 if away_pp[mm] else 0) + (1 if home_pp[mm] else 0)
+            esm+= (0 if away_pp[mm] else 1) + (0 if home_pp[mm] else 1)
+        for g in (m.get('goals') or []):
+            on = (away_pp if g['team']=='away' else home_pp)[min(94,g['minute'])]
+            if on: ppg+=1
+            else: esg+=1
+    print(f"\n{label} power play: PP {ppg}/{ppm}={ppg/ppm*100:.2f}%/min | ES {esg}/{esm}={esg/esm*100:.2f}%/min | lyft {ppg/ppm/(esg/esm):.2f}x | PP-andel av mål {ppg/(ppg+esg)*100:.1f}%")
+
+pp_rate(d['herr']['matches'],'HERR')
+pp_rate(d['dam']['matches'],'DAM')

@@ -1,0 +1,106 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '059');
+---
+
+<Base
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
+  description="Ett numerärt överläge höjer måltempot med 40 % i bandy, och var femte mål görs i power play. Utvisningarna — och därmed överlägena — toppar i matchens sista kvart, precis när den avgörs."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 059 · 10 juni 2026</p>
+    <h1 class="finding-title">Power play:<br>överläget höjer måltempot 40 %</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">1,40×</span>
+        <span class="key-number__label">Måltempo i power play vs full styrka</span>
+        <span class="key-number__note">Herr — 6,7 % mot 4,8 % mål per lag-minut</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">20 %</span>
+        <span class="key-number__label">Av alla mål görs i numerärt överläge</span>
+        <span class="key-number__note">Trots att power play är en minoritet av speltiden</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">1,37×</span>
+        <span class="key-number__label">Samma lyft i damserien</span>
+        <span class="key-number__note">6,5 % mot 4,7 % per lag-minut</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">24 %</span>
+        <span class="key-number__label">Av straffarna faller minut 75–89</span>
+        <span class="key-number__note">Överlägena toppar när matchen avgörs</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>När ett lag blir utvisat spelar motståndaren i numerärt överläge — power play — tills utvisningen löper ut. Hur mycket är ett sådant överläge egentligen värt i mål? Och när i matchen uppstår överlägena?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Varje utvisning i Bandygrytan har ett utvisat lag, en minut och en längd (5 eller 10 minuter). Ur det kan varje matchminut märkas som power play eller full styrka för respektive lag, och varje mål placeras i rätt tillstånd. Måltempot mäts som mål per lag-minut — vilket gör power play och full styrka jämförbara trots att de utgör olika mycket speltid. Analysen omfattar 1 321 herrmatchar och 428 dammatchar 2019–2026 (exkl. 2023–24): drygt 36 000 power play-minuter i herrserien.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      <p>Ett numerärt överläge höjer måltempot med 40 procent. I herrserien görs 6,7 % mål per lag-minut i power play mot 4,8 % vid full styrka — en faktor 1,40. Damserien landar nästan exakt lika: 1,37.</p>
+      <table>
+        <thead><tr><th>Tillstånd (herr)</th><th>Mål</th><th>Lag-minuter</th><th>Mål per lag-minut</th></tr></thead>
+        <tbody>
+          <tr><td>Power play</td><td>2 437</td><td>36 366</td><td>6,70 %</td></tr>
+          <tr><td>Full styrka</td><td>9 630</td><td>201 414</td><td>4,78 %</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Var femte mål görs i överläge.</strong> 20 % av alla mål i herrserien (och 20 % i dam) faller medan det målande laget har en man mer — en betydande andel, eftersom power play bara utgör en dryg sjättedel av speltiden. Utvisningen är alltså inte bara en frånvaro av en spelare; den är ett av spelets mest produktiva målfönster.</p>
+      <p><strong>Och överlägena kommer sent.</strong> Utvisningarna — och därmed power play-fönstren — är inte jämnt fördelade: 24 % av straffarna faller i minut 75–89, mer än dubbelt så många som i matchens första kvart (10 %). De mest produktiva överlägena koncentreras alltså till slutskedet, precis när matcher avgörs.</p>
+      <table>
+        <thead><tr><th>Period</th><th>Andel av straffarna (herr)</th></tr></thead>
+        <tbody>
+          <tr><td>0–14 min</td><td>10 %</td></tr>
+          <tr><td>15–29 min</td><td>13 %</td></tr>
+          <tr><td>30–44 min</td><td>15 %</td></tr>
+          <tr><td>45–59 min</td><td>17 %</td></tr>
+          <tr><td>60–74 min</td><td>15 %</td></tr>
+          <tr><td>75–89 min</td><td>24 %</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Att ett överläge höjer måltempot är väntat; att lyftet är så stabilt — 1,40 i herr, 1,37 i dam — och att en femtedel av alla mål kommer just där, visar hur central utvisningen är för målproduktionen i bandy. Kombinerat med Finding 057 (ledande lag saboterar mer) och att överlägena toppar i slutkvarten tecknar det en bild av disciplinen som en avgörande faktor sent i täta matcher: den som slarvar bort en spelare i minut 80 ger bort spelets bästa målläge i exakt fel ögonblick.</p>
+      <p>Lyftet på 40 % är sannolikt en försiktig uppskattning. Ett mål som ett underläge-lag gör korthänt räknas här till full styrka, vilket drar upp den siffran något och trycker ihop skillnaden. Den verkliga power play-fördelen är om något större.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Power play-status härleds ur utvisningarnas start och längd. Överlappande utvisningar (fem mot fyra, fem mot tre) slås samman till "power play" utan gradskillnad.</li>
+        <li>Utvisningslängden antas löpa fullt ut. Om en utvisning i praktiken bröts tidigt (vissa regler) överskattas power play-minuterna något.</li>
+        <li>Straff-timingen mäts på tilldelade straffar, som samvarierar med men inte är identiska med utvisningar. Mönstret "fler sent" gäller båda.</li>
+        <li>2023–24 saknas i datasetet.</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>
