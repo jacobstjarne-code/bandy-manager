@@ -71,11 +71,14 @@ export const RETIREMENT_RESPONSES: Record<string, string[]> = {
   ],
 }
 
-// M60 (textaudit 2026-07-04): FAREWELL_MATCH_STRINGS (och de två "legacy"-
-// arrayerna nedan) har NOLL konsumenter någonstans i src/ — hela
-// avskedsmatch-atmosfärtexten är onåbar, inte bara ett token-
-// substitutionsfynd som ärendet antog. Ingen scen/service läser dem.
-// Opus/Jacob-beslut: väv in i en avskedsmatch-scen/kafferum, eller ta bort.
+// M60/M67a (textaudit 2026-07-04/05): FAREWELL_MATCH_STRINGS var död kod
+// (noll konsumenter) — WIRAD 2026-07-05 i coffeeRoomService.getCoffeeRoomQuote,
+// gated på en aktiv veteran_farewell-arc vars spelares sista hemmamatch i
+// säsongen är nästa matchade fixture. FAREWELL_MATCH_ATMOSPHERE + FAREWELL_MATCH_KLACK
+// nedan är FORTFARANDE ONÅBARA — plain narratörsröst (ociterad) passar inte
+// samma kafferumsslot som de citerade FAREWELL_MATCH_STRINGS-replikerna utan
+// att blanda register; kräver antingen en egen avskedsmatch-scen eller ett
+// beslut om vilken yta som ska bära dem. Opus/Jacob-beslut kvarstår för de två.
 
 // Avskedsmatch atmosphere/klack-strängar
 export const FAREWELL_MATCH_STRINGS = [
