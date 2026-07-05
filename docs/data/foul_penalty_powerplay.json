@@ -1,0 +1,187 @@
+{
+  "_meta": {
+    "analysis": "foul / penalty / power play — underlag findings 057-059",
+    "source": "bandygrytan_detailed.json (Elitserien herr/dam)",
+    "note": "Alla matcher (grundserie + slutspel). A2 är den rigorösa PP-extensionen.",
+    "n_matches": {
+      "herr": 1321,
+      "dam": 428
+    }
+  },
+  "finding_057_sabotage_by_state": {
+    "herr": {
+      "leder": {
+        "sabotage": 149,
+        "total": 1949,
+        "pct": 7.6,
+        "ci": [
+          6.5,
+          8.9
+        ]
+      },
+      "jämnt": {
+        "sabotage": 60,
+        "total": 1087,
+        "pct": 5.5,
+        "ci": [
+          4.3,
+          7.0
+        ]
+      },
+      "under": {
+        "sabotage": 82,
+        "total": 1951,
+        "pct": 4.2,
+        "ci": [
+          3.4,
+          5.2
+        ]
+      },
+      "leder_under_kvot": 1.82
+    },
+    "dam": {
+      "leder": {
+        "sabotage": 37,
+        "total": 521,
+        "pct": 7.1,
+        "ci": [
+          5.2,
+          9.6
+        ]
+      },
+      "jämnt": {
+        "sabotage": 16,
+        "total": 248,
+        "pct": 6.5,
+        "ci": [
+          4.0,
+          10.2
+        ]
+      },
+      "under": {
+        "sabotage": 38,
+        "total": 791,
+        "pct": 4.8,
+        "ci": [
+          3.5,
+          6.5
+        ]
+      },
+      "leder_under_kvot": 1.48
+    }
+  },
+  "finding_058_penalty_conversion": {
+    "herr": {
+      "penalties": 996,
+      "goals": 648,
+      "pct": 65.1,
+      "ci": [
+        62,
+        68
+      ]
+    },
+    "dam": {
+      "penalties": 430,
+      "goals": 234,
+      "pct": 54.4,
+      "ci": [
+        50,
+        59
+      ]
+    }
+  },
+  "finding_059_powerplay": {
+    "herr": {
+      "pp_goals": 2437,
+      "pp_team_minutes": 36366,
+      "pp_rate_pct": 6.7,
+      "es_goals": 9630,
+      "es_team_minutes": 201414,
+      "es_rate_pct": 4.78,
+      "lift": 1.4,
+      "pp_share_of_goals_pct": 20.2
+    },
+    "dam": {
+      "pp_goals": 760,
+      "pp_team_minutes": 11768,
+      "pp_rate_pct": 6.46,
+      "es_goals": 3085,
+      "es_team_minutes": 65272,
+      "es_rate_pct": 4.73,
+      "lift": 1.37,
+      "pp_share_of_goals_pct": 19.8
+    }
+  },
+  "finding_059_penalty_timing": {
+    "herr": {
+      "n": 996,
+      "windows": [
+        {
+          "window": "0-14",
+          "count": 103,
+          "pct": 10
+        },
+        {
+          "window": "15-29",
+          "count": 125,
+          "pct": 13
+        },
+        {
+          "window": "30-44",
+          "count": 150,
+          "pct": 15
+        },
+        {
+          "window": "45-59",
+          "count": 170,
+          "pct": 17
+        },
+        {
+          "window": "60-74",
+          "count": 150,
+          "pct": 15
+        },
+        {
+          "window": "75-89",
+          "count": 243,
+          "pct": 24
+        }
+      ]
+    },
+    "dam": {
+      "n": 430,
+      "windows": [
+        {
+          "window": "0-14",
+          "count": 46,
+          "pct": 11
+        },
+        {
+          "window": "15-29",
+          "count": 67,
+          "pct": 16
+        },
+        {
+          "window": "30-44",
+          "count": 81,
+          "pct": 19
+        },
+        {
+          "window": "45-59",
+          "count": 71,
+          "pct": 17
+        },
+        {
+          "window": "60-74",
+          "count": 68,
+          "pct": 16
+        },
+        {
+          "window": "75-89",
+          "count": 82,
+          "pct": 19
+        }
+      ]
+    }
+  }
+}
