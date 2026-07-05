@@ -4,7 +4,9 @@
  * spelarens första kontakt med truppen.
  *
  * All svensk text lever här. Inget hårdkodas i komponenten.
- * Namen är tokens — {earliest}/{phone}/{cold} — löses ut i ScenComponent.
+ * Namen är tokens — {earliest}/{phone}/{cold}/{group3} — löses ut i ScenComponent.
+ * META.date-tokens {date}/{temp}/{arena} löses ut mot klubbens faktiska
+ * första matchdag + regionala oktobersnitt (M64, textaudit 2026-07-04).
  */
 
 export type SundayTrainingCastKey = 'earliest' | 'phone' | 'cold' | 'group'
@@ -38,8 +40,8 @@ export const SUNDAY_TRAINING_PLAYERS: SundayTrainingPlayer[] = [
   },
   {
     castKey: 'group',
-    initial: 'A',
-    name: 'Andersson, Eriksson, Karlsson',
+    initial: '{group3}',
+    name: '{group3}',
     text: 'skjuter på mål utan målvakt. <em>De skrattar varje gång någon träffar stolpen.</em>',
   },
   {
@@ -75,8 +77,9 @@ export const SUNDAY_TRAINING_CHOICES: SundayTrainingChoice[] = [
 
 export const SUNDAY_TRAINING_META = {
   title: 'Söndagsträningen',
-  // {arena} ersätts med klubbens arenaName vid render
-  date: '4 oktober · −2°C · {arena}',
+  // {date}/{temp} ersätts med klubbens faktiska matchday-1-datum och
+  // regionala oktobersnitt, {arena} med klubbens arenaName — allt vid render.
+  date: '{date} · {temp} · {arena}',
   headline: 'Sex spelare på isen.',
   subtitle: 'Ingen tvingad. Frivilligt morgonpass.',
 }
