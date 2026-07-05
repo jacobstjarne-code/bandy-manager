@@ -84,16 +84,21 @@ M17–M67a/M67c/M33/M31/M9 + BACKLOG-konsolideringen HELT AVKLARADE 2026-07-05
     strecket...' · MidTable behåller originalrepliken 'Plats fem till
     åtta. Inget kvalspel.' som nu är rätt gated · ChallengeTop 'Topp
     fyra...' · WinLeague 'Guld. Det är sagt nu.'). M63 DÄRMED HELT KLAR.
-- **M67a, M67c, M33, M31, M9 + BACKLOG-konsolidering HELT AVKLARADE
-  2026-07-05** (Code, ren implementation av Jacobs beslutsomgång):
-  · **M67a** — FIXAD. `coffeeRoomService.getCoffeeRoomQuote`: ny gren,
-    samma prioritet som victory-echot. Aktiv `veteran_farewell`-arc +
-    arc-spelarens sista hemmafixture i säsongen matchar nästa schemalagda
-    (återanvänt `getNextManagedFixture`) → FAREWELL_MATCH_STRINGS med
-    {player}/{members}/{leader} substituerat. FAREWELL_MATCH_ATMOSPHERE/
-    FAREWELL_MATCH_KLACK (samma fil) förblir ONÅBARA — ociterad narratörs-
-    röst passar inte samma citerade kafferumsslot; kommentar uppdaterad,
-    kvarstår som eget Opus/Jacob-beslut (egen scen eller annan yta).
+- **M67a (DELVIS — se grepverifiering nedan), M67c, M33, M31, M9 +
+  BACKLOG-konsolidering HELT AVKLARADE 2026-07-05** (Code, ren
+  implementation av Jacobs beslutsomgång):
+  · **M67a** — FIXAD FÖR `FAREWELL_MATCH_STRINGS` ENDAST, inte hela
+    "atmosfärarrayerna"-formuleringen i specen. `coffeeRoomService.
+    getCoffeeRoomQuote`: ny gren, samma prioritet som victory-echot.
+    Aktiv `veteran_farewell`-arc + arc-spelarens sista hemmafixture i
+    säsongen matchar nästa schemalagda (återanvänt `getNextManagedFixture`)
+    → FAREWELL_MATCH_STRINGS med {player}/{members}/{leader} substituerat.
+    FAREWELL_MATCH_ATMOSPHERE/FAREWELL_MATCH_KLACK (samma fil) förblir
+    ONÅBARA — grepverifierat på Jacobs fråga 2026-07-05 (noll konsumenter,
+    bekräftat), ny egen rad i BACKLOG.md (tidigare bara en filkommentar).
+    Ociterad narratörsröst passar inte samma citerade kafferumsslot;
+    kvarstår som eget Opus/Jacob-beslut (egen matchdags-scen eller
+    radering).
     Regressionstest: `coffeeRoomQuote.farewell.test.ts` (3 tester).
   · **M67c** — FIXAD. `boardQuotes.ts` raderad i sin helhet. `boardData.ts`
     behåller `BOARD_PROFILES` (LIVE) + `BoardPersonality`/`BoardRole`-
