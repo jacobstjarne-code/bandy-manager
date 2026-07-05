@@ -1,0 +1,104 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '057');
+---
+
+<Base
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
+  description="Lag som leder begår sabotage-utvisningar 1,8 gånger så ofta som lag i underläge. Det taktiska stoppfoulet är ett ledningsförsvar — mönstret finns i både herr- och damserien."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 057 · 10 juni 2026</p>
+    <h1 class="finding-title">Det cyniska foulet:<br>ledande lag saboterar mer</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">1,82×</span>
+        <span class="key-number__label">Sabotage-utvisningar: leder vs under</span>
+        <span class="key-number__note">Herr — andelen av lägets utvisningar</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">7,6 %</span>
+        <span class="key-number__label">Sabotage-andel när laget leder</span>
+        <span class="key-number__note">Herr — mot 4,2 % i underläge</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">1,48×</span>
+        <span class="key-number__label">Samma kvot i damserien</span>
+        <span class="key-number__note">7,1 % leder mot 4,8 % under</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">≈ platt</span>
+        <span class="key-number__label">Övriga förseelsetyper</span>
+        <span class="key-number__note">Fasthållning, våldsamt slag m.fl. skiftar knappt med spelläge</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Det taktiska stoppfoulet — att medvetet sabotera motståndarens speluppbyggnad för att bryta ett anfall — är ett välkänt fenomen i lagsport. I bandy loggas den förseelsetypen som "sabotage". Frågan är om den fördelar sig jämnt över matchen, eller om den är knuten till spelläget: begår ett lag som leder fler sådana foul för att skydda försprånget?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Varje utvisning i Bandygrytan har en orsakskategori i klartext och en ställning vid tidpunkten (score-at-time). Det gör att varje utvisning kan klassas efter om det utvisade laget ledde, låg under eller stod jämnt när foulet begicks. Analysen omfattar 1 321 herrmatchar och 428 dammatchar 2019–2026 (exkl. 2023–24), och jämför andelen av varje spelläges utvisningar som är just "sabotage".</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      <p>Sabotage-utvisningar är påtagligt vanligare när det utvisade laget leder. I herrserien utgör de 7,6 % av utvisningarna i ledning mot 4,2 % i underläge — en faktor 1,82, och konfidensintervallen överlappar inte.</p>
+      <table>
+        <thead><tr><th>Spelläge (herr)</th><th>Sabotage-andel</th><th>95 % CI</th><th>n utvisningar</th></tr></thead>
+        <tbody>
+          <tr><td>Leder</td><td>7,6 %</td><td>[6,5–8,9]</td><td>1 949</td></tr>
+          <tr><td>Jämnt</td><td>5,5 %</td><td>[4,3–7,0]</td><td>1 087</td></tr>
+          <tr><td>Under</td><td>4,2 %</td><td>[3,4–5,2]</td><td>1 951</td></tr>
+        </tbody>
+      </table>
+      <p>Damserien visar samma riktning: 7,1 % i ledning mot 4,8 % i underläge, en faktor 1,48. Att mönstret återkommer i båda serierna gör det mer robust.</p>
+      <table>
+        <thead><tr><th>Spelläge (dam)</th><th>Sabotage-andel</th><th>95 % CI</th></tr></thead>
+        <tbody>
+          <tr><td>Leder</td><td>7,1 %</td><td>[5,2–9,6]</td></tr>
+          <tr><td>Jämnt</td><td>6,5 %</td><td>[4,0–10,2]</td></tr>
+          <tr><td>Under</td><td>4,8 %</td><td>[3,5–6,5]</td></tr>
+        </tbody>
+      </table>
+      <p>Effekten är specifik för sabotage. De vanligaste övriga förseelsetyperna — fasthållning, våldsamt slag, slag på klubban, hakning — skiftar bara marginellt med spelläget. Det är alltså inte så att ledande lag foular mer generellt; det är just den taktiska, spelavbrytande kategorin som stiger.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Mönstret är förenligt med det taktiska stoppfoulet som ledningsförsvar: laget som leder har mer att förlora på en snabb kontring och avbryter därför motståndarens uppbyggnad oftare, medan laget i underläge inte har samma incitament att stoppa spelet. Att övriga förseelsetyper ligger stilla stärker den läsningen — det handlar inte om att ledande lag spelar smutsigare rakt av, utan om en specifik spelavbrytande handling som tjänar ett syfte just när man ligger över.</p>
+      <p>Riktningen är entydig, men datan säger inget om avsikt. En sabotage-utvisning kan vara kylt beräknad eller ett ögonblicks frustration; kategorin fångar handlingen, inte motivet.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Orsakskategorin sätts av domaren/matchsekreteraren. Vad som rubriceras "sabotage" kan variera mellan matcher och domare.</li>
+        <li>Korrelation, inte kausalitet. Spellägets koppling till foultypen betyder inte att ledningen orsakar foulet — men den entydiga riktningen och mönstrets närvaro i båda serierna talar för en verklig effekt.</li>
+        <li>Analysen ser bara utvisade förseelser. Sabotage-handlingar som stannade vid frislag utan utvisning syns inte.</li>
+        <li>2023–24 saknas i datasetet.</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>

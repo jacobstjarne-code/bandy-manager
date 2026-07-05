@@ -1,0 +1,93 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '058');
+---
+
+<Base
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
+  description="Straffar i bandy går i mål i 65 % av fallen i herrserien och 54 % i damserien — lägre än i fotboll, och med en tydlig skillnad mellan serierna."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 058 · 10 juni 2026</p>
+    <h1 class="finding-title">Straffen i bandy:<br>65 % i mål — och en dam–herr-skillnad</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">65,1 %</span>
+        <span class="key-number__label">Straffkonvertering herr</span>
+        <span class="key-number__note">648 mål av 996 straffar</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">54,4 %</span>
+        <span class="key-number__label">Straffkonvertering dam</span>
+        <span class="key-number__note">234 mål av 430 straffar</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">≈ 11 pp</span>
+        <span class="key-number__label">Skillnad herr − dam</span>
+        <span class="key-number__note">Konfidensintervallen möts nätt och jämnt</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">Lägre</span>
+        <span class="key-number__label">Än i fotboll</span>
+        <span class="key-number__note">Där straffar går i mål klart oftare</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Straffen är den renaste avslutssituationen i bandy: skytt mot målvakt, tolv meter, inget försvar emellan. Hur ofta går den faktiskt i mål — och skiljer det sig mellan herr- och damserien?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Bandygrytan loggar varje tilldelad straff som en egen händelse, och varje mål med sin typ (öppet spel, hörna eller straff). Konverteringen är kvoten straffmål genom tilldelade straffar. Analysen omfattar 1 321 herrmatchar och 428 dammatchar 2019–2026 (exkl. 2023–24): 996 straffar i herr och 430 i dam.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      <table>
+        <thead><tr><th>Serie</th><th>Straffar</th><th>Straffmål</th><th>Konvertering</th><th>95 % CI</th></tr></thead>
+        <tbody>
+          <tr><td>Herr</td><td>996</td><td>648</td><td>65,1 %</td><td>[62–68]</td></tr>
+          <tr><td>Dam</td><td>430</td><td>234</td><td>54,4 %</td><td>[50–59]</td></tr>
+        </tbody>
+      </table>
+      <p>Två saker sticker ut. För det första är konverteringen <strong>lägre än i fotboll</strong>, där straffen går i mål klart oftare — en tredjedel av bandystrafferna i herrserien räddas eller missas. För det andra är <strong>dam-konverteringen påtagligt lägre än herr</strong>, 54 mot 65 procent; konfidensintervallen möts precis vid kanten, så skillnaden är reell om än inte enorm.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Att straffen är svårare i bandy än i fotboll är rimligt: avståndet är tolv meter mot fotbollens elva, bollen är liten och hård, och bandymålvakten har en stor målbur men också stora rörelseytor att täcka. En tredjedel som inte blir mål är en betydande andel för en till synes ren situation.</p>
+      <p>Dam–herr-skillnaden är svårare att förklara utan mer data. Den kan bottna i skytteteknik, målvaktsspel eller något annat — mönstret är observerat, inte förklarat. Den ansluter till bilden från Finding 056 av damserien som ett eget strukturellt objekt snarare än en kopia av herrserien.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Straffmål räknas ur måltypen "straff" i händelseloggen. En missad straff som ledde till retur och mål i öppet spel räknas inte som straffmål — konverteringen mäter alltså direkt straffmål, inte hela värdet av en tilldelad straff.</li>
+        <li>Jämförelsen med fotboll är kvalitativ; ingen exakt siffra hämtas från extern källa här.</li>
+        <li>Dam-underlaget (430 straffar) är mindre än herr, vilket ger bredare intervall.</li>
+        <li>2023–24 saknas i datasetet.</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>
