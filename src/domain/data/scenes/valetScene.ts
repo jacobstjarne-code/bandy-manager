@@ -48,6 +48,30 @@ export interface ValetChoiceCard {
   /** Byggtid i omgångar — "klar om ~X omg". */
   buildRounds: number
   cost: number
+  /** A-2 (Valet-scen-audit, 2026-07-06): CTA-texten i bekräfta-steget när kortet är
+   *  valt men inte bekräftat än — bär nodens namn ("Bygg värmestugan"), aldrig
+   *  generiskt "Bekräfta". Jacob skriver de tio, '[Opus]' tills dess. */
+  confirmCta: string
+}
+
+/**
+ * A-2 (Valet-scen-audit, beslut 2026-07-06 — Jacob): tap-to-commit bytt mot
+ * select→confirm. Skäl: valet är irreversibelt och säsongsdefinierande (120–300 tkr
+ * ur en kassa på några hundra), ett feltryck ska inte låsa året, och tvåstegsmodellen
+ * förstärker A-1-likvärdigheten (inget händer förrän spelaren aktivt bekräftar).
+ * Nyckel = nodeId, samma format som BOARD_MEETING_EXPECTATION_LINE (M63).
+ */
+const VALET_CONFIRM_CTA: Record<string, string> = {
+  varmestuga: '[Opus]',
+  laktare_ostra: '[Opus]',
+  belysning: '[Opus]',
+  matchhall: '[Opus]',
+  kiosk: '[Opus]',
+  stralkastare: '[Opus]',
+  gym: '[Opus]',
+  traningshall: '[Opus]',
+  akademi_2: '[Opus]',
+  akademi_3: '[Opus]',
 }
 
 export interface ValetScene {
@@ -63,6 +87,8 @@ export interface ValetScene {
   /** Avstå-raden — att vänta är ett legitimt val, inte ett hopp över. */
   declineLabel: string
   declineNote: string
+  /** A-2: bekräfta-CTA:n för avstå-valet, samma tvåstegsmodell som korten. */
+  declineConfirmCta: string
   /** A-1 (Valet-scen-audit): knapp-likvärdighet — inget kort är förvalt. */
   noPresetNote: string
   /** Om inga val finns (allt byggt, eller bygge pågår) — scenen ska inte ens triggas, men text finns för säkerhets skull. */
@@ -109,6 +135,7 @@ export function getValetScene(game: SaveGame): ValetScene {
     consequenceParts: buildConsequenceParts(def),
     buildRounds: def.buildRounds,
     cost: def.cost,
+    confirmCta: VALET_CONFIRM_CTA[def.id] ?? '[Opus]',
   }))
 
   return {
@@ -119,6 +146,7 @@ export function getValetScene(game: SaveGame): ValetScene {
     cards,
     declineLabel: 'Vi väntar i år',
     declineNote: 'Inget bygge den här säsongen. Kassan får vila — och nästa år kan valet vara ett annat.',
+    declineConfirmCta: 'Vänta i år',
     noPresetNote: 'Inget val är förvalt.',
     emptyNote: 'Inget att bygga just nu — antingen står ett bygge redan på gång, eller så är det som går att bygga redan byggt.',
   }
