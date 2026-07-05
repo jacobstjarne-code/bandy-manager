@@ -26,16 +26,16 @@ export const SM_FINAL_VICTORY_TEMPLATES = {
     {
       quote:
         'Jag sa det till Birgitta i pausen, jag sa: det här är vår final. Den minns vi när vi är gamla. Och då hade vi inte ens kvitterat än.',
-      attribution: 'Birger Karlsson, klackledare',
+      attribution: 'Birger Karlsson, läktarveteran',
     },
     {
       quote: 'Förr i tiden sa man att det inte gick att slå storstaden. Sen kom du.',
-      attribution: 'Birger Karlsson, klackledare',
+      attribution: 'Birger Karlsson, läktarveteran',
     },
     {
       quote:
         'Jag har hängt på den där läktaren i 22 år. I dag fattar jag varför jag aldrig slutade.',
-      attribution: 'Birger Karlsson, klackledare',
+      attribution: 'Birger Karlsson, läktarveteran',
     },
   ] as BirgerQuote[],
 

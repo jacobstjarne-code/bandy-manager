@@ -29,19 +29,18 @@ function formatTkr(amount: number): string {
   return Math.round(amount / 1000).toString()
 }
 
-// M63 (textaudit 2026-07-04): ordförandens förväntansreplik var hårdkodad
-// ("Plats fem till åtta. Inget kvalspel.") oavsett styrelsens faktiska
-// boardExpectation — en WinLeague- eller AvoidBottom-styrelse fick samma
-// mittenambitiösa replik. Nivån exponeras nu; Fable skriver de fyra
-// ceremoniella varianterna (samma register som forvantningar-beatet,
-// inte den korta frasen i BOARD_EXPECTATION_TEXT/boardService.ts).
-// '[Opus]' är en medveten synlig platshållare tills dess (CLAUDE.md:
-// "SVENSK TEXT — CODE SKRIVER ALDRIG").
+// M63 (textaudit 2026-07-04, text klar 2026-07-05): ordförandens
+// förväntansreplik var hårdkodad ("Plats fem till åtta. Inget kvalspel.")
+// oavsett styrelsens faktiska boardExpectation — en WinLeague- eller
+// AvoidBottom-styrelse fick samma mittenambitiösa replik. Nivån gated
+// nu mot fyra ceremoniella varianter (Fable, samma register som
+// forvantningar-beatet, inte den korta frasen i
+// BOARD_EXPECTATION_TEXT/boardService.ts).
 const BOARD_MEETING_EXPECTATION_LINE: Record<ClubExpectation, string> = {
-  [ClubExpectation.AvoidBottom]: '[Opus]',
-  [ClubExpectation.MidTable]: '[Opus]',
-  [ClubExpectation.ChallengeTop]: '[Opus]',
-  [ClubExpectation.WinLeague]: '[Opus]',
+  [ClubExpectation.AvoidBottom]: 'Håll oss ovanför strecket. Mer begär vi inte i år. Allt därutöver är bonus.',
+  [ClubExpectation.MidTable]: 'Plats fem till åtta. Inget kvalspel.',
+  [ClubExpectation.ChallengeTop]: 'Topp fyra. Och när slutspelet börjar ska ingen vilja möta oss.',
+  [ClubExpectation.WinLeague]: 'Guld. Det är sagt nu. Vi låtsas inte annat i år.',
 }
 
 export function getBoardMeetingBeats(game: SaveGame): BoardMeetingBeat[] {

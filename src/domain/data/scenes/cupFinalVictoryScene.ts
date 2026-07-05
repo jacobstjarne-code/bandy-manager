@@ -26,17 +26,17 @@ export const CUP_FINAL_VICTORY_TEMPLATES = {
     {
       quote:
         'Jag har sett kanske trettio cup-finaler i tv. Aldrig vår klubb i någon av dem. I dag är det vi.',
-      attribution: 'Birger Karlsson, klackledare',
+      attribution: 'Birger Karlsson, läktarveteran',
     },
     {
       quote:
         'Pokalen är liten. Men den passar i klubbhuset, och det är där den ska stå.',
-      attribution: 'Birger Karlsson, klackledare',
+      attribution: 'Birger Karlsson, läktarveteran',
     },
     {
       quote:
         'Jag sa till Birgitta att vi vunnit. Hon frågade om det var SM. Jag sa nej. Hon frågade om jag var glad ändå. Det var jag.',
-      attribution: 'Birger Karlsson, klackledare',
+      attribution: 'Birger Karlsson, läktarveteran',
     },
   ] as BirgerQuote[],
 

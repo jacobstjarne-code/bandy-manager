@@ -17,7 +17,10 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     buildRounds: 8,
     requires: [],
     facilitiesBonus: 5,
-    capacityBonus: 1000,
+    // M62 (2026-07-05, Jacob-delegerat beslut): 1000 → 100. En värmestuga är
+    // komfort/retention, inte ny åskådarkapacitet — 1000 hade nästan tredubblat
+    // en snittarena (bas 200–700) före den faktiska läktarutbyggnaden (+400).
+    capacityBonus: 100,
     financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
     consequences: [
       { dim: 'publik', dir: 'upp', label: 'Folk stannar längre' },

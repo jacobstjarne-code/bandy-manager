@@ -20,7 +20,7 @@ export const STURE_PER_CLUB: Record<string, string> = {
   'club_forsbacka': 'Storstadsklubbarna räknar inte med oss. Inte förrän isen ligger…',
 
   // Söderfors — ankarsmedjan på ö i Dalälven, vägen går alltid över bro
-  'club_soderfors': 'Halva ön bor över bron. Dom kommer alltid ändå.',
+  'club_soderfors': 'Halva publiken bor över bron. Dom kommer alltid ändå.',
 
   // Västanfors — landets äldsta konstfrusna landbana (1935), Bergslagen
   'club_vastanfors': 'Banan har varit konstfrusen sedan trettiofem. Dom flesta lag i serien fanns inte ens då.',
@@ -29,16 +29,16 @@ export const STURE_PER_CLUB: Record<string, string> = {
   'club_karlsborg': 'Solen är inte uppe när vi öppnar grindarna. Det är inget problem för oss.',
 
   // Målilla — småländska höglandet, extrema temperaturer, termometern på torget
-  'club_malilla': 'Termometern på torget visade minus arton i natt. Folk kommer ändå.',
+  'club_malilla': 'Snart visar termometern på torget minus arton. Folk kommer ändå.',
 
   // Gagnef — Dalabygd där älvarna möts, skidor och skridskor delar bygden
-  'club_gagnef': 'Skidföret är bra i år. Det märks på läktaren.',
+  'club_gagnef': 'Blir skidföret bra i vinter märks det på läktaren.',
 
   // Hälleforsnäs — sörmländsk bruksort, järnbruket borta
   'club_halleforsnas': 'Järnbruket är borta. Bandyn är kvar.',
 
   // Lesjöfors — Värmlands köldhål, fjäderfabriken, fostrat storspelare
-  'club_lesjofors': 'Det blir tjugotvå minus i natt. Andra lag fryser fast då. Vi vaknar.',
+  'club_lesjofors': 'I januari är det tjugotvå minus här. Andra lag fryser fast då. Vi vaknar.',
 
   // Rögle — sydligast i bandysverige, hockeylandskap, salt havsluft
   'club_rogle': 'Hockeyfolket skrattar fortfarande. Det är okej.',
