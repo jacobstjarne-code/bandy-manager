@@ -8,6 +8,7 @@
 
 import type { SaveGame } from '../../entities/SaveGame'
 import type { BoardMember } from '../../entities/Club'
+import { ClubExpectation } from '../../enums'
 
 export interface BoardMeetingBeat {
   id: string
@@ -26,6 +27,21 @@ function expiringContractsCount(squadPlayerIds: string[], players: SaveGame['pla
 
 function formatTkr(amount: number): string {
   return Math.round(amount / 1000).toString()
+}
+
+// M63 (textaudit 2026-07-04): ordförandens förväntansreplik var hårdkodad
+// ("Plats fem till åtta. Inget kvalspel.") oavsett styrelsens faktiska
+// boardExpectation — en WinLeague- eller AvoidBottom-styrelse fick samma
+// mittenambitiösa replik. Nivån exponeras nu; Fable skriver de fyra
+// ceremoniella varianterna (samma register som forvantningar-beatet,
+// inte den korta frasen i BOARD_EXPECTATION_TEXT/boardService.ts).
+// '[Opus]' är en medveten synlig platshållare tills dess (CLAUDE.md:
+// "SVENSK TEXT — CODE SKRIVER ALDRIG").
+const BOARD_MEETING_EXPECTATION_LINE: Record<ClubExpectation, string> = {
+  [ClubExpectation.AvoidBottom]: '[Opus]',
+  [ClubExpectation.MidTable]: '[Opus]',
+  [ClubExpectation.ChallengeTop]: '[Opus]',
+  [ClubExpectation.WinLeague]: '[Opus]',
 }
 
 export function getBoardMeetingBeats(game: SaveGame): BoardMeetingBeat[] {
@@ -73,7 +89,7 @@ Mer har vi inte."`,
     {
       id: 'forvantningar',
       speaker: chairman,
-      body: `"Plats fem till åtta. Inget kvalspel.
+      body: `"${BOARD_MEETING_EXPECTATION_LINE[club.boardExpectation] ?? '[Opus]'}
 
 Och håll bygden med oss. Tomma läktare är dåligt för bandyn och dåligt för budgeten."`,
       cta: 'Det går bra',
