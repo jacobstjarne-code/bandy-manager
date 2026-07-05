@@ -1,3 +1,13 @@
+// M61 (textaudit 2026-07-04, VIKTIG-flaggad): HALL_NEWS_POSITIVE/NEGATIVE
+// och HALL_NEWS_OUTDOOR_PRIDE nedan, samt BOARD_HALL_QUOTES längre ner, har
+// NOLL konsumenter i src/ — hela {hallclub}-nyhetspoolen är onåbar. Ärendets
+// kärnoro (spelets tolv Elitserieklubbar är utomhusklubbar — substitueras
+// {hallclub} med en serieklubb ljuger hela poolen) är därför moot: ingen
+// anropare substituerar {hallclub}/{paper}/{opponent}/{club} någonstans.
+// Enda live-exporten i filen är HALL_DEBATE_EVENTS (konsumerad av
+// hallDebateService.ts, som korrekt substituerar {politiker}).
+// Opus/Jacob-beslut: väv in nyhetspoolen (kräver en omvärldsklubb-källa,
+// samma mönster som rumorService.ts) eller ta bort de tre döda exporterna.
 export const HALL_NEWS_POSITIVE = [
   '{hallclub} rapporterar perfekt is till kvällens match. Inga problem med väder.',
   '{hallclub}s ungdomslag tränar fem dagar i veckan — året runt. Utan hall hade det inte gått.',
