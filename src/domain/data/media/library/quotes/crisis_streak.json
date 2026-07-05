@@ -18,14 +18,14 @@
     "type": "quote",
     "tags": ["crisis_streak"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Tre raka. Det märks i tabellen."
+    "body": "Det märks i tabellen. Vi ser det lika bra som ni."
   },
   {
     "id": "quote_crisis_streak_004",
     "type": "quote",
     "tags": ["crisis_streak"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Det var som Bengt sa i kafferummet: vi behöver bara vinna en match."
+    "body": "Det var som Sixten sa i kafferummet: vi behöver bara vinna en match."
   },
   {
     "id": "quote_crisis_streak_005",

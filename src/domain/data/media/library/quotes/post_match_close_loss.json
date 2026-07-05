@@ -32,14 +32,14 @@
     "type": "quote",
     "tags": ["post_match_close_loss"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Ledningen försvann i slutet."
+    "body": "Sånt här avgörs på en boll. Idag var den deras."
   },
   {
     "id": "quote_post_close_loss_006",
     "type": "quote",
     "tags": ["post_match_close_loss"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Vi sköt mer. De satte sina."
+    "body": "De var kliniska med sina lägen. Vi var det inte."
   },
   {
     "id": "quote_post_close_loss_007",
@@ -60,7 +60,7 @@
     "type": "quote",
     "tags": ["post_match_close_loss"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Vi tappade på en hörna i slutet. Det blev dyrbart."
+    "body": "En boll fel väg. Det blev dyrbart."
   },
   {
     "id": "quote_post_close_loss_010",

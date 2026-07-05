@@ -17,7 +17,7 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
         body: `Säsongen närmar sig, men först bandyårets första delikatess. Svenska cupen är inte den finaste pokalen, men den är den första.<br><br>Isen är sällan vad den ska vara, spelarna är ännu inte i form, och formationen sitter inte. Just därför är det något särskilt. Här syns vem som hängt med under sommaren och vem som kommit tillbaka för tidigt.<br><br>Bandyårets första riktiga avläsning.`,
       },
       {
-        body: `Cupen är på väg. Inte ligan, inte slutspelet — men det första. Det är något särskilt med första matcherna i oktober.<br><br>Lottningen finns där. Resultatet finns inte än. Just nu vet ingen mer än alla andra. Det kommer att ändras snart.<br><br>Bandyåret börjar nu.`,
+        body: `Cupen är på väg. Inte serien, inte slutspelet — men det första. Det är något särskilt med första matcherna i oktober.<br><br>Lottningen finns där. Resultatet finns inte än. Just nu vet ingen mer än alla andra. Det kommer att ändras snart.<br><br>Bandyåret börjar nu.`,
       },
       {
         body: `Oktober. Lottningen är gjord och planerna är spolade. Det är fortfarande sommarljus i minnet, men inte här — här är det vinterns början som närmar sig.<br><br>Cupen är cupen. Den brukar inte avgöra något viktigt. Men den brukar avgöra mycket om vad som komma ska.<br><br>Vi får se.`,
@@ -29,7 +29,7 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
     chapter: '⬩ Cupen börjar ⬩',
     variants: [
       {
-        body: `<em>"Lottningen kunde varit värre."</em><br><br>Replik från klubbhuset. Ingen vet vem som sa det först.<br><br>{vsLabel} {motståndare}. Förstarundan brukar avgöras tidigt. Eller inte.<br><br>Vinst ger kvartsfinal. Förlust ger en söndag mer att träna. Ingen kommer minnas matchen — utom om ni förlorar.`,
+        body: `<em>"Lottningen kunde varit värre."</em><br><br>Replik från klubbhuset. Ingen vet vem som sa det först.<br><br>{vsLabel} {motståndare}. Cupbandy brukar avgöras tidigt. Eller inte.<br><br>Vinst ger en runda till. Förlust ger en söndag mer att träna. Ingen kommer minnas matchen — utom om ni förlorar.`,
       },
     ],
   },
@@ -73,13 +73,13 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
     chapter: '⬩ Pokalen ⬩',
     variants: [
       {
-        body: `Cupen är spelad. Pokalen står på en byrå någonstans.<br><br>Nu vidtar det som är längre, jämnare, och i längden viktigare. Ligan börjar nästa helg.<br><br>Det är dags att gå in i den med det man har lärt sig — och med vetskapen om att cupen, hur fin den än var, ändå bara är cupen.`,
+        body: `Cupen är spelad. Pokalen står på en byrå någonstans.<br><br>Nu vidtar det som är längre, jämnare, och i längden viktigare. Serien börjar nästa helg.<br><br>Det är dags att gå in i den med det man har lärt sig — och med vetskapen om att cupen, hur fin den än var, ändå bara är cupen.`,
       },
       {
-        body: `Vår cup är slut. Tre matcher om vi var med långt, en om det inte gick.<br><br>Det är så cupen är. Den prövar lag innan ligan tar vid. Vad lärde vi oss? Mer än vi tror, mindre än vi ville.<br><br>Ligan väntar. Det är där det avgörs.`,
+        body: `Vår cup är slut. Några matcher blev det, fler blev det inte.<br><br>Det är så cupen är. Den prövar lag innan serien tar vid. Vad lärde vi oss? Mer än vi tror, mindre än vi ville.<br><br>Serien väntar. Det är där det avgörs.`,
       },
       {
-        body: `Cupen är avgjord. Spelarna kommer tillbaka till tisdagsträningarna. Magnus jobbar med dem som behöver formjustering. Resten är som vanligt.<br><br>Pokalen är någon annans. Det blev vad det blev.<br><br>Nu ligan. Då har vi 22 omgångar att visa vad vi gör med en hel säsong.`,
+        body: `Cupen är avgjord. Spelarna kommer tillbaka till tisdagsträningarna. Assisterande tränaren tar hand om dem som behöver formjustering. Resten är som vanligt.<br><br>Pokalen är någon annans. Det blev vad det blev.<br><br>Nu serien. Då har vi 22 omgångar att visa vad vi gör med en hel säsong.`,
       },
     ],
   },
@@ -87,13 +87,13 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
     chapter: '⬩ Pokalen ⬩',
     variants: [
       {
-        body: `<strong>Pokalen är vår.</strong><br><br>Den är inte den finaste pokalen i bandy. Men den är den första vi vunnit på länge — och det väger.<br><br>Ligan börjar nästa helg. Vi går in i den med pokalen i ena handen och en målbild i den andra.`,
+        body: `<strong>Pokalen är vår.</strong><br><br>Den är inte den finaste pokalen i bandy. Men den är årets första, och den är vår — det väger.<br><br>Serien börjar nästa helg. Vi går in i den med pokalen i ena handen och en målbild i den andra.`,
       },
       {
-        body: `<strong>Vi vann cupen.</strong><br><br>Det är inte SM. Men det är årets första pokal som delats ut i svensk bandy, och det var vi som tog den. Förra säsongen tog vi oss inte till finalen. Året innan inte ens till semin.<br><br>Sen är det ligan. Den är något annat. Men i dag är pokalen vår.`,
+        body: `<strong>Vi vann cupen.</strong><br><br>Det är inte SM. Men det är årets första pokal som delats ut i svensk bandy, och det var vi som tog den.<br><br>Sen är det serien. Den är något annat. Men i dag är pokalen vår.`,
       },
       {
-        body: `<strong>Pokalen är på byrån i klubbhuset nu.</strong> Lite blank. Lite lätt.<br><br>Det var inte säsongens viktigaste match. Men ingen sa något om det när Bengt höjde den.<br><br>Ligan börjar nästa helg. Det här minns vi.`,
+        body: `<strong>Pokalen är på byrån i klubbhuset nu.</strong> Lite blank. Lite lätt.<br><br>Det var inte säsongens viktigaste match. Men ingen sa något om det när kaptenen höjde den.<br><br>Serien börjar nästa helg. Det här minns vi.`,
       },
     ],
   },

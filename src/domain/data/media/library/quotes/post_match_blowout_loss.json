@@ -18,7 +18,7 @@
     "type": "quote",
     "tags": ["post_match_blowout_loss"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Det här tar vi inte med oss. Onsdag tränar vi."
+    "body": "Det här tar vi inte med oss. Nästa träning börjar om."
   },
   {
     "id": "quote_post_blowout_loss_004",
@@ -39,14 +39,14 @@
     "type": "quote",
     "tags": ["post_match_blowout_loss"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Bussresan blir lång. Vi får jobba in det vi tappade."
+    "body": "Tyst omklädningsrum. Vi får jobba in det vi tappade."
   },
   {
     "id": "quote_post_blowout_loss_007",
     "type": "quote",
     "tags": ["post_match_blowout_loss"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Tre mål mer än vi orkade med. Det är ingen match att prata om."
+    "body": "Det var för många mål fel väg. Ingen match att prata om."
   },
   {
     "id": "quote_post_blowout_loss_008",
