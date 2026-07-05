@@ -22,7 +22,7 @@ Beställare: Fable-genomgång 2026-07. Utförare: Code. Fable skriver findings f
 
 ## A2. Powerplay-konvertering (prioritet 2)
 
-**OBS (tillägg 2026-07):** `src/data/findings.yaml` listar Finding 059 ("Power play: överläget höjer måltempot 40 %") och 058 ("Straffen i bandy: 65 % i mål"), daterade 10 juni, men inga finding-sidor eller analys-outputs hittas i `docs/`. Innan A2 körs: lokalisera underlaget för 057–059. Om analysen redan är gjord — verifiera och återanvänd; kör inte om i onödan. Om bara rubrikerna finns — A2 nedan är spec:en, och outputen ska då persisteras till `docs/data/` denna gång.
+**OBS — LÖST 2026-07-05 (underlag hittat + persisterat):** Underlaget för findings 057–059 fanns som körbart script (`scripts/analyze_foul_penalty.py`), inte som `docs/data`-artefakt — därför gav den tidigare `docs/`-sökningen noll. Analyserna kördes den här sessionen (5 juli, inte 10 juni; "10 juni" var ett felaktigt visningsdatum, nu rättat till körningsdatum i yaml + sidor). Scriptet är nu utökat att persistera: `docs/data/foul_penalty_powerplay.json` + `docs/data/ANALYS_FOUL_PENALTY_POWERPLAY.md` (commit `3de25e7a`). Alla siffror verifierade mot sidornas påståenden. **A2 nedan är INTE en omkörning av 057–059** — den är den rigorösa extensionen (PP-konvertering per duration 5/10, reform 25/26 pre/post, shorthanded-mål) som snabb-scriptet inte beräknar. Kör A2 som ny, självständig analys.
 
 **Fråga:** Vad ger en utvisning i mål, och ändrade reformen 25/26 detta?
 
