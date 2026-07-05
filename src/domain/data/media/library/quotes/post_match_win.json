@@ -32,7 +32,7 @@
     "type": "quote",
     "tags": ["post_match_win"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Bra hörnor avgjorde, det märks att vi övat."
+    "body": "Det vi övat på i veckan syntes därute."
   },
   {
     "id": "quote_post_win_006",
@@ -67,7 +67,7 @@
     "type": "quote",
     "tags": ["post_match_win"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Försvaret stod där det skulle. Vi släppte in noll."
+    "body": "Försvaret stod där det skulle stå."
   },
   {
     "id": "quote_post_win_011",
@@ -95,7 +95,7 @@
     "type": "quote",
     "tags": ["post_match_win"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Hemmaplan, hemmavinst. Det ska sitta så."
+    "body": "Vinst är vinst. Det ska sitta så."
   },
   {
     "id": "quote_post_win_015",
@@ -116,7 +116,7 @@
     "type": "quote",
     "tags": ["post_match_win"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Andra halvlek var bättre, första räckte ändå."
+    "body": "Det fanns mer att ge. Skönt att det inte behövdes."
   },
   {
     "id": "quote_post_win_018",
@@ -130,7 +130,7 @@
     "type": "quote",
     "tags": ["post_match_win"],
     "attribution": { "name": "{coachName}", "role": "Coach" },
-    "body": "Bengt log lite när han kom av isen. Det räcker."
+    "body": "Äldste i laget log när han kom av isen. Det räcker."
   },
   {
     "id": "quote_post_win_020",
