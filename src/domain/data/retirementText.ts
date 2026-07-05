@@ -71,6 +71,12 @@ export const RETIREMENT_RESPONSES: Record<string, string[]> = {
   ],
 }
 
+// M60 (textaudit 2026-07-04): FAREWELL_MATCH_STRINGS (och de två "legacy"-
+// arrayerna nedan) har NOLL konsumenter någonstans i src/ — hela
+// avskedsmatch-atmosfärtexten är onåbar, inte bara ett token-
+// substitutionsfynd som ärendet antog. Ingen scen/service läser dem.
+// Opus/Jacob-beslut: väv in i en avskedsmatch-scen/kafferum, eller ta bort.
+
 // Avskedsmatch atmosphere/klack-strängar
 export const FAREWELL_MATCH_STRINGS = [
   '"{player} spelar sin sista match. {members} i klacken har förberett sig."',
