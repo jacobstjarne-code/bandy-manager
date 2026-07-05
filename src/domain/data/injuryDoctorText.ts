@@ -6,6 +6,17 @@
 // tar det lugnt, sex om vi inte gör det". Råd, inte order. Bryr sig, men torrt.
 //
 // {spelare} interpoleras av Code (oftast efternamn). {veckor}/{omg} likaså där det finns.
+//
+// M9 (textaudit, verifierad 2026-07-05): HELA FILEN ÄR DÖD KOD — noll
+// konsumenter någonstans i src/ (samtliga sju exports: DOCTOR_NAMES,
+// DOCTOR_STYLES, DIAGNOSIS_LINES, REHAB_STAGE_LINES, PLAY_THROUGH_AFTERMATH,
+// DOCTOR_SECONDARY_LINES, LONGTERM_ARC_LINES). Ärendets ursprungliga oro
+// ("andra halvlek"-raden i DIAGNOSIS_LINES.mild ska bara visas för match-
+// skador, inte träningsskador) är därför moot — ingen scen/service läser
+// filen, så ingen gating kan vara trasig. Samma klass som M60/M61/M42/M48.
+// Opus/Jacob-beslut: väv in i skade-flödet (finns redan en Injury-entitet
+// med severity/stage som matchar denna fils typer nästan exakt) eller ta
+// bort filen.
 
 export type DoctorStyle = 'torr' | 'varm' | 'rakt_pa'
 
