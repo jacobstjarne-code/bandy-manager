@@ -1,0 +1,293 @@
+# Bandy Brain — findings-index (enda sanningskälla).
+# Fält: num, title, date, status (active|superseded|corrected), superseded_by, excerpt.
+# Renderas av src/data/findings.ts → findings/index.astro + pages/index.astro.
+# Lägg nya findings här; sidorna genereras.
+
+- num: '056'
+  title: 'Dam och herr: samma sport, skild struktur'
+  date: '5 juni 2026'
+  status: active
+  excerpt: >-
+    Mål/match, hemmavinst och utvisningsnivå är nästan identiska mellan serierna.
+    Men damserien har nästan ingen hemmaplansfördel, färre oavgjorda och
+    ledningar som håller — tre skillnader som troligen är samma sak: ett bredare
+    styrkespann. Hörnberoendet är lägre och står separat.
+
+- num: '055'
+  title: 'Reformens mekanism: lätta utvisningar, inte grova'
+  date: '3 juni 2026'
+  status: active
+
+- num: '054'
+  title: 'Spelstil eller kvalitet? En klusteranalys i två omgångar'
+  date: '3 juni 2026'
+  status: active
+
+- num: '053'
+  title: 'Temperaturkartan: vilka matchups hettar upp Elitserien?'
+  date: '3 juni 2026'
+  status: active
+
+- num: '052'
+  title: 'Säsong 25/26: utvisningsfrekvensen steg 16 % — reformen syns i datan'
+  date: '1 juni 2026'
+  status: active
+
+- num: '051'
+  title: 'Comeback-fönstret: sex minuter tidigt i andra halvlek'
+  date: '31 maj 2026'
+  status: active
+
+- num: '050'
+  title: 'Takhöjning till 17 (motor v1.2.0): takeffekt löst, hemmafördel exponeras'
+  date: '26 april 2026'
+  status: active
+
+- num: '049'
+  title: 'canScore-grindar parametriserade inför takhöjning'
+  date: '26 april 2026'
+  status: active
+
+- num: '048'
+  title: 'Penalty-prob-fix: straffmålsandel 3,6 → 5,4 % (motor v1.1.0)'
+  date: '26 april 2026'
+  status: active
+
+- num: '047'
+  title: 'Motorkalibrering mot Elitserien: sex mätvärden nära, tre med gap'
+  date: '26 april 2026'
+  status: active
+
+- num: '046'
+  title: 'Hörnmålsandelen faller stadigt mot final'
+  date: '26 april 2026'
+  status: active
+
+- num: '045'
+  title: 'VSK och Vetlanda nära ligasnittet i hörnakonvertering'
+  date: '25 april 2026'
+  status: active
+
+- num: '044'
+  title: 'Bortalag gör fler mål på hörnor'
+  date: '25 april 2026'
+  status: active
+
+- num: '043'
+  title: 'Tidiga 2H-comeback: lag och spelarstilar'
+  date: '25 april 2026'
+  status: superseded
+  superseded_by: '051'
+
+- num: '042'
+  title: 'Comeback-andelen 96–100 min avviker från slumpen'
+  date: '25 april 2026'
+  status: superseded
+  superseded_by: '051'
+
+- num: '041'
+  title: 'Comebacks sker tidigare än övriga reduceringar'
+  date: '25 april 2026'
+  status: superseded
+  superseded_by: '051'
+
+- num: '040'
+  title: 'Hemmafördel håller — men bortaledningar är stabila'
+  date: '25 april 2026'
+  status: active
+
+- num: '039'
+  title: 'Hemmafördelen håller bättre vid halvtidsledning'
+  date: '25 april 2026'
+  status: active
+
+- num: '038'
+  title: 'Större halvtidsledning ger markant högre vinstchans'
+  date: '25 april 2026'
+  status: active
+
+- num: '037'
+  title: 'Vändningar sällsynta efter 1–0 i halvtid'
+  date: '25 april 2026'
+  status: active
+
+- num: '036'
+  title: 'Hemmaledning håller oftare än bortaledning'
+  date: '25 april 2026'
+  status: active
+
+- num: '035'
+  title: 'Hörnkonvertering skiljer knappt mellan hemma och borta'
+  date: '25 april 2026'
+  status: active
+
+- num: '034'
+  title: 'Bortalagets hörneffektivitet marginellt lägre'
+  date: '25 april 2026'
+  status: active
+
+- num: '033'
+  title: 'Hörnmål fördelas jämnt — bortaeffekt syns i konvertering'
+  date: '25 april 2026'
+  status: active
+
+- num: '032'
+  title: 'Målminutsfördelning per division: ingen data tillgänglig'
+  date: '25 april 2026'
+  status: active
+
+- num: '031'
+  title: 'Slutminutstopp: täta resultat eller serienivå?'
+  date: '25 april 2026'
+  status: active
+
+- num: '030'
+  title: 'Hörneffektivitet och matchläge: data saknas'
+  date: '25 april 2026'
+  status: active
+
+- num: '029'
+  title: 'Mållagens ursprung utanför hörnor i damserien'
+  date: '25 april 2026'
+  status: active
+
+- num: '028'
+  title: 'Hörneffektivitet damserie: data saknas'
+  date: '25 april 2026'
+  status: active
+
+- num: '027'
+  title: 'Data saknas för taktisk hörnanalys'
+  date: '25 april 2026'
+  status: active
+
+- num: '026'
+  title: 'Hemmafördel stärker halvtidsledningens prediktiva kraft'
+  date: '25 april 2026'
+  status: active
+
+- num: '025'
+  title: 'Halvtidsledning avgör mindre i semifinal'
+  date: '25 april 2026'
+  status: active
+
+- num: '024'
+  title: 'Vändningar sker i 16 % av matcher'
+  date: '25 april 2026'
+  status: active
+
+- num: '023'
+  title: 'Damernas målfördelning saknar tillräcklig data'
+  date: '25 april 2026'
+  status: active
+
+- num: '022'
+  title: 'Hörnmål slås in lika ofta hemma som borta'
+  date: '25 april 2026'
+  status: active
+
+- num: '021'
+  title: 'Mellankategorin: måldistribution vid 2–3 måls marginal'
+  date: '25 april 2026'
+  status: active
+
+- num: '020'
+  title: 'Dammatchdata saknas för jämförelse'
+  date: '25 april 2026'
+  status: active
+
+- num: '019'
+  title: 'Målen klustrar tydligt i herrbandy'
+  date: '25 april 2026'
+  status: active
+
+- num: '018'
+  title: 'VSK och Nässjö: hörnamål jämfört'
+  date: '25 april 2026'
+  status: active
+
+- num: '017'
+  title: 'Comebacks startar tidigare i andra halvlek'
+  date: '25 april 2026'
+  status: superseded
+  superseded_by: '051'
+
+- num: '016'
+  title: 'Hemmaled vid halvtid vinner oftare'
+  date: '25 april 2026'
+  status: active
+
+- num: '015'
+  title: 'Större halvtidsledning ger dramatiskt högre vinst'
+  date: '25 april 2026'
+  status: active
+
+- num: '014'
+  title: 'Bortalagets hörnor konverteras lika ofta'
+  date: '25 april 2026'
+  status: active
+
+- num: '013'
+  title: 'Dam och herr visar likartad målminutsfördelning'
+  date: '25 april 2026'
+  status: active
+
+- num: '012'
+  title: 'Damserien omvandlar hörnor till mål mer sällan'
+  date: '25 april 2026'
+  status: active
+
+- num: '011'
+  title: 'Halvledning förutsäger seger — men olika starkt'
+  date: '25 april 2026'
+  status: active
+
+- num: '010'
+  title: 'Hörnmål toppar mitten, öppet spel slutet'
+  date: '25 april 2026'
+  status: active
+
+- num: '009'
+  title: 'Mål faller tidigare i jämna matcher'
+  date: '25 april 2026'
+  status: active
+
+- num: '008'
+  title: 'Klustret 40–50 är jämnt fördelat'
+  date: '25 april 2026'
+  status: corrected
+
+- num: '007'
+  title: 'Dam vs herr: lika mål, men olika dynamik'
+  date: '25 april 2026'
+  status: active
+
+- num: '006'
+  title: 'Slutspelet: färre mål, starkare ledningar'
+  date: '25 april 2026'
+  status: active
+
+- num: '005'
+  title: 'Mål faller inte jämnt'
+  date: '25 april 2026'
+  status: active
+
+- num: '004'
+  title: 'Bandy och mål'
+  date: '25 april 2026'
+  status: active
+
+- num: '003'
+  title: 'Hemmafördelen i bandy'
+  date: '25 april 2026'
+  status: active
+
+- num: '002'
+  title: 'Hörnornas värde i bandy'
+  date: '25 april 2026'
+  status: active
+
+- num: '001'
+  title: 'Halvtidsledning i bandy'
+  date: '25 april 2026'
+  status: active

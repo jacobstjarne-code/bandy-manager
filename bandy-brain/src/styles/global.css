@@ -260,6 +260,27 @@ a:hover {
   letter-spacing: 0.08em;
 }
 
+.finding-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
+.finding-badge--superseded {
+  background: rgba(192, 138, 46, 0.15);
+  color: #c08a2e;
+}
+
+.finding-badge--corrected {
+  background: rgba(192, 138, 46, 0.15);
+  color: #c08a2e;
+}
+
 .finding-card__title {
   font-size: 1.3rem;
   font-weight: normal;
