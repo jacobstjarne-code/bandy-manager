@@ -73,15 +73,21 @@ function generatePatron(
   }
 }
 
-// M33 (textaudit 2026-07-03): V/MP/SD finns i POLITICIAN_PROFILES men saknar
-// vikt här — faller till den likformiga default-poolen nedan. Vilka agendor
-// de partierna ska vägas mot är en smakfråga för Jacob/Fable, inte en Code-gissning.
+// M33 (textaudit 2026-07-03, profilering klar 2026-07-05): V/MP/SD fanns i
+// POLITICIAN_PROFILES men saknade vikt här — föll till den likformiga
+// default-poolen. Jacobs beslut: V → inclusion (tyngst) + infrastructure,
+// MP → infrastructure + inclusion, SD → prestige + savings. Samma vikter
+// som PARTY_AGENDA_WEIGHTS i politicianService.ts (duplicerad struktur,
+// se den filens kommentar om de två separata generatorerna).
 const PARTY_AGENDA_WEIGHTS_CNG: Record<string, Array<'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'>> = {
   S:      ['youth', 'inclusion', 'youth', 'inclusion'],
   M:      ['savings', 'prestige', 'savings', 'prestige'],
   C:      ['youth', 'infrastructure', 'youth'],
   L:      ['infrastructure', 'prestige'],
   KD:     ['youth', 'inclusion'],
+  V:      ['inclusion', 'infrastructure', 'inclusion'],
+  MP:     ['infrastructure', 'inclusion'],
+  SD:     ['prestige', 'savings'],
   lokalt: ['youth', 'inclusion', 'prestige', 'savings', 'infrastructure'],
 }
 
