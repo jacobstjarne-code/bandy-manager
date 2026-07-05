@@ -1,0 +1,115 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '060');
+---
+
+<Base
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
+  description="En empirisk win probability-modell över 1 124 Elitseriematcher: en tvåmålsledning är inte 95-procentigt säker förrän minut 84 i herrserien — i damserien redan minut 31. Bandy är en comeback-sport, men bara på herrsidan."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
+    <h1 class="finding-title">När dör en bandymatch?<br>Tvåmålsledningen är säker först i minut 84</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">Minut 84</span>
+        <span class="key-number__label">Först då är +2 ≥ 95 % säker (herr)</span>
+        <span class="key-number__note">En tvåmålsledning lever i 83 minuter</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">Aldrig</span>
+        <span class="key-number__label">+1 når inte 95 % före minut 90</span>
+        <span class="key-number__note">En uddamålsledning är öppen match hela vägen</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">Minut 31</span>
+        <span class="key-number__label">Samma tröskel i damserien</span>
+        <span class="key-number__note">Dam-matcher avgörs 53 minuter tidigare</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">61 %</span>
+        <span class="key-number__label">Vinstchans vid +1 i halvtid</span>
+        <span class="key-number__note">De berömda 78 % bärs av flermålsledningarna</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Varje matchögonblick har en ställning och en klocka. Tillsammans borde de räcka för att svara på sportens mest grundläggande lägesfråga: hur sannolikt är det att laget som leder faktiskt vinner? Och följdfrågan som varje publik känner i kroppen — när är matchen avgjord på riktigt?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Ur målsekvenserna i Bandygrytan byggs en tillståndslinje per match: för varje matchminut 1–90 och målskillnad (hemma−borta, trunkerad till ±3) mäts den empiriska utfallsfördelningen — hemmavinst, oavgjort, bortavinst. Underlaget är 1 124 herrmatchar och 376 dammatchar i grundserien 2019–2026 (exkl. 2023–24). Celler med minst 30 observationer räknas som pålitliga; för herr är 585 av 620 celler pålitliga, för dam 447 av 621.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      <p><strong>Bandymatchen dör sent.</strong> Definiera "död" som första minut där utfallet är minst 95 % säkert. I herrserien är en trémålsledning död vid minut 30 — men en tvåmålsledning håller sig levande ända till minut 84, och en uddamålsledning når aldrig tröskeln före slutsignalen. Herrbandy är, mätt så här, en sport där nästan varje match med mindre än tre måls marginal är öppen på riktigt.</p>
+      <table>
+        <thead><tr><th>Målskillnad</th><th>Herr — död vid</th><th>Dam — död vid</th></tr></thead>
+        <tbody>
+          <tr><td>+3</td><td>minut 30</td><td>minut 19</td></tr>
+          <tr><td>+2</td><td>minut 84</td><td>minut 31</td></tr>
+          <tr><td>+1</td><td>aldrig före 90</td><td>aldrig före 90</td></tr>
+          <tr><td>−1</td><td>aldrig före 90</td><td>aldrig före 90</td></tr>
+          <tr><td>−2</td><td>minut 84</td><td>minut 52</td></tr>
+          <tr><td>−3</td><td>minut 55</td><td>minut 18</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Damserien avgörs dramatiskt tidigare.</strong> Tvåmålsledningen som lever till minut 84 i herr är säker redan i minut 31 i dam — 53 minuter tidigare. Mönstret gäller hela tabellen. Halvtidstillstånden säger samma sak från ett annat håll: ett hemmalag som ligger under med ett mål i halvtid vinner 27 % av herrmatcherna men bara 7 % av dammatcherna.</p>
+      <p><strong>Hemmafördelen syns som comeback-förmåga.</strong> I herr är +3 (hemmalaget leder med tre) död vid minut 30, men −3 (bortalaget leder med tre) först vid minut 55. Ett hemmalag i brant underläge stör utfallet i 25 minuter längre än ett bortalag i samma sits — hemmafördelen är inte bara fler vinster, den är längre livslängd i förlorade lägen.</p>
+      <p><strong>Och 78-procentssiffran får sin dekomposition.</strong> Findings 001, 011 och 038 har etablerat att halvtidsledning ger ~78 % vinstchans i herrserien. Modellen reproducerar aggregatet (viktat ≈ 79 %) men visar vad det består av: +1 i halvtid ger 61 %, +2 ger 80 %, +3 ger 98 %. Den berömda halvtidsledningen är alltså ingen garanti alls när den är ett enda mål — genomsnittet bärs av flermålsledningarna.</p>
+      <table>
+        <thead><tr><th>Ställning vid min 45</th><th>P(hemmavinst) herr</th><th>n</th><th>P(hemmavinst) dam</th><th>n</th></tr></thead>
+        <tbody>
+          <tr><td>+3</td><td>98 %</td><td>191</td><td>100 %</td><td>90</td></tr>
+          <tr><td>+2</td><td>80 %</td><td>123</td><td>93 %</td><td>30</td></tr>
+          <tr><td>+1</td><td>61 %</td><td>209</td><td>62 %</td><td>55</td></tr>
+          <tr><td>0</td><td>40 %</td><td>226</td><td>44 %</td><td>45</td></tr>
+          <tr><td>−1</td><td>27 %</td><td>147</td><td>7 %</td><td>44</td></tr>
+          <tr><td>−2</td><td>17 %</td><td>95</td><td>11 %</td><td>37</td></tr>
+          <tr><td>−3</td><td>3 %</td><td>133</td><td>0 %</td><td>75</td></tr>
+        </tbody>
+      </table>
+      <p>En läsanvisning för jämna lägen: hemmalagets vinstchans vid oavgjort sjunker från 50 % i minut 1 till 18 % i minut 89. Det betyder inte att bortalaget gynnas av jämnt sent — det är oavgjort som utfall som växer och äter sannolikhetsmassa från båda vinstutfallen ju mindre tid som återstår.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Modellen sätter siffror på något bandypubliken vet i magen: herrbandy är en comeback-sport. Kombinationen högt måltempo och lång effektiv speltid gör att ledningar under tre mål aldrig är trygga — det är samma struktur som Finding 051 (comeback-fönstret tidigt i andra halvlek) och Finding 059 (utvisningen som sent målfönster) belyser från andra vinklar. En tränare som stänger matchen i minut 60 med +2 gör det 24 minuter innan datan säger att den är stängd.</p>
+      <p>Att damserien dör tidigare ansluter till Finding 056: dam och herr är samma sport med skild struktur. Ledningar är dödligare, underlägen mer definitiva — vilket i sin tur gör 056:s fynd om den frånvarande dam-hemmafördelen mer begripligt: den herr-mekanism som syns här som förlängd livslängd i underläge saknar motsvarighet på damsidan.</p>
+      <p>För Bandy Managers del är detta motorvalidering på systemnivå: motorns simulerade matcher ska reproducera den här ytan — inte bara måltotaler och minutfördelningar utan själva förloppsdynamiken. Och för matchupplevelsen är griden direkt användbar som live-vinstsannolikhet.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Grundserie endast. Slutspel har annan dramaturgi (bäst-av-serier, högre insats) och är inte inkluderat.</li>
+        <li>Empirisk grid utan utjämning eller regression — glesa celler är brusiga och är flaggade (n &lt; 30), inte utelämnade. Dam-griden är väsentligt glesare (376 matcher).</li>
+        <li>Tröskeln 95 % är ett val, inte en naturlag. Vid 90 % eller 99 % flyttar "dödsminuterna" på sig; riktningen och dam–herr-gapet består.</li>
+        <li>Minutfönstret 45–50 blandar tilläggstid i första halvlek med tidig andra halvlek i speltid. Det påverkar bucketing i det fönstret, inte tillståndslogiken.</li>
+        <li>2023–24 saknas i datasetet.</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>
