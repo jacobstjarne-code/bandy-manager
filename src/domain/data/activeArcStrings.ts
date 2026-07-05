@@ -1,17 +1,6 @@
-import type { ArcType, ActiveArc } from '../entities/Narrative'
+import type { ActiveArc } from '../entities/Narrative'
 
 export type ArcPlayer = { firstName: string; lastName: string }
-
-export const ARC_ICON: Record<ArcType, string> = {
-  hungrig_breakthrough: '🎯',
-  joker_redemption: '🃏',
-  veteran_farewell: '🎖️',
-  veteran_final_season: '🎖️',
-  ledare_crisis: '💪',
-  lokal_hero: '🏠',
-  contract_drama: '📋',
-  derby_echo: '',
-}
 
 export function getArcHeadline(arc: ActiveArc, player?: ArcPlayer): string {
   const initial = player ? `${player.firstName[0]}. ${player.lastName}` : arc.subject ?? '?'

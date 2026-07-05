@@ -722,7 +722,7 @@ export function generatePressConference(
   choices.push({
     id: 'refuse_press',
     label: 'Vägra presskonferens',
-    subtitle: '😤 -3 moral · journalisten irriterad',
+    subtitle: '-3 moral · journalisten irriterad',
     effect: {
       type: 'pressResponse' as const,
       value: -3,
@@ -733,7 +733,7 @@ export function generatePressConference(
   return {
     id: `event_press_r${fixture.roundNumber ?? 0}_${game.currentSeason}`,
     type: 'pressConference' as const,
-    title: `🎤 Presskonferens — ${displayJournalist}`,
+    title: `Presskonferens — ${displayJournalist}`,
     body: `"${question.text}"`,
     choices,
     resolved: false,

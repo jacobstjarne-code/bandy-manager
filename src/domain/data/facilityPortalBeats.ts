@@ -36,35 +36,12 @@
  * WIRAT 2026-06-20: båda beroendena uppfyllda. (1) lastCompleted sätts i
  * advanceFacilityState (facilityService.ts). (2) PortalBeat.tsx bär route/kicker/›.
  * Beatet 'facility_completed' lever i PORTAL_BEATS (portalBeats.ts) med övergångstrigger
- * (lastCompleted.matchday === currentMatchday). buildFacilityCompletedBeat nedan är SUPERSEDED
- * — portalBeats.ts inlinear text-uppslaget (FACILITY_COMPLETED_BEATS/FALLBACK); funktionen är
- * död kod och kan tas bort av Code (verifiera ingen importör + typecheck).
+ * (lastCompleted.matchday === currentMatchday). portalBeats.ts inlinear text-uppslaget
+ * (FACILITY_COMPLETED_BEATS/FALLBACK) direkt — den superseded `buildFacilityCompletedBeat`
+ * (och dess platshållar-🏟️) togs bort 2026-07-06 (Emoji→Lucide-svepet, Överlämning 2),
+ * noll importörer verifierat.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-
-import type { SaveGame } from '../entities/SaveGame'
-import { FACILITY_NODE_DEFS } from './facilityNodes'
-
-export interface FacilityBeat {
-  id: string
-  /** Etikett-raden ("Bygget") — Design §04. Emoji hör till etiketten, ej textraden. */
-  kicker: string
-  emoji: string
-  /** EN mening. Klubbliv, ingen data. */
-  text: string
-  /** Route beatet pekar in i (Bygget-fliken). */
-  route: string
-  /**
-   * Returnerar texten anpassad till vilken nod det gäller, eller null om beatet
-   * inte ska visas. Tar nodeId så meningen kan namnge bygget konkret.
-   * NOTE: triggern (när detta körs) hör till Code-wiringen — se filhuvudet.
-   */
-  resolve: (game: SaveGame, nodeId: string) => string | null
-}
-
-function nodeLabel(nodeId: string): string | null {
-  return FACILITY_NODE_DEFS.find(d => d.id === nodeId)?.label ?? null
-}
 
 /**
  * Ton-poolen. EN färdig mening per state-change-typ, plus nodspecifika varianter
@@ -111,21 +88,3 @@ export const HALL_PROCESS_BEATS: Record<string, string> = {
   kommun:      'Kommunen har tagit i frågan om hallen. Inget löfte — men en dörr på glänt.',
 }
 
-/**
- * Bygger det aktiva bygg-beatet. Anropas av Code-wiringen NÄR triggervillkoret är
- * uppfyllt (se filhuvudet — kräver lastCompleted-fältet). Returnerar färdig FacilityBeat
- * eller null.
- */
-export function buildFacilityCompletedBeat(_game: SaveGame, nodeId: string): FacilityBeat | null {
-  const label = nodeLabel(nodeId)
-  if (!label) return null
-  const text = FACILITY_COMPLETED_BEATS[nodeId] ?? FACILITY_COMPLETED_FALLBACK(label)
-  return {
-    id: `facility_completed_${nodeId}`,
-    kicker: 'Bygget',
-    emoji: '🏟️',  // platshållare — hör till emoji→Lucide-svepet (separat tråd)
-    text,
-    route: '/game/bygget',
-    resolve: () => text,
-  }
-}
