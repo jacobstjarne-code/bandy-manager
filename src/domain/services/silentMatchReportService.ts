@@ -21,8 +21,11 @@ export function generateSilentMatchReport(
   const goals = (fixture.events ?? []).filter(e => e.type === MatchEventType.Goal)
   const goalTexts = goals.slice(0, 3).map(e => {
     const min = e.minute ?? 0
-    const half = min <= 45 ? 'första' : 'andra'
-    return `mål i ${half} halvlek (${min}')`
+    // M57 (textaudit 2026-07-04): mål efter minut 90 (förlängningen, se
+    // matchCore.ts:1926 — OT-minuter löper 91-109) etiketterades "andra
+    // halvlek", men andra halvlek slutar vid 90.
+    const half = min <= 45 ? 'första halvlek' : min <= 90 ? 'andra halvlek' : 'förlängningen'
+    return `mål i ${half} (${min}')`
   })
 
   const result = managedScore > oppScore ? 'seger' : managedScore < oppScore ? 'förlust' : 'oavgjort'
