@@ -360,7 +360,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
             }}
             onClick={onContinue}
           >
-            TILL AVSPARK →
+            TILL AVSLAG →
           </button>
         </div>
       </div>

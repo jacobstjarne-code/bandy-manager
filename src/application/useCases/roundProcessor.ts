@@ -1730,7 +1730,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const mediaRubrikTexts: Record<string, { title: string; body: string }> = {
       B: {
         title: `${clubName} gör annandagen till en folkfest`,
-        body: 'Läktaren fylldes en timme före nedsläpp. Glögg, en klack som höll i hela matchen och fyrverkeri efter slutsignalen — annandagen blev dagen orten samlades kring laget. Lokaltidningen kallar det säsongens folkfest.',
+        body: 'Läktaren fylldes en timme före avslag. Glögg, en klack som höll i hela matchen och fyrverkeri efter slutsignalen — annandagen blev dagen orten samlades kring laget. Lokaltidningen kallar det säsongens folkfest.',
       },
       C: {
         title: `${clubName} öppnar portarna på annandagen`,

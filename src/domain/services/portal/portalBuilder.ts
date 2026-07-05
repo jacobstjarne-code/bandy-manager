@@ -117,7 +117,7 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
 
   // C1: endgame-kurering — gäller de avgörande matchfönstren (slutspel + slutspurt
   // omg ≥20). Smalare än fas 'endgame' (som är hela omg 12+); här handlar det om att
-  // när pucken är avgörande ska portalen vara EN sak. Säsong-2-start lämnas medvetet
+  // när utgången är avgörande ska portalen vara EN sak. Säsong-2-start lämnas medvetet
   // utanför (otydlig detektion, risk att gömma relevanta säsongsstart-kort) — flaggad.
   const isEndgameCuration = isPlayoff || currentLigaRound >= 20
   // C1 close-out: storySlot-släckningen gatas på LEVANDE INSATS (kvar i slutspelsrace /

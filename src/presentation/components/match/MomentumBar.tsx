@@ -7,7 +7,7 @@ import { BRYTPUNKT } from '../../../domain/data/matchLiveText'
  * Nålen = `homeInitiative` (motorns reella initiativ-andel, som redan väger in post-paus-
  * urgency, kvitterings-momentum och alla multiplikatorer). INTE skott-proxyn momentumDiff.
  * Därför är de tre tvingande beteendena ärliga *by construction*:
- *  - 2H-avspark: jagande lagets urgency höjer dess homeWeight → nålen glider dit.
+ *  - 2H-avslag: jagande lagets urgency höjer dess homeWeight → nålen glider dit.
  *  - Kvittering: motorn nollar inte → homeInitiative håller kvar → nålen stannar (ingen 50/50-reset).
  *  - Sent: bandet (volatilitet) vidgas ur lateFactor + matchProfile — inte ur tick-historik.
  * Brytpunkts-etiketterna (§4.1-copy) speglar aktiv motordynamik, inte dekoration.

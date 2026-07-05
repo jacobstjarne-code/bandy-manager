@@ -49,7 +49,7 @@ const singleScrim = (mode: 'band' | 'header', fadeTo: string) =>
 
 export function IllustrationPlaceholder({ name, style }: { name: string; style?: React.CSSProperties }) {
   // Scen-konst Del 2: fonden är avsiktlig, inte en trasig ruta. En kall is/strålkastar-
-  // antydan + svag rink-båge i scen-paletten, så tomrummet läser som "scenen är riggad,
+  // antydan + svag plan-båge i scen-paletten, så tomrummet läser som "scenen är riggad,
   // bilden kommer" — inte "något saknas". Dimensioner oförändrade (inget hoppar när
   // assetet landar). Token-only (color-mix mot --ice/--bg-portal-surface).
   return (

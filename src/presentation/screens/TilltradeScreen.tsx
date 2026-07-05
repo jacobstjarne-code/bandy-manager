@@ -144,7 +144,7 @@ export function TilltradeScreen() {
           {/* Genre + bars */}
           <div style={{ textAlign: 'center' }}>
             <div className="h-scene-genre">
-              {step === 1 ? '⬩  Tillträdet  ⬩' : '⬩  Klart för avspark  ⬩'}
+              {step === 1 ? '⬩  Tillträdet  ⬩' : '⬩  Klart för avslag  ⬩'}
             </div>
             <BeatBars step={step} size="lg" />
           </div>

@@ -368,7 +368,7 @@ function SmFinalLagpresentation({
           background: 'transparent', cursor: 'pointer',
         }}
       >
-        {scene?.ctaToKickoff ?? 'TILL AVSPARK →'}
+        {scene?.ctaToKickoff ?? 'TILL AVSLAG →'}
       </button>
     </div>
   )

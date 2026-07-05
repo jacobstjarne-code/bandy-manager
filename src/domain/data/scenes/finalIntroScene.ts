@@ -3,7 +3,7 @@
  *
  * Mock: docs/incoming/2026-06-11_design_smfinal_uppspel.html (typografiska scenen i sekvens:
  * portal-ref → uppspel m. final-illustration → komponerad lagpresentation). Ersätter det gamla
- * FinalIntroScreen-uppspelet (jätte-🏆, GoldConfetti före avspark, NÄSTA-pill, "Säsong {season}").
+ * FinalIntroScreen-uppspelet (jätte-🏆, GoldConfetti före avslag, NÄSTA-pill, "Säsong {season}").
  *
  * DET HÄR ÄR OPUS-TEXTEN. Komponenten (tier-prop gold=final/copper=kvarts-semi, illustration
  * som optional prop, typografisk scen) byggs av Code mot mocken — men texten är min, och den var
