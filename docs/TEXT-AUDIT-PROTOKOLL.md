@@ -40,57 +40,44 @@ text-relaterad commit. Uppdateras tabellen inte är sessionen inte klar.
   DAY_JOB_TITLES till bruksorts-yrken. Ingen krasch, bara tyst underdäckning.
 
 ### CODE GÖR
-M17–M53 HELT AVKLARADE 2026-07-04 (M36–M42/M44–M49/M51–M53 denna omgång,
-detaljer + utfall i AVGJORT) → se AVGJORT. Kvar: M9 (gammal, ej upptagen
-denna omgång) + M54–M58 (domän 3-svansens service-relevansskanning,
-tillkom UNDER denna omgångs körning — INTE ännu körda).
-- **M54** pressConferenceService: frågepooler saknar kontextgates som
-  svarssystemet redan har. Inför valfri gate per fråga (lätt pre-context
-  före frågevalet — buildPressContext-fälten finns): (a) 'Ni vände
-  underläge till seger' → gate trailedAtHalf; (b) 'Ni kvitterade sent'
-  → gate sen kvittering ur events (mål ≥75' som gjorde det lika);
-  (c) 'Ni har oavgjort i tre raka' → gate drawStreak ≥3 (streak-loopen
-  räknar idag bara W/L); (d) 'Hur var stämningen på {arenaName}' → gate
-  isHome (arenaName är ALLTID managed club — frågan ljuger på bortaplan);
-  (e) 'Laget spelade bra idag. Vad är skillnaden jämfört med tidigare
-  omgångar?' → minRound: 3; (f) follow-up-frågorna (findFollowUpQuestion)
-  → gate !won — preferIds kringgår matchesContext i slot 1–3, så en
-  follow-up efter SEGER serverar idag förlustsvar ("Vi var inte
-  tillräckligt bra idag") som enda alternativ; (g) cl25 playoff_loss
-  ("Bäst av fem. Vi kommer tillbaka i nästa.") → exkludera FINALEN
-  (isFinal) — finalen är EN match, det finns ingen nästa.
-- **M55** mediaService.generateTrendArticles: findIndex ger -1 när ALLA
-  fem senaste är W (eller L) → winStreak/lossStreak = -1 och artikeln
-  uteblir för just de starkaste sviterna. Fix: -1 → lastResults.length.
-- **M56 (låg)** 'Kafeterian' som inbox-titel i generateAbsurdityArticles
-  — kafferummet är kanontermen. Grep 'Kafeterian' (scandalService använder
-  samma format enligt kommentaren), enhetliggör: EN term, alla ställen.
-- **M57** silentMatchReportService: mål efter minut 90 etiketteras 'andra
-  halvlek' — lägg förlängningsgren (≤45 första, ≤90 andra, annars
-  'förlängningen').
-- **M58** opponentManagerService använder Math.random() i BÅDA quote-
-  pickarna (generatePreMatch + generatePostMatch) — determinism-brott,
-  M35-klassen → seeda med fixtureHash/rand. Samtidigt: verifiera
-  hasScandal-semantiken vid anropet — SCANDAL_AFFECTED-texterna antar att
-  skandalen berör MOTSTÅNDARLAGET ("mycket runtomkring oss", "läget vi är
-  i"); skickas en liga-/egen-klubbskandal in ljuger citaten.
-- **M60** tokenverifiering (patron-läckeklassen): (a) FAREWELL_MATCH_STRINGS
-  {player}/{members}/{leader} — grep anroparen, substitueras alla tre?
-  (b) SEASON_SUMMARY_ELIM_TEXT: pickSeasonElimText returnerar body MED
-  {motståndare}/{season} oresolverade — substitutionen MÅSTE ske hos
-  anroparen (SeasonSummaryScreen). Verifiera.
-- **M61 (VIKTIG)** hallDebateData: verifiera {hallclub}-källan — spelets
-  tolv Elitserieklubbar är UTOMHUSKLUBBAR (hallen är drömbyggnation);
-  substitueras {hallclub} med en serieklubb ljuger hela nyhetspoolen.
-  Ska vara omvärldsklubb (div 1/allsvenskan-klassen, rumorService-
-  precedent). Samtidigt: (a) {paper}/{opponent}/{club}/{politiker} — obs
-  token heter {politiker} här men {politician} i facilityFinancingStrings,
-  döm om det är två källor eller en inkonsistens; (b) OUTDOOR_PRIDE-
-  raderna bär resultat-/väder-/publikclaims ('er seger', 'två poäng',
-  'storpublik i snöstorm') — verifiera gating; (c) driftsiffrorna
-  (3/3,2 Mkr per år, 890 tkr el i januari) ska inte kunna motsägas av
-  motorns hall-drift när spelaren själv byggt — synka eller avprecisera
-  när hallens driftmodell finns.
+M17–M61 HELT AVKLARADE 2026-07-04/05 (M54–M58+M60–M61 denna omgång,
+detaljer + utfall i AVGJORT) → se AVGJORT. M59/M62 är Jacob/design-frågor
+(se JACOB BESLUTAR ovan), inte Code-ärenden. Kvar: M9 (gammal) +
+M63–M66 (tillkom UNDER denna omgångs körning — INTE ännu körda).
+- **M63** boardMeetingScene: ordförandens förväntan "Plats fem till åtta.
+  Inget kvalspel." är hårdkodad — scenen fyrar vid säsong 2-start oavsett
+  hur säsong 1 slutade (SM-guld → absurd replik). Koppla raden till
+  styrelsens faktiska förväntansnivå; Fable skriver 3–4 varianter när
+  Code exponerar nivån. 'Inget kvalspel' hänger dessutom på M53
+  (nedflyttningsstrukturen — overifierad).
+- **M64** sundayTrainingScene: (a) META.date hårdkodar '4 oktober · −2°C'
+  — kan motsäga spelets kalenderdatum och vädersystem på grannytor.
+  Tokenisera ({date}/{temp}) eller verifiera mot faktiska startdatumet.
+  (b) group-beatet namnger 'Andersson, Eriksson, Karlsson' (initial 'A')
+  — tre PÅHITTADE spelare bredvid tre riktiga tokens ({earliest}/{phone}/
+  {cold}); truppen kan sakna alla tre namnen. Tokenisera tre truppnamn
+  eller avnamna — Fable skriver om när formatet är valt.
+- **M65 (Jacob smak + Code grep)** 'Birger Karlsson, klackledare' ×6 i
+  smFinalVictoryScene + cupFinalVictoryScene — ROLLKOLLISION med
+  supporterServices genererade klackledare ({leader}-token, klackPresenter).
+  Två olika klackledare med olika namn på olika skärmar. Rekommendation:
+  behåll Birger som fast läktarfigur (citaten är bra och Birgitta-loren
+  hänger på honom) men byt attributionsrollen till något rollfritt
+  ('läktarveteran' e.d.). Alternativ: tokenisera mot ledaren. Kanonbeslut.
+- **M66** resolver-/städbatch: (a) sm/cupFinalVictory — verifiera att
+  bodyText (akademi-callbacken) bara väljs när avgörande målskytten HAR
+  promotionSeason, annars fallback (filhuvudet lovar det; resolvern
+  overifierad). (b) media/library/quotes: "role": "Coach" i ALLA ~90
+  attributions — engelska; sed till 'Tränare' (eller det UI:t förväntar).
+  (c) playoffAnslag: verifiera {motståndare}/{resultat}-substitutionen +
+  semantiken ({resultat} = avgörandematchens siffror, inte matchserien —
+  texterna antar matchsiffror). (d) cupFinalIntroScene är disabled sedan
+  2026-05-10, innehållet flyttat till cupAnslag (verifierat: arvet är
+  rentvättat där) — radera filen efter import-grep. (e) cupIntroScene +
+  cup_first_match-anslaget generaliserades textledes (bye-fallet: första
+  cupmatchen kan vara kvartsfinal) — ingen kodgate behövs längre, men
+  verifiera att direktkvalade FÅR cup_first_match-anslaget (annars är
+  bodyDirektkval enda vägen och generaliseringen överflödig men ofarlig).
 - **M9** grep imports av injuryDoctorText — nås DIAGNOSIS_LINES för
   träningsskador? ("andra halvlek"-raden får bara visas för matchskador.)
 - Stilnoter (ej rörda denna omgång): seasonChampionYear()-helpern i
@@ -114,11 +101,11 @@ tillkom UNDER denna omgångs körning — INTE ännu körda).
   meritskärm byggs. Aktiveras då.
 
 ### NÄSTA AUDIT-PASS
-- **DOMÄN 3 HELT KLAR 2026-07-04.** **DOMÄN 4a+4b KLARA 2026-07-04**
-  (ceremoni/säsong + facility, se LOGG).
-- Kvar: domän 4c–4e i FÄRSK session — scenes/ (10 filer) · anslag/
-  (leagueAnslag, playoffAnslag) · media/library/quotes/ (7 JSON).
-  Misstankenumrering fortsätter från M63.
+- **HELA TEXTAUDITEN KOMPLETT 2026-07-04** — domän 1, 2, 3 och 4 dömda
+  (domän 4c–4e: scenes/, anslag/ inkl cupAnslag-återbesök, media/quotes —
+  se LOGG). Kvar är ärendekön: M54–M58 + M60/M61/M63–M66 (Code),
+  M59/M62/M65 (Jacob), M33-restfrågan. Numrering fortsätter från M67
+  vid framtida punktinsatser (nya filer döms mot protokollet vid PR).
 - text-guard-linten byggs av Code EFTER att alla fyra domäners termlista
   är slutjusterad.
 
@@ -132,6 +119,44 @@ tillkom UNDER denna omgångs körning — INTE ännu körda).
   Principen gäller framåt: text om managern skrivs pronomenfri.
   OBS opponentManagerService (oskannad, domän 4-inledningen) ska dömas
   mot samma princip — rivaltränare kan också vara Margareta.
+- **M54, M55, M56, M57, M58, M60, M61 HELT AVKLARADE 2026-07-05** (domän
+  3-svans + domän 4-inledning, Code — M59/M62 hos Jacob/design):
+  · **M54** — FIXAD, alla sju underpunkter. pressConferenceService fick
+    fyra nya PressQuestion-gates (`requireTrailedAtHalf`, `requireLateEqualizer`,
+    `requireDrawStreak3`, `requireHome`) + `PressContext` utökad med
+    `drawStreak` (samma mönster som streak/lossStreak, tredje gren i
+    strömräkningsloopen) och `lateEqualizer` (mål ≥75' som gjorde
+    ställningen jämn, beräknat kronologiskt ur fixture.events). `ctx`
+    flyttades TIDIGARE i generatePressConference (byggdes tidigare EFTER
+    frågevalet) så frågepoolen kan gates mot samma kontext svaren redan
+    döms mot. (e) minRound:3 tillagd. (f) följdfrågorna gated på !ctx.won.
+    (g) cl25 fick ny tag `playoff_loss_not_final` (medvetet utesluten ur
+    isGenericMatch-fallbacken också, inte bara strikt matchesContext).
+  · **M55** — FIXAD. findIndex(-1)-fallet mappas nu till lastResults.length.
+  · **M56** — FIXAD. "Kafeterian" → "Kafferummet" på alla sex ställen
+    (scandalService, coffeeRoomService ×3, mediaService, CoffeeRoomSecondary.tsx).
+  · **M57** — FIXAD. Tredje gren tillagd: min ≤90 → andra halvlek, annars
+    → förlängningen (OT-mål har minute 91-109 per matchCore.ts:1926).
+  · **M58** — FIXAD (determinism) + VERIFIERAD (hasScandal-semantik).
+    Båda quote-funktionerna fick en seed-parameter (fixtureId från
+    anropsstället) + seededPick istf Math.random(). hasScandal-filtreringen
+    var redan korrekt scopead till `affectedClubId === opponentClub.id`.
+  · **M60** — VERIFIERAD, STÖRRE FYND ÄN ÄRENDET ANTOG. (a)
+    FAREWELL_MATCH_STRINGS + de två "legacy"-arrayerna i samma fil har
+    NOLL konsumenter — hela avskedsmatch-atmosfärtexten onåbar, token-
+    frågan moot. (b) SEASON_SUMMARY_ELIM_TEXT — ingen bugg, SeasonSummaryScreen
+    substituerar redan båda tokens korrekt.
+  · **M61 (VIKTIG)** — VERIFIERAD, HELA {hallclub}-POOLEN ONÅBAR.
+    HALL_NEWS_POSITIVE/NEGATIVE/OUTDOOR_PRIDE + BOARD_HALL_QUOTES har
+    noll konsumenter — kärnoron (utomhusklubb substituerad som hallklubb)
+    kan inte manifesteras. Enda live-exporten (HALL_DEBATE_EVENTS)
+    substituerar {politiker} korrekt. {politiker}/{politician}-namnskillnaden
+    mot facilityFinancingStrings verifierad som två separata,
+    icke-interagerande mallsystem — terminologi-nit, ingen bugg.
+    Alla tre dödfynd (M60a, M61) dödmarkerade med kommentar i respektive
+    fil, ingen kod borttagen — Opus/Jacob avgör väva-in-eller-radera.
+  Verifiering: npx tsc --noEmit, npm run build, npx vitest run efter
+  varje ärende — 125 testfiler / 1238 tester gröna genom hela batchen.
 - **M36–M42, M44–M49, M51–M53 HELT AVKLARADE 2026-07-04** (domän 3, Code):
   · **M36** — FIXAD. `pressRefusals` bekräftat kumulativ (nollställs
     aldrig) — texten sa "tre i rad", avpreciserad till "gång på gång".
@@ -1296,3 +1321,128 @@ MISSTANKAR — döm i kontext, luta konservativt:
   cupAnslag är guldstandardreferensen, läses som ton, döms lätt) ·
   media/library/quotes/ (7 JSON, 22 KB — batchskrivna med Jacobs
   feedback, döms mot L#7-processen). Numrering från M63.
+
+- 2026-07-04 (kväll, avslut): DOMÄN 4c+4d+4e KLARA — HELA TEXTAUDITEN
+  DÄRMED KOMPLETT (domän 1–4). Jacob överstyr färsk-session-regeln
+  ("fortsätt"); kört klustervis med leverans per snitt.
+
+  RÄTTAT 4c — scenes/ (≈20 ändringar, 8 filer):
+  · finalIntroScene, tyngsta fyndklustret: 'TILL AVSPARK' → TILL AVSLAG
+    (fotbollsterm i final-CTA:n!) · copper-tiern (kvarts/semi) fick
+    finalskrivna MB-repliker (4/10 säger 'final'), Studenternas som
+    hero-arena OCH 'Förlorar man är säsongen slut' — TRIPPELT världsfel,
+    slutspelet är bäst av fem hos lagen → egen COPPER_KEYLINE_POOL
+    (10 nya repliker, lärdom #7-golv), hero 'Slutspel. Först till tre.',
+    ingress 'Bäst av fem...' · gold-ingressens 'Fulla läktare' (ogatat
+    publikclaim) → 'Finaldag.' · jovial 'Femtontusen' (hårdkodad publik
+    mot motorns attendance) → 'Halva bandysverige' · 'Bara en får sitt
+    slut' (läste makabert) → 'Bara den ena får slutet den ville ha.'
+  · valetScene: 'Snön ligger kvar' vid SÄSONGSSTART på hösten (vårspråk)
+    → 'Frosten ligger på planen om morgnarna' (kanonbilden) · frågan
+    argumenterade FÖR vänta-valet (bryter filens egen A-1-likvärdighet)
+    → neutral.
+  · journalistRelationshipScene: 'Lokaltidningens rubriker' (outlet kan
+    vara SVT/DN) → outletneutral · 'skriver inte om er längre' (motsägs
+    av mediaService-rubrikerna) → 'skriver hellre om er än med er' ·
+    'Tre nekade' → interpolerat ${refusals} · 'Tre presskonferenser till
+    så vänder det' (overifierat motorclaim) → avpreciserat.
+  · boardMeetingScene: transferbudget utan enhet → tkr.
+  · cupIntroScene: 'Förstarundan'/'Vinst ger kvartsfinal' (bye-fallet:
+    första cupmatchen kan vara kvarten) → 'Cupbandy'/'en runda till'.
+  · seasonSignatureReveal: 'ligan' → serien · 'Fokusera på spelet'
+    (metaröst) struket · injury_curve-bodyn stod i dåtid om ospelade
+    matcher + 'fysioterapeuterna' mot kanontermen → prognosform +
+    sjukgymnasterna.
+  · sm/cupFinalVictoryScene: '{minute}:e' ×2 — ORDINALBUGGEN från domän 1
+    igen (91:a, inte 91:e) → 'minut {minute}' · SM-callbacken 'Som du
+    gick ut till på söndagsträningen' — ogatat mot spelarens FAKTISKA
+    söndagsval (kan ha valt kaffet) → 'Guldet runt halsen {yearsAgo} år
+    senare' (parallellform med cupens 'Pokalen i händerna').
+  GODKÄNT: sundayTrainingScene i övrigt (M64 för datum/gruppnamn),
+  seasonEndPhase-triggrar (kod), cupFinalIntroScene (disabled, M66d).
+
+  RÄTTAT 4d — anslag/ (≈18 ändringar, 3 filer):
+  · leagueAnslag: 'ligan' ×8 → serien (halfway v1 sa själv 'Halva
+    serien' — inkonsistensen bevisade termen) · 'Var det nere på sju
+    poäng vi ville vara?' (obegriplig + hårdkodat tabelläge) struket ·
+    'Vad mötte de?' → Vilka · 'vart vi är' ×2 → var · 'i kvart' →
+    i kvarten.
+  · playoffAnslag: 'Tredje raka' + 'vann den tredje matchen' — båda
+    hårdantar SWEEP, serien kan sluta 3–1/3–2 → 'avgjorde serien'/'vann
+    den sista matchen' · 'Semifinalist är längre än de flesta kommer'
+    (grammatikblandning) → 'Semifinal är...' · 'Slutminuten skiljde
+    lite' (obegriplig + hardantog jämn final) struket.
+  · cupAnslag (guldstandarden återbesökt — bar ändå fel): 'ligan' ×7 →
+    serien · cup_first_match ärvde kvartsfinal-claimen → generaliserad ·
+    'den första vi vunnit på länge' + 'Förra säsongen tog vi oss inte
+    till finalen. Året innan inte ens till semin.' — ogatade
+    HISTORIKCLAIMS (säsong 1 / fjolårsvinnare motsäger) → strukna/
+    omskrivna · 'Tre matcher om vi var med långt, en om det inte gick'
+    (räknar fel för semiutslagna och R1-finalister) → avpreciserat ·
+    'Magnus jobbar med formjustering' (Kurt-klassen — ass-tränaren är
+    genererad) → 'Assisterande tränaren' · 'när Bengt höjde den' —
+    GUIDELINES-EXEMPLET har läckt in som speltext → 'när kaptenen höjde
+    den'. (cupFinalIntro-scenens fel-årstidsrad ärvdes INTE — verifierat.)
+
+  RÄTTAT 4e — media/library/quotes/ (≈23 ändringar, 6 av 7 filer;
+  success_streak_5 godkänd orörd):
+  · TREPOÄNGSFELET ×2 i draw-poolen ('räckte inte till tre', 'Vi sökte
+    tre, fick en') → två — L#8-klassikern i mina egna batchfiler ·
+    ogatade hemma/borta-claims ×5 ('Hemmaplan, hemmavinst', 'En poäng på
+    bortaplan', 'Oavgjort hemma', 'Bussresan hem' ×2, 'Förlust borta')
+    → gateoberoende · hårdkodade tal/dagar/väder ('Två mål på två
+    misstag', 'Tre mål mot', 'Tre mål mer', 'de sex föregående
+    omgångarna', 'Tre raka', 'på onsdag' ×2, 'Sex grader, vind från
+    norr' — vädret trackas, L#9 slår guidelines rytm-exemplet) →
+    avpreciserade med formen bevarad ('Trögt spel, tröga ben, en grötig
+    match') · förloppsclaims ('Ledningen försvann i slutet', 'Vi sköt
+    mer', 'hörna i slutet', 'nollat första', 'släppte in noll' i
+    ogatad vinstpool, 'Bra hörnor avgjorde') → claimfria · 'en period i
+    andra halvlek' → en stund · Bengt ×3: avnamnad i win/loss (Äldste i
+    laget / kollektivet), i kafferummet → SIXTEN (etablerad kafferumsfigur
+    — konsistens istället för kollision).
+
+  MISSTANKAR: M63–M66 inlagda (M63 boardförväntan, M64 söndagsträningens
+  datum/gruppnamn, M65 Birger-rollkollisionen till Jacob, M66
+  resolver-/städbatch inkl role:'Coach'-seden över ~90 attributions).
+
+  LÄGE: HELA AUDITEN KOMPLETT. NÄSTA: Code kör M54–M58 + M60/M61/M63–M66;
+  Jacob dömer M59/M62/M65 (+M33-resten); därefter byggs text-guard-linten
+  på den slutliga termlistan (regressionstermerna: trepoängaren, Rating:,
+  'ligan' i speltext, RF:s licensnämnd, Sex-poäng, fria agenter, basics —
+  komplettera med 'avspark', 'Coach' och ':e-ordinaler på minuttokens'
+  från domän 4).
+
+- 2026-07-05 (Code): M54–M58 + M60–M61 KÖRDA I ORDNING, HELA BATCHEN
+  AVKLARAD (M59/M62 lämnade orörda — Jacob/design-frågor). Se AVGJORT
+  för utfall per ärende.
+
+  Två VERIFIERA-ärenden (M60, M61) avslöjade STÖRRE dödkod-fynd än
+  ärendena själva antog — tredje respektive fjärde gången den här
+  audit-omgången (efter M42 och M48 i förra batchen) att ett "verifiera
+  token-substitutionen"-ärende visar sig vara "hela poolen är onåbar".
+  Mönstret börjar bli tydligt: Fable-skriven text hittar en riktig bugg
+  i EN specifik detalj (ett token, en gating), men den bredare frågan
+  "läses den här poolen ens av någon?" ställs inte förrän Code grep:ar
+  konsumenterna. Värt att bygga in i själva läspasset framåt — en snabb
+  konsument-grep innan ett textfynd skrivs in som ärende, inte bara när
+  Code sen verifierar det.
+
+  M54 var den mest omfattande fixen: pressConferenceService fick fyra
+  nya kontextgates + två nya PressContext-fält (drawStreak, lateEqualizer)
+  + en omstrukturering (ctx byggs nu före frågevalet, inte efter) för att
+  frågepoolen ska kunna gates mot samma verklighet svarssystemet redan
+  dömer mot.
+
+  Build+test genom hela batchen: npx tsc --noEmit rent, npm run build
+  grönt, npx vitest run — 125 testfiler / 1238 tester gröna efter varje
+  ärende.
+
+  LÄGE: M17–M61 helt avklarade. Kvar i CODE GÖR: M9 (gammal) + M63–M66
+  (tillkom under domän 4-läsningen, INTE ännu körda). BACKLOG.md:s
+  "BYGGT MEN OSYNLIGT"-tabell är fortfarande uppe i 6 aktiva rader (över
+  ~5-gränsen sedan förra batchen) — nya dödkod-fynd (M60a, M61) loggades
+  denna gång bara som kod-kommentarer, INTE som nya BACKLOG-rader, just
+  för att inte växa tabellen ytterligare. En konsolideringsomgång är
+  fortsatt rekommenderad innan nästa runda. NÄSTA: Code kör M63–M66 när
+  Jacob/Fable ger klartecken.
