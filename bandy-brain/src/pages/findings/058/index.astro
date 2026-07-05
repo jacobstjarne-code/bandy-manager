@@ -13,7 +13,7 @@ const _finding = _findings.find((f) => f.num === '058');
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
-    <p class="finding-meta">Finding 058 · 10 juni 2026</p>
+    <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
     <h1 class="finding-title">Straffen i bandy:<br>65 % i mål — och en dam–herr-skillnad</h1>
 
     <hr class="finding-divider" />
@@ -32,7 +32,7 @@ const _finding = _findings.find((f) => f.num === '058');
       <div class="key-number">
         <span class="key-number__value">≈ 11 pp</span>
         <span class="key-number__label">Skillnad herr − dam</span>
-        <span class="key-number__note">Konfidensintervallen möts nätt och jämnt</span>
+        <span class="key-number__note">Konfidensintervallen överlappar inte</span>
       </div>
       <div class="key-number">
         <span class="key-number__value">Lägre</span>
@@ -66,7 +66,7 @@ const _finding = _findings.find((f) => f.num === '058');
           <tr><td>Dam</td><td>430</td><td>234</td><td>54,4 %</td><td>[50–59]</td></tr>
         </tbody>
       </table>
-      <p>Två saker sticker ut. För det första är konverteringen <strong>lägre än i fotboll</strong>, där straffen går i mål klart oftare — en tredjedel av bandystrafferna i herrserien räddas eller missas. För det andra är <strong>dam-konverteringen påtagligt lägre än herr</strong>, 54 mot 65 procent; konfidensintervallen möts precis vid kanten, så skillnaden är reell om än inte enorm.</p>
+      <p>Två saker sticker ut. För det första är konverteringen <strong>lägre än i fotboll</strong>, där straffen går i mål klart oftare — en tredjedel av bandystrafferna i herrserien räddas eller missas. För det andra är <strong>dam-konverteringen påtagligt lägre än herr</strong>, 54 mot 65 procent; konfidensintervallen överlappar inte, så skillnaden är statistiskt robust.</p>
     </div>
 
     <hr class="finding-divider" />

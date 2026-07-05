@@ -13,7 +13,7 @@ const _finding = _findings.find((f) => f.num === '057');
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
-    <p class="finding-meta">Finding 057 · 10 juni 2026</p>
+    <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
     <h1 class="finding-title">Det cyniska foulet:<br>ledande lag saboterar mer</h1>
 
     <hr class="finding-divider" />
@@ -68,7 +68,7 @@ const _finding = _findings.find((f) => f.num === '057');
           <tr><td>Under</td><td>4,2 %</td><td>[3,4–5,2]</td><td>1 951</td></tr>
         </tbody>
       </table>
-      <p>Damserien visar samma riktning: 7,1 % i ledning mot 4,8 % i underläge, en faktor 1,48. Att mönstret återkommer i båda serierna gör det mer robust.</p>
+      <p>Damserien visar samma riktning: 7,1 % i ledning mot 4,8 % i underläge, en faktor 1,48. Konfidensintervallen överlappar dock i damserien — beviset är där svagare än i herr, där intervallen är klart åtskilda. Att riktningen återkommer i båda serierna gör ändå mönstret mer robust än varje serie för sig.</p>
       <table>
         <thead><tr><th>Spelläge (dam)</th><th>Sabotage-andel</th><th>95 % CI</th></tr></thead>
         <tbody>

@@ -7,13 +7,13 @@ const _finding = _findings.find((f) => f.num === '059');
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="Ett numerärt överläge höjer måltempot med 40 % i bandy, och var femte mål görs i power play. Utvisningarna — och därmed överlägena — toppar i matchens sista kvart, precis när den avgörs."
+  description="Ett numerärt överläge höjer måltempot med 40 % i bandy, och var femte mål görs i power play. Straffarna — en proxy för när förseelserna toppar — koncentreras till matchens sista kvart, precis när den avgörs."
 >
   <div class="finding-layout">
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
-    <p class="finding-meta">Finding 059 · 10 juni 2026</p>
+    <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
     <h1 class="finding-title">Power play:<br>överläget höjer måltempot 40 %</h1>
 
     <hr class="finding-divider" />
@@ -37,7 +37,7 @@ const _finding = _findings.find((f) => f.num === '059');
       <div class="key-number">
         <span class="key-number__value">24 %</span>
         <span class="key-number__label">Av straffarna faller minut 75–89</span>
-        <span class="key-number__note">Överlägena toppar när matchen avgörs</span>
+        <span class="key-number__note">Straffar som proxy för förseelsetrycket — se begränsningar</span>
       </div>
     </div>
 
@@ -67,8 +67,8 @@ const _finding = _findings.find((f) => f.num === '059');
           <tr><td>Full styrka</td><td>9 630</td><td>201 414</td><td>4,78 %</td></tr>
         </tbody>
       </table>
-      <p><strong>Var femte mål görs i överläge.</strong> 20 % av alla mål i herrserien (och 20 % i dam) faller medan det målande laget har en man mer — en betydande andel, eftersom power play bara utgör en dryg sjättedel av speltiden. Utvisningen är alltså inte bara en frånvaro av en spelare; den är ett av spelets mest produktiva målfönster.</p>
-      <p><strong>Och överlägena kommer sent.</strong> Utvisningarna — och därmed power play-fönstren — är inte jämnt fördelade: 24 % av straffarna faller i minut 75–89, mer än dubbelt så många som i matchens första kvart (10 %). De mest produktiva överlägena koncentreras alltså till slutskedet, precis när matcher avgörs.</p>
+      <p><strong>Var femte mål görs i överläge.</strong> 20 % av alla mål i herrserien (och 20 % i dam) faller medan det målande laget har en man mer — en betydande andel, eftersom power play bara utgör en dryg sjundedel av speltiden. Utvisningen är alltså inte bara en frånvaro av en spelare; den är ett av spelets mest produktiva målfönster.</p>
+      <p><strong>Och förseelsetrycket stiger mot slutet.</strong> Straffarna är inte jämnt fördelade över matchen: 24 % faller i minut 75–89, mer än dubbelt så många som i matchens första kvart (10 %). Straffar samvarierar med utvisningar utan att vara identiska med dem (se Begränsningar), så power play-fönstren följer sannolikt samma mönster — de mest produktiva överlägena koncentreras då till slutskedet, precis när matcher avgörs. Utvisningarnas egna minuter finns i datan; att mäta fördelningen direkt på dem är nästa steg.</p>
       <table>
         <thead><tr><th>Period</th><th>Andel av straffarna (herr)</th></tr></thead>
         <tbody>
@@ -86,7 +86,7 @@ const _finding = _findings.find((f) => f.num === '059');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>Att ett överläge höjer måltempot är väntat; att lyftet är så stabilt — 1,40 i herr, 1,37 i dam — och att en femtedel av alla mål kommer just där, visar hur central utvisningen är för målproduktionen i bandy. Kombinerat med Finding 057 (ledande lag saboterar mer) och att överlägena toppar i slutkvarten tecknar det en bild av disciplinen som en avgörande faktor sent i täta matcher: den som slarvar bort en spelare i minut 80 ger bort spelets bästa målläge i exakt fel ögonblick.</p>
+      <p>Att ett överläge höjer måltempot är väntat; att lyftet är så stabilt — 1,40 i herr, 1,37 i dam — och att en femtedel av alla mål kommer just där, visar hur central utvisningen är för målproduktionen i bandy. Kombinerat med Finding 057 (ledande lag saboterar mer) och att förseelserna toppar i slutkvarten tecknar det en bild av disciplinen som en avgörande faktor sent i täta matcher: den som slarvar bort en spelare i minut 80 ger bort spelets bästa målläge i exakt fel ögonblick.</p>
       <p>Lyftet på 40 % är sannolikt en försiktig uppskattning. Ett mål som ett underläge-lag gör korthänt räknas här till full styrka, vilket drar upp den siffran något och trycker ihop skillnaden. Den verkliga power play-fördelen är om något större.</p>
     </div>
 
