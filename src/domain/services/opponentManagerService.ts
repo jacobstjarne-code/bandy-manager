@@ -1,4 +1,5 @@
 import type { Club } from '../entities/Club'
+import { seededPick } from '../utils/random'
 
 // DREAM-001 + WEAK-016: Opponent manager generation and quote system
 
@@ -18,7 +19,10 @@ export function generateOpponentManager(rand: () => number): Club['opponentManag
   }
 }
 
-export function generatePreMatchOpponentQuote(opponentClub: Club, isDerby: boolean): string {
+// M58 (textaudit 2026-07-04): seed = fixtureId (+ discriminator-suffix, så
+// pre-/post-match-citat för samma fixture inte råkar dela index). Samma
+// klass som M35 (insandareService) — Math.random() bröt determinismen.
+export function generatePreMatchOpponentQuote(opponentClub: Club, isDerby: boolean, seed: string): string {
   const mgr = opponentClub.opponentManager
   if (!mgr) return ''
 
@@ -42,7 +46,7 @@ export function generatePreMatchOpponentQuote(opponentClub: Club, isDerby: boole
   }
 
   const pool = quotes[mgr.persona] ?? quotes.defensive
-  return pool[Math.floor(Math.random() * pool.length)]
+  return seededPick(pool, `${seed}_pre`)
 }
 
 const SCANDAL_AFFECTED_LOST = [
@@ -62,7 +66,7 @@ const SCANDAL_AFFECTED_GENERIC = [
   '"Vi spelade. Det är vad jag bryr mig om idag."',
 ]
 
-export function generatePostMatchOpponentQuote(opponentClub: Club, theyWon: boolean, hasScandal?: boolean): string {
+export function generatePostMatchOpponentQuote(opponentClub: Club, theyWon: boolean, hasScandal: boolean | undefined, seed: string): string {
   const mgr = opponentClub.opponentManager
   if (!mgr) return ''
 
@@ -70,7 +74,7 @@ export function generatePostMatchOpponentQuote(opponentClub: Club, theyWon: bool
     const pool = theyWon
       ? [...SCANDAL_AFFECTED_WON, ...SCANDAL_AFFECTED_GENERIC]
       : [...SCANDAL_AFFECTED_LOST, ...SCANDAL_AFFECTED_GENERIC]
-    const quote = pool[Math.floor(Math.random() * pool.length)]
+    const quote = seededPick(pool, `${seed}_post_scandal`)
     return `${mgr.name}: ${quote}`
   }
 
@@ -90,5 +94,5 @@ export function generatePostMatchOpponentQuote(opponentClub: Club, theyWon: bool
   }
 
   const pool = quotes[mgr.persona] ?? quotes.defensive
-  return pool[Math.floor(Math.random() * pool.length)]
+  return seededPick(pool, `${seed}_post`)
 }

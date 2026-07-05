@@ -303,7 +303,7 @@ export function processUpcomingDerbyNotification(
   })
 
   if (opponentClub) {
-    const opponentQuote = generatePreMatchOpponentQuote(opponentClub, true)
+    const opponentQuote = generatePreMatchOpponentQuote(opponentClub, true, upcomingManagedFixture.id)
     if (opponentQuote) {
       inboxItems.push({
         id: `inbox_prematch_quote_${upcomingManagedFixture.id}`,

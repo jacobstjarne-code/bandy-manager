@@ -51,7 +51,7 @@ export function generatePostMatchEvents(game: SaveGame, fixture: Fixture): GameE
         s.season === game.currentSeason &&
         s.type !== 'small_absurdity'
       )
-      const quote = generatePostMatchOpponentQuote(opponentClub, theyWon, opponentScandal)
+      const quote = generatePostMatchOpponentQuote(opponentClub, theyWon, opponentScandal, fixture.id)
       if (quote) {
         const opponentClubName = opponentClub.shortName ?? opponentClub.name
         const isDerby = !!getRivalry(fixture.homeClubId, fixture.awayClubId)
