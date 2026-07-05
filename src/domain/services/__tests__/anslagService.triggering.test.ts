@@ -285,6 +285,31 @@ describe('computeNextAnslag — cup_first_match', () => {
     })
     expect(computeNextAnslag(game)).not.toBe('cup_first_match')
   })
+
+  // M66e (textaudit 2026-07-05): direktkvalade klubbar (bye till kvarten) hade ingen
+  // round-1-fixture, så cup_first_match triggades aldrig för dem — deras faktiska
+  // första match är round 2.
+  it('triggas på scheduled round-2-cupmatch om klubben är direktkvalad', () => {
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 1,
+      cupBracket: makeMinimalBracket({ byeTeamIds: ['managed'] }),
+      fixtures: [makeCupFixture({ roundNumber: 2, matchday: 8 })],
+      seenAnslag: ['cup_start'],
+    })
+    expect(computeNextAnslag(game)).toBe('cup_first_match')
+  })
+
+  it('triggas INTE på round-2-cupmatch om klubben INTE är direktkvalad', () => {
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 1,
+      cupBracket: makeMinimalBracket(),
+      fixtures: [makeCupFixture({ roundNumber: 2, matchday: 8 })],
+      seenAnslag: ['cup_start'],
+    })
+    expect(computeNextAnslag(game)).not.toBe('cup_first_match')
+  })
 })
 
 describe('computeNextAnslag — cup_start trigger-guard', () => {

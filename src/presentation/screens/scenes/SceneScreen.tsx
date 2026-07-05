@@ -15,7 +15,6 @@ import { JournalistRelationshipScene } from './JournalistRelationshipScene'
 import { SeasonSignatureRevealScene } from './SeasonSignatureRevealScene'
 import { BoardMeetingScene } from './BoardMeetingScene'
 import { CupIntroScene } from './CupIntroScene'
-import { CupFinalIntroScene } from './CupFinalIntroScene'
 import { CupFinalVictoryScene } from './CupFinalVictoryScene'
 import { ValetScene } from './ValetScene'
 
@@ -46,8 +45,6 @@ export function SceneScreen() {
       return <BoardMeetingScene game={game} onComplete={() => handleComplete()} />
     case 'cup_intro':
       return <CupIntroScene game={game} onComplete={() => handleComplete()} />
-    case 'cup_final_intro':
-      return <CupFinalIntroScene game={game} onComplete={() => handleComplete()} />
     case 'cup_final_victory':
       return <CupFinalVictoryScene game={game} onComplete={() => handleComplete()} />
     case 'valet':

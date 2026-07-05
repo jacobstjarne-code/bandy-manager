@@ -140,17 +140,23 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
       return 'cup_start'
     }
 
-    // cup_first_match — after cup_start, before first round-1 cup match
+    // cup_first_match — after cup_start, before managed clubs faktiska första cupmatch.
+    // M66e (textaudit 2026-07-05): gaten krävde tidigare alltid roundNumber===1,
+    // så direktkvalade klubbar (bye till kvarten, isClubDirektkvalad) fick
+    // aldrig anslaget — cup_first_match-textens generalisering till "första
+    // matchen" (cupAnslag.ts) var därmed onåbar för dem trots att texten redan
+    // var skriven för att bära scenariot.
     if (seen.includes('cup_start') && !seen.includes('cup_first_match')) {
-      const hasScheduledRound1 = game.fixtures.some(
+      const firstRoundForClub = isClubDirektkvalad(bracket, club) ? 2 : 1
+      const hasScheduledFirstMatch = game.fixtures.some(
         f =>
           f.isCup &&
-          f.roundNumber === 1 &&
+          f.roundNumber === firstRoundForClub &&
           f.season === game.currentSeason &&
           f.status === FixtureStatus.Scheduled &&
           (f.homeClubId === club || f.awayClubId === club)
       )
-      if (hasScheduledRound1) {
+      if (hasScheduledFirstMatch) {
         return 'cup_first_match'
       }
     }

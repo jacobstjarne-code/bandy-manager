@@ -3,49 +3,49 @@
     "id": "quote_crisis_streak_001",
     "type": "quote",
     "tags": ["crisis_streak"],
-    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "attribution": { "name": "{coachName}", "role": "Tränare" },
     "body": "Vi måste prata igenom detta. Grundligt."
   },
   {
     "id": "quote_crisis_streak_002",
     "type": "quote",
     "tags": ["crisis_streak"],
-    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "attribution": { "name": "{coachName}", "role": "Tränare" },
     "body": "Det syns på killarna."
   },
   {
     "id": "quote_crisis_streak_003",
     "type": "quote",
     "tags": ["crisis_streak"],
-    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "attribution": { "name": "{coachName}", "role": "Tränare" },
     "body": "Det märks i tabellen. Vi ser det lika bra som ni."
   },
   {
     "id": "quote_crisis_streak_004",
     "type": "quote",
     "tags": ["crisis_streak"],
-    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "attribution": { "name": "{coachName}", "role": "Tränare" },
     "body": "Det var som Sixten sa i kafferummet: vi behöver bara vinna en match."
   },
   {
     "id": "quote_crisis_streak_005",
     "type": "quote",
     "tags": ["crisis_streak"],
-    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "attribution": { "name": "{coachName}", "role": "Tränare" },
     "body": "I veckan tränar vi tills det sitter."
   },
   {
     "id": "quote_crisis_streak_006",
     "type": "quote",
     "tags": ["crisis_streak"],
-    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "attribution": { "name": "{coachName}", "role": "Tränare" },
     "body": "Det börjar med en match. Sen två. Sen tre."
   },
   {
     "id": "quote_crisis_streak_007",
     "type": "quote",
     "tags": ["crisis_streak"],
-    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "attribution": { "name": "{coachName}", "role": "Tränare" },
     "body": "Vi får ändra på något."
   }
 ]

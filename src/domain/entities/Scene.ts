@@ -12,7 +12,6 @@ export type SceneId =
   | 'season_signature_reveal'
   | 'board_meeting'
   | 'cup_intro'
-  | 'cup_final_intro'
   | 'cup_final_victory'
   | 'valet'  // B1 — säsongsstartens byggval (valetScene.ts). Registrerad för typ; wiring i Code-lane.
 
