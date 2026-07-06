@@ -94,14 +94,28 @@ export function ValetScene({ game, onComplete }: Props) {
                   transition: 'opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease',
                 }}
               >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{
+                    fontFamily: 'Georgia, serif',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: 'var(--text-light)',
+                    letterSpacing: '-0.1px',
+                  }}>
+                    {card.label}
+                  </span>
+                  {/* N-4: kvalitativ bygghorisont på titelraden, som en tagg */}
+                  <span className="tag tag-dark">{card.horizonLabel}</span>
+                </div>
+                {/* N-5: kursiv Georgia flavor-rad — "det som gör kortet till en scen" */}
                 <span style={{
                   fontFamily: 'Georgia, serif',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: 'var(--text-light)',
-                  letterSpacing: '-0.1px',
+                  fontStyle: 'italic',
+                  fontSize: 11.5,
+                  lineHeight: 1.4,
+                  color: 'var(--text-light-secondary)',
                 }}>
-                  {card.label}
+                  {card.flavor}
                 </span>
                 <span style={{ fontSize: 11.5, lineHeight: 1.4 }}>
                   {card.consequenceParts.map((part, i) => (
