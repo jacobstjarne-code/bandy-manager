@@ -1,0 +1,104 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '061');
+---
+
+<Base
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
+  description="Isärplockat är ett numerärt överläge värt 1,33× med en man mer och 1,81× med två. Fyra av tio tiominutare släpper in mål — och reformens många nya femminutare ändrade hur ofta domaren blåser, inte hur dödligt ett enskilt överläge är."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
+    <h1 class="finding-title">Utvisningens pris:<br>fyra av tio tiominutare släpper in mål</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">39,8&nbsp;%</span>
+        <span class="key-number__label">Av tiominutarna ger överläget minst ett mål</span>
+        <span class="key-number__note">Herr — damserien nästan identisk: 39,1 %</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">29,2&nbsp;%</span>
+        <span class="key-number__label">Av femminutarna slutar med mål</span>
+        <span class="key-number__note">Fönstrets längd är halva priset</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">1,33×</span>
+        <span class="key-number__label">Måltempo med en man mer — rensat</span>
+        <span class="key-number__note">KI 1,27–1,40 · två man mer: 1,81×</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">9,5&nbsp;%</span>
+        <span class="key-number__label">Av alla mål görs i numerärt underläge</span>
+        <span class="key-number__note">Bandyns långa utvisningar ger det korta laget tid</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 059 mätte det poolade överläget: allt power play mot allt annat, faktor 1,40. Men "power play" rymmer olika saker — en man mer och två man mer, femminutare och tiominutare, och en baslinje där även korthänta minuter räknades som full styrka. Här plockas överläget isär: vad är en man mer värd, rensat? Vad kostar en enskild utvisning i sannolikheten att släppa in mål? Och gjorde reformens många nya lätta utvisningar överlägena mindre dödliga?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Samma bas som Finding 059: 1 321 herrmatchar och 428 dammatchar ur Bandygrytan 2019–2026 (exkl. 2023–24). Skillnaden är klassningen. Varje matchminut märks nu med faktisk styrkerelation — fem mot fem, fem mot fyra, fem mot tre — i stället för det binära power play/full styrka. Korthänta minuter lyfts ur full styrka-baslinjen, och överlappande utvisningar hålls isär i stället för att slås samman. Dessutom följs varje utvisning som ett eget fönster: gav överläget minst ett mål innan det löpte ut?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      <p><strong>En man mer är värd 1,33× — två man mer 1,81×.</strong> Rensat för både överlapp och korthänta baslinjeminuter höjer ett enkelt överläge måltempot med en tredjedel (KI 1,27–1,40). Dubbelt överläge närmar sig en fördubbling. Damserien följer samma mönster nästan exakt.</p>
+      <table>
+        <thead><tr><th>Styrkerelation (herr)</th><th>Måltempo relativt full styrka</th></tr></thead>
+        <tbody>
+          <tr><td>En man mer</td><td>1,33× (KI 1,27–1,40)</td></tr>
+          <tr><td>Två man mer</td><td>1,81×</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Utvisningens pris mätt per fönster: tid är halva värdet.</strong> Knappt var tredje femminutare ger det överlägsna laget mål — men fyra av tio tiominutare gör det. Skillnaden mellan en lätt och en grov utvisning är alltså inte bara markering; den är tio procentenheter målsannolikhet.</p>
+      <table>
+        <thead><tr><th>Utvisningslängd</th><th>Andel som ger minst ett mål (herr)</th><th>Dam</th></tr></thead>
+        <tbody>
+          <tr><td>5 minuter</td><td>29,2 %</td><td>26,6 %</td></tr>
+          <tr><td>10 minuter</td><td>39,8 %</td><td>39,1 %</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Det korta laget är inte tyst.</strong> 9,5 % av alla mål i herrserien görs i numerärt underläge. Det låter högt, men är en direkt följd av bandyns långa utvisningar: på tio minuter hinner även ett korthänt lag skapa lägen. Det är den siffran som trycker ihop det råa power play-övertaget — och som gjorde att den poolade bilden i Finding 059 behövde plockas isär.</p>
+      <p><strong>Reformen ändrade frekvensen, inte dödligheten.</strong> Säsongen 2025–26 sköt femminutarnas andel av utvisningarna från 5,3 % till 19,5 % (Cohens h = 0,45) — men konverteringen per fönster är oförändrad (h = 0,05). Domarna blåser oftare lätt; ett enskilt överläge är precis lika farligt som förut. Det stämmer med mekanismen i Finding 055: reformen verkar genom fler lätta utvisningar, inte genom att ändra spelet inne i dem.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Utvisningens pris är i första hand tid. Skillnaden mellan 29 och 40 procents målrisk ligger inte i något taktiskt val — den ligger i hur länge fönstret står öppet. För det utvisade laget betyder det att den grova utvisningen är nästan en förlorad slantsingling; för det överlägsna att tålamod lönar sig, eftersom sannolikheten ackumuleras över fönstret.</p>
+      <p>Dekompositionen skärper också Finding 059. Den poolade faktorn 1,40 står som deskriptiv siffra, men den bars upp av tvåmansöverlägena och av en baslinje som drogs ned av korthänta minuter. Rensat är en man mer värd 1,33× — något mindre än poolningen antydde, inte mer, som 059:s tolkning förmodade. Åt andra hållet: 1,81× för två man mer visar att den riktigt dyra situationen är den dubbla utvisningen, bandyns närmaste motsvarighet till ett öppet mål.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Konverteringsmåttet räknar minst ett mål per fönster — flermålsfönster syns inte i andelen.</li>
+        <li>Fem mot tre-minuterna är få; 1,81× saknar därför redovisat konfidensintervall och ska läsas som storleksordning.</li>
+        <li>Utvisningslängden antas löpa fullt ut, som i Finding 059.</li>
+        <li>Reformjämförelsen bygger på en säsong (2025–26) mot poolen 2019–2025.</li>
+        <li>2023–24 saknas i datasetet.</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>

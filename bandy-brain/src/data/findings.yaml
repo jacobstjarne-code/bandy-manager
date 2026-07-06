@@ -3,6 +3,16 @@
 # Renderas av src/data/findings.ts → findings/index.astro + pages/index.astro.
 # Lägg nya findings här; sidorna genereras.
 
+- num: '061'
+  title: 'Utvisningens pris: fyra av tio tiominutare släpper in mål'
+  date: '6 juli 2026'
+  status: active
+  excerpt: >-
+    Isärplockat är överläget värt 1,33× med en man mer och 1,81× med två —
+    en skärpning av 059:s poolade 1,40. Konverteringen per fönster: 29 % för
+    femminutare, 40 % för tiominutare. Reformens många nya lätta utvisningar
+    ändrade frekvensen, inte dödligheten per överläge.
+
 - num: '060'
   title: 'När dör en bandymatch? Tvåmålsledningen är säker först i minut 84'
   date: '5 juli 2026'
