@@ -47,11 +47,15 @@ export interface ValetChoiceCard {
   consequenceParts: ConsequencePart[]
   /** Byggtid i omgångar — "klar om ~X omg". */
   buildRounds: number
+  /** N-4: kvalitativ bygghorisont på titelraden — härledd ur buildRounds. */
+  horizonLabel: string
   cost: number
   /** A-2 (Valet-scen-audit, 2026-07-06): CTA-texten i bekräfta-steget när kortet är
    *  valt men inte bekräftat än — bär nodens namn ("Bygg värmestugan"), aldrig
-   *  generiskt "Bekräfta". Jacob skriver de tio, '[Opus]' tills dess. */
+   *  generiskt "Bekräfta". Alla tio skrivna och dömda 2026-07-06. */
   confirmCta: string
+  /** N-5: kursiv serif-flavorrad — klubbens röst om vad bygget lovar. */
+  flavor: string
 }
 
 /**
@@ -62,16 +66,37 @@ export interface ValetChoiceCard {
  * Nyckel = nodeId, samma format som BOARD_MEETING_EXPECTATION_LINE (M63).
  */
 const VALET_CONFIRM_CTA: Record<string, string> = {
-  varmestuga: '[Opus]',
-  laktare_ostra: '[Opus]',
-  belysning: '[Opus]',
-  matchhall: '[Opus]',
-  kiosk: '[Opus]',
-  stralkastare: '[Opus]',
-  gym: '[Opus]',
-  traningshall: '[Opus]',
-  akademi_2: '[Opus]',
-  akademi_3: '[Opus]',
+  varmestuga: 'Bygg värmestugan',
+  laktare_ostra: 'Bygg östra läktaren',
+  belysning: 'Sätt upp belysningen',
+  matchhall: 'Ta upp hallfrågan',
+  kiosk: 'Bygg kiosken',
+  stralkastare: 'Res strålkastarna',
+  gym: 'Bygg gymmet',
+  traningshall: 'Bygg träningshallen',
+  akademi_2: 'Starta akademiprogrammet',
+  akademi_3: 'Bygg elitakademin',
+}
+
+/**
+ * N-5 (Valet-scen-audit, beslut 2026-07-06): flavor-raden per kort — kursiv
+ * Georgia i mocken ("det som gör kortet till en scen, inte en meny").
+ * Klubbens röst om vad bygget LOVAR — aspirationsspråk är tillåtet här
+ * (konsekvensraden bär redan riktningarna; L#9 gäller påståenden om nuläget).
+ * Varmestugans rad är mockens kanon-exempel, behållen ordagrant.
+ * Code: rendera som kursiv serif-rad på kortet (se auditens .vflavor).
+ */
+const VALET_FLAVOR: Record<string, string> = {
+  varmestuga: 'Kylan biter mindre. Folk stannar.',
+  laktare_ostra: 'Fyrahundra platser till. De syns från vägen.',
+  belysning: 'Mörkret får vänta utanför staketet.',
+  matchhall: 'Tak över isen. Frågan är vad det kostar — utöver pengarna.',
+  kiosk: 'Varm korv i pausen. Kön är halva nöjet.',
+  stralkastare: 'Kvällsmatch i vitt ljus. Det ser ut som allvar.',
+  gym: 'Det som byggs där inne syns på isen.',
+  traningshall: 'Ungdomarna slipper vänta på vintern.',
+  akademi_2: 'Egna spelare. Det börjar med ett schema.',
+  akademi_3: 'Orten fostrar sina egna. Hela vägen upp.',
 }
 
 export interface ValetScene {
@@ -124,6 +149,21 @@ function buildConsequenceParts(def: FacilityNodeDef): ConsequencePart[] {
   }))
 }
 
+/**
+ * N-4 (Valet-scen-audit, beslut 2026-07-06 — Fable): kvalitativ horisontetikett
+ * på kortets titelrad. OBS: mockens exempelnivåer ("I år" / "Om tre säsonger")
+ * skulle LJUGA mot motorn — Valet sker vid säsongsstart och buildRounds spänner
+ * 4–20 av seriens 22 omgångar, så ALLT blir klart inom innevarande säsong.
+ * Trösklarna mappar därför mot bandyårets inre kalender (serien november–mars):
+ * ≤6 omg ≈ december · 7–14 ≈ jan–feb · ≥15 ≈ slutspurten. "klar om ~X omg"
+ * behålls i metaraden — kvantiteten för den som räknar, horisonten för scenen.
+ */
+function buildHorizonLabel(buildRounds: number): string {
+  if (buildRounds <= 6) return 'Före jul'
+  if (buildRounds <= 14) return 'Mitt i vintern'
+  return 'Lagom till våren'
+}
+
 export function getValetScene(game: SaveGame): ValetScene {
   const facilityState = game.facilityState
   const choices = facilityState ? getPreSeasonChoices(facilityState) : []
@@ -134,8 +174,10 @@ export function getValetScene(game: SaveGame): ValetScene {
     label: def.label,
     consequenceParts: buildConsequenceParts(def),
     buildRounds: def.buildRounds,
+    horizonLabel: buildHorizonLabel(def.buildRounds),
     cost: def.cost,
     confirmCta: VALET_CONFIRM_CTA[def.id] ?? '[Opus]',
+    flavor: VALET_FLAVOR[def.id] ?? '',
   }))
 
   return {
