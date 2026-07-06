@@ -1,0 +1,299 @@
+{
+  "_meta": {
+    "analysis": "A2 powerplay-konvertering",
+    "spec": "ANALYSSPEC_VAG2_OEXPLOATERAT.md A2",
+    "source": "docs/data/bandygrytan_detailed.json",
+    "reform_season": "2025-26",
+    "note": "fouls[].team = utvisade laget (DATA.md §4); duration 5/10 (schemaV5); anomalier + null exkluderade ur PP-fönster."
+  },
+  "herr": {
+    "series": "herr",
+    "n_matches": 1321,
+    "total_goals": 11719,
+    "anomalies_excluded": {
+      "3": 1,
+      "30": 1,
+      "6": 1,
+      "60": 4,
+      "None": 4
+    },
+    "rate_ratio_one_up": {
+      "rr": 1.332,
+      "ci": [
+        1.265,
+        1.403
+      ],
+      "pp_rate_pct": 6.445,
+      "es_rate_pct": 4.838,
+      "g_pp": 1743,
+      "m_pp": 27044,
+      "g_es": 8655,
+      "m_es": 178900
+    },
+    "rate_ratio_two_up": {
+      "rr": 1.812,
+      "ci": [
+        1.58,
+        2.077
+      ],
+      "pp_rate_pct": 8.765,
+      "es_rate_pct": 4.838,
+      "g_pp": 210,
+      "m_pp": 2396,
+      "g_es": 8655,
+      "m_es": 178900
+    },
+    "conversion_5min": {
+      "clean_n": 226,
+      "clean_scored": 66,
+      "conversion_pct": 29.2,
+      "ci": [
+        23.7,
+        35.4
+      ],
+      "goals_per_susp": 0.314,
+      "overlap_n": 169,
+      "overlap_scored": 51
+    },
+    "conversion_10min": {
+      "clean_n": 2348,
+      "clean_scored": 934,
+      "conversion_pct": 39.8,
+      "ci": [
+        37.8,
+        41.8
+      ],
+      "goals_per_susp": 0.496,
+      "overlap_n": 2233,
+      "overlap_scored": 1013
+    },
+    "shorthanded_goals": {
+      "n": 1111,
+      "share_of_all_goals_pct": 9.48
+    },
+    "minutes_by_state": {
+      "es": 178900,
+      "pp1": 27044,
+      "sh": 29440,
+      "pp2": 2396
+    },
+    "goals_by_state": {
+      "es": 8655,
+      "pp1": 1743,
+      "sh": 1111,
+      "pp2": 210
+    },
+    "per_season": {
+      "2019-20": {
+        "pp_rate_pct": 5.395,
+        "es_rate_pct": 4.384,
+        "rr": 1.231,
+        "clean_conversion_pct": 34.5,
+        "clean_n": 391,
+        "share_5min_pct": 2.0,
+        "susp_total": 811
+      },
+      "2020-21": {
+        "pp_rate_pct": 6.258,
+        "es_rate_pct": 4.847,
+        "rr": 1.291,
+        "clean_conversion_pct": 39.5,
+        "clean_n": 418,
+        "share_5min_pct": 2.6,
+        "susp_total": 862
+      },
+      "2021-22": {
+        "pp_rate_pct": 6.742,
+        "es_rate_pct": 4.847,
+        "rr": 1.391,
+        "clean_conversion_pct": 38.8,
+        "clean_n": 551,
+        "share_5min_pct": 2.4,
+        "susp_total": 1007
+      },
+      "2022-23": {
+        "pp_rate_pct": 6.291,
+        "es_rate_pct": 4.442,
+        "rr": 1.416,
+        "clean_conversion_pct": 36.5,
+        "clean_n": 406,
+        "share_5min_pct": 6.9,
+        "susp_total": 677
+      },
+      "2024-25": {
+        "pp_rate_pct": 8.0,
+        "es_rate_pct": 5.491,
+        "rr": 1.457,
+        "clean_conversion_pct": 43.0,
+        "clean_n": 335,
+        "share_5min_pct": 15.2,
+        "susp_total": 702
+      },
+      "2025-26": {
+        "pp_rate_pct": 7.28,
+        "es_rate_pct": 5.127,
+        "rr": 1.42,
+        "clean_conversion_pct": 41.0,
+        "clean_n": 473,
+        "share_5min_pct": 19.5,
+        "susp_total": 917
+      }
+    },
+    "reform_comparison": {
+      "conversion": {
+        "pre_pct": 38.4,
+        "pre_n": 2101,
+        "reform_pct": 41.0,
+        "reform_n": 473,
+        "cohens_h": 0.054
+      },
+      "share_5min": {
+        "pre_pct": 5.3,
+        "reform_pct": 19.5,
+        "cohens_h": 0.45
+      }
+    }
+  },
+  "dam": {
+    "series": "dam",
+    "n_matches": 428,
+    "total_goals": 3763,
+    "anomalies_excluded": {},
+    "rate_ratio_one_up": {
+      "rr": 1.314,
+      "ci": [
+        1.2,
+        1.438
+      ],
+      "pp_rate_pct": 6.407,
+      "es_rate_pct": 4.876,
+      "g_pp": 562,
+      "m_pp": 8772,
+      "g_es": 2808,
+      "m_es": 57584
+    },
+    "rate_ratio_two_up": {
+      "rr": 1.652,
+      "ci": [
+        1.317,
+        2.071
+      ],
+      "pp_rate_pct": 8.054,
+      "es_rate_pct": 4.876,
+      "g_pp": 77,
+      "m_pp": 956,
+      "g_es": 2808,
+      "m_es": 57584
+    },
+    "conversion_5min": {
+      "clean_n": 64,
+      "clean_scored": 17,
+      "conversion_pct": 26.6,
+      "ci": [
+        17.3,
+        38.5
+      ],
+      "goals_per_susp": 0.344,
+      "overlap_n": 45,
+      "overlap_scored": 6
+    },
+    "conversion_10min": {
+      "clean_n": 723,
+      "clean_scored": 283,
+      "conversion_pct": 39.1,
+      "ci": [
+        35.7,
+        42.7
+      ],
+      "goals_per_susp": 0.549,
+      "overlap_n": 728,
+      "overlap_scored": 315
+    },
+    "shorthanded_goals": {
+      "n": 316,
+      "share_of_all_goals_pct": 8.4
+    },
+    "minutes_by_state": {
+      "es": 57584,
+      "pp1": 8772,
+      "sh": 9728,
+      "pp2": 956
+    },
+    "goals_by_state": {
+      "es": 2808,
+      "pp1": 562,
+      "sh": 316,
+      "pp2": 77
+    },
+    "per_season": {
+      "2019-20": {
+        "pp_rate_pct": 5.687,
+        "es_rate_pct": 4.523,
+        "rr": 1.257,
+        "clean_conversion_pct": 31.9,
+        "clean_n": 113,
+        "share_5min_pct": 1.8,
+        "susp_total": 221
+      },
+      "2020-21": {
+        "pp_rate_pct": 6.25,
+        "es_rate_pct": 4.815,
+        "rr": 1.298,
+        "clean_conversion_pct": 36.6,
+        "clean_n": 145,
+        "share_5min_pct": 1.5,
+        "susp_total": 324
+      },
+      "2021-22": {
+        "pp_rate_pct": 5.659,
+        "es_rate_pct": 4.733,
+        "rr": 1.196,
+        "clean_conversion_pct": 37.7,
+        "clean_n": 159,
+        "share_5min_pct": 2.2,
+        "susp_total": 318
+      },
+      "2022-23": {
+        "pp_rate_pct": 7.162,
+        "es_rate_pct": 4.924,
+        "rr": 1.455,
+        "clean_conversion_pct": 42.5,
+        "clean_n": 134,
+        "share_5min_pct": 12.6,
+        "susp_total": 254
+      },
+      "2024-25": {
+        "pp_rate_pct": 8.836,
+        "es_rate_pct": 5.963,
+        "rr": 1.482,
+        "clean_conversion_pct": 45.3,
+        "clean_n": 117,
+        "share_5min_pct": 11.6,
+        "susp_total": 207
+      },
+      "2025-26": {
+        "pp_rate_pct": 6.304,
+        "es_rate_pct": 4.454,
+        "rr": 1.416,
+        "clean_conversion_pct": 34.5,
+        "clean_n": 119,
+        "share_5min_pct": 15.7,
+        "susp_total": 236
+      }
+    },
+    "reform_comparison": {
+      "conversion": {
+        "pre_pct": 38.8,
+        "pre_n": 668,
+        "reform_pct": 34.5,
+        "reform_n": 119,
+        "cohens_h": -0.09
+      },
+      "share_5min": {
+        "pre_pct": 5.4,
+        "reform_pct": 15.7,
+        "cohens_h": 0.343
+      }
+    }
+  }
+}

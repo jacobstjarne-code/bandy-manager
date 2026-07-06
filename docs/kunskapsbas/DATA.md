@@ -128,6 +128,8 @@ Distribution från Firebase-spotcheck (30 matcher, 5 per säsong):
 
 Ökningen av 5-minutersutvisningar 2025-26 (från ~6–14% till 37,5%) korrelerar med "Våga visa rött"-direktivet och representerar ett mer granulerat mätbart reformspår än den totala volymökningen.
 
+**UPPDATERING 2026-07-06 (full data, schemaVersion 5 — ersätter spotcheck-estimatet för 2025-26 ovan):** Med `duration` extraherad för hela datasetet (100% täckning) är 5-min-andelen 2025-26 **19,5% (herr, 179 av 917 utv. på 210 matcher)** och **15,7% (dam, 37 av 236 utv.)** — inte 37,5%. Spotchecken (5 matcher/säsong) överskattade 2025-26 kraftigt. Reformsignalen kvarstår tydlig: herr pre-reform (2019-25, poolad) 5,3% → 19,5% 2025-26, nästan 4× (Cohen's h = 0,45). Använd full-data-siffrorna, inte spotcheck-tabellen, för reformkvantifiering. Källa: `docs/data/powerplay_analysis.json` + `ANALYS_POWERPLAY.md` (A2).
+
 **Orsaker (`info`-fältet) — unika värden i spotcheck:**
 Bentackling, Fasthållning, Friläge, Hakning, Interference, Ojust tackling, Olämpligt upptr./uppträdande, Sabotage, Slag på klubban, Slag på skridskon, Våldsamt slag
 
