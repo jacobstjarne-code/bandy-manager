@@ -1,0 +1,91 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '064');
+---
+
+<Base
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
+  description="10 398 målpar i Elitserien herr: laget som gör mål gör nästa också i 55 % av fallen, och ju större ledning desto starkare drag. Men kvitteringen — folkpsykologins tändvätska — ger ingen mätbar skjuts. Och Bandy Managers motor gör tvärtom mot verkligheten: den mean-reverterar där bandyn har momentum."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
+    <h1 class="finding-title">Mål föder mål —<br>men kvitteringen ger ingen skjuts</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">55,0 %</span>
+        <span class="key-number__label">Nästa mål görs av samma lag (herr)</span>
+        <span class="key-number__note">Dominans och momentum blandat — se Datan</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">51,0 %</span>
+        <span class="key-number__label">Kvitteraren tar ledningen</span>
+        <span class="key-number__note">≈ baslinjen — kvitteringen är ingen tändvätska</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">71,1 %</span>
+        <span class="key-number__label">Samma mått i damserien</span>
+        <span class="key-number__note">Det bredare styrkespannet — se Finding 056</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">7,3 pp</span>
+        <span class="key-number__label">Gapet mellan verklighet och motor</span>
+        <span class="key-number__note">55,0 mot 47,7 % — motorn mean-reverterar</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Efter ett mål — vem gör nästa? Bandyns folkpsykologi drar åt två håll samtidigt: målet ger energi och nästa kommer snart ("mål föder mål"), men också att en kvittering tänder det kvitterande laget. Båda kan inte vara lika sanna. Och en följdfråga för spelbygget: gör Bandy Managers motor som verkligheten?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Varje målpar i Elitseriens grundserier: 10 398 par herr, 3 336 dam, varav 1 439 kvitteringar herr. Mot detta 1 490 motorsimulerade matcher ur Bandy Managers matchmotor. Halvleksflagga för verklig data, ren motorklocka för sim; Wilson-konfidensintervall på alla andelar.</p>
+      <p>En läsanvisning som styr hela findingen: att samma lag gör nästa mål kan bero på momentum <em>eller</em> på att bättre lag gör fler av alla mål. De två går inte att skilja åt i nivåsiffran. Därför är den bärande jämförelsen verklighet mot simulering — båda dataseten innehåller samma styrkeheterogenitet, så skillnaden mellan dem isolerar dynamiken.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      <p><strong>Mål föder mål, och dominans föder mer.</strong> Laget som gör mål gör nästa i 55,0 % [54,1–56,0] av fallen. Draget växer med ledningen: efter ett mål till +1 svarar motståndaren i 45,8 % av fallen, vid +3 bara i 39,5 %, vid +6 i 32,0 %. Ju större övertag, desto oftare rullar det på — en dominansgradient snarare än en jämn myntsingling.</p>
+      <p><strong>Kvitteringen är ingen tändvätska.</strong> Efter en kvittering tar det kvitterande laget ledningen i 51,0 % [48,4–53,6] av fallen — på baslinjens nivå (~53 %, hemmamålsandelen). Det energiskifte som varje klack känner när kvitteringen går in syns inte i vem som gör nästa mål. Momentumet i bandy är generellt — vilket mål som helst gynnar det målande laget svagt — inte knutet till kvitteringens dramaturgi.</p>
+      <p><strong>Damserien rullar mer.</strong> 71,1 % [69,6–72,6] av dammålen följs av mål från samma lag. Läst tillsammans med Finding 056 och 060 är förklaringen strukturell snarare än psykologisk: damseriens bredare styrkespann gör att dominanskomponenten väger tyngre — starka lag gör långa sviter för att de är starka.</p>
+      <p><strong>Motorn gör tvärtom.</strong> I simulerade matcher gör det målande laget nästa mål i 47,7 % [46,8–48,6] av fallen — under 50, där verkligheten ligger på 55. Konfidensintervallen är långt ifrån varandra. Motorn mean-reverterar: det underlägsna laget studsar tillbaka, i varje ledningsläge. Mekaniken bakom är identifierbar — motorns momentum-boost ges specifikt till det <em>kvitterande</em> laget, alltså exakt det tillstånd där verkligheten inte visar något momentum alls. Inom boostens sexminutersfönster syns den (24,9 % mot verklighetens 21,1 %), men den kompenserar fel sak, och nettot blir anti-momentum. Timingen är däremot välkalibrerad: snabbt svar inom 5 minuter är 43,2 % verkligt mot 42,9 % simulerat, median 6–7 minuter i båda.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Bandyns momentum är dominans plus en svag generell målföljd — inte kvitteringspsykologi. Det är förenligt med Finding 060: matcher lever länge därför att målfrekvensen är hög och även ett 60/40-flöde vänder ibland, men flödet i sig lutar mot laget som senast gjorde mål.</p>
+      <p>För motorn är detta den tydligaste kalibreringssignalen sedan takhöjningen (Finding 050): mekaniken siktar på fel tillstånd. Kalibreringskandidaten är en liten generell post-mål-boost till det målande laget i stället för dagens kvitteringsboost. Motorn är orörd — justeringen är ett designbeslut, och ändras den ska motsvarande D-fact uppdateras i samma commit.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Styrkeheterogenitet konfunderar nivåsiffrorna (55 %, 71 %) — de blandar dominans och momentum. Verklig-mot-sim-jämförelsen är robust mot detta; nivåtolkningarna är det inte.</li>
+        <li>Kvitteringsbaslinjen är approximativ (hemmamålsandelen ~53 %); slutsatsen "ingen skjuts" vilar på att 51,0 % ligger vid eller strax under den.</li>
+        <li>Simuleringen blandar managed- och AI-matcher (1 490 matcher, 3 seeds × 3 säsonger).</li>
+        <li>Vid stora ledningar i sim slår målskillnadstaket igenom (vid +6 svarar motståndaren i 100 % av fallen) — en motorartefakt, exkluderad ur tolkningen.</li>
+        <li>2023–24 saknas i verklig data.</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>

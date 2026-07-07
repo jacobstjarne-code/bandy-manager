@@ -3,6 +3,11 @@
 # Renderas av src/data/findings.ts → findings/index.astro + pages/index.astro.
 # Lägg nya findings här; sidorna genereras.
 
+- num: '064'
+  title: 'Mål föder mål — men kvitteringen ger ingen skjuts'
+  date: '7 juli 2026'
+  status: active
+
 - num: '063'
   title: 'Reformen är bred: åtta av tio domare höjde sin egen utvisningstakt'
   date: '7 juli 2026'
