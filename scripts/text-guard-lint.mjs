@@ -86,6 +86,12 @@ const RULES = [
     exclude: /\d\s*×\s*30\s*minuter/,
   },
   {
+    id: 'point-system-idiom', ref: 'termlista-finalisering 2026-07-05 (regressionstermer)', severity: 'error',
+    desc: '"trepoängaren"/"trepoängare" (fotbolls-idiom, vinst värd tre poäng) samt "N-poängsmatch" där N inte är "fyra" — bandy har tvåpoängssystemet, en match mot direkt tabellkonkurrent svänger fyra poäng (2 för vinst + 2 den andra går miste om), inte något annat tal. Riktad allowlist: "fyrapoängsmatch(er)" är etablerad korrekt term och undantas här specifikt — inte via en global ignore som skulle släcka hela mönstret.',
+    re: /\btrepoäng(aren|are)\b|\b\w*-?poängs?match(en|er)?\b/i,
+    exclude: /fyrapoängsmatch(er)?\b/i,
+  },
+  {
     id: 'automatic-relegation', ref: 'EFTER LÄSPASSET (domän 3)', severity: 'warn',
     desc: '"Två lag åker direkt" (eller liknande automatisk-nedflyttning-fras) — regelboken har kval mellan seriernas plats, inte automatisk nedflyttning',
     re: /två lag åker (direkt|ner)\b/i,
