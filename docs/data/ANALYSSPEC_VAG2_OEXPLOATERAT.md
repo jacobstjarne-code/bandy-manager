@@ -36,7 +36,7 @@ Beställare: Fable-genomgång 2026-07. Utförare: Code. Fable skriver findings f
 
 **Metod:** `bandygrytan_allsvenskan.json`, 887 matcher. Jämför mot Elitserien herr: mål/match, hemmavinst%, oavgjort%, HT-ledning→vinst, målminutsfördelning (halvleksflagga), utvisningsfrekvens totalt (fouls[].team är null — ingen per-lag-analys). **Uteslut all hörnanalys** — goals[].type är opålitlig i denna fil (~45 % hörnmål är parserartefakt). CI:er på alla jämförelser.
 
-**Output:** `allsvenskan_vs_elitserien.json` + rapport + explicit lista över vilka påståenden i findings 032 och 066 som inte längre stämmer (Fable uppdaterar findingarna).
+**Output:** `allsvenskan_vs_elitserien.json` + rapport + explicit lista över vilka påståenden i finding 032 som inte längre stämmer (Fable uppdaterar findingarna).
 
 ## A4. Domaranalys — ANONYMISERAD (prioritet 4)
 

@@ -1,0 +1,100 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '062');
+---
+
+<Base
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
+  description="887 Bandyallsvenskan-matcher mot 1 124 Elitseriematcher: mål per match, hemmafördel, oavgjortandel och halvtidsprediktion är statistiskt omöjliga att skilja åt. En division ner är samma sport — vilket gör dam–herr-skillnaden i Finding 056 mer anmärkningsvärd, inte mindre."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
+    <h1 class="finding-title">En division ner, samma sport:<br>Allsvenskan går inte att skilja från Elitserien</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">9,16 / 9,12</span>
+        <span class="key-number__label">Mål per match, Allsvenskan / Elitserien</span>
+        <span class="key-number__note">Cohen's d = 0,01 — ingen skillnad</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">51,2 / 50,2 %</span>
+        <span class="key-number__label">Hemmavinst, Allsvenskan / Elitserien</span>
+        <span class="key-number__note">Konfidensintervallen omsluter varandra</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">79,5 / 80,1 %</span>
+        <span class="key-number__label">Halvtidsledning → vinst</span>
+        <span class="key-number__note">Samma dramaturgi en division ner</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">4,24 / 3,77</span>
+        <span class="key-number__label">Utvisningar per match — enda avvikelsen</span>
+        <span class="key-number__note">Och den siffran är ett golv, inte ett mått</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Bandyallsvenskan är nivån under Elitserien: andra spelare, andra budgetar, andra arenor. Men är det ett annat spel? Skiljer sig målproduktion, hemmafördel och matchdramaturgi mellan divisionerna — eller sätts spelets struktur av något annat än nivån?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>887 Bandyallsvenskan-matcher (grundserie, 2019–2026, exkl. 2023–24; säsongen 2024–25 endast delvis) mot Elitseriens 1 124. Allsvenskan-loggningen är ojämn, vilket styr metoden: mått på matchnivå (mål per match, resultatfördelning, halvtidsprediktion) bygger på slutresultat och är robusta för samtliga matcher; målminutfördelningen bygger enbart på de 687 matcher där händelseloggen reproducerar slutresultatet; utvisningsfrekvensen är ett under-loggat golv. Hörnanalys är utesluten — måltypsfältet är opålitligt i Allsvenskan-filen.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      <p><strong>Divisionerna går inte att skilja åt.</strong> På varje robust mått är skillnaden försumbar och konfidensintervallen överlappande:</p>
+      <table>
+        <thead><tr><th>Mått</th><th>Allsvenskan</th><th>Elitserien herr</th><th>Effektstorlek</th></tr></thead>
+        <tbody>
+          <tr><td>Mål/match</td><td>9,16 [8,94–9,37]</td><td>9,12 [8,93–9,31]</td><td>d = 0,01</td></tr>
+          <tr><td>Hemmavinst</td><td>51,2 % [47,9–54,5]</td><td>50,2 % [47,3–53,1]</td><td>h = 0,02</td></tr>
+          <tr><td>Oavgjort</td><td>12,6 % [10,6–15,0]</td><td>11,6 % [9,8–13,6]</td><td>h = 0,03</td></tr>
+          <tr><td>Bortavinst</td><td>36,2 % [33,1–39,4]</td><td>38,3 % [35,5–41,1]</td><td>h = −0,04</td></tr>
+          <tr><td>HT-ledning → vinst</td><td>79,5 % (n=356)</td><td>80,1 % (n=528)</td><td>h = −0,02</td></tr>
+        </tbody>
+      </table>
+      <p>Målminutfördelningen har samma form i båda serierna — svag stigning över matchen, mest mål i sista kvarten (18,6 % respektive 19,1 % i minut 76–90), och samma lyft direkt efter paus. Inget av de sex femtonminutersfönstren skiljer serierna åt med mer än 0,5 procentenheter.</p>
+      <p><strong>Den enda avvikelsen är utvisningarna</strong> — 4,24 per match i Allsvenskans fullständigt loggade matcher mot Elitseriens 3,77. Men Allsvenskans siffra är ett golv: loggningen fångar färre händelser, så den verkliga skillnaden kan vara större, mindre eller en ren loggningsartefakt. Riktningsgivande, inte belagd.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Nollresultatet är fyndet. En hel divisionsskillnad i spelarkvalitet, ekonomi och förutsättningar lämnar inga spår i spelets struktur: samma målproduktion, samma hemmafördel, samma dramaturgi, samma prediktiva kraft i en halvtidsledning. Strukturen ser ut att sättas av spelets regler och format — inte av vilka som spelar.</p>
+      <p>Det gör Finding 056 skarpare. Dam- och herrserien skiljer sig strukturellt på punkt efter punkt — hemmafördel, hörnberoende, ledningars dödlighet (Finding 060). Om nivåskillnad inte producerar strukturskillnad, vilket divisionsjämförelsen visar, kan dam–herr-skillnaderna inte viftas bort som en nivåeffekt. Något annat skiljer serierna åt, och datan har ännu inte sagt vad.</p>
+      <p>För Bandy Manager är konsekvensen direkt: lägre divisioner i spelet kan använda samma motorkalibrering som Elitserien. Datan säger att det inte är en förenkling — det är så sporten beter sig.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Allsvenskans händelseloggning är ojämn; alla event-baserade mått (målminuter, utvisningar) bygger på delmängder eller golv. Matchnivåmåtten påverkas inte.</li>
+        <li>Målminutfördelningen är i rå matchminut utan halvleksuppdelning — halvleksflagga saknas i Allsvenskan-filen, och minut ≥ 46-regeln är förbjuden (se Finding 051).</li>
+        <li>Ingen per-lag-utvisningsanalys — lagfältet saknas i Allsvenskan-filens utvisningsdata.</li>
+        <li>Fyra huvudjämförelser; slutsatserna vilar på effektstorlekar och CI-överlapp, inte enskilda p-värden.</li>
+        <li>2023–24 saknas; 2024–25 är partiell för Allsvenskan (28 matcher).</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>
