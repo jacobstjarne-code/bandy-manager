@@ -13,6 +13,9 @@ data-warehouse/matches.db-wal
 design-system/uploads/
 
 # Domaranalys — INTERN DATA. Ej för publik kanal.
+# Wildcard-catch-all: ALLT med INTERNAL-prefix i docs/data/ ignoreras (domarnamn
+# får aldrig ut publikt). Specifika rader nedan behålls som dokumentation.
+docs/data/INTERNAL_*
 docs/data/INTERNAL_referee_per_match.json
 docs/data/INTERNAL_referee_aggregates.json
 docs/data/INTERNAL_REFEREE_PATTERNS.md
