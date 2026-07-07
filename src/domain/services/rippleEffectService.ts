@@ -134,8 +134,18 @@ function applyBigDerbyWinRipples(game: SaveGame): SaveGame {
     }
   }
 
-  // Community standing +5
-  updated = { ...updated, communityStanding: Math.min(100, (updated.communityStanding ?? 50) + 5) }
+  // Yta 2 (Audit-syntes, 2026-07-07 — Väg B): communityStanding-steget (Orten)
+  // borttaget avsiktligt. Med fyra steg (Stämningen/Klacken/Orten/Sponsorerna)
+  // klippte describeRippleChains .slice(0,3) alltid bort Sponsorerna — kedjan
+  // visade bara atmosfär ("alla blev glada"), aldrig pengaföljden. Grep-
+  // verifierat: ingen achievement/styrelsemål/era-tröskel/narrativ text
+  // refererar derby-vinst specifikt som communityStanding-källa (reputation-
+  // MilestoneService/clubEraService läser bara det ackumulerade värdet
+  // generellt, matat av många andra källor — economy/politiker/sponsorer/
+  // hallprocess). Nu ryms alla tre kvarvarande steg (Stämningen/Klacken/
+  // Sponsorerna) utan att klippas, och pengarna syns äntligen i kedjan.
+  // Community standing FRÅN derbyvinster specifikt är alltså medvetet borta
+  // — inte en glömd rad. Rör inte tillbaka utan ett nytt designbeslut.
 
   // Sponsors: bump all active sponsor incomes by 5% for one season via sponsor mood
   updated = {
