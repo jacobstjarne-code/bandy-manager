@@ -1,0 +1,91 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { findings as _findings } from '../../../data/findings';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const _finding = _findings.find((f) => f.num === '063');
+---
+
+<Base
+  title={`Finding ${_finding?.num} — ${_finding?.title}`}
+  description="Uppföljning av Finding 052 på domarnivå: åtta av tio domare med tillräckligt underlag höjde sin egen utvisningstakt 2025-26, bara två av arton avviker från ligans timing-mönster, och klubbmix-screening av arton domare gav inga flaggor. Reformen är en kåregenskap, inte några få individers stil."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
+    <h1 class="finding-title">Reformen är bred: åtta av tio domare<br>höjde sin egen utvisningstakt</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number">
+        <span class="key-number__value">8 av 10</span>
+        <span class="key-number__label">Domare höjde sitt eget snitt 2025-26</span>
+        <span class="key-number__note">Mot sitt eget pre-reformsnitt — bred implementation</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">2 av 18</span>
+        <span class="key-number__label">Avviker från ligans timing-mönster</span>
+        <span class="key-number__note">Bonferroni-korrigerat — timing är ligaegenskap, inte domarstil</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">0</span>
+        <span class="key-number__label">Bias-flaggor i klubbmix-screening</span>
+        <span class="key-number__note">18 domare screenade</span>
+      </div>
+      <div class="key-number">
+        <span class="key-number__value">+16 %</span>
+        <span class="key-number__label">Liganivå — den kanoniska siffran</span>
+        <span class="key-number__note">Från Finding 052; domarurvalet ger +20 % (se Datan)</span>
+      </div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 052 visade att utvisningsfrekvensen steg 16 % säsongen 2025-26 — reformen syns i datan. Men en liganivåsiffra kan dölja två helt olika verkligheter: en domarkår som samlat dömer strängare, eller några få domare som dömer mycket strängare. Vilken är det?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Domartillsättningar per match kopplade till utvisningsdata, 104 domare totalt i datasetet. Tre analyser: reformdelta per domare (kräver minst 8 matcher före reformen och 5 under 2025-26 — tio domare kvalar), timing-profil mot ligans baslinje (18 domare med tillräckligt underlag), och klubbmix-screening (samma 18). Analysen är gjord på individnivå men publiceras enbart i aggregat; domare är pseudonymiserade i det interna underlaget och redovisas inte enskilt.</p>
+      <p>Domarurvalet omfattar bara matcher med loggad domartillsättning — en delmängd av 052:s underlag. På den delmängden är liganivåökningen +20 % (3,65 → 4,40 utvisningar/match) mot 052:s +16 % på hela materialet. Det är samma reform mätt på olika matchpopulationer, inte två olika resultat; 052:s siffra är den kanoniska.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      <p><strong>Reformen är bred.</strong> Åtta av de tio domare som dömt tillräckligt många matcher på båda sidor om reformen höjde sin egen utvisningstakt 2025-26 jämfört med sitt eget historiska snitt. Ökningen är alltså inte ett sammansättningsfenomen — det är inte så att strängare domare fått fler matcher — utan samma domare som dömer hårdare än de själva gjorde tidigare.</p>
+      <p><strong>De två som gick mot strömmen var de som redan låg högst.</strong> De enda domare vars utvisningstakt sjönk var de två med kårens högsta pre-reformsnitt. Reformen ser därmed inte ut att ha lyft alla lika mycket, utan dragit kåren mot en gemensam nivå — spridningen komprimeras uppifrån och underifrån samtidigt.</p>
+      <p><strong>Timing är en ligaegenskap.</strong> Bara två av arton profilerade domare avviker signifikant (Bonferroni-korrigerat) från ligans fördelning av utvisningar över matchens perioder. För de allra flesta domare bestäms alltså <em>när</em> i matchen det döms av spelet, inte av vem som dömer.</p>
+      <p><strong>Ingen bias-flagga.</strong> Klubbmix-screeningen av arton domare — en kontroll av om någon domares utvisningsmönster avviker när exponeringen mot olika klubbar räknas bort — gav inga signifikanta flaggor. Merparten av de råa skillnaderna mellan domare förklaras av vilka matcher de tilldelats.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Det här är den starkaste läsningen av 052 som datan medger: reformen är en policy som implementerats, inte en artefakt av vilka som råkat döma. Att samma individer dömer strängare än sina egna historiska snitt stänger den viktigaste alternativa förklaringen till liganivåökningen.</p>
+      <p>Att spridningen dessutom komprimeras — de mest utvisningsbenägna domarna backade medan resten steg — är den kanske mest intressanta detaljen. För lagen betyder en samlad kår ökad förutsägbarhet: vilken domare som tillsätts spelar mindre roll 2025-26 än tidigare. Kombinerat med Finding 059 och 061 (utvisningen som spelets mest produktiva målfönster) är den förutsägbarheten inte kosmetik — disciplin är en taktisk variabel, och dess prislista blev just enhetligare.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Endast tio domare kvalar för reformdeltat (≥8 pre- + ≥5 reformmatcher) — aggregatet "8 av 10" bygger på ett litet urval, om än det enda möjliga.</li>
+        <li>Individdata är intern och pseudonymiserad; denna finding redovisar enbart aggregat. Per-domare-tabeller publiceras inte, bland annat därför att volymsorterade pseudonymer är re-identifierbara mot halvpublika tillsättningsdata.</li>
+        <li>Dam-underlaget per domare är för tunt för slutsatser och ingår inte.</li>
+        <li>Klubbmix-screeningen är en täckningsredovisning, inte ett friande bevis — den utesluter stora systematiska avvikelser, inte små.</li>
+        <li>2023–24 saknas i datasetet.</li>
+      </ul>
+    </div>
+
+  </div>
+</Base>
