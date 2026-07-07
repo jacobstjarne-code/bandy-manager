@@ -1,0 +1,349 @@
+{
+  "_meta": {
+    "analysis": "A6 kalendereffekter",
+    "spec": "ANALYSSPEC_VAG2_OEXPLOATERAT.md A6",
+    "questions": "Q004 (höst/vinter), Q167 (tidpunkt i serien), Q174 (säsongsperiod)",
+    "note": "Säsongsfas via datum-terciler (round sparsam). 2023-24 saknas."
+  },
+  "herr": {
+    "label": "herr",
+    "n_matches": 1321,
+    "rest_days": {
+      "≤3": {
+        "n": 1390,
+        "win_pct": 45.8,
+        "points_per_match": 1.02,
+        "goals_for_per_match": 4.47,
+        "goals_against_per_match": 4.42
+      },
+      "4-6": {
+        "n": 822,
+        "win_pct": 44.5,
+        "points_per_match": 1.0,
+        "goals_for_per_match": 4.75,
+        "goals_against_per_match": 4.68
+      },
+      "7-13": {
+        "n": 300,
+        "win_pct": 40.7,
+        "points_per_match": 0.93,
+        "goals_for_per_match": 4.35,
+        "goals_against_per_match": 4.66
+      },
+      "14+": {
+        "n": 37,
+        "win_pct": 48.6,
+        "points_per_match": 1.08,
+        "goals_for_per_match": 4.3,
+        "goals_against_per_match": 4.51
+      }
+    },
+    "rest_differential": {
+      "more_rested_team_win_pct": {
+        "pct": 45.7,
+        "ci": [
+          37.7,
+          54.0
+        ],
+        "n": 140
+      },
+      "n_decisive_with_rest_gap": 140
+    },
+    "christmas_break": {
+      "kort (3-6 dgr)": {
+        "n_breaks": 64,
+        "median_break_days": 5,
+        "last_before": {
+          "n": 64,
+          "win_pct": 51.6,
+          "points_per_match": 1.09,
+          "goals_for_per_match": 4.69
+        },
+        "first_after": {
+          "n": 64,
+          "win_pct": 43.8,
+          "points_per_match": 1.11,
+          "goals_for_per_match": 4.8
+        }
+      },
+      "långt (≥7 dgr)": {
+        "n_breaks": 20,
+        "median_break_days": 7,
+        "last_before": {
+          "n": 20,
+          "win_pct": 45.0,
+          "points_per_match": 0.9,
+          "goals_for_per_match": 4.5
+        },
+        "first_after": {
+          "n": 20,
+          "win_pct": 30.0,
+          "points_per_match": 0.65,
+          "goals_for_per_match": 3.45
+        }
+      },
+      "alla (≥3 dgr)": {
+        "n_breaks": 84,
+        "median_break_days": 6,
+        "last_before": {
+          "n": 84,
+          "win_pct": 50.0,
+          "points_per_match": 1.05,
+          "goals_for_per_match": 4.64
+        },
+        "first_after": {
+          "n": 84,
+          "win_pct": 40.5,
+          "points_per_match": 1.0,
+          "goals_for_per_match": 4.48
+        }
+      }
+    },
+    "season_phase_terciles": {
+      "tidig": {
+        "n": 439,
+        "goals_per_match": 8.89,
+        "fouls_per_match": 3.9,
+        "home_win": {
+          "pct": 47.6,
+          "ci": [
+            43.0,
+            52.3
+          ],
+          "n": 439
+        }
+      },
+      "mitt": {
+        "n": 439,
+        "goals_per_match": 8.94,
+        "fouls_per_match": 3.63,
+        "home_win": {
+          "pct": 51.5,
+          "ci": [
+            46.8,
+            56.1
+          ],
+          "n": 439
+        }
+      },
+      "sen": {
+        "n": 443,
+        "goals_per_match": 9.4,
+        "fouls_per_match": 3.8,
+        "home_win": {
+          "pct": 53.5,
+          "ci": [
+            48.8,
+            58.1
+          ],
+          "n": 443
+        }
+      }
+    },
+    "by_month": {
+      "1": {
+        "goals_per_match": 8.95,
+        "home_win_pct": 51.4,
+        "n": 282
+      },
+      "2": {
+        "goals_per_match": 9.59,
+        "home_win_pct": 54.4,
+        "n": 252
+      },
+      "3": {
+        "goals_per_match": 8.75,
+        "home_win_pct": 54.6,
+        "n": 119
+      },
+      "4": {
+        "goals_per_match": 9.0,
+        "home_win_pct": 100.0,
+        "n": 1
+      },
+      "10": {
+        "goals_per_match": 9.5,
+        "home_win_pct": 51.4,
+        "n": 70
+      },
+      "11": {
+        "goals_per_match": 8.98,
+        "home_win_pct": 46.7,
+        "n": 289
+      },
+      "12": {
+        "goals_per_match": 8.9,
+        "home_win_pct": 49.7,
+        "n": 308
+      }
+    }
+  },
+  "dam": {
+    "label": "dam",
+    "n_matches": 428,
+    "rest_days": {
+      "≤3": {
+        "n": 167,
+        "win_pct": 52.7,
+        "points_per_match": 1.08,
+        "goals_for_per_match": 4.9,
+        "goals_against_per_match": 4.32
+      },
+      "4-6": {
+        "n": 169,
+        "win_pct": 45.6,
+        "points_per_match": 0.95,
+        "goals_for_per_match": 4.12,
+        "goals_against_per_match": 4.01
+      },
+      "7-13": {
+        "n": 381,
+        "win_pct": 47.0,
+        "points_per_match": 0.97,
+        "goals_for_per_match": 4.41,
+        "goals_against_per_match": 4.77
+      },
+      "14+": {
+        "n": 85,
+        "win_pct": 49.4,
+        "points_per_match": 1.05,
+        "goals_for_per_match": 4.32,
+        "goals_against_per_match": 4.31
+      }
+    },
+    "rest_differential": {
+      "more_rested_team_win_pct": {
+        "pct": 46.0,
+        "ci": [
+          35.9,
+          56.4
+        ],
+        "n": 87
+      },
+      "n_decisive_with_rest_gap": 87
+    },
+    "christmas_break": {
+      "kort (3-6 dgr)": {
+        "n_breaks": 10,
+        "median_break_days": 6,
+        "last_before": {
+          "n": 10,
+          "win_pct": 50.0,
+          "points_per_match": 1.0,
+          "goals_for_per_match": 4.3
+        },
+        "first_after": {
+          "n": 10,
+          "win_pct": 50.0,
+          "points_per_match": 1.1,
+          "goals_for_per_match": 2.8
+        }
+      },
+      "långt (≥7 dgr)": {
+        "n_breaks": 39,
+        "median_break_days": 10,
+        "last_before": {
+          "n": 39,
+          "win_pct": 48.7,
+          "points_per_match": 0.97,
+          "goals_for_per_match": 4.05
+        },
+        "first_after": {
+          "n": 39,
+          "win_pct": 48.7,
+          "points_per_match": 0.97,
+          "goals_for_per_match": 4.36
+        }
+      },
+      "alla (≥3 dgr)": {
+        "n_breaks": 49,
+        "median_break_days": 9,
+        "last_before": {
+          "n": 49,
+          "win_pct": 49.0,
+          "points_per_match": 0.98,
+          "goals_for_per_match": 4.1
+        },
+        "first_after": {
+          "n": 49,
+          "win_pct": 49.0,
+          "points_per_match": 1.0,
+          "goals_for_per_match": 4.04
+        }
+      }
+    },
+    "season_phase_terciles": {
+      "tidig": {
+        "n": 140,
+        "goals_per_match": 9.29,
+        "fouls_per_match": 3.54,
+        "home_win": {
+          "pct": 48.6,
+          "ci": [
+            40.4,
+            56.8
+          ],
+          "n": 140
+        }
+      },
+      "mitt": {
+        "n": 140,
+        "goals_per_match": 8.59,
+        "fouls_per_match": 3.44,
+        "home_win": {
+          "pct": 44.3,
+          "ci": [
+            36.3,
+            52.6
+          ],
+          "n": 140
+        }
+      },
+      "sen": {
+        "n": 148,
+        "goals_per_match": 8.91,
+        "fouls_per_match": 3.94,
+        "home_win": {
+          "pct": 51.4,
+          "ci": [
+            43.4,
+            59.3
+          ],
+          "n": 148
+        }
+      }
+    },
+    "by_month": {
+      "1": {
+        "goals_per_match": 9.05,
+        "home_win_pct": 48.0,
+        "n": 98
+      },
+      "2": {
+        "goals_per_match": 9.23,
+        "home_win_pct": 45.6,
+        "n": 79
+      },
+      "3": {
+        "goals_per_match": 7.53,
+        "home_win_pct": 53.2,
+        "n": 47
+      },
+      "10": {
+        "goals_per_match": 9.78,
+        "home_win_pct": 50.0,
+        "n": 18
+      },
+      "11": {
+        "goals_per_match": 8.89,
+        "home_win_pct": 49.5,
+        "n": 95
+      },
+      "12": {
+        "goals_per_match": 9.14,
+        "home_win_pct": 46.2,
+        "n": 91
+      }
+    }
+  }
+}
