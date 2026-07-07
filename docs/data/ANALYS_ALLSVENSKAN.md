@@ -31,9 +31,19 @@ Allsvenskan: 6009 mål ur 687 complete-loggade matcher. Elitserien: 9330 mål ur
 | 61-75 | 16.7% | 16.5% |
 | 76-90 | 18.6% | 19.1% |
 
-## Utvisningsfrekvens (under-loggat golv)
+## Utvisningsfrekvens
 
-Allsvenskan: 4.6 utv./match (alla), 4.24 i full-loggade (n=204). Elitserien herr: 3.77. Allsvenskans siffra är ett golv — loggningen fångar färre händelser. Jämförelsen är riktningsgivande, inte exakt.
+**Allsvenskan 4.6 utv./match vs Elitserien herr 3.77** — allsvenskan ligger ~22% högre.
+
+Detta är den enda tydliga strukturella skillnaden mellan serierna. Till skillnad från en tidigare hypotes är siffran **inte** ett under-loggat golv: `loggingQuality` spårar inte foul-completeness — utvisningar loggas i samma spann oavsett kvalitetsetikett (full/partial/minimal nedan är icke-monotont, `full` är till och med lägst). 4.6 är därför en rimlig punktskattning, inte en undre gräns.
+
+| loggingQuality | Utv./match | n |
+|---|---|---|
+| full | 4.24 | 204 |
+| partial | 4.78 | 528 |
+| minimal | 4.45 | 155 |
+
+*Kvarstående förbehåll:* en systematisk skillnad i loggningsnivå mellan allsvenskan-filen och elitserie-filen kan inte helt uteslutas, men riktningen (fler utvisningar i allsvenskan) är robust eftersom foul-loggningen inom allsvenskan inte samvarierar med kvalitetsetiketten.
 
 ## Findings som berörs
 

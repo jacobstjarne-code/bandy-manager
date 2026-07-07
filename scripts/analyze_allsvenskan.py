@@ -94,15 +94,17 @@ def goal_minute_dist(matches):
 
 
 def foul_rate(matches):
-    """Utvisningar per match — under-loggat golv (loggingQuality-känsligt)."""
+    """Utvisningar per match. VIKTIGT: loggingQuality spårar INTE foul-completeness —
+    full/partial/minimal ligger alla i samma spann (icke-monotont), så per_match_all är
+    rätt punktskattning, inte ett under-loggat golv."""
+    byq = {}
+    for m in matches:
+        q = m.get('loggingQuality')
+        d = byq.setdefault(q, [0, 0]); d[0] += len(m.get('fouls') or []); d[1] += 1
     nf = sum(len(m.get('fouls') or []) for m in matches)
-    per = nf / len(matches)
-    # bara full-logged som referens
-    full = [m for m in matches if m.get('loggingQuality') == 'full']
-    nff = sum(len(m.get('fouls') or []) for m in full)
-    return {'fouls_total': nf, 'per_match_all': round(per, 2),
-            'per_match_full_logged': round(nff / len(full), 2) if full else None,
-            'n_full': len(full)}
+    per_q = {str(q): {'fouls_per_match': round(f / n, 2), 'n': n} for q, (f, n) in byq.items()}
+    return {'fouls_total': nf, 'per_match_all': round(nf / len(matches), 2),
+            'per_logging_quality': per_q}
 
 
 def analyze(matches, label):
@@ -169,7 +171,8 @@ def main():
     print(f"  hemmavinst: ALS {comps['home_win']['als_pct']}% vs ELITE {comps['home_win']['elite_pct']}% (h={comps['home_win']['cohens_h']})")
     print(f"  oavgjort: ALS {comps['draw']['als_pct']}% vs ELITE {comps['draw']['elite_pct']}% (h={comps['draw']['cohens_h']})")
     print(f"  HT-ledn→vinst: ALS {comps['ht_lead_to_win']['als_pct']}% vs ELITE {comps['ht_lead_to_win']['elite_pct']}% (h={comps['ht_lead_to_win']['cohens_h']})")
-    print(f"  utvisn/match: ALS {A['foul_rate']['per_match_all']} (full-logg {A['foul_rate']['per_match_full_logged']}) vs ELITE {E['foul_rate']['per_match_all']}")
+    print(f"  utvisn/match: ALS {A['foul_rate']['per_match_all']} vs ELITE {E['foul_rate']['per_match_all']} "
+          f"| per-quality ALS: {A['foul_rate']['per_logging_quality']}")
 
     write_report(out)
 
@@ -213,12 +216,24 @@ def write_report(o):
     for ba, be in zip(ga['distribution'], ge['distribution']):
         L.append(f"| {ba['window']} | {ba['pct']}% | {be['pct']}% |")
 
-    L.append("\n## Utvisningsfrekvens (under-loggat golv)\n")
+    L.append("\n## Utvisningsfrekvens\n")
     fa, fe = A['foul_rate'], E['foul_rate']
-    L.append(f"Allsvenskan: {fa['per_match_all']} utv./match (alla), {fa['per_match_full_logged']} i full-loggade "
-             f"(n={fa['n_full']}). Elitserien herr: {fe['per_match_all']}. "
-             "Allsvenskans siffra är ett golv — loggningen fångar färre händelser. "
-             "Jämförelsen är riktningsgivande, inte exakt.\n")
+    L.append(f"**Allsvenskan {fa['per_match_all']} utv./match vs Elitserien herr {fe['per_match_all']}** "
+             f"— allsvenskan ligger ~{round((fa['per_match_all']/fe['per_match_all']-1)*100)}% högre.\n")
+    L.append("Detta är den enda tydliga strukturella skillnaden mellan serierna. Till skillnad från "
+             "en tidigare hypotes är siffran **inte** ett under-loggat golv: `loggingQuality` spårar inte "
+             "foul-completeness — utvisningar loggas i samma spann oavsett kvalitetsetikett "
+             "(full/partial/minimal nedan är icke-monotont, `full` är till och med lägst). "
+             f"{fa['per_match_all']} är därför en rimlig punktskattning, inte en undre gräns.\n")
+    L.append("| loggingQuality | Utv./match | n |")
+    L.append("|---|---|---|")
+    for q in ('full', 'partial', 'minimal'):
+        pq = fa['per_logging_quality'].get(q)
+        if pq:
+            L.append(f"| {q} | {pq['fouls_per_match']} | {pq['n']} |")
+    L.append("\n*Kvarstående förbehåll:* en systematisk skillnad i loggningsnivå mellan allsvenskan-filen "
+             "och elitserie-filen kan inte helt uteslutas, men riktningen (fler utvisningar i allsvenskan) "
+             "är robust eftersom foul-loggningen inom allsvenskan inte samvarierar med kvalitetsetiketten.\n")
 
     L.append("## Findings som berörs\n")
     L.append("- **Finding 032** (\"Målminutsfördelning per division: ingen data tillgänglig\"): "

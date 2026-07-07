@@ -981,8 +981,20 @@
     "foul_rate": {
       "fouls_total": 4078,
       "per_match_all": 4.6,
-      "per_match_full_logged": 4.24,
-      "n_full": 204
+      "per_logging_quality": {
+        "partial": {
+          "fouls_per_match": 4.78,
+          "n": 528
+        },
+        "full": {
+          "fouls_per_match": 4.24,
+          "n": 204
+        },
+        "minimal": {
+          "fouls_per_match": 4.45,
+          "n": 155
+        }
+      }
     },
     "logging_quality": {
       "partial": 528,
@@ -2210,8 +2222,12 @@
     "foul_rate": {
       "fouls_total": 4233,
       "per_match_all": 3.77,
-      "per_match_full_logged": null,
-      "n_full": 0
+      "per_logging_quality": {
+        "None": {
+          "fouls_per_match": 3.77,
+          "n": 1124
+        }
+      }
     },
     "logging_quality": {
       "null": 1124
