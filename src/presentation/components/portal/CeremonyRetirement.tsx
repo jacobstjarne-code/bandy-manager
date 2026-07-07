@@ -2,6 +2,7 @@ import { useGameStore } from '../../store/gameStore'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { Z } from '../../utils/zIndices'
+import { DecisionChoices } from '../DecisionChoices'
 
 interface Props {
   game: SaveGame
@@ -68,30 +69,16 @@ export function CeremonyRetirement({ game, event }: Props) {
         </p>
       )}
 
-      {/* Choices */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 300 }}>
-        {event.choices.map((choice, i) => (
-          <button
-            key={choice.id}
-            onClick={() => resolveEvent(event.id, choice.id)}
-            style={{
-              padding: '13px 16px',
-              background: i === 0 ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
-              border: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.15)',
-              borderRadius: 'var(--radius-md)',
-              color: i === 0 ? 'var(--bg-dark)' : 'var(--text-light)',
-              fontSize: 13, fontWeight: i === 0 ? 700 : 500,
-              cursor: 'pointer', textAlign: 'left',
-            }}
-          >
-            {choice.label}
-            {choice.subtitle && (
-              <span style={{ display: 'block', fontSize: 11, marginTop: 2, opacity: 0.7, fontWeight: 400 }}>
-                {choice.subtitle}
-              </span>
-            )}
-          </button>
-        ))}
+      {/* Choices — yta 5b (Audit-syntes, 2026-07-07): handrullade knappar → delad
+          DecisionChoices, samma komponent som Portal/Granskas övriga event-kort.
+          Alla event.choices-fält (id/label/subtitle) mappas rakt av, ingen sträng
+          tappad. Första valet primärt, matchar tidigare i===0-beteendet. */}
+      <div style={{ width: '100%', maxWidth: 300 }}>
+        <DecisionChoices
+          choices={event.choices}
+          onChoose={(choiceId) => resolveEvent(event.id, choiceId)}
+          primaryChoiceId={event.choices[0]?.id}
+        />
       </div>
     </div>
   )
