@@ -33,6 +33,11 @@ export interface PortalBeat {
   /** Förbättring 3 severity-skalan. 0/undefined=plain, 1=copper (kicker), 2=danger, 3=kris-band mörk yta.
    *  Funktion → kan eskalera på game-state. Bakåtkompatibelt: beats utan severity → kicker?1:0. */
   severity?: (game: SaveGame) => 0 | 1 | 2 | 3
+  /** Yta 2 (Audit-syntes, 2026-07-07): valfri stegvis nedbrytning under `text` — kedjan visas
+   *  som separata rader (riktningsfärgad), inte hopplattad i löpmeningen. Beats utan `steps`
+   *  renderas precis som förut, bara `text`. Texten i varje steg är oförändrad — samma
+   *  STEP_VERBS-fraser som redan användes i den hopplattade meningen, ingen ny copy. */
+  steps?: (game: SaveGame) => { text: string; dir: 'up' | 'down' }[]
 }
 
 /**
@@ -97,15 +102,22 @@ const TRIGGER_CLAUSE: Record<RippleChain['trigger'], (name?: string) => string> 
   mecenat_left:  (n) => `${n ?? 'Mecenaten'} drog sig ur.`,
 }
 
-function renderChain(c: RippleChain | undefined): string {
+// Yta 2 (Audit-syntes, 2026-07-07): renderChain() plattade kedjan till EN löpmening
+// ("Derbysegern sitter kvar. stämningen lyfter, klacken tänds."). Design ville se
+// kedjan stegvis (label + riktning per steg) för läsbarhet — "så du förstår motorn
+// du styr, inte bara utfallet". Delad i två: klausulen (oförändrad text) + en
+// separat stegvis lista. STEP_VERBS-fraserna återanvänds ordagrant, ingen ny copy.
+function renderClause(c: RippleChain | undefined): string {
   if (!c) return ''
-  const clause = TRIGGER_CLAUSE[c.trigger](c.subjectName)
-  if (c.steps.length === 0) return clause
-  const verbs = c.steps.slice(0, 3).map(s => {
+  return TRIGGER_CLAUSE[c.trigger](c.subjectName)
+}
+
+function renderSteps(c: RippleChain | undefined): { text: string; dir: 'up' | 'down' }[] {
+  if (!c) return []
+  return c.steps.slice(0, 3).map(s => {
     const pair = STEP_VERBS[s.label]
-    return pair ? pair[s.dir] : s.label
+    return { text: pair ? pair[s.dir] : s.label, dir: s.dir }
   })
-  return `${clause} ${verbs.join(', ')}.`
 }
 
 export const PORTAL_BEATS: PortalBeat[] = [
@@ -156,7 +168,8 @@ export const PORTAL_BEATS: PortalBeat[] = [
       return c.steps.some(s => s.label === 'Styrelsen') ? 2 : 1
     },
     trigger: (g) => !!g.pendingRippleChain && g.pendingRippleChain.round === g.currentMatchday,
-    text: (g) => renderChain(g.pendingRippleChain),
+    text: (g) => renderClause(g.pendingRippleChain),
+    steps: (g) => renderSteps(g.pendingRippleChain),
     keyFn: (g) => `ripple_${g.pendingRippleChain?.trigger ?? 'unknown'}_${g.pendingRippleChain?.round ?? 0}_s${g.pendingRippleChain?.season ?? 0}`,
     oncePerSeason: false,
   },

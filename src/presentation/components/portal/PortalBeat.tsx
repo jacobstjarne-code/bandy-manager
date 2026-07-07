@@ -53,6 +53,7 @@ export function PortalBeat({ game }: Props) {
   if (!beat) return null
 
   const beatText = typeof beat.text === 'function' ? beat.text(game) : beat.text
+  const beatSteps = beat.steps ? beat.steps(game) : []
   const kickerText = typeof beat.kicker === 'function' ? beat.kicker(game) : beat.kicker
   const sev: 0 | 1 | 2 | 3 = beat.severity
     ? beat.severity(game)
@@ -116,6 +117,21 @@ export function PortalBeat({ game }: Props) {
           <div className="h-quote" style={{ color: styles.textColor, lineHeight: 1.55 }}>
             {beatText}
           </div>
+          {/* Yta 2 (Audit-syntes, 2026-07-07): kedjan stegvis — label/riktning per rad,
+              inte hopplattad i löpmeningen. Bara beats med `steps` visar den här listan;
+              övriga beats renderas precis som förut. */}
+          {beatSteps.length > 0 && (
+            <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {beatSteps.map((step, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 6, fontSize: 11.5 }}>
+                  <span style={{ color: step.dir === 'up' ? 'var(--success)' : 'var(--danger)', flexShrink: 0 }}>
+                    {step.dir === 'up' ? '↑' : '↓'}
+                  </span>
+                  <span style={{ color: styles.textColor }}>{step.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         {isNavigable && (
           <span style={{
