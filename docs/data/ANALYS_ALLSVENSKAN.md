@@ -1,80 +1,52 @@
-# Analys: Bandyallsvenskan Herr
+# A3 — Bandyallsvenskan vs Elitserien herr
 
-**Källa:** `bandygrytan_allsvenskan.json`
-**Säsonger:** 2019-20 till 2023-24 (5 hela säsonger) + 2024-25 Övre (28 matcher)
-**Totalt:** 887 matcher
-**Referens:** Elitserien 1124 matcher (`bandygrytan_detailed.json`)
+**Analys:** ANALYSSPEC_VAG2_OEXPLOATERAT.md A3. **Utförare:** Code. Fable skriver finding + uppdaterar 032.
 
----
+## Datakvalitet — läs först
 
-## Nyckeltal — Allsvenskan vs Elitserien
+Allsvenskan-filen (887 grundseriematcher) har ojämn loggning: {'partial': 528, 'full': 204, 'minimal': 155}. `goals[]` rekonstruerar slutresultatet i endast ~82% av full-loggade matcher, så **event-baserade mått är svagare än Elitseriens**. Därför: mål/match och resultatfördelning från **slutresultat** (robust, alla matcher); mål-minutfördelning enbart på delmängd där `goals[]`==slutresultat; utvisningsfrekvens som **under-loggat golv**. Uteslutet: hörnanalys (`type` opålitlig, ~45% hörnmål = artefakt), per-lag-fouls (team saknas), 1H/2H-split (ingen halvleksflagga — minut≥46-regeln förbjuden).
 
-| Mått | Allsvenskan | Elitserien | Diff |
+## Match-nivå (robust — ur slutresultat)
+
+| Mått | Allsvenskan | Elitserien herr | Effektstorlek |
 |---|---|---|---|
-| Mål/match | **9.16** | 9.12 | +0.04 |
-| Hemmaseger% | **51.2%** | 50.2% | +1.0pp |
-| Oavgjort% | **12.6%** | 11.6% | +1.0pp |
-| Bortaseger% | **36.2%** | 38.3% | −2.1pp |
-| Mål i 1:a HT | **4.21** | 4.19 | +0.02 |
-| Halvtidsledare vinner% | **79.9%** | 78.1% | +1.8pp |
-| Comeback −1 vid HT | **20.0%** | 24.5% | −4.5pp |
-| 2:a halvlek % | **54.3%** | 54.2% | +0.1pp |
-| Utvisningar/match | **4.60** | 3.77 | **+0.83** |
+| Mål/match | 9.16 (95% CI 8.94–9.37) | 9.12 (8.93–9.31) | Cohen's d = 0.01 |
+| Hemmavinst | 51.2% (CI 47.9–54.5) | 50.2% (CI 47.3–53.1) | Cohen's h = 0.02 |
+| Oavgjort | 12.6% (CI 10.6–15.0) | 11.6% (CI 9.8–13.6) | Cohen's h = 0.033 |
+| Bortavinst | 36.2% (CI 33.1–39.4) | 38.3% (CI 35.5–41.1) | Cohen's h = -0.043 |
+| HT-ledning→vinst | 79.5% (n=356, CI 75.0–83.4) | 80.1% (n=528, CI 76.5–83.3) | Cohen's h = -0.015 |
 
----
+Bonferroni: 4 huvudtest — tolka h/d, inte enbart p; CI-överlapp anges per rad.
 
-## Mål per säsong
+## Mål-minutfördelning (rå minut, ENDAST complete-loggade matcher)
 
-| Säsong | n | Mål/match | Hemmaseger% |
-|---|---|---|---|
-| 2019-20 | 176 | 9.14 | 48.9% |
-| 2020-21 | 176 | 8.98 | 58.0% |
-| 2021-22 | 156 | 9.06 | 43.6% |
-| 2022-23 | 176 | 9.14 | 55.1% |
-| 2023-24 | 175 | 9.53 | 49.1% |
-| 2024-25 Övre | 28 | 8.64 | 53.6% |
+Allsvenskan: 6009 mål ur 687 complete-loggade matcher. Elitserien: 9330 mål ur 1066. **Ingen 1H/2H-split** — halvleksflagga saknas i allsvenskan-filen.
 
-Hemmaseger% varierar 43–58% mellan säsonger — hög varians mot Elitseriens stabila ~50%. Kan delvis förklaras av att Allsvenskan ibland haft Norra/Södra-grupper med obalanserad styrka.
-
----
-
-## Tolkning
-
-**Allsvenskan är inte en nivå lägre i mål.** Mål/match 9.16 är identiskt med Elitseriens 9.12. Skillnaden i spelkvalitet märks inte i målsnittet — det är ett annat spel, mer fysiskt, men lika produktivt offensivt.
-
-**Klart fler utvisningar.** 4.60 utvisningar/match mot 3.77 i Elitserien (+22%). Allsvenskan är ett tuffare, mer fysiskt spel. Lag väljer att stanna i presskampen framför tekniskt spel. Nässjö IF, om de möter Elitserien-lag i kval, möter lag som är tränade för *lägre* utvisningsfrekvens — det är en adaptationsfråga.
-
-**Halvtidsläget avgör.** 79.9% vinstprocent för halvtidsledande lag — till och med lite högre än Elitseriens 78.1%. Allsvenskan-lag tenderar att ligga back i andra halvlek när de väl leder, vilket gör comebacks svårare (20.0% comeback -1 vs 24.5% i Elitserien).
-
-**Hemmafördel likvärdig.** 51.2% hemmaseger = nästan identiskt med Elitserien. Ingen stor strukturell skillnad i hemmafördel.
-
-**Andra halvlek dominerar.** 54.3% av målen i 2:a halvlek — exakt som Elitserien. Mönstret håller i alla divisioner.
-
----
-
-## Allsvenskan vs Elitserien — vad Christoffer behöver veta
-
-Nässjö spelar Allsvenskan. Christoffer frågar sig troligen: *är det en lång väg till Elitserien, eller är klyftan liten?*
-
-**Klyftan i mål är minimal.** En matchdag i Allsvenskan ser ut som en matchdag i Elitserien om man bara kollar resultaten: 9.1-9.2 mål, 50-51% hemmaseger, 11-13% oavgjort.
-
-**Klyftan i tempo och utvisningar är tydlig.** Elitserien-lag har 0.83 färre utvisningar/match — de är effektivare i press, gör färre onödiga foulsekvenser, är bättre disciplinerade. Att ta klivet från Allsvenskan till Elitserien handlar delvis om att lära sig ett disciplinerat defensivt spel.
-
-**Kval-format gynnar stabila lag.** En lag som leder vid halvtid i kval vinner 70.4% av gångerna. Att komma in stabilt, styra halvtiden och undvika att hamna efter är viktigare än att ha offensiv explosivitet.
-
----
-
-## Täckning och begränsningar
-
-| Säsong | Matcher | Kommentar |
+| Fönster | Allsvenskan | Elitserien herr |
 |---|---|---|
-| 2019-20 | 176 | Fullständig säsong |
-| 2020-21 | 176 | Fullständig säsong |
-| 2021-22 | 156 | Fullständig säsong (förkortad p.g.a. COVID) |
-| 2022-23 | 176 | Fullständig säsong |
-| 2023-24 | 175 | Fullständig säsong (1 match saknar data) |
-| 2024-25 | 28 | Enbart Övre-gruppen; Nedre ej i preCache |
+| 1-15 | 15.6% | 15.3% |
+| 16-30 | 15.2% | 15.4% |
+| 31-45 | 15.9% | 16.0% |
+| 46-60 | 18.1% | 17.8% |
+| 61-75 | 16.7% | 16.5% |
+| 76-90 | 18.6% | 19.1% |
 
-**`cornerGoal%` ej rapporterat.** Parsing-metoden ger ~45% hörnmål vilket är klart överestimerat (Elitserien-referens via exaktare analys: 22%). Övriga nyckeltal är tillförlitliga.
+## Utvisningsfrekvens (under-loggat golv)
 
-**Utvisningsdata:** Antalet utvisningar räknas från event typ 3 i Firebase-eventen. Noteras att "duration" ej kunnat bestämmas per utvisning från events (defaultas till 10 min). Frekvensen (antal per match) är tillförlitlig.
+Allsvenskan: 4.6 utv./match (alla), 4.24 i full-loggade (n=204). Elitserien herr: 3.77. Allsvenskans siffra är ett golv — loggningen fångar färre händelser. Jämförelsen är riktningsgivande, inte exakt.
+
+## Findings som berörs
+
+- **Finding 032** ("Målminutsfördelning per division: ingen data tillgänglig"): delvis inaktuell. En rå-minutfördelning på divisionsnivå (allsvenskan) ÄR nu möjlig för complete-loggade matcher (687 st). Men 1H/2H-splitten är fortfarande otillgänglig (ingen halvleksflagga), så påståendet stämmer för halvleksuppdelad fördelning, inte för rå minut. **Fable: formulera om 032 till att data finns för rå minut men inte per halvlek.**
+- **Finding 066**: refereras i spec:en men **existerar inte** (ingen sida, ingen yaml-post 001–061). Kan inte adresseras — spec-referensen är felaktig. **Fable: kontrollera vilket nummer som avsågs.**
+
+## Begränsningar
+
+- Event-baserade mått (mål-minut, utvisningar) begränsas av allsvenskans ojämna loggning; match-nivå (slutresultat) är opåverkat.
+- Grundserie i bägge serier. Allsvenskan 2024-25 endast 28 matcher (partiell säsong).
+- Hörnanalys utesluten (goals[].type opålitlig i denna fil).
+- Ingen per-lag-utvisningsanalys (fouls[].team saknas i allsvenskan-filen).
+
+## Öppna Q-nummer som berörs
+
+Divisionsjämförelse-frågorna bakom finding 032 samt varje Q i `docs/findings/facts/questions/` som rör Allsvenskan vs Elitserien-struktur.
