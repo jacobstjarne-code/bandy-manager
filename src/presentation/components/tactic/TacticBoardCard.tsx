@@ -3,7 +3,7 @@ import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { AssistantCoach } from '../../../domain/entities/AssistantCoach'
 import { TacticMentality } from '../../../domain/enums'
 import { getTacticConsequence } from '../../../domain/services/chemistryService'
-import type { OpponentAnalysis } from '../../../domain/services/opponentAnalysisService'
+import { getSuggestionWhyLine, type OpponentAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { FormationView } from './FormationView'
 import { NotesView } from './NotesView'
 
@@ -42,6 +42,9 @@ export function TacticBoardCard({
   // mentaliteten (inget att föreslå då).
   const suggestedMentality = opponentAnalysis?.suggestedMentality
   const showSuggestion = suggestedMentality !== undefined && suggestedMentality !== mentality
+  // {coach} interpolerar mot assistentens namn (coach.name), inte initialer — Fables
+  // textleverans 2026-07-07 namnger assistenten i varje varför-rad.
+  const suggestionWhyLine = getSuggestionWhyLine(opponentAnalysis?.recommendation, coach.name)
 
   function setMentality(m: TacticMentality) {
     onTacticChange({ ...club.activeTactic, mentality: m })
@@ -70,9 +73,8 @@ export function TacticBoardCard({
               }}
             >
               {s.label}
-              {/* Yta 3: förslagsmarkör — visuell, ändrar aldrig mentality själv.
-                  '[Opus]' tills Fable skriver copyn. Recommendation i spel just nu:
-                  se opponentAnalysis?.recommendation nedanför why-raden. */}
+              {/* Yta 3: förslagsmarkör — visuell, ändrar aldrig mentality själv. Pillen
+                  bär bara "assistentens förslag"; namnet hör hemma i varför-raden. */}
               {showSuggestion && s.id === suggestedMentality && (
                 <span style={{
                   position: 'absolute', top: -6, right: -2,
@@ -81,21 +83,18 @@ export function TacticBoardCard({
                   borderRadius: 99, padding: '2px 5px',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
                 }}>
-                  [Opus]
+                  FÖRESLÅS
                 </span>
               )}
             </button>
           ))}
         </div>
-        {/* Yta 3: varför-raden — vem föreslår + varför, härledd ur recommendation.
-            '[Opus]' tills Fable skriver copyn. Recommendation i spel just nu:
-            {opponentAnalysis?.recommendation} (en av de fyra fasta strängarna i
-            opponentAnalysisService.generateDetailedAnalysis — se handoff för alla fyra
-            + deras suggestedMentality-mappning). Nivå 2 (animation vid byte) väntar på
-            Design efter denna nivå 1. */}
-        {showSuggestion && (
+        {/* Yta 3: varför-raden — vem föreslår + varför, härledd ur recommendation
+            (getSuggestionWhyLine). Nivå 2 (animation vid byte) väntar på Design
+            efter denna nivå 1. */}
+        {showSuggestion && suggestionWhyLine && (
           <p className="h-quote-sm" style={{ marginTop: 6, color: 'var(--text-muted)' }}>
-            [Opus]
+            {suggestionWhyLine}
           </p>
         )}
       </div>

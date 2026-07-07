@@ -27,12 +27,46 @@ export interface OpponentAnalysis {
  * Yta 3 (Audit-syntes, 2026-07-07): enda källan för recommendation → TacticMentality.
  * Testbar isolerat från resten av analysgenereringen. Bara de tre riktade
  * rekommendationerna ger ett förslag — "Jämn motståndare" ger avsiktligt undefined.
+ *
+ * Balanced har MEDVETET ingen väg in — jämn motståndare föreslår ingenting (Fables
+ * textdömning 2026-07-07: en falsk "Balanserad föreslås"-pill hade sagt att assistenten
+ * har en åsikt när den inte har det, värre än ingen pill alls). Två rekommendationer
+ * mappar till Offensive, en till Defensive — det är en spegling av analystjänstens
+ * egen recommendation-logik (fler offensiva utfall), inte en design-obalans. Lägger
+ * någon till en balans-rekommendation i generateDetailedAnalysis utan att uppdatera
+ * denna funktion faller den tyst till undefined — det är rätt reservläge, men om
+ * avsikten var en Balanced-väg, uppdatera HÄR, inte bara i analysgenereringen.
  */
 export function mapRecommendationToMentality(recommendation: string | undefined): TacticMentality | undefined {
   if (recommendation === 'Pressa högt och dominera mitten.') return TacticMentality.Offensive
   if (recommendation === 'Spela offensivt — deras försvar är sårbart.') return TacticMentality.Offensive
   if (recommendation === 'Prioritera defensiven — de har farliga forwards.') return TacticMentality.Defensive
   return undefined
+}
+
+/**
+ * Yta 3 textleverans (Fable, 2026-07-07): varför-raden under SPELSTIL-knapparna.
+ * En variant per aktiv recommendation, assistentens röst (Sixten-registret — kort,
+ * konkret, understatement). Namnger vad assistenten SÅG, inte en order — "Stå stadigt
+ * först" i defensivfallet bär avsiktligt att det är en start, inte ett låst läge.
+ * "Jämn motståndare"-fallet har ingen rad här — det gates redan bort i presentations-
+ * lagret via suggestedMentality===undefined, aldrig ett saknat-mall-fall.
+ */
+const RECOMMENDATION_WHY_LINE: Record<string, (coachName: string) => string> = {
+  'Pressa högt och dominera mitten.': (coach) =>
+    `${coach} såg det: deras halvlinje är tunn. Pressa högt, ta mitten.`,
+  'Spela offensivt — deras försvar är sårbart.': (coach) =>
+    `${coach} såg en spricka i deras försvar. Våga framåt.`,
+  'Prioritera defensiven — de har farliga forwards.': (coach) =>
+    `${coach} varnar för deras forwards. Stå stadigt först.`,
+}
+
+/** Yta 3: recommendation + assistentens namn → varför-raden. undefined om ingen
+ *  aktiv rekommendation mappar (inkl. "Jämn motståndare", som aldrig ska ha en rad). */
+export function getSuggestionWhyLine(recommendation: string | undefined, coachName: string): string | undefined {
+  if (!recommendation) return undefined
+  const template = RECOMMENDATION_WHY_LINE[recommendation]
+  return template ? template(coachName) : undefined
 }
 
 export function generateBasicAnalysis(
