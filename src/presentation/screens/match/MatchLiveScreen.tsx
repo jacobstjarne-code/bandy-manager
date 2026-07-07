@@ -179,6 +179,13 @@ export function MatchLiveScreen() {
     // återställ via assistenten, bryt soft-lock-loopen.
     if (liveFixture?.matchStartedAt && liveFixture.status === 'scheduled') {
       simulateAbandonedMatch(fixture.id)
+      // advance()-flytten (Audit-syntes yta 5, 2026-07-07): till skillnad från matchDone-
+      // effekten nedan (rad ~333, som redan kör advance(true) innan "TILL GRANSKNING"-
+      // knappen ens blir klickbar) satte den här återhämtningsvägen ALDRIG roundSummary
+      // eller körde omgångsprocessningen — simulateAbandonedMatch gör bara själva
+      // matchsimuleringen. Utan denna rad var GranskaScreens mount-effekt den ENDA
+      // platsen som täckte just den här vägen.
+      advance(true)
       navigate('/game/review', { replace: true })
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps

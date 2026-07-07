@@ -26,7 +26,6 @@ export function GranskaScreen() {
   const game = useGameStore(s => s.game)
   const roundSummary = useGameStore(s => s.roundSummary)
   const clearRoundSummary = useGameStore(s => s.clearRoundSummary)
-  const advance = useGameStore(s => s.advance)
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const [visible, setVisible] = useState(false)
   const [resolvedEventIds, setResolvedEventIds] = useState<Set<string>>(new Set())
@@ -34,7 +33,6 @@ export function GranskaScreen() {
   const [soundsPlayed, setSoundsPlayed] = useState(false)
   const [step, setStep] = useState<GranskaStep>('oversikt')
   const [visitedSteps, setVisitedSteps] = useState<Set<GranskaStep>>(new Set(['oversikt']))
-  const didAdvance = useRef(false)
   const didRedirect = useRef(false)
 
   useEffect(() => {
@@ -42,22 +40,21 @@ export function GranskaScreen() {
     return () => clearTimeout(t)
   }, [])
 
+  // advance()-flytten (Audit-syntes yta 5, 2026-07-07): denna effekt processade
+  // tidigare omgången själv (advance(true)) som en sidoeffekt av att skärmen
+  // monterades — en skärm som avancerar spelets tillstånd bara för att den
+  // navigerades till, oavsett att `if (roundSummary) return` höll den i schack.
+  // Alla tre vägar in hit säkerställer nu processningen explicit INNAN navigering
+  // (MatchScreen.tsx snabbsim, MatchLiveScreen.tsx matchDone-effekten, och dess
+  // övergiven-match-återhämtning) — den här effekten är därför en ren guard:
+  // finns roundSummary, visa den; annars finns inget att visa, gå till dashboard.
   useEffect(() => {
     if (roundSummary) return
-    if (!game?.lastCompletedFixtureId) {
-      navigate('/game/dashboard', { replace: true })
-      return
-    }
-    const liveFixture = game.fixtures.find(f => f.id === game.lastCompletedFixtureId)
-    const alreadyProcessed = liveFixture && game.lastProcessedMatchday === liveFixture.matchday
-    if (!didAdvance.current && !alreadyProcessed) {
-      didAdvance.current = true
-      advance(true)
-    } else if (alreadyProcessed && !didRedirect.current) {
+    if (!didRedirect.current) {
       didRedirect.current = true
       navigate('/game/dashboard', { replace: true })
     }
-  }, [roundSummary, game, navigate, advance])
+  }, [roundSummary, navigate])
 
   useEffect(() => {
     if (!roundSummary || soundsPlayed) return
