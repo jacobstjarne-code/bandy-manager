@@ -1,0 +1,99 @@
+{
+  "_meta": {
+    "analysis": "A7 publik × hemmafördel (dam-gåtan)",
+    "spec": "ANALYSSPEC_VAG2_OEXPLOATERAT.md A7",
+    "gate": "dam-täckning ≥ 50% krävs för steg 2",
+    "gate_result": "EJ PASSERAD — stannar vid täckningsrapport"
+  },
+  "coverage": {
+    "herr": {
+      "n_matches": 1321,
+      "n_with_attendance": 456,
+      "coverage_pct": 34.5,
+      "per_season": {
+        "2019-20": {
+          "covered": 139,
+          "total": 216,
+          "pct": 64
+        },
+        "2020-21": {
+          "covered": 1,
+          "total": 214,
+          "pct": 0
+        },
+        "2021-22": {
+          "covered": 174,
+          "total": 291,
+          "pct": 60
+        },
+        "2022-23": {
+          "covered": 142,
+          "total": 208,
+          "pct": 68
+        },
+        "2024-25": {
+          "covered": 0,
+          "total": 182,
+          "pct": 0
+        },
+        "2025-26": {
+          "covered": 0,
+          "total": 210,
+          "pct": 0
+        }
+      },
+      "attendance_min": 134,
+      "attendance_median": 942,
+      "attendance_max": 12648,
+      "attendance_mean": 1274
+    },
+    "dam": {
+      "n_matches": 428,
+      "n_with_attendance": 87,
+      "coverage_pct": 20.3,
+      "per_season": {
+        "2019-20": {
+          "covered": 22,
+          "total": 67,
+          "pct": 33
+        },
+        "2020-21": {
+          "covered": 0,
+          "total": 77,
+          "pct": 0
+        },
+        "2021-22": {
+          "covered": 32,
+          "total": 81,
+          "pct": 40
+        },
+        "2022-23": {
+          "covered": 33,
+          "total": 91,
+          "pct": 36
+        },
+        "2024-25": {
+          "covered": 0,
+          "total": 56,
+          "pct": 0
+        },
+        "2025-26": {
+          "covered": 0,
+          "total": 56,
+          "pct": 0
+        }
+      },
+      "attendance_min": 101,
+      "attendance_median": 184,
+      "attendance_max": 4735,
+      "attendance_mean": 366
+    }
+  },
+  "step2_quartile_analysis": null,
+  "dam_gata_context": {
+    "note": "Finding 056: damserien saknar nästan hemmafördel. A7 skulle testa publik som mekanism.",
+    "dam_median_attendance": 184,
+    "herr_median_attendance": 942,
+    "observation": "Deskriptivt: dam-publik ~1/5 av herr — förenligt med publik-mekanismen, men EJ ett test (87 dammatcher, 20% täckning, 0% senaste två säsonger)."
+  }
+}
