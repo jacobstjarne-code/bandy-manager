@@ -2,7 +2,7 @@ import type { Club } from '../entities/Club'
 import type { Player } from '../entities/Player'
 import type { Fixture } from '../entities/Fixture'
 import type { StandingRow } from '../entities/SaveGame'
-import { PlayerPosition } from '../enums'
+import { PlayerPosition, TacticMentality } from '../enums'
 
 export interface OpponentAnalysis {
   opponentClubId: string
@@ -13,9 +13,26 @@ export interface OpponentAnalysis {
   strengths: string[]
   weaknesses: string[]
   recommendation?: string
+  /** Yta 3 (Audit-syntes, 2026-07-07): recommendation mappad till en TacticMentality,
+   *  så Analys→Taktik-bryggan kan markera den föreslagna knappen utan att TacticBoardCard
+   *  behöver tolka fritext. undefined = "Jämn motståndare" — ingen falsk föreslagen knapp
+   *  när analysen faktiskt inte lutar. Se mapRecommendationToMentality() nedan. */
+  suggestedMentality?: TacticMentality
   recentForm?: string
   tablePosition?: number
   keyPlayers: { playerId: string; name: string; position: string; estimatedCA: number }[]
+}
+
+/**
+ * Yta 3 (Audit-syntes, 2026-07-07): enda källan för recommendation → TacticMentality.
+ * Testbar isolerat från resten av analysgenereringen. Bara de tre riktade
+ * rekommendationerna ger ett förslag — "Jämn motståndare" ger avsiktligt undefined.
+ */
+export function mapRecommendationToMentality(recommendation: string | undefined): TacticMentality | undefined {
+  if (recommendation === 'Pressa högt och dominera mitten.') return TacticMentality.Offensive
+  if (recommendation === 'Spela offensivt — deras försvar är sårbart.') return TacticMentality.Offensive
+  if (recommendation === 'Prioritera defensiven — de har farliga forwards.') return TacticMentality.Defensive
+  return undefined
 }
 
 export function generateBasicAnalysis(
@@ -130,6 +147,7 @@ export function generateDetailedAnalysis(
     strengths,
     weaknesses,
     recommendation,
+    suggestedMentality: mapRecommendationToMentality(recommendation),
     keyPlayers: available
       .sort((a, b) => b.currentAbility - a.currentAbility)
       .slice(0, 5)
