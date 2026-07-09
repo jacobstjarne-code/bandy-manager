@@ -1,0 +1,156 @@
+{
+  "_meta": {
+    "analysis": "A8 restposter (overtime / own_goal / kval)",
+    "spec": "ANALYSSPEC_VAG2_OEXPLOATERAT.md A8",
+    "data_gaps": "overtime-flagga och own_goal FINNS EJ i datan — spec:en antog fält som inte existerar."
+  },
+  "herr": {
+    "phase_breakdown": {
+      "regular": {
+        "n": 1124,
+        "goals_per_match": 9.12,
+        "penalties_per_match": 0.77,
+        "draw_pct": 11.6,
+        "draws": 130,
+        "home_win_pct": 50.2
+      },
+      "qualification": {
+        "n": 38,
+        "goals_per_match": 8.66,
+        "penalties_per_match": 0.79,
+        "draw_pct": 26.3,
+        "draws": 10,
+        "home_win_pct": 36.8
+      },
+      "quarterfinal": {
+        "n": 68,
+        "goals_per_match": 8.81,
+        "penalties_per_match": 0.59,
+        "draw_pct": 1.5,
+        "draws": 1,
+        "home_win_pct": 60.3
+      },
+      "semifinal": {
+        "n": 38,
+        "goals_per_match": 8.39,
+        "penalties_per_match": 0.61,
+        "draw_pct": 2.6,
+        "draws": 1,
+        "home_win_pct": 57.9
+      },
+      "final": {
+        "n": 12,
+        "goals_per_match": 7.0,
+        "penalties_per_match": 0.58,
+        "draw_pct": 0.0,
+        "draws": 0,
+        "home_win_pct": 50.0
+      },
+      "round_of_16": {
+        "n": 13,
+        "goals_per_match": 9.08,
+        "penalties_per_match": 0.54,
+        "draw_pct": 0.0,
+        "draws": 0,
+        "home_win_pct": 61.5
+      },
+      "playoff": {
+        "n": 28,
+        "goals_per_match": 10.25,
+        "penalties_per_match": 0.96,
+        "draw_pct": 0.0,
+        "draws": 0,
+        "home_win_pct": 60.7
+      }
+    },
+    "own_goal": {
+      "goal_types_present": {
+        "open": 8774,
+        "corner": 2645,
+        "penalty": 648
+      },
+      "own_goal_type_present": false,
+      "note": "Inget self/own-goal i goals[].type och inget separat event → självmål ej inventeringsbart."
+    },
+    "overtime_proxy": {
+      "n_knockout": 159,
+      "knockout_draws": 2,
+      "note": "2 oavgjorda knockout-matcher (serieaggregat eller data-egenhet)."
+    }
+  },
+  "dam": {
+    "phase_breakdown": {
+      "regular": {
+        "n": 376,
+        "goals_per_match": 9.12,
+        "penalties_per_match": 1.02,
+        "draw_pct": 4.3,
+        "draws": 16,
+        "home_win_pct": 47.6
+      },
+      "qualification": {
+        "n": 4,
+        "goals_per_match": 7.25,
+        "penalties_per_match": 0.75,
+        "draw_pct": 25.0,
+        "draws": 1,
+        "home_win_pct": 50.0
+      },
+      "quarterfinal": {
+        "n": 28,
+        "goals_per_match": 7.93,
+        "penalties_per_match": 0.64,
+        "draw_pct": 0.0,
+        "draws": 0,
+        "home_win_pct": 46.4
+      },
+      "semifinal": {
+        "n": 16,
+        "goals_per_match": 7.0,
+        "penalties_per_match": 1.31,
+        "draw_pct": 0.0,
+        "draws": 0,
+        "home_win_pct": 50.0
+      },
+      "final": {
+        "n": 4,
+        "goals_per_match": 7.25,
+        "penalties_per_match": 1.5,
+        "draw_pct": 0.0,
+        "draws": 0,
+        "home_win_pct": 100.0
+      }
+    },
+    "own_goal": {
+      "goal_types_present": {
+        "open": 3027,
+        "corner": 584,
+        "penalty": 234
+      },
+      "own_goal_type_present": false,
+      "note": "Inget self/own-goal i goals[].type och inget separat event → självmål ej inventeringsbart."
+    },
+    "overtime_proxy": {
+      "n_knockout": 48,
+      "knockout_draws": 0,
+      "note": "Inga oavgjorda knockout-matcher → förlängning/straffläggning avgjorde dem, men ingen OT-flagga finns så frekvensen kan inte mätas."
+    }
+  },
+  "kval": {
+    "n_matches": 38,
+    "goals_per_match": 8.66,
+    "home_win_pct": 36.8,
+    "home_win_ci": [
+      23,
+      53
+    ],
+    "draw_pct": 26.3,
+    "seasons": {
+      "2019-20": 12,
+      "2020-21": 2,
+      "2021-22": 12,
+      "2022-23": 12
+    },
+    "note": "38 kvalmatcher — deskriptivt only. För litet för inferens om kval-dramaturgi."
+  }
+}
