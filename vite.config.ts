@@ -3,8 +3,16 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'child_process'
 
+// __GIT_HASH__ läses EN gång vid serverstart (define bakas in för hela
+// dev-server-processens livstid). Ett git-fel vid just den starten (t.ex.
+// index.lock från en samtidig git-operation) syns annars aldrig — catch{}
+// gömde felet. Om detta återkommer: läs stderr, starta om dev-servern.
 let gitHash = 'unknown'
-try { gitHash = execSync('git rev-parse --short HEAD').toString().trim() } catch {}
+try {
+  gitHash = execSync('git rev-parse --short HEAD').toString().trim()
+} catch (err) {
+  console.warn('[vite.config] git rev-parse --short HEAD misslyckades, __GIT_HASH__ blir "unknown":', (err as Error).message)
+}
 
 export default defineConfig({
   define: {
