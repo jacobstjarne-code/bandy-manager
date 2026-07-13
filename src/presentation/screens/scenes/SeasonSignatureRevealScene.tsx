@@ -102,13 +102,17 @@ export function SeasonSignatureRevealScene({ game, onComplete }: Props) {
         {data.subtitle}
       </div>
 
-      {/* Body */}
+      {/* Body — T3 (2026-07-13): fynd under samma svep som BoardMeetingScene/
+          CoffeeRoom. Detta är säsongens narrativa huvudtext, aktiv precis nu,
+          inget dimmed-tillstånd bakom sig — --text-light, inte -secondary.
+          Subtitle ovan är en annan, legitim hierarki (rubrik+underrubrik) och
+          rörs inte. */}
       <div style={{
         flex: 1,
         padding: '8px 32px 16px',
         fontFamily: 'Georgia, serif',
         fontSize: 13,
-        color: 'var(--text-light-secondary)',
+        color: 'var(--text-light)',
         lineHeight: 1.7,
         position: 'relative',
         zIndex: 1,

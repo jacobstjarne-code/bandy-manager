@@ -60,11 +60,13 @@ function SpeakerRow({ initial, speakerName, text, align }: SpeakerRowProps) {
         <div className="h-label h-label-light">
           {speakerName}
         </div>
+        {/* T3 (2026-07-13): repliken är aktiv dialog spelaren läser just nu,
+            inget dimmed-tillstånd bakom sig — --text-light, inte -secondary. */}
         <div
           style={{
             fontFamily: 'Georgia, serif',
             fontSize: 13,
-            color: 'var(--text-light-secondary)',
+            color: 'var(--text-light)',
             lineHeight: 1.5,
             fontStyle: 'italic',
           }}
