@@ -253,7 +253,11 @@
 }
 
 /* ── Stämpel-CTA ── */
-/* Funktionell status (fas-handling / START / SLUT) — aldrig dekoration. */
+/* PT-4 (BACKLOG.md 2026-07-10): var mono — hör till matchdatan (klocka/tidsstämplar/
+   händelseetiketter), inte till en knapp som navigerar UT ur matchen ("TILL GRANSKNING").
+   font-body matchar CTA-typografin (.btn-cta i global.css, samma som "KLAR — NÄSTA
+   OMGÅNG" i GranskaScreen och "Sätt igång" i ArrivalScene). Box-modellen (padding/
+   bakgrund/radie) är ledger-specifik och orörd — bara typografin var fel. */
 .lf-stamp {
   display: block;
   width: calc(100% - 26px);
@@ -261,7 +265,7 @@
   padding: 13px;
   background: var(--copper);
   color: var(--paper-warm);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 1px;

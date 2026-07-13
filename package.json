@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && npm run lint:design-guard",
     "start": "node server.js",
     "test": "vitest run",
     "test:watch": "vitest",
