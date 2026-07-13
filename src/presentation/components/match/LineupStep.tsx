@@ -65,7 +65,7 @@ const PRACTICE_COACH_QUOTES = [
   '”Här är truppen. Elva på isen, redan uppställda — du börjar inte från tomt.”',
   '”Färgen säger om spelaren passar sin plats. Grönt är rätt, gult går an, rött skaver.”',
   null, // beat 2 — interpoleras, se practiceSpotlightQuote()
-  '”Det var allt. Formen sköter jag; den ändrar du själv senare. Kör.”',
+  '”Det var allt. Formen sköter jag; den ändrar du själv senare. Kör. Efter i dag ställer du dem själv.”',
 ] as const
 
 function practiceSpotlightQuote(player: Player, slotPosition: PlayerPosition): string {
@@ -297,7 +297,7 @@ export function LineupStep({
             marginLeft: 'auto', fontFamily: 'ui-monospace, monospace', fontSize: 8, letterSpacing: '1px',
             color: 'var(--text-muted)', background: 'var(--bg)', border: '1px solid var(--border)',
             borderRadius: 3, padding: '2px 6px',
-          }}>LÅST I INTRO</span>
+          }}>SATT FÖR IDAG</span>
         </div>
       ) : (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', marginBottom: 10 }}>
