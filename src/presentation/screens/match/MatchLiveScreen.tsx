@@ -71,21 +71,33 @@ interface LocationState {
 }
 
 /**
- * PT-9 (BACKLOG.md 2026-07-13): unik, stabil seed-bas per interaktionstyp+steg,
- * så att (a) inga två interaktioner i samma match någonsin delar seed (varje
- * `kind` har ett eget 100 000-brett intervall, och `step` — currentStep,
+ * PT-9/PT-10 (BACKLOG.md 2026-07-13): unik, stabil seed-bas per interaktionstyp+
+ * steg, så att (a) inga två interaktioner i samma match någonsin delar seed
+ * (varje `kind` har ett eget 100 000-brett intervall, och `step` — currentStep,
  * dvs. indexet i steps[] — är unikt per interaktionstillfälle), och (b) ingen
  * kollision uppstår med PT-7:s atStep/fromStep-seeds (som ligger i ett lågt
  * heltalsintervall, 0-60).
  *
- * `step` sätts INNAN spelaren väljer zon/hårdhet/riktning/höjd — seeden beror
- * alltså aldrig på valet. Valet påverkar bara sannolikheten inne i resolve*-
- * funktionerna, inte vilken slumpsekvens som dras (verifierat separat).
+ * `step` sätts INNAN spelaren (eller, i commentary-mode, motorn) väljer
+ * zon/hårdhet/riktning/höjd — seeden beror alltså aldrig på valet. Valet
+ * påverkar bara sannolikheten inne i resolve*-funktionerna (PT-9-kinds) eller
+ * VILKET värde som väljs ur en array (PT-10-kinds), aldrig vilken slumpsekvens
+ * som dras för nästa interaktion (verifierat separat, se BACKLOG).
+ *
+ * PT-10 lade till kinds för commentary-mode-VALET (fyra) + taktik-kommentaren
+ * (kosmetisk) — kedjan val→resolve→utfall är nu deterministisk hela vägen.
  */
-type InteractionRandKind = 'corner' | 'cornerVoice' | 'penalty' | 'counter' | 'counterVoice' | 'freekick' | 'freekickVoice'
+type InteractionRandKind =
+  | 'corner' | 'cornerVoice' | 'penalty' | 'counter' | 'counterVoice' | 'freekick' | 'freekickVoice'
+  | 'cornerZoneChoice' | 'cornerDeliveryChoice' | 'penaltyDirChoice' | 'penaltyHeightChoice'
+  | 'counterChoiceCm' | 'freekickChoiceCm' | 'tacticComment'
 const INTERACTION_SEED_BASE: Record<InteractionRandKind, number> = {
   corner: 100_000, penalty: 200_000, counter: 300_000, freekick: 400_000,
   cornerVoice: 500_000, counterVoice: 600_000, freekickVoice: 700_000,
+  cornerZoneChoice: 800_000, cornerDeliveryChoice: 900_000,
+  penaltyDirChoice: 1_000_000, penaltyHeightChoice: 1_100_000,
+  counterChoiceCm: 1_200_000, freekickChoiceCm: 1_300_000,
+  tacticComment: 1_400_000,
 }
 function interactionSeed(fixtureId: string, step: number, kind: InteractionRandKind): number {
   return fixtureSeed(fixtureId, INTERACTION_SEED_BASE[kind] + step)
@@ -471,10 +483,15 @@ export function MatchLiveScreen() {
         handleCornerChoice(setup.zone, setup.delivery, cd, voiceLine)
         return
       }
-      // commentary-mode (icke-interaktiv uppspelning) — ingen spelare väljer, oförändrat
+      // PT-10: commentary-mode — ingen spelare väljer, men motorns val ska ändå
+      // vara deterministiskt (situationen — fixture+steg — väljer, inte klockan).
       const zones: CornerZone[] = ['near', 'center', 'far']
       const deliveries: CornerDelivery[] = ['hard', 'low', 'short']
-      handleCornerChoice(zones[Math.floor(Math.random() * 3)], deliveries[Math.floor(Math.random() * 3)], step.cornerInteractionData)
+      handleCornerChoice(
+        seededPick(zones, interactionSeed(fixture?.id ?? '', currentStep, 'cornerZoneChoice')),
+        seededPick(deliveries, interactionSeed(fixture?.id ?? '', currentStep, 'cornerDeliveryChoice')),
+        step.cornerInteractionData,
+      )
       return
     }
 
@@ -493,9 +510,14 @@ export function MatchLiveScreen() {
         setPenaltyOutcome(null)
         return
       }
+      // PT-10: commentary-mode — samma resonemang som hörnan ovan.
       const dirs: PenaltyDirection[] = ['left', 'center', 'right']
       const heights: PenaltyHeight[] = ['low', 'high']
-      handlePenaltyChoice(dirs[Math.floor(Math.random() * 3)], heights[Math.floor(Math.random() * 2)], step.penaltyInteractionData)
+      handlePenaltyChoice(
+        seededPick(dirs, interactionSeed(fixture?.id ?? '', currentStep, 'penaltyDirChoice')),
+        seededPick(heights, interactionSeed(fixture?.id ?? '', currentStep, 'penaltyHeightChoice')),
+        step.penaltyInteractionData,
+      )
       return
     }
 
@@ -516,9 +538,12 @@ export function MatchLiveScreen() {
         handleCounterChoice(choice, cd, voiceLine)
         return
       }
-      // commentary-mode (icke-interaktiv uppspelning) — ingen spelare väljer, oförändrat
+      // PT-10: commentary-mode — samma resonemang som hörnan ovan.
       const choices: CounterChoice[] = ['sprint', 'build', 'earlyBall']
-      handleCounterChoice(choices[Math.floor(Math.random() * 3)], step.counterInteractionData)
+      handleCounterChoice(
+        seededPick(choices, interactionSeed(fixture?.id ?? '', currentStep, 'counterChoiceCm')),
+        step.counterInteractionData,
+      )
       return
     }
 
@@ -539,9 +564,12 @@ export function MatchLiveScreen() {
         handleFreeKickChoice(choice, fd, voiceLine)
         return
       }
-      // commentary-mode (icke-interaktiv uppspelning) — ingen spelare väljer, oförändrat
+      // PT-10: commentary-mode — samma resonemang som hörnan ovan.
       const fkChoices: FreeKickChoice[] = ['shoot', 'chipPass', 'layOff']
-      handleFreeKickChoice(fkChoices[Math.floor(Math.random() * 3)], step.freeKickInteractionData)
+      handleFreeKickChoice(
+        seededPick(fkChoices, interactionSeed(fixture?.id ?? '', currentStep, 'freekickChoiceCm')),
+        step.freeKickInteractionData,
+      )
       return
     }
 
@@ -1126,7 +1154,11 @@ export function MatchLiveScreen() {
       defend: ['Tränaren sjunker ner. Försvara ledningen.', 'Alla bakom bollen.'],
     }
     const comments = tacticCommentary[optId] ?? []
-    const commentText = comments[Math.floor(Math.random() * comments.length)] ?? ''
+    // PT-10: kosmetisk (bara kommentarstext) — seedas ändå, determinism överallt
+    // är enklare att hålla än determinism med undantag.
+    const commentText = comments.length > 0
+      ? seededPick(comments, interactionSeed(fixture.id, currentStep, 'tacticComment'))
+      : ''
 
     const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
     const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
