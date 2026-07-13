@@ -234,7 +234,11 @@ export function CornerInteraction({ data, outcome, onChoose, coach, practice }: 
       readout={{ label: zoneLabel, pct: Math.round(zoneRate * 100) }}
       coachTip={coachTip}
       coach={coach}
-      cta={{ label: 'Slå hörnan', variant: 'copper', onClick: () => handleConfirm() }}
+      // T1 (SF-3, CODE_INSTRUKTION_SIDFOT_INTRORAM 2026-07-13): i introt/practice
+      // är hörnans commit det enda steget där diegetisk commit OCH sidfot
+      // sammanfaller — för spelaren ÄR detta "gå vidare". Versal+pil matchar
+      // sidfotsmallens verb-konvention (SF-1/SF-4). Live oförändrad.
+      cta={{ label: practice ? 'SLÅ HÖRNAN →' : 'Slå hörnan', variant: 'copper', onClick: () => handleConfirm() }}
       phase={phase}
       outcome={outcome ? (
         <p style={{

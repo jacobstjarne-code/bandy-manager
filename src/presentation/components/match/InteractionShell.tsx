@@ -229,11 +229,16 @@ export function InteractionShell({
           </div>
         )}
 
-        {/* New CTA button */}
+        {/* New CTA button. T1 (SF-3, CODE_INSTRUKTION_SIDFOT_INTRORAM 2026-07-13):
+            i untimed (practice) sammanfaller diegetisk commit och sidfot — rendera
+            sidfotsmallen (.btn .btn-primary .btn-cta), inte den mono/flat/tidsatta
+            live-stilen. untimed är i praktiken bara sant för hörnan i introt idag
+            (enda konsumenten som sätter practice), så andra interaction-cta-copper-
+            ytor (straff/kontring/frislag, alltid live) påverkas inte. */}
         {cta && phase === 'choosing' && (
           <button
             onClick={cta.onClick}
-            className={cta.variant === 'danger' ? 'interaction-cta-danger' : 'interaction-cta-copper'}
+            className={untimed ? 'btn btn-primary btn-cta' : (cta.variant === 'danger' ? 'interaction-cta-danger' : 'interaction-cta-copper')}
           >
             {cta.label}
           </button>
