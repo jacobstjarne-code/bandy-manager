@@ -48,6 +48,8 @@ Skärmdumpar + Jacobs öga. **OBS: allt nedan verifierat BARA för CUP-matcher**
 | PT-4 | **"TILL GRANSKNING"-CTA i matchhändelse-monon** — navigerings-CTA renderad i scoreboardens mono istället för CTA-typografin (SÄTT IGÅNG/FORTSÄTT/KLAR). Kanon-miss: mono hör till matchdatan, inte knappar ut ur matchen. Hör ihop med typografi-kanon-efterpasset (oöppnat). | Code | Code | Byt till CTA-typografi. |
 | PT-5 | **Dubbla "gå vidare"-vägar (bild 1)** — "Se sammanfattning →" (vit ruta) OCH "TILL GRANSKNING →" (botten) leder båda till Granska. Rörigheten Jacob kände. | design | Design | Vilken vinner? (del av sidfots-granskningen). |
 | PT-6 | **Nedsläckning av matchhändelser går för långt långsamt** (live-flödet). | design/Code | Design | Timing-just, lågprio. |
+| PT-7 | **MatchLiveScreen.tsx:205-208 seedar motorn med Date.now()** — verkligt determinism-brott, samma klass som M35/M58 i textauditen. Upptäckt under PT-3-spårningen, korrekt lämnad orörd där. En matchmotor på väggklocka gör matcher irreproducerbara — vilket bland annat försvårar exakt den sortens utredning PT-3 krävde. | bug | Code | Seeda deterministiskt (fixture-id/matchday, som resten av motorn). |
+| PT-8 | **Bye-fallet har bitit två gånger** — M66e (cup_first_match-gaten krävde hårdkodat roundNumber===1, direktkvalade fick aldrig anslaget) och PT-3-harnesset (drain-helpern satte aldrig lineup för mellanliggande matchdagar → klubb med bye in i dynamiskt skapad cuprunda stallade). Mönster, inte tillfällighet: kod som antar att varje klubb spelar varje matchdag. | bug-mönster | Code | Lågprio — grep efter fler ställen som antar match-per-matchdag innan nästa bye-bugg hittar oss. |
 
 ## PLAYTEST-RUNDA 2026-07-10 (Jacob, intro) — ÖPPNA
 
