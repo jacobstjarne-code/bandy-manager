@@ -18,6 +18,7 @@ import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import { MatchEventType, TacticMentality, TacticTempo, TacticPress, PlayerPosition } from '../../../domain/enums'
 import { getRivalry } from '../../../domain/data/rivalries'
+import { fixtureSeed } from '../../../domain/utils/random'
 import { computePlayerRatings } from '../../utils/matchRatings'
 import { playSound, isMuted, toggleMute } from '../../audio/soundEffects'
 import { PhaseOverlay } from '../../components/match/PhaseOverlay'
@@ -205,7 +206,10 @@ export function MatchLiveScreen() {
     const gen = simulateMatchStepByStep({
       fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
       homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
-      seed: Date.now(),
+      // PT-7 (BACKLOG.md 2026-07-10): Date.now() gjorde live-matcher irreproducerbara
+      // — bröt projektets seed-disciplin och försvårade PT-3-sekvensutredningen.
+      // fixtureSeed(fixture.id) matchar konventionen i matchActions.ts/matchEngine.ts.
+      seed: fixtureSeed(fixture.id),
       weather: matchWeather?.weather,
       homeClubName: homeClubName || undefined,
       awayClubName: awayClubName || undefined,
@@ -613,7 +617,9 @@ export function MatchLiveScreen() {
       fixture, homeLineup, awayLineup,
       homePlayers, awayPlayers,
       homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
-      seed: Date.now(),
+      // PT-7: fixtureSeed(fixture.id, atStep) — deterministisk per fixture+ingreppspunkt,
+      // istf Date.now() som gjorde regenereringen irreproducerbar (BACKLOG.md 2026-07-10).
+      seed: fixtureSeed(fixture.id, atStep),
       weather: matchWeather?.weather,
       homeClubName: homeClubName || undefined,
       awayClubName: awayClubName || undefined,
@@ -1024,7 +1030,9 @@ export function MatchLiveScreen() {
       fixture, homeLineup: updatedHome, awayLineup: updatedAway,
       homePlayers, awayPlayers,
       homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
-      seed: Date.now(),
+      // PT-7: fixtureSeed(fixture.id, 31) — 31 är halvtidssteget (samma gräns som
+      // steps.slice(0,31)/setCurrentStep(31) nedan), deterministiskt istf Date.now().
+      seed: fixtureSeed(fixture.id, 31),
       weather: matchWeather?.weather,
       homeClubName: homeClubName || undefined,
       awayClubName: awayClubName || undefined,
@@ -1100,7 +1108,9 @@ export function MatchLiveScreen() {
       fixture, homeLineup: newHome, awayLineup: newAway,
       homePlayers, awayPlayers,
       homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
-      seed: Date.now(),
+      // PT-7: fixtureSeed(fixture.id, fromStep) — deterministisk per fixture+ingreppspunkt,
+      // istf Date.now() (BACKLOG.md 2026-07-10).
+      seed: fixtureSeed(fixture.id, fromStep),
       weather: matchWeather?.weather,
       homeClubName: homeClubName || undefined,
       awayClubName: awayClubName || undefined,
