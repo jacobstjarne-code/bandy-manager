@@ -1661,7 +1661,6 @@ export function MatchLiveScreen() {
         endResult={endResult}
         endSummary={endSummary}
         endArenaMeta={endArenaMeta}
-        onSeeSummary={() => navigate('/game/review', { replace: true })}
       />
 
       {showHalftime && !matchDone && (

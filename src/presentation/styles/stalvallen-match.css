@@ -1734,12 +1734,5 @@
   color: var(--ink-soft);
   margin-bottom: 12px;
 }
-.feed-end-row .end-cta {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-family: var(--font-body); font-size: 12px; font-weight: 600;
-  padding: 7px 12px;
-  background: var(--copper); color: var(--paper-warm);
-  border-radius: 4px; border: none; cursor: pointer;
-  letter-spacing: 0.3px;
-}
-.feed-end-row .end-cta:hover { background: var(--copper-deep); }
+/* .end-cta borttagen T2 (PT-5, 2026-07-13) — "Se sammanfattning →" togs bort,
+   den dockade sidfoten ("TILL GRANSKNING →") är enda gå-vidare-vägen. */

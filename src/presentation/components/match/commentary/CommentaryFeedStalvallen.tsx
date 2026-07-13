@@ -28,17 +28,19 @@ interface CommentaryFeedStalvallenProps {
   endResult?: string       // "Forsbacka 9 — 8 Skutskär"
   endSummary?: string      // 1-2 meningar
   endArenaMeta?: string    // "SCHAKTVALLEN · OMG. 2"
-  onSeeSummary?: () => void
 }
 
 interface FeedEndRowProps {
   result: string
   summary: string
   arenaMeta: string
-  onSeeSummary: () => void
 }
 
-function FeedEndRow({ result, summary, arenaMeta, onSeeSummary }: FeedEndRowProps) {
+// T2 (PT-5, CODE_INSTRUKTION_SIDFOT_INTRORAM 2026-07-13): "Se sammanfattning →"
+// borttagen — den dockade sidfoten ("TILL GRANSKNING →") är enda gå-vidare-
+// vägen. Två fyllda primärer till samma vy (Granska) upphävde mallregeln
+// "en primär per skärm" och gjorde spelaren osäker på vilken som var rätt.
+function FeedEndRow({ result, summary, arenaMeta }: FeedEndRowProps) {
   return (
     <div className="feed-end-row">
       <div className="end-head">
@@ -47,9 +49,6 @@ function FeedEndRow({ result, summary, arenaMeta, onSeeSummary }: FeedEndRowProp
       </div>
       <div className="end-score"><strong>{result}</strong></div>
       <div className="end-summary">{summary}</div>
-      <button className="end-cta" onClick={onSeeSummary}>
-        Se sammanfattning →
-      </button>
     </div>
   )
 }
@@ -84,7 +83,7 @@ function Tag({ type }: { type: TagType }) {
   )
 }
 
-export function CommentaryFeedStalvallen({ rows, autoScroll = true, matchDone, endResult, endSummary, endArenaMeta, onSeeSummary }: CommentaryFeedStalvallenProps) {
+export function CommentaryFeedStalvallen({ rows, autoScroll = true, matchDone, endResult, endSummary, endArenaMeta }: CommentaryFeedStalvallenProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const prevLength = useRef(rows.length)
 
@@ -107,12 +106,11 @@ export function CommentaryFeedStalvallen({ rows, autoScroll = true, matchDone, e
       </div>
 
       {/* FIX-48: Slut-rad — FÖRSTA i feeden */}
-      {matchDone && endResult && onSeeSummary && (
+      {matchDone && endResult && (
         <FeedEndRow
           result={endResult}
           summary={endSummary ?? 'Matchen är slut.'}
           arenaMeta={endArenaMeta ?? ''}
-          onSeeSummary={onSeeSummary}
         />
       )}
 
