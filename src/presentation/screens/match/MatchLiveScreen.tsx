@@ -70,6 +70,27 @@ interface LocationState {
   matchMode?: 'full' | 'commentary' | 'quicksim'
 }
 
+/**
+ * PT-9 (BACKLOG.md 2026-07-13): unik, stabil seed-bas per interaktionstyp+steg,
+ * så att (a) inga två interaktioner i samma match någonsin delar seed (varje
+ * `kind` har ett eget 100 000-brett intervall, och `step` — currentStep,
+ * dvs. indexet i steps[] — är unikt per interaktionstillfälle), och (b) ingen
+ * kollision uppstår med PT-7:s atStep/fromStep-seeds (som ligger i ett lågt
+ * heltalsintervall, 0-60).
+ *
+ * `step` sätts INNAN spelaren väljer zon/hårdhet/riktning/höjd — seeden beror
+ * alltså aldrig på valet. Valet påverkar bara sannolikheten inne i resolve*-
+ * funktionerna, inte vilken slumpsekvens som dras (verifierat separat).
+ */
+type InteractionRandKind = 'corner' | 'cornerVoice' | 'penalty' | 'counter' | 'counterVoice' | 'freekick' | 'freekickVoice'
+const INTERACTION_SEED_BASE: Record<InteractionRandKind, number> = {
+  corner: 100_000, penalty: 200_000, counter: 300_000, freekick: 400_000,
+  cornerVoice: 500_000, counterVoice: 600_000, freekickVoice: 700_000,
+}
+function interactionSeed(fixtureId: string, step: number, kind: InteractionRandKind): number {
+  return fixtureSeed(fixtureId, INTERACTION_SEED_BASE[kind] + step)
+}
+
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -444,7 +465,9 @@ export function MatchLiveScreen() {
         const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
         const setup = assistantPickCorner(cd, game?.assistantCoach, cornerTaker, topRusher, gk)
         const pool = ASSISTANT_FF_LINES.corner[setup.zone]
-        const voiceLine = pool && pool.length > 0 ? seededPick(pool, Date.now()) : undefined
+        const voiceLine = pool && pool.length > 0
+          ? seededPick(pool, interactionSeed(fixture?.id ?? '', currentStep, 'cornerVoice'))
+          : undefined
         handleCornerChoice(setup.zone, setup.delivery, cd, voiceLine)
         return
       }
@@ -487,7 +510,9 @@ export function MatchLiveScreen() {
         const cd = step.counterInteractionData
         const choice = assistantPickCounter(cd, game?.assistantCoach)
         const pool = ASSISTANT_FF_LINES.counter[choice]
-        const voiceLine = pool && pool.length > 0 ? seededPick(pool, Date.now()) : undefined
+        const voiceLine = pool && pool.length > 0
+          ? seededPick(pool, interactionSeed(fixture?.id ?? '', currentStep, 'counterVoice'))
+          : undefined
         handleCounterChoice(choice, cd, voiceLine)
         return
       }
@@ -508,7 +533,9 @@ export function MatchLiveScreen() {
         const fd = step.freeKickInteractionData
         const choice = assistantPickFreeKick(fd, game?.assistantCoach)
         const pool = ASSISTANT_FF_LINES.freekick[choice]
-        const voiceLine = pool && pool.length > 0 ? seededPick(pool, Date.now()) : undefined
+        const voiceLine = pool && pool.length > 0
+          ? seededPick(pool, interactionSeed(fixture?.id ?? '', currentStep, 'freekickVoice'))
+          : undefined
         handleFreeKickChoice(choice, fd, voiceLine)
         return
       }
@@ -665,7 +692,7 @@ export function MatchLiveScreen() {
     const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
     const defOutfield = defenders.filter(p => p.position !== PlayerPosition.Goalkeeper)
 
-    const rand = mulberry32(Date.now())
+    const rand = mulberry32(interactionSeed(fixture.id, currentStep, 'corner'))
     const sgMood = game.supporterGroup?.mood ?? 50
     const outcome = resolveCorner(
       { zone, delivery },
@@ -740,7 +767,7 @@ export function MatchLiveScreen() {
     if (!penData || !fixture || !game) return
 
     const managedIsHome = fixture.homeClubId === game.managedClubId
-    const rand = mulberry32(Date.now())
+    const rand = mulberry32(interactionSeed(fixture.id, currentStep, 'penalty'))
     const keeperDive = resolveAIPenaltyKeeperDive('offensive', rand)
     const outcome = resolvePenalty(penData, dir, height, keeperDive, rand)
     setPenaltyOutcome(outcome)
@@ -821,7 +848,7 @@ export function MatchLiveScreen() {
     const support = attackers.find(p => p.id === counterData.supportId) ?? attackers[1]
     const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
 
-    const rand = mulberry32(Date.now())
+    const rand = mulberry32(interactionSeed(fixture.id, currentStep, 'counter'))
     const outcome = resolveCounter(choice, runner, support, gk, rand)
     setCounterOutcome(outcome)
 
@@ -893,7 +920,7 @@ export function MatchLiveScreen() {
     const kicker = attackers.find(p => p.id === fkData.kickerId) ?? attackers[0]
     const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
 
-    const rand = mulberry32(Date.now())
+    const rand = mulberry32(interactionSeed(fixture.id, currentStep, 'freekick'))
     const outcome = resolveFreeKick(choice, kicker, gk, fkData, rand)
     setFreeKickOutcome(outcome)
 
