@@ -55,9 +55,11 @@ Ledgern omsluter: **Förbered** (sub-tabbar Trupp | Taktik) · **Spela** (match 
 | **Sub-/flikrad** | bg `#f4eee1`, 1px rule-strong underkant (sub-tabbar) resp. 1px ink-topp (Granska-flikar). Flik mono 9px (Förbered) / 7.5px (Granska), letter-spacing 1.5px. Aktiv: copper + 2px copper-linje. Förbered: under RPS-stripen. Granska: mellan body och stämpel. |
 | **Marginal** | 20px bred, gradient `#e3d9c5→#ece4d4`, 1.5px copper högerlinje. Perforeringar: 7px cirklar, paper-fyllda, `inset 0 0 0 1px rgba(154,74,40,.3)`, **jämnt fördelade responsivt (~80px isär, beräknat ur höjd)** — INTE mockens fasta y-pixlar. |
 | **Sektionsrubrik** (`.sh`) | mono 9px, letter-spacing 2px, versal, copper. 1px rule under. Valfri höger-not (`.r`) ink-faint 8px. |
-| **Stämpel-CTA** | copper fylld, paper-hi text, mono 12px fet versal, 2px copper-ram, radius 4, padding 13, margin 9×12×12. Fast i botten (flex-shrink:0). Spärrad/ghost (transparent, ink-faint, rule-strong-ram) när fasen inte är komplett. **Alltid den enda framåt-handlingen — aldrig dekorativ.** |
+| **Stämpel-CTA** | copper fylld, paper-hi text, **brödtext** 12px fet versal (`--font-body` — se PT-4/T4 nedan), 2px copper-ram, radius 4, padding 13, margin 9×12×12. Fast i botten (flex-shrink:0). Spärrad/ghost (transparent, ink-faint, rule-strong-ram) när fasen inte är komplett. **Alltid den enda framåt-handlingen — aldrig dekorativ.** |
 | **Papper** | body `#ece4d4`, upphöjda ytor `#f4eee1`. |
 | **Färg/typ** | **Befintliga system-tokens enbart — kopiera INTE mockens `:root`-block.** Mappa varje färg mot palettens token; saknas en → flagga, hitta inte på. Copper `#A25828`/`#C47A3A`, ink `#1f1c16`/`#5c554a`/`#8a8270`, rule `#d8cdb6`/`#c2b598`. Georgia = innehåll, mono = chrome/etiketter. **Inga nya tokens.** |
+
+**T4 (2026-07-13, PT-4-synk):** Stämpel-CTA:n bytte font-family från mono till brödtext (`.lf-stamp` i `ledger.css`, commit `f96d0bf4`) — den här radens ursprungliga "mono 12px fet versal" ljög mot koden och riskerade att mono återinfördes vid nästa ledger-arbete. Konflikten (liggarens genomgående mono-dokumentkänsla vs. sidfotsmallens brödtext-CTA) avgjordes till FLÖDETS igenkänning: stämpeln är den enda framåt-handlande knappen i ledgern, precis som sidfoten är det i introramen — den avancerar, den beskriver inte data. Det är därför den följer `.btn-cta`-mallen, inte liggarens mono-chrome. Ledgerns ÖVRIGA mono (masthead, RPS-strip, sektionsrubriker) är oförändrat — bara den framåt-handlande stämpeln lämnade mono.
 
 ---
 
