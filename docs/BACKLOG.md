@@ -33,6 +33,32 @@
 
 ---
 
+## PLAYTEST-RUNDA 2026-07-10 (Jacob, intro + match-flöde, cup) — ÖPPNA
+
+Skärmdumpar + Jacobs öga. **OBS: allt nedan verifierat BARA för CUP-matcher**
+— ligavägen (tabell-uppdatering, season_done, playoff-status) är EGEN kodväg
+ och OTESTAD. B1/B2-cupavancemang-buggen bevisade att cup/liga har asymmetriska
+ Granska-vägar; testa liga separat innan advance-flytten är helt stängd.
+
+| # | Fynd | Klass | Ägare | Nästa |
+|---|------|-------|-------|-------|
+| PT-1 | **advance-flytten GRÖN (cup)** — alla tre vägar (live-match 2–4, sim 5–3, övergiven) landar rätt resultat + rätt fas (GRANSKA). | verifierat | — | **Liga-testet återstår** (rad PT-2). |
+| PT-2 | **advance-flytten OTESTAD för LIGA** — ligamatch har tabell-uppdatering + season_done + playoff-status som cup saknar. | test | Jacob | Spela ligamatch live→Granska + ligamatch sim→Granska, verifiera tabellen rör sig ETT steg. |
+| ~~PT-3~~ | ~~**Sim-efter-live-känslan IGEN**~~ — STÄNGT 2026-07-13, se DECISIONS.md samma datum. Riktat sekvenstest (`scripts/live-sim-sequence.ts`, N=976 lyckade sekvenser) tvingade match 1 till vinst och jämförde match 2 mot match 3–4: ingen signifikant skillnad (poäng p=0.28, målskillnad p=0.56, motsatt riktning på de två måtten — bruset, inte en effekt). Kodspårning bekräftar dessutom att live och sim delar EXAKT samma state-skrivning (`applyPlayerStateUpdates`) — det finns ingen mekanism i domänlagret som skulle kunna bära en live→sim-effekt. Känslan är sann som upplevelse (halvtidsinteraktion, se B10) men inte en mätbar sekvensbugg. | verifierat | — | — |
+| PT-4 | **"TILL GRANSKNING"-CTA i matchhändelse-monon** — navigerings-CTA renderad i scoreboardens mono istället för CTA-typografin (SÄTT IGÅNG/FORTSÄTT/KLAR). Kanon-miss: mono hör till matchdatan, inte knappar ut ur matchen. Hör ihop med typografi-kanon-efterpasset (oöppnat). | Code | Code | Byt till CTA-typografi. |
+| PT-5 | **Dubbla "gå vidare"-vägar (bild 1)** — "Se sammanfattning →" (vit ruta) OCH "TILL GRANSKNING →" (botten) leder båda till Granska. Rörigheten Jacob kände. | design | Design | Vilken vinner? (del av sidfots-granskningen). |
+| PT-6 | **Nedsläckning av matchhändelser går för långt långsamt** (live-flödet). | design/Code | Design | Timing-just, lågprio. |
+
+## PLAYTEST-RUNDA 2026-07-10 (Jacob, intro) — ÖPPNA
+
+| # | Fynd | Klass | Ägare | Nästa |
+|---|------|-------|-------|-------|
+| IN-1 | **Ankomst-texten stannar grå** (ArrivalScene, bild 1) — prolog + citat renderas i dämpad grå på mörk scen; ceremoninivå kräver full läsbarhet, grå-mot-mörkt är också kontrastproblem. | Code (verifiera) | Code | Verifiera: gäller bara ArrivalScene eller alla scen-prologer (delar --bg-scene)? Medveten hierarki som blev för dämpad, eller rent fel? Fable dömer token när Code visar vilken variabel som sitter på raderna. |
+| IN-2 | **"LÅST I INTRO"-pillen (StartElva, bild 2)** — formationslåsningen kommuniceras på utvecklarspråk; förstagångsspelare läser "något är låst, gjorde jag fel?". | copy/design | Jacob-beslut → Fable | Jacob: pill kvar med bättre text, eller bort? Fable lutar OMSKRIVA (låsningen ska kommuniceras, inte så här). Fable skriver när beslut fattat. |
+| IN-3 | **Sidfoten/gå-vidare-knappen varierar** över introstegen — Jacobs analys: innehållet ska stå (diegetiskt) men RAMEN (knappform/glow/placering/typografi) ska vara EN konsekvent sak; förstagångsspelaren lär sig "gå vidare" en gång. Verb-copyn (SÄTT IGÅNG/FORTSÄTT/SLÅ HÖRNAN) BEHÅLLS — verbet hör till handlingen. | design | Design | Design-order skickad 2026-07-10 (sidfots-mall + match-live-topp + PT-4-typsnittet i ett svep). |
+
+---
+
 
 ## PROCESS-REGLER (etablerade 2026-05-17)
 
