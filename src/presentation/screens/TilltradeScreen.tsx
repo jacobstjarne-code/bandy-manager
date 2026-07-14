@@ -79,6 +79,9 @@ export function TilltradeScreen() {
   const markOnboardingComplete = useGameStore(s => s.markOnboardingComplete)
   const [step, setStep] = useState<Step>(1)
   const [cornerOutcome, setCornerOutcome] = useState<CornerOutcome | null>(null)
+  // T5a (SF-2, 2026-07-13/14): F2:s beat-progression ägs här, inte i LineupStep
+  // — sidfoten dockas i .scene-cta-area (F1/F3/F4:s position), inte inline i kortet.
+  const [lineupBeat, setLineupBeat] = useState(0)
 
   // F2 — useLineupEditor ovillkorligt (hooks-regel)
   const managedClub = game?.clubs.find(c => c.id === game?.managedClubId)
@@ -109,6 +112,11 @@ export function TilltradeScreen() {
   async function finish() {
     await markOnboardingComplete()
     navigate('/game/dashboard', { replace: true })
+  }
+
+  function commitLineupAndAdvance() {
+    lineupEditor.commitLineup()
+    setStep(3)
   }
 
   function handlePracticeCorner(zone: CornerZone, delivery: CornerDelivery) {
@@ -283,6 +291,7 @@ export function TilltradeScreen() {
             <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
               <LineupStep
                 practice
+                practiceBeat={lineupBeat}
                 opponent={null}
                 nextFixture={null}
                 game={game}
@@ -304,7 +313,7 @@ export function TilltradeScreen() {
                 onSwapPlayers={lineupEditor.swapSlots}
                 onRemovePlayer={lineupEditor.removePlayer}
                 onError={lineupEditor.setLineupError}
-                onNext={() => { lineupEditor.commitLineup(); setStep(3) }}
+                onNext={commitLineupAndAdvance}
               />
             </div>
           </div>
@@ -340,6 +349,26 @@ export function TilltradeScreen() {
           </>
         )}
       </div>
+
+      {/* F2 CTA — T5a (SF-2, 2026-07-13/14): dockad sidfotsmall, samma position
+          som F1/F3/F4 (var tidigare inline i LineupSteps scrollande kort).
+          Beat-progressionen (0-2 avslöjar coach-repliker, 3 committar) ägs här.
+          disabled läser canPlay — README-regel 15 (.btn:disabled = 40% opacitet,
+          ingen bespoke gråton). */}
+      {step === 2 && (
+        <div className="scene-cta-area in">
+          <button
+            className="btn btn-primary btn-cta"
+            disabled={!lineupEditor.canPlay}
+            onClick={() => {
+              if (lineupBeat < 3) setLineupBeat(b => Math.min(3, b + 1))
+              else commitLineupAndAdvance()
+            }}
+          >
+            FORTSÄTT →
+          </button>
+        </div>
+      )}
 
       {/* F3 CTA — dyker upp efter att hörnan slagits */}
       {step === 3 && (cornerOutcome || !practiceCorner) && (

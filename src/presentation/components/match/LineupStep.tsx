@@ -26,6 +26,12 @@ interface LineupStepProps {
    * Lista/Plan-vyväxlaren, och avslöjar färgnyckel/spotlight/CTA i fyra beats.
    * Matchdags-editorn (denna prop = false/utelämnad) är HELT oförändrad. */
   practice?: boolean
+  /** T5a (SF-2, CODE_INSTRUKTION_SIDFOT_INTRORAM 2026-07-13/14): beat-index
+   *  (0-3) ägs av Tillträdet, inte denna komponent — Tillträdet dockar sin
+   *  egen sidfotsmall-knapp och styr progressionen, så knappen sitter i
+   *  samma dockade position som F1/F3/F4 istf inline i det scrollande kortet.
+   *  Bara relevant när practice=true. */
+  practiceBeat?: number
   opponent: Club | null
   nextFixture: Fixture | null
   game: SaveGame
@@ -81,6 +87,7 @@ const SPARKLE_SVG = (
 
 export function LineupStep({
   practice = false,
+  practiceBeat = 0,
   opponent,
   nextFixture,
   game,
@@ -106,7 +113,6 @@ export function LineupStep({
 }: LineupStepProps) {
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>(practice ? 'pitch' : 'list')
   const [justFilled, setJustFilled] = useState(false)
-  const [practiceBeat, setPracticeBeat] = useState(0)
 
   // Auto-fill when switching to pitch view with no lineupSlots at all (defensive fallback).
   // IMPORTANT: Only triggers when lineupSlots is undefined or has zero keys.
@@ -463,27 +469,12 @@ export function LineupStep({
         </div>
       )}
 
-      {/* Footer CTA — practice: "Fortsätt" avancerar beat 0-2, "Vidare" (beat 3) går till nästa uppgift */}
-      <div style={{ padding: '4px 14px 24px', borderTop: '0.5px solid var(--border)', marginTop: 4 }}>
-        {practice ? (
-          practiceBeat < 3 ? (
-            <button
-              onClick={() => setPracticeBeat(b => Math.min(3, b + 1))}
-              className="btn btn-cta btn-primary"
-              style={{ width: '100%' }}
-            >
-              Fortsätt →
-            </button>
-          ) : (
-            <button
-              onClick={onNext}
-              className="btn btn-cta btn-primary"
-              style={{ width: '100%' }}
-            >
-              Vidare →
-            </button>
-          )
-        ) : (
+      {/* Footer CTA — live only. T5a (SF-2, 2026-07-13/14): practice-footern
+          flyttad till Tillträdets dockade .scene-cta-area (samma position som
+          F1/F3/F4) — döljs härifrån helt, renderas inte inline i det
+          scrollande kortet längre. */}
+      {!practice && (
+        <div style={{ padding: '4px 14px 24px', borderTop: '0.5px solid var(--border)', marginTop: 4 }}>
           <button
             onClick={onNext}
             disabled={!canPlay}
@@ -492,8 +483,8 @@ export function LineupStep({
           >
             Nästa: Taktik →
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </>
   )
 }
