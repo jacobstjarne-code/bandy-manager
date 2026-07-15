@@ -2,7 +2,7 @@
  * CornerInteraction.tsx — Stålvallen redesign
  *
  * BATCH D-01. Uses InteractionShell with:
- * - timer.style = 'tag' (5s amber)
+ * - timer: 5s (T5b, 2026-07-13/14: ringen — se InteractionShell)
  * - SVG pitch: LED palette (amber own, red defenders, steel-blue GK, green selected zone)
  * - Monospace LED sub-choice buttons (HÅRT / LÅGT / KORT)
  * - cta.variant = 'copper'
@@ -212,7 +212,7 @@ export function CornerInteraction({ data, outcome, onChoose, coach, practice }: 
       icon="📐"
       title="HÖRNA"
       minute={data.minute}
-      timer={{ seconds: 5, style: 'tag' }}
+      timer={{ seconds: 5 }}
       untimed={practice}
       pitch={
         <CornerPitchSVG

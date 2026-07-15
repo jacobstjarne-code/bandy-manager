@@ -4,7 +4,9 @@
  * BATCH B-01. Shared shell for all 5 event panels.
  * Backward-compatible: legacy consumers (CornerInteraction etc) that
  * pass timerSeconds/stats/actions still work. New consumers can use
- * the structured riskRow + timer.style='ring' API.
+ * the structured riskRow API. T5b (2026-07-13/14): timern har bara en
+ * representation nu (CountDownRing) — den gamla amber-badgen ("tag") togs
+ * bort, alla fem paneler delade tidigare två visuella språk för samma sak.
  *
  * Lärdom #3 (LESSONS.md): useRef for callback dep — onTimeout never in dep array.
  * Lärdom #7: don't put state written inside effect into deps.
@@ -17,7 +19,6 @@ export type InteractionPhase = 'choosing' | 'locked' | 'revealed'
 
 interface TimerConfig {
   seconds: number
-  style: 'tag' | 'ring'
 }
 
 interface Props {
@@ -26,7 +27,11 @@ interface Props {
   minute: number
   // Legacy API — still works
   timerSeconds?: number
-  // New API — structured timer with ring support for last-minute
+  // New API — structured timer.
+  // T5b (UT-1, CODE_INSTRUKTION_SIDFOT_INTRORAM 2026-07-13/14): ringen (CountDownRing)
+  // är nu den ENDA nedräkningsrepresentationen — badge-varianten (.event-timer "tag")
+  // tog bort. Alla fem uppgifts-toppar delade tidigare två visuella språk (amber-badge
+  // vs. ring) för samma sak; ringen var den starkare, skalar till alla lägen.
   timer?: TimerConfig
   // Explicit opt-out: ingen tidspress (övningsläge). Default = false → timern kör
   // som vanligt. "timer saknas = av" undviks medvetet (skulle tyst släcka live-paneler).
@@ -93,7 +98,6 @@ export function InteractionShell({
 }: Props) {
   // Resolve timer config — timer prop takes precedence over legacy timerSeconds
   const totalSeconds = timer?.seconds ?? timerSeconds ?? 5
-  const timerStyle: 'tag' | 'ring' = timer?.style ?? 'tag'
 
   const [timeLeft, setTimeLeft] = useState(totalSeconds)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -132,15 +136,6 @@ export function InteractionShell({
     }
   }, [phase, totalSeconds, untimed])
 
-  const timerFraction = timeLeft / totalSeconds
-
-  // Tag timer color for legacy style
-  const tagColor = timerFraction > 0.5
-    ? 'var(--led-amber)'
-    : timerFraction > 0.25
-    ? 'var(--led-red)'
-    : 'var(--led-red)'
-
   return (
     <div className="interaction-root">
       {/* Fold-hint */}
@@ -162,22 +157,9 @@ export function InteractionShell({
             </div>
           </div>
 
-          {/* Timer — tag or ring. Släckt i untimed (övningsläge). */}
+          {/* Timer — ringen (T5b, se kommentar vid TimerConfig). Släckt i untimed (övningsläge). */}
           {phase === 'choosing' && !untimed && (
-            timerStyle === 'ring' ? (
-              <CountDownRing timeLeft={timeLeft} total={totalSeconds} />
-            ) : (
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700,
-                color: tagColor,
-                background: `rgba(255,170,0,${timerFraction < 0.3 ? 0.15 : 0.08})`,
-                border: `1px solid rgba(255,170,0,0.25)`,
-                borderRadius: 3, padding: '3px 7px',
-                flexShrink: 0,
-              }}>
-                {timeLeft}s
-              </span>
-            )
+            <CountDownRing timeLeft={timeLeft} total={totalSeconds} />
           )}
         </div>
 

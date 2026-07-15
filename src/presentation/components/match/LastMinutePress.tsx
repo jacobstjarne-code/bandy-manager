@@ -2,7 +2,7 @@
  * LastMinutePress.tsx — Stålvallen redesign
  *
  * BATCH B-02. Uses new InteractionShell with:
- * - timer.style = 'ring' (8s count-down ring)
+ * - timer: 8s (ringen — T5b, 2026-07-13/14: nu den enda representationen, delad med de fyra andra panelerna)
  * - riskRow always shown
  * - cta.variant = 'danger' ("Spräng igenom →")
  * - SVG pitch: hel plan, 10 amber spelare i högt formation, 5 röda risk-pilar
@@ -165,7 +165,7 @@ export function LastMinutePress({ data, onChoose, coach }: LastMinutePressProps)
       icon="⏰"
       title="SLUTMINUTERNA"
       minute={data.minute}
-      timer={{ seconds: 8, style: 'ring' }}
+      timer={{ seconds: 8 }}
       pitch={<LastMinutePitchSVG choice={choice} />}
       subChoices={subChoicesNode}
       readout={{ label: CHOICES.find(c => c.c === choice)?.label ?? '', pct: Math.round((CHOICES.find(c => c.c === choice)?.rates ?? 0) * 100) }}
