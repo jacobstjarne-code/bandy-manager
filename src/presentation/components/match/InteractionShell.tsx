@@ -4,9 +4,12 @@
  * BATCH B-01. Shared shell for all 5 event panels.
  * Backward-compatible: legacy consumers (CornerInteraction etc) that
  * pass timerSeconds/stats/actions still work. New consumers can use
- * the structured riskRow API. T5b (2026-07-13/14): timern har bara en
- * representation nu (CountDownRing) — den gamla amber-badgen ("tag") togs
- * bort, alla fem paneler delade tidigare två visuella språk för samma sak.
+ * the structured riskRow API. T5b/UT-1 (ratificerad 2026-07-16): nedräkningen
+ * är ETT element (CountdownIndicator) med två uttryckliga states ägda av
+ * TRÖSKELN, inte av anropskoden — badge när timeLeft > 10s, ring när ≤10s.
+ * Ingen caller väljer style längre; alla fem paneler har idag totalSeconds
+ * ≤ 8, så ringen är i praktiken alltid det synliga läget — badge-grenen är
+ * en dokumenterad, avsiktlig gren för framtida längre timers, inte dött kod.
  *
  * Lärdom #3 (LESSONS.md): useRef for callback dep — onTimeout never in dep array.
  * Lärdom #7: don't put state written inside effect into deps.
@@ -50,6 +53,12 @@ interface Props {
   onTimeout: () => void
   // New CTA variant
   cta?: { label: string; variant: 'copper' | 'danger'; onClick: () => void }
+  // T5c/UT-2 (ratificerad 2026-07-16): fold-hint-mall ägd härifrån — de fem
+  // panelerna matar bara in etikett + uppmaning, aldrig egen huvud-styling.
+  // Renderas "▲ {foldHintLabel} · {foldHintPrompt}". foldHintLabel default
+  // faller tillbaka till title om utelämnad.
+  foldHintLabel?: string
+  foldHintPrompt: string
 }
 
 /** SVG count-down ring for last-minute press */
@@ -88,6 +97,31 @@ function CountDownRing({ timeLeft, total, color = 'var(--led-red)' }: { timeLeft
   )
 }
 
+/**
+ * CountdownIndicator — ETT nedräkningselement, två uttryckliga states
+ * (T5b/UT-1, ratificerad 2026-07-16). Badge när gott om tid (>10s kvar),
+ * ring när det brådskar (≤10s). Tröskeln ägs här, inte av anropskoden.
+ */
+const BADGE_THRESHOLD_SECONDS = 10
+
+function CountdownIndicator({ timeLeft, total }: { timeLeft: number; total: number }) {
+  if (timeLeft > BADGE_THRESHOLD_SECONDS) {
+    return (
+      <span style={{
+        fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700,
+        color: 'var(--led-amber)',
+        background: 'rgba(255,170,0,0.08)',
+        border: '1px solid rgba(255,170,0,0.25)',
+        borderRadius: 3, padding: '3px 7px',
+        flexShrink: 0,
+      }}>
+        {timeLeft}s
+      </span>
+    )
+  }
+  return <CountDownRing timeLeft={timeLeft} total={total} />
+}
+
 export function InteractionShell({
   icon, title, minute,
   timerSeconds,
@@ -95,6 +129,7 @@ export function InteractionShell({
   stats, pitch, coachTip, coach, actions,
   subChoices, readout, riskRow, cta,
   phase, outcome, onTimeout, untimed,
+  foldHintLabel, foldHintPrompt,
 }: Props) {
   // Resolve timer config — timer prop takes precedence over legacy timerSeconds
   const totalSeconds = timer?.seconds ?? timerSeconds ?? 5
@@ -138,10 +173,10 @@ export function InteractionShell({
 
   return (
     <div className="interaction-root">
-      {/* Fold-hint */}
+      {/* Fold-hint — T5c/UT-2: mall ägd här, panelerna matar bara in etikett+uppmaning */}
       <div className="interaction-fold-hint">
         <span className="interaction-fold-hint-arrow">▲</span>
-        <span className="interaction-fold-hint-label">HÄNDELSE KRÄVER SVAR</span>
+        <span className="interaction-fold-hint-label">{foldHintLabel ?? title} · {foldHintPrompt}</span>
       </div>
 
       <div className="interaction-panel">
@@ -157,9 +192,9 @@ export function InteractionShell({
             </div>
           </div>
 
-          {/* Timer — ringen (T5b, se kommentar vid TimerConfig). Släckt i untimed (övningsläge). */}
+          {/* Nedräkning — CountdownIndicator (T5b/UT-1). Släckt i untimed (övningsläge). */}
           {phase === 'choosing' && !untimed && (
-            <CountDownRing timeLeft={timeLeft} total={totalSeconds} />
+            <CountdownIndicator timeLeft={timeLeft} total={totalSeconds} />
           )}
         </div>
 

@@ -211,6 +211,8 @@ export function CornerInteraction({ data, outcome, onChoose, coach, practice }: 
     <InteractionShell
       icon="📐"
       title="HÖRNA"
+      // T5c/UT-2: fold-hint-uppmaning väntar på Fables textdömning (BACKLOG UT-2)
+      foldHintPrompt="[Opus]"
       minute={data.minute}
       timer={{ seconds: 5 }}
       untimed={practice}

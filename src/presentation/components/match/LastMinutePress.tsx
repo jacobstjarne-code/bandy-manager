@@ -164,6 +164,8 @@ export function LastMinutePress({ data, onChoose, coach }: LastMinutePressProps)
     <InteractionShell
       icon="⏰"
       title="SLUTMINUTERNA"
+      // T5c/UT-2: fold-hint-uppmaning väntar på Fables textdömning (BACKLOG UT-2)
+      foldHintPrompt="[Opus]"
       minute={data.minute}
       timer={{ seconds: 8 }}
       pitch={<LastMinutePitchSVG choice={choice} />}

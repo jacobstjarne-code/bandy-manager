@@ -181,6 +181,8 @@ export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyIn
     <InteractionShell
       icon="🎯"
       title="STRAFF"
+      // T5c/UT-2: fold-hint-uppmaning väntar på Fables textdömning (BACKLOG UT-2)
+      foldHintPrompt="[Opus]"
       minute={data.minute}
       timer={{ seconds: 4 }}
       pitch={

@@ -179,6 +179,8 @@ export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKick
     <InteractionShell
       icon="🏒"
       title="FRISLAG"
+      // T5c/UT-2: fold-hint-uppmaning väntar på Fables textdömning (BACKLOG UT-2)
+      foldHintPrompt="[Opus]"
       minute={data.minute ?? 0}
       timer={{ seconds: 6 }}
       pitch={
