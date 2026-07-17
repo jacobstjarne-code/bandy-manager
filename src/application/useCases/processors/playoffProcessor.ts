@@ -5,6 +5,7 @@ import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayoffStatus } from '../../../domain/enums'
 import { updateSeriesAfterMatch, advancePlayoffRound } from '../../../domain/services/playoffService'
 import { generateSemiFinalEvent, generateFinalEvent } from '../../../domain/services/playoffNarrativeService'
+import { seasonChampionYear } from '../../../domain/utils/seasonYear'
 
 function isSeriesDecided(series: { winnerId: string | null }): boolean {
   return series.winnerId !== null
@@ -216,7 +217,7 @@ export function processPlayoffRound(
         date: game.currentDate,
         type: InboxItemType.Playoff,
         title: 'SVENSKA MÄSTARE!',
-        body: `GRATTIS! ${champion?.name} är svenska mästare ${game.currentSeason + 1}! En historisk säsong som aldrig glöms!`,
+        body: `GRATTIS! ${champion?.name} är svenska mästare ${seasonChampionYear(game.currentSeason)}! En historisk säsong som aldrig glöms!`,
         isRead: false,
       } as InboxItem)
     } else {
@@ -225,7 +226,7 @@ export function processPlayoffRound(
         date: game.currentDate,
         type: InboxItemType.Playoff,
         title: `${champion?.name} är svenska mästare!`,
-        body: `${champion?.name} tar SM-guldet ${game.currentSeason + 1}!`,
+        body: `${champion?.name} tar SM-guldet ${seasonChampionYear(game.currentSeason)}!`,
         isRead: false,
       } as InboxItem)
     }

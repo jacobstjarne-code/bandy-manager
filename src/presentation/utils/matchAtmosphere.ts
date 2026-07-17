@@ -7,15 +7,22 @@ export type CardTintType =
   | 'derby' | 'playoff' | 'annandagen' | 'cup'
   | 'community' | 'alert' | 'negative'
 
+// E-MA1 (BACKLOG.md): rå rgba-kluster bytta mot token-baserad color-mix.
+// Varje klusters RGB var en handskriven kopia av en redan namngiven tokens hex
+// (derby/playoff/annandagen bekräftat mot NextMatchCards migrering, PR-B/C2;
+// cup/negative/community/alert verifierade här via exakt hex-match — --ice
+// #7EB3D4=126,179,212, --danger #B05040=176,80,64, --accent #C47A3A=196,122,58
+// — inte en gissning, samma tal, bara aldrig genom var()). Alpha bevarad 1:1
+// som color-mix-procent.
 export function getCardTint(type: CardTintType | undefined): string {
   switch (type) {
-    case 'derby':      return 'rgba(196,80,50,0.03)'
-    case 'playoff':    return 'rgba(196,168,76,0.04)'
-    case 'annandagen': return 'rgba(100,140,80,0.03)'
-    case 'cup':        return 'rgba(126,179,212,0.04)'
-    case 'community':  return 'rgba(196,122,58,0.02)'
-    case 'alert':      return 'rgba(196,122,58,0.04)'
-    case 'negative':   return 'rgba(176,80,64,0.03)'
+    case 'derby':      return 'color-mix(in srgb, var(--match-warn) 3%, transparent)'
+    case 'playoff':    return 'color-mix(in srgb, var(--match-gold) 4%, transparent)'
+    case 'annandagen': return 'color-mix(in srgb, var(--match-positive) 3%, transparent)'
+    case 'cup':        return 'color-mix(in srgb, var(--ice) 4%, transparent)'
+    case 'community':  return 'color-mix(in srgb, var(--accent) 2%, transparent)'
+    case 'alert':      return 'color-mix(in srgb, var(--accent) 4%, transparent)'
+    case 'negative':   return 'color-mix(in srgb, var(--danger) 3%, transparent)'
     default:           return 'transparent'
   }
 }

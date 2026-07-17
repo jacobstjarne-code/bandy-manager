@@ -9,6 +9,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Club } from '../../../domain/entities/Club'
 import { SCENE_TEXT, STAKE_TEXT, FINAL_LAGPRESENTATION_QUOTES, type LaddningOccasion } from '../../../domain/data/matchLaddningText'
+import { FINAL_STAT_LABELS } from '../../../domain/data/scenes/finalIntroScene'
 import { getSeasonContext } from '../../../domain/services/seasonContextService'
 import { seededPick } from '../../../domain/utils/random'
 import { IllustrationPlaceholder } from '../illustration/IllustrationScene'
@@ -187,14 +188,14 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
                 <span className="h-num" style={{ color: 'var(--text-light)', display: 'block' }}>
                   {ordPos(myPos)}
                 </span>
-                <span className="h-micro" style={{ letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>Serien</span>
+                <span className="h-micro" style={{ letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>{FINAL_STAT_LABELS.serien}</span>
               </div>
               {playoffRec !== '–' && (
                 <div style={{ textAlign: 'center' }}>
                   <span className="h-num" style={{ color: 'var(--text-light)', display: 'block' }}>
                     {playoffRec}
                   </span>
-                  <span className="h-micro" style={{ letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>Slutspelet</span>
+                  <span className="h-micro" style={{ letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>{FINAL_STAT_LABELS.slutspel}</span>
                 </div>
               )}
             </div>

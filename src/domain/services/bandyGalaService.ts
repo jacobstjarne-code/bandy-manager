@@ -3,6 +3,7 @@ import type { GameEvent } from '../entities/GameEvent'
 import { InboxItemType } from '../enums'
 import type { InboxItem } from '../entities/SaveGame'
 import { formatRating } from '../format'
+import { seasonChampionYear } from '../utils/seasonYear'
 
 // ── Awards ──────────────────────────────────────────────────────────────────
 
@@ -133,7 +134,7 @@ export function generateGalaEvent(
     id: `event_gala_${game.currentSeason}`,
     type: 'communityEvent',
     title: '🏆 Bandygalan',
-    body: `Bandygalan ${game.currentSeason + 1} — årets prisutdelning!\n\n${nomineeList}${hasWinner ? `\n\n${managedClub?.name} har ${managedWinners.length} pristagare!` : ''}`,
+    body: `Bandygalan ${seasonChampionYear(game.currentSeason)} — årets prisutdelning!\n\n${nomineeList}${hasWinner ? `\n\n${managedClub?.name} har ${managedWinners.length} pristagare!` : ''}`,
     choices: [
       {
         id: 'attend',
@@ -192,7 +193,7 @@ export function generateGalaInbox(
         matchday: currentMatchday,
         playerId: nom.playerId,
         description: 'gala_winner',
-        displayText: `${nom.playerName} vann ${AWARD_LABELS[nom.award]} på Bandygalan ${game.currentSeason + 1}`,
+        displayText: `${nom.playerName} vann ${AWARD_LABELS[nom.award]} på Bandygalan ${seasonChampionYear(game.currentSeason)}`,
         resolved: true,
       })
     }

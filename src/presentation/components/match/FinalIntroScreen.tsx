@@ -8,7 +8,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getWeatherEmoji, getConditionLabel } from '../../../domain/services/weatherService'
 import { truncate } from '../../utils/formatters'
-import { getFinalIntroScene } from '../../../domain/data/scenes/finalIntroScene'
+import { getFinalIntroScene, FINAL_STAT_LABELS } from '../../../domain/data/scenes/finalIntroScene'
 import type { FinalTier } from '../../../domain/data/scenes/finalIntroScene'
 
 const startBtn: React.CSSProperties = {
@@ -185,7 +185,7 @@ function SmFinalUppspelet({
               {seriePos}
             </b>
             <span className="h-micro" style={{ letterSpacing: 1, color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>
-              {scene?.statLabels.serien ?? 'Serien'}
+              {scene?.statLabels.serien ?? FINAL_STAT_LABELS.serien}
             </span>
           </div>
           <div style={{ textAlign: 'center' }}>
@@ -193,7 +193,7 @@ function SmFinalUppspelet({
               {slutspelRecord}
             </b>
             <span className="h-micro" style={{ letterSpacing: 1, color: 'var(--text-light-secondary)', textTransform: 'uppercase' }}>
-              {scene?.statLabels.slutspel ?? 'Slutspelet'}
+              {scene?.statLabels.slutspel ?? FINAL_STAT_LABELS.slutspel}
             </span>
           </div>
         </div>

@@ -129,6 +129,13 @@ function buildIngress(
   return `${väder} Bäst av fem.\nDet räcker inte att vinna en kväll —\ndet ska göras om, och om igen.`
 }
 
+// E-FS1 (BACKLOG.md): SM-final-uppspelet renderas i två komponenter (Förbered/
+// MatchLaddningScene, Spela/FinalIntroScreen) — statradens etiketter delades
+// tidigare mellan en hårdkodad JSX-sträng i MatchLaddningScene och detta
+// statLabels-fält, samma två ord från två separata källor. En konstant, båda
+// läser den.
+export const FINAL_STAT_LABELS = { serien: 'Serien', slutspel: 'Slutspelet' } as const
+
 export function getFinalIntroScene(
   game: SaveGame,
   fixture: Fixture,
@@ -153,7 +160,7 @@ export function getFinalIntroScene(
     eyebrow,
     hero: buildHero(tier),
     ingress: buildIngress(tier, managedClubName, weather),
-    statLabels: { serien: 'Serien', slutspel: 'Slutspelet' },
+    statLabels: FINAL_STAT_LABELS,
     keyline: { quote, speaker },
     ctaToLineup: 'LAGEN →',
     ctaToKickoff: 'TILL AVSLAG →',
