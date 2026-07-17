@@ -181,8 +181,10 @@ export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyIn
     <InteractionShell
       icon="🎯"
       title="STRAFF"
-      // T5c/UT-2: fold-hint-uppmaning väntar på Fables textdömning (BACKLOG UT-2)
-      foldHintPrompt="[Opus]"
+      // T5c/UT-2: fold-hint-uppmaning, textdömd av Fable 2026-07-16. "VÄLJ HÖRN"
+      // (måls hörn) bytt till "VÄLJ PLACERING" — förväxlingsrisk mot HÖRNA-panelens
+      // hörnslag (samma flöde, båda vanliga händelser i en match).
+      foldHintPrompt="VÄLJ PLACERING"
       minute={data.minute}
       timer={{ seconds: 4 }}
       pitch={
