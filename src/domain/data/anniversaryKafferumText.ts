@@ -5,8 +5,12 @@ import { seededPick } from '../utils/random'
  * Kafferum-rader när ett eko är aktivt. En mening + datum-känsla.
  * Tonregel: vad som hände, inte utförlig återberättelse.
  *
- * coffeeRoomService konsumerar som 4-tupel [speaker1, quote1, speaker2, quote2].
- * pickAnniversaryKafferum() används av anropare som vill ha context-aware sträng.
+ * pickAnniversaryKafferum() är enda konsumtionsvägen — outcome/typ-gated,
+ * samma mönster som pickAnniversaryKlack (M22a). coffeeRoomService.ts
+ * konsumerar den och resolvar {subject} själv (fillTemplate) när echot
+ * har en subjectPlayerId. Den tidigare generiska 4-tupeln (ANNIVERSARY_
+ * KAFFERUM) är borttagen (BYGGT-MEN-OSYNLIGT, 2026-07-16) — den ignorerade
+ * outcome/typ helt och resolvade aldrig {subject}.
  */
 
 // Textaudit domän 2 (2026-07-03): poolerna delades per event-typ. Tidigare
@@ -64,13 +68,3 @@ export function pickAnniversaryKafferum(echo: ActiveAnniversary): string {
   const seed = echo.originalSeason + echo.matchday
   return seededPick(pool, seed)
 }
-
-// coffeeRoomService importerar ANNIVERSARY_KAFFERUM som 4-tupel-array
-// [speaker1, text1, speaker2, text2] → returneras som samtal
-// Vi konverterar Opus-poolerna till det formatet
-export const ANNIVERSARY_KAFFERUM: Array<[string, string, string, string]> = [
-  ['Sture', 'Den här veckan, va', 'Birgitta', 'Ja. Man glömmer inte.'],
-  ['Kioskvakten', 'Vid den här tiden, det året...', 'Sture', 'Vet. Man tänker på det.'],
-  ['Birgitta', 'Samma vecka som det hände', 'Ragnhild', 'Det sätter sig, det gör det.'],
-  ['Kioskvakten', 'Minns du?', 'Sture', 'Tydligt. Hela resan.'],
-]

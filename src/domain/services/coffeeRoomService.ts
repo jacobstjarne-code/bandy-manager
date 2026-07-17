@@ -5,7 +5,8 @@ import { getCharacterName } from './supporterService'
 import { pickKlackEchoText } from '../data/klackEchoText'
 import { mulberry32 } from '../utils/random'
 import { RIVAL_SALE_KAFFERUM, INCOMING_BID_KAFFERUM } from '../data/transferResponseText'
-import { ANNIVERSARY_KAFFERUM } from '../data/anniversaryKafferumText'
+import { pickAnniversaryKafferum } from '../data/anniversaryKafferumText'
+import { fillTemplate } from '../data/matchCommentary'
 import { ANTICIPATION_KAFFERUM } from '../data/anticipationKafferumText'
 import { getFatigueState } from './decisionFatigueService'
 import { getUpcomingAnchor } from './calendarLookahead'
@@ -385,14 +386,26 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     return { text: INCOMING_BID_KAFFERUM[idx] }
   }
 
-  // B6: anniversary kafferum — 33% chance when medium-or-bigger unseen eko exists
-  const hasAnniversaryEko = (game.activeAnniversaries ?? []).some(
+  // B6: anniversary kafferum — 33% chance when medium-or-bigger unseen eko exists.
+  // Bygg (2026-07-16): bytt från den generiska 4-tupeln (ANNIVERSARY_KAFFERUM,
+  // borttagen — se anniversaryKafferumText.ts) till pickAnniversaryKafferum(),
+  // outcome/typ-gated precis som klackens motsvarighet (M22a, matchCore.ts).
+  // Samma {subject}-mönster: fillTemplate bara när echot faktiskt har en
+  // subjectPlayerId — annars läcker token för de ekon som saknar en (t.ex.
+  // serieettan).
+  const qualifyingAnniversaries = (game.activeAnniversaries ?? []).filter(
     a => a.echoSize !== 'small'
   )
-  if (hasAnniversaryEko && ANNIVERSARY_KAFFERUM.length > 0 && seed % 3 === 0) {
-    const idx = Math.abs(seed * 23) % ANNIVERSARY_KAFFERUM.length
-    const ex = ANNIVERSARY_KAFFERUM[idx]
-    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+  if (qualifyingAnniversaries.length > 0 && seed % 3 === 0) {
+    const echo = qualifyingAnniversaries[Math.abs(seed * 23) % qualifyingAnniversaries.length]
+    const rawKafferum = pickAnniversaryKafferum(echo)
+    const subjectPlayer = echo.subjectPlayerId
+      ? game.players.find(p => p.id === echo.subjectPlayerId)
+      : undefined
+    const text = subjectPlayer
+      ? fillTemplate(rawKafferum, { subject: `${subjectPlayer.firstName} ${subjectPlayer.lastName}` })
+      : rawKafferum
+    return { text }
   }
 
   // C-B2: klack echo in kafferum — 33% chance when weight > 0.15
