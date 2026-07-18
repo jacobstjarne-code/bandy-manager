@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
-import { selectNationalTeam, LANDSLAGS_CA_TROSKEL, CALLUP_CAP } from '../nationalTeamService'
+import { selectNationalTeam, applyCallupEffects, applyReturnEffects, LANDSLAGS_CA_TROSKEL, CALLUP_CAP } from '../nationalTeamService'
 
 const base = createNewGame({ managerName: 'T', clubId: 'club_forsbacka', season: 2025, seed: 3 })
 
@@ -68,5 +68,65 @@ describe('selectNationalTeam — förtjänstmodell (M16)', () => {
       ),
     }
     expect(selectNationalTeam(game)).not.toContain(managedIds[0])
+  })
+})
+
+/**
+ * Konsolidering 2026-07-18: applyCallupEffects/applyReturnEffects var döda
+ * (roundProcessor.ts återimplementerade samma logik inline, med extra
+ * inbox-sidoeffekter funktionerna saknade). Låser att den konsoliderade
+ * funktionen ger EXAKT den effekt roundProcessor.ts:s inline-version gav
+ * (spelarfält + camp-round + inbox-notis), inklusive den drift som fanns
+ * mellan dem: camp.startRound ska vara omgången uttagningen SKER i (den
+ * caller angivna `round`-parametern), inte ett stale `game.currentMatchday`.
+ */
+describe('applyCallupEffects/applyReturnEffects — konsoliderad (2026-07-18)', () => {
+  it('applyCallupEffects sätter callup-räknare, camp-round (nextMatchday) och en engångs-inboxnotis', () => {
+    const managedIds = base.players.filter(p => p.clubId === base.managedClubId).map(p => p.id)
+    const playerIds = [managedIds[0]]
+    const game = { ...base, currentMatchday: 3, currentSeason: 2025, inbox: [] }
+
+    const result = applyCallupEffects(game, game.players, playerIds, 14)
+
+    const player = result.players.find(p => p.id === playerIds[0])!
+    expect(player.nationalTeamCallups).toBe(1)
+    expect(player.lastNationalTeamCallup).toBe(2025)
+    // Camp-rundan ska vara `round`-parametern (14, omgången callupen sker i),
+    // INTE game.currentMatchday (3, föregående/stale omgång) — det var draften.
+    expect(result.activeNationalTeamCamp).toEqual({ startRound: 14, endRound: 15, playerIds })
+    expect(result.inboxItems).toHaveLength(1)
+    expect(result.inboxItems[0].title).toBe('VM-uttagning')
+  })
+
+  it('applyCallupEffects dedupar inboxnotisen om samma säsongs-id redan finns', () => {
+    const managedIds = base.players.filter(p => p.clubId === base.managedClubId).map(p => p.id)
+    const playerIds = [managedIds[0]]
+    const game = {
+      ...base,
+      currentSeason: 2025,
+      inbox: [{ id: 'inbox_vm_callup_2025', date: '2025-01-01', type: 0, title: '', body: '', isRead: false }] as any,
+    }
+
+    const result = applyCallupEffects(game, game.players, playerIds, 14)
+    expect(result.inboxItems).toHaveLength(0)
+  })
+
+  it('applyReturnEffects höjer form/morale (capat 100), rensar inget camp-state själv och ger en engångs-inboxnotis', () => {
+    const managedIds = base.players.filter(p => p.clubId === base.managedClubId).map(p => p.id)
+    const camp = { startRound: 14, endRound: 15, playerIds: [managedIds[0]] }
+    const game = {
+      ...base,
+      currentSeason: 2025,
+      inbox: [],
+      players: base.players.map(p => p.id === managedIds[0] ? { ...p, form: 98, morale: 97 } : p),
+    }
+
+    const result = applyReturnEffects(game, game.players, camp)
+
+    const player = result.players.find(p => p.id === managedIds[0])!
+    expect(player.form).toBe(100) // 98+4 → capat
+    expect(player.morale).toBe(100) // 97+6 → capat
+    expect(result.inboxItems).toHaveLength(1)
+    expect(result.inboxItems[0].title).toBe('Landslagsspelarena är tillbaka')
   })
 })

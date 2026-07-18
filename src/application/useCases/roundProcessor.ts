@@ -69,9 +69,8 @@ import { detectNotableResult, decayKlackEcho } from '../../domain/services/klack
 import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
 import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
 import { adjustSupporterMood } from '../../domain/services/supporterService'
-import { selectNationalTeam, LANDSLAGS_CA_TROSKEL, CALLUP_CAP } from '../../domain/services/nationalTeamService'
+import { selectNationalTeam, applyCallupEffects, applyReturnEffects, LANDSLAGS_CA_TROSKEL, CALLUP_CAP } from '../../domain/services/nationalTeamService'
 import {
-  CALLUP_NOTICE_LINES,
   SNUB_SCENE_LINES,
 } from '../../domain/data/landslagText'
 import { updateManagerBurnout, updateH2HRecord, getBurnoutZone } from '../../domain/services/managerProfileService'
@@ -533,46 +532,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   if (nationalTeamCalSlot?.isLandslagsuppehall && !isCupRound && !isPlayoffRound && !game.activeNationalTeamCamp) {
     const calledUpIds = selectNationalTeam({ ...game, players: nationalTeamUpdatedPlayers })
     if (calledUpIds.length > 0) {
-      const calledUpPlayers = nationalTeamUpdatedPlayers.filter(p => calledUpIds.includes(p.id))
-      const names = calledUpPlayers.map(p => p.lastName)
-      const nameStr = names.length === 1
-        ? names[0]
-        : `${names.slice(0, -1).join(', ')} och ${names[names.length - 1]}`
-
-      const noticeTemplates = calledUpIds.length === 1
-        ? CALLUP_NOTICE_LINES.single
-        : CALLUP_NOTICE_LINES.multi
-      const noticeTemplate = noticeTemplates[game.currentSeason % noticeTemplates.length]
-      const noticeBody = noticeTemplate
-        .replace('{spelare}', nameStr)
-        .replace('{spelare_lista}', nameStr)
-
-      const callupInboxId = `inbox_vm_callup_${game.currentSeason}`
-      if (!game.inbox.some(i => i.id === callupInboxId)) {
-        newInboxItems.push({
-          id: callupInboxId,
-          date: game.currentDate,
-          type: InboxItemType.Community,
-          title: 'VM-uttagning',
-          body: noticeBody,
-          isRead: false,
-        })
-      }
-
-      // Apply callup effects to players
-      nationalTeamUpdatedPlayers = nationalTeamUpdatedPlayers.map(p => {
-        if (!calledUpIds.includes(p.id)) return p
-        return {
-          ...p,
-          nationalTeamCallups: (p.nationalTeamCallups ?? 0) + 1,
-          lastNationalTeamCallup: game.currentSeason,
-        }
-      })
-      nationalTeamCampState = {
-        startRound: nextMatchday,
-        endRound: nextMatchday + 1,
-        playerIds: calledUpIds,
-      }
+      const callupResult = applyCallupEffects(game, nationalTeamUpdatedPlayers, calledUpIds, nextMatchday)
+      nationalTeamUpdatedPlayers = callupResult.players
+      nationalTeamCampState = callupResult.activeNationalTeamCamp
+      newInboxItems.push(...callupResult.inboxItems)
     }
 
     // M16 (regelboksanpassning 2026-07-03): snub-mekaniken flyttad utanför
@@ -624,27 +587,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Return from national team camp
   if (game.activeNationalTeamCamp && nextMatchday > game.activeNationalTeamCamp.endRound) {
-    const camp = game.activeNationalTeamCamp
-    nationalTeamUpdatedPlayers = nationalTeamUpdatedPlayers.map(p => {
-      if (!camp.playerIds.includes(p.id)) return p
-      return {
-        ...p,
-        form: Math.min(100, p.form + 4),
-        morale: Math.min(100, p.morale + 6),
-      }
-    })
+    const returnResult = applyReturnEffects(game, nationalTeamUpdatedPlayers, game.activeNationalTeamCamp)
+    nationalTeamUpdatedPlayers = returnResult.players
     nationalTeamCampState = undefined
-    const returnInboxId = `inbox_vm_return_${game.currentSeason}`
-    if (!game.inbox.some(i => i.id === returnInboxId)) {
-      newInboxItems.push({
-        id: returnInboxId,
-        date: game.currentDate,
-        type: InboxItemType.Community,
-        title: 'Landslagsspelarena är tillbaka',
-        body: 'Landslagslägret är över. Spelarna är hemma och redo.',
-        isRead: false,
-      })
-    }
+    newInboxItems.push(...returnResult.inboxItems)
   }
 
   // Merge national team player updates into finalPlayers

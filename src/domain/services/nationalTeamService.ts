@@ -1,4 +1,7 @@
-import type { SaveGame } from '../entities/SaveGame'
+import type { SaveGame, InboxItem } from '../entities/SaveGame'
+import type { Player } from '../entities/Player'
+import { InboxItemType } from '../enums'
+import { CALLUP_NOTICE_LINES } from '../data/landslagText'
 
 // M16 (regelboksanpassning 2026-07-03): förtjänstmodell. Ersätter den tidigare
 // alltid-3-till-5-uttagna-logiken (underminerade "säsongens guldkorn"-premissen
@@ -28,9 +31,52 @@ export function selectNationalTeam(game: SaveGame): string[] {
   return qualified.slice(0, CALLUP_CAP).map(p => p.id)
 }
 
-export function applyCallupEffects(game: SaveGame, playerIds: string[]): SaveGame {
-  const round = game.currentMatchday
-  const updated = game.players.map(p => {
+// Konsoliderad 2026-07-18 (nationalTeam-konsolideringen): roundProcessor.ts hade
+// återimplementerat denna logik inline med extra sidoeffekter (inbox-notiser) som
+// dessa funktioner saknade — den var den enda som faktiskt kördes. Verifierat en
+// äkta värdedrift innan sammanslagning: den gamla `round = game.currentMatchday`
+// pekade på FÖREGÅENDE omgång (currentMatchday sätts till nextMatchday först i
+// slutet av roundProcessor-anropet), medan inline korrekt använde `nextMatchday`
+// (omgången uttagningen faktiskt sker i). Inline var sanningen — round tas nu in
+// som explicit parameter istf att derivas ur ett stale state-fält. Snub-mekaniken
+// (samma trigger-block i roundProcessor.ts) har ingen egen service-motsvarighet
+// och konsolideras inte hit — den är inte en duplicering, bara grannkod.
+export function applyCallupEffects(
+  game: SaveGame,
+  players: Player[],
+  playerIds: string[],
+  round: number,
+): {
+  players: Player[]
+  activeNationalTeamCamp: { startRound: number; endRound: number; playerIds: string[] }
+  inboxItems: InboxItem[]
+} {
+  const calledUpPlayers = players.filter(p => playerIds.includes(p.id))
+  const names = calledUpPlayers.map(p => p.lastName)
+  const nameStr = names.length === 1
+    ? names[0]
+    : `${names.slice(0, -1).join(', ')} och ${names[names.length - 1]}`
+
+  const noticeTemplates = playerIds.length === 1 ? CALLUP_NOTICE_LINES.single : CALLUP_NOTICE_LINES.multi
+  const noticeTemplate = noticeTemplates[game.currentSeason % noticeTemplates.length]
+  const noticeBody = noticeTemplate
+    .replace('{spelare}', nameStr)
+    .replace('{spelare_lista}', nameStr)
+
+  const inboxItems: InboxItem[] = []
+  const callupInboxId = `inbox_vm_callup_${game.currentSeason}`
+  if (!game.inbox.some(i => i.id === callupInboxId)) {
+    inboxItems.push({
+      id: callupInboxId,
+      date: game.currentDate,
+      type: InboxItemType.Community,
+      title: 'VM-uttagning',
+      body: noticeBody,
+      isRead: false,
+    })
+  }
+
+  const updatedPlayers = players.map(p => {
     if (!playerIds.includes(p.id)) return p
     return {
       ...p,
@@ -38,17 +84,20 @@ export function applyCallupEffects(game: SaveGame, playerIds: string[]): SaveGam
       lastNationalTeamCallup: game.currentSeason,
     }
   })
+
   return {
-    ...game,
-    players: updated,
+    players: updatedPlayers,
     activeNationalTeamCamp: { startRound: round, endRound: round + 1, playerIds },
+    inboxItems,
   }
 }
 
-export function applyReturnEffects(game: SaveGame): SaveGame {
-  const camp = game.activeNationalTeamCamp
-  if (!camp) return game
-  const updated = game.players.map(p => {
+export function applyReturnEffects(
+  game: SaveGame,
+  players: Player[],
+  camp: NonNullable<SaveGame['activeNationalTeamCamp']>,
+): { players: Player[]; inboxItems: InboxItem[] } {
+  const updatedPlayers = players.map(p => {
     if (!camp.playerIds.includes(p.id)) return p
     return {
       ...p,
@@ -56,5 +105,19 @@ export function applyReturnEffects(game: SaveGame): SaveGame {
       morale: Math.min(100, p.morale + 6),
     }
   })
-  return { ...game, players: updated, activeNationalTeamCamp: undefined }
+
+  const inboxItems: InboxItem[] = []
+  const returnInboxId = `inbox_vm_return_${game.currentSeason}`
+  if (!game.inbox.some(i => i.id === returnInboxId)) {
+    inboxItems.push({
+      id: returnInboxId,
+      date: game.currentDate,
+      type: InboxItemType.Community,
+      title: 'Landslagsspelarena är tillbaka',
+      body: 'Landslagslägret är över. Spelarna är hemma och redo.',
+      isRead: false,
+    })
+  }
+
+  return { players: updatedPlayers, inboxItems }
 }
