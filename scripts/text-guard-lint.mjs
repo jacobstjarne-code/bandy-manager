@@ -93,8 +93,9 @@ const RULES = [
   },
   {
     id: 'automatic-relegation', ref: 'EFTER LÄSPASSET (domän 3)', severity: 'warn',
-    desc: '"Två lag åker direkt" (eller liknande automatisk-nedflyttning-fras) — regelboken har kval mellan seriernas plats, inte automatisk nedflyttning',
+    desc: '"Två lag åker direkt" (eller liknande automatisk-nedflyttning-fras) — regelboken har kval mellan seriernas plats, inte automatisk nedflyttning. Undantag: rena kommentarsrader — M53-fixkommentaren i upptaktCopy.ts citerar den GAMLA, redan rättade texten som dokumentation ("helper sa X, rättat till Y"), inte levande spelartext. Regeln ska döma innehåll, inte historik om innehåll.',
     re: /två lag åker (direkt|ner)\b/i,
+    exclude: /^\s*\/\//,
   },
   {
     id: 'period-as-half', ref: 'TERMLISTA v2', severity: 'warn',
