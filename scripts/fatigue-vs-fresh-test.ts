@@ -20,6 +20,7 @@
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { FixtureStatus } from '../src/domain/enums'
 import { createHeadlessGame, autoSelectLineup } from './stress/fixtures'
+import { advanceUntilManagedFixture } from '../src/testing/advanceUntilManagedFixture'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 import type { Fixture } from '../src/domain/entities/Fixture'
 
@@ -51,23 +52,31 @@ function minScheduledMatchday(game: SaveGame): number {
   return scheduled.reduce((mn, f) => f.matchday < mn ? f.matchday : mn, Infinity)
 }
 
+/**
+ * PT-8 (2026-07-18): loop-villkoret (samma "klubben spelar inte varje
+ * matchday"-bugg som bet PT-3-harnesset och 1c-testerna, se BACKLOG) flyttat
+ * till den delade src/testing/advanceUntilManagedFixture.ts. Denna funktion
+ * behåller bara sin egen lineup-strategi (conditional autoSelectLineup, bara
+ * när managed club faktiskt har en fixture på nästa matchday) som
+ * `advanceOneRound`-callback. seasonEnded-brytningen behövs inte separat —
+ * scheduled.length===0-kollen i den delade hjälparen täcker samma fall.
+ */
 function advanceUntilMatchday(game: SaveGame, targetMatchday: number): SaveGame {
-  for (let i = 0; i < 50; i++) {
-    if (minScheduledMatchday(game) >= targetMatchday) break
-    if (game.pendingScreen) { game = { ...game, pendingScreen: null }; continue }
-    if (!game.managedClubPendingLineup) {
-      const nextMd = minScheduledMatchday(game)
-      const hasManagedAtMd = game.fixtures.some(
-        f => f.status === FixtureStatus.Scheduled && f.matchday === nextMd &&
-             (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-      )
-      if (hasManagedAtMd) game = autoSelectLineup(game)
-    }
-    const r = advanceToNextEvent(game)
-    game = clearScreens(r.game)
-    if (r.seasonEnded) break
-  }
-  return game
+  return advanceUntilManagedFixture(
+    game,
+    g => {
+      if (!g.managedClubPendingLineup) {
+        const nextMd = minScheduledMatchday(g)
+        const hasManagedAtMd = g.fixtures.some(
+          f => f.status === FixtureStatus.Scheduled && f.matchday === nextMd &&
+               (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId)
+        )
+        if (hasManagedAtMd) g = autoSelectLineup(g)
+      }
+      return clearScreens(advanceToNextEvent(g).game)
+    },
+    { targetMatchday, maxRounds: 50 },
+  )
 }
 
 /** Restore all managed-club player fitness to 90 (fresh baseline). */

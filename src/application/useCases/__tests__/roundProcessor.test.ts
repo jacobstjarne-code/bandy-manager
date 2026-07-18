@@ -11,6 +11,7 @@ import type { TeamSelection } from '../../../domain/entities/Fixture'
 import { checkForPlayThroughInjuryOffer } from '../processors/eventProcessor'
 import { getInjurySeverity, PLAY_THROUGH_AFTERMATH } from '../../../domain/data/injuryDoctorText'
 import { fixtureSeed } from '../../../domain/utils/random'
+import { advanceUntilManagedFixture as drainUntilManagedFixture } from '../../../testing/advanceUntilManagedFixture'
 
 function makeGame(): SaveGame {
   return createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 42 })
@@ -471,19 +472,13 @@ describe('checkForPlayThroughInjuryOffer', () => {
  * Dränera fram till matchdagen där klubben faktiskt har en fixture innan
  * spela-på-tester körs, annars avancerar advanceToNextEvent bara andra
  * klubbars matcher och startersThisRound innehåller aldrig vår spelare.
+ *
+ * PT-8 (2026-07-18): loop-villkoret flyttat till den delade
+ * src/testing/advanceUntilManagedFixture.ts — samma bugg bet tre gånger
+ * separat (M66e, PT-3-harnesset, denna filen) innan den blev en hjälpare.
  */
 function advanceUntilManagedFixture(game: SaveGame): SaveGame {
-  for (let i = 0; i < 40; i++) {
-    const scheduled = game.fixtures.filter(f => f.status === FixtureStatus.Scheduled)
-    if (scheduled.length === 0) return game
-    const nextMd = scheduled.reduce((mn, f) => f.matchday < mn ? f.matchday : mn, Infinity)
-    const managedHasNext = scheduled.some(
-      f => f.matchday === nextMd && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-    )
-    if (managedHasNext) return game
-    game = advanceWithLineup(game, i + 1).game
-  }
-  return game
+  return drainUntilManagedFixture(game, (g, i) => advanceWithLineup(g, i + 1).game)
 }
 
 describe('roundProcessor — pool 1c spela-på-gambling', () => {

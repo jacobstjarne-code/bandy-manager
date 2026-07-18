@@ -25,6 +25,7 @@
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { FixtureStatus } from '../src/domain/enums'
 import { createHeadlessGame, autoSelectLineup } from './stress/fixtures'
+import { advanceUntilManagedFixture } from '../src/testing/advanceUntilManagedFixture'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 import type { Fixture } from '../src/domain/entities/Fixture'
 
@@ -54,14 +55,23 @@ function minScheduledMatchday(game: SaveGame): number {
   return scheduled.reduce((mn, f) => f.matchday < mn ? f.matchday : mn, Infinity)
 }
 
-/** Advance until the next scheduled matchday IS targetMatchday (i.e., drain all matchdays before it). */
+/**
+ * Advance until the next scheduled matchday IS targetMatchday (i.e., drain all matchdays before it).
+ *
+ * PT-8 (2026-07-18): denna funktion satte tidigare ALDRIG lineup under
+ * dräneringen (bara i advanceAtMatchday, vid mål-matchdagen) — höll för att
+ * m1 hittills alltid varit matchday 1 här (ingen dränering körs), men var en
+ * landmina om skriptet någonsin anropas med en senare targetMatchday och en
+ * klubb med bye i cupkvalet. Samma bugg som bet PT-3-harnesset och 1c-testerna
+ * (se BACKLOG PT-8) — fixad genom att gå via den delade
+ * src/testing/advanceUntilManagedFixture.ts, som sätter lineup varje varv.
+ */
 function advanceUntilMatchday(game: SaveGame, targetMatchday: number): SaveGame {
-  for (let i = 0; i < 40; i++) {
-    const nextMd = minScheduledMatchday(game)
-    if (nextMd >= targetMatchday) break
-    game = clearScreens(advanceToNextEvent(game).game)
-  }
-  return game
+  return advanceUntilManagedFixture(
+    game,
+    g => clearScreens(advanceToNextEvent(autoSelectLineup(g)).game),
+    { targetMatchday, maxRounds: 40 },
+  )
 }
 
 /**

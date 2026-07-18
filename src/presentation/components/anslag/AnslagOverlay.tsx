@@ -42,8 +42,15 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
   }
 
   if (anslagKey === 'cup_first_match') {
+    // PT-8 (2026-07-18): samma bugg som M66e fixade i anslagService.ts (triggern)
+    // men INTE här (renderingen) — hårdkodat roundNumber===1 hittade aldrig en
+    // direktkvalad klubbs (bye till kvarten) faktiska första cupmatch, som ligger
+    // på roundNumber 2. Anslaget visades (triggern var fixad) men {vsLabel}/
+    // {motståndare} förblev outfyllda för dessa klubbar. Samma isClubDirektkvalad-
+    // logik som triggern använder.
+    const firstRoundForClub = bracket && club ? (isClubDirektkvalad(bracket, club.id) ? 2 : 1) : 1
     const round1Fixture = game.fixtures.find(f =>
-      f.isCup && f.roundNumber === 1 &&
+      f.isCup && f.roundNumber === firstRoundForClub &&
       f.season === game.currentSeason &&
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )

@@ -39,6 +39,7 @@
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { FixtureStatus } from '../src/domain/enums'
 import { createHeadlessGame, autoSelectLineup } from './stress/fixtures'
+import { advanceUntilManagedFixture } from '../src/testing/advanceUntilManagedFixture'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 import type { Fixture } from '../src/domain/entities/Fixture'
 
@@ -77,17 +78,19 @@ function minScheduledMatchday(game: SaveGame): number {
  * rundor DYNAMISKT när föregående cupomgång klarat sig (vem möter vem i R2
  * beror på R1:s resultat). Om laget har en bye rakt in i en sådan dynamiskt
  * skapad cupomgång utan att lineup satts, fastnar draineringen permanent på
- * den matchdagen — minScheduledMatchday slutar aldrig peka framåt. Fix:
- * sätt lineup varje varv, inte bara vid mål-matchdagen.
+ * den matchdagen. Fix: sätt lineup varje varv, inte bara vid mål-matchdagen.
+ *
+ * PT-8 (2026-07-18): loop-villkoret (samma bugg bet tre gånger separat,
+ * se BACKLOG) flyttat till den delade src/testing/advanceUntilManagedFixture.ts
+ * — denna funktion behåller bara SIN lineup-strategi (autoSelectLineup varje
+ * varv) som `advanceOneRound`-callback.
  */
 function advanceUntilMatchday(game: SaveGame, targetMatchday: number): SaveGame {
-  for (let i = 0; i < 60; i++) {
-    const nextMd = minScheduledMatchday(game)
-    if (nextMd >= targetMatchday) break
-    game = autoSelectLineup(game)
-    game = clearScreens(advanceToNextEvent(game).game)
-  }
-  return game
+  return advanceUntilManagedFixture(
+    game,
+    g => clearScreens(advanceToNextEvent(autoSelectLineup(g)).game),
+    { targetMatchday, maxRounds: 60 },
+  )
 }
 
 function outcome(game: SaveGame, f: Fixture): 'win' | 'draw' | 'loss' {
