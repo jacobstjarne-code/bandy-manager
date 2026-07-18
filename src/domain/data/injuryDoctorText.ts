@@ -7,16 +7,15 @@
 //
 // {spelare} interpoleras av Code (oftast efternamn). {veckor}/{omg} likaså där det finns.
 //
-// M9 (textaudit, verifierad 2026-07-05): HELA FILEN ÄR DÖD KOD — noll
-// konsumenter någonstans i src/ (samtliga sju exports: DOCTOR_NAMES,
-// DOCTOR_STYLES, DIAGNOSIS_LINES, REHAB_STAGE_LINES, PLAY_THROUGH_AFTERMATH,
-// DOCTOR_SECONDARY_LINES, LONGTERM_ARC_LINES). Ärendets ursprungliga oro
-// ("andra halvlek"-raden i DIAGNOSIS_LINES.mild ska bara visas för match-
-// skador, inte träningsskador) är därför moot — ingen scen/service läser
-// filen, så ingen gating kan vara trasig. Samma klass som M60/M61/M42/M48.
-// Opus/Jacob-beslut: väv in i skade-flödet (finns redan en Injury-entitet
-// med severity/stage som matchar denna fils typer nästan exakt) eller ta
-// bort filen.
+// M9 (textaudit, verifierad 2026-07-05): var HELT död kod — noll konsumenter.
+// Pool 1c (2026-07-18): PLAY_THROUGH_AFTERMATH + InjurySeverity nu wirade i
+// spela-på-mekaniken (playerStateProcessor.ts/eventProcessor.ts/eventResolver.ts)
+// via getInjurySeverity() nedan. DOCTOR_NAMES/DOCTOR_STYLES/DIAGNOSIS_LINES/
+// REHAB_STAGE_LINES/DOCTOR_SECONDARY_LINES/LONGTERM_ARC_LINES har fortfarande
+// noll konsumenter — pool 1a/1b/1d/1e, egna tickets. Ingen "Injury-entitet med
+// severity/stage" finns (den tidigare kommentaren ovan var fel/stale) — Player
+// har bara isInjured/injuryDaysRemaining, severity härleds nu av
+// getInjurySeverity() ur injuryDaysRemaining.
 
 export type DoctorStyle = 'torr' | 'varm' | 'rakt_pa'
 
@@ -33,6 +32,22 @@ export const DOCTOR_NAMES: string[] = [
 export const DOCTOR_STYLES: DoctorStyle[] = ['torr', 'varm', 'rakt_pa']
 
 export type InjurySeverity = 'mjuk' | 'mild' | 'svar' | 'langtid'
+
+/**
+ * Pool 1c: härleder allvarlighetsgrad ur injuryDaysRemaining — Player har
+ * ingen egen severity-data, bara dagar kvar. Trösklar satta mot de två
+ * skaderegn som faktiskt producerar dagar: playerStateProcessor.ts (post-
+ * match, 7-34 dagar) och matchInjuryService.ts (matchhändelser, 0-315 dagar
+ * — skenan ensam sträcker sig till 30-45 VECKOR). mjuk/mild täcker
+ * playerStateProcessor-spannet (så spela-på-erbjudandet faktiskt kan
+ * triggas av den vanligaste skadekällan); svår/långtid täcker resten.
+ */
+export function getInjurySeverity(injuryDaysRemaining: number): InjurySeverity {
+  if (injuryDaysRemaining <= 13) return 'mjuk'
+  if (injuryDaysRemaining <= 27) return 'mild'
+  if (injuryDaysRemaining <= 60) return 'svar'
+  return 'langtid'
+}
 
 /** Diagnos-repliker vid skade-scenen, per allvarlighetsgrad. */
 export const DIAGNOSIS_LINES: Record<InjurySeverity, string[]> = {

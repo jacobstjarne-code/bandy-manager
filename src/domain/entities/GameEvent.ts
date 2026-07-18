@@ -45,6 +45,7 @@ export type GameEventType =
   | 'fanLetter'
   | 'opponentQuote'
   | 'csPress'
+  | 'playThroughInjury'
 
 export interface EventChoice {
   id: string
@@ -102,6 +103,7 @@ export interface EventEffect {
     | 'refereeRelationship'
     | 'setLegendRole'
     | 'hallProcess'
+    | 'playThroughInjury'
   value?: number
   refereeId?: string
   amount?: number

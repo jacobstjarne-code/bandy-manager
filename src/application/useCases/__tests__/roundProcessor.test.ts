@@ -8,6 +8,9 @@ import { FixtureStatus, InboxItemType, TacticMentality, TacticTempo, TacticPress
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { TransferBid } from '../../../domain/entities/GameEvent'
 import type { TeamSelection } from '../../../domain/entities/Fixture'
+import { checkForPlayThroughInjuryOffer } from '../processors/eventProcessor'
+import { getInjurySeverity, PLAY_THROUGH_AFTERMATH } from '../../../domain/data/injuryDoctorText'
+import { fixtureSeed } from '../../../domain/utils/random'
 
 function makeGame(): SaveGame {
   return createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 42 })
@@ -396,5 +399,199 @@ describe('roundProcessor — inbox after round', () => {
     }
     const matchResultItems = game.inbox.filter(item => item.type === InboxItemType.MatchResult)
     expect(matchResultItems.length).toBe(0)
+  })
+})
+
+// ── Group 8: Pool 1c — spela-på-mekaniken ───────────────────────────────────
+
+describe('getInjurySeverity', () => {
+  it('mappar dagar kvar till rätt allvarlighetsgrad', () => {
+    expect(getInjurySeverity(7)).toBe('mjuk')
+    expect(getInjurySeverity(13)).toBe('mjuk')
+    expect(getInjurySeverity(14)).toBe('mild')
+    expect(getInjurySeverity(27)).toBe('mild')
+    expect(getInjurySeverity(28)).toBe('svar')
+    expect(getInjurySeverity(60)).toBe('svar')
+    expect(getInjurySeverity(61)).toBe('langtid')
+    expect(getInjurySeverity(210)).toBe('langtid')
+  })
+})
+
+describe('checkForPlayThroughInjuryOffer', () => {
+  it('erbjuder för mjuk/mild severity, aldrig för svår/långtid', () => {
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const nextFixture = game.fixtures.find(
+      f => !f.isCup && f.status === FixtureStatus.Scheduled &&
+           (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )!
+
+    const mildGame: SaveGame = {
+      ...game,
+      players: game.players.map(p => p.id === player.id ? { ...p, isInjured: true, injuryDaysRemaining: 10 } : p),
+    }
+    const svarGame: SaveGame = {
+      ...game,
+      players: game.players.map(p => p.id === player.id ? { ...p, isInjured: true, injuryDaysRemaining: 40 } : p),
+    }
+    const healthyGame = game
+
+    const mildEvents = checkForPlayThroughInjuryOffer(mildGame, nextFixture.matchday)
+    const svarEvents = checkForPlayThroughInjuryOffer(svarGame, nextFixture.matchday)
+    const healthyEvents = checkForPlayThroughInjuryOffer(healthyGame, nextFixture.matchday)
+
+    expect(mildEvents.some(e => e.relatedPlayerId === player.id)).toBe(true)
+    expect(svarEvents.some(e => e.relatedPlayerId === player.id)).toBe(false)
+    expect(healthyEvents.some(e => e.relatedPlayerId === player.id)).toBe(false)
+  })
+
+  it('erbjuder inte en andra gång om en offert redan väntar för samma spelare', () => {
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const nextFixture = game.fixtures.find(
+      f => !f.isCup && f.status === FixtureStatus.Scheduled &&
+           (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )!
+    const injuredGame: SaveGame = {
+      ...game,
+      players: game.players.map(p => p.id === player.id ? { ...p, isInjured: true, injuryDaysRemaining: 10 } : p),
+      pendingEvents: [{
+        id: 'existing', type: 'playThroughInjury', title: 'x', body: 'x',
+        choices: [], relatedPlayerId: player.id, resolved: false,
+      }],
+    }
+    const events = checkForPlayThroughInjuryOffer(injuredGame, nextFixture.matchday)
+    expect(events.some(e => e.relatedPlayerId === player.id)).toBe(false)
+  })
+})
+
+/**
+ * club_forsbacka (seed 42) har bye i cup-kvalet — dess FÖRSTA schemalagda
+ * fixture är matchday 5, inte 1 (matchday 1-4 är andra klubbars cupmatcher).
+ * Dränera fram till matchdagen där klubben faktiskt har en fixture innan
+ * spela-på-tester körs, annars avancerar advanceToNextEvent bara andra
+ * klubbars matcher och startersThisRound innehåller aldrig vår spelare.
+ */
+function advanceUntilManagedFixture(game: SaveGame): SaveGame {
+  for (let i = 0; i < 40; i++) {
+    const scheduled = game.fixtures.filter(f => f.status === FixtureStatus.Scheduled)
+    if (scheduled.length === 0) return game
+    const nextMd = scheduled.reduce((mn, f) => f.matchday < mn ? f.matchday : mn, Infinity)
+    const managedHasNext = scheduled.some(
+      f => f.matchday === nextMd && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )
+    if (managedHasNext) return game
+    game = advanceWithLineup(game, i + 1).game
+  }
+  return game
+}
+
+describe('roundProcessor — pool 1c spela-på-gambling', () => {
+  it('spelare som accepterat men INTE valdes till start återställs till skadad utan rullning, inget eftersnack', () => {
+    const game = advanceUntilManagedFixture(makeGame())
+    const lineupGame = withAutoLineup(game)
+    const lineup = lineupGame.managedClubPendingLineup!
+    // Plocka bort en bänkspelare explicit ur bägge listorna — garanterat "ej vald"
+    // oavsett truppstorlek (istf att förlita sig på att någon råkar bli över).
+    const benchedId = lineup.benchPlayerIds[0]
+    const trimmedLineup: TeamSelection = {
+      ...lineup,
+      benchPlayerIds: lineup.benchPlayerIds.filter(id => id !== benchedId),
+    }
+
+    const gameWithAccepted: SaveGame = {
+      ...lineupGame,
+      managedClubPendingLineup: trimmedLineup,
+      players: lineupGame.players.map(p =>
+        p.id === benchedId ? { ...p, isInjured: false, injuryDaysRemaining: 10, playingThroughInjury: true } : p
+      ),
+    }
+
+    const result = advanceToNextEvent(gameWithAccepted, 555)
+    const after = result.game.players.find(p => p.id === benchedId)!
+    expect(after.isInjured).toBe(true)
+    expect(after.playingThroughInjury).toBe(false)
+    expect(after.injuryDaysRemaining).toBe(10)
+
+    const aftermathItem = result.game.inbox.find(
+      i => i.relatedPlayerId === benchedId && i.title.startsWith('Läkarbesked')
+    )
+    expect(aftermathItem).toBeUndefined()
+  })
+
+  it('spelare som startar efter accept får antingen återfall (dubblerade dagar) eller håller (frisk) — aldrig oförändrat', () => {
+    const game = advanceUntilManagedFixture(makeGame())
+    const lineupGame = withAutoLineup(game)
+    const starterId = lineupGame.managedClubPendingLineup!.startingPlayerIds[0]
+
+    const gameWithAccepted: SaveGame = {
+      ...lineupGame,
+      players: lineupGame.players.map(p =>
+        p.id === starterId ? { ...p, isInjured: false, injuryDaysRemaining: 10, playingThroughInjury: true } : p
+      ),
+    }
+
+    const result = advanceToNextEvent(gameWithAccepted, 999)
+    const after = result.game.players.find(p => p.id === starterId)!
+    expect(after.playingThroughInjury).toBe(false)
+
+    const aftermathItem = result.game.inbox.find(
+      i => i.relatedPlayerId === starterId && i.title.startsWith('Läkarbesked')
+    )
+    expect(aftermathItem).toBeTruthy()
+
+    if (after.isInjured) {
+      // Återfall: dagarna ska ha dubblerats från originalvärdet (10 → 20)
+      expect(after.injuryDaysRemaining).toBe(20)
+      expect(PLAY_THROUGH_AFTERMATH.slice(0, 5)).toContain(aftermathItem!.body)
+    } else {
+      // Höll: frisk, ingen kvarvarande skada
+      expect(after.injuryDaysRemaining).toBe(0)
+      expect(aftermathItem!.body).toBe(PLAY_THROUGH_AFTERMATH[5])
+    }
+  })
+
+  it('determinism: samma fixture + samma spelare + samma val → identiskt utfall två körningar i rad', () => {
+    const game = advanceUntilManagedFixture(makeGame())
+    const lineupGame = withAutoLineup(game)
+    const starterId = lineupGame.managedClubPendingLineup!.startingPlayerIds[0]
+
+    const gameWithAccepted: SaveGame = {
+      ...lineupGame,
+      players: lineupGame.players.map(p =>
+        p.id === starterId ? { ...p, isInjured: false, injuryDaysRemaining: 10, playingThroughInjury: true } : p
+      ),
+    }
+
+    const result1 = advanceToNextEvent(gameWithAccepted, 4242)
+    const result2 = advanceToNextEvent(gameWithAccepted, 4242)
+
+    const after1 = result1.game.players.find(p => p.id === starterId)!
+    const after2 = result2.game.players.find(p => p.id === starterId)!
+    // Skärpt kontroll: bekräfta att gamblet FAKTISKT kördes (inte reverterades
+    // i tysthet, vilket annars skulle göra determinism-jämförelsen trivial).
+    const aftermath1 = result1.game.inbox.find(i => i.relatedPlayerId === starterId && i.title.startsWith('Läkarbesked'))
+    const aftermath2 = result2.game.inbox.find(i => i.relatedPlayerId === starterId && i.title.startsWith('Läkarbesked'))
+    expect(aftermath1).toBeTruthy()
+    expect(aftermath2).toBeTruthy()
+
+    expect(after1.isInjured).toBe(after2.isInjured)
+    expect(after1.injuryDaysRemaining).toBe(after2.injuryDaysRemaining)
+    expect(aftermath1?.body).toBe(aftermath2?.body)
+  })
+
+  it('seeden beror på fixture+spelare, inte på valet — direkt kontroll av seed-formeln', () => {
+    // Direkt verifiering av själva seed-formeln (samma en playerStateProcessor
+    // använder): samma fixture-id men olika spelar-id ger olika seeds, och
+    // formeln tar inget "val"-argument alls — den KAN inte bero på valet,
+    // eftersom valet redan skett (accept) innan denna kod någonsin körs.
+    const fixtureId = 'fixture_test_1'
+    const seedA = fixtureSeed(`${fixtureId}:player_a`)
+    const seedB = fixtureSeed(`${fixtureId}:player_b`)
+    expect(seedA).not.toBe(seedB)
+
+    // Samma (fixture, spelare)-par ger alltid samma seed — grunden för determinism.
+    const seedARepeat = fixtureSeed(`${fixtureId}:player_a`)
+    expect(seedA).toBe(seedARepeat)
   })
 })

@@ -115,6 +115,25 @@ export function createRecoveryItem(
   }
 }
 
+/** Pool 1c: eftersnack när spela-på-gamblet avgjorts. body = en av
+ *  PLAY_THROUGH_AFTERMATH-raderna (redan Opus-text, injuryDoctorText.ts) —
+ *  skickas in färdig, ingen ny copy skrivs här. */
+export function createPlayThroughAftermathItem(
+  player: Player,
+  aftermathLine: string,
+  currentDate: string,
+): InboxItem {
+  return {
+    id: generateId(InboxItemType.Injury),
+    date: currentDate,
+    type: InboxItemType.Injury,
+    title: `Läkarbesked: ${player.firstName} ${player.lastName}`,
+    body: aftermathLine,
+    relatedPlayerId: player.id,
+    isRead: false,
+  }
+}
+
 export function createYouthIntakeItem(
   result: YouthIntakeResult,
   club: Club,

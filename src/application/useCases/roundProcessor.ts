@@ -13,6 +13,7 @@ import {
   createInjuryItem,
   createSuspensionItem,
   createRecoveryItem,
+  createPlayThroughAftermathItem,
 } from '../../domain/services/inboxService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
@@ -48,7 +49,7 @@ import { processNarrative, processUpcomingDerbyNotification } from './processors
 import { detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
 import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
-import { processGameEvents, applyMecenatSpawn, processScandals } from './processors/eventProcessor'
+import { processGameEvents, applyMecenatSpawn, processScandals, checkForPlayThroughInjuryOffer } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas, describeRippleChain } from '../../domain/services/rippleEffectService'
 import type { RippleChain } from '../../domain/entities/SaveGame'
@@ -332,6 +333,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const updatedPlayers = playerStateResult.updatedPlayers
   const newlyInjured = playerStateResult.newlyInjured
   const newlySuspended = playerStateResult.newlySuspended
+  const playThroughResolutions = playerStateResult.playThroughResolutions
   let finalPlayers = updatedPlayers
 
   // Apply match injuries from matchSimProcessor (post-match batch injury checks)
@@ -475,6 +477,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   for (const player of updatedPlayers) {
     if (player.clubId === game.managedClubId && injuredBeforeRound.has(player.id) && !player.isInjured) {
       newInboxItems.push(createRecoveryItem(player, game.currentDate))
+    }
+  }
+
+  // Pool 1c: spela-på-eftersnack (doktorns röst, PLAY_THROUGH_AFTERMATH)
+  for (const { player, aftermathLine } of playThroughResolutions) {
+    if (player.clubId === game.managedClubId) {
+      newInboxItems.push(createPlayThroughAftermathItem(player, aftermathLine, game.currentDate))
     }
   }
 
@@ -1324,6 +1333,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     )
     updatedMecenater = mecenatResult.updatedMecenater
     allNewEvents.push(...mecenatResult.newEvents)
+  }
+
+  // ── Pool 1c: spela-på-erbjudandet ─────────────────────────────────────────
+  if (!isSecondPassForManagedMatch) {
+    allNewEvents.push(...checkForPlayThroughInjuryOffer(game, nextMatchday))
   }
 
   // ── B3/B4: Cap low-priority (atmospheric) events per round ───────────────

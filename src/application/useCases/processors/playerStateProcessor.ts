@@ -8,9 +8,10 @@ import { FixtureStatus, MatchEventType } from '../../../domain/enums'
 import { computeWeatherTacticInteraction } from '../../../domain/services/matchSimulator'
 import { getTacticModifiers } from '../../../domain/services/tacticModifiers'
 import { developPlayers } from '../../../domain/services/playerDevelopmentService'
-import { mulberry32 } from '../../../domain/utils/random'
+import { mulberry32, fixtureSeed } from '../../../domain/utils/random'
 import { generateInjuryEntry, generateReturnFromInjuryEntry } from '../../../domain/services/narrativeService'
 import { generateInjuryNarrative } from '../../../domain/data/injuryStories'
+import { PLAY_THROUGH_AFTERMATH } from '../../../domain/data/injuryDoctorText'
 import {
   getEffectiveMode,
   BYGG_SEASON_FORM_RATE,
@@ -35,6 +36,9 @@ export interface PlayerStateResult {
   updatedPlayers: Player[]
   newlyInjured: Array<{ player: Player; days: number }>
   newlySuspended: Array<{ player: Player }>
+  /** Pool 1c: spelare vars spela-på-gambling avgjordes (eller kansellerades
+   *  utan risk om de aldrig faktiskt startade matchen) denna runda. */
+  playThroughResolutions: Array<{ player: Player; relapsed: boolean; aftermathLine: string }>
 }
 
 function getPlayerRating(playerId: string, fixtures: Fixture[]): number | null {
@@ -192,6 +196,50 @@ export function applyPlayerStateUpdates(
     return updated
   })
 
+  // ── Pool 1c: spela-på-gambling — avgörs EN gång per spelare som accepterat
+  // erbjudandet (playingThroughInjury===true), oavsett om de faktiskt startade.
+  // Determinism: seeden är fixture-id + spelar-id, ALDRIG spelarens val eller
+  // Math.random() — situationen avgör seeden, valet (som redan skett vid accept)
+  // avgör bara OM rullningen sker alls.
+  const playThroughResolutions: Array<{ player: Player; relapsed: boolean; aftermathLine: string }> = []
+  for (let idx = 0; idx < updatedPlayers.length; idx++) {
+    const p = updatedPlayers[idx]
+    if (!p.playingThroughInjury) continue
+
+    if (!startersThisRound.has(p.id)) {
+      // Bänkad/ej vald denna runda — gamblet kräver att spelaren verkligen
+      // spelade. Återställ utan risk, ingen rullning, inget eftersnack.
+      updatedPlayers[idx] = { ...p, isInjured: true, playingThroughInjury: false }
+      continue
+    }
+
+    const fixture = simulatedFixtures.find(f => f.homeClubId === p.clubId || f.awayClubId === p.clubId)
+    const seedKey = `${fixture?.id ?? 'unknown'}:${p.id}`
+    const relapsed = mulberry32(fixtureSeed(seedKey))() < 0.75
+    const originalDays = p.injuryDaysRemaining
+
+    let aftermathLine: string
+    if (relapsed) {
+      const lineIdx = Math.floor(mulberry32(fixtureSeed(seedKey, 1))() * 5)
+      aftermathLine = PLAY_THROUGH_AFTERMATH[lineIdx]
+      updatedPlayers[idx] = {
+        ...p,
+        isInjured: true,
+        injuryDaysRemaining: originalDays * 2,
+        playingThroughInjury: false,
+      }
+    } else {
+      aftermathLine = PLAY_THROUGH_AFTERMATH[5]
+      updatedPlayers[idx] = {
+        ...p,
+        isInjured: false,
+        injuryDaysRemaining: 0,
+        playingThroughInjury: false,
+      }
+    }
+    playThroughResolutions.push({ player: updatedPlayers[idx], relapsed, aftermathLine })
+  }
+
   // Utvisning i bandy = 10 minuters penalty på isen (spelaren kommer tillbaka).
   // Det är INTE en spelande avstängning. Ingen suspensionGamesRemaining sätts.
   // Matchstraff är extremt sällsynt (~2% av utvisningar) och ger 1 match.
@@ -293,6 +341,7 @@ export function applyPlayerStateUpdates(
     updatedPlayers: finalPlayers,
     newlyInjured,
     newlySuspended,
+    playThroughResolutions,
   }
 }
 

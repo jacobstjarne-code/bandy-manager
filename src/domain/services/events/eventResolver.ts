@@ -192,6 +192,22 @@ export function resolveEvent(
       }
       break
     }
+    case 'playThroughInjury': {
+      // Pool 1c: tillfälligt fritagen för EN match. injuryDaysRemaining rörs
+      // INTE — det är originalvärdet post-match-rullningen (playerStateProcessor)
+      // dubblar vid återfall. Om spelaren inte faktiskt startar den matchen
+      // återställs isInjured där, utan att rullningen sker.
+      const pid = effect.targetPlayerId
+      if (pid) {
+        updatedGame = {
+          ...updatedGame,
+          players: updatedGame.players.map(p =>
+            p.id === pid ? { ...p, isInjured: false, playingThroughInjury: true } : p,
+          ),
+        }
+      }
+      break
+    }
     case 'teamBoostMorale': {
       const boost = effect.value ?? 5
       const clubId = effect.targetClubId

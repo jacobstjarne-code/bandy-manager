@@ -102,6 +102,14 @@ export interface Player {
 
   isInjured: boolean
   injuryDaysRemaining: number
+  /** Pool 1c (injuryDoctorText.ts, spela-på-mekaniken): true medan spelaren
+   *  tillfälligt är fritagen (isInjured=false) för EN specifik match efter att
+   *  ha accepterat att spela på en mjuk/mild skada. injuryDaysRemaining fryses
+   *  (rörs inte) under tiden — det är det ORIGINALVÄRDE post-match-rullningen
+   *  dubblar vid återfall. Om spelaren inte faktiskt startar matchen den var
+   *  tänkt för (bänkad/ej vald) återställs isInjured utan att rullningen sker —
+   *  gamblet kräver att spelaren verkligen spelade. */
+  playingThroughInjury?: boolean
   suspensionGamesRemaining: number
   recentlyInjuredUntil?: number  // matchday — "Ramp först" warn om Bygg/Toppa sätts före detta
   suspensionCause?: { sinceMatchday: number; opponentName: string; matches: number }

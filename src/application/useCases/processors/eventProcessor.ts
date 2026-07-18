@@ -12,6 +12,7 @@ import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterSe
 import { checkEconomicCrisis } from '../../../domain/services/economicCrisisService'
 import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
+import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
 import type { Scandal } from '../../../domain/services/scandalService'
 import { checkScandalTrigger, applyScandalEffect, resolveExpiredScandals } from '../../../domain/services/scandalService'
 import {
@@ -358,6 +359,60 @@ export function applyMecenatSpawn(
     }
   }
   return { updatedMecenater, newEvents: [] }
+}
+
+// ── Pool 1c: spela-på-erbjudandet (injuryDoctorText.ts) ──────────────────────
+//
+// Jacobs tre designbeslut (2026-07-18):
+// 1. Bara mjuk/mild severity erbjuds — aldrig svår/långtid (orimligt avvägande).
+// 2. Ingen matchvikts-gating — spelaren väger själv om matchen är värd risken.
+// 3. Erbjuds varje matchcykel villkoren håller, inte engångs — men aldrig en
+//    andra samtidig offert för samma spelare (dedup mot pendingEvents).
+//
+// Textytan (title/body/choice-labels) är NY svensk copy Code inte skriver —
+// '[Opus]'-platshållare tills Fable/Jacob levererar (SVENSK TEXT-regeln).
+// PLAY_THROUGH_AFTERMATH-raderna som visas EFTER matchen är redan Opus-text
+// (injuryDoctorText.ts) — de rörs inte här, bara wiring i playerStateProcessor.
+export function checkForPlayThroughInjuryOffer(
+  game: SaveGame,
+  nextMatchday: number,
+): GameEvent[] {
+  const managedId = game.managedClubId
+  const hasManagedFixtureThisRound = game.fixtures.some(
+    f => f.matchday === nextMatchday && f.status === 'scheduled' &&
+         (f.homeClubId === managedId || f.awayClubId === managedId)
+  )
+  if (!hasManagedFixtureThisRound) return []
+
+  const candidates = game.players.filter(p =>
+    p.clubId === managedId &&
+    p.isInjured &&
+    !p.playingThroughInjury &&
+    ['mjuk', 'mild'].includes(getInjurySeverity(p.injuryDaysRemaining))
+  )
+  if (candidates.length === 0) return []
+
+  const pending = game.pendingEvents ?? []
+  const events: GameEvent[] = []
+  for (const player of candidates) {
+    const alreadyPending = pending.some(
+      e => e.type === 'playThroughInjury' && e.relatedPlayerId === player.id && !e.resolved
+    )
+    if (alreadyPending) continue
+    events.push({
+      id: `playthrough_${player.id}_${nextMatchday}`,
+      type: 'playThroughInjury',
+      title: '[Opus]',
+      body: '[Opus]',
+      choices: [
+        { id: 'play', label: '[Opus]', effect: { type: 'playThroughInjury', targetPlayerId: player.id } },
+        { id: 'rest', label: '[Opus]', effect: { type: 'noOp' } },
+      ],
+      relatedPlayerId: player.id,
+      resolved: false,
+    })
+  }
+  return events
 }
 
 // ── Scandals (Lager 1 — Världshändelser) ─────────────────────────────────
