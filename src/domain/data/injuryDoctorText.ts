@@ -10,12 +10,19 @@
 // M9 (textaudit, verifierad 2026-07-05): var HELT död kod — noll konsumenter.
 // Pool 1c (2026-07-18): PLAY_THROUGH_AFTERMATH + InjurySeverity nu wirade i
 // spela-på-mekaniken (playerStateProcessor.ts/eventProcessor.ts/eventResolver.ts)
-// via getInjurySeverity() nedan. DOCTOR_NAMES/DOCTOR_STYLES/DIAGNOSIS_LINES/
-// REHAB_STAGE_LINES/DOCTOR_SECONDARY_LINES/LONGTERM_ARC_LINES har fortfarande
-// noll konsumenter — pool 1a/1b/1d/1e, egna tickets. Ingen "Injury-entitet med
-// severity/stage" finns (den tidigare kommentaren ovan var fel/stale) — Player
-// har bara isInjured/injuryDaysRemaining, severity härleds nu av
-// getInjurySeverity() ur injuryDaysRemaining.
+// via getInjurySeverity() nedan.
+// Pool 1a+1e (2026-07-18): createDoctor() genererar en per-save doktor
+// (SaveGame.doctor, satt i createNewGame.ts, speglar createJournalist).
+// DIAGNOSIS_LINES wirad i inboxService.ts's createInjuryItem (post-match-
+// skadan, playerStateProcessor-källan). LONGTERM_ARC_LINES wirad i
+// matchInjuryService.ts's generateInjuryInboxItem för 'skenan'-typen
+// (enda matchskadan som når langtid-severity, 30-45 v) — ERSÄTTER
+// INJURY_INBOX_BODY.skenan där (en röst vinner, inte båda staplade).
+// REHAB_STAGE_LINES/DOCTOR_SECONDARY_LINES har fortfarande noll konsumenter
+// — pool 1b/1d, egen ticket (kräver stage-fält-verifiering först).
+// Ingen "Injury-entitet med severity/stage" finns (den tidigare kommentaren
+// ovan var fel/stale) — Player har bara isInjured/injuryDaysRemaining,
+// severity härleds nu av getInjurySeverity() ur injuryDaysRemaining.
 
 export type DoctorStyle = 'torr' | 'varm' | 'rakt_pa'
 
@@ -30,6 +37,13 @@ export const DOCTOR_NAMES: string[] = [
 ]
 
 export const DOCTOR_STYLES: DoctorStyle[] = ['torr', 'varm', 'rakt_pa']
+
+/** Pool 1a/1e (2026-07-18): save-genererad doktorsidentitet, speglar createJournalist. */
+export function createDoctor(rand: () => number): DoctorIdentity {
+  const name = DOCTOR_NAMES[Math.floor(rand() * DOCTOR_NAMES.length)]
+  const style = DOCTOR_STYLES[Math.floor(rand() * DOCTOR_STYLES.length)]
+  return { name, style }
+}
 
 export type InjurySeverity = 'mjuk' | 'mild' | 'svar' | 'langtid'
 

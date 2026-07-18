@@ -8,6 +8,8 @@ import type { TrainingFocus } from '../entities/Training'
 import { InboxItemType, ClubExpectation } from '../enums'
 import { SUSPENSION_INCIDENT_LINES } from '../data/suspensionText'
 import { trainingTypeLabel, trainingIntensityLabel } from './trainingService'
+import { getInjurySeverity, DIAGNOSIS_LINES } from '../data/injuryDoctorText'
+import type { DoctorIdentity } from '../data/injuryDoctorText'
 
 function generateId(type: InboxItemType): string {
   return `inbox_${type}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
@@ -55,19 +57,36 @@ export function createMatchResultItem(
   }
 }
 
+/**
+ * Pool 1a (2026-07-18): body bär doktorns diagnos (DIAGNOSIS_LINES, per
+ * severity via getInjurySeverity) istf en mekanisk "missar N dagar"-mening.
+ * Radantalet flyttat till titeln (veckor, samma konvention som
+ * matchInjuryService.ts's generateInjuryInboxItem) så at-a-glance-läget
+ * bevaras trots att body nu är prosa. Deterministisk radval: samma
+ * charCodeAt-hash-mönster som createSuspensionItem nedan använder i samma fil.
+ */
 export function createInjuryItem(
   player: Player,
   estimatedDaysOut: number,
   currentDate: string,
+  doctor?: DoctorIdentity,
 ): InboxItem {
+  const spelare = `${player.firstName} ${player.lastName}`
+  const severity = getInjurySeverity(estimatedDaysOut)
+  const lines = DIAGNOSIS_LINES[severity]
+  const lineIdx = Math.abs(player.id.charCodeAt(0) + estimatedDaysOut) % lines.length
+  const body = lines[lineIdx].replace(/\{spelare\}/g, spelare)
+  const weeksOut = Math.max(1, Math.ceil(estimatedDaysOut / 7))
+
   return {
     id: generateId(InboxItemType.Injury),
     date: currentDate,
     type: InboxItemType.Injury,
-    title: `Skada: ${player.firstName} ${player.lastName}`,
-    body: `${player.firstName} ${player.lastName} skadade sig och missar uppskattningsvis ${estimatedDaysOut} dagar.`,
+    title: `Skada: ${spelare} (${weeksOut} v borta)`,
+    body,
     relatedPlayerId: player.id,
     isRead: false,
+    fromRole: doctor?.name,
   }
 }
 

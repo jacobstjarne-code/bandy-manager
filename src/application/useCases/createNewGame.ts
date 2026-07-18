@@ -18,6 +18,7 @@ import { BOARD_PROFILES } from '../../domain/data/boardData'
 import { VOLUNTEER_FIRST_NAMES, LOCAL_PAPER_NAMES } from '../../domain/data/communityNames'
 import { initCharacterPlayers } from '../../domain/services/characterPlayerService'
 import { createJournalist } from '../../domain/services/journalistService'
+import { createDoctor } from '../../domain/data/injuryDoctorText'
 import { createTrainerArc } from '../../domain/services/trainerArcService'
 import { generateBoardObjectives } from '../../domain/services/boardObjectiveService'
 import { generateMecenat } from '../../domain/services/mecenatService'
@@ -288,6 +289,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const localPaperName = pickRandom(LOCAL_PAPER_NAMES, rand)
 
   const journalist = createJournalist(localPaperName, rand)
+  const doctor = createDoctor(rand)
   const initialMecenater = rand() < 0.5 ? [generateMecenat(input.clubId, input.season ?? 2025, rand)] : []
   const patron = generatePatron(managedClub.reputation, managedPlayers, rand)
   const localPolitician = generatePolitician(rand, input.season ?? 2025)
@@ -379,6 +381,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     volunteers,
     localPaperName,
     journalist,
+    doctor,
     patron,
     localPolitician,
     board,

@@ -206,6 +206,8 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.trainerArc === undefined) data.trainerArc = { current: 'established', history: [], seasonCount: 1, bestFinish: 6, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 0, boardWarningGiven: false }
   // V1.0 — Journalist character (created on-demand if missing)
   if (data.journalist === undefined) data.journalist = null
+  // Pool 1a/1e (2026-07-18) — doctor character (fromRole falls back gracefully if missing)
+  if (data.doctor === undefined) data.doctor = null
 
   // ── localPolitician: ensure newer optional fields exist ───────────────
   if (data.localPolitician && typeof data.localPolitician === 'object') {

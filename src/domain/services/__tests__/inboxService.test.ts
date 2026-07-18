@@ -8,6 +8,7 @@ import {
   createContractExpiringItem,
   createBoardFeedbackItem,
 } from '../inboxService'
+import { DIAGNOSIS_LINES } from '../../data/injuryDoctorText'
 import type { Fixture } from '../../entities/Fixture'
 import type { Player } from '../../entities/Player'
 import type { Club } from '../../entities/Club'
@@ -176,17 +177,25 @@ describe('createMatchResultItem', () => {
 })
 
 describe('createInjuryItem', () => {
-  it('mentions player name and days out', () => {
+  it('mentions player name and week estimate in title; body is doktorns diagnos för rätt severity', () => {
     const player = makePlayer()
     const item = createInjuryItem(player, 14, TEST_DATE)
 
     expect(item.type).toBe(InboxItemType.Injury)
     expect(item.title).toContain(player.firstName)
     expect(item.title).toContain(player.lastName)
-    expect(item.body).toContain(player.firstName)
-    expect(item.body).toContain('14')
+    expect(item.title).toContain('v borta')
+    // 14 dagar → 'mild' severity (getInjurySeverity: <=13 mjuk, <=27 mild)
+    expect(DIAGNOSIS_LINES.mild.some(line => line.replace(/\{spelare\}/g, `${player.firstName} ${player.lastName}`) === item.body)).toBe(true)
     expect(item.relatedPlayerId).toBe(player.id)
     expect(item.isRead).toBe(false)
+    expect(item.fromRole).toBeUndefined()
+  })
+
+  it('attributes fromRole to the given doctor', () => {
+    const player = makePlayer()
+    const item = createInjuryItem(player, 5, TEST_DATE, { name: 'Henrik', style: 'torr' })
+    expect(item.fromRole).toBe('Henrik')
   })
 })
 

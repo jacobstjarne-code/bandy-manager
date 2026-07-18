@@ -30,6 +30,7 @@ import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEve
 import type { Referee, RefereeRelation } from './Referee'
 import type { CommunityActivities, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
 import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord } from './Narrative'
+import type { DoctorIdentity } from '../data/injuryDoctorText'
 
 // ── Legibel konsekvens — domino-kedje-typer (används av rippleEffectService + portalBeats) ──
 export interface RippleChainStep { label: string; dir: 'up' | 'down' }
@@ -192,6 +193,9 @@ export interface SaveGame {
 
   // V1.0 — Named journalist with memory
   journalist?: Journalist
+
+  // Pool 1a/1e (2026-07-18) — per-save named doctor, speglar journalist
+  doctor?: DoctorIdentity
 
   // V0.9 NÄTET fields
   licenseReview?: LicenseReview

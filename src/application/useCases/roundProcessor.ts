@@ -344,7 +344,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       finalPlayers = finalPlayers.map(p => p.id === injuredPlayer.id ? injuredPlayer : p)
       // Only generate inbox for managed club players with ≥1 week out
       if (player.clubId === game.managedClubId && event.weeksOut >= 1) {
-        newInboxItems.push(generateInjuryInboxItem(player, event, game.currentSeason, nextMatchday))
+        newInboxItems.push(generateInjuryInboxItem(player, event, game.currentSeason, nextMatchday, game.doctor))
       }
     }
   }
@@ -446,7 +446,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   for (const { player, days } of newlyInjured) {
     const clubId = player.clubId
     if (clubId === game.managedClubId) {
-      newInboxItems.push(createInjuryItem(player, days, game.currentDate))
+      newInboxItems.push(createInjuryItem(player, days, game.currentDate, game.doctor))
       const beforeStarRipple = gameAfterRipples
       gameAfterRipples = applyRipples(gameAfterRipples, { type: 'star_injured', playerId: player.id })
       roundRippleChains.push(describeRippleChain(beforeStarRipple, gameAfterRipples, 'star_injured',

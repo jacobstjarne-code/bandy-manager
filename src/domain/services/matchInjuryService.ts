@@ -5,6 +5,8 @@ import { WeatherCondition } from '../enums'
 import type { Weather } from '../entities/Weather'
 import type { Tactic } from '../entities/Club'
 import { TacticTempo, TacticPress } from '../enums'
+import { LONGTERM_ARC_LINES } from '../data/injuryDoctorText'
+import type { DoctorIdentity } from '../data/injuryDoctorText'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 //
@@ -167,14 +169,29 @@ const INJURY_INBOX_BODY: Record<MatchInjuryType, string> = {
   hjarnskakning: 'Hjärnskakningsprotokollet gäller. Ingen fysisk belastning på tio dagar, sedan stegvis uppbyggnad. Han mår bra nu, men symptomen kan komma senare.',
 }
 
+/**
+ * Pool 1e (2026-07-18): 'skenan' (hälsena, 30-45 v) är den enda matchskadan
+ * som når langtid-severity (getInjurySeverity, injuryDoctorText.ts) — där
+ * ersätter LONGTERM_ARC_LINES (säsongsavslutande narrativ båge) den generiska
+ * INJURY_INBOX_BODY.skenan-texten istf att staplas ovanpå den (en röst
+ * vinner). Övriga fem skadetyper behåller sin befintliga, redan
+ * typ-specifika diagnostext oförändrad. fromRole bär nu doktorns save-namn
+ * (createDoctor) istf den generiska 'Medicinsk stab'-rollen — faller
+ * tillbaka till den gamla rollen om inget doctor skickas in (äldre saves).
+ */
 export function generateInjuryInboxItem(
   player: Player,
   event: MatchInjuryEvent,
   season: number,
   round: number,
+  doctor?: DoctorIdentity,
 ): InboxItem {
   const title = `${player.firstName} ${player.lastName} — matchskada (${event.weeksOut === 0 ? 'blåmärke' : `${event.weeksOut} v borta`})`
-  const body = INJURY_INBOX_BODY[event.type]
+  const spelare = `${player.firstName} ${player.lastName}`
+  const body = event.type === 'skenan'
+    ? LONGTERM_ARC_LINES[Math.abs(player.id.charCodeAt(0) + season + round) % LONGTERM_ARC_LINES.length]
+        .replace(/\{spelare\}/g, spelare)
+    : INJURY_INBOX_BODY[event.type]
 
   return {
     id: `injury_${player.id}_${season}_${round}`,
@@ -184,6 +201,6 @@ export function generateInjuryInboxItem(
     body,
     relatedPlayerId: player.id,
     isRead: false,
-    fromRole: 'Medicinsk stab',
+    fromRole: doctor?.name ?? 'Medicinsk stab',
   }
 }
