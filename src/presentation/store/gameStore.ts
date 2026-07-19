@@ -120,7 +120,7 @@ interface GameState {
   completeScene: (sceneId: import('../../domain/entities/Scene').SceneId, choiceId?: string) => void
   triggerCoffeeRoomScene: () => void
   triggerJournalistScene: () => void
-  markPhaseAcknowledged: (phase: import('../../domain/data/seasonPhases').SeasonPhase) => void
+  markPhaseAcknowledged: (phase: import('../../domain/data/seasonPhases').PortalPhase) => void
   recordPortalShown: (cardIds: string[], storySlotKind?: string) => void
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
   markAnniversaryAcknowledged: (eventId: string) => void

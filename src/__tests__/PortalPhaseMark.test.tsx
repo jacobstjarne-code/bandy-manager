@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { PortalPhaseMark } from '../presentation/components/portal/PortalPhaseMark'
-import { getSeasonPhase, getCurrentLeagueRound } from '../domain/data/seasonPhases'
-import { SEASON_MOOD } from '../domain/services/dailyBriefingService'
+import { getFunctionaryPhase, getCurrentLeagueRound } from '../domain/data/seasonPhases'
+import { pickPhaseMarkCopy } from '../domain/data/phaseMarkText'
 import { FixtureStatus, PlayoffStatus } from '../domain/enums'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { Fixture } from '../domain/entities/Fixture'
@@ -32,7 +32,7 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     currentDate: '2026-03-15',
     currentSeason: 2026,
     currentMatchday: 1,
-    clubs: [] as never,
+    clubs: [{ id: 'club_a' }, { id: 'club_b' }] as never,
     players: [],
     league: { id: 'l1', name: 'Test', clubs: [] } as never,
     fixtures: [],
@@ -71,36 +71,55 @@ describe('PortalPhaseMark — component export', () => {
   })
 })
 
-describe('PortalPhaseMark — logic', () => {
+describe('PortalPhaseMark — 2026-07-19 migrering till sjufasmodellen', () => {
 
-  it('pre_season returns null context (no PHASEMARK_LABELS entry)', () => {
+  it('höststart (omg 1-3) har ingen markör — pickPhaseMarkCopy returnerar null', () => {
     const game = makeGame({ fixtures: [] })
     const round = getCurrentLeagueRound(game)
-    const phase = getSeasonPhase(round, false)
-    expect(phase).toBe('early')
-    // 'early' has no entry in PHASEMARK_LABELS — component renders null
-    const hasLabel = phase === 'endgame' || phase === 'playoff'
-    expect(hasLabel).toBe(false)
+    const phase = getFunctionaryPhase(round, 6, 12)
+    expect(phase).toBe('höststart')
+    expect(pickPhaseMarkCopy(phase, game)).toBeNull()
   })
 
-  it('seen=[] at endgame round 13 — should show mark', () => {
-    const completed = Array.from({ length: 13 }, (_, i) =>
-      makeLeagueFixture(i + 1, FixtureStatus.Completed)
-    )
+  it('höst/vinter (mellanfaser) har ingen markör', () => {
+    const game = makeGame()
+    expect(pickPhaseMarkCopy(getFunctionaryPhase(5, 6, 12), game)).toBeNull() // höst
+    expect(pickPhaseMarkCopy(getFunctionaryPhase(14, 6, 12), game)).toBeNull() // vinter (mittenplacering)
+  })
+
+  it('annandagen (omg 7-11) ger copy med rätt helper', () => {
+    const completed = Array.from({ length: 8 }, (_, i) => makeLeagueFixture(i + 1, FixtureStatus.Completed))
     const game = makeGame({ fixtures: completed, phaseMarksSeen: [] })
     const round = getCurrentLeagueRound(game)
-    const phase = getSeasonPhase(round, false)
-    expect(phase).toBe('endgame')
-    const seen = game.phaseMarksSeen ?? []
-    expect(seen.includes(phase)).toBe(false)
-    // SEASON_MOOD[endgame] must have at least one quote
-    expect((SEASON_MOOD['endgame'] ?? []).length).toBeGreaterThan(0)
+    const phase = getFunctionaryPhase(round, 6, 12)
+    expect(phase).toBe('annandagen')
+    const copy = pickPhaseMarkCopy(phase, game)
+    expect(copy).not.toBeNull()
+    expect(copy!.helper).toBe('Årets största bandydag')
+    expect(copy!.eyebrow).toContain('ANNANDAGEN')
   })
 
-  it('seen=[playoff] suppresses the playoff mark', () => {
+  it('vinterkris kräver dålig tabellplacering, annars vinter (ingen markör)', () => {
+    const game = makeGame()
+    const crisis = getFunctionaryPhase(14, 10, 12) // botten 60%+ → vinterkris
+    const noCrisis = getFunctionaryPhase(14, 2, 12) // topp → vinter
+    expect(crisis).toBe('vinterkris')
+    expect(noCrisis).toBe('vinter')
+    expect(pickPhaseMarkCopy(crisis, game)).not.toBeNull()
+    expect(pickPhaseMarkCopy(noCrisis, game)).toBeNull()
+  })
+
+  it('slutspurt (omg 21+) ger copy', () => {
+    const game = makeGame()
+    const phase = getFunctionaryPhase(21, 6, 12)
+    expect(phase).toBe('slutspurt')
+    const copy = pickPhaseMarkCopy(phase, game)
+    expect(copy).not.toBeNull()
+    expect(copy!.helper).toBe('Sista omgångarna')
+  })
+
+  it('playoff mappas oförändrad (samma text som gamla PHASEMARK_LABELS.playoff)', () => {
     const game = makeGame({
-      fixtures: [],
-      phaseMarksSeen: ['playoff'],
       playoffBracket: {
         season: 2026,
         status: PlayoffStatus.InProgress,
@@ -110,18 +129,23 @@ describe('PortalPhaseMark — logic', () => {
         champion: null,
       },
     })
+    const copy = pickPhaseMarkCopy('playoff', game)
+    expect(copy).not.toBeNull()
+    expect(copy!.eyebrow).toBe('⬩ Slutspelet börjar ⬩')
+    expect(copy!.helper).toBe('Portal har stramat åt — bara det viktiga nu.')
+  })
+
+  it('seen=[playoff] suppresses the playoff mark (samma logik som komponenten läser)', () => {
+    const game = makeGame({ phaseMarksSeen: ['playoff'] })
     const seen = game.phaseMarksSeen ?? []
     expect(seen.includes('playoff')).toBe(true)
     // Component returns null when phase is already seen
   })
 
-  it('helper text is defined for endgame and playoff phases', () => {
-    const PHASEMARK_HELPERS: Partial<Record<string, string>> = {
-      endgame: 'Tabellen avgör. Visas en gång per säsong.',
-      playoff: 'Portal har stramat åt — bara det viktiga nu.',
-    }
-    expect(PHASEMARK_HELPERS['endgame']).toBeTruthy()
-    expect(PHASEMARK_HELPERS['playoff']).toBeTruthy()
+  it('quote-poolen väljs deterministiskt (samma säsong+klubb+fas → samma rad)', () => {
+    const gameA = makeGame({ managedClubId: 'club_a', currentSeason: 2026 })
+    const gameB = makeGame({ managedClubId: 'club_a', currentSeason: 2026 })
+    expect(pickPhaseMarkCopy('slutspurt', gameA)!.quote).toBe(pickPhaseMarkCopy('slutspurt', gameB)!.quote)
   })
 
 })

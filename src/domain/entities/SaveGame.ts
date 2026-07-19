@@ -1,7 +1,7 @@
 import type { PendingScreen } from '../enums'
 import type { MatchdaySlot } from '../services/scheduleGenerator'
 import type { NotableEventType } from '../data/klackEchoText'
-import type { SeasonPhase } from '../data/seasonPhases'
+import type { PortalPhase } from '../data/seasonPhases'
 import type { SeasonSignature } from './SeasonSignature'
 import type { Club, BoardMember, BoardRole, BoardPersonality } from './Club'
 import type { Player } from './Player'
@@ -87,7 +87,11 @@ export interface SaveGame {
   shownBeats?: string[]                // Beat-nycklar som visats (format: beatId eller beatId_season)
 
   // Portal fas-markeringar (visas en gång per fas per säsong)
-  phaseMarksSeen: SeasonPhase[]        // default []
+  // 2026-07-19: PortalPhase (inte SeasonPhase) — sjufasmodellens fasnamn
+  // (annandagen/vinterkris/våroffensiv/slutspurt) + playoff/spectator.
+  // Nollställs vid säsongsskifte i seasonEndProcessor.ts — annars ser en
+  // spelare t.ex. annandagen en enda gång på tio säsonger.
+  phaseMarksSeen: PortalPhase[]        // default [], nollställs varje säsongsskifte
   upptaktPhaseMarkSeenSeason?: number  // C-SD2: säsong då upptakt-PhaseMark visats (engångs/säsong)
 
   // Fas-anslag (säsongskapitel-overlay)

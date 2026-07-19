@@ -2,7 +2,7 @@ import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGa
 import type { AnslagKey } from '../../../domain/services/anslagService'
 import { findActiveAnniversaries } from '../../../domain/services/clubMemoryService'
 import { PendingScreen } from '../../../domain/enums'
-import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../../../domain/data/seasonPhases'
+import { getCurrentLeagueRound, getFunctionaryPhase, isManagedClubInPlayoff, type PortalPhase } from '../../../domain/data/seasonPhases'
 import { shouldShowUpptakt } from '../../../application/services/portalEscalationResolver'
 import { clamp } from '../../../domain/utils/clamp'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
@@ -213,11 +213,18 @@ export function gameFlowActions(get: Get, set: Set) {
       set({ game: gameToSave, lastAdvanceResult: result, roundSummary: summary })
       void persistAutosave(gameToSave, 'advance')
 
-      // Märk fas som sedd när spelaren lämnar Portal (trigger i advance)
-      const PHASEMARK_PHASES = new Set<SeasonPhase>(['endgame', 'playoff'])
+      // Märk fas som sedd när spelaren lämnar Portal (trigger i advance).
+      // 2026-07-19: migrerad till sjufasmodellen (PortalPhaseMark.tsx) —
+      // gamla 'endgame' finns inte längre, ersatt av de fyra fasnamn som
+      // faktiskt har en markör (se phaseMarkText.ts).
+      const PHASEMARK_PHASES = new Set<PortalPhase>(['annandagen', 'vinterkris', 'våroffensiv', 'slutspurt', 'playoff'])
       const advLigaRound = getCurrentLeagueRound(gameToSave)
       const advIsPlayoff = isManagedClubInPlayoff(gameToSave)
-      const advPhase = getSeasonPhase(advLigaRound, advIsPlayoff)
+      const advTablePosition = gameToSave.standings.find(s => s.clubId === gameToSave.managedClubId)?.position
+        ?? Math.ceil(gameToSave.clubs.length / 2)
+      const advPhase: PortalPhase = advIsPlayoff
+        ? 'playoff'
+        : getFunctionaryPhase(advLigaRound, advTablePosition, gameToSave.clubs.length)
       const advSeen = gameToSave.phaseMarksSeen ?? []
       if (PHASEMARK_PHASES.has(advPhase) && !advSeen.includes(advPhase)) {
         const markedGame = { ...gameToSave, phaseMarksSeen: [...advSeen, advPhase] }

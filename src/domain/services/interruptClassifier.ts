@@ -142,13 +142,17 @@ export function countPendingInterrupts(game: SaveGame): Record<InterruptCategory
   }
 
   // ── phase_mark ────────────────────────────────────────────────────────────
-  // Phase marks are season phases not yet in phaseMarksSeen.
-  // All valid SeasonPhase values listed explicitly to avoid dynamic imports.
-  const ALL_SEASON_PHASES: import('../data/seasonPhases').SeasonPhase[] = [
-    'early', 'mid', 'endgame', 'playoff', 'spectator',
+  // Phase marks are the markable PortalPhase values not yet in phaseMarksSeen.
+  // 2026-07-19: uppdaterad till sjufasmodellens fem faktiskt markerbara faser
+  // (annandagen/vinterkris/våroffensiv/slutspurt/playoff) + spectator (egen
+  // markör, PortalSpectatorMark.tsx). 'early'/'mid'/'endgame' fanns aldrig
+  // markerbara i praktiken (early/mid saknade PHASEMARK_LABELS-post; endgame
+  // är nu retirerad) — listan speglar nu vad som verkligen kan visas.
+  const ALL_MARKABLE_PHASES: import('../data/seasonPhases').PortalPhase[] = [
+    'annandagen', 'vinterkris', 'våroffensiv', 'slutspurt', 'playoff', 'spectator',
   ]
   const seen = new Set(game.phaseMarksSeen ?? [])
-  const unseenPhases = ALL_SEASON_PHASES.filter(p => !seen.has(p))
+  const unseenPhases = ALL_MARKABLE_PHASES.filter(p => !seen.has(p))
   for (const _ of unseenPhases) {
     tally('phase_mark', { category: 'phase_mark' })
   }

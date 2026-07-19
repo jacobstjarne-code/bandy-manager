@@ -1188,6 +1188,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     fixtures: newFixtures,
     league: newLeague,
     standings: calculateStandings(updatedClubs.map(c => c.id), []),
+    // 2026-07-19: fasmarkörer (PortalPhaseMark) är per säsong, inte per save —
+    // nollställs här. Utan detta ser en spelare t.ex. annandagen en gång, aldrig igen.
+    phaseMarksSeen: [],
     // A5 — Notisdiet: arkivera olästa från föregående säsong (markera som lästa).
     // Decision-items med levande expiresRound följer med orörd.
     inbox: [
