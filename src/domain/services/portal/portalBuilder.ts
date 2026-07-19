@@ -1,8 +1,8 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { DashboardCard } from './dashboardCardBag'
 import { CARD_BAG } from './dashboardCardBag'
-import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, isManagedClubSpectator } from '../../data/seasonPhases'
-import { applyPhaseBias } from './seasonPhaseBias'
+import { getCurrentLeagueRound, getPortalPhase, isManagedClubInPlayoff, isManagedClubSpectator } from '../../data/seasonPhases'
+import { applyPhaseBias, applyPhaseCardBias } from './seasonPhaseBias'
 import { inboxItemToCardCandidate, FREKVENTA, SALLSYNTA } from './inboxToPortal'
 import type { InboxKind } from './inboxToPortal'
 import { getRoundCharacter } from '../../data/roundCharacter'
@@ -112,13 +112,22 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
   const currentLigaRound = getCurrentLeagueRound(game)
   const isPlayoff = isManagedClubInPlayoff(game)
   const isSpectator = isManagedClubSpectator(game)
-  const phase = getSeasonPhase(currentLigaRound, isPlayoff, isSpectator)
+  // B1 (2026-07-19): funktionärsfaserna (getFunctionaryPhase) styr nu vilka
+  // kort som suppressas/viktas — inte bara vad funktionärerna säger.
+  // tablePosition matchar functionaryQuoteService.ts's konvention (fallback
+  // mittenplacering om standings saknar klubben).
+  const tablePosition = game.standings.find(s => s.clubId === game.managedClubId)?.position
+    ?? Math.ceil(game.clubs.length / 2)
+  const phase = getPortalPhase(currentLigaRound, tablePosition, game.clubs.length, isPlayoff, isSpectator)
   const character = getRoundCharacter(game)
 
   // C1: endgame-kurering — gäller de avgörande matchfönstren (slutspel + slutspurt
-  // omg ≥20). Smalare än fas 'endgame' (som är hela omg 12+); här handlar det om att
-  // när utgången är avgörande ska portalen vara EN sak. Säsong-2-start lämnas medvetet
-  // utanför (otydlig detektion, risk att gömma relevanta säsongsstart-kort) — flaggad.
+  // omg ≥20). B1 (2026-07-19): smalare än BÅDE 'vinterkris' (omg 12-16,
+  // tabellvillkorad) och 'våroffensiv'/'slutspurt' (omg 17+, `phase` ovan);
+  // här handlar det om att när utgången är avgörande ska portalen vara EN
+  // sak, oavsett vilken av de faserna man kom från. Säsong-2-start lämnas
+  // medvetet utanför (otydlig detektion, risk att gömma relevanta
+  // säsongsstart-kort) — flaggad.
   const isEndgameCuration = isPlayoff || currentLigaRound >= 20
   // C1 close-out: storySlot-släckningen gatas på LEVANDE INSATS (kvar i slutspelsrace /
   // spelar match), inte rå omg≥20. En utslagen åskådar-klubb (isSpectator) vid omg≥20
@@ -134,6 +143,7 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
       ...card,
       effectiveWeight:
         applyPhaseBias(card.weight, card.tier, phase) *
+        applyPhaseCardBias(1, card.id, phase) *
         (CHARACTER_BIAS[character][card.id] ?? 1) *
         staleBias(card.id, staleTracking, game.currentMatchday),
     }))

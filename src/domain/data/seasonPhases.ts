@@ -23,9 +23,41 @@ export function getFunctionaryPhase(roundNumber: number, tablePosition: number, 
   return 'slutspurt'
 }
 
-// ── Dashboard / SEASON_MOOD phase ─────────────────────────────────────────────
+// ── Portal-kortbagens fas (B1, 2026-07-19) ────────────────────────────────────
+//
+// Ersätter SeasonPhase (nedan) SPECIFIKT för kortsuppression/viktbias
+// (dashboardCardBag.ts's suppressIn, seasonPhaseBias.ts's PHASE_BIAS) — de
+// operationerna är rena tal/booleans, ingen ny text krävs. SeasonPhase självt
+// rörs INTE: SEASON_MOOD (dailyBriefingService.ts) och PortalPhaseMark.tsx:s
+// PHASEMARK_LABELS är genuina textpooler bundna till den 3-ställiga modellen —
+// att bredda DEM till sju faser kräver ny Opus-text för vinter/vinterkris/
+// våroffensiv/slutspurt (höststart/höst/annandagen skulle också behöva
+// omformulering eftersom gamla early/mid-texten refererar specifika månader
+// som inte stämmer på de nya gränserna). Det är inte denna specs uppgift
+// (B1 är Code, ingen Fable-leverans begärd) — flaggat, inte tyst ihopblandat.
+export type PortalPhase = FunctionaryPhase | 'playoff' | 'spectator'
 
-export type SeasonPhase = 'pre_season' | 'early' | 'mid' | 'endgame' | 'playoff' | 'spectator'
+export function getPortalPhase(
+  leagueRound: number,
+  tablePosition: number,
+  totalTeams: number,
+  isPlayoff: boolean,
+  isSpectator: boolean = false,
+): PortalPhase {
+  if (isSpectator) return 'spectator'
+  if (isPlayoff) return 'playoff'
+  return getFunctionaryPhase(leagueRound, tablePosition, totalTeams)
+}
+
+// ── Dashboard / SEASON_MOOD phase ─────────────────────────────────────────────
+// OFÖRÄNDRAD av B1 — se kommentar ovan. Driver SEASON_MOOD (dailyBriefingService)
+// + PortalPhaseMark.tsx:s engångsbanner, inte kortbagen.
+//
+// B1 (2026-07-19): 'pre_season' borttagen ur unionen — getSeasonPhase()
+// returnerade den aldrig (verifierat), den var en gren som aldrig nåddes.
+// Motsvarande död SEASON_MOOD-rad och ALL_SEASON_PHASES-listpost i
+// interruptClassifier.ts städade samtidigt.
+export type SeasonPhase = 'early' | 'mid' | 'endgame' | 'playoff' | 'spectator'
 
 export function getCurrentLeagueRound(game: import('../entities/SaveGame').SaveGame): number {
   return game.fixtures

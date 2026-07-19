@@ -145,7 +145,7 @@ export function countPendingInterrupts(game: SaveGame): Record<InterruptCategory
   // Phase marks are season phases not yet in phaseMarksSeen.
   // All valid SeasonPhase values listed explicitly to avoid dynamic imports.
   const ALL_SEASON_PHASES: import('../data/seasonPhases').SeasonPhase[] = [
-    'pre_season', 'early', 'mid', 'endgame', 'playoff', 'spectator',
+    'early', 'mid', 'endgame', 'playoff', 'spectator',
   ]
   const seen = new Set(game.phaseMarksSeen ?? [])
   const unseenPhases = ALL_SEASON_PHASES.filter(p => !seen.has(p))

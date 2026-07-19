@@ -16,7 +16,6 @@ import {
 import type { SpecialDateContext } from '../data/specialDateStrings'
 
 export const SEASON_MOOD: Record<SeasonPhase, string[]> = {
-  pre_season: ['Ny säsong. Nya möjligheter.'],
   early: [
     'Oktober. Första frosten. Truppen samlas.',
     'Höstmörkret sänker sig. Men isen glänser.',
