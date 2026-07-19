@@ -18,8 +18,18 @@
 // matchInjuryService.ts's generateInjuryInboxItem för 'skenan'-typen
 // (enda matchskadan som når langtid-severity, 30-45 v) — ERSÄTTER
 // INJURY_INBOX_BODY.skenan där (en röst vinner, inte båda staplade).
-// REHAB_STAGE_LINES/DOCTOR_SECONDARY_LINES har fortfarande noll konsumenter
-// — pool 1b/1d, egen ticket (kräver stage-fält-verifiering först).
+// Pool 1b+1d (2026-07-18): verifierat — inget stage-fält finns någonstans
+// (ingen Injury-entitet existerar alls). getRehabStage() härleder stadiet ur
+// injuryDaysRemaining som ett ABSOLUT avstånd till återkomst (se funktionens
+// egen kommentar för varför en relativ andel inte går att räkna ut).
+// REHAB_STAGE_LINES wirad i PlayerCard.tsx som ett ANDRA, kompletterande
+// stycke under injuryNarrative (skadans ursprungshistoria är statisk sedan
+// skadetillfället; rehab-raden uppdateras med var i återhämtningen spelaren
+// är NU — olika moment, båda får plats). DOCTOR_SECONDARY_LINES wirad i
+// InjuryStatusSecondary.tsx — ERSÄTTER den tidigare kontextraden
+// (injuryContextText.ts, nu orphanad, se BACKLOG) eftersom båda konkurrerade
+// om samma UI-rad (en röst vinner). Ton härleds ur severity (langtid→beslut)
+// + stage (rest/light→kämpigt, full/matchfit→lovande).
 // Ingen "Injury-entitet med severity/stage" finns (den tidigare kommentaren
 // ovan var fel/stale) — Player har bara isInjured/injuryDaysRemaining,
 // severity härleds nu av getInjurySeverity() ur injuryDaysRemaining.
@@ -61,6 +71,27 @@ export function getInjurySeverity(injuryDaysRemaining: number): InjurySeverity {
   if (injuryDaysRemaining <= 27) return 'mild'
   if (injuryDaysRemaining <= 60) return 'svar'
   return 'langtid'
+}
+
+export type RehabStage = 'rest' | 'light' | 'full' | 'matchfit'
+
+/**
+ * Pool 1b/1d (2026-07-18): Player/Injury har inget stage-fält (verifierat —
+ * ingen Injury-entitet existerar alls). Stadiet härleds därför ur
+ * injuryDaysRemaining som ett ABSOLUT avstånd till återkomst, inte en andel
+ * av den ursprungliga skadans totala längd (Player lagrar bara dagar KVAR,
+ * inte det ursprungliga totalet, så en relativ andel går inte att räkna ut
+ * i efterhand). Trösklar: sista veckan matchfit, upp till tre veckor full,
+ * upp till sex veckor light, därutöver rest. Detta ger rimligt beteende
+ * över hela severity-spannet: en mjuk skada (≤13 dagar) tillbringar det
+ * mesta av sin korta tid i full/matchfit, en långtidsskada (>60 dagar,
+ * upp till 315) tillbringar veckor i rest innan den ens når light.
+ */
+export function getRehabStage(injuryDaysRemaining: number): RehabStage {
+  if (injuryDaysRemaining <= 7) return 'matchfit'
+  if (injuryDaysRemaining <= 21) return 'full'
+  if (injuryDaysRemaining <= 42) return 'light'
+  return 'rest'
 }
 
 /** Diagnos-repliker vid skade-scenen, per allvarlighetsgrad. */
@@ -108,6 +139,19 @@ export const REHAB_STAGE_LINES: Record<'rest' | 'light' | 'full' | 'matchfit', s
 }
 
 /**
+ * Pool 1b (2026-07-18): deterministiskt radval ur REHAB_STAGE_LINES, samma
+ * charCodeAt-hash-mönster som createSuspensionItem/createInjuryItem
+ * (inboxService.ts) — aldrig Math.random. Ingen {spelare}-interpolering
+ * behövs, poolen använder redan pronomen ("Han vilar...").
+ */
+export function pickRehabStageLine(playerId: string, injuryDaysRemaining: number): string {
+  const stage = getRehabStage(injuryDaysRemaining)
+  const lines = REHAB_STAGE_LINES[stage]
+  const idx = Math.abs(playerId.charCodeAt(0) + injuryDaysRemaining) % lines.length
+  return lines[idx]
+}
+
+/**
  * Eftersnack när spelaren pressats tillbaka för tidigt ("spela på").
  * De fem första = det gick illa. Den sista = spelet gick hem den här gången.
  */
@@ -141,6 +185,25 @@ export const DOCTOR_SECONDARY_LINES: Record<DoctorSecondaryTone, string[]> = {
     '{spelare} var här i går och frågade om operation. Jag sa att det är hans beslut.',
     '{spelare} vill veta om han hinner tillbaka till slutspelet. Jag lovade ingenting.',
   ],
+}
+
+/**
+ * Pool 1d (2026-07-18): ton härleds ur severity+stage — 'beslut' är
+ * reserverad för långtidsskador (matchar filens egen kommentar ovan:
+ * "beslutsläge (långtidsskada)"). Övriga severity-nivåer mappas mot stage:
+ * tidigt i rehabben (rest/light) läser som kämpigt, sent (full/matchfit)
+ * som lovande — en enkel, motiverad proxy givet att ingen separat
+ * "går rehabben bra"-signal finns på Player.
+ */
+export function pickDoctorSecondaryLine(playerId: string, spelare: string, injuryDaysRemaining: number): string {
+  const severity = getInjurySeverity(injuryDaysRemaining)
+  const stage = getRehabStage(injuryDaysRemaining)
+  const tone: DoctorSecondaryTone = severity === 'langtid'
+    ? 'beslut'
+    : (stage === 'rest' || stage === 'light') ? 'kampigt' : 'lovande'
+  const lines = DOCTOR_SECONDARY_LINES[tone]
+  const idx = Math.abs(playerId.charCodeAt(0) + injuryDaysRemaining) % lines.length
+  return lines[idx].replace(/\{spelare\}/g, spelare)
 }
 
 /** Långtidsskada-arc — säsongsavslutande skada som narrativ båge. {spelare} interpoleras. */

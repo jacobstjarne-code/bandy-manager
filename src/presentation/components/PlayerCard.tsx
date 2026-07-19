@@ -15,6 +15,7 @@ import { Icon } from './primitives/Icon'
 import { formatSalary, positionShort } from '../utils/formatters'
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { mentorshipBondAdeptInForm, mentorshipBondAdeptResting } from '../../domain/data/mentorshipStrings'
+import { pickRehabStageLine } from '../../domain/data/injuryDoctorText'
 import { MessageCircle, Crown, Wind, MessageSquare, Megaphone, Smile, Flame } from 'lucide-react'
 
 export interface PlayerCardProps {
@@ -546,6 +547,13 @@ export function PlayerCard({
               </p>
               <p className="h-quote-sm" style={{ lineHeight: 1.5 }}>
                 {player.injuryNarrative}
+              </p>
+              {/* Pool 1b (2026-07-18): doktorns rehab-status — skild röst från
+                  injuryNarrative (skadans ursprungshistoria, statisk sedan
+                  skadetillfället). Denna raden uppdateras med dagar kvar,
+                  eftersom den beskriver VAR i rehabben spelaren är NU. */}
+              <p className="h-quote-sm" style={{ lineHeight: 1.5, marginTop: 6, color: 'var(--text-muted)' }}>
+                {pickRehabStageLine(player.id, player.injuryDaysRemaining)}
               </p>
             </div>
           )}

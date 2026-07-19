@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
-import { injuryContextLine } from '../../../../domain/data/injuryContextText'
+import { pickDoctorSecondaryLine } from '../../../../domain/data/injuryDoctorText'
 
 /** Secondary-kort: skadeläge med namn + veckor kvar per spelare. */
 export function InjuryStatusSecondary({ game }: CardRenderProps) {
@@ -18,16 +18,15 @@ export function InjuryStatusSecondary({ game }: CardRenderProps) {
 
   const top = injured.slice(0, 3)
 
-  // Stjärnspelaren bland skadade (högst form + ability)
+  // Pool 1d (2026-07-18): doktor-tonen ersätter den tidigare kontextraden
+  // (injuryContextText.ts, kvar oanvänd i den filen) — en röst vinner, inte
+  // båda staplade i samma kort. Ton härleds ur severity+stage per spelare.
   const topPlayer = injured[0]
-  const isKeyPlayer = !!topPlayer && ((topPlayer.form ?? 50) + (topPlayer.currentAbility ?? 50)) > 130
-  const contextLine = injuryContextLine({
-    lastName: topPlayer.lastName,
-    daysRemaining: topPlayer.injuryDaysRemaining,
-    injuredCount: injured.length,
-    isKeyPlayer,
-    seedId: topPlayer.id,
-  })
+  const contextLine = pickDoctorSecondaryLine(
+    topPlayer.id,
+    topPlayer.lastName,
+    topPlayer.injuryDaysRemaining,
+  )
 
   return (
     <div
