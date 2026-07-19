@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
-import { pickDoctorSecondaryLine } from '../../../../domain/data/injuryDoctorText'
+import { pickDoctorSecondaryLine, pickKeyPlayerInjuryLine, pickManyInjuredLine } from '../../../../domain/data/injuryDoctorText'
 
 /** Secondary-kort: skadeläge med namn + veckor kvar per spelare. */
 export function InjuryStatusSecondary({ game }: CardRenderProps) {
@@ -18,15 +18,17 @@ export function InjuryStatusSecondary({ game }: CardRenderProps) {
 
   const top = injured.slice(0, 3)
 
-  // Pool 1d (2026-07-18): doktor-tonen ersätter den tidigare kontextraden
-  // (injuryContextText.ts, kvar oanvänd i den filen) — en röst vinner, inte
-  // båda staplade i samma kort. Ton härleds ur severity+stage per spelare.
+  // 2026-07-19 (ruling): samma prioritetsordning injuryContextText.ts hade
+  // (nu raderad, axlarna skördade till injuryDoctorText.ts) — nyckelspelare
+  // vinner, sen 4+ skadade samtidigt, annars doktorns severity/stage-ton.
+  // En röst per kort, aldrig två staplade.
   const topPlayer = injured[0]
-  const contextLine = pickDoctorSecondaryLine(
-    topPlayer.id,
-    topPlayer.lastName,
-    topPlayer.injuryDaysRemaining,
-  )
+  const isKeyPlayer = ((topPlayer.form ?? 50) + (topPlayer.currentAbility ?? 50)) > 130
+  const contextLine = isKeyPlayer
+    ? pickKeyPlayerInjuryLine(topPlayer.id, topPlayer.lastName)
+    : injured.length >= 4
+      ? pickManyInjuredLine(topPlayer.id, injured.length)
+      : pickDoctorSecondaryLine(topPlayer.id, topPlayer.lastName, topPlayer.injuryDaysRemaining)
 
   return (
     <div

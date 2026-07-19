@@ -26,13 +26,22 @@
 // stycke under injuryNarrative (skadans ursprungshistoria är statisk sedan
 // skadetillfället; rehab-raden uppdateras med var i återhämtningen spelaren
 // är NU — olika moment, båda får plats). DOCTOR_SECONDARY_LINES wirad i
-// InjuryStatusSecondary.tsx — ERSÄTTER den tidigare kontextraden
-// (injuryContextText.ts, nu orphanad, se BACKLOG) eftersom båda konkurrerade
-// om samma UI-rad (en röst vinner). Ton härleds ur severity (langtid→beslut)
-// + stage (rest/light→kämpigt, full/matchfit→lovande).
+// InjuryStatusSecondary.tsx — ERSÄTTER den tidigare kontextraden eftersom
+// båda konkurrerade om samma UI-rad (en röst vinner). Ton härleds ur
+// severity (langtid→beslut) + stage (rest/light→kämpigt, full/matchfit→lovande).
 // Ingen "Injury-entitet med severity/stage" finns (den tidigare kommentaren
 // ovan var fel/stale) — Player har bara isInjured/injuryDaysRemaining,
 // severity härleds nu av getInjurySeverity() ur injuryDaysRemaining.
+//
+// 2026-07-19 (ruling, tog tillbaka del av 1d-ordern): injuryContextText.ts
+// hade INTE bara en konkurrerande severity-röst — den hade två axlar
+// DOCTOR_SECONDARY_LINES saknade helt (nyckelspelare-borta, flera-skadade-
+// samtidigt, en AGGREGERAD läsning av truppläget). De skördades hit som
+// KEY_PLAYER_INJURY_LINES/MANY_INJURED_LINES (doktorns röst, samma
+// prioritetsordning InjuryStatusSecondary.tsx hade: nyckelspelare > 4+
+// skadade > severity/stage-fallback). Filen raderad efter skörd —
+// SHORT/MEDIUM/LONG-severity-raderna där var redan dubblerade av
+// DIAGNOSIS_LINES.
 
 export type DoctorStyle = 'torr' | 'varm' | 'rakt_pa'
 
@@ -204,6 +213,40 @@ export function pickDoctorSecondaryLine(playerId: string, spelare: string, injur
   const lines = DOCTOR_SECONDARY_LINES[tone]
   const idx = Math.abs(playerId.charCodeAt(0) + injuryDaysRemaining) % lines.length
   return lines[idx].replace(/\{spelare\}/g, spelare)
+}
+
+/**
+ * Nyckelspelare/flera-skadade-axlarna (2026-07-19). injuryContextText.ts
+ * (raderad, se BACKLOG-historik) hade två axlar DOCTOR_SECONDARY_LINES
+ * saknar helt: en AGGREGERAD läsning av skadeläget (den här spelaren är
+ * svår att ersätta / så här många är borta samtidigt), inte en individuell
+ * severity/stage-diagnos. Jacobs ruling 2026-07-19: skörda axlarna i
+ * doktorns röst (han är klubbläkare, ser hela behandlingsrummet) istf två
+ * röster på samma kort. De gamla SHORT/MEDIUM/LONG-severity-raderna i den
+ * filen täcktes redan av DIAGNOSIS_LINES/pickDoctorSecondaryLine ovan och
+ * raderades utan ersättning.
+ */
+export const KEY_PLAYER_INJURY_LINES: string[] = [
+  '{spelare} är svår att ersätta. Det vet du lika bra som jag.',
+  'Han är en av era bästa. Det märks på de andra att han inte är där.',
+  'Vi klarar oss utan honom. Sämre, men vi klarar oss.',
+]
+
+/** {antal} interpoleras — antal samtidigt skadade spelare. */
+export const MANY_INJURED_LINES: string[] = [
+  '{antal} på britsen den här veckan. Det blir ditt pussel, inte mitt.',
+  'Det är trångt här inne. {antal} stycken, och alla vill tillbaka i förtid.',
+  '{antal} borta samtidigt. Sånt händer en lång vinter, men det gör inte truppen bredare.',
+]
+
+export function pickKeyPlayerInjuryLine(playerId: string, spelare: string): string {
+  const idx = Math.abs(playerId.charCodeAt(0)) % KEY_PLAYER_INJURY_LINES.length
+  return KEY_PLAYER_INJURY_LINES[idx].replace(/\{spelare\}/g, spelare)
+}
+
+export function pickManyInjuredLine(playerId: string, antal: number): string {
+  const idx = Math.abs(playerId.charCodeAt(0) + antal) % MANY_INJURED_LINES.length
+  return MANY_INJURED_LINES[idx].replace(/\{antal\}/g, String(antal))
 }
 
 /** Långtidsskada-arc — säsongsavslutande skada som narrativ båge. {spelare} interpoleras. */
