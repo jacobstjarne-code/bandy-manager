@@ -8,7 +8,7 @@
  * annars osynlig tills en spelare råkar lägga märke till den.
  *
  * Mäter, per säsong, ur den headlessa simuleringens game.inbox:
- *   - hur ofta samma sträng (body) återkommer
+ *   - hur ofta samma sträng (title+body sammanslaget) återkommer
  *   - antal texter per omgång
  *   - andel som kräver handling (proxy: InboxItem.expiresRound satt —
  *     "Decision items: expiry round (required on decision-bearing items)",
@@ -17,6 +17,12 @@
  *     InboxItem.fromRole — redan satt av doktor/assistenttränare-flödena;
  *     items utan fromRole kan inte attribueras till en karaktär och räknas
  *     inte in i det måttet)
+ *
+ * Fix 2026-07-19: dubblettnyckeln läste bara body. Två poolklasser gav
+ * falska dubbletter: journalistService.ts's rubrik-items (body är en
+ * konstant byline, rubriken som faktiskt varierar ligger i title) och
+ * mediaService.ts's mediaItem() (body alltid '', allt innehåll i title).
+ * Nyckeln är nu title+body sammanslaget.
  */
 
 import type { InboxItem } from '../../src/domain/entities/Inbox'
@@ -56,7 +62,7 @@ export function recordInboxTextMetrics(
   for (const item of newItems) {
     acc.totalTexts++
 
-    const key = item.body
+    const key = `${item.title}\n${item.body}`
     acc.stringCounts.set(key, (acc.stringCounts.get(key) ?? 0) + 1)
 
     if (item.expiresRound !== undefined) acc.actionableCount++
