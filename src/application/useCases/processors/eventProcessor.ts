@@ -23,11 +23,15 @@ import {
   MECENAT_WITHDRAWAL_FALLBACK,
 } from '../../../domain/data/eventProcessorStrings'
 import { seededPick } from '../../../domain/utils/random'
+import { pickDemandCategory, createPendingDemand, isDemandFulfilled } from '../../../domain/services/demandEngine'
+import type { MecenatDemand } from '../../../domain/entities/Mecenat'
+import type { Patron } from '../../../domain/entities/Community'
 
 export interface EventProcessorResult {
   gameEvents: GameEvent[]
   inboxItems: InboxItem[]
   updatedMecenater: NonNullable<SaveGame['mecenater']>
+  updatedPatron: Patron | undefined
   lastEconomicStressRound: number | undefined
   // Lager 2 state updates
   wageBudgetOverrunRounds: number
@@ -143,6 +147,52 @@ export function processGameEvents(
       if (shoutEvent) {
         gameEvents.push(shoutEvent)
       }
+    }
+
+    // ── Kravmotor (2026-07-19): periodiskt krav kopplat till mecenatens intresse ──
+    // Läs FÄRSKASTE state (updatedMecenater[i]), inte den stale `mec`-referensen
+    // från loopens topp — social-event-blocket ovan kan redan ha muterat den.
+    const mecNow = updatedMecenater[i]
+    if (mecNow.pendingDemand) {
+      if (nextMatchday >= mecNow.pendingDemand.deadlineRound) {
+        const fulfilled = isDemandFulfilled(game, mecNow.pendingDemand, game.managedClubId)
+        const delta = fulfilled ? 15 : -15
+        const resolvedDemand = mecNow.pendingDemand
+        updatedMecenater = updatedMecenater.map((m, idx) => {
+          if (idx !== i) return m
+          const newDemands: MecenatDemand[] = fulfilled
+            ? []
+            : [...m.demands, {
+                type: resolvedDemand.category,
+                description: resolvedDemand.description,
+                targetPlayerId: resolvedDemand.targetPlayerId,
+              }]
+          return {
+            ...m,
+            happiness: Math.max(0, Math.min(100, m.happiness + delta)),
+            demands: newDemands,
+            pendingDemand: undefined,
+          }
+        })
+      }
+    } else if (localRand() < 0.2) {
+      // Ingen garanti varje berättigad omgång — sprider ut genereringen så
+      // en misslyckande-serie tar mer än en säsong under otur (balans mot
+      // demands.length>=3-withdrawal-tröskeln, se demandEngine.ts).
+      const seed = mecNow.id.length * 7 + nextMatchday * 13 + game.currentSeason * 31
+      const category = pickDemandCategory(seed)
+      const favoritePlayer = mecNow.favoritePlayerId
+        ? game.players.find(p => p.id === mecNow.favoritePlayerId)
+        : undefined
+      const targetPlayerId = category === 'playtime'
+        ? (favoritePlayer?.id ?? game.players.find(p => p.clubId === game.managedClubId && !p.isInjured)?.id)
+        : undefined
+      const newDemand = createPendingDemand(game, category, nextMatchday, {
+        seed,
+        targetPlayerId,
+        favoritePlayerName: favoritePlayer ? `${favoritePlayer.firstName} ${favoritePlayer.lastName}` : undefined,
+      })
+      updatedMecenater = updatedMecenater.map((m, idx) => idx === i ? { ...m, pendingDemand: newDemand } : m)
     }
 
     if (mec.demands.length > 0) {
@@ -302,10 +352,49 @@ export function processGameEvents(
     gameEvents.push(riskyEvent)
   }
 
+  // ── Kravmotor (2026-07-19): Patron — samma motor som Mecenat ovan, egen
+  // konsekvens. Uppfyllt/ouppfyllt matar det BEFINTLIGA portalkortet
+  // (patron_demand_unmet, initCardBag.ts) + triggern (patronDemandUnmetOver3Rounds,
+  // demands.length>0 && patience<30) — demands hålls kvar (INTE rensad) vid
+  // misslyckande så triggern hittar den stale texten; rensas bara vid uppfyllt.
+  let updatedPatron = game.patron
+  if (updatedPatron?.isActive) {
+    if (updatedPatron.pendingDemand) {
+      if (nextMatchday >= updatedPatron.pendingDemand.deadlineRound) {
+        const fulfilled = isDemandFulfilled(game, updatedPatron.pendingDemand, game.managedClubId)
+        const delta = fulfilled ? 15 : -15
+        updatedPatron = {
+          ...updatedPatron,
+          happiness: Math.max(0, Math.min(100, updatedPatron.happiness + delta)),
+          patience: Math.max(0, Math.min(100, (updatedPatron.patience ?? 80) + delta)),
+          demands: fulfilled ? [] : updatedPatron.demands,
+          pendingDemand: undefined,
+        }
+      }
+    } else if (localRand() < 0.2) {
+      const seed = (updatedPatron.name?.length ?? 5) * 7 + nextMatchday * 13 + game.currentSeason * 31
+      const category = pickDemandCategory(seed)
+      const favoritePlayer = updatedPatron.favoritePlayerId
+        ? game.players.find(p => p.id === updatedPatron!.favoritePlayerId)
+        : undefined
+      const targetPlayerId = category === 'playtime'
+        ? (favoritePlayer?.id ?? game.players.find(p => p.clubId === game.managedClubId && !p.isInjured)?.id)
+        : undefined
+      const newDemand = createPendingDemand(game, category, nextMatchday, {
+        seed,
+        targetPlayerId,
+        favoritePlayerName: favoritePlayer ? `${favoritePlayer.firstName} ${favoritePlayer.lastName}` : undefined,
+        favoriteRelation: updatedPatron.favoriteRelation,
+      })
+      updatedPatron = { ...updatedPatron, pendingDemand: newDemand, demands: [newDemand.description] }
+    }
+  }
+
   return {
     gameEvents,
     inboxItems,
     updatedMecenater,
+    updatedPatron,
     lastEconomicStressRound,
     wageBudgetOverrunRounds,
     wageBudgetWarningSent,

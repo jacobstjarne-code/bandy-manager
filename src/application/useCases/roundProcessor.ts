@@ -933,6 +933,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   )
   const allNewEvents = [...eventResult.gameEvents, ...playoffResult.gameEvents]
   let updatedMecenater = eventResult.updatedMecenater
+  const updatedPatron = eventResult.updatedPatron
   newInboxItems.push(...eventResult.inboxItems)
 
   // Legibel konsekvens: mecenat_left ripple (VILANDE i eventProcessor, wiras här)
@@ -1425,6 +1426,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     trainerArc: updatedArc,
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,
+    patron: updatedPatron,
     // Spara förra omgångens seed — pick()-funktionen hoppar över det värdet för att undvika upprepning
     lastCoffeeQuoteHash: currentLeagueRound !== null ? (currentLeagueRound - 1) * 11 + game.currentSeason * 31 : game.lastCoffeeQuoteHash,
     lastEconomicStressRound: eventResult.lastEconomicStressRound,

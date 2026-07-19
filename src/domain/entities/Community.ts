@@ -1,4 +1,5 @@
 import type { BoardPersonality } from './Club'
+import type { PendingDemand } from './Demand'
 
 export interface CommunityActivities {
   kiosk: 'none' | 'basic' | 'upgraded'
@@ -34,7 +35,15 @@ export interface Patron {
   personality?: PatronPersonality
   patience?: number           // 0-100, decreases when ignored
   totalContributed?: number   // running total
+  // Kravmotor (2026-07-19): demands håller den PÅGÅENDE/senast avgjorda
+  // kravtexten (befintlig form, 3 konsumenter läser den som ren sträng —
+  // dailyBriefingService/patronTriggers/PatronDemandPrimary, orörda).
+  // Rensas till [] först när ett krav UPPFYLLS; hålls kvar (stale text)
+  // vid misslyckande så patronDemandUnmetOver3Rounds fortfarande hittar
+  // det när patience faller under tröskeln. pendingDemand bär den
+  // maskin-läsbara livscykeln (deadline, kategori) — internt, ingen UI läser den.
   demands?: string[]
+  pendingDemand?: PendingDemand
   backstory?: string
 }
 
