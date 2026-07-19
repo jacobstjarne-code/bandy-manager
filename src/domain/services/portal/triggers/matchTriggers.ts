@@ -2,6 +2,7 @@ import type { SaveGame } from '../../../entities/SaveGame'
 import type { Fixture } from '../../../entities/Fixture'
 import { getRivalry } from '../../../data/rivalries'
 import { PlayoffRound } from '../../../enums'
+import { getFarewellMatchPlayer } from '../../retirementService'
 
 /** Returnerar nästa schemalagda fixture för managed club. */
 export function getNextManagedFixture(game: SaveGame): Fixture | null {
@@ -56,6 +57,33 @@ export function nextMatchIsSMFinal(game: SaveGame): boolean {
     if (series.round === PlayoffRound.Final && series.fixtures.includes(next.id)) return true
   }
   return false
+}
+
+/**
+ * B2 (2026-07-19): nästa match är cupfinalen. Cupfinalen faller idag till
+ * next_match (vikt 10) trots färdig ceremoni (cupFinalVictoryScene,
+ * cupanslagens "Pokalen är vår") — portalen pekar aldrig på den i förväg.
+ * Samma bracket-lookup-mönster som MatchLiveScreen.tsx:s isCupFinal
+ * (round === 4 i cupBracket.matches).
+ */
+export function nextMatchIsCupFinal(game: SaveGame): boolean {
+  const next = getNextManagedFixture(game)
+  if (!next || !next.isCup) return false
+  const bracket = game.cupBracket
+  if (!bracket) return false
+  const finalMatch = bracket.matches.find(m => m.round === 4)
+  return finalMatch?.fixtureId === next.id
+}
+
+/**
+ * B2 (2026-07-19): nästa match är en aktiv veteran_farewell-arcs spelares
+ * sista hemmamatch i säsongen — samma gate som pool 2:s matchdagsceremoni
+ * (MatchLaddningScene) och kafferummet redan använder, återanvänd här
+ * istf en tredje beräkning av samma villkor.
+ */
+export function nextMatchIsFarewellMatch(game: SaveGame): boolean {
+  const next = getNextManagedFixture(game)
+  return getFarewellMatchPlayer(game, next) !== null
 }
 
 /** Nästa match är en hemmamatch. */

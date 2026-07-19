@@ -13,6 +13,8 @@ import type { DashboardCard } from './dashboardCardBag'
 // Triggers
 import {
   nextMatchIsSMFinal,
+  nextMatchIsCupFinal,
+  nextMatchIsFarewellMatch,
   nextMatchIsDerby,
   nextMatchIsHome,
   nextMatchIsBigGame,
@@ -30,6 +32,8 @@ import { hasInjuredStarters } from './triggers/stateTriggers'
 import { NextMatchPrimary } from '../../../presentation/components/portal/primary/NextMatchPrimary'
 import { DerbyPrimary } from '../../../presentation/components/portal/primary/DerbyPrimary'
 import { SMFinalPrimary } from '../../../presentation/components/portal/primary/SMFinalPrimary'
+import { CupFinalPrimary } from '../../../presentation/components/portal/primary/CupFinalPrimary'
+import { FarewellMatchPrimary } from '../../../presentation/components/portal/primary/FarewellMatchPrimary'
 import { TransferDeadlinePrimary } from '../../../presentation/components/portal/primary/TransferDeadlinePrimary'
 import { PatronDemandPrimary } from '../../../presentation/components/portal/primary/PatronDemandPrimary'
 import { EventPrimary } from '../../../presentation/components/portal/primary/EventPrimary'
@@ -85,6 +89,16 @@ const PORTAL_CARDS: DashboardCard[] = [
     triggers: [nextMatchIsSMFinal],
     Component: SMFinalPrimary,
   },
+  // B2 (2026-07-19): cupfinalen hade färdig ceremoni (cupFinalVictoryScene,
+  // cupanslagens "Pokalen är vår") men föll till next_match (vikt 10) i
+  // förväg. Vikt strax under SM-finalen, som beställt.
+  {
+    id: 'next_match_cupfinal',
+    tier: 'primary',
+    weight: 98,
+    triggers: [nextMatchIsCupFinal],
+    Component: CupFinalPrimary,
+  },
   {
     id: 'event_critical',
     tier: 'primary',
@@ -98,6 +112,18 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 90,
     triggers: [transferDeadlineWithin3Rounds],
     Component: TransferDeadlinePrimary,
+  },
+  // B2 (2026-07-19): avskedsmatchens ceremoni byggdes i pool 2
+  // (MatchLaddningScene) men portalen varnade aldrig att den var på väg.
+  // Vikt strax över derbyt (80) — ett en-gång-per-karriär-ögonblick väger
+  // tyngre narrativt än en återkommande rivalmatch, även om det inte har
+  // samma tabellstakes.
+  {
+    id: 'next_match_farewell',
+    tier: 'primary',
+    weight: 82,
+    triggers: [nextMatchIsFarewellMatch],
+    Component: FarewellMatchPrimary,
   },
   {
     id: 'next_match_derby',
