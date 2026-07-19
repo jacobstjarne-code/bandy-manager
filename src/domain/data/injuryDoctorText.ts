@@ -114,6 +114,11 @@ export const DIAGNOSIS_LINES: Record<InjurySeverity, string[]> = {
     'Det är ljumsken. Han kände det redan i andra halvlek och spelade igenom — det gör de alla. Tre veckor om vi tar det lugnt. Sex om vi inte gör det.',
     'Muskeln har gett upp för den här gången. Räkna med en månad, inte en vecka. Skyndar vi får vi börja om.',
     'Inget dramatiskt, men inget man pressar heller. Han är borta ett par omgångar. Lyssna på mig den här gången.',
+    // 2026-07-20 (Opus) — fyra nya, 7-34 dagar är den vanligaste skadan.
+    'Vaden. Den håller om han får vara ifred ett tag. Det får han sällan, men jag säger det ändå.',
+    'Knät svullnade efter matchen. Inget som knäcker honom, men det tar sin tid. Fyra veckor, säg.',
+    'Han hann vrida foten innan han föll. Det är oftast bättre än tvärtom. Ett par omgångar.',
+    'Ryggen låste sig. Sånt går över, men inte på en vecka, och inte om han tränar igenom det.',
   ],
   svar: [
     'Det här tar sin tid. Vi pratar inte veckor, vi pratar månader. Han kommer tillbaka, men inte i vinter.',
@@ -257,3 +262,21 @@ export const LONGTERM_ARC_LINES: string[] = [
   'Knät blir aldrig riktigt som förr. Det behöver det inte vara heller — han har spelat på sämre.',
   'Det långa loppet nu. {spelare} ses i rehabrummet, inte på isen, fram till nästa vinter.',
 ]
+
+/**
+ * Pool 2026-07-20 — createRecoveryItem (inboxService.ts) var en enda
+ * hårdkodad mening. Doktorns röst, {spelare} interpoleras. Titeln
+ * ("Tillbaka: {förnamn} {efternamn}") är oförändrad — bara body blir en pool.
+ */
+export const RECOVERY_LINES: string[] = [
+  '{spelare} är klar. Han har gjort vad jag sagt, för en gångs skull.',
+  '{spelare} är tillgänglig igen. Ta det lugnt med honom första matchen.',
+  '{spelare} är frisk. Han har tjatat i två veckor om att få spela — nu får han.',
+  '{spelare} är tillbaka. Kroppen höll, den här gången.',
+  '{spelare} är klar för spel. Ingen restriktion från mig.',
+]
+
+export function pickRecoveryLine(playerId: string, spelare: string): string {
+  const idx = Math.abs(playerId.charCodeAt(0)) % RECOVERY_LINES.length
+  return RECOVERY_LINES[idx].replace(/\{spelare\}/g, spelare)
+}

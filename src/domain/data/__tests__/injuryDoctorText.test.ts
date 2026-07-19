@@ -6,6 +6,7 @@ import {
   REHAB_STAGE_LINES, DOCTOR_SECONDARY_LINES,
   pickKeyPlayerInjuryLine, pickManyInjuredLine,
   KEY_PLAYER_INJURY_LINES, MANY_INJURED_LINES,
+  DIAGNOSIS_LINES, pickRecoveryLine, RECOVERY_LINES,
 } from '../injuryDoctorText'
 
 describe('createDoctor', () => {
@@ -111,5 +112,27 @@ describe('pickManyInjuredLine — 2026-07-19 (skördad ur injuryContextText.ts)'
     const line7 = pickManyInjuredLine('player_1', 7)
     expect(line4).toContain('4')
     expect(line7).toContain('7')
+  })
+})
+
+describe('DIAGNOSIS_LINES.mild — 2026-07-20 (fyra nya rader)', () => {
+  it('har sju rader totalt', () => {
+    expect(DIAGNOSIS_LINES.mild).toHaveLength(7)
+  })
+})
+
+describe('pickRecoveryLine — 2026-07-20 (createRecoveryItem blev en pool)', () => {
+  it('returnerar en rad ur RECOVERY_LINES med {spelare} interpolerat, deterministiskt', () => {
+    const lineA = pickRecoveryLine('player_1', 'Andersson')
+    const lineB = pickRecoveryLine('player_1', 'Andersson')
+    expect(lineA).toBe(lineB)
+    expect(lineA).not.toContain('{spelare}')
+    expect(lineA).toContain('Andersson')
+    const filled = RECOVERY_LINES.map(l => l.replace(/\{spelare\}/g, 'Andersson'))
+    expect(filled).toContain(lineA)
+  })
+
+  it('har fem rader', () => {
+    expect(RECOVERY_LINES).toHaveLength(5)
   })
 })

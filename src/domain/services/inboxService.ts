@@ -8,7 +8,7 @@ import type { TrainingFocus } from '../entities/Training'
 import { InboxItemType, ClubExpectation } from '../enums'
 import { SUSPENSION_INCIDENT_LINES } from '../data/suspensionText'
 import { trainingTypeLabel, trainingIntensityLabel } from './trainingService'
-import { getInjurySeverity, DIAGNOSIS_LINES } from '../data/injuryDoctorText'
+import { getInjurySeverity, DIAGNOSIS_LINES, pickRecoveryLine } from '../data/injuryDoctorText'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
 
 function generateId(type: InboxItemType): string {
@@ -123,12 +123,13 @@ export function createRecoveryItem(
   player: Player,
   currentDate: string,
 ): InboxItem {
+  const spelare = `${player.firstName} ${player.lastName}`
   return {
     id: generateId(InboxItemType.Recovery),
     date: currentDate,
     type: InboxItemType.Recovery,
-    title: `Tillbaka: ${player.firstName} ${player.lastName}`,
-    body: `${player.firstName} ${player.lastName} är frisk och tillgänglig igen.`,
+    title: `Tillbaka: ${spelare}`,
+    body: pickRecoveryLine(player.id, spelare),
     relatedPlayerId: player.id,
     isRead: false,
   }
