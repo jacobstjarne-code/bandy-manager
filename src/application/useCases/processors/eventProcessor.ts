@@ -491,11 +491,11 @@ export function checkForPlayThroughInjuryOffer(
     events.push({
       id: `playthrough_${player.id}_${nextMatchday}`,
       type: 'playThroughInjury',
-      title: '[Opus]',
-      body: '[Opus]',
+      title: `${game.doctor?.name ?? 'Doktorn'} om ${player.lastName}`,
+      body: 'Han vill spela. Han säger att det håller. Jag säger att det inte gör det — men han kan gå ut om du sätter honom. Sen får vi se hur länge han är borta i stället.',
       choices: [
-        { id: 'play', label: '[Opus]', effect: { type: 'playThroughInjury', targetPlayerId: player.id } },
-        { id: 'rest', label: '[Opus]', effect: { type: 'noOp' } },
+        { id: 'play', label: 'Han spelar', subtitle: 'Risken är att skadan förvärras', effect: { type: 'playThroughInjury', targetPlayerId: player.id } },
+        { id: 'rest', label: 'Han vilar', subtitle: 'Tillbaka enligt plan', effect: { type: 'noOp' } },
       ],
       relatedPlayerId: player.id,
       resolved: false,
