@@ -51,11 +51,10 @@ interface DemandContext {
 }
 
 /**
- * Textinnehåll — alla fyra kategorier levererade (Jacob, 2026-07-19).
- * 'playtime' interpolerar {favorit}/{relation} (PATRON_PLAYTIME_DEMANDS, 9
- * rader). De tre andra har inga {token} — kraven är generella (verifierat:
- * ingen .replace() behövs för dem) — 3 rader var (Jacobs eget beslut:
- * ojämn variation mot playtime accepterad tills vidare, inte utökad nu).
+ * Textinnehåll — alla fyra kategorier levererade (Jacob, 2026-07-19), nio
+ * rader var. 'playtime' interpolerar {favorit}/{relation}
+ * (PATRON_PLAYTIME_DEMANDS). De tre andra har inga {token} — kraven är
+ * generella (verifierat: ingen .replace() behövs för dem).
  */
 export function generateDemandDescription(category: DemandCategory, ctx: DemandContext): string {
   if (category === 'playtime') {
