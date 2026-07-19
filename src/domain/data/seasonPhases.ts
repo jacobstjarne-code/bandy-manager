@@ -23,18 +23,16 @@ export function getFunctionaryPhase(roundNumber: number, tablePosition: number, 
   return 'slutspurt'
 }
 
-// ── Portal-kortbagens fas (B1, 2026-07-19) ────────────────────────────────────
+// ── Portal-kortbagens fas ──────────────────────────────────────────────────
 //
-// Ersätter SeasonPhase (nedan) SPECIFIKT för kortsuppression/viktbias
-// (dashboardCardBag.ts's suppressIn, seasonPhaseBias.ts's PHASE_BIAS) — de
-// operationerna är rena tal/booleans, ingen ny text krävs. SeasonPhase självt
-// rörs INTE: SEASON_MOOD (dailyBriefingService.ts) och PortalPhaseMark.tsx:s
-// PHASEMARK_LABELS är genuina textpooler bundna till den 3-ställiga modellen —
-// att bredda DEM till sju faser kräver ny Opus-text för vinter/vinterkris/
-// våroffensiv/slutspurt (höststart/höst/annandagen skulle också behöva
-// omformulering eftersom gamla early/mid-texten refererar specifika månader
-// som inte stämmer på de nya gränserna). Det är inte denna specs uppgift
-// (B1 är Code, ingen Fable-leverans begärd) — flaggat, inte tyst ihopblandat.
+// Ensam fasmodell (2026-07-20). Fram till B1 (2026-07-19) fanns en parallell
+// 3-ställig SeasonPhase (early/mid/endgame/playoff/spectator) som drev
+// SEASON_MOOD (dailyBriefingService.ts) och PortalPhaseMark.tsx:s gamla
+// engångsbanner. Den migrerades bort samma dag (PortalPhaseMark läser nu
+// getFunctionaryPhase) och dailyBriefingService.ts (SEASON_MOOD, noll
+// anropare) raderades 2026-07-20 — SeasonPhase/getSeasonPhase hade då noll
+// konsumenter kvar och raderades. Använd PortalPhase/getPortalPhase för allt
+// fasberoende i Portal — det finns ingen annan fasmodell att förväxla med.
 export type PortalPhase = FunctionaryPhase | 'playoff' | 'spectator'
 
 export function getPortalPhase(
@@ -49,36 +47,18 @@ export function getPortalPhase(
   return getFunctionaryPhase(leagueRound, tablePosition, totalTeams)
 }
 
-// ── Dashboard / SEASON_MOOD phase ─────────────────────────────────────────────
-// OFÖRÄNDRAD av B1 — se kommentar ovan. Driver SEASON_MOOD (dailyBriefingService)
-// + PortalPhaseMark.tsx:s engångsbanner, inte kortbagen.
-//
-// B1 (2026-07-19): 'pre_season' borttagen ur unionen — getSeasonPhase()
-// returnerade den aldrig (verifierat), den var en gren som aldrig nåddes.
-// Motsvarande död SEASON_MOOD-rad och ALL_SEASON_PHASES-listpost i
-// interruptClassifier.ts städade samtidigt.
-export type SeasonPhase = 'early' | 'mid' | 'endgame' | 'playoff' | 'spectator'
-
 export function getCurrentLeagueRound(game: import('../entities/SaveGame').SaveGame): number {
   return game.fixtures
     .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 }
 
-export function getSeasonPhase(leagueRound: number, isPlayoff: boolean, isSpectator: boolean = false): SeasonPhase {
-  if (isSpectator) return 'spectator'
-  if (isPlayoff) return 'playoff'
-  if (leagueRound <= 3) return 'early'
-  if (leagueRound <= 11) return 'mid'
-  return 'endgame'
-}
-
 /**
  * Returnerar true om managed club fortfarande är aktiv i slutspelet
  * (inte eliminerad och har kvarvarande scheduled fixtures i sin serie).
  *
- * Används som `isPlayoff`-parameter till getSeasonPhase för korrekt fas:
- * eliminerade spelare hamnar i 'endgame', inte 'playoff'.
+ * Används som `isPlayoff`-parameter till getPortalPhase/getFunctionaryPhase
+ * för korrekt fas: eliminerade spelare hamnar i 'slutspurt', inte 'playoff'.
  */
 export function isManagedClubInPlayoff(game: import('../entities/SaveGame').SaveGame): boolean {
   if (!game.playoffBracket) return false
