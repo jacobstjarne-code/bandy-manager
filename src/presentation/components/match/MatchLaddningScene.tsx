@@ -137,6 +137,12 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
     : undefined
 
   // ── SM-final: steg 2 — Uppspel ──────────────────────────────
+  // Kollisionsbeslut (2026-07-19, låst av matchLaddningGrind.test.ts): om
+  // SM-finalen RÅKAR sammanfalla med en aktiv veteran_farewell-arcs spelares
+  // sista hemmamatch, byggs INGEN sammanslagen ceremoni. SM-finalen vinner —
+  // avskedsbeaten (farewellPlayer-blocket i standardscenen nedan) är
+  // strukturellt onåbar när isFinal är true, oavsett arc-signalen. Medvetet
+  // vald för ett extremt sällsynt sammanträffande, inte glömt.
   if (isFinal && finalStep === 'uppspel') {
     const myPos = getLeaguePosition(game, game.managedClubId)
     const playoffRec = getPlayoffRecord(game, game.managedClubId)

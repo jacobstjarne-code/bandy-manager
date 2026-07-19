@@ -4,8 +4,10 @@
 
 import { describe, it, expect } from 'vitest'
 import { computeLaddningBeat } from '../domain/data/matchLaddningGrind'
+import { getFarewellMatchPlayer } from '../domain/services/retirementService'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { Fixture } from '../domain/entities/Fixture'
+import type { ActiveArc } from '../domain/entities/Narrative'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -231,6 +233,38 @@ describe('computeLaddningBeat — tier scene', () => {
   it('final takes priority over isAnnandagen when both set', () => {
     const fix = makeFixture({ isFinaldag: true, isAnnandagen: true })
     const game = makeGame({ fixtures: [fix] })
+    const beat = computeLaddningBeat(game, fix)
+    expect(beat.tier).toBe('scene')
+    if (beat.tier === 'scene') {
+      expect(beat.occasion).toBe('final')
+      expect(beat.isFinal).toBe(true)
+    }
+  })
+
+  it('SM-final wins over avskedsmatch (2026-07-19 ruling): en sällsynt kollision, medvetet inte sammanslagen', () => {
+    // Konstruerar en fixture som är BÅDA samtidigt: SM-finalen (isFinaldag)
+    // OCH en aktiv veteran_farewell-arcs spelares sista hemmamatch (sista
+    // matchday, hemma, non-cup). Bekräftar först att båda villkoren verkligen
+    // är sanna var för sig (annars testar det inget), sen att
+    // computeLaddningBeat väljer final. MatchLaddningScene.tsx:s
+    // avskedsbeat lever bara i standard-grenen (!isFinal) — isFinal:true
+    // gör den strukturellt onåbar den här omgången, oavsett arc-signalen.
+    // Beslutat, inte glömt: ingen sammanslagen ceremoni byggs för detta
+    // extremt sällsynta sammanträffande.
+    const fix = makeFixture({ id: 'final_fix', isFinaldag: true, matchday: 40, season: 2026 })
+    const arc: ActiveArc = {
+      id: 'arc_farewell', type: 'veteran_farewell', playerId: 'p1',
+      startedMatchday: 1, phase: 'peak', expiresMatchday: 40,
+    }
+    const game = makeGame({
+      fixtures: [fix],
+      players: [{ id: 'p1', clubId: 'club_home' } as never],
+      activeArcs: [arc],
+    })
+
+    // Förutsättning: båda triggren är sanna oberoende av varandra.
+    expect(getFarewellMatchPlayer(game, fix)?.id).toBe('p1')
+
     const beat = computeLaddningBeat(game, fix)
     expect(beat.tier).toBe('scene')
     if (beat.tier === 'scene') {
