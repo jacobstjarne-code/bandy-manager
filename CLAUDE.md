@@ -395,6 +395,20 @@ En mock av en BEFINTLIG yta ändrar ytans UTSEENDE — den tar aldrig bort ytan 
 
 **Historik:** 2026-06-23 (KORRVANDA3) — beställningen var att styla om konsekvens-/"Dina val"-sektionen i matchsammanfattningen (M15-mock). Istället togs hela sektionen bort. Mocken var omdesign av en befintlig sektion, aldrig "radera den". (B3 i KORRVANDA-3B.)
 
+### 6. DEN SPÅRBARA SPELARKEDJAN
+
+**Ett system är inte färdigt förrän hela kedjan går att beskriva på en rad:**
+
+> trigger → stateförändring → synlig yta → spelarens tolkning → senare konsekvens
+
+Testtäckning, gröna lintar och en committad datafil räcker inte. Om något led saknas är systemet påbörjat, inte klart. "Grön build" och "spårbar kedja" är två olika frågor — en PR kan svara ja på den första och nej på den andra.
+
+**Konkret check innan något markeras klart:**
+- Skriv ut kedjan i commit-meddelandet, ett led i taget, med filnamn/funktion för varje led.
+- Om ett led saknar en konkret pekare (en fil, en funktion, en rad kod) — systemet är inte klart. Fortsätt bygga eller flagga öppet i BACKLOG, markera inte som klart.
+
+**Historik:** `patron.demands`, `Mecenat.demands`, `injuryDoctorText.ts` och de sju citat-JSON:erna i `media/library/quotes/` var alla byggda i tre av fem led — konsument fanns, generator saknades, eller texten fanns utan yta. Alla fyra såg "klara" ut vid commit (typad, testad, i vissa fall referens från annan kod) men nådde aldrig spelaren. Regeln hade stoppat samtliga vid commit-tillfället, inte månader senare vid audit.
+
 ---
 
 ## VERIFIERINGSPROTOKOLL — OBLIGATORISKT
@@ -792,6 +806,18 @@ Annars → spec.
 
 Om Opus skriver en spec — säg VARFÖR den inte fixades direkt
 ("berör 8 filer", "kräver stress-test-loop", "kräver pixel-jämför").
+
+### När Design kopplas in
+
+**Design kopplas in där ytan är ny eller hierarkin ändras — inte där texten byts.**
+
+Konkret: Design äger en ny scens/ytas frågeform eller interaktionsmönster, ett nytt primärkorts språk och plats i vikthierarkin, textnivåers visuella uttryck (position, kontrast, storlek, rytm), och en ny framåtkrok eller CTA:s placering i ett befintligt flöde.
+
+Design kopplas INTE in för: fasmodellskonsolidering (byta vilken intern datatyp ett UI läser, utan att UI:t ändras), stresstestmått eller annan intern instrumentering, eller ren wiring (koppla en redan textad pool till en redan byggd konsument).
+
+**Testfråga:** ändrar detta vad spelaren SER eller hur de FATTAR BESLUT, på ett sätt som inte redan är specat? Ja → Design. Nej, bara "vilket system levererar samma sak" → Code direkt.
+
+**Historik:** Denna regel skrevs in 2026-07-19 som en av tre styrande regler i samband med kafferums-/dramaturgi-specen (Fables kodläsning + extern strukturanalys) — för att förhindra att wiring-tunga leveranser (fasmodell, stresstestmått) av misstag väntar på en granskningsrunda de inte behöver, samtidigt som nya ytor (kafferummets frågeform) inte byggs utan Design.
 
 ---
 

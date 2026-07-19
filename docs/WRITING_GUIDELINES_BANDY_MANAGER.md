@@ -349,6 +349,33 @@ register i sin kommentar. Text-audit dömer varje sträng INOM sitt register
 
 Versionera med datum-rad i Lärdomar-sektionen.
 
+## DEL 8 — Textnivåer (R2, 2026-07-19)
+
+All speltext tillhör exakt EN av fyra nivåer. Nivåerna får inte se likadana ut —
+textauditen har hittills dömt sanning och ton, aldrig vikt. En atmosfärsrad ser
+i dag ut ungefär som en konsekvensrad, vilket tvingar spelaren att läsa allt för
+att veta vad som var viktigt.
+
+1. **Beslutstext** — måste läsas, påverkar ett val spelaren gör NU.
+2. **Konsekvenstext** — förklarar vad ett val ledde till.
+3. **Karaktärstext** — bygger relation, plats och minne.
+4. **Atmosfärstext** — färg, får hoppas över utan förlust.
+
+**Nivån ska framgå av FORM** (position, kontrast, storlek, rytm — Designs
+domän, se CLAUDE.md "När Design kopplas in") — **inte av ännu en mening i
+texten själv.** Skriv inte "OBS, viktigt:" i en beslutstext för att kompensera
+för att den ser ut som atmosfärstext. Det är en design-bugg, inte ett
+textproblem, och löses inte med mer text.
+
+**Krav på varje ny textpool:** ange nivå i filhuvudets kommentar. Exempel:
+
+```ts
+// Nivå: Konsekvenstext — förklarar utfallet av spela-på-valet (pool 1c).
+export const PLAY_THROUGH_AFTERMATH: string[] = [...]
+```
+
+En pool utan nivå-deklaration är inte klar för granskning.
+
 ## Pre-flight-checklista (kopiera till tankesektion innan varje skriv-batch)
 
 ```
@@ -359,9 +386,12 @@ Versionera med datum-rad i Lärdomar-sektionen.
     [ ] squadNuStrings.ts (för spelare-status, konkretion)
     [ ] assistantCoachService.ts (för coach-citat — OBS jovial-personligheten har klyschor, undvik)
 [ ] Öppnat och läst tidigare BATCHAR i samma session (primär tonexempel)
-    [ ] post_match_loss.json (om finns)
-    [ ] post_match_win.json (om finns)
-    [ ] etc — alla tidigare committade library-filer
+    [ ] `media/library/quotes/*.json` (post_match_win/loss/draw/close_loss/
+        blowout_loss/crisis_streak/success_streak_5) — RADERADE 2026-07-19
+        (M67-klass dödmönster, 0 konsumenter, se BACKLOG-historik). Använd
+        INTE som referens längre — om en ny library-fil av samma typ skrivs,
+        verifiera FÖRST att den har en konsument (R1, spårbara kedjan)
+    [ ] etc — alla tidigare committade OCH LEVANDE library-filer
 [ ] Verifierat alla bandy-specifika ord mot kodbasen
 [ ] Planerat rytm-fördelning före skrivning (~40% helmeningar, ~30% två korta, ~15% en ensam, ~10% tre led, ~5% experimentell)
 [ ] Begränsa till MAX 10 citat per generation-block
