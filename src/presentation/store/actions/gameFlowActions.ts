@@ -524,6 +524,24 @@ export function gameFlowActions(get: Get, set: Set) {
         const coffeeScene = getCoffeeRoomScene(updatedGame)
         if (coffeeScene) {
           updatedGame.lastCoffeeSceneIndices = [...(updatedGame.lastCoffeeSceneIndices ?? []), ...coffeeScene.pickedIndices].slice(-12)
+          // D3 — återkomsten visades: ta bort den ur kön, den landar bara en gång.
+          if (coffeeScene.consumedReturnQuestionId) {
+            updatedGame.coffeeRoomPendingReturns = (updatedGame.coffeeRoomPendingReturns ?? [])
+              .filter(p => p.questionId !== coffeeScene.consumedReturnQuestionId)
+          }
+        }
+        // A2/D1-D3 — choiceId format "{questionId}:{answerId}" när spelaren svarat.
+        // Svaret pensioneras (ställs aldrig igen) och en återkomst schemaläggs.
+        if (choiceId && choiceId.includes(':')) {
+          const [questionId, answerId] = choiceId.split(':')
+          if ((answerId === 'A' || answerId === 'B') && !(updatedGame.coffeeRoomAnsweredQuestions ?? []).includes(questionId)) {
+            updatedGame.coffeeRoomAnsweredQuestions = [...(updatedGame.coffeeRoomAnsweredQuestions ?? []), questionId]
+            updatedGame.coffeeRoomAnswers = { ...(updatedGame.coffeeRoomAnswers ?? {}), [questionId]: answerId }
+            updatedGame.coffeeRoomPendingReturns = [
+              ...(updatedGame.coffeeRoomPendingReturns ?? []),
+              { questionId, answerId, answeredMatchday: updatedGame.currentMatchday },
+            ]
+          }
         }
       } else if (sceneId === 'season_signature_reveal') {
         // Track per-season with dedicated field (not SceneId[] — needs season number)

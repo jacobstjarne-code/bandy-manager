@@ -14,6 +14,7 @@ import { TRANSFER_DEADLINE_ROUND } from './portal/triggers/transferTriggers'
 import { getNextManagedFixture } from './portal/triggers/matchTriggers'
 import { FAREWELL_MATCH_STRINGS } from '../data/retirementText'
 import { getFarewellMatchPlayer } from './retirementService'
+import { COFFEE_ROOM_QUESTIONS, COFFEE_ROOM_QUESTION_SPEAKER, type CoffeeRoomAnswerOption } from '../data/coffeeRoomQuestionsText'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -27,6 +28,14 @@ interface CoffeeQuote {
   text: string
 }
 
+/** A2 (2026-07-19) — D1: Sture vänder sig till spelaren, tredje beaten. */
+export interface CoffeeRoomQuestionPrompt {
+  questionId: string
+  speaker: string
+  text: string
+  answers: [CoffeeRoomAnswerOption, CoffeeRoomAnswerOption]
+}
+
 export interface CoffeeScene {
   exchanges: Array<[string, string, string, string]>
   /** B9 T1B — index i pool som valdes; sparas i SaveGame.lastCoffeeSceneIndices */
@@ -35,6 +44,10 @@ export interface CoffeeScene {
     title: string
     subtitle?: string
   }
+  /** D1 — gated tillägg, en gång per besök, bara på rutinbesök (generiska poolen). */
+  question?: CoffeeRoomQuestionPrompt
+  /** D3 — satt när scenen visar en återkomst; completeScene tar bort den ur coffeeRoomPendingReturns. */
+  consumedReturnQuestionId?: string
 }
 
 const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
@@ -565,6 +578,22 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
   if (round === 0) return null
 
+  // D3 (A1) — återkomsten: samma prioritetslogik som victory-echo/farewell i
+  // getCoffeeRoomQuote (starkt, ovillkorat, en gång). Seedad på svaret +
+  // matchday, landar deterministiskt när tröskeln är nådd — inte varje besök.
+  const dueReturn = pickDueCoffeeRoomReturn(game)
+  if (dueReturn) {
+    const questionDef = COFFEE_ROOM_QUESTIONS.find(q => q.id === dueReturn.questionId)
+    if (questionDef) {
+      return {
+        exchanges: [questionDef.returns[dueReturn.answerId]],
+        pickedIndices: [],
+        meta: { title: 'Kafferummet', subtitle: 'Tisdag förmiddag · samtalet fortsätter där det var' },
+        consumedReturnQuestionId: dueReturn.questionId,
+      }
+    }
+  }
+
   const hotStreak = game.fatigueHotStreak ?? 0
   if (hotStreak >= 2) {
     const { pressure } = getFatigueState(game)
@@ -668,6 +697,20 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     exchanges.push(pool[idx])
   }
 
+  // D1 (A1) — tredje beaten: gated (som fatigue/anticipation), en gång per
+  // besök, bara på rutinbesök (den här generiska poolen — hotStreak/anchor
+  // är redan egna narrativa lägen och ska inte också bära en fråga samma
+  // besök). Krascha inte på tom pool — bara sex frågor finns, alla kan vara
+  // besvarade (D3-regeln: en besvarad fråga ställs aldrig igen).
+  const answered = new Set(game.coffeeRoomAnsweredQuestions ?? [])
+  const unanswered = COFFEE_ROOM_QUESTIONS.filter(q => !answered.has(q.id))
+  const questionGateSeed = hashSeed(matchday * 43 + game.currentSeason * 19)
+  let question: CoffeeRoomQuestionPrompt | undefined
+  if (unanswered.length > 0 && questionGateSeed % 5 < 2) {
+    const q = unanswered[0]
+    question = { questionId: q.id, speaker: COFFEE_ROOM_QUESTION_SPEAKER, text: q.question, answers: q.answers }
+  }
+
   return {
     exchanges,
     pickedIndices,
@@ -675,5 +718,24 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
       title: 'Kafferummet',
       subtitle: 'Tisdag förmiddag · några stannade kvar efter mötet',
     },
+    question,
   }
+}
+
+/**
+ * D3 — hittar en obesvarad återkomst vars tröskel (seedad, 2-6 omgångar
+ * efter svaret) är nådd. En i taget (FIFO på answeredMatchday) — samma
+ * "ett beat per besök"-princip som resten av rummet.
+ */
+function pickDueCoffeeRoomReturn(game: SaveGame): { questionId: string; answerId: 'A' | 'B' } | null {
+  const pending = game.coffeeRoomPendingReturns ?? []
+  if (pending.length === 0) return null
+  const currentMatchday = game.currentMatchday ?? 0
+  const due = [...pending]
+    .sort((a, b) => a.answeredMatchday - b.answeredMatchday)
+    .find(p => {
+      const delay = 2 + (hashSeed(p.questionId.length * 13 + p.answeredMatchday * 7) % 5)
+      return currentMatchday >= p.answeredMatchday + delay
+    })
+  return due ? { questionId: due.questionId, answerId: due.answerId } : null
 }

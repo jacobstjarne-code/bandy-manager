@@ -36,7 +36,7 @@ export function SceneScreen() {
     case 'sm_final_victory':
       return <SMFinalVictoryScene game={game} onComplete={() => handleComplete()} />
     case 'coffee_room':
-      return <CoffeeRoomScene game={game} onComplete={() => handleComplete()} />
+      return <CoffeeRoomScene game={game} onComplete={(choiceId) => handleComplete(choiceId)} />
     case 'journalist_relationship':
       return <JournalistRelationshipScene game={game} onComplete={() => handleComplete()} />
     case 'season_signature_reveal':

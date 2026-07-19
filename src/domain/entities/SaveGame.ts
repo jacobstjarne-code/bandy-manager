@@ -83,6 +83,11 @@ export interface SaveGame {
   lastCoffeeSceneRound?: number        // Round när senaste coffee_room visades
   lastCoffeeSceneIndices?: number[]    // rullande-12 historik av visade pool-index (undviks i nästa scen)
 
+  // A2 (2026-07-19) — kafferummets frågor (COFFEE_ROOM_QUESTIONS). D1-D3.
+  coffeeRoomAnsweredQuestions?: string[]   // questionId — pensionerad, ställs aldrig igen
+  coffeeRoomAnswers?: Record<string, 'A' | 'B'>  // questionId → valt svar, för återkomsten (D3)
+  coffeeRoomPendingReturns?: Array<{ questionId: string; answerId: 'A' | 'B'; answeredMatchday: number }>
+
   // Portal-beats (lättviktiga engångsmoment)
   shownBeats?: string[]                // Beat-nycklar som visats (format: beatId eller beatId_season)
 
