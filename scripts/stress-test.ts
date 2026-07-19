@@ -21,6 +21,7 @@ import { printSeedProgress, printFinalReport } from './stress/reporter'
 import type { SeedResult } from './stress/reporter'
 import { extractMatchStat, extractEconSnapshot, newSeasonStats } from './stress/stats'
 import type { SeasonStats } from './stress/stats'
+import { newTextMetricsAccumulator, recordInboxTextMetrics, summarizeTextMetrics } from './stress/textMetrics'
 
 // ── Arg parsing ──────────────────────────────────────────────────────────────
 
@@ -137,6 +138,10 @@ async function main(): Promise<void> {
       let previouslyCompletedIds = new Set<string>(
         game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)
       )
+      // B6: textmått — diffa inbox varje varv för att hitta NYA texter denna omgång.
+      const textMetricsAcc = newTextMetricsAccumulator()
+      let previousInboxIds = new Set<string>(game.inbox.map(i => i.id))
+      let roundsThisSeason = 0
 
       while (!seasonDone && !seedCrashed) {
         // Always set lineup before advancing (advance clears managedClubPendingLineup each round)
@@ -166,7 +171,15 @@ async function main(): Promise<void> {
             seasonStats.econSnapshots.push(
               extractEconSnapshot(result.game, roundPlayed, result.game.standings ?? [])
             )
+            roundsThisSeason = roundPlayed
           }
+
+          // B6: textmått — nya inbox-items denna omgång
+          const newInboxItems = result.game.inbox.filter(i => !previousInboxIds.has(i.id))
+          if (roundPlayed !== null) {
+            recordInboxTextMetrics(newInboxItems, roundPlayed, textMetricsAcc)
+          }
+          previousInboxIds = new Set(result.game.inbox.map(i => i.id))
 
           if (result.seasonEnded || result.game.managerFired) {
             seasonDone = true
@@ -219,6 +232,7 @@ async function main(): Promise<void> {
 
       if (seedCrashed) break
       seasonsCompleted++
+      seasonStats.textMetrics = summarizeTextMetrics(textMetricsAcc, roundsThisSeason)
       allSeasonStats.push(seasonStats)
     }
 
@@ -255,6 +269,29 @@ async function main(): Promise<void> {
     seasons: allSeasonStats,
   }, null, 2))
   console.log(`\nSkriven ${statsFile} (${totalMatches} matcher)`)
+
+  // B6: textmått — aggregerat över alla säsonger som körts
+  const seasonsWithText = allSeasonStats.filter(s => s.textMetrics)
+  if (seasonsWithText.length > 0) {
+    const tm = seasonsWithText.map(s => s.textMetrics!)
+    const avgTextsPerRound = tm.reduce((s, m) => s + m.textsPerRoundAvg, 0) / tm.length
+    const avgActionableRatio = tm.reduce((s, m) => s + m.actionableRatio, 0) / tm.length
+    const maxDuplicates = Math.max(...tm.map(m => m.duplicateStrings))
+    const maxRepeat = Math.max(...tm.map(m => m.maxStringRepeats))
+    const gaps = tm.map(m => m.avgCharacterGapRounds).filter((g): g is number => g !== null)
+    const avgGap = gaps.length > 0 ? gaps.reduce((s, g) => s + g, 0) / gaps.length : null
+    const maxGap = Math.max(...tm.map(m => m.maxCharacterGapRounds ?? 0))
+
+    console.log('\n── Textmått (B6) ──────────────────────────────')
+    console.log(`Texter/omgång (snitt över ${tm.length} säsonger): ${avgTextsPerRound.toFixed(2)}`)
+    console.log(`Andel handlingskrävande (proxy: expiresRound satt): ${(avgActionableRatio * 100).toFixed(1)}%`)
+    console.log(`Flest dubblerade strängar i en säsong: ${maxDuplicates}  ·  högsta enskilda upprepning: ${maxRepeat}x`)
+    if (avgGap !== null) {
+      console.log(`Omgångar mellan en karaktärs repliker (fromRole): snitt ${avgGap.toFixed(1)}, max ${maxGap}`)
+    } else {
+      console.log('Omgångar mellan en karaktärs repliker: ingen fromRole-attribuerad text observerad')
+    }
+  }
 
   console.log()
   printFinalReport({ seeds, maxSeasons: seasons, results })

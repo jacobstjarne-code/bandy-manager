@@ -5,6 +5,7 @@
 import type { Fixture } from '../../src/domain/entities/Fixture'
 import type { SaveGame } from '../../src/domain/entities/SaveGame'
 import { MatchEventType, FixtureStatus } from '../../src/domain/enums'
+import type { TextMetricsSummary } from './textMetrics'
 
 export interface MatchStat {
   seed: number
@@ -54,6 +55,8 @@ export interface SeasonStats {
   clubRep: number
   matches: MatchStat[]
   econSnapshots: EconSnapshot[]
+  /** B6 (2026-07-19): textmått — se textMetrics.ts. Saknas för säsonger körda före detta. */
+  textMetrics?: TextMetricsSummary
 }
 
 function getPhase(fix: Fixture): MatchStat['phase'] {
