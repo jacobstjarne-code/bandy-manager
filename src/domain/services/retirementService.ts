@@ -1,4 +1,6 @@
 import type { Player } from '../entities/Player'
+import type { SaveGame } from '../entities/SaveGame'
+import type { Fixture } from '../entities/Fixture'
 
 export interface RetirementData {
   playerId: string
@@ -54,6 +56,25 @@ const BEST_MOMENT_TEMPLATES = [
   (_name: string) => `Kampanjen när laget kämpade sig kvar i serien mot alla odds.`,
   (_name: string) => `Debuten i A-laget — nervig, men minnet sitter kvar.`,
 ]
+
+/**
+ * Pool 2 (2026-07-19): delad gate-signal för "spelarens sista hemmamatch i
+ * säsongen". Extraherad ur coffeeRoomService.ts's M67a-wiring (samma villkor,
+ * tidigare duplicerad inline där) så matchdags-avskedsbeaten (MatchLaddningScene)
+ * och kafferummet läser EXAKT samma signal — inte två separata beräkningar av
+ * samma sak som kan driva isär.
+ */
+export function getFarewellMatchPlayer(game: SaveGame, nextFixture: Fixture | null | undefined): Player | null {
+  const farewellArc = (game.activeArcs ?? []).find(a => a.type === 'veteran_farewell')
+  if (!farewellArc) return null
+  const farewellPlayer = game.players.find(p => p.id === farewellArc.playerId)
+  if (!farewellPlayer) return null
+  const lastHomeFixture = game.fixtures
+    .filter(f => f.season === game.currentSeason && !f.isCup && f.homeClubId === game.managedClubId)
+    .sort((a, b) => b.matchday - a.matchday)[0]
+  if (!lastHomeFixture || nextFixture?.id !== lastHomeFixture.id) return null
+  return farewellPlayer
+}
 
 export function generateFarewellQuote(player: Player): string {
   const name = `${player.firstName} ${player.lastName}`

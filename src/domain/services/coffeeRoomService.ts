@@ -13,6 +13,7 @@ import { getUpcomingAnchor } from './calendarLookahead'
 import { TRANSFER_DEADLINE_ROUND } from './portal/triggers/transferTriggers'
 import { getNextManagedFixture } from './portal/triggers/matchTriggers'
 import { FAREWELL_MATCH_STRINGS } from '../data/retirementText'
+import { getFarewellMatchPlayer } from './retirementService'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -232,22 +233,15 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   // FAREWELL_MATCH_STRINGS hade noll konsumenter (M60-verifieringen) — wirad
   // in här, samma prioritetsnivå som victory-echot (en gång per säsong, en
   // spelare, ska inte konkurrera bort av rutinkafferum-repliker).
-  const farewellArc = (game.activeArcs ?? []).find(a => a.type === 'veteran_farewell')
-  if (farewellArc) {
-    const farewellPlayer = game.players.find(p => p.id === farewellArc.playerId)
-    const lastHomeFixture = game.fixtures
-      .filter(f => f.season === game.currentSeason && !f.isCup && f.homeClubId === game.managedClubId)
-      .sort((a, b) => b.matchday - a.matchday)[0]
-    const nextFixture = getNextManagedFixture(game)
-    if (farewellPlayer && lastHomeFixture && nextFixture?.id === lastHomeFixture.id) {
-      const seed = hashSeed(farewellPlayer.id.length * 17 + game.currentSeason * 31)
-      const template = FAREWELL_MATCH_STRINGS[Math.abs(seed) % FAREWELL_MATCH_STRINGS.length]
-      const text = template
-        .replace('{player}', farewellPlayer.lastName)
-        .replace('{members}', String(game.supporterGroup?.members ?? ''))
-        .replace('{leader}', getCharacterName(game, 'leader'))
-      return { text }
-    }
+  const farewellPlayer = getFarewellMatchPlayer(game, getNextManagedFixture(game))
+  if (farewellPlayer) {
+    const seed = hashSeed(farewellPlayer.id.length * 17 + game.currentSeason * 31)
+    const template = FAREWELL_MATCH_STRINGS[Math.abs(seed) % FAREWELL_MATCH_STRINGS.length]
+    const text = template
+      .replace('{player}', farewellPlayer.lastName)
+      .replace('{members}', String(game.supporterGroup?.members ?? ''))
+      .replace('{leader}', getCharacterName(game, 'leader'))
+    return { text }
   }
 
   const round = game.fixtures

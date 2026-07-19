@@ -13,6 +13,8 @@ import { FINAL_STAT_LABELS } from '../../../domain/data/scenes/finalIntroScene'
 import { getSeasonContext } from '../../../domain/services/seasonContextService'
 import { seededPick } from '../../../domain/utils/random'
 import { IllustrationPlaceholder } from '../illustration/IllustrationScene'
+import { getFarewellMatchPlayer } from '../../../domain/services/retirementService'
+import { FAREWELL_MATCH_ATMOSPHERE, FAREWELL_MATCH_KLACK } from '../../../domain/data/retirementText'
 
 // Assets confirmed in repo; others fall back to IllustrationPlaceholder.
 const OCCASION_ASSET: Partial<Record<LaddningOccasion, string>> = {
@@ -110,6 +112,14 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
   const stakeText = (seasonCtx === 'relegationFight' || seasonCtx === 'topRace')
     ? seededPick(STAKE_TEXT[seasonCtx], seed + 13)
     : null
+
+  // Pool 2 (2026-07-19): avskedsmatch-beat — spelarens sista hemmamatch i
+  // säsongen (veteran_farewell-arc), samma gate-signal som coffeeRoomService
+  // (retirementService.ts's getFarewellMatchPlayer, delad — inte duplicerad).
+  // Matchdags-ceremoniröst, skild från pensionsvals-eventet (matchdag ≠ avgång).
+  const farewellPlayer = getFarewellMatchPlayer(game, nextFixture)
+  const farewellAtmosphere = farewellPlayer ? seededPick(FAREWELL_MATCH_ATMOSPHERE, seed + 19) : null
+  const farewellKlack = farewellPlayer ? seededPick(FAREWELL_MATCH_KLACK, seed + 23) : null
 
   const assetName = OCCASION_ASSET[occasion]
   const isHome = nextFixture.homeClubId === game.managedClubId
@@ -448,6 +458,22 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
               color: 'var(--warm-light)', fontWeight: 600,
             }}>
               {stakeText}
+            </div>
+          )}
+
+          {/* Pool 2: avskedsmatch-beat. Ingen egen etikett skriven här — de
+              två Opus-textraderna (FAREWELL_MATCH_ATMOSPHERE/KLACK) etablerar
+              redan kontexten själva ("Avskedsmatch i dag...", "Sista matchen
+              för en av oss..."). SVENSK TEXT-regeln: Code hittar inte på en
+              rubrik för att komplettera dem. */}
+          {farewellPlayer && (
+            <div style={{ marginTop: 11, paddingTop: 11, borderTop: '0.5px solid color-mix(in srgb, var(--gold) 30%, transparent)' }}>
+              <p className="h-quote-sm h-quote-light" style={{ lineHeight: 1.5, textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>
+                {farewellAtmosphere}
+              </p>
+              <p className="h-quote-sm h-quote-light" style={{ lineHeight: 1.5, marginTop: 6, textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>
+                {farewellKlack}
+              </p>
             </div>
           )}
         </div>
