@@ -38,6 +38,31 @@ export const PATRON_PLAYTIME_DEMANDS = [
   '"Grabben blöder för den här klubben. Visa att det betyder något."',
 ]
 
+// Kravmotor (2026-07-19, Jacobs text): tre kategorier utan {token} — kraven
+// är generella, inget spelarnamn/placeringstal interpoleras (verifierat mot
+// demandEngine.ts: generateDemandDescription gör ingen .replace() för dessa
+// tre). Bara 3 rader per kategori (PATRON_PLAYTIME_DEMANDS har 9 — Jacobs
+// eget beslut 2026-07-19: kör med 3 nu, ojämn variation accepterad tills
+// vidare hellre än att vänta). Delade mellan Mecenat och Patron, precis som
+// PLAYTIME_DEMANDS ovan redan är.
+export const DEMAND_LEAGUE_POSITION_LINES = [
+  '"Jag vill se er i övre halvan när jag betalar. Det är inte mycket begärt."',
+  '"Håll er borta från bottenstriden. Jag har folk som frågar."',
+  '"Topp fyra. Sen kan vi prata om nästa år."',
+]
+
+export const DEMAND_YOUTH_FOCUS_LINES = [
+  '"Ta upp någon från P19. Det är därför jag lägger pengar här."',
+  '"Jag betalar för ortens ungar, inte för inlånade från Västerås."',
+  '"Låt en av de unga få speltid. De behöver se att vägen finns."',
+]
+
+export const DEMAND_VISIBLE_MONEY_LINES = [
+  '"Jag vill se vad pengarna blir. Något man kan ta på."',
+  '"Det ska synas att jag varit här. Inte bara i bokföringen."',
+  '"Bygg något. Vad som helst — men något som står kvar."',
+]
+
 export const PATRON_STYLE_COMPLAINTS = [
   '"Jag saknar anfallsbandyn. Vi brukade göra mål."',
   '"Det här defensiva spelet... publiken somnar."',

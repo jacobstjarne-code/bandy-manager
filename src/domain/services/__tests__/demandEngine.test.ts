@@ -4,7 +4,9 @@ import {
   pickDemandCategory, generateDemandDescription, createPendingDemand, isDemandFulfilled,
   DEMAND_WINDOW_MATCHDAYS,
 } from '../demandEngine'
-import { PATRON_PLAYTIME_DEMANDS } from '../../data/patronData'
+import {
+  PATRON_PLAYTIME_DEMANDS, DEMAND_LEAGUE_POSITION_LINES, DEMAND_YOUTH_FOCUS_LINES, DEMAND_VISIBLE_MONEY_LINES,
+} from '../../data/patronData'
 
 const base = createNewGame({ managerName: 'T', clubId: 'club_forsbacka', season: 2025, seed: 9 })
 
@@ -32,10 +34,16 @@ describe('generateDemandDescription', () => {
     expect(text).not.toContain('{relation}')
   })
 
-  it('returns the Opus-placeholder for categories without a written pool', () => {
-    expect(generateDemandDescription('league_position', { seed: 1 })).toBe('[Opus]')
-    expect(generateDemandDescription('youth_focus', { seed: 1 })).toBe('[Opus]')
-    expect(generateDemandDescription('visible_money', { seed: 1 })).toBe('[Opus]')
+  it('uses the Opus-written pools for league_position/youth_focus/visible_money (2026-07-19)', () => {
+    expect(DEMAND_LEAGUE_POSITION_LINES).toContain(generateDemandDescription('league_position', { seed: 1 }))
+    expect(DEMAND_YOUTH_FOCUS_LINES).toContain(generateDemandDescription('youth_focus', { seed: 1 }))
+    expect(DEMAND_VISIBLE_MONEY_LINES).toContain(generateDemandDescription('visible_money', { seed: 1 }))
+  })
+
+  it('is deterministic per seed for all three token-free categories', () => {
+    expect(generateDemandDescription('league_position', { seed: 7 })).toBe(generateDemandDescription('league_position', { seed: 7 }))
+    expect(generateDemandDescription('youth_focus', { seed: 7 })).toBe(generateDemandDescription('youth_focus', { seed: 7 }))
+    expect(generateDemandDescription('visible_money', { seed: 7 })).toBe(generateDemandDescription('visible_money', { seed: 7 }))
   })
 })
 

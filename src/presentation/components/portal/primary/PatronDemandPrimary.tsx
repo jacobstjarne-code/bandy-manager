@@ -36,7 +36,7 @@ export function PatronDemandPrimary({ game }: CardRenderProps) {
         {patron.name}
       </div>
       <div className="h-quote h-quote-light" style={{ lineHeight: 1.5, marginBottom: 10 }}>
-        "{demand}"
+        {demand}
       </div>
       <div style={{
         display: 'flex',

@@ -1,6 +1,11 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { DemandCategory, PendingDemand } from '../entities/Demand'
-import { PATRON_PLAYTIME_DEMANDS } from '../data/patronData'
+import {
+  PATRON_PLAYTIME_DEMANDS,
+  DEMAND_LEAGUE_POSITION_LINES,
+  DEMAND_YOUTH_FOCUS_LINES,
+  DEMAND_VISIBLE_MONEY_LINES,
+} from '../data/patronData'
 
 /**
  * Gemensam kravmotor — Mecenat + Patron (2026-07-19).
@@ -46,11 +51,11 @@ interface DemandContext {
 }
 
 /**
- * Textinnehåll: bara 'playtime' har en befintlig Opus-skriven pool
- * (PATRON_PLAYTIME_DEMANDS — tidigare död text, innehållet återanvänds
- * här, INTE strukturen den satt i, per instruktion). league_position/
- * youth_focus/visible_money saknar motsvarande pooler — '[Opus]' tills
- * de levereras (SVENSK TEXT-regeln: Code hittar inte på repliker).
+ * Textinnehåll — alla fyra kategorier levererade (Jacob, 2026-07-19).
+ * 'playtime' interpolerar {favorit}/{relation} (PATRON_PLAYTIME_DEMANDS, 9
+ * rader). De tre andra har inga {token} — kraven är generella (verifierat:
+ * ingen .replace() behövs för dem) — 3 rader var (Jacobs eget beslut:
+ * ojämn variation mot playtime accepterad tills vidare, inte utökad nu).
  */
 export function generateDemandDescription(category: DemandCategory, ctx: DemandContext): string {
   if (category === 'playtime') {
@@ -59,7 +64,10 @@ export function generateDemandDescription(category: DemandCategory, ctx: DemandC
       .replace('{favorit}', ctx.favoritePlayerName ?? 'en av spelarna')
       .replace('{relation}', ctx.favoriteRelation ?? 'bekant')
   }
-  return '[Opus]'
+  const pool = category === 'league_position' ? DEMAND_LEAGUE_POSITION_LINES
+    : category === 'youth_focus' ? DEMAND_YOUTH_FOCUS_LINES
+    : DEMAND_VISIBLE_MONEY_LINES
+  return pool[Math.abs(ctx.seed) % pool.length]
 }
 
 /** Bygger ett nytt PendingDemand — tar snapshot av vad uppfyllt-kollen ska mäta mot. */
