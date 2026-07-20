@@ -22,6 +22,9 @@ export interface NextOpponentTeaserFacts {
   opponentForm: FormResult[]        // senaste 5, äldst→nyast
   opponentLeaguePosition: number | null
   managedLeaguePosition: number | null
+  /** B3 (2026-07-20, hook-kroken): faktiska tabellpoäng — "två poäng skiljer" kräver den exakta differensen, inte platsdifferensen. */
+  opponentLeaguePoints: number | null
+  managedLeaguePoints: number | null
   /** Motståndarens obesegrade svit på den planen laget nu möter dem på (hemma/borta), denna säsong. 0 om ingen svit eller ingen data. */
   opponentUnbeatenStreakAtVenue: number
   opponentUnbeatenStreakSinceDate: string | null
@@ -103,6 +106,8 @@ export function getNextOpponentTeaserFacts(game: SaveGame): NextOpponentTeaserFa
     opponentForm,
     opponentLeaguePosition: game.standings.find(s => s.clubId === opponentId)?.position ?? null,
     managedLeaguePosition: game.standings.find(s => s.clubId === managedId)?.position ?? null,
+    opponentLeaguePoints: game.standings.find(s => s.clubId === opponentId)?.points ?? null,
+    managedLeaguePoints: game.standings.find(s => s.clubId === managedId)?.points ?? null,
     opponentUnbeatenStreakAtVenue: unbeatenStreak,
     opponentUnbeatenStreakSinceDate: streakSinceDate,
     previousMeetingThisSeason,

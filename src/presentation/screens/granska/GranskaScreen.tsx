@@ -11,6 +11,7 @@ import { GranskaOversikt } from './GranskaOversikt'
 import { GranskaSpelare } from './GranskaSpelare'
 import { GranskaShotmap } from './GranskaShotmap'
 import { GranskaAnalys } from './GranskaAnalys'
+import { NextOpponentHook } from './NextOpponentHook'
 
 type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'analys'
 
@@ -267,6 +268,9 @@ export function GranskaScreen() {
             )
           })}
         </div>
+
+        {/* B3 — framåtkroken: sista innehållsblocket, direkt ovanför CTA:n */}
+        <NextOpponentHook game={game} />
 
         {/* CTA */}
         <div style={{ padding: '0 20px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
