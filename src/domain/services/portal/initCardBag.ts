@@ -50,6 +50,7 @@ import { KlackenSecondary } from '../../../presentation/components/portal/second
 import { CoffeeRoomSecondary } from '../../../presentation/components/portal/secondary/CoffeeRoomSecondary'
 import { JournalistSecondary } from '../../../presentation/components/portal/secondary/JournalistSecondary'
 import { SeasonSignatureSecondary } from '../../../presentation/components/portal/secondary/SeasonSignatureSecondary'
+import { StreakSecondary } from '../../../presentation/components/portal/secondary/StreakSecondary'
 import { WeeklyDecisionSecondary } from '../../../presentation/components/portal/secondary/WeeklyDecisionSecondary'
 import { RetirementDecisionSecondary } from '../../../presentation/components/portal/secondary/RetirementDecisionSecondary'
 import { ActiveArcsSecondary } from '../../../presentation/components/portal/secondary/ActiveArcsSecondary'
@@ -64,6 +65,7 @@ import { shouldShowBurnoutMark } from '../managerProfileService'
 import { SpectatorPrimary } from '../../../presentation/components/portal/primary/SpectatorPrimary'
 import type { CardRenderProps } from './dashboardCardBag'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
+import { getStreakState } from '../../data/roundCharacter'
 import { shouldShowJournalistCard } from '../journalistVisibilityService'
 import { isManagedClubSpectator } from '../../data/seasonPhases'
 import { FixtureStatus } from '../../enums'
@@ -278,6 +280,14 @@ const PORTAL_CARDS: DashboardCard[] = [
       return !!sig && sig.id !== 'calm_season'
     }],
     Component: SeasonSignatureSecondary,
+  },
+  {
+    id: 'streak_card',
+    tier: 'secondary',
+    weight: 58,
+    suppressIn: ['playoff'],
+    triggers: [(game) => getStreakState(game) !== null],
+    Component: StreakSecondary,
   },
   {
     id: 'watch_others',
