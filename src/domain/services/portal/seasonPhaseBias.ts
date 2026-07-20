@@ -37,11 +37,19 @@ const PHASE_BIAS: Record<PortalPhase, TierBias> = {
  * coffee_room/journalist och dämpar board_objectives i CHARACTER_BIAS; samma
  * princip, men bundet till tabellplacering (vinterkris-villkoret) istf en
  * matchsvit.
+ *
+ * 2026-07-20 (Jacob): streak_card tillagt — vinterkris är villkorad på
+ * tabellplacering, men en förlustsvit i januari är det sammansatta
+ * ögonblicket: fasen säger att det är mörkt, sviten säger varför. Samma
+ * lyft som coffee_room/journalist (1.3), inte board_objectives nivå (1.4)
+ * — sviten är en känsla/reaktion, inte en strukturell konsekvens som
+ * styrelsemålen.
  */
 export const PHASE_CARD_BIAS: Partial<Record<PortalPhase, Record<string, number>>> = {
   vinterkris: {
     coffee_room_card: 1.3,
     journalist_card: 1.3,
+    streak_card: 1.3,
     board_objectives: 1.4,
     tabell: 1.3,
     ekonomi: 0.6,

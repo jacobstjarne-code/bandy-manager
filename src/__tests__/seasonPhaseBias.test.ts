@@ -53,6 +53,10 @@ describe('applyPhaseCardBias', () => {
     expect(applyPhaseCardBias(100, 'board_objectives', 'vinterkris')).toBeCloseTo(140)
   })
 
+  it('lyfter streak_card i vinterkris — fasen säger att det är mörkt, sviten säger varför (2026-07-20)', () => {
+    expect(applyPhaseCardBias(100, 'streak_card', 'vinterkris')).toBeCloseTo(130)
+  })
+
   it('dämpar rutinkort (ekonomi, watch_others, season_signature_card) i vinterkris', () => {
     expect(applyPhaseCardBias(100, 'ekonomi', 'vinterkris')).toBeCloseTo(60)
     expect(applyPhaseCardBias(100, 'watch_others', 'vinterkris')).toBeCloseTo(50)
