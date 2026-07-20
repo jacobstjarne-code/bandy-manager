@@ -284,7 +284,13 @@ const PORTAL_CARDS: DashboardCard[] = [
   {
     id: 'streak_card',
     tier: 'secondary',
-    weight: 58,
+    // 2026-07-20 (Jacob): 58 → 67. B4:s egen tes är att funktionären bär
+    // intern temperatur och journalisten extern press — sviten ska kännas
+    // i klubbhuset INNAN den blir nyhet. Med journalist_card på 65 och
+    // streak_card under den (58) kom nyheten före känslan, vilket
+    // inverterade motiveringen. 67 sätter ordningen rätt: över
+    // journalist_card (65), under injury_status (70).
+    weight: 67,
     suppressIn: ['playoff'],
     triggers: [(game) => getStreakState(game) !== null],
     Component: StreakSecondary,
