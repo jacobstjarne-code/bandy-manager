@@ -31,7 +31,7 @@ import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentSe
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { processPlayoffRound } from './processors/playoffProcessor'
 import { processCupRound } from './processors/cupProcessor'
-import { appendFinanceLog } from '../../domain/services/economyService'
+import { appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { checkInObjectives } from '../../domain/services/boardObjectiveService'
@@ -527,6 +527,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   let nationalTeamUpdatedPlayers = finalPlayers
   let nationalTeamCampState = game.activeNationalTeamCamp
   let nationalTeamSnub = game.lastNationalSnub
+  // Release-svepet 2026-07-21 (Block 2c) — se appendet vid updatedGame nedan
+  // (samma "lägg på i efterhand"-mönster som marketValueInbox): finansbonusen
+  // appliceras mot updatedGame.clubs i slutet, inte här, för att slippa tråckla
+  // en ny clubs-variabel genom hela economy/transfer-kedjan (rad ~900-1400)
+  // som redan ligger EFTER den här punkten i funktionen.
+  let nationalTeamCallupBonusTkr = 0
+  let nationalTeamCallupModal = game.pendingCallupModal
 
   // Trigger callup on landslagsuppehall round
   if (nationalTeamCalSlot?.isLandslagsuppehall && !isCupRound && !isPlayoffRound && !game.activeNationalTeamCamp) {
@@ -536,6 +543,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       nationalTeamUpdatedPlayers = callupResult.players
       nationalTeamCampState = callupResult.activeNationalTeamCamp
       newInboxItems.push(...callupResult.inboxItems)
+      nationalTeamCallupBonusTkr = callupResult.callupModal.bonusTkr
+      nationalTeamCallupModal = callupResult.callupModal
     }
 
     // M16 (regelboksanpassning 2026-07-03): snub-mekaniken flyttad utanför
@@ -1525,11 +1534,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     lastNationalSnub: nationalTeamSnub,
     pendingNationalTeamReturn: nationalTeamReturnLine,
     nationalTeamReturnExpires: nationalTeamReturnExpiresState,
+    pendingCallupModal: nationalTeamCallupModal,
   }
 
   // Append market value change notifications to inbox
   if (marketValueInbox.length > 0) {
     updatedGame = { ...updatedGame, inbox: [...updatedGame.inbox, ...marketValueInbox] }
+  }
+
+  // Release-svepet 2026-07-21 (Block 2c) — landslagsuttagningens +5 tkr/uttagen
+  // (HANDOFF-C-K1-LANDSLAG-2026-05-23.md Q3, låst av Jacob). Samma efterhands-
+  // mönster som marketValueInbox ovan, se kommentaren vid nationalTeamCallupBonusTkr.
+  if (nationalTeamCallupBonusTkr > 0) {
+    updatedGame = { ...updatedGame, clubs: applyFinanceChange(updatedGame.clubs, game.managedClubId, nationalTeamCallupBonusTkr * 1000) }
   }
 
   // ── Arc processing ──────────────────────────────────────────────────────

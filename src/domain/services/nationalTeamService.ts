@@ -3,6 +3,15 @@ import type { Player } from '../entities/Player'
 import { InboxItemType } from '../enums'
 import { CALLUP_NOTICE_LINES, RETURN_SCENE_LINES } from '../data/landslagText'
 
+// Release-svepet 2026-07-21 (Block 2c): HANDOFF-C-K1-LANDSLAG-2026-05-23.md
+// Q3, låst av Jacob 2026-05-23 — "+5 tkr/uttagen, synligt narrativt". Fanns
+// låst men aldrig kodad förrän CALLUP_MODAL byggdes (modalen visar summan,
+// den måste vara verklig — inte en påhittad siffra på skärmen). Klubbens
+// finance-fält muteras INTE här — roundProcessor.ts applicerar bonusTkr mot
+// den slutgiltiga clubs-kedjan (samma efterhands-mönster som marketValueInbox),
+// eftersom denna funktion körs innan economy/transfer-kedjan i roundProcessor.
+export const CALLUP_BONUS_PER_PLAYER_TKR = 5
+
 // M16 (regelboksanpassning 2026-07-03): förtjänstmodell. Ersätter den tidigare
 // alltid-3-till-5-uttagna-logiken (underminerade "säsongens guldkorn"-premissen
 // i landslagText — varje bruksklubb fick garanterat flera landslagsspelare).
@@ -50,12 +59,15 @@ export function applyCallupEffects(
   players: Player[]
   activeNationalTeamCamp: { startRound: number; endRound: number; playerIds: string[] }
   inboxItems: InboxItem[]
+  callupModal: { playerIds: string[]; names: string[]; bonusTkr: number }
 } {
   const calledUpPlayers = players.filter(p => playerIds.includes(p.id))
   const names = calledUpPlayers.map(p => p.lastName)
   const nameStr = names.length === 1
     ? names[0]
     : `${names.slice(0, -1).join(', ')} och ${names[names.length - 1]}`
+
+  const bonusTkr = CALLUP_BONUS_PER_PLAYER_TKR * playerIds.length
 
   const noticeTemplates = playerIds.length === 1 ? CALLUP_NOTICE_LINES.single : CALLUP_NOTICE_LINES.multi
   const noticeTemplate = noticeTemplates[game.currentSeason % noticeTemplates.length]
@@ -96,6 +108,7 @@ export function applyCallupEffects(
     players: updatedPlayers,
     activeNationalTeamCamp: { startRound: round, endRound: round + 1, playerIds },
     inboxItems,
+    callupModal: { playerIds, names: calledUpPlayers.map(p => `${p.firstName} ${p.lastName}`), bonusTkr },
   }
 }
 

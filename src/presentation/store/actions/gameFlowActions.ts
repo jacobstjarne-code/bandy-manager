@@ -32,6 +32,7 @@ interface GetState {
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
   markAnniversaryAcknowledged: (eventId: string) => void
   resolveAnnandagsVal: (val: 'A' | 'B' | 'C' | 'D') => void
+  dismissCallupModal: () => void
 }
 
 type Get = () => GetState
@@ -714,6 +715,18 @@ export function gameFlowActions(get: Get, set: Set) {
 
       set({ game: updatedGame })
       void persistAutosave(updatedGame, 'resolveAnnandagsVal')
+    },
+
+    // Release-svepet 2026-07-21 (Block 2c) — ren avfärdning, ingen förgrening
+    // (jfr resolveAnnandagsVal ovan): CALLUP_MODAL:s enda knapp bekräftar att
+    // spelaren sett ceremonin, ändrar inget spelläge. Bonusen är redan
+    // applicerad (roundProcessor.ts, vid själva uttagningen).
+    dismissCallupModal: () => {
+      const { game } = get()
+      if (!game || !game.pendingCallupModal) return
+      const updatedGame: SaveGame = { ...game, pendingCallupModal: undefined }
+      set({ game: updatedGame })
+      void persistAutosave(updatedGame, 'dismissCallupModal')
     },
   }
 }

@@ -125,6 +125,7 @@ interface GameState {
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
   markAnniversaryAcknowledged: (eventId: string) => void
   resolveAnnandagsVal: (val: 'A' | 'B' | 'C' | 'D') => void
+  dismissCallupModal: () => void
   updateMatchLaddningBand: (data: { matchday: number; streakLength: number; stateType: 'winning_streak' | 'losing_streak' } | null) => void
 }
 

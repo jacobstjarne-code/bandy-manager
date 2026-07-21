@@ -96,6 +96,43 @@ describe('applyCallupEffects/applyReturnEffects — konsoliderad (2026-07-18)', 
     expect(result.activeNationalTeamCamp).toEqual({ startRound: 14, endRound: 15, playerIds })
     expect(result.inboxItems).toHaveLength(1)
     expect(result.inboxItems[0].title).toBe('VM-uttagning')
+    // Block 2c — firstNationalTeamCallupSeason/-Matchday frysta vid FÖRSTA uttagningen
+    expect(player.firstNationalTeamCallupSeason).toBe(2025)
+    expect(player.firstNationalTeamCallupMatchday).toBe(14)
+    // Block 2c — CALLUP_MODAL-payload: en rad per uttagen, +5 tkr/uttagen (HANDOFF Q3)
+    expect(result.callupModal.bonusTkr).toBe(5)
+    expect(result.callupModal.names).toEqual([`${player.firstName} ${player.lastName}`])
+  })
+
+  it('applyCallupEffects fryser INTE om firstNationalTeamCallupSeason redan finns (andra uttagningen)', () => {
+    const managedIds = base.players.filter(p => p.clubId === base.managedClubId).map(p => p.id)
+    const playerIds = [managedIds[0]]
+    const game = {
+      ...base, currentSeason: 2027, inbox: [],
+      players: base.players.map(p =>
+        p.id === playerIds[0]
+          ? { ...p, nationalTeamCallups: 1, firstNationalTeamCallupSeason: 2025, firstNationalTeamCallupMatchday: 14 }
+          : p
+      ),
+    }
+
+    const result = applyCallupEffects(game, game.players, playerIds, 18)
+    const player = result.players.find(p => p.id === playerIds[0])!
+
+    expect(player.nationalTeamCallups).toBe(2)
+    expect(player.firstNationalTeamCallupSeason).toBe(2025)
+    expect(player.firstNationalTeamCallupMatchday).toBe(14)
+  })
+
+  it('applyCallupEffects skalar callupModal.bonusTkr med antal uttagna', () => {
+    const managedIds = base.players.filter(p => p.clubId === base.managedClubId).map(p => p.id)
+    const playerIds = [managedIds[0], managedIds[1]]
+    const game = { ...base, currentSeason: 2025, inbox: [] }
+
+    const result = applyCallupEffects(game, game.players, playerIds, 14)
+    expect(result.callupModal.bonusTkr).toBe(10)
+    expect(result.callupModal.playerIds).toEqual(playerIds)
+    expect(result.callupModal.names).toHaveLength(2)
   })
 
   it('applyCallupEffects dedupar inboxnotisen om samma säsongs-id redan finns', () => {

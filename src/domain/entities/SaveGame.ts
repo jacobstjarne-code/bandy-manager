@@ -335,6 +335,10 @@ export interface SaveGame {
   // pendingVictoryEcho/victoryEchoExpires ovan.
   pendingNationalTeamReturn?: { text: string }
   nationalTeamReturnExpires?: number
+  // Release-svepet 2026-07-21 (Block 2c): ceremonimodal vid uttagning, samma
+  // en-gång-visa-och-avfärda-mönster som pendingAnnandagsVal — men med en
+  // datapayload (namn + synlig ekonomibonus) istf en ren boolean.
+  pendingCallupModal?: { playerIds: string[]; names: string[]; bonusTkr: number }
 
   // Legibel konsekvens — transient, rensas varje omgång
   pendingRippleChain?: RippleChain

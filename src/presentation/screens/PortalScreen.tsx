@@ -26,6 +26,7 @@ import { PortalRoundMark } from '../components/portal/PortalRoundMark'
 import { PortalUpptakt } from '../components/portal/PortalUpptakt'
 import { getEscalationSubState } from '../../application/services/portalEscalationResolver'
 import { AnnandagsValEvent } from '../components/portal/AnnandagsValEvent'
+import { CallupModal } from '../components/portal/CallupModal'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
 import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
@@ -306,6 +307,9 @@ export function PortalScreen() {
         )}
         {game.pendingAnnandagsVal && (
           <AnnandagsValEvent game={game} />
+        )}
+        {game.pendingCallupModal && (
+          <CallupModal game={game} />
         )}
         <PortalObjectiveAlert game={game} />
         <PortalEventSlot game={game} />
