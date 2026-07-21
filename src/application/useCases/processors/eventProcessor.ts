@@ -458,8 +458,9 @@ export function applyMecenatSpawn(
 // 3. Erbjuds varje matchcykel villkoren håller, inte engångs — men aldrig en
 //    andra samtidig offert för samma spelare (dedup mot pendingEvents).
 //
-// Textytan (title/body/choice-labels) är NY svensk copy Code inte skriver —
-// '[Opus]'-platshållare tills Fable/Jacob levererar (SVENSK TEXT-regeln).
+// Textytan (title/body/choice-labels) är Opus-text, levererad och wirad
+// 2026-07-20 (doktorns röst, se raderna nedan) — kommentaren nedan beskrev
+// tidigare ett '[Opus]'-platshållarläge, rättad 2026-07-21 (release-svepet).
 // PLAY_THROUGH_AFTERMATH-raderna som visas EFTER matchen är redan Opus-text
 // (injuryDoctorText.ts) — de rörs inte här, bara wiring i playerStateProcessor.
 export function checkForPlayThroughInjuryOffer(

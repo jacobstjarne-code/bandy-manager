@@ -10,8 +10,10 @@ import { getFarewellMatchPlayer } from '../../../../domain/services/retirementSe
  * (primary-weight-2), inte gold: en avskedsmatch är inte en trofé-ceremoni.
  *
  * Undertexten ({player.lastName}s sista hemmamatch) är strukturell
- * (namn + fakta), inte narrativ — '[Opus]' reserverat om Fable vill ge
- * kortet en egen rad utöver det.
+ * (namn + fakta), inte narrativ — ingen placeholder-mekanism finns här,
+ * det narrativa har sedan D4-regressionsfixen (2026-07-21) en egen yta:
+ * FAREWELL_MATCH_STRINGS i kafferummet (coffeeRoomService.ts), samma
+ * getFarewellMatchPlayer-signal som detta kortet.
  */
 export function FarewellMatchPrimary({ game }: CardRenderProps) {
   const navigate = useNavigate()

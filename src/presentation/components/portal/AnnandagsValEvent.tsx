@@ -10,7 +10,9 @@
  *   D (Mecenat-värd)  — legacy + aktiv mecenat
  *
  * SWEDISH TEXT: All Swedish player-facing copy levereras av Opus.
- * Placeholder '[Opus]' används för alla beskrivningstexter.
+ * Text levererad och wirad (buildOptions nedan) — kommentaren ovan
+ * beskrev ett äldre, oskrivet läge. Rättad 2026-07-21 (release-svepet,
+ * upptäckt: koden ljög aldrig, bara kommentaren).
  */
 
 import { useGameStore } from '../../store/gameStore'
