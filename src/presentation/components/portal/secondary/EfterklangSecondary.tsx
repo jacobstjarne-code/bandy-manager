@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { CardRenderProps } from '../portalTypes'
 import { pickEfterklang } from '../../../../domain/services/portal/pickEfterklang'
 import type { EfterklangMemory } from '../../../../domain/services/portal/pickEfterklang'
-import { EFTERKLANG_TYPE_ICON } from '../../../../domain/data/efterklangText'
+import { EFTERKLANG_TYPE_ICON, EFTERKLANG_EYEBROW } from '../../../../domain/data/efterklangText'
 import { Sparkline, MIN_POINTS } from '../../primitives/Sparkline'
 import { EfterklangThreadModal } from './EfterklangThreadModal'
 
@@ -36,7 +36,7 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
         {/* Generisk rubrik + trådräknare */}
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
           <span style={{ fontSize: 8, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--warm-light)', fontWeight: 700 }}>
-            ⬩ Efterklang ⬩
+            {EFTERKLANG_EYEBROW}
           </span>
           <span className="h-micro" style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', letterSpacing: '1px' }}> {/* ds-exempt: intentional ui-monospace metadata */}
             {countLabel}
