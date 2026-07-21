@@ -20,7 +20,7 @@ import { DecisionChoices } from '../../components/DecisionChoices'
 import { Swords } from 'lucide-react'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
-import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_TIRED_OUTCOMES, CAPTAIN_OUTCOMES } from '../../../domain/data/managerKvittoText'
+import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_TIRED_OUTCOMES, CAPTAIN_OUTCOMES, LEADERSHIP_OUTCOMES } from '../../../domain/data/managerKvittoText'
 import type { KvittoOutcomeDir, CaptainContext } from '../../../domain/data/managerKvittoText'
 
 const TRAINING_LABEL: Record<string, string> = {
@@ -594,6 +594,35 @@ export function GranskaOversikt({
               value: kvittoDir === 'good' ? '✓' : kvittoDir === 'bad' ? '✗' : '—',
               valueLabel: kvittoDir === 'good' ? 'bra val' : kvittoDir === 'bad' ? 'backade' : 'neutral',
             })
+          }
+        }
+
+        // LEADERSHIP_OUTCOMES — droppad import (release-svepet 2026-07-21).
+        // Läser game.leadershipActions direkt, inte managerChoiceLog: en
+        // ledarskapsåtgärd (lower_tempo/mentor/private_talk/public_praise,
+        // leadershipService.ts) loggas aldrig som en ManagerChoiceEntry —
+        // den är en egen mekanik. Senaste åtgärden vars fönster täcker
+        // matchen räknas; riktningen läses på matchutfallet (grepp om
+        // GRUPPEN, inte en enskild spelares rating — matchar poolens
+        // egen kommentar i managerKvittoText.ts).
+        if (rows.length < 4 && fixture) {
+          const relevantLeadership = (game.leadershipActions ?? [])
+            .filter(a => a.fromRound <= fixture.matchday && a.expiresRound >= fixture.matchday)
+            .sort((a, b) => b.fromRound - a.fromRound)[0]
+          if (relevantLeadership) {
+            const player = findPlayer(relevantLeadership.playerId)
+            if (player) {
+              const i = rows.length
+              const pool = LEADERSHIP_OUTCOMES[kvittoDir]
+              rows.push({
+                stripe: kvittoDir,
+                heading: 'Ledarskap',
+                playerName: player.lastName,
+                outcome: pool[(seed + i) % pool.length],
+                value: kvittoDir === 'good' ? '✓' : kvittoDir === 'bad' ? '✗' : '—',
+                valueLabel: kvittoDir === 'good' ? 'satte sig' : kvittoDir === 'bad' ? 'bet inte' : 'neutral',
+              })
+            }
           }
         }
 
