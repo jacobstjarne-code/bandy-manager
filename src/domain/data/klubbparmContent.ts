@@ -105,7 +105,15 @@ export const KLUBBPARM_CHAPTERS: KlubbparmChapter[] = [
   { id: 'slutspel', label: 'Slutspel', isUnlocked: g => g.playoffBracket != null || currentLeagueRound(g) >= 22, content: SLUTSPEL },
 ]
 
-/** True tills Opus fyllt kapitlet — driver `[Opus]`-stubben i UI:t. */
+/**
+ * True tills Opus fyllt kapitlet — driver `[Opus]`-stubben i UI:t
+ * (KlubbparmOverlay.tsx). SÄKERHETSNÄT, inte förväntad väg: verifierat
+ * 2026-07-21 (release-svepet) att alla sex nuvarande kapitel (Hörnor/
+ * Matchen/Orten/Klacken/Ekonomi/Slutspel) har `paragraphs.length > 0` —
+ * stubben är i praktiken oåtkomlig idag. Lägg ALLTID text i KLUBBPARM_
+ * CHAPTERS samma commit som ett sjunde kapitel läggs till ovan, annars
+ * renderar overlayn en synlig '[Opus]'-platshållare för det kapitlet.
+ */
 export function chapterAwaitsText(ch: KlubbparmChapter): boolean {
   return ch.content.paragraphs.length === 0
 }

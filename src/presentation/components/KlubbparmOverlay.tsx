@@ -148,6 +148,8 @@ export function KlubbparmOverlay({ game, onClose }: KlubbparmOverlayProps) {
               Kapitlet öppnas när systemet låses upp.
             </p>
           ) : chapterAwaitsText(active) ? (
+            // Säkerhetsnät, inte förväntad väg — se chapterAwaitsText/KLUBBPARM_CHAPTERS
+            // i klubbparmContent.ts. Ny kapitel-post utan text = denna raden syns.
             <p style={{ fontFamily: 'system-ui', fontSize: 11, color: 'var(--text-muted)' }}>[Opus]</p>
           ) : (
             <>

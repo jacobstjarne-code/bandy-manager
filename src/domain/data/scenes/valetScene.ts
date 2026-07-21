@@ -63,7 +63,14 @@ export interface ValetChoiceCard {
  * select→confirm. Skäl: valet är irreversibelt och säsongsdefinierande (120–300 tkr
  * ur en kassa på några hundra), ett feltryck ska inte låsa året, och tvåstegsmodellen
  * förstärker A-1-likvärdigheten (inget händer förrän spelaren aktivt bekräftar).
- * Nyckel = nodeId, samma format som BOARD_MEETING_EXPECTATION_LINE (M63).
+ * Nyckel = nodeId, samma format som boardService.ts:s BOARD_EXPECTATION_CEREMONIAL.
+ *
+ * SÄKERHETSNÄT (release-svepet 2026-07-21): `?? '[Opus]'`-fallbacken nedan
+ * (rad ~180) är INTE typgaranterad mot facilityNodes.ts — Record<string,
+ * string>, inte Record<FacilityNodeId, string>. Lägg ALLTID till en rad här
+ * samma commit som en elfte facilitetsnod läggs i facilityNodes.ts,
+ * annars renderar Valet-scenen en synlig '[Opus]'-platshållare för den
+ * nya noden. Verifierat 2026-07-21: alla nuvarande 10 noder täckta.
  */
 const VALET_CONFIRM_CTA: Record<string, string> = {
   varmestuga: 'Bygg värmestugan',
@@ -176,6 +183,7 @@ export function getValetScene(game: SaveGame): ValetScene {
     buildRounds: def.buildRounds,
     horizonLabel: buildHorizonLabel(def.buildRounds),
     cost: def.cost,
+    // Säkerhetsnät, inte förväntad väg — se VALET_CONFIRM_CTA:s filhuvud ovan.
     confirmCta: VALET_CONFIRM_CTA[def.id] ?? '[Opus]',
     flavor: VALET_FLAVOR[def.id] ?? '',
   }))
