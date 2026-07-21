@@ -2,8 +2,6 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { ScandalType } from './scandalService'
 import { InboxItemType } from '../enums'
 import { getCharacterName } from './supporterService'
-import { pickKlackEchoText } from '../data/klackEchoText'
-import { mulberry32 } from '../utils/random'
 import { RIVAL_SALE_KAFFERUM, INCOMING_BID_KAFFERUM } from '../data/transferResponseText'
 import { pickAnniversaryKafferum } from '../data/anniversaryKafferumText'
 import { fillTemplate } from '../data/matchCommentary'
@@ -23,17 +21,22 @@ function hashSeed(n: number): number {
   return (x ^ (x >>> 16)) >>> 0
 }
 
-interface CoffeeQuote {
-  speaker?: string
-  text: string
-}
-
 /** A2 (2026-07-19) — D1: Sture vänder sig till spelaren, tredje beaten. */
 export interface CoffeeRoomQuestionPrompt {
   questionId: string
   speaker: string
   text: string
   answers: [CoffeeRoomAnswerOption, CoffeeRoomAnswerOption]
+}
+
+/**
+ * D4-regressionsfix (2026-07-21) — enkelröstad reaktion utan naturlig
+ * andra-talare (rival-sälj, inkommande bud, årsdagsekon, avskedsmatch,
+ * resultatkommentar). Renderas som en rad, inte en tvåpersonsväxel.
+ */
+export interface CoffeeNarratorLine {
+  speaker?: string
+  text: string
 }
 
 export interface CoffeeScene {
@@ -48,6 +51,8 @@ export interface CoffeeScene {
   question?: CoffeeRoomQuestionPrompt
   /** D3 — satt när scenen visar en återkomst; completeScene tar bort den ur coffeeRoomPendingReturns. */
   consumedReturnQuestionId?: string
+  /** D4-regressionsfix — se CoffeeNarratorLine. Ersätter exchanges för det besöket när satt. */
+  narratorLine?: CoffeeNarratorLine
 }
 
 const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
@@ -236,40 +241,25 @@ const SCANDAL_DASHBOARD_OTHER: Partial<Record<ScandalType, Array<[string, string
   ],
 }
 
-export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
-  // Victory echo takes priority
-  if (game.pendingVictoryEcho) {
-    return { text: game.pendingVictoryEcho.coffeeLine }
-  }
-
-  // M67a (textaudit 2026-07-05): veteran_farewell-arcens sista hemmamatch.
-  // FAREWELL_MATCH_STRINGS hade noll konsumenter (M60-verifieringen) — wirad
-  // in här, samma prioritetsnivå som victory-echot (en gång per säsong, en
-  // spelare, ska inte konkurrera bort av rutinkafferum-repliker).
-  const farewellPlayer = getFarewellMatchPlayer(game, getNextManagedFixture(game))
-  if (farewellPlayer) {
-    const seed = hashSeed(farewellPlayer.id.length * 17 + game.currentSeason * 31)
-    const template = FAREWELL_MATCH_STRINGS[Math.abs(seed) % FAREWELL_MATCH_STRINGS.length]
-    const text = template
-      .replace('{player}', farewellPlayer.lastName)
-      .replace('{members}', String(game.supporterGroup?.members ?? ''))
-      .replace('{leader}', getCharacterName(game, 'leader'))
-    return { text }
-  }
-
-  const round = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
-    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
-
-  if (round === 0) return null
-
-  const lastFixture = game.fixtures
-    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-    .sort((a, b) => b.matchday - a.matchday)[0]
-
-  // Multiplier 11 (coprime to 7 och 3) gör att idx roterar genom alla värden per omgång
-  const seed = round * 11 + game.currentSeason * 31
-
+/**
+ * D4-regressionsfix (2026-07-21): getCoffeeRoomScene (D4, 2026-07-19) ersatte
+ * getCoffeeRoomQuote som kafferummets ram utan att portera dess innehåll —
+ * en tyst halvering, upptäckt i release-svepet 2026-07-20. Detta är
+ * FUSION, inte duplicering: beslutslogiken (vilken reaktion, vilken gate,
+ * vilket seed) är flyttad hit oförändrad, bara omformad från getCoffeeRoomQuote:s
+ * hopklämda en-rads-sträng ("X" — Y: "Z") till scenens riktiga form — en
+ * tvåpersonsväxel när poolen redan är det (skandal/transfer), en
+ * CoffeeNarratorLine när den inte har en naturlig andra-talare (rival-sälj,
+ * inkommande bud, årsdag). getCoffeeRoomQuote hade noll konsumenter kvar
+ * (grep-verifierat i release-svepet) och är raderad.
+ *
+ * Legend-referenser och supporter-karaktärscitat (de sista två grenarna i
+ * gamla getCoffeeRoomQuote) portas INTE hit — utanför den beställda listan,
+ * flaggade separat. Samma sak med klackEcho-i-kafferum och victory-echo:
+ * också döda av samma regression, men inte del av denna beställning.
+ */
+function pickCoffeeRoomEventReaction(game: SaveGame, round: number, seed: number):
+  { exchange: [string, string, string, string] } | { line: CoffeeNarratorLine } | null {
   let soldItem: typeof game.inbox[number] | undefined
   let boughtItem: typeof game.inbox[number] | undefined
   for (const item of (game.inbox ?? []).slice(-10)) {
@@ -289,51 +279,22 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   // nu samma konstant som transferTriggers.ts:s deadline-logik.
   const deadlineRound = round >= TRANSFER_DEADLINE_ROUND - 2 && round <= TRANSFER_DEADLINE_ROUND
 
-  // Detect form streak (last 3 managed league matches)
-  const recentManaged = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup &&
-      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-    .sort((a, b) => b.matchday - a.matchday)
-    .slice(0, 3)
-
-  const getResult = (f: typeof recentManaged[0]) => {
-    const isHome = f.homeClubId === game.managedClubId
-    const my = isHome ? f.homeScore : f.awayScore
-    const their = isHome ? f.awayScore : f.homeScore
-    return my > their ? 'win' : my < their ? 'loss' : 'draw'
-  }
-
-  let streakType: 'winning' | 'losing' | null = null
-  if (recentManaged.length >= 3) {
-    const results = recentManaged.map(getResult)
-    if (results.every(r => r === 'win')) streakType = 'winning'
-    else if (results.every(r => r === 'loss')) streakType = 'losing'
-  }
-
-  if (streakType && seed % 3 === 0) {
-    const idx = Math.abs(seed * 13) % STREAK_EXCHANGES[streakType].length
-    const ex = STREAK_EXCHANGES[streakType][idx]
-    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
-  }
-
   if (deadlineRound && seed % 5 === 0) {
     const idx = Math.abs(seed * 3) % TRANSFER_DEADLINE_EXCHANGES.length
-    const ex = TRANSFER_DEADLINE_EXCHANGES[idx]
-    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+    return { exchange: TRANSFER_DEADLINE_EXCHANGES[idx] }
   }
   if (soldItem && seed % 3 === 0) {
     const idx = Math.abs(seed * 7) % TRANSFER_SALE_EXCHANGES.length
     const ex = TRANSFER_SALE_EXCHANGES[idx]
     const soldPlayer = soldItem.relatedPlayerId
-      ? game.players.find(p => p.id === soldItem.relatedPlayerId)
+      ? game.players.find(p => p.id === soldItem!.relatedPlayerId)
       : null
     const name = soldPlayer ? soldPlayer.lastName : 'spelaren'
-    return { speaker: ex[0], text: `"${ex[1].replace('{name}', name)}" — ${ex[2]}: "${ex[3]}"` }
+    return { exchange: [ex[0], ex[1].replace('{name}', name), ex[2], ex[3]] }
   }
   if (boughtItem && seed % 3 === 1) {
     const idx = Math.abs(seed * 11) % TRANSFER_BUY_EXCHANGES.length
-    const ex = TRANSFER_BUY_EXCHANGES[idx]
-    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+    return { exchange: TRANSFER_BUY_EXCHANGES[idx] }
   }
 
   // Aktiva väntande bud (vi har lagt bud, väntar på svar) — 33% chans
@@ -342,8 +303,7 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   )
   if (hasPendingBid && seed % 3 === 2) {
     const idx = Math.abs(seed * 13) % TRANSFER_PENDING_BID_EXCHANGES.length
-    const ex = TRANSFER_PENDING_BID_EXCHANGES[idx]
-    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+    return { exchange: TRANSFER_PENDING_BID_EXCHANGES[idx] }
   }
 
   // Scandal reference (25% chance when recent scandal this season)
@@ -365,9 +325,9 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
         const klubb = affectedClub?.name ?? 'grannklubben'
         const andraKlubb = secondaryClub?.name ?? 'grannklubben'
         const sub = (s: string) => s.replace(/\{KLUBB\}/g, klubb).replace(/\{ANDRA_KLUBB\}/g, andraKlubb)
-        return { speaker: sub(ex[0]), text: `"${sub(ex[1])}" — ${sub(ex[2])}: "${sub(ex[3])}"` }
+        return { exchange: [sub(ex[0]), sub(ex[1]), sub(ex[2]), sub(ex[3])] }
       }
-      return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+      return { exchange: ex }
     }
   }
 
@@ -379,7 +339,7 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     seed % 2 === 0
   ) {
     const idx = Math.abs(seed * 19) % RIVAL_SALE_KAFFERUM.length
-    return { text: RIVAL_SALE_KAFFERUM[idx] }
+    return { line: { text: RIVAL_SALE_KAFFERUM[idx] } }
   }
 
   // C-O2: incoming bid kafferum — show within 2 matchdays when AI bids on managed player
@@ -390,16 +350,10 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     seed % 3 !== 0
   ) {
     const idx = Math.abs(seed * 31) % INCOMING_BID_KAFFERUM.length
-    return { text: INCOMING_BID_KAFFERUM[idx] }
+    return { line: { text: INCOMING_BID_KAFFERUM[idx] } }
   }
 
   // B6: anniversary kafferum — 33% chance when medium-or-bigger unseen eko exists.
-  // Bygg (2026-07-16): bytt från den generiska 4-tupeln (ANNIVERSARY_KAFFERUM,
-  // borttagen — se anniversaryKafferumText.ts) till pickAnniversaryKafferum(),
-  // outcome/typ-gated precis som klackens motsvarighet (M22a, matchCore.ts).
-  // Samma {subject}-mönster: fillTemplate bara när echot faktiskt har en
-  // subjectPlayerId — annars läcker token för de ekon som saknar en (t.ex.
-  // serieettan).
   const qualifyingAnniversaries = (game.activeAnniversaries ?? []).filter(
     a => a.echoSize !== 'small'
   )
@@ -412,130 +366,26 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     const text = subjectPlayer
       ? fillTemplate(rawKafferum, { subject: `${subjectPlayer.firstName} ${subjectPlayer.lastName}` })
       : rawKafferum
-    return { text }
+    return { line: { text } }
   }
 
-  // C-B2: klack echo in kafferum — 33% chance when weight > 0.15
-  // C-SY1 #2: cause-prefix-variant i 35% av fallen när orsaken är färsk
-  if (game.klackEcho && game.klackEcho.currentWeight > 0.15 && seed % 3 === 0) {
-    const echoRand = mulberry32(Math.abs(seed) + 7)
-    const t = pickKlackEchoText(game.klackEcho, game.currentMatchday, 'kafferum', echoRand)
-    if (t) return { text: t }
-  }
+  return null
+}
 
-  const lastHash = game.lastCoffeeQuoteHash ?? -1
-  // pick avoiding the index that matches lastHash to prevent same quote two rounds in a row
-  const pick = <T>(arr: T[]): T => {
-    const idx = Math.abs(seed) % arr.length
-    const lastIdx = ((lastHash % arr.length) + arr.length) % arr.length
-    if (idx === lastIdx && arr.length > 1) {
-      return arr[(idx + 1) % arr.length]
-    }
-    return arr[idx]
-  }
+/** Ported från gamla getCoffeeRoomQuote — kommentar för resultat-grenen nedan. */
+function pickCoffeeRoomResultReaction(game: SaveGame, seed: number): { line: CoffeeNarratorLine } | null {
+  const lastFixture = game.fixtures
+    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    .sort((a, b) => b.matchday - a.matchday)[0]
+  if (!lastFixture || seed % 2 !== 0) return null
 
-  if (lastFixture && (seed % 2 === 0)) {
-    const isHome = lastFixture.homeClubId === game.managedClubId
-    const myScore = isHome ? lastFixture.homeScore : lastFixture.awayScore
-    const theirScore = isHome ? lastFixture.awayScore : lastFixture.homeScore
-    const result: 'win' | 'loss' | 'draw' = myScore > theirScore ? 'win' : myScore < theirScore ? 'loss' : 'draw'
-    const pool = RESULT_EXCHANGES[result]
-    const [speaker, text] = pick(pool)
-    return { speaker, text }
-  }
-
-  const exchange = pick(GENERIC_EXCHANGES)
-  // Röstregel (textaudit domän 2, 2026-07-03): repliken är rollskriven —
-  // talaren är alltid rollen. Tidigare byttes talare A mot ett slumpat
-  // volontärsnamn medan svaret i strängen behöll rollnamnet ("Karin
-  // Lindström: 'Ingen betalar 25 kr för en korv...' — Kassören: ...").
-  // Vill vi ha volontärer i kafferummet får de en egen pool.
-  const speakerName = exchange[0]
-
-  // Resolve dynamic placeholders
-  let text = `"${exchange[1]}" — ${exchange[2]}: "${exchange[3]}"`
-  if (text.includes('{youthName}')) {
-    const youthPlayers = game.youthTeam?.players ?? []
-    const youthName = youthPlayers.length > 0
-      ? youthPlayers[Math.abs(seed + 5) % youthPlayers.length].lastName
-      : 'någon i P19'
-    text = text.replace('{youthName}', youthName)
-  }
-
-  // 15% chance: club legend reference
-  const legends = game.clubLegends ?? []
-  if (legends.length > 0 && seed % 7 === 0) {
-    const legend = legends[Math.abs(seed + 11) % legends.length]
-    const generalPool: Array<[string, string, string, string]> = [
-      ['Materialaren', `${legend.name} var nere på akademiträningen igår. Grabbarna lyssnade.`, 'Vaktmästaren', 'Det är så det ska vara.'],
-      ['Kioskvakten', `${legend.name} köpte korv. Sa inget. Men han såg glad ut.`, 'Kassören', 'Det betyder något.'],
-      ['Vaktmästaren', `${legend.name} ringer fortfarande när vi vinner.`, 'Materialaren', 'Naturligtvis.'],
-      ['Kassören', `${legend.name} satt på läktaren i lördags. Ensam. Men han var här.`, 'Materialaren', 'Det räcker.'],
-      ['Kioskvakten', `${legend.name} hälsade på efter matchen. Pratade med alla. Som om han aldrig slutat.`, 'Vaktmästaren', 'Det är hans grej.'],
-    ]
-    // youthCoach-pool: legenden som ungdomstränare
-    const youthCoachPool: Array<[string, string, string, string]> = [
-      ['Materialaren', `${legend.name} hade en P19-grabb inne i veckan. En och en. Över en timme.`, 'Vaktmästaren', 'Det är så dom byggs.'],
-      ['Kioskvakten', `${legend.name} står på isen kvart i sju varje morgon nu.`, 'Vaktmästaren', 'Det gör han tills han inte kan längre.'],
-      ['Vaktmästaren', `${legend.name} sa att en av P19-killarna ska upp i vår.`, 'Materialaren', 'Sa han vilken?" Vaktmästaren: "Nej. Han säger inget innan det är klart.'],
-      ['Materialaren', `${legend.name} skällde på grabbarna igår. Riktigt skällde.`, 'Kioskvakten', 'Bra." Materialaren: "Bra.'],
-      ['Kassören', `${legend.name} har börjat ringa föräldrarna också.`, 'Ordföranden', 'Vad pratar dom om?" Kassören: "Läxor.'],
-      ['Kioskvakten', `${legend.name} satt och tittade på P16-matchen i söndags. Antecknade.`, 'Materialaren', 'Han ser något vi inte ser.'],
-    ]
-    // scout-pool: legenden som scout
-    const scoutPool: Array<[string, string, string, string]> = [
-      ['Materialaren', `${legend.name} hade fyra namn på pappret. Tre av dem är värda att titta på.`, 'Vaktmästaren', 'Det räcker.'],
-      ['Kioskvakten', `${legend.name} är borta hela helgen. Tre matcher på tre orter.`, 'Kassören', 'Det är så dom är.'],
-      ['Kassören', `${legend.name} ringde i tisdags. Sa bara "inte han".`, 'Ordföranden', 'Då sparade vi pengar.'],
-      ['Vaktmästaren', `${legend.name} hittade en kille i Norrland. Hade kollat honom tre gånger.`, 'Materialaren', 'Tre?" Vaktmästaren: "Han litar inte på första intrycket.'],
-      ['Kioskvakten', `${legend.name} kom hem från bortamatchen på kvällen. Klockan var över elva.`, 'Vaktmästaren', 'Han kunde åkt på morgonen." Kioskvakten: "Han kunde det. Men det gör han inte.'],
-      ['Materialaren', `${legend.name} sa nej till en agent som ringde.`, 'Kassören', 'Vad sa han?" Materialaren: "Att han hittar killar själv.'],
-    ]
-    const pool = legend.role === 'youth_coach' ? youthCoachPool
-      : legend.role === 'scout' ? scoutPool
-      : generalPool
-    const refIdx = Math.abs(seed + 13) % pool.length
-    const ref = pool[refIdx]
-    return { speaker: ref[0], text: `"${ref[1]}" — ${ref[2]}: "${ref[3]}"` }
-  }
-
-  // 20% chance: replace with supporter-karaktär-citat
-  const sg = game.supporterGroup
-  if (sg && (seed % 5 === 0)) {
-    const leader  = getCharacterName(game, 'leader')
-    const veteran = getCharacterName(game, 'veteran')
-    const youth   = getCharacterName(game, 'youth')
-    const family  = getCharacterName(game, 'family')
-    const favPlayer = game.players.find(p => p.id === sg.favoritePlayerId)
-    const favName = favPlayer ? favPlayer.lastName : 'spelaren'
-    const groupName = sg.name
-
-    // Rykte-reaktioner: academyNoticed och reputationWarning
-    const resolvedIds = new Set(game.resolvedEventIds ?? [])
-    const season = game.currentSeason
-    if (resolvedIds.has(`rep_academy_${season}`)) {
-      return { speaker: youth, text: `"Såg ni? LANDSLAGET tittar på oss!" — ${leader}: "Jag vet. Det är stor grej."` }
-    }
-    if (resolvedIds.has(`rep_warning_${season}`)) {
-      return { speaker: veteran, text: `"Det var bättre förr. Och jag menar det den här gången." — ${family}: "Kom igen nu, ${veteran}."` }
-    }
-
-    const supporterQuotes: Array<[string, string, string, string]> = [
-      [leader, `${groupName} är med oavsett. Det är det enda som gäller.`, veteran, 'Det är vad vi alltid sagt.'],
-      [youth,  `${favName} är den bäste just nu. Ingen pratar om det tillräckligt.`, leader, 'Jag vet. Han levererar.'],
-      [veteran, `Jag har följt laget i trettio år. Det här laget har något.`, family, 'Barnen älskar matchdagarna.'],
-      [family, `${youth} hade med sig en ny banderoll. Den var fin.`, leader, 'Hon lägger ner mer tid än oss alla.'],
-      [youth,  `Bortaresan var bäst i år. Vi var nitton stycken.`, veteran, `${leader} förstår att organisera.`],
-      [leader, `Klacken börjar växa. Folk märker det.`, family, 'Det syns när man sitter på läktaren.'],
-      [veteran, `${favName} — den killen är orten igenom.`, youth, 'Alla älskar honom. Han är en av oss.'],
-    ]
-
-    const qIdx = Math.abs(seed + 9) % supporterQuotes.length
-    const sq = supporterQuotes[qIdx]
-    return { speaker: sq[0], text: `"${sq[1]}" — ${sq[2]}: "${sq[3]}"` }
-  }
-
-  return { speaker: speakerName, text }
+  const isHome = lastFixture.homeClubId === game.managedClubId
+  const myScore = isHome ? lastFixture.homeScore : lastFixture.awayScore
+  const theirScore = isHome ? lastFixture.awayScore : lastFixture.homeScore
+  const result: 'win' | 'loss' | 'draw' = myScore > theirScore ? 'win' : myScore < theirScore ? 'loss' : 'draw'
+  const pool = RESULT_EXCHANGES[result]
+  const [speaker, text] = pool[Math.abs(seed * 5) % pool.length]
+  return { line: { speaker, text } }
 }
 
 // R1 — fatigue kafferum-scener (Opus 2026-05-23). Tonala, ingen moral-träff.
@@ -577,6 +427,25 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     .filter(f => f.status === 'completed' && !f.isCup)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
   if (round === 0) return null
+
+  // M67a / D4-regressionsfix (2026-07-21) — veteran_farewell-arcens sista
+  // hemmamatch. Samma prioritetsnivå som ursprungligen: en gång per säsong,
+  // en spelare, ska inte konkurrera bort av rutinkafferum-repliker.
+  const farewellPlayer = getFarewellMatchPlayer(game, getNextManagedFixture(game))
+  if (farewellPlayer) {
+    const fseed = hashSeed(farewellPlayer.id.length * 17 + game.currentSeason * 31)
+    const template = FAREWELL_MATCH_STRINGS[Math.abs(fseed) % FAREWELL_MATCH_STRINGS.length]
+    const text = template
+      .replace('{player}', farewellPlayer.lastName)
+      .replace('{members}', String(game.supporterGroup?.members ?? ''))
+      .replace('{leader}', getCharacterName(game, 'leader'))
+    return {
+      exchanges: [],
+      pickedIndices: [],
+      meta: { title: 'Kafferummet' },
+      narratorLine: { text },
+    }
+  }
 
   // D3 (A1) — återkomsten: samma prioritetslogik som victory-echo/farewell i
   // getCoffeeRoomQuote (starkt, ovillkorat, en gång). Seedad på svaret +
@@ -631,6 +500,45 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
 
   const matchday = game.currentMatchday ?? 0
   if (matchday === 0) return null
+
+  // D4-regressionsfix (2026-07-21) — skandal/transfer/årsdagsreaktioner +
+  // senaste-resultat-kommentar. Gate-trösklarna (seed%N) är identiska med
+  // gamla getCoffeeRoomQuote, men seedet självt bytt från round-baserat till
+  // matchday-baserat (samma formel som resten av scenen redan använder,
+  // rad nedan) — annars är seedet KONSTANT för alla besök inom samma
+  // ligarunda (round ändras bara varannan vecka, matchday varje besök),
+  // vilket kan permanent svälta ut D1-frågesystemet om gaten råkar slå in
+  // för en given save (hittat i test: pickCoffeeRoomResultReaction fastnade
+  // på samma sida av seed%2 i 200 raka matchdagar med round-baserat seed).
+  // Ligger efter hotStreak/anchor (redan tuned, orörda) men före den
+  // generiska poolen — matchar var getCoffeeRoomQuote läste dem, precis
+  // innan sitt eget generiska fallback.
+  const reactionSeed = matchday * 11 + game.currentSeason * 31
+  const eventReaction = pickCoffeeRoomEventReaction(game, round, reactionSeed)
+  if (eventReaction) {
+    if ('exchange' in eventReaction) {
+      return {
+        exchanges: [eventReaction.exchange],
+        pickedIndices: [],
+        meta: { title: 'Kafferummet' },
+      }
+    }
+    return {
+      exchanges: [],
+      pickedIndices: [],
+      meta: { title: 'Kafferummet' },
+      narratorLine: eventReaction.line,
+    }
+  }
+  const resultReaction = pickCoffeeRoomResultReaction(game, reactionSeed)
+  if (resultReaction) {
+    return {
+      exchanges: [],
+      pickedIndices: [],
+      meta: { title: 'Kafferummet' },
+      narratorLine: resultReaction.line,
+    }
+  }
 
   // Pool: GENERIC + ev. STREAK om streak finns
   const pool: Array<[string, string, string, string]> = []

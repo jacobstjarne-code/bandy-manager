@@ -42,6 +42,11 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // 2026-07-21: huvudbunten passerade workbox default (2 MiB) — spelets
+        // textmängd (domain/data) växer med varje sprint, bundeln med den.
+        // 3 MiB ger headroom utan att dölja en verklig storleksregression;
+        // om detta träffas igen är det en signal att code-splitta, inte höja igen.
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

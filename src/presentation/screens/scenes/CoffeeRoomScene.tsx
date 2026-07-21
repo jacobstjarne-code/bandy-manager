@@ -90,6 +90,57 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
           </div>
         ))}
 
+        {/* D4-regressionsfix (2026-07-21) — enkelröstad reaktion utan naturlig andra-talare */}
+        {scene.narratorLine && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
+              opacity: 0,
+              animation: 'scene-fade-in-exchange 0.6s ease-out forwards',
+            }}
+          >
+            {scene.narratorLine.speaker && (
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: 'var(--bg-dark-elevated)',
+                  border: '1px solid var(--bg-leather)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: 'Georgia, serif',
+                  fontSize: 13,
+                  color: 'var(--text-light-secondary)',
+                  flexShrink: 0,
+                  marginTop: 2,
+                }}
+              >
+                {scene.narratorLine.speaker.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {scene.narratorLine.speaker && (
+                <div className="h-label h-label-light">{scene.narratorLine.speaker}</div>
+              )}
+              <div
+                style={{
+                  fontFamily: 'Georgia, serif',
+                  fontSize: 13,
+                  color: 'var(--text-light)',
+                  lineHeight: 1.5,
+                  fontStyle: 'italic',
+                }}
+              >
+                {'"' + scene.narratorLine.text + '"'}
+              </div>
+            </div>
+          </div>
+        )}
+
         {question && (
           <div
             style={{

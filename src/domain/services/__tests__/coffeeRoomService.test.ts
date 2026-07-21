@@ -62,12 +62,12 @@ function makeFixture(overrides: Partial<Fixture> = {}): Fixture {
 }
 
 describe('getCoffeeRoomScene', () => {
-  it('returnerar non-null när minst en omgång spelats', () => {
+  it('returnerar non-null med innehåll när minst en omgång spelats (utbyten eller narratorLine)', () => {
     const completed = makeFixture({ roundNumber: 1, matchday: 1 })
     const g = makeGame({ fixtures: [completed], currentMatchday: 2 })
     const scene = getCoffeeRoomScene(g)
     expect(scene).not.toBeNull()
-    expect(scene!.exchanges.length).toBeGreaterThan(0)
+    expect(scene!.exchanges.length > 0 || scene!.narratorLine !== undefined).toBe(true)
   })
 
   it('returnerar null när inga omgångar spelats', () => {
@@ -75,14 +75,18 @@ describe('getCoffeeRoomScene', () => {
     expect(getCoffeeRoomScene(g)).toBeNull()
   })
 
-  it('returnerar mellan 1 och 3 utbyten', () => {
+  it('returnerar mellan 1 och 3 utbyten, eller en narratorLine-reaktion (D4-regressionsfix, 2026-07-21)', () => {
     const completed = makeFixture({ roundNumber: 2, matchday: 2 })
     for (let md = 1; md <= 6; md++) {
       const g = makeGame({ fixtures: [completed], currentMatchday: md })
       const scene = getCoffeeRoomScene(g)
       expect(scene).not.toBeNull()
-      expect(scene!.exchanges.length).toBeGreaterThanOrEqual(1)
-      expect(scene!.exchanges.length).toBeLessThanOrEqual(3)
+      if (scene!.narratorLine) {
+        expect(scene!.exchanges.length).toBe(0)
+      } else {
+        expect(scene!.exchanges.length).toBeGreaterThanOrEqual(1)
+        expect(scene!.exchanges.length).toBeLessThanOrEqual(3)
+      }
     }
   })
 

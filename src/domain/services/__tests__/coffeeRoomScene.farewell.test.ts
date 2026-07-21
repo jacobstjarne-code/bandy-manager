@@ -1,12 +1,16 @@
 import { describe, it, expect } from 'vitest'
-import { getCoffeeRoomQuote } from '../coffeeRoomService'
+import { getCoffeeRoomScene } from '../coffeeRoomService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { Player } from '../../entities/Player'
 import type { Fixture } from '../../entities/Fixture'
 import { FixtureStatus, PlayerPosition, PlayerArchetype } from '../../enums'
 
 // M67a (textaudit 2026-07-05): veteran_farewell-arcens sista hemmamatch —
-// FAREWELL_MATCH_STRINGS wirad in i coffeeRoomService.getCoffeeRoomQuote.
+// FAREWELL_MATCH_STRINGS wirad in i coffeeRoomService.
+// D4-regressionsfix (2026-07-21): getCoffeeRoomQuote (ursprunglig konsument)
+// raderad efter D4-regressionen (getCoffeeRoomScene ersatte den 2026-07-19
+// utan att portera farewell vidare). Denna testfil migrerad till att verifiera
+// getCoffeeRoomScene's narratorLine istället.
 
 function emptySeasonStats() {
   return {
@@ -113,8 +117,8 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   } as SaveGame
 }
 
-describe('getCoffeeRoomQuote — M67a veteran_farewell', () => {
-  it('surfaces a farewell line when the next fixture is the arc-players sista hemmamatch', () => {
+describe('getCoffeeRoomScene — M67a veteran_farewell (migrerad från getCoffeeRoomQuote 2026-07-21)', () => {
+  it('surfaces a farewell narratorLine when the next fixture is the arc-players sista hemmamatch', () => {
     const veteran = makePlayer({ id: 'vet1', lastName: 'Fransson' })
     const lastHome = makeFixture({ id: 'home_last', matchday: 20, homeClubId: 'managed', awayClubId: 'opp', status: FixtureStatus.Scheduled })
     const earlierHome = makeFixture({ id: 'home_early', matchday: 10, homeClubId: 'managed', awayClubId: 'opp', status: FixtureStatus.Completed, homeScore: 2, awayScore: 1 })
@@ -134,19 +138,22 @@ describe('getCoffeeRoomQuote — M67a veteran_farewell', () => {
       }],
     })
 
-    const quote = getCoffeeRoomQuote(game)
-    expect(quote).not.toBeNull()
-    expect(quote?.text).toContain('Fransson')
+    const scene = getCoffeeRoomScene(game)
+    expect(scene).not.toBeNull()
+    expect(scene?.narratorLine).toBeDefined()
+    expect(scene?.narratorLine?.text).toContain('Fransson')
+    expect(scene?.exchanges).toEqual([])
   })
 
   it('does NOT surface farewell text when the next fixture is an earlier home match, not the last', () => {
     const veteran = makePlayer({ id: 'vet1', lastName: 'Fransson' })
     const nextHome = makeFixture({ id: 'home_next', matchday: 12, homeClubId: 'managed', awayClubId: 'opp', status: FixtureStatus.Scheduled })
     const laterHome = makeFixture({ id: 'home_later', matchday: 20, homeClubId: 'managed', awayClubId: 'opp', status: FixtureStatus.Scheduled })
+    const earlierCompleted = makeFixture({ id: 'home_done', matchday: 1, homeClubId: 'managed', awayClubId: 'opp', status: FixtureStatus.Completed, homeScore: 1, awayScore: 1 })
     const game = makeGame({
       currentMatchday: 11,
       players: [veteran],
-      fixtures: [nextHome, laterHome],
+      fixtures: [nextHome, laterHome, earlierCompleted],
       activeArcs: [{
         id: 'arc_vet1',
         type: 'veteran_farewell',
@@ -160,16 +167,16 @@ describe('getCoffeeRoomQuote — M67a veteran_farewell', () => {
       }],
     })
 
-    const quote = getCoffeeRoomQuote(game)
-    expect(quote?.text ?? '').not.toContain('Fransson')
+    const scene = getCoffeeRoomScene(game)
+    expect(scene?.narratorLine?.text ?? '').not.toContain('Fransson')
   })
 
-  it('does nothing when there is no active veteran_farewell arc', () => {
+  it('does nothing special when there is no active veteran_farewell arc', () => {
     const game = makeGame({
       fixtures: [makeFixture({ id: 'home_last', matchday: 20, status: FixtureStatus.Scheduled })],
       activeArcs: [],
     })
     // Should fall through to the normal (round===0 → null) path without throwing
-    expect(() => getCoffeeRoomQuote(game)).not.toThrow()
+    expect(() => getCoffeeRoomScene(game)).not.toThrow()
   })
 })
