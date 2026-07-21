@@ -129,4 +129,17 @@ describe('applyCallupEffects/applyReturnEffects — konsoliderad (2026-07-18)', 
     expect(result.inboxItems).toHaveLength(1)
     expect(result.inboxItems[0].title).toBe('Landslagsspelarena är tillbaka')
   })
+
+  it('applyReturnEffects returnerar returLine byggd på RETURN_SCENE_LINES.standard med spelarnamn insatt', () => {
+    const managedIds = base.players.filter(p => p.clubId === base.managedClubId).map(p => p.id)
+    const camp = { startRound: 14, endRound: 15, playerIds: [managedIds[0]] }
+    const game = { ...base, currentSeason: 2025, inbox: [] }
+
+    const result = applyReturnEffects(game, game.players, camp)
+    const player = game.players.find(p => p.id === managedIds[0])!
+
+    expect(result.returnLine).toContain(player.lastName)
+    expect(result.returnLine).not.toContain('{spelare}')
+    expect(result.inboxItems[0].body).toBe(result.returnLine)
+  })
 })

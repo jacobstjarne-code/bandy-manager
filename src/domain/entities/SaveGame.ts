@@ -329,6 +329,12 @@ export interface SaveGame {
   // C-K1 — Landslagsuttagning
   activeNationalTeamCamp?: { startRound: number; endRound: number; playerIds: string[] }
   lastNationalSnub?: { playerId: string; season: number; round: number }
+  // Release-svepet 2026-07-21 (Block 2a): hemkomsten var bara en inbox-rad
+  // (INBOX-PRINCIPEN-brott — syntes aldrig i en spelarvy). pendingNationalTeamReturn
+  // ytar RETURN_SCENE_LINES i kafferummet, samma pending+expires-mönster som
+  // pendingVictoryEcho/victoryEchoExpires ovan.
+  pendingNationalTeamReturn?: { text: string }
+  nationalTeamReturnExpires?: number
 
   // Legibel konsekvens — transient, rensas varje omgång
   pendingRippleChain?: RippleChain

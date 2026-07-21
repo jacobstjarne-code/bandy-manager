@@ -1,7 +1,7 @@
 import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
 import { InboxItemType } from '../enums'
-import { CALLUP_NOTICE_LINES } from '../data/landslagText'
+import { CALLUP_NOTICE_LINES, RETURN_SCENE_LINES } from '../data/landslagText'
 
 // M16 (regelboksanpassning 2026-07-03): förtjänstmodell. Ersätter den tidigare
 // alltid-3-till-5-uttagna-logiken (underminerade "säsongens guldkorn"-premissen
@@ -96,7 +96,7 @@ export function applyReturnEffects(
   game: SaveGame,
   players: Player[],
   camp: NonNullable<SaveGame['activeNationalTeamCamp']>,
-): { players: Player[]; inboxItems: InboxItem[] } {
+): { players: Player[]; inboxItems: InboxItem[]; returnLine: string } {
   const updatedPlayers = players.map(p => {
     if (!camp.playerIds.includes(p.id)) return p
     return {
@@ -106,6 +106,22 @@ export function applyReturnEffects(
     }
   })
 
+  const returnedPlayers = players.filter(p => camp.playerIds.includes(p.id))
+  const names = returnedPlayers.map(p => p.lastName)
+  const nameStr = names.length === 1
+    ? names[0]
+    : `${names.slice(0, -1).join(', ')} och ${names[names.length - 1]}`
+
+  // Release-svepet 2026-07-21 (Block 2a): RETURN_SCENE_LINES.gold ("kom hem
+  // med VM-guld") kräver ett VM-turneringsutfall som inte finns — lägret är
+  // ren avresa+hemkomst, inget resultat simuleras. Att slumpa fram "guld"
+  // utan bakomliggande state hade varit en påhittad historisk händelse
+  // spelaren läser som sann (SPÅRBARA SPELARKEDJAN, CLAUDE.md). Bara
+  // .standard wirat här; .gold väntar på en VM-turneringsmekanik — rapporterat
+  // till Jacob, inte byggt i det här svepet.
+  const returnTemplate = RETURN_SCENE_LINES.standard[game.currentSeason % RETURN_SCENE_LINES.standard.length]
+  const returnLine = returnTemplate.replace('{spelare}', nameStr)
+
   const inboxItems: InboxItem[] = []
   const returnInboxId = `inbox_vm_return_${game.currentSeason}`
   if (!game.inbox.some(i => i.id === returnInboxId)) {
@@ -114,10 +130,10 @@ export function applyReturnEffects(
       date: game.currentDate,
       type: InboxItemType.Community,
       title: 'Landslagsspelarena är tillbaka',
-      body: 'Landslagslägret är över. Spelarna är hemma och redo.',
+      body: returnLine,
       isRead: false,
     })
   }
 
-  return { players: updatedPlayers, inboxItems }
+  return { players: updatedPlayers, inboxItems, returnLine }
 }

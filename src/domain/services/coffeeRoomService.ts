@@ -558,6 +558,20 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     }
   }
 
+  // Release-svepet 2026-07-21 (Block 2a) — landslagsåterkomsten. Var tidigare
+  // bara en inbox-rad (INBOX-PRINCIPEN-brott, CLAUDE.md: syntes aldrig i en
+  // spelarvy). Samma pending+expires-mönster som victory-echo/farewell ovan:
+  // ovillkorat, en gång, seedat ingenting (texten är redan vald i
+  // nationalTeamService.applyReturnEffects).
+  if (game.pendingNationalTeamReturn) {
+    return {
+      exchanges: [],
+      pickedIndices: [],
+      meta: { title: 'Kafferummet' },
+      narratorLine: { text: game.pendingNationalTeamReturn.text },
+    }
+  }
+
   // D3 (A1) — återkomsten: samma prioritetslogik som victory-echo/farewell i
   // getCoffeeRoomQuote (starkt, ovillkorat, en gång). Seedad på svaret +
   // matchday, landar deterministiskt när tröskeln är nådd — inte varje besök.

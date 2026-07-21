@@ -586,11 +586,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // Return from national team camp
+  // Release-svepet 2026-07-21 (Block 2a): pending+expires-mönster, samma
+  // form som pendingVictoryEcho/victoryEchoExpires — konsumeras av
+  // coffeeRoomService.ts som en ovillkorad kafferums-scen.
+  let nationalTeamReturnLine = game.pendingNationalTeamReturn
+  let nationalTeamReturnExpiresState = game.nationalTeamReturnExpires
   if (game.activeNationalTeamCamp && nextMatchday > game.activeNationalTeamCamp.endRound) {
     const returnResult = applyReturnEffects(game, nationalTeamUpdatedPlayers, game.activeNationalTeamCamp)
     nationalTeamUpdatedPlayers = returnResult.players
     nationalTeamCampState = undefined
     newInboxItems.push(...returnResult.inboxItems)
+    nationalTeamReturnLine = { text: returnResult.returnLine }
+    nationalTeamReturnExpiresState = nextMatchday + 1
+  } else if (nextMatchday > (nationalTeamReturnExpiresState ?? 0)) {
+    nationalTeamReturnLine = undefined
+    nationalTeamReturnExpiresState = undefined
   }
 
   // Merge national team player updates into finalPlayers
@@ -1513,6 +1523,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     // C-K1 — Landslagsuttagning
     activeNationalTeamCamp: nationalTeamCampState,
     lastNationalSnub: nationalTeamSnub,
+    pendingNationalTeamReturn: nationalTeamReturnLine,
+    nationalTeamReturnExpires: nationalTeamReturnExpiresState,
   }
 
   // Append market value change notifications to inbox
