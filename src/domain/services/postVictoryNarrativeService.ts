@@ -5,7 +5,19 @@ import { getRivalry } from '../data/rivalries'
 export type VictoryType = 'playoff_derby_win' | 'playoff_win' | 'big_derby_win' | 'derby_win' | 'blowout'
 
 export interface VictoryEcho {
+  // TEXT-UTAN-YTA (VILANDE), klassad i release-svepet 2026-07-21 — RADERA
+  // INTE. Auditerad, färdig Opus-text (fem segertyper, alla ifyllda nedan
+  // i generateVictoryEcho). Enda tänkta konsumenten var dailyBriefingService.
+  // ts's generateBriefing() — ett en-radigt "dagens humör"-strip — men den
+  // funktionen hade NOLL anropare redan innan filen raderades som död kod
+  // (bf1b3cec, 2026-07-20). diaryLine nådde alltså aldrig spelaren, varken
+  // före eller efter den raderingen. Ingen dagboks-/krönike-yta finns någon
+  // annanstans i kodbasen (verifierat: grep efter dagbok/krönika/diary gav
+  // inga skärmar). Väntar på en yta — manager-reflektion, dagbok, vad Design
+  // landar i. Rapporterat till design→text-flödet tillsammans med
+  // hallprövningen och landslaget.
   diaryLine: string
+  // Kafferummets röst — LEVANDE sedan D4-regressionsfixen (coffeeRoomService.ts).
   coffeeLine: string
   boardMessage?: string
 }
