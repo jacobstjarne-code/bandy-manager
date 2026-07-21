@@ -155,6 +155,16 @@ export interface Player {
   // C-K1 — Landslagsuttagning
   nationalTeamCallups?: number       // total career callups
   lastNationalTeamCallup?: number    // season of last callup
+  // Release-svepet 2026-07-21 (Block 2b): durabla flaggor, satta en gång —
+  // till skillnad från nationalTeamCallups (räknare som fortsätter växa)
+  // behövs en fryst pekare till säsongen OCH matchdagen den första
+  // uttagningen skedde, så klubbminnet (clubMemoryService.ts) kan bygga
+  // eventet permanent (även efter en andra uttagning) och matcha det mot
+  // rätt årsdag. Samma mönster som promotedFromAcademy+promotionRound ovan —
+  // matchday (inte leagueRound) krävs eftersom cup-matchdagarna ligger före
+  // ligan i kalendern (buildSeasonCalendar: matchday 1-4=cup, sen +4 offset).
+  firstNationalTeamCallupSeason?: number
+  firstNationalTeamCallupMatchday?: number
 
   freeAgentSince?: number            // season when player entered free-agent pool (for gallring)
 }

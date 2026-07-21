@@ -78,10 +78,17 @@ export function applyCallupEffects(
 
   const updatedPlayers = players.map(p => {
     if (!playerIds.includes(p.id)) return p
+    const isFirstCallup = !p.nationalTeamCallups
     return {
       ...p,
       nationalTeamCallups: (p.nationalTeamCallups ?? 0) + 1,
       lastNationalTeamCallup: game.currentSeason,
+      // Release-svepet 2026-07-21 (Block 2b): frusna en gång, till skillnad
+      // från callup-räknaren ovan — se Player.ts:s kommentar vid fälten.
+      // `round`-parametern är redan den globala matchdagen (se kommentaren
+      // ovanför funktionen, konsolideringen 2026-07-18), inte ligaomgången.
+      firstNationalTeamCallupSeason: isFirstCallup ? game.currentSeason : p.firstNationalTeamCallupSeason,
+      firstNationalTeamCallupMatchday: isFirstCallup ? round : p.firstNationalTeamCallupMatchday,
     }
   })
 

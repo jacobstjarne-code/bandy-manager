@@ -133,6 +133,40 @@ describe('getClubMemory', () => {
     const allEvents = result.seasons.flatMap(s => s.events)
     expect(allEvents.filter(e => e.type === 'scandal')).toHaveLength(0)
   })
+
+  it('builds a national_team_callup event from firstNationalTeamCallupSeason, at the frozen matchday', () => {
+    const game = makeMinimalGame({
+      currentSeason: 2,
+      players: [{
+        id: 'p1', firstName: 'Erik', lastName: 'Salonen', clubId: MANAGED_CLUB_ID,
+        nationalTeamCallups: 2, lastNationalTeamCallup: 3,
+        firstNationalTeamCallupSeason: 2, firstNationalTeamCallupMatchday: 18,
+      }],
+    } as Partial<SaveGame>)
+    const result = getClubMemory(game)
+    const events = result.seasons.find(s => s.season === 2)!.events
+    const callupEvents = events.filter(e => e.type === 'national_team_callup')
+    expect(callupEvents).toHaveLength(1)
+    expect(callupEvents[0].significance).toBe(60)
+    expect(callupEvents[0].matchday).toBe(18)
+    expect(callupEvents[0].subjectPlayerId).toBe('p1')
+    expect(callupEvents[0].text).toContain('Salonen')
+  })
+
+  it('does not duplicate the callup event in a later season even as nationalTeamCallups keeps growing', () => {
+    const game = makeMinimalGame({
+      currentSeason: 3,
+      players: [{
+        id: 'p1', firstName: 'Erik', lastName: 'Salonen', clubId: MANAGED_CLUB_ID,
+        nationalTeamCallups: 2, lastNationalTeamCallup: 3,
+        firstNationalTeamCallupSeason: 2, firstNationalTeamCallupMatchday: 18,
+      }],
+    } as Partial<SaveGame>)
+    const result = getClubMemory(game)
+    const allEvents = result.seasons.flatMap(s => s.events)
+    expect(allEvents.filter(e => e.type === 'national_team_callup')).toHaveLength(1)
+    expect(result.seasons.find(s => s.season === 3)!.events.some(e => e.type === 'national_team_callup')).toBe(false)
+  })
 })
 
 describe('scoreEvent', () => {

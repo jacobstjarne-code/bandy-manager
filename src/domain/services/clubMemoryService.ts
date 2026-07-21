@@ -7,12 +7,13 @@ import {
   buildEventFromRetirement,
 } from './clubMemoryEventBuilders'
 import type { MomentSource } from '../entities/Moment'
+import { FIRST_CALLUP_MEMORY_LINES } from '../data/landslagText'
 
 export type MemoryEventType =
   | 'season_finish' | 'cup_final' | 'sm_final' | 'derby_result'
   | 'big_win' | 'big_loss' | 'player_milestone' | 'academy_promotion'
   | 'retirement' | 'facility_built' | 'transfer_signed' | 'transfer_sold'
-  | 'patron_change' | 'storyline_resolution' | 'scandal'
+  | 'patron_change' | 'storyline_resolution' | 'scandal' | 'national_team_callup'
 
 export interface MemoryEvent {
   type: MemoryEventType
@@ -104,6 +105,21 @@ function collectSeasonEvents(game: SaveGame, season: number, managedClubId: stri
       matchday: player.promotionRound ?? 1,
       text: `${player.firstName} ${player.lastName} uppflyttad från P19 till A-laget.`,
       emoji: '🎓', significance: 55, subjectPlayerId: player.id,
+    })
+  }
+
+  // Release-svepet 2026-07-21 (Block 2b) — första landslagsuttagningen.
+  // firstNationalTeamCallupSeason är fryst en gång (till skillnad från
+  // nationalTeamCallups-räknaren) — se Player.ts:s kommentar vid fältet.
+  // Samma derived-per-säsong-mönster som academy_promotion ovan.
+  for (const player of game.players) {
+    if (player.firstNationalTeamCallupSeason !== season || player.clubId !== managedClubId) continue
+    const template = FIRST_CALLUP_MEMORY_LINES[season % FIRST_CALLUP_MEMORY_LINES.length]
+    events.push({
+      type: 'national_team_callup', season,
+      matchday: player.firstNationalTeamCallupMatchday ?? 1,
+      text: template.replace('{spelare}', `${player.firstName} ${player.lastName}`),
+      emoji: '⭐', significance: 60, subjectPlayerId: player.id,
     })
   }
 
