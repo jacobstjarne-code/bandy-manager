@@ -25,6 +25,7 @@ import {
   transferDeadlineWithin3Rounds,
 } from './triggers/transferTriggers'
 import { patronDemandUnmetOver3Rounds } from './triggers/patronTriggers'
+import { mecenatHasPendingDemand } from './triggers/mecenatTriggers'
 import { hasCriticalEvent } from './triggers/eventTriggers'
 import { hasInjuredStarters } from './triggers/stateTriggers'
 
@@ -51,6 +52,7 @@ import { CoffeeRoomSecondary } from '../../../presentation/components/portal/sec
 import { JournalistSecondary } from '../../../presentation/components/portal/secondary/JournalistSecondary'
 import { SeasonSignatureSecondary } from '../../../presentation/components/portal/secondary/SeasonSignatureSecondary'
 import { StreakSecondary } from '../../../presentation/components/portal/secondary/StreakSecondary'
+import { MecenatDemandSecondary } from '../../../presentation/components/portal/secondary/MecenatDemandSecondary'
 import { WeeklyDecisionSecondary } from '../../../presentation/components/portal/secondary/WeeklyDecisionSecondary'
 import { RetirementDecisionSecondary } from '../../../presentation/components/portal/secondary/RetirementDecisionSecondary'
 import { ActiveArcsSecondary } from '../../../presentation/components/portal/secondary/ActiveArcsSecondary'
@@ -294,6 +296,18 @@ const PORTAL_CARDS: DashboardCard[] = [
     suppressIn: ['playoff'],
     triggers: [(game) => getStreakState(game) !== null],
     Component: StreakSecondary,
+  },
+  {
+    // Synlighetsfix (2026-07-21) — mec.pendingDemand hade noll UI-konsumenter
+    // (spelaren såg bara misslyckande-påminnelsen). Vikt matchar injury_status
+    // (70) — en obesvarad mecenat-fråga bär samma brådska som en skada:
+    // permanent withdrawal (finansiell straff) är den möjliga konsekvensen.
+    id: 'mecenat_demand_unmet',
+    tier: 'secondary',
+    weight: 70,
+    suppressIn: ['playoff'],
+    triggers: [mecenatHasPendingDemand],
+    Component: MecenatDemandSecondary,
   },
   {
     id: 'watch_others',
