@@ -98,4 +98,48 @@ describe('getCoffeeRoomScene', () => {
     const allText = scene!.exchanges.flat().join(' ')
     expect(allText).not.toContain('{youthName}')
   })
+
+  it('pendingHallEcho ytas ovillkorat i kafferummet (Block 3c)', () => {
+    const completed = makeFixture({ roundNumber: 1, matchday: 1 })
+    const g = makeGame({
+      fixtures: [completed], currentMatchday: 2,
+      pendingHallEcho: { text: 'Medlemsmötet sköt på frågan.' },
+    } as Partial<SaveGame>)
+    const scene = getCoffeeRoomScene(g)
+    expect(scene?.narratorLine?.text).toBe('Medlemsmötet sköt på frågan.')
+    expect(scene?.exchanges).toEqual([])
+  })
+
+  it('PROVNING_AMBIENT/HALL_KLACK_BASE kan ytas när ett hallTrial är aktivt (Block 3b/3d)', () => {
+    const completed = makeFixture({ roundNumber: 1, matchday: 1 })
+    let hitForankring = false
+    let hitKlar = false
+    for (let md = 1; md <= 60; md++) {
+      const gForankring = makeGame({
+        fixtures: [completed], currentMatchday: md,
+        facilityState: { builtNodeIds: [], hallTrial: { stage: 'forankring', support: 50, startedSeason: 1, stageStartedRound: 1 } },
+      } as Partial<SaveGame>)
+      const sceneForankring = getCoffeeRoomScene(gForankring)
+      if (sceneForankring?.narratorLine && [
+        'Hallfrågan är uppe igen. Hälften vid bordet tycker. Andra hälften tiger.',
+        '"Tak", sa någon vid kaffet. Det räckte för en halvtimmes diskussion.',
+        'Kassören har börjat dricka kaffe med oss. Han har siffror med sig.',
+        'Ingen säger hall rakt ut längre. Alla vet ändå vad som menas.',
+        'Birger samlar Västra Sidan efter matchen. Ingen banderoll än — bara samtal.',
+        'Klacken sjöng den gamla vinterramsan extra länge i dag. Det var inget sammanträffande.',
+      ].includes(sceneForankring.narratorLine.text)) hitForankring = true
+
+      const gKlar = makeGame({
+        fixtures: [completed], currentMatchday: md,
+        facilityState: { builtNodeIds: ['matchhall'], hallTrial: { stage: 'klar', support: 80, startedSeason: 1, stageStartedRound: 1 } },
+      } as Partial<SaveGame>)
+      const sceneKlar = getCoffeeRoomScene(gKlar)
+      if (sceneKlar?.narratorLine && [
+        'Klacken har hittat sin nya kortsida. Ekot gör ramsorna större än de är.',
+        'Västra Sidans flaggor hänger i taket nu istället för på vallen. Någon ordnade det utan att fråga.',
+      ].includes(sceneKlar.narratorLine.text)) hitKlar = true
+    }
+    expect(hitForankring).toBe(true)
+    expect(hitKlar).toBe(true)
+  })
 })

@@ -11,6 +11,7 @@ import { pickCSPressPublishedQuote, buildCSPressMemoryEntry } from '../../data/c
 import type { PressChoice } from '../../data/csPressEventText'
 import { EVENT_SOURCE_MAP, startCooldown } from '../sourceCooldownService'
 import type { SourceKey } from '../sourceCooldownService'
+import { PROVNING_RESOLUTION } from '../../data/hallProvningData'
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
 export function resolveEvent(
@@ -733,6 +734,40 @@ export function resolveEvent(
                 ...updatedGame.supporterGroup,
                 mood: Math.min(100, updatedGame.supporterGroup.mood + 3),
               },
+            }
+          }
+
+          // Release-svepet 2026-07-21 (Block 3c) — PROVNING_RESOLUTION → inbox
+          // (permanent post-it, händelsekortet självt arkiveras aldrig — bara
+          // ID:t i resolvedEventIds) + ett kort kafferums-eko (samma pending+
+          // expires-mönster som pendingVictoryEcho/pendingNationalTeamReturn).
+          // Bara förankringens EGEN röstningsutgång (hallprocess_res_s-eventet)
+          // bär den här texten — förhandlingens kommun-nej (hallprocess_fhnej_s)
+          // har sin egen, andra text (ingen PROVNING_RESOLUTION-post finns för
+          // den, rörs inte). nedlagd_egen hör bara till avbryta-valet.
+          let resolutionText: string | undefined
+          if (update.selfNedlagd) {
+            resolutionText = PROVNING_RESOLUTION.nedlagd_egen
+          } else if (eventId.startsWith('hallprocess_res_s')) {
+            if (update.stage === 'bordlagd') resolutionText = PROVNING_RESOLUTION.bordlagd
+            else if (update.stage === 'nedlagd') resolutionText = PROVNING_RESOLUTION.nedlagd_fall
+          }
+          if (resolutionText) {
+            const resInboxId = `inbox_hall_resolution_${eventId}`
+            updatedGame = {
+              ...updatedGame,
+              inbox: updatedGame.inbox.some(i => i.id === resInboxId)
+                ? updatedGame.inbox
+                : [...updatedGame.inbox, {
+                    id: resInboxId,
+                    date: updatedGame.currentDate,
+                    type: InboxItemType.Community,
+                    title: 'Hallfrågan',
+                    body: resolutionText,
+                    isRead: false,
+                  }],
+              pendingHallEcho: { text: resolutionText },
+              hallEchoExpires: (updatedGame.currentMatchday ?? 0) + 1,
             }
           }
         } catch { /* malformed payload — silently ignore */ }

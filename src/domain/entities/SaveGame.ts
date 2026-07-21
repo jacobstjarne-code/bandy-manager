@@ -339,6 +339,12 @@ export interface SaveGame {
   // en-gång-visa-och-avfärda-mönster som pendingAnnandagsVal — men med en
   // datapayload (namn + synlig ekonomibonus) istf en ren boolean.
   pendingCallupModal?: { playerIds: string[]; names: string[]; bonusTkr: number }
+  // Release-svepet 2026-07-21 (Block 3c) — hallprövningens resolution-eko
+  // (PROVNING_RESOLUTION), samma pending+expires-mönster som
+  // pendingVictoryEcho/victoryEchoExpires. Sätts av eventResolver.ts:s
+  // hallProcess-case, konsumeras av coffeeRoomService.ts.
+  pendingHallEcho?: { text: string }
+  hallEchoExpires?: number
 
   // Legibel konsekvens — transient, rensas varje omgång
   pendingRippleChain?: RippleChain

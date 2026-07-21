@@ -612,6 +612,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nationalTeamReturnExpiresState = undefined
   }
 
+  // Release-svepet 2026-07-21 (Block 3c) — hallprövningens resolution-eko.
+  // Satt av eventResolver.ts (spelaraktion, inte rundtakt) — samma expiry-
+  // klarering här som nationalTeamReturnLine ovan, eftersom det bara är
+  // roundProcessor som tickar varje omgång.
+  let hallEchoLine = game.pendingHallEcho
+  let hallEchoExpiresState = game.hallEchoExpires
+  if (hallEchoLine && nextMatchday > (hallEchoExpiresState ?? 0)) {
+    hallEchoLine = undefined
+    hallEchoExpiresState = undefined
+  }
+
   // Merge national team player updates into finalPlayers
   if (nationalTeamUpdatedPlayers !== finalPlayers) {
     finalPlayers = finalPlayers.map(p => {
@@ -1535,6 +1546,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     pendingNationalTeamReturn: nationalTeamReturnLine,
     nationalTeamReturnExpires: nationalTeamReturnExpiresState,
     pendingCallupModal: nationalTeamCallupModal,
+    pendingHallEcho: hallEchoLine,
+    hallEchoExpires: hallEchoExpiresState,
   }
 
   // Append market value change notifications to inbox

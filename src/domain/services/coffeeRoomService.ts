@@ -15,6 +15,7 @@ import { getNextManagedFixture } from './portal/triggers/matchTriggers'
 import { FAREWELL_MATCH_STRINGS } from '../data/retirementText'
 import { getFarewellMatchPlayer } from './retirementService'
 import { COFFEE_ROOM_QUESTIONS, COFFEE_ROOM_QUESTION_SPEAKER, type CoffeeRoomAnswerOption } from '../data/coffeeRoomQuestionsText'
+import { PROVNING_AMBIENT, HALL_KLACK_BASE } from '../data/hallProvningData'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -572,6 +573,19 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     }
   }
 
+  // Release-svepet 2026-07-21 (Block 3c) — hallprövningens resolution-eko
+  // (PROVNING_RESOLUTION), samma ovillkorade en-gångs-mönster som ovan. Satt
+  // av eventResolver.ts:s hallProcess-case när förankringens röstning landar
+  // på bordlagd/nedlagd, eller spelaren avbryter själv.
+  if (game.pendingHallEcho) {
+    return {
+      exchanges: [],
+      pickedIndices: [],
+      meta: { title: 'Kafferummet' },
+      narratorLine: { text: game.pendingHallEcho.text },
+    }
+  }
+
   // D3 (A1) — återkomsten: samma prioritetslogik som victory-echo/farewell i
   // getCoffeeRoomQuote (starkt, ovillkorat, en gång). Seedad på svaret +
   // matchday, landar deterministiskt när tröskeln är nådd — inte varje besök.
@@ -619,6 +633,34 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
           pickedIndices: [idx],
           meta: { title: 'Kafferummet', subtitle: 'Tisdag förmiddag · någon har redan börjat räkna dagar' },
         }
+      }
+    }
+  }
+
+  // Release-svepet 2026-07-21 (Block 3b/3d) — hallprövningens atmosfär.
+  // PROVNING_AMBIENT gated per fas (forankring/krav/forhandling/bygge); .klack
+  // ytas HÄR (kafferummet) istf i matchCore.ts:s 'klack'-kontext (live
+  // matchkommentar) — att hooka hallprövnings-text in i matchsimuleringen
+  // hade varit en större, känsligare ändring (matchCore.ts kalibrerat mot
+  // 1124 matcher) än vad "wira poolen" kräver. HALL_KLACK_BASE (permanent,
+  // efter 'klar') delar samma gren — PROVNING_AMBIENT har ingen 'klar'-nyckel,
+  // HALL_KLACK_BASE är den avsedda efterföljaren. ~35% chans så en flerveckors
+  // fas kryddas, inte domineras (samma idiom som §11.2 ovan).
+  const hallTrial = game.facilityState?.hallTrial
+  if (hallTrial) {
+    const hallMatchday = game.currentMatchday ?? 0
+    const hallSeed = hallMatchday * 53 + game.currentSeason * 19
+    const stagePool = PROVNING_AMBIENT[hallTrial.stage]
+    const hallPool = stagePool ? [...stagePool.kafferum, ...stagePool.klack]
+      : hallTrial.stage === 'klar' ? HALL_KLACK_BASE
+      : null
+    if (hallPool && hallPool.length > 0 && hashSeed(hallSeed) % 100 < 35) {
+      const idx = hashSeed(hallSeed * 3) % hallPool.length
+      return {
+        exchanges: [],
+        pickedIndices: [],
+        meta: { title: 'Kafferummet' },
+        narratorLine: { text: hallPool[idx] },
       }
     }
   }

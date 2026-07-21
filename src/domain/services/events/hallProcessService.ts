@@ -15,6 +15,7 @@ import {
   PROVNING_DECISIONS_FORANKRING,
   PROVNING_DECISIONS_FORHANDLING,
   PROVNING_EVENT_FORDYRING,
+  PROVNING_RESOLUTION,
 } from '../../data/hallProvningData'
 import { getRivalry } from '../../data/rivalries'
 import { clamp } from '../../utils/clamp'
@@ -158,11 +159,15 @@ function buildForankringEvent(
     } else if (finalSupport >= 40) {
       nextStage = 'bordlagd'
       cooldown = s + 1
-      body = 'Medlemsmötet sköt på frågan. Den ligger kvar i en pärm i klubbhuset — och i bakhuvudet på alla.'
+      // Release-svepet 2026-07-21 (Block 3c): dedup — denna raden var tidigare
+      // en egen hårdkodad kopia av PROVNING_RESOLUTION.bordlagd. Samma text,
+      // en källa. eventResolver.ts:s hallProcess-case läser samma konstant
+      // för inbox+kafferums-ekot när detta valet resolvas.
+      body = PROVNING_RESOLUTION.bordlagd
     } else {
       nextStage = 'nedlagd'
       cooldown = s + 2
-      body = 'Hallfrågan föll. Birger bjöd på kaffe efteråt. Han var storsint nog att inte le.'
+      body = PROVNING_RESOLUTION.nedlagd_fall
     }
 
     const payload = {
