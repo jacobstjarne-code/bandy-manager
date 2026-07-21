@@ -11,7 +11,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { BoardObjective } from '../../../domain/entities/Community'
 import { resolveBoardMeetingState } from '../../../application/services/boardMeetingStateResolver'
 import { BOARD_MEETING_COPY, GOAL_MOTIVATIONS } from '../../../domain/data/boardMeetingCopy'
-import { BOARD_EXPECTATION_TEXT } from '../../../domain/services/boardService'
+import { BOARD_EXPECTATION_CEREMONIAL } from '../../../domain/services/boardService'
 import { seededPick } from '../../../domain/utils/random'
 import { SceneCTA } from './shared/SceneCTA'
 
@@ -96,7 +96,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
         </div>
         {club?.boardExpectation && (
           <div style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 10, fontStyle: 'italic' }}>
-            Målet i år: att {BOARD_EXPECTATION_TEXT[club.boardExpectation]}. Inget mer behöver sägas om saken.
+            {BOARD_EXPECTATION_CEREMONIAL[club.boardExpectation]}
           </div>
         )}
       </div>

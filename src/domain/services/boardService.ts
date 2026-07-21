@@ -10,6 +10,22 @@ export const BOARD_EXPECTATION_TEXT: Record<ClubExpectation, string> = {
   [ClubExpectation.WinLeague]: 'vinna serien',
 }
 
+/**
+ * M63 (textaudit 2026-07-04, text 2026-07-05) — ordförandens fullständiga
+ * ceremoniella förväntansreplik, en per ClubExpectation. Migrerad hit
+ * 2026-07-21 från scenes/boardMeetingScene.ts:s getBoardMeetingBeats
+ * (superseterat förstautkast, raderat — BoardMeetingScene.tsx är den
+ * levande scenen sedan säsong 2+ byggdes om). Texten är oförändrad,
+ * bara flyttad: BOARD_EXPECTATION_TEXT ovan är kortfrasen ("att {X}"),
+ * denna är hela repliken för styrelsemötets "Målet i år"-rad.
+ */
+export const BOARD_EXPECTATION_CEREMONIAL: Record<ClubExpectation, string> = {
+  [ClubExpectation.AvoidBottom]: 'Håll oss ovanför strecket. Mer begär vi inte i år. Allt därutöver är bonus.',
+  [ClubExpectation.MidTable]: 'Plats fem till åtta. Inget kvalspel.',
+  [ClubExpectation.ChallengeTop]: 'Topp fyra. Och när slutspelet börjar ska ingen vilja möta oss.',
+  [ClubExpectation.WinLeague]: 'Guld. Det är sagt nu. Vi låtsas inte annat i år.',
+}
+
 export interface BoardEvaluation {
   satisfaction: 'delighted' | 'satisfied' | 'concerned' | 'unhappy'
   message: string

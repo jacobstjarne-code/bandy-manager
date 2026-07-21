@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getBoardMeetingBeats, shouldTriggerBoardMeeting } from '../boardMeetingScene'
+import { shouldTriggerBoardMeeting } from '../boardMeetingScene'
 import { migrateSaveGame } from '../../../../infrastructure/persistence/saveGameMigration'
 import { CLUB_TEMPLATES } from '../../../services/worldGenerator'
 import type { SaveGame } from '../../../entities/SaveGame'
@@ -119,80 +119,11 @@ function makeGame(overrides: {
   } as SaveGame
 }
 
-// ─── BoardMeetingScene — beats ─────────────────────────────────────────────
-
-describe('BoardMeetingScene — getBoardMeetingBeats', () => {
-  it('renderar 4 beats med inflätade siffror', () => {
-    const game = makeGame({ clubId: 'club_forsbacka', squadSize: 16, cash: 330000, transferBudget: 65000, expiring: 4 })
-    const beats = getBoardMeetingBeats(game)
-    expect(beats).toHaveLength(4)
-    expect(beats[1].body).toContain('Truppen är 16')
-    expect(beats[1].body).toContain('330 tkr')
-    expect(beats[1].body).toContain('65')
-  })
-
-  it('beat 0 är inramning med autoAdvance', () => {
-    const game = makeGame()
-    const beats = getBoardMeetingBeats(game)
-    expect(beats[0].id).toBe('inramning')
-    expect(beats[0].autoAdvance).toBe(true)
-    expect(beats[0].durationMs).toBe(4000)
-  })
-
-  it('beat 1 är lagesrapport med kassör som speaker', () => {
-    const game = makeGame()
-    const beats = getBoardMeetingBeats(game)
-    expect(beats[1].id).toBe('lagesrapport')
-    expect(beats[1].cta).toBe('Förstått')
-    expect(beats[1].speaker?.firstName).toBe('Lennart')
-    expect(beats[1].speaker?.lastName).toBe('Dahlgren')
-  })
-
-  it('beat 2 är forvantningar med ordförande som speaker', () => {
-    const game = makeGame()
-    const beats = getBoardMeetingBeats(game)
-    expect(beats[2].id).toBe('forvantningar')
-    expect(beats[2].cta).toBe('Det går bra')
-    expect(beats[2].speaker?.firstName).toBe('Lars')
-  })
-
-  it('beat 3 är avslut med ledamot som speaker', () => {
-    const game = makeGame()
-    const beats = getBoardMeetingBeats(game)
-    expect(beats[3].id).toBe('avslut')
-    expect(beats[3].cta).toBe('Då börjar vi')
-    expect(beats[3].speaker?.firstName).toBe('Mikael')
-  })
-
-  it('inflätar arenanamn och styrelsemedlemmar per klubb — Forsbacka', () => {
-    const game = makeGame({ clubId: 'club_forsbacka' })
-    const beats = getBoardMeetingBeats(game)
-    expect(beats[0].body).toContain('Slagghögen')
-    expect(beats[0].body).toContain('Lars Berglund')
-  })
-
-  it('inflätar arenanamn och styrelsemedlemmar per klubb — Målilla', () => {
-    const malillaGame = makeGame({ clubId: 'club_malilla' })
-    const beats = getBoardMeetingBeats(malillaGame)
-    expect(beats[0].body).toContain('Hyttvallen')
-    expect(beats[0].body).toContain('Karin Petersson')
-  })
-
-  it('räknar utgående kontrakt korrekt', () => {
-    const game = makeGame({ squadSize: 10, expiring: 3 })
-    const beats = getBoardMeetingBeats(game)
-    expect(beats[1].body).toContain('3 kontrakt går ut i vår')
-  })
-
-  it('returnerar tom array om game.board saknas', () => {
-    const game = makeGame()
-    const gameWithoutBoard = { ...game, board: undefined }
-    const beats = getBoardMeetingBeats(gameWithoutBoard as never)
-    expect(beats).toHaveLength(0)
-  })
-})
-
 // ─── shouldTriggerBoardMeeting ────────────────────────────────────────────
+// 2026-07-21: getBoardMeetingBeats-testblocket raderat samtidigt som
+// funktionen (superseterat förstautkast, se boardMeetingScene.ts:s
+// filhuvud). Den levande scenens täckning ligger i BoardMeetingScene-
+// relaterade tester (boardMeetingCopy/boardMeetingStateResolver).
 
 describe('shouldTriggerBoardMeeting — trigger-villkor', () => {
   it('triggar inte säsong 1 (ArrivalScene täcker det)', () => {
