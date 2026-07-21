@@ -39,6 +39,12 @@ export const ABSENCE_SECONDARY_LINES: string[] = [
 /**
  * LandslagsReturScen — kafferum vid hemkomst. Synlig boost (Code renderar form/moral).
  * `gold` = kom hem med VM-medalj.
+ *
+ * `.standard` wirad i release-svepet 2026-07-21 (nationalTeamService.ts →
+ * coffeeRoomService.ts). `.gold` är TEXT-UTAN-YTA (VILANDE) — kräver ett
+ * VM-turneringsutfall som inte finns (lägret simulerar aldrig ett resultat).
+ * RADERA INTE — väntar på en VM-turneringsmekanik. Se nationalTeamService.ts:s
+ * applyReturnEffects för rotorsaken.
  */
 export const RETURN_SCENE_LINES = {
   standard: [
@@ -64,6 +70,16 @@ export const SNUB_SCENE_LINES: string[] = [
 /**
  * LobbyPress — weekly-decision. Spelare ber dig höra av dig till förbundskaptenen.
  * body = uppmaningen; Code bygger valen. accept-text/decline-text för knapparnas efterspel.
+ *
+ * TEXT-UTAN-YTA (VILANDE), klassad i release-svepet 2026-07-21 (CLAUDE.md
+ * §"TVÅ SORTERS DÖD KOD"). RADERA INTE. Kortets SKALA (prompt+optionA/B) kan
+ * rida weeklyDecisionService.ts som ren data (ett nytt switch-case, kategori
+ * är bara kosmetisk filter-etikett) — men HANDOFF-C-K1-LANDSLAG-2026-05-23.md
+ * är explicit att LobbyPress ska "påverka uttagningschans", vilket kräver nytt
+ * persistent per-spelare-state + en ny WeeklyDecisionEffect-variant + en
+ * läs-hook i nationalTeamService.ts:s selectNationalTeam — mekanikutökning,
+ * uttryckligen utanför release-svepets scope (Jacobs gräns, 2026-07-21).
+ * Se docs/BACKLOG.md → BYGGT MEN OSYNLIGT för stäng-villkor.
  */
 export const LOBBY_PRESS = {
   prompt: [
