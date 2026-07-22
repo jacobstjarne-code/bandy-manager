@@ -1271,7 +1271,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   if (communityResult.completedNodeId === 'matchhall' && updatedFacilityState?.hallTrial) {
     updatedFacilityState = {
       ...updatedFacilityState,
-      hallTrial: { ...updatedFacilityState.hallTrial, stage: 'klar' },
+      // completedSeason (Block 3e): enda platsen stage sätts till 'klar' —
+      // riktig säsong, inte en gissning (se HallTrial.completedSeason).
+      hallTrial: { ...updatedFacilityState.hallTrial, stage: 'klar', completedSeason: game.currentSeason },
     }
     postTransferClubs = postTransferClubs.map(c =>
       c.id === game.managedClubId ? { ...c, hasIndoorArena: true } : c

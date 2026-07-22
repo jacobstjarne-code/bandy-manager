@@ -10,6 +10,8 @@ interface FacilityTreeProps {
   selectedNodeId?: string
   onSelect?: (nodeId: string) => void
   clubName?: string
+  /** Block 3a — HALLNODE_SUBS[stage] med riktiga värden ifyllda (hallProcessService.formatHallNodeSub). */
+  hallNodeSub?: string
 }
 
 const GREN_LABELS: Record<string, string> = {
@@ -63,11 +65,13 @@ function CooldownDots({ total, filled }: { total: number; filled: number }) {
   )
 }
 
-function NodeCard({ view, mode, selected, onSelect }: {
+function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive }: {
   view: FacilityNodeView
   mode: 'betrakta' | 'valj'
   selected: boolean
   onSelect?: (id: string) => void
+  hallNodeSub?: string
+  hallTrialActive?: boolean
 }) {
   const { def, status } = view
   const isHall = def.isHall
@@ -125,7 +129,13 @@ function NodeCard({ view, mode, selected, onSelect }: {
   })()
 
   const opacity = status === 'locked' ? 0.35 : 1
-  const clickable = mode === 'valj' && (status === 'available') && !isHall && !!onSelect
+  // Block 3a: hallnoden öppnar H·1-hubben (via chevron) närhelst ett trial är
+  // aktivt — oberoende av betrakta/valj-läget, eftersom hubben bara VISAR
+  // status, den startar inget bygge. Startvalet (inled/inte_nu) sker separat
+  // via hallProcessService.ts:s buildStartEvent, ett vanligt GameEvent-kort.
+  const clickable = isHall
+    ? hallTrialActive && !!onSelect
+    : mode === 'valj' && (status === 'available') && !!onSelect
 
   const marginLeft = isHall ? 18 : 0
 
@@ -180,7 +190,7 @@ function NodeCard({ view, mode, selected, onSelect }: {
 
       {isHall && (
         <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2 }}>
-          Öppnar prövningen — förankring krävs ›
+          {hallNodeSub ?? 'Öppnar prövningen — förankring krävs'}{clickable ? ' ›' : ''}
         </div>
       )}
 
@@ -206,7 +216,9 @@ export function FacilityTree({
   selectedNodeId,
   onSelect,
   clubName,
+  hallNodeSub,
 }: FacilityTreeProps) {
+  const hallTrialActive = !!facilityState.hallTrial
   const tree = getFacilityTreeByGren(facilityState, currentMatchday)
   const grens: Array<'anlaggning' | 'verksamhet' | 'akademi'> = ['anlaggning', 'verksamhet', 'akademi']
 
@@ -257,6 +269,8 @@ export function FacilityTree({
                     mode={mode}
                     selected={selectedNodeId === view.def.id}
                     onSelect={onSelect}
+                    hallNodeSub={view.def.isHall ? hallNodeSub : undefined}
+                    hallTrialActive={view.def.isHall ? hallTrialActive : undefined}
                   />
                 </div>
               ))}

@@ -36,6 +36,7 @@ import { GameOverScreen } from '../screens/GameOverScreen'
 import { GranskaScreen } from '../screens/granska/GranskaScreen'
 import { TaktikScreen } from '../screens/TaktikScreen'
 import FacilityScreen from '../screens/FacilityScreen'
+import HallProvningScreen from '../screens/HallProvningScreen'
 
 import { HistoryScreen } from '../screens/HistoryScreen'
 import { HalfTimeSummaryScreen } from '../screens/HalfTimeSummaryScreen'
@@ -142,6 +143,7 @@ export function AppRouter() {
           {/* Bygget = kanonisk flik-destination; facility behålls för deep-links (push) */}
           <Route path="bygget" element={<FacilityScreen />} />
           <Route path="facility" element={<FacilityScreen />} />
+          <Route path="hall-provning" element={<HallProvningScreen />} />
         </Route>
         <Route element={<GameGuard />}>
           <Route path="/game/round-summary" element={<RoundSummaryScreen />} />

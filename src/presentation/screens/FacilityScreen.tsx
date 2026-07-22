@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { FacilityTree } from '../components/club/FacilityTree'
 import { FACILITY_NODE_DEFS, getFinancingOptions, type FinancingContext, type FinancingOption } from '../../domain/services/facilityService'
 import { financingFlavor } from '../../domain/data/facilityFinancingStrings'
+import { formatHallNodeSub } from '../../domain/services/events/hallProcessService'
 
 const tkr = (n: number) => `${Math.round(n / 1000)} tkr`
 
@@ -104,8 +105,17 @@ export default function FacilityScreen() {
           currentMatchday={game.currentMatchday}
           currentSeason={game.currentSeason}
           mode={mode}
-          onSelect={(id) => { setSelectedNodeId(id); setError(null) }}
+          onSelect={(id) => {
+            // Block 3a: hallnoden öppnar H·1-hubben, inte finansieringssheeten
+            // (den har inget att finansiera direkt — bygget startar via
+            // förhandlingens vägval, ett GameEvent).
+            const def = FACILITY_NODE_DEFS.find(d => d.id === id)
+            if (def?.isHall) { navigate('/game/hall-provning'); return }
+            setSelectedNodeId(id)
+            setError(null)
+          }}
           clubName={managedClub?.arenaName ?? managedClub?.name}
+          hallNodeSub={formatHallNodeSub(game)}
         />
       </div>
 

@@ -16,6 +16,7 @@ import {
   PROVNING_DECISIONS_FORHANDLING,
   PROVNING_EVENT_FORDYRING,
   PROVNING_RESOLUTION,
+  HALLNODE_SUBS,
 } from '../../data/hallProvningData'
 import { getRivalry } from '../../data/rivalries'
 import { clamp } from '../../utils/clamp'
@@ -474,5 +475,46 @@ export function generateHallProcessEvent(
     case 'vilande':
     default:
       return null
+  }
+}
+
+// ── Nod-undertext (Block 3a/3e) ──────────────────────────────────────────
+
+/**
+ * Fyller HALLNODE_SUBS[stage]:s platshållare ({n}/{x}/{season}/{year}) med
+ * riktiga värden — aldrig en gissning. Används av FacilityTree.tsx:s nod-
+ * undertext och H·1-hubben (samma källa, ingen andra sanning).
+ *
+ * {season} i 'bygge' är en matchdags-räkning ("omg {etaMatchday}"), inte ett
+ * kalenderårtal — activeProject.etaMatchday kan falla i nästa säsong
+ * (buildRounds=20, se facilityNodes.ts) och det finns ingen matchday→säsong-
+ * konvertering i kodbasen att luta sig mot (samma dokumenterade hål som
+ * FacilityNodeView.completedSeason, clubMemoryService.ts). Undvik att gissa
+ * fel årtal — visa den riktiga matchdagen istf.
+ */
+export function formatHallNodeSub(game: SaveGame): string {
+  const fs = game.facilityState
+  const trial = fs?.hallTrial
+  const stage: HallTrialStage = trial?.stage ?? 'vilande'
+  const template = HALLNODE_SUBS[stage]
+
+  switch (stage) {
+    case 'forankring':
+      return template.replace('{n}', String(trial?.support ?? 0))
+    case 'krav': {
+      const krav = computeKravStatus(game)
+      const met = [krav.kapital, krav.underlag, krav.styrelse].filter(Boolean).length
+      return template.replace('{x}', String(met))
+    }
+    case 'bygge': {
+      const eta = fs?.activeProject?.etaMatchday
+      return template.replace('{season}', eta !== undefined ? `omg ${eta}` : '—')
+    }
+    case 'nedlagd':
+      return template.replace('{season}', String(trial?.cooldownUntilSeason ?? '—'))
+    case 'klar':
+      return template.replace('{year}', String(trial?.completedSeason ?? game.currentSeason))
+    default:
+      return template
   }
 }

@@ -157,6 +157,12 @@ export interface HallTrial {
   stageStartedRound: number
   cooldownUntilSeason?: number  // efter fall/nedläggning
   finansiering?: 'egen' | 'kommun' | 'patron'  // sätts i förhandlingen
+  // Release-svepet 2026-07-21 (Block 3a/3e): satt av roundProcessor.ts precis
+  // när stage → 'klar' (matchhall-completion). Utan detta hade HALLNODE_SUBS.klar
+  // ("Byggd {year}") behövt gissa ett årtal — facilityService.ts:s FacilityNodeView
+  // saknar dokumenterat en per-nod completedSeason (se clubMemoryService.ts:s
+  // kommentar om samma hål för Facility-minnen generellt).
+  completedSeason?: number
 }
 
 export interface BoardObjective {
