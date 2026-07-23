@@ -88,11 +88,11 @@ export function sanitizeNext(nextPath: string): string {
 
 export function loginPage(opts: { error?: boolean; configError?: boolean; next?: string } = {}): Response {
   const nextPath = sanitizeNext(opts.next ?? '/');
-  const errorLine = opts.configError
-    ? `<p class="err">[Opus — konfigurationsfel]</p>`
-    : opts.error
-      ? `<p class="err">[Opus — fel lösenord]</p>`
-      : '';
+  // configError (SITE_PASSWORD/COOKIE_SECRET ej satta) renderar plain sida —
+  // ett setup-tillstånd som normalt aldrig når Daniel. Bara fel-lösenord får copy.
+  const errorLine = opts.error
+    ? `<p class="err">Det stämmer inte. Försök igen.</p>`
+    : '';
   const html = `<!doctype html>
 <html lang="sv">
 <head>
@@ -107,7 +107,8 @@ export function loginPage(opts: { error?: boolean; configError?: boolean; next?:
   body { background: var(--bg); color: var(--text); font-family: 'Georgia','Times New Roman',serif; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
   .card { width: 100%; max-width: 24rem; text-align: center; }
   .mark { font-family: system-ui,-apple-system,sans-serif; font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.75rem; }
-  h1 { font-size: 1.35rem; font-weight: 400; line-height: 1.4; margin: 0 0 1.75rem; }
+  h1 { font-size: 1.35rem; font-weight: 400; line-height: 1.4; margin: 0 0 .6rem; }
+  .sub { font-family: system-ui,-apple-system,sans-serif; font-size: .8rem; color: var(--muted); line-height: 1.5; margin: 0 0 1.75rem; }
   form { display: flex; gap: .5rem; }
   input { flex: 1; padding: .7rem .85rem; font-size: 1rem; font-family: system-ui,-apple-system,sans-serif; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
   input:focus { outline: none; border-color: var(--accent); }
@@ -119,11 +120,15 @@ export function loginPage(opts: { error?: boolean; configError?: boolean; next?:
 <body>
   <main class="card">
     <p class="mark">Bandy Brain</p>
-    <h1>[Opus — en rad]</h1>
+    <h1>På jakt efter bandyns numeriska själ.</h1>
+    <!-- HÅRDKODAT TAL: "Sextioen" (61) = 65 finding-nummer minus 4 superseterade
+         (017/041/042/043). Edge-middlewaren kan inte läsa findings.yaml på runtime,
+         därför hårdkodat. Uppdatera raden när antalet aktiva findings ändras. -->
+    <p class="sub">Sextioen undersökningar av bandyn genom dess siffror. Ännu inte öppna.</p>
     <form method="POST" action="/">
-      <input type="password" name="password" placeholder="[Opus]" autofocus autocomplete="current-password" aria-label="[Opus]" />
+      <input type="password" name="password" placeholder="Lösenord" autofocus autocomplete="current-password" aria-label="Lösenord" />
       <input type="hidden" name="next" value="${nextPath.replace(/"/g, '&quot;')}" />
-      <button type="submit">[Opus]</button>
+      <button type="submit">Stig in</button>
     </form>
     ${errorLine}
   </main>
