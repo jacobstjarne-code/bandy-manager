@@ -230,12 +230,15 @@ export function FacilityTree({
           <span style={{ fontSize: 8, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block', marginTop: 2 }}>
             Betrakta · val görs i säsongsstarten
           </span>
-          {FACILITY_INTRO && (
-            <p style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>
-              {FACILITY_INTRO}
-            </p>
-          )}
         </div>
+      )}
+
+      {/* B4 (Korrvända 2-audit, 2026-07-28): visas i BÅDA lägena — behövs
+          mest när man faktiskt väljer (valj), inte bara i betrakta. */}
+      {FACILITY_INTRO && (
+        <p style={{ fontSize: 10, color: 'var(--text-secondary)', marginBottom: 8, lineHeight: 1.5 }}>
+          {FACILITY_INTRO}
+        </p>
       )}
 
       {grens.map(gren => {
