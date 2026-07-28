@@ -81,7 +81,12 @@ export function TransfersScreen() {
     p.clubId !== 'free_agent' &&
     p.availability && p.availability !== 'unavailable'
   )
-  const marknadHasDot = incomingBids.length > 0 || availablePlayersForDot.length > 0
+  // B1 (Korrvända 2-audit, 2026-07-28): incomingBids flyttad hit ur
+  // marknadHasDot. Pricken lovade uppmärksamhet på Marknad-fliken, men
+  // inkommande bud renderas aldrig där — payoffen är 🔥-badgen per spelarrad
+  // på Sälj-fliken (rad ~354, samma filter). Pricken hörde till fel flik.
+  const marknadHasDot = availablePlayersForDot.length > 0
+  const saljHasDot = incomingBids.length > 0
 
   function handleSignFreeAgent(agentId: string) {
     if (!game) return
@@ -189,7 +194,7 @@ export function TransfersScreen() {
           { id: 'marknad', label: 'Marknad', dot: marknadHasDot ? 'accent' : null },
           { id: 'scouting', label: 'Scouting', dot: null },
           { id: 'freeagents', label: 'Fria', dot: freeAgents.length > 0 && windowOpen ? 'accent' : null },
-          { id: 'sell', label: 'Sälj', dot: null },
+          { id: 'sell', label: 'Sälj', dot: saljHasDot ? 'accent' : null },
         ]}
         activeId={activeTab}
         onSelect={(id) => setActiveTab(id as typeof activeTab)}
@@ -256,20 +261,15 @@ export function TransfersScreen() {
             {groups.length === 0 ? (
               <div className="card-sharp" style={{ padding: '24px 18px', textAlign: 'center' }}>
                 <p style={{ fontSize: 22, marginBottom: 10 }}>🔍</p>
-                {/* // OPUS_COPY — guide-rubrik och förklaringstext för tom marknad */}
                 <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
-                  Marknaden är stängd eller tom
+                  Marknaden är tom just nu
                 </p>
                 <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.55, marginBottom: 16 }}>
-                  Inga spelare är tillgängliga för transfer just nu. Spana in talanger via Scouting — då ser du dem här när de väl blir tillgängliga.
+                  Spelare dyker upp när klubbar säljer. Vill du hitta egna talanger — skicka ut en scout.
                 </p>
                 <button
                   onClick={() => setActiveTab('scouting')}
-                  style={{
-                    padding: '10px 18px', background: 'var(--accent)', border: 'none',
-                    borderRadius: 'var(--radius-md)', color: 'var(--bg-dark)',
-                    fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                  }}
+                  className="btn btn-primary"
                 >
                   Gå till Scouting →
                 </button>
