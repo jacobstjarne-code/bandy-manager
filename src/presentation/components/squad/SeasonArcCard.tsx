@@ -282,8 +282,7 @@ export function SeasonArcCard({ game }: Props) {
                 marginTop: 3,
                 lineHeight: 1.3,
               }}>
-                {/* // OPUS_COPY — mikro-effekt per läge */}
-                {m === 'bygg' ? '+form / –ben' : m === 'hall' ? 'neutralt' : m === 'toppa' ? '+3 omg / fall' : 'vila / –form'}
+                {m === 'bygg' ? 'form ↑ långsamt' : m === 'hall' ? 'stabilt' : m === 'toppa' ? '3 upp, sen svacka' : 'vila ben, form ↓'}
               </div>
             </button>
           ))}
