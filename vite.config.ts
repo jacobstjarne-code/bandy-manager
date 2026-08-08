@@ -7,11 +7,17 @@ import { execSync } from 'child_process'
 // dev-server-processens livstid). Ett git-fel vid just den starten (t.ex.
 // index.lock från en samtidig git-operation) syns annars aldrig — catch{}
 // gömde felet. Om detta återkommer: läs stderr, starta om dev-servern.
-let gitHash = 'unknown'
+//
+// 2026-08-08 (sluttest): Vercels byggcontainer har ingen git-metadata, så
+// execSync kastade och hashen blev 'unknown' i PRODUKTION — varje
+// testarrapport ur FeedbackButton bar "build: unknown" och gick inte att
+// matcha mot en deploy. CI-hashen läses därför FÖRST; git-anropet är en
+// lokal override som vinner när .git finns.
+let gitHash = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'unknown'
 try {
   gitHash = execSync('git rev-parse --short HEAD').toString().trim()
 } catch (err) {
-  console.warn('[vite.config] git rev-parse --short HEAD misslyckades, __GIT_HASH__ blir "unknown":', (err as Error).message)
+  console.warn(`[vite.config] git rev-parse --short HEAD misslyckades, __GIT_HASH__ = "${gitHash}":`, (err as Error).message)
 }
 
 export default defineConfig({
