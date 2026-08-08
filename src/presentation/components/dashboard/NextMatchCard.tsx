@@ -2,7 +2,8 @@ import { ClubBadge } from '../ClubBadge'
 import { formatArenaName } from '../../../domain/utils/arenaName'
 import { IceQuality, PlayoffRound } from '../../../domain/enums'
 import { getIceQualityLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
-import { getCupRoundLabel, getCupRoundName } from '../../../domain/services/cupService'
+import { getCupRoundLabel } from '../../../domain/services/cupService'
+import { isClubDirektkvalad } from '../../../domain/services/anslagService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { getCurrentAct } from '../../../domain/services/seasonActService'
 import { getCoachStyleLabel } from '../../../domain/services/aiCoachService'
@@ -112,6 +113,22 @@ export function NextMatchCard({
   const isPlayoff = !!isPlayoffFixture
   const isFinal = playoffSeries?.round === PlayoffRound.Final
 
+  // SLUTTEST 2026-08-08 (punkt 2a+2b): cupMatch hissad hit så header-tagg,
+  // taggraden och förklaringsraden delar SAMMA facit — tre separata lokala
+  // beräkningar innan gav tre chanser att glida isär.
+  const cupMatch = isCup ? game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id) : undefined
+  // Rot (2a): villkoret läste cupMatch.round > 1 — sant i semi/final OCH för
+  // ett lag som tog sig UR förstarundan på isen. Rätt fråga är: fick klubben
+  // bye rakt in i kvartsfinalen? Samma primitiv (byeTeamIds) som
+  // anslagService.ts/AnslagOverlay.tsx redan använder via isClubDirektkvalad
+  // — återanvänd istf en fjärde egen kopia av samma kontroll.
+  const isDirektkvalad = cupMatch?.round === 2
+    && !!game.cupBracket && isClubDirektkvalad(game.cupBracket, game.managedClubId)
+  // Rot (2b): "Neutral plan" var hårdkodad för ALLA cuprundor — bara finalen
+  // (round 4, cupService/getCupRoundName-konventionen) spelas på neutral
+  // plan (CUP_FINAL_VENUE), övriga har riktig homeClubId/awayClubId.
+  const isCupFinalMatch = cupMatch?.round === 4
+
   // ── Act-based glow (statisk, ej pulserande) ──
   const act = getCurrentAct(nextFixture.roundNumber)
   const actGlow: React.CSSProperties = act >= 3 && !isFinal && !isPlayoff
@@ -163,11 +180,10 @@ export function NextMatchCard({
     headerTagText = 'TOPP 8'
     headerTagStyle = { background: 'color-mix(in srgb, var(--match-gold) 15%, transparent)', color: 'var(--match-gold)', fontSize: 8, padding: '2px 7px', border: '1px solid color-mix(in srgb, var(--match-gold) 25%, transparent)' }
   } else if (isCup) {
-    const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
     const roundLabel = cupMatch ? getCupRoundLabel(cupMatch.round) : 'Cup'
     headerIcon = '🏆'
     headerLabel = `Cupen · ${roundLabel}`
-    headerTagText = 'NEUTRAL PLAN'
+    headerTagText = isCupFinalMatch ? 'NEUTRAL PLAN' : isHome ? 'HEMMA' : 'BORTA'
     headerTagStyle = { background: 'color-mix(in srgb, var(--accent) 15%, transparent)', color: 'var(--match-copper)', fontSize: 8, padding: '2px 7px', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }
   } else if (isDerby) {
     headerIcon = derbyIntense ? '🔥' : '⚔️'
@@ -374,18 +390,17 @@ export function NextMatchCard({
                 <span className="tag tag-outline" style={{ fontSize: 8 }}>Annandagen</span>
               </>
             )}
-            {isCup && !isDerby && (() => {
-              const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
-              return (
-                <>
-                  <span className="tag tag-copper" style={{ fontSize: 8 }}>En match avgör</span>
+            {isCup && !isDerby && (
+              <>
+                <span className="tag tag-copper" style={{ fontSize: 8 }}>En match avgör</span>
+                {isCupFinalMatch && (
                   <span className="tag tag-outline" style={{ fontSize: 8 }}>Neutral plan</span>
-                  {cupMatch && cupMatch.round > 1 && (
-                    <span className="tag tag-outline" style={{ fontSize: 8 }}>Direktkval</span>
-                  )}
-                </>
-              )
-            })()}
+                )}
+                {isDirektkvalad && (
+                  <span className="tag tag-outline" style={{ fontSize: 8 }}>Direktkval</span>
+                )}
+              </>
+            )}
             {isFinal && (
               <>
                 <span className="tag tag-copper" style={{ fontSize: 8 }}>En match avgör</span>
@@ -396,15 +411,11 @@ export function NextMatchCard({
         )}
 
         {/* Cup direktkvalificering — förklaring */}
-        {isCup && !isDerby && (() => {
-          const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
-          if (!cupMatch || cupMatch.round <= 1) return null
-          return (
-            <p style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', marginTop: 4 }}>
-              Direktkvalificerade utifrån ranking · {getCupRoundName(cupMatch.round)}
-            </p>
-          )
-        })()}
+        {isCup && !isDerby && isDirektkvalad && (
+          <p style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', marginTop: 4 }}>
+            De fyra högst rankade lagen går direkt in i kvartsfinalen. Ni är ett av dem.
+          </p>
+        )}
 
         {/* Readiness + ice */}
         {(() => {
