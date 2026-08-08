@@ -20,7 +20,7 @@ import { initCharacterPlayers } from '../../domain/services/characterPlayerServi
 import { createJournalist } from '../../domain/services/journalistService'
 import { createDoctor } from '../../domain/data/injuryDoctorText'
 import { createTrainerArc } from '../../domain/services/trainerArcService'
-import { generateBoardObjectives } from '../../domain/services/boardObjectiveService'
+import { generateBoardObjectives, evaluateObjective } from '../../domain/services/boardObjectiveService'
 import { generateMecenat } from '../../domain/services/mecenatService'
 import { generateSupporterGroup } from '../../domain/services/supporterService'
 import { generateAICoaches } from '../../domain/services/aiCoachService'
@@ -447,5 +447,17 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   }
 
   const playersWithAvailability = updatePlayerAvailability(game)
-  return { ...game, players: playersWithAvailability }
+  const finalGame: SaveGame = { ...game, players: playersWithAvailability }
+
+  // SLUTTEST 2026-08-08 (punkt 4b): se samma fix + rotorsak i
+  // seasonEndProcessor.ts — currentValue måste fyllas i här också, annars
+  // ljuger ankomstscenen (spelets FÖRSTA skärm) om nivåmålens läge redan
+  // från säsong 1.
+  return {
+    ...finalGame,
+    boardObjectives: (finalGame.boardObjectives ?? []).map(obj => ({
+      ...obj,
+      currentValue: evaluateObjective(obj, finalGame).value,
+    })),
+  }
 }

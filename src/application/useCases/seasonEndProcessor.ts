@@ -918,8 +918,16 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   const objRand = mulberry32((seed ?? 42) + game.currentSeason * 777)
   const managedClubForObj = updatedClubs.find(c => c.id === game.managedClubId)
+  // SLUTTEST 2026-08-08 (punkt 4b): currentValue satt till 0 vid generering,
+  // uppdaterades bara i checkInObjectives (omg 7/14/22) — hela introt +
+  // första tredjedelen av säsongen visade en falsk nolla för nivåmål (t.ex.
+  // growFanbase, target 70, spelaren såg "0 / 70" när mätaren stod på 50).
+  // Deltamål (growFinances) hade rätt i noll — bara nivåmålen ljög.
+  // evaluateObjective körs nu en gång direkt vid generering; checkIn-rytmen
+  // (omg 7/14/22) orörd.
   const newSeasonObjectives = managedClubForObj && game.board
     ? generateBoardObjectives(managedClubForObj, game, game.board, objRand)
+        .map(obj => ({ ...obj, currentValue: evaluateObjective(obj, game).value }))
     : []
 
   // ── Bandygalan ────────────────────────────────────────────────────────────
