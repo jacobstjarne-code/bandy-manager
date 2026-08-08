@@ -91,7 +91,7 @@ function playHomegrown(owner: BoardMember, season: number): BoardObjective {
 function growFanbase(owner: BoardMember, season: number): BoardObjective {
   return makeObjective(
     'growFanbase', 'community',
-    'Klackens humör ska nå 70',
+    'Publikens humör ska nå 70',
     `${displayName(owner)}: "Publiken måste tillbaka. Vi behöver stämning på läktarna. Humöret uppe i 70 — det är målet."`,
     owner, 'growFanbase', 70,
     `${displayName(owner)}: "Stämningen är tillbaka! Bra jobbat."`,

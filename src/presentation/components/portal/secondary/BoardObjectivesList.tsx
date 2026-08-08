@@ -29,6 +29,18 @@ export function formatMoney(value: number): string {
   return `${value} kr`
 }
 
+// SLUTTEST 2026-08-08 (uppföljning): formatMoney väljer enhet (kr/tkr/mkr)
+// oberoende per tal — currentValue och targetValue på SAMMA rad kan då landa
+// i olika enheter (t.ex. "0 kr / 100 tkr" tidigt i säsongen, growFinances).
+// Enheten väljs nu en gång på det STÖRRE av de två talen och används på
+// båda sidorna — samma enhet på båda sidor av snedstrecket.
+export function formatMoneyPair(current: number, target: number): [string, string] {
+  const scale = Math.max(Math.abs(current), Math.abs(target))
+  if (scale >= 1_000_000) return [`${(current / 1_000_000).toFixed(1)} mkr`, `${(target / 1_000_000).toFixed(1)} mkr`]
+  if (scale >= 1000) return [`${Math.round(current / 1000)} tkr`, `${Math.round(target / 1000)} tkr`]
+  return [`${current} kr`, `${target} kr`]
+}
+
 interface ObjRowProps {
   obj: BoardObjective
   onNavigate?: () => void
@@ -79,10 +91,13 @@ function ObjRow({ obj, onNavigate }: ObjRowProps) {
             <span>Framsteg</span>
             {/* 2026-08-08 (sluttest): ekonomiska mål renderade rått tal ("0 / 100000")
                 trots att formatMoney låg i samma fil — bryter Tal & enheter-kortet
-                (DESIGN-DECISIONS 2026-06-11: pengar i tkr/mkr, aldrig rå krona). */}
+                (DESIGN-DECISIONS 2026-06-11: pengar i tkr/mkr, aldrig rå krona).
+                Uppföljning samma dag: formatMoney(a) / formatMoney(b) var för sig
+                kunde ge OLIKA enheter på de två sidorna ("0 kr / 100 tkr") —
+                formatMoneyPair väljer en delad enhet på det större talet. */}
             <span className="obj-progress-value">
               {obj.type === 'economic'
-                ? `${formatMoney(obj.currentValue)} / ${formatMoney(obj.targetValue)}`
+                ? formatMoneyPair(obj.currentValue, obj.targetValue).join(' / ')
                 : `${obj.currentValue} / ${obj.targetValue}`}
             </span>
           </div>
