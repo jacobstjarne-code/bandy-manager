@@ -77,7 +77,14 @@ function ObjRow({ obj, onNavigate }: ObjRowProps) {
         <>
           <div className="obj-progress-header">
             <span>Framsteg</span>
-            <span className="obj-progress-value">{obj.currentValue} / {obj.targetValue}</span>
+            {/* 2026-08-08 (sluttest): ekonomiska mål renderade rått tal ("0 / 100000")
+                trots att formatMoney låg i samma fil — bryter Tal & enheter-kortet
+                (DESIGN-DECISIONS 2026-06-11: pengar i tkr/mkr, aldrig rå krona). */}
+            <span className="obj-progress-value">
+              {obj.type === 'economic'
+                ? `${formatMoney(obj.currentValue)} / ${formatMoney(obj.targetValue)}`
+                : `${obj.currentValue} / ${obj.targetValue}`}
+            </span>
           </div>
           <div className="obj-progress-track">
             <div className="obj-progress-fill" style={{ width: `${progressPct}%`, background: progressFillColor }} />
