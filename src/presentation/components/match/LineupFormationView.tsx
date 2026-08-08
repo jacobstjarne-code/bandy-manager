@@ -102,7 +102,7 @@ export function LineupFormationView({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: isEmpty ? 9 : 13,
+                  fontSize: isEmpty ? 8 : 13,
                   fontWeight: isEmpty ? 700 : 800,
                   color: isEmpty ? 'color-mix(in srgb, var(--ink) 40%, transparent)' : 'var(--text-primary)',
                   transition: 'background 120ms, border-color 120ms, transform 120ms',
@@ -112,7 +112,7 @@ export function LineupFormationView({
                 }}>
                   {player
                     ? (player.shirtNumber != null ? String(player.shirtNumber) : '?')
-                    : slot.label.slice(0, 2).toUpperCase()}
+                    : slot.label.toUpperCase()}
                 </div>
 
                 {/* NO name text — shown in legend/list below */}

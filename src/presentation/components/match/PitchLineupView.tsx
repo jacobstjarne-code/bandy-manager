@@ -191,7 +191,7 @@ export function PitchLineupView({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: isEmpty ? 9 : 12,
+                    fontSize: isEmpty ? 8 : 12,
                     fontWeight: 800,
                     color: isEmpty ? 'var(--text-secondary)' : 'var(--text-primary)',
                     transition: 'background 120ms, border-color 120ms, transform 120ms',
@@ -206,7 +206,7 @@ export function PitchLineupView({
                   }}>
                     {player
                       ? (player.shirtNumber != null ? String(player.shirtNumber) : '?')
-                      : slot.label.slice(0, 2).toUpperCase()}
+                      : slot.label.toUpperCase()}
                   </div>
 
                   {/* Player name below circle */}
