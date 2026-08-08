@@ -33,17 +33,17 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
     p => p.archetype === PlayerArchetype.CornerSpecialist && startingIds.includes(p.id)
   )
 
-  // Compute per-key recommended value
+  // SLUTTEST 2026-08-08 (punkt 5): läser nu analysis.suggestedMentality/
+  // .suggestedPress (opponentAnalysisService.ts, samma "Yta 3"-mappning som
+  // redan drev den varma remsans recommendation-text) istf en egen,
+  // oberoende recentForm/tablePosition-beräkning. Rot till motsägelsen: två
+  // lager läste olika signaler (den varma remsan: motståndarens truppstyrka
+  // per position; denna raden: form/tabellplacering) och kunde peka åt olika
+  // håll samtidigt ("Prioritera defensiven" ovanför, "Matchar förslaget.
+  // Offensivt läge" tre rader ner). En källa nu, ingen egen tolkning kvar här.
   const recommendations: Partial<Record<keyof Tactic, string>> = {}
-  if (analysis) {
-    if (analysis.recentForm === 'Svag form' || (analysis.tablePosition != null && analysis.tablePosition >= 9)) {
-      recommendations.mentality = 'offensive'
-      recommendations.press = 'high'
-    } else if (analysis.recentForm === 'Stark form' || (analysis.tablePosition != null && analysis.tablePosition <= 3)) {
-      recommendations.mentality = 'defensive'
-      recommendations.press = 'low'
-    }
-  }
+  if (analysis?.suggestedMentality) recommendations.mentality = analysis.suggestedMentality
+  if (analysis?.suggestedPress) recommendations.press = analysis.suggestedPress
   recommendations.cornerStrategy = cornerSpec ? 'aggressive' : 'safe'
 
   // Per-key confirm/warn feedback
