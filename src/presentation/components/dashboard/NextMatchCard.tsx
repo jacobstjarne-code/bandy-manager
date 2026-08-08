@@ -124,10 +124,14 @@ export function NextMatchCard({
   // — återanvänd istf en fjärde egen kopia av samma kontroll.
   const isDirektkvalad = cupMatch?.round === 2
     && !!game.cupBracket && isClubDirektkvalad(game.cupBracket, game.managedClubId)
-  // Rot (2b): "Neutral plan" var hårdkodad för ALLA cuprundor — bara finalen
-  // (round 4, cupService/getCupRoundName-konventionen) spelas på neutral
-  // plan (CUP_FINAL_VENUE), övriga har riktig homeClubId/awayClubId.
-  const isCupFinalMatch = cupMatch?.round === 4
+  // Rot (2b, rättad 2026-08-08): "Neutral plan" var hårdkodad för ALLA
+  // cuprundor. Min FÖRSTA fix (cupMatch.round === 4) var fortfarande fel —
+  // cupService.ts:s generateNextCupRound stämplar isCupFinalWeekend =
+  // nextRound >= 3, alltså BÅDE semifinal OCH final får CUP_FINAL_VENUE
+  // (Sävstaås IP, Bollnäs) och isCupFinalhelgen: true på fixturen. Semin
+  // visades som "BORTA" fast den spelas i Bollnäs precis som finalen.
+  // Facit är fixturens egen flagga, inte en gissad rond-gräns.
+  const isCupFinalMatch = nextFixture.isCupFinalhelgen === true
 
   // ── Act-based glow (statisk, ej pulserande) ──
   const act = getCurrentAct(nextFixture.roundNumber)
