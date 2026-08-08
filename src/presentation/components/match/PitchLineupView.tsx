@@ -224,7 +224,7 @@ export function PitchLineupView({
                       lineHeight: 1,
                       textShadow: '0 0 3px rgba(255,255,255,0.8)',
                     }}>
-                      {player.lastName.slice(0, 7)}
+                      {player.lastName}
                     </span>
                   )}
                 </div>
@@ -267,7 +267,7 @@ export function PitchLineupView({
             return (
               <span key={slot.id} style={{ fontSize: 10, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                 <span style={{ fontWeight: 700 }}>{player.shirtNumber ?? '?'}</span>{' '}
-                {player.lastName.slice(0, 6)}
+                {player.lastName}
                 <span style={{ color: 'var(--text-muted)' }}> ({slot.label})</span>
                 {slot !== template.slots[template.slots.length - 1] && <span style={{ color: 'var(--border-dark)', margin: '0 2px' }}>·</span>}
               </span>
