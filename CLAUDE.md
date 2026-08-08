@@ -195,7 +195,22 @@ När manuell playtest inte är praktiskt (t.ex. text-/data-tunga sprintar där u
 - UX-flöden där interaktion/timing/feedback är poängen
 - Sprintar som berör MatchLiveScreen-rendering eller andra perception-tunga vyer
 
-För dessa: kod-simulation kan komplettera men ersatter inte manuell verifiering. Markera som "awaiting playtest-verification" i KVAR.md tills Jacob hunnit playtesta.
+För dessa: kod-simulation kan komplettera men ersätter inte manuell verifiering. Markera som "awaiting playtest-verification" i KVAR.md tills Jacob hunnit playtesta.
+
+### BROWSER-VERIFIERING FÖRE RAPPORT (Code) — OBLIGATORISKT
+
+Claude Code i desktop-appen har en inbyggd browser-pane och kan starta dev-servern själv (Cmd+Shift+B / Views-menyn). Därmed gäller: **Code sluter kedjan bygg → verifiera i UI själv, innan rapport.** "Inte verifierat: manuell playtest, ingen browser i den här miljön" är inte längre ett giltigt förbehåll.
+
+**Vid varje leverans som renderar något för spelaren:** starta dev-servern, navigera till ytan, och se den. Rapporten ska innehålla vad du SÅG — inte vad koden gör.
+
+De tre frågor browser-verifieringen ska besvara, som gröna tester aldrig kan:
+1. **Renderas texten färdig?** Inga `[Opus]`, inga oresolverade `{token}`, inga dubblerade citattecken (källan bar dem redan, komponenten wrappade i fler — 2026-07-20).
+2. **Sitter elementet där det ska?** Inte avklippt, inte bakom ett syskon, inte utanför containern.
+3. **Går flödet att fullfölja?** Klicka igenom hela interaktionen, inte bara ladda skärmen.
+
+**Vad som fortfarande är Jacobs:** känsla (är tempot rätt, bär scenen sin tyngd), långa förlopp (nå januari, vinna ett derby, spela två säsonger), och slutbedömning av dramaturgi. Code verifierar att det FUNGERAR; Jacob bedömer om det är BRA.
+
+**Rotorsak:** fyra fel den här veckan var alla gröna i test och trasiga på skärmen — `[Opus]` som spelets mest visade sträng (28x/säsong), dubbelciterad mecenattext, kafferummets halverade innehåll efter D4-refaktorn, och "LÅST I INTRO"-pillen som kommunicerade på utvecklarspråk. Ingen av dem hade överlevt att någon tittade på ytan en gång.
 
 **Notera:** Build + tester grönt är *teknisk* verifiering, inte audit. Audit kräver att man kan svara på frågan "vad ser spelaren?" — antingen via direkt observation eller via simulation som dumpar output.
 
@@ -558,8 +573,16 @@ grep -rn '#[0-9a-fA-F]\{3,8\}' src/ --include="*.tsx" | grep -v node_modules \
 # innehöll ordet "SVG").
 
 # 2. Inga "rink" kvar
-grep -rni 'rink' src/ --include="*.ts" --include="*.tsx" | grep -v node_modules
-# Ska returnera 0
+grep -rniE '\brink\b' src/ --include="*.ts" --include="*.tsx" | grep -v node_modules | grep -v -- '--ice-rink'
+# Ska returnera 0. Ordgräns (\brink\b) tillagd 2026-08-08 (SLUTTEST-fyndet,
+# punkt 7) — utan den matchade grep -rni 'rink' även "flexShrink" (substräng-
+# match, dussintals falska träffar i varje skärm som använder flexbox), vilket
+# gjorde porten i praktiken okörbar. Ett dokumenterat undantag inbyggt i
+# kommandot: `--ice-rink`/`--ice-rink-deep` (BandyPitch.tsx, FormationView.tsx)
+# är tokennamn från pitchfärgs-beslutet 2026-06-19, inte ordet "rink" i
+# speltext. Nytt fynd av ordet "rink" i text/kommentar ska INTE läggas till
+# som ett nytt grep -v-undantag — det är precis vad porten ska fånga.
+
 
 # 3. Import-verifiering: alla nya imports används
 # Kör build — TypeScript fångar unused imports
