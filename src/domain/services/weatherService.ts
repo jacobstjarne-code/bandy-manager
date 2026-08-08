@@ -112,6 +112,15 @@ export function generateMatchWeather(
     injuryRiskModifier = 1.15
     goalChanceModifier = 0.92
     attendanceModifier = 0.75
+  } else if (condition === WeatherCondition.Thaw && homeClub.hasArtificialIce) {
+    // SLUTTEST 2026-08-08 (punkt 6) — rot: hasArtificialIce ger ALLTID
+    // Excellent/Good iceQuality (rad 57-58), så Thaw+Poor/Thaw+Moderate ovan
+    // triggade aldrig för konstfrysta banor — regn hade noll mekanisk effekt
+    // där. Konstfrusen bana blir vattensjuk ovanpå isen vid töväder, men banan
+    // håller i grunden bättre än naturis — mildare straff än naturisens
+    // Moderate-gren (10-18/0.88), inte lika hårt som Poor (20-30/0.80).
+    ballControlPenalty = 5 + Math.round(rand() * 5)
+    speedModifier = 0.94
   } else if (condition === WeatherCondition.LightSnow) {
     ballControlPenalty = 5 + Math.round(rand() * 7)
     speedModifier = 0.92
