@@ -217,12 +217,140 @@ npm run lint:design                 → grönt
 
 - **Punkt 1** — kan inte deploya/verifiera preview-URL (Vercel MCP saknar auth).
 - **Punkt 3** — kod klar, inte visuellt verifierad på 390px (ingen browser).
-- **Punkt 5** — rapporterad med konkret väg + mindre diff än väntat (Yta
-  3-infrastrukturen finns redan), inte byggd — väntar på Jacobs go.
-- **Punkt 6** — konstanter föreslagna, inte byggda/stress-testade — väntar
-  på Jacobs dom om styrkan.
 - **Punkt 4c** — utredd, ingen ytterligare läcka hittad, rapporterad
   nyansering av var bugen troligen sitter (etikett, inte mätare) — Jacob avgör.
 - **Innan något markeras klart-kravet** (browser-verifiering, tre frågor,
   "vad SÅG du") — kunde inte uppfyllas i den här sessionen. Samma
   begränsning gäller hela sessionen, inte punktvis.
+
+---
+
+## UPPFÖLJNING (samma dag) — Jacobs domar på punkterna ovan, byggda
+
+### 2 (rättad igen). Cup: neutral plan missade semifinalen
+
+Min egen `82a0e6eb`-fix (`isCupFinalMatch = cupMatch?.round === 4`) var
+fortfarande fel — Jacob playtestade och rapporterade rotorsaken exakt:
+`cupService.ts`s `generateNextCupRound` sätter `isCupFinalWeekend =
+nextRound >= 3`, alltså BÅDE semifinal (rond 3) OCH final (rond 4) spelas
+på `CUP_FINAL_VENUE` (Sävstaås IP, Bollnäs) och får `isCupFinalhelgen:
+true` på fixturen. En rond-gräns kan aldrig fånga det — bara fixturens
+egen flagga kan. **Fil:** `NextMatchCard.tsx`. Commit `ebfb0e0c`.
+```ts
+const isCupFinalMatch = nextFixture.isCupFinalhelgen === true
+```
+
+**Spårat parallellt (rapport, inte byggt):** matchmotorn ger FULL
+hemmafördel på cupens semi/final trots att båda spelas på neutral plan.
+`matchCore.ts:492` (`effectiveHomeAdvantage = fixture.isNeutralVenue ? 0 :
+...`) och samtliga 4+ ställen som bygger matchinput
+(`useMatchGenerator.ts:62,127`, `MatchLiveScreen.tsx:241,674,1087,1169`)
+kollar bara `isNeutralVenue` — ett fält `playoffService.ts` ENDAST sätter
+för SM-finalen. `isCupFinalhelgen` används extensivt i `matchCore.ts` för
+att VÄLJA KOMMENTARSTEXT (rad ~1413-1892) men aldrig för
+hemmafördelsberäkningen. Text säger "neutral plan", motorn räknar hemma-
+fördel som vanligt. Rör inte `matchCore.ts`/`cupService.ts` i den här
+commiten — kalibrerad kod, större ändring än en kortfix. Jacobs bord.
+
+### 4b uppföljning. Samma enhet på båda sidor av snedstrecket
+
+`BoardObjectivesList.tsx` renderade `formatMoney(currentValue)` och
+`formatMoney(targetValue)` var för sig — varje anrop väljer kr/tkr/mkr
+oberoende av det andra talet, så tidigt i säsongen (`growFinances`,
+`currentValue=0`) blev det `0 kr / 100 tkr` på samma rad. Ny
+`formatMoneyPair(current, target)` väljer EN enhet på `Math.max(|current|,
+|target|)` och formaterar båda talen i den. Verifierat (vite-node):
+`formatMoneyPair(0, 100000)` → `['0 tkr', '100 tkr']`,
+`formatMoneyPair(1200000, 1500000)` → `['1.2 mkr', '1.5 mkr']`.
+**Filer:** `BoardObjectivesList.tsx`, `boardObjectiveService.ts`. Commit
+`d82b02a3`.
+
+**Löst tråd, inte rapporterad tidigare, inte åtgärdad:** samma fils
+`progressPct`-formel (`(currentValue/targetValue)*100`) är bakvänd för
+"lägre är bättre"-mål (`topHalf`, target 6 = "plats 6 eller bättre" men
+`currentValue` är själva placeringen; `reduceInjuries`, target 5 = "max 5
+skador"). Ett lag på plats 9 (misslyckas "topp 6") räknar `(9/6)*100=150%`,
+klipps till en FULL progressbar — visar övererövring fast målet faktiskt
+missas. Upptäckt vid denna utredning, ligger utanför vad som begärdes den
+här rundan. Flaggas för Jacob, inte fixat.
+
+### 4c uppföljning. Etiketten rättad
+
+`growFanbase`s etikett ändrad från "Klackens humör ska nå 70" till
+ordagrant **"Publikens humör ska nå 70"** (Jacobs dom, kopierad exakt).
+Ratificerar min tidigare läsning: mekaniken (`fanMood`) och flavour-
+texten pekade redan rätt, bara den tersa etiketten använde fel term.
+**Fil:** `boardObjectiveService.ts`. Commit `d82b02a3`.
+
+### 5. Taktikskärmens motsägelse — BYGGD
+
+Exakt enligt egen föreslagen väg i rapporten ovan (Option 1, återanvänd
+Yta 3-infrastrukturen). Ny `mapRecommendationToPress` i
+`opponentAnalysisService.ts`, spegling av `mapRecommendationToMentality`
+— samma tre riktade recommendation-strängar, "Jämn motståndare" ger
+avsiktligt `undefined`. `suggestedPress?: TacticPress` på
+`OpponentAnalysis`, satt i `generateDetailedAnalysis` bredvid
+`suggestedMentality`. `TacticStep.tsx`s egen, oberoende
+`recentForm`/`tablePosition`-beräkning borttagen — läser nu
+`analysis.suggestedMentality`/`.suggestedPress`, samma källa som den varma
+remsans `recommendation`-text. En källa, ingen egen tolkning kvar i
+komponenten. **Filer:** `opponentAnalysisService.ts` (3 filer totalt inkl.
+test), `TacticStep.tsx`. 5 nya tester
+(`opponentAnalysisService.test.ts`), 1399→1404 gröna. Commit `1a6454b7`.
+
+### 6. Knottrig is på konstfrusen bana — BYGGD, stresstestad
+
+Exakt de föreslagna konstanterna, ingen justering: ny gren i
+`weatherService.ts`, `condition===Thaw && homeClub.hasArtificialIce` →
+`ballControlPenalty = 5 + Math.round(rand()*5)` (5-10), `speedModifier =
+0.94`. Placerad efter Thaw+Moderate, före LightSnow. Rot: `hasArtificialIce`
+gav alltid `Excellent`/`Good` `iceQuality` (rad 57-58), så
+Thaw+Poor/Thaw+Moderate — enda grenarna som satte effekt vid töväder —
+triggade aldrig för de klubbarna. Regn gav noll mekanisk effekt på
+konstfrusen bana innan denna fix.
+
+**Texthake verifierad, ingen ny text/wiring behövdes:** `matchCore.ts`s
+`weather_goal_thaw`/`weather_miss_thaw`/`iceDeterioration_thaw`-pooler
+(rad 1489, 1557, 1567, 1660, 1667) triggar redan på
+`weather.condition===Thaw`, oberoende av `iceQuality`. Texten
+("vattenpöl", "slushig is", "slasket") är generisk nog att passa
+konstfrusen bana med ytvatten också — ingen klubbtypsspecifik formulering
+som skulle bli fel.
+
+**Stresstest 10 seeds × 5 säsonger (7312 matcher), före/efter:**
+```
+                     FÖRE     EFTER    mål (bandygrytan)
+goalsPerMatch        9.19     9.19     9.12 ±1.5   ✅
+cornerGoalPct        22.7%    22.7%    22.2% ±3    ✅
+homeWinPct            49.5%    49.5%    50.2% ±5   ✅
+```
+Oförändrat på säsongsnivå — effekten träffar en smal delmängd matcher
+(konstfrusna klubbar × töväder), ingen mätbar förskjutning av
+kalibreringen. 0 crascher, 0 invariant-brott båda körningarna.
+**Fil:** `weatherService.ts`. Commit `26a7068d`.
+
+### Kvalitetsportar (uppföljningsrundan)
+```
+npx tsc --noEmit                    → rent
+npx vitest run                      → 1404/1404 gröna
+npm run build                       → grönt, lint:design-guard ✓
+npm run lint:text-guard             → grönt
+npm run lint:design                 → grönt
+```
+
+### Commits (uppföljning, kronologisk)
+`ebfb0e0c` (punkt 2, rättad igen) · `d82b02a3` (punkt 4b/4c) ·
+`1a6454b7` (punkt 5) · `26a7068d` (punkt 6). Pushade till origin/main.
+
+### Kvar overifierat — Jacobs egen anteckning, inte löst av mig
+
+Jacob försökte själv verifiera två saker och konstaterar att båda kräver
+en riktig telefon: (1) **tomma lineup-slots efter etikettfixen** (punkt
+3) — han fyllde elvan direkt och fick aldrig upp ett tomt slot att
+kontrollera; (2) **riktig 390px-viewport** — fönsterresizen i hans miljö
+slog inte igenom (`innerWidth` stod kvar på 1440), och appen kapar själv
+vid 430px så en 375px-mätning blir en proxy, inte det verkliga svaret.
+Jag har ingen browser eller enhet i den här sessionen heller (samma
+begränsning som resten av auditen, se "Verifieringsmetod" överst) — kan
+inte utföra den verifieringen åt honom. Kvarstår som ett öppet, ägar-löst
+verifieringssteg tills någon har appen öppen på en faktisk telefon.
