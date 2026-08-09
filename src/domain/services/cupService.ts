@@ -179,6 +179,14 @@ export function generateNextCupRound(
         arenaName: CUP_FINAL_VENUE.arenaName,
         venueCity: CUP_FINAL_VENUE.city,
         isCupFinalhelgen: true,
+        // 2026-08-08 (sluttest): matchmotorn läser BARA isNeutralVenue, som fram
+        // till nu bara playoffService satte (SM-finalen). Cupens semi och final
+        // presenterades som neutral plan i portalen och spelades i Bollnäs enligt
+        // arenaName/venueCity — men simulerades med full hemmafördel för det lag
+        // som råkade stå som homeClubId. En flagga per fråga: isCupFinalhelgen är
+        // presentation (finalhelgens ram), isNeutralVenue är mekanik. Motorn
+        // behöver inte veta vad en cup är.
+        isNeutralVenue: true,
       } : {}),
     }
 

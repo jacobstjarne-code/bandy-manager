@@ -41,6 +41,36 @@ export function formatMoneyPair(current: number, target: number): [string, strin
   return [`${current} kr`, `${target} kr`]
 }
 
+// SLUTTEST 2026-08-08 (uppföljning 2): mål där LÄGRE är bättre — topHalf
+// (tabellplacering) och reduceInjuries (antal skador) — räknades med samma
+// kvot som mål där högre är bättre. Ett lag på plats 9 mot målet "topp 6"
+// gav 9/6 = 150 %, klampat till 100: FULL stapel för ett mål man missar.
+// Styrelsens krav syns i ankomstscenen och på portalen, alltså två av de
+// tre första skärmarna en ny spelare ser — en full stapel där är en synlig
+// lögn, inte en avrundning.
+//
+// Detta är en INTERIMSFIX. Den ärligt riktiga formeln är avståndsbaserad —
+// (start − nuvärde) / (start − mål) — men den kräver ett startValue på
+// BoardObjective, alltså entitetsfält + saveGameMigration för befintliga
+// saves. Det ligger hos Code (se CODE_INSTRUKTION_SLUTTEST_2026-08-08.md).
+// Tills dess: binärt och sant hellre än graderat och falskt.
+const LOWER_IS_BETTER: ReadonlyArray<BoardObjective['measureFn']> = ['topHalf', 'reduceInjuries']
+
+export function computeProgressPct(obj: BoardObjective): number {
+  if (obj.targetValue <= 0) return 0
+  if (LOWER_IS_BETTER.includes(obj.measureFn)) {
+    // Verifiering (Code, 2026-08-09): ursprungsvillkoret krävde currentValue > 0,
+    // vilket gav TOM stapel för reduceInjuries vid currentValue=0 (noll skador
+    // — det bästa möjliga utfallet, alltså ett uppfyllt mål). currentValue <=
+    // targetValue räcker — båda måtten (tabellplacering, skadeantal) är redan
+    // icke-negativa. Ofarligt i dagens enda renderingsväg (BoardObjectivesList
+    // filtrerar bort status==='met' innan ObjRow når den här funktionen, så en
+    // renderad reduceInjuries-post har alltid currentValue > 5), men fel i sig.
+    return obj.currentValue <= obj.targetValue ? 100 : 0
+  }
+  return Math.min(100, Math.round((obj.currentValue / obj.targetValue) * 100))
+}
+
 interface ObjRowProps {
   obj: BoardObjective
   onNavigate?: () => void
@@ -49,7 +79,7 @@ interface ObjRowProps {
 function ObjRow({ obj, onNavigate }: ObjRowProps) {
   const [hovered, setHovered] = useState(false)
   const isBalance = obj.measureFn === 'balanceBudget'
-  const progressPct = obj.targetValue > 0 ? Math.min(100, Math.round((obj.currentValue / obj.targetValue) * 100)) : 0
+  const progressPct = computeProgressPct(obj)
 
   const progressFillColor = obj.status === 'at_risk' || obj.status === 'failed'
     ? 'var(--match-warn)'
