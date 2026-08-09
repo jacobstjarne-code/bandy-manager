@@ -16,18 +16,28 @@ import { test, expect } from '@playwright/test'
  * scenes.visual.ts-baselines) — den här filen driver bredden via URL:en,
  * inte via viewporten, och sätter viewporten till 430px (bredare än båda
  * testbredderna) så webbläsarfönstret aldrig är den begränsande faktorn.
+ *
+ * trupp-blandat/trupp-kris/lineup-empty/lineup-filled byggda av den seedade
+ * spelläges-fabriken (gameStateFactory.ts, 2026-08-09) — se DevScenesScreen.tsx
+ * för hur varje tillstånd komponeras. lineup-* körs vid dubbel viewport-höjd
+ * (900px räcker inte för hela Uppställningen inkl. CTA:n).
  */
 const WIDE_VIEWPORT = { width: 430, height: 900 }
+const TALL_VIEWPORT = { width: 430, height: 1400 }
 
-const BASELINE_SCENES: [string, string?][] = [
+const BASELINE_SCENES: [string, string?, { width: number; height: number }?][] = [
   ['stillness'],
   ['tabell'],
+  ['trupp-blandat'],
+  ['trupp-kris'],
+  ['lineup-empty', undefined, TALL_VIEWPORT],
+  ['lineup-filled', undefined, TALL_VIEWPORT],
 ]
 
-for (const [id, clickText] of BASELINE_SCENES) {
+for (const [id, clickText, viewport] of BASELINE_SCENES) {
   for (const width of [390, 375]) {
     test(`baseline ${width}px: ${id}`, async ({ page }) => {
-      await page.setViewportSize(WIDE_VIEWPORT)
+      await page.setViewportSize(viewport ?? WIDE_VIEWPORT)
       await page.goto(`/dev/scenes?scene=${id}&width=${width}`, { waitUntil: 'networkidle' })
       await page.getByText('DEV GALLERY').waitFor({ timeout: 15000 })
       if (clickText) {

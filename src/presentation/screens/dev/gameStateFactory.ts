@@ -161,12 +161,36 @@ export function withLongestSurnames(game: SaveGame): SaveGame {
 // ── Uppställning (lineup) ────────────────────────────────────────────────────
 
 /**
- * Sätter managedClubPendingLineup med formationens slots delvis (eller helt)
- * fyllda — `emptyCount` slots lämnas null. useLineupEditor läser detta direkt
- * vid mount (savedLineup) och tvångsfyller INTE (auto-fill-guarden triggar
- * bara på trasigt state — skadade/avstängda i startelvan, eller
- * inkonsekventa slots — inte på ett avsiktligt ofullständigt men konsekvent
- * savedLineup).
+ * createNewGame sätter alltid managedClubPendingLineup till en komplett
+ * standardelva (defaultLineup) — atRound/övriga overrides rör den inte, så
+ * den lever kvar genom hela kedjan om inget rensar den explicit. En genuint
+ * partiell/tom-slots-vy kräver att den SAKNAS (se withLineupSlots doc) så
+ * appens nudge-mekanik (lineupNudge.ts) kickar in istf det sparade valet.
+ */
+export function withoutPendingLineup(game: SaveGame): SaveGame {
+  return { ...game, managedClubPendingLineup: undefined }
+}
+
+/**
+ * Sätter managedClubPendingLineup med formationens slots fyllda enligt
+ * emptyCount. FUNGERAR SOM AVSETT bara för emptyCount=0 (en komplett,
+ * "sparad" elva — matchar setLineup.ts:s egen regel: exakt 11 spelare krävs
+ * för att spara alls, en partiell elva kan strukturellt aldrig nå
+ * managedClubPendingLineup i riktigt spel).
+ *
+ * emptyCount>0 ser ut att fungera (rätt startingPlayerIds-längd, rätt
+ * lineupSlots-struktur på det game-objekt funktionen returnerar) men
+ * PRODUCERAR INTE en delvis tom vy i UI: useLineupEditor.ts:s tacticState
+ * initieras bara från managedClub.activeTactic/nudgeData, aldrig från
+ * savedLineup.tactic.lineupSlots — en påhittad partiell savedLineup läses
+ * då som "inkonsekvent" av hookens auto-fill-skydd och fylls tvångsmässigt
+ * till 11 vid mount. Upptäckt via en riktig skärmdump (11 av 11 placerade
+ * trots emptyCount:3), inte genom att läsa koden.
+ *
+ * För en genuint partiell/tom-slots-vy: lämna managedClubPendingLineup
+ * OSATT och låt appens egen nudge-mekanik (lineupNudge.ts — PREFILL_COUNT=8,
+ * EMPTY_SLOTS=3, seedad på fixtureId) göra jobbet. Den kickar in just när
+ * savedLineup saknas.
  */
 export function withLineupSlots(game: SaveGame, opts: { emptyCount: number; formation?: FormationType }): SaveGame {
   const formation = opts.formation ?? '5-3-2'

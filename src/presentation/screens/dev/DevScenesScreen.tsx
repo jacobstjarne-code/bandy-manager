@@ -17,6 +17,7 @@ import { FormStatusMinimal } from '../../components/portal/minimal/FormStatusMin
 import { EfterklangSecondary } from '../../components/portal/secondary/EfterklangSecondary'
 import { SquadScreen } from '../SquadScreen'
 import { PortalScreen } from '../PortalScreen'
+import { MatchScreen } from '../MatchScreen'
 import { TranareTab } from '../../components/club/TranareTab'
 import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
 import { GranskaScreen } from '../granska/GranskaScreen'
@@ -38,10 +39,13 @@ import { SubstitutionModal } from '../../components/match/SubstitutionModal'
 import { SentValCard } from '../../components/match/SentValCard'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
+import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup } from './gameStateFactory'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'roundsummary' | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
   | 'momentumbar' | 'tacticmodal' | 'submodal' | 'spakb'
+  // VISUELL_AUDIT punkt 1 (2026-08-09): spelläges-fabriken (gameStateFactory.ts)
+  | 'trupp-blandat' | 'trupp-kris' | 'lineup-empty' | 'lineup-filled'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -76,6 +80,10 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'tacticmodal',   label: 'TacticChangeModal (🟥 mörk panel)' },
   { id: 'submodal',      label: 'SubstitutionModal (🟥 mörk panel)' },
   { id: 'spakb',         label: 'Spak B — sent matchningsval (feed-kort)' },
+  { id: 'trupp-blandat', label: 'Trupp/Nu — blandat (1 skada + 1 utgående kontrakt)' },
+  { id: 'trupp-kris',    label: 'Trupp/Nu — kris (alla fyra kategorier)' },
+  { id: 'lineup-empty',  label: 'Uppställningen — 3 tomma slots' },
+  { id: 'lineup-filled', label: 'Uppställningen — fylld, längsta efternamn' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -311,6 +319,35 @@ const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1' })
 const calmPlayers = devPlayers.map(p => ({ ...p, isInjured: false, injuryDaysRemaining: 0, suspensionGamesRemaining: 0, morale: 70 }))
 const stillnessGame = makeGame(makeLeagueFixtures(), { players: calmPlayers, captainPlayerId: 'p-d1' })
 
+// VISUELL_AUDIT punkt 1 (2026-08-09) — spelläges-fabriken (gameStateFactory.ts).
+// atRound(18) ger en riktig, validerad mittsäsongsomgång (createNewGame + fejkad,
+// invariant-kollad historik) att bygga Trupp/Nu- och Uppställnings-baselinen på.
+// Matchday 18 (inte 14) avsiktligt valt: seed 2:s matchday 14 råkar vara
+// Annandagen (isAnnandagen:true, 2026-12-26) — det tvingar fram MatchScreens
+// "laddning"-beat/IllustrationScene istf lineup-steget direkt, upptäckt genom
+// att faktiskt titta på skärmdumpen (inte bara läsa koden).
+const factoryMidSeasonGame = atRound(makeBaseGame({ seed: 2 }), 18)
+const truppBlandatGame = withExpiringContracts(withInjuries(factoryMidSeasonGame, 1), 1)
+const truppKrisGame = withExpiringContracts(withLowMorale(withSuspended(withInjuries(factoryMidSeasonGame, 1), 1), 1), 1)
+// "3 tomma slots": INTE withLineupSlots({emptyCount:3}) — setLineup-use caset
+// (application/useCases/setLineup.ts) kräver exakt 11 startspelare för att
+// spara alls, så managedClubPendingLineup kan strukturellt aldrig hålla en
+// PARTIELL elva i riktigt spel. Den tomma-slots-vyn spelaren faktiskt ser är
+// appens egen "nudge"-mekanik (lineupNudge.ts: PREFILL_COUNT=8, EMPTY_SLOTS=3,
+// deterministiskt seedad på fixtureId) som kickar in just när
+// managedClubPendingLineup SAKNAS. Upptäckt genom att ett withLineupSlots-
+// försök gav "11 av 11 placerade" på skärmen trots emptyCount:3 — tacticState
+// initieras bara från managedClub.activeTactic/nudgeData, aldrig från
+// savedLineup.tactic.lineupSlots, så en påhittad partiell savedLineup
+// klassas som inkonsekvent av useLineupEditor.ts:s eget skydd och fylls
+// automatiskt. Lämna managedClubPendingLineup osatt — låt riktig nudge visa vägen.
+//
+// createNewGame sätter ALLTID managedClubPendingLineup till en komplett
+// defaultLineup (upptäckt via samma skärmdump-verifiering) — withoutPendingLineup
+// rensar den explicit så nudgeData faktiskt får chansen att beräknas.
+const lineupEmptyGame = withoutPendingLineup(factoryMidSeasonGame)
+const lineupFilledGame = withLineupSlots(withLongestSurnames(factoryMidSeasonGame), { emptyCount: 0, formation: '5-3-2' })
+
 // Granska IA — fingerad spelad match (md 20) + andra matcher + roundSummary
 const granskaFixture = {
   id: 'fx-granska', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
@@ -492,6 +529,10 @@ export function DevScenesScreen() {
       : scene === 'season-header' ? seasonHeaderGame
       : scene === 'finalhelg' ? finalhelgGame
       : scene === 'arrival' || scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
+      : scene === 'trupp-blandat' ? truppBlandatGame
+      : scene === 'trupp-kris' ? truppKrisGame
+      : scene === 'lineup-empty' ? lineupEmptyGame
+      : scene === 'lineup-filled' ? lineupFilledGame
       : portalGame
     useGameStore.setState({ game: g, roundSummary: (scene === 'granska' || scene === 'roundsummary') ? granskaRoundSummary : null } as never)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -643,6 +684,16 @@ export function DevScenesScreen() {
         {scene === 'squad-trupp' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <SquadScreen />
+          </div>
+        )}
+        {(scene === 'trupp-blandat' || scene === 'trupp-kris') && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <SquadScreen />
+          </div>
+        )}
+        {(scene === 'lineup-empty' || scene === 'lineup-filled') && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <MatchScreen />
           </div>
         )}
         {scene === 'annandagen' && (
