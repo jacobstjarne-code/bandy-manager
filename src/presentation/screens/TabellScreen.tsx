@@ -101,39 +101,55 @@ export function TabellScreen() {
         const topRated = [...allPlayers].filter(p => p.seasonStats.gamesPlayed >= 3).sort((a, b) => b.seasonStats.averageRating - a.seasonStats.averageRating).slice(0, 5)
         const topPenaltyMin = [...allPlayers].sort((a, b) => (b.seasonStats.yellowCards * 5 + b.seasonStats.redCards * 10) - (a.seasonStats.yellowCards * 5 + a.seasonStats.redCards * 10)).slice(0, 5)
 
-        function StatTable({ title, players, value, unit }: { title: string; players: typeof allPlayers; value: (p: typeof allPlayers[0]) => string | number; unit?: string }) {
+        // VISUELL_AUDIT punkt 2 (2026-08-09): fem StatTable staplade med lika
+        // vikt. Första (Toppskytt) defaultOpen, övriga fyra i <details> —
+        // valt över .btn-segmented som minsta diffen (ingen ny state, ingen
+        // segmenterad väljar-UI att bygga, native disclosure). Ingen
+        // strukturell ändring av tabellfliken, ingen ny copy/token.
+        function StatTable({ title, players, value, unit, defaultOpen = true }: { title: string; players: typeof allPlayers; value: (p: typeof allPlayers[0]) => string | number; unit?: string; defaultOpen?: boolean }) {
           if (players.length === 0) return null
-          return (
-            <div style={{ marginBottom: 20 }}>
-              <p className="h-label" style={{ marginBottom: 8 }}>{title}</p>
-              <div className="card-sharp" style={{ overflow: 'hidden' }}>
-                {players.map((p, i) => {
-                  const club = game!.clubs.find(c => c.id === p.clubId)
-                  const isManaged = p.clubId === game!.managedClubId
-                  return (
-                    <div key={p.id} style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      padding: '9px 12px',
-                      borderTop: i === 0 ? 'none' : '1px solid var(--border)',
-                      background: isManaged ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
-                    }}>
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)', width: 16, textAlign: 'right' }}>{i + 1}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: 13, fontWeight: isManaged ? 700 : 500, color: isManaged ? 'var(--accent)' : 'var(--text-primary)' }}>
-                          {p.firstName} {p.lastName}
-                        </span>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
-                          {club?.shortName ?? club?.name ?? '?'} · {p.age} år
-                        </span>
-                      </div>
-                      <span className="h-num" style={{ color: 'var(--accent-dark)' }}>
-                        {value(p)}{unit ? <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>{unit}</span> : null}
+          const rows = (
+            <div className="card-sharp" style={{ overflow: 'hidden' }}>
+              {players.map((p, i) => {
+                const club = game!.clubs.find(c => c.id === p.clubId)
+                const isManaged = p.clubId === game!.managedClubId
+                return (
+                  <div key={p.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '9px 12px',
+                    borderTop: i === 0 ? 'none' : '1px solid var(--border)',
+                    background: isManaged ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
+                  }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', width: 16, textAlign: 'right' }}>{i + 1}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: 13, fontWeight: isManaged ? 700 : 500, color: isManaged ? 'var(--accent)' : 'var(--text-primary)' }}>
+                        {p.firstName} {p.lastName}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
+                        {club?.shortName ?? club?.name ?? '?'} · {p.age} år
                       </span>
                     </div>
-                  )
-                })}
-              </div>
+                    <span className="h-num" style={{ color: 'var(--accent-dark)' }}>
+                      {value(p)}{unit ? <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>{unit}</span> : null}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
+          )
+          if (defaultOpen) {
+            return (
+              <div style={{ marginBottom: 20 }}>
+                <p className="h-label" style={{ marginBottom: 8 }}>{title}</p>
+                {rows}
+              </div>
+            )
+          }
+          return (
+            <details style={{ marginBottom: 20 }}>
+              <summary className="h-label" style={{ marginBottom: 8, cursor: 'pointer' }}>{title}</summary>
+              <div style={{ marginTop: 8 }}>{rows}</div>
+            </details>
           )
         }
 
@@ -141,10 +157,10 @@ export function TabellScreen() {
           <div>
             <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 12 }}>Ligans toppskyttar, assistkungar och betyg.</p>
             <StatTable title="🥅 Toppskytt" players={topScorers} value={p => p.seasonStats.goals} unit=" mål" />
-            <StatTable title="🎯 Flest assist" players={topAssisters} value={p => p.seasonStats.assists} unit=" ast" />
-            <StatTable title="🔄 Flest hörnmål" players={topCornerGoals} value={p => p.seasonStats.cornerGoals} unit=" hörn" />
-            <StatTable title="⭐ Bäst snittbetyg (min 3 matcher)" players={topRated} value={p => p.seasonStats.averageRating.toFixed(1)} />
-            <StatTable title="⏱️ Flest utvisningsminuter" players={topPenaltyMin} value={p => p.seasonStats.yellowCards * 5 + p.seasonStats.redCards * 10} unit=" min" />
+            <StatTable title="🎯 Flest assist" players={topAssisters} value={p => p.seasonStats.assists} unit=" ast" defaultOpen={false} />
+            <StatTable title="🔄 Flest hörnmål" players={topCornerGoals} value={p => p.seasonStats.cornerGoals} unit=" hörn" defaultOpen={false} />
+            <StatTable title="⭐ Bäst snittbetyg (min 3 matcher)" players={topRated} value={p => p.seasonStats.averageRating.toFixed(1)} defaultOpen={false} />
+            <StatTable title="⏱️ Flest utvisningsminuter" players={topPenaltyMin} value={p => p.seasonStats.yellowCards * 5 + p.seasonStats.redCards * 10} unit=" min" defaultOpen={false} />
           </div>
         )
       })()}
@@ -256,7 +272,7 @@ export function TabellScreen() {
                   display: 'grid',
                   gridTemplateColumns: '24px 32px 1fr 22px 52px 32px 28px',
                   gap: 4,
-                  padding: '6px 10px',
+                  padding: '7px 10px',
                   alignItems: 'center',
                   borderTop: i === 0 ? 'none' : '1px solid var(--border)',
                   borderLeft: `3px solid ${hasLeagueStarted ? getRowBorderColor(row.position) : 'transparent'}`,
