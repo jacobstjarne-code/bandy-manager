@@ -14,7 +14,7 @@ const SCENES: [string, string?][] = [
   ['season-a'], ['season-b'], ['season-c'],
   ['miljoheader-karlsborg'], ['miljoheader-rogle'],
   ['roundsummary'], ['tabell'], ['season-header'], ['finalhelg'], ['annandagen'],
-  ['arrival'], ['squad-trupp', 'button:has-text("👥 TRUPP")'],
+  ['arrival'], ['squad-trupp', 'button:has-text("Trupp")'],
   ['momentumbar'], ['tacticmodal'], ['submodal'], ['spakb'],
 ]
 

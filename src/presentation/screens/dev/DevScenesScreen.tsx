@@ -459,6 +459,14 @@ export function DevScenesScreen() {
     ? new URLSearchParams(window.location.search).get('scene')
     : null) as SceneId | null
   const [scene, setScene] = useState<SceneId>(initialScene ?? 'cup-victory')
+  // VISUELL_AUDIT punkt 1 (2026-08-09): data-scene-content var hårdkodad till
+  // 375px oavsett Playwright-viewport — en "390px"-baseline hade i praktiken
+  // screenshottat samma 375px-innehåll med mer grått runt om, inte bredare
+  // innehåll. ?width=390 gör bredden en riktig variabel, default 375 så
+  // ALLA befintliga scenes.visual.ts-baselines är pixel-oförändrade.
+  const contentWidth = (typeof window !== 'undefined'
+    ? Number(new URLSearchParams(window.location.search).get('width'))
+    : 0) || 375
   const storeReady = useGameStore(s => s.game?.lastCompletedFixtureId === 'fx-granska')
   const seasonReady = useGameStore(s => (s.game?.seasonSummaries?.length ?? 0) > 0)
   const finalReady = useGameStore(s => !!s.game?.playoffBracket?.final)
@@ -520,7 +528,7 @@ export function DevScenesScreen() {
       </div>
 
       {/* ── Scene output — 375 px mobile viewport ── */}
-      <div data-scene-content style={{ maxWidth: 375, margin: '0 auto' }}>
+      <div data-scene-content style={{ maxWidth: contentWidth, margin: '0 auto' }}>
 
         {scene === 'cup-victory' && (
           <CupFinalVictoryScene game={cupGame} onComplete={() => {}} />
