@@ -2,8 +2,8 @@
  * Stress-test reporter — progress lines under körning + slutrapport per §6.
  */
 
-import type { InvariantFinding } from './invariants'
-import { INVARIANT_NAMES } from './invariants'
+import type { InvariantFinding } from '../../src/domain/services/gameInvariants'
+import { INVARIANT_NAMES } from '../../src/domain/services/gameInvariants'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

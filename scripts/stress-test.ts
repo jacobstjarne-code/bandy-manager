@@ -16,7 +16,7 @@ import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { FixtureStatus } from '../src/domain/enums'
 
 import { createHeadlessGame, autoSelectLineup, autoResolvePendingScreen } from './stress/fixtures'
-import { checkInvariants } from './stress/invariants'
+import { checkInvariants } from '../src/domain/services/gameInvariants'
 import { printSeedProgress, printFinalReport } from './stress/reporter'
 import type { SeedResult } from './stress/reporter'
 import { extractMatchStat, extractEconSnapshot, newSeasonStats } from './stress/stats'

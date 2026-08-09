@@ -1,10 +1,20 @@
 /**
- * Stress-test invariants — körs efter varje advanceToNextEvent.
+ * gameInvariants.ts — flyttad hit 2026-08-09 från scripts/stress/invariants.ts
+ * (SLUTTEST/PORTAL-fabriksrapporten). Ren flytt, ingen logikändring.
+ *
+ * Detta är domänsanningar om vad ett giltigt SaveGame-tillstånd är — inte
+ * testriggslogik. Att de hittills bara konsumerats av stresstestet var en
+ * historisk tillfällighet, inte en klassificering. Ska kunna anropas från
+ * produktionskod (t.ex. saveGameMigration efter en migrering, eller
+ * dev-fabriker som fejkar historik och måste garantera att resultatet är
+ * ett tillstånd spelet faktiskt kan nå).
+ *
+ * scripts/stress-test.ts och scripts/stress/reporter.ts importerar härifrån.
  * Varje funktion returnerar [] vid OK, eller InvariantFinding[] vid brott.
  */
 
-import type { SaveGame } from '../../src/domain/entities/SaveGame'
-import { FixtureStatus, PlayerPosition } from '../../src/domain/enums'
+import type { SaveGame } from '../entities/SaveGame'
+import { FixtureStatus, PlayerPosition } from '../enums'
 
 export interface InvariantFinding {
   name: string
