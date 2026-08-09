@@ -354,3 +354,182 @@ Jag har ingen browser eller enhet i den här sessionen heller (samma
 begränsning som resten av auditen, se "Verifieringsmetod" överst) — kan
 inte utföra den verifieringen åt honom. Kvarstår som ett öppet, ägar-löst
 verifieringssteg tills någon har appen öppen på en faktisk telefon.
+
+---
+
+## RUNDA 3 (samma dag) — `CODE_INSTRUKTION_SLUTTEST_RUNDA3_2026-08-08.md`
+
+Opus playtestade produktionsbygget `5a955a8` skarpt i browser (avregistrerad
+service worker, tömd localStorage) — bekräftade att hashen, styrelsemålens
+enheter/etikett, direktkval-gaten och neutral plan på finalhelgen håller i
+produktion. Fem punkter, plus två interimsfixar Opus lämnade i working tree
+för Code att verifiera och committa.
+
+### 0. Opus interimsfixar — verifierade, en bugg fångad innan commit
+
+`cupService.ts`: `isNeutralVenue: true` tillagd i finalhelgens spread
+(samma rotorsak som punkt 1 nedan). tsc + build oförändrat.
+
+`BoardObjectivesList.tsx`: `computeProgressPct`-interimsfix (binär 100/0
+för topHalf/reduceInjuries). **Verifiering fångade en bugg innan commit:**
+villkoret krävde `currentValue > 0`, vilket gav TOM stapel för
+`reduceInjuries` vid `currentValue=0` (noll skador — bästa möjliga utfall,
+ett uppfyllt mål). Rättat till `currentValue <= targetValue`. Ofarligt i
+dagens enda renderväg (BoardObjectivesList filtrerar bort `status==='met'`
+innan render) men fel i sig — fixat innan commit, inte efteråt.
+**Commit:** `eaf8cdfd`.
+
+### 1. Hemmafördel på neutral plan — VERIFIERAD med nytt test
+
+Nytt statistiskt test, `neutralVenueHomeAdvantage.test.ts` (3 tester,
+N=800 jämnstarka matcher per test, fasta seeds — deterministiskt, inte
+flakigt):
+- Cupsemifinal (`isCupFinalhelgen`, `isNeutralVenue=true`, rond 3): hemma-
+  vinstandel 42–58%-bandet, målsnittet symmetriskt (<8% skevhet).
+- Samma lag på en vanlig ligamatch (`isNeutralVenue` ej satt): hemma-
+  vinstandel >51% — bekräftar att testet faktiskt mäter något (kalibrerad
+  `homeAdvantage=0.14` syns när flaggan INTE är satt).
+- SM-finalen (`isFinaldag`, `isNeutralVenue=true` — samma flagga
+  `playoffService.ts` alltid satt): samma 42–58%-band, oförändrat beteende.
+
+Om mekanismen går sönder igen fångar detta testet det vid `tsc`/CI, inte
+vid nästa playtest. **Fil:** `src/domain/services/__tests__/neutralVenueHomeAdvantage.test.ts`.
+**Commit:** `ef225005`.
+
+### 2a. Publik och klack på neutral plan — UTREDNING, INGET BYGGT
+
+**Publik (`calcAttendance`, `economyService.ts:297`):** `capacity`,
+`hasIndoorArena` och (indirekt via `arenaCapacity ?? reputation*7+150`)
+klubbens egen kapacitet läses ALLTID från `homeClubForAttendance` —
+`game.clubs.find(c => c.id === fixture.homeClubId)`
+(`matchSimProcessor.ts:429`). `isSemiFinal`/`isFinal` expanderar kapaciteten
+(×2/×1.8) som en proxy för "större evenemang, större publik", men
+bas-siffran och `hasIndoorArena` (väder-dämpning) kommer alltid från
+vilken klubb som råkar stå som `homeClubId` i bracketen — inte från den
+faktiska värdarenan (Sävstaås IP). `CUP_FINAL_VENUE` (`specialDateStrings.ts:14`)
+har bara `arenaName`/`city`, ingen egen kapacitet eller `hasIndoorArena` —
+det finns idag ingen data att läsa istället. Samma mönster gäller
+`hallInomhus` i matchinput (`useMatchGenerator.ts`): `fixture.homeClubId
+=== game.managedClubId && homeClubObj?.hasIndoorArena` — bracket-klubbens
+egen arenatyp, inte värdarenans, och bara sant om spelarens klubb råkar
+stå som hemmalag den omgången.
+
+`fanMood: game.fanMood` är alltid det EGNA (spelade) klubbens humör,
+oavsett hemma/borta-status i just den fixturen — en redan existerande
+förenkling, inte specifik för neutral plan, men den förstärker samma
+mönster: publikuppskattningen vid en delad neutral arena bygger helt på
+EN klubbs siffror, aldrig en blandning.
+
+**Svar på frågan:** ja, samma bugg en nivå upp, bekräftad i kod — men att
+fixa den kräver att `CUP_FINAL_VENUE` (och motsvarande för SM-final,
+Studenternas IP) får egna kapacitets-/arenadata att läsa istället för att
+låna en bracket-klubbs, ett datamodell-beslut, inte en kortfix. Byggde
+inget, väntar på Jacobs dom om det är värt att modellera.
+
+### 2b. Arenanamnet i Granska — UTREDNING, INGET BYGGT
+
+`GranskaOversikt.tsx:192`: `{homeClub?.arenaName && !fixture.isNeutralVenue
+&& <p>Spelades på {formatArenaName(homeClub.arenaName)}</p>}`. Facit: Granska
+varken "läser fixture.arenaName när det finns" ELLER "slår alltid upp
+hemmaklubbens arena" — den gör en TREDJE sak: visar hemmaklubbens arena
+NÄR `isNeutralVenue` inte är satt, och visar INGENTING alls när den är
+satt. Ingen else-gren skriver ut `fixture.arenaName`/`venueCity` (Bollnäs/
+Sävstaås IP) för neutral-plan-matcher.
+
+Det observerade felet ("Slagghögen arena" efter kvartsfinalen) var alltså
+KORREKT — kvartsfinalen (rond 2) är inte del av finalhelgen och spelas
+verkligen på hemmaklubbens egen arena. Men nu när RUNDA 3 punkt 1:s fix
+sätter `isNeutralVenue=true` även på cupsemifinalen: resultatskärmen
+kommer visa INGEN arenarad alls för semi/final, istället för den korrekta
+"Sävstaås IP, Bollnäs". Bättre än fel arena, men inte samma som rätt
+arena. Samma matchCore.ts-fallback (`fixture.arenaName ?? input.arenaName
+?? ''`, rad 1401) som redan används i speciella-datum-kontexten skulle
+lösa det om Granska fick en egen rad för det — men det är en textrad Jacob
+(Opus) bör skriva, inte en Code-genväg. Byggde inget.
+
+### 3. (se sektionen längre upp — riktig avståndsbaserad progressformel, BYGGD)
+
+Se "Kvalitetsportar (uppföljningsrundan)"-blocket och commit `ef225005`
+ovan för fullständig beskrivning: `BoardObjective.startValue`, migration,
+regressionsguard mot start<=target, 11 nya tester.
+
+### 4. Vädersampel — SIFFROR, ingen kalibreringsändring
+
+Tre tal, precis som efterfrågat, mätta med `generateMatchWeather` direkt
+(22 ligaomgångars klimatfördelning × 200 oberoende drag/omgång = 4400
+sampel per klubb, ad-hoc-skript kört och raderat efter mätning — inga nya
+filer i repot):
+
+```
+                              Söderfors (naturis)   Forsbacka (konstfrusen)
+Matcher med temp > 0°              30.8%                   22.3%
+  — därav iceQuality Poor/Moderat  51.7%                    0.0%  (strukturellt — hasArtificialIce
+                                                                    tvingar alltid Excellent/Good,
+                                                                    oavsett väder, rad 57-58)
+condition===Thaw (ger ballControl-
+Penalty/speedModifier)              3.5%                    1.7%
+```
+
+Tredje talet — texthake — mättes separat: 300 fulla matcher tvingade till
+`weather.condition=Thaw`, körda i `mode: 'full'` (samma väg
+`MatchLiveScreen` faktiskt använder — `useMatchGenerator.ts` lämnar `mode`
+osatt, som defaultar till full text; `mode: 'fast'` skulle gett NOLL
+kommentar oavsett väder, se nedan). **100% av matcherna (300/300) fick
+minst en textrad som nämner isen, snitt 9,28 rader/match** —
+`weather_goal_thaw`/`weather_miss_thaw`/`iceDeterioration_thaw` triggar
+ofta och pålitligt när matchen faktiskt spelas i live-läge.
+
+**Viktig nyans som inte var uppenbar innan mätningen:** `matchSimProcessor.ts`
+(snabbsimulera-omgången-vägen, `matchEngine.ts`s `simulateMatch`) kör
+ALLTID `mode: 'fast'`, vilket ger NOLL kommentartext — inte bara väder,
+utan mål, utvisningar, allt. Det är en generell, redan existerande
+egenskap hos snabbsim (prestandaskäl), inte en väder-specifik brist. Om
+Jacob spelar med snabbsimulerade omgångar (vanligt för ovtiktiga matcher)
+ser han aldrig NÅGON matchtext, väder inkluderat — det är förväntat
+beteende för den spelstilen, inte ett texthake-fel.
+
+**Svar till Jacobs fråga "sällan och tyst?":** nej — mekaniken märks ofta
+(live-läge: 100% textträff, 3,5%/1,7% av alla matcher har den mekaniska
+effekten aktiv) och den är inte tyst när matchen faktiskt spelas ut. Det
+enda "tysta" är iceQuality-TAGGEN på dashboarden (`getIceQualityLabel`) —
+Forsbackas konstfrusna bana visar "Bra is" strukturellt oavsett väder
+(rad 57-58), vilket är AVSIKTLIGT (banan håller i grunden, se rotorsak i
+punkt 6 föregående runda) men betyder att ingen förhandsindikator på
+dashboarden signalerar "regn påverkar spelet idag" för konstfrusna klubbar
+— bara live-kommentaren gör det, i efterhand. Om det är ett problem är det
+en design/text-fråga (en distinkt tagg för "vattensjuk men hel is"?), inte
+en kalibreringsjustering. Ingen kod ändrad i denna punkt.
+
+### 5. Dubblett på cupkortet — BYGGD
+
+`NextMatchCard.tsx`: `NEUTRAL PLAN` renderades två gånger (rubriktagg +
+infoslingan). Rubriktaggen behållen (Jacobs dom — skiljer sig inte
+visuellt), infoslingans dubblett borttagen. **Commit:** `ef225005`.
+
+### Kvalitetsportar (RUNDA 3)
+```
+npx tsc --noEmit                    → rent
+npx vitest run                      → 1420/1420 gröna
+npm run build                       → grönt, lint:design-guard ✓
+npm run lint:text-guard             → grönt
+npm run lint:design                 → grönt
+```
+
+### Commits (RUNDA 3, kronologisk)
+`eaf8cdfd` (punkt 0 — Opus interimsfixar, verifierade + en bugg fångad) ·
+`ef225005` (punkt 1/3/5 — hemmafördel-test, riktig progressformel,
+dubblett-tagg).
+
+### Ej byggt (med orsak) — RUNDA 3
+
+- **Punkt 2a** (publik/klack på neutral plan) — bekräftad bugg (samma
+  klass som punkt 1, en nivå upp), men fixen kräver ny data på
+  `CUP_FINAL_VENUE` (kapacitet, hasIndoorArena) som inte finns idag —
+  datamodell-beslut, inte kortfix. Jacobs dom.
+- **Punkt 2b** (Granskas arenanamn) — bekräftat att semi/final nu visar
+  INGEN arenarad (bättre än fel arena, men inte rätt arena). Fixen är en
+  ny textrad i Granska, Opus-jobb (svensk text), inte en Code-genväg.
+- **Punkt 4** (vädersampel) — siffror levererade, ingen kalibreringsändring
+  begärd eller gjord. En design-nyans flaggad (iceQuality-taggen döljer
+  effekten för konstfrusna klubbar på dashboarden) — Jacobs bord om det
+  ska adresseras.
