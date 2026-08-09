@@ -66,7 +66,8 @@ export interface Fixture {
   status: FixtureStatus
 
   isCup?: boolean
-  isNeutralVenue?: boolean  // true for SM-final at neutral ground (Studenternas IP, Uppsala)
+  isNeutralVenue?: boolean  // mekaniskt: nollar hemmafördel i matchCore.ts. Satt av playoffService.ts
+                             // (SM-final, Studenternas IP) och cupService.ts (cupens finalhelg, Bollnäs).
   isKnockout?: boolean      // true for all playoff + cup matches (enables overtime/penalties on draw)
   isFinaldag?: boolean       // true for the SM-final fixture
   arenaName?: string         // neutral venue-namn för final/cup-final

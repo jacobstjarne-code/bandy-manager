@@ -41,32 +41,34 @@ export function formatMoneyPair(current: number, target: number): [string, strin
   return [`${current} kr`, `${target} kr`]
 }
 
-// SLUTTEST 2026-08-08 (uppföljning 2): mål där LÄGRE är bättre — topHalf
-// (tabellplacering) och reduceInjuries (antal skador) — räknades med samma
-// kvot som mål där högre är bättre. Ett lag på plats 9 mot målet "topp 6"
-// gav 9/6 = 150 %, klampat till 100: FULL stapel för ett mål man missar.
-// Styrelsens krav syns i ankomstscenen och på portalen, alltså två av de
-// tre första skärmarna en ny spelare ser — en full stapel där är en synlig
-// lögn, inte en avrundning.
+// SLUTTEST 2026-08-08 (uppföljning 2 + RUNDA 3 punkt 3): mål där LÄGRE är
+// bättre — topHalf (tabellplacering) och reduceInjuries (antal skador) —
+// räknades med samma kvot som mål där högre är bättre. Ett lag på plats 9
+// mot målet "topp 6" gav 9/6 = 150 %, klampat till 100: FULL stapel för ett
+// mål man missar. Styrelsens krav syns i ankomstscenen och på portalen,
+// alltså två av de tre första skärmarna en ny spelare ser.
 //
-// Detta är en INTERIMSFIX. Den ärligt riktiga formeln är avståndsbaserad —
-// (start − nuvärde) / (start − mål) — men den kräver ett startValue på
-// BoardObjective, alltså entitetsfält + saveGameMigration för befintliga
-// saves. Det ligger hos Code (se CODE_INSTRUKTION_SLUTTEST_2026-08-08.md).
-// Tills dess: binärt och sant hellre än graderat och falskt.
+// RIKTIG FORMEL (RUNDA 3): avståndsbaserad — (start − nuvärde) / (start − mål),
+// klampad 0–1. BoardObjective.startValue (entities/Community.ts) sätts av
+// createNewGame.ts/seasonEndProcessor.ts till samma värde som currentValue
+// initieras med vid generering; saveGameMigration.ts backfyller äldre saves
+// med currentValue som startpunkt.
 const LOWER_IS_BETTER: ReadonlyArray<BoardObjective['measureFn']> = ['topHalf', 'reduceInjuries']
 
 export function computeProgressPct(obj: BoardObjective): number {
   if (obj.targetValue <= 0) return 0
   if (LOWER_IS_BETTER.includes(obj.measureFn)) {
-    // Verifiering (Code, 2026-08-09): ursprungsvillkoret krävde currentValue > 0,
-    // vilket gav TOM stapel för reduceInjuries vid currentValue=0 (noll skador
-    // — det bästa möjliga utfallet, alltså ett uppfyllt mål). currentValue <=
-    // targetValue räcker — båda måtten (tabellplacering, skadeantal) är redan
-    // icke-negativa. Ofarligt i dagens enda renderingsväg (BoardObjectivesList
-    // filtrerar bort status==='met' innan ObjRow når den här funktionen, så en
-    // renderad reduceInjuries-post har alltid currentValue > 5), men fel i sig.
-    return obj.currentValue <= obj.targetValue ? 100 : 0
+    // Fallback (binärt, samma som interimsfixen) när startValue saknas ELLER
+    // redan står på/förbi målet vid start (start <= target — laget låg redan
+    // topp 6 när målet begärdes). Avståndsformeln antar att start är SÄMRE än
+    // målet; ett start<=target ger ett nolla eller negativt nämnare och kan
+    // producera en FULL stapel åt ett lag som senare tappar och missar målet
+    // — samma fellogik som bugen detta ersätter, fast via en annan väg.
+    if (obj.startValue === undefined || obj.startValue <= obj.targetValue) {
+      return obj.currentValue <= obj.targetValue ? 100 : 0
+    }
+    const pct = (obj.startValue - obj.currentValue) / (obj.startValue - obj.targetValue)
+    return Math.round(Math.min(1, Math.max(0, pct)) * 100)
   }
   return Math.min(100, Math.round((obj.currentValue / obj.targetValue) * 100))
 }

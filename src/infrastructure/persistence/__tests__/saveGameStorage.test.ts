@@ -165,6 +165,31 @@ describe('migrateSaveGame', () => {
   it('sets version to current version', () => {
     const oldSave = { version: '0.1.0', players: [], communityActivities: {} }
     const migrated = migrateSaveGame(oldSave)
-    expect(migrated.version).toBe('0.3.2')
+    expect(migrated.version).toBe('0.3.3')
+  })
+
+  // SLUTTEST RUNDA 3 (2026-08-08, punkt 3): startValue är nytt på BoardObjective.
+  // Äldre saves saknar det — backfyll med currentValue, annars kraschar
+  // computeProgressPct:s avståndsformel (startValue undefined) inte, men ger
+  // fallback-binär progress istf den riktiga graderade — vilket är avsikten,
+  // inte en bugg. Detta testar bara att backfillen faktiskt skriver fältet.
+  it('backfyller boardObjectives.startValue från currentValue på äldre saves', () => {
+    const oldSave = {
+      players: [],
+      communityActivities: {},
+      boardObjectives: [{ id: 'obj1', measureFn: 'topHalf', targetValue: 6, currentValue: 9 }],
+    }
+    const migrated = migrateSaveGame(oldSave)
+    expect((migrated.boardObjectives[0] as any).startValue).toBe(9)
+  })
+
+  it('rör inte startValue om det redan finns på saven', () => {
+    const oldSave = {
+      players: [],
+      communityActivities: {},
+      boardObjectives: [{ id: 'obj1', measureFn: 'topHalf', targetValue: 6, currentValue: 7, startValue: 11 }],
+    }
+    const migrated = migrateSaveGame(oldSave)
+    expect((migrated.boardObjectives[0] as any).startValue).toBe(11)
   })
 })

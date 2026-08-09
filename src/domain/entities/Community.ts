@@ -174,6 +174,12 @@ export interface BoardObjective {
   ownerPersonality: BoardPersonality
   targetValue: number
   currentValue: number
+  /** SLUTTEST RUNDA 3 (2026-08-08, punkt 3): läget när målet sattes — krävs för
+   *  en ärlig progressbar på lägre-är-bättre-mål (topHalf/reduceInjuries), där
+   *  currentValue/targetValue-kvoten pekar åt fel håll. Se computeProgressPct
+   *  i BoardObjectivesList.tsx. Saknas på saves från före detta fält
+   *  (saveGameMigration.ts backfyller med currentValue som fallback-start). */
+  startValue?: number
   measureFn: string
   status: 'active' | 'met' | 'failed' | 'at_risk'
   assignedSeason: number

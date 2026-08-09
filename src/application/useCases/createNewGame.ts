@@ -455,9 +455,13 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   // från säsong 1.
   return {
     ...finalGame,
-    boardObjectives: (finalGame.boardObjectives ?? []).map(obj => ({
-      ...obj,
-      currentValue: evaluateObjective(obj, finalGame).value,
-    })),
+    // SLUTTEST RUNDA 3 (punkt 3): startValue satt till SAMMA värde som den
+    // initiala currentValue — "läget när målet sattes" är per definition läget
+    // just nu, vid generering. Krävs av computeProgressPct (BoardObjectivesList.tsx)
+    // för lägre-är-bättre-mål.
+    boardObjectives: (finalGame.boardObjectives ?? []).map(obj => {
+      const startingValue = evaluateObjective(obj, finalGame).value
+      return { ...obj, currentValue: startingValue, startValue: startingValue }
+    }),
   }
 }

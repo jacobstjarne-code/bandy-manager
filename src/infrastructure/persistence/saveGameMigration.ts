@@ -113,7 +113,7 @@ function mergeLegacyBoard(
   return result
 }
 
-export const CURRENT_SAVE_VERSION = '0.3.2'
+export const CURRENT_SAVE_VERSION = '0.3.3'
 
 export function migrateSaveGame(raw: unknown): SaveGame {
   const data = raw as Record<string, unknown>
@@ -184,6 +184,14 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.mecenater === undefined) data.mecenater = []
   if (data.facilityState === undefined) data.facilityState = migrateFacilityState((data.facilityProjects as LegacyFacilityProject[] | undefined) ?? [])
   if (data.boardObjectives === undefined) data.boardObjectives = []
+  // SLUTTEST RUNDA 3 (2026-08-08, punkt 3): startValue är ett nytt fält (krävs
+  // för en riktig avståndsbaserad progressbar på lägre-är-bättre-mål). Saves
+  // från före detta saknar det. currentValue som fallback-start är inte
+  // historiskt korrekt (vi vet inte var laget stod när målet begärdes), men
+  // ger en stapel som rör sig åt rätt håll i stället för en som ljuger.
+  data.boardObjectives = (data.boardObjectives as Record<string, unknown>[]).map(obj =>
+    obj.startValue === undefined ? { ...obj, startValue: obj.currentValue } : obj
+  )
   if (data.boardObjectiveHistory === undefined) data.boardObjectiveHistory = []
   // KF4 (2026-06-21): konsolidera styrelsen till EN game.board[]. Slå ihop gammal
   // club.board (namn/kön/ålder, från managed-klubben) + gammal boardPersonalities

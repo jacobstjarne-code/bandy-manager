@@ -925,9 +925,14 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // Deltamål (growFinances) hade rätt i noll — bara nivåmålen ljög.
   // evaluateObjective körs nu en gång direkt vid generering; checkIn-rytmen
   // (omg 7/14/22) orörd.
+  // SLUTTEST RUNDA 3 (punkt 3): startValue = samma initiala evaluateObjective-
+  // värde som currentValue skrivs in med — se createNewGame.ts för samma mönster.
   const newSeasonObjectives = managedClubForObj && game.board
     ? generateBoardObjectives(managedClubForObj, game, game.board, objRand)
-        .map(obj => ({ ...obj, currentValue: evaluateObjective(obj, game).value }))
+        .map(obj => {
+          const startingValue = evaluateObjective(obj, game).value
+          return { ...obj, currentValue: startingValue, startValue: startingValue }
+        })
     : []
 
   // ── Bandygalan ────────────────────────────────────────────────────────────

@@ -397,9 +397,9 @@ export function NextMatchCard({
             {isCup && !isDerby && (
               <>
                 <span className="tag tag-copper" style={{ fontSize: 8 }}>En match avgör</span>
-                {isCupFinalMatch && (
-                  <span className="tag tag-outline" style={{ fontSize: 8 }}>Neutral plan</span>
-                )}
+                {/* SLUTTEST RUNDA 3 (punkt 5): "NEUTRAL PLAN" renderades två
+                    gånger — här och i rubriktaggen (headerTagText, rad ~190).
+                    Rubriktaggen behålls (Jacobs dom), infoslingans dubblett tas bort. */}
                 {isDirektkvalad && (
                   <span className="tag tag-outline" style={{ fontSize: 8 }}>Direktkval</span>
                 )}
