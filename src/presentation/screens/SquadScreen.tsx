@@ -204,7 +204,16 @@ function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversar
   } else if (player.dayJob) {
     allChips.push(<span key="dayjob" style={chipStyle('var(--text-secondary)', 'transparent', 'var(--border-dark)')}>👷 {player.dayJob.title}</span>)
   }
+  // VISUELL_AUDIT punkt 3: allChips.slice(0,3) dolde upp till sex chips utan
+  // att visa att det fanns fler. +N-pill (samma chipStyle) när fler än tre.
   const chips = allChips.slice(0, 3)
+  if (allChips.length > 3) {
+    chips.push(
+      <span key="more" style={chipStyle('var(--text-muted)', 'transparent', 'var(--border-dark)')}>
+        +{allChips.length - 3}
+      </span>
+    )
+  }
 
   const clubSeasons = player.seasonHistory?.filter(s => s.clubId === player.clubId).length ?? 0
   const showVeteranBand = clubSeasons >= 5 && !isCaptain
@@ -549,7 +558,6 @@ export function SquadScreen() {
         const latestPulse = (game.teamFitnessHistory ?? []).slice(-1)[0]
         const injuryDanger = (latestPulse?.injuryCount ?? 0) >= 2
         const moralDanger = (latestPulse?.avgMorale ?? 100) < 55
-        const nuEmpty = 'squad-empty'
         const playerRow = (p: typeof players[0], statusColor: string, statusText: string) => (
           <div
             key={p.id}
@@ -565,6 +573,36 @@ export function SquadScreen() {
             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>
           </div>
         )
+        // VISUELL_AUDIT punkt 3 (2026-08-09): fyra sektioner renderades
+        // ovillkorligt med rubrik, även tomma — allEmpty visade StillnessSection,
+        // men bara när ALLA fyra var tomma; blandat läge gav tomma rubriker
+        // mellan de fyllda. Rendera nu bara sektioner där list.length > 0,
+        // severity-stripe (samma prioritet/tokens som stripeColor: skada/
+        // avstängning → danger, moral/kontrakt → warm) på var och en av dem.
+        // De tomma kategorierna samlas i en enda CalmRow istf fyra tomma rubriker.
+        const CATEGORY_LABEL: Record<string, string> = {
+          skador: 'skador', avstängningar: 'avstängningar', moral: 'moral', 'utgående kontrakt': 'utgående kontrakt',
+        }
+        const emptyCategories: string[] = []
+        if (injured.length === 0) emptyCategories.push(CATEGORY_LABEL.skador)
+        if (suspended.length === 0) emptyCategories.push(CATEGORY_LABEL.avstängningar)
+        if (lowMorale.length === 0) emptyCategories.push(CATEGORY_LABEL.moral)
+        if (expiringContracts.length === 0) emptyCategories.push(CATEGORY_LABEL['utgående kontrakt'])
+        // "Inget om {A} eller {B}." / "Inget om {A}, {B} eller {C}." — texten är
+        // Opus färdigskriven (VISUELL_AUDIT-ordern), inte omskriven här.
+        const calmRowText = emptyCategories.length === 0 ? null
+          : emptyCategories.length === 1 ? `Inget om ${emptyCategories[0]}.`
+          : `Inget om ${emptyCategories.slice(0, -1).join(', ')} eller ${emptyCategories[emptyCategories.length - 1]}.`
+
+        const sectionWrap = (color: string, children: React.ReactNode) => (
+          <div className="card-sharp" style={{
+            marginBottom: 12, padding: '9px 12px', overflow: 'hidden',
+            borderLeft: `3px solid ${color}`, borderRadius: '0 8px 8px 0',
+          }}>
+            {children}
+          </div>
+        )
+
         return (
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
             <SeasonArcCard game={game} />
@@ -572,36 +610,32 @@ export function SquadScreen() {
               <StillnessSection game={game} />
             ) : (
               <>
-                <div style={{ marginBottom: 12, ...(injuryDanger ? { borderLeft: '3px solid var(--danger)', paddingLeft: 10 } : {}) }}>
-                  <div className="h-label" style={{ marginBottom: 8 }}>🚑 SKADADE</div>
-                  {injured.length === 0
-                    ? <div className={nuEmpty}>Inga skadade just nu.</div>
-                    : injured.map(p => playerRow(p, 'var(--danger)', getInjuryText(p.injuryDaysRemaining, p.id)))}
-                </div>
-                <div style={{ marginBottom: 12 }}>
+                {injured.length > 0 && sectionWrap('var(--danger)', <>
+                  <div className="h-label" style={{ marginBottom: 8, color: injuryDanger ? 'var(--danger)' : undefined }}>🚑 SKADADE</div>
+                  {injured.map(p => playerRow(p, 'var(--danger)', getInjuryText(p.injuryDaysRemaining, p.id)))}
+                </>)}
+                {suspended.length > 0 && sectionWrap('var(--danger)', <>
                   <div className="h-label" style={{ marginBottom: 8 }}>🟥 AVSTÄNGDA</div>
-                  {suspended.length === 0
-                    ? <div className={nuEmpty}>Ingen avstängd.</div>
-                    : suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id, p.suspensionCause)))}
-                </div>
-                <div style={{ marginBottom: 12, ...(moralDanger ? { borderLeft: '3px solid var(--danger)', paddingLeft: 10 } : {}) }}>
-                  <div className="h-label" style={{ marginBottom: 8 }}>😟 LÅG MORAL</div>
-                  {lowMorale.length > 0 && (
-                    <div className="squad-section-note">
-                      Låg moral i längden tär på formen, och det är formen som märks på isen. Ett samtal i tid brukar räcka för att vända det.
-                    </div>
-                  )}
-                  {lowMorale.length === 0
-                    ? <div className={nuEmpty}>Truppen är på topp.</div>
-                    : lowMorale.map(p => playerRow(p, 'var(--warning)', getMoraleText(p.morale, p.lowMoraleDays, p.id)))}
-                </div>
-                <div style={{ marginBottom: 12 }}>
+                  {suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id, p.suspensionCause)))}
+                </>)}
+                {lowMorale.length > 0 && sectionWrap('var(--warm)', <>
+                  <div className="h-label" style={{ marginBottom: 8, color: moralDanger ? 'var(--danger)' : undefined }}>😟 LÅG MORAL</div>
+                  <div className="squad-section-note">
+                    Låg moral i längden tär på formen, och det är formen som märks på isen. Ett samtal i tid brukar räcka för att vända det.
+                  </div>
+                  {lowMorale.map(p => playerRow(p, 'var(--warning)', getMoraleText(p.morale, p.lowMoraleDays, p.id)))}
+                </>)}
+                {expiringContracts.length > 0 && sectionWrap('var(--warm)', <>
                   <div className="h-label" style={{ marginBottom: 8 }}>📄 KONTRAKT UTGÅR</div>
-                  {expiringContracts.length === 0
-                    ? <div className={nuEmpty}>Inga kontrakt löper ut den här säsongen.</div>
-                    : expiringContracts.map(p => playerRow(p, p.contractUntilSeason < game.currentSeason ? 'var(--danger)' : 'var(--warning)', getContractText(p.contractUntilSeason, game.currentSeason, p.id)))}
-                </div>
-                {/* Stiltje-lagren stannar men tonas ned när något brinner */}
+                  {expiringContracts.map(p => playerRow(p, p.contractUntilSeason < game.currentSeason ? 'var(--danger)' : 'var(--warning)', getContractText(p.contractUntilSeason, game.currentSeason, p.id)))}
+                </>)}
+                {calmRowText && (
+                  <div className="card-sharp" style={{ marginBottom: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{calmRowText}</span>
+                  </div>
+                )}
+                {/* Stiltje-lagret stannar men tonas ned när något brinner */}
                 <StillnessSection game={game} receded />
               </>
             )}
