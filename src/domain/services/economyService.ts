@@ -3,6 +3,7 @@ import type { Club } from '../entities/Club'
 import type { Player } from '../entities/Player'
 import { getActiveVolunteerBonus } from './volunteerService'
 import type { Volunteer } from './volunteerService'
+import { CUP_FINAL_VENUE } from '../data/specialDateStrings'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
 
@@ -294,8 +295,27 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
 
 // ── Attendance calculator (exported for UI display) ──────────────────────────
 
+// SLUTTEST RUNDA 4 (2026-08-08, punkt 1): finalhelgens neutral-evenemangsfaktor.
+// "Publiken som inte följer något av lagen" — folk som kommer för själva
+// evenemanget (cupfinalhelg i Bollnäs), utöver de två klubbarnas egna
+// anhängare. Rapporterat värde, ej kalibrerat mot verklig data (finns inget
+// att kalibrera mot — det är ett spelvärde). Verifierat med scripts/tmp-körning
+// innan commit: två små klubbar (rep ~45-48) fyller INTE CUP_FINAL_VENUE.capacity
+// (7000), två stora (rep ~78-85) stannar INTE på ett golv kring 900 — se
+// commit-meddelandet för de faktiska talen.
+const NEUTRAL_EVENT_FACTOR = 1.5
+
 export function calcAttendance(params: {
   club: { reputation: number; arenaCapacity?: number }
+  /** SLUTTEST RUNDA 4 (punkt 1): motståndarens klubb — krävs för att räkna
+   *  kombinerat publikunderlag på neutral plan. Oanvänd om isNeutralVenue
+   *  inte är satt. */
+  awayClub?: { reputation: number }
+  /** SLUTTEST RUNDA 4 (punkt 1): matchen spelas på neutral plan (cupens
+   *  finalhelg, Bollnäs — eller SM-final). Läses av fixture.isNeutralVenue,
+   *  ALDRIG isCupFinalhelgen (presentation, inte mekanik — samma princip som
+   *  RUNDA 3 punkt 1:s hemmafördel-fix). */
+  isNeutralVenue?: boolean
   fanMood: number
   position: number
   isKnockout: boolean
@@ -309,31 +329,52 @@ export function calcAttendance(params: {
   weatherAttendanceModifier?: number     // raw MatchWeather.effects.attendanceModifier — dämpas/neutraliseras internt
   hasIndoorArena?: boolean               // arena-golvet: väder påverkar inte inomhuspublik
 }): number {
-  const { club, fanMood, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen, fixtureMonth, journalistAttendanceModifier, weatherAttendanceModifier, hasIndoorArena } = params
-  const baseCapacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
+  const { club, awayClub, isNeutralVenue, fanMood, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen, fixtureMonth, journalistAttendanceModifier, weatherAttendanceModifier, hasIndoorArena } = params
+  const homeBaseCapacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
 
-  // Finals get expanded capacity (temporary stands, like Studenternas)
-  // SM-final: 4x capacity (capped 20000), semifinal: 2x, cup final: 3x
-  // Annandagen: 2x (whole region shows up)
-  const expandedCapacity = isFinal ? Math.min(20000, baseCapacity * 4)
-    : isSemiFinal ? Math.min(8000, baseCapacity * 2)
-    : isAnnandagen ? Math.min(15000, baseCapacity * 2)
-    : baseCapacity
+  // SLUTTEST RUNDA 4 (punkt 1): neutral plan — bägge lagens publikunderlag
+  // summeras som RÄKNEBAS (ingen av dem är "hemma"), men SLUTTAKET är
+  // CUP_FINAL_VENUE.capacity — inte den vanliga isFinal/isSemiFinal-
+  // expansionen (som bygger på EN klubbs egen kapacitet, fel modell när
+  // ingen klubb äger arenan). hasIndoorArena läses av
+  // CUP_FINAL_VENUE.hallInomhus (via anropsstället), inte hemmaklubbens.
+  //
+  // Gate: isCup && isNeutralVenue, INTE bara isNeutralVenue — SM-finalen
+  // sätter också isNeutralVenue (Studenternas IP, en helt annan, redan
+  // tunad arena) men fick ingen egen kapacitetsdata i den här rundan.
+  // Bara isNeutralVenue hade tyst bytt SM-finalens 4x-expansion (upp till
+  // 20 000) mot cupens 7000-tak — en oavsiktlig regression på ett system
+  // som inte var i scope. isFinal/isSemiFinal-grenarna nedan är därför
+  // orörda för SM-finalen.
+  const isNeutralCupVenue = isCup && isNeutralVenue
+  const awayBaseCapacity = awayClub ? Math.round(awayClub.reputation * 7 + 150) : homeBaseCapacity
+  const calcBase = isNeutralCupVenue ? homeBaseCapacity + awayBaseCapacity : homeBaseCapacity
+  const capCeiling = isNeutralCupVenue ? CUP_FINAL_VENUE.capacity
+    : isFinal ? Math.min(20000, homeBaseCapacity * 4)
+    : isSemiFinal ? Math.min(8000, homeBaseCapacity * 2)
+    : isAnnandagen ? Math.min(15000, homeBaseCapacity * 2)
+    : homeBaseCapacity
 
-  const attendanceRate = Math.min(0.95, 0.35 + (fanMood / 100) * 0.40 + (position <= 3 ? 0.08 : 0))
+  // Klackeffekten (punkt 1): på cupens neutrala finalhelg har ingen sin
+  // läktare i Bollnäs — mood/tabellplacerings-boosten (annars en äkta
+  // hemmaklacks-effekt) halveras istf att ges fullt till vilken klubb som
+  // råkar stå som homeClubId.
+  const moodWeight = isNeutralCupVenue ? 0.5 : 1.0
+  const attendanceRate = Math.min(0.95, 0.35 + (fanMood / 100) * 0.40 * moodWeight + (position <= 3 ? 0.08 * moodWeight : 0))
   const eventBonus = isFinal ? 2.5 : isSemiFinal ? 1.8 : isKnockout ? 1.40 : isCup ? 1.20 : 1.0
   const derbyBonus = isDerby ? 1.30 : 1.0
   // Annandagen is the most-attended league match of the year — whole village turns up
   const annandagenBonus = isAnnandagen ? 1.80 : 1.0
   // DREAM-004: december julturneringen — hela familjen på läktaren
   const christmasBonus = (fixtureMonth === 12) ? 1.15 : 1.0
+  const neutralEventFactor = isNeutralCupVenue ? NEUTRAL_EVENT_FACTOR : 1.0
   // Väder (SYSTEMKARTA fynd 1): snöstorm tunnar läktaren, finaler/annandagen dämpar dippen
   const weatherFactor = effectiveWeatherAttendance(
     weatherAttendanceModifier,
     hasIndoorArena,
     Boolean(isFinal || isSemiFinal || isAnnandagen),
   )
-  const base = Math.round(expandedCapacity * attendanceRate * eventBonus * derbyBonus * annandagenBonus * christmasBonus * weatherFactor * (journalistAttendanceModifier ?? 1.0))
-  return Math.min(expandedCapacity, Math.max(50, base))
+  const base = Math.round(calcBase * attendanceRate * eventBonus * derbyBonus * annandagenBonus * christmasBonus * neutralEventFactor * weatherFactor * (journalistAttendanceModifier ?? 1.0))
+  return Math.min(capCeiling, Math.max(50, base))
 }
 

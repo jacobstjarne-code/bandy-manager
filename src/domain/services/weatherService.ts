@@ -174,6 +174,21 @@ export function getIceQualityLabel(quality: IceQuality): string {
   }
 }
 
+/**
+ * SLUTTEST RUNDA 4 (2026-08-08, punkt 4): "Istaggen ljuger inte, men den
+ * tiger." iceQuality mäter ANLÄGGNINGENS kvalitet — konstfrusna klubbar
+ * visar Excellent/Good oavsett väder (rätt: banan håller i grunden, se
+ * RUNDA 2 punkt 6). Men vid condition===Thaw ligger det vatten OVANPÅ isen
+ * (knotter-mekaniken, ballControlPenalty) — och "Bra is" läses av spelaren
+ * som "inget händer", trots att effekten biter. Vid Thaw visar taggen
+ * ytans tillstånd (vått) istf anläggningens kvalitet, oavsett underlag.
+ * Övriga conditions oförändrat — samma getIceQualityLabel som innan.
+ */
+export function getIceTagLabel(quality: IceQuality, condition: WeatherCondition): string {
+  if (condition === WeatherCondition.Thaw) return 'Blöt is'
+  return getIceQualityLabel(quality)
+}
+
 export function getConditionLabel(condition: WeatherCondition): string {
   switch (condition) {
     case WeatherCondition.Clear: return 'Klart'

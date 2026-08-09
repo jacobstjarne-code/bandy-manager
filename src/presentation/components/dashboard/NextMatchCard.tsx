@@ -1,7 +1,7 @@
 import { ClubBadge } from '../ClubBadge'
 import { formatArenaName } from '../../../domain/utils/arenaName'
 import { IceQuality, PlayoffRound } from '../../../domain/enums'
-import { getIceQualityLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
+import { getIceTagLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
 import { getCupRoundLabel } from '../../../domain/services/cupService'
 import { isClubDirektkvalad } from '../../../domain/services/anslagService'
 import { getRivalry } from '../../../domain/data/rivalries'
@@ -223,10 +223,13 @@ export function NextMatchCard({
     : 'var(--accent-dark)'
 
   // Ice quality tag
+  // SLUTTEST RUNDA 4 (punkt 4): getIceTagLabel visar "Blöt is" vid
+  // condition===Thaw istf anläggningens iceQuality-etikett — se
+  // weatherService.ts för rotorsak ("istaggen ljuger inte, men den tiger").
   const iceTag = matchWeather ? (() => {
     const iq = matchWeather.weather.iceQuality
     const poor = iq === IceQuality.Poor || iq === IceQuality.Cancelled
-    const label = getIceQualityLabel(iq)
+    const label = getIceTagLabel(iq, matchWeather.weather.condition)
     return (
       <span className={poor ? 'tag tag-red' : 'tag tag-ice'} style={{ fontSize: 8 }}>
         {label}{poor ? ' ⚠️' : ''}

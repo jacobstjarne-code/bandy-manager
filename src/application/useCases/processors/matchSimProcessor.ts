@@ -11,6 +11,7 @@ import type { MatchPhaseContext } from '../../../domain/services/matchUtils'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { generateMatchWeather } from '../../../domain/services/weatherService'
 import { calcAttendance } from '../../../domain/services/economyService'
+import { CUP_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
 import { generatePressConference } from '../../../domain/services/pressConferenceService'
 import { mulberry32 } from '../../../domain/utils/random'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../../domain/data/playerNames'
@@ -429,11 +430,16 @@ export function simulateRound(
     }
 
     const homeClubForAttendance = game.clubs.find(c => c.id === fixture.homeClubId)
+    const awayClubForAttendance = game.clubs.find(c => c.id === fixture.awayClubId)
     const isFinalFixture = fixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(fixture.id)
     const isSemiFixture = fixture.roundNumber > 22 && game.playoffBracket?.semiFinals.some(s => s.fixtures.includes(fixture.id))
     const fixtureWeather = game.matchWeathers?.find(mw => mw.fixtureId === fixture.id)
     const attendance = homeClubForAttendance ? calcAttendance({
       club: homeClubForAttendance,
+      // SLUTTEST RUNDA 4 (punkt 1): isNeutralVenue, inte isCupFinalhelgen —
+      // publiken är mekanik, samma princip som RUNDA 3 punkt 1:s hemmafördel.
+      awayClub: awayClubForAttendance,
+      isNeutralVenue: !!fixture.isNeutralVenue,
       fanMood: game.fanMood ?? 50,
       position: game.standings.find(s => s.clubId === fixture.homeClubId)?.position ?? 6,
       isKnockout: !!fixture.isKnockout,
@@ -444,7 +450,10 @@ export function simulateRound(
       isAnnandagen: !!currentCalendarSlot?.isAnnandagen,
       fixtureMonth: new Date(game.currentDate).getMonth() + 1,
       weatherAttendanceModifier: fixtureWeather?.effects.attendanceModifier,
-      hasIndoorArena: homeClubForAttendance.hasIndoorArena,
+      // SLUTTEST RUNDA 4 (punkt 1): på cupens neutrala finalhelg spelas
+      // matchen inte i homeClubForAttendance egen hall — läs värdarenans
+      // egen hallInomhus (CUP_FINAL_VENUE), inte bracket-klubbens.
+      hasIndoorArena: (fixture.isCup && fixture.isNeutralVenue) ? CUP_FINAL_VENUE.hallInomhus : homeClubForAttendance.hasIndoorArena,
     }) : undefined
     simulatedFixtures.push({ ...result.fixture, attendance, refereeId: referee.id })
   }

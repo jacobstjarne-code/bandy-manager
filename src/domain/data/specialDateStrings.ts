@@ -14,6 +14,12 @@ export const SM_FINAL_VENUE = {
 export const CUP_FINAL_VENUE = {
   arenaName: 'Sävstaås IP',
   city: 'Bollnäs',
+  // SLUTTEST RUNDA 4 (2026-08-08, punkt 1): spelvärden, inte ett påstående om
+  // den verkliga arenan — märkbart större än seriens småstadsarenor
+  // (reputation*7+150, 150-850) så finalhelgen känns som en större scen.
+  // Läses av economyService.ts:s calcAttendance för neutral-venue-matcher.
+  capacity: 7000,
+  hallInomhus: false,
 }
 
 // ── Lore-data ─────────────────────────────────────────────────────────────────

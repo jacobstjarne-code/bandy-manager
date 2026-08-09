@@ -4,7 +4,8 @@ import type { Fixture, MatchEvent } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { Club } from '../../../domain/entities/Club'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
-import { MatchEventType, InboxItemType, TrainingType } from '../../../domain/enums'
+import { MatchEventType, InboxItemType, TrainingType, WeatherCondition } from '../../../domain/enums'
+import type { Weather } from '../../../domain/entities/Weather'
 import { formatArenaName } from '../../../domain/utils/arenaName'
 import { csColor, formatFinance } from '../../utils/formatters'
 import { getRivalry } from '../../../domain/data/rivalries'
@@ -57,6 +58,32 @@ export function granskaFlavorText(args: {
     : totalGoals >= 8 ? '🎢 Dramatiskt kryss' : '🤝 Rättvis poängdelning'
   const flavorTail = won ? ` · ${isHome ? 'hemmaseger' : 'bortaseger'}` : ''
   return `${flavor}${flavorTail}`
+}
+
+/**
+ * SLUTTEST RUNDA 4 (2026-08-08, punkt 3): "vädret syns inte i snabbläget."
+ * Live-kommentaren (matchCore.ts, mode:'full') nämner väder ofta (RUNDA 3
+ * punkt 4: 100% textträff i live-läge) — men mode:'fast' (snabbsimulera
+ * omgången) genererar ALDRIG kommentartext, väder inkluderat. Den som
+ * spelar snabbsimulerat har alltså aldrig sett att vädret påverkade
+ * matchen. Granska läser sparad MatchWeather-data direkt (inte
+ * livekommentaren) — funkar därför oavsett simuleringsläge.
+ *
+ * Villkorsordning: nederbörds-/siktcondition (Thaw/HeavySnow/LightSnow/Fog)
+ * kollas FÖRE extremkyla — "vinner nederbörden" vid samtidiga villkor
+ * (kyla + snöfall). Ren funktion → enhetstestbar.
+ */
+export function getGranskaWeatherEffectLine(weather: Weather | undefined): string | null {
+  if (!weather) return null
+  switch (weather.condition) {
+    case WeatherCondition.Thaw: return 'Det regnade. Isen var knottrig hela matchen.'
+    case WeatherCondition.HeavySnow: return 'Ymnigt snöfall. Bollen dog i drivorna.'
+    case WeatherCondition.LightSnow: return 'Lätt snöfall över isen. Bollen gick trögare än den brukar.'
+    case WeatherCondition.Fog: return 'Dimman låg tät. Långt spel var ingen idé.'
+    default: break
+  }
+  if (weather.temperature < -15) return 'Sträng kyla. Bollen studsade hårt och händerna domnade.'
+  return null
 }
 
 /**
@@ -189,7 +216,19 @@ export function GranskaOversikt({
             {fixture.attendance != null && (
               <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>🏟️ {fixture.attendance} åskådare</p>
             )}
-            {homeClub?.arenaName && !fixture.isNeutralVenue && (
+            {/* SLUTTEST RUNDA 4 (punkt 2): fixture.arenaName läses FÖRST (satt av
+                cupService.ts/playoffService.ts för neutral-plan-matcher — "Sävstaås
+                IP"/"Studenternas IP", redan kompletta namn, INTE genom
+                formatArenaName som skulle lägga till " arena"). Faller tillbaka på
+                hemmaklubbens egen arena (formatArenaName som innan) när fixturen
+                inte har ett eget namn. Tidigare version visade INGEN rad alls för
+                neutral-plan-matcher (!fixture.isNeutralVenue-gaten) sedan RUNDA 3
+                satte isNeutralVenue även på cupens semi/final. */}
+            {fixture.arenaName ? (
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>
+                Spelades på {fixture.arenaName}{fixture.venueCity ? ` i ${fixture.venueCity}` : ''}
+              </p>
+            ) : homeClub?.arenaName && (
               <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>Spelades på {formatArenaName(homeClub.arenaName)}</p>
             )}
 
@@ -211,6 +250,19 @@ export function GranskaOversikt({
               return summary ? (
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 12, padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', textAlign: 'left' }}>
                   {summary}
+                </p>
+              ) : null
+            })()}
+
+            {/* SLUTTEST RUNDA 4 (punkt 3): väderrad — syns oavsett simuleringsläge,
+                se getGranskaWeatherEffectLine ovan för rotorsak. */}
+            {(() => {
+              const weatherLine = getGranskaWeatherEffectLine(
+                game.matchWeathers?.find(mw => mw.fixtureId === fixture.id)?.weather
+              )
+              return weatherLine ? (
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 6 }}>
+                  {weatherLine}
                 </p>
               ) : null
             })()}
