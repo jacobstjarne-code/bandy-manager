@@ -533,3 +533,82 @@ dubblett-tagg).
   begärd eller gjord. En design-nyans flaggad (iceQuality-taggen döljer
   effekten för konstfrusna klubbar på dashboarden) — Jacobs bord om det
   ska adresseras.
+
+---
+
+## RUNDA 4 (samma dag) — `CODE_INSTRUKTION_SLUTTEST_RUNDA4_2026-08-08.md`
+
+Tre domar, alla byggda. **Commit:** `f15d334a`.
+
+### 1. Neutral plans publik — BYGGD
+
+`CUP_FINAL_VENUE.capacity=7000`/`hallInomhus=false` (specialDateStrings.ts).
+`calcAttendance` summerar bägge klubbarnas publikunderlag
+(`reputation*7+150` per klubb) på cupens neutrala finalhelg, lägger på
+`NEUTRAL_EVENT_FACTOR=1.5`, kapar mot `CUP_FINAL_VENUE.capacity`.
+Klackeffekten (mood/tabellplacerings-boosten) halveras.
+
+**Faktor rapporterad + verifierad innan commit:** 1.5. Två små klubbar
+(rep 45+48) final ≈1605, två stora (rep 85+78) final ≈2432 — differentierat,
+ingen fyller 7000, ingen stannar vid ett golv kring 900.
+
+**Scope-beslut som inte var explicit i ordern, fattat och dokumenterat i
+commit-meddelandet:** gaten är `isCup && isNeutralVenue`, inte bara
+`isNeutralVenue`. SM-finalen sätter också `isNeutralVenue` (Studenternas
+IP) men fick ingen egen kapacitetsdata i denna runda — en ren
+`isNeutralVenue`-gate hade tyst bytt SM-finalens befintliga 4x-expansion
+(upp till 20 000) mot cupens 7000-tak, en oavsiktlig regression på ett
+system som inte var i scope. `isFinal`/`isSemiFinal`-grenarna är orörda
+för SM-finalen.
+
+### 2. Arenaraden i Granska — BYGGD
+
+Läser `fixture.arenaName` (komplett namn från cupService.ts/
+playoffService.ts, INTE genom `formatArenaName` — det skulle lagt till
+" arena" och gett "Sävstaås IP arena"), annars hemmaklubbens egen arena
+(`formatArenaName` som innan). "Spelades på {arenaName} i {venueCity}" när
+staden finns. Föregående version (RUNDA 3 punkt 2b) visade ingen arenarad
+alls för neutral plan — nu rätt arena, inte bara ingen fel arena.
+
+### 3. Vädret i snabbläget — BYGGD + uppföljningsrapport
+
+Ny `getGranskaWeatherEffectLine()` — väderrad i Granska efter
+resultatsammanfattningen, prioordning nederbörd/sikt före extremkyla
+(nederbörden vinner vid samtidiga villkor). Läser sparad `MatchWeather`-
+data direkt, inte livekommentaren — funkar oavsett simuleringsläge. 9 nya
+tester (`getGranskaWeatherEffectLine.test.ts`).
+
+**Uppföljningsrapport (efterfrågad):** ja, det finns fler textlager som
+bara existerar i live-läge. `matchCore.ts:1379`, `if (!isFast) {...}`,
+omsluter INTE bara väder — hela det kontextuella berättarlagret: legend-
+kommentar (spelare med `isClubLegend`), storylines (`rescued_from_
+unemployment`, `went_fulltime_pro`, m.fl.), THE BOMB 1.3-kontextuell text
+(akademi-uppflyttad, kapten, klackfavorit, dayJob), derby-text, cup/final/
+semifinal-specifik måltext, och supporterklackens matchreaktioner. Allt
+detta är noll i `mode:'fast'` (snabbsimulera omgången), precis som vädret
+var. `generateQuickSummary`/`generateSilentMatchReport` (Granskas
+kompensation för snabbsimulerade matcher) är rent mekaniska — målskytt-
+räkning och marginal från `fixture.events`, ingen åtkomst till någon av
+ovanstående. Vädret var alltså representativt för en mycket större klass,
+inte ett enskilt undantag. **Svar: ja — egen runda, före release, som
+Jacob själv föreslog som villkor.** Inget byggt utöver väderraden i denna
+runda.
+
+### 4. Istaggen — BYGGD
+
+Ny `getIceTagLabel(quality, condition)` i weatherService.ts: visar "Blöt
+is" istf `getIceQualityLabel`s anläggningskvalitet när
+`condition===Thaw`, oavsett underlag. Övriga conditions oförändrat.
+`NextMatchCard.tsx` uppdaterad. `MatchHeader.tsx`/`matchCore.ts`s
+`openingWeatherNote` rörda inte — bägge visar redan `getConditionLabel`
+("Töväder") i samma mening/rad, redan sant, inte samma "tiger"-problem
+som dashboardtaggen hade isolerat.
+
+### Kvalitetsportar (RUNDA 4)
+```
+npx tsc --noEmit                    → rent
+npx vitest run                      → 1429/1429 gröna
+npm run build                       → grönt, lint:design-guard ✓
+npm run lint:text-guard             → grönt
+npm run lint:design                 → grönt
+```
