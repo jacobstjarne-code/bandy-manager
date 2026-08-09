@@ -24,6 +24,8 @@ import { FixtureStatus } from '../../../domain/enums'
 import { FORMATIONS, type FormationType } from '../../../domain/entities/Formation'
 import { mulberry32 } from '../../../domain/utils/random'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
+import { generateWeeklyDecision } from '../../../domain/services/weeklyDecisionService'
+import type { ActiveAnniversary, MemoryEventType } from '../../../domain/services/clubMemoryService'
 
 // ── Bas ──────────────────────────────────────────────────────────────────────
 
@@ -234,5 +236,49 @@ export function withLineupSlots(game: SaveGame, opts: { emptyCount: number; form
   }
 
   return { ...game, managedClubPendingLineup: pendingLineup }
+}
+
+// ── Portal-atmosfärsmarks ────────────────────────────────────────────────────
+// PORTAL-TAKREGEL (2026-08-09): Upptakt (getEscalationSubState) och Spectator
+// (isManagedClubSpectator) är STRUKTURELLT ömsesidigt uteslutande — Upptakt
+// kräver !isManagedClubInPlayoff (bara grundserien), Spectator kräver
+// game.playoffBracket (bara slutspelet). De kan aldrig vara aktiva samtidigt,
+// oavsett spelläge. "Full omgång — fem marks har innehåll" (takregel-ordern
+// §5) kan alltså inte betyda alla fem ATMOSFÄRSMARKS bokstavligt — högst
+// Situation+Beat+Anniversary+(Upptakt ELLER Spectator) = 4 är nåbart, och i
+// praktiken oftast färre (se Q3-mätningens fördelning: aldrig fler än 3
+// samtidigt i 290 simulerade omgångar). "Fem marks" i doften syftar sannolikt
+// på hela mark-ekosystemet (inkl. handlingar/kronologi), inte atmosfärslagret
+// isolerat — rapporterat, inte tyst kringgått.
+
+/** Trigger för PORTAL_BEATS[0] ("board_failure") — enklaste, mest deterministiska beat att tvinga fram. */
+export function withActiveBeat(game: SaveGame): SaveGame {
+  const objectives = game.boardObjectives ?? []
+  if (objectives.length === 0) return game
+  return { ...game, boardObjectives: objectives.map((o, i) => i === 0 ? { ...o, status: 'failed' as const } : o) }
+}
+
+/** PortalObjectiveAlert visas i varningsläge när ett mål är 'at_risk'. */
+export function withObjectiveAlertWarning(game: SaveGame): SaveGame {
+  const objectives = game.boardObjectives ?? []
+  if (objectives.length === 0) return game
+  return { ...game, boardObjectives: objectives.map((o, i) => i === 0 ? { ...o, status: 'at_risk' as const } : o) }
+}
+
+/** Big-eko med outcome='won' — enda vägen som garanterat ger en icke-tom quote (pickAnniversaryMarkCopy). */
+export function withAnniversary(game: SaveGame): SaveGame {
+  const echo: ActiveAnniversary = {
+    eventId: 'dev_anniversary_1', originalSeason: game.currentSeason - 3, yearsAgo: 3,
+    matchday: game.currentMatchday, type: 'big_win' as MemoryEventType,
+    outcome: 'won', significance: 95, echoSize: 'big',
+    originalEventText: 'Stor seger.',
+  }
+  return { ...game, activeAnniversaries: [...(game.activeAnniversaries ?? []), echo] }
+}
+
+/** generateWeeklyDecision — samma domänfunktion roundProcessor använder, inte en handskriven ersättning. */
+export function withPendingWeeklyDecision(game: SaveGame): SaveGame {
+  const decision = generateWeeklyDecision(game, game.currentMatchday)
+  return decision ? { ...game, pendingWeeklyDecision: decision } : game
 }
 

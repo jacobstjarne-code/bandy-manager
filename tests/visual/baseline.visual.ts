@@ -17,13 +17,21 @@ import { test, expect } from '@playwright/test'
  * inte via viewporten, och sätter viewporten till 430px (bredare än båda
  * testbredderna) så webbläsarfönstret aldrig är den begränsande faktorn.
  *
- * trupp-blandat/trupp-kris/lineup-empty/lineup-filled byggda av den seedade
- * spelläges-fabriken (gameStateFactory.ts, 2026-08-09) — se DevScenesScreen.tsx
- * för hur varje tillstånd komponeras. lineup-* körs vid dubbel viewport-höjd
- * (900px räcker inte för hela Uppställningen inkl. CTA:n).
+ * trupp-blandat/trupp-kris/lineup-empty/lineup-filled/portal-tom (m.fl.)
+ * byggda av den seedade spelläges-fabriken (gameStateFactory.ts, 2026-08-09)
+ * — se DevScenesScreen.tsx för hur varje tillstånd komponeras. lineup- och
+ * portal-scenerna körs vid extra hög viewport (900px räcker inte för hela
+ * Uppställningen/Portalen inkl. CTA:n).
+ *
+ * PORTAL-TAKREGEL (2026-08-09) §5: fyra tillstånd. portal-full når beat+eko+
+ * upptakt+situation (4 av 5 atmosfärsmarks) — Upptakt och Spectator är
+ * strukturellt ömsesidigt uteslutande (se gameStateFactory.ts), så "fem
+ * marks" i ordern kan inte betyda alla fem atmosfärslager-marks bokstavligt.
+ * Detta ÄR taket, rapporterat i commit-meddelandet.
  */
 const WIDE_VIEWPORT = { width: 430, height: 900 }
 const TALL_VIEWPORT = { width: 430, height: 1400 }
+const PORTAL_VIEWPORT = { width: 430, height: 1500 }
 
 const BASELINE_SCENES: [string, string?, { width: number; height: number }?][] = [
   ['stillness'],
@@ -32,6 +40,10 @@ const BASELINE_SCENES: [string, string?, { width: number; height: number }?][] =
   ['trupp-kris'],
   ['lineup-empty', undefined, TALL_VIEWPORT],
   ['lineup-filled', undefined, TALL_VIEWPORT],
+  ['portal-tom', undefined, PORTAL_VIEWPORT],
+  ['portal-normal', undefined, PORTAL_VIEWPORT],
+  ['portal-full', undefined, PORTAL_VIEWPORT],
+  ['portal-grind', undefined, PORTAL_VIEWPORT],
 ]
 
 for (const [id, clickText, viewport] of BASELINE_SCENES) {

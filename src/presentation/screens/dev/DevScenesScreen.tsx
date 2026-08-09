@@ -39,13 +39,15 @@ import { SubstitutionModal } from '../../components/match/SubstitutionModal'
 import { SentValCard } from '../../components/match/SentValCard'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
-import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup } from './gameStateFactory'
+import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision } from './gameStateFactory'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'roundsummary' | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
   | 'momentumbar' | 'tacticmodal' | 'submodal' | 'spakb'
   // VISUELL_AUDIT punkt 1 (2026-08-09): spelläges-fabriken (gameStateFactory.ts)
   | 'trupp-blandat' | 'trupp-kris' | 'lineup-empty' | 'lineup-filled'
+  // PORTAL-TAKREGEL (2026-08-09): fyra baseline-tillstånd, §5 i ordern
+  | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -84,6 +86,10 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'trupp-kris',    label: 'Trupp/Nu — kris (alla fyra kategorier)' },
   { id: 'lineup-empty',  label: 'Uppställningen — 3 tomma slots' },
   { id: 'lineup-filled', label: 'Uppställningen — fylld, längsta efternamn' },
+  { id: 'portal-tom',    label: 'Portal — tom omgång' },
+  { id: 'portal-normal', label: 'Portal — normal (1 atmosfärsrad)' },
+  { id: 'portal-full',   label: 'Portal — full (beat+eko+upptakt)' },
+  { id: 'portal-grind',  label: 'Portal — grind-läge (veckobeslut olöst)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -348,6 +354,20 @@ const truppKrisGame = withExpiringContracts(withLowMorale(withSuspended(withInju
 const lineupEmptyGame = withoutPendingLineup(factoryMidSeasonGame)
 const lineupFilledGame = withLineupSlots(withLongestSurnames(factoryMidSeasonGame), { emptyCount: 0, formation: '5-3-2' })
 
+// PORTAL-TAKREGEL (2026-08-09) — §5-baselinen, fyra tillstånd.
+// portal-full: matchday 24 valt specifikt — inom upptakt-fönstret (sista 3
+// grundserieomgångarna) UTAN att vara "mittfalt" (cementerat, ingen upptakt).
+// Upptakt och Spectator är strukturellt ömsesidigt uteslutande (se
+// gameStateFactory.ts:s kommentar ovanför withAnniversary) — "5 marks" i
+// ordern kan alltså inte betyda alla fem atmosfärsmarks bokstavligt; detta
+// är den faktiska taket (situation+beat+eko+upptakt = 4), rapporterat i
+// commit-meddelandet, inte tyst kringgått.
+const portalTomGame = factoryMidSeasonGame
+const portalNormalGame = withActiveBeat(factoryMidSeasonGame)
+const portalFullBase = atRound(makeBaseGame({ seed: 2 }), 24)
+const portalFullGame = withAnniversary(withActiveBeat(portalFullBase))
+const portalGrindGame = withObjectiveAlertWarning(withPendingWeeklyDecision(factoryMidSeasonGame))
+
 // Granska IA — fingerad spelad match (md 20) + andra matcher + roundSummary
 const granskaFixture = {
   id: 'fx-granska', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
@@ -533,6 +553,10 @@ export function DevScenesScreen() {
       : scene === 'trupp-kris' ? truppKrisGame
       : scene === 'lineup-empty' ? lineupEmptyGame
       : scene === 'lineup-filled' ? lineupFilledGame
+      : scene === 'portal-tom' ? portalTomGame
+      : scene === 'portal-normal' ? portalNormalGame
+      : scene === 'portal-full' ? portalFullGame
+      : scene === 'portal-grind' ? portalGrindGame
       : portalGame
     useGameStore.setState({ game: g, roundSummary: (scene === 'granska' || scene === 'roundsummary') ? granskaRoundSummary : null } as never)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -651,6 +675,11 @@ export function DevScenesScreen() {
 
         {scene === 'portal' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <PortalScreen />
+          </div>
+        )}
+        {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind') && (
+          <div style={{ height: '1400px', overflow: 'hidden', position: 'relative' }}>
             <PortalScreen />
           </div>
         )}
