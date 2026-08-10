@@ -612,3 +612,80 @@ npm run build                       → grönt, lint:design-guard ✓
 npm run lint:text-guard             → grönt
 npm run lint:design                 → grönt
 ```
+
+---
+
+## VISUELL_AUDIT + PORTAL-TAKREGEL (samma dag) — `CODE_INSTRUKTION_VISUELL_AUDIT_YTA2_YTA3_2026-08-08.md` + `CODE_INSTRUKTION_PORTAL_TAKREGEL_2026-08-08.md`
+
+Alla punkter byggda. Commits `bd690388` → `6df38217` (10 commits).
+
+### Baseline — förutsättningen, byggd först
+`data-scene-content` (DevScenesScreen.tsx) var hårdkodad `maxWidth:375` —
+en första baseline-version screenshottade av misstag samma 375px-innehåll
+två gånger under olika namn. Fixat med en `?width=`-parameter (default 375,
+alla befintliga snapshots opåverkade). Ny seedad spelläges-fabrik
+(`gameStateFactory.ts`, ovanpå `createNewGame` — inte det handskrivna
+`as unknown as SaveGame`-mönstret) med hård invariant-validering
+(`atRound` kastar om fejkad historik bryter mot `checkInvariants`, flyttad
+till `src/domain/services/gameInvariants.ts` som en domänsanning, inte
+testriggslogik). Fabriken fångade ett eget buggförsök under bygget
+(matchday- vs roundNumber-förväxling i cup-inflikad historik).
+
+**10 tillstånd × 2 bredder = 20 Playwright-snapshots**, alla gröna: Trupp
+(lugnt/blandat/kris), Uppställningen (tomma slots via appens egen
+nudge-mekanik — inte fejkad, den kan strukturellt inte sparas partiell;
+fylld/längsta namn), Tabell (12-lag+zonstreck), Portal (tom/normal/full/
+grind). Detta stänger de två punkterna som stått öppna sedan sluttestets
+början (tomma lineup-slots, riktig 390px-bredd) — ingen telefon behövs
+längre för att verifiera dem.
+
+### Tabell (litet) — StatTable-hierarki + radhöjd 7px
+Toppskytt defaultOpen, fyra `<details>` (mindre diff än `.btn-segmented`).
+Radhöjd 6→7px, testad mot 375px-baselinen — håller ihop med
+slutspelsstrecket/nedflyttningsstrecket.
+
+### Trupp — CalmRow + villkorliga sektioner + chip +N
+Fyra sektioner renderar bara när de har innehåll (`list.length > 0`),
+severity-stripe per sektion (samma tokens som `stripeColor`). Tomma
+kategorier samlas i en CalmRow (grön dot + given text, kopierad ordagrant:
+"Inget om {A} eller {B}."). `PlayerRow`s chip-cap fick en `+N`-pill.
+`.squad-empty`-CSS-klassen borttagen, orphanad.
+
+### Portal-takregeln — den stora
+`atmosphereResolver.ts`: enda källan för "har den här atmosfärsmarken
+något att säga". Prioritetsordning Anniversary > Upptakt > Spectator >
+Beat > Situation, `ATMOSPHERE_CAP=2` (Jacobs revidering efter mätningen:
+snitt 1,91 marks/omgång, aldrig fler än 3 av 5 samtidigt — sänkning till 1
+är en separat mätfråga mot 390px-baselinen). Handlingar flyttade efter
+Primary, ObjectiveAlert-undantaget (varningsläge) kvar före. QueueRail
+byggdes ut med demoterade marks som chips — ingen ny komponent.
+
+**Två rapporterade avvikelser mellan order och kod, inte tyst kringgångna:**
+- Upptakt/Spectator strukturellt ömsesidigt uteslutande (grundserie vs
+  slutspel) — "fem marks samtidigt" kan inte betyda alla fem bokstavligt.
+- PhaseMark har egen eyebrow/quote/helper-copy, inte bara ett fasnamn —
+  att pressa in den i `GameHeader.tsx`s (delad, global) sigill vore en ny
+  headerdesign. Ligger kvar som egen rad efter Primary tills Jacob beslutar.
+
+Verifierat i browser (DOM-positioner, inte bara skärmdumpar — en
+`AnslagOverlay` dolde innehållet i första screenshotomgången, upptäckt och
+kringgått genom att faktiskt inspektera, inte anta). 12 nya tester
+(`atmosphereResolver.test.ts`).
+
+### Kvalitetsportar (VISUELL_AUDIT + PORTAL-TAKREGEL)
+```
+npx tsc --noEmit                    → rent
+npx vitest run                      → 1449/1449 gröna
+npm run build                       → grönt, lint:design-guard ✓
+npm run lint:text-guard             → grönt
+npm run lint:design                 → grönt
+Playwright (baseline.visual.ts + scenes.visual.ts) → 52 snapshots gröna
+```
+
+### Ej byggt / öppna frågor
+- **PhaseMark → header.** Rapporterad ovan, väntar på Jacobs dom om
+  omfattning (ny headerdesign vs kvar som egen rad).
+- **Tomma lineup-slots + riktig telefonbredd på Jacobs egen telefon.**
+  Baselinen bevisar att koden är rätt (nudge-mekaniken, 390px-renderingen)
+  — men känslan/layouten på en FAKTISK skärm är fortfarande Jacobs sista
+  grind, ingen av oss kan ersätta den.
