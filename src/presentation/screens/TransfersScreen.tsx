@@ -286,13 +286,24 @@ export function TransfersScreen() {
                       club={game.clubs.find(c => c.id === player.clubId)}
                       report={scoutReports[player.id]}
                       windowOpen={windowOpen}
-                      isLast={i >= Math.min(group.players.length, 10) - 1}
+                      isLast={group.players.length <= 10 && i >= Math.min(group.players.length, 10) - 1}
                       activeAssignment={!!activeAssignment}
                       scoutBudget={scoutBudget}
                       onBid={setBiddingPlayerId}
                       onScout={handleScout}
                     />
                   ))}
+                  {/* AUDIT DEL 2 A4 (2026-08-09): slice(0,10) dolde tidigare grupper
+                      över 10 spelare utan att visa att det fanns fler — samma
+                      spillmönster som Trupp-chipsen (VISUELL_AUDIT punkt 3, +N-pill). */}
+                  {group.players.length > 10 && (
+                    <div style={{
+                      padding: '8px 12px', fontSize: 11, color: 'var(--text-muted)',
+                      textAlign: 'center', fontWeight: 600,
+                    }}>
+                      +{group.players.length - 10} fler spelare
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
