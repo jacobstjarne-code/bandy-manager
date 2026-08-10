@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState, useCallback } from 'react'
+import { useMemo, useEffect, useState, useCallback, Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FastForward } from 'lucide-react'
 import { Icon } from '../components/primitives/Icon'
@@ -33,6 +33,7 @@ import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { PortalObjectiveAlert } from '../components/portal/PortalObjectiveAlert'
 import { getNextActionCue } from '../utils/nextActionCue'
+import { selectAtmosphereMarks, type AtmosphereMarkKind } from '../../domain/services/portal/atmosphereResolver'
 
 // Initialisera bag-of-cards en gång vid modulimport
 initCardBag()
@@ -268,6 +269,40 @@ export function PortalScreen() {
     }
   }, [])
 
+  // PORTAL-TAKREGEL (2026-08-09): marks blir data före de blir JSX. Budgeten
+  // (ATMOSPHERE_CAP, default 2) gäller bara atmosfärslagret — Situation,
+  // Beat, Anniversary, Upptakt, Spectator. Handlingar (AnnandagsVal, Callup,
+  // EventSlot, ObjectiveAlert utom i varningsläge) och kronologi (PhaseMark,
+  // RoundMark) räknas inte mot taket, se render nedan.
+  const atmosphereSelection = selectAtmosphereMarks(game, escalationSubState)
+  const ATMOSPHERE_COMPONENT: Record<AtmosphereMarkKind, React.ReactNode> = {
+    anniversary: <PortalAnniversaryMark game={game} />,
+    upptakt: <PortalUpptakt game={game} subState={escalationSubState} />,
+    spectator: <PortalSpectatorMark game={game} />,
+    beat: <PortalBeat game={game} />,
+    situation: <SituationCard game={game} />,
+  }
+  // Korta, mekaniska köetiketter (samma register som PortalQueueRail.tsx:s
+  // egna SOURCE_META — "Orten", "Kommunen" — inte narrativ speltext).
+  const ATMOSPHERE_QUEUE_LABEL: Record<AtmosphereMarkKind, { icon: string; label: string }> = {
+    anniversary: { icon: '⬩', label: 'Historik' },
+    upptakt: { icon: '◷', label: 'Upptakt' },
+    spectator: { icon: '👁', label: 'Åskådarläge' },
+    beat: { icon: '📍', label: 'Läget' },
+    situation: { icon: '🧭', label: 'Orientering' },
+  }
+  const demotedAtmosphereChips = atmosphereSelection.demoted.map(kind => ATMOSPHERE_QUEUE_LABEL[kind])
+  const objectiveAlertWarning = (game.boardObjectives ?? []).some(o => o.status === 'at_risk')
+
+  // Rapportfråga 2 (Portal-fabriksrapporten): cardStaleTracking är en generisk
+  // Record<string, StaleEntry> — marks registreras här med "mark_"-prefix,
+  // samma mekanik som korten (recordPortalShown), egen ID-rymd så
+  // kortrotationen inte störs.
+  useEffect(() => {
+    recordPortalShown(atmosphereSelection.shown.map(kind => `mark_${kind}`))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [atmosphereSelection.shown.join(','), recordPortalShown])
+
   return (
     <>
       {nextAnslag && (
@@ -291,33 +326,45 @@ export function PortalScreen() {
         {isSmFinal && (
           <IllustrationScene mode="header" name="final" alt="SM-finalhelg" style={{ margin: '-14px -14px 14px' }} />
         )}
-        <SituationCard game={game} />
-        <PortalPhaseMark game={game} />
-        <PortalUpptakt game={game} subState={escalationSubState} />
-        <PortalSpectatorMark game={game} />
-        <PortalAnniversaryMark game={game} />
-        <PortalBeat game={game} />
-        <PortalRoundMark game={game} />
-        {/* PortalActiveBudget (pills) removed — Variant B: en fråga åt gången, ingen paginering */}
+        {/* PORTAL-TAKREGEL: högst ATMOSPHERE_CAP (2) atmosfärsrader, i
+            prioritetsordning (atmosphereSelection.shown). Resten går ned i
+            PortalQueueRail som chips (demotedAtmosphereChips nedan). */}
+        {atmosphereSelection.shown.map(kind => (
+          <Fragment key={kind}>{ATMOSPHERE_COMPONENT[kind]}</Fragment>
+        ))}
+        {/* Undantag från "handlingar efter Primary": ObjectiveAlert när den
+            faktiskt varnar (styrelsen på väg att fälla dig) — det är inte
+            stämning, det är ett hot mot din anställning. */}
+        {objectiveAlertWarning && <PortalObjectiveAlert game={game} />}
+        <div data-coach-id="klacken-card">
+          <Primary game={game} playoffCtx={playoffCtx} escalationSubState={escalationSubState} />
+        </div>
+        {/* Handlingar (spelaren ska GÖRA något) och kronologi (fas/omgång) —
+            efter Primary, inte före. Matchen är veckans fråga, allt annat är
+            veckans övriga frågor.
+            PhaseMark/RoundMark: takregel-ordern säger "hör hemma i headern,
+            som redan bär klubbnamn och omgång" (GameHeader.tsx:s
+            roundChipLabel-sigill). PhaseMark har dock egen eyebrow/quote/
+            helper-copy (inte bara ett fas-namn) — att pressa in den i
+            GameHeaders kompakta sigill vore en ny headerdesign, inte en
+            flytt av två rader. Kvar här tills vidare, rapporterat separat. */}
         {isSeason1Round1 && activeCount > 0 && (
           <div className="portal-tutorial-frame">
             <strong>Lugnare första veckan</strong>
             En fråga åt gången. Resten ligger och väntar tills du hittat rytmen.
           </div>
         )}
+        <PortalPhaseMark game={game} />
+        <PortalRoundMark game={game} />
         {game.pendingAnnandagsVal && (
           <AnnandagsValEvent game={game} />
         )}
         {game.pendingCallupModal && (
           <CallupModal game={game} />
         )}
-        <PortalObjectiveAlert game={game} />
         <PortalEventSlot game={game} />
-        <div data-coach-id="klacken-card">
-          <Primary game={game} playoffCtx={playoffCtx} escalationSubState={escalationSubState} />
-        </div>
         {StorySlotComponent && <StorySlotComponent game={game} />}
-        <PortalQueueRail game={game} />
+        <PortalQueueRail game={game} demotedMarks={demotedAtmosphereChips} />
         <PortalSecondarySection cards={layout.secondary} game={game} />
         <PortalMinimalBar cards={layout.minimal} game={game} />
         <PortalInboxCounter game={game} />

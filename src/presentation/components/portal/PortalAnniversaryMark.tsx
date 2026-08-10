@@ -1,49 +1,19 @@
 import { useGameStore } from '../../store/gameStore'
 import { pickAnniversaryMarkCopy } from '../../../domain/data/anniversaryMarkText'
+import { resolveAnniversaryEcho } from '../../../domain/services/portal/atmosphereResolver'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 interface Props { game: SaveGame }
 
+// PORTAL-TAKREGEL (2026-08-09): urvalslogiken (elim-anslag-väntan, big-eko-
+// filter, tom-copy-koll) flyttad till atmosphereResolver.ts:s
+// resolveAnniversaryEcho — samma funktion PortalScreen.tsx:s prioritets-
+// urval anropar. Ingen duplicerad gate-kedja kvar här.
 export function PortalAnniversaryMark({ game }: Props) {
   const markAnniversaryAcknowledged = useGameStore(s => s.markAnniversaryAcknowledged)
 
-  if (!game.activeAnniversaries || game.activeAnniversaries.length === 0) return null
-
-  // ElimAnslag-prioritet: om managed club är eliminerad men elim-anslaget inte är seen — vänta
-  if (game.playoffBracket) {
-    const managedClubId = game.managedClubId
-    const { seenAnslag } = game
-    const bracket = game.playoffBracket
-
-    // Kolla om managed club är eliminerad: inte med i någon aktiv serie
-    const allSeries = [
-      ...bracket.quarterFinals,
-      ...bracket.semiFinals,
-      ...(bracket.final ? [bracket.final] : []),
-    ]
-    // En serie utan winnerId är fortfarande aktiv
-    const activeSeries = allSeries.filter(s =>
-      s.winnerId === null &&
-      (s.homeClubId === managedClubId || s.awayClubId === managedClubId)
-    )
-    const isEliminated = activeSeries.length === 0
-
-    if (isEliminated) {
-      // Kontrollera om elim-anslaget visats
-      const elimSeen = (seenAnslag ?? []).some(k =>
-        k.includes('playoff_eliminated')
-      )
-      if (!elimSeen) return null
-    }
-  }
-
-  // Välj big eko med högst significance
-  const bigEchos = game.activeAnniversaries.filter(a => a.echoSize === 'big')
-  if (bigEchos.length === 0) return null
-
-  const bigEcho = bigEchos.reduce((best, a) =>
-    a.significance > best.significance ? a : best
-  )
+  const bigEcho = resolveAnniversaryEcho(game)
+  if (!bigEcho) return null
 
   const rawCopy = pickAnniversaryMarkCopy(bigEcho, game)
 
@@ -66,9 +36,6 @@ export function PortalAnniversaryMark({ game }: Props) {
     quote: resolve(rawCopy.quote),
     helper: resolve(rawCopy.helper),
   }
-
-  // Om ingen copy finns (Opus inte levererat ännu) — visa ingenting
-  if (!copy.quote) return null
 
   const isTriumph = bigEcho.outcome === 'won'
   const accentColor = isTriumph ? 'var(--gold)' : 'var(--danger)'

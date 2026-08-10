@@ -4,6 +4,10 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 interface Props {
   game: SaveGame
+  /** PORTAL-TAKREGEL (2026-08-09): atmosfärsmarks som förlorade mot taket
+   *  (ATMOSPHERE_CAP) denna omgång. Auditens "Denna vecka"-rad är i praktiken
+   *  den här kön, utbyggd — ingen ny komponent, samma .portal-queue-chip. */
+  demotedMarks?: { icon: string; label: string }[]
 }
 
 const SOURCE_META: Record<string, { icon: string; label: string }> = {
@@ -51,9 +55,9 @@ function uniqueBySource<T extends { type?: string; source?: string }>(items: T[]
   })
 }
 
-export function PortalQueueRail({ game }: Props) {
+export function PortalQueueRail({ game, demotedMarks = [] }: Props) {
   const deferred = game.deferredDecisions ?? []
-  if (deferred.length === 0) return null
+  if (deferred.length === 0 && demotedMarks.length === 0) return null
 
   const { pressure } = getFatigueState(game)
   const matchday = game.currentMatchday ?? 1
@@ -62,6 +66,7 @@ export function PortalQueueRail({ game }: Props) {
   const items = deferred as Array<{ type?: string; source?: string; deferredAt?: number }>
   const uniqueItems = uniqueBySource(items).slice(0, 5)
   const hasMore = items.length - uniqueItems.length
+  const totalCount = deferred.length + demotedMarks.length
 
   const railClass = pressure === 'hot'
     ? 'portal-queue-rail hot-pressure'
@@ -74,10 +79,16 @@ export function PortalQueueRail({ game }: Props) {
       <div className="portal-queue-rail-head">
         <span className="portal-queue-rail-eyebrow">⏳ I kö</span>
         <span className="portal-queue-rail-count">
-          <strong>{deferred.length}</strong> nästa veckan
+          <strong>{totalCount}</strong> nästa veckan
         </span>
       </div>
       <div className="portal-queue-chips">
+        {demotedMarks.map((mark, idx) => (
+          <span key={`mark-${idx}`} className="portal-queue-chip">
+            <span className="portal-queue-chip-icon">{mark.icon}</span>
+            <span>{mark.label}</span>
+          </span>
+        ))}
         {uniqueItems.map((item, idx) => {
           const sourceKey = item.source ?? item.type ?? 'unknown'
           const meta = SOURCE_META[sourceKey]
