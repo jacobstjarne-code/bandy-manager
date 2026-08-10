@@ -42,7 +42,9 @@ const SCENES = [
   // Full-täckning (audit-spec task #1) — riktiga skärmar headless
   ['roundsummary', 'RoundSummary (DB-3 hero-score → ScoreBlock)'],
   ['tabell', 'Tabell (DB-8 solid header + managed-rad)'],
-  ['season-header', 'SeasonSummary header (DB-3 + R2-1 hero-titel + R2-2 btn-hero)'],
+  ['season-header', 'SeasonSummary header — mästare (DB-3 + R2-1 hero-titel + R2-2 btn-hero + cup)'],
+  ['season-noplayoffs', 'SeasonSummary — mittfält, inget slutspel (AUDIT DEL 2 Etapp B-baseline)'],
+  ['season-fired', 'SeasonSummary — styrelsen besviken, sparkad (AUDIT DEL 2 Etapp B-baseline)'],
   ['finalhelg', 'Finalhelg-portal (IllustrationScene header-band)'],
   ['annandagen', 'Annandagen-anslag (IllustrationScene band)'],
   ['arrival', 'ArrivalScene (IllustrationScene fullbleed-bakgrund)'],

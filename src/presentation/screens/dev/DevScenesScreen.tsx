@@ -43,6 +43,10 @@ import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, with
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'roundsummary' | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
+  // AUDIT DEL 2 (2026-08-09), Etapp B-baseline: tre riktiga SeasonSummaryScreen-
+  // utfall (mästare byggs redan av 'season-header') — bevisar kapitelindelningen
+  // (B2) håller när sektioner saknas (inget slutspel / styrelsen besviken).
+  | 'season-noplayoffs' | 'season-fired'
   | 'momentumbar' | 'tacticmodal' | 'submodal' | 'spakb'
   // VISUELL_AUDIT punkt 1 (2026-08-09): spelläges-fabriken (gameStateFactory.ts)
   | 'trupp-blandat' | 'trupp-kris' | 'lineup-empty' | 'lineup-filled'
@@ -73,7 +77,9 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'miljoheader-rogle', label: 'MiljöHeader — Rögle (scanian_coast, mildast)' },
   { id: 'roundsummary',  label: 'RoundSummary (DB-3 hero-score)' },
   { id: 'tabell',        label: 'Tabell (DB-8 header + managed-rad)' },
-  { id: 'season-header', label: 'SeasonSummary header (DB-3 + R2 hero-titel)' },
+  { id: 'season-header', label: 'SeasonSummary header (DB-3 + R2 hero-titel) — mästare' },
+  { id: 'season-noplayoffs', label: 'SeasonSummary — mittfält, inget slutspel' },
+  { id: 'season-fired',  label: 'SeasonSummary — styrelsen besviken, sparkad' },
   { id: 'finalhelg',     label: 'Finalhelg-portal (IllustrationScene header)' },
   { id: 'annandagen',    label: 'Annandagen-anslag (IllustrationScene band)' },
   { id: 'arrival',       label: 'ArrivalScene (IllustrationScene fullbleed)' },
@@ -453,13 +459,24 @@ function makeSeasonSummary(overrides: Record<string, unknown>) {
   }
   return base
 }
-const seasonSumChampion = makeSeasonSummary({ finalPosition: 1, playoffResult: 'champion', expectedVerdict: 'exceeded', expectationVerdict: 'exceeded' as const })
+// AUDIT DEL 2 (2026-08-09), Etapp B-baseline: cupResult='winner' läggs till här
+// (var tidigare null) — "mästare → gold-hero+cup" i ordern kräver BÅDA
+// sektionerna samtidigt, inte bara ligamästerskapet.
+const seasonSumChampion = makeSeasonSummary({ finalPosition: 1, playoffResult: 'champion', cupResult: 'winner' as const, expectedVerdict: 'exceeded', expectationVerdict: 'exceeded' as const })
 const seasonSumTopThree = makeSeasonSummary({ finalPosition: 2, playoffResult: 'finalist', expectationVerdict: 'met' as const })
 const seasonSumMidtable = makeSeasonSummary({ finalPosition: 6, playoffResult: 'quarterfinal', expectationVerdict: 'met' as const, formTrend: 'stable' as const })
 
 // Full-täcknings-scener (audit-spec task #1) — renderar riktiga skärmar headless.
 // SeasonSummary läser game.seasonSummaries (sista) → hela skärmen inkl. ÅRSBOK/hero-titel/CTA.
 const seasonHeaderGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumChampion] })
+// AUDIT DEL 2 (2026-08-09), Etapp B-baseline: mittfält utan slutspel — didNotQualify,
+// skiljer sig från seasonSumMidtable (season-c) som faktiskt når kvartsfinal.
+const seasonSumNoPlayoffs = makeSeasonSummary({ finalPosition: 8, playoffResult: 'didNotQualify', expectationVerdict: 'met' as const, formTrend: 'stable' as const })
+const seasonNoPlayoffsGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumNoPlayoffs] })
+// Sparkad: expectationVerdict 'failed' (❌ "Styrelsen är besviken") + managerFired
+// styr handleNextSeason-routningen (→ /game/game-over istf /game/dashboard).
+const seasonSumFired = makeSeasonSummary({ finalPosition: 11, playoffResult: 'didNotQualify', expectationVerdict: 'failed' as const, formTrend: 'declining' as const })
+const seasonFiredGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumFired], managerFired: true } as never)
 // Finalhelg: playoffBracket med managed i en pågående final (winnerId null) → isSmFinal.
 const finalhelgGame = makeGame(makeLeagueFixtures(), {
   playoffBracket: {
@@ -547,6 +564,8 @@ export function DevScenesScreen() {
       : scene === 'season-c' ? seasonGameC
       : scene === 'roundsummary' || scene === 'tabell' ? granskaGame
       : scene === 'season-header' ? seasonHeaderGame
+      : scene === 'season-noplayoffs' ? seasonNoPlayoffsGame
+      : scene === 'season-fired' ? seasonFiredGame
       : scene === 'finalhelg' ? finalhelgGame
       : scene === 'arrival' || scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
       : scene === 'trupp-blandat' ? truppBlandatGame
@@ -695,7 +714,7 @@ export function DevScenesScreen() {
             <TabellScreen />
           </div>
         )}
-        {scene === 'season-header' && seasonReady && (
+        {(scene === 'season-header' || scene === 'season-noplayoffs' || scene === 'season-fired') && seasonReady && (
           <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
             <SeasonSummaryScreen />
           </div>

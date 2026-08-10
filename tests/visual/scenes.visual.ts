@@ -13,7 +13,7 @@ const SCENES: [string, string?][] = [
   ['stillness'], ['granska'], ['upptakt'], ['ekonomi'], ['playercard'],
   ['season-a'], ['season-b'], ['season-c'],
   ['miljoheader-karlsborg'], ['miljoheader-rogle'],
-  ['roundsummary'], ['tabell'], ['season-header'], ['finalhelg'], ['annandagen'],
+  ['roundsummary'], ['tabell'], ['season-header'], ['season-noplayoffs'], ['season-fired'], ['finalhelg'], ['annandagen'],
   ['arrival'], ['squad-trupp', 'button:has-text("Trupp")'],
   ['momentumbar'], ['tacticmodal'], ['submodal'], ['spakb'],
 ]
