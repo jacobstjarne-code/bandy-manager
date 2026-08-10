@@ -72,6 +72,15 @@ export function SeasonSummaryScreen() {
   const isHistorical = !!params.season
   const isChampion = summary.playoffResult === 'champion'
 
+  // AUDIT DEL 2 A3, uppföljning (2026-08-09): reversibel dedup mellan DIN
+  // SÄSONG och DINA VAL (seasonDecisionsService.ts läser samma game.storylines
+  // helt utan dedup). Jacobs ruling: dela seenTypes så en storyline bara syns
+  // en gång per skärm, men BEHÅLL DINA VAL:s storyline-inkludering — designfrågan
+  // (bär storyline ett fält som pekar mot ett beslut, eller är den ren
+  // inramning?) är öppen, inte löst här. DIN SÄSONG fylls i render-ordning
+  // FÖRE DINA VAL nedan, så den vinner förstahandsanspråk.
+  const claimedStorylineTypes = new Set<string>()
+
   function playoffResultLabel(r: SeasonSummary['playoffResult']): string {
     switch (r) {
       case 'champion': return '🏆 Svenska mästare'
@@ -368,7 +377,7 @@ export function SeasonSummaryScreen() {
             body: string
             relatedPlayerName?: string
           }
-          const items: TimelineItem[] = []
+          const keyMomentItems: TimelineItem[] = []
 
           // keyMoments
           for (const m of summary.keyMoments ?? []) {
@@ -381,7 +390,7 @@ export function SeasonSummaryScreen() {
               : m.type === 'lateWinner' ? '⚡'
               : '⛸️'
             const relatedPlayer = m.relatedPlayerId ? game.players.find(p => p.id === m.relatedPlayerId) : null
-            items.push({
+            keyMomentItems.push({
               round: m.round,
               icon,
               headline: m.headline,
@@ -390,7 +399,12 @@ export function SeasonSummaryScreen() {
             })
           }
 
-          // arc storylines — deduplicera per typ
+          // AUDIT DEL 2 A3 (2026-08-09): arc storylines — deduplicerade per typ.
+          // (SÄSONGENS BERÄTTELSER, som körde samma filter mot samma
+          // game.storylines med ett eget, odelat Set, är borttagen — de två
+          // sektionerna dubblerade i praktiken varje säsong med ≥1 storyline.)
+          // seenSlTypes speglas in i claimedStorylineTypes (komponent-scope)
+          // så DINA VAL längre ned kan hoppa över typer som redan visats här.
           const allSeasonStorylines = game.storylines?.filter(s => s.season === summary.season) ?? []
           const seenSlTypes = new Set<string>()
           const seasonStorylines = allSeasonStorylines.filter(s => {
@@ -412,19 +426,34 @@ export function SeasonSummaryScreen() {
               default: return '📖'
             }
           }
-          for (const sl of seasonStorylines) {
+          const storylineItems: TimelineItem[] = seasonStorylines.map(sl => {
             const p = sl.playerId ? game.players.find(pl => pl.id === sl.playerId) : null
-            items.push({
+            return {
               round: sl.matchday ?? 99,
               icon: storylineEmoji(sl.type),
               headline: sl.displayText,
               body: '',
               relatedPlayerName: p ? `${p.firstName} ${p.lastName}` : undefined,
-            })
-          }
+            }
+          })
 
-          items.sort((a, b) => a.round - b.round)
-          const topItems = items.slice(0, 7)
+          // Storylines är sällsynta och narrativt tyngre än generiska keyMoments
+          // (matchhändelser) — garantera dem plats i taket istf en blind
+          // kronologisk slice(0,7) som kan trycka ut dem helt när en säsong har
+          // många keyMoments (summary.keyMoments är redan självt kappat till 7
+          // i seasonSummaryService.ts, så plats saknades annars helt).
+          const CAP = 7
+          const guaranteedStorylines = storylineItems.slice(0, CAP)
+          const remainingBudget = Math.max(0, CAP - guaranteedStorylines.length)
+          const selectedKeyMoments = keyMomentItems.slice(0, remainingBudget)
+          const topItems = [...guaranteedStorylines, ...selectedKeyMoments].sort((a, b) => a.round - b.round)
+
+          // Bara typer som FAKTISKT fick plats (samma index-ordning som storylineItems)
+          // räknas som claimed — annars skulle en typ som knuffades ut av CAP ändå
+          // spärra DINA VAL från att visa den, och storylinen skulle inte synas alls.
+          for (const sl of seasonStorylines.slice(0, guaranteedStorylines.length)) {
+            claimedStorylineTypes.add(sl.type)
+          }
 
           if (topItems.length === 0) return null
 
@@ -458,38 +487,6 @@ export function SeasonSummaryScreen() {
                   </div>
                 </div>
               ))}
-            </div>
-          )
-        })()}
-
-        {/* SÄSONGENS BERÄTTELSER */}
-        {(() => {
-          const seasonStorylines = (game.storylines ?? []).filter(s => s.season === summary.season)
-          if (seasonStorylines.length === 0) return null
-          // Deduplicera per typ — en storyline-typ räcker per berättelse
-          const seenTypes = new Set<string>()
-          const dedupedStorylines = seasonStorylines.filter(s => {
-            if (seenTypes.has(s.type)) return false
-            seenTypes.add(s.type)
-            return true
-          })
-          return (
-            <div className="card-round" style={{ padding: '10px 12px', marginBottom: 8 }}>
-              <SectionLabel style={{ marginBottom: 6 }}>📖 SÄSONGENS BERÄTTELSER</SectionLabel>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {dedupedStorylines.slice(-5).map((s, i) => {
-                  const player = s.playerId ? game.players.find(p => p.id === s.playerId) : null
-                  const playerName = player ? `${player.firstName} ${player.lastName}` : null
-                  return (
-                    <p key={i} className="h-quote-sm" style={{ lineHeight: 1.5, margin: 0 }}>
-                      {playerName && (
-                        <><span style={{ color: 'var(--accent)', fontWeight: 600, fontStyle: 'normal' }}>{playerName}</span> — </>
-                      )}
-                      {s.displayText}
-                    </p>
-                  )
-                })}
-              </div>
             </div>
           )
         })()}
@@ -716,7 +713,7 @@ export function SeasonSummaryScreen() {
 
         {/* DINA VAL */}
         {(() => {
-          const decisions = collectSeasonDecisions(game)
+          const decisions = collectSeasonDecisions(game, claimedStorylineTypes)
           if (decisions.length === 0) return null
           return (
             <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>

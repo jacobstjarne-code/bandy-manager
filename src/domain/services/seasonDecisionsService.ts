@@ -7,7 +7,15 @@ export interface SeasonDecision {
   round?: number
 }
 
-export function collectSeasonDecisions(game: SaveGame): SeasonDecision[] {
+/**
+ * AUDIT DEL 2 A3, uppföljning (2026-08-09): `excludeStorylineTypes` låter
+ * anroparen (SeasonSummaryScreen.tsx) hoppa över storyline-typer som redan
+ * visats i en annan sektion på samma skärm (DIN SÄSONG) — samma
+ * game.storylines-array, delad dedup-koordinering istf två okoordinerade
+ * läsare. Reversibelt: designfrågan (ska storylines höra hemma här alls?)
+ * är öppen, se rapporten i samma commit.
+ */
+export function collectSeasonDecisions(game: SaveGame, excludeStorylineTypes?: Set<string>): SeasonDecision[] {
   const decisions: SeasonDecision[] = []
   const season = game.currentSeason
 
@@ -27,7 +35,7 @@ export function collectSeasonDecisions(game: SaveGame): SeasonDecision[] {
 
   // Resolved storylines
   for (const sl of game.storylines ?? []) {
-    if (sl.season === season && sl.displayText) {
+    if (sl.season === season && sl.displayText && !excludeStorylineTypes?.has(sl.type)) {
       decisions.push({ icon: '📖', text: sl.displayText, round: sl.matchday })
     }
   }
