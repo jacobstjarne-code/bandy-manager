@@ -26,6 +26,32 @@ function getSignatureEmojiFromRubric(rubric: string): string {
   return ''
 }
 
+/**
+ * AUDIT DEL 2 B2 (2026-08-09): kapitelindelning — Georgia + accent-linje,
+ * ingen ny komponentfil (samma lokala-helper-mönster som StatRow nedan).
+ * Tre dividers vid de tre verkliga innehållsövergångarna (Resultat→
+ * Berättelsen→Truppen→Siffrorna). Ordern nämnde fyra, men Resultat-kapitlet
+ * ÄR hero-kortet överst (redan visuellt distinkt via h-display-hero) — en
+ * divider FÖRE det hade klippt mitt i en sammanhållen ceremoniell yta,
+ * inte markerat en innehållsövergång. Ingen omflyttning av innehåll.
+ */
+function ChapterDivider({ label }: { label: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '22px 0 14px' }}>
+      <div style={{ flex: 1, height: 1, background: 'var(--accent)', opacity: 0.3 }} />
+      <span style={{
+        // ds-exempt: order-specificerad Georgia-eyebrow, inget .h-quote/.h-display-* matchar (alla är stora rubrikstilar, inte liten versal bokstavsspärr)
+        fontFamily: 'var(--font-display)', fontStyle: 'italic',
+        fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase',
+        color: 'var(--accent)', whiteSpace: 'nowrap',
+      }}>
+        {label}
+      </span>
+      <div style={{ flex: 1, height: 1, background: 'var(--accent)', opacity: 0.3 }} />
+    </div>
+  )
+}
+
 export function SeasonSummaryScreen() {
   const navigate = useNavigate()
   const params = useParams<{ season?: string }>()
@@ -260,6 +286,8 @@ export function SeasonSummaryScreen() {
           </div>
         </div>
 
+        <ChapterDivider label="Berättelsen" />
+
         {/* SIGNATURE RUBRIC */}
         {summary.signatureRubric && (
           <div style={{
@@ -491,6 +519,8 @@ export function SeasonSummaryScreen() {
           )
         })()}
 
+        <ChapterDivider label="Truppen" />
+
         {/* SEASON'S BEST */}
         <div className="card-sharp card-stagger-2" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>SÄSONGENS BÄSTA</SectionLabel>
@@ -535,6 +565,8 @@ export function SeasonSummaryScreen() {
             </div>
           </div>
         )}
+
+        <ChapterDivider label="Siffrorna" />
 
         {/* STATISTICS */}
         <div className="card-sharp card-stagger-3" style={{ padding: '10px 14px', marginBottom: 8 }}>
