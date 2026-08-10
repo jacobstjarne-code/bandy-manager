@@ -181,6 +181,7 @@ export function generatePostMatchHeadline(
     title: headline,
     mediaVariants: { portal: portalHeadline, granska: granskaHeadline },
     body: `${journalist.name}, ${journalist.outlet}`,
+    outlet: journalist.outlet,
     isRead: false,
   } as InboxItem
 }
@@ -197,6 +198,7 @@ export function generateCriticalArticle(journalist: Journalist, managerName: str
     // ökar den, inget i journalistService nollställer den) — avprecisad till
     // Fables föreslagna formulering.
     body: `Ledare i lokaltidningen: Klubbens ledning har nu gång på gång vägrat ställa upp. Det är inte bara en fråga om PR — det är en fråga om respekt för orten, supportrarna och de som följer laget. ${managerName} behöver börja svara.`,
+    outlet: journalist.outlet,
     date: currentDate,
     isRead: false,
   } as InboxItem

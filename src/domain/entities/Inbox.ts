@@ -23,4 +23,13 @@ export interface InboxItem {
   // Fynd 3: pressrubrik-varianter per yta (samma händelse, olika formulering).
   // title = inkorgs-varianten; portal/granska läser sina egna.
   mediaVariants?: { portal: string; granska: string }
+  // AUDIT DEL 2 A2 (2026-08-09): strukturerad kategori istf title-string-
+  // matchning. InboxScreen.tsx grupperade tidigare nemesis-poster via
+  // `title.startsWith('⚠️ Nemesis:')` — ingen av de faktiska skapandeplatserna
+  // satte den emojin i titeln, så grupperingen har troligen aldrig matchat.
+  kind?: 'nemesis'
+  // Strukturerad källa istf regex-extraktion ur body ("· Utgivare"-mönster
+  // som ingen av de riktiga body-generatorerna faktiskt producerar — de
+  // använder komma eller tankstreck, se journalistService.ts).
+  outlet?: string
 }

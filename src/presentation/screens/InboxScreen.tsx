@@ -357,21 +357,19 @@ type NewsRenderItem =
   | { kind: 'single'; item: InboxItem }
   | { kind: 'group'; count: number; label: string; items: InboxItem[] }
 
-function groupNyheter(items: InboxItem[]): NewsRenderItem[] {
-  // 1. Nemesis items (title starts with '⚠️ Nemesis:')
-  const nemesisItems = items.filter(i => i.title.startsWith('⚠️ Nemesis:'))
-  const nonNemesis = items.filter(i => !i.title.startsWith('⚠️ Nemesis:'))
+export function groupNyheter(items: InboxItem[]): NewsRenderItem[] {
+  // 1. Nemesis items (strukturerad kind, se AUDIT DEL 2 A2)
+  const nemesisItems = items.filter(i => i.kind === 'nemesis')
+  const nonNemesis = items.filter(i => i.kind !== 'nemesis')
 
-  // 2. Media items grouped by outlet name (extracted from body)
+  // 2. Media items grouped by outlet name (strukturerad källa, se AUDIT DEL 2 A2)
   const mediaTypes = new Set([InboxItemType.Media, InboxItemType.MediaEvent])
   const mediaItems = nonNemesis.filter(i => mediaTypes.has(i.type))
   const nonMedia = nonNemesis.filter(i => !mediaTypes.has(i.type))
 
-  // Group media by outlet (body often contains "Journalist · Outlet")
   const mediaByOutlet = new Map<string, InboxItem[]>()
   for (const item of mediaItems) {
-    // Try to extract outlet from body or title
-    const outlet = item.body?.match(/·\s*(.+)$/m)?.[1]?.trim() ?? 'Media'
+    const outlet = item.outlet ?? 'Media'
     const list = mediaByOutlet.get(outlet) ?? []
     list.push(item)
     mediaByOutlet.set(outlet, list)

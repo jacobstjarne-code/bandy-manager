@@ -216,6 +216,7 @@ export function processNarrative(
           body: `${opponentPlayer.firstName} ${opponentPlayer.lastName} (${nemesisClub?.name ?? 'motst.'}) har nu gjort ${newTotal} mål mot oss. Är det dags att värva honom istället?`,
           relatedPlayerId: playerId,
           isRead: false,
+          kind: 'nemesis',
         } as InboxItem)
       }
     }

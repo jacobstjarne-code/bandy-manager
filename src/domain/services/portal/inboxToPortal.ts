@@ -131,7 +131,7 @@ export function inboxItemToCardCandidate(
       tier = isHighSig ? 'primary' : 'secondary'
       weight = isHighSig ? 85 : 60
       stripe = 'accent'
-    } else if (item.title.startsWith('⚠️ Nemesis:') || item.title === 'Nemesis lägger av') {
+    } else if (item.kind === 'nemesis') {
       kind = 'nemesis'
       tier = 'secondary'
       weight = 75

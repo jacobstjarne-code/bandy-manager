@@ -474,6 +474,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
           title: 'Nemesis lägger av',
           body: `${retiringPlayer.firstName} ${retiringPlayer.lastName} avslutar karriären. Han gjorde ${nemesis.goalsAgainstUs} mål mot oss. En epok är över.`,
           isRead: false,
+          kind: 'nemesis',
         } as InboxItem)
         delete updatedNemesisTracker[key]
       }
