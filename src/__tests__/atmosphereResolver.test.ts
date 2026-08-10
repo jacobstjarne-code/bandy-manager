@@ -1,14 +1,19 @@
 /**
- * atmosphereResolver — PORTAL-TAKREGEL (2026-08-09).
+ * atmosphereResolver — PORTAL-TAKREGEL (2026-08-09), reviderad AUDIT DEL 2
+ * (2026-08-09).
  *
  * Kärnkravet: budgeten (ATMOSPHERE_CAP) ska gälla atmosfärslagret, i
- * prioritetsordning (anniversary > upptakt > spectator > beat > situation),
- * och "demoted" ska bara innehålla marks som FAKTISKT hade något att säga
- * men förlorade mot taket — inte ineligible marks (de syns ingenstans).
+ * prioritetsordning (anniversary > upptakt > spectator > beat > phasemark >
+ * situation), och "demoted" ska bara innehålla marks som FAKTISKT hade något
+ * att säga men förlorade mot taket — inte ineligible marks (de syns
+ * ingenstans). PhaseMark tillkom i revideringen (Jacobs ruling: den bär
+ * redaktionell text och är atmosfär, inte kronologi — RoundMark, som ÄR ren
+ * kronologi, flyttades till GameHeader.tsx istället och är inte längre en
+ * atmosfärsmark alls).
  */
 import { describe, it, expect } from 'vitest'
 import {
-  hasUpptaktContent, hasAnniversaryContent, hasSpectatorContent,
+  hasUpptaktContent, hasAnniversaryContent, hasSpectatorContent, hasPhaseMarkContent,
   selectAtmosphereMarks, ATMOSPHERE_CAP,
 } from '../domain/services/portal/atmosphereResolver'
 import type { SaveGame } from '../domain/entities/SaveGame'
@@ -18,7 +23,8 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
     id: 'test', managerName: 'Tränare', managedClubId: 'club_home',
     currentDate: '2026-10-15', currentSeason: 2026, currentMatchday: 5,
-    clubs: [], players: [], fixtures: [], standings: [], inbox: [],
+    clubs: [{ id: 'club_home' } as never, { id: 'club_away' } as never],
+    players: [], fixtures: [], standings: [], inbox: [],
     playoffBracket: null, cupBracket: null, pendingEvents: [], transferBids: [],
     sponsors: [], seasonSummaries: [], version: '1.0', lastSavedAt: '2026-10-15T00:00:00',
     ...overrides,
@@ -100,6 +106,28 @@ describe('hasSpectatorContent', () => {
   })
 })
 
+describe('hasPhaseMarkContent', () => {
+  function makeGameAtRound(round: number, overrides: Partial<SaveGame> = {}): SaveGame {
+    const fixtures = round > 0 ? [{
+      id: 'f1', status: 'completed', isCup: false, roundNumber: round,
+      homeClubId: 'club_home', awayClubId: 'club_away', homeScore: 1, awayScore: 0,
+    } as never] : []
+    return makeGame({ fixtures, standings: [{ clubId: 'club_home', position: 3 } as never], ...overrides })
+  }
+
+  it('höststart (runda ≤3) har ingen fasmarkör-text → false', () => {
+    expect(hasPhaseMarkContent(makeGameAtRound(2))).toBe(false)
+  })
+
+  it('annandagen (runda 7-11) har text och inte sedd → true', () => {
+    expect(hasPhaseMarkContent(makeGameAtRound(7))).toBe(true)
+  })
+
+  it('annandagen redan sedd (phaseMarksSeen) → false', () => {
+    expect(hasPhaseMarkContent(makeGameAtRound(7, { phaseMarksSeen: ['annandagen'] } as never))).toBe(false)
+  })
+})
+
 describe('selectAtmosphereMarks — prioritet + tak', () => {
   it('helt tomt läge: bara Situation (alltid berättigad, aldrig null)', () => {
     const game = makeGame()
@@ -123,6 +151,20 @@ describe('selectAtmosphereMarks — prioritet + tak', () => {
     const selection = selectAtmosphereMarks(game, 'sakrat')
     expect(selection.shown).toEqual(['upptakt', 'situation'])
     expect(selection.demoted).toEqual([])
+  })
+
+  it('phasemark rankas mellan beat och situation — anniversary + phasemark berättigade, tak=2 → phasemark vinner över situation', () => {
+    const game = makeGame({
+      activeAnniversaries: [makeEcho()],
+      fixtures: [{
+        id: 'f1', status: 'completed', isCup: false, roundNumber: 7,
+        homeClubId: 'club_home', awayClubId: 'club_away', homeScore: 1, awayScore: 0,
+      } as never],
+      standings: [{ clubId: 'club_home', position: 3 } as never],
+    })
+    const selection = selectAtmosphereMarks(game, null)
+    expect(selection.shown).toEqual(['anniversary', 'phasemark'])
+    expect(selection.demoted).toEqual(['situation'])
   })
 
   it('respekterar ATMOSPHERE_CAP (2) — aldrig fler än cap i shown', () => {

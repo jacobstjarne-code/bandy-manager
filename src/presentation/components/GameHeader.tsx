@@ -8,6 +8,19 @@ import { KlubbparmOverlay } from './KlubbparmOverlay'
 import { Logo } from './Logo'
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
+import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
+
+const ROUND_NAME: Record<PlayoffRound, string> = {
+  [PlayoffRound.QuarterFinal]: 'Kvartsfinal',
+  [PlayoffRound.SemiFinal]: 'Semifinal',
+  [PlayoffRound.Final]: 'SM-Final',
+}
+
+const CRIT_LABEL: Record<'open' | 'matchpuck' | 'decisive', string | null> = {
+  open: null,
+  matchpuck: 'Matchpuck',
+  decisive: 'Avgörande',
+}
 
 /** Handritad SVG-kuvert-glyph i koppar. Ersätter 🔔-emoji. */
 function EnvelopeIcon({ size = 18, color = 'currentColor' }: { size?: number; color?: string }) {
@@ -65,21 +78,24 @@ export function GameHeader() {
     .reduce((min, f) => Math.min(min, f.roundNumber), Infinity)
   const currentRound = nextLeagueRound < Infinity ? nextLeagueRound : lastPlayedRound
 
-  // Playoff phase label
+  // AUDIT DEL 2 (2026-08-09), Jacobs ruling: RoundMark (ren kronologi — rundnamn
+  // + kritikalitet) hör hemma i headerns befintliga omgångs-sigill, inte som en
+  // egen rad i Portal. Detta ersätter headerns tidigare EGEN, parallella
+  // beräkning av samma rundnamn (playoffCtx via getPlayoffSeriesContext är
+  // samma källa PortalRoundMark redan använde — en beräkning, inte två som
+  // råkade vara överens). Ingen ny headerdesign: samma .h-label-chip, bara
+  // texten byggd av en gemensam källa. Kritikalitet (Matchpuck/Avgörande)
+  // ersätter den gamla "match N"-suffixen när serien faktiskt är kritisk —
+  // annars visas matchnumret som förut.
   const bracket = game.playoffBracket
   const isInPlayoff = bracket !== null && bracket.status !== PlayoffStatus.Completed
+  const playoffCtx = isInPlayoff ? getPlayoffSeriesContext(game) : null
   let playoffLabel: string | null = null
-  if (isInPlayoff && bracket) {
-    const allSeries = [...bracket.quarterFinals, ...bracket.semiFinals, ...(bracket.final ? [bracket.final] : [])]
-    const activeSeries = allSeries.find(s =>
-      !s.winnerId && (s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId)
-    )
-    if (activeSeries) {
-      const roundName = activeSeries.round === PlayoffRound.QuarterFinal ? 'Kvartsfinal'
-        : activeSeries.round === PlayoffRound.SemiFinal ? 'Semifinal'
-        : 'SM-Final'
-      const matchNum = activeSeries.homeWins + activeSeries.awayWins + 1
-      playoffLabel = `${roundName} · match ${matchNum}`
+  if (isInPlayoff) {
+    if (playoffCtx) {
+      const critLabel = CRIT_LABEL[playoffCtx.criticality]
+      const suffix = critLabel ?? `match ${playoffCtx.nextGame}`
+      playoffLabel = `${ROUND_NAME[playoffCtx.round]} · ${suffix}`
     } else {
       playoffLabel = 'Slutspel'
     }

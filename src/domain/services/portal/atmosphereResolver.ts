@@ -25,13 +25,19 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { EscalationSubState } from '../../../application/services/portalEscalationResolver'
 import { getActiveBeat } from '../portalBeatService'
-import { isManagedClubSpectator } from '../../data/seasonPhases'
+import { getCurrentLeagueRound, getFunctionaryPhase, isManagedClubInPlayoff, isManagedClubSpectator } from '../../data/seasonPhases'
 import { pickAnniversaryMarkCopy } from '../../data/anniversaryMarkText'
+import { pickPhaseMarkCopy } from '../../data/phaseMarkText'
 import type { ActiveAnniversary } from '../clubMemoryService'
 
-export type AtmosphereMarkKind = 'anniversary' | 'upptakt' | 'spectator' | 'beat' | 'situation'
+// AUDIT DEL 2 (2026-08-09), Jacobs ruling: PhaseMark bär redaktionell text
+// (eyebrow/citat/helper) och är därmed atmosfär, inte kronologi — hör hemma
+// i takregelns prioritetskedja, lägst prioriterad (under Beat), INTE i
+// headern. RoundMark är ren kronologi och flyttades ur Portal till
+// GameHeader istället (se GameHeader.tsx).
+export type AtmosphereMarkKind = 'anniversary' | 'upptakt' | 'spectator' | 'beat' | 'phasemark' | 'situation'
 
-export const ATMOSPHERE_PRIORITY: readonly AtmosphereMarkKind[] = ['anniversary', 'upptakt', 'spectator', 'beat', 'situation']
+export const ATMOSPHERE_PRIORITY: readonly AtmosphereMarkKind[] = ['anniversary', 'upptakt', 'spectator', 'beat', 'phasemark', 'situation']
 
 // REVIDERAD 2026-08-09 efter Codes mätning (snitt 1,91 marks/omgång, aldrig
 // fler än 3 av 5 samtidigt i 290 simulerade omgångar — se PORTAL_TAKREGEL-
@@ -104,6 +110,28 @@ export function hasSpectatorContent(game: SaveGame): boolean {
   return isManagedClubSpectator(game) && !seen.includes('spectator')
 }
 
+/**
+ * Speglar PortalPhaseMark.tsx:s inbäddade gate exakt: fas via
+ * getFunctionaryPhase (eller 'playoff' om klubben är i slutspel),
+ * phaseMarksSeen-spärr (en gång per fas), tom-copy-koll.
+ */
+export function resolvePhaseMark(game: SaveGame): ReturnType<typeof pickPhaseMarkCopy> {
+  const currentLigaRound = getCurrentLeagueRound(game)
+  const isPlayoff = isManagedClubInPlayoff(game)
+  const tablePosition = game.standings.find(s => s.clubId === game.managedClubId)?.position
+    ?? Math.ceil(game.clubs.length / 2)
+  const phase = isPlayoff ? 'playoff' : getFunctionaryPhase(currentLigaRound, tablePosition, game.clubs.length)
+
+  const seen = game.phaseMarksSeen ?? []
+  if (seen.includes(phase)) return null
+
+  return pickPhaseMarkCopy(phase, game)
+}
+
+export function hasPhaseMarkContent(game: SaveGame): boolean {
+  return resolvePhaseMark(game) !== null
+}
+
 export interface AtmosphereSelection {
   shown: AtmosphereMarkKind[]
   demoted: AtmosphereMarkKind[]
@@ -123,6 +151,7 @@ export function selectAtmosphereMarks(
     upptakt: hasUpptaktContent(upptaktSubState),
     spectator: hasSpectatorContent(game),
     beat: hasBeatContent(game),
+    phasemark: hasPhaseMarkContent(game),
     situation: true,
   }
 

@@ -22,7 +22,6 @@ import { computeNextAnslag } from '../../domain/services/anslagService'
 import { getActiveDecisionCount } from '../../domain/services/decisionBudgetService'
 import { PlayoffRound, PendingScreen } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
-import { PortalRoundMark } from '../components/portal/PortalRoundMark'
 import { PortalUpptakt } from '../components/portal/PortalUpptakt'
 import { getEscalationSubState } from '../../application/services/portalEscalationResolver'
 import { AnnandagsValEvent } from '../components/portal/AnnandagsValEvent'
@@ -269,17 +268,23 @@ export function PortalScreen() {
     }
   }, [])
 
-  // PORTAL-TAKREGEL (2026-08-09): marks blir data före de blir JSX. Budgeten
-  // (ATMOSPHERE_CAP, default 2) gäller bara atmosfärslagret — Situation,
-  // Beat, Anniversary, Upptakt, Spectator. Handlingar (AnnandagsVal, Callup,
-  // EventSlot, ObjectiveAlert utom i varningsläge) och kronologi (PhaseMark,
-  // RoundMark) räknas inte mot taket, se render nedan.
+  // PORTAL-TAKREGEL (2026-08-09), REVIDERAD AUDIT DEL 2 (2026-08-09): marks
+  // blir data före de blir JSX. Budgeten (ATMOSPHERE_CAP, default 2) gäller
+  // atmosfärslagret — Situation, Beat, Anniversary, Upptakt, Spectator, och
+  // (efter Jacobs ruling) PhaseMark, som bär redaktionell eyebrow/citat/
+  // helper-text och därför ÄR atmosfär, inte kronologi. RoundMark (ren
+  // kronologi, rundnamn/fas-badge) flyttades ur Portal till GameHeader.tsx:s
+  // roundChipLabel — den räknades aldrig mot taket och gör det inte nu
+  // heller, den finns bara inte i Portal längre. Handlingar (AnnandagsVal,
+  // Callup, EventSlot, ObjectiveAlert utom i varningsläge) räknas inte mot
+  // taket, se render nedan.
   const atmosphereSelection = selectAtmosphereMarks(game, escalationSubState)
   const ATMOSPHERE_COMPONENT: Record<AtmosphereMarkKind, React.ReactNode> = {
     anniversary: <PortalAnniversaryMark game={game} />,
     upptakt: <PortalUpptakt game={game} subState={escalationSubState} />,
     spectator: <PortalSpectatorMark game={game} />,
     beat: <PortalBeat game={game} />,
+    phasemark: <PortalPhaseMark game={game} />,
     situation: <SituationCard game={game} />,
   }
   // Korta, mekaniska köetiketter (samma register som PortalQueueRail.tsx:s
@@ -289,6 +294,7 @@ export function PortalScreen() {
     upptakt: { icon: '◷', label: 'Upptakt' },
     spectator: { icon: '👁', label: 'Åskådarläge' },
     beat: { icon: '📍', label: 'Läget' },
+    phasemark: { icon: '📅', label: 'Säsongsfas' },
     situation: { icon: '🧭', label: 'Orientering' },
   }
   const demotedAtmosphereChips = atmosphereSelection.demoted.map(kind => ATMOSPHERE_QUEUE_LABEL[kind])
@@ -339,23 +345,17 @@ export function PortalScreen() {
         <div data-coach-id="klacken-card">
           <Primary game={game} playoffCtx={playoffCtx} escalationSubState={escalationSubState} />
         </div>
-        {/* Handlingar (spelaren ska GÖRA något) och kronologi (fas/omgång) —
-            efter Primary, inte före. Matchen är veckans fråga, allt annat är
-            veckans övriga frågor.
-            PhaseMark/RoundMark: takregel-ordern säger "hör hemma i headern,
-            som redan bär klubbnamn och omgång" (GameHeader.tsx:s
-            roundChipLabel-sigill). PhaseMark har dock egen eyebrow/quote/
-            helper-copy (inte bara ett fas-namn) — att pressa in den i
-            GameHeaders kompakta sigill vore en ny headerdesign, inte en
-            flytt av två rader. Kvar här tills vidare, rapporterat separat. */}
+        {/* Handlingar (spelaren ska GÖRA något) — efter Primary, inte före.
+            Matchen är veckans fråga, allt annat är veckans övriga frågor.
+            PhaseMark renderas nu ovan (i ATMOSPHERE_COMPONENT-slingan, om
+            den vann prioriteringen) — inte här som ett eget, alltid synligt
+            block. RoundMark finns inte längre i Portal, se GameHeader.tsx. */}
         {isSeason1Round1 && activeCount > 0 && (
           <div className="portal-tutorial-frame">
             <strong>Lugnare första veckan</strong>
             En fråga åt gången. Resten ligger och väntar tills du hittat rytmen.
           </div>
         )}
-        <PortalPhaseMark game={game} />
-        <PortalRoundMark game={game} />
         {game.pendingAnnandagsVal && (
           <AnnandagsValEvent game={game} />
         )}
