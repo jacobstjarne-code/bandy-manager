@@ -282,3 +282,47 @@ export function withPendingWeeklyDecision(game: SaveGame): SaveGame {
   return decision ? { ...game, pendingWeeklyDecision: decision } : game
 }
 
+// ── Transfers ────────────────────────────────────────────────────────────────
+// AUDIT DEL 2 (2026-08-09), Etapp B-baseline: fyra fönstertillstånd —
+// getTransferWindowStatus(game.currentDate) läser bara kalendermånaden
+// (transferWindowService.ts), så en override behöver bara byta månadsdelen.
+// Året spelar ingen roll för windowstatus, men byts inte i onödan.
+
+/** Stängt fönster (nov-dec/feb-jul) — april är entydigt mitt i "stängt". */
+export function withTransferWindowClosed(game: SaveGame): SaveGame {
+  const year = game.currentDate.slice(0, 4)
+  return { ...game, currentDate: `${year}-04-15` }
+}
+
+/** Öppet fönster (aug-okt, försäsong). */
+export function withTransferWindowOpen(game: SaveGame): SaveGame {
+  const year = game.currentDate.slice(0, 4)
+  return { ...game, currentDate: `${year}-09-15` }
+}
+
+/**
+ * `count` inkommande, pending bud på managed clubs egna spelare (riktiga
+ * TransferBid-poster, direction='incoming', sellingClubId=managedClubId) —
+ * samma form transferProcessor.ts/eventFactories.ts skapar i riktigt spel.
+ * Kräver >=1 icke-managed klubb och >=count managed-spelare i fabriksbasen.
+ */
+export function withIncomingBids(game: SaveGame, count: number): SaveGame {
+  const buyingClub = game.clubs.find(c => c.id !== game.managedClubId)
+  const targets = managedPlayerIds(game, count)
+  if (!buyingClub || targets.length === 0) return game
+  const bids = targets.map((playerId, i) => ({
+    id: `dev_bid_${i}`,
+    playerId,
+    buyingClubId: buyingClub.id,
+    sellingClubId: game.managedClubId,
+    offerAmount: 350_000 + i * 75_000,
+    offeredSalary: 12_000,
+    contractYears: 3,
+    direction: 'incoming' as const,
+    status: 'pending' as const,
+    createdRound: game.currentMatchday,
+    expiresRound: game.currentMatchday + 2,
+  }))
+  return { ...game, transferBids: [...(game.transferBids ?? []), ...bids] }
+}
+

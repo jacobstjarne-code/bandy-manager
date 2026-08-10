@@ -24,6 +24,7 @@ import { GranskaScreen } from '../granska/GranskaScreen'
 import { RoundSummaryScreen } from '../RoundSummaryScreen'
 import { TabellScreen } from '../TabellScreen'
 import { SeasonSummaryScreen } from '../SeasonSummaryScreen'
+import { TransfersScreen } from '../TransfersScreen'
 import { ArrivalScene } from '../ArrivalScene'
 import { AnslagOverlay } from '../../components/anslag/AnslagOverlay'
 import { PortalUpptakt } from '../../components/portal/PortalUpptakt'
@@ -39,7 +40,7 @@ import { SubstitutionModal } from '../../components/match/SubstitutionModal'
 import { SentValCard } from '../../components/match/SentValCard'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
-import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision } from './gameStateFactory'
+import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids } from './gameStateFactory'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'roundsummary' | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -47,6 +48,10 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // utfall (mästare byggs redan av 'season-header') — bevisar kapitelindelningen
   // (B2) håller när sektioner saknas (inget slutspel / styrelsen besviken).
   | 'season-noplayoffs' | 'season-fired'
+  // AUDIT DEL 2 (2026-08-09), Etapp B-baseline: Transfers, fyra fönstertillstånd
+  // — bevisar att budkortet (B1, byggs efter denna baseline) inte försvinner
+  // när fönstret växlar eller antal bud ändras.
+  | 'transfers-closed' | 'transfers-open-nobids' | 'transfers-onebid' | 'transfers-multibids'
   | 'momentumbar' | 'tacticmodal' | 'submodal' | 'spakb'
   // VISUELL_AUDIT punkt 1 (2026-08-09): spelläges-fabriken (gameStateFactory.ts)
   | 'trupp-blandat' | 'trupp-kris' | 'lineup-empty' | 'lineup-filled'
@@ -80,6 +85,10 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'season-header', label: 'SeasonSummary header (DB-3 + R2 hero-titel) — mästare' },
   { id: 'season-noplayoffs', label: 'SeasonSummary — mittfält, inget slutspel' },
   { id: 'season-fired',  label: 'SeasonSummary — styrelsen besviken, sparkad' },
+  { id: 'transfers-closed',      label: 'Transfers — fönster stängt' },
+  { id: 'transfers-open-nobids', label: 'Transfers — fönster öppet, inga bud' },
+  { id: 'transfers-onebid',      label: 'Transfers — ett inkommande bud' },
+  { id: 'transfers-multibids',   label: 'Transfers — flera inkommande bud' },
   { id: 'finalhelg',     label: 'Finalhelg-portal (IllustrationScene header)' },
   { id: 'annandagen',    label: 'Annandagen-anslag (IllustrationScene band)' },
   { id: 'arrival',       label: 'ArrivalScene (IllustrationScene fullbleed)' },
@@ -360,6 +369,14 @@ const truppKrisGame = withExpiringContracts(withLowMorale(withSuspended(withInju
 const lineupEmptyGame = withoutPendingLineup(factoryMidSeasonGame)
 const lineupFilledGame = withLineupSlots(withLongestSurnames(factoryMidSeasonGame), { emptyCount: 0, formation: '5-3-2' })
 
+// AUDIT DEL 2 (2026-08-09), Etapp B-baseline: Transfers, fyra fönstertillstånd.
+// windowOpen/stängt är rent kalenderdrivet (transferWindowService.ts läser bara
+// currentDate-månaden) — withTransferWindow{Closed,Open} byter bara den.
+const transfersClosedGame = withTransferWindowClosed(factoryMidSeasonGame)
+const transfersOpenNoBidsGame = withTransferWindowOpen(factoryMidSeasonGame)
+const transfersOneBidGame = withIncomingBids(withTransferWindowOpen(factoryMidSeasonGame), 1)
+const transfersMultiBidsGame = withIncomingBids(withTransferWindowOpen(factoryMidSeasonGame), 3)
+
 // PORTAL-TAKREGEL (2026-08-09) — §5-baselinen, fyra tillstånd.
 // portal-full: matchday 24 valt specifikt — inom upptakt-fönstret (sista 3
 // grundserieomgångarna) UTAN att vara "mittfalt" (cementerat, ingen upptakt).
@@ -566,6 +583,10 @@ export function DevScenesScreen() {
       : scene === 'season-header' ? seasonHeaderGame
       : scene === 'season-noplayoffs' ? seasonNoPlayoffsGame
       : scene === 'season-fired' ? seasonFiredGame
+      : scene === 'transfers-closed' ? transfersClosedGame
+      : scene === 'transfers-open-nobids' ? transfersOpenNoBidsGame
+      : scene === 'transfers-onebid' ? transfersOneBidGame
+      : scene === 'transfers-multibids' ? transfersMultiBidsGame
       : scene === 'finalhelg' ? finalhelgGame
       : scene === 'arrival' || scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
       : scene === 'trupp-blandat' ? truppBlandatGame
@@ -717,6 +738,11 @@ export function DevScenesScreen() {
         {(scene === 'season-header' || scene === 'season-noplayoffs' || scene === 'season-fired') && seasonReady && (
           <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
             <SeasonSummaryScreen />
+          </div>
+        )}
+        {(scene === 'transfers-closed' || scene === 'transfers-open-nobids' || scene === 'transfers-onebid' || scene === 'transfers-multibids') && (
+          <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
+            <TransfersScreen />
           </div>
         )}
         {scene === 'finalhelg' && finalReady && (
