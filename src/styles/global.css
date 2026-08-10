@@ -862,6 +862,11 @@ a {
 .card-stagger-4 { animation: fadeInUpScale 280ms ease-out 180ms both; }
 .card-stagger-5 { animation: fadeInUpScale 280ms ease-out 240ms both; }
 .card-stagger-6 { animation: fadeInUpScale 280ms ease-out 300ms both; }
+/* AUDIT DEL 2 A1 (2026-08-09): EkonomiTab.tsx hade sju SectionCard-sektioner
+   (stagger={7} på Scouting) men CSS:en definierade bara t.o.m. 6 — bundeln
+   emitterade card-stagger-7 utan matchande regel, ingen animation för
+   sektion sju. Samma kurva, nästa steg i sekvensen (300+60=360ms). */
+.card-stagger-7 { animation: fadeInUpScale 280ms ease-out 360ms both; }
 
 /* Interactive button pulse */
 .btn-pulse {
