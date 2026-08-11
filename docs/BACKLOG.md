@@ -282,6 +282,12 @@ B5 (väljar-overlay) = Jacobs blick, ej Code-order ännu. Mentorskap-kanon = **J
 
 ## C. IDÉER UTAN SPEC — KRÄVS SPECCING INNAN BYGGE
 
+### Klubbhistorik saknar berättelse-lager (fynd vid AUDIT DEL 2 B3-utredning, 2026-08-11)
+
+| # | Idé | Plats | Estimat |
+|---|---|---|---|
+| C-HIST1 | **HistoryScreen bär i dag bara `narrativeSummary` per säsong — en enda textrad.** Ingen storyline, inget beslut, ingen båge är avläsbar när man ser tillbaka på en tidigare säsong, till skillnad från SeasonSummaryScreen (DIN SÄSONG-tidslinjen, AUDIT DEL 2 A3) som visar keyMoments+storylines i detalj samma säsong den inträffar. Fyndet uppstod när B3 ("SeasonBits, dela Timeline mellan SeasonSummary/History") avkallades — utredningen visade att History inte har någon Timeline-motsvarighet alls att dela in i, bara en placeholder-rad. Öppen fråga inför en större analys av vad "titta tillbaka på en säsong" ska ge spelaren — INTE en yta att bygga nu, ingen spec finns. | `HistoryScreen.tsx` (seasons-fliken, per-säsongskortet) | Ospecat — kräver designbeslut om omfattning innan estimat. |
+
 ### Bandy Brain — win-prob-kurva som första grafik (flaggat 2026-07-05)
 
 | # | Idé | Plats | Estimat |
