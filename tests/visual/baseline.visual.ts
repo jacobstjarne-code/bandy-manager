@@ -44,6 +44,9 @@ const BASELINE_SCENES: [string, string?, { width: number; height: number }?][] =
   ['portal-normal', undefined, PORTAL_VIEWPORT],
   ['portal-full', undefined, PORTAL_VIEWPORT],
   ['portal-grind', undefined, PORTAL_VIEWPORT],
+  // AUDIT DEL 2 (2026-08-11): kontrollfall, Berg-budets dubbelrendering (dc3d771f)
+  ['portal-bid-single', undefined, PORTAL_VIEWPORT],
+  ['portal-bid-multi', undefined, PORTAL_VIEWPORT],
 ]
 
 for (const [id, clickText, viewport] of BASELINE_SCENES) {

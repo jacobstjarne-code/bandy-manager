@@ -26,6 +26,7 @@ import { mulberry32 } from '../../../domain/utils/random'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { generateWeeklyDecision } from '../../../domain/services/weeklyDecisionService'
 import type { ActiveAnniversary, MemoryEventType } from '../../../domain/services/clubMemoryService'
+import { bidReceivedEvent } from '../../../domain/services/events/eventFactories'
 
 // ── Bas ──────────────────────────────────────────────────────────────────────
 
@@ -324,5 +325,20 @@ export function withIncomingBids(game: SaveGame, count: number): SaveGame {
     expiresRound: game.currentMatchday + 2,
   }))
   return { ...game, transferBids: [...(game.transferBids ?? []), ...bids] }
+}
+
+/**
+ * AUDIT DEL 2 (2026-08-11), kontrollfall efter Berg-fixet (dc3d771f): gör
+ * EN av de befintliga inkommande buden (senast tillagda, dvs. sist i
+ * transferBids) till det just nu aktiva HÄNDELSE-kortet — samma
+ * bidReceivedEvent() som real spellogik (eventFactories.ts) använder, inte
+ * en handskriven ersättning. Komponera med withIncomingBids:
+ *   withActiveIncomingBidEvent(withIncomingBids(game, 3))
+ */
+export function withActiveIncomingBidEvent(game: SaveGame): SaveGame {
+  const bid = [...(game.transferBids ?? [])].reverse().find(b => b.direction === 'incoming' && b.status === 'pending')
+  if (!bid) return game
+  const event = bidReceivedEvent(bid, game)
+  return { ...game, pendingEvents: [...(game.pendingEvents ?? []), event] }
 }
 

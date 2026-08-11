@@ -30,6 +30,20 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
   // HÄNDELSE-kort (PortalEventSlot) ska inte också räknas här ("N öppna bud
   // kräver svar" + en "Hantera bud →"-knapp som pekar på samma sak).
   const openBids = getQueueableOpenBids(game)
+  // Kontrollfall efter samma fix: om DET ENDA budet redan visas som eget
+  // HÄNDELSE-kort blir openBids tom — men "Inga öppna bud just nu" vore då
+  // ett falskt påstående (det FINNS ett öppet bud, det är bara redan
+  // besvarat ovanför). rawOpenBidCount skiljer "genuint noll" från
+  // "redan hanterat" utan att någon ny svensk text behöver skrivas —
+  // den missvisande raden utelämnas helt i det tredje fallet istf att
+  // ersättas med en påhittad mening.
+  const rawOpenBidCount = game.transferBids.filter(
+    b => b.direction === 'incoming' && b.status === 'pending' && b.sellingClubId === managedId
+  ).length
+  const allOpenBidsAlreadyShown = rawOpenBidCount > 0 && openBids.length === 0
+  const bidLine = openBids.length > 0
+    ? `${openBids.length} öppna bud kräver svar`
+    : allOpenBidsAlreadyShown ? null : 'Inga öppna bud just nu'
 
   // Senaste nyförvärv (accepterade bud)
   const recentSignings = game.transferBids.filter(
@@ -59,17 +73,18 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
       <div className="h-display-sm" style={{ color: 'var(--text-light)', marginBottom: 6 }}>
         Transferfönstret stänger
       </div>
-      <div style={{
-        fontSize: 12,
-        color: 'var(--text-light-secondary)',
-        lineHeight: 1.5,
-        marginBottom: 10,
-      }}>
-        {openBids.length > 0
-          ? `${openBids.length} öppna bud kräver svar`
-          : 'Inga öppna bud just nu'}
-        {recentSignings.length > 0 && ` · ${recentSignings.length} nyförvärv`}
-      </div>
+      {(bidLine || recentSignings.length > 0) && (
+        <div style={{
+          fontSize: 12,
+          color: 'var(--text-light-secondary)',
+          lineHeight: 1.5,
+          marginBottom: 10,
+        }}>
+          {bidLine}
+          {bidLine && recentSignings.length > 0 && ' · '}
+          {recentSignings.length > 0 && `${recentSignings.length} nyförvärv`}
+        </div>
+      )}
       <div style={{
         display: 'flex',
         gap: 12,

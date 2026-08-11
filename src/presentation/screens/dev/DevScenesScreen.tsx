@@ -40,7 +40,7 @@ import { SubstitutionModal } from '../../components/match/SubstitutionModal'
 import { SentValCard } from '../../components/match/SentValCard'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
-import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids } from './gameStateFactory'
+import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids, withActiveIncomingBidEvent } from './gameStateFactory'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'roundsummary' | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -57,6 +57,8 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'trupp-blandat' | 'trupp-kris' | 'lineup-empty' | 'lineup-filled'
   // PORTAL-TAKREGEL (2026-08-09): fyra baseline-tillstånd, §5 i ordern
   | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind'
+  // AUDIT DEL 2 (2026-08-11): kontrollfall, Berg-budets dubbelrendering (dc3d771f)
+  | 'portal-bid-single' | 'portal-bid-multi'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -105,6 +107,8 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'portal-normal', label: 'Portal — normal (1 atmosfärsrad)' },
   { id: 'portal-full',   label: 'Portal — full (beat+eko+upptakt)' },
   { id: 'portal-grind',  label: 'Portal — grind-läge (veckobeslut olöst)' },
+  { id: 'portal-bid-single', label: 'Portal — 1 bud, det är det aktiva HÄNDELSE-kortet' },
+  { id: 'portal-bid-multi',  label: 'Portal — 3 bud, ett är det aktiva HÄNDELSE-kortet' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -390,6 +394,13 @@ const portalNormalGame = withActiveBeat(factoryMidSeasonGame)
 const portalFullBase = atRound(makeBaseGame({ seed: 2 }), 24)
 const portalFullGame = withAnniversary(withActiveBeat(portalFullBase))
 const portalGrindGame = withObjectiveAlertWarning(withPendingWeeklyDecision(factoryMidSeasonGame))
+// AUDIT DEL 2 (2026-08-11), kontrollfall efter Berg-fixet (dc3d771f): ett
+// aktivt bud (HÄNDELSE-kort) ska aldrig få TransferDeadlinePrimary att
+// påstå "Inga öppna bud just nu" — varken när det är det enda budet eller
+// när det är ett av flera. Två separata tillstånd, inte en variant av
+// portal-tom/normal (de har egna, redan etablerade betydelser).
+const portalBidSingleGame = withActiveIncomingBidEvent(withIncomingBids(factoryMidSeasonGame, 1))
+const portalBidMultiGame = withActiveIncomingBidEvent(withIncomingBids(factoryMidSeasonGame, 3))
 
 // Granska IA — fingerad spelad match (md 20) + andra matcher + roundSummary
 const granskaFixture = {
@@ -597,6 +608,8 @@ export function DevScenesScreen() {
       : scene === 'portal-normal' ? portalNormalGame
       : scene === 'portal-full' ? portalFullGame
       : scene === 'portal-grind' ? portalGrindGame
+      : scene === 'portal-bid-single' ? portalBidSingleGame
+      : scene === 'portal-bid-multi' ? portalBidMultiGame
       : portalGame
     useGameStore.setState({ game: g, roundSummary: (scene === 'granska' || scene === 'roundsummary') ? granskaRoundSummary : null } as never)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -718,7 +731,8 @@ export function DevScenesScreen() {
             <PortalScreen />
           </div>
         )}
-        {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind') && (
+        {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind'
+          || scene === 'portal-bid-single' || scene === 'portal-bid-multi') && (
           <div style={{ height: '1400px', overflow: 'hidden', position: 'relative' }}>
             <PortalScreen />
           </div>
