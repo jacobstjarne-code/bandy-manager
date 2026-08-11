@@ -18,8 +18,12 @@ export function PressConferenceScene({ event, journalist, onChoice }: Props) {
   // Extract question text from body (format: "frågan")
   const question = event.body.replace(/^"|"$/g, '')
 
-  // Extract context from title (format: "🎤 Presskonferens — Namn, Tidning")
-  const titleParts = event.title.replace('🎤 Presskonferens — ', '')
+  // AUDIT DEL 3 (2026-08-11): strukturerat fält istf title-prefix-parse.
+  // event.title.replace('🎤 Presskonferens — ', '') var en no-op —
+  // pressConferenceService.ts sätter bara 'Presskonferens — ' (ingen emoji)
+  // — en tidsinställd bugg, samma mönster som gameFlowActions.ts:s youth-
+  // resultat hade. journalist-propen bär redan samma data strukturerat.
+  const titleParts = journalist ? `${journalist.name}, ${journalist.outlet}` : styleLabel
 
   return (
     <div style={{

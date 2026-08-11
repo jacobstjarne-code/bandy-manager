@@ -171,7 +171,10 @@ export function gameFlowActions(get: Get, set: Set) {
       const youthInbox = resultGame.inbox.find(i =>
         i.type === 'youthP17' && !game.inbox.find(o => o.id === i.id)
       )
-      const youthMatchResult = youthInbox ? youthInbox.title.replace(/^📋 /, '') : undefined
+      // AUDIT DEL 3 (2026-08-11): läser strukturerat fält istf title-prefix-
+      // parse — title.replace(/^📋 /, '') var en no-op (prefixet fanns
+      // aldrig i title), en tidsinställd bugg. Se Inbox.ts:youthMatchSummary.
+      const youthMatchResult = youthInbox?.youthMatchSummary
 
       // Determine display round: use league round number, not matchday
       // For cup-only rounds, show the most recently completed league round + context

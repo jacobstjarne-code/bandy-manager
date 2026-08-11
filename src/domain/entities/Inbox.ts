@@ -32,4 +32,16 @@ export interface InboxItem {
   // som ingen av de riktiga body-generatorerna faktiskt producerar — de
   // använder komma eller tankstreck, se journalistService.ts).
   outlet?: string
+  // AUDIT DEL 3 (2026-08-11): strukturerat fält istf title-prefix-parse.
+  // gameFlowActions.ts läste tidigare youthInbox.title.replace(/^📋 /, '')
+  // — prefixet fanns aldrig i title (youthProcessor.ts satte det aldrig),
+  // så parsen var en no-op som råkade fungera. En tidsinställd bugg: hade
+  // någon lagt tillbaka ett chrome-prefix på title senare hade den börjat
+  // tysta fel. Satt bara på InboxItemType.YouthP17-poster.
+  youthMatchSummary?: string
+  // AUDIT DEL 3 (2026-08-11): strukturerat fält istf ⚠️-räkning i body.
+  // ClubScreen.tsx räknade tidigare träningsskador via
+  // body.split('⚠️').length — samma mönster som Inbox-nemesis hade (A2).
+  // Satt bara på InboxItemType.Training-poster.
+  injuredPlayerCount?: number
 }

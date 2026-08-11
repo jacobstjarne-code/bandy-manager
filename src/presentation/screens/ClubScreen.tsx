@@ -57,14 +57,15 @@ export function ClubScreen() {
         const inboxItem = game.inbox.find(item =>
           item.type === 'training' && item.body.includes(`Omgång ${session.roundNumber}`)
         )
-        const injuryCount = inboxItem ? (inboxItem.body.split('⚠️').length - 1) : 0
+        // AUDIT DEL 3 (2026-08-11): strukturerat fält istf ⚠️-räkning i body.
+        const injuryCount = inboxItem?.injuredPlayerCount ?? 0
         return { roundNumber: session.roundNumber, focus: session.focus, injuryCount }
       })
     : undefined
 
-  const trainingInjuriesThisSeason = game.inbox.filter(item =>
-    item.type === 'training' && item.body.includes('⚠️')
-  ).reduce((sum, item) => sum + (item.body.split('⚠️').length - 1), 0)
+  const trainingInjuriesThisSeason = game.inbox
+    .filter(item => item.type === 'training')
+    .reduce((sum, item) => sum + (item.injuredPlayerCount ?? 0), 0)
 
   const TAB_LABELS: { key: ClubTab; label: string }[] = [
     { key: 'training', label: 'Träning' },

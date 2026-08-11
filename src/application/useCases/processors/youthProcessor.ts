@@ -66,13 +66,15 @@ export function processYouth(
       ? `\n\n⭐ SCOUTRAPPORTEN: ${readyPlayers[0].firstName} ${readyPlayers[0].lastName} (${readyPlayers[0].age} år) börjar bli mogen för A-truppen.`
       : ''
 
+    const youthMatchSummary = `P19 ${resultStr} mot ${matchResult.opponentName} ${scoreStr}`
     inboxItems.push({
       id: `inbox_p17_r${nextMatchday}_${game.currentSeason}`,
       date: newDate,
       type: InboxItemType.YouthP17,
-      title: `P19 ${resultStr} mot ${matchResult.opponentName} ${scoreStr}`,
+      title: youthMatchSummary,
       body: `Pojklaget ${resultStr} mot ${matchResult.opponentName} med ${scoreStr}.${scorerStr}${bestStr}\n${tableStr}${scoutNote}`,
       isRead: false,
+      youthMatchSummary,
     } as InboxItem)
   }
 

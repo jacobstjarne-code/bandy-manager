@@ -340,5 +340,6 @@ export function createTrainingItem(
     title: `Träning omg ${roundNumber}: ${typeLabel}`,
     body,
     isRead: false,
+    injuredPlayerCount: injuredPlayers.length,
   }
 }

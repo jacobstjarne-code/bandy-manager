@@ -7,6 +7,7 @@ import {
   createPlayerDevelopmentItem,
   createContractExpiringItem,
   createBoardFeedbackItem,
+  createTrainingItem,
 } from '../inboxService'
 import { DIAGNOSIS_LINES } from '../../data/injuryDoctorText'
 import type { Fixture } from '../../entities/Fixture'
@@ -30,6 +31,8 @@ import {
   TacticAttackingFocus,
   CornerStrategy,
   PenaltyKillStyle,
+  TrainingType,
+  TrainingIntensity,
 } from '../../enums'
 
 const TEST_DATE = '2026-03-15'
@@ -310,6 +313,26 @@ describe('createBoardFeedbackItem', () => {
     const standing = makeStanding({ position: 6, points: 12 })
     const item = createBoardFeedbackItem(club, standing, 12, TEST_DATE)
     expect(item.date).toBe(TEST_DATE)
+  })
+})
+
+describe('createTrainingItem — AUDIT DEL 3 (2026-08-11), strukturerat fält istf ⚠️-räkning', () => {
+  it('injuredPlayerCount matchar antalet skadade spelare, body bär fortfarande ⚠️ (chrome, oförändrat)', () => {
+    const focus = { type: TrainingType.Physical, intensity: TrainingIntensity.Normal }
+    const injured = [
+      makePlayer({ id: 'p1', firstName: 'Nils', lastName: 'Berg', injuryDaysRemaining: 7 }),
+      makePlayer({ id: 'p2', firstName: 'Ola', lastName: 'Sjö', injuryDaysRemaining: 14 }),
+    ]
+    const item = createTrainingItem(focus, 5, injured, TEST_DATE)
+    expect(item.injuredPlayerCount).toBe(2)
+    expect(item.body).toContain('⚠️')
+  })
+
+  it('inga skador ger injuredPlayerCount 0', () => {
+    const focus = { type: TrainingType.Physical, intensity: TrainingIntensity.Normal }
+    const item = createTrainingItem(focus, 5, [], TEST_DATE)
+    expect(item.injuredPlayerCount).toBe(0)
+    expect(item.body).not.toContain('⚠️')
   })
 })
 
