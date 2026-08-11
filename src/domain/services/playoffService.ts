@@ -234,3 +234,36 @@ export function advancePlayoffRound(
 
   return { bracket, newFixtures: [] }
 }
+
+/**
+ * GRANSKA DEL 4 (2026-08-11), steg 5 — slutspelets motsvarighet till
+ * cupService.ts:s getManagedClubCupStatus. Ingen ny mekanik: bara en
+ * derivering ur fält som redan finns (bracket.champion, series.winnerId/
+ * loserId) — samma data Turneringsläge-sektionen ändå behöver läsa.
+ */
+export function getManagedClubPlayoffStatus(
+  bracket: PlayoffBracket,
+  managedClubId: string,
+): { eliminated: boolean; eliminatedInRound?: PlayoffRound; isInFinal: boolean; won: boolean } {
+  if (bracket.champion === managedClubId) {
+    return { eliminated: false, isInFinal: false, won: true }
+  }
+
+  const allSeries = [...bracket.quarterFinals, ...bracket.semiFinals, ...(bracket.final ? [bracket.final] : [])]
+    .filter(s => s.homeClubId === managedClubId || s.awayClubId === managedClubId)
+
+  const roundsMostAdvancedFirst = [PlayoffRound.Final, PlayoffRound.SemiFinal, PlayoffRound.QuarterFinal]
+  for (const round of roundsMostAdvancedFirst) {
+    const series = allSeries.find(s => s.round === round)
+    if (series?.loserId === managedClubId) {
+      return { eliminated: true, eliminatedInRound: round, isInFinal: false, won: false }
+    }
+  }
+
+  const finalSeries = allSeries.find(s => s.round === PlayoffRound.Final)
+  if (finalSeries && !finalSeries.winnerId) {
+    return { eliminated: false, isInFinal: true, won: false }
+  }
+
+  return { eliminated: false, isInFinal: false, won: false }
+}

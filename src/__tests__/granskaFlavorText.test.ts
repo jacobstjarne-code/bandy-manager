@@ -34,4 +34,22 @@ describe('granskaFlavorText — A1 straff-guard', () => {
     expect(granskaFlavorText({ won: true, lost: false, isHome: false, homeScore: 1, awayScore: 5 }))
       .toBe('💪 Dominant insats · bortaseger')
   })
+
+  // GRANSKA DEL 4 steg 3 (2026-08-11): neutral plan (finalhelgen, SM-final) har
+  // inget "hemma" att vinna — svansen ska bort, inte bara flyttas.
+  it('neutral plan (final) — ingen hemma-/bortaseger-svans trots vinst', () => {
+    const out = granskaFlavorText({ won: true, lost: false, isHome: true, homeScore: 3, awayScore: 1, isNeutralVenue: true })
+    expect(out).toBe('✅ Klar vinst')
+    expect(out).not.toContain('seger')
+  })
+
+  it('neutral plan, förlust — ingen svans att ta bort (fanns aldrig på förlust)', () => {
+    expect(granskaFlavorText({ won: false, lost: true, isHome: false, homeScore: 3, awayScore: 1, isNeutralVenue: true }))
+      .toBe('❌ Klar förlust')
+  })
+
+  it('isNeutralVenue default false — befintligt beteende oförändrat', () => {
+    expect(granskaFlavorText({ won: true, lost: false, isHome: true, homeScore: 2, awayScore: 1 }))
+      .toBe('😅 Knapp seger · hemmaseger')
+  })
 })

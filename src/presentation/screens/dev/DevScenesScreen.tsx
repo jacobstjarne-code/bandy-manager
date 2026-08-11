@@ -41,7 +41,7 @@ import { SentValCard } from '../../components/match/SentValCard'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
 import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids, withActiveIncomingBidEvent } from './gameStateFactory'
-import { CUP_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
+import { CUP_FINAL_VENUE, SM_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -56,7 +56,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // AUDIT DEL 3 (2026-08-10): Granska matchtypsmatrisen — förberedelse för
   // Design-uppdraget (DESIGN_UPPDRAG_GRANSKA_DEL4_2026-08-10.md steg A).
   // 'granska' (befintlig) täcker liga.
-  | 'granska-cup' | 'granska-cup-final' | 'granska-slutspel' | 'granska-avsked'
+  | 'granska-cup' | 'granska-cup-final' | 'granska-slutspel' | 'granska-sm-final' | 'granska-avsked'
   | 'momentumbar' | 'tacticmodal' | 'submodal' | 'spakb'
   // VISUELL_AUDIT punkt 1 (2026-08-09): spelläges-fabriken (gameStateFactory.ts)
   | 'trupp-blandat' | 'trupp-kris' | 'lineup-empty' | 'lineup-filled'
@@ -84,6 +84,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'granska-cup',       label: 'Granska — cup, vanlig runda' },
   { id: 'granska-cup-final', label: 'Granska — cup, finalhelgen (neutral plan)' },
   { id: 'granska-slutspel',  label: 'Granska — slutspel' },
+  { id: 'granska-sm-final',  label: 'Granska — SM-final (slutspel + skede:final)' },
   { id: 'granska-avsked',    label: 'Granska — avskedsmatch' },
   { id: 'upptakt',      label: 'Upptakt (C-SD2 sub-states)' },
   { id: 'ekonomi',      label: 'Ekonomi (Våg 4: kassa-trend)' },
@@ -574,7 +575,7 @@ const granskaRoundSummary = {
 function makeGranskaFixture(overrides: Partial<typeof granskaFixture> & {
   isCup?: boolean; isKnockout?: boolean; isCupFinalhelgen?: boolean
   isNeutralVenue?: boolean; farewellMatchForPlayerId?: string
-  arenaName?: string; venueCity?: string
+  arenaName?: string; venueCity?: string; isFinaldag?: boolean
 }) {
   return { ...granskaFixture, ...overrides }
 }
@@ -624,6 +625,32 @@ const granskaPlayoffGame = makeGame([...makeLeagueFixtures(), granskaPlayoffFixt
   },
 })
 const granskaPlayoffRoundSummary = { ...granskaRoundSummary, round: 33 }
+
+// SM-final — GRANSKA DEL 4 steg 3-förberedelse (2026-08-11): tävlingstyp:slutspel
+// + skede:final, den enda kombinationen isSeasonEndingFinal (granskaSectionRegistry.ts)
+// triggar på. Fälten matchar playoffService.ts:s generatePlayoffFixtures(isFinal-
+// grenen) ordagrant: isNeutralVenue+isKnockout+isFinaldag, SM_FINAL_VENUE
+// (Studenternas IP, Uppsala) — INTE isCup. playoffBracket.final wired med
+// fixturen, annars blir skede undefined av datalucka (samma fel som
+// granska-slutspel hade innan steg 2 fixade det).
+const granskaSmFinalFixture = makeGranskaFixture({
+  isKnockout: true, isFinaldag: true, isNeutralVenue: true,
+  arenaName: SM_FINAL_VENUE.arenaName, venueCity: SM_FINAL_VENUE.city,
+  roundNumber: 37, matchday: 37,
+})
+const granskaSmFinalGame = makeGame([...makeLeagueFixtures(), granskaSmFinalFixture], {
+  lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 37, communityStanding: 58,
+  playoffBracket: {
+    season: 8, status: 'final',
+    quarterFinals: [], semiFinals: [],
+    final: {
+      id: 'po-final-granska', round: 'final', homeClubId: HOME_ID, awayClubId: AWAY_ID,
+      fixtures: [granskaSmFinalFixture.id], homeWins: 1, awayWins: 0, winnerId: HOME_ID, loserId: AWAY_ID,
+    },
+    champion: HOME_ID,
+  },
+})
+const granskaSmFinalRoundSummary = { ...granskaRoundSummary, round: 37 }
 
 // Avskedsmatch — vanlig ligamatch, farewellMatchForPlayerId satt på en trupp-spelare.
 const granskaFarewellFixture = makeGranskaFixture({ farewellMatchForPlayerId: 'p-h1' })
@@ -697,6 +724,7 @@ export function DevScenesScreen() {
       : scene === 'granska-cup' ? granskaCupGame
       : scene === 'granska-cup-final' ? granskaCupFinalGame
       : scene === 'granska-slutspel' ? granskaPlayoffGame
+      : scene === 'granska-sm-final' ? granskaSmFinalGame
       : scene === 'granska-avsked' ? granskaFarewellGame
       : scene === 'season-a' ? seasonGameA
       : scene === 'season-b' ? seasonGameB
@@ -729,6 +757,7 @@ export function DevScenesScreen() {
       : scene === 'granska-cup' ? granskaCupRoundSummary
       : scene === 'granska-cup-final' ? granskaCupFinalRoundSummary
       : scene === 'granska-slutspel' ? granskaPlayoffRoundSummary
+      : scene === 'granska-sm-final' ? granskaSmFinalRoundSummary
       : scene === 'granska-avsked' ? granskaFarewellRoundSummary
       : null
     useGameStore.setState({ game: g, roundSummary: roundSummaryForScene } as never)
@@ -924,7 +953,7 @@ export function DevScenesScreen() {
         )}
 
         {(scene === 'granska' || scene === 'granska-cup' || scene === 'granska-cup-final'
-          || scene === 'granska-slutspel' || scene === 'granska-avsked') && storeReady && (
+          || scene === 'granska-slutspel' || scene === 'granska-sm-final' || scene === 'granska-avsked') && storeReady && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <GranskaScreen />
           </div>

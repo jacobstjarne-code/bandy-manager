@@ -25,6 +25,7 @@ import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_T
 import type { KvittoOutcomeDir, CaptainContext } from '../../../domain/data/managerKvittoText'
 import type { MatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { visasFor } from '../../../domain/services/granskaSectionRegistry'
+import { deriveTurneringslageMode, TURNERINGSLAGE_TEXT } from '../../../domain/services/turneringslageService'
 
 const TRAINING_LABEL: Record<string, string> = {
   [TrainingType.Skating]: 'Skridskoteknik', [TrainingType.BallControl]: 'Bollkontroll',
@@ -38,6 +39,12 @@ const TRAINING_LABEL: Record<string, string> = {
  * A1 — flavor-radens text. Straffavgjord match (bara cup/slutspel sätter penResult)
  * får egen label FÖRE margin-logiken, annars hade en straffseger 4–4 hamnat i kryss-grenen.
  * Ren funktion → enhetstestbar (straff-guard + att ligamatch aldrig läcker straff-text).
+ *
+ * GRANSKA DEL 4 steg 3 (2026-08-11): isNeutralVenue slår av "hemmaseger"/
+ * "bortaseger"-svansen. Matrisens rad för Resultat-hero flaggade den som fel
+ * på neutral plan (finalhelgen, SM-final) — det finns inget "hemma" att vinna
+ * på Studenternas IP eller i Bollnäs. Default false, ingen befintlig
+ * anropssida (liga, alltid hemmaplan-koncept) påverkas.
  */
 export function granskaFlavorText(args: {
   penResult?: { home: number; away: number }
@@ -46,8 +53,9 @@ export function granskaFlavorText(args: {
   isHome: boolean
   homeScore?: number
   awayScore?: number
+  isNeutralVenue?: boolean
 }): string {
-  const { penResult, won, lost, isHome, homeScore, awayScore } = args
+  const { penResult, won, lost, isHome, homeScore, awayScore, isNeutralVenue } = args
   if (penResult) return won ? '🎯 Straffseger' : '🎯 Förlust på straffar'
   const myScore = isHome ? (homeScore ?? 0) : (awayScore ?? 0)
   const theirScore = isHome ? (awayScore ?? 0) : (homeScore ?? 0)
@@ -58,7 +66,7 @@ export function granskaFlavorText(args: {
     : lost
     ? margin <= -3 ? '💣 Svår dag på jobbet' : margin === -1 ? '😤 Nära men inte nog' : '❌ Klar förlust'
     : totalGoals >= 8 ? '🎢 Dramatiskt kryss' : '🤝 Rättvis poängdelning'
-  const flavorTail = won ? ` · ${isHome ? 'hemmaseger' : 'bortaseger'}` : ''
+  const flavorTail = won && !isNeutralVenue ? ` · ${isHome ? 'hemmaseger' : 'bortaseger'}` : ''
   return `${flavor}${flavorTail}`
 }
 
@@ -173,11 +181,12 @@ export function GranskaOversikt({
   const getClubShort = (id: string) => game.clubs.find(c => c.id === id)?.shortName ?? game.clubs.find(c => c.id === id)?.name ?? '?'
   const latestTraining = (game.trainingHistory ?? []).slice(-1)[0]
   const trainingLabel = latestTraining ? TRAINING_LABEL[latestTraining.focus.type] ?? 'Träning' : null
-  return (
-    <>
-      <GroupDivider label="Resultatet" style={{ marginTop: 2 }} />
-      {/* Result hero — tappbar → Analys (händelsetidslinje + insikter) */}
-      {fixture && (
+
+  // GRANSKA DEL 4 steg 3 (2026-08-11): tre sektioner hissade till lokala
+  // variabler (istf inline i huvud-JSX:en) så avskeds-tributegrenen nedan kan
+  // återanvända dem ordagrant — samma innehåll, EN källa, inte en kopia som
+  // kan glida isär från originalet över tid.
+  const resultatHeroCard = fixture && (
         <div className="card-sharp card-tap" onClick={onOpenReport} style={{ margin: '0 0 3px', position: 'relative', cursor: 'pointer', ...fadeIn(0) }}>
           <span style={{ position: 'absolute', top: 13, right: 14, fontSize: 16, color: 'var(--accent)' }}>›</span>
           <div style={{ padding: '16px 14px 16px', textAlign: 'center' }}>
@@ -188,11 +197,15 @@ export function GranskaOversikt({
               <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: 'right' }}>{awayClub?.shortName ?? awayClub?.name}</span>
             </div>
 
-            {/* DB-3: hero-score → ScoreBlock (en primitiv för alla resultat i UI-flöde) */}
+            {/* DB-3: hero-score → ScoreBlock (en primitiv för alla resultat i UI-flöde).
+                GRANSKA DEL 4 steg 3: trophy-ton — gold-variant reserverad för SM-final/
+                Cup-final (design-system/DESIGN-DECISIONS.md: "Gold-regel"), tvingad här
+                vid anropssidan, inte i komponenten. Bara på VUNNEN final — en förlorad
+                final är fortfarande en förlust, inte guld. */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
               <ScoreBlock
                 score={`${fixture.homeScore}–${fixture.awayScore}`}
-                variant={won ? 'win' : lost ? 'loss' : 'draw'}
+                variant={axes.skede === 'final' && won ? 'gold' : won ? 'win' : lost ? 'loss' : 'draw'}
                 size="hero"
                 light
               />
@@ -249,7 +262,7 @@ export function GranskaOversikt({
                   </div>
                 )
               }
-              const summary = generateQuickSummary(fixture, isHome, game.players)
+              const summary = generateQuickSummary(fixture, isHome, game.players, axes.tavlingstyp, axes.skede)
               return summary ? (
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 12, padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', textAlign: 'left' }}>
                   {summary}
@@ -272,7 +285,7 @@ export function GranskaOversikt({
 
             {/* Flavor-rad — kort sammanfattning, border-top, klipps aldrig mot underkanten */}
             {(() => {
-              const flavorText = granskaFlavorText({ penResult, won, lost, isHome, homeScore: fixture.homeScore, awayScore: fixture.awayScore })
+              const flavorText = granskaFlavorText({ penResult, won, lost, isHome, homeScore: fixture.homeScore, awayScore: fixture.awayScore, isNeutralVenue: fixture.isNeutralVenue })
               // penResult-grenen har egen färglogik (straff → alltid won/lost, ingen neutral)
               if (penResult) {
                 return (
@@ -289,7 +302,94 @@ export function GranskaOversikt({
             })()}
           </div>
         </div>
-      )}
+  )
+
+  const nyckelmomentCard = keyMoments.length > 0 && (
+        <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(6) }}>
+          <SectionLabel style={{ marginBottom: 8 }}>NYCKELMOMENT</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {keyMoments.map((e, i) => {
+              const isHomeEvent = e.clubId === fixture?.homeClubId
+              const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
+              const scorerName = scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'
+              const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🥅') : '⏱️'
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: isHomeEvent ? 'flex-start' : 'flex-end', gap: 5 }}>
+                  {isHomeEvent && <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 24, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>}
+                  {isHomeEvent && <span style={{ fontSize: 11 }}>{icon}</span>}
+                  <span style={{ fontSize: 11, color: e.type === MatchEventType.Suspension ? 'var(--danger)' : 'var(--text-secondary)' }}>{scorerName}</span>
+                  {!isHomeEvent && <span style={{ fontSize: 11 }}>{icon}</span>}
+                  {!isHomeEvent && <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 24, textAlign: 'left', flexShrink: 0 }}>{e.minute}'</span>}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+  )
+
+  // §11.3 — Granska-slutets framåtpekare. Avslutande viskning, inget kort/rubrik.
+  // ✕ bara på den säsongsavslutande finalen (slutspel+final) — en cupfinal
+  // spelas i augusti, ligasäsongen fortsätter direkt efteråt, så den behåller
+  // pekaren (nextFixture finns naturligt ändå). Avsked ✓ (matrisen).
+  const nastaMatchPekareLine = visasFor('nastaMatchPekare', axes.tavlingstyp, axes.skede) && (() => {
+    const nextFixture = game.fixtures
+      .filter(f =>
+        f.status !== 'completed' &&
+        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+      )
+      .sort((a, b) => a.matchday - b.matchday)[0]
+    if (!nextFixture) return null
+
+    const isNextHome = nextFixture.homeClubId === game.managedClubId
+    const oppId = isNextHome ? nextFixture.awayClubId : nextFixture.homeClubId
+    const venue = isNextHome ? 'hemma' : 'borta'
+
+    const nextSlot = (game.seasonCalendar ?? []).find(s => s.matchday === nextFixture.matchday)
+    const calendarFlag = nextSlot?.isAnnandagen ? 'annandag' as const
+      : nextSlot?.isNyarsbandy ? 'nyar' as const
+      : nextSlot?.isCupFinalhelgen ? 'cupfinalhelg' as const
+      : null
+    // Formkollen körs på MOTSTÅNDAREN, inte managed club.
+    const oppFormLast5 = getFormResults(oppId, game.fixtures, game.clubs, 5).map(r => r.result)
+    const oppPosition = getCurrentLeaguePosition(oppId, game)
+
+    const pointerType = selectNextMatchPointerType({
+      isDerby: getRivalry(game.managedClubId, oppId) !== null,
+      calendarFlag,
+      oppFormLast5,
+      managedPosition: leaguePosition,
+      oppPosition,
+    })
+
+    const line = seededPick(NEXT_MATCH_POINTER[pointerType], nextFixture.matchday)
+      .replaceAll('{opp}', getClubShort(oppId))
+      .replaceAll('{venue}', venue)
+
+    return (
+      <p style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', textAlign: 'center', marginTop: 14 }}>
+        {line}
+      </p>
+    )
+  })()
+
+  // GRANSKA DEL 4 steg 3 (2026-08-11): ett första försök att gren:a av avsked
+  // som en helt egen return tidigt i funktionen visade sig DROPPA innehåll
+  // matrisen inte alls ✕:ar för avsked — Media (⚠, kvar), NY SKADA-kortet,
+  // kritiska events, presskonferens/CS-press/domarmöte (event-drivna
+  // beslutsprompter helt utanför matrisens 12 rader). En "egen gren" som
+  // tystar en väntande presskonferens är en regression, inte en förbättring.
+  // Reverterat till EN return — registret (steg 2) döljer redan korrekt de
+  // sju ✕-sektionerna (Tabell/Form/Statistik/Dina val/Omgångssammanfattning/
+  // Andra matcher/Scouting) för avsked, verifierat i browser. En fullständig
+  // fysisk avgrening (hissa även critical events/press/CS-press/domarmöte/
+  // Media/NY SKADA) är görbar men är sex block till att flytta rätt utan att
+  // tappa något — rapporterat till Jacob som en separat avvägning istf gjort
+  // under tidspress här.
+  return (
+    <>
+      <GroupDivider label="Resultatet" style={{ marginTop: 2 }} />
+      {/* Result hero — tappbar → Analys (händelsetidslinje + insikter) */}
+      {resultatHeroCard}
 
       {/* Resultat-strip — tabell + form (två kolumner). GRANSKA DEL 4 steg 2:
           var och en gated individuellt — cup döljer båda, slutspel behåller
@@ -329,6 +429,27 @@ export function GranskaOversikt({
                 </div>
               </div>
             )}
+          </div>
+        )
+      })()}
+
+      {/* Turneringsläge — GRANSKA DEL 4 steg 5 (2026-08-11), NY sektion. Enda
+          sektionen matrisen lägger TILL, inte tar bort — täcker live-luckan
+          där en cupsemifinal-förlust aldrig nämnde "cup" en enda gång på
+          skärmen. Text är [Opus]-markerad, struktur/derivering är Code:s
+          (turneringslageService.ts, ingen ny mekanik — läser cupService/
+          playoffService:s befintliga statusfunktioner). Visas bara när ett
+          läge faktiskt kan avgöras (se deriveTurneringslageMode) — annars
+          ingen rad (No false empty states, DS-regel 12). */}
+      {(() => {
+        const mode = deriveTurneringslageMode(game, axes.tavlingstyp)
+        if (!mode) return null
+        return (
+          <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px' }}>
+            <SectionLabel style={{ marginBottom: 6 }}>TURNERINGSLÄGE</SectionLabel>
+            <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>
+              {TURNERINGSLAGE_TEXT[mode]}
+            </p>
           </div>
         )
       })()}
@@ -766,28 +887,7 @@ export function GranskaOversikt({
       })()}
 
       {/* Nyckelmoment */}
-      {keyMoments.length > 0 && (
-        <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(6) }}>
-          <SectionLabel style={{ marginBottom: 8 }}>NYCKELMOMENT</SectionLabel>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {keyMoments.map((e, i) => {
-              const isHomeEvent = e.clubId === fixture?.homeClubId
-              const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
-              const scorerName = scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'
-              const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🥅') : '⏱️'
-              return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: isHomeEvent ? 'flex-start' : 'flex-end', gap: 5 }}>
-                  {isHomeEvent && <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 24, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>}
-                  {isHomeEvent && <span style={{ fontSize: 11 }}>{icon}</span>}
-                  <span style={{ fontSize: 11, color: e.type === MatchEventType.Suspension ? 'var(--danger)' : 'var(--text-secondary)' }}>{scorerName}</span>
-                  {!isHomeEvent && <span style={{ fontSize: 11 }}>{icon}</span>}
-                  {!isHomeEvent && <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 24, textAlign: 'left', flexShrink: 0 }}>{e.minute}'</span>}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+      {nyckelmomentCard}
 
       {/* ── KLUBBEN ── */}
       <GroupDivider label="Klubben" />
@@ -896,50 +996,8 @@ export function GranskaOversikt({
         )
       })()}
 
-      {/* §11.3 — Granska-slutets framåtpekare. Avslutande viskning, inget kort/rubrik.
-          GRANSKA DEL 4 steg 2: ✕ bara på den säsongsavslutande finalen (slutspel+final)
-          — en cupfinal spelas i augusti, ligasäsongen fortsätter direkt efteråt, så
-          den behåller pekaren (nextFixture finns naturligt ändå). Avsked ✓ (matrisen). */}
-      {visasFor('nastaMatchPekare', axes.tavlingstyp, axes.skede) && (() => {
-        const nextFixture = game.fixtures
-          .filter(f =>
-            f.status !== 'completed' &&
-            (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-          )
-          .sort((a, b) => a.matchday - b.matchday)[0]
-        if (!nextFixture) return null
-
-        const isNextHome = nextFixture.homeClubId === game.managedClubId
-        const oppId = isNextHome ? nextFixture.awayClubId : nextFixture.homeClubId
-        const venue = isNextHome ? 'hemma' : 'borta'
-
-        const nextSlot = (game.seasonCalendar ?? []).find(s => s.matchday === nextFixture.matchday)
-        const calendarFlag = nextSlot?.isAnnandagen ? 'annandag' as const
-          : nextSlot?.isNyarsbandy ? 'nyar' as const
-          : nextSlot?.isCupFinalhelgen ? 'cupfinalhelg' as const
-          : null
-        // Formkollen körs på MOTSTÅNDAREN, inte managed club.
-        const oppFormLast5 = getFormResults(oppId, game.fixtures, game.clubs, 5).map(r => r.result)
-        const oppPosition = getCurrentLeaguePosition(oppId, game)
-
-        const pointerType = selectNextMatchPointerType({
-          isDerby: getRivalry(game.managedClubId, oppId) !== null,
-          calendarFlag,
-          oppFormLast5,
-          managedPosition: leaguePosition,
-          oppPosition,
-        })
-
-        const line = seededPick(NEXT_MATCH_POINTER[pointerType], nextFixture.matchday)
-          .replaceAll('{opp}', getClubShort(oppId))
-          .replaceAll('{venue}', venue)
-
-        return (
-          <p style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', textAlign: 'center', marginTop: 14 }}>
-            {line}
-          </p>
-        )
-      })()}
+      {/* §11.3 — Granska-slutets framåtpekare. Avslutande viskning, inget kort/rubrik. */}
+      {nastaMatchPekareLine}
     </>
   )
 }

@@ -34,6 +34,7 @@ const SCENES = [
   ['granska-cup', 'Granska — cup, vanlig runda (AUDIT DEL 3 matchtypsmatrisen)'],
   ['granska-cup-final', 'Granska — cup, finalhelgen neutral plan (AUDIT DEL 3 matchtypsmatrisen)'],
   ['granska-slutspel', 'Granska — slutspel (AUDIT DEL 3 matchtypsmatrisen)'],
+  ['granska-sm-final', 'Granska — SM-final, slutspel+skede:final (GRANSKA DEL 4 steg 6)'],
   ['granska-avsked', 'Granska — avskedsmatch (AUDIT DEL 3 matchtypsmatrisen)'],
   ['upptakt', 'Upptakt (C-SD2)'],
   ['ekonomi', 'EkonomiTab (DB-4 saldo Georgia)'],

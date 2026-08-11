@@ -6,10 +6,12 @@ import {
   updateSeriesAfterMatch,
   advancePlayoffRound,
   maxMatchesInSeries,
+  getManagedClubPlayoffStatus,
 } from '../playoffService'
 import { PlayoffStatus, PlayoffRound, FixtureStatus } from '../../enums'
 import type { StandingRow } from '../../entities/SaveGame'
 import type { PlayoffSeries } from '../../entities/Playoff'
+import type { PlayoffBracket } from '../../entities/Playoff'
 import type { Fixture } from '../../entities/Fixture'
 
 function makeStandings(): StandingRow[] {
@@ -374,5 +376,56 @@ describe('advancePlayoffRound', () => {
     expect(newBracket.status).toBe(PlayoffStatus.Completed)
     expect(newBracket.champion).toBe('club_1')
     expect(newFixtures).toHaveLength(0)
+  })
+})
+
+// GRANSKA DEL 4 (2026-08-11), steg 5 — getManagedClubPlayoffStatus.
+describe('getManagedClubPlayoffStatus', () => {
+  const MANAGED = 'club_1'
+  const OPP = 'club_2'
+
+  function series(round: PlayoffRound, overrides: Partial<PlayoffSeries> = {}): PlayoffSeries {
+    return {
+      id: `s-${round}`, round, homeClubId: MANAGED, awayClubId: OPP,
+      fixtures: [], homeWins: 0, awayWins: 0, winnerId: null, loserId: null,
+      ...overrides,
+    }
+  }
+
+  function bracketWith(overrides: Partial<PlayoffBracket>): PlayoffBracket {
+    return { season: 8, status: PlayoffStatus.QuarterFinals, quarterFinals: [], semiFinals: [], final: null, champion: null, ...overrides }
+  }
+
+  it('vunnen final — champion === managedClubId', () => {
+    const bracket = bracketWith({ champion: MANAGED })
+    expect(getManagedClubPlayoffStatus(bracket, MANAGED)).toEqual({ eliminated: false, isInFinal: false, won: true })
+  })
+
+  it('ut i kvartsfinal', () => {
+    const bracket = bracketWith({ quarterFinals: [series(PlayoffRound.QuarterFinal, { winnerId: OPP, loserId: MANAGED })] })
+    expect(getManagedClubPlayoffStatus(bracket, MANAGED)).toEqual({ eliminated: true, eliminatedInRound: PlayoffRound.QuarterFinal, isInFinal: false, won: false })
+  })
+
+  it('ut i semifinal', () => {
+    const bracket = bracketWith({
+      quarterFinals: [series(PlayoffRound.QuarterFinal, { winnerId: MANAGED, loserId: OPP })],
+      semiFinals: [series(PlayoffRound.SemiFinal, { winnerId: OPP, loserId: MANAGED })],
+    })
+    expect(getManagedClubPlayoffStatus(bracket, MANAGED)).toEqual({ eliminated: true, eliminatedInRound: PlayoffRound.SemiFinal, isInFinal: false, won: false })
+  })
+
+  it('förlorad final — eliminatedInRound Final', () => {
+    const bracket = bracketWith({ final: series(PlayoffRound.Final, { winnerId: OPP, loserId: MANAGED }) })
+    expect(getManagedClubPlayoffStatus(bracket, MANAGED)).toEqual({ eliminated: true, eliminatedInRound: PlayoffRound.Final, isInFinal: false, won: false })
+  })
+
+  it('vidare till final — final-serie pågår, ingen vinnare än', () => {
+    const bracket = bracketWith({ final: series(PlayoffRound.Final) })
+    expect(getManagedClubPlayoffStatus(bracket, MANAGED)).toEqual({ eliminated: false, isInFinal: true, won: false })
+  })
+
+  it('fortfarande med, inget avgjort — kvartsfinal vunnen, semi ej spelad än', () => {
+    const bracket = bracketWith({ quarterFinals: [series(PlayoffRound.QuarterFinal, { winnerId: MANAGED, loserId: OPP })] })
+    expect(getManagedClubPlayoffStatus(bracket, MANAGED)).toEqual({ eliminated: false, isInFinal: false, won: false })
   })
 })

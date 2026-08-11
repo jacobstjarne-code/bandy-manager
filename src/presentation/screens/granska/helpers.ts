@@ -1,8 +1,45 @@
 import { MatchEventType } from '../../../domain/enums'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
+import type { Tavlingstyp, Skede } from '../../../domain/services/matchTypeAxes'
 
-export function generateQuickSummary(fixture: Fixture, managedIsHome: boolean, players: Player[]): string {
+/**
+ * GRANSKA DEL 4 (2026-08-11), steg 4 — fast-lägets prosa, struktur men inte
+ * text. Detta är den ENDA texten en snabbsimmare möter om matchen alls
+ * (mode:'fast' genererar ingen kommentar under matchen, till skillnad från
+ * live/'full') — se docs/incoming/DESIGN_UPPDRAG_GRANSKA_DEL4-2026-08-11.md.
+ *
+ * Tre lägen får egna pooler: skede==='final' (delad mellan cup- och
+ * SM-final — steg 1: "final är inget eget tävlingstyp-värde"), tävlingstyp
+ * 'slutspel' (icke-final), och 'avsked'. Liga och cup (icke-final) rör den
+ * befintliga, redan skrivna default-logiken nedan orört.
+ *
+ * Texten är Opus's (CLAUDE.md: "Code skriver ALDRIG svensk speltext").
+ * Pool-arrayerna är TOMMA med flit — inga utkastmeningar, ingen "temporär"
+ * placeholder-prosa. '[Opus]' är den enda tillåtna platshållarsträngen.
+ * Rapporterad lista över vilka lägen som behöver rader: se commit-
+ * meddelandet / SPRINT_GRANSKADEL4_STEG4_AUDIT.md.
+ */
+export const QUICK_SUMMARY_FINAL_POOL: string[] = [] // Opus levererar
+export const QUICK_SUMMARY_SLUTSPEL_POOL: string[] = [] // Opus levererar
+export const QUICK_SUMMARY_AVSKED_POOL: string[] = [] // Opus levererar
+
+function pickFromPool(pool: string[], seed: number): string {
+  if (pool.length === 0) return '[Opus]'
+  return pool[seed % pool.length]
+}
+
+export function generateQuickSummary(
+  fixture: Fixture,
+  managedIsHome: boolean,
+  players: Player[],
+  tavlingstyp?: Tavlingstyp,
+  skede?: Skede,
+): string {
+  if (skede === 'final') return pickFromPool(QUICK_SUMMARY_FINAL_POOL, fixture.matchday)
+  if (tavlingstyp === 'slutspel') return pickFromPool(QUICK_SUMMARY_SLUTSPEL_POOL, fixture.matchday)
+  if (tavlingstyp === 'avsked') return pickFromPool(QUICK_SUMMARY_AVSKED_POOL, fixture.matchday)
+
   const homeScore = fixture.homeScore
   const awayScore = fixture.awayScore
   const myScore = managedIsHome ? homeScore : awayScore
