@@ -151,6 +151,37 @@ describe('advanceFacilityState', () => {
     expect(result.facilitiesBonus).toBe(def.facilitiesBonus)
   })
 
+  // AUDIT DEL 3 (2026-08-11): builtSeason skrivs per nod vid completion.
+  describe('builtSeasons — AUDIT DEL 3 (2026-08-11)', () => {
+    it('skriver säsongen för den byggda noden', () => {
+      const state: FacilityState = {
+        builtNodeIds: [],
+        activeProject: { nodeId: 'kiosk', startedMatchday: 1, etaMatchday: 5 },
+      }
+      const result = advanceFacilityState(state, 5, 8)
+      expect(result.state.builtSeasons?.kiosk).toBe(8)
+    })
+
+    it('bevarar tidigare byggda noders säsonger vid nästa completion', () => {
+      const state: FacilityState = {
+        builtNodeIds: ['kiosk'],
+        builtSeasons: { kiosk: 3 },
+        activeProject: { nodeId: 'belysning', startedMatchday: 10, etaMatchday: 14 },
+      }
+      const result = advanceFacilityState(state, 14, 5)
+      expect(result.state.builtSeasons?.kiosk).toBe(3)
+      expect(result.state.builtSeasons?.belysning).toBe(5)
+    })
+
+    it('migration: saknar builtSeasons på gamla saves, kraschar inte, gissar inte bakåt', () => {
+      // Gammal save — fältet fanns inte innan denna ändring.
+      const state = { builtNodeIds: ['kiosk'], activeProject: { nodeId: 'belysning', startedMatchday: 1, etaMatchday: 5 } } as FacilityState
+      const result = advanceFacilityState(state, 5, 6)
+      expect(result.state.builtSeasons?.kiosk).toBeUndefined()
+      expect(result.state.builtSeasons?.belysning).toBe(6)
+    })
+  })
+
   it('completes after eta (late check)', () => {
     const state: FacilityState = {
       builtNodeIds: [],

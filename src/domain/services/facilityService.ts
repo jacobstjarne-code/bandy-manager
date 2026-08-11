@@ -156,7 +156,7 @@ export function startFacilityBuild(
 export function advanceFacilityState(
   state: FacilityState,
   currentMatchday: number,
-  _season: number,
+  season: number,
 ): { state: FacilityState; completedNodeId: string | null; facilitiesBonus: number; capacityBonus: number } {
   const { activeProject } = state
   if (!activeProject || currentMatchday < activeProject.etaMatchday) {
@@ -166,6 +166,9 @@ export function advanceFacilityState(
   const newState: FacilityState = {
     ...state,
     builtNodeIds: [...state.builtNodeIds, activeProject.nodeId],
+    // AUDIT DEL 3 (2026-08-11): builtSeason skrivs vid completion — kan bara
+    // fyllas framåt, se Community.ts:s kommentar ovanför FacilityState.builtSeasons.
+    builtSeasons: { ...state.builtSeasons, [activeProject.nodeId]: season },
     activeProject: undefined,
     lastCompleted: { nodeId: activeProject.nodeId, matchday: currentMatchday },
   }
@@ -179,6 +182,6 @@ export function advanceFacilityState(
 
 /** Empty initial state for new saves. */
 export function createInitialFacilityState(): FacilityState {
-  return { builtNodeIds: [] }
+  return { builtNodeIds: [], builtSeasons: {} }
 }
 
