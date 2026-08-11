@@ -52,6 +52,10 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // — bevisar att budkortet (B1, byggs efter denna baseline) inte försvinner
   // när fönstret växlar eller antal bud ändras.
   | 'transfers-closed' | 'transfers-open-nobids' | 'transfers-onebid' | 'transfers-multibids'
+  // AUDIT DEL 3 (2026-08-10): Granska matchtypsmatrisen — förberedelse för
+  // Design-uppdraget (DESIGN_UPPDRAG_GRANSKA_DEL4_2026-08-10.md steg A).
+  // 'granska' (befintlig) täcker liga.
+  | 'granska-cup' | 'granska-cup-final' | 'granska-slutspel' | 'granska-avsked'
   | 'momentumbar' | 'tacticmodal' | 'submodal' | 'spakb'
   // VISUELL_AUDIT punkt 1 (2026-08-09): spelläges-fabriken (gameStateFactory.ts)
   | 'trupp-blandat' | 'trupp-kris' | 'lineup-empty' | 'lineup-filled'
@@ -73,7 +77,11 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'board-b',      label: 'BoardMeeting B (bra)' },
   { id: 'board-c',      label: 'BoardMeeting C (dålig)' },
   { id: 'stillness',    label: 'NU-stiltje (lugn vecka)' },
-  { id: 'granska',      label: 'Granska (IA: 3 grupper)' },
+  { id: 'granska',      label: 'Granska (IA: 3 grupper) — liga' },
+  { id: 'granska-cup',       label: 'Granska — cup, vanlig runda' },
+  { id: 'granska-cup-final', label: 'Granska — cup, finalhelgen (neutral plan)' },
+  { id: 'granska-slutspel',  label: 'Granska — slutspel' },
+  { id: 'granska-avsked',    label: 'Granska — avskedsmatch' },
   { id: 'upptakt',      label: 'Upptakt (C-SD2 sub-states)' },
   { id: 'ekonomi',      label: 'Ekonomi (Våg 4: kassa-trend)' },
   { id: 'playercard',   label: 'PlayerCard (Våg 4: rating-block)' },
@@ -525,6 +533,54 @@ const granskaRoundSummary = {
   newInboxCount: 2,
 }
 
+// AUDIT DEL 3 (2026-08-10), förberedelse för Design-uppdraget "Matchtypsmatrisen"
+// (DESIGN_UPPDRAG_GRANSKA_DEL4_2026-08-10.md, steg A): fem scener via fabriken,
+// samma granskaFixture-form som redan finns (liga), bara klassificeringsflaggorna
+// ändrade — INGET i granska/ rört, bara spelläget som byggs runt den befintliga,
+// oförändrade skärmen. Måste finnas INNAN ett ev. sektionsregister byggs, annars
+// finns inget bevis för vilka sektioner som fanns innan de ev. togs bort.
+// 'fx-granska' återanvänt som id i alla fem (storeReady kollar bara det id:t,
+// varje scen sätter sitt EGET game-objekt så ingen kollision uppstår).
+function makeGranskaFixture(overrides: Partial<typeof granskaFixture> & {
+  isCup?: boolean; isKnockout?: boolean; isCupFinalhelgen?: boolean
+  isNeutralVenue?: boolean; farewellMatchForPlayerId?: string
+}) {
+  return { ...granskaFixture, ...overrides }
+}
+
+// Cup, vanlig runda — isCup+isKnockout, INTE finalhelgen/neutral plan.
+// matchday 16 (inte 8/13, de kolliderar med makeLeagueFixtures()s auto-
+// genererade rundor 1-14 för samma två klubbar — samma säkra-zon-mönster
+// som originalets granskaFixture (runda 20) redan använder).
+const granskaCupFixture = makeGranskaFixture({ isCup: true, isKnockout: true, roundNumber: 16, matchday: 16 })
+const granskaCupGame = makeGame([...makeLeagueFixtures(), granskaCupFixture], {
+  lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 16, communityStanding: 58,
+})
+const granskaCupRoundSummary = { ...granskaRoundSummary, round: 16 }
+
+// Cup, finalhelgen — neutral plan (RUNDA 3-fixet: isNeutralVenue bara på cupFINALEN, inte semi).
+const granskaCupFinalFixture = makeGranskaFixture({
+  isCup: true, isKnockout: true, isCupFinalhelgen: true, isNeutralVenue: true, roundNumber: 19, matchday: 19,
+})
+const granskaCupFinalGame = makeGame([...makeLeagueFixtures(), granskaCupFinalFixture], {
+  lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 19, communityStanding: 58,
+})
+const granskaCupFinalRoundSummary = { ...granskaRoundSummary, round: 19 }
+
+// Slutspel — isKnockout, INTE cup, INTE neutral plan (SM-semifinal, hemmaplan).
+const granskaPlayoffFixture = makeGranskaFixture({ isKnockout: true, roundNumber: 33, matchday: 33 })
+const granskaPlayoffGame = makeGame([...makeLeagueFixtures(), granskaPlayoffFixture], {
+  lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 33, communityStanding: 58,
+})
+const granskaPlayoffRoundSummary = { ...granskaRoundSummary, round: 33 }
+
+// Avskedsmatch — vanlig ligamatch, farewellMatchForPlayerId satt på en trupp-spelare.
+const granskaFarewellFixture = makeGranskaFixture({ farewellMatchForPlayerId: 'p-h1' })
+const granskaFarewellGame = makeGame([...makeLeagueFixtures(), granskaFarewellFixture], {
+  lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 20, communityStanding: 58,
+})
+const granskaFarewellRoundSummary = { ...granskaRoundSummary }
+
 // BoardMeeting fingered state — season 2+, prev-season objective history + new goals
 // KF4 (2026-06-21): EN styrelsemodell — full BoardMember[] på game.board (find-by-role).
 const board = [
@@ -587,6 +643,10 @@ export function DevScenesScreen() {
       : scene === 'board-c' ? boardGameC
       : scene === 'stillness' ? stillnessGame
       : scene === 'granska' ? granskaGame
+      : scene === 'granska-cup' ? granskaCupGame
+      : scene === 'granska-cup-final' ? granskaCupFinalGame
+      : scene === 'granska-slutspel' ? granskaPlayoffGame
+      : scene === 'granska-avsked' ? granskaFarewellGame
       : scene === 'season-a' ? seasonGameA
       : scene === 'season-b' ? seasonGameB
       : scene === 'season-c' ? seasonGameC
@@ -611,7 +671,14 @@ export function DevScenesScreen() {
       : scene === 'portal-bid-single' ? portalBidSingleGame
       : scene === 'portal-bid-multi' ? portalBidMultiGame
       : portalGame
-    useGameStore.setState({ game: g, roundSummary: (scene === 'granska' || scene === 'roundsummary') ? granskaRoundSummary : null } as never)
+    const roundSummaryForScene =
+      scene === 'granska' || scene === 'roundsummary' ? granskaRoundSummary
+      : scene === 'granska-cup' ? granskaCupRoundSummary
+      : scene === 'granska-cup-final' ? granskaCupFinalRoundSummary
+      : scene === 'granska-slutspel' ? granskaPlayoffRoundSummary
+      : scene === 'granska-avsked' ? granskaFarewellRoundSummary
+      : null
+    useGameStore.setState({ game: g, roundSummary: roundSummaryForScene } as never)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene])
 
@@ -808,7 +875,8 @@ export function DevScenesScreen() {
           </div>
         )}
 
-        {scene === 'granska' && storeReady && (
+        {(scene === 'granska' || scene === 'granska-cup' || scene === 'granska-cup-final'
+          || scene === 'granska-slutspel' || scene === 'granska-avsked') && storeReady && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <GranskaScreen />
           </div>

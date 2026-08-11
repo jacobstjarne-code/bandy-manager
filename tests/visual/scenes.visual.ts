@@ -12,6 +12,9 @@ const SCENES: [string, string?][] = [
   ['cup-victory'], ['sm-victory'], ['season-arc'], ['portal-cards'], ['efterklang'],
   ['squad'], ['portal'], ['tranare'], ['board-a'], ['board-b'], ['board-c'],
   ['stillness'], ['granska'], ['upptakt'], ['ekonomi'], ['playercard'],
+  // AUDIT DEL 3 (2026-08-10): Granska matchtypsmatrisen — förberedelse för
+  // Design-uppdraget (DESIGN_UPPDRAG_GRANSKA_DEL4_2026-08-10.md steg A).
+  ['granska-cup'], ['granska-cup-final'], ['granska-slutspel'], ['granska-avsked'],
   ['season-a'], ['season-b'], ['season-c'],
   ['miljoheader-karlsborg'], ['miljoheader-rogle'],
   ['roundsummary'], ['tabell'], ['season-header'], ['season-noplayoffs'], ['season-fired'], ['finalhelg'], ['annandagen'],
