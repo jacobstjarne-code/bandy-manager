@@ -7,6 +7,7 @@ import { playSound } from '../../audio/soundEffects'
 import { MatchEventType } from '../../../domain/enums'
 import { FixtureStatus } from '../../../domain/enums'
 import { getCriticalEventsForGranska } from '../../../domain/services/granskaEventClassifier'
+import { deriveMatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { GranskaOversikt } from './GranskaOversikt'
 import { GranskaSpelare } from './GranskaSpelare'
 import { GranskaShotmap } from './GranskaShotmap'
@@ -119,6 +120,12 @@ export function GranskaScreen() {
       )
     : []
 
+  // GRANSKA DEL 4 (2026-08-11), steg 2: axlarna, härledda en gång här och
+  // skickade ner — ingen skärm under Översikt ska härleda matchtyp själv.
+  const axes = fixture
+    ? deriveMatchTypeAxes(fixture, game.managedClubId, game.playoffBracket)
+    : { tavlingstyp: 'liga' as const, skede: undefined, plats: 'hemma' as const }
+
   const pendingEvents = game.pendingEvents ?? []
 
   function handleChoice(eventId: string, choiceId: string, choiceLabel: string) {
@@ -187,6 +194,7 @@ export function GranskaScreen() {
             cs={cs}
             otherResults={otherResults}
             onOpenReport={() => goToStep('analys')}
+            axes={axes}
           />
         )}
         {step === 'spelare' && (

@@ -737,5 +737,12 @@ export function generatePressConference(
     body: `"${question.text}"`,
     choices,
     resolved: false,
+    // GRANSKA DEL 4 (2026-08-11): strukturerat fält istf title-prefix-parse
+    // (GranskaOversikt.tsx:413) — samma mönster som A2 gjorde för Inbox.
+    // role tomt när ingen namngiven journalist-karaktär finns (fallback är
+    // bara ett kanalnamn, ingen person).
+    sender: namedJournalist
+      ? { name: namedJournalist.name, role: namedJournalist.outlet }
+      : { name: journalist, role: '' },
   }
 }

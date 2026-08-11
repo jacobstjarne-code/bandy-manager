@@ -41,6 +41,7 @@ import { SentValCard } from '../../components/match/SentValCard'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
 import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids, withActiveIncomingBidEvent } from './gameStateFactory'
+import { CUP_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -573,33 +574,54 @@ const granskaRoundSummary = {
 function makeGranskaFixture(overrides: Partial<typeof granskaFixture> & {
   isCup?: boolean; isKnockout?: boolean; isCupFinalhelgen?: boolean
   isNeutralVenue?: boolean; farewellMatchForPlayerId?: string
+  arenaName?: string; venueCity?: string
 }) {
   return { ...granskaFixture, ...overrides }
 }
 
 // Cup, vanlig runda — isCup+isKnockout, INTE finalhelgen/neutral plan.
-// matchday 16 (inte 8/13, de kolliderar med makeLeagueFixtures()s auto-
-// genererade rundor 1-14 för samma två klubbar — samma säkra-zon-mönster
-// som originalets granskaFixture (runda 20) redan använder).
-const granskaCupFixture = makeGranskaFixture({ isCup: true, isKnockout: true, roundNumber: 16, matchday: 16 })
+// GRANSKA DEL 4 steg 2 (2026-08-11): roundNumber 2 (kvartsfinal), inte 16 —
+// matchTypeAxes.ts:s deriveSkede läser cupens roundNumber 1-4 (samma tal
+// cupService.ts:s CUP_MATCHDAYS/getCupRoundName bygger på). roundNumber:16
+// låg utanför det intervallet och gjorde skede undefined — sektionsregistret
+// råkade se rätt ut ändå (undefined uppför sig som "inte final") men
+// testade då inte den verkliga rond→skede-mappningen, bara en tillfällighet.
+// matchday hålls kvar på en säker zon (16, inte 2 — 2 kolliderar med
+// makeLeagueFixtures()s auto-genererade rundor 1-14); matchday och
+// roundNumber är oberoende fält, ingen konflikt att skilja dem åt.
+const granskaCupFixture = makeGranskaFixture({ isCup: true, isKnockout: true, roundNumber: 2, matchday: 16 })
 const granskaCupGame = makeGame([...makeLeagueFixtures(), granskaCupFixture], {
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 16, communityStanding: 58,
 })
 const granskaCupRoundSummary = { ...granskaRoundSummary, round: 16 }
 
 // Cup, finalhelgen — neutral plan (RUNDA 3-fixet: isNeutralVenue bara på cupFINALEN, inte semi).
+// roundNumber: 4 = cupService.ts:s verkliga finalrond (samma skäl som ovan).
 const granskaCupFinalFixture = makeGranskaFixture({
-  isCup: true, isKnockout: true, isCupFinalhelgen: true, isNeutralVenue: true, roundNumber: 19, matchday: 19,
+  isCup: true, isKnockout: true, isCupFinalhelgen: true, isNeutralVenue: true, roundNumber: 4, matchday: 19,
+  arenaName: CUP_FINAL_VENUE.arenaName, venueCity: CUP_FINAL_VENUE.city,
 })
 const granskaCupFinalGame = makeGame([...makeLeagueFixtures(), granskaCupFinalFixture], {
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 19, communityStanding: 58,
 })
 const granskaCupFinalRoundSummary = { ...granskaRoundSummary, round: 19 }
 
-// Slutspel — isKnockout, INTE cup, INTE neutral plan (SM-semifinal, hemmaplan).
+// Slutspel — isKnockout, INTE cup, INTE neutral plan (SM-kvartsfinal, hemmaplan).
+// GRANSKA DEL 4 steg 2: playoffBracket wired med fixturen registrerad i
+// quarterFinals — annars läser deriveSkede (matchTypeAxes.ts, slutspel-grenen
+// söker fixture.id i bracketens tre grenar) ingen bracket alls och skede blir
+// undefined av brist på data, inte av att det verkligen är en kvartsfinal.
 const granskaPlayoffFixture = makeGranskaFixture({ isKnockout: true, roundNumber: 33, matchday: 33 })
 const granskaPlayoffGame = makeGame([...makeLeagueFixtures(), granskaPlayoffFixture], {
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 33, communityStanding: 58,
+  playoffBracket: {
+    season: 8, status: 'quarterFinals',
+    quarterFinals: [{
+      id: 'po-qf-granska', round: 'quarterFinal', homeClubId: HOME_ID, awayClubId: AWAY_ID,
+      fixtures: [granskaPlayoffFixture.id], homeWins: 1, awayWins: 0, winnerId: null, loserId: null,
+    }],
+    semiFinals: [], final: null, champion: null,
+  },
 })
 const granskaPlayoffRoundSummary = { ...granskaRoundSummary, round: 33 }
 

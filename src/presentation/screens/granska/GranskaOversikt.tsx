@@ -23,6 +23,8 @@ import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNa
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
 import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_TIRED_OUTCOMES, CAPTAIN_OUTCOMES, LEADERSHIP_OUTCOMES } from '../../../domain/data/managerKvittoText'
 import type { KvittoOutcomeDir, CaptainContext } from '../../../domain/data/managerKvittoText'
+import type { MatchTypeAxes } from '../../../domain/services/matchTypeAxes'
+import { visasFor } from '../../../domain/services/granskaSectionRegistry'
 
 const TRAINING_LABEL: Record<string, string> = {
   [TrainingType.Skating]: 'Skridskoteknik', [TrainingType.BallControl]: 'Bollkontroll',
@@ -157,13 +159,14 @@ interface GranskaOversiktProps {
   cs: number
   otherResults: Fixture[]
   onOpenReport: () => void
+  axes: MatchTypeAxes
 }
 
 export function GranskaOversikt({
   game, fixture, homeClub, awayClub, isHome,
   won, lost, resultColor, resultLabel, potm, potmRating, penResult,
   keyMoments, pendingEvents, resolvedEventIds, chosenLabels, fadeIn, onChoice, onResolve,
-  rs, standing, standingBefore, financesDelta, csDelta, cs, otherResults, onOpenReport,
+  rs, standing, standingBefore, financesDelta, csDelta, cs, otherResults, onOpenReport, axes,
 }: GranskaOversiktProps) {
   const navigate = useNavigate()
   const leaguePosition = getCurrentLeaguePosition(game.managedClubId, game)
@@ -288,39 +291,50 @@ export function GranskaOversikt({
         </div>
       )}
 
-      {/* Resultat-strip — tabell + form (två kolumner) */}
+      {/* Resultat-strip — tabell + form (två kolumner). GRANSKA DEL 4 steg 2:
+          var och en gated individuellt — cup döljer båda, slutspel behåller
+          form utom på final, avsked/final döljer båda. Se
+          granskaSectionRegistry.ts. Aldrig ett tomt/gråtonat kort (DS-regel 12) —
+          faller hela stripen bort renderas ingenting alls. */}
       {standing && (() => {
+        const showTabell = visasFor('tabell', axes.tavlingstyp, axes.skede)
+        const showForm = visasFor('form', axes.tavlingstyp, axes.skede)
+        if (!showTabell && !showForm) return null
         const form = getFormResults(game.managedClubId, game.fixtures, game.clubs).slice(-5)
         const dotColor = (r: 'V' | 'O' | 'F') => r === 'V' ? 'var(--success)' : r === 'F' ? 'var(--danger)' : 'var(--text-muted)'
         return (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '0 0 3px', ...fadeIn(1) }}>
-            <div className="card-sharp card-tap" onClick={() => navigate('/game/tabell')} style={{ padding: '10px 12px', cursor: 'pointer' }}>
-              <SectionLabel style={{ marginBottom: 7 }}>📊 TABELL</SectionLabel>
-              <span className="h-num-lg" style={{ color: 'var(--text-primary)' }}>
-                {leaguePosition ?? '—'}{leaguePosition ? ':a' : ''}
-              </span>
-              {standingBefore && leaguePosition && standingBefore !== leaguePosition && (
-                <span style={{ fontSize: 11, marginLeft: 6, color: standingBefore > leaguePosition ? 'var(--success)' : 'var(--danger)' }}>
-                  {standingBefore > leaguePosition ? '↑' : '↓'}
+          <div style={{ display: 'grid', gridTemplateColumns: showTabell && showForm ? '1fr 1fr' : '1fr', gap: 6, margin: '0 0 3px', ...fadeIn(1) }}>
+            {showTabell && (
+              <div className="card-sharp card-tap" onClick={() => navigate('/game/tabell')} style={{ padding: '10px 12px', cursor: 'pointer' }}>
+                <SectionLabel style={{ marginBottom: 7 }}>📊 TABELL</SectionLabel>
+                <span className="h-num-lg" style={{ color: 'var(--text-primary)' }}>
+                  {leaguePosition ?? '—'}{leaguePosition ? ':a' : ''}
                 </span>
-              )}
-            </div>
-            <div className="card-sharp" style={{ padding: '10px 12px' }}>
-              <SectionLabel style={{ marginBottom: 7 }}>📈 FORM</SectionLabel>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {form.length === 0
-                  ? <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>Inga matcher ännu</span>
-                  : form.map((r, i) => ( // ds-exempt: V/O/F-bokstav i dynamiskt färgad form-dot
-                    <span key={i} style={{ width: 16, height: 16, borderRadius: 4, background: dotColor(r.result), color: 'var(--text-light)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{r.result}</span>
-                  ))}
+                {standingBefore && leaguePosition && standingBefore !== leaguePosition && (
+                  <span style={{ fontSize: 11, marginLeft: 6, color: standingBefore > leaguePosition ? 'var(--success)' : 'var(--danger)' }}>
+                    {standingBefore > leaguePosition ? '↑' : '↓'}
+                  </span>
+                )}
               </div>
-            </div>
+            )}
+            {showForm && (
+              <div className="card-sharp" style={{ padding: '10px 12px' }}>
+                <SectionLabel style={{ marginBottom: 7 }}>📈 FORM</SectionLabel>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {form.length === 0
+                    ? <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>Inga matcher ännu</span>
+                    : form.map((r, i) => ( // ds-exempt: V/O/F-bokstav i dynamiskt färgad form-dot
+                      <span key={i} style={{ width: 16, height: 16, borderRadius: 4, background: dotColor(r.result), color: 'var(--text-light)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{r.result}</span>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
         )
       })()}
 
-      {/* Statistik */}
-      {fixture?.report && (
+      {/* Statistik — GRANSKA DEL 4 steg 2: ✕ på avsked (matchmallen viker för hyllningen). */}
+      {fixture?.report && visasFor('statistik', axes.tavlingstyp, axes.skede) && (
         <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(1) }}>
           <SectionLabel style={{ marginBottom: 8 }}>STATISTIK</SectionLabel>
           {[
@@ -410,7 +424,10 @@ export function GranskaOversikt({
         if (!pc) return null
         const pcResolved = resolvedEventIds.has(pc.id)
         const pcChosenLabel = chosenLabels[pc.id]
-        const pcTitle = pc.title.replace(/^🎤\s*Presskonferens\s*[—–-]\s*/i, '').trim()
+        // GRANSKA DEL 4 (2026-08-11): strukturerat fält (pc.sender) istf
+        // title-prefix-parse — pc.title bär aldrig 🎤-prefixet (generatorn
+        // emitterar det aldrig), så regexen var en no-op sedan tidigare.
+        const pcTitle = pc.sender ? (pc.sender.role ? `${pc.sender.name}, ${pc.sender.role}` : pc.sender.name) : null
         return (
           <div className="card-sharp" style={{
             margin: '0 0 3px',
@@ -550,7 +567,8 @@ export function GranskaOversikt({
 
       {/* Manager kvitto — val → utfall */}
       {/* M15 — Dina val: utfallsrader (stripe + beslut + spelare + utfall + siffra) */}
-      {(() => {
+      {/* GRANSKA DEL 4 steg 2: ✕ på avsked — "ingen taktik-obduktion" på en hyllning. */}
+      {visasFor('dinaVal', axes.tavlingstyp, axes.skede) && (() => {
         const log = fixture?.report?.managerChoiceLog
         if (!log || log.length === 0) return null
         const kvittoDir: KvittoOutcomeDir = won ? 'good' : lost ? 'bad' : 'neutral'
@@ -588,10 +606,14 @@ export function GranskaOversikt({
             if (!player) continue
             // D2: kontext + riktning ur kaptenens matchrating (som started_tired).
             // Kontext: final → slutspel → derby → vardag (prioordning per diagnosen).
-            // isNeutralVenue = SM-final (neutral plan). Alla andra knockout = slutspel.
+            // GRANSKA DEL 4 steg 1-rapporten: isNeutralVenue dög INTE som "är det
+            // final"-tecken — cupService.ts sätter isNeutralVenue på BÅDE
+            // cupsemifinalen och cupfinalen (isCupFinalWeekend = nextRound >= 3),
+            // så en spelad cupsemifinal klassificerades tidigare felaktigt som
+            // 'final'. axes.skede kommer ur roundNumber/bracket, inte isNeutralVenue.
             const captainContext: CaptainContext =
-              fixture?.isNeutralVenue ? 'final'
-              : fixture?.isKnockout ? 'slutspel'
+              axes.skede === 'final' ? 'final'
+              : (axes.tavlingstyp === 'cup' || axes.tavlingstyp === 'slutspel') ? 'slutspel'
               : getRivalry(fixture?.homeClubId ?? '', fixture?.awayClubId ?? '') ? 'derby'
               : 'vardag'
             const captainRating = fixture?.report?.playerRatings[entry.playerId]
@@ -769,7 +791,9 @@ export function GranskaOversikt({
 
       {/* ── KLUBBEN ── */}
       <GroupDivider label="Klubben" />
-      {rs && (
+      {/* GRANSKA DEL 4 steg 2: ✕ på final (cup eller slutspel — "inte '+2 tkr/omg' under
+          guldet") och avsked. Se granskaSectionRegistry.ts. */}
+      {rs && visasFor('omgangssammanfattning', axes.tavlingstyp, axes.skede) && (
         <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
           <SectionLabel style={{ marginBottom: 8 }}>OMGÅNGSSAMMANFATTNING</SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -819,10 +843,17 @@ export function GranskaOversikt({
       )}
 
       {/* ── OMVÄRLDEN ── */}
-      {(otherResults.length > 0 || game.inbox.some(i => i.type === InboxItemType.ScoutReport && !i.isRead)) && (
-        <GroupDivider label="Omvärlden" />
-      )}
-      {otherResults.length > 0 && (() => {
+      {/* GRANSKA DEL 4 steg 2: Andra matcher ✕ på final (bägge — "fanns inga";
+          otherResults är redan strukturellt tomt där eftersom cup-/slutspelsfinalen
+          är den enda matchen den dagen, men registret gör garantin explicit istf
+          att förlita sig på det). Scouting ✕ bara på den säsongsavslutande
+          finalen och avsked (cupfinal håller — säsongen fortsätter). */}
+      {(() => {
+        const showAndraMatcher = otherResults.length > 0 && visasFor('andraMatcher', axes.tavlingstyp, axes.skede)
+        const showScouting = game.inbox.some(i => i.type === InboxItemType.ScoutReport && !i.isRead) && visasFor('scouting', axes.tavlingstyp, axes.skede)
+        return (showAndraMatcher || showScouting) && <GroupDivider label="Omvärlden" />
+      })()}
+      {otherResults.length > 0 && visasFor('andraMatcher', axes.tavlingstyp, axes.skede) && (() => {
         const rivalClubId = game.clubs.filter(c => c.id !== game.managedClubId).find(c => getRivalry(game.managedClubId, c.id))?.id ?? null
         return (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
@@ -847,6 +878,7 @@ export function GranskaOversikt({
         )
       })()}
       {(() => {
+        if (!visasFor('scouting', axes.tavlingstyp, axes.skede)) return null
         const scoutItems = game.inbox.filter(i => i.type === InboxItemType.ScoutReport && !i.isRead).slice(-2)
         if (scoutItems.length === 0) return null
         return (
@@ -864,8 +896,11 @@ export function GranskaOversikt({
         )
       })()}
 
-      {/* §11.3 — Granska-slutets framåtpekare. Avslutande viskning, inget kort/rubrik. */}
-      {(() => {
+      {/* §11.3 — Granska-slutets framåtpekare. Avslutande viskning, inget kort/rubrik.
+          GRANSKA DEL 4 steg 2: ✕ bara på den säsongsavslutande finalen (slutspel+final)
+          — en cupfinal spelas i augusti, ligasäsongen fortsätter direkt efteråt, så
+          den behåller pekaren (nextFixture finns naturligt ändå). Avsked ✓ (matrisen). */}
+      {visasFor('nastaMatchPekare', axes.tavlingstyp, axes.skede) && (() => {
         const nextFixture = game.fixtures
           .filter(f =>
             f.status !== 'completed' &&
