@@ -14,6 +14,7 @@ import { TransferPlayerCard } from '../components/transfers/TransferPlayerCard'
 import { ScoutingTab } from '../components/transfers/ScoutingTab'
 import { FreeAgentList } from '../components/transfers/FreeAgentList'
 import { WageOverrunWarning } from '../components/transfers/WageOverrunWarning'
+import { IncomingBidCard } from '../components/transfers/IncomingBidCard'
 import '../styles/transfers.css'
 import { TabBar } from '../components/shared/TabBar'
 import { TabIntro } from '../components/shared/TabIntro'
@@ -25,6 +26,7 @@ export function TransfersScreen() {
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
   const signFreeAgent = useGameStore(s => s.signFreeAgent)
   const listPlayerForSale = useGameStore(s => s.listPlayerForSale)
+  const respondToIncomingBid = useGameStore(s => s.respondToIncomingBid)
   const startTalentSearch = useGameStore(s => s.startTalentSearch)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   useEffect(() => { markScreenVisited('transfers') }, [])
@@ -98,6 +100,15 @@ export function TransfersScreen() {
   function handleListForSale(playerId: string) {
     if (!game) return
     listPlayerForSale(playerId)
+  }
+
+  function handleRespondToBid(bidId: string, response: 'accept' | 'reject') {
+    if (!game) return
+    const result = respondToIncomingBid(bidId, response)
+    if (!result.success) {
+      setScoutMessage(result.error ?? 'Kunde inte svara på budet.')
+      setTimeout(() => setScoutMessage(null), 3000)
+    }
   }
 
   function handleBid(playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) {
@@ -208,6 +219,26 @@ export function TransfersScreen() {
           {windowInfo.label} · <span className="transfers-window-desc">{windowInfo.description}</span>
         </p>
       </div>
+
+      {/* AUDIT DEL 2 B1 (2026-08-09): inkommande bud — förstaklasskort överst på
+          Marknad, före dina egna utgående bud. incomingBids beräknad ovan
+          (rad ~77, samma filter Sälj-fliken redan använder för 🔥-badgen). */}
+      {activeTab === 'marknad' && incomingBids.map(bid => {
+        const player = game.players.find(p => p.id === bid.playerId)
+        const buyingClub = game.clubs.find(c => c.id === bid.buyingClubId)
+        if (!player || !buyingClub) return null
+        return (
+          <IncomingBidCard
+            key={bid.id}
+            bid={bid}
+            player={player}
+            buyingClub={buyingClub}
+            currentRound={currentRound}
+            onAccept={() => handleRespondToBid(bid.id, 'accept')}
+            onReject={() => handleRespondToBid(bid.id, 'reject')}
+          />
+        )
+      })}
 
       {/* Aktiva bud (outgoing) — alltid synliga i marknad */}
       {activeTab === 'marknad' && (() => {

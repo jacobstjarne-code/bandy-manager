@@ -491,9 +491,13 @@
 }
 
 /* ── Sell tab interest badge ── */
+/* AUDIT DEL 2 B1 (2026-08-09): degraderad till sekundär referens — IncomingBidCard
+   (Marknad) är nu den primära, agerbara ytan för ett bud. Badgen är kvar (den
+   svarar fortfarande "finns intresse?" på Sälj-fliken) men signalerar inte
+   längre accent/CTA-vikt. Var: color: var(--accent); font-weight: 600. */
 .transfers-interest-badge {
-  color: var(--accent);
-  font-weight: 600;
+  color: var(--text-muted);
+  font-weight: 500;
   margin-left: 6px;
 }
 

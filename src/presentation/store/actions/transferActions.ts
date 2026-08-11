@@ -1,6 +1,6 @@
 import type { SaveGame, TalentSearchRequest, Sponsor } from '../../../domain/entities/SaveGame'
 import { startScoutAssignment } from '../../../domain/services/scoutingService'
-import { createOutgoingBid } from '../../../domain/services/transferService'
+import { createOutgoingBid, executeTransfer } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { bidReceivedEvent } from '../../../domain/services/events/eventFactories'
@@ -134,6 +134,50 @@ export function transferActions(get: Get, set: Set) {
           pendingEvents: [...(game.pendingEvents ?? []), event],
         },
       })
+      return { success: true }
+    },
+
+    /**
+     * AUDIT DEL 2 B1 (2026-08-09): svar på inkommande bud direkt från
+     * IncomingBidCard (Marknad) — utan att gå via pendingEvents/resolveEvent,
+     * eftersom ett bud inte garanterat har en matchande pendingEvent-post
+     * (postAdvanceEvents.ts kappar på 2 events/omgång, ett bud kan hamna
+     * utanför den budgeten den första omgången det dyker upp). Samma
+     * domänlogik som eventResolver.ts:s acceptTransfer/rejectTransfer-fall
+     * (executeTransfer, samma moralstraff vid avslag) — inte en parallell
+     * implementation. Rensar EVENTUELL matchande pendingEvent (alla kända
+     * id-varianter från postAdvanceEvents.ts) i samma steg, så budet inte
+     * kan dyka upp igen som ett obesvarat HÄNDELSE-kort efter att kortet
+     * redan svarat — samma dubbelkälleklass som Berg-fyndet (AUDIT DEL 2),
+     * fast förebyggd här istf upptäckt i efterhand.
+     */
+    respondToIncomingBid: (bidId: string, response: 'accept' | 'reject') => {
+      const { game } = get()
+      if (!game) return { success: false, error: 'Inget spel laddat' }
+      const bid = (game.transferBids ?? []).find(b => b.id === bidId)
+      if (!bid) return { success: false, error: 'Budet hittades inte' }
+
+      const relatedEventIds = new Set([
+        `event_bid_${bidId}`, `event_bid_aiaccept_${bidId}`, `event_bid_aireject_${bidId}`,
+      ])
+      const pendingEvents = (game.pendingEvents ?? []).filter(e => !relatedEventIds.has(e.id))
+
+      let updatedGame: SaveGame
+      if (response === 'accept') {
+        updatedGame = { ...executeTransfer(game, bid), pendingEvents }
+      } else {
+        updatedGame = {
+          ...game,
+          transferBids: (game.transferBids ?? []).map(b =>
+            b.id === bidId ? { ...b, status: 'rejected' as const } : b,
+          ),
+          players: game.players.map(p =>
+            p.id === bid.playerId ? { ...p, morale: Math.max(0, p.morale - 5) } : p,
+          ),
+          pendingEvents,
+        }
+      }
+      set({ game: updatedGame })
       return { success: true }
     },
 

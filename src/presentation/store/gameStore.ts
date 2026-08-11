@@ -75,6 +75,7 @@ interface GameState {
   renewContract: (playerId: string, newSalary: number, years: number) => { success: boolean; error?: string; wageWarning?: number }
   signFreeAgent: (agentId: string) => { success: boolean; error?: string }
   listPlayerForSale: (playerId: string) => { success: boolean; error?: string }
+  respondToIncomingBid: (bidId: string, response: 'accept' | 'reject') => { success: boolean; error?: string }
   resolveEvent: (eventId: string, choiceId: string) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number, halftimeDecision?: 'lugna' | 'pressa' | 'prata') => void
   markMatchStarted: (fixtureId: string, homeLineup?: import('../../domain/entities/Fixture').TeamSelection, awayLineup?: import('../../domain/entities/Fixture').TeamSelection) => void
