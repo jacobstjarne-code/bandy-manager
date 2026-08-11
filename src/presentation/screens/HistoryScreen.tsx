@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { PlayerLink } from '../components/PlayerLink'
-import { ordinal } from '../utils/formatters'
+import { ordinal, formatFinanceAbs, playoffResultLabel, cupResultLabel } from '../utils/formatters'
 import { seasonSpanLabel, seasonStartYear, seasonChampionYear } from '../../domain/utils/seasonYear'
 import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
 import { shareSeasonImage } from '../utils/seasonShareImage'
@@ -27,28 +27,15 @@ function RecordRow({ label, value, sub, isLast }: { label: string; value: string
   )
 }
 
-function playoffLabel(result: string | null | undefined): string {
-  if (result === 'champion') return '🏆 SVENSKA MÄSTARE!'
-  if (result === 'finalist') return '🥈 SM-final (förlust)'
-  if (result === 'semifinal') return 'Semifinal'
-  if (result === 'quarterfinal') return 'Kvartsfinal'
-  if (result === 'didNotQualify') return 'Ej kvalificerad'
-  return '—'
-}
-
-function cupLabel(result: string | null | undefined): string | null {
-  if (result === 'winner') return '🏆 Cupmästare!'
-  if (result === 'finalist') return '🥈 Cupfinal'
-  if (result === 'semifinal') return 'Cupsemifinalen'
-  if (result === 'quarter') return 'Cupkvartsfinalen'
-  if (result === 'eliminated') return null
-  return null
-}
-
-function formatFinances(n: number): string {
-  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} mkr`
-  if (Math.abs(n) >= 1_000) return `${Math.round(n / 1_000)} tkr`
-  return `${n} kr`
+// AUDIT DEL 2 B3, avkallad — minimal delning (2026-08-11): playoff/cup-etiketter
+// och pengaformat delade med SeasonSummaryScreen.tsx via presentation/utils/
+// formatters.ts — var två separata funktioner här med text som redan glidit
+// isär från den fulla ytans ("Ej kvalificerad" vs "Ej kvalad till slutspel").
+// cupResultLabel returnerar '' (inte null) för eliminated/okänt — wrapparen
+// nedan (cupLabel) bevarar det gamla null-kontraktet anroparen förväntar sig.
+function cupLabel(result: SeasonSummary['cupResult']): string | null {
+  const label = cupResultLabel(result)
+  return label === '' ? null : label
 }
 
 function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
@@ -380,7 +367,7 @@ export function HistoryScreen() {
                   </p>
                   <p style={{ fontSize: 14 }}>
                     🏆 SM: <span style={{ color: isGold ? 'var(--accent)' : 'var(--text-primary)', fontWeight: isGold ? 700 : 500 }}>
-                      {playoffLabel(s.playoffResult)}
+                      {playoffResultLabel(s.playoffResult) || '—'}
                     </span>
                   </p>
                   {cup && <p style={{ fontSize: 14 }}>🏆 Cup: {cup}</p>}
@@ -406,9 +393,9 @@ export function HistoryScreen() {
                     </p>
                   )}
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                    💰 Ekonomi: {formatFinances(s.startFinances)} → {formatFinances(s.endFinances)}{' '}
+                    💰 Ekonomi: {formatFinanceAbs(s.startFinances)} → {formatFinanceAbs(s.endFinances)}{' '}
                     <span style={{ color: s.financialChange >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>
-                      ({s.financialChange >= 0 ? '+' : ''}{formatFinances(s.financialChange)})
+                      ({s.financialChange >= 0 ? '+' : ''}{formatFinanceAbs(s.financialChange)})
                     </span>
                   </p>
                   {s.standingsSnapshot && s.standingsSnapshot.length > 0 && (

@@ -31,11 +31,49 @@ export function formatFinance(n: number): string {
   return `${sign}${Math.round(abs / 1_000)} tkr`
 }
 
-// mkr/tkr format without sign, e.g. "1.2 mkr" or "450 tkr"
+// mkr/tkr/kr format without sign, e.g. "1.2 mkr", "450 tkr" or "600 kr".
+// AUDIT DEL 2 B3, avkallad (2026-08-11): tidigare saknades kr-grenen (allt
+// under 1000 visades som "0 tkr") — samma bugg fanns inte i HistoryScreen.tsx:s
+// egen, separata formatFinances, som denna nu ersätter (en formatterare,
+// inte två som kan glida isär).
 export function formatFinanceAbs(n: number): string {
   const abs = Math.abs(n)
   if (abs >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} mkr`
-  return `${Math.round(n / 1_000)} tkr`
+  if (abs >= 1_000) return `${Math.round(n / 1_000)} tkr`
+  return `${n} kr`
+}
+
+/**
+ * AUDIT DEL 2 B3, avkallad — minimal delning (2026-08-11): SeasonSummaryScreen.tsx
+ * och HistoryScreen.tsx hade separata playoff/cup-etikettfunktioner för samma
+ * enum-värden, med text som redan glidit isär ("Ej kvalad till slutspel" vs
+ * "Ej kvalificerad", "CUPVINNARE!" vs "Cupmästare!"). Konsoliderat till EN
+ * källa — texten är SeasonSummaryScreen.tsx:s ordagrant (den fulla ytan),
+ * inte nyskriven.
+ */
+export function playoffResultLabel(
+  result: 'champion' | 'finalist' | 'semifinal' | 'quarterfinal' | 'didNotQualify' | null | undefined,
+): string {
+  switch (result) {
+    case 'champion': return '🏆 Svenska mästare'
+    case 'finalist': return '🥈 Finalist'
+    case 'semifinal': return '4:e i semifinal'
+    case 'quarterfinal': return 'Kvartsfinalist'
+    case 'didNotQualify': return 'Ej kvalad till slutspel'
+    default: return ''
+  }
+}
+
+export function cupResultLabel(
+  result: 'winner' | 'finalist' | 'semifinal' | 'quarter' | 'eliminated' | null | undefined,
+): string {
+  switch (result) {
+    case 'winner': return 'CUPVINNARE!'
+    case 'finalist': return 'Cupfinalist'
+    case 'semifinal': return 'Cupsemifinalist'
+    case 'quarter': return 'Cupkvartsfinalist'
+    default: return ''
+  }
 }
 
 // Community standing color: green → gold → amber → red

@@ -5,7 +5,7 @@ import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { ClubBadge } from '../components/ClubBadge'
 import { SectionLabel } from '../components/SectionLabel'
-import { csColor, formatFinanceAbs, positionShort } from '../utils/formatters'
+import { csColor, formatFinanceAbs, positionShort, playoffResultLabel, cupResultLabel } from '../utils/formatters'
 import type { PlayerPosition } from '../../domain/enums'
 import { shareSeasonImage } from '../utils/seasonShareImage'
 import { collectSeasonDecisions } from '../../domain/services/seasonDecisionsService'
@@ -106,17 +106,6 @@ export function SeasonSummaryScreen() {
   // inramning?) är öppen, inte löst här. DIN SÄSONG fylls i render-ordning
   // FÖRE DINA VAL nedan, så den vinner förstahandsanspråk.
   const claimedStorylineTypes = new Set<string>()
-
-  function playoffResultLabel(r: SeasonSummary['playoffResult']): string {
-    switch (r) {
-      case 'champion': return '🏆 Svenska mästare'
-      case 'finalist': return '🥈 Finalist'
-      case 'semifinal': return '4:e i semifinal'
-      case 'quarterfinal': return 'Kvartsfinalist'
-      case 'didNotQualify': return 'Ej kvalad till slutspel'
-      default: return ''
-    }
-  }
 
   function playoffEliminationSentence(r: SeasonSummary['playoffResult']): string {
     if (!r || r === 'champion') return ''
@@ -557,7 +546,7 @@ export function SeasonSummaryScreen() {
                 {summary.cupResult === 'winner' ? '🏆' : summary.cupResult === 'finalist' ? '🥈' : '🏆'}
               </span>
               <p style={{ fontSize: summary.cupResult === 'winner' ? 16 : 14, fontWeight: 700, color: summary.cupResult === 'winner' ? 'var(--accent)' : 'var(--text-primary)', marginTop: 6, fontFamily: 'var(--font-display)' }}> {/* ds-exempt: fontSize + color ternary */}
-                {summary.cupResult === 'winner' ? 'CUPVINNARE!' : summary.cupResult === 'finalist' ? 'Cupfinalist' : summary.cupResult === 'semifinal' ? 'Cupsemifinalist' : 'Cupkvartsfinalist'}
+                {cupResultLabel(summary.cupResult)}
               </p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                 Svenska Cupen {seasonStartYear(summary.season)}
