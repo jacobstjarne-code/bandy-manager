@@ -1,6 +1,5 @@
 import type { SaveGame } from '../../../entities/SaveGame'
 import type { TransferBid } from '../../../entities/GameEvent'
-import { getNextEvent } from '../../eventQueueService'
 
 /** Transferdeadline är omgång 15 (stänger efter omgång 15, januari-fönster). */
 export const TRANSFER_DEADLINE_ROUND = 15
@@ -15,15 +14,16 @@ export const TRANSFER_DEADLINE_ROUND = 15
  * SÄSONGENS BERÄTTELSER, tredje gången i den här auditen).
  */
 export function getQueueableOpenBids(game: SaveGame): TransferBid[] {
+  // TEMP — CI-VERIFIERING (2026-08-11): återinför medvetet Berg-buggen
+  // (exkluderingen borttagen) för att bevisa att entitets-dedup-grinden
+  // failar i pipelinen, inte bara lokalt. Reverteras i nästa commit på
+  // denna branch, mergas ALDRIG mot main.
   const pendingIncoming = game.transferBids.filter(
     b => b.direction === 'incoming'
       && b.status === 'pending'
       && b.sellingClubId === game.managedClubId
   )
-  const activeEvent = getNextEvent(game)
-  const activeBidId = activeEvent?.relatedBidId
-  if (!activeBidId) return pendingIncoming
-  return pendingIncoming.filter(b => b.id !== activeBidId)
+  return pendingIncoming
 }
 
 /**
