@@ -33,5 +33,11 @@ jobs:
             echo "Inga baseline-ändringar."
           else
             git commit -m "test(visual): seed/uppdatera Linux-baselines (workflow_dispatch)"
+            # Race: checkout kan ligga bakom om main hunnit få nya commits under
+            # körningen (2026-08-11: en samtidig push gjorde att git push refused
+            # som non-fast-forward). rebase på senaste main innan push — baseline-
+            # commiten rör bara *-linux.png, kan aldrig kollidera med källkod.
+            git fetch origin main
+            git rebase origin/main
             git push
           fi
