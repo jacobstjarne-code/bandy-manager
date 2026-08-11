@@ -1,0 +1,88 @@
+import type { Fixture } from '../entities/Fixture'
+import type { PlayoffBracket } from '../entities/Playoff'
+
+/**
+ * GRANSKA DEL 4 (2026-08-11), steg 1 — axelhärledningen.
+ *
+ * Tre oberoende axlar ur en fixture. Sektionsregler (steg 2) läser
+ * tävlingstyp + skede. Arena/flavor läser plats. Plats får INTE bakas in i
+ * tävlingstyp — ett femvärdesenum slår ihop cupkvartsfinal hemma med
+ * cupsemifinal på neutral plan, samma fel som lagades i SLUTTEST RUNDA 4.
+ *
+ * SM-final = tavlingstyp:'slutspel' + skede:'final'. Cupfinal = 'cup' + 'final'.
+ * Final är inget eget tavlingstyp-värde, bara ett skede som cup och slutspel delar.
+ */
+export type Tavlingstyp = 'liga' | 'cup' | 'slutspel' | 'avsked'
+export type Skede = 'forstarunda' | 'kvartsfinal' | 'semifinal' | 'final'
+export type Plats = 'hemma' | 'borta' | 'neutral'
+
+export interface MatchTypeAxes {
+  tavlingstyp: Tavlingstyp
+  /** Bara satt för cup/slutspel — liga och avsked har inget skede. */
+  skede?: Skede
+  plats: Plats
+}
+
+export function deriveMatchTypeAxes(
+  fixture: Fixture,
+  managedClubId: string,
+  playoffBracket: PlayoffBracket | null,
+): MatchTypeAxes {
+  const tavlingstyp = deriveTavlingstyp(fixture)
+  return {
+    tavlingstyp,
+    skede: deriveSkede(fixture, tavlingstyp, playoffBracket),
+    plats: derivePlats(fixture, managedClubId),
+  }
+}
+
+/**
+ * avsked går före cup/slutspel: farewellMatchForPlayerId sätts på "nästa
+ * hemmamatch" oavsett typ (gameFlowActions.ts) och kan därför i teorin träffa
+ * en cup- eller slutspelsmatch. Avskedet är då den skärm som visas — se
+ * steg 3 (trophy/tribute-grenar): elva av tolv sektioner är ✕ på avsked,
+ * det är inte "cup med undantag".
+ */
+function deriveTavlingstyp(fixture: Fixture): Tavlingstyp {
+  if (fixture.farewellMatchForPlayerId) return 'avsked'
+  if (fixture.isCup) return 'cup'
+  if (fixture.isKnockout) return 'slutspel'
+  return 'liga'
+}
+
+/**
+ * Cup: skede ur fixture.roundNumber (1=förstarunda…4=final), samma
+ * rond-numrering cupService.ts:s CUP_MATCHDAYS och getCupRoundName() bygger
+ * på — tolv lag, topp fyra bye in i kvarten, botten åtta spelar förstarunda,
+ * inget gruppspel, ingen åttondel (cupService.ts:generateCupFixtures).
+ *
+ * Slutspel: skede ur vilken gren av playoffBracket vars fixtures-array
+ * innehåller matchen — PlayoffSeries har ingen egen fixture→skede-pekare,
+ * bara `fixtures: string[]` per gren (quarterFinals/semiFinals/final).
+ */
+function deriveSkede(fixture: Fixture, tavlingstyp: Tavlingstyp, bracket: PlayoffBracket | null): Skede | undefined {
+  if (tavlingstyp === 'cup') {
+    switch (fixture.roundNumber) {
+      case 1: return 'forstarunda'
+      case 2: return 'kvartsfinal'
+      case 3: return 'semifinal'
+      case 4: return 'final'
+      default: return undefined
+    }
+  }
+  if (tavlingstyp === 'slutspel') {
+    if (!bracket) return undefined
+    if (bracket.final?.fixtures.includes(fixture.id)) return 'final'
+    if (bracket.semiFinals.some(s => s.fixtures.includes(fixture.id))) return 'semifinal'
+    if (bracket.quarterFinals.some(s => s.fixtures.includes(fixture.id))) return 'kvartsfinal'
+    return undefined
+  }
+  return undefined
+}
+
+/** fixture.isNeutralVenue är redan den mekaniska sanningen (matchCore.ts nollar
+ *  hemmafördel på den) — plats härleds direkt därur, ingen ny logik. */
+function derivePlats(fixture: Fixture, managedClubId: string): Plats {
+  if (fixture.isNeutralVenue) return 'neutral'
+  return fixture.homeClubId === managedClubId ? 'hemma' : 'borta'
+}
