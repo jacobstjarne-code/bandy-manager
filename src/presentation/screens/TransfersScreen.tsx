@@ -252,7 +252,13 @@ export function TransfersScreen() {
                 const player = game.players.find(p => p.id === bid.playerId)
                 const club = game.clubs.find(c => c.id === bid.sellingClubId)
                 return (
-                  <div key={bid.id} className="transfers-list-row" style={{ borderBottom: i < outgoing.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                  <div
+                    key={bid.id}
+                    className="transfers-list-row"
+                    style={{ borderBottom: i < outgoing.length - 1 ? '1px solid var(--border)' : 'none' }}
+                    data-entity-id={`bid:${bid.id}`}
+                    data-entity-source="TransfersOutgoingBid"
+                  >
                     <div className="transfers-list-content">
                       <p className="transfers-list-name">{player ? `${player.firstName} ${player.lastName}` : '?'}</p>
                       <p className="transfers-list-meta-sm">{club?.name ?? '?'} · Bud: {formatValue(bid.offerAmount)}</p>

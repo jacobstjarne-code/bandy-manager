@@ -5,6 +5,9 @@ export interface SeasonDecision {
   icon: string
   text: string
   round?: number
+  /** Satt bara för storyline-härledda poster — bär StorylineEntry.id vidare
+   *  för entity-dedup-grinden (AUDIT DEL 2, 2026-08-12). */
+  storylineId?: string
 }
 
 /**
@@ -36,7 +39,7 @@ export function collectSeasonDecisions(game: SaveGame, excludeStorylineTypes?: S
   // Resolved storylines
   for (const sl of game.storylines ?? []) {
     if (sl.season === season && sl.displayText && !excludeStorylineTypes?.has(sl.type)) {
-      decisions.push({ icon: '📖', text: sl.displayText, round: sl.matchday })
+      decisions.push({ icon: '📖', text: sl.displayText, round: sl.matchday, storylineId: sl.id })
     }
   }
 

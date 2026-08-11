@@ -30,6 +30,8 @@ export function OpenBidsSecondary({ game }: CardRenderProps) {
         cursor: 'pointer',
       }}
       onClick={() => navigate('/game/transfers')}
+      data-entity-id={`bid:${firstBid.id}`}
+      data-entity-source="OpenBidsSecondary"
     >
       <div style={{
         fontSize: 8,

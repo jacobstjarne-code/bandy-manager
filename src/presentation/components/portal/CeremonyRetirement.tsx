@@ -23,15 +23,21 @@ export function CeremonyRetirement({ game, event }: Props) {
   // Split at the last sentence starting with "Vill"
   const splitIdx = event.body.lastIndexOf(' Vill du')
   const farewellText = splitIdx > 0 ? event.body.slice(0, splitIdx).trim() : event.body
+  // Entitets-dedup-grinden (2026-08-12): se EventCardInline.tsx för samma resonemang.
+  const entityId = event.relatedBidId ? `bid:${event.relatedBidId}` : `event:${event.id}`
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'var(--bg-dark)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      zIndex: Z.modal,
-      padding: '0 24px',
-    }}>
+    <div
+      style={{
+        position: 'fixed', inset: 0,
+        background: 'var(--bg-dark)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        zIndex: Z.modal,
+        padding: '0 24px',
+      }}
+      data-entity-id={entityId}
+      data-entity-source="CeremonyRetirement"
+    >
       {/* Eyebrow */}
       <p style={{
         fontSize: 10, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase',

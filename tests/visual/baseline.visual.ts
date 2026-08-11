@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { assertNoDuplicateEntityIds } from './entityDedup'
 
 /**
  * VISUELL AUDIT — regressionsbaseline (CODE_INSTRUKTION_VISUELL_AUDIT_YTA2_YTA3
@@ -62,6 +63,8 @@ for (const [id, clickText, viewport] of BASELINE_SCENES) {
       await page.evaluate(() => document.fonts.ready)
       await page.waitForTimeout(700)
       await expect(page.locator('[data-scene-content]')).toHaveScreenshot(`baseline-${width}-${id}.png`)
+      // Entitets-dedup-grinden (AUDIT DEL 2, 2026-08-12) — se entityDedup.ts.
+      await assertNoDuplicateEntityIds(page)
     })
   }
 }

@@ -393,6 +393,8 @@ export function SeasonSummaryScreen() {
             headline: string
             body: string
             relatedPlayerName?: string
+            /** Satt bara för storyline-härledda rader — entity-dedup-grinden (2026-08-12). */
+            storylineId?: string
           }
           const keyMomentItems: TimelineItem[] = []
 
@@ -451,6 +453,7 @@ export function SeasonSummaryScreen() {
               headline: sl.displayText,
               body: '',
               relatedPlayerName: p ? `${p.firstName} ${p.lastName}` : undefined,
+              storylineId: sl.id,
             }
           })
 
@@ -478,7 +481,12 @@ export function SeasonSummaryScreen() {
             <div style={{ marginBottom: 8 }}>
               <SectionLabel style={{ marginBottom: 6 }}>🏒 DIN SÄSONG</SectionLabel>
               {topItems.map((item, i) => (
-                <div key={i} className="card-round" style={{ padding: '10px 12px', marginBottom: 6 }}>
+                <div
+                  key={i}
+                  className="card-round"
+                  style={{ padding: '10px 12px', marginBottom: 6 }}
+                  {...(item.storylineId ? { 'data-entity-id': `storyline:${item.storylineId}`, 'data-entity-source': 'SeasonSummaryTimeline' } : {})}
+                >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                     <div style={{
                       width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
@@ -740,11 +748,15 @@ export function SeasonSummaryScreen() {
             <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
               <SectionLabel>📋 DINA VAL</SectionLabel>
               {decisions.map((d, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 8,
-                  padding: '5px 0',
-                  borderBottom: i < decisions.length - 1 ? '1px solid var(--border)' : 'none',
-                }}>
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 8,
+                    padding: '5px 0',
+                    borderBottom: i < decisions.length - 1 ? '1px solid var(--border)' : 'none',
+                  }}
+                  {...(d.storylineId ? { 'data-entity-id': `storyline:${d.storylineId}`, 'data-entity-source': 'SeasonSummaryDinaVal' } : {})}
+                >
                   <span style={{ fontSize: 12, flexShrink: 0 }}>{d.icon}</span>
                   <span style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4, flex: 1 }}>{d.text}</span>
                   {d.round !== undefined && (

@@ -31,12 +31,16 @@ export function EventPrimary({ game }: CardRenderProps) {
     default: '⚠️',
   }
   const emoji = eventEmoji[criticalEvent.type] ?? eventEmoji.default
+  // Entitets-dedup-grinden (2026-08-12): se EventCardInline.tsx för samma resonemang.
+  const entityId = criticalEvent.relatedBidId ? `bid:${criticalEvent.relatedBidId}` : `event:${criticalEvent.id}`
 
   return (
-    <div className="card-sharp" style={{
-      padding: 16,
-      marginBottom: 14,
-    }}>
+    <div
+      className="card-sharp"
+      style={{ padding: 16, marginBottom: 14 }}
+      data-entity-id={entityId}
+      data-entity-source="EventPrimary"
+    >
       <div className="h-label" style={{ marginBottom: 8, color: 'var(--danger)' }}>
         {emoji} HÄNDELSE KRÄVER SVAR
       </div>

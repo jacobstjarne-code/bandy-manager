@@ -66,6 +66,12 @@ export function EventCardInline({ event, currentMatchday }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const actions = getActionsForEvent(event)
   const typeLabel = getEventTypeLabel(event)
+  // Entitets-dedup-grinden (2026-08-12): ett event OM ett bud ÄR budet, inte
+  // en separat entitet — event.id och bid.id är olika strängar för samma
+  // sak. relatedBidId är den kanoniska identiteten när den finns (matchar
+  // OpenBidsSecondary/IncomingBidCard/TransfersOutgoingBid), annars faller
+  // det tillbaka på event.id.
+  const entityId = event.relatedBidId ? `bid:${event.relatedBidId}` : `event:${event.id}`
 
   const age = currentMatchday != null ? getItemAge(event, currentMatchday) : 0
   const agedClass = age >= 5 ? 'aged-2' : age >= 3 ? 'aged-1' : ''
@@ -85,6 +91,8 @@ export function EventCardInline({ event, currentMatchday }: Props) {
         borderRadius: 'var(--radius-md)',
         padding: '14px 16px 14px 18px',
       }}
+      data-entity-id={entityId}
+      data-entity-source="EventCardInline"
     >
       {/* Vänster-stripe — action card, 3 px */}
       <div className="portal-card-stripe portal-card-stripe-copper-wide" />

@@ -85,14 +85,21 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
     )
   }
 
+  // Entitets-dedup-grinden (2026-08-12): se EventCardInline.tsx för samma resonemang.
+  const entityId = event.relatedBidId ? `bid:${event.relatedBidId}` : `event:${event.id}`
+
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'rgba(0,0,0,0.6)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'flex-start',
-      paddingTop: '60px', zIndex: 'var(--z-modal)', overflowY: 'auto',
-    }}>
+    <div
+      style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.6)',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'flex-start',
+        paddingTop: '60px', zIndex: 'var(--z-modal)', overflowY: 'auto',
+      }}
+      data-entity-id={entityId}
+      data-entity-source="EventOverlay"
+    >
       <div className="card-round" style={{
         padding: '24px 20px',
         minWidth: 280, maxWidth: 360, width: '90%',

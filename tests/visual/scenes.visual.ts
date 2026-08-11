@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { assertNoDuplicateEntityIds } from './entityDedup'
 
 /**
  * Visuell regression för /dev/scenes. En baseline per yta (Linux-seedad).
@@ -35,5 +36,7 @@ for (const [id, clickText] of SCENES) {
     // wrappar till ett stort block med 32 knappar och ändras när scener läggs till —
     // en element-snapshot isolerar varje baseline från nav-churn.
     await expect(page.locator('[data-scene-content]')).toHaveScreenshot(`scene-${id}.png`)
+    // Entitets-dedup-grinden (AUDIT DEL 2, 2026-08-12) — se entityDedup.ts.
+    await assertNoDuplicateEntityIds(page)
   })
 }

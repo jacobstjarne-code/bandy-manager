@@ -25,7 +25,12 @@ export function IncomingBidCard({ bid, player, buyingClub, currentRound, onAccep
   const loyalty = player.loyaltyScore
 
   return (
-    <div className="card-sharp transfers-state-copper-strong" style={{ marginBottom: 16, padding: '12px 14px' }}>
+    <div
+      className="card-sharp transfers-state-copper-strong"
+      style={{ marginBottom: 16, padding: '12px 14px' }}
+      data-entity-id={`bid:${bid.id}`}
+      data-entity-source="IncomingBidCard"
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div>
           <p className="transfers-list-name-lg" style={{ marginBottom: 2 }}>
