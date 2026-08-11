@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { hasOpenBids, transferDeadlineWithin3Rounds } from '../../domain/services/portal/triggers/transferTriggers'
+import { hasOpenBids, getQueueableOpenBids, transferDeadlineWithin3Rounds } from '../../domain/services/portal/triggers/transferTriggers'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { TransferBid } from '../../domain/entities/GameEvent'
+import type { GameEvent } from '../../domain/entities/GameEvent'
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
@@ -94,6 +95,53 @@ describe('hasOpenBids', () => {
       transferBids: [makeBid({ direction: 'outgoing', buyingClubId: 'club_a', sellingClubId: 'club_b' })],
     })
     expect(hasOpenBids(game)).toBe(false)
+  })
+})
+
+function makeBidEvent(overrides: Partial<GameEvent> = {}): GameEvent {
+  return {
+    id: 'event_bid_bid1',
+    type: 'transferBidReceived',
+    title: 'Inkommande bud',
+    body: '',
+    choices: [{ id: 'accept', label: 'Acceptera', effect: { type: 'acceptTransfer', bidId: 'bid1' } }],
+    relatedBidId: 'bid1',
+    resolved: false,
+    ...overrides,
+  }
+}
+
+describe('getQueueableOpenBids / hasOpenBids — AUDIT DEL 2 (2026-08-11), Berg-budets dubbelrendering', () => {
+  it('bud utan matchande pendingEvent räknas som köbart (oförändrat beteende)', () => {
+    const game = makeGame({ transferBids: [makeBid()], pendingEvents: [] })
+    expect(getQueueableOpenBids(game)).toHaveLength(1)
+    expect(hasOpenBids(game)).toBe(true)
+  })
+
+  it('bud vars event ÄR det just nu aktiva HÄNDELSE-kortet filtreras bort ur kön', () => {
+    const game = makeGame({
+      transferBids: [makeBid()],
+      pendingEvents: [makeBidEvent()],
+    })
+    expect(getQueueableOpenBids(game)).toHaveLength(0)
+    expect(hasOpenBids(game)).toBe(false)
+  })
+
+  it('med flera bud: bara det som visas som HÄNDELSE filtreras, resten förblir köbara', () => {
+    const game = makeGame({
+      transferBids: [makeBid({ id: 'bid1' }), makeBid({ id: 'bid2', playerId: 'p2' })],
+      pendingEvents: [makeBidEvent({ id: 'event_bid_bid1', relatedBidId: 'bid1' })],
+    })
+    const queueable = getQueueableOpenBids(game)
+    expect(queueable.map(b => b.id)).toEqual(['bid2'])
+  })
+
+  it('ett obesläktat pendingEvent (annan typ, inget relatedBidId) påverkar inte filtreringen', () => {
+    const game = makeGame({
+      transferBids: [makeBid()],
+      pendingEvents: [makeBidEvent({ id: 'event_other', type: 'contractRequest', relatedBidId: undefined })],
+    })
+    expect(getQueueableOpenBids(game)).toHaveLength(1)
   })
 })
 

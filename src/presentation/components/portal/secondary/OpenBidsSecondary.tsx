@@ -1,14 +1,17 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
+import { getQueueableOpenBids } from '../../../../domain/services/portal/triggers/transferTriggers'
 
-/** Secondary-kort: öppna bud + klubbnamn. */
+/**
+ * Secondary-kort: öppna bud + klubbnamn. AUDIT DEL 2 (2026-08-11): läser
+ * getQueueableOpenBids istf att filtrera game.transferBids själv — samma
+ * källa som hasOpenBids-triggern, så ett bud som redan visas som eget
+ * HÄNDELSE-kort (PortalEventSlot) aldrig också dyker upp här.
+ */
 export function OpenBidsSecondary({ game }: CardRenderProps) {
   const navigate = useNavigate()
-  const managedId = game.managedClubId
 
-  const openBids = game.transferBids.filter(
-    b => b.direction === 'incoming' && b.status === 'pending' && b.sellingClubId === managedId
-  )
+  const openBids = getQueueableOpenBids(game)
 
   if (openBids.length === 0) return null
 

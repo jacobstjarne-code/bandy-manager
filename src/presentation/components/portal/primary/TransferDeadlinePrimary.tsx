@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
+import { getQueueableOpenBids } from '../../../../domain/services/portal/triggers/transferTriggers'
 
 /**
  * Primary-kort för transfer-deadline-period.
@@ -24,10 +25,11 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
   const DEADLINE_ROUND = 15
   const roundsLeft = Math.max(0, DEADLINE_ROUND - currentRound)
 
-  // Öppna inkommande bud
-  const openBids = game.transferBids.filter(
-    b => b.direction === 'incoming' && b.status === 'pending' && b.sellingClubId === managedId
-  )
+  // AUDIT DEL 2 (2026-08-11), Berg-budets dubbelrendering: getQueueableOpenBids
+  // istf rå transferBids-filtrering — ett bud som redan visas som eget
+  // HÄNDELSE-kort (PortalEventSlot) ska inte också räknas här ("N öppna bud
+  // kräver svar" + en "Hantera bud →"-knapp som pekar på samma sak).
+  const openBids = getQueueableOpenBids(game)
 
   // Senaste nyförvärv (accepterade bud)
   const recentSignings = game.transferBids.filter(
