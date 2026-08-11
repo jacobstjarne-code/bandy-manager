@@ -21,7 +21,6 @@ import { MatchScreen } from '../MatchScreen'
 import { TranareTab } from '../../components/club/TranareTab'
 import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
 import { GranskaScreen } from '../granska/GranskaScreen'
-import { RoundSummaryScreen } from '../RoundSummaryScreen'
 import { TabellScreen } from '../TabellScreen'
 import { SeasonSummaryScreen } from '../SeasonSummaryScreen'
 import { TransfersScreen } from '../TransfersScreen'
@@ -43,7 +42,7 @@ import { useGameStore } from '../../store/gameStore'
 import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids, withActiveIncomingBidEvent } from './gameStateFactory'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
-  | 'roundsummary' | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
+  | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
   // AUDIT DEL 2 (2026-08-09), Etapp B-baseline: tre riktiga SeasonSummaryScreen-
   // utfall (mästare byggs redan av 'season-header') — bevisar kapitelindelningen
   // (B2) håller när sektioner saknas (inget slutspel / styrelsen besviken).
@@ -90,7 +89,6 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'season-c',     label: 'SeasonSummary C (mittfält → subtle)' },
   { id: 'miljoheader-karlsborg', label: 'MiljöHeader — Karlsborg (arctic_coast, mörkast)' },
   { id: 'miljoheader-rogle', label: 'MiljöHeader — Rögle (scanian_coast, mildast)' },
-  { id: 'roundsummary',  label: 'RoundSummary (DB-3 hero-score)' },
   { id: 'tabell',        label: 'Tabell (DB-8 header + managed-rad)' },
   { id: 'season-header', label: 'SeasonSummary header (DB-3 + R2 hero-titel) — mästare' },
   { id: 'season-noplayoffs', label: 'SeasonSummary — mittfält, inget slutspel' },
@@ -650,7 +648,7 @@ export function DevScenesScreen() {
       : scene === 'season-a' ? seasonGameA
       : scene === 'season-b' ? seasonGameB
       : scene === 'season-c' ? seasonGameC
-      : scene === 'roundsummary' || scene === 'tabell' ? granskaGame
+      : scene === 'tabell' ? granskaGame
       : scene === 'season-header' ? seasonHeaderGame
       : scene === 'season-noplayoffs' ? seasonNoPlayoffsGame
       : scene === 'season-fired' ? seasonFiredGame
@@ -672,7 +670,7 @@ export function DevScenesScreen() {
       : scene === 'portal-bid-multi' ? portalBidMultiGame
       : portalGame
     const roundSummaryForScene =
-      scene === 'granska' || scene === 'roundsummary' ? granskaRoundSummary
+      scene === 'granska' ? granskaRoundSummary
       : scene === 'granska-cup' ? granskaCupRoundSummary
       : scene === 'granska-cup-final' ? granskaCupFinalRoundSummary
       : scene === 'granska-slutspel' ? granskaPlayoffRoundSummary
@@ -806,11 +804,6 @@ export function DevScenesScreen() {
         )}
 
         {/* Full-täcknings-scener (audit-spec task #1) */}
-        {scene === 'roundsummary' && storeReady && (
-          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
-            <RoundSummaryScreen />
-          </div>
-        )}
         {scene === 'tabell' && storeReady && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <TabellScreen />

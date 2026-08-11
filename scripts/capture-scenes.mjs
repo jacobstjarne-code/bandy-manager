@@ -44,7 +44,6 @@ const SCENES = [
   ['miljoheader-karlsborg', 'MiljöHeader — Karlsborg (arctic_coast, mörkast/blåast)'],
   ['miljoheader-rogle', 'MiljöHeader — Rögle (scanian_coast, mildast/ljusast)'],
   // Full-täckning (audit-spec task #1) — riktiga skärmar headless
-  ['roundsummary', 'RoundSummary (DB-3 hero-score → ScoreBlock)'],
   ['tabell', 'Tabell (DB-8 solid header + managed-rad)'],
   ['season-header', 'SeasonSummary header — mästare (DB-3 + R2-1 hero-titel + R2-2 btn-hero + cup)'],
   ['season-noplayoffs', 'SeasonSummary — mittfält, inget slutspel (AUDIT DEL 2 Etapp B-baseline)'],

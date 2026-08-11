@@ -74,7 +74,7 @@ export function PhaseIndicator({ currentPhase }: PhaseIndicatorProps) {
 
 function getCurrentPhase(pathname: string): 'prepare' | 'play' | 'review' {
   if (pathname.includes('/match/live')) return 'play'
-  if (pathname.includes('/review') || pathname.includes('/round-summary') || pathname.includes('/match-result')) return 'review'
+  if (pathname.includes('/review') || pathname.includes('/match-result')) return 'review'
   return 'prepare'
 }
 

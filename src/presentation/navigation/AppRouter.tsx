@@ -42,7 +42,6 @@ import { HistoryScreen } from '../screens/HistoryScreen'
 import { HalfTimeSummaryScreen } from '../screens/HalfTimeSummaryScreen'
 import { PlayoffIntroScreen } from '../screens/PlayoffIntroScreen'
 import { QFSummaryScreen } from '../screens/QFSummaryScreen'
-import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
 import { SimSummaryScreen } from '../screens/SimSummaryScreen'
 import { useGameStore } from '../store/gameStore'
 import { PendingScreen } from '../../domain/enums'
@@ -146,8 +145,7 @@ export function AppRouter() {
           <Route path="hall-provning" element={<HallProvningScreen />} />
         </Route>
         <Route element={<GameGuard />}>
-          <Route path="/game/round-summary" element={<RoundSummaryScreen />} />
-<Route path="/game/game-over" element={<GameOverScreen />} />
+          <Route path="/game/game-over" element={<GameOverScreen />} />
         </Route>
         {import.meta.env.DEV && DevScenesScreen && (
           <Route path="/dev/scenes" element={
