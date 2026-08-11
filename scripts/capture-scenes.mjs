@@ -60,6 +60,8 @@ const SCENES = [
   ['tacticmodal', 'TacticChangeModal (🟥 → mörk Stålvallen-panel)'],
   ['submodal', 'SubstitutionModal (🟥 → mörk Stålvallen-panel)'],
   ['spakb', 'Spak B — sent matchningsval (feed-kort, amber)'],
+  ['club-fresh', 'Club — säsong 1, inga öppna minnen (AUDIT DEL 3, Klubben i korthet)'],
+  ['club-established', 'Club — etablerad epok, flera öppna minnen (AUDIT DEL 3, Klubben i korthet)'],
 ]
 
 rmSync(OUT, { recursive: true, force: true })

@@ -12,6 +12,8 @@ import { TranareTab } from '../components/club/TranareTab'
 import { TabBar } from '../components/shared/TabBar'
 import { TabIntro } from '../components/shared/TabIntro'
 import { TAB_INTROS } from '../../domain/data/tabIntros'
+import { SectionLabel } from '../components/SectionLabel'
+import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -76,8 +78,39 @@ export function ClubScreen() {
     { key: 'tranare', label: 'Tränare' },
   ]
 
+  const era = calculateClubEra(game)
+  // AUDIT DEL 3 (2026-08-11): managerProfile.seasonsAtClub — samma fält TranareTab.tsx
+  // redan visar som "Säsong N i klubben". game.currentSeason är kalenderår (2026), inte
+  // ett säsongsindex. trainerArc.seasonCount räknas upp först vid säsongsslut och skulle
+  // visa "år 0" under hela spelarens faktiska första säsong.
+  const seasonCount = game.managerProfile?.seasonsAtClub ?? 1
+  const openMemories = (game.activeAnniversaries ?? []).length
+
   return (
     <div className="screen-col-layout">
+      {/* Klubben i korthet — AUDIT DEL 3 (2026-08-11) */}
+      <div className="card-sharp" style={{ margin: '12px 12px 0', padding: '10px 12px', background: 'var(--bg-leather)', border: 'none' }}>
+        <SectionLabel style={{ color: 'var(--text-light-secondary)', marginBottom: 4 }}>KLUBBEN I KORTHET</SectionLabel>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'var(--text-light)' }}>{eraLabel(era)}</div>
+            <SectionLabel style={{ color: 'var(--text-light-secondary)', margin: 0 }}>
+              {`Epok · år ${seasonCount}`}
+            </SectionLabel>
+          </div>
+          {openMemories > 0 && (
+            <div style={{ borderLeft: '1px solid rgba(255,255,255,.15)', paddingLeft: 12 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'var(--accent)' }}>{openMemories}</div>
+              <div onClick={() => setActiveTab('minne')} style={{ cursor: 'pointer' }}>
+                <SectionLabel style={{ color: 'var(--text-light-secondary)', margin: 0 }}>
+                  Öppna minnen ›
+                </SectionLabel>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Tab bar */}
       <div className="tab-bar-host">
         <TabBar

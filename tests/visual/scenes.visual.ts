@@ -21,6 +21,8 @@ const SCENES: [string, string?][] = [
   ['transfers-closed'], ['transfers-open-nobids'], ['transfers-onebid'], ['transfers-multibids'],
   ['arrival'], ['squad-trupp', 'button:has-text("Trupp")'],
   ['momentumbar'], ['tacticmodal'], ['submodal'], ['spakb'],
+  // AUDIT DEL 3 (2026-08-11): baseline före ombyggnad, Club 'Klubben i korthet'.
+  ['club-fresh'], ['club-established'],
 ]
 
 for (const [id, clickText] of SCENES) {

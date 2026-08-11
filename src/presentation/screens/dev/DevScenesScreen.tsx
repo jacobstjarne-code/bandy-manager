@@ -19,6 +19,7 @@ import { SquadScreen } from '../SquadScreen'
 import { PortalScreen } from '../PortalScreen'
 import { MatchScreen } from '../MatchScreen'
 import { TranareTab } from '../../components/club/TranareTab'
+import { ClubScreen } from '../ClubScreen'
 import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
 import { GranskaScreen } from '../granska/GranskaScreen'
 import { TabellScreen } from '../TabellScreen'
@@ -62,6 +63,8 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind'
   // AUDIT DEL 2 (2026-08-11): kontrollfall, Berg-budets dubbelrendering (dc3d771f)
   | 'portal-bid-single' | 'portal-bid-multi'
+  // AUDIT DEL 3 (2026-08-11): baseline före ombyggnad, Club 'Klubben i korthet'
+  | 'club-fresh' | 'club-established'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -115,6 +118,8 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'portal-grind',  label: 'Portal — grind-läge (veckobeslut olöst)' },
   { id: 'portal-bid-single', label: 'Portal — 1 bud, det är det aktiva HÄNDELSE-kortet' },
   { id: 'portal-bid-multi',  label: 'Portal — 3 bud, ett är det aktiva HÄNDELSE-kortet' },
+  { id: 'club-fresh',       label: 'Club — säsong 1, inga öppna minnen' },
+  { id: 'club-established', label: 'Club — etablerad epok, flera öppna minnen' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -408,6 +413,32 @@ const portalGrindGame = withObjectiveAlertWarning(withPendingWeeklyDecision(fact
 const portalBidSingleGame = withActiveIncomingBidEvent(withIncomingBids(factoryMidSeasonGame, 1))
 const portalBidMultiGame = withActiveIncomingBidEvent(withIncomingBids(factoryMidSeasonGame, 3))
 
+// AUDIT DEL 3 (2026-08-11): baseline före ombyggnad, Club 'Klubben i korthet'.
+// club-fresh: createTrainerArc()-default (seasonCount 0, bestFinish 12) → era
+// survival, managerProfile.seasonsAtClub default 1, inga activeAnniversaries —
+// "öppna minnen"-kolumnen ska INTE synas här (No false empty states — DS-regel).
+const clubFreshGame = makeBaseGame({ seed: 2 })
+// club-established: sex säsonger, bestFinish 6 (topp 6, inte topp 4 — annars
+// slår legacy-villkoret till istf establishment), hög communityStanding → era
+// establishment (calculateClubEra), matchar mockens "Etablering". Tre öppna
+// minnen via withAnniversary, applicerad tre gånger, eventId gjorda unika i
+// efterhand så de inte kolliderar.
+const clubEstablishedBase = atRound(makeBaseGame({ seed: 2 }), 20)
+const clubEstablishedWithMemories = [0, 1, 2].reduce(
+  (g) => withAnniversary(g),
+  clubEstablishedBase
+)
+const clubEstablishedGame = {
+  ...clubEstablishedWithMemories,
+  communityStanding: 75,
+  activeAnniversaries: (clubEstablishedWithMemories.activeAnniversaries ?? []).map((a, i) => ({ ...a, eventId: `dev_anniversary_${i + 1}` })),
+  managerProfile: { ...clubEstablishedWithMemories.managerProfile, seasonsAtClub: 6 },
+  trainerArc: {
+    current: 'stable', history: [], seasonCount: 6, bestFinish: 6, titlesWon: 0,
+    consecutiveLosses: 0, consecutiveWins: 2, boardWarningGiven: false,
+  },
+} as unknown as SaveGame
+
 // Granska IA — fingerad spelad match (md 20) + andra matcher + roundSummary
 const granskaFixture = {
   id: 'fx-granska', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
@@ -668,6 +699,8 @@ export function DevScenesScreen() {
       : scene === 'portal-grind' ? portalGrindGame
       : scene === 'portal-bid-single' ? portalBidSingleGame
       : scene === 'portal-bid-multi' ? portalBidMultiGame
+      : scene === 'club-fresh' ? clubFreshGame
+      : scene === 'club-established' ? clubEstablishedGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -872,6 +905,12 @@ export function DevScenesScreen() {
           || scene === 'granska-slutspel' || scene === 'granska-avsked') && storeReady && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <GranskaScreen />
+          </div>
+        )}
+
+        {(scene === 'club-fresh' || scene === 'club-established') && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <ClubScreen />
           </div>
         )}
 
