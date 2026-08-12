@@ -2,6 +2,15 @@ import type { GameEvent } from '../../domain/entities/GameEvent'
 import type { Journalist } from '../../domain/entities/SaveGame'
 import { DecisionChoices } from './DecisionChoices'
 
+/**
+ * GEMENSAM BESLUTSMODELL (2026-08-12): INTE migrerad till DecisionCard.
+ * Chrome:et (tvådelad header, journalist-kortet med citerad fråga) är en
+ * bespok scen, inte en "situation → val"-kortform — DecisionCard hade tvingat
+ * in en avsändare/etikett-rad och en title/body-uppdelning som inte matchar
+ * hur en presskonferens faktiskt är byggd (fråga, inte påstående). Knapp-
+ * lagret delar däremot DecisionChoices (se render nedan) — det var den enda
+ * delen som faktiskt var en dubblett av de andra åtta ställningarna.
+ */
 interface Props {
   event: GameEvent
   journalist: Journalist | undefined

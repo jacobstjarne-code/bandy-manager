@@ -38,8 +38,11 @@ import { MomentumBar } from '../../components/match/MomentumBar'
 import { TacticChangeModal } from '../../components/match/TacticChangeModal'
 import { SubstitutionModal } from '../../components/match/SubstitutionModal'
 import { SentValCard } from '../../components/match/SentValCard'
+import { TaktikScreen } from '../TaktikScreen'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
+import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
+import { generateDetailedAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids, withActiveIncomingBidEvent } from './gameStateFactory'
 import { CUP_FINAL_VENUE, SM_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
 
@@ -66,6 +69,9 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'portal-bid-single' | 'portal-bid-multi'
   // AUDIT DEL 3 (2026-08-11): baseline före ombyggnad, Club 'Klubben i korthet'
   | 'club-fresh' | 'club-established'
+  // AUDIT DEL 4 (2026-08-12): TacticBoardCard/tacticRows-enande — behöver en
+  // riktig opponentAnalysis för att kunna verifiera FÖRESLÅS-badgen alls.
+  | 'taktik'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -122,6 +128,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'portal-bid-multi',  label: 'Portal — 3 bud, ett är det aktiva HÄNDELSE-kortet' },
   { id: 'club-fresh',       label: 'Club — säsong 1, inga öppna minnen' },
   { id: 'club-established', label: 'Club — etablerad epok, flera öppna minnen' },
+  { id: 'taktik',           label: 'Taktiktavlan — alla 8 dimensioner + FÖRESLÅS' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -415,6 +422,34 @@ const portalGrindGame = withObjectiveAlertWarning(withPendingWeeklyDecision(fact
 const portalBidSingleGame = withActiveIncomingBidEvent(withIncomingBids(factoryMidSeasonGame, 1))
 const portalBidMultiGame = withActiveIncomingBidEvent(withIncomingBids(factoryMidSeasonGame, 3))
 
+// AUDIT DEL 4 (2026-08-12): Taktiktavlan — samma opponentAnalysisService-anrop
+// som TacticStep gör live (generateDetailedAnalysis), inte fabricerad data, så
+// FÖRESLÅS-badgen körs mot riktig produktionslogik. activeTactic.mentality/press
+// medvetet satta att INTE matcha förslaget (recommendation kan annars råka landa
+// på samma värde som redan är aktivt) — annars visas ingen badge alls i denna
+// dev-scen och den går inte att browser-verifiera.
+const taktikGame = (() => {
+  const nf = getNextManagedFixture(factoryMidSeasonGame)
+  if (!nf) return factoryMidSeasonGame
+  const oppId = nf.homeClubId === factoryMidSeasonGame.managedClubId ? nf.awayClubId : nf.homeClubId
+  const opp = factoryMidSeasonGame.clubs.find(c => c.id === oppId)
+  if (!opp) return factoryMidSeasonGame
+  const oppPlayers = factoryMidSeasonGame.players.filter(p => opp.squadPlayerIds.includes(p.id))
+  const baseAnalysis = generateDetailedAnalysis(opp, oppPlayers, factoryMidSeasonGame.standings, factoryMidSeasonGame.fixtures, nf.id)
+  // suggestedMentality/suggestedPress är undefined när opponentAnalysisService
+  // klassar motståndaren som jämbördig ("Jämn motståndare") — sant för denna
+  // fabricerade motståndarparning. Tvingar fram en riktad rekommendation
+  // (mapRecommendationToMentality/-Press-mönstret, samma strängar som
+  // opponentAnalysisService.ts själv använder) så FÖRESLÅS-badgen går att
+  // browser-verifiera, snarare än att den råkar utebli.
+  const analysis = { ...baseAnalysis, recommendation: 'Pressa högt och dominera mitten.', suggestedMentality: 'offensive' as const, suggestedPress: 'high' as const }
+  const managedClub = factoryMidSeasonGame.clubs.find(c => c.id === factoryMidSeasonGame.managedClubId)
+  if (!managedClub) return { ...factoryMidSeasonGame, opponentAnalyses: { [oppId]: analysis } }
+  const mismatchedTactic = { ...managedClub.activeTactic, mentality: 'defensive' as const, press: 'low' as const }
+  const clubs = factoryMidSeasonGame.clubs.map(c => c.id === managedClub.id ? { ...c, activeTactic: mismatchedTactic } : c)
+  return { ...factoryMidSeasonGame, clubs, opponentAnalyses: { [oppId]: analysis } }
+})()
+
 // AUDIT DEL 3 (2026-08-11): baseline före ombyggnad, Club 'Klubben i korthet'.
 // club-fresh: createTrainerArc()-default (seasonCount 0, bestFinish 12) → era
 // survival, managerProfile.seasonsAtClub default 1, inga activeAnniversaries —
@@ -457,15 +492,52 @@ const granskaFixture = {
     { minute: 81, type: 'goal', clubId: AWAY_ID, playerId: undefined, description: 'Straffmål' },
     { minute: 88, type: 'goal', clubId: HOME_ID, playerId: 'p-f1', description: 'Mål' },
   ],
-  report: { playerRatings: { 'p-f1': 8.4, 'p-h1': 7.2, 'p-f2': 7.0, 'p-d2': 5.2 }, shotsHome: 17, shotsAway: 9, onTargetHome: 9, onTargetAway: 4, savesHome: 3, savesAway: 8, cornersHome: 9, cornersAway: 3, penaltiesHome: 0, penaltiesAway: 1, possessionHome: 58, possessionAway: 42, playerOfTheMatchId: 'p-f1' },
+  report: { playerRatings: { 'p-gk1': 6.4, 'p-d1': 6.6, 'p-d2': 5.2, 'p-d3': 6.1, 'p-d4': 6.3, 'p-h1': 7.2, 'p-h2': 6.5, 'p-h3': 6.0, 'p-h4': 6.2, 'p-f1': 8.4, 'p-f2': 7.0 }, shotsHome: 17, shotsAway: 9, onTargetHome: 9, onTargetAway: 4, savesHome: 3, savesAway: 8, cornersHome: 9, cornersAway: 3, penaltiesHome: 0, penaltiesAway: 1, possessionHome: 58, possessionAway: 42, playerOfTheMatchId: 'p-f1' },
   attendance: 478,
+  // BROWSER-VERIFIERING (2026-08-12): GranskaSpelare-fliken saknade lineup helt
+  // (homeLineup ej satt) → STARTELVA/BÄNKEN-korten renderade tomma, upptäckt vid
+  // faktisk skärmdumpsgranskning av DecisionCard-migreringen, inte via kod-läsning.
+  homeLineup: {
+    startingPlayerIds: ['p-gk1', 'p-d1', 'p-d2', 'p-d3', 'p-d4', 'p-h1', 'p-h2', 'p-h3', 'p-h4', 'p-f1', 'p-f2'],
+    benchPlayerIds: ['p-gk2', 'p-f3', 'p-f4', 'p-f5'],
+    captainPlayerId: 'p-d1',
+  },
 }
 const granskaOtherFixtures = [
   { id: 'fx-o1', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20, homeClubId: 'club-s1', awayClubId: 'club-s5', homeScore: 3, awayScore: 2, status: 'completed' as const, events: [] },
   { id: 'fx-o2', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20, homeClubId: 'club-s8', awayClubId: 'club-s2', homeScore: 1, awayScore: 1, status: 'completed' as const, events: [] },
 ]
+// BROWSER-VERIFIERING (2026-08-12): två fabricerade pendingEvents (en 'critical',
+// en 'player') så DecisionCard faktiskt går att se renderad med riktigt
+// innehåll — tidigare gick granska-scenen att öppna utan att någon
+// DecisionCard-migrerad kortyta någonsin hade data att visa.
+const granskaPendingEvents = [
+  {
+    id: 'dev-critical-1', type: 'contractRequest' as const,
+    title: 'Kontraktskrav', body: 'Erik vill förlänga — och vill ha mer betalt för att stanna.',
+    sender: { name: 'Erik Johansson', role: 'Half' },
+    relatedPlayerId: 'p-h1',
+    choices: [
+      { id: 'accept', label: 'Godkänn kravet', effect: { type: 'noOp' as const } },
+      { id: 'reject', label: 'Avböj', effect: { type: 'noOp' as const } },
+    ],
+    resolved: false,
+  },
+  {
+    id: 'dev-player-1', type: 'playerPraise' as const,
+    title: 'Fin insats', body: 'Karl var lagets bästa spelare — assistenten vill lyfta det i truppen.',
+    sender: { name: 'Björn Svensson', role: 'Assisterande tränare' },
+    relatedPlayerId: 'p-f1',
+    choices: [
+      { id: 'praise', label: 'Lyft det öppet', effect: { type: 'noOp' as const } },
+      { id: 'private', label: 'Ta det enskilt', effect: { type: 'noOp' as const } },
+    ],
+    resolved: false,
+  },
+]
 const granskaGame = makeGame([...makeLeagueFixtures(), granskaFixture, ...granskaOtherFixtures], {
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 20, communityStanding: 58,
+  pendingEvents: granskaPendingEvents,
 })
 // Upptakt sub-states — fingerade tabeller (played=19, 3 omg kvar)
 function makeUpptaktStandings(managedPoints: number, otherPoints: number[]) {
@@ -755,6 +827,7 @@ export function DevScenesScreen() {
       : scene === 'portal-bid-multi' ? portalBidMultiGame
       : scene === 'club-fresh' ? clubFreshGame
       : scene === 'club-established' ? clubEstablishedGame
+      : scene === 'taktik' ? taktikGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -1081,6 +1154,8 @@ export function DevScenesScreen() {
             <SentValCard minute={79} onPush={() => {}} onShut={() => {}} />
           </div>
         )}
+
+        {scene === 'taktik' && <TaktikScreen />}
       </div>
     </div>
   )

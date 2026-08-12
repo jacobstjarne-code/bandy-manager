@@ -74,42 +74,56 @@ export function TacticBoardCard({
                 const rec = recommendations[key]
                 const current = tactic[key] as string
                 const showSuggestion = rec !== undefined && rec !== current
+                const recIndex = showSuggestion ? options.findIndex(o => o.value === rec) : -1
                 return (
                   <div key={key} style={{ marginBottom: ri < rows.length - 1 ? 6 : 0 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '78px 1fr', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>{label}</span>
-                      <div style={{ display: 'flex', gap: 0, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
-                        {options.map((opt, i) => (
-                          <button
-                            key={opt.value}
-                            onClick={() => setTacticValue(key, opt.value as Tactic[typeof key])}
-                            style={{
-                              position: 'relative',
-                              flex: 1, textAlign: 'center', padding: '6px 3px',
-                              fontSize: 9, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
-                              cursor: 'pointer', fontFamily: 'var(--font-body)',
-                              border: 'none', borderRight: i === options.length - 1 ? 'none' : '1px solid var(--border)',
-                              background: current === opt.value ? 'var(--accent)' : 'transparent',
-                              color: current === opt.value ? 'var(--text-light)' : 'var(--text-muted)',
-                            }}
-                          >
-                            {opt.label}
-                            {/* Yta 3 / AUDIT DEL 4: förslagsmarkör — visuell, ändrar aldrig
-                                fältet självt. Pillen bär bara "assistentens förslag";
-                                namnet hör hemma i varför-raden. */}
-                            {showSuggestion && opt.value === rec && (
-                              <span style={{
-                                position: 'absolute', top: -6, right: -2,
-                                fontSize: 6.5, fontWeight: 700, letterSpacing: '0.3px', textTransform: 'uppercase',
-                                background: 'var(--copper)', color: 'var(--text-light)',
-                                borderRadius: 99, padding: '2px 4px',
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
-                              }}>
-                                FÖRESLÅS
-                              </span>
-                            )}
-                          </button>
-                        ))}
+                      {/* BROWSER-VERIFIERING (2026-08-12): förslagspillen låg tidigare INUTI
+                          knapp-radens overflow:hidden-container med top:-6 — klipptes bort,
+                          osynlig i praktiken (fanns i DOM, syntes aldrig på skärm). Fanns redan
+                          i originalversionen (bara mentality); upptäckt nu eftersom pillen
+                          skulle synas på 8 rader istf 1. Pillen ligger nu utanför den klippande
+                          containern, positionerad procentuellt mot förslagets index. */}
+                      <div style={{ position: 'relative' }}>
+                        <div style={{ display: 'flex', gap: 0, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+                          {options.map((opt, i) => (
+                            <button
+                              key={opt.value}
+                              onClick={() => setTacticValue(key, opt.value as Tactic[typeof key])}
+                              style={{
+                                flex: 1, textAlign: 'center', padding: '6px 3px',
+                                fontSize: 9, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
+                                cursor: 'pointer', fontFamily: 'var(--font-body)',
+                                border: 'none', borderRight: i === options.length - 1 ? 'none' : '1px solid var(--border)',
+                                background: current === opt.value ? 'var(--accent)' : 'transparent',
+                                color: current === opt.value ? 'var(--text-light)' : 'var(--text-muted)',
+                              }}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                        {/* Yta 3 / AUDIT DEL 4: förslagsmarkör — visuell, ändrar aldrig fältet
+                            självt. Pillen bär bara "assistentens förslag"; namnet hör hemma i
+                            varför-raden. */}
+                        {recIndex >= 0 && (
+                          <span style={{
+                            position: 'absolute', top: -6,
+                            left: `calc(${recIndex} * (100% / ${options.length}))`,
+                            width: `calc(100% / ${options.length})`,
+                            display: 'flex', justifyContent: 'center', pointerEvents: 'none',
+                          }}>
+                            <span style={{
+                              fontSize: 6.5, fontWeight: 700, letterSpacing: '0.3px', textTransform: 'uppercase',
+                              background: 'var(--copper)', color: 'var(--text-light)',
+                              borderRadius: 99, padding: '2px 4px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+                            }}>
+                              FÖRESLÅS
+                            </span>
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

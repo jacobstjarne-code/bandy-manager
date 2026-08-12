@@ -4,6 +4,14 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { Z } from '../../utils/zIndices'
 import { DecisionChoices } from '../DecisionChoices'
 
+/**
+ * GEMENSAM BESLUTSMODELL (2026-08-12): INTE migrerad till DecisionCard.
+ * Ceremonin (eyebrow, namn, statistikrad, headline-citat, avskedscitat) är
+ * en bespok helskärmslayout, inte en "situation → val"-kortform — det finns
+ * ingen wrapper-card att dela, bara en sekvens av fritt placerade textblock.
+ * Knapp-lagret delade redan DecisionChoices sedan 2026-07-07 (yta 5b), före
+ * DecisionCard-scaffolden fanns.
+ */
 interface Props {
   game: SaveGame
   event: GameEvent
