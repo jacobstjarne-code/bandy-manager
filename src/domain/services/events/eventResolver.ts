@@ -4,6 +4,7 @@ import type { GameEvent } from '../../entities/GameEvent'
 import type { DinnerScene } from '../mecenatDinnerService'
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
+import { describeRippleChain } from '../rippleEffectService'
 import { applyFinanceChange } from '../economyService'
 import { startFacilityBuild } from '../facilityService'
 import { recordInteraction, recordPressRefusal, generateCriticalArticle } from '../journalistService'
@@ -95,11 +96,22 @@ export function resolveEvent(
   const { effect } = choice
   let updatedGame = game
 
+  // ÖVERLÄMNING 2 steg 1-pilot (2026-08-12): before/after-snapshot kring
+  // transferbudets tre utfall. Satt inuti respektive case (spelarnamnet
+  // behövs för subjectName), konsumerat efter switchen — se
+  // pilotTransferBidRippleChain-kommentaren i SaveGame.ts för varför den
+  // INTE är pendingRippleChain (renderas ingenstans ännu, medvetet).
+  let pilotTransferBidTrigger: 'transfer_bid_accepted' | 'transfer_bid_rejected' | 'transfer_bid_countered' | null = null
+  let pilotTransferBidPlayerName: string | undefined
+
   switch (effect.type) {
     case 'acceptTransfer': {
       const bid = (game.transferBids ?? []).find(b => b.id === effect.bidId)
       if (bid) {
         updatedGame = executeTransfer(game, bid)
+        const player = game.players.find(p => p.id === bid.playerId)
+        pilotTransferBidTrigger = 'transfer_bid_accepted'
+        pilotTransferBidPlayerName = player ? `${player.firstName} ${player.lastName}` : undefined
       }
       break
     }
@@ -116,6 +128,11 @@ export function resolveEvent(
                 : p,
             )
           : updatedGame.players,
+      }
+      {
+        const player = effect.targetPlayerId ? game.players.find(p => p.id === effect.targetPlayerId) : undefined
+        pilotTransferBidTrigger = 'transfer_bid_rejected'
+        pilotTransferBidPlayerName = player ? `${player.firstName} ${player.lastName}` : undefined
       }
       break
     }
@@ -144,6 +161,11 @@ export function resolveEvent(
               : b,
           ),
         }
+      }
+      {
+        const player = currentBid ? game.players.find(p => p.id === currentBid.playerId) : undefined
+        pilotTransferBidTrigger = 'transfer_bid_countered'
+        pilotTransferBidPlayerName = player ? `${player.firstName} ${player.lastName}` : undefined
       }
       break
     }
@@ -1501,6 +1523,17 @@ export function resolveEvent(
       eventSource as SourceKey,
     )
     updatedGame = { ...updatedGame, sourceCooldowns: newCooldowns }
+  }
+
+  // ÖVERLÄMNING 2 steg 1-pilot: se kommentaren vid deklarationen ovan.
+  if (pilotTransferBidTrigger) {
+    updatedGame = {
+      ...updatedGame,
+      pilotTransferBidRippleChain: describeRippleChain(
+        game, updatedGame, pilotTransferBidTrigger, pilotTransferBidPlayerName,
+        game.currentMatchday, game.currentSeason,
+      ),
+    }
   }
 
   return updatedGame

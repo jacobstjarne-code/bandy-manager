@@ -96,7 +96,14 @@ const STEP_VERBS: Record<string, { up: string; down: string }> = {
   'Sponsorerna':  { up: 'sponsorerna hör av sig',        down: 'sponsorerna drar öronen åt sig' },
 }
 
-const TRIGGER_CLAUSE: Record<RippleChain['trigger'], (name?: string) => string> = {
+// ÖVERLÄMNING 2 steg 1-pilot (2026-08-12): Partial, inte Record — de tre nya
+// transfer_bid_*-triggers (rippleEffectService.ts) har ingen klausul här
+// ännu. Text är Opus/Jacobs jobb (CLAUDE.md: Code skriver aldrig svensk
+// speltext) och det här är dessutom uttryckligen en rapport-pilot som INTE
+// ska rendera något — pilotTransferBidRippleChain (SaveGame.ts) läses inte
+// av något beat, bara av rapporten. Lägg till klausuler här när/om
+// transfer-ripplen faktiskt ska visas.
+const TRIGGER_CLAUSE: Partial<Record<RippleChain['trigger'], (name?: string) => string>> = {
   star_injured:  (n) => `${n ?? 'Spelaren'} är borta ett tag.`,
   big_derby_win: () => 'Derbysegern sitter kvar.',
   mecenat_left:  (n) => `${n ?? 'Mecenaten'} drog sig ur.`,
@@ -109,7 +116,7 @@ const TRIGGER_CLAUSE: Record<RippleChain['trigger'], (name?: string) => string> 
 // separat stegvis lista. STEP_VERBS-fraserna återanvänds ordagrant, ingen ny copy.
 function renderClause(c: RippleChain | undefined): string {
   if (!c) return ''
-  return TRIGGER_CLAUSE[c.trigger](c.subjectName)
+  return TRIGGER_CLAUSE[c.trigger]?.(c.subjectName) ?? ''
 }
 
 function renderSteps(c: RippleChain | undefined): { text: string; dir: 'up' | 'down' }[] {
