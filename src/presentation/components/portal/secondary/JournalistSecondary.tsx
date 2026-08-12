@@ -69,7 +69,7 @@ export function JournalistSecondary({ game }: CardRenderProps) {
         cursor: 'pointer',
       }}
     >
-      <SectionLabel emoji="📰">JOURNALIST · {game.journalist.outlet}</SectionLabel>
+      <SectionLabel>📰 JOURNALIST · {game.journalist.outlet}</SectionLabel>
       {/* Row 1: name + emoji */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
         <span style={{

@@ -9,12 +9,22 @@ interface Props {
   onChoose: (choiceId: string, label: string) => void
   layout?: 'inline' | 'stack'
   primaryChoiceId?: string
+  /** GEMENSAM BESLUTSMODELL (2026-08-12): 'lg' bär EventOverlay-modalens
+   *  tidigare handrullade knappmått (14px text, 14×16 padding, radius 10)
+   *  in i den delade komponenten — annars hade migreringen krympt en
+   *  fullskärms-modals knappar till inline-kortskala (12px/7×14). Standard
+   *  'sm' är oförändrad för alla ~30 befintliga anropsställen. */
+  size?: 'sm' | 'lg'
 }
 
-export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryChoiceId }: Props) {
+export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryChoiceId, size = 'sm' }: Props) {
   const containerStyle: React.CSSProperties = layout === 'inline'
     ? { display: 'flex', gap: 8, flexWrap: 'wrap' }
     : { display: 'flex', flexDirection: 'column', gap: 5 }
+
+  const lgStyle: React.CSSProperties = size === 'lg'
+    ? { padding: '14px 16px', fontSize: 14, borderRadius: 10 }
+    : {}
 
   return (
     <div style={containerStyle}>
@@ -25,7 +35,7 @@ export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryCh
             key={choice.id}
             onClick={() => onChoose(choice.id, choice.label)}
             className={isPrimary ? 'btn btn-primary' : 'btn btn-outline'}
-            style={layout === 'stack' ? { width: '100%', textAlign: 'left' } : undefined}
+            style={{ ...(layout === 'stack' ? { width: '100%', textAlign: 'left' } : undefined), ...lgStyle }}
           >
             {choice.label}
             {choice.subtitle && (

@@ -8,6 +8,15 @@
  * - Body-text: Georgia 13px italic
  * - Knapprad med actions från getActionsForEvent — använder .btn .btn-primary / .btn .btn-outline
  * - Räknarrad hanteras av PortalInboxCounter (i botten av PortalScreen)
+ *
+ * GEMENSAM BESLUTSMODELL (2026-08-12): INTE migrerad till DecisionCard.
+ * Wrappern delar redan knapp-lagret (DecisionChoices nedan) men chrome:et
+ * hör till Portal-kortfamiljen, inte Granska/EventOverlay-familjen: vänster-
+ * stripen (portal-card-stripe), eyebrow-typografin (portal-card-eyebrow,
+ * inte SectionLabel/.h-label), och ålders-förfallsklasserna (aged-1/aged-2)
+ * är alla delade med ANDRA Portal-kort, inte unika för händelsekort. Att
+ * tvinga in dem i DecisionCard hade antingen svällt komponenten med Portal-
+ * specifika props eller brutit den delningen med resten av Portal-familjen.
  */
 
 import { useGameStore } from '../../store/gameStore'

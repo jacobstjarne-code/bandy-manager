@@ -204,7 +204,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
 
       {/* DITT SKOTTMÖNSTER */}
       <div className="card-sharp" style={{ marginTop: 8, padding: '10px 12px' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 8 }}>🎯 DITT SKOTTMÖNSTER</p>
+        <SectionLabel style={{ marginBottom: 8 }}>🎯 DITT SKOTTMÖNSTER</SectionLabel>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
           <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Den här matchen</span>
           <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>

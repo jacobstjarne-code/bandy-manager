@@ -17,7 +17,7 @@ import { SectionLabel } from '../../components/SectionLabel'
 import { ScoreBlock } from '../../components/primitives'
 import { generateSilentMatchReport } from '../../../domain/services/silentMatchReportService'
 import { generateQuickSummary } from './helpers'
-import { DecisionChoices } from '../../components/DecisionChoices'
+import { DecisionCard } from '../../components/DecisionCard'
 import { Swords } from 'lucide-react'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
@@ -493,37 +493,25 @@ export function GranskaOversikt({
           <>
             {criticalEvents.map((event, ei) => {
               const resolved = resolvedEventIds.has(event.id)
-              const chosenLabel = chosenLabels[event.id]
               const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
               const relatedClub = event.relatedClubId ? game.clubs.find(c => c.id === event.relatedClubId) : null
+              const tags = [
+                ...(relatedPlayer ? [{ label: `${relatedPlayer.firstName} ${relatedPlayer.lastName} · Styrka ${Math.round(relatedPlayer.currentAbility)}`, tone: 'accent' as const }] : []),
+                ...(relatedClub ? [{ label: relatedClub.name, tone: 'ice' as const }] : []),
+              ]
               return (
-                <div key={event.id} className="card-sharp" style={{ margin: '0 0 3px', ...fadeIn(2 + ei) }}>
-                  <div style={{ padding: '10px 12px' }}>
-                    <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>{event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}</SectionLabel>
-                    {resolved ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
-                        <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
-                      </div>
-                    ) : (
-                      <>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5, lineHeight: 1.3 }}>{event.title}</p>
-                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 8, whiteSpace: 'pre-line' }}>{event.body}</p>
-                        {(relatedPlayer || relatedClub) && (
-                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                            {relatedPlayer && <span style={{ fontSize: 11, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)', borderRadius: 99, padding: '3px 8px', color: 'var(--accent)', fontWeight: 600 }}>{relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}</span>}
-                            {relatedClub && <span style={{ fontSize: 11, background: 'color-mix(in srgb, var(--ice) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--ice) 25%, transparent)', borderRadius: 99, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>{relatedClub.name}</span>}
-                          </div>
-                        )}
-                        <DecisionChoices
-                          choices={event.choices}
-                          onChoose={(id, label) => onChoice(event.id, id, label)}
-                          layout="stack"
-                        />
-                      </>
-                    )}
-                  </div>
-                </div>
+                <DecisionCard
+                  key={event.id}
+                  style={fadeIn(2 + ei)}
+                  label={event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
+                  title={event.title}
+                  body={event.body}
+                  tags={tags}
+                  resolved={resolved}
+                  chosenLabel={chosenLabels[event.id]}
+                  choices={event.choices}
+                  onChoose={(id, label) => onChoice(event.id, id, label)}
+                />
               )
             })}
             {playerEvents.length > 0 && (
@@ -545,39 +533,23 @@ export function GranskaOversikt({
       {visasFor('pressConference', axes.tavlingstyp, axes.skede) && (() => {
         const pc = game.pendingPressConference
         if (!pc) return null
-        const pcResolved = resolvedEventIds.has(pc.id)
-        const pcChosenLabel = chosenLabels[pc.id]
         // GRANSKA DEL 4 (2026-08-11): strukturerat fält (pc.sender) istf
         // title-prefix-parse — pc.title bär aldrig 🎤-prefixet (generatorn
         // emitterar det aldrig), så regexen var en no-op sedan tidigare.
-        const pcTitle = pc.sender ? (pc.sender.role ? `${pc.sender.name}, ${pc.sender.role}` : pc.sender.name) : null
+        const pcTitle = pc.sender ? (pc.sender.role ? `${pc.sender.name}, ${pc.sender.role}` : pc.sender.name) : undefined
         return (
-          <div className="card-sharp" style={{
-            margin: '0 0 3px',
-            borderLeft: '3px solid var(--warm)',
-            borderRadius: '0 8px 8px 0',
-            ...fadeIn(4),
-          }}>
-            <div style={{ padding: '10px 12px' }}>
-              <SectionLabel style={{ marginBottom: pcResolved ? 4 : 6 }}>🎤 PRESSKONFERENSEN</SectionLabel>
-              {pcResolved ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{pcChosenLabel}</span>
-                </div>
-              ) : (
-                <>
-                  {pcTitle && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{pcTitle}</p>}
-                  <p className="h-quote" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>{pc.body}</p>
-                  <DecisionChoices
-                    choices={pc.choices}
-                    onChoose={(id, label) => onChoice(pc.id, id, label)}
-                    layout="stack"
-                  />
-                </>
-              )}
-            </div>
-          </div>
+          <DecisionCard
+            style={fadeIn(4)}
+            accent
+            label="🎤 PRESSKONFERENSEN"
+            subtitle={pcTitle}
+            body={pc.body}
+            bodyAsQuote
+            resolved={resolvedEventIds.has(pc.id)}
+            chosenLabel={chosenLabels[pc.id]}
+            choices={pc.choices}
+            onChoose={(id, label) => onChoice(pc.id, id, label)}
+          />
         )
       })()}
 
@@ -585,40 +557,20 @@ export function GranskaOversikt({
       {visasFor('csPress', axes.tavlingstyp, axes.skede) && (() => {
         const cp = game.pendingCSPress
         if (!cp) return null
-        const cpResolved = resolvedEventIds.has(cp.id)
-        const cpChosenLabel = chosenLabels[cp.id]
         const journalist = game.journalist
         return (
-          <div className="card-sharp" style={{
-            margin: '0 0 3px',
-            borderLeft: '3px solid var(--warm)',
-            borderRadius: '0 8px 8px 0',
-            ...fadeIn(4),
-          }}>
-            <div style={{ padding: '10px 12px' }}>
-              <SectionLabel style={{ marginBottom: cpResolved ? 4 : 6 }}>📰 PRESSFRÅGA</SectionLabel>
-              {cpResolved ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{cpChosenLabel}</span>
-                </div>
-              ) : (
-                <>
-                  {journalist && (
-                    <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>
-                      {journalist.name} · {journalist.outlet}
-                    </p>
-                  )}
-                  <p className="h-quote" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>{cp.body}</p>
-                  <DecisionChoices
-                    choices={cp.choices}
-                    onChoose={(id, label) => onChoice(cp.id, id, label)}
-                    layout="stack"
-                  />
-                </>
-              )}
-            </div>
-          </div>
+          <DecisionCard
+            style={fadeIn(4)}
+            accent
+            label="📰 PRESSFRÅGA"
+            subtitle={journalist ? `${journalist.name} · ${journalist.outlet}` : undefined}
+            body={cp.body}
+            bodyAsQuote
+            resolved={resolvedEventIds.has(cp.id)}
+            chosenLabel={chosenLabels[cp.id]}
+            choices={cp.choices}
+            onChoose={(id, label) => onChoice(cp.id, id, label)}
+          />
         )
       })()}
 
@@ -626,30 +578,18 @@ export function GranskaOversikt({
       {visasFor('refereeMeeting', axes.tavlingstyp, axes.skede) && (() => {
         const rm = game.pendingRefereeMeeting
         if (!rm) return null
-        const rmResolved = resolvedEventIds.has(rm.id)
-        const rmChosenLabel = chosenLabels[rm.id]
         return (
-          <div className="card-sharp" style={{ margin: '0 0 3px', ...fadeIn(4) }}>
-            <div style={{ padding: '10px 12px' }}>
-              <SectionLabel style={{ marginBottom: rmResolved ? 4 : 6 }}>🏟️ DOMARENS LOCKER ROOM</SectionLabel>
-              {rmResolved ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{rmChosenLabel}</span>
-                </div>
-              ) : (
-                <>
-                  <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>{rm.sender?.name}</p>
-                  <p className="h-quote" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>{rm.body}</p>
-                  <DecisionChoices
-                    choices={rm.choices}
-                    onChoose={(id, label) => onChoice(rm.id, id, label)}
-                    layout="stack"
-                  />
-                </>
-              )}
-            </div>
-          </div>
+          <DecisionCard
+            style={fadeIn(4)}
+            label="🏟️ DOMARENS LOCKER ROOM"
+            subtitle={rm.sender?.name}
+            body={rm.body}
+            bodyAsQuote
+            resolved={resolvedEventIds.has(rm.id)}
+            chosenLabel={chosenLabels[rm.id]}
+            choices={rm.choices}
+            onChoose={(id, label) => onChoice(rm.id, id, label)}
+          />
         )
       })()}
 

@@ -1,5 +1,6 @@
 import type { GameEvent } from '../../domain/entities/GameEvent'
 import type { Journalist } from '../../domain/entities/SaveGame'
+import { DecisionChoices } from './DecisionChoices'
 
 interface Props {
   event: GameEvent
@@ -79,28 +80,14 @@ export function PressConferenceScene({ event, journalist, onChoice }: Props) {
           </p>
         </div>
 
-        {/* Choices */}
-        <div style={{ padding: '12px 16px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {event.choices.map(choice => (
-            <button
-              key={choice.id}
-              onClick={() => onChoice(choice.id)}
-              style={{
-                width: '100%',
-                padding: '12px 14px',
-                borderRadius: 8,
-                fontSize: 13,
-                fontWeight: 600,
-                textAlign: 'left',
-                cursor: 'pointer',
-                background: 'var(--bg-elevated)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              {choice.label}
-            </button>
-          ))}
+        {/* Choices — GEMENSAM BESLUTSMODELL (2026-08-12): handrullade knappar
+            → delad DecisionChoices. Scenen (header/journalist-kort/citat)
+            förblir bespok, se DecisionCard.tsx:s doc-kommentar. */}
+        <div style={{ padding: '12px 16px 16px' }}>
+          <DecisionChoices
+            choices={event.choices}
+            onChoose={(choiceId) => onChoice(choiceId)}
+          />
         </div>
       </div>
     </div>

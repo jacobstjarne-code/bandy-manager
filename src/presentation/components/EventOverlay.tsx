@@ -6,14 +6,7 @@ import { PressConferenceScene } from './PressConferenceScene'
 import { MecenatDinnerEvent } from './events/MecenatDinnerEvent'
 import type { GameEvent } from '../../domain/entities/GameEvent'
 import { getNextEvent } from '../../domain/services/eventQueueService'
-
-function choiceStyle(_choiceId: string): React.CSSProperties {
-  return {
-    background: 'var(--bg-elevated)',
-    color: 'var(--text-primary)',
-    border: '1px solid var(--border)',
-  }
-}
+import { DecisionCard } from './DecisionCard'
 
 interface EventOverlayProps {
   // Optionellt: om GameShell/GameGuard redan har räknat ut nästa event via attentionRouter
@@ -88,6 +81,11 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
   // Entitets-dedup-grinden (2026-08-12): se EventCardInline.tsx för samma resonemang.
   const entityId = event.relatedBidId ? `bid:${event.relatedBidId}` : `event:${event.id}`
 
+  const tags = [
+    ...(relatedPlayer ? [{ label: `${relatedPlayer.firstName} ${relatedPlayer.lastName} · Styrka ${Math.round(relatedPlayer.currentAbility)}`, tone: 'accent' as const }] : []),
+    ...(relatedClub ? [{ label: relatedClub.name, tone: 'ice' as const }] : []),
+  ]
+
   return (
     <div
       style={{
@@ -97,99 +95,20 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
         alignItems: 'center', justifyContent: 'flex-start',
         paddingTop: '60px', zIndex: 'var(--z-modal)', overflowY: 'auto',
       }}
-      data-entity-id={entityId}
-      data-entity-source="EventOverlay"
     >
-      <div className="card-round" style={{
-        padding: '24px 20px',
-        minWidth: 280, maxWidth: 360, width: '90%',
-        marginBottom: 20,
-        background: 'var(--bg)',
-        border: 'none',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
-      }}>
-        {/* Type badge */}
-        <p className="h-label" style={{ marginBottom: event.sender ? 6 : 12 }}>
-          Händelse
-        </p>
-
-        {/* Sender */}
-        {event.sender && (
-          <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 10 }}>
-            {event.sender.name}, {event.sender.role}
-          </p>
-        )}
-
-        {/* Title */}
-        <h2 className="h-display-sm" style={{ marginBottom: 14 }}>
-          {event.title}
-        </h2>
-
-        {/* Body */}
-        <p style={{
-          fontSize: 14,
-          color: 'var(--text-secondary)',
-          lineHeight: 1.6,
-          marginBottom: relatedPlayer || relatedClub ? 12 : 24,
-          whiteSpace: 'pre-line',
-        }}>
-          {event.body}
-        </p>
-
-        {/* Player / Club info pills */}
-        {(relatedPlayer || relatedClub) && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
-            {relatedPlayer && (
-              <span style={{
-                fontSize: 12,
-                background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
-                border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
-                borderRadius: 20,
-                padding: '4px 10px',
-                color: 'var(--accent)',
-                fontWeight: 600,
-              }}>
-                {relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}
-              </span>
-            )}
-            {relatedClub && (
-              <span style={{
-                fontSize: 12,
-                background: 'color-mix(in srgb, var(--ice) 10%, transparent)',
-                border: '1px solid color-mix(in srgb, var(--ice) 25%, transparent)',
-                borderRadius: 20,
-                padding: '4px 10px',
-                color: 'var(--ice)',
-                fontWeight: 600,
-              }}>
-                {relatedClub.name}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Choices */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {event.choices.map(choice => (
-            <button
-              key={choice.id}
-              onClick={() => handleChoice(choice.id)}
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                borderRadius: 10,
-                fontSize: 14,
-                fontWeight: 600,
-                textAlign: 'left',
-                cursor: 'pointer',
-                ...choiceStyle(choice.id),
-              }}
-            >
-              {choice.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <DecisionCard
+        shape="round"
+        size="lg"
+        entityId={entityId}
+        entitySource="EventOverlay"
+        label={event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
+        title={event.title}
+        body={event.body}
+        tags={tags}
+        resolved={false}
+        choices={event.choices}
+        onChoose={(id) => handleChoice(id)}
+      />
 
       {/* Progress */}
       {total > 1 && (

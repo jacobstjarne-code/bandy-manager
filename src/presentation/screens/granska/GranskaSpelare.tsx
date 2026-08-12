@@ -7,7 +7,7 @@ import { SectionLabel } from '../../components/SectionLabel'
 import { getPortraitSvg } from '../../../domain/services/portraitService'
 import { ratingColor } from './helpers'
 import { classifyEventNature } from '../../../domain/services/granskaEventClassifier'
-import { DecisionChoices } from '../../components/DecisionChoices'
+import { DecisionCard } from '../../components/DecisionCard'
 
 interface GranskaSpelareProps {
   game: SaveGame
@@ -51,35 +51,20 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
         <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
           <SectionLabel style={{ marginBottom: 8 }}>👥 KRING SPELARNA</SectionLabel>
           {playerEvents.map(event => {
-            const resolved = resolvedEventIds.has(event.id)
-            const chosenLabel = chosenLabels[event.id]
             const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
             return (
               <div key={event.id} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
-                {event.sender && (
-                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.5px', color: 'var(--text-muted)', marginBottom: 3 }}>
-                    {event.sender.name} · {event.sender.role}
-                  </p>
-                )}
-                {relatedPlayer && (
-                  <span style={{ display: 'inline-block', fontSize: 11, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)', borderRadius: 99, padding: '2px 8px', color: 'var(--accent)', fontWeight: 600, marginBottom: 4 }}>
-                    {relatedPlayer.firstName} {relatedPlayer.lastName}
-                  </span>
-                )}
-                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, lineHeight: 1.3 }}>{event.title}</p>
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: resolved || !event.choices?.length ? 0 : 8 }}>{event.body}</p>
-                {resolved ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
-                  </div>
-                ) : event.choices?.length > 0 && (
-                  <DecisionChoices
-                    choices={event.choices}
-                    onChoose={(id, label) => onChoice(event.id, id, label)}
-                    layout="stack"
-                  />
-                )}
+                <DecisionCard
+                  shape="none"
+                  label={event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
+                  title={event.title}
+                  body={event.body}
+                  tags={relatedPlayer ? [{ label: `${relatedPlayer.firstName} ${relatedPlayer.lastName}`, tone: 'accent' }] : undefined}
+                  resolved={resolvedEventIds.has(event.id)}
+                  chosenLabel={chosenLabels[event.id]}
+                  choices={event.choices ?? []}
+                  onChoose={(id, label) => onChoice(event.id, id, label)}
+                />
               </div>
             )
           })}
