@@ -31,21 +31,24 @@ import { assertNoDuplicateEntityIds } from './entityDedup'
  * Detta ÄR taket, rapporterat i commit-meddelandet.
  */
 const WIDE_VIEWPORT = { width: 430, height: 900 }
-// ROTORSAK (2026-08-12): 1400/1500 räckte 2026-08-09 men dev-navet (data-dev-nav,
-// [data-scene-content]s föregående syskon i DOM) har växt sedan dess — fler
-// dev-scener → högre nav → elementets top-offset flyttar sig neråt. När
-// nav+innehåll tillsammans överskrider viewporten måste Playwright scrolla
-// för att fånga hela [data-scene-content], och då stitchas capturen i flera
-// steg. [data-dev-nav] är position:sticky och återfäster sig i toppen av
-// VARJE scroll-steg under stitchningen — det producerar läckande nav-text i
-// den sammansatta bilden, inte en renderingsskillnad i scenen. Samma mönster
-// upptäcktes i produktskärmarnas EGNA sticky headers (t.ex. Uppställningens
-// steg-navigering) — nav-döljningen ovan (addStyleTag) löser bara dev-navet,
-// inte det. Enda robusta fixen: gör viewporten tillräckligt hög att INGEN
-// scroll någonsin krävs, oavsett hur högt nav:et blir. 4000px täcker dagens
-// ~1400px nav + ~2000px innehåll med marginal för framtida scentillägg.
-const TALL_VIEWPORT = { width: 430, height: 4000 }
-const PORTAL_VIEWPORT = { width: 430, height: 4000 }
+// ROTORSAK (2026-08-12): [data-dev-nav] (dev-skalets scen-väljare, INTE
+// produktkod) är position:sticky. När [data-scene-content] är högre än
+// viewporten scrollar Playwright internt och stitchar capturen i flera steg
+// — ett sticky-element återfäster sig i toppen av VARJE scroll-steg under den
+// processen, vilket läcker nav-knapptext in i den sammansatta bilden. Att
+// höja viewporten (försökt 2026-08-12, se historik) löser symptomet men inte
+// källan: det gör att snapshotarna inte längre visar vad en telefon faktiskt
+// visar, och takregelns "klarar Primary vikningen vid 390px"-kriterium går
+// inte att bedöma mot en scen utan vikning. Rätt fix: DevScenesScreen.tsx
+// sätter [data-dev-nav] till position:static (istf sticky) när
+// documentElement bär klassen 'capture-mode' — testerna sätter klassen innan
+// screenshot (se nedan). Nav:et tar fortfarande sin normala plats i flödet
+// (ingen layoutförskjutning av det som faktiskt fotograferas), det slutar
+// bara återfästa sig under stitchningen. Viewporten är därför tillbaka på
+// samma höjder som 2026-08-09 — de behövdes för att Uppställningen/Portalen
+// själva är högre än 900px, inte för att kompensera för nav-läckaget.
+const TALL_VIEWPORT = { width: 430, height: 1400 }
+const PORTAL_VIEWPORT = { width: 430, height: 1500 }
 
 const BASELINE_SCENES: [string, string?, { width: number; height: number }?][] = [
   ['stillness'],
@@ -75,13 +78,10 @@ for (const [id, clickText, viewport] of BASELINE_SCENES) {
       }
       await page.evaluate(() => document.fonts.ready)
       await page.waitForTimeout(700)
-      // ROTORSAK (2026-08-12): se scenes.visual.ts — [data-dev-nav] är sticky och
-      // läcker in i toppen av stitchade element-screenshots när innehållet är
-      // högre än viewporten. TALL_VIEWPORT/PORTAL_VIEWPORT (900-1500px) räckte
-      // 2026-08-09 men nav:et har växt sedan dess (fler dev-scener) — dölj
-      // navet så capture aldrig behöver scrolla förbi ett sticky-syskon,
-      // oavsett hur högt nav:et blir framöver.
-      await page.addStyleTag({ content: '[data-dev-nav] { display: none !important; }' })
+      // Neutraliserar [data-dev-nav]s sticky-positionering (se ROTORSAK ovan).
+      // Skalet fortsätter ta sin normala plats i dokumentflödet — bara den
+      // egenskap som orsakar stitch-läckage stängs av.
+      await page.evaluate(() => document.documentElement.classList.add('capture-mode'))
       await expect(page.locator('[data-scene-content]')).toHaveScreenshot(`baseline-${width}-${id}.png`)
       // Entitets-dedup-grinden (AUDIT DEL 2, 2026-08-12) — se entityDedup.ts.
       await assertNoDuplicateEntityIds(page)

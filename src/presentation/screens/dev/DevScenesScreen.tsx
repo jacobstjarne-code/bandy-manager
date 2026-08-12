@@ -851,12 +851,31 @@ export function DevScenesScreen() {
   }, [scene])
 
   return (
-    <div style={{ background: '#080808', minHeight: '100vh' }}>
-      {/* ── Nav ── */}
+    // SKAL-REGEL (2026-08-12): #root är overflow:hidden (global.css) — riktiga
+    // skärmar hanterar sitt eget interna scroll-flöde, men DevScenesScreen
+    // gjorde det aldrig. Utan egen overflow-container kapas document.body/
+    // documentElement.scrollHeight vid viewportens höjd, och Playwright måste
+    // tvinga fram scroll förbi den gränsen för att fånga högt innehåll — en
+    // körväg som inte är pålitlig. height:100vh + overflowY:auto ger skalet
+    // sitt EGET scroll-sammanhang (som riktiga skärmar redan har), så normal
+    // scroll-och-stitch fungerar utan specialfall.
+    <div style={{ background: '#080808', height: '100vh', overflowY: 'auto' }}>
+      {/* SKAL-REGEL (2026-08-12, se CLAUDE.md): dev-scenskalet får inte påverka det
+          som fotograferas. Två separata regler följer av det:
+          1. zIndex UNDER --z-modal (300), aldrig över — ett skal-element ska
+             aldrig kunna dölja produktionens egna modaler (hände med EventOverlay/
+             PressConferenceScene när navet låg på 999).
+          2. position:sticky stängs av under capture (html.capture-mode, satt av
+             Playwright-testerna innan screenshot) — sticky-element återfäster sig
+             i toppen av VARJE scroll-steg när Playwright stitchar en element-
+             screenshot som är högre än viewporten, vilket läcker nav-text in i
+             capturen. Kvar som sticky i vanlig dev-användning (bra UX vid manuell
+             genombläddring), bara neutraliserad vid automatiserad capture. */}
+      <style>{'html.capture-mode [data-dev-nav] { position: static !important; }'}</style>
       <div
         data-dev-nav
         style={{
-          position: 'sticky', top: 0, zIndex: 999,
+          position: 'sticky', top: 0, zIndex: 50,
           background: '#111', borderBottom: '1px solid #2a2a2a',
           padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
         }}

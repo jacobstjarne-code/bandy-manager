@@ -253,6 +253,25 @@ Kärnregler (hela listan i `design-system/README.md`):
 
 ---
 
+## DEV-SCENSKALET FÅR INTE PÅVERKA DET SOM FOTOGRAFERAS
+
+`DevScenesScreen.tsx` (`/dev/scenes`) är ett skal runt produktkomponenter — dess enda jobb är att göra dem synliga för `tests/visual/*.visual.ts` och manuell granskning. Skalet är inte produkten. Om skalets egen chrome (nav, wrapper, z-index) läcker in i en screenshot eller döljer det som faktiskt testas, är det skalet som är trasigt, inte scenen.
+
+**Tre konkreta fel, samma rotorsak, hittade samma dag (2026-08-12):**
+1. `[data-dev-nav]` var `position:sticky` — Playwright återfäster ett sticky-element i toppen av VARJE scroll-steg när det stitchar en element-screenshot högre än viewporten. Läckte in nav-knapptext i toppen av `lineup-empty`/`portal-*`-capturerna.
+2. `[data-dev-nav]` hade `zIndex:999` — högre än produktionens `--z-modal` (300). En riktig modal (EventOverlay, PressConferenceScene) hamnade osynlig BAKOM dev-navet, trots att DOM:en var helt korrekt.
+3. DevScenesScreens egen wrapper saknade ett eget scroll-sammanhang (`overflow-y: auto`) — ärvde bara `#root`s `overflow:hidden`, vilket tvingade Playwright att scrolla förbi en gräns som inte är avsedd att vara scrollbar.
+
+**Reglerna, framåt:**
+- Skalets `zIndex` ska alltid ligga UNDER `--z-modal` (300) — aldrig konkurrera med produktionens z-skala. Ett dev-verktyg får aldrig kunna dölja det det testar.
+- Sticky/fixed positionering i skalet ska stängas av under capture (t.ex. via en `capture-mode`-klass på `documentElement`, satt av testet innan screenshot) — inte tas bort helt (sticky är legitim UX vid manuell genombläddring, bara inkompatibel med stitchning).
+- Skalet ska ha sitt eget scroll-sammanhang, precis som riktiga skärmar redan har — inte förlita sig på att `#root`s overflow råkar tillåta det.
+- **Fixa aldrig detta genom att höja Playwright-viewporten långt över vad en telefon faktiskt visar.** Det byter ut en verklig mätning mot en artificiell — och om ett beslut väntar på just den mätningen (t.ex. "klarar X vikningen vid 390px"), blir beslutet fattat mot data som inte längre betyder det den påstår. Skalning av viewport är bara giltigt när en enskild scens EGET innehåll legitimt är högt (redan etablerat mönster för Uppställningen/Portalen sedan 2026-08-09) — aldrig som kompensation för ett scaffold-fel.
+
+**Självkontroll innan en ny dev-scen eller ett nytt test-mönster i `tests/visual/` markeras klart:** "Skulle den här bilden se likadan ut om skalet inte fanns?" Om nej — det är skalet som ska fixas, inte testets viewport.
+
+---
+
 ## INGA FEATURE FLAGS
 
 Detta är ett en-utvecklare-spel. Jacob är beta-testare, dev-team och release-manager i samma person. Feature flags från större team-workflows har ingen bäring här — de skapar bara friktion.
