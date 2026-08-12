@@ -25,7 +25,7 @@ import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_T
 import type { KvittoOutcomeDir, CaptainContext } from '../../../domain/data/managerKvittoText'
 import type { MatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { visasFor } from '../../../domain/services/granskaSectionRegistry'
-import { deriveTurneringslageMode, TURNERINGSLAGE_TEXT } from '../../../domain/services/turneringslageService'
+import { deriveTurneringslageMode, getTurneringslageText } from '../../../domain/services/turneringslageService'
 
 const TRAINING_LABEL: Record<string, string> = {
   [TrainingType.Skating]: 'Skridskoteknik', [TrainingType.BallControl]: 'Bollkontroll',
@@ -433,14 +433,13 @@ export function GranskaOversikt({
         )
       })()}
 
-      {/* Turneringsläge — GRANSKA DEL 4 steg 5 (2026-08-11), NY sektion. Enda
-          sektionen matrisen lägger TILL, inte tar bort — täcker live-luckan
-          där en cupsemifinal-förlust aldrig nämnde "cup" en enda gång på
-          skärmen. Text är [Opus]-markerad, struktur/derivering är Code:s
-          (turneringslageService.ts, ingen ny mekanik — läser cupService/
-          playoffService:s befintliga statusfunktioner). Visas bara när ett
-          läge faktiskt kan avgöras (se deriveTurneringslageMode) — annars
-          ingen rad (No false empty states, DS-regel 12). */}
+      {/* Turneringsläge — GRANSKA DEL 4 steg 5. Enda sektionen matrisen lägger
+          TILL, inte tar bort — täcker live-luckan där en cupsemifinal-förlust
+          aldrig nämnde "cup" en enda gång på skärmen. Text från Opus
+          (2026-08-12), struktur/derivering Code:s (turneringslageService.ts,
+          ingen ny mekanik). Visas bara när ett läge faktiskt kan avgöras
+          (se deriveTurneringslageMode) — annars ingen rad (No false empty
+          states, DS-regel 12). */}
       {(() => {
         const mode = deriveTurneringslageMode(game, axes.tavlingstyp)
         if (!mode) return null
@@ -448,7 +447,7 @@ export function GranskaOversikt({
           <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px' }}>
             <SectionLabel style={{ marginBottom: 6 }}>TURNERINGSLÄGE</SectionLabel>
             <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>
-              {TURNERINGSLAGE_TEXT[mode]}
+              {getTurneringslageText(mode, axes.tavlingstyp)}
             </p>
           </div>
         )

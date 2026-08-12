@@ -604,6 +604,10 @@ const granskaCupFinalFixture = makeGranskaFixture({
 })
 const granskaCupFinalGame = makeGame([...makeLeagueFixtures(), granskaCupFinalFixture], {
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 19, communityStanding: 58,
+  // GRANSKA DEL 4 steg 5 (2026-08-12): cupBracket wired så Turneringsläge-
+  // kortets cup-gren (vunnen_final — granskaCupFinalFixture avgörs 4-2 till
+  // HOME_ID) har en levande baseline, inte bara enhetstest.
+  cupBracket: { season: 8, matches: [{ id: 'cup-r4-m0', round: 4, fixtureId: granskaCupFinalFixture.id, homeClubId: HOME_ID, awayClubId: AWAY_ID, winnerId: HOME_ID }], winnerId: HOME_ID, completed: true },
 })
 const granskaCupFinalRoundSummary = { ...granskaRoundSummary, round: 19 }
 

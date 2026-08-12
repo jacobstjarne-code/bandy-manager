@@ -11,29 +11,58 @@ function makeFixture(overrides: Partial<Fixture> = {}): Fixture {
   }
 }
 
-describe('generateQuickSummary — GRANSKA DEL 4 steg 4 (2026-08-11)', () => {
+describe('generateQuickSummary — GRANSKA DEL 4 steg 4 (2026-08-11/12)', () => {
   it('liga (inga axlar skickade) — befintlig default-prosa, oförändrad', () => {
     const out = generateQuickSummary(makeFixture(), true, [])
     expect(out).toContain('seger')
-    expect(out).not.toBe('[Opus]')
   })
 
   it('cup, icke-final (skede satt men inte final) — samma default-prosa som liga', () => {
     const out = generateQuickSummary(makeFixture(), true, [], 'cup', 'kvartsfinal')
     expect(out).toContain('seger')
-    expect(out).not.toBe('[Opus]')
   })
 
-  it('skede:final — [Opus]-platshållare, oavsett tävlingstyp cup eller slutspel', () => {
-    expect(generateQuickSummary(makeFixture(), true, [], 'cup', 'final')).toBe('[Opus]')
-    expect(generateQuickSummary(makeFixture(), true, [], 'slutspel', 'final')).toBe('[Opus]')
+  it('skede:final, vinst — delad text cup/slutspel', () => {
+    expect(generateQuickSummary(makeFixture({ homeScore: 3, awayScore: 1 }), true, [], 'cup', 'final'))
+      .toBe('Det var finalen. Ni tog den.')
+    expect(generateQuickSummary(makeFixture({ homeScore: 3, awayScore: 1 }), true, [], 'slutspel', 'final'))
+      .toBe('Det var finalen. Ni tog den.')
   })
 
-  it('tavlingstyp:slutspel, icke-final — [Opus]-platshållare', () => {
-    expect(generateQuickSummary(makeFixture(), true, [], 'slutspel', 'kvartsfinal')).toBe('[Opus]')
+  it('skede:final, förlust', () => {
+    expect(generateQuickSummary(makeFixture({ homeScore: 1, awayScore: 3 }), true, [], 'cup', 'final'))
+      .toBe('Det var finalen. Ni fick åka hem utan.')
   })
 
-  it('tavlingstyp:avsked — [Opus]-platshållare', () => {
-    expect(generateQuickSummary(makeFixture(), true, [], 'avsked', undefined)).toBe('[Opus]')
+  it('skede:final, straffavgjord — rotorsaksfixen: lika på fullt slut ska INTE tolkas som "ej vinst"', () => {
+    const fixture = makeFixture({ homeScore: 2, awayScore: 2, penaltyResult: { home: 4, away: 3 } })
+    expect(generateQuickSummary(fixture, true, [], 'cup', 'final')).toBe('Det var finalen. Ni tog den.')
+    expect(generateQuickSummary(fixture, false, [], 'cup', 'final')).toBe('Det var finalen. Ni fick åka hem utan.')
+  })
+
+  it('skede:final, förlängningsavgjord', () => {
+    const fixture = makeFixture({ homeScore: 2, awayScore: 2, overtimeResult: 'away' })
+    expect(generateQuickSummary(fixture, false, [], 'slutspel', 'final')).toBe('Det var finalen. Ni tog den.')
+    expect(generateQuickSummary(fixture, true, [], 'slutspel', 'final')).toBe('Det var finalen. Ni fick åka hem utan.')
+  })
+
+  it('tavlingstyp:slutspel, icke-final — vinst/förlust', () => {
+    expect(generateQuickSummary(makeFixture({ homeScore: 3, awayScore: 1 }), true, [], 'slutspel', 'kvartsfinal'))
+      .toBe('Slutspel. Det märks på tempot.')
+    expect(generateQuickSummary(makeFixture({ homeScore: 1, awayScore: 3 }), true, [], 'slutspel', 'kvartsfinal'))
+      .toBe('Slutspel. En match till hade suttit fint.')
+  })
+
+  it('tavlingstyp:avsked, vinst/förlust', () => {
+    expect(generateQuickSummary(makeFixture({ homeScore: 3, awayScore: 1 }), true, [], 'avsked', undefined))
+      .toBe('Sista matchen på hemmaisen. Publiken stannade kvar efteråt.')
+    expect(generateQuickSummary(makeFixture({ homeScore: 1, awayScore: 3 }), true, [], 'avsked', undefined))
+      .toBe('Sista matchen på hemmaisen. Resultatet spelade mindre roll än vanligt.')
+  })
+
+  it('tavlingstyp:avsked, äkta oavgjort — ingen given text, faller till default-prosan istf en gissad tredje variant', () => {
+    const out = generateQuickSummary(makeFixture({ homeScore: 2, awayScore: 2 }), true, [], 'avsked', undefined)
+    expect(out).toContain('poäng')
+    expect(out).not.toContain('hemmaisen')
   })
 })

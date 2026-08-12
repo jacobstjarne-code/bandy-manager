@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { deriveTurneringslageMode } from '../turneringslageService'
+import { deriveTurneringslageMode, getTurneringslageText } from '../turneringslageService'
+import type { TurneringslageMode } from '../turneringslageService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { CupBracket } from '../../entities/Cup'
 import type { PlayoffBracket, PlayoffSeries } from '../../entities/Playoff'
@@ -93,5 +94,31 @@ describe('deriveTurneringslageMode — GRANSKA DEL 4 steg 5 (2026-08-11)', () =>
   it('fortfarande med, inget avgjort — null (ingen rad, naturlig tystnad mitt i turneringen)', () => {
     const bracket = playoffBracketWith({ quarterFinals: [series(PlayoffRound.QuarterFinal, { winnerId: MANAGED, loserId: OPP })] })
     expect(deriveTurneringslageMode(makeGame({ playoffBracket: bracket }), 'slutspel')).toBeNull()
+  })
+})
+
+// Text från Opus (2026-08-12) — låst mot oavsiktlig drift.
+describe('getTurneringslageText', () => {
+  const cupModes: [TurneringslageMode, string][] = [
+    ['ut_forstarunda', 'Ut i förstarundan. Cupen blev kort i år.'],
+    ['ut_kvart', 'Kvartsfinal, och inte längre. Cupen är över för den här gången.'],
+    ['ut_semi', 'En match från final. Cupen slutar här.'],
+    ['vidare_final', 'Final. Ni är en match från att ta hem den.'],
+    ['vunnen_final', 'Cupen är er.'],
+    ['forlorad_final', 'Final och silver. Det tar ett tag innan man ser det som något annat än en förlust.'],
+  ]
+  it.each(cupModes)('cup, %s', (mode, text) => {
+    expect(getTurneringslageText(mode, 'cup')).toBe(text)
+  })
+
+  const slutspelModes: [TurneringslageMode, string][] = [
+    ['ut_kvart', 'Kvartsfinal, och inte längre. Säsongen är slut.'],
+    ['ut_semi', 'En match från SM-final. Så nära kom ni.'],
+    ['vidare_final', 'SM-final. Studenternas väntar.'],
+    ['vunnen_final', 'Svenska mästare.'],
+    ['forlorad_final', 'SM-final och silver. Ingen tröst i dag. Kanske i mars.'],
+  ]
+  it.each(slutspelModes)('slutspel, %s', (mode, text) => {
+    expect(getTurneringslageText(mode, 'slutspel')).toBe(text)
   })
 })

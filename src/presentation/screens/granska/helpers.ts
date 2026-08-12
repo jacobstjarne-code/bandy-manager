@@ -4,30 +4,24 @@ import type { Player } from '../../../domain/entities/Player'
 import type { Tavlingstyp, Skede } from '../../../domain/services/matchTypeAxes'
 
 /**
- * GRANSKA DEL 4 (2026-08-11), steg 4 — fast-lägets prosa, struktur men inte
- * text. Detta är den ENDA texten en snabbsimmare möter om matchen alls
- * (mode:'fast' genererar ingen kommentar under matchen, till skillnad från
- * live/'full') — se docs/incoming/DESIGN_UPPDRAG_GRANSKA_DEL4-2026-08-11.md.
+ * GRANSKA DEL 4 (2026-08-11/12), steg 4 — fast-lägets prosa. Detta är den
+ * ENDA texten en snabbsimmare möter om matchen alls (mode:'fast' genererar
+ * ingen kommentar under matchen, till skillnad från live/'full') — se
+ * docs/incoming/DESIGN_UPPDRAG_GRANSKA_DEL4-2026-08-11.md.
  *
- * Tre lägen får egna pooler: skede==='final' (delad mellan cup- och
+ * Tre lägen har egna pooler: skede==='final' (delad mellan cup- och
  * SM-final — steg 1: "final är inget eget tävlingstyp-värde"), tävlingstyp
  * 'slutspel' (icke-final), och 'avsked'. Liga och cup (icke-final) rör den
- * befintliga, redan skrivna default-logiken nedan orört.
- *
- * Texten är Opus's (CLAUDE.md: "Code skriver ALDRIG svensk speltext").
- * Pool-arrayerna är TOMMA med flit — inga utkastmeningar, ingen "temporär"
- * placeholder-prosa. '[Opus]' är den enda tillåtna platshållarsträngen.
- * Rapporterad lista över vilka lägen som behöver rader: se commit-
- * meddelandet / SPRINT_GRANSKADEL4_STEG4_AUDIT.md.
+ * befintliga default-logiken nedan orört. Text från Opus (2026-08-12),
+ * formulerad så den fungerar oavsett målsiffror — seger/förlust, inga
+ * marginal-grenar.
  */
-export const QUICK_SUMMARY_FINAL_POOL: string[] = [] // Opus levererar
-export const QUICK_SUMMARY_SLUTSPEL_POOL: string[] = [] // Opus levererar
-export const QUICK_SUMMARY_AVSKED_POOL: string[] = [] // Opus levererar
-
-function pickFromPool(pool: string[], seed: number): string {
-  if (pool.length === 0) return '[Opus]'
-  return pool[seed % pool.length]
-}
+const QUICK_SUMMARY_FINAL_WIN = 'Det var finalen. Ni tog den.'
+const QUICK_SUMMARY_FINAL_LOSS = 'Det var finalen. Ni fick åka hem utan.'
+const QUICK_SUMMARY_SLUTSPEL_WIN = 'Slutspel. Det märks på tempot.'
+const QUICK_SUMMARY_SLUTSPEL_LOSS = 'Slutspel. En match till hade suttit fint.'
+const QUICK_SUMMARY_AVSKED_WIN = 'Sista matchen på hemmaisen. Publiken stannade kvar efteråt.'
+const QUICK_SUMMARY_AVSKED_LOSS = 'Sista matchen på hemmaisen. Resultatet spelade mindre roll än vanligt.'
 
 export function generateQuickSummary(
   fixture: Fixture,
@@ -36,14 +30,41 @@ export function generateQuickSummary(
   tavlingstyp?: Tavlingstyp,
   skede?: Skede,
 ): string {
-  if (skede === 'final') return pickFromPool(QUICK_SUMMARY_FINAL_POOL, fixture.matchday)
-  if (tavlingstyp === 'slutspel') return pickFromPool(QUICK_SUMMARY_SLUTSPEL_POOL, fixture.matchday)
-  if (tavlingstyp === 'avsked') return pickFromPool(QUICK_SUMMARY_AVSKED_POOL, fixture.matchday)
-
   const homeScore = fixture.homeScore
   const awayScore = fixture.awayScore
   const myScore = managedIsHome ? homeScore : awayScore
   const theirScore = managedIsHome ? awayScore : homeScore
+
+  // Rotorsak (upptäckt 2026-08-12, i samma steg som pratade in de här
+  // poolerna): fixture.homeScore/awayScore är alltid LIKA på en straff-
+  // avgjord match — en ren poängjämförelse hade klassat en vunnen
+  // cupsemifinal på straffar som "oavgjort". won/lost härleds därför
+  // OT-/straffmedvetet, samma logik GranskaScreen.tsx redan använder för
+  // samma syfte (återanvänd, inte omskriven). Gäller ALLA isKnockout-
+  // matcher (cup + slutspel, alla ronder) — inte bara final/avsked-grenarna.
+  const penResult = fixture.penaltyResult
+  const otResult = fixture.overtimeResult
+  const wonByPenalties = penResult ? (managedIsHome ? penResult.home > penResult.away : penResult.away > penResult.home) : false
+  const lostByPenalties = penResult ? (managedIsHome ? penResult.home < penResult.away : penResult.away < penResult.home) : false
+  const wonByOT = otResult ? (managedIsHome ? otResult === 'home' : otResult === 'away') : false
+  const lostByOT = otResult ? (managedIsHome ? otResult === 'away' : otResult === 'home') : false
+  const won = myScore > theirScore || wonByOT || wonByPenalties
+  const lost = myScore < theirScore || lostByOT || lostByPenalties
+
+  // Final är alltid avgjord (isKnockout → övertid/straffar vid lika) —
+  // ingen tredje "oavgjort"-variant given eller behövd.
+  if (skede === 'final') return won ? QUICK_SUMMARY_FINAL_WIN : QUICK_SUMMARY_FINAL_LOSS
+  if (tavlingstyp === 'slutspel') return won ? QUICK_SUMMARY_SLUTSPEL_WIN : QUICK_SUMMARY_SLUTSPEL_LOSS
+  if (tavlingstyp === 'avsked') {
+    // Avsked är, till skillnad från final/slutspel, inte nödvändigtvis en
+    // isKnockout-match — en avskedsmatch KAN sluta oavgjort (vanlig ligamatch
+    // med farewellMatchForPlayerId satt). Opus levererade bara seger/förlust;
+    // ett äkta oavgjort faller igenom till default-logiken nedan istf en
+    // gissad tredje variant.
+    if (won) return QUICK_SUMMARY_AVSKED_WIN
+    if (lost) return QUICK_SUMMARY_AVSKED_LOSS
+  }
+
   const margin = myScore - theirScore
   const totalGoals = homeScore + awayScore
 
