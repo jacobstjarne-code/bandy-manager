@@ -78,6 +78,9 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // varje dev-scen och var därför osynade av hela svepet, oavsett vad som
   // ändrades i dem (se GEMENSAM BESLUTSMODELL-commiten, d934aa1e).
   | 'event-overlay' | 'press-conference'
+  // AUDIT DEL 4 (2026-08-12) — Primary-rangordningen (initCardBag.ts) prövad
+  // i konkurrens, inte bara en i taget.
+  | 'primary-smfinal-vs-deadline' | 'primary-event-vs-farewell'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -137,6 +140,8 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'taktik',           label: 'Taktiktavlan — alla 8 dimensioner + FÖRESLÅS' },
   { id: 'event-overlay',    label: 'EventOverlay — kritiskt event, fullskärms-modal' },
   { id: 'press-conference', label: 'PressConferenceScene — bespok scen' },
+  { id: 'primary-smfinal-vs-deadline', label: 'Primary — SM-final(100) mot deadline(90)' },
+  { id: 'primary-event-vs-farewell',   label: 'Primary — kritiskt event(95) mot avsked(82)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -422,6 +427,45 @@ const portalNormalGame = withActiveBeat(factoryMidSeasonGame)
 const portalFullBase = atRound(makeBaseGame({ seed: 2 }), 24)
 const portalFullGame = withAnniversary(withActiveBeat(portalFullBase))
 const portalGrindGame = withObjectiveAlertWarning(withPendingWeeklyDecision(factoryMidSeasonGame))
+
+// AUDIT DEL 4 (2026-08-12) — täckningslucka i takregel-baselinen: alla fyra
+// tillstånd ovan varierar bara atmosfärslagret. Primary-urvalet (initCardBag.ts,
+// SM-final 100 · cupfinal 98 · event_critical 95 · deadline 90 · avsked 82 ·
+// derby 80 · next_match 10) fotograferades aldrig i konkurrens — deadline
+// (90) vann i tre av fyra bara för att inget högre viktat villkor någonsin
+// var sant samtidigt. Samma klass av lucka som lät FÖRESLÅS-badgen vara
+// osynlig en månad (3f9bc07a): otestad rangordning upptäcks inte förrän
+// någon råkar trigga rätt kombination i skarpt läge.
+const primarySmFinalFixture = {
+  id: 'fx-primary-smfinal', leagueId: 'liga-dev', season: 8, roundNumber: 37, matchday: 37,
+  homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 0, awayScore: 0,
+  status: 'scheduled' as const, isFinaldag: true, events: [],
+}
+// SM-final (100) mot deadline (90) samtidigt: makeLeagueFixtures() ger 14
+// avklarade ligarundor => roundsLeft = 15-14 = 1, transferDeadlineWithin3Rounds
+// sant. Förväntat vinnare: SMFinalPrimary (100 > 90).
+const primarySmfinalVsDeadlineGame = makeGame([...makeLeagueFixtures(), primarySmFinalFixture])
+
+const primaryFarewellFixture = {
+  id: 'fx-primary-farewell', leagueId: 'liga-dev', season: 8, roundNumber: 21, matchday: 21,
+  homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 0, awayScore: 0,
+  status: 'scheduled' as const, farewellMatchForPlayerId: 'p-h1', events: [],
+}
+// event_critical (95) mot avsked (82) samtidigt — ett kritiskt event pendlar
+// medan nästa match är en avskedsmatch. Förväntat vinnare: EventPrimary
+// (95 > 82).
+const primaryEventVsFarewellGame = makeGame([...makeLeagueFixtures(), primaryFarewellFixture], {
+  pendingEvents: [{
+    id: 'dev-primary-critical', type: 'playerUnhappy' as const, resolved: false,
+    title: 'Missnöjd spelare', body: 'Erik är missnöjd med speltiden inför avskedet.',
+    sender: { name: 'Erik Johansson', role: 'Half' },
+    relatedPlayerId: 'p-h1',
+    choices: [
+      { id: 'talk', label: 'Prata med honom', effect: { type: 'noOp' as const } },
+      { id: 'ignore', label: 'Vänta och se', effect: { type: 'noOp' as const } },
+    ],
+  }],
+})
 // AUDIT DEL 2 (2026-08-11), kontrollfall efter Berg-fixet (dc3d771f): ett
 // aktivt bud (HÄNDELSE-kort) ska aldrig få TransferDeadlinePrimary att
 // påstå "Inga öppna bud just nu" — varken när det är det enda budet eller
@@ -837,6 +881,8 @@ export function DevScenesScreen() {
       : scene === 'club-established' ? clubEstablishedGame
       : scene === 'taktik' ? taktikGame
       : scene === 'event-overlay' || scene === 'press-conference' ? granskaGame
+      : scene === 'primary-smfinal-vs-deadline' ? primarySmfinalVsDeadlineGame
+      : scene === 'primary-event-vs-farewell' ? primaryEventVsFarewellGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -986,7 +1032,8 @@ export function DevScenesScreen() {
           </div>
         )}
         {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind'
-          || scene === 'portal-bid-single' || scene === 'portal-bid-multi') && (
+          || scene === 'portal-bid-single' || scene === 'portal-bid-multi'
+          || scene === 'primary-smfinal-vs-deadline' || scene === 'primary-event-vs-farewell') && (
           <div style={{ height: '1400px', overflow: 'hidden', position: 'relative' }}>
             <PortalScreen />
           </div>

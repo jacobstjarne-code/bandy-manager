@@ -57,6 +57,14 @@ const SCENES: [string, string?, string?, boolean?, number?][] = [
   ['taktik', undefined, undefined, undefined, EXTRA_HEIGHT],
   ['event-overlay', undefined, undefined, true],
   ['press-conference', undefined, undefined, true],
+  // AUDIT DEL 4 (2026-08-12) — täckningslucka: Primary-rangordningen
+  // (initCardBag.ts) hade aldrig fotograferats i konkurrens. De fyra
+  // takregel-scenerna (baseline.visual.ts) varierar bara atmosfärslagret —
+  // deadline (90) vann Primary-platsen i tre av fyra bara för att inget
+  // högre viktat villkor råkade vara sant samtidigt. Samma lucka-klass som
+  // lät FÖRESLÅS-badgen vara osynlig en månad.
+  ['primary-smfinal-vs-deadline', undefined, undefined, undefined, EXTRA_HEIGHT],
+  ['primary-event-vs-farewell', undefined, undefined, undefined, EXTRA_HEIGHT],
 ]
 
 for (const [id, clickText, snapshotNameOverride, fixedOverlay, extraHeight] of SCENES) {
