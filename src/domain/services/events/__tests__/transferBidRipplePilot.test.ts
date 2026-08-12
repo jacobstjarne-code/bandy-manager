@@ -95,7 +95,10 @@ describe('ÖVERLÄMNING 2 steg 1-pilot: transferbud → ripple', () => {
     console.log('finances före/efter (säljande klubb):', game.clubs[0].finances, '→', after.clubs.find(c => c.id === 'c1')?.finances)
     console.log('spelaren kvar i truppen?', after.players.find(p => p.id === 'berg')?.clubId)
 
-    expect(chain).toBeDefined()
+    // AUDIT DEL 4 steg 2 (2026-08-12): kassan in — accept ska nu visa den.
+    // Transferbudget rörs INTE här (managed club SÄLJER — transferBudget
+    // dras bara för den KÖPANDE klubben i executeTransfer).
+    expect(chain?.steps).toEqual([{ label: 'Kassan', dir: 'up' }])
   })
 
   it('avslag: producerar vilken kedja?', () => {
@@ -111,10 +114,14 @@ describe('ÖVERLÄMNING 2 steg 1-pilot: transferbud → ripple', () => {
     console.log(JSON.stringify(chain, null, 2))
     console.log('spelarens moral före/efter:', game.players[0].morale, '→', after.players.find(p => p.id === 'berg')?.morale)
 
-    expect(chain).toBeDefined()
+    // AUDIT DEL 4 steg 2: förblir tom EFTER kassan/transferbudget också —
+    // avslagets enda konsekvens (spelarens morale) är ett Player-fält, inte
+    // ett SaveGame/klubb-fält. Rapporterat till Jacob, inte byggt (kräver ett
+    // beslut om kedjan ska få se relatedPlayerId-fält).
+    expect(chain?.steps).toEqual([])
   })
 
-  it('kräv mer: producerar vilken kedja?', () => {
+  it('kräv mer: förblir tom (Jacobs dom, verifierad efter steg 2)', () => {
     const bid = makeBid()
     const game = makeGame({ transferBids: [bid] })
     const event = bidReceivedEvent(bid, game)
@@ -129,6 +136,10 @@ describe('ÖVERLÄMNING 2 steg 1-pilot: transferbud → ripple', () => {
     console.log(JSON.stringify(chain, null, 2))
     console.log('budets belopp före/efter:', bid.offerAmount, '→', after.transferBids?.find(b => b.id === 'bid1')?.offerAmount)
 
-    expect(chain).toBeDefined()
+    // Jacobs dom (2026-08-12): "kräv mer" ändrar bara budets storlek — inget
+    // tillstånd (kassa/moral/humör) rör sig, så kedjan SKA vara tom. Detta är
+    // en regressionsvakt mot att steg 3 (magnitud/fler fält) av misstag
+    // börjar fyra en falsk rad här.
+    expect(chain?.steps).toEqual([])
   })
 })

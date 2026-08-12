@@ -68,6 +68,20 @@ export function describeRippleChain(
   if (boardD !== 0) steps.push({ label: 'Styrelsen', dir: boardD > 0 ? 'up' : 'down' })
   const sponsD = (after.sponsorNetworkMood ?? 50) - (before.sponsorNetworkMood ?? 50)
   if (sponsD !== 0) steps.push({ label: 'Sponsorerna', dir: sponsD > 0 ? 'up' : 'down' })
+
+  // AUDIT DEL 4 steg 2 (2026-08-12): ekonomi — kassan och transferbudgeten.
+  // Klubb-nivå (managedClubId), inte SaveGame-nivå som de fem ovan — RIPPLE_
+  // AFFECTED_FIELDS (denna fils topp) kan inte utökas med dem rakt av, den
+  // är typad Pick<SaveGame, ...> för mergeRippleDeltas specifikt (en annan
+  // konsument, roundProcessor.ts:s tre ursprungliga triggers). Samma AVSIKT
+  // (fler fält kedjan bevakar) löst här istf i den konstanten.
+  const beforeClub = before.clubs.find(c => c.id === before.managedClubId)
+  const afterClub = after.clubs.find(c => c.id === after.managedClubId)
+  const kassaD = (afterClub?.finances ?? 0) - (beforeClub?.finances ?? 0)
+  if (kassaD !== 0) steps.push({ label: 'Kassan', dir: kassaD > 0 ? 'up' : 'down' })
+  const budgetD = (afterClub?.transferBudget ?? 0) - (beforeClub?.transferBudget ?? 0)
+  if (budgetD !== 0) steps.push({ label: 'Transferbudget', dir: budgetD > 0 ? 'up' : 'down' })
+
   return { trigger, subjectName, round, season, steps }
 }
 
