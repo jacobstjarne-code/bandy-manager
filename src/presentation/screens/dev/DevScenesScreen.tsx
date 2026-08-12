@@ -39,6 +39,8 @@ import { TacticChangeModal } from '../../components/match/TacticChangeModal'
 import { SubstitutionModal } from '../../components/match/SubstitutionModal'
 import { SentValCard } from '../../components/match/SentValCard'
 import { TaktikScreen } from '../TaktikScreen'
+import { EventOverlay } from '../../components/EventOverlay'
+import { PressConferenceScene } from '../../components/PressConferenceScene'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
@@ -72,6 +74,10 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // AUDIT DEL 4 (2026-08-12): TacticBoardCard/tacticRows-enande — behöver en
   // riktig opponentAnalysis för att kunna verifiera FÖRESLÅS-badgen alls.
   | 'taktik'
+  // AUDIT DEL 4 (2026-08-12) — baseline-täckning: dessa ytor saknade tidigare
+  // varje dev-scen och var därför osynade av hela svepet, oavsett vad som
+  // ändrades i dem (se GEMENSAM BESLUTSMODELL-commiten, d934aa1e).
+  | 'event-overlay' | 'press-conference'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -129,6 +135,8 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'club-fresh',       label: 'Club — säsong 1, inga öppna minnen' },
   { id: 'club-established', label: 'Club — etablerad epok, flera öppna minnen' },
   { id: 'taktik',           label: 'Taktiktavlan — alla 8 dimensioner + FÖRESLÅS' },
+  { id: 'event-overlay',    label: 'EventOverlay — kritiskt event, fullskärms-modal' },
+  { id: 'press-conference', label: 'PressConferenceScene — bespok scen' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -828,6 +836,7 @@ export function DevScenesScreen() {
       : scene === 'club-fresh' ? clubFreshGame
       : scene === 'club-established' ? clubEstablishedGame
       : scene === 'taktik' ? taktikGame
+      : scene === 'event-overlay' || scene === 'press-conference' ? granskaGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -1156,6 +1165,37 @@ export function DevScenesScreen() {
         )}
 
         {scene === 'taktik' && <TaktikScreen />}
+
+        {/* AUDIT DEL 4 (2026-08-12) — baseline-täckning: EventOverlay tar emot
+            event via prop (samma väg GameShell använder), ingen global
+            event-kö-drift behövs. Kritiska events blockeras annars av
+            isMatchScreen — /dev/scenes matchar ingen av de rutterna. */}
+        {scene === 'event-overlay' && (
+          <div style={{ position: 'relative', minHeight: 500 }}>
+            <EventOverlay event={granskaPendingEvents[0]} />
+          </div>
+        )}
+
+        {scene === 'press-conference' && (
+          <div style={{ position: 'relative', minHeight: 500 }}>
+            <PressConferenceScene
+              event={{
+                id: 'dev-press-1', type: 'pressConference', resolved: false,
+                title: 'Presskonferens — Britta Sandström, Gefle Dagblad',
+                body: '"Ni vann stort men spelade passivt sista tio minuterna — medvetet val eller tapp av tempo?"',
+                choices: [
+                  { id: 'confident', label: 'Medvetet — vi förvaltade ledningen', effect: { type: 'pressResponse' } },
+                  { id: 'honest', label: 'Ärligt, vi tappade greppet lite', effect: { type: 'pressResponse' } },
+                ],
+              } as never}
+              journalist={{
+                name: 'Britta Sandström', outlet: 'Gefle Dagblad', persona: 'sceptical',
+                style: 'neutral', relationship: 58, memory: [], pressRefusals: 0,
+              } as never}
+              onChoice={() => {}}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

@@ -246,9 +246,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
         const oppConversion = oppOnTargetDisplay > 0 ? Math.round(oppGoals / oppOnTargetDisplay * 100) : 0
         return (
           <div className="card-sharp" style={{ marginTop: 6, padding: '10px 12px' }}>
-            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 8 }}>
-              🛡 {oppClub.name.toUpperCase()}
-            </p>
+            <SectionLabel style={{ marginBottom: 8 }}>🛡 {oppClub.name.toUpperCase()}</SectionLabel>
             {(() => {
               const oppOnTargetDisplay = oppGoals + oppSavedByUs
               const savePct = oppOnTargetDisplay > 0 ? Math.round(oppSavedByUs / oppOnTargetDisplay * 100) : 0
@@ -293,7 +291,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
         }
         return (
           <div style={{ marginTop: 6, padding: '8px 10px', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 'var(--radius-md)' }}>
-            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', color: 'var(--accent)', marginBottom: 4 }}>💡 INSIKT</p>
+            <SectionLabel style={{ color: 'var(--accent)', marginBottom: 4 }}>💡 INSIKT</SectionLabel>
             <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{insight}</p>
           </div>
         )

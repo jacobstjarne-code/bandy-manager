@@ -31,8 +31,21 @@ import { assertNoDuplicateEntityIds } from './entityDedup'
  * Detta ÄR taket, rapporterat i commit-meddelandet.
  */
 const WIDE_VIEWPORT = { width: 430, height: 900 }
-const TALL_VIEWPORT = { width: 430, height: 1400 }
-const PORTAL_VIEWPORT = { width: 430, height: 1500 }
+// ROTORSAK (2026-08-12): 1400/1500 räckte 2026-08-09 men dev-navet (data-dev-nav,
+// [data-scene-content]s föregående syskon i DOM) har växt sedan dess — fler
+// dev-scener → högre nav → elementets top-offset flyttar sig neråt. När
+// nav+innehåll tillsammans överskrider viewporten måste Playwright scrolla
+// för att fånga hela [data-scene-content], och då stitchas capturen i flera
+// steg. [data-dev-nav] är position:sticky och återfäster sig i toppen av
+// VARJE scroll-steg under stitchningen — det producerar läckande nav-text i
+// den sammansatta bilden, inte en renderingsskillnad i scenen. Samma mönster
+// upptäcktes i produktskärmarnas EGNA sticky headers (t.ex. Uppställningens
+// steg-navigering) — nav-döljningen ovan (addStyleTag) löser bara dev-navet,
+// inte det. Enda robusta fixen: gör viewporten tillräckligt hög att INGEN
+// scroll någonsin krävs, oavsett hur högt nav:et blir. 4000px täcker dagens
+// ~1400px nav + ~2000px innehåll med marginal för framtida scentillägg.
+const TALL_VIEWPORT = { width: 430, height: 4000 }
+const PORTAL_VIEWPORT = { width: 430, height: 4000 }
 
 const BASELINE_SCENES: [string, string?, { width: number; height: number }?][] = [
   ['stillness'],
@@ -62,6 +75,13 @@ for (const [id, clickText, viewport] of BASELINE_SCENES) {
       }
       await page.evaluate(() => document.fonts.ready)
       await page.waitForTimeout(700)
+      // ROTORSAK (2026-08-12): se scenes.visual.ts — [data-dev-nav] är sticky och
+      // läcker in i toppen av stitchade element-screenshots när innehållet är
+      // högre än viewporten. TALL_VIEWPORT/PORTAL_VIEWPORT (900-1500px) räckte
+      // 2026-08-09 men nav:et har växt sedan dess (fler dev-scener) — dölj
+      // navet så capture aldrig behöver scrolla förbi ett sticky-syskon,
+      // oavsett hur högt nav:et blir framöver.
+      await page.addStyleTag({ content: '[data-dev-nav] { display: none !important; }' })
       await expect(page.locator('[data-scene-content]')).toHaveScreenshot(`baseline-${width}-${id}.png`)
       // Entitets-dedup-grinden (AUDIT DEL 2, 2026-08-12) — se entityDedup.ts.
       await assertNoDuplicateEntityIds(page)
