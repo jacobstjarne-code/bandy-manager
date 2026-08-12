@@ -83,4 +83,18 @@ describe('visasFor — GRANSKA DEL 4 steg 2, matrisen i docs/incoming/DESIGN_UPP
     expect(visasFor('nastaMatchPekare', ...SM_FINAL)).toBe(false)
     expect(visasFor('nastaMatchPekare', ...AVSKED)).toBe(true)
   })
+
+  // GRANSKA DEL 4 (2026-08-12): sex sektioner som renderade utan att finnas i
+  // matrisens tolv rader (Jacobs fynd, efter att tribute-gren-försöket 2026-08-11
+  // visade att de saknades). Event-drivna beslutsprompter/alerter — ✓ i varje
+  // tävlingstyp/skede, aldrig ✕, av samma skäl (tystar man inte en väntande
+  // presskonferens för att matchen var en final).
+  it('criticalEvents, pressConference, csPress, refereeMeeting, reaktioner, nySkada — aldrig ✕, i någon matchtyp', () => {
+    const sections = ['criticalEvents', 'pressConference', 'csPress', 'refereeMeeting', 'reaktioner', 'nySkada'] as const
+    for (const section of sections) {
+      for (const [tavlingstyp, skede] of [LIGA, CUP_KVART, CUP_FINAL, SLUTSPEL_KVART, SM_FINAL, AVSKED]) {
+        expect(visasFor(section, tavlingstyp, skede)).toBe(true)
+      }
+    }
+  })
 })

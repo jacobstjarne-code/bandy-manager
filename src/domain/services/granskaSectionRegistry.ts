@@ -4,6 +4,15 @@ export type GranskaSection =
   | 'resultatHero' | 'tabell' | 'form' | 'statistik' | 'nyckelmoment'
   | 'dinaVal' | 'omgangssammanfattning' | 'andraMatcher' | 'scouting'
   | 'pressMedia' | 'nastaMatchPekare'
+  // GRANSKA DEL 4 (2026-08-12) — sex sektioner som renderade i GranskaOversikt.tsx
+  // men aldrig fanns i matrisens tolv rader (Jacobs fynd: "Matrisen beskriver
+  // alltså inte skärmen, den beskriver de sektioner Design råkade titta på").
+  // Alla sex är event-drivna beslutsprompter eller informationsalerter,
+  // oberoende av matchtyp — en väntande presskonferens eller en ny skada
+  // försvinner inte för att matchen var en final. Se visasFor nedan för
+  // motiveringen till att alla sex är ✓ i varje tävlingstyp/skede.
+  | 'criticalEvents' | 'pressConference' | 'csPress' | 'refereeMeeting'
+  | 'reaktioner' | 'nySkada'
 
 /**
  * GRANSKA DEL 4 (2026-08-11), steg 2 — sektionsregistret.
@@ -14,8 +23,9 @@ export type GranskaSection =
  * Det här svarar bara på "syns sektionen".
  *
  * Turneringsläge (ny sektion, matrisens sista rad) är INTE med här — den
- * har ingen komponent än (byggs i steg 5). Ett registerinlägg utan yta att
- * gate:a är inte en gate, det är en förhoppning.
+ * gates:as av turneringslageService.ts:s deriveTurneringslageMode (egen
+ * härledning ur cup-/playoffBracket, inte en enkel tävlingstyp/skede-tabell),
+ * inte av visasFor.
  *
  * "SM-final"-kolumnen i matrisen är enligt ordern (steg 1-notisen) ingen
  * egen axel — den identifieras av skede:'final', oavsett om tävlingstypen
@@ -56,6 +66,20 @@ export function visasFor(section: GranskaSection, tavlingstyp: Tavlingstyp, sked
     case 'resultatHero':
     case 'nyckelmoment':
     case 'pressMedia':
+      return true
+    // De sex event-drivna sektionerna: ✓ i varje tävlingstyp/skede, med flit.
+    // Att tysta en väntande presskonferens eller en skadeanmälan för att
+    // matchen råkade vara en final eller en avskedsmatch vore en regression
+    // (samma insikt som fällde det första tribute-gren-försöket, 2026-08-11) —
+    // inte en förbättring. De läggs in explicit här, inte bara lämnas ogated,
+    // så registret är den fullständiga kartan över skärmen, inte bara de
+    // rader Design råkade titta på.
+    case 'criticalEvents':
+    case 'pressConference':
+    case 'csPress':
+    case 'refereeMeeting':
+    case 'reaktioner':
+    case 'nySkada':
       return true
   }
 }

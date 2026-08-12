@@ -22,6 +22,7 @@ const QUICK_SUMMARY_SLUTSPEL_WIN = 'Slutspel. Det märks på tempot.'
 const QUICK_SUMMARY_SLUTSPEL_LOSS = 'Slutspel. En match till hade suttit fint.'
 const QUICK_SUMMARY_AVSKED_WIN = 'Sista matchen på hemmaisen. Publiken stannade kvar efteråt.'
 const QUICK_SUMMARY_AVSKED_LOSS = 'Sista matchen på hemmaisen. Resultatet spelade mindre roll än vanligt.'
+const QUICK_SUMMARY_AVSKED_DRAW = 'Sista matchen på hemmaisen. Oavgjort, och ingen brydde sig särskilt.'
 
 export function generateQuickSummary(
   fixture: Fixture,
@@ -58,11 +59,10 @@ export function generateQuickSummary(
   if (tavlingstyp === 'avsked') {
     // Avsked är, till skillnad från final/slutspel, inte nödvändigtvis en
     // isKnockout-match — en avskedsmatch KAN sluta oavgjort (vanlig ligamatch
-    // med farewellMatchForPlayerId satt). Opus levererade bara seger/förlust;
-    // ett äkta oavgjort faller igenom till default-logiken nedan istf en
-    // gissad tredje variant.
+    // med farewellMatchForPlayerId satt). Tredje raden levererad 2026-08-12.
     if (won) return QUICK_SUMMARY_AVSKED_WIN
     if (lost) return QUICK_SUMMARY_AVSKED_LOSS
+    return QUICK_SUMMARY_AVSKED_DRAW
   }
 
   const margin = myScore - theirScore

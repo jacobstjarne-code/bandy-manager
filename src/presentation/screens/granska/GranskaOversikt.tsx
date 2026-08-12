@@ -482,8 +482,10 @@ export function GranskaOversikt({
         </div>
       )}
 
-      {/* Critical events — max 3, kräver val */}
-      {(() => {
+      {/* Critical events — max 3, kräver val. GRANSKA DEL 4 (2026-08-12):
+          registrerad i granskaSectionRegistry.ts (✓ i alla lägen — en väntande
+          transferbud-decision försvinner inte för att matchen var en final). */}
+      {visasFor('criticalEvents', axes.tavlingstyp, axes.skede) && (() => {
         const criticalEvents = getCriticalEventsForGranska(pendingEvents).slice(0, 3)
         const playerEvents = getPlayerEventsForGranska(pendingEvents)
         const inboxOnlyCount = pendingEvents.filter(e => !e.resolved && classifyEventNature(e) === 'inbox-only').length
@@ -538,8 +540,9 @@ export function GranskaOversikt({
         )
       })()}
 
-      {/* Presskonferens — tidskritisk, direkt efter events */}
-      {(() => {
+      {/* Presskonferens — tidskritisk, direkt efter events. GRANSKA DEL 4
+          (2026-08-12): registrerad, ✓ i alla lägen. */}
+      {visasFor('pressConference', axes.tavlingstyp, axes.skede) && (() => {
         const pc = game.pendingPressConference
         if (!pc) return null
         const pcResolved = resolvedEventIds.has(pc.id)
@@ -578,8 +581,8 @@ export function GranskaOversikt({
         )
       })()}
 
-      {/* C-B1: CS-pressfråga */}
-      {(() => {
+      {/* C-B1: CS-pressfråga. GRANSKA DEL 4 (2026-08-12): registrerad, ✓ i alla lägen. */}
+      {visasFor('csPress', axes.tavlingstyp, axes.skede) && (() => {
         const cp = game.pendingCSPress
         if (!cp) return null
         const cpResolved = resolvedEventIds.has(cp.id)
@@ -619,8 +622,8 @@ export function GranskaOversikt({
         )
       })()}
 
-      {/* Domarmöte */}
-      {(() => {
+      {/* Domarmöte. GRANSKA DEL 4 (2026-08-12): registrerad, ✓ i alla lägen. */}
+      {visasFor('refereeMeeting', axes.tavlingstyp, axes.skede) && (() => {
         const rm = game.pendingRefereeMeeting
         if (!rm) return null
         const rmResolved = resolvedEventIds.has(rm.id)
@@ -650,7 +653,8 @@ export function GranskaOversikt({
         )
       })()}
 
-      <ReaktionerKort pendingEvents={pendingEvents} onResolve={onResolve} />
+      {/* GRANSKA DEL 4 (2026-08-12): registrerad, ✓ i alla lägen. */}
+      {visasFor('reaktioner', axes.tavlingstyp, axes.skede) && <ReaktionerKort pendingEvents={pendingEvents} onResolve={onResolve} />}
 
       {/* Media */}
       {(() => {
@@ -894,11 +898,16 @@ export function GranskaOversikt({
           guldet") och avsked. Se granskaSectionRegistry.ts. */}
       {rs && visasFor('omgangssammanfattning', axes.tavlingstyp, axes.skede) && (
         <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-          <SectionLabel style={{ marginBottom: 8 }}>OMGÅNGSSAMMANFATTNING</SectionLabel>
+          {/* Rubrikbyte 2026-08-12 (Opus): "omgång" ljög i cupmatcher — sektionen
+              hette OMGÅNGSSAMMANFATTNING och Ekonomiraden bar /omg-suffixet trots
+              att en cupmatch inte är en "omgång" i spelarens mening. Siffran var
+              redan matchtyp-agnostiskt korrekt (samma ekonomi-tick oavsett cup/
+              liga) — bara orden ljög. Ordbyte, inte ✕ (matrisen är ⚠ för cup). */}
+          <SectionLabel style={{ marginBottom: 8 }}>SEDAN SIST</SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
               <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>💰 Ekonomi</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: financesDelta >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatFinance(financesDelta)}/omg</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: financesDelta >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatFinance(financesDelta)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
               <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🏘 Bygdens puls</span>
@@ -928,8 +937,9 @@ export function GranskaOversikt({
         </div>
       )}
 
-      {/* NY SKADA — eget danger-stripe-kort, bara om en ny skada finns denna omg */}
-      {rs?.injuries && rs.injuries.length > 0 && (
+      {/* NY SKADA — eget danger-stripe-kort, bara om en ny skada finns denna omg.
+          GRANSKA DEL 4 (2026-08-12): registrerad, ✓ i alla lägen. */}
+      {visasFor('nySkada', axes.tavlingstyp, axes.skede) && rs?.injuries && rs.injuries.length > 0 && (
         <div className="card-sharp card-tap" onClick={() => navigate('/game/squad')}
           style={{ margin: '0 0 6px', padding: '10px 12px', borderLeft: '3px solid var(--danger)', borderRadius: '0 8px 8px 0', cursor: 'pointer' }}>
           <SectionLabel style={{ marginBottom: 6 }}>🩹 NY SKADA</SectionLabel>

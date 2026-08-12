@@ -60,9 +60,8 @@ describe('generateQuickSummary — GRANSKA DEL 4 steg 4 (2026-08-11/12)', () => 
       .toBe('Sista matchen på hemmaisen. Resultatet spelade mindre roll än vanligt.')
   })
 
-  it('tavlingstyp:avsked, äkta oavgjort — ingen given text, faller till default-prosan istf en gissad tredje variant', () => {
+  it('tavlingstyp:avsked, äkta oavgjort — tredje raden (2026-08-12)', () => {
     const out = generateQuickSummary(makeFixture({ homeScore: 2, awayScore: 2 }), true, [], 'avsked', undefined)
-    expect(out).toContain('poäng')
-    expect(out).not.toContain('hemmaisen')
+    expect(out).toBe('Sista matchen på hemmaisen. Oavgjort, och ingen brydde sig särskilt.')
   })
 })
