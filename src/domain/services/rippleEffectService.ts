@@ -115,10 +115,19 @@ export function applyRipples(game: SaveGame, trigger: RippleTrigger): SaveGame {
     case 'star_injured':
       return applyStarInjuryRipples(game, trigger.playerId)
     case 'big_derby_win':
-      return applyBigDerbyWinRipples(game)
+      return applyBigDerbyWinRipples(game, trigger.fixtureId)
     case 'mecenat_left':
       return applyMecenatLeftRipples(game, trigger.mecenatId)
   }
+}
+
+// ÖVERLÄMNING 2 steg 3, dynamiska deltan (2026-08-16): Jacobs krav — dagens
+// fasta värden ska vara MITTPUNKTEN i spannet, inte en av ändarna, så
+// kalibreringen (redan spelad in mot verkliga säsonger) inte glider.
+// weight=1.0 exakt vid "genomsnittsfallet" som beskrivs vid varje formel;
+// clamp() sätter yttergränserna så inga extremfall ger absurda utslag.
+function clamp(n: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, n))
 }
 
 function applyStarInjuryRipples(game: SaveGame, playerId: string): SaveGame {
@@ -131,39 +140,77 @@ function applyStarInjuryRipples(game: SaveGame, playerId: string): SaveGame {
   const weeksOut = Math.ceil((player.injuryDaysRemaining ?? 0) / 7)
   const isFranchise = player.id === game.captainPlayerId || player.currentAbility >= 78
 
+  // Vikt: spelarens styrka relativt truppsnittet × kaptenskap × hur etablerad
+  // hen är denna säsong. Baseline (vikt=1.0, reproducerar exakt −4/−3/−4):
+  // CA = truppsnittet, inte kapten, 10 matcher spelade den här säsongen.
+  // En inbytare (låg CA, få matcher, ej kapten) hamnar nära golvet (0.25) —
+  // knappt märkbart. Lagets bästa (hög CA, kapten, etablerad) hamnar nära
+  // taket (2.5) — svider ordentligt.
+  const squadPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+  const avgCA = squadPlayers.length > 0
+    ? squadPlayers.reduce((sum, p) => sum + p.currentAbility, 0) / squadPlayers.length
+    : player.currentAbility
+  const caWeight = avgCA > 0 ? clamp(player.currentAbility / avgCA, 0.4, 2.0) : 1.0
+  const captainMult = player.id === game.captainPlayerId ? 1.3 : 1.0
+  const gamesThisSeason = player.seasonStats?.gamesPlayed ?? 0
+  const gamesWeight = clamp(gamesThisSeason / 10, 0.3, 1.4)
+  const weight = clamp(caWeight * captainMult * gamesWeight, 0.25, 2.5)
+
   // Bas — varje stjärnskada (oavsett längd): oro i leden
   let updated: SaveGame = {
     ...game,
-    fanMood: Math.max(0, (game.fanMood ?? 50) - 4),
+    fanMood: Math.max(0, (game.fanMood ?? 50) - Math.round(4 * weight)),
   }
   if (updated.supporterGroup) {
     updated = { ...updated, supporterGroup: {
       ...updated.supporterGroup,
-      mood: Math.max(0, (updated.supporterGroup.mood ?? 50) - 3),
+      mood: Math.max(0, (updated.supporterGroup.mood ?? 50) - Math.round(3 * weight)),
     }}
   }
 
   // Eskalering — endast långtidsskada (≥4 v) PÅ en franchise-spelare rör styrelsen
   if (weeksOut >= 4 && isFranchise) {
-    updated = { ...updated, boardPatience: Math.max(0, (updated.boardPatience ?? 70) - 4) }
+    updated = { ...updated, boardPatience: Math.max(0, (updated.boardPatience ?? 70) - Math.round(4 * weight)) }
   }
 
   return updated
 }
 
-function applyBigDerbyWinRipples(game: SaveGame): SaveGame {
+function applyBigDerbyWinRipples(game: SaveGame, fixtureId: string): SaveGame {
   let updated = game
 
-  // fanMood +8
-  updated = { ...updated, fanMood: Math.min(100, (updated.fanMood ?? 50) + 8) }
+  // Vikt: målmarginal × motståndarens tabellplacering. Baseline (vikt=1.0,
+  // reproducerar exakt +8/+10/+5): 2 mål marginal mot ett mittenlag. En
+  // enmålsseger mot ett bottenlag ger en svag skvalp; att köra över
+  // serieledaren med stor marginal ger en riktig våg.
+  const fixture = game.fixtures.find(f => f.id === fixtureId)
+  let weight = 1.0
+  if (fixture) {
+    const managedIsHome = fixture.homeClubId === game.managedClubId
+    const managedScore = managedIsHome ? (fixture.homeScore ?? 0) : (fixture.awayScore ?? 0)
+    const oppScore = managedIsHome ? (fixture.awayScore ?? 0) : (fixture.homeScore ?? 0)
+    const margin = Math.max(1, managedScore - oppScore)
+    const marginWeight = clamp(margin / 2, 0.4, 2.2)
 
-  // Supporter group mood +10 (if exists)
+    const oppId = managedIsHome ? fixture.awayClubId : fixture.homeClubId
+    const totalClubs = game.standings.length || 12
+    const oppPosition = game.standings.find(s => s.clubId === oppId)?.position ?? Math.ceil(totalClubs / 2)
+    // Position 1 (serieledaren) → ~1.4-1.5, mittenlag → 1.0, sistalaget → 0.5.
+    const oppWeight = clamp(1.5 - (oppPosition / totalClubs), 0.5, 1.5)
+
+    weight = clamp(marginWeight * oppWeight, 0.3, 2.5)
+  }
+
+  // fanMood +8 (baseline)
+  updated = { ...updated, fanMood: Math.min(100, (updated.fanMood ?? 50) + Math.round(8 * weight)) }
+
+  // Supporter group mood +10 (baseline, if exists)
   if (updated.supporterGroup) {
     updated = {
       ...updated,
       supporterGroup: {
         ...updated.supporterGroup,
-        mood: Math.min(100, (updated.supporterGroup.mood ?? 50) + 10),
+        mood: Math.min(100, (updated.supporterGroup.mood ?? 50) + Math.round(10 * weight)),
       },
     }
   }
@@ -184,28 +231,38 @@ function applyBigDerbyWinRipples(game: SaveGame): SaveGame {
   // Sponsors: bump all active sponsor incomes by 5% for one season via sponsor mood
   updated = {
     ...updated,
-    sponsorNetworkMood: Math.min(100, (updated.sponsorNetworkMood ?? 50) + 5),
+    sponsorNetworkMood: Math.min(100, (updated.sponsorNetworkMood ?? 50) + Math.round(5 * weight)),
   }
 
   return updated
 }
 
-function applyMecenatLeftRipples(game: SaveGame, _mecenatId: string): SaveGame {
+function applyMecenatLeftRipples(game: SaveGame, mecenatId: string): SaveGame {
   let updated = game
 
-  // communityStanding −8
-  updated = { ...updated, communityStanding: Math.max(0, (updated.communityStanding ?? 50) - 8) }
+  // Vikt: mecenatens contribution (kr/säsong, wealth 1-5 → ~20 000-120 000
+  // per mecenatService.ts) relativt en 70 000-baseline (wealth≈3, mitten av
+  // skalan) — reproducerar exakt −8/−10/−5 för en genomsnittlig mecenat.
+  // En liten mecenat som drar sig ur märks knappt; en stor rycker undan mattan.
+  const mecenat = (game.mecenater ?? []).find(m => m.id === mecenatId)
+  const baselineContribution = 70000
+  const weight = mecenat
+    ? clamp(mecenat.contribution / baselineContribution, 0.3, 2.0)
+    : 1.0
 
-  // boardPatience −10
-  updated = { ...updated, boardPatience: Math.max(0, (updated.boardPatience ?? 70) - 10) }
+  // communityStanding −8 (baseline)
+  updated = { ...updated, communityStanding: Math.max(0, (updated.communityStanding ?? 50) - Math.round(8 * weight)) }
 
-  // Supporter mood −5
+  // boardPatience −10 (baseline)
+  updated = { ...updated, boardPatience: Math.max(0, (updated.boardPatience ?? 70) - Math.round(10 * weight)) }
+
+  // Supporter mood −5 (baseline)
   if (updated.supporterGroup) {
     updated = {
       ...updated,
       supporterGroup: {
         ...updated.supporterGroup,
-        mood: Math.max(0, (updated.supporterGroup.mood ?? 50) - 5),
+        mood: Math.max(0, (updated.supporterGroup.mood ?? 50) - Math.round(5 * weight)),
       },
     }
   }
