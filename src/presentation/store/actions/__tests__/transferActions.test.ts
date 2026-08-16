@@ -107,7 +107,7 @@ describe('ÖVERLÄMNING 2: respondToIncomingBid sammanslagen med resolveEvent', 
     const after = store.getGame()
     expect(after?.pilotTransferBidRippleChain).toEqual({
       trigger: 'transfer_bid_accepted', subjectName: 'Anders Berg', round: 14, season: 2025,
-      steps: [{ label: 'Kassan', dir: 'up', scope: 'club' }],
+      steps: [{ label: 'Kassan', dir: 'up', scope: 'club', magnitude: 'kraftigt' }],
     })
     expect(after?.players.find(p => p.id === 'berg')?.clubId).toBe('c2')
   })
@@ -121,7 +121,7 @@ describe('ÖVERLÄMNING 2: respondToIncomingBid sammanslagen med resolveEvent', 
     expect(result.success).toBe(true)
 
     const after = store.getGame()
-    expect(after?.pilotTransferBidRippleChain?.steps).toEqual([{ label: 'Moralen', dir: 'down', scope: 'player' }])
+    expect(after?.pilotTransferBidRippleChain?.steps).toEqual([{ label: 'Moralen', dir: 'down', scope: 'player', magnitude: 'knappt' }])
   })
 
   it('kräv mer: NU tillgängligt från Marknad-vägen (tidigare bara resolveEvent) — kedjan tom', () => {

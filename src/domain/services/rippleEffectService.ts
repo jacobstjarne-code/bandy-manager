@@ -2,6 +2,8 @@
 // Systemkorsningar: stjärna skadad, derby-seger, mecenat lämnar.
 
 import type { SaveGame, RippleChain, RippleChainStep } from '../entities/SaveGame'
+import type { Player } from '../entities/Player'
+import type { TransferBid } from '../entities/GameEvent'
 
 // M15: fields that ripple effects can modify — used for targeted merging
 export const RIPPLE_AFFECTED_FIELDS = [
@@ -58,6 +60,25 @@ export function mergeRippleDeltas(
  * star_injured ännu — det är en separat, medveten senare runda (Jacobs dom:
  * piloten ska stå färdig och kunna kastas innan mönstret generaliseras).
  */
+// ÖVERLÄMNING 2 steg 3 (2026-08-16): tröskel per fälttyp, inte globalt —
+// humör och kassa rör sig i olika skalor (Jacobs krav). Humör-fält (0-100,
+// t.ex. Stämningen/Moralen): absoluta poäng, grundat i de ursprungliga fasta
+// deltana (4/3/8/10/5) så mittpunkterna landar spritt över banden, inte alla
+// i samma. Ekonomi-fält (Kassan/Transferbudget): andel av wageBudget, eftersom
+// samma kronbelopp betyder olika mycket för en liten och en stor klubb.
+function humorMagnitude(absDelta: number): RippleChainStep['magnitude'] {
+  if (absDelta >= 10) return 'kraftigt'
+  if (absDelta >= 5) return 'tydligt'
+  return 'knappt'
+}
+
+function economyMagnitude(absDelta: number, wageBudget: number): RippleChainStep['magnitude'] {
+  const pct = wageBudget > 0 ? absDelta / wageBudget : 0
+  if (pct > 0.4) return 'kraftigt'
+  if (pct >= 0.1) return 'tydligt'
+  return 'knappt'
+}
+
 export function describeRippleChain(
   before: SaveGame,
   after: SaveGame,
@@ -69,15 +90,15 @@ export function describeRippleChain(
 ): RippleChain {
   const steps: RippleChainStep[] = []
   const fanD = (after.fanMood ?? 50) - (before.fanMood ?? 50)
-  if (fanD !== 0) steps.push({ label: 'Stämningen', dir: fanD > 0 ? 'up' : 'down', scope: 'club' })
+  if (fanD !== 0) steps.push({ label: 'Stämningen', dir: fanD > 0 ? 'up' : 'down', scope: 'club', magnitude: humorMagnitude(Math.abs(fanD)) })
   const klackD = (after.supporterGroup?.mood ?? 50) - (before.supporterGroup?.mood ?? 50)
-  if (klackD !== 0) steps.push({ label: 'Klacken', dir: klackD > 0 ? 'up' : 'down', scope: 'club' })
+  if (klackD !== 0) steps.push({ label: 'Klacken', dir: klackD > 0 ? 'up' : 'down', scope: 'club', magnitude: humorMagnitude(Math.abs(klackD)) })
   const csD = (after.communityStanding ?? 50) - (before.communityStanding ?? 50)
-  if (csD !== 0) steps.push({ label: 'Orten', dir: csD > 0 ? 'up' : 'down', scope: 'club' })
+  if (csD !== 0) steps.push({ label: 'Orten', dir: csD > 0 ? 'up' : 'down', scope: 'club', magnitude: humorMagnitude(Math.abs(csD)) })
   const boardD = (after.boardPatience ?? 70) - (before.boardPatience ?? 70)
-  if (boardD !== 0) steps.push({ label: 'Styrelsen', dir: boardD > 0 ? 'up' : 'down', scope: 'club' })
+  if (boardD !== 0) steps.push({ label: 'Styrelsen', dir: boardD > 0 ? 'up' : 'down', scope: 'club', magnitude: humorMagnitude(Math.abs(boardD)) })
   const sponsD = (after.sponsorNetworkMood ?? 50) - (before.sponsorNetworkMood ?? 50)
-  if (sponsD !== 0) steps.push({ label: 'Sponsorerna', dir: sponsD > 0 ? 'up' : 'down', scope: 'club' })
+  if (sponsD !== 0) steps.push({ label: 'Sponsorerna', dir: sponsD > 0 ? 'up' : 'down', scope: 'club', magnitude: humorMagnitude(Math.abs(sponsD)) })
 
   // AUDIT DEL 4 steg 2 (2026-08-12): ekonomi — kassan och transferbudgeten.
   // Klubb-nivå (managedClubId), inte SaveGame-nivå som de fem ovan — RIPPLE_
@@ -87,10 +108,11 @@ export function describeRippleChain(
   // (fler fält kedjan bevakar) löst här istf i den konstanten.
   const beforeClub = before.clubs.find(c => c.id === before.managedClubId)
   const afterClub = after.clubs.find(c => c.id === after.managedClubId)
+  const wageBudget = beforeClub?.wageBudget ?? 0
   const kassaD = (afterClub?.finances ?? 0) - (beforeClub?.finances ?? 0)
-  if (kassaD !== 0) steps.push({ label: 'Kassan', dir: kassaD > 0 ? 'up' : 'down', scope: 'club' })
+  if (kassaD !== 0) steps.push({ label: 'Kassan', dir: kassaD > 0 ? 'up' : 'down', scope: 'club', magnitude: economyMagnitude(Math.abs(kassaD), wageBudget) })
   const budgetD = (afterClub?.transferBudget ?? 0) - (beforeClub?.transferBudget ?? 0)
-  if (budgetD !== 0) steps.push({ label: 'Transferbudget', dir: budgetD > 0 ? 'up' : 'down', scope: 'club' })
+  if (budgetD !== 0) steps.push({ label: 'Transferbudget', dir: budgetD > 0 ? 'up' : 'down', scope: 'club', magnitude: economyMagnitude(Math.abs(budgetD), wageBudget) })
 
   // ÖVERLÄMNING 2 steg 3-underlag: spelarnivå, egen scope. Etiketten är
   // fältets namn ("Moralen") — subjectName bär redan VEM det gäller, "Spelaren"
@@ -99,7 +121,7 @@ export function describeRippleChain(
     const beforePlayer = before.players.find(p => p.id === relatedPlayerId)
     const afterPlayer = after.players.find(p => p.id === relatedPlayerId)
     const moraleD = (afterPlayer?.morale ?? 50) - (beforePlayer?.morale ?? 50)
-    if (moraleD !== 0) steps.push({ label: 'Moralen', dir: moraleD > 0 ? 'up' : 'down', scope: 'player' })
+    if (moraleD !== 0) steps.push({ label: 'Moralen', dir: moraleD > 0 ? 'up' : 'down', scope: 'player', magnitude: humorMagnitude(Math.abs(moraleD)) })
   }
 
   return { trigger, subjectName, round, season, steps }
@@ -128,6 +150,33 @@ export function applyRipples(game: SaveGame, trigger: RippleTrigger): SaveGame {
 // clamp() sätter yttergränserna så inga extremfall ger absurda utslag.
 function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n))
+}
+
+// ÖVERLÄMNING 2 (2026-08-16, Jacobs dom): Moralen-steget (transfer-avslag)
+// var den enda kvarvarande fasta konstanten (−5) — bryter mönstret de tre
+// andra triggarna redan följer. Samma disciplin: dagens värde är MITTPUNKTEN.
+// Vikt: spelarens temperament (proxy: discipline — inget separat temperament-
+// fält finns i Player) × hur långt budet låg under marknadsvärdet × hur
+// länge kontraktet har kvar. Baseline (vikt=1.0, reproducerar exakt −5):
+// discipline=60 (kodbasens vanliga default), bud 20% under marknadsvärde,
+// 2 år kvar på kontraktet.
+export function transferRejectMoraleWeight(player: Player, bid: TransferBid, currentSeason: number): number {
+  // Lågt discipline → hetare temperament → sveder mer av ett avslag.
+  const disciplineWeight = clamp(1.5 - (player.discipline ?? 60) / 120, 0.5, 1.6)
+
+  // Ju längre under marknadsvärdet budet låg, desto mer kändes avslaget som
+  // en förlorad chans att få rätt betalt — inte bara ett nej.
+  const gapPct = player.marketValue > 0
+    ? Math.max(0, (player.marketValue - bid.offerAmount) / player.marketValue)
+    : 0.2
+  const gapWeight = clamp(gapPct / 0.2, 0.4, 2.0)
+
+  // Kort kvarvarande kontrakt → spelaren såg budet som sin chans att gå
+  // vidare, blockeringen väger tyngre. Långt kvar → mindre akut, väger lättare.
+  const remainingYears = clamp((player.contractUntilSeason ?? currentSeason + 2) - currentSeason, 1, 6)
+  const contractWeight = clamp(2 / remainingYears, 0.5, 1.7)
+
+  return clamp(disciplineWeight * gapWeight * contractWeight, 0.3, 2.5)
 }
 
 function applyStarInjuryRipples(game: SaveGame, playerId: string): SaveGame {

@@ -39,7 +39,11 @@ import type { DoctorIdentity } from '../data/injuryDoctorText'
 // läsaren att en spelares humör väger lika mycket som hela klubbens — det gör
 // det inte. 'club' är default (alla sju ursprungliga steg), 'player' bara för
 // steg som diffar ett specifikt event.relatedPlayerId-fält.
-export interface RippleChainStep { label: string; dir: 'up' | 'down'; scope: 'club' | 'player' }
+// ÖVERLÄMNING 2 steg 3 (2026-08-16): magnitude — tre nivåer, tröskel per
+// fälttyp (humör-fält: absoluta poäng, ekonomi-fält: andel av wageBudget,
+// se humorMagnitude/economyMagnitude i rippleEffectService.ts). Avgör vilken
+// av de tre textraderna i rippleChainText.ts som visas för steget.
+export interface RippleChainStep { label: string; dir: 'up' | 'down'; scope: 'club' | 'player'; magnitude: 'knappt' | 'tydligt' | 'kraftigt' }
 export interface RippleChain {
   trigger: 'star_injured' | 'big_derby_win' | 'mecenat_left'
     // ÖVERLÄMNING 2 steg 1-pilot (2026-08-12): tre separata triggers, inte en

@@ -99,7 +99,8 @@ describe('ÖVERLÄMNING 2 steg 1-pilot: transferbud → ripple', () => {
     // scope:'club' (klubbomfattande, inte en enskild spelares fält).
     // Transferbudget rörs INTE här (managed club SÄLJER — transferBudget
     // dras bara för den KÖPANDE klubben i executeTransfer).
-    expect(chain?.steps).toEqual([{ label: 'Kassan', dir: 'up', scope: 'club' }])
+    // wageBudget 200 000, kassaD +250 000 → 125% → kraftigt
+    expect(chain?.steps).toEqual([{ label: 'Kassan', dir: 'up', scope: 'club', magnitude: 'kraftigt' }])
   })
 
   it('avslag: producerar vilken kedja?', () => {
@@ -119,7 +120,8 @@ describe('ÖVERLÄMNING 2 steg 1-pilot: transferbud → ripple', () => {
     // scope:'player' — etiketten är fältets namn ("Moralen"), inte "Spelaren"
     // (subjectName bär redan vem det gäller). Detta var den enda konsekvensen
     // avslaget faktiskt har, och den var osynlig fram till nu.
-    expect(chain?.steps).toEqual([{ label: 'Moralen', dir: 'down', scope: 'player' }])
+    // discipline 60, gap 16.7% (under 20%-baseline), 2 år kvar → vikt <1 → delta 4 → knappt
+    expect(chain?.steps).toEqual([{ label: 'Moralen', dir: 'down', scope: 'player', magnitude: 'knappt' }])
   })
 
   it('kräv mer: förblir tom (Jacobs dom, verifierad efter steg 2)', () => {

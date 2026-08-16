@@ -4,7 +4,7 @@ import type { GameEvent } from '../../entities/GameEvent'
 import type { DinnerScene } from '../mecenatDinnerService'
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
-import { describeRippleChain } from '../rippleEffectService'
+import { describeRippleChain, transferRejectMoraleWeight } from '../rippleEffectService'
 import { applyFinanceChange } from '../economyService'
 import { startFacilityBuild } from '../facilityService'
 import { recordInteraction, recordPressRefusal, generateCriticalArticle } from '../journalistService'
@@ -120,6 +120,15 @@ export function resolveEvent(
       break
     }
     case 'rejectTransfer': {
+      // ÖVERLÄMNING 2 (2026-08-16): Moralen skalar nu som de tre andra
+      // triggarna — temperament (discipline) × bud-gap mot marknadsvärde ×
+      // kvarvarande kontraktstid. Mittpunkt reproducerar dagens −5.
+      const rejectedBid = (game.transferBids ?? []).find(b => b.id === effect.bidId)
+      const rejectedPlayer = effect.targetPlayerId ? game.players.find(p => p.id === effect.targetPlayerId) : undefined
+      const moraleWeight = (rejectedBid && rejectedPlayer)
+        ? transferRejectMoraleWeight(rejectedPlayer, rejectedBid, game.currentSeason)
+        : 1.0
+      const moraleDelta = Math.round(5 * moraleWeight)
       updatedGame = {
         ...updatedGame,
         transferBids: (updatedGame.transferBids ?? []).map(b =>
@@ -128,7 +137,7 @@ export function resolveEvent(
         players: effect.targetPlayerId
           ? updatedGame.players.map(p =>
               p.id === effect.targetPlayerId
-                ? { ...p, morale: Math.max(0, p.morale - 5) }
+                ? { ...p, morale: Math.max(0, p.morale - moraleDelta) }
                 : p,
             )
           : updatedGame.players,
