@@ -33,7 +33,13 @@ import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPh
 import type { DoctorIdentity } from '../data/injuryDoctorText'
 
 // ── Legibel konsekvens — domino-kedje-typer (används av rippleEffectService + portalBeats) ──
-export interface RippleChainStep { label: string; dir: 'up' | 'down' }
+// ÖVERLÄMNING 2 steg 3-underlag (2026-08-12): scope skiljer sju klubbomfattande
+// hinkar (Stämningen/Klacken/Orten/Styrelsen/Sponsorerna/Kassan/Transferbudget)
+// från en enskild persons fält (Moralen). Odifferentierat i samma array lär
+// läsaren att en spelares humör väger lika mycket som hela klubbens — det gör
+// det inte. 'club' är default (alla sju ursprungliga steg), 'player' bara för
+// steg som diffar ett specifikt event.relatedPlayerId-fält.
+export interface RippleChainStep { label: string; dir: 'up' | 'down'; scope: 'club' | 'player' }
 export interface RippleChain {
   trigger: 'star_injured' | 'big_derby_win' | 'mecenat_left'
     // ÖVERLÄMNING 2 steg 1-pilot (2026-08-12): tre separata triggers, inte en

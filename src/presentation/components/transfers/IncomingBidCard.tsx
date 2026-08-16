@@ -1,15 +1,16 @@
 import type { Player } from '../../../domain/entities/Player'
 import type { Club } from '../../../domain/entities/Club'
-import type { TransferBid } from '../../../domain/entities/GameEvent'
+import type { TransferBid, EventChoice } from '../../../domain/entities/GameEvent'
 import { formatValue } from '../../utils/formatters'
+import { DecisionChoices } from '../DecisionChoices'
 
 interface IncomingBidCardProps {
   bid: TransferBid
   player: Player
   buyingClub: Club
   currentRound: number
-  onAccept: () => void
-  onReject: () => void
+  choices: EventChoice[]
+  onChoose: (choiceId: string) => void
 }
 
 /**
@@ -18,8 +19,15 @@ interface IncomingBidCardProps {
  * strukturerad data, inte skriven prosa — Code skriver aldrig svensk speltext
  * (CLAUDE.md), så "motiv" visas som etiketter/siffror, samma register som
  * playerNotesService.ts:s formatMetadata ("Lojalitet X/10"), inte en ny mening.
+ *
+ * ÖVERLÄMNING 2 (2026-08-12): choices/onChoose istf onAccept/onReject —
+ * TransfersScreen skickar samma bidReceivedEvent(bid, game).choices som
+ * resolveEvent-vägen redan använder, så Marknad och HÄNDELSE-kortet visar
+ * exakt samma alternativ (inklusive "Kräv mer" när det är tillgängligt).
+ * DecisionChoices, inte handrullade knappar — samma delade knapplager som
+ * resten av gemensam-beslutsmodell-migreringen (d934aa1e).
  */
-export function IncomingBidCard({ bid, player, buyingClub, currentRound, onAccept, onReject }: IncomingBidCardProps) {
+export function IncomingBidCard({ bid, player, buyingClub, currentRound, choices, onChoose }: IncomingBidCardProps) {
   const roundsLeft = (bid.expiresRound ?? 0) - currentRound
   const isDreamClub = player.dreamClubId === buyingClub.id
   const loyalty = player.loyaltyScore
@@ -52,22 +60,7 @@ export function IncomingBidCard({ bid, player, buyingClub, currentRound, onAccep
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button
-          onClick={onReject}
-          className="btn btn-outline"
-          style={{ flex: 1, padding: '8px', fontSize: 12, fontWeight: 600 }}
-        >
-          Avslå
-        </button>
-        <button
-          onClick={onAccept}
-          className="btn btn-copper"
-          style={{ flex: 1, padding: '8px', fontSize: 12, fontWeight: 600 }}
-        >
-          Acceptera
-        </button>
-      </div>
+      <DecisionChoices choices={choices} onChoose={onChoose} primaryChoiceId="accept" />
     </div>
   )
 }

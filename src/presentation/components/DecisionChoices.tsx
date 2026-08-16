@@ -35,7 +35,19 @@ export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryCh
             key={choice.id}
             onClick={() => onChoose(choice.id, choice.label)}
             className={isPrimary ? 'btn btn-primary' : 'btn btn-outline'}
-            style={{ ...(layout === 'stack' ? { width: '100%', textAlign: 'left' } : undefined), ...lgStyle }}
+            style={{
+              ...(layout === 'stack' ? { width: '100%', textAlign: 'left' } : undefined),
+              ...lgStyle,
+              // ÖVERLÄMNING 2 (2026-08-12): .btn är display:inline-flex (global.css) —
+              // en flex-container lägger sina barn i EN RAD som default, oavsett att
+              // subtitle-spannet nedan har display:'block'. Ett flex-item ignorerar sin
+              // EGEN display för layouten, bara containerns flex-direction räknas. Utan
+              // column här skrivs etikett och subtitle ut på samma rad och klipper
+              // varandra — upptäckt via faktisk skärmdump när IncomingBidCard blev
+              // första anropsstället som fyller subtitle på riktigt (~30 befintliga
+              // anropsställen hade aldrig subtitle satt, så buggen var latent).
+              ...(choice.subtitle ? { flexDirection: 'column', alignItems: layout === 'stack' ? 'flex-start' : 'center' } : {}),
+            }}
           >
             {choice.label}
             {choice.subtitle && (

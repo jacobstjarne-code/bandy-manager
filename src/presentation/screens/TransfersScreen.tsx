@@ -15,6 +15,7 @@ import { ScoutingTab } from '../components/transfers/ScoutingTab'
 import { FreeAgentList } from '../components/transfers/FreeAgentList'
 import { WageOverrunWarning } from '../components/transfers/WageOverrunWarning'
 import { IncomingBidCard } from '../components/transfers/IncomingBidCard'
+import { bidReceivedEvent } from '../../domain/services/events/eventFactories'
 import '../styles/transfers.css'
 import { TabBar } from '../components/shared/TabBar'
 import { TabIntro } from '../components/shared/TabIntro'
@@ -102,9 +103,12 @@ export function TransfersScreen() {
     listPlayerForSale(playerId)
   }
 
-  function handleRespondToBid(bidId: string, response: 'accept' | 'reject') {
+  // ÖVERLÄMNING 2 (2026-08-12): choiceId ('accept'|'reject'|'counter') istf
+  // ett smalare 'accept'|'reject' — samma tre utfall som HÄNDELSE-kortet
+  // (resolveEvent) nu erbjuds via, "kräv mer" inkluderat.
+  function handleRespondToBid(bidId: string, choiceId: string) {
     if (!game) return
-    const result = respondToIncomingBid(bidId, response)
+    const result = respondToIncomingBid(bidId, choiceId)
     if (!result.success) {
       setScoutMessage(result.error ?? 'Kunde inte svara på budet.')
       setTimeout(() => setScoutMessage(null), 3000)
@@ -227,6 +231,10 @@ export function TransfersScreen() {
         const player = game.players.find(p => p.id === bid.playerId)
         const buyingClub = game.clubs.find(c => c.id === bid.buyingClubId)
         if (!player || !buyingClub) return null
+        // ÖVERLÄMNING 2 (2026-08-12): samma choices resolveEvent-vägen visar
+        // (bidReceivedEvent, eventFactories.ts) — Marknad och HÄNDELSE-kortet
+        // erbjuder nu identiska val, inklusive "Kräv mer" när canCounter.
+        const choices = bidReceivedEvent(bid, game).choices
         return (
           <IncomingBidCard
             key={bid.id}
@@ -234,8 +242,8 @@ export function TransfersScreen() {
             player={player}
             buyingClub={buyingClub}
             currentRound={currentRound}
-            onAccept={() => handleRespondToBid(bid.id, 'accept')}
-            onReject={() => handleRespondToBid(bid.id, 'reject')}
+            choices={choices}
+            onChoose={(choiceId) => handleRespondToBid(bid.id, choiceId)}
           />
         )
       })}

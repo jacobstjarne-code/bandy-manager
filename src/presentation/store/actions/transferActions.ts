@@ -1,9 +1,11 @@
 import type { SaveGame, TalentSearchRequest, Sponsor } from '../../../domain/entities/SaveGame'
 import { startScoutAssignment } from '../../../domain/services/scoutingService'
-import { createOutgoingBid, executeTransfer } from '../../../domain/services/transferService'
+import { createOutgoingBid } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { bidReceivedEvent } from '../../../domain/services/events/eventFactories'
+import { resolveEvent } from '../../../domain/services/eventService'
+import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { formatSalary } from '../../../domain/format'
 
 interface GetState { game: SaveGame | null }
@@ -138,45 +140,55 @@ export function transferActions(get: Get, set: Set) {
     },
 
     /**
-     * AUDIT DEL 2 B1 (2026-08-09): svar på inkommande bud direkt från
-     * IncomingBidCard (Marknad) — utan att gå via pendingEvents/resolveEvent,
-     * eftersom ett bud inte garanterat har en matchande pendingEvent-post
-     * (postAdvanceEvents.ts kappar på 2 events/omgång, ett bud kan hamna
-     * utanför den budgeten den första omgången det dyker upp). Samma
-     * domänlogik som eventResolver.ts:s acceptTransfer/rejectTransfer-fall
-     * (executeTransfer, samma moralstraff vid avslag) — inte en parallell
-     * implementation. Rensar EVENTUELL matchande pendingEvent (alla kända
-     * id-varianter från postAdvanceEvents.ts) i samma steg, så budet inte
-     * kan dyka upp igen som ett obesvarat HÄNDELSE-kort efter att kortet
-     * redan svarat — samma dubbelkälleklass som Berg-fyndet (AUDIT DEL 2),
-     * fast förebyggd här istf upptäckt i efterhand.
+     * ÖVERLÄMNING 2 (2026-08-12), sammanslagen med resolveEvent — tidigare
+     * (AUDIT DEL 2 B1, 2026-08-09) svarade den här funktionen på inkommande
+     * bud med en egen, parallell reducer (kärnlogiken identisk med
+     * eventResolver.ts:s acceptTransfer/rejectTransfer, men handrullad här).
+     * Konsekvensen: Marknadsvägen saknade "kräv mer" helt och fick aldrig
+     * ripple-kvittot (pilotTransferBidRippleChain) som resolveEvent-vägen
+     * har sedan ÖVERLÄMNING 2 steg 1. Två skal, samma kärna, glidna isär.
+     *
+     * Nu: samma bidReceivedEvent(bid, game) som HÄNDELSE-kortet visar
+     * syntetiseras här, injiceras temporärt i pendingEvents, och resolveEvent
+     * gör det faktiska arbetet — en enda källa för acceptTransfer/
+     * rejectTransfer/counterOffer, oavsett vilken skärm spelaren står på.
+     *
+     * Ett bud har inte garanterat en matchande pendingEvent-post sedan
+     * tidigare (postAdvanceEvents.ts kappar på 2 events/omgång) — därför
+     * injiceras eventet OAVSETT om det redan låg i kön, och alla tre kända
+     * id-varianter (accept/aiaccept/aireject) sopas undan efteråt, precis
+     * som den gamla implementationen gjorde. Den städningen fick INTE tappas
+     * i sammanslagningen.
      */
-    respondToIncomingBid: (bidId: string, response: 'accept' | 'reject') => {
+    respondToIncomingBid: (bidId: string, choiceId: string) => {
       const { game } = get()
       if (!game) return { success: false, error: 'Inget spel laddat' }
       const bid = (game.transferBids ?? []).find(b => b.id === bidId)
       if (!bid) return { success: false, error: 'Budet hittades inte' }
 
+      const event = bidReceivedEvent(bid, game)
+      if (!event.choices.some(c => c.id === choiceId)) {
+        return { success: false, error: 'Det alternativet är inte tillgängligt för det här budet' }
+      }
+
+      const gameWithEvent: SaveGame = {
+        ...game,
+        pendingEvents: [...(game.pendingEvents ?? []), event],
+      }
+      const afterResolve = resolveEvent(gameWithEvent, event.id, choiceId)
+
+      // Syskon-undanstädningen från den gamla implementationen — resolveEvents
+      // egen tail rensar bara event.id, inte AI-svarsvarianterna.
       const relatedEventIds = new Set([
         `event_bid_${bidId}`, `event_bid_aiaccept_${bidId}`, `event_bid_aireject_${bidId}`,
       ])
-      const pendingEvents = (game.pendingEvents ?? []).filter(e => !relatedEventIds.has(e.id))
+      const sweptEvents = (afterResolve.pendingEvents ?? []).filter(e => !relatedEventIds.has(e.id))
 
-      let updatedGame: SaveGame
-      if (response === 'accept') {
-        updatedGame = { ...executeTransfer(game, bid), pendingEvents }
-      } else {
-        updatedGame = {
-          ...game,
-          transferBids: (game.transferBids ?? []).map(b =>
-            b.id === bidId ? { ...b, status: 'rejected' as const } : b,
-          ),
-          players: game.players.map(p =>
-            p.id === bid.playerId ? { ...p, morale: Math.max(0, p.morale - 5) } : p,
-          ),
-          pendingEvents,
-        }
-      }
+      const afterSweep: SaveGame = { ...afterResolve, pendingEvents: sweptEvents }
+      const updatedGame = (afterSweep.deferredDecisions ?? []).length > 0
+        ? promoteFromQueue(afterSweep)
+        : afterSweep
+
       set({ game: updatedGame })
       return { success: true }
     },

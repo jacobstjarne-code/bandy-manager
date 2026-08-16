@@ -103,6 +103,10 @@ export function resolveEvent(
   // INTE är pendingRippleChain (renderas ingenstans ännu, medvetet).
   let pilotTransferBidTrigger: 'transfer_bid_accepted' | 'transfer_bid_rejected' | 'transfer_bid_countered' | null = null
   let pilotTransferBidPlayerName: string | undefined
+  // ÖVERLÄMNING 2 steg 3-underlag: bara avslaget bär en relatedPlayerId in i
+  // kedjan — det är utfallet vars enda konsekvens (spelarens morale) annars
+  // är osynlig. Accept/kräv mer behöver den inte (Kassan/tomt redan rätt).
+  let pilotTransferBidRelatedPlayerId: string | undefined
 
   switch (effect.type) {
     case 'acceptTransfer': {
@@ -133,6 +137,7 @@ export function resolveEvent(
         const player = effect.targetPlayerId ? game.players.find(p => p.id === effect.targetPlayerId) : undefined
         pilotTransferBidTrigger = 'transfer_bid_rejected'
         pilotTransferBidPlayerName = player ? `${player.firstName} ${player.lastName}` : undefined
+        pilotTransferBidRelatedPlayerId = effect.targetPlayerId
       }
       break
     }
@@ -1531,7 +1536,7 @@ export function resolveEvent(
       ...updatedGame,
       pilotTransferBidRippleChain: describeRippleChain(
         game, updatedGame, pilotTransferBidTrigger, pilotTransferBidPlayerName,
-        game.currentMatchday, game.currentSeason,
+        game.currentMatchday, game.currentSeason, pilotTransferBidRelatedPlayerId,
       ),
     }
   }

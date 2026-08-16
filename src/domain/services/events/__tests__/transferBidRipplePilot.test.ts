@@ -95,10 +95,11 @@ describe('ÖVERLÄMNING 2 steg 1-pilot: transferbud → ripple', () => {
     console.log('finances före/efter (säljande klubb):', game.clubs[0].finances, '→', after.clubs.find(c => c.id === 'c1')?.finances)
     console.log('spelaren kvar i truppen?', after.players.find(p => p.id === 'berg')?.clubId)
 
-    // AUDIT DEL 4 steg 2 (2026-08-12): kassan in — accept ska nu visa den.
+    // AUDIT DEL 4 steg 2 (2026-08-12): kassan in — accept ska nu visa den,
+    // scope:'club' (klubbomfattande, inte en enskild spelares fält).
     // Transferbudget rörs INTE här (managed club SÄLJER — transferBudget
     // dras bara för den KÖPANDE klubben i executeTransfer).
-    expect(chain?.steps).toEqual([{ label: 'Kassan', dir: 'up' }])
+    expect(chain?.steps).toEqual([{ label: 'Kassan', dir: 'up', scope: 'club' }])
   })
 
   it('avslag: producerar vilken kedja?', () => {
@@ -114,11 +115,11 @@ describe('ÖVERLÄMNING 2 steg 1-pilot: transferbud → ripple', () => {
     console.log(JSON.stringify(chain, null, 2))
     console.log('spelarens moral före/efter:', game.players[0].morale, '→', after.players.find(p => p.id === 'berg')?.morale)
 
-    // AUDIT DEL 4 steg 2: förblir tom EFTER kassan/transferbudget också —
-    // avslagets enda konsekvens (spelarens morale) är ett Player-fält, inte
-    // ett SaveGame/klubb-fält. Rapporterat till Jacob, inte byggt (kräver ett
-    // beslut om kedjan ska få se relatedPlayerId-fält).
-    expect(chain?.steps).toEqual([])
+    // ÖVERLÄMNING 2 steg 3 (2026-08-15, Jacobs dom): spelarnivå byggd, egen
+    // scope:'player' — etiketten är fältets namn ("Moralen"), inte "Spelaren"
+    // (subjectName bär redan vem det gäller). Detta var den enda konsekvensen
+    // avslaget faktiskt har, och den var osynlig fram till nu.
+    expect(chain?.steps).toEqual([{ label: 'Moralen', dir: 'down', scope: 'player' }])
   })
 
   it('kräv mer: förblir tom (Jacobs dom, verifierad efter steg 2)', () => {

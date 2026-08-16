@@ -48,7 +48,16 @@ export function mergeRippleDeltas(
   }
 }
 
-/** Diffar before/after på de ripple-påverkade fälten → en beskrivande dominokedja. */
+/**
+ * Diffar before/after på de ripple-påverkade fälten → en beskrivande dominokedja.
+ *
+ * relatedPlayerId (ÖVERLÄMNING 2 steg 3-underlag, 2026-08-12) är valfri och
+ * diffar EN specifik spelares fält (idag: morale) som ett eget, scope:'player'-
+ * märkt steg — skilt från de sju scope:'club'-stegen nedan. Byggd nu (avslags-
+ * utfallets enda konsekvens är annars alltid osynlig), men INTE utökad till
+ * star_injured ännu — det är en separat, medveten senare runda (Jacobs dom:
+ * piloten ska stå färdig och kunna kastas innan mönstret generaliseras).
+ */
 export function describeRippleChain(
   before: SaveGame,
   after: SaveGame,
@@ -56,18 +65,19 @@ export function describeRippleChain(
   subjectName: string | undefined,
   round: number,
   season: number,
+  relatedPlayerId?: string,
 ): RippleChain {
   const steps: RippleChainStep[] = []
   const fanD = (after.fanMood ?? 50) - (before.fanMood ?? 50)
-  if (fanD !== 0) steps.push({ label: 'Stämningen', dir: fanD > 0 ? 'up' : 'down' })
+  if (fanD !== 0) steps.push({ label: 'Stämningen', dir: fanD > 0 ? 'up' : 'down', scope: 'club' })
   const klackD = (after.supporterGroup?.mood ?? 50) - (before.supporterGroup?.mood ?? 50)
-  if (klackD !== 0) steps.push({ label: 'Klacken', dir: klackD > 0 ? 'up' : 'down' })
+  if (klackD !== 0) steps.push({ label: 'Klacken', dir: klackD > 0 ? 'up' : 'down', scope: 'club' })
   const csD = (after.communityStanding ?? 50) - (before.communityStanding ?? 50)
-  if (csD !== 0) steps.push({ label: 'Orten', dir: csD > 0 ? 'up' : 'down' })
+  if (csD !== 0) steps.push({ label: 'Orten', dir: csD > 0 ? 'up' : 'down', scope: 'club' })
   const boardD = (after.boardPatience ?? 70) - (before.boardPatience ?? 70)
-  if (boardD !== 0) steps.push({ label: 'Styrelsen', dir: boardD > 0 ? 'up' : 'down' })
+  if (boardD !== 0) steps.push({ label: 'Styrelsen', dir: boardD > 0 ? 'up' : 'down', scope: 'club' })
   const sponsD = (after.sponsorNetworkMood ?? 50) - (before.sponsorNetworkMood ?? 50)
-  if (sponsD !== 0) steps.push({ label: 'Sponsorerna', dir: sponsD > 0 ? 'up' : 'down' })
+  if (sponsD !== 0) steps.push({ label: 'Sponsorerna', dir: sponsD > 0 ? 'up' : 'down', scope: 'club' })
 
   // AUDIT DEL 4 steg 2 (2026-08-12): ekonomi — kassan och transferbudgeten.
   // Klubb-nivå (managedClubId), inte SaveGame-nivå som de fem ovan — RIPPLE_
@@ -78,9 +88,19 @@ export function describeRippleChain(
   const beforeClub = before.clubs.find(c => c.id === before.managedClubId)
   const afterClub = after.clubs.find(c => c.id === after.managedClubId)
   const kassaD = (afterClub?.finances ?? 0) - (beforeClub?.finances ?? 0)
-  if (kassaD !== 0) steps.push({ label: 'Kassan', dir: kassaD > 0 ? 'up' : 'down' })
+  if (kassaD !== 0) steps.push({ label: 'Kassan', dir: kassaD > 0 ? 'up' : 'down', scope: 'club' })
   const budgetD = (afterClub?.transferBudget ?? 0) - (beforeClub?.transferBudget ?? 0)
-  if (budgetD !== 0) steps.push({ label: 'Transferbudget', dir: budgetD > 0 ? 'up' : 'down' })
+  if (budgetD !== 0) steps.push({ label: 'Transferbudget', dir: budgetD > 0 ? 'up' : 'down', scope: 'club' })
+
+  // ÖVERLÄMNING 2 steg 3-underlag: spelarnivå, egen scope. Etiketten är
+  // fältets namn ("Moralen") — subjectName bär redan VEM det gäller, "Spelaren"
+  // hade varit dubbelt och tomt (Jacobs dom, 2026-08-15).
+  if (relatedPlayerId) {
+    const beforePlayer = before.players.find(p => p.id === relatedPlayerId)
+    const afterPlayer = after.players.find(p => p.id === relatedPlayerId)
+    const moraleD = (afterPlayer?.morale ?? 50) - (beforePlayer?.morale ?? 50)
+    if (moraleD !== 0) steps.push({ label: 'Moralen', dir: moraleD > 0 ? 'up' : 'down', scope: 'player' })
+  }
 
   return { trigger, subjectName, round, season, steps }
 }
