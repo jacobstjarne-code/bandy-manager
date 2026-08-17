@@ -77,6 +77,7 @@ import { SquadStatusMinimal } from '../../../presentation/components/portal/mini
 import { FormStatusMinimal } from '../../../presentation/components/portal/minimal/FormStatusMinimal'
 import { KlackenMoodMinimal } from '../../../presentation/components/portal/minimal/KlackenMoodMinimal'
 import { EconomyMinimal } from '../../../presentation/components/portal/minimal/EconomyMinimal'
+import { BoardPatienceMinimal } from '../../../presentation/components/portal/minimal/BoardPatienceMinimal'
 
 function makeSourceCard(source: 'kommunen' | 'mecenat' | 'lokaltidningen') {
   return function SourceCard({ game }: CardRenderProps) {
@@ -372,6 +373,19 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 50,
     triggers: [alwaysTrue],
     Component: SquadStatusMinimal,
+  },
+  // 3.2 (SLUTTEST_KO.md, 2026-08-17): alwaysTrue, inte "bara vid problem" —
+  // en spelare måste kunna se Stabilt FÖRE Under press/Ultimatum för att
+  // eskaleringen ska vara begriplig, inte bara en varning som dyker upp
+  // ur tomma intet. Vikt mellan squad_status och form_status: viktigare än
+  // dagsformen, mindre akut än truppens tillgänglighet i normalläge — färgen
+  // (danger vid Ultimatum) bär brådskan när det gäller, inte vikten.
+  {
+    id: 'board_patience_minimal',
+    tier: 'minimal',
+    weight: 45,
+    triggers: [alwaysTrue],
+    Component: BoardPatienceMinimal,
   },
   {
     id: 'form_status',
