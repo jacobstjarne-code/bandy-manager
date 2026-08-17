@@ -208,7 +208,29 @@ Portalens befintliga minimal-familj, samma mönster som `EconomyMinimal`. **Kval
 *Job market:* behåll managerprofil och historik, välj ny klubb, återställ klubbspecifik state.
 
 Rapportera vad var och en kostar. **Rent karriärslut är minimikravet** — se O13.
-**Status:** `RAPPORT-VÄNTAR`
+**Status:** `RAPPORT-LEVERERAD`
+
+**Nuvarande beteende, bekräftat i kod (inte antaget):**
+- `handleNewGame()` (`GameOverScreen.tsx:37-39`) navigerar till `/` men rensar aldrig `store.game`. `IntroSequence.tsx:56`s `hasSave = store.game !== null` är därför fortfarande `true` → "FORTSÄTT" visas → tar spelaren till `/game` → 3.1:s nya `managerFired`-guard (`4d59ee3b`) studsar dem direkt tillbaka till `/game/game-over`. Loopen är mildare än innan 3.1 (spelaren kan inte längre faktiskt SPELA som sparkad), men FORTSÄTT-knappen är fortfarande en återvändsgränd — enda vägen ut är att välja "NY KARRIÄR" istället.
+- `useGameStore.newGame()` (`gameStore.ts:165-184`) raderar **redan idag ovillkorat alla befintliga saves** ur IndexedDB (`listSaveGames().forEach(deleteSaveGame)`) innan den nya karriären skapas — ingen arkivering sker. Det betyder att en sparkad karriärs data redan nu tystas ihjäl utan spår så fort spelaren lyckas navigera till en ny karriär via den enda fungerande vägen (NY KARRIÄR). "Rent karriärslut" är alltså inte bara att LÄGGA TILL en rensning — det är att lägga till en arkivering INNAN den rensning som redan händer.
+- Persistenslagret (`saveGameStorage.ts`) är redan flersave-kapabelt i grunden (`listSaveGames`/`loadSaveGame`/`deleteSaveGame`/`saveSaveGame`, en per `game.id`) — men INGEN skärm i presentationslagret använder det för att bläddra/välja mellan flera saves. `newGame()`s allt-raderas-först-beteende gör att appen fungerar som en-save-i-taget idag, oavsett vad lagret klarar av.
+- `HistoryScreen.tsx` läser karriärhistorik (`seasonSummaries`) LIVE ur `useGameStore().game` — den har inget läge för att visa en arkiverad/död karriär efter att den aktiva saven rensats. Ska den återanvändas för "erbjud Historik" måste den ta emot ett externt game-snapshot som prop, inte bara läsa live store-state.
+
+**Kontrakt A — Rent karriärslut (minimikravet):**
+1. Ny store-action (t.ex. `clearFiredGame()`) som sätter `game: null` UTAN att nödvändigtvis radera själva IndexedDB-posten omedelbart — annars kan Historik-visningen aldrig nå den.
+2. Sekvensering: eftersom `newGame()` redan ovillkorat raderar alla saves, måste "arkivera sammanfattning" ske FÖRE ett eventuellt senare `newGame()`-anrop — antingen genom att låta den sparkade karriären ligga kvar i IndexedDB (genuint flersave, `deleteSaveGame` anropas aldrig på den) tills spelaren själv väljer att starta nytt, eller genom att extrahera en lätt sammanfattning (`seasonSummaries` + klubbidentitet + slutstatistik — inte hela `SaveGame` med spelartrupp/fixtures) till en separat, billigare arkivpost. Det andra är säkrare mot lagringskvoten — `gameStore.ts:169`s egen kommentar ("Clear old localStorage data that may be filling quota") bekräftar att kvoten redan varit ett verkligt problem i det här projektet, så "spara alla fulla saves för alltid" är inte riskfritt.
+3. `GameOverScreen.tsx`s "STARTA NYTT SPEL"-knapp behöver antingen bli två knappar (en som visar Historik/karriärrecap innan rensning, en som går direkt till Ny karriär) eller en sekvens (visa → rensa → navigera). Skärmens befintliga "Din karriär"-statistikblock (säsonger/bästa plats/vinster) är redan en minimal recap — kan räcka som "Historik" i sig, eller länka vidare till en läsa-bara `HistoryScreen`.
+4. `IntroSequence.tsx` kräver ingen ändring — `hasSave` blir korrekt `false` automatiskt så fort `store.game` faktiskt nollställs.
+
+Uppskattad omfattning: 3-4 filer (`gameStore.ts` ny action, `GameOverScreen.tsx` flöde/knappar, `HistoryScreen.tsx` om den ska återanvändas för en död karriär, ev. `saveGameStorage.ts` för en lättviktig arkivpost). Ingen ny arkitektur — bygger på befintlig flersave-kapacitet, bara en presentationsyta som saknas.
+
+**Kontrakt B — Job market (O13, uttryckligen ej beslutad):**
+Väsentligt större, av ett strukturellt skäl: `createNewGame()` (`createNewGame.ts:186-193`) genererar ALLTID en helt ny värld (`generateWorld` — alla 12 klubbar, alla spelare) och ett nytt schema från säsong 1. Det finns ingen "behåll ligan, byt bara vilken klubb jag styr"-väg idag. "Välj ny klubb, återställ klubbspecifik state, behåll managerprofil och historik" kräver alltså:
+1. En genuint ny väg vid sidan av `createNewGame` som tar en BEFINTLIG `SaveGame` (ligan, övriga 11 klubbars trupper/tabellposition, säsongskalendern) och bara byter `managedClubId` + återställer det som är klubbspecifikt (trupp, ekonomi, styrelserelation, stab) — en helt annan operation än att bygga world+schedule från noll.
+2. Ett explicit beslut om VILKA fält som ska överleva bytet (managerns egen karriärstatistik, `seasonSummaries`, `managerProfile`) och vilka som ska nollställas (klubbens trupp, kassa, `boardPatience`, styrelsemål) — inte bara kod, ett designbeslut som `createNewGame`s nuvarande antaganden inte är byggda för att uttrycka.
+3. Given O13 uttryckligen är "Inte beslutad" — jag djupdyker inte längre i detaljerad filomfattning här. Poängen med den här uppskattningen är bredden av skillnaden mot Kontrakt A, inte en färdig spec för något som inte är beslutat att byggas.
+
+**Min läsning:** Kontrakt A är byggbart nu, måttlig omfattning, väntar inte på obeslutade frågor. Kontrakt B väntar på O13 OCH kräver en väsentlig omarbetning av `createNewGame`s grundantagande (alltid ny värld) — inte en påbyggnad ovanpå Kontrakt A, utan en annan operation. Din dom att avgöra om B någonsin byggs; A kan byggas oavsett det svaret.
 
 ---
 
