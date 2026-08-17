@@ -395,45 +395,73 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
 
 // ── Context matching ───────────────────────────────────────────────────────────
 
-function matchesContext(tag: string, ctx: PressContext): boolean {
-  switch (tag) {
-    case 'win_any':       return ctx.won
-    case 'win_big':       return ctx.won && ctx.margin >= 3
-    case 'win_streak':    return ctx.won && ctx.streak >= 3
-    case 'win_away':      return ctx.won && !ctx.isHome
-    case 'win_derby':     return ctx.won && ctx.isDerby
-    case 'win_top3':      return ctx.won && ctx.position <= 3
-    case 'win_comeback':  return ctx.won && ctx.trailedAtHalf
-    case 'loss_any':      return ctx.lost
-    case 'loss_big':      return ctx.lost && ctx.margin >= 3
-    case 'loss_streak':   return ctx.lost && ctx.lossStreak >= 3
-    case 'loss_home':     return ctx.lost && ctx.isHome
-    case 'loss_close':    return ctx.lost && ctx.margin === 1
-    case 'loss_derby':    return ctx.lost && ctx.isDerby
-    case 'loss_referee':  return ctx.lost && ctx.rand() < 0.15
-    case 'draw_any':      return ctx.draw
-    case 'draw_away_top': return ctx.draw && !ctx.isHome && ctx.opponentPosition <= 3
-    case 'draw_boring':   return ctx.draw && (ctx.totalShots ?? 99) < 10
-    case 'playoff_win':   return ctx.won && ctx.isPlayoff
-    case 'playoff_loss_not_final': return ctx.lost && ctx.isPlayoff && !ctx.isFinal
-    case 'cup_win':       return ctx.won && ctx.isCup
-    case 'final_pre':     return ctx.isPlayoff && ctx.isFinal
-    case 'winter':        return (ctx.temperature ?? 0) < -10
-    case 'relegation':    return ctx.position >= 10
-    case 'youngster':     return ctx.youngsterScored
-    case 'any':           return true
-    default:              return false
-  }
+// M-refaktor (Jacob 2026-08-17): den gamla generic-fallbacken avgjorde
+// återanvändbarhet via tag.startsWith('win_'/'loss_'/'draw_') — en tyst
+// fälla där VARJE framtida tagg med rätt prefix automatiskt blev
+// generic-eligible, även om den var tänkt som narrativt specifik
+// (samma buggklass som playoff_loss_not_final redan en gång fick en
+// handpatchad undantagsrad för). Ersatt med en explicit klassificering,
+// samlokaliserad med matchningsvillkoret så det bara finns EN lista per
+// tagg — inte matchesContext-listan och en separat generic-lista.
+//
+// generic-fältet:
+//   'win'       — generic-eligible när matchen vanns
+//   'loss'      — generic-eligible när matchen förlorades
+//   'draw'      — generic-eligible vid oavgjort
+//   'universal' — alltid generic-eligible (idag bara 'any')
+//   'none'      — ALDRIG generic-eligible. Detta är default för nya taggar
+//                 som inte listas explicit nedan (se `?? 'none'` i
+//                 isGenericMatch) — en ny tagg måste klassificeras
+//                 medvetet, den kan inte "råka" bli återanvändbar.
+type GenericBucket = 'win' | 'loss' | 'draw' | 'universal' | 'none'
+
+const TAG_DEFS: Record<string, { matches: (ctx: PressContext) => boolean; generic: GenericBucket }> = {
+  win_any:      { matches: ctx => ctx.won,                                        generic: 'win' },
+  win_big:      { matches: ctx => ctx.won && ctx.margin >= 3,                      generic: 'win' },
+  win_streak:   { matches: ctx => ctx.won && ctx.streak >= 3,                      generic: 'win' },
+  win_away:     { matches: ctx => ctx.won && !ctx.isHome,                          generic: 'win' },
+  win_derby:    { matches: ctx => ctx.won && ctx.isDerby,                          generic: 'win' },
+  win_top3:     { matches: ctx => ctx.won && ctx.position <= 3,                    generic: 'win' },
+  win_comeback: { matches: ctx => ctx.won && ctx.trailedAtHalf,                    generic: 'win' },
+  loss_any:     { matches: ctx => ctx.lost,                                        generic: 'loss' },
+  loss_big:     { matches: ctx => ctx.lost && ctx.margin >= 3,                     generic: 'loss' },
+  loss_streak:  { matches: ctx => ctx.lost && ctx.lossStreak >= 3,                 generic: 'loss' },
+  loss_home:    { matches: ctx => ctx.lost && ctx.isHome,                          generic: 'loss' },
+  loss_close:   { matches: ctx => ctx.lost && ctx.margin === 1,                    generic: 'loss' },
+  loss_derby:   { matches: ctx => ctx.lost && ctx.isDerby,                         generic: 'loss' },
+  loss_referee: { matches: ctx => ctx.lost && ctx.rand() < 0.15,                   generic: 'loss' },
+  draw_any:     { matches: ctx => ctx.draw,                                        generic: 'draw' },
+  draw_away_top:{ matches: ctx => ctx.draw && !ctx.isHome && ctx.opponentPosition <= 3, generic: 'draw' },
+  draw_boring:  { matches: ctx => ctx.draw && (ctx.totalShots ?? 99) < 10,          generic: 'draw' },
+  playoff_win:  { matches: ctx => ctx.won && ctx.isPlayoff,                        generic: 'win' },
+  // M54(g): playoff_loss_not_final medvetet UTESLUTEN från generic — cl25
+  // ska inte slinka in via generic-fallbacken när matchen var finalen.
+  playoff_loss_not_final: { matches: ctx => ctx.lost && ctx.isPlayoff && !ctx.isFinal, generic: 'none' },
+  cup_win:      { matches: ctx => ctx.won && ctx.isCup,                            generic: 'win' },
+  final_pre:    { matches: ctx => ctx.isPlayoff && ctx.isFinal,                    generic: 'win' },
+  winter:       { matches: ctx => (ctx.temperature ?? 0) < -10,                    generic: 'none' },
+  relegation:   { matches: ctx => ctx.position >= 10,                              generic: 'none' },
+  youngster:    { matches: ctx => ctx.youngsterScored,                             generic: 'none' },
+  any:          { matches: () => true,                                            generic: 'universal' },
 }
 
-function isGenericMatch(tag: string, won: boolean, lost: boolean, draw: boolean): boolean {
-  if (tag === 'any') return true
-  if (won && (tag.startsWith('win_') || tag === 'playoff_win' || tag === 'cup_win' || tag === 'final_pre')) return true
-  // M54(g): playoff_loss_not_final medvetet UTESLUTEN här — cl25 ska inte
-  // slinka in via generic-fallbacken när matchen var finalen.
-  if (lost && tag.startsWith('loss_')) return true
-  if (draw && tag.startsWith('draw_')) return true
-  return false
+// Exporterad enbart för tabelltestet (isGenericMatch.table.test.ts) — inte
+// avsedd som allmän API-yta för resten av appen.
+export const ALL_PRESS_TAGS = Object.keys(TAG_DEFS)
+
+function matchesContext(tag: string, ctx: PressContext): boolean {
+  return TAG_DEFS[tag]?.matches(ctx) ?? false
+}
+
+export function isGenericMatch(tag: string, won: boolean, lost: boolean, draw: boolean): boolean {
+  const bucket = TAG_DEFS[tag]?.generic ?? 'none'
+  switch (bucket) {
+    case 'universal': return true
+    case 'win':        return won
+    case 'loss':       return lost
+    case 'draw':       return draw
+    case 'none':       return false
+  }
 }
 
 // ── Build 3 contextually-weighted responses ────────────────────────────────────
