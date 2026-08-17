@@ -76,7 +76,7 @@ export function generateSupporterEvents(
           {
             id: 'sture',
             label: `Ge ${sture} rätt — traditionen är viktig`,
-            subtitle: '💛 -2 klackens stämning · ${elin} besviken',
+            subtitle: `💛 -2 klackens stämning · ${elin} besviken`,
             effect: { type: 'supporterMood', amount: -2 },
           },
           {
