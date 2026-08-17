@@ -20,7 +20,8 @@
     "stress": "node_modules/.bin/vite-node scripts/stress-test.ts",
     "analyze-stress": "node_modules/.bin/vite-node scripts/analyze-stress.ts",
     "warehouse:generate": "node_modules/.bin/vite-node scripts/data-warehouse/generate.ts",
-    "warehouse:validate": "node_modules/.bin/vite-node scripts/data-warehouse/validate.ts"
+    "warehouse:validate": "node_modules/.bin/vite-node scripts/data-warehouse/validate.ts",
+    "check:deploy-sync": "node scripts/check-deploy-sync.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
