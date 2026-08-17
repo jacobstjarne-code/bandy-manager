@@ -1236,6 +1236,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     matchWeathers: [],
     trainingHistory: [],
     playoffBracket: null,
+    // A2 (2026-08-17): nollställs tillsammans med playoffBracket — nästa säsongs
+    // elimineringsanslag (om det inträffar) sätter ett nytt värde i playoffProcessor.ts.
+    lastPlayoffElimination: null,
     cupBracket: newCupBracket,
     // A1 (långspelsaudit, 10 säsonger, 2026-08-17): .slice(-5) kapade
     // karriärminnet — år 1-5 av 10 var borta, fem SM-guld stod kvar som

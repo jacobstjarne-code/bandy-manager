@@ -759,6 +759,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const playoffCsBoost = playoffResult.playoffCsBoost
   const triggerQFSummary = playoffResult.triggerQFSummary
   newInboxItems.push(...playoffResult.inboxItems)
+  // A2 (2026-08-17): only overwritten in the round the managed club is eliminated
+  // — otherwise carries forward, same accumulator pattern as lastRivalSaleInfo above.
+  const lastPlayoffElimination = playoffResult.lastPlayoffElimination ?? game.lastPlayoffElimination ?? null
   // playoff narrative events collected here, pushed to allNewEvents after it's declared below
 
   // Apply playoff fixture cancellations to allFixtures
@@ -1411,6 +1414,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     matchWeathers: trimmedWeathers,
     trainingHistory: trimmedTrainingHistory,
     playoffBracket: updatedBracket,
+    lastPlayoffElimination,
     cupBracket: updatedCupBracket,
     scoutReports: { ...updatedScoutReports, ...rumorScoutReports },
     activeScoutAssignment: updatedScoutAssignment,

@@ -66,6 +66,55 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
     }
   }
 
+  // Template-variable resolution for playoff elimination anslag.
+  //
+  // A2 (långspelsaudit, 10 säsonger, 2026-08-17): {motståndare}/{resultat} rendrades
+  // ALLTID bokstavligt för playoff_eliminated_* — två rotorsaker, båda fixade här:
+  //   1. Denna substitution låg tidigare EFTER `finalBody`-beräkningen (som var en
+  //      `const`) — så `variantBody`-omtilldelningen nådde aldrig rendern, oavsett
+  //      om eliminatingSeries hittades eller ej. Flyttad hit, före finalBody.
+  //   2. Substitutionen härledde motståndare/resultat ur game.playoffBracket vid
+  //      RENDER-tillfället, vilket kräver att bracket fortfarande innehåller den
+  //      avgörande serien intakt. Läser nu primärt game.lastPlayoffElimination —
+  //      resolved EN gång i playoffProcessor.ts, samma stund inbox-raden för
+  //      elimineringen skapas (se PlayoffEliminationInfo i Playoff.ts). Bracket-
+  //      härledningen finns kvar som fallback för sparfiler från innan detta fält
+  //      fanns (en pågående elimineringsanslag utan lastPlayoffElimination satt).
+  const getPlayoffRoundLabel = (round: string) =>
+    round === 'quarterFinal' ? 'kvartsfinalen' :
+    round === 'semiFinal' ? 'semifinalen' :
+    'SM-finalen'
+  if (anslagKey.startsWith('playoff_eliminated_')) {
+    const info = game.lastPlayoffElimination
+    if (info) {
+      variantBody = variantBody
+        .replace(/{motståndare}/g, info.opponentName)
+        .replace(/{rond}/g, getPlayoffRoundLabel(info.round))
+        .replace(/{resultat}/g, info.resultat)
+    } else {
+      // Fallback för sparfiler äldre än lastPlayoffElimination-fältet.
+      const allSeries = [
+        ...(game.playoffBracket?.quarterFinals ?? []),
+        ...(game.playoffBracket?.semiFinals ?? []),
+        ...(game.playoffBracket?.final ? [game.playoffBracket.final] : []),
+      ]
+      const eliminatingSeries = allSeries.find(s =>
+        s.loserId === game.managedClubId && s.winnerId !== null
+      )
+      if (eliminatingSeries) {
+        const opponent = game.clubs.find(c => c.id === eliminatingSeries.winnerId)
+        const seriesFixtures = eliminatingSeries.fixtures
+          .map((fid: string) => game.fixtures.find(f => f.id === fid))
+          .filter((f): f is NonNullable<typeof f> => !!f && f.status === 'completed')
+        const lastFixture = seriesFixtures.sort((a, b) => b.matchday - a.matchday)[0]
+        variantBody = variantBody
+          .replace(/{motståndare}/g, opponent?.shortName ?? opponent?.name ?? 'motståndaren')
+          .replace(/{rond}/g, getPlayoffRoundLabel(eliminatingSeries.round))
+          .replace(/{resultat}/g, lastFixture ? `${lastFixture.homeScore}–${lastFixture.awayScore}` : '')
+      }
+    }
+  }
+
   const isDirektkvalad = anslagKey === 'cup_start' && bracket && club
     ? isClubDirektkvalad(bracket, club.id)
     : false
@@ -74,33 +123,6 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
       ? anslag.bodyDirektkval.replace('{clubName}', club.name)
       : ''
   )
-
-  // Template-variable resolution for playoff elimination anslag
-  if (anslagKey.startsWith('playoff_eliminated_')) {
-    const allSeries = [
-      ...(game.playoffBracket?.quarterFinals ?? []),
-      ...(game.playoffBracket?.semiFinals ?? []),
-      ...(game.playoffBracket?.final ? [game.playoffBracket.final] : []),
-    ]
-    const eliminatingSeries = allSeries.find(s =>
-      s.loserId === game.managedClubId && s.winnerId !== null
-    )
-    if (eliminatingSeries) {
-      const opponent = game.clubs.find(c => c.id === eliminatingSeries.winnerId)
-      const seriesFixtures = eliminatingSeries.fixtures
-        .map((fid: string) => game.fixtures.find(f => f.id === fid))
-        .filter((f): f is NonNullable<typeof f> => !!f && f.status === 'completed')
-      const lastFixture = seriesFixtures.sort((a, b) => b.matchday - a.matchday)[0]
-      const getRoundLabel = (round: string) =>
-        round === 'quarterFinal' ? 'kvartsfinalen' :
-        round === 'semiFinal' ? 'semifinalen' :
-        'SM-finalen'
-      variantBody = variantBody
-        .replace(/{motståndare}/g, opponent?.shortName ?? opponent?.name ?? 'motståndaren')
-        .replace(/{rond}/g, getRoundLabel(eliminatingSeries.round))
-        .replace(/{resultat}/g, lastFixture ? `${lastFixture.homeScore}–${lastFixture.awayScore}` : '')
-    }
-  }
 
   const isWinner = anslagKey === 'cup_done_winner'
 

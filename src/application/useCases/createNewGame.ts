@@ -345,6 +345,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     managedClubTraining: { type: TrainingType.Physical, intensity: TrainingIntensity.Normal },
     trainingHistory: [],
     playoffBracket: null,
+    lastPlayoffElimination: null,
     cupBracket,
     seasonSummaries: [],
     pendingScreen: null,

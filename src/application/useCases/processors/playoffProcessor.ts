@@ -1,6 +1,6 @@
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
-import type { PlayoffBracket } from '../../../domain/entities/Playoff'
+import type { PlayoffBracket, PlayoffEliminationInfo } from '../../../domain/entities/Playoff'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayoffStatus } from '../../../domain/enums'
 import { updateSeriesAfterMatch, advancePlayoffRound } from '../../../domain/services/playoffService'
@@ -20,6 +20,9 @@ export interface PlayoffProcessorResult {
   cancelledFixtureIds: string[]
   triggerQFSummary: boolean
   staleEventIds: string[]
+  // A2 (2026-08-17): set only in the round the managed club is eliminated —
+  // see comment at the PlayoffEliminationInfo definition (Playoff.ts) for why.
+  lastPlayoffElimination: PlayoffEliminationInfo | null
 }
 
 /**
@@ -49,6 +52,7 @@ export function processPlayoffRound(
     cancelledFixtureIds: [],
     triggerQFSummary: false,
     staleEventIds: [],
+    lastPlayoffElimination: null,
   }
 
   if (result.updatedBracket === null) return result
@@ -193,6 +197,22 @@ export function processPlayoffRound(
         body: `${winner?.name ?? 'Motståndaren'} gick vidare med ${theirWins}-${myWins} i matcher. En stark insats, men slutspelet är nu över för er del.`,
         isRead: false,
       } as InboxItem)
+
+      // A2 (2026-08-17): resolve motståndare/resultat HÄR, en gång, med game.clubs
+      // och allFixtures båda garanterat färska — inte vid ett framtida render-
+      // tillfälle där bracket kan ha hunnit nollställas (seasonEndProcessor.ts)
+      // eller där renderns egen kopia av samma uträkning kastades bort (se
+      // PlayoffEliminationInfo-kommentaren i Playoff.ts).
+      const seriesFixturesCompleted = series.fixtures
+        .map(fid => allFixtures.find(f => f.id === fid))
+        .filter((f): f is Fixture => !!f && f.status === FixtureStatus.Completed)
+      const decidingFixture = seriesFixturesCompleted.sort((a, b) => b.matchday - a.matchday)[0]
+      result.lastPlayoffElimination = {
+        season: game.currentSeason,
+        round: series.round,
+        opponentName: winner?.shortName ?? winner?.name ?? 'motståndaren',
+        resultat: decidingFixture ? `${decidingFixture.homeScore}–${decidingFixture.awayScore}` : '',
+      }
       break
     }
 

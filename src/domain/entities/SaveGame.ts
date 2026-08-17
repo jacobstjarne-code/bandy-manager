@@ -9,7 +9,7 @@ import type { League } from './League'
 import type { Fixture, TeamSelection } from './Fixture'
 import type { MatchWeather } from './Weather'
 import type { TrainingFocus, TrainingSession, TrainingProject } from './Training'
-import type { PlayoffBracket } from './Playoff'
+import type { PlayoffBracket, PlayoffEliminationInfo } from './Playoff'
 import type { CupBracket } from './Cup'
 import type { SeasonSummary } from './SeasonSummary'
 import type { ScoutReport, ScoutAssignment } from './Scouting'
@@ -146,6 +146,11 @@ export interface SaveGame {
 
   playoffBracket: PlayoffBracket | null
   cupBracket: CupBracket | null
+  // A2 (långspelsaudit, 10 säsonger, 2026-08-17): resolved vid elimineringstillfället
+  // i playoffProcessor.ts — AnslagOverlay läser detta direkt istf att härleda
+  // motståndare/resultat ur playoffBracket vid render. Nollställs vid säsongsskifte
+  // (seasonEndProcessor.ts) tillsammans med playoffBracket.
+  lastPlayoffElimination?: PlayoffEliminationInfo | null
 
   pendingScreen?: PendingScreen | null
   seasonSummaries: SeasonSummary[]
