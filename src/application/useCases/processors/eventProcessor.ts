@@ -239,7 +239,7 @@ export function processGameEvents(
               label: 'Noterat',
               effect: {
                 type: 'finance',
-                amount: penalty,
+                value: penalty,
               },
             },
           ],

@@ -664,6 +664,34 @@ export function resolveEvent(
                   },
                 }
               }
+            } else if (sub.type === 'kommunBidragChange') {
+              // 2026-08-17 (Stickiness-audit): politicianEvents.ts:151-155 lovar "+6 000
+              // kr/sä kommunbidrag" i subtitlen via en multiEffect-subEffect, men denna
+              // gren saknades — effekten var tyst noll. Samma matte som top-level
+              // case 'kommunBidragChange' (rad 491-499).
+              if (updatedGame.localPolitician) {
+                updatedGame = {
+                  ...updatedGame,
+                  localPolitician: {
+                    ...updatedGame.localPolitician,
+                    kommunBidrag: Math.max(0, (updatedGame.localPolitician.kommunBidrag ?? 0) + (sub.amount ?? 0)),
+                  },
+                }
+              }
+            } else if (sub.type === 'reputation') {
+              // 2026-08-17 (Stickiness-audit): politicianEvents.ts:118-121 lovar "+5
+              // reputation" i subtitlen (redan en gång "synkad mot subtitlen" enligt M29-
+              // kommentaren där — den synken la till subEffect-posten men missade att
+              // multiEffect-resolvern saknade en reputation-gren, så effekten förblev
+              // tyst noll). Samma matte som top-level case 'reputation' (rad 536-546).
+              updatedGame = {
+                ...updatedGame,
+                clubs: updatedGame.clubs.map(c =>
+                  c.id === updatedGame.managedClubId
+                    ? { ...c, reputation: Math.max(1, Math.min(100, c.reputation + (sub.amount ?? 0))) }
+                    : c
+                ),
+              }
             } else if (sub.type === 'supporterMood') {
               if (updatedGame.supporterGroup) {
                 updatedGame = {
