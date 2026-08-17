@@ -62,6 +62,15 @@ export interface Mecenat {
   pendingDemand?: PendingDemand
   socialExpectations: SocialEvent[]
   isActive: boolean
+  // K5 (SLUTTEST-KÖN, 2026-08-17): isActive:false var överlastad — betydde
+  // BÅDE "ny mecenat, ej accepterad ännu" (applyMecenatSpawn) OCH "permanent
+  // avskedad" (withdrawal-blocket). eventResolver.ts's case 'mecenatHappiness'
+  // kunde inte skilja dem åt och tolkade en avskedad mecenat som "väntar på
+  // intro" — återupplivade den. Jacobs beslut: permanent ska betyda permanent,
+  // inget villkorat undantag. Detta fältet är den enda källan till sanning för
+  // det — satt EN gång vid avsked, aldrig återställt, kollat FÖRE isActive i
+  // resolvern.
+  permanentlyWithdrawn?: boolean
   arrivedSeason: number
   favoritePlayerId?: string
   wantsStyle?: string

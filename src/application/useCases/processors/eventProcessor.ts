@@ -247,7 +247,7 @@ export function processGameEvents(
         }
         gameEvents.push(withdrawalEvent)
         updatedMecenater = updatedMecenater.map((m, idx) =>
-          idx === i ? { ...m, isActive: false, happiness: 0 } : m,
+          idx === i ? { ...m, isActive: false, happiness: 0, permanentlyWithdrawn: true } : m,
         )
         mecenatWithdrawnSeason = game.currentSeason
       }

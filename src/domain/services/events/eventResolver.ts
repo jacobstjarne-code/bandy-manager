@@ -584,6 +584,11 @@ export function resolveEvent(
       const costKr = effect.value ?? 0
       const target = updatedGame.mecenater.find(m => m.id === targetId)
       if (!target) break
+      // K5 (SLUTTEST-KÖN, 2026-08-17): permanent ska betyda permanent — en
+      // avskedad mecenat kan inte röras av mecenatHappiness alls, varken
+      // isActive, happiness eller kostnaden nedan. Se Mecenat.ts:s kommentar
+      // vid permanentlyWithdrawn.
+      if (target.permanentlyWithdrawn) break
       if (!target.isActive) {
         // Intro activation — pending mecenat accepts relationship
         const completedFixtures = (updatedGame.fixtures ?? []).filter(f => (f.status as string) === 'completed')
@@ -721,7 +726,8 @@ export function resolveEvent(
                   },
                 }
               }
-            } else if (sub.type === 'mecenatHappiness' && sub.targetMecenatId && updatedGame.mecenater) {
+            } else if (sub.type === 'mecenatHappiness' && sub.targetMecenatId && updatedGame.mecenater
+              && !updatedGame.mecenater.find(m => m.id === sub.targetMecenatId)?.permanentlyWithdrawn) {
               const delta = sub.amount ?? 0
               updatedGame = {
                 ...updatedGame,
