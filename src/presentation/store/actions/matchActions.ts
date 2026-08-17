@@ -5,6 +5,7 @@ import { calculateStandings } from '../../../domain/services/standingsService'
 import { updateCupBracketAfterRound, generateNextCupRound } from '../../../domain/services/cupService'
 import { stampFixturesFromCalendar } from '../../../domain/services/scheduleGenerator'
 import { updateSeriesAfterMatch, advancePlayoffRound } from '../../../domain/services/playoffService'
+import { isPlayoffNarrativeCardStillValid } from '../../../domain/services/playoffNarrativeService'
 import { simulateMatch } from '../../../domain/services/matchEngine'
 import { fixtureSeed } from '../../../domain/utils/random'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
@@ -12,6 +13,28 @@ import { generateCoachQuote } from '../../../domain/services/assistantCoachServi
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
 type Set = (partial: Partial<{ game: SaveGame | null }>) => void
+
+/**
+ * A3 (2026-08-17, LÅNGSPEL-audit): saveLiveMatchResult/concedeWalkover
+ * advancerar playoffBracket direkt (samma domänfunktioner som
+ * playoffProcessor.ts använder) men går ALDRIG via processPlayoffRound —
+ * roundProcessor.ts's staleEventIds-mekanism (H-02) ser därför aldrig denna
+ * fasövergång och kan inte rensa ett kort som blivit ogiltigt precis nu.
+ * Om spelaren spelar sin avgörande slutspelsmatch LIVE och bracketen därmed
+ * hoppar förbi ett skede (t.ex. semifinal→final när båda semifinalerna
+ * avgörs i samma anrop) hinner Portalen visa det gamla kortet innan någon
+ * advanceToNextEvent-omgång ens körts. Samma bracket-giltighetsgrind som
+ * roundProcessor.ts (isPlayoffNarrativeCardStillValid) appliceras här, direkt
+ * vid mutationstillfället — det är den faktiska konsumtionstidpunkten:
+ * Portalen läser game.pendingEvents/deferredDecisions nästa gång den renderas,
+ * inte först vid nästa advance().
+ */
+function purgeStalePlayoffCards(game: SaveGame, bracket: SaveGame['playoffBracket']): Pick<SaveGame, 'pendingEvents' | 'deferredDecisions'> {
+  return {
+    pendingEvents: (game.pendingEvents ?? []).filter(e => isPlayoffNarrativeCardStillValid(e.id, bracket, game.managedClubId)),
+    deferredDecisions: (game.deferredDecisions ?? []).filter(e => isPlayoffNarrativeCardStillValid(e.id, bracket, game.managedClubId)),
+  }
+}
 
 export function matchActions(get: Get, set: Set) {
   return {
@@ -170,7 +193,12 @@ export function matchActions(get: Get, set: Set) {
         }
       }
 
-      set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket, managedClubPendingLineup: undefined, lastHalftimeDecision: undefined } })
+      // A3: bracket may have just been advanced directly above (bypassing
+      // processPlayoffRound) — re-derive playoff-card validity now, at the
+      // real consumption point, not just on the next advanceToNextEvent().
+      const playoffCardCleanup = purgeStalePlayoffCards(game, updatedPlayoffBracket)
+
+      set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket, managedClubPendingLineup: undefined, lastHalftimeDecision: undefined, ...playoffCardCleanup } })
     },
 
     simulateAbandonedMatch: (fixtureId: string) => {
@@ -308,6 +336,10 @@ export function matchActions(get: Get, set: Set) {
         isRead: false,
       }
 
+      // A3: same bracket-validity re-check as saveLiveMatchResult — walkover
+      // can also advance the bracket directly, bypassing processPlayoffRound.
+      const playoffCardCleanup = purgeStalePlayoffCards(game, updatedPlayoffBracket)
+
       set({ game: {
         ...game,
         fixtures: updatedFixtures,
@@ -317,6 +349,7 @@ export function matchActions(get: Get, set: Set) {
         managedClubPendingLineup: undefined,
         lastCompletedFixtureId: fixtureId,
         inbox: [walkoverItem, ...game.inbox],
+        ...playoffCardCleanup,
       }})
     },
 

@@ -1,5 +1,8 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
+import type { PlayoffBracket } from '../entities/Playoff'
+import { PlayoffStatus } from '../enums'
+import { getManagedClubPlayoffStatus } from './playoffService'
 
 export function generateQuarterFinalEvent(game: SaveGame): GameEvent {
   const history = game.seasonSummaries ?? []
@@ -51,4 +54,43 @@ export function generateFinalEvent(game: SaveGame): GameEvent {
     choices: [{ id: 'ack', label: 'Det är dags', effect: { type: 'noOp' } }],
     resolved: false,
   }
+}
+
+/**
+ * A3 (2026-08-17, LÅNGSPEL-audit — samma familj som H-02): konsumtionstids-
+ * grind för slutspelets "Fokusera"-kort (playoff_qf_/sf_/final_<säsong>).
+ *
+ * playoffProcessor.ts's `managedInNewBracket`-check bevisar bara att managed
+ * club var en legitim kvarts-/semifinalist/finalist i EXAKT ÖGONBLICKET kortet
+ * genererades. Den säger ingenting om huruvida det fortfarande stämmer när
+ * kortet faktiskt plockas ut ur kön och visas — KF3s avbrottsbudget
+ * (deferredDecisions) kan hålla kvar ett kort i flera omgångar. Observerat
+ * konkret i 10-säsongersplaytesten: "Finalen. Birger..." avfyrades trots att
+ * managed club redan var utslaget i semifinalen.
+ *
+ * Detta kompletterar (ersätter inte) playoffProcessor.ts's staleEventIds —
+ * den mekanismen rensar ett korts EGEN fas när den avslutas (t.ex. SF-kortet
+ * när BÅDA semifinalserierna är avgjorda). Den här funktionen omvärderar
+ * giltigheten mot den LEVANDE bracketen varje omgång, oavsett om hela fasen
+ * hunnit avslutas — fångar alltså elimineringen samma omgång den sker, inte
+ * först när motståndarens parallella serie också är klar.
+ *
+ * Icke-slutspelskort (alla andra event-typer) passerar opåverkade (true).
+ */
+export function isPlayoffNarrativeCardStillValid(
+  eventId: string,
+  bracket: PlayoffBracket | null,
+  managedClubId: string,
+): boolean {
+  const isQF = eventId.startsWith('playoff_qf_')
+  const isSF = eventId.startsWith('playoff_sf_')
+  const isFinal = eventId.startsWith('playoff_final_')
+  if (!isQF && !isSF && !isFinal) return true
+
+  if (!bracket) return false
+
+  const status = getManagedClubPlayoffStatus(bracket, managedClubId)
+  if (isQF) return bracket.status === PlayoffStatus.QuarterFinals && !status.eliminated
+  if (isSF) return bracket.status === PlayoffStatus.SemiFinals && !status.eliminated
+  return bracket.status === PlayoffStatus.Final && status.isInFinal
 }

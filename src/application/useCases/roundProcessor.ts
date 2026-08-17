@@ -30,6 +30,7 @@ import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { processPlayoffRound } from './processors/playoffProcessor'
+import { isPlayoffNarrativeCardStillValid } from '../../domain/services/playoffNarrativeService'
 import { processCupRound } from './processors/cupProcessor'
 import { appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
@@ -1427,7 +1428,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       ...(game.pendingEvents ?? []).filter(e =>
         !e.resolved &&
         !allNewEvents.some(n => n.id === e.id) &&
-        !playoffResult.staleEventIds.includes(e.id)
+        !playoffResult.staleEventIds.includes(e.id) &&
+        // A3 (2026-08-17): bracket-giltighetsgrind utöver staleEventIds — se
+        // playoffNarrativeService.ts's isPlayoffNarrativeCardStillValid.
+        isPlayoffNarrativeCardStillValid(e.id, updatedBracket, game.managedClubId)
       ),
       ...allNewEvents,
     ],
@@ -1439,9 +1443,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     // "playoff_sf_"-kort dök upp i portalen EFTER att finalen redan var vunnen,
     // eftersom kortet legat undanträngt i deferredDecisions genom hela SF- och
     // finalfasen). Samma filter som pendingEvents ovan, applicerat här.
+    //
+    // A3 (2026-08-17): staleEventIds rensar ett korts EGEN fas när den
+    // avslutas som helhet (t.ex. SF-kortet först när BÅDA semifinalserierna
+    // är avgjorda) — men managed clubs egen elimination kan ske omgångar
+    // innan motståndarens parallella serie är klar. isPlayoffNarrativeCardStillValid
+    // omvärderar mot den levande bracketen varje omgång och fångar
+    // elimineringen samma omgång den sker, oavsett fasens helhetsstatus.
     deferredDecisions: (game.deferredDecisions ?? []).filter(e =>
       !allNewEvents.some(n => n.id === e.id) &&
-      !playoffResult.staleEventIds.includes(e.id)
+      !playoffResult.staleEventIds.includes(e.id) &&
+      isPlayoffNarrativeCardStillValid(e.id, updatedBracket, game.managedClubId)
     ),
     sponsors: updatedSponsors,
     activeTalentSearch: updatedTalentSearch,
