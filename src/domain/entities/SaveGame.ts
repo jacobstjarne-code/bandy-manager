@@ -86,6 +86,12 @@ export interface SaveGame {
   id: string
   managerName: string
   managedClubId: string
+  // K4 (SLUTTEST-KÖN, 2026-08-17): kan bara fyllas framåt, samma logik som
+  // builtSeason (facilityService.ts) — undefined för saves skapade innan
+  // detta fält fanns, ingen gissning bakåt. Ingen konsument ännu — se
+  // domain/data/ruleVersion.ts för regelversionens motivering.
+  worldSeed?: number
+  ruleVersion?: string
 
   currentDate: string    // ISO date
   currentSeason: number

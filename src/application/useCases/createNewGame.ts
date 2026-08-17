@@ -17,6 +17,7 @@ import { POLITICIAN_PROFILES } from '../../domain/data/politicianData'
 import { BOARD_PROFILES } from '../../domain/data/boardData'
 import { VOLUNTEER_FIRST_NAMES, LOCAL_PAPER_NAMES } from '../../domain/data/communityNames'
 import { initCharacterPlayers } from '../../domain/services/characterPlayerService'
+import { CURRENT_RULE_VERSION } from '../../domain/data/ruleVersion'
 import { createJournalist } from '../../domain/services/journalistService'
 import { createDoctor } from '../../domain/data/injuryDoctorText'
 import { createTrainerArc } from '../../domain/services/trainerArcService'
@@ -464,5 +465,11 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
       const startingValue = evaluateObjective(obj, finalGame).value
       return { ...obj, currentValue: startingValue, startValue: startingValue }
     }),
+    // K4 (SLUTTEST-KÖN, 2026-08-17): faktiskt använt seed (samma värde som
+    // generateWorld/initCharacterPlayers fick), inte input.seed rakt av —
+    // om den någonsin blir undefined ska fältet spegla defaulten 42, inte
+    // "okänt". Ingen konsument läser detta ännu.
+    worldSeed: input.seed ?? 42,
+    ruleVersion: CURRENT_RULE_VERSION,
   }
 }

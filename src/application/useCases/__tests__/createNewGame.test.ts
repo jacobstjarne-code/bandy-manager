@@ -63,4 +63,20 @@ describe('createNewGame', () => {
     const fixtureIds2 = game2.fixtures.map(f => f.id).sort()
     expect(fixtureIds1).toEqual(fixtureIds2)
   })
+
+  // K4 (SLUTTEST-KÖN, 2026-08-17): beständiga fält, ingen konsument ännu —
+  // testet verifierar bara att de faktiskt sparas, inte att något läser dem.
+  it('worldSeed sparas som det faktiskt använda seedet (inte input.seed rakt av)', () => {
+    const withSeed = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 99 })
+    expect(withSeed.worldSeed).toBe(99)
+
+    const withoutSeed = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025 })
+    expect(withoutSeed.worldSeed).toBe(42) // samma default som mulberry32/generateWorld faktiskt får
+  })
+
+  it('ruleVersion sätts till den aktuella regelversionen', () => {
+    const game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 42 })
+    expect(typeof game.ruleVersion).toBe('string')
+    expect(game.ruleVersion!.length).toBeGreaterThan(0)
+  })
 })
