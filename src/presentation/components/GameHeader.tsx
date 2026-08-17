@@ -9,6 +9,7 @@ import { Logo } from './Logo'
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
+import { getManagerDisplayName } from '../../domain/services/managerProfileService'
 
 const ROUND_NAME: Record<PlayoffRound, string> = {
   [PlayoffRound.QuarterFinal]: 'Kvartsfinal',
@@ -149,7 +150,7 @@ export function GameHeader() {
           overflow: 'hidden',
           textOverflow: 'ellipsis',
         }}>
-          {game.managerName} · {seasonSpanLabel(game.currentSeason)}
+          {getManagerDisplayName(game)} · {seasonSpanLabel(game.currentSeason)}
         </p>
       </div>
 

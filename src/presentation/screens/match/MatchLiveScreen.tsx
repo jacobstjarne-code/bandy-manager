@@ -12,6 +12,7 @@ import { useGameStore, useManagedClub } from '../../store/gameStore'
 import { simulateSecondHalf, simulateFromMidMatch } from '../../../domain/services/matchSimulator'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { MATCH_GOAL_DIFFERENCE_CAP, MATCH_TOTAL_GOAL_CAP } from '../../../domain/services/matchCore'
+import { getManagerDisplayName } from '../../../domain/services/managerProfileService'
 import type { MatchPhaseContext } from '../../../domain/services/matchUtils'
 import type { Tactic } from '../../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
@@ -1529,7 +1530,7 @@ export function MatchLiveScreen() {
     <LedgerFrame
       clubId={managedClub?.id ?? ''}
       clubName={managedClub?.name ?? ''}
-      managerName={game?.managerName ?? ''}
+      managerName={game ? getManagerDisplayName(game) : ''}
       season={seasonSpanLabel(game?.currentSeason ?? fixture.season)}
       round={fixture.matchday}
       phase="spela"

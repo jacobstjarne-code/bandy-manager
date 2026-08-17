@@ -7,6 +7,7 @@ import { isClubDirektkvalad } from '../../../domain/services/anslagService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { getCurrentAct } from '../../../domain/services/seasonActService'
 import { getCoachStyleLabel } from '../../../domain/services/aiCoachService'
+import { getManagerDisplayName } from '../../../domain/services/managerProfileService'
 import type { PlayoffSeries } from '../../../domain/entities/Playoff'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
@@ -320,7 +321,7 @@ export function NextMatchCard({
             </p>
             {mySubTag}
             {game.managerName && (
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '4px 0 0', fontFamily: 'var(--font-body)' }}>{game.managerName}</p>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '4px 0 0', fontFamily: 'var(--font-body)' }}>{getManagerDisplayName(game)}</p>
             )}
           </div>
 

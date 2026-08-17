@@ -23,6 +23,29 @@ const BURNOUT_NATURAL_DECAY = 3      // drift toward 0 when neither winning nor 
 const BURNOUT_TRIGGER_THRESHOLD = 70
 const BURNOUT_TRIGGER_ROUNDS = 2     // consecutive rounds above threshold before BurnoutMark
 
+// AUDIT (2026-08-17): enda källan för hur tränarens namn visas för spelaren.
+// Enordsnamn (t.ex. "Säsongstest") fick tidigare ett SLUMPAT efternamn hängt
+// på sig i vissa vyer (BurnoutMark, TranareTab, resolveContractExtension) via
+// managerProfile.lastName — som är en fallback-genererad text från
+// generateManagerProfile, inte något spelaren skrivit in. game.managerName är
+// alltid EXAKT vad spelaren skrev in vid NameInputScreen. Alla ytor som visar
+// tränarens namn ska läsa den här funktionen — aldrig profile.firstName/
+// .lastName direkt för visning.
+export function getManagerDisplayName(game: SaveGame): string {
+  return game.managerName.trim()
+}
+
+// Initialer för ManagerPortrait m.fl. Tar en redan trimmad displayName (från
+// getManagerDisplayName) så att enordsnamn INTE behöver en fabricerad andra
+// bokstav från ett slumpat efternamn — istället används de två första
+// bokstäverna i det enda ordet.
+export function getManagerInitials(displayName: string): string {
+  const parts = displayName.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return ''
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+}
+
 export function generateManagerProfile(seed: number, startSeason: number = 1): ManagerProfile {
   const r = mulberry32(seed)
   const pick = <T>(arr: T[]) => arr[Math.floor(r() * arr.length)]
@@ -89,11 +112,11 @@ export function resolveContractExtension(
   profile: ManagerProfile,
   currentSeason: number,
   seed: number,
+  managerName: string,
 ): { profile: ManagerProfile; inboxText: string | null } {
   const seasonsLeft = profile.contractUntilSeason - currentSeason
   if (seasonsLeft > 1) return { profile, inboxText: null }
 
-  const managerName = `${profile.firstName} ${profile.lastName}`
   const extended = Math.floor(mulberry32(seed)() * 10) < 7  // 70% extend
 
   if (extended) {

@@ -1,4 +1,4 @@
-import { shouldShowBurnoutMark, getBurnoutZone } from '../../../domain/services/managerProfileService'
+import { shouldShowBurnoutMark, getBurnoutZone, getManagerDisplayName } from '../../../domain/services/managerProfileService'
 import { BURNOUT_MARK } from '../../../domain/data/managerKaraktarText'
 import type { CardRenderProps } from '../../../domain/services/portal/dashboardCardBag'
 
@@ -17,7 +17,7 @@ export function BurnoutMark({ game }: CardRenderProps) {
   const round = game.currentMatchday
   const quote = quotes[round % quotes.length]
   const helper = helpers[round % helpers.length]
-  const eyebrow = BURNOUT_MARK.eyebrow.replace('{manager}', `${profile.firstName} ${profile.lastName}`)
+  const eyebrow = BURNOUT_MARK.eyebrow.replace('{manager}', getManagerDisplayName(game))
 
   return (
     <div className="portal-phasemark" style={{ borderColor: 'var(--danger)' }}>

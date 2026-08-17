@@ -7,6 +7,7 @@ import {
   getBurnoutZone,
   shouldShowBurnoutMark,
   getContractStatusText,
+  getManagerDisplayName,
 } from '../../../domain/services/managerProfileService'
 import { BURNOUT_ZONE_LABELS, BURNOUT_MARK, COACH_RIVALRY_QUOTES } from '../../../domain/data/managerKaraktarText'
 import { SectionLabel } from '../SectionLabel'
@@ -38,6 +39,7 @@ export function TranareTab({ game }: Props) {
   }
 
   const seed = game.currentSeason * 997 + 13
+  const displayName = getManagerDisplayName(game)
   const { opener, family } = getManagerBio(profile, seed)
   const zone = getBurnoutZone(profile.burnoutScore)
   const zoneLabel = BURNOUT_ZONE_LABELS[zone]
@@ -86,14 +88,13 @@ export function TranareTab({ game }: Props) {
 
         <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
           <ManagerPortrait
-            firstName={profile.firstName}
-            lastName={profile.lastName}
+            displayName={displayName}
             seasonsAtClub={profile.seasonsAtClub}
             burnoutScore={profile.burnoutScore}
           />
           <div style={{ flex: 1, minWidth: 0 }}>
             <p className="h-name" style={{ margin: 0 }}>
-              {profile.firstName} {profile.lastName}
+              {displayName}
             </p>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>
               {profile.age} år · {profile.hometown}

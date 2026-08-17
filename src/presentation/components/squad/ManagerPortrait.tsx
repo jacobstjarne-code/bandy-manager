@@ -1,13 +1,14 @@
+import { getManagerInitials } from '../../../domain/services/managerProfileService'
+
 interface Props {
-  firstName: string
-  lastName: string
+  displayName: string
   seasonsAtClub: number
   burnoutScore?: number
   size?: number
 }
 
-export function ManagerPortrait({ firstName, lastName, seasonsAtClub, burnoutScore = 0, size = 54 }: Props) {
-  const initials = `${firstName[0] ?? ''}${lastName[0] ?? ''}`.toUpperCase()
+export function ManagerPortrait({ displayName, seasonsAtClub, burnoutScore = 0, size = 54 }: Props) {
+  const initials = getManagerInitials(displayName)
   const isVeteran = seasonsAtClub >= 3
   const isLegend  = seasonsAtClub >= 6
   const showBurnoutDot = burnoutScore >= 70
