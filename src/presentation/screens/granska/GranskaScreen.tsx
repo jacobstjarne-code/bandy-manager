@@ -287,7 +287,7 @@ export function GranskaScreen() {
               {unresolved} ohanterad{unresolved > 1 ? 'e' : ''} händelse{unresolved > 1 ? 'r' : ''} — du kan hantera dem i Översikt
             </p>
           )}
-          <button onClick={handleContinue} className="btn btn-primary btn-cta">
+          <button onClick={handleContinue} disabled={unresolved > 0} className="btn btn-primary btn-cta">
             KLAR — NÄSTA OMGÅNG →
           </button>
         </div>

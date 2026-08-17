@@ -104,7 +104,7 @@ export function generateQuickSummary(
     else if (lateDecider) lines.push('En dramatisk seger i slutminuterna.')
     else lines.push('En knapp men viktig seger.')
   } else if (myScore < theirScore) {
-    if (margin <= -4) lines.push('En tungt matchdag att glömma.')
+    if (margin <= -4) lines.push('En tung matchdag att glömma.')
     else if (margin === -3) lines.push('En klar förlust.')
     else if (lateDecider) lines.push('En bitter förlust i matchens slutskede.')
     else lines.push('En förlust att analysera.')
