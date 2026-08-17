@@ -1021,4 +1021,16 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 
 **Känn igen:** "Koden ser redan rätt ut" som slutsats baserad på EN läst kodrad, när samma hjälpare har fler anropsställen. En audit-post märkt OKLAR i väntan på browser-verifiering trots att en snabb kodläsning "redan svarade".
 
+## 45. Fyra kompletta no-ops bakom stora löften — felet var inte i texten utan i att systemet inte klagade
+
+**Mönster:** Ett `EventChoice`-val lovar en tydlig konsekvens i UI (kaptenstal höjer moral, varsel-stöd höjer moral, offer_pro gör spelaren heltidsproffs) — och konsekvensen uteblir helt, tyst, utan fel i konsolen eller röd test. Fyra separata val i `eventResolver.ts` var kompletta no-ops i månader: `boostMorale` konstruerades utan `targetPlayerId` (captainSpeech, varsel support/nothing), och `multiEffect`s sub-resolver saknade helt en gren för `makeFullTimePro` (varsel offer_pro).
+
+**Rotorsak:** Resolverns cases var skrivna som `if (pid) { ...tillämpa effekt... }` utan `else` — ett saknat obligatoriskt fält gjorde att hela blocket hoppades över i tystnad istället för att klaga. Samma sak i `multiEffect`s sub-typ-switch: en sub-typ som inte matchade NÅGON `else if`-gren försvann rakt igenom loopen utan spår. Ingenting i typsystemet, testsviten eller runtime fångade detta — `EventEffect`-typen tillät fälten som optional, så TypeScript klagade aldrig, och ingen befintlig test konstruerade ett ofullständigt effektblock för att bevisa att resolvern skulle klaga.
+
+**Fix:** Varje case som kräver ett obligatoriskt fält ska kasta (`if (!pid) throw new Error(...)`) istället för att tyst hoppa över blocket — ett fel vid resolutionstillfället är billigare att hitta än en spelare som aldrig märker att kaptenstalet inte gjorde något. `multiEffect`s `try/catch` runt `JSON.parse` fick separeras från valideringen (parse-fel ska tystas, saknat-fält-fel ska INTE fångas av samma catch) — annars slår den nya vaktens `throw` ihjäl sig själv i samma block den skulle skydda.
+
+**Känn igen:** Ett `EventChoice`.subtitle som lovar en siffra/effekt som inte syns i state efter resolution. Ett effektblock konstruerat utan alla fält typen tillåter som optional. `if (x) { ... }` utan `else` runt en effekttillämpning i en resolver-switch.
+
+**Historik (2026-08-17):** Choice-label-svepet (2.5) jämförde alla `EventChoice`-etiketter mot faktiskt `effect`-beteende och hittade fyra sådana no-ops samtidigt — se `docs/CHOICE_LABEL_SVEP_2026-08-17.md`. En femte, angränsande bugg (`varsel offer_pro`s storyline skrevs oberoende av om effekten lyckades) visar samma familj en nivå upp: inte bara "effekten uteblev tyst" utan "narrativet firade en händelse som aldrig hände".
+
 **Historik (2026-08-17):** Å5 i SLUTTEST-KÖN — GPT:s fynd "skadeporträttet blåses upp till ~150px" verkade motsägas av `SquadScreen.tsx:249` (huvudlistans rad), korrekt storysatt sedan 2026-05-24. Kodläsning där gav slutsatsen "fyndet är inaktuellt". Browser-verifiering vid 390px på rätt scen (`trupp-kris`, kris-raden för skador/avstängningar/moral/utgående kontrakt) visade SVG:er på 208–221px — buggen levde på `SquadScreen.tsx:568`, ett helt annat anropsställe för samma `getPortraitSvg`-hjälpare, utan någon wrapper alls. Fyra andra anropsställen (`GranskaSpelare.tsx` ×2, `LockerRoomCard.tsx`, `LockerRoomMap.tsx`) var samtliga korrekt storysatta — enda trasiga instansen.
