@@ -1237,7 +1237,20 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     trainingHistory: [],
     playoffBracket: null,
     cupBracket: newCupBracket,
-    seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary].slice(-5),
+    // A1 (långspelsaudit, 10 säsonger, 2026-08-17): .slice(-5) kapade
+    // karriärminnet — år 1-5 av 10 var borta, fem SM-guld stod kvar som
+    // räknare men åren de vanns fanns inte. Bandy Manager är ett spel om
+    // att minnas (Krönikan, årsdagarna, builtSeason) — en produkt som
+    // raderar spelarens första fem år motsäger sin egen premiss.
+    // Ingen kompaktering byggd: OrtenTab.tsx:573 länkar redan till
+    // /game/season-summary/:season för VILKEN säsong som helst i historiken
+    // (inte bara de senaste) och SeasonSummaryScreen läser hela SeasonSummary-
+    // objektet (roundPoints, storyTriggers, topScorer, m.m.) — en separat
+    // kompakt/detaljerad-uppdelning hade tystat den funktionen för äldre
+    // säsonger utan att någon bett om det. Obegränsad array matchar både
+    // ordern ("säsongsidentitet ska aldrig kastas, detaljdata är en
+    // renderingsfråga") och den redan byggda funktionen exakt.
+    seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary],
     pendingScreen: PendingScreen.SeasonSummary,
     seasonStartSnapshot: managerFired ? game.seasonStartSnapshot : (() => {
       const managedClub = game.clubs.find(c => c.id === game.managedClubId)
