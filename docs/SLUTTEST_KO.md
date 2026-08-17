@@ -70,6 +70,17 @@ Tio dygn av felrättning har en egen risk: att någon river det som fungerar. De
 
 Gate-baserat, inte datumbaserat.
 
+**Prioriteringsfiltret** (framgångsauditen): spelet har fyra nivåer, och alla fyra måste fungera.
+
+| Nivå | Spelarens fråga | Behöver |
+|---|---|---|
+| Match | Vad försöker jag göra i nästa match? | Begriplig motståndarkontext, relevanta taktikval, sann Granska |
+| Säsong | Vad står på spel denna vinter? | Tabell-/cupbåge, personer, ett eget mål, konsekvens, en ren landning |
+| Karriär | Vad har klubben blivit — och vad kostar nästa steg? | Ekonomi, renommé, faciliteter, legender, jobbmarknad, dynastipress, full historik |
+| Community | Varför skulle någon annan bry sig om min historia? | Publik krönika, utmaning, share-back, gruppminne |
+
+**Regeln:** en ny feature ska stärka minst en nivå och återkoppla till en annan. Gör den inte det ska den sannolikt inte prioriteras. Detta är filtret som hade sparat oss flera rundor — använd det innan något läggs till i den här filen.
+
 **Grind 0 — sanningen.** En automatiserad tvåsäsongskörning kan jämföra varje berättad siffra, varje namn och varje permanent tillstånd mot save-state utan avvikelse. Inga kritiska mobilflöden blockerade. Produktionsbygge och deploy-sha obligatoriskt. → stänger K1–K4, etapp 1, 2, 4.
 
 **Grind 1 — misslyckandet.** Seedade simuleringar visar att en svår klubb kan hamna i botten och bli sparkad **utan sabotage**, medan skickligt spel fortfarande hjälper. Minst ett beslut per säsong saknar uppenbart facit. → stänger etapp 3, U1, U6, O2, O4.
@@ -181,7 +192,7 @@ Spelets största konsekvens är i dag osynlig före tröskeln och ett kraschtill
 ### 3.1 · `managerFired`-guard på alla `/game`-rutter
 `GameShell.tsx:38-49` skyddar bara mot saknat game. I fired-state kan dashboarden väckas, eller så kraschar det (`Cannot read properties of undefined (reading 'status')`).
 Byggs oavsett vad 3.3 landar på.
-**Status:** `EJ`
+**Status:** `KLAR (4d59ee3b)` — `if (game.managerFired) return <Navigate to="/game/game-over" replace />` tillagt direkt efter den befintliga `if (!game)`-guarden, samma mönster. game-over-rutten går via `GameGuard` (separat wrapper), ingen omdirigeringsloop. **Ej browser-verifierat** — ingen browser-drivrutin tillgänglig i sessionen som byggde den, och ingen e2e-infrastruktur (localStorage-seedad SaveGame genom `gameStore.ts`) finns i repot för att verifiera mekaniskt heller. Manuell kontroll kvar: trigga avsked, navigera till `/game/squad` eller tryck bakåt, ska landa på `/game/game-over`.
 
 ### 3.2 · `BoardPatienceMinimal`
 Ingen produktionskomponent läser `boardPatience` före `GameOverScreen:24-34`. GPT lät sig sparkas och fick ingen förvarning.
@@ -221,6 +232,7 @@ Samma klass genomgående: `RoundSummaryScreen` mot `GranskaScreen`, `respondToIn
 | 4.12 | Delningsbilden kapas i produktion | `seasonShareImage.ts` — fast canvas 1080×1350, handrullad y-pekare (`:18-185`), tre spelarblock efter målsektionen (`:155-178`), fot alltid på `H-60`. Regionsbaserad layout, reservera fot först, **hård assertion att inget ritas efter `H - footerHeight`**. Bildsnapshots för värsta datakombination och långa svenska namn | `EJ` |
 | 4.13 | `shareSeasonImage` returnerar `void` och sväljer alla fel (`:215-244`) | Returnera `shared`/`downloaded`/`cancelled`/`failed`. `AbortError` = cancel **utan** nedladdning — i dag laddas filen ner efter avbrott. Web Share saknar `text` och `url` | `EJ` |
 | 4.14 | "Spara som bild" under Säsongens match producerar säsongskortet | Generiska `handleShare`; `matchHighlightService:88-99` sätter `shareImageReady: false` permanent. Byt texten till "Dela säsongen" tills matchartefakten finns — en knapp som lovar en artefakt den inte kan leverera är 2.5 igen | `EJ` |
+| 4.15 | **Svårighetsbadgen ljuger tills U1 är byggd.** `offerSelectionService` sätter LÄTT/MEDEL/SVÅR enbart på renommé, och Skutskär (SVÅR) gick inte att misslyckas med ens under avsiktlig tankning. **Tillfällig åtgärd, byggs nu:** ersätt etiketten med vad som faktiskt är sant — en sammansatt klubbprofil eller "lägre förväntningar" / "begränsade resurser". En falsk SVÅR-badge är sämre än ingen badge, och klubbvalsskärmen är den första yta varje ny spelare ser. Text från Opus | `EJ` |
 
 **Godkänd när etappen är klar:** ingen renderad produkttext innehåller `{...}` eller råa nycklar, och samma fråga ställd till två ytor får samma svar (placering, motståndare, arena, kondition, pengar).
 
@@ -403,6 +415,10 @@ Antingen handlingar med verkliga priser (delegera pressen, sänk träningsintens
 | O12 | Förhandsdeltan i val: `+8` mot `+2` synligt före valet gör rollspel irrationellt — GPT valde det semantiskt rätta svaret och fick ett synligt mekaniskt straff. Visa riktning, risk och vem som berörs före; exakt utfall efter. Hör ihop med O2 | `EJ SKRIVEN` |
 | O13 | Jobbmarknad efter avsked — framgångsauditens rekommendation ovanpå 3.3. **Inte beslutad.** 3.3:s rena karriärslut är minimikravet | `EJ BESLUTAD` |
 | O14 | Monetisering och paketering — framgångsauditens modell är en **hypotes**, inte en dom. Ska inte driva något bygge | `HYPOTES` |
+| O15 | **Taktikens två lägen.** Åtta dimensioner är värdefulla för nördar men ska inte vara åtta lika stora veckouppgifter. Standardläge: assistentens två rekommendationer, **vad som skiljer planen från förra matchen**, och "följ rådet". Avancerat läge: alla åtta, större träffytor, historik över vad spelaren faktiskt ändrat. Var M-01 i tvåsäsongsauditen och återkom i framgångsauditen — hör ihop med D1 och Å2 | `EJ SKRIVEN` |
+| O16 | **Granska som lärandeyta.** Ytan svarar i dag på *vad* som hände men inte på **vilket av mina val som bidrog**. Utan det är taktik och rotation olärbara — spelaren kan inte veta om planen fungerade. Bygger på 4.8 (kondition/attribuering) men är större: kausal återkoppling per beslut | `EJ SKRIVEN` |
+| O17 | **Anläggningsträdets slut.** Det vanliga trädet gick att tömma på ~tio säsonger och då försvann framåtdriften. Ett fullt träd ska öppna nästa horisont, inte visa ett tomtillstånd. Hallprövningen är ett naturligt endgame men förutsätter att byggandet fortfarande kostar (O5). Plus: kunna omprioritera eller avveckla en byggd nod | `EJ SKRIVEN` |
+| O18 | **Årsboken som karriärens ryggrad.** Utöver K3:s bevarade säsongsidentitet ska den lagra: spelarens eget mål (O3) och hur det gick, säsongens viktigaste beslut, största personförändring, rivalry-/legendutveckling. Det är vad som gör tio säsonger till en båge i stället för tio fristående år | `EJ SKRIVEN` |
 
 ---
 
@@ -430,3 +446,17 @@ Antingen handlingar med verkliga priser (delegera pressen, sänk träningsintens
 **Release är en verifierad sha.** Main, deploy och auditerad version ska gå att jämföra på en rad. Fem auditer har körts mot fyra olika revisioner och två av dem beskrev fel som redan var lagade.
 
 **Uppdatera denna fil post för post. Skriv ingen ny.**
+
+---
+
+# MEDVETET UTANFÖR DEN HÄR FILEN
+
+Så att ingen letar efter dem här och tror att de fallit bort:
+
+**Release- och marknadsstrategin.** Rekrytera grundare i stället för trafik; använd befintliga communities (Discord, Reddit, bandyforum, gruppchattar); publicera berättelser i stället för featurelistor; knyt redaktionella utmaningar till bandyåret; köp ingen trafik före aktiveringsbevis. Beslutat som riktning, ligger i framgångsauditen och best-in-class-strategin. Inget av det är kö.
+
+**De billiga valideringsexperimenten.** Tio manuellt perfekta berättelsekort; en statisk Slottsbron-utmaning; en manuell Bruksliga; följ-en-karriär-journalen. Kan köras parallellt efter Grind 0, kräver nästan ingen kod. Jacobs bord.
+
+**Kvalitativ uppföljning med riktiga spelare.** Sex till åtta personer, pausa efter omgång 3, 11 och 22, fem frågor om vem de bryr sig om, vad de försöker uppnå, vad de riskerar, vilket beslut som ändrade något, vad de vill se nästa säsong. Bra stickiness är att svaren blir mer specifika över tid.
+
+**Ryktesskedjan** (att ligan inte reagerar på dominans) — **avskriven** på nytt underlag. Tio säsonger gav placeringarna 1,1,1,3,2,1,2,1,3,3 och poäng 39→28. De två identiska säsongerna i tvåsäsongsauditen var slump. Ej samma sak som U6.
