@@ -110,6 +110,9 @@ export function resolveEvent(
 
   switch (effect.type) {
     case 'acceptTransfer': {
+      // 2.5-vakt-svepet (2026-08-17): bidId saknat → .find() ger undefined →
+      // tyst no-op utan spår. Samma klass som boostMorale-familjen ovan.
+      if (!effect.bidId) throw new Error("effect 'acceptTransfer' saknar obligatoriskt fält bidId")
       const bid = (game.transferBids ?? []).find(b => b.id === effect.bidId)
       if (bid) {
         updatedGame = executeTransfer(game, bid)
@@ -123,6 +126,11 @@ export function resolveEvent(
       // ÖVERLÄMNING 2 (2026-08-16): Moralen skalar nu som de tre andra
       // triggarna — temperament (discipline) × bud-gap mot marknadsvärde ×
       // kvarvarande kontraktstid. Mittpunkt reproducerar dagens −5.
+      // 2.5-vakt-svepet (2026-08-17): båda fälten obligatoriska — utan bidId
+      // matchar .map() ingen post (tyst no-op), utan targetPlayerId uteblir
+      // moralstraffet helt trots att bud-avslaget genomförs.
+      if (!effect.bidId) throw new Error("effect 'rejectTransfer' saknar obligatoriskt fält bidId")
+      if (!effect.targetPlayerId) throw new Error("effect 'rejectTransfer' saknar obligatoriskt fält targetPlayerId")
       const rejectedBid = (game.transferBids ?? []).find(b => b.id === effect.bidId)
       const rejectedPlayer = effect.targetPlayerId ? game.players.find(p => p.id === effect.targetPlayerId) : undefined
       const moraleWeight = (rejectedBid && rejectedPlayer)
@@ -151,6 +159,9 @@ export function resolveEvent(
       break
     }
     case 'counterOffer': {
+      // 2.5-vakt-svepet (2026-08-17): utan bidId matchar map() ingen post —
+      // tyst no-op, budet varken höjs eller markeras avvisat.
+      if (!effect.bidId) throw new Error("effect 'counterOffer' saknar obligatoriskt fält bidId")
       const currentBid = (updatedGame.transferBids ?? []).find(b => b.id === effect.bidId)
       const currentCount = currentBid?.counterCount ?? 0
       if (currentCount >= 2) {
@@ -184,8 +195,12 @@ export function resolveEvent(
       break
     }
     case 'extendContract': {
+      // 2.5-vakt-svepet (2026-08-17): utan targetPlayerId sker ingen
+      // kontraktsförlängning alls — tyst no-op på ett val som lovar en
+      // konkret ny lön/kontraktslängd.
       const pid = effect.targetPlayerId
-      if (pid) {
+      if (!pid) throw new Error("effect 'extendContract' saknar obligatoriskt fält targetPlayerId")
+      {
         const years = choice.id === 'extend3' ? 3 : 1
         updatedGame = {
           ...updatedGame,
@@ -205,15 +220,15 @@ export function resolveEvent(
       break
     }
     case 'rejectContract': {
+      // Se extendContract-kommentaren ovan — samma vaktprincip.
       const pid = effect.targetPlayerId
-      if (pid) {
-        updatedGame = {
-          ...updatedGame,
-          players: updatedGame.players.map(p =>
-            p.id === pid ? { ...p, morale: Math.max(0, p.morale - 10) } : p,
-          ),
-          handledContractPlayerIds: [...(updatedGame.handledContractPlayerIds ?? []), pid],
-        }
+      if (!pid) throw new Error("effect 'rejectContract' saknar obligatoriskt fält targetPlayerId")
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.id === pid ? { ...p, morale: Math.max(0, p.morale - 10) } : p,
+        ),
+        handledContractPlayerIds: [...(updatedGame.handledContractPlayerIds ?? []), pid],
       }
       break
     }
@@ -240,14 +255,15 @@ export function resolveEvent(
       // INTE — det är originalvärdet post-match-rullningen (playerStateProcessor)
       // dubblar vid återfall. Om spelaren inte faktiskt startar den matchen
       // återställs isInjured där, utan att rullningen sker.
+      // 2.5-vakt-svepet (2026-08-17): utan targetPlayerId spelar ingen —
+      // valet "han spelar" skulle tyst inte ändra någon spelares status.
       const pid = effect.targetPlayerId
-      if (pid) {
-        updatedGame = {
-          ...updatedGame,
-          players: updatedGame.players.map(p =>
-            p.id === pid ? { ...p, isInjured: false, playingThroughInjury: true } : p,
-          ),
-        }
+      if (!pid) throw new Error("effect 'playThroughInjury' saknar obligatoriskt fält targetPlayerId")
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.id === pid ? { ...p, isInjured: false, playingThroughInjury: true } : p,
+        ),
       }
       break
     }
@@ -272,25 +288,29 @@ export function resolveEvent(
       break
     }
     case 'acceptSponsor': {
+      // 2.5-vakt-svepet (2026-08-17): rawData saknat → inget sponsoravtal
+      // alls. JSON.parse-fel tystas fortfarande (malformad sträng, inte ett
+      // konstruktionsfel) — men sponsor.id saknat EFTER lyckad parsning är
+      // samma "parsat men obligatoriskt fält saknas"-klass som spawnPatron.
       const rawData = effect.sponsorData ?? event.sponsorData
-      if (rawData) {
-        try {
-          const sponsor = JSON.parse(rawData)
-          if (sponsor.id) {
-            updatedGame = {
-              ...updatedGame,
-              sponsors: [...(updatedGame.sponsors ?? []), sponsor],
-              inbox: [...updatedGame.inbox, {
-                id: `inbox_sponsor_${sponsor.id}`,
-                date: updatedGame.currentDate,
-                type: InboxItemType.BoardFeedback,
-                title: `🤝 Nytt sponsoravtal: ${sponsor.name}`,
-                body: `${sponsor.name} har tecknat avtal. +${sponsor.weeklyIncome} kr/omgång i ${sponsor.contractRounds} omgångar.`,
-                isRead: false,
-              }],
-            }
-          }
-        } catch {}
+      if (!rawData) throw new Error("effect 'acceptSponsor' saknar obligatoriskt fält sponsorData")
+      try {
+        const sponsor = JSON.parse(rawData)
+        if (!sponsor.id) throw new Error("effect 'acceptSponsor': sponsorData saknar obligatoriskt fält id")
+        updatedGame = {
+          ...updatedGame,
+          sponsors: [...(updatedGame.sponsors ?? []), sponsor],
+          inbox: [...updatedGame.inbox, {
+            id: `inbox_sponsor_${sponsor.id}`,
+            date: updatedGame.currentDate,
+            type: InboxItemType.BoardFeedback,
+            title: `🤝 Nytt sponsoravtal: ${sponsor.name}`,
+            body: `${sponsor.name} har tecknat avtal. +${sponsor.weeklyIncome} kr/omgång i ${sponsor.contractRounds} omgångar.`,
+            isRead: false,
+          }],
+        }
+      } catch (e) {
+        if (e instanceof SyntaxError) { /* malformad JSON, tystas */ } else { throw e }
       }
       break
     }
@@ -389,6 +409,8 @@ export function resolveEvent(
       break
     }
     case 'raiseBid': {
+      // 2.5-vakt-svepet (2026-08-17): utan bidId matchar map() ingen post.
+      if (!effect.bidId) throw new Error("effect 'raiseBid' saknar obligatoriskt fält bidId")
       updatedGame = {
         ...updatedGame,
         transferBids: (updatedGame.transferBids ?? []).map(b =>
@@ -400,7 +422,9 @@ export function resolveEvent(
       break
     }
     case 'setCommunity': {
-      if (!effect.communityKey) break
+      // 2.5-vakt-svepet (2026-08-17): utan communityKey vet resolvern inte
+      // vilken community-aktivitet som ska sättas — tyst no-op tidigare.
+      if (!effect.communityKey) throw new Error("effect 'setCommunity' saknar obligatoriskt fält communityKey")
       const current: CommunityActivities = updatedGame.communityActivities ?? {
         kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false,
       }
@@ -466,10 +490,15 @@ export function resolveEvent(
       break
     }
     case 'spawnPatron': {
+      // 2.5-vakt-svepet (2026-08-17): utan patronData/sponsorData finns
+      // ingen mecenat att skapa. JSON.parse-fel tystas (malformad sträng),
+      // men name/business saknat EFTER lyckad parsning är samma
+      // "parsat men obligatoriskt fält saknas"-klass som acceptSponsor.
       const rawPatron = effect.patronData ?? effect.sponsorData  // patronData preferred, sponsorData for legacy saves
-      if (!rawPatron) break
+      if (!rawPatron) throw new Error("effect 'spawnPatron' saknar obligatoriskt fält patronData/sponsorData")
       try {
         const p = JSON.parse(rawPatron)
+        if (!p.name || !p.business) throw new Error("effect 'spawnPatron': parsad data saknar obligatoriskt fält name/business")
         updatedGame = {
           ...updatedGame,
           patron: {
@@ -487,7 +516,9 @@ export function resolveEvent(
             demands: [],
           },
         }
-      } catch { /* ignore parse errors */ }
+      } catch (e) {
+        if (e instanceof SyntaxError) { /* malformad JSON, tystas */ } else { throw e }
+      }
       break
     }
     case 'patronWithdrawn': {
@@ -593,7 +624,13 @@ export function resolveEvent(
       break
     }
     case 'mecenatHappiness': {
-      if (!effect.targetMecenatId || !updatedGame.mecenater) break
+      // 2.5-vakt-svepet (2026-08-17): targetMecenatId är ett konstruktions-
+      // krav (samma klass som targetPlayerId-familjen) — kastar om det
+      // saknas. `!updatedGame.mecenater`/`!target` är legitimt speltillstånd
+      // (ingen mecenat spawnad än, eller en refererad mecenat som inte
+      // längre finns) — de förblir break, inte throw.
+      if (!effect.targetMecenatId) throw new Error("effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId")
+      if (!updatedGame.mecenater) break
       const targetId = effect.targetMecenatId
       const delta = effect.amount ?? 0
       const costKr = effect.value ?? 0
@@ -769,16 +806,23 @@ export function resolveEvent(
                   },
                 }
               }
-            } else if (sub.type === 'mecenatHappiness' && sub.targetMecenatId && updatedGame.mecenater
-              && !updatedGame.mecenater.find(m => m.id === sub.targetMecenatId)?.permanentlyWithdrawn) {
-              const delta = sub.amount ?? 0
-              updatedGame = {
-                ...updatedGame,
-                mecenater: updatedGame.mecenater.map(m =>
-                  m.id === sub.targetMecenatId
-                    ? { ...m, happiness: Math.max(0, Math.min(100, m.happiness + delta)) }
-                    : m
-                ),
+            } else if (sub.type === 'mecenatHappiness') {
+              // 2.5-vakt-svepet (2026-08-17): villkoret var tidigare
+              // `&& sub.targetMecenatId` — samma tyst-no-op-mönster som
+              // boostMorale/makeFullTimePro-subeffekterna ovan. Saknad
+              // mecenater-array eller permanentlyWithdrawn förblir ett
+              // legitimt tyst skip (speltillstånd, inte konstruktionsfel).
+              if (!sub.targetMecenatId) throw new Error("multiEffect-subEffect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId")
+              if (updatedGame.mecenater && !updatedGame.mecenater.find(m => m.id === sub.targetMecenatId)?.permanentlyWithdrawn) {
+                const delta = sub.amount ?? 0
+                updatedGame = {
+                  ...updatedGame,
+                  mecenater: updatedGame.mecenater.map(m =>
+                    m.id === sub.targetMecenatId
+                      ? { ...m, happiness: Math.max(0, Math.min(100, m.happiness + delta)) }
+                      : m
+                  ),
+                }
               }
             }
           }
@@ -800,8 +844,12 @@ export function resolveEvent(
     }
     case 'hallProcess': {
       // B1 §5 (06-12-modellen): uppdatera FacilityState.hallTrial.
+      // 2.5-vakt-svepet (2026-08-17): utan hallProcessData sker ingen
+      // uppdatering av hallprövningen alls — tyst no-op på ett helt
+      // valresultat. JSON.parse-fel tystas fortfarande (malformad sträng).
       const rawData = effect.hallProcessData
-      if (rawData) {
+      if (!rawData) throw new Error("effect 'hallProcess' saknar obligatoriskt fält hallProcessData")
+      {
         try {
           const update = JSON.parse(rawData) as {
             init?: HallTrial
@@ -883,7 +931,9 @@ export function resolveEvent(
               hallEchoExpires: (updatedGame.currentMatchday ?? 0) + 1,
             }
           }
-        } catch { /* malformed payload — silently ignore */ }
+        } catch (e) {
+          if (e instanceof SyntaxError) { /* malformed payload — silently ignore */ } else { throw e }
+        }
       }
       break
     }
@@ -991,6 +1041,13 @@ export function resolveEvent(
         sold_star: 'sold_star', loan: 'loan', mecenat: 'mecenat',
       }
       const outcome = outcomeMap[effect.crisisPhase ?? ''] ?? 'natural_recovery'
+      // 2.5-vakt-svepet (2026-08-17): outcome='sold_star' skrevs tidigare till
+      // economicCrisisState oavsett om removePlayerId fanns — en falsk
+      // "spelare-sald"-berättelse utan att någon spelare faktiskt togs bort
+      // (samma klass som varsel offer_pro-storylinen, 441c4474). Reproducerbart
+      // i economicCrisisService.ts om managedPlayers är tomt (bestPlayer
+      // undefined) — se rapport i CHOICE_LABEL_SVEP_2026-08-17.md.
+      if (outcome === 'sold_star' && !effect.removePlayerId) throw new Error("effect 'resolveEconomicCrisis' med crisisPhase 'sold_star' saknar obligatoriskt fält removePlayerId")
       // Efterdyning-stämpel: senaste spelade ligamatch denna säsong (counter-oberoende,
       // samma mönster som journalist-premissen ovan — rör inte currentMatchday-räknaren).
       const resolvedMatchday = updatedGame.fixtures
@@ -1062,9 +1119,13 @@ export function resolveEvent(
       break
     }
     case 'refereeRelationship': {
+      // 2.5-vakt-svepet (2026-08-17): utan refereeId sker ingen uppdatering
+      // alls, men pendingRefereeMeeting rensades ändå — mötet såg "avklarat"
+      // ut för spelaren trots att relationen aldrig rördes.
       const delta = effect.value ?? 0
       const refId = effect.refereeId
-      if (refId && (updatedGame.refereeRelations !== undefined)) {
+      if (!refId) throw new Error("effect 'refereeRelationship' saknar obligatoriskt fält refereeId")
+      if (updatedGame.refereeRelations !== undefined) {
         const existing = updatedGame.refereeRelations.find(r => r.refereeId === refId)
         if (existing) {
           const newReaction = Math.max(-2, Math.min(2, existing.clubReaction + delta)) as -2 | -1 | 0 | 1 | 2
@@ -1099,8 +1160,12 @@ export function resolveEvent(
       break
     }
     case 'setLegendRole': {
+      // 2.5-vakt-svepet (2026-08-17): utan legendRole/relatedPlayerId sätts
+      // ingen roll alls — tyst no-op på pensionsceremonins enda beslut.
       const role = effect.legendRole as 'youth_coach' | 'scout' | 'farewell' | undefined
-      if (role && event.relatedPlayerId) {
+      if (!role) throw new Error("effect 'setLegendRole' saknar obligatoriskt fält legendRole")
+      if (!event.relatedPlayerId) throw new Error("event 'retirementCeremony' saknar obligatoriskt fält relatedPlayerId för setLegendRole")
+      {
         updatedGame = {
           ...updatedGame,
           clubLegends: (updatedGame.clubLegends ?? []).map(l =>
