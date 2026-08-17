@@ -996,3 +996,29 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 **Känn igen:** Footer/version visar en hash äldre än senaste commit. En "bugg" som inte finns när du läser källan. En grind/gate som finns i koden men inte i beteendet.
 
 **Historik (2026-06-18):** Spelkänsle-playtesten kördes mot c78a22d, bakom arbetsträdet. Efterklang-grinden (playedLeague<5) fanns redan i trädet men visades i builden; flera copy-fixar var redan inne. Diagnoserna höll mot källan men byggstatusen måste alltid noteras.
+
+---
+
+## 43. Kartlägg HELA klassen före första fixen — den partiella fixen ser komplett ut
+
+**Mönster:** Ett systemfel (determinism-brott, fel term, sovande grind) upptäcks, fixas där det syns, och rapporteras som löst. Samma fel dyker upp igen nästa pass, på en annan rad i samma fil. Varje enskild fix var korrekt; kedjan tog tre rundor där en hade räckt.
+
+**Rotorsak:** Reflexen är att fixa det man ser och flagga resten "för senare" — vilket är rätt beteende för *okända* fynd men fel för en *känd klass*. När felklassen är identifierad ("RNG på väggklocka", "fotbollsterm", "grind som ligger över faktiskt läge") är kartläggningen billig och partialiteten dyr: mellanläget SER komplett ut i commit, test och rapport, så ingen letar vidare.
+
+**Fix:** När en felklass namnges — GREP HELA YTAN FÖRST (filen, mappen, kodbasen beroende på klass), lista alla instanser, fixa sedan. Rapporten ska svara på "är det slut?", inte bara "är det jag hittade fixat?". Sluta med ett verifierande slutgrep som visar noll levande träffar.
+
+**Känn igen:** En fix-commit som säger "även hittade N till, flaggade ej fixade". En grind vars baslinje ligger långt över faktiskt läge. Ett ärende med suffix (PT-7 → PT-9 → PT-10).
+
+**Historik (2026-07-13):** Determinism i `MatchLiveScreen.tsx` krävde TRE pass: PT-7 seedade matchstegen och flaggade sju interaktions-RNG:er; PT-9 seedade fyra av de sju (utfallen) och flaggade fem `Math.random()` till; PT-10 stängde resten. Först då var samma fixture reproducerbar. Ett slutgrep i pass ETT hade gett hela listan. Samma mönster: text-guarden (regressionstermer levde vidare i filer auditen aldrig nådde), ds-guard-baslinjen (stod 165/128/75 mot faktiska 40/59/65 — grinden kunde inte larma), bye-antagandet (M66e + PT-3-harnesset, två instanser innan mönstret sattes).
+
+## 44. Två anropsställen för samma hjälpare, ett storleksatt och ett inte — kodläsning på det ena ger fel svar om det andra
+
+**Mönster:** En hjälpfunktion (`getPortraitSvg`) anropas från flera ställen i presentationslagret. Vid EN anropssida är resultatet wrappat i en storleksatt container (`width:40, height:40, flexShrink:0, overflow:hidden`); vid en ANNAN saknas wrappern helt (`<div dangerouslySetInnerHTML={...} />`, ingen `style`, ingen `className`). Auditören läser det förstnämnda stället, ser att det är korrekt, och drar slutsatsen att fyndet ("porträttet blåses upp") är inaktuellt — trots att buggen lever fullt ut på det andra stället, i en annan del av samma skärm.
+
+**Rotorsak:** Samma klass som `respondToIncomingBid` mot `resolveEvent` (två kodvägar till samma tillståndsförändring, bara en grindad) — men i presentationslagret: två kodvägar till samma RENDERING, bara en storleksatt. `git log -1` på filen räcker inte för att avfärda ett fynd; filen kan ha EN korrekt och EN trasig instans av samma mönster, och blame visar bara att NÅGOT i filen ändrades senast, inte VILKEN rad.
+
+**Fix:** Innan ett visuellt fynd avfärdas som inaktuellt utifrån kodläsning — grep ALLA anropsställen för samma hjälpare (`grep -rn "getPortraitSvg"`), inte bara det första som råkar dyka upp. Jämför varje anropssidas wrapper mot varandra. Skiljer de sig, är minst en av dem trasig — browser-verifiera den specifika ytan fyndet faktiskt pekar på (rätt scen, rätt state), inte en angränsande yta som råkar dela hjälparen.
+
+**Känn igen:** "Koden ser redan rätt ut" som slutsats baserad på EN läst kodrad, när samma hjälpare har fler anropsställen. En audit-post märkt OKLAR i väntan på browser-verifiering trots att en snabb kodläsning "redan svarade".
+
+**Historik (2026-08-17):** Å5 i SLUTTEST-KÖN — GPT:s fynd "skadeporträttet blåses upp till ~150px" verkade motsägas av `SquadScreen.tsx:249` (huvudlistans rad), korrekt storysatt sedan 2026-05-24. Kodläsning där gav slutsatsen "fyndet är inaktuellt". Browser-verifiering vid 390px på rätt scen (`trupp-kris`, kris-raden för skador/avstängningar/moral/utgående kontrakt) visade SVG:er på 208–221px — buggen levde på `SquadScreen.tsx:568`, ett helt annat anropsställe för samma `getPortraitSvg`-hjälpare, utan någon wrapper alls. Fyra andra anropsställen (`GranskaSpelare.tsx` ×2, `LockerRoomCard.tsx`, `LockerRoomMap.tsx`) var samtliga korrekt storysatta — enda trasiga instansen.

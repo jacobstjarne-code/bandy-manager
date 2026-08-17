@@ -565,7 +565,10 @@ export function SquadScreen() {
             onClick={() => setSelectedPlayerId(p.id)}
             style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}
           >
-            <div dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
+            <div
+              style={{ width: 40, height: 40, flexShrink: 0, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', background: 'var(--bg-surface)' }}
+              dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }}
+            />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
               <div style={{ fontSize: 11, color: statusColor }}>{statusText}</div>
