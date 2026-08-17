@@ -127,6 +127,22 @@ export function describeRippleChain(
   return { trigger, subjectName, round, season, steps }
 }
 
+const CHAIN_MAGNITUDE_SCORE: Record<RippleChainStep['magnitude'], number> = { knappt: 1, tydligt: 2, kraftigt: 3 }
+
+// ÖVERLÄMNING 2 (2026-08-17, Jacobs korrigering): rangordnar kedjor för
+// roundProcessor.ts:s pendingRippleChains, tidigare en hardkodad rangordning
+// PER TRIGGER (mecenat_left vann alltid, oavsett utfall). En långtidsskada
+// med Styrelse-eskalering kunde försvinna helt bara för att en mecenat lämnade
+// samma omgång — även om mecenatens eget Styrelse-utslag var litet den
+// gången. Väger nu det VERKLIGA utfallet (magnitude): ett Styrelse-utslag
+// väger tyngst oavsett trigger — det är utfallet som kan sluta i sparkning —
+// men bland flera Styrelse-bärande kedjor avgör magnitude, inte trigger-namn.
+export function rippleChainSignificance(c: RippleChain): number {
+  const styrelsen = c.steps.find(s => s.label === 'Styrelsen')
+  if (styrelsen) return 10 + CHAIN_MAGNITUDE_SCORE[styrelsen.magnitude]
+  return c.steps.reduce((max, s) => Math.max(max, CHAIN_MAGNITUDE_SCORE[s.magnitude]), 0)
+}
+
 export type RippleTrigger =
   | { type: 'star_injured'; playerId: string }
   | { type: 'big_derby_win'; fixtureId: string }

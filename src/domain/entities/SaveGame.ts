@@ -361,12 +361,15 @@ export interface SaveGame {
   pendingHallEcho?: { text: string }
   hallEchoExpires?: number
 
-  // Legibel konsekvens — transient, rensas varje omgång
-  pendingRippleChain?: RippleChain
+  // Legibel konsekvens — transient, rensas varje omgång. ÖVERLÄMNING 2
+  // (2026-08-17): plural sedan Jacobs korrigering — chainSignificance kastade
+  // tidigare bort alla kedjor utom en per omgång; nu sparas alla, rangordnade
+  // (index 0 = mest signifikant, se chainSignificance i roundProcessor.ts).
+  pendingRippleChains?: RippleChain[]
 
   // ÖVERLÄMNING 2 steg 1-pilot (2026-08-12): transferbudets ripple, satt av
   // eventResolver.ts kring acceptTransfer/rejectTransfer/counterOffer. EGET
-  // fält (inte pendingRippleChain) — portalBeats.ts läser bara det fältet,
+  // fält (inte pendingRippleChains) — portalBeats.ts läser bara det fältet,
   // så detta renderas ingenstans ännu. Rapport, inte leverans: se commit.
   pilotTransferBidRippleChain?: RippleChain
 

@@ -163,21 +163,31 @@ export const PORTAL_BEATS: PortalBeat[] = [
   },
 
   // ── Legibel konsekvens: dominokedjan i ögonblicket ───────────────────────
+  // ÖVERLÄMNING 2 (2026-08-17): pendingRippleChains är nu rangordnad (index 0
+  // = mest signifikant, se chainSignificance i roundProcessor.ts — väger ett
+  // verkligt Styrelse-utslag, inte längre vilken trigger det var). Beat-
+  // slotten här visar bara toppen — portalens beat-system har redan sin egen
+  // en-i-taget-konkurrens (severity mot andra beats), det ändras inte här.
+  // Övriga kedjor kastas inte längre bort, de finns kvar i arrayen för
+  // framtida konsumenter (t.ex. en granska-vy) även om inget läser dem än.
   {
     id: 'ripple_consequence',
     emoji: '⛓️',
     kicker: 'Konsekvens',
     severity: (g) => {
-      const c = g.pendingRippleChain
+      const c = g.pendingRippleChains?.[0]
       if (!c) return 0
       if (c.trigger === 'big_derby_win') return 0
       if (c.trigger === 'mecenat_left') return 2
       return c.steps.some(s => s.label === 'Styrelsen') ? 2 : 1
     },
-    trigger: (g) => !!g.pendingRippleChain && g.pendingRippleChain.round === g.currentMatchday,
-    text: (g) => renderClause(g.pendingRippleChain),
-    steps: (g) => renderSteps(g.pendingRippleChain),
-    keyFn: (g) => `ripple_${g.pendingRippleChain?.trigger ?? 'unknown'}_${g.pendingRippleChain?.round ?? 0}_s${g.pendingRippleChain?.season ?? 0}`,
+    trigger: (g) => !!g.pendingRippleChains?.[0] && g.pendingRippleChains[0].round === g.currentMatchday,
+    text: (g) => renderClause(g.pendingRippleChains?.[0]),
+    steps: (g) => renderSteps(g.pendingRippleChains?.[0]),
+    keyFn: (g) => {
+      const c = g.pendingRippleChains?.[0]
+      return `ripple_${c?.trigger ?? 'unknown'}_${c?.round ?? 0}_s${c?.season ?? 0}`
+    },
     oncePerSeason: false,
   },
 

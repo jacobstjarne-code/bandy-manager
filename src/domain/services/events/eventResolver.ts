@@ -100,7 +100,7 @@ export function resolveEvent(
   // transferbudets tre utfall. Satt inuti respektive case (spelarnamnet
   // behövs för subjectName), konsumerat efter switchen — se
   // pilotTransferBidRippleChain-kommentaren i SaveGame.ts för varför den
-  // INTE är pendingRippleChain (renderas ingenstans ännu, medvetet).
+  // INTE är pendingRippleChains (renderas ingenstans ännu, medvetet).
   let pilotTransferBidTrigger: 'transfer_bid_accepted' | 'transfer_bid_rejected' | 'transfer_bid_countered' | null = null
   let pilotTransferBidPlayerName: string | undefined
   // ÖVERLÄMNING 2 steg 3-underlag: bara avslaget bär en relatedPlayerId in i
