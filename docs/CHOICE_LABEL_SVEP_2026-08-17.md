@@ -95,9 +95,41 @@ Dessa är inte "text lovar X, kod gör Y" i en enkel riktning — de är **odekl
 
 **Din dom, en gång för alla tre:** ska subtitle-texten utökas för att nämna bieffekten (styrelseplats, spelarlott, moralspann), eller är den avsiktligt dold information (spelaren SKA inte veta i förväg)? Om det senare — inget att fixa, bara att notera som medvetet designval i DECISIONS.md så nästa audit inte flaggar det igen.
 
-### (a)/(c) — inga fler fynd i denna klassificerbara delmängd
+### (a) Tecken-omvänt — grepsvep över alla event-filer med kr/tkr/mkr-belopp
 
-Inget kvarstående klassificerbart fynd i (a) omkastat tecken eller (c) fel storlek utöver det redan lösta (bandyplay, klass a). Möjligt att sådana finns bland de ~22 lägre-allvarlighetsgrad-fynden som aldrig itemiserades — se nästa avsnitt.
+Per instruktion: throw-guarden fångar inte tecken-fel (fältet FINNS, bara med fel värde), så detta krävde en separat, manuell genomläsning — inte instrumentet. Grep:ade `subtitle:`/`label:` i alla 12 filer med kr/tkr/mkr-nämningar i `src/domain/services/` (events/ + de fristående service-filerna: `patronEvents.ts`, `postAdvanceEvents.ts`, `eventFactories.ts`, `politicianEvents.ts`, `communityActivitiesEvents.ts`, `supporterEvents.ts`, `sponsorEvents.ts`, `characterPlayerService.ts`, `economicCrisisService.ts`, `mecenatService.ts`, `pressConferenceService.ts`, `weeklyDecisionService.ts`), läste varje träff mot sin effekt för hand. Efter community_bandyplay-fyndet (redan fixat) var frågan om det fanns fler — svaret:
+
+**Ett nytt (a)-fynd, mindre allvarligt än bandyplay:** `communityActivitiesEvents.ts:137-139` (`community_julmarknad` → `start`). Subtitle: "💰 engångskostnad · ⭐ +8-18 tkr intäkt + fanMood". Effekten är `{ type: 'setCommunity', amount: 8000, ... }` — en POSITIV engångssumma, inte en kostnad. Skiljer sig från bandyplay genom att beloppet faktiskt är matematiskt korrekt (event-bodyn förklarar: "Kostar 4 000 men ger 12 000 i intäkter" — netto +8000 är rätt uträknat), men ordet "engångskostnad" i subtitlen är sakligt fel om man bara läser subtitlen: den lovar att pengar DRAS, men klubbkassan ÖKAR med 8000 kr. En spelare som bara skummar subtitlen (inte hela body-texten) förväntar sig motsatt riktning på sina pengar. Textbeslut, inte kalibrering — subtitlen bör beskriva NETTOT ("+8 tkr netto" el. dyl.), inte kalla en nettovinst för en kostnad.
+
+**Inga fler tecken-omvända fynd** i de 12 filerna. Alla övriga kr/tkr/mkr-nämnda choices (kiosk-start/uppgradering, lotteri, bandyskola, spoksponsor, detOmojligaValet, icaMaxi, varsel-heltidskontrakt, mecenat-intervention/intro/avgång, ekonomikris tre vägar, weeklyDecisionService — se not nedan, m.fl.) har korrekt tecken mellan text och effekt, verifierade en och en.
+
+**Nytt (b)-fynd under samma genomläsning:** `economicCrisisService.ts:100-102` — ekonomikrisens `ask_mecenat`-val. Label: "Be mecenaten (+200 000 kr, lojalitet −30)". Effekten (`resolveEconomicCrisis` med `crisisPhase: 'mecenat'`) rör pengarna korrekt (+200 000, verifierat i (a)-svepet ovan) men **rör aldrig någon mecenats happiness/lojalitet** — grep bekräftar att `crisisPhase === 'mecenat'` inte förekommer någon annanstans i `eventResolver.ts` än i själva `outcomeMap`. "Lojalitet −30" är en helt påhittad konsekvens. Värre: valet erbjuds ALLTID (alla tre krisval returneras ovillkorat, `economicCrisisService.ts:88-104`) — även om spelaren inte har en aktiv mecenat, vilket gör löftet dubbelt tomt i det läget (ingen mecenat att straffa, och koden skulle inte straffa en även om en fanns).
+
+**Systematisk täckningslucka, värd en egen rad:** `weeklyDecisionService.ts` är en HELT SEPARAT beslutspipeline (`WeeklyDecision`/`resolveWeeklyDecision`, egen `effect: string`-typ för visning + en egen `WeeklyDecisionEffect`-union för den faktiska mutationen) — inte `EventChoice`/`resolveEvent`. Den låg utanför runda 1:s scope (agenterna läste bara `src/domain/services/events/` + `eventProcessor.ts`/`matchSimProcessor.ts`) OCH utanför throw-guard-instrumentets scope (`collectPendingItems` läser bara `pendingEvents`/`pendingPressConference`/`pendingRefereeMeeting`/`pendingCSPress` — aldrig `game.pendingWeeklyDecision`). Läste igenom hela filen manuellt (`makeDecisions` + `resolveWeeklyDecision`, alla ~16 beslut) som en engångskontroll: **alla tecken stämde, inga no-ops hittade** — men detta var en manuell stickprovskontroll, inte en instrumenterad grind. Om `weeklyDecisionService.ts` ska ha samma mekaniska skydd som `eventResolver.ts` nu har är det ett separat bygge (egen vakt + eget instrument, eller en gemensam abstraktion) — inte gjort här.
+
+### (c) Fel storlek — inga nya fynd
+
+Ingen ny (c)-klassificering hittad utöver vad som redan låg i (b)-korgen ovan (flera av (b)-fynden HAR ett korrekt tecken men fel/obefintlig storlek snarare än ett rent påhittat fält — gränsen mellan (b) och (c) är ibland flytande när effekten är HELT frånvarande snarare än bara fel dimensionerad; klassade dem som (b) genomgående eftersom "0 istället för utlovat belopp" är närmare "påhittat" än "fel storlek").
+
+---
+
+## REDAN KLASSIFICERADE — LETA INTE OM DESSA
+
+Fullständig lista över varje val som fått en dom (löst, flaggat, eller klassat) i denna rapport, så att ett framtida svep vet vad som redan är utrett:
+
+**Löst/byggt (sektion LÖST ovan):** captainSpeech→support, varsel→support, varsel→nothing, varsel→offer_pro, community_bandyplay→start, `${elin}`-buggen (supporterEvents.ts konflikt-eventet), mecenat-avgång→listen, mecenat-avgång→offer_tribute (samtliga fem effekttyper av "obligatoriskt-fält-saknas"-klassen, se `eventResolverGuardSweep.test.ts` för de ~20 breddade vakterna som nu TÄCKER men inte i sig ÄR nya fynd).
+
+**Flaggat, väntar på Jacobs dom (sektion "Flaggat separat" + "kommunens_villkor"):** bandyplays löpande nettoförlust, kiosk break-even (nytt), kommunens_villkor (byte-identiska val).
+
+**Klassade (b) påhittad effekt:** politician_savings→comply, patron_ignored→apologize, detOmojligaValet→keep, community_anlaggning→renovate, community_ismaskin→repair, riskySponsorOffer-exponeringen (roundProcessor.ts), ask_mecenat i ekonomikrisen (nytt).
+
+**Klassat (a) tecken-omvänt:** community_bandyplay→start (löst), community_julmarknad→start (nytt, ej byggt — textbeslut).
+
+**"Sticker ut", väntar på designbeslut om avsiktlig dold info:** spoksponsor→accept, icamaxi_visit→send_player, bidReceivedEvent→reject.
+
+**Explicit kontrollerade och friade (inga fynd):** patronEvents.ts (spawnPatron-flödet), postAdvanceEvents.ts (spoksponsor/detOmojligaValet-pengarnas tecken), eventFactories.ts (dayJobConflict→goPro, mecenatInterventionEvent), politicianEvents.ts (start_program), supporterEvents.ts (away_trip_bus), sponsorEvents.ts (icaMaxi-pengarnas tecken), characterPlayerService.ts (jubilee-ceremonin), economicCrisisService.ts (sell_star/take_loan/ask_mecenats pengar — bara lojalitetslöftet är trasigt, se ovan), mecenatService.ts (mecenat-intro), weeklyDecisionService.ts (samtliga ~16 beslut, manuell kontroll — se täckningslucka-noten ovan).
+
+Allt som INTE står i en av listorna ovan, och inte heller i de ~18 posterna från runda 1:s första sammanställning, tillhör de outredda ~20 — se nästa avsnitt.
 
 ---
 
