@@ -4,6 +4,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS, autoAssignFormation, getRecommendedFormation, FORMATION_META } from '../../../domain/entities/Formation'
 import type { Tactic } from '../../../domain/entities/Club'
+import { positionShort } from '../../../domain/format'
 import { PlayerDot } from './PlayerDot'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
@@ -358,7 +359,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
                 cursor: selectedSlotId ? 'pointer' : 'default',
               }}
             >
-              <span className="h-label">{p.position.slice(0, 3).toUpperCase()}</span>
+              <span className="h-label">{positionShort(p.position)}</span>
               <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', lineHeight: 1.2, maxWidth: 48, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {p.lastName}
               </span>
