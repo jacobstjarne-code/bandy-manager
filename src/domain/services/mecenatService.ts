@@ -617,7 +617,15 @@ export function checkMecenatRetirement(game: import('../entities/SaveGame').Save
         id: 'listen',
         label: 'Lyssna',
         subtitle: 'Mecenat stannar en säsong till',
-        effect: { type: 'mecenatHappiness', value: 5 },
+        // 2.5 (instrument-svepet, 2026-08-17): var { type: 'mecenatHappiness',
+        // value: 5 } utan targetMecenatId — sen vakten breddades (ed94218f)
+        // hade det kastat live vid varje resolution. Redundant sedan tidigare:
+        // den FAKTISKA happiness/communityStanding-effekten sköts helt av
+        // eventResolver.ts:s post-switch-block (event.type === 'mecenatEvent'
+        // && eventId.startsWith('event_mecenat_retire_'), rad ~1607), som
+        // redan applicerar +5 happiness på rätt mecenat via eventId, oavsett
+        // effect.type. noOp matchar plan_succession-mönstret nedan.
+        effect: { type: 'noOp' },
       },
       {
         id: 'plan_succession',
@@ -629,7 +637,8 @@ export function checkMecenatRetirement(game: import('../entities/SaveGame').Save
         id: 'offer_tribute',
         label: 'Erbjud jubileumsmatch (25k)',
         subtitle: '+5 relation · +3 orten',
-        effect: { type: 'mecenatHappiness', value: 5 },
+        // Se 'listen'-kommentaren ovan — samma redundanta effekt, samma fix.
+        effect: { type: 'noOp' },
       },
     ],
     resolved: false,
