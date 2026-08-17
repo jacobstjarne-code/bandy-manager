@@ -104,6 +104,16 @@ export function isSeriesDecided(series: PlayoffSeries): boolean {
   return series.homeWins >= 3 || series.awayWins >= 3
 }
 
+/**
+ * VARJE anropare som skriver resultatet av denna funktion till game.playoffBracket
+ * MÅSTE, i samma anrop/objekt som muterar bracketen, filtrera
+ * game.pendingEvents/deferredDecisions via isPlayoffNarrativeCardStillValid
+ * (playoffNarrativeService.ts) mot den NYA bracketen — direkt vid mutationsstället
+ * eller ett steg upp i anropskedjan. Utan det kan ett slutspelskort som just blivit
+ * inaktuellt (t.ex. det egna laget utslaget) bli kvar synligt i Portalen. Se
+ * playoffBracketMutationCallers.test.ts, som failar om en ny anropare dyker upp
+ * utan att listan där medvetet uppdaterats.
+ */
 export function updateSeriesAfterMatch(
   series: PlayoffSeries,
   fixture: Fixture,
@@ -152,6 +162,16 @@ export function updateSeriesAfterMatch(
   return updated
 }
 
+/**
+ * VARJE anropare som skriver resultatet av denna funktion till game.playoffBracket
+ * MÅSTE, i samma anrop/objekt som muterar bracketen, filtrera
+ * game.pendingEvents/deferredDecisions via isPlayoffNarrativeCardStillValid
+ * (playoffNarrativeService.ts) mot den NYA bracketen — direkt vid mutationsstället
+ * eller ett steg upp i anropskedjan. Utan det kan ett slutspelskort som just blivit
+ * inaktuellt (t.ex. det egna laget utslaget) bli kvar synligt i Portalen. Se
+ * playoffBracketMutationCallers.test.ts, som failar om en ny anropare dyker upp
+ * utan att listan där medvetet uppdaterats.
+ */
 export function advancePlayoffRound(
   bracket: PlayoffBracket,
   season: number,
