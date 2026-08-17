@@ -24,6 +24,19 @@ jobs:
         run: npx tsc --noEmit
       - name: Tests (vitest)
         run: npm test
+      # ETAPP 1.2 (Skutskär-auditen, 2026-08-17): tsc --noEmit ensam missade
+      # inte den faktiska buggen (seasonEndProcessor.ts:1178 saknade
+      # resolveContractExtensions fjärde argument — det ÄR ett typfel, tsc
+      # skulle ha fällt det) — den missade för att buggen aldrig nådde en
+      # PUSHAD commit där check-jobbet körde mot den kompletta filen; en
+      # commit-uppdelning under samma session lät en signaturändring och dess
+      # anropsplats landa i olika commits. Det riktiga hålet var att ingen i
+      # sessionen NÅGONSIN läste CI:s faktiska status — bara lokal körning.
+      # Full produktionsbygge (inte bara tsc) som EGET, obligatoriskt steg
+      # här — inte bara i screenshots-jobbet där ett fel dränks i
+      # artefaktuppladdning — så en trasig main aldrig kan se grön ut.
+      - name: Production build (vite)
+        run: npm run build
       - name: Design tokens (lint:design)
         run: npm run lint:design
       - name: Color-mirror i synk med global.css
