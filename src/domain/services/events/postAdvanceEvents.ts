@@ -602,14 +602,21 @@ export function generatePostAdvanceEvents(
       rand
     )
     if (offer) {
+      // 2026-08-17 (Stickiness-audit): weeklyFmt rundade till närmsta heltal-k
+      // medan totalFmt räknade totalValue exakt ur samma (orundade) weeklyIncome
+      // — vid t.ex. 1500 kr/vecka visade kortet "2k kr/vecka" men en total som
+      // bara stämde med 1500, inte 2000. formatK visar en decimal BARA när
+      // talet inte redan är ett jämnt tusental, så veckobelopp och total alltid
+      // multiplicerar ut till samma tal utan att skräpa ner de vanliga, jämna
+      // beloppen (weeklyIncome är alltid multipel av 500, sponsorService.ts)
+      // med ett onödigt ",0".
+      const formatK = (n: number) => Number.isInteger(n / 1000) ? `${n / 1000}k kr` : `${formatDecimalComma(n / 1000)}k kr`
       const totalValue = offer.weeklyIncome * offer.contractRounds
-      const weeklyFmt = offer.weeklyIncome >= 1000
-        ? `${Math.round(offer.weeklyIncome / 1000)}k kr`
-        : `${offer.weeklyIncome} kr`
+      const weeklyFmt = offer.weeklyIncome >= 1000 ? formatK(offer.weeklyIncome) : `${offer.weeklyIncome} kr`
       const totalFmt = totalValue >= 1000000
         ? `${formatDecimalComma(totalValue / 1000000)} mkr`
         : totalValue >= 1000
-        ? `${Math.round(totalValue / 1000)}k kr`
+        ? formatK(totalValue)
         : `${totalValue} kr`
 
       events.push({
