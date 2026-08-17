@@ -717,7 +717,14 @@ export function GranskaOversikt({
               playerName: player.lastName,
               outcome: outcomeText,
               value: `${cond}%`,
-              valueLabel: 'trötthet',
+              // 2026-08-17 (Stickiness-audit): cond är player.fitness rakt av
+              // (roundProcessor.ts/matchActions.ts: `condition_${fitness}`) —
+              // HÖGRE tal betyder MER kondition, inte mer trötthet. Etiketten
+              // "trötthet" på samma siffra var en semantisk inversion: "0%
+              // trötthet" läses som "inte alls trött", när 0 faktiskt betyder
+              // helt slut. "kondition" matchar hur samma fält visas överallt
+              // annars i appen (PlayerCard.tsx: "Kondition").
+              valueLabel: 'kondition',
             })
           } else if (entry.type === 'bench_fit' && entry.playerId) {
             const player = findPlayer(entry.playerId)
