@@ -1,6 +1,7 @@
 import type { FacilityNodeView, FacilityState, FacilityNodeDef } from '../../../domain/entities/SaveGame'
 import { getFacilityTreeByGren } from '../../../domain/services/facilityService'
 import { FACILITY_DESC, FACILITY_INTRO } from '../../../domain/data/facilityDescriptions'
+import { FACILITY_NODE_DEFS } from '../../../domain/data/facilityNodes'
 
 interface FacilityTreeProps {
   facilityState: FacilityState
@@ -47,6 +48,28 @@ function ConsekvensRad({ consequences }: { consequences: FacilityNodeDef['conseq
   )
 }
 
+// Bug 2 (AUDIT DEL 4, A4) — akademi_3 (och ev. framtida noder) kräver FLERA
+// byggen (AND av requires[]). Tidigare visades bara requires[0] i låstaggen.
+// Listar nu varje krav separat med eget uppfyllt/ej uppfyllt-status, samma
+// mönster som BoardMeetingScene.tsx:s evalRows (✓/✕ + success/danger-färg).
+function LockRequirements({ requires, builtNodeIds }: { requires: string[]; builtNodeIds: string[] }) {
+  if (requires.length === 0) return null
+  const built = new Set(builtNodeIds)
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
+      {requires.map(r => {
+        const label = FACILITY_NODE_DEFS.find(d => d.id === r)?.label ?? r
+        const met = built.has(r)
+        return (
+          <span key={r} style={{ fontSize: 8.5, fontWeight: 600, color: met ? 'var(--success)' : 'var(--danger-text)', whiteSpace: 'nowrap' }}>
+            {met ? '✓' : '✕'} {label}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 function CooldownDots({ total, filled }: { total: number; filled: number }) {
   const dots = Math.min(4, total)
   const filledDots = Math.round((filled / total) * dots)
@@ -65,13 +88,14 @@ function CooldownDots({ total, filled }: { total: number; filled: number }) {
   )
 }
 
-function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive }: {
+function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive, builtNodeIds }: {
   view: FacilityNodeView
   mode: 'betrakta' | 'valj'
   selected: boolean
   onSelect?: (id: string) => void
   hallNodeSub?: string
   hallTrialActive?: boolean
+  builtNodeIds: string[]
 }) {
   const { def, status } = view
   const isHall = def.isHall
@@ -92,26 +116,15 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
 
   const nameColor = isHall ? 'var(--cold)' : 'var(--text-primary)'
 
-  const lockLabel = (() => {
-    const r = def.requires[0]
-    if (!r) return null
-    const labels: Record<string, string> = {
-      traningshall: 'Träningshall',
-      laktare_ostra: 'Läktare',
-      varmestuga: 'Värmestuga',
-      gym: 'Gym',
-      belysning: 'Belysning',
-      kiosk: 'Kiosk',
-    }
-    return labels[r] ?? r
-  })()
-
   const tagText = (() => {
     if (isHall) return 'Prövning'
     if (status === 'built') return view.completedSeason ? `Byggd ${view.completedSeason}` : 'Byggd'
     if (status === 'ongoing') return 'Pågår'
     if (status === 'available') return 'Möjlig'
-    return lockLabel ? `🔒 ${lockLabel}` : '🔒 Låst'
+    // Bug 2 (AUDIT DEL 4, A4): taggen visade tidigare bara requires[0] — vilseledande
+    // för noder med flera krav (t.ex. akademi_3: traningshall + akademi_2). Generisk
+    // tagg, full uppdelning per krav visas i LockRequirements nedan.
+    return '🔒 Låst'
   })()
 
   const tagColor = (() => {
@@ -188,6 +201,10 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
         <ConsekvensRad consequences={def.consequences} />
       )}
 
+      {status === 'locked' && !isHall && (
+        <LockRequirements requires={def.requires} builtNodeIds={builtNodeIds} />
+      )}
+
       {isHall && (
         <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2 }}>
           {hallNodeSub ?? 'Öppnar prövningen — förankring krävs'}{clickable ? ' ›' : ''}
@@ -228,7 +245,7 @@ export function FacilityTree({
         <div style={{ marginBottom: 8 }}>
           <h2 className="h-name">Anläggningen</h2>
           <span style={{ fontSize: 8, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block', marginTop: 2 }}>
-            Betrakta · val görs i säsongsstarten
+            Ett bygge åt gången
           </span>
         </div>
       )}
@@ -274,6 +291,7 @@ export function FacilityTree({
                     onSelect={onSelect}
                     hallNodeSub={view.def.isHall ? hallNodeSub : undefined}
                     hallTrialActive={view.def.isHall ? hallTrialActive : undefined}
+                    builtNodeIds={facilityState.builtNodeIds}
                   />
                 </div>
               ))}
