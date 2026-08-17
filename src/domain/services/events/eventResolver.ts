@@ -511,7 +511,7 @@ export function resolveEvent(
             isActive: true,
             hasBeenWarned: false,
             backstory: p.backstory ?? undefined,
-            patience: 80,
+            goodwill: 80,
             totalContributed: 0,
             demands: [],
           },
@@ -618,7 +618,7 @@ export function resolveEvent(
         patron: {
           ...updatedGame.patron,
           influence: Math.max(0, Math.min(100, (updatedGame.patron.influence ?? 30) + (effect.amount ?? 0))),
-          patience: Math.max(0, Math.min(100, (updatedGame.patron.patience ?? 80) + (effect.value ?? 0))),
+          goodwill: Math.max(0, Math.min(100, (updatedGame.patron.goodwill ?? 80) + (effect.value ?? 0))),
         },
       }
       break

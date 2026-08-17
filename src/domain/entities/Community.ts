@@ -33,14 +33,17 @@ export interface Patron {
   isActive: boolean
   hasBeenWarned?: boolean
   personality?: PatronPersonality
-  patience?: number           // 0-100, decreases when ignored
+  // 3.2 (SLUTTEST_KO.md, 2026-08-17): döpt om från `patience` — kolliderade
+  // namnmässigt med SaveGame.boardPatience (styrelsens tålamod med managern),
+  // ett helt annat begrepp. goodwill = patronens tålamod med KLUBBEN.
+  goodwill?: number           // 0-100, decreases when ignored
   totalContributed?: number   // running total
   // Kravmotor (2026-07-19): demands håller den PÅGÅENDE/senast avgjorda
   // kravtexten (befintlig form, 3 konsumenter läser den som ren sträng —
   // dailyBriefingService/patronTriggers/PatronDemandPrimary, orörda).
   // Rensas till [] först när ett krav UPPFYLLS; hålls kvar (stale text)
   // vid misslyckande så patronDemandUnmetOver3Rounds fortfarande hittar
-  // det när patience faller under tröskeln. pendingDemand bär den
+  // det när goodwill faller under tröskeln. pendingDemand bär den
   // maskin-läsbara livscykeln (deadline, kategori) — internt, ingen UI läser den.
   demands?: string[]
   pendingDemand?: PendingDemand

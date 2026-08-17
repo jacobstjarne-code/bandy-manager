@@ -33,15 +33,15 @@ describe('patronDemandUnmetOver3Rounds', () => {
     expect(patronDemandUnmetOver3Rounds(makeGame({ demands: [] }))).toBe(false)
   })
 
-  it('returnerar false om patience är hög (60)', () => {
-    expect(patronDemandUnmetOver3Rounds(makeGame({ demands: ['Vinn ligan'], patience: 60 }))).toBe(false)
+  it('returnerar false om goodwill är hög (60)', () => {
+    expect(patronDemandUnmetOver3Rounds(makeGame({ demands: ['Vinn ligan'], goodwill: 60 }))).toBe(false)
   })
 
-  it('returnerar true om patience < 30 och demands finns', () => {
-    expect(patronDemandUnmetOver3Rounds(makeGame({ demands: ['Vinn ligan'], patience: 15 }))).toBe(true)
+  it('returnerar true om goodwill < 30 och demands finns', () => {
+    expect(patronDemandUnmetOver3Rounds(makeGame({ demands: ['Vinn ligan'], goodwill: 15 }))).toBe(true)
   })
 
-  it('returnerar true vid patience = 0', () => {
-    expect(patronDemandUnmetOver3Rounds(makeGame({ demands: ['Vinn'], patience: 0 }))).toBe(true)
+  it('returnerar true vid goodwill = 0', () => {
+    expect(patronDemandUnmetOver3Rounds(makeGame({ demands: ['Vinn'], goodwill: 0 }))).toBe(true)
   })
 })

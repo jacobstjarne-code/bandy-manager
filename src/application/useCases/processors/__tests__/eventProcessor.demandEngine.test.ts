@@ -83,7 +83,7 @@ describe('processGameEvents — kravmotor integration (Patron)', () => {
   function withActivePatron(game: SaveGame): SaveGame {
     return {
       ...game,
-      patron: { name: 'Test Patron', business: 'Test AB', influence: 40, happiness: 60, contribution: 10000, isActive: true, patience: 70 },
+      patron: { name: 'Test Patron', business: 'Test AB', influence: 40, happiness: 60, contribution: 10000, isActive: true, goodwill: 70 },
     }
   }
 
@@ -102,14 +102,14 @@ describe('processGameEvents — kravmotor integration (Patron)', () => {
         ...game.patron!,
         pendingDemand: { category: 'league_position', description: '[Opus]', createdRound: 1, deadlineRound: 5 },
         demands: ['[Opus]'],
-        patience: 70,
+        goodwill: 70,
       },
       standings: game.standings.map(s => s.clubId === game.managedClubId ? { ...s, position: game.standings.length } : s),
     }
     const result = processGameEvents(pendingGame, [], null, 5, () => 0.99)
     expect(result.updatedPatron?.pendingDemand).toBeUndefined()
     expect(result.updatedPatron?.demands).toEqual(['[Opus]']) // INTE rensad vid misslyckande
-    expect(result.updatedPatron?.patience).toBe(55) // 70 - 15
+    expect(result.updatedPatron?.goodwill).toBe(55) // 70 - 15
   })
 
   it('uppfyllt krav: demands rensas', () => {
@@ -120,13 +120,13 @@ describe('processGameEvents — kravmotor integration (Patron)', () => {
         ...game.patron!,
         pendingDemand: { category: 'league_position', description: '[Opus]', createdRound: 1, deadlineRound: 5 },
         demands: ['[Opus]'],
-        patience: 70,
+        goodwill: 70,
       },
       standings: game.standings.map(s => s.clubId === game.managedClubId ? { ...s, position: 1 } : s),
     }
     const result = processGameEvents(pendingGame, [], null, 5, () => 0.99)
     expect(result.updatedPatron?.pendingDemand).toBeUndefined()
     expect(result.updatedPatron?.demands).toEqual([])
-    expect(result.updatedPatron?.patience).toBe(85) // 70 + 15
+    expect(result.updatedPatron?.goodwill).toBe(85) // 70 + 15
   })
 })

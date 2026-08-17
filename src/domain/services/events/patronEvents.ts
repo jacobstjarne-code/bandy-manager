@@ -180,7 +180,7 @@ export function generatePatronEvents(
   const patronGame = game.patron
   if (patronGame?.isActive) {
     const influence = patronGame.influence ?? 30
-    const patience = patronGame.patience ?? 80
+    const goodwill = patronGame.goodwill ?? 80
 
     // Influence crosses 60 — wants to affect decisions
     if (influence >= 60 && influence < 80) {
@@ -210,8 +210,8 @@ export function generatePatronEvents(
       }
     }
 
-    // Patron ignored — patience < 20 and influence > 30
-    if (patience < 20 && influence > 30) {
+    // Patron ignored — goodwill < 20 and influence > 30
+    if (goodwill < 20 && influence > 30) {
       const eid = `patron_ignored_${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         events.push({

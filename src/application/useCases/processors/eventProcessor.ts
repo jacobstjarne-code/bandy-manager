@@ -366,7 +366,7 @@ export function processGameEvents(
         updatedPatron = {
           ...updatedPatron,
           happiness: Math.max(0, Math.min(100, updatedPatron.happiness + delta)),
-          patience: Math.max(0, Math.min(100, (updatedPatron.patience ?? 80) + delta)),
+          goodwill: Math.max(0, Math.min(100, (updatedPatron.goodwill ?? 80) + delta)),
           demands: fulfilled ? [] : updatedPatron.demands,
           pendingDemand: undefined,
         }

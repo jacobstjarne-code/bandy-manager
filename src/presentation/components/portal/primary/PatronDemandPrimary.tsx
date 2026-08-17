@@ -12,10 +12,10 @@ export function PatronDemandPrimary({ game }: CardRenderProps) {
   if (!patron || !patron.isActive) return null
 
   const demand = patron.demands?.[0] ?? 'Kräver åtgärd'
-  const patience = patron.patience ?? 50
-  const patienceLabel = patience < 20
+  const goodwill = patron.goodwill ?? 50
+  const goodwillLabel = goodwill < 20
     ? 'Ytterst otålig'
-    : patience < 40
+    : goodwill < 40
     ? 'Missnöjd'
     : 'Otålig'
 
@@ -48,8 +48,8 @@ export function PatronDemandPrimary({ game }: CardRenderProps) {
         borderTop: '1px solid var(--bg-leather)',
       }}>
         <span>
-          <strong style={{ color: 'var(--danger)', fontWeight: 600 }}>{patienceLabel}</strong>
-          {' · '}tålamod {patience}
+          <strong style={{ color: 'var(--danger)', fontWeight: 600 }}>{goodwillLabel}</strong>
+          {' · '}tålamod {goodwill}
         </span>
       </div>
       <button
