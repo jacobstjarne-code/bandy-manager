@@ -45,6 +45,14 @@ export function GameShell() {
   }, [location.pathname])
 
   if (!game) return <Navigate to="/" replace />
+  // 3.1 (SLUTTEST_KO.md, 2026-08-17): GameShell täckte bara "inget game"-fallet.
+  // En sparkad manager kunde nå tillbaka till dashboard/squad/etc via bakåtknapp
+  // eller en stale route-återinträde (t.ex. app-reload mellan avsked och
+  // SeasonSummaryScreen.handleNextSeason:s engångsredirect till game-over) —
+  // vyerna antar aktiv-manager-tillstånd och kraschar, eller visar en dashboard
+  // som inte längre borde vara nåbar. game-over-rutten går via GameGuard, inte
+  // GameShell, så ingen omdirigeringsloop uppstår.
+  if (game.managerFired) return <Navigate to="/game/game-over" replace />
 
   const attention = getCurrentAttention(game)
   // coffee_room is a modal over dashboard — BottomNav stays visible (FIX-41)
