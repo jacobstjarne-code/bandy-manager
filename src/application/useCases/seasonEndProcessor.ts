@@ -1,5 +1,5 @@
 import type { SaveGame, InboxItem, AllTimeRecords } from '../../domain/entities/SaveGame'
-import { resolveContractExtension } from '../../domain/services/managerProfileService'
+import { resolveContractExtension, getManagerDisplayName } from '../../domain/services/managerProfileService'
 
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
 import type { Player } from '../../domain/entities/Player'
@@ -1175,7 +1175,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   let contractInboxItem: InboxItem | null = null
   if (updatedManagerProfile) {
     const contractSeed = (game.currentSeason * 7919 + 88003) | 0
-    const { profile: contractedProfile, inboxText } = resolveContractExtension(updatedManagerProfile, game.currentSeason, contractSeed)
+    const { profile: contractedProfile, inboxText } = resolveContractExtension(updatedManagerProfile, game.currentSeason, contractSeed, getManagerDisplayName(game))
     updatedManagerProfile = contractedProfile
     if (inboxText) {
       contractInboxItem = {
@@ -1269,6 +1269,16 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     scoutBudget: 10,
     transferBids: [],
     pendingEvents: seasonEndPendingEvents,
+    // 2026-08-17: deferredDecisions (KF3-avbrottsbudgetens FIFO-kö i
+    // roundProcessor.ts) rensades aldrig vid säsongsslut, till skillnad från
+    // pendingEvents (wholesale-ersatt ovan). Verifierat i headless
+    // simulering: events undanträngda av budgetcapet mitt i säsong N (t.ex.
+    // sponsorerbjudanden, mecenatevent, ett kvarglömt playoff-"Fokusera"-kort)
+    // låg kvar i kön oförändrade och surfade upp i portalen flera omgångar in
+    // i säsong N+1 — daterade och kontextuellt fel. pendingEvents fick redan
+    // samma typ av wholesale-clear vid rollover; deferredDecisions är samma
+    // sorts i-flight beslutskö och ska rensas på samma sätt, inte selektivt.
+    deferredDecisions: [],
     handledContractPlayerIds: [],
     sponsors: sponsorsAfterLicense,
     opponentAnalyses: {},

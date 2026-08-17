@@ -109,6 +109,7 @@ export function processPlayoffRound(
   if (currentPhaseComplete) {
     const wasQFPhase = result.updatedBracket!.status === PlayoffStatus.QuarterFinals
     const wasSFPhase = result.updatedBracket!.status === PlayoffStatus.SemiFinals
+    const wasFinalPhase = result.updatedBracket!.status === PlayoffStatus.Final
     const nextRoundStart =
       wasQFPhase ? 28
       : wasSFPhase ? 33
@@ -128,9 +129,16 @@ export function processPlayoffRound(
     }
 
     // Clear stale playoff event for the phase that just completed — prevents
-    // old "Fokusera"-kort from persisting into the next phase's portal
+    // old "Fokusera"-kort from persisting into the next phase's portal.
+    // wasFinalPhase clear added 2026-08-17: the Final's own "SM-finalen"-kort
+    // was never added to staleEventIds, so it could survive (via pendingEvents
+    // or the deferredDecisions budget-queue, see roundProcessor.ts) past the
+    // champion being crowned. staleEventIds is consumed both against
+    // pendingEvents AND deferredDecisions (roundProcessor.ts) — see also the
+    // season-rollover wholesale-clear in seasonEndProcessor.ts.
     if (wasQFPhase) result.staleEventIds.push(`playoff_qf_${game.currentSeason}`)
     else if (wasSFPhase) result.staleEventIds.push(`playoff_sf_${game.currentSeason}`)
+    else if (wasFinalPhase) result.staleEventIds.push(`playoff_final_${game.currentSeason}`)
 
     // Narrative event for managed club advancing to next round
     const managedInNewBracket = [
@@ -141,11 +149,13 @@ export function processPlayoffRound(
       if (wasQFPhase) {
         const sfId = `playoff_sf_${game.currentSeason}`
         const alreadyFired = (game.pendingEvents ?? []).some(e => e.id === sfId) ||
+          (game.deferredDecisions ?? []).some(e => e.id === sfId) ||
           (game.resolvedEventIds ?? []).includes(sfId)
         if (!alreadyFired) result.gameEvents.push(generateSemiFinalEvent(game))
       } else if (result.updatedBracket!.status === PlayoffStatus.Final) {
         const finalId = `playoff_final_${game.currentSeason}`
         const alreadyFired = (game.pendingEvents ?? []).some(e => e.id === finalId) ||
+          (game.deferredDecisions ?? []).some(e => e.id === finalId) ||
           (game.resolvedEventIds ?? []).includes(finalId)
         if (!alreadyFired) result.gameEvents.push(generateFinalEvent(game))
       }

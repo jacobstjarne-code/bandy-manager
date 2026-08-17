@@ -51,7 +51,7 @@ import { processMedia } from './processors/mediaProcessor'
 import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
 import { processGameEvents, applyMecenatSpawn, processScandals, checkForPlayThroughInjuryOffer } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
-import { applyRipples, mergeRippleDeltas, describeRippleChain } from '../../domain/services/rippleEffectService'
+import { applyRipples, mergeRippleDeltas, describeRippleChain, rippleChainSignificance } from '../../domain/services/rippleEffectService'
 import type { RippleChain } from '../../domain/entities/SaveGame'
 import { applyMatchInjury, generateInjuryInboxItem } from '../../domain/services/matchInjuryService'
 import {
@@ -1373,15 +1373,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Legibel konsekvens: välj mest signifikant kedja (mecenat_left > skada+styrelse > skada > derby)
-  function chainSignificance(c: RippleChain): number {
-    if (c.trigger === 'mecenat_left') return 4
-    if (c.trigger === 'star_injured' && c.steps.some(s => s.label === 'Styrelsen')) return 3
-    if (c.trigger === 'star_injured') return 2
-    return 1
-  }
-  const pendingRippleChain = roundRippleChains.length > 0
-    ? roundRippleChains.reduce((best, c) => chainSignificance(c) > chainSignificance(best) ? c : best)
+  // ÖVERLÄMNING 2 (2026-08-17, Jacobs korrigering): ingen kedja kastas
+  // längre — alla sparas rangordnade. Rangordningen (rippleChainSignificance,
+  // rippleEffectService.ts) väger nu det verkliga utfallet, inte vilken
+  // trigger som orsakade det. Se den funktionens kommentar för rotorsaken.
+  const pendingRippleChains = roundRippleChains.length > 0
+    ? [...roundRippleChains].sort((a, b) => rippleChainSignificance(b) - rippleChainSignificance(a))
     : undefined
 
   // M15: merge ripple-derived field changes via centralized function
@@ -1430,6 +1427,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       ),
       ...allNewEvents,
     ],
+    // 2026-08-17: staleEventIds fångade tidigare bara pendingEvents. Ett event
+    // som blivit undanträngt till deferredDecisions (KF3-avbrottsbudgeten,
+    // längre ned i denna funktion) av budgetcapet innan sin fas hann klaras av
+    // missade rensningen helt — det låg kvar i FIFO-kön och kunde surfa upp
+    // igen omgångar senare, efter att fasen redan var över (bekräftat: en
+    // "playoff_sf_"-kort dök upp i portalen EFTER att finalen redan var vunnen,
+    // eftersom kortet legat undanträngt i deferredDecisions genom hela SF- och
+    // finalfasen). Samma filter som pendingEvents ovan, applicerat här.
+    deferredDecisions: (game.deferredDecisions ?? []).filter(e =>
+      !allNewEvents.some(n => n.id === e.id) &&
+      !playoffResult.staleEventIds.includes(e.id)
+    ),
     sponsors: updatedSponsors,
     activeTalentSearch: updatedTalentSearch,
     talentSearchResults: updatedTalentResults,
@@ -1451,7 +1460,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     boardObjectives: updatedBoardObjectives,
     boardTrust: Math.max(0, (game.boardTrust ?? 0) + boardObjTrustDelta),
     boardObjectiveHistory: game.boardObjectiveHistory ?? [],
-    pendingRippleChain,
+    pendingRippleChains,
     facilityState: updatedFacilityState ?? game.facilityState,
     volunteers: updatedVolunteers,
     volunteerMorale: updatedVolunteerMorale,

@@ -516,3 +516,20 @@ Mellan varje delsprint: mät via analyze-stress, läs rapporten, avgör om näst
 **Alternativ övervägt:** Avfärda direkt som "redan stängt i B10". Avvisat — Jacob hade explicit rätt i att B10:s test mätte fel sak (isolerat, inte sekvens); en andra avfärdning utan nytt bevis hade upprepat samma metodfel.
 
 **Konsekvens:** `scripts/live-sim-sequence.ts` är permanent tooling (samma status som `live-vs-sim.ts`/`compare-modes.ts`) — kör om vid framtida motorändringar som rör fitness/sharpness/form om känslan dyker upp igen. Om B10:s halvtidsfördel någon gång känns för stor är det en balansjustering av halvtidseffekternas styrka (se B10:s egen konsekvensrad), inte en motorbugg att leta efter i sekvensen.
+
+---
+
+## 2026-08-17 — `deferredDecisions` fick samma wholesale-clear som `pendingEvents` vid säsongsrollover
+
+**Problem (Jacobs order):** "rensa alla event med avslutad säsong vid rollover, inte bara kvart och semi." Den kända mekanismen var `staleEventIds` i `playoffProcessor.ts` (rensar `playoff_qf_`/`playoff_sf_` ur `pendingEvents` när respektive fas avslutas) — men den täckte varken Final-fasen eller något annat event-slag.
+
+**Kodspårning innan fix:** `seasonEndProcessor.ts` wholesale-ersätter redan `pendingEvents: seasonEndPendingEvents` vid rollover, så den arrayen var INTE den faktiska läckan — headless simulering (seed-driven, `advanceToNextEvent` + `autoSelectLineup`/`autoResolvePendingScreen`) visade att den var ren. De enskilda `pending*`-objektfälten (`pendingPressConference`, `pendingCSPress`, `pendingRefereeMeeting`, `pendingScene`, m.fl.) rekomputeras ovillkorligt varje omgång i `roundProcessor.ts` och självläker därför på premiäromgången. Den verkliga läckan: `game.deferredDecisions` — KF3-avbrottsbudgetens FIFO-kö (events som trängts undan av `MAX_ACTIVE_DECISIONS`-capet). Den filtrerades varken av `staleEventIds` när en fas avslutades, eller alls vid `seasonEndProcessor.ts`s rollover. Bekräftat i en engångs-probe (headless, seed=2): ett `playoff_sf_2026`-kort låg kvar oberört i `deferredDecisions` genom hela SF- och finalfasen och dök upp i portalen EFTER att SM-guldet redan var avgjort; säsong-2026-daterade events (`patron_emerge_2026`, sponsorerbjudanden m.fl.) cirkulerade fortfarande i kön vid matchdag 10 i säsong 2027.
+
+**Beslut:** Tre ändringar, samma mönster som redan fanns för `pendingEvents`:
+1. `playoffProcessor.ts` — lade till den saknade `wasFinalPhase`-grenen i `staleEventIds` (tidigare bara QF/SF).
+2. `roundProcessor.ts` — `staleEventIds`-filtret (och `allNewEvents`-dedupen) appliceras nu även på `game.deferredDecisions`, inte bara `pendingEvents`.
+3. `seasonEndProcessor.ts` — `deferredDecisions: []` tillagt i rollover-objektet, exakt samma wholesale-clear som `pendingEvents` redan fick.
+
+**Alternativ övervägt:** En generisk "strip alla event-id:n vars inbäddade säsongssiffra < currentSeason"-scrubber. Avvisat — kodbasens etablerade mönster vid rollover är redan wholesale-replace (`pendingEvents: seasonEndPendingEvents`), inte selektiv ID-mönstermatchning; att lägga samma regel på `deferredDecisions` är konsekvent med det mönstret och kräver ingen ny mekanism. En ID-scrubber hade dessutom fångat falska positiva — legitima årsboks-event som `event_gala_2026` bär medvetet det AVSLUTADE säsongsnumret i sitt ID och ska synas i den nya säsongens portal.
+
+**Konsekvens:** `deferredDecisions` ska framöver behandlas som en del av samma i-flight-beslutskö som `pendingEvents` — varje framtida `staleEventIds`-användning eller rollover-fält som rör events måste beakta båda arrayerna, annars återkommer läckan i en ny variant. Regressionstest: `src/application/useCases/__tests__/seasonRolloverStaleEvents.test.ts` (kör headless genom final → ceremoni → årsbok → premiär, asserterar tom `deferredDecisions` vid rollover + inga `playoff_qf_/sf_/final_<gammal säsong>`-kort i pendingEvents ELLER deferredDecisions upp till 15 omgångar in i nya säsongen).
