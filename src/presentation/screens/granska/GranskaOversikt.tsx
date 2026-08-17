@@ -26,6 +26,8 @@ import type { KvittoOutcomeDir, CaptainContext } from '../../../domain/data/mana
 import type { MatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { visasFor } from '../../../domain/services/granskaSectionRegistry'
 import { deriveTurneringslageMode, getTurneringslageText } from '../../../domain/services/turneringslageService'
+import { deriveKapitelPunktKind } from '../../../domain/services/kapitelPunktService'
+import { KapitelPunkt } from '../../components/granska/KapitelPunkt'
 
 const TRAINING_LABEL: Record<string, string> = {
   [TrainingType.Skating]: 'Skridskoteknik', [TrainingType.BallControl]: 'Bollkontroll',
@@ -385,11 +387,35 @@ export function GranskaOversikt({
   // Media/NY SKADA) är görbar men är sex block till att flytta rätt utan att
   // tappa något — rapporterat till Jacob som en separat avvägning istf gjort
   // under tidspress här.
+  // GRANSKA CRESCENDO (2026-08-17) — KapitelPunkt. En rad i registret
+  // (granskaSectionRegistry.ts), avsked är ETT av de fem innehållen, inte en
+  // egen gren — se kommentaren ovan om varför den fysiska avgrening som
+  // provades tidigare reverterades.
+  const farewellPlayer = fixture?.farewellMatchForPlayerId
+    ? game.players.find(p => p.id === fixture.farewellMatchForPlayerId)
+    : undefined
+  const kapitelPunktKind = visasFor('kapitelPunkt', axes.tavlingstyp, axes.skede)
+    ? deriveKapitelPunktKind(axes.tavlingstyp, axes.skede, won, farewellPlayer != null)
+    : null
+
   return (
     <>
       <GroupDivider label="Resultatet" style={{ marginTop: 2 }} />
       {/* Result hero — tappbar → Analys (händelsetidslinje + insikter) */}
       {resultatHeroCard}
+
+      {/* Kapitelpunkt — efter resultatblocket, före Turneringsläge/statistik. */}
+      {kapitelPunktKind && (
+        <KapitelPunkt
+          kind={kapitelPunktKind}
+          avsked={farewellPlayer ? {
+            firstName: farewellPlayer.firstName,
+            lastName: farewellPlayer.lastName,
+            games: farewellPlayer.careerStats.totalGames,
+            goals: farewellPlayer.careerStats.totalGoals,
+          } : undefined}
+        />
+      )}
 
       {/* Resultat-strip — tabell + form (två kolumner). GRANSKA DEL 4 steg 2:
           var och en gated individuellt — cup döljer båda, slutspel behåller
@@ -441,6 +467,15 @@ export function GranskaOversikt({
           (se deriveTurneringslageMode) — annars ingen rad (No false empty
           states, DS-regel 12). */}
       {(() => {
+        // 2026-08-17 (GRANSKA CRESCENDO, upptäckt vid browser-verifiering):
+        // vunnen_final/forlorad_final säger ORDAGRANT samma sak som KapitelPunkt
+        // (båda läser samma "Svenska mästare."/"Cupen är er."-text) på exakt
+        // samma skärm — finalens EGEN Granska-sida. Utan denna spärr syntes
+        // budskapet två gånger i rad. Turneringslägets övriga lägen
+        // (ut_forstarunda/ut_kvart/ut_semi/vidare_final) hör hemma på en ANNAN
+        // matchs Granska-sida (den som slog ut/tog laget vidare) där
+        // kapitelPunktKind alltid är null — ingen krock där.
+        if (kapitelPunktKind && kapitelPunktKind !== 'avsked') return null
         const mode = deriveTurneringslageMode(game, axes.tavlingstyp)
         if (!mode) return null
         return (

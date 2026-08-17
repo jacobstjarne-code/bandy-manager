@@ -13,6 +13,15 @@ export type GranskaSection =
   // motiveringen till att alla sex är ✓ i varje tävlingstyp/skede.
   | 'criticalEvents' | 'pressConference' | 'csPress' | 'refereeMeeting'
   | 'reaktioner' | 'nySkada'
+  // GRANSKA CRESCENDO (2026-08-17) — KapitelPunkt: en rad, ingen egen gren.
+  // Avsked är ETT av kapitelpunktens fem innehåll, inte en separat sektion
+  // eller en fysisk avgrening (se kommentaren i GranskaOversikt.tsx om varför
+  // det första avgreningsförsöket reverterades). Exakt VILKET av de fem
+  // innehållen (sm_guld/cup_vunnen/sm_final_forlorad/cupfinal_forlorad/avsked)
+  // avgörs av kapitelPunktService.ts:s deriveKapitelPunktKind (won/lost +
+  // farewell, som visasFor inte har tillgång till) — den här raden avgör bara
+  // om SLOTEN är relevant för tävlingstyp/skede-kombinationen.
+  | 'kapitelPunkt'
 
 /**
  * GRANSKA DEL 4 (2026-08-11), steg 2 — sektionsregistret.
@@ -67,6 +76,8 @@ export function visasFor(section: GranskaSection, tavlingstyp: Tavlingstyp, sked
     case 'nyckelmoment':
     case 'pressMedia':
       return true
+    case 'kapitelPunkt':
+      return isAnyFinal || tavlingstyp === 'avsked'
     // De sex event-drivna sektionerna: ✓ i varje tävlingstyp/skede, med flit.
     // Att tysta en väntande presskonferens eller en skadeanmälan för att
     // matchen råkade vara en final eller en avskedsmatch vore en regression

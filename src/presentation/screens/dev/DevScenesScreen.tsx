@@ -185,7 +185,12 @@ function makePlayer(id: string, first: string, last: string, age: number, pos: P
     attributes: { finishing: 60, dribbling: 58, passing: 62, defending: 60, stamina: 65, positioning: 62, goalkeeping: pos === PlayerPosition.Goalkeeper ? 78 : 5, corners: 55, penaltyShooting: 50, longShots: 50 },
     isInjured: false, suspensionGamesRemaining: 0, contractEnd: 9, wage: ca * 25, salary: ca * 100, value: ca * 300, goals: 0, assists: 0, gamesPlayed: 14,
     seasonStats: { goals: 0, assists: 0, gamesPlayed: 14, averageRating: 6.5 },
-    careerStats: { goals: 0, assists: 0, gamesPlayed: 50, averageRating: 6.5, seasons: 3 },
+    // 2026-08-17: fältnamnen matchade INTE PlayerCareerStats (totalGames/
+    // totalGoals/totalAssists/seasonsPlayed) — ett kvarblivet skal från en
+    // äldre typform. Osynligt tills KapitelPunkts avsked-variant faktiskt
+    // läste careerStats.totalGames/totalGoals och fick undefined (samma
+    // mönster som managerName-gapet i makeGame(), fångat i tranare-scenen).
+    careerStats: { totalGames: 50, totalGoals: 0, totalAssists: 0, seasonsPlayed: 3 },
     seasonHistory: [
       { season: 6, goals: 4, assists: 3, games: 18, rating: 6.4, clubId: HOME_ID },
       { season: 7, goals: 5, assists: 4, games: 20, rating: 6.7, clubId: HOME_ID },
