@@ -31,8 +31,19 @@ const BURNOUT_TRIGGER_ROUNDS = 2     // consecutive rounds above threshold befor
 // alltid EXAKT vad spelaren skrev in vid NameInputScreen. Alla ytor som visar
 // tränarens namn ska läsa den här funktionen — aldrig profile.firstName/
 // .lastName direkt för visning.
+//
+// 2026-08-17: fallback till 'Tränaren' om managerName saknas (samma mönster
+// som eventResolver.ts's båda anrop) — riktiga sparfiler har alltid fältet
+// (NameInputScreen kräver ett namn, saveGameStorage validerar det vid import),
+// men funktionen är dokumenterad som EN källa alla ytor ska anropa utan egen
+// guard, så den ska själv degradera i stället för att krascha hela rendret om
+// ett ofullständigt game-objekt (dev-scen-mock, framtida fixture) saknar det.
+// Rotorsak till tranare-scenens timeout i tap-target-gaten: DevScenesScreen.tsx's
+// makeGame() saknade managerName, TranareTab kraschade i renderingen (naken
+// .trim() på undefined), ErrorBoundary ersatte hela skärmen inklusive DEV
+// GALLERY-headern — Playwright väntade på text som aldrig kom tillbaka.
 export function getManagerDisplayName(game: SaveGame): string {
-  return game.managerName.trim()
+  return (game.managerName ?? '').trim() || 'Tränaren'
 }
 
 // Initialer för ManagerPortrait m.fl. Tar en redan trimmad displayName (från

@@ -299,6 +299,7 @@ function makeGame(fixtureOverrides: object[], extra: Record<string, unknown> = {
     managedClubPeriodisation: 'toppa',
     managedClubPeriodisationSince: 14,
     // Minimal required fields
+    managerName: 'Jacob Stjärne',
     inbox: [], leagueId: 'liga-dev', managedClubName: 'Edsbyn BK',
     transferBids: [], scoutingReports: [],
     managerProfile: {
