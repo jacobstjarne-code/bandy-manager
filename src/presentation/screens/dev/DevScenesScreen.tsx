@@ -859,6 +859,13 @@ export function DevScenesScreen() {
   const contentWidth = (typeof window !== 'undefined'
     ? Number(new URLSearchParams(window.location.search).get('width'))
     : 0) || 375
+  // Tap-target-grinden (2026-08-17, "Bredda grinden, inte snapshotarna"):
+  // ?navGate=1 monterar en äkta BottomNav ENBART för geometrimätning i
+  // tapTargetGate.visual.ts. scenes.visual.ts skickar aldrig parametern,
+  // så dess pixelbaselines är oförändrade — samma princip som ?width redan
+  // etablerade (default = befintligt beteende, opt-in för det nya).
+  const navGate = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('navGate') === '1'
   const storeReady = useGameStore(s => s.game?.lastCompletedFixtureId === 'fx-granska')
   const seasonReady = useGameStore(s => (s.game?.seasonSummaries?.length ?? 0) > 0)
   const finalReady = useGameStore(s => !!s.game?.playoffBracket?.final)
@@ -1306,6 +1313,7 @@ export function DevScenesScreen() {
           </div>
         )}
       </div>
+      {navGate && <BottomNav />}
     </div>
   )
 }
