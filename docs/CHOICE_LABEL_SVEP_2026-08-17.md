@@ -8,6 +8,24 @@
 
 ---
 
+## RUNDA 2 (2026-08-17) — instrument-drivet svep
+
+Metodändring per Jacobs instruktion: fynd skrivs till DENNA fil löpande, medan de hittas — inte sammanställt efteråt ur en agents context (trettioen fynd försvann så i runda 1). Ordning: (1) bredda vakten så den täcker hela no-op-klassen mekaniskt, (2) kör en simulerad flersäsongskörning som triggar alla event och resolvar alla choices, fångar throws, (3) det som INTE fångas av vakten (för att fältet finns men är fel) delas i grep-bar (a) tecken-omvänt och läsning-krävande (b)/(c).
+
+### Steg 1 — vakten breddad (fdcf55cb hade 5 vakter → `ed94218f` har 25)
+
+Fullständig katalog gjord av en läsande agent över hela `eventResolver.ts` (1652 rader). ~20 nya vakter tillagda, samtliga verifierade grep-mässigt mot ALLA levande konstruktionsställen innan de lades till (för att inte kasta på en legitim optional — se `saveBandyLetter` nedan, undantaget som INTE fick en vakt). Commit `ed94218f`, test `eventResolverGuardSweep.test.ts` (23 tester, 20 verifierat failande mot koden innan commiten).
+
+**Nytt fynd under kartläggningen, inte i runda 1:** `resolveEconomicCrisis` med `crisisPhase: 'sold_star'` skrev `economicCrisisState.outcome: 'sold_star'` OAVSETT om `effect.removePlayerId` fanns — en falsk "spelare-såld"-berättelse där ingen spelare faktiskt togs bort ur truppen. Reproducerbart i `economicCrisisService.ts:75-92`: om `managedPlayers` (icke-legend-spelare i den styrda klubben) är tomt blir `bestPlayer` `undefined`, men valet "Sälj {bäste spelaren}" (fallback-text "bäste spelaren") erbjuds ändå med `removePlayerId: bestPlayer?.id` = `undefined`. Vakten gör detta till en högljudd throw nu istället för en tyst felaktig journalpost — men ROTEN är kvar: `economicCrisisService.ts` bör inte erbjuda "sälj bästa spelaren"-valet när ingen säljbar spelare finns. **Rapporterat, inte byggt** — ett UI/text-beslut (visa inte valet, eller visa det gråmarkerat) hör hemma hos Jacob/Design, inte en tyst kodfix i resolvern.
+
+**Legitim optional, INTE vaktad (kontrollerad innan beslut togs):** `saveBandyLetter`s `replyText` kan vara `undefined` — `bandyLetterService.ts:64`s val `archive_no_reply` ("Lägg i arkivet (inget svar)") konstruerar effekten medvetet utan svarstext. Att vakta detta hade kastat på en helt avsedd spelarhandling.
+
+### Steg 2 — instrument-körningen
+
+(fylls i löpande medan den körs)
+
+---
+
 ## LÖST (byggt denna session, med commit)
 
 De fem posterna Jacob dömde per-fall är alla byggda, testade (regressionstest verifierat att faila mot koden innan fixen, per stash-disciplinen) och committade:
