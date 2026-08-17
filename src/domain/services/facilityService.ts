@@ -171,6 +171,12 @@ export function advanceFacilityState(
     builtSeasons: { ...state.builtSeasons, [activeProject.nodeId]: season },
     activeProject: undefined,
     lastCompleted: { nodeId: activeProject.nodeId, matchday: currentMatchday },
+    // 2026-08-17 (Stickiness-audit): kö, inte skriv-över — se Community.ts's
+    // kommentar vid FacilityState.unseenCompletedFacilities för rotorsaken.
+    unseenCompletedFacilities: [
+      ...(state.unseenCompletedFacilities ?? []),
+      { nodeId: activeProject.nodeId, matchday: currentMatchday },
+    ],
   }
   return {
     state: newState,
@@ -183,5 +189,21 @@ export function advanceFacilityState(
 /** Empty initial state for new saves. */
 export function createInitialFacilityState(): FacilityState {
   return { builtNodeIds: [], builtSeasons: {} }
+}
+
+/** Samma dismiss-nyckel som portalBeats.ts's facility_completed-beat's keyFn. */
+export function facilityCompletedBeatKey(nodeId: string): string {
+  return `facility_completed_${nodeId}`
+}
+
+/** Den äldsta klara byggnaden spelaren ännu inte sett invigningsbeatet för
+ *  (unseenCompletedFacilities ordnad kronologiskt, filtrerad mot shownBeats —
+ *  se Community.ts:s kommentar vid unseenCompletedFacilities). */
+export function getFirstUnseenCompletedFacility(
+  state: FacilityState,
+  shownBeats: string[],
+): { nodeId: string; matchday: number } | null {
+  const queue = state.unseenCompletedFacilities ?? []
+  return queue.find(c => !shownBeats.includes(facilityCompletedBeatKey(c.nodeId))) ?? null
 }
 

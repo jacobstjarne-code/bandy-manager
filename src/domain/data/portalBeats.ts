@@ -14,6 +14,7 @@ import { getRivalry } from './rivalries'
 import { nextManagedFixture } from '../services/situationFragments'
 import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from './facilityPortalBeats'
 import { FACILITY_NODE_DEFS } from './facilityNodes'
+import { getFirstUnseenCompletedFacility, facilityCompletedBeatKey } from '../services/facilityService'
 import { TRANSFER_DEADLINE_ROUND } from '../services/portal/triggers/transferTriggers'
 
 export interface PortalBeat {
@@ -545,17 +546,28 @@ export const PORTAL_BEATS: PortalBeat[] = [
     kicker: 'Bygget',
     route: '/game/bygget',
     text: (game: SaveGame) => {
-      const nodeId = game.facilityState?.lastCompleted?.nodeId ?? ''
+      const nodeId = game.facilityState
+        ? getFirstUnseenCompletedFacility(game.facilityState, game.shownBeats ?? [])?.nodeId ?? ''
+        : ''
       const label = FACILITY_NODE_DEFS.find(d => d.id === nodeId)?.label ?? nodeId
       return FACILITY_COMPLETED_BEATS[nodeId] ?? FACILITY_COMPLETED_FALLBACK(label)
     },
-    // Triggar BARA den runda bygget stod klart (övergångstriggern, regel 01 "bara på state-change").
+    // 2026-08-17 (Stickiness-audit): triggar tills spelaren FAKTISKT sett invigningen
+    // (game.shownBeats, se keyFn) — inte bara den exakta omgången bygget blev klart.
+    // Missade spelaren portalen den omgången (simulering, flera besök mellan visiter)
+    // försvann invigningen tidigare permanent. Kön (unseenCompletedFacilities) håller
+    // ALLA outnyttjade completions, inte bara den senaste — se facilityService.ts.
     trigger: (game: SaveGame) => {
-      const last = game.facilityState?.lastCompleted
-      return last != null && last.matchday === game.currentMatchday
+      if (!game.facilityState) return false
+      return getFirstUnseenCompletedFacility(game.facilityState, game.shownBeats ?? []) != null
     },
     // Unik per nod-byggnad — dismiss-nyckeln bär med nodeId så framtida byggen triggar nytt beat.
-    keyFn: (game: SaveGame) => `facility_completed_${game.facilityState?.lastCompleted?.nodeId ?? 'unknown'}`,
+    keyFn: (game: SaveGame) => {
+      const first = game.facilityState
+        ? getFirstUnseenCompletedFacility(game.facilityState, game.shownBeats ?? [])
+        : null
+      return facilityCompletedBeatKey(first?.nodeId ?? 'unknown')
+    },
     oncePerSeason: false,
   },
 ]

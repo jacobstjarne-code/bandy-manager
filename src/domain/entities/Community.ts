@@ -137,9 +137,19 @@ export interface FacilityState {
     etaMatchday: number
     completedSeason?: number
   }
-  /** B1 portal-beat: satt av advanceFacilityState när ett bygge blir klart. Beat-triggern
-   *  kontrollerar matchday === game.currentMatchday för att visa beatet DENNA omgång. */
+  /** B1 portal-beat: satt av advanceFacilityState när ett bygge blir klart. Behålls för
+   *  ev. andra konsumenter, men portalBeats.ts's facility_completed-beat läser INTE
+   *  längre detta fält för sin trigger — se unseenCompletedFacilities nedan. */
   lastCompleted?: { nodeId: string; matchday: number }
+  /** 2026-08-17 (Stickiness-audit): lastCompleted ovan triggade beatet BARA på exakt
+   *  matchday === currentMatchday — missade spelaren portalen den omgången (simulerade
+   *  förbi, eller flera byggen hann bli klara mellan besök) försvann invigningen
+   *  permanent, och ett senare bygge kunde tyst SKRIVA ÖVER lastCompleted innan
+   *  spelaren ens sett det första. Kö istället för ett enda fält — samma princip som
+   *  pendingEvents/deferredDecisions: varje completion pushas hit, ingen försvinner
+   *  förrän spelaren faktiskt sett invigningsbeatet (game.shownBeats, per-nod keyFn).
+   *  Skrivs av advanceFacilityState, läses av portalBeats.ts's facility_completed. */
+  unseenCompletedFacilities?: { nodeId: string; matchday: number }[]
   /** B1 §5 (06-12-modellen): matchhall-prövningens tillståndsmaskin. undefined = vilande.
    *  EN support-axel, tre förankrings-decisions, kommunförhandling via politicianData. */
   hallTrial?: HallTrial

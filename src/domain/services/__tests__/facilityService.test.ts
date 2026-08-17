@@ -7,6 +7,8 @@ import {
   advanceFacilityState,
   getPreSeasonChoices,
   getFinancingOptions,
+  getFirstUnseenCompletedFacility,
+  facilityCompletedBeatKey,
   FACILITY_NODE_DEFS,
 } from '../facilityService'
 import type { FacilityState } from '../../entities/Community'
@@ -262,5 +264,61 @@ describe('getFinancingOptions', () => {
     expect(ok.available).toBe(true)
     expect(ok.clubCost).toBe(48000)       // 80k × 0.6
     expect(ok.contributorName).toBe('Birger')
+  })
+})
+
+// 2026-08-17 (Stickiness-audit): facility_completed-beatet triggade tidigare bara
+// på exakt matchday === currentMatchday (missad omgång = förlorad invigning för
+// gott, och ett andra bygge kunde skriva över det första innan det setts). Kön
+// (unseenCompletedFacilities) ska hålla kvar completions tills de faktiskt setts.
+describe('unseenCompletedFacilities — kö istället för enda-fält (Stickiness-audit)', () => {
+  it('advanceFacilityState lägger till i kön, skriver inte över', () => {
+    let state: FacilityState = {
+      builtNodeIds: [],
+      activeProject: { nodeId: 'kiosk', startedMatchday: 1, etaMatchday: 3 },
+    }
+    const first = advanceFacilityState(state, 3, 1)
+    state = first.state
+    expect(state.unseenCompletedFacilities).toEqual([{ nodeId: 'kiosk', matchday: 3 }])
+
+    state = { ...state, activeProject: { nodeId: 'laktare', startedMatchday: 4, etaMatchday: 7 } }
+    const second = advanceFacilityState(state, 7, 1)
+    state = second.state
+    expect(state.unseenCompletedFacilities).toEqual([
+      { nodeId: 'kiosk', matchday: 3 },
+      { nodeId: 'laktare', matchday: 7 },
+    ])
+  })
+
+  it('getFirstUnseenCompletedFacility ignorerar spelaren en omgång — den försvinner inte (matchday-jämförelsen som var buggen)', () => {
+    const state: FacilityState = {
+      builtNodeIds: ['kiosk'],
+      unseenCompletedFacilities: [{ nodeId: 'kiosk', matchday: 3 }],
+    }
+    // Flera omgångar senare, spelaren har inte öppnat portalen förrän nu — den
+    // gamla triggern (matchday === currentMatchday) hade missat detta helt.
+    const stillThere = getFirstUnseenCompletedFacility(state, [])
+    expect(stillThere).toEqual({ nodeId: 'kiosk', matchday: 3 })
+  })
+
+  it('första i kön visas, dismiss (shownBeats) tar fram nästa', () => {
+    const state: FacilityState = {
+      builtNodeIds: ['kiosk', 'laktare'],
+      unseenCompletedFacilities: [
+        { nodeId: 'kiosk', matchday: 3 },
+        { nodeId: 'laktare', matchday: 7 },
+      ],
+    }
+    const before = getFirstUnseenCompletedFacility(state, [])
+    expect(before?.nodeId).toBe('kiosk')
+
+    const afterFirstDismissed = getFirstUnseenCompletedFacility(state, [facilityCompletedBeatKey('kiosk')])
+    expect(afterFirstDismissed?.nodeId).toBe('laktare')
+
+    const afterBothDismissed = getFirstUnseenCompletedFacility(state, [
+      facilityCompletedBeatKey('kiosk'),
+      facilityCompletedBeatKey('laktare'),
+    ])
+    expect(afterBothDismissed).toBeNull()
   })
 })
