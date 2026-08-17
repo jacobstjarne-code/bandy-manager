@@ -7,6 +7,7 @@ import { seededPick, fixtureSeed } from '../utils/random'
 import { ordinal } from '../utils/numberFormat'
 import { deriveFixtureOutcome, countGoalsByPlayer, findLateWinnerGoal, isComeback } from './matchUtils'
 import { formatRating } from '../format'
+import { computeSeasonVerdictRating, expectationVerdictFromRating } from './boardService'
 
 function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
   const managedClubId = game.managedClubId
@@ -271,30 +272,24 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   }
 
   // Board expectation check
+  // A5 (LANGSPEL 10 säsonger, 2026-08-17): denna behövde tidigare en EGEN
+  // met/exceeded-tröskeltabell, oberoende av den som styr styrelsebetyget
+  // i inboxen (generateSeasonVerdict, boardService.ts). De två tabellerna
+  // drev isär — samma rot som growFanbase-etikettfyndet i SLUTTEST-audition
+  // (två källor som beskriver samma sak). Nu delar båda samma rating via
+  // computeSeasonVerdictRating, och expectationVerdictFromRating hanterar
+  // WinLeague-specialfallet (binärt mål — "vinna ligan" betyder plats 1,
+  // inget "nästan").
   const boardExpectation = club.boardExpectation
   const isChampion = playoffResult === 'champion'
 
-  function expectationThreshold(e: ClubExpectation): number {
-    switch (e) {
-      case ClubExpectation.AvoidBottom: return 10
-      case ClubExpectation.MidTable: return 7
-      case ClubExpectation.ChallengeTop: return 5
-      case ClubExpectation.WinLeague: return 2
-    }
-  }
-
-  const threshold = expectationThreshold(boardExpectation)
-  const metExpectation = finalPosition <= threshold || (boardExpectation === ClubExpectation.WinLeague && isChampion)
-
-  // Exceeded: significantly better than threshold
-  const exceededThresholds: Record<ClubExpectation, number> = {
-    [ClubExpectation.AvoidBottom]: 6,
-    [ClubExpectation.MidTable]: 3,
-    [ClubExpectation.ChallengeTop]: 2,
-    [ClubExpectation.WinLeague]: 1,
-  }
-  const exceeded = finalPosition <= exceededThresholds[boardExpectation] || (boardExpectation === ClubExpectation.WinLeague && isChampion)
-  const expectationVerdict: SeasonSummary['expectationVerdict'] = exceeded ? 'exceeded' : metExpectation ? 'met' : 'failed'
+  const seasonVerdictRating = computeSeasonVerdictRating(boardExpectation, finalPosition, game.clubs.length)
+  const expectationVerdict: SeasonSummary['expectationVerdict'] =
+    expectationVerdictFromRating(boardExpectation, seasonVerdictRating, isChampion)
+  // Legacy boolean mirror of expectationVerdict, kept for the (dev-only)
+  // consumer that still reads it — derived from the same verdict, not a
+  // second computation.
+  const metExpectation = expectationVerdict !== 'failed'
 
   // Player stats
   const sortedByGoals = [...managedPlayers].sort((a, b) => b.seasonStats.goals - a.seasonStats.goals)

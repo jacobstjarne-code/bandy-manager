@@ -160,50 +160,89 @@ export function generateBoardMessage(
   return { title: template.title, body: template.body }
 }
 
+/**
+ * A5 (LANGSPEL 10 säsonger, 2026-08-17): enda källan för "hur bra var
+ * placeringen X relativt styrelsens krav Y" — 1-5. Tidigare låg denna
+ * switch inline i generateSeasonVerdict, och seasonSummaryService.ts hade
+ * en EGEN, oberoende trösklad met/exceeded-tabell för samma fråga (drev
+ * isär: 2:a plats under WinLeague "uppfyllde" årsbokens tröskel men fick
+ * bara betyg 4/5 här — samma rot som growFanbase-etikettfyndet i
+ * SLUTTEST-audition, två källor som beskriver samma sak). Både
+ * generateSeasonVerdict (styrelsebetyget i inboxen) och
+ * seasonSummaryService (årsbokens narrativ) ska anropa DENNA funktion,
+ * aldrig underhålla en egen tröskeltabell.
+ */
+export function computeSeasonVerdictRating(
+  expectation: ClubExpectation,
+  finalPosition: number,
+  totalTeams: number,
+): 1 | 2 | 3 | 4 | 5 {
+  switch (expectation) {
+    case ClubExpectation.WinLeague:
+      if (finalPosition === 1) return 5
+      else if (finalPosition <= 2) return 4
+      else if (finalPosition <= 4) return 3
+      else if (finalPosition <= 6) return 2
+      else return 1
+
+    case ClubExpectation.ChallengeTop:
+      if (finalPosition <= 2) return 5
+      else if (finalPosition <= 4) return 4
+      else if (finalPosition <= 6) return 3
+      else if (finalPosition <= 8) return 2
+      else return 1
+
+    case ClubExpectation.MidTable: {
+      const midpoint = Math.round(totalTeams / 2)
+      if (finalPosition >= midpoint - 2 && finalPosition <= midpoint + 2) return 5
+      else if (finalPosition <= midpoint + 3) return 4
+      else if (finalPosition <= totalTeams - 3) return 3
+      else if (finalPosition <= totalTeams - 1) return 2
+      else return 1
+    }
+
+    case ClubExpectation.AvoidBottom:
+      if (finalPosition <= totalTeams - 4) return 5
+      else if (finalPosition <= totalTeams - 2) return 4
+      else if (finalPosition === totalTeams - 1) return 2
+      else return 1
+
+    default:
+      return 3
+  }
+}
+
+/**
+ * A5: rating (1-5, from computeSeasonVerdictRating) → the 3-state verdict
+ * the yearbook badge/narrative uses. WinLeague is a binary goal — "vinna
+ * ligan" means table position 1, nothing else — so unlike the other three
+ * (range) expectations, only rating 5 counts as met and nothing short of
+ * becoming playoff champion (isChampion) counts as exceeding it. Applying
+ * the generic rating>=3 "met" bucket to WinLeague was the exact bug: 2nd
+ * place (rating 4) read as "uppfyller styrelsens krav på att vinna ligan"
+ * and 1st place (rating 5) read as "överträffade alla förväntningar" even
+ * though 1st place is precisely what was asked for, not more.
+ */
+export function expectationVerdictFromRating(
+  expectation: ClubExpectation,
+  rating: 1 | 2 | 3 | 4 | 5,
+  isChampion: boolean,
+): 'exceeded' | 'met' | 'failed' {
+  if (isChampion) return 'exceeded'
+  if (expectation === ClubExpectation.WinLeague) {
+    return rating === 5 ? 'met' : 'failed'
+  }
+  if (rating === 5) return 'exceeded'
+  if (rating >= 3) return 'met'
+  return 'failed'
+}
+
 export function generateSeasonVerdict(
   expectation: ClubExpectation,
   finalPosition: number,
   totalTeams: number,
 ): { title: string; body: string; rating: 1 | 2 | 3 | 4 | 5 } {
-  let rating: 1 | 2 | 3 | 4 | 5
-
-  switch (expectation) {
-    case ClubExpectation.WinLeague:
-      if (finalPosition === 1) rating = 5
-      else if (finalPosition <= 2) rating = 4
-      else if (finalPosition <= 4) rating = 3
-      else if (finalPosition <= 6) rating = 2
-      else rating = 1
-      break
-
-    case ClubExpectation.ChallengeTop:
-      if (finalPosition <= 2) rating = 5
-      else if (finalPosition <= 4) rating = 4
-      else if (finalPosition <= 6) rating = 3
-      else if (finalPosition <= 8) rating = 2
-      else rating = 1
-      break
-
-    case ClubExpectation.MidTable: {
-      const midpoint = Math.round(totalTeams / 2)
-      if (finalPosition >= midpoint - 2 && finalPosition <= midpoint + 2) rating = 5
-      else if (finalPosition <= midpoint + 3) rating = 4
-      else if (finalPosition <= totalTeams - 3) rating = 3
-      else if (finalPosition <= totalTeams - 1) rating = 2
-      else rating = 1
-      break
-    }
-
-    case ClubExpectation.AvoidBottom:
-      if (finalPosition <= totalTeams - 4) rating = 5
-      else if (finalPosition <= totalTeams - 2) rating = 4
-      else if (finalPosition === totalTeams - 1) rating = 2
-      else rating = 1
-      break
-
-    default:
-      rating = 3
-  }
+  const rating = computeSeasonVerdictRating(expectation, finalPosition, totalTeams)
 
   const ratingTexts: Record<number, { title: string; body: string }> = {
     5: {
