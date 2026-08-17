@@ -370,10 +370,16 @@ export function PortalScreen() {
         <PortalInboxCounter game={game} />
       </div>
 
-      {/* STICKY CTA — alltid synlig ovanför BottomNav */}
+      {/* STICKY CTA — alltid synlig ovanför BottomNav.
+          Tap-target-fyndet (geometrigrinden breddad till nav-bärande scener,
+          2026-08-17): bara +8px — inte bara i "Simulera"-fallet (redan fixat
+          separat), utan för HELA containern, i VARJE portal-tillstånd
+          ("Redo — spela omgång N", "Fortsätt slutspel", "Säsong över").
+          --cta-nav-clearance (48px) är samma token B-01/MatchLaddningScene
+          redan etablerade för exakt den här bugklassen. */}
       <div style={{
         position: 'fixed',
-        bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 8px)',
+        bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
         left: 14,
         right: 14,
         zIndex: 'var(--z-header)',  // persistent botten-chrome (ej modal) — var 200 = oförändrat
