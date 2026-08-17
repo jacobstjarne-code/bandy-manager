@@ -193,7 +193,11 @@ export function generateCommunityActivitiesEvents(
             id: 'start',
             label: 'Starta bandyskolan',
             subtitle: '💰 -5 tkr · ⭐ ungdomsrekrytering + intäkter',
-            effect: { type: 'setCommunity', amount: 6000, communityKey: 'bandyplay', communityValue: 'true' },
+            // 2.5 (choice-label-svepet, 2026-08-17): amount var +6000 (vinst)
+            // trots att texten lovar en kostnad på 5 tkr — omkastat tecken,
+            // spelaren fattade beslut på motsatt information mot vad koden
+            // gjorde. -5000 matchar texten exakt.
+            effect: { type: 'setCommunity', amount: -5000, communityKey: 'bandyplay', communityValue: 'true' },
           },
           {
             id: 'pass',
