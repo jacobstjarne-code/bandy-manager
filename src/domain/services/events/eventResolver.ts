@@ -1488,21 +1488,37 @@ export function resolveEvent(
     }
   }
 
+  // 2.5 (choice-label-svepet, 2026-08-17): skrevs tidigare oavsett om
+  // multiEffect-subeffekterna faktiskt lyckades applicera makeFullTimePro på
+  // någon spelare — samma "storyline oberoende av effektutfall"-mönster som
+  // captainSpeech ovan. Gated nu på att minst en berörd spelare verkligen
+  // blev isFullTimePro efter resolutionen, inte bara på choiceId.
   if (event.type === 'varsel' && choiceId === 'offer_pro') {
-    updatedGame = {
-      ...updatedGame,
-      storylines: [
-        ...(updatedGame.storylines ?? []),
-        {
-          id: `story_varsel_rescue_${updatedGame.currentSeason}`,
-          type: 'rescued_from_unemployment' as const,
-          season: updatedGame.currentSeason,
-          matchday: currentMatchday,
-          description: 'rescued_from_unemployment',
-          displayText: 'Klubben räddade spelare från uppsägning genom att erbjuda heltidskontrakt',
-          resolved: true,
-        },
-      ],
+    let hasSuccessfulRescue = false
+    try {
+      const subList = JSON.parse(choice.effect.subEffects ?? '[]') as Array<{ type: string; targetPlayerId?: string }>
+      hasSuccessfulRescue = subList.some(sub =>
+        sub.type === 'makeFullTimePro' && sub.targetPlayerId
+        && updatedGame.players.find(p => p.id === sub.targetPlayerId)?.isFullTimePro === true
+      )
+    } catch { /* malformad subEffects — ingen räddning skedde */ }
+
+    if (hasSuccessfulRescue) {
+      updatedGame = {
+        ...updatedGame,
+        storylines: [
+          ...(updatedGame.storylines ?? []),
+          {
+            id: `story_varsel_rescue_${updatedGame.currentSeason}`,
+            type: 'rescued_from_unemployment' as const,
+            season: updatedGame.currentSeason,
+            matchday: currentMatchday,
+            description: 'rescued_from_unemployment',
+            displayText: 'Klubben räddade spelare från uppsägning genom att erbjuda heltidskontrakt',
+            resolved: true,
+          },
+        ],
+      }
     }
   }
 

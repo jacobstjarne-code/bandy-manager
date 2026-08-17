@@ -97,6 +97,21 @@ describe('varsel — de berörda spelarnas moral (var boostMorale utan targetPla
     expect(affected.every(p => p.dayJob === undefined)).toBe(true)
     expect(game.storylines?.some(s => s.type === 'went_fulltime_pro' || s.type === 'rescued_from_unemployment')).toBeTruthy()
   })
+
+  it("'offer_pro' skriver INGEN rescued_from_unemployment-storyline om effekten inte lyckades (var tidigare oberoende av utfall)", () => {
+    let game = makeGameWithSquad()
+    const event: GameEvent = {
+      id: 'test_varsel_broken',
+      type: 'varsel',
+      title: 't', body: 'b',
+      choices: [{ id: 'offer_pro', label: 'Erbjud proffskontrakt', effect: { type: 'multiEffect', subEffects: '[]' } as never }],
+      resolved: false,
+    }
+    game = { ...game, pendingEvents: [event] }
+    game = resolveEvent(game, event.id, 'offer_pro')
+
+    expect(game.storylines?.some(s => s.type === 'rescued_from_unemployment')).toBeFalsy()
+  })
 })
 
 describe('vakten — obligatoriska fält kastar i stället för att tystna', () => {
