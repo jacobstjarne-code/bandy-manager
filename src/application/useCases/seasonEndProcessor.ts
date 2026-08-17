@@ -404,10 +404,19 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     age: player.age + 1,
     fitness: Math.min(100, player.fitness + 15),
     startSeasonCA: player.currentAbility,
+    // 2026-08-17 (Stickiness-audit, karriärstatistik-dubblering): totalGames/
+    // totalGoals/totalAssists ägs av statsProcessor.ts (uppdateras EN gång per
+    // spelad match, hela säsongen igenom — se careerStats-blocket där). Att
+    // ADDERA seasonStats hit igen vid rollover dubblade varje säsongs siffror
+    // (48 matcher blev 96) — och kompounderade vid varje efterföljande rollover,
+    // eftersom nästa säsongs per-match-ackumulering utgick från den redan
+    // uppblåsta basen. Rollover äger bara seasonsPlayed (inkrementeras här,
+    // rörs aldrig av statsProcessor.ts) — totalGames/totalGoals/totalAssists
+    // förs vidare oförändrade, redan korrekta från säsongens matcher.
     careerStats: {
-      totalGames: (player.careerStats?.totalGames ?? 0) + (player.seasonStats?.gamesPlayed ?? 0),
-      totalGoals: (player.careerStats?.totalGoals ?? 0) + (player.seasonStats?.goals ?? 0),
-      totalAssists: (player.careerStats?.totalAssists ?? 0) + (player.seasonStats?.assists ?? 0),
+      totalGames: player.careerStats?.totalGames ?? 0,
+      totalGoals: player.careerStats?.totalGoals ?? 0,
+      totalAssists: player.careerStats?.totalAssists ?? 0,
       seasonsPlayed: (player.careerStats?.seasonsPlayed ?? 0) + 1,
     },
     caHistory: [
