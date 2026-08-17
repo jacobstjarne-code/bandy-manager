@@ -382,10 +382,15 @@ export function PortalScreen() {
         gap: 6,
       }}>
         {canSimulateRemaining && (
+          // Tap-target-fyndet (mobil speltest-audit, 2026-08-17): bara 28px fri
+          // kant till den ordinarie primär-CTA:n nedanför — värsta möjliga par,
+          // en felträff simulerar bort resten av säsongen. marginBottom
+          // oberoende av gap:6/cue-blockets varierande höjd, så avståndet
+          // aldrig kan kollapsa under 44px oavsett cue-textens längd.
           <button
             onClick={handleSimulateRemaining}
             className="btn btn-ghost"
-            style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+            style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 24 }}
           >
             <Icon icon={FastForward} size={13} /> Simulera resterande säsong
           </button>

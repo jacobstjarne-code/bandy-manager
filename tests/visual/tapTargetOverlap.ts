@@ -91,15 +91,26 @@ export async function findTapTargetViolations(
       return `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}${text ? ` "${text}"` : ''}`
     }
 
-    // "Sticky CTA" = elementet SJÄLVT eller någon förälder (upp till scope)
-    // har computed position fixed/sticky. Det här är den semantiska
-    // definitionen — INTE "råkar rendera nära botten av en lång, scrollbar
-    // sida" (chip-rutnät, träningsknappar), som tidigare gav falska larm.
+    // "Sticky CTA" = elementet SJÄLVT eller någon förälder (upp till scope,
+    // men INTE förbi den första scrollbara förfadern) har computed position
+    // fixed/sticky. Andra falska-larm-fyndet (2026-08-17, submodal): ett
+    // helt modal-skal kan vara position:fixed medan INNEHÅLLET är en
+    // vanlig, internt scrollande spelarlista (overflowY:auto) — utan
+    // scroll-gränsen ärver VARJE radknapp isStickyCta bara för att en
+    // förfader längre upp råkar vara fixed, och 44px-kravet appliceras då
+    // felaktigt på ordinära listrader (samma etablerade, accepterade mobil-
+    // mönster som Trupp/Marknad redan använder utan 44px mellanrum). En rad
+    // som scrollar MED sin lista är inte "fixed relativt viewporten" i den
+    // mening som faktiskt är risken — den slutar vara det så fort en
+    // scrollbar gräns korsas på vägen upp.
     function isFixedOrSticky(el: Element): boolean {
       let node: Element | null = el
       while (node && node !== scope.parentElement) {
-        const pos = getComputedStyle(node).position
-        if (pos === 'fixed' || pos === 'sticky') return true
+        const cs = getComputedStyle(node)
+        if (node !== el && (cs.overflowY === 'auto' || cs.overflowY === 'scroll' || cs.overflow === 'auto' || cs.overflow === 'scroll')) {
+          return false
+        }
+        if (cs.position === 'fixed' || cs.position === 'sticky') return true
         node = node.parentElement
       }
       return false

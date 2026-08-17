@@ -785,7 +785,14 @@
 .match-modal-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  /* Tap-target-fyndet (mobil speltest-audit, 2026-08-17): 6px lodrätt gav
+     bara 6px fri kant mellan Höj/Sänk tempot och Anfallspress/Parkera
+     bussen (samma kolumn, olika rad) — under 44px-golvet. Fyra distinkta
+     taktikval, inte en scrollande lista av likvärdiga rader. Bara row-gap
+     höjs — kolumn-gapet (sida vid sida) flaggades aldrig av grinden och
+     lämnas kompakt. */
+  row-gap: 44px;
+  column-gap: 6px;
 }
 .match-modal-btn {
   font-family: var(--font-mono);
@@ -807,7 +814,7 @@
 }
 .match-modal-cancel {
   width: 100%;
-  margin-top: 8px;
+  margin-top: 44px; /* tap-target-fyndet 2026-08-17 — var 8px, under 44px mot gridknapparna ovanför */
   padding: 8px;
   background: none;
   border: none;
@@ -821,6 +828,16 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* Tap-target-fyndet (mobil speltest-audit, 2026-08-17): 12px fri kant
+     mellan ×-stängknappen (match-modal-close, ovanför) och första
+     spelarraden — en avfärda-hela-modalen-kontroll för nära en välj-spelare-
+     kontroll, samma riskklass som Simulera-knappen mot primär-CTA:n. Rad-mot-
+     rad (4px) rörs INTE — det är en vanlig scrollande lista, samma mönster
+     som Trupp/Marknad, inte samma riskklass. 44px direkt, inte adderat till
+     match-modal-heads egna margin-bottom:12px — angränsande vertikala
+     marginaler KOLLAPSAR i CSS (kollapsar till max(12,N), inte 12+N), 32px
+     gav bara 32px uppmätt, inte 44. */
+  margin-top: 44px;
 }
 .match-modal-row {
   display: flex;
