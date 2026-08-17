@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { advanceToNextEvent } from '../../../application/useCases/advanceToNextEvent'
 import { generateSeasonSummary } from '../seasonSummaryService'
-import { FixtureStatus } from '../../enums'
+import { FixtureStatus, PlayoffRound, PlayoffStatus } from '../../enums'
 
 function makeFullSeasonGame() {
   let game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 42 })
@@ -114,5 +114,70 @@ describe('generateSeasonSummary', () => {
   }, 60000)
 })
 
-// Suppress unused import warning
-void FixtureStatus
+// 2026-08-17 (Stickiness-audit): eliminatedByClubId/decidingFixtureId/decidingRound
+// måste fångas HÄR, vid genereringstillfället, medan game.playoffBracket fortfarande
+// är den här säsongens — SeasonSummaryScreen.tsx läste tidigare game.playoffBracket
+// vid RENDER, vilket blir opålitligt efter rollover (nollställs, eller pekar på en
+// senare säsongs bracket). Se SeasonSummary.ts's kommentar för hela rotorsaken.
+describe('generateSeasonSummary — playoff-eliminering fångas vid genereringstillfället', () => {
+  it('sätter eliminatedByClubId/decidingFixtureId/decidingRound från en kvartsfinal-förlust', () => {
+    let game = makeFullSeasonGame()
+    const opponentId = game.clubs.find(c => c.id !== game.managedClubId)!.id
+    const decisiveFixtureId = 'test_qf_decisive'
+
+    game = {
+      ...game,
+      fixtures: [
+        ...game.fixtures,
+        {
+          id: 'test_qf_g1',
+          season: game.currentSeason,
+          matchday: 30,
+          roundNumber: 28,
+          homeClubId: game.managedClubId,
+          awayClubId: opponentId,
+          homeScore: 2,
+          awayScore: 4,
+          status: FixtureStatus.Completed,
+          isCup: false,
+        } as never,
+        {
+          id: decisiveFixtureId,
+          season: game.currentSeason,
+          matchday: 32,
+          roundNumber: 29,
+          homeClubId: opponentId,
+          awayClubId: game.managedClubId,
+          homeScore: 5,
+          awayScore: 3,
+          status: FixtureStatus.Completed,
+          isCup: false,
+        } as never,
+      ],
+      playoffBracket: {
+        season: game.currentSeason,
+        status: PlayoffStatus.Completed,
+        quarterFinals: [{
+          id: 'qf_test',
+          round: PlayoffRound.QuarterFinal,
+          homeClubId: game.managedClubId,
+          awayClubId: opponentId,
+          fixtures: ['test_qf_g1', decisiveFixtureId],
+          homeWins: 0,
+          awayWins: 2,
+          winnerId: opponentId,
+          loserId: game.managedClubId,
+        }],
+        semiFinals: [],
+        final: null,
+        champion: null,
+      },
+    }
+
+    const summary = generateSeasonSummary(game)
+
+    expect(summary.eliminatedByClubId).toBe(opponentId)
+    expect(summary.decidingFixtureId).toBe(decisiveFixtureId)
+    expect(summary.decidingRound).toBe(29)
+  }, 60000)
+})

@@ -36,6 +36,17 @@ export interface SeasonSummary {
   goalsAgainst: number
   goalDifference: number
   playoffResult: 'champion' | 'finalist' | 'semifinal' | 'quarterfinal' | 'didNotQualify' | null
+  /** 2026-08-17 (Stickiness-audit): satt HÄR, vid genereringstillfället, medan
+   *  game.playoffBracket fortfarande är den här säsongens — INTE härlett senare
+   *  i SeasonSummaryScreen genom att läsa game.playoffBracket, som nollställs
+   *  vid rollover och därför blir opålitligt (eller pekar på en SENARE säsongs
+   *  bracket) för en gammal summary. Klubb-id, inte namn — game.clubs
+   *  nollställs aldrig, säkert att slå upp mot när som helst. */
+  eliminatedByClubId?: string
+  /** Fixtures-id för matchen som avgjorde serien (sista matchen där vinnaren
+   *  nådde vinst-tröskeln) — samma rollover-säkra motivering som ovan. */
+  decidingFixtureId?: string
+  decidingRound?: number
 
   boardExpectation: ClubExpectation
   metExpectation: boolean

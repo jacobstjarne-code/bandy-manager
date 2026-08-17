@@ -118,16 +118,16 @@ export function SeasonSummaryScreen() {
     const context = contextMap[r]
     if (!context) return ''
 
-    // Find the opponent who eliminated managed club
+    // 2026-08-17 (Stickiness-audit): läser summary.eliminatedByClubId (satt vid
+    // genereringstillfället, se seasonSummaryService.ts) — INTE game.playoffBracket,
+    // som nollställs vid rollover och därför inte är historiskt tillförlitligt
+    // för en gammal summary (blev tidigare generiskt "Kvartsfinalen mot motståndet").
+    // game.clubs är däremot alltid live och säkert att slå upp mot.
     let opponentName = 'motståndet'
-    const bracket = game?.playoffBracket
-    if (bracket) {
-      const allSeries = [...bracket.quarterFinals, ...bracket.semiFinals, ...(bracket.final ? [bracket.final] : [])]
-      const elimSeries = allSeries.find(s => s.loserId === game?.managedClubId)
-      if (elimSeries?.winnerId) {
-        const oppClub = game?.clubs.find(c => c.id === elimSeries.winnerId)
-        if (oppClub) opponentName = oppClub.shortName ?? oppClub.name
-      }
+    const elimClubId = summary?.eliminatedByClubId
+    if (elimClubId) {
+      const oppClub = game?.clubs.find(c => c.id === elimClubId)
+      if (oppClub) opponentName = oppClub.shortName ?? oppClub.name
     }
 
     return pickSeasonElimText(context, summary!.season, summary!.clubId)

@@ -243,6 +243,11 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   // Playoff result
   const bracket = game.playoffBracket
   let playoffResult: SeasonSummary['playoffResult'] = null
+  // 2026-08-17 (Stickiness-audit): fångas HÄR, inte härlett senare ur en
+  // bracket som kan vara nollställd/utbytt vid rollover — se SeasonSummary.ts.
+  let eliminatedByClubId: string | undefined
+  let decidingFixtureId: string | undefined
+  let decidingRound: number | undefined
   if (bracket) {
     if (bracket.champion === managedClubId) {
       playoffResult = 'champion'
@@ -260,6 +265,15 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
           playoffResult = s.round === PlayoffRound.QuarterFinal ? 'quarterfinal'
             : s.round === PlayoffRound.SemiFinal ? 'semifinal'
             : 'finalist'
+          eliminatedByClubId = s.winnerId ?? undefined
+          // matchday, inte roundNumber — global spelordning, se CLAUDE.md:s
+          // arkitekturnot om matchday-systemet.
+          const decidingFixture = game.fixtures
+            .filter(f => s.fixtures.includes(f.id) && f.status === FixtureStatus.Completed)
+            .sort((a, b) => a.matchday - b.matchday)
+            .at(-1)
+          decidingFixtureId = decidingFixture?.id
+          decidingRound = decidingFixture?.roundNumber
           break
         }
       }
@@ -587,6 +601,9 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     goalsAgainst,
     goalDifference,
     playoffResult,
+    eliminatedByClubId,
+    decidingFixtureId,
+    decidingRound,
     boardExpectation,
     metExpectation,
     expectationVerdict,
