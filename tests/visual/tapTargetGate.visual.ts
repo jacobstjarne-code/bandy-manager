@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { SCENES } from './scenes.visual'
+import { SCENES } from './sceneRegistry'
 import { findTapTargetViolations } from './tapTargetOverlap'
 
 /**
