@@ -162,7 +162,7 @@ Bygg inget förrän jag sett listan. Vissa löften ska wiras, andra ska skrivas 
 
 **Klassen, fjärde gången i serien:** prototypen som hävdade att ripple-slingan fanns, Mariannes tre kontrakt, dessa två val, mecenatens permanenta avsked. Text skriver checkar domänen inte täcker.
 **Godkänd när:** varje choice-label motsvaras av verifierbar state-diff, och kontraktstest finns för vila, skaderisk, spelarflykt och heltidslön.
-**Status:** `RAPPORT-VÄNTAR`
+**Status:** `RAPPORT-LEVERERAD` — full rapport i `docs/CHOICE_LABEL_SVEP_2026-08-17.md`. ~40 avvikande val över 9 filer (`eventProcessor.ts`/`matchSimProcessor.ts` rena). Fem kompletta no-ops bakom lag-/ekonomilöften (bl.a. tre `boostMorale`-val utan `targetPlayerId` som levererar noll, en `multiEffect`-subtyp som `multiEffect`-resolvern inte stöder), en strukturell bugg (två hallprövnings-val ger byte-identiska effekter), och ett tecken-omvänt fynd (`community_bandyplay`: texten säger kostnad, koden ger intäkt som blir löpande förlust). Två döda filer flaggade för radering. Väntar på Jacobs per-fall-beslut, inget byggt.
 
 ---
 
