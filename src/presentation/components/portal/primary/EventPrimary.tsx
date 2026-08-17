@@ -44,12 +44,12 @@ export function EventPrimary({ game }: CardRenderProps) {
       <div className="h-label" style={{ marginBottom: 8, color: 'var(--danger)' }}>
         {emoji} HÄNDELSE KRÄVER SVAR
       </div>
-      <div className="h-display-sm" style={{ color: 'var(--text-light)', marginBottom: 8 }}>
+      <div className="h-display-sm" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>
         {title}
       </div>
       <div style={{
         fontSize: 12,
-        color: 'var(--text-light-secondary)',
+        color: 'var(--text-secondary)',
         lineHeight: 1.5,
         marginBottom: 10,
       }}>
