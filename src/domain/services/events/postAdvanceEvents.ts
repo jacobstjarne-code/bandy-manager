@@ -380,7 +380,7 @@ export function generatePostAdvanceEvents(
               p.age >= 25 && p.currentAbility >= 50
             )
         if (captain && managedClub) {
-          events.push(generateCaptainSpeechEvent(captain, managedClub.name, game.currentSeason))
+          events.push(generateCaptainSpeechEvent(captain, managedClub.id, game.currentSeason))
         }
       }
     }

@@ -218,14 +218,20 @@ export function resolveEvent(
       break
     }
     case 'boostMorale': {
+      // 2.5 (choice-label-svepet, 2026-08-17): kastade tidigare tyst över
+      // saknat targetPlayerId (if (pid) {...}, annars break). Fyra choice-
+      // konstruktioner missade fältet och blev osynliga no-ops bakom stora
+      // löften ("+8 moral hela laget" levererade noll) — synliga först vid
+      // browser-genomspelning, inte vid build/test. Ett obligatoriskt fält
+      // som saknas ska krascha vid konstruktionstillfället, inte tystna.
+      // Vill du boosta hela laget: teamBoostMorale, inte boostMorale utan mål.
       const pid = effect.targetPlayerId
-      if (pid) {
-        updatedGame = {
-          ...updatedGame,
-          players: updatedGame.players.map(p =>
-            p.id === pid ? { ...p, morale: Math.min(100, p.morale + (effect.value ?? 5)) } : p,
-          ),
-        }
+      if (!pid) throw new Error("effect 'boostMorale' saknar obligatoriskt fält targetPlayerId — använd teamBoostMorale för hela laget")
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.id === pid ? { ...p, morale: Math.min(100, p.morale + (effect.value ?? 5)) } : p,
+        ),
       }
       break
     }
@@ -246,12 +252,19 @@ export function resolveEvent(
       break
     }
     case 'teamBoostMorale': {
+      // 2.5 (choice-label-svepet, 2026-08-17): targetClubId var tidigare
+      // valfritt med fallback "boosta alla spelare, alla klubbar" — riskabelt
+      // för en typ vars hela poäng är "hela LAGET", inte hela ligan. Ingen
+      // befintlig konstruktion utelämnade fältet (typen var oanvänd innan
+      // denna sweep), så kravet stänger en risk utan att röra något som
+      // förlitat sig på det gamla beteendet.
       const boost = effect.value ?? 5
       const clubId = effect.targetClubId
+      if (!clubId) throw new Error("effect 'teamBoostMorale' saknar obligatoriskt fält targetClubId")
       updatedGame = {
         ...updatedGame,
         players: updatedGame.players.map(p =>
-          (!clubId || p.clubId === clubId)
+          p.clubId === clubId
             ? { ...p, morale: Math.min(100, Math.max(0, p.morale + boost)) }
             : p,
         ),
@@ -337,8 +350,10 @@ export function resolveEvent(
       break
     }
     case 'makeFullTimePro': {
+      // Se boostMorale-kommentaren ovan — samma vaktprincip.
       const pid = effect.targetPlayerId
-      if (pid) {
+      if (!pid) throw new Error("effect 'makeFullTimePro' saknar obligatoriskt fält targetPlayerId")
+      {
         const proPlayer = updatedGame.players.find(p => p.id === pid)
         const oldJob = proPlayer?.dayJob?.title ?? 'jobbet'
         updatedGame = {
@@ -631,8 +646,16 @@ export function resolveEvent(
     case 'multiEffect': {
       // subEffects is a JSON array of EventEffect objects
       if (effect.subEffects) {
+        // 2.5 (choice-label-svepet, 2026-08-17): JSON.parse-felet ska tystas
+        // (malformad sträng, inget att göra åt), men ett sub-effekt-block som
+        // saknar ett obligatoriskt fält ska INTE fångas av samma catch — det
+        // var precis vad som gjorde makeFullTimePro-no-open (varsel offer_pro)
+        // osynlig. Parsning och validering separerade i två steg.
+        let subList: Array<{ type: string; amount?: number; value?: number; targetPlayerId?: string; targetMecenatId?: string }> | null = null
         try {
-          const subList: Array<{ type: string; amount?: number; value?: number; targetPlayerId?: string; targetMecenatId?: string }> = JSON.parse(effect.subEffects)
+          subList = JSON.parse(effect.subEffects)
+        } catch { /* ignore parse errors */ }
+        if (subList) {
           for (const sub of subList) {
             if (sub.type === 'income') {
               updatedGame = {
@@ -707,12 +730,32 @@ export function resolveEvent(
                   },
                 }
               }
-            } else if (sub.type === 'boostMorale' && sub.targetPlayerId) {
+            } else if (sub.type === 'boostMorale') {
+              // 2.5 (choice-label-svepet, 2026-08-17): villkoret var tidigare
+              // `&& sub.targetPlayerId` — ett saknat fält gjorde att grenen
+              // aldrig ens matchade, tyst noll-effekt. Samma vaktprincip som
+              // top-level case 'boostMorale' ovan.
+              if (!sub.targetPlayerId) throw new Error("multiEffect-subEffect 'boostMorale' saknar obligatoriskt fält targetPlayerId")
               updatedGame = {
                 ...updatedGame,
                 players: updatedGame.players.map(p =>
                   p.id === sub.targetPlayerId
                     ? { ...p, morale: Math.min(100, p.morale + (sub.amount ?? 5)) }
+                    : p
+                ),
+              }
+            } else if (sub.type === 'makeFullTimePro') {
+              // 2.5 (choice-label-svepet, 2026-08-17): saknades helt —
+              // varsel-eventets 'offer_pro'-val konstruerade denna sub-typ,
+              // men multiEffect-resolvern hade ingen gren för den. Total
+              // no-op bakom "höjd lönekostnad · +15 moral". Samma effekt som
+              // top-level case 'makeFullTimePro'.
+              if (!sub.targetPlayerId) throw new Error("multiEffect-subEffect 'makeFullTimePro' saknar obligatoriskt fält targetPlayerId")
+              updatedGame = {
+                ...updatedGame,
+                players: updatedGame.players.map(p =>
+                  p.id === sub.targetPlayerId
+                    ? { ...p, isFullTimePro: true, dayJob: undefined, salary: sub.value ?? p.salary, morale: Math.min(100, p.morale + 15) }
                     : p
                 ),
               }
@@ -739,7 +782,7 @@ export function resolveEvent(
               }
             }
           }
-        } catch { /* ignore parse errors */ }
+        }
       }
       break
     }
@@ -1422,7 +1465,12 @@ export function resolveEvent(
     .filter(f => f.status === 'completed' && !f.isCup)
     .reduce((m, f) => Math.max(m, f.roundNumber), 0)
 
-  if (event.type === 'captainSpeech') {
+  // 2.5 (choice-label-svepet, 2026-08-17): skrevs tidigare OAVSETT choiceId
+  // — "Kaptenen samlade laget" hamnade i karriärminnet även när spelaren
+  // valde 'decline' ("Nej — jag tar det här samtalet själv", ingen moralboost
+  // alls). Effekt och historikpost i samma operation: bara 'support', bara
+  // när teamBoostMorale faktiskt kan verka (managedClubId finns).
+  if (event.type === 'captainSpeech' && choiceId === 'support' && updatedGame.managedClubId) {
     updatedGame = {
       ...updatedGame,
       storylines: [

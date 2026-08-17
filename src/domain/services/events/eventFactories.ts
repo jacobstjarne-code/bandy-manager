@@ -285,7 +285,12 @@ export function generatePlayerPraiseEvent(
 }
 
 // ── Captain speech — captain rallies the team after losing streak ─────────
-export function generateCaptainSpeechEvent(captain: Player, _clubName: string, season: number): GameEvent {
+// 2.5 (choice-label-svepet, 2026-08-17): var 'boostMorale' UTAN targetPlayerId
+// — resolvern kräver det fältet för boostMorale, break:ade tyst, noll spelare
+// påverkades trots "+8 moral hela laget". teamBoostMorale (redan i resolvern,
+// aldrig konstruerad någonstans förut) är rätt mekanik för HELA laget —
+// kräver clubId, aldrig utelämnat (se eventResolver.ts:s vakt).
+export function generateCaptainSpeechEvent(captain: Player, clubId: string, season: number): GameEvent {
   const isHighForm = captain.morale >= 70
   return {
     id: `event_captain_speech_s${season}`,
@@ -297,7 +302,7 @@ export function generateCaptainSpeechEvent(captain: Player, _clubName: string, s
         id: 'support',
         label: 'Ja — kör på, det behövs',
         subtitle: isHighForm ? '+8 moral hela laget' : '+5 moral hela laget',
-        effect: { type: 'boostMorale', value: isHighForm ? 8 : 5 },
+        effect: { type: 'teamBoostMorale', value: isHighForm ? 8 : 5, targetClubId: clubId },
       },
       {
         id: 'decline',
@@ -324,10 +329,17 @@ export function generateVarselEvent(
     body: `${employerName} har meddelat varsel. ${players.length === 1 ? 'En spelare' : `${players.length} spelare`} i truppen berörs: ${names}. De riskerar att förlora jobbet — och kanske behöva flytta.`,
     choices: [
       {
+        // 2.5 (choice-label-svepet, 2026-08-17): var 'boostMorale' UTAN
+        // targetPlayerId (obligatoriskt fält) — resolvern break:ade tyst,
+        // noll spelare påverkades trots "+5 moral alla". multiEffect med en
+        // boostMorale-subEffect per BERÖRD spelare (inte hela klubben —
+        // varslet gäller bara dessa namngivna spelare).
         id: 'support',
         label: 'Stöd spelarna — erbjud extra träning och stöd',
         subtitle: '+5 moral alla · 🤝 laget håller ihop',
-        effect: { type: 'boostMorale', value: 5 },
+        effect: { type: 'multiEffect', subEffects: JSON.stringify(
+          players.map(p => ({ type: 'boostMorale', targetPlayerId: p.id, amount: 5 }))
+        ) },
       },
       {
         id: 'offer_pro',
@@ -338,10 +350,15 @@ export function generateVarselEvent(
         ) },
       },
       {
+        // Samma bugg som 'support' — -8 nu korrekt levererad till de berörda
+        // spelarna. "risk att spelare lämnar" i subtitlen är EJ byggd här —
+        // ingen avhoppsmekanik finns, se choice-label-svepets rapport (b).
         id: 'nothing',
         label: 'Det är tråkigt, men inte vårt problem',
         subtitle: '-8 moral · risk att spelare lämnar',
-        effect: { type: 'boostMorale', value: -8 },
+        effect: { type: 'multiEffect', subEffects: JSON.stringify(
+          players.map(p => ({ type: 'boostMorale', targetPlayerId: p.id, amount: -8 }))
+        ) },
       },
     ],
     resolved: false,
