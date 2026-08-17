@@ -1,8 +1,8 @@
 {
   "_meta": {
-    "seeds": 4,
-    "seasons": 8,
-    "totalEventsSeen": 5892,
+    "seeds": 6,
+    "seasons": 10,
+    "totalEventsSeen": 10899,
     "distinctEventTypes": [
       "academyEvent",
       "bandyLetter",
@@ -13,6 +13,7 @@
       "dayJobConflict",
       "economicStress",
       "fanLetter",
+      "icaMaxiEvent",
       "journalistExclusive",
       "licenseHandlingsplan",
       "mecenatDinner",
@@ -37,141 +38,8 @@
       "transferBidReceived",
       "varsel"
     ],
-    "totalChoicesProbed": 6498,
-    "generatedAt": "2026-08-17T20:22:40.693Z"
+    "totalChoicesProbed": 12183,
+    "generatedAt": "2026-08-17T20:30:53.811Z"
   },
-  "throws": [
-    {
-      "seed": 0,
-      "season": 7,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_gunilla_2026_2032",
-      "eventType": "mecenatEvent",
-      "choiceId": "listen",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 0,
-      "season": 7,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_gunilla_2026_2032",
-      "eventType": "mecenatEvent",
-      "choiceId": "offer_tribute",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 0,
-      "season": 8,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_gunilla_2026_2033",
-      "eventType": "mecenatEvent",
-      "choiceId": "listen",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 0,
-      "season": 8,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_gunilla_2026_2033",
-      "eventType": "mecenatEvent",
-      "choiceId": "offer_tribute",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 1,
-      "season": 8,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_gunilla_2026_2033",
-      "eventType": "mecenatEvent",
-      "choiceId": "listen",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 1,
-      "season": 8,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_gunilla_2026_2033",
-      "eventType": "mecenatEvent",
-      "choiceId": "offer_tribute",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 2,
-      "season": 7,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_christina_2025_2032",
-      "eventType": "mecenatEvent",
-      "choiceId": "listen",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 2,
-      "season": 7,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_christina_2025_2032",
-      "eventType": "mecenatEvent",
-      "choiceId": "offer_tribute",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 2,
-      "season": 8,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_christina_2025_2033",
-      "eventType": "mecenatEvent",
-      "choiceId": "listen",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 2,
-      "season": 8,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_christina_2025_2033",
-      "eventType": "mecenatEvent",
-      "choiceId": "offer_tribute",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 3,
-      "season": 8,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_margareta_2028_2033",
-      "eventType": "mecenatEvent",
-      "choiceId": "listen",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    },
-    {
-      "seed": 3,
-      "season": 8,
-      "round": null,
-      "eventId": "event_mecenat_retire_mecenat_margareta_2028_2033",
-      "eventType": "mecenatEvent",
-      "choiceId": "offer_tribute",
-      "effectType": "mecenatHappiness",
-      "message": "effect 'mecenatHappiness' saknar obligatoriskt fält targetMecenatId",
-      "live": false
-    }
-  ]
+  "throws": []
 }
