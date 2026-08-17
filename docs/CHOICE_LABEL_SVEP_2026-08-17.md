@@ -22,7 +22,15 @@ Fullständig katalog gjord av en läsande agent över hela `eventResolver.ts` (1
 
 ### Steg 2 — instrument-körningen
 
-(fylls i löpande medan den körs)
+Instrumentet: `scripts/eventGuardInstrument.ts` (nytt skript, `node_modules/.bin/vite-node scripts/eventGuardInstrument.ts --seeds=N --seasons=M`). Simulerar N seeds × M säsonger via samma `advanceToNextEvent`-loop som `npm run stress`, men — till skillnad från stress-testet, som ALDRIG anropar `resolveEvent` (bekräftat via research innan skriptet byggdes) — för varje genererat event: probar ALLA dess choices mot en engångskopia av speltillståndet (fångar throws), och resolvar sedan EN slumpad överlevande choice på det RIKTIGA tillståndet så att stateful maskiner (hallprövning, mecenat, patron, community-uppgraderingar) faktiskt fortskrider över säsonger. Resultat skrivs till `scripts/stress/eventGuardInstrument_results.json`.
+
+**Första körningen (4 seeds × 8 säsonger, ~105s) hittade ETT fynd, och det var allvarligare än ett vanligt no-op:**
+
+**`mecenatEvent → listen`/`offer_tribute` (mecenatHappiness) — regression orsakad av vaktbreddningen själv, fixad omedelbart (commit `6b9ea0c8`).** `checkMecenatRetirement` (`mecenatService.ts`) konstruerade båda valen med `{ type: 'mecenatHappiness', value: 5 }` utan `targetMecenatId`. Innan vaktbreddningen (`ed94218f`, samma sweep, tidigare samma dag) var detta en harmlös död kod-rad — den FAKTISKA happiness/communityStanding/kostnadseffekten sköttes redan helt av `eventResolver.ts`:s post-switch-block (`event.type === 'mecenatEvent' && eventId.startsWith('event_mecenat_retire_')`, ~rad 1607), som appliceras oavsett `effect.type`. Men sedan vakten breddades hade EXAKT DESSA TVÅ VAL kraschat live för en riktig spelare — instrumentet fångade sin egen förälders bugg innan den nådde main. Fixad till `noOp` (matchar `plan_succession`s redan korrekta mönster), test `mecenatRetirementRedundantEffect.test.ts` verifierat att 4/5 fall kraschade mot koden innan fixen.
+
+**Ingen ytterligare no-op hittad i denna körning.** 5892 events sedda (32 distinkta typer), 6498 choices probade, 0 kast efter mecenat-fixen. Detta är ett positivt resultat i sig — de fyra manuellt hittade no-opsen från runda 1 plus det ovanstående fyndet verkar vara HELA no-op-klassen som fanns, inte toppen av ett isberg. Se `_meta.distinctEventTypes` i JSON-filen för exakt täckning per körning.
+
+**Vad instrumentet INTE kan bevisa:** att 0 kast betyder 0 kvarvarande no-ops. Det betyder 0 no-ops BLAND de `effect.type`-fält vakten känner till som obligatoriska. Effekter med fel STORLEK, fel TECKEN, eller en helt PÅHITTAD konsekvens (ingen state-mutation alls, men inget fält "saknas" heller — koden bara gör något annat än texten lovar) syns inte här. Det är precis det (a)/(b)/(c)-arbetet nedan tar vid där.
 
 ---
 
