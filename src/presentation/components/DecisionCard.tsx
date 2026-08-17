@@ -147,20 +147,15 @@ export function DecisionCard({ shape = 'sharp', accent, entityId, entitySource, 
       className={isRound ? 'card-round' : 'card-sharp'}
       style={{
         margin: isRound ? '0 0 20px' : '0 0 3px',
+        padding: isRound ? '24px 20px' : '10px 12px',
         ...(accent ? { borderLeft: '3px solid var(--warm)', borderRadius: '0 8px 8px 0' } : {}),
-        ...(isRound ? { padding: '24px 20px', minWidth: 280, maxWidth: 360, width: '90%', background: 'var(--bg)', border: 'none', boxShadow: '0 8px 40px rgba(0,0,0,0.3)' } : {}),
+        ...(isRound ? { minWidth: 280, maxWidth: 360, width: '90%', background: 'var(--bg)', border: 'none', boxShadow: '0 8px 40px rgba(0,0,0,0.3)' } : {}),
         ...style,
       }}
       {...(entityId ? { 'data-entity-id': entityId } : {})}
       {...(entitySource ? { 'data-entity-source': entitySource } : {})}
     >
-      {isRound ? (
-        <DecisionCardContent {...content} />
-      ) : (
-        <div style={{ padding: '10px 12px' }}>
-          <DecisionCardContent {...content} />
-        </div>
-      )}
+      <DecisionCardContent {...content} />
     </div>
   )
 }
