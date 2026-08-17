@@ -30,7 +30,7 @@ import { assertNoDuplicateEntityIds } from './entityDedup'
 // mått ordern faktiskt behöver (det gör bara PORTAL_VIEWPORT i
 // baseline.visual.ts, som är oförändrad sedan 2026-08-09).
 const EXTRA_HEIGHT = 3600
-const SCENES: [string, string?, string?, boolean?, number?][] = [
+export const SCENES: [string, string?, string?, boolean?, number?][] = [
   ['cup-victory'], ['sm-victory'], ['season-arc'], ['portal-cards'], ['efterklang'],
   ['squad'], ['portal'], ['tranare'], ['board-a'], ['board-b'], ['board-c'],
   ['stillness'], ['granska'], ['upptakt'], ['ekonomi'], ['playercard'],

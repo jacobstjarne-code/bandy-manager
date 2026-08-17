@@ -155,6 +155,14 @@
   /* Layout */
   --bottom-nav-height: 60px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* 2026-08-17 (mobil speltest-audit, SÄTT LAGET-fyndet): sticky CTA:er ovanför
+     bottennavigationen använde ett bart +12px-mellanrum ovanpå bottom-nav-height —
+     tillräckligt i en kontrollerad headless-mätning, men noll marginal mot
+     verklig enhets-/typsnittsvarians. Ett riktigt tumtryck har ~44px precision
+     (WCAG/HIG-normen). +12px kollapsade till 2px fri kant på ett verkligt device.
+     Använd DENNA token, inte en hårdkodad +Npx, varhelst en sticky CTA sitter
+     ovanför bottennavigationen. */
+  --cta-nav-clearance: 48px;
 
   /* Portal seasonal tone — dark defaults, overridden by getSeasonalTone() */
   --bg-portal:          #1a1612;

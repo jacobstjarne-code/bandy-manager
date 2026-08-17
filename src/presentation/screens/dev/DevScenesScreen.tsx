@@ -18,6 +18,7 @@ import { EfterklangSecondary } from '../../components/portal/secondary/Efterklan
 import { SquadScreen } from '../SquadScreen'
 import { PortalScreen } from '../PortalScreen'
 import { MatchScreen } from '../MatchScreen'
+import { BottomNav } from '../../navigation/BottomNav'
 import { TranareTab } from '../../components/club/TranareTab'
 import { ClubScreen } from '../ClubScreen'
 import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
@@ -81,6 +82,10 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // AUDIT DEL 4 (2026-08-12) — Primary-rangordningen (initCardBag.ts) prövad
   // i konkurrens, inte bara en i taget.
   | 'primary-smfinal-vs-deadline' | 'primary-event-vs-farewell'
+  // Mobil speltest-audit (2026-08-17) — tap-target-grinden: enda scenen som
+  // renderar en äkta BottomNav bredvid produktkomponenten (se render-blocket
+  // för rotorsak). Detta ÄR SÄTT LAGET-fyndet (MatchLaddningBand, streak≥3).
+  | 'navgate-laddning-band'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -405,6 +410,29 @@ const truppKrisGame = withExpiringContracts(withLowMorale(withSuspended(withInju
 // rensar den explicit så nudgeData faktiskt får chansen att beräknas.
 const lineupEmptyGame = withoutPendingLineup(factoryMidSeasonGame)
 const lineupFilledGame = withLineupSlots(withLongestSurnames(factoryMidSeasonGame), { emptyCount: 0, formation: '5-3-2' })
+
+// Mobil speltest-audit (2026-08-17), tap-target-grinden: forcerar de N senaste
+// spelade matcherna till vinster så computeLaddningBeat (matchLaddningGrind.ts)
+// väljer tier:'band' (kräver streak ≥3) istf tier:'scene'. Ingen egen fixture-
+// generering — återanvänder factoryMidSeasonGames redan validerade historik,
+// skriver bara om resultatet på de sista matcherna för den styrda klubben.
+function withWinStreak(game: SaveGame, streakLength: number): SaveGame {
+  const managedId = game.managedClubId
+  const targetIds = new Set(
+    game.fixtures
+      .filter(f => f.status === 'completed' && (f.homeClubId === managedId || f.awayClubId === managedId))
+      .sort((a, b) => b.matchday - a.matchday)
+      .slice(0, streakLength)
+      .map(f => f.id)
+  )
+  const fixtures = game.fixtures.map(f => {
+    if (!targetIds.has(f.id)) return f
+    const managedIsHome = f.homeClubId === managedId
+    return { ...f, homeScore: managedIsHome ? 4 : 1, awayScore: managedIsHome ? 1 : 4 }
+  })
+  return { ...game, fixtures, matchLaddningBandShown: undefined }
+}
+const matchLaddningBandGame = withWinStreak(factoryMidSeasonGame, 3)
 
 // AUDIT DEL 2 (2026-08-09), Etapp B-baseline: Transfers, fyra fönstertillstånd.
 // windowOpen/stängt är rent kalenderdrivet (transferWindowService.ts läser bara
@@ -871,6 +899,7 @@ export function DevScenesScreen() {
       : scene === 'trupp-kris' ? truppKrisGame
       : scene === 'lineup-empty' ? lineupEmptyGame
       : scene === 'lineup-filled' ? lineupFilledGame
+      : scene === 'navgate-laddning-band' ? matchLaddningBandGame
       : scene === 'portal-tom' ? portalTomGame
       : scene === 'portal-normal' ? portalNormalGame
       : scene === 'portal-full' ? portalFullGame
@@ -1078,6 +1107,20 @@ export function DevScenesScreen() {
         {(scene === 'lineup-empty' || scene === 'lineup-filled') && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <MatchScreen />
+          </div>
+        )}
+        {/* Mobil speltest-audit (2026-08-17), tap-target-grinden: till skillnad
+            från alla andra scener ovan renderas BottomNav HÄR, äkta, sida vid
+            sida med produktkomponenten — inte utelämnad. MatchLaddningScene/Band
+            är position:fixed/inset:0 och positionerar sig mot HELA viewporten
+            (som i produktion), så wrappern har ingen transform som skulle
+            kontainera dem — 390×844 är den verkliga mätningen, ingen konstgjord
+            höjd. Detta är den ENDA dev-scenen som gör detta; ingen av de
+            övriga 76 kan användas för nav-kollisionsmätning, se rapport. */}
+        {scene === 'navgate-laddning-band' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <MatchScreen />
+            <BottomNav />
           </div>
         )}
         {scene === 'annandagen' && (

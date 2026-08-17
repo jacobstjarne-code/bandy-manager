@@ -220,7 +220,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
         <div style={{
           padding: '12px 16px',
-          paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 12px)',
+          paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
           background: 'transparent', zIndex: 3,
         }}>
           <button
@@ -364,7 +364,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
         <div style={{
           padding: '12px 16px',
-          paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 12px)',
+          paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
           background: 'transparent', zIndex: 3,
         }}>
           <button
@@ -487,7 +487,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
       <div style={{
         padding: '12px 16px',
-        paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 12px)',
+        paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
         background: 'rgba(12,14,20,0.96)',
         zIndex: 3,
       }}>

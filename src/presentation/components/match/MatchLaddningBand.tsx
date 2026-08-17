@@ -101,7 +101,11 @@ export function MatchLaddningBand({ state, streakLength, isBroken, game, opponen
 
       <div style={{
         padding: '12px 16px',
-        paddingBottom: 'max(16px, calc(var(--safe-bottom, 0px) + 12px))',
+        // 2026-08-17: saknade --bottom-nav-height helt (till skillnad från
+        // MatchLaddningScene.tsx:s tre CTA-containrar) — samma fel som
+        // SÄTT LAGET-fyndet i mobil speltest-audit, fast värre här eftersom
+        // bottennavigationens 60px inte reserverades alls, bara safe-bottom.
+        paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
       }}>
         <button
           className="btn btn-primary btn-cta"

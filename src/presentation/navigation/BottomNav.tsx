@@ -105,7 +105,7 @@ export function BottomNav() {
           {lockReason}
         </div>
       )}
-      <nav style={{
+      <nav data-bottom-nav style={{
         position: 'fixed',
         bottom: 0,
         left: '50%',

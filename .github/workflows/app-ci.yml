@@ -55,6 +55,31 @@ jobs:
           name: syn-audit-screenshots
           path: screenshots/audit
 
+  # Tap-target-överlapp (mobil speltest-audit, 2026-08-17): EGEN port, separat
+  # från visual-regression nedan. Motiv (Jacobs ord): en pixel-diff-regression
+  # och en träffyta-regression är olika klasser av fel — ska synas som olika
+  # klasser i CI-statusen, inte begravas i samma jobbs gröna/röda. Se
+  # tests/visual/tapTargetOverlap.ts för vad grinden faktiskt täcker (och
+  # dess kända begränsning: bottennav-kollision bara mätbar där
+  # [data-bottom-nav] renderas, vilket idag bara är den nya
+  # navgate-laddning-band-scenen).
+  tap-target-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/visual/tapTargetGate.visual.ts
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tap-target-gate-report
+          path: playwright-report
+
   # Visuell regression: jämför /dev/scenes mot Linux-seedade baselines (samma OS →
   # pixelstabilt, till skillnad från Mac-vs-Linux). Baselines seedas via
   # visual-baselines.yml (workflow_dispatch). Innan de finns hoppar jobbet över
@@ -80,7 +105,11 @@ jobs:
       - if: steps.baselines.outputs.exist == 'true'
         run: npx playwright install --with-deps chromium
       - if: steps.baselines.outputs.exist == 'true'
-        run: npm run test:visual
+        # Explicit filnamn, INTE npm run test:visual (som matchar alla
+        # *.visual.ts): tapTargetGate.visual.ts har sin egen port ovan och
+        # ska inte köras dubbelt eller fälla DETTA jobb vid en tap-target-
+        # regression — de är olika felklasser (se tap-target-gate-jobbet).
+        run: npx playwright test tests/visual/scenes.visual.ts tests/visual/baseline.visual.ts
       - if: ${{ failure() && steps.baselines.outputs.exist == 'true' }}
         uses: actions/upload-artifact@v4
         with:
