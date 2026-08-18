@@ -7,6 +7,7 @@ export interface SetLineupInput {
   startingPlayerIds: string[]
   benchPlayerIds: string[]
   captainPlayerId?: string
+  autoSelected?: boolean
 }
 
 export type SetLineupResult =
@@ -14,7 +15,7 @@ export type SetLineupResult =
   | { success: false; error: string }
 
 export function setLineup(input: SetLineupInput): SetLineupResult {
-  const { game, clubId, startingPlayerIds, benchPlayerIds, captainPlayerId } = input
+  const { game, clubId, startingPlayerIds, benchPlayerIds, captainPlayerId, autoSelected } = input
 
   // 1. Must have exactly 11 starters
   if (startingPlayerIds.length !== 11) {
@@ -73,6 +74,7 @@ export function setLineup(input: SetLineupInput): SetLineupResult {
     benchPlayerIds,
     captainPlayerId,
     tactic: club.activeTactic,
+    ...(autoSelected !== undefined && { autoSelected }),
   }
 
   const updatedGame: SaveGame = {

@@ -679,6 +679,8 @@ export function GranskaOversikt({
           outcome: string
           value: string
           valueLabel: string
+          /** 4.8 (andra halvan): attribution när laget kom från auto-uttagning, inte spelarens val. */
+          note?: string
         }
         const rows: OutcomeRow[] = []
         const findPlayer = (id?: string) => id ? game.players.find(p => p.id === id) : undefined
@@ -751,6 +753,11 @@ export function GranskaOversikt({
               heading: 'Startade trött',
               playerName: player.lastName,
               outcome: outcomeText,
+              // 4.8 (andra halvan): "Assistenten satte laget" är låst text (Jacob,
+              // 2026-08-17) — visas bara när denna started_tired-post kommer från
+              // simulateRemainingStep()'s auto-uttagning, aldrig vid spelarens egen
+              // lineup. Skiljer "du valde detta" från "assistenten valde detta".
+              ...(entry.autoSelected && { note: 'Assistenten satte laget' }),
               value: `${cond}%`,
               // 2026-08-17 (Stickiness-audit): cond är player.fitness rakt av
               // (roundProcessor.ts/matchActions.ts: `condition_${fitness}`) —
@@ -851,6 +858,11 @@ export function GranskaOversikt({
                   <div className="h-micro" style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
                     {row.outcome}
                   </div>
+                  {row.note && (
+                    <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 1, fontStyle: 'italic' }}>
+                      {row.note}
+                    </div>
+                  )}
                 </div>
                 {/* Value */}
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>

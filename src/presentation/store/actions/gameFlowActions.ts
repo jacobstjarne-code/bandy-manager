@@ -24,7 +24,7 @@ interface GetState {
   roundSummary: RoundSummaryData | null
   lastAdvanceResult: AdvanceResult | null
   resolveEvent: (eventId: string, choiceId: string) => void
-  setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
+  setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string, autoSelected?: boolean) => { success: boolean; error?: string }
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
   resolveWeeklyDecision: (choice: 'A' | 'B') => void
   completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => void
@@ -519,6 +519,7 @@ export function gameFlowActions(get: Get, set: Set) {
           available.slice(0, 11).map(p => p.id),
           available.slice(11, 16).map(p => p.id),
           available[0]?.id,
+          true,
         )
       }
       return advance(true) // suppress navigation — caller handles it

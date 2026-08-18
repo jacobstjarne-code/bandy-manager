@@ -6,6 +6,13 @@ export interface TeamSelection {
   benchPlayerIds: string[]
   captainPlayerId?: string
   tactic: Tactic
+  /**
+   * SLUTTEST_KO.md 4.8 (andra halvan, 2026-08-18): true när laget valdes av
+   * simulateRemainingStep()'s auto-pick (bästa 11 på currentAbility, kondition
+   * ignorerad) istället för av spelaren. Läses av started_tired-loggningen i
+   * roundProcessor.ts/matchActions.ts för att sätta attributionstexten.
+   */
+  autoSelected?: boolean
 }
 
 export interface MatchEvent {
@@ -27,6 +34,8 @@ export interface ManagerChoiceEntry {
   /** Structured, not player text — e.g. 'lowered_tempo' or 'condition_38' */
   detail: string
   minute?: number
+  /** 4.8 (andra halvan): kopierat från TeamSelection.autoSelected — bara satt på started_tired. */
+  autoSelected?: boolean
 }
 
 export interface MatchReport {

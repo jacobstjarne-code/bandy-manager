@@ -67,7 +67,7 @@ interface GameState {
   clearFiredGame: () => void
   loadGame: (id: string) => Promise<boolean>
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
-  setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
+  setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string, autoSelected?: boolean) => { success: boolean; error?: string }
   updateTactic: (tactic: Tactic) => void
   setTraining: (focus: TrainingFocus) => void
   markOnboardingComplete: () => Promise<SaveActionResult>
@@ -271,10 +271,10 @@ export const useGameStore = create<GameState>()(
         return true
       },
 
-      setPlayerLineup: (startingPlayerIds, benchPlayerIds, captainPlayerId) => {
+      setPlayerLineup: (startingPlayerIds, benchPlayerIds, captainPlayerId, autoSelected) => {
         const { game } = get()
         if (!game) return { success: false, error: 'Inget spel laddat' }
-        const result = setLineup({ game, clubId: game.managedClubId, startingPlayerIds, benchPlayerIds, captainPlayerId })
+        const result = setLineup({ game, clubId: game.managedClubId, startingPlayerIds, benchPlayerIds, captainPlayerId, autoSelected })
         if (result.success) {
           set({ game: result.game })
           return { success: true }

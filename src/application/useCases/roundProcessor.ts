@@ -670,7 +670,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     for (const pid of (lineup?.startingPlayerIds ?? [])) {
       const player = game.players.find(p => p.id === pid)
       if (player && (player.fitness ?? 100) < 40) {
-        choiceLog.push({ type: 'started_tired', playerId: pid, detail: `condition_${Math.round(player.fitness ?? 0)}` })
+        choiceLog.push({
+          type: 'started_tired', playerId: pid, detail: `condition_${Math.round(player.fitness ?? 0)}`,
+          ...(lineup?.autoSelected && { autoSelected: true }),
+        })
       }
     }
     for (const pid of (lineup?.benchPlayerIds ?? [])) {

@@ -75,6 +75,7 @@ export function matchActions(get: Get, set: Set) {
             type: 'started_tired',
             playerId: pid,
             detail: `condition_${Math.round(player.fitness ?? 0)}`,
+            ...(myLineup?.autoSelected && { autoSelected: true }),
           })
         }
       }
