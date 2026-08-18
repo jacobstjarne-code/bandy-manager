@@ -178,6 +178,9 @@ export interface GameEvent {
   followUpText?: string      // Simple follow-up inbox text (3-5 matchdays later)
   priority?: EventPriority   // defaults to getEventPriority(type) if not set
   deferredAt?: number        // matchday när eventet hamnade i kön (R1 age tracking)
+  systemhandelse?: boolean   // O19 (SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
+                              // (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
+                              // ingen räknare/cooldown/säsongsbudget läser fältet ännu.
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

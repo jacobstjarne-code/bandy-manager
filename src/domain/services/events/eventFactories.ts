@@ -113,6 +113,7 @@ export function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
     relatedClubId: bid.buyingClubId,
     relatedBidId: bid.id,
     resolved: false,
+    systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
   }
 }
 
@@ -374,6 +375,7 @@ export function generateVarselEvent(
     ],
     resolved: false,
     followUpText: `Situationen efter varslet på ${employerName} har stabiliserats. Spelarna har hittat nya lösningar.`,
+    systemhandelse: true,  // O19: mallens eget referensfall, 5/5
   }
 }
 
@@ -535,6 +537,7 @@ export function generateMecenatInterventionEvent(mec: Mecenat, roundNumber: numb
       },
     ],
     resolved: false,
+    systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
   }
 }
 

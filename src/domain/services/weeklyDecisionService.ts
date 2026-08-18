@@ -19,6 +19,9 @@ export interface WeeklyDecision {
   optionB: WeeklyDecisionOption
   category: WeeklyDecisionCategory
   requiredEra?: ClubEra[]
+  systemhandelse?: boolean  // O19 (SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
+                              // (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
+                              // ingen räknare/cooldown/säsongsbudget läser fältet ännu.
 }
 
 export type WeeklyDecisionEffect =
@@ -99,6 +102,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       question: `${leader} har hyrt en buss till ${awayOpponent}. ${veteran} har redan bokat sin plats. Bidra med 3 000 kr?`,
       optionA: { label: 'Bidra', effect: '−3 tkr · +bortasupport', effectColor: 'success' },
       optionB: { label: 'Låt dem ordna', effect: `−5 ${groupName}-stämning`, effectColor: 'danger' },
+      systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {
       id: 'tifo_contribution',
@@ -106,6 +110,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       question: `${youth} vill arrangera tifo till nästa hemmamatch. Bidra med 2 000 kr?`,
       optionA: { label: 'Bidra', effect: '−2 tkr · +supporterstämning', effectColor: 'success' },
       optionB: { label: 'Neka', effect: '−5 supporterstämning', effectColor: 'danger' },
+      systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {
       id: 'supporter_conflict_mediate',
@@ -160,6 +165,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       question: `Kommunen vill döpa om arenan efter en lokal sponsor. ${veteran} är emot. Acceptera?`,
       optionA: { label: 'Acceptera', effect: '+20 tkr engång · −stolthet', effectColor: 'success' },
       optionB: { label: 'Behåll namnet', effect: `+${groupName}-stämning · −boardpatience`, effectColor: 'muted' },
+      systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {
       id: 'legacy_youth_showcase',

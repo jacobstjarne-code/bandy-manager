@@ -590,6 +590,7 @@ export function generatePostAdvanceEvents(
             },
           ],
           resolved: false,
+          systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
         })
       }
     }

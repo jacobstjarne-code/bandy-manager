@@ -104,6 +104,7 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): GameE
       ],
       resolved: false,
       priority: 'critical',
+      systemhandelse: true,  // O19: sell_star-valet är 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     }
   }
 

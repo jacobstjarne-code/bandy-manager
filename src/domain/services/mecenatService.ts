@@ -642,5 +642,6 @@ export function checkMecenatRetirement(game: import('../entities/SaveGame').Save
       },
     ],
     resolved: false,
+    systemhandelse: true,  // O19: offer_tribute-valet är 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
   }
 }
