@@ -50,6 +50,11 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   ['season-a'], ['season-b'], ['season-c'],
   ['miljoheader-karlsborg'], ['miljoheader-rogle'],
   ['tabell'], ['season-header'], ['season-noplayoffs'], ['season-fired'], ['finalhelg'], ['annandagen'],
+  // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — fyra baseline-scener, CODE_
+  // INSTRUKTION_SOMMAREN_2026-08-17.md:s matris. Saknade baseline fram till
+  // denna rad — osynade av hela svepet tills nu, samma lucka-klass som
+  // AUDIT DEL 4:s Taktiktavlan/EventOverlay-fynd ovan.
+  ['sommaren-s2'], ['sommaren-titelforsvarare'], ['sommaren-tomt'], ['sommaren-siffra'],
   ['transfers-closed'], ['transfers-open-nobids'], ['transfers-onebid'], ['transfers-multibids'],
   ['arrival'], ['squad-trupp', 'button:has-text("Trupp")'],
   ['momentumbar'], ['tacticmodal'], ['submodal'], ['spakb'],

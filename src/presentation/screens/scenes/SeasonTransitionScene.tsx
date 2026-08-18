@@ -129,7 +129,22 @@ export function SeasonTransitionScene() {
             De minns förra året, men de bryr sig mest om nästa.
           </div>
           {visibleObjectiveCount > 0 && (
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+            // Browser-verifierat (2026-08-18): BoardObjectivesList/.obj-row-*
+            // (stalvallen-portal.css) är byggd uteslutande för mörk värd —
+            // .obj-row-label/.obj-progress-value läser --text-light (#F5F1EB)
+            // rakt av, aldrig satt om av komponenten själv eftersom Portal/
+            // ArrivalScene alltid ger den ett mörkt kort. Sommarens paper-kropp
+            // är den FÖRSTA ljusa värden — texten blev i praktiken osynlig
+            // (nästan-vitt på nästan-vitt). Fixen skopar om --text-light/
+            // --text-light-secondary till de ljusa värdens motsvarigheter för
+            // just detta underträd via CSS custom properties — komponentens
+            // egen logik/klasser är orörda, ordern ("bygg ingen egen variant")
+            // hålls bokstavligt.
+            <div style={{
+              background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden',
+              ['--text-light' as string]: 'var(--text-primary)',
+              ['--text-light-secondary' as string]: 'var(--text-secondary)',
+            }}>
               <BoardObjectivesList objectives={objectives} max={2} />
             </div>
           )}
