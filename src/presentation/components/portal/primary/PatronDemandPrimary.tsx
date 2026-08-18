@@ -54,7 +54,7 @@ export function PatronDemandPrimary({ game }: CardRenderProps) {
       </div>
       <button
         onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
-        className="btn btn-primary"
+        className="btn btn-outline"
         style={{ width: '100%', marginTop: 12 }}
       >
         Hantera patron →

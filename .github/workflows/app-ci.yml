@@ -114,6 +114,25 @@ jobs:
           name: contrast-gate-report
           path: playwright-report
 
+  # En-primär-grinden (åtgärdslistans post 18, 2026-08-19): max 1 synlig
+  # .btn-primary per skärm (CLAUDE.md-regeln, aldrig mätt automatiskt förut).
+  en-primary-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/visual/enPrimaryGate.visual.ts
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: en-primary-gate-report
+          path: playwright-report
+
   # Visuell regression: jämför /dev/scenes mot Linux-seedade baselines (samma OS →
   # pixelstabilt, till skillnad från Mac-vs-Linux). Baselines seedas via
   # visual-baselines.yml (workflow_dispatch). Innan de finns hoppar jobbet över

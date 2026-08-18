@@ -91,7 +91,7 @@ export function DerbyPrimary({ game }: CardRenderProps) {
       </div>
       <button
         onClick={() => navigate('/game/match')}
-        className="btn btn-primary"
+        className="btn btn-outline"
         style={{ width: '100%', marginTop: 12 }}
       >
         Sätt lineup för derbyt →

@@ -104,7 +104,7 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
       {openBids.length > 0 && (
         <button
           onClick={() => navigate('/game/transfers')}
-          className="btn btn-primary"
+          className="btn btn-outline"
           style={{ width: '100%', marginTop: 12 }}
         >
           Hantera bud →

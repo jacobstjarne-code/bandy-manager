@@ -58,7 +58,7 @@ export function EventPrimary({ game }: CardRenderProps) {
       </div>
       <button
         onClick={() => navigate('/game/inbox')}
-        className="btn btn-primary"
+        className="btn btn-outline"
         style={{ width: '100%' }}
       >
         Hantera händelse →
