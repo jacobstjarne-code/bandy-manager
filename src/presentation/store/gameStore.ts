@@ -59,6 +59,12 @@ interface GameState {
 
   // Actions
   newGame: (managerName: string, clubId: string) => void
+  // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — nollställer store:t utan att
+  // röra IndexedDB-posten (den rensas ändå av newGame:s befintliga, ovillkorade
+  // delete-all-loop nästa gång spelaren startar en ny karriär). Gör att
+  // huvudmenyns hasSave blir korrekt false utan att "SE KARRIÄREN"-flödet
+  // (som fångar game i route-state FÖRE detta anrop) tappar sin data.
+  clearFiredGame: () => void
   loadGame: (id: string) => Promise<boolean>
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
@@ -181,6 +187,10 @@ export const useGameStore = create<GameState>()(
           game = { ...game, pendingScene: { sceneId, triggeredAt: game.currentDate } }
         }
         set({ game, lastAdvanceResult: null })
+      },
+
+      clearFiredGame: () => {
+        set({ game: null })
       },
 
       loadGame: async (id) => {

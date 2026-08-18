@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 export function GameOverScreen() {
   const game = useGameStore(s => s.game)
+  const clearFiredGame = useGameStore(s => s.clearFiredGame)
   const navigate = useNavigate()
 
   if (!game) {
@@ -34,7 +35,18 @@ export function GameOverScreen() {
     return `Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i ${managedClub?.name ?? 'klubben'}.`
   }
 
+  // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — två vägar, inte en. "Se
+  // karriären" fångar game i route-state INNAN "Ny karriär" hinner nollställa
+  // store:t (clearFiredGame), så historikvyn aldrig tappar den avslutade
+  // karriärens data. handleNewGame() rensar store:t explicit — hasSave i
+  // IntroSequence blir korrekt false utan att förlita sig på att newGame()
+  // faktiskt anropas (spelaren kan avbryta på klubbvalet).
+  function handleViewHistory() {
+    navigate('/game/game-over/historik', { state: { snapshot: game } })
+  }
+
   function handleNewGame() {
+    clearFiredGame()
     navigate('/', { replace: true })
   }
 
@@ -141,7 +153,19 @@ export function GameOverScreen() {
           </div>
         </div>
 
-        {/* New game button */}
+        {/* 3.3 Kontrakt A: två vägar, inte en (DOM 2026-08-17) */}
+        <button
+          className="btn"
+          onClick={handleViewHistory}
+          style={{
+            width: '100%',
+            letterSpacing: '1.5px',
+            textTransform: 'uppercase',
+            marginBottom: 10,
+          }}
+        >
+          SE KARRIÄREN
+        </button>
         <button
           className="btn btn-primary"
           onClick={handleNewGame}
@@ -151,7 +175,7 @@ export function GameOverScreen() {
             textTransform: 'uppercase',
           }}
         >
-          STARTA NYTT SPEL
+          NY KARRIÄR
         </button>
       </div>
     </div>

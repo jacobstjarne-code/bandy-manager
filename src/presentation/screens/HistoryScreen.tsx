@@ -5,6 +5,7 @@ import { PlayerLink } from '../components/PlayerLink'
 import { ordinal, formatFinanceAbs, playoffResultLabel, cupResultLabel } from '../utils/formatters'
 import { seasonSpanLabel, seasonStartYear, seasonChampionYear } from '../../domain/utils/seasonYear'
 import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
+import type { SaveGame } from '../../domain/entities/SaveGame'
 import { shareSeasonImage } from '../utils/seasonShareImage'
 import { Swords } from 'lucide-react'
 import { loadTeamPhoto, listTeamPhotoSeasons } from '../../infrastructure/teamPhotoStorage'
@@ -106,9 +107,33 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
 
 type ArchiveTab = 'seasons' | 'letters' | 'school' | 'photos' | 'blodslinje'
 
-export function HistoryScreen() {
+export interface HistoryScreenProps {
+  /**
+   * 3.3 (SLUTTEST_KO.md, 2026-08-17) — Kontrakt A. En "avslutad karriär"-vy
+   * kan inte läsa live store-state (den kan vara rensad, eller på väg att
+   * bli det). Skickas explicit av GameOverScreens "SE KARRIÄREN"-flöde
+   * (game fångas i navigate-anropets route-state INNAN "NY KARRIÄR" hinner
+   * nollställa store:t) — och samma prop är avsedd att återanvändas av U7:s
+   * återställningsflöde (visa ett save som inte är det aktiva). Utelämnas
+   * fältet läses live store-state precis som tidigare (normalt Historik-flöde).
+   */
+  snapshot?: SaveGame
+}
+
+/**
+ * Ren funktion, testbar utan render: snapshot vinner alltid över live
+ * store-state när den finns. Utbruten separat eftersom projektet saknar
+ * @testing-library/react — komponentens interna logik måste vara
+ * anropbar utan en React-renderingskontext för att gå att regressionstesta.
+ */
+export function resolveDisplayedGame(snapshot: SaveGame | undefined, liveGame: SaveGame | null): SaveGame | null {
+  return snapshot ?? liveGame
+}
+
+export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
   const navigate = useNavigate()
-  const game = useGameStore(s => s.game)
+  const liveGame = useGameStore(s => s.game)
+  const game = resolveDisplayedGame(snapshot, liveGame)
   const [expandedSeason, setExpandedSeason] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<ArchiveTab>('seasons')
   const [photoSeasons, setPhotoSeasons] = useState<number[]>([])

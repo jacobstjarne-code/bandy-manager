@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { FeedbackButton } from '../components/FeedbackButton'
 
 const DevScenesScreen = import.meta.env.DEV
@@ -53,6 +53,17 @@ const PENDING_SCREEN_ROUTES: Partial<Record<PendingScreen, string>> = {
   [PendingScreen.PlayoffIntro]:    '/game/playoff-intro',
   [PendingScreen.QFSummary]:       '/game/qf-summary',
   [PendingScreen.SeasonSummary]:   '/game/season-summary',
+}
+
+// 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — "SE KARRIÄREN" måste kunna
+// visa historik för en avslutad (managerFired) karriär. GameShell redirectar
+// bort managerFired-spel innan /game/history hinner rendera, så denna rutten
+// hänger under samma GameGuard som game-over (bara kollar !game, inte
+// managerFired) istället. Snapshot fångas i route-state av GameOverScreen.
+function FiredCareerHistoryScreen() {
+  const location = useLocation()
+  const snapshot = (location.state as { snapshot?: import('../../domain/entities/SaveGame').SaveGame } | null)?.snapshot
+  return <HistoryScreen snapshot={snapshot} />
 }
 
 function DashboardOrPortal() {
@@ -146,6 +157,7 @@ export function AppRouter() {
         </Route>
         <Route element={<GameGuard />}>
           <Route path="/game/game-over" element={<GameOverScreen />} />
+          <Route path="/game/game-over/historik" element={<FiredCareerHistoryScreen />} />
         </Route>
         {import.meta.env.DEV && DevScenesScreen && (
           <Route path="/dev/scenes" element={
