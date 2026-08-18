@@ -24,6 +24,7 @@ import {
 import { formatValue, formatDecimalComma } from '../../format'
 import { findEmployerForJob } from '../../data/localEmployers'
 import { generateSilentShoutEvent, generateMecenatConflictEvent, generateMecenatAllianceEvent } from '../mecenatService'
+import { captainRallyAlreadyEngagedThisSeason } from '../captainRallyGuard'
 
 // ── generatePostAdvanceEvents ──────────────────────────────────────────────
 export function generatePostAdvanceEvents(
@@ -370,7 +371,7 @@ export function generatePostAdvanceEvents(
       const isHome = f.homeClubId === game.managedClubId
       return isHome ? f.homeScore < f.awayScore : f.awayScore < f.homeScore
     })
-    if (allLosses) {
+    if (allLosses && !captainRallyAlreadyEngagedThisSeason(game)) {
       const eid = `event_captain_speech_s${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const managedClub = game.clubs.find(c => c.id === game.managedClubId)

@@ -6,6 +6,7 @@ import { InboxItemType, MatchEventType } from '../enums'
 import { getRivalry } from '../data/rivalries'
 import { mulberry32 } from '../utils/random'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
+import { captainRallyAlreadyEngagedThisSeason } from './captainRallyGuard'
 
 // 4.6 (SLUTTEST_KO.md, 2026-08-17): alla newStorylines.push(...)-anrop nedan
 // sätter matchday: getCurrentLeagueRound(game), INTE den lokala
@@ -166,7 +167,12 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
   }
 
   // ── ledare_crisis ── (förlustsvit ≥ 3)
-  if (!hasArcType('ledare_crisis') && canAddArc()) {
+  // 4.6 (SLUTTEST_KO.md, 2026-08-17): "dubbla kaptensevent" — postAdvanceEvents.ts:s
+  // captainSpeech-event triggar på EXAKT samma villkor (3+ förluster i rad) och
+  // producerar samma captain_rallied_team-storyline. De byggdes oberoende och
+  // kunde båda fyra samma säsong. captainRallyAlreadyEngagedThisSeason är den
+  // delade spärren — se captainRallyGuard.ts.
+  if (!hasArcType('ledare_crisis') && canAddArc() && !captainRallyAlreadyEngagedThisSeason(game)) {
     const recentResults = completedManagedFixtures
       .slice(-5)
       .map(f => {
