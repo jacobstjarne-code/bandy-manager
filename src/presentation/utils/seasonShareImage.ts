@@ -1,8 +1,23 @@
-import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
+import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
 import { seasonSpanLabel, seasonStartYear } from '../../domain/utils/seasonYear'
 
 const W = 1080
-const H = 1350
+const MIN_H = 1350
+const TOP_MARGIN = 120
+// 4.12 (SLUTTEST_KO.md, 2026-08-18): rotorsak för "kapas i produktion" — H var
+// fast 1350 och footern fast på H-60, men innehållshöjden är datadriven (playoff-
+// raden + upp till tre statsrader är alla villkorade). Fixat innehåll (spelare/
+// säsong utan de fyra villkorade blocken) rymdes inom 1350; värsta kombinationen
+// (SM-final + toppskytt + bäst betyg + mest förbättrad) gjorde inte det, och
+// footern ritades på en fast position oavsett var innehållet faktiskt slutade.
+const FOOTER_RESERVED = 90
+
+interface LayoutRow {
+  /** Kort etikett för assertion-felmeddelandet — inte spelartext, syns aldrig i UI. */
+  label: string
+  height: number
+  draw: (ctx: CanvasRenderingContext2D, y: number) => void
+}
 
 function playoffLabel(r: SeasonSummary['playoffResult']): string {
   switch (r) {
@@ -15,8 +30,226 @@ function playoffLabel(r: SeasonSummary['playoffResult']): string {
   }
 }
 
+/**
+ * Region-baserad layout: EN lista av rader driver både höjdberäkningen
+ * (computeSeasonShareImageHeight) och den faktiska ritningen (drawRows) —
+ * de kan inte längre divergera från varandra, vilket var precis hur den
+ * fasta 1350:an och den villkorade innehållslängden hamnade i otakt.
+ */
+function buildLayoutRows(summary: SeasonSummary): LayoutRow[] {
+  const pad = 90
+  const rows: LayoutRow[] = []
+
+  rows.push({
+    label: 'arsbok-label', height: 60,
+    draw: (ctx, y) => {
+      ctx.font = `600 36px -apple-system, system-ui, sans-serif`
+      ctx.fillStyle = 'rgba(245,241,235,0.35)'
+      ctx.letterSpacing = '6px'
+      ctx.textAlign = 'center'
+      ctx.fillText('ÅRSBOK', W / 2, y)
+    },
+  })
+
+  rows.push({
+    label: 'club-name', height: 80,
+    draw: (ctx, y) => {
+      ctx.font = `800 72px -apple-system, system-ui, sans-serif`
+      ctx.fillStyle = '#F5F1EB'
+      ctx.letterSpacing = '2px'
+      ctx.textAlign = 'center'
+      ctx.fillText(summary.clubName.toUpperCase(), W / 2, y)
+    },
+  })
+
+  rows.push({
+    label: 'season', height: 100,
+    draw: (ctx, y) => {
+      ctx.font = `600 44px -apple-system, system-ui, sans-serif`
+      ctx.fillStyle = 'rgba(245,241,235,0.55)'
+      ctx.letterSpacing = '4px'
+      ctx.textAlign = 'center'
+      ctx.fillText(`SÄSONG ${seasonSpanLabel(summary.season)}`, W / 2, y)
+    },
+  })
+
+  rows.push({
+    label: 'divider-1', height: 80,
+    draw: (ctx, y) => {
+      ctx.strokeStyle = 'rgba(196,122,58,0.4)'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(pad, y)
+      ctx.lineTo(W - pad, y)
+      ctx.stroke()
+    },
+  })
+
+  rows.push({
+    label: 'position', height: 200,
+    draw: (ctx, y) => {
+      const posColor = summary.finalPosition === 1 ? '#C47A3A'
+        : summary.finalPosition <= 3 ? '#C47A3A'
+        : summary.finalPosition >= 10 ? '#C85A50'
+        : '#F5F1EB'
+      ctx.font = `900 200px -apple-system, system-ui, sans-serif`
+      ctx.fillStyle = posColor
+      ctx.letterSpacing = '-4px'
+      ctx.textAlign = 'center'
+      ctx.fillText(`${summary.finalPosition}.`, W / 2, y + 160)
+    },
+  })
+
+  rows.push({
+    label: 'points', height: 80,
+    draw: (ctx, y) => {
+      ctx.font = `600 42px -apple-system, system-ui, sans-serif`
+      ctx.fillStyle = 'rgba(245,241,235,0.45)'
+      ctx.letterSpacing = '2px'
+      ctx.textAlign = 'center'
+      ctx.fillText(`PLATS · ${summary.points} POÄNG`, W / 2, y + 10)
+    },
+  })
+
+  if (summary.playoffResult) {
+    rows.push({
+      label: 'playoff', height: 80,
+      draw: (ctx, y) => {
+        ctx.font = `700 48px -apple-system, system-ui, sans-serif`
+        ctx.fillStyle = summary.playoffResult === 'champion' ? '#C47A3A' : '#F5F1EB'
+        ctx.letterSpacing = '1px'
+        ctx.textAlign = 'center'
+        ctx.fillText(playoffLabel(summary.playoffResult), W / 2, y)
+      },
+    })
+  }
+
+  rows.push({
+    label: 'divider-2', height: 70,
+    draw: (ctx, y) => {
+      ctx.strokeStyle = 'rgba(196,122,58,0.25)'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(pad, y)
+      ctx.lineTo(W - pad, y)
+      ctx.stroke()
+    },
+  })
+
+  rows.push({
+    label: 'wdl', height: 180,
+    draw: (ctx, y) => {
+      const wdlItems = [
+        { label: 'V', value: summary.wins, color: '#5A9A4A' },
+        { label: 'O', value: summary.draws, color: '#F5F1EB' },
+        { label: 'F', value: summary.losses, color: '#C85A50' },
+      ]
+      const cellW = (W - pad * 2) / 3
+      for (let i = 0; i < wdlItems.length; i++) {
+        const item = wdlItems[i]
+        const cx = pad + cellW * i + cellW / 2
+        ctx.font = `900 100px -apple-system, system-ui, sans-serif`
+        ctx.fillStyle = item.color
+        ctx.letterSpacing = '0px'
+        ctx.textAlign = 'center'
+        ctx.fillText(String(item.value), cx, y + 90)
+        ctx.font = `600 32px -apple-system, system-ui, sans-serif`
+        ctx.fillStyle = 'rgba(245,241,235,0.35)'
+        ctx.letterSpacing = '3px'
+        ctx.fillText(item.label, cx, y + 130)
+      }
+    },
+  })
+
+  rows.push({
+    label: 'goals', height: 80,
+    draw: (ctx, y) => {
+      ctx.font = `600 38px -apple-system, system-ui, sans-serif`
+      ctx.fillStyle = 'rgba(245,241,235,0.35)'
+      ctx.letterSpacing = '2px'
+      ctx.textAlign = 'center'
+      ctx.fillText(`MÅL ${summary.goalsFor}–${summary.goalsAgainst}`, W / 2, y)
+    },
+  })
+
+  rows.push({
+    label: 'divider-3', height: 70,
+    draw: (ctx, y) => {
+      ctx.strokeStyle = 'rgba(196,122,58,0.25)'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(pad, y)
+      ctx.lineTo(W - pad, y)
+      ctx.stroke()
+    },
+  })
+
+  if (summary.topScorer) {
+    const topScorer = summary.topScorer
+    rows.push({
+      label: 'top-scorer', height: 110,
+      draw: (ctx, y) => drawStat(ctx, '⛸️ TOPPSKYTT', topScorer.name, `${topScorer.goals} mål`, pad, y, W),
+    })
+  }
+
+  if (summary.topRated) {
+    const topRated = summary.topRated
+    rows.push({
+      label: 'top-rated', height: 110,
+      draw: (ctx, y) => drawStat(ctx, '⭐ BÄST BETYG', topRated.name, `${topRated.avgRating.toFixed(1)} snitt`, pad, y, W),
+    })
+  }
+
+  if (summary.mostImproved) {
+    const mostImproved = summary.mostImproved
+    rows.push({
+      label: 'most-improved', height: 110,
+      draw: (ctx, y) => drawStat(ctx, '📈 MEST FÖRBÄTTRAD', mostImproved.name, `+${mostImproved.caGain} CA`, pad, y, W),
+    })
+  }
+
+  return rows
+}
+
+function contentHeight(rows: LayoutRow[]): number {
+  return rows.reduce((sum, r) => sum + r.height, 0)
+}
+
+/** Pure — testbar utan canvas. Samma rader som drawRows konsumerar, se buildLayoutRows. */
+export function computeSeasonShareImageHeight(summary: SeasonSummary): number {
+  return Math.max(MIN_H, TOP_MARGIN + contentHeight(buildLayoutRows(summary)) + FOOTER_RESERVED)
+}
+
+/**
+ * Hård assertion (SLUTTEST_KO.md 4.12): ingenting får ritas efter H - FOOTER_RESERVED.
+ * Kastar hellre än att tyst klippa — en rads deklarerade `height` som inte matchar
+ * vad dess `draw` faktiskt ritar (t.ex. ett internt y+offset som växer förbi radens
+ * egen box) ska synas som ett fel i utveckling, inte som en beskuren bild i produktion.
+ */
+export function assertWithinContentBounds(y: number, maxY: number, label: string): void {
+  if (y > maxY) {
+    throw new Error(
+      `seasonShareImage: raden "${label}" ritas vid y=${y}, som är förbi den reserverade footer-gränsen ${maxY}. ` +
+      `computeSeasonShareImageHeight och buildLayoutRows har hamnat i otakt — en rads deklarerade height matchar inte var den faktiskt ritas.`
+    )
+  }
+}
+
+function drawRows(ctx: CanvasRenderingContext2D, rows: LayoutRow[], maxContentY: number): void {
+  let y = TOP_MARGIN
+  for (const row of rows) {
+    assertWithinContentBounds(y, maxContentY, row.label)
+    row.draw(ctx, y)
+    y += row.height
+  }
+}
+
 export async function generateSeasonShareImage(summary: SeasonSummary): Promise<Blob | null> {
   try {
+    const rows = buildLayoutRows(summary)
+    const H = Math.max(MIN_H, TOP_MARGIN + contentHeight(rows) + FOOTER_RESERVED)
+    const maxContentY = H - FOOTER_RESERVED
+
     const canvas = document.createElement('canvas')
     canvas.width = W
     canvas.height = H
@@ -42,135 +275,10 @@ export async function generateSeasonShareImage(summary: SeasonSummary): Promise<
     ctx.fillStyle = '#C47A3A'
     ctx.fillRect(0, 0, W, 6)
 
-    const pad = 90
-    let y = 120
+    drawRows(ctx, rows, maxContentY)
 
-    // ÅRSBOK label
-    ctx.font = `600 36px -apple-system, system-ui, sans-serif`
-    ctx.fillStyle = 'rgba(245,241,235,0.35)'
-    ctx.letterSpacing = '6px'
-    ctx.textAlign = 'center'
-    ctx.fillText('ÅRSBOK', W / 2, y)
-    y += 60
-
-    // Club name
-    ctx.font = `800 72px -apple-system, system-ui, sans-serif`
-    ctx.fillStyle = '#F5F1EB'
-    ctx.letterSpacing = '2px'
-    ctx.fillText(summary.clubName.toUpperCase(), W / 2, y)
-    y += 80
-
-    // Season
-    ctx.font = `600 44px -apple-system, system-ui, sans-serif`
-    ctx.fillStyle = 'rgba(245,241,235,0.55)'
-    ctx.letterSpacing = '4px'
-    ctx.fillText(`SÄSONG ${seasonSpanLabel(summary.season)}`, W / 2, y)
-    y += 100
-
-    // Divider
-    ctx.strokeStyle = 'rgba(196,122,58,0.4)'
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(pad, y)
-    ctx.lineTo(W - pad, y)
-    ctx.stroke()
-    y += 80
-
-    // Position — big number
-    const posColor = summary.finalPosition === 1 ? '#C47A3A'
-      : summary.finalPosition <= 3 ? '#C47A3A'
-      : summary.finalPosition >= 10 ? '#C85A50'
-      : '#F5F1EB'
-
-    ctx.font = `900 200px -apple-system, system-ui, sans-serif`
-    ctx.fillStyle = posColor
-    ctx.letterSpacing = '-4px'
-    ctx.textAlign = 'center'
-    ctx.fillText(`${summary.finalPosition}.`, W / 2, y + 160)
-    y += 200
-
-    ctx.font = `600 42px -apple-system, system-ui, sans-serif`
-    ctx.fillStyle = 'rgba(245,241,235,0.45)'
-    ctx.letterSpacing = '2px'
-    ctx.fillText(`PLATS · ${summary.points} POÄNG`, W / 2, y + 10)
-    y += 80
-
-    // Playoff result
-    if (summary.playoffResult) {
-      ctx.font = `700 48px -apple-system, system-ui, sans-serif`
-      ctx.fillStyle = summary.playoffResult === 'champion' ? '#C47A3A' : '#F5F1EB'
-      ctx.letterSpacing = '1px'
-      ctx.fillText(playoffLabel(summary.playoffResult), W / 2, y)
-      y += 80
-    }
-
-    // Divider
-    ctx.strokeStyle = 'rgba(196,122,58,0.25)'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(pad, y)
-    ctx.lineTo(W - pad, y)
-    ctx.stroke()
-    y += 70
-
-    // W/D/L row
-    const wdlItems = [
-      { label: 'V', value: summary.wins, color: '#5A9A4A' },
-      { label: 'O', value: summary.draws, color: '#F5F1EB' },
-      { label: 'F', value: summary.losses, color: '#C85A50' },
-    ]
-    const cellW = (W - pad * 2) / 3
-    for (let i = 0; i < wdlItems.length; i++) {
-      const item = wdlItems[i]
-      const cx = pad + cellW * i + cellW / 2
-      ctx.font = `900 100px -apple-system, system-ui, sans-serif`
-      ctx.fillStyle = item.color
-      ctx.letterSpacing = '0px'
-      ctx.textAlign = 'center'
-      ctx.fillText(String(item.value), cx, y + 90)
-      ctx.font = `600 32px -apple-system, system-ui, sans-serif`
-      ctx.fillStyle = 'rgba(245,241,235,0.35)'
-      ctx.letterSpacing = '3px'
-      ctx.fillText(item.label, cx, y + 130)
-    }
-    y += 180
-
-    // Goals
-    ctx.font = `600 38px -apple-system, system-ui, sans-serif`
-    ctx.fillStyle = 'rgba(245,241,235,0.35)'
-    ctx.letterSpacing = '2px'
-    ctx.textAlign = 'center'
-    ctx.fillText(`MÅL ${summary.goalsFor}–${summary.goalsAgainst}`, W / 2, y)
-    y += 80
-
-    // Divider
-    ctx.strokeStyle = 'rgba(196,122,58,0.25)'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(pad, y)
-    ctx.lineTo(W - pad, y)
-    ctx.stroke()
-    y += 70
-
-    // Top scorer
-    if (summary.topScorer) {
-      drawStat(ctx, '⛸️ TOPPSKYTT', summary.topScorer.name, `${summary.topScorer.goals} mål`, pad, y, W)
-      y += 110
-    }
-
-    // Best rated
-    if (summary.topRated) {
-      drawStat(ctx, '⭐ BÄST BETYG', summary.topRated.name, `${summary.topRated.avgRating.toFixed(1)} snitt`, pad, y, W)
-      y += 110
-    }
-
-    // Most improved
-    if (summary.mostImproved) {
-      drawStat(ctx, '📈 MEST FÖRBÄTTRAD', summary.mostImproved.name, `+${summary.mostImproved.caGain} CA`, pad, y, W)
-      y += 110
-    }
-
-    // Bottom watermark
+    // Bottom watermark — alltid H-60, men H är nu beräknad så att sista
+    // innehållsraden aldrig kan nå hit (maxContentY = H - FOOTER_RESERVED).
     ctx.font = `500 30px -apple-system, system-ui, sans-serif`
     ctx.fillStyle = 'rgba(245,241,235,0.2)'
     ctx.letterSpacing = '1px'
