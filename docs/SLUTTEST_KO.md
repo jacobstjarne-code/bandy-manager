@@ -151,7 +151,7 @@ Behåll kompakt sammanfattning per säsong för **hela** karriären: säsong, pl
 |---|---|---|
 | 1.1 | `seasonEndProcessor.ts:1178` — `resolveContractExtension` saknade fjärde argument (`managerName`) | `KLAR (73a98e14)` |
 | 1.2 | `tsc --noEmit` + Vite-build som obligatoriska CI-grindar | `KLAR (f9a3358a)` |
-| 1.3 | Deploy-sync som synlig releasegrind — live mot main på en rad | `KLAR (39770cd0)` |
+| 1.3 | Deploy-sync som synlig releasegrind — live mot main på en rad | `DELVIS KLAR (39770cd0 + d068f867)` — grinden jämför origin/main mot Vercel och gör det korrekt, men var riktad åt fel håll för felet som faktiskt inträffade 2026-08-18 (51 commits opushade — den körs bara på push, aldrig när problemet är att push uteblir). Två nya lager täcker den andra riktningen: post-commit-hook (`scripts/git-hooks/post-commit`, tröskel 1 opushad commit) + sessionsstart-steg 5 (`CLAUDE.md`, arbetsdags-koll mot `origin/main`) |
 | 1.4 | Visual-baselines regenerering. **Väntar på min styckvisa kvittering** — rapportera vad som ska ha ändrats, post för post, så jag kan godkänna per ändring och inte som klump | `PÅGÅR` — 21 diffar kartlagda i tre bekräftade + en obekräftad batch, se nedan. Aldrig triggad |
 | 1.5 | `tranare`-scenens timeout | `KLAR (f72c30b4)` |
 
