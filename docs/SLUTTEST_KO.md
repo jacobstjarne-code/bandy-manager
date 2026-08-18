@@ -393,7 +393,7 @@ GPT tankade medvetet en hel säsong: felvänd taktik, svagaste elva, 15 vägrade
 **Uppskattad omfattning:** 3-4 filer (`offerSelectionService.ts`, `boardService.ts`, `seasonEndProcessor.ts`, ev. en liten ny `difficultyService.ts`), plus en engångs-analyskörning mot stress-datan för trösklarna. Ingen ny entity.
 
 **Öppna frågor för Jacobs beslut:** ska difficulty vara en engångsetikett (som idag) eller omvärderas löpande om ekonomin rasar mitt i säsong? Är nedflyttningszonen (botten 1 eller 2?) formellt definierad någonstans — hittades inte, måste bekräftas innan trösklarna görs proportionella. Ska stress-kalibreringen vara ett engångsjobb eller ett återkommande valideringssteg vid world-gen-ändringar (som `calibrate.ts`)?
-**Status:** `RAPPORT-LEVERERAD` — väntar på Jacobs dom om modell + de tre öppna frågorna. Pausad tills dess, precis som O5 är pausad tills U1 håller (Grind 1-beroende, se O5/O2/O4)
+**Status:** `KLAR (4be59ff9)` — Jacobs dom på de tre öppna frågorna: engångsetikett (som idag, ingen löpande omvärdering), nedflyttningszon som konstant (`RELEGATION_ZONE_SIZE=2`), kalibrering som engångsjobb. `computeDifficultyScore()` (offerSelectionService.ts) + `computeBoardPatienceUpdate()`/`evaluateBoard` (boardService.ts) — D029 dokumenterar formeln och kalibreringstabellen mot alla tolv `CLUB_TEMPLATES`. `O5` fortfarande pausad — U1 höll, men O5 väntar dessutom på Grind 1 självt
 
 ### U2 · Kanonisk matchkontext
 Symptom: straffsegrar rapporteras som "Oavgjort, vi tar en poäng". Cupfinal ger "Två viktiga poäng". Hemmakryss ger "En poäng på bortaplan". Clean-sheet-press efter 9–8. Icke-derbyfinal erbjuder derbyreplik.
