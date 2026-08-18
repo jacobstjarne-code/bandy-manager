@@ -14,6 +14,7 @@ import {
   generateShiftConflictEvent,
   generateCoworkerBondEvent,
   generateVarselEvent,
+  varselEventId,
   generatePlayerMediaEvent,
   generatePlayerPraiseEvent,
   generateCaptainSpeechEvent,
@@ -280,7 +281,7 @@ export function generatePostAdvanceEvents(
 
   // 5e. Varsel (once per season, round 8-14, 10% chance, affects large employer)
   if (events.length < 2 && roundPlayed >= 8 && roundPlayed <= 14 && rand() < 0.10) {
-    const eid = `event_varsel_s${game.currentSeason}`
+    const eid = varselEventId(game.currentSeason)
     if (!alreadyQueued.has(eid)) {
       const nonProWithJob = game.players.filter(p =>
         p.clubId === game.managedClubId &&

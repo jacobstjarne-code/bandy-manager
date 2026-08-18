@@ -316,6 +316,17 @@ export function generateCaptainSpeechEvent(captain: Player, clubId: string, seas
 }
 
 // ── Employer layoff (varsel) event ────────────────────────────────────────
+// 4.3 (SLUTTEST_KO.md, 2026-08-17): dedup-kollen i postAdvanceEvents.ts
+// använde `event_varsel_s${season}` medan detta event byggde sitt id ur
+// `event_varsel_${employerName}_${season}` — de matchade aldrig, så
+// "en gång per säsong"-spärren var verkningslös. Gemensam ID-funktion
+// (säsongsscopead, ingen arbetsgivare — intentionen är en gång PER SÄSONG,
+// inte en gång per arbetsgivare) löser det strukturellt istället för att
+// laga ena sidan.
+export function varselEventId(season: number): string {
+  return `event_varsel_s${season}`
+}
+
 export function generateVarselEvent(
   players: { id: string; firstName: string; lastName: string; dayJob?: { title: string } }[],
   employerName: string,
@@ -323,7 +334,7 @@ export function generateVarselEvent(
 ): GameEvent {
   const names = players.map(p => `${p.firstName} ${p.lastName} (${p.dayJob?.title ?? 'anställd'})`).join(', ')
   return {
-    id: `event_varsel_${employerName}_${season}`,
+    id: varselEventId(season),
     type: 'varsel',
     title: `Varsel på ${employerName}`,
     body: `${employerName} har meddelat varsel. ${players.length === 1 ? 'En spelare' : `${players.length} spelare`} i truppen berörs: ${names}. De riskerar att förlora jobbet — och kanske behöva flytta.`,
