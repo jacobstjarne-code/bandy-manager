@@ -107,7 +107,18 @@ Går före allt. Varje post här är ett fall där appen påstår något falskt 
 ### K2 · Migrering av befintliga saves
 Kan talen räknas om ur matchhistoriken, eller är de förlorade?
 **Detta är ett produktbeslut, inte en migrering.** Kan de inte räknas om måste någon bestämma om spelare ska se sina rekord halveras eller om felet fryses in för gamla saves. Rapportera, jag dömer.
-**Status:** `RAPPORT-VÄNTAR`
+
+**Rapport levererad:** dubbleringen låg i att `seasonEndProcessor.ts:406-453` adderade `seasonStats` till `careerStats` vid varje rollover, trots att `statsProcessor.ts:75-80, 219-224` redan ackumulerar samma fält matchvis (liga+cup) hela säsongen.
+
+**Tre lager, olika svar:**
+1. **Innevarande säsong + liga-delen av senaste 10 säsongerna** — går att räkna om korrekt. `player.seasonHistory` sparar `{season, goals, assists, games}` per säsong (men bara liga, `.slice(-10)`), och `game.fixtures` för aktuell säsong har komplett matchdata. Samma mönster som A5-migrationen (`saveGameMigration.ts:439-480`) återanvänds rakt av.
+2. **Cup-delen av alla redan avslutade säsonger** — permanent förlorad. `seasonCupStats` nollställs varje rollover, arkiveras aldrig.
+3. **Allt bortom 10 säsonger tillbaka (liga också)** — permanent förlorad. `seasonHistory.slice(-10)` har redan kastat äldre poster, och gamla `fixtures` skrivs över vid rollover. Drabbar just veteraner/klubblegender med långa karriärer — de spelare där 100-matcherslarm och rekord känns mest.
+
+**Migrationsmekanism om Jacob väljer omräkning:** `saveGameMigration.ts`s `migrateSaveGame()`-krok (körs redan vid varje load) — ny funktion, ~30-40 rader, samma struktur som A5-blocket. 1 fil.
+
+**Domen väntar på Jacob.** Tre alternativ för de förlorade delarna: (a) visa förbättrat men tyst ofullständigt tal, (b) samma tal men synligt flaggat "uppskattat, cupmatcher före denna säsong saknas", (c) frysa hela `careerStats` orört för befintliga saves, garantera korrekthet bara framåt.
+**Status:** `RAPPORT-LEVERERAD` — väntar på Jacobs dom mellan (a)/(b)/(c) för de förlorade delarna
 
 ### K3 · `.slice(-5)` — karriärminnet kapas
 `seasonEndProcessor.ts:1240`. Efter tio säsonger fanns 2031/32–2035/36; år 1–5 var borta, medan titelräknarna stod kvar.
@@ -468,9 +479,17 @@ Sponsorerna först — vanligast och tommast. Motvikter som redan finns i värld
 **Godkänd när:** inget alternativ väljs av mer än 80 % i val-entropin.
 
 ### O3 · Spelarens eget säsongsmål
-Efter årsboken ska spelaren formulera eller välja ett personligt mål: etablera oss i slutspelet, ge en akademispelare tio matcher, slå rivalen, bygga träningshallen, göra en veteran till klubbikon.
-**Inte ett styrelsekrav.** Ett löfte spelet återkallar vid halvtid och säsongsslut. GPT formulerade fem sådana mål spontant efter två säsonger — spelet frågade aldrig.
-**Status:** `EJ SKRIVEN`
+**Status:** `SKRIVEN` — `DOM_EGET_SASONGSMAL_2026-08-17.md`
+
+Ett mål, valt i Sommaren, återkallat vid halvtid och i årsboken. Sex måltyper härledda ur klubbens läge, plus "inget särskilt i år" som giltigt svar. All text låst i domen, inklusive årsbokens fyra utfallsrader.
+
+**Tre regler som avgör:** ett mål och inte tre (tre är en checklista, alltså ett styrelsekrav till). Valfritt att avstå. **Aldrig en belöning** — uppfyllt mål ger inga pengar, inget rykte, ingenting utom att spelet säger att du gjorde det. Kopplas det till en mekanisk belöning blir det ett uppdrag och spelaren optimerar i stället för att välja.
+
+**Lagras i `SeasonSummary`** som del av `O18`: måltyp, referens, utfall. Tre fält.
+
+**Kräver `5.1` Sommaren och `O18`.** Kräver **inte** `O5` eller `U1` — den enda av mina domar som kan byggas direkt efter Sommaren. Halvtidsraden kräver `D1`:s ambient-nivå.
+
+**Godkänd när:** en spelare kan säga vad hen lovade sig själv förra sommaren — och spelet säger samma sak i årsboken.
 
 ### O4 · Burnout: spelbar eller nedtonad
 **Status:** `SKRIVEN` — `DOM_BURNOUT_2026-08-17.md`. **Domen: spelbar.**
@@ -506,7 +525,9 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 | O15 | **Taktikens två lägen.** Åtta dimensioner är värdefulla för nördar men ska inte vara åtta lika stora veckouppgifter. Standardläge: assistentens två rekommendationer, **vad som skiljer planen från förra matchen**, och "följ rådet". Avancerat läge: alla åtta, större träffytor, historik över vad spelaren faktiskt ändrat. Var M-01 i tvåsäsongsauditen och återkom i framgångsauditen — hör ihop med D1 och Å2 | `EJ SKRIVEN` |
 | O16 | **Granska som lärandeyta.** Ytan svarar i dag på *vad* som hände men inte på **vilket av mina val som bidrog**. Utan det är taktik och rotation olärbara — spelaren kan inte veta om planen fungerade. Bygger på 4.8 (kondition/attribuering) men är större: kausal återkoppling per beslut | `EJ SKRIVEN` |
 | O17 | **Anläggningsträdets slut.** Det vanliga trädet gick att tömma på ~tio säsonger och då försvann framåtdriften. Ett fullt träd ska öppna nästa horisont, inte visa ett tomtillstånd. Hallprövningen är ett naturligt endgame men förutsätter att byggandet fortfarande kostar (O5). Plus: kunna omprioritera eller avveckla en byggd nod | `EJ SKRIVEN` |
-| O18 | **Årsboken som karriärens ryggrad.** Utöver K3:s bevarade säsongsidentitet ska den lagra: spelarens eget mål (O3) och hur det gick, säsongens viktigaste beslut, största personförändring, rivalry-/legendutveckling. Det är vad som gör tio säsonger till en båge i stället för tio fristående år | `EJ SKRIVEN` |
+| O18 | **Årsboken som karriärens ryggrad.** Utöver K3:s bevarade säsongsidentitet ska den lagra: spelarens eget mål (`O3`) och hur det gick, säsongens viktigaste beslut, största personförändring, rivalry-/legendutveckling. Det är vad som gör tio säsonger till en båge i stället för tio fristående år. **Byggs ihop med `O3`** — målets tre fält är första posten i den | `EJ SKRIVEN` |
+| O19 | **Märk de nio 5/5-händelserna som systemhändelser i data**, inte i en rapport — de ska bli åtkomliga för en gemensam räknare. Billigt, och gör säsongsbudgeten möjlig. Ingen mekanik byggs än | `EJ` |
+| O20 | **De tio 4/5-händelserna — rapportera vilken punkt som saknas i var och en.** Saknas punkt 5 (systemen pekar isär) är det `O2`:s dominansfråga. Saknas punkt 3 (ett tal att räkna på) väntar den på `O5`. Det avgör vilka som är billiga att lyfta till 5/5 | `EJ` |
 
 ---
 
