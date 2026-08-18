@@ -72,7 +72,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   const allFixtures = game.fixtures
   const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-  const standings = calculateStandings(game.league.teamIds, completedFixtures)
+  // 4.1 (SLUTTEST_KO.md, 2026-08-17): samma saknade pointDeductions-argument
+  // som playoffTransition.ts — styrelsens säsongsutlåtande (genereras från
+  // managedClubStanding.position nedan) kunde annars beskriva fel placering
+  // för en klubb med poängavdrag.
+  const standings = calculateStandings(game.league.teamIds, completedFixtures, game.pointDeductions)
 
   const newInboxItems: InboxItem[] = []
 

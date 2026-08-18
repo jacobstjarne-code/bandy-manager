@@ -125,7 +125,9 @@ export function matchActions(get: Get, set: Set) {
           : f
       )
       const completedFixtures = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-      const standings = calculateStandings(game.league.teamIds, completedFixtures)
+      // 4.1 (SLUTTEST_KO.md, 2026-08-17): pointDeductions saknades — samma
+      // klass som playoffTransition.ts/seasonEndProcessor.ts, se rotorsak där.
+      const standings = calculateStandings(game.league.teamIds, completedFixtures, game.pointDeductions)
 
       const completedCupFixture = updatedFixtures.find(f => f.id === fixtureId && f.isCup)
       let updatedCupBracket = game.cupBracket ?? null
@@ -229,7 +231,8 @@ export function matchActions(get: Get, set: Set) {
       const completed = result.fixture
       const updatedFixtures = game.fixtures.map(f => f.id === fixtureId ? completed : f)
       const completedLeague = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-      const standings = calculateStandings(game.league.teamIds, completedLeague)
+      // 4.1 (SLUTTEST_KO.md, 2026-08-17): pointDeductions saknades — se rotorsak i playoffTransition.ts.
+      const standings = calculateStandings(game.league.teamIds, completedLeague, game.pointDeductions)
 
       const isHome = fixture.homeClubId === game.managedClubId
       const managedScore = isHome ? completed.homeScore ?? 0 : completed.awayScore ?? 0
@@ -279,7 +282,8 @@ export function matchActions(get: Get, set: Set) {
 
       const updatedFixtures = game.fixtures.map(f => f.id === fixtureId ? completed : f)
       const completedLeague = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-      const standings = calculateStandings(game.league.teamIds, completedLeague)
+      // 4.1 (SLUTTEST_KO.md, 2026-08-17): pointDeductions saknades — se rotorsak i playoffTransition.ts.
+      const standings = calculateStandings(game.league.teamIds, completedLeague, game.pointDeductions)
 
       let updatedCupBracket = game.cupBracket ?? null
       if (fixture.isCup && updatedCupBracket && !updatedCupBracket.completed) {

@@ -19,7 +19,11 @@ function advanceDate(dateStr: string, days: number): string {
 export function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResult {
   // Calculate standings from regular season completed fixtures — exclude cup
   const completedFixtures = game.fixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-  const standings = calculateStandings(game.league.teamIds, completedFixtures)
+  // 4.1 (SLUTTEST_KO.md, 2026-08-17): pointDeductions saknades här — en klubb
+  // under avdrag (licensbeslut) fick fel poäng/placering i slutspelsseedningen
+  // jämfört med den löpande tabellen (roundProcessor.ts, som redan skickar
+  // detta). Samma tie-breaker, samma indata — annars är kanoniciteten skenbar.
+  const standings = calculateStandings(game.league.teamIds, completedFixtures, game.pointDeductions)
 
   const bracket = generatePlayoffBracket(standings, game.currentSeason)
   const allQFFixtures: ReturnType<typeof generatePlayoffFixtures> = []

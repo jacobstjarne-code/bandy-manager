@@ -35,7 +35,7 @@ export function TabellScreen() {
   const latestRound = completedLeague.reduce((max, f) => Math.max(max, f.roundNumber), 0)
   const prevRoundFixtures = completedLeague.filter(f => f.roundNumber < latestRound)
   const prevStandings = latestRound > 1
-    ? calculateStandings(game.league?.teamIds ?? game.clubs.map(c => c.id), prevRoundFixtures)
+    ? calculateStandings(game.league?.teamIds ?? game.clubs.map(c => c.id), prevRoundFixtures, game.pointDeductions)
     : []
 
   function clubName(clubId: string): string {
