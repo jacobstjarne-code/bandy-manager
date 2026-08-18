@@ -381,7 +381,19 @@ GPT tankade medvetet en hel säsong: felvänd taktik, svagaste elva, 15 vägrade
 **Två frågor:** vad krävs för att härleda difficulty ur truppstyrka, ekonomi, faciliteter, styrelsens förväntan och simulerad placeringsdistribution? Och separat: vad krävs för att en klubb i nedflyttningsstrid faktiskt tappar `boardPatience`?
 
 **Villkor jag redan sätter:** svårighetsgraden ska beskriva klubbens *situation*, inte ge dolda AI-bonusar. Eventuell assistans är en separat spelarinställning.
-**Status:** `RAPPORT-VÄNTAR`
+
+**Rapport levererad.** Bekräftat i kod: `boardService.ts:74-79` (AvoidBottom "delighted" ner till plats totalTeams−4, "unhappy" bara vid absolut sistaplats) och `seasonEndProcessor.ts:693-711` (patience straffar bara botten tre, plats 4-9 ger ingen förändring alls) förklarar tillsammans varför Skutskär inte kunde misslyckas — bufferten är löst i två separata filer, inte en.
+
+**Vad som redan finns att bygga på, utan ny datamodell:** `ClubTemplate` (`worldGenerator.ts:108-128`) har redan `finances`, `wageBudget`, `youthQuality`, `facilities`, `boardExpectation` per klubb. CA-aggregat går att räkna fram direkt efter spelargenerering (`generateAttributes`, CA ≈ reputation×0.7±10). `scripts/stress-test.ts` genererar redan hela ligans placeringar per seed — räcker att extrahera dem för kalibrering, ingen ny simuleringsmotor.
+
+**Rekommenderad modell:** tre faktorer, ingen ny simulering i runtime — reputation (bas, som idag) + `boardExpectation`-gap (ett `ChallengeTop`-krav på reputation 62 är objektivt svårare än `AvoidBottom` på samma reputation) + finansiell marginal (`finances/wageBudget`-kvot). Stress-data används bara för att KALIBRERA trösklarna en gång, inte som runtime-input. Ingen dold bonus/straff — difficulty blir en ren etikett på fakta som redan finns.
+
+**Rekommenderad boardPatience-fix:** gör AvoidBottom-tröskeln proportionell mot faktisk nedflyttningszon (idag löpare än den sportsliga verkligheten), och lägg till en svag negativ lutning för plats 8-10 (inte bara en klippa vid botten-tre) så press känns innan klubben faktiskt är nere.
+
+**Uppskattad omfattning:** 3-4 filer (`offerSelectionService.ts`, `boardService.ts`, `seasonEndProcessor.ts`, ev. en liten ny `difficultyService.ts`), plus en engångs-analyskörning mot stress-datan för trösklarna. Ingen ny entity.
+
+**Öppna frågor för Jacobs beslut:** ska difficulty vara en engångsetikett (som idag) eller omvärderas löpande om ekonomin rasar mitt i säsong? Är nedflyttningszonen (botten 1 eller 2?) formellt definierad någonstans — hittades inte, måste bekräftas innan trösklarna görs proportionella. Ska stress-kalibreringen vara ett engångsjobb eller ett återkommande valideringssteg vid world-gen-ändringar (som `calibrate.ts`)?
+**Status:** `RAPPORT-LEVERERAD` — väntar på Jacobs dom om modell + de tre öppna frågorna. Pausad tills dess, precis som O5 är pausad tills U1 håller (Grind 1-beroende, se O5/O2/O4)
 
 ### U2 · Kanonisk matchkontext
 Symptom: straffsegrar rapporteras som "Oavgjort, vi tar en poäng". Cupfinal ger "Två viktiga poäng". Hemmakryss ger "En poäng på bortaplan". Clean-sheet-press efter 9–8. Icke-derbyfinal erbjuder derbyreplik.
@@ -412,7 +424,17 @@ Rot: event-ID:n är unika per säsong, inte per karaktärsbåge, och cooldown fi
 ### U6 · Renommé nedåt
 Skutskär tankade en säsong och renommét **steg** 52 → 56. Koden kan sänka via skandal och nekad licens, men ingen placerings- eller trendnedgång finns i `seasonEndProcessor`.
 Rapportera vad ett säsongsvis renommédelta ur placering mot förväntan skulle kräva, och vad det påverkar: spelarvilja att stanna, sponsorintresse, publik, jobberbjudanden, styrelsekrav.
-**Status:** `EJ` — Code flaggar att detta möjligen är samma sak som "ryktesskedjan" som utreddes tidigare. **Det är det inte.** Ryktesskedjan handlade om att ligan inte reagerar på dominans (avskriven — tio säsonger visade sportslig variation). U6 handlar om att renommé inte kan **falla** vid misslyckande. Motsatt riktning, annan fråga.
+**Status:** `RAPPORT-LEVERERAD` — Code flaggade tidigare att detta möjligen var samma sak som "ryktesskedjan" som utreddes tidigare. **Det är det inte.** Ryktesskedjan handlade om att ligan inte reagerar på dominans (avskriven — tio säsonger visade sportslig variation). U6 handlar om att renommé inte kan **falla** vid misslyckande. Motsatt riktning, annan fråga.
+
+**Var reputation redan läses (nedströms-effekter, full lista):** ekonomi (`economyService.ts` — weeklyBase, arenakapacitet, biljettpris, publikfaktor — publik och löpande intäkter är alltså direkt reputation-styrda redan idag), cupseedning, transfer-svårighet (`offerSelectionService.ts`, delad med U1), spelarvärvning/dayJob (`worldGenerator.ts`), politiker-bonus (`politicianService.ts`, >65), patron-bidrag (`patronEvents.ts`, viktar reputation×300), klack-status "storstad" (≥70), milstolpar (landslagstränare/scoutbesök vid >65/70). **Ingen träff** på sponsorintresse direkt kopplat till reputation utanför kommunbidrag/patron, och ingen explicit manager-jobberbjudande-mekanism kopplad till reputation.
+
+**Hur renommé sänks idag (mönster att återanvända):** `scandalService.ts` — `fundraiser_vanished` (−8) och `coach_meltdown` (−5), båda återställs fullt när skandalen löper ut. Nekad licens: −15, permanent, engångs. Alltid `Math.max(0,...)`/`Math.min(100,...)`-clamp.
+
+**Den saknade länken finns redan byggd, bara inte kopplad:** `Club.boardExpectation` + `computeSeasonVerdictRating(expectation, finalPosition, totalTeams)` (`boardService.ts:175`) returnerar redan 1-5 för hur väl placeringen matchar förväntan — men ratingen driver idag bara text och `boardObjectives`-patience, aldrig reputation.
+
+**Formel-skiss** (i `seasonEndProcessor.ts` där `computeSeasonVerdictRating` redan beräknas): `repDelta = { 1: -6, 2: -3, 3: 0, 4: +2, 5: +4 }[rating]`, clampat 0-100. Proportion mot befintligt: under skandalnivå (−5/−8, tillfälligt) eftersom ett säsongsmisslyckande återkommer varje säsong medan skandal är enstaka.
+
+**Omfattning:** 3-5 rader i `seasonEndProcessor.ts`, ingen ny service — återanvänder `boardExpectation`/`computeSeasonVerdictRating` fullt ut. Kirurgiskt, men **kräver en D-fact-post** för magnituden (CLAUDE.md:s D-FACT-regel vid nya spelmagnituder) innan commit.
 
 ### U7 · Save-portabilitet — den enda posten där ett fel raderar spelarens arbete
 Export/import finns i `saveGameStorage:5-56` men är **inte nåbar från UI**. En tioårig karriär lever i en lokal IndexedDB utan backup, utan enhetsbyte, utan migrationstest mellan releaser.
@@ -436,6 +458,7 @@ Rapportera vad som kan mätas utan konto och utan personuppgifter. **Efter sanni
 | ID | Post | Status |
 |---|---|---|
 | D1 | Eventköns viktning: ambient / normal / pivotal, plus konsekvensnivå på val (neutral, positiv, kostsam, irreversibel). Inkl. Å7:s inline-rytm och Å8:s taktikviktning. Svåraste frågan: hur pivotal får väga mer **utan** att bli en fjärde ceremoni | `SKICKAD` |
+| D4 | **Taktikens två lägen** (`O15`). Fyra frågor: hur "två ändringar föreslås" ser ut som ett sammanhållet förslag; hur "vad skiljer mot förra matchen" visas; hur avancerat läge nås utan två skärmar; träffytorna (Å2). Läses ihop med D1 | `SKICKAD` |
 | D2 | Crescendot (post 6/7/10) | `LEVERERAD` → 5.2, 5.3, Å10 |
 | D3 | Sommaren | `LEVERERAD` → 5.1 |
 
@@ -522,8 +545,8 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 | O12 | Förhandsdeltan — se `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md`, skriven ihop med O2 | `SKRIVEN` |
 | O13 | Jobbmarknad efter avsked — framgångsauditens rekommendation ovanpå 3.3. **Inte beslutad.** 3.3:s rena karriärslut är minimikravet | `EJ BESLUTAD` |
 | O14 | Monetisering och paketering — framgångsauditens modell är en **hypotes**, inte en dom. Ska inte driva något bygge | `HYPOTES` |
-| O15 | **Taktikens två lägen.** Åtta dimensioner är värdefulla för nördar men ska inte vara åtta lika stora veckouppgifter. Standardläge: assistentens två rekommendationer, **vad som skiljer planen från förra matchen**, och "följ rådet". Avancerat läge: alla åtta, större träffytor, historik över vad spelaren faktiskt ändrat. Var M-01 i tvåsäsongsauditen och återkom i framgångsauditen — hör ihop med D1 och Å2 | `EJ SKRIVEN` |
-| O16 | **Granska som lärandeyta.** Ytan svarar i dag på *vad* som hände men inte på **vilket av mina val som bidrog**. Utan det är taktik och rotation olärbara — spelaren kan inte veta om planen fungerade. Bygger på 4.8 (kondition/attribuering) men är större: kausal återkoppling per beslut | `EJ SKRIVEN` |
+| O15 | **Taktikens två lägen.** Brief skickad till Design 2026-08-17. Standardläge: assistentens två rekommendationer som **ett** förslag, vad som skiljer planen från förra matchen, och "följ rådet" (ändrar bara det som föreslås). Avancerat läge: alla åtta, större träffytor, ändringshistorik. Standardläge är default. Å2 (träffytorna) ingår. De åtta dimensionerna stannar — progressiv disclosure, inte förenkling | `HOS DESIGN` |
+| O16 | **Granska som lärandeyta** — `DOM_GRANSKA_LARANDEYTA_2026-08-17.md`. En sektion, `DITT VAL`, som kopplar **ett** av spelarens val till ett mätt utfall. Fyra kandidater i ordning efter kopplingens säkerhet: press→återvinningar, hörnstrategi→hörnmål, tempo→kondition sista tjugo, formation→målens ursprung. All text låst. **Rapportera-först:** vilka av de fyra har `MatchResult` faktiskt siffror för? Bygg bara de som redan mäts. **Kräver `4.8` andra halvan** — utan den kan sektionen tillskriva spelaren assistentens beslut, vilket gör den aktivt skadlig | `SKRIVEN` |
 | O17 | **Anläggningsträdets slut.** Det vanliga trädet gick att tömma på ~tio säsonger och då försvann framåtdriften. Ett fullt träd ska öppna nästa horisont, inte visa ett tomtillstånd. Hallprövningen är ett naturligt endgame men förutsätter att byggandet fortfarande kostar (O5). Plus: kunna omprioritera eller avveckla en byggd nod | `EJ SKRIVEN` |
 | O18 | **Årsboken som karriärens ryggrad.** Utöver K3:s bevarade säsongsidentitet ska den lagra: spelarens eget mål (`O3`) och hur det gick, säsongens viktigaste beslut, största personförändring, rivalry-/legendutveckling. Det är vad som gör tio säsonger till en båge i stället för tio fristående år. **Byggs ihop med `O3`** — målets tre fält är första posten i den | `EJ SKRIVEN` |
 | O19 | **Märk de nio 5/5-händelserna som systemhändelser i data**, inte i en rapport — de ska bli åtkomliga för en gemensam räknare. Billigt, och gör säsongsbudgeten möjlig. Ingen mekanik byggs än | `EJ` |
