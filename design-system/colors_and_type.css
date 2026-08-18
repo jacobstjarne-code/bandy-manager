@@ -424,6 +424,18 @@
   letter-spacing: 0.5px;
 }
 
+/* 5.1 Sommaren (2026-08-18) — epok-raden i kapitel-headern. 15px/400/italic,
+   ljusare än .h-scene-helper (11px) — samma familj, ett steg upp i vikt. */
+.h-scene-epok {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 15px;
+  color: var(--text-light-secondary);
+  text-align: center;
+  line-height: 1.4;
+}
+
 /* Setting prolog — legacy class kept for other scenes (BoardMeetingScene, ValetScene).
    T3 (2026-07-13): var --text-light-secondary permanent trots att prologen är
    aktiv text spelaren läser just nu, inget dimmed-tillstånd bakom sig — bröt
