@@ -555,7 +555,7 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 | ID | Post | Status |
 |---|---|---|
 | O6 | Positionsvokabulären i `Formation.ts`: `LIB`, `VCB`/`HCB`, `CMF`, `HR` som spegling av `VH` | `EJ SKRIVEN` |
-| O7 | Språkfelslistan från alla auditer, samlad. Kända: "En tungt matchdag", Helena Wikströms "Skämmig insats. Punkt" | `VÄNTAR PÅ CODE` |
+| O7 | Språkfelslistan från alla auditer, samlad. Rapport levererad — se not under tabellen | `RAPPORT-LEVERERAD` |
 | O8 | Text: Turneringsläge mitt i serie (efter 5.3), fast-lägets prosapooler, Sommarens saknade händelsetyper | `VÄNTAR` |
 | O9 | Delningskortets berättelseläge. "6:e, 21 poäng" ser mediokert ut för en utomstående; det var en svår klubb som gick från nia till kvartsfinal. Huvudbudskapet ska vara förtjänad kontrast plus svarsinbjudan. Tre artefakter att namnge: Årets berättelse, Årets match, Karriären hittills | `EJ SKRIVEN` |
 | O10 | Best-in-class-strategin beslutad som ambition. Bandyarkivet, spelbara vägskäl, Bruksligor, utmaningslänkar, skaparekosystem byggs **inte** nu — men strategins Fas 0 är samma sanningslager som K1–K5. Ordningen håller | `BESLUTAD, EJ PÅBÖRJAD` |
@@ -563,6 +563,17 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 | O12 | Förhandsdeltan — se `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md`, skriven ihop med O2 | `SKRIVEN` |
 | O13 | Jobbmarknad efter avsked — framgångsauditens rekommendation ovanpå 3.3. **Inte beslutad.** 3.3:s rena karriärslut är minimikravet | `EJ BESLUTAD` |
 | O14 | Monetisering och paketering — framgångsauditens modell är en **hypotes**, inte en dom. Ska inte driva något bygge | `HYPOTES` |
+
+**O7 — fyra öppna fynd, alla markerade `[Opus]`, ingen ny text skriven av Code:**
+
+| Fil:rad | Citerad text | Feltyp |
+|---|---|---|
+| `GranskaAnalys.tsx:162` | "En tungt förlust att analysera grundligt." | Grammatik — genuskongruens ("en tung förlust"). Samma felklass som redan rättats i `helpers.ts:107` ("En tung matchdag"), men återkom oupptäckt i en systerfil |
+| `journalistHeadlineStrings.ts:204` | "Skämmig insats. Punkt" | Ej standardsvenska ("skämmig") — känt exempel, Helena Wikström |
+| `journalistHeadlineStrings.ts:178` | "Skämmig kväll — inget försvar för det här" | Samma ord, samma konstant, ej tidigare flaggat separat |
+| `nationalTeamService.ts:152` | "Landslagsspelarena är tillbaka" | Stavfel ("spelarna"). `nationalTeamService.test.ts:167` assertar den felstavade strängen — testet måste uppdateras i samma commit som texträttningen |
+
+**Begränsning värd att bära vidare:** två auditer (Skutskär-, långspelsauditen) är refererade i `CODE_INSTRUKTION_LANGSPEL_10SASONGER_2026-08-17.md`/`CODE_TOTALORDER_2026-08-17.md` som källa till en "Språkfelen (LOW)"-lista, men de underlagen är själva markerade "uppladdade, ej i repo" — går inte att söka i. Sannolikt fler fynd där. Tre äldre fynd (mattstöd/samma kväll, brittningen/Dominerar sitt område, bryter igenom→slår igenom) är redan fixade (`KVAR.md`), listade bara för att ingen ska återupptäcka dem som nya.
 | O15 | **Taktikens två lägen.** Brief skickad till Design 2026-08-17. Standardläge: assistentens två rekommendationer som **ett** förslag, vad som skiljer planen från förra matchen, och "följ rådet" (ändrar bara det som föreslås). Avancerat läge: alla åtta, större träffytor, ändringshistorik. Standardläge är default. Å2 (träffytorna) ingår. De åtta dimensionerna stannar — progressiv disclosure, inte förenkling | `HOS DESIGN` |
 | O16 | **Granska som lärandeyta** — `DOM_GRANSKA_LARANDEYTA_2026-08-17.md`. En sektion, `DITT VAL`, som kopplar **ett** av spelarens val till ett mätt utfall. Fyra kandidater i ordning efter kopplingens säkerhet: press→återvinningar, hörnstrategi→hörnmål, tempo→kondition sista tjugo, formation→målens ursprung. All text låst. **Rapportera-först:** vilka av de fyra har `MatchResult` faktiskt siffror för? Bygg bara de som redan mäts. **Kräver `4.8` andra halvan** — utan den kan sektionen tillskriva spelaren assistentens beslut, vilket gör den aktivt skadlig | `SKRIVEN` |
 | O17 | **Anläggningsträdets slut** — `DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md`. Tre delar: (1) ett fullt träd är ett **tillstånd** med text och sammanställning, **byggs nu**; (2) hallprövningen gatas på fullt träd nu men är en horisont först efter `O5` — en hall som kostar 3 mkr mot en kassa på 11 är samma klickning som de sista noderna; (3) **avveckla en byggd nod** blir ett val först när drift finns (`O5` del 2), och det uppfyller varsel-mallens punkt 4–5. **Inte fler noder** — det skjuter problemet fem säsonger framåt | `SKRIVEN` |
