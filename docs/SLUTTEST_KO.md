@@ -319,7 +319,7 @@ Dessa är **inte** nya löften utan mekaniskt kontrakt. Framgångsauditens "paus
 Variant 1e. Underlag: `CODE_INSTRUKTION_SOMMAREN_2026-08-17.md` och `docs/incoming/Sommaren-sasongsovergangen-2026-08-17.dc.html`.
 All copy låst. Fem rapportera-först-punkter i ordern: `getBurnoutZone`s zoner, händelsetyper mina tre radformer inte täcker, fältet bakom "slutspel inte rimligt", inhakning i flödet, härlett omgångsantal.
 Utbrändhetens golv på 30 är det enda som gör burnout till något annat än en räknare som nollställs. Bygg det som specificerat.
-**Status:** `EJ`
+**Status:** `KLAR (0d617cef)` — ny fil `seasonTransitionService.ts` (15 rena funktioner, 42 test), ny route `/game/season-transition` i `CEREMONY_PATHS`, ny återinträdesguard (`seasonGoalChosenForSeason`, samma fält O3 sedan tar över — se kommentaren i `SaveGame.ts`), nytt persisterat fält `pendingSeasonTransitionEvents` (retired/contractExpired/aged skrivs av `seasonEndProcessor.ts`, promoted skrivs direkt av `academyActions.ts` när det händer). Fjärde radformen (kontraktsutgång, prioriterad före de tre andra) tillagd per Jacobs DOM. Fyra dev-scener via fabriken, browser-verifierade text-för-text mot låst copy över alla villkorsgrenar samtidigt — alla fyra stämde exakt. **Inte verifierat visuellt** (temperaturkurvan vid 390px) — dev-skalets sticky-galleri är självt högre än viewporten, samma förbehåll som "DEV-SCENSKALET FÅR INTE PÅVERKA DET SOM FOTOGRAFERAS" redan dokumenterar. 50 nya test, stash-verifierade, 2044/2044 grönt, stress 10×5 rent
 
 ### 5.2 · KapitelPunkt i Granska
 En komponent, tre innehåll (cupfinal / SM-final / avsked), efter resultatblocket, före Turneringsläge och statistik. En rad i `granskaSectionRegistry` — **ingen egen gren.**
