@@ -222,12 +222,23 @@ export function generateWeeklyDecision(game: SaveGame, round: number): WeeklyDec
     p.clubId === game.managedClubId && p.position !== PlayerPosition.Goalkeeper && p.attributes.cornerSkill > 60,
   )
 
+  // Throw-guard (SLUTTEST_KO.md, 2026-08-17, samma mönster som eventResolver.ts:s
+  // vakt): player_weekend_off kräver en wearyPlayer (form < 40) för att ge effekt
+  // i BÅDA valen — denna filtreringen SAKNADES (till skillnad från corner-besluten
+  // ovan, som redan var skyddade av PC-2). Utan den kunde beslutet visas och
+  // resolveWeeklyDecision:s tidigare tysta noop-fallback dölja att löftet
+  // ("−1 kondition · +5 moral" / "−3 moral") aldrig levererades.
+  const hasWearyPlayer = game.players.some(p =>
+    p.clubId === game.managedClubId && p.form < 40 && p.position !== PlayerPosition.Goalkeeper,
+  )
+
   // Filter out already-resolved decisions, era-incompatible ones, och beslut vars
   // utlovade effekt inte kan realiseras (PC-2 corner, PC-3 scout utan budget).
   const available = pool.filter(d => {
     if (resolved.includes(`${d.id}_${game.currentSeason}`)) return false
     if (d.requiredEra && !d.requiredEra.includes(currentEra)) return false
     if ((d.id === 'corner_extra_training' || d.id === 'training_corners_vs_matchprep') && !hasCornerCandidate) return false
+    if (d.id === 'player_weekend_off' && !hasWearyPlayer) return false
     if (d.id === 'scout_opponent_corners' && (game.scoutBudget ?? 0) === 0) return false
     return true
   })
@@ -261,17 +272,25 @@ export function resolveWeeklyDecision(
 
   switch (decision.id) {
     case 'corner_extra_training':
+      // Throw-guard (SLUTTEST_KO.md, 2026-08-17): generateWeeklyDecision döljer
+      // detta beslutet när ingen cornerCandidate finns (PC-2) — når koden hit
+      // ändå är det ett brutet kontrakt, inte ett normalt no-op-läge. Samma
+      // disciplin som eventResolver.ts:s vakt: gör det högt, inte tyst.
+      if (choice === 'A' && !cornerCandidate)
+        throw new Error("weeklyDecision 'corner_extra_training' val A saknar cornerCandidate — generateWeeklyDecision:s PC-2-filter borde ha dolt beslutet")
       if (choice === 'A' && cornerCandidate)
         return [{ type: 'cornerSkill', playerId: cornerCandidate.id, delta: 3 }]
       return [{ type: 'noop' }]
 
     case 'player_weekend_off':
+      // Throw-guard (SLUTTEST_KO.md, 2026-08-17): samma disciplin — filtret
+      // (hasWearyPlayer ovan i generateWeeklyDecision) ska ha dolt beslutet.
+      if (!wearyPlayer)
+        throw new Error("weeklyDecision 'player_weekend_off' saknar wearyPlayer — generateWeeklyDecision:s hasWearyPlayer-filter borde ha dolt beslutet")
       // PC-1: A lovar "−1 kondition · +5 moral" — returnera båda (kondition saknades).
-      if (choice === 'A' && wearyPlayer)
+      if (choice === 'A')
         return [{ type: 'morale', playerId: wearyPlayer.id, delta: 5 }, { type: 'fitness', playerId: wearyPlayer.id, delta: -1 }]
-      if (choice === 'B' && wearyPlayer)
-        return [{ type: 'morale', playerId: wearyPlayer.id, delta: -3 }]
-      return [{ type: 'noop' }]
+      return [{ type: 'morale', playerId: wearyPlayer.id, delta: -3 }]
 
     case 'away_trip_bus':
       if (choice === 'A')
@@ -295,16 +314,23 @@ export function resolveWeeklyDecision(
       return [{ type: 'communityStanding', delta: -2 }]
 
     case 'training_corners_vs_matchprep':
-      if (choice === 'A' && cornerCandidate)
-        return [{ type: 'cornerSkill', playerId: cornerCandidate.id, delta: 2 }]
+      // Throw-guard (SLUTTEST_KO.md, 2026-08-17): choice A delar samma
+      // PC-2-filter (hasCornerCandidate) som corner_extra_training.
+      if (choice === 'A' && !cornerCandidate)
+        throw new Error("weeklyDecision 'training_corners_vs_matchprep' val A saknar cornerCandidate — generateWeeklyDecision:s PC-2-filter borde ha dolt beslutet")
+      if (choice === 'A')
+        return [{ type: 'cornerSkill', playerId: cornerCandidate!.id, delta: 2 }]
       // Fynd 11: B = matchprep → hörnförsvar. Höj cornerRecovery på den mest
       // motanfalls-sårbara backen (matchCore läser cornerRecovery direkt på
       // post-corner-kontringen). Permanent +2, symmetriskt med A:s +cornerSkill —
       // INTE en leadershipActions-effekt, för motorn läser inte leadershipActions
       // under match (skulle bli en no-op).
-      if (choice === 'B' && weakRecoveryDefender)
-        return [{ type: 'cornerRecovery', playerId: weakRecoveryDefender.id, delta: 2 }]
-      return [{ type: 'noop' }]
+      // weakRecoveryDefender kräver bara "något fältspelare finns" (inget
+      // tröskelvillkor som cornerCandidate/wearyPlayer) — praktiskt taget alltid
+      // sant i en riktig trupp, men vakten skyddar ändå det degenererade fallet.
+      if (!weakRecoveryDefender)
+        throw new Error("weeklyDecision 'training_corners_vs_matchprep' val B saknar en fältspelare att rikta cornerRecovery mot")
+      return [{ type: 'cornerRecovery', playerId: weakRecoveryDefender.id, delta: 2 }]
 
     case 'scout_opponent_corners':
       // Fynd 11: A = scouta nästa motståndare. Detaljerad analys är gated bakom
