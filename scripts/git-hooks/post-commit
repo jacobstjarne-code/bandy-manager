@@ -1,0 +1,11 @@
+#!/bin/sh
+# deploy-sync post-commit (SLUTTEST_KO 1.3-lucka, 2026-08-18): scripts/check-
+# deploy-sync.mjs jämför origin/main mot Vercel korrekt, men är riktad åt fel
+# håll för läget där push uteblir — den körs bara manuellt och main är sin
+# egen baslinje tills något faktiskt pushas. 51 commits låg opushade innan
+# det syntes. Tröskel 1, inte 10: felet uppstod vid den första opushade
+# commiten, inte vid den tionde. En rad, tyst om allt är synkat.
+git fetch --quiet origin main 2>/dev/null
+ahead=$(git rev-list --count origin/main..HEAD 2>/dev/null || echo 0)
+[ "$ahead" -ge 1 ] && echo "⚠️  deploy-sync: $ahead opushad(e) commit(s) på main"
+exit 0

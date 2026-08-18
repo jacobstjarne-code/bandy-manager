@@ -4,7 +4,7 @@
 
 Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessionsstart-läsning. Vid sessionsstart läser du minimum nedan, sedan vidare beroende på uppgiftstyp.
 
-### Varje session, alltid (4 steg):
+### Varje session, alltid (5 steg):
 
 1. **Tid:** `web_search "current time Stockholm"` följt av `web_fetch` på en sida i resultaten där datum/tid renderas i HTML (time.io, timeanddate.com fungerar). Försök inte gissa API-URL:er — `web_fetch` accepterar bara URL:er som dykt upp i sökresultat eller angetts av Jacob. Skriv överst: `2026-04-22, onsdag morgon (09:41 CEST)`. Om tids-sidan inte svarar — fråga Jacob. Förhåll dig till timestampen när du refererar till tid.
 
@@ -13,6 +13,16 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 3. **BYGGT-MEN-OSYNLIGT — läs FÖRE du spårar kod.** Öppna `docs/BACKLOG.md` och läs (a) listan "BYGGT MEN OSYNLIGT/ONÅBART" överst och (b) sektion A (aktiva sprintar + sessionsfynd). Detta är obligatoriskt, inte orientering-vid-behov. **Hård regel:** om Jacob frågar om något kan vara byggt-men-osynligt, parkerat, halvfärdigt, eller "finns det redan?" — sök svaret i BACKLOG.md FÖRST, innan du grep:ar koden. Koden visar vad som finns; BACKLOG visar vad vi *vet* om vad som finns och varför det ser ut som det gör. Att spåra fram ett svar ur koden som redan står i BACKLOG är det dyraste felet i det här projektet — det får Jacob att tro att en sak är bortglömd när den är loggad, och tvärtom. Verifiera mot koden EFTER att du läst BACKLOG, inte istället för.
 
 4. **Incoming-koll.** `docs/incoming/` är drop-zon, inte arkiv. Lista den. Baslinje = `README.md` (mappens manual). (`2026-06-11_design_b1_klubbutveckling.html` var tidigare baslinje-referens men är konsumerad — alla tre ytor byggda — och flyttad till `docs/mockups/` 2026-06-23; den är inte längre en incoming-baslinje.) Allt ANNAT triageras SAMMA session till sitt hem: mock → `docs/mockups/`, design-brief/handoff → `design-system/briefs/`, analys/flödesgenomgång → `docs/`, dubblett/äldre snapshot → `docs/incoming/_RADERAS/` (Opus saknar delete; Jacob kör `git rm` på _RADERAS). **Batcha aldrig.** En hög på 27 filer kostade en vecka i verifiera-mot-källan-arkeologi (2026-06-20); vid drop-tillfället är samma bedömning 30 sekunder för att kontexten är färsk. Nya drops filas vid drop-tillfället, inte "senare". Avgör mot KÄLLAN (är det byggt/stale/konsumerat?), inte mot minnet.
+
+5. **Deploy-sync-koll.** Engångsinstallation per maskin (hook-filen ligger trackad i `scripts/git-hooks/`, `.git/hooks/` är det som är ospårat — kör om `git config --get core.hooksPath` inte redan svarar `scripts/git-hooks`):
+   ```
+   git config core.hooksPath scripts/git-hooks
+   ```
+   Det installerar en post-commit-hook som skriver EN tyst rad när main lämnar en commit opushad — tröskel **1**, inte 10: felet (2026-08-18, 51 opushade commits) uppstod vid den första, en tröskel på tio hade bara lärt oss att nio är okej. Tyst om allt är synkat.
+
+   Komplement, samma steg: `git fetch --quiet && git log -1 --format=%cd --date=short origin/main` — jämför mot dagens datum (steg 1), räknat i **arbetsdagar, inte dygn** (fredag→måndag är en arbetsdag, inte tre). Tre arbetsdagar utan en commit på `origin/main` är ett fel, rapportera till Jacob innan annat arbete påbörjas — en dags paus är normalt.
+
+   **Varför två lager:** `scripts/check-deploy-sync.mjs` (ETAPP 1.3) jämför `origin/main` mot Vercel och gör det korrekt — den var bara riktad åt fel håll för det fel som faktiskt inträffade: den körs på push, och `origin/main` är sin egen baslinje så länge inget pushas. Hooken fångar ögonblicket det uppstår, oavsett vilken worktree/session som committar (delar huvudrepots `.git`). Arbetsdags-kollen är backstop om hooken saknas i en miljö.
 
 ### Innan du börjar arbeta — välj uppgiftstyp:
 
