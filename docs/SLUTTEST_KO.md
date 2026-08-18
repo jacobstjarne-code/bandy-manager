@@ -446,7 +446,7 @@ Hypotesen höll, med en rättelse: den kan **inte** byggas på `resolvedEventIds
 
 **Ordning:** loggen + skrivväg först (alla nio källor), sedan `isOnCooldown` mot pivotal beats, sedan `systemhandelseBudgetOk`. De manuella `semanticKey`-besluten (arc-bågarna) tas när loggen finns — inte som förarbete.
 
-**Status:** `DOM GIVEN — BYGG`
+**Status:** `DELVIS KLAR (2cb602fb, 20025175)` — infrastrukturen (`SaveGame.narrativeLog`, `logNarrativeBeat`/`isOnCooldown`/`systemhandelseBudgetOk`) klar och testad. **8 av 9 skrivvägar wiring:ade:** resolvedEventIds (eventResolver.ts, semanticKey=event.type), resolvedWeeklyDecisions (semanticKey=decision.id), shownBeats, shownScenes, activeArcs/storylines (en post per NY storyline — själva felklassen "Finalen. Birger…"), sourceCooldowns (egen semanticKey `source_X`), klackEcho (bara vid faktiskt ny eko), lastCoffeeSceneIndices. **9:e källan (cardStaleTracking) medvetet INTE wiring:ad** — bokför portalkortens staleness vid nästan varje rendering, fel semantisk passform för en narrativ-beat-logg, hade dränkt de åtta faktiska källorna i brus. Dokumenterat i kod (gameStore.ts:s `recordPortalShown`), inte en glömd källa. Åtta befintliga mekanismer ligger kvar orörda, per DOM:ens villkor. **Inte byggt än, näst i DOM:ens egen ordning:** `isOnCooldown` mot pivotal beats, `systemhandelseBudgetOk`:s faktiska gating (kopplad till O19:s marknering). 1970/1970 gröna, stress-test 50/50 säsonger utan krasch eller invariant-brott (roundProcessor.ts/eventResolver.ts är de mest känsliga filerna i kodbasen)
 
 ### U6 · Renommé nedåt
 Skutskär tankade en säsong och renommét **steg** 52 → 56. Koden kan sänka via skandal och nekad licens, men ingen placerings- eller trendnedgång finns i `seasonEndProcessor`.
