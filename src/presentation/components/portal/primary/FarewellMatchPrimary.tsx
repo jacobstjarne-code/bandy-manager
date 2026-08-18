@@ -37,7 +37,7 @@ export function FarewellMatchPrimary({ game }: CardRenderProps) {
     : ''
 
   return (
-    <div className="primary-card primary-weight-2" style={{ borderRadius: 8, padding: '14px 16px', marginBottom: 14 }}>
+    <div className="primary-card primary-weight-2" data-primary-card="true" style={{ borderRadius: 8, padding: '14px 16px', marginBottom: 14 }}>
       <div className="primary-eyebrow">🎽 AVSKEDSMATCH · IMORGON</div>
       <div className="h-display-sm" style={{ color: 'var(--text-light)', marginBottom: 6 }}>
         {farewellPlayer.firstName} {farewellPlayer.lastName}s sista hemmamatch

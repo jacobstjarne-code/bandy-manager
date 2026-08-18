@@ -93,6 +93,27 @@ jobs:
           name: tap-target-gate-report
           path: playwright-report
 
+  # Kontrastgrinden (åtgärdslistans post 17, 2026-08-18): WCAG-kontrast för
+  # alla [data-primary-card]-varianter (Portal-Primary-familjen). Egen job,
+  # samma motiv som tap-target-gate — en kontrastregression är en annan
+  # felklass än en pixel-diff, ska synas som en egen grön/röd i CI.
+  contrast-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/visual/contrastGate.visual.ts
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contrast-gate-report
+          path: playwright-report
+
   # Visuell regression: jämför /dev/scenes mot Linux-seedade baselines (samma OS →
   # pixelstabilt, till skillnad från Mac-vs-Linux). Baselines seedas via
   # visual-baselines.yml (workflow_dispatch). Innan de finns hoppar jobbet över

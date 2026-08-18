@@ -91,7 +91,7 @@ export function NextMatchPrimary({ game, playoffCtx: playoffCtxFromParent, escal
   // NextMatchCard byggdes för Dashboard (ljus bg, mörk text). Portal är mörk →
   // .card--portal scopar om light-theme-tokens till portal-värden (DB-6, ej inline-hack).
   return (
-    <div className="card--portal">
+    <div className="card--portal" data-primary-card="true">
       {specialDateLabel && (
         <p className="h-label" style={{ color: 'var(--accent)', marginBottom: 8 }}>
           {specialDateLabel}

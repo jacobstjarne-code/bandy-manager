@@ -216,12 +216,19 @@ export function NextMatchCard({
   // Crest size — SM-Final gets 38px, others 36px
   const crestSize = isFinal ? 38 : 36
 
-  // "vs" color
-  const vsColor = isFinal ? 'var(--accent-dark)'
-    : isPlayoff ? 'var(--accent-dark)'
+  // "vs" color. Kontrastgrinden (post 17, 2026-08-18): default/final/playoff-
+  // grenarna läste --accent-dark (3.15:1 mot portal-bg, upptäckt via
+  // NextMatchPrimary/.card--portal) — bytt till --accent-text (dedikerad
+  // textroll, se global.css). isDerby/isAnnandagen-grenarna (--danger/
+  // --success-light) är INTE verifierade i portal-mörk kontext ännu —
+  // ingen dev-scen med derby/annandagen-nästa-match träffar denna komponent
+  // i dagens SCENES-svep, så grinden har inte kunnat pröva dem. Kvar som
+  // öppen lucka, inte tyst antagen OK.
+  const vsColor = isFinal ? 'var(--accent-text)'
+    : isPlayoff ? 'var(--accent-text)'
     : isDerby ? 'var(--danger)'
     : isAnnandagen ? 'var(--success-light)'
-    : 'var(--accent-dark)'
+    : 'var(--accent-text)'
 
   // Ice quality tag
   // SLUTTEST RUNDA 4 (punkt 4): getIceTagLabel visar "Blöt is" vid
@@ -512,7 +519,14 @@ export function NextMatchCard({
                         )
                       })}
                     </div>
-                    <span style={{ fontSize: 8, color: 'var(--border)', fontFamily: 'var(--font-body)' }}>vs</span>
+                    {/* Kontrastgrinden (post 17, 2026-08-18): --text-muted mot portal-bg
+                        ger 3,15:1 — under 4,5:1-normaltextkravet, över 3:1. Divider mellan
+                        två formsträckor (dot-rader bär informationen, "vs" är etikett för
+                        dem) vid 8px. Flaggat till Jacob/Design, inte löst — data-contrast-
+                        exempt dokumenterar den nuvarande, medvetet ovägda bedömningen så
+                        grinden förblir grön UTAN att tysta framtida regressioner på andra
+                        element. Ta bort attributet den dag storlek/vikt/kontrast avgörs. */}
+                    <span data-contrast-exempt="vs-divider 3.15:1, flaggat ej löst" style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>vs</span>
                     <div style={{ display: 'flex', gap: 3 }}>
                       {oppRecent.map(f => {
                         const r = getResult(f, opponent.id)

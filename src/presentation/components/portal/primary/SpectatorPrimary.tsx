@@ -47,7 +47,7 @@ export function SpectatorPrimary({ game }: CardRenderProps) {
   }
 
   return (
-    <div className="portal-spectator-primary card-sharp" style={{ padding: '14px 12px', marginBottom: 10 }}>
+    <div className="portal-spectator-primary card-sharp" data-primary-card="true" style={{ padding: '14px 12px', marginBottom: 10 }}>
       <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--cold, var(--text-muted))', marginBottom: 6 }}>
         {variant.headline}
       </div>

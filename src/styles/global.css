@@ -59,6 +59,14 @@
   --accent:       #C47A3A;
   --accent-dark:  #A25828;
   --accent-deep:  #8B4820;
+  /* Kontrastgrinden (post 17, 2026-08-18): --accent-dark har två roller i
+     NextMatchCard.tsx som inte kan dela samma variabel i mörk kontext —
+     headerTagStyle (rad ~175) läser den som BAKGRUND (ska förbli mörk),
+     vsColor + .tag-copper läser den som TEXT (3,15:1 mot portal-bg, för
+     låg). --accent-text är dedikerad för textrollen: default = samma
+     värde som --accent-dark idag (noll synlig ändring utanför portalen),
+     remappad i .card--portal nedan. */
+  --accent-text:  var(--accent-dark);
 
   /* Semantic */
   --success:        #5A9A4A;
@@ -350,7 +358,7 @@ a {
 .tag-copper {
   background: transparent;
   border: 1px solid var(--accent);
-  color: var(--accent-dark);
+  color: var(--accent-text);
 }
 
 .tag-outline {
@@ -516,6 +524,14 @@ a {
   --text-secondary: var(--text-light-secondary);
   --text-muted:     rgba(196,186,168,0.55);
   --match-home-bg:  var(--bg-portal-elevated);
+  /* Kontrastgrinden (post 17, 2026-08-18): --accent-text (se :root-def för
+     rollmotivering) → var(--accent) här, 4.93:1 mot portal-bg. FÖRSTA
+     FÖRSÖKET remappade --accent-dark rakt av — fel: NextMatchCard.tsx:175
+     (headertaggen HEMMA/BORTA · Omg N) läser SAMMA variabel som bakgrund
+     (background: var(--accent-dark)), och blev en ny regression (3.01:1)
+     av samma ändring. --accent-text existerar exakt för att undvika den
+     kollisionen — headerTagStyle rörs aldrig av denna rad. */
+  --accent-text:    var(--accent);
 }
 
 .btn-secondary {

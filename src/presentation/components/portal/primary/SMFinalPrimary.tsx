@@ -60,7 +60,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
   const posStr = standing ? `${standing.position}:a · ${standing.points} p` : ''
 
   return (
-    <div className="primary-card primary-weight-3" style={{ borderRadius: 8, padding: '14px 16px', marginBottom: 14 }}>
+    <div className="primary-card primary-weight-3" data-primary-card="true" style={{ borderRadius: 8, padding: '14px 16px', marginBottom: 14 }}>
       <div className="primary-eyebrow">
         🏆 SM-FINAL · IMORGON
         {critTagLabel && <span className="primary-crit-tag">{critTagLabel}</span>}

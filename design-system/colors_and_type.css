@@ -60,6 +60,14 @@
   --accent:       #C47A3A;
   --accent-dark:  #A25828;
   --accent-deep:  #8B4820;
+  /* Kontrastgrinden (post 17, 2026-08-18): --accent-dark har två roller i
+     NextMatchCard.tsx som inte kan dela samma variabel i mörk kontext —
+     headerTagStyle (rad ~175) läser den som BAKGRUND (ska förbli mörk),
+     vsColor + .tag-copper läser den som TEXT (3,15:1 mot portal-bg, för
+     låg). --accent-text är dedikerad för textrollen: default = samma
+     värde som --accent-dark idag (noll synlig ändring utanför portalen),
+     remappad i .card--portal nedan. */
+  --accent-text:  var(--accent-dark);
 
   /* Semantic */
   --success:        #5A9A4A;

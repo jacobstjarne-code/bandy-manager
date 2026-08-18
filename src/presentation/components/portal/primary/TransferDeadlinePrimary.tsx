@@ -58,7 +58,7 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
   const wagePct = wageBudget > 0 ? Math.round((usedWage / wageBudget) * 100) : 0
 
   return (
-    <div style={{
+    <div data-primary-card="true" style={{
       background: 'linear-gradient(135deg, var(--bg-portal-elevated) 0%, rgba(200,146,60,0.15) 100%)',
       border: '1px solid var(--warning)',
       borderRadius: 8,

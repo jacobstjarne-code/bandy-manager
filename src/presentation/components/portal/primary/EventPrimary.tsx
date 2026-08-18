@@ -37,6 +37,7 @@ export function EventPrimary({ game }: CardRenderProps) {
   return (
     <div
       className="card-sharp"
+      data-primary-card="true"
       style={{ padding: 16, marginBottom: 14 }}
       data-entity-id={entityId}
       data-entity-source="EventPrimary"

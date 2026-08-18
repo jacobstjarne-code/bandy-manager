@@ -51,7 +51,7 @@ export function DerbyPrimary({ game }: CardRenderProps) {
   const arenaName = isHome ? (club?.arenaName ?? 'Hemmaplan') : (opponent.arenaName ?? 'Bortaplan')
 
   return (
-    <div style={{
+    <div data-primary-card="true" style={{
       background: 'linear-gradient(135deg, var(--bg-portal-elevated) 0%, color-mix(in srgb, var(--danger) 15%, transparent) 100%)',
       border: '1px solid var(--danger)',
       borderRadius: 8,
