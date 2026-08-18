@@ -14,6 +14,7 @@ import { EVENT_SOURCE_MAP, startCooldown } from '../sourceCooldownService'
 import type { SourceKey } from '../sourceCooldownService'
 import { PROVNING_RESOLUTION } from '../../data/hallProvningData'
 import { getCurrentLeagueRound } from '../../data/seasonPhases'
+import { logNarrativeBeat } from '../narrativeLogService'
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
 export function resolveEvent(
@@ -1533,10 +1534,18 @@ export function resolveEvent(
   }
 
   // Mark event resolved and remove from pendingEvents
+  // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 1/9. semanticKey =
+  // event.type — grovkornigt (skiljer inte t.ex. varsel mot olika
+  // arbetsgivare), avsiktligt: DOM:en säger uttryckligen att finkorniga
+  // semanticKey-beslut tas EFTER att loggen finns, inte som förarbete här.
   updatedGame = {
     ...updatedGame,
     pendingEvents: (updatedGame.pendingEvents ?? []).filter(e => e.id !== eventId),
     resolvedEventIds: [...(updatedGame.resolvedEventIds ?? []), eventId].slice(-200), // keep last 200
+    narrativeLog: logNarrativeBeat(
+      updatedGame, event.type, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame),
+      event.systemhandelse,
+    ),
   }
 
   // ── Post-resolution storyline generation ────────────────────────────────
@@ -1718,7 +1727,14 @@ export function resolveEvent(
       updatedGame.sourceCooldowns ?? {},
       eventSource as SourceKey,
     )
-    updatedGame = { ...updatedGame, sourceCooldowns: newCooldowns }
+    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 6/9. Egen
+    // semanticKey (source_{eventSource}) — grovare gruppering än event.type
+    // (skriv väg 1), flera event-typer kan dela samma källa.
+    updatedGame = {
+      ...updatedGame,
+      sourceCooldowns: newCooldowns,
+      narrativeLog: logNarrativeBeat(updatedGame, `source_${eventSource}`, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame)),
+    }
   }
 
   // ÖVERLÄMNING 2 steg 1-pilot: se kommentaren vid deklarationen ovan.

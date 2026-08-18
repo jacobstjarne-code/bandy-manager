@@ -796,6 +796,15 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, matchLaddningBandShown: data ?? undefined } })
       },
 
+      // U5 (SLUTTEST_KO.md, 2026-08-17): medvetet INTE en narrativeLog-källa.
+      // cardStaleTracking bokför hur länge VARJE portalkort (dussintals,
+      // hela card bag) legat framme — den fyller på vid nästan varje
+      // portal-rendering, inte vid en narrativ "beat". Att skriva en
+      // narrativeLog-post per kort här hade dränkt de åtta faktiska
+      // narrativa källorna i brus och gjort isOnCooldown/systemhandelseBudgetOk
+      // långsammare utan att lösa "Finalen. Birger…"-felklassen — det är
+      // fel mekanism för den frågan. 8/9 källor wiring:ade, denna är det
+      // dokumenterade undantaget.
       recordPortalShown: (cardIds, storySlotKind) => {
         set(state => {
           if (!state.game) return state

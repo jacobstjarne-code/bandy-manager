@@ -17,6 +17,7 @@ import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService
 import { getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
 import { navigateTo } from '../../navigation/globalNavigate'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
+import { logNarrativeBeat } from '../../../domain/services/narrativeLogService'
 
 interface GetState {
   game: SaveGame | null
@@ -348,11 +349,14 @@ export function gameFlowActions(get: Get, set: Set) {
       )
       const resolvedRound = isFinite(resolvedMatchday) ? resolvedMatchday : (game.weeklyDecisionLastRound ?? 1)
 
+      // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 2/9. decision.id
+      // är redan season-strippad (t.ex. 'away_trip_bus'), inget att härleda.
       let updatedGame: SaveGame = {
         ...game,
         pendingWeeklyDecision: undefined,
         resolvedWeeklyDecisions: [...(game.resolvedWeeklyDecisions ?? []), resolvedKey],
         weeklyDecisionLastRound: Math.max(game.weeklyDecisionLastRound ?? 0, resolvedRound),
+        narrativeLog: logNarrativeBeat(game, decision.id, game.currentSeason, resolvedRound, decision.systemhandelse),
       }
 
       // Apply effects
@@ -464,7 +468,10 @@ export function gameFlowActions(get: Get, set: Set) {
       if (!game) return
       const shown = game.shownBeats ?? []
       if (!shown.includes(beatKey)) {
-        set({ game: { ...game, shownBeats: [...shown, beatKey] } })
+        // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 3/9. Loggar
+        // den råa beatKey:en oskalad (flera keyFn:s bakar redan in `_s{season}`
+        // — finkornig strippning är ett senare, medvetet steg per DOM:en).
+        set({ game: { ...game, shownBeats: [...shown, beatKey], narrativeLog: logNarrativeBeat(game, beatKey, game.currentSeason, getCurrentLeagueRound(game)) } })
       }
     },
 
@@ -528,6 +535,12 @@ export function gameFlowActions(get: Get, set: Set) {
         const coffeeScene = getCoffeeRoomScene(updatedGame)
         if (coffeeScene) {
           updatedGame.lastCoffeeSceneIndices = [...(updatedGame.lastCoffeeSceneIndices ?? []), ...coffeeScene.pickedIndices].slice(-12)
+          // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 8/9 — en
+          // post per visat poolindex, matchar mekanismens egna syfte
+          // (undvik samma kafferumsrad igen).
+          for (const idx of coffeeScene.pickedIndices) {
+            updatedGame.narrativeLog = logNarrativeBeat(updatedGame, `coffee_pool_${idx}`, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame))
+          }
           // D3 — återkomsten visades: ta bort den ur kön, den landar bara en gång.
           if (coffeeScene.consumedReturnQuestionId) {
             updatedGame.coffeeRoomPendingReturns = (updatedGame.coffeeRoomPendingReturns ?? [])
@@ -566,7 +579,9 @@ export function gameFlowActions(get: Get, set: Set) {
           }
         }
       } else {
+        // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 4/9.
         updatedGame.shownScenes = [...(updatedGame.shownScenes ?? []), sceneId]
+        updatedGame.narrativeLog = logNarrativeBeat(updatedGame, sceneId, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame))
       }
       if (choiceId) {
         updatedGame.sceneChoices = {

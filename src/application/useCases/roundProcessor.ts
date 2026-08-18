@@ -46,6 +46,7 @@ import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService
 import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
+import { logNarrativeBeat } from '../../domain/services/narrativeLogService'
 import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
@@ -716,10 +717,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // C-B2: detect notable result for klack echo (after match completes)
   let updatedKlackEcho = game.klackEcho ? decayKlackEcho(game.klackEcho) : undefined
+  let newKlackEchoType: string | undefined  // U5: bara satt när en NY eko faktiskt triggas, inte vid ren decay
   if (justCompletedManagedFixture) {
     const echo = detectNotableResult(justCompletedManagedFixture, { ...game, fixtures: simulatedFixtures })
     if (echo) {
       updatedKlackEcho = { ...echo, currentWeight: echo.initialWeight }
+      newKlackEchoType = echo.type
     }
   }
 
@@ -1567,6 +1570,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     sourceCooldowns: decrementCooldowns(game.sourceCooldowns ?? {}),
     // C-B2 — klack echo
     klackEcho: updatedKlackEcho,
+    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 7/9 — bara vid
+    // en FAKTISKT ny eko (inte ren decay av en befintlig).
+    narrativeLog: newKlackEchoType
+      ? logNarrativeBeat(game, `klack_echo_${newKlackEchoType}`, game.currentSeason, nextMatchday)
+      : game.narrativeLog,
     // C-K1 — Landslagsuttagning
     activeNationalTeamCamp: nationalTeamCampState,
     lastNationalSnub: nationalTeamSnub,
@@ -1627,12 +1635,26 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       isRead: false,
     }))
 
+    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 5/9. En post per
+    // ny storyline (den faktiska narrativa "beat" som visas för spelaren) —
+    // semanticKey = storyline.type, grovkornigt (skiljer inte per spelare;
+    // det finkorniga per-karaktär-beslutet är medvetet skjutet till senare,
+    // per DOM:en). Detta är exakt felklassen "Finalen. Birger…" upprepades.
+    let narrativeLogWithArcs = updatedGame.narrativeLog
+    for (const storyline of arcResult.newStorylines) {
+      narrativeLogWithArcs = logNarrativeBeat(
+        { ...updatedGame, narrativeLog: narrativeLogWithArcs },
+        storyline.type, storyline.season, storyline.matchday,
+      )
+    }
+
     updatedGame = {
       ...updatedGame,
       activeArcs: cleanedArcs,
       pendingEvents: [...(updatedGame.pendingEvents ?? []), ...arcOtherEvents, ...arcLowAllowed],
       storylines: [...(updatedGame.storylines ?? []), ...arcResult.newStorylines],
       inbox: [...updatedGame.inbox, ...arcInbox, ...arcDroppedInbox],
+      narrativeLog: narrativeLogWithArcs,
     }
   }
 
