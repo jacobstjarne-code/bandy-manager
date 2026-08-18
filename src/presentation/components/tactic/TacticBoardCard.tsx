@@ -76,7 +76,7 @@ export function TacticBoardCard({
                 const showSuggestion = rec !== undefined && rec !== current
                 const recIndex = showSuggestion ? options.findIndex(o => o.value === rec) : -1
                 return (
-                  <div key={key} style={{ marginBottom: ri < rows.length - 1 ? 6 : 0 }}>
+                  <div key={key} style={{ marginBottom: ri < rows.length - 1 ? 14 : 0 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '78px 1fr', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>{label}</span>
                       {/* BROWSER-VERIFIERING (2026-08-12): förslagspillen låg tidigare INUTI
@@ -92,7 +92,8 @@ export function TacticBoardCard({
                               key={opt.value}
                               onClick={() => setTacticValue(key, opt.value as Tactic[typeof key])}
                               style={{
-                                flex: 1, textAlign: 'center', padding: '6px 3px',
+                                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                minHeight: 44, textAlign: 'center', padding: '0 3px',
                                 fontSize: 9, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
                                 cursor: 'pointer', fontFamily: 'var(--font-body)',
                                 border: 'none', borderRight: i === options.length - 1 ? 'none' : '1px solid var(--border)',
@@ -109,7 +110,11 @@ export function TacticBoardCard({
                             varför-raden. */}
                         {recIndex >= 0 && (
                           <span style={{
-                            position: 'absolute', top: -6,
+                            // Å2 (SLUTTEST_KO.md, 2026-08-18): top:-6 lät badgens nedre ~6px
+                            // (badgehöjd ~11.8px) skära ner i knapp-boxens egen yta. -12 rensar
+                            // knappens topp helt; rad-mellanrummet ovan höjt till 14px (från 6)
+                            // så badgen inte istället skär in i FÖREGÅENDE rads knappbox.
+                            position: 'absolute', top: -12,
                             left: `calc(${recIndex} * (100% / ${options.length}))`,
                             width: `calc(100% / ${options.length})`,
                             display: 'flex', justifyContent: 'center', pointerEvents: 'none',
