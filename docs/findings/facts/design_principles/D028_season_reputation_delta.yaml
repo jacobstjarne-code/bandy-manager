@@ -1,0 +1,45 @@
+fact_id: D028
+category: design_principles
+claim: "Säsongsvist renommédelta ur styrelsebetyget (1-5, computeSeasonVerdictRating): {1: -6, 2: -3, 3: 0, 4: +2, 5: +4}"
+value:
+  RATING_1: -6
+  RATING_2: -3
+  RATING_3: 0
+  RATING_4: 2
+  RATING_5: 4
+unit: reputation points
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/boardService.ts (seasonReputationDelta), src/application/useCases/seasonEndProcessor.ts (tillämpning)"
+verified_at: 2026-08-17
+verified_by: code
+status: active
+invariants:
+  - "value.RATING_1 >= -20"
+  - "value.RATING_1 <= 0"
+  - "value.RATING_5 >= 0"
+  - "value.RATING_5 <= 20"
+related_facts: []
+notes: |
+  U6 (SLUTTEST_KO.md, 2026-08-17): en testklubb (Skutskär) tankade en hel
+  säsong avsiktligt men renommét STEG 52→56 ändå. Koden kunde sänka renommé
+  via skandal (scandalService.ts: -5 till -8, tillfälligt, återställs när
+  skandalen löper ut) och nekad licens (-15, permanent, engångs), men ingen
+  mekanism kopplade en dålig SÄSONG (placering under styrelsens krav) till
+  renommé — bara till boardPatience.
+
+  Formeln återanvänder computeSeasonVerdictRating (boardService.ts), som
+  redan avgör styrelseutlåtandets text vid säsongsslut — samma rating,
+  ingen ny härledning.
+
+  Magnitud-motivering: satt UNDER skandalnivå (-5/-8) eftersom ett
+  säsongsmisslyckande (rating 1) återkommer VARJE säsong om klubben inte
+  förbättras, medan en skandal är en enstaka händelse. -6/säsong två år i
+  rad (-12) är fortfarande mindre än en nekad licens (-15), men ackumuleras
+  om läget inte ändras — vilket är avsikten (ihållande misslyckande ska
+  synas, inte bara en enda hård smäll).
+
+  rating 3 (mötte kravet exakt) ger 0 — varken bonus eller straff för att
+  bara leverera det som begärdes. Bara rating 4-5 (överträffade) ger positivt
+  delta, bara rating 1-2 (missade) ger negativt.

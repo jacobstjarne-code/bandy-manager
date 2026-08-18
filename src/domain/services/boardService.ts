@@ -212,6 +212,16 @@ export function computeSeasonVerdictRating(
   }
 }
 
+// U6 (SLUTTEST_KO.md, 2026-08-17) / D028: renommé kunde inte falla vid
+// misslyckande — bara skandal/nekad licens sänkte det. Under skandalnivå
+// (−5/−8, tillfälligt, scandalService.ts) eftersom ett säsongsmisslyckande
+// återkommer varje säsong medan skandal är enstaka.
+const SEASON_REPUTATION_DELTA: Record<1 | 2 | 3 | 4 | 5, number> = { 1: -6, 2: -3, 3: 0, 4: 2, 5: 4 }
+
+export function seasonReputationDelta(rating: 1 | 2 | 3 | 4 | 5): number {
+  return SEASON_REPUTATION_DELTA[rating]
+}
+
 /**
  * A5: rating (1-5, from computeSeasonVerdictRating) → the 3-state verdict
  * the yearbook badge/narrative uses. WinLeague is a binary goal — "vinna

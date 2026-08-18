@@ -20,7 +20,7 @@ import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/pla
 import { generateRetirementData, generateFarewellQuote } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
-import { generateSeasonVerdict, generatePreSeasonMessage } from '../../domain/services/boardService'
+import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 import { updateLoyaltyScores } from '../../domain/services/characterPlayerService'
 import { processAITransfers } from '../../domain/services/aiTransferService'
@@ -82,14 +82,20 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Board verdict at season end
   const managedClubStanding = standings.find(s => s.clubId === game.managedClubId)
+  // U6 (SLUTTEST_KO.md, 2026-08-17): renommé kunde inte FALLA vid misslyckande
+  // — bara skandal/nekad licens sänkte det. Ratingen (1-5, samma som redan
+  // driver styrelseutlåtandet nedan) återanvänds för ett säsongsvis delta,
+  // se D028 för magnituden och proportionsresonemanget mot skandal (-5/-8).
+  let seasonVerdictRating: 1 | 2 | 3 | 4 | 5 | null = null
   if (managedClubStanding) {
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
     if (managedClub) {
-      const { title, body } = generateSeasonVerdict(
+      const { title, body, rating } = generateSeasonVerdict(
         managedClub.boardExpectation,
         managedClubStanding.position,
         game.clubs.length,
       )
+      seasonVerdictRating = rating
       newInboxItems.push({
         id: `inbox_board_verdict_${game.currentSeason}`,
         date: game.currentDate,
@@ -197,6 +203,17 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const youthPlayers: Player[] = []
   const youthRecords = [...game.youthIntakeHistory]
   const updatedClubs = game.clubs.map(club => ({ ...club }))
+
+  // U6 (SLUTTEST_KO.md, 2026-08-17) / D028: säsongsvist renommédelta ur
+  // placering mot förväntan.
+  if (seasonVerdictRating !== null) {
+    const managedIdx = updatedClubs.findIndex(c => c.id === game.managedClubId)
+    if (managedIdx !== -1) {
+      const repDelta = seasonReputationDelta(seasonVerdictRating)
+      const current = updatedClubs[managedIdx].reputation ?? 50
+      updatedClubs[managedIdx] = { ...updatedClubs[managedIdx], reputation: Math.max(0, Math.min(100, current + repDelta)) }
+    }
+  }
 
   let youthIntakeResultForManagedClub: ReturnType<typeof generateYouthIntake> | null = null
 

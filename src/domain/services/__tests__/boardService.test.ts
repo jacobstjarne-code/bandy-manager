@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBoard, generateBoardMessage, generateSeasonVerdict } from '../boardService'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta } from '../boardService'
 import { ClubExpectation } from '../../enums'
 import type { StandingRow } from '../../entities/SaveGame'
 
@@ -94,5 +94,28 @@ describe('generateSeasonVerdict', () => {
       expect(v.body.length).toBeGreaterThan(0)
       expect([1, 2, 3, 4, 5]).toContain(v.rating)
     }
+  })
+})
+
+describe('seasonReputationDelta — U6 (SLUTTEST_KO.md, 2026-08-17) / D028', () => {
+  it('exakt formeln från D028', () => {
+    expect(seasonReputationDelta(1)).toBe(-6)
+    expect(seasonReputationDelta(2)).toBe(-3)
+    expect(seasonReputationDelta(3)).toBe(0)
+    expect(seasonReputationDelta(4)).toBe(2)
+    expect(seasonReputationDelta(5)).toBe(4)
+  })
+
+  it('understiger skandalstraffet i magnitud (proportion mot befintligt mönster)', () => {
+    const SCANDAL_MIN_PENALTY = 5  // scandalService.ts: fundraiser_vanished/coach_meltdown, −8 till −5
+    expect(Math.abs(seasonReputationDelta(1))).toBeLessThan(SCANDAL_MIN_PENALTY + 3)
+  })
+
+  it('bara rating 4-5 ger positivt delta, bara 1-2 ger negativt, 3 är neutralt', () => {
+    expect(seasonReputationDelta(3)).toBe(0)
+    expect(seasonReputationDelta(1)).toBeLessThan(0)
+    expect(seasonReputationDelta(2)).toBeLessThan(0)
+    expect(seasonReputationDelta(4)).toBeGreaterThan(0)
+    expect(seasonReputationDelta(5)).toBeGreaterThan(0)
   })
 })
