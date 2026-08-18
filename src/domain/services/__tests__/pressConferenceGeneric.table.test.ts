@@ -30,7 +30,6 @@ const EXPECTED: Record<string, Record<Outcome, boolean>> = {
   win_big:      { won: true,  lost: false, draw: false, none: false },
   win_streak:   { won: true,  lost: false, draw: false, none: false },
   win_away:     { won: true,  lost: false, draw: false, none: false },
-  win_derby:    { won: true,  lost: false, draw: false, none: false },
   win_top3:     { won: true,  lost: false, draw: false, none: false },
   win_comeback: { won: true,  lost: false, draw: false, none: false },
   playoff_win:  { won: true,  lost: false, draw: false, none: false },
@@ -43,7 +42,6 @@ const EXPECTED: Record<string, Record<Outcome, boolean>> = {
   loss_streak:  { won: false, lost: true, draw: false, none: false },
   loss_home:    { won: false, lost: true, draw: false, none: false },
   loss_close:   { won: false, lost: true, draw: false, none: false },
-  loss_derby:   { won: false, lost: true, draw: false, none: false },
   loss_referee: { won: false, lost: true, draw: false, none: false },
 
   // ── draw-bucket: generic-eligible endast vid oavgjort ──
@@ -58,6 +56,12 @@ const EXPECTED: Record<string, Record<Outcome, boolean>> = {
   // M54(g): playoff_loss_not_final — cl25 ska inte slinka in som filler
   // när matchen var finalen. Medvetet uteslutet, inte ett prefix-missfall.
   playoff_loss_not_final: { won: false, lost: false, draw: false, none: false },
+  // U2 (SLUTTEST_KO.md, 2026-08-17), symptom 5: win_derby/loss_derby låg
+  // tidigare i 'win'/'loss'-bucketen — en icke-derbymatch som föll tillbaka
+  // på generic-fallbacken kunde få ett derby-svar. Flyttade hit medvetet,
+  // samma disciplin som playoff_loss_not_final ovan.
+  win_derby:               { won: false, lost: false, draw: false, none: false },
+  loss_derby:              { won: false, lost: false, draw: false, none: false },
   winter:                 { won: false, lost: false, draw: false, none: false },
   relegation:              { won: false, lost: false, draw: false, none: false },
   youngster:               { won: false, lost: false, draw: false, none: false },

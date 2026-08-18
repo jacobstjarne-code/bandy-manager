@@ -1,5 +1,6 @@
 import type { Fixture } from '../entities/Fixture'
 import type { PlayoffBracket } from '../entities/Playoff'
+import { getRivalry } from '../data/rivalries'
 
 /**
  * GRANSKA DEL 4 (2026-08-11), steg 1 — axelhärledningen.
@@ -16,11 +17,24 @@ export type Tavlingstyp = 'liga' | 'cup' | 'slutspel' | 'avsked'
 export type Skede = 'forstarunda' | 'kvartsfinal' | 'semifinal' | 'final'
 export type Plats = 'hemma' | 'borta' | 'neutral'
 
+export type Utfall = 'vunnet' | 'forlorat' | 'oavgjort'
+
 export interface MatchTypeAxes {
   tavlingstyp: Tavlingstyp
   /** Bara satt för cup/slutspel — liga och avsked har inget skede. */
   skede?: Skede
   plats: Plats
+  /**
+   * U2 (SLUTTEST_KO.md, 2026-08-17) — faktiskt utfall för den hanterade
+   * klubben, EFTER förlängning/straffar om matchen gick dit. Ersätter fyra
+   * separata rå-score-tolkningar i pressConferenceService.ts/
+   * csPressEventService.ts som gav en straffseger som "oavgjort".
+   */
+  utfall: Utfall
+  /** = tavlingstyp === 'liga'. Cup/slutspel/avsked ger inga ligapoäng. */
+  gavLigapoang: boolean
+  /** = !!getRivalry(homeClubId, awayClubId), oavsett tävlingstyp. */
+  arDerby: boolean
 }
 
 export function deriveMatchTypeAxes(
@@ -33,7 +47,33 @@ export function deriveMatchTypeAxes(
     tavlingstyp,
     skede: deriveSkede(fixture, tavlingstyp, playoffBracket),
     plats: derivePlats(fixture, managedClubId),
+    utfall: deriveUtfall(fixture, managedClubId),
+    gavLigapoang: tavlingstyp === 'liga',
+    arDerby: !!getRivalry(fixture.homeClubId, fixture.awayClubId),
   }
+}
+
+/**
+ * Läser wentToPenalties/overtimeResult/penaltyResult FÖRE homeScore/awayScore
+ * — en straffavgjord match har homeScore === awayScore (oavgjort efter
+ * ordinarie tid + förlängning), så råscore ensam gav "oavgjort" trots att
+ * matchen var avgjord. Samma rotorsak som U2:s symptom 1. Exporterad separat
+ * (inte bara via deriveMatchTypeAxes) eftersom pressConferenceService.ts
+ * behöver den utan playoffBracket-parametern som skede kräver.
+ */
+export function deriveUtfall(fixture: Fixture, managedClubId: string): Utfall {
+  const isHome = fixture.homeClubId === managedClubId
+  if (fixture.wentToPenalties && fixture.penaltyResult) {
+    if (fixture.penaltyResult.home === fixture.penaltyResult.away) return 'oavgjort'
+    const penaltyWinnerIsHome = fixture.penaltyResult.home > fixture.penaltyResult.away
+    return penaltyWinnerIsHome === isHome ? 'vunnet' : 'forlorat'
+  }
+  if (fixture.overtimeResult) {
+    return fixture.overtimeResult === (isHome ? 'home' : 'away') ? 'vunnet' : 'forlorat'
+  }
+  if (fixture.homeScore === fixture.awayScore) return 'oavgjort'
+  const homeWon = fixture.homeScore > fixture.awayScore
+  return homeWon === isHome ? 'vunnet' : 'forlorat'
 }
 
 /**

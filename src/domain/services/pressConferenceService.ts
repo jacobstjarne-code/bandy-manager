@@ -3,6 +3,7 @@ import type { GameEvent } from '../entities/GameEvent'
 import type { Fixture } from '../entities/Fixture'
 import { getRivalry } from '../data/rivalries'
 import { MatchEventType } from '../enums'
+import { deriveUtfall } from './matchTypeAxes'
 
 export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
 
@@ -19,6 +20,11 @@ interface PressQuestion {
   requireLateEqualizer?: boolean  // (b) "kvitterade sent"
   requireDrawStreak3?: boolean    // (c) "oavgjort i tre raka"
   requireHome?: boolean           // (d) {arenaName} är alltid managed clubs egen arena
+  // U2 (SLUTTEST_KO.md, 2026-08-17): symptom 3 (hemmakryss → "poäng på
+  // bortaplan") och symptom 2 (cupfinal → "två viktiga poäng") — plats/
+  // ligapoäng-gates saknades helt, bara requireHome fanns.
+  requireAway?: boolean
+  requireLeaguePoints?: boolean   // matchen gav faktiskt ligapoäng (liga, inte cup/slutspel)
 }
 
 const QUESTIONS: Record<string, PressQuestion[]> = {
@@ -41,7 +47,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Tidningarna pratar mer om ekonomi än bandy just nu. Hur landar det hos er?', preferIds: ['bw_d2', 'w_h2', 'cl07'], minScandalThisSeason: true },
     { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['w_c4', 'bw_d1', 'cl03'], minScandalThisSeason: true },
     { text: 'Seger! Berätta om matchen.', preferIds: ['w_h1', 'w_c1', 'w_d1'] },
-    { text: 'Två viktiga poäng. Hur påverkar det stämningen i laget?', preferIds: ['w_p2', 'w_h2', 'w_p4'] },
+    { text: 'Två viktiga poäng. Hur påverkar det stämningen i laget?', preferIds: ['w_p2', 'w_h2', 'w_p4'], requireLeaguePoints: true },
     { text: 'Vilken spelare stack ut idag?', preferIds: ['w_p3', 'w_h3', 'w_c3'] },
     { text: 'Hur håller ni den här formen uppe?', preferIds: ['w_c4', 'w_d4', 'cl03'], minRound: 3 },
     { text: 'Ni vände underläge till seger. Vad hände i pausen?', preferIds: ['w_p5', 'w_h5', 'w_d5'], requireTrailedAtHalf: true },
@@ -81,7 +87,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['dr_c4', 'bw_d1', 'dr_h1'], minScandalThisSeason: true },
     { text: 'Oavgjort — nöjd eller besviken?', preferIds: ['dr_h1', 'dr_c1', 'dr_d1'] },
     { text: 'Ni kvitterade sent. Vad säger det om lagets karaktär?', preferIds: ['dr_p2', 'dr_h2', 'dr_d1'], requireLateEqualizer: true },
-    { text: 'En poäng på bortaplan — räknas det som bra?', preferIds: ['dr_c3', 'dr_h3', 'dr_d1'] },
+    { text: 'En poäng på bortaplan — räknas det som bra?', preferIds: ['dr_c3', 'dr_h3', 'dr_d1'], requireAway: true },
     { text: 'Det satt i detaljerna idag. Vilken är viktigast att förbättra?', preferIds: ['dr_h4', 'dr_c4', 'dr_h6'] },
     { text: 'Ert spel var ojämnt idag. Vad berodde det på?', preferIds: ['dr_h5', 'dr_h4', 'dr_c4'] },
     { text: 'Ni har oavgjort i tre raka. Är det en trend att oroa sig för?', preferIds: ['dr_c6', 'dr_h6', 'dr_h3'], requireDrawStreak3: true },
@@ -285,6 +291,7 @@ interface PressContext {
   isPlayoff: boolean
   isCup: boolean
   isFinal: boolean
+  gavLigapoang: boolean
   streak: number
   lossStreak: number
   drawStreak: number
@@ -302,15 +309,21 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
   const isHome = fixture.homeClubId === game.managedClubId
   const myScore = isHome ? (fixture.homeScore ?? 0) : (fixture.awayScore ?? 0)
   const theirScore = isHome ? (fixture.awayScore ?? 0) : (fixture.homeScore ?? 0)
-  const won = myScore > theirScore
-  const lost = myScore < theirScore
-  const draw = myScore === theirScore
+  // U2 (SLUTTEST_KO.md, 2026-08-17): utfall via deriveUtfall (straff/förlängnings-
+  // medveten), inte rå score — en straffseger har myScore===theirScore men är
+  // avgjord. rawDraw (nedan, lateEqualizer) är MEDVETET kvar på råscore: den
+  // frågar om ordinarie tids kvittering, inte matchens slutgiltiga utfall.
+  const utfall = deriveUtfall(fixture, game.managedClubId)
+  const won = utfall === 'vunnet'
+  const lost = utfall === 'forlorat'
+  const draw = utfall === 'oavgjort'
   const margin = Math.abs(myScore - theirScore)
   const isDerby = !!getRivalry(fixture.homeClubId, fixture.awayClubId)
   const isPlayoff = !!fixture.isKnockout && !fixture.isCup
   const isCup = !!fixture.isCup
   const isFinal = !!fixture.isNeutralVenue
     || (isCup && !!(game.cupBracket?.matches.find(m => m.round === 3 && m.fixtureId === fixture.id)))
+  const gavLigapoang = !isPlayoff && !isCup && !fixture.farewellMatchForPlayerId
 
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
   const position = standing?.position ?? 8
@@ -360,8 +373,12 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
 
   // M54(b) (textaudit 2026-07-04): sen kvittering — matchen slutade oavgjord
   // OCH nivelleringen (samma antal mål båda lagen) skedde senast vid minut ≥75.
+  // rawDraw (rå score, inte `draw`/utfall): en kvittering i minut 80 som sen
+  // gick till straffar är fortfarande en sen kvittering narrativt, oavsett
+  // vem som vann skottläggningen — se kommentaren vid `utfall` ovan.
+  const rawDraw = myScore === theirScore
   let lateEqualizer = false
-  if (draw) {
+  if (rawDraw) {
     let runningMine = 0, runningTheirs = 0
     for (const e of evts) {
       if (e.type !== MatchEventType.Goal) continue
@@ -387,7 +404,7 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
     : undefined
 
   return {
-    won, lost, draw, margin, isDerby, isHome, isPlayoff, isCup, isFinal,
+    won, lost, draw, margin, isDerby, isHome, isPlayoff, isCup, isFinal, gavLigapoang,
     streak, lossStreak, drawStreak, opponentPosition, position,
     temperature, totalShots, trailedAtHalf, lateEqualizer, youngsterScored, rand,
   }
@@ -420,7 +437,11 @@ const TAG_DEFS: Record<string, { matches: (ctx: PressContext) => boolean; generi
   win_big:      { matches: ctx => ctx.won && ctx.margin >= 3,                      generic: 'win' },
   win_streak:   { matches: ctx => ctx.won && ctx.streak >= 3,                      generic: 'win' },
   win_away:     { matches: ctx => ctx.won && !ctx.isHome,                          generic: 'win' },
-  win_derby:    { matches: ctx => ctx.won && ctx.isDerby,                          generic: 'win' },
+  // U2 (SLUTTEST_KO.md, 2026-08-17), symptom 5: win_derby/loss_derby låg i sina
+  // egna generic-buckets ('win'/'loss') — en icke-derbymatch som föll tillbaka
+  // på generic-fallbacken kunde då få ett derby-svar. Samma disciplin som
+  // playoff_loss_not_final (raden nedanför) redan tillämpar: generic:'none'.
+  win_derby:    { matches: ctx => ctx.won && ctx.isDerby,                          generic: 'none' },
   win_top3:     { matches: ctx => ctx.won && ctx.position <= 3,                    generic: 'win' },
   win_comeback: { matches: ctx => ctx.won && ctx.trailedAtHalf,                    generic: 'win' },
   loss_any:     { matches: ctx => ctx.lost,                                        generic: 'loss' },
@@ -428,7 +449,7 @@ const TAG_DEFS: Record<string, { matches: (ctx: PressContext) => boolean; generi
   loss_streak:  { matches: ctx => ctx.lost && ctx.lossStreak >= 3,                 generic: 'loss' },
   loss_home:    { matches: ctx => ctx.lost && ctx.isHome,                          generic: 'loss' },
   loss_close:   { matches: ctx => ctx.lost && ctx.margin === 1,                    generic: 'loss' },
-  loss_derby:   { matches: ctx => ctx.lost && ctx.isDerby,                         generic: 'loss' },
+  loss_derby:   { matches: ctx => ctx.lost && ctx.isDerby,                         generic: 'none' },
   loss_referee: { matches: ctx => ctx.lost && ctx.rand() < 0.15,                   generic: 'loss' },
   draw_any:     { matches: ctx => ctx.draw,                                        generic: 'draw' },
   draw_away_top:{ matches: ctx => ctx.draw && !ctx.isHome && ctx.opponentPosition <= 3, generic: 'draw' },
@@ -580,36 +601,35 @@ export function generatePressConference(
   game: SaveGame,
   rand: () => number,
 ): GameEvent | null {
-  const isHome = fixture.homeClubId === game.managedClubId
-  const myScore = isHome ? (fixture.homeScore ?? 0) : (fixture.awayScore ?? 0)
-  const theirScore = isHome ? (fixture.awayScore ?? 0) : (fixture.homeScore ?? 0)
-  const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
+  // U2 (SLUTTEST_KO.md, 2026-08-17): ctx byggs FÖRST och äger won/lost/draw/
+  // isDerby — tidigare räknade den här funktionen ut samma sak en gång till
+  // ur rå homeScore/awayScore (tredje oberoende beräkningen i filen, efter
+  // buildPressContext och TAG_DEFS), vilket bl.a. gav en straffseger som
+  // "oavgjort" här trots att buildPressContext redan visste bättre.
+  const ctx = buildPressContext(fixture, game, rand)
 
   let contextKey: string
-  if (rivalry && myScore > theirScore) contextKey = 'derbyWin'
-  else if (rivalry && myScore < theirScore) contextKey = 'derbyLoss'
-  else if (myScore >= theirScore + 3) contextKey = 'bigWin'
-  else if (myScore > theirScore) contextKey = 'win'
-  else if (theirScore >= myScore + 3) contextKey = 'bigLoss'
-  else if (myScore < theirScore) contextKey = 'loss'
+  if (ctx.isDerby && ctx.won) contextKey = 'derbyWin'
+  else if (ctx.isDerby && ctx.lost) contextKey = 'derbyLoss'
+  else if (ctx.won && ctx.margin >= 3) contextKey = 'bigWin'
+  else if (ctx.won) contextKey = 'win'
+  else if (ctx.lost && ctx.margin >= 3) contextKey = 'bigLoss'
+  else if (ctx.lost) contextKey = 'loss'
   else contextKey = 'draw'
 
   const round = fixture.roundNumber ?? 0
   const allQuestions = QUESTIONS[contextKey]
   if (!allQuestions || allQuestions.length === 0) return null
   const hasCurrentSeasonScandal = (game.scandalHistory ?? []).some(s => s.season === game.currentSeason)
-  // M54 (textaudit 2026-07-04): ctx flyttad hit (var tidigare byggd efter
-  // frågevalet) så frågepoolen kan gates mot samma kontext svarssystemet redan
-  // dömer mot — annars kan t.ex. "Ni vände underläge till seger" frågas efter
-  // en match som aldrig låg under.
-  const ctx = buildPressContext(fixture, game, rand)
   const questions = allQuestions.filter(q =>
     (!q.minRound || round >= q.minRound) &&
     (!q.minScandalThisSeason || hasCurrentSeasonScandal) &&
     (!q.requireTrailedAtHalf || ctx.trailedAtHalf) &&
     (!q.requireLateEqualizer || ctx.lateEqualizer) &&
     (!q.requireDrawStreak3 || ctx.drawStreak >= 3) &&
-    (!q.requireHome || ctx.isHome)
+    (!q.requireHome || ctx.isHome) &&
+    (!q.requireAway || !ctx.isHome) &&
+    (!q.requireLeaguePoints || ctx.gavLigapoang)
   )
   const questionPool = questions.length > 0 ? questions : allQuestions
 
@@ -640,7 +660,7 @@ export function generatePressConference(
   if (rand() < 0.30 && storylines.length > 0) {
     const seasonStories = storylines.filter(s => s.season === game.currentSeason && s.resolved)
     const clubStanding = game.standings.find(s => s.clubId === game.managedClubId)
-    if (myScore > theirScore && seasonStories.some(s => s.type === 'underdog_season')) {
+    if (ctx.won && seasonStories.some(s => s.type === 'underdog_season')) {
       question = { text: 'Ingen trodde på er i augusti. Vad säger du till tvivlarna?', preferIds: question.preferIds }
     } else if (clubStanding && clubStanding.losses >= 3 && seasonStories.some(s => s.type === 'underdog_season')) {
       question = { text: 'Ingen trodde på er i augusti. Vad hände?', preferIds: question.preferIds }

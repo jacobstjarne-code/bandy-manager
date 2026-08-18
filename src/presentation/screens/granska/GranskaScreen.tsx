@@ -124,7 +124,7 @@ export function GranskaScreen() {
   // skickade ner — ingen skärm under Översikt ska härleda matchtyp själv.
   const axes = fixture
     ? deriveMatchTypeAxes(fixture, game.managedClubId, game.playoffBracket)
-    : { tavlingstyp: 'liga' as const, skede: undefined, plats: 'hemma' as const }
+    : { tavlingstyp: 'liga' as const, skede: undefined, plats: 'hemma' as const, utfall: 'oavgjort' as const, gavLigapoang: false, arDerby: false }
 
   const pendingEvents = game.pendingEvents ?? []
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { deriveMatchTypeAxes } from '../matchTypeAxes'
+import { deriveMatchTypeAxes, deriveUtfall } from '../matchTypeAxes'
 import type { Fixture } from '../../entities/Fixture'
 import type { PlayoffBracket } from '../../entities/Playoff'
 import { PlayoffRound, PlayoffStatus, FixtureStatus } from '../../enums'
@@ -19,7 +19,10 @@ function makeFixture(overrides: Partial<Fixture> = {}): Fixture {
 describe('deriveMatchTypeAxes — GRANSKA DEL 4 steg 1 (2026-08-11)', () => {
   it('liga: hemmamatch', () => {
     const axes = deriveMatchTypeAxes(makeFixture(), HOME, null)
-    expect(axes).toEqual({ tavlingstyp: 'liga', skede: undefined, plats: 'hemma' })
+    expect(axes).toEqual({
+      tavlingstyp: 'liga', skede: undefined, plats: 'hemma',
+      utfall: 'vunnet', gavLigapoang: true, arDerby: false,
+    })
   })
 
   it('liga: bortamatch', () => {
@@ -48,7 +51,10 @@ describe('deriveMatchTypeAxes — GRANSKA DEL 4 steg 1 (2026-08-11)', () => {
       makeFixture({ isCup: true, isKnockout: true, isNeutralVenue: true, isCupFinalhelgen: true, roundNumber: 3 }),
       HOME, null,
     )
-    expect(axes).toEqual({ tavlingstyp: 'cup', skede: 'semifinal', plats: 'neutral' })
+    expect(axes).toEqual({
+      tavlingstyp: 'cup', skede: 'semifinal', plats: 'neutral',
+      utfall: 'vunnet', gavLigapoang: false, arDerby: false,
+    })
   })
 
   it('cupfinal = cup + final, inte ett eget tavlingstyp-värde', () => {
@@ -87,7 +93,10 @@ describe('deriveMatchTypeAxes — GRANSKA DEL 4 steg 1 (2026-08-11)', () => {
   it('SM-final = tavlingstyp:slutspel + skede:final (neutral plan)', () => {
     const fixture = makeFixture({ id: 'po-final', isKnockout: true, isFinaldag: true, isNeutralVenue: true })
     const axes = deriveMatchTypeAxes(fixture, HOME, bracketWith(PlayoffRound.Final, 'po-final'))
-    expect(axes).toEqual({ tavlingstyp: 'slutspel', skede: 'final', plats: 'neutral' })
+    expect(axes).toEqual({
+      tavlingstyp: 'slutspel', skede: 'final', plats: 'neutral',
+      utfall: 'vunnet', gavLigapoang: false, arDerby: false,
+    })
   })
 
   it('slutspelsfixture utan matchande bracket-post → skede undefined (inte krasch)', () => {
@@ -114,5 +123,52 @@ describe('deriveMatchTypeAxes — GRANSKA DEL 4 steg 1 (2026-08-11)', () => {
     const axes = deriveMatchTypeAxes(fixture, HOME, null)
     expect(axes.tavlingstyp).toBe('avsked')
     expect(axes.skede).toBeUndefined()
+  })
+
+  describe('arDerby och gavLigapoang', () => {
+    it('rivalklubbar i cup → arDerby:true, gavLigapoang:false', () => {
+      const axes = deriveMatchTypeAxes(
+        makeFixture({ homeClubId: 'club_soderfors', awayClubId: 'club_skutskar', isCup: true, isKnockout: true, roundNumber: 1 }),
+        'club_soderfors', null,
+      )
+      expect(axes.arDerby).toBe(true)
+      expect(axes.gavLigapoang).toBe(false)
+    })
+
+    it('avsked ger inga ligapoäng även i en annars vanlig ligamatch', () => {
+      const axes = deriveMatchTypeAxes(makeFixture({ farewellMatchForPlayerId: 'p-1' }), HOME, null)
+      expect(axes.gavLigapoang).toBe(false)
+    })
+  })
+})
+
+describe('deriveUtfall — U2 (SLUTTEST_KO.md, 2026-08-17), symptom 1', () => {
+  it('rak vinst/förlust/oavgjort ur homeScore/awayScore', () => {
+    expect(deriveUtfall(makeFixture({ homeScore: 3, awayScore: 1 }), HOME)).toBe('vunnet')
+    expect(deriveUtfall(makeFixture({ homeScore: 1, awayScore: 3 }), HOME)).toBe('forlorat')
+    expect(deriveUtfall(makeFixture({ homeScore: 2, awayScore: 2 }), HOME)).toBe('oavgjort')
+  })
+
+  it('straffseger: homeScore===awayScore men penaltyResult avgör — INTE oavgjort', () => {
+    const fixture = makeFixture({
+      homeScore: 2, awayScore: 2, wentToPenalties: true, penaltyResult: { home: 5, away: 4 },
+    })
+    expect(deriveUtfall(fixture, HOME)).toBe('vunnet')
+    expect(deriveUtfall(fixture, AWAY)).toBe('forlorat')
+  })
+
+  it('straffar, samma resultat, men managedClub är bortalaget', () => {
+    const fixture = makeFixture({
+      homeClubId: HOME, awayClubId: AWAY,
+      homeScore: 1, awayScore: 1, wentToPenalties: true, penaltyResult: { home: 3, away: 5 },
+    })
+    expect(deriveUtfall(fixture, AWAY)).toBe('vunnet')
+    expect(deriveUtfall(fixture, HOME)).toBe('forlorat')
+  })
+
+  it('förlängningsseger utan straffar', () => {
+    const fixture = makeFixture({ homeScore: 3, awayScore: 3, overtimeResult: 'away' })
+    expect(deriveUtfall(fixture, AWAY)).toBe('vunnet')
+    expect(deriveUtfall(fixture, HOME)).toBe('forlorat')
   })
 })
