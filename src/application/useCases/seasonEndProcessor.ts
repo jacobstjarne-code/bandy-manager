@@ -1,4 +1,4 @@
-import type { SaveGame, InboxItem, AllTimeRecords } from '../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem, AllTimeRecords, SeasonTransitionEvent } from '../../domain/entities/SaveGame'
 import { resolveContractExtension, getManagerDisplayName } from '../../domain/services/managerProfileService'
 
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
@@ -22,6 +22,7 @@ import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/aca
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
 import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
+import { applyBurnoutRecoveryAtTransition } from '../../domain/services/seasonTransitionService'
 import { updateLoyaltyScores } from '../../domain/services/characterPlayerService'
 import { processAITransfers } from '../../domain/services/aiTransferService'
 import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
@@ -471,6 +472,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Retirement check — delegated to shouldRetire() in playerDevelopmentService
   const retiredManagedPlayers: ReturnType<typeof generateRetirementData>[] = []
+  // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18): "Medan du var borta" — bara
+  // retired/contractExpired kan avgöras här (aged/promoted härleds separat
+  // nedan resp. skrivs redan av academyActions.ts). Bara managed club.
+  const seasonTransitionEvents: SeasonTransitionEvent[] = []
   for (const player of resetPlayers) {
     const retires = shouldRetire(player, retirementRand)
     if (retires) {
@@ -486,6 +491,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
           body: `${player.firstName} ${player.lastName} (${player.age} år) lägger skridskorna på hyllan. ${retData.totalGames > 0 ? `${retData.totalGames} matcher, ${retData.totalGoals} mål. ` : ''}${generateFarewellQuote(player)}`,
           isRead: false,
         } as InboxItem)
+        seasonTransitionEvents.push({ type: 'retired', playerId: player.id, playerLastName: player.lastName })
       }
     }
   }
@@ -686,6 +692,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         body: `${player.firstName} ${player.lastName}s kontrakt har löpt ut. Han lämnar som fri agent.`,
         isRead: false,
       } as InboxItem)
+      seasonTransitionEvents.push({ type: 'contractExpired', playerId: player.id, playerLastName: player.lastName })
     }
   }
 
@@ -1207,6 +1214,30 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // 5.1 Sommaren — "aged": den äldsta spelaren kvar i den hanterade truppen
+  // efter årets avhopp (retirement/kontraktsutgång redan filtrerade bort ur
+  // playersAfterLicense) — INTE varje spelares födelsedag, en enda
+  // representant för truppens veterannärvaro. Ingen kandidat om truppen
+  // (orimligt) skulle vara tom.
+  const agedCandidate = playersAfterLicense
+    .filter(p => p.clubId === game.managedClubId)
+    .reduce((oldest: typeof playersAfterLicense[number] | null, p) =>
+      !oldest || p.age > oldest.age ? p : oldest, null)
+  if (agedCandidate) {
+    seasonTransitionEvents.push({ type: 'aged', playerId: agedCandidate.id, playerLastName: agedCandidate.lastName, age: agedCandidate.age })
+  }
+
+  // 5.1 Sommaren — utbrändhetens återhämtning vid övergången (Jacobs DOM,
+  // 2026-08-18): hälften av avståndet ner till 30, aldrig under 30. Sker
+  // HÄR, inte vid säsongsslutets vanliga per-omgångsuppdatering (updateManagerBurnout,
+  // managerProfileService.ts) — en engångshändelse vid själva övergången.
+  if (updatedManagerProfile) {
+    updatedManagerProfile = {
+      ...updatedManagerProfile,
+      burnoutScore: applyBurnoutRecoveryAtTransition(updatedManagerProfile.burnoutScore),
+    }
+  }
+
   const updatedGame: SaveGame = {
     ...game,
     captainPlayerId: nextCaptainPlayerId,
@@ -1216,6 +1247,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     seasonCalendar: nextSeasonCalendar,
     clubs: clubsAfterLicense,
     players: playersAfterLicense,
+    // 5.1 Sommaren: ackumulerade akademiuppflyttningar under säsongen
+    // (academyActions.ts) + retired/contractExpired/aged från denna körning.
+    // Sommaren tömmer listan när den visas, inte denna funktion.
+    pendingSeasonTransitionEvents: [...(game.pendingSeasonTransitionEvents ?? []), ...seasonTransitionEvents],
     fixtures: newFixtures,
     league: newLeague,
     standings: calculateStandings(updatedClubs.map(c => c.id), []),

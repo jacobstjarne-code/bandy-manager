@@ -82,6 +82,25 @@ export interface YouthIntakeRecord {
   topProspectId?: string
 }
 
+/**
+ * 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — "Medan du var borta"-radernas
+ * källa. Fyra typer, ingen till: 'contractExpired' (kontraktet gick ut,
+ * spelaren blev fri agent), 'retired' (la av), 'aged' (den äldsta spelaren
+ * i truppen efter årets åldersuppdatering — inte varje spelares födelsedag),
+ * 'promoted' (akademiuppflyttning). retired/contractExpired/aged skrivs av
+ * seasonEndProcessor.ts vid säsongsslut (de kan bara hända då). promoted
+ * skrivs av academyActions.ts:s uppflyttningsaktion NÄR den händer (kan ske
+ * när som helst under säsongen, inte bara vid övergången) — därför ackumuleras
+ * listan under säsongen och töms av Sommarens CTA, inte av seasonEndProcessor.
+ */
+export interface SeasonTransitionEvent {
+  type: 'contractExpired' | 'retired' | 'aged' | 'promoted'
+  playerId: string
+  playerLastName: string
+  /** Bara satt för 'aged'. */
+  age?: number
+}
+
 export interface SaveGame {
   id: string
   managerName: string
@@ -547,4 +566,16 @@ export interface SaveGame {
     streakLength: number
     stateType: 'winning_streak' | 'losing_streak'
   }
+
+  // 5.1 Sommaren — se SeasonTransitionEvent-kommentaren ovan för skrivvägarna.
+  pendingSeasonTransitionEvents?: SeasonTransitionEvent[]
+  /**
+   * Återinträdesguard för Sommaren (Jacobs DOM, 2026-08-18): "skärmen är
+   * nåbar bara när säsongens mål ännu inte är valt (O3)." O3 (DOM_EGET_
+   * SASONGSMAL_2026-08-17.md) är specad men obyggd — det här fältet är
+   * VAD O3 SEN TAR ÖVER. När O3:s målväljare byggs ska den skriva till
+   * SAMMA fält (currentSeason), inte en egen "sedd"-flagga. Sommaren är
+   * passerad exakt när seasonGoalChosenForSeason === game.currentSeason.
+   */
+  seasonGoalChosenForSeason?: number
 }

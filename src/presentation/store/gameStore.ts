@@ -120,6 +120,7 @@ interface GameState {
   seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
   simulateRemainingStep: () => AdvanceResult | null
   clearRoundSummary: () => void
+  passSeasonTransition: () => void
   markScreenVisited: (screen: string) => void
   dismissBeat: (beatKey: string) => void
   markAnslagSeen: (key: import('../../domain/services/anslagService').AnslagKey) => void

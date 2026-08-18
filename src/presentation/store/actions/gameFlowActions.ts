@@ -335,6 +335,17 @@ export function gameFlowActions(get: Get, set: Set) {
 
     clearRoundSummary: () => set({ roundSummary: null }),
 
+    // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18): Jacobs DOM — återinträdesguard
+    // hänger på seasonGoalChosenForSeason (O3 tar över samma fält, se
+    // kommentaren på SaveGame.seasonGoalChosenForSeason). Töm den ackumulerade
+    // eventlistan här — inte i seasonEndProcessor.ts — för nästa säsongs
+    // "medan du var borta" ska börja tomt, inte ärva den här säsongens.
+    passSeasonTransition: () => {
+      const { game } = get()
+      if (!game) return
+      set({ game: { ...game, seasonGoalChosenForSeason: game.currentSeason, pendingSeasonTransitionEvents: [] } })
+    },
+
     resolveWeeklyDecision: (choice: 'A' | 'B') => {
       const { game } = get()
       if (!game || !game.pendingWeeklyDecision) return

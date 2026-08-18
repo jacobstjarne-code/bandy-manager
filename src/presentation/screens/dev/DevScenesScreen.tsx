@@ -25,6 +25,7 @@ import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
 import { GranskaScreen } from '../granska/GranskaScreen'
 import { TabellScreen } from '../TabellScreen'
 import { SeasonSummaryScreen } from '../SeasonSummaryScreen'
+import { SeasonTransitionScene } from '../scenes/SeasonTransitionScene'
 import { TransfersScreen } from '../TransfersScreen'
 import { ArrivalScene } from '../ArrivalScene'
 import { AnslagOverlay } from '../../components/anslag/AnslagOverlay'
@@ -86,6 +87,10 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // renderar en äkta BottomNav bredvid produktkomponenten (se render-blocket
   // för rotorsak). Detta ÄR SÄTT LAGET-fyndet (MatchLaddningBand, streak≥3).
   | 'navgate-laddning-band'
+  // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — CODE_INSTRUKTION_SOMMAREN_
+  // 2026-08-17.md:s fyra baseline-scener, via fabriken (samma mönster som
+  // season-a/b/c, inte en egen scen per override).
+  | 'sommaren-s2' | 'sommaren-titelforsvarare' | 'sommaren-tomt' | 'sommaren-siffra'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -147,6 +152,10 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'press-conference', label: 'PressConferenceScene — bespok scen' },
   { id: 'primary-smfinal-vs-deadline', label: 'Primary — SM-final(100) mot deadline(90)' },
   { id: 'primary-event-vs-farewell',   label: 'Primary — kritiskt event(95) mot avsked(82)' },
+  { id: 'sommaren-s2',              label: 'Sommaren — säsong 2, utvilad, tre händelser, slutspel rimligt' },
+  { id: 'sommaren-titelforsvarare', label: 'Sommaren — säsong 6, titelförsvarare, nära gränsen' },
+  { id: 'sommaren-tomt',            label: 'Sommaren — säsong 4, efter tapp, tomt-fallet, slutspel ej rimligt' },
+  { id: 'sommaren-siffra',          label: 'Sommaren — säsong 11 (siffervariant), något sliten, en händelse' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -714,6 +723,65 @@ const seasonGameA = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSum
 const seasonGameB = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumTopThree] })
 const seasonGameC = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumMidtable] })
 
+// 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — CODE_INSTRUKTION_SOMMAREN_2026-08-17.
+// md:s fyra baseline-scener, via fabriken (behövs en override är det en override,
+// inte en egen scen — samma princip som season-a/b/c ovan).
+const SOMMAREN_CLUBS = [...devClubs, ...Array.from({ length: 10 }, (_, i) => ({ ...devClubs[1], id: `club-filler-${i}`, name: `Fyllnadsklubb ${i}` }))]
+const sommarenCupFixture = {
+  id: 'fx-sommaren-cup', leagueId: 'liga-dev', season: 9, roundNumber: 2, matchday: 1,
+  homeClubId: HOME_ID, awayClubId: AWAY_ID, status: 'scheduled' as const,
+  isCup: true, events: [],
+}
+function makeSommarenGame(extra: Record<string, unknown>): SaveGame {
+  return makeGame([sommarenCupFixture], {
+    clubs: SOMMAREN_CLUBS,
+    boardObjectives: [
+      { id: 'obj-1', type: 'sporting', label: 'Nå slutspel', description: 'Slutspel', ownerId: 'O. Ström', ownerPersonality: 'traditionalist', targetValue: 8, currentValue: 3, measureFn: 'position', status: 'active', assignedSeason: 9, successReward: '', failureConsequence: '', carryOver: false },
+      { id: 'obj-2', type: 'economic', label: 'Balansera budgeten', description: 'Ekonomi', ownerId: 'B. Lund', ownerPersonality: 'ekonom', targetValue: 0, currentValue: 120000, measureFn: 'finances', status: 'active', assignedSeason: 9, successReward: '', failureConsequence: '', carryOver: false },
+    ],
+    ...extra,
+  } as never)
+}
+function transitionEvents(...types: Array<'retired' | 'aged' | 'promoted'>): import('../../../domain/entities/SaveGame').SeasonTransitionEvent[] {
+  const names: Record<string, string> = { retired: 'Berglund', aged: 'Åberg', promoted: 'Nilsson' }
+  return types.map(type => ({ type, playerId: `p-${type}`, playerLastName: names[type], ...(type === 'aged' && { age: 34 }) }))
+}
+// Säsong 2, utvilad, tre händelser, slutspel rimligt.
+const sommarenS2Game = makeSommarenGame({
+  trainerArc: { current: 'newcomer', history: [], seasonCount: 2, bestFinish: 3, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 2 },
+  seasonSummaries: [makeSeasonSummary({ finalPosition: 3, playoffResult: 'quarterfinal' })],
+  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 15 },
+  pendingSeasonTransitionEvents: transitionEvents('retired', 'aged', 'promoted'),
+})
+// Säsong 6, titelförsvarare, nära gränsen, tre händelser.
+const sommarenTitelforsvarareGame = makeSommarenGame({
+  trainerArc: { current: 'grind', history: [], seasonCount: 6, bestFinish: 1, titlesWon: 1, consecutiveLosses: 0, consecutiveWins: 4 },
+  seasonSummaries: [
+    makeSeasonSummary({ finalPosition: 4, playoffResult: 'semifinal' }),
+    makeSeasonSummary({ finalPosition: 1, playoffResult: 'champion' }),
+  ],
+  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 78 },
+  pendingSeasonTransitionEvents: transitionEvents('retired', 'aged', 'promoted'),
+})
+// Säsong 4, efter tapp, tomt-fallet, slutspel INTE rimligt (avoidBottom + didNotQualify).
+const sommarenTomtGame = makeSommarenGame({
+  clubs: SOMMAREN_CLUBS.map(c => c.id === HOME_ID ? { ...c, boardExpectation: 'avoidBottom' } : c),
+  trainerArc: { current: 'questioned', history: [], seasonCount: 4, bestFinish: 5, titlesWon: 0, consecutiveLosses: 3, consecutiveWins: 0 },
+  seasonSummaries: [
+    makeSeasonSummary({ finalPosition: 4, playoffResult: 'quarterfinal' }),
+    makeSeasonSummary({ finalPosition: 9, playoffResult: 'didNotQualify' }),
+  ],
+  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 55 },
+  pendingSeasonTransitionEvents: [],
+})
+// Säsong 11 (siffervarianten), något sliten, en händelse.
+const sommarenSiffraGame = makeSommarenGame({
+  trainerArc: { current: 'grind', history: [], seasonCount: 11, bestFinish: 2, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 1 },
+  seasonSummaries: [makeSeasonSummary({ finalPosition: 5, playoffResult: 'quarterfinal' })],
+  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 50 },
+  pendingSeasonTransitionEvents: transitionEvents('retired'),
+})
+
 const granskaRoundSummary = {
   round: 20, date: '2026-02-01', matchPlayed: true,
   communityStandingBefore: 54, communityStandingAfter: 58, communityStandingChanges: [],
@@ -902,6 +970,10 @@ export function DevScenesScreen() {
       : scene === 'season-header' ? seasonHeaderGame
       : scene === 'season-noplayoffs' ? seasonNoPlayoffsGame
       : scene === 'season-fired' ? seasonFiredGame
+      : scene === 'sommaren-s2' ? sommarenS2Game
+      : scene === 'sommaren-titelforsvarare' ? sommarenTitelforsvarareGame
+      : scene === 'sommaren-tomt' ? sommarenTomtGame
+      : scene === 'sommaren-siffra' ? sommarenSiffraGame
       : scene === 'transfers-closed' ? transfersClosedGame
       : scene === 'transfers-open-nobids' ? transfersOpenNoBidsGame
       : scene === 'transfers-onebid' ? transfersOneBidGame
@@ -1090,6 +1162,11 @@ export function DevScenesScreen() {
         {(scene === 'season-header' || scene === 'season-noplayoffs' || scene === 'season-fired') && seasonReady && (
           <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
             <SeasonSummaryScreen />
+          </div>
+        )}
+        {(scene === 'sommaren-s2' || scene === 'sommaren-titelforsvarare' || scene === 'sommaren-tomt' || scene === 'sommaren-siffra') && (
+          <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
+            <SeasonTransitionScene />
           </div>
         )}
         {(scene === 'transfers-closed' || scene === 'transfers-open-nobids' || scene === 'transfers-onebid' || scene === 'transfers-multibids') && (

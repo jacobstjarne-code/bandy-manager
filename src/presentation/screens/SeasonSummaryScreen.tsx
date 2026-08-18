@@ -179,7 +179,12 @@ export function SeasonSummaryScreen() {
     if (game.managerFired) {
       navigate('/game/game-over', { replace: true })
     } else {
-      navigate('/game/dashboard', { replace: true })
+      // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18): efter årsbokens "Starta
+      // säsong"-knapp, före portalen. handleNextSeason nås bara efter att en
+      // säsong redan avslutats (seasonEndProcessor har redan höjt
+      // currentSeason), så "från säsong 2 och framåt" gäller strukturellt
+      // varje gång den här grenen körs — inget separat säsongsvillkor behövs.
+      navigate('/game/season-transition', { replace: true })
     }
   }
 

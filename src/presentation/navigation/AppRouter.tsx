@@ -30,6 +30,7 @@ import { ClubScreen } from '../screens/ClubScreen'
 import { TabellScreen } from '../screens/TabellScreen'
 import { ChampionScreen } from '../screens/ChampionScreen'
 import { SeasonSummaryScreen } from '../screens/SeasonSummaryScreen'
+import { SeasonTransitionScene } from '../screens/scenes/SeasonTransitionScene'
 import { InboxScreen } from '../screens/InboxScreen'
 
 import { GameOverScreen } from '../screens/GameOverScreen'
@@ -141,6 +142,7 @@ export function AppRouter() {
           <Route path="champion" element={<ChampionScreen />} />
           <Route path="season-summary" element={<SeasonSummaryScreen />} />
           <Route path="season-summary/:season" element={<SeasonSummaryScreen />} />
+          <Route path="season-transition" element={<SeasonTransitionScene />} />
           <Route path="inbox" element={<InboxScreen />} />
 
           <Route path="history" element={<HistoryScreen />} />

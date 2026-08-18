@@ -270,6 +270,15 @@ export function academyActions(get: Get, set: Set) {
         isRead: false,
       }
 
+      // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18): promotion kan hända när som
+      // helst under säsongen (spelarinitierad, till skillnad från retired/
+      // aged/contractExpired som bara kan hända vid säsongsslut) — skriv
+      // därför direkt hit, inte i seasonEndProcessor.ts. Sommaren läser och
+      // tömmer listan när övergången väl visas.
+      const transitionEvent: import('../../../domain/entities/SaveGame').SeasonTransitionEvent = {
+        type: 'promoted', playerId: newPlayer.id, playerLastName: newPlayer.lastName,
+      }
+
       set({
         game: {
           ...game,
@@ -277,6 +286,7 @@ export function academyActions(get: Get, set: Set) {
           clubs: updatedClubs,
           youthTeam: updatedYouthTeam,
           inbox: [inboxItem, ...game.inbox],
+          pendingSeasonTransitionEvents: [...(game.pendingSeasonTransitionEvents ?? []), transitionEvent],
         }
       })
       return { success: true, timing }

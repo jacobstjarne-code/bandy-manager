@@ -75,6 +75,7 @@ export function GameShell() {
     '/game/half-time-summary',
     '/game/champion',
     '/game/season-summary',
+    '/game/season-transition',
     '/game/game-over',
   ])
   const hideBottomNav = sceneActive ||
