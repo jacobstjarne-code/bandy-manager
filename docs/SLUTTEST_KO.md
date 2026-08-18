@@ -325,7 +325,7 @@ Utbrändhetens golv på 30 är det enda som gör burnout till något annat än e
 En komponent, tre innehåll (cupfinal / SM-final / avsked), efter resultatblocket, före Turneringsläge och statistik. En rad i `granskaSectionRegistry` — **ingen egen gren.**
 Kommentarblocket på `GranskaOversikt.tsx:375-387` dokumenterar varför: en tidig `return` för avsked rev sex event-drivna sektioner som inte fanns i matrisen. Avsked är innehåll överst, aldrig en gren som river sektioner.
 Copy låst i chatten 2026-08-17 (sex varianter plus avskedsraden i två former).
-**Status:** `EJ`
+**Status:** `KLAR (fc6f5015, redan byggt — status ej synkad förrän nu, 2026-08-18)` — samma commit Å6 redan pekade mot. `kapitelPunktService.ts`: fyra fasta varianter (sm_guld/cup_vunnen/sm_final_forlorad/cupfinal_forlorad) + avsked i två former (under/över 10 mål) = de "sex varianterna". `deriveKapitelPunktKind` slår ihop match-utfall OCH avsked till EN `kind`, `GranskaOversikt.tsx:397-418` läser `granskaSectionRegistry`s `visasFor('kapitelPunkt',...)`-rad — ingen egen gren, exakt placering efter resultatblocket. 11 test gröna. Browser-verifierat: tre dev-scener (granska-sm-final/granska-avsked/granska-cup-final) renderar rätt låst text
 
 ### 5.3 · Turneringsläge mitt i serie
 `deriveTurneringslageMode` returnerar `null` under en pågående serie, så en semifinal där klubben står 1–0 visar ingenting alls.
