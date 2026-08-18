@@ -201,6 +201,24 @@ Portalens befintliga minimal-familj, samma mönster som `EconomyMinimal`. **Kval
 **Godkänd när:** en spelare som närmar sig tröskeln ser minst två steg av eskalerande varning, med orsak.
 **Status:** `DELVIS KLAR (165b280c, b5c1c9e3)` — `patron.patience` → `patron.goodwill` (165b280c, alla 7 läs-/skrivställen + testfixturer). `BoardPatienceMinimal` byggt och registrerat i `initCardBag.ts` (`b5c1c9e3`) — kvalitativa zoner Stabilt/Under press/Ultimatum, trösklar (30/50) återanvända 1:1 från `board_failure`-beatens redan kalibrerade severity-gränser (`portalBeats.ts:141-160`), inte nya siffror. `alwaysTrue`-trigger (inte bara-vid-problem) medvetet: utan en synlig Stabilt-baslinje går eskalering inte att läsa. **Godkänd-när-kravet delvis uppfyllt:** zonordet (steg 1→2→3) syns nu alltid, men "med orsak" kräver en reason-textrad i tiln som SVENSK TEXT-regeln (CLAUDE.md) förbjuder Code att författa — den fulla textmotiveringen kommer fortfarande bara från `board_failure`-beaten när den vinner rotationen mot andra beats, inte garanterat. **Sidofynd, ej åtgärdat:** `Mecenat.ts` har ett tredje fält som också heter `patience` (`mecenatService.ts:228`) — samma kollisionsrisk mot `boardPatience`, inte del av den uttryckliga instruktionen. Ej browser-verifierat, samma skäl som 3.1.
 
+**TEXT LÅST AV OPUS 2026-08-17 — "med orsak"-kravet:**
+
+| Zon | Rad | Vad som följer |
+|---|---|---|
+| Stabilt | **Styrelsen har inget att invända.** | ingen orsaksrad |
+| Under press | **Styrelsen är orolig.** | + en orsaksrad |
+| Ultimatum | **Styrelsen har tappat tålamodet.** | + orsaksrad + väg tillbaka |
+
+**Orsaksrader** — välj den som faktiskt driver värdet nedåt, en åt gången, i den här prioritetsordningen:
+1. Tabellplacering under kravet: *Ni ligger under det de begärde.*
+2. Ekonomi: *Kassan går åt fel håll.*
+3. Upprepning — andra året i rad utan uppfyllt mål: *Andra året i rad utan det de bad om.*
+4. Klack eller publik: *Det syns på läktaren, och de ser det.*
+
+**Väg tillbaka** (endast Ultimatum) — det ouppfyllda styrelsemålet, sagt rakt: *Det som återstår: {mål}.*
+
+Därmed är kravet "minst två steg av eskalerande varning, med orsak" uppfyllbart utan att hänga på att `board_failure`-beaten vinner rotationen. **Tredje `patience`-fältet: döp om i samma commit.**
+
 ### 3.3 · Post-firing-kontraktet — RAPPORT
 `GameOverScreen.tsx:37-39` navigerar till `/` utan att rensa save, så huvudmenyn visar FORTSÄTT. Två kontrakt möjliga:
 
@@ -234,6 +252,25 @@ Väsentligt större, av ett strukturellt skäl: `createNewGame()` (`createNewGam
 
 ---
 
+**DOM 2026-08-17 — KONTRAKT A. Bygg det.**
+
+Tre saker i rapporten avgör, och de är alla nya för mig:
+
+**`newGame()` raderar redan alla saves ovillkorat** innan den skapar den nya karriären. En sparkad karriär tystas alltså ihäl utan spår i dag — problemet är inte att rensning saknas, det är att **arkivering saknas före en rensning som redan sker.**
+
+**Arkivera lätt, inte tungt.** En separat arkivpost med `seasonSummaries`, klubbidentitet och slutstatistik — inte hela `SaveGame` med trupp och fixtures. Codes eget belagda skäl räcker: `gameStore.ts:169`s kommentar visar att lagringskvoten redan varit ett verkligt problem i projektet. "Spara alla fulla saves för alltid" är en framtida buggrapport.
+
+**`HistoryScreen` tar emot ett snapshot som prop.** Den läser live store-state i dag och kan därmed inte visa en död karriär. Det är ändringen som gör "erbjud Historik" möjlig — och samma ändring behövs ändå för `U7`s backupflöde.
+
+**Två vägar från Game Over**, inte en: **Se karriären** och **Ny karriär**. Den första visar arkivet, den andra rensar och startar om. Sekvensen "visa → rensa → navigera" bakom en knapp döljer att något kastas.
+
+**Kontrakt B byggs inte.** Skillnaden är större än `O13` antog: `createNewGame` genererar alltid en ny värld, så job market kräver en helt annan operation — behåll ligan, byt `managedClubId`, återställ det klubbspecifika. Det är inte en påbyggnad på A. `O13` uppdaterad med det.
+
+**Godkänd när:** efter avsked finns ingen väg till `/game`, huvudmenyn visar inte FORTSÄTT, och den avslutade karriären är läsbar.
+**Status:** `DOM GIVEN — BYGG`
+
+---
+
 # ETAPP 4 — två källor som glidit isär
 
 Samma klass genomgående: `RoundSummaryScreen` mot `GranskaScreen`, `respondToIncomingBid` mot `resolveEvent`, `isNeutralVenue` som proxy för final. Två vägar till samma sanning, och de glider.
@@ -254,7 +291,7 @@ Samma klass genomgående: `RoundSummaryScreen` mot `GranskaScreen`, `respondToIn
 | 4.12 | Delningsbilden kapas i produktion | `seasonShareImage.ts` — fast canvas 1080×1350, handrullad y-pekare (`:18-185`), tre spelarblock efter målsektionen (`:155-178`), fot alltid på `H-60`. Regionsbaserad layout, reservera fot först, **hård assertion att inget ritas efter `H - footerHeight`**. Bildsnapshots för värsta datakombination och långa svenska namn | `EJ` |
 | 4.13 | `shareSeasonImage` returnerar `void` och sväljer alla fel (`:215-244`) | Returnera `shared`/`downloaded`/`cancelled`/`failed`. `AbortError` = cancel **utan** nedladdning — i dag laddas filen ner efter avbrott. Web Share saknar `text` och `url` | `EJ` |
 | 4.14 | "Spara som bild" under Säsongens match producerar säsongskortet | Generiska `handleShare`; `matchHighlightService:88-99` sätter `shareImageReady: false` permanent. Byt texten till "Dela säsongen" tills matchartefakten finns — en knapp som lovar en artefakt den inte kan leverera är 2.5 igen | `EJ` |
-| 4.15 | **Svårighetsbadgen ljuger tills U1 är byggd.** `offerSelectionService` sätter LÄTT/MEDEL/SVÅR enbart på renommé, och Skutskär (SVÅR) gick inte att misslyckas med ens under avsiktlig tankning. **Tillfällig åtgärd, byggs nu:** ersätt etiketten med vad som faktiskt är sant — en sammansatt klubbprofil eller "lägre förväntningar" / "begränsade resurser". En falsk SVÅR-badge är sämre än ingen badge, och klubbvalsskärmen är den första yta varje ny spelare ser. Text från Opus | `EJ` |
+| 4.15 | **Svårighetsbadgen ljuger tills U1 är byggd.** Text låst av Opus 2026-08-17: byt `LÄTT/MEDEL/SVÅR` mot vad som faktiskt härleds — **`HÖGA FÖRVÄNTNINGAR` / `RIMLIGA FÖRVÄNTNINGAR` / `LÅGA FÖRVÄNTNINGAR`**, samma tre renommétrösklar som i dag. Undertexten på klubbkortet: hög → *"Styrelsen räknar med topplacering."*, rimlig → *"Styrelsen väntar sig en säsong utan kris."*, låg → *"Styrelsen väntar sig inte mirakel. Resurserna är små."* — En falsk SVÅR-badge är sämre än ingen badge, och klubbvalet är den första yta varje ny spelare ser. Återinförs som verklig svårighetsgrad när `U1` är byggd | `EJ` |
 
 **Godkänd när etappen är klar:** ingen renderad produkttext innehåller `{...}` eller råa nycklar, och samma fråga ställd till två ytor får samma svar (placering, motståndare, arena, kondition, pengar).
 
@@ -408,13 +445,27 @@ Tre oberoende testare pekade ut samma sak: varslet var det bästa i spelet. Det 
 
 **Görs nu, kräver ingen ny mekanik — Code-rapport:** klassificera alla befintliga händelser mot mallens fem punkter. Hur många uppfyller fem, fyra, tre? Det talet är utgångsläget.
 
+**Code-rapport levererad:** `docs/DOM_VARSLET_KLASSIFICERING_2026-08-17.md` — 101 bedömda val, genomsökt över 14 filer (`eventFactories.ts`, `communityActivitiesEvents.ts`, `patronEvents.ts`, `mecenatService.ts`, `politicianEvents.ts`, `sponsorEvents.ts`, `supporterEvents.ts`, `economicCrisisService.ts`, `arcService.ts`, `hallProcessService.ts`, `weeklyDecisionService.ts`, `postAdvanceEvents.ts` inline, `characterPlayerService.ts`, `bandyLetterService.ts`, `schoolAssignmentService.ts`, `mecenatDinnerService.ts`).
+
+**Utgångsläget:** 9/5 (systemhändelse), 10 st 4/5, 17 st 3/5, 27 st 2/5, 31 st 1/5, 7 st 0/5. 64 % landar på 2/5 eller lägre.
+
+**Nio dolda 5/5-kandidater redan i kodbasen, ingen tidigare märkt som systemhändelse:** `bidReceivedEvent`, `generateMecenatInterventionEvent` (båda eventFactories.ts), `offer_tribute` (mecenatService.ts), `sell_star` (economicCrisisService.ts), `away_trip_bus`, `tifo_contribution`, `legacy_naming_arena` (alla tre weeklyDecisionService.ts), `detOmojligaValet` (postAdvanceEvents.ts) — utöver varslet självt. De är utspridda över åtta filer, triggas oberoende av varandra och delar ingen gemensam cooldown-pool, vilket betyder att flera strukturellt kan träffa samma säsong trots riktmärket 2–3/säsong.
+
+**Tre nya "påhittad effekt"-buggar hittade under sweepet** (utanför O1:s egentliga uppdrag, tillagda i choice-label-svepets öppna lista): alla i `mecenatService.ts` (träningsdags-, transferbudget- och projektfinansierings-rader utan motsvarande kod). `hallProcessService.ts`s `kommunens_villkor`-bugg (identiskt val oavsett svar) dök upp igen i sweepet men var redan känd och dokumenterad sedan tidigare — ingen ny information.
+
 **Godkänd när:** en spelare som spelat två säsonger kan namnge ett beslut som gjorde ont och beskriva vad det kostade, utan att öppna en meny.
 
 ### O2 · Dominansrevisionen
-Vanliga sponsoroffer ger pengar utan motkostnad; avslag ger "inga effekter". Då är "acceptera" inte ett beslut utan en kvitteringsknapp.
-Regel att formulera: ett viktigt val ska förändra minst två system och kunna skapa en mening spelaren minns. Sponsorer behöver motvikt — synlighet, kategoriexklusivitet, lokal legitimitet, kontraktslängd, risk.
-Mäts av U9:s val-entropi.
-**Status:** `EJ SKRIVEN`
+**Status:** `SKRIVEN` — `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md`, ihop med O12.
+
+Två regler: (1) ett val kräver två system och inget alternativ som är svagare på varje dimension — annars är det ambient, inte ett kort. (2) Före valet visas riktning, vem som berörs och exakta **pengar**; efter valet visas allt. Pengar är den enda resurs där exakthet inte förstör valet.
+
+Sponsorerna först — vanligast och tommast. Motvikter som redan finns i världen: synlighet, kategoriexklusivitet, `communityStanding`, kontraktslängd, risk.
+
+**Rapportera-först:** hur många val har ett strikt dominant alternativ? Går siffran att härleda ur `2.5`-svepets material eller krävs eget pass?
+
+**Beroenden:** `D1` (ambient-nivån att degradera till), `U9` (val-entropin mäter domen), `O5` (en kostnad i kronor är bara ett val om kronor är knappa).
+**Godkänd när:** inget alternativ väljs av mer än 80 % i val-entropin.
 
 ### O3 · Spelarens eget säsongsmål
 Efter årsboken ska spelaren formulera eller välja ett personligt mål: etablera oss i slutspelet, ge en akademispelare tio matcher, slå rivalen, bygga träningshallen, göra en veteran till klubbikon.
@@ -422,9 +473,17 @@ Efter årsboken ska spelaren formulera eller välja ett personligt mål: etabler
 **Status:** `EJ SKRIVEN`
 
 ### O4 · Burnout: spelbar eller nedtonad
-Fyra auditer säger samma sak. Texten säger att tränaren behöver vila "på riktigt"; det finns ingen väg att lätta schemat, delegera eller ta ledigt. Efter många omgångar blev signalen bakgrundsbrus.
-Antingen handlingar med verkliga priser (delegera pressen, sänk träningsintensitet, be styrelsen om stöd), eller uttryckligen atmosfärisk och mindre alarmerande. **Att låta ytan antyda något mekaniken inte bär är det enda otillåtna.**
-**Status:** `EJ SKRIVEN`
+**Status:** `SKRIVEN` — `DOM_BURNOUT_2026-08-17.md`. **Domen: spelbar.**
+
+Effekten är **informationskvalitet**, inte prestation: hög burnout gör att assistentens rekommendation uteblir, motståndaranalysen blir grövre, spelarbetygen fördröjs. En utmattad manager ser sämre — laget spelar inte plötsligt sämre. Det senare vore ett dolt straff, samma sak jag avvisade om rivalernas catch-up-budget.
+
+Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelationen, svaret blir assistentens), sänk träningsintensiteten (utvecklingen bromsar), be styrelsen om andrum (`boardPatience` faller — den enda som kan kosta jobbet). All text låst i domen.
+
+**Byggs oberoende av `O5` och `U1`** — burnout är en egen valuta och kräver inte att kronor är knappa. Kräver `D1` för viktningen.
+
+**Rapportera-först:** var konsumeras assistentens taktikrekommendation och motståndaranalysens detaljnivå? Går de att gradera eller är de binära?
+
+**Godkänd när:** en spelare kan säga vad burnout kostade och vad hen gjorde åt det.
 
 ### O5 · Framgångsekonomin — PAUSAD
 `DOM_FRAMGANGSEKONOMIN_2026-08-17.md`. Tre krafter i ordning: löneinflation med rykte, driftskostnad för byggt, styrelsens investeringskrav. Rivalernas catch-up-budget avvisad — dolt mottryck spelaren inte kan se.
@@ -440,8 +499,8 @@ Antingen handlingar med verkliga priser (delegera pressen, sänk träningsintens
 | O8 | Text: Turneringsläge mitt i serie (efter 5.3), fast-lägets prosapooler, Sommarens saknade händelsetyper | `VÄNTAR` |
 | O9 | Delningskortets berättelseläge. "6:e, 21 poäng" ser mediokert ut för en utomstående; det var en svår klubb som gick från nia till kvartsfinal. Huvudbudskapet ska vara förtjänad kontrast plus svarsinbjudan. Tre artefakter att namnge: Årets berättelse, Årets match, Karriären hittills | `EJ SKRIVEN` |
 | O10 | Best-in-class-strategin beslutad som ambition. Bandyarkivet, spelbara vägskäl, Bruksligor, utmaningslänkar, skaparekosystem byggs **inte** nu — men strategins Fas 0 är samma sanningslager som K1–K5. Ordningen håller | `BESLUTAD, EJ PÅBÖRJAD` |
-| O11 | **Innehållskontraktet.** Ingen ny berättelsetext wiras utan deklarerad trigger, faktisk state-effekt, berörda system, livslängd, `semanticKey` + cooldown, och var utfallet återkallas. Färdig text utan yta bevaras men wiras inte. Detta är regeln som hindrar nästa "Ge honom vila" | `EJ SKRIVEN` |
-| O12 | Förhandsdeltan i val: `+8` mot `+2` synligt före valet gör rollspel irrationellt — GPT valde det semantiskt rätta svaret och fick ett synligt mekaniskt straff. Visa riktning, risk och vem som berörs före; exakt utfall efter. Hör ihop med O2 | `EJ SKRIVEN` |
+| O11 | **Innehållskontraktet** — `DOM_INNEHALLSKONTRAKTET_2026-08-17.md`. Sex obligatoriska fält: trigger, state-effekt, berörda system/personer, livslängd, `semanticKey`+cooldown, återkallningsyta. **Gäller från nu**, också för ändringar av befintlig text. Rapportera-först: finns ett register att hänga tabellen på, eller måste det skapas? I så fall samma arbete som `U5` — gör dem ihop | `SKRIVEN` |
+| O12 | Förhandsdeltan — se `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md`, skriven ihop med O2 | `SKRIVEN` |
 | O13 | Jobbmarknad efter avsked — framgångsauditens rekommendation ovanpå 3.3. **Inte beslutad.** 3.3:s rena karriärslut är minimikravet | `EJ BESLUTAD` |
 | O14 | Monetisering och paketering — framgångsauditens modell är en **hypotes**, inte en dom. Ska inte driva något bygge | `HYPOTES` |
 | O15 | **Taktikens två lägen.** Åtta dimensioner är värdefulla för nördar men ska inte vara åtta lika stora veckouppgifter. Standardläge: assistentens två rekommendationer, **vad som skiljer planen från förra matchen**, och "följ rådet". Avancerat läge: alla åtta, större träffytor, historik över vad spelaren faktiskt ändrat. Var M-01 i tvåsäsongsauditen och återkom i framgångsauditen — hör ihop med D1 och Å2 | `EJ SKRIVEN` |

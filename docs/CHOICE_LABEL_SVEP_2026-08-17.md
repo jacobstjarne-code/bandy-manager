@@ -84,6 +84,11 @@ De nio konkreta fynden nedan (utöver de fem redan lösta) är redan itemiserade
 - **`communityActivitiesEvents.ts:333-337`** — `community_anlaggning` → `renovate`. Label säger "−25 000 kr" + "+15 faciliteter", effekten är bara `reputation +5` — inga pengar dras, ingen facilitetseffekt finns.
 - **`communityActivitiesEvents.ts:221-225`** — `community_ismaskin` → `repair`. Samma mönster: "−15 000 kr" i texten, `tempFacilities`-effekten rör aldrig ekonomin.
 - **`roundProcessor.ts:985-1016`** (adjacent, en nivå nedströms valet) — `riskySponsorOffer`s exponeringshändelse lovar i sin inbox-text att sponsorn försvinner + pengar återkrävs. Koden har bara en kommentar (`// handled in SaveGame assembly below`) — ingen sådan kod finns.
+- **`mecenatService.ts:340`** — `generateSocialEvent` → `accept`. Subtitle lovar "⏰ truppen missar en träningsdag" — effekten är enbart `mecenatHappiness +15`, ingen träningsdagsmekanik (fitness/utveckling/schemapåverkan) existerar i resolvern för det här valet.
+- **`mecenatService.ts:408`** — `silentShout`-grenen → valet med subtitle "💰 mecenat bidrar". Effekten rör bara `mecenatHappiness`/`silentShout`-fält, aldrig ekonomin (`grep` bekräftar inget `finance`/`income`-fält i denna gren).
+- **`mecenatService.ts:548`** — `generateMecenatAllianceEvent`. Subtitle "💰 projekt finansieras · 🤝 +10 båda" — effekten sätter bara `mecenatHappiness`-fält för båda mecenaterna, ingen facilitets-/projektfinansieringseffekt existerar (samma mönster som `community_anlaggning`/`community_ismaskin` ovan, men i mecenat-filen).
+
+**Cross-referens (redan itemiserat ovan, inte ett nytt fynd):** `kommunens_villkor`s identiska-val-bugg (`hallProcessService.ts:342-360`) upptäcktes oberoende igen under O1-klassificeringssvepet (`docs/DOM_VARSLET_KLASSIFICERING_2026-08-17.md`) — samma fynd som redan står i "kommunens_villkor — rapport, inget byggt" ovan, ingen ny information.
 
 ### Sticker ut — passar inte (a)/(b)/(c), egen bedömning krävs
 
