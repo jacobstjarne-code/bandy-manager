@@ -56,3 +56,21 @@ Tvåvägsspegel mellan **designsystem** (detta projekt) och **codebasen** (`band
 ## Sync-logg
 
 - **2026-05-16** — R3 Endgame Portal + R3+ Klimax-eskalering levererade från Claude.ai-design-projektet. Två mockar + två handoffs ska placeras enligt etiketterna i nedladdningsuppmaningarna.
+
+- **2026-08-18 (Code → Design) — IllustrationScene/IllustrationPlaceholder: hela anropslistan, verifierad mot koden.** Bakgrund: GPT rapporterade "illustration på väg" synligt i produktion på cupens matchladdning. Diagnos visade att `docs/incoming/Illustrationer-stilbibel-2026-08-18.dc.html`s "beställningsbriefer"-katalog (sju briefar: Derbyt/Sommaren/Nyårsbandy/Vårsol/Kafferummet/Nedflyttning + bruksort-headern) inte matchade kodens faktiska anrop — den var en önskelista, inte en katalog över vad som faktiskt renderas. Kanon-katalogen ska styras av anropslistan nedan, inte tvärtom.
+
+  **Fullständig anropslista** (grep-bekräftat, `IllustrationScene`/`IllustrationPlaceholder`, hela `src/`):
+
+  | Kod-namn | Anropsställe | Bild? |
+  |---|---|---|
+  | `intro` | `ArrivalScene.tsx:88`, `TilltradeScreen.tsx:143,233` (tillträdesflödet) | ✅ `intro.jpg` |
+  | `final` | `PortalScreen.tsx:333` (SM-finalhelg header), `MatchLaddningScene.tsx` via `OCCASION_ASSET.final` | ✅ `final.jpg` |
+  | `annandagen` | `AnslagOverlay.tsx` (`league_midwinter`-anslag), `MatchLaddningScene.tsx` via `OCCASION_ASSET.annandagen` | ✅ `annandagen.jpg` |
+  | `cup` | `MatchLaddningScene.tsx` (`LaddningOccasion`, cupmatchernas laddningsscen) | ❌ inte i `OCCASION_ASSET`, aldrig beställd |
+  | `premiar` | `MatchLaddningScene.tsx` (`LaddningOccasion`, säsongens första ligamatch) | ❌ inte i `OCCASION_ASSET`, aldrig beställd |
+  | `derby` | `MatchLaddningScene.tsx` (`LaddningOccasion`) | ❌ kod-kommentar: "ordered, placeholder until dropped" |
+  | `nyar` | `MatchLaddningScene.tsx` (`LaddningOccasion`) | ❌ kod-kommentar: "ordered, placeholder until dropped" |
+
+  **Prioritetsbedömning (Jacob):** `cup` går före `derby`/`nyar` i beställningskön (redan "ordered") eftersom cupmatcher spelas flera gånger per säsong (fyra rundor) — det är där platshållartexten faktiskt syns oftast, mer än på en engångshändelse som Nyårsbandy.
+
+  **Åtgärdat i denna sync:** `cup`- och `premiar`-briefar tillagda i stilbibelns katalog (PRIO 2 resp. ordinarie), med kod-namn explicit angivet i varje briefs ref-tagg så framtida drift mellan katalog och kod syns direkt. De sju ursprungliga briefarna (Derbyt/Sommaren/Nyårsbandy/Vårsol/Kafferummet/Nedflyttning) rör vyer som antingen redan har ett kod-namn (`derby`) eller ännu inte har något anropsställe i koden alls — **oförändrade, inte verifierade i denna sync**, flagga separat om de ska prioriteras.

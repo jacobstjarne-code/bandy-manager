@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+<script src="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/_ds_bundle.js"></script>
+<style>
+  html,body{margin:0;padding:0;background:var(--bg);}
+  *{box-sizing:border-box;}
+  a{color:var(--accent-deep);}
+  code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.84em;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent-deep);padding:1px 5px;border-radius:4px;}
+  .lbl{font-family:system-ui,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+  .cs{background:var(--bg-surface);border:1px solid var(--border);border-radius:9px;}
+  .swatch{height:34px;border-radius:6px;border:1px solid rgba(0,0,0,.12);}
+  .brief{background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .brief-h{background:var(--bg-dark);color:var(--text-light);padding:11px 15px;display:flex;align-items:center;gap:9px;}
+  .prompt{background:#1a1712;color:#e8e2d5;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11.5px;line-height:1.6;padding:12px 14px;border-radius:7px;white-space:pre-wrap;}
+  .ref{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent-deep);}
+</style>
+</helmet>
+<div style="min-height:100vh;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text-primary);padding:0 16px 90px;">
+
+  <!-- MASTHEAD -->
+  <header style="max-width:900px;margin:22px auto 0;background:var(--bg-dark);border-bottom:3px solid var(--accent);border-radius:10px 10px 0 0;padding:32px 38px 26px;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(92deg,rgba(255,255,255,.015) 0 2px,transparent 2px 7px);"></div>
+    <div style="position:relative;">
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);font-weight:600;">Illustrationer · stil-bibel + beställningsbriefer</div>
+      <h1 style="font-family:Georgia,serif;font-weight:800;color:var(--text-light);font-size:33px;line-height:1.05;margin:11px 0 8px;letter-spacing:-.5px;">Erik-stilen, låst — och redo att beställa</h1>
+      <p style="color:var(--text-light-secondary);font-size:13.5px;line-height:1.55;max-width:640px;margin:9px 0 0;">Läst ur Eriks tre (intro, final, annandagen). En sida stil-lås + korta, referensfästa promptar per moment. <strong>Kort prompt + Eriks bild som referens</strong> — det var det som vann i somras. Kör i Nano Banana; jag granskar mot bibeln.</p>
+    </div>
+  </header>
+
+  <main style="max-width:900px;margin:0 auto;background:var(--bg-surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:24px 24px 40px;">
+
+    <!-- STYLE BIBLE -->
+    <div class="lbl" style="color:var(--accent-deep);font-size:12px;margin-bottom:12px;">▎Stil-bibeln — allt måste peka hit</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div class="cs" style="padding:15px 17px;">
+        <div style="font-family:Georgia,serif;font-weight:700;font-size:15px;margin-bottom:8px;">Den låsta ytan</div>
+        <p style="font-size:12.5px;line-height:1.6;color:var(--text-secondary);margin:0 0 8px;">Vektor-flat med <b>kornig litografi-yta</b>, platta färgfält, tydliga former. <b>Kanon = annandagens matta korn med pappersram</b> — den är mest 70-talsliggare, minst AI-glansig. Intro-bildens nattglans är undantaget, inte mallen: nya bilder ska inte glänsa.</p>
+        <p style="font-size:12.5px;line-height:1.6;color:var(--text-secondary);margin:0;"><b>Perspektiv:</b> högt fågelperspektiv över bruksorten <em>eller</em> ryggfigur i förgrunden. <b>Silhuett, aldrig ansikte.</b> Miljön är berättelsen — bandyplanen i mitten, granskog, berg/sjö, strålkastare, rökande skorsten.</p>
+      </div>
+      <div class="cs" style="padding:15px 17px;">
+        <div style="font-family:Georgia,serif;font-weight:700;font-size:15px;margin-bottom:10px;">Paletten</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">
+          <div><div class="swatch" style="background:#1e3a4f;"></div><div class="lbl" style="color:var(--text-muted);font-size:7px;margin-top:3px;text-align:center;">nattblå</div></div>
+          <div><div class="swatch" style="background:#7e9cb0;"></div><div class="lbl" style="color:var(--text-muted);font-size:7px;margin-top:3px;text-align:center;">is</div></div>
+          <div><div class="swatch" style="background:#eae4d6;"></div><div class="lbl" style="color:var(--text-muted);font-size:7px;margin-top:3px;text-align:center;">snö/papper</div></div>
+          <div><div class="swatch" style="background:#b5623a;"></div><div class="lbl" style="color:var(--text-muted);font-size:7px;margin-top:3px;text-align:center;">tegel/koppar</div></div>
+        </div>
+        <p style="font-size:12px;line-height:1.55;color:var(--text-secondary);margin:0;">Kall vinterbas (blågrå/is/snö) med <b>en varm accent</b> — tegelrött/koppar i fabrik, kyrka, stugfönster, strålkastare. Aldrig neon, aldrig mer än en varm ton. Samma koppar-mot-svalt som appen.</p>
+      </div>
+    </div>
+
+    <div class="cs" style="padding:14px 17px;margin-bottom:14px;">
+      <div class="lbl" style="color:var(--accent-deep);margin-bottom:8px;">Vad gör en bild till ett MOMENT (annars ingen illustration)</div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--text-secondary);margin:0;">Illustrationer markerar <b>bara moments</b> — brytpunkter i berättelsen, aldrig vardagsytor (DS-doktrin). Ett moment har en <em>känsla</em> och en <em>plats</em>: ankomst, final, annandag, derby, uppflyttning. Om scenen inte kan sammanfattas i "en känsla på en plats i bruksorten" → ingen illustration, använd typografi/ikon.</p>
+    </div>
+
+    <div class="cs" style="padding:14px 17px;margin-bottom:14px;border-left:3px solid var(--danger);">
+      <div class="lbl" style="color:var(--danger);margin-bottom:8px;">Kompositionsregel — rita mot IllustrationScenes scrim (annars ombeskärs bilden)</div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--text-secondary);margin:0 0 9px;">Appen lägger mörka scrims över bilden för läsbar text. Motivet måste sitta där scrimen <em>inte</em> är — annars försvinner det. Rita mot rätt läge:</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div class="cs" style="padding:9px 11px;"><div class="lbl" style="color:var(--accent-deep);margin-bottom:4px;">fullbleed</div><p style="font-size:11px;line-height:1.45;color:var(--text-secondary);margin:0;">0,55 svart över övre <b>22%</b>, gradient till 0,92 över nedre <b>62%</b>. Motiv <b>25–50% ned</b>. Nedre tredjedelen mörk &amp; tom.</p></div>
+        <div class="cs" style="padding:9px 11px;"><div class="lbl" style="color:var(--accent-deep);margin-bottom:4px;">band</div><p style="font-size:11px;line-height:1.45;color:var(--text-secondary);margin:0;">Beskärs på <b>center 30%</b> — håll motivet lodrätt centrerat.</p></div>
+        <div class="cs" style="padding:9px 11px;"><div class="lbl" style="color:var(--accent-deep);margin-bottom:4px;">header</div><p style="font-size:11px;line-height:1.45;color:var(--text-secondary);margin:0;"><b>200px</b> vid <b>center 40%</b>.</p></div>
+      </div>
+      <p style="font-size:11px;line-height:1.5;color:var(--text-muted);margin:9px 0 0;font-style:italic;">Kontrollera Eriks tre under scrimen i appen innan fler beställs — särskilt <b>intro</b> (fullbleed, mest utsatt). Ritades de inte mot gradienterna kan de behöva ombeskäras.</p>
+    </div>
+
+    <div class="cs" style="padding:14px 17px;margin-bottom:22px;background:#1a1712;border:none;">
+      <div class="lbl" style="color:#DD9555;margin-bottom:8px;">Prompt-recept (kort vann i somras — håll det så)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div>
+          <div class="lbl" style="color:#9fcf8a;margin-bottom:5px;">Gör</div>
+          <ul style="margin:0;padding-left:16px;font-size:11.5px;line-height:1.6;color:#d8d2c4;">
+            <li>2–4 rader, konkret scen</li>
+            <li>Fäst Eriks bild som referens</li>
+            <li>Namnge ytan: "flat vector, grainy lithograph, matte"</li>
+            <li>En varm accent utpekad</li>
+          </ul>
+        </div>
+        <div>
+          <div class="lbl" style="color:#e0a0a0;margin-bottom:5px;">Undvik</div>
+          <ul style="margin:0;padding-left:16px;font-size:11.5px;line-height:1.6;color:#d8d2c4;">
+            <li>Långa staplade adjektiv → drar mot glans/foto</li>
+            <li>"photorealistic, 3D, glossy, cinematic"</li>
+            <li>Text/logotyp i bilden</li>
+            <li>Ansikten (silhuett istället)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER BRIEFS -->
+    <div class="lbl" style="color:var(--accent-deep);font-size:12px;margin-bottom:6px;">▎Beställningsbriefer — synkade mot kanon-katalogen</div>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;">Utöver Eriks tre (intro/final/annandagen). Synkad mot kanon: <b>bruksort-headern överst</b> (syns på varje skärm — högst prioriterad), sedan de beställda ceremonibilderna. Per-klubb-vinjetter: <b>kanon står</b> — identitet via märke + ton + namn ovanpå den delade bilden, inte tolv målningar av tolv orter. Varje prompt är kort; [Opus]-copy behövs ej i bild.</p>
+    <p style="font-size:12px;color:var(--danger);margin:0 0 14px;background:color-mix(in srgb, var(--danger) 8%, transparent);border-radius:6px;padding:8px 11px;"><b>2026-08-18 (Code → Design):</b> katalogen nedan (Derbyt/Sommaren/Nyårsbandy/Vårsol/Kafferummet/Nedflyttning) matchade INTE kodens faktiska anrop innan denna uppdatering — ingen av de sju ursprungliga briefarna nämnde <code>cup</code> eller <code>premiar</code>, de två enda anropade namnen som saknar bild. Full anropslista med kod-referenser: <code>design-system/SYNC.md</code>, sync-loggen 2026-08-18.</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <div class="brief" style="border:2px solid var(--accent);">
+        <div class="brief-h" style="background:var(--accent);"><span style="font-size:15px;">🏘️</span><span style="font-weight:700;font-size:14px;">Bruksort-headern</span><span class="ref" style="margin-left:auto;background:rgba(255,255,255,.2);color:#fff;">PRIO 1 · header · ref: annandagen.jpg</span></div>
+        <div style="padding:13px 15px;">
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 9px;line-height:1.5;"><b>Känsla + plats:</b> den delade miljö-headern bakom varje vardagsyta — en generisk svensk bruksort med bandyplan, granskog, berg/sjö. <b>Inte per klubb</b> (identitet via badge + ton + namn overlay). <b>Läge: header, 200px @ center 40%</b> — håll horisonten och motivet i den mittersta remsan, toppen luftig för chrome.</p>
+          <div class="prompt">Flat vector illustration, grainy lithograph, matte, 1970s sports almanac. Wide calm view of a generic small Swedish mill town in winter, a bandy pitch, spruce forest, hills and a frozen lake, low horizon. Cold blue-grey palette, one warm copper accent in a brick chimney. Composition centered in the middle band, uncluttered top. No text, no faces.</div>
+        </div>
+      </div>
+
+      <!-- 2026-08-18 (Code → Design): tillagd. Kodens faktiska anropslista (se
+           rapporten i design-system/SYNC.md) visade att `cup` — inte något av
+           de sju befintliga briefarna nedan — är det namn som faktiskt saknar
+           bild i produktion (MatchLaddningScene.tsx, cupmatchernas laddningsscen).
+           Prioriterad PRIO 2 på Jacobs uttryckliga bedömning: cupmatcher spelas
+           flera gånger per säsong (fyra cuprundor/säsong), så "illustration på
+           väg"-platshållaren syns oftare där än på någon annan onämnd yta. -->
+      <div class="brief" style="border:1px solid var(--accent);">
+        <div class="brief-h" style="background:color-mix(in srgb, var(--accent) 55%, var(--bg-dark));"><span style="font-size:15px;">🏆</span><span style="font-weight:700;font-size:14px;">Cupen (matchladdning)</span><span class="ref" style="margin-left:auto;background:rgba(255,255,255,.15);color:#fff;">PRIO 2 · fullbleed · ref: final.jpg · kod-namn: <code style="background:transparent;color:inherit;padding:0;">cup</code></span></div>
+        <div style="padding:13px 15px;">
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 9px;line-height:1.5;"><b>Känsla + plats:</b> bortamatchens knockout-spänning — en främmande, mindre ort, samma köld men utan hemmaklackens värme. En enkel resväg mot ett upplyst mål i mörkret. <b>Läge: fullbleed</b> — motiv 25–50% ned, nedre tredjedelen mörk &amp; tom (scrimen tar den).</p>
+          <div class="prompt">Flat vector illustration, grainy lithograph, matte, 1970s sports almanac. A lone floodlit bandy arena glowing in the distance across a dark snow-covered valley, seen from an approaching road, spruce forest silhouettes on both sides. Cold blue-grey palette, one warm copper accent in the distant floodlights. Subject in the upper-middle third, lower third dark and empty. No text, no faces.</div>
+        </div>
+      </div>
+
+      <!-- 2026-08-18 (Code → Design): tillagd, samma rotorsak som cup-briefen
+           ovan. `premiar` (säsongens första ligamatch, LaddningOccasion i
+           MatchLaddningScene.tsx) hade heller ingen matchande brief. -->
+      <div class="brief">
+        <div class="brief-h"><span style="font-size:15px;">🏁</span><span style="font-weight:700;font-size:14px;">Premiären (säsongens första ligamatch)</span><span class="ref" style="margin-left:auto;">Ref: intro.jpg · kod-namn: <code style="background:transparent;color:inherit;padding:0;">premiar</code></span></div>
+        <div style="padding:13px 15px;">
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 9px;line-height:1.5;"><b>Känsla + plats:</b> ny säsong, orörd is innan första avslaget, tomma läktare som väntar på att fyllas. Samma ankomst-känsla som <code>intro.jpg</code>, men för planen istället för klubbhuset. <b>Läge: fullbleed</b> — motiv 25–50% ned, nedre tredjedelen mörk &amp; tom.</p>
+          <div class="prompt">Flat vector illustration, grainy lithograph, matte, 1970s sports almanac. An empty floodlit bandy pitch at dusk before the season's first match, freshly resurfaced ice untouched, empty stands waiting, first snow beginning to fall. Cold blue-grey palette, one warm copper accent in the floodlights. Subject in the upper-middle third, lower third dark and empty. No text, no faces.</div>
+        </div>
+      </div>
+
+      <div class="brief">
+        <div class="brief-h"><span style="font-size:15px;">🔥</span><span style="font-weight:700;font-size:14px;">Derbyt</span><span class="ref" style="margin-left:auto;">Ref: final.jpg</span></div>
+        <div style="padding:13px 15px;">
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 9px;line-height:1.5;"><b>Känsla + plats:</b> laddad kväll, packad läktare, två klackar i var sin färg, snöyra i strålkastarljuset.</p>
+          <div class="prompt">Flat vector illustration, grainy lithograph, matte, 1970s sports almanac. Aerial view of a floodlit bandy arena at dusk in a Swedish mill town, packed stands, two supporter groups in opposing colours, light snow in the beams. Cold blue-grey palette, one warm copper accent in the floodlights. No text, no faces.</div>
+        </div>
+      </div>
+
+      <div class="brief">
+        <div class="brief-h"><span style="font-size:15px;">☀</span><span style="font-weight:700;font-size:14px;">Sommaren (säsongsövergången)</span><span class="ref" style="margin-left:auto;">Ref: annandagen.jpg</span></div>
+        <div style="padding:13px 15px;">
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 9px;line-height:1.5;"><b>Känsla + plats:</b> stilla försommar, tom bandyplan utan is, grönska tar över, orten vilar — kontrast mot vintern. Kopplar till Sommaren-skärmen.</p>
+          <div class="prompt">Flat vector illustration, grainy lithograph, matte, 1970s sports almanac. High view of a Swedish mill town in early summer, the empty bandy pitch bare of ice and turning to grass, quiet houses, forest and lake, long light. Warm muted palette, one copper accent in a brick chimney. No text, no faces.</div>
+        </div>
+      </div>
+
+      <div class="brief">
+        <div class="brief-h"><span style="font-size:15px;">🎆</span><span style="font-weight:700;font-size:14px;">Nyårsbandy</span><span class="ref" style="margin-left:auto;">Ref: annandagen.jpg</span></div>
+        <div style="padding:13px 15px;">
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 9px;line-height:1.5;"><b>Känsla + plats:</b> nyårsdagens matcher — klar vinterkyla, folk i vantar kring planen, fyrverkerirök som ännu hänger kvar över orten, årsskiftets stillhet.</p>
+          <div class="prompt">Flat vector illustration, grainy lithograph, matte, 1970s sports almanac. Aerial view of a bandy pitch in a Swedish mill town on New Year's Day, bundled-up crowd, faint fireworks smoke lingering over the rooftops, crisp winter light. Cold blue palette, one warm copper accent in a window. No text, no faces.</div>
+        </div>
+      </div>
+
+      <div class="brief">
+        <div class="brief-h"><span style="font-size:15px;">☀</span><span style="font-weight:700;font-size:14px;">Vårsol (säsongsslut)</span><span class="ref" style="margin-left:auto;">Ref: annandagen.jpg</span></div>
+        <div style="padding:13px 15px;">
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 9px;line-height:1.5;"><b>Känsla + plats:</b> säsongen är slut — mars/aprilsol, isen mjuknar och blänker, snön drar sig undan i kanterna, orten vänder mot ljuset. Lugn, inte triumf.</p>
+          <div class="prompt">Flat vector illustration, grainy lithograph, matte, 1970s sports almanac. High view of a bandy pitch in a Swedish mill town in late-winter spring sun, softening glossy ice, snow retreating at the edges, long warm light. Cold palette warming, one copper accent on a sunlit wall. No text, no faces.</div>
+        </div>
+      </div>
+
+      <div class="brief">
+        <div class="brief-h"><span style="font-size:15px;">☕</span><span style="font-weight:700;font-size:14px;">Kafferummet</span><span class="ref" style="margin-left:auto;">Ref: intro.jpg</span></div>
+        <div style="padding:13px 15px;">
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 9px;line-height:1.5;"><b>Känsla + plats:</b> klubbstugans kafferum inifrån — ryggsilhuetter kring ett bord, termos och koppar, fönster mot den snöiga planen. Intimt, stilla, inte en scen utomhus.</p>
+          <div class="prompt">Flat vector illustration, grainy lithograph, matte, 1970s sports almanac. Interior of a bandy clubhouse coffee room, silhouetted figures from behind around a table with a thermos and cups, window looking out on a snowy pitch. Warm muted interior, cold blue light from the window, one copper accent. No text, no faces.</div>
+        </div>
+      </div>
+
+      <div class="brief">
+        <div class="brief-h"><span style="font-size:15px;">📉</span><span style="font-weight:700;font-size:14px;">Nedflyttning</span><span class="ref" style="margin-left:auto;">Ref: intro.jpg</span></div>
+        <div style="padding:13px 15px;">
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 9px;line-height:1.5;"><b>Känsla + plats:</b> ensam tyngd — ryggfigur (tränaren) blickar ut över mörk, tömd plan, sista ljuset släcks. <b>Fullbleed:</b> figur 25–50% ned, nedre tredjedelen mörk &amp; tom (scrimen tar den).</p>
+          <div class="prompt">Flat vector illustration, grainy lithograph, matte, 1970s sports almanac. Lone coach silhouette from behind on a ridge, looking down at an empty floodlit bandy pitch in a Swedish mill town at night, one light going dark. Subject in the upper-middle third, lower third dark and empty. Cold blue palette, faint copper glow. No text, no faces.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PROCESS -->
+    <div style="margin-top:22px;background:var(--bg-dark);border-radius:12px;padding:18px 20px;">
+      <div class="lbl" style="color:var(--accent);margin-bottom:8px;">Arbetsflödet</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+        <div><div style="color:var(--text-light);font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">1 · Jag</div><p style="color:var(--text-light-secondary);font-size:11.5px;line-height:1.5;margin:0;">Skriver kort prompt + väljer referensbild per moment (den här filen).</p></div>
+        <div><div style="color:var(--text-light);font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">2 · Du</div><p style="color:var(--text-light-secondary);font-size:11.5px;line-height:1.5;margin:0;">Kör i Nano Banana med Eriks bild fäst. Behåll prompten kort — lägg inte till.</p></div>
+        <div><div style="color:var(--text-light);font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">3 · Jag</div><p style="color:var(--text-light-secondary);font-size:11.5px;line-height:1.5;margin:0;">Granskar mot bibeln (yta, palett, silhuett), trimmar där det driftar.</p></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:24px;color:var(--text-muted);font-size:11px;font-style:italic;font-family:Georgia,serif;">— Erik-stilen, låst · en känsla på en plats i bruksorten —</div>
+
+  </main>
+</div>
+</x-dc>
+</body>
+</html>
