@@ -403,7 +403,15 @@ Fem symptom, fem egna felaktiga härledningar ur `homeScore`/`awayScore`. Fixas 
 **Frågor:** hur många ställen i `pressConferenceService` klassificerar matchutfall eller tävlingstyp självständigt? Vad **saknas** i `matchTypeAxes` (finns sedan Granska del 4: `tävlingstyp | skede | plats`) för presskonferensens behov — faktisk vinnare efter förlängning/straffar, om ligapoäng finns, derby? Vad är minsta ändringen som gör alla fem symptomen omöjliga snarare än lagade?
 
 **Villkor:** **en** kontextmodell, byggd på `matchTypeAxes`. Ett parallellt `MatchOutcomeContext` är två sanningar om samma match — exakt felklassen vi jagat i tio dygn.
-**Status:** `RAPPORT-VÄNTAR`
+
+**Rapport levererad.** Fyra oberoende klassificeringsställen bekräftade, alla i `pressConferenceService.ts` + `csPressEventService.ts`: (1) `buildPressContext()` (:301-394) härleder won/lost/draw + isDerby + isCup/isPlayoff helt vid sidan av `matchTypeAxes`. (2) `contextKey`-blocket (:583-595) räknar myScore/theirScore och rivalry EN GÅNG TILL — tredje beräkningen av samma sak i samma fil, och läser aldrig `isCup`/`isPlayoff`. (3) `csPressEventService.computeCSStreak()`/`shouldTriggerCSPress()` — fjärde parallella score-tolkningen. (4) `TAG_DEFS`: `win_derby`/`loss_derby` klassade `generic: 'win'/'loss'` (:423, 431) — samma buggklass som redan patchades för `playoff_loss_not_final` men missad för derby-taggarna. Det är rotorsaken till symptom 5.
+
+**Vad som saknas i `matchTypeAxes`:** "faktisk vinnare efter förlängning/straffar" (läser aldrig `wentToPenalties`/`penaltyResult`/`overtimeResult` — rotorsak symptom 1), "gav ligapoäng" (går att härleda 1:1 ur redan befintlig `tavlingstyp==='liga'`, men ingen kod läser den — rotorsak symptom 2), "är detta en derby" (finns inte i någon axel — rotorsak symptom 5 tillsammans med punkt 4 ovan). Symptom 3 (hemmakryss) är INTE en modellucka — `plats` täcker redan hemma/borta, buggen är att frågan saknar en `requireAway`-spärr (bara `requireHome` finns). Symptom 4 (9-8 clean sheet) gick inte att reproducera bokstavligt — spärren är korrekt — men är ändå ställe (3) ovan: en fjärde oberoende råscore-tolkning som inte delar sanning med resten.
+
+**Minsta ändringen:** tre nya fält på `MatchTypeAxes`, beräknade EN gång i `deriveMatchTypeAxes()`: `utfall` (vunnet/förlorat/oavgjort, läser straff/förlängning), `gavLigapoang` (= tavlingstyp==='liga'), `arDerby` (= `!!getRivalry(...)`). Lägg till `requireAway?` på `PressQuestion`, fixa `win_derby`/`loss_derby` till `generic: 'none'`. Radera `buildPressContext`s och `contextKey`-blockets egna beräkningar (ställe 1+2), wire:a båda mot en enda `deriveMatchTypeAxes()`-instans.
+
+**Uppskattad omfattning:** `matchTypeAxes.ts` (+≈20 rader), refaktor av `pressConferenceService.ts` (ta bort dubbelberäkningarna, wire:a om), enrads-fix i TAG_DEFS, enrads-fix i `csPressEventService.ts`. Ingen ny parallell modell.
+**Status:** `RAPPORT-LEVERERAD` — klart att bygga direkt, inget produktbeslut väntas. Kirurgiskt nog för Code utan spec
 
 ### U3 · Effektschemat
 `eventProcessor:240-242` skriver effekten i `amount`, `eventResolver:823-828` läser `effect.value`. Mecenatkortet lovar 1 000 000 kr och drar 0.
