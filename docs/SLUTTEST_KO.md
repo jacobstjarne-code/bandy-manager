@@ -477,7 +477,7 @@ Rapportera vad ett begripligt backupflöde kostar, plus en automatisk lokal åte
 **Uppskattad omfattning:** `GameHeader.tsx` (+10-15 rader), ny funktion i `saveGameStorage.ts` (+20-30 rader) + 2 anropsplatser. Ingen ny fil, ingen ny route, inga nya beroenden.
 
 **Öppna frågor för Jacobs beslut:** ska import skriva över nuvarande save direkt eller varna först (destruktivt)? Ska en misslyckad migrering automatiskt erbjuda återställning (kräver liten UI-yta) eller bara logga tyst? Rotationsantal (1 vs 2-3)?
-**Status:** `RAPPORT-LEVERERAD` — kirurgiskt, byggbart direkt efter Jacobs svar på de tre öppna frågorna
+**Status:** `KLAR (baf10f4c)` — Jacobs dom: import varnar (window.confirm) före, två snapshots. Export/import wirat i `GameHeader.tsx`s befintliga inställnings-dropdown. `snapshotSave()`/`listSaveSnapshots()`/`loadSaveSnapshot()` (saveGameStorage.ts) tar snapshot före `newGame()`s delete-all och före `loadSaveGame()`s migreringssteg. **Ärligt ogjort:** ingen automatisk "återställning erbjuds"-banner vid en faktiskt misslyckad migrering — snapshoten finns och är läsbar, men ingen UI upptäcker/föreslår den proaktivt. Den verkliga risksurfacen (zustand persist-rehydrering vid appstart) är en annan mekanism än den manuella save-storage-vägen som byggdes. 1953/1953 gröna, regressionstest verifierat mot pre-fix kod
 
 ### U8 · Bundle och precache
 2,1 MB huvudbundle, 4,17 MB PWA-precache för en mobile-first app. Rapportera vad code splitting skär och vad det kostar. **Efter sanningslagret.**
