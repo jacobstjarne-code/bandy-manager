@@ -31,14 +31,15 @@ Denna fil ersätter alla `CODE_INSTRUKTION_*`-filer från 2026-08-17 som kölist
 
 ## BLOCKERAT PÅ OPUS-TEXT — före allt annat på mitt bord
 
-Fyra poster är mekaniskt färdiga och väntar bara på mig:
+Tre poster är mekaniskt färdiga och väntar bara på mig:
 
 | Post | Vad som behövs |
 |---|---|
 | 2.6 `ArrivalScene:74` | N=1-grammatik för kontraktsraden, och formen när antalet varierar |
 | 4.2 derbyrepliken | 13 storyline-frågor saknar topikanpassade svar. Listan skickad 2026-08-17 (+ 4 arc-aware-frågor med samma bugg, inte medräknade i de 13, väntar på besked om de ska ingå) |
-| 4.8 andra halvan | Text som skiljer spelarens val från autouttagningens i snabbläget |
 | 5.3 Turneringsläge | Rader för pågående serie, efter Codes datakartläggning |
+
+4.8 andra halvan löst 2026-08-18 (`49abf3fc`) — Jacob gav texten direkt i chatten ("Assistenten satte laget"), ingen spec behövdes.
 
 K5 är löst — designbeslutet (permanent betyder permanent) implementerat i `3b33db0e`.
 
@@ -297,7 +298,7 @@ Samma klass genomgående: `RoundSummaryScreen` mot `GranskaScreen`, `respondToIn
 | 4.5 | Årsbokens styrelsemening ur objective-resultat, inte placeringstier | "2:a plats uppfyller kravet att vinna ligan". Samma rot som `growFanbase`-etiketten i sluttestet | `KLAR (6f1d36a1)` |
 | 4.6 | Årsboken: rå nyckel `captain_rallied_team`, dubbla kaptensevent, `O33` i en 22-omgångssäsong | Sista är kalenderindex mot ligaomgång — separera dem | `KLAR (ae1f00d0, cf6bc619, ee18caaa)` — tre separata rotorsaker, tre commits. O33: arc-storylines satte matchday till det globala matchday-värdet (kan bli 27+ i slutspel), bytt till getCurrentLeagueRound. Dubbla kaptensevent: captainSpeech-eventet och ledare_crisis-arcen triggar båda på 3+ förluster i rad, oberoende byggda — captainRallyGuard.ts delad spärr. Rå nyckel: fyra storylines (inte bara captain_rallied_team) satte description till den råa type-strängen — grep bekräftade fyra träffar totalt, alla fixade |
 | 4.7 | `SeasonSummary` lagrar `eliminatedByClubId`, avgörande match, rundnummer | `SeasonSummaryScreen:121-135` läste `game.playoffBracket`, ej historiskt tillförlitlig efter rollover → "Kvartsfinalen mot motståndet" | `KLAR (fd3a7428)` |
-| 4.8 | `condition_0` etiketterad "trötthet" (`GranskaOversikt:703-720`) — noll kondition visas som noll trötthet | Semantisk inversion; gör rotation olärbar | `KLAR (35e9ac16)` — andra halvan (skilj spelarens val från autouttagningens) `EJ`, kräver nytt fält + Opus-text |
+| 4.8 | `condition_0` etiketterad "trötthet" (`GranskaOversikt:703-720`) — noll kondition visas som noll trötthet | Semantisk inversion; gör rotation olärbar | `KLAR (35e9ac16)` — andra halvan `KLAR (49abf3fc)`: `TeamSelection.autoSelected` trädas genom setLineup → setPlayerLineup → simulateRemainingStep (enda auto-uttagningsplatsen för managed club, verifierat mot matchSimProcessor.ts), kopieras in i `ManagerChoiceEntry.autoSelected` på started_tired-poster i båda byggplatserna (roundProcessor.ts snabbsim + matchActions.ts live). "Assistenten satte laget" visas som muted notering i Granska när flaggad |
 | 4.9 | Sponsorpresentation | `postAdvanceEvents:605-619` rundar veckobelopp till tusental, räknar totalen exakt → "2k × 10 = 15k" | `KLAR (05e7b9b4)` |
 | 4.10 | `FormationView.tsx:361` — `p.position.slice(0,3).toUpperCase()` på engelskt enum ger DEF/MID/HAL/GOA | Explicit mappning: goalkeeper→MV, defender→B, half→YH, midfielder→MF, forward→A | `KLAR (50178bb3)` |
 | 4.11 | `facility_completed` konsumeras i stället för tidsstyras | `portalBeats:541-558` triggar bara när `lastCompleted.matchday === currentMatchday`. Tas platsen av något högre prioriterat försvinner invigningen för alltid | `KLAR (43903fbd)` |
