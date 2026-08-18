@@ -11,6 +11,14 @@ interface IncomingBidCardProps {
   currentRound: number
   choices: EventChoice[]
   onChoose: (choiceId: string) => void
+  /**
+   * Å4 (SLUTTEST_KO.md, 2026-08-18): primaryChoiceId="accept" var tidigare
+   * ovillkorligt — tre inkommande bud gav tre samtidiga .btn-primary.
+   * Bara kortet med mest brådskande svarsfrist ska vara primär; övriga
+   * visar samma val men utan primär-styling (TransfersScreen sorterar och
+   * sätter isPrimary bara på första kortet).
+   */
+  isPrimary: boolean
 }
 
 /**
@@ -27,7 +35,7 @@ interface IncomingBidCardProps {
  * DecisionChoices, inte handrullade knappar — samma delade knapplager som
  * resten av gemensam-beslutsmodell-migreringen (d934aa1e).
  */
-export function IncomingBidCard({ bid, player, buyingClub, currentRound, choices, onChoose }: IncomingBidCardProps) {
+export function IncomingBidCard({ bid, player, buyingClub, currentRound, choices, onChoose, isPrimary }: IncomingBidCardProps) {
   const roundsLeft = (bid.expiresRound ?? 0) - currentRound
   const isDreamClub = player.dreamClubId === buyingClub.id
   const loyalty = player.loyaltyScore
@@ -60,7 +68,7 @@ export function IncomingBidCard({ bid, player, buyingClub, currentRound, choices
         </div>
       )}
 
-      <DecisionChoices choices={choices} onChoose={onChoose} primaryChoiceId="accept" />
+      <DecisionChoices choices={choices} onChoose={onChoose} primaryChoiceId={isPrimary ? 'accept' : undefined} />
     </div>
   )
 }

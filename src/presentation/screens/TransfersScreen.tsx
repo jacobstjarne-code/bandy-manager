@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom'
 
 import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
+import type { TransferBid } from '../../domain/entities/GameEvent'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 import { formatFinanceAbs, positionShort, formatValue } from '../utils/formatters'
 import { SectionLabel } from '../components/SectionLabel'
@@ -20,6 +21,17 @@ import '../styles/transfers.css'
 import { TabBar } from '../components/shared/TabBar'
 import { TabIntro } from '../components/shared/TabIntro'
 import { TAB_INTROS } from '../../domain/data/tabIntros'
+
+/**
+ * Å4 (SLUTTEST_KO.md, 2026-08-18): sorterar inkommande bud efter svarsfrist
+ * (lägst expiresRound = mest brådskande, ohanterat "expiresRound saknas"
+ * räknas som mest brådskande, 0). Renderns .map() sätter isPrimary på
+ * index 0 av resultatet — så det alltid är det mest brådskande kortet,
+ * inte det första i transferBids-arrayens godtyckliga lagringsordning.
+ */
+export function sortBidsByUrgency(bids: TransferBid[]): TransferBid[] {
+  return [...bids].sort((a, b) => (a.expiresRound ?? 0) - (b.expiresRound ?? 0))
+}
 
 export function TransfersScreen() {
   const game = useGameStore(s => s.game)
@@ -227,7 +239,7 @@ export function TransfersScreen() {
       {/* AUDIT DEL 2 B1 (2026-08-09): inkommande bud — förstaklasskort överst på
           Marknad, före dina egna utgående bud. incomingBids beräknad ovan
           (rad ~77, samma filter Sälj-fliken redan använder för 🔥-badgen). */}
-      {activeTab === 'marknad' && incomingBids.map(bid => {
+      {activeTab === 'marknad' && sortBidsByUrgency(incomingBids).map((bid, i) => {
         const player = game.players.find(p => p.id === bid.playerId)
         const buyingClub = game.clubs.find(c => c.id === bid.buyingClubId)
         if (!player || !buyingClub) return null
@@ -244,6 +256,7 @@ export function TransfersScreen() {
             currentRound={currentRound}
             choices={choices}
             onChoose={(choiceId) => handleRespondToBid(bid.id, choiceId)}
+            isPrimary={i === 0}
           />
         )
       })}
@@ -303,7 +316,12 @@ export function TransfersScreen() {
 
         return (
           <div style={{ marginBottom: 24 }}>
-            {groups.length === 0 ? (
+            {/* Å4 (SLUTTEST_KO.md, 2026-08-18): "Marknaden är tom" visades tidigare
+                även med tre aktiva inkommande bud synliga precis ovanför — olika
+                datakällor (köpbara spelare vs. bud på egna spelare) men samma skärm,
+                läste som självmotsägande. Gaten mot incomingBids.length istället för
+                ny text som förklarar skillnaden (Code skriver ingen ny svensk text). */}
+            {groups.length === 0 && incomingBids.length === 0 ? (
               <div className="card-sharp" style={{ padding: '24px 18px', textAlign: 'center' }}>
                 <p style={{ fontSize: 22, marginBottom: 10 }}>🔍</p>
                 <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
