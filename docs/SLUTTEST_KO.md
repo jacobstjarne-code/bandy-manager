@@ -245,7 +245,7 @@ Samma klass genomgående: `RoundSummaryScreen` mot `GranskaScreen`, `respondToIn
 | 4.3 | Varsel-dedupe | `postAdvanceEvents:281-307` kollar `event_varsel_s{season}`, fabriken skapar `event_varsel_{employer}_{season}`. Gemensam ID-funktion | `KLAR (406be8e4)` — `varselEventId(season)` exporterad, används av båda anropsställena. Test verifierat mot repro (fixat id i resolvedEventIds blockerade inte ett nytt event innan fixet) |
 | 4.4 | Byggflikens copy → "Ett bygge åt gången". Låsta noder listar **alla** krav med uppfyllt/ej | `FacilityTree.tsx:231` sa säsongsstart, `FacilityScreen:84-92` implementerar löpande. `facilityNodes:162-168` kräver två noder, visar en | `KLAR (b805a829)` |
 | 4.5 | Årsbokens styrelsemening ur objective-resultat, inte placeringstier | "2:a plats uppfyller kravet att vinna ligan". Samma rot som `growFanbase`-etiketten i sluttestet | `KLAR (6f1d36a1)` |
-| 4.6 | Årsboken: rå nyckel `captain_rallied_team`, dubbla kaptensevent, `O33` i en 22-omgångssäsong | Sista är kalenderindex mot ligaomgång — separera dem | `EJ` |
+| 4.6 | Årsboken: rå nyckel `captain_rallied_team`, dubbla kaptensevent, `O33` i en 22-omgångssäsong | Sista är kalenderindex mot ligaomgång — separera dem | `KLAR (ae1f00d0, cf6bc619, ee18caaa)` — tre separata rotorsaker, tre commits. O33: arc-storylines satte matchday till det globala matchday-värdet (kan bli 27+ i slutspel), bytt till getCurrentLeagueRound. Dubbla kaptensevent: captainSpeech-eventet och ledare_crisis-arcen triggar båda på 3+ förluster i rad, oberoende byggda — captainRallyGuard.ts delad spärr. Rå nyckel: fyra storylines (inte bara captain_rallied_team) satte description till den råa type-strängen — grep bekräftade fyra träffar totalt, alla fixade |
 | 4.7 | `SeasonSummary` lagrar `eliminatedByClubId`, avgörande match, rundnummer | `SeasonSummaryScreen:121-135` läste `game.playoffBracket`, ej historiskt tillförlitlig efter rollover → "Kvartsfinalen mot motståndet" | `KLAR (fd3a7428)` |
 | 4.8 | `condition_0` etiketterad "trötthet" (`GranskaOversikt:703-720`) — noll kondition visas som noll trötthet | Semantisk inversion; gör rotation olärbar | `KLAR (35e9ac16)` — andra halvan (skilj spelarens val från autouttagningens) `EJ`, kräver nytt fält + Opus-text |
 | 4.9 | Sponsorpresentation | `postAdvanceEvents:605-619` rundar veckobelopp till tusental, räknar totalen exakt → "2k × 10 = 15k" | `KLAR (05e7b9b4)` |
@@ -400,8 +400,15 @@ De fyra första är svar på framgångsauditens huvudtes och väger tyngre än n
 ### O1 · Varslet som systemmall — den egentliga svarsdomen
 Tre oberoende testare pekade ut samma sak: varslet var det bästa i spelet. Det förenade en plats (Älvkarleby kommun), namngivna personer (Torsten Henriksson, Erik Sundqvist), en konkret resurs (1,5× lön), en sportslig följd och ett långsiktigt minne. Det gick att återberätta efteråt.
 
-**Det finns exakt ett sådant.** Ingen post i den här filen gör spelet mer likt det — de gör det mindre trasigt. Mallen ska formuleras och tillämpas på sponsorer, kontrakt, mecenater, anläggningar, supporterrelationer och rekrytering. **Färre sådana händelser är bättre än många enkla moralval.**
-**Status:** `EJ SKRIVEN`
+**Det finns exakt ett sådant.** Ingen post i den här filen gör spelet mer likt det — de gör det mindre trasigt.
+
+**Status:** `SKRIVEN` — `DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md`. Fem kvalifikationskrav, sex kandidater i prioritetsordning (sponsorn först — vanligast och tommast), riktmärke två–tre per säsong.
+
+**Byggs efter Grind 1.** Beroenden: `O5` (ett tal måste betyda något — 1,5× lön kostar ingenting vid 11 mkr) och `U1` (systemen kan inte peka isär om ingenting kan misslyckas). Throw-guarden var det tredje beroendet och är klart.
+
+**Görs nu, kräver ingen ny mekanik — Code-rapport:** klassificera alla befintliga händelser mot mallens fem punkter. Hur många uppfyller fem, fyra, tre? Det talet är utgångsläget.
+
+**Godkänd när:** en spelare som spelat två säsonger kan namnge ett beslut som gjorde ont och beskriva vad det kostade, utan att öppna en meny.
 
 ### O2 · Dominansrevisionen
 Vanliga sponsoroffer ger pengar utan motkostnad; avslag ger "inga effekter". Då är "acceptera" inte ett beslut utan en kvitteringsknapp.
