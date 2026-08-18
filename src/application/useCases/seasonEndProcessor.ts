@@ -20,7 +20,7 @@ import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/pla
 import { generateRetirementData, generateFarewellQuote } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
-import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta } from '../../domain/services/boardService'
+import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 import { updateLoyaltyScores } from '../../domain/services/characterPlayerService'
 import { processAITransfers } from '../../domain/services/aiTransferService'
@@ -703,29 +703,16 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const currentPatience = game.boardPatience ?? 70
   const currentFailures = game.consecutiveFailures ?? 0
 
-  let newBoardPatience = currentPatience
-  let newConsecutiveFailures = currentFailures
+  // U1 (SLUTTEST_KO.md, 2026-08-17): "nedflyttningsstrid" gav tidigare ingen
+  // verklig tålamodsförlust förrän i botten-tre av en totalTeams/3-gissning
+  // — kärnan i fyndet var att en klubb kunde tankas en hel säsong och
+  // styrelsen blev ändå NÖJDARE. computeBoardPatienceUpdate() använder nu
+  // den faktiska nedflyttningszonen (RELEGATION_ZONE_SIZE, delad med
+  // boardService.ts:s evaluateBoard) plus en varningszon precis ovanför.
+  const patienceUpdate = computeBoardPatienceUpdate(finalPos, totalTeams, currentPatience, currentFailures)
+  let newBoardPatience = patienceUpdate.newBoardPatience
+  let newConsecutiveFailures = patienceUpdate.newConsecutiveFailures
   let managerFired = false
-
-  const topThird = Math.ceil(totalTeams / 3)
-  const bottomThird = totalTeams - Math.floor(totalTeams / 3) + 1
-
-  if (finalPos <= 2) {
-    // Promotion zone
-    newBoardPatience = Math.min(100, currentPatience + 20)
-    newConsecutiveFailures = 0
-  } else if (finalPos <= topThird) {
-    // Top 3 (but not top 2)
-    newBoardPatience = Math.min(100, currentPatience + 15)
-    newConsecutiveFailures = 0
-  } else if (finalPos >= bottomThird) {
-    // Bottom 3
-    newBoardPatience = Math.max(0, currentPatience - 20)
-    newConsecutiveFailures = currentFailures + 1
-  } else {
-    // Mid-table (pos 4-7 approximately)
-    newConsecutiveFailures = 0
-  }
 
   // NOTE: Firing check moved AFTER board objectives evaluation (line ~699)
   // so objective success/failure affects the decision

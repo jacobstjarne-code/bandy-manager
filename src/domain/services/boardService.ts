@@ -31,6 +31,12 @@ export interface BoardEvaluation {
   message: string
 }
 
+// U1 (SLUTTEST_KO.md, 2026-08-17): den faktiska nedflyttningszonen — en
+// konstant, inte en totalTeams/3-härledd gissning. Delad mellan
+// evaluateBoard (AvoidBottom-tröskeln nedan) och seasonEndProcessor.ts:s
+// boardPatience-formel, så de beskriver samma zon.
+export const RELEGATION_ZONE_SIZE = 2
+
 // How far into the season (0-1). Earlier = more lenient thresholds.
 function seasonProgress(roundsPlayed: number, totalRounds: number): number {
   return Math.min(1, roundsPlayed / totalRounds)
@@ -71,12 +77,18 @@ export function evaluateBoard(
       else satisfaction = 'concerned'
       break
 
-    case ClubExpectation.AvoidBottom:
-      if (pos <= totalTeams - 4) satisfaction = 'delighted'
-      else if (pos <= totalTeams - 2 - lenient) satisfaction = 'satisfied'
-      else if (pos === totalTeams - 1) satisfaction = 'concerned'
+    case ClubExpectation.AvoidBottom: {
+      // U1 (SLUTTEST_KO.md, 2026-08-17): "unhappy" täckte tidigare bara den
+      // absolut sista platsen — en klubb på den NÄST sista platsen (också
+      // inne i den faktiska nedflyttningszonen, RELEGATION_ZONE_SIZE=2) läste
+      // bara som "concerned", inte som verklig risk.
+      const relegationZoneStart = totalTeams - RELEGATION_ZONE_SIZE + 1
+      if (pos <= relegationZoneStart - 3) satisfaction = 'delighted'
+      else if (pos <= relegationZoneStart - 1 - lenient) satisfaction = 'satisfied'
+      else if (pos < relegationZoneStart) satisfaction = 'concerned'
       else satisfaction = 'unhappy'
       break
+    }
 
     default:
       satisfaction = 'satisfied'
@@ -220,6 +232,39 @@ const SEASON_REPUTATION_DELTA: Record<1 | 2 | 3 | 4 | 5, number> = { 1: -6, 2: -
 
 export function seasonReputationDelta(rating: 1 | 2 | 3 | 4 | 5): number {
   return SEASON_REPUTATION_DELTA[rating]
+}
+
+/**
+ * U1 (SLUTTEST_KO.md, 2026-08-17) — säsongsslutets boardPatience-uppdatering,
+ * utbruten ur seasonEndProcessor.ts som en ren funktion (samma disciplin som
+ * seasonReputationDelta ovan) för att gå att regressionstesta utan en full
+ * säsongssimulering. RELEGATION_ZONE_SIZE-baserad, med en varningszon precis
+ * ovanför den faktiska zonen — se seasonEndProcessor.ts:s anropsställe för
+ * hela rotorsaken (nedflyttningsstrid gav ingen verklig tålamodsförlust).
+ */
+export function computeBoardPatienceUpdate(
+  finalPos: number,
+  totalTeams: number,
+  currentPatience: number,
+  currentFailures: number,
+): { newBoardPatience: number; newConsecutiveFailures: number } {
+  const topThird = Math.ceil(totalTeams / 3)
+  const relegationZoneStart = totalTeams - RELEGATION_ZONE_SIZE + 1
+  const warningZoneStart = relegationZoneStart - RELEGATION_ZONE_SIZE
+
+  if (finalPos <= 2) {
+    return { newBoardPatience: Math.min(100, currentPatience + 20), newConsecutiveFailures: 0 }
+  }
+  if (finalPos <= topThird) {
+    return { newBoardPatience: Math.min(100, currentPatience + 15), newConsecutiveFailures: 0 }
+  }
+  if (finalPos >= relegationZoneStart) {
+    return { newBoardPatience: Math.max(0, currentPatience - 20), newConsecutiveFailures: currentFailures + 1 }
+  }
+  if (finalPos >= warningZoneStart) {
+    return { newBoardPatience: Math.max(0, currentPatience - 5), newConsecutiveFailures: 0 }
+  }
+  return { newBoardPatience: currentPatience, newConsecutiveFailures: 0 }
 }
 
 /**

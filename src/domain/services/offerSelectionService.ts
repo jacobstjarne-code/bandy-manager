@@ -1,4 +1,5 @@
 import { CLUB_TEMPLATES } from './worldGenerator'
+import { ClubExpectation } from '../enums'
 
 export interface ClubOffer {
   clubId: string
@@ -6,14 +7,57 @@ export interface ClubOffer {
   quoteIndex: number
 }
 
-// Difficulty baseras på reputation:
-// hard: reputation < 55
-// medium: reputation 55-74
-// easy: reputation >= 75
+interface DifficultyInput {
+  reputation: number
+  finances: number
+  wageBudget: number
+  boardExpectation: ClubExpectation
+}
 
-function getDifficulty(reputation: number): 'easy' | 'medium' | 'hard' {
-  if (reputation >= 75) return 'easy'
-  if (reputation >= 55) return 'medium'
+// U1 (SLUTTEST_KO.md, 2026-08-17) — det största fyndet i sluttestserien:
+// difficulty satt ENBART från reputation gjorde en AvoidBottom-klubb med
+// sund ekonomi (Skutskär, rep 52) till "hard" trots att styrelsekravet var
+// det lägsta som finns och tålamodsstraffet bara träffade botten tre. En
+// testare tankade en hel säsong medvetet — femte plats, styrelsen BLEV NÖJD.
+//
+// Ny modell, tre faktorer, ingen ny simulering vid runtime: reputation
+// (bas, som idag) + boardExpectation-gap (kräver styrelsen mer än ryktet
+// motiverar?) + finansiell marginal (finances/wageBudget). Se D029 för
+// exakta konstanter och kalibreringsresonemang mot de tolv klubbmallarna.
+function reputationImpliedSeverity(reputation: number): 0 | 1 | 2 | 3 {
+  if (reputation >= 80) return 3
+  if (reputation >= 68) return 2
+  if (reputation >= 55) return 1
+  return 0
+}
+
+function expectationSeverity(exp: ClubExpectation): 0 | 1 | 2 | 3 {
+  switch (exp) {
+    case ClubExpectation.WinLeague: return 3
+    case ClubExpectation.ChallengeTop: return 2
+    case ClubExpectation.MidTable: return 1
+    case ClubExpectation.AvoidBottom: default: return 0
+  }
+}
+
+/** D029: poäng, inte ett facit i sig — bucket:as till easy/medium/hard nedanför. */
+export function computeDifficultyScore(t: DifficultyInput): number {
+  let score = t.reputation
+
+  const gap = expectationSeverity(t.boardExpectation) - reputationImpliedSeverity(t.reputation)
+  score -= gap * 12  // styrelsen begär mer än ryktet motiverar → svårare jobb
+
+  const margin = t.wageBudget > 0 ? t.finances / t.wageBudget : 0
+  if (margin < 4) score -= 10       // tunn kassabuffert mot lönerna — skört läge
+  else if (margin >= 6) score += 5  // rejäl marginal — stabilt läge
+
+  return score
+}
+
+function getDifficulty(t: DifficultyInput): 'easy' | 'medium' | 'hard' {
+  const score = computeDifficultyScore(t)
+  if (score >= 75) return 'easy'
+  if (score >= 50) return 'medium'
   return 'hard'
 }
 
@@ -40,7 +84,7 @@ export function selectThreeOffers(seed: number): ClubOffer[] {
   }
 
   for (const t of CLUB_TEMPLATES) {
-    grouped[getDifficulty(t.reputation)].push(t.id)
+    grouped[getDifficulty(t)].push(t.id)
   }
 
   // Fallback: om en grupp är tom, fyll från närmaste

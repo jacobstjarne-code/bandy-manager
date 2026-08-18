@@ -1,4 +1,5 @@
-import { selectThreeOffers, selectQuoteIndex } from '../domain/services/offerSelectionService'
+import { selectThreeOffers, selectQuoteIndex, computeDifficultyScore } from '../domain/services/offerSelectionService'
+import { ClubExpectation } from '../domain/enums'
 
 describe('selectThreeOffers', () => {
   const seeds = [1, 42, 12345, 999999, Date.now()]
@@ -43,6 +44,44 @@ describe('selectThreeOffers', () => {
       expect(offer.clubId).toMatch(/^club_/)
       expect(offer.quoteIndex).toBeGreaterThanOrEqual(0)
     }
+  })
+})
+
+describe('computeDifficultyScore — U1 (SLUTTEST_KO.md, 2026-08-17) / D029', () => {
+  // Skutskär (rep 52, AvoidBottom, finances 210000/wageBudget 50000 = 4.2x
+  // marginal) var det konkreta buggexemplet: gammal modell (reputation-only,
+  // <55=hard) gav "hard" trots att styrelsekravet var det lägsta som finns
+  // och ekonomin var sund. En testare tankade en hel säsong och styrelsen
+  // blev ändå NÖJDARE.
+  it('Skutskär-liknande klubb (lågt rykte, lågt krav, sund ekonomi) landar INTE i hard-tröskeln', () => {
+    const score = computeDifficultyScore({
+      reputation: 52, finances: 210_000, wageBudget: 50_000, boardExpectation: ClubExpectation.AvoidBottom,
+    })
+    expect(score).toBeGreaterThanOrEqual(50)  // medium-tröskeln, se getDifficulty
+  })
+
+  it('en klubb vars styrelsekrav ÖVERSTIGER vad ryktet motiverar får lägre score', () => {
+    const matched = computeDifficultyScore({
+      reputation: 55, finances: 300_000, wageBudget: 60_000, boardExpectation: ClubExpectation.MidTable,
+    })
+    const overreaching = computeDifficultyScore({
+      reputation: 55, finances: 300_000, wageBudget: 60_000, boardExpectation: ClubExpectation.WinLeague,
+    })
+    expect(overreaching).toBeLessThan(matched)
+  })
+
+  it('tunn kassamarginal (< 4x lönebudget) sänker score, rejäl marginal (>= 6x) höjer den', () => {
+    const thin = computeDifficultyScore({
+      reputation: 60, finances: 150_000, wageBudget: 50_000, boardExpectation: ClubExpectation.MidTable,
+    })
+    const neutral = computeDifficultyScore({
+      reputation: 60, finances: 250_000, wageBudget: 50_000, boardExpectation: ClubExpectation.MidTable,
+    })
+    const healthy = computeDifficultyScore({
+      reputation: 60, finances: 350_000, wageBudget: 50_000, boardExpectation: ClubExpectation.MidTable,
+    })
+    expect(thin).toBeLessThan(neutral)
+    expect(healthy).toBeGreaterThan(neutral)
   })
 })
 

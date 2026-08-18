@@ -1,0 +1,62 @@
+fact_id: D029
+category: design_principles
+claim: "Svårighetsgrad = reputation + expectationGap*(-12) + finansiell marginal-justering (-10 om <4x lönebudget, +5 om >=6x); tröskel easy>=75, medium>=50. Nedflyttningszon = RELEGATION_ZONE_SIZE=2 platser (konstant, delad mellan evaluateBoard och seasonEndProcessor)."
+value:
+  DIFFICULTY_EASY_THRESHOLD: 75
+  DIFFICULTY_MEDIUM_THRESHOLD: 50
+  DIFFICULTY_GAP_PENALTY_PER_STEP: -12
+  DIFFICULTY_THIN_MARGIN_PENALTY: -10
+  DIFFICULTY_THIN_MARGIN_RATIO: 4
+  DIFFICULTY_HEALTHY_MARGIN_BONUS: 5
+  DIFFICULTY_HEALTHY_MARGIN_RATIO: 6
+  RELEGATION_ZONE_SIZE: 2
+  BOARD_PATIENCE_WARNING_ZONE_DELTA: -5
+unit: score points / league positions
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/offerSelectionService.ts (computeDifficultyScore), src/domain/services/boardService.ts (RELEGATION_ZONE_SIZE, computeBoardPatienceUpdate, evaluateBoard AvoidBottom)"
+verified_at: 2026-08-17
+verified_by: code
+status: active
+invariants:
+  - "value.DIFFICULTY_EASY_THRESHOLD > value.DIFFICULTY_MEDIUM_THRESHOLD"
+  - "value.RELEGATION_ZONE_SIZE >= 1"
+  - "value.RELEGATION_ZONE_SIZE <= 4"
+related_facts: [D028]
+notes: |
+  U1 (SLUTTEST_KO.md, 2026-08-17) — "det största fyndet i hela testserien":
+  offerSelectionService.ts satte difficulty ENBART från reputation (hard
+  <55). Skutskär (rep 52, AvoidBottom-krav — det lägsta som finns, sund
+  ekonomi 4.2x lönebudget) klassades "hard" trots att jobbet objektivt var
+  lätt. En testare sabbade en säsong medvetet (felvänd taktik, svagaste
+  elva, 15 vägrade presskonferenser) och slutade femma — styrelsen blev
+  MER nöjd, inte mindre.
+
+  Ny modell, tre faktorer, ingen ny körtidssimulering: reputation (bas,
+  som idag) + expectationGap (kräver styrelsen mer än ryktet motiverar,
+  ordinalt 0-3 per krav-nivå, straff -12/steg) + finansiell marginal
+  (finances/wageBudget, straff -10 under 4x, bonus +5 över 6x).
+
+  Kalibrering (engångsjobb, INTE en automatiserad pipeline): räknat för
+  hand mot de tolv befintliga CLUB_TEMPLATES. Alla tolv har idag
+  expectationGap=0 (styrelsekravet matchar redan reputation-tiern i
+  templaten) — så modellens synliga effekt kommer nästan helt från
+  marginaljusteringen. Resultat vid tröskeln easy>=75/medium>=50:
+  Slottsbron (score 48) och Heros (score 40) hard; Skutskär (52),
+  Rögle (50) och sex till medium; Forsbacka (90) och Västanfors (83) easy.
+  Jämfört med gamla modellen: Skutskär och Rögle flyttar hard→medium
+  (den faktiska bug-fixen), övriga oförändrade grupptillhörighet.
+
+  Nedflyttningszonen: ingen enskild "N lag flyttas ner"-regel fanns
+  tidigare i spelet (tre olika filer hade tre olika lösa trösklar för
+  narrativ "bottenstrid" — 9+, 10+, och en totalTeams/3-räkning för
+  boardPatience). RELEGATION_ZONE_SIZE=2 är en NY delad konstant, satt
+  bara för boardPatience-mekaniken (evaluateBoard + seasonEndProcessor) —
+  de lösa narrativa trösklarna i seasonContextService.ts/
+  pressConferenceService.ts rördes INTE (utanför U1:s scope, ingen
+  rapporterad symptom pekade dit).
+
+  Varningszon (plats 9-10 av 12): ny, svag tålamodsstraff (-5, ingen
+  failure-räknare) precis ovanför den faktiska zonen — trycket ska byggas
+  upp innan klippan, inte bara vid den. Samma bredd som RELEGATION_ZONE_SIZE.

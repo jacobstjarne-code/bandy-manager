@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta } from '../boardService'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate } from '../boardService'
 import { ClubExpectation } from '../../enums'
 import type { StandingRow } from '../../entities/SaveGame'
 
@@ -60,6 +60,13 @@ describe('evaluateBoard', () => {
     it('unhappy at very bottom late season', () => {
       expect(evaluateBoard(ClubExpectation.AvoidBottom, makeStanding(12), TOTAL, 20, TOTAL_ROUNDS).satisfaction).toBe('unhappy')
     })
+    // U1 (SLUTTEST_KO.md, 2026-08-17): RELEGATION_ZONE_SIZE=2 — plats 11 (näst
+    // sist av 12) ska läsa som 'unhappy', inte bara 'concerned'. Tidigare var
+    // bara den absolut sista platsen 'unhappy', vilket var kärnan i U1-fyndet
+    // (en klubb kunde ligga näst sist utan att styrelsen brydde sig).
+    it('näst sist (i den faktiska nedflyttningszonen) är också unhappy, inte bara concerned', () => {
+      expect(evaluateBoard(ClubExpectation.AvoidBottom, makeStanding(11), TOTAL, 20, TOTAL_ROUNDS).satisfaction).toBe('unhappy')
+    })
   })
 })
 
@@ -94,6 +101,37 @@ describe('generateSeasonVerdict', () => {
       expect(v.body.length).toBeGreaterThan(0)
       expect([1, 2, 3, 4, 5]).toContain(v.rating)
     }
+  })
+})
+
+describe('computeBoardPatienceUpdate — U1 (SLUTTEST_KO.md, 2026-08-17)', () => {
+  const TOTAL = 12  // RELEGATION_ZONE_SIZE=2 → zon = plats 11-12, varningszon = plats 9-10
+
+  it('nedflyttningszonen (plats 11-12): -20 patience, failures+1', () => {
+    expect(computeBoardPatienceUpdate(11, TOTAL, 70, 0)).toEqual({ newBoardPatience: 50, newConsecutiveFailures: 1 })
+    expect(computeBoardPatienceUpdate(12, TOTAL, 70, 2)).toEqual({ newBoardPatience: 50, newConsecutiveFailures: 3 })
+  })
+
+  it('varningszonen (plats 9-10): -5 patience, failures nollställs — INTE den gamla botten-tre-gissningen som gav noll effekt här', () => {
+    expect(computeBoardPatienceUpdate(9, TOTAL, 70, 2)).toEqual({ newBoardPatience: 65, newConsecutiveFailures: 0 })
+    expect(computeBoardPatienceUpdate(10, TOTAL, 70, 2)).toEqual({ newBoardPatience: 65, newConsecutiveFailures: 0 })
+  })
+
+  it('mid-table (plats 5-8): ingen patience-förändring, failures nollställs', () => {
+    expect(computeBoardPatienceUpdate(6, TOTAL, 70, 3)).toEqual({ newBoardPatience: 70, newConsecutiveFailures: 0 })
+  })
+
+  it('topp (plats 1-2): +20 patience', () => {
+    expect(computeBoardPatienceUpdate(1, TOTAL, 70, 0).newBoardPatience).toBe(90)
+  })
+
+  it('topp tre (men inte topp två): +15 patience', () => {
+    expect(computeBoardPatienceUpdate(3, TOTAL, 70, 0).newBoardPatience).toBe(85)
+  })
+
+  it('patience clampas till [0, 100]', () => {
+    expect(computeBoardPatienceUpdate(1, TOTAL, 95, 0).newBoardPatience).toBe(100)
+    expect(computeBoardPatienceUpdate(12, TOTAL, 10, 0).newBoardPatience).toBe(0)
   })
 })
 
