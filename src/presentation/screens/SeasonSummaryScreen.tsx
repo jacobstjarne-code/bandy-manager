@@ -379,7 +379,13 @@ export function SeasonSummaryScreen() {
                   opacity: sharing ? 0.5 : 1,
                 }}
               >
-                {sharing ? 'Sparar...' : 'Spara som bild'}
+                {/* 4.14 (SLUTTEST_KO.md, 2026-08-18): knappen anropar handleShare()
+                    → shareSeasonImage(summary), som alltid producerar SÄSONGSKORTET,
+                    inte en bild av just den här matchen (h.shareImageReady är permanent
+                    false — matchHighlightService.ts har ingen egen bildgenerator).
+                    "Spara som bild" lovade en matchartefakt knappen inte kan leverera.
+                    Text låst av Jacob 2026-08-18, verbatim tills matchartefakten finns. */}
+                {sharing ? 'Sparar...' : 'Dela säsongen'}
               </button>
             </div>
           )
