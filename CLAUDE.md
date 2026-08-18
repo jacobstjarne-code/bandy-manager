@@ -303,6 +303,9 @@ Detta är ett en-utvecklare-spel. Jacob är beta-testare, dev-team och release-m
 
 Vercel-MCP är ansluten (claude.ai-integrationen, `https://mcp.vercel.com`). Code kan deploya och läsa build-/runtime-loggar direkt — ingen manuell dashboard-koll, ingen copy-paste av felmeddelanden.
 
+### Känd begränsning: Vercels kostnadsfria plans dags-kvot (bekräftat 2026-08-18)
+Projektet ligger på Vercels gratisnivå, som har ett dagligt tak på antal deployar. Nås taket slutar Vercel trigga nya builds **tyst** — ingen ERROR-post, inget i deployment-listan alls, symptomen är identiska med en trasig GitHub↔Vercel-koppling. Det kostade en hel diagnosrunda 2026-08-18 (sex pushar, noll deploy-aktivitet) innan Jacob bekräftade den verkliga orsaken var kvoten, inte en trasig integration. **Innan du misstänker en trasig koppling eller ett byggfel:** om `list_deployments`/GitHubs Deployments-API visar noll aktivitet för flera pushar i rad SAMMA DAG, trots att tidigare pushar samma dag deployade normalt — anta kvot, inte trasig koppling. Fortsätt committa och pusha som vanligt (GitHub självt är opåverkat, deploy-sync-hooken i sessionsstart steg 5 bryr sig bara om origin/main, inte Vercel) — deployen kommer ikapp när kvoten återställs. Rapportera kort, gräv inte vidare.
+
 ### Det som ALLTID är automatiskt
 - Efter en RC-relevant push: deploya till en **preview**-URL, läs build-loggen, rapportera URL + build-status + hash. Detta är ren vinst och kräver inget go.
 - Vid grön build: rapportera URL, klart.
