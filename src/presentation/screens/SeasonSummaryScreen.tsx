@@ -524,7 +524,12 @@ export function SeasonSummaryScreen() {
 
         <ChapterDivider label="Truppen" />
 
-        {/* SEASON'S BEST */}
+        {/* SEASON'S BEST — Å11 (SLUTTEST_KO.md, 2026-08-18, DS-regel 12): kortet
+            renderade tidigare ovillkorligt även när alla fem award-fälten var
+            null (för få matcher/data för säsongen) — en rubrik ovanför ett
+            tomt grid. "✕ betyder att sektionen inte renderas. Inte ett tomt
+            kort." Gated på faktisk data, precis som regeln kräver. */}
+        {(summary.topScorer || summary.topAssister || summary.topRated || summary.mostImproved || summary.youngPlayer) && (
         <div className="card-sharp card-stagger-2" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>SÄSONGENS BÄSTA</SectionLabel>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -550,6 +555,7 @@ export function SeasonSummaryScreen() {
             )}
           </div>
         </div>
+        )}
 
         {/* CUP RESULT */}
         {summary.cupResult && summary.cupResult !== 'eliminated' && (
