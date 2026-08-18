@@ -36,7 +36,7 @@ function makeWithdrawnMecenat(): Mecenat {
     personality: 'filantropen',
     influence: 20,
     happiness: 0,               // satt av withdrawal-blocket
-    patience: 50,
+    goodwill: 50,
     contribution: 50000,
     totalContributed: 150000,
     demands: [],

@@ -225,7 +225,7 @@ export function generateMecenat(
     personality,
     influence: 10 + Math.floor(rand() * 20),
     happiness: 60 + Math.floor(rand() * 20),
-    patience: 50 + Math.floor(rand() * 30),
+    goodwill: 50 + Math.floor(rand() * 30),
     contribution,
     totalContributed: 0,
     demands: [],

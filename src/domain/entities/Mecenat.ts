@@ -47,7 +47,12 @@ export interface Mecenat {
   personality: MecenatPersonality
   influence: number
   happiness: number
-  patience: number
+  // 3.2 (SLUTTEST_KO.md, 2026-08-17) — döpt om från `patience`: samma
+  // kollisionsrisk mot `boardPatience`/`patron.patience`→`goodwill` (165b280c)
+  // som redan åtgärdats en gång. Fältet skrivs vid mecenat-generering men
+  // läses ingenstans annars (grep bekräftat) — döpt om, inte borttaget,
+  // eftersom kravmotorn (demands) kan komma att läsa det senare.
+  goodwill: number
   contribution: number
   totalContributed: number
   // M48 (textaudit 2026-07-04): var ALDRIG populerad — WIRAD 2026-07-19 av

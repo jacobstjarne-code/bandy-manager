@@ -42,7 +42,7 @@ describe('O19: systemhandelse-märkning', () => {
   it('generateMecenatInterventionEvent är märkt', () => {
     const mec: Mecenat = {
       id: 'm1', name: 'Test Mecenat', business: 'Test AB', personality: 'showman',
-      happiness: 40, isActive: true, patience: 50, goodwill: 50,
+      happiness: 40, isActive: true, goodwill: 50,
     } as Mecenat
     const event = generateMecenatInterventionEvent(mec, 5)
     expect(event.systemhandelse).toBe(true)
@@ -52,7 +52,7 @@ describe('O19: systemhandelse-märkning', () => {
     const game = makeGame()
     const mec: Mecenat = {
       id: 'm1', name: 'Test Mecenat', business: 'Test AB', personality: 'showman',
-      happiness: 60, isActive: true, patience: 50, goodwill: 50,
+      happiness: 60, isActive: true, goodwill: 50,
       yearsActive: 8, retirementThreshold: 6, hasAnnouncedRetirement: false,
     } as Mecenat
     const withMecenat = { ...game, mecenater: [mec] }

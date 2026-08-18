@@ -14,7 +14,7 @@ function makeMecenat(overrides: Partial<Mecenat> = {}): Mecenat {
     personality: 'demanding' as never,
     influence: 50,
     happiness: 80,
-    patience: 80,
+    goodwill: 80,
     contribution: 100000,
     totalContributed: 100000,
     demands: [],

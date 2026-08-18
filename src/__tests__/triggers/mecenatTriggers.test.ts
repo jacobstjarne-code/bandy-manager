@@ -14,7 +14,7 @@ function makeMecenat(overrides: Partial<Mecenat> = {}): Mecenat {
     personality: 'demanding' as never,
     influence: 50,
     happiness: 80,
-    patience: 80,
+    goodwill: 80,
     contribution: 100000,
     totalContributed: 100000,
     demands: [],
@@ -63,7 +63,7 @@ describe('mecenatHasPendingDemand — synlighetsfix 2026-07-21', () => {
     // Skillnaden mot patronDemandUnmetOver3Rounds: hög happiness/patience ska INTE dölja ett färskt krav.
     const mec = makeMecenat({
       happiness: 90,
-      patience: 90,
+      goodwill: 90,
       pendingDemand: { category: 'league_position', description: 'x', createdRound: 5, deadlineRound: 13 },
     })
     expect(mecenatHasPendingDemand(makeGame([mec]))).toBe(true)

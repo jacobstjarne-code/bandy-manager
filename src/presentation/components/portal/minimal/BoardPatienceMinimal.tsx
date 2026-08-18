@@ -13,9 +13,13 @@ import { getBoardPatienceZone } from '../../../../domain/services/portal/boardPa
  * bär fortfarande den fulla textmotiveringen (styrelsens citat) när den
  * vinner beat-rotationen; det här kortet garanterar bara att ZONEN inte
  * är beroende av den rotationen.
+ *
+ * "med orsak"-kravet (text låst av Opus 2026-08-17): headline + orsaksrad
+ * (under_press/ultimatum) + väg tillbaka (bara ultimatum) — se
+ * boardPatienceZone.ts för hur orsaken väljs.
  */
 export function BoardPatienceMinimal({ game }: CardRenderProps) {
-  const { zone, label } = getBoardPatienceZone(game)
+  const { zone, label, headline, causeLine, pathBackLine } = getBoardPatienceZone(game)
 
   const color = zone === 'stabilt'
     ? 'var(--success)'
@@ -37,6 +41,19 @@ export function BoardPatienceMinimal({ game }: CardRenderProps) {
       <div className="h-num-sm" style={{ color }}>
         {label}
       </div>
+      <div style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 4 }}>
+        {headline}
+      </div>
+      {causeLine && (
+        <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>
+          {causeLine}
+        </div>
+      )}
+      {pathBackLine && (
+        <div style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 2 }}>
+          {pathBackLine}
+        </div>
+      )}
     </div>
   )
 }
