@@ -402,7 +402,16 @@ export function resolveEvent(
               // gjorde precis det misstaget med sin egen, GLOBALA currentMatchday-variabel).
               matchday: getCurrentLeagueRound(updatedGame),
               playerId: pid,
-              description: 'went_fulltime_pro',
+              // 4.6 (SLUTTEST_KO.md, 2026-08-17): description var den råa
+              // typnyckeln ('went_fulltime_pro') — läcker som synlig text där
+              // seasonSummaryService.ts:s arcMoments använder .description som
+              // body (t.ex. SeasonSummaryScreen.tsx:s "DIN SÄSONG"-kort).
+              // Ingen ny svensk text författad här (SVENSK TEXT-regeln,
+              // CLAUDE.md) — återanvänder samma redan godkända mening som
+              // displayText, inte en påhittad andra rad.
+              description: proPlayer
+                ? `${proPlayer.firstName} ${proPlayer.lastName} slutade som ${oldJob} för att satsa heltid på bandyn`
+                : 'Blev heltidsproffs',
               displayText: proPlayer
                 ? `${proPlayer.firstName} ${proPlayer.lastName} slutade som ${oldJob} för att satsa heltid på bandyn`
                 : 'Blev heltidsproffs',
@@ -1550,7 +1559,9 @@ export function resolveEvent(
           type: 'captain_rallied_team' as const,
           season: updatedGame.currentSeason,
           matchday: currentMatchday,
-          description: 'captain_rallied_team',
+          // 4.6 (SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — se
+          // kommentaren vid went_fulltime_pro-storylinen ovan för rotorsak.
+          description: 'Kaptenen samlade laget efter en svår period',
           displayText: 'Kaptenen samlade laget efter en svår period',
           resolved: true,
         },
@@ -1583,7 +1594,10 @@ export function resolveEvent(
             type: 'rescued_from_unemployment' as const,
             season: updatedGame.currentSeason,
             matchday: currentMatchday,
-            description: 'rescued_from_unemployment',
+            // 4.6 (SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — se
+            // kommentaren vid went_fulltime_pro-storylinen (eventResolver.ts
+            // rad ~405) för rotorsak.
+            description: 'Klubben räddade spelare från uppsägning genom att erbjuda heltidskontrakt',
             displayText: 'Klubben räddade spelare från uppsägning genom att erbjuda heltidskontrakt',
             resolved: true,
           },

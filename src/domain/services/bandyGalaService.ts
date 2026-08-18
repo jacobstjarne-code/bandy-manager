@@ -192,7 +192,9 @@ export function generateGalaInbox(
         season: game.currentSeason,
         matchday: currentMatchday,
         playerId: nom.playerId,
-        description: 'gala_winner',
+        // 4.6 (SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — samma
+        // felklass som eventResolver.ts:s tre storylines, se kommentaren där.
+        description: `${nom.playerName} vann ${AWARD_LABELS[nom.award]} på Bandygalan ${seasonChampionYear(game.currentSeason)}`,
         displayText: `${nom.playerName} vann ${AWARD_LABELS[nom.award]} på Bandygalan ${seasonChampionYear(game.currentSeason)}`,
         resolved: true,
       })
