@@ -116,6 +116,23 @@ export interface StorylineEntry {
   resolved: boolean
 }
 
+/**
+ * U5 (SLUTTEST_KO.md, 2026-08-17) — DOM GIVEN. En delad logg, en skrivväg,
+ * två läsvägar: narrativ cooldown per båge (isOnCooldown, U5) och
+ * systemhändelsebudget per säsong (systemhandelseBudgetOk, O19). Ersätter
+ * INTE de åtta befintliga cooldown-/dedupmekanismerna (resolvedEventIds,
+ * resolvedWeeklyDecisions, shownBeats, shownScenes, activeArcs,
+ * sourceCooldowns, cardStaleTracking, klackEcho) under migreringen — de
+ * ligger kvar parallellt tills alla källor skriver hit. Se
+ * narrativeLogService.ts.
+ */
+export interface NarrativeLogEntry {
+  semanticKey: string
+  season: number
+  round: number
+  systemhandelse?: boolean
+}
+
 export interface BandyLetter {
   id: string
   senderName: string

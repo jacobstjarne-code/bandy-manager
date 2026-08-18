@@ -29,7 +29,7 @@ import type { PendingScene, SceneId } from './Scene'
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'
 import type { CommunityActivities, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
-import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord } from './Narrative'
+import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry } from './Narrative'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
 
 // ── Legibel konsekvens — domino-kedje-typer (används av rippleEffectService + portalBeats) ──
@@ -61,7 +61,7 @@ export interface RippleChain {
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
 export type { CommunityActivities, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
 export type { BoardMember, BoardRole, BoardPersonality }
-export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord }
+export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry }
 export type { StandingRow }
 export type { InboxItem }
 export type { TransferOffer, TransferState }
@@ -258,6 +258,10 @@ export interface SaveGame {
   // V1.0 — Storylines + Legacy
   storylines?: StorylineEntry[]
   clubLegends?: ClubLegend[]
+
+  // U5 (SLUTTEST_KO.md, 2026-08-17) — narrativLoggen, se Narrative.ts:s
+  // NarrativeLogEntry-kommentar och narrativeLogService.ts.
+  narrativeLog?: NarrativeLogEntry[]
 
   // V1.0 — Market value tracking (previous round values for delta display)
   previousMarketValues?: Record<string, number>  // playerId → last known marketValue
