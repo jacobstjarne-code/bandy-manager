@@ -579,7 +579,26 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 | O17 | **Anläggningsträdets slut** — `DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md`. Tre delar: (1) ett fullt träd är ett **tillstånd** med text och sammanställning, **byggs nu**; (2) hallprövningen gatas på fullt träd nu men är en horisont först efter `O5` — en hall som kostar 3 mkr mot en kassa på 11 är samma klickning som de sista noderna; (3) **avveckla en byggd nod** blir ett val först när drift finns (`O5` del 2), och det uppfyller varsel-mallens punkt 4–5. **Inte fler noder** — det skjuter problemet fem säsonger framåt | `SKRIVEN` |
 | O18 | **Årsboken som karriärens ryggrad** — `DOM_ARSBOKEN_RYGGRAD_2026-08-17.md`. Fem fält i `SeasonSummary`: spelarens mål+utfall (`O3`), säsongens viktigaste beslut (kräver `O19`), största personförändring, rivalitetens ställning, klubbens epok. **Ett fält per säsong, aldrig en lista** — en händelselös säsong ska bära färre fält, inte utfyllnad. All text låst. Fält 3–5 kan byggas nu; fält 1 ihop med `O3`. `HistoryScreen` med snapshot-prop delas med `3.3` och `U7` — bygg den en gång | `SKRIVEN` |
 | O19 | **Märk de nio 5/5-händelserna som systemhändelser i data**, inte i en rapport — de ska bli åtkomliga för en gemensam räknare. Billigt, och gör säsongsbudgeten möjlig. Ingen mekanik byggs än | `KLAR (72427068)` — nytt fält `systemhandelse?: boolean` på `GameEvent` + `WeeklyDecision` (två separata typer, delar inget interface). Satt på alla nio konstruktionsställen. **Designval, inte givet av ordern:** märkt på HELA event:et/decisionen, inte per enskilt val — för `checkMecenatRetirement` (bara `offer_tribute` är 5/5 av tre val) och economicCrisisService (bara `sell_star` av tre) betyder det att räknaren senare ser händelsemomentet som systemhändelse oavsett vilket val spelaren faktiskt gör. Motivering: en finare per-val-märkning kräver att veta VILKET val spelaren gjorde innan räknaren kan agera, vilket hör ihop med säsongsbudget-mekaniken (U5, inte byggd än) — event-nivå är den enda granularitet som är meningsfull utan den mekaniken. Regressionstest verifierat mot pre-fix kod |
-| O20 | **De tio 4/5-händelserna — rapportera vilken punkt som saknas i var och en.** Saknas punkt 5 (systemen pekar isär) är det `O2`:s dominansfråga. Saknas punkt 3 (ett tal att räkna på) väntar den på `O5`. Det avgör vilka som är billiga att lyfta till 5/5 | `EJ` |
+| O20 | **De tio 4/5-händelserna — rapportera vilken punkt som saknas i var och en.** Saknas punkt 5 (systemen pekar isär) är det `O2`:s dominansfråga. Saknas punkt 3 (ett tal att räkna på) väntar den på `O5`. Det avgör vilka som är billiga att lyfta till 5/5 | `RAPPORT-LEVERERAD` — se tabell under |
+
+**O20 — vilken punkt saknas, tio händelser, källa `DOM_VARSLET_KLASSIFICERING_2026-08-17.md`:**
+
+| Händelse | Saknad punkt | Grupp |
+|---|---|---|
+| `politician_inclusion` | K5 — allt pekar uppåt, ingen kostnad | `O2` (dominans) |
+| `icamaxi_visit` → `send_player` | K5 | `O2` |
+| `supporter_away_trip_` → `subsidize` | K5 | `O2` |
+| `survival_emergency_lotto` | K5 | `O2` |
+| `q1` (mecenatDinner, bidrag) | K5 | `O2` |
+| `politician_warning` (låg relation) → `board_contact` | K3 — ingen kr-summa, bara relationspoäng | `O5` (väntar) |
+| `gentjanst` → `no`-valet | K3 | `O5` |
+| `q2` (mecenatDinner, konkurrens) | K3 | `O5` |
+| `ismaskin_offer` | K2 — träffar ingen spelare/funktionär, bara kassa+kommunstatus | Varken/eller — kräver ett namngivet mål, inte en ekonomi- eller dominansfix |
+| `jubilee` (characterPlayerService) | K1 — ingen extern aktör, klubbens egen ceremoni | Varken/eller — kräver en extern namngiven aktör i texten |
+
+**Fördelning:** 5 av 10 väntar bara på `O2` (lägg till en genuin nedsida i redan befintliga val — billigast, kräver ingen ny mekanik). 3 av 10 väntar på `O5` (kräver att ett kr-tal betyder något, pausad tills `U1`). 2 av 10 (`ismaglet_offer`, `jubilee`) är varken/eller — de kräver ett litet textbeslut (ge kravet en namngiven avsändare respektive ett namngivet mål) som varken `O2` eller `O5` löser åt dem, men som är billigt när Opus har tid.
+
+**Körorder:** Opus avgör om de 5 K5-fallen ska räknas in i `O2`:s befintliga sponsor-först-ordning eller tas som en egen liten svit efter `O2`:s första leverans. De 3 K3-fallen rör sig inte förrän `O5` är olåst av `U1`. `ismaskin_offer`/`jubilee` kan textas när som helst, oberoende av båda.
 
 ---
 
