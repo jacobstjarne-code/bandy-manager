@@ -278,7 +278,7 @@ Tre saker i rapporten avgör, och de är alla nya för mig:
 **Kontrakt B byggs inte.** Skillnaden är större än `O13` antog: `createNewGame` genererar alltid en ny värld, så job market kräver en helt annan operation — behåll ligan, byt `managedClubId`, återställ det klubbspecifika. Det är inte en påbyggnad på A. `O13` uppdaterad med det.
 
 **Godkänd när:** efter avsked finns ingen väg till `/game`, huvudmenyn visar inte FORTSÄTT, och den avslutade karriären är läsbar.
-**Status:** `DOM GIVEN — BYGG`
+**Status:** `KLAR (853b4d55)` — två knappar (SE KARRIÄREN / NY KARRIÄR), ny route `/game/game-over/historik` under `GameGuard` (kollar bara `!game`, inte `managerFired` — `GameShell` hade annars redirectat bort den direkt). `clearFiredGame()`-action nollställer store:t. **Avvikelse från "arkivera lätt"-rekommendationen, medveten:** byggde INTE en separat persisterad arkivpost — `GameOverScreen` fångar hela `game`-objektet i `navigate()`s route-state, `HistoryScreen` läser det via en ny `snapshot`-prop (`resolveDisplayedGame()`) istället för live store. Lättare än en ny IndexedDB-post (noll extra skrivningar), men överlever inte en sidladdning mellan avsked och "SE KARRIÄREN"-klick — route-state är minnesbaserat. Given `game` ändå ligger kvar orört i store fram tills `clearFiredGame()` körs (bara NY KARRIÄR-knappen anropar den), är det praktiska felfönstret smalt: en reload på game-over-skärmen läser fortfarande live store korrekt (samma data), det är bara ett reload EFTER att "SE KARRIÄREN" navigerat och route-state gått förlorat men INNAN NY KARRIÄR som skulle tappa vyn. Godkänn eller kräv en persisterad arkivpost — säg till.
 
 ---
 
