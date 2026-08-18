@@ -10,6 +10,7 @@ import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 import { getManagerDisplayName } from '../../domain/services/managerProfileService'
+import { exportSaveAsJson, importSaveFromJson } from '../../infrastructure/persistence/saveGameStorage'
 
 const ROUND_NAME: Record<PlayoffRound, string> = {
   [PlayoffRound.QuarterFinal]: 'Kvartsfinal',
@@ -49,6 +50,7 @@ export function GameHeader() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
   const saveGame = useGameStore(s => s.saveGame)
+  const loadGame = useGameStore(s => s.loadGame)
   const club = useManagedClub()
   const unreadInbox = useUnreadInboxCount()
   const [showMenu, setShowMenu] = useState(false)
@@ -59,14 +61,38 @@ export function GameHeader() {
   })
   const [showKlubbparm, setShowKlubbparm] = useState(false)
 
+  function showToast(ok: boolean, text: string) {
+    setSaveToast({ visible: true, ok, text })
+    setTimeout(() => setSaveToast(prev => ({ ...prev, visible: false })), 2400)
+  }
+
   async function handleSaveGame() {
     const result = await saveGame()
-    if (result.success) {
-      setSaveToast({ visible: true, ok: true, text: '✓ Sparat' })
-    } else {
-      setSaveToast({ visible: true, ok: false, text: result.error ?? 'Kunde inte spara' })
+    if (result.success) showToast(true, '✓ Sparat')
+    else showToast(false, result.error ?? 'Kunde inte spara')
+  }
+
+  function handleExportSave() {
+    if (!game) return
+    exportSaveAsJson(game)
+    showToast(true, '✓ Exporterad')
+  }
+
+  // U7 (SLUTTEST_KO.md, 2026-08-17): import skriver över den aktiva karriären
+  // — window.confirm som varning FÖRE, Jacobs beslut. Ingen ny modal-yta för
+  // en operation som redan är sällsynt och destruktiv.
+  async function handleImportSave() {
+    const proceed = window.confirm(
+      'Importera säkerhetskopia? Din aktuella karriär ersätts. Detta går inte att ångra.'
+    )
+    if (!proceed) return
+    const imported = await importSaveFromJson()
+    if (!imported) {
+      showToast(false, 'Kunde inte importera')
+      return
     }
-    setTimeout(() => setSaveToast(prev => ({ ...prev, visible: false })), 2400)
+    const ok = await loadGame(imported.id)
+    showToast(ok, ok ? '✓ Importerad' : 'Kunde inte ladda den importerade filen')
   }
 
   if (!game || !club) return null
@@ -242,6 +268,8 @@ export function GameHeader() {
           {[
             { label: '💾 Spara spel', action: handleSaveGame },
             { label: '📂 Ladda spel', action: () => navigate('/') },
+            { label: '⬇️ Exportera säkerhetskopia', action: handleExportSave },
+            { label: '⬆️ Importera säkerhetskopia', action: handleImportSave },
           ].map((item, i) => (
             <button key={i} onClick={() => { void item.action(); setShowMenu(false) }}
               style={{

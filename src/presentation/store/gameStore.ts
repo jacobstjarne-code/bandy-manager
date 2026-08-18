@@ -14,7 +14,7 @@ import { promoteFromQueue } from '../../domain/services/decisionBudgetService'
 import { type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
-import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded, saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
+import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded, saveSaveGame, snapshotSave } from '../../infrastructure/persistence/saveGameStorage'
 import { applyFinanceChange } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
 import { canStartBuild, startFacilityBuild, getFinancingOptions, FACILITY_NODE_DEFS, type FinancingContext } from '../../domain/services/facilityService'
@@ -169,6 +169,13 @@ export const useGameStore = create<GameState>()(
       roundSummary: null,
 
       newGame: (managerName, clubId) => {
+        // U7 (SLUTTEST_KO.md, 2026-08-17): snapshot av den aktiva karriären
+        // FÖRE den ovillkorade raderingen nedan — samma skyddsnät som
+        // loadSaveGame:s pre_migration-snapshot. Fire-and-forget (newGame är
+        // synkron); ett misslyckat snapshot ska aldrig blockera flödet.
+        const activeGame = get().game
+        if (activeGame) void snapshotSave('pre_newgame', activeGame)
+
         // Delete all existing saves from IndexedDB before starting fresh
         const existing = listSaveGames()
         existing.forEach(s => deleteSaveGame(s.id).catch(() => {}))

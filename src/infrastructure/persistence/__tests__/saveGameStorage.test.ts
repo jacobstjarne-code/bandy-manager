@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame } from '../saveGameStorage'
+import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame, snapshotSave, listSaveSnapshots, loadSaveSnapshot } from '../saveGameStorage'
 import { migrateSaveGame } from '../saveGameMigration'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { createNewGame } from '../../../application/useCases/createNewGame'
@@ -36,11 +36,15 @@ function makeGame(id: string, managedClubId: string, lastSavedAt: string): SaveG
   return { ...game, id, lastSavedAt }
 }
 
+// Global, inte bara inuti describe('saveGameStorage') — annars läcker
+// idbStore (och därmed snapshot-index:et) mellan alla describe-block i
+// filen, eftersom beforeEach i Vitest är scopeat till sin egen describe.
+beforeEach(() => {
+  localStorageMock.clear()
+  for (const k of Object.keys(idbStore)) delete idbStore[k]
+})
+
 describe('saveGameStorage', () => {
-  beforeEach(() => {
-    localStorageMock.clear()
-    for (const k of Object.keys(idbStore)) delete idbStore[k]
-  })
 
   it('saveSaveGame stores game and loadSaveGame retrieves identical object', async () => {
     const game = makeGame('save_001', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
@@ -120,6 +124,54 @@ describe('saveGameStorage', () => {
     const loaded2 = await loadSaveGame('save_002')
     expect(loaded2).not.toBeNull()
     expect(loaded2?.id).toBe('save_002')
+  })
+})
+
+describe('snapshotSave / listSaveSnapshots / loadSaveSnapshot — U7 (SLUTTEST_KO.md, 2026-08-17)', () => {
+  it('en snapshot går att lista och läsa tillbaka', async () => {
+    const game = makeGame('save_snap1', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+    await snapshotSave('pre_newgame', game)
+
+    const snapshots = await listSaveSnapshots()
+    expect(snapshots.length).toBe(1)
+    expect(snapshots[0].reason).toBe('pre_newgame')
+
+    const restored = await loadSaveSnapshot(snapshots[0].key)
+    expect(restored?.id).toBe('save_snap1')
+  })
+
+  it('rotation: fler än 2 snapshots behåller bara de 2 senaste', async () => {
+    const g1 = makeGame('s1', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+    const g2 = makeGame('s2', 'club_forsbacka', '2025-10-02T10:00:00.000Z')
+    const g3 = makeGame('s3', 'club_forsbacka', '2025-10-03T10:00:00.000Z')
+
+    await snapshotSave('pre_newgame', g1)
+    await snapshotSave('pre_newgame', g2)
+    await snapshotSave('pre_newgame', g3)
+
+    const snapshots = await listSaveSnapshots()
+    expect(snapshots.length).toBe(2)
+    // Den äldsta (g1) ska vara borta — varken listad eller läsbar.
+    const restoredIds = await Promise.all(snapshots.map(s => loadSaveSnapshot(s.key).then(g => g?.id)))
+    expect(restoredIds).not.toContain('s1')
+    expect(restoredIds).toContain('s2')
+    expect(restoredIds).toContain('s3')
+  })
+
+  it('loadSaveSnapshot returnerar null för en okänd nyckel', async () => {
+    expect(await loadSaveSnapshot('bandy_snapshot_okand_123_0')).toBeNull()
+  })
+})
+
+describe('loadSaveGame — snapshot före migrering (U7)', () => {
+  it('tar en pre_migration-snapshot av rådatan innan migreringen appliceras', async () => {
+    const game = makeGame('save_migtest', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+    await saveSaveGame(game)
+
+    await loadSaveGame('save_migtest')
+
+    const snapshots = await listSaveSnapshots()
+    expect(snapshots.some(s => s.reason === 'pre_migration')).toBe(true)
   })
 })
 
