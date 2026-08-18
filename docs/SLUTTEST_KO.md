@@ -462,6 +462,7 @@ Rapportera vad ett säsongsvis renommédelta ur placering mot förväntan skulle
 **Formel-skiss** (i `seasonEndProcessor.ts` där `computeSeasonVerdictRating` redan beräknas): `repDelta = { 1: -6, 2: -3, 3: 0, 4: +2, 5: +4 }[rating]`, clampat 0-100. Proportion mot befintligt: under skandalnivå (−5/−8, tillfälligt) eftersom ett säsongsmisslyckande återkommer varje säsong medan skandal är enstaka.
 
 **Omfattning:** 3-5 rader i `seasonEndProcessor.ts`, ingen ny service — återanvänder `boardExpectation`/`computeSeasonVerdictRating` fullt ut. Kirurgiskt, men **kräver en D-fact-post** för magnituden (CLAUDE.md:s D-FACT-regel vid nya spelmagnituder) innan commit.
+**Status:** `KLAR (1bfd2352)` — `seasonReputationDelta()` i `boardService.ts`, tillämpad i `seasonEndProcessor.ts`. D028 skriven. 1939/1939 gröna, regressionstest verifierat mot pre-fix kod
 
 ### U7 · Save-portabilitet — den enda posten där ett fel raderar spelarens arbete
 Export/import finns i `saveGameStorage:5-56` men är **inte nåbar från UI**. En tioårig karriär lever i en lokal IndexedDB utan backup, utan enhetsbyte, utan migrationstest mellan releaser.
