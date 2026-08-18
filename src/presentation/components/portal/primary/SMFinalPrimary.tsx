@@ -103,9 +103,14 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
         </div>
       )}
 
+      {/* Å3 (SLUTTEST_KO.md, 2026-08-18): PortalScreen.tsx:s fasta sticky-CTA
+          är den EN primärhandlingen i varje portal-tillstånd — samma mönster
+          som SpectatorPrimary.tsx:s egen kort-knapp (btn-outline, inte
+          btn-primary). Den här var den enda primary-kort-knappen i hela
+          Portal som konkurrerade med den, med .btn-primary på båda samtidigt. */}
       <button
         onClick={() => navigate('/game/match')}
-        className="btn btn-primary"
+        className="btn btn-outline"
         style={{ width: '100%', marginTop: 12 }}
       >
         Sätt lineup för finalen →
