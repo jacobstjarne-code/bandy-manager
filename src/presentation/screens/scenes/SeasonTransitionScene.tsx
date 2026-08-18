@@ -181,15 +181,7 @@ export function SeasonTransitionScene() {
               {eyebrowLabel}
             </div>
           )}
-          <button
-            onClick={handleContinue}
-            style={{
-              width: '100%', background: 'linear-gradient(180deg, #DD9555, #8B4820)', color: '#fff',
-              fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 700, letterSpacing: 1,
-              padding: 13, borderRadius: 12, textAlign: 'center', border: 'none', cursor: 'pointer',
-              boxShadow: '0 4px 18px rgba(162,88,40,.5)',
-            }}
-          >
+          <button onClick={handleContinue} className="btn btn-cta btn-primary">
             {ctaText}
           </button>
         </div>
@@ -203,7 +195,7 @@ function RoadNode({ emoji, label, sub, lit }: { emoji: string; label: string; su
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, width: 70, opacity: lit ? 1 : 0.5 }}>
       <div style={{
         width: 34, height: 34, borderRadius: '50%',
-        background: lit ? 'linear-gradient(180deg, #DD9555, #8B4820)' : 'var(--bg-leather)',
+        background: lit ? 'linear-gradient(180deg, var(--copper), var(--copper-deep))' : 'var(--bg-leather)',
         border: lit ? 'none' : '1px solid rgba(255,255,255,.12)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: lit ? 15 : 14,
         boxShadow: lit ? '0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent)' : 'none',
