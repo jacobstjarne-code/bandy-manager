@@ -267,6 +267,7 @@ All eases are subtle, short, copper-themed. `fadeIn` (220 ms), `fadeInUpScale` (
 ### Transparency & blur
 
 - **Backdrop** (`EventOverlay`, modals) — `rgba(0,0,0,0.6)`, **no blur**. Modals are centered cards (max-width 380 px), not bottom-sheets.
+- **In-match dock exception (Å10, ratificerad 2026-08-18):** live-matchvyns modaler följer en egen, skärpt regel — **bara modaler som besvaras UNDER pågående, orullande spel dockas** (`.match-modal-dock`, fäst mot botten ovanför BottomNav). Allt annat centreras (`.match-modal-overlay` + `.match-modal-panel`, samma mönster som `HalftimeModal`). `TacticChangeModal` dockas — en snabb, glanceable taktikändring medan matchen rullar. `SubstitutionModal` centreras — ett byte är en mer deliberat, pausad handling (spelaren bläddrar startelva → bänk i två steg), inte en sidolinje-blick. Testfråga innan en ny in-match-modal byggs: "besvaras den här med matchen rullande, eller pausar spelaren för att ta beslutet?" Rullande → dock. Pausar → centrerad.
 - **Tag backgrounds** use 10–15% alpha of their hue — `rgba(90,154,74,0.12)` for `.tag-green`.
 - **No frosted-glass / backdrop-filter anywhere** — doesn't fit the paper + leather mood.
 

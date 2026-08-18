@@ -1,4 +1,4 @@
-import { ArrowLeftRight } from 'lucide-react'
+import { ArrowLeftRight, Settings } from 'lucide-react'
 import { Icon } from '../primitives/Icon'
 
 interface MatchControlsProps {
@@ -69,7 +69,7 @@ export function MatchControls({
             className={`match-control-btn match-control-tactic${tacticGlow ? ' spak-b-glow' : ''}`}
             title="Taktikjustering"
           >
-            ⚙️
+            <Icon icon={Settings} size={16} />
             <span className="match-control-tactic-count">{tacticChangesLeft}</span>
             <span className="match-control-tactic-label">TAKTIK</span>
           </button>
