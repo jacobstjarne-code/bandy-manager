@@ -447,7 +447,17 @@ Rapportera vad ett säsongsvis renommédelta ur placering mot förväntan skulle
 ### U7 · Save-portabilitet — den enda posten där ett fel raderar spelarens arbete
 Export/import finns i `saveGameStorage:5-56` men är **inte nåbar från UI**. En tioårig karriär lever i en lokal IndexedDB utan backup, utan enhetsbyte, utan migrationstest mellan releaser.
 Rapportera vad ett begripligt backupflöde kostar, plus en automatisk lokal återställningspunkt före migrationskritiska steg. Cloud save och konto ligger långt senare och ska inte bli startfriktion.
-**Status:** `EJ`
+
+**Rapport levererad.** Export/import är redan komplett i `saveGameStorage.ts` (`exportSaveAsJson` :5-15, blob-download, ingen File System Access API behövs; `importSaveFromJson` :32-57, validerar struktur + kör `migrateSaveGame`) — bekräftat att INGEN `.tsx`-fil importerar någotdera, bara testfilen.
+
+**UI-koppling, minsta ändringen:** `GameHeader.tsx:233-257` har redan en färdig inställnings-dropdown med "💾 Spara spel"/"📂 Ladda spel". Två nya rader i samma array (Exportera/Importera säkerhetskopia) — 1 fil, ~10-15 rader, ingen ny skärm.
+
+**Automatisk återställningspunkt:** två triggerpunkter i `gameStore.ts` — före `newGame()`s ovillkorade radering (:165-174, en rad `snapshotBeforeDelete` innan `deleteSaveGame`-loopen) och vid schemaversionsskillnad i `loadSaveGame`/`migrateSaveGame` innan migreringen appliceras. Ny funktion `snapshotSave()` i `saveGameStorage.ts`, samma `idb-keyval`-mönster som redan används, rotation på max 2-3 snapshots (given att lagringskvoten redan varit ett verkligt problem, se `gameStore.ts:169`s kommentar).
+
+**Uppskattad omfattning:** `GameHeader.tsx` (+10-15 rader), ny funktion i `saveGameStorage.ts` (+20-30 rader) + 2 anropsplatser. Ingen ny fil, ingen ny route, inga nya beroenden.
+
+**Öppna frågor för Jacobs beslut:** ska import skriva över nuvarande save direkt eller varna först (destruktivt)? Ska en misslyckad migrering automatiskt erbjuda återställning (kräver liten UI-yta) eller bara logga tyst? Rotationsantal (1 vs 2-3)?
+**Status:** `RAPPORT-LEVERERAD` — kirurgiskt, byggbart direkt efter Jacobs svar på de tre öppna frågorna
 
 ### U8 · Bundle och precache
 2,1 MB huvudbundle, 4,17 MB PWA-precache för en mobile-first app. Rapportera vad code splitting skär och vad det kostar. **Efter sanningslagret.**
@@ -555,8 +565,8 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 | O14 | Monetisering och paketering — framgångsauditens modell är en **hypotes**, inte en dom. Ska inte driva något bygge | `HYPOTES` |
 | O15 | **Taktikens två lägen.** Brief skickad till Design 2026-08-17. Standardläge: assistentens två rekommendationer som **ett** förslag, vad som skiljer planen från förra matchen, och "följ rådet" (ändrar bara det som föreslås). Avancerat läge: alla åtta, större träffytor, ändringshistorik. Standardläge är default. Å2 (träffytorna) ingår. De åtta dimensionerna stannar — progressiv disclosure, inte förenkling | `HOS DESIGN` |
 | O16 | **Granska som lärandeyta** — `DOM_GRANSKA_LARANDEYTA_2026-08-17.md`. En sektion, `DITT VAL`, som kopplar **ett** av spelarens val till ett mätt utfall. Fyra kandidater i ordning efter kopplingens säkerhet: press→återvinningar, hörnstrategi→hörnmål, tempo→kondition sista tjugo, formation→målens ursprung. All text låst. **Rapportera-först:** vilka av de fyra har `MatchResult` faktiskt siffror för? Bygg bara de som redan mäts. **Kräver `4.8` andra halvan** — utan den kan sektionen tillskriva spelaren assistentens beslut, vilket gör den aktivt skadlig | `SKRIVEN` |
-| O17 | **Anläggningsträdets slut.** Det vanliga trädet gick att tömma på ~tio säsonger och då försvann framåtdriften. Ett fullt träd ska öppna nästa horisont, inte visa ett tomtillstånd. Hallprövningen är ett naturligt endgame men förutsätter att byggandet fortfarande kostar (O5). Plus: kunna omprioritera eller avveckla en byggd nod | `EJ SKRIVEN` |
-| O18 | **Årsboken som karriärens ryggrad.** Utöver K3:s bevarade säsongsidentitet ska den lagra: spelarens eget mål (`O3`) och hur det gick, säsongens viktigaste beslut, största personförändring, rivalry-/legendutveckling. Det är vad som gör tio säsonger till en båge i stället för tio fristående år. **Byggs ihop med `O3`** — målets tre fält är första posten i den | `EJ SKRIVEN` |
+| O17 | **Anläggningsträdets slut** — `DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md`. Tre delar: (1) ett fullt träd är ett **tillstånd** med text och sammanställning, **byggs nu**; (2) hallprövningen gatas på fullt träd nu men är en horisont först efter `O5` — en hall som kostar 3 mkr mot en kassa på 11 är samma klickning som de sista noderna; (3) **avveckla en byggd nod** blir ett val först när drift finns (`O5` del 2), och det uppfyller varsel-mallens punkt 4–5. **Inte fler noder** — det skjuter problemet fem säsonger framåt | `SKRIVEN` |
+| O18 | **Årsboken som karriärens ryggrad** — `DOM_ARSBOKEN_RYGGRAD_2026-08-17.md`. Fem fält i `SeasonSummary`: spelarens mål+utfall (`O3`), säsongens viktigaste beslut (kräver `O19`), största personförändring, rivalitetens ställning, klubbens epok. **Ett fält per säsong, aldrig en lista** — en händelselös säsong ska bära färre fält, inte utfyllnad. All text låst. Fält 3–5 kan byggas nu; fält 1 ihop med `O3`. `HistoryScreen` med snapshot-prop delas med `3.3` och `U7` — bygg den en gång | `SKRIVEN` |
 | O19 | **Märk de nio 5/5-händelserna som systemhändelser i data**, inte i en rapport — de ska bli åtkomliga för en gemensam räknare. Billigt, och gör säsongsbudgeten möjlig. Ingen mekanik byggs än | `EJ` |
 | O20 | **De tio 4/5-händelserna — rapportera vilken punkt som saknas i var och en.** Saknas punkt 5 (systemen pekar isär) är det `O2`:s dominansfråga. Saknas punkt 3 (ett tal att räkna på) väntar den på `O5`. Det avgör vilka som är billiga att lyfta till 5/5 | `EJ` |
 
