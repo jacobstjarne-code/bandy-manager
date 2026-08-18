@@ -320,9 +320,20 @@ function drawStat(
   ctx.fillText(value, W - pad, y + 48)
 }
 
-export async function shareSeasonImage(summary: SeasonSummary): Promise<void> {
+/**
+ * 4.13 (SLUTTEST_KO.md, 2026-08-18). Tidigare: Promise<void>, svalde alla
+ * fel tyst — anroparen kunde aldrig veta om delningen faktiskt lyckades,
+ * laddades ner, avbröts av användaren, eller misslyckades helt.
+ */
+export type SeasonShareResult = 'shared' | 'downloaded' | 'cancelled' | 'failed'
+
+function isAbortError(e: unknown): boolean {
+  return e instanceof DOMException ? e.name === 'AbortError' : (e as { name?: string } | undefined)?.name === 'AbortError'
+}
+
+export async function shareSeasonImage(summary: SeasonSummary): Promise<SeasonShareResult> {
   const blob = await generateSeasonShareImage(summary)
-  if (!blob) return
+  if (!blob) return 'failed'
 
   const fileName = `bandy-${seasonStartYear(summary.season)}-${summary.clubName.replace(/\s/g, '_')}.png`
 
@@ -334,10 +345,18 @@ export async function shareSeasonImage(summary: SeasonSummary): Promise<void> {
         await navigator.share({
           files: [file],
           title: `${summary.clubName} — Säsong ${seasonSpanLabel(summary.season)}`,
+          // narrativeSummary är redan genererad, redan visad text (HistoryScreen,
+          // SeasonSummaryScreen) — ingen ny svensk prosa, bara samma sträng återanvänd.
+          text: summary.narrativeSummary,
+          url: window.location.origin,
         })
-        return
-      } catch {
-        // User cancelled or error — fall through to download
+        return 'shared'
+      } catch (e) {
+        // AbortError = användaren avbröt medvetet i delningsarket. Nedladdning
+        // efter ett avbrott vore att tvinga fram artefakten trots att spelaren
+        // sa nej — därför ingen fallback här, bara här.
+        if (isAbortError(e)) return 'cancelled'
+        // Annat delningsfel (t.ex. filen för stor för mottagaren) — fall through till nedladdning.
       }
     }
   }
@@ -349,4 +368,5 @@ export async function shareSeasonImage(summary: SeasonSummary): Promise<void> {
   a.download = fileName
   a.click()
   URL.revokeObjectURL(url)
+  return 'downloaded'
 }

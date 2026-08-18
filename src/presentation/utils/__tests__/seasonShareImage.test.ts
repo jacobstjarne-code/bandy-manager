@@ -13,10 +13,10 @@
  * fillText/moveTo-anrops y-koordinat, så att den hårda assertionen
  * (assertWithinContentBounds) faktiskt körs och kan verifieras hålla.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { generateSeasonSummary } from '../../../domain/services/seasonSummaryService'
-import { computeSeasonShareImageHeight, generateSeasonShareImage, assertWithinContentBounds } from '../seasonShareImage'
+import { computeSeasonShareImageHeight, generateSeasonShareImage, assertWithinContentBounds, shareSeasonImage } from '../seasonShareImage'
 import type { SeasonSummary } from '../../../domain/entities/SeasonSummary'
 
 function baseSummary(): SeasonSummary {
@@ -129,5 +129,123 @@ describe('generateSeasonShareImage — hård footer-assertion (mockad ctx)', () 
   it('assertWithinContentBounds kastar INTE inom gränsen (inklusive exakt på gränsen)', () => {
     expect(() => assertWithinContentBounds(100, 100, 'test-raden')).not.toThrow()
     expect(() => assertWithinContentBounds(99, 100, 'test-raden')).not.toThrow()
+  })
+})
+
+/**
+ * SLUTTEST_KO.md 4.13 (2026-08-18) — shareSeasonImage returnerade Promise<void>
+ * och svalde alla fel. Anroparen kunde aldrig veta om delningen lyckades,
+ * laddades ner, avbröts, eller misslyckades. Fyra utfall, ett test per.
+ */
+describe('shareSeasonImage — returvärde (4.13)', () => {
+  function mockCanvasCreation() {
+    const { ctx } = makeRecordingCtx()
+    const canvasStub = {
+      width: 0, height: 0,
+      getContext: () => ctx,
+      toBlob: (cb: (b: Blob | null) => void) => cb(new Blob(['x'], { type: 'image/png' })),
+    }
+    const realCreateElement = document.createElement.bind(document)
+    return vi.spyOn(document, 'createElement').mockImplementation((tag: string) =>
+      tag === 'canvas' ? (canvasStub as unknown as HTMLElement) : realCreateElement(tag)
+    )
+  }
+
+  function stubObjectURL() {
+    const createObjectURL = vi.fn().mockReturnValue('blob:mock')
+    const revokeObjectURL = vi.fn()
+    // jsdom saknar URL.createObjectURL/revokeObjectURL helt — vi.spyOn kräver
+    // att metoden redan finns, så de sätts direkt och städas bort i afterEach.
+    // @ts-expect-error — testfixtur
+    URL.createObjectURL = createObjectURL
+    // @ts-expect-error — testfixtur
+    URL.revokeObjectURL = revokeObjectURL
+    return { createObjectURL, revokeObjectURL }
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    // @ts-expect-error — testfixtur, navigator.share finns inte i jsdom by default
+    delete navigator.share
+    // @ts-expect-error — samma
+    delete navigator.canShare
+    // @ts-expect-error — samma, satt av stubObjectURL
+    delete URL.createObjectURL
+    // @ts-expect-error — samma
+    delete URL.revokeObjectURL
+  })
+
+  it('"shared" när Web Share lyckas', async () => {
+    const createElementSpy = mockCanvasCreation()
+    const shareSpy = vi.fn().mockResolvedValue(undefined)
+    // @ts-expect-error — testfixtur
+    navigator.share = shareSpy
+    // @ts-expect-error — testfixtur
+    navigator.canShare = () => true
+
+    const result = await shareSeasonImage(minimalCase())
+
+    expect(result).toBe('shared')
+    expect(shareSpy).toHaveBeenCalledTimes(1)
+    const call = shareSpy.mock.calls[0][0]
+    expect(call.text).toBe(minimalCase().narrativeSummary)
+    expect(call.url).toBe(window.location.origin)
+    createElementSpy.mockRestore()
+  })
+
+  it('"cancelled" vid AbortError — laddar INTE ner filen (rotorsak för 4.13)', async () => {
+    const createElementSpy = mockCanvasCreation()
+    const abortError = new DOMException('User cancelled', 'AbortError')
+    // @ts-expect-error — testfixtur
+    navigator.share = vi.fn().mockRejectedValue(abortError)
+    // @ts-expect-error — testfixtur
+    navigator.canShare = () => true
+    const { createObjectURL } = stubObjectURL()
+
+    const result = await shareSeasonImage(minimalCase())
+
+    expect(result).toBe('cancelled')
+    expect(createObjectURL).not.toHaveBeenCalled()
+    createElementSpy.mockRestore()
+  })
+
+  it('"downloaded" när Web Share saknas (fallback)', async () => {
+    const createElementSpy = mockCanvasCreation()
+    const { createObjectURL, revokeObjectURL } = stubObjectURL()
+
+    const result = await shareSeasonImage(minimalCase())
+
+    expect(result).toBe('downloaded')
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    expect(revokeObjectURL).toHaveBeenCalledTimes(1)
+    createElementSpy.mockRestore()
+  })
+
+  it('"failed" när canvas-generering misslyckas (ingen 2d-context)', async () => {
+    const canvasStub = { width: 0, height: 0, getContext: () => null }
+    const realCreateElement = document.createElement.bind(document)
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tag: string) =>
+      tag === 'canvas' ? (canvasStub as unknown as HTMLElement) : realCreateElement(tag)
+    )
+
+    const result = await shareSeasonImage(minimalCase())
+
+    expect(result).toBe('failed')
+    createElementSpy.mockRestore()
+  })
+
+  it('"downloaded" när Web Share ger ett annat fel än AbortError (fall-through bevarad)', async () => {
+    const createElementSpy = mockCanvasCreation()
+    // @ts-expect-error — testfixtur
+    navigator.share = vi.fn().mockRejectedValue(new Error('NotAllowedError'))
+    // @ts-expect-error — testfixtur
+    navigator.canShare = () => true
+    const { createObjectURL } = stubObjectURL()
+
+    const result = await shareSeasonImage(minimalCase())
+
+    expect(result).toBe('downloaded')
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    createElementSpy.mockRestore()
   })
 })
