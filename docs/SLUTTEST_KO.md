@@ -342,9 +342,20 @@ Rapportera vad som finns tillgängligt att visa mitt i en serie — matchställn
 | 6.1 | Geometrigrinden — **blev 31 scener, inte 28**, enbart mätläge | `KLAR (8eea7768)` |
 | 6.2 | `event-overlay` + `press-conference`: **båda samexisterar med riktig nav** — strukturellt bekräftat. Ingår i grinden | `KLAR (8eea7768)` |
 | 6.3 | De fyra kvarvarande tap-target-fynden, i konsekvensordning: `primary-smfinal-vs-deadline` / `primary-event-vs-farewell` (28 px mellan "Simulera resterande säsong" och "Redo — spela omgång N" — en felträff simulerar bort resten av säsongen), `submodal` (4 px), `tacticmodal` (6–8 px) | `KLAR (c5fa24f7, redan byggt — status ej synkad förrän nu, 2026-08-18)` — commit `c5fa24f7` ("tap-target-fynden 1-3 — Simulera/CTA, taktikgrid, spelarbytesmodal", 2026-08-17) fixade alla tre underliggande ställen (de två Primary-scenerna delar samma "Simulera"-fix). Verifierat på nytt idag: `npx playwright test tapTargetGate.visual.ts -g "primary-smfinal-vs-deadline\|primary-event-vs-farewell\|submodal\|tacticmodal"` — 6/6 gröna (ren geometrigrind, inga snapshot-baselines krävs) |
-| 6.4 | Kontrastgrind, en-primär-grind, träffytegrind, matchtypsmatris-grind, datarobusthetsgrind (åtgärdslistans post 17–21) | `EJ` |
+| 6.4 | Kontrastgrind, en-primär-grind, träffytegrind, matchtypsmatris-grind, datarobusthetsgrind (åtgärdslistans post 17–21) | `PÅGÅR` — post 17 (Kontrastgrind) `KLAR`, se not nedan. Post 18 (en-primär), 20 (matchtypsmatris), 21 (datakort/DecisionCard/takregel) fortfarande `EJ` |
 
 **Varför 6.1 bara mäter:** kostnaden i den breda varianten är att någon granskar 28 bilddiffar. Nyttan sitter i geometrijämförelsen, som inte behöver någon ny snapshot. Bilddiffarna tas styckvis senare, när någon ändå rör respektive yta.
+
+**6.4, post 17 — Kontrastgrind, byggd 2026-08-18:** `tests/visual/contrastGate.ts` (WCAG 2.1-kontrastformel, 4,5:1 normaltext / 3:1 stortext) + `tests/visual/contrastGate.visual.ts` (sveper hela `SCENES`), wired i `app-ci.yml` som egen `contrast-gate`-job. Scope: `[data-primary-card]` — attributet satt på alla nio `portal/primary/*.tsx`-rotwrappers i samma commit (de delade tidigare fyra olika klassmönster, inget gemensamt CSS-selektor var möjligt utan att missa några).
+
+Gaten hittade tre riktiga fel vid första körningen, alla fixade:
+1. `NextMatchCard.tsx:515` — "vs"-avdelaren mellan formsträckor läste `var(--border)` som textfärg (fel token-roll, inte bara fel kontext) → `var(--text-muted)`.
+2. `.tag-copper` (global.css) läste `var(--accent-dark)` — aldrig remappad för `.card--portal`s mörka kontext (3,15:1). Ny dedikerad `--accent-text`-token (default = samma värde som idag, noll synlig ändring utanför Portal; remappad i `.card--portal`) — INTE en blank remapp av `--accent-dark` självt, det första försöket bröt `headerTagStyle`s bakgrundsanvändning av samma variabel (ny regression, 3,01:1, hittad och reverterad innan commit).
+3. `NextMatchCard.tsx`s `vsColor` (crest-avdelaren) — samma `--accent-dark`-rotorsak i default/final/playoff-grenarna → `--accent-text`.
+
+Verifierat att gaten fångar riktiga regressioner: EventPrimary.tsx:s Å1-fix (`52a1fc30`) reverterades tillfälligt → gaten föll med exakt samma signatur (1,06:1/1,81:1) → återställd. Två falska positiva i gaten själv fixade under vägen: SVG `<text>` (ClubBadge.tsx läser `fill`, inte CSS `color`) och `background-image`-gradienter (`.btn-primary` — gaten klev förbi till fel förfaders bakgrund).
+
+**Flaggat, inte löst:** `NextMatchCard.tsx`s mindre "vs" (dot-strip-avdelare, 8px) sitter på 3,15:1 mot portal-bg efter token-fixen — under 4,5:1-normaltextkravet, över 3:1. Genuin designfråga (är en 8px divider mellan två redan-informativa dot-rader menad att vara fullkontrast-text eller medvetet nedtonad?), inte löst ensidigt. Markerad `data-contrast-exempt` i koden (grep:bar, med anledning) så gaten förblir grön utan att tyst gissa ett svar. `vsColor`s `isDerby`/`isAnnandagen`-grenar (`--danger`/`--success-light`) är INTE verifierade i portal-mörk kontext — ingen dev-scen i dagens `SCENES` träffar dem, så gaten har aldrig prövat dem. Öppen lucka, inte antagen OK.
 
 ---
 
