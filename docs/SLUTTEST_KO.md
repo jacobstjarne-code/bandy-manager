@@ -210,7 +210,7 @@ Ingen produktionskomponent läser `boardPatience` före `GameOverScreen:24-34`. 
 Portalens befintliga minimal-familj, samma mönster som `EconomyMinimal`. **Kvalitativa zoner, inte råtal:** Stabilt · Under press · Ultimatum. Med orsak och möjlig väg tillbaka.
 **Varför den inte kan vänta:** ett avsked utan varning är godtyckligt, inte dramatiskt. Och `patron.patience` heter samma sak och betyder något annat — döp om det ena i samma commit.
 **Godkänd när:** en spelare som närmar sig tröskeln ser minst två steg av eskalerande varning, med orsak.
-**Status:** `DELVIS KLAR (165b280c, b5c1c9e3)` — `patron.patience` → `patron.goodwill` (165b280c, alla 7 läs-/skrivställen + testfixturer). `BoardPatienceMinimal` byggt och registrerat i `initCardBag.ts` (`b5c1c9e3`) — kvalitativa zoner Stabilt/Under press/Ultimatum, trösklar (30/50) återanvända 1:1 från `board_failure`-beatens redan kalibrerade severity-gränser (`portalBeats.ts:141-160`), inte nya siffror. `alwaysTrue`-trigger (inte bara-vid-problem) medvetet: utan en synlig Stabilt-baslinje går eskalering inte att läsa. **Godkänd-när-kravet delvis uppfyllt:** zonordet (steg 1→2→3) syns nu alltid, men "med orsak" kräver en reason-textrad i tiln som SVENSK TEXT-regeln (CLAUDE.md) förbjuder Code att författa — den fulla textmotiveringen kommer fortfarande bara från `board_failure`-beaten när den vinner rotationen mot andra beats, inte garanterat. **Sidofynd, ej åtgärdat:** `Mecenat.ts` har ett tredje fält som också heter `patience` (`mecenatService.ts:228`) — samma kollisionsrisk mot `boardPatience`, inte del av den uttryckliga instruktionen. Ej browser-verifierat, samma skäl som 3.1.
+**Status:** `KLAR (165b280c, b5c1c9e3, f435022d)` — `patron.patience` → `patron.goodwill` (165b280c). `BoardPatienceMinimal` byggt (`b5c1c9e3`) — kvalitativa zoner Stabilt/Under press/Ultimatum, trösklar (30/50) från `board_failure`-beatens kalibrerade severity-gränser. **"med orsak"-kravet nu fullt uppfyllt (`f435022d`):** `boardPatienceZone.ts`s `pickConcernCause()` väljer orsaksrad i Opus låsta prioritetsordning (sporting → economic → upprepning → community) genom att läsa `boardObjectives`/`boardObjectiveHistory` — headline+orsaksrad+väg-tillbaka renderas nu permanent i kortet, oberoende av om `board_failure`-beaten vinner rotationen. **Sidofynd åtgärdat i samma commit:** `Mecenat.ts`s tredje `patience`-fält döpt om till `goodwill` (skrevs vid generering, lästes ingenstans annars). Ej browser-verifierat, samma skäl som 3.1.
 
 **TEXT LÅST AV OPUS 2026-08-17 — "med orsak"-kravet:**
 
@@ -427,7 +427,26 @@ Rot: event-ID:n är unika per säsong, inte per karaktärsbåge, och cooldown fi
 **Frågor:** hur många oberoende cooldown-/dedupmekanismer finns? Hur många distinkta narrativa event-typer finns totalt, och hur många behöver `semanticKey`? Kan nyckeln härledas maskinellt ur befintliga ID:n, eller kräver varje event ett manuellt beslut om vilken båge det tillhör?
 
 **Är svaret trehundra typer** börjar vi med pivotal beats och lämnar ambient orörda.
-**Status:** `RAPPORT-VÄNTAR`
+
+**RAPPORT LEVERERAD 2026-08-17.** Åtta oberoende cooldown-/dedupmekanismer, var och en med egen lagringsplats på `SaveGame`: `resolvedEventIds`, `resolvedWeeklyDecisions`+`weeklyDecisionLastRound`, `shownBeats`+`getBeatKey`, `shownScenes`, `activeArcs`, `sourceCooldowns`, `cardStaleTracking`, `klackEcho`+`lastCoffeeSceneIndices`. Plus `captainRallyGuard.ts` — en handskriven vakt som slår upp i **två** av dem, byggd för att två system oberoende kunde trigga samma kaptensmöte. Den filen är i sig beviset på att bristen redan orsakat en riktig bugg.
+
+~90–100 distinkta narrativa händelseformer (47 `GameEventType` + ~15 `StorylineType` + 8 `ArcType` + 25–30 beat-id:n). 15–20 pivotal, 70–80 ambient.
+
+`semanticKey` är **maskinellt härledbar i ungefär hälften** av fallen (strippa `_${season}` — `playoff_final_${season}`, Birger-talet, följer mönstret exakt). Resten kräver ett domänbeslut: `arc_vetfinal_${vet.id}_s${season}` — är "samma båge" per spelare eller per arketyp? `event_bid_aiaccept_${bid.id}` saknar säsong helt.
+
+---
+
+## DOM 2026-08-17 — EN mekanism, ny liten logg
+
+Hypotesen höll, med en rättelse: den kan **inte** byggas på `resolvedEventIds`. Den listan är platta ID-strängar utan tidsstämpel per post. `storylines` har däremot redan rätt form (`{id, type, season, matchday, resolved}`) och rensas aldrig vid säsongsskifte — den är mönstret att bygga vidare på.
+
+**Bygg `SaveGame.narrativeLog?: NarrativeLogEntry[]`** med `{ semanticKey, season, round, systemhandelse? }` och tre funktioner: `logNarrativeBeat`, `isOnCooldown` (per-nyckel), `systemhandelseBudgetOk` (aggregat). Samma skrivväg, två läsvsägar — `O19`:s säsongsbudget och `U5`:s narrativa cooldown är samma mekanism.
+
+**Villkoret som avgör om detta blir en förbättring eller en nionde mekanism:** de åtta befintliga får ligga kvar parallellt **under migreringen**, men varje källa som skriver till en av dem ska skriva till loggen i samma operation. När alla nio skrivvägar gör det raderas de gamla läsvsägarna. **Rapportera när skrivningen är komplett** — en logg som bara hälften av källorna skriver till är sämre än åtta ärliga mekanismer, för då tror läsaren att den vet.
+
+**Ordning:** loggen + skrivväg först (alla nio källor), sedan `isOnCooldown` mot pivotal beats, sedan `systemhandelseBudgetOk`. De manuella `semanticKey`-besluten (arc-bågarna) tas när loggen finns — inte som förarbete.
+
+**Status:** `DOM GIVEN — BYGG`
 
 ### U6 · Renommé nedåt
 Skutskär tankade en säsong och renommét **steg** 52 → 56. Koden kan sänka via skandal och nekad licens, men ingen placerings- eller trendnedgång finns i `seasonEndProcessor`.
