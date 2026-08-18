@@ -797,14 +797,15 @@ export const useGameStore = create<GameState>()(
       },
 
       // U5 (SLUTTEST_KO.md, 2026-08-17): medvetet INTE en narrativeLog-källa.
-      // cardStaleTracking bokför hur länge VARJE portalkort (dussintals,
-      // hela card bag) legat framme — den fyller på vid nästan varje
-      // portal-rendering, inte vid en narrativ "beat". Att skriva en
-      // narrativeLog-post per kort här hade dränkt de åtta faktiska
-      // narrativa källorna i brus och gjort isOnCooldown/systemhandelseBudgetOk
-      // långsammare utan att lösa "Finalen. Birger…"-felklassen — det är
-      // fel mekanism för den frågan. 8/9 källor wiring:ade, denna är det
-      // dokumenterade undantaget.
+      // Jacobs dom (2026-08-17): "en logg som bara hälften skriver till är
+      // sämre än åtta ärliga mekanismer" gäller ofullständighet av
+      // FÖRSUMMELSE — inte en källa som inte hör hemma. cardStaleTracking
+      // mäter hur länge ett portalkort legat framme; narrativeLog svarar på
+      // när en båge senast hände. Olika frågor. Ett kort som renderades igen
+      // är inte en beat, och "kortet roterade ut ur påsen" är ett
+      // urvalsbeslut — inte något som hände i spelvärlden. Att kalla det en
+      // beat luddar upp kategorin som gör loggen användbar. 8/9 är den
+      // slutgiltiga siffran (se narrativeLogService.ts:s huvudkommentar).
       recordPortalShown: (cardIds, storySlotKind) => {
         set(state => {
           if (!state.game) return state

@@ -13,8 +13,19 @@ import type { NarrativeLogEntry } from '../entities/Narrative'
  *     två i samma omgång).
  *
  * Ersätter INTE de åtta befintliga mekanismerna under migreringen — de
- * ligger kvar parallellt tills alla nio källor skriver hit (se
- * SLUTTEST_KO.md:s U5-status för vilka som är wiring:ade).
+ * ligger kvar parallellt.
+ *
+ * **8 källor skriver hit, en gör det medvetet INTE.** Jacobs dom
+ * (2026-08-17): en logg som bara HÄLFTEN av källorna skriver till är sämre
+ * än åtta ärliga mekanismer — men det gäller ofullständighet av försummelse,
+ * inte en källa som inte hör hemma. `cardStaleTracking` (gameStore.ts:
+ * `recordPortalShown`) mäter hur länge ett portalkort legat framme —
+ * en annan fråga än "när hände den här bågen senast", och den fylls på vid
+ * nästan varje rendering, inte vid en narrativ händelse. Ett kort som
+ * renderades igen är inte en beat, och "kortet roterade ut ur påsen" är ett
+ * urvalsbeslut, inte något som hände i spelvärlden — att kalla det en beat
+ * luddar upp kategorin, och kategorin är det enda som gör loggen användbar.
+ * 8/9 är den slutgiltiga siffran, inte en lucka att fylla i senare.
  */
 export function logNarrativeBeat(
   game: SaveGame,
