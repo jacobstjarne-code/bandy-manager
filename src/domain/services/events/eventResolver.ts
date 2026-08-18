@@ -13,6 +13,7 @@ import type { PressChoice } from '../../data/csPressEventText'
 import { EVENT_SOURCE_MAP, startCooldown } from '../sourceCooldownService'
 import type { SourceKey } from '../sourceCooldownService'
 import { PROVNING_RESOLUTION } from '../../data/hallProvningData'
+import { getCurrentLeagueRound } from '../../data/seasonPhases'
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
 export function resolveEvent(
@@ -395,7 +396,11 @@ export function resolveEvent(
               id: `story_pro_${pid}_${updatedGame.currentSeason}`,
               type: 'went_fulltime_pro' as const,
               season: updatedGame.currentSeason,
-              matchday: updatedGame.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((m, f) => Math.max(m, f.roundNumber), 0),
+              // 4.6 (SLUTTEST_KO.md, 2026-08-17): var en inline-reimplementation av
+              // getCurrentLeagueRound — samma logik, dubblerad. Bytt till den delade
+              // funktionen så en framtida läsare inte kopierar mönstret fel (arcService.ts
+              // gjorde precis det misstaget med sin egen, GLOBALA currentMatchday-variabel).
+              matchday: getCurrentLeagueRound(updatedGame),
               playerId: pid,
               description: 'went_fulltime_pro',
               displayText: proPlayer
@@ -1526,9 +1531,9 @@ export function resolveEvent(
   }
 
   // ── Post-resolution storyline generation ────────────────────────────────
-  const currentMatchday = updatedGame.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
-    .reduce((m, f) => Math.max(m, f.roundNumber), 0)
+  // 4.6 (SLUTTEST_KO.md, 2026-08-17): getCurrentLeagueRound, inte en
+  // inline-reimplementation — se kommentaren vid importen/rad ~398 för varför.
+  const currentMatchday = getCurrentLeagueRound(updatedGame)
 
   // 2.5 (choice-label-svepet, 2026-08-17): skrevs tidigare OAVSETT choiceId
   // — "Kaptenen samlade laget" hamnade i karriärminnet även när spelaren

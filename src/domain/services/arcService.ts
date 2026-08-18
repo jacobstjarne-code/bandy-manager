@@ -5,6 +5,18 @@ import type { GameEvent } from '../entities/GameEvent'
 import { InboxItemType, MatchEventType } from '../enums'
 import { getRivalry } from '../data/rivalries'
 import { mulberry32 } from '../utils/random'
+import { getCurrentLeagueRound } from '../data/seasonPhases'
+
+// 4.6 (SLUTTEST_KO.md, 2026-08-17): alla newStorylines.push(...)-anrop nedan
+// sätter matchday: getCurrentLeagueRound(game), INTE den lokala
+// currentMatchday-variabeln (som är GLOBAL — justCompletedFixture?.matchday,
+// kan bli 27+ under slutspel). SeasonSummaryScreen.tsx renderar
+// storyline.matchday som "O{round}" och antar en ligaomgång (1-22); en
+// arc-storyline som avgjordes under slutspelet visade "O33" innan denna fix.
+// Samma logik som eventResolver.ts:s captainSpeech-storyline redan
+// implementerade inline (nu delad via getCurrentLeagueRound istället).
+// currentMatchday (global) används fortfarande korrekt för inbox/event-
+// tidsstämplar i denna fil — bara storyline.matchday är omfattat.
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -372,7 +384,7 @@ export function progressArcs(
             id: storylineId,
             type: 'derby_echo_resolved',
             season: game.currentSeason,
-            matchday: currentMatchday,
+            matchday: getCurrentLeagueRound(game),
             description: derbyResult === 'win'
               ? `Derbysegern mot ${opponentName} satte tonen för resten av säsongen.`
               : `Derby-förlusten mot ${opponentName} satt kvar länge i omklädningsrummet.`,
@@ -413,7 +425,7 @@ export function progressArcs(
             id: storylineId,
             type: 'lokal_hero_moment',
             season: game.currentSeason,
-            matchday: currentMatchday,
+            matchday: getCurrentLeagueRound(game),
             playerId: p.id,
             description: `${name}s derby-mål blev säsongens folkligaste ögonblick.`,
             displayText: `🏠 ${name} — ortens hjälte`,
@@ -480,7 +492,7 @@ export function progressArcs(
               id: storylineId,
               type: 'hungrig_breakthrough',
               season: game.currentSeason,
-              matchday: currentMatchday,
+            matchday: getCurrentLeagueRound(game),
               playerId: p.id,
               description: `${name} bröt den långa målsvälten och levererade när det gällde som mest.`,
               displayText: `${name} bröt isen`,
@@ -556,7 +568,7 @@ export function progressArcs(
                 id: storylineId,
                 type: 'joker_vindicated',
                 season: game.currentSeason,
-                matchday: currentMatchday,
+            matchday: getCurrentLeagueRound(game),
                 playerId: p.id,
                 description: `${name} avgjorde när det gällde och tystade alla kritiker.`,
                 displayText: `${name} — joker i hjärtat`,
@@ -618,7 +630,7 @@ export function progressArcs(
             id: storylineId,
             type: extended ? 'veteran_stayed' : 'veteran_farewell',
             season: game.currentSeason,
-            matchday: currentMatchday,
+            matchday: getCurrentLeagueRound(game),
             playerId: p.id,
             description: extended
               ? `${name} förlängde kontraktet. Legenden fortsätter sin resa med klubben.`
@@ -674,7 +686,7 @@ export function progressArcs(
             id: storylineId,
             type: 'veteran_farewell',
             season: game.currentSeason,
-            matchday: currentMatchday,
+            matchday: getCurrentLeagueRound(game),
             playerId: p.id,
             description: `${name}s sista säsong. Publiken hyllar honom vid avslutet.`,
             displayText: `🏅 ${name} — en karriär på isen`,
@@ -773,7 +785,7 @@ export function progressArcs(
             id: storylineId,
             type: 'captain_rallied_team',
             season: game.currentSeason,
-            matchday: currentMatchday,
+            matchday: getCurrentLeagueRound(game),
             playerId: p.id,
             description: `${name} steg upp under krisperioden och samlade laget.`,
             displayText: `🦁 ${name} samlade laget`,
@@ -833,7 +845,7 @@ export function progressArcs(
               id: storylineId,
               type: 'contract_drama_resolved',
               season: game.currentSeason,
-              matchday: currentMatchday,
+            matchday: getCurrentLeagueRound(game),
               playerId: p.id,
               description: `${name} lämnade klubben efter kontraktsstriden. En bitter upplösning.`,
               displayText: `📋 ${name} lämnade`,
