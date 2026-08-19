@@ -1,11 +1,18 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
-import { getEventPriority } from '../../../../domain/entities/GameEvent'
+import { getEventRenderTarget } from '../../../../domain/services/eventQueueService'
 
 /**
  * Primary-kort för kritiska events som kräver svar.
  * Ingen mock-referens — card-sharp med danger-border.
  * Visar BARA events med priority='critical' — medium/low visas av PortalEventSlot.
+ *
+ * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2: ett event utan val har
+ * inget att "kräva svar" på — getEventRenderTarget klassar det som 'ambient'
+ * oavsett priority, aldrig 'overlay', så det utesluts här. Utan detta hade
+ * ett kritiskt-men-ambient event visat "HÄNDELSE KRÄVER SVAR" och en
+ * "Hantera händelse →"-knapp som ledde till inboxen utan något beslut att
+ * fatta där — samma mekaniska glapp som PortalEventSlot/EventOverlay hade.
  */
 export function EventPrimary({ game }: CardRenderProps) {
   const navigate = useNavigate()
@@ -13,7 +20,7 @@ export function EventPrimary({ game }: CardRenderProps) {
   const criticalEvent = (game.pendingEvents ?? []).find(
     e => !e.resolved &&
          e.type !== 'pressConference' &&
-         (e.priority ?? getEventPriority(e.type)) === 'critical'
+         getEventRenderTarget(e) === 'overlay'
   )
 
   if (!criticalEvent) return null

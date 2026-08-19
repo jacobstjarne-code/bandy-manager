@@ -25,6 +25,36 @@ export interface QueueStats {
 }
 
 /**
+ * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — Ambient-regeln.
+ * "Att ett event utan val inte får ett kort är en mekanisk regel, inte en
+ * estetisk — den går inte att tolka fel och den kan testas."
+ *
+ * Ett event utan val (choices.length === 0) ska ALDRIG renderas som ett
+ * DecisionCard/EventOverlay-kort. Rent predikat, noll side effects.
+ */
+export function isAmbientEvent(event: GameEvent): boolean {
+  return event.choices.length === 0
+}
+
+export type EventRenderTarget = 'overlay' | 'inline' | 'ambient'
+
+/**
+ * Central källa för VAR ett pending event ska renderas. GameShell (EventOverlay-
+ * gaten), PortalEventSlot (inline-gaten) och EventPrimary (dashboard-primärkortet)
+ * läste tidigare var sin kopia av samma priority==='critical'-check — tre ställen
+ * som kunde glida isär (samma klass av bugg som Å7:s dubbelpadding). Ett event
+ * utan val rutas ALLTID till 'ambient', oavsett priority — annars softlockar ett
+ * kritiskt event utan val EventOverlay (fullskärmsmodal utan knappar, upptäckt
+ * 2026-08-19 vid D1-utredningen: EventOverlay läste event.choices direkt utan
+ * getActionsForEvent-fallbacken som EventCardInline redan hade).
+ */
+export function getEventRenderTarget(event: GameEvent): EventRenderTarget {
+  if (isAmbientEvent(event)) return 'ambient'
+  const priority = event.priority ?? getEventPriority(event.type)
+  return priority === 'critical' ? 'overlay' : 'inline'
+}
+
+/**
  * Returnerar nästa event att visa, eller null om kön är tom.
  * Sorterar primärt på priority (critical → high → normal → low),
  * sekundärt på array-ordning (FIFO inom samma prio).

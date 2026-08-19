@@ -4,14 +4,18 @@
  * Renderas mellan SituationCard/PortalBeat och Primary card.
  * Returnerar null om:
  *   - attention.kind !== 'event' (idle, screen eller scene styr)
- *   - event.priority === 'critical' (dessa hanteras av EventOverlay)
+ *   - getEventRenderTarget(event) === 'overlay' (kritiska icke-ambienta events,
+ *     dessa hanteras av EventOverlay)
  *
- * Medium och atmosfäriska events visas som EventCardInline.
+ * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — ambienta events (utan val)
+ * fångas HÄR oavsett priority, som AmbientEventRow — de får aldrig ett kort.
+ * Medium och atmosfäriska events (med val) visas som EventCardInline.
  */
 
 import { getCurrentAttention } from '../../../domain/services/attentionRouter'
-import { getEventPriority } from '../../../domain/entities/GameEvent'
+import { getEventRenderTarget } from '../../../domain/services/eventQueueService'
 import { EventCardInline } from './EventCardInline'
+import { AmbientEventRow } from './AmbientEventRow'
 import { CeremonyRetirement } from './CeremonyRetirement'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
@@ -26,14 +30,20 @@ export function PortalEventSlot({ game }: Props) {
   if (attention.kind !== 'event') return null
 
   const event = attention.event
-  const priority = event.priority ?? getEventPriority(event.type)
-
-  // Kritiska går via EventOverlay (utanför Portal). Skippa här.
-  if (priority === 'critical') return null
+  const target = getEventRenderTarget(event)
 
   // Suppressa community-events under cup-finalhelgen (tonalt fel att visa bandyskola under finalen)
   const currentSlot = (game.seasonCalendar ?? []).find(s => s.matchday === game.currentMatchday)
   if (currentSlot?.isCupFinalhelgen && event.type === 'communityEvent') return null
+
+  // Ambienta events (utan val) — ambient rad, oavsett priority. Måste fångas
+  // här: EventOverlay (GameShell.tsx) skippar dem numera helt.
+  if (target === 'ambient') {
+    return <AmbientEventRow event={event} />
+  }
+
+  // Kritiska (icke-ambienta) går via EventOverlay (utanför Portal). Skippa här.
+  if (target === 'overlay') return null
 
   // Retirement ceremony gets full-screen chrome (legend farewell)
   if (event.type === 'retirementCeremony') {

@@ -30,7 +30,11 @@ interface Props {
   currentMatchday?: number
 }
 
-function getEventTypeLabel(event: GameEvent): string {
+/**
+ * Exporterad (D1, 2026-08-19) så AmbientEventRow.tsx kan återanvända samma
+ * emoji+etikett-mappning — en källa, inte en dubblett (Port 4).
+ */
+export function getEventTypeLabel(event: GameEvent): string {
   switch (event.type) {
     case 'communityEvent':
       return '🏘️ ORTEN'

@@ -7,17 +7,18 @@ import { EventOverlay } from '../components/EventOverlay'
 import { PhaseIndicatorAuto } from '../components/PhaseIndicator'
 import { useGameStore } from '../store/gameStore'
 import { getCurrentAttention } from '../../domain/services/attentionRouter'
-import { getEventPriority } from '../../domain/entities/GameEvent'
+import { getEventRenderTarget } from '../../domain/services/eventQueueService'
 
 // Lightweight guard for full-screen routes that don't use BottomNav
 export function GameGuard() {
   const game = useGameStore(s => s.game)
   if (!game) return <Navigate to="/" replace />
   const attention = getCurrentAttention(game)
-  // Bara overlay för kritiska events — medium/atmospheric visas av PortalEventSlot
+  // Bara overlay för kritiska icke-ambienta events — medium/atmospheric visas
+  // av PortalEventSlot, ambienta (D1 punkt 2) visas ALDRIG som overlay.
   const shouldShowEventOverlay =
     attention.kind === 'event' &&
-    (attention.event.priority ?? getEventPriority(attention.event.type)) === 'critical'
+    getEventRenderTarget(attention.event) === 'overlay'
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <GameHeader />
@@ -94,7 +95,7 @@ export function GameShell() {
   const isLedgerOwnedChrome = location.pathname.includes('/match/live')
   const shouldShowEventOverlay =
     attention.kind === 'event' &&
-    (attention.event.priority ?? getEventPriority(attention.event.type)) === 'critical' &&
+    getEventRenderTarget(attention.event) === 'overlay' &&
     !isMatchRoute &&
     !isReviewRoute &&
     !isPressConferenceRoute

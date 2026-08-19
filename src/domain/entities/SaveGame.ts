@@ -3,7 +3,7 @@ import type { MatchdaySlot } from '../services/scheduleGenerator'
 import type { NotableEventType } from '../data/klackEchoText'
 import type { PortalPhase } from '../data/seasonPhases'
 import type { SeasonSignature } from './SeasonSignature'
-import type { Club, BoardMember, BoardRole, BoardPersonality } from './Club'
+import type { Club, BoardMember, BoardRole, BoardPersonality, TacticChangeLogEntry } from './Club'
 import type { Player } from './Player'
 import type { League } from './League'
 import type { Fixture, TeamSelection } from './Fixture'
@@ -167,6 +167,13 @@ export interface SaveGame {
   onboardingComplete?: boolean     // Tillträdet-flödet slutfört (sätts vid F4)
   dismissedHints?: string[]
   lastCompletedFixtureId?: string   // id of most recently completed managed-club fixture
+  // O15 (2026-08-18/19, DOM 1b): Taktikens två lägen. tacticAdvancedMode persisteras
+  // så "Avancerat" inte är en spärr man öppnar varje vecka (Jacobs villkor) —
+  // satt via egen store-action (setTacticAdvancedMode, samma persistGameSnapshot-
+  // mönster som preferredMatchMode). tacticChangeLog är avancerat lägets
+  // "Vad du ändrat i år"-historik, se TacticChangeLogEntry (Club.ts).
+  tacticAdvancedMode?: boolean
+  tacticChangeLog?: TacticChangeLogEntry[]
   chemistryStats?: Record<string, number>  // key = sortedId1|sortedId2, value = shared minutes
 
   playoffBracket: PlayoffBracket | null

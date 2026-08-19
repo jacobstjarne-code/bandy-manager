@@ -515,11 +515,19 @@ export function gameFlowActions(get: Get, set: Set) {
       if (!game) return null
       if ((game.pendingEvents?.length ?? 0) > 0) {
         const event = game.pendingEvents[0]
-        const neutralChoice = event.choices.find(c =>
-          c.id.includes('reject') || c.id.includes('decline') || c.id.includes('no') ||
-          (c.effect as { type?: string })?.type === 'noOp'
-        ) ?? event.choices[0]
-        resolveEvent(event.id, neutralChoice.id)
+        // D1-utredningen (2026-08-19): ambienta events (choices.length === 0,
+        // se eventQueueService.ts:s isAmbientEvent) gav tidigare
+        // event.choices[0] === undefined → .id kraschade. eventResolver.ts:33
+        // ignorerar choiceId helt för choice-lösa events (filtrerar bara bort
+        // dem ur kön), så valfri sträng funkar — 'ambient_dismiss' matchar
+        // AmbientEventRow.tsx:s dismiss-anrop.
+        const neutralChoiceId = event.choices.length === 0
+          ? 'ambient_dismiss'
+          : (event.choices.find(c =>
+              c.id.includes('reject') || c.id.includes('decline') || c.id.includes('no') ||
+              (c.effect as { type?: string })?.type === 'noOp'
+            ) ?? event.choices[0]).id
+        resolveEvent(event.id, neutralChoiceId)
         return { game: get().game!, roundPlayed: null, seasonEnded: false }
       }
       if (!game.managedClubPendingLineup) {
