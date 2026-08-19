@@ -31,17 +31,15 @@ Denna fil ersätter alla `CODE_INSTRUKTION_*`-filer från 2026-08-17 som kölist
 
 ## BLOCKERAT PÅ OPUS-TEXT — före allt annat på mitt bord
 
-Tre poster är mekaniskt färdiga och väntar bara på mig:
-
 | Post | Vad som behövs |
 |---|---|
-| 2.6 `ArrivalScene:74` | N=1-grammatik för kontraktsraden, och formen när antalet varierar |
-| 4.2 derbyrepliken | 13 storyline-frågor saknar topikanpassade svar. Listan skickad 2026-08-17 (+ 4 arc-aware-frågor med samma bugg, inte medräknade i de 13, väntar på besked om de ska ingå) |
-| 5.3 Turneringsläge | Rader för pågående serie, efter Codes datakartläggning |
+| 4.2 derbyrepliken | Listan (13 + 4 arc-frågor, frågetext + ämne) läggs i `docs/` av Code 2026-08-19 — Jacob skriver svaren samma dag den finns |
 
 4.8 andra halvan löst 2026-08-18 (`49abf3fc`) — Jacob gav texten direkt i chatten ("Assistenten satte laget"), ingen spec behövdes.
 
 K5 är löst — designbeslutet (permanent betyder permanent) implementerat i `3b33db0e`.
+
+2.6 löst 2026-08-19 (text given direkt, se ETAPP 2). 5.3 rapport levererad 2026-08-19, väntar på Jacobs text (se ETAPP 5).
 
 ---
 
@@ -174,7 +172,11 @@ Behåll kompakt sammanfattning per säsong för **hela** karriären: säsong, pl
 | 2.2 | Råa mallvariabler `{motståndare}` `{resultat}` | `finalBody` skapas `AnslagOverlay.tsx:72` **före** interpoleringen muterar `variantBody` på `:98-101` | `KLAR (0359161c)` |
 | 2.3 | Finalbeats efter eliminering | **Inte** genereringsgaten. `matchActions.saveLiveMatchResult`/`concedeWalkover` muterar bracket direkt utan att gå via `processPlayoffRound`, så `staleEventIds` blir blind | `KLAR (0359161c + aa552b60)` |
 | 2.4 | Vakt mot fjärde kodvägen: test som failar när en ny anropare av `advancePlayoffRound`/`updateSeriesAfterMatch` saknar validitetskollen. Kollen finns nu på tre ställen; en fjärde väg kommer ingen minnas | | `KLAR (0b325c10)` — `playoffBracketMutationCallers.test.ts`, allowlist-baserad, verifierad fortsatt korrekt |
-| 2.6 | `ArrivalScene.tsx:74` — tre utgående kontrakt som inte finns. Bekräftad av **tre** oberoende auditer | Statisk sträng, hämtas inte ur saven | `PÅGÅR` — mekaniskt redo, blockerad på Opus-text |
+| 2.6 | `ArrivalScene.tsx:74` — tre utgående kontrakt som inte finns. Bekräftad av **tre** oberoende auditer | Statisk sträng, hämtas inte ur saven | `KLAR` — se not nedan |
+
+**2.6, byggd 2026-08-19.** Ny funktion `getTreasurerLine(contractsExpiringCount)` (`arrivalDialogue.ts`) — tre kompletta repliker (0/1/2+, ordet stavat ut upp till tio via `contractCountWord()`), Jacobs text ordagrant, ersätter hela den gamla hårdkodade raden (inte ett fragment att foga ihop). `ArrivalScene.tsx`: räknar `game.players.filter(p => p.clubId === managedClubId && p.contractUntilSeason === game.currentSeason).length` — samma villkor `arcService.ts`/`playerVoiceService.ts` redan använder för "kontrakt går ut i år", ny prop `contractsExpiringCount` trädd genom till `ArrivalSceneInner`. 4 nya test (stash-verifierade, failar korrekt mot pre-fix-kod), 195/195 filer · 2048/2048 gröna, tsc/hex-grep/build rent.
+
+**Ej browser-verifierat — pre-existerande, orelaterad dev-scen-lucka:** `/dev/scenes?scene=arrival` renderar tomt även UTAN denna ändring (bekräftat via stash: samma tomma resultat på HEAD). `DevScenesScreen.tsx`s `squadGame`-fixture (delas av arrival/squad-trupp/annandagen-scenerna) saknar `board`, vilket träffar `ArrivalScene.tsx`s egen guard (`if (!board || board.length === 0) navigate(...)`) och omdirigerar bort tyst. Inte del av 2.6:s scope — flaggat, inte fixat här.
 
 ### 2.5 · Choice-label-svepet — den viktigaste posten i etappen
 Kända fall: "Ge honom vila" ger bara `boostMorale +10` (`eventFactories.ts:199-204`) — spelaren blev matchens bästa direkt efteråt. Varselvalet lovar "risk att spelare lämnar" och ger bara `boostMorale` (`:340-345`).
