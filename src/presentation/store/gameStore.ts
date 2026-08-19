@@ -122,7 +122,10 @@ interface GameState {
   seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
   simulateRemainingStep: () => AdvanceResult | null
   clearRoundSummary: () => void
-  passSeasonTransition: () => void
+  // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md): valfri goal-param, se
+  // gameFlowActions.ts:s implementation för semantik (undefined = "inget
+  // särskilt i år", ett giltigt svar).
+  passSeasonTransition: (goal?: { type: import('../../domain/entities/SeasonSummary').SeasonGoalType; referenceId?: string; trackedPlayerIds?: string[] }) => void
   markScreenVisited: (screen: string) => void
   dismissBeat: (beatKey: string) => void
   markAnslagSeen: (key: import('../../domain/services/anslagService').AnslagKey) => void

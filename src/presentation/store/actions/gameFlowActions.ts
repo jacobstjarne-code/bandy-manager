@@ -1,4 +1,5 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
+import type { SeasonGoalType } from '../../../domain/entities/SeasonSummary'
 import type { AnslagKey } from '../../../domain/services/anslagService'
 import { findActiveAnniversaries } from '../../../domain/services/clubMemoryService'
 import { PendingScreen } from '../../../domain/enums'
@@ -340,10 +341,23 @@ export function gameFlowActions(get: Get, set: Set) {
     // kommentaren på SaveGame.seasonGoalChosenForSeason). Töm den ackumulerade
     // eventlistan här — inte i seasonEndProcessor.ts — för nästa säsongs
     // "medan du var borta" ska börja tomt, inte ärva den här säsongens.
-    passSeasonTransition: () => {
+    //
+    // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md, 2026-08-19): valfri goal-param.
+    // undefined = "Inget särskilt i år" (giltigt svar, domen kräver det) —
+    // skriver då inget activeSeasonGoal, samma "fältet saknas" som en spelare
+    // som aldrig sett O3 (seasonGoalService.deriveGoalOutcomeLine hanterar
+    // båda identiskt: "Du lovade ingenting i somras. Det höll du.").
+    passSeasonTransition: (goal?: { type: SeasonGoalType; referenceId?: string; trackedPlayerIds?: string[] }) => {
       const { game } = get()
       if (!game) return
-      set({ game: { ...game, seasonGoalChosenForSeason: game.currentSeason, pendingSeasonTransitionEvents: [] } })
+      set({
+        game: {
+          ...game,
+          seasonGoalChosenForSeason: game.currentSeason,
+          pendingSeasonTransitionEvents: [],
+          activeSeasonGoal: goal ? { ...goal, chosenSeason: game.currentSeason } : undefined,
+        },
+      })
     },
 
     resolveWeeklyDecision: (choice: 'A' | 'B') => {
