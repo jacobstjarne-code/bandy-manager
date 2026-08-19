@@ -102,6 +102,7 @@ export function TacticBoardCard({
               return (
                 <button
                   key={opt.value}
+                  data-testid="tactic-option"
                   onClick={() => setTacticValue(key, opt.value as Tactic[typeof key])}
                   style={{
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -216,7 +217,7 @@ export function TacticBoardCard({
               }}
             >
               <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                {hiddenGroups.map(g => `🏒 ${g.label}`).join(' · ')}
+                🏒 {hiddenGroups.map(g => g.label).join(' · ')}
               </span>
               <span style={{ fontSize: 10, color: 'var(--accent-deep)', fontWeight: 700, letterSpacing: '0.5px' }}>
                 VISA ALLA ÅTTA ›
