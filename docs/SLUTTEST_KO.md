@@ -3,6 +3,36 @@
 **Skapad:** 2026-08-17 · **Omskriven:** 2026-08-17 (djupversion) · **Ägare:** Opus
 **Uppdateras post för post. Skriv ingen ny fil.**
 
+---
+
+# ▶ BYGGBART NU — ta nästa rad
+
+**Är du blockerad på CI, deploy eller ett svar: ta nästa post här. Fråga inte, schemalägg ingen väckning.**
+
+Alla poster nedan har låst text eller ingen text alls, inga obesvarade beroenden, och rör inte `matchCore`-kalibreringen.
+
+| # | Post | Var |
+|---|---|---|
+| 1 | **B9** positionsviktad utmattning — godkänd att bygga. `fitness` läses aldrig av `matchCore`, bara `squadEvaluator` — normaliserad omfördelning mot startelvan bevarar aggregatet exakt | `playerStateProcessor.ts` |
+| 2 | **B3** `playStyleTradition` — alla tolv värden dömda, se B3-posten | `clubExtendedInfo.ts` |
+| 3 | **B4** de fyra `THREAT_REASON_LINES`-poolerna — text låst i chatten 2026-08-19 | `opponentAnalysisService.ts` |
+| 4 | **B5** `ARCHETYPE_STRENGTHS` + `ATTRIBUTE_LABELS` — rena textswappar, väntar på Opus-ord | `scoutingService.ts` |
+| 5 | **B2** UI visar två presslägen, inte tre — motorn är binär, tre val där två är identiska är `kommunens_villkor` igen | taktikytorna |
+| 6 | **5.1 fynd 5** alternativ (a): `hideProgress`-prop på `BoardObjectivesList` | `BoardObjectivesList.tsx` |
+| 7 | **5.1 fynd 4** `FeedbackButton` scope:ad till innehållets botten, inte viewportens | `FeedbackButton.tsx` |
+| 8 | **O6 sidofynd** dubbla `VB`/`HB` i fyrbackslinjen — tredje ordet för innerback: **`MB`** (mittback) | `Formation.ts` |
+| 9 | **O7** fyra språkfel — se O7-tabellen, testet på `nationalTeamService.test.ts:167` i samma commit | fyra filer |
+| 10 | **U5 forts** `isOnCooldown` mot pivotal beats, sedan `systemhandelseBudgetOk` | `narrativeLogService.ts` |
+| 11 | **O2** noOp-grepet först, rapportera siffran före pairwise-analysen | eventfilerna |
+| 12 | **6.4 post 21** edge-case-fixturer (långa namn, skada, tomt priskort) | `DevScenesScreen.tsx` |
+| 13 | **Å12–15** skulden: nav-dokdrift, emoji-rester, egna skuggor | flera |
+
+**Väntar på Jacob, inte byggbart:** B12 steg 2 (dom på A/B/C-tabellen), B1 (formationssystemet), 5.3 (Opus-text), O16-uppföljning, O5/O1 (bakom Grind 1).
+
+**Rör inte:** `matchCore`-kalibreringen, possession-motorn, de sex taktikdimensionerna, rollsystemet — allt V2, se `docs/V2_MATCHMOTOR_OCH_TAKTIK.md`.
+
+---
+
 Denna fil ersätter alla `CODE_INSTRUKTION_*`-filer från 2026-08-17 som kölista. De lever kvar som **underlag** — de bär rotorsaker, låst copy och villkor — men status står bara här.
 
 `docs/KVAR.md` är dödmarkerad sedan 2026-06-21 och ska inte återupplivas. `docs/BACKLOG.md` äger långsiktig status; denna fil äger sluttestperioden. Lägg en pekare från BACKLOG §A hit.
@@ -791,7 +821,23 @@ Låta `matchCore` skriva ner vad den redan vet vid varje chansskapande/bolltapp-
 
 **Sammanfattning:** byggbart nu utan att röra RNG/kalibrering — `origin`, `manpowerState`, `tacticalFactors`, `contributingFactors` (alla B eller A, rena avläsningar av redan beräknad state). `primaryCause`/`responsiblePlayerId` byggbara ENDAST för den smala, belagda kontringsmåls-pathwayn (`slowest`) — `undefined` överallt annars, aldrig ett generellt fält som gissar. `involvedPlayerIds` samma begränsning. `sequenceId` väntar helt på V2. Frilägen (fråga 7), passningstyper (fråga 6) och `FREE_HIT`-ursprung (fråga 5) kräver ny simuleringslogik eller finns bara i UI-lagret utanför `matchCore` — inte extraherbara utan ett nytt motorbeslut.
 
-**Status:** `RAPPORT-LEVERERAD` — väntar på Jacobs dom innan Steg 2a/2c/2b (i den ordningen) påbörjas. Inget byggt.
+**Status:** `DOM GIVEN 2026-08-19 — BYGG` (`docs/DOM_B12_STEG2_2026-08-19.md`)
+
+**Bygg fyra fält, i denna ordning:** `manpowerState` (A, renast — billigaste beviset på att berikningen inte läcker) → `tacticalFactors` → `contributingFactors` → `origin` (sist, kräver mest kunskap om `seqType`-vägarna). Rapportens föreslagna ordning är alltså vänd.
+
+**`origin`:** skriv inte en enum som lovar fyra värden när motorn kan tre. Antingen tre, eller ett fjärde som aldrig sätts och är dokumenterat som sådant — `FREE_HIT` skrivs av `MatchLiveScreen`, inte `matchCore`.
+
+**Bygg INTE `primaryCause`/`responsiblePlayerId`, inte ens för den belagda `slowest`-vägen.** Kopplingen är sann men täcker under fem procent av målen. Ett fält som är satt i en marginalväg och `undefined` i resten gör tre konsumenter systematiskt fel: spelarbetyget straffar bara den som var långsammast tillbaka efter en hörna, `B4` kan bara peka ut ansvar när målet råkade vara en kontring, `O16` får en kausal koppling som gäller en undantagsväg. **Systematiskt underrapporterat är värre än inte rapporterat.** Fälten får finnas i typen som optional med en kommentar om varför de är tomma — sätts av V2. Utvisningens `playerId` står kvar, den är ett komplett ansvar.
+
+**`involvedPlayerIds` och `sequenceId`:** C, byggs inte. B7 väntar därmed på V2, som sammanslagningen redan säger.
+
+**Ingen konsument byggs i samma svep.** `B5`/`B4`/`O16` läser fälten först när alla fyra finns — annars byggs tre ytor mot ett halvfyllt underlag.
+
+**1/4 BYGGD 2026-08-19: `manpowerState`.** `{ownSuspended, opponentSuspended}` på `MatchEvent` (`Fixture.ts`), ren avläsning av `homeActiveSuspensions`/`awayActiveSuspensions` vid varje event-skapande-ställe i `matchCore.ts` (19 ställen — samtliga Goal/Assist/Save/Corner/Penalty/Suspension/Substitution, inklusive straff-triggern som är en egen closure och förlängningen som är en egen loop, båda ändå i samma lexikaliska scope). Utvisningens EGET manpowerState läses FÖRE dess egen increment (läget domaren faktiskt dömde i, inte ett steg senare). `primaryCause`/`responsiblePlayerId` tillagda i typen som `optional` med kommentar om varför de är tomma, exakt som domen kräver — sätts inte av `matchCore`.
+
+**Byte-identiskt bekräftat:** `npm run stress` (10 seeds × 5 säsonger, 7627 matcher) före/efter — enda diffen i `season_stats.json` var `generatedAt`-tidsstämpeln. 3 nya tester (`matchCoreManpowerState.test.ts`), stash-verifierade.
+
+**Kvar:** `tacticalFactors` → `contributingFactors` → `origin`, i den ordningen, samma stresstest-disciplin per fält.
 
 **O20 — vilken punkt saknas, tio händelser, källa `DOM_VARSLET_KLASSIFICERING_2026-08-17.md`:**
 
