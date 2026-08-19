@@ -47,11 +47,59 @@ export type GameEventType =
   | 'csPress'
   | 'playThroughInjury'
 
+/**
+ * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
+ * Domen namnger fyra nivåer (neutral/positiv/kostsam/irreversibel), men
+ * 'irreversibel' modelleras HÄR som en egen boolean (choice.irreversible)
+ * i stället för ett fjärde enum-värde — domen säger uttryckligen att ett
+ * val kan vara BÅDA kostsamt OCH irreversibelt samtidigt ("Är valet både
+ * kostsamt och irreversibelt: båda raderna, kostnaden först"), vilket en
+ * ren enum inte kan uttrycka utan ett femte "bådadera"-värde. Se
+ * getConsequenceLines() nedan för den mekaniska, testbara regeln.
+ */
+export type ConsequenceLevel = 'neutral' | 'positive' | 'costly'
+
 export interface EventChoice {
   id: string
   label: string
   subtitle?: string    // Consequence preview: "💛 +8 fanMood · ⭐ +3 reputation"
+  /** D1 punkt 3. 'neutral'/'positive' visar ALDRIG en markör (facit-förbud,
+   *  O12 — att märka ut det goda valet är facit). 'costly' visar costLabel.
+   *  ALDRIG --danger eller ⚠ i renderingslagret — hård spärr i domen: rött
+   *  läser som "fel", en spelare som ser rött på ett val lär sig att spelet
+   *  har en åsikt om det. */
+  consequenceLevel?: ConsequenceLevel
+  /** Redan-formaterad kostnadstext för consequenceLevel==='costly', ordagrant
+   *  kopierad från D1:s låsta copy — t.ex. "Kostar 45 tkr", "Kostar 18 tkr/mån",
+   *  "Kostar 45 tkr nu, 6 tkr/mån sen", "Kostar en plats i truppen",
+   *  "Kostar relationen till {namn}". Ingen ny formattering i renderingslagret. */
+  costLabel?: string
+  /** Sant om valet inte går att ändra i efterhand. Oberoende av
+   *  consequenceLevel — se getConsequenceLines(). */
+  irreversible?: boolean
   effect: EventEffect
+}
+
+/**
+ * D1 punkt 3 — den mekaniska regeln för vilka konsekvensrader ett val visar.
+ * Ren funktion, ingen rendering: DecisionChoices.tsx anropar den för att
+ * bestämma vilka rader (om några) som ska stå under valets etikett.
+ *
+ * "Kostsam: exakta pengar, alltid... Irreversibel: en EGEN rad under
+ * alternativet, samma dämpade register... Är valet både kostsamt och
+ * irreversibelt: båda raderna, kostnaden först."
+ */
+export function getConsequenceLines(
+  choice: Pick<EventChoice, 'consequenceLevel' | 'costLabel' | 'irreversible'>,
+): string[] {
+  const lines: string[] = []
+  if (choice.consequenceLevel === 'costly' && choice.costLabel) {
+    lines.push(choice.costLabel)
+  }
+  if (choice.irreversible) {
+    lines.push('Går inte att ändra.')
+  }
+  return lines
 }
 
 export interface EventSender {

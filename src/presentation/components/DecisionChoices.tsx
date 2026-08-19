@@ -1,7 +1,15 @@
+import { getConsequenceLines } from '../../domain/entities/GameEvent'
+import type { ConsequenceLevel } from '../../domain/entities/GameEvent'
+
 interface DecisionChoice {
   id: string
   label: string
   subtitle?: string
+  /** D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — se GameEvent.ts:s
+   *  EventChoice/getConsequenceLines för den mekaniska regeln. */
+  consequenceLevel?: ConsequenceLevel
+  costLabel?: string
+  irreversible?: boolean
 }
 
 interface Props {
@@ -30,6 +38,12 @@ export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryCh
     <div style={containerStyle}>
       {choices.map(choice => {
         const isPrimary = primaryChoiceId !== undefined && choice.id === primaryChoiceId
+        // D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
+        // Ren logik i GameEvent.ts:s getConsequenceLines: 'costly' → costLabel,
+        // irreversible → "Går inte att ändra.", kostnaden alltid först. ALDRIG
+        // --danger eller ⚠ här (hård spärr i domen — rött läser som "fel").
+        const consequenceLines = getConsequenceLines(choice)
+        const hasExtraLines = !!choice.subtitle || consequenceLines.length > 0
         return (
           <button
             key={choice.id}
@@ -45,8 +59,9 @@ export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryCh
               // column här skrivs etikett och subtitle ut på samma rad och klipper
               // varandra — upptäckt via faktisk skärmdump när IncomingBidCard blev
               // första anropsstället som fyller subtitle på riktigt (~30 befintliga
-              // anropsställen hade aldrig subtitle satt, så buggen var latent).
-              ...(choice.subtitle ? { flexDirection: 'column', alignItems: layout === 'stack' ? 'flex-start' : 'center' } : {}),
+              // anropsställen hade aldrig subtitle satt, så buggen var latent). Samma
+              // öde väntade konsekvensraderna (D1 punkt 3) utan samma villkor.
+              ...(hasExtraLines ? { flexDirection: 'column', alignItems: layout === 'stack' ? 'flex-start' : 'center' } : {}),
             }}
           >
             {choice.label}
@@ -55,6 +70,11 @@ export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryCh
                 {choice.subtitle}
               </span>
             )}
+            {consequenceLines.map((line, i) => (
+              <span key={i} style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>
+                {line}
+              </span>
+            ))}
           </button>
         )
       })}
