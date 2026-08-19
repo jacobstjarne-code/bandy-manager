@@ -83,7 +83,7 @@ export function SeasonTransitionScene() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-dark)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: 'var(--bg-dark)', display: 'flex', flexDirection: 'column' }}>
       {/* 1. Kapitel-header — svalt, stilla, tittar bakåt */}
       <div style={{
         background: 'radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--accent) 26%, var(--bg-dark)), var(--bg-dark) 70%)',
@@ -157,7 +157,7 @@ export function SeasonTransitionScene() {
       </div>
 
       {/* 3. Horisont-block, varmt — säsongsvägen, tändraden, CTA */}
-      <div style={{ background: 'var(--bg-dark)', padding: '16px 15px 15px', position: 'relative', overflow: 'hidden', marginTop: 'auto' }}>
+      <div style={{ background: 'var(--bg-dark)', padding: '16px 15px 15px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: NOISE_OVERLAY }} />
         <div style={{ position: 'relative' }}>
           <div style={{ fontSize: 8, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--copper)', textAlign: 'center', marginBottom: 13, fontFamily: 'var(--font-body)' }}>

@@ -747,7 +747,12 @@ function transitionEvents(...types: Array<'retired' | 'aged' | 'promoted'>): imp
   return types.map(type => ({ type, playerId: `p-${type}`, playerLastName: names[type], ...(type === 'aged' && { age: 34 }) }))
 }
 // Säsong 2, utvilad, tre händelser, slutspel rimligt.
+// currentSeason satt = seasonCount (2026-08-19-fyndet: kickern läste game.
+// currentSeason, epokLine läser trainerArc.seasonCount — två olika fält som
+// makeSommarenGame() aldrig synkade, så alla fyra scener visade samma
+// ärvda default (8) i kickern oavsett vad brödtexten sa).
 const sommarenS2Game = makeSommarenGame({
+  currentSeason: 2,
   trainerArc: { current: 'newcomer', history: [], seasonCount: 2, bestFinish: 3, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 2 },
   seasonSummaries: [makeSeasonSummary({ finalPosition: 3, playoffResult: 'quarterfinal' })],
   managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 15 },
@@ -755,6 +760,7 @@ const sommarenS2Game = makeSommarenGame({
 })
 // Säsong 6, titelförsvarare, nära gränsen, tre händelser.
 const sommarenTitelforsvarareGame = makeSommarenGame({
+  currentSeason: 6,
   trainerArc: { current: 'grind', history: [], seasonCount: 6, bestFinish: 1, titlesWon: 1, consecutiveLosses: 0, consecutiveWins: 4 },
   seasonSummaries: [
     makeSeasonSummary({ finalPosition: 4, playoffResult: 'semifinal' }),
@@ -765,6 +771,7 @@ const sommarenTitelforsvarareGame = makeSommarenGame({
 })
 // Säsong 4, efter tapp, tomt-fallet, slutspel INTE rimligt (avoidBottom + didNotQualify).
 const sommarenTomtGame = makeSommarenGame({
+  currentSeason: 4,
   clubs: SOMMAREN_CLUBS.map(c => c.id === HOME_ID ? { ...c, boardExpectation: 'avoidBottom' } : c),
   trainerArc: { current: 'questioned', history: [], seasonCount: 4, bestFinish: 5, titlesWon: 0, consecutiveLosses: 3, consecutiveWins: 0 },
   seasonSummaries: [
@@ -776,6 +783,7 @@ const sommarenTomtGame = makeSommarenGame({
 })
 // Säsong 11 (siffervarianten), något sliten, en händelse.
 const sommarenSiffraGame = makeSommarenGame({
+  currentSeason: 11,
   trainerArc: { current: 'grind', history: [], seasonCount: 11, bestFinish: 2, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 1 },
   seasonSummaries: [makeSeasonSummary({ finalPosition: 5, playoffResult: 'quarterfinal' })],
   managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 50 },
