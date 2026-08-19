@@ -11,6 +11,7 @@ import { Swords } from 'lucide-react'
 import { loadTeamPhoto, listTeamPhotoSeasons } from '../../infrastructure/teamPhotoStorage'
 import { buildBlodslinje } from '../components/clubmemory/ClubMemoryView'
 import { Spine } from '../components/shared/Spine'
+import { deriveGoalOutcomeLine, derivePersonChangeLine, deriveRivalryLine, deriveEraChangeLine, shouldShowEraChangeLine } from '../../domain/services/seasonGoalService'
 
 function RecordRow({ label, value, sub, isLast }: { label: string; value: string; sub: string; isLast?: boolean }) {
   return (
@@ -415,6 +416,36 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                       📈 Mest förbättrad:{' '}
                       <PlayerLink playerId={s.mostImproved.playerId} name={s.mostImproved.name} />
                       {' '}(+{s.mostImproved.caGain})
+                    </p>
+                  )}
+                  {/* O18 fält 3-5 (DOM_ARSBOKEN_RYGGRAD_2026-08-17.md) — ett fält per säsong,
+                      aldrig utfyllnad. Renderas bara när fältet faktiskt har innehåll — en
+                      äldre save utan dessa fält (skapad innan denna kod fanns) visar helt
+                      enkelt inga av raderna, ingen gissning bakåt. */}
+                  {s.personChange && (
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                      👤 {derivePersonChangeLine(s.personChange)}
+                    </p>
+                  )}
+                  {s.rivalryStanding && (
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                      ⚔️ {deriveRivalryLine(s.rivalryStanding)}
+                    </p>
+                  )}
+                  {shouldShowEraChangeLine(s.clubEra, summaries[i + 1]?.clubEra) && (
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                      🏛️ {deriveEraChangeLine(game.clubs.find(c => c.id === game.managedClubId)?.name ?? '', summaries[i + 1].clubEra!)}
+                    </p>
+                  )}
+                  {/* O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — målraden, sista raden före
+                      ekonomin. Renderas bara när ett mål faktiskt valdes den säsongen —
+                      deriveGoalOutcomeLine() hanterar "inget mål" med en egen låst rad
+                      ("Du lovade ingenting..."), men den skulle fabricerat en gammal säsong
+                      som föregick den här featuren. Samma "gissa inte bakåt"-disciplin som
+                      K2/K3: bara verklig data, aldrig ett antagande om vad som hänt tidigare. */}
+                  {s.personalGoal && (
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                      🎯 {deriveGoalOutcomeLine(s.personalGoal, game)}
                     </p>
                   )}
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
