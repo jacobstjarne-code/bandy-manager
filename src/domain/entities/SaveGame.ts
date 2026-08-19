@@ -3,7 +3,7 @@ import type { MatchdaySlot } from '../services/scheduleGenerator'
 import type { NotableEventType } from '../data/klackEchoText'
 import type { PortalPhase } from '../data/seasonPhases'
 import type { SeasonSignature } from './SeasonSignature'
-import type { Club, BoardMember, BoardRole, BoardPersonality } from './Club'
+import type { Club, BoardMember, BoardRole, BoardPersonality, TacticChangeLogEntry } from './Club'
 import type { Player } from './Player'
 import type { League } from './League'
 import type { Fixture, TeamSelection } from './Fixture'
@@ -11,7 +11,7 @@ import type { MatchWeather } from './Weather'
 import type { TrainingFocus, TrainingSession, TrainingProject } from './Training'
 import type { PlayoffBracket, PlayoffEliminationInfo } from './Playoff'
 import type { CupBracket } from './Cup'
-import type { SeasonSummary } from './SeasonSummary'
+import type { SeasonSummary, SeasonGoalType } from './SeasonSummary'
 import type { ScoutReport, ScoutAssignment } from './Scouting'
 import type { YouthTeam, Mentorship, MentorshipRecord, LoanDeal, AcademyLevel } from './Academy'
 import type { GameEvent, TransferBid } from './GameEvent'
@@ -167,6 +167,13 @@ export interface SaveGame {
   onboardingComplete?: boolean     // Tillträdet-flödet slutfört (sätts vid F4)
   dismissedHints?: string[]
   lastCompletedFixtureId?: string   // id of most recently completed managed-club fixture
+  // O15 (2026-08-18/19, DOM 1b): Taktikens två lägen. tacticAdvancedMode persisteras
+  // så "Avancerat" inte är en spärr man öppnar varje vecka (Jacobs villkor) —
+  // satt via egen store-action (setTacticAdvancedMode, samma persistGameSnapshot-
+  // mönster som preferredMatchMode). tacticChangeLog är avancerat lägets
+  // "Vad du ändrat i år"-historik, se TacticChangeLogEntry (Club.ts).
+  tacticAdvancedMode?: boolean
+  tacticChangeLog?: TacticChangeLogEntry[]
   chemistryStats?: Record<string, number>  // key = sortedId1|sortedId2, value = shared minutes
 
   playoffBracket: PlayoffBracket | null
@@ -578,4 +585,20 @@ export interface SaveGame {
    * passerad exakt när seasonGoalChosenForSeason === game.currentSeason.
    */
   seasonGoalChosenForSeason?: number
+
+  /**
+   * O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål,
+   * valt i Sommaren, för INNEVARANDE säsong. Arbetsfält: konsumeras och
+   * skrivs till SeasonSummary.personalGoal vid säsongsslut
+   * (seasonEndProcessor.ts), och nollställs där — nästa Sommaren skriver
+   * ett nytt. trackedPlayerIds bär extra bokföring 'keepSquad' behöver för
+   * att mäta utfallet (vilka kontrakt gick ut vid valtillfället) utan att
+   * bryta SeasonGoalRecords "tre fält, inget mer".
+   */
+  activeSeasonGoal?: {
+    type: SeasonGoalType
+    referenceId?: string
+    trackedPlayerIds?: string[]
+    chosenSeason: number
+  }
 }
