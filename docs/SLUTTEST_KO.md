@@ -569,7 +569,7 @@ Rapportera vad som kan mätas utan konto och utan personuppgifter. **Efter sanni
 
 | ID | Post | Status |
 |---|---|---|
-| D1 | Eventköns viktning: ambient / normal / pivotal, plus konsekvensnivå på val (neutral, positiv, kostsam, irreversibel). Inkl. Å7:s inline-rytm och Å8:s taktikviktning. Svåraste frågan: hur pivotal får väga mer **utan** att bli en fjärde ceremoni | `SKICKAD` |
+| D1 | Eventköns viktning: ambient / normal / pivotal, plus konsekvensnivå på val (neutral, positiv, kostsam, irreversibel). Inkl. Å7:s inline-rytm och Å8:s taktikviktning. Svåraste frågan: hur pivotal får väga mer **utan** att bli en fjärde ceremoni | `DELVIS KLAR` — se `docs/DOM_D1_EVENTVIKTNING_2026-08-19.md`. Punkt 1 (Å7, dubbelpadding) redan `KLAR (97d26cfd)` innan detta pass, orört. Punkt 2 (Ambient-regeln) `KLAR (4e347971)` — `isAmbientEvent`/`getEventRenderTarget` i `eventQueueService.ts`, ny `AmbientEventRow.tsx`, wirad i `PortalEventSlot.tsx`/`GameShell.tsx`/`EventPrimary.tsx`; fann och fixade under vägen en verklig softlock (kritiskt event utan val gav en fullskärmsmodal utan knappar) samt en krasch i `gameFlowActions.ts`s `simulateRemainingStep`. Punkt 3 (konsekvensmarkören) `KLAR (9ae907bc)` — `EventChoice.consequenceLevel`/`costLabel`/`irreversible` + `getConsequenceLines()` i `GameEvent.ts`, rendering i `DecisionChoices.tsx`; grep-verifierat 0 träffar på `--danger`/⚠ i den nya koden. Renderingsstöd byggt men opt-in — inga befintliga events sätter de nya fälten än. Punkt 4 (pivotal + "därför nu"-raden + batch-av-tre) väntar uttryckligen på `O19`s eventklassificering + `contentContract.ts`, ej påbörjad. 21 nya tester (`eventRenderRouting.test.ts` + `consequenceMarker.test.ts`), stash-verifierade. |
 | D4 | **Taktikens två lägen** (`O15`). Fyra frågor: hur "två ändringar föreslås" ser ut som ett sammanhållet förslag; hur "vad skiljer mot förra matchen" visas; hur avancerat läge nås utan två skärmar; träffytorna (Å2). Läses ihop med D1 | `SKICKAD` |
 | D2 | Crescendot (post 6/7/10) | `LEVERERAD` → 5.2, 5.3, Å10 |
 | D3 | Sommaren | `LEVERERAD` → 5.1 |
@@ -707,6 +707,22 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 | B1 | **Formationssystemet mot bandyns femmannaförsvar.** Alla lag spelar fem i försvaret — två backar, libero, två ytterhalvor. Bara de främre fem varierar (två eller tre mittfältare). Vårt 5-3-2 / 4-3-3 / 3-3-4 beskriver en variation som inte finns. **Rör byggd mekanik och `BEVARA`-listan — RAPPORT FÖRST, eget beslut före bygge** | **Stor** |
 
 **Ordning:** B4 → B5 → B7 → B6 → B8 → B3 → B2 (rapport) → B1 (rapport).
+
+## Tillägg efter att alla sju delar lästs (2026-08-19, senare)
+
+De fyra sista delarna (målvakt, back, mittfältare, anfallare) lästes efter att B1–B8 skrivits. Tre nya poster, och en förstärkning av B1.
+
+| ID | Post | Storlek |
+|---|---|---|
+| B9 | **Positionsberoende bytesbehov.** Liw: *"För en mittfältare finns egentligen inget utrymme att vila på planen. Jämfört med halven har vi mindre möjlighet att välja om vi ska gå med eller inte... Därför måste vi byta oftare."* Ytterhalvor kan spela nittio minuter; mittfältare kan inte. **Rapportera först:** är `fatigue` positionsberoende i dag, eller enhetlig? Om enhetlig är det ett verkligt fidelitetsfel — rotation blir en generisk syssla i stället för en positionsfråga. Rör matchmotorns kalibrering | Medel |
+| B10 | **Zonmarkering, inte man-man.** Törner: *"Det går inte att åka efter en spelare, det går inte. Utan jag håller min zon och släpper över spelare till en medspelare när han lämnar min position."* Detta är inte en taktikdimension att lägga till — det är **grundregeln för hur bandyförsvar fungerar**, och den ska synas i matchtext och i hur `B4`:s hotspelare beskrivs (den som rör sig över zongränser är svårast). Textpost, ingen mekanik | Liten |
+| B11 | **Den ihåliga muren.** Wasberg: målvakten kan **medvetet ställa en ihålig mur** vid frislag för att locka skytten att skjuta från dåligt läge. Ett taktiskt val som inte finns i spelet, och som passar hörn-/frislagsmekaniken vi redan har. **Rapportera:** finns frislag som egen händelse med val, eller bara hörnor? | Liten–Medel |
+
+**B1 förstärkt.** Liw bekräftar Brodén oberoende och med samma ord (*"en lek med siffror"*), och lägger till strukturen: **två femmor plus målvakt** — bakre femman (två backar, libero, två ytterhalvor) och främre femman (mittfältare och anfallare i någon fördelning). Två oberoende elitkällor säger samma sak. Det är inte längre en tolkning.
+
+**B5 utvidgad** med hela vokabulären ur alla sju delar: flipp, styrspel, vända hem, uppåkning, drop, översteg, åka i tomme, gå i djupet, fiska efter bollar, rättvänd/felvänd, hal, brytsäker, följsam, bra på tennis, placeringssäker, köldtålig, ryssvantar.
+
+**B4 har nu en färdig mall.** Varje intervju slutar med "vem är svårast att möta", och svaret är alltid **ett namn plus ett skäl**: *"Han är riktigt hal."* · *"Han dyker upp varsomhelst och gör mål på allt."* · *"Extremt bra på att åka och fiska efter bollar."* Och **Edlund nämns av två oberoende spelare** — ett hot är allmänt känt, inte hemligt. Analysen ska peka konsekvent på samma spelare, inte slumpa.
 
 **Rättelse till `DOM_ILLUSTRATIONERNA_2026-08-18.md`:** raden "Ingen sarg — låga stakethinder" är fel. Sargen finns, **låg och flyttbar** — man ser över den. Ersätt raden i stilbibeln.
 
