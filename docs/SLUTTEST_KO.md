@@ -29,13 +29,9 @@ Denna fil ersätter alla `CODE_INSTRUKTION_*`-filer från 2026-08-17 som kölist
 
 ---
 
-## BLOCKERAT PÅ OPUS-TEXT — före allt annat på mitt bord
+## BLOCKERAT PÅ OPUS-TEXT — tomt (2026-08-19)
 
-| Post | Vad som behövs |
-|---|---|
-| 4.2 derbyrepliken | Listan levererad 2026-08-19: `docs/DERBYREPLIKEN_STORYLINE_FRAGOR_2026-08-19.md` (13 + 4 arc-frågor, frågetext + ämne + trigger). Jacob skriver svaren samma dag den finns |
-
-4.8 andra halvan löst 2026-08-18 (`49abf3fc`) — Jacob gav texten direkt i chatten ("Assistenten satte laget"), ingen spec behövdes.
+4.2 derbyrepliken wire:ad 2026-08-19 (`c1c35970`) — sista posten i den här listan. 4.8 andra halvan löst 2026-08-18 (`49abf3fc`) — Jacob gav texten direkt i chatten ("Assistenten satte laget"), ingen spec behövdes.
 
 K5 är löst — designbeslutet (permanent betyder permanent) implementerat i `3b33db0e`.
 
@@ -301,7 +297,7 @@ Samma klass genomgående: `RoundSummaryScreen` mot `GranskaScreen`, `respondToIn
 | ID | Post | Rotorsak / villkor | Status |
 |---|---|---|---|
 | 4.1 | Standings parity — dashboard 5:e, bracket 6:a, årsbok 5:e, samma säsong och 21 poäng | `calculateStandings` (tie-breaker: poäng→GD→gjorda mål→klubbId) var redan kanonisk, men `roundProcessor.ts` var ENDA anropsstället som skickade `game.pointDeductions` som tredje argument. `playoffTransition.ts`, `seasonEndProcessor.ts`, `TabellScreen.tsx`, `matchActions.ts`×3 gjorde det inte — en klubb under poängavdrag fick olika placering på olika ytor trots samma underliggande tabellfunktion | `KLAR (85e60a47)` — **osäkerhet kvar:** fixet är verifierat korrekt och täcker HELA felklassen (pointDeductions-inkonsekvens), men jag har inte det ursprungliga repro-savet och kan inte 100% bekräfta att just DEN observationen (5:e/6:a/5:e, 21 poäng) berodde på ett aktivt poängavdrag snarare än något annat. Om samma mönster syns igen efter denna fix, det är en annan rotorsak — säg till |
-| 4.2 | Derbyrepliken. **Tre vägar in**, vilket är varför tre tidigare ordrar inte räckte: `preferIds` filtreras ej (`:28,36,41`); `win_derby` klassad generic `win` (`:423`); storyline-frågan behåller föregående matchfrågas `preferIds` (`:657-696`) och svaren byggs ur dem | Alla tre stängs. Specialtaggar får `generic: none`. **13 + 4 arc-frågor saknar topikanpassade svar — listan levererad 2026-08-19** (`docs/DERBYREPLIKEN_STORYLINE_FRAGOR_2026-08-19.md`), väntar på Jacobs svar. Hör ihop med U2 | `PÅGÅR` — lista klar, väntar Opus-text |
+| 4.2 | Derbyrepliken. **Tre vägar in**, vilket är varför tre tidigare ordrar inte räckte: `preferIds` filtreras ej (`:28,36,41`); `win_derby` klassad generic `win` (`:423`); storyline-frågan behåller föregående matchfrågas `preferIds` (`:657-696`) och svaren byggs ur dem | Alla tre stängs. Specialtaggar får `generic: none`. **13 + 4 arc-frågor wire:ade 2026-08-19** — 31 nya svar (`docs/SVAR_STORYLINE_FRAGOR_2026-08-19.md`, Opus) i `PLAYER_RESPONSES` (`topic_person`/`topic_town`/`topic_doubt`/`topic_player`, 3 återanvänder `w_h5`/`w_p3`/`cl32`); alla 17 override-platser pekar nu på topikanpassade `preferIds`. Två spärrar: nya taggarna `matches:()=>false` + `generic:'none'` — nås endast via explicit `preferIds`. Nytt tabelltest `storylineArcPreferIds.table.test.ts` verifierar preferIds-täckning + topic_*-otillgänglighet från vanlig matchfråga. Hör ihop med U2 | `KLAR (c1c35970)` |
 | 4.3 | Varsel-dedupe | `postAdvanceEvents:281-307` kollar `event_varsel_s{season}`, fabriken skapar `event_varsel_{employer}_{season}`. Gemensam ID-funktion | `KLAR (406be8e4)` — `varselEventId(season)` exporterad, används av båda anropsställena. Test verifierat mot repro (fixat id i resolvedEventIds blockerade inte ett nytt event innan fixet) |
 | 4.4 | Byggflikens copy → "Ett bygge åt gången". Låsta noder listar **alla** krav med uppfyllt/ej | `FacilityTree.tsx:231` sa säsongsstart, `FacilityScreen:84-92` implementerar löpande. `facilityNodes:162-168` kräver två noder, visar en | `KLAR (b805a829)` |
 | 4.5 | Årsbokens styrelsemening ur objective-resultat, inte placeringstier | "2:a plats uppfyller kravet att vinna ligan". Samma rot som `growFanbase`-etiketten i sluttestet | `KLAR (6f1d36a1)` |
