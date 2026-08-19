@@ -102,11 +102,18 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test tests/visual/tapTargetGate.visual.ts
+      # 2026-08-19: alla sex upload-artifact-steg i denna fil pekade på
+      # playwright-report/, som ALDRIG skapas — playwright.config.ts sätter
+      # reporter:'github' i CI (log-annotationer, inte en HTML-rapport), så
+      # varje "if: failure()"-uppladdning har tyst laddat upp noll filer hela
+      # sessionen ("No files were found... No artifacts will be uploaded").
+      # De faktiska diff-bilderna skrivs till test-results/ (Playwrights
+      # default outputDir) — det är den katalogen som faktiskt ska laddas upp.
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: tap-target-gate-report
-          path: playwright-report
+          path: test-results
 
   # Kontrastgrinden (åtgärdslistans post 17, 2026-08-18): WCAG-kontrast för
   # alla [data-primary-card]-varianter (Portal-Primary-familjen). Egen job,
@@ -127,7 +134,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: contrast-gate-report
-          path: playwright-report
+          path: test-results
 
   # En-primär-grinden (åtgärdslistans post 18, 2026-08-19): max 1 synlig
   # .btn-primary per skärm (CLAUDE.md-regeln, aldrig mätt automatiskt förut).
@@ -146,7 +153,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: en-primary-gate-report
-          path: playwright-report
+          path: test-results
 
   # Matchtypsmatris-grinden (åtgärdslistans post 20, 2026-08-19): frånvaro
   # av irrelevanta Granska-sektioner + närvaro av "ankaret" (kapitelPunkt).
@@ -165,7 +172,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: matchtypsmatris-gate-report
-          path: playwright-report
+          path: test-results
 
   # DecisionCard-dubbelpadding-grinden (åtgärdslistans post 7/21, 2026-08-19).
   decisioncard-padding-gate:
@@ -183,7 +190,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: decisioncard-padding-gate-report
-          path: playwright-report
+          path: test-results
 
   # Visuell regression: jämför /dev/scenes mot Linux-seedade baselines (samma OS →
   # pixelstabilt, till skillnad från Mac-vs-Linux). Baselines seedas via
@@ -219,4 +226,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: visual-regression-report
-          path: playwright-report
+          path: test-results
