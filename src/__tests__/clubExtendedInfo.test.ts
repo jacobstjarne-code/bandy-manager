@@ -50,4 +50,27 @@ describe('CLUB_EXTENDED_INFO', () => {
       expect(info.briefDescription.trim().length).toBeGreaterThan(0)
     }
   })
+
+  // B3 (Jacobs dom, 2026-08-19): sex och sex, avsiktligt — de två SVÅR-klassade
+  // klubbarna (U1s difficulty-modell) på var sitt håll. Låser domen mot
+  // en framtida omedveten ändring — flippar någon en klubb utan att döma
+  // om ska testet faila, inte tyst glida isär från domen.
+  test('playStyleTradition — alla tolv dömda, sex spelande och sex åkande', () => {
+    const bySplit: Record<'spelande' | 'akande', string[]> = { spelande: [], akande: [] }
+    for (const [id, info] of Object.entries(CLUB_EXTENDED_INFO)) {
+      expect(info.playStyleTradition, `${id} saknar playStyleTradition`).toBeDefined()
+      bySplit[info.playStyleTradition!].push(id)
+    }
+    expect(bySplit.spelande.sort()).toEqual(
+      ['club_gagnef', 'club_malilla', 'club_rogle', 'club_skutskar', 'club_soderfors', 'club_vastanfors']
+    )
+    expect(bySplit.akande.sort()).toEqual(
+      ['club_forsbacka', 'club_halleforsnas', 'club_heros', 'club_karlsborg', 'club_lesjofors', 'club_slottsbron']
+    )
+  })
+
+  test('playStyleTradition — de två SVÅR-klubbarna på var sitt håll (avsiktligt)', () => {
+    expect(CLUB_EXTENDED_INFO['club_skutskar'].playStyleTradition).toBe('spelande')
+    expect(CLUB_EXTENDED_INFO['club_slottsbron'].playStyleTradition).toBe('akande')
+  })
 })
