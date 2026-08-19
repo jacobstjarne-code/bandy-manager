@@ -648,7 +648,7 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 
 | ID | Post | Status |
 |---|---|---|
-| O6 | Positionsvokabulären i `Formation.ts`: `LIB`, `VCB`/`HCB`, `CMF`, `HR` som spegling av `VH` | `EJ SKRIVEN` |
+| O6 | Positionsvokabulären i `Formation.ts`: `LIB`, `VCB`/`HCB`, `CMF`, `HR` som spegling av `VH` | `KLAR (6ede9f06)` — Jacobs research (SvenskaFans bandytaktikserie + Elitseriens positionslista): `LIB` och `CMF` är verkliga, distinkta bandypositioner — behålls, tidigare dom om dem var fel. Två ändringar: `HR`→`HH` (spegling av `VH`, `HR` var ett skrivfel som blivit kanon), `VCB`/`HCB`→`VB`/`HB` (centerback är fotbollsterm, svensk backlinje saknar den sammansättningen). **Sidofynd, oadresserat:** i `4-3-3`/`4-2-4` (fyrbackslinje) ger renamningen `VB`/`VB` och `HB`/`HB` som DUBBLA etiketter på samma rad (ytterback + den forna VCB/HCB-innerbacken) — pitch-vyn kan inte längre skilja dem åt visuellt. Grepat: bara `Formation.ts` påverkat, inga andra kodställen refererade de gamla etiketterna. Jacob behöver döma: acceptera dubbletten, eller ett tredje ord för innerbacken i fyrbackslinjen (t.ex. "mittback"/`MB`) |
 | O7 | Språkfelslistan från alla auditer, samlad. Rapport levererad — se not under tabellen | `RAPPORT-LEVERERAD` |
 | O8 | Text: Turneringsläge mitt i serie (efter 5.3), fast-lägets prosapooler, Sommarens saknade händelsetyper | `VÄNTAR` |
 | O9 | Delningskortets berättelseläge. "6:e, 21 poäng" ser mediokert ut för en utomstående; det var en svår klubb som gick från nia till kvartsfinal. Huvudbudskapet ska vara förtjänad kontrast plus svarsinbjudan. Tre artefakter att namnge: Årets berättelse, Årets match, Karriären hittills | `EJ SKRIVEN` |
