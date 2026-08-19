@@ -329,6 +329,16 @@ export function deriveEraChangeLine(clubName: string, previousEra: ClubEra): str
   return `Det här året slutade ${clubName} vara i ${eraLabel(previousEra).toLowerCase()}.`
 }
 
+/**
+ * Ska Historikens epokrad visas för den här säsongen? Bara när epoken
+ * faktiskt skiftade mot föregående SPARADE säsong (HistoryScreen.tsx) —
+ * `previousEra` saknas för den allra första säsongen i historiken (inget
+ * att jämföra mot), vilket korrekt döljer raden där.
+ */
+export function shouldShowEraChangeLine(currentEra: ClubEra | undefined, previousEra: ClubEra | undefined): boolean {
+  return currentEra !== undefined && previousEra !== undefined && currentEra !== previousEra
+}
+
 // ── Halvtidsraden (ambient rad, D1) ────────────────────────────────────────
 
 const POSITION_WORDS = ['ett', 'två', 'tre', 'fyra', 'fem', 'sex', 'sju', 'åtta', 'nio', 'tio', 'elva', 'tolv']

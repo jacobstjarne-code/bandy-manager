@@ -11,6 +11,7 @@ import {
   deriveRivalryStanding,
   deriveRivalryLine,
   deriveEraChangeLine,
+  shouldShowEraChangeLine,
   checkSeasonGoalHalfwayEvent,
 } from '../seasonGoalService'
 
@@ -271,6 +272,25 @@ describe('deriveEraChangeLine', () => {
   it('formaterar med redan skeppad eraLabel-text, inte ny prosa', () => {
     expect(deriveEraChangeLine('Slottsbron BK', 'survival')).toBe('Det här året slutade Slottsbron BK vara i överlevnad.')
     expect(deriveEraChangeLine('Slottsbron BK', 'legacy')).toBe('Det här året slutade Slottsbron BK vara i storhetstid.')
+  })
+})
+
+// HistoryScreen.tsx (O18 fält 5) — jämför säsongens clubEra mot FÖREGÅENDE
+// sparade säsongs, inte mot en frusen etikett. Off-by-one i indexeringen
+// (summaries[i+1] i den omvänt sorterade listan) är exakt den klass av fel
+// den här testfilen ska fånga innan wiringen görs.
+describe('shouldShowEraChangeLine', () => {
+  it('epok skiftade — true', () => {
+    expect(shouldShowEraChangeLine('fotfaste', 'survival')).toBe(true)
+  })
+  it('samma epok som föregående säsong — false', () => {
+    expect(shouldShowEraChangeLine('fotfaste', 'fotfaste')).toBe(false)
+  })
+  it('ingen föregående säsong (första i historiken) — false, inget att jämföra mot', () => {
+    expect(shouldShowEraChangeLine('fotfaste', undefined)).toBe(false)
+  })
+  it('äldre save utan clubEra på den här säsongen — false', () => {
+    expect(shouldShowEraChangeLine(undefined, 'survival')).toBe(false)
   })
 })
 
