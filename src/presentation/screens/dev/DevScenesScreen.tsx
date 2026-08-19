@@ -8,7 +8,7 @@
 import { useState, useMemo } from 'react'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Club } from '../../../domain/entities/Club'
-import { PlayerPosition } from '../../../domain/enums'
+import { PlayerPosition, CornerStrategy, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, PenaltyKillStyle } from '../../../domain/enums'
 import { CupFinalVictoryScene } from '../scenes/CupFinalVictoryScene'
 import { SMFinalVictoryScene } from '../scenes/SMFinalVictoryScene'
 import { SeasonArcCard } from '../../components/squad/SeasonArcCard'
@@ -596,6 +596,14 @@ const granskaFixture = {
     startingPlayerIds: ['p-gk1', 'p-d1', 'p-d2', 'p-d3', 'p-d4', 'p-h1', 'p-h2', 'p-h3', 'p-h4', 'p-f1', 'p-f2'],
     benchPlayerIds: ['p-gk2', 'p-f3', 'p-f4', 'p-f5'],
     captainPlayerId: 'p-d1',
+    // O16 (2026-08-19) BROWSER-VERIFIERING: DITT VAL (cornerStrategy → hörnmål)
+    // kräver homeLineup.tactic — saknades tidigare (bara lineup mockades ut).
+    // Aggressive matchar redan befintlig hörnmål-händelse (minut 41, isCornerGoal).
+    tactic: {
+      mentality: TacticMentality.Balanced, tempo: TacticTempo.Normal, press: TacticPress.Medium,
+      passingRisk: TacticPassingRisk.Mixed, width: TacticWidth.Normal, attackingFocus: TacticAttackingFocus.Mixed,
+      cornerStrategy: CornerStrategy.Aggressive, penaltyKillStyle: PenaltyKillStyle.Active,
+    },
   },
 }
 const granskaOtherFixtures = [

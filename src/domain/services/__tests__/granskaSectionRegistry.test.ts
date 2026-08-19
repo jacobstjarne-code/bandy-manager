@@ -51,6 +51,15 @@ describe('visasFor — GRANSKA DEL 4 steg 2, matrisen i docs/incoming/DESIGN_UPP
     expect(visasFor('dinaVal', ...AVSKED)).toBe(false)
   })
 
+  it('dittVal (O16) — samma synlighet som dinaVal: ✕ bara avsked, ✓ liga/cup/slutspel inkl. final', () => {
+    expect(visasFor('dittVal', ...LIGA)).toBe(true)
+    expect(visasFor('dittVal', ...CUP_KVART)).toBe(true)
+    expect(visasFor('dittVal', ...CUP_FINAL)).toBe(true)
+    expect(visasFor('dittVal', ...SLUTSPEL_KVART)).toBe(true)
+    expect(visasFor('dittVal', ...SM_FINAL)).toBe(true)
+    expect(visasFor('dittVal', ...AVSKED)).toBe(false)
+  })
+
   it('omgangssammanfattning — ✕ på final (bägge, ceremoniellt), ✕ avsked, ✓ cup/slutspel utom final', () => {
     expect(visasFor('omgangssammanfattning', ...LIGA)).toBe(true)
     expect(visasFor('omgangssammanfattning', ...CUP_KVART)).toBe(true)

@@ -4,7 +4,7 @@ import type { Fixture, MatchEvent } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { Club } from '../../../domain/entities/Club'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
-import { MatchEventType, InboxItemType, TrainingType, WeatherCondition } from '../../../domain/enums'
+import { MatchEventType, InboxItemType, TrainingType, WeatherCondition, CornerStrategy } from '../../../domain/enums'
 import type { Weather } from '../../../domain/entities/Weather'
 import { formatArenaName } from '../../../domain/utils/arenaName'
 import { csColor, formatFinance } from '../../utils/formatters'
@@ -127,6 +127,57 @@ export function selectNextMatchPointerType(args: {
     return 'tabell_nara'
   }
   return 'neutral'
+}
+
+/**
+ * O16 — GRANSKA SOM LÄRANDEYTA (DOM_GRANSKA_LARANDEYTA_2026-08-17.md).
+ * Kandidat 2 av fyra i domen — den enda med siffror i MatchResult redan idag
+ * (cornerStrategy → matchCore.ts:462/675/1195, isCornerGoal på MatchEvent).
+ * De andra tre (press→återvinningar, tempo→kondition sista tjugo,
+ * formation→målens ursprung) kräver ny instrumentering och är INTE byggda —
+ * se SLUTTEST_KO.md O16.
+ *
+ * Formen är låst (domen, "Texten"): vad du valde, vad som hände. Ingen
+ * bindestreckad slutsats, aldrig beröm/tillrättavisning — bara vad som
+ * mättes. Returnerar null när ingen hörna togs alls (0 hörnor = ingen
+ * koppling att visa, domen: "Kan matchmotorn inte peka på ett samband ska
+ * sektionen inte renderas").
+ *
+ * Svenska namn på cornerStrategy-värdena lånade rakt av matchCore.ts:457-462
+ * kommentar ("säkra hörnor = omställning, aggressiva = metodiskt set-piece").
+ * Ren funktion → enhetstestbar.
+ */
+export function dittValCornerText(args: {
+  cornerStrategy: CornerStrategy
+  totalCorners: number
+  /** Minuter för mål gjorda av DEN STYRDA klubben på hörna, denna match. */
+  cornerGoalMinutes: number[]
+}): string | null {
+  const { cornerStrategy, totalCorners, cornerGoalMinutes } = args
+  if (totalCorners <= 0) return null
+
+  const strategyLabel = cornerStrategy === CornerStrategy.Safe ? 'säkra hörnor'
+    : cornerStrategy === CornerStrategy.Aggressive ? 'aggressiva hörnor'
+    : 'vanliga hörnor'
+  const chose = `Du valde ${strategyLabel}.`
+
+  const CARDINAL: Record<number, string> = {
+    2: 'två', 3: 'tre', 4: 'fyra', 5: 'fem', 6: 'sex', 7: 'sju', 8: 'åtta', 9: 'nio', 10: 'tio', 11: 'elva', 12: 'tolv',
+  }
+  const cardinal = (n: number) => CARDINAL[n] ?? String(n)
+
+  if (cornerGoalMinutes.length === 0) {
+    return totalCorners === 1
+      ? `${chose} Den gick inte in.`
+      : `${chose} Ingen av de ${cardinal(totalCorners)} gick in.`
+  }
+
+  if (cornerGoalMinutes.length === 1) {
+    const half = cornerGoalMinutes[0] < 45 ? 'första halvlek' : 'andra halvlek'
+    return `${chose} Det gav ett mål i ${half}.`
+  }
+
+  return `${chose} Det gav ${cardinal(cornerGoalMinutes.length)} mål.`
 }
 
 /** Grupp-avdelare: ⬩ + label + hairline. */
@@ -886,6 +937,30 @@ export function GranskaOversikt({
                 </div>
               </div>
             ))}
+          </div>
+        )
+      })()}
+
+      {/* O16 — DITT VAL: cornerStrategy → hörnmål, den enda av fyra kandidater
+          matchmotorn har siffror för idag (se DOM_GRANSKA_LARANDEYTA_2026-08-17.md
+          + dittValCornerText ovan). Skild från "DINA VAL · UTFALL" ovan (den
+          sektionen läser managerChoiceLog, in-match-beslut — den här läser en
+          förematch-taktikinställning mot ett efterhandsmätt utfall). */}
+      {visasFor('dittVal', axes.tavlingstyp, axes.skede) && fixture && (() => {
+        const managedIsHome = isHome
+        const cornerStrategy = managedIsHome ? fixture.homeLineup?.tactic.cornerStrategy : fixture.awayLineup?.tactic.cornerStrategy
+        const totalCorners = managedIsHome ? fixture.report?.cornersHome : fixture.report?.cornersAway
+        if (cornerStrategy == null || totalCorners == null) return null
+        const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
+        const cornerGoalMinutes = fixture.events
+          .filter(e => e.type === MatchEventType.Goal && e.isCornerGoal && e.clubId === managedClubId)
+          .map(e => e.minute)
+        const text = dittValCornerText({ cornerStrategy, totalCorners, cornerGoalMinutes })
+        if (!text) return null
+        return (
+          <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(7.5) }}>
+            <SectionLabel style={{ marginBottom: 6 }}>DITT VAL</SectionLabel>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{text}</p>
           </div>
         )
       })()}

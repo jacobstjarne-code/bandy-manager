@@ -22,6 +22,14 @@ export type GranskaSection =
   // farewell, som visasFor inte har tillgång till) — den här raden avgör bara
   // om SLOTEN är relevant för tävlingstyp/skede-kombinationen.
   | 'kapitelPunkt'
+  // O16 — GRANSKA SOM LÄRANDEYTA (2026-08-17/19, DOM_GRANSKA_LARANDEYTA).
+  // "DITT VAL" — skild från 'dinaVal' (managerChoiceLog-kvittot ovan). Kopplar
+  // EN förematch-taktikinställning (cornerStrategy) till ETT MÄTT utfall
+  // (hörnmål i den avslutade matchen), inte en logg av in-match-beslut.
+  // Samma synlighet som 'dinaVal': ✕ bara på avsked (ingen taktik-obduktion
+  // på en hyllningsmatch). Renderas ändå ⭕ om matchmotorn inte kan peka på
+  // ett samband (0 hörnor tagna) — det avgörs i GranskaOversikt.tsx, inte här.
+  | 'dittVal'
 
 /**
  * GRANSKA DEL 4 (2026-08-11), steg 2 — sektionsregistret.
@@ -63,6 +71,8 @@ export function visasFor(section: GranskaSection, tavlingstyp: Tavlingstyp, sked
     case 'statistik':
       return tavlingstyp !== 'avsked'
     case 'dinaVal':
+      return tavlingstyp !== 'avsked'
+    case 'dittVal':
       return tavlingstyp !== 'avsked'
     case 'omgangssammanfattning':
       return tavlingstyp !== 'avsked' && !isAnyFinal
