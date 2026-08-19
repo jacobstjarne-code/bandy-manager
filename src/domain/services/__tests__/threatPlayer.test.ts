@@ -1,5 +1,6 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { selectThreatPlayer, displayThreatReasonLine, THREAT_REASON_LINES } from '../opponentAnalysisService'
+import type { ThreatPlayer, ThreatReasonKey } from '../opponentAnalysisService'
 import type { Player } from '../../entities/Player'
 import { PlayerPosition, PlayerArchetype } from '../../enums'
 
@@ -106,26 +107,49 @@ describe('selectThreatPlayer', () => {
   })
 })
 
-describe('displayThreatReasonLine — CLAUDE.md: Code skriver aldrig svensk speltext', () => {
-  afterEach(() => {
-    // Städa ev. textrader ett test lagt till, så poolerna är tomma för nästa test
-    for (const key of Object.keys(THREAT_REASON_LINES) as (keyof typeof THREAT_REASON_LINES)[]) {
-      THREAT_REASON_LINES[key].length = 0
+// Opus levererade 2026-08-19 (fyra pooler, fyra rader var). VIKTIGT: dessa
+// tester läser/verifierar den RIKTIGA exporterade THREAT_REASON_LINES —
+// muterar den ALDRIG (det var buggen i en tidigare version av den här
+// filen: push/clear direkt på det delade, nu produktionsfyllda objektet
+// hade tystat rader åt andra tester eller riktig kod i samma körning).
+describe('displayThreatReasonLine — text levererad av Opus 2026-08-19', () => {
+  const threat = (reasonKey: ThreatReasonKey, lastName: string, playerId = 'stable-id'): ThreatPlayer =>
+    ({ playerId, name: `E. ${lastName}`, lastName, position: PlayerPosition.Forward, reasonKey })
+
+  it('alla fyra pooler har fyra rader vardera', () => {
+    for (const key of Object.keys(THREAT_REASON_LINES) as ThreatReasonKey[]) {
+      expect(THREAT_REASON_LINES[key]).toHaveLength(4)
     }
   })
 
-  it('tom pool (Opus har inte levererat än) — undefined, ingen platshållartext', () => {
-    const threat = { playerId: 'p1', name: 'E. Karlsson', position: PlayerPosition.Forward, reasonKey: 'evasive' as const }
-    expect(displayThreatReasonLine(threat)).toBeUndefined()
+  it('{Efternamn} interpoleras mot spelarens riktiga efternamn', () => {
+    const line = displayThreatReasonLine(threat('evasive', 'Karlsson'))
+    expect(line).toBeDefined()
+    expect(line).not.toContain('{Efternamn}')
+    expect(line).toContain('Karlsson')
   })
 
-  it('fylld pool — deterministiskt val, samma spelare ger alltid samma rad', () => {
-    THREAT_REASON_LINES.evasive.push('Rad A', 'Rad B', 'Rad C')
-    const threat = { playerId: 'stable-id', name: 'E. Karlsson', position: PlayerPosition.Forward, reasonKey: 'evasive' as const }
-    const first = displayThreatReasonLine(threat)
-    const second = displayThreatReasonLine(threat)
-    expect(first).toBeDefined()
+  it('stabil per spelare — samma spelare ger alltid samma rad (Jacobs villkor: "inte per rendering")', () => {
+    const t = threat('clinical', 'Andersson', 'p-stable-42')
+    const first = displayThreatReasonLine(t)
+    const second = displayThreatReasonLine(t)
+    const third = displayThreatReasonLine(t)
     expect(first).toBe(second)
-    expect(['Rad A', 'Rad B', 'Rad C']).toContain(first)
+    expect(second).toBe(third)
+  })
+
+  it('olika spelar-id kan ge olika rad ur samma pool (hash-baserat, inte alltid index 0)', () => {
+    const lines = new Set<string | undefined>()
+    for (let i = 0; i < 20; i++) {
+      lines.add(displayThreatReasonLine(threat('relentless', 'Testsson', `p-${i}`)))
+    }
+    // Med 20 olika id:n mot en pool på fyra rader ska mer än en rad förekomma —
+    // annars är hash-spridningen trasig (allt landar på samma index).
+    expect(lines.size).toBeGreaterThan(1)
+  })
+
+  it('okänd/hypotetisk tom pool — undefined, ingen platshållartext (regressionsvakt för framtida kategorier)', () => {
+    const emptyPoolThreat = { playerId: 'p1', name: 'E. Karlsson', lastName: 'Karlsson', position: PlayerPosition.Forward, reasonKey: 'nonexistent' as ThreatReasonKey }
+    expect(displayThreatReasonLine(emptyPoolThreat)).toBeUndefined()
   })
 })

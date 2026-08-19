@@ -46,6 +46,7 @@ export type ThreatReasonKey = 'evasive' | 'clinical' | 'relentless' | 'creative'
 export interface ThreatPlayer {
   playerId: string
   name: string
+  lastName: string
   position: string
   reasonKey: ThreatReasonKey
 }
@@ -75,33 +76,56 @@ export function selectThreatPlayer(players: Player[]): ThreatPlayer | undefined 
   return {
     playerId: threat.id,
     name: `${threat.firstName[0]}. ${threat.lastName}`,
+    lastName: threat.lastName,
     position: threat.position,
     reasonKey,
   }
 }
 
 /**
- * B4-textraden — CLAUDE.md: Code skriver aldrig svensk speltext. Tomma pooler
- * med avsikt tills Opus levererar (samma mönster som andra "// Opus levererar"-
- * fält i projektet). displayThreatReasonLine() nedan returnerar undefined om
- * poolen är tom — presentationslagret ska rendera INGENTING, inte en platshållare,
- * hellre än att visa spelaren en tom eller uppenbart maskinell rad.
+ * B4-textraden — Opus levererade 2026-08-19. Formen är alltid densamma:
+ * namnet, vad han gör, och varför det är ditt problem. Assistenten talar.
+ * `{Efternamn}` interpolerar mot ThreatPlayer.lastName.
  */
 export const THREAT_REASON_LINES: Record<ThreatReasonKey, string[]> = {
-  evasive: [],
-  clinical: [],
-  relentless: [],
-  creative: [],
+  evasive: [
+    '{Efternamn} är riktigt hal. Får du tag i honom en gång ska du vara nöjd.',
+    'Ni kommer inte kunna gå på {Efternamn}. Han är borta innan klubban är framme.',
+    '{Efternamn} åker som om isen lutar åt hans håll. Håll er mellan honom och målet.',
+    'Det finns inget bra sätt att möta {Efternamn} en mot en. Var två.',
+  ],
+  clinical: [
+    '{Efternamn} dyker upp varsomhelst och gör mål på allt.',
+    'Ger ni {Efternamn} ett halvt läge så ligger den inne.',
+    '{Efternamn} rör sig inte mycket. Han står bara alltid rätt.',
+    'Släpp inte {Efternamn} ur sikte i straffområdet. Det är hela hans jobb.',
+  ],
+  relentless: [
+    '{Efternamn} fiskar bollar hela matchen. Han ger sig aldrig på en förlorad situation.',
+    '{Efternamn} åker mer än någon annan i deras lag. Han är där ni inte väntar er honom.',
+    'Slarvar ni med en passning tar {Efternamn} den. Han jagar allt.',
+    '{Efternamn} orkar nittio minuter. Frågan är om ni gör det.',
+  ],
+  creative: [
+    '{Efternamn} ser hela planen. Stänger ni ena sidan hittar han den andra.',
+    'Det är {Efternamn} som vänder deras spel. Får han vara rättvänd är ni sena.',
+    '{Efternamn} behöver inte åka någonstans. Han flyttar er med bollen i stället.',
+    'Låt inte {Efternamn} få tid. Han hittar en passning ni inte ser.',
+  ],
 }
 
-/** Deterministiskt val ur poolen (spelar-id som seed) — samma spelare + samma
- *  reasonKey ger alltid samma rad tills poolen växer, ingen flimrande text. */
+/**
+ * Deterministiskt val ur poolen (spelar-id som seed) — samma spelare + samma
+ * reasonKey ger alltid samma rad, oavsett hur många gånger analysen öppnas
+ * (Jacobs villkor 2026-08-19: "stabil per match, inte per rendering... annars
+ * läser det som brus"). {Efternamn} interpolerad in i vald rad.
+ */
 export function displayThreatReasonLine(threat: ThreatPlayer): string | undefined {
   const pool = THREAT_REASON_LINES[threat.reasonKey]
-  if (pool.length === 0) return undefined
+  if (!pool || pool.length === 0) return undefined
   let hash = 0
   for (let i = 0; i < threat.playerId.length; i++) hash = (hash * 31 + threat.playerId.charCodeAt(i)) >>> 0
-  return pool[hash % pool.length]
+  return pool[hash % pool.length].replaceAll('{Efternamn}', threat.lastName)
 }
 
 /**
