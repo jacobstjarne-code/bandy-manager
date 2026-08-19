@@ -117,7 +117,14 @@ Kan talen räknas om ur matchhistoriken, eller är de förlorade?
 **Migrationsmekanism om Jacob väljer omräkning:** `saveGameMigration.ts`s `migrateSaveGame()`-krok (körs redan vid varje load) — ny funktion, ~30-40 rader, samma struktur som A5-blocket. 1 fil.
 
 **Domen väntar på Jacob.** Tre alternativ för de förlorade delarna: (a) visa förbättrat men tyst ofullständigt tal, (b) samma tal men synligt flaggat "uppskattat, cupmatcher före denna säsong saknas", (c) frysa hela `careerStats` orört för befintliga saves, garantera korrekthet bara framåt.
-**Status:** `RAPPORT-LEVERERAD` — väntar på Jacobs dom mellan (a)/(b)/(c) för de förlorade delarna
+
+**Jacobs dom: (a).** Räkna om det som går. Cupdelen och allt bortom tio säsonger förblir förlorat, gissa aldrig bakåt, ingen kompensationstext.
+
+**Byggd 2026-08-19.** Ny K2-block i `saveGameMigration.ts` (efter A5-blocket, samma struktur): `careerStats.totalGames/totalGoals/totalAssists` blir en REN härledning ur `seasonHistory` (redan kapad till tio) + `seasonStats` (innevarande säsongs levande, K1-opåverkade ligatally) — inte längre en egen ackumulator som kan glida isär. Körs ovillkorat varje laddning (självläkande cache, ingen engångsflagga — en redan korrekt save räknar om till exakt samma tal). **Säkerhetsspärr:** kör bara om `seasonHistory` faktiskt är en array — en save från innan fältet fanns lämnas helt orörd (ingen data att räkna om ur är ingen ändring, inte en nollställning).
+
+4 nya test (`careerStatsMigration.test.ts`): dubblerad→sann omräkning, saknad `seasonHistory`→orört, idempotens, tioårsgränsen respekteras automatiskt. Alla stash-verifierade — ett verkligt testfixturfel hittades under verifieringen (A5-blocket triggade på `seasonCupStats===undefined` och nollställde `seasonStats` innan K2-blocket hann läsa det; fixat genom att ge testspelarna en tom `seasonCupStats`) innan de gav rätt signal. 196/196 filer, 2052/2052 gröna, tsc/build rent.
+
+**Status:** `KLAR`
 
 ### K3 · `.slice(-5)` — karriärminnet kapas
 `seasonEndProcessor.ts:1240`. Efter tio säsonger fanns 2031/32–2035/36; år 1–5 var borta, medan titelräknarna stod kvar.
@@ -139,7 +146,7 @@ Behåll kompakt sammanfattning per säsong för **hela** karriären: säsong, pl
 **Godkänd när:** testet är avskippat och grönt, och en permanent lämnad mecenat inte kan förekomma i aktiva listor, finansieringsalternativ eller nya krav.
 **Status:** `KLAR (3b33db0e)` — `Mecenat.permanentlyWithdrawn`, kollas FÖRE `isActive` i båda `mecenatHappiness`-vägarna (top-level + multiEffect-subEffect), ingen mutation alls om satt. Testet avskippat, två fall, båda regressionsverifierade.
 
-**Ordning inom blockerarna:** K1 → K2 (rapport) → K5 → K3 → K4. K1 före K3 därför att `.slice(-5)`-fixen bevarar fler säsonger, alltså bevarar den snart de felaktiga talen längre.
+**Ordning inom blockerarna:** K1 → K2 → K5 → K3 → K4, alla `KLAR`. K1 före K3 därför att `.slice(-5)`-fixen bevarar fler säsonger, alltså bevarar den snart de felaktiga talen längre.
 
 ---
 
