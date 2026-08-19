@@ -14,6 +14,7 @@ import { promoteFromQueue } from '../../domain/services/decisionBudgetService'
 import { type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
+import { diffTactics } from '../utils/tacticData'
 import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded, saveSaveGame, snapshotSave } from '../../infrastructure/persistence/saveGameStorage'
 import { applyFinanceChange } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
@@ -69,6 +70,7 @@ interface GameState {
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string, autoSelected?: boolean) => { success: boolean; error?: string }
   updateTactic: (tactic: Tactic) => void
+  setTacticAdvancedMode: (advanced: boolean) => Promise<SaveActionResult>
   setTraining: (focus: TrainingFocus) => void
   markOnboardingComplete: () => Promise<SaveActionResult>
   saveGame: () => Promise<SaveActionResult>
@@ -289,7 +291,40 @@ export const useGameStore = create<GameState>()(
         const updatedClubs = game.clubs.map(c =>
           c.id === game.managedClubId ? { ...c, activeTactic: tactic } : c
         )
-        set({ game: { ...game, clubs: updatedClubs } })
+        // O15 (2026-08-18/19): "Vad du ändrat i år"-loggning. Baslinjen är INTE
+        // föregående updateTactic-anrop, utan tactic-snapshotet från senast SPELADE
+        // matchens TeamSelection (samma källa som getTacticDeltaLine använder för
+        // standardlägets delta-rad) — så en ångrad ändring inom samma omgång inte
+        // lämnar en spökrad, och en riktig ändring alltid visar rätt slutvärde.
+        let tacticChangeLog = game.tacticChangeLog
+        const lastFixture = game.lastCompletedFixtureId
+          ? game.fixtures.find(f => f.id === game.lastCompletedFixtureId)
+          : undefined
+        const baselineTactic = lastFixture
+          ? (lastFixture.homeClubId === game.managedClubId ? lastFixture.homeLineup : lastFixture.awayLineup)?.tactic
+          : undefined
+        if (baselineTactic) {
+          const diffs = diffTactics(baselineTactic, tactic)
+          const matchday = game.currentMatchday
+          const withoutThisMatchday = (tacticChangeLog ?? []).filter(e => e.matchday !== matchday)
+          tacticChangeLog = diffs.length > 0
+            ? [...withoutThisMatchday, { matchday, changes: diffs }]
+            : withoutThisMatchday
+        }
+        set({ game: { ...game, clubs: updatedClubs, tacticChangeLog } })
+      },
+
+      // O15 (2026-08-18/19, DOM 1b): "annars är standardläget inte progressiv
+      // disclosure utan en spärr man måste öppna varje vecka" (Jacob) — samma
+      // persistGameSnapshot-mönster som updateMatchMode, så växlar spelaren till
+      // Avancerat en gång står det kvar över reload/session, inte bara i minnet.
+      setTacticAdvancedMode: async (advanced) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        if ((game.tacticAdvancedMode ?? false) === advanced) return { success: true }
+        const updated = { ...game, tacticAdvancedMode: advanced }
+        set({ game: updated })
+        return persistGameSnapshot(updated)
       },
 
       markOnboardingComplete: async () => {
