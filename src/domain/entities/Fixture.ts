@@ -44,6 +44,14 @@ export interface MatchEvent {
    *  fabricerat precision motorn inte har. Tom array = inget avvikande
    *  villkor aktivt (default). */
   contributingFactors?: string[]
+  /** B12 steg 2, fält 4/4: omskrivning av den redan avgjorda `seqType` som
+   *  skapade eventet, till tre möjliga värden. INTE `'FREE_HIT'` — frislagsmål
+   *  skrivs av `MatchLiveScreen`, inte av `matchCore` (DOM_B12_STEG2s
+   *  uttryckliga begränsning: hellre tre sanna värden än fyra där ett aldrig
+   *  sätts). Sätts bara på skott-/målutfall (Goal/Assist/Save/Corner) —
+   *  Suspension/Substitution har inget "ursprung" i den bemärkelsen och
+   *  lämnas `undefined`, inte ett gissat värde. */
+  origin?: 'OPEN_PLAY' | 'CORNER' | 'PENALTY'
   /** B12 steg 2 — CLASS C, medvetet aldrig satt av matchCore i denna omgång.
    *  Kräver att motorn kan peka ut en enskild ansvarig spelare generellt
    *  (inte bara i den smala kontringsmåls-pathwayn), vilket den inte kan
