@@ -35,6 +35,15 @@ export interface MatchEvent {
    *  eventets ögonblick — exakt de villkor buildSequenceWeights (matchCore.ts)
    *  redan förgrenar på. Tom array = inget avvikande läge aktivt (default). */
   tacticalFactors?: string[]
+  /** B12 steg 2, fält 3/4: motorförhållanden som faktiskt påverkade
+   *  målchansen vid eventets ögonblick — bara de mekanismer koden verkligen
+   *  läser (hot_hand, derby, weather, second_half_mode, equalizer_momentum).
+   *  "second_half_mode" slår ihop andrahalvlekläge och post-paus-urgency
+   *  eftersom motorn multiplicerar dem in i samma homeModeAttackMult/
+   *  awayModeAttackMult utan separat spårning — att särskilja dem hade
+   *  fabricerat precision motorn inte har. Tom array = inget avvikande
+   *  villkor aktivt (default). */
+  contributingFactors?: string[]
   /** B12 steg 2 — CLASS C, medvetet aldrig satt av matchCore i denna omgång.
    *  Kräver att motorn kan peka ut en enskild ansvarig spelare generellt
    *  (inte bara i den smala kontringsmåls-pathwayn), vilket den inte kan

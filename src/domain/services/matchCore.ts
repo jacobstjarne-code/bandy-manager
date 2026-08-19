@@ -741,6 +741,10 @@ function* simulateMatchCore(
     attackingClubId: string,
     curHomeScore: number,
     curAwayScore: number,
+    // B12 steg 2, fält 3/4: beräknad vid anropsstället (steg-loopens scope,
+    // där homeHotMult/homeModeAttackMult m.fl. finns) — resolvePenaltyTrigger
+    // definieras utanför loopen och kan inte se de steg-lokala bindningarna.
+    attackingContributingFactors: string[],
   ): {
     goalScored: boolean
     onTarget: boolean
@@ -756,7 +760,7 @@ function* simulateMatchCore(
     if (!shooter || !gk) {
       return { goalScored: false, onTarget: false, scorerPlayerId: undefined, penaltyInteractionData: undefined, penaltyCauseText: '', events }
     }
-    const penEvent: MatchEvent = { minute, type: MatchEventType.Penalty, clubId: attackingClubId, description: 'Straff', manpowerState: currentManpowerState(attackingClubId === fixture.homeClubId), tacticalFactors: currentTacticalFactors(attackingClubId === fixture.homeClubId) }
+    const penEvent: MatchEvent = { minute, type: MatchEventType.Penalty, clubId: attackingClubId, description: 'Straff', manpowerState: currentManpowerState(attackingClubId === fixture.homeClubId), tacticalFactors: currentTacticalFactors(attackingClubId === fixture.homeClubId), contributingFactors: attackingContributingFactors }
     events.push(penEvent)
     if (!isFast && isManagedAttacking) {
       // Interactive — MatchLiveScreen resolves outcome, no goal scored yet
@@ -800,6 +804,7 @@ function* simulateMatchCore(
         description: `Straffmål av ${shooter.firstName} ${shooter.lastName}`,
         isPenaltyGoal: true,
         manpowerState: currentManpowerState(attackingClubId === fixture.homeClubId), tacticalFactors: currentTacticalFactors(attackingClubId === fixture.homeClubId),
+        contributingFactors: attackingContributingFactors,
       }
       events.push(ge)
       return { goalScored: true, onTarget: true, scorerPlayerId: shooter.id, penaltyInteractionData: undefined, penaltyCauseText: '', events }
@@ -829,6 +834,12 @@ function* simulateMatchCore(
           description:       `🔄 ${inName} IN för ${outName}`,
           manpowerState:     currentManpowerState(managedClubId === fixture.homeClubId),
           tacticalFactors:   currentTacticalFactors(managedClubId === fixture.homeClubId),
+          // contributingFactors utelämnas medvetet här: bytet loggas innan
+          // stegets hot_hand/mode-multiplikatorer räknats ut för iterationen
+          // (currentContributingFactors deklareras längre ned i samma loop-
+          // varv) — att anropa den hade läst TDZ-fel eller fejkat föregående
+          // varvs state. Tom array är den ärliga default-tolkningen.
+          contributingFactors: [],
         })
       }
     }
@@ -998,6 +1009,28 @@ function* simulateMatchCore(
     const homeWeight = effectiveHomeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor * homePowerplayBoost
     const awayWeight = effectiveAwayAttack * (1 + awayMods.pressModifier * 0.2) * awayPenaltyFactor * awayPowerplayBoost
 
+    // B12 steg 2, fält 3/4 (DOM_B12_STEG2_2026-08-19.md) — contributingFactors:
+    // 'B', lista över redan beräknade modifierare skilda från 1.0/0. Definierad
+    // HÄR (inuti steg-loopen, inte som currentManpowerState/currentTacticalFactors
+    // utanför) eftersom homeHotMult/awayHotMult/homeModeAttackMult/
+    // awayModeAttackMult är steg-lokala `const`-bindningar, inte tillgängliga
+    // från en closure utanför loopen. andrahalvlekläge och post-paus-urgency
+    // slås ihop till EN etikett ('second_half_mode') — koden multiplicerar
+    // redan ihop dem sekventiellt i samma homeModeAttackMult/awayModeAttackMult-
+    // variabel utan egen spårning var för sig, så att låtsas kunna skilja dem åt
+    // vore att uppfinna en precision motorn inte har.
+    const currentContributingFactors = (isHome: boolean): string[] => {
+      const factors: string[] = []
+      const hotMult = isHome ? homeHotMult : awayHotMult
+      if (hotMult !== 1) factors.push('hot_hand')
+      if (derbyChanceMult !== 0) factors.push('derby')
+      if (weatherGoalMod !== 1.0) factors.push('weather')
+      const modeMult = isHome ? homeModeAttackMult : awayModeAttackMult
+      if (step >= 30 && modeMult !== 1.0) factors.push('second_half_mode')
+      if (equalizeMomentumTimer > 0 && equalizeMomentumTeam === (isHome ? 'home' : 'away')) factors.push('equalizer_momentum')
+      return factors
+    }
+
     const homeInitiative  = homeWeight / (homeWeight + awayWeight)
     const isHomeAttacking = rand() < homeInitiative
 
@@ -1060,7 +1093,7 @@ function* simulateMatchCore(
         const scoreDiff = isHomeAttacking ? homeScore - awayScore : awayScore - homeScore
         const penProb = 0.19 * GOAL_RATE_MOD * getPenaltyPeriodMod(minute) * getScorelinePenaltyMod(scoreDiff)
         if (rand() < penProb) {
-          const result = resolvePenaltyTrigger(attackingStarters, defendingStarters, isHomeAttacking, minute, attackingClubId, homeScore, awayScore)
+          const result = resolvePenaltyTrigger(attackingStarters, defendingStarters, isHomeAttacking, minute, attackingClubId, homeScore, awayScore, currentContributingFactors(isHomeAttacking))
           for (const ev of result.events) { stepEvents.push(ev); allEvents.push(ev) }
           if (result.goalScored) {
             if (isHomeAttacking) { homeScore++ } else { awayScore++ }
@@ -1093,12 +1126,12 @@ function* simulateMatchCore(
             scorerPlayerId = scorer.id
             goalScored = true
             trackGoal(scorer.id)
-            const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Mål av ${scorer.firstName} ${scorer.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+            const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Mål av ${scorer.firstName} ${scorer.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
             stepEvents.push(ev); allEvents.push(ev)
             if (assister) {
               assisterPlayerId = assister.id
               trackAssist(assister.id)
-              const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist av ${assister.firstName} ${assister.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+              const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist av ${assister.firstName} ${assister.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
               stepEvents.push(ae); allEvents.push(ae)
             }
           }
@@ -1109,13 +1142,13 @@ function* simulateMatchCore(
             gkPlayerId = gk.id
             saveOccurred = true
             trackSave(gk.id)
-            const ev: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Räddning av ${gk.firstName} ${gk.lastName}`, manpowerState: currentManpowerState(!isHomeAttacking), tacticalFactors: currentTacticalFactors(!isHomeAttacking) }
+            const ev: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Räddning av ${gk.firstName} ${gk.lastName}`, manpowerState: currentManpowerState(!isHomeAttacking), tacticalFactors: currentTacticalFactors(!isHomeAttacking), contributingFactors: currentContributingFactors(!isHomeAttacking) }
             stepEvents.push(ev); allEvents.push(ev)
           }
         } else if (shotResult < goalThreshold + 0.45) {
           cornerOccurred = true
           if (isHomeAttacking) { cornersHome++ } else { cornersAway++ }
-          const ev: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnslag', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+          const ev: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnslag', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
           stepEvents.push(ev); allEvents.push(ev)
         }
       }
@@ -1157,12 +1190,12 @@ function* simulateMatchCore(
             scorerPlayerId = scorer.id
             goalScored = true
             trackGoal(scorer.id)
-            const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Omställningsmål av ${scorer.firstName} ${scorer.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+            const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Omställningsmål av ${scorer.firstName} ${scorer.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
             stepEvents.push(ev); allEvents.push(ev)
             if (assister) {
               assisterPlayerId = assister.id
               trackAssist(assister.id)
-              const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist av ${assister.firstName} ${assister.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+              const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist av ${assister.firstName} ${assister.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
               stepEvents.push(ae); allEvents.push(ae)
             }
           }
@@ -1173,7 +1206,7 @@ function* simulateMatchCore(
             gkPlayerId = gk.id
             saveOccurred = true
             trackSave(gk.id)
-            const ev: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Räddning av ${gk.firstName} ${gk.lastName}`, manpowerState: currentManpowerState(!isHomeAttacking), tacticalFactors: currentTacticalFactors(!isHomeAttacking) }
+            const ev: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Räddning av ${gk.firstName} ${gk.lastName}`, manpowerState: currentManpowerState(!isHomeAttacking), tacticalFactors: currentTacticalFactors(!isHomeAttacking), contributingFactors: currentContributingFactors(!isHomeAttacking) }
             stepEvents.push(ev); allEvents.push(ev)
           }
         }
@@ -1196,7 +1229,7 @@ function* simulateMatchCore(
               isHomeAttacking, sgMood, minute, homeScore, awayScore,
             )
             cornerOccurred = true
-            const ev: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörna', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+            const ev: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörna', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
             stepEvents.push(ev); allEvents.push(ev)
             void gk
           }
@@ -1246,21 +1279,21 @@ function* simulateMatchCore(
             cornerOccurred    = true
             // Hörnmål räknas som skott och skott på mål (P2)
             if (isHomeAttacking) { shotsHome++; onTargetHome++ } else { shotsAway++; onTargetAway++ }
-            const ce: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnmål', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+            const ce: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnmål', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
             stepEvents.push(ce); allEvents.push(ce)
             trackGoal(scorer.id)
-            const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Hörnmål av ${scorer.firstName} ${scorer.lastName}`, isCornerGoal: true, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+            const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Hörnmål av ${scorer.firstName} ${scorer.lastName}`, isCornerGoal: true, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
             stepEvents.push(ev); allEvents.push(ev)
             if (assister) {
               assisterPlayerId = assister.id
               trackAssist(assister.id)
-              const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Hörnassist av ${assister.firstName} ${assister.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+              const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Hörnassist av ${assister.firstName} ${assister.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
               stepEvents.push(ae); allEvents.push(ae)
             }
           }
         } else if (r < goalThreshold + 0.3) {
           cornerOccurred = true
-          const ev: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnslag', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+          const ev: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnslag', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
           stepEvents.push(ev); allEvents.push(ev)
 
           // Post-corner counter (low cornerRecovery = vulnerability)
@@ -1286,7 +1319,7 @@ function* simulateMatchCore(
                 const slowest = attackingDefenders.find(p => (p.attributes.cornerRecovery ?? 50) === slowestRecovery)
                 if (slowest) counterDesc = `${slowest.lastName} hinner inte tillbaka! Kontring av ${counterScorer.firstName} ${counterScorer.lastName}`
               }
-              const cg: MatchEvent = { minute, type: MatchEventType.Goal, clubId: counterClubId, playerId: counterScorer.id, description: counterDesc, manpowerState: currentManpowerState(!isHomeAttacking), tacticalFactors: currentTacticalFactors(!isHomeAttacking) }
+              const cg: MatchEvent = { minute, type: MatchEventType.Goal, clubId: counterClubId, playerId: counterScorer.id, description: counterDesc, manpowerState: currentManpowerState(!isHomeAttacking), tacticalFactors: currentTacticalFactors(!isHomeAttacking), contributingFactors: currentContributingFactors(!isHomeAttacking) }
               stepEvents.push(cg); allEvents.push(cg)
             }
           }
@@ -1308,7 +1341,7 @@ function* simulateMatchCore(
           scorerPlayerId = scorer.id
           goalScored = true
           trackGoal(scorer.id)
-          const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, description: `Mål av ${scorer.firstName} ${scorer.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking) }
+          const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, description: `Mål av ${scorer.firstName} ${scorer.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking) }
           stepEvents.push(ev); allEvents.push(ev)
         }
       } else if (shotResult < goalThreshold + 0.45) {
@@ -1319,7 +1352,7 @@ function* simulateMatchCore(
           gkPlayerId = gk.id
           saveOccurred = true
           trackSave(gk.id)
-          const ev: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Räddning av ${gk.firstName} ${gk.lastName}`, manpowerState: currentManpowerState(!isHomeAttacking), tacticalFactors: currentTacticalFactors(!isHomeAttacking) }
+          const ev: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Räddning av ${gk.firstName} ${gk.lastName}`, manpowerState: currentManpowerState(!isHomeAttacking), tacticalFactors: currentTacticalFactors(!isHomeAttacking), contributingFactors: currentContributingFactors(!isHomeAttacking) }
           stepEvents.push(ev); allEvents.push(ev)
         }
       }
@@ -1393,7 +1426,7 @@ function* simulateMatchCore(
             homeSuspensionTimers.push(duration)
           }
           trackRed(suspPlayer.id)
-          const ev: MatchEvent = { minute, type: MatchEventType.Suspension, clubId: defendingClubId, playerId: suspPlayer.id, description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}`, durationMinutes: suspensionDurationMinutes, manpowerState: suspensionManpowerState, tacticalFactors: currentTacticalFactors(!isHomeAttacking) }
+          const ev: MatchEvent = { minute, type: MatchEventType.Suspension, clubId: defendingClubId, playerId: suspPlayer.id, description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}`, durationMinutes: suspensionDurationMinutes, manpowerState: suspensionManpowerState, tacticalFactors: currentTacticalFactors(!isHomeAttacking), contributingFactors: currentContributingFactors(!isHomeAttacking) }
           stepEvents.push(ev); allEvents.push(ev)
         }
       }
@@ -1956,6 +1989,13 @@ function* simulateMatchCore(
   const otGoalMod     = weatherGoalMod * profileGoalMod * 1.3
   const otHomeAttack  = homeAttack * 1.15
   const otAwayAttack  = awayAttack * 1.15
+  // B12 steg 2, fält 3/4 — OT-loopen är en egen loop utan hot_hand/mode/
+  // equalizer-momentum-mekanik (otGoalMod/otHomeAttack/otAwayAttack ovan
+  // bär ingenting av det). Enda faktorn som faktiskt påverkar OT-målchansen
+  // är väder (via otGoalMod). Att lista de andra fyra hade fabricerat
+  // precision motorn inte har i förlängningen.
+  const currentContributingFactorsOT = (): string[] =>
+    weatherGoalMod !== 1.0 ? ['weather'] : []
 
   for (let step = 62; step < 75; step++) {
     const minute     = 91 + Math.round((step - 62) * 1.5)
@@ -1987,11 +2027,11 @@ function* simulateMatchCore(
         otScorerPlayerId = scorer.id
         otGoalScored = true
         trackGoal(scorer.id)
-        const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Förlängningsmål av ${scorer.firstName} ${scorer.lastName}`, manpowerState: currentManpowerState(isHA), tacticalFactors: currentTacticalFactors(isHA) }
+        const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Förlängningsmål av ${scorer.firstName} ${scorer.lastName}`, manpowerState: currentManpowerState(isHA), tacticalFactors: currentTacticalFactors(isHA), contributingFactors: currentContributingFactorsOT() }
         stepEvents.push(ev); allEvents.push(ev)
         if (assister) {
           trackAssist(assister.id)
-          const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist av ${assister.firstName} ${assister.lastName}`, manpowerState: currentManpowerState(isHA), tacticalFactors: currentTacticalFactors(isHA) }
+          const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist av ${assister.firstName} ${assister.lastName}`, manpowerState: currentManpowerState(isHA), tacticalFactors: currentTacticalFactors(isHA), contributingFactors: currentContributingFactorsOT() }
           stepEvents.push(ae); allEvents.push(ae)
         }
       }
