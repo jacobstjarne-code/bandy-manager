@@ -727,6 +727,24 @@ De fyra sista delarna (målvakt, back, mittfältare, anfallare) lästes efter at
 
 **Rättelse till `DOM_ILLUSTRATIONERNA_2026-08-18.md`:** raden "Ingen sarg — låga stakethinder" är fel. Sargen finns, **låg och flyttbar** — man ser över den. Ersätt raden i stilbibeln.
 
+### B12 · Kausal och taktisk metadata på befintliga matchhändelser (händelseberikning)
+
+**Order:** `docs/CODE_INSTRUKTION_B12_BERIKNING_2026-08-19.md`. **Jacobs beslut:** alternativ B — berikningen nu, possession-motorn som eget V2-program efter releasen.
+
+Låta `matchCore` skriva ner vad den redan vet vid varje chansskapande/bolltapp-event (orsak, ansvarig/inblandad spelare, numerärt läge, målets ursprung) — istället för att kasta informationen. **Ingen ny motor, inga nya sannolikheter, inga nya taktikdimensioner** — allt det är V2.
+
+**Godkännandekriteriet (hårt, avsiktligt):** `npm run stress` före och efter måste ge **byte-identiskt** resultat på samma seed — målsnitt, hemmavinstandel, oavgjortandel, hörnmål, utvisningar, allt. Inte "inom toleransen". Skiljer sig något har berikningen läckt in i beräkningen och ska rullas tillbaka. Stresstest före och efter **varje** delsteg (2a/2c/2b), inte bara i slutet.
+
+**Steg 1 — RAPPORT, bygg inget.** Tio frågor om vad `matchCore` redan vet men kastar (fråga 10 är kärnan: finns orsaken som lokal variabel vid beslutspunkten, eller måste den härledas i efterhand? En gissad orsak är sämre än ingen). Därefter en klassificering per föreslaget fält — **A** (befintlig info som tappas), **B** (deterministiskt härledbar utan RNG), **C** (kräver ny simulering/nytt beslut, hör till V2). **Bara A och B byggs.**
+
+**Falsk kausalitet är den enda vägen posten kan skada:** ett påhittat `responsiblePlayerId` är fel på tre ställen samtidigt (spelarbetyg, `B4`, `O16`). `responsiblePlayerId` sätts bara när spelaren redan är part i det utlösande beslutet, aldrig för att hen "råkade vara närmast" tidigare.
+
+**Ordning om steg 1 tillåter:** 2a (kausal metadata på chans/bolltapp) → 2c (`manpowerState`, minst riskabelt) → 2b (målets ursprung, kräver mest kunskap om motorns interna beslut).
+
+**Låser upp:** `B5` (referat), `B4` (efteranalys) och `O16` (utvärdering — listan blir längre och korrekt istället för approximativ) läser samma beriktade data istället för att tolka verkligheten var för sig oberoende. Spelarbetyg som känner till negativa prestationer följer med gratis.
+
+**Status:** `SKRIVEN` — steg 1-rapporten är nästa jobb på denna post, inget byggt än.
+
 **O20 — vilken punkt saknas, tio händelser, källa `DOM_VARSLET_KLASSIFICERING_2026-08-17.md`:**
 
 | Händelse | Saknad punkt | Grupp |
