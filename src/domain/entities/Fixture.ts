@@ -31,6 +31,10 @@ export interface MatchEvent {
    *  state (homeActiveSuspensions/awayActiveSuspensions) — ingen ny
    *  sannolikhetsberäkning, ingen RNG-konsumtion. */
   manpowerState?: { ownSuspended: number; opponentSuspended: number }
+  /** B12 steg 2, fält 2/4: etikettering av EGET lags taktikkonfiguration vid
+   *  eventets ögonblick — exakt de villkor buildSequenceWeights (matchCore.ts)
+   *  redan förgrenar på. Tom array = inget avvikande läge aktivt (default). */
+  tacticalFactors?: string[]
   /** B12 steg 2 — CLASS C, medvetet aldrig satt av matchCore i denna omgång.
    *  Kräver att motorn kan peka ut en enskild ansvarig spelare generellt
    *  (inte bara i den smala kontringsmåls-pathwayn), vilket den inte kan
