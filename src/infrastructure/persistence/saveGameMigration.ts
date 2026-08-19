@@ -479,6 +479,63 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     }
   }
 
+  // ── K2 — karriärstatistikens dubblering, retroaktiv rättning (SLUTTEST_KO.md,
+  //    2026-08-19). Roten (K1, redan fixad `b4ad8279`): seasonEndProcessor.ts
+  //    ADDERADE seasonStats till careerStats vid rollover, TROTS att
+  //    statsProcessor.ts redan ackumulerar careerStats matchvis hela säsongen.
+  //    Redan spelade saves bär den dubblade — eller vid flera rollovers,
+  //    kompounderade — summan permanent i sin sparade careerStats. K1 stoppar
+  //    framtida dubblering; K2 rättar det som redan hänt.
+  //
+  //    Jacobs dom (alternativ a): räkna om det som går. totalGames/totalGoals/
+  //    totalAssists görs om till en REN härledning ur seasonHistory (redan
+  //    avslutade säsonger, ligadel, redan kapad till senaste tio — samma
+  //    gräns seasonHistory:s egen .slice(-10) redan sätter, ingen extra
+  //    logik krävs för att hålla den) + seasonStats (innevarande säsongs
+  //    LEVANDE ligatally — aldrig träffad av dubbleringsbuggen eftersom
+  //    statsProcessor.ts skriver den matchvis, inte vid rollover).
+  //    Cupdelen av redan avslutade säsonger finns inte bevarad någonstans
+  //    (seasonCupStats nollställs varje rollover, arkiveras aldrig) — och
+  //    allt bortom tio säsonger tillbaka är redan kastat ur seasonHistory.
+  //    Båda FÖRBLIR förlorade, per domen: gissa aldrig bakåt, skriv ingen
+  //    kompensation. En halverad men sann siffra slår en påhittad hel.
+  //
+  //    Körs varje laddning, ovillkorat — självläkande cache, inte en
+  //    engångsflagga. En redan korrekt save räknar om till EXAKT samma tal
+  //    den redan hade (seasonHistory+seasonStats ÄR sanningskällan;
+  //    careerStats.totalGames/totalGoals/totalAssists blir en ren härledning
+  //    av dem, aldrig mer en egen ackumulator som kan glida isär).
+  //
+  //    SÄKERHETSSPÄRR: kör bara om seasonHistory faktiskt är en array. En
+  //    save från innan fältet fanns har seasonHistory===undefined — att då
+  //    räkna om skulle nollställa en veterans hela karriär (värre än
+  //    halverad, total förlust) istället för att lämna den orörd. Ingen data
+  //    att räkna om ur betyder ingen ändring, inte en gissning.
+  if (Array.isArray(data.players)) {
+    data.players = (data.players as Record<string, unknown>[]).map(p => {
+      if (!Array.isArray(p.seasonHistory)) return p
+      const history = p.seasonHistory as Array<{ goals?: number; assists?: number; games?: number }>
+      const current = p.seasonStats as { gamesPlayed?: number; goals?: number; assists?: number } | undefined
+      const historyGames = history.reduce((sum, h) => sum + (h.games ?? 0), 0)
+      const historyGoals = history.reduce((sum, h) => sum + (h.goals ?? 0), 0)
+      const historyAssists = history.reduce((sum, h) => sum + (h.assists ?? 0), 0)
+      const currentGames = current?.gamesPlayed ?? 0
+      const currentGoals = current?.goals ?? 0
+      const currentAssists = current?.assists ?? 0
+      const prevCareer = (p.careerStats as Record<string, unknown> | undefined) ?? {}
+      return {
+        ...p,
+        careerStats: {
+          ...prevCareer,
+          totalGames: historyGames + currentGames,
+          totalGoals: historyGoals + currentGoals,
+          totalAssists: historyAssists + currentAssists,
+          seasonsPlayed: history.length + (currentGames > 0 ? 1 : 0),
+        },
+      }
+    })
+  }
+
   // ── B5: expiresRound migration — backfill open TransferBidReceived without deadline ─────
   if (Array.isArray(data.inbox)) {
     const currentRound = (data.currentMatchday as number | undefined) ?? 0
