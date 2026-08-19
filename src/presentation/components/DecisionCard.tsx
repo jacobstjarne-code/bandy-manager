@@ -145,6 +145,7 @@ export function DecisionCard({ shape = 'sharp', accent, entityId, entitySource, 
   return (
     <div
       className={isRound ? 'card-round' : 'card-sharp'}
+      data-decision-card="true"
       style={{
         margin: isRound ? '0 0 20px' : '0 0 3px',
         padding: isRound ? '24px 20px' : '10px 12px',
