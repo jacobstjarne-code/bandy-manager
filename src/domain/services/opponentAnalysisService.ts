@@ -27,6 +27,81 @@ export interface OpponentAnalysis {
   recentForm?: string
   tablePosition?: number
   keyPlayers: { playerId: string; name: string; position: string; estimatedCA: number }[]
+  /** B4 (BANDYSPRAK_KALLASNING_2026-08-19.md): "Vem är svårast att möta" — mallen
+   *  ur sju elitspelarintervjuer är alltid ETT namn plus ETT skäl ("Christoffer
+   *  Edlund... han är extremt bra på att åka och fiska efter bollar"), aldrig
+   *  "de har farliga forwards". Bara i detaljerad analys, som strengths/weaknesses. */
+  threatPlayer?: ThreatPlayer
+}
+
+/**
+ * B4 — vilken spelaregenskap gör motståndarens huvudhot farlig. Mappas mot en
+ * textvariant i THREAT_REASON_LINES (Opus levererar, se kommentaren där).
+ * Fyra kategorier räcker för att täcka mallens exempel (hal/skridskor,
+ * målnäsa/positionering, arbetsmyra/bollvinnare, spelvändare/passning) — fler
+ * kategorier utan text bakom dem är bara fler tomma hål.
+ */
+export type ThreatReasonKey = 'evasive' | 'clinical' | 'relentless' | 'creative'
+
+export interface ThreatPlayer {
+  playerId: string
+  name: string
+  position: string
+  reasonKey: ThreatReasonKey
+}
+
+/**
+ * B4: pekar konsekvent på SAMMA spelare för samma motståndarlag (domens krav
+ * — "Edlund nämns av två oberoende spelare... analysen ska peka konsekvent på
+ * samma spelare, inte slumpa"). Ren funktion av redan existerande attribut,
+ * ingen slump: högst currentAbility bland tillgängliga (samma urvalsprincip
+ * som keyPlayers) avgör VEM, det egna högsta relevanta attributet avgör VARFÖR.
+ */
+export function selectThreatPlayer(players: Player[]): ThreatPlayer | undefined {
+  const available = players.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
+  if (available.length === 0) return undefined
+
+  const threat = [...available].sort((a, b) => b.currentAbility - a.currentAbility)[0]
+  const a = threat.attributes
+
+  const candidates: { key: ThreatReasonKey; value: number }[] = [
+    { key: 'evasive', value: (a.skating + a.dribbling) / 2 },     // "riktigt hal"
+    { key: 'clinical', value: (a.positioning + a.shooting) / 2 }, // "dyker upp varsomhelst och gör mål på allt"
+    { key: 'relentless', value: (a.workRate + a.acceleration) / 2 }, // "åker mycket och fiskar bollar"
+    { key: 'creative', value: (a.vision + a.passing) / 2 },       // spelvändare
+  ]
+  const reasonKey = candidates.sort((x, y) => y.value - x.value)[0].key
+
+  return {
+    playerId: threat.id,
+    name: `${threat.firstName[0]}. ${threat.lastName}`,
+    position: threat.position,
+    reasonKey,
+  }
+}
+
+/**
+ * B4-textraden — CLAUDE.md: Code skriver aldrig svensk speltext. Tomma pooler
+ * med avsikt tills Opus levererar (samma mönster som andra "// Opus levererar"-
+ * fält i projektet). displayThreatReasonLine() nedan returnerar undefined om
+ * poolen är tom — presentationslagret ska rendera INGENTING, inte en platshållare,
+ * hellre än att visa spelaren en tom eller uppenbart maskinell rad.
+ */
+export const THREAT_REASON_LINES: Record<ThreatReasonKey, string[]> = {
+  evasive: [],
+  clinical: [],
+  relentless: [],
+  creative: [],
+}
+
+/** Deterministiskt val ur poolen (spelar-id som seed) — samma spelare + samma
+ *  reasonKey ger alltid samma rad tills poolen växer, ingen flimrande text. */
+export function displayThreatReasonLine(threat: ThreatPlayer): string | undefined {
+  const pool = THREAT_REASON_LINES[threat.reasonKey]
+  if (pool.length === 0) return undefined
+  let hash = 0
+  for (let i = 0; i < threat.playerId.length; i++) hash = (hash * 31 + threat.playerId.charCodeAt(i)) >>> 0
+  return pool[hash % pool.length]
 }
 
 /**
@@ -208,6 +283,7 @@ export function generateDetailedAnalysis(
     recommendation,
     suggestedMentality: mapRecommendationToMentality(recommendation),
     suggestedPress: mapRecommendationToPress(recommendation),
+    threatPlayer: selectThreatPlayer(available),
     keyPlayers: available
       .sort((a, b) => b.currentAbility - a.currentAbility)
       .slice(0, 5)

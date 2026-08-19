@@ -3,7 +3,7 @@ import type { Club } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { useGameStore } from '../../store/gameStore'
-import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
+import { generateBasicAnalysis, displayThreatReasonLine } from '../../../domain/services/opponentAnalysisService'
 import { getCupRoundLabel } from '../../../domain/services/cupService'
 import { positionShort } from '../../utils/formatters'
 import type { PlayerPosition } from '../../../domain/enums'
@@ -95,6 +95,14 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
 
       {displayAnalysis.level === 'detailed' && (
         <>
+          {/* B4 (BANDYSPRAK_KALLASNING_2026-08-19.md): ett namn plus ett skäl,
+              inte "de har farliga forwards". Renderar ingenting tills Opus
+              fyllt THREAT_REASON_LINES — ingen platshållartext till spelaren. */}
+          {displayAnalysis.threatPlayer && displayThreatReasonLine(displayAnalysis.threatPlayer) && (
+            <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 4 }}>
+              🎯 {displayAnalysis.threatPlayer.name}: {displayThreatReasonLine(displayAnalysis.threatPlayer)}
+            </p>
+          )}
           {displayAnalysis.strengths.length > 0 && (
             <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 4 }}>
               ✅ {displayAnalysis.strengths.join(', ')}
