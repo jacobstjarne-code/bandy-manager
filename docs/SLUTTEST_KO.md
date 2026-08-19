@@ -743,7 +743,24 @@ Låta `matchCore` skriva ner vad den redan vet vid varje chansskapande/bolltapp-
 
 **Låser upp:** `B5` (referat), `B4` (efteranalys) och `O16` (utvärdering — listan blir längre och korrekt istället för approximativ) läser samma beriktade data istället för att tolka verkligheten var för sig oberoende. Spelarbetyg som känner till negativa prestationer följer med gratis.
 
-**Status:** `SKRIVEN` — steg 1-rapporten är nästa jobb på denna post, inget byggt än.
+**STEG 1-RAPPORTEN LEVERERAD 2026-08-19.** Läst hela `matchCore.ts` (2078 rader) + `Fixture.ts`s `MatchEvent`. Två load-bearing fynd stickprovsverifierade mot koden (grep + radläsning) innan de skrevs in här: (1) `possessionId`/`sequenceId`/`previousEventId` finns noll träffar någonstans i `src/` — `allEvents` (`:569`) är en helt platt lista. (2) Kontringsmålets `slowest`-mekanism (`:1247-1258`) är precis så belagd som rapporten säger: `slowestRecovery`/`attackingDefenders`/`cornerRecovery < 50` räknas redan fram, `slowest.lastName` skrivs in i fritext-beskrivningen, men `slowest.id` skrivs ALDRIG till själva `MatchEvent`-objektet (`cg`, `:1258`, bär bara `minute/type/clubId/playerId/description`).
+
+**Klassificeringstabell:**
+
+| Fält | Klass | Motivering |
+|---|---|---|
+| `origin` | **B** | Ren omskrivning av redan avgjord `seqType` (`:993`) för de tre vägar motorn faktiskt går (öppet spel/omställning, hörna, straff). Täcker INTE `FREE_HIT` — icke-interaktiva/AI-mål från frislag skrivs aldrig av `matchCore` självt, bara av `MatchLiveScreen.tsx` (`:974-976`), utanför scope |
+| `manpowerState` | **A** | `homeActiveSuspensions`/`awayActiveSuspensions` (`:523-524`, uppdaterade `:930-944`) är exakta heltal, redan lästa för powerplay-boost (`:949-950`) före varje sekvensval. Textbook-A |
+| `tacticalFactors` | **B** | Taktikinställningarna (mentality/press/tempo/width/cornerStrategy/passingRisk) är känd konfiguration, redan lästa i `buildSequenceWeights` (`:655-699`) — ren etikettering, ingen simulering |
+| `contributingFactors` | **B** | Redan beräknade aktiva modifierare (hot-hand `:849-850`, kvitteringsmomentum `:918-924`, 2H-läge `:866-878`, derby `:490-491`, väder `:472-480`, post-paus-urgency `:892-896`) — en lista över vilka som var ≠1.0 är ren avläsning |
+| `primaryCause` | **C** (ett smalt A-undantag) | Belagd i EXAKT en pathway (kontringsmål efter hörna, `slowest`). Resten av motorn (attack/transition/halfchance/corner, `:1018-1263`) modellerar anfall/försvar som lagaggregat, ingen enskild orsak. Fältet skulle stå tomt för >95% av alla mål — klassat C för fältet i stort, per ordern ("osäker → C") |
+| `responsiblePlayerId` | **C** (ett smalt A-undantag) | Samma mönster: A bara för kontringsmålet (`slowest.id`) och redan-levererat för utvisningar (`playerId` på Suspension-eventet). Motorns majoritetsväg pekar aldrig ut en enskild försvarsspelare — `defDefense`/`defGK` är laggenomsnitt (`squadEvaluator.ts:111-121`) |
+| `involvedPlayerIds` | **B/C blandat** | Scorer+assist+GK redan `playerId`/`secondaryPlayerId` (A, redan levererat). Rikare identitet (`rusherIds`/`runnerId`/`kickerId`) finns BARA i de interaktiva services:na (`cornerInteractionService.ts` m.fl.), bara vid `mode:'full'` + managed-lag + tröskelvillkor — strukturellt frånvarande i `fast`-läge som täcker merparten av säsongens matcher. Klassat C för generell tillämpning |
+| `sequenceId` | **C** | Bekräftat: ingen länkningsstruktur existerar. Kräver possession-motorn, redan Jacobs beslut till V2 |
+
+**Sammanfattning:** byggbart nu utan att röra RNG/kalibrering — `origin`, `manpowerState`, `tacticalFactors`, `contributingFactors` (alla B eller A, rena avläsningar av redan beräknad state). `primaryCause`/`responsiblePlayerId` byggbara ENDAST för den smala, belagda kontringsmåls-pathwayn (`slowest`) — `undefined` överallt annars, aldrig ett generellt fält som gissar. `involvedPlayerIds` samma begränsning. `sequenceId` väntar helt på V2. Frilägen (fråga 7), passningstyper (fråga 6) och `FREE_HIT`-ursprung (fråga 5) kräver ny simuleringslogik eller finns bara i UI-lagret utanför `matchCore` — inte extraherbara utan ett nytt motorbeslut.
+
+**Status:** `RAPPORT-LEVERERAD` — väntar på Jacobs dom innan Steg 2a/2c/2b (i den ordningen) påbörjas. Inget byggt.
 
 **O20 — vilken punkt saknas, tio händelser, källa `DOM_VARSLET_KLASSIFICERING_2026-08-17.md`:**
 
