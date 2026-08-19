@@ -4,7 +4,7 @@ import type { Club } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Weather } from '../../../domain/entities/Weather'
 import type { Moment } from '../../../domain/entities/Moment'
-import { FixtureStatus, MatchEventType } from '../../../domain/enums'
+import { FixtureStatus, MatchEventType, PlayerPosition } from '../../../domain/enums'
 import { computeWeatherTacticInteraction } from '../../../domain/services/matchSimulator'
 import { getTacticModifiers } from '../../../domain/services/tacticModifiers'
 import { developPlayers } from '../../../domain/services/playerDevelopmentService'
@@ -68,6 +68,38 @@ export function applyPlayerStateUpdates(
   const currentMatchday = game.currentMatchday
   const localRand = mulberry32(baseSeed + 9999)
 
+  // B9 (SLUTTEST_KO.md, Jacobs dom 2026-08-19): mittfältare kan inte välja bort
+  // ett anfall som en ytterhalv kan (Liw), men fatigueRate idag är lagvis —
+  // samma förlust oavsett position. matchCore.ts läser aldrig .fitness (grep
+  // gav 0 träffar) så det här rör lagvalskalibrering (squadEvaluator), inte
+  // matchmotorns RNG-ström — en annan, mindre känslig klass.
+  // Normaliserat mot den FAKTISKA startelvans snitt per lag och match (inte
+  // en global konstant) — lagets totala/genomsnittliga fitnessförlust per
+  // match är oförändrad, bara omfördelad mellan positionerna.
+  const POSITION_FATIGUE_MULT: Record<PlayerPosition, number> = {
+    [PlayerPosition.Goalkeeper]: 1.0,
+    [PlayerPosition.Defender]: 1.0,
+    [PlayerPosition.Half]: 0.85,
+    [PlayerPosition.Midfielder]: 1.15,
+    [PlayerPosition.Forward]: 1.0,
+  }
+  const playersById = new Map(players.map(p => [p.id, p]))
+  const positionFatigueNormMult = new Map<string, number>()
+  for (const fixture of simulatedFixtures) {
+    for (const lineup of [fixture.homeLineup, fixture.awayLineup]) {
+      if (!lineup) continue
+      const starters = lineup.startingPlayerIds
+        .map(id => playersById.get(id))
+        .filter((p): p is Player => !!p)
+      if (starters.length === 0) continue
+      const avgMult = starters.reduce((sum, p) => sum + POSITION_FATIGUE_MULT[p.position], 0) / starters.length
+      if (avgMult <= 0) continue
+      for (const p of starters) {
+        positionFatigueNormMult.set(p.id, POSITION_FATIGUE_MULT[p.position] / avgMult)
+      }
+    }
+  }
+
   // Player fitness / form / sharpness updates (start from training-updated players)
   const updatedPlayers = players.map(player => {
     let updated = { ...player }
@@ -115,7 +147,8 @@ export function applyPlayerStateUpdates(
         weatherTacticFatigue = 1.0 + twi.extraFatigue
       }
       const byggExtraCost = isManaged && effectiveMode === 'bygg' ? BYGG_EXTRA_FITNESS_COST : 0
-      const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue * weatherTacticFatigue) + byggExtraCost
+      const positionFatigueMult = positionFatigueNormMult.get(player.id) ?? 1.0
+      const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue * weatherTacticFatigue * positionFatigueMult) + byggExtraCost
       updated.fitness = Math.max(0, updated.fitness - fitnessLoss)
 
       // Form update based on match rating
