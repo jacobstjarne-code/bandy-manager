@@ -22,6 +22,8 @@ import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/aca
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
 import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
+import { evaluateSeasonGoal, deriveSeasonPersonChange, deriveRivalryStanding } from '../../domain/services/seasonGoalService'
+import { calculateClubEra } from '../../domain/services/clubEraService'
 import { applyBurnoutRecoveryAtTransition } from '../../domain/services/seasonTransitionService'
 import { updateLoyaltyScores } from '../../domain/services/characterPlayerService'
 import { processAITransfers } from '../../domain/services/aiTransferService'
@@ -1134,13 +1136,31 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Generate season summary with the final communityStanding (after all season-end adjustments)
   const matchHighlight = selectMatchOfTheSeason(game)
+  // O3/O18 (DOM_EGET_SASONGSMAL/DOM_ARSBOKEN_RYGGRAD, 2026-08-19): samma
+  // pre-reset game-vy som generateSeasonSummary självt läser (game.players/
+  // game.standings/game.fixtures/game.facilityState speglar fortfarande den
+  // AVSLUTADE säsongen här — resetPlayers/updatedClubs för nästa säsong har
+  // inte skrivits tillbaka till `game` än). contractExpiredIds/retiredPlayerIds
+  // är redan beräknade ovan (kontraktsutgång/pensionering samma rollover).
+  const seasonEndGameView = { ...game, clubs: updatedClubs }
+  const activeGoal = game.activeSeasonGoal?.chosenSeason === game.currentSeason ? game.activeSeasonGoal : undefined
+  const personalGoal = activeGoal
+    ? evaluateSeasonGoal(seasonEndGameView, activeGoal, { contractExpiredIds, retiredPlayerIds })
+    : undefined
+  const personChange = deriveSeasonPersonChange(seasonEndGameView, retiredManagedPlayers)
+  const rivalryStanding = deriveRivalryStanding(seasonEndGameView)
+  const clubEraSnapshot = calculateClubEra(seasonEndGameView)
   seasonSummary = {
     ...generateSeasonSummary(
-      { ...game, clubs: updatedClubs },
+      seasonEndGameView,
       Math.min(100, newCommunityStanding + communityStandingDelta),
     ),
     retiredPlayers: retiredManagedPlayers.length > 0 ? retiredManagedPlayers : undefined,
     matchOfTheSeason: matchHighlight ?? undefined,
+    personalGoal,
+    personChange,
+    rivalryStanding,
+    clubEra: clubEraSnapshot,
   }
 
   // Manager profile — career record, contract extension, age/seasonsAtClub tick
@@ -1306,6 +1326,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // ordern ("säsongsidentitet ska aldrig kastas, detaljdata är en
     // renderingsfråga") och den redan byggda funktionen exakt.
     seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary],
+    // O3 — konsumerat ovan (personalGoal), nollställt här. Nästa Sommaren
+    // (SeasonTransitionScene) skriver ett nytt activeSeasonGoal när spelaren väljer.
+    activeSeasonGoal: undefined,
     pendingScreen: PendingScreen.SeasonSummary,
     seasonStartSnapshot: managerFired ? game.seasonStartSnapshot : (() => {
       const managedClub = game.clubs.find(c => c.id === game.managedClubId)
