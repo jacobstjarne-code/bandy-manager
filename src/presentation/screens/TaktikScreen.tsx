@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom'
-import { useGameStore, useManagedClub, useManagedPlayers } from '../store/gameStore'
+import { useGameStore, useManagedClub, useManagedPlayers, useLastCompletedFixture } from '../store/gameStore'
 import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
 import type { Tactic } from '../../domain/entities/Club'
 import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
+import { getTacticDeltaLine, getTacticChangeHistoryLines } from '../utils/tacticData'
 
 export function TaktikScreen() {
   const navigate = useNavigate()
@@ -10,6 +11,8 @@ export function TaktikScreen() {
   const club = useManagedClub()
   const players = useManagedPlayers()
   const updateTactic = useGameStore(s => s.updateTactic)
+  const setTacticAdvancedMode = useGameStore(s => s.setTacticAdvancedMode)
+  const lastFixture = useLastCompletedFixture()
   const coach = game?.assistantCoach
   const captainPlayerId = game?.captainPlayerId
 
@@ -25,6 +28,15 @@ export function TaktikScreen() {
     }
   })()
 
+  // O15 (2026-08-18/19): delta-radens {Motståndare} är motståndaren i förra SPELADE
+  // matchen (lastFixture), inte nästa motstånd — "sedan sist" i spelarens minne.
+  const lastOpponentName = (() => {
+    if (!game || !lastFixture) return undefined
+    const oppId = lastFixture.homeClubId === game.managedClubId ? lastFixture.awayClubId : lastFixture.homeClubId
+    const opp = game.clubs.find(c => c.id === oppId)
+    return opp?.shortName ?? opp?.name
+  })()
+
   if (!game || !club || !coach) {
     return (
       <div style={{ padding: '20px 12px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
@@ -32,6 +44,12 @@ export function TaktikScreen() {
       </div>
     )
   }
+
+  // O15: standard är default (tacticAdvancedMode undefined → false) tills spelaren
+  // aktivt växlar — och växlingen persisteras då via setTacticAdvancedMode.
+  const advancedMode = game.tacticAdvancedMode ?? false
+  const deltaLine = getTacticDeltaLine(club.activeTactic, lastFixture, game.managedClubId, game.currentSeason, lastOpponentName)
+  const historyLines = getTacticChangeHistoryLines(game.tacticChangeLog)
 
   function handleTacticChange(tactic: Tactic) {
     updateTactic(tactic)
@@ -72,6 +90,10 @@ export function TaktikScreen() {
           matchday={game.currentMatchday}
           nextOpponentName={nextOpponentName}
           opponentAnalysis={nextOpponentAnalysis}
+          advancedMode={advancedMode}
+          onToggleAdvancedMode={setTacticAdvancedMode}
+          deltaLine={deltaLine}
+          historyLines={historyLines}
         />
       </div>
     </div>

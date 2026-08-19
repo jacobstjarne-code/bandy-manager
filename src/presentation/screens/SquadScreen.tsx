@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore, useExpiringContracts } from '../store/gameStore'
+import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore, useExpiringContracts, useLastCompletedFixture } from '../store/gameStore'
+import { getTacticDeltaLine, getTacticChangeHistoryLines } from '../utils/tacticData'
 import { ContractsTab } from '../components/transfers/ContractsTab'
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
@@ -435,6 +436,25 @@ export function SquadScreen() {
     }
   }, [game])
 
+  // O15 (2026-08-18/19): samma Taktikens-två-lägen-wiring som TaktikScreen.tsx —
+  // Trupp-skärmens Taktik-flik är EN till konsument av samma TacticBoardCard
+  // (Å2 var redan gemensam), delta/historik/lägestoggel får inte glida isär mellan de
+  // två ingångarna. lastOpponentName = motståndaren i förra SPELADE matchen (inte
+  // nästa) — "sedan sist" i spelarens minne.
+  const lastFixture = useLastCompletedFixture()
+  const setTacticAdvancedMode = useGameStore(s => s.setTacticAdvancedMode)
+  const lastOpponentName = useMemo(() => {
+    if (!game || !lastFixture) return undefined
+    const oppId = lastFixture.homeClubId === game.managedClubId ? lastFixture.awayClubId : lastFixture.homeClubId
+    const opp = game.clubs.find(c => c.id === oppId)
+    return opp?.shortName ?? opp?.name
+  }, [game, lastFixture])
+  const tacticAdvancedMode = game?.tacticAdvancedMode ?? false
+  const tacticDeltaLine = (game && club)
+    ? getTacticDeltaLine(club.activeTactic, lastFixture, game.managedClubId, game.currentSeason, lastOpponentName)
+    : undefined
+  const tacticHistoryLines = getTacticChangeHistoryLines(game?.tacticChangeLog)
+
   function handleTalk(playerId: string, choice: 'encourage' | 'demand' | 'future') {
     const result = talkToPlayer(playerId, choice, currentRound)
     setTalkFeedback({ text: result.feedback, moraleChange: result.moraleChange, formChange: result.formChange })
@@ -533,6 +553,10 @@ export function SquadScreen() {
             matchday={game.currentMatchday}
             nextOpponentName={nextOpponentName}
             opponentAnalysis={nextOpponentAnalysis}
+            advancedMode={tacticAdvancedMode}
+            onToggleAdvancedMode={setTacticAdvancedMode}
+            deltaLine={tacticDeltaLine}
+            historyLines={tacticHistoryLines}
           />
         </div>
       )}
