@@ -709,6 +709,8 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 
 **Ordning:** B4 → B5 → B7 → B6 → B8 → B3 → B2 (rapport) → B1 (rapport).
 
+**B4 MEKANIK BYGGD 2026-08-19 (`9406be40`).** `selectThreatPlayer()` pekar deterministiskt ut samma spelare (högst tillgänglig `currentAbility`, samma urval som `keyPlayers`) och klassar VARFÖR ur fyra attributpar (evasive/clinical/relentless/creative) — ren funktion, ingen slump, domens "peka konsekvent" håller by construction. Wired i `OpponentAnalysisCard.tsx` (🎯-raden, samma villkorade mönster som strengths/weaknesses). **Texten är fortfarande Opus** — `THREAT_REASON_LINES` i `opponentAnalysisService.ts` är fyra tomma pooler (en per reasonKey), `displayThreatReasonLine()` returnerar `undefined` och renderar ingenting tills de fylls. 8 tester, stash-verifierade. Nästa i ordningen: `B5`.
+
 ## Tillägg efter att alla sju delar lästs (2026-08-19, senare)
 
 De fyra sista delarna (målvakt, back, mittfältare, anfallare) lästes efter att B1–B8 skrivits. Tre nya poster, och en förstärkning av B1.
