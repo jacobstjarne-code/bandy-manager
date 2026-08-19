@@ -33,7 +33,7 @@ Denna fil ersätter alla `CODE_INSTRUKTION_*`-filer från 2026-08-17 som kölist
 
 | Post | Vad som behövs |
 |---|---|
-| 4.2 derbyrepliken | Listan (13 + 4 arc-frågor, frågetext + ämne) läggs i `docs/` av Code 2026-08-19 — Jacob skriver svaren samma dag den finns |
+| 4.2 derbyrepliken | Listan levererad 2026-08-19: `docs/DERBYREPLIKEN_STORYLINE_FRAGOR_2026-08-19.md` (13 + 4 arc-frågor, frågetext + ämne + trigger). Jacob skriver svaren samma dag den finns |
 
 4.8 andra halvan löst 2026-08-18 (`49abf3fc`) — Jacob gav texten direkt i chatten ("Assistenten satte laget"), ingen spec behövdes.
 
@@ -301,7 +301,7 @@ Samma klass genomgående: `RoundSummaryScreen` mot `GranskaScreen`, `respondToIn
 | ID | Post | Rotorsak / villkor | Status |
 |---|---|---|---|
 | 4.1 | Standings parity — dashboard 5:e, bracket 6:a, årsbok 5:e, samma säsong och 21 poäng | `calculateStandings` (tie-breaker: poäng→GD→gjorda mål→klubbId) var redan kanonisk, men `roundProcessor.ts` var ENDA anropsstället som skickade `game.pointDeductions` som tredje argument. `playoffTransition.ts`, `seasonEndProcessor.ts`, `TabellScreen.tsx`, `matchActions.ts`×3 gjorde det inte — en klubb under poängavdrag fick olika placering på olika ytor trots samma underliggande tabellfunktion | `KLAR (85e60a47)` — **osäkerhet kvar:** fixet är verifierat korrekt och täcker HELA felklassen (pointDeductions-inkonsekvens), men jag har inte det ursprungliga repro-savet och kan inte 100% bekräfta att just DEN observationen (5:e/6:a/5:e, 21 poäng) berodde på ett aktivt poängavdrag snarare än något annat. Om samma mönster syns igen efter denna fix, det är en annan rotorsak — säg till |
-| 4.2 | Derbyrepliken. **Tre vägar in**, vilket är varför tre tidigare ordrar inte räckte: `preferIds` filtreras ej (`:28,36,41`); `win_derby` klassad generic `win` (`:423`); storyline-frågan behåller föregående matchfrågas `preferIds` (`:649-657`) och svaren byggs ur dem (`:726`) | Alla tre stängs. Specialtaggar får `generic: none`. **13 storyline-frågor saknar topikanpassade svar — blockerad på Opus-text.** Hör ihop med U2 | `PÅGÅR` |
+| 4.2 | Derbyrepliken. **Tre vägar in**, vilket är varför tre tidigare ordrar inte räckte: `preferIds` filtreras ej (`:28,36,41`); `win_derby` klassad generic `win` (`:423`); storyline-frågan behåller föregående matchfrågas `preferIds` (`:657-696`) och svaren byggs ur dem | Alla tre stängs. Specialtaggar får `generic: none`. **13 + 4 arc-frågor saknar topikanpassade svar — listan levererad 2026-08-19** (`docs/DERBYREPLIKEN_STORYLINE_FRAGOR_2026-08-19.md`), väntar på Jacobs svar. Hör ihop med U2 | `PÅGÅR` — lista klar, väntar Opus-text |
 | 4.3 | Varsel-dedupe | `postAdvanceEvents:281-307` kollar `event_varsel_s{season}`, fabriken skapar `event_varsel_{employer}_{season}`. Gemensam ID-funktion | `KLAR (406be8e4)` — `varselEventId(season)` exporterad, används av båda anropsställena. Test verifierat mot repro (fixat id i resolvedEventIds blockerade inte ett nytt event innan fixet) |
 | 4.4 | Byggflikens copy → "Ett bygge åt gången". Låsta noder listar **alla** krav med uppfyllt/ej | `FacilityTree.tsx:231` sa säsongsstart, `FacilityScreen:84-92` implementerar löpande. `facilityNodes:162-168` kräver två noder, visar en | `KLAR (b805a829)` |
 | 4.5 | Årsbokens styrelsemening ur objective-resultat, inte placeringstier | "2:a plats uppfyller kravet att vinna ligan". Samma rot som `growFanbase`-etiketten i sluttestet | `KLAR (6f1d36a1)` |
