@@ -570,6 +570,12 @@ Sponsorerna först — vanligast och tommast. Motvikter som redan finns i värld
 
 **Rapportera-först:** hur många val har ett strikt dominant alternativ? Går siffran att härleda ur `2.5`-svepets material eller krävs eget pass?
 
+**Besvarad 2026-08-19:** nej, går inte att härleda — `2.5` mätte text-mot-effekt-fidelitet (lovar texten vad effekten gör), inte val-mot-syskonval på varje dimension inom samma beslut. Olika frågor. Täckningen var dessutom partiell (~40 av okänt totalt, bara ~18 skrivna ut, `weeklyDecisionService.ts` bara stickprovskontrollerad).
+
+**Jacobs dom:** bygg det skriptade passet i `eventGuardInstrument.ts`-stil. **Ordning:** (1) noOp-grep över samtliga event-filer först — `{type:'noOp'}` bredvid ett rent fördel-val är dominans i renaste form, kräver ingen dimensionsjämförelse. Rapportera den siffran innan (2) den fulla pairwise-analysen (extrahera fulla effektvektorer per beslut, jämför alla par för dominans).
+
+**Första konkreta fall när domen tillämpas:** `hesitantPlayerEvent` → `convince` (+15 moral, ingen kostnad) vs `accept` (`noOp`) — samma paradigm som sponsoroffren, litet och tydligt, visar formen. Inte byggt än.
+
 **Beroenden:** `D1` (ambient-nivån att degradera till), `U9` (val-entropin mäter domen), `O5` (en kostnad i kronor är bara ett val om kronor är knappa).
 **Godkänd när:** inget alternativ väljs av mer än 80 % i val-entropin.
 
@@ -613,7 +619,13 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 | O8 | Text: Turneringsläge mitt i serie (efter 5.3), fast-lägets prosapooler, Sommarens saknade händelsetyper | `VÄNTAR` |
 | O9 | Delningskortets berättelseläge. "6:e, 21 poäng" ser mediokert ut för en utomstående; det var en svår klubb som gick från nia till kvartsfinal. Huvudbudskapet ska vara förtjänad kontrast plus svarsinbjudan. Tre artefakter att namnge: Årets berättelse, Årets match, Karriären hittills | `EJ SKRIVEN` |
 | O10 | Best-in-class-strategin beslutad som ambition. Bandyarkivet, spelbara vägskäl, Bruksligor, utmaningslänkar, skaparekosystem byggs **inte** nu — men strategins Fas 0 är samma sanningslager som K1–K5. Ordningen håller | `BESLUTAD, EJ PÅBÖRJAD` |
-| O11 | **Innehållskontraktet** — `DOM_INNEHALLSKONTRAKTET_2026-08-17.md`. Sex obligatoriska fält: trigger, state-effekt, berörda system/personer, livslängd, `semanticKey`+cooldown, återkallningsyta. **Gäller från nu**, också för ändringar av befintlig text. Rapportera-först: finns ett register att hänga tabellen på, eller måste det skapas? I så fall samma arbete som `U5` — gör dem ihop | `SKRIVEN` |
+| O11 | **Innehållskontraktet** — `DOM_INNEHALLSKONTRAKTET_2026-08-17.md`. Sex obligatoriska fält: trigger, state-effekt, berörda system/personer, livslängd, `semanticKey`+cooldown, återkallningsyta. **Gäller från nu**, också för ändringar av befintlig text. Rapportera-först: finns ett register att hänga tabellen på, eller måste det skapas? I så fall samma arbete som `U5` — gör dem ihop | `SKRIVEN` — se ruling nedan |
+
+**O11 — rapportera-först besvarad, 2026-08-19.** Inget register finns (grep bekräftat: `GameEventType` är en ren unionstyp, `eventFactories.ts` är imperativa konstruktionsfunktioner, `getEventPriority()` är en enkolumns-switch — inget deklarativt per-typ-register existerar). **Jacobs dom:** O11 och U5 byggs som EN fil, `src/domain/data/contentContract.ts`, en rad per narrativt innehåll, sex kolumner där kolumn 5 är `U5`:s redan gjorda `semanticKey`-analys. Att bygga tabellen ÄR att bygga registret — två pass vore två sanningar om samma sak.
+
+**Ordning:** `narrativeLog`s kompletta skrivväg FÖRST, registret sedan (loggen registrerar vad som hänt, registret deklarerar vad varje innehåll ÄR — deklarationen blir billigare och sannare när loggen visar vad som faktiskt fyrar).
+
+**Flaggat innan bygge (Code, samma dag):** skrivvägen är redan komplett i den mening som avgör ordningen — `U5`s "8/9 skrivvägar" var aldrig en väntande 9:e källa. Jacobs egen dom 2026-08-17 uteslöt `cardStaleTracking` PERMANENT (olika fråga: portalkorts synlighetstid, inte narrativ båge) — 8/8 av det som hör hemma är wired. Det som FAKTISKT återstår av `U5` innan `contentContract.ts` börjar, per `U5`s egen DOM-ordning: `isOnCooldown` mot pivotal beats, sedan `systemhandelseBudgetOk`:s faktiska gating. Om "kompletta skrivväg" i ordern syftar på något annat än dessa två — flagga tillbaka, annars är det redan uppfyllt och nästa steg är `isOnCooldown`.
 | O12 | Förhandsdeltan — se `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md`, skriven ihop med O2 | `SKRIVEN` |
 | O13 | Jobbmarknad efter avsked — framgångsauditens rekommendation ovanpå 3.3. **Inte beslutad.** 3.3:s rena karriärslut är minimikravet | `EJ BESLUTAD` |
 | O14 | Monetisering och paketering — framgångsauditens modell är en **hypotes**, inte en dom. Ska inte driva något bygge | `HYPOTES` |
