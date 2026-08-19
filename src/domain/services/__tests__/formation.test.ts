@@ -108,6 +108,22 @@ describe('Formation templates', () => {
       expect(gkCount).toBe(1), `${type} should have exactly 1 GK slot`
     }
   })
+
+  // O6-sidofyndet (SLUTTEST_KO.md, Jacobs dom 2026-08-19): fyrbackslinjen i
+  // 4-3-3/4-2-4 fick VB/VB/HB/HB efter O6:s huvudfix — pitch-vyn kunde inte
+  // skilja ytterback och den forna VCB/HCB-innerbacken åt. Tredje ordet
+  // (MB, "mittback") löser detta genom att en fyrbackslinje nu visar tre
+  // distinkta ord (VB/MB/HB) istället för två upprepade — inte fyra unika
+  // (MB/MB delar ord medvetet, samma mönster som CB i trebackslinjerna).
+  it('fyrbackslinjer (4-3-3, 4-2-4) har minst tre distinkta backetiketter, inte två', () => {
+    for (const type of ['4-3-3', '4-2-4'] as const) {
+      const backLine = FORMATIONS[type].slots.filter(s => s.position === PlayerPosition.Defender)
+      expect(backLine).toHaveLength(4)
+      const distinctLabels = new Set(backLine.map(s => s.label))
+      expect(distinctLabels.size, `${type}: förväntade 3 distinkta backetiketter (VB/MB/HB), fick ${[...distinctLabels]}`).toBe(3)
+      expect(distinctLabels.has('MB')).toBe(true)
+    }
+  })
 })
 
 describe('getPositionFit', () => {

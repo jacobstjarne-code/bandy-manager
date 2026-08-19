@@ -69,8 +69,8 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
       { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
       // 4 backar — samma rad
       { id: 'def-ll',  label: 'VB',  position: PlayerPosition.Defender,   x: 14, y: 22 },
-      { id: 'def-lc',  label: 'VB',  position: PlayerPosition.Defender,   x: 38, y: 22 },
-      { id: 'def-rc',  label: 'HB',  position: PlayerPosition.Defender,   x: 62, y: 22 },
+      { id: 'def-lc',  label: 'MB',  position: PlayerPosition.Defender,   x: 38, y: 22 },
+      { id: 'def-rc',  label: 'MB',  position: PlayerPosition.Defender,   x: 62, y: 22 },
       { id: 'def-rr',  label: 'HB',  position: PlayerPosition.Defender,   x: 86, y: 22 },
       // 3 halvar — samma rad
       { id: 'half-l',  label: 'VH',  position: PlayerPosition.Half,       x: 25, y: 50 },
@@ -133,8 +133,8 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
       { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
       // 4 backar — samma rad
       { id: 'def-ll',  label: 'VB',  position: PlayerPosition.Defender,   x: 14, y: 22 },
-      { id: 'def-lc',  label: 'VB',  position: PlayerPosition.Defender,   x: 38, y: 22 },
-      { id: 'def-rc',  label: 'HB',  position: PlayerPosition.Defender,   x: 62, y: 22 },
+      { id: 'def-lc',  label: 'MB',  position: PlayerPosition.Defender,   x: 38, y: 22 },
+      { id: 'def-rc',  label: 'MB',  position: PlayerPosition.Defender,   x: 62, y: 22 },
       { id: 'def-rr',  label: 'HB',  position: PlayerPosition.Defender,   x: 86, y: 22 },
       // 2 halvar — samma rad
       { id: 'half-l',  label: 'VH',  position: PlayerPosition.Half,       x: 35, y: 50 },
