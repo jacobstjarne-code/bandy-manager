@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
-import { getStureLine } from '../../domain/data/arrivalDialogue'
+import { getStureLine, getTreasurerLine } from '../../domain/data/arrivalDialogue'
 import { BoardObjectivesList } from '../components/portal/secondary/BoardObjectivesList'
 import { IllustrationScene } from '../components/illustration/IllustrationScene'
 import type { BoardObjective } from '../../domain/entities/Community'
@@ -20,10 +20,11 @@ interface ArrivalSceneInnerProps {
   clubName: string
   board: BoardMember[]
   objectives: BoardObjective[]
+  contractsExpiringCount: number
   onComplete: () => void
 }
 
-function ArrivalSceneInner({ clubId, clubName, board, objectives, onComplete }: ArrivalSceneInnerProps) {
+function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpiringCount, onComplete }: ArrivalSceneInnerProps) {
   const [phase, setPhase] = useState<Phase>('setting')
   const [settingIn, setSettingIn] = useState(false)
 
@@ -71,7 +72,7 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, onComplete }: 
   const treasurer = board.find(m => m.role === 'kassör')!  // kassör
   const member = board.find(m => m.role === 'ledamot')!    // ledamot — byns röst
   const memberLine = getStureLine(clubId)
-  const treasurerLine = `"Det här är en gammal klubb. Vi förväntar oss inte mirakel — men vi förväntar oss att det syns att du bryr dig. Tre kontrakt löper ut. Snacka med dom tidigt."`
+  const treasurerLine = getTreasurerLine(contractsExpiringCount)
 
   // Dot i is lit when we've entered that phase: dot 0 = settingIn, 1–3 = phase > that dot's phase
   const dotLit = [
@@ -198,12 +199,19 @@ export function ArrivalScene() {
     return null
   }
 
+  // 2.6: kontrakt som löper ut DENNA säsong i den hanterade klubben — samma
+  // villkor arcService.ts/playerVoiceService.ts redan använder.
+  const contractsExpiringCount = game.players.filter(
+    p => p.clubId === game.managedClubId && p.contractUntilSeason === game.currentSeason
+  ).length
+
   return (
     <ArrivalSceneInner
       clubId={managedClub.id}
       clubName={managedClub.name}
       board={board}
       objectives={game.boardObjectives ?? []}
+      contractsExpiringCount={contractsExpiringCount}
       onComplete={() => navigate('/tilltrade', { replace: true })}
     />
   )

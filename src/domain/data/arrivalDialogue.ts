@@ -79,3 +79,36 @@ export function getStureLine(clubId: string): string {
   const idx = Math.abs(hash) % STURE_VARIANTS.length
   return STURE_VARIANTS[idx]
 }
+
+// 2.6 (SLUTTEST_KO.md, 2026-08-19): Margareta (kassör) var den enda av de
+// tre styrelsereplikerna kvar utan data-drivet innehåll — treasurerLine i
+// ArrivalScene.tsx:74 hävdade "Tre kontrakt löper ut" oavsett vad saven
+// faktiskt innehöll. Text låst av Jacob, tre buckets: noll/exakt ett/två
+// eller fler (spellat ut i ord upp till tio).
+const CONTRACT_COUNT_WORDS = ['noll', 'ett', 'två', 'tre', 'fyra', 'fem', 'sex', 'sju', 'åtta', 'nio', 'tio'] as const
+
+function contractCountWord(n: number): string {
+  if (n <= 10) return CONTRACT_COUNT_WORDS[n]
+  return String(n)
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+/**
+ * Kassörens replik — antal kontrakt i den hanterade klubben som löper ut
+ * denna säsong (`contractUntilSeason === currentSeason`, samma villkor
+ * `arcService.ts`/`playerVoiceService.ts` redan använder för "kontrakt
+ * går ut i år"). Tre kompletta repliker, inte fragment att foga ihop —
+ * ersätter den gamla hårdkodade raden helt.
+ */
+export function getTreasurerLine(contractsExpiringCount: number): string {
+  if (contractsExpiringCount === 0) {
+    return '"Kontrakten är trygga ett år till. Det är mer än vi brukar kunna säga."'
+  }
+  if (contractsExpiringCount === 1) {
+    return '"Ett kontrakt löper ut i vår. Ta det samtalet innan någon annan gör det."'
+  }
+  return `"${capitalize(contractCountWord(contractsExpiringCount))} kontrakt löper ut. Snacka med dom tidigt."`
+}
