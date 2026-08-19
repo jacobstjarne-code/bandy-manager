@@ -26,6 +26,18 @@ export interface MatchEvent {
   isPenaltyGoal?: boolean
   /** Utvisningens längd (5 eller 10 min) — sätts bara på MatchEventType.Suspension. */
   durationMinutes?: 5 | 10
+  /** B12 steg 2a (DOM_B12_STEG2_2026-08-19.md): numerärt läge vid eventets
+   *  ögonblick, ur clubId:s eget perspektiv. Ren avläsning av redan beräknad
+   *  state (homeActiveSuspensions/awayActiveSuspensions) — ingen ny
+   *  sannolikhetsberäkning, ingen RNG-konsumtion. */
+  manpowerState?: { ownSuspended: number; opponentSuspended: number }
+  /** B12 steg 2 — CLASS C, medvetet aldrig satt av matchCore i denna omgång.
+   *  Kräver att motorn kan peka ut en enskild ansvarig spelare generellt
+   *  (inte bara i den smala kontringsmåls-pathwayn), vilket den inte kan
+   *  idag. Optional i typen, dokumenterat tomt — sätts av V2. */
+  primaryCause?: string
+  /** Se primaryCause ovan — samma skäl, samma V2-gräns. */
+  responsiblePlayerId?: string
 }
 
 export interface ManagerChoiceEntry {
