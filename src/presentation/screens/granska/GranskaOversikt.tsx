@@ -368,7 +368,7 @@ export function GranskaOversikt({
       .replaceAll('{venue}', venue)
 
     return (
-      <p style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', textAlign: 'center', marginTop: 14 }}>
+      <p data-granska-section="nastaMatchPekare" style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', textAlign: 'center', marginTop: 14 }}>
         {line}
       </p>
     )
@@ -404,17 +404,24 @@ export function GranskaOversikt({
       {/* Result hero — tappbar → Analys (händelsetidslinje + insikter) */}
       {resultatHeroCard}
 
-      {/* Kapitelpunkt — efter resultatblocket, före Turneringsläge/statistik. */}
+      {/* Kapitelpunkt — efter resultatblocket, före Turneringsläge/statistik.
+          data-granska-section: matchtypsmatrisgrinden (post 20) läser detta
+          som "ankaret" — det enda av matrisens nio matchtypsberoende
+          sektioner vars NÄRVARO asserteras, inte bara frånvaro (kapitelPunkt-
+          Kind är deterministisk när visasFor säger ✓, se kapitelPunktService.
+          ts — ingen data-lucka som tabell/form/statistik kan gömma bakom). */}
       {kapitelPunktKind && (
-        <KapitelPunkt
-          kind={kapitelPunktKind}
-          avsked={farewellPlayer ? {
-            firstName: farewellPlayer.firstName,
-            lastName: farewellPlayer.lastName,
-            games: farewellPlayer.careerStats.totalGames,
-            goals: farewellPlayer.careerStats.totalGoals,
-          } : undefined}
-        />
+        <div data-granska-section="kapitelPunkt">
+          <KapitelPunkt
+            kind={kapitelPunktKind}
+            avsked={farewellPlayer ? {
+              firstName: farewellPlayer.firstName,
+              lastName: farewellPlayer.lastName,
+              games: farewellPlayer.careerStats.totalGames,
+              goals: farewellPlayer.careerStats.totalGoals,
+            } : undefined}
+          />
+        </div>
       )}
 
       {/* Resultat-strip — tabell + form (två kolumner). GRANSKA DEL 4 steg 2:
