@@ -6,9 +6,24 @@ name: app-ci
 # ratchas till error allt eftersom skulden städas (se scripts/check-design-tokens.mjs).
 
 on:
+  # 2026-08-19: åtta Playwright-tunga jobb (screenshots + fem gates + visual-
+  # regression) körde på RENA docs-commits — ingen av dem läser markdown eller
+  # data under docs/. Samma felklass som Vercels dagskvot samma vecka: kostnad
+  # utan nytta, upptäckt när tre körningar samtidigt satt fast 35-50 min på
+  # `npx playwright install` (konto-nivåns concurrency, inte kodfel) och
+  # blockerade varandra i kön. paths-ignore stryper det vid källan — en
+  # commit som BARA rör docs/**/*.md/data triggar aldrig workflowen alls.
+  # En commit som rör BÅDE docs och kod kör som vanligt (ignore gäller bara
+  # när ALLA ändrade filer matchar).
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
 
 jobs:
   check:
