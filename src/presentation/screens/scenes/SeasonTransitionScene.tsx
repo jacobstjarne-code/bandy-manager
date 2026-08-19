@@ -7,6 +7,7 @@
  * Mellan årsboken och första matchen, säsong 2+. Inga beslut, bara rytm —
  * passerbar på två sekunder men väger något (Jacobs egen brief).
  */
+import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useGameStore } from '../../store/gameStore'
 import { ClubExpectation, FixtureStatus } from '../../../domain/enums'
@@ -14,6 +15,7 @@ import { deriveMatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { getBurnoutZone } from '../../../domain/services/managerProfileService'
 import { seasonStartYear } from '../../../domain/utils/seasonYear'
 import { BoardObjectivesList } from '../../components/portal/secondary/BoardObjectivesList'
+import { getSeasonGoalOffers, type SeasonGoalOffer } from '../../../domain/services/seasonGoalService'
 import {
   deriveEpokLine, deriveWonTitleLastSeason, deriveWorsePlacementOrEarlierExit,
   deriveSommarLine, selectAwayEventLines, deriveIsPlayoffUnlikely, deriveTandLine,
@@ -77,8 +79,24 @@ export function SeasonTransitionScene() {
   const visibleObjectiveCount = Math.min(objectives.filter(o => o.status !== 'met').length, 2)
   const hiddenObjectiveCount = objectives.filter(o => o.status !== 'met').length - visibleObjectiveCount
 
+  // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål,
+  // valt här och bara här ("enda gången i spelet spelaren har överblick och
+  // inte är mitt i något"). Tre-läges state: undefined = ingen interaktion
+  // ännu (inget visuellt förvalt), 'none' = spelaren valde explicit "Inget
+  // särskilt i år", ett SeasonGoalOffer = ett riktigt mål valt. undefined
+  // och 'none' ger samma slutresultat i passSeasonTransition (inget mål
+  // registreras) — SeasonGoalType saknar idag en egen 'none'-variant, så ett
+  // explicit avstående går inte att skilja från ingen interaktion i
+  // historiken (se HistoryScreen.tsx). Känt, avsiktligt gap.
+  const [selectedGoal, setSelectedGoal] = useState<SeasonGoalOffer | 'none' | undefined>(undefined)
+  const goalOffers = getSeasonGoalOffers(game)
+
   function handleContinue() {
-    passSeasonTransition()
+    passSeasonTransition(
+      selectedGoal && selectedGoal !== 'none'
+        ? { type: selectedGoal.type, referenceId: selectedGoal.referenceId, trackedPlayerIds: selectedGoal.trackedPlayerIds }
+        : undefined
+    )
     navigate('/game/dashboard', { replace: true })
   }
 
@@ -153,6 +171,48 @@ export function SeasonTransitionScene() {
               +{hiddenObjectiveCount} till
             </div>
           )}
+        </div>
+
+        <div style={{ height: 1, background: 'var(--border)' }} />
+
+        {/* O3 — säsongens eget mål. Enda beslutet i Sommaren, avsiktligt. */}
+        <div data-season-goal-picker="true">
+          <div style={{ fontSize: 8, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4, fontFamily: 'var(--font-body)' }}>
+            Ditt mål
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 8 }}>
+            Styrelsen har sitt. Vad vill du?
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {[...goalOffers.map(o => ({ key: o.type, offer: o as SeasonGoalOffer | 'none', text: o.choiceText })),
+              { key: 'none', offer: 'none' as const, text: 'Inget särskilt i år. Vi ser vad som händer.' }]
+              .map(({ key, offer, text }) => {
+                const isSelected = offer === 'none' ? selectedGoal === 'none' : selectedGoal !== 'none' && selectedGoal?.type === offer.type
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setSelectedGoal(offer)}
+                    data-season-goal-option={key}
+                    data-selected={isSelected}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8, textAlign: 'left',
+                      padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
+                      background: isSelected ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'var(--bg-surface)',
+                      border: `1px solid ${isSelected ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'var(--border)'}`,
+                      fontSize: 12, color: isSelected ? 'var(--accent-text)' : 'var(--text-primary)',
+                      fontFamily: 'var(--font-body)',
+                    }}
+                  >
+                    <span style={{
+                      width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
+                      border: `1.5px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
+                      background: isSelected ? 'var(--accent)' : 'transparent',
+                    }} />
+                    {text}
+                  </button>
+                )
+              })}
+          </div>
         </div>
       </div>
 

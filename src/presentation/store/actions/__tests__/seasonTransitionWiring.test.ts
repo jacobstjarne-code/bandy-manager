@@ -69,4 +69,24 @@ describe('passSeasonTransition (5.1 Sommaren — återinträdesguard)', () => {
     useGameStore.setState({ game: null })
     expect(() => useGameStore.getState().passSeasonTransition()).not.toThrow()
   })
+
+  // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md, 2026-08-19)
+  it('med ett valt mål — skriver activeSeasonGoal med chosenSeason', () => {
+    const game = makeGame()
+    useGameStore.setState({ game })
+
+    useGameStore.getState().passSeasonTransition({ type: 'playoff' })
+
+    const after = useGameStore.getState().game
+    expect(after?.activeSeasonGoal).toEqual({ type: 'playoff', chosenSeason: game.currentSeason })
+  })
+
+  it('utan mål ("Inget särskilt i år") — activeSeasonGoal förblir odefinierat', () => {
+    const game = makeGame()
+    useGameStore.setState({ game })
+
+    useGameStore.getState().passSeasonTransition()
+
+    expect(useGameStore.getState().game?.activeSeasonGoal).toBeUndefined()
+  })
 })
