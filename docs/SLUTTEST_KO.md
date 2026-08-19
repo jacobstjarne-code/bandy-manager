@@ -20,7 +20,7 @@ Alla poster nedan har låst text eller ingen text alls, inga obesvarade beroende
 | 5 | **B2** UI visar två presslägen, inte tre — motorn är binär, tre val där två är identiska är `kommunens_villkor` igen | taktikytorna |
 | 6 | **5.1 fynd 5** alternativ (a): `hideProgress`-prop på `BoardObjectivesList` | `BoardObjectivesList.tsx` |
 | 7 | **5.1 fynd 4** `FeedbackButton` scope:ad till innehållets botten, inte viewportens | `FeedbackButton.tsx` |
-| 8 | **O6 sidofynd** dubbla `VB`/`HB` i fyrbackslinjen — tredje ordet för innerback: **`MB`** (mittback) | `Formation.ts` |
+| 8 | ~~**O6 sidofynd** dubbla `VB`/`HB` i fyrbackslinjen~~ — KLAR, `MB` för innerback (`0bc0ba77`) | `Formation.ts` |
 | 9 | **O7** fyra språkfel — se O7-tabellen, testet på `nationalTeamService.test.ts:167` i samma commit | fyra filer |
 | 10 | **U5 forts** `isOnCooldown` mot pivotal beats, sedan `systemhandelseBudgetOk` | `narrativeLogService.ts` |
 | 11 | **O2** noOp-grepet först, rapportera siffran före pairwise-analysen | eventfilerna |
@@ -843,7 +843,9 @@ Låta `matchCore` skriva ner vad den redan vet vid varje chansskapande/bolltapp-
 
 **3/4 BYGGD 2026-08-19: `contributingFactors`.** `string[]` på `MatchEvent` — `hot_hand`/`derby`/`weather`/`second_half_mode`/`equalizer_momentum`, de motorförhållanden som faktiskt påverkade målchansen. `second_half_mode` slår medvetet ihop andrahalvlekläge och post-paus-urgency (samma `homeModeAttackMult`/`awayModeAttackMult`-variabel i koden, ingen separat spårning — att särskilja dem hade fabricerat precision motorn inte har). Egen closure för OT-loopen (`currentContributingFactorsOT`, bara `weather` möjlig där — ingen hot_hand/mode/equalizer-mekanik finns i förlängningen). Bytesloggningen vid steg 31 får `contributingFactors: []` — closure:n är inte i scope än på grund av TDZ i samma loop-varv, ett gissat värde hade varit fel. Byte-identiskt bekräftat (omkört efter att en första verifieringsrunda av misstag race:ade två bakgrundskörningar mot samma fil). 4 nya tester (`matchCoreContributingFactors.test.ts`), inklusive väder/derby/OT-särfall.
 
-**Kvar:** `origin` (sist, kräver mest kunskap om `seqType`-vägarna). Ingen konsument (`B5`/`B4`/`O16`) byggs förrän alla fyra fält finns, enligt domen.
+**4/4 BYGGD 2026-08-19, B12 STEG 2 KLAR: `origin`.** `'OPEN_PLAY' | 'CORNER' | 'PENALTY'` — inte `FREE_HIT` (frislagsmål skrivs av `MatchLiveScreen`, per domens begränsning). Satt på 19/22 event-ställen (bara skott-/målutfall — Suspension/Substitution har inget "ursprung", lämnas `undefined`). Genuin tvetydighet hittad och testad: `'Hörnslag'` (Corner-typ) skapas av BÅDA attack-grenen (avslaget skott → hörna, `OPEN_PLAY`) och corner-grenen (icke-målutfall, `CORNER`) — samma `MatchEventType` och beskrivningstext, olika ursprung, exakt vad fältet finns för att fånga. Post-cornerkontring klassas `OPEN_PLAY`, inte `CORNER` (målet kommer från kontringen, inte hörnleveransen). Byte-identiskt bekräftat. 4 nya tester (`matchCoreOrigin.test.ts`).
+
+**Ingen konsument byggd.** `B5`/`B4`/`O16` läser inte de fyra nya fälten än — väntar på egen beställning, enligt domen.
 
 **O20 — vilken punkt saknas, tio händelser, källa `DOM_VARSLET_KLASSIFICERING_2026-08-17.md`:**
 
