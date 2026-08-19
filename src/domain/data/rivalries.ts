@@ -26,3 +26,21 @@ export function getRivalry(clubId1: string, clubId2: string): Rivalry | null {
 export function isRivalryMatch(clubId1: string, clubId2: string): boolean {
   return getRivalry(clubId1, clubId2) !== null
 }
+
+/**
+ * O3/O18 (2026-08-19) — klubbens EN rival, om den har flera (t.ex.
+ * club_slottsbron: både Blåderbyt och Slaget om Värmland). Ingen tidigare
+ * konsument behövde "min rival" ur en enda klubbs perspektiv, bara
+ * "är dessa två rivaler" (getRivalry/isRivalryMatch). Högst intensitet vinner.
+ */
+export function getPrimaryRivalry(clubId: string): Rivalry | null {
+  const matches = RIVALRIES.filter(r => r.clubIds.includes(clubId))
+  if (matches.length === 0) return null
+  return [...matches].sort((a, b) => b.intensity - a.intensity)[0]
+}
+
+export function getRivalClubId(clubId: string): string | null {
+  const rivalry = getPrimaryRivalry(clubId)
+  if (!rivalry) return null
+  return rivalry.clubIds[0] === clubId ? rivalry.clubIds[1] : rivalry.clubIds[0]
+}

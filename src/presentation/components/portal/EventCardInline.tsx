@@ -70,6 +70,8 @@ export function getEventTypeLabel(event: GameEvent): string {
       return '💰 EKONOMI'
     case 'sponsorOffer':
       return '💼 SPONSOR'
+    case 'seasonGoalHalfway':
+      return '🎯 SÄSONGSMÅLET'
     default:
       return '📋 HÄNDELSE'
   }

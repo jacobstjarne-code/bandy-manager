@@ -1,4 +1,24 @@
 import type { ClubExpectation } from '../enums'
+import type { ClubEra } from './SaveGame'
+
+// O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål, valt i
+// Sommaren. Sex fasta typer, interpolerade namn, ingen AI-generering.
+export type SeasonGoalType = 'playoff' | 'establish' | 'playerCarry' | 'rival' | 'facility' | 'keepSquad'
+export type SeasonGoalOutcome = 'met' | 'close' | 'not'
+
+/**
+ * Tre fält, inget mer (Jacobs dom, ordagrant). referenceId saknas för mål
+ * utan naturlig enskild referens (playoff/establish/keepSquad). Ingen
+ * frusen visningsetikett sparas här medvetet — seasonGoalService.ts slår
+ * upp namnet live vid renderingstillfället (med graciös degradering om
+ * referensen inte längre går att hitta, t.ex. en spelare som lämnat
+ * klubben flera säsonger senare) i stället för att bryta "tre fält".
+ */
+export interface SeasonGoalRecord {
+  type: SeasonGoalType
+  referenceId?: string
+  outcome: SeasonGoalOutcome
+}
 
 export type MatchHighlightCategory =
   | 'comeback'
@@ -126,4 +146,40 @@ export interface SeasonSummary {
     bestMoment?: string
     isLegend: boolean
   }>
+
+  // ── O18 (DOM_ARSBOKEN_RYGGRAD_2026-08-17.md) — årsbokens fem fält ────────
+  // Ett fält per säsong, aldrig en lista. En händelselös säsong bär FÄRRE
+  // fält (odefinierat), inte utfyllnad. Fält 2 (säsongens viktigaste beslut)
+  // byggs inte än — kräver O19-märkning som inte finns.
+
+  /** Fält 1 — spelarens eget mål och utfall (O3). Absent = inget valdes
+   *  (eller sparet föregår O3) — årsboken visar "Du lovade ingenting...". */
+  personalGoal?: SeasonGoalRecord
+
+  /** Fält 3 — största personförändringen denna säsong. Namnet fryses här
+   *  (samma motivering som retiredPlayers/topScorer ovan: spelaren kan vara
+   *  borta ur game.players när Historik läses år senare). Prioritetsordning
+   *  vid val (Code, 2026-08-19): legendspelare som slutade > akademispelare
+   *  som slog igenom > spelare som gick från reserv till bärande roll. */
+  personChange?: {
+    kind: 'retired' | 'breakthrough' | 'establishedStarter'
+    playerId: string
+    name: string
+    seasons?: number   // 'retired' — antal säsonger i klubben
+  }
+
+  /** Fält 4 — rivalitetens ställning denna säsong (ligamatcher mot klubbens
+   *  rival, om en finns — se domain/data/rivalries.ts). */
+  rivalryStanding?: {
+    rivalClubId: string
+    rivalName: string
+    wins: number
+    draws: number
+    losses: number
+  }
+
+  /** Fält 5 — klubbens epok vid årets slut (calculateClubEra-snapshot,
+   *  taget innan trainerArc rullas över till nästa säsong). Historik visar
+   *  bara en rad när epoken SKIFTADE mot föregående sparade säsong. */
+  clubEra?: ClubEra
 }

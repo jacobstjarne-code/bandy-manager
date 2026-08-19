@@ -10,6 +10,7 @@ import { createEconomicStressEvent } from '../../../domain/services/events/event
 import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent } from '../../../domain/services/mecenatService'
 import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterService'
 import { checkEconomicCrisis } from '../../../domain/services/economicCrisisService'
+import { checkSeasonGoalHalfwayEvent } from '../../../domain/services/seasonGoalService'
 import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
 import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
@@ -106,6 +107,10 @@ export function processGameEvents(
   // DREAM-002: Ekonomisk kris
   const crisisEvent = checkEconomicCrisis(game, nextMatchday)
   if (crisisEvent) gameEvents.push(crisisEvent)
+
+  // O3 — säsongsmålets halvtidsrad (ambient, D1 punkt 2)
+  const seasonGoalHalfwayEvent = checkSeasonGoalHalfwayEvent(game)
+  if (seasonGoalHalfwayEvent) gameEvents.push(seasonGoalHalfwayEvent)
 
   // DREAM-016: Skoluppgift
   const schoolEvent = generateSchoolAssignmentEvent(game, nextMatchday)

@@ -46,6 +46,7 @@ export type GameEventType =
   | 'opponentQuote'
   | 'csPress'
   | 'playThroughInjury'
+  | 'seasonGoalHalfway'
 
 /**
  * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
