@@ -1,5 +1,5 @@
 import type { FacilityNodeView, FacilityState, FacilityNodeDef } from '../../../domain/entities/SaveGame'
-import { getFacilityTreeByGren } from '../../../domain/services/facilityService'
+import { getFacilityTreeByGren, isFacilityTreeFull, getOrdinaryFacilityNodeDefs } from '../../../domain/services/facilityService'
 import { FACILITY_DESC, FACILITY_INTRO } from '../../../domain/data/facilityDescriptions'
 import { FACILITY_NODE_DEFS } from '../../../domain/data/facilityNodes'
 
@@ -238,6 +238,11 @@ export function FacilityTree({
   const hallTrialActive = !!facilityState.hallTrial
   const tree = getFacilityTreeByGren(facilityState, currentMatchday)
   const grens: Array<'anlaggning' | 'verksamhet' | 'akademi'> = ['anlaggning', 'verksamhet', 'akademi']
+  // O17 del 1 (DOM_ANLAGGNINGSTRADETS_SLUT, 2026-08-17) — fullt träd är ett
+  // tillstånd, inte ett tomrum. Matchhallen räknas inte in (separat Prövning,
+  // se getOrdinaryFacilityNodeDefs).
+  const treeFull = isFacilityTreeFull(facilityState)
+  const ordinaryDefs = getOrdinaryFacilityNodeDefs()
 
   return (
     <div style={{ color: 'var(--text-primary)' }}>
@@ -256,6 +261,23 @@ export function FacilityTree({
         <p style={{ fontSize: 10, color: 'var(--text-secondary)', marginBottom: 8, lineHeight: 1.5 }}>
           {FACILITY_INTRO}
         </p>
+      )}
+
+      {/* O17 del 1 — fullt-träd-tillståndet. Texten är låst ordagrant
+          (DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md). Driftskostnad per
+          säsong (O5) finns inte än — sammanställningen visar bara antal
+          noder, inte drift. Trädet nedan visas oförändrat (varje nod visar
+          redan sin "Byggd {säsong}"-tagg), banner:n lägger till tillståndet,
+          tar inte bort listan. */}
+      {treeFull && (
+        <div className="card-sharp" style={{ padding: '14px 16px', marginBottom: 10 }}>
+          <p style={{ fontSize: 12, fontStyle: 'italic', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+            Allt som gick att bygga är byggt. Nu handlar det om vad ni gör med det.
+          </p>
+          <p className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 8 }}>
+            {ordinaryDefs.length} noder byggda
+          </p>
+        </div>
       )}
 
       {grens.map(gren => {

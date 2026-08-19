@@ -1,6 +1,5 @@
 import { TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../../domain/enums'
-import type { Tactic, TacticChangeLogEntry } from '../../domain/entities/Club'
-import type { Fixture } from '../../domain/entities/Fixture'
+import type { Tactic } from '../../domain/entities/Club'
 
 export interface TacticRow {
   label: string
@@ -92,94 +91,4 @@ export const tacticExplanations: Record<string, Record<string, string>> = {
     wings: 'Anfall via kanterna. Mer hörnor, mer kross.',
     mixed: 'Varierar angreppssätt beroende på situationen.',
   },
-}
-
-/**
- * O15 (Taktikens två lägen) — gruppindelningen delas nu av TacticBoardCard.tsx
- * (tidigare en lokalt duplicerad TACTIC_GROUPS-array, byte-för-byte identisk med
- * TacticStep.tsx:s egen lokala `groups`). TacticStep.tsx är oförändrad i denna
- * leverans (målskärmen är TaktikScreen/TacticBoardCard) men kan migrera hit senare
- * utan att semantiken ändras.
- */
-export const TACTIC_GROUPS = [
-  { label: 'Spelplan', keys: ['mentality', 'tempo', 'press'] as const },
-  { label: 'Bollspel', keys: ['passingRisk', 'width', 'attackingFocus'] as const },
-  { label: 'Fasta situationer', keys: ['cornerStrategy', 'penaltyKillStyle'] as const },
-]
-
-function optionLabel(key: keyof Tactic, value: string): string {
-  const row = tacticRows.find(r => r.key === key)
-  return row?.options.find(o => o.value === value)?.label ?? value
-}
-
-/** Diff mellan två fullständiga Tactic-objekt, i tacticRows kanoniska ordning (de 8
- *  dimensionerna — `formation`/`lineupSlots` räknas aldrig som en "ändring"). */
-export function diffTactics(from: Tactic, to: Tactic): { key: keyof Tactic; value: string }[] {
-  const diffs: { key: keyof Tactic; value: string }[] = []
-  for (const row of tacticRows) {
-    const key = row.key
-    if (from[key] !== to[key]) diffs.push({ key, value: to[key] as string })
-  }
-  return diffs
-}
-
-/**
- * O15 — delta-raden i standardläget: "vad som skiljer mot förra matchen". LÅST TEXT
- * (Jacob/Design, 2026-08-18/19), kopierad ordagrant — ändra inte formuleringarna.
- *
- * KRITISKT VILLKOR (Jacobs egna ord): jämför mot förra SPELADE matchen, oavsett
- * tävlingstyp (liga/cup/slutspel) — inte förra ligamatchen specifikt. `lastFixture`
- * ska därför komma från useLastCompletedFixture()/game.lastCompletedFixtureId, som
- * redan sätts av roundProcessor/matchActions för varje spelad matchdag oavsett
- * isCup/slutspel — ingen egen ligafiltrering här.
- *
- * Baslinjen för diffen är INTE föregående updateTactic-anrop, utan tactic-snapshotet
- * sparat på den matchens TeamSelection (Fixture.homeLineup/awayLineup.tactic) — den
- * tactic som faktiskt spelades senast, inte något mellanläge under redigering.
- */
-export function getTacticDeltaLine(
-  currentTactic: Tactic,
-  lastFixture: Fixture | null | undefined,
-  managedClubId: string,
-  currentSeason: number,
-  lastOpponentName: string | undefined,
-): string | undefined {
-  if (!lastFixture) return undefined // första matchen någonsin — ingen rad
-  if (lastFixture.season !== currentSeason) {
-    return 'Ny säsong. Planen står som du lämnade den.'
-  }
-  const isHome = lastFixture.homeClubId === managedClubId
-  const lastTactic = (isHome ? lastFixture.homeLineup : lastFixture.awayLineup)?.tactic
-  if (!lastTactic) return undefined // saknat snapshot — hellre ingen rad än en fel rad
-  const opp = lastOpponentName ?? 'motståndaren'
-  const diffs = diffTactics(lastTactic, currentTactic)
-  if (diffs.length === 0) return `Samma plan som mot ${opp}.`
-  const labels = diffs.map(d => tacticRows.find(r => r.key === d.key)!.label)
-  if (diffs.length === 1) {
-    return `Sedan ${opp}: ${labels[0]} → ${optionLabel(diffs[0].key, diffs[0].value)}.`
-  }
-  if (diffs.length === 2) {
-    return `Sedan ${opp}: ${labels[0]} och ${labels[1]} ändrade.`
-  }
-  if (diffs.length === 3) {
-    return `Sedan ${opp}: ${labels[0]}, ${labels[1]} och ${labels[2]} ändrade.`
-  }
-  return `Sedan ${opp} har du gjort om planen.`
-}
-
-/**
- * O15 — avancerat lägets "Vad du ändrat i år"-rader. En rad per matchday med
- * loggade ändringar (nyast överst), plus en avslutande "utgångsläge satt"-rad
- * (LÅST ordval, Design) om ingen riktig post redan finns på omgång 1.
- */
-export function getTacticChangeHistoryLines(changeLog: TacticChangeLogEntry[] | undefined): string[] {
-  const sorted = [...(changeLog ?? [])].sort((a, b) => b.matchday - a.matchday)
-  const lines = sorted.map(entry => {
-    const parts = entry.changes.map(c => `${tacticRows.find(r => r.key === c.key)?.label ?? c.key} → ${optionLabel(c.key, c.value)}`)
-    return `Omg ${entry.matchday} · ${parts.join(' · ')}`
-  })
-  if (!sorted.some(e => e.matchday === 1)) {
-    lines.push('Omg 1 · utgångsläge satt')
-  }
-  return lines
 }

@@ -71,7 +71,10 @@ export function getFacilityNodeViews(
 
   return FACILITY_NODE_DEFS.map(def => {
     if (built.has(def.id)) {
-      return { def, status: 'built' as const }
+      // O17 del 1 (DOM_ANLAGGNINGSTRADETS_SLUT): builtSeasons fanns sedan
+      // AUDIT DEL 3 (2026-08-11) men hade ingen konsument — FacilityTree.tsx:s
+      // "Byggd {season}"-tagg låg redan där och väntade. Kopplar ihop dem.
+      return { def, status: 'built' as const, completedSeason: state.builtSeasons?.[def.id] }
     }
     if (activeId === def.id && state.activeProject) {
       const { startedMatchday, etaMatchday } = state.activeProject
@@ -105,6 +108,21 @@ export function getFacilityTreeByGren(
     verksamhet: views.filter(v => v.def.gren === 'verksamhet'),
     akademi: views.filter(v => v.def.gren === 'akademi'),
   }
+}
+
+/** O17 del 1 (DOM_ANLAGGNINGSTRADETS_SLUT) — de "vanliga" noderna, dvs. allt
+ *  utom matchhallen. Matchhallen räknas inte in i "fullt träd": den är en
+ *  separat Prövning (isHall), inte en nod som töms via det vanliga bygg-flödet. */
+export function getOrdinaryFacilityNodeDefs(): FacilityNodeDef[] {
+  return FACILITY_NODE_DEFS.filter(def => !def.isHall)
+}
+
+/** O17 del 1 — trädet är fullt när varje vanlig (icke-hall) nod är byggd.
+ *  Används av FacilityTree.tsx (fullt-träd-tillståndet) och O17 del 2's
+ *  gate i hallProcessService.shouldStartHallTrial. */
+export function isFacilityTreeFull(state: FacilityState): boolean {
+  const built = new Set(state.builtNodeIds)
+  return getOrdinaryFacilityNodeDefs().every(def => built.has(def.id))
 }
 
 /** Available nodes at season start (for PreSeason Valet). */

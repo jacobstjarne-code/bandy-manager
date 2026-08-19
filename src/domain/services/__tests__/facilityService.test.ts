@@ -9,6 +9,8 @@ import {
   getFinancingOptions,
   getFirstUnseenCompletedFacility,
   facilityCompletedBeatKey,
+  isFacilityTreeFull,
+  getOrdinaryFacilityNodeDefs,
   FACILITY_NODE_DEFS,
 } from '../facilityService'
 import type { FacilityState } from '../../entities/Community'
@@ -29,6 +31,20 @@ describe('getFacilityNodeViews', () => {
     const views = getFacilityNodeViews(state, 1)
     const varmestuga = views.find(v => v.def.id === 'varmestuga')
     expect(varmestuga?.status).toBe('built')
+  })
+
+  it('O17 del 1: built nodes carry completedSeason from builtSeasons', () => {
+    const state: FacilityState = { builtNodeIds: ['varmestuga'], builtSeasons: { varmestuga: 4 } }
+    const views = getFacilityNodeViews(state, 1)
+    const varmestuga = views.find(v => v.def.id === 'varmestuga')
+    expect(varmestuga?.completedSeason).toBe(4)
+  })
+
+  it('O17 del 1: built node without a builtSeasons entry (pre-4.11 save) has undefined completedSeason, no guess', () => {
+    const state: FacilityState = { builtNodeIds: ['varmestuga'] }
+    const views = getFacilityNodeViews(state, 1)
+    const varmestuga = views.find(v => v.def.id === 'varmestuga')
+    expect(varmestuga?.completedSeason).toBeUndefined()
   })
 
   it('ongoing node shows correct eta and cooldown', () => {
@@ -320,5 +336,34 @@ describe('unseenCompletedFacilities — kö istället för enda-fält (Stickines
       facilityCompletedBeatKey('laktare'),
     ])
     expect(afterBothDismissed).toBeNull()
+  })
+})
+
+// O17 del 1 — DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md
+describe('isFacilityTreeFull', () => {
+  const ORDINARY_IDS = getOrdinaryFacilityNodeDefs().map(d => d.id)
+
+  it('matchhallen räknas inte in — 9 vanliga noder, ingen hall', () => {
+    expect(ORDINARY_IDS).not.toContain('matchhall')
+    expect(ORDINARY_IDS.length).toBe(9)
+  })
+
+  it('tomt träd är inte fullt', () => {
+    expect(isFacilityTreeFull(emptyState)).toBe(false)
+  })
+
+  it('åtta av nio byggda är inte fullt', () => {
+    const almost: FacilityState = { builtNodeIds: ORDINARY_IDS.slice(0, 8) }
+    expect(isFacilityTreeFull(almost)).toBe(false)
+  })
+
+  it('alla nio vanliga noder byggda — fullt, oavsett matchhallens status', () => {
+    const full: FacilityState = { builtNodeIds: ORDINARY_IDS }
+    expect(isFacilityTreeFull(full)).toBe(true)
+  })
+
+  it('matchhallen byggd men en vanlig nod saknas — inte fullt', () => {
+    const missingOne: FacilityState = { builtNodeIds: [...ORDINARY_IDS.slice(1), 'matchhall'] }
+    expect(isFacilityTreeFull(missingOne)).toBe(false)
   })
 })

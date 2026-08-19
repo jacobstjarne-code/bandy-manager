@@ -20,15 +20,24 @@ import {
 } from '../../data/hallProvningData'
 import { getRivalry } from '../../data/rivalries'
 import { clamp } from '../../utils/clamp'
+import { isFacilityTreeFull } from '../facilityService'
 
 // ── Trigger ───────────────────────────────────────────────────────────────
 
+/**
+ * O17 del 2 (DOM_ANLAGGNINGSTRADETS_SLUT, 2026-08-17): hallprövningen öppnas
+ * när trädet är fullt — tidigare räckte det med `laktare_ostra` byggd, vilket
+ * kunde starta prövningen med sju-åtta noder ospelade. Domen: "hallprövningen
+ * öppnas när trädet är fullt, men den är en horisont först efter O5" — den
+ * ekonomiska tyngden (driftskostnad) väntar på O5, men gaten mot fullt träd
+ * är trivial och byggs nu tillsammans med del 1.
+ */
 export function shouldStartHallTrial(game: SaveGame): boolean {
   const fs = game.facilityState
   if (!fs) return false
   if (fs.activeProject) return false
   if (game.currentSeason < 2) return false
-  if (!fs.builtNodeIds.includes('laktare_ostra')) return false
+  if (!isFacilityTreeFull(fs)) return false
   const hasIndoorRival = game.clubs.some(c => c.id !== game.managedClubId && c.hasIndoorArena === true)
   if (!hasIndoorRival) return false
 
