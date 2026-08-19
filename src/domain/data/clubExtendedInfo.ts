@@ -1,9 +1,20 @@
+/**
+ * B3 (BANDYSPRAK_KALLASNING_2026-08-19.md): "spela eller åk" — Brodéns enda
+ * fundamentala stilskillnad, korrelerar INTE med tabellplacering. `undefined`
+ * på alla klubbar tills Opus dömer vilka som är vilka — en identitetsfråga
+ * ("sitter i tröjorna") som Code inte ska gissa sig till. Fältet finns för
+ * att B3s andra hälft (scouttext/matchreferat som refererar traditionen)
+ * ska ha något att läsa när det byggs, inte för att alla tolv är ifyllda nu.
+ */
+export type PlayStyleTradition = 'spelande' | 'akande'
+
 export interface ClubExtendedInfo {
   clubId: string
   arenaNote: string
   patronType: string
   klimateArchetype: string
   briefDescription: string
+  playStyleTradition?: PlayStyleTradition
 }
 
 export const CLUB_EXTENDED_INFO: Record<string, ClubExtendedInfo> = {
