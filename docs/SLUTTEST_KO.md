@@ -338,7 +338,20 @@ Copy låst i chatten 2026-08-17 (sex varianter plus avskedsraden i två former).
 `deriveTurneringslageMode` returnerar `null` under en pågående serie, så en semifinal där klubben står 1–0 visar ingenting alls.
 **Ett avgjort utfall är information; en oavgjord serie är dramatik.** Att bara det första renderas är omvänd prioritering.
 Rapportera vad som finns tillgängligt att visa mitt i en serie — matchställning, antal segrar som krävs, hemmafördel nästa match. Jag skriver texten.
-**Status:** `RAPPORT-VÄNTAR`
+
+**RAPPORT, 2026-08-19.** Alla tre finns redan, för slutspel — och inte bara "finns i datan", utan REDAN BERÄKNADE av en levande funktion: `getPlayoffSeriesContext()` (`src/domain/services/portal/playoffSeriesContext.ts`), byggd för NextMatchCards vikt-styling, inte för Turneringsläge — men det är exakt samma fråga.
+
+**Matchställning:** `context.wins`/`context.losses` — räknat ur den hanterade klubbens perspektiv (inte hemma/borta-perspektiv som `PlayoffSeries.homeWins`/`awayWins`), matchvis genom `series.fixtures` mot `game.fixtures`. Färdig att läsa rakt av: "Ni leder 2–1."
+
+**Antal segrar som krävs:** inte ett eget fält i `context`, men trivialt — samma tröskel `playoffService.ts`s egen `isSeriesDecided()` redan använder: final = 1 vinst (enda matchen), kvarts/semi = 3 vinster (bäst av fem). En rad kod: `series.round === PlayoffRound.Final ? 1 : 3`.
+
+**Hemmafördel nästa match:** inte heller ett eget fält, men `context.nextGame` (1-indexerat matchnummer i serien) pekar direkt mot `series.fixtures[nextGame - 1]` — slå upp den fixturen i `game.fixtures` och jämför `homeClubId` mot `managedClubId`. Best-of-5-mönstret är dessutom deterministiskt (hemma/borta/hemma/borta/hemma för seriens hemmaklubb, se `generatePlayoffFixtures`), så det går även att räkna ut utan uppslaget om det är billigare.
+
+**Cup är en annan fråga, inte samma lucka.** Cup har ingen serie — varje rond är EN match, avgjord direkt (`CupBracket`/`CupMatch`, inget `homeWins`/`awayWins`-koncept). Det finns alltså ingen "matchställning mitt i en rond" att visa för cup. Den motsvarande luckan för cup är en ANNAN: mellan ronder (vunnit rond 2, inte spelat rond 3 än) visar `deriveTurneringslageMode` heller ingenting där (`isInFinal` är false tills finalen), men det som går att visa är bara "vidare till [rondnamn], hemma/borta mot [nästa motståndare]" — ingen ställning, ingen "segrar som krävs" (alltid 1, hela poängen med cup). Om Sommaren/Turneringsläge ska täcka båda är det två separata texter, inte en delad mall.
+
+**Flaggat, inte fixat — datakvalitetsfynd i den återanvända funktionen:** `getPlayoffSeriesContext()`s `wins`/`losses`-räkning (rad 39-45) jämför RÅ `homeScore`/`awayScore` (`myGoals > theirGoals ? wins++ : losses++`) — ingen `else if`, ren binär. En match avgjord i förlängning/straff har `homeScore === awayScore` i grundtiden (samma mönster U2 redan fixade för `MatchTypeAxes.utfall`, som läser `wentToPenalties`/`overtimeResult` FÖRE råscore) — här faller en sådan match rakt in i `else`-grenen och räknas som förlust, oavsett vem som faktiskt vann. Inte rapporterat tidigare eftersom ingen UI hittills visat serieställningen självständigt (bara vikt/kritikalitet, som inte bryr sig om VILKEN sida som vann matchpucken). Om 5.3 bygger på denna funktion ärver texten samma bugg — värt att fixa i samma sving, inte en separat post.
+
+**Status:** `RAPPORT-LEVERERAD` — väntar på Jacobs text
 
 ---
 
