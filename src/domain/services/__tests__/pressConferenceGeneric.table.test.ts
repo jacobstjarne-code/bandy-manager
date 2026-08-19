@@ -65,6 +65,13 @@ const EXPECTED: Record<string, Record<Outcome, boolean>> = {
   winter:                 { won: false, lost: false, draw: false, none: false },
   relegation:              { won: false, lost: false, draw: false, none: false },
   youngster:               { won: false, lost: false, draw: false, none: false },
+  // 4.2 (SLUTTEST_KO, 2026-08-19): topic_*-svar hör till en specifik fråga
+  // (nås via preferIds), aldrig till ett matchutfall — samma disciplin som
+  // win_derby/loss_derby ovan.
+  topic_person:            { won: false, lost: false, draw: false, none: false },
+  topic_town:              { won: false, lost: false, draw: false, none: false },
+  topic_doubt:             { won: false, lost: false, draw: false, none: false },
+  topic_player:            { won: false, lost: false, draw: false, none: false },
 }
 
 describe('isGenericMatch — table-driven klassificering per tagg', () => {

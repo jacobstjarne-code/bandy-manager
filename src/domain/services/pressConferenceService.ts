@@ -124,7 +124,9 @@ interface ManagerResponse {
   mediaQuote: string
 }
 
-const PLAYER_RESPONSES: ManagerResponse[] = [
+// Exporterad enbart för tabelltestet (storylineArcPreferIds.table.test.ts) —
+// samma undantag som ALL_PRESS_TAGS ovan, inte avsedd som allmän API-yta.
+export const PLAYER_RESPONSES: ManagerResponse[] = [
   // ── Befintliga svar: bigWin ──
   { id: 'bw_c1', tag: 'win_big', label: '"Vi visade vad vi kan."', moraleEffect: 5, mediaQuote: 'Tränaren var säker: "Vi visade vad vi kan."' },
   { id: 'bw_h1', tag: 'win_any', label: '"Bra dag, men vi har mer att ge."', moraleEffect: 3, mediaQuote: 'Tränaren var ödmjuk: "Bra dag, men vi har mer att ge."' },
@@ -277,11 +279,51 @@ const PLAYER_RESPONSES: ManagerResponse[] = [
   { id: 'cl30', tag: 'any',          label: '"Alla vill spela vacker bandy. Men vacker bandy utan poäng är bara konståkning."', moraleEffect: 2, mediaQuote: 'Tränaren: "Alla vill spela vacker bandy. Utan poäng är det bara konståkning."' },
   { id: 'cl31', tag: 'relegation',   label: '"Vi har balanserat på ett bananskal hela säsongen. Men vi har inte ramlat ännu."', moraleEffect: 3, mediaQuote: 'Tränaren: "Vi har balanserat på ett bananskal hela säsongen. Men vi har inte ramlat ännu."' },
   { id: 'cl32', tag: 'youngster',    label: '"När en ung grabb gör mål i elitserien... då minns man varför man blev tränare."', moraleEffect: 5, mediaQuote: 'Tränaren: "När en ung grabb gör mål i elitserien — då minns man varför man blev tränare."' },
+
+  // ── 4.2 (SLUTTEST_KO, 2026-08-19): topikanpassade svar till de 17 storyline-
+  // och arc-frågorna. Alla nås ENDAST via preferIds (TAG_DEFS: matches ()=>false,
+  // generic:'none') — se docs/SVAR_STORYLINE_FRAGOR_2026-08-19.md.
+  // ── topic_person: människor och arbete ──
+  { id: 'tp_liv1', tag: 'topic_person', label: '"Han går till jobbet klockan sex. Sen tränar han. Det är det man ska skriva om."', moraleEffect: 5, mediaQuote: 'Tränaren: "Han går till jobbet klockan sex och tränar sen. Det är det man ska skriva om."' },
+  { id: 'tp_liv2', tag: 'topic_person', label: '"Vi är en förening. Det betyder att vi bryr oss om folk även när det inte lönar sig."', moraleEffect: 6, mediaQuote: 'Tränaren: "Vi är en förening. Vi bryr oss om folk även när det inte lönar sig."' },
+  { id: 'tp_liv3', tag: 'topic_person', label: '"Det är inte min sak att prata om andras privatliv."', moraleEffect: 1, mediaQuote: 'Tränaren avböjde: "Det är inte min sak att prata om andras privatliv."' },
+  { id: 'tp_liv4', tag: 'topic_person', label: '"Han bad aldrig om något. Det var vi som frågade."', moraleEffect: 5, mediaQuote: 'Tränaren: "Han bad aldrig om något. Det var vi som frågade honom."' },
+  { id: 'tp_liv5', tag: 'topic_person', label: '"Trygghet gör folk modigare. Det syns på isen också."', moraleEffect: 6, mediaQuote: 'Tränaren: "Trygghet gör folk modigare. Det syns på isen också."' },
+  { id: 'tp_liv6', tag: 'topic_person', label: '"Ett kontrakt är papper. Det som räknas är att någon vill ha en kvar."', moraleEffect: 5, mediaQuote: 'Tränaren: "Ett kontrakt är bara papper. Det som räknas är att någon vill ha en kvar."' },
+  { id: 'tp_liv7', tag: 'topic_person', label: '"Han hade kunnat gå någon annanstans. Han gjorde inte det."', moraleEffect: 6, mediaQuote: 'Tränaren: "Han hade kunnat gå någon annanstans. Han valde oss."' },
+  { id: 'tp_liv8', tag: 'topic_person', label: '"Vi lovade ingenting. Vi sa bara att vi finns kvar."', moraleEffect: 4, mediaQuote: 'Tränaren: "Vi lovade honom ingenting. Vi sa bara att vi finns kvar."' },
+  // ── topic_town: orten ──
+  { id: 'tp_ort1', tag: 'topic_town', label: '"Folk säger hej i affären igen. Det är hela mätaren."', moraleEffect: 6, mediaQuote: 'Tränaren: "Folk säger hej i affären igen. Det är hela mätaren för mig."' },
+  { id: 'tp_ort2', tag: 'topic_town', label: '"Vi spelar för dem som står ut med oss när det går dåligt."', moraleEffect: 5, mediaQuote: 'Tränaren: "Vi spelar för dem som står ut med oss när det går dåligt."' },
+  { id: 'tp_ort3', tag: 'topic_town', label: '"De kommer tillbaka när vi ger dem en anledning. Inte innan."', moraleEffect: 3, mediaQuote: 'Tränaren var rak: "De kommer tillbaka när vi ger dem en anledning. Inte innan."' },
+  { id: 'tp_ort4', tag: 'topic_town', label: '"Det är ingen press. Det är att någon bryr sig. Skillnaden är stor."', moraleEffect: 6, mediaQuote: 'Tränaren: "Det är ingen press. Det är att någon bryr sig. Skillnaden är stor."' },
+  { id: 'tp_ort5', tag: 'topic_town', label: '"Tomma läktare är vårt fel, inte deras."', moraleEffect: 3, mediaQuote: 'Tränaren tog ansvar: "Tomma läktare är vårt fel, inte publikens."' },
+  { id: 'tp_ort6', tag: 'topic_town', label: '"Pengar löser en sak i taget. Laget löser resten."', moraleEffect: 4, mediaQuote: 'Tränaren: "Pengar löser en sak i taget. Laget löser resten."' },
+  { id: 'tp_ort7', tag: 'topic_town', label: '"Han gör det för att han växte upp här. Inte för att synas."', moraleEffect: 5, mediaQuote: 'Tränaren om sponsorn: "Han gör det för att han växte upp här. Inte för att synas."' },
+  { id: 'tp_ort8', tag: 'topic_town', label: '"Det låter och dammar. Grabbarna klarar av lite oväsen."', moraleEffect: 3, mediaQuote: 'Tränaren log: "Det låter och dammar. Grabbarna klarar lite oväsen."' },
+  { id: 'tp_ort9', tag: 'topic_town', label: '"Om två år står det där. Då är det värt varenda dag."', moraleEffect: 5, mediaQuote: 'Tränaren: "Om två år står bygget där. Då är det värt varenda dag."' },
+  // ── topic_doubt: förväntan och tvivel ──
+  { id: 'tp_tvi1', tag: 'topic_doubt', label: '"Jag lyssnade aldrig. Det är inte högmod, jag hann bara inte."', moraleEffect: 6, mediaQuote: 'Tränaren: "Jag lyssnade aldrig på tvivlarna. Jag hann bara inte."' },
+  { id: 'tp_tvi2', tag: 'topic_doubt', label: '"De hade rätt på papperet. Papperet spelar inga matcher."', moraleEffect: 7, mediaQuote: 'Tränaren: "De hade rätt på papperet. Men papperet spelar inga matcher."' },
+  { id: 'tp_tvi3', tag: 'topic_doubt', label: '"Vi har inte bevisat något än. Fråga mig i mars."', moraleEffect: 4, mediaQuote: 'Tränaren bromsade: "Vi har inte bevisat något än. Fråga mig i mars."' },
+  { id: 'tp_tvi4', tag: 'topic_doubt', label: '"Det som höll oss uppe var att ingen väntade sig något."', moraleEffect: 3, mediaQuote: 'Tränaren: "Det som höll oss uppe var att ingen väntade sig något. Nu gör de det."' },
+  { id: 'tp_tvi5', tag: 'topic_doubt', label: '"Vi föll ihop när vi började tro på berömmet."', moraleEffect: 2, mediaQuote: 'Tränaren var självkritisk: "Vi föll ihop när vi började tro på berömmet."' },
+  { id: 'tp_tvi6', tag: 'topic_doubt', label: '"Han sa det ingen annan vågade säga. Sen sa han inget mer."', moraleEffect: 6, mediaQuote: 'Tränaren om kaptenen: "Han sa det ingen annan vågade säga. Sen sa han inget mer."' },
+  { id: 'tp_tvi7', tag: 'topic_doubt', label: '"Sånt håller i tre veckor. Sen får man förtjäna det igen."', moraleEffect: 4, mediaQuote: 'Tränaren: "Ett tal håller i tre veckor. Sen får man förtjäna det igen."' },
+  // ── topic_player: enskilda spelare under press ──
+  { id: 'tp_spe1', tag: 'topic_player', label: '"Jag tror på honom. Det är hela svaret."', moraleEffect: 6, mediaQuote: 'Tränaren var kort: "Jag tror på honom. Det är hela svaret."' },
+  { id: 'tp_spe2', tag: 'topic_player', label: '"Han får spela sig ur det. Det finns ingen annan väg."', moraleEffect: 4, mediaQuote: 'Tränaren: "Han får spela sig ur det. Det finns ingen annan väg."' },
+  { id: 'tp_spe3', tag: 'topic_player', label: '"Han kostar ibland. Men han vinner matcher ingen annan vinner."', moraleEffect: 5, mediaQuote: 'Tränaren: "Han kostar ibland. Men han vinner matcher ingen annan vinner."' },
+  { id: 'tp_spe4', tag: 'topic_player', label: '"Det bestämmer han, inte jag. Och inte ni."', moraleEffect: 4, mediaQuote: 'Tränaren: "Det bestämmer han själv. Inte jag, och inte pressen."' },
+  { id: 'tp_spe5', tag: 'topic_player', label: '"Han har gett klubben tolv år. Han får ta den tid han behöver."', moraleEffect: 7, mediaQuote: 'Tränaren: "Han har gett klubben tolv år. Han får ta den tid han behöver."' },
+  { id: 'tp_spe6', tag: 'topic_player', label: '"Rykten kommer varje vinter. Han är kvar varje vår."', moraleEffect: 5, mediaQuote: 'Tränaren avfärdade: "Rykten kommer varje vinter. Han är kvar varje vår."' },
+  { id: 'tp_spe7', tag: 'topic_player', label: '"Vi pratar om det när säsongen är slut. Inte nu."', moraleEffect: 3, mediaQuote: 'Tränaren: "Vi pratar om kontraktet när säsongen är slut. Inte nu."' },
 ]
 
 // ── PressContext ───────────────────────────────────────────────────────────────
 
-interface PressContext {
+// Exporterad enbart för tabelltestet (storylineArcPreferIds.table.test.ts).
+export interface PressContext {
   won: boolean
   lost: boolean
   draw: boolean
@@ -432,7 +474,9 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
 //                 medvetet, den kan inte "råka" bli återanvändbar.
 type GenericBucket = 'win' | 'loss' | 'draw' | 'universal' | 'none'
 
-const TAG_DEFS: Record<string, { matches: (ctx: PressContext) => boolean; generic: GenericBucket }> = {
+// Exporterad enbart för tabelltestet (storylineArcPreferIds.table.test.ts) —
+// samma undantag som ALL_PRESS_TAGS/PLAYER_RESPONSES ovan.
+export const TAG_DEFS: Record<string, { matches: (ctx: PressContext) => boolean; generic: GenericBucket }> = {
   win_any:      { matches: ctx => ctx.won,                                        generic: 'win' },
   win_big:      { matches: ctx => ctx.won && ctx.margin >= 3,                      generic: 'win' },
   win_streak:   { matches: ctx => ctx.won && ctx.streak >= 3,                      generic: 'win' },
@@ -464,6 +508,13 @@ const TAG_DEFS: Record<string, { matches: (ctx: PressContext) => boolean; generi
   relegation:   { matches: ctx => ctx.position >= 10,                              generic: 'none' },
   youngster:    { matches: ctx => ctx.youngsterScored,                             generic: 'none' },
   any:          { matches: () => true,                                            generic: 'universal' },
+  // 4.2 (SLUTTEST_KO, 2026-08-19): topic_*-svar hör till en specifik fråga, inte
+  // ett matchutfall. matches: () => false stänger kontextmatchning; generic: 'none'
+  // stänger generic-fallbacken. Enda vägen in är explicit preferIds.
+  topic_person: { matches: () => false,                                           generic: 'none' },
+  topic_town:   { matches: () => false,                                           generic: 'none' },
+  topic_doubt:  { matches: () => false,                                           generic: 'none' },
+  topic_player: { matches: () => false,                                           generic: 'none' },
 }
 
 // Exporterad enbart för tabelltestet (isGenericMatch.table.test.ts) — inte
@@ -648,9 +699,16 @@ export function generatePressConference(
         veteran_farewell: `Blir det här ${arcPlayer.firstName} ${arcPlayer.lastName}s sista säsong?`,
         contract_drama: `Rykten säger att ${arcPlayer.firstName} ${arcPlayer.lastName} kan lämna. Kommentar?`,
       }
+      // 4.2: topikanpassade preferIds per arc-typ — se docs/SVAR_STORYLINE_FRAGOR_2026-08-19.md
+      const arcPreferIds: Partial<Record<import('../entities/Narrative').ArcType, string[]>> = {
+        hungrig_breakthrough: ['tp_spe1', 'tp_spe2', 'tp_liv3'],
+        joker_redemption: ['tp_spe3', 'tp_spe2', 'tp_liv3'],
+        veteran_farewell: ['tp_spe5', 'tp_spe4', 'tp_spe7'],
+        contract_drama: ['tp_spe6', 'tp_spe7', 'tp_spe4'],
+      }
       const q = arcQuestions[arc.type]
       if (q) {
-        question = { text: q, preferIds: question.preferIds }
+        question = { text: q, preferIds: arcPreferIds[arc.type] ?? question.preferIds }
       }
     }
   }
@@ -661,38 +719,38 @@ export function generatePressConference(
     const seasonStories = storylines.filter(s => s.season === game.currentSeason && s.resolved)
     const clubStanding = game.standings.find(s => s.clubId === game.managedClubId)
     if (ctx.won && seasonStories.some(s => s.type === 'underdog_season')) {
-      question = { text: 'Ingen trodde på er i augusti. Vad säger du till tvivlarna?', preferIds: question.preferIds }
+      question = { text: 'Ingen trodde på er i augusti. Vad säger du till tvivlarna?', preferIds: ['tp_tvi2', 'tp_tvi1', 'tp_tvi3'] }
     } else if (clubStanding && clubStanding.losses >= 3 && seasonStories.some(s => s.type === 'underdog_season')) {
-      question = { text: 'Ingen trodde på er i augusti. Vad hände?', preferIds: question.preferIds }
+      question = { text: 'Ingen trodde på er i augusti. Vad hände?', preferIds: ['tp_tvi4', 'tp_tvi5', 'tp_tvi3'] }
     } else if (seasonStories.some(s => s.type === 'captain_rallied_team') && rand() < 0.5) {
-      question = { text: 'Kaptenen tog ton i omklädningsrummet. Har det gett effekt?', preferIds: question.preferIds }
+      question = { text: 'Kaptenen tog ton i omklädningsrummet. Har det gett effekt?', preferIds: ['tp_tvi6', 'tp_tvi7', 'w_h5'] }
     } else if (seasonStories.some(s => s.type === 'rescued_from_unemployment') && rand() < 0.5) {
       const rescueStory = seasonStories.find(s => s.type === 'rescued_from_unemployment')
       const rescuePlayer = rescueStory?.playerId ? game.players.find(p => p.id === rescueStory.playerId) : null
       const matchGoalEvents = (fixture.events ?? []).filter(e => e.type === MatchEventType.Goal && e.clubId === game.managedClubId)
       const rescueScorerMatch = rescuePlayer && matchGoalEvents.some(e => e.playerId === rescuePlayer.id)
       if (rescuePlayer && rescueScorerMatch) {
-        question = { text: `Berätta om ${rescuePlayer.firstName} ${rescuePlayer.lastName}s resa tillbaka.`, preferIds: question.preferIds }
+        question = { text: `Berätta om ${rescuePlayer.firstName} ${rescuePlayer.lastName}s resa tillbaka.`, preferIds: ['tp_liv1', 'tp_liv4', 'tp_liv2'] }
       } else {
-        question = { text: 'Varslet drabbade era spelare hårt. Hur har klubben hanterat situationen?', preferIds: question.preferIds }
+        question = { text: 'Varslet drabbade era spelare hårt. Hur har klubben hanterat situationen?', preferIds: ['tp_liv2', 'tp_liv8', 'tp_liv3'] }
       }
     } else if (seasonStories.some(s => s.type === 'went_fulltime_pro') && rand() < 0.5) {
       const proStory = seasonStories.find(s => s.type === 'went_fulltime_pro')
       const proPlayer = proStory?.playerId ? game.players.find(p => p.id === proStory.playerId) : null
       if (proPlayer) {
-        question = { text: `${proPlayer.firstName} ${proPlayer.lastName} slutade jobbet för att satsa på bandyn. Har det betalat sig?`, preferIds: question.preferIds }
+        question = { text: `${proPlayer.firstName} ${proPlayer.lastName} slutade jobbet för att satsa på bandyn. Har det betalat sig?`, preferIds: ['tp_liv5', 'tp_liv1', 'tp_liv6'] }
       }
     } else if (seasonStories.some(s => s.type === 'returned_to_club') && rand() < 0.5) {
       const returnStory = seasonStories.find(s => s.type === 'returned_to_club')
       const returnPlayer = returnStory?.playerId ? game.players.find(p => p.id === returnStory.playerId) : null
       if (returnPlayer) {
-        question = { text: `Berätta om ${returnPlayer.firstName} ${returnPlayer.lastName}s resa tillbaka till klubben.`, preferIds: question.preferIds }
+        question = { text: `Berätta om ${returnPlayer.firstName} ${returnPlayer.lastName}s resa tillbaka till klubben.`, preferIds: ['tp_liv7', 'tp_liv6', 'tp_liv3'] }
       }
     } else if (seasonStories.some(s => s.type === 'gala_winner') && rand() < 0.5) {
       const galaStory = seasonStories.find(s => s.type === 'gala_winner')
       const galaPlayer = galaStory?.playerId ? game.players.find(p => p.id === galaStory.playerId) : null
       if (galaPlayer) {
-        question = { text: `${galaPlayer.firstName} ${galaPlayer.lastName} vann galan. Hur viktigt är det för laget?`, preferIds: question.preferIds }
+        question = { text: `${galaPlayer.firstName} ${galaPlayer.lastName} vann galan. Hur viktigt är det för laget?`, preferIds: ['tp_spe1', 'tp_ort4', 'w_p3'] }
       }
     }
   }
@@ -701,17 +759,17 @@ export function generatePressConference(
   const cs = game.communityStanding ?? 50
   const newMecenat = (game.mecenater ?? []).find(m => m.arrivedSeason === game.currentSeason)
   if (cs > 75 && rand() < 0.25) {
-    question = { text: 'Det pratas om er i hela kommunen. Är det press eller inspiration?', preferIds: question.preferIds }
+    question = { text: 'Det pratas om er i hela kommunen. Är det press eller inspiration?', preferIds: ['tp_ort4', 'tp_ort1', 'tp_ort2'] }
   } else if (cs < 35 && rand() < 0.25) {
-    question = { text: 'Publiken sviker. Hur påverkar det laget?', preferIds: question.preferIds }
+    question = { text: 'Publiken sviker. Hur påverkar det laget?', preferIds: ['tp_ort5', 'tp_ort3', 'tp_ort2'] }
   } else if (newMecenat && rand() < 0.25) {
-    question = { text: `Ni har fått ${newMecenat.name}s stöd. Gör det skillnad i omklädningsrummet?`, preferIds: question.preferIds }
+    question = { text: `Ni har fått ${newMecenat.name}s stöd. Gör det skillnad i omklädningsrummet?`, preferIds: ['tp_ort7', 'tp_ort6', 'tp_liv3'] }
   } else if (game.facilityState?.activeProject != null && round >= 8 && rand() < 0.20) {
-    question = { text: 'Det byggs vid arenan. Hur påverkar det koncentrationen?', preferIds: question.preferIds }
+    question = { text: 'Det byggs vid arenan. Hur påverkar det koncentrationen?', preferIds: ['tp_ort8', 'tp_ort9', 'tp_ort6'] }
   } else if (game.players.some(p => p.clubId === game.managedClubId && p.promotedFromAcademy && p.age <= 20) && round >= 4 && rand() < 0.20) {
     const youngStar = game.players.find(p => p.clubId === game.managedClubId && p.promotedFromAcademy && p.age <= 20)
     const name = youngStar ? `${youngStar.firstName} ${youngStar.lastName}` : 'er unge spelare'
-    question = { text: `${name} imponerar. Hur hanterar ni trycket på en så ung spelare?`, preferIds: question.preferIds }
+    question = { text: `${name} imponerar. Hur hanterar ni trycket på en så ung spelare?`, preferIds: ['tp_spe4', 'tp_spe2', 'cl32'] }
   }
 
   // WEAK-008 + DEV-006: check for follow-up question first (40% chance if journalist has negative memory)
