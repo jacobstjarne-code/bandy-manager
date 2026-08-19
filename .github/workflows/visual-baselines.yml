@@ -7,6 +7,12 @@ name: visual-baselines
 
 on:
   workflow_dispatch:
+    inputs:
+      note:
+        description: 'Vad som godkänns i denna seed (visas i commit-meddelandet) — vilka ändringar som låses in, så det går att spåra i efterhand.'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: write
@@ -25,6 +31,8 @@ jobs:
       - name: Generera/uppdatera baselines (Linux)
         run: npm run test:visual:update
       - name: Committa baselines om de ändrats
+        env:
+          SEED_NOTE: ${{ github.event.inputs.note }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -32,7 +40,11 @@ jobs:
           if git diff --staged --quiet; then
             echo "Inga baseline-ändringar."
           else
-            git commit -m "test(visual): seed/uppdatera Linux-baselines (workflow_dispatch)"
+            if [ -n "$SEED_NOTE" ]; then
+              git commit -m "test(visual): seed/uppdatera Linux-baselines (workflow_dispatch)" -m "$SEED_NOTE"
+            else
+              git commit -m "test(visual): seed/uppdatera Linux-baselines (workflow_dispatch)"
+            fi
             # Race: checkout kan ligga bakom om main hunnit få nya commits under
             # körningen (2026-08-11: en samtidig push gjorde att git push refused
             # som non-fast-forward). rebase på senaste main innan push — baseline-
