@@ -15,8 +15,8 @@ Alla poster nedan har låst text eller ingen text alls, inga obesvarade beroende
 |---|---|---|
 | 1 | **B9** positionsviktad utmattning — godkänd att bygga. `fitness` läses aldrig av `matchCore`, bara `squadEvaluator` — normaliserad omfördelning mot startelvan bevarar aggregatet exakt | `playerStateProcessor.ts` |
 | 2 | **B3** `playStyleTradition` — alla tolv värden dömda, se B3-posten | `clubExtendedInfo.ts` |
-| 3 | **B4** de fyra `THREAT_REASON_LINES`-poolerna — text låst i chatten 2026-08-19 | `opponentAnalysisService.ts` |
-| 4 | **B5** `ARCHETYPE_STRENGTHS` + `ATTRIBUTE_LABELS` — rena textswappar, väntar på Opus-ord | `scoutingService.ts` |
+| 3 | ~~**B4** de fyra `THREAT_REASON_LINES`-poolerna~~ — KLAR, se B4-posten (`4e7fd447`) | `opponentAnalysisService.ts` |
+| 4 | ~~**B5** `ARCHETYPE_STRENGTHS` + `ATTRIBUTE_LABELS`~~ — Opus tar den själv (2026-08-19, ren skrivning) | `scoutingService.ts` |
 | 5 | **B2** UI visar två presslägen, inte tre — motorn är binär, tre val där två är identiska är `kommunens_villkor` igen | taktikytorna |
 | 6 | **5.1 fynd 5** alternativ (a): `hideProgress`-prop på `BoardObjectivesList` | `BoardObjectivesList.tsx` |
 | 7 | **5.1 fynd 4** `FeedbackButton` scope:ad till innehållets botten, inte viewportens | `FeedbackButton.tsx` |
@@ -27,7 +27,7 @@ Alla poster nedan har låst text eller ingen text alls, inga obesvarade beroende
 | 12 | **6.4 post 21** edge-case-fixturer (långa namn, skada, tomt priskort) | `DevScenesScreen.tsx` |
 | 13 | **Å12–15** skulden: nav-dokdrift, emoji-rester, egna skuggor | flera |
 
-**Väntar på Jacob, inte byggbart:** B12 steg 2 (dom på A/B/C-tabellen), B1 (formationssystemet), 5.3 (Opus-text), O16-uppföljning, O5/O1 (bakom Grind 1).
+**Väntar på Jacob, inte byggbart:** B1 (formationssystemet), 5.3 (Opus-text, Opus tar den själv), O16-uppföljning, O5/O1 (bakom Grind 1). B12 steg 2 dömd 2026-08-19 (`DOM_B12_STEG2_2026-08-19.md`) — under byggnad, se B12-sektionen.
 
 **Rör inte:** `matchCore`-kalibreringen, possession-motorn, de sex taktikdimensionerna, rollsystemet — allt V2, se `docs/V2_MATCHMOTOR_OCH_TAKTIK.md`.
 
@@ -739,7 +739,7 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 
 **Ordning:** B4 → B5 → B7 → B6 → B8 → B3 → B2 (rapport) → B1 (rapport).
 
-**B4 MEKANIK BYGGD 2026-08-19 (`9406be40`).** `selectThreatPlayer()` pekar deterministiskt ut samma spelare (högst tillgänglig `currentAbility`, samma urval som `keyPlayers`) och klassar VARFÖR ur fyra attributpar (evasive/clinical/relentless/creative) — ren funktion, ingen slump, domens "peka konsekvent" håller by construction. Wired i `OpponentAnalysisCard.tsx` (🎯-raden, samma villkorade mönster som strengths/weaknesses). **Texten är fortfarande Opus** — `THREAT_REASON_LINES` i `opponentAnalysisService.ts` är fyra tomma pooler (en per reasonKey), `displayThreatReasonLine()` returnerar `undefined` och renderar ingenting tills de fylls. 8 tester, stash-verifierade. Nästa i ordningen: `B5`.
+**B4 MEKANIK BYGGD 2026-08-19 (`9406be40`).** `selectThreatPlayer()` pekar deterministiskt ut samma spelare (högst tillgänglig `currentAbility`, samma urval som `keyPlayers`) och klassar VARFÖR ur fyra attributpar (evasive/clinical/relentless/creative) — ren funktion, ingen slump, domens "peka konsekvent" håller by construction. Wired i `OpponentAnalysisCard.tsx` (🎯-raden, samma villkorade mönster som strengths/weaknesses). **TEXT LEVERERAD OCH WIRED 2026-08-19 (`4e7fd447`).** Jacobs fyra pooler (evasive/clinical/relentless/creative, 4 rader var, `{Efternamn}`-platshållare) i `THREAT_REASON_LINES`. Rotationen är stabil per match (hash på spelar-id), inte per rendering. `displayThreatReasonLine()` interpolerar `{Efternamn}` och har en null-safety-fix (`!pool || pool.length === 0`, inte bara `pool.length === 0` — kastade annars för en okänd `reasonKey`). Testsviten skrevs om: originalet muterade den delade `THREAT_REASON_LINES`-exporten direkt i `afterEach`, ofarligt när poolerna var tomma men en risk nu när de bär produktionstext. B5 tar Opus själv, inte nästa Code-post.
 
 **B1 RAPPORT LEVERERAD 2026-08-19 — bekräftar fyndet, INGEN dom fattad, inget byggt.** Läst `Formation.ts` i sin helhet (bekräftat i samma session vid O6). Sex formationer (`5-3-2/3-3-4/4-3-3/3-4-3/2-3-2-3/4-2-4`) VARIERAR backlinjens storlek (2, 3 eller 4 backar/halvar) — precis den fidelitetslucka domen beskriver, eftersom källmaterialets två oberoende elitspelare (Brodén + Liw) bekräftar att ALLA bandylag spelar exakt fem i försvaret (två backar, libero, två ytterhalvor), bara den FRÄMRE femman (mittfältare/anfallare) varierar. Domen är själv tydlig: **"Öppen fråga, inte en order."** Det är den enda posten av tolv som rör redan byggd, `BEVARA`-skyddad matchmotorkalibrering (`matchCore.ts` läser `formation` för positionskrav i flera vägar) — en omskrivning skulle beröra alla sex formationsdefinitioner, `autoAssignFormation`, `getRecommendedFormation`, och `squadEvaluator.ts`s positionsvikter samtidigt. Kräver Jacobs eget beslut innan ens en spec skrivs, per ordern. Inget kodfynd utöver vad B1s egen text redan säger — rapporten bekräftar att fyndet stämmer mot koden, mer än så är inte begärt.
 
@@ -837,7 +837,11 @@ Låta `matchCore` skriva ner vad den redan vet vid varje chansskapande/bolltapp-
 
 **Byte-identiskt bekräftat:** `npm run stress` (10 seeds × 5 säsonger, 7627 matcher) före/efter — enda diffen i `season_stats.json` var `generatedAt`-tidsstämpeln. 3 nya tester (`matchCoreManpowerState.test.ts`), stash-verifierade.
 
-**Kvar:** `tacticalFactors` → `contributingFactors` → `origin`, i den ordningen, samma stresstest-disciplin per fält.
+**2/4 BYGGD 2026-08-19: `tacticalFactors`.** `string[]` på `MatchEvent`, ren etikettering av EGET lags taktikkonfiguration (tempo/press/width/cornerStrategy/passingRisk/mentality) — exakt de sex villkor `buildSequenceWeights` redan förgrenar på, ingen ny simulering. Wired via `sed` på 19 ställen + 1 manuell fix (Suspension-eventet missades av regexen, fångat av testsviten: `expected undefined to deeply equal []`). Byte-identiskt bekräftat. 2 nya tester (`matchCoreTacticalFactors.test.ts`).
+
+**3/4 BYGGD 2026-08-19: `contributingFactors`.** `string[]` på `MatchEvent` — `hot_hand`/`derby`/`weather`/`second_half_mode`/`equalizer_momentum`, de motorförhållanden som faktiskt påverkade målchansen. `second_half_mode` slår medvetet ihop andrahalvlekläge och post-paus-urgency (samma `homeModeAttackMult`/`awayModeAttackMult`-variabel i koden, ingen separat spårning — att särskilja dem hade fabricerat precision motorn inte har). Egen closure för OT-loopen (`currentContributingFactorsOT`, bara `weather` möjlig där — ingen hot_hand/mode/equalizer-mekanik finns i förlängningen). Bytesloggningen vid steg 31 får `contributingFactors: []` — closure:n är inte i scope än på grund av TDZ i samma loop-varv, ett gissat värde hade varit fel. Byte-identiskt bekräftat (omkört efter att en första verifieringsrunda av misstag race:ade två bakgrundskörningar mot samma fil). 4 nya tester (`matchCoreContributingFactors.test.ts`), inklusive väder/derby/OT-särfall.
+
+**Kvar:** `origin` (sist, kräver mest kunskap om `seqType`-vägarna). Ingen konsument (`B5`/`B4`/`O16`) byggs förrän alla fyra fält finns, enligt domen.
 
 **O20 — vilken punkt saknas, tio händelser, källa `DOM_VARSLET_KLASSIFICERING_2026-08-17.md`:**
 
