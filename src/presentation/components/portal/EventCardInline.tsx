@@ -6,7 +6,8 @@
  * - card-sharp-mönster (1 px border, 8 px radius), --bg-portal-surface bakgrund
  * - Prio-signal i typ-label-färg: high/normal = accent, low = muted
  * - Body-text: Georgia 13px italic
- * - Knapprad med actions från getActionsForEvent — använder .btn .btn-primary / .btn .btn-outline
+ * - Knapprad med actions från getActionsForEvent — alla `.btn .btn-outline`
+ *   (en-primär-grinden: Portalens sticky CTA är den enda `.btn-primary`)
  * - Räknarrad hanteras av PortalInboxCounter (i botten av PortalScreen)
  *
  * GEMENSAM BESLUTSMODELL (2026-08-12): INTE migrerad till DecisionCard.
@@ -154,12 +155,15 @@ export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) 
         {event.body}
       </p>
 
-      {/* Knapprad — första action primär, övriga outline */}
+      {/* Knapprad — alla outline (en-primär-grinden, post 18/Å3-Å4-mönstret:
+          Portalens sticky CTA är den enda .btn-primary, alltid. Tidigare
+          gav första action .btn-primary här, vilket kolliderade med CTA:n
+          och slog upp osynligt tills portal-bid-single/-multi registrerades
+          i sceneRegistry.ts, 2026-08-22 — samma lucka-klass som Å3/Å4. */}
       <DecisionChoices
         choices={actions.map(a => ({ id: a.choiceId, label: a.label }))}
         onChoose={(id) => handleAction(id)}
         layout="inline"
-        primaryChoiceId={actions[0]?.choiceId}
       />
 
     </div>

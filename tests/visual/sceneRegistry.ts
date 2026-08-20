@@ -78,4 +78,13 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   // lät FÖRESLÅS-badgen vara osynlig en månad.
   ['primary-smfinal-vs-deadline', undefined, undefined, undefined, EXTRA_HEIGHT],
   ['primary-event-vs-farewell', undefined, undefined, undefined, EXTRA_HEIGHT],
+  // "Skydd eller illusion?"-fyndet (SLUTTEST_KO.md, 2026-08-20): tio scener
+  // fanns redan i DevScenesScreen.tsx:s galleri men var osvepta av alla fem
+  // grindar — samma lucka-klass som halftime-summary ovan (V1-uppföljning),
+  // bara aldrig stängd. lineup-filled (withLongestSurnames) är dessutom
+  // 6.4 post 21:s enda befintliga edge-case-fixtur (extremt långa
+  // efternamn) — den satt redan byggd, bara oregistrerad.
+  ['trupp-blandat'], ['trupp-kris'], ['lineup-empty'], ['lineup-filled'],
+  ['portal-tom'], ['portal-normal'], ['portal-full'], ['portal-grind'],
+  ['portal-bid-single'], ['portal-bid-multi'],
 ]
