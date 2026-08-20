@@ -33,6 +33,19 @@ describe('gameStateFactory — atRound', () => {
     const b = atRound(makeBaseGame({ seed: 5 }), 10)
     expect(a.standings).toEqual(b.standings)
   })
+
+  // CI-flake-rotorsak (2026-08-20, taktik-scenens visual-regression): createNewGame
+  // seedar assistantCoach på save_${Date.now()} — avsiktligt för riktiga spel, men gör
+  // varje dev-scene som visar coach.name/personality-beroende text ickedeterministisk.
+  // makeBaseGame skriver över med en seed-baserad coach; detta testet är grinden mot
+  // att den regressionen smyger tillbaka.
+  it('assistantCoach är deterministisk för samma seed, olik för olika seed', () => {
+    const a = makeBaseGame({ seed: 7 })
+    const b = makeBaseGame({ seed: 7 })
+    const c = makeBaseGame({ seed: 8 })
+    expect(a.assistantCoach).toEqual(b.assistantCoach)
+    expect(a.assistantCoach).not.toEqual(c.assistantCoach)
+  })
 })
 
 describe('gameStateFactory — squad-overrides', () => {

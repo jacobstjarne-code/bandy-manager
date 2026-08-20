@@ -18,6 +18,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Tactic } from '../../../domain/entities/Club'
 import { createNewGame } from '../../../application/useCases/createNewGame'
+import { generateAssistantCoach } from '../../../domain/services/assistantCoachService'
 import { calculateStandings } from '../../../domain/services/standingsService'
 import { checkInvariants } from '../../../domain/services/gameInvariants'
 import { FixtureStatus } from '../../../domain/enums'
@@ -34,7 +35,15 @@ export function makeBaseGame(opts?: { seed?: number; clubId?: string }): SaveGam
   const seed = opts?.seed ?? 1
   const clubId = opts?.clubId ?? CLUB_TEMPLATES[seed % CLUB_TEMPLATES.length].id
   const game = createNewGame({ managerName: 'Dev', clubId, seed })
-  return { ...game, pendingScreen: null }
+  // CI-flake-rotorsak (2026-08-20, taktik-scenens visual-regression): createNewGame
+  // seedar assistantCoach på `save_${Date.now()}` — avsiktligt för RIKTIGA spel (varje
+  // save ska få en genuint egen assistent), men gör varje dev-scene som visar
+  // coach.name/personality-beroende text (taktik-tavlan, matchactions) ickedeterministisk
+  // mellan körningar. Olika namn/personality → olika citat-pooler → olika radbrytning
+  // → skärmdumpens höjd skiftar (2105 vs 2122 vs 2135px i olika CI-körningar), vilket
+  // såg ut som en flaky pixel-diff men var text som faktiskt ändrades. Skriv över med en
+  // seed-baserad, reproducerbar coach — ENDAST här i dev-fabriken, aldrig i createNewGame.
+  return { ...game, assistantCoach: generateAssistantCoach(`dev-seed-${seed}`), pendingScreen: null }
 }
 
 // ── atRound — fejkar historik, validerar hårt ───────────────────────────────
