@@ -5,8 +5,8 @@
  */
 
 import type { SaveGame } from '../entities/SaveGame'
-import type { GameEvent } from '../entities/GameEvent'
-import { getEventPriority } from '../entities/GameEvent'
+import type { GameEvent, EventPriority } from '../entities/GameEvent'
+import { getEventPriority, getWhyNowLine } from '../entities/GameEvent'
 
 // Numerisk rank per prio — lägre tal = högre prioritet
 const PRIORITY_RANK: Record<string, number> = {
@@ -34,6 +34,30 @@ export interface QueueStats {
  */
 export function isAmbientEvent(event: GameEvent): boolean {
   return event.choices.length === 0
+}
+
+/**
+ * D1 punkt 4 (DOM_D1_EVENTVIKTNING_2026-08-19.md) — självkontrollen. "Kan
+ * ingen av de fyra raderna sättas, ska vikten sänkas till normal." Ett
+ * `critical`-event utan en "därför nu"-rad (getWhyNowLine) är enligt domen
+ * inte verkligt pivotal och tappar sin overlay-behandling.
+ *
+ * INGEN KONSUMENT WIRAD ÄN (samma mellanläge som B12 steg 2, Etapp II rad 17,
+ * SLUTTEST_KO.md) — getEventRenderTarget/getNextEvent/getQueueStats läser
+ * fortfarande event.priority direkt, inte denna. Orsak: ingen av de ~16
+ * befintliga `critical`-konstruktionsställena (mecenatEvent×11,
+ * criticalEconomy×3, playerUnhappy, economicStress) sätter ännu
+ * deadlineLabel/whyNowPerson/wholeEventIrreversible/seasonDefining — att
+ * aktivera nedgraderingen NU hade tyst tömt overlay-kategorin på alla
+ * kritiska events, inte ett medvetet produktval. Vilken av de fyra grunderna
+ * som faktiskt driver brådskan per event är en innehållsbedömning (CLAUDE.md:
+ * svensk speltext/tonval skrivs av Opus), inte något att gissa fram händelse
+ * för händelse. Se SLUTTEST_KO.md D1 punkt 4 för klassificeringsläget.
+ */
+export function getEffectivePriority(event: GameEvent): EventPriority {
+  const raw = event.priority ?? getEventPriority(event.type)
+  if (raw === 'critical' && getWhyNowLine(event) === null) return 'normal'
+  return raw
 }
 
 export type EventRenderTarget = 'overlay' | 'inline' | 'ambient'

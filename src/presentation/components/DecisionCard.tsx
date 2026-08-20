@@ -62,6 +62,9 @@ interface DecisionCardProps {
   body: string
   bodyAsQuote?: boolean
   tags?: DecisionCardTag[]
+  /** D1 punkt 4 — "därför nu"-raden (getWhyNowLine). Samma dämpade register
+   *  som subtitle, aldrig --danger/⚠. undefined = ingen rad, inte pivotal. */
+  whyNowLine?: string
 
   resolved: boolean
   chosenLabel?: string
@@ -85,7 +88,7 @@ const TAG_TONE_STYLE: Record<DecisionCardTag['tone'], CSSProperties> = {
 }
 
 function DecisionCardContent({
-  size = 'sm', theme = 'light', label, title, subtitle, body, bodyAsQuote, tags,
+  size = 'sm', theme = 'light', label, title, subtitle, body, bodyAsQuote, tags, whyNowLine,
   resolved, chosenLabel, choices, onChoose, choicesLayout = 'stack', primaryChoiceId,
 }: Omit<DecisionCardProps, 'shape' | 'accent' | 'entityId' | 'entitySource' | 'style'>) {
   const bodyColor = theme === 'dark' ? 'var(--text-light)' : 'var(--text-primary)'
@@ -108,6 +111,9 @@ function DecisionCardContent({
           )}
           {subtitle && (
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{subtitle}</p>
+          )}
+          {whyNowLine && (
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: isLg ? 12 : 6 }}>{whyNowLine}</p>
           )}
           {(() => {
             // Rena informationskort utan val (GranskaSpelares "KRING SPELARNA"
