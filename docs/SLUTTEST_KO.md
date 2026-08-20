@@ -33,10 +33,10 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 
 | # | Post |
 |---|---|
-| 14 | `manpowerState` — renast A, billigaste beviset att berikningen inte läcker |
-| 15 | `tacticalFactors` |
-| 16 | `contributingFactors` |
-| 17 | `origin` — sist, kräver mest kunskap om `seqType` |
+| 14 | ~~`manpowerState`~~ KLAR (`9845be33`) — billigaste beviset att berikningen inte läcker, byte-identiskt bekräftat |
+| 15 | ~~`tacticalFactors`~~ KLAR (`d49f94e8`), byte-identiskt bekräftat |
+| 16 | ~~`contributingFactors`~~ KLAR (`e334736b`), byte-identiskt bekräftat |
+| 17 | ~~`origin`~~ KLAR (`74ebda01`) — B12 steg 2 HELT KLAR, alla fyra fält. Ingen konsument wired än |
 
 **Bygg inte** `primaryCause` / `responsiblePlayerId` / `involvedPlayerIds` / `sequenceId`. Se `DOM_B12_STEG2_2026-08-19.md`.
 
