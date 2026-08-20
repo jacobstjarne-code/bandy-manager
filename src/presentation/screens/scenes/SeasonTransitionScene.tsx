@@ -101,7 +101,7 @@ export function SeasonTransitionScene() {
   }
 
   return (
-    <div style={{ background: 'var(--bg-dark)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: 'var(--bg-dark)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* 1. Kapitel-header — svalt, stilla, tittar bakåt */}
       <div style={{
         background: 'radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--accent) 26%, var(--bg-dark)), var(--bg-dark) 70%)',
