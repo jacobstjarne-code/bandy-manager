@@ -159,11 +159,13 @@ export function SeasonTransitionScene() {
             // egen logik/klasser är orörda, ordern ("bygg ingen egen variant")
             // hålls bokstavligt.
             <div style={{
-              background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden',
+              background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden',
               ['--text-light' as string]: 'var(--text-primary)',
               ['--text-light-secondary' as string]: 'var(--text-secondary)',
             }}>
-              <BoardObjectivesList objectives={objectives} max={2} />
+              {/* 5.1 fynd 5 (SLUTTEST_KO.md, alt. a): "Framsteg X/Y" mot ett nyss
+                  återställt mål motsäger rubriken ovan ("nya mål") — döljs här. */}
+              <BoardObjectivesList objectives={objectives} max={2} hideProgress />
             </div>
           )}
           {hiddenObjectiveCount > 0 && (

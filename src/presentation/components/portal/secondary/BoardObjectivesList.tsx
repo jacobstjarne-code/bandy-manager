@@ -76,9 +76,10 @@ export function computeProgressPct(obj: BoardObjective): number {
 interface ObjRowProps {
   obj: BoardObjective
   onNavigate?: () => void
+  hideProgress?: boolean
 }
 
-function ObjRow({ obj, onNavigate }: ObjRowProps) {
+function ObjRow({ obj, onNavigate, hideProgress = false }: ObjRowProps) {
   const [hovered, setHovered] = useState(false)
   const isBalance = obj.measureFn === 'balanceBudget'
   const progressPct = computeProgressPct(obj)
@@ -108,7 +109,7 @@ function ObjRow({ obj, onNavigate }: ObjRowProps) {
         </span>
       </div>
 
-      {isBalance ? (
+      {hideProgress ? null : isBalance ? (
         <div className="obj-row-balance" style={{ color: balanceColor }}>
           {obj.currentValue >= 0 ? '+' : '−'}{formatMoney(Math.abs(obj.currentValue))}
           {obj.targetValue !== 0 && (
@@ -146,9 +147,15 @@ export interface BoardObjectivesListProps {
   objectives: BoardObjective[]
   max?: number
   onNavigate?: () => void
+  /** 5.1 fynd 5 (SLUTTEST_KO.md, 2026-08-19): "Framsteg X/Y" mot en nyss
+   *  återställd/nysatt målsättning läser som en motsägelse på Sommaren-scenen
+   *  ("STYRELSEN HAR SATT NYA MÅL" bredvid en redan fylld stapel). Döljer
+   *  framstegsblocket, visar bara ikon/etikett/ägare. Default false — noll
+   *  påverkan på Portal/ArrivalScene:s befintliga bruk. */
+  hideProgress?: boolean
 }
 
-export function BoardObjectivesList({ objectives, max = 2, onNavigate }: BoardObjectivesListProps) {
+export function BoardObjectivesList({ objectives, max = 2, onNavigate, hideProgress = false }: BoardObjectivesListProps) {
   const items = (objectives ?? [])
     .filter(o => o.status !== 'met')
     .sort((a, b) => SORT_ORDER[a.status] - SORT_ORDER[b.status])
@@ -160,7 +167,7 @@ export function BoardObjectivesList({ objectives, max = 2, onNavigate }: BoardOb
     <>
       {items.map((obj, i) => (
         <div key={obj.id} className={i > 0 ? 'obj-row-separator' : undefined}>
-          <ObjRow obj={obj} onNavigate={onNavigate} />
+          <ObjRow obj={obj} onNavigate={onNavigate} hideProgress={hideProgress} />
         </div>
       ))}
     </>
