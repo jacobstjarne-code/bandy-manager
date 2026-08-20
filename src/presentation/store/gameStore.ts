@@ -215,6 +215,17 @@ export const useGameStore = create<GameState>()(
           game = { ...game, pendingScene: { sceneId, triggeredAt: game.currentDate } }
         }
         set({ game, lastAdvanceResult: null })
+        // Multi-slot (2026-08-22, Jacobs rättning): persistera den NYA
+        // karriären till bandy_save_index REDAN HÄR, inte först vid
+        // markOnboardingComplete(). En karriär skapad men avbruten före
+        // tillträde-onboardingen slutförs låg annars osynlig i väljaren för
+        // alltid — inget senare tillfälle skulle någonsin indexera den, och
+        // spelarens arbete (klubbval, spelarnamn) fanns kvar på disk men gick
+        // inte att nå. En ofärdig karriär SYNS i väljaren nu (SaveGameSummary
+        // bär bara managerName/clubName/season/lastSavedAt, inga onboarding-
+        // beroende fält) — AppRouter.tsx:96 skickar redan korrekt vidare till
+        // /tilltrade om spelaren väljer en icke-onboardad save.
+        void saveSaveGame(game)
       },
 
       clearFiredGame: () => {
