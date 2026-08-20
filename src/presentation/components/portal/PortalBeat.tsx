@@ -60,16 +60,22 @@ export function PortalBeat({ game }: Props) {
     : kickerText ? 1 : 0
   const styles = getSeverityStyles(sev)
 
+  // Entitets-dedup-grinden (Överlämning 2 steg 0, 2026-08-22): beatKey är
+  // redan den kanoniska per-instans-identiteten (keyFn för t.ex. ripple_
+  // consequence bakar in trigger/omgång) — samma nyckel dismiss redan
+  // använde, nu även data-entity-id. Innan detta hade PortalBeat inga
+  // entity-taggar alls, så en eventuell ripple-dubblering hade smugit
+  // förbi assertNoDuplicateEntityIds tyst.
+  const beatKey = getBeatKey(beat, game.currentSeason, game)
+
   const dismiss = (e: React.MouseEvent) => {
     e.stopPropagation()
-    const key = getBeatKey(beat, game.currentSeason, game)
-    dismissBeat(key, beat.id)
+    dismissBeat(beatKey, beat.id)
   }
 
   const handleClick = () => {
     if (beat.route) {
-      const key = getBeatKey(beat, game.currentSeason, game)
-      dismissBeat(key, beat.id)
+      dismissBeat(beatKey, beat.id)
       navigate(beat.route)
     }
   }
@@ -80,6 +86,8 @@ export function PortalBeat({ game }: Props) {
   return (
     <div
       onClick={isNavigable ? handleClick : undefined}
+      data-entity-id={`beat:${beatKey}`}
+      data-entity-source="PortalBeat"
       style={{
         marginBottom: 10,
         overflow: 'hidden',
