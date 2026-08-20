@@ -61,17 +61,17 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 
 | # | Post |
 |---|---|
-| 30 | **Grind 1-verifiering** — seedad simulering: kan en svår klubb bli sparkad utan sabotage, och hur ofta? **Enda posten där svaret kommer från ett speltest, inte ett bygge** |
+| 30 | ~~**Grind 1-verifiering**~~ KLAR — se `GRINDAR`-sektionen ("VERIFIERAT 2026-08-19", `scripts/grind1-boardpatience-sim.ts`). `club_slottsbron` 2/25 sparkade (8%), `club_heros` 20/25 (80%) trots 4:e-placering nästan varje säsong — misslyckandet är verkligt, men "skickligt spel hjälper" håller inte för Heros. Två sidofynd rapporterade, inte byggda, väntar på Jacob (se `Väntar på Jacob`) |
 | 31 | **O5** framgångsekonomin — tre krafter, **en i taget**, stresstest emellan: löneinflation → driftskostnad → investeringskrav |
 | 32 | **O1** varsel-mallen, sponsorn först (vanligast och tommast) |
-| 33 | **O20** de fem K5-fallen som egen svit, efter O2:s första leverans |
+| 33 | ~~**O20** de tio 4/5-händelserna~~ RAPPORT-LEVERERAD — se O20-tabellen längre ner |
 
 ## Etapp V — skuld och övrigt
 
 | # | Post |
 |---|---|
 | 34 | **Överlämning 2 steg 0** — elva grep-pass. **Körs när Code väntar på CI**, blockerar ingenting |
-| 35 | **6.4 post 21** edge-case-fixturer |
+| 35 | **6.4 post 21** edge-case-fixturer — Å11-residualen (ChapterDivider "Truppen" ovillkorlig) `KLAR (36351a95)`. Kärnfrågan (långa namn/svensk pos/skada/tomt pris-kort) fortfarande `EJ` — se not |
 | 36 | **Å12–15** nav-dokdrift, emoji-rester, egna skuggor |
 | 37 | **SPÅR B** fyra textnivåer som DS-kanon — hör ihop med D1, **Opus dömer först** |
 | 38 | **U8** bundle, **U9** telemetri |
@@ -515,7 +515,7 @@ Verifiering, båda riktningarna, live regressionstestade: (1) statistik-sektione
 
 - **Post 3 (två takkandidater → en vinnande CTA)** — redan täckt. `en-primary-gate` (post 18, samma dag) är EXAKT samma mekanism riktad bredare — den fångar `.btn-primary`-konkurrens generiskt, inte bara Portal-taket. Inget nytt byggt, inget nytt behövs.
 - **Post 7 (DecisionCard-dubbelpadding, "sex lägen") — `KLAR`, byggd 2026-08-19.** `tests/visual/decisionCardPaddingGate.ts` + `.visual.ts`, wired som `decisioncard-padding-gate`-job. `DecisionCard.tsx`s rot (shape≠'none') fick `data-decision-card="true"`. Metod: för varje märkt kort, om FÖRÄLDERN har padding på alla fyra sidor OCH kortet är förälderns enda betydande barn → dubbelpaddings-misstanke, matchar exakt Å7:s ursprungliga diagnos (en padded card-sharp inuti en padded card-sharp). `shape="none"` (GranskaSpelare) ingår inte — den FÖRUTSÄTTER en padded förälder, det är hela poängen. Grep-bekräftat: sex faktiska anropsställen (fyra i GranskaOversikt, ett i GranskaSpelare, ett i EventOverlay) — alla sex redan fria från dubbelpadding vid byggtillfället, grinden är regressionsvakt, inte en fix av ett aktuellt fel. Verifierat: EventOverlay.tsx:s kort tillfälligt omslutet i en padded div → gaten föll korrekt ("sitter i en padded förälder — dubbelpadding") → återställd, 56/56 gröna.
-- **Post 5 + 11 (datakortens robusthet: långa namn, svensk pos, skada, tomt pris-kort)** — `EJ`, INTE byggt denna runda. Kärnfynden är redan fixade punktvis (Å5: porträttstorlek `bd331755`; Å11: tomt awards-kort `9716d862`) men den BREDARE robusthetsgarantin post 5/11 efterfrågar (extremt långa efternamn, svenska positionsförkortningar konsekvent, skadetillstånd, tomma pris-kort) kräver EDGE-CASE-fixturer i `DevScenesScreen.tsx` som inte finns idag (t.ex. en spelare med ett 20-tecken-efternamn) — ett separat, större jobb än att koppla en gate mot en redan levande sanningskälla (som post 17/18/20/7 alla kunde göra). Å11:s egen kända residual ("Truppen"-kapitlets `ChapterDivider` fortfarande ovillkorlig) står också kvar orört. Flaggat här explicit, inte tyst avfört.
+- **Post 5 + 11 (datakortens robusthet: långa namn, svensk pos, skada, tomt pris-kort)** — `EJ`, INTE byggt denna runda. Kärnfynden är redan fixade punktvis (Å5: porträttstorlek `bd331755`; Å11: tomt awards-kort `9716d862`) men den BREDARE robusthetsgarantin post 5/11 efterfrågar (extremt långa efternamn, svenska positionsförkortningar konsekvent, skadetillstånd, tomma pris-kort) kräver EDGE-CASE-fixturer i `DevScenesScreen.tsx` som inte finns idag (t.ex. en spelare med ett 20-tecken-efternamn) — ett separat, större jobb än att koppla en gate mot en redan levande sanningskälla (som post 17/18/20/7 alla kunde göra). **Å11:s egen kända residual ("Truppen"-kapitlets `ChapterDivider` ovillkorlig) `KLAR (36351a95)`**, 2026-08-20 — `shouldShowTruppenChapter()` extraherad, gatar rubriken på om något av korten under den faktiskt renderar. Ej browser-verifierat: upptäckt under fixen att INGEN dev-scene renderar det faktiska `SeasonSummaryScreen`-komponentet (`season-a`/`b`/`c` är handmockade score-block-previews, inte komponentet) — samma täckningslucka som "Skydd eller illusion?"-fyndet ovan. Låg risk (ren villkorsomslutning, redan testad boolesk logik), men flaggat explicit, inte tyst antaget säkert.
 
 ---
 
