@@ -52,7 +52,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | 23 | **O4** burnout — rapport levererad (2/3 effekter redan gradeade, byggbara), väntar på `D1`s viktning | `DOM_BURNOUT_2026-08-17.md` |
 | 24 | ~~**O16** `DITT VAL` i Granska~~ KLAR (`ee8f2d1c`) — bara hörnstrategi→hörnmål byggd (enda mätta av fyra kandidater), rapporterat | `DOM_GRANSKA_LARANDEYTA_2026-08-17.md` |
 | 25 | ~~**O17 del 1** fullt anläggningsträd som tillstånd~~ KLAR (`40530421`) — del 2 (gate) också klar, del 3 väntar på O5 | `DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md` |
-| 26 | **O2** noOp-grepet, rapportera siffran, sedan pairwise | `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md` |
+| 26 | **O2** noOp-grepet levererat — 13 bekräftade + metodfynd om resolver-specialiserade "falska noOp". Pairwise (steg 2) väntar | `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md` |
 | 27 | **O9** delningskortets tre rader + fråga, efter 4.12/4.13 | `DOM_DELNINGSKORTET_2026-08-17.md` |
 | 28 | **O11** `contentContract.ts` — efter 18 | `DOM_INNEHALLSKONTRAKTET_2026-08-17.md` |
 | 29 | ~~**O19** märk de nio 5/5-händelserna i data~~ KLAR (`72427068`) | varsel-domen |
@@ -719,6 +719,33 @@ Sponsorerna först — vanligast och tommast. Motvikter som redan finns i värld
 
 **Beroenden:** `D1` (ambient-nivån att degradera till), `U9` (val-entropin mäter domen), `O5` (en kostnad i kronor är bara ett val om kronor är knappa).
 **Godkänd när:** inget alternativ väljs av mer än 80 % i val-entropin.
+
+**noOp-grepet — RAPPORT LEVERERAD, 2026-08-20.** 41 `type:'noOp'`-förekomster i 14 filer. Läste varje enskild siblingjämförelse (inte bara räknat träffar) — grepet ensamt duger inte, se metodfyndet nedan.
+
+**13 bekräftade dominanta val** (noOp bredvid ett syskonval utan modellerad kostnad, samma paradigm som `hesitantPlayerEvent`):
+| Fil:rad | Fördelsvalet | Dominerad noOp |
+|---|---|---|
+| `eventFactories.ts:52` | `convince` (+15 moral) | `accept` — domens eget referensfall |
+| `eventFactories.ts:164` | `promise` (+10 moral) | `hold` |
+| `eventFactories.ts:301` | kapten `support` (+5/+8 moral laget) | `decline` |
+| `eventFactories.ts:536` | mecenat `invite_generic` (gratis +8 happiness) | `ignore` |
+| `characterPlayerService.ts:112` | veteranhyllning (+3 samhällsstöd) | `plan` |
+| `characterPlayerService.ts:173` | kaptensutnämning (+2 samhällsstöd) | `no` |
+| `communityActivitiesEvents.ts:165` | loppis `support` (streamingintäkt) | `decline` |
+| `communityActivitiesEvents.ts:281` | `fika` (+3 fanMood) | `skip` |
+| `communityActivitiesEvents.ts:309` | mystisk `go` (engångsintäkt + fanMood) | `pass` |
+| `bandyGalaService.ts:141` | gala-närvaro (+reputation/+fanMood) | `skip` |
+| `sponsorEvents.ts:24` | `send_player` (+5 tkr + communityStanding) | `decline` |
+| `patronEvents.ts:283` | `welcome`/`cautious` (gratis patron) | `decline` |
+| `mecenatService.ts:280` | `welcome`/`cautious` (gratis mecenat-relation) | `decline` |
+
+**1 osäkert fall:** `eventFactories.ts:577` (materialar-korv, `lock` +4000 kr) vs `free` (`noOp`) — `lock` binder klubben två år (nämnt i `body`, inte i `effect`). Kan vara dominant eller inte beroende på om bindningstiden faktiskt begränsar något senare — kräver den fulla pairwise-analysen, inte grep-nivån.
+
+**Metodfynd, viktigare än listan: en ren `type:'noOp'`-grep ger falska svar för sju förekomster.** Mecenat-avgångstrion (`listen`/`plan_succession`/`offer_tribute`, `mecenatService.ts:617-641`) och de fyra presskonferens-svaren (`csPressEventService.ts:141-144`) är ALLA generiskt typade `noOp` — men resolvas i verkligheten via id-baserad special-casing i `eventResolver.ts` (grep bekräftar: `eventId.startsWith('event_mecenat_retire_')`, `choiceId === 'offer_tribute'` osv.), som applicerar riktiga effekter OAVSETT vad `effect.type` säger. En ren grep hade antingen missat dessa som "redan lika (alla noOp)" eller felaktigt flaggat dem som dominans-kandidater. **Steg 2 (pairwise) måste korsa varje kandidat mot `eventResolver.ts`s id-baserade grenar, inte bara läsa `effect`-fältet** — annars ärvs samma blinda fläck i den fulla analysen.
+
+**Sidofynd, ingen dominansfråga:** `communityActivitiesEvents.ts:343-346` (`renovate`/`wait`) — `wait`s text lovar "faciliteter försämras" men dess `effect` är `{type:'noOp'}`, ingen försämring sker mekaniskt. Text-effekt-mismatch, samma felklass som `nothing`-valets kommenterade bugg i `eventFactories.ts:365`. Inte O2:s fråga, men värt en egen rad om/när text-effekt-fidelitet svepas igen.
+
+**Nästa steg:** den fulla pairwise-analysen (steg 2) — extrahera effektvektorer, jämför alla syskonval, inte bara noOp-sidorna. Inte påbörjad, väntar på Jacobs go givet metodfyndet ovan.
 
 ### O3 · Spelarens eget säsongsmål
 **Status:** `KLAR (7604b196, 56e5882c, c025bfd7, 424bc7ed)` — domänlager (offers/evaluering/rader) + halvtidsraden (D1 landade under samma session) byggda av tidigare pass; UI-valet i Sommaren ("DITT VAL"-sektionen, tre-läges state, browser-verifierat) byggt `424bc7ed`. **Känt, avsiktligt gap:** "Inget mål valt"-radens text ("Du lovade ingenting...") renderas aldrig i praktiken — `SeasonGoalType` saknar en `'none'`-variant, så ett explicit avstående inte går att skilja från en säsong som spelades innan featuren fanns. Se `HistoryScreen.tsx`-commiten (`3fe41754`) för resonemanget. Om Jacob vill ha den aktiva versionen krävs en liten typutökning.
