@@ -49,7 +49,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | 20 | ~~**O15/D4** taktikens två lägen + Å2:s träffytor~~ KLAR (`e248835f`) | D4 + min dom |
 | 21 | ~~**O3** spelarens säsongsmål~~ KLAR (`7604b196`/`56e5882c`/`c025bfd7`/`424bc7ed`) — känt gap: 'inget särskilt i år'-raden ej nåbar utan `SeasonGoalType`-utökning | `DOM_EGET_SASONGSMAL_2026-08-17.md` |
 | 22 | **O18 fält 2** — O19 klar men fält 2 INTE buildbart än, se not | `DOM_ARSBOKEN_RYGGRAD_2026-08-17.md` |
-| 23 | **O4** burnout: informationskvalitet + tre handlingar | `DOM_BURNOUT_2026-08-17.md` |
+| 23 | **O4** burnout — rapport levererad (2/3 effekter redan gradeade, byggbara), väntar på `D1`s viktning | `DOM_BURNOUT_2026-08-17.md` |
 | 24 | ~~**O16** `DITT VAL` i Granska~~ KLAR (`ee8f2d1c`) — bara hörnstrategi→hörnmål byggd (enda mätta av fyra kandidater), rapporterat | `DOM_GRANSKA_LARANDEYTA_2026-08-17.md` |
 | 25 | ~~**O17 del 1** fullt anläggningsträd som tillstånd~~ KLAR (`40530421`) — del 2 (gate) också klar, del 3 väntar på O5 | `DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md` |
 | 26 | **O2** noOp-grepet, rapportera siffran, sedan pairwise | `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md` |
@@ -743,6 +743,14 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 **Byggs oberoende av `O5` och `U1`** — burnout är en egen valuta och kräver inte att kronor är knappa. Kräver `D1` för viktningen.
 
 **Rapportera-först:** var konsumeras assistentens taktikrekommendation och motståndaranalysens detaljnivå? Går de att gradera eller är de binära?
+
+**RAPPORT LEVERERAD, 2026-08-20.** Två av tre effekter är redan gradeade av BEFINTLIG infrastruktur, ingen ny mekanik krävs för dem — bara en burnout-koll vid rätt anropsställe:
+
+1. **Motståndaranalysens detaljnivå — redan tvånivåad.** `OpponentAnalysis.level: 'basic' | 'detailed'` (`opponentAnalysisService.ts`) med två separata exporterade funktioner, `generateBasicAnalysis`/`generateDetailedAnalysis`. Valet mellan dem görs i dag PER ANROPSSTÄLLE (statiskt — `TacticStep.tsx`/`gameStore.ts`/`DevScenesScreen.tsx` kör alltid detailed, `LineupStep.tsx`/`OpponentAnalysisCard.tsx` kör alltid basic), inte av något dynamiskt game-state. `OpponentAnalysisCard.tsx:61-124` renderar redan olika innehåll per nivå (formation/style/threatPlayer bara vid `detailed`). Burnout skulle bara behöva byta vilken funktion som anropas vid hög burnout på de ställen som annars kör detailed — samma två-nivå-rendering återanvänds, ingen ny UI-gren.
+2. **Assistentens taktikrekommendation — redan binär-med-tomt-tillstånd.** `suggestedMentality`/`suggestedPress` är redan `?: TacticMentality`/`?: TacticPress`, och `undefined` är redan ett levande, testat tillstånd ("Jämn motståndare" — B2/O15-arbetet i den här sessionen bekräftade det igen). `TacticBoardCard.tsx`/`TacticStep.tsx` visar redan "inget förslag" tyst, utan särskild text, när fälten är `undefined`. Burnout skulle återanvända EXAKT samma tomma tillstånd — ingen ny text, ingen ny renderingsgren, bara en villkorad `undefined`-tilldelning vid generering.
+3. **Spelarbetygen fördröjs — INTE redan gradeat, kräver ny mekanik.** `MatchReport.playerRatings: Record<string, number>` (`Fixture.ts:75`) är ett OBLIGATORISKT fält, alltid fullt populerat när en match är klar. Ingen "delay"/"partial"-koncept finns. Att bygga detta kräver antingen en ny fördröjningsmekanik (betyg syns X dagar senare) eller att lämnas utanför denna leverans.
+
+**Slutsats:** 2/3 effekter byggbara nu utan ny text eller ny renderingslogik (återanvänder befintlig optionalitet). Effekt 3 kräver ett separat, litet designbeslut (hur länge fördröjs betygen, vad visas under tiden) innan den kan byggas — inte en textfråga, en mekanikfråga. Väntar på `D1` för viktningen (domens eget villkor) innan bygge.
 
 **Godkänd när:** en spelare kan säga vad burnout kostade och vad hen gjorde åt det.
 
