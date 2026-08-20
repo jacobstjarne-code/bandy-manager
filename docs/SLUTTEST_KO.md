@@ -16,14 +16,14 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | # | Post | Var |
 |---|---|---|
 | 1 | ~~**B9** positionsviktad utmattning~~ KLAR (`ee58474d`) | `playerStateProcessor.ts` |
-| 2 | **B3** `playStyleTradition` — alla tolv värden dömda | `clubExtendedInfo.ts` |
+| 2 | ~~**B3** `playStyleTradition` — alla tolv värden dömda~~ KLAR (`d37605a2`) | `clubExtendedInfo.ts` |
 | 3 | ~~**B4** fyra `THREAT_REASON_LINES`-pooler~~ KLAR (`4e7fd447`) | `opponentAnalysisService.ts` |
 | 4 | ~~**B5** scoutvokabulären~~ Opus tar den själv | `scoutingService.ts` |
-| 5 | **B2** två presslägen i UI, inte tre — motorn är binär | taktikytorna |
-| 6 | **5.1 fynd 5** `hideProgress`-prop | `BoardObjectivesList.tsx` |
+| 5 | ~~**B2** två presslägen i UI, inte tre~~ KLAR (`b24c18f6`) | taktikytorna |
+| 6 | ~~**5.1 fynd 5** `hideProgress`-prop~~ KLAR (`5e2dfc96`) | `BoardObjectivesList.tsx` |
 | 7 | **5.1 fynd 4** `FeedbackButton` till innehållets botten | `FeedbackButton.tsx` |
 | 8 | ~~**O6 sidofynd** innerback = `MB`~~ KLAR (`0bc0ba77`) | `Formation.ts` |
-| 9 | **O7** fyra språkfel + testet på `nationalTeamService.test.ts:167` | fyra filer |
+| 9 | ~~**O7** fyra språkfel + testet~~ KLAR (`a33e4f85`), text från Jacob | fyra filer |
 | 10 | ~~**C3** fem rå `borderRadius: 8` → `var(--radius-md)`~~ KLAR (`edf88401`) | `SeasonSummaryScreen`, `SquadScreen` |
 | 11 | ~~**V1-uppföljning** `HalfTimeSummaryScreen` in i `sceneRegistry`~~ KLAR (`f3ae1b64`) — tio andra scener saknas fortfarande, rapporterat nedan | `sceneRegistry.ts` |
 | 12 | ~~Radera `MatchDoneOverlay.tsx` (död kod) och `_RADERAS/` efter verifiering~~ KLAR (`565d19fd`) | — |
@@ -438,6 +438,8 @@ Skärmdumpar regenererade (`screenshots/sommaren/*.png`, 390px, `capture-mode`-f
 **Två nya fynd vid godkännandet, till kön, ingen brådska:**
 
 4. **Fotens frizon för stor i korta fall.** `FeedbackButton.tsx:67` är `position:'fixed', bottom:64` — VIEWPORT-relativ, global RC-testchrome (alla skärmar, inte scen-scoped). Varje annan scen har hittills garanterat minst `100vh` innehåll (samma mönster jag just tog bort från Sommaren), så raden har alltid legat direkt under verkligt innehåll av en slump, aldrig av design. Utan den garantin (Sommarens korta fall, t.ex. "tomt"-varianten med få händelser) slutar scenens eget mörka innehåll ~130px före viewportens botten, och "byggnummer · rapportera"-raden hänger ensam i det exponerade tomrummet därunder. Innehållshöjden är fortsatt rätt (Jacobs egen dom) — det är kopplingen mellan `FeedbackButton` och "sidan fyller alltid skärmen" som aldrig var explicit, bara sant av en slump tills nu.
+
+   **Designspänningen (2026-08-20, svar på "vad står emot vad"):** `FeedbackButton` är monterad EN gång globalt (`AppRouter.tsx:174`, syskon till `<Routes>`, inte barn till någon scen) — den har ingen scen-DOM att luta sig mot strukturellt. `#root`s eget skal (`overflow:hidden`, SKAL-REGELN) tvingar redan hela appen till en fast 100vh-box oavsett innehåll, så `position:'absolute'` hade INTE löst något — den hade landat mot exakt samma 100vh-box som `fixed` redan gör (samma "containing block"). Den verkliga motsättningen: temperaturkurve-fixen (samma sprint) tog BORT `minHeight:'100vh'` från scenens rot medvetet, så att scener blir exakt så höga som sitt innehåll — men `FeedbackButton` antar fortfarande att en mörk bakgrund alltid når hela vägen till viewportens botten. Två redan fattade beslut (scener ska vara innehållshöga · foten ska alltid vara nåbar och synlig mot mörk botten) pekar åt olika håll för KORTA scener. Att lösa det kräver antingen (a) JS-mätning av faktisk dokumenthöjd vs viewport och växla button-position dynamiskt, eller (b) ge korta scener en egen bottenfyllnad (bakgrund som sträcker sig till minst 100vh utan att FLYTTA innehållet, bara måla bakom det) — båda är produktval om vilket beteende som är rätt, inte en mekanisk fix. Ej byggd, väntar på din riktning.
 5. **"Framsteg 3/8" möter "nya mål" — rapport, vilket är billigast.** Siffran är korrekt (fynd 3 ovan), men "STYRELSEN HAR SATT NYA MÅL" + en redan fylld stapel läses som en motsägelse på just den här ytan — ingen av de två byggdes med den andra i åtanke. Två alternativ:
    - **(a) Dölj framstegsstapeln i Sommaren.** `BoardObjectivesList`/`ObjRow` (`BoardObjectivesList.tsx`) har idag ingen väg att visa BARA `label`/`owner` utan `Framsteg X/Y`-blocket. Kräver en ny valfri prop (`hideProgress?: boolean`, default `false` — noll påverkan på Portal/ArrivalScene:s befintliga bruk), trädd genom till `ObjRow`, ~15-20 rader över 2 filer. **Ingen ny svensk text** — Code kan bygga, testa och leverera detta helt själv, samma dag.
    - **(b) Byt rubriken så den inte säger "nya".** Mekaniskt den minsta ändringen (en rad, `SeasonTransitionScene.tsx:125`) — men SVENSK TEXT-regeln (CLAUDE.md) stoppar Code från att formulera ersättningen själv. Blir ett nytt "blockerad på Opus-text"-ärende, samma kö som redan är full.
