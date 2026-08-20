@@ -29,6 +29,22 @@
 
 ---
 
+## ⚠️ PRÖVAT OCH AVFÄRDAT — bygg inte om utan att läsa detta först
+
+**`vercel.json`s `ignoreCommand`** (byggd `bb23ff99` 2026-08-22, återkallad `[nästa commit]` samma dag). Avsikt: hoppa över deploy på docs-only-pushar för att spara Vercels dagliga gratiskvot. `git diff --quiet ${VERCEL_GIT_PREVIOUS_SHA:-HEAD^} HEAD -- . ':!docs' ':!*.md'`.
+
+**Rotorsak till varför det inte funkar:** Vercel gör en SHALLOW git-clone vid varje build (bekräftat i byggloggen: "Failed to fetch one or more git submodules", ~4s klontid). En lokal `git diff` mot en godtycklig äldre sha (`VERCEL_GIT_PREVIOUS_SHA`, som kan peka långt bakåt om flera pushar i rad saknat deploy — t.ex. under ett kvotstopp) kan inte förutsättas ha den commiten i den grunda klonens historik. Två separata fel på samma dag, i produktion, mitt i ett kritiskt speltest-fönster:
+1. `.vercelignore` städade bort `.git/HEAD`/`.git/config` FÖRE ignoreCommand kördes → "Not a git repository" (fixad, men avslöjade problemet).
+2. Efter den fixen: `fatal: bad object 66c95328...` — den historiska commiten fanns inte i den grunda klonen.
+
+**Beslut (Jacob, samma dag):** dra tillbaka helt. Proportionen var fel — en optimering som ska spara kvot fick i stället stoppa produktionen två gånger på en timme. `--deepen=N` avvisades som nästa försök: det gissar hur djup historiken behöver vara, och gissningen blir fel exakt när den behövs som mest (efter ett längre kvotstopp, när `VERCEL_GIT_PREVIOUS_SHA` pekar långt bakåt) — en tredje variant av samma trasiga antagande, inte en lösning på det.
+
+**Kvotproblemet löses i stället UTAN kod:** samla `docs:`-commits till en per arbetsblock istället för en per post — merparten av en dags deployer är statusuppdateringar i SLUTTEST_KO.md mot en oförändrad app.
+
+**Om ignoreCommand blir aktuellt igen:** det kräver antingen att Vercel garanterar en fullständig (icke-grund) clone, eller ett skip-beslut som inte är beroende av lokal git-historik alls (t.ex. ett Vercel-inbyggt filter, om ett sådant finns, eller ett externt state — inte en `git diff` mot en sha vars existens inte kan garanteras).
+
+---
+
 ## PLAYTEST-RUNDA 2026-07-10 (Jacob, intro + match-flöde, cup) — ÖPPNA
 
 Skärmdumpar + Jacobs öga. **OBS: allt nedan verifierat BARA för CUP-matcher**
