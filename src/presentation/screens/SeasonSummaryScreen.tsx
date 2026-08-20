@@ -322,7 +322,7 @@ export function SeasonSummaryScreen() {
             <div style={{
               background: 'var(--bg-elevated)',  // DB-8: dekorativ yt-gradient → solid (accent-ramen är cuen)
               border: '2px solid var(--accent)',
-              borderRadius: 8,
+              borderRadius: 'var(--radius-md)',
               padding: '20px 18px',
               textAlign: 'center',
               position: 'relative',
@@ -683,7 +683,7 @@ export function SeasonSummaryScreen() {
               {summary.youthIntakeCount} nya spelare rekryterades
             </p>
             {summary.bestYouthProspect && (
-              <div style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)', borderRadius: 8, padding: '10px 12px', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}>
+              <div style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)', borderRadius: 'var(--radius-md)', padding: '10px 12px', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}>
                 <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 4 }}>BÄSTA PROSPEKT</p>
                 <p style={{ fontSize: 14, fontWeight: 700 }}>{summary.bestYouthProspect.name}</p>
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
@@ -846,7 +846,7 @@ function AwardCard({ icon, title, name, value }: { icon: string; title: string; 
     <div style={{
       background: 'color-mix(in srgb, var(--accent) 6%, transparent)',
       border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
-      borderRadius: 8,
+      borderRadius: 'var(--radius-md)',
       padding: '10px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>

@@ -755,7 +755,7 @@ export function SquadScreen() {
                 style={{
                   flex: 1,
                   padding: '7px 8px',
-                  borderRadius: 8,
+                  borderRadius: 'var(--radius-md)',
                   fontSize: 11,
                   fontWeight: 600,
                   border: lineupTab === tab.key ? 'none' : '1px solid var(--accent)',
@@ -948,7 +948,7 @@ export function SquadScreen() {
               <div style={{
                 margin: '0 14px 12px', padding: '10px 14px',
                 background: 'var(--bg-elevated)', border: `1px solid ${meta.color}44`,
-                borderRadius: 8,
+                borderRadius: 'var(--radius-md)',
                 display: 'flex', alignItems: 'center', gap: 10,
               }}>
                 <span style={{ fontSize: 22 }}>{meta.emoji}</span>
