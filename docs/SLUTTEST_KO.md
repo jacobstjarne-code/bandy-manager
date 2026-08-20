@@ -5,31 +5,97 @@
 
 ---
 
-# ▶ BYGGBART NU — ta nästa rad
+# ▶ HELA KÖN — ta nästa rad
 
-**Är du blockerad på CI, deploy eller ett svar: ta nästa post här. Fråga inte, schemalägg ingen väckning.**
+**Blockerad på CI, deploy eller ett svar: ta nästa post här. Fråga inte, schemalägg ingen väckning.**
 
-Alla poster nedan har låst text eller ingen text alls, inga obesvarade beroenden, och rör inte `matchCore`-kalibreringen.
+Allt som ska byggas före release står här, i ordning. Detaljer finns i respektive post längre ner och i de dömda underlagsfilerna.
+
+## Etapp I — smått och låst
 
 | # | Post | Var |
 |---|---|---|
-| 1 | ~~**B9** positionsviktad utmattning~~ — KLAR, se B9-posten (`ee58474d`) | `playerStateProcessor.ts` |
-| 2 | **B3** `playStyleTradition` — alla tolv värden dömda, se B3-posten | `clubExtendedInfo.ts` |
-| 3 | ~~**B4** de fyra `THREAT_REASON_LINES`-poolerna~~ — KLAR, se B4-posten (`4e7fd447`) | `opponentAnalysisService.ts` |
-| 4 | ~~**B5** `ARCHETYPE_STRENGTHS` + `ATTRIBUTE_LABELS`~~ — Opus tar den själv (2026-08-19, ren skrivning) | `scoutingService.ts` |
-| 5 | **B2** UI visar två presslägen, inte tre — motorn är binär, tre val där två är identiska är `kommunens_villkor` igen | taktikytorna |
-| 6 | **5.1 fynd 5** alternativ (a): `hideProgress`-prop på `BoardObjectivesList` | `BoardObjectivesList.tsx` |
-| 7 | **5.1 fynd 4** `FeedbackButton` scope:ad till innehållets botten, inte viewportens | `FeedbackButton.tsx` |
-| 8 | ~~**O6 sidofynd** dubbla `VB`/`HB` i fyrbackslinjen~~ — KLAR, `MB` för innerback (`0bc0ba77`) | `Formation.ts` |
-| 9 | **O7** fyra språkfel — se O7-tabellen, testet på `nationalTeamService.test.ts:167` i samma commit | fyra filer |
-| 10 | **U5 forts** `isOnCooldown` mot pivotal beats, sedan `systemhandelseBudgetOk` | `narrativeLogService.ts` |
-| 11 | **O2** noOp-grepet först, rapportera siffran före pairwise-analysen | eventfilerna |
-| 12 | **6.4 post 21** edge-case-fixturer (långa namn, skada, tomt priskort) | `DevScenesScreen.tsx` |
-| 13 | **Å12–15** skulden: nav-dokdrift, emoji-rester, egna skuggor | flera |
+| 1 | ~~**B9** positionsviktad utmattning~~ KLAR (`ee58474d`) | `playerStateProcessor.ts` |
+| 2 | **B3** `playStyleTradition` — alla tolv värden dömda | `clubExtendedInfo.ts` |
+| 3 | ~~**B4** fyra `THREAT_REASON_LINES`-pooler~~ KLAR (`4e7fd447`) | `opponentAnalysisService.ts` |
+| 4 | ~~**B5** scoutvokabulären~~ Opus tar den själv | `scoutingService.ts` |
+| 5 | **B2** två presslägen i UI, inte tre — motorn är binär | taktikytorna |
+| 6 | **5.1 fynd 5** `hideProgress`-prop | `BoardObjectivesList.tsx` |
+| 7 | **5.1 fynd 4** `FeedbackButton` till innehållets botten | `FeedbackButton.tsx` |
+| 8 | ~~**O6 sidofynd** innerback = `MB`~~ KLAR (`0bc0ba77`) | `Formation.ts` |
+| 9 | **O7** fyra språkfel + testet på `nationalTeamService.test.ts:167` | fyra filer |
+| 10 | ~~**C3** fem rå `borderRadius: 8` → `var(--radius-md)`~~ KLAR (`edf88401`) | `SeasonSummaryScreen`, `SquadScreen` |
+| 11 | ~~**V1-uppföljning** `HalfTimeSummaryScreen` in i `sceneRegistry`~~ KLAR (`f3ae1b64`) — tio andra scener saknas fortfarande, rapporterat nedan | `sceneRegistry.ts` |
+| 12 | ~~Radera `MatchDoneOverlay.tsx` (död kod) och `_RADERAS/` efter verifiering~~ KLAR (`565d19fd`) | — |
+| 13 | ~~**taktik-flaken** — utred, kör inte om~~ KLAR (`a3303ce5`) — rot: `assistantCoach` seedad på `Date.now()` i `gameStateFactory.makeBaseGame()`, inte scenens seed. Baseline regenererad | EXTRA_HEIGHT / `sceneRegistry` |
 
-**Väntar på Jacob, inte byggbart:** B1 (formationssystemet), 5.3 (Opus-text, Opus tar den själv), O16-uppföljning, O5/O1 (bakom Grind 1). B12 steg 2 dömd 2026-08-19 (`DOM_B12_STEG2_2026-08-19.md`) — under byggnad, se B12-sektionen.
+## Etapp II — B12-berikningen (stresstest mellan varje delsteg)
 
-**Rör inte:** `matchCore`-kalibreringen, possession-motorn, de sex taktikdimensionerna, rollsystemet — allt V2, se `docs/V2_MATCHMOTOR_OCH_TAKTIK.md`.
+| # | Post |
+|---|---|
+| 14 | `manpowerState` — renast A, billigaste beviset att berikningen inte läcker |
+| 15 | `tacticalFactors` |
+| 16 | `contributingFactors` |
+| 17 | `origin` — sist, kräver mest kunskap om `seqType` |
+
+**Bygg inte** `primaryCause` / `responsiblePlayerId` / `involvedPlayerIds` / `sequenceId`. Se `DOM_B12_STEG2_2026-08-19.md`.
+
+## Etapp III — dömda ytor, all text låst
+
+| # | Post | Underlag |
+|---|---|---|
+| 18 | **U5 forts** `isOnCooldown` mot pivotal beats, sedan `systemhandelseBudgetOk` | U5-domen |
+| 19 | **D1** punkt 1–3: Å7-padding, ambient-regeln, konsekvensmarkören (inte röd) | `DOM_D1_EVENTVIKTNING_2026-08-19.md` |
+| 20 | **O15/D4** taktikens två lägen + Å2:s träffytor | D4 + min dom |
+| 21 | **O3** spelarens säsongsmål | `DOM_EGET_SASONGSMAL_2026-08-17.md` |
+| 22 | **O18** årsbokens fem fält — fält 1 ihop med O3, fält 2 kräver O19 | `DOM_ARSBOKEN_RYGGRAD_2026-08-17.md` |
+| 23 | **O4** burnout: informationskvalitet + tre handlingar | `DOM_BURNOUT_2026-08-17.md` |
+| 24 | **O16** `DITT VAL` i Granska — efter etapp II blir listan längre och korrekt | `DOM_GRANSKA_LARANDEYTA_2026-08-17.md` |
+| 25 | **O17 del 1** fullt anläggningsträd som tillstånd | `DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md` |
+| 26 | **O2** noOp-grepet, rapportera siffran, sedan pairwise | `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md` |
+| 27 | **O9** delningskortets tre rader + fråga, efter 4.12/4.13 | `DOM_DELNINGSKORTET_2026-08-17.md` |
+| 28 | **O11** `contentContract.ts` — efter 18 | `DOM_INNEHALLSKONTRAKTET_2026-08-17.md` |
+| 29 | **O19** märk de nio 5/5-händelserna i data | varsel-domen |
+
+## Etapp IV — Grind 1 och andra akten
+
+| # | Post |
+|---|---|
+| 30 | **Grind 1-verifiering** — seedad simulering: kan en svår klubb bli sparkad utan sabotage, och hur ofta? **Enda posten där svaret kommer från ett speltest, inte ett bygge** |
+| 31 | **O5** framgångsekonomin — tre krafter, **en i taget**, stresstest emellan: löneinflation → driftskostnad → investeringskrav |
+| 32 | **O1** varsel-mallen, sponsorn först (vanligast och tommast) |
+| 33 | **O20** de fem K5-fallen som egen svit, efter O2:s första leverans |
+
+## Etapp V — skuld och övrigt
+
+| # | Post |
+|---|---|
+| 34 | **Överlämning 2 steg 0** — elva grep-pass. **Körs när Code väntar på CI**, blockerar ingenting |
+| 35 | **6.4 post 21** edge-case-fixturer |
+| 36 | **Å12–15** nav-dokdrift, emoji-rester, egna skuggor |
+| 37 | **SPÅR B** fyra textnivåer som DS-kanon — hör ihop med D1, **Opus dömer först** |
+| 38 | **U8** bundle, **U9** telemetri |
+| 39 | Arkivera resten av `incoming/` allteftersom |
+
+## Väntar på Jacob
+
+**B1** formationssystemet (rör `BEVARA`) · **O13** jobbmarknad · **O14** monetisering · Grind 1:s två sidofynd (binär `met`/`failed`, Heros ekonomi)
+
+**Väntar på Opus:** 5.3 Turneringsläge-text, B5:s scoutord, SPÅR B-domen
+
+## Rör inte
+
+`matchCore`-kalibreringen, possession-motorn, de sex taktikdimensionerna, rollsystemet, attributmodellen — allt V2, se `docs/V2_MATCHMOTOR_OCH_TAKTIK.md`.
+
+---
+
+## CI-hygien (2026-08-20)
+
+**Taktik-scenens visual-regression-flake (post 13) — löst, inte omkört.** Laddade ner CI:s expected/actual/diff-artefakter direkt (`gh run download`) istället för att vänta på nästa upload, per instruktion. Bekräftat: ingen layout-/CSS-skillnad — assistentens namn (Sven Gustafsson → Johan Magnusson mellan körningar) och samtliga sex bänkspelarcitat differerade helt. Rot: `createNewGame.ts:273` seedar `assistantCoach` på `save_${Date.now()}` — avsiktligt för riktiga spel (varje save ska få en genuint egen assistent), men `gameStateFactory.makeBaseGame()` (dev-scenes standardfabrik sedan 2026-08-09) ärver det, så coach-identiteten — och därmed vilken citat-pool bänkspelarnas repliker väljs ur — skiftar slumpmässigt mellan varje CI-körning. Olika citattext → olika radbrytning → skärmdumpens höjd skiftar (2105/2122/2135px sågs). Fix (`a3303ce5`): `makeBaseGame()` skriver över `assistantCoach` med en seed-baserad, reproducerbar coach — ENDAST i dev-fabriken, `createNewGame` orört. Verifierat: två separata dev-server-processer gav byte-identisk skärmdump; alla 57 dev-scenes-scener körda lokalt utan krasch; ny regressionstest (`gameStateFactory.test.ts`) stash-verifierad. Linux-baseline regenererad via `visual-baselines.yml` (workflow_dispatch).
+
+**Andra `factoryMidSeasonGame`-scener kan vara jämförbart drabbade** om de renderar coach-derived text (trupp-*, transfers-*, portal-*, lineup-*) — inte verifierat vilka, samma rotorsak gäller dem alla nu efter fixen. Ingen egen post, ingen känd aktuell flake i dem.
+
+**V1-uppföljningens fulla fynd (post 11):** tio scener finns i `DevScenesScreen.tsx`s galleri men saknas i `sceneRegistry.ts` — sveps av ingen grind (en-primary/kontrast/tap-target): `trupp-blandat`, `trupp-kris`, `lineup-empty`, `lineup-filled`, `portal-tom`, `portal-normal`, `portal-full`, `portal-grind`, `portal-bid-single`, `portal-bid-multi`. Billiga en-radstillägg om/när det prioriteras — Jacobs egen poäng gäller generellt: en yta ingen grind sveper är en yta där nästa fel är osynligt.
 
 ---
 
