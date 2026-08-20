@@ -55,6 +55,11 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   // denna rad — osynade av hela svepet tills nu, samma lucka-klass som
   // AUDIT DEL 4:s Taktiktavlan/EventOverlay-fynd ovan.
   ['sommaren-s2'], ['sommaren-titelforsvarare'], ['sommaren-tomt'], ['sommaren-siffra'],
+  // V1-uppföljning (RELÄ-Code-DS-konformans-svep1-3.md, 2026-08-20): HalfTimeSummaryScreen
+  // saknades helt — inte bara i denna lista utan i hela dev-scenes-galleriet (se
+  // DevScenesScreen.tsx). Ingen grind svepte den, så V1:s "två btn-primary" (strukturellt
+  // ofarligt idag, try/catch-grenar) hade inte fångats om det slutat vara ofarligt.
+  ['halftime-summary'],
   ['transfers-closed'], ['transfers-open-nobids'], ['transfers-onebid'], ['transfers-multibids'],
   ['arrival'], ['squad-trupp', 'button:has-text("Trupp")'],
   ['momentumbar'], ['tacticmodal'], ['submodal'], ['spakb'],

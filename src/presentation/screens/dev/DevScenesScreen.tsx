@@ -17,6 +17,7 @@ import { FormStatusMinimal } from '../../components/portal/minimal/FormStatusMin
 import { EfterklangSecondary } from '../../components/portal/secondary/EfterklangSecondary'
 import { SquadScreen } from '../SquadScreen'
 import { PortalScreen } from '../PortalScreen'
+import { HalfTimeSummaryScreen } from '../HalfTimeSummaryScreen'
 import { MatchScreen } from '../MatchScreen'
 import { BottomNav } from '../../navigation/BottomNav'
 import { TranareTab } from '../../components/club/TranareTab'
@@ -91,6 +92,9 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // 2026-08-17.md:s fyra baseline-scener, via fabriken (samma mönster som
   // season-a/b/c, inte en egen scen per override).
   | 'sommaren-s2' | 'sommaren-titelforsvarare' | 'sommaren-tomt' | 'sommaren-siffra'
+  // V1-uppföljning (RELÄ-Code-DS-konformans-svep1-3.md, 2026-08-20): HalfTimeSummaryScreen
+  // saknades helt ur galleriet — se motivering vid SCENES-raden nedan.
+  | 'halftime-summary'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -156,6 +160,11 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'sommaren-titelforsvarare', label: 'Sommaren — säsong 6, titelförsvarare, nära gränsen' },
   { id: 'sommaren-tomt',            label: 'Sommaren — säsong 4, efter tapp, tomt-fallet, slutspel ej rimligt' },
   { id: 'sommaren-siffra',          label: 'Sommaren — säsong 11 (siffervariant), något sliten, en händelse' },
+  // V1-uppföljning (RELÄ-Code-DS-konformans-svep1-3.md, 2026-08-20): HalfTimeSummaryScreen
+  // fanns aldrig i dev-scenes-galleriet — inte bara utanför sceneRegistry.ts:s SCENES,
+  // utan aldrig fotograferad alls. En yta ingen grind sveper är en yta där nästa fel
+  // är osynligt (Jacobs formulering) — gäller generellt, inte bara en-primary-gate.
+  { id: 'halftime-summary', label: 'HalfTimeSummaryScreen (halvtidssammanfattning)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -1013,6 +1022,7 @@ export function DevScenesScreen() {
       : scene === 'event-overlay' || scene === 'press-conference' ? granskaGame
       : scene === 'primary-smfinal-vs-deadline' ? primarySmfinalVsDeadlineGame
       : scene === 'primary-event-vs-farewell' ? primaryEventVsFarewellGame
+      : scene === 'halftime-summary' ? portalGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -1159,6 +1169,11 @@ export function DevScenesScreen() {
         {scene === 'portal' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <PortalScreen />
+          </div>
+        )}
+        {scene === 'halftime-summary' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <HalfTimeSummaryScreen />
           </div>
         )}
         {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind'
