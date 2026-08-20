@@ -71,7 +71,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | # | Post |
 |---|---|
 | 34 | **Överlämning 2 steg 0** — elva grep-pass. **Körs när Code väntar på CI**, blockerar ingenting |
-| 35 | **6.4 post 21** edge-case-fixturer — Å11-residualen `KLAR (36351a95)`. Långa-efternamn-delen `KLAR (f71b5edb)`: `lineup-filled` (withLongestSurnames) fanns redan byggd, registrerad i `sceneRegistry.ts` nu. Svensk pos/skada/tomt pris-kort fortfarande `EJ` — se not |
+| 35 | **6.4 post 21** edge-case-fixturer — Å11-residualen `KLAR (36351a95)`. Långa-efternamn (`lineup-filled`) OCH skadetillstånd (`trupp-blandat`/`trupp-kris`, `withInjuries`) `KLAR (f71b5edb)` — alla tre fanns redan byggda, bara oregistrerade. Svensk positionsförkortnings-konsekvens + tomt pris-kort (marknadsvärde, inte awards) fortfarande `EJ`, ingen befintlig fixtur hittad |
 | 36 | **Å12–15** nav-dokdrift, emoji-rester, egna skuggor — Å12 `KLAR`, Å14 `KLAR` (`10e53a89`, skuggkanon dömd och byggd). Å13/Å15 `EJ` |
 | 37 | **SPÅR B** fyra textnivåer som DS-kanon — hör ihop med D1, **Opus dömer först** |
 | 38 | **U8** bundle, **U9** telemetri |
