@@ -350,10 +350,15 @@ export function PortalScreen() {
             PhaseMark renderas nu ovan (i ATMOSPHERE_COMPONENT-slingan, om
             den vann prioriteringen) — inte här som ett eget, alltid synligt
             block. RoundMark finns inte längre i Portal, se GameHeader.tsx. */}
+        {/* Kassörens röst på den befintliga raden (Portal-orientering #1,
+            Jacobs dom 2026-08-22): ingen ny hälsning, ingen ny slot, ingen
+            ny dismissedHints-post — samma villkor och innehåll som förut,
+            bara attribuerat till samma kassör som redan talar i ankomsten
+            (ArrivalScene.tsx:72,143), kafferummet och hallprövningen. */}
         {isSeason1Round1 && activeCount > 0 && (
           <div className="portal-tutorial-frame">
-            <strong>Lugnare första veckan</strong>
-            En fråga åt gången. Resten ligger och väntar tills du hittat rytmen.
+            <strong>{game.board?.find(m => m.role === 'kassör')?.firstName ?? 'Kassören'} · Kassör</strong>
+            "Lugnare första veckan. En fråga åt gången — resten ligger och väntar tills du hittat rytmen."
           </div>
         )}
         {game.pendingAnnandagsVal && (
