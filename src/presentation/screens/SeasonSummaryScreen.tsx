@@ -35,6 +35,17 @@ function getSignatureEmojiFromRubric(rubric: string): string {
  * divider FÖRE det hade klippt mitt i en sammanhållen ceremoniell yta,
  * inte markerat en innehållsövergång. Ingen omflyttning av innehåll.
  */
+/**
+ * Å11-residual (SLUTTEST_KO.md, 6.4 post 21, 2026-08-20) — DS-regel 12 en
+ * nivå upp: "Truppen"-kapitlet ska inte rendera en rubrik ovanför tomrum
+ * när BÅDA korten under den (Säsongens bästa + Svenska Cupen) gatas bort.
+ */
+export function shouldShowTruppenChapter(summary: Pick<SeasonSummary, 'topScorer' | 'topAssister' | 'topRated' | 'mostImproved' | 'youngPlayer' | 'cupResult'>): boolean {
+  const hasAward = !!(summary.topScorer || summary.topAssister || summary.topRated || summary.mostImproved || summary.youngPlayer)
+  const hasCup = !!(summary.cupResult && summary.cupResult !== 'eliminated')
+  return hasAward || hasCup
+}
+
 function ChapterDivider({ label }: { label: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '22px 0 14px' }}>
@@ -527,7 +538,13 @@ export function SeasonSummaryScreen() {
           )
         })()}
 
+        {/* Å11-residual (SLUTTEST_KO.md, 6.4 post 21, 2026-08-20): kapitelrubriken
+            var ovillkorlig även när BÅDA korten under den (Säsongens bästa +
+            Svenska Cupen) gatas bort av DS-regel 12 — samma klass av fel en
+            nivå upp, en rubrik ovanför tomrum. */}
+        {shouldShowTruppenChapter(summary) && (
         <ChapterDivider label="Truppen" />
+        )}
 
         {/* SEASON'S BEST — Å11 (SLUTTEST_KO.md, 2026-08-18, DS-regel 12): kortet
             renderade tidigare ovillkorligt även när alla fem award-fälten var
