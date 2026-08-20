@@ -533,3 +533,22 @@ Mellan varje delsprint: mät via analyze-stress, läs rapporten, avgör om näst
 **Alternativ övervägt:** En generisk "strip alla event-id:n vars inbäddade säsongssiffra < currentSeason"-scrubber. Avvisat — kodbasens etablerade mönster vid rollover är redan wholesale-replace (`pendingEvents: seasonEndPendingEvents`), inte selektiv ID-mönstermatchning; att lägga samma regel på `deferredDecisions` är konsekvent med det mönstret och kräver ingen ny mekanism. En ID-scrubber hade dessutom fångat falska positiva — legitima årsboks-event som `event_gala_2026` bär medvetet det AVSLUTADE säsongsnumret i sitt ID och ska synas i den nya säsongens portal.
 
 **Konsekvens:** `deferredDecisions` ska framöver behandlas som en del av samma i-flight-beslutskö som `pendingEvents` — varje framtida `staleEventIds`-användning eller rollover-fält som rör events måste beakta båda arrayerna, annars återkommer läckan i en ny variant. Regressionstest: `src/application/useCases/__tests__/seasonRolloverStaleEvents.test.ts` (kör headless genom final → ceremoni → årsbok → premiär, asserterar tom `deferredDecisions` vid rollover + inga `playoff_qf_/sf_/final_<gammal säsong>`-kort i pendingEvents ELLER deferredDecisions upp till 15 omgångar in i nya säsongen).
+
+---
+
+## 2026-08-22 — Multi-slot saves: raderingsloopen bort, inte en ny lagringsmodell
+
+**Problem (Jacobs order, releasegrind):** `newGame()` raderade tidigare ALLA befintliga saves innan en ny karriär startade (`gameStore.ts`, "radera-alla-loopen"). En spelare som ville prova en ny klubb var tvungen att radera sin gamla karriär — inbyggd begränsning, inte ett UI-val.
+
+**Utredning innan fix (rapporterad separat, körd av Explore-agent):** `bandy_save_index` + `bandy_save_<id>` (saveGameStorage.ts) var redan ett riktigt uuid-nycklat multi-save-index — `saveSaveGame`/`listSaveGames`/`loadGame(id)` fanns och var testade, bara aldrig kopplade till en yta förutom den destruktiva JSON-importen (`GameHeader.tsx`). Två separata lager: zustands `persist`-middleware speglar HELA `game`-objektet till en FAST IndexedDB-nyckel (`bandy-game-store`) på varje state-ändring (live, moment-till-moment) — den id-nycklade lagringen uppdateras bara vid explicita `saveSaveGame()`-anrop (`saveGame()`, `markOnboardingComplete()`, m.fl.), inte automatiskt vid varje ändring.
+
+**Beslut:**
+1. `newGame()` — tog bort den ovillkorade delete-all-loopen. Ersatte med `saveSaveGame(activeGame)` på den UTGÅENDE karriären innan bytet (samma mönster som `snapshotSave('pre_newgame', ...)` som redan fanns där).
+2. Ny `switchToSave(id)`-action i gameStore — samma mönster tillämpat symmetriskt för byte MELLAN två befintliga karriärer (persistera utgående, sen `loadGame(id)`).
+3. Ny yta: `SaveManagerScreen.tsx` (`/saves`) — listar `listSaveGames()`, väljer via `switchToSave`. `IntroSequence.tsx` visar en "Byt karriär"-knapp bara när `listSaveGames().length > 1` (annars är FORTSÄTT redan rätt genväg).
+
+**Den fasta nyckelns roll — INTE en pekare till aktivt save-id:** övervägt och avvisat. Att göra `bandy-game-store` till bara en pekare (`{activeId: string}`) hade krävt att storage-adaptern läser den id-nycklade blobben på VARJE state-ändring istf att hålla den i minnet — dyrare och en större omskrivning för en byte-besparing utan funktionell vinst. Den fasta nyckeln fortsätter vara en FULL LIVE-SPEGEL av vilken karriär som än är aktiv (det är redan vad `game.id` i den speglade blobben uttrycker) — enda kravet för korrekt multi-slot är att den id-nycklade snapshot-platsen är färsk VID BYTESÖGONBLICKET, vilket steg 1+2 ovan garanterar. Ingen ändring av persist-konfigurationen.
+
+**Alternativ övervägt:** Ny keying-modell för den fasta nyckeln (t.ex. `bandy-active-save-id` + separat läsning av `bandy_save_<id>` vid boot). Avvisat — hade dubblerat läsvägen för "FORTSÄTT" (idag: en enda synkron rehydrering från EN nyckel) utan att lösa något som steg 1+2 inte redan löser.
+
+**Konsekvens:** En färskt skapad karriär (innan tillträde-onboarding slutförs) syns INTE i `listSaveGames()`/väljaren förrän `markOnboardingComplete()` (eller ett annat explicit save-anrop) kört — konsekvent med befintligt beteende, inte en ny lucka. Browser-verifierat end-to-end (två karriärer skapade, båda listade, byte fungerar, korrekt klubb/spelare renderas efter byte, noll konsolfel).

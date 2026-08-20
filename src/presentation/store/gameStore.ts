@@ -15,7 +15,7 @@ import { type AdvanceResult } from '../../application/useCases/advanceToNextEven
 import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
 import { diffTactics } from '../utils/tacticData'
-import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded, saveSaveGame, snapshotSave } from '../../infrastructure/persistence/saveGameStorage'
+import { loadSaveGame, migrateLocalStorageIfNeeded, saveSaveGame, snapshotSave } from '../../infrastructure/persistence/saveGameStorage'
 import { applyFinanceChange } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
 import { canStartBuild, startFacilityBuild, getFinancingOptions, FACILITY_NODE_DEFS, type FinancingContext } from '../../domain/services/facilityService'
@@ -61,12 +61,22 @@ interface GameState {
   // Actions
   newGame: (managerName: string, clubId: string) => void
   // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — nollställer store:t utan att
-  // röra IndexedDB-posten (den rensas ändå av newGame:s befintliga, ovillkorade
-  // delete-all-loop nästa gång spelaren startar en ny karriär). Gör att
-  // huvudmenyns hasSave blir korrekt false utan att "SE KARRIÄREN"-flödet
-  // (som fångar game i route-state FÖRE detta anrop) tappar sin data.
+  // röra IndexedDB-posten. Gör att huvudmenyns hasSave blir korrekt false utan
+  // att "SE KARRIÄREN"-flödet (som fångar game i route-state FÖRE detta
+  // anrop) tappar sin data. Multi-slot (2026-08-22): newGame:s tidigare
+  // ovillkorade delete-all-loop är borttagen — IndexedDB-posten för en
+  // avfyrad karriär rensas alltså aldrig automatiskt längre, vilket nu är
+  // KORREKT beteende (den ska kunna dyka upp i SaveManagerScreen efteråt),
+  // inte en kvarglömd rensning.
   clearFiredGame: () => void
   loadGame: (id: string) => Promise<boolean>
+  // Multi-slot (2026-08-22): byte MELLAN två befintliga karriärer, från
+  // SaveManagerScreen. Persisterar den utgående karriären till sin egen
+  // id-nycklade save-plats FÖRST — annars vore ett byte bort och sen
+  // tillbaka en dataförlust av allt spelat sedan senaste explicita saveGame().
+  // loadGame(id) är no-op om id redan är den aktiva karriären (se dess egen
+  // guard), så switchToSave är säker att anropa även på den redan aktiva.
+  switchToSave: (id: string) => Promise<boolean>
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string, autoSelected?: boolean) => { success: boolean; error?: string }
   updateTactic: (tactic: Tactic) => void
@@ -176,21 +186,26 @@ export const useGameStore = create<GameState>()(
 
       newGame: (managerName, clubId) => {
         // U7 (SLUTTEST_KO.md, 2026-08-17): snapshot av den aktiva karriären
-        // FÖRE den ovillkorade raderingen nedan — samma skyddsnät som
-        // loadSaveGame:s pre_migration-snapshot. Fire-and-forget (newGame är
-        // synkron); ett misslyckat snapshot ska aldrig blockera flödet.
+        // FÖRE bytet — samma skyddsnät som loadSaveGame:s pre_migration-
+        // snapshot. Fire-and-forget (newGame är synkron); ett misslyckat
+        // snapshot ska aldrig blockera flödet.
+        //
+        // Multi-slot (2026-08-22, releasegrind): den tidigare koden raderade
+        // ALLA befintliga saves här ("radera-alla-loopen") — det var det som
+        // gjorde en-spelare-i-taget till en inbyggd begränsning, inte bara ett
+        // UI-val. En spelare som ville prova en ny klubb var tvungen att
+        // radera sin gamla karriär. bandy_save_index/bandy_save_<id> är redan
+        // ett riktigt uuid-nycklat multi-save-index (saveGameStorage.ts) —
+        // saves kan redan samexistera säkert på disk, ingenting kolliderar.
+        // Enda kravet: den UTGÅENDE karriären måste persisteras till sin egen
+        // save-plats INNAN vi byter, annars är snapshotet save-väljaren
+        // (SaveManagerScreen) senare laddar inaktuellt. Se switchToSave
+        // nedan för samma mönster vid byte MELLAN två befintliga karriärer.
         const activeGame = get().game
-        if (activeGame) void snapshotSave('pre_newgame', activeGame)
-
-        // Delete all existing saves from IndexedDB before starting fresh
-        const existing = listSaveGames()
-        existing.forEach(s => deleteSaveGame(s.id).catch(() => {}))
-        // Clear old localStorage data that may be filling quota
-        try {
-          localStorage.removeItem('bandy-game-store')
-          const keys = Object.keys(localStorage).filter(k => k.startsWith('bandy_save_'))
-          keys.forEach(k => localStorage.removeItem(k))
-        } catch {}
+        if (activeGame) {
+          void snapshotSave('pre_newgame', activeGame)
+          void saveSaveGame(activeGame)
+        }
         let game = createNewGame({ managerName, clubId })
         // Trigga inledande scen (board_meeting) vid säsong 1 / matchday 0.
         // advanceToNextEvent kör samma logik vid varje runda men vid newGame
@@ -275,6 +290,12 @@ export const useGameStore = create<GameState>()(
         }
         set({ game: migrated, lastAdvanceResult: null })
         return true
+      },
+
+      switchToSave: async (id) => {
+        const { game } = get()
+        if (game) await saveSaveGame(game)
+        return get().loadGame(id)
       },
 
       setPlayerLineup: (startingPlayerIds, benchPlayerIds, captainPlayerId, autoSelected) => {

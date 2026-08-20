@@ -15,6 +15,7 @@ function NavigateSetter() {
   return null
 }
 import { NameInputScreen } from '../screens/NameInputScreen'
+import { SaveManagerScreen } from '../screens/SaveManagerScreen'
 import { ClubSelectionScreen } from '../screens/ClubSelectionScreen'
 import { IntroSequence } from '../screens/IntroSequence'
 import { ArrivalScene } from '../screens/ArrivalScene'
@@ -126,6 +127,7 @@ export function AppRouter() {
       <NavigateSetter />
       <Routes>
         <Route path="/" element={<IntroSequence />} />
+        <Route path="/saves" element={<SaveManagerScreen />} />
         <Route path="/new-game" element={<NameInputScreen />} />
         <Route path="/club-selection" element={<ClubSelectionScreen />} />
         <Route path="/intro" element={<ArrivalScene />} />

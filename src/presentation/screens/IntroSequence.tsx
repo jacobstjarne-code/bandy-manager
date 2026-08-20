@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
+import { listSaveGames } from '../../infrastructure/persistence/saveGameStorage'
 
 // 23 particles — faster cycles (2–4 s), many negative delays so snow is mid-flight from frame 1
 function SnowParticles() {
@@ -54,6 +55,9 @@ function SnowParticles() {
 export function IntroSequence() {
   const navigate = useNavigate()
   const hasSave = useGameStore(s => s.game !== null)
+  // Multi-slot (2026-08-22): "BYT KARRIÄR" syns bara när det faktiskt finns
+  // ett val att göra — en spelare (FORTSÄTT) täcker redan enda-save-fallet.
+  const [saveCount] = useState(() => listSaveGames().length)
   const [slide, setSlide] = useState(0)   // 0 = S0, 1 = S1
   const [s0Phase, setS0Phase] = useState(-1) // drives S0 content stagger
 
@@ -220,6 +224,23 @@ export function IntroSequence() {
               }}
             >
               FORTSÄTT
+            </button>
+          )}
+          {saveCount > 1 && (
+            <button
+              onClick={() => navigate('/saves')}
+              style={{
+                width: '100%', maxWidth: 300, padding: '10px 24px',
+                background: 'transparent', border: 'none',
+                color: 'rgba(245,241,235,0.55)',
+                fontSize: 11, fontWeight: 600, letterSpacing: '2px',
+                textTransform: 'uppercase', cursor: 'pointer',
+                opacity: s1 ? 1 : 0,
+                transition: 'opacity 700ms ease',
+                transitionDelay: s1 ? '1900ms' : '0ms',
+              }}
+            >
+              Byt karriär
             </button>
           )}
           <img
