@@ -16,7 +16,7 @@ import { formatSalary, positionShort } from '../utils/formatters'
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { mentorshipBondAdeptInForm, mentorshipBondAdeptResting } from '../../domain/data/mentorshipStrings'
 import { pickRehabStageLine } from '../../domain/data/injuryDoctorText'
-import { MessageCircle, Crown, Wind, MessageSquare, Megaphone, Smile, Flame } from 'lucide-react'
+import { MessageCircle, Crown, Wind, MessageSquare, Megaphone, Smile, Flame, Medal, Drama, Home } from 'lucide-react'
 
 export interface PlayerCardProps {
   player: Player
@@ -380,11 +380,15 @@ export function PlayerCard({
             </p>
             {isOwned && (
               <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
-                {player.trait === 'hungrig' && <span className="tag" style={{ borderColor: 'var(--success)', color: 'var(--success)' }}>🔥 Hungrig</span>}
-                {player.trait === 'veteran' && <span className="tag" style={{ borderColor: 'var(--text-muted)', color: 'var(--text-muted)' }}>🏅 Veteran</span>}
-                {player.trait === 'joker' && <span className="tag" style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>🎭 Joker</span>}
-                {player.trait === 'lokal' && <span className="tag" style={{ borderColor: 'var(--ice)', color: 'var(--ice)' }}>🏘️ Lokal</span>}
-                {player.trait === 'ledare' && <span className="tag" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>🦁 Ledare</span>}
+                {/* D1 (Överlämning 2 steg 0, Jacobs dom 2026-08-22): trait-taggar
+                    följer samma regel som allt annat i appen — strukturerat fält,
+                    Lucide-ikon, ingen emoji som bär betydelse. tag-*-familjen
+                    (global.css) istf hand-rullad className="tag" + inline-färg. */}
+                {player.trait === 'hungrig' && <span className="tag tag-green"><Icon icon={Flame} size={11} color="var(--success-light)" /> Hungrig</span>}
+                {player.trait === 'veteran' && <span className="tag tag-ghost"><Icon icon={Medal} size={11} color="var(--text-muted)" /> Veteran</span>}
+                {player.trait === 'joker' && <span className="tag tag-copper"><Icon icon={Drama} size={11} color="var(--accent-text)" /> Joker</span>}
+                {player.trait === 'lokal' && <span className="tag tag-ice"><Icon icon={Home} size={11} color="var(--ice-dark)" /> Lokal</span>}
+                {player.trait === 'ledare' && <span className="tag tag-copper"><Icon icon={Crown} size={11} color="var(--accent-text)" /> Ledare</span>}
                 {asMentor.length > 0 && <span className="tag" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>🎓 Mentor</span>}
               </div>
             )}
