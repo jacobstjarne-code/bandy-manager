@@ -230,33 +230,6 @@ export interface GameEvent {
   systemhandelse?: boolean   // O19 (SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
                               // (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
                               // ingen räknare/cooldown/säsongsbudget läser fältet ännu.
-  /** D1 punkt 4 ("därför nu"-raden), prioritetsordning 1 av 4 — se getWhyNowLine().
-   *  Redan-formaterad tidpunkt, t.ex. "omgång 14", "transferfönstret stänger", "fredag". */
-  deadlineLabel?: string
-  /** D1 punkt 4, prioritetsordning 2 av 4. Förnamnet på den som väntar på besked. */
-  whyNowPerson?: string
-  /** D1 punkt 4, prioritetsordning 3 av 4. HELA eventet (inte bara ett enskilt val,
-   *  se EventChoice.irreversible för det) går inte att göra ogjort. */
-  wholeEventIrreversible?: boolean
-  /** D1 punkt 4, prioritetsordning 4 av 4. Det som avgörs här bär hela säsongen. */
-  seasonDefining?: boolean
-}
-
-/**
- * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 4 — "därför nu"-raden.
- * "Den sista punkten är den viktigaste: 'därför nu'-raden är inte dekoration
- * på pivotal, den är kriteriet för pivotal." Fem former, denna funktion
- * returnerar den FÖRSTA som matchar i domens prioritetsordning, eller null
- * om inget av de fyra datafälten är satt — då är eventet enligt domen
- * "sannolikt inte pivotal" och vikten ska sänkas (se getEffectivePriority
- * i eventQueueService.ts). Copy ordagrant låst i domen, ingen ny text här.
- */
-export function getWhyNowLine(event: Pick<GameEvent, 'deadlineLabel' | 'whyNowPerson' | 'wholeEventIrreversible' | 'seasonDefining'>): string | null {
-  if (event.deadlineLabel) return `Svaret måste komma före ${event.deadlineLabel}.`
-  if (event.whyNowPerson) return `${event.whyNowPerson} väntar på besked.`
-  if (event.wholeEventIrreversible) return 'Det här går inte att göra ogjort.'
-  if (event.seasonDefining) return 'Det som bestäms här bär hela våren.'
-  return null
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

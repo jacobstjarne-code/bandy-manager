@@ -6,7 +6,7 @@ import { PressConferenceScene } from './PressConferenceScene'
 import { MecenatDinnerEvent } from './events/MecenatDinnerEvent'
 import type { GameEvent } from '../../domain/entities/GameEvent'
 import { getNextEvent } from '../../domain/services/eventQueueService'
-import { getWhyNowLine } from '../../domain/entities/GameEvent'
+import { getContentContractEntry, getWhyNowLine } from '../../domain/data/contentContract'
 import { DecisionCard } from './DecisionCard'
 
 interface EventOverlayProps {
@@ -106,7 +106,7 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
         title={event.title}
         body={event.body}
         tags={tags}
-        whyNowLine={getWhyNowLine(event) ?? undefined}
+        whyNowLine={getWhyNowLine(getContentContractEntry('GameEventType', event.type)) ?? undefined}
         resolved={false}
         choices={event.choices}
         onChoose={(id) => handleChoice(id)}

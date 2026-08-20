@@ -1,19 +1,31 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { isAmbientEvent, getEventRenderTarget } from '../domain/services/eventQueueService'
 import type { GameEvent } from '../domain/entities/GameEvent'
 
 /**
- * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — Ambient-regeln.
+ * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — Ambient-regeln, och
+ * punkt 4 — self-kontrollen (getEffectivePriority läser contentContract.ts,
+ * Jacobs dom 2026-08-21). Testar den mekaniska routing-BESLUTET som ren
+ * logik, samma mönster som matchLive_integration.test.tsx:s ARKITEKTONISKA
+ * NOTERING beskriver: @testing-library/react är inte installerat, så
+ * komponentträd renderas aldrig i testsviten — GameShell/PortalEventSlot/
+ * EventPrimary läser alla samma funktion, så ett grönt test här bevisar
+ * även deras beteende.
  *
- * "Att ett event utan val inte får ett kort är en mekanisk regel, inte en
- * estetisk — den går inte att tolka fel och den kan testas." Testar den
- * regeln som ren logik, samma mönster som matchLive_integration.test.tsx:s
- * ARKITEKTONISKA NOTERING beskriver: @testing-library/react är inte
- * installerat, så komponentträd renderas aldrig i testsviten — den
- * mekaniska routing-BESLUTET (getEventRenderTarget) testas i stället för
- * DOM-utfallet, och GameShell/PortalEventSlot/EventPrimary läser alla
- * samma funktion, så ett grönt test här bevisar även deras beteende.
+ * contentContract mockas till att alltid returnera en whyNow-bärande rad —
+ * det här filens jobb är att testa RUTNINGSMEKANIKEN (ambient/overlay/
+ * inline givet en effektiv prioritet), inte VILKA typer som faktiskt är
+ * klassificerade som pivotal idag (det testas separat i
+ * eventQueueEffectivePriority.test.ts mot den verkliga, delvis ofyllda
+ * registerstatusen).
  */
+vi.mock('../domain/data/contentContract', async () => {
+  const actual = await vi.importActual<typeof import('../domain/data/contentContract')>('../domain/data/contentContract')
+  return {
+    ...actual,
+    getContentContractEntry: (source: string, id: string) => ({ id, source, filled: true, deadlineLabel: 'omgång 14' }),
+  }
+})
 
 function makeChoice(id = 'choice_a'): GameEvent['choices'][number] {
   return { id, label: 'Ett val', effect: { type: 'noOp' } }

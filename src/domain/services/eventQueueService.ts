@@ -6,7 +6,8 @@
 
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent, EventPriority } from '../entities/GameEvent'
-import { getEventPriority, getWhyNowLine } from '../entities/GameEvent'
+import { getEventPriority } from '../entities/GameEvent'
+import { getContentContractEntry, getWhyNowLine } from '../data/contentContract'
 
 // Numerisk rank per prio — lägre tal = högre prioritet
 const PRIORITY_RANK: Record<string, number> = {
@@ -39,25 +40,24 @@ export function isAmbientEvent(event: GameEvent): boolean {
 /**
  * D1 punkt 4 (DOM_D1_EVENTVIKTNING_2026-08-19.md) — självkontrollen. "Kan
  * ingen av de fyra raderna sättas, ska vikten sänkas till normal." Ett
- * `critical`-event utan en "därför nu"-rad (getWhyNowLine) är enligt domen
- * inte verkligt pivotal och tappar sin overlay-behandling.
+ * `critical`-event utan en "därför nu"-rad är enligt domen inte verkligt
+ * pivotal och tappar sin overlay-behandling.
  *
- * INGEN KONSUMENT WIRAD ÄN (samma mellanläge som B12 steg 2, Etapp II rad 17,
- * SLUTTEST_KO.md) — getEventRenderTarget/getNextEvent/getQueueStats läser
- * fortfarande event.priority direkt, inte denna. Orsak: ingen av de ~16
- * befintliga `critical`-konstruktionsställena (mecenatEvent×11,
- * criticalEconomy×3, playerUnhappy, economicStress) sätter ännu
- * deadlineLabel/whyNowPerson/wholeEventIrreversible/seasonDefining — att
- * aktivera nedgraderingen NU hade tyst tömt overlay-kategorin på alla
- * kritiska events, inte ett medvetet produktval. Vilken av de fyra grunderna
- * som faktiskt driver brådskan per event är en innehållsbedömning (CLAUDE.md:
- * svensk speltext/tonval skrivs av Opus), inte något att gissa fram händelse
- * för händelse. Se SLUTTEST_KO.md D1 punkt 4 för klassificeringsläget.
+ * KOPPLAD MOT REGISTRET, INTE MOT GISSNING (Jacobs dom 2026-08-21): whyNow-
+ * data läses ur `contentContract.ts` per `event.type`, inte ur event-
+ * instansen. Ingen av de fyra typer som idag routas kritiskt (mecenatEvent,
+ * economicStress, playerUnhappy, criticalEconomy — se getEventPriority i
+ * GameEvent.ts) har än en ifylld contentContract-rad, så DENNA FUNKTION
+ * NEDGRADERAR ALLA KRITISKA EVENTS TILL 'normal' IDAG — medvetet, inte en
+ * bugg. "Regeln kontrollerar sig själv": mekanismen aktiveras rad för rad,
+ * sant, i takt med att O11-registret fylls i — aldrig genom att gissa en
+ * brådskerad för att täcka en typ i förväg.
  */
 export function getEffectivePriority(event: GameEvent): EventPriority {
   const raw = event.priority ?? getEventPriority(event.type)
-  if (raw === 'critical' && getWhyNowLine(event) === null) return 'normal'
-  return raw
+  if (raw !== 'critical') return raw
+  const entry = getContentContractEntry('GameEventType', event.type)
+  return getWhyNowLine(entry) === null ? 'normal' : 'critical'
 }
 
 export type EventRenderTarget = 'overlay' | 'inline' | 'ambient'
@@ -71,11 +71,14 @@ export type EventRenderTarget = 'overlay' | 'inline' | 'ambient'
  * kritiskt event utan val EventOverlay (fullskärmsmodal utan knappar, upptäckt
  * 2026-08-19 vid D1-utredningen: EventOverlay läste event.choices direkt utan
  * getActionsForEvent-fallbacken som EventCardInline redan hade).
+ *
+ * Läser getEffectivePriority (D1 punkt 4), inte raw priority — se den
+ * funktionen för varför overlay-kategorin är tom tills contentContract.ts
+ * fylls i.
  */
 export function getEventRenderTarget(event: GameEvent): EventRenderTarget {
   if (isAmbientEvent(event)) return 'ambient'
-  const priority = event.priority ?? getEventPriority(event.type)
-  return priority === 'critical' ? 'overlay' : 'inline'
+  return getEffectivePriority(event) === 'critical' ? 'overlay' : 'inline'
 }
 
 /**
@@ -89,8 +92,8 @@ export function getNextEvent(game: SaveGame): GameEvent | null {
   if (events.length === 0) return null
 
   const sorted = [...events].sort((a, b) => {
-    const ap = PRIORITY_RANK[a.priority ?? getEventPriority(a.type)] ?? PRIORITY_RANK.normal
-    const bp = PRIORITY_RANK[b.priority ?? getEventPriority(b.type)] ?? PRIORITY_RANK.normal
+    const ap = PRIORITY_RANK[getEffectivePriority(a)] ?? PRIORITY_RANK.normal
+    const bp = PRIORITY_RANK[getEffectivePriority(b)] ?? PRIORITY_RANK.normal
     if (ap !== bp) return ap - bp
     // FIFO inom samma prio — bevara array-ordning
     return events.indexOf(a) - events.indexOf(b)
@@ -104,12 +107,11 @@ export function getNextEvent(game: SaveGame): GameEvent | null {
  */
 export function getQueueStats(game: SaveGame): QueueStats {
   const events = (game.pendingEvents ?? []).filter(e => !e.resolved)
-  const getRank = (e: GameEvent) => e.priority ?? getEventPriority(e.type)
   return {
     total: events.length,
-    critical: events.filter(e => getRank(e) === 'critical').length,
-    high: events.filter(e => getRank(e) === 'high').length,
-    normal: events.filter(e => getRank(e) === 'normal').length,
-    low: events.filter(e => getRank(e) === 'low').length,
+    critical: events.filter(e => getEffectivePriority(e) === 'critical').length,
+    high: events.filter(e => getEffectivePriority(e) === 'high').length,
+    normal: events.filter(e => getEffectivePriority(e) === 'normal').length,
+    low: events.filter(e => getEffectivePriority(e) === 'low').length,
   }
 }

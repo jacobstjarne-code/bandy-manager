@@ -1,5 +1,4 @@
-import { describe, it, expect } from 'vitest'
-import { getEffectivePriority } from '../eventQueueService'
+import { describe, it, expect, vi } from 'vitest'
 import type { GameEvent } from '../../entities/GameEvent'
 
 function makeEvent(overrides: Partial<GameEvent>): GameEvent {
@@ -10,26 +9,36 @@ function makeEvent(overrides: Partial<GameEvent>): GameEvent {
 }
 
 /**
- * D1 punkt 4 — självkontrollen. INGEN KONSUMENT WIRAD ÄN (se kommentar i
- * eventQueueService.ts) — detta testet låser bara den rena funktionen,
- * inte routing/sortering, som fortfarande läser event.priority direkt.
+ * D1 punkt 4 — självkontrollen, kopplad mot contentContract.ts (Jacobs dom,
+ * 2026-08-21), inte mot event-instansens egna fält.
  */
-describe('getEffectivePriority', () => {
-  it('critical utan whyNow-data nedgraderas till normal', () => {
-    expect(getEffectivePriority(makeEvent({ priority: 'critical' }))).toBe('normal')
+describe('getEffectivePriority — verklig registerstatus (ingen mock)', () => {
+  it('mecenatEvent (critical by default) nedgraderas idag till normal — contentContract.ts har ingen whyNow-rad för den ännu', async () => {
+    const { getEffectivePriority } = await import('../eventQueueService')
+    expect(getEffectivePriority(makeEvent({ type: 'mecenatEvent' }))).toBe('normal')
   })
 
-  it('critical MED whyNow-data behåller critical', () => {
-    expect(getEffectivePriority(makeEvent({ priority: 'critical', deadlineLabel: 'omgång 14' }))).toBe('critical')
-  })
-
-  it('icke-critical prioritet påverkas inte av whyNow-fält', () => {
+  it('icke-critical prioritet påverkas inte av registret', async () => {
+    const { getEffectivePriority } = await import('../eventQueueService')
     expect(getEffectivePriority(makeEvent({ priority: 'high' }))).toBe('high')
     expect(getEffectivePriority(makeEvent({ priority: 'low' }))).toBe('low')
   })
+})
 
-  it('ingen explicit priority faller tillbaka på getEventPriority(type) precis som idag', () => {
-    // mecenatEvent är critical by default (GameEvent.ts getEventPriority) — utan whyNow-data nedgraderas den
-    expect(getEffectivePriority(makeEvent({}))).toBe('normal')
+describe('getEffectivePriority — wiring mot contentContract (mockad rad)', () => {
+  it('critical MED en ifylld whyNow-rad i registret behåller critical', async () => {
+    vi.resetModules()
+    vi.doMock('../../data/contentContract', async () => {
+      const actual = await vi.importActual<typeof import('../../data/contentContract')>('../../data/contentContract')
+      return {
+        ...actual,
+        getContentContractEntry: (source: string, id: string) =>
+          source === 'GameEventType' && id === 'mecenatEvent' ? { id, source, filled: true, deadlineLabel: 'omgång 14' } : undefined,
+      }
+    })
+    const { getEffectivePriority } = await import('../eventQueueService')
+    expect(getEffectivePriority(makeEvent({ type: 'mecenatEvent' }))).toBe('critical')
+    vi.doUnmock('../../data/contentContract')
+    vi.resetModules()
   })
 })

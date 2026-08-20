@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CONTENT_CONTRACT } from '../contentContract'
+import { CONTENT_CONTRACT, getContentContractEntry, getWhyNowLine } from '../contentContract'
 
 /**
  * O11 (SLUTTEST_KO.md, 2026-08-20) — INNEHÅLLSKONTRAKTET. Detta testet låser
@@ -51,5 +51,58 @@ describe('CONTENT_CONTRACT — struktur', () => {
       const anyFieldSet = e.trigger || e.stateEffect || (e.systems?.length ?? 0) > 0 || e.lifespan || e.semanticKey || e.recallSurface
       expect(anyFieldSet, `${e.id}: har fält ifyllda men filled:false — sätt filled:true om raden faktiskt är klar`).toBeFalsy()
     }
+  })
+
+  it('ingen filled:false-rad har whyNow-fält satta (D1 punkt 4 — inget gissat innan raden faktiskt spårats)', () => {
+    const todo = CONTENT_CONTRACT.filter(e => !e.filled)
+    for (const e of todo) {
+      const anyWhyNowSet = e.deadlineLabel || e.whyNowPerson || e.wholeEventIrreversible || e.seasonDefining
+      expect(anyWhyNowSet, `${e.id}: har whyNow-fält satta trots filled:false`).toBeFalsy()
+    }
+  })
+})
+
+/**
+ * D1 punkt 4 (DOM_D1_EVENTVIKTNING_2026-08-19.md) — "därför nu"-raden.
+ * Jacobs dom 2026-08-21: getWhyNowLine läser contentContract-raden, inte
+ * event-instansen. Copy ordagrant låst i domen, testet låser bara
+ * prioritetsordningen och null-fallet.
+ */
+describe('getWhyNowLine', () => {
+  it('deadline vinner över allt annat om flera fält är satta', () => {
+    expect(getWhyNowLine({ deadlineLabel: 'omgång 14', whyNowPerson: 'Anders', wholeEventIrreversible: true, seasonDefining: true }))
+      .toBe('Svaret måste komma före omgång 14.')
+  })
+
+  it('person vinner över irreversibel och säsongsavgörande', () => {
+    expect(getWhyNowLine({ whyNowPerson: 'Anders', wholeEventIrreversible: true, seasonDefining: true }))
+      .toBe('Anders väntar på besked.')
+  })
+
+  it('irreversibel vinner över säsongsavgörande', () => {
+    expect(getWhyNowLine({ wholeEventIrreversible: true, seasonDefining: true }))
+      .toBe('Det här går inte att göra ogjort.')
+  })
+
+  it('säsongsavgörande är sista fallet', () => {
+    expect(getWhyNowLine({ seasonDefining: true })).toBe('Det som bestäms här bär hela våren.')
+  })
+
+  it('inget fält satt ger null — domens signal att vikten ska sänkas', () => {
+    expect(getWhyNowLine({})).toBeNull()
+  })
+
+  it('undefined-rad (ingen contentContract-träff) ger null', () => {
+    expect(getWhyNowLine(undefined)).toBeNull()
+  })
+})
+
+describe('getContentContractEntry', () => {
+  it('hittar en känd rad', () => {
+    expect(getContentContractEntry('GameEventType', 'hesitantPlayer')?.filled).toBe(true)
+  })
+
+  it('returnerar undefined för okänt (source, id)', () => {
+    expect(getContentContractEntry('GameEventType', 'not_a_real_type')).toBeUndefined()
   })
 })

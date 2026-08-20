@@ -2,13 +2,27 @@
  * Tests for attentionRouter (A2/A3) and eventQueueService (B2).
  * Verifierar att getCurrentAttention prioriterar korrekt:
  *   screen > scene > event > idle
+ *
+ * contentContract mockas till att alltid returnera en whyNow-bärande rad —
+ * D1 punkt 4 (Jacobs dom 2026-08-21) kopplar getEffectivePriority mot
+ * contentContract.ts, och detta filens jobb är att testa kö-/attention-
+ * MEKANIKEN givet en priority, inte vilka typer som faktiskt är
+ * klassificerade pivotal idag (se eventQueueEffectivePriority.test.ts).
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { getCurrentAttention } from '../domain/services/attentionRouter'
 import { getNextEvent, getQueueStats } from '../domain/services/eventQueueService'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { GameEvent } from '../domain/entities/GameEvent'
 import { PendingScreen } from '../domain/enums'
+
+vi.mock('../domain/data/contentContract', async () => {
+  const actual = await vi.importActual<typeof import('../domain/data/contentContract')>('../domain/data/contentContract')
+  return {
+    ...actual,
+    getContentContractEntry: (source: string, id: string) => ({ id, source, filled: true, deadlineLabel: 'omgång 14' }),
+  }
+})
 
 // ─── Minimal SaveGame factory ──────────────────────────────────────────────
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {

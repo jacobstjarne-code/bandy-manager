@@ -26,6 +26,17 @@
  * del av grinden, en separat, större leverans. Detta pass svarar
  * rapportera-först-frågan och bygger registret; att koppla på en byggtid-
  * kontroll som vägrar merge av ofyllda rader är nästa steg, inte detta.
+ *
+ * KOPPLING TILL D1 PUNKT 4 (Jacobs dom, 2026-08-21): "därför nu"-radens
+ * getWhyNowLine() läser HÄRIFRÅN (per GameEventType-rad), inte från
+ * event-instansen. Ingen av de sex nu ifyllda raderna bär whyNow-data —
+ * mecenatEvent/economicStress/playerUnhappy/criticalEconomy (de fyra typer
+ * som faktiskt routas kritiskt, se getEventPriority i GameEvent.ts) är
+ * fortfarande `filled: false`. Tills en av dem spåras och en av de fyra
+ * whyNow-formerna grundas i verklig data, nedgraderar getEffectivePriority
+ * (eventQueueService.ts) alla kritiska events till 'normal' — MEDVETET,
+ * inte en bugg. Mekanismen aktiveras rad för rad när registret fylls i,
+ * aldrig genom att gissa en brådskerad för att täcka en typ.
  */
 
 export type ContractSource = 'GameEventType' | 'StorylineType' | 'ArcType' | 'PortalBeat'
@@ -55,6 +66,39 @@ export interface ContentContractEntry {
   /** true = alla sex fält verifierade mot koden. false = platshållare. */
   filled: boolean
   notes?: string
+
+  // ── D1 punkt 4 ("därför nu"-raden) — Jacobs dom 2026-08-21: getWhyNowLine
+  // läser HÄR, inte på event-instansen. Fälten sätts bara när en av de fyra
+  // formerna kan grundas i faktisk, spårad data för denna rad — aldrig som
+  // gissning för att "täcka" en pivotal-klassad typ. En rad utan whyNow-fält
+  // är enligt domen inte pivotal, och getEffectivePriority (eventQueueService.ts)
+  // nedgraderar den till 'normal' tills raden faktiskt spåras och fylls i.
+  /** Redan-formaterad tidpunkt, t.ex. "omgång 14", "transferfönstret stänger". */
+  deadlineLabel?: string
+  /** Förnamnet på den som väntar på besked. */
+  whyNowPerson?: string
+  /** HELA eventet (inte ett enskilt val, se EventChoice.irreversible för det) går inte att göra ogjort. */
+  wholeEventIrreversible?: boolean
+  /** Det som avgörs här bär hela säsongen. */
+  seasonDefining?: boolean
+}
+
+/**
+ * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 4 — "därför nu"-raden.
+ * "Den sista punkten är den viktigaste: 'därför nu'-raden är inte dekoration
+ * på pivotal, den är kriteriet för pivotal." Fem former, denna funktion
+ * returnerar den FÖRSTA som matchar i domens prioritetsordning, eller null
+ * om ingen av de fyra formerna är satt på contentContract-raden — då är
+ * eventet enligt domen inte pivotal, vikten sänks (getEffectivePriority i
+ * eventQueueService.ts). Copy ordagrant låst i domen, ingen ny text här.
+ */
+export function getWhyNowLine(entry: Pick<ContentContractEntry, 'deadlineLabel' | 'whyNowPerson' | 'wholeEventIrreversible' | 'seasonDefining'> | undefined): string | null {
+  if (!entry) return null
+  if (entry.deadlineLabel) return `Svaret måste komma före ${entry.deadlineLabel}.`
+  if (entry.whyNowPerson) return `${entry.whyNowPerson} väntar på besked.`
+  if (entry.wholeEventIrreversible) return 'Det här går inte att göra ogjort.'
+  if (entry.seasonDefining) return 'Det som bestäms här bär hela våren.'
+  return null
 }
 
 const GAME_EVENT_TYPE_IDS = [
@@ -160,3 +204,8 @@ export const CONTENT_CONTRACT: ContentContractEntry[] = [
   ...ARC_TYPE_IDS.map(id => basePlaceholder(id, 'ArcType')),
   ...PORTAL_BEAT_IDS_ALL.map(id => ({ ...basePlaceholder(id, 'PortalBeat'), ...(PIVOTAL_FILLED[id] ? { ...PIVOTAL_FILLED[id], filled: true } : {}) })),
 ]
+
+/** Slagning mot registret — O(n) över 95 rader, ingen indexering behövs vid denna storlek. */
+export function getContentContractEntry(source: ContractSource, id: string): ContentContractEntry | undefined {
+  return CONTENT_CONTRACT.find(e => e.source === source && e.id === id)
+}
