@@ -74,7 +74,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | 35 | ~~**6.4 post 21** edge-case-fixturer~~ KLAR — Å11-residualen `36351a95`. Långa-efternamn + skadetillstånd `f71b5edb` (redan byggda fixturer, bara oregistrerade). Positionsförkortningar granskade `17b1a6a3`: `positionShort()` (`domain/format.ts`) är den enda källan, 6 filer som refererar `PlayerPosition`-enumen utan att importera den använder alla enumen för LOGIK (sortering/filtrering), ingen för textrendering — inget inkonsekvensfynd. Marknadsvärde granskat: `Player.marketValue` är ett obligatoriskt numeriskt fält (aldrig undefined), `formatMarketValue`/`formatValue` hanterar 0 kr korrekt i alla tre kontrollerade konsumenter — inget "tomt pris-kort"-fall hittat, sannolikt samma fynd som Å11 redan täckte |
 | 36 | **Å12–15** nav-dokdrift, emoji-rester, egna skuggor — Å12/Å13/Å14 `KLAR`. Å13 (`f9fcef62`): 🟥 (rött kort) → 🚫 (utvisning) på de två live-ställen som missades av tidigare svep. Å15 (bundle) `EJ` |
 | 37 | **SPÅR B** fyra textnivåer som DS-kanon — hör ihop med D1, **Opus dömer först** |
-| 38 | **U8** bundle — RAPPORT LEVERERAD (2026-08-22), se not: ingen tydlig nettovinst, väntar på Jacobs produktbeslut. **U9** telemetri |
+| 38 | **U8** bundle — RAPPORT LEVERERAD (2026-08-22), se not: ingen tydlig nettovinst, väntar på Jacobs produktbeslut. **U9** telemetri — RAPPORT LEVERERAD (2026-08-22): 4/9 mått (inkl. val-entropin) byggbara nu utan ny infrastruktur, 5/9 kräver ett beslut om extern anonym mättjänst (appen har noll backend idag) |
 | 39 | Arkivera resten av `incoming/` allteftersom |
 | 40 | **Grind 0, resten** — "inga kritiska mobilflöden blockerade" + "produktionsbygge/deploy-sha obligatoriskt" (grindens egen definition, GRINDAR-sektionen). Numeriska kärnan `KLAR (a7a7054a)`, gate-satt. Detta kräver browser/deploy-verifiering, inte en simulering — separat post |
 
@@ -673,7 +673,19 @@ Rapportera vad ett begripligt backupflöde kostar, plus en automatisk lokal åte
 Ingen mätning finns. Behövs: onboarding → första match, första säsong → årsbok, årsbok → säsong 2, säsong 3/5/10, val-entropi, avskedsfrekvens per klubbprofil, exakt textupprepning, save recovery, och delningsfunneln.
 **Val-entropi är det mest värdefulla måttet i listan:** väljer 90 % samma alternativ är det sannolikt ingen riktig fråga. Det mäter O2 automatiskt.
 Rapportera vad som kan mätas utan konto och utan personuppgifter. **Efter sanningslagret.**
-**Status:** `EJ`
+
+**RAPPORT LEVERERAD, 2026-08-22** (villkoret uppfyllt sedan `a7a7054a`). Grundfakta som styr hela svaret: **appen har noll backend.** `FeedbackButton.tsx` säger det uttryckligen i sin egen kommentar ("Ingen backend → export via urklipp + mailto") — enda vägen data lämnar enheten idag är att SPELAREN aktivt kopierar/mailar en rapport. Det delar listans nio mått i två helt olika klasser, inte en gradskillnad:
+
+**Klass 1 — mätbart LOKALT, ingen ny infrastruktur, kan exporteras via samma urklipp/mailto-mönster som FeedbackButton redan har:**
+- **Val-entropi** — INTE mätbart idag utan ny loggning: varken `resolvedEventIds` (bara event-ID, inte VILKET val) eller `narrativeLog` (semanticKey/säsong/omgång, inte valet) sparar vilket val spelaren gjorde. Kräver en ny, liten lokal logg (`{eventType, choiceId}`-par) — litet jobb, ingen transmission behövs för att Jacob själv ska kunna läsa den ur en delad save.
+- **Exakt textupprepning** — delvis redan mätt, fast bara i SIMULERING: `npm run stress` skriver redan ut "Flest dubblerade strängar i en säsong" (såg 40 dubbletter, 31x högsta upprepning i en körning denna session). Samma räkning mot en RIKTIG spelares narrativeLog/inbox vore samma kod, bara en annan datakälla.
+- **Save recovery** — mätbart: `saveGameMigration.ts`/`snapshotSave`-vägarna i `saveGameStorage.ts` kan räkna hur ofta de faktiskt triggar, lokalt.
+- **Avskedsfrekvens per klubbprofil** — mätbart RETROSPEKTIVT ur en delad save (`managerFired` + klubbens `boardExpectation`), ingen ny loggning behövs, bara en analysfunktion som körs på insamlade saves.
+
+**Klass 2 — KRÄVER något som lämnar enheten anonymt, även om det aldrig blir ett konto:** onboarding→första match, säsong 1→årsbok→säsong 2, säsong 3/5/10-retention, delningsfunneln. Dessa är TRATTAR ÖVER TID OCH SESSIONER — att veta att SAMMA spelare (inte bara "någon") nådde milstolpe X kräver antingen ett konto (uteslutet) eller en anonym, kontolös identifierare som pingar något UTANFÖR enheten flera gånger över dagar/veckor. Det är inte en kodningslucka, det är en arkitekturell avsaknad: appen har ingen plats att skicka den pingen till. Lösningen (t.ex. Vercel Web Analytics eller motsvarande cookie-fri, kontolös tjänst) är en ny extern beroende/tjänst — Jacobs beslut, inte något jag lägger till ensidigt.
+
+**Slutsats:** fyra av nio mått byggbara nu utan någon ny infrastruktur (mest värdefulla — val-entropin — ibland dem). Fem kräver ett beslut om att introducera EN extern, anonym mättjänst innan något av dem går att bygga alls.
+**Status:** `RAPPORT LEVERERAD — klass 1 byggbar på beställning, klass 2 väntar på Jacobs beslut om extern mättjänst`
 
 ---
 
