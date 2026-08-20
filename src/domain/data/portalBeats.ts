@@ -128,6 +128,27 @@ function renderSteps(c: RippleChain | undefined): { text: string; dir: 'up' | 'd
   })
 }
 
+// U5 forts (SLUTTEST_KO.md, 2026-08-19/20): isOnCooldown mot "pivotal beats".
+// "Pivotal" saknar en formell klassificering i kodbasen ännu (bara ett
+// storleksuppskattnings-omnämnande: "15-20 pivotal, 70-80 ambient" av
+// ~90-100 narrativa former — den riktiga taxonomin väntar på O11/
+// contentContract.ts). Interimsval tills dess: de sju beats nedan är de
+// som läser som stora, sällsynta narrativa ögonblick snarare än rutinmässig
+// matchreaktion — samma intuition som severity 3 ("kris-band") pekar mot,
+// men severity beräknas dynamiskt per game-state och går inte att lista
+// statiskt, så id:n används direkt istället. minSeasonsApart=2: samma
+// specifika ögonblick ska inte kunna komma tillbaka säsongen efter.
+export const PIVOTAL_BEAT_IDS: readonly string[] = [
+  'board_failure',
+  'ripple_consequence',
+  'callback_nemesis',
+  'callback_legend_mentor',
+  'callback_legend_debut',
+  'callback_legend_record',
+  'facility_completed',
+]
+export const PIVOTAL_BEAT_COOLDOWN_SEASONS = 2
+
 export const PORTAL_BEATS: PortalBeat[] = [
   // ── Board-rewards: misslyckande-ultimatum (eskalerande sev 1→2→3) ──────────
   {

@@ -19,6 +19,7 @@ import { getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
 import { navigateTo } from '../../navigation/globalNavigate'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
 import { logNarrativeBeat } from '../../../domain/services/narrativeLogService'
+import { PIVOTAL_BEAT_IDS } from '../../../domain/data/portalBeats'
 
 interface GetState {
   game: SaveGame | null
@@ -488,7 +489,7 @@ export function gameFlowActions(get: Get, set: Set) {
       }
     },
 
-    dismissBeat: (beatKey: string) => {
+    dismissBeat: (beatKey: string, beatId?: string) => {
       const { game } = get()
       if (!game) return
       const shown = game.shownBeats ?? []
@@ -496,7 +497,16 @@ export function gameFlowActions(get: Get, set: Set) {
         // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 3/9. Loggar
         // den råa beatKey:en oskalad (flera keyFn:s bakar redan in `_s{season}`
         // — finkornig strippning är ett senare, medvetet steg per DOM:en).
-        set({ game: { ...game, shownBeats: [...shown, beatKey], narrativeLog: logNarrativeBeat(game, beatKey, game.currentSeason, getCurrentLeagueRound(game)) } })
+        let log = logNarrativeBeat(game, beatKey, game.currentSeason, getCurrentLeagueRound(game))
+        // U5 forts (2026-08-20): pivotal beats loggar DESSUTOM en post på sitt
+        // eget stabila beat.id (utöver den kompositnyckel-baserade posten
+        // ovan) — isOnCooldown (portalBeatService.ts) matchar exakt mot
+        // semanticKey och kan annars aldrig hitta ett tidigare tillfälle när
+        // keyFn bakar in trigger/omgång i nyckeln (t.ex. ripple_consequence).
+        if (beatId && PIVOTAL_BEAT_IDS.includes(beatId)) {
+          log = logNarrativeBeat({ ...game, narrativeLog: log }, beatId, game.currentSeason, getCurrentLeagueRound(game))
+        }
+        set({ game: { ...game, shownBeats: [...shown, beatKey], narrativeLog: log } })
       }
     },
 

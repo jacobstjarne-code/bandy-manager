@@ -63,13 +63,13 @@ export function PortalBeat({ game }: Props) {
   const dismiss = (e: React.MouseEvent) => {
     e.stopPropagation()
     const key = getBeatKey(beat, game.currentSeason, game)
-    dismissBeat(key)
+    dismissBeat(key, beat.id)
   }
 
   const handleClick = () => {
     if (beat.route) {
       const key = getBeatKey(beat, game.currentSeason, game)
-      dismissBeat(key)
+      dismissBeat(key, beat.id)
       navigate(beat.route)
     }
   }
