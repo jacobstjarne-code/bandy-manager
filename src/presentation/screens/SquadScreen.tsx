@@ -918,7 +918,7 @@ export function SquadScreen() {
             style={{
             background: 'var(--bg)',
             borderRadius: 'var(--radius-md)',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+            boxShadow: 'var(--shadow-modal)',
             border: '1px solid var(--border)',
             width: '100%',
             maxWidth: 390,

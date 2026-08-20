@@ -743,7 +743,11 @@
   border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
   border-radius: 14px;
   padding: 16px;
-  box-shadow: 0 -4px 24px color-mix(in srgb, var(--panel) 45%, transparent);
+  /* Skuggkanon (D1 punkt 4 + Å14, 2026-08-21): SubstitutionModal (centrerad,
+     denna klass utan .match-modal-dock) = modal-nivå. TacticChangeModal
+     (dockad, samma element bär BÅDA klasserna) övermappas nedan till
+     modal-dark — samma elevationsnivå, olika läge, per Å10. */
+  box-shadow: var(--shadow-modal);
   width: 90%;
   max-width: 430px;
   margin-inline: auto;
@@ -754,6 +758,7 @@
   left: 16px;
   right: 16px;
   z-index: var(--z-modal);
+  box-shadow: var(--shadow-modal-dark);
 }
 .match-modal-head {
   display: flex;

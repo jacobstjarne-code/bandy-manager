@@ -16,7 +16,7 @@ export function PhaseOverlay({ phase, onContinue }: PhaseOverlayProps) {
         minWidth: 260, maxWidth: 320, width: '90%',
         background: 'var(--bg)',
         border: 'none',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.35)',
+        boxShadow: 'var(--shadow-modal)',
       }}>
         <div style={{ fontSize: 52, marginBottom: 16 }}>{isOT ? '⏱' : '🎯'}</div>
         <h2 style={{

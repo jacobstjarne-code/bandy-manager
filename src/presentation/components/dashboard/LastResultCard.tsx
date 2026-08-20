@@ -55,7 +55,7 @@ export function LastResultCard({
           <p className="h-label" style={{ margin: 0 }}>
             <Swords size={8} style={{ verticalAlign: 'middle', marginRight: 2 }} />{' '}Senast
           </p>
-          <button style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 4, flexShrink: 0, background: 'transparent', border: '1px solid var(--border)', color: 'var(--accent)', fontSize: 12, lineHeight: 1, boxShadow: '0 1px 2px rgba(0,0,0,0.03)', cursor: 'pointer' }}>›</button>
+          <button style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 4, flexShrink: 0, background: 'transparent', border: '1px solid var(--border)', color: 'var(--accent)', fontSize: 12, lineHeight: 1, boxShadow: 'var(--shadow-rest)', cursor: 'pointer' }}>›</button>
         </div>
 
         <p

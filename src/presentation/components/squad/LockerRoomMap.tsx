@@ -152,7 +152,7 @@ export function LockerRoomMap({ players, captainId, game, onPlayerClick }: Props
             pointerEvents: 'none',
             zIndex: 10,
             whiteSpace: 'nowrap',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            boxShadow: 'var(--shadow-raised)',
           }}>
             <strong>{tooltipPlayer.firstName} {tooltipPlayer.lastName}</strong>
             <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>

@@ -156,7 +156,7 @@ export function DecisionCard({ shape = 'sharp', accent, entityId, entitySource, 
         margin: isRound ? '0 0 20px' : '0 0 3px',
         padding: isRound ? '24px 20px' : '10px 12px',
         ...(accent ? { borderLeft: '3px solid var(--warm)', borderRadius: '0 8px 8px 0' } : {}),
-        ...(isRound ? { minWidth: 280, maxWidth: 360, width: '90%', background: 'var(--bg)', border: 'none', boxShadow: '0 8px 40px rgba(0,0,0,0.3)' } : {}),
+        ...(isRound ? { minWidth: 280, maxWidth: 360, width: '90%', background: 'var(--bg)', border: 'none', boxShadow: 'var(--shadow-modal)' } : {}),
         ...style,
       }}
       {...(entityId ? { 'data-entity-id': entityId } : {})}

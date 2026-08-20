@@ -262,7 +262,7 @@ export function GameHeader() {
           position: 'absolute', top: 48, right: 10,
           background: 'var(--bg-surface)', border: '1px solid var(--border)',
           borderRadius: 8, padding: '4px 0',
-          boxShadow: 'var(--shadow-menu)',
+          boxShadow: 'var(--shadow-raised)',
           zIndex: 'var(--z-header)', minWidth: 160,  // var 200 = oförändrat
         }}>
           {[

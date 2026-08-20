@@ -48,7 +48,7 @@ export function KlubbparmOverlay({ game, onClose }: KlubbparmOverlayProps) {
           maxHeight: 'calc(100vh - 100px)',
           overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+          boxShadow: 'var(--shadow-modal)',
         }}
       >
         {/* Läder-header-band */}

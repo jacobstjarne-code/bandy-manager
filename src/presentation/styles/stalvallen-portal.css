@@ -462,6 +462,10 @@
   overflow: hidden;
   border: 1px solid transparent;
 }
+/* Skuggkanon (D1 punkt 4 + Å14, 2026-08-21): weight-2/-2-warm använde
+   --shadow-card (ljust läges droppskugga) på Portalens mörka bakgrund —
+   nästan osynlig svart-på-svart, exakt det problem domen beskriver.
+   --shadow-rest-dark (ljus inset-rim) ersätter den, ringen intakt. */
 
 .primary-card.primary-weight-1 {
   border-color: rgba(196, 122, 58, 0.32);
@@ -471,7 +475,7 @@
   background: linear-gradient(180deg,
     rgba(196, 122, 58, 0.08) 0%,
     var(--bg-portal-elevated) 38%);
-  box-shadow: 0 0 0 1px rgba(196, 122, 58, 0.10), var(--shadow-card);
+  box-shadow: 0 0 0 1px rgba(196, 122, 58, 0.10), var(--shadow-rest-dark);
 }
 .primary-card.primary-weight-3 {
   border-color: rgba(232, 185, 92, 0.55);
@@ -486,7 +490,7 @@
   background: linear-gradient(180deg,
     rgba(140, 110, 58, 0.10) 0%,
     var(--bg-portal-elevated) 40%);
-  box-shadow: 0 0 0 1px rgba(140, 110, 58, 0.14), var(--shadow-card);
+  box-shadow: 0 0 0 1px rgba(140, 110, 58, 0.14), var(--shadow-rest-dark);
 }
 .primary-card.primary-weight-2 .primary-eyebrow { color: var(--warm-light); }
 .primary-card.primary-weight-2-warm .primary-eyebrow { color: var(--warm-light); }

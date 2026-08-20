@@ -72,7 +72,7 @@ export function FormDots({ results, size = 8 }: FormDotsProps) {
             fontWeight: 600,
             whiteSpace: 'nowrap',
             zIndex: 100,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            boxShadow: 'var(--shadow-raised-dark)',
             pointerEvents: 'none',
           }}>
             <span style={{ color: COLORS[results[tapped].result] }}>{results[tapped].result}</span>
@@ -145,7 +145,7 @@ export function FormSquares({ results, size = 22 }: FormDotsProps & { size?: num
             fontWeight: 600,
             whiteSpace: 'nowrap',
             zIndex: 100,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            boxShadow: 'var(--shadow-raised-dark)',
             pointerEvents: 'none',
           }}>
             {results[tapped].score}

@@ -47,7 +47,7 @@ export function PressConferenceScene({ event, journalist, onChoice }: Props) {
         minWidth: 280, maxWidth: 360, width: '90%',
         marginBottom: 20,
         background: 'var(--bg)',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.35)',
+        boxShadow: 'var(--shadow-modal)',
         padding: 0,
         overflow: 'hidden',
       }}>
