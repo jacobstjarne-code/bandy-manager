@@ -68,3 +68,30 @@ export function systemhandelseBudgetOk(
   if (mostRecentRound === -Infinity) return true
   return currentRound - mostRecentRound >= minRoundsBetween
 }
+
+/**
+ * U5 forts (SLUTTEST_KO.md, 2026-08-20) — systemhandelseBudgetOk:s faktiska
+ * gating, applicerad på en BATCH nygenererade items (t.ex. en omgångs
+ * `allNewEvents`) i ordning. `game.narrativeLog` uppdateras bara vid
+ * RESOLUTION (spelaren svarar), inte vid generering — utan den provisoriska,
+ * ALDRIG persisterade räkningen här hade två systemhandelse-items genererade
+ * i SAMMA batch (innan någotdera hunnit resolvas) båda slunkit igenom, trots
+ * att varsel-mallen kräver "aldrig två i samma omgång". Släppta items tappas
+ * för denna omgång — inget efterköat återförsök.
+ */
+export function filterSystemhandelseBudget<T extends { id: string; systemhandelse?: boolean }>(
+  items: T[],
+  game: SaveGame,
+  currentSeason: number,
+  currentRound: number,
+  maxPerSeason = 3,
+  minRoundsBetween = 1,
+): T[] {
+  let provisional = game
+  return items.filter(item => {
+    if (!item.systemhandelse) return true
+    if (!systemhandelseBudgetOk(provisional, currentSeason, currentRound, maxPerSeason, minRoundsBetween)) return false
+    provisional = { ...provisional, narrativeLog: logNarrativeBeat(provisional, `provisional_${item.id}`, currentSeason, currentRound, true) }
+    return true
+  })
+}

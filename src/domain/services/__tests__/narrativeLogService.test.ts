@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { logNarrativeBeat, isOnCooldown, systemhandelseBudgetOk } from '../narrativeLogService'
+import { logNarrativeBeat, isOnCooldown, systemhandelseBudgetOk, filterSystemhandelseBudget } from '../narrativeLogService'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
 
@@ -116,5 +116,58 @@ describe('systemhandelseBudgetOk — O19 säsongsbudget', () => {
       ],
     }
     expect(systemhandelseBudgetOk(game, 3, 5, 3)).toBe(true)
+  })
+})
+
+// U5 forts (SLUTTEST_KO.md, 2026-08-20) — den faktiska gatingen, applicerad
+// på en batch (roundProcessor.ts:s allNewEvents-motsvarighet).
+describe('filterSystemhandelseBudget — U5 forts gating', () => {
+  it('icke-systemhändelser släpps alltid igenom, oavsett budget', () => {
+    const game = {
+      ...makeGame(),
+      narrativeLog: [
+        { semanticKey: 'a', season: 3, round: 2, systemhandelse: true },
+        { semanticKey: 'b', season: 3, round: 8, systemhandelse: true },
+        { semanticKey: 'c', season: 3, round: 14, systemhandelse: true },
+      ],
+    }
+    const items = [{ id: 'e1' }, { id: 'e2', systemhandelse: false }]
+    expect(filterSystemhandelseBudget(items, game, 3, 20)).toEqual(items)
+  })
+
+  it('en systemhändelse släpps igenom när budget finns', () => {
+    const game = makeGame()
+    const items = [{ id: 'e1', systemhandelse: true }]
+    expect(filterSystemhandelseBudget(items, game, 3, 10)).toEqual(items)
+  })
+
+  it('taket redan nått: systemhändelsen tappas, icke-systemhändelser i samma batch påverkas inte', () => {
+    const game = {
+      ...makeGame(),
+      narrativeLog: [
+        { semanticKey: 'a', season: 3, round: 2, systemhandelse: true },
+        { semanticKey: 'b', season: 3, round: 8, systemhandelse: true },
+        { semanticKey: 'c', season: 3, round: 14, systemhandelse: true },
+      ],
+    }
+    const items = [{ id: 'e1', systemhandelse: true }, { id: 'e2' }]
+    expect(filterSystemhandelseBudget(items, game, 3, 20)).toEqual([{ id: 'e2' }])
+  })
+
+  it('två systemhändelser i SAMMA batch: bara den första släpps igenom (aldrig två i samma omgång)', () => {
+    // Ingen tidigare logg — utan den provisoriska räkningen hade båda
+    // slunkit igenom eftersom det riktiga narrativeLog inte uppdateras
+    // förrän spelaren resolvar. Detta test är rotorsaken till varför
+    // filterSystemhandelseBudget existerar som egen funktion.
+    const game = makeGame()
+    const items = [{ id: 'e1', systemhandelse: true }, { id: 'e2', systemhandelse: true }]
+    expect(filterSystemhandelseBudget(items, game, 3, 10)).toEqual([{ id: 'e1', systemhandelse: true }])
+  })
+
+  it('game.narrativeLog självt muteras aldrig av filtreringen', () => {
+    const game = makeGame()
+    const items = [{ id: 'e1', systemhandelse: true }, { id: 'e2', systemhandelse: true }]
+    filterSystemhandelseBudget(items, game, 3, 10)
+    expect(game.narrativeLog).toBeUndefined()
   })
 })

@@ -46,7 +46,7 @@ import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService
 import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
-import { logNarrativeBeat } from '../../domain/services/narrativeLogService'
+import { logNarrativeBeat, filterSystemhandelseBudget } from '../../domain/services/narrativeLogService'
 import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
@@ -1519,8 +1519,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         resolvedWeeklyDecisions: game.resolvedWeeklyDecisions ?? [],
       }
       const budgetOk = canAddDecision(gameWithNewEvents, nextMatchday)
-      const newDecision = budgetOk
+      const rawNewDecision = budgetOk
         ? generateWeeklyDecision(gameWithNewEvents, nextMatchday)
+        : null
+      // U5 forts (2026-08-20): systemhandelseBudgetOk gäller decisions också
+      // (aggregat över events+decisions, samma säsongsbudget) — canAddDecision
+      // ovan är en annan, redan befintlig spärr (allmän beslutskadens), inte
+      // varsel-mallens "aldrig fler än tre systemhändelser/max en per omgång".
+      const newDecision = rawNewDecision
+        ? filterSystemhandelseBudget([rawNewDecision], game, game.currentSeason, nextMatchday)[0] ?? null
         : null
       return {
         pendingWeeklyDecision: newDecision ?? undefined,
@@ -2062,5 +2069,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }
+  // U5 forts (SLUTTEST_KO.md, 2026-08-20): systemhandelseBudgetOk:s faktiska
+  // gating (se filterSystemhandelseBudget, narrativeLogService.ts, för
+  // rotorsaken till den provisoriska räkningen). Släppta events tappas för
+  // denna omgång — samma konservativa avvägning som canAddDecision ovan.
+  const budgetedNewEvents = filterSystemhandelseBudget(allNewEvents, updatedGame, game.currentSeason, nextMatchday)
+
+  return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: budgetedNewEvents, hasManagedCupMatch: hasManagedCupPending }
 }
