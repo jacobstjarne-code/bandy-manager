@@ -26,6 +26,7 @@ import { FORMATIONS, type FormationType } from '../../../domain/entities/Formati
 import { mulberry32 } from '../../../domain/utils/random'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { generateWeeklyDecision } from '../../../domain/services/weeklyDecisionService'
+import { computeNextAnslag, type AnslagKey } from '../../../domain/services/anslagService'
 import type { ActiveAnniversary, MemoryEventType } from '../../../domain/services/clubMemoryService'
 import { bidReceivedEvent } from '../../../domain/services/events/eventFactories'
 
@@ -91,7 +92,23 @@ export function atRound(game: SaveGame, targetMatchday: number): SaveGame {
     ),
   } : game.cupBracket
 
-  const next: SaveGame = { ...game, fixtures, standings, currentMatchday: targetMatchday, cupBracket }
+  let next: SaveGame = { ...game, fixtures, standings, currentMatchday: targetMatchday, cupBracket }
+
+  // Dev-scenes overlay-bugg (2026-08-22, hittad under en Playwright-genomklickning
+  // av BatchStack): atRound fejkar en mitt-i-säsongen-historik utan att en spelare
+  // faktiskt klickat sig fram dit — seenAnslag stannar tom, så AnslagOverlay
+  // (PortalScreen.tsx, riktig modal, z-index 300 — inte skalpollution) tror INGET
+  // anslag någonsin visats och täcker varje dev-scen som mountar PortalScreen mitt
+  // i säsongen. computeNextAnslag() är redan en tillstånds-maskin (nästa att visa
+  // givet seenAnslag) — loopa den till uttömning istf att räkna upp AnslagKey-
+  // unionen (Cup|League|Playoff) för hand.
+  const seenAnslag: AnslagKey[] = [...(next.seenAnslag ?? [])]
+  for (let i = 0; i < 40; i++) {
+    const anslag = computeNextAnslag({ ...next, seenAnslag })
+    if (!anslag) break
+    seenAnslag.push(anslag)
+  }
+  next = { ...next, seenAnslag }
 
   const crashes = checkInvariants(next).filter(f => f.severity === 'crash')
   if (crashes.length > 0) {
