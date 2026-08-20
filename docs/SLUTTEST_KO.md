@@ -45,17 +45,17 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | # | Post | Underlag |
 |---|---|---|
 | 18 | **U5 forts** `isOnCooldown` mot pivotal beats, sedan `systemhandelseBudgetOk` | U5-domen |
-| 19 | **D1** punkt 1–3: Å7-padding, ambient-regeln, konsekvensmarkören (inte röd) | `DOM_D1_EVENTVIKTNING_2026-08-19.md` |
-| 20 | **O15/D4** taktikens två lägen + Å2:s träffytor | D4 + min dom |
-| 21 | **O3** spelarens säsongsmål | `DOM_EGET_SASONGSMAL_2026-08-17.md` |
+| 19 | ~~**D1** punkt 1–3: Å7-padding, ambient-regeln, konsekvensmarkören~~ KLAR (`97d26cfd`/`4e347971`/`9ae907bc`) — punkt 4 väntar på O19+contentContract | `DOM_D1_EVENTVIKTNING_2026-08-19.md` |
+| 20 | ~~**O15/D4** taktikens två lägen + Å2:s träffytor~~ KLAR (`e248835f`) | D4 + min dom |
+| 21 | ~~**O3** spelarens säsongsmål~~ KLAR (`7604b196`/`56e5882c`/`c025bfd7`/`424bc7ed`) — känt gap: 'inget särskilt i år'-raden ej nåbar utan `SeasonGoalType`-utökning | `DOM_EGET_SASONGSMAL_2026-08-17.md` |
 | 22 | **O18** årsbokens fem fält — fält 1 ihop med O3, fält 2 kräver O19 | `DOM_ARSBOKEN_RYGGRAD_2026-08-17.md` |
 | 23 | **O4** burnout: informationskvalitet + tre handlingar | `DOM_BURNOUT_2026-08-17.md` |
-| 24 | **O16** `DITT VAL` i Granska — efter etapp II blir listan längre och korrekt | `DOM_GRANSKA_LARANDEYTA_2026-08-17.md` |
-| 25 | **O17 del 1** fullt anläggningsträd som tillstånd | `DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md` |
+| 24 | ~~**O16** `DITT VAL` i Granska~~ KLAR (`ee8f2d1c`) — bara hörnstrategi→hörnmål byggd (enda mätta av fyra kandidater), rapporterat | `DOM_GRANSKA_LARANDEYTA_2026-08-17.md` |
+| 25 | ~~**O17 del 1** fullt anläggningsträd som tillstånd~~ KLAR (`40530421`) — del 2 (gate) också klar, del 3 väntar på O5 | `DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md` |
 | 26 | **O2** noOp-grepet, rapportera siffran, sedan pairwise | `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md` |
 | 27 | **O9** delningskortets tre rader + fråga, efter 4.12/4.13 | `DOM_DELNINGSKORTET_2026-08-17.md` |
 | 28 | **O11** `contentContract.ts` — efter 18 | `DOM_INNEHALLSKONTRAKTET_2026-08-17.md` |
-| 29 | **O19** märk de nio 5/5-händelserna i data | varsel-domen |
+| 29 | ~~**O19** märk de nio 5/5-händelserna i data~~ KLAR (`72427068`) | varsel-domen |
 
 ## Etapp IV — Grind 1 och andra akten
 
