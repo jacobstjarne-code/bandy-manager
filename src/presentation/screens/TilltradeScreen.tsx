@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { useLineupEditor } from '../hooks/useLineupEditor'
@@ -99,10 +99,21 @@ export function TilltradeScreen() {
     return { data, attackers, defenders }
   }, [game])
 
-  if (!game) { navigate('/', { replace: true }); return null }
-  if (game.onboardingComplete) { navigate('/game/dashboard', { replace: true }); return null }
+  // Mobilflöde-verifiering (SLUTTEST_KO.md, Grind 0-resten, 2026-08-22):
+  // navigate() anropades tidigare direkt i render-kroppen som tre villkorade
+  // early returns — React varnade "Cannot update a component while rendering
+  // a different component" (upptäckt vid en riktig genomklickning av
+  // onboarding-flödet, inte en syntetisk test). navigate() hör hemma i en
+  // effekt, aldrig i render self; return null-grenarna nedan är fortfarande
+  // rätt (bara renderingen som pausas, inte navigeringen).
+  useEffect(() => {
+    if (!game) { navigate('/', { replace: true }); return }
+    if (game.onboardingComplete) { navigate('/game/dashboard', { replace: true }); return }
+    if (!game.assistantCoach) { navigate('/game/dashboard', { replace: true }); return }
+  }, [game, navigate])
+
+  if (!game || game.onboardingComplete || !game.assistantCoach) return null
   const coach = game.assistantCoach
-  if (!coach) { navigate('/game/dashboard', { replace: true }); return null }
 
   const firstName = coach.name.split(' ')[0]
   const lastName = coach.name.split(' ')[1] ?? ''
