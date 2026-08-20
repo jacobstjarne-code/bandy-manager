@@ -1045,4 +1045,18 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 
 **Känn igen:** ett `visual-regression`-fel i en EXTRA_HEIGHT-scen där diffen är en HÖJDMISMATCH (inte en färg-/layoutdiff) och ingen ändrad fil har någon rimlig koppling till scenen. Reflexen "kör om" är rätt EN gång. Andra gången är reflexen fel.
 
+## 47. Fjärde skalet-stör-fotot-buggen — men denna gången var det inte skalet
+
+**Mönster:** CLAUDE.md:s regel "DEV-SCENSKALET FÅR INTE PÅVERKA DET SOM FOTOGRAFERAS" dokumenterar tre incidenter (sticky dev-nav vid stitchning, `zIndex:999` över `--z-modal`, saknat eget scroll-sammanhang). En fjärde incident (2026-08-22, BatchStack-verifiering): varje mitt-i-säsongen Portal-dev-scen (`portal-tom/normal/full/grind/bid-*`) visade en full-viewport `AnslagOverlay` som täckte allt, oavsett scen-param, scroll eller `pendingScene`-overrides.
+
+**Skillnaden mot de tre tidigare:** den här gången var det INTE skalet. `AnslagOverlay` (`PortalScreen.tsx`, `z-index:300`, appens egna modallager) är korrekt appkod — den gjorde exakt vad den ska givet ett tillstånd. Rotorsaken satt i FABRIKEN: `gameStateFactory.ts`s `atRound()` fejkar en mitt-i-säsongen-historik (fixtures/standings) utan att röra `game.seenAnslag`, så varje seedad scen såg ut som ett tillstånd ingen riktig spelare kan nå (halva säsongen spelad, noll anslag någonsin sedda) — `computeNextAnslag()` hittade därför alltid ett att visa.
+
+**Varför det tog tre gånger längre att hitta:** symptomet ("skärmdumpen visar fel sak") var identiskt med de tre skal-incidenterna, så felsökningen letade i skalet (DevScenesScreen.tsx:s nav/wrapper) först, hittade inget, och landade på "okänd, pre-existing harness-bugg" innan roten faktiskt spårades till fixtur-datan. En `elementFromPoint`-gate (se nedan) hade sparat den rundan genom att peka på VILKET element som täckte, inte anta att skalet var boven.
+
+**Fixen, generellt formulerad:** när en fejkad historik simulerar "spelaren är vid omgång N" måste den även simulera "spelaren har sett allt som en riktig spelare vid omgång N redan sett" — inte bara de fält som direkt driver den vy man testar. `computeNextAnslag()` är redan en tillståndsmaskin; att loopa den till uttömning (istf att räkna upp `AnslagKey`-unionen för hand) backfyller `seenAnslag` korrekt utan att duplicera dess regler.
+
+**Förslag på grind (rapporterat, inte byggt):** en generell ockluderings-check i `tests/visual/scenes.visual.ts` — för varje registrerad scen, `document.elementFromPoint()` på målmarkörens (`data-scene-content` eller scenens egen root) bounding-box-centrum + några interiöra samplingspunkter, och assertera att träffen är markören själv eller en ättling. Fångar BÅDE skal-läckage och legitima-men-fel-tillstånd-överlägg (som denna) utan en underhållen blocklista av "kända fel-scener" — bredare än det tidigare z-index/geometri-fokuset, som per definition inte hade fångat den här varianten (overlayen var legitim UI på rätt lager, inte scaffold-läckage).
+
+**Känn igen:** en dev-scene-screenshot visar fel innehåll och DOM-inspektion (`getBoundingClientRect`) bekräftar att RÄTT element faktiskt finns och är korrekt positionerat — då är något ANNAT ovanpå det. Fråga först "vilket element täcker?" (elementFromPoint), inte "vilket skal-mönster känner jag igen?" — annars letar man i fel lager.
+
 **Historik (2026-08-18):** Enda observerade instansen hittills — `taktik`, körning `32191934694` → omkörning `95888984429` (grön). Ingen andra instans loggad än. Om/när nästa uppstår, länka hit och uppgradera denna post från "observerat en gång" till "mönster, utrett".
