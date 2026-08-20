@@ -642,7 +642,7 @@ export function SquadScreen() {
                   {injured.map(p => playerRow(p, 'var(--danger)', getInjuryText(p.injuryDaysRemaining, p.id)))}
                 </>)}
                 {suspended.length > 0 && sectionWrap('var(--danger)', <>
-                  <div className="h-label" style={{ marginBottom: 8 }}>🟥 AVSTÄNGDA</div>
+                  <div className="h-label" style={{ marginBottom: 8 }}>🚫 AVSTÄNGDA</div>
                   {suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id, p.suspensionCause)))}
                 </>)}
                 {lowMorale.length > 0 && sectionWrap('var(--warm)', <>

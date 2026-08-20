@@ -74,7 +74,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
               const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🥅')
                 : e.type === MatchEventType.Corner ? '🔄'
                 : e.type === MatchEventType.Penalty ? '🎯'
-                : '🟥'
+                : '🚫' // Suspension (bandy-utvisning, inte rött kort — emojiConsistency.ts)
               const p = e.playerId ? game.players.find(pl => pl.id === e.playerId) : null
               const name = p ? `${p.firstName[0]}. ${p.lastName}` : (e.description ?? '')
               const textColor = isManagedEvent ? 'var(--text-primary)' : 'var(--text-muted)'
