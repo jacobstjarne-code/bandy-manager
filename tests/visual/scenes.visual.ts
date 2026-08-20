@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { assertNoDuplicateEntityIds } from './entityDedup'
+import { assertNoUnexpectedOverlay } from './occlusionGate'
 import { SCENES } from './sceneRegistry'
 
 /**
@@ -58,5 +59,7 @@ for (const [id, clickText, snapshotNameOverride, fixedOverlay, extraHeight] of S
     await expect(page.locator('[data-scene-content]')).toHaveScreenshot(`scene-${snapshotName}.png`)
     // Entitets-dedup-grinden (AUDIT DEL 2, 2026-08-12) — se entityDedup.ts.
     await assertNoDuplicateEntityIds(page)
+    // Occlusion-grinden (2026-08-22, LESSONS.md #47) — se occlusionGate.ts.
+    await assertNoUnexpectedOverlay(page)
   })
 }
