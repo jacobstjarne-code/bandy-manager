@@ -589,6 +589,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   const keyMoments = allMoments.slice(0, 7)
 
   return {
+    id: `${game.id}_s${game.currentSeason}_${managedClubId}`,
     season: game.currentSeason,
     clubId: managedClubId,
     clubName: club.name,

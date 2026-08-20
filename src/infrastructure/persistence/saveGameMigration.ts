@@ -113,7 +113,7 @@ function mergeLegacyBoard(
   return result
 }
 
-export const CURRENT_SAVE_VERSION = '0.3.3'
+export const CURRENT_SAVE_VERSION = '0.3.4'
 
 export function migrateSaveGame(raw: unknown): SaveGame {
   const data = raw as Record<string, unknown>
@@ -138,6 +138,16 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.resolvedEventIds === undefined) data.resolvedEventIds = []
   if (data.transferBids === undefined) data.transferBids = []
   if (data.seasonSummaries === undefined) data.seasonSummaries = []
+  // SeasonSummary.id (2026-08-22) — förutsättning för delbarhet, tillagt efter
+  // v0.3.3. Gamla saves har summaries utan `id`; backfyll med samma formel
+  // som seasonSummaryService.ts använder vid genereringstillfället, annars
+  // saknar äldre karriärer id på precis de summaries som fanns FÖRE migrationen.
+  if (Array.isArray(data.seasonSummaries)) {
+    data.seasonSummaries = (data.seasonSummaries as Record<string, unknown>[]).map(s => {
+      if (s.id !== undefined) return s
+      return { ...s, id: `${data.id as string}_s${s.season as number}_${s.clubId as string}` }
+    })
+  }
   if (data.scoutReports === undefined) data.scoutReports = {}
   if (data.trainingHistory === undefined) data.trainingHistory = []
   if (data.trainingProjects === undefined) data.trainingProjects = []

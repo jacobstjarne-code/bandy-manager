@@ -43,6 +43,12 @@ export interface MatchHighlight {
 }
 
 export interface SeasonSummary {
+  /** Stabilt, globalt unikt id (2026-08-22, förutsättning för delbarhet —
+   *  se SVAR_ARKITEKTUR_SAVEGAME). Härlett ur `${game.id}_s${season}_${clubId}`
+   *  vid genereringstillfället i seasonSummaryService.ts, inte array-index.
+   *  Gamla saves saknar fältet — saveGameMigration.ts backfyller det med
+   *  samma formel vid inläsning. */
+  id: string
   season: number
   clubId: string
   clubName: string

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame, snapshotSave, listSaveSnapshots, loadSaveSnapshot } from '../saveGameStorage'
-import { migrateSaveGame } from '../saveGameMigration'
+import { migrateSaveGame, CURRENT_SAVE_VERSION } from '../saveGameMigration'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 
@@ -217,7 +217,26 @@ describe('migrateSaveGame', () => {
   it('sets version to current version', () => {
     const oldSave = { version: '0.1.0', players: [], communityActivities: {} }
     const migrated = migrateSaveGame(oldSave)
-    expect(migrated.version).toBe('0.3.3')
+    expect(migrated.version).toBe(CURRENT_SAVE_VERSION)
+  })
+
+  // SeasonSummary.id (2026-08-22): förutsättning för delbarhet — gamla saves
+  // saknar fältet, migrationen backfyller det med samma formel som
+  // seasonSummaryService.ts använder vid genereringstillfället.
+  it('backfills SeasonSummary.id for old saves that predate the field', () => {
+    const oldSave = {
+      version: '0.3.3',
+      id: 'save-abc',
+      players: [],
+      communityActivities: {},
+      seasonSummaries: [
+        { season: 1, clubId: 'club-x', clubName: 'X' },
+        { id: 'already-has-one', season: 2, clubId: 'club-x', clubName: 'X' },
+      ],
+    }
+    const migrated = migrateSaveGame(oldSave)
+    expect(migrated.seasonSummaries?.[0].id).toBe('save-abc_s1_club-x')
+    expect(migrated.seasonSummaries?.[1].id).toBe('already-has-one')
   })
 
   // SLUTTEST RUNDA 3 (2026-08-08, punkt 3): startValue är nytt på BoardObjective.
