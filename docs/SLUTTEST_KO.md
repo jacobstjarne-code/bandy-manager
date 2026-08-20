@@ -21,7 +21,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | 4 | ~~**B5** scoutvokabulären~~ Opus tar den själv | `scoutingService.ts` |
 | 5 | ~~**B2** två presslägen i UI, inte tre~~ KLAR (`b24c18f6`) | taktikytorna |
 | 6 | ~~**5.1 fynd 5** `hideProgress`-prop~~ KLAR (`5e2dfc96`) | `BoardObjectivesList.tsx` |
-| 7 | **5.1 fynd 4** `FeedbackButton` till innehållets botten | `FeedbackButton.tsx` |
+| 7 | ~~**5.1 fynd 4** `FeedbackButton` till innehållets botten~~ KLAR (`bab6835a`) — Jacobs beslut: bakgrundsfyllnad på korta scener, inte JS-mätning. `minHeight:'100vh'` tillagt på `SeasonTransitionScene`s rot, samma mönster som de sex syskonscenerna redan hade. Verifierat att ingen `marginTop:'auto'`/`flex:1` finns kvar internt (grep) — den gamla "180px tomrum"-buggen kräver båda, bara den ena läggs tillbaka | `FeedbackButton.tsx` / `SeasonTransitionScene.tsx` |
 | 8 | ~~**O6 sidofynd** innerback = `MB`~~ KLAR (`0bc0ba77`) | `Formation.ts` |
 | 9 | ~~**O7** fyra språkfel + testet~~ KLAR (`a33e4f85`), text från Jacob | fyra filer |
 | 10 | ~~**C3** fem rå `borderRadius: 8` → `var(--radius-md)`~~ KLAR (`edf88401`) | `SeasonSummaryScreen`, `SquadScreen` |
@@ -82,7 +82,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | 43 | **SeasonSummary.id — `KLAR (dc409505)`.** `id: string` tillagt, satt vid genereringstillfället (`${game.id}_s${season}_${clubId}`), migrationsrad backfyller gamla saves. Förutsättning för allt delbart (Grind 4-relaterat), byggd utan server. |
 | 44 | **Occlusion-grinden (elementFromPoint) — `KLAR (53d6fb7e)`.** LESSONS.md #47, fjärde "skalet stör fotot"-incidenten. Generell `document.elementFromPoint()`-check i `scenes.visual.ts`, ersätter ingen tidigare punktfix men fångar en KLASS av fel de inte gjorde (legitima-men-fel-tillstånd, inte bara skal-läckage). Stash-testat mot det verkliga AnslagOverlay-fallet, körd grön mot alla 67 scener. |
 | 45 | **`vercel.json` ignoreCommand — `KLAR (bb23ff99)`, EJ E2E-verifierad.** Beställd 2026-08-18, aldrig byggd (`git log -S` bekräftar noll historik). `git diff --quiet ${VERCEL_GIT_PREVIOUS_SHA:-HEAD^} HEAD -- . ':!docs' ':!*.md'` — exkluderar docs-only-pushar från att dra en deploy. Kan inte E2E-verifieras lokalt (kräver en riktig Vercel-push); nästa docs-only-push är det verkliga testet. |
-| 46 | **Deploy-sync-grinden — känd svaghet, ej åtgärdad.** `npm run check:deploy-sync` kräver `VERCEL_TOKEN` som inte finns i den lokala miljön — grinden fungerar bara i CI (på push), inte vid det tillfälle den faktiskt behövs (en session som vill VERIFIERA innan ett speltest, utan att själv pusha något nytt). Samma svaghetsklass som att grinden bara körs på push och aldrig fångar att en push UTEBLIR (kvot-tystnaden). Ingen fix föreslagen än — kräver antingen ett lokalt VERCEL_TOKEN i utvecklarmiljön eller att Vercel MCP-vägen (redan använd manuellt denna session, `list_deployments`/`get_deployment`) blir den kanoniska lokala metoden istf `check-deploy-sync.mjs`. |
+| 46 | ~~**Deploy-sync-grinden — känd svaghet.**~~ **DOM 2026-08-22:** Vercel MCP är nu den kanoniska vägen för manuell/lokal deploy-sync-koll (`list_deployments`/`get_deployment` + `git rev-parse origin/main`) — dokumenterat i `CLAUDE.md`s DEPLOY-sektion. `check-deploy-sync.mjs` lever kvar oförändrat som CI-variant (har token där). Motivering: skriptet kräver `VERCEL_TOKEN`, saknas lokalt, fungerade INTE när det faktiskt behövdes samma dag — MCP-vägen fungerade i exakt det ögonblicket. |
 
 ## Väntar på Jacob
 
