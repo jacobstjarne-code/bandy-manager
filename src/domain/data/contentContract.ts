@@ -173,6 +173,44 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     recallSurface: 'ingen',
     notes: 'O2-dominansfynd (0f96f1c2) — send_player dominerar decline i ren effekt-mening (se O2-rapporten för hela listan av 13 fynd).',
   },
+
+  // ── De fyra kritiska typerna (Jacobs order, 2026-08-22) — spårade FÖRST,
+  // före de återstående 85, eftersom D1 punkt 4:s self-kontroll (2026-08-21)
+  // nedgraderar ALLA fyra till 'normal' tills whyNow-data finns här. whyNow-
+  // fälten lämnas medvetet TOMMA — se notes för vad var och en saknar.
+  // Opus skriver raderna där en form faktiskt går att grunda i text.
+  playerUnhappy: {
+    trigger: 'player.morale < 35 OCH bänkad (ej startande) i minst 2 av senaste 3 spelade matcher för hanterade klubben (postAdvanceEvents.ts:128-151).',
+    stateEffect: `'promise'-valet: boostMorale +10 (targetPlayerId). 'hold': noOp — missnöjet kvarstår oadresserat, ingen nedåtgående konsekvens modellerad om spelaren ignoreras.`,
+    systems: ['spelarmoral'],
+    lifespan: 'engångs per säsong (event-id inkluderar currentSeason — samma spelare kan trigga igen nästa säsong)',
+    recallSurface: 'ingen',
+    notes: 'whyNow SAKNAS. Bäst grundade kandidat: "person väntar" (whyNowPerson) — spelaren i relatedPlayerId är bokstavligen den som väntar på besked, förnamnet är redan känd data, inte påhittat. Men OM detta faktiskt bär tillräcklig brådska för overlay/pivotal-behandling (jämfört med t.ex. hesitantPlayer, som redan är overlay-fri) är ett tonval — flaggat, inte satt.',
+  },
+  economicStress: {
+    trigger: 'managedClub.finances mellan -100 000 och +50 000 kr ("stress-zonen"), throttlead till max 1 händelse per 6 omgångar (game.lastEconomicStressRound). Tre slumpmässigt valda flavor-varianter (materialarens klubbor / bussbolagets avtal / kioskvaktens korvavtal), ingen unik semantisk identitet per variant.',
+    stateEffect: 'Litet ekonomiskt val per variant: -5000 till +4000 kr, eller en moraleDelta -2 (materialar-variantens "vänta"-val). Ingen av de tre bär en verklig kris.',
+    systems: ['ekonomi'],
+    lifespan: 'engångs, kan återkomma var 6:e omgång så länge zonen gäller',
+    recallSurface: 'ingen',
+    notes: 'whyNow SAKNAS — och detta är den mest tveksamma av de fyra. Innehållet (klubbinköp, korvavtal) bär ingen verklig brådska i NÅGON av de tre varianterna. Detta kan vara fel typ att ge overlay-behandling ÖVERHUVUDTAGET — om Opus dömer att ingen whyNow-form passar bör svaret vara att sänka basprioriteten i getEventPriority (GameEvent.ts), inte att skriva en konstruerad brådskerad.',
+  },
+  mecenatEvent: {
+    trigger: 'ÅTTA separata undertyper, samma GameEventType, olika villkor (mecenatService.ts): (a) generateMecenatIntroEvent — ny mecenat presenterar sig, triggervillkor satt vid mecenat-generering, ej vidare spårat. (b) generateSocialEvent — periodisk social inbjudan (jakt/middag/golf/bastu/vin/segling/hockey/vernissage), typ vald slumpmässigt ur mecenatens businessType, säsongsfiltrerad. (c–f) generateSilentShoutEvent — fyra trösklar på mecenat.silentShout: 30–49 medieomnämnande (15% chans/omgång), 50–69 transferförslag (20% chans, kräver namngiven spelare), 70–89 taktikpress (15% chans, kräver ej redan offensiv taktik), 90+ styrelsehot (20% chans). (g) generateMecenatConflictEvent — två mecenater med motstridiga önskemål, triggervillkor ej vidare spårat. (h) generateMecenatAllianceEvent — två mecenater vill samfinansiera samma projekt, triggervillkor ej vidare spårat. (i) checkMecenatRetirement — mecenat.yearsActive ≥ retirementThreshold (default 6) ELLER age ≥ 70, ej redan announced.',
+    stateEffect: 'Nästan alla varianter: mecenatHappiness ±5 till ±30 beroende på val. Konflikt/allians: multiEffect på båda mecenaternas happiness samtidigt. Retirement: ingen direkt stateeffekt i själva announcement-eventet.',
+    systems: ['mecenatrelation', 'ekonomi (enstaka varianter, t.ex. intervention-kostnad)'],
+    lifespan: 'engångs per tillfälle — silentShout-varianterna kan återkomma om siffran stiger igen efter en tidigare händelse',
+    recallSurface: 'ingen enhetlig — varierar per undertyp, ej kartlagd denna session',
+    notes: 'whyNow SAKNAS, och frågan är svårare än för de andra tre: 8 verkliga undertyper delar ETT contentContract-id. En enda whyNow-rad kan inte rättvist representera alla åtta (en 90+ styrelsehot-händelse bär uppenbart mer brådska än en golfinbjudan). Om Opus vill aktivera mekanismen träffsäkert för mecenatEvent krävs sannolikt ett beslut PER undertyp (t.ex. bara styrelsehot-varianten får whyNow), vilket i sin tur kräver att event-konstruktionen kan skicka undertyps-specifik whyNow-data — en mindre kodändring utöver bara textrader. Flaggat, inte byggt.',
+  },
+  criticalEconomy: {
+    trigger: 'managedClub.finances < -200 000 kr (economicCrisisService.ts). Fas 1 (awareness) triggar direkt. Fas 2 (pressure) triggar 3 omgångar efter fas 1 startade, om ej redan löst. Fas 3 (decision) triggar 5 omgångar efter fas 1, om ej löst.',
+    stateEffect: 'Fas 1: inget direkt, möte bokas. Fas 2: "present_plan" −20 000 kr, "accept_loss" löser krisen naturligt. Fas 3 (tre vägar): "sell_star" +350 000 kr + spelaren SÄLJS (permanent), "take_loan" +300 000 kr löpande kostnad, "ask_mecenat" +200 000 kr − mecenatlojalitet 30. Fas 3s sell_star är redan O19-märkt systemhandelse:true.',
+    systems: ['ekonomi', 'spelartrupp (fas 3, sälj-alternativet)', 'mecenatrelation (fas 3, mecenat-alternativet)'],
+    lifespan: 'en sammanhängande båge över minst 5 omgångar (fas 1→2→3), sedan löst för säsongen',
+    recallSurface: 'ingen',
+    notes: 'whyNow SAKNAS, men detta är den STARKASTE kandidaten av de fyra. Fas 1 och 2s kroppstext antyder redan deadlines ("Jag vill träffa dig. I morgon.", "inom två veckor") men INGEN av dem är en mekanisk deadline i koden (fas 3 triggar strikt matchday-baserat, oavsett vad texten lovar) — att sätta deadlineLabel från dessa citat vore att koda in ett löfte texten inte håller, samma klass av fel som playerPraise-fyndet. Renare kandidat: wholeEventIrreversible på fas 3 — men bara ETT av dess tre val (sell_star) är faktiskt irreversibelt, inte hela eventet, så D1s befintliga CHOICE-nivå-mekanism (punkt 3, redan byggd) är rätt verktyg där, inte event-nivå. Cross-referens: sell_star-valet saknar fortfarande consequenceLevel/irreversible (D1 punkt 3s fält, "opt-in, inga befintliga events sätter dem än") — värt att sätta OAVSETT whyNow-beslutet, separat, litet jobb.',
+  },
 }
 
 const PIVOTAL_FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' | 'filled'>>> = {
