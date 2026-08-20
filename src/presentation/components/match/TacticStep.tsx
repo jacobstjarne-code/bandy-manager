@@ -17,9 +17,15 @@ interface TacticStepProps {
   onNext: () => void
 }
 
-// Maps tactic value index (0=conservative, 1=balanced, 2=aggressive) to intensity class
-function intensityClass(idx: number): string {
-  return idx === 0 ? 'intensity-1' : idx === 1 ? 'intensity-2' : 'intensity-3'
+// Maps tactic value index (0=conservative, ..., last=aggressive) to intensity class.
+// total-aware (B2, SLUTTEST_KO.md 2026-08-19): press slog ihop low/medium till EN
+// knapp (tacticData.ts) — en rad kan nu ha 2 alternativ, inte alltid 3. Med bara
+// idx===1→intensity-2 hade en tvåknapps-rads sista knapp (idx 1) fått medium-
+// intensitet istället för stark — samma bugklass om fler rader krymper senare.
+function intensityClass(idx: number, total: number): string {
+  if (idx === 0) return 'intensity-1'
+  if (idx === total - 1) return 'intensity-3'
+  return 'intensity-2'
 }
 
 export function TacticStep({ tacticState, startingIds, game, opponent, nextFixture, onChange, onBack, onNext }: TacticStepProps) {
@@ -151,13 +157,18 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
                     <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600 }}>{label}</span>
                     <div className="tactic-segmented">
                       {options.map((opt, oi) => {
-                        const isActive = tacticState[key] === opt.value
-                        const isRec = rec === opt.value
+                        // B2 (SLUTTEST_KO.md 2026-08-19): opt.value kan vara ett värdeblock
+                        // (t.ex. press: ['medium','low']) — se tacticData.ts.
+                        const values = Array.isArray(opt.value) ? opt.value : [opt.value]
+                        const isActive = values.includes(tacticState[key] as string)
+                        const isRec = rec !== undefined && values.includes(rec)
                         return (
                           <button
-                            key={opt.value}
-                            className={`tactic-btn ${intensityClass(oi)}${isActive ? ' active' : ''}${isRec ? ' recommended' : ''}`}
-                            onClick={() => onChange(key, opt.value as Tactic[typeof key])}
+                            key={values.join('-')}
+                            className={`tactic-btn ${intensityClass(oi, options.length)}${isActive ? ' active' : ''}${isRec ? ' recommended' : ''}`}
+                            // Se TacticBoardCard.tsx: klick på en redan aktiv sammanslagen
+                            // knapp ska inte tyst skriva om t.ex. 'low' → 'medium'.
+                            onClick={() => { if (!isActive) onChange(key, values[0] as Tactic[typeof key]) }}
                           >
                             {opt.label}
                           </button>

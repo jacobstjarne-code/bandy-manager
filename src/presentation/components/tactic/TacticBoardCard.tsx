@@ -98,20 +98,28 @@ export function TacticBoardCard({
           <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>{label}</span>
           <div style={{ display: 'flex', gap: 0, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
             {options.map((opt, i) => {
-              const isRec = rec !== undefined && rec === opt.value && rec !== current
+              // B2 (SLUTTEST_KO.md 2026-08-19): opt.value kan vara ett värdeblock
+              // (t.ex. press: ['medium','low'] — matchCore behandlar dem identiskt).
+              // isSelected/isRec matchar mot HELA blocket; klick normaliserar till [0].
+              const values = Array.isArray(opt.value) ? opt.value : [opt.value]
+              const isSelected = values.includes(current)
+              const isRec = rec !== undefined && values.includes(rec) && !isSelected
               return (
                 <button
-                  key={opt.value}
+                  key={values.join('-')}
                   data-testid="tactic-option"
-                  onClick={() => setTacticValue(key, opt.value as Tactic[typeof key])}
+                  // Klick på en redan aktiv sammanslagen knapp ska INTE tyst skriva om
+                  // t.ex. 'low' → 'medium' — det vore en spöklik ändring i tactic-
+                  // change-loggen (diffTactics ser råvärdet, inte UI-blocket).
+                  onClick={() => { if (!isSelected) setTacticValue(key, values[0] as Tactic[typeof key]) }}
                   style={{
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                     minHeight: 44, textAlign: 'center', padding: '0 3px',
                     fontSize: 9, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
                     cursor: 'pointer', fontFamily: 'var(--font-body)',
                     border: 'none', borderRight: i === options.length - 1 ? 'none' : '1px solid var(--border)',
-                    background: current === opt.value ? 'var(--accent)' : 'transparent',
-                    color: current === opt.value ? 'var(--text-light)' : 'var(--text-muted)',
+                    background: isSelected ? 'var(--accent)' : 'transparent',
+                    color: isSelected ? 'var(--text-light)' : 'var(--text-muted)',
                   }}
                 >
                   {opt.label}{isRec ? ' ★' : ''}
@@ -177,8 +185,9 @@ export function TacticBoardCard({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {activeSuggestions.map(([key, value]) => {
                     const row = tacticRows.find(r => r.key === key)!
-                    const currentLabel = row.options.find(o => o.value === tactic[key])?.label ?? String(tactic[key])
-                    const newLabel = row.options.find(o => o.value === value)?.label ?? value
+                    const findLabel = (v: string) => row.options.find(o => Array.isArray(o.value) ? o.value.includes(v) : o.value === v)?.label
+                    const currentLabel = findLabel(tactic[key] as string) ?? String(tactic[key])
+                    const newLabel = findLabel(value) ?? value
                     return (
                       <div key={key as string} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                         <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 64 }}>{row.label}</span>

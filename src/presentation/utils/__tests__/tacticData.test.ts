@@ -139,3 +139,26 @@ describe('getTacticChangeHistoryLines', () => {
     expect(getTacticChangeHistoryLines(log)).toEqual(['Omg 1 · Mentalitet → Offensiv'])
   })
 })
+
+// B2 (SLUTTEST_KO.md, 2026-08-19): matchCore.ts konsumerar press binärt (bara
+// 'high' ger egen viktjustering, :673) — 'low'/'medium' är identiska i
+// simuleringen. tacticRows slår ihop dem till en synlig "Medium"-knapp utan att
+// röra TacticPress-typen eller befintliga saves (en tactic med press:'low' ska
+// fortfarande matcha och etiketteras rätt).
+describe('optionLabel (via getTacticDeltaLine) — press-blocket', () => {
+  const managedClubId = 'us'
+
+  it('press:low etiketteras "Medium", inte "Låg" (etiketten finns inte längre separat)', () => {
+    const last = fixtureWithTactic(baseTactic({ press: TacticPress.High }), { season: 1 })
+    const current = baseTactic({ press: TacticPress.Low })
+    expect(getTacticDeltaLine(current, last, managedClubId, 1, 'Målilla'))
+      .toBe('Sedan Målilla: Press → Medium.')
+  })
+
+  it('press:medium etiketteras också "Medium" — samma knapp, samma text', () => {
+    const last = fixtureWithTactic(baseTactic({ press: TacticPress.High }), { season: 1 })
+    const current = baseTactic({ press: TacticPress.Medium })
+    expect(getTacticDeltaLine(current, last, managedClubId, 1, 'Målilla'))
+      .toBe('Sedan Målilla: Press → Medium.')
+  })
+})

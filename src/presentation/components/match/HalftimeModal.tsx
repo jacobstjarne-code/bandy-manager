@@ -202,7 +202,7 @@ export function HalftimeModal({
 
   function btnRow(
     label: string,
-    options: { val: string; label: string }[],
+    options: { val: string | string[]; label: string }[],
     current: string,
     setter: (v: string) => void,
   ) {
@@ -210,20 +210,26 @@ export function HalftimeModal({
       <div style={{ marginBottom: 14 }}>
         <p style={{ fontSize: 11, color: 'var(--text-light-secondary)', marginBottom: 6, fontWeight: 600, textAlign: 'left' }}>{label}</p>
         <div style={{ display: 'flex', gap: 6 }}>
-          {options.map(o => (
-            <button
-              key={o.val}
-              onClick={() => setter(o.val)}
-              style={{
-                flex: 1, padding: '7px 4px', fontSize: 11, fontWeight: 700,
-                background: current === o.val ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 8%, transparent)',
-                border: `1px solid ${current === o.val ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 20%, transparent)'}`,
-                borderRadius: 'var(--radius-md)',
-                color: current === o.val ? 'var(--text-light)' : 'var(--text-light-secondary)',
-                cursor: 'pointer',
-              }}
-            >{o.label}</button>
-          ))}
+          {options.map(o => {
+            // B2 (SLUTTEST_KO.md 2026-08-19): o.val kan vara ett värdeblock (press:
+            // ['medium','low'] — matchCore behandlar dem identiskt, se tacticData.ts).
+            const vals = Array.isArray(o.val) ? o.val : [o.val]
+            const isSelected = vals.includes(current)
+            return (
+              <button
+                key={vals.join('-')}
+                onClick={() => { if (!isSelected) setter(vals[0]) }}
+                style={{
+                  flex: 1, padding: '7px 4px', fontSize: 11, fontWeight: 700,
+                  background: isSelected ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 8%, transparent)',
+                  border: `1px solid ${isSelected ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 20%, transparent)'}`,
+                  borderRadius: 'var(--radius-md)',
+                  color: isSelected ? 'var(--text-light)' : 'var(--text-light-secondary)',
+                  cursor: 'pointer',
+                }}
+              >{o.label}</button>
+            )
+          })}
         </div>
       </div>
     )
@@ -337,8 +343,7 @@ export function HalftimeModal({
               { val: TacticTempo.High, label: 'Högt' },
             ], tempo, v => onSetTempo(v as TacticTempo))}
             {btnRow('Press', [
-              { val: TacticPress.Low, label: 'Låg' },
-              { val: TacticPress.Medium, label: 'Medium' },
+              { val: [TacticPress.Medium, TacticPress.Low], label: 'Medium' },
               { val: TacticPress.High, label: 'Hög' },
             ], press, v => onSetPress(v as TacticPress))}
             <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 0 }}>

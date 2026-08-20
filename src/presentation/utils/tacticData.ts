@@ -5,7 +5,13 @@ import type { Fixture } from '../../domain/entities/Fixture'
 export interface TacticRow {
   label: string
   key: keyof Tactic
-  options: { label: string; value: string }[]
+  /** value kan vara ett värdeblock (B2, SLUTTEST_KO.md 2026-08-19): matchCore.ts
+   *  konsumerar `press` binärt (bara 'high' ger egen viktjustering, :673) — 'low'
+   *  och 'medium' är IDENTISKA i simuleringen. Ett block slår ihop dem till EN
+   *  synlig knapp, ärligt mot motorn, utan att röra Tactic-typen eller befintliga
+   *  saves (en tactic med press:'low' matchar fortfarande blockets knapp). Klick
+   *  normaliserar alltid till block[0]. */
+  options: { label: string; value: string | string[] }[]
 }
 
 export const tacticRows: TacticRow[] = [
@@ -20,8 +26,7 @@ export const tacticRows: TacticRow[] = [
     { label: 'Högt', value: TacticTempo.High },
   ]},
   { label: 'Press', key: 'press', options: [
-    { label: 'Låg', value: TacticPress.Low },
-    { label: 'Medium', value: TacticPress.Medium },
+    { label: 'Medium', value: [TacticPress.Medium, TacticPress.Low] },
     { label: 'Hög', value: TacticPress.High },
   ]},
   { label: 'Passning', key: 'passingRisk', options: [
@@ -109,7 +114,8 @@ export const TACTIC_GROUPS = [
 
 function optionLabel(key: keyof Tactic, value: string): string {
   const row = tacticRows.find(r => r.key === key)
-  return row?.options.find(o => o.value === value)?.label ?? value
+  const opt = row?.options.find(o => Array.isArray(o.value) ? o.value.includes(value) : o.value === value)
+  return opt?.label ?? value
 }
 
 /** Diff mellan två fullständiga Tactic-objekt, i tacticRows kanoniska ordning (de 8
