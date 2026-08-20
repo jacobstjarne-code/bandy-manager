@@ -103,6 +103,28 @@ export function getNextEvent(game: SaveGame): GameEvent | null {
 }
 
 /**
+ * Batch-av-tre (D1 punkt 4, dömd 2026-08-21). Ger de ÖVRIGA medlemmarna i
+ * `activeEvent`s batch — events som delar `triggerGroupId`, är obesvarade,
+ * inte är `activeEvent` självt. "Gränsen är delad orsak, inte antal — och
+ * alltid ≤3": max 2 syskon returneras (aktivt + 2 = 3 totalt), och ett
+ * pivotal-klassat syskon (getEffectivePriority==='critical') filtreras
+ * bort — "Ett pivotal-event får aldrig hamna i en batch", det bryter
+ * stapeln och visas ensamt i EventOverlay istället. Utan triggerGroupId på
+ * `activeEvent` returneras alltid [] (inget att batcha ihop mot).
+ */
+export function getBatchSiblings(game: SaveGame, activeEvent: GameEvent): GameEvent[] {
+  if (!activeEvent.triggerGroupId) return []
+  const events = (game.pendingEvents ?? []).filter(e => !e.resolved)
+  return events
+    .filter(e =>
+      e.id !== activeEvent.id &&
+      e.triggerGroupId === activeEvent.triggerGroupId &&
+      getEffectivePriority(e) !== 'critical'
+    )
+    .slice(0, 2)
+}
+
+/**
  * Statistik för Portal-visning och debugging.
  */
 export function getQueueStats(game: SaveGame): QueueStats {

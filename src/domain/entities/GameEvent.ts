@@ -230,6 +230,16 @@ export interface GameEvent {
   systemhandelse?: boolean   // O19 (SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
                               // (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
                               // ingen räknare/cooldown/säsongsbudget läser fältet ännu.
+  /** Batch-av-tre (D1 punkt 4, dömd 2026-08-21). Gränsen för att batcha är
+   *  DELAD ORSAK, inte antal — sätts vid konstruktionsstället när flera
+   *  events uppstår ur SAMMA händelse (t.ex. tre kontrakt vid fönster-
+   *  öppning). getBatchSiblings (eventQueueService.ts) grupperar pending
+   *  events på detta fält, aldrig på type/tidpunkt. INGET nuvarande
+   *  konstruktionsställe sätter fältet — event-genereringen är idag
+   *  medvetet kapad till ~2/omgång (postAdvanceEvents.ts), så en verklig
+   *  samma-orsak-skur förekommer inte i spelet ännu. Mekanismen är byggd
+   *  och redo; ingen konsument fyller den. Se SLUTTEST_KO.md. */
+  triggerGroupId?: string
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

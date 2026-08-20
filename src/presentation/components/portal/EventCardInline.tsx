@@ -19,6 +19,7 @@
  * specifika props eller brutit den delningen med resten av Portal-familjen.
  */
 
+import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { getActionsForEvent } from '../../../domain/services/eventActions'
 import { getItemAge } from '../../../domain/services/decisionFatigueService'
@@ -28,6 +29,13 @@ import type { GameEvent } from '../../../domain/entities/GameEvent'
 interface Props {
   event: GameEvent
   currentMatchday?: number
+  /** Batch-av-tre (D1 punkt 4, 2026-08-21): satt av BatchStack (aldrig av
+   *  det ovillkorade PortalEventSlot-fallet) — "besvarat kort sjunker och
+   *  tonar ut nedåt" innan resolveEvent faktiskt körs, så nästa kort i
+   *  stapeln hinner resas med sin egen entré-animation istf att bara byta
+   *  ut sig direkt. Utelämnad (default) = exakt dagens beteende, ingen
+   *  fördröjning, inget nytt för icke-batchade kort. */
+  exitDelayMs?: number
 }
 
 /**
@@ -77,8 +85,9 @@ export function getEventTypeLabel(event: GameEvent): string {
   }
 }
 
-export function EventCardInline({ event, currentMatchday }: Props) {
+export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
+  const [isExiting, setIsExiting] = useState(false)
   const actions = getActionsForEvent(event)
   const typeLabel = getEventTypeLabel(event)
   // Entitets-dedup-grinden (2026-08-12): ett event OM ett bud ÄR budet, inte
@@ -92,12 +101,17 @@ export function EventCardInline({ event, currentMatchday }: Props) {
   const agedClass = age >= 5 ? 'aged-2' : age >= 3 ? 'aged-1' : ''
 
   function handleAction(choiceId: string) {
-    resolveEvent(event.id, choiceId)
+    if (!exitDelayMs) {
+      resolveEvent(event.id, choiceId)
+      return
+    }
+    setIsExiting(true)
+    setTimeout(() => resolveEvent(event.id, choiceId), exitDelayMs)
   }
 
   return (
     <div
-      className={`event-card-inline${agedClass ? ` ${agedClass}` : ''}`}
+      className={`event-card-inline${agedClass ? ` ${agedClass}` : ''}${isExiting ? ' batch-stack-active is-exiting' : ''}`}
       style={{
         position: 'relative',
         margin: '0 0 8px 0',
@@ -105,6 +119,7 @@ export function EventCardInline({ event, currentMatchday }: Props) {
         border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
         borderRadius: 'var(--radius-md)',
         padding: '14px 16px 14px 18px',
+        pointerEvents: isExiting ? 'none' : undefined,
       }}
       data-entity-id={entityId}
       data-entity-source="EventCardInline"
