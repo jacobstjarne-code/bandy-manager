@@ -470,6 +470,26 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       averageRating: 0,
       minutesPlayed: 0,
     },
+    // Grind 0 (SLUTTEST_KO.md, 2026-08-21) — seasonCupStats saknade denna
+    // nollställning. seasonStats (liga) återställdes ovan, men seasonCupStats
+    // ärvdes oförändrad via `...player`-spreaden ovan i mappningen och
+    // ackumulerade tyst över ALLA säsonger (2 cupmatcher säsong 1 → 5 efter
+    // säsong 2, borde varit 2 → cupmatcherna i säsong 2 för sig). saveGameMigration.ts:498
+    // dokumenterar redan "seasonCupStats nollställs varje rollover" — koden
+    // gjorde det aldrig. careerStats påverkas inte (statsProcessor.ts räknar
+    // in cupmatcher i totalGames/totalGoals/totalAssists oavsett bucket).
+    seasonCupStats: {
+      gamesPlayed: 0,
+      goals: 0,
+      assists: 0,
+      cornerGoals: 0,
+      penaltyGoals: 0,
+      yellowCards: 0,
+      redCards: 0,
+      suspensions: 0,
+      averageRating: 0,
+      minutesPlayed: 0,
+    },
   }))
 
   // Retirement check — delegated to shouldRetire() in playerDevelopmentService

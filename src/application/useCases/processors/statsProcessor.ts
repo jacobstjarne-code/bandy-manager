@@ -269,6 +269,13 @@ export function updatePlayerMatchStats(
         ...benchPlayer,
         seasonStats: isCupFixture ? benchPlayer.seasonStats : benchUpdated,
         seasonCupStats: isCupFixture ? benchUpdated : benchPlayer.seasonCupStats,
+        // Grind 0 (SLUTTEST_KO.md, 2026-08-21): denna grenen ökade seasonStats/
+        // seasonCupStats.gamesPlayed men glömde careerStats.totalGames — allStarters-
+        // grenen ovan (rad ~204-224) håller alltid de två i lockstep, denna gjorde
+        // det inte. Samma klass av bugg som K1 (två ställen som ska hålla samma
+        // tal kan glida isär), upptäckt genom en riktig flersäsongskörning där
+        // careerStats-ökningen inte matchade seasonStats hos djupbänkade spelare.
+        careerStats: { ...benchPlayer.careerStats, totalGames: benchPlayer.careerStats.totalGames + 1 },
       }
     }
   }

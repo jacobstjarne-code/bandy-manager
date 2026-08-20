@@ -117,4 +117,18 @@ describe('generateWorld', () => {
       expect(club.arenaCapacity).toBeLessThanOrEqual(1000)
     }
   })
+
+  /**
+   * Grind 0 (SLUTTEST_KO.md, 2026-08-21) — Erik Ström-easter egget hade
+   * careerStats.seasonsPlayed hårdkodad till 1 medan seasonHistory (och
+   * totalGames/totalGoals/totalAssists) började från 0 som alla andra
+   * spelare — en permanent off-by-one mot K3s "seasonHistory.length ==
+   * seasonsPlayed"-invariant, upptäckt genom en riktig flersäsongskörning.
+   */
+  it('Erik Ström (easter egg) startar med seasonsPlayed:0, i linje med alla andra spelares emptyCareer', () => {
+    const erik = world.players.find(p => p.id.startsWith('player_erik_strom_'))
+    expect(erik, 'Erik Ström ska finnas i Forsbackas trupp').toBeDefined()
+    expect(erik?.careerStats.seasonsPlayed).toBe(0)
+    expect(erik?.careerStats.totalGames).toBe(0)
+  })
 })

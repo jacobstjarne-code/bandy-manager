@@ -927,7 +927,13 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     injuryDaysRemaining: 0,
     suspensionGamesRemaining: 0,
     seasonStats: { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 },
-    careerStats: { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 1 },
+    // Grind 0 (SLUTTEST_KO.md, 2026-08-21): seasonsPlayed var hårdkodad till 1
+    // trots att seasonHistory (och alla andra spelares emptyCareer, rad 765-770)
+    // börjar från 0 — en permanent off-by-one mot seasonHistory.length för just
+    // den här spelaren. Inget annat fält (totalGames/totalGoals/totalAssists,
+    // seasonHistory) matchade en påstådd "redan spelad säsong", så ingen avsedd
+    // bakgrundshistoria gick förlorad av rättelsen.
+    careerStats: { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 0 },
     isFullTimePro: true,
   }
   const clubFwds = allPlayers
