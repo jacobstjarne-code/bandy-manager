@@ -175,7 +175,7 @@ const BIG_LOSS_HEADLINES: Record<Persona, Cell> = {
       'Kollapsen — sönderspelade och svarslösa',
       'Mardrömskväll — inget mindre',
       'Förödmjukade av {opp} — förnedring inför publik',
-      'Skämmig kväll — inget försvar för det här',
+      'Skamlig kväll — inget försvar för det här',
       'Total kollaps — slutade {scoreline}',
     ],
     prevLoss: [
@@ -201,7 +201,7 @@ const BIG_LOSS_HEADLINES: Record<Persona, Cell> = {
   critical: {
     fresh: [
       'Diskussion om ledarskapet börjar nu',
-      'Skämmig insats. Punkt',
+      'Skamlig insats. Punkt',
       'Det här är inte ett elitlag idag',
       'Inga ursäkter accepteras',
       'En förlust som ska följa laget hela säsongen',

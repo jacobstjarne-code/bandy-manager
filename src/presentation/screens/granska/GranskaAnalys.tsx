@@ -159,7 +159,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
         const potmPlayer = potm
         if (potmPlayer) insights.push(`${potmPlayer.firstName} ${potmPlayer.lastName} utsågs till matchens bästa spelare.`)
         if (won && (myScore - theirScore) >= 3) insights.push('En klar seger som styrker lagets nuvarande form.')
-        if (lost && (theirScore - myScore) >= 3) insights.push('En tungt förlust att analysera grundligt.')
+        if (lost && (theirScore - myScore) >= 3) insights.push('En tung förlust att analysera grundligt.')
         if (insights.length === 0) return null
         return (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>

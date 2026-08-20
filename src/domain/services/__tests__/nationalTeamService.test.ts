@@ -164,7 +164,7 @@ describe('applyCallupEffects/applyReturnEffects — konsoliderad (2026-07-18)', 
     expect(player.form).toBe(100) // 98+4 → capat
     expect(player.morale).toBe(100) // 97+6 → capat
     expect(result.inboxItems).toHaveLength(1)
-    expect(result.inboxItems[0].title).toBe('Landslagsspelarena är tillbaka')
+    expect(result.inboxItems[0].title).toBe('Landslagsspelarna är tillbaka')
   })
 
   it('applyReturnEffects returnerar returLine byggd på RETURN_SCENE_LINES.standard med spelarnamn insatt', () => {

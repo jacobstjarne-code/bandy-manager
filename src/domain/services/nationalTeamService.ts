@@ -149,7 +149,7 @@ export function applyReturnEffects(
       id: returnInboxId,
       date: game.currentDate,
       type: InboxItemType.Community,
-      title: 'Landslagsspelarena är tillbaka',
+      title: 'Landslagsspelarna är tillbaka',
       body: returnLine,
       isRead: false,
     })
