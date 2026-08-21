@@ -68,6 +68,24 @@ function growFinances(owner: BoardMember, season: number): BoardObjective {
   )
 }
 
+// O5 kraft 3 (Jacobs dom 2026-08-17, byggd 2026-08-23): styrelsens
+// investeringskrav. Aktiveras när kassan passerat SURPLUS_CEILING —
+// en full kassa ska inte längre vara konsekvenslös. targetValue är
+// gränsen styrelsen vill se kassan UNDER igen (spenderad, inte sparad).
+export const SURPLUS_CEILING = 2_000_000
+
+function investSurplus(owner: BoardMember, season: number): BoardObjective {
+  return makeObjective(
+    'investSurplus', 'economic',
+    'Investera överskottet',
+    `${displayName(owner)}: "Vi har över två miljoner på kontot och en anläggning som inte har rört sig på flera år. Använd pengarna."`,
+    owner, 'investSurplus', SURPLUS_CEILING,
+    `${displayName(owner)}: "Nu ser jag att pengarna gör nytta."`,
+    `${displayName(owner)}: "Kassan bara växer. Vad väntar vi på?"`,
+    false, season,
+  )
+}
+
 const HOMEGROWN_DESCRIPTIONS = [
   'Vi har pojkar från orten i truppen. Minst tre av dem ska starta regelbundet. Det är så vi bygger en klubb.',
   'Jag vill se lokala grabbar på isen. Tre egenfostrade i startelvan — det borde vara självklart.',
@@ -210,6 +228,9 @@ export function generateBoardObjectives(
       allCandidates.push(balanceBudget(kassör, season))
     } else if (club.finances < 500000) {
       allCandidates.push(growFinances(kassör, season))
+    } else if (club.finances >= SURPLUS_CEILING) {
+      // O5 kraft 3: fullkassan är inte längre konsekvenslös.
+      allCandidates.push(investSurplus(kassör, season))
     }
   }
 
@@ -301,6 +322,16 @@ export function evaluateObjective(
       const start = game.seasonStartFinances ?? 0
       const delta = club.finances - start
       return { value: delta, status: delta >= objective.targetValue ? 'met' : delta >= 0 ? 'active' : 'at_risk' }
+    }
+    case 'investSurplus': {
+      // O5 kraft 3: met = kassan tillbaka under taket. active = fortfarande
+      // över taket men minskande sen säsongsstart (rör sig åt rätt håll).
+      // at_risk = fortfarande över och INTE minskande — kravet ignorerat.
+      const club = game.clubs.find(c => c.id === game.managedClubId)!
+      const value = club.finances
+      if (value <= objective.targetValue) return { value, status: 'met' }
+      const start = game.seasonStartFinances ?? value
+      return { value, status: value < start ? 'active' : 'at_risk' }
     }
     case 'playHomegrown': {
       const recent = game.fixtures
