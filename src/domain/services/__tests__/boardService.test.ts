@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate } from '../boardService'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience } from '../boardService'
 import { ClubExpectation } from '../../enums'
 import type { StandingRow } from '../../entities/SaveGame'
 
@@ -104,34 +104,105 @@ describe('generateSeasonVerdict', () => {
   })
 })
 
-describe('computeBoardPatienceUpdate — U1 (SLUTTEST_KO.md, 2026-08-17)', () => {
-  const TOTAL = 12  // RELEGATION_ZONE_SIZE=2 → zon = plats 11-12, varningszon = plats 9-10
+describe('computeBoardPatienceUpdate — U1 andra halvan (Jacobs dom 2026-08-22, efter Skutskär-auditen)', () => {
+  const TOTAL = 12  // RELEGATION_ZONE_SIZE=2 → zon = plats 11-12
+  const AB = ClubExpectation.AvoidBottom  // ankare 9, slope above=2/below=4
 
-  it('nedflyttningszonen (plats 11-12): -20 patience, failures+1', () => {
-    expect(computeBoardPatienceUpdate(11, TOTAL, 70, 0)).toEqual({ newBoardPatience: 50, newConsecutiveFailures: 1 })
-    expect(computeBoardPatienceUpdate(12, TOTAL, 70, 2)).toEqual({ newBoardPatience: 50, newConsecutiveFailures: 3 })
+  it('nedflyttningszonen (plats 11-12): newConsecutiveFailures oförändrad logik (+1 per säsong i zonen)', () => {
+    expect(computeBoardPatienceUpdate(11, TOTAL, 70, 0, AB)).toEqual({ newBoardPatience: 62, newConsecutiveFailures: 1 })
+    expect(computeBoardPatienceUpdate(12, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 58, newConsecutiveFailures: 3 })
   })
 
-  it('varningszonen (plats 9-10): -5 patience, failures nollställs — INTE den gamla botten-tre-gissningen som gav noll effekt här', () => {
-    expect(computeBoardPatienceUpdate(9, TOTAL, 70, 2)).toEqual({ newBoardPatience: 65, newConsecutiveFailures: 0 })
-    expect(computeBoardPatienceUpdate(10, TOTAL, 70, 2)).toEqual({ newBoardPatience: 65, newConsecutiveFailures: 0 })
+  it('varningszonen (plats 9-10): kontinuerlig, inte längre en fast -5', () => {
+    expect(computeBoardPatienceUpdate(9, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 70, newConsecutiveFailures: 0 })   // pos == ankare → delta 0
+    expect(computeBoardPatienceUpdate(10, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 66, newConsecutiveFailures: 0 })  // 1 under ankaret × below(4)
   })
 
-  it('mid-table (plats 5-8): ingen patience-förändring, failures nollställs', () => {
-    expect(computeBoardPatienceUpdate(6, TOTAL, 70, 3)).toEqual({ newBoardPatience: 70, newConsecutiveFailures: 0 })
+  it('DÖDZONEN ÄR BORTA — plats 6 (tidigare noll effekt) rör nu siffran, AvoidBottom-klubb belönas för att slå ankaret', () => {
+    // gap = ankare(9) − pos(6) = 3, delta = above(2) × 3 = +6 — INTE längre 0
+    expect(computeBoardPatienceUpdate(6, TOTAL, 70, 3, AB)).toEqual({ newBoardPatience: 76, newConsecutiveFailures: 0 })
   })
 
-  it('topp (plats 1-2): +20 patience', () => {
-    expect(computeBoardPatienceUpdate(1, TOTAL, 70, 0).newBoardPatience).toBe(90)
+  it('topp (plats 1): kontinuerlig above-lutning, inte en fast +20', () => {
+    // gap = 9−1 = 8, delta = 2×8 = 16
+    expect(computeBoardPatienceUpdate(1, TOTAL, 70, 0, AB).newBoardPatience).toBe(86)
   })
 
-  it('topp tre (men inte topp två): +15 patience', () => {
-    expect(computeBoardPatienceUpdate(3, TOTAL, 70, 0).newBoardPatience).toBe(85)
+  it('plats 3: gap=6, delta=2×6=12', () => {
+    expect(computeBoardPatienceUpdate(3, TOTAL, 70, 0, AB).newBoardPatience).toBe(82)
   })
 
   it('patience clampas till [0, 100]', () => {
-    expect(computeBoardPatienceUpdate(1, TOTAL, 95, 0).newBoardPatience).toBe(100)
-    expect(computeBoardPatienceUpdate(12, TOTAL, 10, 0).newBoardPatience).toBe(0)
+    expect(computeBoardPatienceUpdate(1, TOTAL, 95, 0, AB).newBoardPatience).toBe(100)
+    expect(computeBoardPatienceUpdate(12, TOTAL, 10, 0, AB).newBoardPatience).toBe(0)
+  })
+
+  it('boardExpectation-medveten: samma plats 8 läses olika för AvoidBottom vs ChallengeTop', () => {
+    // AvoidBottom (ankare 9): gap=1, delta=above(2)×1=+2
+    expect(computeBoardPatienceUpdate(8, TOTAL, 70, 0, ClubExpectation.AvoidBottom).newBoardPatience).toBe(72)
+    // ChallengeTop (ankare 4): gap=4−8=−4, delta=below(4)×−4=−16
+    expect(computeBoardPatienceUpdate(8, TOTAL, 70, 0, ClubExpectation.ChallengeTop).newBoardPatience).toBe(54)
+  })
+
+  it('WinLeague: ankare 1, above=0 (går inte att slå), below=5', () => {
+    expect(computeBoardPatienceUpdate(1, TOTAL, 70, 0, ClubExpectation.WinLeague).newBoardPatience).toBe(70)
+    // gap = 1−2 = −1, delta = 5×−1 = −5
+    expect(computeBoardPatienceUpdate(2, TOTAL, 70, 0, ClubExpectation.WinLeague).newBoardPatience).toBe(65)
+  })
+})
+
+describe('updateRunningBoardPatience — U1 andra halvan, ändring 1+2 (Jacobs dom 2026-08-22)', () => {
+  function makeGameWithLastFixture(overrides: { homeScore: number; awayScore: number; fixtureId?: string; boardPatience?: number; boardPatienceLastCountedFixtureId?: string }) {
+    return {
+      managedClubId: 'club_a',
+      boardPatience: overrides.boardPatience ?? 70,
+      boardPatienceLastCountedFixtureId: overrides.boardPatienceLastCountedFixtureId,
+      fixtures: [{
+        id: overrides.fixtureId ?? 'fx1',
+        status: 'completed',
+        isCup: false,
+        roundNumber: 5,
+        homeClubId: 'club_a',
+        awayClubId: 'club_b',
+        homeScore: overrides.homeScore,
+        awayScore: overrides.awayScore,
+      }],
+    } as unknown as Parameters<typeof updateRunningBoardPatience>[0]
+  }
+
+  it('vinst: +1.0', () => {
+    const game = makeGameWithLastFixture({ homeScore: 2, awayScore: 1 })
+    expect(updateRunningBoardPatience(game, 0)).toEqual({ boardPatience: 71, boardPatienceLastCountedFixtureId: 'fx1' })
+  })
+
+  it('oavgjort: +0.5', () => {
+    const game = makeGameWithLastFixture({ homeScore: 1, awayScore: 1 })
+    expect(updateRunningBoardPatience(game, 0)).toEqual({ boardPatience: 70.5, boardPatienceLastCountedFixtureId: 'fx1' })
+  })
+
+  it('förlust utan svit: -1.5, inget tillägg', () => {
+    const game = makeGameWithLastFixture({ homeScore: 0, awayScore: 1 })
+    expect(updateRunningBoardPatience(game, 1)).toEqual({ boardPatience: 68.5, boardPatienceLastCountedFixtureId: 'fx1' })
+  })
+
+  it('förlustsvit 3-4: extra -3 ovanpå bas-förlusten', () => {
+    const game = makeGameWithLastFixture({ homeScore: 0, awayScore: 1 })
+    expect(updateRunningBoardPatience(game, 3).boardPatience).toBe(70 - 1.5 - 3)
+  })
+
+  it('förlustsvit ≥5: extra -8 ovanpå bas-förlusten — den bärande signalen', () => {
+    const game = makeGameWithLastFixture({ homeScore: 0, awayScore: 1 })
+    expect(updateRunningBoardPatience(game, 5).boardPatience).toBe(70 - 1.5 - 8)
+  })
+
+  it('samma fixture räknas inte två gånger (idempotens, samma mönster som trainerArc.lastCountedFixtureId)', () => {
+    const game = makeGameWithLastFixture({ homeScore: 2, awayScore: 1, boardPatienceLastCountedFixtureId: 'fx1' })
+    expect(updateRunningBoardPatience(game, 0)).toEqual({ boardPatience: 70, boardPatienceLastCountedFixtureId: 'fx1' })
+  })
+
+  it('klämd till [0, 100]', () => {
+    const game = makeGameWithLastFixture({ homeScore: 0, awayScore: 1, boardPatience: 1 })
+    expect(updateRunningBoardPatience(game, 5).boardPatience).toBe(0)
   })
 })
 

@@ -4,7 +4,7 @@ import { resolveContractExtension, getManagerDisplayName } from '../../domain/se
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
 import type { Player } from '../../domain/entities/Player'
 import type { GameEvent } from '../../domain/entities/GameEvent'
-import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype } from '../../domain/enums'
+import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype, ClubExpectation } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateYouthIntake } from '../../domain/services/youthIntakeService'
@@ -729,16 +729,23 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // ── Board patience update ─────────────────────────────────────────────
   const totalTeams = game.clubs.length
   const finalPos = managedClubStanding?.position ?? totalTeams
+  // U1 andra halvan (2026-08-22): currentPatience är nu redan uppdaterad
+  // löpande under säsongen (roundProcessor.ts:s updateRunningBoardPatience)
+  // — detta anrop lägger bara säsongsslutets EGEN term (position relativt
+  // förväntan) ovanpå, det ersätter inte den löpande delen.
   const currentPatience = game.boardPatience ?? 70
   const currentFailures = game.consecutiveFailures ?? 0
+  const managedClubExpectation = game.clubs.find(c => c.id === game.managedClubId)?.boardExpectation ?? ClubExpectation.MidTable
 
   // U1 (SLUTTEST_KO.md, 2026-08-17): "nedflyttningsstrid" gav tidigare ingen
   // verklig tålamodsförlust förrän i botten-tre av en totalTeams/3-gissning
   // — kärnan i fyndet var att en klubb kunde tankas en hel säsong och
-  // styrelsen blev ändå NÖJDARE. computeBoardPatienceUpdate() använder nu
-  // den faktiska nedflyttningszonen (RELEGATION_ZONE_SIZE, delad med
-  // boardService.ts:s evaluateBoard) plus en varningszon precis ovanför.
-  const patienceUpdate = computeBoardPatienceUpdate(finalPos, totalTeams, currentPatience, currentFailures)
+  // styrelsen blev ändå NÖJDARE. U1 andra halvan (Jacobs dom 2026-08-22,
+  // efter Skutskär-auditen): computeBoardPatienceUpdate läser nu en
+  // kontinuerlig, boardExpectation-medveten formel (se boardService.ts)
+  // istf en klippa vid nedflyttningskanten — position 4-8 av 12 var
+  // tidigare en "dödzon" med noll effekt oavsett utfall.
+  const patienceUpdate = computeBoardPatienceUpdate(finalPos, totalTeams, currentPatience, currentFailures, managedClubExpectation)
   let newBoardPatience = patienceUpdate.newBoardPatience
   let newConsecutiveFailures = patienceUpdate.newConsecutiveFailures
   let managerFired = false
@@ -917,9 +924,18 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   // ── Board objectives — evaluate + generate new ────────────────────────────
+  // U1 andra halvan, ändring 5 (Jacobs dom 2026-08-22): evaluateObjective()s
+  // FYRA riktiga tillstånd (met/at_risk/active/failed) plattas inte längre
+  // till två för patience-kostnaden — Skutskär hade två at_risk-uppdrag och
+  // den distinktionen försvann helt i den gamla versionen. boardObjectiveHistory
+  // (den långsiktiga loggen, flera konsumenter läser bara met/failed) förblir
+  // medvetet binär här — objectiveStatuses nedan är den nya, separata källan
+  // för både patience-kostnaden och SeasonSummary.objectiveOutcome (ändring 6).
   const objectiveResults: Array<{ season: number; objectiveId: string; result: 'met' | 'failed'; ownerReaction: string; label: string }> = []
+  const objectiveStatuses: Array<'met' | 'failed' | 'at_risk' | 'active'> = []
   for (const obj of game.boardObjectives ?? []) {
     const result = evaluateObjective(obj, game)
+    objectiveStatuses.push(result.status)
     const finalStatus = result.status === 'met' ? 'met' as const : 'failed' as const
     objectiveResults.push({
       season: game.currentSeason,
@@ -938,10 +954,18 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     } as InboxItem)
   }
 
-  // Board objectives affect patience: each failure costs -5, each success gives +3
-  const objFailures = objectiveResults.filter(r => r.result === 'failed').length
-  const objSuccesses = objectiveResults.filter(r => r.result === 'met').length
-  newBoardPatience = Math.max(0, Math.min(100, newBoardPatience - objFailures * 5 + objSuccesses * 3))
+  // Board objectives affect patience: met +3, at_risk -2, active 0, failed -5
+  const OBJECTIVE_PATIENCE_COST: Record<'met' | 'failed' | 'at_risk' | 'active', number> = {
+    met: 3, at_risk: -2, active: 0, failed: -5,
+  }
+  const objectiveOutcome = {
+    met: objectiveStatuses.filter(s => s === 'met').length,
+    atRisk: objectiveStatuses.filter(s => s === 'at_risk').length,
+    active: objectiveStatuses.filter(s => s === 'active').length,
+    failed: objectiveStatuses.filter(s => s === 'failed').length,
+  }
+  const objectiveDelta = objectiveStatuses.reduce((sum, status) => sum + OBJECTIVE_PATIENCE_COST[status], 0)
+  newBoardPatience = Math.max(0, Math.min(100, newBoardPatience + objectiveDelta))
 
   // Firing check — AFTER objectives so success/failure affects the decision
   if (newBoardPatience <= 15 || newConsecutiveFailures >= 3) {
@@ -1181,6 +1205,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     personChange,
     rivalryStanding,
     clubEra: clubEraSnapshot,
+    // U1 andra halvan, ändring 6 (Jacobs dom 2026-08-22): datan för
+    // årsbokens tvåsanningsmening ("Plats 8 överträffade målet. Två
+    // uppdrag missades.") — objectiveStatuses beräknad ovan (samma pass
+    // som patience-kostnaden). Bara data, ingen text — Jacob/Opus skriver
+    // meningen när fältet finns.
+    objectiveOutcome,
   }
 
   // Manager profile — career record, contract extension, age/seasonsAtClub tick

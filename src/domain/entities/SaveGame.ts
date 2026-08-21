@@ -203,6 +203,12 @@ export interface SaveGame {
   lastIncomingBidMatchday?: number  // C-O2 — matchday when AI last bid on managed club's player
 
   boardPatience?: number         // 0–100, starts 70
+  /** U1 andra halvan (2026-08-22): "senast räknade fixture" för den löpande
+   *  omgångsvisa boardPatience-uppdateringen (updateRunningBoardPatience,
+   *  boardService.ts) — samma idempotens-mönster som trainerArc.lastCountedFixtureId,
+   *  förhindrar dubbelräkning om funktionen någonsin anropas två gånger för
+   *  samma omgång. */
+  boardPatienceLastCountedFixtureId?: string
   consecutiveFailures?: number   // seasons ended in bottom half without improvement
   managerFired?: boolean
 

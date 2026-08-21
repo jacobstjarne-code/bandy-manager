@@ -188,4 +188,17 @@ export interface SeasonSummary {
    *  taget innan trainerArc rullas över till nästa säsong). Historik visar
    *  bara en rad när epoken SKIFTADE mot föregående sparade säsong. */
   clubEra?: ClubEra
+
+  /** U1 andra halvan, ändring 6 (Jacobs dom 2026-08-22, efter Skutskär-
+   *  auditen): boardObjectives fyra riktiga tillstånd vid säsongsslut —
+   *  förutsättningen för årsbokens tvåsanningsmening ("Plats 8 överträffade
+   *  målet. Två uppdrag missades."). Bara data, ingen text — den svenska
+   *  meningen skrivs av Opus när fältet finns att läsa (verdictText(),
+   *  SeasonSummaryScreen.tsx). */
+  objectiveOutcome?: {
+    met: number
+    atRisk: number
+    active: number
+    failed: number
+  }
 }

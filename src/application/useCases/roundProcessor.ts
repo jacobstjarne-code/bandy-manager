@@ -17,7 +17,7 @@ import {
 } from '../../domain/services/inboxService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
-import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
+import { evaluateBoard, generateBoardMessage, updateRunningBoardPatience } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
 
 import type { AdvanceResult } from './advanceTypes'
@@ -876,6 +876,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // ── Player availability + trainer arc ──────────────────────────────────
   const availabilityUpdatedPlayers = updatePlayerAvailability({ ...game, players: marketUpdatedPlayers })
   const updatedArc = updateTrainerArc({ ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings })
+  // U1 andra halvan (2026-08-22): löpande boardPatience, samma omgång/samma
+  // fixture-underlag som trainerArc — se boardService.ts:s egen kommentar
+  // för rotorsaken (boardPatience kunde tidigare bara röra sig vid
+  // säsongsslut). consecutiveLosses skickas in explicit (inte läst från
+  // game.trainerArc, som fortfarande är FÖRRA omgångens värde här).
+  const runningPatienceUpdate = updateRunningBoardPatience(
+    { ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings },
+    updatedArc.consecutiveLosses,
+  )
 
   // ── Board objectives check-in (round 7, 14, 22) ──────────────────────
   const leagueRound = currentLeagueRound ?? 0
@@ -1487,6 +1496,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     volunteers: updatedVolunteers,
     volunteerMorale: updatedVolunteerMorale,
     trainerArc: updatedArc,
+    boardPatience: runningPatienceUpdate.boardPatience,
+    boardPatienceLastCountedFixtureId: runningPatienceUpdate.boardPatienceLastCountedFixtureId,
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,
     patron: updatedPatron,

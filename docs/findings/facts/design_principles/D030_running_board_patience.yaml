@@ -1,0 +1,78 @@
+fact_id: D030
+category: design_principles
+claim: "boardPatience uppdateras löpande varje omgång (win +1.0/draw +0.5/loss -1.5 + förlustsvit-tillägg -3 vid streak>=3, -8 vid streak>=5), inte bara vid säsongsslut. Säsongsslutets egen term är kontinuerlig och boardExpectation-medveten: delta = slope·(ankare-position), ankare och slope per ClubExpectation-nivå, delad ankarkonstant med evaluateBoard. Objektivens fyra tillstånd (met/at_risk/active/failed) kostar olika (+3/-2/0/-5) istf att plattas till två."
+value:
+  RUNNING_PATIENCE_WIN: 1.0
+  RUNNING_PATIENCE_DRAW: 0.5
+  RUNNING_PATIENCE_LOSS: -1.5
+  LOSING_STREAK_SURCHARGE_3: -3
+  LOSING_STREAK_SURCHARGE_5: -8
+  ANCHOR_WIN_LEAGUE: 1
+  ANCHOR_CHALLENGE_TOP: 4
+  ANCHOR_MID_TABLE: 6
+  ANCHOR_AVOID_BOTTOM: 9
+  SLOPE_WIN_LEAGUE_BELOW: 5
+  SLOPE_CHALLENGE_TOP_ABOVE: 2.5
+  SLOPE_CHALLENGE_TOP_BELOW: 4
+  SLOPE_MID_TABLE_ABOVE: 2
+  SLOPE_MID_TABLE_BELOW: 3
+  SLOPE_AVOID_BOTTOM_ABOVE: 2
+  SLOPE_AVOID_BOTTOM_BELOW: 4
+  OBJECTIVE_COST_MET: 3
+  OBJECTIVE_COST_AT_RISK: -2
+  OBJECTIVE_COST_ACTIVE: 0
+  OBJECTIVE_COST_FAILED: -5
+unit: patience points (0-100 scale) per round or per season-end evaluation
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/boardService.ts (updateRunningBoardPatience, computeBoardPatienceUpdate, BOARD_EXPECTATION_ANCHOR_POSITION, BOARD_PATIENCE_SLOPE), src/application/useCases/roundProcessor.ts (hook vid samma anropsställe som updateTrainerArc), src/application/useCases/seasonEndProcessor.ts (objectiveStatuses/OBJECTIVE_PATIENCE_COST)"
+verified_at: 2026-08-22
+verified_by: code
+status: active
+invariants:
+  - "value.RUNNING_PATIENCE_LOSS < value.RUNNING_PATIENCE_DRAW < value.RUNNING_PATIENCE_WIN"
+  - "value.LOSING_STREAK_SURCHARGE_5 < value.LOSING_STREAK_SURCHARGE_3 < 0"
+  - "value.OBJECTIVE_COST_FAILED < value.OBJECTIVE_COST_AT_RISK < value.OBJECTIVE_COST_ACTIVE < value.OBJECTIVE_COST_MET"
+related_facts: [D029]
+notes: |
+  U1 andra halvan (Jacobs dom 2026-08-22, efter Skutskär-auditen mot
+  52009671 — se docs/incoming/bandy-manager-skutskaer-audit-52009671-2026-08-20.md
+  och docs/GRIND1_BOARDPATIENCE_OCH_BATCHSTACK_ANALYS_2026-08-21.md).
+
+  Djupaste fyndet: computeBoardPatienceUpdate anropades tidigare EN gång
+  per säsong, vid säsongsslut — boardPatience kunde alltså inte röra sig
+  under 21 av 22 omgångar. En spelare med en verklig kris (Skutskär: 8:a
+  av 12, 18 poäng, fem raka förluster, två hotade styrelseuppdrag) fick
+  styrelsen att förbli "Stabil" hela vägen, eftersom talet den läste inte
+  hade uppdaterats sedan säsongsstart. D029:s BOARD_PATIENCE_WARNING_ZONE_DELTA
+  (-5, fast klippa vid plats 9-10) är SUPERSETERAD av detta D-fact — den
+  gamla "dödzonen" (plats 4-8 av 12, noll effekt oavsett utfall) finns
+  inte längre; varje position rör nu siffran, skalad mot en delad
+  ankarposition per ClubExpectation.
+
+  Förlustsviten (piggyback på trainerArcService.ts:s redan beräknade
+  consecutiveLosses, roundProcessor.ts:878) är den avsiktligt ORTOGONALA
+  signalen — straffar inte en svår klubb som grindar fram en bra
+  placering genom många jämna resultat (spridda förluster kedjar aldrig,
+  sviten nollställs vid varje icke-förlust), men fångar en klubb som
+  kollapsar via en svit sent på säsongen.
+
+  Kalibrering, illustrativ handräkning (Skutskär-formad säsong,
+  startpatience 70): löpande term ≈ -19.5 (bas -16.5 + svit-tillägg -12
+  vid en 5-matchers svit), säsongsslut-position (AvoidBottom, ankare 9,
+  pos 8) ≈ +2, objektiv (2×at_risk) ≈ -4 → summa ≈ 48.5, "under_press"
+  men inte nära avskedströskeln 15. Jacobs dom efter denna första
+  handräkning: at_risk-kostnaden höjd -2→-4 och ≥5-strecket -6→-8 (de
+  värden som faktiskt är byggda i koden, se value ovan) — ny illustrativ
+  summa ≈ 38.5. Stresstest (scripts/grind1-boardpatience-sim-v2.ts, 100
+  seedade körningar × 3 säsonger för club_skutskar OCH club_heros) körd
+  samma dag för att verifiera fördelningen, inte bara punktskattningen —
+  se SLUTTEST_KO.md/BACKLOG.md för resultatet.
+
+  club_heros' kända 80%-avskedsfrekvens (tidigare Grind-1-fynd) visade
+  sig INTE komma från computeBoardPatienceUpdate alls — en separat,
+  oberoende per-omgångs konkurskoll (postRoundFlagsProcessor.ts, finances
+  < -2 000 000) var den faktiska boven, maskerad av en klassificeringsbugg
+  i v1-simuleringsskriptet. Rapporterat separat, INTE byggt i detta pass
+  (Jacobs order: "Bygg inget där").

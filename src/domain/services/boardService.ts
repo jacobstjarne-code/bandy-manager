@@ -1,5 +1,5 @@
 import { ClubExpectation } from '../enums'
-import type { StandingRow } from '../entities/SaveGame'
+import type { StandingRow, SaveGame } from '../entities/SaveGame'
 import { ordinal } from '../utils/numberFormat'
 import type { Club } from '../entities/Club'
 
@@ -37,6 +37,23 @@ export interface BoardEvaluation {
 // boardPatience-formel, så de beskriver samma zon.
 export const RELEGATION_ZONE_SIZE = 2
 
+// U1 andra halvan (Jacobs dom 2026-08-22, efter Skutskär-auditen): EN
+// delad ankarposition per ClubExpectation — "positionen som exakt
+// motsvarar förväntan, varken över- eller underträffar den". Kalibrerad
+// för den fasta 12-lags-ligan (CLUB_TEMPLATES.length === 12), samma
+// hårdkodnings-konvention evaluateBoard redan använde innan denna
+// refaktor. Källan till en tidigare bugklass: anchor-liknande siffror
+// härleddes SEPARAT i evaluateBoard, computeSeasonVerdictRating och
+// computeBoardPatienceUpdate — tre gissningar om samma sak som kunde
+// divergera tyst. Denna konstant är den ENDA källan; evaluateBoard och
+// computeBoardPatienceUpdate läser båda den nedan, aldrig en egen kopia.
+export const BOARD_EXPECTATION_ANCHOR_POSITION: Record<ClubExpectation, number> = {
+  [ClubExpectation.WinLeague]: 1,
+  [ClubExpectation.ChallengeTop]: 4,
+  [ClubExpectation.MidTable]: 6,
+  [ClubExpectation.AvoidBottom]: 9,
+}
+
 // How far into the season (0-1). Earlier = more lenient thresholds.
 function seasonProgress(roundsPlayed: number, totalRounds: number): number {
   return Math.min(1, roundsPlayed / totalRounds)
@@ -53,27 +70,32 @@ export function evaluateBoard(
   const progress = seasonProgress(roundsPlayed, totalRounds)
   // Leniency: early season allows 2 extra places before alarm
   const lenient = progress < 0.4 ? 2 : 0
+  // U1 andra halvan: samma ankare som computeBoardPatienceUpdate läser —
+  // banden nedan är omskrivna som ankare±offset, siffermässigt IDENTISKA
+  // mot de tidigare hårdkodade trösklarna (ingen beteendeändring här),
+  // bara med en enda delad källa istf en egen gissning per funktion.
+  const anchor = BOARD_EXPECTATION_ANCHOR_POSITION[expectation]
 
   let satisfaction: BoardEvaluation['satisfaction']
 
   switch (expectation) {
     case ClubExpectation.WinLeague:
-      if (pos <= 2) satisfaction = 'delighted'
-      else if (pos <= 4 + lenient) satisfaction = 'satisfied'
-      else if (pos <= 6 + lenient) satisfaction = 'concerned'
+      if (pos <= anchor + 1) satisfaction = 'delighted'
+      else if (pos <= anchor + 3 + lenient) satisfaction = 'satisfied'
+      else if (pos <= anchor + 5 + lenient) satisfaction = 'concerned'
       else satisfaction = 'unhappy'
       break
 
     case ClubExpectation.ChallengeTop:
-      if (pos <= 3) satisfaction = 'delighted'
-      else if (pos <= 6 + lenient) satisfaction = 'satisfied'
-      else if (pos <= 8 + lenient) satisfaction = 'concerned'
+      if (pos <= anchor - 1) satisfaction = 'delighted'
+      else if (pos <= anchor + 2 + lenient) satisfaction = 'satisfied'
+      else if (pos <= anchor + 4 + lenient) satisfaction = 'concerned'
       else satisfaction = 'unhappy'
       break
 
     case ClubExpectation.MidTable:
-      if (pos >= 4 && pos <= 8) satisfaction = 'delighted'
-      else if (pos <= 10 + lenient) satisfaction = 'satisfied'
+      if (pos >= anchor - 2 && pos <= anchor + 2) satisfaction = 'delighted'
+      else if (pos <= anchor + 4 + lenient) satisfaction = 'satisfied'
       else satisfaction = 'concerned'
       break
 
@@ -83,8 +105,8 @@ export function evaluateBoard(
       // inne i den faktiska nedflyttningszonen, RELEGATION_ZONE_SIZE=2) läste
       // bara som "concerned", inte som verklig risk.
       const relegationZoneStart = totalTeams - RELEGATION_ZONE_SIZE + 1
-      if (pos <= relegationZoneStart - 3) satisfaction = 'delighted'
-      else if (pos <= relegationZoneStart - 1 - lenient) satisfaction = 'satisfied'
+      if (pos <= anchor - 1) satisfaction = 'delighted'
+      else if (pos <= anchor + 1 - lenient) satisfaction = 'satisfied'
       else if (pos < relegationZoneStart) satisfaction = 'concerned'
       else satisfaction = 'unhappy'
       break
@@ -234,37 +256,96 @@ export function seasonReputationDelta(rating: 1 | 2 | 3 | 4 | 5): number {
   return SEASON_REPUTATION_DELTA[rating]
 }
 
+// U1 andra halvan (Jacobs dom 2026-08-22): tvålutning per ClubExpectation
+// — "above" (positionen är bättre än ankaret, belönar) och "below" (sämre
+// än ankaret, straffar hårdare). WinLeague har ankare=1 — går inte att slå,
+// så above används aldrig i praktiken (kvar för typfullständighet).
+const BOARD_PATIENCE_SLOPE: Record<ClubExpectation, { above: number; below: number }> = {
+  [ClubExpectation.WinLeague]: { above: 0, below: 5 },
+  [ClubExpectation.ChallengeTop]: { above: 2.5, below: 4 },
+  [ClubExpectation.MidTable]: { above: 2, below: 3 },
+  [ClubExpectation.AvoidBottom]: { above: 2, below: 4 },
+}
+
 /**
  * U1 (SLUTTEST_KO.md, 2026-08-17) — säsongsslutets boardPatience-uppdatering,
  * utbruten ur seasonEndProcessor.ts som en ren funktion (samma disciplin som
  * seasonReputationDelta ovan) för att gå att regressionstesta utan en full
- * säsongssimulering. RELEGATION_ZONE_SIZE-baserad, med en varningszon precis
- * ovanför den faktiska zonen — se seasonEndProcessor.ts:s anropsställe för
- * hela rotorsaken (nedflyttningsstrid gav ingen verklig tålamodsförlust).
+ * säsongssimulering.
+ *
+ * U1 andra halvan (Jacobs dom 2026-08-22, efter Skutskär-auditen): den
+ * tidigare klippformeln gav NOLL patience-effekt för position 4-8 av 12
+ * ("dödzonen") oavsett utfall, och läste aldrig boardExpectation — en
+ * AvoidBottom-klubb på 8:e plats och en WinLeague-klubb på 8:e plats fick
+ * identisk (nollad) behandling. Ersatt av en kontinuerlig, förväntans-
+ * medveten formel: delta = slope·(ankare−position), positiv lutning
+ * (BOARD_PATIENCE_SLOPE.above) om positionen slår ankaret, negativ
+ * (.below, brantare) om den missar det. Ankaret är DELAT med evaluateBoard
+ * (BOARD_EXPECTATION_ANCHOR_POSITION ovan) — aldrig en egen gissning.
+ *
+ * newConsecutiveFailures oförändrad (RELEGATION_ZONE_SIZE-baserad) — det
+ * är den andra, separata avskedsvägen (>=3 raka säsonger i faktisk
+ * nedflyttningszon) och rördes inte av Jacobs fem ändringar.
  */
 export function computeBoardPatienceUpdate(
   finalPos: number,
   totalTeams: number,
   currentPatience: number,
   currentFailures: number,
+  expectation: ClubExpectation,
 ): { newBoardPatience: number; newConsecutiveFailures: number } {
-  const topThird = Math.ceil(totalTeams / 3)
   const relegationZoneStart = totalTeams - RELEGATION_ZONE_SIZE + 1
-  const warningZoneStart = relegationZoneStart - RELEGATION_ZONE_SIZE
+  const anchor = BOARD_EXPECTATION_ANCHOR_POSITION[expectation]
+  const slope = BOARD_PATIENCE_SLOPE[expectation]
+  const gap = anchor - finalPos // positivt = bättre än ankaret
+  const delta = gap >= 0 ? slope.above * gap : slope.below * gap
+  const newBoardPatience = Math.max(0, Math.min(100, currentPatience + delta))
+  const newConsecutiveFailures = finalPos >= relegationZoneStart ? currentFailures + 1 : 0
+  return { newBoardPatience, newConsecutiveFailures }
+}
 
-  if (finalPos <= 2) {
-    return { newBoardPatience: Math.min(100, currentPatience + 20), newConsecutiveFailures: 0 }
+// U1 andra halvan, ändring 1+2 (Jacobs dom 2026-08-22): löpande omgångsterm.
+// Utan denna kunde boardPatience bara röra sig EN gång per säsong (vid
+// säsongsslut) — en varningszon-indikator (3.2) var därför dekoration i 21
+// av 22 omgångar. Piggybackar på samma "senast räknade fixture"-mönster
+// trainerArcService.ts:s updateTrainerArc redan använder (samma runda,
+// samma anropsordning i roundProcessor.ts — se anropsstället för varför
+// consecutiveLosses skickas in explicit istf läst från game.trainerArc).
+const RUNNING_PATIENCE_DELTA = { win: 1.0, draw: 0.5, loss: -1.5 } as const
+
+/**
+ * Förlustsviten som bärande signal (ändring 2): ortogonal mot både
+ * slutposition och difficulty — straffar inte en svår klubb som grindar
+ * fram en bra placering genom många jämna resultat, men fångar en klubb
+ * som kollapsar via en svit sent på säsongen. Adderas OVANPÅ
+ * RUNNING_PATIENCE_DELTA.loss varje omgång sviten fortsätter.
+ */
+function losingStreakSurcharge(consecutiveLosses: number): number {
+  if (consecutiveLosses >= 5) return -8
+  if (consecutiveLosses >= 3) return -3
+  return 0
+}
+
+export function updateRunningBoardPatience(
+  game: SaveGame,
+  consecutiveLossesAfterThisRound: number,
+): { boardPatience: number; boardPatienceLastCountedFixtureId?: string } {
+  const currentPatience = game.boardPatience ?? 70
+  const lastFixtures = game.fixtures
+    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
+    .sort((a, b) => b.roundNumber - a.roundNumber)
+  const last = lastFixtures[0]
+  if (!last || last.id === game.boardPatienceLastCountedFixtureId) {
+    return { boardPatience: currentPatience, boardPatienceLastCountedFixtureId: game.boardPatienceLastCountedFixtureId }
   }
-  if (finalPos <= topThird) {
-    return { newBoardPatience: Math.min(100, currentPatience + 15), newConsecutiveFailures: 0 }
-  }
-  if (finalPos >= relegationZoneStart) {
-    return { newBoardPatience: Math.max(0, currentPatience - 20), newConsecutiveFailures: currentFailures + 1 }
-  }
-  if (finalPos >= warningZoneStart) {
-    return { newBoardPatience: Math.max(0, currentPatience - 5), newConsecutiveFailures: 0 }
-  }
-  return { newBoardPatience: currentPatience, newConsecutiveFailures: 0 }
+  const isHome = last.homeClubId === game.managedClubId
+  const myScore = isHome ? last.homeScore : last.awayScore
+  const theirScore = isHome ? last.awayScore : last.homeScore
+  const outcome = (myScore ?? 0) > (theirScore ?? 0) ? 'win' : (myScore ?? 0) < (theirScore ?? 0) ? 'loss' : 'draw'
+  const baseDelta = RUNNING_PATIENCE_DELTA[outcome]
+  const surcharge = outcome === 'loss' ? losingStreakSurcharge(consecutiveLossesAfterThisRound) : 0
+  const boardPatience = Math.max(0, Math.min(100, currentPatience + baseDelta + surcharge))
+  return { boardPatience, boardPatienceLastCountedFixtureId: last.id }
 }
 
 /**
