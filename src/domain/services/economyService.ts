@@ -18,6 +18,7 @@ export type FinanceReason =
   | 'league_prize'
   | 'patron'
   | 'kommunbidrag'
+  | 'facility_upkeep'
   | 'budget_priority'
   | 'transfer_in'
   | 'transfer_out'
@@ -134,6 +135,7 @@ export interface RoundIncomeBreakdown {
   weeklyWages: number            // monthly salary total / 4
   weeklyArenaCost: number        // arenaCapacity × 5 per round
   weeklyLegendCost: number       // 500 kr/omgång per aktiv legend (youth_coach | scout)
+  facilityUpkeep: number         // O5 kraft 2: summa upkeepCost för byggda noder (once at round 1)
   netPerRound: number            // sum of all income − wages − arena cost
 }
 
@@ -157,6 +159,7 @@ export interface CalcRoundIncomeParams {
   legendSalaryCost?: number      // 500 kr × antal aktiva legendroller (youth_coach | scout)
   journalistAttendanceModifier?: number  // from journalistVisibilityService (0.95 / 1.0 / 1.10)
   weatherAttendanceModifier?: number     // from MatchWeather.effects via effectiveWeatherAttendance (1.0 om frånvarande)
+  builtFacilityUpkeepCosts?: number[]    // O5 kraft 2: upkeepCost för varje byggd nod (FacilityState.builtNodeIds → FACILITY_NODE_DEFS)
 }
 
 // O5 kraft 1 — löneinflation med rykte (Jacobs dom 2026-08-17,
@@ -285,8 +288,15 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
 
   const weeklyLegendCost = legendSalaryCost ?? 0
 
+  // ── Anläggningsdrift (O5 kraft 2, utbetalas en gång per säsong, omgång 1) ──
+  // Samma rytm som kommunbidraget — en synlig post, inte en dold veckoläcka.
+  const facilityUpkeep = isFirstRound
+    ? (params.builtFacilityUpkeepCosts ?? []).reduce((sum, c) => sum + c, 0)
+    : 0
+
   const netPerRound = weeklyBase + sponsorIncome + matchRevenue + communityMatchIncome
-    + communityRoundIncome + volunteerIncome + kommunBidrag - weeklyWages - weeklyArenaCost - weeklyLegendCost
+    + communityRoundIncome + volunteerIncome + kommunBidrag - weeklyWages - weeklyArenaCost
+    - weeklyLegendCost - facilityUpkeep
 
   return {
     weeklyBase,
@@ -299,6 +309,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     weeklyWages,
     weeklyArenaCost,
     weeklyLegendCost,
+    facilityUpkeep,
     netPerRound,
   }
 }

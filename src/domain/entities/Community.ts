@@ -112,6 +112,14 @@ export interface FacilityNodeDef {
   facilitiesBonus: number    // applys to club.facilities on completion (backward compat)
   capacityBonus?: number     // added to audience capacity on completion
   financing?: NodeFinancing  // B1 §1 — kommun/mecenat-medfinansiering
+  /** O5 kraft 2 (Jacobs dom 2026-08-17, byggd 2026-08-23): drift per säsong
+   *  för en byggd nod. cost/12 avrundat till närmaste 100 — kalibrerad så att
+   *  ALLA nio ordinarie noders (icke-hall) drift tillsammans ≈ en tredjedel
+   *  av en normal säsongsintäkt för en medelklubb (rykte 60), domens eget
+   *  mått. Betalas en gång per säsong (calcRoundIncome, isFirstRound),
+   *  samma rytm som kommunbidraget — synligt som en post, inte en dold
+   *  veckoläcka. */
+  upkeepCost: number
 }
 
 // Derived view type — never saved, computed from FacilityState

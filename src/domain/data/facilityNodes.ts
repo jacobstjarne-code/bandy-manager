@@ -6,6 +6,14 @@ import type { FacilityNodeDef } from '../entities/Community'
 // financing (B1 §1/§8): kommun gated på politician.relationship (+ ev. communityStanding),
 // mecenat på aktiv villig mecenat. Egen kassa alltid implicit (full cost). Lägre tröskel
 // ju mindre/mer ungdomsinriktad noden är. Matchhall saknar financing (prövningsspec/patron-borgen).
+//
+// upkeepCost (O5 kraft 2, Jacobs dom 2026-08-17, byggd 2026-08-23): cost/12
+// avrundat till närmaste 100. De nio ordinarie noderna (allt utom
+// matchhall/isHall — samma "fullt träd"-definition som O17s isFacilityTreeFull)
+// summerar till 143 400 kr/säsong, mätt mot en simulerad medelklubbs (rykte
+// 60) bruttoårsintäkt (426 063 kr via calcRoundIncome) — 33,7 %, domens
+// eget mått ("en tredjedel av en normal säsongsintäkt"). Betalas en gång
+// per säsong (calcRoundIncome, isFirstRound), inte veckovis.
 
 export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
   // ── ANLÄGGNING ──────────────────────────────────────────────────────────
@@ -14,6 +22,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     gren: 'anlaggning',
     label: 'Värmestuga',
     cost: 120000,
+    upkeepCost: 10000,
     buildRounds: 8,
     requires: [],
     facilitiesBonus: 5,
@@ -33,6 +42,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     gren: 'anlaggning',
     label: 'Läktare — östra',
     cost: 300000,
+    upkeepCost: 25000,
     buildRounds: 12,
     requires: ['varmestuga'],
     facilitiesBonus: 10,
@@ -49,6 +59,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     gren: 'anlaggning',
     label: 'Belysning träningsplan',
     cost: 240000,
+    upkeepCost: 20000,
     buildRounds: 6,
     requires: [],
     facilitiesBonus: 5,
@@ -65,6 +76,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     gren: 'anlaggning',
     label: 'Matchhall',
     cost: 1800000,
+    upkeepCost: 150000,
     buildRounds: 20,
     requires: ['laktare_ostra'],
     facilitiesBonus: 20,
@@ -84,6 +96,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     gren: 'verksamhet',
     label: 'Kiosk & servering',
     cost: 80000,
+    upkeepCost: 6700,
     buildRounds: 4,
     requires: [],
     facilitiesBonus: 3,
@@ -100,6 +113,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     gren: 'verksamhet',
     label: 'Strålkastare',
     cost: 80000,
+    upkeepCost: 6700,
     buildRounds: 5,
     requires: [],
     facilitiesBonus: 5,
@@ -116,6 +130,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     gren: 'verksamhet',
     label: 'Gym',
     cost: 150000,
+    upkeepCost: 12500,
     buildRounds: 8,
     requires: [],
     facilitiesBonus: 8,
@@ -131,6 +146,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     gren: 'verksamhet',
     label: 'Träningshall (ungdom)',
     cost: 380000,
+    upkeepCost: 31700,
     buildRounds: 14,
     requires: [],
     facilitiesBonus: 8,
@@ -148,6 +164,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     gren: 'akademi',
     label: 'Akademinivå 2',
     cost: 120000,
+    upkeepCost: 10000,
     buildRounds: 8,
     requires: ['kiosk'],
     facilitiesBonus: 5,
@@ -163,6 +180,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     gren: 'akademi',
     label: 'Akademinivå 3',
     cost: 250000,
+    upkeepCost: 20800,
     buildRounds: 12,
     requires: ['traningshall', 'akademi_2'],
     facilitiesBonus: 8,

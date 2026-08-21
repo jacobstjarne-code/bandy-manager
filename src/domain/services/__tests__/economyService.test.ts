@@ -241,6 +241,54 @@ describe('calcRoundIncome — wages and base income', () => {
   })
 })
 
+// O5 kraft 2 (Jacobs dom 2026-08-17, byggd 2026-08-23): anläggningsdrift,
+// betalas en gång per säsong (isFirstRound), inte veckovis.
+describe('calcRoundIncome — facilityUpkeep (O5 kraft 2)', () => {
+  it('summerar builtFacilityUpkeepCosts vid isFirstRound', () => {
+    const result = calcRoundIncome({
+      club: makeClub(), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+      isFirstRound: true, builtFacilityUpkeepCosts: [10000, 6700, 20000],
+    })
+    expect(result.facilityUpkeep).toBe(36700)
+  })
+
+  it('0 om inte isFirstRound, även med byggda noder', () => {
+    const result = calcRoundIncome({
+      club: makeClub(), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+      isFirstRound: false, builtFacilityUpkeepCosts: [10000, 6700],
+    })
+    expect(result.facilityUpkeep).toBe(0)
+  })
+
+  it('0 om inga noder byggda', () => {
+    const result = calcRoundIncome({
+      club: makeClub(), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+      isFirstRound: true, builtFacilityUpkeepCosts: [],
+    })
+    expect(result.facilityUpkeep).toBe(0)
+  })
+
+  it('dras av i netPerRound', () => {
+    const result = calcRoundIncome({
+      club: makeClub(), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+      isFirstRound: true, builtFacilityUpkeepCosts: [10000],
+    })
+    const expected = result.weeklyBase + result.sponsorIncome + result.matchRevenue
+      + result.communityMatchIncome + result.communityRoundIncome + result.volunteerIncome
+      + result.kommunBidrag - result.weeklyWages - result.weeklyArenaCost - result.weeklyLegendCost - result.facilityUpkeep
+    expect(result.netPerRound).toBe(expected)
+    expect(result.facilityUpkeep).toBe(10000)
+  })
+})
+
 // ── Group 4: calcRoundIncome — sponsors ───────────────────────────────────────
 
 describe('calcRoundIncome — sponsors', () => {

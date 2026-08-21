@@ -13,6 +13,7 @@ import { getJournalistAttendanceModifier } from '../../../domain/services/journa
 import type { FinanceEntry } from '../../../domain/services/economyService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { generateVolunteerRoster } from '../../../domain/services/volunteerService'
+import { FACILITY_NODE_DEFS } from '../../../domain/data/facilityNodes'
 
 export interface EconomyProcessorResult {
   updatedClubs: Club[]
@@ -58,6 +59,9 @@ export function processEconomy(
     .filter(l => l.role === 'youth_coach' || l.role === 'scout').length) * 500
   const volunteerSeedNum = game.managedClubId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + game.currentSeason * 17
   const volunteerRoster = generateVolunteerRoster(volunteerSeedNum, 4)
+  // O5 kraft 2: byggda nodens upkeepCost, en per byggd nod (FacilityState.builtNodeIds)
+  const builtFacilityUpkeepCosts = (game.facilityState?.builtNodeIds ?? [])
+    .map(id => FACILITY_NODE_DEFS.find(def => def.id === id)?.upkeepCost ?? 0)
   const managedIncome = calcRoundIncome({
     club: managedClub,
     players: managedClubPlayers,
@@ -84,6 +88,7 @@ export function processEconomy(
       managedClub.hasIndoorArena,
       Boolean(managedHomeMatch?.isFinaldag || managedHomeMatch?.isAnnandagen || (managedHomeMatch?.matchday ?? 0) > 22),
     ),
+    builtFacilityUpkeepCosts,
   })
 
   if (managedIncome.weeklyBase !== 0) {
@@ -107,6 +112,10 @@ export function processEconomy(
   }
   if (managedIncome.kommunBidrag !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.kommunBidrag, reason: 'kommunbidrag', label: `Kommunbidrag (säsongsstart)` })
+  }
+  if (managedIncome.facilityUpkeep !== 0) {
+    const builtCount = (game.facilityState?.builtNodeIds ?? []).length
+    roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.facilityUpkeep, reason: 'facility_upkeep', label: `Anläggningsdrift (${builtCount} byggda noder)` })
   }
   if (managedIncome.weeklyWages !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyWages, reason: 'wages', label: 'Löner' })
