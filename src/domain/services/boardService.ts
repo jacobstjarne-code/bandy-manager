@@ -319,8 +319,26 @@ const RUNNING_PATIENCE_DELTA = { win: 1.0, draw: 0.5, loss: -1.5 } as const
  * fram en bra placering genom många jämna resultat, men fångar en klubb
  * som kollapsar via en svit sent på säsongen. Adderas OVANPÅ
  * RUNNING_PATIENCE_DELTA.loss varje omgång sviten fortsätter.
+ *
+ * Tak på fem omgångar per enskild svit (Jacobs koefficientdom 2026-08-23,
+ * efter Grind 1 v3-stresstestet): förlustsvit≥3 hade tidigare inget tak,
+ * och verkligt spel (autoSelectLineup/advanceToNextEvent) producerar sviter
+ * på 7-19 omgångar i en och samma säsong — långt bortom det illustrativa
+ * 5-matchersexemplet domen ursprungligen räknade på. En 16-omgångarssvit
+ * betalade ~-120 patience, vilket ensamt drev 57%/100% avskedsfrekvens
+ * (Skutskär/Heros) i stresstestet, mycket högre än kalibreringsmålet
+ * "icke-noll men rimlig". Jacobs skäl: efter fem raka förluster har
+ * styrelsen bildat sin uppfattning — förlust tolv tillför ingen ny
+ * information. Inte en engångskostnad (tappar upptrappningen -3→-8 som gör
+ * sviten kännbar) och inte lägre magnituder (försvagar det verkliga fallet
+ * — kollaps sent på säsongen — vikterna ska fånga). Tak på ANTAL OMGÅNGAR
+ * bevarar båda: -3/-3/-8 betalas ut precis som förut för omgång 3, 4, 5 av
+ * en svit, sedan 0 för varje ytterligare omgång SAMMA svit fortsätter.
+ * Ingen extra state behövs — consecutiveLosses nollställs redan vid varje
+ * ny svit (trainerArcService.ts), så gränsen på indata-värdet räcker.
  */
 function losingStreakSurcharge(consecutiveLosses: number): number {
+  if (consecutiveLosses > 5) return 0
   if (consecutiveLosses >= 5) return -8
   if (consecutiveLosses >= 3) return -3
   return 0

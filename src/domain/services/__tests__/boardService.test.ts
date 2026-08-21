@@ -195,6 +195,16 @@ describe('updateRunningBoardPatience — U1 andra halvan, ändring 1+2 (Jacobs d
     expect(updateRunningBoardPatience(game, 5).boardPatience).toBe(70 - 1.5 - 8)
   })
 
+  it('TAK (Jacobs koefficientdom 2026-08-23): förlustsvit 6 — tillägget utgår, bara bas-förlusten kvar', () => {
+    const game = makeGameWithLastFixture({ homeScore: 0, awayScore: 1 })
+    expect(updateRunningBoardPatience(game, 6).boardPatience).toBe(70 - 1.5)
+  })
+
+  it('TAK: förlustsvit 16 (verklig längd ur Grind 1 v3-stresstestet) — samma delta som svit 6, ingen ytterligare eskalering', () => {
+    const game = makeGameWithLastFixture({ homeScore: 0, awayScore: 1 })
+    expect(updateRunningBoardPatience(game, 16).boardPatience).toBe(70 - 1.5)
+  })
+
   it('samma fixture räknas inte två gånger (idempotens, samma mönster som trainerArc.lastCountedFixtureId)', () => {
     const game = makeGameWithLastFixture({ homeScore: 2, awayScore: 1, boardPatienceLastCountedFixtureId: 'fx1' })
     expect(updateRunningBoardPatience(game, 0)).toEqual({ boardPatience: 70, boardPatienceLastCountedFixtureId: 'fx1' })
