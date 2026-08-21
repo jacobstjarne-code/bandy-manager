@@ -217,6 +217,8 @@ Med korrekt positionsläsning + taket: Skutskär 50/100 (var 57%, verklig positi
 
 Konkurspaden loggad i `docs/BACKLOG.md` under "Två läsare, en sanning" (`managerFired`-raden): tre oberoende vägar till avsked, ingen yta förklarar för spelaren vilken som utlöstes.
 
+**GRIND 1 PASSERAD (Jacobs dom 2026-08-23).** Skutskär 50% sparkade inom tre säsonger med sund positionsvarians — en svår klubb kan misslyckas och bli sparkad utan sabotage, utan att vara mekaniskt garanterad att göra det. Koefficienterna LÅSTA som de står (`losingStreakSurcharge` med femomgångarstaket, `boardService.ts`). Heros klassad som en separat designfråga (spelbarhet), inte en koefficientfråga — se rapport nedan, `DOM_FRAMGANGSEKONOMIN_HEROS_2026-08-23.md`. → öppnar `O5` och `O1`.
+
 **Grind 2 — andra akten.** En framgångsrik klubb har år åtta ett ekonomiskt val där båda alternativen svider. Ingen exakt pivotal scen upprepas inom tre säsonger. Ett färdigbyggt anläggningsträd öppnar nästa horisont i stället för ett tomtillstånd. → stänger O5, U5, O3.
 
 **Grind 3 — rytmen.** Spelaren kan alltid identifiera skärmens primära handling och nästa olösta fråga. Rutinbeats stoppar inte autosimulering. Säsongen landar en gång. → stänger etapp 5, D1, Å3, Å4.
