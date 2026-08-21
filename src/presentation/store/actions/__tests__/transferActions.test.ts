@@ -165,3 +165,34 @@ describe('ÖVERLÄMNING 2: respondToIncomingBid sammanslagen med resolveEvent', 
     expect(store.getGame()?.transferBids?.[0]).toEqual(bid)
   })
 })
+
+// O5 kraft 1 (Jacobs dom 2026-08-17, byggd 2026-08-23): renewContract-
+// golvet skalar nu med klubbens rykte istf. vara en ren currentAbility-
+// funktion. berg: currentAbility 72, isFullTimePro (inget dayJob).
+describe('renewContract — O5 kraft 1, löneinflation med rykte', () => {
+  it('avvisar en förlängning under golvet (rykte 60 → golv 12500)', () => {
+    const store = makeStore(makeGame())
+    const actions = transferActions(store.get, store.set)
+    const result = actions.renewContract('berg', 12000, 2)
+    expect(result.success).toBe(false)
+    expect((result as { error?: string }).error).toMatch(/kräver minst/)
+  })
+
+  it('accepterar exakt golvet', () => {
+    const store = makeStore(makeGame())
+    const actions = transferActions(store.get, store.set)
+    const result = actions.renewContract('berg', 12500, 2)
+    expect(result.success).toBe(true)
+  })
+
+  it('en klubb med högre rykte har ett högre golv för samma spelare', () => {
+    const highRepGame = makeGame({
+      clubs: [makeClub({ id: 'c1', reputation: 90, squadPlayerIds: ['berg'] }), makeClub({ id: 'c2', name: 'Köparklubben', shortName: 'KÖP', squadPlayerIds: [] })],
+    })
+    const store = makeStore(highRepGame)
+    const actions = transferActions(store.get, store.set)
+    // rykte 90 → repFactor 1.4 → golv = round(72*200*0.8*1.4/500)*500 = 16000
+    const belowHighRepFloor = actions.renewContract('berg', 13000, 2)
+    expect(belowHighRepFloor.success).toBe(false)  // hade accepterats vid rykte 60 (golv 12500)
+  })
+})

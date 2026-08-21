@@ -221,4 +221,29 @@ describe('createOutgoingBid', () => {
     expect(result.bid).toBeDefined()
     expect(result.bid!.playerId).toBe('p1')
   })
+
+  // O5 kraft 1 (Jacobs dom 2026-08-17, byggd 2026-08-23): offeredSalary
+  // hade tidigare ingen valideringsgräns alls — löneinflationen kräver att
+  // ett för lågt bud avvisas, skalat mot KÖPANDE klubbs rykte.
+  describe('O5 kraft 1 — löneinflation med rykte (minSalary-golv)', () => {
+    it('avvisar ett bud under golvet (rykte 60, currentAbility 65 → golv 11500)', () => {
+      const game = makeGame()
+      const result = createOutgoingBid(game, 'p1', 200000, 11000, 3, 5)
+      expect(result.success).toBe(false)
+      expect(result.error).toMatch(/kräver minst/)
+    })
+
+    it('accepterar exakt golvet', () => {
+      const game = makeGame()
+      const result = createOutgoingBid(game, 'p1', 200000, 11500, 3, 5)
+      expect(result.success).toBe(true)
+    })
+
+    it('en klubb med lägre rykte har ett lägre golv för samma spelare', () => {
+      const lowRepGame = makeGame({ clubs: [makeClub({ id: 'c1', reputation: 30, squadPlayerIds: ['own1'] }), makeClub({ id: 'c2', name: 'Other FK', shortName: 'OFK', squadPlayerIds: ['p1'] })] })
+      // rykte 30 → repFactor 0.8 → golv = round(65*200*0.8*0.8/500)*500 = 8500
+      const belowHighRepFloor = createOutgoingBid(lowRepGame, 'p1', 200000, 9000, 3, 5)
+      expect(belowHighRepFloor.success).toBe(true)  // hade avvisats vid rykte 60 (golv 11500)
+    })
+  })
 })

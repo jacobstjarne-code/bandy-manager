@@ -159,6 +159,16 @@ export interface CalcRoundIncomeParams {
   weatherAttendanceModifier?: number     // from MatchWeather.effects via effectiveWeatherAttendance (1.0 om frånvarande)
 }
 
+// O5 kraft 1 — löneinflation med rykte (Jacobs dom 2026-08-17,
+// DOM_FRAMGANGSEKONOMIN_2026-08-17.md, byggd 2026-08-23 efter Grind 1
+// passerade). Samma kurva som kommunbidragets repFactor nedan
+// (0.5–1.5 över rykte 0-100) — en sanning, ett ställe, återanvänd här
+// istf en andra oberoende gissning. rep 50 (ligans mitt) ≈ 1.0x
+// (oförändrat golv), rep 90 ≈ 1.4x, rep 45 ≈ 0.95x.
+export function reputationSalaryMultiplier(reputation: number): number {
+  return 0.5 + (reputation / 100) * 1.0
+}
+
 /**
  * Single canonical income calculation.
  * Used by roundProcessor for the actual finance mutation,
@@ -266,7 +276,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   let kommunBidrag = 0
   if (isFirstRound) {
     const kommunBase = 60000
-    const repFactor = 0.5 + (club.reputation / 100) * 1.0           // 0.5–1.5
+    const repFactor = reputationSalaryMultiplier(club.reputation)   // 0.5–1.5
     // Sprint 26: kvadratisk csFactor — belönar hög puls, straffar låg (var linjär 0.7–1.3)
     const csNormalized = 0.3 + ((communityStanding ?? 50) / 100) * 0.7  // 0.3–1.0
     const csFactor = csNormalized * csNormalized                         // 0.09–1.0

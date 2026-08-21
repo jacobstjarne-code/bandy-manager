@@ -2,7 +2,7 @@ import type { SaveGame, TalentSearchRequest, Sponsor } from '../../../domain/ent
 import { startScoutAssignment } from '../../../domain/services/scoutingService'
 import { createOutgoingBid } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
-import { applyFinanceChange } from '../../../domain/services/economyService'
+import { applyFinanceChange, reputationSalaryMultiplier } from '../../../domain/services/economyService'
 import { bidReceivedEvent } from '../../../domain/services/events/eventFactories'
 import { resolveEvent } from '../../../domain/services/eventService'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
@@ -47,17 +47,21 @@ export function transferActions(get: Get, set: Set) {
       if (!game) return { success: false, error: 'Inget spel laddat' }
       const player = game.players.find(p => p.id === playerId && p.clubId === game.managedClubId)
       if (!player) return { success: false, error: 'Spelaren hittades inte' }
+      const club = game.clubs.find(c => c.id === game.managedClubId)
+      if (!club) return { success: false, error: 'Ingen klubb hittad' }
 
+      // O5 kraft 1 (Jacobs dom 2026-08-17, byggd 2026-08-23): rykte skalar
+      // lönekravet, samma kurva som economyService.ts:s kommunbidrag —
+      // rot: intäktssidan skalade redan med rykte, lönesidan gjorde det inte.
       const isFullTimePro = !player.dayJob
-      const minSalary = Math.round((isFullTimePro ? player.currentAbility * 200 * 0.80 : player.currentAbility * 80 * 0.80) / 500) * 500
+      const repFactor = reputationSalaryMultiplier(club.reputation)
+      const minSalary = Math.round((isFullTimePro ? player.currentAbility * 200 * 0.80 : player.currentAbility * 80 * 0.80) * repFactor / 500) * 500
       if (newSalary < minSalary) return { success: false, error: `${player.firstName} avslår — kräver minst ${formatSalary(minSalary)}` }
 
       const currentWageBill = game.players
         .filter(p => p.clubId === game.managedClubId)
         .reduce((sum, p) => sum + p.salary, 0)
       const projectedWageBill = currentWageBill - player.salary + newSalary
-      const club = game.clubs.find(c => c.id === game.managedClubId)
-      if (!club) return { success: false, error: 'Ingen klubb hittad' }
 
       const isMinSalary = newSalary === minSalary
       const updatedPlayers = game.players.map(p =>

@@ -4,10 +4,11 @@ import type { Player } from '../entities/Player'
 import type { Club } from '../entities/Club'
 import { getTransferWindowStatus } from './transferWindowService'
 import { InboxItemType } from '../enums'
-import { applyFinanceChange, appendFinanceLog } from './economyService'
+import { applyFinanceChange, appendFinanceLog, reputationSalaryMultiplier } from './economyService'
 import type { FinanceEntry } from './economyService'
 import { getRegionDistance } from '../data/regionGeography'
 import { getRivalry } from '../data/rivalries'
+import { formatSalary } from '../format'
 
 function bidId(round: number, playerId: string, buyingClubId: string): string {
   return `bid_${round}_${playerId}_${buyingClubId}`
@@ -159,6 +160,19 @@ export function createOutgoingBid(
 
   if (managedClub.transferBudget < offerAmount) {
     return { success: false, error: `Otillräcklig transferbudget (${managedClub.transferBudget.toLocaleString('sv-SE')} kr)` }
+  }
+
+  // O5 kraft 1 (Jacobs dom 2026-08-17, byggd 2026-08-23): "vad spelarna
+  // begär" gäller vid nyförvärv precis som vid förlängning — samma golv-
+  // formel som transferActions.ts:s renewContract, skalad mot KÖPANDE
+  // klubbs rykte (spelaren är alltid köpare i utgående bud, se kommentaren
+  // "Spelaren lägger bud" ovan). Innan detta hade offeredSalary ingen
+  // valideringsgräns alls.
+  const isFullTimePro = !target.dayJob
+  const repFactor = reputationSalaryMultiplier(managedClub.reputation)
+  const minSalary = Math.round((isFullTimePro ? target.currentAbility * 200 * 0.80 : target.currentAbility * 80 * 0.80) * repFactor / 500) * 500
+  if (offeredSalary < minSalary) {
+    return { success: false, error: `${target.firstName} tackar nej — kräver minst ${formatSalary(minSalary)}` }
   }
 
   const bid: TransferBid = {
