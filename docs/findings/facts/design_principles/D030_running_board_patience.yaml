@@ -1,12 +1,13 @@
 fact_id: D030
 category: design_principles
-claim: "boardPatience uppdateras löpande varje omgång (win +1.0/draw +0.5/loss -1.5 + förlustsvit-tillägg -3 vid streak>=3, -8 vid streak>=5), inte bara vid säsongsslut. Säsongsslutets egen term är kontinuerlig och boardExpectation-medveten: delta = slope·(ankare-position), ankare och slope per ClubExpectation-nivå, delad ankarkonstant med evaluateBoard. Objektivens fyra tillstånd (met/at_risk/active/failed) kostar olika (+3/-2/0/-5) istf att plattas till två."
+claim: "boardPatience uppdateras löpande varje omgång (win +1.0/draw +0.5/loss -1.5 + förlustsvit-tillägg -3 vid streak>=3, -8 vid streak>=5, TAK: 0 vid streak>5 — tillägget betalas ut i högst fem omgångar av en enskild svit), inte bara vid säsongsslut. Säsongsslutets egen term är kontinuerlig och boardExpectation-medveten: delta = slope·(ankare-position), ankare och slope per ClubExpectation-nivå, delad ankarkonstant med evaluateBoard. Objektivens fyra tillstånd (met/at_risk/active/failed) kostar olika (+3/-2/0/-5) istf att plattas till två."
 value:
   RUNNING_PATIENCE_WIN: 1.0
   RUNNING_PATIENCE_DRAW: 0.5
   RUNNING_PATIENCE_LOSS: -1.5
   LOSING_STREAK_SURCHARGE_3: -3
   LOSING_STREAK_SURCHARGE_5: -8
+  LOSING_STREAK_SURCHARGE_CAP_ROUNDS: 5
   ANCHOR_WIN_LEAGUE: 1
   ANCHOR_CHALLENGE_TOP: 4
   ANCHOR_MID_TABLE: 6
@@ -27,9 +28,12 @@ source:
   type: design_decision
   decided_by: jacob
   doc: "src/domain/services/boardService.ts (updateRunningBoardPatience, computeBoardPatienceUpdate, BOARD_EXPECTATION_ANCHOR_POSITION, BOARD_PATIENCE_SLOPE), src/application/useCases/roundProcessor.ts (hook vid samma anropsställe som updateTrainerArc), src/application/useCases/seasonEndProcessor.ts (objectiveStatuses/OBJECTIVE_PATIENCE_COST)"
-verified_at: 2026-08-22
+verified_at: 2026-08-23
 verified_by: code
 status: active
+revisions:
+  - date: 2026-08-23
+    change: "Lade till LOSING_STREAK_SURCHARGE_CAP_ROUNDS=5 — tillägget (-3/-8) betalas ut för omgång 3-5 av en svit precis som förut, sedan 0 för varje ytterligare omgång samma svit fortsätter. Jacobs koefficientdom efter Grind 1 v3-stresstestet: verkliga sviter under normalt spel blev 7-19 omgångar, inte det illustrativa 5-matchers-exemplet formeln ursprungligen kalibrerades mot — en 16-omgångarssvit kostade ~-120 patience ensam, vilket drev 57%/100% avskedsfrekvens (Skutskär/Heros), långt över kalibreringsmålet. Ingen ändring av -3/-8-magnituderna, ingen engångskostnad — bara ett tak på antal omgångar. Se docs/GRIND1_STRESSTEST_RESULTAT_2026-08-23.md."
 invariants:
   - "value.RUNNING_PATIENCE_LOSS < value.RUNNING_PATIENCE_DRAW < value.RUNNING_PATIENCE_WIN"
   - "value.LOSING_STREAK_SURCHARGE_5 < value.LOSING_STREAK_SURCHARGE_3 < 0"
