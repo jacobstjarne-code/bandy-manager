@@ -18,7 +18,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | 1 | ~~**B9** positionsviktad utmattning~~ KLAR (`ee58474d`) | `playerStateProcessor.ts` |
 | 2 | ~~**B3** `playStyleTradition` — alla tolv värden dömda~~ KLAR (`d37605a2`) | `clubExtendedInfo.ts` |
 | 3 | ~~**B4** fyra `THREAT_REASON_LINES`-pooler~~ KLAR (`4e7fd447`) | `opponentAnalysisService.ts` |
-| 4 | ~~**B5** scoutvokabulären~~ Opus tar den själv | `scoutingService.ts` |
+| 4 | ~~**B5** scoutvokabulären~~ OPUS-LEVERERAD PÅ DISK 2026-08-21, väntar Codes commit + tsc/vitest — se B5-noten under BANDYSPRÅKET | `scoutingService.ts` |
 | 5 | ~~**B2** två presslägen i UI, inte tre~~ KLAR (`b24c18f6`) | taktikytorna |
 | 6 | ~~**5.1 fynd 5** `hideProgress`-prop~~ KLAR (`5e2dfc96`) | `BoardObjectivesList.tsx` |
 | 7 | ~~**5.1 fynd 4** `FeedbackButton` till innehållets botten~~ KLAR (`bab6835a`) — Jacobs beslut: bakgrundsfyllnad på korta scener, inte JS-mätning. `minHeight:'100vh'` tillagt på `SeasonTransitionScene`s rot, samma mönster som de sex syskonscenerna redan hade. Verifierat att ingen `marginTop:'auto'`/`flex:1` finns kvar internt (grep) — den gamla "180px tomrum"-buggen kräver båda, bara den ena läggs tillbaka | `FeedbackButton.tsx` / `SeasonTransitionScene.tsx` |
@@ -64,7 +64,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | 30 | ~~**Grind 1-verifiering**~~ KLAR — se `GRINDAR`-sektionen ("VERIFIERAT 2026-08-19", `scripts/grind1-boardpatience-sim.ts`). `club_slottsbron` 2/25 sparkade (8%), `club_heros` 20/25 (80%) trots 4:e-placering nästan varje säsong — misslyckandet är verkligt, men "skickligt spel hjälper" håller inte för Heros. Två sidofynd rapporterade, inte byggda, väntar på Jacob (se `Väntar på Jacob`) |
 | 31 | **O5** framgångsekonomin — tre krafter, **en i taget**, stresstest emellan: löneinflation → driftskostnad → investeringskrav |
 | 32 | **O1** varsel-mallen, sponsorn först (vanligast och tommast) |
-| 33 | ~~**O20** de tio 4/5-händelserna~~ RAPPORT-LEVERERAD — se O20-tabellen längre ner |
+| 33 | ~~**O20** de tio 4/5-händelserna~~ RAPPORT-LEVERERAD — se O20-tabellen längre ner. Textfallen `ismaskin_offer`/`jubilee` LEVERERADE 2026-08-21 [Opus], körorder dömd samma dag (se O20-noten) |
 
 ## Etapp V — skuld och övrigt
 
@@ -90,7 +90,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 
 **B1** formationssystemet (rör `BEVARA`) · **O13** jobbmarknad · **O14** monetisering · Grind 1:s två sidofynd (binär `met`/`failed`, Heros ekonomi)
 
-**Väntar på Opus:** 5.3 Turneringsläge-text, B5:s scoutord, SPÅR B-domen
+**Väntar på Opus:** 5.3 Turneringsläge-text, SPÅR B-domen. (B5:s scoutord levererade 2026-08-21, se BANDYSPRÅKET.)
 
 ## Rör inte
 
@@ -199,7 +199,15 @@ Gate-baserat, inte datumbaserat.
 - `club_slottsbron`: 2/25 sparkade (8%) — placering 10:e alla tre säsonger, patience faller sakta mot 0.
 - `club_heros`: 20/25 sparkade (80%) — men placering är 4:a (av 12) NÄSTAN VARJE SÄSONG. **Misslyckandet är alltså verkligt, men den första hälften av villkoret ("skickligt spel fortfarande hjälper") håller INTE för Heros:** en 4:e-placering ger `computeBoardPatienceUpdate()`s `topThird`-bonus (+15), men patience kraschar ändå mot 0 inom 2-3 säsonger. Två mekanismer identifierade (diagnostisk körning, `club_heros` seed 20000): (1) `seasonEndProcessor.ts:900-901` plattar `evaluateObjective()`s fyra tillstånd (`met`/`at_risk`/`active`/`failed`) till binärt `met`/`failed` — ett mål som är PÅ VÄG (`active`, t.ex. `cupRun` som nådde kvartsfinal men inte semifinal) räknas som lika misslyckat som ett mål som aldrig rördes. (2) Klubbens ekonomi kollapsar oberoende av tabellplacering — samma diagnostiska körning: +108 tkr → −321 tkr → −711 tkr över tre säsonger av 4:e-placeringar, vilket i sin tur garanterar att `balanceBudget`/`growFinances`-målen (ofta tilldelade `Heros` eftersom kassörens kandidat-logik triggar på `finances<500000`) misslyckas oavsett spel.
 
-**Rapporterat, inte byggt** — ingen fix gjord, det här är Grind 1s verifieringssiffra Jacob efterfrågade, plus två sidofynd värda en egen dom: (a) binär met/failed-plattning av objectiveutvärderingen, (b) ekonomimodellen för svaga klubbar (kan höra ihop med `O5`s "ett tal måste betyda något" men är motsatt riktning — det är FÖRLUST-sidan av ekonomin som är okontrollerad, inte framgångssidan).
+**Rapporterat, inte byggt (2026-08-19-läget)** — ingen fix gjord, det här är Grind 1s verifieringssiffra Jacob efterfrågade, plus två sidofynd värda en egen dom: (a) binär met/failed-plattning av objectiveutvärderingen, (b) ekonomimodellen för svaga klubbar.
+
+**SKUTSKÄR-AUDITEN mot `52009671` (2026-08-20/21) bekräftade: Grind 1 INTE passerad.** Riktig GPT-genomklickning, en hel säsong utan sabotage: 8:a av 12, 18p, fem raka förluster, två hotade styrelseuppdrag — styrelsen förblev "Stabil", årsboken sa "mer än nöjd". `docs/incoming/bandy-manager-skutskaer-audit-52009671-2026-08-20.md`. Rotorsak spårad: `computeBoardPatienceUpdate` anropades EN gång per säsong (vid säsongsslut) — boardPatience kunde inte röra sig under 21 av 22 omgångar. Full analys: `docs/GRIND1_BOARDPATIENCE_OCH_BATCHSTACK_ANALYS_2026-08-21.md`.
+
+**U1 andra halvan BYGGD `3bd02fb5` (2026-08-22), koefficienterna EJ LÅSTA.** Fem ändringar (Jacobs dom): löpande omgångsterm, förlustsvit som bärande ortogonal signal, boardExpectation som indata, dödzonen (plats 4-8/12) ersatt av en kontinuerlig ankare-formel (delad med `evaluateBoard`), objektivens fyra tillstånd kostar olika istf att plattas till två. D-fact D030.
+
+**Stresstest v2 kört samma dag (`scripts/grind1-boardpatience-sim-v2.ts`, 100×3 säsonger/klubb, resultat: `docs/GRIND1_STRESSTEST_RESULTAT_2026-08-22.md`): 57% (Skutskär) / 100% (Heros) sparkade — långt över kalibreringsmålet.** Rotorsak: förlustsvit-tillägget kostar per omgång SVITEN FORTSÄTTER, inte en engångskostnad — verkliga sviter under normalt spel blir 7-19 matcher långa (inte bara det illustrativa 5-matchers-exemplet), vilket kan kosta över -100 patience från EN svit. Väntar på Jacobs dom om nästa koefficientrunda (kortare svit-straff, tak per säsong, eller lägre magnituder).
+
+**Heros gamla 80%-fynd (nedan) delvis omtolkat:** en separat utredning (2026-08-22) visade att den GAMLA 80%-siffran (2026-08-19, innan U1 andra halvan) till stor del kom från en tredje, HELT OBEROENDE avskedsväg — en per-omgångs konkurskoll (`postRoundFlagsProcessor.ts`, finances < -2 000 000) — maskerad av en klassificeringsbugg i v1-scriptet (bara två grenar, ingen bankruptcy-gren). v2-scriptet klassificerar korrekt och visar att Heros' 100%-siffra under DEN NYA formeln kommer från `boardPatience<=15` (svit-drivet, se ovan), inte bankruptcy denna gång — men den gamla ekonomi-rotorsaken (b, nedan) är fortfarande verifierad och obyggd, separat fråga.
 
 **Grind 2 — andra akten.** En framgångsrik klubb har år åtta ett ekonomiskt val där båda alternativen svider. Ingen exakt pivotal scen upprepas inom tre säsonger. Ett färdigbyggt anläggningsträd öppnar nästa horisont i stället för ett tomtillstånd. → stänger O5, U5, O3.
 
@@ -926,6 +934,8 @@ De fyra sista delarna (målvakt, back, mittfältare, anfallare) lästes efter at
 
 **B5 utvidgad** med hela vokabulären ur alla sju delar: flipp, styrspel, vända hem, uppåkning, drop, översteg, åka i tomme, gå i djupet, fiska efter bollar, rättvänd/felvänd, hal, brytsäker, följsam, bra på tennis, placeringssäker, köldtålig, ryssvantar.
 
+**B5 TEXT LEVERERAD 2026-08-21 [Opus], direkt på disk i `scoutingService.ts` — väntar Codes commit.** Båda Record-tabellerna omskrivna, mallarna orörda per rapporten. Två språkfel i det gamla löstes i samma svep: mallarna producerade "Spelare med järnhård i försvarsarbetet" (adjektiv i substantivslot) och "Försvagas av svag skridskogången" (svag + bestämd form) — alla nya värden är därför obestämda substantivfraser i en-genus, vilket gör samtliga fem mallar grammatiska utan mallrörning. Vokabulär i bruk: hal (Dribbler), brytsäker + bra tennis (DefensiveWorker), placeringssäker (PositionalGoalkeeper), reflexer på mållinjen (bandymålvakten motar på linjen), flipp (Playmaker), "gör mål på allt" (Finisher, Wasbergs ord om Karlsson), följsamhet/första skäret/zonspelet/spelintelligens i attributetiketterna. Code: kontrollera att inga tester asserterar de gamla strängarna ('dödligt avslut' m.fl.) innan commit. **B8-residual, en rad Code-mekanik kvar:** åkhalv/lyrhalv kräver en deterministisk härledning som inte finns — förslag: i `generateScoutNotes`, om `position === Half` och `|skating − passing| ≥ 15`, appendera en mening. Låst text [Opus]: skating-övertag → "Ren åkhalv — motståndarna kan stå högt, det kommer inga lyft." · passing-övertag → "Ren lyrhalv — motståndarna kan falla, inget hot i åkningen." Klubbfattning (utåt/inåt) byggs INTE — ingen data att hänga den på, en gissad fattning per spelare vore fabricerad precision. Rättvänd/felvänd och spelsättsorden (lyra/flipp/styrspel/vända hem/uppåkning i REFERAT) väntar på B12-konsumenterna, per rapporten.
+
 **B4 har nu en färdig mall.** Varje intervju slutar med "vem är svårast att möta", och svaret är alltid **ett namn plus ett skäl**: *"Han är riktigt hal."* · *"Han dyker upp varsomhelst och gör mål på allt."* · *"Extremt bra på att åka och fiska efter bollar."* Och **Edlund nämns av två oberoende spelare** — ett hot är allmänt känt, inte hemligt. Analysen ska peka konsekvent på samma spelare, inte slumpa.
 
 **Rättelse till `DOM_ILLUSTRATIONERNA_2026-08-18.md`:** raden "Ingen sarg — låga stakethinder" är fel. Sargen finns, **låg och flyttbar** — man ser över den. Ersätt raden i stilbibeln.
@@ -1004,7 +1014,7 @@ Låta `matchCore` skriva ner vad den redan vet vid varje chansskapande/bolltapp-
 
 **Fördelning:** 5 av 10 väntar bara på `O2` (lägg till en genuin nedsida i redan befintliga val — billigast, kräver ingen ny mekanik). 3 av 10 väntar på `O5` (kräver att ett kr-tal betyder något, pausad tills `U1`). 2 av 10 (`ismaglet_offer`, `jubilee`) är varken/eller — de kräver ett litet textbeslut (ge kravet en namngiven avsändare respektive ett namngivet mål) som varken `O2` eller `O5` löser åt dem, men som är billigt när Opus har tid.
 
-**Körorder:** Opus avgör om de 5 K5-fallen ska räknas in i `O2`:s befintliga sponsor-först-ordning eller tas som en egen liten svit efter `O2`:s första leverans. De 3 K3-fallen rör sig inte förrän `O5` är olåst av `U1`. `ismaskin_offer`/`jubilee` kan textas när som helst, oberoende av båda.
+**Körorder — DÖMD 2026-08-21 [Opus]:** de 5 K5-fallen räknas IN i `O2`:s befintliga sponsor-först-ordning, som ett avslutande block efter sponsorerna — inte en egen svit. Skälet: det är samma mekanik (en genuin nedsida läggs till i befintliga val) i delvis samma filer; en separat svit skulle öppna samma filer två gånger för samma ändringsklass. De 3 K3-fallen rör sig inte förrän `O5` är olåst av `U1`. **`ismaskin_offer`/`jubilee` TEXTADE 2026-08-21 [Opus], direkt på disk:** ismaskinen fick sitt namngivna mål (veteranen, `${veteran}` som redan är i scope i `makeDecisions`), jubileet fick en extern aktör som agerar (Klacken — samma K1-logik som varsel-mallens exempel 2; `generateCharacterPlayerEvents` saknar `game`-parametern, så interpolerade namn som `localPaperName` var inte nåbara utan signaturändring). Effekter och val-etiketter orörda i båda — inga nya löften. Väntar Codes commit.
 
 ---
 
