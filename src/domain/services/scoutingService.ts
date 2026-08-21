@@ -92,33 +92,37 @@ export function getScoutReportAge(_report: ScoutReport, currentSeason: number, s
   return 'stale'
 }
 
+// B5 (2026-08-21, Opus): bandyvokabulär ur SvenskaFans-serien, se
+// docs/BANDYSPRAK_KALLASNING_2026-08-19.md. Alla värden är obestämda
+// substantivfraser i en-genus så att mallarnas alla fem slots
+// ('Spelare med X', 'Försvagas av svag Y' osv.) förblir grammatiska.
 const ARCHETYPE_STRENGTHS: Record<PlayerArchetype, string> = {
-  [PlayerArchetype.Finisher]: 'dödligt avslut',
-  [PlayerArchetype.Playmaker]: 'suverän passning',
-  [PlayerArchetype.DefensiveWorker]: 'järnhård i försvarsarbetet',
-  [PlayerArchetype.TwoWaySkater]: 'imponerande skridskoåkning i båda riktningar',
-  [PlayerArchetype.ReflexGoalkeeper]: 'reflexer i världsklass',
-  [PlayerArchetype.PositionalGoalkeeper]: 'strålande positionsspel i målet',
-  [PlayerArchetype.Dribbler]: 'magisk teknik med bollen',
+  [PlayerArchetype.Finisher]: 'förmågan att göra mål på allt',
+  [PlayerArchetype.Playmaker]: 'en flipp som hittar rätt',
+  [PlayerArchetype.DefensiveWorker]: 'ett brytsäkert försvarsspel och bra tennis',
+  [PlayerArchetype.TwoWaySkater]: 'skridskoåkning åt båda hållen',
+  [PlayerArchetype.ReflexGoalkeeper]: 'reflexer på mållinjen',
+  [PlayerArchetype.PositionalGoalkeeper]: 'ett placeringssäkert målvaktsspel',
+  [PlayerArchetype.Dribbler]: 'en hal spelstil',
   [PlayerArchetype.CornerSpecialist]: 'farliga hörnor',
   [PlayerArchetype.RawTalent]: 'enorm potential',
 }
 
 const ATTRIBUTE_LABELS: Partial<Record<keyof PlayerAttributes, string>> = {
-  skating: 'skridskogången',
-  acceleration: 'accelerationen',
-  stamina: 'uthålligheten',
-  ballControl: 'bollkontrollen',
-  passing: 'passningsspelet',
+  skating: 'skridskoåkning',
+  acceleration: 'fart i första skäret',
+  stamina: 'uthållighet över nittio minuter',
+  ballControl: 'följsamhet med bollen',
+  passing: 'precision i passningarna',
   shooting: 'skotteknik',
-  dribbling: 'dribblandet',
-  vision: 'speluppfattningen',
-  decisions: 'spelsinnet',
-  workRate: 'arbetsviljan',
-  positioning: 'positionsspelet',
-  defending: 'försvarsarbetet',
-  cornerSkill: 'hörnorna',
-  goalkeeping: 'målvaktsspelet',
+  dribbling: 'teknik i fart',
+  vision: 'speluppfattning',
+  decisions: 'spelintelligens',
+  workRate: 'arbetsvilja',
+  positioning: 'placering i zonspelet',
+  defending: 'brytsäkerhet',
+  cornerSkill: 'träffsäkerhet på hörnor',
+  goalkeeping: 'säkerhet i målet',
 }
 
 export function generateScoutNotes(player: Player, rand?: () => number): string {
