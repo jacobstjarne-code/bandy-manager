@@ -30,10 +30,6 @@ export function generatePostMatchEvents(game: SaveGame, fixture: Fixture): GameE
       choices: [],
       resolved: false,
       priority: 'low',
-      // Batch-av-tre (D1 punkt 4, 2026-08-22): fanLetter + opponentQuote
-      // delar samma orsak (fixture.id) — enda ställe i kodbasen där ett
-      // enskilt trigger-tillfälle genererar >1 GameEvent i samma pass.
-      triggerGroupId: `postmatch_${fixture.id}`,
     })
   }
 
@@ -67,7 +63,6 @@ export function generatePostMatchEvents(game: SaveGame, fixture: Fixture): GameE
           choices: [],
           resolved: false,
           priority: 'low',
-          triggerGroupId: `postmatch_${fixture.id}`,
         })
       }
     }
