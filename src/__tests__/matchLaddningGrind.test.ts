@@ -73,7 +73,11 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   } as SaveGame
 }
 
-// Build a game with N consecutive wins/losses in completed fixtures
+// Build a game with N consecutive wins/losses in completed fixtures.
+// O1/SPÅR B B4-fixet (2026-08-23): getStreakState läser numera game.trainerArc
+// (samma consecutiveWins/consecutiveLosses som boardPatience), inte längre en
+// oberoende omräkning ur fixtures — trainerArc måste alltså sättas här också,
+// annars ser getStreakState ingen svit oavsett fixtures.
 function makeStreakGame(
   type: 'win' | 'loss',
   count: number,
@@ -91,7 +95,13 @@ function makeStreakGame(
       awayScore: type === 'win' ? 0 : 3,
     }))
   }
-  return makeGame({ fixtures, currentMatchday: count + 1, ...extraOverrides })
+  const trainerArc = {
+    current: 'grind', history: [], seasonCount: 1, bestFinish: 1, titlesWon: 0,
+    consecutiveWins: type === 'win' ? count : 0,
+    consecutiveLosses: type === 'loss' ? count : 0,
+    boardWarningGiven: false,
+  } as SaveGame['trainerArc']
+  return makeGame({ fixtures, currentMatchday: count + 1, trainerArc, ...extraOverrides })
 }
 
 // ── grind tier: none ─────────────────────────────────────────────────────────
@@ -355,6 +365,7 @@ describe('computeLaddningBeat — tier band (active streak)', () => {
       fixtures,
       currentMatchday: 5,
       matchLaddningBandShown: { matchday: 4, streakLength: 3, stateType: 'winning_streak' },
+      trainerArc: { current: 'grind', history: [], seasonCount: 1, bestFinish: 1, titlesWon: 0, consecutiveWins: 4, consecutiveLosses: 0, boardWarningGiven: false } as SaveGame['trainerArc'],
     })
     const fix = makeFixture({ matchday: 5 })
     const beat = computeLaddningBeat(game, fix)
@@ -378,6 +389,7 @@ describe('computeLaddningBeat — tier band (active streak)', () => {
       fixtures,
       currentMatchday: 6,
       matchLaddningBandShown: { matchday: 5, streakLength: 3, stateType: 'winning_streak' },
+      trainerArc: { current: 'grind', history: [], seasonCount: 1, bestFinish: 1, titlesWon: 0, consecutiveWins: 5, consecutiveLosses: 0, boardWarningGiven: false } as SaveGame['trainerArc'],
     })
     const fix = makeFixture({ matchday: 6 })
     const beat = computeLaddningBeat(game, fix)
