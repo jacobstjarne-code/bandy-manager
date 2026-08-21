@@ -53,7 +53,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | 24 | ~~**O16** `DITT VAL` i Granska~~ KLAR (`ee8f2d1c`) — bara hörnstrategi→hörnmål byggd (enda mätta av fyra kandidater), rapporterat | `DOM_GRANSKA_LARANDEYTA_2026-08-17.md` |
 | 25 | ~~**O17 del 1** fullt anläggningsträd som tillstånd~~ KLAR (`40530421`) — del 2 (gate) också klar, del 3 väntar på O5 | `DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md` |
 | 26 | **O2** noOp-grepet levererat — 13 bekräftade + metodfynd om resolver-specialiserade "falska noOp". Pairwise (steg 2) väntar | `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md` |
-| 27 | **O9** delningskortets tre rader + fråga, efter 4.12/4.13 | `DOM_DELNINGSKORTET_2026-08-17.md` |
+| 27 | **O9** delningskortets tre rader + fråga — **TEXT LEVERERAD 2026-08-21 [Opus]**, `O9_TEXT_ARETS_BERATTELSE_2026-08-21.md`: alla radformer låsta med härledningsregler ur `SeasonSummary` (kontrastmappning per `ClubExpectation`×`expectationVerdict`, ögonblicksmall per `MatchHighlightCategory`, tvåsanningsraden ur `objectiveOutcome`, met-fallback, failed-regeln). Code wirar mot 4.12:s regionslayout — båda ytterligheterna (2 resp. 5 rader + fot) in i `buildLayoutRows`-testet. `comeback`/`underdog_upset` är text-utan-generator, flaggat i filen | `DOM_DELNINGSKORTET_2026-08-17.md` |
 | 28 | ~~**O11** `contentContract.ts`~~ KLAR (`e43aa821`) — 95 rader (canonical id, en per källa), 6 `filled:true` djupspårade, resten ärliga TODO-rader. Struktur låst av test, innehåll fylls i senare pass | `DOM_INNEHALLSKONTRAKTET_2026-08-17.md` |
 | 29 | ~~**O19** märk de nio 5/5-händelserna i data~~ KLAR (`72427068`) | varsel-domen |
 
@@ -62,7 +62,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | # | Post |
 |---|---|
 | 30 | ~~**Grind 1-verifiering**~~ KLAR — se `GRINDAR`-sektionen ("VERIFIERAT 2026-08-19", `scripts/grind1-boardpatience-sim.ts`). `club_slottsbron` 2/25 sparkade (8%), `club_heros` 20/25 (80%) trots 4:e-placering nästan varje säsong — misslyckandet är verkligt, men "skickligt spel hjälper" håller inte för Heros. Två sidofynd rapporterade, inte byggda, väntar på Jacob (se `Väntar på Jacob`) |
-| 31 | ~~**O5** framgångsekonomin~~ KLAR (`50475cda`/`f19e5378`/`43120846`) — alla tre krafter byggda i ordning, stresstestade var för sig. Avveckling av byggd nod (kraft 2:s bieffekt) väntar på mock, se BACKLOG D-O5 |
+| 31 | **O5** framgångsekonomin — tre krafter byggda (`50475cda`/`f19e5378`/`43120846`), men acceptanstestet över åtta säsonger fann 35% avskedsfrekvens för ligans LÄTTASTE klubb (Västanfors, inkl. efter tre raka SM-guld) — se O5-sektionen, `O5_ACCEPTANSTEST_8SASONGER_2026-08-23.md`. Väntar Jacobs dom innan O1 |
 | 32 | **O1** varsel-mallen, sponsorn först (vanligast och tommast) |
 | 33 | ~~**O20** de tio 4/5-händelserna~~ RAPPORT-LEVERERAD — se O20-tabellen längre ner. Textfallen `ismaskin_offer`/`jubilee` LEVERERADE 2026-08-21 [Opus], körorder dömd samma dag (se O20-noten) |
 
@@ -85,12 +85,14 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | 46 | ~~**Deploy-sync-grinden — känd svaghet.**~~ **DOM 2026-08-22:** Vercel MCP är nu den kanoniska vägen för manuell/lokal deploy-sync-koll (`list_deployments`/`get_deployment` + `git rev-parse origin/main`) — dokumenterat i `CLAUDE.md`s DEPLOY-sektion. `check-deploy-sync.mjs` lever kvar oförändrat som CI-variant (har token där). Motivering: skriptet kräver `VERCEL_TOKEN`, saknas lokalt, fungerade INTE när det faktiskt behövdes samma dag — MCP-vägen fungerade i exakt det ögonblicket. |
 | 47 | ~~**D1 trait-emoji → `tag-*`-familjen**~~ KLAR (`47d60f50`) — Jacobs dom: samma regel som allt annat, strukturerat fält + Lucide, ingen betydelsebärande emoji. `PlayerCard.tsx`s fem hand-rullade `className="tag"` + inline-färg + emoji (hungrig/veteran/joker/lokal/ledare) bytta mot befintliga `tag-*`-varianter (`tag-green`/`tag-ghost`/`tag-copper`/`tag-ice`) + `<Icon icon={...} />` (Flame/Medal/Drama/Home/Crown — alla redan i bruk i filen för andra syften, ingen ny ikon-import). Verifierat: enda renderingsstället (grep bekräftar), browser-verifierat mot en temporärt taggad dev-fixtur (återställd efteråt), tsc/vitest (2264 gröna)/build/ds-guard/hex-grep/rink-grep rena. |
 | 48 | ~~**Portal-orientering #1+#2**~~ **AVGJORDA 2026-08-22.** #2 (transferfönster-copy) — bygg inget, redan levande i tre tillståndsberoende mekanismer sedan 2026-07-02 (portal-beat/primary-kort/TransfersScreen-header), texten bättre än föreslaget. #1 (kassörens hälsning) — skriv ingen ny, `portal-tutorial-frame` gör redan jobbet. Ge den befintliga raden en röst istället: `KLAR (d654ecb7)`, `game.board?.find(m => m.role === 'kassör')` (samma mönster som `ArrivalScene.tsx:72`), ingen ny slot/flagga. Browser-verifierat ("Bengt · Kassör"), tsc/vitest (2264 gröna)/build/ds-guard rena. |
+| 49 | **SPÅR B steg 1 [Code]** — de fyra `.txt-`-klasserna (`beslut/konsekvens/karaktar/atmosfar`) i `global.css` enligt formreglerna i `incoming/SPAR-B-TEXTNIVAER-SVITKORT-FRAMATKROK-2026-07-20.md` (B5-tabellen), plus den fasta nivåmappningen mot D1:s eventviktning enligt `DOM_SPARB_TEXTNIVAER_2026-08-21.md` (pivotal↔beslut, normal↔konsekvens, ambient↔atmosfär; karaktär är röst inom 2–4, aldrig nivå 1). Första nivåpasset: applicera klasserna på EN yta (Granska-briefingen, före/efter-exemplet i underlaget) och browser-verifiera mot Designs formregler innan bredare utrullning. Därefter aktiveras textauditens VIKT-kategori (notera i `TEXT-AUDIT-PROTOKOLL.md`) |
+| 50 | **SPÅR B steg 2 [Code]** — B4 svitkortets form (FormSquares, transient topp-stripe, citatplats — de tre särskiljningsdragen mot `season_signature_card`) läsande `trainerArcService`s `consecutiveLosses`/winning-detektion, ALDRIG egen räknare; segersvit-tröskel sätts symmetriskt ur winning-detektionen (crisis ≥3 finns). B3 krokens wiring: sista blocket i Granska ovanför CTA:n, data ur `getNextOpponentTeaserFacts`, med High 3-gaten ur `DOM_SPARB_TEXTNIVAER_2026-08-21.md` — renderas ENDAST när en nästa match för managerklubben faktiskt existerar (aldrig efter uttåg/säsongsslut/avsked). Replik- och mallplatserna lämnas med tydlig platshållarkommentar — **ingen svensk text skrivs av Code**, Fable levererar steg 3 när formerna är låsta |
 
 ## Väntar på Jacob
 
 **B1** formationssystemet (rör `BEVARA`) · **O13** jobbmarknad · **O14** monetisering · Grind 1:s två sidofynd (binär `met`/`failed`, Heros ekonomi)
 
-**Väntar på Opus:** 5.3 Turneringsläge-text, O9-texten (Årets berättelse — nu obockerad, 4.12/4.13/4.14/K1 alla KLARA). (B5:s scoutord committade 2026-08-22, `5934e1f8`, se BANDYSPRÅKET; SPÅR B-domen levererad 2026-08-21, se post 37.)
+**Väntar på Opus:** 5.3 Turneringsläge-text · **O5-granskningen**: verifiera bygget (`50475cda`/`f19e5378`/`43120846`) mot domens fyra RAPPORTERA-krav, Skutskär-kalibreringen (kraft 2–3 får aldrig träffa en klubb som redan blöder — nedsidan är 111 tkr på en kompetent SVÅR-säsong) och år 8-kriteriet · Skutskär-auditens (2026-08-20) triage: High 1–6 döms en och en innan Code-order skrivs — High 1 (styrelsens sammansatta dommodell) först, den delar faktorkälla med O9:s kontrastrad · SPÅR B steg 3 (funktionärens svitrepliker + krokmallen, efter Codes steg 1–2). (B5:s scoutord committade 2026-08-22, `5934e1f8`, se BANDYSPRÅKET; SPÅR B-domen levererad 2026-08-21, se post 37; O9-texten levererad 2026-08-21, se post 27.)
 
 ## Rör inte
 
@@ -843,7 +845,9 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 
 Alla tre stresstestade var för sig (10×5, 0 krascher/invariantbrott vardera) per domens ordning ("en åt gången, med npm run stress emellan").
 
-**Status:** `KLAR`
+**Acceptanstest, tre krafter TILLSAMMANS över tid — KÖRT 2026-08-23, allvarligt fynd.** `docs/O5_ACCEPTANSTEST_8SASONGER_2026-08-23.md`. 20 seeds × 8 säsonger, Västanfors (ligans lättaste klubb, rykte 78). **7/20 (35%) sparkas inom åtta säsonger — trots att en av dem (seed 70014) precis vunnit ligan TRE SÄSONGER I RAD.** Alla sju `boardPatience<=15`. Rotorsak, ej byggd/ej Jacobs dom än: löneinflationen (kraft 1) höjer kostnaden med klubbens EGNA rykte, och rykte växer med framgång — säsongsslutstermen straffar varje avvikelse från ett redan högt ankare (ChallengeTop) lika hårt oavsett hur mycket tålamod tidigare framgångar "borde" ha köpt. Kraft 2 kunde inte verifieras empiriskt (ingen stress-infrastruktur bygger någonsin en anläggningsnod — verktygslucka, inte en O5-bugg; analytiskt svar ≈24% av intäkten, under domens mål 33%). Kraft 3 (investSurplus) fungerar mekaniskt som avsett men bidrar troligen till avskedstrycket (failed-poster kostar patience). **Status ändrad från `KLAR` till `KLAR MEN IFRÅGASATT` — väntar Jacobs dom på om detta kräver en fjärde koefficientrunda innan O1 byggs ovanpå.**
+
+**Status:** `KLAR MEN IFRÅGASATT` (se acceptanstestet ovan)
 
 ### O6–O14 · Kortare poster
 

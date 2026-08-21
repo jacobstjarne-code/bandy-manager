@@ -486,6 +486,7 @@ Systemkartan (`SYSTEMKARTA_DEL1_2026-06-12.md`, 13 kartfynd) spårades separat f
 
 | # | Vad | Plats |
 |---|---|---|
+| E-STRESS1 | **Ingen headless stress-infrastruktur (varken `npm run stress` eller enskilda script) bygger NÅGONSIN en anläggningsnod.** Upptäckt vid O5-acceptanstestet (`O5_ACCEPTANSTEST_8SASONGER_2026-08-23.md`) — `builtNodeIds` var tomt i alla 20×8 säsongssampel, oavsett kassastorlek (upp till 6,5 mkr). O5 kraft 2 (anläggningsdrift) kan alltså aldrig verifieras empiriskt i en simulering idag, bara via enhetstester. | `scripts/stress/fixtures.ts` (harnesset) — ingen byggpolicy finns |
 | ~~E-SC1~~ | ~~Delad seedad picker~~ | **LÖST `a9077d4e` 2026-06-20** — 6 datafiler + eventProcessor:s `pickByIndex` → `seededPick`. Kvar: `pickVariant` i specialDateService (annan signatur, eget idiom) + SpectatorPrimary (lokal, trivial). |
 | ~~E-SC2~~ | ~~**Eskalering recompute per render.**~~ | ~~PortalScreen-trädet~~ | **LÖST — redan optimerat, ingen ändring behövdes.** PortalScreen beräknar `escalationSubState`/`playoffCtx` EN gång (rad 246/248) och vidarebefordrar som props. PortalUpptakt + NextMatchPrimary har conditional guards (`subStateFromParent !== undefined ? subStateFromParent : recompute()`). Kod-verifierat 2026-06-20. |
 | ~~E-SC3~~ | ~~trendStroke last-vs-first~~ | **LÖST 2026-06-20** — EkonomiTab + StillnessSection använder redan `seasonTrendStroke`. |
