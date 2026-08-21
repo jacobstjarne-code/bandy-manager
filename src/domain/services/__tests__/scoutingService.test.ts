@@ -145,6 +145,45 @@ describe('generateScoutNotes', () => {
       expect(notes.length).toBeGreaterThan(0)
     }
   })
+
+  // B8-residual (SLUTTEST_KO.md, BANDYSPRÅKET — låst text [Opus], 2026-08-21)
+  describe('åkhalv/lyrhalv (position === Half, |skating − passing| >= 15)', () => {
+    it('skating-övertag på en halv ger åkhalv-raden', () => {
+      const p = makePlayer({
+        position: PlayerPosition.Half,
+        attributes: { ...makePlayer().attributes, skating: 80, passing: 50 },
+      })
+      expect(generateScoutNotes(p)).toContain('Ren åkhalv — motståndarna kan stå högt, det kommer inga lyft.')
+    })
+
+    it('passing-övertag på en halv ger lyrhalv-raden', () => {
+      const p = makePlayer({
+        position: PlayerPosition.Half,
+        attributes: { ...makePlayer().attributes, skating: 50, passing: 80 },
+      })
+      expect(generateScoutNotes(p)).toContain('Ren lyrhalv — motståndarna kan falla, inget hot i åkningen.')
+    })
+
+    it('jämn halv (< 15 i gap) får ingen åk-/lyrhalv-rad', () => {
+      const p = makePlayer({
+        position: PlayerPosition.Half,
+        attributes: { ...makePlayer().attributes, skating: 60, passing: 55 },
+      })
+      const notes = generateScoutNotes(p)
+      expect(notes).not.toContain('åkhalv')
+      expect(notes).not.toContain('lyrhalv')
+    })
+
+    it('samma skating/passing-gap på en icke-halv position ger ingen rad', () => {
+      const p = makePlayer({
+        position: PlayerPosition.Forward,
+        attributes: { ...makePlayer().attributes, skating: 80, passing: 50 },
+      })
+      const notes = generateScoutNotes(p)
+      expect(notes).not.toContain('åkhalv')
+      expect(notes).not.toContain('lyrhalv')
+    })
+  })
 })
 
 describe('getScoutReportAge', () => {

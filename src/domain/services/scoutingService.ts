@@ -155,5 +155,23 @@ export function generateScoutNotes(player: Player, rand?: () => number): string 
     `Erfaren profil. ${strength.charAt(0).toUpperCase() + strength.slice(1)} är tydlig styrka. Försvagas av svag ${weakLabel}.`,
   ]
 
-  return templates[Math.floor(localRand() * templates.length)]
+  const note = templates[Math.floor(localRand() * templates.length)]
+
+  // B8-residual (SLUTTEST_KO.md, BANDYSPRÅKET — låst text [Opus], 2026-08-21):
+  // åkhalv/lyrhalv kräver en deterministisk härledning som inte fanns —
+  // skating-övertag = åkhalv (offensiv i öppen bana), passing-övertag =
+  // lyrhalv (spelbyggare via lyra/långpassning). Bygger inte om B12-
+  // konsumenterna (rättvänd/felvänd, spelsättsorden i REFERAT) — de väntar
+  // fortfarande, per rapporten.
+  if (player.position === PlayerPosition.Half) {
+    const skatingEdge = player.attributes.skating - player.attributes.passing
+    if (skatingEdge >= 15) {
+      return `${note} Ren åkhalv — motståndarna kan stå högt, det kommer inga lyft.`
+    }
+    if (skatingEdge <= -15) {
+      return `${note} Ren lyrhalv — motståndarna kan falla, inget hot i åkningen.`
+    }
+  }
+
+  return note
 }
