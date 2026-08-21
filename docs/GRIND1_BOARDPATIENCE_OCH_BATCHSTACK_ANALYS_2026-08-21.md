@@ -113,3 +113,55 @@ Bekräftat via repo-omfattande grep, noll andra träffar utanför tester. Batch-
 ## Sammanfattning — vad båda fynden har gemensamt
 
 Båda är samma felklass: kod som är korrekt byggd och grönt testad, men aldrig verifierad mot det SPECIFIKA verkliga scenario den skulle hantera. boardPatience-formeln är matematiskt konsekvent men läser fel indata för Skutskärs säsongsform. BatchStack-mekanismen är strukturellt sund men den enda källan som taggar den kan aldrig nå fram dit. Ingendera är byggd i denna rapport — båda väntar på ditt beslut om nästa steg.
+
+---
+
+## Del 3 — Föreslagna vikter för boardPatience (2026-08-22, efter Jacobs dom om fem ändringar)
+
+**Status: förslag, inte byggt.** Illustrativ handräkning, inte simulerad. Alla siffror är utgångspunkter för din kalibrering, inte facit.
+
+### Piggyback-punkt hittad
+
+`roundProcessor.ts:878` anropar redan `updateTrainerArc(game)` varje omgång, som redan beräknar `arc.consecutiveLosses`/`consecutiveWins` från riktiga matchresultat (`trainerArcService.ts:39-58`). Det är exakt inkopplingspunkten för ändring 1+2 — ingen ny sviträkning behövs, bara återanvänd `arc.consecutiveLosses`.
+
+### 1. Löpande omgångsterm
+**Var:** ny `updateRunningBoardPatience()` i `boardService.ts`, anropad bredvid `updateTrainerArc` vid `roundProcessor.ts:878`, skriver till `game.boardPatience` varje omgång (idag orörd mitt i säsongen).
+**Formel:** vinst +1,0, oavgjort +0,5, förlust −1,5, klämd 0–100 varje omgång.
+
+### 2. Förlustsvit som bärande signal
+**Var:** samma omgångskrok, matad med `arc.consecutiveLosses` (redan beräknad, nollställs vid varje icke-förlust — ger ortogonaliteten gratis: spridda enstaka förluster kedjar aldrig).
+**Formel (extra, ovanpå förlustens −1,5):** svit 1–2 → +0; svit 3–4 → −3/omgång; svit ≥5 → −6/omgång. En 5-matchers svit kostar bas(−1,5×5=−7,5) + tillägg(0+0−3−3−6=−12) = **−19,5 totalt**, mot en klubb med samma fem förluster utspridda (kedjar aldrig) som bara kostar −7,5. Det är ortogonaliteten: samma antal förluster, helt olika patience-skada.
+
+### 3. boardExpectation som indata
+**Var:** säsongsslut-termen (punkt 4), INTE den löpande termen — att hålla förväntan utanför omgångskalkylen bevarar ortogonaliteten punkt 2 kräver.
+**Schema:** återanvänd `ClubExpectation`-nivåerna med en ankarposition per nivå (12 lag): WinLeague=1, ChallengeTop=5, MidTable=6, AvoidBottom=9 (en klar av `warningZoneStart`). **Bedömningsfråga, inte fakta:** dessa ankare finns inte i kodbasen idag — härledda ur de befintliga nöjd/orolig-banden i `evaluateBoard()`.
+
+### 4. Dödzonen → kontinuerlig formel
+**Var:** ersätter klippan i `boardService.ts:245-268` helt.
+**Formel:** tvålutning linjärt kring ankaret — `delta = kAbove·(ankare−pos)` om pos ≤ ankare (belönar att slå det), `kBelow·(ankare−pos)` om pos > ankare (brantare straff för att missa det). Föreslagna k per nivå: WinLeague kBelow=5; ChallengeTop kAbove=2,5/kBelow=4; MidTable kAbove=2/kBelow=3; AvoidBottom kAbove=2/kBelow=4. Varje position rör nu siffran — position 4–8 är inte längre inert.
+
+### 5. Objektivens fyra riktiga tillstånd
+**Var:** `seasonEndProcessor.ts:920-944` plattar idag `evaluateObjective()`s fyra tillstånd (`boardObjectiveService.ts:292`) till två vid rad 923 (`at_risk` blir tyst `failed`-kostnad, `active` blir `met`-kostnad) före aggregatet `-5/+3` vid rad 944.
+**Föreslagna kostnader, applicerade per status utan plattning:** failed −5, at_risk −2, active 0, met +3. **Trådningsnot:** `boardObjectiveHistory`s typ (`boardObjectiveService.ts:7`, speglad i `SaveGame.ts`) är typad `'met'|'failed'` bara — behöver `'at_risk'` tillagt om historikloggen ska bevara distinktionen långsiktigt.
+
+### 6. Årsbokens tvåsanningsmening
+**Var:** `SeasonSummaryScreen.tsx:164-168`, `verdictText()` — exakt platsen där den nuvarande enkla sanningen ("Styrelsen är nöjd"/"är besviken") renderas ur `summary.expectationVerdict` ensamt.
+**Datalucka:** `SeasonSummary.ts` har inget objektivutfalls-fält alls. `seasonSummaryService.ts:300` beräknar redan `seasonVerdictRating` lokalt, men objektivens miss/hotad-antal beräknas separat i `seasonEndProcessor.ts:942-943` (`objFailures`, `objSuccesses`) och skickas aldrig in — `generateSeasonSummary()` anropas vid `seasonEndProcessor.ts:1174-1177` utan dem. **Behöver trådas:** lägg till ett `objectiveOutcome?: { failed, atRisk, met }`-fält på `SeasonSummary` och skicka det genom det anropsstället så `verdictText()` kan komponera tvåsanningsmeningen när betyget är bra men failures/at-risk > 0 (eller tvärtom). Den svenska texten själv är Opus jobb.
+
+### Illustrativ handräkning (inte simulerad)
+
+**Skutskär** — AvoidBottom, 8:a/12, 18p, antaget 7V-4O-11F (22 matcher) med en 5-matchers förlustsvit bland förlusterna, 2 objektiv at_risk, startpatience 70:
+- Löpande: vinster +7,0, oavgjorda +2,0, förluster bas −16,5, svittillägg −12,0 → **−19,5**
+- Säsongsslut-position (AvoidBottom, ankare 9, pos 8 är BÄTTRE än ankaret): +2·(9−8) = **+2,0**
+- Objektiv: 2×at_risk = **−4,0**
+- **Summa: 70 − 19,5 + 2,0 − 4,0 = 48,5**
+
+48,5 hamnar precis innanför `boardPatienceZone.ts`s "under_press"-band (30–49), inte "ultimatum" (<30) och långt från avskedströskeln ≤15. Jämfört med idag (stannade "Stabil"/~70 hela säsongen enligt ursprungsfyndet) är detta en verklig, synlig förskjutning — genuin spänning, inte dom. Det når INTE, i denna enda punktskattning, "icke-noll avskedsrisk" i strikt mening (att korsa ≤15). **Bedömningsfråga/flagga:** en något värre variant av samma form (6-matchers svit istf 5, eller ett at_risk som tippar till failed) skulle rimligen hamna i låga 20-tal/höga tonåren — vilket är där egenskapen "icke-noll men inte säkert" borde synas ÖVER SIMULERADE SÄSONGER, inte i en enda punktskattning. Ett riktigt stresstest (samma konvention projektet redan använder) bör köras innan koefficienterna låses. Om du vill att just DETTA scenario ska läsa som riskablare är spakarna: at_risk-kostnaden (−2→−4) eller ≥5-svit-nivån (−6→−8).
+
+**Club Heros** — AvoidBottom, 4:a/12, svår klubb (rykte 45), antaget 11V-5O-6F, ingen svit ≥3, 1 objektiv at_risk (ekonomiskt) + 1 met (sportsligt):
+- Löpande: +11,0+2,5−9,0+0 = **+4,5**
+- Säsongsslut-position (ankare 9, pos 4): +2·(9−4) = **+10,0**
+- Objektiv: −2,0+3,0 = **+1,0**
+- **Summa: 70 + 4,5 + 10,0 + 1,0 = 85,5** (klämd, gott och väl "Stabil")
+
+Detta bekräftar att förslaget INTE återintroducerar Grind-1s överdrivna avsked-fynd GENOM boardPatience — en svår klubb som slutar bra utan en riktig förlustsvit förblir starkt skyddad, om något MER skyddad än idag (dagens flata +15 vägs upp av den löpande termens egna +4,5). Om Heros fortfarande sparkas 80 % av gångerna i praktiken kommer det avskedet från något annat (objektiv-/licensmekanik utanför `computeBoardPatienceUpdate`) — värt en separat riktad koll, inte något dessa fem/sex ändringar borde förväntas fixa på egen hand.
