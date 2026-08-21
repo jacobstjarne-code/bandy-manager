@@ -62,7 +62,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | # | Post |
 |---|---|
 | 30 | ~~**Grind 1-verifiering**~~ KLAR — se `GRINDAR`-sektionen ("VERIFIERAT 2026-08-19", `scripts/grind1-boardpatience-sim.ts`). `club_slottsbron` 2/25 sparkade (8%), `club_heros` 20/25 (80%) trots 4:e-placering nästan varje säsong — misslyckandet är verkligt, men "skickligt spel hjälper" håller inte för Heros. Två sidofynd rapporterade, inte byggda, väntar på Jacob (se `Väntar på Jacob`) |
-| 31 | **O5** framgångsekonomin — tre krafter, **en i taget**, stresstest emellan: löneinflation → driftskostnad → investeringskrav |
+| 31 | ~~**O5** framgångsekonomin~~ KLAR (`50475cda`/`f19e5378`/`43120846`) — alla tre krafter byggda i ordning, stresstestade var för sig. Avveckling av byggd nod (kraft 2:s bieffekt) väntar på mock, se BACKLOG D-O5 |
 | 32 | **O1** varsel-mallen, sponsorn först (vanligast och tommast) |
 | 33 | ~~**O20** de tio 4/5-händelserna~~ RAPPORT-LEVERERAD — se O20-tabellen längre ner. Textfallen `ismaskin_offer`/`jubilee` LEVERERADE 2026-08-21 [Opus], körorder dömd samma dag (se O20-noten) |
 
@@ -73,7 +73,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | 34 | ~~**Överlämning 2 steg 0**~~ RAPPORT LEVERERAD (`9dec6df8`) — `docs/sprints/OVERLAMNING2_STEG0_INVENTERING_2026-08-22.md`. 16 poster: 11 redan byggda (flera EFTER juli-dokumenten men INOM sluttestserien, under andra spec-namn), 2 redan fixade (advance()-buggen, DS-konformanssvep), 1 Design-fråga dömd samma dag (D1 trait-emoji → tag-*-familjen, se separat post nedan), Portal-orienteringens punkt 1+2 avgjorda samma dag (se separat post nedan), 1 litet verifierat instrumenteringsgap: ripple-entiteter i `PortalBeat.tsx` saknar `data-entity-id`/`data-entity-source` — entitets-dedup-grinden är blind för den ytan (ingen aktiv dubblering hittad idag, men skulle missa en om den uppstod). Ingen av LÄS MIG.md:s fyra sprint-steg behövs som egen sprint — redan uppfyllda styckvis |
 | 35 | ~~**6.4 post 21** edge-case-fixturer~~ KLAR — Å11-residualen `36351a95`. Långa-efternamn + skadetillstånd `f71b5edb` (redan byggda fixturer, bara oregistrerade). Positionsförkortningar granskade `17b1a6a3`: `positionShort()` (`domain/format.ts`) är den enda källan, 6 filer som refererar `PlayerPosition`-enumen utan att importera den använder alla enumen för LOGIK (sortering/filtrering), ingen för textrendering — inget inkonsekvensfynd. Marknadsvärde granskat: `Player.marketValue` är ett obligatoriskt numeriskt fält (aldrig undefined), `formatMarketValue`/`formatValue` hanterar 0 kr korrekt i alla tre kontrollerade konsumenter — inget "tomt pris-kort"-fall hittat, sannolikt samma fynd som Å11 redan täckte |
 | 36 | **Å12–15** nav-dokdrift, emoji-rester, egna skuggor — Å12/Å13/Å14 `KLAR`. Å13 (`f9fcef62`): 🟥 (rött kort) → 🚫 (utvisning) på de två live-ställen som missades av tidigare svep. Å15 (bundle) `EJ` |
-| 37 | **SPÅR B** fyra textnivåer som DS-kanon — hör ihop med D1, **Opus dömer först** |
+| 37 | ~~**SPÅR B** fyra textnivåer som DS-kanon~~ DOM LEVERERAD 2026-08-21 [Opus] — `DOM_SPARB_TEXTNIVAER_2026-08-21.md`: B5 godkänd som DS-kanon + fast mappning mot D1:s viktnivåer + textauditen får femte domkategorin VIKT; B4 funktionärsrösten godkänd, låst mot GRIND1:s `consecutiveLosses` (aldrig egen räknare); B3 godkänd + gate ur Skutskär-auditens High 3 (ingen krok utan faktisk nästa match). Code bygger steg 1–2, Fable skriver svitrepliker + krokmall i steg 3 |
 | 38 | **U8** bundle — RAPPORT LEVERERAD (2026-08-22), se not: ingen tydlig nettovinst, väntar på Jacobs produktbeslut. **U9** telemetri — RAPPORT LEVERERAD (2026-08-22): 4/9 mått (inkl. val-entropin) byggbara nu utan ny infrastruktur, 5/9 kräver ett beslut om extern anonym mättjänst (appen har noll backend idag) |
 | 39 | Arkivera resten av `incoming/` allteftersom |
 | 41 | **Dev-only, ej blockerande:** DevScenesScreen.tsx sätter `useGameStore.setState()` i en `useMemo` under render (medvetet, kommentar rad ~973: "körs UNDER render... så PortalScreen kan läsa store"), vilket triggar samma "Cannot update a component while rendering" på `FeedbackButton` (som prenumererar på store:t) på alla Portal-dev-scener. Hittat 2026-08-22 vid Grind 0/AnslagOverlay-verifieringen. Inte fixat — bara dev-scaffold, ingen spelare ser det, och mönstret är dokumenterat medvetet i filen. Rapporteras, inte köat, om det inte stör framtida dev-scene-arbete |
@@ -90,7 +90,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 
 **B1** formationssystemet (rör `BEVARA`) · **O13** jobbmarknad · **O14** monetisering · Grind 1:s två sidofynd (binär `met`/`failed`, Heros ekonomi)
 
-**Väntar på Opus:** 5.3 Turneringsläge-text, SPÅR B-domen. (B5:s scoutord committade 2026-08-22, `5934e1f8`, se BANDYSPRÅKET.)
+**Väntar på Opus:** 5.3 Turneringsläge-text, O9-texten (Årets berättelse — nu obockerad, 4.12/4.13/4.14/K1 alla KLARA). (B5:s scoutord committade 2026-08-22, `5934e1f8`, se BANDYSPRÅKET; SPÅR B-domen levererad 2026-08-21, se post 37.)
 
 ## Rör inte
 
@@ -603,7 +603,7 @@ GPT tankade medvetet en hel säsong: felvänd taktik, svagaste elva, 15 vägrade
 **Uppskattad omfattning:** 3-4 filer (`offerSelectionService.ts`, `boardService.ts`, `seasonEndProcessor.ts`, ev. en liten ny `difficultyService.ts`), plus en engångs-analyskörning mot stress-datan för trösklarna. Ingen ny entity.
 
 **Öppna frågor för Jacobs beslut:** ska difficulty vara en engångsetikett (som idag) eller omvärderas löpande om ekonomin rasar mitt i säsong? Är nedflyttningszonen (botten 1 eller 2?) formellt definierad någonstans — hittades inte, måste bekräftas innan trösklarna görs proportionella. Ska stress-kalibreringen vara ett engångsjobb eller ett återkommande valideringssteg vid world-gen-ändringar (som `calibrate.ts`)?
-**Status:** `KLAR (4be59ff9)` — Jacobs dom på de tre öppna frågorna: engångsetikett (som idag, ingen löpande omvärdering), nedflyttningszon som konstant (`RELEGATION_ZONE_SIZE=2`), kalibrering som engångsjobb. `computeDifficultyScore()` (offerSelectionService.ts) + `computeBoardPatienceUpdate()`/`evaluateBoard` (boardService.ts) — D029 dokumenterar formeln och kalibreringstabellen mot alla tolv `CLUB_TEMPLATES`. `O5` fortfarande pausad — U1 höll, men O5 väntar dessutom på Grind 1 självt
+**Status:** `KLAR (4be59ff9)` — Jacobs dom på de tre öppna frågorna: engångsetikett (som idag, ingen löpande omvärdering), nedflyttningszon som konstant (`RELEGATION_ZONE_SIZE=2`), kalibrering som engångsjobb. `computeDifficultyScore()` (offerSelectionService.ts) + `computeBoardPatienceUpdate()`/`evaluateBoard` (boardService.ts) — D029 dokumenterar formeln och kalibreringstabellen mot alla tolv `CLUB_TEMPLATES`. `O5` var pausad i väntan på Grind 1 — **upplåst och KLAR 2026-08-23**, se O5-sektionen nedan
 
 ### U2 · Kanonisk matchkontext
 Symptom: straffsegrar rapporteras som "Oavgjort, vi tar en poäng". Cupfinal ger "Två viktiga poäng". Hemmakryss ger "En poäng på bortaplan". Clean-sheet-press efter 9–8. Icke-derbyfinal erbjuder derbyreplik.
@@ -830,10 +830,20 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 
 **Godkänd när:** en spelare kan säga vad burnout kostade och vad hen gjorde åt det.
 
-### O5 · Framgångsekonomin — PAUSAD
+### O5 · Framgångsekonomin — KLAR 2026-08-23
 `DOM_FRAMGANGSEKONOMIN_2026-08-17.md`. Tre krafter i ordning: löneinflation med rykte, driftskostnad för byggt, styrelsens investeringskrav. Rivalernas catch-up-budget avvisad — dolt mottryck spelaren inte kan se.
-**Pausad tills U1 är byggd.** Domen antog att nedsidan fanns och behövde kalibreras mot. Skutskär visar att en svag klubb inte kan misslyckas; löneinflation mot ett sådant spel blir dekoration i övre halvan och godtycklig i nedre.
-**Status:** `PAUSAD`
+
+**Upplåst av Grind 1-passet 2026-08-23.** RAPPORTERA-svaren (alla fyra punkter): `DOM_FRAMGANGSEKONOMIN_HEROS_2026-08-23.md`.
+
+**Kraft 1 — löneinflation med rykte, KLAR (`50475cda`).** Ny `reputationSalaryMultiplier()` (economyService.ts, 0.5–1.5 över rykte 0-100, samma kurva som kommunbidraget). Två anropsställen: `renewContract` (förlängning) och `createOutgoingBid` (nyförvärv, saknade tidigare valideringsgräns helt).
+
+**Kraft 2 — driftskostnad för byggt, KLAR (`f19e5378`).** Ny `upkeepCost` per `FacilityNodeDef` (cost/12, avrundat till 100). De nio ordinarie noderna (icke-hall) summerar till 143 400 kr/säsong ≈ 33,7 % av en medelklubbs bruttoårsintäkt — domens eget mål ("en tredjedel"). Betalas en gång per säsong (isFirstRound), synlig transaktionslogg-post. **Avveckling av en byggd nod (domens egen "öppnar ett beslut") medvetet INTE byggd** — kräver en mock (Princip 4), loggad `BACKLOG.md` D-O5.
+
+**Kraft 3 — styrelsens investeringskrav, KLAR (`43120846`).** Ny `investSurplus`-objective i `boardObjectiveService.ts`, samma factory+measureFn-mönster som `balanceBudget`/`growFinances`. Aktiveras vid `finances >= 2 mkr` (SURPLUS_CEILING). Fyra tillstånd: met/active/at_risk mätt mot `seasonStartFinances` (samma fält `growFinances` redan använde).
+
+Alla tre stresstestade var för sig (10×5, 0 krascher/invariantbrott vardera) per domens ordning ("en åt gången, med npm run stress emellan").
+
+**Status:** `KLAR`
 
 ### O6–O14 · Kortare poster
 
