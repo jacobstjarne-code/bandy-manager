@@ -471,3 +471,36 @@ export function checkInObjectives(
 
   return { updated, inboxMessages, sponsorNetworkMoodDelta, boardTrustDelta, foretroendepottAmount }
 }
+
+/**
+ * Femte koefficientrundan (Jacobs dom 2026-08-23, O5_FEMTE_PASSET_
+ * AVSKEDSDIAGNOS_2026-08-23.md): meritbufferten (boardService.ts) skyddar
+ * inte upprepade objektivmissar — "samma objective missat tre år i rad är
+ * inte otur, det är att managern inte gör det styrelsen bad om."
+ *
+ * boardObjectiveHistory bär bara ETT binärt met/failed per objectiveId
+ * (evaluateObjective()s fyra riktiga tillstånd — met/at_risk/active/failed —
+ * plattas redan till två där, se seasonEndProcessor.ts:s kommentar om
+ * varför). Det betyder att denna funktion INTE kan skilja en genuint
+ * misslyckad tidigare säsong från en som bara var 'active' (på väg, aldrig
+ * avgjord) — båda loggas som 'failed'. Det är den precisaste signal typen
+ * faktiskt bär, inte en nygjord typ-utökning (Jacobs villkor: använd typen
+ * som den är, bygg utan om den inte bär det). Rapporterat, inte löst.
+ *
+ * En kostnad räknas som "upprepad" om den är negativ (cost < 0, dvs.
+ * at_risk eller failed denna säsong) OCH objectiveId:ts SENASTE
+ * historikpost också var 'failed'. Historiken förutsätts kronologisk
+ * (äldst→nyast, samma ordning boardObjectiveHistory alltid pushas i).
+ */
+export function isRepeatedObjectiveFailure(
+  objectiveId: string,
+  cost: number,
+  history: Array<{ objectiveId: string; result: 'met' | 'failed' }>,
+): boolean {
+  if (cost >= 0) return false
+  let latest: 'met' | 'failed' | undefined
+  for (const h of history) {
+    if (h.objectiveId === objectiveId) latest = h.result
+  }
+  return latest === 'failed'
+}

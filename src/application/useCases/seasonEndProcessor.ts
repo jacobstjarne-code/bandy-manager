@@ -30,7 +30,7 @@ import { processAITransfers } from '../../domain/services/aiTransferService'
 import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
 import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
-import { evaluateObjective, generateBoardObjectives } from '../../domain/services/boardObjectiveService'
+import { evaluateObjective, generateBoardObjectives, isRepeatedObjectiveFailure } from '../../domain/services/boardObjectiveService'
 import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../domain/services/mecenatService'
 import { checkLicenseStatus, buildLicenseInboxItem } from '../../domain/services/licenseService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
@@ -726,13 +726,68 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const activePlayers = resetPlayers
     .filter(p => !retiredPlayerIds.has(p.id))
     .map(p => contractExpiredIds.has(p.id) ? { ...p, clubId: 'free_agent' } : p)
+  // ── Board objectives — evaluate FÖRE patiensuppdateringen ────────────────
+  // Femte koefficientrundan (Jacobs dom 2026-08-23, O5_FEMTE_PASSET_
+  // AVSKEDSDIAGNOS_2026-08-23.md): meritbufferten utökad till HELA
+  // säsongsslutstermen (position + objektivkostnad), inte bara position.
+  // Objektiven måste därför utvärderas HÄR, före computeBoardPatienceUpdate
+  // — evaluateObjective(obj, game) läser bara den ursprungliga game-parametern
+  // (inget mutex/reassignment av `game` sker mellan gamla och nya platsen,
+  // verifierat), så flytten ändrar inget om VAD som utvärderas.
+  //
+  // Jacobs andra villkor: bufferten skyddar INTE upprepat missade mål — se
+  // isRepeatedObjectiveFailure() (boardObjectiveService.ts) för den fulla
+  // motiveringen och rapporten om vad boardObjectiveHistory:s typ faktiskt bär.
+  const objectiveResults: Array<{ season: number; objectiveId: string; result: 'met' | 'failed'; ownerReaction: string; label: string }> = []
+  const objectiveStatuses: Array<'met' | 'failed' | 'at_risk' | 'active'> = []
+  const OBJECTIVE_PATIENCE_COST: Record<'met' | 'failed' | 'at_risk' | 'active', number> = {
+    met: 3, at_risk: -2, active: 0, failed: -5,
+  }
+  const objectiveHistory = game.boardObjectiveHistory ?? []
+  let bufferEligibleObjectiveDelta = 0
+  let unprotectedObjectiveDelta = 0
+  for (const obj of game.boardObjectives ?? []) {
+    const result = evaluateObjective(obj, game)
+    objectiveStatuses.push(result.status)
+    const finalStatus = result.status === 'met' ? 'met' as const : 'failed' as const
+    objectiveResults.push({
+      season: game.currentSeason,
+      objectiveId: obj.id,
+      result: finalStatus,
+      ownerReaction: finalStatus === 'met' ? obj.successReward : obj.failureConsequence,
+      label: obj.label,
+    })
+    newInboxItems.push({
+      id: `inbox_boardobj_end_${obj.id}_${game.currentSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.BoardFeedback,
+      title: finalStatus === 'met' ? `${obj.label} — uppfyllt` : `${obj.label} — misslyckat`,
+      body: finalStatus === 'met' ? obj.successReward : obj.failureConsequence,
+      isRead: false,
+    } as InboxItem)
+
+    const cost = OBJECTIVE_PATIENCE_COST[result.status]
+    if (isRepeatedObjectiveFailure(obj.id, cost, objectiveHistory)) {
+      unprotectedObjectiveDelta += cost
+    } else {
+      bufferEligibleObjectiveDelta += cost
+    }
+  }
+  const objectiveOutcome = {
+    met: objectiveStatuses.filter(s => s === 'met').length,
+    atRisk: objectiveStatuses.filter(s => s === 'at_risk').length,
+    active: objectiveStatuses.filter(s => s === 'active').length,
+    failed: objectiveStatuses.filter(s => s === 'failed').length,
+  }
+
   // ── Board patience update ─────────────────────────────────────────────
   const totalTeams = game.clubs.length
   const finalPos = managedClubStanding?.position ?? totalTeams
   // U1 andra halvan (2026-08-22): currentPatience är nu redan uppdaterad
   // löpande under säsongen (roundProcessor.ts:s updateRunningBoardPatience)
   // — detta anrop lägger bara säsongsslutets EGEN term (position relativt
-  // förväntan) ovanpå, det ersätter inte den löpande delen.
+  // förväntan, PLUS nu objektivkostnaden — se ovan) ovanpå, det ersätter
+  // inte den löpande delen.
   const currentPatience = game.boardPatience ?? 70
   const currentFailures = game.consecutiveFailures ?? 0
   const currentMeritBuffer = game.meritBuffer ?? 0
@@ -746,10 +801,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // kontinuerlig, boardExpectation-medveten formel (se boardService.ts)
   // istf en klippa vid nedflyttningskanten — position 4-8 av 12 var
   // tidigare en "dödzon" med noll effekt oavsett utfall.
-  const patienceUpdate = computeBoardPatienceUpdate(finalPos, totalTeams, currentPatience, currentFailures, managedClubExpectation, currentMeritBuffer)
+  const patienceUpdate = computeBoardPatienceUpdate(finalPos, totalTeams, currentPatience, currentFailures, managedClubExpectation, currentMeritBuffer, bufferEligibleObjectiveDelta)
   let newBoardPatience = patienceUpdate.newBoardPatience
   let newConsecutiveFailures = patienceUpdate.newConsecutiveFailures
   const newMeritBuffer = patienceUpdate.newMeritBuffer
+  // Upprepade objektivmissar — ALDRIG buffer-skyddade, träffar patiensen direkt.
+  newBoardPatience = Math.max(0, Math.min(100, newBoardPatience + unprotectedObjectiveDelta))
   let managerFired = false
 
   // NOTE: Firing check moved AFTER board objectives evaluation (line ~699)
@@ -924,50 +981,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
     seasonEndPendingEvents.push(handlingsplanEvent)
   }
-
-  // ── Board objectives — evaluate + generate new ────────────────────────────
-  // U1 andra halvan, ändring 5 (Jacobs dom 2026-08-22): evaluateObjective()s
-  // FYRA riktiga tillstånd (met/at_risk/active/failed) plattas inte längre
-  // till två för patience-kostnaden — Skutskär hade två at_risk-uppdrag och
-  // den distinktionen försvann helt i den gamla versionen. boardObjectiveHistory
-  // (den långsiktiga loggen, flera konsumenter läser bara met/failed) förblir
-  // medvetet binär här — objectiveStatuses nedan är den nya, separata källan
-  // för både patience-kostnaden och SeasonSummary.objectiveOutcome (ändring 6).
-  const objectiveResults: Array<{ season: number; objectiveId: string; result: 'met' | 'failed'; ownerReaction: string; label: string }> = []
-  const objectiveStatuses: Array<'met' | 'failed' | 'at_risk' | 'active'> = []
-  for (const obj of game.boardObjectives ?? []) {
-    const result = evaluateObjective(obj, game)
-    objectiveStatuses.push(result.status)
-    const finalStatus = result.status === 'met' ? 'met' as const : 'failed' as const
-    objectiveResults.push({
-      season: game.currentSeason,
-      objectiveId: obj.id,
-      result: finalStatus,
-      ownerReaction: finalStatus === 'met' ? obj.successReward : obj.failureConsequence,
-      label: obj.label,
-    })
-    newInboxItems.push({
-      id: `inbox_boardobj_end_${obj.id}_${game.currentSeason}`,
-      date: game.currentDate,
-      type: InboxItemType.BoardFeedback,
-      title: finalStatus === 'met' ? `${obj.label} — uppfyllt` : `${obj.label} — misslyckat`,
-      body: finalStatus === 'met' ? obj.successReward : obj.failureConsequence,
-      isRead: false,
-    } as InboxItem)
-  }
-
-  // Board objectives affect patience: met +3, at_risk -2, active 0, failed -5
-  const OBJECTIVE_PATIENCE_COST: Record<'met' | 'failed' | 'at_risk' | 'active', number> = {
-    met: 3, at_risk: -2, active: 0, failed: -5,
-  }
-  const objectiveOutcome = {
-    met: objectiveStatuses.filter(s => s === 'met').length,
-    atRisk: objectiveStatuses.filter(s => s === 'at_risk').length,
-    active: objectiveStatuses.filter(s => s === 'active').length,
-    failed: objectiveStatuses.filter(s => s === 'failed').length,
-  }
-  const objectiveDelta = objectiveStatuses.reduce((sum, status) => sum + OBJECTIVE_PATIENCE_COST[status], 0)
-  newBoardPatience = Math.max(0, Math.min(100, newBoardPatience + objectiveDelta))
 
   // Firing check — AFTER objectives so success/failure affects the decision
   if (newBoardPatience <= 15 || newConsecutiveFailures >= 3) {

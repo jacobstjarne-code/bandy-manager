@@ -209,6 +209,48 @@ describe('computeBoardPatienceUpdate — meritbuffert (fjärde koefficientrundan
   })
 })
 
+// Femte koefficientrundan (Jacobs dom 2026-08-23, O5_FEMTE_PASSET_AVSKEDSDIAGNOS_
+// 2026-08-23.md): bufferten utökad till HELA säsongsslutstermen — position OCH
+// objektivkostnad (bufferEligibleObjectiveDelta) tillsammans, inte bara position.
+describe('computeBoardPatienceUpdate — meritbuffert täcker position+objektiv (femte koefficientrundan, 2026-08-23)', () => {
+  const TOTAL = 12
+  const CT = ClubExpectation.ChallengeTop  // ankare 4, above=2.5, below=4
+
+  it('objektivkostnad bankas i bufferten precis som position, om delen är positiv', () => {
+    // plats 4 (på ankaret, positionsdelta=0) + objektiv +3 (ett möte) → delta=+3
+    const result = computeBoardPatienceUpdate(4, TOTAL, 70, 0, CT, 0, 3)
+    expect(result.newBoardPatience).toBe(73)
+    expect(result.newMeritBuffer).toBe(3)
+  })
+
+  it('objektivkostnad förbrukar bufferten precis som position, om delen är negativ — position exakt på ankaret bevisar att kostnaden är REN objektiv (samma bevisform som seed 70000 säsong 3 i diagnosen)', () => {
+    // plats 4 (positionsdelta=0) + objektiv -12 (flera missade uppdrag) → delta=-12. Buffer 20 räcker.
+    const result = computeBoardPatienceUpdate(4, TOTAL, 70, 0, CT, 20, -12)
+    expect(result.newBoardPatience).toBe(70)  // helt skyddad — ren objektivkostnad absorberad
+    expect(result.newMeritBuffer).toBe(8)     // 20 - 12
+  })
+
+  it('position+objektiv SUMMERAS innan buffer-logiken — en dålig position kan kvittas av goda objektiv och tvärtom', () => {
+    // plats 8 (gap=-4, positionDelta=-16) + objektiv +20 (flera möten) → summa +4, netto POSITIVT
+    const result = computeBoardPatienceUpdate(8, TOTAL, 70, 0, CT, 0, 20)
+    expect(result.newBoardPatience).toBe(74)  // 70 + 4
+    expect(result.newMeritBuffer).toBe(4)     // positiv summa bankas
+  })
+
+  it('Jacobs villkor 1 — golvet är noll, ALDRIG ett plus: stor buffert kan inte göra en dålig säsong till en bra', () => {
+    // plats 8 (positionDelta=-16) + objektiv -4 → summa -20. Buffer 100 (hypotetiskt stor).
+    const result = computeBoardPatienceUpdate(8, TOTAL, 70, 0, CT, 100, -4)
+    expect(result.newBoardPatience).toBe(70)  // neutral — INTE 90 eller högre
+    expect(result.newMeritBuffer).toBe(80)    // 100 - 20 absorberat, aldrig mer än vad som behövdes
+  })
+
+  it('samma räkneexempel som O5_FEMTE_PASSET_AVSKEDSDIAGNOS_2026-08-23.md — seed 70000 säsong 3: position på ankaret, hela smällen är objektiv', () => {
+    // pos=4 → positionDelta=0. Diagnosen observerade säsongsslut+objektiv=-12.0 den säsongen.
+    const result = computeBoardPatienceUpdate(4, TOTAL, 87, 0, CT, 0, -12)
+    expect(result.newBoardPatience).toBe(75)  // 87 - 12, ingen buffert fanns att skydda med
+  })
+})
+
 describe('updateRunningBoardPatience — U1 andra halvan, ändring 1+2 (Jacobs dom 2026-08-22)', () => {
   function makeGameWithLastFixture(overrides: { homeScore: number; awayScore: number; fixtureId?: string; boardPatience?: number; boardPatienceLastCountedFixtureId?: string }) {
     return {

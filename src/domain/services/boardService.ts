@@ -305,6 +305,28 @@ const BOARD_PATIENCE_SLOPE: Record<ClubExpectation, { above: number; below: numb
 //   domens "två-tre säsongers minne".
 export const MERIT_BUFFER_CAP = 20
 
+/**
+ * Femte koefficientrundan (Jacobs dom 2026-08-23, O5_FEMTE_PASSET_
+ * AVSKEDSDIAGNOS_2026-08-23.md): bufferten utökad till HELA säsongsslutstermen
+ * — position OCH objektivkostnad tillsammans — inte bara position. Rotorsak
+ * till utökningen: dekomponering av sex sparkade acceptanstest-körningar
+ * visade att objektivkostnaden (som tidigare låg helt oskyddad, applicerad
+ * separat i seasonEndProcessor.ts EFTER denna funktion) var en STÖRRE
+ * bidragande faktor (-276,0 summerat) än positionstermen (-123,0 löpande
+ * term, för jämförelse) — bufferten skyddade fel del av samma fråga
+ * ("har managern gjort något värt tålamod?").
+ *
+ * `bufferEligibleObjectiveDelta` är den delen av objektivkostnaden som FÅR
+ * absorberas/bankas tillsammans med positionen — anropsstället
+ * (seasonEndProcessor.ts) exkluderar UPPREPADE objektivmissar innan den
+ * skickas hit (Jacobs andra villkor: "samma objective missat tre år i rad
+ * är inte otur"), de träffar patiensen direkt, aldrig buffer-skyddade.
+ *
+ * Golvet är noll, aldrig ett plus (Jacobs första villkor) — detta följer
+ * redan av matematiken utan extra klampning: `absorbed` kan aldrig
+ * överstiga `-delta`, så `effectiveDelta` kan aldrig bli positivt när
+ * `delta` var negativt.
+ */
 export function computeBoardPatienceUpdate(
   finalPos: number,
   totalTeams: number,
@@ -312,21 +334,26 @@ export function computeBoardPatienceUpdate(
   currentFailures: number,
   expectation: ClubExpectation,
   currentMeritBuffer = 0,
+  bufferEligibleObjectiveDelta = 0,
 ): { newBoardPatience: number; newConsecutiveFailures: number; newMeritBuffer: number } {
   const relegationZoneStart = totalTeams - RELEGATION_ZONE_SIZE + 1
   const anchor = BOARD_EXPECTATION_ANCHOR_POSITION[expectation]
   const slope = BOARD_PATIENCE_SLOPE[expectation]
   const gap = anchor - finalPos // positivt = bättre än ankaret
-  const delta = gap >= 0 ? slope.above * gap : slope.below * gap
+  const positionDelta = gap >= 0 ? slope.above * gap : slope.below * gap
+  const delta = positionDelta + bufferEligibleObjectiveDelta // HELA säsongsslutstermen
 
   let effectiveDelta = delta
   let newMeritBuffer = currentMeritBuffer
   if (delta >= 0) {
-    // Mötte/överträffade förväntan — patiensen stiger som förut, OCH en
-    // kredit banka in (inget avdrag från den direkta vinsten).
+    // Mötte/överträffade förväntan (position+objektiv sammanslaget) —
+    // patiensen stiger som förut, OCH en kredit bankas in (inget avdrag
+    // från den direkta vinsten).
     newMeritBuffer = Math.min(MERIT_BUFFER_CAP, currentMeritBuffer + delta)
   } else {
     // Understeg förväntan — krediten förbrukas FÖRST, innan patiensen rörs.
+    // Golvet är noll: absorbed <= -delta alltid, effectiveDelta kan aldrig
+    // bli positivt.
     const absorbed = Math.min(currentMeritBuffer, -delta)
     newMeritBuffer = currentMeritBuffer - absorbed
     effectiveDelta = delta + absorbed

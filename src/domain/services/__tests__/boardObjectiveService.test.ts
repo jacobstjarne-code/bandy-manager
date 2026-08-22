@@ -2,7 +2,7 @@
 // investeringskrav. Ingen tidigare testfil fanns för boardObjectiveService —
 // denna täcker bara den nya investSurplus-objectiven, inte hela filen.
 import { describe, it, expect } from 'vitest'
-import { generateBoardObjectives, evaluateObjective, SURPLUS_CEILING } from '../boardObjectiveService'
+import { generateBoardObjectives, evaluateObjective, SURPLUS_CEILING, isRepeatedObjectiveFailure } from '../boardObjectiveService'
 import type { BoardMember } from '../../entities/Club'
 import type { Club } from '../../entities/Club'
 import type { SaveGame } from '../../entities/SaveGame'
@@ -81,5 +81,53 @@ describe('evaluateObjective — investSurplus (O5 kraft 3)', () => {
     const club = makeClub({ finances: SURPLUS_CEILING + 500000 })
     const game = makeGame({ clubs: [club], seasonStartFinances: SURPLUS_CEILING + 200000 })
     expect(evaluateObjective(objective, game).status).toBe('active')
+  })
+})
+
+// Femte koefficientrundan (Jacobs dom 2026-08-23, O5_FEMTE_PASSET_AVSKEDSDIAGNOS_
+// 2026-08-23.md): meritbufferten skyddar inte upprepade objektivmissar.
+describe('isRepeatedObjectiveFailure', () => {
+  it('false om kostnaden inte är negativ (met eller active) — oavsett historik', () => {
+    expect(isRepeatedObjectiveFailure('cupRun', 3, [{ objectiveId: 'cupRun', result: 'failed' }])).toBe(false)
+    expect(isRepeatedObjectiveFailure('cupRun', 0, [{ objectiveId: 'cupRun', result: 'failed' }])).toBe(false)
+  })
+
+  it('false om ingen tidigare historik finns för objectiveId — en FÄRSK miss, buffer-skyddad', () => {
+    expect(isRepeatedObjectiveFailure('cupRun', -5, [])).toBe(false)
+    expect(isRepeatedObjectiveFailure('cupRun', -5, [{ objectiveId: 'topHalf', result: 'failed' }])).toBe(false)
+  })
+
+  it('false om SENASTE förekomsten av samma objectiveId var met — strecket bröts, ny chans', () => {
+    expect(isRepeatedObjectiveFailure('cupRun', -5, [
+      { objectiveId: 'cupRun', result: 'failed' },
+      { objectiveId: 'cupRun', result: 'met' },
+    ])).toBe(false)
+  })
+
+  it('true om SENASTE förekomsten av samma objectiveId också var failed — upprepad, oskyddad', () => {
+    expect(isRepeatedObjectiveFailure('cupRun', -5, [
+      { objectiveId: 'cupRun', result: 'met' },
+      { objectiveId: 'cupRun', result: 'failed' },
+    ])).toBe(true)
+  })
+
+  it('läser SENASTE posten, inte första — flera förekomster i historiken', () => {
+    expect(isRepeatedObjectiveFailure('cupRun', -5, [
+      { objectiveId: 'cupRun', result: 'failed' },
+      { objectiveId: 'cupRun', result: 'met' },
+      { objectiveId: 'cupRun', result: 'failed' },
+    ])).toBe(true)
+    expect(isRepeatedObjectiveFailure('cupRun', -5, [
+      { objectiveId: 'cupRun', result: 'failed' },
+      { objectiveId: 'cupRun', result: 'failed' },
+      { objectiveId: 'cupRun', result: 'met' },
+    ])).toBe(false)
+  })
+
+  it('andra objectiveId:s historik påverkar inte — filtrerar korrekt per id', () => {
+    expect(isRepeatedObjectiveFailure('cupRun', -5, [
+      { objectiveId: 'topHalf', result: 'failed' },
+      { objectiveId: 'topHalf', result: 'failed' },
+    ])).toBe(false)
   })
 })
