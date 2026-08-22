@@ -299,6 +299,14 @@ Detta är ett en-utvecklare-spel. Jacob är beta-testare, dev-team och release-m
 
 ---
 
+## AGENTERS BEHÖRIGHETSGRÄNS — `.claude/worktrees`
+
+En agent rör aldrig `.claude/worktrees` eller annat som tillhör en session den inte äger.
+
+En worktree stängs när dess arbete är klart. 24 kvarliggande sedan april (upptäckt 2026-08-23 efter att en underagent körde `rm -rf .claude/worktrees` under en orelaterad research-uppgift, självrapporterade det, och `git worktree prune` sedan städade den halvborta resten) betyder att parallellt agentarbete ackumulerar artefakter ingen städar.
+
+---
+
 ## DEPLOY (Vercel-MCP) — AUTOMATISK STATUS, HALVAUTOMATISK FIX
 
 Vercel-MCP är ansluten (claude.ai-integrationen, `https://mcp.vercel.com`). Code kan deploya och läsa build-/runtime-loggar direkt — ingen manuell dashboard-koll, ingen copy-paste av felmeddelanden.
