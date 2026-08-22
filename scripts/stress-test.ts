@@ -15,7 +15,7 @@ import type { SaveGame } from '../src/domain/entities/SaveGame'
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { FixtureStatus } from '../src/domain/enums'
 
-import { createHeadlessGame, autoSelectLineup, autoResolvePendingScreen } from './stress/fixtures'
+import { createHeadlessGame, autoSelectLineup, autoResolvePendingScreen, autoBuildCheapestAffordableFacility } from './stress/fixtures'
 import { checkInvariants } from '../src/domain/services/gameInvariants'
 import { printSeedProgress, printFinalReport } from './stress/reporter'
 import type { SeedResult } from './stress/reporter'
@@ -146,6 +146,10 @@ async function main(): Promise<void> {
       while (!seasonDone && !seedCrashed) {
         // Always set lineup before advancing (advance clears managedClubPendingLineup each round)
         game = autoSelectLineup(game)
+        // E-STRESS1 (2026-08-23): utan detta byggde ingen headless körning
+        // NÅGONSIN en anläggningsnod — O5 kraft 2 (drift) kunde bara
+        // verifieras analytiskt, aldrig i drift. Se BACKLOG.md.
+        game = autoBuildCheapestAffordableFacility(game)
 
         // Advance
         let roundPlayed: number | null = null

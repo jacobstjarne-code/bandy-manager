@@ -8,6 +8,8 @@ import { createNewGame } from '../../src/application/useCases/createNewGame'
 import { setLineup } from '../../src/application/useCases/setLineup'
 import { CLUB_TEMPLATES } from '../../src/domain/services/worldGenerator'
 import { PlayerPosition } from '../../src/domain/enums'
+import { canStartBuild, startFacilityBuild, getFacilityNodeViews, createInitialFacilityState } from '../../src/domain/services/facilityService'
+import { applyFinanceChange } from '../../src/domain/services/economyService'
 
 // ── Game creation ─────────────────────────────────────────────────────────────
 
@@ -124,4 +126,44 @@ export function autoResolvePendingScreen(game: SaveGame): ResolveResult {
     unresolvable: false,
     screenType: ps,
   }
+}
+
+// ── Facility auto-build (E-STRESS1, 2026-08-23) ─────────────────────────────
+
+/**
+ * Minsta möjliga byggpolicy för headless stress-körningar: bygg billigaste
+ * TILLGÄNGLIGA (icke byggda, icke låsta) nod med egen kassa, om ett
+ * säkerhetsmarginal-belopp lämnas kvar. Ingen kommun-/mecenatfinansiering
+ * (samma förenkling som gameFlowActions.ts:s Valet-scen — "club"-läget,
+ * full kostnad ur egen kassa) — det håller policyn till en funktion utan
+ * att dra in politician/mecenat-tillstånd i harnesset.
+ *
+ * Rotorsak till varför detta behövdes: innan detta fanns INGEN headless-
+ * körning (varken npm run stress eller enskilda script) som någonsin
+ * byggde en nod — O5 kraft 2 (anläggningsdrift) kunde alltså aldrig
+ * verifieras empiriskt, bara analytiskt. Se BACKLOG.md E-STRESS1,
+ * O5_ACCEPTANSTEST_8SASONGER_2026-08-23.md.
+ */
+const FACILITY_BUILD_SAFETY_MARGIN = 300_000
+
+export function autoBuildCheapestAffordableFacility(game: SaveGame): SaveGame {
+  const state = game.facilityState ?? createInitialFacilityState()
+  if (state.activeProject) return game  // redan ett bygge igång
+
+  const club = game.clubs.find(c => c.id === game.managedClubId)
+  if (!club) return game
+
+  const views = getFacilityNodeViews(state, game.currentMatchday ?? 0)
+  const available = views.filter(v => v.status === 'available')
+  if (available.length === 0) return game
+
+  const cheapest = available.reduce((min, v) => v.def.cost < min.def.cost ? v : min)
+  if (club.finances - cheapest.def.cost < FACILITY_BUILD_SAFETY_MARGIN) return game
+
+  const can = canStartBuild(cheapest.def.id, state)
+  if (!can.ok) return game
+
+  const newState = startFacilityBuild(cheapest.def.id, state, game.currentMatchday ?? 0)
+  const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -cheapest.def.cost)
+  return { ...game, facilityState: newState, clubs: updatedClubs }
 }
