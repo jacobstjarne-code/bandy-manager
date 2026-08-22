@@ -287,21 +287,54 @@ const BOARD_PATIENCE_SLOPE: Record<ClubExpectation, { above: number; below: numb
  * är den andra, separata avskedsvägen (>=3 raka säsonger i faktisk
  * nedflyttningszon) och rördes inte av Jacobs fem ändringar.
  */
+// Meritbuffert (Jacobs koefficientdom 2026-08-23, DOM_MERITBUFFERT_2026-08-23.md,
+// fjärde koefficientrundan — O5-acceptanstestets fynd: en klubb med tre raka
+// SM-guld sparkades två säsonger senare efter en normal svacka, för att
+// säsongsslutstermen inte hade något minne av vad klubben gjort innan.
+// "Samma princip som streak-taket" (Jacobs ord): styrelsen har ett minne,
+// inte bara ett omdöme om senaste säsongen.
+//
+// PROPOSAL, inte låst — Jacob dömer magnituderna. Föreslagna värden nedan
+// verifierade mot Grind 1 v3-stresstestets Skutskär-data (AvoidBottom,
+// gap oftast -1 till -3, delta -4 till -12) och O5-acceptanstestets
+// Västanfors-data (ChallengeTop, treepeat-scenariot seed 70014: tre säsonger
+// gap=+3, delta=+7,5 vardera, sedan en 8:e-plats-säsong gap=-4, delta=-16):
+//   MERIT_BUFFER_CAP = 20 — täcker exakt seed 70014:s -16-smäll efter tre
+//   golden-delta-inbetalningar (7,5×3=22,5, kapat till 20), lämnar 4 kvar.
+//   Ett tak på "≈2,5 typiska säsonger" i ChallengeTop-registret, matchar
+//   domens "två-tre säsongers minne".
+export const MERIT_BUFFER_CAP = 20
+
 export function computeBoardPatienceUpdate(
   finalPos: number,
   totalTeams: number,
   currentPatience: number,
   currentFailures: number,
   expectation: ClubExpectation,
-): { newBoardPatience: number; newConsecutiveFailures: number } {
+  currentMeritBuffer = 0,
+): { newBoardPatience: number; newConsecutiveFailures: number; newMeritBuffer: number } {
   const relegationZoneStart = totalTeams - RELEGATION_ZONE_SIZE + 1
   const anchor = BOARD_EXPECTATION_ANCHOR_POSITION[expectation]
   const slope = BOARD_PATIENCE_SLOPE[expectation]
   const gap = anchor - finalPos // positivt = bättre än ankaret
   const delta = gap >= 0 ? slope.above * gap : slope.below * gap
-  const newBoardPatience = Math.max(0, Math.min(100, currentPatience + delta))
+
+  let effectiveDelta = delta
+  let newMeritBuffer = currentMeritBuffer
+  if (delta >= 0) {
+    // Mötte/överträffade förväntan — patiensen stiger som förut, OCH en
+    // kredit banka in (inget avdrag från den direkta vinsten).
+    newMeritBuffer = Math.min(MERIT_BUFFER_CAP, currentMeritBuffer + delta)
+  } else {
+    // Understeg förväntan — krediten förbrukas FÖRST, innan patiensen rörs.
+    const absorbed = Math.min(currentMeritBuffer, -delta)
+    newMeritBuffer = currentMeritBuffer - absorbed
+    effectiveDelta = delta + absorbed
+  }
+
+  const newBoardPatience = Math.max(0, Math.min(100, currentPatience + effectiveDelta))
   const newConsecutiveFailures = finalPos >= relegationZoneStart ? currentFailures + 1 : 0
-  return { newBoardPatience, newConsecutiveFailures }
+  return { newBoardPatience, newConsecutiveFailures, newMeritBuffer }
 }
 
 // U1 andra halvan, ändring 1+2 (Jacobs dom 2026-08-22): löpande omgångsterm.

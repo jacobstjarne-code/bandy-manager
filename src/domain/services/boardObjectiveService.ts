@@ -324,14 +324,21 @@ export function evaluateObjective(
       return { value: delta, status: delta >= objective.targetValue ? 'met' : delta >= 0 ? 'active' : 'at_risk' }
     }
     case 'investSurplus': {
-      // O5 kraft 3: met = kassan tillbaka under taket. active = fortfarande
-      // över taket men minskande sen säsongsstart (rör sig åt rätt håll).
-      // at_risk = fortfarande över och INTE minskande — kravet ignorerat.
+      // Fjärde koefficientrundan (Jacobs dom 2026-08-23, O5-acceptanstestets
+      // fynd: 0/59 met, 40/59 failed — "0% met betyder att målet är ett
+      // straff för att ha pengar"). Gamla versionen krävde att kassan
+      // MINSKAT sen säsongsstart för 'active' — mekaniskt omöjligt för en
+      // framgångsrik klubb (ingen stress-infrastruktur spenderade något,
+      // se BACKLOG E-STRESS1), så objectivet kunde bara landa på 'at_risk'
+      // (→ 'failed' i den binära historiken) varje gång den triggades.
+      // Rapporterat billigast av två alternativ: aldrig sämre än 'active'
+      // så länge kassan är över taket (denna rad) mot att mäta faktisk
+      // INVESTERING (t.ex. byggda noder) istf kassaminskning — det senare
+      // kräver ny spårning, det förra är en radändring. met kräver
+      // fortfarande att kassan faktiskt kommit under taket.
       const club = game.clubs.find(c => c.id === game.managedClubId)!
       const value = club.finances
-      if (value <= objective.targetValue) return { value, status: 'met' }
-      const start = game.seasonStartFinances ?? value
-      return { value, status: value < start ? 'active' : 'at_risk' }
+      return { value, status: value <= objective.targetValue ? 'met' : 'active' }
     }
     case 'playHomegrown': {
       const recent = game.fixtures

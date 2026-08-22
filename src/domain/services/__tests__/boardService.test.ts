@@ -109,18 +109,18 @@ describe('computeBoardPatienceUpdate — U1 andra halvan (Jacobs dom 2026-08-22,
   const AB = ClubExpectation.AvoidBottom  // ankare 9, slope above=2/below=4
 
   it('nedflyttningszonen (plats 11-12): newConsecutiveFailures oförändrad logik (+1 per säsong i zonen)', () => {
-    expect(computeBoardPatienceUpdate(11, TOTAL, 70, 0, AB)).toEqual({ newBoardPatience: 62, newConsecutiveFailures: 1 })
-    expect(computeBoardPatienceUpdate(12, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 58, newConsecutiveFailures: 3 })
+    expect(computeBoardPatienceUpdate(11, TOTAL, 70, 0, AB)).toEqual({ newBoardPatience: 62, newConsecutiveFailures: 1, newMeritBuffer: 0 })
+    expect(computeBoardPatienceUpdate(12, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 58, newConsecutiveFailures: 3, newMeritBuffer: 0 })
   })
 
   it('varningszonen (plats 9-10): kontinuerlig, inte längre en fast -5', () => {
-    expect(computeBoardPatienceUpdate(9, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 70, newConsecutiveFailures: 0 })   // pos == ankare → delta 0
-    expect(computeBoardPatienceUpdate(10, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 66, newConsecutiveFailures: 0 })  // 1 under ankaret × below(4)
+    expect(computeBoardPatienceUpdate(9, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 70, newConsecutiveFailures: 0, newMeritBuffer: 0 })   // pos == ankare → delta 0
+    expect(computeBoardPatienceUpdate(10, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 66, newConsecutiveFailures: 0, newMeritBuffer: 0 })  // 1 under ankaret × below(4)
   })
 
   it('DÖDZONEN ÄR BORTA — plats 6 (tidigare noll effekt) rör nu siffran, AvoidBottom-klubb belönas för att slå ankaret', () => {
     // gap = ankare(9) − pos(6) = 3, delta = above(2) × 3 = +6 — INTE längre 0
-    expect(computeBoardPatienceUpdate(6, TOTAL, 70, 3, AB)).toEqual({ newBoardPatience: 76, newConsecutiveFailures: 0 })
+    expect(computeBoardPatienceUpdate(6, TOTAL, 70, 3, AB)).toEqual({ newBoardPatience: 76, newConsecutiveFailures: 0, newMeritBuffer: 6 })
   })
 
   it('topp (plats 1): kontinuerlig above-lutning, inte en fast +20', () => {
@@ -148,6 +148,64 @@ describe('computeBoardPatienceUpdate — U1 andra halvan (Jacobs dom 2026-08-22,
     expect(computeBoardPatienceUpdate(1, TOTAL, 70, 0, ClubExpectation.WinLeague).newBoardPatience).toBe(70)
     // gap = 1−2 = −1, delta = 5×−1 = −5
     expect(computeBoardPatienceUpdate(2, TOTAL, 70, 0, ClubExpectation.WinLeague).newBoardPatience).toBe(65)
+  })
+})
+
+// Fjärde koefficientrundan (Jacobs dom 2026-08-23, DOM_MERITBUFFERT_2026-08-23.md,
+// O5-acceptanstestets fynd: en klubb med tre raka SM-guld sparkades efter en
+// normal svacka två säsonger senare). PROPOSAL — magnituderna (MERIT_BUFFER_CAP=20)
+// är Codes förslag, inte Jacobs låsta dom.
+describe('computeBoardPatienceUpdate — meritbuffert (fjärde koefficientrundan, 2026-08-23)', () => {
+  const TOTAL = 12
+  const CT = ClubExpectation.ChallengeTop  // ankare 4, above=2.5, below=4
+
+  it('god säsong (gap>=0) bankar kredit UTAN att sänka den direkta vinsten', () => {
+    // plats 1: gap=3, delta=above(2.5)×3=7.5
+    const result = computeBoardPatienceUpdate(1, TOTAL, 70, 0, CT, 0)
+    expect(result.newBoardPatience).toBe(77.5)
+    expect(result.newMeritBuffer).toBe(7.5)
+  })
+
+  it('krediten kapas vid MERIT_BUFFER_CAP (20)', () => {
+    // Redan 18 i banken, ny god säsong tjänar in 7.5 → hade blivit 25.5, kapas till 20
+    const result = computeBoardPatienceUpdate(1, TOTAL, 70, 0, CT, 18)
+    expect(result.newMeritBuffer).toBe(20)
+  })
+
+  it('dålig säsong förbrukar krediten FÖRST — patiensen orörd om krediten räcker', () => {
+    // plats 8: gap=4−8=−4, delta=below(4)×−4=−16. Buffer 20 räcker.
+    const result = computeBoardPatienceUpdate(8, TOTAL, 70, 0, CT, 20)
+    expect(result.newBoardPatience).toBe(70)  // helt skyddad
+    expect(result.newMeritBuffer).toBe(4)     // 20 − 16 absorberat
+  })
+
+  it('dålig säsong med otillräcklig kredit — resten drar patiensen, som förut', () => {
+    // Buffer 10, behov 16 → 10 absorberas, resterande −6 drar patiensen
+    const result = computeBoardPatienceUpdate(8, TOTAL, 70, 0, CT, 10)
+    expect(result.newBoardPatience).toBe(64)
+    expect(result.newMeritBuffer).toBe(0)
+  })
+
+  it('utan buffert (0) beter sig EXAKT som innan fixet — ingen regression för klubbar utan historik', () => {
+    const result = computeBoardPatienceUpdate(8, TOTAL, 70, 0, CT, 0)
+    expect(result.newBoardPatience).toBe(54)  // samma som testet ovan ("boardExpectation-medveten")
+    expect(result.newMeritBuffer).toBe(0)
+  })
+
+  it('seed 70014-scenariot (O5-acceptanstestet): tre raka SM-guld, sedan en 8:e-plats — patiensen ska INTE krascha', () => {
+    let patience = 70
+    let buffer = 0
+    // Tre säsonger plats 1 (gap=3, delta=+7.5 var)
+    for (let i = 0; i < 3; i++) {
+      const r = computeBoardPatienceUpdate(1, TOTAL, patience, 0, CT, buffer)
+      patience = r.newBoardPatience
+      buffer = r.newMeritBuffer
+    }
+    expect(buffer).toBe(20)  // 7.5×3=22.5, kapat till 20
+    // Säsong 4: plats 8 (gap=−4, delta=−16)
+    const crash = computeBoardPatienceUpdate(8, TOTAL, patience, 0, CT, buffer)
+    expect(crash.newBoardPatience).toBe(patience)  // oförändrad — hela smällen absorberad
+    expect(crash.newMeritBuffer).toBe(4)
   })
 })
 

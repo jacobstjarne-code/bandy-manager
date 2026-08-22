@@ -71,15 +71,15 @@ describe('evaluateObjective — investSurplus (O5 kraft 3)', () => {
     expect(evaluateObjective(objective, game).status).toBe('met')
   })
 
-  it('active: fortfarande över taket men minskande sen säsongsstart', () => {
+  it('active: fortfarande över taket, kassan minskande sen säsongsstart (aldrig sämre än active, fjärde koefficientrundan 2026-08-23)', () => {
     const club = makeClub({ finances: SURPLUS_CEILING + 200000 })
     const game = makeGame({ clubs: [club], seasonStartFinances: SURPLUS_CEILING + 500000 })
     expect(evaluateObjective(objective, game).status).toBe('active')
   })
 
-  it('at_risk: fortfarande över taket och INTE minskande', () => {
+  it('active (INTE at_risk): fortfarande över taket och kassan växer — får aldrig faila bara för att ha pengar', () => {
     const club = makeClub({ finances: SURPLUS_CEILING + 500000 })
     const game = makeGame({ clubs: [club], seasonStartFinances: SURPLUS_CEILING + 200000 })
-    expect(evaluateObjective(objective, game).status).toBe('at_risk')
+    expect(evaluateObjective(objective, game).status).toBe('active')
   })
 })

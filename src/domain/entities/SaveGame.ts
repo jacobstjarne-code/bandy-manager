@@ -211,6 +211,16 @@ export interface SaveGame {
   boardPatienceLastCountedFixtureId?: string
   consecutiveFailures?: number   // seasons ended in bottom half without improvement
   managerFired?: boolean
+  /** Meritbuffert (Jacobs koefficientdom 2026-08-23, DOM_MERITBUFFERT_2026-08-23.md,
+   *  O5-acceptanstestets fynd: en klubb med tre raka SM-guld sparkades två
+   *  säsonger senare efter en normal svacka, eftersom boardPatience-formeln
+   *  inte hade något minne av tidigare framgång). Byggs upp av
+   *  computeBoardPatienceUpdate när en säsong möter/överträffar
+   *  boardExpectation (gap >= 0), förbrukas INNAN en understigande säsongs
+   *  negativa delta rör boardPatience. Scope: bara säsongsslutets
+   *  positionsterm — rör inte den löpande omgångstermen eller
+   *  förlustsvit-tillägget, som redan har sitt eget tak. */
+  meritBuffer?: number
 
   rivalryHistory?: Record<string, {
     wins: number

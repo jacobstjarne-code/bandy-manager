@@ -735,6 +735,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // förväntan) ovanpå, det ersätter inte den löpande delen.
   const currentPatience = game.boardPatience ?? 70
   const currentFailures = game.consecutiveFailures ?? 0
+  const currentMeritBuffer = game.meritBuffer ?? 0
   const managedClubExpectation = game.clubs.find(c => c.id === game.managedClubId)?.boardExpectation ?? ClubExpectation.MidTable
 
   // U1 (SLUTTEST_KO.md, 2026-08-17): "nedflyttningsstrid" gav tidigare ingen
@@ -745,9 +746,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // kontinuerlig, boardExpectation-medveten formel (se boardService.ts)
   // istf en klippa vid nedflyttningskanten — position 4-8 av 12 var
   // tidigare en "dödzon" med noll effekt oavsett utfall.
-  const patienceUpdate = computeBoardPatienceUpdate(finalPos, totalTeams, currentPatience, currentFailures, managedClubExpectation)
+  const patienceUpdate = computeBoardPatienceUpdate(finalPos, totalTeams, currentPatience, currentFailures, managedClubExpectation, currentMeritBuffer)
   let newBoardPatience = patienceUpdate.newBoardPatience
   let newConsecutiveFailures = patienceUpdate.newConsecutiveFailures
+  const newMeritBuffer = patienceUpdate.newMeritBuffer
   let managerFired = false
 
   // NOTE: Firing check moved AFTER board objectives evaluation (line ~699)
@@ -1427,6 +1429,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     talentSearchResults: game.talentSearchResults ?? [],
     boardPatience: newBoardPatience,
     consecutiveFailures: newConsecutiveFailures,
+    meritBuffer: newMeritBuffer,
     rivalryHistory: game.rivalryHistory ?? {},
     clubLegends: newLegends,
     mecenater: ageMecenater((game.mecenater ?? []).map(m => m.isActive ? updateSilentShout(m) : m)),
