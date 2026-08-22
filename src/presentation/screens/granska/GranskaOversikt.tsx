@@ -16,7 +16,7 @@ import { seededPick } from '../../../domain/utils/random'
 import { SectionLabel } from '../../components/SectionLabel'
 import { ScoreBlock } from '../../components/primitives'
 import { generateSilentMatchReport } from '../../../domain/services/silentMatchReportService'
-import { generateQuickSummary } from './helpers'
+import { generateQuickSummary, getStartedTiredDirection } from './helpers'
 import { DecisionCard } from '../../components/DecisionCard'
 import { Swords } from 'lucide-react'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
@@ -794,8 +794,8 @@ export function GranskaOversikt({
             const player = findPlayer(entry.playerId)
             if (!player) continue
             const rating = fixture?.report?.playerRatings[entry.playerId]
-            const dir: KvittoOutcomeDir = rating !== undefined ? (rating >= 7 ? 'good' : rating <= 5 ? 'bad' : 'neutral') : kvittoDir
             const cond = entry.detail.startsWith('condition_') ? entry.detail.slice(10) : entry.detail
+            const dir: KvittoOutcomeDir = getStartedTiredDirection(cond, rating, kvittoDir)
             const pool = STARTED_TIRED_OUTCOMES[dir]
             // Rotate deterministically: 3 sentences, avoid same in sequence
             const sentences = [

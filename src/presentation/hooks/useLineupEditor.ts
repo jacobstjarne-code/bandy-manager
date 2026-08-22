@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useGameStore, type SaveActionResult } from '../store/gameStore'
-import { spelklarhet, buildNudgeLineup } from '../utils/lineupNudge'
+import { pickBestEleven, buildNudgeLineup } from '../utils/lineupNudge'
 import {
   PlayerPosition,
   FixtureStatus,
@@ -204,22 +204,14 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
   }
 
   function handleAutoFill() {
+    // High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): "Fyll bästa
+    // elvan" — den knapp auditen faktiskt testade. Delar nu pickBestEleven()
+    // med lineupNudge.ts:s buildNudgeLineup istf en egen, tredje kopia av
+    // samma urvalslogik med en annan (CA-dominant) formel.
     const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
-    const sorted = [...available].sort((a, b) => spelklarhet(b) - spelklarhet(a))
-    const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
-    const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
-    const starters: Player[] = gkPool.length > 0 ? [gkPool[0]] : []
-    for (const p of outfieldPool) {
-      if (starters.length >= 11) break
-      starters.push(p)
-    }
-    for (const p of gkPool.slice(1)) {
-      if (starters.length >= 11) break
-      starters.push(p)
-    }
+    const { starters, rest } = pickBestEleven(available)
     const starterIds = starters.map(p => p.id)
-    const starterSet = new Set(starterIds)
-    const bench = sorted.filter(p => !starterSet.has(p.id)).slice(0, 5)
+    const bench = rest.slice(0, 5)
     const formation = tacticState.formation ?? '5-3-2'
     const template = FORMATIONS[formation]
     const newLineupSlots = autoAssignFormation(template, starters)

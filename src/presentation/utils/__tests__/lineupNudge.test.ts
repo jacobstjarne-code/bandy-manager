@@ -1,16 +1,21 @@
 /**
- * lineupNudge.test.ts — B10 Ticket 2
+ * lineupNudge.test.ts — B10 Ticket 2 + High 2 (Skutskär-auditen, 2026-08-22)
  *
  * Verifierar:
  * 1. buildNudgeLineup ger exakt PREFILL_COUNT spelare + EMPTY_SLOTS tomma icke-MV-slots
  * 2. Målvaktsslot är alltid fylld
  * 3. Deterministiskt: samma fixtureId → samma tomma slots
  * 4. Olika fixtureId → (i praktiken) olika tomma slots
- * 5. spelklarhet-formeln (ability*0.7 + form*0.2 + fitness*0.1) använder rätt vikter
+ * 5. pickBestEleven sorterar efter getSelectionScore (currentAbility×playerModifier,
+ *    samma viktning matchmotorn använder) — spelklarhet (CA*0.7+form*0.2+fitness*0.1)
+ *    är borttagen, det var den andra sanningen som orsakade auditfyndet.
+ * 6. SPELKLARHET_FITNESS_FLOOR: en spelare under golvet utesluts om ett
+ *    alternativ finns, men inkluderas ändå om poolen ovanför golvet är för tunn.
  */
 
 import { describe, it, expect } from 'vitest'
-import { buildNudgeLineup, spelklarhet, PREFILL_COUNT, EMPTY_SLOTS } from '../lineupNudge'
+import { buildNudgeLineup, pickBestEleven, SPELKLARHET_FITNESS_FLOOR, PREFILL_COUNT, EMPTY_SLOTS } from '../lineupNudge'
+import { getSelectionScore } from '../../../domain/services/squadEvaluator'
 import { FORMATIONS } from '../../../domain/entities/Formation'
 import type { Player } from '../../../domain/entities/Player'
 import {
@@ -31,7 +36,7 @@ import {
 function makePlayer(
   id: string,
   position: PlayerPosition,
-  overrides: Partial<Pick<Player, 'currentAbility' | 'form' | 'fitness'>> = {}
+  overrides: Partial<Pick<Player, 'currentAbility' | 'form' | 'fitness' | 'seasonForm' | 'sharpness'>> = {}
 ): Player {
   const ca = overrides.currentAbility ?? 65
   return {
@@ -52,7 +57,11 @@ function makePlayer(
     morale: 75,
     form: overrides.form ?? 75,
     fitness: overrides.fitness ?? 75,
-    sharpness: 75,
+    // playerModifier() cappar effectiveFitness mot (seasonForm ?? 60) + 3 —
+    // sätt seasonForm = fitness som default här så testens fitness-värden
+    // faktiskt slår igenom obeskurna, om inte testet EXPLICIT vill testa capen.
+    seasonForm: overrides.seasonForm ?? overrides.fitness ?? 75,
+    sharpness: overrides.sharpness ?? 75,
     currentAbility: ca,
     potentialAbility: ca + 10,
     developmentRate: 50,
@@ -108,16 +117,50 @@ describe('lineupNudge (B10 T2)', () => {
     expect(EMPTY_SLOTS).toBe(3)
   })
 
-  it('spelklarhet använder rätt vikter: ability*0.7 + form*0.2 + fitness*0.1', () => {
-    const p = makePlayer('x', PlayerPosition.Forward, { currentAbility: 70, form: 80, fitness: 90 })
-    const expected = 70 * 0.7 + 80 * 0.2 + 90 * 0.1
-    expect(spelklarhet(p)).toBeCloseTo(expected, 5)
+  // High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): sorteringen ska
+  // använda getSelectionScore (currentAbility×playerModifier), samma
+  // viktning matchmotorn faktiskt använder — inte en egen, andra sanning.
+  it('pickBestEleven sorterar efter getSelectionScore, inte råa currentAbility', () => {
+    // Två spelare med samma CA men olika fitness/form ska INTE rankas lika —
+    // getSelectionScore multiplicerar CA mot playerModifier (form/fitness/
+    // sharpness), spelklarhets linjära 10%-fitnessvikt hade gett ett mindre
+    // gap. seasonForm satt = fitness (se makePlayer) så capen inte stör.
+    const fresh = makePlayer('fresh', PlayerPosition.Forward, { currentAbility: 65, form: 90, fitness: 95 })
+    const stale = makePlayer('stale', PlayerPosition.Forward, { currentAbility: 65, form: 40, fitness: 30 })
+    expect(getSelectionScore(fresh)).toBeGreaterThan(getSelectionScore(stale))
+    // Skillnaden ska vara stor (multiplikativ), inte den lilla marginal en
+    // 10%-linjär fitnessvikt hade gett för samma CA.
+    expect(getSelectionScore(fresh) - getSelectionScore(stale)).toBeGreaterThan(15)
   })
 
-  it('spelklarhet: lågklassig spelare i toppform slår inte högnivåspelare i normalform', () => {
-    const star = makePlayer('star', PlayerPosition.Forward, { currentAbility: 80, form: 75, fitness: 75 })
-    const hotStreak = makePlayer('hot', PlayerPosition.Forward, { currentAbility: 50, form: 100, fitness: 100 })
-    expect(spelklarhet(star)).toBeGreaterThan(spelklarhet(hotStreak))
+  it('en svag spelare i toppform/fitness kan fortfarande rankas under en stark spelare i normalform — CA väger fortfarande in', () => {
+    const star = makePlayer('star', PlayerPosition.Forward, { currentAbility: 85, form: 75, fitness: 75 })
+    const hotStreakButWeak = makePlayer('hot', PlayerPosition.Forward, { currentAbility: 40, form: 100, fitness: 100 })
+    expect(getSelectionScore(star)).toBeGreaterThan(getSelectionScore(hotStreakButWeak))
+  })
+
+  it('SPELKLARHET_FITNESS_FLOOR: en spelare under golvet utesluts ur bästa-11 när ett bättre alternativ finns på samma position', () => {
+    const exhausted = makePlayer('exhausted', PlayerPosition.Forward, { currentAbility: 90, fitness: SPELKLARHET_FITNESS_FLOOR - 5 })
+    const fresh = makePlayer('fresh_f', PlayerPosition.Forward, { currentAbility: 40, fitness: 80 })
+    const squad = [
+      makePlayer('gk', PlayerPosition.Goalkeeper),
+      ...Array.from({ length: 9 }, (_, i) => makePlayer(`filler${i}`, PlayerPosition.Defender, { currentAbility: 50, fitness: 80 })),
+      exhausted,
+      fresh,
+    ]
+    const { starters } = pickBestEleven(squad)
+    // exhausted har högre rå CA men ligger under golvet OCH ett alternativ finns → uteslutet
+    expect(starters.some(p => p.id === 'exhausted')).toBe(false)
+    expect(starters.some(p => p.id === 'fresh_f')).toBe(true)
+  })
+
+  it('SPELKLARHET_FITNESS_FLOOR: en tunn trupp (alla under golvet) väljer ändå NÅGON — golvet kastar aldrig bort spelare det inte finns ersättare för', () => {
+    const squad = [
+      makePlayer('gk', PlayerPosition.Goalkeeper, { fitness: SPELKLARHET_FITNESS_FLOOR - 10 }),
+      ...Array.from({ length: 10 }, (_, i) => makePlayer(`p${i}`, PlayerPosition.Defender, { fitness: SPELKLARHET_FITNESS_FLOOR - 10, currentAbility: 50 + i })),
+    ]
+    const { starters } = pickBestEleven(squad)
+    expect(starters.length).toBe(11)
   })
 
   it('buildNudgeLineup: returnerar exakt PREFILL_COUNT startspelares IDs', () => {

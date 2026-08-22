@@ -9,17 +9,68 @@ import type { Player } from '../../domain/entities/Player'
 import type { FormationTemplate } from '../../domain/entities/Formation'
 import { autoAssignFormation } from '../../domain/entities/Formation'
 import { fixtureSeed, mulberry32 } from '../../domain/utils/random'
+import { getSelectionScore } from '../../domain/services/squadEvaluator'
 
 export const PREFILL_COUNT = 8
 export const EMPTY_SLOTS = 3
 
 /**
- * Spelklarhet-formel:
- * Kombinerar currentAbility (dominant, 70%), form (20%) och fitness (10%).
- * Ren form vore fel — en lågklassig spelare i bra form ska inte tränga ut en stjärna.
+ * High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom). En spelare under detta
+ * fitness-golv utesluts ur "bästa 11"-poolen om ett rimligt alternativ finns
+ * — samma etablerade idiom som `AI_FITNESS_FLOOR=40` (matchSimProcessor.ts)
+ * redan använder för AI-lagens rotation. Spelaren ska lyda samma regel som
+ * AI:n, inte en mildare. En tunn trupp (Skutskär-scenariot) tvingas ändå
+ * välja NÅGON — poolen under golvet finns kvar som fallback, den kastas
+ * aldrig, bara nedprioriteras.
  */
-export function spelklarhet(p: Player): number {
-  return p.currentAbility * 0.7 + p.form * 0.2 + p.fitness * 0.1
+export const SPELKLARHET_FITNESS_FLOOR = 22
+
+/**
+ * High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): partitionerar i två
+ * block (fitness ≥ golvet, fitness < golvet), sorterade var för sig efter
+ * `getSelectionScore()` (samma currentAbility×playerModifier-viktning
+ * matchmotorn faktiskt använder — se squadEvaluator.ts). Blocket under
+ * golvet läggs sist, inte bort — `pickBestEleven()` fyller därifrån bara om
+ * poolen ovanför golvet inte räcker till 11 spelare.
+ */
+function prioritizeByFitnessFloor(players: Player[]): Player[] {
+  const byScore = (a: Player, b: Player) => getSelectionScore(b) - getSelectionScore(a)
+  const aboveFloor = players.filter(p => p.fitness >= SPELKLARHET_FITNESS_FLOOR).sort(byScore)
+  const belowFloor = players.filter(p => p.fitness < SPELKLARHET_FITNESS_FLOOR).sort(byScore)
+  return [...aboveFloor, ...belowFloor]
+}
+
+export interface BestElevenResult {
+  starters: Player[]
+  /** Resten, sorterad bästa-först — anroparen trimmar till bänkstorlek själv. */
+  rest: Player[]
+}
+
+/**
+ * High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): DEN gemensamma "bästa
+ * 11"-urvalslogiken. Fanns tidigare duplicerad två gånger (denna fil OCH
+ * useLineupEditor.ts:s handleAutoFill — "Fyll bästa elvan"-knappen auditen
+ * testade) med en TREDJE, oberoende formel (spelklarhet) än den matchmotorn
+ * faktiskt använder. Nu: en källa, en formel (getSelectionScore), delad.
+ */
+export function pickBestEleven(available: Player[]): BestElevenResult {
+  const sorted = prioritizeByFitnessFloor(available)
+  const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
+  const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
+
+  const starters: Player[] = gkPool.length > 0 ? [gkPool[0]] : []
+  for (const p of outfieldPool) {
+    if (starters.length >= 11) break
+    starters.push(p)
+  }
+  for (const p of gkPool.slice(1)) {
+    if (starters.length >= 11) break
+    starters.push(p)
+  }
+
+  const starterSet = new Set(starters.map(p => p.id))
+  const rest = sorted.filter(p => !starterSet.has(p.id))
+  return { starters, rest }
 }
 
 export interface NudgeLineup {
@@ -40,21 +91,7 @@ export function buildNudgeLineup(
 ): NudgeLineup {
   const rand = mulberry32(fixtureSeed(fixtureId, 77))
 
-  // Sortera på spelklarhet, bästa först
-  const sorted = [...available].sort((a, b) => spelklarhet(b) - spelklarhet(a))
-  const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
-  const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
-
-  // Ta de bästa 11 (med MV) för autoAssignFormation
-  const best11: Player[] = gkPool.length > 0 ? [gkPool[0]] : []
-  for (const p of outfieldPool) {
-    if (best11.length >= 11) break
-    best11.push(p)
-  }
-  for (const p of gkPool.slice(1)) {
-    if (best11.length >= 11) break
-    best11.push(p)
-  }
+  const best11 = pickBestEleven(available).starters
 
   // Fyll alla slots med de bästa 11
   const allSlots = autoAssignFormation(formation, best11)

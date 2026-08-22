@@ -74,9 +74,22 @@ Stash-test-cykel körd (23 nya test-failures mot återställd kod, alla tre delf
 
 **Kvalitetsportar:** stash-test (10 failures mot återställd kod). 2383/2383 gröna, build ren, stress 10×5 0 krascher.
 
-## 6. High 2 — Utmattningen — RAPPORT LEVERERAD, INTE BYGGD
+## 6. High 2 — Utmattningen — KLAR (Jacobs dom 2026-08-22)
 
-Se `docs/HIGH2_UTMATTNINGEN_FORSLAG_2026-08-22.md`. Rotorsaken bekräftad i kod: `spelklarhet()` (Fyll bästa-sorteringen) väger fitness 10%, `playerModifier()` (den faktiska matchvärderingen) väger fitness 60% — motsatt prioritering, exakt det auditen observerade. Två alternativ skisserade (hård grind vs. icke-linjär kurva), ingen magnitud dömd. Väntar Jacobs dom innan kod skrivs.
+Se `docs/HIGH2_UTMATTNINGEN_FORSLAG_2026-08-22.md` för förslaget — Jacob dömde Alternativ A (hård grind, inte den icke-linjära kurvan) plus tre tillägg som inte fanns i förslaget: sorteringsformeln själv, en dubblerad tredje kopia av urvalslogiken, och copy-kopplingen till Granska.
+
+**Rot (bekräftad i förslaget, adresserad nu):** `spelklarhet()` (Fyll bästa-sorteringen, lineupNudge.ts) vägde fitness 10% i en LINJÄR summa med currentAbility — motsatt riktning mot `playerModifier()`/`evaluateSquad()` (squadEvaluator.ts, matchmotorns faktiska värdering), som väger fitness/form 60% MULTIPLIKATIVT. "Fyll bästa elvan" kunde därför välja en elva spelklarheten ansåg stark, men som matchmotorn värderade mycket lägre.
+
+**Byggt:**
+- **Sorteringen (den verkliga fixen):** ny `getSelectionScore(player) = currentAbility × playerModifier(player)` (squadEvaluator.ts) — samma multiplikativa mönster `evaluateSquad()` redan använder, CA som positions-agnostisk proxy. `spelklarhet()` RADERAD, inte lämnad som en andra sanning (se BACKLOG.md "Två läsare, en sanning", raden nu STÄNGD).
+- **En tredje, dold kopia hittad och konsoliderad:** utöver `lineupNudge.ts`s `buildNudgeLineup` fanns EN TREDJE oberoende "bästa 11"-implementation i `useLineupEditor.ts`s `handleAutoFill` — troligen den FAKTISKA "Fyll bästa elvan"-knappen auditens repro pekade på. Ny delad `pickBestEleven()` (lineupNudge.ts) — bägge konsumenterna anropar samma funktion, ingen egen tredje formel kvar.
+- **`SPELKLARHET_FITNESS_FLOOR = 22`** (lineupNudge.ts) — mirror av det etablerade `AI_FITNESS_FLOOR = 40`-mönstret (matchSimProcessor.ts). Spelare under golvet nedprioriteras i urvalet men kastas aldrig — en tunn trupp (Skutskär-scenariot) väljer ändå NÅGON via fallback-poolen. Alternativ B (icke-linjär kurva) avvisad: fitness räknades två gånger (multiplikativt OCH additivt), svårare att resonera om.
+- **Copy-kopplingen:** `GranskaOversikt.tsx`s `started_tired`-utfallstext hade ett oanvänt `cond`-fält (historisk fitness) — spelaren kunde få en good/neutral-rad ("Höll måttet, ingen påverkan") trots att fitness låg under golvet. Ny `getStartedTiredDirection()` (extraherad till `granska/helpers.ts` för testbarhet) tvingar `'bad'` hårt under golvet, ingen fjärde riktning — `bad`-poolen (STARTED_TIRED_OUTCOMES) fanns redan och säger rätt sak.
+- **Byggt INTE:** "Bästa nu" vs "skydda säsongen" (Jacobs dom: UI-förändring, kräver mock — med sorteringen fixad är "Fyll bästa" redan det skyddande valet).
+
+**Tester:** `lineupNudge.test.ts` — 2 spelklarhets-specifika tester ersatta med 4 nya (`getSelectionScore`-sortering, CA-vägning kvar, golv-uteslutning, tunn-trupp-fallback), 13 tester totalt i filen. Ny `getStartedTiredDirection.test.ts` — 8 tester (golvkant, fallback, otolkbar kondition).
+
+**Kvalitetsportar:** stash-test (12 failures mot återställd kod — 4 i lineupNudge.test.ts, 8 i getStartedTiredDirection.test.ts). 2406/2406 gröna, build ren (tsc + vite + lint:design-guard), stress 10×5 0 krascher, 0 invariant-brott.
 
 ## 7. Medium 4 (critical per instans/undertyp) + Medium 3 (Form-etiketten) — KLAR
 
@@ -124,8 +137,7 @@ Se `docs/HIGH2_UTMATTNINGEN_FORSLAG_2026-08-22.md`. Rotorsaken bekräftad i kod:
 
 ## Sammanfattning — hela ordern klar
 
-Punkt 1, 3, 4, 5, 6 (rapport), 7, 8 alla levererade. Punkt 2 (styrelsemodellen) redan gjord innan detta pass. High 5 (BatchStack) och Medium 2 (mecenatpoolen) — INTE med i Jacobs byggordning, medvetet skippade.
+Punkt 1, 3, 4, 5, 6, 7, 8 alla levererade (6 byggd 2026-08-22 efter Jacobs dom, se ovan). Punkt 2 (styrelsemodellen) redan gjord innan detta pass. High 5 (BatchStack) — INTE med i Jacobs byggordning, medvetet skippad. Medium 2 (mecenatpoolen) beställd i SAMMA dom som High 2 — separat pass, se HANDOVER.
 
 **Väntar Jacobs dom:**
-- High 2:s magnituder (spelklarhetsgrind 20–25% vs. icke-linjär kurva) — `HIGH2_UTMATTNINGEN_FORSLAG_2026-08-22.md`.
 - Domarcitatets `loss`-hink — `'[Opus]'`-platshållare, en rad text saknas.

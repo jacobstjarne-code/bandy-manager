@@ -2,6 +2,29 @@ import { MatchEventType } from '../../../domain/enums'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { Tavlingstyp, Skede } from '../../../domain/services/matchTypeAxes'
+import type { KvittoOutcomeDir } from '../../../domain/data/managerKvittoText'
+import { SPELKLARHET_FITNESS_FLOOR } from '../../utils/lineupNudge'
+
+/**
+ * High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): hårt villkor, ingen
+ * fjärde riktning. En spelare under fitness-golvet (samma
+ * SPELKLARHET_FITNESS_FLOOR som "Fyll bästa" nu exkluderar mot) kan ALDRIG
+ * få en good/neutral-rad — oavsett matchbetyg. "Han höll trots tunga ben"
+ * ljög tidigare om en spelare som var för trött för att räknas som
+ * spelklar överhuvudtaget. Extraherad till helpers.ts för direkt testbarhet
+ * (GranskaOversikt.tsx är för stor/komplex för komponent-rendering-test).
+ */
+export function getStartedTiredDirection(
+  startedConditionRaw: string,
+  rating: number | undefined,
+  fallbackDir: KvittoOutcomeDir,
+): KvittoOutcomeDir {
+  const startedFitness = Number(startedConditionRaw)
+  const belowFloor = !Number.isNaN(startedFitness) && startedFitness < SPELKLARHET_FITNESS_FLOOR
+  if (belowFloor) return 'bad'
+  if (rating !== undefined) return rating >= 7 ? 'good' : rating <= 5 ? 'bad' : 'neutral'
+  return fallbackDir
+}
 
 /**
  * GRANSKA DEL 4 (2026-08-11/12), steg 4 — fast-lägets prosa. Detta är den

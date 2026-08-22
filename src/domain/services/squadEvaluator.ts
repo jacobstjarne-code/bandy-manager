@@ -47,6 +47,27 @@ function playerModifier(player: Player): number {
   return base * sharpnessFactor
 }
 
+/**
+ * High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom). `spelklarhet()`
+ * (lineupNudge.ts, nu borttagen) viktade fitness bara 10% i en linjär
+ * summa med currentAbility — motsatt riktning mot vad matchmotorn faktiskt
+ * gör (playerModifier ovan väger fitness/form 60% MULTIPLIKATIVT mot varje
+ * positionsscore). "Fyll bästa elvan" kunde därför välja en elva
+ * spelklarheten ansåg stark, men som matchmotorn värderade mycket lägre.
+ *
+ * getSelectionScore() är den universella (positions-agnostiska)
+ * motsvarigheten till evaluateSquad()s positions-specifika
+ * `attributeScore(p) * effectivePlayerModifier(p, tactic)`-mönster —
+ * currentAbility ersätter attributeScore (ingen formation/slot är känd
+ * ännu vid urvalstillfället, CA är den holistiska proxyn) och multipliceras
+ * mot samma playerModifier() matchmotorn använder, inte en linjär blandning.
+ * Exporterad så lineupNudge.ts (Fyll bästa-sorteringen) kan använda EXAKT
+ * samma viktning som matchvärderingen, inte en egen andra sanning.
+ */
+export function getSelectionScore(player: Player): number {
+  return player.currentAbility * playerModifier(player)
+}
+
 function effectivePlayerModifier(player: Player, tactic: Tactic): number {
   const base = playerModifier(player)
   const lineupSlots = tactic.lineupSlots
