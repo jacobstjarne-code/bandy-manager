@@ -24,7 +24,7 @@
 
 import { createNewGame } from '../src/application/useCases/createNewGame'
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
-import { autoSelectLineup, autoResolvePendingScreen } from './stress/fixtures'
+import { autoSelectLineup, autoResolvePendingScreen, autoBuildCheapestAffordableFacility } from './stress/fixtures'
 import { getFacilityNodeViews, isFacilityTreeFull, FACILITY_NODE_DEFS } from '../src/domain/services/facilityService'
 import { calcRoundIncome, evaluateFinanceStatus } from '../src/domain/services/economyService'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
@@ -129,6 +129,7 @@ function runOne(seed: number): RunResult {
         if (guardRounds > 2000) throw new Error(`season ${season} never ended — round guard tripped`)
 
         game = autoSelectLineup(game)
+        game = autoBuildCheapestAffordableFacility(game)  // E-STRESS1 — kraft 2 nu verifierbar i drift
         const result = advanceToNextEvent(game, stepSeed++)
         game = result.game
 
