@@ -27,13 +27,19 @@ describe('getEffectivePriority — verklig registerstatus (ingen mock)', () => {
 
 describe('getEffectivePriority — wiring mot contentContract (mockad rad)', () => {
   it('critical MED en ifylld whyNow-rad i registret behåller critical', async () => {
+    // Medium 4 (Skutskär-auditen, 2026-08-22): eventQueueService.ts anropar
+    // sedan getEffectiveWhyNowLine (instans-medveten wrapper), inte längre
+    // getContentContractEntry/getWhyNowLine direkt — den mockas här i
+    // stället. Att mocka getContentContractEntry hade inte längre fungerat:
+    // getEffectiveWhyNowLine anropar den LOKALT inom samma modul, ett
+    // internt samma-fil-anrop som Vitests modul-mock inte fångar.
     vi.resetModules()
     vi.doMock('../../data/contentContract', async () => {
       const actual = await vi.importActual<typeof import('../../data/contentContract')>('../../data/contentContract')
       return {
         ...actual,
-        getContentContractEntry: (source: string, id: string) =>
-          source === 'GameEventType' && id === 'mecenatEvent' ? { id, source, filled: true, deadlineLabel: 'omgång 14' } : undefined,
+        getEffectiveWhyNowLine: (event: { type: string }) =>
+          event.type === 'mecenatEvent' ? 'Svaret måste komma före omgång 14.' : null,
       }
     })
     const { getEffectivePriority } = await import('../eventQueueService')

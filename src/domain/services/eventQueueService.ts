@@ -7,7 +7,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent, EventPriority } from '../entities/GameEvent'
 import { getEventPriority } from '../entities/GameEvent'
-import { getContentContractEntry, getWhyNowLine } from '../data/contentContract'
+import { getEffectiveWhyNowLine } from '../data/contentContract'
 
 // Numerisk rank per prio — lägre tal = högre prioritet
 const PRIORITY_RANK: Record<string, number> = {
@@ -44,20 +44,19 @@ export function isAmbientEvent(event: GameEvent): boolean {
  * pivotal och tappar sin overlay-behandling.
  *
  * KOPPLAD MOT REGISTRET, INTE MOT GISSNING (Jacobs dom 2026-08-21): whyNow-
- * data läses ur `contentContract.ts` per `event.type`, inte ur event-
- * instansen. Ingen av de fyra typer som idag routas kritiskt (mecenatEvent,
- * economicStress, playerUnhappy, criticalEconomy — se getEventPriority i
- * GameEvent.ts) har än en ifylld contentContract-rad, så DENNA FUNKTION
- * NEDGRADERAR ALLA KRITISKA EVENTS TILL 'normal' IDAG — medvetet, inte en
- * bugg. "Regeln kontrollerar sig själv": mekanismen aktiveras rad för rad,
- * sant, i takt med att O11-registret fylls i — aldrig genom att gissa en
- * brådskerad för att täcka en typ i förväg.
+ * data läses primärt ur `contentContract.ts` per `event.type`. Medium 4
+ * (Skutskär-auditen, 2026-08-22): "Prioritera per undertyp/instans, inte
+ * bara GameEventType" — getEffectiveWhyNowLine() läser nu FÖRST event-
+ * instansens egen `whyNow`-signal (satt vid konstruktionsstället för en
+ * SPECIFIK instans, t.ex. det irreversibla stjärnsälj-ultimatumet i
+ * economicCrisisService.ts fas 3) innan den faller tillbaka på typ-raden.
+ * En bastuinbjudan (samma GameEventType) utan egen whyNow-signal förblir
+ * 'normal' — bara den instans som faktiskt bär brådska blir 'critical'.
  */
 export function getEffectivePriority(event: GameEvent): EventPriority {
   const raw = event.priority ?? getEventPriority(event.type)
   if (raw !== 'critical') return raw
-  const entry = getContentContractEntry('GameEventType', event.type)
-  return getWhyNowLine(entry) === null ? 'normal' : 'critical'
+  return getEffectiveWhyNowLine(event) === null ? 'normal' : 'critical'
 }
 
 export type EventRenderTarget = 'overlay' | 'inline' | 'ambient'

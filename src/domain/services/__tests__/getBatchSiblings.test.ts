@@ -8,12 +8,16 @@ import type { SaveGame } from '../../entities/SaveGame'
 // idag (se contentContract.ts). Mockad här bara för att kunna konstruera ett
 // GENUINT pivotal syskon och testa FILTRERINGEN, inte klassificeringsstatusen
 // (den testas separat i eventQueueEffectivePriority.test.ts).
+//
+// Medium 4 (Skutskär-auditen, 2026-08-22): mockar getEffectiveWhyNowLine
+// direkt, inte getContentContractEntry — se eventRenderRouting.test.ts för
+// samma rotorsak (internt samma-fil-anrop i contentContract.ts).
 vi.mock('../../data/contentContract', async () => {
   const actual = await vi.importActual<typeof import('../../data/contentContract')>('../../data/contentContract')
   return {
     ...actual,
-    getContentContractEntry: (source: string, id: string) =>
-      source === 'GameEventType' && id === 'mecenatEvent' ? { id, source, filled: true, deadlineLabel: 'omgång 14' } : undefined,
+    getEffectiveWhyNowLine: (event: { type: string }) =>
+      event.type === 'mecenatEvent' ? 'Svaret måste komma före omgång 14.' : null,
   }
 })
 

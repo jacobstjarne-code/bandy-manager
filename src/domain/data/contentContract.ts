@@ -101,6 +101,28 @@ export function getWhyNowLine(entry: Pick<ContentContractEntry, 'deadlineLabel' 
   return null
 }
 
+/**
+ * Medium 4 (Skutskär-auditen, 2026-08-22): "Prioritera per undertyp/instans,
+ * inte bara GameEventType. En bastu är normal; ett irreversibelt stjärnsälj
+ * eller ett faktiskt ultimatum är pivotal." getWhyNowLine() läste tidigare
+ * ENBART den TYP-nivå-rad Jacobs D1-dom (2026-08-21) explicit band den till
+ * — alla instanser av t.ex. `criticalEconomy` (en bastuinbjudan OCH ett
+ * stjärnsälj-ultimatum delar samma GameEventType) fick antingen samma
+ * critical-status eller samma nedgradering, aldrig särskiljda.
+ *
+ * `event.whyNow` (GameEvent.ts) är den nya, PER-INSTANS-satta motsvarigheten
+ * — samma fyra fält, samma låsta copy (getWhyNowLine ändras inte, bara VAR
+ * den läser ifrån). Konstruktionsstället sätter den bara när formen faktiskt
+ * är grundad i spårad data för DEN HÄR instansen (D1:s egen disciplin,
+ * oförändrad) — instansen vinner över typ-raden om båda är satta, eftersom
+ * en instans-specifik brådska alltid är mer exakt än en typ-generell.
+ */
+export function getEffectiveWhyNowLine(event: { type: string; whyNow?: Pick<ContentContractEntry, 'deadlineLabel' | 'whyNowPerson' | 'wholeEventIrreversible' | 'seasonDefining'> }): string | null {
+  const instanceLine = getWhyNowLine(event.whyNow)
+  if (instanceLine) return instanceLine
+  return getWhyNowLine(getContentContractEntry('GameEventType', event.type))
+}
+
 const GAME_EVENT_TYPE_IDS = [
   'transferBidReceived', 'contractRequest', 'playerUnhappy', 'starPerformance', 'sponsorOffer',
   'pressConference', 'dayJobConflict', 'bidWar', 'hesitantPlayer', 'communityEvent', 'patronEvent',

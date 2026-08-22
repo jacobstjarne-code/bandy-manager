@@ -74,8 +74,32 @@ Stash-test-cykel körd (23 nya test-failures mot återställd kod, alla tre delf
 
 **Kvalitetsportar:** stash-test (10 failures mot återställd kod). 2383/2383 gröna, build ren, stress 10×5 0 krascher.
 
-## Återstår (fixordning punkt 6–7)
+## 6. High 2 — Utmattningen — RAPPORT LEVERERAD, INTE BYGGD
 
-6. High 2 — Utmattningen (RAPPORT innan kalibrering, inte byggd)
-7. Medium 4 (critical per instans) + Medium 3 (Form-etiketten)
+Se `docs/HIGH2_UTMATTNINGEN_FORSLAG_2026-08-22.md`. Rotorsaken bekräftad i kod: `spelklarhet()` (Fyll bästa-sorteringen) väger fitness 10%, `playerModifier()` (den faktiska matchvärderingen) väger fitness 60% — motsatt prioritering, exakt det auditen observerade. Två alternativ skisserade (hård grind vs. icke-linjär kurva), ingen magnitud dömd. Väntar Jacobs dom innan kod skrivs.
+
+## 7. Medium 4 (critical per instans/undertyp) + Medium 3 (Form-etiketten) — KLAR
+
+### Medium 3 — Form-etiketten (text redan dömd av Jacob)
+
+**Byggt:** `FormStatusMinimal.tsx` — etiketten "Form" → "Spelarform" (säger vad talet faktiskt är: attributsnitt, inte resultatkurva). Ny separat rad "Form: V O F" som återanvänder `getFormResults()`/`FormDots` — samma funktion TabellScreen/GranskaOversikt redan använder, ingen dubblett (PORT 4). Tester: `FormStatusMinimal.test.tsx`, 4 tester.
+
+### Medium 4 — Critical per instans/undertyp
+
+**Rot:** `getEffectivePriority()` läste whyNow-data ENBART per `GameEventType` (`contentContract.ts`, Jacobs D1-dom 2026-08-21) — alla instanser av t.ex. `criticalEconomy` (en trivial bastuinbjudan-nivå-händelse OCH ett irreversibelt stjärnsälj-ultimatum delar samma typ) fick identisk behandling. Ingen typ hade en ifylld whyNow-rad, så ALLA kritiska events nedgraderades till 'normal' — bekräftat i BACKLOG.md sedan tidigare ("Ingen nåbar pivotal-instans finns i produktion").
+
+**Byggt:**
+- Nytt `GameEvent.whyNow`-fält — SAMMA fyra former som `contentContract.ts`s typ-nivå-fält (`deadlineLabel`/`whyNowPerson`/`wholeEventIrreversible`/`seasonDefining`), men satt PER INSTANS vid konstruktionsstället.
+- `getEffectiveWhyNowLine(event)` (`contentContract.ts`) — läser instansens `whyNow` FÖRST, faller tillbaka på typ-raden. `getWhyNowLine()` själv oförändrad (samma låsta copy, ingen ny text).
+- `getEffectivePriority()` och `EventOverlay.tsx` uppdaterade att läsa via `getEffectiveWhyNowLine`.
+- **Första nåbara instansen:** `economicCrisisService.ts`s fas 3 ("Två vägar ur krisen" — namngiven ekonomichef, ett av tre val irreversibelt) fick `whyNow: { whyNowPerson: 'Johan Bergstedt' }` — contentContract.ts:s egen tidigare analys pekade redan ut detta som "STARKASTE kandidaten" av de fyra kritiska typerna. Fas 1/2 (samma `GameEventType`, ingen instans-whyNow) förblir korrekt 'normal' — bastu-nivå, inte ultimatum.
+
+**Regressionsstädning:** fyra befintliga testfiler (`eventQueueEffectivePriority`, `eventRenderRouting`, `attentionRouter`, `getBatchSiblings`) mockade tidigare `getContentContractEntry` — ett internt samma-fil-anrop `getEffectiveWhyNowLine` gör som Vitests modul-mock inte fångar. Alla fyra uppdaterade att mocka `getEffectiveWhyNowLine` direkt.
+
+**Tester:** `eventQueueEffectivePriorityInstance.test.ts` — 6 tester, DET kontraktstest auditen efterfrågade ("minst en nåbar critical-produktionsinstans"): riktig `checkEconomicCrisis()`-produktionskod, ingen syntetisk mock, verifierar fas 3 → critical och fas 1/2 → normal.
+
+**Kvalitetsportar:** stash-test (12 failures mot återställd kod, inkl. de fyra regressionsfixade filerna). 2393/2393 gröna, build ren, stress 10×5 0 krascher.
+
+## Återstår (fixordning punkt 8, ej numrerad i Jacobs lista)
+
 8. Medium 7 (deep-link) + Low 2 (PWA-versionsskifte)

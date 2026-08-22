@@ -12,18 +12,24 @@ import type { GameEvent } from '../domain/entities/GameEvent'
  * EventPrimary läser alla samma funktion, så ett grönt test här bevisar
  * även deras beteende.
  *
- * contentContract mockas till att alltid returnera en whyNow-bärande rad —
+ * contentContract mockas till att alltid returnera en whyNow-rad —
  * det här filens jobb är att testa RUTNINGSMEKANIKEN (ambient/overlay/
  * inline givet en effektiv prioritet), inte VILKA typer som faktiskt är
  * klassificerade som pivotal idag (det testas separat i
  * eventQueueEffectivePriority.test.ts mot den verkliga, delvis ofyllda
  * registerstatusen).
+ *
+ * Medium 4 (Skutskär-auditen, 2026-08-22): mockar getEffectiveWhyNowLine
+ * direkt, inte längre getContentContractEntry — eventQueueService.ts
+ * anropar sedan den instans-medvetna wrappern, och getEffectiveWhyNowLine
+ * anropar getContentContractEntry LOKALT inom samma modul (ett internt
+ * samma-fil-anrop Vitests modul-mock inte fångar).
  */
 vi.mock('../domain/data/contentContract', async () => {
   const actual = await vi.importActual<typeof import('../domain/data/contentContract')>('../domain/data/contentContract')
   return {
     ...actual,
-    getContentContractEntry: (source: string, id: string) => ({ id, source, filled: true, deadlineLabel: 'omgång 14' }),
+    getEffectiveWhyNowLine: () => 'Svaret måste komma före omgång 14.',
   }
 })
 

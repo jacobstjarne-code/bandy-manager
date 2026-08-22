@@ -258,6 +258,20 @@ export interface GameEvent {
    *  tillåter högst två poster per storyline-id och säsong (en huvudfråga,
    *  en uppföljning). undefined för icke-storyline-frågor. */
   storylinePressKey?: string
+  /** Medium 4 (Skutskär-auditen, 2026-08-22): per-INSTANS "därför nu"-signal
+   *  — samma fyra former och samma låsta copy som contentContract.ts:s
+   *  typ-nivå-fält (getWhyNowLine, oförändrad), men satt på EVENTET, inte
+   *  bara på dess GameEventType. Löser "en bastuinbjudan och ett irreversibelt
+   *  stjärnsälj delar samma typ men inte samma brådska" — getEffectiveWhyNowLine
+   *  (contentContract.ts) läser denna FÖRST, faller tillbaka på typ-raden.
+   *  Sätts bara vid konstruktionsstället när formen är grundad i faktisk,
+   *  spårad data för DEN HÄR instansen — aldrig gissat för att täcka en typ. */
+  whyNow?: {
+    deadlineLabel?: string
+    whyNowPerson?: string
+    wholeEventIrreversible?: boolean
+    seasonDefining?: boolean
+  }
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

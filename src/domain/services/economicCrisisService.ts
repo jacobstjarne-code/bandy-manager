@@ -105,6 +105,13 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): GameE
       resolved: false,
       priority: 'critical',
       systemhandelse: true,  // O19: sell_star-valet är 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
+      // Medium 4 (Skutskär-auditen, 2026-08-22): den STARKASTE kandidaten av
+      // de fyra kritiska typerna (contentContract.ts's egen analys, rad
+      // ~212) — namngiven avsändare som konkret väntar på ett beslut, ett
+      // av de tre valen (sell_star) faktiskt irreversibelt. Instans-satt,
+      // inte typ-nivå: fas 1/2 (bastu-nivå brådska, ingen konkret ultimatum
+      // än) förblir 'normal' via samma GameEventType.
+      whyNow: { whyNowPerson: 'Johan Bergstedt' },
     }
   }
 
