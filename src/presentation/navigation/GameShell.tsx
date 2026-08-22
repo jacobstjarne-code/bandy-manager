@@ -5,13 +5,20 @@ import { RouteBoundary } from '../components/RouteBoundary'
 import { GameHeader } from '../components/GameHeader'
 import { EventOverlay } from '../components/EventOverlay'
 import { PhaseIndicatorAuto } from '../components/PhaseIndicator'
-import { useGameStore } from '../store/gameStore'
+import { useGameStore, useHasHydrated } from '../store/gameStore'
 import { getCurrentAttention } from '../../domain/services/attentionRouter'
 import { getEventRenderTarget } from '../../domain/services/eventQueueService'
 
 // Lightweight guard for full-screen routes that don't use BottomNav
 export function GameGuard() {
   const game = useGameStore(s => s.game)
+  const hasHydrated = useHasHydrated()
+  // Medium 7 (Skutskär-auditen, 2026-08-22): vänta på persist-rehydrering
+  // innan "ingen sparning"-domen fälls — game är alltid null under det
+  // första ögonblicket, oavsett om en giltig sparning finns i IndexedDB.
+  // Rendera ingenting under väntan (inte en redirect) — den begärda routen
+  // ligger redan kvar när hydreringen blir klar.
+  if (!hasHydrated) return null
   if (!game) return <Navigate to="/" replace />
   const attention = getCurrentAttention(game)
   // Bara overlay för kritiska icke-ambienta events — medium/atmospheric visas

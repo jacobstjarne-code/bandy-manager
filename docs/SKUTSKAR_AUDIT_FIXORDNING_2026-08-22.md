@@ -100,6 +100,32 @@ Se `docs/HIGH2_UTMATTNINGEN_FORSLAG_2026-08-22.md`. Rotorsaken bekräftad i kod:
 
 **Kvalitetsportar:** stash-test (12 failures mot återställd kod, inkl. de fyra regressionsfixade filerna). 2393/2393 gröna, build ren, stress 10×5 0 krascher.
 
-## Återstår (fixordning punkt 8, ej numrerad i Jacobs lista)
+## 8. Medium 7 (deep-link) + Low 2 (PWA-versionsskifte) — KLAR
 
-8. Medium 7 (deep-link) + Low 2 (PWA-versionsskifte)
+### Medium 7 — Deep-link-rehydrering
+
+**Rot:** `GameGuard` (`GameShell.tsx`) läste `game` och redirectade till `/` så fort den var `null` — men Zustand persist-middlewaren laddar `game` ur IndexedDB ASYNKRONT. `game` är alltid `null` under det första ögonblicket efter en hård omladdning, oavsett om en giltig sparning finns. `replace: true` gjorde redirecten permanent — den begärda adressen (`/game/history`) gick förlorad, spelaren hamnade på titelskärmen och fick manuellt trycka FORTSÄTT (som landar på dashboard, inte den ursprungligen begärda undersidan).
+
+**Byggt:** `useHasHydrated()` (`gameStore.ts`) — läser Zustand persist-middlewarens egen hydreringsstatus (`persist.hasHydrated()` + `onFinishHydration`-prenumeration), ingen ny persist-logik. `GameGuard` väntar nu (`if (!hasHydrated) return null`) innan "ingen sparning"-domen fälls. Routen "bevaras" per automatik — väntar man i stället för att redirecta bort finns webbläsaren redan kvar på rätt adress när hydreringen blir klar.
+
+**Medvetet INTE ändrat:** `DashboardOrPortal` (`AppRouter.tsx`) har samma klass av `!game`-koll, men REDIRECTAR inte (renderar bara `<PortalScreen />` inline) — ingen route-förlust, bara en möjlig kort flimmer. Annan severity än den bekräftade auditbuggen, lämnad orörd för att hålla scope till det som faktiskt är bekräftat trasigt.
+
+**Tester:** `useHasHydrated.test.tsx` — 3 tester, riktig DOM-rendering (`react-dom/client` + `act`, inte `renderToStaticMarkup` — hooken har state/effects som kräver en riktig commit-cykel). Verifierar kontraktet mot Zustands persist-API samt false→true-övergången när `onFinishHydration` triggas efter mount.
+
+### Low 2 — PWA-versionsskifte
+
+**Rot:** `registerType: 'autoUpdate'` (vite.config.ts) bytte en redan öppen flik till ny kod i tysthet — ingen synlig signal. En redan öppen flik kunde fortsätta köra en gammal build utan att spelaren visste om det, kritiskt när buggrapporter (`FeedbackButton.tsx`) måste knytas till rätt build-hash.
+
+**Byggt:** `registerType` → `'prompt'` (den enda vägen att få kontroll över UI:t — `'autoUpdate'` aktiverar/kastar den väntande service workern innan appen hinner visa något). Ny `PwaUpdateBanner.tsx` — använder `virtual:pwa-register/react`s `useRegisterSW()`, visar "Ny version finns" + en "Ladda om"-knapp när `needRefresh` blir sant. Loggar aktiv build-hash (`__GIT_HASH__`, samma fält `FeedbackButton` redan rapporterar) vid SW-registrering och när en ny version upptäcks.
+
+**Verifiering:** `npm run build` kompilerar rent med det nya `virtual:pwa-register/react`-beroendet (workbox-window nu i bundeln, tidigare orört). Ingen live-browser-verifiering av det faktiska SW-uppdateringsflödet i denna session — kräver en riktig deploy-till-deploy-cykel, inte något en lokal testkörning kan simulera fullt ut.
+
+**Kvalitetsportar (steg 8, gemensam batch):** stash-test (2 failures mot återställd kod — `useHasHydrated` fanns inte). 2396/2396 gröna, build ren, stress 10×5 0 krascher.
+
+## Sammanfattning — hela ordern klar
+
+Punkt 1, 3, 4, 5, 6 (rapport), 7, 8 alla levererade. Punkt 2 (styrelsemodellen) redan gjord innan detta pass. High 5 (BatchStack) och Medium 2 (mecenatpoolen) — INTE med i Jacobs byggordning, medvetet skippade.
+
+**Väntar Jacobs dom:**
+- High 2:s magnituder (spelklarhetsgrind 20–25% vs. icke-linjär kurva) — `HIGH2_UTMATTNINGEN_FORSLAG_2026-08-22.md`.
+- Domarcitatets `loss`-hink — `'[Opus]'`-platshållare, en rad text saknas.

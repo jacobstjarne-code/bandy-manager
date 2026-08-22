@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { get as idbGet, set as idbSet, del as idbDel } from 'idb-keyval'
@@ -926,6 +927,39 @@ export const useGameStore = create<GameState>()(
     }
   )
 )
+
+/**
+ * Medium 7 (Skutskär-auditen, 2026-08-22): en hård omladdning av en intern
+ * speladress (t.ex. /game/history) visade titelskärmen trots giltig
+ * sparning. Rot: GameGuard (GameShell.tsx) läste `game` och redirectade
+ * till "/" så fort den var `null` — men persist-middlewaren laddar `game`
+ * ur IndexedDB ASYNKRONT, så `game` ÄR `null` under det första ögonblicket
+ * varje gång, oavsett om en giltig sparning finns. Redirecten hann alltid
+ * före hydreringen, och `replace: true` gjorde den permanent — spelaren
+ * kunde inte navigera tillbaka till den begärda adressen, bara till "/".
+ *
+ * `useHasHydrated()` läser Zustand persist-middlewarens egen
+ * hydreringsstatus (`useGameStore.persist.hasHydrated()` +
+ * `onFinishHydration`-prenumeration) — ingen ny persist-logik, bara en
+ * observerbar vy av den som redan finns. Konsumenter (GameGuard,
+ * DashboardOrPortal) väntar med "!game → ingen sparning"-domen tills
+ * hydreringen är klar, så en giltig sparning aldrig tolkas som saknad.
+ * Den begärda routen "bevaras" per automatik: väntar man i stället för
+ * att redirecta bort, ligger webbläsaren redan kvar på rätt adress när
+ * hydreringen väl är klar.
+ */
+export function useHasHydrated(): boolean {
+  const [hydrated, setHydrated] = useState(() => useGameStore.persist.hasHydrated())
+  useEffect(() => {
+    if (useGameStore.persist.hasHydrated()) {
+      setHydrated(true)
+      return
+    }
+    const unsub = useGameStore.persist.onFinishHydration(() => setHydrated(true))
+    return unsub
+  }, [])
+  return hydrated
+}
 
 // Convenience selectors
 export const useManagedClub = () => {

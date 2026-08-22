@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { FeedbackButton } from '../components/FeedbackButton'
+import { PwaUpdateBanner } from '../components/PwaUpdateBanner'
 
 const DevScenesScreen = import.meta.env.DEV
   ? lazy(() => import('../screens/dev/DevScenesScreen').then(m => ({ default: m.DevScenesScreen })))
@@ -174,6 +175,7 @@ export function AppRouter() {
           K-1: inne i Router-trädet så komponenten kan route-medvetet dölja
           sig själv (MatchLive är en fokus-yta, se FeedbackButton.tsx). */}
       <FeedbackButton />
+      <PwaUpdateBanner />
     </BrowserRouter>
   )
 }

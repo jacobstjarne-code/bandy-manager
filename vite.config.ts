@@ -28,7 +28,13 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // Low 2 (Skutskär-auditen, 2026-08-22): 'autoUpdate' bytte en redan
+      // öppen flik till ny kod utan synlig signal — testaren visste inte
+      // vilken build de faktiskt körde. 'prompt' + PwaUpdateBanner.tsx ger
+      // spelaren ett synligt "Ny version finns — ladda om" i stället för
+      // en tyst byte, viktigt när buggrapporter måste knytas till en
+      // specifik build-hash (FeedbackButton.tsx).
+      registerType: 'prompt',
       includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'Bandy Manager',
