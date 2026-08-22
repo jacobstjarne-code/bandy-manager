@@ -15,16 +15,36 @@ export interface NextActionCue {
  * PortalScreen.tsx:s modulsidoeffekter (soundEffects/gameStore-rehydrering)
  * vid import i testmiljön.
  */
+/**
+ * Låg 1 + Medium 5 (Skutskär-auditen, 2026-08-22): sant när den hanterade
+ * klubben inte har någon egen match kvar schemalagd — säsongen är
+ * funktionellt slut för SPELAREN, även om andra klubbars serier fortsätter
+ * (t.ex. resten av slutspelet efter en egen kvartsfinalförlust). Delad
+ * mellan nextActionCue.ts (Low 1) och gameFlowActions.ts (Medium 5 —
+ * rensar daterade sponsorerbjudanden ur kön i samma ögonblick).
+ */
+export function hasManagedClubFutureFixture(game: SaveGame): boolean {
+  return game.fixtures.some(
+    f => f.status === 'scheduled' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+  )
+}
+
 export function getNextActionCue(game: SaveGame): NextActionCue {
   if (game.pendingWeeklyDecision != null) {
     return { text: 'Veckans beslut väntar — ta det först.', tone: 'warning' }
   }
 
-  const scheduledFixtures = game.fixtures.filter(f => f.status === 'scheduled')
-  if (scheduledFixtures.length === 0) {
-    return { text: 'Näst på tur: spela omgången.', tone: 'default' }
+  // Low 1 (Skutskär-auditen, 2026-08-22): "Näst på tur: spela omgången"
+  // visades även när den hanterade klubben INTE hade någon match kvar att
+  // spela (utslagen ur slutspelet — bara andra klubbars serier återstod).
+  // Spelaren såg "Säsongen är slut" och "spela omgången" på samma vy
+  // samtidigt. Kollar den hanterade klubbens EGNA kvarvarande matcher,
+  // inte bara om NÅGON match är schemalagd någonstans i ligan.
+  if (!hasManagedClubFutureFixture(game)) {
+    return { text: 'Säsongen är slut för er del — avsluta säsongen.', tone: 'default' }
   }
 
+  const scheduledFixtures = game.fixtures.filter(f => f.status === 'scheduled')
   const nextMatchday = Math.min(...scheduledFixtures.map(f => f.matchday))
   const managedMatchInNextRound = scheduledFixtures.find(
     f => f.matchday === nextMatchday && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)

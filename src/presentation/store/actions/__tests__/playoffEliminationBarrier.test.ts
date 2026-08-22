@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { shouldStopAutoLoopForPlayoffElimination, buildMultiWeekPeriod } from '../gameFlowActions'
+import { shouldStopAutoLoopForPlayoffElimination, buildMultiWeekPeriod, clearDatedOffersAtSeasonEnd } from '../gameFlowActions'
+import { hasManagedClubFutureFixture } from '../../../utils/nextActionCue'
 import type { FinanceEntry } from '../../../../domain/services/economyService'
+import type { GameEvent } from '../../../../domain/entities/GameEvent'
+import type { SaveGame } from '../../../../domain/entities/SaveGame'
+import type { Fixture } from '../../../../domain/entities/Fixture'
+import { FixtureStatus } from '../../../../domain/enums'
 
 /**
  * High 3 (Skutskär-auditen, docs/incoming/bandy-manager-skutskaer-audit-52009671-2026-08-20.md):
@@ -61,5 +66,68 @@ describe('buildMultiWeekPeriod', () => {
     })
     // round 8-posten (utanför perioden) läcker inte in
     expect(period!.financeLogEntries.some(e => e.round === 8)).toBe(false)
+  })
+})
+
+/**
+ * Medium 5 (Skutskär-auditen, 2026-08-22): "Efter uttåget behövde jag
+ * hantera spelar-/sponsorkort innan årsboken kunde öppnas." Ett kvarstående
+ * sponsorerbjudande lovar veckointäkt över omgångar som inte längre spelas.
+ */
+function makeFixture(overrides: Partial<Fixture>): Fixture {
+  return {
+    id: 'f', leagueId: 'L', season: 1, roundNumber: 1, matchday: 1,
+    homeClubId: 'x', awayClubId: 'y', status: FixtureStatus.Scheduled, events: [],
+    ...overrides,
+  } as Fixture
+}
+
+function sponsorOfferEvent(overrides: Partial<GameEvent> = {}): GameEvent {
+  return {
+    id: 's1', type: 'sponsorOffer', title: 't', body: 'b',
+    choices: [{ id: 'accept', label: 'A', effect: { type: 'noOp' } }],
+    resolved: false,
+    ...overrides,
+  }
+}
+
+describe('hasManagedClubFutureFixture', () => {
+  it('false när klubben inte har någon egen schemalagd match kvar (andra klubbars matcher räknas inte)', () => {
+    const game = { managedClubId: 'managed', fixtures: [makeFixture({ homeClubId: 'other1', awayClubId: 'other2' })] } as SaveGame
+    expect(hasManagedClubFutureFixture(game)).toBe(false)
+  })
+
+  it('true när klubben har en egen schemalagd match kvar', () => {
+    const game = { managedClubId: 'managed', fixtures: [makeFixture({ homeClubId: 'managed', awayClubId: 'other' })] } as SaveGame
+    expect(hasManagedClubFutureFixture(game)).toBe(true)
+  })
+
+  it('en COMPLETED egen match räknas inte som "kvar"', () => {
+    const game = { managedClubId: 'managed', fixtures: [makeFixture({ homeClubId: 'managed', awayClubId: 'other', status: FixtureStatus.Completed })] } as SaveGame
+    expect(hasManagedClubFutureFixture(game)).toBe(false)
+  })
+})
+
+describe('clearDatedOffersAtSeasonEnd', () => {
+  it('tar bort ett OBESVARAT sponsorOffer-event', () => {
+    const result = clearDatedOffersAtSeasonEnd([sponsorOfferEvent()])
+    expect(result).toEqual([])
+  })
+
+  it('rör INTE ett redan resolvat sponsorOffer-event', () => {
+    const resolved = sponsorOfferEvent({ id: 's2', resolved: true })
+    expect(clearDatedOffersAtSeasonEnd([resolved])).toEqual([resolved])
+  })
+
+  it('rör INTE andra event-typer', () => {
+    const other: GameEvent = { id: 'o1', type: 'academyEvent', title: 't', body: 'b', choices: [], resolved: false }
+    expect(clearDatedOffersAtSeasonEnd([other])).toEqual([other])
+  })
+
+  it('blandad kö: bara det obesvarade sponsorOffer-eventet försvinner', () => {
+    const sponsor = sponsorOfferEvent()
+    const resolved = sponsorOfferEvent({ id: 's3', resolved: true })
+    const other: GameEvent = { id: 'o2', type: 'academyEvent', title: 't', body: 'b', choices: [], resolved: false }
+    expect(clearDatedOffersAtSeasonEnd([sponsor, resolved, other])).toEqual([resolved, other])
   })
 })

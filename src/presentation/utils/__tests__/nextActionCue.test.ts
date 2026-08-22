@@ -81,16 +81,21 @@ describe('getNextActionCue', () => {
     expect(getNextActionCue(game)).toEqual({ text: 'Veckans beslut väntar — ta det först.', tone: 'warning' })
   })
 
-  it('inga schemalagda matcher → generisk "spela omgången"', () => {
+  it('inga schemalagda matcher alls → säsongen är slut (inte "spela omgången")', () => {
     const game = makeGame({ fixtures: [] })
-    expect(getNextActionCue(game)).toEqual({ text: 'Näst på tur: spela omgången.', tone: 'default' })
+    expect(getNextActionCue(game)).toEqual({ text: 'Säsongen är slut för er del — avsluta säsongen.', tone: 'default' })
   })
 
-  it('schemalagda matcher finns men inte för managed club nästa omgång → generisk', () => {
+  // Low 1 (Skutskär-auditen, 2026-08-22): detta var EXAKT auditens fynd —
+  // andra klubbars matcher (t.ex. resten av slutspelet) fortfarande
+  // schemalagda, men den hanterade klubben har ingen kvar (utslagen).
+  // Tidigare visade denna gren "Näst på tur: spela omgången" trots att
+  // spelaren inte hade något kvar att spela.
+  it('schemalagda matcher finns för ANDRA klubbar men inte för managed → säsongen är slut', () => {
     const game = makeGame({
       fixtures: [makeFixture({ homeClubId: 'other1', awayClubId: 'other2', matchday: 5 })],
     })
-    expect(getNextActionCue(game)).toEqual({ text: 'Näst på tur: spela omgången.', tone: 'default' })
+    expect(getNextActionCue(game)).toEqual({ text: 'Säsongen är slut för er del — avsluta säsongen.', tone: 'default' })
   })
 
   it('managed match nästa omgång, lineup EJ satt → pekar på laget', () => {

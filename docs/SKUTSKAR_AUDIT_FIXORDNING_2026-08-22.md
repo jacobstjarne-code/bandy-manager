@@ -48,9 +48,34 @@ Stash-test-cykel körd (23 nya test-failures mot återställd kod, alla tre delf
 
 **Kvalitetsportar:** stash-test (7 failures mot återställd kod), 2373/2373 gröna, build ren, stress 10×5 0 krascher.
 
-## Återstår (fixordning punkt 4–7)
+## 5. Medium 5 (säsongsslutsbarriär) + Medium 1 (sponsordedupe) + Low 1 (next-action) — KLAR
 
-5. Medium 5 (säsongsslutsbarriär) + Medium 1 (sponsordedupe) + Low 1 (next-action)
+### Medium 1 — Sponsordedupe
+
+**Rot:** `activeSponsors` räknade bara ACCEPTERADE avtal — ett redan genererat men obesvarat erbjudande räknades inte som "aktivt", så ett nytt kunde skapas ovanpå varje omgång ("Bygg AB Nordin" och "Skrot & Metall Nordin" direkt efter varandra).
+
+**Byggt:** ny gate i `postAdvanceEvents.ts` — `hasOpenSponsorOffer` (obesvarat `sponsorOffer`-event i `pendingEvents`) spärrar generering av ett nytt, oavsett auto-loopar. Tester: `sponsorOfferDedupe.test.ts`, 3 tester (spärrat, tillåtet när kön är tom, ett REDAN resolvat event spärrar inte).
+
+### Low 1 — Next-action efter eliminering
+
+**Rot:** `getNextActionCue()` (Portal-dashboardens "Vad nu?"-rad) föll tillbaka på "Näst på tur: spela omgången" så fort inga schemalagda matcher fanns för den NÄRMASTE omgången — men kollade aldrig om det var DEN HANTERADE KLUBBEN specifikt som saknade matcher (utslagen ur slutspelet) mot att bara andra klubbars serier fortsatte.
+
+**Byggt:** ny `hasManagedClubFutureFixture(game)` — kollar klubbens EGNA schemalagda matcher, inte "finns någon match schemalagd någonstans". Ny gren i `getNextActionCue`: `!hasManagedClubFutureFixture` → "Säsongen är slut för er del — avsluta säsongen." istf den motsägande "spela omgången". **Två befintliga tester uppdaterade** (de kodade tidigare den buggiga förväntan som "rätt" — nu uppdaterade till den korrekta, auditbekräftade texten).
+
+### Medium 5 — Säsongsslutsbarriären
+
+**Rot (ingen KODBEVIS i auditen, bara SÅG):** "Efter uttåget behövde jag hantera spelar-/sponsorkort innan årsboken kunde öppnas." Ett kvarstående sponsorerbjudande lovar veckointäkt över omgångar som inte längre kommer att spelas.
+
+**Byggt (den konkreta, kodbara delen av auditens rekommendation — "rensa daterade erbjudanden före ceremonin"):** ny `clearDatedOffersAtSeasonEnd()` i `gameFlowActions.ts` — tar bort obesvarade `sponsorOffer`-event ur kön så fort `!hasManagedClubFutureFixture` (samma villkor som Low 1, delad funktion), i stället för att vänta på nästa faktiska säsongsrollover (`seasonEndProcessor.ts` gör redan en wholesale-clear DÅ, men det är för sent — spelaren har redan sett/hanterat kortet på vägen dit). Rör ALDRIG andra event-typer eller redan resolvade poster.
+
+**Inte byggt (kräver mock, princip 4):** en dedikerad "säsongsslutsbarriär"-SKÄRM (avsluta match → visa årsbok → sommarflödets övergångsbeslut som EGEN sekvens) — det var auditens fulla förslag, men har ingen KODBEVIS-plats och är en visuellt/interaktivt ny yta. Den byggda dedupe-/rensnings-fixen adresserar den KONKRETA friktionen (kort att hantera) utan att bygga om hela sekvensen.
+
+**Tester:** `playoffEliminationBarrier.test.ts` utökad — 10 nya tester (`hasManagedClubFutureFixture` × 3, `clearDatedOffersAtSeasonEnd` × 4, plus tidigare High 3-tester kvar). Filen har nu 24 tester totalt.
+
+**Kvalitetsportar:** stash-test (10 failures mot återställd kod). 2383/2383 gröna, build ren, stress 10×5 0 krascher.
+
+## Återstår (fixordning punkt 6–7)
+
 6. High 2 — Utmattningen (RAPPORT innan kalibrering, inte byggd)
 7. Medium 4 (critical per instans) + Medium 3 (Form-etiketten)
 8. Medium 7 (deep-link) + Low 2 (PWA-versionsskifte)

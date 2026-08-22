@@ -1,4 +1,5 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
+import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { SeasonGoalType } from '../../../domain/entities/SeasonSummary'
 import type { AnslagKey } from '../../../domain/services/anslagService'
 import { findActiveAnniversaries } from '../../../domain/services/clubMemoryService'
@@ -20,6 +21,7 @@ import { navigateTo } from '../../navigation/globalNavigate'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
 import { logNarrativeBeat } from '../../../domain/services/narrativeLogService'
 import { PIVOTAL_BEAT_IDS } from '../../../domain/data/portalBeats'
+import { hasManagedClubFutureFixture } from '../../utils/nextActionCue'
 
 interface GetState {
   game: SaveGame | null
@@ -62,6 +64,19 @@ export function shouldStopAutoLoopForPlayoffElimination(
  * ekonomifliken redan visar, filtrerade till exakt den perioden. Ren
  * funktion, exporterad för test.
  */
+/**
+ * Medium 5 (Skutskär-auditen, 2026-08-22): säsongsslutsbarriären. Rensar
+ * obesvarade sponsorerbjudanden — de lovar veckointäkt över omgångar som
+ * inte längre kommer att spelas — ur pending-kön så fort den hanterade
+ * klubben inte har någon egen match kvar, i stället för att vänta på nästa
+ * faktiska säsongsrollover (seasonEndProcessor.ts). Ren funktion, exporterad
+ * för test. Rör ALDRIG redan resolvade poster eller andra event-typer —
+ * bara obesvarade sponsorOffer.
+ */
+export function clearDatedOffersAtSeasonEnd(pendingEvents: GameEvent[]): GameEvent[] {
+  return pendingEvents.filter(e => e.type !== 'sponsorOffer' || e.resolved)
+}
+
 export function buildMultiWeekPeriod(
   autoLoops: number,
   firstRoundPlayed: number | null,
@@ -154,6 +169,23 @@ export function gameFlowActions(get: Get, set: Set) {
       }
 
       const multiWeekPeriod = buildMultiWeekPeriod(autoLoops, firstRoundPlayed, result.roundPlayed, result.game.financeLog ?? [])
+
+      // Medium 5 (Skutskär-auditen, 2026-08-22): säsongsslutsbarriären.
+      // "Efter uttåget behövde jag hantera spelar-/sponsorkort innan
+      // årsboken kunde öppnas" — ett kvarstående sponsorerbjudande lovar
+      // veckointäkt över ett antal omgångar som inte längre kommer att
+      // spelas. seasonEndProcessor.ts rensar redan pendingEvents wholesale
+      // NÄSTA gång säsongsslutet faktiskt processas, men fram tills dess
+      // låg det obesvarade kortet kvar och kändes som ett beslut spelaren
+      // var tvungen att ta ställning till innan ceremonin. Rensas i samma
+      // ögonblick klubben inte har någon egen match kvar — inte bara vid
+      // faktisk säsongsrollover.
+      if (!hasManagedClubFutureFixture(result.game)) {
+        const clearedPendingEvents = clearDatedOffersAtSeasonEnd(result.game.pendingEvents)
+        if (clearedPendingEvents.length !== result.game.pendingEvents.length) {
+          result = { ...result, game: { ...result.game, pendingEvents: clearedPendingEvents } }
+        }
+      }
 
       const resultGame = result.game
       const managedClubAfter = resultGame.clubs.find(c => c.id === resultGame.managedClubId)

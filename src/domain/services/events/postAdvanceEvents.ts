@@ -596,7 +596,14 @@ export function generatePostAdvanceEvents(
     }
   }
 
-  if (activeSponsors.length < maxSponsors) {
+  // Medium 1 (Skutskär-auditen, 2026-08-22): två sponsorerbjudanden kunde
+  // ligga direkt efter varandra ("Bygg AB Nordin" och "Skrot & Metall
+  // Nordin") eftersom activeSponsors bara räknar ACCEPTERADE avtal — ett
+  // redan genererat men obesvarat erbjudande räknades inte som "aktivt",
+  // så ett nytt kunde skapas ovanpå varje omgång. Dedupe: högst ett öppet
+  // (obesvarat) sponsorOffer-event åt gången, oavsett auto-loopar.
+  const hasOpenSponsorOffer = (game.pendingEvents ?? []).some(e => e.type === 'sponsorOffer' && !e.resolved)
+  if (activeSponsors.length < maxSponsors && !hasOpenSponsorOffer) {
     const offer = generateSponsorOffer(
       managedClub?.reputation ?? 50,
       activeSponsors.length,
