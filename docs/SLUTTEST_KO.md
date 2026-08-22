@@ -62,7 +62,7 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | # | Post |
 |---|---|
 | 30 | ~~**Grind 1-verifiering**~~ KLAR — se `GRINDAR`-sektionen ("VERIFIERAT 2026-08-19", `scripts/grind1-boardpatience-sim.ts`). `club_slottsbron` 2/25 sparkade (8%), `club_heros` 20/25 (80%) trots 4:e-placering nästan varje säsong — misslyckandet är verkligt, men "skickligt spel hjälper" håller inte för Heros. Två sidofynd rapporterade, inte byggda, väntar på Jacob (se `Väntar på Jacob`) |
-| 31 | **O5** framgångsekonomin — tre krafter (`50475cda`/`f19e5378`/`43120846`) + fjärde koefficientrundan: meritbuffert + investSurplus-fix + E-STRESS1 (`142c615d`/`3ff05b15`). Omkörning: seed 70014 (tre raka guld → avsked) löst, men totalt avskedstal bara 35%→30% — se O5-sektionen, `O5_ACCEPTANSTEST_OMKORNING_2026-08-23.md`. Väntar Jacobs dom: femte pass eller godtagbart innan O1 |
+| 31 | **O5** framgångsekonomin — fyra koefficientrundor byggda (`50475cda`/`f19e5378`/`43120846`/`142c615d`/`3ff05b15`). Femte passet (avskedsdiagnos, `O5_FEMTE_PASSET_AVSKEDSDIAGNOS_2026-08-23.md`) hittade rotorsaken: meritbufferten skyddar bara positionstermen, inte objektivkostnaden — förklarar varför sex klubbar fortfarande sparkas trots bufferten. Väntar Jacobs dom om scope-utökning innan O1 |
 | 32 | **O1** varsel-mallen, sponsorn först (vanligast och tommast) |
 | 33 | ~~**O20** de tio 4/5-händelserna~~ RAPPORT-LEVERERAD — se O20-tabellen längre ner. Textfallen `ismaskin_offer`/`jubilee` LEVERERADE 2026-08-21 [Opus], körorder dömd samma dag (se O20-noten) |
 
@@ -851,7 +851,13 @@ Alla tre stresstestade var för sig (10×5, 0 krascher/invariantbrott vardera) p
 
 **Omkörning efter alla tre — `docs/O5_ACCEPTANSTEST_OMKORNING_2026-08-23.md`.** Seed 70014 (tre raka SM-guld → avsked) sparkas INTE längre — mekanismen verifierad mot exakt sitt måltillfälle. Men totalt avskedstal bara ner 35%→30% (6/20) — nya seeds sparkas som inte gjorde det förra körningen, trolig orsak facility-byggpolicyns verkliga kassaspänning (E-STRESS1) interagerande med boardPatience på ospårat sätt. Kraft 2 nu MÄTT i drift (inte gissad): 7,0% av intäkten år 3 → 15,3% år 8 (trädet fullt i 50%) — under domens mål 33% även vid fullt träd (≈18%). Kriteriet: andra halvan ("sparkas inte för att ha lyckats") löst för det konkreta fallet, INTE bevisat generellt. Första halvan ("ett ekonomiskt val som svider år 8") starkare stödd nu — verklig, återkommande kassaspänning genom hela spelet.
 
-**Status:** `KLAR, delvis verifierad` — meritbufferten fungerar för sitt måltillfälle men 30% avskedsfrekvens för ligans lättaste klubb kvarstår. Väntar Jacobs dom: femte pass för att spåra kvarvarande avsked, eller 30% godtas som "rimlig risk"
+**Femte passet — avskedsdiagnos, `docs/O5_FEMTE_PASSET_AVSKEDSDIAGNOS_2026-08-23.md`.** Två hypoteser prövade, båda AVFÄRDADE: H1 (E-STRESS1:s byggpolicy för aggressiv) — bygglogg visar modesta köp, pausar korrekt när kassan är ansträngd. H2 (kassaspänning når patiens via okartlagd väg) — konkursvägen bekräftat tyst (0/32 säsongssampel når ens `warning`-tröskeln), och fristående kodgranskning hittar ingen väg alls från kassa/löner till spelarstatistik eller matchstyrka.
+
+**Den verkliga rotorsaken: meritbufferten skyddar fel DEL av säsongsslutet.** Dekomponering (löpande term vs. säsongsslut+objektiv) över alla 32 säsongssampel i de sex sparkade körningarna: löpande term −123,0, säsongsslut+objektiv −276,0 — objektivkostnaden (`OBJECTIVE_PATIENCE_COST`) läggs på HELT SEPARAT från `computeBoardPatienceUpdate`s meritbuffert-logik, som bara ser positionsdelen. Bevis: seed 70000 säsong 3, position exakt på ankaret (gap=0, positionsdelta=0), ändå säsongsslut+objektiv=−12,0 — allt objektivkostnad, obeskyddad. Förklarar varför seed 70014 (treepeat-scenariot som utlöste bufferten) klarar sig — dess golden-säsonger höll objektiven mötta, ingen objektivkostnad att skydda mot — medan dessa sex, i en långsammare nedgång där både position OCH uppdrag glider isär samtidigt, bara får halva skyddet.
+
+**Rekommendation, inte byggd:** utöka meritbufferten till att också absorbera negativ `objectiveDelta`, inte bara positionstermen — antingen genom att skicka `objectiveDelta` in i `computeBoardPatienceUpdate`, eller en andra buffert-avdrag i `seasonEndProcessor.ts`. Designfråga för Jacob: ska uppdragsmisslyckanden kosta oskyddat (avsiktligt — "löften" skiljs från "tabellplacering"), eller ska bufferten täcka hela säsongsslutet som en enhet?
+
+**Status:** `KLAR, femte passet levererat — väntar Jacobs dom om scope-utökningen innan O1`
 
 ### O6–O14 · Kortare poster
 
