@@ -7,7 +7,7 @@ import { generatePostAdvanceEvents, generateEvents } from '../../../domain/servi
 import { canAddDecision } from '../../../domain/services/decisionBudgetService'
 import { isInCooldown } from '../../../domain/services/sourceCooldownService'
 import { createEconomicStressEvent } from '../../../domain/services/events/eventFactories'
-import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent } from '../../../domain/services/mecenatService'
+import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent, getMecenatSocialUsedTypes, getMecenatSocialType, MECENAT_SOCIAL_MAX_PER_SEASON } from '../../../domain/services/mecenatService'
 import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterService'
 import { checkEconomicCrisis } from '../../../domain/services/economicCrisisService'
 import { checkSeasonGoalHalfwayEvent } from '../../../domain/services/seasonGoalService'
@@ -132,17 +132,29 @@ export function processGameEvents(
     return { ...mec, happiness: decayedHappiness }
   })
 
+  // Medium 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): säsongsminne DELAT
+  // över alla mecenater i denna omgång — sätts en gång före loopen (läser
+  // game.narrativeLog) och uppdateras lokalt vid varje genererat event, så
+  // två mecenater som båda rullar i SAMMA omgång inte kan välja samma typ
+  // (narrativeLog skrivs först i roundProcessor.ts, efter denna funktion
+  // returnerat — en stale läsning av `game` hade missat den racen).
+  let mecenatSocialUsedTypes = getMecenatSocialUsedTypes(game)
+
   for (let i = 0; i < updatedMecenater.length; i++) {
     const mec = updatedMecenater[i]
     if (!mec.isActive) continue
 
     const roundsSinceLastSocial = nextMatchday - (mec.lastSocialRound ?? 0)
-    if (roundsSinceLastSocial >= 4 && localRand() < 0.35) {
-      const socialEvent = generateSocialEvent(mec, game.currentSeason, nextMatchday, localRand)
-      gameEvents.push(socialEvent)
-      updatedMecenater = updatedMecenater.map((m, idx) =>
-        idx === i ? { ...m, lastSocialRound: nextMatchday } : m
-      )
+    if (roundsSinceLastSocial >= 4 && localRand() < 0.35 && mecenatSocialUsedTypes.size < MECENAT_SOCIAL_MAX_PER_SEASON) {
+      const socialEvent = generateSocialEvent(mec, game.currentSeason, nextMatchday, localRand, mecenatSocialUsedTypes)
+      if (socialEvent) {
+        gameEvents.push(socialEvent)
+        const type = socialEvent.mecenatSocialKey ? getMecenatSocialType(socialEvent.mecenatSocialKey) : undefined
+        if (type) mecenatSocialUsedTypes = new Set(mecenatSocialUsedTypes).add(type)
+        updatedMecenater = updatedMecenater.map((m, idx) =>
+          idx === i ? { ...m, lastSocialRound: nextMatchday } : m
+        )
+      }
     }
 
     if (mec.happiness < 30 || mec.silentShout >= 30) {

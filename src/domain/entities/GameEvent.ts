@@ -272,6 +272,16 @@ export interface GameEvent {
     wholeEventIrreversible?: boolean
     seasonDefining?: boolean
   }
+  /** Medium 2 (Skutskär-auditen, 2026-08-22): mecenat-socialpoolens säsongsminne.
+   *  Satt av generateSocialEvent() (mecenatService.ts) till `mecenat_social_${type}`
+   *  — samma bastuinbjudan (eller vilken social-typ som helst) fick tidigare rulla
+   *  om obegränsat eftersom varje mecenat höll sitt EGET `lastSocialRound`-minne,
+   *  utan koppling mecenater emellan eller mellan typer. Callern (roundProcessor.ts)
+   *  loggar denna som en narrativeLog-post när eventet genereras — samma
+   *  skrivmönster som storylinePressKey. mecenatSocialBudgetOk()/mecenatSocialUsedTypes()
+   *  (mecenatService.ts) läser samma logg: max två sociala mecenatbeats per säsong
+   *  totalt, aldrig samma typ två gånger. */
+  mecenatSocialKey?: string
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

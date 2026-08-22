@@ -1,6 +1,35 @@
-import type { Mecenat, MecenatType, MecenatPersonality, SocialEvent } from '../entities/SaveGame'
+import type { Mecenat, MecenatType, MecenatPersonality, SaveGame, SocialEvent } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import { TacticMentality } from '../enums'
+
+const MECENAT_SOCIAL_KEY_PREFIX = 'mecenat_social_'
+export const MECENAT_SOCIAL_MAX_PER_SEASON = 2
+
+/**
+ * Medium 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): mecenat-socialpoolens
+ * säsongsminne. Kodens enda spärr var tidigare `mec.lastSocialRound` — ETT
+ * minne PER mecenat, ingen koppling mellan mecenater eller mellan typer.
+ * Samma bastuinbjudan (eller vilken typ som helst) kunde upprepas obegränsat
+ * — samma klass av fel som pressminnet (High 4), löst med samma mekanism
+ * (narrativeLog, Jacobs order: "den byggdes för detta"). Läses från
+ * game.narrativeLog VID GENERERINGSTILLFÄLLET, inte vid resolution —
+ * matchar storylinePressKey-mönstret.
+ */
+export function getMecenatSocialUsedTypes(
+  game: Pick<SaveGame, 'narrativeLog' | 'currentSeason'>,
+): Set<SocialEvent['type']> {
+  const types = (game.narrativeLog ?? [])
+    .filter(e => e.semanticKey.startsWith(MECENAT_SOCIAL_KEY_PREFIX) && e.season === game.currentSeason)
+    .map(e => e.semanticKey.slice(MECENAT_SOCIAL_KEY_PREFIX.length) as SocialEvent['type'])
+  return new Set(types)
+}
+
+/** Läser typen tillbaka ur ett `mecenatSocialKey` (t.ex. `mecenat_social_middag` → `middag`). */
+export function getMecenatSocialType(key: string): SocialEvent['type'] | undefined {
+  return key.startsWith(MECENAT_SOCIAL_KEY_PREFIX)
+    ? (key.slice(MECENAT_SOCIAL_KEY_PREFIX.length) as SocialEvent['type'])
+    : undefined
+}
 
 // ── Region-based business templates ─────────────────────────────────────
 
@@ -311,7 +340,22 @@ const SOCIAL_BODIES: Record<SocialEvent['type'], (name: string) => string> = {
   vernissage: (n) => `${n} öppnar en utställning. "Det målas i familjen. Kom och visa er, det ser bra ut."`,
 }
 
-export function generateSocialEvent(mecenat: Mecenat, season: number, matchday: number, rand: () => number): GameEvent {
+/**
+ * Medium 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): `usedTypes` är
+ * säsongens redan förbrukade sociala typer (över ALLA mecenater, se
+ * getMecenatSocialUsedTypes) — aldrig samma typ två gånger. Om mecenatens
+ * säsongsfiltrerade pool är helt uttömd (bara möjligt när poolen har en
+ * enda typ och den redan använts) genereras inget event denna omgång,
+ * hellre än en tyst repetition. Callern (eventProcessor.ts) avgör separat
+ * om budgeten (max två/säsong totalt) tillåter fler.
+ */
+export function generateSocialEvent(
+  mecenat: Mecenat,
+  season: number,
+  matchday: number,
+  rand: () => number,
+  usedTypes: Set<SocialEvent['type']> = new Set(),
+): GameEvent | null {
   // Seasonal filtering — bandy season runs November–March (matchdays 1–22)
   // Jakt (älgjakt): September–October only = matchdays 1–3
   // Golfrunda + segelbåt: Swedish summer activities, never during bandy season
@@ -322,13 +366,16 @@ export function generateSocialEvent(mecenat: Mecenat, season: number, matchday: 
     if (t === 'golfrunda' || t === 'segelbåt') return false  // never in winter
     return true
   })
-  const pool = types.length > 0 ? types : (['middag'] as SocialEvent['type'][])
+  const seasonPool = types.length > 0 ? types : (['middag'] as SocialEvent['type'][])
+  const pool = seasonPool.filter(t => !usedTypes.has(t))
+  if (pool.length === 0) return null
   const type = pool[Math.floor(rand() * pool.length)]
   const label = SOCIAL_LABELS[type]
   const body = SOCIAL_BODIES[type](mecenat.name)
 
   return {
     id: `event_social_${mecenat.id}_${season}_${matchday}`,
+    mecenatSocialKey: `${MECENAT_SOCIAL_KEY_PREFIX}${type}`,
     type: 'mecenatEvent',
     title: `🤝 ${mecenat.name}: ${label}`,
     sender: { name: mecenat.name, role: mecenat.business },

@@ -135,9 +135,24 @@ Se `docs/HIGH2_UTMATTNINGEN_FORSLAG_2026-08-22.md` för förslaget — Jacob dö
 
 **Kvalitetsportar (steg 8, gemensam batch):** stash-test (2 failures mot återställd kod — `useHasHydrated` fanns inte). 2396/2396 gröna, build ren, stress 10×5 0 krascher.
 
+## 9. Medium 2 — Mecenatpoolen — KLAR (Jacobs dom 2026-08-22, samma order som High 2)
+
+**Rot:** `eventProcessor.ts`s sociala mecenat-loop hade EN spärr — `roundsSinceLastSocial >= 4 && localRand() < 0.35` — per mecenat, inget gemensamt minne mellan mecenater eller mellan typer. Samma bastuinbjudan (`bastu_affärssamtal`) kunde upprepas obegränsat över en säsong, samma felklass som pressminnet (High 4).
+
+**Byggt:**
+- Ny `GameEvent.mecenatSocialKey?: string` — satt av `generateSocialEvent()` (mecenatService.ts) till `mecenat_social_${type}` vid genereringstillfället, samma mönster som `storylinePressKey`.
+- `getMecenatSocialUsedTypes(game)` (mecenatService.ts) — läser `game.narrativeLog` filtrerat på `mecenat_social_`-prefix + aktuell säsong, returnerar mängden redan använda typer. `MECENAT_SOCIAL_MAX_PER_SEASON = 2` exporterad, en källa.
+- `generateSocialEvent()` tar nu en femte, valfri `usedTypes: Set<SocialEvent['type']>`-parameter (default tom mängd, bakåtkompatibel) — utesluter redan använda typer ur poolen. Om mecenatens säsongsfiltrerade pool blir helt tom (bara möjligt när poolen har en enda typ och den redan använts) returneras `null` — ingen tyst repetition som fallback.
+- `eventProcessor.ts`s loop: `mecenatSocialUsedTypes` sätts EN gång från `game.narrativeLog` före loopen och uppdateras lokalt vid varje genererat event — löser samma-omgångs-racet (två mecenater som båda rullar i SAMMA omgång, innan narrativeLog hunnit skrivas, kan annars välja samma typ eller tillsammans överskrida budgeten). Gate: `roundsSinceLastSocial>=4 && rand<0.35 && usedTypes.size < MECENAT_SOCIAL_MAX_PER_SEASON`.
+- `roundProcessor.ts`: ny loop över `allNewEvents` som skriver en `narrativeLog`-post per `mecenatSocialKey`-satt event, samma "skrivs när eventet genereras"-mönster som storylinePressKey.
+
+**Tester:** `mecenatSocialBudget.test.ts` — 8 tester (`getMecenatSocialUsedTypes`, `getMecenatSocialType`, uteslutning av redan använd typ, pool-uttömning → null, default-parameter oförändrat beteende, budget-konstanten).
+
+**Kvalitetsportar:** stash-test (8 failures mot återställd kod). 2414/2414 gröna, build ren, stress 10×5 0 krascher, 0 invariant-brott.
+
 ## Sammanfattning — hela ordern klar
 
-Punkt 1, 3, 4, 5, 6, 7, 8 alla levererade (6 byggd 2026-08-22 efter Jacobs dom, se ovan). Punkt 2 (styrelsemodellen) redan gjord innan detta pass. High 5 (BatchStack) — INTE med i Jacobs byggordning, medvetet skippad. Medium 2 (mecenatpoolen) beställd i SAMMA dom som High 2 — separat pass, se HANDOVER.
+Punkt 1, 3, 4, 5, 6, 7, 8 samt Medium 2 alla levererade (6 och Medium 2 byggda 2026-08-22 efter Jacobs dom, se ovan). Punkt 2 (styrelsemodellen) redan gjord innan detta pass. High 5 (BatchStack) — INTE med i Jacobs byggordning, medvetet skippad.
 
 **Väntar Jacobs dom:**
 - Domarcitatets `loss`-hink — `'[Opus]'`-platshållare, en rad text saknas.

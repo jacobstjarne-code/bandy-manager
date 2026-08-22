@@ -1602,6 +1602,20 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // Medium 2 (Skutskär-auditen, 2026-08-22): mecenat-socialpoolens
+  // narrativeLog-post skrivs här, en per genererat social-event denna
+  // omgång (upp till två kan förekomma i SAMMA omgång om två mecenater
+  // rullar samtidigt — budget/typ-uteslutning redan applicerad vid
+  // genereringen, se GameEvent.mecenatSocialKey).
+  for (const event of allNewEvents) {
+    if (event.mecenatSocialKey) {
+      updatedGame = {
+        ...updatedGame,
+        narrativeLog: logNarrativeBeat(updatedGame, event.mecenatSocialKey, updatedGame.currentSeason, nextMatchday),
+      }
+    }
+  }
+
   // Release-svepet 2026-07-21 (Block 2c) — landslagsuttagningens +5 tkr/uttagen
   // (HANDOFF-C-K1-LANDSLAG-2026-05-23.md Q3, låst av Jacob). Samma efterhands-
   // mönster som marketValueInbox ovan, se kommentaren vid nationalTeamCallupBonusTkr.
