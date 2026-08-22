@@ -15,7 +15,7 @@ import { CUP_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
 import { generatePressConference } from '../../../domain/services/pressConferenceService'
 import { mulberry32 } from '../../../domain/utils/random'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../../domain/data/playerNames'
-import { pickRefereeForMatch, shouldTriggerRefereeMeeting, updateRefereeRelation, REFEREE_MEETING_QUOTES, getRefereeDisplayName, generateReferees } from '../../../domain/services/refereeService'
+import { pickRefereeForMatch, shouldTriggerRefereeMeeting, updateRefereeRelation, getRefereeMeetingQuotePool, getRefereeDisplayName, generateReferees } from '../../../domain/services/refereeService'
 import type { Referee } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
@@ -368,7 +368,16 @@ export function simulateRound(
       const penCount = result.fixture.events.filter(e => e.isPenaltyGoal).length
       const meetingRand = mulberry32(baseSeed + i + 7777)
       if (shouldTriggerRefereeMeeting(suspCount, penCount, referee.style, meetingRand)) {
-        const quotes = REFEREE_MEETING_QUOTES[referee.style]
+        // Medium 6 (Skutskär-auditen, 2026-08-22): domarcitatet fick tidigare
+        // en slumpad rad oavsett resultat — en förlust kunde få "Idag föll
+        // de åt er". Utfallet räknas här, samma homeScore/awayScore-jämförelse
+        // matchSimulator redan producerat, ingen ny beräkning.
+        const managedScore = isManagedHome ? result.fixture.homeScore : result.fixture.awayScore
+        const opponentScore = isManagedHome ? result.fixture.awayScore : result.fixture.homeScore
+        const refQuoteOutcome = (managedScore ?? 0) > (opponentScore ?? 0) ? 'win' as const
+          : (managedScore ?? 0) < (opponentScore ?? 0) ? 'loss' as const
+          : 'draw' as const
+        const quotes = getRefereeMeetingQuotePool(referee.style, refQuoteOutcome)
         const quoteIndex = Math.floor(meetingRand() * quotes.length)
         const quote = quotes[quoteIndex]
         const meetingEvent: GameEvent = {

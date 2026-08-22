@@ -24,8 +24,29 @@ import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { getActionsForEvent } from '../../../domain/services/eventActions'
 import { getItemAge } from '../../../domain/services/decisionFatigueService'
+import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
 import { DecisionChoices } from '../DecisionChoices'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
+import type { Player } from '../../../domain/entities/Player'
+
+/**
+ * High 6 (Skutskär-auditen, 2026-08-22): eventet bar redan relatedPlayerId
+ * och en titel med spelarens namn (eventProcessor.ts) — men kortet visade
+ * bara den generiska brödtexten ("Han vill spela...") utan att någonsin
+ * rendera titeln eller namnet. Flera samtidiga playThroughInjury-kort gick
+ * inte att skilja åt. Samma player-tag-mönster som EventOverlay.tsx, men
+ * med namn+dagar-kvar istf generisk "Styrka X" — det är de två sifforna
+ * beslutet faktiskt hänger på här. Ren funktion, exporterad så logiken kan
+ * testas utan att rendera komponenten eller mocka Zustand-storen.
+ */
+export function getInjuryTag(event: GameEvent, players: Player[] | undefined): string | undefined {
+  if (event.type !== 'playThroughInjury' || !event.relatedPlayerId) return undefined
+  const player = players?.find(p => p.id === event.relatedPlayerId)
+  if (!player) return undefined
+  const severity = getInjurySeverity(player.injuryDaysRemaining)
+  const severityLabel = severity.charAt(0).toUpperCase() + severity.slice(1)
+  return `${player.firstName} ${player.lastName} · ${severityLabel} skada · ${player.injuryDaysRemaining} dagar kvar`
+}
 
 interface Props {
   event: GameEvent
@@ -88,9 +109,11 @@ export function getEventTypeLabel(event: GameEvent): string {
 
 export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
+  const players = useGameStore(s => s.game?.players)
   const [isExiting, setIsExiting] = useState(false)
   const actions = getActionsForEvent(event)
   const typeLabel = getEventTypeLabel(event)
+  const injuryTag = getInjuryTag(event, players)
   // Entitets-dedup-grinden (2026-08-12): ett event OM ett bud ÄR budet, inte
   // en separat entitet — event.id och bid.id är olika strängar för samma
   // sak. relatedBidId är den kanoniska identiteten när den finns (matchar
@@ -140,6 +163,23 @@ export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) 
       {event.type === 'hallDebate' && event.title && (
         <div style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, fontWeight: 600, color: 'var(--text-light)', lineHeight: 1.35, marginBottom: 8 }}>
           {event.title}
+        </div>
+      )}
+
+      {/* High 6: spelar-tag för playThroughInjury — namn, skada, dagar kvar */}
+      {injuryTag && (
+        <div style={{ marginBottom: 8 }}>
+          <span style={{
+            fontSize: 11,
+            borderRadius: 99,
+            padding: '3px 8px',
+            fontWeight: 600,
+            background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
+            color: 'var(--accent)',
+          }}>
+            {injuryTag}
+          </span>
         </div>
       )}
 

@@ -1586,6 +1586,22 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // av omgången.
   updatedGame = applyRiskySponsorMaturation(updatedGame, nextMatchday, newDate, localRand)
 
+  // High 4 (Skutskär-auditen, 2026-08-22): press-storylinens narrativeLog-post
+  // skrivs här, NÄR FRÅGAN VISAS — inte vid resolution. storylineBudgetOk()
+  // (pressConferenceService.ts) läser samma logg för att stoppa en tredje
+  // gång. Se GameEvent.storylinePressKey.
+  if (updatedGame.pendingPressConference?.storylinePressKey) {
+    updatedGame = {
+      ...updatedGame,
+      narrativeLog: logNarrativeBeat(
+        updatedGame,
+        updatedGame.pendingPressConference.storylinePressKey,
+        updatedGame.currentSeason,
+        nextMatchday,
+      ),
+    }
+  }
+
   // Release-svepet 2026-07-21 (Block 2c) — landslagsuttagningens +5 tkr/uttagen
   // (HANDOFF-C-K1-LANDSLAG-2026-05-23.md Q3, låst av Jacob). Samma efterhands-
   // mönster som marketValueInbox ovan, se kommentaren vid nationalTeamCallupBonusTkr.

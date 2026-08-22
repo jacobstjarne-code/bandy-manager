@@ -538,12 +538,20 @@ export function isGenericMatch(tag: string, won: boolean, lost: boolean, draw: b
 
 // ── Build 3 contextually-weighted responses ────────────────────────────────────
 
-function buildPressResponses(ctx: PressContext, preferIds: string[] = []): ManagerResponse[] {
-  const preferredById = new Map(PLAYER_RESPONSES.map(r => [r.id, r]))
+// Skutskär-auditen High 4 (2026-08-22): state-gate på svarspool-nivå — ett
+// svar som förutsätter ett state spelaren inte längre är i (t.ex. 'tp_liv1',
+// "Han går till jobbet klockan sex", när spelaren redan är isFullTimePro)
+// filtreras bort HELT, inte bara nedprioriteras. Gäller alla tre slottar och
+// fallback-poolen, inte bara preferIds — annars kan den fortfarande smyga
+// in via den generiska poolen.
+function buildPressResponses(ctx: PressContext, preferIds: string[] = [], excludedResponseIds: string[] = []): ManagerResponse[] {
+  const excluded = new Set(excludedResponseIds)
+  const eligibleResponses = excluded.size > 0 ? PLAYER_RESPONSES.filter(r => !excluded.has(r.id)) : PLAYER_RESPONSES
+  const preferredById = new Map(eligibleResponses.map(r => [r.id, r]))
   const contextMatched: ManagerResponse[] = []
   const generic: ManagerResponse[] = []
 
-  for (const r of PLAYER_RESPONSES) {
+  for (const r of eligibleResponses) {
     if (matchesContext(r.tag, ctx)) {
       contextMatched.push(r)
     } else if (r.tag === 'any' || isGenericMatch(r.tag, ctx.won, ctx.lost, ctx.draw)) {
@@ -591,7 +599,7 @@ function buildPressResponses(ctx: PressContext, preferIds: string[] = []): Manag
     result.push(pick)
     used.add(pick.id)
   } else {
-    const allPool = PLAYER_RESPONSES.filter(r => !used.has(r.id) && isGenericMatch(r.tag, ctx.won, ctx.lost, ctx.draw))
+    const allPool = eligibleResponses.filter(r => !used.has(r.id) && isGenericMatch(r.tag, ctx.won, ctx.lost, ctx.draw))
     if (allPool.length > 0) {
       const pick = allPool[Math.floor(ctx.rand() * allPool.length)]
       result.push(pick)
@@ -600,7 +608,7 @@ function buildPressResponses(ctx: PressContext, preferIds: string[] = []): Manag
 
   // Fallback: fill from full pool if needed
   while (result.length < 3) {
-    const fallback = PLAYER_RESPONSES.filter(r => !used.has(r.id))
+    const fallback = eligibleResponses.filter(r => !used.has(r.id))
     if (fallback.length === 0) break
     const pick = fallback[Math.floor(ctx.rand() * fallback.length)]
     result.push(pick)
@@ -713,44 +721,84 @@ export function generatePressConference(
     }
   }
 
+  // High 4 (Skutskär-auditen, 2026-08-22): pressminnet. En storyline-fråga
+  // fick tidigare rulla om och om igen (samma kontraktsfråga sex raka
+  // matcher, kaptenfrågan ~åtta gånger) eftersom ENDA spärren var en
+  // slumpchans per match — ingen räkning av hur många gånger DEN HÄR
+  // storylinen redan fått sin fråga. storylineBudgetOk läser narrativeLog
+  // (Jacobs order: "den byggdes för detta") — max en huvudfråga plus en
+  // uppföljning per storyline-INSTANS (story.id, inte bara story.type — två
+  // olika spelares went_fulltime_pro-bågar samma säsong ska räknas separat).
+  // Callern (matchSimProcessor.ts → roundProcessor.ts) läser event.storylinePressKey
+  // och skriver den faktiska narrativeLog-posten när eventet genereras, inte
+  // här — den här funktionen är en ren fråga, ingen mutation.
+  function storylineBudgetOk(story: { id: string }): boolean {
+    const key = `press_storyline_${story.id}`
+    const usedThisSeason = (game.narrativeLog ?? []).filter(
+      e => e.semanticKey === key && e.season === game.currentSeason,
+    ).length
+    return usedThisSeason < 2
+  }
+
+  let storylinePressKey: string | undefined
+  // State-gate (Skutskär-auditen High 4): 'tp_liv1' ("Han går till jobbet
+  // klockan sex...") beskriver ett kvarvarande dagjobb — förbjuden så fort
+  // frågan handlar om en spelare som redan är isFullTimePro.
+  let excludedResponseIds: string[] = []
+
   // Storyline-aware question override (30% chance if matching storyline exists)
   const storylines = game.storylines ?? []
   if (rand() < 0.30 && storylines.length > 0) {
     const seasonStories = storylines.filter(s => s.season === game.currentSeason && s.resolved)
     const clubStanding = game.standings.find(s => s.clubId === game.managedClubId)
-    if (ctx.won && seasonStories.some(s => s.type === 'underdog_season')) {
+    const underdogStory = seasonStories.find(s => s.type === 'underdog_season')
+    const captainStory = seasonStories.find(s => s.type === 'captain_rallied_team')
+    const rescueStory = seasonStories.find(s => s.type === 'rescued_from_unemployment')
+    const proStory = seasonStories.find(s => s.type === 'went_fulltime_pro')
+    const returnStory = seasonStories.find(s => s.type === 'returned_to_club')
+    const galaStory = seasonStories.find(s => s.type === 'gala_winner')
+
+    if (ctx.won && underdogStory && storylineBudgetOk(underdogStory)) {
       question = { text: 'Ingen trodde på er i augusti. Vad säger du till tvivlarna?', preferIds: ['tp_tvi2', 'tp_tvi1', 'tp_tvi3'] }
-    } else if (clubStanding && clubStanding.losses >= 3 && seasonStories.some(s => s.type === 'underdog_season')) {
+      storylinePressKey = `press_storyline_${underdogStory.id}`
+    } else if (clubStanding && clubStanding.losses >= 3 && underdogStory && storylineBudgetOk(underdogStory)) {
       question = { text: 'Ingen trodde på er i augusti. Vad hände?', preferIds: ['tp_tvi4', 'tp_tvi5', 'tp_tvi3'] }
-    } else if (seasonStories.some(s => s.type === 'captain_rallied_team') && rand() < 0.5) {
+      storylinePressKey = `press_storyline_${underdogStory.id}`
+    } else if (captainStory && storylineBudgetOk(captainStory) && rand() < 0.5) {
       question = { text: 'Kaptenen tog ton i omklädningsrummet. Har det gett effekt?', preferIds: ['tp_tvi6', 'tp_tvi7', 'w_h5'] }
-    } else if (seasonStories.some(s => s.type === 'rescued_from_unemployment') && rand() < 0.5) {
-      const rescueStory = seasonStories.find(s => s.type === 'rescued_from_unemployment')
-      const rescuePlayer = rescueStory?.playerId ? game.players.find(p => p.id === rescueStory.playerId) : null
+      storylinePressKey = `press_storyline_${captainStory.id}`
+    } else if (rescueStory && storylineBudgetOk(rescueStory) && rand() < 0.5) {
+      const rescuePlayer = rescueStory.playerId ? game.players.find(p => p.id === rescueStory.playerId) : null
       const matchGoalEvents = (fixture.events ?? []).filter(e => e.type === MatchEventType.Goal && e.clubId === game.managedClubId)
       const rescueScorerMatch = rescuePlayer && matchGoalEvents.some(e => e.playerId === rescuePlayer.id)
       if (rescuePlayer && rescueScorerMatch) {
         question = { text: `Berätta om ${rescuePlayer.firstName} ${rescuePlayer.lastName}s resa tillbaka.`, preferIds: ['tp_liv1', 'tp_liv4', 'tp_liv2'] }
+        if (rescuePlayer.isFullTimePro) excludedResponseIds.push('tp_liv1')
       } else {
         question = { text: 'Varslet drabbade era spelare hårt. Hur har klubben hanterat situationen?', preferIds: ['tp_liv2', 'tp_liv8', 'tp_liv3'] }
       }
-    } else if (seasonStories.some(s => s.type === 'went_fulltime_pro') && rand() < 0.5) {
-      const proStory = seasonStories.find(s => s.type === 'went_fulltime_pro')
-      const proPlayer = proStory?.playerId ? game.players.find(p => p.id === proStory.playerId) : null
+      storylinePressKey = `press_storyline_${rescueStory.id}`
+    } else if (proStory && storylineBudgetOk(proStory) && rand() < 0.5) {
+      const proPlayer = proStory.playerId ? game.players.find(p => p.id === proStory.playerId) : null
       if (proPlayer) {
         question = { text: `${proPlayer.firstName} ${proPlayer.lastName} slutade jobbet för att satsa på bandyn. Har det betalat sig?`, preferIds: ['tp_liv5', 'tp_liv1', 'tp_liv6'] }
+        // went_fulltime_pro betyder per definition isFullTimePro===true —
+        // dagjobbssvaret är alltid fel här, inte bara villkorat.
+        excludedResponseIds.push('tp_liv1')
+        storylinePressKey = `press_storyline_${proStory.id}`
       }
-    } else if (seasonStories.some(s => s.type === 'returned_to_club') && rand() < 0.5) {
-      const returnStory = seasonStories.find(s => s.type === 'returned_to_club')
-      const returnPlayer = returnStory?.playerId ? game.players.find(p => p.id === returnStory.playerId) : null
+    } else if (returnStory && storylineBudgetOk(returnStory) && rand() < 0.5) {
+      const returnPlayer = returnStory.playerId ? game.players.find(p => p.id === returnStory.playerId) : null
       if (returnPlayer) {
         question = { text: `Berätta om ${returnPlayer.firstName} ${returnPlayer.lastName}s resa tillbaka till klubben.`, preferIds: ['tp_liv7', 'tp_liv6', 'tp_liv3'] }
+        if (returnPlayer.isFullTimePro) excludedResponseIds.push('tp_liv1')
+        storylinePressKey = `press_storyline_${returnStory.id}`
       }
-    } else if (seasonStories.some(s => s.type === 'gala_winner') && rand() < 0.5) {
-      const galaStory = seasonStories.find(s => s.type === 'gala_winner')
-      const galaPlayer = galaStory?.playerId ? game.players.find(p => p.id === galaStory.playerId) : null
+    } else if (galaStory && storylineBudgetOk(galaStory) && rand() < 0.5) {
+      const galaPlayer = galaStory.playerId ? game.players.find(p => p.id === galaStory.playerId) : null
       if (galaPlayer) {
         question = { text: `${galaPlayer.firstName} ${galaPlayer.lastName} vann galan. Hur viktigt är det för laget?`, preferIds: ['tp_spe1', 'tp_ort4', 'w_p3'] }
+        storylinePressKey = `press_storyline_${galaStory.id}`
       }
     }
   }
@@ -801,7 +849,7 @@ export function generatePressConference(
     }
   }
 
-  const responses = buildPressResponses(ctx, question.preferIds)
+  const responses = buildPressResponses(ctx, question.preferIds, excludedResponseIds)
 
   if (responses.length === 0) return null
 
@@ -850,5 +898,6 @@ export function generatePressConference(
     sender: namedJournalist
       ? { name: namedJournalist.name, role: namedJournalist.outlet }
       : { name: journalist, role: '' },
+    storylinePressKey,
   }
 }

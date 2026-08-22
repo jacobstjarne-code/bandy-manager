@@ -249,6 +249,15 @@ export interface GameEvent {
    *  samma-orsak-skur förekommer inte i spelet ännu. Mekanismen är byggd
    *  och redo; ingen konsument fyller den. Se SLUTTEST_KO.md. */
   triggerGroupId?: string
+  /** High 4 (Skutskär-auditen, 2026-08-22): pressminnet. Satt av
+   *  generatePressConference() när frågan är en storyline-override —
+   *  `press_storyline_${story.id}`. Callern (roundProcessor.ts) loggar denna
+   *  som en narrativeLog-post NÄR EVENTET GENERERAS (frågan visas), inte vid
+   *  resolution — repetitionen auditen fångade var i FRÅGAN, inte svaret.
+   *  storylineBudgetOk() i pressConferenceService.ts läser samma logg och
+   *  tillåter högst två poster per storyline-id och säsong (en huvudfråga,
+   *  en uppföljning). undefined för icke-storyline-frågor. */
+  storylinePressKey?: string
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

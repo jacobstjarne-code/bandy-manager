@@ -37,11 +37,50 @@ export const REFEREE_MEETING_QUOTES: Record<RefereeStyle, string[]> = {
     'Inga större anmärkningar. Tack för idag.',
     'Kaptenen pratade med mig i pausen. Sånt uppskattar jag.',
   ],
-  inconsistent: [
+  // 'inconsistent' hade en av dessa tre rader tidigare — se
+  // REFEREE_MEETING_QUOTES_INCONSISTENT nedan, som ersatte den (Medium 6).
+  // Tomt tomrum vore fel — behåll nyckeln men peka på den delade poolen via
+  // getRefereeMeetingQuotePool(), aldrig direkt index i den här arrayen.
+  inconsistent: [],
+}
+
+/**
+ * Medium 6 (Skutskär-auditen, 2026-08-22): 'inconsistent'-domarens citat
+ * innehöll en oöverensstämmande rad — "Idag föll de åt er" visades OAVSETT
+ * matchresultat, och auditen fångade den efter en FÖRLUST. Delad i
+ * vinst/förlust/neutral istf en enda pool. `neutral` gäller alltid;
+ * `win`/`loss` läggs till beroende på faktiskt utfall.
+ *
+ * `loss` saknar en riktig rad — CLAUDE.md:s hårda regel, Code skriver
+ * aldrig citat. '[Opus]' väntar en skriven rad; poolen är aldrig tom
+ * (neutral-raderna finns alltid med, se getRefereeMeetingQuotePool).
+ */
+export const REFEREE_MEETING_QUOTES_INCONSISTENT: Record<'win' | 'loss' | 'neutral', string[]> = {
+  neutral: [
     'Några beslut var svåra. Jag vet. Jag var där.',
-    'Bandy är marginaler. Idag föll de åt er. Ibland inte.',
     'Jag hörde bänken. Jag hör allt. Det ändrar ingenting.',
   ],
+  win: [
+    'Bandy är marginaler. Idag föll de åt er. Ibland inte.',
+  ],
+  loss: [
+    '[Opus]',
+  ],
+}
+
+export type MatchOutcomeForRefereeQuote = 'win' | 'loss' | 'draw'
+
+/** Medium 6: neutral-raderna gäller alltid, oavsett utfall. win/loss läggs
+ *  bara till för sitt eget utfall — en förlust kan aldrig få "Idag föll de
+ *  åt er". Ett oavgjort får bara neutral-raderna (ingen av dem gör anspråk
+ *  på en riktning). strict/lenient är redan outcome-säkra rakt igenom
+ *  (ingen av deras rader hävdar en riktning) — oförändrade, hela poolen. */
+export function getRefereeMeetingQuotePool(style: RefereeStyle, outcome: MatchOutcomeForRefereeQuote): string[] {
+  if (style !== 'inconsistent') return REFEREE_MEETING_QUOTES[style]
+  const directional = outcome === 'win' ? REFEREE_MEETING_QUOTES_INCONSISTENT.win
+    : outcome === 'loss' ? REFEREE_MEETING_QUOTES_INCONSISTENT.loss
+    : []
+  return [...REFEREE_MEETING_QUOTES_INCONSISTENT.neutral, ...directional]
 }
 
 // ── Generate referees from profiles ─────────────────────────────────────────
