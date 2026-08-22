@@ -166,12 +166,12 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     notes: 'Kvarstående gap, inte fixat i detta pass — texten kan fortfarande lova mer än effekten ger. Kräver Opus-text för att antingen korrigera löftet eller bygga en riktig vila-mekanik.',
   },
   sponsorOffer: {
-    trigger: 'sponsorEvents.ts:~15-36 — exakt villkor ej vidare spårat denna session',
-    stateEffect: `'send_player'-valet: income +5000, communityStanding +2, ingen modellerad kostnad. 'decline': noOp.`,
-    systems: ['ekonomi', 'samhällsstöd'],
+    trigger: 'postAdvanceEvents.ts:~599 (generateSponsorOffer, sponsorService.ts) — en gång per omgång om activeSponsors<maxSponsors.',
+    stateEffect: `Plain (ingen rival i samma kategori): 'accept' lägger till sponsorn, ingen kostnad. 'reject': noOp — ren kvitteringsknapp, O2-dominansfynd (0f96f1c2). Konfliktvariant (O1, 2026-08-22, en aktiv sponsor i samma kategori finns redan): 'accept' lägger till den nya OCH nollställer rivalens contractRounds (avtalet slutar) OCH communityStanding -6. 'reject': noOp, rivalen behåller sin plats.`,
+    systems: ['ekonomi', 'communityStanding (bara konfliktvarianten)'],
     lifespan: 'engångs',
     recallSurface: 'ingen',
-    notes: 'O2-dominansfynd (0f96f1c2) — send_player dominerar decline i ren effekt-mening (se O2-rapporten för hela listan av 13 fynd).',
+    notes: 'O1 (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md) — sponsorn med ett problem, högst prioriterade kandidaten, byggd 2026-08-22. 4/5 av mallen: punkt 2 (spelare/funktionär redan mött) ouppfylld, sponsorer är företag. Därför INTE systemhandelse:true. Text (title/body/subtitles på konfliktvarianten) väntar Opus — placeholder \'[Opus]\' i koden.',
   },
 
   // ── De fyra kritiska typerna (Jacobs order, 2026-08-22) — spårade FÖRST,

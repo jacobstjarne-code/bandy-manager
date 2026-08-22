@@ -44,10 +44,22 @@ export function resolveEvent(
   if (event.type === 'sponsorOffer') {
     if (choiceId === 'accept' && event.sponsorData) {
       const sponsor: Sponsor = JSON.parse(event.sponsorData)
+      // O1 (varsel-mallen, "sponsorn med ett problem"): en konfliktvariant
+      // bär terminateSponsorId (postAdvanceEvents.ts) — rivalen i samma
+      // kategori avslutas (contractRounds→0, samma idiom som sponsorProcessor.ts
+      // använder för naturligt utlöpta avtal) och priset betalas i communityStanding.
+      // Plain-varianten saknar båda fälten och beter sig som förut.
+      const sponsors = event.terminateSponsorId
+        ? [...(game.sponsors ?? []).map(s => s.id === event.terminateSponsorId ? { ...s, contractRounds: 0 } : s), sponsor]
+        : [...(game.sponsors ?? []), sponsor]
+      const communityStanding = event.terminateSponsorId
+        ? Math.max(0, Math.min(100, (game.communityStanding ?? 50) + (event.communityStandingDelta ?? 0)))
+        : game.communityStanding
       return {
         ...game,
         pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
-        sponsors: [...(game.sponsors ?? []), sponsor],
+        sponsors,
+        communityStanding,
       }
     }
     return {

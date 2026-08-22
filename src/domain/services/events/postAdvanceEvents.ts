@@ -1,4 +1,4 @@
-import type { SaveGame } from '../../entities/SaveGame'
+import type { SaveGame, Sponsor } from '../../entities/SaveGame'
 import type { GameEvent, TransferBid } from '../../entities/GameEvent'
 import type { Fixture } from '../../entities/Fixture'
 import { pickStarPerformanceText } from '../../data/eventCardInlineStrings'
@@ -605,49 +605,90 @@ export function generatePostAdvanceEvents(
       rand
     )
     if (offer) {
-      // 2026-08-17 (Stickiness-audit): weeklyFmt rundade till närmsta heltal-k
-      // medan totalFmt räknade totalValue exakt ur samma (orundade) weeklyIncome
-      // — vid t.ex. 1500 kr/vecka visade kortet "2k kr/vecka" men en total som
-      // bara stämde med 1500, inte 2000. formatK visar en decimal BARA när
-      // talet inte redan är ett jämnt tusental, så veckobelopp och total alltid
-      // multiplicerar ut till samma tal utan att skräpa ner de vanliga, jämna
-      // beloppen (weeklyIncome är alltid multipel av 500, sponsorService.ts)
-      // med ett onödigt ",0".
-      const formatK = (n: number) => Number.isInteger(n / 1000) ? `${n / 1000}k kr` : `${formatDecimalComma(n / 1000)}k kr`
-      const totalValue = offer.weeklyIncome * offer.contractRounds
-      const weeklyFmt = offer.weeklyIncome >= 1000 ? formatK(offer.weeklyIncome) : `${offer.weeklyIncome} kr`
-      const totalFmt = totalValue >= 1000000
-        ? `${formatDecimalComma(totalValue / 1000000)} mkr`
-        : totalValue >= 1000
-        ? formatK(totalValue)
-        : `${totalValue} kr`
-
-      events.push({
-        id: `event_sponsor_${offer.id}`,
-        type: 'sponsorOffer',
-        title: `Sponsorerbjudande — ${offer.name}`,
-        body: `${offer.name} vill sponsra ${managedClub?.name ?? 'klubben'} med ${weeklyFmt}/vecka i ${offer.contractRounds} omgångar (totalt ${totalFmt}).`,
-        relatedPlayerId: undefined,
-        relatedClubId: undefined,
-        choices: [
-          {
-            id: 'accept',
-            label: `Acceptera (${weeklyFmt}/vecka)`,
-            subtitle: `💰 +${totalFmt} totalt`,
-            effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) },
-          },
-          {
-            id: 'reject',
-            label: 'Avslå',
-            subtitle: 'Inga effekter',
-            effect: { type: 'noOp' },
-          },
-        ],
-        resolved: false,
-        sponsorData: JSON.stringify(offer),
-      })
+      events.push(buildSponsorOfferEvent(offer, activeSponsors, managedClub?.name))
     }
   }
 
   return events
+}
+
+// ── buildSponsorOfferEvent (O1) ─────────────────────────────────────────────
+/**
+ * O1 (varsel-mallen, DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md, "sponsorn med
+ * ett problem" — högst prioriterade kandidaten: vanligast och tommast, accept
+ * var en ren kvitteringsknapp).
+ *
+ * Konfliktvariant: den nya sponsorn konkurrerar med en redan aktiv sponsor i
+ * SAMMA kategori — den rivalen finns redan i spelvärlden (accepterad av
+ * spelaren tidigare), vilket ger valet ett riktigt pris. 4/5 av mallen, inte
+ * 5/5 — punkt 2 (spelare/funktionär redan mött) är inte uppfylld, sponsorer
+ * är företag, inte personer. Därför INTE systemhandelse:true och INTE räknad
+ * mot O19/U5:s säsongsbudget — att tagga en 4/5-händelse som systemhändelse
+ * skulle blåsa upp räknaren mallen själv varnar för ("de ska vara få").
+ *
+ * COMMUNITY_STANDING_DELTA (-6): PROPOSAL, ingen D-fact-låst magnitud. Mellan
+ * de befintliga referenspunkterna i kodbasen: -12 för att sälja en älskad
+ * akademispelare (detOmojligaValet, ovan i denna fil), +2/+5 för triviala
+ * sponsornickar (sponsorEvents.ts). En affärsrelation som avslutas för
+ * klubbens eget val är mindre allvarligt än ett svek mot en spelare, mer än
+ * en nick — proportionerligt placerad i mitten.
+ *
+ * Text (title/body/subtitles på konfliktvarianten) väntar Opus — CLAUDE.md:s
+ * hårda regel om svensk speltext. '[Opus]' är avsiktligt synligt tills dess.
+ */
+export function buildSponsorOfferEvent(
+  offer: Sponsor,
+  activeSponsors: Sponsor[],
+  managedClubName: string | undefined,
+): GameEvent {
+  // 2026-08-17 (Stickiness-audit): weeklyFmt rundade till närmsta heltal-k
+  // medan totalFmt räknade totalValue exakt ur samma (orundade) weeklyIncome
+  // — vid t.ex. 1500 kr/vecka visade kortet "2k kr/vecka" men en total som
+  // bara stämde med 1500, inte 2000. formatK visar en decimal BARA när
+  // talet inte redan är ett jämnt tusental, så veckobelopp och total alltid
+  // multiplicerar ut till samma tal utan att skräpa ner de vanliga, jämna
+  // beloppen (weeklyIncome är alltid multipel av 500, sponsorService.ts)
+  // med ett onödigt ",0".
+  const formatK = (n: number) => Number.isInteger(n / 1000) ? `${n / 1000}k kr` : `${formatDecimalComma(n / 1000)}k kr`
+  const totalValue = offer.weeklyIncome * offer.contractRounds
+  const weeklyFmt = offer.weeklyIncome >= 1000 ? formatK(offer.weeklyIncome) : `${offer.weeklyIncome} kr`
+  const totalFmt = totalValue >= 1000000
+    ? `${formatDecimalComma(totalValue / 1000000)} mkr`
+    : totalValue >= 1000
+    ? formatK(totalValue)
+    : `${totalValue} kr`
+
+  const rivalSponsor = activeSponsors.find(s => s.category === offer.category)
+  const COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT = -6
+
+  return {
+    id: `event_sponsor_${offer.id}`,
+    type: 'sponsorOffer',
+    title: rivalSponsor ? '[Opus]' : `Sponsorerbjudande — ${offer.name}`,
+    body: rivalSponsor
+      ? '[Opus]'
+      : `${offer.name} vill sponsra ${managedClubName ?? 'klubben'} med ${weeklyFmt}/vecka i ${offer.contractRounds} omgångar (totalt ${totalFmt}).`,
+    relatedPlayerId: undefined,
+    relatedClubId: undefined,
+    choices: [
+      {
+        id: 'accept',
+        label: `Acceptera (${weeklyFmt}/vecka)`,
+        subtitle: rivalSponsor ? '[Opus]' : `💰 +${totalFmt} totalt`,
+        effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) },
+      },
+      {
+        id: 'reject',
+        label: 'Avslå',
+        subtitle: rivalSponsor ? '[Opus]' : 'Inga effekter',
+        effect: { type: 'noOp' },
+      },
+    ],
+    resolved: false,
+    sponsorData: JSON.stringify(offer),
+    ...(rivalSponsor && {
+      terminateSponsorId: rivalSponsor.id,
+      communityStandingDelta: COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT,
+    }),
+  }
 }

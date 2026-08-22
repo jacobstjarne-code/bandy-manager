@@ -230,6 +230,15 @@ export interface GameEvent {
   systemhandelse?: boolean   // O19 (SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
                               // (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
                               // ingen räknare/cooldown/säsongsbudget läser fältet ännu.
+  /** O1 (SLUTTEST_KO.md, varsel-mallen, "sponsorn med ett problem"): satt bara
+   *  på sponsorOffer-events där en ny sponsor konkurrerar med en redan
+   *  aktiv sponsor i samma kategori. Id:t på den rivaliserande sponsorn vars
+   *  contractRounds nollställs (avslutas) om spelaren accepterar den nya. */
+  terminateSponsorId?: string
+  /** O1: communityStanding-kostnaden (negativ) för att avsluta rivalens
+   *  avtal när spelaren accepterar den nya sponsorn. undefined = ingen kostnad
+   *  (den vanliga sponsorOffer-varianten utan konflikt). */
+  communityStandingDelta?: number
   /** Batch-av-tre (D1 punkt 4, dömd 2026-08-21). Gränsen för att batcha är
    *  DELAD ORSAK, inte antal — sätts vid konstruktionsstället när flera
    *  events uppstår ur SAMMA händelse (t.ex. tre kontrakt vid fönster-

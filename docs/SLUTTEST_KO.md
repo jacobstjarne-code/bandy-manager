@@ -62,8 +62,8 @@ Allt som ska byggas före release står här, i ordning. Detaljer finns i respek
 | # | Post |
 |---|---|
 | 30 | ~~**Grind 1-verifiering**~~ KLAR — se `GRINDAR`-sektionen ("VERIFIERAT 2026-08-19", `scripts/grind1-boardpatience-sim.ts`). `club_slottsbron` 2/25 sparkade (8%), `club_heros` 20/25 (80%) trots 4:e-placering nästan varje säsong — misslyckandet är verkligt, men "skickligt spel hjälper" håller inte för Heros. Två sidofynd rapporterade, inte byggda, väntar på Jacob (se `Väntar på Jacob`) |
-| 31 | **O5** framgångsekonomin — fem koefficientrundor byggda (`50475cda`/`f19e5378`/`43120846`/`142c615d`/`3ff05b15`/`f7db7fc7`). Scope-utökningen (buffert täcker position+objektiv) verifierad korrekt men ändrade INTE avskedstalet i sjätte körningen (`O5_SJATTE_KORNINGEN_2026-08-23.md`) — exakt samma sex seeds sparkas, oförändrat 30%. Rotorsak: de sex skadas huvudsakligen av den löpande omgångstermen (redan låst i Grind 1), inte säsongsslutstermen bufferten skyddar. Två av sex (70004/70013) har 70014-formen (topp-säsong→nedgång) men bara EN golden-säsong, inte tre — banka för lite kredit. Väntar Jacobs dom: godta 30%, sjätte pass på löpande termen, eller höj taket |
-| 32 | **O1** varsel-mallen, sponsorn först (vanligast och tommast) |
+| 31 | ~~**O5** framgångsekonomin~~ **KLAR (Jacobs slutdom 2026-08-22)** — 30 % avskedstal godtaget som DÖMD risknivå, inte en oavslutad kalibrering. Fyra av sex sparkade är giltig utdragen nedgång (Grind 1-mönstret), två har en enda guldsäsong (bufferten köper ett år, inte fyra — avsett). Den löpande termen (skadar de sex, inte bufferten) förblir låst. Nästa prövning: speltest, inte simulering. → öppnar `O1` |
+| 32 | ~~**O1** varsel-mallen, sponsorn först~~ **Sponsorn-delen BYGGD (2026-08-22)** — konfliktvariant för `sponsorOffer`, se O1-sektionen. Text väntar Opus. Fem återstående kandidater (kontraktet/mecenaten/anläggningen/ungdomen/supportern) obyggda |
 | 33 | ~~**O20** de tio 4/5-händelserna~~ RAPPORT-LEVERERAD — se O20-tabellen längre ner. Textfallen `ismaskin_offer`/`jubilee` LEVERERADE 2026-08-21 [Opus], körorder dömd samma dag (se O20-noten) |
 
 ## Etapp V — skuld och övrigt
@@ -753,6 +753,8 @@ Tre oberoende testare pekade ut samma sak: varslet var det bästa i spelet. Det 
 
 **Godkänd när:** en spelare som spelat två säsonger kan namnge ett beslut som gjorde ont och beskriva vad det kostade, utan att öppna en meny.
 
+**Sponsorn först — BYGGD 2026-08-22, `docs/O1_SPONSORN_FORST_2026-08-22.md`.** Pre-spec cross-check: U5:s säsongsbudget/cooldown-mekanik fanns redan helt klar (U5 stängd innan detta pass) — inget att bygga där. Fann också att sponsorsystemet har TVÅ flöden: `sponsorOffer` (den vanliga, tomma — kvitteringsknappen) och `riskySponsorOffer` (redan har riktigt pris i texten, men konsekvensen är trasig kod, text-utan-mekanik — flaggat separat i BACKLOG, inte byggt i detta pass). Byggde konfliktvarianten för `sponsorOffer`: när en ny sponsor konkurrerar med en redan aktiv sponsor i samma kategori blir accept ett riktigt val (ny sponsor + rivalens avtal avslutas + communityStanding −6) mot reject (`noOp`, status quo). 4/5 av mallen (punkt 2, spelare/funktionär, ouppfylld — sponsorer är företag) — INTE taggad `systemhandelse:true`, räknas inte mot säsongsbudgeten. Text väntar Opus (`'[Opus]'`-platshållare, CLAUDE.md:s hårda regel). 8 nya tester, stash-testade, 2330/2330 gröna, build ren, stress 10×5 0 krascher.
+
 ### O2 · Dominansrevisionen
 **Status:** `SKRIVEN` — `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md`, ihop med O12.
 
@@ -832,7 +834,7 @@ Tre handlingar med verkliga priser: delegera pressen (tappar journalistrelatione
 
 **Godkänd när:** en spelare kan säga vad burnout kostade och vad hen gjorde åt det.
 
-### O5 · Framgångsekonomin — KLAR 2026-08-23
+### O5 · Framgångsekonomin — KLAR 2026-08-22 (Jacobs slutdom)
 `DOM_FRAMGANGSEKONOMIN_2026-08-17.md`. Tre krafter i ordning: löneinflation med rykte, driftskostnad för byggt, styrelsens investeringskrav. Rivalernas catch-up-budget avvisad — dolt mottryck spelaren inte kan se.
 
 **Upplåst av Grind 1-passet 2026-08-23.** RAPPORTERA-svaren (alla fyra punkter): `DOM_FRAMGANGSEKONOMIN_HEROS_2026-08-23.md`.
@@ -861,7 +863,9 @@ Alla tre stresstestade var för sig (10×5, 0 krascher/invariantbrott vardera) p
 
 **Sjätte körningen — `docs/O5_SJATTE_KORNINGEN_2026-08-23.md`.** Överraskande nollresultat: exakt samma sex seeds sparkas som förra körningen (70000/70003/70004/70005/70006/70013), avskedstalet oförändrat 30% (6/20) — bara seed 70004:s avskedssäsong flyttades en säsong tidigare (S5→S4). Seed 70014 (målscenariot) förblir permanent fixat, mekanismen fungerar exakt som specad. Rotorsak till nollresultatet: de sex sparkade skadas huvudsakligen av den LÖPANDE omgångstermen (förlustsviter mitt i säsongen, redan låst i Grind 1) — som ingen buffert någonsin rört, varken förut eller nu. Två av sex (70004, 70013) har SAMMA FORM som 70014 (en toppsäsong/guld, sedan nedgång, sedan avsked) men bara EN golden-säsong i stället för tre — bankar för lite kredit (≈+7,5 av tak 20) för att täcka flera efterföljande säsongers skada. De andra fyra ser ut som genuin utdragen nedgång, samma giltiga misslyckande-utan-sabotage-mönster som Grind 1 dömde för Skutskär. Kriteriet: "sparkas inte för att ha lyckats" uppfyllt för det konkreta 70014-fallet, delvis öppet för 70004/70013 (magnitudfråga om en enda toppsäsong ska räcka). "Ett val som svider år 8" fortsatt starkt stött (42% av säsongssampel under billigaste åtagande). Tre obyggda vägar lagda fram, ingen rekommenderad: godta 30% som avsikt, sjätte pass på löpande termen, eller höj `MERIT_BUFFER_CAP`. **Väntar Jacobs dom.**
 
-**Status:** `KLAR, femte passet levererat — väntar Jacobs dom om scope-utökningen innan O1`
+**Jacobs slutdom (2026-08-22): 30 % godtaget. Kalibreringen är klar, O5 stängd.** Skäl: fyra av sex sparkade är utdragen nedgång — samma mönster Grind 1 redan godkände som giltigt misslyckande. Två (70004/70013) har en enda guldsäsong och sedan flera års skada, vilket är vad en buffert SKA göra: en topp köper ett år, inte fyra. Det som skadar dem är den löpande termen, redan låst av rätt skäl i Grind 1 — att lossa den nu vore att göra om ett beslut för att få en siffra att se snällare ut. **30 % är en DÖMD risknivå, inte en oavslutad kalibrering.** Nästa prövning är ett speltest, inte en simulering — en människa som blir sparkad efter ett guld vet om det kändes orättvist; simuleringen kan bara säga att det hände.
+
+**Status:** `KLAR (Jacobs slutdom 2026-08-22, ab87a71d + denna post)` — öppnar `O1`.
 
 ### O6–O14 · Kortare poster
 
