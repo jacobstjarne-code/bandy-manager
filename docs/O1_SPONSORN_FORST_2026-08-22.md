@@ -29,21 +29,27 @@ Mallens fem punkter, ärligt bedömda — **4/5, inte 5/5**:
 
 **Därför INTE `systemhandelse: true`.** En 4/5-händelse som taggas som systemhändelse blåser upp säsongsbudgeten mallen själv varnar för ("de ska vara få") — bara genuina 5/5 ska räknas mot O19/U5:s räknare. Naturlig sällsynthet (samma kategori av 20 möjliga i `BUSINESS_TYPES`) håller frekvensen låg utan en formell spärr.
 
-## Text
+## Text — skriven av Opus 2026-08-22, klistrad ordagrant
 
-Title/body/subtitles på konfliktvarianten är `'[Opus]'` — CLAUDE.md:s hårda regel, Code skriver aldrig svensk speltext. Kortet renderas (synlig platshållare, inte krasch) tills Opus skriver den. Vad texten behöver bära: en namngiven ny sponsor med ett problem ELLER en tydlig konflikt mot den namngivna rivalen (vem rivalen är, `rivalSponsor.name`/`rivalSponsor.category` finns tillgängliga i konstruktionsstället).
+Rubrik: `{NySponsor} vill in`. Brödtext, val ("Ta avtalet"/"Tacka nej"), underrader och båda utfallstexterna (accept/avslag) klistrade in exakt som levererat, ingen redigering (SPEC-LYDNAD). "{GamleSponsor} har suttit i logen i {N} år"-raden byttes mot Jacobs egen fallback ("var med när det var tunnare än nu") genomgående — verifierat (se nedan) att ingen sponsor som kan bli rival här någonsin hinner bli flerårig, så N-års-grenen skulle aldrig triggas med dagens data. Utfallstexterna renderas som inbox-poster vid resolution (`inbox_sponsor_conflict_accept_*`/`_reject_*`), samma mönster som övriga sponsor-notiser.
+
+**Bieffekt att känna till, inte fixad:** rivalens avtal avslutas via `contractRounds→0`, samma idiom som en naturligt utlupen sponsor. Nästa omgång fångar `sponsorProcessor.ts`s generiska "X avslutar (avtalet har löpt ut)"-notis automatiskt ovanpå den nya, specifika utfallstexten — en mindre tondubblering (två notiser om samma sak, en generisk "löpte ut", en specifik "ni sa nej till dem"), inte en felaktig eller motsägande konsekvens. Inte byggt bort — hade krävt att undanta konflikt-terminerade sponsorer från `sponsorProcessor.ts`s generiska expiry-loop, utanför ordern.
 
 ## Verifiering
 
-Stash-test-cykel körd (nya testerna failar mot återställd kod, passerar mot den nya). 8 nya tester (`sponsorConflict.test.ts`): konfliktdetektering (rival vald korrekt bland flera sponsorer, ingen rival → plain-varianten, inte systemhandelse-taggad), eventResolver (accept lägger till+avslutar+kostar, reject orört, regression på plain-varianten, communityStanding clampas vid 0). 2330/2330 gröna (full svit), build ren, stress 10×5 — 0 krascher, 0 invariant-brott.
+Stash-test-cykel körd två gånger (mekanik, sedan text) — nya testerna failar mot återställd kod, passerar mot den nya, båda gångerna. 8 tester (`sponsorConflict.test.ts`): konfliktdetektering (rival vald korrekt bland flera sponsorer, textinterpolation av båda namnen, ingen rival → plain-varianten, inte systemhandelse-taggad), eventResolver (accept lägger till+avslutar+kostar+utfallstext, reject orört+utfallstext, regression på plain-varianten inkl. att ingen konflikt-inbox-post läcker in, communityStanding clampas vid 0). 2330/2330 gröna (full svit), build ren, stress 10×5 — 0 krascher, 0 invariant-brott.
 
 ## Kod
 
 - `src/domain/entities/GameEvent.ts` — två nya optional-fält, `terminateSponsorId`/`communityStandingDelta`.
-- `src/domain/services/events/eventResolver.ts` — `sponsorOffer`-grenen hanterar terminering + communityStanding.
-- `src/domain/services/events/postAdvanceEvents.ts` — konstruktionen bruten ut till `buildSponsorOfferEvent` (exporterad, ren funktion, testbar utan RNG).
+- `src/domain/services/events/eventResolver.ts` — `sponsorOffer`-grenen hanterar terminering + communityStanding + utfallstext-inbox.
+- `src/domain/services/events/postAdvanceEvents.ts` — konstruktionen bruten ut till `buildSponsorOfferEvent` (exporterad, ren funktion, testbar utan RNG), texten inklistrad.
 - `src/domain/data/contentContract.ts` — `sponsorOffer`-raden uppdaterad (O11-registret, `filled: true`, båda varianterna beskrivna).
 
 ## Flaggat, inte byggt
 
-`riskySponsorOffer`s trasiga maturation-konsekvens (`roundProcessor.ts:1000-1034`) — separat leverans, se BACKLOG.
+`riskySponsorOffer`s trasiga maturation-konsekvens (`roundProcessor.ts:1000-1034`) — INTE ett nytt fynd, redan klassad (b) i `CHOICE_LABEL_SVEP_2026-08-17.md` (rad 86/129) för en vecka sedan men aldrig wirad. Rediscoverad oberoende via O1:s pre-spec cross-check, vilket i sig är värt att notera: ett känt, klassat fynd som legat oåtgärdat är exakt den typ av kostnad BACKLOG:s "listan" ska förhindra. Flyttat in i 2.5-listan (SLUTTEST_KO.md) med kostnadsuppskattning, se den sektionen — Jacob dömer wira/skriv-om.
+
+## Punkt 2 (spelare/funktionär) — rapporterat, se DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md
+
+Jacobs fråga: kan punkt 2 uppfyllas om rivalen är namngiven och funnits över flera säsonger? Svar: `generateSponsorOffer`s sponsorer (poolen den byggda mekaniken drar rivaler ur) genereras slumpmässigt PER ERBJUDANDE, ingen identitet över tid, kontraktslängd alltid under en säsong (8-16 omgångar). Kontextuella sponsorer (`checkContextualSponsors`) HAR stabil identitet över säsonger — men ligger i en annan kategori-namnrymd, onåbara som rival i den byggda `category`-matchningen. Fullständigt svar + konsekvens för mallen: se tillägget i `DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md`.

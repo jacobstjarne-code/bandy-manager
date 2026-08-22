@@ -38,20 +38,27 @@ describe('buildSponsorOfferEvent — konfliktdetektering', () => {
 
     expect(event.terminateSponsorId).toBeUndefined()
     expect(event.communityStandingDelta).toBeUndefined()
-    expect(event.title).not.toBe('[Opus]')
-    expect(event.choices.find(c => c.id === 'accept')!.subtitle).not.toBe('[Opus]')
+    expect(event.title).toBe(`Sponsorerbjudande — ${offer.name}`)
+    expect(event.choices.find(c => c.id === 'accept')!.label).toMatch(/^Acceptera/)
+    expect(event.choices.find(c => c.id === 'reject')!.label).toBe('Avslå')
   })
 
-  it('rival i samma kategori → konfliktvarianten, terminateSponsorId pekar på rivalen', () => {
-    const rival = makeSponsor({ id: 'sponsor_rival', category: 'Bygg' })
-    const offer = makeSponsor({ id: 'sponsor_new', category: 'Bygg' })
+  it('rival i samma kategori → konfliktvarianten, terminateSponsorId pekar på rivalen och texten interpolerar båda namnen', () => {
+    const rival = makeSponsor({ id: 'sponsor_rival', category: 'Bygg', name: 'Rivalen AB' })
+    const offer = makeSponsor({ id: 'sponsor_new', category: 'Bygg', name: 'Nykomlingen AB', weeklyIncome: 1500 })
     const event = buildSponsorOfferEvent(offer, [rival], 'Testklubben')
 
     expect(event.terminateSponsorId).toBe('sponsor_rival')
     expect(event.communityStandingDelta).toBeLessThan(0)
-    // Text väntar Opus (CLAUDE.md — Code skriver aldrig svensk speltext)
-    expect(event.title).toBe('[Opus]')
-    expect(event.body).toBe('[Opus]')
+    expect(event.title).toBe('Nykomlingen AB vill in')
+    expect(event.body).toContain('Nykomlingen AB')
+    expect(event.body).toContain('Rivalen AB')
+    const accept = event.choices.find(c => c.id === 'accept')!
+    const reject = event.choices.find(c => c.id === 'reject')!
+    expect(accept.label).toBe('Ta avtalet')
+    expect(accept.subtitle).toBe('Rivalen AB var med när det var tunnare än nu.')
+    expect(reject.label).toBe('Tacka nej')
+    expect(reject.subtitle).toBe('Ni behåller det ni har.')
   })
 
   it('inte systemhandelse — 4/5, inte 5/5 (punkt 2, spelare/funktionär, ouppfylld)', () => {
@@ -86,7 +93,7 @@ describe('eventResolver — sponsorOffer konfliktvariant', () => {
       pendingEvents: [{
         id: 'event_sponsor_test',
         type: 'sponsorOffer',
-        title: '[Opus]', body: '[Opus]',
+        title: 'Rivalen AB vill in', body: 'Rivalen AB vill synas på tröjan.',
         choices: [
           { id: 'accept', label: 'Acceptera', effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) } },
           { id: 'reject', label: 'Avslå', effect: { type: 'noOp' } },
@@ -106,6 +113,9 @@ describe('eventResolver — sponsorOffer konfliktvariant', () => {
     expect(newSponsor!.weeklyIncome).toBe(1200)
     expect(rivalAfter!.contractRounds).toBe(0)
     expect(game.communityStanding).toBe(startCS - 6)
+
+    const outcomeItem = game.inbox.find(i => i.id === 'inbox_sponsor_conflict_accept_event_sponsor_test')
+    expect(outcomeItem?.body).toBe(`${offer.name} är med från nästa match. ${rival.name} svarade inte i telefon.`)
   })
 
   it('reject: rivalen orörd, ingen ny sponsor, communityStanding oförändrad', () => {
@@ -121,7 +131,7 @@ describe('eventResolver — sponsorOffer konfliktvariant', () => {
       pendingEvents: [{
         id: 'event_sponsor_test2',
         type: 'sponsorOffer',
-        title: '[Opus]', body: '[Opus]',
+        title: 'Rivalen AB vill in', body: 'Rivalen AB vill synas på tröjan.',
         choices: [
           { id: 'accept', label: 'Acceptera', effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) } },
           { id: 'reject', label: 'Avslå', effect: { type: 'noOp' } },
@@ -138,6 +148,9 @@ describe('eventResolver — sponsorOffer konfliktvariant', () => {
     expect(game.sponsors!.find(s => s.id === 'sponsor_new')).toBeUndefined()
     expect(game.sponsors!.find(s => s.id === 'sponsor_rival')!.contractRounds).toBe(10)
     expect(game.communityStanding).toBe(startCS)
+
+    const outcomeItem = game.inbox.find(i => i.id === 'inbox_sponsor_conflict_reject_event_sponsor_test2')
+    expect(outcomeItem?.body).toBe(`${offer.name} tackade artigt och la på. ${rival.name} fick aldrig veta.`)
   })
 
   it('regression: plain-varianten (utan terminateSponsorId) beter sig exakt som förut', () => {
@@ -162,10 +175,13 @@ describe('eventResolver — sponsorOffer konfliktvariant', () => {
       }],
     }
 
+    const inboxLenBefore = game.inbox.length
     game = resolveEvent(game, 'event_sponsor_plain', 'accept')
 
     expect(game.sponsors!.find(s => s.id === 'sponsor_new')).toBeTruthy()
     expect(game.communityStanding).toBe(startCS)
+    // plain-varianten saknar terminateSponsorId → ingen konflikt-utfallstext
+    expect(game.inbox.length).toBe(inboxLenBefore)
   })
 
   it('communityStanding clampas till 0, dras inte under', () => {
@@ -180,7 +196,7 @@ describe('eventResolver — sponsorOffer konfliktvariant', () => {
       pendingEvents: [{
         id: 'event_sponsor_clamp',
         type: 'sponsorOffer',
-        title: '[Opus]', body: '[Opus]',
+        title: 'Rivalen AB vill in', body: 'Rivalen AB vill synas på tröjan.',
         choices: [
           { id: 'accept', label: 'Acceptera', effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) } },
           { id: 'reject', label: 'Avslå', effect: { type: 'noOp' } },

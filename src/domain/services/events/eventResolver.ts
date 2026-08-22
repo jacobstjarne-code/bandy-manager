@@ -42,29 +42,60 @@ export function resolveEvent(
 
   // Handle sponsor events by type (not effect)
   if (event.type === 'sponsorOffer') {
+    // O1 (varsel-mallen, "sponsorn med ett problem"): konfliktvariantens
+    // rival — uppslaget FÖRE mutation, båda utfallstexterna (accept/avslag)
+    // behöver namnet och rivalen kan vara borta ur listan efter accept.
+    const rivalName = event.terminateSponsorId
+      ? (game.sponsors ?? []).find(s => s.id === event.terminateSponsorId)?.name
+      : undefined
     if (choiceId === 'accept' && event.sponsorData) {
       const sponsor: Sponsor = JSON.parse(event.sponsorData)
-      // O1 (varsel-mallen, "sponsorn med ett problem"): en konfliktvariant
-      // bär terminateSponsorId (postAdvanceEvents.ts) — rivalen i samma
-      // kategori avslutas (contractRounds→0, samma idiom som sponsorProcessor.ts
-      // använder för naturligt utlöpta avtal) och priset betalas i communityStanding.
-      // Plain-varianten saknar båda fälten och beter sig som förut.
+      // en konfliktvariant bär terminateSponsorId (postAdvanceEvents.ts) —
+      // rivalen i samma kategori avslutas (contractRounds→0, samma idiom
+      // som sponsorProcessor.ts använder för naturligt utlöpta avtal) och
+      // priset betalas i communityStanding. Plain-varianten saknar båda
+      // fälten och beter sig som förut.
       const sponsors = event.terminateSponsorId
         ? [...(game.sponsors ?? []).map(s => s.id === event.terminateSponsorId ? { ...s, contractRounds: 0 } : s), sponsor]
         : [...(game.sponsors ?? []), sponsor]
       const communityStanding = event.terminateSponsorId
         ? Math.max(0, Math.min(100, (game.communityStanding ?? 50) + (event.communityStandingDelta ?? 0)))
         : game.communityStanding
+      const inbox = rivalName
+        ? [...game.inbox, {
+            id: `inbox_sponsor_conflict_accept_${event.id}`,
+            date: game.currentDate,
+            type: InboxItemType.SponsorNetwork,
+            title: `${sponsor.name} tecknar avtal`,
+            body: `${sponsor.name} är med från nästa match. ${rivalName} svarade inte i telefon.`,
+            isRead: false,
+          }]
+        : game.inbox
       return {
         ...game,
         pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
         sponsors,
         communityStanding,
+        inbox,
       }
     }
+    const rejectedOffer = choiceId === 'reject' && rivalName && event.sponsorData
+      ? (JSON.parse(event.sponsorData) as Sponsor)
+      : undefined
+    const inbox = rejectedOffer
+      ? [...game.inbox, {
+          id: `inbox_sponsor_conflict_reject_${event.id}`,
+          date: game.currentDate,
+          type: InboxItemType.SponsorNetwork,
+          title: `${rejectedOffer.name} — inget avtal`,
+          body: `${rejectedOffer.name} tackade artigt och la på. ${rivalName} fick aldrig veta.`,
+          isRead: false,
+        }]
+      : game.inbox
     return {
       ...game,
       pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
+      inbox,
     }
   }
 

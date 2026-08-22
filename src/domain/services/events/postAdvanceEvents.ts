@@ -633,8 +633,9 @@ export function generatePostAdvanceEvents(
  * klubbens eget val är mindre allvarligt än ett svek mot en spelare, mer än
  * en nick — proportionerligt placerad i mitten.
  *
- * Text (title/body/subtitles på konfliktvarianten) väntar Opus — CLAUDE.md:s
- * hårda regel om svensk speltext. '[Opus]' är avsiktligt synligt tills dess.
+ * Text skriven av Opus 2026-08-22, klistrad ordagrant (SPEC-LYDNAD). Sista
+ * raden i utfallstexterna ("{GamleSponsor} fick aldrig veta") är avsiktligt
+ * bärande — spelaren vet något funktionärerna i spelvärlden inte vet.
  */
 export function buildSponsorOfferEvent(
   offer: Sponsor,
@@ -661,26 +662,35 @@ export function buildSponsorOfferEvent(
   const rivalSponsor = activeSponsors.find(s => s.category === offer.category)
   const COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT = -6
 
+  // Text för konfliktvarianten (Jacob, 2026-08-22, klistrad ordagrant —
+  // SPEC-LYDNAD: ändra ingenting). "{GamleSponsor} har suttit i logen i {N}
+  // år"-raden kräver flerårig tenure-data som inte finns: en vanlig sponsors
+  // contractRounds är 8-16 omgångar (sponsorService.ts), under EN säsong —
+  // ingen sponsor som kan bli rival här hinner någonsin bli flerårig.
+  // Jacobs egen fallback används därför alltid, inte som nödlösning utan
+  // som den enda raden datan faktiskt bär.
+  const rivalTenureLine = rivalSponsor ? `${rivalSponsor.name} var med när det var tunnare än nu.` : undefined
+
   return {
     id: `event_sponsor_${offer.id}`,
     type: 'sponsorOffer',
-    title: rivalSponsor ? '[Opus]' : `Sponsorerbjudande — ${offer.name}`,
+    title: rivalSponsor ? `${offer.name} vill in` : `Sponsorerbjudande — ${offer.name}`,
     body: rivalSponsor
-      ? '[Opus]'
+      ? `${offer.name} vill synas på tröjan. De betalar ${weeklyFmt} — mer än ${rivalSponsor.name} någonsin gjorde. Men de gör samma sak i den här bygden, och de tänker inte dela på platsen. Tar ni deras pengar får ${rivalSponsor.name} beskedet av er, inte av dem.`
       : `${offer.name} vill sponsra ${managedClubName ?? 'klubben'} med ${weeklyFmt}/vecka i ${offer.contractRounds} omgångar (totalt ${totalFmt}).`,
     relatedPlayerId: undefined,
     relatedClubId: undefined,
     choices: [
       {
         id: 'accept',
-        label: `Acceptera (${weeklyFmt}/vecka)`,
-        subtitle: rivalSponsor ? '[Opus]' : `💰 +${totalFmt} totalt`,
+        label: rivalSponsor ? 'Ta avtalet' : `Acceptera (${weeklyFmt}/vecka)`,
+        subtitle: rivalSponsor ? rivalTenureLine : `💰 +${totalFmt} totalt`,
         effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) },
       },
       {
         id: 'reject',
-        label: 'Avslå',
-        subtitle: rivalSponsor ? '[Opus]' : 'Inga effekter',
+        label: rivalSponsor ? 'Tacka nej' : 'Avslå',
+        subtitle: rivalSponsor ? 'Ni behåller det ni har.' : 'Inga effekter',
         effect: { type: 'noOp' },
       },
     ],
