@@ -41,6 +41,43 @@ interface GetState {
 type Get = () => GetState
 type Set = (partial: Partial<{ game: SaveGame | null; roundSummary: RoundSummaryData | null; lastAdvanceResult: AdvanceResult | null }>) => void
 
+/**
+ * High 3 (Skutskär-auditen, 2026-08-22): playoff-elimineringens tidsbarriär.
+ * Ren funktion, exporterad för test — diff mot pre-advance-snapshotet, inte
+ * bara "är satt", eftersom `lastPlayoffElimination` ligger kvar satt under
+ * RESTEN av säsongen efter elimineringen (nollställs först i
+ * seasonEndProcessor.ts). En ren "är satt"-koll hade stoppat auto-loopen
+ * permanent, inte bara omgången elimineringen faktiskt inträffade.
+ */
+export function shouldStopAutoLoopForPlayoffElimination(
+  gameBefore: Pick<SaveGame, 'lastPlayoffElimination'>,
+  gameAfter: Pick<SaveGame, 'lastPlayoffElimination'>,
+): boolean {
+  return !gameBefore.lastPlayoffElimination && !!gameAfter.lastPlayoffElimination
+}
+
+/**
+ * High 3 (Skutskär-auditen, 2026-08-22): namnger perioden när advance()s
+ * auto-loop hoppade över fler än en omgång — samma financeLog-poster
+ * ekonomifliken redan visar, filtrerade till exakt den perioden. Ren
+ * funktion, exporterad för test.
+ */
+export function buildMultiWeekPeriod(
+  autoLoops: number,
+  firstRoundPlayed: number | null,
+  lastRoundPlayed: number | null,
+  financeLog: import('../../../domain/services/economyService').FinanceEntry[],
+): import('../../../domain/entities/RoundSummary').RoundSummaryMultiWeekPeriod | undefined {
+  if (autoLoops <= 0 || firstRoundPlayed == null || lastRoundPlayed == null) return undefined
+  return {
+    fromRound: firstRoundPlayed,
+    toRound: lastRoundPlayed,
+    financeLogEntries: financeLog
+      .filter(e => e.round >= firstRoundPlayed && e.round <= lastRoundPlayed)
+      .map(e => ({ round: e.round, amount: e.amount, label: e.label })),
+  }
+}
+
 async function persistAutosave(game: SaveGame, context: string): Promise<void> {
   try {
     await saveSaveGame(game)
@@ -71,12 +108,22 @@ export function gameFlowActions(get: Get, set: Set) {
       const pendingEventsBeforeAdvance = game.pendingEvents ?? []
 
       let result = advanceToNextEvent(game)
+      const firstRoundPlayed = result.roundPlayed
+
+      // High 3 (Skutskär-auditen, 2026-08-22): utan denna spärr fortsatte
+      // auto-loopen nedan genom RESTEN av slutspelet (andra klubbars matcher)
+      // direkt efter att den hanterade klubben slogs ut — Granska visade
+      // fortfarande den just spelade matchen, men flera veckors löner/
+      // världshändelser hade redan summerats till en oförklarad "Ekonomi
+      // −100 tkr"-rad, och en omvärldsrad kunde påstå att nästa motståndare
+      // väntade trots att säsongen för spelaren redan var slut.
+      const justEliminatedFromPlayoff = shouldStopAutoLoopForPlayoffElimination(game, result.game)
 
       // Auto-advance through matchdays where managed club has no fixture (e.g. cup rounds
       // for other teams after elimination). Without this, every cup round requires a
       // separate advance-click and "omgång 1" re-appears confusingly each time.
       let autoLoops = 0
-      while (!result.hasManagedCupMatch && !result.seasonEnded && !result.game.managerFired && autoLoops < 10) {
+      while (!justEliminatedFromPlayoff && !result.hasManagedCupMatch && !result.seasonEnded && !result.game.managerFired && autoLoops < 10) {
         const g = result.game
         const scheduledAll = g.fixtures.filter(f => f.status === 'scheduled')
         if (scheduledAll.length === 0) break
@@ -105,6 +152,8 @@ export function gameFlowActions(get: Get, set: Set) {
           },
         }
       }
+
+      const multiWeekPeriod = buildMultiWeekPeriod(autoLoops, firstRoundPlayed, result.roundPlayed, result.game.financeLog ?? [])
 
       const resultGame = result.game
       const managedClubAfter = resultGame.clubs.find(c => c.id === resultGame.managedClubId)
@@ -206,6 +255,7 @@ export function gameFlowActions(get: Get, set: Set) {
         injuries,
         newInboxCount,
         youthMatchResult,
+        multiWeekPeriod,
       }
 
       // B6 — Populera aktiva anniversaries

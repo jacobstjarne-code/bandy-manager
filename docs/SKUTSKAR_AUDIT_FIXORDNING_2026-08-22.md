@@ -35,9 +35,21 @@ Jacobs order: kör auditens egna fixordning (`docs/incoming/bandy-manager-skutsk
 
 Stash-test-cykel körd (23 nya test-failures mot återställd kod, alla tre delfynd). 2366/2366 gröna (full svit), build ren, stress 10×5 — 0 krascher, 0 invariant-brott.
 
-## Återstår (fixordning punkt 3–7)
+## 4. High 3 — Playoff-barriären (fixordning punkt 3) — KLAR
 
-4. High 3 — Playoff-barriären
+**Rot:** `advance()`s auto-loop (`gameFlowActions.ts`) fortsatte genom RESTEN av slutspelet (andra klubbars matcher) direkt efter att den hanterade klubben slogs ut. Granska visade fortfarande den just spelade elimineringsmatchen, men flera veckors löner/världshändelser hade redan summerats till en oförklarad "Ekonomi −100 tkr"-rad, och en omvärldsrad kunde påstå att nästa motståndare väntade trots att säsongen var slut för spelaren.
+
+**Byggt:**
+- `shouldStopAutoLoopForPlayoffElimination(gameBefore, gameAfter)` — ren funktion, diff mot pre-advance-snapshotet (inte bara "är satt", eftersom `lastPlayoffElimination` ligger kvar satt hela resten av säsongen efter elimineringen — nollställs först i `seasonEndProcessor.ts`). Auto-loopen stoppar samma omgång elimineringen faktiskt inträffar; nästa `advance()`-anrop (spelaren lämnar Granska) kör igenom resten av slutspelet normalt, exakt som auditens rekommenderade fix.
+- `buildMultiWeekPeriod(autoLoops, firstRound, lastRound, financeLog)` — namnger perioden när auto-loopen (i ANDRA scenarier, t.ex. cuprundor mitt i säsongen) faktiskt hoppar över fler än en omgång. Ny `RoundSummaryData.multiWeekPeriod`-fält, filtrerar samma `financeLog`-poster ekonomifliken redan visar.
+- `GranskaOversikt.tsx`s "💰 Ekonomi"-rad visar nu `(omgång X–Y)` när perioden täcker mer än en omgång — raden var redan klickbar (navigerar till ekonomifliken), det som saknades var att veta VILKEN period siffran gällde.
+
+**Tester:** `playoffEliminationBarrier.test.ts` — 11 tester (elimineringsdiff korrekt/inkorrekt i tre lägen, multiWeekPeriod byggd/tom/filtrerad).
+
+**Kvalitetsportar:** stash-test (7 failures mot återställd kod), 2373/2373 gröna, build ren, stress 10×5 0 krascher.
+
+## Återstår (fixordning punkt 4–7)
+
 5. Medium 5 (säsongsslutsbarriär) + Medium 1 (sponsordedupe) + Low 1 (next-action)
 6. High 2 — Utmattningen (RAPPORT innan kalibrering, inte byggd)
 7. Medium 4 (critical per instans) + Medium 3 (Form-etiketten)

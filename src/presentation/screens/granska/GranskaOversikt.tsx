@@ -982,7 +982,17 @@ export function GranskaOversikt({
           <SectionLabel style={{ marginBottom: 8 }}>SEDAN SIST</SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
-              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>💰 Ekonomi</span>
+              {/* High 3 (Skutskär-auditen, 2026-08-22): flera hoppade omgångar
+                  utan hanterad match visade tidigare en odelad summa utan
+                  förklaring ("Ekonomi −100 tkr"). Perioden namnges nu när
+                  raden faktiskt täcker mer än en omgång — radens klick-igenom
+                  till ekonomifliken fanns redan, det som saknades var att veta
+                  VILKEN period siffran gällde. */}
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                💰 Ekonomi{rs.multiWeekPeriod && rs.multiWeekPeriod.toRound > rs.multiWeekPeriod.fromRound
+                  ? ` (omgång ${rs.multiWeekPeriod.fromRound}–${rs.multiWeekPeriod.toRound})`
+                  : ''}
+              </span>
               <span style={{ fontSize: 12, fontWeight: 600, color: financesDelta >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatFinance(financesDelta)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
