@@ -40,7 +40,7 @@ import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
 import { processTransferBids, processLoans, executeAcceptedTransfers } from './processors/transferProcessor'
-import { processSponsors } from './processors/sponsorProcessor'
+import { processSponsors, applyRiskySponsorMaturation } from './processors/sponsorProcessor'
 import { checkContextualSponsors, applyOneTimeKommunstod } from '../../domain/services/contextualSponsorService'
 import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService'
 import { simulateRound } from './processors/matchSimProcessor'
@@ -996,42 +996,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // ── 2B: Risky sponsor risk maturation check ───────────────────────────────
-  if (game.riskySponsorContract && game.riskySponsorContract.season === game.currentSeason) {
-    const rc = game.riskySponsorContract
-    if (nextMatchday >= rc.riskMaturityRound && localRand() < 0.25) {
-      const matId = `risky_sponsor_exposed_${rc.sponsorId}`
-      if (!game.inbox.some(i => i.id === matId)) {
-        const sponsorName = game.sponsors?.find(s => s.id === rc.sponsorId)?.name ?? 'Sponsorn'
-        const riskConsequences = [
-          {
-            title: `${sponsorName}: Skatteverket-granskning publik`,
-            body: `Skatteverket har gripit in mot ${sponsorName}. Företagets bankmedel är frysta och avtal med tredje part avslutas. {KLUBB} förlorar sponsorn i förtid och måste betala tillbaka del av redan utbetalda medel. Anseendet tar en törn.`,
-          },
-          {
-            title: `${sponsorName}: Försatt i konkurs`,
-            body: `${sponsorName} har försatts i konkurs. Det fanns inget att granska — företaget hade inga riktiga kunder. {KLUBB}s avtal är värdelöst. Pengarna som kommit in betalas tillbaka till konkursboet.`,
-          },
-          {
-            title: `${sponsorName} i lokaltidningen`,
-            body: `Lokaltidningen har börjat skriva om ${sponsorName}. Reportagen handlar om okända ägare, suspekta bolagsstrukturer och kopplingar till en tidigare brottsmisstänkt person. {KLUBB} avslutar avtalet före det blir värre.`,
-          },
-        ]
-        const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'Klubben'
-        const picked = riskConsequences[game.currentSeason % riskConsequences.length]
-        newInboxItems.push({
-          id: matId,
-          date: newDate,
-          type: InboxItemType.BoardFeedback,
-          title: picked.title,
-          body: picked.body.replace(/{KLUBB}/g, clubName),
-          isRead: false,
-        } as InboxItem)
-        // Remove the risky sponsor from sponsors list + claw back income
-        // (handled in SaveGame assembly below)
-      }
-    }
-  }
+  // O1-uppföljning (2026-08-22): risky sponsor-maturationens check+konsekvens
+  // flyttad till EN plats, efter `updatedGame` finns — se kommentaren där.
+  // Låg tidigare här (före sponsors/clubs var färdigmonterade) med en
+  // kommentar som LOVADE att sponsorn togs bort och pengar krävdes tillbaka
+  // "i SaveGame-monteringen nedan" — ingen sådan kod fanns någonsin.
 
   // ── Youth processing (P19 sim, mentor effects, academy events, rep delta) ─
   const youthResult = processYouth(game, availabilityUpdatedPlayers, nextMatchday, newDate, baseSeed, localRand)
@@ -1610,6 +1579,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   if (marketValueInbox.length > 0) {
     updatedGame = { ...updatedGame, inbox: [...updatedGame.inbox, ...marketValueInbox] }
   }
+
+  // O1-uppföljning (2026-08-22): riskySponsorOffers maturation-konsekvens —
+  // check + alla tre effekter, se applyRiskySponsorMaturation (sponsorProcessor.ts)
+  // för rotorsak/historik. Ren funktion, samma seedade localRand som resten
+  // av omgången.
+  updatedGame = applyRiskySponsorMaturation(updatedGame, nextMatchday, newDate, localRand)
 
   // Release-svepet 2026-07-21 (Block 2c) — landslagsuttagningens +5 tkr/uttagen
   // (HANDOFF-C-K1-LANDSLAG-2026-05-23.md Q3, låst av Jacob). Samma efterhands-

@@ -663,12 +663,10 @@ export function buildSponsorOfferEvent(
   const COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT = -6
 
   // Text för konfliktvarianten (Jacob, 2026-08-22, klistrad ordagrant —
-  // SPEC-LYDNAD: ändra ingenting). "{GamleSponsor} har suttit i logen i {N}
-  // år"-raden kräver flerårig tenure-data som inte finns: en vanlig sponsors
-  // contractRounds är 8-16 omgångar (sponsorService.ts), under EN säsong —
-  // ingen sponsor som kan bli rival här hinner någonsin bli flerårig.
-  // Jacobs egen fallback används därför alltid, inte som nödlösning utan
-  // som den enda raden datan faktiskt bär.
+  // SPEC-LYDNAD: ändra ingenting). En flerårig tenure-rad ströks ur specen
+  // (Jacobs dom 2026-08-22): en vanlig sponsors contractRounds är 8-16
+  // omgångar, alltid under en säsong — ingen rival här hinner någonsin bli
+  // flerårig, så bara den här raden finns kvar, inte en gren som aldrig nås.
   const rivalTenureLine = rivalSponsor ? `${rivalSponsor.name} var med när det var tunnare än nu.` : undefined
 
   return {

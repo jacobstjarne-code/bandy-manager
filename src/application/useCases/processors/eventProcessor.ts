@@ -20,6 +20,7 @@ import {
   WAGE_OVERRUN_WARNING_TEXT,
   WAGE_OVERRUN_DEDUCTION_TEXT,
   RISKY_SPONSOR_OFFERS,
+  RISKY_SPONSOR_CONTRACT_ROUNDS,
   MECENAT_WITHDRAWAL_TEXT,
   MECENAT_WITHDRAWAL_FALLBACK,
 } from '../../../domain/data/eventProcessorStrings'
@@ -323,7 +324,7 @@ export function processGameEvents(
       name: offerVariant.name,
       category: offerVariant.category,
       weeklyIncome: offerVariant.weeklyIncome,
-      contractRounds: 44,
+      contractRounds: RISKY_SPONSOR_CONTRACT_ROUNDS,
       signedRound: nextMatchday,
       tier: 'risky' as const,
       triggeredBy: 'risky_offer' as const,

@@ -318,6 +318,12 @@ B5 (väljar-overlay) = Jacobs blick, ej Code-order ännu. Mentorskap-kanon = **J
 
 ## C. IDÉER UTAN SPEC — KRÄVS SPECCING INNAN BYGGE
 
+### O1 sponsorkonflikt — kontextuella sponsorer som rival (öppen möjlighet, 2026-08-22)
+
+| # | Idé | Plats | Estimat |
+|---|---|---|---|
+| C-O1SP1 | **O1:s sponsorkonflikt (`buildSponsorOfferEvent`, postAdvanceEvents.ts) är idag 4/5 av varsel-mallen — punkt 2 (spelare/funktionär spelaren mött) ouppfylld eftersom rivalen alltid kommer ur `generateSponsorOffer`s slumpmässiga pool (ingen identitet över tid). Men `checkContextualSponsors` (top4-bonus, CS>70-kommunstöd, publiksnitt-catering) HAR stabila, hårdkodade namn som återkommer varje säsong villkoret uppfylls — genuin kontinuitet, spelaren KAN känna igen dem. De ligger bara i en annan kategori-namnrymd ('Regional'/'Kommunalt'/'Catering') än `BUSINESS_TYPES`, onåbara av dagens `offer.category === rival.category`-matchning. Om en kontextuell sponsor någon gång kan bli rival — via en kategori-brygga eller en bredare matchning — är KORTET 5/5 för de fallen specifikt, och ska då räknas mot O19/U5:s säsongsbudget (`systemhandelse: true`), vilket det inte gör idag.** Ospecat, inte byggt — bara vägen dokumenterad. Se `DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md`s tillägg 2026-08-22 för hela resonemanget. | `postAdvanceEvents.ts` (`buildSponsorOfferEvent`), `contextualSponsorService.ts` | Ospecat — kräver ett designbeslut om kategori-bryggan (och om kontinuiteten faktiskt SKA vara sedd, inte bara teoretiskt möjlig) innan estimat. |
+
 ### Klubbhistorik saknar berättelse-lager (fynd vid AUDIT DEL 2 B3-utredning, 2026-08-11)
 
 | # | Idé | Plats | Estimat |

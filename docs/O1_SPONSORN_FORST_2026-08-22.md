@@ -31,7 +31,7 @@ Mallens fem punkter, ärligt bedömda — **4/5, inte 5/5**:
 
 ## Text — skriven av Opus 2026-08-22, klistrad ordagrant
 
-Rubrik: `{NySponsor} vill in`. Brödtext, val ("Ta avtalet"/"Tacka nej"), underrader och båda utfallstexterna (accept/avslag) klistrade in exakt som levererat, ingen redigering (SPEC-LYDNAD). "{GamleSponsor} har suttit i logen i {N} år"-raden byttes mot Jacobs egen fallback ("var med när det var tunnare än nu") genomgående — verifierat (se nedan) att ingen sponsor som kan bli rival här någonsin hinner bli flerårig, så N-års-grenen skulle aldrig triggas med dagens data. Utfallstexterna renderas som inbox-poster vid resolution (`inbox_sponsor_conflict_accept_*`/`_reject_*`), samma mönster som övriga sponsor-notiser.
+Rubrik: `{NySponsor} vill in`. Brödtext, val ("Ta avtalet"/"Tacka nej"), underrader och båda utfallstexterna (accept/avslag) klistrade in exakt som levererat, ingen redigering (SPEC-LYDNAD). Jacobs dom 2026-08-22: den fleråriga tenure-raden ströks ur specen helt (ingen sponsor som kan bli rival här hinner någonsin bli flerårig) — bara Jacobs egen fallback ("var med när det var tunnare än nu") finns kvar, i koden såväl som i specen. Ingen dold gren, ingen rad ingen underhåller. Utfallstexterna renderas som inbox-poster vid resolution (`inbox_sponsor_conflict_accept_*`/`_reject_*`), samma mönster som övriga sponsor-notiser.
 
 **Bieffekt att känna till, inte fixad:** rivalens avtal avslutas via `contractRounds→0`, samma idiom som en naturligt utlupen sponsor. Nästa omgång fångar `sponsorProcessor.ts`s generiska "X avslutar (avtalet har löpt ut)"-notis automatiskt ovanpå den nya, specifika utfallstexten — en mindre tondubblering (två notiser om samma sak, en generisk "löpte ut", en specifik "ni sa nej till dem"), inte en felaktig eller motsägande konsekvens. Inte byggt bort — hade krävt att undanta konflikt-terminerade sponsorer från `sponsorProcessor.ts`s generiska expiry-loop, utanför ordern.
 
@@ -45,10 +45,13 @@ Stash-test-cykel körd två gånger (mekanik, sedan text) — nya testerna faila
 - `src/domain/services/events/eventResolver.ts` — `sponsorOffer`-grenen hanterar terminering + communityStanding + utfallstext-inbox.
 - `src/domain/services/events/postAdvanceEvents.ts` — konstruktionen bruten ut till `buildSponsorOfferEvent` (exporterad, ren funktion, testbar utan RNG), texten inklistrad.
 - `src/domain/data/contentContract.ts` — `sponsorOffer`-raden uppdaterad (O11-registret, `filled: true`, båda varianterna beskrivna).
+- `src/application/useCases/processors/sponsorProcessor.ts` — ny `applyRiskySponsorMaturation`, se nedan.
+- `src/application/useCases/roundProcessor.ts` — den gamla, ofullständiga checken (rad ~999-1034) borttagen, ersatt av ett enda anrop där `updatedGame` redan finns.
+- `src/domain/data/eventProcessorStrings.ts` — ny delad konstant `RISKY_SPONSOR_CONTRACT_ROUNDS=44` (var en oexporterad literal på två ställen).
 
-## Flaggat, inte byggt
+## `riskySponsorOffer`s maturation-konsekvens — WIRAD 2026-08-22 (Jacobs dom)
 
-`riskySponsorOffer`s trasiga maturation-konsekvens (`roundProcessor.ts:1000-1034`) — INTE ett nytt fynd, redan klassad (b) i `CHOICE_LABEL_SVEP_2026-08-17.md` (rad 86/129) för en vecka sedan men aldrig wirad. Rediscoverad oberoende via O1:s pre-spec cross-check, vilket i sig är värt att notera: ett känt, klassat fynd som legat oåtgärdat är exakt den typ av kostnad BACKLOG:s "listan" ska förhindra. Flyttat in i 2.5-listan (SLUTTEST_KO.md) med kostnadsuppskattning, se den sektionen — Jacob dömer wira/skriv-om.
+INTE ett nytt fynd: redan klassad (b) påhittad effekt i `CHOICE_LABEL_SVEP_2026-08-17.md` (rad 86/129) för en vecka sedan, men aldrig wirad eller återförd till listan. Rediscoverad oberoende via O1:s pre-spec cross-check — ett känt, klassat fynd som legat oåtgärdat är exakt den typ av kostnad BACKLOG:s "listan" ska förhindra. Flyttat in i 2.5-listan (SLUTTEST_KO.md) med kostnadsuppskattning och sedan wirat i samma leverans, se den sektionen för full detalj. Sidofyndet (kontraktet rensades aldrig, säsongsgaten gjorde det permanent tyst efter ett säsongsskifte) fixat i SAMMA block, per Jacobs uttryckliga order — annars hade tre effekter wirats till en väg som ändå aldrig nås.
 
 ## Punkt 2 (spelare/funktionär) — rapporterat, se DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md
 

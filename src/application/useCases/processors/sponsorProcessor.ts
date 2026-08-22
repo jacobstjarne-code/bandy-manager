@@ -3,6 +3,8 @@ import type { Player } from '../../../domain/entities/Player'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import { InboxItemType, TrainingType, TrainingIntensity } from '../../../domain/enums'
 import { mulberry32 } from '../../../domain/utils/random'
+import { applyFinanceChange } from '../../../domain/services/economyService'
+import { RISKY_SPONSOR_CONTRACT_ROUNDS } from '../../../domain/data/eventProcessorStrings'
 
 export interface SponsorProcessorResult {
   updatedSponsors: Sponsor[]
@@ -221,4 +223,109 @@ export function processSponsors(
   }
 
   return { updatedSponsors, inboxItems }
+}
+
+const RISKY_SPONSOR_MATURATION_CHANCE = 0.25
+const RISKY_SPONSOR_CLAWBACK_SHARE = 0.5
+const RISKY_SPONSOR_COMMUNITY_STANDING_DELTA = -4
+
+/**
+ * O1-uppföljning (SLUTTEST_KO.md, 2026-08-22) — riskySponsorOffers
+ * maturation-konsekvens, konsoliderad till EN funktion (check + alla tre
+ * effekter). Låg tidigare uppdelad: checken/inbox-texten i roundProcessor.ts
+ * långt före sponsors/clubs var färdigmonterade, med en kommentar som lovade
+ * att sponsorn togs bort och pengar krävdes tillbaka "i SaveGame-monteringen
+ * nedan" — ingen sådan kod fanns någonsin. Text lovade tre effekter, koden
+ * gav noll.
+ *
+ * Sidofynd wirat i SAMMA leverans (Jacobs order — annars wiras tre effekter
+ * till en väg som ändå aldrig nås): den gamla checken gated på
+ * `rc.season === game.currentSeason`, vilket gjorde kontraktet permanent
+ * okontrollerbart så fort säsongen rullade över UTAN att risken utlösts
+ * (rc.season låst vid tecknandet, currentSeason bara ökar). En SENARE säsong
+ * har per definition redan passerat mognadsfönstret (riskMaturityRound
+ * sattes alltid inom tecknandesäsongen) — annars skulle kontraktet aldrig
+ * kunna kontrolleras igen efter ett säsongsskifte. `riskySponsorContract`
+ * rensades inte heller när risken FAKTISKT utlöstes, eller när sponsorn
+ * löpte ut naturligt innan risken hann utlösas — båda fallen städas nu.
+ *
+ * Ren funktion (game in, game ut) — `localRand` injiceras så testerna kan
+ * styra utfallet deterministiskt utan att fejka hela omgångspipelinen.
+ */
+export function applyRiskySponsorMaturation(
+  game: SaveGame,
+  nextMatchday: number,
+  newDate: string,
+  localRand: () => number,
+): SaveGame {
+  const rc = game.riskySponsorContract
+  if (!rc) return game
+
+  const sponsor = game.sponsors?.find(s => s.id === rc.sponsorId)
+  if (!sponsor) {
+    // Löpte ut naturligt (contractRounds→0) innan risken hann utlösas —
+    // inget kvar att exponera, inget att kräva tillbaka.
+    return { ...game, riskySponsorContract: undefined }
+  }
+
+  // Samma säsong: håll den ursprungliga inom-säsongs-omgångsjämförelsen.
+  // En senare säsong har redan passerat mognadsfönstret, se filhuvudet.
+  const maturityReached = rc.season === game.currentSeason
+    ? nextMatchday >= rc.riskMaturityRound
+    : true
+  if (!maturityReached || localRand() >= RISKY_SPONSOR_MATURATION_CHANCE) return game
+
+  const matId = `risky_sponsor_exposed_${rc.sponsorId}`
+  if (game.inbox.some(i => i.id === matId)) return game
+
+  const sponsorName = sponsor.name
+  const riskConsequences = [
+    {
+      title: `${sponsorName}: Skatteverket-granskning publik`,
+      body: `Skatteverket har gripit in mot ${sponsorName}. Företagets bankmedel är frysta och avtal med tredje part avslutas. {KLUBB} förlorar sponsorn i förtid och måste betala tillbaka del av redan utbetalda medel. Anseendet tar en törn.`,
+    },
+    {
+      title: `${sponsorName}: Försatt i konkurs`,
+      body: `${sponsorName} har försatts i konkurs. Det fanns inget att granska — företaget hade inga riktiga kunder. {KLUBB}s avtal är värdelöst. Pengarna som kommit in betalas tillbaka till konkursboet.`,
+    },
+    {
+      title: `${sponsorName} i lokaltidningen`,
+      body: `Lokaltidningen har börjat skriva om ${sponsorName}. Reportagen handlar om okända ägare, suspekta bolagsstrukturer och kopplingar till en tidigare brottsmisstänkt person. {KLUBB} avslutar avtalet före det blir värre.`,
+    },
+  ]
+  const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'Klubben'
+  const picked = riskConsequences[game.currentSeason % riskConsequences.length]
+
+  // Effekt 1: sponsorn tas bort.
+  const sponsorsAfter = (game.sponsors ?? []).filter(s => s.id !== rc.sponsorId)
+
+  // Effekt 2: claw-back — HÄLFTEN av vad sponsorn hunnit betala, inte allt
+  // (Jacobs dom: en sponsor som drar sig ur tar tillbaka det som återstår av
+  // avtalet, inte pengar som redan gått åt). contractRounds decrementeras
+  // varje omgång oavsett säsongsgräns (processSponsors ovan) — robust mot att
+  // kontraktet nu kan sträcka sig över ett säsongsskifte.
+  const roundsElapsed = Math.max(0, RISKY_SPONSOR_CONTRACT_ROUNDS - sponsor.contractRounds)
+  const paidSoFar = sponsor.weeklyIncome * roundsElapsed
+  const clawback = Math.round(paidSoFar * RISKY_SPONSOR_CLAWBACK_SHARE)
+  const clubsAfter = applyFinanceChange(game.clubs, game.managedClubId, -clawback)
+
+  // Effekt 3: anseende −4 — mildare än O1-konfliktkortets −6. Jacobs dom: att
+  // bli lurad väger lättare än att aktivt välja bort någon.
+  const communityStandingAfter = Math.max(0, Math.min(100, (game.communityStanding ?? 50) + RISKY_SPONSOR_COMMUNITY_STANDING_DELTA))
+
+  return {
+    ...game,
+    sponsors: sponsorsAfter,
+    clubs: clubsAfter,
+    communityStanding: communityStandingAfter,
+    riskySponsorContract: undefined,
+    inbox: [...game.inbox, {
+      id: matId,
+      date: newDate,
+      type: InboxItemType.BoardFeedback,
+      title: picked.title,
+      body: picked.body.replace(/{KLUBB}/g, clubName),
+      isRead: false,
+    } as InboxItem],
+  }
 }

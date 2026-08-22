@@ -28,6 +28,12 @@ export const WAGE_OVERRUN_DEDUCTION_TEXT = [
   },
 ]
 
+// Delad mellan eventProcessor.ts (sätter den på nya riskySponsorOffer-avtal)
+// och roundProcessor.ts (maturation-konsekvensens claw-back-beräkning läser
+// contractRounds-nedräkningen mot detta ursprungsvärde för att veta hur många
+// omgångar sponsorn hunnit betala — måste vara samma tal på båda ställena).
+export const RISKY_SPONSOR_CONTRACT_ROUNDS = 44
+
 export const RISKY_SPONSOR_OFFERS = [
   {
     name: 'Borgvik Bygg AB',
