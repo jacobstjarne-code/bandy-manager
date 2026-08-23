@@ -19,7 +19,7 @@ import { diffTactics } from '../utils/tacticData'
 import { loadSaveGame, migrateLocalStorageIfNeeded, saveSaveGame, snapshotSave } from '../../infrastructure/persistence/saveGameStorage'
 import { applyFinanceChange } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
-import { canStartBuild, startFacilityBuild, getFinancingOptions, FACILITY_NODE_DEFS, type FinancingContext } from '../../domain/services/facilityService'
+import { canStartBuild, startFacilityBuild, canDecommission, decommissionFacilityNode, getFinancingOptions, DECOMMISSION_COMMUNITY_STANDING_COST, FACILITY_NODE_DEFS, type FinancingContext } from '../../domain/services/facilityService'
 import type { FacilityFinancingMode } from '../../domain/entities/Community'
 
 import { matchActions } from './actions/matchActions'
@@ -120,6 +120,7 @@ interface GameState {
   buyScoutRounds: () => void
   recruitVolunteer: (name: string) => void
   startFacilityBuildNode: (nodeId: string, mode?: FacilityFinancingMode) => { success: boolean; error?: string }
+  decommissionFacilityNode: (nodeId: string) => { success: boolean; error?: string }
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
   upgradeAcademy: () => { success: boolean; error?: string }
   upgradeFacilities: () => { success: boolean; error?: string }
@@ -723,6 +724,23 @@ export const useGameStore = create<GameState>()(
         }
 
         set({ game: { ...game, facilityState: newState, clubs: updatedClubs, localPolitician: updatedPol ?? game.localPolitician, mecenater: updatedMecenater } })
+        return { success: true }
+      },
+
+      // O17 del 3 (DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md §3) — avveckla en
+      // byggd nod. communityStanding faller (varsel-mallens punkt 4/5: två
+      // system pekar isär) — det lokala priset för att stänga något folk märkt.
+      decommissionFacilityNode: (nodeId: string) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel' }
+        const state = game.facilityState ?? { builtNodeIds: [] }
+        const can = canDecommission(nodeId, state)
+        if (!can.ok) return { success: false, error: can.reason ?? 'Kan inte avvecklas' }
+
+        const newState = decommissionFacilityNode(nodeId, state)
+        const newStanding = Math.max(0, (game.communityStanding ?? 50) - DECOMMISSION_COMMUNITY_STANDING_COST)
+
+        set({ game: { ...game, facilityState: newState, communityStanding: newStanding } })
         return { success: true }
       },
 

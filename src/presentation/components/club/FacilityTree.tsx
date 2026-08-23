@@ -146,9 +146,11 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
   // aktivt — oberoende av betrakta/valj-läget, eftersom hubben bara VISAR
   // status, den startar inget bygge. Startvalet (inled/inte_nu) sker separat
   // via hallProcessService.ts:s buildStartEvent, ett vanligt GameEvent-kort.
+  // O17 del 3: byggda noder klickbara i valj-läget också — öppnar
+  // avvecklingsvalet (FacilityScreen skiljer på built/available via status).
   const clickable = isHall
     ? hallTrialActive && !!onSelect
-    : mode === 'valj' && (status === 'available') && !!onSelect
+    : mode === 'valj' && (status === 'available' || status === 'built') && !!onSelect
 
   const marginLeft = isHall ? 18 : 0
 

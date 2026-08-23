@@ -2,7 +2,10 @@ import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { FacilityTree } from '../components/club/FacilityTree'
-import { FACILITY_NODE_DEFS, getFinancingOptions, type FinancingContext, type FinancingOption } from '../../domain/services/facilityService'
+import {
+  FACILITY_NODE_DEFS, getFinancingOptions, getFacilityNodeViews, decommissionSubtitle,
+  DECOMMISSION_COMMUNITY_STANDING_COST, type FinancingContext, type FinancingOption,
+} from '../../domain/services/facilityService'
 import { financingFlavor } from '../../domain/data/facilityFinancingStrings'
 import { formatHallNodeSub } from '../../domain/services/events/hallProcessService'
 
@@ -24,6 +27,7 @@ function optionSub(o: FinancingOption): string {
 export default function FacilityScreen() {
   const game = useGameStore(s => s.game)
   const startFacilityBuildNode = useGameStore(s => s.startFacilityBuildNode)
+  const decommissionFacilityNode = useGameStore(s => s.decommissionFacilityNode)
   const navigate = useNavigate()
   // B1-nav: Bygget är en flik-destination (ingen tillbaka-pil); facility-routen är push (deep-link) → pil kvar.
   const isTab = useLocation().pathname === '/game/bygget'
@@ -40,6 +44,12 @@ export default function FacilityScreen() {
   const isSeason1 = (game.seasonSummaries?.length ?? 0) === 0
 
   const selectedDef = selectedNodeId ? FACILITY_NODE_DEFS.find(d => d.id === selectedNodeId) ?? null : null
+  // O17 del 3: samma nodval öppnar antingen finansieringssheeten (available)
+  // eller avvecklingssheeten (built) — statusen avgör, inte en andra prop.
+  const selectedView = selectedNodeId
+    ? getFacilityNodeViews(facilityState, game.currentMatchday).find(v => v.def.id === selectedNodeId) ?? null
+    : null
+  const selectedIsBuilt = selectedView?.status === 'built'
 
   // B1 §2 — finansieringskontext ur nuläget (relation/standing/mecenat).
   const pol = game.localPolitician
@@ -60,6 +70,18 @@ export default function FacilityScreen() {
       setError(null)
     } else {
       setError(res.error ?? 'Kunde inte starta bygget')
+    }
+  }
+
+  function handleDecommission() {
+    if (!selectedNodeId) return
+    const res = decommissionFacilityNode(selectedNodeId)
+    if (res.success) {
+      setSelectedNodeId(null)
+      setMode('betrakta')
+      setError(null)
+    } else {
+      setError(res.error ?? 'Kunde inte avvecklas')
     }
   }
 
@@ -120,7 +142,7 @@ export default function FacilityScreen() {
       </div>
 
       {/* B1 §2/§4 — finansieringsval (bottensheet) */}
-      {selectedDef && (
+      {selectedDef && !selectedIsBuilt && (
         <div
           onClick={() => setSelectedNodeId(null)}
           style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'color-mix(in srgb, var(--bg-dark) 70%, transparent)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
@@ -163,6 +185,43 @@ export default function FacilityScreen() {
                 })()}
               </button>
             ))}
+            {error && <p style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</p>}
+          </div>
+        </div>
+      )}
+
+      {/* O17 del 3 — avvecklingssheet. Undertexten är låst text (Jacobs dom
+          2026-08-23): {Nod} stängs [efter {N} år]. Folk kommer att märka det. */}
+      {selectedDef && selectedIsBuilt && (
+        <div
+          onClick={() => setSelectedNodeId(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'color-mix(in srgb, var(--bg-dark) 70%, transparent)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: 440, background: 'var(--bg-surface)', borderRadius: 'var(--radius) var(--radius) 0 0', borderTop: '1px solid var(--border)', padding: '18px 16px 28px', display: 'flex', flexDirection: 'column', gap: 12 }}
+          >
+            <div>
+              <div className="h-label">Avveckla</div>
+              <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedDef.label}</p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.4 }}>
+                {decommissionSubtitle(selectedDef, selectedView?.completedSeason, game.currentSeason)}
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                Lokalt stöd −{DECOMMISSION_COMMUNITY_STANDING_COST}
+              </p>
+            </div>
+            <button
+              onClick={handleDecommission}
+              className="btn"
+              style={{
+                textAlign: 'left', padding: '10px 12px',
+                background: 'transparent', border: '1px solid var(--danger)', borderRadius: 'var(--radius-md)',
+                color: 'var(--danger-text)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              Avveckla {selectedDef.label}
+            </button>
             {error && <p style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</p>}
           </div>
         </div>

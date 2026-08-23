@@ -204,6 +204,51 @@ export function advanceFacilityState(
   }
 }
 
+/** O17 del 3 — communityStanding-kostnaden för att avveckla en nod (Jacobs
+ *  dom 2026-08-23). Kalibrerad mellan ett avslutat sponsoravtal (mindre
+ *  synligt) och ett svek mot en person (mer synligt) — en nedlagd
+ *  anläggning är mer synlig än det förra och mindre än det senare. */
+export const DECOMMISSION_COMMUNITY_STANDING_COST = 8
+
+/** O17 del 3 (DOM_ANLAGGNINGSTRADETS_SLUT §3) — avveckla en byggd nod. Bara
+ *  ordinarie (icke-hall) noder: hallen är en Prövning, inte en klickbar
+ *  bygg/avveckla-nod. */
+export function canDecommission(
+  nodeId: string,
+  state: FacilityState,
+): { ok: boolean; reason?: string } {
+  const def = FACILITY_NODE_DEFS.find(d => d.id === nodeId)
+  if (!def) return { ok: false, reason: 'okänd_nod' }
+  if (def.isHall) return { ok: false, reason: 'hall_kan_ej_avvecklas' }
+  if (!state.builtNodeIds.includes(nodeId)) return { ok: false, reason: 'inte_byggd' }
+  return { ok: true }
+}
+
+/** Caller must verify canDecommission first and apply communityStanding-kostnaden. */
+export function decommissionFacilityNode(
+  nodeId: string,
+  state: FacilityState,
+): FacilityState {
+  return {
+    ...state,
+    builtNodeIds: state.builtNodeIds.filter(id => id !== nodeId),
+  }
+}
+
+/** O17 del 3 — undertexten på avvecklingsvalet, låst (Jacobs dom 2026-08-23).
+ *  Två former: utan builtSeason (noden byggdes före det fältet fanns) säger
+ *  bara att den stängs; med builtSeason räknas åren den stod — det är det
+ *  som gör builtSeason till något, dess första verkliga konsument. */
+export function decommissionSubtitle(
+  def: FacilityNodeDef,
+  builtSeason: number | undefined,
+  currentSeason: number,
+): string {
+  if (builtSeason == null) return `${def.label} stängs. Folk kommer att märka det.`
+  const years = currentSeason - builtSeason
+  return `${def.label} stängs efter ${years} år. Folk kommer att märka det.`
+}
+
 /** Empty initial state for new saves. */
 export function createInitialFacilityState(): FacilityState {
   return { builtNodeIds: [], builtSeasons: {} }

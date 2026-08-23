@@ -11,6 +11,10 @@ import {
   facilityCompletedBeatKey,
   isFacilityTreeFull,
   getOrdinaryFacilityNodeDefs,
+  canDecommission,
+  decommissionFacilityNode,
+  decommissionSubtitle,
+  DECOMMISSION_COMMUNITY_STANDING_COST,
   FACILITY_NODE_DEFS,
 } from '../facilityService'
 import type { FacilityState } from '../../entities/Community'
@@ -365,5 +369,66 @@ describe('isFacilityTreeFull', () => {
   it('matchhallen byggd men en vanlig nod saknas — inte fullt', () => {
     const missingOne: FacilityState = { builtNodeIds: [...ORDINARY_IDS.slice(1), 'matchhall'] }
     expect(isFacilityTreeFull(missingOne)).toBe(false)
+  })
+})
+
+// O17 del 3 — DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md §3, Jacobs dom 2026-08-23
+describe('canDecommission', () => {
+  it('tillåter avveckling av en byggd, ordinarie nod', () => {
+    const state: FacilityState = { builtNodeIds: ['kiosk'] }
+    expect(canDecommission('kiosk', state).ok).toBe(true)
+  })
+
+  it('blockerar en icke-byggd nod', () => {
+    const result = canDecommission('kiosk', emptyState)
+    expect(result.ok).toBe(false)
+    expect(result.reason).toBe('inte_byggd')
+  })
+
+  it('blockerar matchhallen — Prövning, inte en avvecklingsbar nod', () => {
+    const state: FacilityState = { builtNodeIds: ['matchhall'] }
+    const result = canDecommission('matchhall', state)
+    expect(result.ok).toBe(false)
+    expect(result.reason).toBe('hall_kan_ej_avvecklas')
+  })
+
+  it('blockerar okänd nod', () => {
+    expect(canDecommission('okand_nod', emptyState).ok).toBe(false)
+  })
+})
+
+describe('decommissionFacilityNode', () => {
+  it('tar bort noden ur builtNodeIds, rör inte andra byggda noder', () => {
+    const state: FacilityState = { builtNodeIds: ['kiosk', 'varmestuga'] }
+    const result = decommissionFacilityNode('kiosk', state)
+    expect(result.builtNodeIds).toEqual(['varmestuga'])
+  })
+})
+
+describe('decommissionSubtitle — låst text (Jacobs dom 2026-08-23)', () => {
+  const varmestuga = FACILITY_NODE_DEFS.find(d => d.id === 'varmestuga')!
+
+  it('utan builtSeason: kortformen', () => {
+    expect(decommissionSubtitle(varmestuga, undefined, 8)).toBe(
+      'Värmestuga stängs. Folk kommer att märka det.'
+    )
+  })
+
+  it('med builtSeason: räknar åren sedan bygget', () => {
+    expect(decommissionSubtitle(varmestuga, 3, 8)).toBe(
+      'Värmestuga stängs efter 5 år. Folk kommer att märka det.'
+    )
+  })
+
+  it('samma säsong som byggd: 0 år', () => {
+    expect(decommissionSubtitle(varmestuga, 8, 8)).toBe(
+      'Värmestuga stängs efter 0 år. Folk kommer att märka det.'
+    )
+  })
+})
+
+describe('DECOMMISSION_COMMUNITY_STANDING_COST', () => {
+  it('är 8, kalibrerad mellan sponsoravtal och personsvek', () => {
+    expect(DECOMMISSION_COMMUNITY_STANDING_COST).toBe(8)
   })
 })
