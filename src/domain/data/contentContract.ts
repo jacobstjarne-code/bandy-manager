@@ -2,11 +2,12 @@
  * INNEHÅLLSKONTRAKTET (O11, SLUTTEST_KO.md) — `docs/DOM_INNEHALLSKONTRAKTET_2026-08-17.md`.
  *
  * Rapportera-först besvarad, 2026-08-20: NEJ, inget enat register finns.
- * Fyra separata källor, ingen av dem en tabell: `GameEventType` (48 värden,
- * GameEvent.ts), `StorylineType` (22, Narrative.ts), `ArcType` (8,
- * Narrative.ts), `PORTAL_BEATS` (17 id:n, portalBeats.ts — den enda som
- * redan ÄR en array, inte bara en typ). 48+22+8+17 = 95 distinkta
- * narrativa former, matchar domens egen storleksuppskattning (~90-100).
+ * Fyra separata källor, ingen av dem en tabell: `GameEventType` (49 värden,
+ * GameEvent.ts — 48 vid O11:s ursprungsleverans, `burnoutRelief` tillagd
+ * 2026-08-23 samma pass som täckningsgrinden nedan byggdes), `StorylineType`
+ * (22, Narrative.ts), `ArcType` (8, Narrative.ts), `PORTAL_BEATS` (17 id:n,
+ * portalBeats.ts — den enda som redan ÄR en array, inte bara en typ).
+ * 49+22+8+17 = 96 distinkta narrativa former.
  * Samma arbete som `U5`:s semanticKey-kartläggning, byggda ihop per domens
  * egen instruktion ("gör dem tillsammans, inte två gånger") — U5 var klar
  * (`4e341891`) innan detta pass startade.
@@ -21,11 +22,26 @@
  * varje källa läses individuellt — inte något att gissa sig igenom för
  * hastighetens skull, exakt det kontraktet finns för att förhindra.
  *
- * ENFORCEMENT (grinden som "failar bygget") är INTE byggd i detta pass —
- * domens "Godkänd när"-rad nämner `scripts/eventGuardInstrument.ts` som
- * del av grinden, en separat, större leverans. Detta pass svarar
- * rapportera-först-frågan och bygger registret; att koppla på en byggtid-
- * kontroll som vägrar merge av ofyllda rader är nästa steg, inte detta.
+ * ENFORCEMENT — O11 (2026-08-23): byggd. INTE `scripts/eventGuardInstrument.ts`
+ * (den simulerar spelat state och fångar RESOLVER-kastar — ett annat
+ * verktyg, för en annan sorts fel). Det domens "Godkänd när"-rad faktiskt
+ * bad om — "vägrar merge av ofyllda rader" — betyder i praktiken "vägrar
+ * merge av HELT SAKNADE rader" (en filled:false TODO-rad är en accepterad,
+ * ärlig status; en id som saknas UR REGISTRET HELT är den verkliga risken —
+ * ny narrativ typ läggs till i koden, ingen minns att lägga till raden,
+ * täckningen driver isär utan att synas). Två mekanismer, båda redan
+ * körda gates (ingen ny CI-koppling):
+ * — GameEventType/StorylineType/ArcType: tre TS-kompileringstidsassertioner
+ *   (AssertNoMissingIds nedan) — ingen runtime-representation finns för en
+ *   ren string-literal-union, så tsc är den enda platsen kontrollen kan
+ *   göras. En ny unionmedlem utan motsvarande _IDS-post failar `npx tsc`
+ *   (= npm run build) med id:t namngivet i felmeddelandet. Verifierat
+ *   (2026-08-23): togs `burnoutRelief` bort ur GAME_EVENT_TYPE_IDS testvis,
+ *   tsc failade exakt så; återställt.
+ * — PortalBeat: `contentContract.test.ts`s egen `PORTAL_BEAT_IDS_ALL vs
+ *   PORTAL_BEATS`-test (PortalBeat är en objektinterface, inte en
+ *   stringunion — här FINNS en runtime-array att jämföra mot, så en
+ *   vitest-assertion är rätt verktyg, inte en TS-assertion).
  *
  * KOPPLING TILL D1 PUNKT 4 (Jacobs dom, 2026-08-21): "därför nu"-radens
  * getWhyNowLine() läser HÄRIFRÅN (per GameEventType-rad), inte från
@@ -38,6 +54,9 @@
  * inte en bugg. Mekanismen aktiveras rad för rad när registret fylls i,
  * aldrig genom att gissa en brådskerad för att täcka en typ.
  */
+
+import type { GameEventType } from '../entities/GameEvent'
+import type { StorylineType, ArcType } from '../entities/Narrative'
 
 export type ContractSource = 'GameEventType' | 'StorylineType' | 'ArcType' | 'PortalBeat'
 
@@ -133,6 +152,10 @@ const GAME_EVENT_TYPE_IDS = [
   'playoffEvent', 'bandyLetter', 'criticalEconomy', 'schoolAssignment', 'mecenatDinner',
   'refereeMeeting', 'riskySponsorOffer', 'mecenatWithdrawal', 'patronWithdrawal', 'mediaReaction',
   'fanLetter', 'opponentQuote', 'csPress', 'playThroughInjury', 'seasonGoalHalfway',
+  // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23) — tillagd i samma pass som
+  // O11:s täckningsgrind byggdes. Den grinden hade fångat DENNA rad som
+  // saknad om den funnits ett par timmar tidigare samma session.
+  'burnoutRelief',
 ] as const
 
 const STORYLINE_TYPE_IDS = [
@@ -147,6 +170,24 @@ const ARC_TYPE_IDS = [
   'hungrig_breakthrough', 'joker_redemption', 'veteran_farewell', 'veteran_final_season',
   'ledare_crisis', 'lokal_hero', 'contract_drama', 'derby_echo',
 ] as const
+
+// O11 (2026-08-23) — ENFORCEMENT, den del av domen som INTE byggdes i
+// ursprungspasset ("byggtid-kontroll som vägrar merge av ofyllda rader").
+// Tre kompileringstidsassertioner, en per string-literal-unionkälla (ingen
+// runtime-representation finns för en TS-typ — PortalBeat är annorlunda,
+// se testet i contentContract.test.ts som jämför mot den RIKTIGA
+// PORTAL_BEATS-arrayen). Lägger någon till ett nytt GameEventType/
+// StorylineType/ArcType-värde utan att lägga till det i motsvarande
+// _IDS-array ovan → tsc failar HÄR, med id:t namngivet i felmeddelandet.
+// Ingen ny CI-koppling behövs — tsc körs redan som PORT 1 (npm run build,
+// och varje commit-gate i CLAUDE.md).
+type AssertNoMissingIds<AllIds extends string, Covered extends readonly AllIds[]> =
+  [Exclude<AllIds, Covered[number]>] extends [never] ? true : { MISSING_CONTENT_CONTRACT_IDS: Exclude<AllIds, Covered[number]> }
+// export, inte lokal const — tsconfig har noUnusedLocals:true, och dessa
+// tre existerar ENDAST för sin typkontroll-sidoeffekt (aldrig lästa).
+export const _gameEventTypeIdsCoverAllTypes: AssertNoMissingIds<GameEventType, typeof GAME_EVENT_TYPE_IDS> = true
+export const _storylineTypeIdsCoverAllTypes: AssertNoMissingIds<StorylineType, typeof STORYLINE_TYPE_IDS> = true
+export const _arcTypeIdsCoverAllTypes: AssertNoMissingIds<ArcType, typeof ARC_TYPE_IDS> = true
 
 // Egen lista (inte importerad från portalBeats.ts) — samma motiv som O6/B12
 // hela sessionen: contentContract ska kunna granskas utan att köra kod, och

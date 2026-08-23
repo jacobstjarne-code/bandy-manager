@@ -1,24 +1,40 @@
 import { describe, it, expect } from 'vitest'
 import { CONTENT_CONTRACT, getContentContractEntry, getWhyNowLine } from '../contentContract'
+import { PORTAL_BEATS } from '../portalBeats'
 
 /**
  * O11 (SLUTTEST_KO.md, 2026-08-20) — INNEHÅLLSKONTRAKTET. Detta testet låser
  * registrets STRUKTUR (fullständighet + intern konsistens), inte innehållets
  * korrekthet — att sextiofältet är rätt ifyllt kan bara verifieras genom att
  * läsa källkoden, inte genom en assertion. Se contentContract.ts:s
- * huvudkommentar för täckningsläget (95 rader, en delmängd `filled: true`).
+ * huvudkommentar för täckningsläget (96 rader, en delmängd `filled: true`).
  */
 describe('CONTENT_CONTRACT — struktur', () => {
-  it('har 95 rader — 48 GameEventType + 22 StorylineType + 8 ArcType + 17 PortalBeat', () => {
-    expect(CONTENT_CONTRACT).toHaveLength(95)
+  it('har 96 rader — 49 GameEventType + 22 StorylineType + 8 ArcType + 17 PortalBeat', () => {
+    expect(CONTENT_CONTRACT).toHaveLength(96)
     const bySource = CONTENT_CONTRACT.reduce((acc, e) => {
       acc[e.source] = (acc[e.source] ?? 0) + 1
       return acc
     }, {} as Record<string, number>)
-    expect(bySource.GameEventType).toBe(48)
+    expect(bySource.GameEventType).toBe(49)
     expect(bySource.StorylineType).toBe(22)
     expect(bySource.ArcType).toBe(8)
     expect(bySource.PortalBeat).toBe(17)
+  })
+
+  // O11 enforcement (2026-08-23) — PortalBeat-halvan av täckningsgrinden.
+  // GameEventType/StorylineType/ArcType täcks av TS-kompileringstids-
+  // assertioner i contentContract.ts självt (ren string-literal-union, ingen
+  // runtime-array att jämföra mot). PortalBeat är en objektinterface med en
+  // RIKTIG runtime-array (PORTAL_BEATS) — här är ett vitest-test rätt verktyg.
+  // contentContract.ts:s PORTAL_BEAT_IDS_ALL är MEDVETET inte importerad
+  // från PORTAL_BEATS (samma fils egen kommentar — "avsiktlig, synlig lista,
+  // inte en beräknad"), så det här testet läser PORTAL_BEATS separat för att
+  // upptäcka drift, utan att göra källistan i contentContract.ts beräknad.
+  it('PORTAL_BEAT_IDS_ALL täcker varje id i PORTAL_BEATS (portalBeats.ts) — ingen ny beat osynkad', () => {
+    const contractIds = new Set(CONTENT_CONTRACT.filter(e => e.source === 'PortalBeat').map(e => e.id))
+    const missing = PORTAL_BEATS.map(b => b.id).filter(id => !contractIds.has(id))
+    expect(missing, `PortalBeat-id:n saknade ur contentContract.ts: ${missing.join(', ')}`).toEqual([])
   })
 
   it('inga dubbletter av (id, source) — samma id FÅR förekomma i flera källor (arc-upplösningar), men inte två gånger i SAMMA källa', () => {
