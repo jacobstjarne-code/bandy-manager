@@ -112,9 +112,17 @@ Per instruktion: throw-guarden fångar inte tecken-fel (fältet FINNS, bara med 
 
 **Systematisk täckningslucka, värd en egen rad:** `weeklyDecisionService.ts` är en HELT SEPARAT beslutspipeline (`WeeklyDecision`/`resolveWeeklyDecision`, egen `effect: string`-typ för visning + en egen `WeeklyDecisionEffect`-union för den faktiska mutationen) — inte `EventChoice`/`resolveEvent`. Den låg utanför runda 1:s scope (agenterna läste bara `src/domain/services/events/` + `eventProcessor.ts`/`matchSimProcessor.ts`) OCH utanför throw-guard-instrumentets scope (`collectPendingItems` läser bara `pendingEvents`/`pendingPressConference`/`pendingRefereeMeeting`/`pendingCSPress` — aldrig `game.pendingWeeklyDecision`). Läste igenom hela filen manuellt (`makeDecisions` + `resolveWeeklyDecision`, alla ~16 beslut) som en engångskontroll: **alla tecken stämde, inga no-ops hittade** — men detta var en manuell stickprovskontroll, inte en instrumenterad grind. Om `weeklyDecisionService.ts` ska ha samma mekaniska skydd som `eventResolver.ts` nu har är det ett separat bygge (egen vakt + eget instrument, eller en gemensam abstraktion) — inte gjort här.
 
-### (c) Fel storlek — inga nya fynd
+### (c) Fel storlek
 
-Ingen ny (c)-klassificering hittad utöver vad som redan låg i (b)-korgen ovan (flera av (b)-fynden HAR ett korrekt tecken men fel/obefintlig storlek snarare än ett rent påhittat fält — gränsen mellan (b) och (c) är ibland flytande när effekten är HELT frånvarande snarare än bara fel dimensionerad; klassade dem som (b) genomgående eftersom "0 istället för utlovat belopp" är närmare "påhittat" än "fel storlek").
+**Fjärde rundan (2026-08-23, O2-svepets biprodukt).** Jacobs order under O2 (pairwise-dominansanalysen): "grepa multiEffect-grenen efter fler fältnamnsfel av samma typ" (samma klass som U3 en gång standardiserade bort — `amount` vs `value` — men bara i toppnivå-effekter, aldrig i `multiEffect`s `subEffects`-undertypsswitch). Exhaustiv genomgång: alla 14 subEffect-typer som läser `sub.amount` (income/communityStanding/fanMood/journalistRelationship/boardPatience/reduceBurnout/startTrainingSlowdown/politicianRelationship/kommunBidragChange/reputation/supporterMood/boostMorale/patronInfluence/mecenatHappiness), korsade mot samtliga 9 filer som konstruerar `subEffects: JSON.stringify(...)`.
+
+**Två fynd, båda `boostMorale`, ingen annan typ:**
+- **`eventFactories.ts:279-280`** (`generatePlayerPraiseEvent`, valet "great") — konstruerade `{ type: 'boostMorale', value: 3, ... }`. Resolverns `sub.amount ?? 5` läste `undefined` → **levererade +5 moral, subtitlen lovade +3.** Verklig, mätbar bugg — en text som ljuger åt spelarens FÖRDEL, vilket är lika illa som tvärtom (spelaren lär sig fel om vad valet kostar). **RÄTTAD 2026-08-23** (`amount: 3`), regressionstest `boostMoraleFieldName.test.ts`.
+- **`eventFactories.ts:463-464`** (`generateCoworkerBondEvent`, valet "great") — samma fältmiss, `value: 5`. Här var `5` (det avsedda värdet) och `5` (resolverns default) IDENTISKA — noll synligt symptom, ren tur. **RÄTTAD i samma pass** (`amount: 5`) — samma latenta bugg hade bitit vid nästa magnitudändring om den lämnats.
+
+**Ingen tredje `boostMorale`-instans, och ingen instans av de övriga 13 typerna, har samma fältmiss** — alla andra `subEffects`-konstruktioner i de 9 filerna använder redan korrekt `amount`.
+
+**Sidofynd, INTE en fältnamnsmiss — en hårdkodad felaktig VÄRDE, allvarligare klass, RAPPORTERAD men inte fixad i detta pass:** `eventFactories.ts:361` — `generateVarselEvent`s "offer_pro"-val (mass-heltidskontrakt). `makeFullTimePro`-subeffekten sätts till `{ ..., value: 0 }` för VARJE berörd spelare — resolvern gör `salary: sub.value ?? p.salary`, och eftersom `0` inte är nullish blir lönen **satt till exakt 0 kr**, permanent. Subtitlen lovar "💰 höjd lönekostnad · +15 moral" (höjd, inte raderad). Den korrekta formeln finns redan på samma ställe i filen, för EN spelare i taget: `eventFactories.ts:219`, `value: Math.round(player.salary * 1.5)` — "offer_pro"s massval fick bara aldrig samma uträkning, bara en hårdkodad platshållarnolla. Detta är en genuin ekonomisk bugg (gratis heltidskontrakt för hela truppen via varsel-eventet), inte en dominansfråga och inte en fältnamnsmiss — Jacobs dom väntas innan den rörs.
 
 ---
 
@@ -129,6 +137,10 @@ Fullständig lista över varje val som fått en dom (löst, flaggat, eller klass
 **Klassade (b) påhittad effekt:** politician_savings→comply, patron_ignored→apologize, detOmojligaValet→keep, community_anlaggning→renovate, community_ismaskin→repair, riskySponsorOffer-exponeringen (roundProcessor.ts), ask_mecenat i ekonomikrisen (nytt).
 
 **Klassat (a) tecken-omvänt:** community_bandyplay→start (löst), community_julmarknad→start (nytt, ej byggt — textbeslut).
+
+**Klassade (c) fel storlek (nytt, 2026-08-23, O2-svepet):** generatePlayerPraiseEvent→great (löst), generateCoworkerBondEvent→great (löst, latent).
+
+**Sticker ut, rapporterat men INTE fixat (nytt, 2026-08-23):** generateVarselEvent→offer_pro — `makeFullTimePro`-subeffektens hårdkodade `value: 0` sätter lön till 0 kr för hela truppen, inte den lovade "höjda lönekostnaden". Ekonomisk bugg, inte en fältnamnsmiss — väntar Jacobs dom.
 
 **"Sticker ut", väntar på designbeslut om avsiktlig dold info:** spoksponsor→accept, icamaxi_visit→send_player, bidReceivedEvent→reject.
 

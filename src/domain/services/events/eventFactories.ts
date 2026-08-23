@@ -275,9 +275,15 @@ export function generatePlayerPraiseEvent(
         id: 'great',
         label: 'Fint att höra!',
         subtitle: '+3 moral båda',
+        // 2.5-svepets fjärde runda (2026-08-23): multiEffect-resolverns
+        // boostMorale-gren läser sub.amount, inte sub.value (U3:s
+        // standardfält för alla andra subEffect-typer). 'value' här gav
+        // sub.amount=undefined → resolverns default (?? 5) — spelaren fick
+        // +5 moral, inte de +3 subtitlen lovade. Text som ljuger åt
+        // spelarens fördel är samma fel som tvärtom.
         effect: { type: 'multiEffect', subEffects: JSON.stringify([
-          { type: 'boostMorale', value: 3, targetPlayerId: praiser.id },
-          { type: 'boostMorale', value: 3, targetPlayerId: praised.id },
+          { type: 'boostMorale', amount: 3, targetPlayerId: praiser.id },
+          { type: 'boostMorale', amount: 3, targetPlayerId: praised.id },
         ]) },
       },
     ],
@@ -453,9 +459,14 @@ export function generateCoworkerBondEvent(
         id: 'great',
         label: 'Fantastiskt — uppmuntra det',
         subtitle: '+5 moral båda',
+        // 2.5-svepets fjärde runda (2026-08-23): samma fältnamnsmiss som
+        // playerPraiseEvent (value istf amount) — här utan synligt symptom
+        // bara för att 5 råkar sammanfalla med resolverns default (?? 5).
+        // Rättad ändå: samma latenta bugg hade bitit vid nästa magnitud-
+        // ändring om fältet inte fixades nu.
         effect: { type: 'multiEffect', subEffects: JSON.stringify([
-          { type: 'boostMorale', value: 5, targetPlayerId: player1.id },
-          { type: 'boostMorale', value: 5, targetPlayerId: player2.id },
+          { type: 'boostMorale', amount: 5, targetPlayerId: player1.id },
+          { type: 'boostMorale', amount: 5, targetPlayerId: player2.id },
         ]) },
       },
     ],
