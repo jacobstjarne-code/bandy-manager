@@ -458,8 +458,20 @@ export function progressArcs(
               {
                 id: 'back_him',
                 label: 'Han får tiden han behöver',
-                subtitle: '💛 Moral +5',
-                effect: { type: 'boostMorale', value: 5, targetPlayerId: p.id },
+                // O2 lager 3 (Jacobs dom 2026-08-24): var ren boostMorale,
+                // zero cost — dominerade pressure/alternatives fullständigt
+                // (O2_PAIRWISE_DOMINANCE_AUDIT_2026-08-23.md). Behåller
+                // samma +5 moral, kostar nu utvecklingstakt (developmentRate,
+                // INTE potentialAbility — ett tak krymper inte för att
+                // ingen tryckte på). Text låst av Jacob, ordagrant.
+                subtitle: 'Han får spela sig igenom det. Det tar längre tid den vägen.',
+                effect: {
+                  type: 'multiEffect',
+                  subEffects: JSON.stringify([
+                    { type: 'boostMorale', amount: 5, targetPlayerId: p.id },
+                    { type: 'developmentRateDelta', amount: -4, targetPlayerId: p.id },
+                  ]),
+                },
               },
               {
                 id: 'pressure',
@@ -542,8 +554,19 @@ export function progressArcs(
               {
                 id: 'back_joker',
                 label: 'Jag tror på honom',
-                subtitle: '💛 Moral +8',
-                effect: { type: 'boostMorale', value: 8, targetPlayerId: p.id },
+                // O2 lager 3 (Jacobs dom 2026-08-24): var ren boostMorale,
+                // zero cost — dominerade bench_joker fullständigt. Behåller
+                // samma +8 moral, kostar nu discipline (fältet
+                // disciplineRisk redan läser i matchmotorn, matchCore.ts).
+                // Text låst av Jacob, ordagrant.
+                subtitle: 'Du säger inget om utvisningarna. Han hör det.',
+                effect: {
+                  type: 'multiEffect',
+                  subEffects: JSON.stringify([
+                    { type: 'boostMorale', amount: 8, targetPlayerId: p.id },
+                    { type: 'disciplineDelta', amount: -4, targetPlayerId: p.id },
+                  ]),
+                },
               },
               {
                 id: 'bench_joker',
@@ -714,8 +737,20 @@ export function progressArcs(
                 {
                   id: 'ceremony_flowers',
                   label: 'Blombukett och avtackning',
-                  subtitle: '💛 Moral +15 alla',
-                  effect: { type: 'teamBoostMorale', value: 15, targetClubId: game.managedClubId },
+                  // O2 lager 3 (Jacobs dom 2026-08-24): var ren
+                  // teamBoostMorale, zero cost — en strikt delmängdsöverlägsen
+                  // effekt mot ceremony_simple (mer moral, fler spelare,
+                  // gratis). Behåller samma +15 moral hela laget, kostar nu
+                  // 10 000 kr (applyFinanceChange, income-subEffect). Text
+                  // låst av Jacob, ordagrant.
+                  subtitle: 'Blommor, tal, hela laget på isen. Kostar 10 tkr.',
+                  effect: {
+                    type: 'multiEffect',
+                    subEffects: JSON.stringify([
+                      { type: 'teamBoostMorale', amount: 15, targetClubId: game.managedClubId },
+                      { type: 'income', amount: -10000 },
+                    ]),
+                  },
                 },
                 {
                   id: 'ceremony_simple',
@@ -767,11 +802,22 @@ export function progressArcs(
               {
                 id: 'give_word',
                 label: 'Ge honom ordet',
-                subtitle: '💛 Moral +10 alla spelare',
+                // O2 lager 3 (Jacobs dom 2026-08-24, reviderad samma dag):
+                // var ren teamBoostMorale, zero cost — dominerade take_charge
+                // fullständigt (helar laget, kostar tränaren ingenting).
+                // Behåller samma +10 moral hela laget, kostar nu boardPatience.
+                // Texten nämner INTE styrelsen alls (Jacobs andra dom, efter
+                // den första): konsekvensen syns i mätaren, inte i meningen —
+                // ett steg längre än O12-förbudet mot att säga vad styrelsen
+                // tycker, hit säger texten inte ens att den märker. Text låst
+                // av Jacob, ordagrant.
+                subtitle: 'Du låter honom tala. Laget lyssnar på honom, inte på dig.',
                 effect: {
-                  type: 'teamBoostMorale',
-                  value: 10,
-                  targetClubId: game.managedClubId,
+                  type: 'multiEffect',
+                  subEffects: JSON.stringify([
+                    { type: 'teamBoostMorale', amount: 10, targetClubId: game.managedClubId },
+                    { type: 'boardPatience', amount: -3 },
+                  ]),
                 },
               },
               {

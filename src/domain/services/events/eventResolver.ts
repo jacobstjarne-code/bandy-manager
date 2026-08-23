@@ -340,6 +340,39 @@ export function resolveEvent(
       }
       break
     }
+    case 'developmentRateDelta': {
+      // O2 lager 3 (Jacobs dom 2026-08-24): hungrig_peak_event — back_him
+      // (spela igenom målsvälten obetingat) kostar utvecklingstakt, inte
+      // taket. Permanent, ingen clamp mot ett golv utöver 0-100.
+      const pid = effect.targetPlayerId
+      if (!pid) throw new Error("effect 'developmentRateDelta' saknar obligatoriskt fält targetPlayerId")
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.id === pid
+            ? { ...p, developmentRate: Math.max(0, Math.min(100, p.developmentRate + (effect.amount ?? 0))) }
+            : p,
+        ),
+      }
+      break
+    }
+    case 'disciplineDelta': {
+      // O2 lager 3 (Jacobs dom 2026-08-24): joker_peak_event — back_joker
+      // (backa jokern obetingat, aldrig ifrågasätta utvisningarna) kostar
+      // discipline — fältet disciplineRisk redan läser i matchmotorn
+      // (matchCore.ts).
+      const pid = effect.targetPlayerId
+      if (!pid) throw new Error("effect 'disciplineDelta' saknar obligatoriskt fält targetPlayerId")
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.id === pid
+            ? { ...p, discipline: Math.max(0, Math.min(100, p.discipline + (effect.amount ?? 0))) }
+            : p,
+        ),
+      }
+      break
+    }
     case 'playThroughInjury': {
       // Pool 1c: tillfälligt fritagen för EN match. injuryDaysRemaining rörs
       // INTE — det är originalvärdet post-match-rullningen (playerStateProcessor)
@@ -791,7 +824,7 @@ export function resolveEvent(
         // saknar ett obligatoriskt fält ska INTE fångas av samma catch — det
         // var precis vad som gjorde makeFullTimePro-no-open (varsel offer_pro)
         // osynlig. Parsning och validering separerade i två steg.
-        let subList: Array<{ type: string; amount?: number; value?: number; targetPlayerId?: string; targetMecenatId?: string }> | null = null
+        let subList: Array<{ type: string; amount?: number; value?: number; targetPlayerId?: string; targetMecenatId?: string; targetClubId?: string }> | null = null
         try {
           subList = JSON.parse(effect.subEffects)
         } catch { /* ignore parse errors */ }
@@ -921,6 +954,49 @@ export function resolveEvent(
                       : c
                   ),
                 }
+              }
+            } else if (sub.type === 'developmentRateDelta') {
+              // O2 lager 3 (Jacobs dom 2026-08-24): samma gren som
+              // top-level case 'developmentRateDelta' — arcService.ts:s
+              // back_him kombinerar den med boostMorale (Jacobs låsta
+              // subtitle "Han får spela sig igenom det...").
+              if (!sub.targetPlayerId) throw new Error("multiEffect-subEffect 'developmentRateDelta' saknar obligatoriskt fält targetPlayerId")
+              updatedGame = {
+                ...updatedGame,
+                players: updatedGame.players.map(p =>
+                  p.id === sub.targetPlayerId
+                    ? { ...p, developmentRate: Math.max(0, Math.min(100, p.developmentRate + (sub.amount ?? 0))) }
+                    : p
+                ),
+              }
+            } else if (sub.type === 'disciplineDelta') {
+              // O2 lager 3 (Jacobs dom 2026-08-24): samma gren som
+              // top-level case 'disciplineDelta' — arcService.ts:s
+              // back_joker kombinerar den med boostMorale (Jacobs låsta
+              // subtitle "Du säger inget om utvisningarna...").
+              if (!sub.targetPlayerId) throw new Error("multiEffect-subEffect 'disciplineDelta' saknar obligatoriskt fält targetPlayerId")
+              updatedGame = {
+                ...updatedGame,
+                players: updatedGame.players.map(p =>
+                  p.id === sub.targetPlayerId
+                    ? { ...p, discipline: Math.max(0, Math.min(100, p.discipline + (sub.amount ?? 0))) }
+                    : p
+                ),
+              }
+            } else if (sub.type === 'teamBoostMorale') {
+              // O2 lager 3 (Jacobs dom 2026-08-24): samma gren som
+              // top-level case 'teamBoostMorale' — arcService.ts:s
+              // ceremony_flowers/give_word kombinerar den med income/
+              // boardPatience (priset för en riskfri lagbred gest, se
+              // O2_PAIRWISE_DOMINANCE_AUDIT_2026-08-23.md).
+              if (!sub.targetClubId) throw new Error("multiEffect-subEffect 'teamBoostMorale' saknar obligatoriskt fält targetClubId")
+              updatedGame = {
+                ...updatedGame,
+                players: updatedGame.players.map(p =>
+                  p.clubId === sub.targetClubId
+                    ? { ...p, morale: Math.min(100, Math.max(0, p.morale + (sub.amount ?? 5))) }
+                    : p
+                ),
               }
             } else if (sub.type === 'makeFullTimePro') {
               // 2.5 (choice-label-svepet, 2026-08-17): saknades helt —

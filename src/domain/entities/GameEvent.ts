@@ -155,6 +155,14 @@ export interface EventEffect {
     | 'hallProcess'
     | 'playThroughInjury'
     | 'releasePlayer'
+    // O2 lager 3 (Jacobs dom 2026-08-24): läser targetPlayerId + amount,
+    // samma konvention som boostMorale. developmentRate (INTE
+    // potentialAbility — det är en fast ceiling, krymper aldrig annars i
+    // kodbasen, Jacobs rättade dom) och discipline (redan läst av
+    // disciplineRisk i matchmotorn, matchCore.ts) — permanenta, tysta
+    // motvikter till hungrig_peak_event/joker_peak_event (arcService.ts).
+    | 'developmentRateDelta'
+    | 'disciplineDelta'
   value?: number
   refereeId?: string
   amount?: number
