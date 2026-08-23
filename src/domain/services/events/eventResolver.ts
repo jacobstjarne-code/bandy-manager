@@ -15,6 +15,7 @@ import type { SourceKey } from '../sourceCooldownService'
 import { PROVNING_RESOLUTION } from '../../data/hallProvningData'
 import { getCurrentLeagueRound } from '../../data/seasonPhases'
 import { logNarrativeBeat } from '../narrativeLogService'
+import { captureSystemDecision } from '../seasonDecisionCaptureService'
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
 export function resolveEvent(
@@ -1802,6 +1803,23 @@ export function resolveEvent(
       updatedGame, event.type, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame),
       event.systemhandelse,
     ),
+  }
+
+  // O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md, Jacobs dom 2026-08-24):
+  // kandidatinsamling för "säsongens viktigaste beslut". Läser `game` — den
+  // ORIGINELLA, oförändrade parametern, inte `updatedGame` — offer_pro-
+  // byggaren behöver spelarnas lön FÖRE höjningen för att räkna ut
+  // ökningen; updatedGame:s lön är redan den NYA (effekten har redan
+  // applicerats i switchen ovan). Tyst no-op (null) för alla event/val
+  // utanför den slutna listan av åtta — det normala fallet.
+  if (event.systemhandelse) {
+    const candidate = captureSystemDecision(game, event, choiceId)
+    if (candidate) {
+      updatedGame = {
+        ...updatedGame,
+        seasonDecisionCandidates: [...(updatedGame.seasonDecisionCandidates ?? []), candidate],
+      }
+    }
   }
 
   // ── Post-resolution storyline generation ────────────────────────────────

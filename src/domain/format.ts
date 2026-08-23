@@ -41,6 +41,22 @@ export function positionLong(pos: PlayerPosition): string {
   return POSITION_LONG[pos] ?? pos
 }
 
+// O18 fält 2 (SASONGENS_BESLUT, Jacobs dom 2026-08-24): sell_star-radens
+// {position}-ord, bestämd form, kolloquiala bandytermer — INTE POSITION_LONG
+// (som ger "Anfallare"/"Ytterhalv", formella etiketter för kort/tabeller).
+// Jacobs egna ord, ordagrant: "mittfältaren, backen, forwarden, halvan".
+const POSITION_DEFINITE: Record<PlayerPosition, string> = {
+  [PlayerPosition.Goalkeeper]: 'målvakten',
+  [PlayerPosition.Defender]: 'backen',
+  [PlayerPosition.Half]: 'halvan',
+  [PlayerPosition.Midfielder]: 'mittfältaren',
+  [PlayerPosition.Forward]: 'forwarden',
+}
+
+export function positionDefinite(pos: PlayerPosition): string {
+  return POSITION_DEFINITE[pos] ?? pos
+}
+
 // ── Pengar (regel 11: tkr heltal, lön tkr/mån heltal, aldrig kronprecision) ──
 
 /** Marknadsvärde: "1,2 mkr" / "450 tkr". Sub-tkr visas i kr (sällsynt). */

@@ -311,6 +311,15 @@ export interface SaveGame {
   // NarrativeLogEntry-kommentar och narrativeLogService.ts.
   narrativeLog?: NarrativeLogEntry[]
 
+  // O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md, Jacobs dom 2026-08-24):
+  // kandidater till "säsongens viktigaste beslut" — en post per resolved
+  // O19-märkt systemhandelse-val DENNA säsong, ur en sluten lista av åtta
+  // klassificerade (event.type, choiceId)-par (seasonDecisionCaptureService.ts).
+  // Fylld vid resolution (eventResolver.ts:s gemensamma resolved-block),
+  // rankad+konsumerad vid säsongsslut (seasonEndProcessor.ts →
+  // SeasonSummary.mostImportantDecision), nollställd nästa säsong.
+  seasonDecisionCandidates?: import('../services/seasonDecisionCaptureService').SeasonDecisionCandidate[]
+
   // V1.0 — Market value tracking (previous round values for delta display)
   previousMarketValues?: Record<string, number>  // playerId → last known marketValue
 

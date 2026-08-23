@@ -794,6 +794,19 @@ export function SeasonSummaryScreen() {
           </div>
         )}
 
+        {/* O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md): säsongens viktigaste
+            beslut — en färdig mening, ingen mall. undefined = ingen O19-
+            systemhandelse löstes denna säsong, vilket är korrekt (ingen rad
+            då, per domen). */}
+        {summary.mostImportantDecision && (
+          <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
+            <SectionLabel style={{ marginBottom: 6 }}>⚖️ SÄSONGENS BESLUT</SectionLabel>
+            <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+              {summary.mostImportantDecision}
+            </p>
+          </div>
+        )}
+
         {/* DINA VAL */}
         {(() => {
           const decisions = collectSeasonDecisions(game, claimedStorylineTypes)

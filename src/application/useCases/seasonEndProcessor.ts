@@ -22,6 +22,7 @@ import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/aca
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
 import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
+import { pickSeasonDecision } from '../../domain/services/seasonDecisionCaptureService'
 import { evaluateSeasonGoal, deriveSeasonPersonChange, deriveRivalryStanding } from '../../domain/services/seasonGoalService'
 import { calculateClubEra } from '../../domain/services/clubEraService'
 import { applyBurnoutRecoveryAtTransition } from '../../domain/services/seasonTransitionService'
@@ -1226,6 +1227,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // som patience-kostnaden). Bara data, ingen text — Jacob/Opus skriver
     // meningen när fältet finns.
     objectiveOutcome,
+    // O18 fält 2 (Jacobs dom 2026-08-24): rankad vinnare bland säsongens
+    // seasonDecisionCandidates (fyllda löpande vid resolution,
+    // eventResolver.ts). undefined om ingen O19-systemhandelse löstes —
+    // en säsong utan tungt beslut bär ingen beslutsrad, per domen.
+    mostImportantDecision: pickSeasonDecision(game.seasonDecisionCandidates ?? [])?.sentence,
   }
 
   // Manager profile — career record, contract extension, age/seasonsAtClub tick
@@ -1453,6 +1459,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ...(game.boardObjectiveHistory ?? []),
       ...objectiveResults,
     ],
+    // O18 fält 2: kandidaterna är redan konsumerade ovan (mostImportantDecision).
+    // Nollställd för nästa säsong — annars skulle en gammal säsongs beslut
+    // kunna vinna en framtida säsongs rankning.
+    seasonDecisionCandidates: [],
     trainerArc: checkSeasonEndArc(
       game.trainerArc ?? { current: 'newcomer', history: [], seasonCount: 0, bestFinish: 12, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 0, boardWarningGiven: false },
       game.playoffBracket?.champion === game.managedClubId,
