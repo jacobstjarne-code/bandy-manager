@@ -19,10 +19,12 @@
 - `economic_crisis_awareness` (fas 1, "krismöte på Stadshotellet"): konverterad till ambient (`choices: []`). Commit `6e9e6f11`.
 - `bandyLetter`/`schoolAssignment`: HÅLLS SOM ÄR (Jacobs dom — differentierad arkivtext per knapp är inte ett tomt val). Verifierat att `HistoryScreen.tsx` redan renderar båda arkiven (rad 246–296) — ingen kodändring behövdes.
 
-**Lager 3 (dominansen):**
+**Lager 3 (dominansen) — KLART, HELA O2 STÄNGD 2026-08-24:**
 - `csPress`: KLART — individual behåller uppsidan men fick en 18% avundsjukerisk, team/system fick egna nischer (bredd / riskfri journalistrelation). Commit `c65f20a7`.
-- `sponsorOffer`: KLART (mekanik + siffror) — 8% riskkoppling på plain-varianten, communityStanding/kontraktslängd synliga i accept-subtitlen. Commit `778d616e`. **Öppet:** "synlighetstexten" (platsen stänger ute en bättre sponsor senare) kräver en ny mening — inte skriven av Code, se rapport i chatten 2026-08-24.
-- `arcService` (fyra återstående bågar — veteran_peak_event/contract_peak_event åtgärdade under lager 1): RAPPORT LEVERERAD i chatten 2026-08-24, INTE byggd — Jacob dömer per båge.
+- `sponsorOffer`: KLART — 8% riskkoppling på plain-varianten, communityStanding/kontraktslängd synliga i accept-subtitlen (commit `778d616e`), synlighetsraden ("Platsen är er i {N} omgångar...") tillagd (commit `f14db8a8`).
+- `arcService` (fyra återstående bågar — veteran_peak_event/contract_peak_event åtgärdade under lager 1): KLART — hungrig_peak_event/joker_peak_event/vetfinal_ceremony/ledare_peak_event fick riktiga motvikter (developmentRate/discipline/pengar/boardPatience) enligt Jacobs dom 2026-08-24. Commit `8f31f75f`.
+
+**O2 är därmed avslutad — alla tre lager (trasig kod, tomma val, dominans) byggda och pushade.**
 
 ---
 
