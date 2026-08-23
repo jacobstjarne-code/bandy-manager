@@ -56,7 +56,7 @@ describe('buildSponsorOfferEvent — konfliktdetektering', () => {
     const accept = event.choices.find(c => c.id === 'accept')!
     const reject = event.choices.find(c => c.id === 'reject')!
     expect(accept.label).toBe('Ta avtalet')
-    expect(accept.subtitle).toBe('Rivalen AB var med när det var tunnare än nu.')
+    expect(accept.subtitle).toBe('Rivalen AB var med när det var tunnare än nu. · ⭐ Anseende -6 · ⏳ 10 omg')
     expect(reject.label).toBe('Tacka nej')
     expect(reject.subtitle).toBe('Ni behåller det ni har.')
   })

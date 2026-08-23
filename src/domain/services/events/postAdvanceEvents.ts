@@ -689,7 +689,16 @@ export function buildSponsorOfferEvent(
       {
         id: 'accept',
         label: rivalSponsor ? 'Ta avtalet' : `Acceptera (${weeklyFmt}/vecka)`,
-        subtitle: rivalSponsor ? rivalTenureLine : `💰 +${totalFmt} totalt`,
+        // O2 lager 3 (Jacobs dom 2026-08-24): communityStanding-kostnaden och
+        // kontraktslängden fanns redan som data (COMMUNITY_STANDING_DELTA_
+        // SPONSOR_CONFLICT/offer.contractRounds) men syntes aldrig i
+        // accept-subtitlen — bara i löptext (rivalfallet) eller inte alls
+        // (vanliga fallet). Numeriskt tillägg, samma " · "-format som redan
+        // dokumenterat på EventChoice.subtitle ovan — rivalTenureLine
+        // (Jacob, 2026-08-22, låst text) rörs inte.
+        subtitle: rivalSponsor
+          ? `${rivalTenureLine} · ⭐ Anseende ${COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT} · ⏳ ${offer.contractRounds} omg`
+          : `💰 +${totalFmt} totalt · ⏳ ${offer.contractRounds} omg`,
         effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) },
       },
       {

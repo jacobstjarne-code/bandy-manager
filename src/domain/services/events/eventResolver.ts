@@ -71,12 +71,32 @@ export function resolveEvent(
             isRead: false,
           }]
         : game.inbox
+      // O2 lager 3 (Jacobs dom 2026-08-24): plain-varianten (inget
+      // terminateSponsorId — rivalvarianten har redan sin egna
+      // communityStanding-kostnad ovan, ingen dubbel risk läggs på den) hade
+      // tidigare NOLL nedsida — mekaniskt gratis pengar varje gång
+      // (O2_PAIRWISE_DOMINANCE_AUDIT_2026-08-23.md). 8% (mitten av Jacobs
+      // 5–10%-spann) chans att avtalet ändå visar sig vara riskabelt, samma
+      // mognadsmekanik (applyRiskySponsorMaturation, sponsorProcessor.ts)
+      // som redan finns för den uttalat riskabla sponsorvarianten (se
+      // 'riskySponsorOffer' nedan) — tyst tills den ev. utlöses, ingen ny
+      // text krävs. Bara om inget riskykontrakt redan pågår (samma
+      // encelliga state som resten av mekanismen).
+      const riskySponsorContract = (!event.terminateSponsorId && !game.riskySponsorContract && rand() < 0.08)
+        ? {
+            sponsorId: sponsor.id,
+            riskMaturityRound: game.currentMatchday + 6,
+            acceptedRound: game.currentMatchday,
+            season: game.currentSeason,
+          }
+        : game.riskySponsorContract
       return {
         ...game,
         pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
         sponsors,
         communityStanding,
         inbox,
+        riskySponsorContract,
       }
     }
     const rejectedOffer = choiceId === 'reject' && rivalName && event.sponsorData
