@@ -47,6 +47,11 @@ describe('vakt-svepet — spelareffekter kräver targetPlayerId', () => {
   it('extendContract utan targetPlayerId kastar', () => expectThrows({ type: 'extendContract' }, /targetPlayerId/))
   it('rejectContract utan targetPlayerId kastar', () => expectThrows({ type: 'rejectContract' }, /targetPlayerId/))
   it('playThroughInjury utan targetPlayerId kastar', () => expectThrows({ type: 'playThroughInjury' }, /targetPlayerId/))
+  // O1 kandidat 2 (Jacobs dom 2026-08-24): extendContract fick en multiEffect-
+  // subEffect-gren (veteran_farewell behöver kombinera den med supporterMood)
+  // — samma vaktprincip som mecenatHappiness-paret ovan.
+  it('multiEffect-subEffect extendContract utan targetPlayerId kastar', () =>
+    expectThrows({ type: 'multiEffect', subEffects: JSON.stringify([{ type: 'extendContract', contractYears: 1 }]) }, /targetPlayerId/))
 })
 
 describe('vakt-svepet — sponsor/patron-effekter kräver payload + nyckelfält efter parsning', () => {

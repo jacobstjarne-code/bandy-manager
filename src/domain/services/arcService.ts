@@ -627,19 +627,40 @@ export function progressArcs(
               {
                 id: 'extend_veteran',
                 label: 'Han är en legend — vi förlänger',
-                subtitle: '💛 Moral +10',
-                // O2 lager 1 (Jacobs dom 2026-08-24): var boostMorale — löftet
-                // "vi förlänger" gav aldrig något nytt kontrakt. extendContract
-                // ger samma +10 moral (se dess resolver-gren) och förlänger
-                // faktiskt 2 säsonger till oförändrad lön — texten lovar ingen
-                // löneförändring.
-                effect: { type: 'extendContract', targetPlayerId: p.id, contractYears: 2 },
+                // O1 kandidat 2 (Jacobs dom 2026-08-24): klackens mood är
+                // KONSEKVENSEN av valet, inte ett villkor — favoritePlayerId
+                // mäter en annan fråga (vem som är bäst just nu) och skulle
+                // strukturellt nästan aldrig träffa en åldrande veteran.
+                // +6 klackens stämning är ett FÖRSLAG, inte kalibrerat.
+                subtitle: '💛 Moral +10 · +6 klackens stämning',
+                effect: {
+                  type: 'multiEffect',
+                  subEffects: JSON.stringify([
+                    { type: 'extendContract', targetPlayerId: p.id, contractYears: 2 },
+                    { type: 'supporterMood', amount: 6 },
+                  ]),
+                },
               },
               {
                 id: 'farewell_veteran',
                 label: 'Alla goda ting har ett slut',
-                subtitle: '💛 Moral −20',
-                effect: { type: 'boostMorale', value: -20, targetPlayerId: p.id },
+                // Var tidigare bara boostMorale — "ett slut" gjorde honom
+                // aldrig faktiskt free agent (samma klass av fel som let_go
+                // hade, se veteranArcExtendAndLetGo.test.ts). releasePlayer
+                // lagd till: konsekvensen är omedelbar, inte väntande på
+                // säsongsslutets kontraktsutgång. −14 klackens stämning är
+                // ett FÖRSLAG (större än −20-moralen är på spelaren, mindre
+                // än ett rent personsvek — se O17s −8-kalibrering för samma
+                // skala), inte kalibrerat.
+                subtitle: '💛 Moral −20 · −14 klackens stämning',
+                effect: {
+                  type: 'multiEffect',
+                  subEffects: JSON.stringify([
+                    { type: 'boostMorale', amount: -20, targetPlayerId: p.id },
+                    { type: 'releasePlayer', targetPlayerId: p.id },
+                    { type: 'supporterMood', amount: -14 },
+                  ]),
+                },
               },
               {
                 id: 'wait_veteran',
@@ -651,6 +672,13 @@ export function progressArcs(
             sender: { name: 'Journalist', role: 'Media' },
             relatedPlayerId: p.id,
             resolved: false,
+            // O1 kandidat 2 (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md,
+            // Jacobs dom 2026-08-24): mallens fem punkter — klacken (namngiven
+            // institution, agerar via mood-konsekvensen), veteranen (redan
+            // mött, satt i elvan), lönen/kontraktsåren (ett tal mot en känd
+            // resurs), trupp+ekonomi+klack (tre system), keep vs release
+            // (systemen pekar isär). systemhandelse:true, inte bara playerArc.
+            systemhandelse: true,
           })
           updatedArc = { ...updatedArc, eventsFired: [...updatedArc.eventsFired, eventId] }
         }

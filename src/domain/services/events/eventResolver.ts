@@ -825,7 +825,7 @@ export function resolveEvent(
         // saknar ett obligatoriskt fält ska INTE fångas av samma catch — det
         // var precis vad som gjorde makeFullTimePro-no-open (varsel offer_pro)
         // osynlig. Parsning och validering separerade i två steg.
-        let subList: Array<{ type: string; amount?: number; value?: number; targetPlayerId?: string; targetMecenatId?: string; targetClubId?: string }> | null = null
+        let subList: Array<{ type: string; amount?: number; value?: number; targetPlayerId?: string; targetMecenatId?: string; targetClubId?: string; contractYears?: number }> | null = null
         try {
           subList = JSON.parse(effect.subEffects)
         } catch { /* ignore parse errors */ }
@@ -954,6 +954,31 @@ export function resolveEvent(
                       ? { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== pid) }
                       : c
                   ),
+                }
+              }
+            } else if (sub.type === 'extendContract') {
+              // O1 kandidat 2 (Jacobs dom 2026-08-24, veteran_farewell): samma
+              // gren som top-level case 'extendContract' ovan, tillgänglig här
+              // så extend_veteran kan kombinera kontraktsförlängningen med
+              // supporterMood (klackens reaktion är konsekvensen, inte
+              // villkoret — den kan bara uttryckas i samma val via multiEffect).
+              if (!sub.targetPlayerId) throw new Error("multiEffect-subEffect 'extendContract' saknar obligatoriskt fält targetPlayerId")
+              {
+                const pid = sub.targetPlayerId
+                const years = sub.contractYears ?? 1
+                updatedGame = {
+                  ...updatedGame,
+                  players: updatedGame.players.map(p =>
+                    p.id === pid
+                      ? {
+                          ...p,
+                          contractUntilSeason: updatedGame.currentSeason + years,
+                          salary: sub.value ?? p.salary,
+                          morale: Math.min(100, p.morale + 10),
+                        }
+                      : p,
+                  ),
+                  handledContractPlayerIds: [...(updatedGame.handledContractPlayerIds ?? []), pid],
                 }
               }
             } else if (sub.type === 'developmentRateDelta') {
