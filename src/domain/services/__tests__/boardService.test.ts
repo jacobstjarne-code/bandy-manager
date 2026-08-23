@@ -1,72 +1,32 @@
 import { describe, it, expect } from 'vitest'
 import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience } from '../boardService'
 import { ClubExpectation } from '../../enums'
-import type { StandingRow } from '../../entities/SaveGame'
-
-function makeStanding(position: number): StandingRow {
-  return { clubId: 'c1', played: 10, wins: 5, draws: 1, losses: 4, goalsFor: 20, goalsAgainst: 18, goalDifference: 2, points: 16, position }
-}
-
 const TOTAL = 12
-const TOTAL_ROUNDS = 22
 
+// Skutskär-auditens test 2, Jacobs dom 2026-08-24: evaluateBoard läser nu
+// boardPatience (samma ackumulerade värde som portalens
+// getBoardPatienceZone), inte position/expectation — se boardService.ts:s
+// kommentar på funktionen. De gamla position-baserade testerna (anchor-band
+// per ClubExpectation) testade exakt den separata kalibrering domen
+// avskaffade — ersatta av gränstester mot de nya boardPatience-trösklarna,
+// satta så att de alltid faller inom samma zon som getBoardPatienceZone
+// (30/50-gränserna, portal/boardPatienceZone.ts).
 describe('evaluateBoard', () => {
-  describe('WinLeague', () => {
-    it('delighted at top 2', () => {
-      expect(evaluateBoard(ClubExpectation.WinLeague, makeStanding(1), TOTAL, 14, TOTAL_ROUNDS).satisfaction).toBe('delighted')
-      expect(evaluateBoard(ClubExpectation.WinLeague, makeStanding(2), TOTAL, 14, TOTAL_ROUNDS).satisfaction).toBe('delighted')
-    })
-    it('satisfied at position 3-4 late season', () => {
-      expect(evaluateBoard(ClubExpectation.WinLeague, makeStanding(4), TOTAL, 20, TOTAL_ROUNDS).satisfaction).toBe('satisfied')
-    })
-    it('concerned at 5-6 late season', () => {
-      expect(evaluateBoard(ClubExpectation.WinLeague, makeStanding(6), TOTAL, 20, TOTAL_ROUNDS).satisfaction).toBe('concerned')
-    })
-    it('unhappy deep in table late season', () => {
-      expect(evaluateBoard(ClubExpectation.WinLeague, makeStanding(9), TOTAL, 20, TOTAL_ROUNDS).satisfaction).toBe('unhappy')
-    })
-    it('more lenient early season', () => {
-      // Position 6 early should not be unhappy yet
-      const early = evaluateBoard(ClubExpectation.WinLeague, makeStanding(6), TOTAL, 5, TOTAL_ROUNDS).satisfaction
-      expect(early).not.toBe('unhappy')
-    })
+  it('delighted vid boardPatience 80+', () => {
+    expect(evaluateBoard(80).satisfaction).toBe('delighted')
+    expect(evaluateBoard(100).satisfaction).toBe('delighted')
   })
-
-  describe('ChallengeTop', () => {
-    it('delighted top 3', () => {
-      expect(evaluateBoard(ClubExpectation.ChallengeTop, makeStanding(3), TOTAL, 14, TOTAL_ROUNDS).satisfaction).toBe('delighted')
-    })
-    it('satisfied at 4-6', () => {
-      expect(evaluateBoard(ClubExpectation.ChallengeTop, makeStanding(5), TOTAL, 14, TOTAL_ROUNDS).satisfaction).toBe('satisfied')
-    })
-    it('unhappy at bottom late season', () => {
-      expect(evaluateBoard(ClubExpectation.ChallengeTop, makeStanding(11), TOTAL, 20, TOTAL_ROUNDS).satisfaction).toBe('unhappy')
-    })
+  it('satisfied vid boardPatience 50-79 (portalzonen "stabilt")', () => {
+    expect(evaluateBoard(50).satisfaction).toBe('satisfied')
+    expect(evaluateBoard(79).satisfaction).toBe('satisfied')
   })
-
-  describe('MidTable', () => {
-    it('delighted in mid range 4-8', () => {
-      expect(evaluateBoard(ClubExpectation.MidTable, makeStanding(6), TOTAL, 14, TOTAL_ROUNDS).satisfaction).toBe('delighted')
-    })
-    it('satisfied slightly outside mid range', () => {
-      expect(evaluateBoard(ClubExpectation.MidTable, makeStanding(9), TOTAL, 14, TOTAL_ROUNDS).satisfaction).toBe('satisfied')
-    })
+  it('concerned vid boardPatience 30-49 (portalzonen "under press")', () => {
+    expect(evaluateBoard(30).satisfaction).toBe('concerned')
+    expect(evaluateBoard(49).satisfaction).toBe('concerned')
   })
-
-  describe('AvoidBottom', () => {
-    it('delighted well clear of bottom', () => {
-      expect(evaluateBoard(ClubExpectation.AvoidBottom, makeStanding(5), TOTAL, 14, TOTAL_ROUNDS).satisfaction).toBe('delighted')
-    })
-    it('unhappy at very bottom late season', () => {
-      expect(evaluateBoard(ClubExpectation.AvoidBottom, makeStanding(12), TOTAL, 20, TOTAL_ROUNDS).satisfaction).toBe('unhappy')
-    })
-    // U1 (SLUTTEST_KO.md, 2026-08-17): RELEGATION_ZONE_SIZE=2 — plats 11 (näst
-    // sist av 12) ska läsa som 'unhappy', inte bara 'concerned'. Tidigare var
-    // bara den absolut sista platsen 'unhappy', vilket var kärnan i U1-fyndet
-    // (en klubb kunde ligga näst sist utan att styrelsen brydde sig).
-    it('näst sist (i den faktiska nedflyttningszonen) är också unhappy, inte bara concerned', () => {
-      expect(evaluateBoard(ClubExpectation.AvoidBottom, makeStanding(11), TOTAL, 20, TOTAL_ROUNDS).satisfaction).toBe('unhappy')
-    })
+  it('unhappy vid boardPatience under 30 (portalzonen "ultimatum")', () => {
+    expect(evaluateBoard(29).satisfaction).toBe('unhappy')
+    expect(evaluateBoard(0).satisfaction).toBe('unhappy')
   })
 })
 

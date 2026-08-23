@@ -501,14 +501,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
     const managedStanding = standings.find(s => s.clubId === game.managedClubId)
     if (managedClub && managedStanding) {
-      const totalRounds = 22
-      const evaluation = evaluateBoard(
-        managedClub.boardExpectation,
-        managedStanding,
-        game.clubs.length,
-        currentLeagueRound,
-        totalRounds,
-      )
+      // Skutskär-auditens test 2, Jacobs dom 2026-08-24: evaluateBoard läser
+      // nu game.boardPatience (samma ackumulerade värde som portalens
+      // getBoardPatienceZone), inte längre position/expectation — se
+      // boardService.ts:s kommentar på funktionen.
+      const evaluation = evaluateBoard(game.boardPatience ?? 70)
       const { title, body } = generateBoardMessage(evaluation, managedClub.name, currentLeagueRound)
       const alreadySent = game.inbox.some(
         i => i.id === `inbox_board_r${currentLeagueRound}_${game.currentSeason}`

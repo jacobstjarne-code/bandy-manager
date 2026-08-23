@@ -54,67 +54,30 @@ export const BOARD_EXPECTATION_ANCHOR_POSITION: Record<ClubExpectation, number> 
   [ClubExpectation.AvoidBottom]: 9,
 }
 
-// How far into the season (0-1). Earlier = more lenient thresholds.
-function seasonProgress(roundsPlayed: number, totalRounds: number): number {
-  return Math.min(1, roundsPlayed / totalRounds)
-}
-
-export function evaluateBoard(
-  expectation: ClubExpectation,
-  standing: StandingRow,
-  totalTeams: number,
-  roundsPlayed: number,
-  totalRounds: number,
-): BoardEvaluation {
-  const pos = standing.position
-  const progress = seasonProgress(roundsPlayed, totalRounds)
-  // Leniency: early season allows 2 extra places before alarm
-  const lenient = progress < 0.4 ? 2 : 0
-  // U1 andra halvan: samma ankare som computeBoardPatienceUpdate läser —
-  // banden nedan är omskrivna som ankare±offset, siffermässigt IDENTISKA
-  // mot de tidigare hårdkodade trösklarna (ingen beteendeändring här),
-  // bara med en enda delad källa istf en egen gissning per funktion.
-  const anchor = BOARD_EXPECTATION_ANCHOR_POSITION[expectation]
-
+/**
+ * Skutskär-auditens test 2 (boardVerdictConsistency.test.ts), Jacobs dom
+ * 2026-08-24: satisfaction beräknades tidigare OBEROENDE ur position/
+ * anchor-band (ett ögonblicksomdöme) medan portalens boardPatience-zon
+ * (getBoardPatienceZone, portal/boardPatienceZone.ts) läser ACKUMULERAD
+ * historik — samma familj av fel som Skutskär 8:a-motsägelsen (portalen
+ * "Stabilt", ett uppdrag "I FARA", samma omgång): tre formler om samma
+ * fråga, tre separata kalibreringar som kunde säga emot varandra.
+ *
+ * "Zonen är sanningen, domen ska förklara den." evaluateBoard läser nu
+ * SAMMA boardPatience-värde som getBoardPatienceZone, med trösklar satta
+ * så att 'delighted'/'satisfied' alltid faller inom zonens 'stabilt'
+ * (patience>=50) och 'unhappy' alltid inom 'ultimatum' (patience<30) —
+ * ett ögonblick kan aldrig säga emot minnet, för det ÄR minnet.
+ * Position/expectation styr inte längre klassificeringen (det gjorde de
+ * ALDRIG i boardPatience-zonen — bara i den gamla, nu borttagna, separata
+ * anchor-bandslogiken här).
+ */
+export function evaluateBoard(boardPatience: number): BoardEvaluation {
   let satisfaction: BoardEvaluation['satisfaction']
-
-  switch (expectation) {
-    case ClubExpectation.WinLeague:
-      if (pos <= anchor + 1) satisfaction = 'delighted'
-      else if (pos <= anchor + 3 + lenient) satisfaction = 'satisfied'
-      else if (pos <= anchor + 5 + lenient) satisfaction = 'concerned'
-      else satisfaction = 'unhappy'
-      break
-
-    case ClubExpectation.ChallengeTop:
-      if (pos <= anchor - 1) satisfaction = 'delighted'
-      else if (pos <= anchor + 2 + lenient) satisfaction = 'satisfied'
-      else if (pos <= anchor + 4 + lenient) satisfaction = 'concerned'
-      else satisfaction = 'unhappy'
-      break
-
-    case ClubExpectation.MidTable:
-      if (pos >= anchor - 2 && pos <= anchor + 2) satisfaction = 'delighted'
-      else if (pos <= anchor + 4 + lenient) satisfaction = 'satisfied'
-      else satisfaction = 'concerned'
-      break
-
-    case ClubExpectation.AvoidBottom: {
-      // U1 (SLUTTEST_KO.md, 2026-08-17): "unhappy" täckte tidigare bara den
-      // absolut sista platsen — en klubb på den NÄST sista platsen (också
-      // inne i den faktiska nedflyttningszonen, RELEGATION_ZONE_SIZE=2) läste
-      // bara som "concerned", inte som verklig risk.
-      const relegationZoneStart = totalTeams - RELEGATION_ZONE_SIZE + 1
-      if (pos <= anchor - 1) satisfaction = 'delighted'
-      else if (pos <= anchor + 1 - lenient) satisfaction = 'satisfied'
-      else if (pos < relegationZoneStart) satisfaction = 'concerned'
-      else satisfaction = 'unhappy'
-      break
-    }
-
-    default:
-      satisfaction = 'satisfied'
-  }
+  if (boardPatience >= 80) satisfaction = 'delighted'
+  else if (boardPatience >= 50) satisfaction = 'satisfied'
+  else if (boardPatience >= 30) satisfaction = 'concerned'
+  else satisfaction = 'unhappy'
 
   return { satisfaction, message: '' }
 }
