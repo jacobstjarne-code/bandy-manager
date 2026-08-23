@@ -67,4 +67,9 @@ describe('getRefereeMeetingQuotePool — kontexttabelltest', () => {
   it('regression: den gamla REFEREE_MEETING_QUOTES.inconsistent-arrayen är tom (flyttad, inte dubblerad)', () => {
     expect(REFEREE_MEETING_QUOTES.inconsistent).toEqual([])
   })
+
+  it('inconsistent × loss: fyra riktiga rader, ingen [Opus]-platshållare kvar (fylld 2026-08-23)', () => {
+    expect(REFEREE_MEETING_QUOTES_INCONSISTENT.loss).toHaveLength(4)
+    expect(REFEREE_MEETING_QUOTES_INCONSISTENT.loss).not.toContain('[Opus]')
+  })
 })

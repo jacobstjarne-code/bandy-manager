@@ -51,9 +51,7 @@ export const REFEREE_MEETING_QUOTES: Record<RefereeStyle, string[]> = {
  * vinst/förlust/neutral istf en enda pool. `neutral` gäller alltid;
  * `win`/`loss` läggs till beroende på faktiskt utfall.
  *
- * `loss` saknar en riktig rad — CLAUDE.md:s hårda regel, Code skriver
- * aldrig citat. '[Opus]' väntar en skriven rad; poolen är aldrig tom
- * (neutral-raderna finns alltid med, se getRefereeMeetingQuotePool).
+ * `loss` fyllt 2026-08-23 — text från Jacob (chatten, ordagrant).
  */
 export const REFEREE_MEETING_QUOTES_INCONSISTENT: Record<'win' | 'loss' | 'neutral', string[]> = {
   neutral: [
@@ -64,7 +62,10 @@ export const REFEREE_MEETING_QUOTES_INCONSISTENT: Record<'win' | 'loss' | 'neutr
     'Bandy är marginaler. Idag föll de åt er. Ibland inte.',
   ],
   loss: [
-    '[Opus]',
+    'Det gick inte vår väg i dag. Ibland gör det inte det.',
+    'Han dömde likadant åt båda hållen. Vi gjorde för lite med det.',
+    'Två situationer kunde gått annorlunda. Vi ska inte ha behövt vara där.',
+    'Domaren är inte förklaringen. Vi vet var förklaringen finns.',
   ],
 }
 
