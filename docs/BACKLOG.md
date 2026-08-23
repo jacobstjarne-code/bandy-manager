@@ -49,6 +49,18 @@
 
 ---
 
+## ⚠️ DATAFÄLT SOM SAKNAS — kommer tillbaka
+
+**Vad detta är:** ett fält flera framtida features kommer att vilja ha, som inte går att härleda korrekt ur nuvarande data. Skild från BYGGT MEN OSYNLIGT (logik utan yta) och TVÅ LÄSARE (två läsare av samma fält) — här finns inget att läsa alls, bara en frestelse att gissa.
+
+| Fält | Vad som finns istället | Varför det inte duger | Vem har redan velat ha det |
+|---|---|---|---|
+| **"År i klubben" (tenure, oberoende av `isHomegrown`)** | `careerStats.seasonsPlayed` — karriärvid, inkrementeras varje säsong för VARJE spelare oavsett klubb (`seasonEndProcessor.ts:445`), inget klubbyte nollställer den. Sann tenure ENDAST för `isHomegrown` (aldrig värvad). `seasonHistory` bär `clubId` per post och skulle gå att filtrera på — men är `.slice(-10)`, så för en spelare med >10 säsonger i klubben ger den bara "minst 10", aldrig ett exakt tal. | Ett årtal vi inte kan belägga är ett påstående — O11:s hela poäng är att stoppa exakt den klassen fel (`docs/DOM_INNEHALLSKONTRAKTET_2026-08-17.md`). En värvad veteran med lång karriär skulle annars få ett falskt "tolv år i klubben". | O1 kandidat 2 (`docs/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md`, veteran-kontraktet, `42e42c9d` 2026-08-24) — löst genom att INTE skriva ett tal för icke-`isHomegrown`-spelare. O18 fält 3 (personrad, `SeasonSummary.personChange`) vill ha samma sak: `"{Namn} la av efter {N} säsonger"` kräver exakt samma tal och kommer att träffa exakt samma vägg när den byggs. |
+
+**Om fältet ska byggas:** ett `joinedClubSeason?: number` på `Player`, satt vid transfer-completion (`transferService.ts`) och vid akademiuppflyttning (redan `isHomegrown` där, så fältet kan sättas = spelets startsäsong för konsistens). Inte gjort — ingen feature har krävt det tillräckligt starkt än, men två oberoende features har nu velat ha det. Tredje gången är signalen att bygga fältet, inte gissa runt det igen.
+
+---
+
 ## ⚠️ PRÖVAT OCH AVFÄRDAT — bygg inte om utan att läsa detta först
 
 **`vercel.json`s `ignoreCommand`** (byggd `bb23ff99` 2026-08-22, återkallad `[nästa commit]` samma dag). Avsikt: hoppa över deploy på docs-only-pushar för att spara Vercels dagliga gratiskvot. `git diff --quiet ${VERCEL_GIT_PREVIOUS_SHA:-HEAD^} HEAD -- . ':!docs' ':!*.md'`.
