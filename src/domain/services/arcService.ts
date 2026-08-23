@@ -617,22 +617,34 @@ export function progressArcs(
       if (updatedArc.phase === 'peak' && p) {
         const eventId = `veteran_peak_event_${arc.id}`
         if (!arc.eventsFired.includes(eventId)) {
-          const seasons = p.seasonHistory?.length ?? 0
+          // O1 kandidat 2, text låst av Jacob 2026-08-24. Två brödtextvarianter
+          // — homegrown skriver ut {år} (careerStats.seasonsPlayed är sant
+          // för en spelare som aldrig värvats), värvad gör det inte (ingen
+          // pålitlig klubb-tenure-data finns för värvade spelare, se
+          // BACKLOG.md "Datafält som saknas — år i klubben"). Ingen
+          // {ersättare} — "den som väntar" räcker, mallen kräver den inte.
+          const annualSalaryTkr = Math.round((p.salary * 12) / 1000)
+          const seasonsInClub = p.careerStats?.seasonsPlayed ?? 0
+          const body = p.isHomegrown
+            ? `${name} fyller ${p.age} i vinter. Han har varit här i ${seasonsInClub} år och han vill ha två till. Han är inte bättre än den som väntar, men han är den de sjunger om. ${annualSalaryTkr} tkr i året, samma som förut.`
+            : `${name} fyller ${p.age} i vinter och vill ha två år till. Han har varit här länge nog att folk vet var han bor. Han är inte bättre än den som väntar, men han är den de sjunger om. ${annualSalaryTkr} tkr i året, samma som förut.`
           newEvents.push({
             id: eventId,
             type: 'playerArc',
-            title: `Pressen frågar om ${name}s framtid`,
-            body: `"Hur ser framtiden ut för ${name}? Han har ${seasons} säsonger bakom sig och kontraktet löper ut."`,
+            title: `${name} vill stanna`,
+            body,
             choices: [
               {
                 id: 'extend_veteran',
-                label: 'Han är en legend — vi förlänger',
+                label: 'Förläng två år',
                 // O1 kandidat 2 (Jacobs dom 2026-08-24): klackens mood är
                 // KONSEKVENSEN av valet, inte ett villkor — favoritePlayerId
                 // mäter en annan fråga (vem som är bäst just nu) och skulle
                 // strukturellt nästan aldrig träffa en åldrande veteran.
-                // +6 klackens stämning är ett FÖRSLAG, inte kalibrerat.
-                subtitle: '💛 Moral +10 · +6 klackens stämning',
+                // +6 klackens stämning, godkänd magnitud — mindre än avskedets
+                // −14: att behålla någon är förväntat, att släppa någon är
+                // en händelse.
+                subtitle: 'Klacken får behålla honom. Platsen förblir upptagen.',
                 effect: {
                   type: 'multiEffect',
                   subEffects: JSON.stringify([
@@ -643,16 +655,14 @@ export function progressArcs(
               },
               {
                 id: 'farewell_veteran',
-                label: 'Alla goda ting har ett slut',
+                label: 'Tacka för sig',
                 // Var tidigare bara boostMorale — "ett slut" gjorde honom
                 // aldrig faktiskt free agent (samma klass av fel som let_go
                 // hade, se veteranArcExtendAndLetGo.test.ts). releasePlayer
                 // lagd till: konsekvensen är omedelbar, inte väntande på
-                // säsongsslutets kontraktsutgång. −14 klackens stämning är
-                // ett FÖRSLAG (större än −20-moralen är på spelaren, mindre
-                // än ett rent personsvek — se O17s −8-kalibrering för samma
-                // skala), inte kalibrerat.
-                subtitle: '💛 Moral −20 · −14 klackens stämning',
+                // säsongsslutets kontraktsutgång. −14 klackens stämning,
+                // godkänd magnitud.
+                subtitle: 'Ni får loss lönen och platsen. Klacken får veta av er.',
                 effect: {
                   type: 'multiEffect',
                   subEffects: JSON.stringify([
@@ -661,12 +671,6 @@ export function progressArcs(
                     { type: 'supporterMood', amount: -14 },
                   ]),
                 },
-              },
-              {
-                id: 'wait_veteran',
-                label: 'Vi utvärderar efter säsongen',
-                subtitle: 'Ingen effekt nu',
-                effect: { type: 'noOp' },
               },
             ],
             sender: { name: 'Journalist', role: 'Media' },
@@ -694,9 +698,12 @@ export function progressArcs(
             season: game.currentSeason,
             matchday: getCurrentLeagueRound(game),
             playerId: p.id,
+            // O1 kandidat 2, utfallsraderna låsta av Jacob 2026-08-24 — den
+            // sista meningen i avskedet ("Han sa att han förstod") är avsiktligt
+            // det som gör beslutet dyrt.
             description: extended
-              ? `${name} förlängde kontraktet. Legenden fortsätter sin resa med klubben.`
-              : `${name}s kontrakt löper ut. En era tar slut.`,
+              ? `${name} skriver på i omklädningsrummet. Någon hade tagit med tårta.`
+              : `${name} tömde skåpet själv. Han sa att han förstod.`,
             displayText: extended
               ? `🏅 ${name} stannar — legenden lever`
               : `🏅 ${name}s sista säsong`,
