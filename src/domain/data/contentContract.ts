@@ -12,47 +12,50 @@
  * egen instruktion ("gör dem tillsammans, inte två gånger") — U5 var klar
  * (`4e341891`) innan detta pass startade.
  *
- * TÄCKNINGSLÄGE (ärligt, inte optimistiskt): exakt 95 rader, en per
- * canonical id ur de fyra källorna — registret är strukturellt komplett
- * och användbart som HÄNGSTABELL nu (test: contentContract.test.ts).
- * Bara en delmängd har alla sex fälten ifyllda (`filled: true`) — de
- * spårade under detta och tidigare pass i samma session (domens motiverande
- * felfall, sju pivotal beats, O2-dominansrevisionens granskade val). Resten
- * är `filled: false`, TODO-rader. Att fylla i alla 95 korrekt kräver att
- * varje källa läses individuellt — inte något att gissa sig igenom för
- * hastighetens skull, exakt det kontraktet finns för att förhindra.
+ * TÄCKNINGSLÄGE (ärligt, inte optimistiskt, 2026-08-24): 96 rader (95 vid
+ * O11:s ursprungsleverans, +1 `burnoutRelief` 2026-08-23), en per canonical
+ * id ur de fyra källorna — registret är strukturellt komplett och
+ * användbart som HÄNGSTABELL nu (test: contentContract.test.ts). 9 rader
+ * har alla sex fälten ifyllda (`filled: true`) — spårade under detta och
+ * tidigare pass i samma session (domens motiverande felfall, två pivotal
+ * beats, O2-dominansrevisionens granskade val). Resten (87) är
+ * `filled: false`, TODO-rader — antalet ratchet:as nu av
+ * `scripts/content-contract-guard.ts` (kan inte öka, se ENFORCEMENT nedan).
+ * Att fylla i alla 96 korrekt kräver att varje källa läses individuellt —
+ * inte något att gissa sig igenom för hastighetens skull, exakt det
+ * kontraktet finns för att förhindra.
  *
- * ENFORCEMENT — O11 (2026-08-23): byggd. INTE `scripts/eventGuardInstrument.ts`
- * (den simulerar spelat state och fångar RESOLVER-kastar — ett annat
- * verktyg, för en annan sorts fel). Det domens "Godkänd när"-rad faktiskt
- * bad om — "vägrar merge av ofyllda rader" — betyder i praktiken "vägrar
- * merge av HELT SAKNADE rader" (en filled:false TODO-rad är en accepterad,
- * ärlig status; en id som saknas UR REGISTRET HELT är den verkliga risken —
- * ny narrativ typ läggs till i koden, ingen minns att lägga till raden,
- * täckningen driver isär utan att synas). Två mekanismer, båda redan
- * körda gates (ingen ny CI-koppling):
+ * ENFORCEMENT — O11 (2026-08-23, utökad 2026-08-24). Tre mekanismer, INTE
+ * `scripts/eventGuardInstrument.ts` (den simulerar spelat state och fångar
+ * RESOLVER-kastar — ett annat verktyg, för en annan sorts fel):
  * — GameEventType/StorylineType/ArcType: tre TS-kompileringstidsassertioner
  *   (AssertNoMissingIds nedan) — ingen runtime-representation finns för en
  *   ren string-literal-union, så tsc är den enda platsen kontrollen kan
  *   göras. En ny unionmedlem utan motsvarande _IDS-post failar `npx tsc`
- *   (= npm run build) med id:t namngivet i felmeddelandet. Verifierat
- *   (2026-08-23): togs `burnoutRelief` bort ur GAME_EVENT_TYPE_IDS testvis,
- *   tsc failade exakt så; återställt.
+ *   (= npm run build) med id:t namngivet i felmeddelandet.
  * — PortalBeat: `contentContract.test.ts`s egen `PORTAL_BEAT_IDS_ALL vs
  *   PORTAL_BEATS`-test (PortalBeat är en objektinterface, inte en
  *   stringunion — här FINNS en runtime-array att jämföra mot, så en
  *   vitest-assertion är rätt verktyg, inte en TS-assertion).
+ * — `scripts/content-contract-guard.ts` (Jacobs order 2026-08-24, kedjad i
+ *   `npm run build`): ratchet på antalet `filled: false`-rader, samma
+ *   mönster som `ds-guard.mjs`. En helt saknad rad fångas redan av de två
+ *   ovan — den här grinden fångar den andra risken domens "Godkänd
+ *   när"-rad faktiskt namngav: en NY rad som läggs till men lämnas
+ *   ofylld (eller en tidigare ifylld rad som töms) höjer TODO-antalet över
+ *   den sparade baslinjen och failar bygget. Att fylla i fler av de 87
+ *   befintliga TODO-raderna sänker antalet — informativt, ratchet kan då
+ *   dras åt, precis som ds-guard.
  *
  * KOPPLING TILL D1 PUNKT 4 (Jacobs dom, 2026-08-21): "därför nu"-radens
  * getWhyNowLine() läser HÄRIFRÅN (per GameEventType-rad), inte från
- * event-instansen. Ingen av de sex nu ifyllda raderna bär whyNow-data —
- * mecenatEvent/economicStress/playerUnhappy/criticalEconomy (de fyra typer
- * som faktiskt routas kritiskt, se getEventPriority i GameEvent.ts) är
- * fortfarande `filled: false`. Tills en av dem spåras och en av de fyra
- * whyNow-formerna grundas i verklig data, nedgraderar getEffectivePriority
- * (eventQueueService.ts) alla kritiska events till 'normal' — MEDVETET,
- * inte en bugg. Mekanismen aktiveras rad för rad när registret fylls i,
- * aldrig genom att gissa en brådskerad för att täcka en typ.
+ * event-instansen. Ingen av de nio nu ifyllda raderna bär whyNow-data PÅ
+ * TYP-NIVÅ — playerUnhappy/mecenatEvent/criticalEconomy sätter den
+ * INSTANS-nivå istället (event.whyNow, se respektive rads notes; DÖMT
+ * 2026-08-24), economicStress avsiktligt aldrig. Tills en typ-nivå-rad
+ * faktiskt sätter ett whyNow-fält, nedgraderar getEffectivePriority
+ * (eventQueueService.ts) den till 'normal' om ingen instans heller satt
+ * det — MEDVETET, inte en bugg.
  */
 
 import type { GameEventType } from '../entities/GameEvent'
