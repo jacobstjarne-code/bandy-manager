@@ -13,6 +13,8 @@ import { checkEconomicCrisis } from '../../../domain/services/economicCrisisServ
 import { checkSeasonGoalHalfwayEvent } from '../../../domain/services/seasonGoalService'
 import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
+import { getBurnoutZone } from '../../../domain/services/managerProfileService'
+import { generateBurnoutReliefEvent } from '../../../domain/services/burnoutReliefService'
 import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
 import type { Scandal } from '../../../domain/services/scandalService'
 import { checkScandalTrigger, applyScandalEffect, resolveExpiredScandals } from '../../../domain/services/scandalService'
@@ -121,6 +123,19 @@ export function processGameEvents(
   if (nextMatchday === 20 && canAddDecision(game, nextMatchday) && !isInCooldown(game.sourceCooldowns ?? {}, 'mecenat')) {
     const dinnerEvent = generateDinnerEvent(game, nextMatchday)
     if (dinnerEvent) gameEvents.push(dinnerEvent)
+  }
+
+  // O4 (DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23): burnout-relief —
+  // budget gate + source cooldown, samma mönster som mecenatens middag ovan.
+  // Aldrig i 'frisk'-zonen (ingen effekt att lätta på), aldrig oftare än
+  // var 6:e omgång (SOURCE_COOLDOWN_ROUNDS.burnout) så länge zonen håller i sig.
+  const burnoutZone = getBurnoutZone(game.managerProfile?.burnoutScore ?? 0)
+  if (
+    (burnoutZone === 'markbar' || burnoutZone === 'hog') &&
+    canAddDecision(game, nextMatchday) &&
+    !isInCooldown(game.sourceCooldowns ?? {}, 'burnout')
+  ) {
+    gameEvents.push(generateBurnoutReliefEvent(nextMatchday, game.currentSeason, burnoutZone))
   }
 
   let updatedMecenater = (game.mecenater ?? []).map(mec => {

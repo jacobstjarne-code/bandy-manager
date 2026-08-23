@@ -28,6 +28,7 @@ import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from
 import { findActiveAnniversaries } from '../../domain/services/clubMemoryService'
 import type { ActiveAnniversary } from '../../domain/services/clubMemoryService'
 import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
+import { getBurnoutTacticSuppression, suppressTacticRecommendation, burnoutEffectSeed } from '../../domain/services/burnoutReliefService'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -430,9 +431,13 @@ export function SquadScreen() {
     if (!nf) return { nextOpponentName: undefined, nextOpponentAnalysis: undefined }
     const oppId = nf.homeClubId === game.managedClubId ? nf.awayClubId : nf.homeClubId
     const opp = game.clubs.find(c => c.id === oppId)
+    const rawAnalysis = game.opponentAnalyses?.[oppId]
+    // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): samma gate/seed som
+    // TaktikScreen.tsx — de två skärmarna får aldrig ge olika svar samma omgång.
+    const suppressed = getBurnoutTacticSuppression(game.managerProfile, burnoutEffectSeed(game))
     return {
       nextOpponentName: opp?.shortName ?? opp?.name,
-      nextOpponentAnalysis: game.opponentAnalyses?.[oppId],
+      nextOpponentAnalysis: suppressed ? suppressTacticRecommendation(rawAnalysis) : rawAnalysis,
     }
   }, [game])
 

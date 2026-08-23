@@ -1,4 +1,4 @@
-export type SourceKey = 'kommunen' | 'mecenat' | 'lokaltidningen'
+export type SourceKey = 'kommunen' | 'mecenat' | 'lokaltidningen' | 'burnout'
 
 export interface SourceCooldown {
   roundsLeft: number
@@ -11,6 +11,11 @@ export const SOURCE_COOLDOWN_ROUNDS: Record<SourceKey, number> = {
   kommunen: 8,
   mecenat: 4,
   lokaltidningen: 3,
+  // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): burnoutRelief-eventet — utan
+  // en cooldown skulle det generera om igen VARJE omgång så länge zonen
+  // förblir markbar/hög (burnoutScore rör sig långsamt, ofta över fler
+  // omgångar än så).
+  burnout: 6,
 }
 
 // Event types that map to each source
@@ -21,6 +26,10 @@ export const EVENT_SOURCE_MAP: Partial<Record<string, SourceKey>> = {
   gentjanst: 'kommunen',
   mecenatDinner: 'mecenat',
   journalistExclusive: 'lokaltidningen',
+  // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): resolution-tidpunktens
+  // generiska cooldown-start (eventResolver.ts) räcker — ingen egen
+  // startCooldown-anropsplats behövs.
+  burnoutRelief: 'burnout',
 }
 
 export function startCooldown(

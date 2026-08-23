@@ -409,7 +409,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           : 'physical'
 
     const intensityRaw = game.managedClubTraining?.intensity
-    const intensityBucket = intensityRaw === TrainingIntensity.Light ? 'light'
+    // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): "Sänk tempot på träningen"
+    // (burnoutRelief) tvingar 'light' till och med burnoutTrainingSlowdownUntilRound
+    // — en override, INTE en ändring av spelarens egen Träna-flik-inställning
+    // (game.managedClubTraining.intensity förblir orört, bara den EFFEKTIVA
+    // intensiteten denna omgång sänks).
+    const burnoutSlowdownActive = (game.burnoutTrainingSlowdownUntilRound ?? 0) >= nextMatchday
+    const intensityBucket = burnoutSlowdownActive ? 'light'
+      : intensityRaw === TrainingIntensity.Light ? 'light'
       : (intensityRaw === TrainingIntensity.Hard || intensityRaw === TrainingIntensity.Extreme) ? 'heavy'
       : 'normal'
 

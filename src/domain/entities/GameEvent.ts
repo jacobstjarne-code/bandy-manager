@@ -47,6 +47,7 @@ export type GameEventType =
   | 'csPress'
   | 'playThroughInjury'
   | 'seasonGoalHalfway'
+  | 'burnoutRelief'
 
 /**
  * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
@@ -199,6 +200,9 @@ export function getEventPriority(type: GameEventType): EventPriority {
     case 'contractRequest':
     case 'academyEvent':
     case 'playoffEvent':
+    // O4 (DOM_BURNOUT_2026-08-17.md): "Aldrig pivotal" — burnoutRelief är en
+    // återkommande, sjukdomsartad situation, inte ett unikt ödesögonblick.
+    case 'burnoutRelief':
       return 'normal'
     case 'bandyLetter':
     case 'schoolAssignment':

@@ -283,6 +283,12 @@ export interface SaveGame {
   communityStandingDelta?: number  // delta since last round (positive = up, negative = down)
   journalistRelationship?: number  // 0-100, starts 50
   sponsorNetworkMood?: number    // 0-100, collective mood
+  /** O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): satt av burnoutRelief-eventets
+   *  "Sänk tempot på träningen"-val. Priset för handlingen — inte en ny mätare,
+   *  bara en tillfällig override av den redan existerande trainingIntensity-
+   *  effekten (roundProcessor.ts tvingar 'light' fram till denna omgång,
+   *  oavsett vad spelaren själv valt i Träna-fliken). */
+  burnoutTrainingSlowdownUntilRound?: number
 
   // Sprint 5: named characters
   namedCharacters?: NamedCharacter[]

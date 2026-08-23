@@ -777,6 +777,26 @@ export function resolveEvent(
                 ...updatedGame,
                 boardPatience: Math.max(0, Math.min(100, (updatedGame.boardPatience ?? 70) + (sub.amount ?? 0))),
               }
+            } else if (sub.type === 'reduceBurnout') {
+              // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): burnoutRelief-eventets
+              // tre handlingar. amount är alltid negativt (sänker), samma
+              // clamp 0-100 som updateManagerBurnout (managerProfileService.ts).
+              if (updatedGame.managerProfile) {
+                const newScore = Math.max(0, Math.min(100, updatedGame.managerProfile.burnoutScore + (sub.amount ?? 0)))
+                updatedGame = {
+                  ...updatedGame,
+                  managerProfile: { ...updatedGame.managerProfile, burnoutScore: newScore },
+                }
+              }
+            } else if (sub.type === 'startTrainingSlowdown') {
+              // O4: "Sänk tempot på träningen"-valets pris. amount = antal
+              // omgångar. roundProcessor.ts tvingar trainingIntensity till
+              // 'light' till och med detta matchday, oavsett vad spelaren
+              // själv valt i Träna-fliken.
+              updatedGame = {
+                ...updatedGame,
+                burnoutTrainingSlowdownUntilRound: updatedGame.currentMatchday + (sub.amount ?? 0),
+              }
             } else if (sub.type === 'politicianRelationship') {
               if (updatedGame.localPolitician) {
                 updatedGame = {

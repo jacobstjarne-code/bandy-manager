@@ -4,6 +4,7 @@ import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
 import type { Tactic } from '../../domain/entities/Club'
 import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
 import { getTacticDeltaLine, getTacticChangeHistoryLines } from '../utils/tacticData'
+import { getBurnoutTacticSuppression, suppressTacticRecommendation, burnoutEffectSeed } from '../../domain/services/burnoutReliefService'
 
 export function TaktikScreen() {
   const navigate = useNavigate()
@@ -22,9 +23,14 @@ export function TaktikScreen() {
     if (!nf) return { nextOpponentName: undefined, nextOpponentAnalysis: undefined }
     const oppId = nf.homeClubId === game.managedClubId ? nf.awayClubId : nf.homeClubId
     const opp = game.clubs.find(c => c.id === oppId)
+    const rawAnalysis = game.opponentAnalyses?.[oppId]
+    // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): "assistentens taktik-
+    // rekommendation uteblir ibland/oftare" — deterministisk per omgång,
+    // samma seed som SquadScreen.tsx:s TacticBoardCard-montering.
+    const suppressed = getBurnoutTacticSuppression(game.managerProfile, burnoutEffectSeed(game))
     return {
       nextOpponentName: opp?.shortName ?? opp?.name,
-      nextOpponentAnalysis: game.opponentAnalyses?.[oppId],
+      nextOpponentAnalysis: suppressed ? suppressTacticRecommendation(rawAnalysis) : rawAnalysis,
     }
   })()
 
