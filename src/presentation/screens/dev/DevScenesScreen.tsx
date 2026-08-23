@@ -5,9 +5,12 @@
  * Add a scene: extend SCENES, create fingered game via makeGame(), render below.
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import type { Club } from '../../../domain/entities/Club'
+import type { Club, Tactic } from '../../../domain/entities/Club'
+import type { TeamSelection } from '../../../domain/entities/Fixture'
+import { FORMATIONS } from '../../../domain/entities/Formation'
 import { PlayerPosition, CornerStrategy, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, PenaltyKillStyle } from '../../../domain/enums'
 import { CupFinalVictoryScene } from '../scenes/CupFinalVictoryScene'
 import { SMFinalVictoryScene } from '../scenes/SMFinalVictoryScene'
@@ -19,6 +22,7 @@ import { SquadScreen } from '../SquadScreen'
 import { PortalScreen } from '../PortalScreen'
 import { HalfTimeSummaryScreen } from '../HalfTimeSummaryScreen'
 import { MatchScreen } from '../MatchScreen'
+import { MatchLiveScreen } from '../match/MatchLiveScreen'
 import { BottomNav } from '../../navigation/BottomNav'
 import { TranareTab } from '../../components/club/TranareTab'
 import { ClubScreen } from '../ClubScreen'
@@ -88,6 +92,18 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // renderar en äkta BottomNav bredvid produktkomponenten (se render-blocket
   // för rotorsak). Detta ÄR SÄTT LAGET-fyndet (MatchLaddningBand, streak≥3).
   | 'navgate-laddning-band'
+  // Skutskär-auditen, test 21 (2026-08-23): MatchLiveScreen hade NOLL
+  // dev-scene-täckning ("Skydd eller illusion?", SLUTTEST_KO.md rad 112) —
+  // spelets mest komplexa skärm, onåbar för tapTargetGate.visual.ts. Skiljer
+  // sig från alla andra scener ovan: MatchLiveScreen läser sin data via
+  // react-router `location.state`, inte via useGameStore/props. Ett första
+  // försök körde den i en nästlad <MemoryRouter> — React tillåter inte ett
+  // Router inuti ett annat ("You cannot render a <Router> inside another
+  // <Router>"), kraschade hela DevScenesScreen (fångat av browser-
+  // verifieringen, inte av tsc/vitest). Fixat: samma yttre router,
+  // location.state satt via navigate(samma path, {state, replace:true}) i
+  // en useEffect (se render-blocket) — inget nästlat Router-träd.
+  | 'match-live'
   // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — CODE_INSTRUKTION_SOMMAREN_
   // 2026-08-17.md:s fyra baseline-scener, via fabriken (samma mönster som
   // season-a/b/c, inte en egen scen per override).
@@ -434,6 +450,62 @@ const truppKrisGame = withExpiringContracts(withLowMorale(withSuspended(withInju
 // rensar den explicit så nudgeData faktiskt får chansen att beräknas.
 const lineupEmptyGame = withoutPendingLineup(factoryMidSeasonGame)
 const lineupFilledGame = withLineupSlots(withLongestSurnames(factoryMidSeasonGame), { emptyCount: 0, formation: '5-3-2' })
+
+// Skutskär-auditen, test 21 (2026-08-23): MatchLiveScreen läser fixture/
+// homeLineup/awayLineup via react-router location.state (MatchScreen.tsx:s
+// navigate('/game/match/live', {state: {...}}) — enda skärmen i appen som
+// gör det, alla andra läser useGameStore/props). buildSimpleLineup() speglar
+// gameStateFactory.ts:s withLineupSlots() men för GODTYCKLIG klubb (inte bara
+// managedClubId) så samma funktion kan bygga BÅDA lagens elva ur en riktig,
+// validerad värld (factoryMidSeasonGame — samma bas som lineup-filled).
+function buildSimpleLineup(game: SaveGame, clubId: string, formation: keyof typeof FORMATIONS = '5-3-2'): TeamSelection {
+  const template = FORMATIONS[formation]
+  const available = game.players.filter(p => p.clubId === clubId && !p.isInjured && p.suspensionGamesRemaining === 0)
+  const startingPlayerIds: string[] = []
+  for (const slot of template.slots) {
+    const candidate = available.find(p => p.position === slot.position && !startingPlayerIds.includes(p.id))
+      ?? available.find(p => !startingPlayerIds.includes(p.id))
+    if (candidate) startingPlayerIds.push(candidate.id)
+  }
+  const benchPlayerIds = available.filter(p => !startingPlayerIds.includes(p.id)).slice(0, 5).map(p => p.id)
+  const club = game.clubs.find(c => c.id === clubId)
+  const tactic: Tactic = { ...(club?.activeTactic as Tactic), formation }
+  return { startingPlayerIds, benchPlayerIds, captainPlayerId: startingPlayerIds[0], tactic }
+}
+const matchLiveGame = factoryMidSeasonGame
+const matchLiveFixture = getNextManagedFixture(matchLiveGame)
+const matchLiveHomeClub = matchLiveFixture ? matchLiveGame.clubs.find(c => c.id === matchLiveFixture.homeClubId) : undefined
+const matchLiveAwayClub = matchLiveFixture ? matchLiveGame.clubs.find(c => c.id === matchLiveFixture.awayClubId) : undefined
+const matchLiveLocationState = matchLiveFixture ? {
+  fixture: { ...matchLiveFixture, attendance: matchLiveFixture.attendance ?? 320 },
+  homeLineup: buildSimpleLineup(matchLiveGame, matchLiveFixture.homeClubId),
+  awayLineup: buildSimpleLineup(matchLiveGame, matchLiveFixture.awayClubId),
+  homeClubName: matchLiveHomeClub?.name ?? '',
+  awayClubName: matchLiveAwayClub?.name ?? '',
+  isManaged: true,
+  matchMode: 'full' as const,
+} : null
+type MatchLiveLocationState = NonNullable<typeof matchLiveLocationState>
+
+/**
+ * MatchLiveScreen läser sin data via `useLocation().state`, inte via
+ * useGameStore/props (ensam i hela appen om detta) — samma yttre router
+ * som DevScenesScreen redan lever i (ett nästlat <MemoryRouter> kraschar,
+ * se SceneId-kommentaren ovan). navigate(samma path, {state, replace:true})
+ * lägger state på DEN AKTUELLA location-posten, så `?scene=match-live`
+ * i adressfältet är orört — MatchLiveScreens `useLocation()` ser statet
+ * så fort effekten kört en gång.
+ */
+function MatchLiveDevScene({ locationState }: { locationState: MatchLiveLocationState }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  useEffect(() => {
+    if (location.state) return
+    navigate(location.pathname + location.search, { state: locationState, replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return <MatchLiveScreen />
+}
 
 // Mobil speltest-audit (2026-08-17), tap-target-grinden: forcerar de N senaste
 // spelade matcherna till vinster så computeLaddningBeat (matchLaddningGrind.ts)
@@ -1009,6 +1081,7 @@ export function DevScenesScreen() {
       : scene === 'trupp-kris' ? truppKrisGame
       : scene === 'lineup-empty' ? lineupEmptyGame
       : scene === 'lineup-filled' ? lineupFilledGame
+      : scene === 'match-live' ? matchLiveGame
       : scene === 'navgate-laddning-band' ? matchLaddningBandGame
       : scene === 'portal-tom' ? portalTomGame
       : scene === 'portal-normal' ? portalNormalGame
@@ -1228,6 +1301,11 @@ export function DevScenesScreen() {
         {(scene === 'lineup-empty' || scene === 'lineup-filled') && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <MatchScreen />
+          </div>
+        )}
+        {scene === 'match-live' && matchLiveLocationState && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <MatchLiveDevScene locationState={matchLiveLocationState} />
           </div>
         )}
         {/* Mobil speltest-audit (2026-08-17), tap-target-grinden: till skillnad

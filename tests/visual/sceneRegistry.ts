@@ -87,4 +87,9 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   ['trupp-blandat'], ['trupp-kris'], ['lineup-empty'], ['lineup-filled'],
   ['portal-tom'], ['portal-normal'], ['portal-full'], ['portal-grind'],
   ['portal-bid-single'], ['portal-bid-multi'],
+  // Skutskär-auditen, test 21 (2026-08-23): MatchLiveScreen ("spelets mest
+  // komplexa skärm") hade NOLL dev-scene-täckning — samma familj som
+  // halftime-summary/lineup-filled ovan, bara aldrig byggd förrän nu (se
+  // DevScenesScreen.tsx för hur location.state fejkas via <MemoryRouter>).
+  ['match-live'],
 ]
