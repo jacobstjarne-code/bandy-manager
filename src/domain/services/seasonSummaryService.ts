@@ -647,3 +647,50 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
       : undefined,
   }
 }
+
+/**
+ * ÅRSBOKENS_TVASANNINGSMENING_2026-08-23.md (Jacobs dom): "när
+ * placeringsdomen och uppdragsutfallet pekar åt olika håll ska båda stå i
+ * samma mening... förbundna med men." Pekar de åt samma håll (eller finns
+ * ingen objectiveOutcome-data) returneras null — anroparen visar bara
+ * placeringsdomen, som i dag.
+ *
+ * `placeringsdom` skickas in av anroparen (SeasonSummaryScreen.tsx) —
+ * denna funktion väljer bara VILKEN av de fyra formerna som gäller och
+ * bygger uppdragshalvan av meningen ur redan känd data (objectiveOutcome).
+ * Ordningen (placering först, uppdrag sist) och "men"-kopplingen är
+ * domens egen, inte en design här.
+ *
+ * Namngivning av ett enstaka missat uppdrag (domens "publikmålet nåddes
+ * aldrig"-exempel) är INTE byggd — boardObjective-etiketter är imperativ-
+ * formulerade ("Håll ekonomin i balans", "Investera överskottet") och kan
+ * inte mekaniskt böjas till en grammatisk sats utan att uppfinna ny text.
+ * Räkneformen ("ett uppdrag missades") används därför även vid N=1 tills
+ * Opus dömer den namngivna formen per uppdragstyp.
+ */
+export function seasonTwoTruthsSentence(
+  summary: Pick<SeasonSummary, 'expectationVerdict' | 'objectiveOutcome'>,
+  placeringsdom: string,
+): string | null {
+  const outcome = summary.objectiveOutcome
+  if (!outcome) return null
+
+  const placeringBra = summary.expectationVerdict !== 'failed'
+  const { met, atRisk, failed } = outcome
+
+  if (placeringBra && failed > 0) {
+    const missedClause = failed === 1 ? 'ett uppdrag missades' : `${failed} uppdrag missades`
+    return `${placeringsdom}, men ${missedClause}.`
+  }
+  if (!placeringBra && failed === 0 && atRisk === 0 && met > 0) {
+    return `${placeringsdom}. Uppdragen höll ni däremot.`
+  }
+  if (placeringBra && failed === 0 && atRisk > 0) {
+    const atRiskClause = atRisk === 1 ? 'Ett uppdrag hängde löst' : `${atRisk} uppdrag hängde löst`
+    return `${placeringsdom}. ${atRiskClause} ända in i mars.`
+  }
+  // Båda pekar åt samma håll (eller ingen av de tre fallen ovan matchar,
+  // t.ex. dålig placering + hotade-men-ej-missade uppdrag — domen ger inget
+  // fjärde fall för den kombinationen) — ingen tvåsanningsmening.
+  return null
+}
