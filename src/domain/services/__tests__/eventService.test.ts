@@ -125,7 +125,7 @@ describe('resolveEvent with extendContract', () => {
     const player = makePlayer({ contractUntilSeason: 2025 })
     const event = {
       id: 'e1', type: 'contractRequest' as const, title: 'T', body: 'B',
-      choices: [{ id: 'extend3', label: 'Förläng 3 år', effect: { type: 'extendContract' as const, targetPlayerId: 'p1', value: 12000 } }],
+      choices: [{ id: 'extend3', label: 'Förläng 3 år', effect: { type: 'extendContract' as const, targetPlayerId: 'p1', value: 12000, contractYears: 3 } }],
       relatedPlayerId: 'p1', resolved: false,
     }
     const game = makeGame({ players: [player], pendingEvents: [event] })

@@ -605,7 +605,12 @@ export function progressArcs(
                 id: 'extend_veteran',
                 label: 'Han är en legend — vi förlänger',
                 subtitle: '💛 Moral +10',
-                effect: { type: 'boostMorale', value: 10, targetPlayerId: p.id },
+                // O2 lager 1 (Jacobs dom 2026-08-24): var boostMorale — löftet
+                // "vi förlänger" gav aldrig något nytt kontrakt. extendContract
+                // ger samma +10 moral (se dess resolver-gren) och förlänger
+                // faktiskt 2 säsonger till oförändrad lön — texten lovar ingen
+                // löneförändring.
+                effect: { type: 'extendContract', targetPlayerId: p.id, contractYears: 2 },
               },
               {
                 id: 'farewell_veteran',
@@ -831,7 +836,19 @@ export function progressArcs(
                 id: 'let_go',
                 label: 'Du får gå',
                 subtitle: '💛 Moral −25',
-                effect: { type: 'boostMorale', value: -25, targetPlayerId: p.id },
+                // O2 lager 1 (Jacobs dom 2026-08-24): var enbart boostMorale
+                // på spelaren som lämnar — "Du får gå" gjorde honom aldrig
+                // faktiskt free agent, storylinetexten nedan (`${name} lämnade
+                // klubben`) påstod något koden inte utförde. multiEffect
+                // behåller den befintliga "💛 Moral −25"-texten oförändrad och
+                // lägger till den faktiska borttagningen ur truppen.
+                effect: {
+                  type: 'multiEffect',
+                  subEffects: JSON.stringify([
+                    { type: 'boostMorale', amount: -25, targetPlayerId: p.id },
+                    { type: 'releasePlayer', targetPlayerId: p.id },
+                  ]),
+                },
               },
             ],
             sender: { name: name, role: 'Spelare' },

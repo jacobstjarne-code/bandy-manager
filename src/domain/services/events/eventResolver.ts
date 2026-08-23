@@ -246,7 +246,11 @@ export function resolveEvent(
       const pid = effect.targetPlayerId
       if (!pid) throw new Error("effect 'extendContract' saknar obligatoriskt fält targetPlayerId")
       {
-        const years = choice.id === 'extend3' ? 3 : 1
+        // O2 lager 1 (Jacobs dom 2026-08-24): choice.id==='extend3'-gissningen
+        // täckte bara contractRequestEvent. contractYears sätts nu explicit
+        // vid varje konstruktionsställe istället för att härledas ur ett
+        // magiskt choice.id.
+        const years = effect.contractYears ?? 1
         updatedGame = {
           ...updatedGame,
           players: updatedGame.players.map(p =>
@@ -274,6 +278,27 @@ export function resolveEvent(
           p.id === pid ? { ...p, morale: Math.max(0, p.morale - 10) } : p,
         ),
         handledContractPlayerIds: [...(updatedGame.handledContractPlayerIds ?? []), pid],
+      }
+      break
+    }
+    case 'releasePlayer': {
+      // O2 lager 1 (Jacobs dom 2026-08-24): arcService.ts:s let_go-val
+      // ("Du får gå") applicerade tidigare bara boostMorale på spelaren som
+      // lämnar — spelaren blev aldrig faktiskt free agent. Samma
+      // clubId:'free_agent' + squadPlayerIds-borttag som redan används av
+      // resolveEconomicCrisis (sold_star) och detOmojligaValet-specialfallet
+      // nedan, nu som en generisk effekttyp istället för ytterligare ett
+      // event.type-specialfall.
+      const pid = effect.targetPlayerId
+      if (!pid) throw new Error("effect 'releasePlayer' saknar obligatoriskt fält targetPlayerId")
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p => p.id === pid ? { ...p, clubId: 'free_agent' } : p),
+        clubs: updatedGame.clubs.map(c =>
+          c.id === updatedGame.managedClubId
+            ? { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== pid) }
+            : c
+        ),
       }
       break
     }
@@ -858,6 +883,24 @@ export function resolveEvent(
                     ? { ...p, morale: Math.min(100, p.morale + (sub.amount ?? 5)) }
                     : p
                 ),
+              }
+            } else if (sub.type === 'releasePlayer') {
+              // O2 lager 1 (Jacobs dom 2026-08-24): arcService.ts:s let_go-val
+              // — samma gren som top-level case 'releasePlayer', tillgänglig
+              // här så let_go kan kombinera den med den redan skrivna
+              // "💛 Moral −25"-texten utan att uppfinna ny svensk copy.
+              if (!sub.targetPlayerId) throw new Error("multiEffect-subEffect 'releasePlayer' saknar obligatoriskt fält targetPlayerId")
+              {
+                const pid = sub.targetPlayerId
+                updatedGame = {
+                  ...updatedGame,
+                  players: updatedGame.players.map(p => p.id === pid ? { ...p, clubId: 'free_agent' } : p),
+                  clubs: updatedGame.clubs.map(c =>
+                    c.id === updatedGame.managedClubId
+                      ? { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== pid) }
+                      : c
+                  ),
+                }
               }
             } else if (sub.type === 'makeFullTimePro') {
               // 2.5 (choice-label-svepet, 2026-08-17): saknades helt —

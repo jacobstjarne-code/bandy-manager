@@ -154,6 +154,7 @@ export interface EventEffect {
     | 'setLegendRole'
     | 'hallProcess'
     | 'playThroughInjury'
+    | 'releasePlayer'
   value?: number
   refereeId?: string
   amount?: number
@@ -181,6 +182,10 @@ export interface EventEffect {
   legendRole?: string
   /** B1 §5: JSON-serialiserad HallProcessUpdate för hallProcess-effekten. */
   hallProcessData?: string
+  /** O2 lager 1 (Jacobs dom 2026-08-24): extendContract — antal säsonger
+   *  kontraktet förlängs. Ersätter den tidigare choice.id==='extend3'-gissningen
+   *  i eventResolver.ts, som bara täckte det EN konstruktionsstället kände till. */
+  contractYears?: number
 }
 
 export type EventPriority = 'critical' | 'high' | 'normal' | 'low'

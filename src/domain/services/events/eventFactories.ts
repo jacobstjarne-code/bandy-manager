@@ -128,13 +128,13 @@ export function contractRequestEvent(game: SaveGame, playerId: string): GameEven
       id: 'extend3',
       label: `Förläng 3 år (+20% lön, ${formatValue(newSalaryHigh)}/mån)`,
       subtitle: `💰 ${formatValue(newSalaryHigh)}/mån i 3 år`,
-      effect: { type: 'extendContract', targetPlayerId: playerId, value: newSalaryHigh },
+      effect: { type: 'extendContract', targetPlayerId: playerId, value: newSalaryHigh, contractYears: 3 },
     },
     {
       id: 'extend1',
       label: `Förläng 1 år (samma lön, ${formatValue(newSalaryLow)}/mån)`,
       subtitle: `💰 ${formatValue(newSalaryLow)}/mån i 1 år`,
-      effect: { type: 'extendContract', targetPlayerId: playerId, value: newSalaryLow },
+      effect: { type: 'extendContract', targetPlayerId: playerId, value: newSalaryLow, contractYears: 1 },
     },
     {
       id: 'reject',
