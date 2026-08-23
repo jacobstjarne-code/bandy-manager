@@ -45,6 +45,7 @@ function DoctorFAB() {
 
 export function GameShell() {
   const game = useGameStore(s => s.game)
+  const hasHydrated = useHasHydrated()
   const location = useLocation()
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -52,6 +53,16 @@ export function GameShell() {
     scrollRef.current?.scrollTo(0, 0)
   }, [location.pathname])
 
+  // Skutskär-auditens test 20 (52009671, 2026-08-20): en hård omladdning av
+  // en intern speladress (/game/history, /game/match, /game/club, ...)
+  // visade titelskärmen trots giltig sparning. Samma Medium 7-rotorsak som
+  // GameGuard redan skyddar mot (gameStore.ts:949) — men GameGuard bara
+  // täcker /game/game-over*, medan GameShell är den faktiska föräldern till
+  // alla andra huvudrutter (AppRouter.tsx) och redirectade förut INNAN
+  // persist-middlewarens asynkrona rehydrering hunnit klart, oavsett om en
+  // giltig sparning fanns. Vänta ut hydreringen — rendera ingenting, inte
+  // en redirect — så att den begärda routen ligger kvar när den blir klar.
+  if (!hasHydrated) return null
   if (!game) return <Navigate to="/" replace />
   // 3.1 (SLUTTEST_KO.md, 2026-08-17): GameShell täckte bara "inget game"-fallet.
   // En sparkad manager kunde nå tillbaka till dashboard/squad/etc via bakåtknapp

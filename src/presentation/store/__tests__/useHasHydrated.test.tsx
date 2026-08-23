@@ -14,11 +14,17 @@ beforeAll(() => {
 /**
  * Medium 7 (Skutskär-auditen, docs/incoming/bandy-manager-skutskaer-audit-52009671-2026-08-20.md):
  * en hård omladdning av /game/history visade titelskärmen trots giltig
- * sparning. Rot: GameGuard läste `game` och redirectade INNAN persist-
- * middlewarens asynkrona rehydrering hunnit klart — `game` är alltid
- * `null` under det första ögonblicket. useHasHydrated() ger konsumenter
- * ett sätt att vänta ut den rehydreringen innan de fäller "ingen
- * sparning"-domen.
+ * sparning. Rot: `game` läses ur persist-middlewarens asynkrona
+ * rehydrering och är alltid `null` under det första ögonblicket, oavsett
+ * om en giltig sparning finns. useHasHydrated() ger konsumenter ett sätt
+ * att vänta ut den rehydreringen innan de fäller "ingen sparning"-domen.
+ *
+ * Rättelse (2026-08-24, Skutskär-auditens test 20): denna kommentar
+ * (och den ursprungliga fixen) namngav bara `GameGuard` som konsument —
+ * men /game/history/match/club m.fl. renderas via `GameShell`, som INTE
+ * kallade `useHasHydrated()` förrän `GameShell.test.tsx` reproducerade
+ * exakt Medium 7-symtomet mot den. Fixen läkte fel gren i ~48h. Se
+ * `GameShell.tsx`s guard-kommentar och `GameShell.test.tsx`.
  */
 
 let container: HTMLDivElement | null = null

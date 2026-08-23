@@ -959,12 +959,18 @@ export const useGameStore = create<GameState>()(
  * `useHasHydrated()` läser Zustand persist-middlewarens egen
  * hydreringsstatus (`useGameStore.persist.hasHydrated()` +
  * `onFinishHydration`-prenumeration) — ingen ny persist-logik, bara en
- * observerbar vy av den som redan finns. Konsumenter (GameGuard,
- * DashboardOrPortal) väntar med "!game → ingen sparning"-domen tills
- * hydreringen är klar, så en giltig sparning aldrig tolkas som saknad.
- * Den begärda routen "bevaras" per automatik: väntar man i stället för
- * att redirecta bort, ligger webbläsaren redan kvar på rätt adress när
- * hydreringen väl är klar.
+ * observerbar vy av den som redan finns. Konsumenter väntar med
+ * "!game → ingen sparning"-domen tills hydreringen är klar, så en giltig
+ * sparning aldrig tolkas som saknad. Den begärda routen "bevaras" per
+ * automatik: väntar man i stället för att redirecta bort, ligger
+ * webbläsaren redan kvar på rätt adress när hydreringen väl är klar.
+ *
+ * Konsumenter: `GameGuard` (bara /game/game-over*) och `GameShell` (alla
+ * övriga /game/*-rutter — /game/history, /game/match, /game/club m.fl.,
+ * se AppRouter.tsx). GameShell fick INTE detta i ursprungsfixet (2026-08-22)
+ * — bara GameGuard — trots att GameShell är den faktiska föräldern till
+ * routen (/game/history) auditen namngav. Fångat av Skutskär-auditens
+ * test 20 (GameShell.test.tsx, 2026-08-24), ~48h senare.
  */
 export function useHasHydrated(): boolean {
   const [hydrated, setHydrated] = useState(() => useGameStore.persist.hasHydrated())
