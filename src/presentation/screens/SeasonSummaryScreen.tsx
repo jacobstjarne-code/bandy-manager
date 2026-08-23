@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
-import { seasonTwoTruthsSentence } from '../../domain/services/seasonSummaryService'
+import { seasonTwoTruthsSentence, placeringsdomText } from '../../domain/services/seasonSummaryService'
 import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { ClubBadge } from '../components/ClubBadge'
@@ -294,16 +294,21 @@ export function SeasonSummaryScreen() {
           {/* O18/High 1 (ÅRSBOKENS_TVASANNINGSMENING_2026-08-23.md): när
               placeringsdomen och uppdragsutfallet pekar åt olika håll står
               båda i en mening, förbundna med "men" — annars ingen rad alls.
-              placeringsdom = '[Opus]': domens "Placeringsdom" är en ny,
-              betygsspecifik fras (t.ex. "Åttondeplatsen överträffade målet")
-              som inte finns någonstans i kodbasen ännu — Code skriver den
-              inte. Mekaniken (fallval, uppdragsräkning, "men"-koppling) är
-              klar och testad; bara denna fras väntar på Opus-text. */}
-          {seasonTwoTruthsSentence(summary, '[Opus]') && (
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6, maxWidth: 320 }}>
-              {seasonTwoTruthsSentence(summary, '[Opus]')}
-            </p>
-          )}
+              Placeringsdomen (fem rader, en per betyg 1-5) text låst av
+              Jacob 2026-08-24, ordagrant — se placeringsdomText. */}
+          {(() => {
+            const placeringsdom = placeringsdomText(
+              summary.boardExpectation,
+              summary.finalPosition,
+              summary.standingsSnapshot?.length ?? 12,
+            )
+            const twoTruths = seasonTwoTruthsSentence(summary, placeringsdom)
+            return (
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6, maxWidth: 320 }}>
+                {twoTruths ?? placeringsdom}
+              </p>
+            )
+          })()}
         </div>
 
         <ChapterDivider label="Berättelsen" />

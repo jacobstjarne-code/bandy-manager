@@ -5,7 +5,28 @@
  * placeringsdomen, ingen tvåsanningsmening.
  */
 import { describe, it, expect } from 'vitest'
-import { seasonTwoTruthsSentence } from '../seasonSummaryService'
+import { seasonTwoTruthsSentence, placeringsdomText } from '../seasonSummaryService'
+import { ClubExpectation } from '../../enums'
+
+describe('placeringsdomText — Jacobs låsta text, fem betyg', () => {
+  it('betyg 5 (WinLeague, 1:a): "överträffade det de bad om"', () => {
+    expect(placeringsdomText(ClubExpectation.WinLeague, 1, 12)).toBe('Förstaplatsen överträffade det de bad om.')
+  })
+  it('betyg 3 säger "vad de väntade sig", INTE "precis vad de väntade sig"', () => {
+    expect(placeringsdomText(ClubExpectation.WinLeague, 4, 12)).toBe('Fjärdeplatsen var vad de väntade sig.')
+  })
+  it('betyg 1 (AvoidBottom, sist): "långt under det de bad om"', () => {
+    expect(placeringsdomText(ClubExpectation.AvoidBottom, 12, 12)).toBe('Tolfteplatsen var långt under det de bad om.')
+  })
+  it('ordinal i bestämd form: Åttondeplatsen, Tredjeplatsen, Elfteplatsen', () => {
+    expect(placeringsdomText(ClubExpectation.ChallengeTop, 8, 12)).toContain('Åttondeplatsen')
+    expect(placeringsdomText(ClubExpectation.ChallengeTop, 3, 12)).toContain('Tredjeplatsen')
+    expect(placeringsdomText(ClubExpectation.AvoidBottom, 11, 12)).toContain('Elfteplatsen')
+  })
+  it('okänd position (utanför 1-12): fallback till siffra+ändelse', () => {
+    expect(placeringsdomText(ClubExpectation.MidTable, 15, 16)).toContain('15:e platsen')
+  })
+})
 
 describe('seasonTwoTruthsSentence', () => {
   it('ingen objectiveOutcome-data: null', () => {

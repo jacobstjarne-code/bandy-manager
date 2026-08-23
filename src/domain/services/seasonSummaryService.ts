@@ -648,6 +648,39 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   }
 }
 
+// ÅRSBOKENS_TVASANNINGSMENING_2026-08-23.md, Placeringsdomen — text låst av
+// Jacob 2026-08-24, ordagrant. Betyg 3 säger "vad de väntade sig", INTE
+// "precis vad de väntade sig" — "precis" läser som en prestation, och att
+// göra det förväntade är ingen.
+const PLACERINGSDOM_TEMPLATES: Record<1 | 2 | 3 | 4 | 5, (placering: string) => string> = {
+  5: (p) => `${p} överträffade det de bad om.`,
+  4: (p) => `${p} var mer än målet.`,
+  3: (p) => `${p} var vad de väntade sig.`,
+  2: (p) => `${p} låg under målet.`,
+  1: (p) => `${p} var långt under det de bad om.`,
+}
+
+// Jacobs dom: bestämd form med ordningstal (Åttondeplatsen, Tredjeplatsen,
+// Elfteplatsen) — ligan är fast vid 12 lag (CLUB_TEMPLATES.length===12), så
+// hela intervallet 1-12 täcks utan att "otymplig"-undantaget (siffra+ändelse,
+// "11:e platsen") någonsin behöver användas i praktiken. Fallbacken finns
+// ändå ifall totalTeams någon gång skiljer sig i en historisk summary.
+const ORDINAL_DEFINITE: Record<number, string> = {
+  1: 'Förstaplatsen', 2: 'Andraplatsen', 3: 'Tredjeplatsen', 4: 'Fjärdeplatsen',
+  5: 'Femteplatsen', 6: 'Sjätteplatsen', 7: 'Sjundeplatsen', 8: 'Åttondeplatsen',
+  9: 'Niondeplatsen', 10: 'Tiondeplatsen', 11: 'Elfteplatsen', 12: 'Tolfteplatsen',
+}
+
+export function placeringsdomText(
+  boardExpectation: ClubExpectation,
+  finalPosition: number,
+  totalTeams: number,
+): string {
+  const rating = computeSeasonVerdictRating(boardExpectation, finalPosition, totalTeams)
+  const placering = ORDINAL_DEFINITE[finalPosition] ?? `${finalPosition}:e platsen`
+  return PLACERINGSDOM_TEMPLATES[rating](placering)
+}
+
 /**
  * ÅRSBOKENS_TVASANNINGSMENING_2026-08-23.md (Jacobs dom): "när
  * placeringsdomen och uppdragsutfallet pekar åt olika håll ska båda stå i
@@ -655,11 +688,11 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
  * ingen objectiveOutcome-data) returneras null — anroparen visar bara
  * placeringsdomen, som i dag.
  *
- * `placeringsdom` skickas in av anroparen (SeasonSummaryScreen.tsx) —
- * denna funktion väljer bara VILKEN av de fyra formerna som gäller och
- * bygger uppdragshalvan av meningen ur redan känd data (objectiveOutcome).
- * Ordningen (placering först, uppdrag sist) och "men"-kopplingen är
- * domens egen, inte en design här.
+ * `placeringsdom` skickas in av anroparen (SeasonSummaryScreen.tsx, byggd
+ * med placeringsdomText ovan) — denna funktion väljer bara VILKEN av de
+ * fyra formerna som gäller och bygger uppdragshalvan av meningen ur redan
+ * känd data (objectiveOutcome). Ordningen (placering först, uppdrag sist)
+ * och "men"-kopplingen är domens egen, inte en design här.
  *
  * Namngivning av ett enstaka missat uppdrag (domens "publikmålet nåddes
  * aldrig"-exempel) är INTE byggd — boardObjective-etiketter är imperativ-
