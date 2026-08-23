@@ -34,12 +34,27 @@ function makeSponsor(overrides: Partial<Sponsor> = {}): Sponsor {
   }
 }
 
-describe('buildSponsorOfferEvent — kontraktslängd i accept-subtitlen (plain)', () => {
-  it('visar totalsumma och kontraktslängd', () => {
+describe('buildSponsorOfferEvent — synlighetsraden i accept-subtitlen (plain)', () => {
+  it('visar totalsumma och den låsta synlighetsraden (normalfall)', () => {
+    const offer = makeSponsor({ weeklyIncome: 1000, contractRounds: 12 })
+    const event = buildSponsorOfferEvent(offer, [], 'Testklubben', 6)
+    const accept = event.choices.find(c => c.id === 'accept')!
+    expect(accept.subtitle).toContain('Platsen är er i 12 omgångar. Kommer något bättre i vinter får ni tacka nej.')
+  })
+
+  it('sista lediga platsen (maxSponsors nås av detta accept) → "Sista platsen"-varianten', () => {
+    const offer = makeSponsor({ weeklyIncome: 1000, contractRounds: 12 })
+    const active = [makeSponsor({ id: 'other', category: 'Mat' })]
+    const event = buildSponsorOfferEvent(offer, active, 'Testklubben', 2)
+    const accept = event.choices.find(c => c.id === 'accept')!
+    expect(accept.subtitle).toContain('Sista platsen. Efter det här är det fullt fram till våren.')
+  })
+
+  it('maxSponsors utelämnad (bakåtkompatibelt) → normalfallets rad, aldrig "sista platsen"', () => {
     const offer = makeSponsor({ weeklyIncome: 1000, contractRounds: 12 })
     const event = buildSponsorOfferEvent(offer, [], 'Testklubben')
     const accept = event.choices.find(c => c.id === 'accept')!
-    expect(accept.subtitle).toContain('⏳ 12 omg')
+    expect(accept.subtitle).toContain('Platsen är er i 12 omgångar.')
   })
 })
 

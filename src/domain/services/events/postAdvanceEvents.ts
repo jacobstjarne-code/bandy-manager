@@ -612,7 +612,7 @@ export function generatePostAdvanceEvents(
       rand
     )
     if (offer) {
-      events.push(buildSponsorOfferEvent(offer, activeSponsors, managedClub?.name))
+      events.push(buildSponsorOfferEvent(offer, activeSponsors, managedClub?.name, maxSponsors))
     }
   }
 
@@ -648,6 +648,7 @@ export function buildSponsorOfferEvent(
   offer: Sponsor,
   activeSponsors: Sponsor[],
   managedClubName: string | undefined,
+  maxSponsors?: number,
 ): GameEvent {
   // 2026-08-17 (Stickiness-audit): weeklyFmt rundade till närmsta heltal-k
   // medan totalFmt räknade totalValue exakt ur samma (orundade) weeklyIncome
@@ -676,6 +677,18 @@ export function buildSponsorOfferEvent(
   // flerårig, så bara den här raden finns kvar, inte en gren som aldrig nås.
   const rivalTenureLine = rivalSponsor ? `${rivalSponsor.name} var med när det var tunnare än nu.` : undefined
 
+  // Synlighetsraden (Jacob, 2026-08-24, klistrad ordagrant — SPEC-LYDNAD:
+  // ändra ingenting). "Platsen är er i {N} omgångar. Kommer något bättre i
+  // vinter får ni tacka nej." beskriver en sanning som redan finns i
+  // koden (kategoriplatsen är låst tills contractRounds går ut, se
+  // maxSponsors-gaten i generatePostAdvanceEvents) — bara aldrig sagd högt
+  // förut. "Sista platsen"-varianten när DETTA beslut skulle fylla sista
+  // lediga platsen (maxSponsors nås av just detta accept).
+  const willFillLastSlot = maxSponsors !== undefined && activeSponsors.length + 1 >= maxSponsors
+  const visibilityLine = willFillLastSlot
+    ? 'Sista platsen. Efter det här är det fullt fram till våren.'
+    : `Platsen är er i ${offer.contractRounds} omgångar. Kommer något bättre i vinter får ni tacka nej.`
+
   return {
     id: `event_sponsor_${offer.id}`,
     type: 'sponsorOffer',
@@ -689,16 +702,18 @@ export function buildSponsorOfferEvent(
       {
         id: 'accept',
         label: rivalSponsor ? 'Ta avtalet' : `Acceptera (${weeklyFmt}/vecka)`,
-        // O2 lager 3 (Jacobs dom 2026-08-24): communityStanding-kostnaden och
-        // kontraktslängden fanns redan som data (COMMUNITY_STANDING_DELTA_
-        // SPONSOR_CONFLICT/offer.contractRounds) men syntes aldrig i
-        // accept-subtitlen — bara i löptext (rivalfallet) eller inte alls
-        // (vanliga fallet). Numeriskt tillägg, samma " · "-format som redan
-        // dokumenterat på EventChoice.subtitle ovan — rivalTenureLine
-        // (Jacob, 2026-08-22, låst text) rörs inte.
+        // O2 lager 3 (Jacobs dom 2026-08-24): communityStanding-kostnaden
+        // fanns redan som data (COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT)
+        // men syntes aldrig i accept-subtitlen — bara i löptext
+        // (rivalfallet) eller inte alls (vanliga fallet). visibilityLine
+        // (Jacobs låsta text ovan) ersätter den tidigare bara-siffra
+        // "⏳ N omg" — samma fakta, sagt som en mening istället för en
+        // ikon. Samma " · "-format som redan dokumenterat på
+        // EventChoice.subtitle ovan — rivalTenureLine (Jacob, 2026-08-22,
+        // låst text) rörs inte.
         subtitle: rivalSponsor
-          ? `${rivalTenureLine} · ⭐ Anseende ${COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT} · ⏳ ${offer.contractRounds} omg`
-          : `💰 +${totalFmt} totalt · ⏳ ${offer.contractRounds} omg`,
+          ? `${rivalTenureLine} · ⭐ Anseende ${COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT} · ${visibilityLine}`
+          : `💰 +${totalFmt} totalt · ${visibilityLine}`,
         effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) },
       },
       {
