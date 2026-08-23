@@ -133,6 +133,21 @@ describe('lineupNudge (B10 T2)', () => {
     expect(getSelectionScore(fresh) - getSelectionScore(stale)).toBeGreaterThan(15)
   })
 
+  // Skutskär-auditens test 12 (52009671, 2026-08-20): "simulera identiska
+  // elvor vid 100/50/20/0 % och kontrollera monotont fallande förväntad
+  // prestation." Direkt regressionsskydd för High 2-fixen (två dagar
+  // gammal när detta test skrevs, 2026-08-24) — getSelectionScore är
+  // funktionen fixet FÖRDE IN. seasonForm satt = fitness på varje nivå
+  // (se makePlayer) så season-form-capen inte stör mätningen.
+  it('getSelectionScore faller monotont vid 100 → 50 → 20 → 0 % kondition, samma spelare i övrigt', () => {
+    const scores = [100, 50, 20, 0].map(fitness =>
+      getSelectionScore(makePlayer('p', PlayerPosition.Forward, { currentAbility: 70, form: 75, fitness }))
+    )
+    for (let i = 1; i < scores.length; i++) {
+      expect(scores[i]).toBeLessThan(scores[i - 1])
+    }
+  })
+
   it('en svag spelare i toppform/fitness kan fortfarande rankas under en stark spelare i normalform — CA väger fortfarande in', () => {
     const star = makePlayer('star', PlayerPosition.Forward, { currentAbility: 85, form: 75, fitness: 75 })
     const hotStreakButWeak = makePlayer('hot', PlayerPosition.Forward, { currentAbility: 40, form: 100, fitness: 100 })

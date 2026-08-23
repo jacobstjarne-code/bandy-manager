@@ -224,6 +224,60 @@ describe('evaluateSquad', () => {
     expect(result.goalkeeperScore).toBe(20)
   })
 
+  // Skutskär-auditens test 12 (52009671, 2026-08-20), High 2: "0 % är för
+  // spelbart" — spelare på 0 % kunde fortfarande göra flera mål eller bli
+  // bäst på plan. Skyddar getSelectionScore/playerModifier-fixet
+  // (BACKLOG.md "Spelklarhet vs playerModifier", 2026-08-22) mot regression:
+  // en fixerad elva utvärderad vid fyra konditionsnivåer ska ge MONOTONT
+  // fallande förväntad prestation, aldrig platt eller vändande. seasonForm
+  // satt till 100 på varje nivå så effectiveFitness (playerModifier)
+  // aldrig clampas av season-form-taket (SEASON_FORM_FITNESS_SLACK=3) —
+  // testet isolerar fitness-effekten rent, rör inte form/attribut.
+  describe('0 %-matchkonsekvens — monoton nedgång (Skutskär-audit test 12)', () => {
+    const FITNESS_LEVELS = [100, 50, 20, 0]
+
+    function squadAtFitness(fitness: number): Player[] {
+      return makeSquad().map(p => makePlayer({ ...p, fitness, seasonForm: 100 }))
+    }
+
+    it('offenseScore faller monotont vid 100 → 50 → 20 → 0 % kondition', () => {
+      const scores = FITNESS_LEVELS.map(f => evaluateSquad(squadAtFitness(f), defaultTactic).offenseScore)
+      for (let i = 1; i < scores.length; i++) {
+        expect(scores[i]).toBeLessThan(scores[i - 1])
+      }
+    })
+
+    it('defenseScore faller monotont vid 100 → 50 → 20 → 0 % kondition', () => {
+      const scores = FITNESS_LEVELS.map(f => evaluateSquad(squadAtFitness(f), defaultTactic).defenseScore)
+      for (let i = 1; i < scores.length; i++) {
+        expect(scores[i]).toBeLessThan(scores[i - 1])
+      }
+    })
+
+    it('cornerScore faller monotont vid 100 → 50 → 20 → 0 % kondition', () => {
+      const scores = FITNESS_LEVELS.map(f => evaluateSquad(squadAtFitness(f), defaultTactic).cornerScore)
+      for (let i = 1; i < scores.length; i++) {
+        expect(scores[i]).toBeLessThan(scores[i - 1])
+      }
+    })
+
+    it('goalkeeperScore faller monotont vid 100 → 50 → 20 → 0 % kondition', () => {
+      const scores = FITNESS_LEVELS.map(f => evaluateSquad(squadAtFitness(f), defaultTactic).goalkeeperScore)
+      for (let i = 1; i < scores.length; i++) {
+        expect(scores[i]).toBeLessThan(scores[i - 1])
+      }
+    })
+
+    it('0 % är en verklig, betydande nedgång mot 100 % — inte "för spelbart" (auditens ord)', () => {
+      const full = evaluateSquad(squadAtFitness(100), defaultTactic)
+      const zero = evaluateSquad(squadAtFitness(0), defaultTactic)
+      // playerModifier vid 0% kondition (form 75, sharpness 75): base = 0.75*0.4 = 0.30
+      // vid 100%: base = 0.75*0.4 + 1.0*0.6 = 0.90 — mindre än en tredjedel kvar.
+      expect(zero.offenseScore).toBeLessThan(full.offenseScore * 0.4)
+      expect(zero.defenseScore).toBeLessThan(full.defenseScore * 0.4)
+    })
+  })
+
   it('players with high cornerSkill produce a higher cornerScore', () => {
     const base = makeSquad()
 
