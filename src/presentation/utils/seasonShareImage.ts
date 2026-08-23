@@ -1,5 +1,8 @@
-import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
+import type { SeasonSummary, MatchHighlight, MatchHighlightCategory } from '../../domain/entities/SeasonSummary'
 import { seasonSpanLabel, seasonStartYear } from '../../domain/utils/seasonYear'
+import { ClubExpectation } from '../../domain/enums'
+import { ordinal } from '../../domain/utils/numberFormat'
+import { streakWord } from '../../domain/data/preMatchContextStrings'
 
 const W = 1080
 const MIN_H = 1350
@@ -19,15 +22,120 @@ interface LayoutRow {
   draw: (ctx: CanvasRenderingContext2D, y: number) => void
 }
 
-function playoffLabel(r: SeasonSummary['playoffResult']): string {
-  switch (r) {
-    case 'champion': return '🏆 SVENSKA MÄSTARE'
-    case 'finalist': return '🥈 SM-finalist'
-    case 'semifinal': return 'Semifinal'
-    case 'quarterfinal': return 'Kvartsfinal'
-    case 'didNotQualify': return 'Ej kvalad till slutspel'
-    default: return ''
+// O9 (O9_TEXT_ARETS_BERATTELSE_2026-08-21.md, DOM_DELNINGSKORTET_2026-08-17.md)
+// — låst text, Opus/Fable. Rad 1-4 + tvåsanningsraden nedan ersätter det
+// äldre 4.12-innehållet (position/W-D-L/mål/tre statskort) som byggde
+// layoutmekaniken men aldrig fick O9:s text — exakt den "6., 21 poäng"-
+// reduktion domens fynd kritiserade. Alla rader läser bara SeasonSummary,
+// ingen fri prosa.
+const POSITIONSORD = ['etta', 'tvåa', 'trea', 'fyra', 'femma', 'sexa', 'sjua', 'åtta', 'nia', 'tia', 'elva', 'tolva']
+
+export function positionsord(pos: number): string {
+  return POSITIONSORD[pos - 1] ?? `${pos}:e`
+}
+
+function kapitalisera(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+const FORVANTANSSATS: Record<ClubExpectation, string> = {
+  [ClubExpectation.WinLeague]: 'Skulle vinna ligan.',
+  [ClubExpectation.ChallengeTop]: 'Skulle utmana i toppen.',
+  [ClubExpectation.MidTable]: 'Skulle landa i mitten.',
+  [ClubExpectation.AvoidBottom]: 'Skulle överleva.',
+}
+
+/**
+ * Den STARKASTE enskilda utgången, prioritetsordning 1-5, alltid med
+ * avslutande punkt. `forcePosition` (satt av rad 1 vid `failed`, aldrig av
+ * tvåsanningsraden) hoppar över 1-5 och går direkt till placeringen —
+ * domens regel: "ett misslyckande mot förväntan pyntas inte med en
+ * cupframgång på rad 1".
+ */
+export function utfallssats(summary: SeasonSummary, forcePosition: boolean): string {
+  if (!forcePosition) {
+    if (summary.playoffResult === 'champion') return 'Svenska mästare.'
+    if (summary.cupResult === 'winner') return 'Vann cupen.'
+    if (summary.playoffResult === 'finalist') return 'SM-final.'
+    if (summary.playoffResult === 'semifinal') return 'Semifinal.'
+    if (summary.playoffResult === 'quarterfinal') return 'Kvartsfinal.'
   }
+  return `Slutade ${positionsord(summary.finalPosition)}.`
+}
+
+/** Fallback vid `met` (ingen kontrast) — säsongens tydligaste enskilda fakta. */
+function metFallbackRad(summary: SeasonSummary): string {
+  const pos = kapitalisera(positionsord(summary.finalPosition))
+  if (summary.longestWinStreak >= 4) return `${pos}. ${streakWord(summary.longestWinStreak)} raka segrar.`
+  if (summary.biggestWin) return `${pos}. ${summary.biggestWin.score} mot ${summary.biggestWin.opponent}.`
+  if (summary.topScorer) return `${pos}. ${summary.topScorer.name} gjorde ${summary.topScorer.goals} mål.`
+  return `${pos}, ${summary.points} poäng.`
+}
+
+/** Rad 1 — kontrasten, eller met-fallbacken när ingen kontrast finns. */
+export function kontrastRad(summary: SeasonSummary): string {
+  if (summary.expectationVerdict === 'met') return metFallbackRad(summary)
+  const forcePosition = summary.expectationVerdict === 'failed'
+  return `${FORVANTANSSATS[summary.boardExpectation]} ${utfallssats(summary, forcePosition)}`
+}
+
+const MOMENT_MALL: Record<MatchHighlightCategory, (opponent: string, vara: number, deras: number) => string> = {
+  late_winner: (o, v, d) => `Segern mot ${o} kom i sista minuterna. ${v}–${d}.`,
+  derby_win: (o, v, d) => `Derbyt mot ${o}: ${v}–${d}.`,
+  cup_drama: (o, v, d) => `Cupdramat mot ${o}: ${v}–${d}.`,
+  playoff_decisive: (o, v, d) => `Slutspelsmatchen mot ${o}: ${v}–${d}.`,
+  big_win: (o, v, d) => `${v}–${d} mot ${o}.`,
+  comeback: (o, v, d) => `Vändningen mot ${o}: ${v}–${d}.`,
+  underdog_upset: (o, v, d) => `${o} skulle vinna. Det blev ${v}–${d}.`,
+}
+
+/** Rad 2 — ögonblicket. undefined om ingen matchOfTheSeason finns (raden utelämnas, ingen ersättning). */
+export function ogonblickRad(m: MatchHighlight | undefined): string | undefined {
+  if (!m) return undefined
+  const vara = m.isHome ? m.homeScore : m.awayScore
+  const deras = m.isHome ? m.awayScore : m.homeScore
+  return MOMENT_MALL[m.category](m.opponentName, vara, deras)
+}
+
+/** Rad 3 — statistiken som bevis. Cup-/slutspelstillägg dubbleras aldrig bort — rad 1 är budskapet, rad 3 är belägget. */
+export function statistikRad(summary: SeasonSummary): string {
+  let rad = `${ordinal(summary.finalPosition)} · ${summary.points} p · ${summary.goalsFor}–${summary.goalsAgainst}`
+  if (summary.cupResult === 'winner') rad += ' · Cupmästare'
+  else if (summary.cupResult === 'finalist') rad += ' · Cupfinal'
+  else if (summary.cupResult === 'semifinal') rad += ' · Cupsemi'
+  if (summary.playoffResult === 'champion') rad += ' · SM-guld'
+  else if (summary.playoffResult === 'finalist') rad += ' · SM-final'
+  else if (summary.playoffResult === 'semifinal') rad += ' · SM-semi'
+  else if (summary.playoffResult === 'quarterfinal') rad += ' · Kvartsfinal'
+  return rad
+}
+
+/**
+ * Tvåsanningsraden — villkorad femte rad. Egen `utfallssats(summary, false)`,
+ * OBEROENDE av vilken form rad 1 valde (kontrast eller met-fallback) — så
+ * "Kvartsfinal — men två uppdrag missades." kan visas även när rad 1 var
+ * en met-fallbackrad utan egen utfallssats.
+ */
+export function tvasanningsRad(summary: SeasonSummary): string | undefined {
+  if (summary.expectationVerdict === 'failed') return undefined
+  const outcome = summary.objectiveOutcome
+  if (!outcome) return undefined
+  const n = outcome.failed + outcome.atRisk
+  if (n < 1) return undefined
+  const satsUtanPunkt = utfallssats(summary, false).replace(/\.$/, '')
+  const uppdragsord = n === 1 ? 'ett uppdrag missades' : `${n} uppdrag missades`
+  return `${satsUtanPunkt} — men ${uppdragsord}.`
+}
+
+const FRAGA: Record<SeasonSummary['expectationVerdict'], (clubName: string) => string> = {
+  exceeded: (c) => `Kan du ta ${c} längre?`,
+  met: (c) => `Kan du göra det med ${c}?`,
+  failed: () => 'Kan du göra det bättre?',
+}
+
+/** Rad 4 — frågan. */
+export function fragaRad(summary: SeasonSummary): string {
+  return FRAGA[summary.expectationVerdict](summary.clubName)
 }
 
 /**
@@ -85,47 +193,35 @@ function buildLayoutRows(summary: SeasonSummary): LayoutRow[] {
     },
   })
 
+  // Rad 1 — kontrasten (eller met-fallbacken). Alltid närvarande.
   rows.push({
-    label: 'position', height: 200,
+    label: 'kontrast', height: 150,
     draw: (ctx, y) => {
-      const posColor = summary.finalPosition === 1 ? '#C47A3A'
-        : summary.finalPosition <= 3 ? '#C47A3A'
-        : summary.finalPosition >= 10 ? '#C85A50'
-        : '#F5F1EB'
-      ctx.font = `900 200px -apple-system, system-ui, sans-serif`
-      ctx.fillStyle = posColor
-      ctx.letterSpacing = '-4px'
+      ctx.font = `800 52px -apple-system, system-ui, sans-serif`
+      ctx.fillStyle = '#F5F1EB'
+      ctx.letterSpacing = '0px'
       ctx.textAlign = 'center'
-      ctx.fillText(`${summary.finalPosition}.`, W / 2, y + 160)
+      ctx.fillText(kontrastRad(summary), W / 2, y + 60)
     },
   })
 
-  rows.push({
-    label: 'points', height: 80,
-    draw: (ctx, y) => {
-      ctx.font = `600 42px -apple-system, system-ui, sans-serif`
-      ctx.fillStyle = 'rgba(245,241,235,0.45)'
-      ctx.letterSpacing = '2px'
-      ctx.textAlign = 'center'
-      ctx.fillText(`PLATS · ${summary.points} POÄNG`, W / 2, y + 10)
-    },
-  })
-
-  if (summary.playoffResult) {
+  // Rad 2 — ögonblicket. Utelämnad (ingen ersättning) om matchOfTheSeason saknas.
+  const ogonblick = ogonblickRad(summary.matchOfTheSeason)
+  if (ogonblick) {
     rows.push({
-      label: 'playoff', height: 80,
+      label: 'ogonblick', height: 90,
       draw: (ctx, y) => {
-        ctx.font = `700 48px -apple-system, system-ui, sans-serif`
-        ctx.fillStyle = summary.playoffResult === 'champion' ? '#C47A3A' : '#F5F1EB'
-        ctx.letterSpacing = '1px'
+        ctx.font = `500 36px -apple-system, system-ui, sans-serif`
+        ctx.fillStyle = 'rgba(245,241,235,0.7)'
+        ctx.letterSpacing = '0px'
         ctx.textAlign = 'center'
-        ctx.fillText(playoffLabel(summary.playoffResult), W / 2, y)
+        ctx.fillText(ogonblick, W / 2, y)
       },
     })
   }
 
   rows.push({
-    label: 'divider-2', height: 70,
+    label: 'divider-2', height: 60,
     draw: (ctx, y) => {
       ctx.strokeStyle = 'rgba(196,122,58,0.25)'
       ctx.lineWidth = 1
@@ -136,77 +232,44 @@ function buildLayoutRows(summary: SeasonSummary): LayoutRow[] {
     },
   })
 
+  // Rad 3 — statistiken som bevis. Liten typografi, en rad. Alltid närvarande.
   rows.push({
-    label: 'wdl', height: 180,
+    label: 'statistik', height: 60,
     draw: (ctx, y) => {
-      const wdlItems = [
-        { label: 'V', value: summary.wins, color: '#5A9A4A' },
-        { label: 'O', value: summary.draws, color: '#F5F1EB' },
-        { label: 'F', value: summary.losses, color: '#C85A50' },
-      ]
-      const cellW = (W - pad * 2) / 3
-      for (let i = 0; i < wdlItems.length; i++) {
-        const item = wdlItems[i]
-        const cx = pad + cellW * i + cellW / 2
-        ctx.font = `900 100px -apple-system, system-ui, sans-serif`
-        ctx.fillStyle = item.color
+      ctx.font = `500 30px -apple-system, system-ui, sans-serif`
+      ctx.fillStyle = 'rgba(245,241,235,0.5)'
+      ctx.letterSpacing = '0px'
+      ctx.textAlign = 'center'
+      ctx.fillText(statistikRad(summary), W / 2, y)
+    },
+  })
+
+  // Tvåsanningsraden — villkorad femte rad, under rad 3.
+  const tvasanning = tvasanningsRad(summary)
+  if (tvasanning) {
+    rows.push({
+      label: 'tvasanning', height: 50,
+      draw: (ctx, y) => {
+        ctx.font = `500 24px -apple-system, system-ui, sans-serif`
+        ctx.fillStyle = 'rgba(245,241,235,0.4)'
         ctx.letterSpacing = '0px'
         ctx.textAlign = 'center'
-        ctx.fillText(String(item.value), cx, y + 90)
-        ctx.font = `600 32px -apple-system, system-ui, sans-serif`
-        ctx.fillStyle = 'rgba(245,241,235,0.35)'
-        ctx.letterSpacing = '3px'
-        ctx.fillText(item.label, cx, y + 130)
-      }
-    },
-  })
+        ctx.fillText(tvasanning, W / 2, y)
+      },
+    })
+  }
 
+  // Rad 4 — frågan, avslutande ovanför foten. Alltid närvarande.
   rows.push({
-    label: 'goals', height: 80,
+    label: 'fraga', height: 110,
     draw: (ctx, y) => {
-      ctx.font = `600 38px -apple-system, system-ui, sans-serif`
-      ctx.fillStyle = 'rgba(245,241,235,0.35)'
-      ctx.letterSpacing = '2px'
+      ctx.font = `700 40px -apple-system, system-ui, sans-serif`
+      ctx.fillStyle = '#C47A3A'
+      ctx.letterSpacing = '0px'
       ctx.textAlign = 'center'
-      ctx.fillText(`MÅL ${summary.goalsFor}–${summary.goalsAgainst}`, W / 2, y)
+      ctx.fillText(fragaRad(summary), W / 2, y + 40)
     },
   })
-
-  rows.push({
-    label: 'divider-3', height: 70,
-    draw: (ctx, y) => {
-      ctx.strokeStyle = 'rgba(196,122,58,0.25)'
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.moveTo(pad, y)
-      ctx.lineTo(W - pad, y)
-      ctx.stroke()
-    },
-  })
-
-  if (summary.topScorer) {
-    const topScorer = summary.topScorer
-    rows.push({
-      label: 'top-scorer', height: 110,
-      draw: (ctx, y) => drawStat(ctx, '⛸️ TOPPSKYTT', topScorer.name, `${topScorer.goals} mål`, pad, y, W),
-    })
-  }
-
-  if (summary.topRated) {
-    const topRated = summary.topRated
-    rows.push({
-      label: 'top-rated', height: 110,
-      draw: (ctx, y) => drawStat(ctx, '⭐ BÄST BETYG', topRated.name, `${topRated.avgRating.toFixed(1)} snitt`, pad, y, W),
-    })
-  }
-
-  if (summary.mostImproved) {
-    const mostImproved = summary.mostImproved
-    rows.push({
-      label: 'most-improved', height: 110,
-      draw: (ctx, y) => drawStat(ctx, '📈 MEST FÖRBÄTTRAD', mostImproved.name, `+${mostImproved.caGain} CA`, pad, y, W),
-    })
-  }
 
   return rows
 }
@@ -291,33 +354,6 @@ export async function generateSeasonShareImage(summary: SeasonSummary): Promise<
   } catch {
     return null
   }
-}
-
-function drawStat(
-  ctx: CanvasRenderingContext2D,
-  label: string,
-  name: string,
-  value: string,
-  pad: number,
-  y: number,
-  W: number,
-) {
-  ctx.font = `600 28px -apple-system, system-ui, sans-serif`
-  ctx.fillStyle = 'rgba(245,241,235,0.35)'
-  ctx.letterSpacing = '2px'
-  ctx.textAlign = 'left'
-  ctx.fillText(label, pad, y)
-
-  ctx.font = `700 42px -apple-system, system-ui, sans-serif`
-  ctx.fillStyle = '#F5F1EB'
-  ctx.letterSpacing = '0px'
-  ctx.fillText(name, pad, y + 48)
-
-  ctx.font = `600 36px -apple-system, system-ui, sans-serif`
-  ctx.fillStyle = '#C47A3A'
-  ctx.letterSpacing = '0px'
-  ctx.textAlign = 'right'
-  ctx.fillText(value, W - pad, y + 48)
 }
 
 /**

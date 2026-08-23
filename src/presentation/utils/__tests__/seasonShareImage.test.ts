@@ -1,9 +1,15 @@
 /**
  * SLUTTEST_KO.md 4.12 (2026-08-18) — "Delningsbilden kapas i produktion".
  * Rotorsak: fast canvas-höjd (1350) + fast footer-position (H-60), men
- * innehållet är datadrivet (playoff-raden + upp till tre statsrader är
- * villkorade) — värsta kombinationen rymdes inte inom 1350, och footern
- * ritades ändå på samma fasta position, mitt i innehållet.
+ * innehållet är datadrivet — värsta kombinationen rymdes inte inom 1350,
+ * och footern ritades ändå på samma fasta position, mitt i innehållet.
+ *
+ * O9 (O9_TEXT_ARETS_BERATTELSE_2026-08-21.md, 2026-08-24): innehållet bytt
+ * ut mot domens låsta text (kontrast/ögonblick/statistik/tvåsanning/fråga)
+ * — worstCase/minimalCase omskrivna till O9:s faktiska villkorade rader
+ * (ögonblicket kräver matchOfTheSeason, tvåsanningsraden kräver
+ * objectiveOutcome med failed+atRisk>=1) istf de gamla topScorer/topRated/
+ * mostImproved-statskorten som inte längre renderas.
  *
  * computeSeasonShareImageHeight är den rena delen (ingen canvas) — testad
  * direkt. generateSeasonShareImage kräver en canvas 2d-kontext som jsdom
@@ -17,22 +23,28 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { generateSeasonSummary } from '../../../domain/services/seasonSummaryService'
 import { computeSeasonShareImageHeight, generateSeasonShareImage, assertWithinContentBounds, shareSeasonImage } from '../seasonShareImage'
-import type { SeasonSummary } from '../../../domain/entities/SeasonSummary'
+import type { SeasonSummary, MatchHighlight } from '../../../domain/entities/SeasonSummary'
 
 function baseSummary(): SeasonSummary {
   const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 42 })
   return generateSeasonSummary(game)
 }
 
-const LONG_SWEDISH_NAME = 'Bengt-Åke Örjansson-Kristoffersen'
+const LONG_OPPONENT_NAME = 'Bengt-Åke Örjansson-Kristoffersens IF'
+
+const MATCH_OF_THE_SEASON: MatchHighlight = {
+  fixtureId: 'f1', matchday: 12, opponentName: LONG_OPPONENT_NAME,
+  homeScore: 5, awayScore: 4, isHome: true, category: 'late_winner',
+  narrative: 'n', shareImageReady: true,
+}
 
 function worstCase(): SeasonSummary {
   return {
     ...baseSummary(),
     playoffResult: 'champion',
-    topScorer: { playerId: 'p1', name: LONG_SWEDISH_NAME, goals: 34, assists: 12 },
-    topRated: { playerId: 'p2', name: LONG_SWEDISH_NAME, avgRating: 8.7, games: 26 },
-    mostImproved: { playerId: 'p3', name: LONG_SWEDISH_NAME, caGain: 42, startCA: 90, endCA: 132 },
+    matchOfTheSeason: MATCH_OF_THE_SEASON,
+    expectationVerdict: 'exceeded',
+    objectiveOutcome: { met: 1, atRisk: 1, active: 0, failed: 1 },
   }
 }
 
@@ -40,28 +52,31 @@ function minimalCase(): SeasonSummary {
   return {
     ...baseSummary(),
     playoffResult: null,
-    topScorer: null,
-    topRated: null,
-    mostImproved: null,
+    matchOfTheSeason: undefined,
+    objectiveOutcome: undefined,
   }
 }
 
 describe('computeSeasonShareImageHeight (pure)', () => {
-  it('minsta höjden är golvet 1350 när inga villkorade block finns', () => {
+  it('minsta höjden är golvet 1350 när inga villkorade rader finns', () => {
     expect(computeSeasonShareImageHeight(minimalCase())).toBe(1350)
   })
 
-  it('växer förbi 1350 för värsta kombinationen (SM-final + tre statsrader)', () => {
+  it('golvet 1350 håller kvar även för värsta kombinationen — O9:s rader är kompakta nog att aldrig behöva mer', () => {
+    // O9:s design (max 5 rader + fot) är avsiktligt lean jämfört med det
+    // gamla stat-kortsupplägget — golvet är fortfarande det som styr höjden
+    // i alla realistiska fall. Testet dokumenterar det medvetet, inte ett
+    // regressionskrav på att növerskrida 1350.
     const h = computeSeasonShareImageHeight(worstCase())
-    expect(h).toBeGreaterThan(1350)
+    expect(h).toBe(1350)
   })
 
-  it('varje villkorat block ökar höjden monotont', () => {
+  it('varje villkorad rad ökar höjden monotont (aldrig mindre än utan den)', () => {
     const none = computeSeasonShareImageHeight(minimalCase())
-    const withPlayoff = computeSeasonShareImageHeight({ ...minimalCase(), playoffResult: 'finalist' })
+    const withMoment = computeSeasonShareImageHeight({ ...minimalCase(), matchOfTheSeason: MATCH_OF_THE_SEASON })
     const withAll = computeSeasonShareImageHeight(worstCase())
-    expect(withPlayoff).toBeGreaterThanOrEqual(none)
-    expect(withAll).toBeGreaterThan(withPlayoff)
+    expect(withMoment).toBeGreaterThanOrEqual(none)
+    expect(withAll).toBeGreaterThanOrEqual(withMoment)
   })
 })
 
