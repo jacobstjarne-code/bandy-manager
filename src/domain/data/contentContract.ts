@@ -237,18 +237,22 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     notes: 'O1 (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md) — sponsorn med ett problem, högst prioriterade kandidaten, byggd 2026-08-22. 4/5 av mallen: punkt 2 (spelare/funktionär redan mött) ouppfylld, sponsorer är företag. Därför INTE systemhandelse:true. Text (title/body/subtitles på konfliktvarianten) väntar Opus — placeholder \'[Opus]\' i koden.',
   },
 
-  // ── De fyra kritiska typerna (Jacobs order, 2026-08-22) — spårade FÖRST,
-  // före de återstående 85, eftersom D1 punkt 4:s self-kontroll (2026-08-21)
-  // nedgraderar ALLA fyra till 'normal' tills whyNow-data finns här. whyNow-
-  // fälten lämnas medvetet TOMMA — se notes för vad var och en saknar.
-  // Opus skriver raderna där en form faktiskt går att grunda i text.
+  // ── De fyra kritiska typerna (Jacobs order, 2026-08-22, dömda 2026-08-24)
+  // — spårade FÖRST, före de återstående 85, eftersom D1 punkt 4:s
+  // self-kontroll (2026-08-21) nedgraderar till 'normal' tills whyNow-data
+  // finns. Alla fyra domar fällda: criticalEconomy fas 3 och playerUnhappy
+  // (bara med aktiv bid) sätter whyNow INSTANS-NIVÅ i sina konstruktions-
+  // ställen — typ-nivå-raderna här förblir avsiktligt osatta. mecenatEvent
+  // sätter whyNow bara på EN av åtta undertyper (90+ styrelsehot), samma
+  // instans-mönster. economicStress förblir avsiktligt utan whyNow
+  // permanent — inte ett kvarstående gap, se dess notes.
   playerUnhappy: {
     trigger: 'player.morale < 35 OCH bänkad (ej startande) i minst 2 av senaste 3 spelade matcher för hanterade klubben (postAdvanceEvents.ts:128-151).',
     stateEffect: `'promise'-valet: boostMorale +10 (targetPlayerId). 'hold': noOp — missnöjet kvarstår oadresserat, ingen nedåtgående konsekvens modellerad om spelaren ignoreras.`,
     systems: ['spelarmoral'],
     lifespan: 'engångs per säsong (event-id inkluderar currentSeason — samma spelare kan trigga igen nästa säsong)',
     recallSurface: 'ingen',
-    notes: 'whyNow SAKNAS. Bäst grundade kandidat: "person väntar" (whyNowPerson) — spelaren i relatedPlayerId är bokstavligen den som väntar på besked, förnamnet är redan känd data, inte påhittat. Men OM detta faktiskt bär tillräcklig brådska för overlay/pivotal-behandling (jämfört med t.ex. hesitantPlayer, som redan är overlay-fri) är ett tonval — flaggat, inte satt.',
+    notes: 'DÖMT 2026-08-24: pivotal bara när irreversibel, dvs. spelaren faktiskt kan lämna — inte bara är sur. Wirat instans-nivå (eventFactories.ts, unhappyPlayerEvent): whyNowPerson=spelarens förnamn sätts BARA när en aktiv, inkommande pending transferbid finns för spelaren (samma game.transferBids-källa som transferBidReceived). Ingen bud → whyNow osatt → normal, per D1 punkt 4. Typ-nivå-raden här förblir avsiktligt utan whyNow-fält — beslutet är per-instans, inte per-typ.',
   },
   economicStress: {
     trigger: 'managedClub.finances mellan -100 000 och +50 000 kr ("stress-zonen"), throttlead till max 1 händelse per 6 omgångar (game.lastEconomicStressRound). Tre slumpmässigt valda flavor-varianter (materialarens klubbor / bussbolagets avtal / kioskvaktens korvavtal), ingen unik semantisk identitet per variant.',
@@ -256,7 +260,7 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     systems: ['ekonomi'],
     lifespan: 'engångs, kan återkomma var 6:e omgång så länge zonen gäller',
     recallSurface: 'ingen',
-    notes: 'whyNow SAKNAS — och detta är den mest tveksamma av de fyra. Innehållet (klubbinköp, korvavtal) bär ingen verklig brådska i NÅGON av de tre varianterna. Detta kan vara fel typ att ge overlay-behandling ÖVERHUVUDTAGET — om Opus dömer att ingen whyNow-form passar bör svaret vara att sänka basprioriteten i getEventPriority (GameEvent.ts), inte att skriva en konstruerad brådskerad.',
+    notes: 'DÖMT 2026-08-24: INTE pivotal, avsiktligt. En ekonomisk varning är ett tillstånd, inte en fråga som kräver svar just nu — criticalEconomy fas 3 är redan den pivotala ekonomikanalen, en andra hade varit en för mycket. whyNow lämnas permanent osatt här (inte "ännu inte spårat") — event nedgraderas till normal per D1 punkt 4, vilket är det avsedda utfallet, inte ett kvarstående gap.',
   },
   mecenatEvent: {
     trigger: 'ÅTTA separata undertyper, samma GameEventType, olika villkor (mecenatService.ts): (a) generateMecenatIntroEvent — ny mecenat presenterar sig, triggervillkor satt vid mecenat-generering, ej vidare spårat. (b) generateSocialEvent — periodisk social inbjudan (jakt/middag/golf/bastu/vin/segling/hockey/vernissage), typ vald slumpmässigt ur mecenatens businessType, säsongsfiltrerad. (c–f) generateSilentShoutEvent — fyra trösklar på mecenat.silentShout: 30–49 medieomnämnande (15% chans/omgång), 50–69 transferförslag (20% chans, kräver namngiven spelare), 70–89 taktikpress (15% chans, kräver ej redan offensiv taktik), 90+ styrelsehot (20% chans). (g) generateMecenatConflictEvent — två mecenater med motstridiga önskemål, triggervillkor ej vidare spårat. (h) generateMecenatAllianceEvent — två mecenater vill samfinansiera samma projekt, triggervillkor ej vidare spårat. (i) checkMecenatRetirement — mecenat.yearsActive ≥ retirementThreshold (default 6) ELLER age ≥ 70, ej redan announced.',
@@ -264,7 +268,7 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     systems: ['mecenatrelation', 'ekonomi (enstaka varianter, t.ex. intervention-kostnad)'],
     lifespan: 'engångs per tillfälle — silentShout-varianterna kan återkomma om siffran stiger igen efter en tidigare händelse',
     recallSurface: 'ingen enhetlig — varierar per undertyp, ej kartlagd denna session',
-    notes: 'whyNow SAKNAS, och frågan är svårare än för de andra tre: 8 verkliga undertyper delar ETT contentContract-id. En enda whyNow-rad kan inte rättvist representera alla åtta (en 90+ styrelsehot-händelse bär uppenbart mer brådska än en golfinbjudan). Om Opus vill aktivera mekanismen träffsäkert för mecenatEvent krävs sannolikt ett beslut PER undertyp (t.ex. bara styrelsehot-varianten får whyNow), vilket i sin tur kräver att event-konstruktionen kan skicka undertyps-specifik whyNow-data — en mindre kodändring utöver bara textrader. Flaggat, inte byggt.',
+    notes: 'DÖMT 2026-08-24: 8 undertyper delar inte en whyNow-rad — wirat per undertyp istf. Bara EN av de åtta (generateSilentShoutEvent, 90+ styrelsehot) sätter whyNowPerson=mecenat.name, den enda grenen vars text faktiskt uttalar en verklig avhoppsrisk ("överväger jag att dra mig tillbaka"), inte bara en relationssiffra. De andra sju (intro/social/media/transfer/taktik/conflict/alliance/retirement) saknar whyNow avsiktligt — regeln kontrollerar sig själv, de nedgraderas till normal. Typ-nivå-raden här förblir avsiktligt utan whyNow-fält — beslutet är per-instans, inte per-typ.',
   },
   criticalEconomy: {
     trigger: 'managedClub.finances < -200 000 kr (economicCrisisService.ts). Fas 1 (awareness) triggar direkt. Fas 2 (pressure) triggar 3 omgångar efter fas 1 startade, om ej redan löst. Fas 3 (decision) triggar 5 omgångar efter fas 1, om ej löst.',
@@ -272,7 +276,7 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     systems: ['ekonomi', 'spelartrupp (fas 3, sälj-alternativet)', 'mecenatrelation (fas 3, mecenat-alternativet)'],
     lifespan: 'en sammanhängande båge över minst 5 omgångar (fas 1→2→3), sedan löst för säsongen',
     recallSurface: 'ingen',
-    notes: 'whyNow SAKNAS, men detta är den STARKASTE kandidaten av de fyra. Fas 1 och 2s kroppstext antyder redan deadlines ("Jag vill träffa dig. I morgon.", "inom två veckor") men INGEN av dem är en mekanisk deadline i koden (fas 3 triggar strikt matchday-baserat, oavsett vad texten lovar) — att sätta deadlineLabel från dessa citat vore att koda in ett löfte texten inte håller, samma klass av fel som playerPraise-fyndet. Renare kandidat: wholeEventIrreversible på fas 3 — men bara ETT av dess tre val (sell_star) är faktiskt irreversibelt, inte hela eventet, så D1s befintliga CHOICE-nivå-mekanism (punkt 3, redan byggd) är rätt verktyg där, inte event-nivå. Cross-referens: sell_star-valet saknar fortfarande consequenceLevel/irreversible (D1 punkt 3s fält, "opt-in, inga befintliga events sätter dem än") — värt att sätta OAVSETT whyNow-beslutet, separat, litet jobb.',
+    notes: 'whyNow WIRAD INSTANS-NIVÅ (O2 lager 1, 2026-08-24): fas 3s event (economicCrisisService.ts) sätter whyNowPerson="Johan Bergstedt" (ekonomichefen) direkt på GameEvent.whyNow — inte via denna typ-nivå-rad, som förblir avsiktligt osatt. Fas 1/2s kroppstext antyder deadlines ("Jag vill träffa dig. I morgon.", "inom två veckor") men INGEN är en mekanisk deadline i koden (fas 3 triggar strikt matchday-baserat) — att sätta deadlineLabel från dessa citat vore att koda in ett löfte texten inte håller, samma klass av fel som playerPraise-fyndet. sell_star-valet saknar fortfarande consequenceLevel/irreversible (D1 punkt 3s fält) — värt att sätta separat, litet jobb, ospårat.',
   },
 }
 

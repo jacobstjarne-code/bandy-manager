@@ -174,6 +174,17 @@ export function unhappyPlayerEvent(game: SaveGame, playerId: string): GameEvent 
     },
   ]
 
+  // O11 (Jacobs dom 2026-08-24, contentContract.ts): playerUnhappy pivotal
+  // bara när irreversibel — när spelaren faktiskt kan lämna, inte bara är
+  // sur. Grundat i en verklig, samtidig aktiv köpbegäran (samma
+  // transferBids-källa som transferBidReceived), inte gissat. whyNowPerson
+  // (spelarens förnamn) → "{Namn} väntar på besked." (getWhyNowLine,
+  // contentContract.ts, låst copy). Ingen bud → whyNow förblir osatt,
+  // eventet nedgraderas till normal (D1 punkt 4s befintliga mekanism).
+  const hasActiveBid = (game.transferBids ?? []).some(
+    b => b.playerId === playerId && b.direction === 'incoming' && b.status === 'pending'
+  )
+
   return {
     id: `event_unhappy_${playerId}_${game.currentSeason}`,
     type: 'playerUnhappy',
@@ -182,6 +193,7 @@ export function unhappyPlayerEvent(game: SaveGame, playerId: string): GameEvent 
     choices,
     relatedPlayerId: playerId,
     resolved: false,
+    ...(hasActiveBid && { whyNow: { whyNowPerson: player.firstName } }),
   }
 }
 

@@ -495,6 +495,15 @@ export function generateSilentShoutEvent(
   }
 
   // 90+: Board threat
+  // O11 (Jacobs dom 2026-08-24, contentContract.ts): mecenatEvent har åtta
+  // undertyper bakom samma GameEventType — en whyNow-rad kan inte
+  // representera alla ärligt (en 90+ styrelsehot väger uppenbart mer än en
+  // golfinbjudan). Bara DENNA gren sätter whyNow: den enda av de åtta där
+  // texten faktiskt uttalar en verklig risk att mecenaten lämnar
+  // ("överväger jag att dra mig tillbaka"), inte bara en relationssiffra.
+  // Övriga sju (intro/social/media/transfer/taktik/conflict/alliance/
+  // retirement) lämnas medvetet utan whyNow — nedgraderas till normal, precis
+  // som domen kräver.
   if (ss >= 90 && rand() < 0.20) {
     return {
       id: `event_shout_threat_${mecenat.id}_${Date.now()}`,
@@ -502,6 +511,7 @@ export function generateSilentShoutEvent(
       title: `${mecenat.name} hotar`,
       sender: { name: mecenat.name, role: mecenat.business },
       body: `${mecenat.name}: "Om det inte blir ändringar överväger jag att dra mig tillbaka. Styrelsen borde lyssna."`,
+      whyNow: { whyNowPerson: mecenat.name },
       choices: [
         {
           id: 'submit',
