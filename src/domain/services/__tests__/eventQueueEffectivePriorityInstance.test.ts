@@ -34,7 +34,7 @@ describe('Medium 4 — minst en nåbar critical-produktionsinstans', () => {
         eventsFired: ['pressure'],
       },
     }
-    const event = checkEconomicCrisis(game, 10) // startedMatchday(1) + 5 ≤ 10 → fas 3 nås
+    const event = checkEconomicCrisis(game, 10).event // startedMatchday(1) + 5 ≤ 10 → fas 3 nås
     expect(event).not.toBeNull()
     expect(event!.type).toBe('criticalEconomy')
     expect(event!.whyNow).toEqual({ whyNowPerson: 'Johan Bergstedt' })
@@ -47,7 +47,7 @@ describe('Medium 4 — minst en nåbar critical-produktionsinstans', () => {
       ...game,
       clubs: game.clubs.map(c => c.id === game.managedClubId ? { ...c, finances: -250_000 } : c),
     }
-    const event = checkEconomicCrisis(game, 1)
+    const event = checkEconomicCrisis(game, 1).event
     expect(event).not.toBeNull()
     expect(event!.type).toBe('criticalEconomy')
     expect(event!.whyNow).toBeUndefined()
@@ -66,7 +66,7 @@ describe('Medium 4 — minst en nåbar critical-produktionsinstans', () => {
         eventsFired: [],
       },
     }
-    const event = checkEconomicCrisis(game, 4) // startedMatchday(1) + 3 ≤ 4 → fas 2 nås
+    const event = checkEconomicCrisis(game, 4).event // startedMatchday(1) + 3 ≤ 4 → fas 2 nås
     expect(event).not.toBeNull()
     expect(event!.type).toBe('criticalEconomy')
     expect(getEffectivePriority(event!)).toBe('normal')

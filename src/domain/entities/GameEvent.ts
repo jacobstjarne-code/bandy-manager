@@ -173,6 +173,11 @@ export interface EventEffect {
   // For startEconomicCrisis / resolveEconomicCrisis
   crisisPhase?: string
   removePlayerId?: string
+  /** O2 lager 1 (Jacobs dom 2026-08-24): resolveEconomicCrisis, crisisPhase
+   *  'mecenat' (ask_mecenat-valet) — mecenaten targetMecenatId förlorar
+   *  denna mängd happiness. "Lojalitet −30" var tidigare bara ett löfte i
+   *  labeln, aldrig kodat. */
+  mecenatHappinessDelta?: number
   legendRole?: string
   /** B1 §5: JSON-serialiserad HallProcessUpdate för hallProcess-effekten. */
   hallProcessData?: string

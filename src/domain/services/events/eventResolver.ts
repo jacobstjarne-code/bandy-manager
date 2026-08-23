@@ -1168,6 +1168,20 @@ export function resolveEvent(
           ),
         }
       }
+      // O2 lager 1 (Jacobs dom 2026-08-24): ask_mecenat-valets tidigare
+      // okodade "lojalitet −30" — targetMecenatId/mecenatHappinessDelta
+      // satta av economicCrisisService.ts vid konstruktionstillfället
+      // (tie-break: mecenaten med högst happiness).
+      if (effect.targetMecenatId && effect.mecenatHappinessDelta !== undefined && updatedGame.mecenater) {
+        const targetId = effect.targetMecenatId
+        const delta = effect.mecenatHappinessDelta
+        updatedGame = {
+          ...updatedGame,
+          mecenater: updatedGame.mecenater.map(m =>
+            m.id === targetId ? { ...m, happiness: Math.max(0, Math.min(100, m.happiness + delta)) } : m
+          ),
+        }
+      }
       break
     }
     case 'saveSchoolAssignment': {

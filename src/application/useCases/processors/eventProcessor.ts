@@ -37,6 +37,12 @@ export interface EventProcessorResult {
   updatedMecenater: NonNullable<SaveGame['mecenater']>
   updatedPatron: Patron | undefined
   lastEconomicStressRound: number | undefined
+  // O2 lager 2 (Jacobs dom 2026-08-24): fas 1 (event_crisis_awareness)
+  // konverterad till ambient — tillståndsövergången sker nu vid
+  // genereringen (checkEconomicCrisis), inte via en senare choice-
+  // resolution. Måste därför tröskas ut ur processGameEvents precis som
+  // updatedMecenater/updatedPatron redan gör.
+  economicCrisisState: SaveGame['economicCrisisState']
   // Lager 2 state updates
   wageBudgetOverrunRounds: number
   wageBudgetWarningSent: boolean
@@ -108,8 +114,9 @@ export function processGameEvents(
   if (bandyLetterEvent) gameEvents.push(bandyLetterEvent)
 
   // DREAM-002: Ekonomisk kris
-  const crisisEvent = checkEconomicCrisis(game, nextMatchday)
-  if (crisisEvent) gameEvents.push(crisisEvent)
+  const crisisCheck = checkEconomicCrisis(game, nextMatchday)
+  if (crisisCheck.event) gameEvents.push(crisisCheck.event)
+  const economicCrisisState = crisisCheck.economicCrisisState
 
   // O3 — säsongsmålets halvtidsrad (ambient, D1 punkt 2)
   const seasonGoalHalfwayEvent = checkSeasonGoalHalfwayEvent(game)
@@ -429,6 +436,7 @@ export function processGameEvents(
     updatedMecenater,
     updatedPatron,
     lastEconomicStressRound,
+    economicCrisisState,
     wageBudgetOverrunRounds,
     wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason,

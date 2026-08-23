@@ -1557,6 +1557,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     wageBudgetWarningSent: eventResult.wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason: eventResult.riskySponsorOfferSentThisSeason,
     mecenatWithdrawnSeason: eventResult.mecenatWithdrawnSeason,
+    // O2 lager 2 (Jacobs dom 2026-08-24): fas 1 (event_crisis_awareness)
+    // ambient — tillståndsövergången sker vid genereringen
+    // (checkEconomicCrisis), måste tröskas ut hit precis som övriga
+    // eventResult.*-fält ovan, annars sätts economicCrisisState aldrig och
+    // fas 1 skulle generera om varje omgång (ambienta events, choices:[],
+    // adderas aldrig till resolvedEventIds — se eventResolver.ts:33).
+    economicCrisisState: eventResult.economicCrisisState,
     // P1 — Annandagen val-state
     pendingAnnandagsVal,
     pendingAnnandagsGratisentreVal: clearAnnandagsGratisentreVal ? false : (game.pendingAnnandagsGratisentreVal ?? false),

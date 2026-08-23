@@ -5,71 +5,99 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 
-export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): GameEvent | null {
+export interface EconomicCrisisCheckResult {
+  event: GameEvent | null
+  /** Oförändrad (game.economicCrisisState) i alla grenar utom fas 1:s
+   *  ambient-övergång nedan — se den grenens kommentar. */
+  economicCrisisState: SaveGame['economicCrisisState']
+}
+
+export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): EconomicCrisisCheckResult {
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-  if (!managedClub || managedClub.finances >= -200_000) return null
+  if (!managedClub || managedClub.finances >= -200_000) return { event: null, economicCrisisState: game.economicCrisisState }
 
   const crisis = game.economicCrisisState
   const alreadyResolved = crisis?.phase === 'resolved'
-  if (alreadyResolved) return null
+  if (alreadyResolved) return { event: null, economicCrisisState: game.economicCrisisState }
 
   // Phase 1 — awareness (fires once, immediately when finances drop below -200k)
   if (!crisis) {
     const eventId = `event_crisis_awareness_${game.currentSeason}`
-    if ((game.resolvedEventIds ?? []).includes(eventId)) return null
-    if ((game.pendingEvents ?? []).some(e => e.id === eventId)) return null
+    if ((game.resolvedEventIds ?? []).includes(eventId)) return { event: null, economicCrisisState: game.economicCrisisState }
+    if ((game.pendingEvents ?? []).some(e => e.id === eventId)) return { event: null, economicCrisisState: game.economicCrisisState }
 
+    // Jacobs dom 2026-08-24 (O2 lager 2): accept_meeting/propose_club var
+    // byte-identiska val (samma startEconomicCrisis-effekt, ingen text
+    // arkiverades) — ett genuint tomt val, till skillnad från bandyLetter/
+    // schoolAssignment vars knappar skriver olika arkivtext. Konverterat
+    // till ambient (choices:[]) — tillståndsövergången till fas 'awareness'
+    // sker HÄR, vid genereringen, inte via en senare choice-resolution
+    // (choices.length===0 triggar ingen effekt-applicering i
+    // eventResolver.ts, se dess egen kommentar "atmospheric auto-resolved
+    // events — just remove from queue"). Samma init-logik som tidigare låg
+    // i eventResolver.ts:s 'startEconomicCrisis'-gren, flyttad hit.
+    const currentMatchday = game.fixtures
+      .filter(f => f.status === 'completed' && !f.isCup)
+      .reduce((m, f) => Math.max(m, f.roundNumber), 0)
     return {
-      id: eventId,
-      type: 'criticalEconomy',
-      title: 'Styrelsen ringer — krismöte',
-      body: `Anders Lindgren (styrelsen) ringer klockan 22:17.\n\n"Jag har sett siffrorna. Vi är på ${managedClub.finances.toLocaleString('sv-SE')} kr. Det här är inte ett sponsorproblem — det är ett strukturellt problem. Jag vill träffa dig. I morgon. Inte på klubbkontoret. På Stadshotellet. Jag bjuder."`,
-      sender: { name: 'Anders Lindgren', role: 'Styrelsens ordförande' },
-      choices: [
-        { id: 'accept_meeting', label: 'Tacka ja till mötet', effect: { type: 'startEconomicCrisis', crisisPhase: 'awareness' } },
-        { id: 'propose_club', label: 'Föreslå klubbkontoret istället', effect: { type: 'startEconomicCrisis', crisisPhase: 'awareness' } },
-      ],
-      resolved: false,
-      priority: 'critical',
+      event: {
+        id: eventId,
+        type: 'criticalEconomy',
+        title: 'Styrelsen ringer — krismöte',
+        body: `Anders Lindgren (styrelsen) ringer klockan 22:17.\n\n"Jag har sett siffrorna. Vi är på ${managedClub.finances.toLocaleString('sv-SE')} kr. Det här är inte ett sponsorproblem — det är ett strukturellt problem. Jag vill träffa dig. I morgon. Inte på klubbkontoret. På Stadshotellet. Jag bjuder."`,
+        sender: { name: 'Anders Lindgren', role: 'Styrelsens ordförande' },
+        choices: [],
+        resolved: false,
+        priority: 'critical',
+      },
+      economicCrisisState: {
+        startedSeason: game.currentSeason,
+        startedMatchday: currentMatchday,
+        phase: 'awareness',
+        eventsFired: ['awareness'],
+      },
     }
   }
 
   // Phase 2 — pressure (3 matchdays after phase 1 started)
   if (crisis.phase === 'awareness' && !crisis.eventsFired.includes('pressure')) {
-    if (nextMatchday < crisis.startedMatchday + 3) return null
+    if (nextMatchday < crisis.startedMatchday + 3) return { event: null, economicCrisisState: game.economicCrisisState }
     const eventId = `event_crisis_pressure_${game.currentSeason}`
-    if ((game.resolvedEventIds ?? []).includes(eventId)) return null
-    if ((game.pendingEvents ?? []).some(e => e.id === eventId)) return null
+    if ((game.resolvedEventIds ?? []).includes(eventId)) return { event: null, economicCrisisState: game.economicCrisisState }
+    if ((game.pendingEvents ?? []).some(e => e.id === eventId)) return { event: null, economicCrisisState: game.economicCrisisState }
 
     return {
-      id: eventId,
-      type: 'criticalEconomy',
-      title: '⚠️ Huvudsponsorn hotar lämna',
-      body: `Huvudsponsorns VD har ringt ordföranden.\n\n"Vi har varit med i elva år. Men vi kan inte vara klubbens lösning på allt. Antingen visar ni en plan inom två veckor, eller så står vår logga inte på tröjan nästa säsong."`,
-      sender: { name: 'Holmström Bygg', role: 'Huvudsponsor' },
-      choices: [
-        {
-          id: 'present_plan',
-          label: 'Presentera en ekonomisk plan (−20 000 kr)',
-          effect: { type: 'startEconomicCrisis', crisisPhase: 'pressure', value: -20_000 },
-        },
-        {
-          id: 'accept_loss',
-          label: 'Acceptera — vi klarar oss utan dem',
-          effect: { type: 'resolveEconomicCrisis', crisisPhase: 'natural_recovery' },
-        },
-      ],
-      resolved: false,
-      priority: 'critical',
+      event: {
+        id: eventId,
+        type: 'criticalEconomy',
+        title: '⚠️ Huvudsponsorn hotar lämna',
+        body: `Huvudsponsorns VD har ringt ordföranden.\n\n"Vi har varit med i elva år. Men vi kan inte vara klubbens lösning på allt. Antingen visar ni en plan inom två veckor, eller så står vår logga inte på tröjan nästa säsong."`,
+        sender: { name: 'Holmström Bygg', role: 'Huvudsponsor' },
+        choices: [
+          {
+            id: 'present_plan',
+            label: 'Presentera en ekonomisk plan (−20 000 kr)',
+            effect: { type: 'startEconomicCrisis', crisisPhase: 'pressure', value: -20_000 },
+          },
+          {
+            id: 'accept_loss',
+            label: 'Acceptera — vi klarar oss utan dem',
+            effect: { type: 'resolveEconomicCrisis', crisisPhase: 'natural_recovery' },
+          },
+        ],
+        resolved: false,
+        priority: 'critical',
+      },
+      economicCrisisState: game.economicCrisisState,
     }
   }
 
   // Phase 3 — decision (5 matchdays after phase 1)
   if ((crisis.phase === 'awareness' || crisis.phase === 'pressure') && !crisis.eventsFired.includes('decision')) {
-    if (nextMatchday < crisis.startedMatchday + 5) return null
+    if (nextMatchday < crisis.startedMatchday + 5) return { event: null, economicCrisisState: game.economicCrisisState }
     const eventId = `event_crisis_decision_${game.currentSeason}`
-    if ((game.resolvedEventIds ?? []).includes(eventId)) return null
-    if ((game.pendingEvents ?? []).some(e => e.id === eventId)) return null
+    if ((game.resolvedEventIds ?? []).includes(eventId)) return { event: null, economicCrisisState: game.economicCrisisState }
+    if ((game.pendingEvents ?? []).some(e => e.id === eventId)) return { event: null, economicCrisisState: game.economicCrisisState }
 
     // Find best managed player to offer as sale option
     const managedPlayers = game.players
@@ -78,42 +106,72 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): GameE
     const bestPlayer = managedPlayers[0]
     const bestName = bestPlayer ? `${bestPlayer.firstName} ${bestPlayer.lastName}` : 'bäste spelaren'
 
+    // Jacobs dom 2026-08-24 (O2 lager 1): "lojalitet −30" var tidigare
+    // aldrig kodad — resolveEconomicCrisis rörde bara pengarna, ingen
+    // mecenat straffades, vilket gjorde ask_mecenat en fri vinst på
+    // 100 000 kr jämfört med take_loan. Tie-break vid flera aktiva
+    // mecenater: den med HÖGST happiness (Jacobs skäl — "den som har mest
+    // att förlora blir mest besviken, det gör valet dyrast när det ser
+    // tryggast ut"). Genereringsgrind: valet erbjuds bara när minst en
+    // aktiv mecenat finns — tidigare erbjöds det ovillkorat.
+    const activeMecenater = (game.mecenater ?? []).filter(m => m.isActive)
+    const richestMecenat = activeMecenater.length > 0
+      ? [...activeMecenater].sort((a, b) => b.happiness - a.happiness)[0]
+      : undefined
+
     return {
-      id: eventId,
-      type: 'criticalEconomy',
-      title: 'Två vägar ur krisen',
-      body: `Ekonomichefen har räknat. Det finns tre vägar:\n\n**A. Sälj ${bestName}.** Budet ligger på 350 000 kr. Det löser skulden men laget försvagas.\n\n**B. Kommunlån.** 300 000 kr över tre år. Räntan äter hälften av intäkterna. Politiskt känsligt.\n\n**C. Be mecenaten om hjälp.** Om ni har en aktiv mecenat kan han täcka 200 000 kr. Men det kostar i lojalitet.`,
-      sender: { name: 'Johan Bergstedt', role: 'Ekonomichef' },
-      relatedPlayerId: bestPlayer?.id,
-      choices: [
-        {
-          id: 'sell_star',
-          label: `Sälj ${bestName} (+350 000 kr)`,
-          effect: { type: 'resolveEconomicCrisis', value: 350_000, crisisPhase: 'sold_star', removePlayerId: bestPlayer?.id },
-        },
-        {
-          id: 'take_loan',
-          label: 'Kommunlån (+300 000 kr, löpande kostnad)',
-          effect: { type: 'resolveEconomicCrisis', value: 300_000, crisisPhase: 'loan' },
-        },
-        {
-          id: 'ask_mecenat',
-          label: 'Be mecenaten (+200 000 kr, lojalitet −30)',
-          effect: { type: 'resolveEconomicCrisis', value: 200_000, crisisPhase: 'mecenat' },
-        },
-      ],
-      resolved: false,
-      priority: 'critical',
-      systemhandelse: true,  // O19: sell_star-valet är 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
-      // Medium 4 (Skutskär-auditen, 2026-08-22): den STARKASTE kandidaten av
-      // de fyra kritiska typerna (contentContract.ts's egen analys, rad
-      // ~212) — namngiven avsändare som konkret väntar på ett beslut, ett
-      // av de tre valen (sell_star) faktiskt irreversibelt. Instans-satt,
-      // inte typ-nivå: fas 1/2 (bastu-nivå brådska, ingen konkret ultimatum
-      // än) förblir 'normal' via samma GameEventType.
-      whyNow: { whyNowPerson: 'Johan Bergstedt' },
+      event: {
+        id: eventId,
+        type: 'criticalEconomy',
+        title: 'Två vägar ur krisen',
+        body: richestMecenat
+          ? `Ekonomichefen har räknat. Det finns tre vägar:\n\n**A. Sälj ${bestName}.** Budet ligger på 350 000 kr. Det löser skulden men laget försvagas.\n\n**B. Kommunlån.** 300 000 kr över tre år. Räntan äter hälften av intäkterna. Politiskt känsligt.\n\n**C. Be mecenaten om hjälp.** Om ni har en aktiv mecenat kan han täcka 200 000 kr. Men det kostar i lojalitet.`
+          : `Ekonomichefen har räknat. Det finns två vägar:\n\n**A. Sälj ${bestName}.** Budet ligger på 350 000 kr. Det löser skulden men laget försvagas.\n\n**B. Kommunlån.** 300 000 kr över tre år. Räntan äter hälften av intäkterna. Politiskt känsligt.`,
+        sender: { name: 'Johan Bergstedt', role: 'Ekonomichef' },
+        relatedPlayerId: bestPlayer?.id,
+        choices: [
+          {
+            id: 'sell_star',
+            label: `Sälj ${bestName} (+350 000 kr)`,
+            effect: { type: 'resolveEconomicCrisis', value: 350_000, crisisPhase: 'sold_star', removePlayerId: bestPlayer?.id },
+          },
+          {
+            id: 'take_loan',
+            label: 'Kommunlån (+300 000 kr, löpande kostnad)',
+            effect: { type: 'resolveEconomicCrisis', value: 300_000, crisisPhase: 'loan' },
+          },
+          ...(richestMecenat ? [{
+            id: 'ask_mecenat',
+            label: 'Be mecenaten (+200 000 kr, lojalitet −30)',
+            // targetMecenatId + mecenatHappinessDelta läses av
+            // resolveEconomicCrisis-hanteraren själv (eventResolver.ts) —
+            // INTE multiEffect/subEffects. resolveEconomicCrisis saknar en
+            // gren i multiEffect-undertypsswitchen (samma felklass 2.5/O2
+            // redan fångat två gånger denna vecka), så effekten hade blivit
+            // en tyst no-op om den lindats in i multiEffect istället.
+            effect: {
+              type: 'resolveEconomicCrisis' as const,
+              value: 200_000,
+              crisisPhase: 'mecenat',
+              targetMecenatId: richestMecenat.id,
+              mecenatHappinessDelta: -30,
+            },
+          }] : []),
+        ],
+        resolved: false,
+        priority: 'critical',
+        systemhandelse: true,  // O19: sell_star-valet är 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
+        // Medium 4 (Skutskär-auditen, 2026-08-22): den STARKASTE kandidaten av
+        // de fyra kritiska typerna (contentContract.ts's egen analys, rad
+        // ~212) — namngiven avsändare som konkret väntar på ett beslut, ett
+        // av de tre valen (sell_star) faktiskt irreversibelt. Instans-satt,
+        // inte typ-nivå: fas 1/2 (bastu-nivå brådska, ingen konkret ultimatum
+        // än) förblir 'normal' via samma GameEventType.
+        whyNow: { whyNowPerson: 'Johan Bergstedt' },
+      },
+      economicCrisisState: game.economicCrisisState,
     }
   }
 
-  return null
+  return { event: null, economicCrisisState: game.economicCrisisState }
 }
