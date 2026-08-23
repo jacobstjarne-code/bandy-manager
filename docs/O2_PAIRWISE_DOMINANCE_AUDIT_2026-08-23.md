@@ -6,6 +6,23 @@
 
 ---
 
+## Status (uppdateras löpande)
+
+**Först, före allt annat:** `offer_pro` (varsel-mallen, `generateVarselEvent`) — hela truppens lön blev 0 kr istället för ×1,5. Fixat, commit `8c37d862` → efterföljande.
+
+**Lager 1 (koden gör inte vad etiketten säger) — KLART, alla tre:**
+- `ask_mecenat` (economicCrisisService.ts): okodad "lojalitet −30" wirad mot ny `mecenatHappinessDelta`, tie-break högst happiness, genereringsgrind ≥1 aktiv mecenat. Commit `6e9e6f11`.
+- `extend_veteran` (arcService.ts, veteran_farewell): bytt boostMorale → extendContract (contractYears: 2). Commit `09fd3d8c`.
+- `let_go` (arcService.ts, contract_drama): bytt boostMorale → multiEffect (boostMorale −25 + ny `releasePlayer`-effekt, spelaren blir faktiskt free agent). Commit `09fd3d8c`.
+
+**Lager 2 (de tre tomma valen) — KLART:**
+- `economic_crisis_awareness` (fas 1, "krismöte på Stadshotellet"): konverterad till ambient (`choices: []`). Commit `6e9e6f11`.
+- `bandyLetter`/`schoolAssignment`: HÅLLS SOM ÄR (Jacobs dom — differentierad arkivtext per knapp är inte ett tomt val). Verifierat att `HistoryScreen.tsx` redan renderar båda arkiven (rad 246–296) — ingen kodändring behövdes.
+
+**Lager 3 (dominansen) — INTE PÅBÖRJAT:** csPress-kvartetten, sponsorOffer, arcService (nio val, rapport-endast — Jacob dömer per båge). Ordning enligt Jacobs dom 2026-08-24.
+
+---
+
 ## Sammanfattning
 
 - **Bekräftade dominanspar:** 60+ (exakt lista nedan, per fil/event)
