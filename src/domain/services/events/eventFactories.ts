@@ -335,7 +335,7 @@ export function varselEventId(season: number): string {
 }
 
 export function generateVarselEvent(
-  players: { id: string; firstName: string; lastName: string; dayJob?: { title: string } }[],
+  players: { id: string; firstName: string; lastName: string; dayJob?: { title: string }; salary: number }[],
   employerName: string,
   season: number,
 ): GameEvent {
@@ -363,8 +363,13 @@ export function generateVarselEvent(
         id: 'offer_pro',
         label: `Erbjud heltidskontrakt åt alla (lönekostnad ×1.5)`,
         subtitle: `💰 höjd lönekostnad · +15 moral · ⭐ storyline`,
+        // Jacobs dom 2026-08-23 (O2-svepets prioriterade fix, före allt
+        // annat i O2): value:0 satte hela truppens lön till 0 kr —
+        // sub.value ?? p.salary behandlar inte 0 som saknat. Samma
+        // uträkning som enspelarvarianten tre rader ovan (goPro,
+        // rad 219: Math.round(salary * 1.5)), nu per berörd spelare.
         effect: { type: 'multiEffect', subEffects: JSON.stringify(
-          players.map(p => ({ type: 'makeFullTimePro', targetPlayerId: p.id, value: 0 }))
+          players.map(p => ({ type: 'makeFullTimePro', targetPlayerId: p.id, value: Math.round(p.salary * 1.5) }))
         ) },
       },
       {
