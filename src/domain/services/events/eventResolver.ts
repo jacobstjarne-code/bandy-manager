@@ -1572,9 +1572,23 @@ export function resolveEvent(
       : undefined
     const journalist = updatedGame.journalist
 
-    // Player morale effect
+    // O2 lager 3 (Jacobs dom 2026-08-24): individual dominerade tidigare de
+    // andra tre valen fullständigt (vann eller delade på båda mätta
+    // dimensionerna — se O2_PAIRWISE_DOMINANCE_AUDIT_2026-08-23.md). Jacobs
+    // dom: "individual förblir bäst i förväntan men inte riskfri, och
+    // system/team får en äkta nisch." De tre valen görs nu genuint olika i
+    // KARAKTÄR, inte bara i magnitud:
+    // - individual: oförändrad uppsida (+5 spelaren, +3 journalist), men en
+    //   18% risk att en SLUMPMÄSSIG lagkamrat (inte spelaren själv) tappar
+    //   4 moral — avundsjuka i laget av att en spelare lyfts fram ensam.
+    // - team: ingen risk, men bredd — hela truppen (inte bara spelaren) får
+    //   +2 moral istället för spelarens tidigare 0.
+    // - system: den tidigare −2 var aldrig en verklig avvägning (ingen text
+    //   förklarade varför "systemet" skulle skada spelarens moral) — tas
+    //   bort. Nischen blir journalistrelationen: +4 istället för individuals
+    //   +3, riskfritt. "Strukturen håller" bygger press-förtroendet stabilast.
     if (player) {
-      const moraleDelta = choiceType === 'individual' ? 5 : choiceType === 'system' ? -2 : 0
+      const moraleDelta = choiceType === 'individual' ? 5 : 0
       if (moraleDelta !== 0) {
         updatedGame = {
           ...updatedGame,
@@ -1587,9 +1601,35 @@ export function resolveEvent(
       }
     }
 
+    if (choiceType === 'individual' && playerId && rand() < 0.18) {
+      const teammates = updatedGame.players.filter(
+        p => p.clubId === updatedGame.managedClubId && p.id !== playerId
+      )
+      if (teammates.length > 0) {
+        const envious = teammates[Math.floor(rand() * teammates.length)]
+        updatedGame = {
+          ...updatedGame,
+          players: updatedGame.players.map(p =>
+            p.id === envious.id ? { ...p, morale: Math.max(0, (p.morale ?? 50) - 4) } : p
+          ),
+        }
+      }
+    }
+
+    if (choiceType === 'team') {
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.clubId === updatedGame.managedClubId
+            ? { ...p, morale: Math.min(100, (p.morale ?? 50) + 2) }
+            : p
+        ),
+      }
+    }
+
     // Journalist relationship + memory
     if (journalist) {
-      const relDelta = choiceType === 'individual' ? 3 : choiceType === 'system' ? 3 : choiceType === 'silent' ? -2 : 0
+      const relDelta = choiceType === 'individual' ? 3 : choiceType === 'system' ? 4 : choiceType === 'silent' ? -2 : 0
       const newRelationship = Math.min(100, Math.max(0, journalist.relationship + relDelta))
       let newStyle = journalist.style
       if (choiceType === 'silent' && newRelationship < 30 && journalist.style !== 'provocative') {
