@@ -44,21 +44,21 @@ Två rötter bär nästan allt.
 
 | ID | Post | Status |
 |---|---|---|
-| A-H1 | **Vår förutsättningsfas orsakade den.** `seasonEndProcessor` stegar `boardExpectation` INNAN `generateSeasonSummary` — årsboken dömer den avslutade säsongen mot nästa års krav. Historiken skriver att kravet uppfylldes medan samma resultat gav sparken. Frys `seasonStartBoardExpectation` i säsongsstartens snapshot, alla retrospektiva ytor läser exakt det fältet. Regressionstesta kedjan mål → resultat → patience → avsked → årsbok → historik | `EJ` |
-| A-H8 | Kontraktskronologin: `contractUntilSeason` presenteras olika på olika ytor. En semantik, en gemensam formatterare, invariant som förbjuder aktiva kontrakt med slutsäsong före nuvarande. Plus: nyvärvning + omedelbart pensionsval ska avslöjas före signering eller spärras | `EJ` |
+| A-H1 | **Vår förutsättningsfas orsakade den.** `seasonEndProcessor` stegar `boardExpectation` INNAN `generateSeasonSummary` — årsboken dömer den avslutade säsongen mot nästa års krav. | `KLAR (2026-08-28)`, commit `15c4d4fd`+`2cd25d25`. `seasonStartBoardExpectation` fryst i `SaveGame`, alla retrospektiva ytor läser den. |
+| A-H8 | Kontraktskronologin: `contractUntilSeason` presenteras olika på olika ytor. | `KLAR (2026-08-28)`, commit `8a5fa2d5`. Delad formatterare (`format.ts`), `checkStaleContracts`-invariant (0 brott i 3×6-säsongers stress), signeringsvarning i `FreeAgentList.tsx`. Samma-drag "skriv på→pensionera" ej nåbart idag (verifierat, ej byggt). |
 
 **(b) Ytor som visar rått eller ogatat data:**
 
 | ID | Post | Status |
 |---|---|---|
-| A-M3 | Tekniska eventnycklar läcker (`playoffEvent`, `dayJobConflict`, `criticalEconomy`…). Exhaustiv speltextsmappning; okända typer får generisk mänsklig etikett + telemetri, aldrig rå kod | `EJ` |
-| A-M1 | "Säsongen är slut" visas före slutspelet. Lägg playofffas före fixture-gaten i `getNextActionCue` | `EJ` |
-| A-M2 | Lag som missar slutspel får "Ni är utslagna". Skilj `!managedQF` från `managedQF && !managedAdvanced` | `EJ` |
-| A-M7 | "Halva säsongen kvar" efter säsongsslut. Gata på kalenderfas | `EJ` |
-| A-M10 | Matchkommentar tillskriver målvakten fel lag. Härled lag ur eventets `clubId` | `EJ` |
-| A-M4 | "Beslutsbörda: Lugn" vid 44–51 inboxnotiser. Mät obesvarade, eller döp om måttet | `EJ` |
-| A-M5 | Offseason-räddning utan begriplig berättelse (−322 → −35 tkr). Avstämning med varje större post och avsändare | `EJ` |
-| A-LOW | Språk och format: "1 nästa veckan", "Match av matchen", dubbel interpunktion, förbättringsaritmetik 43→52 som +10, omgångsidentitet, `0 ass` på toppskyttar, falsk multislot-varning, skandalpåstående utan synlig skandal | `EJ` |
+| A-M3 | Tekniska eventnycklar läcker (`playoffEvent`, `dayJobConflict`, `criticalEconomy`…). | `KLAR (2026-08-28)`, commit `5e22e6e5`. Exhaustiv `eventTypeLabels.ts` (alla 49 typer), okänd typ → generisk etikett + `console.warn`. |
+| A-M1 | "Säsongen är slut" visas före slutspelet. | `KLAR (2026-08-28)`, commit `948e4b6e`. |
+| A-M2 | Lag som missar slutspel får "Ni är utslagna". | `KLAR (2026-08-28)`, commit `948e4b6e`. Ny `getQFSummaryStatus()` skiljer 'never_qualified' från 'eliminated'. |
+| A-M7 | "Halva säsongen kvar" efter säsongsslut. | `KLAR (2026-08-28)`, commit `948e4b6e`. |
+| A-M10 | Matchkommentar tillskriver målvakten fel lag. | `KLAR (2026-08-28)`, commit `31abccfa`. Regressionstest bekräftat fail-utan/pass-med fixen. |
+| A-M4 | "Beslutsbörda: Lugn" vid 44–51 inboxnotiser. | `KLAR (2026-08-28)`, commit `fe7fc93d`. Mäter nu aktiva+köade (obesvarat), inte bara köade. |
+| A-M5 | Offseason-räddning utan begriplig berättelse (−322 → −35 tkr). | `KLAR (2026-08-28)`, commit `2cd25d25`+`dca6b174`. `SeasonSummary.offseasonFinanceEntries` + expanderbar avstämning i Historik. |
+| A-LOW | Språk och format: "1 nästa veckan", "Match av matchen", dubbel interpunktion, förbättringsaritmetik 43→52 som +10, omgångsidentitet, `0 ass` på toppskyttar, falsk multislot-varning, skandalpåstående utan synlig skandal | `KLAR (2026-08-28)`, commits `2cd25d25`,`fe7fc93d`,`1dc11456`,`c91d37c7`,`59c03c37`. Alla åtta adresserade: assistdata var redan korrekt (test tillagt för att bevisa det), resten var riktiga rotorsaksbuggar — se respektive commit-meddelande. |
 
 **A-H9** (årsbokens "säsongens beslut" är inte spelarens minne) är Opus att döma — se egen rad längre ner.
 
