@@ -22,7 +22,7 @@ import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/aca
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
 import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
-import { pickSeasonDecision } from '../../domain/services/seasonDecisionCaptureService'
+import { pickSeasonDecision, SEASON_DECISION_NONE_TEXT } from '../../domain/services/seasonDecisionCaptureService'
 import { evaluateSeasonGoal, deriveSeasonPersonChange, deriveRivalryStanding } from '../../domain/services/seasonGoalService'
 import { calculateClubEra } from '../../domain/services/clubEraService'
 import { applyBurnoutRecoveryAtTransition } from '../../domain/services/seasonTransitionService'
@@ -1345,11 +1345,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // som patience-kostnaden). Bara data, ingen text — Jacob/Opus skriver
     // meningen när fältet finns.
     objectiveOutcome,
-    // O18 fält 2 (Jacobs dom 2026-08-24): rankad vinnare bland säsongens
-    // seasonDecisionCandidates (fyllda löpande vid resolution,
-    // eventResolver.ts). undefined om ingen O19-systemhandelse löstes —
-    // en säsong utan tungt beslut bär ingen beslutsrad, per domen.
-    mostImportantDecision: pickSeasonDecision(game.seasonDecisionCandidates ?? [])?.sentence,
+    // O18 fält 2, uppdaterad A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md):
+    // rankad vinnare bland säsongens seasonDecisionCandidates (fyllda
+    // löpande vid resolution, eventResolver.ts). Domens vändning: när
+    // ingenting kvalificerar ska raden inte utebli — den ska säga det,
+    // inte tiga. Låst fallback-text (Jacobs ord, ordagrant).
+    mostImportantDecision: pickSeasonDecision(game.seasonDecisionCandidates ?? [])?.sentence ?? SEASON_DECISION_NONE_TEXT,
   }
 
   // Manager profile — career record, contract extension, age/seasonsAtClub tick

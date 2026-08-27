@@ -4,7 +4,7 @@
  * Meningarna i assertions är Jacobs egna, klistrade ordagrant.
  */
 import { describe, it, expect } from 'vitest'
-import { captureSystemDecision, pickSeasonDecision } from '../seasonDecisionCaptureService'
+import { captureSystemDecision, pickSeasonDecision, SEASON_DECISION_NONE_TEXT } from '../seasonDecisionCaptureService'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
 import { formatValue } from '../../format'
@@ -134,7 +134,13 @@ describe('captureSystemDecision — ask_mecenat (criticalEconomy, form 1)', () =
 })
 
 describe('captureSystemDecision — take_loan (criticalEconomy, form 1, löpande kostnad)', () => {
-  it('economicCrisisState.outcome==="loan": bygger meningen utan namngiven person', () => {
+  // A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): kandidat kräver nu minst
+  // två av {namngiven person, irreversibelt, spänning}. take_loan har ingen
+  // namngiven person, är inte irreversibelt, och bara spänning=true — score
+  // 1, kvalificerar aldrig. Byggarens meningslogik finns kvar (text-utan-yta,
+  // inte superseterad — CLAUDE.md §7) ifall kriterierna justeras, men
+  // captureSystemDecision filtrerar bort den strukturellt nu.
+  it('economicCrisisState.outcome==="loan": kvalificerar INTE (score 1 av 3, under tröskeln)', () => {
     const gameBefore = makeGame()
     const gameAfter: SaveGame = {
       ...gameBefore,
@@ -149,11 +155,7 @@ describe('captureSystemDecision — take_loan (criticalEconomy, form 1, löpande
       resolved: false, systemhandelse: true,
     }
     const candidate = captureSystemDecision(gameBefore, gameAfter, event, 'take_loan')
-    expect(candidate!.sentence).toBe('Du tog lånet. Det kostade er varje månad sedan dess.')
-    expect(candidate!.systemsAffectedCount).toBe(1)
-    expect(candidate!.irreversible).toBe(false)
-    expect(candidate!.namedPerson).toBeUndefined()
-    expect(candidate!.moneyAmount).toBe(300000)
+    expect(candidate).toBeNull()
   })
 
   it('economicCrisisState.outcome saknas/matchar inte "loan": null, ingen falsk mening', () => {
@@ -193,7 +195,10 @@ describe('captureSystemDecision — offer_pro (varsel, form 1)', () => {
     expect(candidate!.systemsAffectedCount).toBe(2)
   })
 
-  it('FLERA varslade: "Du gav de varslade heltidskontrakt", ingen namngiven person', () => {
+  // A-H9: flera varslade ger ingen namngiven person (namedPerson undefined)
+  // — bara tension=true kvar, score 1 av 3, kvalificerar inte längre.
+  // Byggarens meningslogik är oförändrad (text-utan-yta för detta fallet).
+  it('FLERA varslade: kvalificerar INTE (ingen namngiven person, score 1 av 3)', () => {
     const game = makeGame()
     const club = game.clubs.find(c => c.id === game.managedClubId)!
     const [id1, id2] = club.squadPlayerIds
@@ -215,9 +220,7 @@ describe('captureSystemDecision — offer_pro (varsel, form 1)', () => {
     let gameAfter = applyFullTimePro(game, id1)
     gameAfter = applyFullTimePro(gameAfter, id2)
     const candidate = captureSystemDecision(game, gameAfter, event, 'offer_pro')
-    const expectedAnnual = Math.max(0, newSalary1 - p1.salary) * 12 + Math.max(0, newSalary2 - p2.salary) * 12
-    expect(candidate!.sentence).toBe(`Du gav de varslade heltidskontrakt. Det kostade ${formatValue(expectedAnnual)} i året.`)
-    expect(candidate!.namedPerson).toBeUndefined()
+    expect(candidate).toBeNull()
   })
 
   // H3-uppföljning (5c9a7a8, 2026-08-24): ingen av de berörda spelarna
@@ -286,11 +289,13 @@ describe('captureSystemDecision — detOmojligaValet/sell (form 1, flest system)
 // sitt kapital på annat håll" var en påhittad slutsats — ingenting i state
 // stödjer den. Ny låst text nämner bara spelaren som stannade.
 describe('captureSystemDecision — detOmojligaValet/keep (form 3, avstod)', () => {
-  it('"Du lät det vara. {Namn} spelar kvar." — räknas som en giltig kandidat, inte hoppas över', () => {
+  // A-H9: "keep" har en namngiven person men varken irreversibilitet eller
+  // spänning (inget uttalat pris för att avstå) — score 1 av 3, kvalificerar
+  // inte längre som kandidat. Byggarens meningslogik oförändrad (text-utan-yta).
+  it('"Du lät det vara. {Namn} spelar kvar." — kvalificerar INTE (score 1 av 3, ingen kostnad uttalad)', () => {
     const game = makeGame()
     const club = game.clubs.find(c => c.id === game.managedClubId)!
     const playerId = club.squadPlayerIds[0]
-    const player = game.players.find(p => p.id === playerId)!
     const event: GameEvent = {
       id: 'ev6', type: 'detOmojligaValet', title: 't', body: 'b', relatedPlayerId: playerId,
       choices: [
@@ -300,12 +305,7 @@ describe('captureSystemDecision — detOmojligaValet/keep (form 3, avstod)', () 
       resolved: false, systemhandelse: true,
     }
     const candidate = captureSystemDecision(game, game, event, 'keep')
-    const name = `${player.firstName} ${player.lastName}`
-    expect(candidate!.sentence).toBe(`Du lät det vara. ${name} spelar kvar.`)
-    expect(candidate!.systemsAffectedCount).toBe(2)
-    expect(candidate!.irreversible).toBe(false)
-    expect(candidate!.namedPerson).toBe(name)
-    expect(candidate!.moneyAmount).toBeUndefined()
+    expect(candidate).toBeNull()
   })
 
   it('relatedPlayerId saknas/pekar på ingen: null, ingen mening utan namn att verifiera', () => {
@@ -436,30 +436,40 @@ describe('captureSystemDecision — utanför den slutna listan', () => {
   })
 })
 
-describe('pickSeasonDecision — rangordningen', () => {
-  const base = { eventId: 'e', round: 5, season: 1, systemsAffectedCount: 1, irreversible: false }
+// A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): ny rangordning — namngiven
+// person → irreversibelt → spänning → antal system (sist, bara skiljedomare)
+// → kronor (allra sist). Ersätter den gamla ordningen (flest system vann
+// oavsett övrigt) — domens ord: "en räknare är inte ett minne."
+describe('pickSeasonDecision — rangordningen (A-H9)', () => {
+  const base = { eventId: 'e', round: 5, season: 1, systemsAffectedCount: 1, irreversible: false, tension: false }
 
-  it('flest berörda system vinner, oavsett övriga fält', () => {
-    const winner = { ...base, eventId: 'many-systems', systemsAffectedCount: 4, irreversible: false, moneyAmount: 1000, sentence: 'many' }
-    const loser = { ...base, eventId: 'few-systems', systemsAffectedCount: 2, irreversible: true, namedPerson: 'X', moneyAmount: 999999, sentence: 'few' }
-    expect(pickSeasonDecision([loser, winner])?.eventId).toBe('many-systems')
+  it('namngiven person vinner FÖRST, oavsett antal berörda system', () => {
+    const winner = { ...base, eventId: 'named-few-systems', systemsAffectedCount: 1, namedPerson: 'Erik', sentence: 'named' }
+    const loser = { ...base, eventId: 'unnamed-many-systems', systemsAffectedCount: 4, moneyAmount: 999999, sentence: 'unnamed' }
+    expect(pickSeasonDecision([loser, winner])?.eventId).toBe('named-few-systems')
   })
 
-  it('vid lika system: irreversibelt vinner', () => {
-    const winner = { ...base, eventId: 'irrev', systemsAffectedCount: 2, irreversible: true, sentence: 'a' }
-    const loser = { ...base, eventId: 'rev', systemsAffectedCount: 2, irreversible: false, moneyAmount: 999999, sentence: 'b' }
+  it('vid lika (namngiven eller ej): irreversibelt vinner', () => {
+    const winner = { ...base, eventId: 'irrev', namedPerson: 'X', irreversible: true, sentence: 'a' }
+    const loser = { ...base, eventId: 'rev', namedPerson: 'X', irreversible: false, moneyAmount: 999999, sentence: 'b' }
     expect(pickSeasonDecision([loser, winner])?.eventId).toBe('irrev')
   })
 
-  it('vid lika system+irreversibilitet: namngiven person vinner', () => {
-    const winner = { ...base, eventId: 'named', systemsAffectedCount: 2, irreversible: true, namedPerson: 'Erik', sentence: 'a' }
-    const loser = { ...base, eventId: 'unnamed', systemsAffectedCount: 2, irreversible: true, moneyAmount: 999999, sentence: 'b' }
-    expect(pickSeasonDecision([loser, winner])?.eventId).toBe('named')
+  it('vid lika namngiven+irreversibilitet: spänning (gjorde det ont) vinner', () => {
+    const winner = { ...base, eventId: 'tension', namedPerson: 'X', irreversible: true, tension: true, sentence: 'a' }
+    const loser = { ...base, eventId: 'no-tension', namedPerson: 'X', irreversible: true, tension: false, moneyAmount: 999999, sentence: 'b' }
+    expect(pickSeasonDecision([loser, winner])?.eventId).toBe('tension')
   })
 
-  it('vid lika allt övrigt: kronor som sista skiljedomare', () => {
-    const winner = { ...base, eventId: 'more-money', systemsAffectedCount: 2, irreversible: true, namedPerson: 'Erik', moneyAmount: 500000, sentence: 'a' }
-    const loser = { ...base, eventId: 'less-money', systemsAffectedCount: 2, irreversible: true, namedPerson: 'Anna', moneyAmount: 100000, sentence: 'b' }
+  it('vid lika de tre första: antal berörda system, BARA som skiljedomare', () => {
+    const winner = { ...base, eventId: 'many-systems', namedPerson: 'X', irreversible: true, tension: true, systemsAffectedCount: 4, sentence: 'a' }
+    const loser = { ...base, eventId: 'few-systems', namedPerson: 'X', irreversible: true, tension: true, systemsAffectedCount: 2, moneyAmount: 999999, sentence: 'b' }
+    expect(pickSeasonDecision([loser, winner])?.eventId).toBe('many-systems')
+  })
+
+  it('vid lika allt övrigt: kronor som allra sista skiljedomare', () => {
+    const winner = { ...base, eventId: 'more-money', namedPerson: 'Erik', irreversible: true, tension: true, systemsAffectedCount: 2, moneyAmount: 500000, sentence: 'a' }
+    const loser = { ...base, eventId: 'less-money', namedPerson: 'Anna', irreversible: true, tension: true, systemsAffectedCount: 2, moneyAmount: 100000, sentence: 'b' }
     expect(pickSeasonDecision([loser, winner])?.eventId).toBe('more-money')
   })
 
@@ -471,5 +481,19 @@ describe('pickSeasonDecision — rangordningen', () => {
 
   it('tom lista: null', () => {
     expect(pickSeasonDecision([])).toBeNull()
+  })
+})
+
+// A-H9: raden ska ALDRIG utebli längre. seasonEndProcessor.ts skriver
+// `pickSeasonDecision(...)?.sentence ?? SEASON_DECISION_NONE_TEXT` — testar
+// här att den låsta fallback-texten (Jacobs ord, ordagrant) är exakt vad
+// som används i det mönstret när ingen kandidat finns.
+describe('SEASON_DECISION_NONE_TEXT — A-H9 fallback', () => {
+  it('är den låsta texten', () => {
+    expect(SEASON_DECISION_NONE_TEXT).toBe('Inget beslut stack ut i vintras.')
+  })
+
+  it('används av mönstret seasonEndProcessor.ts faktiskt kör: pickSeasonDecision(...)?.sentence ?? SEASON_DECISION_NONE_TEXT', () => {
+    expect(pickSeasonDecision([])?.sentence ?? SEASON_DECISION_NONE_TEXT).toBe('Inget beslut stack ut i vintras.')
   })
 })

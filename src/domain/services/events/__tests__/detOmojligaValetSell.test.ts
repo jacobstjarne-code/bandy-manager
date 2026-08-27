@@ -67,15 +67,24 @@ describe('detOmojligaValet/sell — spelaren tas faktiskt bort ur klubben (H3)',
     expect(() => resolveEvent(brokenGame, 'ev_omojlig', 'sell')).toThrow(/relatedPlayerId/)
   })
 
-  it('keep-valet lämnar spelaren i truppen och skriver "Du lät det vara"', () => {
+  it('keep-valet lämnar spelaren i truppen', () => {
     const { game, player } = makeGameWithSellEvent()
     const resolved = resolveEvent(game, 'ev_omojlig', 'keep')
 
     const club = resolved.clubs.find(c => c.id === resolved.managedClubId)!
     expect(club.squadPlayerIds).toContain(player.id)
+  })
+
+  // A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): "keep" har en namngiven
+  // person men varken irreversibilitet eller spänning (inget uttalat pris
+  // för att avstå) — score 1 av 3, kvalificerar inte längre som säsongens
+  // beslut-kandidat. Byggarens "Du lät det vara..."-mening finns kvar
+  // (text-utan-yta, se seasonDecisionCaptureService.ts), men skrivs inte
+  // längre till seasonDecisionCandidates.
+  it('keep-valet skriver INGEN seasonDecisionCandidates-post (kvalificerar inte under A-H9)', () => {
+    const { game } = makeGameWithSellEvent()
+    const resolved = resolveEvent(game, 'ev_omojlig', 'keep')
     const candidate = resolved.seasonDecisionCandidates?.find(c => c.eventId === 'ev_omojlig')
-    // PÅSTÅENDEKARTAN (2026-08-24), Jacobs egen rättelse: "Licensnämnden fick
-    // sitt kapital på annat håll" var en påhittad slutsats. Ny låst text.
-    expect(candidate!.sentence).toBe(`Du lät det vara. ${player.firstName} ${player.lastName} spelar kvar.`)
+    expect(candidate).toBeUndefined()
   })
 })

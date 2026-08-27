@@ -4,9 +4,25 @@
  * fraser nedan är klistrade ordagrant från Jacob — Code bygger bara
  * datainhämtningen och sätter in redan kända namn/belopp i hans meningar.
  *
- * Sluten mängd: bara dessa åtta (event.type, choiceId)-par klassificerade.
- * Andra systemhandelse-val (t.ex. criticalEconomy fas 1/2, de tre i
- * weeklyDecisionService.ts) ger ingen kandidat — se BACKLOG.md.
+ * A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md, RAPPORT_AH9_KANDIDATVOLYM_
+ * 2026-08-27.md): rangordningen var mekanisk (flest berörda system vann)
+ * och kandidatmängden var för smal (bara O19-märkta systemhandelser, 9
+ * händelser i hela spelet — en säsong utan någon av dem fick ingen rad
+ * alls). Ny dom: rangordna på namngiven person → irreversibelt → spänning
+ * (gjorde valet ont) → antal system SIST, bara som skiljedomare. Kandidat
+ * är varje löst beslut som uppfyller MINST TVÅ av de tre första
+ * kriterierna — `event.systemhandelse`-gaten borttagen ur
+ * `captureSystemDecision` (den gjorde poolen smalare än domen tillåter).
+ *
+ * KVARSTÅENDE BEGRÄNSNING (rapporterad, inte dold): BUILDERS nedan är
+ * fortfarande en sluten mängd av åtta (event.type, choiceId)-par eftersom
+ * `sentence` kräver en Jacob-skriven mall — Code skriver aldrig svensk
+ * speltext (CLAUDE.md). En äkta vidgning bortom dessa åtta (t.ex. Jacobs
+ * eget exempel: en kontraktsförlängning där en namngiven veteran stannade)
+ * kräver nya låsta meningsmallar innan fler (typ, choiceId)-par kan bli
+ * kandidater. Detta pass breddar RANGORDNINGEN och KVALIFICERINGSTRÖSKELN
+ * för de åtta som redan har text, plus fallback-texten när ingen av dem
+ * kvalificerar denna säsong.
  *
  * Formregeln (Jacobs dom): Form 1 (påtvingat — händelsen fanns i kön för att
  * något tvingade fram den: ekonomikris, varsel, deadline) nämner ALDRIG
@@ -19,22 +35,35 @@ import type { GameEvent } from '../entities/GameEvent'
 import { positionDefinite, formatValue } from '../format'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
 
+/** A-H9: låst text (Jacobs ord, ordagrant) för när ingen kandidat kvalificerar. */
+export const SEASON_DECISION_NONE_TEXT = 'Inget beslut stack ut i vintras.'
+
 export interface SeasonDecisionCandidate {
   eventId: string
   round: number
   season: number
-  /** Rangordningsfält 1 (flest vinner). */
+  /** Rangordningsfält 4 (sist, bara skiljedomare — A-H9). */
   systemsAffectedCount: number
-  /** Rangordningsfält 2 (vid lika — irreversibelt vinner). */
+  /** Rangordningsfält 2 (A-H9). */
   irreversible: boolean
-  /** Rangordningsfält 3 (vid lika — en namngiven person vinner). */
+  /** Rangordningsfält 3 (A-H9): pekade valet två system åt olika håll —
+   *  gjorde det ont? Klassificerat per builder nedan, samma sorts
+   *  bedömning som `irreversible`/`systemsAffectedCount` redan är. */
+  tension: boolean
+  /** Rangordningsfält 1 (A-H9, nu FÖRST). */
   namedPerson?: string
-  /** Rangordningsfält 4, sista skiljedomaren. */
+  /** Rangordningsfält 5, allra sista skiljedomaren. */
   moneyAmount?: number
   /** Färdigbyggd mening — sammansatt HÄR, vid resolution, ur data som är
    *  garanterat aktuell just då (spelaren kan redan vara borttagen ur
    *  truppen vid säsongsslut om han sålts). */
   sentence: string
+}
+
+/** A-H9: kandidat kräver minst två av {namedPerson, irreversible, tension}. */
+function qualifies(c: Pick<SeasonDecisionCandidate, 'namedPerson' | 'irreversible' | 'tension'>): boolean {
+  const score = (c.namedPerson ? 1 : 0) + (c.irreversible ? 1 : 0) + (c.tension ? 1 : 0)
+  return score >= 2
 }
 
 // H3 (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24): Builder tar
@@ -68,6 +97,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 2, // finances, spelartrupp
         irreversible: true,
+        tension: true, // sålde en spelare under ekonomisk press — kostade laget
         namedPerson: name,
         moneyAmount: 350_000,
         sentence: `Du sålde ${name}. Det kostade er ${positionDefinite(player.position)}.`,
@@ -92,6 +122,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 2, // finances, mecenatrelation
         irreversible: false,
+        tension: true, // förtroende gick förlorat för att köpa sig ur krisen
         namedPerson: mecenatAfter.name,
         moneyAmount: 200_000,
         sentence: `Du bad ${mecenatAfter.name} om hjälp. Det kostade er hans förtroende.`,
@@ -109,6 +140,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 1, // finances (löpande)
         irreversible: false,
+        tension: true, // en löpande kostnad som äter av varje omgångs marginal
         moneyAmount: 300_000,
         sentence: 'Du tog lånet. Det kostade er varje månad sedan dess.',
       }
@@ -145,6 +177,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 2, // finances, spelartrupp (anställningsstatus)
         irreversible: false,
+        tension: true, // en löneökning kostar löpande, betald för att behålla folk
         namedPerson: confirmedPlayers.length === 1 ? `${confirmedPlayers[0].firstName} ${confirmedPlayers[0].lastName}` : undefined,
         moneyAmount: annualIncrease,
         sentence,
@@ -170,6 +203,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 4, // finances, spelartrupp, communityStanding, fanMood
         irreversible: true,
+        tension: true, // sålde en egenfostrad spelare innan han fick spela klart
         namedPerson: name,
         moneyAmount: 180_000,
         sentence: `Du sålde ${name} innan han hunnit spela klart. Det kostade er akademins bästa år.`,
@@ -191,6 +225,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 2, // communityStanding, fanMood
         irreversible: false,
+        tension: false, // ett avstående utan uttalad kostnad — inget system pekade emot
         namedPerson: name,
         sentence: `Du lät det vara. ${name} spelar kvar.`,
       }
@@ -209,6 +244,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 2, // finances, spelartrupp
         irreversible: true,
+        tension: true, // pengarna gav, men laget tog — ett ja som var ett nej i truppen
         namedPerson: name,
         moneyAmount: bid.offerAmount,
         sentence: `Du tog budet på ${name}. Det gav ${formatValue(bid.offerAmount)}, och tog ${name}.`,
@@ -234,6 +270,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 3, // finances, mecenatrelation, communityStanding
         irreversible: false,
+        tension: true, // ett avsked som gav minnen men tog pengar
         namedPerson: mecenat.name,
         moneyAmount: clubBefore!.finances - clubAfter!.finances,
         sentence: `Du tackade av ${mecenat.name} som han förtjänade. Det gav ett avsked ingen glömmer, och tog 25 tkr.`,
@@ -256,6 +293,15 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
  * tillståndsövergång (t.ex. "spelaren är faktiskt såld") aldrig kunde göra
  * det. Returnerar null tyst för alla (event.type, choiceId) utanför den
  * slutna listan ovan — det är det normala fallet, inte ett fel.
+ *
+ * A-H9: `event.systemhandelse`-gaten borttagen — domen kräver att kandidat-
+ * mängden är "varje löst beslut", inte bara O19-märkta systemhandelser.
+ * BUILDERS-uppslaget är fortfarande den faktiska begränsningen (bara åtta
+ * (typ, choiceId)-par har en Jacob-skriven mening), men den begränsningen
+ * ska inte vara dubbel. Filtrerar nu även på `qualifies()` (minst två av
+ * de tre översta kriterierna) — en byggare kan returnera en kandidat som
+ * INTE kvalificerar (t.ex. detOmojligaValet/keep, ingen kostnad uttalad),
+ * och den ska då inte hamna i loggen alls.
  */
 export function captureSystemDecision(
   gameBefore: SaveGame,
@@ -263,25 +309,30 @@ export function captureSystemDecision(
   event: Pick<GameEvent, 'id' | 'type' | 'choices' | 'systemhandelse' | 'relatedPlayerId' | 'relatedBidId'>,
   choiceId: string,
 ): SeasonDecisionCandidate | null {
-  if (!event.systemhandelse) return null
   const builder = BUILDERS[event.type]?.[choiceId]
   if (!builder) return null
-  return builder(gameBefore, gameAfter, event as GameEvent, choiceId)
+  const candidate = builder(gameBefore, gameAfter, event as GameEvent, choiceId)
+  if (!candidate) return null
+  return qualifies(candidate) ? candidate : null
 }
 
 /**
- * Rangordningsprincipen (Jacobs dom): (1) flest berörda system, (2)
- * irreversibilitet, (3) namngiven person, (4) kronor — sist, bara som
- * skiljedomare. Vid full likhet: det senaste i säsongen.
+ * Rangordningsprincipen (A-H9, DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md):
+ * (1) namngiven person, (2) irreversibilitet, (3) spänning (pekade valet
+ * åt olika håll — gjorde det ont), (4) antal berörda system — sist, bara
+ * som skiljedomare, (5) kronor — allra sista skiljedomaren. Vid full
+ * likhet: det senaste i säsongen. Ersätter den gamla ordningen (flest
+ * system vann) — domens ord: "en räknare är inte ett minne."
  */
 export function pickSeasonDecision(candidates: SeasonDecisionCandidate[]): SeasonDecisionCandidate | null {
   if (candidates.length === 0) return null
   const sorted = [...candidates].sort((a, b) => {
-    if (a.systemsAffectedCount !== b.systemsAffectedCount) return b.systemsAffectedCount - a.systemsAffectedCount
+    const aNamedFirst = a.namedPerson ? 1 : 0
+    const bNamedFirst = b.namedPerson ? 1 : 0
+    if (aNamedFirst !== bNamedFirst) return bNamedFirst - aNamedFirst
     if (a.irreversible !== b.irreversible) return a.irreversible ? -1 : 1
-    const aNamed = a.namedPerson ? 1 : 0
-    const bNamed = b.namedPerson ? 1 : 0
-    if (aNamed !== bNamed) return bNamed - aNamed
+    if (a.tension !== b.tension) return a.tension ? -1 : 1
+    if (a.systemsAffectedCount !== b.systemsAffectedCount) return b.systemsAffectedCount - a.systemsAffectedCount
     const aMoney = a.moneyAmount ?? 0
     const bMoney = b.moneyAmount ?? 0
     if (aMoney !== bMoney) return bMoney - aMoney

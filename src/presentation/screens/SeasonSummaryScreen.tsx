@@ -846,10 +846,11 @@ export function SeasonSummaryScreen() {
           </div>
         )}
 
-        {/* O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md): säsongens viktigaste
-            beslut — en färdig mening, ingen mall. undefined = ingen O19-
-            systemhandelse löstes denna säsong, vilket är korrekt (ingen rad
-            då, per domen). */}
+        {/* O18 fält 2, uppdaterad A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md):
+            säsongens viktigaste beslut — en färdig mening, ingen mall.
+            Raden ska ALLTID synas nu, aldrig tiga — seasonEndProcessor.ts
+            sätter en låst fallback-text ("Inget beslut stack ut i
+            vintras.") när ingen kandidat kvalificerar denna säsong. */}
         {summary.mostImportantDecision && (
           <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
             <SectionLabel style={{ marginBottom: 6 }}>⚖️ SÄSONGENS BESLUT</SectionLabel>
