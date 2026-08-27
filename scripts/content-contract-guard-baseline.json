@@ -1,5 +1,5 @@
 {
-  "todo": 87,
+  "todo": 86,
   "todoIds": [
     "GameEventType:transferBidReceived",
     "GameEventType:contractRequest",
@@ -69,7 +69,6 @@
     "ArcType:joker_redemption",
     "ArcType:veteran_farewell",
     "ArcType:veteran_final_season",
-    "ArcType:ledare_crisis",
     "ArcType:lokal_hero",
     "ArcType:contract_drama",
     "ArcType:derby_echo",
