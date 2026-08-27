@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { ScoreBlock } from '../components/primitives'
 import { Swords } from 'lucide-react'
+import { getQFSummaryStatus } from '../utils/qfSummaryStatus'
 
 /**
  * @cites playoffBracket, g.playoffBracket.quarterFinals.winnerId, g.playoffBracket.quarterFinals.homeWins, g.playoffBracket.quarterFinals.awayWins, g.playoffBracket.semiFinals
@@ -28,8 +29,12 @@ export function QFSummaryScreen() {
 
   const qfMatchups = bracket?.quarterFinals ?? []
   const sfMatchups = bracket?.semiFinals ?? []
-  const managedQF = qfMatchups.find(s => s.homeClubId === g.managedClubId || s.awayClubId === g.managedClubId)
-  const managedAdvanced = managedQF?.winnerId === g.managedClubId
+  // A-M2 (SEXSÄSONGSAUDITEN 2026-08-26): tre skilda utfall, inte två — se
+  // qfSummaryStatus.ts för rotorsaken till varför "never_qualified" måste
+  // särskiljas från "eliminated".
+  const qfStatus = getQFSummaryStatus(qfMatchups, g.managedClubId)
+  const managedAdvanced = qfStatus === 'advanced'
+  const managedNeverQualified = qfStatus === 'never_qualified'
   const managedSF = sfMatchups.find(s => s.homeClubId === g.managedClubId || s.awayClubId === g.managedClubId)
   const sfOpponentId = managedSF
     ? (managedSF.homeClubId === g.managedClubId ? managedSF.awayClubId : managedSF.homeClubId)
@@ -49,7 +54,9 @@ export function QFSummaryScreen() {
         <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
           {managedAdvanced
             ? 'Semifinalerna väntar. Bäst av fem.'
-            : 'Ni är utslagna. Bra fight.'}
+            : managedNeverQualified
+              ? 'Ni kvalificerade er inte för slutspelet.'
+              : 'Ni är utslagna. Bra fight.'}
         </p>
       </div>
 

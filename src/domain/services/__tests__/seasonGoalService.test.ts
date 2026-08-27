@@ -432,4 +432,47 @@ describe('checkSeasonGoalHalfwayEvent — ambient rad (D1)', () => {
     }
     expect(checkSeasonGoalHalfwayEvent(game)).toBeNull()
   })
+
+  // A-M7 (SEXSÄSONGSAUDITEN 2026-08-26): gaten var bara en NEDRE gräns
+  // (ligaomgång >= 11) — getCurrentLeagueRound planar ut på 22 och stannar
+  // där genom hela slutspelet, så om eventet inte hunnit visas kring
+  // omgång 11 (t.ex. utkonkurrerad av annat i decision-kön) kunde "Halva
+  // säsongen kvar" fortfarande skapas efter att grundserien redan var
+  // avslutad. Kalenderfas (getSeasonEndPhase) sätter en övre gräns:
+  // bara 'regular_active' godkänns.
+  it('grundserien avslutad (omgång 22 spelad) — null, säsongen är inte längre "halva"', () => {
+    const base = baseGame()
+    const template = base.fixtures[0]
+    const game = {
+      ...base,
+      fixtures: [
+        ...base.fixtures,
+        { ...template, id: 'round22_marker', roundNumber: 22, isCup: false, status: FixtureStatus.Completed, homeScore: 1, awayScore: 0 },
+      ],
+      activeSeasonGoal: { type: 'playoff' as const, chosenSeason: base.currentSeason },
+      standings: base.standings.map(s => s.clubId === base.managedClubId ? { ...s, position: 9 } : s),
+      playoffBracket: null,
+    }
+    expect(checkSeasonGoalHalfwayEvent(game)).toBeNull()
+  })
+
+  it('slutspel pågår (playoffBracket satt) — null, texten "halva säsongen" är inaktuell', () => {
+    let game = atHalfway(baseGame())
+    game = {
+      ...game,
+      activeSeasonGoal: { type: 'playoff', chosenSeason: game.currentSeason },
+      standings: game.standings.map(s => s.clubId === game.managedClubId ? { ...s, position: 9 } : s),
+      playoffBracket: {
+        season: game.currentSeason,
+        status: 'quarterFinals',
+        quarterFinals: [{
+          id: 'qf1', round: 'quarterFinal',
+          homeClubId: game.managedClubId, awayClubId: 'club_skutskar',
+          fixtures: [], homeWins: 0, awayWins: 0, winnerId: null, loserId: null,
+        }],
+        semiFinals: [], final: null, champion: null,
+      } as never,
+    }
+    expect(checkSeasonGoalHalfwayEvent(game)).toBeNull()
+  })
 })

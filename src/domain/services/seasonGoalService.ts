@@ -20,6 +20,7 @@ import { getRivalClubId } from '../data/rivalries'
 import { FACILITY_NODE_DEFS, getFacilityNodeViews } from './facilityService'
 import { eraLabel } from './clubEraService'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
+import { getSeasonEndPhase } from '../data/seasonEndPhase'
 
 export interface SeasonGoalOffer {
   type: SeasonGoalType
@@ -463,6 +464,15 @@ export function checkSeasonGoalHalfwayEvent(game: SaveGame): GameEvent | null {
   const goal = game.activeSeasonGoal
   if (!goal || goal.chosenSeason !== game.currentSeason) return null
   if (getCurrentLeagueRound(game) < HALFWAY_LEAGUE_ROUND) return null
+  // A-M7 (SEXSÄSONGSAUDITEN 2026-08-26) — rotorsak: gaten var bara en nedre
+  // gräns på ligaomgång (>= 11), aldrig en övre. getCurrentLeagueRound
+  // planar ut på 22 och stannar där genom hela slutspelet/cupen, så om
+  // eventet av någon anledning (låg prioritet, omkörd i decision-kön) inte
+  // hunnit visas kring omgång 11 kunde "Halva säsongen kvar" fortfarande
+  // skapas/visas efter att grundserien redan var avslutad. Kalenderfas
+  // (getSeasonEndPhase) är den kanoniska övre gränsen — bara 'regular_active'
+  // (halva säsongen är fortfarande sant) godkänns.
+  if (getSeasonEndPhase(game) !== 'regular_active') return null
 
   const eventId = `event_season_goal_halfway_${game.currentSeason}`
   if ((game.resolvedEventIds ?? []).includes(eventId)) return null

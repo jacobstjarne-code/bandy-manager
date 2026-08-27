@@ -1,5 +1,6 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
+import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
 
 export interface NextActionCue {
   text: string
@@ -32,6 +33,22 @@ export function hasManagedClubFutureFixture(game: SaveGame): boolean {
 export function getNextActionCue(game: SaveGame): NextActionCue {
   if (game.pendingWeeklyDecision != null) {
     return { text: 'Veckans beslut väntar — ta det först.', tone: 'warning' }
+  }
+
+  // A-M1 (SEXSÄSONGSAUDITEN 2026-08-26) — rotorsak: fixture-gaten
+  // (hasManagedClubFutureFixture) kollade bara "har den hanterade klubben
+  // en schemalagd match kvar", vilket är falskt i GAPET mellan sista
+  // grundseriematchen och slutspelsstarten — handlePlayoffStart
+  // (playoffTransition.ts) skapar slutspelsbracket + kvartsfinalfixtures
+  // först på NÄSTA advance()-anrop (preRoundContextProcessor.ts), så precis
+  // efter omgång 22 finns inga schemalagda fixtures alls ännu, trots att
+  // klubben kan vara kvalificerad och slutspelet bara väntar på att
+  // triggas. Måste kollas FÖRE fixture-gaten: om grundserien är klar men
+  // ingen bracket finns än (getSeasonEndPhase === 'regular_done') är
+  // slutspelet pending, inte över — "spela omgången" (advance) är vad som
+  // faktiskt triggar det.
+  if (getSeasonEndPhase(game) === 'regular_done') {
+    return { text: 'Näst på tur: spela omgången.', tone: 'default' }
   }
 
   // Low 1 (Skutskär-auditen, 2026-08-22): "Näst på tur: spela omgången"

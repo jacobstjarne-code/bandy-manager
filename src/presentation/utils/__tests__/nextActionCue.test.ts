@@ -98,6 +98,26 @@ describe('getNextActionCue', () => {
     expect(getNextActionCue(game)).toEqual({ text: 'Säsongen är slut för er del — avsluta säsongen.', tone: 'default' })
   })
 
+  // A-M1 (SEXSÄSONGSAUDITEN 2026-08-26): grundserien klar (omgång 22, alla
+  // matcher spelade) men playoffBracket ännu inte skapad — det GAP som
+  // uppstår mellan sista grundseriematchen och handlePlayoffStart (som
+  // körs först på NÄSTA advance()-anrop). Klubben KAN vara kvalificerad;
+  // "Säsongen är slut" är fel här — slutspelet är pending, inte över.
+  it('grundserien klar men playoffBracket ännu inte skapad → spela omgången (inte "säsongen är slut")', () => {
+    const completedRounds: Fixture[] = Array.from({ length: 22 }, (_, i) =>
+      makeFixture({
+        id: `round_${i + 1}`,
+        roundNumber: i + 1,
+        matchday: i + 1,
+        status: FixtureStatus.Completed,
+        homeClubId: 'managed',
+        awayClubId: 'opp',
+      })
+    )
+    const game = makeGame({ fixtures: completedRounds, playoffBracket: null })
+    expect(getNextActionCue(game)).toEqual({ text: 'Näst på tur: spela omgången.', tone: 'default' })
+  })
+
   it('managed match nästa omgång, lineup EJ satt → pekar på laget', () => {
     const game = makeGame({
       managedClubPendingLineup: undefined,
