@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { PlayerLink } from '../components/PlayerLink'
-import { ordinal, formatFinanceAbs, playoffResultLabel, cupResultLabel } from '../utils/formatters'
+import { ordinal, formatFinanceAbs, formatFinance, playoffResultLabel, cupResultLabel } from '../utils/formatters'
 import { seasonSpanLabel, seasonStartYear, seasonChampionYear } from '../../domain/utils/seasonYear'
 import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
 import type { SaveGame } from '../../domain/entities/SaveGame'
@@ -139,6 +139,10 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
   const liveGame = useGameStore(s => s.game)
   const game = resolveDisplayedGame(snapshot, liveGame)
   const [expandedSeason, setExpandedSeason] = useState<number | null>(null)
+  // A-M5 (SEXSÄSONGSAUDITEN 2026-08-26): separat toggle från expandedSeason
+  // (ligatabellen) — spelaren kan vilja se avstämningen utan tabellen och
+  // tvärtom, samma mönster som redan finns för standingsSnapshot nedan.
+  const [expandedFinanceSeason, setExpandedFinanceSeason] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<ArchiveTab>('seasons')
   const [photoSeasons, setPhotoSeasons] = useState<number[]>([])
   const [photoSvg, setPhotoSvg] = useState<string | null>(null)
@@ -457,6 +461,45 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                       ({s.financialChange >= 0 ? '+' : ''}{formatFinanceAbs(s.financialChange)})
                     </span>
                   </p>
+                  {/* A-M5 (SEXSÄSONGSAUDITEN 2026-08-26): avstämning för
+                      säsongsväxlingens hopp — samma faktiska rollover-poster
+                      som financeLog (kassavy) redan skulle visat om de loggats
+                      dit. undefined/tom = ingen mecenat/politiker/etc gav
+                      utbetalning denna rollover, ingen rad visas. */}
+                  {s.offseasonFinanceEntries && s.offseasonFinanceEntries.length > 0 && (
+                    <>
+                      <button
+                        onClick={() => setExpandedFinanceSeason(expandedFinanceSeason === s.season ? null : s.season)}
+                        style={{
+                          marginTop: 4, background: 'none', border: 'none',
+                          color: 'var(--accent)', fontSize: 11, cursor: 'pointer',
+                          padding: 0, textAlign: 'left', fontWeight: 600,
+                          display: 'block',
+                        }}
+                      >
+                        {expandedFinanceSeason === s.season ? '▲ Dölj avstämning' : '▼ Visa avstämning (sommaren)'}
+                      </button>
+                      {expandedFinanceSeason === s.season && (
+                        <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+                          {s.offseasonFinanceEntries.map((entry, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                padding: '3px 0',
+                                borderBottom: idx < s.offseasonFinanceEntries!.length - 1 ? '1px solid var(--border)' : 'none',
+                              }}
+                            >
+                              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{entry.label}</span>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: entry.amount >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                                {formatFinance(entry.amount)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
                   {s.standingsSnapshot && s.standingsSnapshot.length > 0 && (
                     <button
                       onClick={() => setExpandedSeason(expandedSeason === s.season ? null : s.season)}
