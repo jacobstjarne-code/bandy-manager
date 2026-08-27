@@ -43,6 +43,18 @@ export function getInjuryTag(event: GameEvent, players: Player[] | undefined): s
   if (event.type !== 'playThroughInjury' || !event.relatedPlayerId) return undefined
   const player = players?.find(p => p.id === event.relatedPlayerId)
   if (!player) return undefined
+  // A-M6 (SLUTTEST_KO): erbjudandet skapas i checkForPlayThroughInjuryOffer
+  // mot ett spelar-snapshot TAGET FÖRE samma omgångs skaderullning
+  // (playerStateProcessor.ts, -7 dagar/omgång). Om spelaren låg exakt på
+  // gränsen (t.ex. 7 dagar kvar, mjuk) hinner hen bli frisk (injuryDaysRemaining
+  // → 0, isInjured → false) i SAMMA anrop till advanceToNextEvent — kortet
+  // renderas sedan mot den redan uppdaterade spelaren, med "0 dagar kvar" som
+  // resultat. Gata på > 0: spelaren är per definition inte skadad vid 0,
+  // visa istf ett frisk-läge — erbjudandet är moot men kortet ska ändå
+  // beskriva verkligheten, inte ett omöjligt sifferläge.
+  if (player.injuryDaysRemaining <= 0) {
+    return `${player.firstName} ${player.lastName} · Frisk`
+  }
   const severity = getInjurySeverity(player.injuryDaysRemaining)
   const severityLabel = severity.charAt(0).toUpperCase() + severity.slice(1)
   return `${player.firstName} ${player.lastName} · ${severityLabel} skada · ${player.injuryDaysRemaining} dagar kvar`

@@ -73,4 +73,40 @@ describe('getInjuryTag', () => {
     expect(getInjuryTag(makeEvent({ relatedPlayerId: undefined }), game.players)).toBeUndefined()
     expect(getInjuryTag(makeEvent({ relatedPlayerId: 'unknown_id' }), game.players)).toBeUndefined()
   })
+
+  /**
+   * A-M6 (SLUTTEST_KO): checkForPlayThroughInjuryOffer väljer kandidater mot
+   * ett spelar-snapshot taget FÖRE samma omgångs skaderullning
+   * (playerStateProcessor.ts). En spelare med 7 dagar kvar (mjuk) hinner bli
+   * frisk (0 dagar, isInjured=false) i samma advanceToNextEvent-anrop —
+   * kortet renderades då mot den redan-friska spelaren och visade "0 dagar
+   * kvar". Gata på > 0: vid 0 (eller mindre) ska taggen visa "Frisk", aldrig
+   * en dagar-kvar-siffra på en spelare som redan är återställd.
+   */
+  it('visar "Frisk" istf "0 dagar kvar" när spelaren hunnit återhämta sig', () => {
+    const game = makeGame()
+    const player = game.players[0]
+    const players = game.players.map(p =>
+      p.id === player.id
+        ? { ...p, firstName: 'Erik', lastName: 'Svensson', injuryDaysRemaining: 0, isInjured: false }
+        : p
+    )
+    const event = makeEvent({ relatedPlayerId: player.id })
+
+    const tag = getInjuryTag(event, players)
+
+    expect(tag).toBe('Erik Svensson · Frisk')
+    expect(tag).not.toContain('0 dagar kvar')
+  })
+
+  it('samma gate täcker även negativa dagar-kvar-värden (skydd mot framtida off-by-one)', () => {
+    const game = makeGame()
+    const player = game.players[0]
+    const players = game.players.map(p =>
+      p.id === player.id ? { ...p, injuryDaysRemaining: -3, isInjured: false } : p
+    )
+    const event = makeEvent({ relatedPlayerId: player.id })
+
+    expect(getInjuryTag(event, players)).toContain('Frisk')
+  })
 })
