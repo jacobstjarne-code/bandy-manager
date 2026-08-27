@@ -1,18 +1,20 @@
 import type { ClubOffer } from '../../../domain/services/offerSelectionService'
 import type { ClubExtendedInfo } from '../../../domain/data/clubExtendedInfo'
 import type { ClubOfferQuote } from '../../../domain/data/clubOfferQuotes'
+import { ClubExpectation } from '../../../domain/enums'
 import { DifficultyTag } from './DifficultyTag'
 
 interface Props {
   offer: ClubOffer
   clubName: string
   region: string
+  boardExpectation: ClubExpectation
   extendedInfo: ClubExtendedInfo
   quote: ClubOfferQuote | null
   onSelect: (clubId: string) => void
 }
 
-export function OfferCard({ offer, clubName, region, extendedInfo, quote, onSelect }: Props) {
+export function OfferCard({ offer, clubName, region, boardExpectation, extendedInfo, quote, onSelect }: Props) {
   const displayText = quote ? quote.text : `"${extendedInfo.briefDescription}"`
 
   return (
@@ -43,6 +45,16 @@ export function OfferCard({ offer, clubName, region, extendedInfo, quote, onSele
         </div>
         <DifficultyTag difficulty={offer.difficulty} />
       </div>
+
+      {boardExpectation === ClubExpectation.Survive && (
+        // H4 Heros (Jacobs dom 2026-08-25), text låst ordagrant — bara Heros
+        // har ClubExpectation.Survive idag (worldGenerator.ts).
+        <div style={{ fontSize: 11, lineHeight: 1.5, marginTop: 4, color: 'var(--text-light-secondary)' }}>
+          <strong style={{ color: 'var(--text-light)', fontWeight: 600 }}>LÅGA FÖRVÄNTNINGAR</strong>
+          <br />
+          Styrelsen begär bara att klubben finns kvar nästa år.
+        </div>
+      )}
 
       <div
         className="h-quote"

@@ -17,9 +17,19 @@ export function PlayerDot({ slot, player, onClick, readOnly, isSelected }: Playe
   const isWarn = player != null && (player.fitness < 40 || player.position !== slot.position)
   const dotFill = player ? (isWarn ? 'url(#dot-warn)' : 'url(#dot-ok)') : 'var(--bg-dark-elevated)'
 
+  // M4 (audit 5c9a7a8, 2026-08-24): "flera centrala ringar/kort är klickbara
+  // divar [SVG-motsvarighet här] utan roll/tabindex" — det här är truppens
+  // mest centrala interaktionspunkt (sätta startelvan). role/tabIndex/
+  // onKeyDown fungerar identiskt på SVG-element som på div/button i moderna
+  // webbläsare.
+  const label = player ? `${slot.label}, ${player.firstName} ${player.lastName}` : `${slot.label}, tom position`
   return (
     <g
       onClick={!readOnly ? onClick : undefined}
+      onKeyDown={!readOnly ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } } : undefined}
+      role={!readOnly ? 'button' : undefined}
+      tabIndex={!readOnly ? 0 : undefined}
+      aria-label={!readOnly ? label : undefined}
       style={{ cursor: readOnly ? 'default' : 'pointer' }}
     >
       {/* Selection ring */}

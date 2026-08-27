@@ -16,12 +16,12 @@ import { seededPick } from '../../../domain/utils/random'
 import { SectionLabel } from '../../components/SectionLabel'
 import { ScoreBlock } from '../../components/primitives'
 import { generateSilentMatchReport } from '../../../domain/services/silentMatchReportService'
-import { generateQuickSummary, getStartedTiredDirection } from './helpers'
+import { generateQuickSummary, getStartedTiredDirection, getSecondHalfKvittoDir, findRotationSubstituteRating, resolvedWithAssertedLabel } from './helpers'
 import { DecisionCard } from '../../components/DecisionCard'
 import { Swords } from 'lucide-react'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
-import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_TIRED_OUTCOMES, CAPTAIN_OUTCOMES, LEADERSHIP_OUTCOMES } from '../../../domain/data/managerKvittoText'
+import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_TIRED_OUTCOMES, CAPTAIN_OUTCOMES, LEADERSHIP_OUTCOMES, PEP_TALK_HOLD_KVITTO, PRATA_KVITTO } from '../../../domain/data/managerKvittoText'
 import type { KvittoOutcomeDir, CaptainContext } from '../../../domain/data/managerKvittoText'
 import type { MatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { visasFor } from '../../../domain/services/granskaSectionRegistry'
@@ -146,6 +146,12 @@ export function selectNextMatchPointerType(args: {
  * Svenska namn på cornerStrategy-värdena lånade rakt av matchCore.ts:457-462
  * kommentar ("säkra hörnor = omställning, aggressiva = metodiskt set-piece").
  * Ren funktion → enhetstestbar.
+ *
+ * fixture.report.cornersHome/cornersAway läses av ANROPAREN (som beräknar
+ * totalCorners innan den skickas in hit) — denna funktion läser bara sina
+ * egna redan-verifierade parametrar.
+ *
+ * @cites cornerStrategy, totalCorners, cornerGoalMinutes
  */
 export function dittValCornerText(args: {
   cornerStrategy: CornerStrategy
@@ -223,6 +229,9 @@ interface GranskaOversiktProps {
   axes: MatchTypeAxes
 }
 
+/**
+ * @cites findRotationSubstituteRating, fixture.report.playerRatings
+ */
 export function GranskaOversikt({
   game, fixture, homeClub, awayClub, isHome,
   won, lost, resultColor, resultLabel, potm, potmRating, penResult,
@@ -585,7 +594,7 @@ export function GranskaOversikt({
         return (
           <>
             {criticalEvents.map((event, ei) => {
-              const resolved = resolvedEventIds.has(event.id)
+              const resolved = resolvedWithAssertedLabel(event.id, resolvedEventIds, chosenLabels)
               const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
               const relatedClub = event.relatedClubId ? game.clubs.find(c => c.id === event.relatedClubId) : null
               const tags = [
@@ -638,7 +647,7 @@ export function GranskaOversikt({
             subtitle={pcTitle}
             body={pc.body}
             bodyAsQuote
-            resolved={resolvedEventIds.has(pc.id)}
+            resolved={resolvedWithAssertedLabel(pc.id, resolvedEventIds, chosenLabels)}
             chosenLabel={chosenLabels[pc.id]}
             choices={pc.choices}
             onChoose={(id, label) => onChoice(pc.id, id, label)}
@@ -659,7 +668,7 @@ export function GranskaOversikt({
             subtitle={journalist ? `${journalist.name} · ${journalist.outlet}` : undefined}
             body={cp.body}
             bodyAsQuote
-            resolved={resolvedEventIds.has(cp.id)}
+            resolved={resolvedWithAssertedLabel(cp.id, resolvedEventIds, chosenLabels)}
             chosenLabel={chosenLabels[cp.id]}
             choices={cp.choices}
             onChoose={(id, label) => onChoice(cp.id, id, label)}
@@ -678,7 +687,7 @@ export function GranskaOversikt({
             subtitle={rm.sender?.name}
             body={rm.body}
             bodyAsQuote
-            resolved={resolvedEventIds.has(rm.id)}
+            resolved={resolvedWithAssertedLabel(rm.id, resolvedEventIds, chosenLabels)}
             chosenLabel={chosenLabels[rm.id]}
             choices={rm.choices}
             onChoose={(id, label) => onChoice(rm.id, id, label)}
@@ -729,6 +738,10 @@ export function GranskaOversikt({
         const log = fixture?.report?.managerChoiceLog
         if (!log || log.length === 0) return null
         const kvittoDir: KvittoOutcomeDir = won ? 'good' : lost ? 'bad' : 'neutral'
+        // PÅSTÅENDEKARTAN (2026-08-24): pausbeslut (halftime_tactic/pep_talk)
+        // bedöms mot andra halvlekens faktiska målskillnad, inte helmatchens
+        // resultat — se helpers.ts:s getSecondHalfKvittoDir.
+        const secondHalfKvittoDir = getSecondHalfKvittoDir(fixture, game.managedClubId, kvittoDir)
         const seed = (fixture?.homeScore ?? 0) + (fixture?.awayScore ?? 0)
         type OutcomeRow = {
           stripe: 'good' | 'neutral' | 'bad'
@@ -752,13 +765,49 @@ export function GranskaOversikt({
               : entry.detail === 'player_talk' ? 'prata'
               : null
             if (!key) continue
-            const pool = HALFTIME_OUTCOMES[key][kvittoDir]
-            const stripe: OutcomeRow['stripe'] = kvittoDir === 'good' ? 'good' : kvittoDir === 'bad' ? 'bad' : 'neutral'
+            const stripe: OutcomeRow['stripe'] = secondHalfKvittoDir === 'good' ? 'good' : secondHalfKvittoDir === 'bad' ? 'bad' : 'neutral'
+            // H2-uppföljning (5c9a7a8, 2026-08-24), Jacobs dom: 'prata' är
+            // fast text (PRATA_KVITTO), inte en good/bad/neutral-pool.
+            // Mekaniken (applyHalftimeDecision) ger samma +12 moral oavsett
+            // andra halvlekens utfall — en utfallsberoende text var aldrig
+            // sann för just det här valet. HALFTIME_OUTCOMES.prata kvar i
+            // managerKvittoText.ts (superseterad här, inte raderad).
+            const outcome = key === 'prata' ? PRATA_KVITTO : HALFTIME_OUTCOMES[key][secondHalfKvittoDir][(seed + i) % HALFTIME_OUTCOMES[key][secondHalfKvittoDir].length]
+            rows.push({
+              stripe, heading: HALFTIME_LABELS[key], playerName: '',
+              outcome,
+              value: secondHalfKvittoDir === 'good' ? '✓' : secondHalfKvittoDir === 'bad' ? '✗' : '—',
+              valueLabel: secondHalfKvittoDir === 'good' ? 'gav effekt' : secondHalfKvittoDir === 'bad' ? 'backade' : 'neutral',
+            })
+          } else if (entry.type === 'pep_talk') {
+            // H2-uppföljning (5c9a7a8, 2026-08-24): live-matchens paussnack
+            // (pauseLean: 'push'/'calm'/'hold', Spak A). push/calm mappar
+            // mot de BEFINTLIGA lugna/pressa-poolerna (samma riktning: push
+            // höjer tempot precis som 'pressa', calm dämpar precis som
+            // 'lugna') — ingen egen textpool finns ännu för dem specifikt.
+            // 'hold' har nu fast text (PEP_TALK_HOLD_KVITTO, Jacobs dom):
+            // PAUSSNACK:s egen etikett för hold är "→ oförändrat" — ingen
+            // mätbar effekt att variera på, en enda rad är rätt.
+            if (entry.detail === 'hold') {
+              rows.push({
+                // TODO(Opus): ingen låst rubrik-text finns ännu för hold
+                // (HALFTIME_LABELS har bara lugna/pressa/prata) — '[Opus]'
+                // tills en finns, per CLAUDE.md:s regel om platshållare.
+                stripe: 'neutral', heading: '[Opus]', playerName: '',
+                outcome: PEP_TALK_HOLD_KVITTO,
+                value: '—', valueLabel: 'neutral',
+              })
+              continue
+            }
+            const key = entry.detail === 'push' ? 'pressa' : entry.detail === 'calm' ? 'lugna' : null
+            if (!key) continue
+            const pool = HALFTIME_OUTCOMES[key][secondHalfKvittoDir]
+            const stripe: OutcomeRow['stripe'] = secondHalfKvittoDir === 'good' ? 'good' : secondHalfKvittoDir === 'bad' ? 'bad' : 'neutral'
             rows.push({
               stripe, heading: HALFTIME_LABELS[key], playerName: '',
               outcome: pool[(seed + i) % pool.length],
-              value: kvittoDir === 'good' ? '✓' : kvittoDir === 'bad' ? '✗' : '—',
-              valueLabel: kvittoDir === 'good' ? 'gav effekt' : kvittoDir === 'bad' ? 'backade' : 'neutral',
+              value: secondHalfKvittoDir === 'good' ? '✓' : secondHalfKvittoDir === 'bad' ? '✗' : '—',
+              valueLabel: secondHalfKvittoDir === 'good' ? 'gav effekt' : secondHalfKvittoDir === 'bad' ? 'backade' : 'neutral',
             })
           } else if (entry.type === 'captain' && entry.playerId) {
             const player = findPlayer(entry.playerId)
@@ -829,15 +878,28 @@ export function GranskaOversikt({
           } else if (entry.type === 'bench_fit' && entry.playerId) {
             const player = findPlayer(entry.playerId)
             if (!player) continue
-            const pool = LINEUP_ROTATION_OUTCOMES[kvittoDir]
-            const stripe: OutcomeRow['stripe'] = kvittoDir === 'good' ? 'good' : kvittoDir === 'bad' ? 'bad' : 'neutral'
+            // PÅSTÅENDEKARTAN omsvep (2026-08-24), VAR-fel-entitet: den vilade
+            // spelaren spelade inte — kvittot ska spegla ERSÄTTARENS insats,
+            // inte lagets resultat (redan dokumenterat som proxy i
+            // managerKvittoText.ts). Föll tidigare tillbaka på LAGRESULTATET
+            // (kvittoDir) när ersättaren inte gick att entydigt identifiera —
+            // samma fel i mindre skala: texten talar fortfarande om just
+            // DEN HÄR vilade spelarens ersättning, men verdikten kom nu från
+            // en helt annan entitet (hela laget). Hellre ingen rad än en rad
+            // om fel entitet — samma "hellre tyst"-princip som
+            // findRotationSubstituteRating själv redan följer.
+            const subRating = fixture ? findRotationSubstituteRating(fixture, game, entry.playerId) : undefined
+            if (subRating === undefined) continue
+            const dir: KvittoOutcomeDir = subRating >= 7 ? 'good' : subRating <= 5 ? 'bad' : 'neutral'
+            const pool = LINEUP_ROTATION_OUTCOMES[dir]
+            const stripe: OutcomeRow['stripe'] = dir === 'good' ? 'good' : dir === 'bad' ? 'bad' : 'neutral'
             rows.push({
               stripe,
               heading: 'Vilad',
               playerName: player.lastName,
               outcome: pool[(seed + i) % pool.length].replace('{spelare}', player.lastName),
-              value: kvittoDir === 'good' ? '✓' : kvittoDir === 'bad' ? '✗' : '—',
-              valueLabel: kvittoDir === 'good' ? 'bra val' : kvittoDir === 'bad' ? 'backade' : 'neutral',
+              value: dir === 'good' ? '✓' : dir === 'bad' ? '✗' : '—',
+              valueLabel: dir === 'good' ? 'bra val' : dir === 'bad' ? 'backade' : 'neutral',
             })
           }
         }

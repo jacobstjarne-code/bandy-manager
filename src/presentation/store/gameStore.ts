@@ -17,6 +17,7 @@ import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
 import { diffTactics } from '../utils/tacticData'
 import { loadSaveGame, migrateLocalStorageIfNeeded, saveSaveGame, snapshotSave } from '../../infrastructure/persistence/saveGameStorage'
+import { subscribeToSaveWrites } from '../../infrastructure/persistence/saveConflictChannel'
 import { applyFinanceChange } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
 import { canStartBuild, startFacilityBuild, canDecommission, decommissionFacilityNode, getFinancingOptions, DECOMMISSION_COMMUNITY_STANDING_COST, FACILITY_NODE_DEFS, type FinancingContext } from '../../domain/services/facilityService'
@@ -29,6 +30,8 @@ import { academyActions } from './actions/academyActions'
 import { gameFlowActions } from './actions/gameFlowActions'
 import { periodisationActions } from './actions/periodisationActions'
 import { computeCardStaleTracking } from '../../domain/services/portal/portalBuilder'
+import { safeStandingPosition } from '../../domain/services/standingsService'
+import { getCsPoliticianGrantBonus } from '../../domain/services/communityStandingScaling'
 
 export type SaveActionResult = { success: boolean; error?: string }
 
@@ -58,6 +61,23 @@ interface GameState {
   isLoading: boolean
   lastAdvanceResult: AdvanceResult | null
   roundSummary: RoundSummaryData | null
+  // C1 (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24): "senast
+  // bekräftad sparningstid" — sätts ENDAST efter att saveSaveGame() faktiskt
+  // returnerat success:true, aldrig optimistiskt vid anropstillfället.
+  // lastSaveError sätts vid varje misslyckad sparning (manuell ELLER
+  // autosave) och rensas vid nästa lyckade — GameHeader.tsx visar den.
+  lastConfirmedSaveAt: string | null
+  lastSaveError: string | null
+  // M2 (audit 5c9a7a8, 2026-08-24): sätts true när EN AV TVÅ saker händer —
+  // (a) denna flik försökte spara och fick conflict:true tillbaka
+  // (saveSaveGame har redan avvisat skrivningen, ingen dataförlust skedde),
+  // eller (b) en annan flik broadcastar att den skrivit en nyare revision av
+  // SAMMA save (subscribeToSaveWrites nedan) — upptäcks direkt, inte först
+  // vid nästa misslyckade sparförsök. Rensas ALDRIG automatiskt: en flik som
+  // hamnat här kan inte längre spara säkert (dess lokala state är per
+  // definition bakom), enda säkra vägen framåt är att ladda om och läsa den
+  // faktiska nyaste kopian. SaveConflictModal.tsx är den blockerande ytan.
+  saveConflict: boolean
 
   // Actions
   newGame: (managerName: string, clubId: string) => void
@@ -84,19 +104,23 @@ interface GameState {
   setTacticAdvancedMode: (advanced: boolean) => Promise<SaveActionResult>
   setTraining: (focus: TrainingFocus) => void
   markOnboardingComplete: () => Promise<SaveActionResult>
+  // M1: se implementationens kommentar (create()-blocket nedan) för varför.
+  advanceOnboardingToTilltrade: () => Promise<SaveActionResult>
+  setTilltradeStep: (step: 1 | 2 | 3 | 4) => Promise<SaveActionResult>
   saveGame: () => Promise<SaveActionResult>
   dismissHint: (screenId: string) => void
   updateMatchMode: (mode: 'full' | 'commentary' | 'quicksim' | 'silent') => Promise<SaveActionResult>
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
   startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst?: boolean) => { success: boolean; error?: string }
+  toggleScoutShortlist: (playerId: string) => void
   placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
   renewContract: (playerId: string, newSalary: number, years: number) => { success: boolean; error?: string; wageWarning?: number }
   signFreeAgent: (agentId: string) => { success: boolean; error?: string }
   listPlayerForSale: (playerId: string) => { success: boolean; error?: string }
   respondToIncomingBid: (bidId: string, choiceId: string) => { success: boolean; error?: string }
   resolveEvent: (eventId: string, choiceId: string) => void
-  saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number, halftimeDecision?: 'lugna' | 'pressa' | 'prata') => void
+  saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number, halftimeDecision?: import('../components/match/HalftimeModal').PauseLean) => void
   markMatchStarted: (fixtureId: string, homeLineup?: import('../../domain/entities/Fixture').TeamSelection, awayLineup?: import('../../domain/entities/Fixture').TeamSelection) => void
   simulateAbandonedMatch: (fixtureId: string) => void
   concedeWalkover: (fixtureId: string) => void
@@ -152,6 +176,9 @@ interface GameState {
   resolveAnnandagsVal: (val: 'A' | 'B' | 'C' | 'D') => void
   dismissCallupModal: () => void
   updateMatchLaddningBand: (data: { matchday: number; streakLength: number; stateType: 'winning_streak' | 'losing_streak' } | null) => void
+  // M2: SaveConflictModal.tsx:s enda knapp. Se implementationens kommentar
+  // för VARFÖR ett rakt window.location.reload() inte räcker här.
+  resolveSaveConflict: () => Promise<void>
 }
 
 const indexedDBStorage = {
@@ -167,15 +194,43 @@ const indexedDBStorage = {
   },
 }
 
-async function persistGameSnapshot(game: SaveGame | null): Promise<SaveActionResult> {
-  if (!game) return { success: false, error: 'Inget spel laddat' }
-  try {
-    await saveSaveGame(game)
-    return { success: true }
-  } catch (e) {
-    console.warn('Save failed:', e)
-    return { success: false, error: 'Kunde inte spara spelet' }
-  }
+// C1 (5c9a7a8, 2026-08-24): läste tidigare på att saveSaveGame() skulle
+// KASTA vid fel — den svalde istället allt internt och returnerade
+// Promise<void>, så catch-blocket här var död kod och detta returnerade
+// alltid success:true. saveSaveGame() returnerar nu en riktig SaveWriteResult
+// (se saveGameStorage.ts) — inget try/catch behövs, resultatet propageras rakt av.
+function persistGameSnapshot(
+  game: SaveGame | null,
+  set: (partial: Partial<GameState> | ((state: GameState) => Partial<GameState>)) => void
+): Promise<SaveActionResult> {
+  if (!game) return Promise.resolve({ success: false, error: 'Inget spel laddat' })
+  return saveSaveGame(game).then(result => {
+    if (result.success) {
+      // M2: skriv tillbaka den nya revisionen in i store:ts `game`, annars
+      // konfliktar denna fliks EGET nästa sparförsök med sig självt (dess
+      // in-memory game.revision skulle annars stå kvar på det gamla värdet
+      // för alltid, medan disken redan gått vidare). Funktionell set —
+      // slår ihop mot AKTUELLT state, inte det game-snapshot som fanns när
+      // detta anrop startade, så en action som hunnit köra under tiden
+      // saveSaveGame() väntade på IndexedDB inte skrivs över.
+      set(state => ({
+        lastConfirmedSaveAt: new Date().toISOString(),
+        lastSaveError: null,
+        game: state.game && state.game.id === game.id ? { ...state.game, revision: result.newRevision } : state.game,
+      }))
+    } else if (result.conflict) {
+      // M2: INTE ett lagringsfel — skrivningen avvisades medvetet av
+      // compare-and-swap. lastSaveError hade fått GameHeader-toasten att
+      // visa och sen tysta sig efter 2.4s, som om spelaren bara kunde
+      // trycka spara igen. Det kan de inte: denna fliks state är bakom,
+      // varje nytt försök avvisas likadant tills omladdning. saveConflict
+      // rensas aldrig automatiskt — se GameState-fältets kommentar.
+      set({ saveConflict: true })
+    } else {
+      set({ lastSaveError: result.error ?? 'Kunde inte spara spelet' })
+    }
+    return result
+  })
 }
 
 export const useGameStore = create<GameState>()(
@@ -185,6 +240,9 @@ export const useGameStore = create<GameState>()(
       isLoading: false,
       lastAdvanceResult: null,
       roundSummary: null,
+      lastConfirmedSaveAt: null,
+      lastSaveError: null,
+      saveConflict: false,
 
       newGame: (managerName, clubId) => {
         // U7 (SLUTTEST_KO.md, 2026-08-17): snapshot av den aktiva karriären
@@ -206,9 +264,26 @@ export const useGameStore = create<GameState>()(
         const activeGame = get().game
         if (activeGame) {
           void snapshotSave('pre_newgame', activeGame)
-          void saveSaveGame(activeGame)
+          // C1 (5c9a7a8, 2026-08-24): fire-and-forget (newGame är synkron) —
+          // men "fire-and-forget" fick tidigare INGEN signal alls vid fel,
+          // eftersom saveSaveGame() svalde sina egna undantag. Nu explicit
+          // console.error om den utgående karriären inte hann persisteras,
+          // istf en tyst void som aldrig kunde upptäckas.
+          void saveSaveGame(activeGame).then(r => {
+            if (!r.success) console.error('newGame: kunde inte spara utgående karriär innan byte:', r.error)
+          })
         }
-        let game = createNewGame({ managerName, clubId })
+        // O10-uppföljning (2026-08-26, Jacobs fynd): newGame() skickade
+        // ALDRIG ett seed till createNewGame() — worldSeed föll tillbaka
+        // till konstanten 42 för VARJE karriär som startats via appen,
+        // sedan K4 (19 aug) fram tills nu. Alla live-careers har delat
+        // exakt samma värld i en vecka, oavsiktligt. Analys-/stresstest-
+        // skripten i scripts/ berörs INTE (de anropar createNewGame direkt
+        // med egna varierande seeds, aldrig via gameStore) — se
+        // RAPPORT_SEED_BAKATVERIFIERING_2026-08-26.md. Fix: ett riktigt
+        // slumpat seed per ny, fristående karriär.
+        const randomSeed = Math.floor(Math.random() * 2 ** 31)
+        let game = createNewGame({ managerName, clubId, seed: randomSeed })
         // Trigga inledande scen (board_meeting) vid säsong 1 / matchday 0.
         // advanceToNextEvent kör samma logik vid varje runda men vid newGame
         // har den aldrig körts än — explicit trigger här.
@@ -227,7 +302,23 @@ export const useGameStore = create<GameState>()(
         // bär bara managerName/clubName/season/lastSavedAt, inga onboarding-
         // beroende fält) — AppRouter.tsx:96 skickar redan korrekt vidare till
         // /tilltrade om spelaren väljer en icke-onboardad save.
-        void saveSaveGame(game)
+        void saveSaveGame(game).then(r => {
+          if (r.success) {
+            // M2: samma resonemang som persistGameSnapshot — utan detta
+            // står den nya karriärens in-memory game.revision kvar på sitt
+            // ursprungsvärde för alltid, och NÄSTA sparning (saveGame,
+            // autosave, vad som helst) skulle avvisas som en falsk
+            // konflikt mot sin egen just skrivna revision.
+            set(state => ({
+              lastConfirmedSaveAt: new Date().toISOString(),
+              lastSaveError: null,
+              game: state.game && state.game.id === game.id ? { ...state.game, revision: r.newRevision } : state.game,
+            }))
+          } else {
+            console.error('newGame: kunde inte spara ny karriär:', r.error)
+            set({ lastSaveError: r.error ?? 'Kunde inte spara' })
+          }
+        })
       },
 
       clearFiredGame: () => {
@@ -307,7 +398,19 @@ export const useGameStore = create<GameState>()(
 
       switchToSave: async (id) => {
         const { game } = get()
-        if (game) await saveSaveGame(game)
+        if (game) {
+          // C1 (5c9a7a8, 2026-08-24): en misslyckad sparning här fick tidigare
+          // ingen konsekvens alls — bytet fortsatte, och den utgående karriärens
+          // ospardade framsteg försvann tyst när loadGame(id) skrev över store:t.
+          // Avbryt bytet om vi inte kan bekräfta att den är säker.
+          const result = await saveSaveGame(game)
+          if (!result.success) {
+            console.error('switchToSave: kunde inte spara utgående karriär, avbryter bytet:', result.error)
+            set({ lastSaveError: result.error ?? 'Kunde inte spara' })
+            return false
+          }
+          set({ lastConfirmedSaveAt: new Date().toISOString(), lastSaveError: null })
+        }
         return get().loadGame(id)
       },
 
@@ -361,7 +464,7 @@ export const useGameStore = create<GameState>()(
         if ((game.tacticAdvancedMode ?? false) === advanced) return { success: true }
         const updated = { ...game, tacticAdvancedMode: advanced }
         set({ game: updated })
-        return persistGameSnapshot(updated)
+        return persistGameSnapshot(updated, set)
       },
 
       markOnboardingComplete: async () => {
@@ -369,11 +472,62 @@ export const useGameStore = create<GameState>()(
         if (!game) return { success: false, error: 'Inget spel laddat' }
         const updated = { ...game, onboardingComplete: true }
         set({ game: updated })
-        return persistGameSnapshot(updated)
+        return persistGameSnapshot(updated, set)
+      },
+
+      // M1 (audit 5c9a7a8, 2026-08-24): ArrivalScene.tsx:s onComplete anropar
+      // denna FÖRE navigate('/tilltrade') — utan den persisterade routern
+      // ingen aning om Ankomsten var klar, och skickade en avbruten spelare
+      // rakt till /tilltrade vid nästa indirekta ruttinträde (byte av save),
+      // hoppade över hela Ankomsten istf att återuppta den.
+      advanceOnboardingToTilltrade: async () => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        const updated = { ...game, onboardingScreen: 'tilltrade' as const }
+        set({ game: updated })
+        return persistGameSnapshot(updated, set)
+      },
+
+      // M1: TilltradeScreen.tsx:s fyra F-steg låg tidigare bara i lokal
+      // useState — ett avbrott (byte till annan save och tillbaka) dumpade
+      // spelaren på steg 1 igen, oavsett var de faktiskt var. Anropas vid
+      // varje setStep(), inte bara vid F4.
+      setTilltradeStep: async (step) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        const updated = { ...game, tilltradeStep: step }
+        set({ game: updated })
+        return persistGameSnapshot(updated, set)
       },
 
       saveGame: async () => {
-        return persistGameSnapshot(get().game)
+        return persistGameSnapshot(get().game, set)
+      },
+
+      // M2: ETT rakt window.location.reload() räcker INTE här, trots att
+      // det är precis vad ErrorBoundary.tsx gör för sin "Ladda om"-knapp.
+      // Skillnaden: Zustands EGEN persist-middleware (indexedDBStorage
+      // ovan, nyckel "bandy-game-store") är en HELT SEPARAT skrivväg från
+      // saveSaveGame()s CAS-skyddade "bandy_save_<id>" — den skriver på
+      // VARJE set()-anrop, utan revisionskoll. En flik som just blivit
+      // avvisad av compare-and-swap har ändå fortsatt trigga egna set()-
+      // anrop (t.ex. set({saveConflict:true}) självt), som skriver DENNA
+      // fliks STALE game-objekt till "bandy-game-store" — möjligen EFTER
+      // den andra flikens nyare skrivning dit. Ett reload som bara läser
+      // "bandy-game-store" kan alltså återuppliva exakt samma race CAS
+      // skulle stoppa, en nivå längre ner. Lösningen: läs uttryckligen den
+      // AUKTORITATIVA kopian (bandy_save_<id>, CAS-skyddad) via
+      // loadSaveGame() och skriv in den i store:t FÖRST — det set()-anropet
+      // skriver i sin tur rätt data till "bandy-game-store" igen — och
+      // reloada SEDAN, som en sista helhets-återställning av all annan
+      // in-memory UI-state (route, transienta flaggor) utöver game.
+      resolveSaveConflict: async () => {
+        const { game } = get()
+        if (game) {
+          const authoritative = await loadSaveGame(game.id)
+          if (authoritative) set({ game: authoritative, saveConflict: false })
+        }
+        window.location.reload()
       },
 
       dismissHint: (screenId) => {
@@ -391,7 +545,7 @@ export const useGameStore = create<GameState>()(
         if (game.preferredMatchMode === mode) return { success: true }
         const updated = { ...game, preferredMatchMode: mode }
         set({ game: updated })
-        return persistGameSnapshot(updated)
+        return persistGameSnapshot(updated, set)
       },
 
       markInboxRead: (itemId) => {
@@ -580,9 +734,9 @@ export const useGameStore = create<GameState>()(
                 ...p,
                 morale: Math.max(0, Math.min(100, p.morale + moraleChange)),
                 form: Math.max(0, Math.min(100, p.form + formChange)),
-                narrativeLog: narrativeEntry
-                  ? [...(p.narrativeLog ?? []), narrativeEntry].slice(-20)
-                  : p.narrativeLog,
+                diary: narrativeEntry
+                  ? [...(p.diary ?? []), narrativeEntry].slice(-20)
+                  : p.diary,
               }
             : p
         )
@@ -766,9 +920,11 @@ export const useGameStore = create<GameState>()(
             return { success: false, message: 'Bjudit in maximalt antal gånger den här säsongen.' }
           }
           let boost = 5 + Math.floor(Math.random() * 4)
-          // Agenda-bonus
-          const standing = game.standings.find(s => s.clubId === game.managedClubId)
-          if (pol.agenda === 'prestige' && standing && standing.position <= 4) boost += 3
+          // Agenda-bonus. LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26):
+          // safeStandingPosition ger null om klubben ännu inte spelat en
+          // ligamatch denna säsong, istf en alfabetisk skuggposition.
+          const managedPosition = safeStandingPosition(game.standings, game.managedClubId)
+          if (pol.agenda === 'prestige' && managedPosition !== null && managedPosition <= 4) boost += 3
           if (pol.agenda === 'youth' && game.communityActivities?.bandySchool) boost += 2
           const newRel = Math.min(100, pol.relationship + boost)
           const updatedPol = { ...pol, relationship: newRel }
@@ -839,7 +995,10 @@ export const useGameStore = create<GameState>()(
           }
           let grant = 15000 + Math.floor((pol.relationship - 50) * 700) // 15k-50k baserat på relation
           if (pol.agenda === 'youth' && game.communityActivities?.bandySchool) grant += 20000
-          if ((game.communityStanding ?? 50) > 70) grant += 10000
+          // Tröskelsvepet (fynd #3, Jacobs dom 2026-08-26): var `cs > 70` →
+          // fast +10 000 kr, samma 70/71-linje som fyra andra system. Delar
+          // nu kurva med kommunstödet (communityStandingScaling.ts).
+          grant += getCsPoliticianGrantBonus(game.communityStanding ?? 50)
           if (pol.agenda === 'savings' && Math.random() < 0.5) {
             const updatedPol2 = { ...pol, relationship: Math.max(0, pol.relationship - 3) }
             set({ game: { ...game, localPolitician: updatedPol2, politicianLastInteraction: { ...lastInteraction, apply: currentRound, applySeason: game.currentSeason } } })
@@ -886,11 +1045,11 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, matchLaddningBandShown: data ?? undefined } })
       },
 
-      // U5 (SLUTTEST_KO.md, 2026-08-17): medvetet INTE en narrativeLog-källa.
+      // U5 (SLUTTEST_KO.md, 2026-08-17): medvetet INTE en narrativeBeatLog-källa.
       // Jacobs dom (2026-08-17): "en logg som bara hälften skriver till är
       // sämre än åtta ärliga mekanismer" gäller ofullständighet av
       // FÖRSUMMELSE — inte en källa som inte hör hemma. cardStaleTracking
-      // mäter hur länge ett portalkort legat framme; narrativeLog svarar på
+      // mäter hur länge ett portalkort legat framme; narrativeBeatLog svarar på
       // när en båge senast hände. Olika frågor. Ett kort som renderades igen
       // är inte en beat, och "kortet roterade ut ur påsen" är ett
       // urvalsbeslut — inte något som hände i spelvärlden. Att kalla det en
@@ -945,6 +1104,21 @@ export const useGameStore = create<GameState>()(
     }
   )
 )
+
+// M2 (audit 5c9a7a8, 2026-08-24): registrerad en gång per flik (modulnivå,
+// inte inuti create()-callbacken — den körs om vid varje hot-reload i dev
+// annars). Fångar ANDRA flikars skrivningar i realtid, INNAN denna flik
+// själv försöker spara och upptäcker konflikten reaktivt via
+// persistGameSnapshot/persistAutosave — en stale flik kan annars fortsätta
+// spela flera åtgärder på data som redan inte går att spara, och tappa allt
+// på en gång. BroadcastChannel levererar aldrig till avsändarens egen
+// kontext, så ett mottaget meddelande är alltid från en verkligt annan flik.
+subscribeToSaveWrites((msg) => {
+  const current = useGameStore.getState().game
+  if (current && current.id === msg.saveId && msg.revision > (current.revision ?? 0)) {
+    useGameStore.setState({ saveConflict: true })
+  }
+})
 
 /**
  * Medium 7 (Skutskär-auditen, 2026-08-22): en hård omladdning av en intern

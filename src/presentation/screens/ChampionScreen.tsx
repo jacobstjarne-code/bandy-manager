@@ -45,6 +45,9 @@ function Confetti() {
   )
 }
 
+/**
+ * @cites playoffBracket, game.playoffBracket.champion, game.playoffBracket.final.loserId, game.playoffBracket.semiFinals.loserId, series.homeWins, series.awayWins, series.winnerId
+ */
 export function ChampionScreen() {
   const { game, advance } = useGameStore()
   const club = useManagedClub()

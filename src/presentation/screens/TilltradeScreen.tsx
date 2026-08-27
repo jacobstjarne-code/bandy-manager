@@ -77,7 +77,17 @@ export function TilltradeScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
   const markOnboardingComplete = useGameStore(s => s.markOnboardingComplete)
-  const [step, setStep] = useState<Step>(1)
+  const setTilltradeStepPersist = useGameStore(s => s.setTilltradeStep)
+  // M1 (audit 5c9a7a8, 2026-08-24): seedad från game.tilltradeStep, inte alltid 1 —
+  // annars dumpar ett avbrott (byte till annan save och tillbaka) spelaren på
+  // steg 1 igen oavsett var de faktiskt var. game finns redan här i praktiken
+  // (routern skickade oss till /tilltrade baserat på ett redan laddat game).
+  const [step, setStepLocal] = useState<Step>(() => game?.tilltradeStep ?? 1)
+  // Persisterar VARJE stegbyte, inte bara F4 — "test av avbrott efter varje CTA".
+  function setStep(n: Step) {
+    setStepLocal(n)
+    void setTilltradeStepPersist(n)
+  }
   const [cornerOutcome, setCornerOutcome] = useState<CornerOutcome | null>(null)
   // T5a (SF-2, 2026-07-13/14): F2:s beat-progression ägs här, inte i LineupStep
   // — sidfoten dockas i .scene-cta-area (F1/F3/F4:s position), inte inline i kortet.

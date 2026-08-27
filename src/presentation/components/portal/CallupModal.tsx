@@ -4,6 +4,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { CALLUP_MODAL_LINES } from '../../../domain/data/landslagText'
 import { positionShort } from '../../utils/formatters'
 import { Icon } from '../primitives/Icon'
+import { Overlay } from '../primitives/Overlay'
 
 /**
  * CALLUP_MODAL — ceremonimodal vid landslagsuttagning, 1× per säsong.
@@ -36,15 +37,13 @@ export function CallupModal({ game }: Props) {
     .filter((p): p is NonNullable<typeof p> => !!p)
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'rgba(0,0,0,0.6)',
-      zIndex: 'var(--z-overlay)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '24px 16px',
-    }}>
+    // M4 (audit 5c9a7a8, 2026-08-24): migrerad till Overlay-primitiven —
+    // tillägger role=dialog/aria-modal, fokusfälla, Escape och inert bakgrund.
+    // Ny (avsedd) sidoeffekt: klick på bakgrunden stänger nu modalen, som
+    // EfterklangThreadModal.tsx redan gjorde — tidigare gick det bara via
+    // "Stäng"-knappen.
+    <Overlay onClose={dismissCallupModal} ariaLabel="Landslagsuttagning" maxWidth={340} backdropPadding="24px 16px">
       <div style={{
-        width: '100%', maxWidth: 340,
         background: 'var(--bg-portal-surface)',
         border: '1px solid color-mix(in srgb, var(--gold) 18%, transparent)',
         borderRadius: 'var(--radius-md)',
@@ -125,6 +124,6 @@ export function CallupModal({ game }: Props) {
           Stäng
         </button>
       </div>
-    </div>
+    </Overlay>
   )
 }

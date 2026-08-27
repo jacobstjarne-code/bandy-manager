@@ -8,6 +8,7 @@ import {
 } from '../../domain/services/facilityService'
 import { financingFlavor } from '../../domain/data/facilityFinancingStrings'
 import { formatHallNodeSub } from '../../domain/services/events/hallProcessService'
+import { Overlay } from '../components/primitives/Overlay'
 
 const tkr = (n: number) => `${Math.round(n / 1000)} tkr`
 
@@ -141,65 +142,76 @@ export default function FacilityScreen() {
         />
       </div>
 
-      {/* B1 §2/§4 — finansieringsval (bottensheet) */}
+      {/* H1 (människoupplevelse-audit 7024f8a, 2026-08-24): båda sheeterna nedan
+          täcktes geometriskt av bottennavigationen — CTA:n hade bara ~6px fri
+          kant, findTapTargetViolations mätte 32px överlapp vid 320/390/430px.
+          Staplingsordningen var redan korrekt (sheeten 300 mot navets 99/100)
+          — fixen är åtgärdsutrymme, inte z-index. Gördel och hängslen: navet
+          blockeras dessutom för pekhändelser medan en sheet är öppen, så en
+          framtida regression i clearance-beräkningen inte kan återskapa buggen. */}
+      {selectedDef && (
+        <style>{'[data-bottom-nav] { pointer-events: none; }'}</style>
+      )}
+      {/* B1 §2/§4 — finansieringsval (bottensheet). M4 (audit 5c9a7a8,
+          2026-08-24): migrerad till Overlay-primitiven — hade tidigare
+          varken role/aria-modal, fokusfälla, Escape eller inert bakgrund. */}
       {selectedDef && !selectedIsBuilt && (
-        <div
-          onClick={() => setSelectedNodeId(null)}
-          style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'color-mix(in srgb, var(--bg-dark) 70%, transparent)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
-        >
+        <Overlay onClose={() => setSelectedNodeId(null)} variant="sheet" ariaLabel={`Finansiering — ${selectedDef.label}`}>
           <div
-            onClick={e => e.stopPropagation()}
-            style={{ width: '100%', maxWidth: 440, background: 'var(--bg-surface)', borderRadius: 'var(--radius) var(--radius) 0 0', borderTop: '1px solid var(--border)', padding: '18px 16px 28px', display: 'flex', flexDirection: 'column', gap: 12 }}
+            style={{ padding: '18px 16px calc(var(--bottom-nav-height, 60px) + var(--safe-bottom, 0px) + 44px)', display: 'flex', flexDirection: 'column', gap: 12 }}
           >
             <div>
               <div className="h-label">Finansiering</div>
               <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedDef.label}</p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Full kostnad {tkr(selectedDef.cost)} · {selectedDef.buildRounds} omgångar att bygga</p>
             </div>
-            {options.map(o => (
-              <button
-                key={o.mode}
-                disabled={!o.available}
-                onClick={() => handleBuild(o.mode)}
-                className="btn"
-                style={{
-                  textAlign: 'left', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 2,
-                  background: 'transparent', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
-                  opacity: o.available ? 1 : 'var(--disabled-opacity)', cursor: o.available ? 'pointer' : 'not-allowed',
-                }}
-              >
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{optionTitle(o)}</span>
-                <span style={{ fontSize: 11, color: o.available ? 'var(--text-secondary)' : 'var(--text-muted)' }}>
-                  {o.available ? optionSub(o) : o.reason}
-                </span>
-                {(() => {
-                  const flavor = financingFlavor(
-                    o.mode,
-                    o.available,
-                    { politician: pol?.name, mecenat: ctx.mecenat?.name },
-                    `${selectedDef.id}:${o.mode}:${facilityState.builtNodeIds.length}`,
-                  )
-                  return flavor
-                    ? <span style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', marginTop: 1 }}>{flavor}</span>
-                    : null
-                })()}
-              </button>
-            ))}
+            {/* H1 (2026-08-24): findTapTargetViolations mätte bara 12px fri kant
+                mellan de här knapparna — 44px-kravet gäller här också, eftersom
+                hela sheeten är en position:fixed-förfader (grinden räknar då
+                varje knapp som en "sticky CTA", se tapTargetOverlap.ts). Egen
+                gap istf sheetens generella 12px, resten av layouten orörd. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 44 }}>
+              {options.map(o => (
+                <button
+                  key={o.mode}
+                  disabled={!o.available}
+                  onClick={() => handleBuild(o.mode)}
+                  className="btn"
+                  style={{
+                    textAlign: 'left', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 2,
+                    background: 'transparent', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
+                    opacity: o.available ? 1 : 'var(--disabled-opacity)', cursor: o.available ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{optionTitle(o)}</span>
+                  <span style={{ fontSize: 11, color: o.available ? 'var(--text-secondary)' : 'var(--text-muted)' }}>
+                    {o.available ? optionSub(o) : o.reason}
+                  </span>
+                  {(() => {
+                    const flavor = financingFlavor(
+                      o.mode,
+                      o.available,
+                      { politician: pol?.name, mecenat: ctx.mecenat?.name },
+                      `${selectedDef.id}:${o.mode}:${facilityState.builtNodeIds.length}`,
+                    )
+                    return flavor
+                      ? <span style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', marginTop: 1 }}>{flavor}</span>
+                      : null
+                  })()}
+                </button>
+              ))}
+            </div>
             {error && <p style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</p>}
           </div>
-        </div>
+        </Overlay>
       )}
 
       {/* O17 del 3 — avvecklingssheet. Undertexten är låst text (Jacobs dom
           2026-08-23): {Nod} stängs [efter {N} år]. Folk kommer att märka det. */}
       {selectedDef && selectedIsBuilt && (
-        <div
-          onClick={() => setSelectedNodeId(null)}
-          style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'color-mix(in srgb, var(--bg-dark) 70%, transparent)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
-        >
+        <Overlay onClose={() => setSelectedNodeId(null)} variant="sheet" ariaLabel={`Avveckla — ${selectedDef.label}`}>
           <div
-            onClick={e => e.stopPropagation()}
-            style={{ width: '100%', maxWidth: 440, background: 'var(--bg-surface)', borderRadius: 'var(--radius) var(--radius) 0 0', borderTop: '1px solid var(--border)', padding: '18px 16px 28px', display: 'flex', flexDirection: 'column', gap: 12 }}
+            style={{ padding: '18px 16px calc(var(--bottom-nav-height, 60px) + var(--safe-bottom, 0px) + 44px)', display: 'flex', flexDirection: 'column', gap: 12 }}
           >
             <div>
               <div className="h-label">Avveckla</div>
@@ -224,7 +236,7 @@ export default function FacilityScreen() {
             </button>
             {error && <p style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</p>}
           </div>
-        </div>
+        </Overlay>
       )}
     </div>
   )

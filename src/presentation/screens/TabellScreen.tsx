@@ -9,6 +9,14 @@ import { getFormResults } from '../utils/formUtils'
 import { Target } from 'lucide-react'
 import { TabBar } from '../components/shared/TabBar'
 
+/**
+ * PÅSTÅENDEKARTAN nivå 1 (2026-08-25): två roundNumber-sorteringar hittade
+ * och fixade till matchday (se kommentarerna vid dem). Kvarvarande
+ * roundNumber-läsning är bara en visningsetikett ("Omgång N"), deklarerad
+ * öppet.
+ *
+ * @cites bracket.winnerId, game.rivalryHistory.currentStreak, fixture.homeScore, fixture.awayScore, roundNumber
+ */
 export function TabellScreen() {
   const game = useGameStore(s => s.game)
   const [expandedClubId, setExpandedClubId] = useState<string | null>(null)
@@ -32,8 +40,13 @@ export function TabellScreen() {
   // Calculate previous round standings for position movement arrows
   const completedLeague = (game.fixtures ?? []).filter(f => f.status === 'completed' && !f.isCup)
   const hasLeagueStarted = completedLeague.length > 0
-  const latestRound = completedLeague.reduce((max, f) => Math.max(max, f.roundNumber), 0)
-  const prevRoundFixtures = completedLeague.filter(f => f.roundNumber < latestRound)
+  // PÅSTÅENDEKARTAN nivå 1 (2026-08-25): roundNumber → matchday. CLAUDE.md:
+  // "Använd ALDRIG roundNumber ... All ordning via matchday" — gäller även
+  // efter ett !isCup-filter, eftersom roundNumber är den nominella
+  // omgångsetiketten och kan glida isär från den faktiska spelordningen vid
+  // ombokade matcher; matchday är den enda globala sanningen.
+  const latestRound = completedLeague.reduce((max, f) => Math.max(max, f.matchday ?? 0), 0)
+  const prevRoundFixtures = completedLeague.filter(f => (f.matchday ?? 0) < latestRound)
   const prevStandings = latestRound > 1
     ? calculateStandings(game.league?.teamIds ?? game.clubs.map(c => c.id), prevRoundFixtures, game.pointDeductions)
     : []
@@ -52,7 +65,7 @@ export function TabellScreen() {
         ((f.homeClubId === managedClubId && f.awayClubId === clubId) ||
          (f.awayClubId === managedClubId && f.homeClubId === clubId))
       )
-      .sort((a, b) => a.roundNumber - b.roundNumber)[0] ?? null
+      .sort((a, b) => (a.matchday ?? 0) - (b.matchday ?? 0))[0] ?? null
   }
 
   function getRowBorderColor(position: number): string {
@@ -382,7 +395,7 @@ export function TabellScreen() {
                   f.status === 'completed' &&
                   ((f.homeClubId === managedClubId && f.awayClubId === row.clubId) ||
                    (f.awayClubId === managedClubId && f.homeClubId === row.clubId))
-                ).sort((a, b) => a.roundNumber - b.roundNumber)
+                ).sort((a, b) => (a.matchday ?? 0) - (b.matchday ?? 0))
 
                 let h2hW = 0, h2hD = 0, h2hL = 0, h2hGF = 0, h2hGA = 0
                 for (const f of h2hFixtures) {

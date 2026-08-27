@@ -153,7 +153,12 @@ export function GameOverScreen() {
           </div>
         </div>
 
-        {/* 3.3 Kontrakt A: två vägar, inte en (DOM 2026-08-17) */}
+        {/* 3.3 Kontrakt A: två vägar, inte en (DOM 2026-08-17).
+            H1-uppföljning (2026-08-24): hela skärmen är position:fixed
+            (rad 55) utan scrollbar mellanhand, så findTapTargetViolations
+            räknar båda knapparna som "sticky CTA" — 10px fri kant mätt,
+            kräver 44px (samma tröskel som navkollisionen i Bygget). Upptäckt
+            i samma svep som registrerade denna, tidigare helt otäckta, yta. */}
         <button
           className="btn"
           onClick={handleViewHistory}
@@ -161,7 +166,7 @@ export function GameOverScreen() {
             width: '100%',
             letterSpacing: '1.5px',
             textTransform: 'uppercase',
-            marginBottom: 10,
+            marginBottom: 44,
           }}
         >
           SE KARRIÄREN

@@ -3,7 +3,8 @@ import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
 import { formatFinanceAbs, formatFinance, formatSalary, seasonTrendStroke } from '../../utils/formatters'
-import { calcRoundIncome, deriveKassaHistory } from '../../../domain/services/economyService'
+import { calcRoundIncome, deriveKassaHistory, buildRoundIncomeParamsForNextFixture } from '../../../domain/services/economyService'
+import { LICENSE_ZONE_TEXT } from '../../../domain/services/licenseService'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import '../../styles/economy.css'
 
@@ -17,6 +18,9 @@ interface EkonomiTabProps {
   onNavigateTab?: (tab: string) => void
 }
 
+/**
+ * @cites game.financeLog, entry.label, entry.round, entry.amount, fanMood, game.licenseStatus
+ */
 export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTransferBudget, buyScoutRounds, onNavigateTab }: EkonomiTabProps) {
   const [sponsorFeedback, setSponsorFeedback] = useState<{ success: boolean; text: string } | null>(null)
   const [communityMsg, setCommunityMsg] = useState<{ key: string; text: string; ok: boolean } | null>(null)
@@ -35,16 +39,17 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   const ca = game.communityActivities
   const legendSalaryCost = ((game.clubLegends ?? [])
     .filter(l => l.role === 'youth_coach' || l.role === 'scout').length) * 500
+  // Preview-mönstret, "samma funktion, samma indata" (2026-08-26): läser
+  // klubbens VERKLIGA nästa match istf ett hårdkodat isHomeMatch:true — se
+  // buildRoundIncomeParamsForNextFixture-kommentaren i economyService.ts.
+  const nextFixtureIncomeParams = buildRoundIncomeParamsForNextFixture(game)
   const income = calcRoundIncome({
     club,
     players: managedPlayers,
     sponsors: game.sponsors ?? [],
     communityActivities: ca,
     fanMood: game.fanMood ?? 50,
-    isHomeMatch: true,
-    matchIsKnockout: false,
-    matchIsCup: false,
-    matchHasRivalry: false,
+    ...nextFixtureIncomeParams,
     standing: game.standings.find(s => s.clubId === game.managedClubId) ?? null,
     rand: () => 0.5,
     legendSalaryCost,
@@ -59,17 +64,24 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   const politician = game.localPolitician ?? null
   const kommunBidrag = politician?.kommunBidrag ?? 0
   const wagePressure = actualMonthlyWages > club.wageBudget
-  const licenseReview = game.licenseReview
-  const licenseLabel = licenseReview?.status === 'approved' ? 'Godkänd'
-    : licenseReview?.status === 'warning' ? 'Varning'
-    : licenseReview?.status === 'continued_review' ? 'Fortsatt granskning'
-    : licenseReview?.status === 'denied' ? 'Nekad'
-    : 'Ej granskad'
-  const licenseColor = licenseReview?.status === 'approved' ? 'var(--success)'
-    : licenseReview?.status === 'warning' ? 'var(--warning)'
-    : licenseReview?.status === 'continued_review' ? 'var(--danger)'
-    : licenseReview?.status === 'denied' ? 'var(--danger)'
-    : 'var(--text-muted)'
+  // 2026-08-26 (Jacobs dom, RAPPORT_LICENSVARNING_RENDERING_2026-08-26.md):
+  // läste tidigare game.licenseReview — ett PARALLELLT system som inte
+  // avskedar managern. Den enda permanenta statusytan i spelet kunde visa
+  // "Godkänd" grönt medan spelaren satt på sitt tredje raka förlustår och
+  // var en säsong från licensnekan. game.licenseStatus (checkLicenseStatus,
+  // licenseService.ts) är systemet som faktiskt räknar mot avsked.
+  const licenseStatus = game.licenseStatus ?? 'clear'
+  const licenseLabel = licenseStatus === 'clear' ? 'Godkänd'
+    : licenseStatus === 'first_warning' ? 'Varning'
+    : licenseStatus === 'point_deduction' ? 'Poängavdrag'
+    : 'Nekad'
+  const licenseColor = licenseStatus === 'clear' ? 'var(--success)'
+    : licenseStatus === 'first_warning' ? 'var(--warning)'
+    : 'var(--danger)'
+  // 2026-08-26 (Jacobs dom, RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md):
+  // "Raka förlustår: X av 4" ersatt av LICENSE_ZONE_TEXT — ingen siffra,
+  // "en spelare som ser 63 lär sig optimera talet i stället för klubben."
+  const licenseZoneText = LICENSE_ZONE_TEXT[licenseStatus]
   const communityStanding = game.communityStanding ?? 50
 
   // C-SY2 Våg 4: kassa-trend härledd ur transaktionsloggen. Stroke = riktning (success/danger).
@@ -209,8 +221,8 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
             {licenseLabel}
           </span>
         </div>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4, lineHeight: 1.4 }}>
-          Licensnämnden granskar ekonomin varje säsong. Negativ kassa eller svag ungdomsverksamhet kan ge varning — som i sin tur skrämmer sponsorer.
+        <p style={{ fontSize: 11, color: licenseColor, fontWeight: 600, marginTop: 4, lineHeight: 1.4 }}>
+          {licenseZoneText}
         </p>
         {communityStanding !== undefined && (
           <div className="eco-row-total" style={{ paddingTop: 6, marginTop: 6 }}>

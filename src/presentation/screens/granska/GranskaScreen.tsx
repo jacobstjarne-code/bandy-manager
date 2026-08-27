@@ -13,6 +13,7 @@ import { GranskaSpelare } from './GranskaSpelare'
 import { GranskaShotmap } from './GranskaShotmap'
 import { GranskaAnalys } from './GranskaAnalys'
 import { NextOpponentHook } from './NextOpponentHook'
+import { mergeResolvedChoices } from './helpers'
 
 type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'analys'
 
@@ -36,6 +37,24 @@ export function GranskaScreen() {
   const [step, setStep] = useState<GranskaStep>('oversikt')
   const [visitedSteps, setVisitedSteps] = useState<Set<GranskaStep>>(new Set(['oversikt']))
   const didRedirect = useRef(false)
+  // M10 (audit 5c9a7a8, 2026-08-24): FRUSEN vid mount, inte game.pendingEvents
+  // läst live. handleChoice nedan löser domänen (resolveEvent) SYNKRONT nu —
+  // om korten renderades från live pendingEvents skulle ett löst event
+  // försvinna ur criticalEvents-listan (GranskaOversikt.tsx) i SAMMA
+  // ögonblick det löstes, innan spelaren ens hunnit se sin egen ✓-markering
+  // (DecisionCard visar resolved-läget permanent, ingen egen timing).
+  // Ingen ny händelse tillkommer normalt medan spelaren står kvar på
+  // Granska (advance() körs inte här) — en engångs-snapshot är därför säker
+  // mot att MISSA något.
+  // Känd, medveten avvägning: om en runda har FLER än 3 kritiska events
+  // (criticalEvents.slice(0,3)) rullar det 4:e inte längre in i listan efter
+  // att ett av de tre lösts, som det gjorde förut när listan lästes live —
+  // det ligger kvar olöst i game.pendingEvents (inte tappat, bara inte visat
+  // HÄR under DEN HÄR skärmvisningen). Sällsynt läge (taket är redan satt
+  // till 3 som om det vore ovanligt att nå), och att lösa det utan att
+  // återinföra en timing-baserad "släpp in nästa efter en stund"-mekanik
+  // hade motverkat hela poängen med denna fix.
+  const [pendingEventsSnapshot] = useState(() => game?.pendingEvents ?? [])
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80)
@@ -126,13 +145,36 @@ export function GranskaScreen() {
     ? deriveMatchTypeAxes(fixture, game.managedClubId, game.playoffBracket)
     : { tavlingstyp: 'liga' as const, skede: undefined, plats: 'hemma' as const, utfall: 'oavgjort' as const, gavLigapoang: false, arDerby: false }
 
-  const pendingEvents = game.pendingEvents ?? []
+  // M10: snapshot (se useState ovan), inte live game.pendingEvents — se den
+  // kommentaren för varför.
+  const pendingEvents = pendingEventsSnapshot
 
+  // PÅSTÅENDEKARTAN (2026-08-24): se helpers.ts:s mergeResolvedChoices —
+  // resolvedEventIds/chosenLabels ovan är bara en optimistisk overlay,
+  // game.resolvedChoices är den nedskrivna sanningen som överlever en
+  // remount/omladdning.
+  const { resolvedEventIds: effectiveResolvedEventIds, chosenLabels: effectiveChosenLabels } =
+    mergeResolvedChoices(game.resolvedChoices ?? [], resolvedEventIds, chosenLabels)
+
+  // M10 (audit 5c9a7a8, 2026-08-24) — rotorsak rapporterad separat
+  // (RAPPORT_M10_ROTORSAK_2026-08-26.md) innan denna fix: domänmutationen
+  // (resolveEvent) sköts tidigare upp 600ms bakom animationen, utan
+  // clearTimeout vid unmount. Ett snabbt "KLAR"-tryck + navigering hann då
+  // ske INNAN den riktiga skrivningen, medan händelsen fortfarande låg kvar
+  // i game.pendingEvents — kunde dyka upp igen som en EventOverlay på
+  // dashboarden och bli besvarad en andra gång innan den ursprungliga,
+  // fördröjda skrivningen hann köra (som då blev en tyst no-op, se
+  // eventResolver.ts — spelarens FAKTISKA val försvann tyst, ersattes av
+  // vad som råkade tryckas på återuppdykningen). Fixen: resolva domänen
+  // SYNKRONT, samma frame som klicket. Animationen (DecisionCards
+  // resolve-övergång) körs oberoende av detta — kortet finns kvar i
+  // pendingEventsSnapshot (se useState ovan) trots att game.pendingEvents
+  // redan är uppdaterat, så inget racefönster återstår.
   function handleChoice(eventId: string, choiceId: string, choiceLabel: string) {
     playSound('click')
     setResolvedEventIds(prev => new Set([...prev, eventId]))
     setChosenLabels(prev => ({ ...prev, [eventId]: choiceLabel }))
-    setTimeout(() => resolveEvent(eventId, choiceId), 600)
+    resolveEvent(eventId, choiceId)
   }
 
   function handleResolveReactions(ids: string[]) {
@@ -156,9 +198,9 @@ export function GranskaScreen() {
     transition: `all 0.35s ease ${80 + i * 60}ms`,
   })
 
-  const unresolvedCritical = getCriticalEventsForGranska(pendingEvents).filter(e => !resolvedEventIds.has(e.id)).length
-  const unresolvedPC = game.pendingPressConference && !resolvedEventIds.has(game.pendingPressConference.id) ? 1 : 0
-  const unresolvedRM = game.pendingRefereeMeeting && !resolvedEventIds.has(game.pendingRefereeMeeting.id) ? 1 : 0
+  const unresolvedCritical = getCriticalEventsForGranska(pendingEvents).filter(e => !effectiveResolvedEventIds.has(e.id)).length
+  const unresolvedPC = game.pendingPressConference && !effectiveResolvedEventIds.has(game.pendingPressConference.id) ? 1 : 0
+  const unresolvedRM = game.pendingRefereeMeeting && !effectiveResolvedEventIds.has(game.pendingRefereeMeeting.id) ? 1 : 0
   const unresolved = unresolvedCritical + unresolvedPC + unresolvedRM
 
   return (
@@ -181,8 +223,8 @@ export function GranskaScreen() {
             penResult={penResult}
             keyMoments={keyMoments}
             pendingEvents={pendingEvents}
-            resolvedEventIds={resolvedEventIds}
-            chosenLabels={chosenLabels}
+            resolvedEventIds={effectiveResolvedEventIds}
+            chosenLabels={effectiveChosenLabels}
             fadeIn={fadeIn}
             onChoice={handleChoice}
             onResolve={handleResolveReactions}
@@ -204,8 +246,8 @@ export function GranskaScreen() {
             isHome={isHome}
             potmId={potmId}
             pendingEvents={pendingEvents}
-            resolvedEventIds={resolvedEventIds}
-            chosenLabels={chosenLabels}
+            resolvedEventIds={effectiveResolvedEventIds}
+            chosenLabels={effectiveChosenLabels}
             onChoice={handleChoice}
           />
         )}

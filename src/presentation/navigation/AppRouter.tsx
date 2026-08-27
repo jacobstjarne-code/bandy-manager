@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { FeedbackButton } from '../components/FeedbackButton'
 import { PwaUpdateBanner } from '../components/PwaUpdateBanner'
+import { SaveConflictModal } from '../components/SaveConflictModal'
 
 const DevScenesScreen = import.meta.env.DEV
   ? lazy(() => import('../screens/dev/DevScenesScreen').then(m => ({ default: m.DevScenesScreen })))
@@ -94,7 +95,15 @@ function DashboardOrPortal() {
   if (!game) return <PortalScreen />
 
   // Ny spelare som ännu inte kört Tillträdet-onboarding (strict false — old saves saknar flaggan och ska slippa)
-  if (game.onboardingComplete === false) return <Navigate to="/tilltrade" replace />
+  // M1 (audit 5c9a7a8, 2026-08-24): denna gren kunde tidigare BARA skicka till
+  // /tilltrade, aldrig till /intro — en spelare som avbröt MITT I Ankomsten
+  // (t.ex. via byte till annan save och tillbaka) landade på /tilltrade och
+  // hoppade över Ankomsten helt, inte bara "fel steg i Ankomsten". game.
+  // onboardingScreen (satt av createNewGame/migrationen) avgör nu vilken av
+  // de två skärmarna som faktiskt är näst på tur.
+  if (game.onboardingComplete === false) {
+    return <Navigate to={game.onboardingScreen === 'arrival' ? '/intro' : '/tilltrade'} replace />
+  }
 
   // coffee_room renders as modal over dashboard — other scenes are full-screen (FIX-41)
   if (attention.kind === 'scene' && game.pendingScene?.sceneId === 'coffee_room') {
@@ -176,6 +185,10 @@ export function AppRouter() {
           sig själv (MatchLive är en fokus-yta, se FeedbackButton.tsx). */}
       <FeedbackButton />
       <PwaUpdateBanner />
+      {/* M2: route-oberoende — en konflikt kan upptäckas på VILKEN skärm som
+          helst (GameShell/GameGuard täcker bara /game/*, inte t.ex. /saves
+          eller /intro). Läser saveConflict direkt ur gameStore. */}
+      <SaveConflictModal />
     </BrowserRouter>
   )
 }

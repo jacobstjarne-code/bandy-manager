@@ -10,6 +10,9 @@ interface GranskaShotmapProps {
   isHome: boolean
 }
 
+/**
+ * @cites fixture.report.shotsHome, fixture.report.shotsAway, fixture.events, fixture.report.savesHome, fixture.report.savesAway, game.fixtures
+ */
 export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
   if (!fixture?.report) return null
 

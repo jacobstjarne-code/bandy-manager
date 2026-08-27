@@ -13,6 +13,12 @@ if (import.meta.env.DEV || import.meta.env.VITE_AUDIT_ENABLED === 'true') {
   })
 }
 
+if (import.meta.env.DEV) {
+  import('./presentation/store/gameStore').then(m => {
+    ;(window as any).__gameStore = m.useGameStore
+  })
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

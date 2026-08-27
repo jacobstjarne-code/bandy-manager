@@ -142,6 +142,8 @@ export function diffTactics(from: Tactic, to: Tactic): { key: keyof Tactic; valu
  * Baslinjen för diffen är INTE föregående updateTactic-anrop, utan tactic-snapshotet
  * sparat på den matchens TeamSelection (Fixture.homeLineup/awayLineup.tactic) — den
  * tactic som faktiskt spelades senast, inte något mellanläge under redigering.
+ *
+ * @cites lastFixture.homeLineup/awayLineup.tactic
  */
 export function getTacticDeltaLine(
   currentTactic: Tactic,

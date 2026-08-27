@@ -180,6 +180,7 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
 export function ArrivalScene() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
+  const advanceOnboardingToTilltrade = useGameStore(s => s.advanceOnboardingToTilltrade)
 
   if (!game) {
     navigate('/', { replace: true })
@@ -212,7 +213,7 @@ export function ArrivalScene() {
       board={board}
       objectives={game.boardObjectives ?? []}
       contractsExpiringCount={contractsExpiringCount}
-      onComplete={() => navigate('/tilltrade', { replace: true })}
+      onComplete={() => { void advanceOnboardingToTilltrade(); navigate('/tilltrade', { replace: true }) }}
     />
   )
 }

@@ -23,14 +23,14 @@ function entryIcon(type: EntryType): string {
 }
 
 export function CareerJourney({ player, currentSeason }: CareerJourneyProps) {
-  const hasNarrative = (player.narrativeLog?.length ?? 0) > 0
+  const hasNarrative = (player.diary?.length ?? 0) > 0
   const hasSeasonsPlayed = (player.careerStats?.seasonsPlayed ?? 0) >= 2
 
   if (!hasNarrative && !hasSeasonsPlayed) return null
 
   const entriesBySeason = new Map<number, JourneyEntry[]>()
 
-  for (const n of player.narrativeLog ?? []) {
+  for (const n of player.diary ?? []) {
     const existing = entriesBySeason.get(n.season) ?? []
     existing.push({ matchday: n.matchday, text: n.text, type: n.type as EntryType })
     entriesBySeason.set(n.season, existing)

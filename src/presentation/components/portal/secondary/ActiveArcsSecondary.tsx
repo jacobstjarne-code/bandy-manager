@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import type { ActiveArc } from '../../../../domain/entities/Narrative'
-import { getArcHeadline } from '../../../../domain/data/activeArcStrings'
+import { getArcHeadline, pickTopActiveArcs } from '../../../../domain/data/activeArcStrings'
 import type { ArcPlayer } from '../../../../domain/data/activeArcStrings'
 
 function getCurrentMatchday(game: CardRenderProps['game']): number {
@@ -117,13 +117,10 @@ function ArcRow({ arc, glyph, currentMatchday, player, onClick, isLast }: ArcRow
 export function ActiveArcsSecondary({ game }: CardRenderProps) {
   const navigate = useNavigate()
 
-  const arcs = (game.activeArcs ?? [])
-    .filter(a => a.type !== 'derby_echo' && a.phase !== 'resolving')
-    .sort((a, b) => {
-      const order: Record<string, number> = { peak: 0, building: 1, resolving: 2 }
-      return (order[a.phase] ?? 1) - (order[b.phase] ?? 1)
-    })
-    .slice(0, 2)
+  // M7: urvalslogiken flyttad till pickTopActiveArcs (activeArcStrings.ts) —
+  // återanvänd nu även av saveGameStorage.ts:s "olöst huvudtråd"-rad på
+  // save-kortet, samma prioritering, inte en andra driftande kopia.
+  const arcs = pickTopActiveArcs(game.activeArcs, 2)
 
   if (arcs.length === 0) return null
 

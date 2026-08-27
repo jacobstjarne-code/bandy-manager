@@ -131,6 +131,9 @@ export function resolveDisplayedGame(snapshot: SaveGame | undefined, liveGame: S
   return snapshot ?? liveGame
 }
 
+/**
+ * @cites s.finalPosition, s.topScorer, s.mostImproved, s.startFinances, s.endFinances, s.narrativeSummary, s.personalGoal, s.personChange, s.rivalryStanding, s.clubEra, s.legacyVerdictWasCorrected, s.verdictSentence
+ */
 export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
   const navigate = useNavigate()
   const liveGame = useGameStore(s => s.game)
@@ -493,6 +496,18 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>
                     📋 {s.narrativeSummary}
                   </p>
+                  {/* M8 (audit 5c9a7a8, 2026-08-24): en säsong sparad före A5-domen
+                      (2026-08-17) kan ha en felaktig dom bakad in i narrativeSummary
+                      OVAN ("2:a plats uppfyller kravet att vinna ligan"). Migreringen
+                      (saveGameMigration.ts) räknar om domen från redan lagrade fält
+                      och sätter legacyVerdictWasCorrected när den skiljer sig — visa
+                      rättelsen synligt HÄR, skriv aldrig tyst över den arkiverade
+                      texten ovan. */}
+                  {s.legacyVerdictWasCorrected && s.verdictSentence && (
+                    <p style={{ fontSize: 11, color: 'var(--warning)', marginTop: 4, lineHeight: 1.5 }}>
+                      ⚠️ Arkiverad text ovan följer en äldre regel. Rättelse: {s.verdictSentence}
+                    </p>
+                  )}
                 </div>
               </div>
             )

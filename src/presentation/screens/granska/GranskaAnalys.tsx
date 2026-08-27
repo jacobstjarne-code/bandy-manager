@@ -18,6 +18,9 @@ interface GranskaAnalysProps {
   potm: Player | null
 }
 
+/**
+ * @cites fixture.report.shotsHome, fixture.report.shotsAway, myScore, theirScore, potm, fixture.report.playerRatings
+ */
 export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, theirScore, potm }: GranskaAnalysProps) {
   const navigate = useNavigate()
   const coach = game.assistantCoach

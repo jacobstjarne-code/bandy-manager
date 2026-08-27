@@ -72,7 +72,7 @@ export function TranareTab({ game }: Props) {
     rivalry: 'Rivalitet',
     milestone: 'Milstolpe',
   }
-  const narrativeItems: SpineItem[] = (profile.narrativeLog ?? [])
+  const narrativeItems: SpineItem[] = (profile.diary ?? [])
     .filter(e => e.text !== '// OPUS_COPY')
     .map(e => ({ label: TYPE_LABEL[e.type] ?? e.type, season: e.season, text: e.text }))
 

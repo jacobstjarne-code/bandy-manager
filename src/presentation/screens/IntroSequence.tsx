@@ -2,6 +2,34 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { listSaveGames } from '../../infrastructure/persistence/saveGameStorage'
+import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
+import { getBoardPatienceZone } from '../../domain/services/portal/boardPatienceZone'
+
+/**
+ * M7 (audit 5c9a7a8, 2026-08-24): "kall återkomst saknar sammanhang —
+ * startsidan säger bara Fortsätt." Läser den REDAN LADDADE game-objektet
+ * (samma källa hasSave härleds ur) live — inte SaveGameSummary:s
+ * senast-sparade ögonblicksbild, som är till för save-VÄLJAREN där hela
+ * spelet inte är laddat. Här finns färskare data gratis.
+ */
+function buildColdReturnLine(game: import('../../domain/entities/SaveGame').SaveGame): string {
+  const club = game.clubs.find(c => c.id === game.managedClubId)
+  const standing = game.standings.find(s => s.clubId === game.managedClubId)
+  const nextFixture = getNextManagedFixture(game)
+  const opponent = nextFixture
+    ? game.clubs.find(c => c.id === (nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId))
+    : null
+  const zone = getBoardPatienceZone(game)
+
+  const parts: string[] = []
+  if (club) parts.push(club.name)
+  if (standing) parts.push(`${standing.position}:a plats`)
+  if (nextFixture && opponent) {
+    parts.push(`Nästa: ${nextFixture.homeClubId === game.managedClubId ? 'hemma mot' : 'borta mot'} ${opponent.name}`)
+  }
+  if (zone.zone !== 'stabilt') parts.push(zone.label)
+  return parts.join(' · ')
+}
 
 // 23 particles — faster cycles (2–4 s), many negative delays so snow is mid-flight from frame 1
 function SnowParticles() {
@@ -54,7 +82,9 @@ function SnowParticles() {
 
 export function IntroSequence() {
   const navigate = useNavigate()
-  const hasSave = useGameStore(s => s.game !== null)
+  const game = useGameStore(s => s.game)
+  const hasSave = game !== null
+  const coldReturnLine = game && game.onboardingComplete !== false ? buildColdReturnLine(game) : null
   // Multi-slot (2026-08-22): "BYT KARRIÄR" syns bara när det faktiskt finns
   // ett val att göra — en spelare (FORTSÄTT) täcker redan enda-save-fallet.
   const [saveCount] = useState(() => listSaveGames().length)
@@ -208,23 +238,35 @@ export function IntroSequence() {
             STARTA KARRIÄREN
           </button>
           {hasSave && (
-            <button
-              onClick={() => navigate('/game')}
-              style={{
-                width: '100%', maxWidth: 300, padding: '14px 24px',
-                background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
-                border: '1.5px solid color-mix(in srgb, var(--accent) 50%, transparent)',
-                borderRadius: 'var(--radius-md)',
-                color: 'rgba(245,241,235,0.85)',
-                fontSize: 13, fontWeight: 600, letterSpacing: '2px',
-                textTransform: 'uppercase', cursor: 'pointer',
-                opacity: s1 ? 1 : 0,
-                transition: 'opacity 700ms ease',
-                transitionDelay: s1 ? '1800ms' : '0ms',
-              }}
-            >
-              FORTSÄTT
-            </button>
+            <div style={{
+              width: '100%', maxWidth: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              opacity: s1 ? 1 : 0, transition: 'opacity 700ms ease', transitionDelay: s1 ? '1800ms' : '0ms',
+            }}>
+              {/* M7: "kall återkomst"-raden — nästa match/tabellplacering/
+                  styrelsezon, så FORTSÄTT inte är den enda informationen. */}
+              {coldReturnLine && (
+                <p style={{
+                  fontSize: 11, color: 'rgba(245,241,235,0.6)', textAlign: 'center',
+                  letterSpacing: '0.5px', margin: 0,
+                }}>
+                  {coldReturnLine}
+                </p>
+              )}
+              <button
+                onClick={() => navigate('/game')}
+                style={{
+                  width: '100%', padding: '14px 24px',
+                  background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
+                  border: '1.5px solid color-mix(in srgb, var(--accent) 50%, transparent)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'rgba(245,241,235,0.85)',
+                  fontSize: 13, fontWeight: 600, letterSpacing: '2px',
+                  textTransform: 'uppercase', cursor: 'pointer',
+                }}
+              >
+                FORTSÄTT
+              </button>
+            </div>
           )}
           {saveCount > 1 && (
             <button

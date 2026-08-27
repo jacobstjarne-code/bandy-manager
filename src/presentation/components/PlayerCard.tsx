@@ -854,7 +854,7 @@ export function PlayerCard({
       {/* ═══ ⑦ KARRIÄRRESA → Karriär ═══ */}
       {isOwned && showKarriar && (() => {
         const bio = generateBio(player, clubName)
-        const hasJourney = (player.narrativeLog?.length ?? 0) > 0 || (player.careerStats?.seasonsPlayed ?? 0) >= 2
+        const hasJourney = (player.diary?.length ?? 0) > 0 || (player.careerStats?.seasonsPlayed ?? 0) >= 2
         if (!bio && !hasJourney) return null
         return (
           <div style={SECTION_STYLE}>

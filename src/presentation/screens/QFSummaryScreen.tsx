@@ -3,6 +3,9 @@ import { useGameStore } from '../store/gameStore'
 import { ScoreBlock } from '../components/primitives'
 import { Swords } from 'lucide-react'
 
+/**
+ * @cites playoffBracket, g.playoffBracket.quarterFinals.winnerId, g.playoffBracket.quarterFinals.homeWins, g.playoffBracket.quarterFinals.awayWins, g.playoffBracket.semiFinals
+ */
 export function QFSummaryScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)

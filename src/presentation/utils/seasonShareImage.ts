@@ -38,7 +38,12 @@ function kapitalisera(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
+// H4 Heros: Survive väntar på Opus-text. OBS för Opus: AvoidBottom
+// nedan lyder redan "Skulle överleva." — Survive-texten bör INTE
+// återanvända samma ord, annars ser de två tiers identiska ut på
+// delningskortet trots att de betyder olika saker.
 const FORVANTANSSATS: Record<ClubExpectation, string> = {
+  [ClubExpectation.Survive]: '[Opus]',
   [ClubExpectation.WinLeague]: 'Skulle vinna ligan.',
   [ClubExpectation.ChallengeTop]: 'Skulle utmana i toppen.',
   [ClubExpectation.MidTable]: 'Skulle landa i mitten.',

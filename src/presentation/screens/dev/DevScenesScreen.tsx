@@ -46,6 +46,9 @@ import { TacticChangeModal } from '../../components/match/TacticChangeModal'
 import { SubstitutionModal } from '../../components/match/SubstitutionModal'
 import { SentValCard } from '../../components/match/SentValCard'
 import { TaktikScreen } from '../TaktikScreen'
+import FacilityScreen from '../FacilityScreen'
+import { GameOverScreen } from '../GameOverScreen'
+import { HistoryScreen } from '../HistoryScreen'
 import { EventOverlay } from '../../components/EventOverlay'
 import { PressConferenceScene } from '../../components/PressConferenceScene'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
@@ -111,6 +114,26 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // V1-uppföljning (RELÄ-Code-DS-konformans-svep1-3.md, 2026-08-20): HalfTimeSummaryScreen
   // saknades helt ur galleriet — se motivering vid SCENES-raden nedan.
   | 'halftime-summary'
+  // Människoupplevelse-auditen (7024f8a, 2026-08-24), H1: Bygget/FacilityScreen
+  // hade NOLL dev-scene-täckning — inte bara utanför tests/visual/sceneRegistry.ts,
+  // aldrig ens importerad här. Samma lucka-klass som "Skydd eller illusion?"
+  // (SLUTTEST_KO.md rad 112-117): en yta ingen grind sveper är en yta där nästa
+  // fel är osynligt — H1:s nav-overlap (avvecklingsknappen) och den tidigare
+  // Annika-finansieringsbuggen var båda symptom av EXAKT den luckan.
+  // 'bygget' = trädet stängt (allmän occlusion/raw-token/screenshot-täckning).
+  // 'bygget-avveckling' = SJÄLVSTÄNDIG scen med en RIKTIG BottomNav monterad
+  // (samma mönster som 'navgate-laddning-band'/SÄTT LAGET) — regressionstestet
+  // öppnar sheeten med RIKTIGA klick (Bygg ut → nod), inte via SCENES clickText,
+  // eftersom nodklick kräver välj-läge först (två steg, inte ett).
+  | 'bygget' | 'bygget-avveckling'
+  // Jacobs order (2026-08-24): lyft ur H1-meta-grindens ratchet-skuld, inte
+  // kvar som TODO — avskedsvägen är den enda ytan där en spelares hela
+  // karriär tar slut, och var helt otäckt (GameOverScreen/HistoryScreen
+  // (via /game/game-over/historik) aldrig importerade i detta galleri).
+  // 'game-over-historik' läser HistoryScreens `snapshot`-prop direkt (samma
+  // data GameOverScreen.tsx:s handleViewHistory() annars skickar via
+  // location.state) — ingen MemoryRouter-omväg som match-live behövde.
+  | 'game-over' | 'game-over-historik'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -181,6 +204,10 @@ const SCENES: { id: SceneId; label: string }[] = [
   // utan aldrig fotograferad alls. En yta ingen grind sveper är en yta där nästa fel
   // är osynligt (Jacobs formulering) — gäller generellt, inte bara en-primary-gate.
   { id: 'halftime-summary', label: 'HalfTimeSummaryScreen (halvtidssammanfattning)' },
+  { id: 'bygget',            label: 'Bygget — trädet (Värmestuga byggd, mecenat Annika aktiv)' },
+  { id: 'bygget-avveckling', label: 'Bygget — riktig nav, H1-regressionstest (avveckling/finansiering)' },
+  { id: 'game-over',          label: 'GameOverScreen — sparkad efter tre säsonger utan förbättring' },
+  { id: 'game-over-historik', label: 'HistoryScreen (snapshot-prop) — avslutad karriär, "Se karriären"' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -652,6 +679,48 @@ const clubEstablishedGame = {
   },
 } as unknown as SaveGame
 
+// H1 (människoupplevelse-audit, 7024f8a, 2026-08-24): Bygget-fixtur. Säsong 2
+// (S1-låset öppet), Värmestuga byggd säsong 1 (öppnar avvecklingssheeten),
+// politiker med relation över kommun-tröskeln + en aktiv, villig mecenat
+// "Annika" (öppnar finansieringssheetens mecenat-alternativ — samma person
+// den ursprungliga finansieringsbuggen gällde).
+const facilityBase = atRound(makeBaseGame({ seed: 4 }), 5)
+const facilityGame = {
+  ...facilityBase,
+  // S1-låset (FacilityScreen.tsx:44): "Bygg ut"-knappen döljs tills en säsong
+  // avslutats. makeBaseGame() sätter ingen seasonSummaries — utan denna raden
+  // hänger fixturen kvar i S1 och testklicket på "Bygg ut" hittar aldrig knappen.
+  seasonSummaries: [makeSeasonSummary({ finalPosition: 6, playoffResult: null })],
+  facilityState: { builtNodeIds: ['varmestuga'], builtSeasons: { varmestuga: 1 } },
+  localPolitician: {
+    name: 'Karin Åhs', title: 'Kommunalråd', party: 'lokalt' as const,
+    agenda: 'infrastructure' as const, relationship: 55, kommunBidrag: 0,
+  },
+  mecenater: [{
+    id: 'dev-mecenat-annika', name: 'Annika', gender: 'female' as const,
+    business: 'Annika Bygg AB', businessType: 'entrepreneur' as const,
+    wealth: 6, personality: 'filantropen' as const, influence: 40,
+    happiness: 65, goodwill: 50, contribution: 0, totalContributed: 0,
+    isActive: true,
+  }],
+} as unknown as SaveGame
+
+// Jacobs order (2026-08-24): avskedsvägen (game-over/game-over/historik).
+// Tre spelade säsonger (nedåtgående placering) + consecutiveFailures:3 —
+// GameOverScreen.tsx:s getBoardStatement() hårdaste textgren ("tre
+// säsonger på rad utan förbättring"), inte den mildare boardPatience-grenen.
+const gameOverGame = {
+  ...makeBaseGame({ seed: 6 }),
+  currentSeason: 4,
+  seasonSummaries: [
+    makeSeasonSummary({ season: 1, finalPosition: 8, wins: 10 }),
+    makeSeasonSummary({ season: 2, finalPosition: 10, wins: 8 }),
+    makeSeasonSummary({ season: 3, finalPosition: 11, wins: 6 }),
+  ],
+  boardPatience: 12,
+  consecutiveFailures: 3,
+} as unknown as SaveGame
+
 // Granska IA — fingerad spelad match (md 20) + andra matcher + roundSummary
 const granskaFixture = {
   id: 'fx-granska', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
@@ -758,6 +827,13 @@ const ekonomiCrisisClub = { ...devClubs[0], finances: 7000, transferBudget: 0, w
 const ekonomiCrisisGame = makeGame(makeLeagueFixtures(), {
   financeLog: makeFinanceLog([-3000, -5000, 2000, -7000, -4000, -6000, -3000, -8000]),
   sponsors: [], communityActivities: {},
+  // 2026-08-26: krisscenariot ska visa VARFÖR EkonomiTab-fixet (RAPPORT_
+  // LICENSVARNING_RENDERING_2026-08-26.md) behövdes — licenseStatus
+  // (System B, det avskedande) satt till point_deduction så scenen
+  // faktiskt bevisar att statusraden nu läser rätt system och visar
+  // ackumulatorns låsta zon-text (RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md).
+  licenseStatus: 'point_deduction',
+  licenseRiskScore: 65,
 })
 
 // SeasonSummary — fingerade summaries för fyra states
@@ -840,12 +916,18 @@ function transitionEvents(...types: Array<'retired' | 'aged' | 'promoted'>): imp
 // currentSeason, epokLine läser trainerArc.seasonCount — två olika fält som
 // makeSommarenGame() aldrig synkade, så alla fyra scener visade samma
 // ärvda default (8) i kickern oavsett vad brödtexten sa).
+// H6 (2026-08-24): epokLine läser numera managerProfile.seasonsAtClub, inte
+// trainerArc.seasonCount (se SeasonTransitionScene.tsx:s rotorsak-kommentar)
+// — seasonsAtClub tillagd på alla fyra mockar nedan så de fortsätter visa
+// RÄTT säsongsordinal i epok-raden, inte bara i kickern.
 const sommarenS2Game = makeSommarenGame({
   currentSeason: 2,
   trainerArc: { current: 'newcomer', history: [], seasonCount: 2, bestFinish: 3, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 2 },
   seasonSummaries: [makeSeasonSummary({ finalPosition: 3, playoffResult: 'quarterfinal' })],
-  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 15 },
+  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 15, seasonsAtClub: 2 },
   pendingSeasonTransitionEvents: transitionEvents('retired', 'aged', 'promoted'),
+  // Förutsättningsfasen, steg 1 — höjd ribba (dev-scene-verifiering).
+  boardAssessment: { season: 2, previousExpectation: 'midTable', newExpectation: 'challengeTop', direction: 'raised', reasonLine: 'Ni har visat att ni kan mer. Då begär vi mer.', seasonAcknowledgment: '[Opus]' },
 })
 // Säsong 6, titelförsvarare, nära gränsen, tre händelser.
 const sommarenTitelforsvarareGame = makeSommarenGame({
@@ -855,7 +937,7 @@ const sommarenTitelforsvarareGame = makeSommarenGame({
     makeSeasonSummary({ finalPosition: 4, playoffResult: 'semifinal' }),
     makeSeasonSummary({ finalPosition: 1, playoffResult: 'champion' }),
   ],
-  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 78 },
+  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 78, seasonsAtClub: 6 },
   pendingSeasonTransitionEvents: transitionEvents('retired', 'aged', 'promoted'),
 })
 // Säsong 4, efter tapp, tomt-fallet, slutspel INTE rimligt (avoidBottom + didNotQualify).
@@ -867,16 +949,20 @@ const sommarenTomtGame = makeSommarenGame({
     makeSeasonSummary({ finalPosition: 4, playoffResult: 'quarterfinal' }),
     makeSeasonSummary({ finalPosition: 9, playoffResult: 'didNotQualify' }),
   ],
-  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 55 },
+  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 55, seasonsAtClub: 4 },
   pendingSeasonTransitionEvents: [],
+  // Förutsättningsfasen, steg 1 — sänkt ribba (dev-scene-verifiering).
+  boardAssessment: { season: 4, previousExpectation: 'midTable', newExpectation: 'avoidBottom', direction: 'lowered', reasonLine: 'Ni tappade för mycket för att vi ska kunna kräva samma sak.', seasonAcknowledgment: '[Opus]' },
 })
 // Säsong 11 (siffervarianten), något sliten, en händelse.
 const sommarenSiffraGame = makeSommarenGame({
   currentSeason: 11,
   trainerArc: { current: 'grind', history: [], seasonCount: 11, bestFinish: 2, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 1 },
   seasonSummaries: [makeSeasonSummary({ finalPosition: 5, playoffResult: 'quarterfinal' })],
-  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 50 },
+  managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 50, seasonsAtClub: 11 },
   pendingSeasonTransitionEvents: transitionEvents('retired'),
+  // Förutsättningsfasen, steg 1 — oförändrad (dev-scene-verifiering).
+  boardAssessment: { season: 11, previousExpectation: 'challengeTop', newExpectation: 'challengeTop', direction: 'unchanged', seasonAcknowledgment: '[Opus]' },
 })
 
 const granskaRoundSummary = {
@@ -1096,6 +1182,8 @@ export function DevScenesScreen() {
       : scene === 'primary-smfinal-vs-deadline' ? primarySmfinalVsDeadlineGame
       : scene === 'primary-event-vs-farewell' ? primaryEventVsFarewellGame
       : scene === 'halftime-summary' ? portalGame
+      : scene === 'bygget' || scene === 'bygget-avveckling' ? facilityGame
+      : scene === 'game-over' || scene === 'game-over-historik' ? gameOverGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -1320,6 +1408,35 @@ export function DevScenesScreen() {
           <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
             <MatchScreen />
             <BottomNav />
+          </div>
+        )}
+        {scene === 'bygget' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <FacilityScreen />
+          </div>
+        )}
+        {/* H1-regressionsscen: samma mönster som navgate-laddning-band ovan —
+            riktig BottomNav monterad bredvid produktkomponenten, äkta 390×844.
+            Sheeten öppnas av testet självt med RIKTIGA klick (Bygg ut → nod),
+            inte via en fixture som redan har selectedNodeId satt — FacilityScreen
+            äger det state:t lokalt och tar inga dev-props. */}
+        {scene === 'bygget-avveckling' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <FacilityScreen />
+            <BottomNav />
+          </div>
+        )}
+        {/* Avskedsvägen (Jacobs order 2026-08-24) — ingen BottomNav: GameOverScreen/
+            HistoryScreen ligger utanför GameShell (GameGuard-blocket, AppRouter.tsx),
+            produktionen visar aldrig nav på dessa rutter. */}
+        {scene === 'game-over' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <GameOverScreen />
+          </div>
+        )}
+        {scene === 'game-over-historik' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <HistoryScreen snapshot={gameOverGame} />
           </div>
         )}
         {scene === 'annandagen' && (

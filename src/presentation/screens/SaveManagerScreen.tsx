@@ -17,13 +17,25 @@ export function SaveManagerScreen() {
   const activeGameId = useGameStore(s => s.game?.id)
   const [saves] = useState<SaveGameSummary[]>(() => listSaveGames())
   const [switchingId, setSwitchingId] = useState<string | null>(null)
+  const [switchError, setSwitchError] = useState<string | null>(null)
 
   async function handleSelect(id: string) {
     if (switchingId) return
     setSwitchingId(id)
+    setSwitchError(null)
     const ok = await switchToSave(id)
     if (ok) navigate('/game')
-    else setSwitchingId(null)
+    else {
+      // C1 (5c9a7a8, 2026-08-24): switchToSave avbryter nu bytet om den
+      // utgående karriären inte gick att spara säkert — det ska synas här,
+      // inte bara logga tyst i konsolen. useGameStore.getState() (inte
+      // hook-värdet) för att undvika ett inaktuellt stängningsvärde —
+      // set() i switchToSave hann köra, men komponenten har inte
+      // nödvändigtvis renderat om än när vi är kvar i samma async-anrop.
+      const freshError = useGameStore.getState().lastSaveError
+      setSwitchError(freshError ?? 'Kunde inte byta karriär — din nuvarande karriär gick inte att spara säkert.')
+      setSwitchingId(null)
+    }
   }
 
   return (
@@ -55,6 +67,15 @@ export function SaveManagerScreen() {
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px' }}>
+        {switchError && (
+          <p style={{
+            background: 'color-mix(in srgb, var(--danger) 12%, var(--bg-surface))',
+            border: '1px solid var(--danger)', borderRadius: 'var(--radius-md)',
+            padding: '10px 12px', fontSize: 12, color: 'var(--danger-text)', marginBottom: 12,
+          }}>
+            {switchError}
+          </p>
+        )}
         {saves.length === 0 && (
           <p className="h-quote" style={{ textAlign: 'center', marginTop: 40 }}>
             Inga sparade karriärer hittades.
@@ -93,7 +114,29 @@ export function SaveManagerScreen() {
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
                 {save.clubName} · säsong {save.season}
+                {save.leaguePosition !== undefined && ` · ${save.leaguePosition}:a plats`}
               </div>
+              {/* M7 (audit 5c9a7a8, 2026-08-24): "save-väljaren visar bara
+                  namn/klubb/säsong/tid" — nästa match, styrelsezon och olöst
+                  huvudtråd, satta på summary vid senaste saveSaveGame() (se
+                  saveGameStorage.ts). undefined för äldre saves sparade
+                  före denna dom — visas då helt enkelt inte, ingen gissning
+                  bakåt. */}
+              {(save.nextFixtureOpponent || (save.boardZone && save.boardZone !== 'stabilt') || save.storylineHook) && (
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3, lineHeight: 1.4 }}>
+                  {save.nextFixtureOpponent && (
+                    <span>Nästa: {save.nextFixtureIsHome ? 'hemma mot' : 'borta mot'} {save.nextFixtureOpponent}</span>
+                  )}
+                  {save.boardZone && save.boardZone !== 'stabilt' && (
+                    <span style={{ color: save.boardZone === 'ultimatum' ? 'var(--danger-text)' : 'var(--warning)' }}>
+                      {save.nextFixtureOpponent ? ' · ' : ''}{save.boardZoneLabel}
+                    </span>
+                  )}
+                  {save.storylineHook && (
+                    <div style={{ fontStyle: 'italic', marginTop: 1 }}>{save.storylineHook}</div>
+                  )}
+                </div>
+              )}
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
                 {isSwitching
                   ? 'Byter…'

@@ -82,6 +82,7 @@ export function AllClubsView({ onSelect, onBack }: Props) {
                       region={club.region}
                       arenaName={club.arenaName}
                       supporterGroupName={club.supporterGroupName}
+                      boardExpectation={club.boardExpectation}
                       extendedInfo={extInfo}
                       quote={quote}
                       onSelect={onSelect}

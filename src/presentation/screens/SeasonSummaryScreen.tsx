@@ -17,6 +17,7 @@ import type { SeasonEliminationContext } from '../../domain/data/seasonSummaryEl
 import { ScoreBlock } from '../components/primitives/ScoreBlock'
 import { Sparkline, MIN_POINTS } from '../components/primitives/Sparkline'
 import { seasonSpanLabel, seasonStartYear } from '../../domain/utils/seasonYear'
+import { seasonVerdictText } from '../../domain/services/boardService'
 
 function getSignatureEmojiFromRubric(rubric: string): string {
   if (rubric.includes('köldvintern')) return '🌨'
@@ -64,6 +65,9 @@ function ChapterDivider({ label }: { label: string }) {
   )
 }
 
+/**
+ * @cites summary.championClubId, summary.eliminatedByClubId, summary.mostImportantDecision, summary.matchOfTheSeason, h.narrative, h.homeScore, h.awayScore, h.potmName
+ */
 export function SeasonSummaryScreen() {
   const navigate = useNavigate()
   const params = useParams<{ season?: string }>()
@@ -149,7 +153,11 @@ export function SeasonSummaryScreen() {
 
   function smWinnerSentence(r: SeasonSummary['playoffResult']): string {
     if (r === 'champion') return ''
-    const champId = game?.playoffBracket?.champion
+    // PÅSTÅENDEKARTAN (2026-08-24): läste tidigare game.playoffBracket.champion
+    // — live state som nollställs vid säsongsrollover, samma bugklass som
+    // playoffEliminationSentence redan fixades för (2026-08-17). summary.championClubId
+    // är snapshottad vid genereringstillfället i seasonSummaryService.ts.
+    const champId = summary?.championClubId
     if (!champId) return ''
     const champ = game?.clubs.find(c => c.id === champId)
     if (!champ) return ''
@@ -163,9 +171,8 @@ export function SeasonSummaryScreen() {
   }
 
   function verdictText(s: SeasonSummary): string {
-    if (s.expectationVerdict === 'exceeded') return 'Styrelsen är mer än nöjd'
-    if (s.expectationVerdict === 'met') return 'Styrelsen är nöjd'
-    return 'Styrelsen är besviken'
+    const totalTeams = game?.clubs.length ?? 12
+    return seasonVerdictText(s.boardExpectation, s.finalPosition, totalTeams)
   }
 
   function StatRow({ label, value, color }: { label: string; value: string | number; color?: string }) {
@@ -449,6 +456,7 @@ export function SeasonSummaryScreen() {
               : m.type === 'bigLoss' ? '❌'
               : m.type === 'comeback' ? '💪'
               : m.type === 'lateWinner' ? '⚡'
+              : m.type === 'storyline' ? '📖'
               : '⛸️'
             const relatedPlayer = m.relatedPlayerId ? game.players.find(p => p.id === m.relatedPlayerId) : null
             keyMomentItems.push({

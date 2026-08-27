@@ -8,21 +8,19 @@
  *
  * idb-keyval mockas till en in-memory Map — vitest/jsdom saknar en riktig
  * IndexedDB (bekräftat: varje suite-körning loggar "indexedDB is not
- * defined" från persist-middlewarens rehydrering). listSaveGames()-indexet
- * ligger i localStorage (saveGameStorage.ts) — testat och bekräftat att
- * denna miljös `localStorage`-global saknar getItem/setItem/removeItem
- * (bara Object.prototype), så saveSaveGame()s localStorage-skrivning
- * kastar och fångas tyst av dess egna try/catch. listSaveGames() går
- * därför INTE att verifiera här — testet begränsas till det som FAKTISKT
- * går att mäta i denna miljö: game-blobbens rundtur via idb-keyval
- * (get/set), som är den del av "byt tillbaka till A" som faktiskt kan
- * tappa eller blanda ihop data mellan två karriärer.
+ * defined" från persist-middlewarens rehydrering).
  *
- * "Exakt steg" har ingen enumererbar store-representation (onboarding-
- * flödets steg är UI-state i TilltradeScreen, inte persisterat game-state)
- * — testat här som "exakt IDENTITET" (managerName/clubId/id), den delen av
- * "tillbaka till A" som FAKTISKT kan bli fel tyst (fel karriärs data läses
- * in, eller data från B läcker in i A).
+ * C1-uppföljning (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24):
+ * localStorage stubbas nu till en RIKTIG in-memory mock (samma mönster som
+ * saveGameStorage.test.ts). Filen körde tidigare mot testmiljöns egen
+ * `localStorage`-global, som saknar getItem/setItem/removeItem (bara
+ * Object.prototype) — saveSaveGame()s indexskrivning kastade därför på
+ * VARJE anrop här, tyst fångad av dess då-svaljande try/catch. Det var
+ * exakt C1-bugg-klassen: ett produktionsfel maskerades av att testet aldrig
+ * kunde upptäcka det. switchToSave() avbryter nu korrekt bytet om
+ * indexskrivningen misslyckas (se gameStore.ts) — med en RIKTIG localStorage
+ * fungerar båda skrivningarna, och "byte lyckas" går att verifiera på
+ * riktigt istf att råka bero på ett svalt fel.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -33,6 +31,20 @@ vi.mock('idb-keyval', () => ({
   del: vi.fn(async (key: string) => { idbStore.delete(key) }),
 }))
 
+function createLocalStorageMock() {
+  let store: Record<string, string> = {}
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => { store[key] = value },
+    removeItem: (key: string) => { delete store[key] },
+    clear: () => { store = {} },
+    get length() { return Object.keys(store).length },
+    key: (index: number) => Object.keys(store)[index] ?? null,
+  }
+}
+const localStorageMock = createLocalStorageMock()
+vi.stubGlobal('localStorage', localStorageMock)
+
 async function flush(): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, 10))
 }
@@ -40,6 +52,7 @@ async function flush(): Promise<void> {
 describe('gameStore — multi-slot: skapa A, skapa B, byt tillbaka till A', () => {
   beforeEach(() => {
     idbStore.clear()
+    localStorageMock.clear()
     vi.resetModules()
   })
 

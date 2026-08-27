@@ -1,5 +1,6 @@
 import type { ClubExtendedInfo } from '../../../domain/data/clubExtendedInfo'
 import type { ClubOfferQuote } from '../../../domain/data/clubOfferQuotes'
+import { ClubExpectation } from '../../../domain/enums'
 
 interface Props {
   clubId: string
@@ -7,6 +8,7 @@ interface Props {
   region: string
   arenaName: string
   supporterGroupName: string
+  boardExpectation: ClubExpectation
   extendedInfo: ClubExtendedInfo
   quote: ClubOfferQuote | null
   onSelect: (clubId: string) => void
@@ -18,6 +20,7 @@ export function ClubExpandedCard({
   region,
   arenaName,
   supporterGroupName,
+  boardExpectation,
   extendedInfo,
   quote,
   onSelect,
@@ -66,6 +69,19 @@ export function ClubExpandedCard({
           <strong style={{ color: 'var(--text-light)', fontWeight: 600 }}>{supporterGroupName}</strong>
         </span>
       </div>
+
+      {boardExpectation === ClubExpectation.Survive && (
+        // H4 Heros (Jacobs dom 2026-08-25), text låst ordagrant — bara Heros
+        // har ClubExpectation.Survive idag (worldGenerator.ts).
+        <div style={{ display: 'flex', gap: 10, marginBottom: 6, fontSize: 11, lineHeight: 1.5 }}>
+          <span style={{ color: 'var(--accent)', width: 16, flexShrink: 0 }}>🎯</span>
+          <span style={{ color: 'var(--text-light-secondary)' }}>
+            <strong style={{ color: 'var(--text-light)', fontWeight: 600 }}>LÅGA FÖRVÄNTNINGAR</strong>
+            <br />
+            Styrelsen begär bara att klubben finns kvar nästa år.
+          </span>
+        </div>
+      )}
 
       <div
         style={{

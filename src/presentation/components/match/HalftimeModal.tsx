@@ -43,6 +43,9 @@ interface HalftimeModalProps {
   onPauseLean: (l: PauseLean) => void
 }
 
+/**
+ * @cites htTempo, computePlayerRatings, MatchEvent
+ */
 export function HalftimeModal({
   fixture,
   homeClubName,
@@ -97,8 +100,13 @@ export function HalftimeModal({
   // magnitud, aldrig siffra. push/calm lutar mot managed-sidan; hold = mitten.
   const leanShift = selectedLean === 'hold' ? 0 : Math.abs(PAUSE_LEAN_FACTOR[selectedLean] - 1) * 60 // push→15%, calm→12%
   const previewHomePct = Math.max(8, Math.min(92, 50 + (managedIsHome ? 1 : -1) * leanShift))
+  // Påståendesvepet #1 (MASTER.md, 2026-08-24): "Ledningen hade vi i en match
+  // förra året på samma plan, och vi tappade den" ströks — komponenten har
+  // ingen säsongskoll, så raden kunde fyras i en klubbs FÖRSTA NÅGONSIN match
+  // (ingen "förra året" finns), och även när ett "förra året" finns saknas
+  // halvtidsställning i historisk matchdata för att faktiskt belägga att en
+  // ledning tappades. Kan påståendet inte beläggas ska det inte göras.
   const HT_WIN_BIG = [
-    'Ledningen hade vi i en match förra året på samma plan, och vi tappade den.',
     'De har inte gett upp en match hela hösten, så vi spelar likadant i andra halvlek.',
     'Vi släpper inte upp dem.',
   ]

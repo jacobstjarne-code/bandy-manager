@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
-import { calcRoundIncome } from '../../../../domain/services/economyService'
+import { calcRoundIncome, buildRoundIncomeParamsForNextFixture } from '../../../../domain/services/economyService'
 import { formatFinanceAbs } from '../../../utils/formatters'
 
 /** Secondary-kort: kassan + burnrate. */
@@ -14,16 +14,16 @@ export function EkonomiSecondary({ game }: CardRenderProps) {
   const legendSalaryCost = ((game.clubLegends ?? [])
     .filter(l => l.role === 'youth_coach' || l.role === 'scout').length) * 500
 
+  // Preview-mönstret, "samma funktion, samma indata" (2026-08-26): se
+  // buildRoundIncomeParamsForNextFixture-kommentaren i economyService.ts.
+  const nextFixtureIncomeParams = buildRoundIncomeParamsForNextFixture(game)
   const { netPerRound } = calcRoundIncome({
     club: club!,
     players: squadPlayers,
     sponsors: game.sponsors ?? [],
     communityActivities: game.communityActivities,
     fanMood: game.fanMood ?? 50,
-    isHomeMatch: true,
-    matchIsKnockout: false,
-    matchIsCup: false,
-    matchHasRivalry: false,
+    ...nextFixtureIncomeParams,
     standing: standing ?? null,
     rand: () => 0.5,
     legendSalaryCost,

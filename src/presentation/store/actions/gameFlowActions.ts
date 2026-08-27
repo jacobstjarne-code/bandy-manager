@@ -41,7 +41,14 @@ interface GetState {
 }
 
 type Get = () => GetState
-type Set = (partial: Partial<{ game: SaveGame | null; roundSummary: RoundSummaryData | null; lastAdvanceResult: AdvanceResult | null }>) => void
+type SetSlice = { game: SaveGame | null; roundSummary: RoundSummaryData | null; lastAdvanceResult: AdvanceResult | null; lastConfirmedSaveAt: string | null; lastSaveError: string | null; saveConflict: boolean }
+// C1 (5c9a7a8, 2026-08-24): lastConfirmedSaveAt/lastSaveError tillagda så
+// persistAutosave (den vanligaste sparvägen — kör efter nästan varje
+// spelaråtgärd) kan surfa ett misslyckande, inte bara logga tyst.
+// M2 (2026-08-24): funktionell form tillåten (Partial<SetSlice> | uppdaterare)
+// så persistAutosave kan slå ihop game.revision mot AKTUELLT state efter en
+// lyckad sparning, istf det snapshot av `game` som fanns när anropet startade.
+type Set = (partial: Partial<SetSlice> | ((state: SetSlice) => Partial<SetSlice>)) => void
 
 /**
  * High 3 (Skutskär-auditen, 2026-08-22): playoff-elimineringens tidsbarriär.
@@ -93,11 +100,34 @@ export function buildMultiWeekPeriod(
   }
 }
 
-async function persistAutosave(game: SaveGame, context: string): Promise<void> {
-  try {
-    await saveSaveGame(game)
-  } catch (e) {
-    console.warn(`Autosave misslyckades (${context}):`, e)
+// C1 (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24) — värsta
+// fyndet i serien. saveSaveGame() svalde tidigare alla undantag och
+// returnerade Promise<void>, så try/catch:et här var död kod: en
+// misslyckad autosave (privat läge, full kvot, avbruten IndexedDB-
+// skrivning) gav ingen som helst signal, varken till spelaren eller
+// konsolen. Detta är den VANLIGASTE sparvägen — kör efter nästan varje
+// spelaråtgärd (advance/resolveEvent/scener/etc, se anropsställena nedan).
+// saveSaveGame() returnerar nu en riktig SaveWriteResult; set() propagerar
+// resultatet till store:t så GameHeader.tsx kan visa det.
+async function persistAutosave(game: SaveGame, context: string, set: Set): Promise<void> {
+  const result = await saveSaveGame(game)
+  if (result.success) {
+    // M2: se motsvarande kommentar i gameStore.ts:persistGameSnapshot —
+    // game.revision måste följa med tillbaka in i store:t, annars
+    // konfliktar denna fliks EGEN nästa autosave med sig själv.
+    set(state => ({
+      lastConfirmedSaveAt: new Date().toISOString(),
+      lastSaveError: null,
+      game: state.game && state.game.id === game.id ? { ...state.game, revision: result.newRevision } : state.game,
+    }))
+  } else if (result.conflict) {
+    // M2: se motsvarande gren i gameStore.ts:persistGameSnapshot — samma
+    // resonemang, denna vägen (autosave) är bara den vanligaste av de två.
+    console.error(`Autosave avvisad som konflikt (${context}) — en annan flik har skrivit en nyare version`)
+    set({ saveConflict: true })
+  } else {
+    console.error(`Autosave misslyckades (${context}):`, result.error)
+    set({ lastSaveError: result.error ?? `Autosave misslyckades (${context})` })
   }
 }
 
@@ -110,7 +140,7 @@ export function gameFlowActions(get: Get, set: Set) {
       // GAP-1(b): auto-spara pre-advance-state INNAN riskoperationen (round-advance/season-end
       // är de tyngsta vägarna). Kraschar advance så kostar det aldrig mer än omgången som just
       // påbörjades — det senast sparade är giltigt pre-advance-state.
-      void persistAutosave(game, 'pre-advance')
+      void persistAutosave(game, 'pre-advance', set)
 
       const managedClubBefore = game.clubs.find(c => c.id === game.managedClubId)
       const financesBefore = managedClubBefore?.finances ?? 0
@@ -300,7 +330,7 @@ export function gameFlowActions(get: Get, set: Set) {
 
       const gameToSave = { ...gameWithAnniversaries, lastSavedAt: new Date().toISOString() }
       set({ game: gameToSave, lastAdvanceResult: result, roundSummary: summary })
-      void persistAutosave(gameToSave, 'advance')
+      void persistAutosave(gameToSave, 'advance', set)
 
       // Märk fas som sedd när spelaren lämnar Portal (trigger i advance).
       // 2026-07-19: migrerad till sjufasmodellen (PortalPhaseMark.tsx) —
@@ -318,14 +348,14 @@ export function gameFlowActions(get: Get, set: Set) {
       if (PHASEMARK_PHASES.has(advPhase) && !advSeen.includes(advPhase)) {
         const markedGame = { ...gameToSave, phaseMarksSeen: [...advSeen, advPhase] }
         set({ game: markedGame })
-        void persistAutosave(markedGame, 'advance')
+        void persistAutosave(markedGame, 'advance', set)
       }
 
       // C-SD2: märk upptakt-PhaseMark sedd (engångs per säsong) när spelaren lämnar Portal
       if (shouldShowUpptakt(gameToSave) && gameToSave.upptaktPhaseMarkSeenSeason !== gameToSave.currentSeason) {
         const markedGame = { ...gameToSave, upptaktPhaseMarkSeenSeason: gameToSave.currentSeason }
         set({ game: markedGame })
-        void persistAutosave(markedGame, 'advance')
+        void persistAutosave(markedGame, 'advance', set)
       }
 
       const managerFired = result.game.managerFired
@@ -457,14 +487,14 @@ export function gameFlowActions(get: Get, set: Set) {
       )
       const resolvedRound = isFinite(resolvedMatchday) ? resolvedMatchday : (game.weeklyDecisionLastRound ?? 1)
 
-      // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 2/9. decision.id
+      // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 2/9. decision.id
       // är redan season-strippad (t.ex. 'away_trip_bus'), inget att härleda.
       let updatedGame: SaveGame = {
         ...game,
         pendingWeeklyDecision: undefined,
         resolvedWeeklyDecisions: [...(game.resolvedWeeklyDecisions ?? []), resolvedKey],
         weeklyDecisionLastRound: Math.max(game.weeklyDecisionLastRound ?? 0, resolvedRound),
-        narrativeLog: logNarrativeBeat(game, decision.id, game.currentSeason, resolvedRound, decision.systemhandelse),
+        narrativeBeatLog: logNarrativeBeat(game, decision.id, game.currentSeason, resolvedRound, decision.systemhandelse),
       }
 
       // Apply effects
@@ -559,7 +589,7 @@ export function gameFlowActions(get: Get, set: Set) {
         ? promoteFromQueue(updatedGame)
         : updatedGame
       set({ game: afterPromote })
-      void persistAutosave(afterPromote, 'resolveWeeklyDecision')
+      void persistAutosave(afterPromote, 'resolveWeeklyDecision', set)
     },
 
     markScreenVisited: (screen: string) => {
@@ -576,7 +606,7 @@ export function gameFlowActions(get: Get, set: Set) {
       if (!game) return
       const shown = game.shownBeats ?? []
       if (!shown.includes(beatKey)) {
-        // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 3/9. Loggar
+        // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 3/9. Loggar
         // den råa beatKey:en oskalad (flera keyFn:s bakar redan in `_s{season}`
         // — finkornig strippning är ett senare, medvetet steg per DOM:en).
         let log = logNarrativeBeat(game, beatKey, game.currentSeason, getCurrentLeagueRound(game))
@@ -586,9 +616,9 @@ export function gameFlowActions(get: Get, set: Set) {
         // semanticKey och kan annars aldrig hitta ett tidigare tillfälle när
         // keyFn bakar in trigger/omgång i nyckeln (t.ex. ripple_consequence).
         if (beatId && PIVOTAL_BEAT_IDS.includes(beatId)) {
-          log = logNarrativeBeat({ ...game, narrativeLog: log }, beatId, game.currentSeason, getCurrentLeagueRound(game))
+          log = logNarrativeBeat({ ...game, narrativeBeatLog: log }, beatId, game.currentSeason, getCurrentLeagueRound(game))
         }
-        set({ game: { ...game, shownBeats: [...shown, beatKey], narrativeLog: log } })
+        set({ game: { ...game, shownBeats: [...shown, beatKey], narrativeBeatLog: log } })
       }
     },
 
@@ -612,7 +642,7 @@ export function gameFlowActions(get: Get, set: Set) {
         activeAnniversaries: (game.activeAnniversaries ?? []).filter(a => a.eventId !== eventId),
       }
       set({ game: updatedGame })
-      void persistAutosave(updatedGame, 'markAnniversaryAcknowledged')
+      void persistAutosave(updatedGame, 'markAnniversaryAcknowledged', set)
     },
 
     simulateRemainingStep: (): AdvanceResult | null => {
@@ -661,11 +691,11 @@ export function gameFlowActions(get: Get, set: Set) {
         const coffeeScene = getCoffeeRoomScene(updatedGame)
         if (coffeeScene) {
           updatedGame.lastCoffeeSceneIndices = [...(updatedGame.lastCoffeeSceneIndices ?? []), ...coffeeScene.pickedIndices].slice(-12)
-          // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 8/9 — en
+          // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 8/9 — en
           // post per visat poolindex, matchar mekanismens egna syfte
           // (undvik samma kafferumsrad igen).
           for (const idx of coffeeScene.pickedIndices) {
-            updatedGame.narrativeLog = logNarrativeBeat(updatedGame, `coffee_pool_${idx}`, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame))
+            updatedGame.narrativeBeatLog = logNarrativeBeat(updatedGame, `coffee_pool_${idx}`, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame))
           }
           // D3 — återkomsten visades: ta bort den ur kön, den landar bara en gång.
           if (coffeeScene.consumedReturnQuestionId) {
@@ -705,9 +735,9 @@ export function gameFlowActions(get: Get, set: Set) {
           }
         }
       } else {
-        // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 4/9.
+        // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 4/9.
         updatedGame.shownScenes = [...(updatedGame.shownScenes ?? []), sceneId]
-        updatedGame.narrativeLog = logNarrativeBeat(updatedGame, sceneId, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame))
+        updatedGame.narrativeBeatLog = logNarrativeBeat(updatedGame, sceneId, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame))
       }
       if (choiceId) {
         updatedGame.sceneChoices = {
@@ -724,7 +754,7 @@ export function gameFlowActions(get: Get, set: Set) {
       }
 
       set({ game: updatedGame })
-      void persistAutosave(updatedGame, 'completeScene')
+      void persistAutosave(updatedGame, 'completeScene', set)
     },
 
     triggerCoffeeRoomScene: () => {
@@ -736,7 +766,7 @@ export function gameFlowActions(get: Get, set: Set) {
         pendingScene: { sceneId: 'coffee_room', triggeredAt: game.currentDate },
       }
       set({ game: updatedGame })
-      void persistAutosave(updatedGame, 'triggerCoffeeRoomScene')
+      void persistAutosave(updatedGame, 'triggerCoffeeRoomScene', set)
     },
 
     triggerJournalistScene: () => {
@@ -748,7 +778,7 @@ export function gameFlowActions(get: Get, set: Set) {
         pendingScene: { sceneId: 'journalist_relationship', triggeredAt: game.currentDate },
       }
       set({ game: updatedGame })
-      void persistAutosave(updatedGame, 'triggerJournalistScene')
+      void persistAutosave(updatedGame, 'triggerJournalistScene', set)
     },
 
     resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite'): { retired: boolean; response: string } => {
@@ -797,7 +827,7 @@ export function gameFlowActions(get: Get, set: Set) {
       }
 
       set({ game: updatedGame })
-      void persistAutosave(updatedGame, 'resolveRetirementDecision')
+      void persistAutosave(updatedGame, 'resolveRetirementDecision', set)
 
       return { retired, response }
     },
@@ -858,7 +888,7 @@ export function gameFlowActions(get: Get, set: Set) {
       }
 
       set({ game: updatedGame })
-      void persistAutosave(updatedGame, 'resolveAnnandagsVal')
+      void persistAutosave(updatedGame, 'resolveAnnandagsVal', set)
     },
 
     // Release-svepet 2026-07-21 (Block 2c) — ren avfärdning, ingen förgrening
@@ -870,7 +900,7 @@ export function gameFlowActions(get: Get, set: Set) {
       if (!game || !game.pendingCallupModal) return
       const updatedGame: SaveGame = { ...game, pendingCallupModal: undefined }
       set({ game: updatedGame })
-      void persistAutosave(updatedGame, 'dismissCallupModal')
+      void persistAutosave(updatedGame, 'dismissCallupModal', set)
     },
   }
 }

@@ -2,6 +2,9 @@ import type { PlayoffBracket } from '../../domain/entities/Playoff'
 import type { CupBracket } from '../../domain/entities/Cup'
 import type { Club } from '../../domain/entities/Club'
 
+/**
+ * @cites bracket.quarterFinals[].winnerId, bracket.semiFinals[].winnerId, homeClubId, awayClubId
+ */
 export function getFinalJourney(bracket: PlayoffBracket, clubId: string, clubs: Club[]): string {
   const qf = bracket.quarterFinals?.find(s => s.winnerId === clubId)
   const sf = bracket.semiFinals?.find(s => s.winnerId === clubId)

@@ -104,6 +104,18 @@ function interactionSeed(fixtureId: string, step: number, kind: InteractionRandK
   return fixtureSeed(fixtureId, INTERACTION_SEED_BASE[kind] + step)
 }
 
+/**
+ * htTempo/htPress/htMentality här är egna React-statevariabler för
+ * paus-taktikreglagen (spelarens LIVE-inställning under matchen) — INTE
+ * en proxy för "vilket paussnack valdes" (den kända, redan fixade bugklassen
+ * — se pauseLean/effectiveLean nedan, som är den faktiska loggade sanningen).
+ * roundNumber används bara som tröskel (quarterfinal-gräns >26) och
+ * likhetsjämförelse (samma omgångs andra match) — aldrig för sortering.
+ * playoffBracket skickas vidare till ett underliggande visningskomponent,
+ * inte för att avgöra vem som blev mästare. Alla tre deklarerade öppet.
+ *
+ * @cites pauseLean, effectiveLean, setHalftimeDecisionForLog, htTempo, htPress, htMentality, roundNumber, playoffBracket
+ */
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -175,7 +187,7 @@ export function MatchLiveScreen() {
   const [spakBAppearStep, setSpakBAppearStep] = useState<number | null>(null)
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
   const [pauseLean, setPauseLean] = useState<PauseLean | null>(null)
-  const [halftimeDecisionForLog, setHalftimeDecisionForLog] = useState<'lugna' | 'pressa' | 'prata' | null>(null)
+  const [halftimeDecisionForLog, setHalftimeDecisionForLog] = useState<PauseLean | null>(null)
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => (isSmFinal || !!isCupFinal) ? 1 : 0)
@@ -1058,14 +1070,13 @@ export function MatchLiveScreen() {
     const htSituation: MatchSituation = managedDiff < 0 ? 'behind' : managedDiff === 0 ? 'level' : 'leading'
     const effectiveLean: PauseLean = pauseLean ?? PAUSSNACK[htSituation][0].lean
 
-    // T3: derive halftime decision string for managerChoiceLog in saveLiveMatchResult
-    {
-      const htLogDecision: 'lugna' | 'pressa' | 'prata' =
-        htTempo === TacticTempo.Low ? 'lugna'
-        : (htPress === TacticPress.High || htMentality === TacticMentality.Offensive) ? 'pressa'
-        : 'prata'
-      setHalftimeDecisionForLog(htLogDecision)
-    }
+    // H2-uppföljning (5c9a7a8, 2026-08-24): loggade tidigare en 'lugna'/
+    // 'pressa'/'prata'-klassificering härledd ur htTempo/htPress/htMentality
+    // — de HELT ANDRA taktikreglagen på samma pausskärm, oberoende av
+    // spelarens faktiska paussnack (effectiveLean, satt av PAUSSNACK-valet
+    // ovan). Loggar nu effectiveLean rakt av — primärt beslut-ID, se
+    // Fixture.ts:s ManagerChoiceEntry-kommentar.
+    setHalftimeDecisionForLog(effectiveLean)
 
     // Morale/sharpness — den osynliga delen (behålls additivt, SPEC A1). Den synliga
     // delen (postBreakUrgency-luten) ligger i pauseLean nedan.

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Star } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { ScoutAssignment, ScoutReport } from '../../../domain/entities/Scouting'
@@ -16,6 +17,12 @@ const POSITION_GROUPS: PlayerPosition[] = [
 ]
 
 const GROUP_CAP = 8
+// L3 (mobil speltest-audit, 2026-08-26): Scoutrapporter var okapad — varje
+// rad är lång (namn + 2 metarader + notis + 4 attributstaplar), så listan
+// växte monotont med antal utvärderade spelare och tryckte "Spelare att
+// utvärdera" långt ner på mobil. Lägre golv än GROUP_CAP eftersom raderna
+// här är mycket högre — 5 okapade rader fyller redan en 375-skärm.
+const REPORT_CAP = 5
 
 interface ScoutingTabProps {
   game: SaveGame
@@ -35,6 +42,7 @@ interface ScoutingTabProps {
   onScout: (player: Player) => void
   onStartTalentSearch: (position: string, maxAge: number, maxSalary: number, currentRound: number) => { success: boolean; error?: string }
   onScoutMessage: (msg: string | null) => void
+  onToggleShortlist: (playerId: string) => void
 }
 
 export function ScoutingTab({
@@ -55,8 +63,10 @@ export function ScoutingTab({
   onScout,
   onStartTalentSearch,
   onScoutMessage,
+  onToggleShortlist,
 }: ScoutingTabProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<PlayerPosition>>(new Set())
+  const [reportsExpanded, setReportsExpanded] = useState(false)
 
   const scoutablePlayers = game.players
     .filter(p => p.clubId !== game.managedClubId)
@@ -219,10 +229,18 @@ export function ScoutingTab({
 
       {/* ── 2. Scoutrapporter ── */}
       {Object.keys(scoutReports).length > 0 && (() => {
-        const reportEntries = Object.values(scoutReports)
+        // L3: favoriter alltid synliga, resten kapas — se REPORT_CAP-
+        // kommentaren. Stabil sortering: favoriter i sin ursprungsordning
+        // före resten i sin.
+        const allEntries = Object.values(scoutReports)
+        const shortlistedEntries = allEntries.filter(r => r.shortlisted)
+        const restEntries = allEntries.filter(r => !r.shortlisted)
+        const visibleRest = reportsExpanded ? restEntries : restEntries.slice(0, Math.max(0, REPORT_CAP - shortlistedEntries.length))
+        const reportEntries = [...shortlistedEntries, ...visibleRest]
+        const hiddenCount = restEntries.length - visibleRest.length
         return (
           <div className="card-stagger-2" style={{ marginBottom: 24 }}>
-            <SectionLabel>Scoutrapporter ({reportEntries.length})</SectionLabel>
+            <SectionLabel>Scoutrapporter ({allEntries.length})</SectionLabel>
             <div className="card-sharp" style={{ overflow: 'hidden' }}>
               {reportEntries.map((report, index) => {
                 const reportPlayer = game.players.find(p => p.id === report.playerId)
@@ -242,6 +260,18 @@ export function ScoutingTab({
                         <p className="transfers-report-name">
                           {reportPlayer ? `${reportPlayer.firstName} ${reportPlayer.lastName}` : report.playerId}
                         </p>
+                        <button
+                          onClick={() => onToggleShortlist(report.playerId)}
+                          aria-label={report.shortlisted ? 'Ta bort från favoriter' : 'Lägg till i favoriter'}
+                          className="btn-ghost"
+                          style={{ flexShrink: 0, padding: 4, display: 'flex', border: 'none', background: 'none', cursor: 'pointer' }}
+                        >
+                          <Star
+                            size={16}
+                            color={report.shortlisted ? 'var(--accent)' : 'var(--text-muted)'}
+                            fill={report.shortlisted ? 'var(--accent)' : 'none'}
+                          />
+                        </button>
                         <span style={{ fontSize: 11, fontWeight: 600, color: freshnessColor, flexShrink: 0 }}>
                           {freshnessLabel}
                         </span>
@@ -289,6 +319,15 @@ export function ScoutingTab({
                 )
               })}
             </div>
+            {!reportsExpanded && hiddenCount > 0 && (
+              <button
+                className="btn btn-ghost"
+                onClick={() => setReportsExpanded(true)}
+                style={{ marginTop: 4, fontSize: 11, padding: '4px 10px', width: '100%' }}
+              >
+                + {hiddenCount} fler rapporter
+              </button>
+            )}
           </div>
         )
       })()}

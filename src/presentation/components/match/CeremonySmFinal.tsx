@@ -3,6 +3,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { truncate } from '../../utils/formatters'
 import { computePlayerRatings } from '../../utils/matchRatings'
+import { didManagedWinFinal } from '../../utils/finalResult'
 import { GoldConfetti } from './GoldConfetti'
 import { Z } from '../../utils/zIndices'
 import { Trophy, Medal } from 'lucide-react'
@@ -68,9 +69,11 @@ export function CeremonySmFinal({
 
   if (slide === 2) {
     const managedIsHome = fixture.homeClubId === managedClubId
-    const managedScore = managedIsHome ? homeScore : awayScore
-    const opponentScore = managedIsHome ? awayScore : homeScore
-    const managedWon = managedScore > opponentScore
+    // PÅSTÅENDEKARTAN (2026-08-24), Jacobs prioritet 1: se finalResult.ts —
+    // homeScore/awayScore är reglertidens ställning och förblir lika vid ett
+    // straffavgörande, så en klubb som vann på straffar visades tidigare
+    // som silvermedaljör.
+    const managedWon = didManagedWinFinal(managedIsHome, homeScore, awayScore, steps)
     const clubName = managedIsHome ? homeClubName : awayClubName
 
     return (

@@ -13,6 +13,9 @@ import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {
+    // H4 Heros: samma korta rubrik Jacob låste för klubbvalsskärmen
+    // ("LÅGA FÖRVÄNTNINGAR"), inte ny text.
+    [ClubExpectation.Survive]: 'Låga förväntningar',
     [ClubExpectation.AvoidBottom]: 'Undvika nedflyttning',
     [ClubExpectation.MidTable]: 'Mitten av tabellen',
     [ClubExpectation.ChallengeTop]: 'Utmana toppen',

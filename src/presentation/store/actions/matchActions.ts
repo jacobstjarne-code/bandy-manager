@@ -1,5 +1,6 @@
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { MatchEvent, TeamSelection, MatchReport, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
+import type { PauseLean } from '../../components/match/HalftimeModal'
 import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../../domain/enums'
 import { calculateStandings } from '../../../domain/services/standingsService'
 import { updateCupBracketAfterRound, generateNextCupRound } from '../../../domain/services/cupService'
@@ -36,6 +37,13 @@ function purgeStalePlayoffCards(game: SaveGame, bracket: SaveGame['playoffBracke
   }
 }
 
+/**
+ * playoffBracket läses/skrivs här som den faktiska bracket-ADVANCERINGEN
+ * efter en spelad match (källan, inte en konsument som påstår "vem blev
+ * mästare") — deklarerad öppet.
+ *
+ * @cites game.captainPlayerId, player.fitness, halftimeDecision, game.lastHalftimeDecision, completed.homeScore, completed.awayScore, playoffBracket
+ */
 export function matchActions(get: Get, set: Set) {
   return {
     saveLiveMatchResult: (
@@ -49,7 +57,7 @@ export function matchActions(get: Get, set: Set) {
       overtimeResult?: 'home' | 'away',
       penaltyResult?: { home: number; away: number },
       attendance?: number,
-      halftimeDecision?: 'lugna' | 'pressa' | 'prata',
+      halftimeDecision?: PauseLean,
     ) => {
       const { game } = get()
       if (!game) return
@@ -92,9 +100,25 @@ export function matchActions(get: Get, set: Set) {
         }
       }
 
-      // halftime_tactic: prefer threaded param (live path sets it); fall back to store field (non-live path)
-      const htDecision = halftimeDecision ?? game.lastHalftimeDecision
-      if (htDecision) {
+      // H2-uppföljning (oberoende speltest- och produktaudit, 5c9a7a8,
+      // 2026-08-24): `halftimeDecision` (LIVE-matchens pauseLean, Spak A) och
+      // `game.lastHalftimeDecision` (QUICKSIM-matchens lugna/pressa/prata,
+      // applyHalftimeDecision i gameFlowActions.ts) är TVÅ separata mekaniker
+      // med skilda typer och skild effekt — inte samma val genom två kanaler.
+      // Den gamla `?? `-fallbacken behandlade dem som utbytbara, vilket var
+      // fel: den lät live-matchens (då odefinierade) pauseLean falla igenom
+      // till en HELT ANDRA taktikreglage-härledd gissning. Två separata
+      // loggposter nu, en typ var.
+      //
+      // pep_talk: fanns som typ i ManagerChoiceEntry, konstruerades ALDRIG —
+      // pauseLean loggades inte alls tidigare. detail bär pauseLean rakt av,
+      // primärt beslut-ID (Jacobs order), inte en härledd approximation.
+      if (halftimeDecision) {
+        choiceLog.push({ type: 'pep_talk', detail: halftimeDecision })
+      }
+
+      // halftime_tactic: oförändrad — quicksim-matchens lugna/pressa/prata-val.
+      if (game.lastHalftimeDecision) {
         const detailMap = {
           lugna: 'lowered_tempo',
           pressa: 'increased_pressure',
@@ -102,7 +126,7 @@ export function matchActions(get: Get, set: Set) {
         } as const
         choiceLog.push({
           type: 'halftime_tactic',
-          detail: detailMap[htDecision],
+          detail: detailMap[game.lastHalftimeDecision],
         })
       }
 

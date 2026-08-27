@@ -68,6 +68,7 @@ export function OffersView({ offers, onSelect, onShowAll }: Props) {
               offer={offer}
               clubName={template.name}
               region={template.region}
+              boardExpectation={template.boardExpectation}
               extendedInfo={extendedInfo}
               quote={quote}
               onSelect={onSelect}

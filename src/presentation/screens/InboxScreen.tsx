@@ -225,6 +225,11 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
             {item.body}
           </p>
         )}
+        {expanded && item.licenseZoneLabel && (
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--danger)', marginTop: 4 }}>
+            {item.licenseZoneLabel}
+          </p>
+        )}
         {playerName && item.relatedPlayerId && (
           <PlayerLink playerId={item.relatedPlayerId} name={playerName} style={{ fontSize: 11, marginTop: 3, display: 'inline-block' }} />
         )}
@@ -351,6 +356,31 @@ function InboxGroupRow({
   )
 }
 
+// ── M7: klustring av gammal, läst inkorg (Kräver svar/Rapporter) ──
+
+/**
+ * M7 (audit 5c9a7a8, 2026-08-24): "Långsave öppnade med 2 aktiva och 32
+ * inboxnotiser." Kräver svar/Rapporter (Nyheter har redan groupNyheter,
+ * Training har redan TrainingAggRow) fick ALDRIG någon klustring — varje
+ * post renderades individuellt oavsett ålder eller läst-status. Läst OCH
+ * äldre än OLD_INBOX_ROUND_THRESHOLD omgångar samlas i en enda expanderbar
+ * rad istf att stapla dem var för sig. Olästa poster viks ALDRIG in här,
+ * oavsett ålder — "kräver svar" betyder just det, en gammal olöst post är
+ * inte mindre brådskande för att den är gammal.
+ */
+export const OLD_INBOX_ROUND_THRESHOLD = 3
+
+export function splitOldInboxItems(items: InboxItem[], currentMatchday: number): { recent: InboxItem[]; old: InboxItem[] } {
+  const recent: InboxItem[] = []
+  const old: InboxItem[] = []
+  for (const item of items) {
+    const round = item.createdRound ?? item.createdMatchday ?? undefined
+    const isOld = item.isRead && round !== undefined && round <= (currentMatchday - OLD_INBOX_ROUND_THRESHOLD)
+    ;(isOld ? old : recent).push(item)
+  }
+  return { recent, old }
+}
+
 // ── M12: Grouping logic for Nyheter ──────────────────────────────
 
 type NewsRenderItem =
@@ -420,8 +450,13 @@ function TrainingAggRow({ items }: { items: InboxItem[] }) {
   const minR = Math.min(...rounds)
   const maxR = Math.max(...rounds)
   const rangeStr = minR === maxR ? `omg ${minR}` : `omg ${minR}–${maxR}`
-  // Detect if any item has an incident (body mentions something non-trivial)
-  const hasIncident = items.some(i => i.body && !/inga incidenter/i.test(i.body) && i.body.trim().length > 2)
+  // PÅSTÅENDEKARTAN (2026-08-24): läste tidigare en regex mot fri text
+  // (/inga incidenter/i) som aldrig produceras — bodyn säger "Inga skador.",
+  // så regexen missade alltid och hasIncident blev praktiskt taget alltid
+  // sant. injuredPlayerCount är samma nedskrivna sanning ClubScreen.tsx
+  // redan läser korrekt (rad 63, 70) — satt av inboxService.ts vid
+  // genereringstillfället, inte en textmatchning i efterhand.
+  const hasIncident = items.some(i => (i.injuredPlayerCount ?? 0) > 0)
   const text = hasIncident
     ? `Träning ${rangeStr}: se detaljer nedan.`
     : `Träning ${rangeStr}: inga incidenter.`
@@ -585,16 +620,45 @@ export function InboxScreen() {
                               playerName={getPlayerName(trainingItems[0].relatedPlayerId)}
                             />
                       )}
-                      {items.map((item, index) => (
-                        <InboxRow
-                          key={item.id}
-                          item={item}
-                          onRead={markInboxRead}
-                          index={index}
-                          playerName={getPlayerName(item.relatedPlayerId)}
-                          expiresRound={getExpiresRound(item)}
-                        />
-                      ))}
+                      {/* M7: läst-och-gammalt viks in i en enda expanderbar rad
+                          istf att staplas individuellt — se splitOldInboxItems. */}
+                      {(() => {
+                        const { recent, old } = splitOldInboxItems(items, game.currentMatchday)
+                        const oldExpandKey = `old:${group}`
+                        const foldOld = old.length >= 3 && !expandedGroups.has(oldExpandKey)
+                        const displayOld = foldOld ? [] : old
+                        return (
+                          <>
+                            {recent.map((item, index) => (
+                              <InboxRow
+                                key={item.id}
+                                item={item}
+                                onRead={markInboxRead}
+                                index={index}
+                                playerName={getPlayerName(item.relatedPlayerId)}
+                                expiresRound={getExpiresRound(item)}
+                              />
+                            ))}
+                            {foldOld && (
+                              <InboxGroupRow
+                                count={old.length}
+                                label={`${old.length} äldre, redan lästa poster`}
+                                onExpand={() => setExpandedGroups(prev => new Set([...prev, oldExpandKey]))}
+                              />
+                            )}
+                            {displayOld.map((item, index) => (
+                              <InboxRow
+                                key={item.id}
+                                item={item}
+                                onRead={markInboxRead}
+                                index={recent.length + index}
+                                playerName={getPlayerName(item.relatedPlayerId)}
+                                expiresRound={getExpiresRound(item)}
+                              />
+                            ))}
+                          </>
+                        )
+                      })()}
                     </div>
                   ) : (
                     /* M12: Nyheter — thin rows + grouped roll-ups */

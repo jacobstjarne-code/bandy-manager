@@ -19,6 +19,9 @@ interface AkademiTabProps {
   recallLoan: (playerId: string) => void
 }
 
+/**
+ * @cites youthTeam.results.opponentName, youthTeam.results.goalsFor, youthTeam.results.goalsAgainst, result.timing, deal.reports.played, deal.reports.rating, deal.reports.goals, roundNumber
+ */
 export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, assignMentor, removeMentor, loanOutPlayer, recallLoan }: AkademiTabProps) {
   const [upgradeMsg, setUpgradeMsg] = useState<string | null>(null)
   const [promotionMsg, setPromotionMsg] = useState<string | null>(null)

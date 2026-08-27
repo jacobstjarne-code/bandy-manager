@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Settings, BookOpen } from 'lucide-react'
 import { Icon } from './primitives/Icon'
@@ -16,6 +16,17 @@ const ROUND_NAME: Record<PlayoffRound, string> = {
   [PlayoffRound.QuarterFinal]: 'Kvartsfinal',
   [PlayoffRound.SemiFinal]: 'Semifinal',
   [PlayoffRound.Final]: 'SM-Final',
+}
+
+// C1 (5c9a7a8, 2026-08-24) — "senast bekräftad sparningstid" i UI.
+function formatRelativeSaveTime(iso: string): string {
+  const deltaMs = Date.now() - new Date(iso).getTime()
+  const minutes = Math.floor(deltaMs / 60000)
+  if (minutes < 1) return 'just nu'
+  if (minutes < 60) return `${minutes} min sedan`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} tim sedan`
+  return new Date(iso).toLocaleDateString('sv-SE')
 }
 
 const CRIT_LABEL: Record<'open' | 'matchpuck' | 'decisive', string | null> = {
@@ -51,6 +62,8 @@ export function GameHeader() {
   const game = useGameStore(s => s.game)
   const saveGame = useGameStore(s => s.saveGame)
   const loadGame = useGameStore(s => s.loadGame)
+  const lastConfirmedSaveAt = useGameStore(s => s.lastConfirmedSaveAt)
+  const lastSaveError = useGameStore(s => s.lastSaveError)
   const club = useManagedClub()
   const unreadInbox = useUnreadInboxCount()
   const [showMenu, setShowMenu] = useState(false)
@@ -69,8 +82,30 @@ export function GameHeader() {
   async function handleSaveGame() {
     const result = await saveGame()
     if (result.success) showToast(true, '✓ Sparat')
-    else showToast(false, result.error ?? 'Kunde inte spara')
+    // Felfallet visas INTE här direkt — se useEffect nedan, som bevakar
+    // lastSaveError och visar EXAKT samma toast oavsett om felet kom från
+    // knapptrycket eller en autosave i bakgrunden (C1, 5c9a7a8, 2026-08-24).
+    // En enda källa till "ett sparfel hände", inte två separata vägar som
+    // kan glida isär.
   }
+
+  // C1 (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24): den
+  // VANLIGASTE sparvägen (autosave, gameFlowActions.ts, kör efter nästan
+  // varje spelaråtgärd) hade tidigare NOLL signal vid fel — inte ens en
+  // konsolrad. lastSaveError sätts nu av både persistGameSnapshot och
+  // persistAutosave; denna effekten är den ENDA ytan som visar den, så en
+  // spelare som mister en autosave i bakgrunden faktiskt märker det, inte
+  // bara någon som råkar trycka den manuella knappen. shownErrorRef
+  // förhindrar att samma fel visas två gånger om komponenten renderar om.
+  const shownErrorRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (lastSaveError && lastSaveError !== shownErrorRef.current) {
+      shownErrorRef.current = lastSaveError
+      showToast(false, lastSaveError)
+    }
+    if (!lastSaveError) shownErrorRef.current = null
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastSaveError])
 
   function handleExportSave() {
     if (!game) return
@@ -265,6 +300,16 @@ export function GameHeader() {
           boxShadow: 'var(--shadow-raised)',
           zIndex: 'var(--z-header)', minWidth: 160,  // var 200 = oförändrat
         }}>
+          {/* C1 (5c9a7a8, 2026-08-24): "senast bekräftad sparningstid" —
+              lastConfirmedSaveAt sätts ENDAST efter ett faktiskt lyckat
+              saveSaveGame()-anrop (persistGameSnapshot/persistAutosave),
+              aldrig optimistiskt. En spelare kan alltså lita på raden. */}
+          <div style={{
+            padding: '8px 14px 6px', fontSize: 10.5, color: 'var(--text-muted)',
+            borderBottom: '1px solid var(--border)', marginBottom: 2,
+          }}>
+            {lastConfirmedSaveAt ? `Senast sparat: ${formatRelativeSaveTime(lastConfirmedSaveAt)}` : 'Inte sparat än denna session'}
+          </div>
           {[
             { label: '💾 Spara spel', action: handleSaveGame },
             { label: '📂 Ladda spel', action: () => navigate('/') },

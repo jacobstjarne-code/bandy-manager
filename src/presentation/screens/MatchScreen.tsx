@@ -20,8 +20,7 @@ import { NodtruppScene } from '../components/match/NodtruppScene'
 import { TacticStep } from '../components/match/TacticStep'
 import { StartStep } from '../components/match/StartStep'
 import { MatchHeader } from '../components/match/MatchHeader'
-import { calcAttendance } from '../../domain/services/economyService'
-import { CUP_FINAL_VENUE } from '../../domain/data/specialDateStrings'
+import { calcAttendance, buildAttendanceParams } from '../../domain/services/economyService'
 import { getMatchMood } from '../../domain/services/matchMoodService'
 import { getRitualText } from '../../domain/services/supporterRituals'
 import { computeLaddningBeat, type LaddningBeat } from '../../domain/data/matchLaddningGrind'
@@ -196,22 +195,13 @@ export function MatchScreen() {
         }
         const aiLineup = generateAiLineupForOpponent()
         const liveMatchWeather = game!.matchWeathers?.find(mw => mw.fixtureId === nextFixture.id)
-        const liveAttendance = homeClub ? calcAttendance({
-          club: homeClub,
-          // SLUTTEST RUNDA 4 (punkt 1): isNeutralVenue, inte isCupFinalhelgen.
-          awayClub,
-          isNeutralVenue: !!nextFixture.isNeutralVenue,
-          fanMood: game!.fanMood ?? 50,
-          position: game!.standings.find(s => s.clubId === nextFixture.homeClubId)?.position ?? 6,
-          isKnockout: !!nextFixture.isKnockout,
-          isCup: !!nextFixture.isCup,
-          isDerby: false,
-          isFinal: nextFixture.roundNumber > 22 && game!.playoffBracket?.final?.fixtures.includes(nextFixture.id),
-          isSemiFinal: nextFixture.roundNumber > 22 && game!.playoffBracket?.semiFinals.some(s => s.fixtures.includes(nextFixture.id)),
-          isAnnandagen: nextFixture.isAnnandagen === true,
-          weatherAttendanceModifier: liveMatchWeather?.effects.attendanceModifier,
-          hasIndoorArena: (nextFixture.isCup && nextFixture.isNeutralVenue) ? CUP_FINAL_VENUE.hallInomhus : homeClub.hasIndoorArena,
-        }) : undefined
+        // Preview-mönstret, "samma funktion, samma indata" (2026-08-26):
+        // delad byggfunktion med matchSimProcessor.ts:s facit-anrop — se
+        // economyService.ts:s buildAttendanceParams-kommentar. Ersätter en
+        // egen härledning som utelämnade communityStanding/isDerby/
+        // fixtureMonth jämfört med den auktoritativa simuleringen.
+        const liveAttendanceParams = buildAttendanceParams(game!, nextFixture)
+        const liveAttendance = liveAttendanceParams ? calcAttendance(liveAttendanceParams) : undefined
         navigate('/game/match/live', {
           state: {
             fixture: { ...nextFixture, attendance: liveAttendance },
@@ -489,25 +479,10 @@ export function MatchScreen() {
           isHome={isHome}
           fanMood={game.fanMood ?? 50}
           expectedAttendance={nextFixture ? (() => {
-            const homeClub = game.clubs.find(c => c.id === nextFixture.homeClubId)
-            if (!homeClub) return undefined
-            const awayClub = game.clubs.find(c => c.id === nextFixture.awayClubId)
-            const mw = (game.matchWeathers ?? []).find(w => w.fixtureId === nextFixture.id)
-            return calcAttendance({
-              club: homeClub,
-              // SLUTTEST RUNDA 4 (punkt 1): isNeutralVenue, inte isCupFinalhelgen.
-              awayClub,
-              isNeutralVenue: !!nextFixture.isNeutralVenue,
-              fanMood: game.fanMood ?? 50,
-              position: game.standings.find(s => s.clubId === nextFixture.homeClubId)?.position ?? 6,
-              isKnockout: !!nextFixture.isKnockout,
-              isCup: !!nextFixture.isCup,
-              isDerby: false,
-              isFinal: nextFixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(nextFixture.id),
-              isSemiFinal: nextFixture.roundNumber > 22 && game.playoffBracket?.semiFinals.some(s => s.fixtures.includes(nextFixture.id)),
-              weatherAttendanceModifier: mw?.effects.attendanceModifier,
-              hasIndoorArena: (nextFixture.isCup && nextFixture.isNeutralVenue) ? CUP_FINAL_VENUE.hallInomhus : homeClub.hasIndoorArena,
-            })
+            // Preview-mönstret, "samma funktion, samma indata" (2026-08-26):
+            // se buildAttendanceParams-kommentaren i economyService.ts.
+            const params = buildAttendanceParams(game, nextFixture)
+            return params ? calcAttendance(params) : undefined
           })() : undefined}
           arenaName={(() => {
             if (!nextFixture) return undefined

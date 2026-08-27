@@ -36,6 +36,7 @@ export function sortBidsByUrgency(bids: TransferBid[]): TransferBid[] {
 export function TransfersScreen() {
   const game = useGameStore(s => s.game)
   const startEvaluation = useGameStore(s => s.startEvaluation)
+  const toggleScoutShortlist = useGameStore(s => s.toggleScoutShortlist)
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
   const signFreeAgent = useGameStore(s => s.signFreeAgent)
   const listPlayerForSale = useGameStore(s => s.listPlayerForSale)
@@ -394,6 +395,7 @@ export function TransfersScreen() {
           onScout={handleScout}
           onStartTalentSearch={startTalentSearch}
           onScoutMessage={setScoutMessage}
+          onToggleShortlist={toggleScoutShortlist}
         />
       )}
 

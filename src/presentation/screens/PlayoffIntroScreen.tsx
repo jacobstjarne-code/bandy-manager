@@ -3,6 +3,9 @@ import { useGameStore } from '../store/gameStore'
 import { FixtureStatus } from '../../domain/enums'
 import { Swords } from 'lucide-react'
 
+/**
+ * @cites playoffBracket, g.standings, g.fixtures, g.playoffBracket.quarterFinals
+ */
 export function PlayoffIntroScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)

@@ -16,6 +16,8 @@ import { getBurnoutZone } from '../../../domain/services/managerProfileService'
 import { seasonStartYear } from '../../../domain/utils/seasonYear'
 import { BoardObjectivesList } from '../../components/portal/secondary/BoardObjectivesList'
 import { getSeasonGoalOffers, type SeasonGoalOffer } from '../../../domain/services/seasonGoalService'
+import { BOARD_EXPECTATION_LEVEL_LABEL } from '../../../domain/services/boardService'
+import type { BoardAssessment } from '../../../domain/entities/SaveGame'
 import {
   deriveEpokLine, deriveWonTitleLastSeason, deriveWorsePlacementOrEarlierExit,
   deriveSommarLine, selectAwayEventLines, deriveIsPlayoffUnlikely, deriveTandLine,
@@ -41,7 +43,18 @@ export function SeasonTransitionScene() {
     return <Navigate to="/game/dashboard" replace />
   }
 
-  const seasonCount = game.trainerArc?.seasonCount ?? 1
+  // H6 (människoupplevelse-audit 7024f8a, 2026-08-24): "Säsong tre kallades
+  // 'Din andra säsong'". Rotorsak: trainerArc.seasonCount räknas upp FÖRST
+  // vid säsongsSLUT (seasonEndProcessor.ts, checkSeasonEndArc — 0-indexerat,
+  // "antal AVSLUTADE säsonger") — vid övergången till säsong 2 är den alltså
+  // 1, inte 2, och deriveEpokVariant()s "seasonCount===2 → sasong2"-gren
+  // (som förväntar sig "ordningen på säsongen SOM KOMMER") missar den
+  // övergången och slår till en säsong FÖR SENT. managerProfile.seasonsAtClub
+  // är samma fält ClubScreen.tsx/TranareTab.tsx redan använder (kommentar i
+  // ClubScreen.tsx, AUDIT DEL 3 2026-08-11) — startar på 1 (spelarens
+  // FÖRSTA säsong) och räknas upp i SAMMA season-end-anrop, med rätt
+  // semantik för "vilken säsong är det här". En sanning, inte tre.
+  const seasonCount = game.managerProfile?.seasonsAtClub ?? 1
   const recentSummaries = game.seasonSummaries ?? []
   const lastSeason = recentSummaries[recentSummaries.length - 1]
 
@@ -136,6 +149,12 @@ export function SeasonTransitionScene() {
             ))}
           </div>
         </div>
+
+        <div style={{ height: 1, background: 'var(--border)' }} />
+
+        {game.boardAssessment && (
+          <BoardTalksSection assessment={game.boardAssessment} />
+        )}
 
         <div style={{ height: 1, background: 'var(--border)' }} />
 
@@ -246,6 +265,102 @@ export function SeasonTransitionScene() {
           <button onClick={handleContinue} className="btn btn-cta btn-primary">
             {ctaText}
           </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Förutsättningsfasen, steg 1 (Jacobs dom 2026-08-25, docs/incoming/
+ * Forutsattningsfasen-styrelsen-talar-2026-08-25.dc.html, variant 1b).
+ * "Styrelsen talar" — ordförandeband + kvittensrad + kravband (ribba,
+ * riktning, skälsrad). Mellandelen ("vad de vet om läget", ligarörelser)
+ * är MEDVETET UTELÄMNAD — blockerad tills aiTransferLog + standingsSnapshot-
+ * trend finns (steg 2). "Hellre två sanna delar än tre där en hittar på"
+ * (Jacobs ord). Ingen egen beräkning här — game.boardAssessment är redan
+ * färdigt från seasonEndProcessor.ts.
+ *
+ * Skälsraden ligger INUTI kravbandet, under ribban — strukturellt, inte en
+ * fotnot. En ny ribba kan inte renderas utan sin rad (stänger H1, Skutskär-
+ * auditen). "Oförändrad": ingen pil, ingen skälsrad, ingen ramfärg — frånvaron
+ * av skäl är korrekt, inte en lucka.
+ */
+function BoardTalksSection({ assessment }: { assessment: BoardAssessment }) {
+  const isRaised = assessment.direction === 'raised'
+  const isLowered = assessment.direction === 'lowered'
+  const frameColor = isRaised ? 'var(--accent)' : isLowered ? 'var(--ice)' : 'rgba(255,255,255,.06)'
+  const arrowColor = isRaised ? 'var(--accent)' : 'var(--ice)'
+
+  return (
+    <div>
+      {/* Ordförandeband — svalt, samma kromfamilj som kapitel-headern ovan */}
+      <div style={{
+        background: 'var(--bg-dark)', borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
+        padding: '11px 12px 10px', position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{ position: 'absolute', inset: 0, background: NOISE_OVERLAY }} />
+        <div style={{ position: 'relative', display: 'flex', gap: 9, alignItems: 'center' }}>
+          <div style={{
+            width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+            background: 'radial-gradient(circle at 35% 30%, #5a5048, #2a251f)',
+            border: '1.5px solid var(--border-dark)',
+          }} />
+          <div>
+            <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--copper)', marginBottom: 1, fontFamily: 'var(--font-body)' }}>
+              Ordföranden
+            </div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700, color: 'var(--text-light)' }}>
+              Styrelsen har sett er säsong
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{
+        background: 'var(--bg-surface)', border: '1px solid var(--border)', borderTop: 'none',
+        borderRadius: '0 0 var(--radius-md) var(--radius-md)', padding: '11px 12px', display: 'flex', flexDirection: 'column', gap: 9,
+      }}>
+        <div className="h-quote" style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+          "{assessment.seasonAcknowledgment}"
+        </div>
+
+        <div style={{
+          background: 'var(--bg-leather)', borderRadius: 'var(--radius-md)', padding: '11px 12px',
+          boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${frameColor} 30%, transparent)`,
+        }}>
+          <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--copper)', marginBottom: 6, fontFamily: 'var(--font-body)' }}>
+            Vad styrelsen begär i år
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: assessment.reasonLine ? 8 : 0 }}>
+            {assessment.direction !== 'unchanged' && (
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 11, color: 'var(--text-light-secondary)' }}>
+                {BOARD_EXPECTATION_LEVEL_LABEL[assessment.previousExpectation]}
+              </span>
+            )}
+            {assessment.direction !== 'unchanged' && (
+              <span style={{ color: arrowColor, fontSize: 12 }}>{isRaised ? '↗' : '↘'}</span>
+            )}
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 800, color: 'var(--text-light)' }}>
+              {BOARD_EXPECTATION_LEVEL_LABEL[assessment.newExpectation]}
+            </span>
+            {assessment.direction === 'unchanged' && (
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', fontFamily: 'Georgia' }}>
+                — som i fjol
+              </span>
+            )}
+          </div>
+          {assessment.reasonLine && (
+            <div
+              className="h-quote"
+              style={{
+                fontSize: 11.5, color: 'var(--text-light-secondary)', lineHeight: 1.5,
+                borderLeft: `2px solid ${arrowColor}`, paddingLeft: 8,
+              }}
+            >
+              "{assessment.reasonLine}"
+            </div>
+          )}
         </div>
       </div>
     </div>

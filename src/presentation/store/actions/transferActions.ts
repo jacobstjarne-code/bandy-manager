@@ -12,6 +12,20 @@ interface GetState { game: SaveGame | null }
 type Get = () => GetState
 type Set = (partial: Partial<{ game: SaveGame | null }>) => void
 
+/**
+ * PÅSTÅENDEKARTAN nivå 1 (2026-08-25): en roundNumber-sortering (placeOutgoingBid)
+ * fixad till matchday samma dag. Uppföljning samma dag (Jacobs order, efter
+ * BACKLOG-fyndet "createdRound/expiresRound/signedRound blandar minst två
+ * skalor"): samtliga TRE `currentRound`-beräkningar i denna fil
+ * (placeOutgoingBid/sellStar/seekSponsor) bytta från roundNumber till
+ * matchday — de matar `TransferBid.createdRound/expiresRound` och
+ * `Sponsor.signedRound`, som `transferProcessor.ts` jämför direkt mot
+ * `nextMatchday` (matchday-skala). Se BACKLOG.md för hela inventeringen
+ * (samma bugg fanns även i `LoanDeal.startRound/endRound`, fixad separat
+ * i academyActions.ts).
+ *
+ * @cites minSalary, player.currentAbility, club.reputation, player.dayJob
+ */
 export function transferActions(get: Get, set: Set) {
   return {
     startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst = false) => {
@@ -25,17 +39,40 @@ export function transferActions(get: Get, set: Set) {
       return { success: true }
     },
 
+    // L3 (mobil speltest-audit, 2026-08-26): favoritmärke för scoutrapporter
+    // — ren tvärvänd boolean, ingen annan state påverkas. Se Scouting.ts:s
+    // fältkommentar för motivet.
+    toggleScoutShortlist: (playerId: string) => {
+      const { game } = get()
+      if (!game) return
+      const report = game.scoutReports?.[playerId]
+      if (!report) return
+      set({
+        game: {
+          ...game,
+          scoutReports: {
+            ...game.scoutReports,
+            [playerId]: { ...report, shortlisted: !report.shortlisted },
+          },
+        },
+      })
+    },
+
     placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => {
       const { game } = get()
       if (!game) return { success: false, error: 'Inget spel laddat' }
+      // PÅSTÅENDEKARTAN nivå 1 (2026-08-25): roundNumber → matchday.
+      // CLAUDE.md: "Använd ALDRIG roundNumber ... All ordning via matchday."
       const scheduledFixtures = game.fixtures
         .filter(f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && f.status === 'scheduled')
-        .sort((a, b) => a.roundNumber - b.roundNumber)
+        .sort((a, b) => (a.matchday ?? 0) - (b.matchday ?? 0))
 
       if (scheduledFixtures.length === 0) {
         return { success: false, error: 'Inga fler matcher denna säsong — vänta till nästa säsong' }
       }
-      const currentRound = scheduledFixtures[0].roundNumber
+      // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday
+      // — samma skala som transferProcessor.ts jämför expiresRound/createdRound mot.
+      const currentRound = scheduledFixtures[0].matchday ?? 0
       const result = createOutgoingBid(game, playerId, offerAmount, offeredSalary, contractYears, currentRound)
       if (!result.success || !result.bid) return { success: false, error: result.error }
       set({ game: { ...game, transferBids: [...(game.transferBids ?? []), result.bid] } })
@@ -118,7 +155,8 @@ export function transferActions(get: Get, set: Set) {
       const marketVal = player.marketValue ?? 50000
       const offerAmount = Math.round(marketVal * 0.9 / 5000) * 5000
       const offeredSalary = Math.round(player.salary * 1.1 / 1000) * 1000
-      const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.roundNumber))
+      // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday.
+      const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.matchday ?? 0))
       const bid = {
         id: `bid_sell_${Date.now()}_${playerId}`,
         playerId,
@@ -225,7 +263,8 @@ export function transferActions(get: Get, set: Set) {
       const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
       const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
       if (activeSponsors.length >= maxSponsors) return { success: false, error: 'Alla sponsorplatser är fyllda' }
-      const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.roundNumber))
+      // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday.
+      const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.matchday ?? 0))
       const rand = Math.random.bind(Math)
       const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -SEEK_COST)
       const sponsor = generateSponsorOffer(club.reputation, activeSponsors.length, maxSponsors, currentRound, rand)

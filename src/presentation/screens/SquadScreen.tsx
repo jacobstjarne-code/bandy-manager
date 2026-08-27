@@ -220,7 +220,7 @@ function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversar
   const clubSeasons = player.seasonHistory?.filter(s => s.clubId === player.clubId).length ?? 0
   const showVeteranBand = clubSeasons >= 5 && !isCaptain
 
-  const lastStoryline = player.narrativeLog?.filter(e => e.type === 'storyline').slice(-1)[0]
+  const lastStoryline = player.diary?.filter(e => e.type === 'storyline').slice(-1)[0]
 
   return (
     <div
@@ -387,7 +387,7 @@ function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversar
         </div>
       )}
       {/* VÄNTAR PÅ Manager v1 + R1: Full lobby-kategorisering med motiv */}
-      {/* VÄNTAR PÅ narrativeLog-mappning: Klacken-favorit-chip */}
+      {/* VÄNTAR PÅ diary-mappning: Klacken-favorit-chip */}
     </div>
   )
 }

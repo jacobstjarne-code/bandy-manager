@@ -172,9 +172,12 @@ export function academyActions(get: Get, set: Set) {
         timing = 'good'
       }
 
+      // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday.
+      // promotionRound skrivs vidare till clubMemoryService.ts:s MemoryEvent.matchday
+      // och jämförs där direkt mot game.currentMatchday — måste vara samma skala.
       const currentRound = game.fixtures
         .filter(f => f.status === 'completed' && !f.isCup)
-        .reduce((max, f) => Math.max(max, f.roundNumber), 0) + 1
+        .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0) + 1
 
       let hash = 0
       for (let i = 0; i < youthPlayerId.length; i++) {
@@ -257,6 +260,11 @@ export function academyActions(get: Get, set: Set) {
           : c
       )
 
+      // PÅSTÅENDEKARTAN SANNINGEN-SAKNAS-text, låst av Jacob 2026-08-25: den
+      // gamla "late"-raden ("vänt på ett par uppkallningar") påstod diskreta
+      // avböjda tillfällen som aldrig funnits — roundsReadyForPromotion mäter
+      // hur LÄNGE spelaren varit redo, inte hur många gånger han avvisats.
+      const roundsReady = youthPlayer.roundsReadyForPromotion ?? 0
       const inboxItem = {
         id: `inbox_promotion_${youthPlayerId}_${game.currentSeason}`,
         date: game.currentDate,
@@ -266,7 +274,9 @@ export function academyActions(get: Get, set: Set) {
           ? `${youthPlayer.firstName} ${youthPlayer.lastName} (${youthPlayer.age} år) är klar för steget upp. Tajmingen är bra.`
           : timing === 'early'
           ? `${youthPlayer.firstName} ${youthPlayer.lastName} kallas upp lite tidigt. Han är fortfarande ung och kanske inte riktigt mogen.`
-          : `${youthPlayer.firstName} ${youthPlayer.lastName} har vänt på ett par uppkallningar — nu är det dags att ta steget.`,
+          : roundsReady >= 3
+            ? `${youthPlayer.firstName} har varit redo i ${roundsReady} omgångar.`
+            : `${youthPlayer.firstName} är redo.`,
         isRead: false,
       }
 
@@ -311,6 +321,10 @@ export function academyActions(get: Get, set: Set) {
       const alreadyMentored = (game.mentorships ?? []).some(m => m.isActive && m.youthPlayerId === youthPlayerId)
       if (alreadyMentored) return { success: false, error: 'Spelaren har redan en mentor' }
 
+      // roundNumber-skala, MEDVETET INTE bytt till matchday (2026-08-25, se
+      // BACKLOG.md): startRound är enbart display ("sedan omg X" i PlayerCard.tsx/
+      // AkademiTab.tsx), ingen läsare jämför den mot matchday. Att byta skala här
+      // skulle tyst ändra det visade omgångsnumret utan att fixa en bugg.
       const currentRound = game.fixtures
         .filter(f => f.status === 'completed' && !f.isCup)
         .reduce((max, f) => Math.max(max, f.roundNumber), 0)
@@ -348,9 +362,12 @@ export function academyActions(get: Get, set: Set) {
       if (player.age > 23) return { success: false, error: 'Lån är bara för spelare under 24 år' }
       if (player.isOnLoan) return { success: false, error: 'Spelaren är redan på lån' }
 
+      // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday
+      // — transferProcessor.ts jämför LoanDeal.startRound/endRound direkt mot
+      // nextMatchday (matchday-skala).
       const currentRound = game.fixtures
         .filter(f => f.status === 'completed' && !f.isCup)
-        .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+        .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0)
 
       const loanDeal: LoanDeal = {
         playerId,
