@@ -64,7 +64,19 @@ export interface MatchEvent {
 export interface ManagerChoiceEntry {
   type: 'halftime_tactic' | 'started_tired' | 'pep_talk' | 'captain' | 'bench_fit'
   playerId?: string
-  /** Structured, not player text — e.g. 'lowered_tempo' or 'condition_38' */
+  /**
+   * Structured, not player text — e.g. 'lowered_tempo' or 'condition_38'.
+   *
+   * H2-uppföljning (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24):
+   * `pep_talk` fanns som typ men konstruerades ALDRIG — Spak A:s pauseLean
+   * ('push'|'calm'|'hold', matchLiveText.ts) loggades tidigare ALDRIG som sig
+   * själv. `halftime_tactic` (detail: 'lowered_tempo'/'increased_pressure'/
+   * 'player_talk') härleddes istället ur de HELT ANDRA taktikreglagen
+   * (htTempo/htPress/htMentality) — en oberoende funktion från samma
+   * pausskärm, inte spelarens faktiska paussnack-val. `pep_talk`.detail bär
+   * nu pauseLean-värdet rakt av ('push'/'calm'/'hold') — primärt beslut-ID,
+   * inte en härledd approximation.
+   */
   detail: string
   minute?: number
   /** 4.8 (andra halvan): kopierat från TeamSelection.autoSelected — bara satt på started_tired. */

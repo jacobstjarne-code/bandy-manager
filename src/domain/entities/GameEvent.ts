@@ -241,6 +241,13 @@ export interface GameEvent {
   choices: EventChoice[]
   sender?: EventSender       // Named person + role
   relatedPlayerId?: string
+  // M3 (audit 5c9a7a8, 2026-08-24): för händelser som namnger FLERA specifika
+  // spelare i title/body (t.ex. juniorlandslagets "1-2 utvalda") men bara har
+  // EN relatedPlayerId-plats. Resolvern ska verka på EXAKT dessa spelare, inte
+  // återhärleda ett urval genom att filtrera hela truppen på nytt vid
+  // resolveringstillfället — den filtreringen kan ge ett annat, större urval
+  // än vad kortet faktiskt visade spelaren.
+  selectedPlayerIds?: string[]
   relatedClubId?: string
   relatedBidId?: string
   relatedFixtureId?: string
@@ -274,7 +281,7 @@ export interface GameEvent {
   /** High 4 (Skutskär-auditen, 2026-08-22): pressminnet. Satt av
    *  generatePressConference() när frågan är en storyline-override —
    *  `press_storyline_${story.id}`. Callern (roundProcessor.ts) loggar denna
-   *  som en narrativeLog-post NÄR EVENTET GENERERAS (frågan visas), inte vid
+   *  som en narrativeBeatLog-post NÄR EVENTET GENERERAS (frågan visas), inte vid
    *  resolution — repetitionen auditen fångade var i FRÅGAN, inte svaret.
    *  storylineBudgetOk() i pressConferenceService.ts läser samma logg och
    *  tillåter högst två poster per storyline-id och säsong (en huvudfråga,
@@ -299,7 +306,7 @@ export interface GameEvent {
    *  — samma bastuinbjudan (eller vilken social-typ som helst) fick tidigare rulla
    *  om obegränsat eftersom varje mecenat höll sitt EGET `lastSocialRound`-minne,
    *  utan koppling mecenater emellan eller mellan typer. Callern (roundProcessor.ts)
-   *  loggar denna som en narrativeLog-post när eventet genereras — samma
+   *  loggar denna som en narrativeBeatLog-post när eventet genereras — samma
    *  skrivmönster som storylinePressKey. mecenatSocialBudgetOk()/mecenatSocialUsedTypes()
    *  (mecenatService.ts) läser samma logg: max två sociala mecenatbeats per säsong
    *  totalt, aldrig samma typ två gånger. */

@@ -29,5 +29,8 @@ export interface ManagerProfile {
   contractUntilSeason: number
   monthlySalary: number      // tkr/month
   coachRivalries: CoachRivalry[]
-  narrativeLog?: ManagerNarrativeEntry[]
+  // PÅSTÅENDEKARTAN (2026-08-24): döpt om från `narrativeLog` — namnkollision
+  // med SaveGame.narrativeBeatLog (gating-logg, ingen text) och Player.diary.
+  // Se registerfyndet i SLUTTEST_KO.md post 58.
+  diary?: ManagerNarrativeEntry[]
 }

@@ -43,6 +43,11 @@ export enum IceQuality {
 }
 
 export enum ClubExpectation {
+  // H4 Heros (Jacobs dom 2026-08-25): Survive är en femte, LÄGRE tier än
+  // AvoidBottom — för klubbar där premissen "det går inte att lyckas, bara
+  // att hålla ut" är sann i kanon (bara Heros idag, se worldGenerator.ts).
+  // Sistaplats räknas inte som misslyckande under Survive.
+  Survive = 'survive',
   AvoidBottom = 'avoidBottom',
   MidTable = 'midTable',
   ChallengeTop = 'challengeTop',

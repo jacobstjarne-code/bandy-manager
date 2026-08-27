@@ -20,6 +20,23 @@ export interface YouthPlayer {
   seasonGoals: number
   seasonAssists: number
   readyForPromotion: boolean
+  /**
+   * PÅSTÅENDEKARTAN SANNINGEN-SAKNAS-fix (2026-08-25, Jacobs dom: "bygg
+   * räknaren"). Antal P19-omgångar i följd readyForPromotion varit sant utan
+   * att spelaren kallats upp — nollställs så fort readyForPromotion blir
+   * falskt igen (form/utveckling kan sjunka tillbaka) eller vid uppflyttning.
+   */
+  roundsReadyForPromotion: number
+  /**
+   * M3 (audit 5c9a7a8, 2026-08-24): satt av event_district_callup_-
+   * resolvern när spelaren skickas till juniorlandslaget — kortet lovar
+   * "Ej tillgänglig 2 omg" men ingen mekanik verkställde det. Absolut
+   * matchday (inte en nedräknare) eftersom P19-matcher bara spelas var
+   * annan omgång (youthProcessor.ts: nextMatchday % 2 === 0) — en spelare
+   * är borta från P19-laget så länge matchday <= detta värde
+   * (simulateYouthMatch, academyService.ts).
+   */
+  availabilityUntilRound?: number
 }
 
 export interface YouthMatchResult {

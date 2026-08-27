@@ -73,10 +73,37 @@ export interface SeasonSummary {
    *  nådde vinst-tröskeln) — samma rollover-säkra motivering som ovan. */
   decidingFixtureId?: string
   decidingRound?: number
+  /** PÅSTÅENDEKARTAN (2026-08-24): satt HÄR, vid genereringstillfället, av
+   *  samma skäl som eliminatedByClubId — game.playoffBracket.champion
+   *  nollställs vid rollover och är opålitligt för en gammal summary.
+   *  SeasonSummaryScreen.tsx:s smWinnerSentence läste tidigare det live-fältet
+   *  direkt (kunde tappa vem som blev mästare efter en säsongsväxling).
+   *  Klubb-id, inte namn — game.clubs nollställs aldrig, säkert att slå upp
+   *  mot när som helst. */
+  championClubId?: string
 
   boardExpectation: ClubExpectation
   metExpectation: boolean
   expectationVerdict: 'exceeded' | 'met' | 'failed'
+  /**
+   * M8 (audit 5c9a7a8, 2026-08-24): domens EGEN mening, lagrad separat från
+   * narrativeSummary-blobben (som bakar in den som sin FÖRSTA mening men
+   * aldrig kan uppdateras säkert i efterhand utan att gissa i resten av
+   * texten). Saknas på poster skapade före denna dom — saveGameMigration.ts
+   * backfyller den då genom att räkna om domen från redan lagrade fält
+   * (boardExpectation/finalPosition/playoffResult, alla stabila) och bygga
+   * om ENDAST denna mening (buildExpectationVerdictSentence,
+   * seasonSummaryService.ts) — aldrig resten av narrativeSummary.
+   */
+  verdictSentence?: string
+  /**
+   * M8: satt av migreringen ENDAST när omräkningen ovan gav en ANNAN dom än
+   * den som redan låg bakad i narrativeSummary — dvs den gamla texten
+   * bevisligen byggde på en tröskeltabell som senare rättades (A5,
+   * 2026-08-17). HistoryScreen.tsx visar då verdictSentence som rättelse
+   * bredvid den arkiverade originaltexten, istf att tyst skriva över den.
+   */
+  legacyVerdictWasCorrected?: boolean
 
   topScorer: { playerId: string; name: string; goals: number; assists: number } | null
   topAssister: { playerId: string; name: string; assists: number } | null
@@ -129,7 +156,13 @@ export interface SeasonSummary {
 
   keyMoments?: Array<{
     round: number
-    type: 'bigWin' | 'bigLoss' | 'hatTrick' | 'derbyWin' | 'derbyLoss' | 'comeback' | 'lateWinner'
+    // 'storyline' (påståendesvepet #5, MASTER.md, 2026-08-24): resolvade
+    // arc-berättelser (t.ex. contract_drama_resolved, en BITTER avresa)
+    // hårdkodades tidigare till 'bigWin' — SeasonSummaryScreen.tsx:s
+    // ikonval läser type, inte bara displayText, så en avskedstext kunde
+    // visas med en ✅-ikon. 'storyline' ger en neutral ikon (📖) istf en
+    // matchresultat-ikon som kan motsäga texten bredvid den.
+    type: 'bigWin' | 'bigLoss' | 'hatTrick' | 'derbyWin' | 'derbyLoss' | 'comeback' | 'lateWinner' | 'storyline'
     headline: string
     body: string
     fixtureId?: string

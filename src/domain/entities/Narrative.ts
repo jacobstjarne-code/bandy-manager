@@ -179,9 +179,13 @@ export type ArcType =
   | 'joker_redemption'        // Joker som kostar/räddar — oförutsägbar
   | 'veteran_farewell'        // Veteran med utgående kontrakt, sista säsongen?
   | 'veteran_final_season'    // Veteran 34+ vars kontrakt löper ut detta år — hela säsongen-arc
-  | 'ledare_crisis'           // Kapten/ledare under krisperiod
+  // 'ledare_crisis' BORTTAGEN (H1-uppföljning, 2026-08-24, Jacobs dom) —
+  // dubblerade postAdvanceEvents.ts:s captainSpeech (samma trigger, "3
+  // förluster i rad"), som är kanon. Se saveGameMigration.ts för migrering
+  // av saves med en ledare_crisis-arc mid-flight, och BACKLOG.md "Två
+  // läsare, en sanning" för full historik. Återanvänd inte strängen.
   | 'lokal_hero'              // Lokalhjälte som gör något stort
-  | 'contract_drama'          // Bygger på transfer-spekulationsinkorg
+  | 'contract_drama'          // Spelare med utgående kontrakt som fått ett bud
   | 'derby_echo'              // POST-derby efterdyningar (2 omgångar)
 
 export interface ActiveArc extends BaseArc {

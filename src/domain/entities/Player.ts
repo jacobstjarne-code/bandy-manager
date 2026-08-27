@@ -128,14 +128,29 @@ export interface Player {
   shirtNumber?: number
   availability?: PlayerAvailability
   lowMoraleDays?: number  // consecutive matchdays with morale < 30
-  seasonHistory?: Array<{ season: number; goals: number; assists: number; games: number; rating: number; clubId: string }>
+  // E-GRIND0-1 rotorsak (2026-08-24): goals/assists/games är LIGA-ENDAST
+  // (statsProcessor.ts:s seasonStats, aldrig seasonCupStats) — oförändrad
+  // etablerad semantik, flera läsare (seasonGoalService.ts:s breakthrough/
+  // establishedStarter, saveGameMigration.ts:s careerStats-återuppbyggnad)
+  // förutsätter det. cupGames/cupGoals/cupAssists tillagda separat, inte
+  // adderade in i de befintliga fälten, av samma skäl — de nya fälten är
+  // den enda källa som fångar seasonCupStats:s värde VID RÄTT TIDPUNKT
+  // (innan säsongsslutets nollställning), vilket löser grind0Truth.test.ts:s
+  // K1-kontroll mot en tidigare mekanism (preRolloverSeason) som kunde bli
+  // stale av en tyst extra-runda (roundProcessor.ts:1928:s "auto-advance
+  // playoff rounds when managed club is eliminated"-rekursion — se
+  // SLUTTEST_KO.md för full spårning).
+  seasonHistory?: Array<{ season: number; goals: number; assists: number; games: number; rating: number; clubId: string; cupGames?: number; cupGoals?: number; cupAssists?: number }>
 
   // Sprint 9 — DREAM-012: injury narrative
   familyContext?: string    // generated once, persists across injuries
   injuryNarrative?: string  // current injury story text
 
   // V1.4 — Player narrative diary (auto-generated)
-  narrativeLog?: Array<{
+  // PÅSTÅENDEKARTAN (2026-08-24): döpt om från `narrativeLog` — namnkollision
+  // med SaveGame.narrativeBeatLog (gating-logg, ingen text) och
+  // ManagerProfile.diary. Se registerfyndet i SLUTTEST_KO.md post 58.
+  diary?: Array<{
     season: number
     matchday: number
     text: string

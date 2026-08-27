@@ -16,4 +16,11 @@ export interface Sponsor {
   expiresSeason?: number
   isOneTime?: boolean
   paidOutSeason?: number
+  // H4-uppföljning (2026-08-26): engångsbeloppet, satt vid skapandetillfället
+  // (contextualSponsorService.ts:checkContextualSponsors) — kommunstödet
+  // skalar nu kontinuerligt med communityStanding istf ett fast belopp,
+  // så utbetalningen (applyOneTimeKommunstod) måste läsa DETTA värde, inte
+  // en global konstant, annars visar meddelandet ett skalat tal men
+  // betalar ut det gamla fasta beloppet.
+  oneTimeAmount?: number
 }

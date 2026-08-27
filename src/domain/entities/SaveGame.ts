@@ -1,4 +1,4 @@
-import type { PendingScreen } from '../enums'
+import type { PendingScreen, ClubExpectation } from '../enums'
 import type { MatchdaySlot } from '../services/scheduleGenerator'
 import type { NotableEventType } from '../data/klackEchoText'
 import type { PortalPhase } from '../data/seasonPhases'
@@ -101,6 +101,36 @@ export interface SeasonTransitionEvent {
   age?: number
 }
 
+/**
+ * Förutsättningsfasen, steg 1 (Jacobs dom 2026-08-25, DOM_FORUTSATTNINGSFASEN_
+ * 2026-08-24.md + docs/incoming/Forutsattningsfasen-styrelsen-talar-2026-08-25.dc.html,
+ * variant 1b). "Styrelsen talar" i Sommaren — kvittensrad + kravband (ribba,
+ * riktning, skälsrad). Skrivs EN gång per säsongsslut i seasonEndProcessor.ts,
+ * samma loop-varv som redan beräknar boardExpectation-stegningen för hanterad
+ * klubb (generatePreSeasonMessage). Läses rent av SeasonTransitionScene.tsx,
+ * ingen egen beräkning där — samma mönster som pendingSeasonTransitionEvents.
+ *
+ * STEG 1 (byggt): kvittensrad + kravband, grundat ENDAST i egen placering
+ * (föregående resultat). STEG 2 (blockerad, väntar på aiTransferLog +
+ * standingsSnapshot-trend): mellandelen ("vad de vet om läget", ligarörelser)
+ * — renderas inte förrän den finns, "hellre två sanna delar än tre där en
+ * hittar på" (Jacobs ord).
+ */
+export interface BoardAssessment {
+  season: number
+  previousExpectation: ClubExpectation
+  newExpectation: ClubExpectation
+  direction: 'raised' | 'lowered' | 'unchanged'
+  /** Bara satt när direction !== 'unchanged' — "en ny ribba kan inte renderas utan sin rad." */
+  reasonLine?: string
+  /**
+   * Del 1, "vad de såg" — en kort kvittens av föregående säsong, INTE en
+   * upprepning av årsboken (DOM:s ord: "styrelsens läsning av den"). Väntar
+   * på Opus — se boardService.ts:s '[Opus]'-platshållare.
+   */
+  seasonAcknowledgment: string
+}
+
 export interface SaveGame {
   id: string
   managerName: string
@@ -165,6 +195,27 @@ export interface SaveGame {
   tutorialSeen?: boolean          // deprecated — migration: if true, skip coachMarksSeen
   coachMarksSeen?: boolean         // deprecated — pensioneras med CoachMarks, ersatt av Tillträdet
   onboardingComplete?: boolean     // Tillträdet-flödet slutfört (sätts vid F4)
+  /**
+   * M1 (audit 5c9a7a8, 2026-08-24): vilken av de TVÅ onboarding-skärmarna
+   * ("Ankomsten" /intro, "Tillträdet" /tilltrade) spelaren faktiskt är på.
+   * Utan detta kunde routern bara skicka en avbruten spelare till
+   * /tilltrade — aldrig till /intro — så ett avbrott mitt i Ankomsten
+   * (t.ex. byte till annan save och tillbaka) hoppade över hela scenen
+   * istf att återuppta den. Satt till 'arrival' vid createNewGame(), skrivs
+   * till 'tilltrade' när ArrivalScene slutförs (setOnboardingScreen-
+   * action). Gamla saves saknar fältet — migrationen backfyller 'tilltrade'
+   * (bevarar tidigare beteende, INTE 'arrival', för att inte kasta en
+   * redan-förbi-Ankomsten-spelare bakåt).
+   */
+  onboardingScreen?: 'arrival' | 'tilltrade'
+  /**
+   * M1: Tillträdets interna steg (F1 Ankomst/trupp, F2 Startelva, F3 Hörnan,
+   * F4 Klart) — samma bugg som ovan men EN nivå djupare: TilltradeScreen.tsx
+   * höll detta i lokal useState, så ett avbrott (byte till annan save och
+   * tillbaka) dumpade spelaren på steg 1 igen, oavsett var de faktiskt var.
+   * undefined = steg 1 (inte påbörjat/precis startat).
+   */
+  tilltradeStep?: 1 | 2 | 3 | 4
   dismissedHints?: string[]
   lastCompletedFixtureId?: string   // id of most recently completed managed-club fixture
   // O15 (2026-08-18/19, DOM 1b): Taktikens två lägen. tacticAdvancedMode persisteras
@@ -249,6 +300,13 @@ export interface SaveGame {
   loanDeals: LoanDeal[]
   version: string
   lastSavedAt: string   // ISO datetime
+  // M2 (audit 5c9a7a8, 2026-08-24): monotont löpnummer för optimistisk
+  // concurrency-kontroll mellan flikar. saveSaveGame() ökar den med 1 vid
+  // varje lyckad skrivning. Om en skrivning ser en HÖGRE revision redan på
+  // disk än den flik-lokala tabellen (senast lästa/skrivna för denna save-id)
+  // känner till, har en annan flik hunnit skriva emellan — skrivningen
+  // avvisas som konflikt istället för att tyst skriva över den nyare kopian.
+  revision?: number
 
   communityActivities?: CommunityActivities
   volunteers?: string[]
@@ -267,6 +325,15 @@ export interface SaveGame {
   lastCSPressMatchday?: number  // for C-B1 cooldown tracking
   budgetPriority?: 'squad' | 'balanced' | 'youth'
   resolvedEventIds?: string[]  // event IDs that have been resolved — prevents re-triggering
+  /** PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
+   *  — saknades helt. DecisionCard.tsx:s "Du valde: X" fanns tidigare bara i
+   *  GranskaScreen.tsx:s flyktiga useState (chosenLabels/resolvedEventIds),
+   *  nollställd vid remount. Skrivs i eventResolver.ts:s resolveEvent(), på
+   *  alla fem exit-punkter (samma cap-mönster som resolvedEventIds, senaste
+   *  200). label är ett snapshot av choice.label vid resolutionstillfället —
+   *  om poolen någonsin randomiseras ska kvittot visa vad spelaren FAKTISKT
+   *  såg, inte en omslagen nutida text. */
+  resolvedChoices?: Array<{ eventId: string; choiceId: string; label: string }>
 
   // V1.0 — Named journalist with memory
   journalist?: Journalist
@@ -309,7 +376,13 @@ export interface SaveGame {
 
   // U5 (SLUTTEST_KO.md, 2026-08-17) — narrativLoggen, se Narrative.ts:s
   // NarrativeLogEntry-kommentar och narrativeLogService.ts.
-  narrativeLog?: NarrativeLogEntry[]
+  // PÅSTÅENDEKARTAN (2026-08-24): döpt om från `narrativeLog` — samma namn
+  // fanns tidigare på tre olika register (SaveGame/Player/ManagerProfile),
+  // en namnkollision, inte en strukturell duplicering (se registerfyndet i
+  // SLUTTEST_KO.md post 58). Detta är gating-loggen (semanticKey/säsong/
+  // omgång, ingen text) — Player/ManagerProfile:s textdagböcker heter nu
+  // `diary`.
+  narrativeBeatLog?: NarrativeLogEntry[]
 
   // O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md, Jacobs dom 2026-08-24):
   // kandidater till "säsongens viktigaste beslut" — en post per resolved
@@ -335,6 +408,25 @@ export interface SaveGame {
     result: 'met' | 'failed'
     ownerReaction: string
     label?: string   // måletikett för BoardMeeting-eval (tillagd 2026-06-01)
+  }>
+
+  /**
+   * AI-klubbars transferlogg (Jacobs order 2026-08-25: "billigt och sant" —
+   * processAITransfers (aiTransferService.ts) beräknade redan denna data per
+   * transfer och kastade den. Skrivs i seasonEndProcessor.ts direkt efter
+   * anropet, capped senaste 200 (samma mönster som resolvedEventIds).
+   * Underlag för Förutsättningsfasen steg 2 (ligarörelser i Sommaren) —
+   * ingen UI-konsument byggd än, väntar på den egna ordern.
+   */
+  aiTransferLog?: Array<{
+    season: number
+    playerId: string
+    playerName: string
+    fromClubId: string
+    fromClubName: string
+    toClubId: string
+    toClubName: string
+    fee: number
   }>
 
   // V1.0 — Trainer narrative arc
@@ -502,8 +594,14 @@ export interface SaveGame {
   pendingPointDeductions?: Record<string, number>
 
   // Sprint 25h — Lager 3: Licensnämnden
+  // 2026-08-26 (Jacobs dom, RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md):
+  // consecutiveLossSeasons (binär räknare, minneslös — en positiv säsong
+  // nollställde ALLT) ersatt av licenseRiskScore, en ackumulator (0-100,
+  // samma princip som meritBuffer). licenseStatus lever kvar som den ZON
+  // (clear/first_warning/point_deduction/license_denied) poängen ligger i —
+  // härledd, inte en egen tillståndsmaskin längre.
   licenseStatus?: import('../services/licenseService').LicenseStatus
-  consecutiveLossSeasons?: number      // consecutive seasons with net deficit
+  licenseRiskScore?: number
 
   // Säsongssignatur (SPEC_SAESONGSSIGNATUR_KAPITEL_C)
   currentSeasonSignature?: SeasonSignature
@@ -607,6 +705,8 @@ export interface SaveGame {
 
   // 5.1 Sommaren — se SeasonTransitionEvent-kommentaren ovan för skrivvägarna.
   pendingSeasonTransitionEvents?: SeasonTransitionEvent[]
+  /** Förutsättningsfasen, steg 1 — se BoardAssessment-kommentaren ovan. */
+  boardAssessment?: BoardAssessment
   /**
    * Återinträdesguard för Sommaren (Jacobs DOM, 2026-08-18): "skärmen är
    * nåbar bara när säsongens mål ännu inte är valt (O3)." O3 (DOM_EGET_
