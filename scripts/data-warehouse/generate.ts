@@ -714,10 +714,12 @@ function main() {
     // Determine outcome
     const outcome = f.homeScore > f.awayScore ? 'home_win' : f.homeScore < f.awayScore ? 'away_win' : 'draw'
 
-    // Count expulsions (RedCard events — utvisning i bandy)
+    // Count expulsions (Suspension events — utvisning i bandy). M9 (5c9a7a8,
+    // 2026-08-24): var MatchEventType.RedCard, ett borttaget enum-medlem —
+    // se stats.ts:s kommentar för full rotorsak.
     let homeExp = 0, awayExp = 0
     for (const ev of allEvents) {
-      if (ev.type === MatchEventType.RedCard) {
+      if (ev.type === MatchEventType.Suspension) {
         if (ev.clubId === homeId) homeExp++
         else if (ev.clubId === awayId) awayExp++
       }
@@ -811,7 +813,7 @@ function main() {
         if (isHome) periods[period].homeCorners++
         else periods[period].awayCorners++
       }
-      if (ev.type === MatchEventType.RedCard) {
+      if (ev.type === MatchEventType.Suspension) {
         if (isHome) periods[period].homeExp++
         else periods[period].awayExp++
       }

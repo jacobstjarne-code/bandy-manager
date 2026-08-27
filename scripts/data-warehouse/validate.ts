@@ -479,7 +479,7 @@ ${rows}
 ## Noteringar
 
 - Period-shots och period-possession lagras inte (NULL) — deriveras inte från events.
-- Expulsions är mappade från MatchEventType.RedCard (bandy-terminologi: utvisning, inte rött kort).
+- Expulsions är mappade från MatchEventType.Suspension (bandy-terminologi: utvisning, inte rött kort).
 - Reproducibilitetskontrollen förutsätter identisk squad-generering med samma seed. Väderparametrar (windStrength, snowfall) rekonstrueras approximativt och kan skilja marginellt.
 - Control och limits-buckets kör med homeAdvantage=0 (neutral plan) för att isolera taktikeffekter.
 `

@@ -188,7 +188,7 @@ async function main(): Promise<void> {
       if (!byKey.has(key)) byKey.set(key, [])
       byKey.get(key)!.push(t)
     }
-    for (const [key, group] of byKey) {
+    for (const [, group] of byKey) {
       const first = group[0]
       console.log(`\n  ${first.eventType} → ${first.choiceId} (${first.effectType})${first.live ? ' [LIVE — blockerade riktig spelframdrift]' : ' [probe]'}`)
       console.log(`    "${first.message}"`)

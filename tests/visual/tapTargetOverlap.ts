@@ -16,6 +16,16 @@ import type { Page } from '@playwright/test'
  * renders i scenen, och (b) andra interaktiva element i botten-bandet av
  * viewporten (sticky CTA:er som riskerar överlappa varandra).
  *
+ * VARFÖR getBoundingClientRect OCH INTE elementFromPoint (andra gången
+ * samma slutsats, se dess egen kommentar): document.elementFromPoint gav
+ * INKONSEKVENTA svar två separata gånger i det här skalet — SÄTT LAGET-
+ * fyndet (kommentaren i tapTargetGate.visual.ts, rad 13-23) och H1:s
+ * Bygget-regression (människoupplevelse-audit 7024f8a, 2026-08-24):
+ * elementFromPoint pekade på CTA:n själv (avveckling) respektive returnerade
+ * null (finansiering) trots att getBoundingClientRect båda gångerna mätte
+ * en verklig, reproducerbar kollision. getBoundingClientRect är INSTRUMENTET
+ * i det här skalet — pröva inte elementFromPoint en tredje gång.
+ *
  * KÄND BEGRÄNSNING (rapporterad, inte dold): /dev/scenes-skalet (Dev-
  * ScenesScreen.tsx) renderar INTE BottomNav för något av sina 76 befintliga
  * scener — bara den nya navgate-laddning-band-scenen gör det (se dess

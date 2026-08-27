@@ -20,7 +20,7 @@
 import { createNewGame } from '../src/application/useCases/createNewGame'
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { autoSelectLineup, autoResolvePendingScreen, autoBuildCheapestAffordableFacility } from './stress/fixtures'
-import { getFacilityNodeViews, FACILITY_NODE_DEFS } from '../src/domain/services/facilityService'
+import { FACILITY_NODE_DEFS } from '../src/domain/services/facilityService'
 import { evaluateFinanceStatus } from '../src/domain/services/economyService'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 

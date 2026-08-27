@@ -43,7 +43,7 @@ export function printSeedProgress(result: SeedResult, totalSeeds: number): void 
 /**
  * Prints one line per advance step (verbose mode only).
  */
-export function printAdvanceStep(seedIdx: number, season: number, roundPlayed: number | null): void {
+export function printAdvanceStep(_seedIdx: number, season: number, roundPlayed: number | null): void {
   const rnd = roundPlayed != null ? `round ${roundPlayed}` : 'season-end'
   process.stdout.write(`  [s${season}] ${rnd}\r`)
 }

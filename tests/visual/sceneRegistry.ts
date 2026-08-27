@@ -92,4 +92,17 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   // halftime-summary/lineup-filled ovan, bara aldrig byggd förrän nu (se
   // DevScenesScreen.tsx för hur location.state fejkas via <MemoryRouter>).
   ['match-live'],
+  // Människoupplevelse-auditen (7024f8a, 2026-08-24), H1: Bygget hade NOLL
+  // dev-scene-täckning — inte importerad i DevScenesScreen.tsx alls, samma
+  // lucka-klass som "Skydd eller illusion?" (SLUTTEST_KO.md rad 112-117).
+  // Bara trädet (stängt) registreras här för allmän occlusion/raw-token/
+  // screenshot-svep. 'bygget-avveckling' (H1:s nav-kollisionsfynd) är EN
+  // egen scen i DevScenesScreen.tsx men INTE i denna lista — den kräver två
+  // riktiga klick (Bygg ut → nod) för att nå sheeten, vilket clickText-fältet
+  // (ETT klick) inte kan uttrycka. Den scenen sveps istället av en egen
+  // regressionstest, se tapTargetGate.visual.ts.
+  ['bygget'],
+  // Jacobs order (2026-08-24): avskedsvägen lyft ur ratchet-skulden. Ingen
+  // BottomNav-produktionsrutt (GameGuard-blocket) — allmän svep räcker.
+  ['game-over'], ['game-over-historik'],
 ]

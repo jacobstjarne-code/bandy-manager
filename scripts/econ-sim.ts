@@ -13,7 +13,6 @@
  */
 
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
-import { FixtureStatus } from '../src/domain/enums'
 import { createHeadlessGame, autoSelectLineup, autoResolvePendingScreen } from './stress/fixtures'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 
@@ -93,9 +92,6 @@ async function main(): Promise<void> {
       const seasonStartFinances = prevFinances
       const pulseAtStart = game.communityStanding ?? 50
 
-      let previouslyCompletedIds = new Set<string>(
-        game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)
-      )
 
       while (!seasonDone) {
         game = autoSelectLineup(game)

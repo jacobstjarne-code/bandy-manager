@@ -47,17 +47,32 @@ describe('selectThreeOffers', () => {
   })
 })
 
-describe('computeDifficultyScore — U1 (SLUTTEST_KO.md, 2026-08-17) / D029', () => {
-  // Skutskär (rep 52, AvoidBottom, finances 210000/wageBudget 50000 = 4.2x
-  // marginal) var det konkreta buggexemplet: gammal modell (reputation-only,
-  // <55=hard) gav "hard" trots att styrelsekravet var det lägsta som finns
-  // och ekonomin var sund. En testare tankade en hel säsong och styrelsen
-  // blev ändå NÖJDARE.
-  it('Skutskär-liknande klubb (lågt rykte, lågt krav, sund ekonomi) landar INTE i hard-tröskeln', () => {
+describe('computeDifficultyScore — D029 rev. 2026-08-25 (H4-mätning 5)', () => {
+  // Rögle (rep 50, AvoidBottom, finances 200000/wageBudget 48000 = 4,17x
+  // marginal) är det konkreta buggexemplet denna revision: etiketterades
+  // "medium" trots UPPMÄTT 100% avskedsfrekvens (RAPPORT_SURVIVE_VERIFIERAD_
+  // OCH_ROGLE_TIERFRAGAN_2026-08-25.md) — en osanning i klubbvalet, samma
+  // klass av fel som 2026-08-17-fyndet, fast åt andra hållet (då var
+  // problemet en klubb FELAKTIGT märkt hard, nu en FELAKTIGT märkt medium).
+  it('Rögle landar i hard-tröskeln (2026-08-17-fixets slutsats är omvänd av senare data)', () => {
+    const score = computeDifficultyScore({
+      reputation: 50, finances: 200_000, wageBudget: 48_000, boardExpectation: ClubExpectation.AvoidBottom,
+    })
+    expect(score).toBeLessThan(50)  // medium-tröskeln, se getDifficulty — nu UNDER
+  })
+
+  it('Skutskär (rep 52, marginal 4,2x) landar också i hard — delar Rögles finansiella skörhet', () => {
     const score = computeDifficultyScore({
       reputation: 52, finances: 210_000, wageBudget: 50_000, boardExpectation: ClubExpectation.AvoidBottom,
     })
-    expect(score).toBeGreaterThanOrEqual(50)  // medium-tröskeln, se getDifficulty
+    expect(score).toBeLessThan(50)
+  })
+
+  it('D029:s ursprungliga princip lever kvar: lågt rykte + lågt krav + GENUINT sund marginal (>=6x) landar inte i hard', () => {
+    const score = computeDifficultyScore({
+      reputation: 52, finances: 325_000, wageBudget: 50_000, boardExpectation: ClubExpectation.AvoidBottom,
+    })
+    expect(score).toBeGreaterThanOrEqual(50)
   })
 
   it('en klubb vars styrelsekrav ÖVERSTIGER vad ryktet motiverar får lägre score', () => {
@@ -70,17 +85,21 @@ describe('computeDifficultyScore — U1 (SLUTTEST_KO.md, 2026-08-17) / D029', ()
     expect(overreaching).toBeLessThan(matched)
   })
 
-  it('tunn kassamarginal (< 4x lönebudget) sänker score, rejäl marginal (>= 6x) höjer den', () => {
+  it('skör marginal (< 4,5x) sänker score mer än svagt tunn (4,5–5,5x), rejäl marginal (>= 6x) höjer den', () => {
     const thin = computeDifficultyScore({
       reputation: 60, finances: 150_000, wageBudget: 50_000, boardExpectation: ClubExpectation.MidTable,
     })
-    const neutral = computeDifficultyScore({
+    const mild = computeDifficultyScore({
       reputation: 60, finances: 250_000, wageBudget: 50_000, boardExpectation: ClubExpectation.MidTable,
+    })
+    const neutral = computeDifficultyScore({
+      reputation: 60, finances: 280_000, wageBudget: 50_000, boardExpectation: ClubExpectation.MidTable,
     })
     const healthy = computeDifficultyScore({
       reputation: 60, finances: 350_000, wageBudget: 50_000, boardExpectation: ClubExpectation.MidTable,
     })
-    expect(thin).toBeLessThan(neutral)
+    expect(thin).toBeLessThan(mild)
+    expect(mild).toBeLessThan(neutral)
     expect(healthy).toBeGreaterThan(neutral)
   })
 })

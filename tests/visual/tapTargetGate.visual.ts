@@ -96,6 +96,10 @@ const NAV_BEARING_SCENES = [
   'momentumbar', 'tacticmodal', 'submodal', 'spakb',
   // Event-overlays — dashboard-monterade, se motivering ovan
   'event-overlay', 'press-conference',
+  // Bygget (H1, människoupplevelse-audit 7024f8a, 2026-08-24) — trädet, stängt.
+  // Sheeten (H1:s faktiska fynd) kräver två riktiga klick för att öppnas —
+  // täcks av en egen regressionstest nedan, inte av denna generiska sweep.
+  'bygget',
 ]
 
 test.describe('tap-target-overlap — bottennav-kollision, nav-bärande scener (navGate)', () => {
@@ -131,5 +135,86 @@ test.describe('tap-target-regression — MatchLaddningBand (SÄTT LAGET)', () =>
       await page.waitForTimeout(400)
       await expect(page.locator('button', { hasText: 'SÄTT LAGET' })).toHaveCount(0)
     })
+  }
+})
+
+// Människoupplevelse-auditen (7024f8a, 2026-08-24), H1: mobilnavet täckte
+// Bygget-sheetens huvudknapp ("Avveckla Värmestuga" 6px fri yta över navet;
+// samma överlapp gjorde tidigare finansieringsvalet "Annika 72 tkr"
+// otryckbart). Rotorsaken generaliserar: Bygget hade ingen dev-scene alls,
+// så ingen grind kunde svepa den — samma lucka-klass som SÄTT LAGET-fyndet
+// ovan, bara aldrig stängd förrän nu. FacilityScreens sheet kräver TVÅ
+// riktiga klick att nå (Bygg ut → nod, se NodeCard.tsx:s `mode==='valj'`-
+// gate) — SCENES clickText-fältet (ETT klick) räcker inte, därför en egen
+// describe här, samma mönster som MatchLaddningBand ovan.
+//
+// Jacobs order (innan CSS rörs): sheeten ligger på --z-modal (300), navet på
+// 99/100 — staplingsordningen är redan korrekt på papperet, så "höj
+// z-index" vore fel fix på fel diagnos. Två mätningar körs, medvetet olika
+// metod: findTapTargetViolations (getBoundingClientRect, samma metod som
+// bevisligen fångade SÄTT LAGET-regressionen, se filens kommentar rad 13-23)
+// är den AUKTORITATIVA gaten. document.elementFromPoint är en RAPPORTERANDE
+// diagnos, inte ett gate-villkor — samma fils egen historik (rad 13-23)
+// dokumenterar att elementFromPoint gav inkonsekventa svar mellan
+// dev-scenes-skalet och den riktiga ruttade appen förra gången det prövades,
+// så ett elementFromPoint-facit här tas som en observation att rapportera,
+// inte som sanning i sig.
+test.describe('tap-target-regression — Bygget (H1: avveckling + finansiering)', () => {
+  const cases = [
+    { label: 'avveckling — Värmestuga', nodeText: 'Värmestuga', ctaText: 'Avveckla Värmestuga' },
+    { label: 'finansiering — Kiosk (mecenat Annika)', nodeText: 'Kiosk & servering', ctaText: 'Annika' },
+  ]
+
+  for (const { label, nodeText, ctaText } of cases) {
+    for (const width of [320, 390, 430]) {
+      test(`${label} @ ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 844 })
+        await page.goto('/dev/scenes?scene=bygget-avveckling', { waitUntil: 'networkidle' })
+        await page.getByText('DEV GALLERY').waitFor({ timeout: 15000 })
+        await page.evaluate(() => document.fonts.ready)
+        // DEV-SCENSKALET (CLAUDE.md): [data-dev-nav] är position:sticky och
+        // wrappar över många rader (60+ scenknappar) — vid 390px kan den bli
+        // hundratals pixlar hög och skymma FacilityScreens EGEN header (där
+        // "Bygg ut" sitter) precis vid scroll-y 0. Samma "skalet stör fotot"-
+        // klass som html.capture-mode redan finns till för (se style-taggen
+        // i DevScenesScreen.tsx), fast för ett klick här snarare än ett foto.
+        await page.evaluate(() => document.documentElement.classList.add('capture-mode'))
+        await page.waitForTimeout(500)
+
+        // Steg 1/2: Bygg ut → nod. Två riktiga klick, inte locator-genvägar
+        // som kringgår NodeCard.tsx:s mode==='valj'-gate.
+        await page.locator('button', { hasText: 'Bygg ut' }).first().click()
+        await page.waitForTimeout(200)
+        await page.getByText(nodeText, { exact: true }).first().click()
+        await page.waitForTimeout(300)
+
+        const cta = page.locator('button', { hasText: ctaText }).first()
+        await expect(cta, `CTA "${ctaText}" (${label}) hittades inte efter Bygg ut → ${nodeText}`).toBeVisible()
+
+        // RAPPORTERANDE diagnos (inte gate): vilket element svarar
+        // elementFromPoint med vid CTA:ns mittpunkt och nedersta kvartal —
+        // samma två punkter som auditens egen regressionssvit föreslår
+        // ("Testa både mittknapp och nedersta 25 procent av varje CTA").
+        const box = await cta.boundingBox()
+        if (!box) throw new Error(`CTA "${ctaText}" saknar bounding box`)
+        const samplePoints: [string, number, number][] = [
+          ['mitt', box.x + box.width / 2, box.y + box.height / 2],
+          ['nedersta 25%', box.x + box.width / 2, box.y + box.height * 0.9],
+        ]
+        for (const [where, x, y] of samplePoints) {
+          const hit = await page.evaluate(([px, py]) => {
+            const el = document.elementFromPoint(px, py)
+            if (!el) return null
+            return { tag: el.tagName, cls: (el as HTMLElement).className || '', text: (el.textContent || '').trim().slice(0, 40) }
+          }, [x, y] as [number, number])
+          console.log(`[bygget-h1][elementFromPoint][${label}@${width}px][${where}] → ${hit ? `<${hit.tag.toLowerCase()} class="${hit.cls}">"${hit.text}"` : 'null'}`)
+        }
+
+        // AUKTORITATIV gate: getBoundingClientRect-baserad clearance mot en
+        // riktig BottomNav (bygget-avveckling monterar den, se DevScenesScreen.tsx).
+        const violations = await findTapTargetViolations(page)
+        expect(violations.map(v => v.message), `bottennav-kollision, Bygget ${label} @ ${width}px`).toEqual([])
+      })
+    }
   }
 })

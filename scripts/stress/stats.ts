@@ -4,7 +4,7 @@
 
 import type { Fixture } from '../../src/domain/entities/Fixture'
 import type { SaveGame } from '../../src/domain/entities/SaveGame'
-import { MatchEventType, FixtureStatus } from '../../src/domain/enums'
+import { MatchEventType } from '../../src/domain/enums'
 import type { TextMetricsSummary } from './textMetrics'
 
 export interface MatchStat {
@@ -97,8 +97,14 @@ export function extractMatchStat(fix: Fixture, game: SaveGame, seed: number, sea
         if (isHome) htHome++
         else htAway++
       }
-    } else if (ev.type === MatchEventType.RedCard) {
-      // Bandy uses 10-min suspensions (MatchEventType.RedCard in matchCore.ts)
+    } else if (ev.type === MatchEventType.Suspension) {
+      // M9 (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24):
+      // MatchEventType.RedCard existerar inte längre som enum-medlem —
+      // döpt om till Suspension (string-värdet 'redCard' bevarat för
+      // save-kompatibilitet, se enums/index.ts). Denna jämförelsen
+      // matchade tidigare aldrig ett enda event (undefined === ev.type),
+      // så harnesset rapporterade tyst noll utvisningar/match — scripts/
+      // ingick inte i någon tsconfig, tsc såg aldrig felet.
       suspensions.push({ minute: ev.minute, team })
     } else if (ev.type === MatchEventType.Corner) {
       if (isHome) cornersHome++
