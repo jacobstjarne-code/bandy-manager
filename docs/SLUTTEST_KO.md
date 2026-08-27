@@ -22,19 +22,19 @@
 
 | ID | Post | Status |
 |---|---|---|
-| A-B1 | Byggfel: oänvend `safeStandingPosition`-import (`opponentAnalysisService.ts:6`), från vår egen LÄST-FÖRE-INITIERING-fix. **Plus:** rapportera varför tsc-grinden inte fångade det — körs produktionsbygget i CI alls? | `EJ` |
-| A-C1 | Full match blockerad vid halvtid i mobilbredd. Dock på 400/500 fångar input ovanför modalen på 300. Stäng alla docks + `pointer-events: none` när `showHalftime`. Ta bort död PAUSSNACK-stamp. **390×844-test till minut 46** | `EJ` |
-| A-H7 | Delningsknappen fastnar i "Genererar bild…", återgår aldrig. `try/finally`, timeout, cancelled/failed-state, explicit "Ladda ner PNG"-fallback | `EJ` |
-| A-H10 | Granska låser nästa steg när ett kriskort saknar val. Invariant: `unresolvedBlockingCount > 0` ⇒ minst en synlig enabled action | `EJ` |
-| A-M6 | Skadeeventet visar "0 dagar kvar". Gata på `> 0` | `EJ` |
+| A-B1 | Byggfel: oänvend `safeStandingPosition`-import (`opponentAnalysisService.ts:6`), från vår egen LÄST-FÖRE-INITIERING-fix. **Plus:** rapportera varför tsc-grinden inte fångade det — körs produktionsbygget i CI alls? | `KLAR (2026-08-27)` — koden hade redan rätt wiring (import + användning i samma commit, `085f9dab`), ingen fix behövdes. CI-svar: `.github/workflows/app-ci.yml` kör faktiskt `npm run build` (tsc+vite+design-guard+content-contract) som eget required-steg — grinden fångar en sådan bugg. Det som "inte fångades" var okommitterat arbete som aldrig nådde en pushad commit (samma rotorsak som A-COMMIT). |
+| A-C1 | Full match blockerad vid halvtid i mobilbredd. Dock på 400/500 fångar input ovanför modalen på 300. Stäng alla docks + `pointer-events: none` när `showHalftime`. Ta bort död PAUSSNACK-stamp. **390×844-test till minut 46** | `KLAR (2026-08-27)`, commit `124c11f3` |
+| A-H7 | Delningsknappen fastnar i "Genererar bild…", återgår aldrig. `try/finally`, timeout, cancelled/failed-state, explicit "Ladda ner PNG"-fallback | `KLAR (2026-08-27)`, commit `0d2e2194` |
+| A-H10 | Granska låser nästa steg när ett kriskort saknar val. Invariant: `unresolvedBlockingCount > 0` ⇒ minst en synlig enabled action | `KLAR (2026-08-27)`, commit `2a5281b4` |
+| A-M6 | Skadeeventet visar "0 dagar kvar". Gata på `> 0` | `KLAR (2026-08-27)`, commit `c037bdcd` |
 
 ## SPÅR 3 — innehållets livslängd (en rotorsak, inte tolv fixar)
 
 | ID | Post | Status |
 |---|---|---|
-| A-H4a | **`narrativeBeatLog` används inte av innehållspoolerna.** Wira: journalisten (Anna Hedlund/Ludvig Nieminen, två raka slutspelsmatcher), finaluppladdningen (Birger, två raka finaler), burnout-raderna, akademiraderna, kafferummet. `semanticKey` per båge. Journalisten: högst en gång per säsong totalt, inte samma spelare igen förrän poolen roterat | `EJ` |
-| A-H4b | **`[Opus]` syns för spelaren varje sommar.** Releasegrind som failar bygget om strängen finns i någon produktionsväg. Rapportera vilka platshållare som är kvar — Opus skriver texterna | `EJ` |
-| A-L1 | Efterklang: "Relation Relation" och "omg 0". Formatterings- och nollvärdesvakt | `EJ` |
+| A-H4a | **`narrativeBeatLog` används inte av innehållspoolerna.** Wira: journalisten (Anna Hedlund/Ludvig Nieminen, två raka slutspelsmatcher), finaluppladdningen (Birger, två raka finaler), burnout-raderna, akademiraderna, kafferummet. `semanticKey` per båge. Journalisten: högst en gång per säsong totalt, inte samma spelare igen förrän poolen roterat | `KLAR (2026-08-27)`, commit `921ab995` — journalist/Birger(SM+cup)/kafferum/burnout wirade. **Akademiraderna:** hittade ingen andra bugg utöver #7 (uppkallningstexten, redan fixad i MASTER.md-passet) — greppade academyService.ts/academyActions.ts/AkademiTab.tsx utan träff, `academyEvent`-GameEventType är deklarerad men aldrig genererad. Behöver en konkret rad/skärmdump om revisionen syftar på något annat. |
+| A-H4b | **`[Opus]` syns för spelaren varje sommar.** Releasegrind som failar bygget om strängen finns i någon produktionsväg. Rapportera vilka platshållare som är kvar — Opus skriver texterna | `KLAR (2026-08-27)`, commit `013a2318` — grinden byggd, 11 platshållare listade (i huvudsak `ClubExpectation.Survive` som saknar låst text på tre säsongsövergångsytor + en ny styrelseobjektiv-typ). Väntar på Opus-text, inte kod. |
+| A-L1 | Efterklang: "Relation Relation" och "omg 0". Formatterings- och nollvärdesvakt | `KLAR (2026-08-27)`, commit `a7c0ac49` |
 
 ## SPÅR 2 — sanningen (svep efter ROTORSAK, inte post för post)
 
@@ -72,8 +72,8 @@ Två rötter bär nästan allt.
 
 | ID | Post | Status |
 |---|---|---|
-| A-H2 | Fyra samtidiga anspåk: truppens lönekrav efter egen prestation · bud som kommer oftare vid framgång · `investSurplus` som mäter investering istället för saldo · `communityStanding` som kostar mer att hålla när klubben växt | `RAPPORT-VÄNTAR` |
-| A-H3 | Trötthet ska kosta **tillgänglighet**, inte prestation. En spelare under tröskeln kan bli otillgänglig nästa match. Att sänka prestationen är ett dolt straff; att ta spelaren ur laget går att planera runt | `RAPPORT-VÄNTAR` |
+| A-H2 | Fyra samtidiga anspåk: truppens lönekrav efter egen prestation · bud som kommer oftare vid framgång · `investSurplus` som mäter investering istället för saldo · `communityStanding` som kostar mer att hålla när klubben växt | `RAPPORTERAD (2026-08-27), VÄNTAR JACOBS DOM`. Alla fyra bekräftade obyggda: lönekrav läser bara `currentAbility`×rykte (aldrig mål/assist/form), budfrekvens flat 15%/omgång oavsett rykte/tabellplacering, `investSurplus` läser bara `club.finances` (koden har redan en kommentar som säger detta), `communityStanding` har inga storleksskalade nedåtdrivare alls — den enda skalningen som finns går åt fel håll. |
+| A-H3 | Trötthet ska kosta **tillgänglighet**, inte prestation. En spelare under tröskeln kan bli otillgänglig nästa match. Att sänka prestationen är ett dolt straff; att ta spelaren ur laget går att planera runt | `RAPPORTERAD (2026-08-27), VÄNTAR JACOBS DOM`. Fråga 5 besvarad entydigt: fatigue är idag 100% en prestationsmultiplikator — skaderisk (matchInjuryService.ts) läser aldrig fitness, och `setLineup.ts`s enda spärr är `isInjured`+avstängning. **Slutsats: A-H3 är ett BYGGE, inte en kalibrering.** |
 | A-H6 | SM-guldets CTA lovar en ceremoni som inte kommer i snabbläget. Bygg den gemensamma vägen — `CeremonySmFinal` finns och är wirad i fullmatchskärmen. Döp inte om knappen | `EJ` |
 
 **Fem rapportfrågor före bygge**, se domen. Fråga 5 (kan trötthet göra en spelare otillgänglig?) avgör om `A-H3` är kalibrering eller bygge.
@@ -82,9 +82,9 @@ Två rötter bär nästan allt.
 
 | ID | Post | Ägare | Status |
 |---|---|---|---|
-| A-FAC | **Facilitetsnodernas löften — `consequences[]` läses aldrig programmatiskt.** Strålkastarens "+10 % sponsorintäkt" och matchhallens "tv-avtal" är rena påhitt. Matchhallens "Klacken glesnar" är **motsagd av koden** (inomhusarena höjer publiken). Gymmets "+15 %" är verklig mekanism med påhittad siffra. Stryk de tre första, avtalisera gymmets. Kiosken wiras. `capacityBonus` är korrekt — rör inte | Code | `EJ` |
-| A-GRIND | `consequences[]` ska antingen läsas programmatiskt eller inte finnas. Rapportera vad deklarerade effekter kostar — samma fråga som `contentContract`, en nivå ner | Code | `EJ` |
-| A-COMMIT | **203 filer / ~94 600 rader okommitterade**, HEAD på `5c9a7a8b` sedan 24 aug. Vi tömde 27 worktrees av misstag den här sessionen. Committa och pusha i logiska block | Code | `EJ` |
+| A-FAC | **Facilitetsnodernas löften — `consequences[]` läses aldrig programmatiskt.** Strålkastarens "+10 % sponsorintäkt" och matchhallens "tv-avtal" är rena påhitt. Matchhallens "Klacken glesnar" är **motsagd av koden** (inomhusarena höjer publiken). Gymmets "+15 %" är verklig mekanism med påhittad siffra. Stryk de tre första, avtalisera gymmets. Kiosken wiras. `capacityBonus` är korrekt — rör inte | Code | `KLAR (2026-08-27)` — kiosken wirad (economyService.ts, KIOSK_NODE_SALES_BONUS_MULT), strålkastare/matchhall/gym rättade per Jacobs domar per nod. traningshalls "Ungdomarna väljer att stanna" (samma klass, ingen retentionsmekanik) fortfarande orört — ingen dom gavs för den specifikt. |
+| A-GRIND | `consequences[]` ska antingen läsas programmatiskt eller inte finnas. Rapportera vad deklarerade effekter kostar — samma fråga som `contentContract`, en nivå ner | Code | `EJ` — rapport ej skriven, prioriterades ner för SPÅR 1/3. |
+| A-COMMIT | **203 filer / ~94 600 rader okommitterade**, HEAD på `5c9a7a8b` sedan 24 aug. Vi tömde 27 worktrees av misstag den här sessionen. Committa och pusha i logiska block | Code | `KLAR (2026-08-27)` — allt committat i 18 logiska block och pushat, `5c9a7a8b..594be0f7`. |
 | A-M8 | Avsked avslutar karriären — = `O13`, tränarmarknaden, dömd `DOM_TRANARMARKNADEN_2026-08-26.md` | Code | `EJ` |
 | A-M9 | Samma finaluppladdning två raka finaler — ingår i `A-H4a` | Code | `EJ` |
 | A-H9 | Årsbokens "säsongens beslut" är inte spelarens minne. Rangordningen känns mekanisk, och år två saknades raden helt trots många beslut | **Opus** | `EJ DÖMD` |
