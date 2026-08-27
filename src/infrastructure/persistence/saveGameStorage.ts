@@ -200,6 +200,35 @@ export interface SaveWriteResult {
   newRevision?: number
 }
 
+// M3 (SEXSÄSONGSAUDITEN 2026-08-26, "Multislot"): en NYSTARTAD karriär, en
+// enda flik, fick "En annan flik har sparat". Rotorsak var aldrig en andra
+// flik — newGame() (gameStore.ts) gör ett fire-and-forget saveSaveGame(game)
+// för den nya karriären, och navigationen till /intro kan hinna trigga en
+// EGEN autosave (t.ex. completeScene → persistAutosave) INNAN den första
+// skrivningen hunnit skriva tillbaka sin nya revision in i store:ts `game`.
+// Båda anropen läser då samma stale `game.revision` (0) från VARDERA sitt
+// eget snapshot av store-state, tagna i olika mikrouppgifter av samma flik.
+// Om den första hinner skriva disken (revision 1) innan den andra läser
+// disken för sin konflikt-koll, ser den andra onDiskRevision(1) > dess egen
+// knownRevision(0) — och avvisas med samma text som en RIKTIG cross-tab-
+// konflikt, trots att ingen annan flik någonsin existerat.
+//
+// Fix, två delar, båda modul-scopade (nollställs korrekt vid en riktig
+// flik-omladdning — precis det RIKTIGA cross-tab-scenariot ska fortsätta
+// upptäckas via disken, se C1/M2-kommentaren nedan):
+// 1. tabLastWrittenRevision — denna FLIKENS senast bekräftade skrivna
+//    revision per save-id. Konflikt-kollen tar max(knownRevision, detta)
+//    istället för att lita blint på anroparens ev. stale snapshot.
+// 2. inFlightWrites — kedjar skrivningar till SAMMA save-id i turordning,
+//    så den andra skrivningen i racet ovan läser disken EFTER att den
+//    första faktiskt skrivit klart, inte mitt i.
+// Ingen av delarna påverkar den RIKTIGA cross-tab-detekteringen: en annan
+// flik har sin egen modulinstans (eget JS-realm) med tomma Maps — dess
+// skrivning syns bara via disken, exakt det CAS-kollen nedan fortfarande
+// jämför mot.
+const tabLastWrittenRevision = new Map<string, number>()
+const inFlightWrites = new Map<string, Promise<SaveWriteResult>>()
+
 /**
  * C1 (oberoende speltest- och produktaudit, deploy 5c9a7a8, 2026-08-24) —
  * DET VÄRSTA fyndet i hela serien. Funktionen svalde tidigare ALLA undantag
@@ -249,6 +278,24 @@ export interface SaveWriteResult {
  *    om skadan här är mindre än fall 2.
  */
 export async function saveSaveGame(game: SaveGame, opts?: { force?: boolean }): Promise<SaveWriteResult> {
+  // M3: kedja denna skrivningen EFTER varje annan pågående skrivning till
+  // SAMMA save-id i den här fliken — se kommentaren vid tabLastWrittenRevision
+  // ovan. Utan detta kan två fire-and-forget-anrop (t.ex. newGame()s egen
+  // sparning + intro-scenens completeScene-autosave) båda läsa disken innan
+  // någon av dem skrivit, och den ena avvisas som en falsk "annan flik"-
+  // konflikt mot sitt eget syskonanrop.
+  const key = `${SAVE_PREFIX}${game.id}`
+  const prior = inFlightWrites.get(key) ?? Promise.resolve({ success: true } as SaveWriteResult)
+  const chained = prior.then(() => doSaveSaveGame(game, opts), () => doSaveSaveGame(game, opts))
+  inFlightWrites.set(key, chained)
+  try {
+    return await chained
+  } finally {
+    if (inFlightWrites.get(key) === chained) inFlightWrites.delete(key)
+  }
+}
+
+async function doSaveSaveGame(game: SaveGame, opts?: { force?: boolean }): Promise<SaveWriteResult> {
   const key = `${SAVE_PREFIX}${game.id}`
 
   let onDiskRevision = 0
@@ -261,7 +308,10 @@ export async function saveSaveGame(game: SaveGame, opts?: { force?: boolean }): 
     // inte en misslyckad läsning som en konflikt.
   }
 
-  const knownRevision = game.revision ?? 0
+  // M3: max mot denna FLIKENS senast bekräftat skrivna revision för detta
+  // save-id — inte bara den (möjligen stale) game.revision anroparen råkade
+  // ha i sin snapshot. Se kommentaren vid tabLastWrittenRevision ovan.
+  const knownRevision = Math.max(game.revision ?? 0, tabLastWrittenRevision.get(game.id) ?? 0)
   // force: explicit, redan spelarbekräftad ersättning (t.ex. importSaveFromJson,
   // som redan kört ett window.confirm — "din aktuella karriär ersätts, går inte
   // att ångra"). Den flödet KÄNNER per definition inte den importerade filens
@@ -287,6 +337,7 @@ export async function saveSaveGame(game: SaveGame, opts?: { force?: boolean }): 
     return { success: false, error: `Kunde inte spara: lagringen är full eller otillgänglig (${msg})` }
   }
 
+  tabLastWrittenRevision.set(game.id, nextRevision)
   broadcastSaveWritten(game.id, nextRevision)
 
   try {

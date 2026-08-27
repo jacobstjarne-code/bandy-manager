@@ -255,18 +255,45 @@ describe('saveGameStorage', () => {
       expect([r1.conflict, r2.conflict, r3.conflict]).toEqual([undefined, undefined, undefined])
     })
 
-    it('samma flik som INTE matar tillbaka newRevision konfliktar med sig själv vid nästa sparning', async () => {
-      // Negativ kontrollpunkt till testet ovan — dokumenterar VARFÖR
-      // gameStore.ts/gameFlowActions.ts måste skriva tillbaka revision (se
-      // deras kommentarer): utan det avvisas den fliktens EGET nästa
-      // sparförsök, som om en annan flik hade skrivit emellan.
+    it('samma flik som INTE matar tillbaka newRevision konfliktar INTE längre med sig själv (M3, revideration av tidigare kontrakt)', async () => {
+      // M3 (SEXSÄSONGSAUDITEN 2026-08-26, "Multislot"): detta testet
+      // dokumenterade tidigare motsatsen — att en anropare som glömde mata
+      // tillbaka newRevision skulle straffas med en falsk självkonflikt vid
+      // nästa sparning. I praktiken visade det sig att FLERA legitima,
+      // samtidiga fire-and-forget-anrop i SAMMA flik (newGame()s egen
+      // sparning + intro-scenens completeScene-autosave, båda via
+      // gameFlowActions.ts/gameStore.ts `void persistAutosave(...)`) kan
+      // råka läsa samma stale `game.revision`-snapshot innan endera hunnit
+      // skriva tillbaka — och den andra fick texten "En annan flik har
+      // sparat" i en helt nystartad, enda-flik-karriär. Se
+      // tabLastWrittenRevision i saveGameStorage.ts: modulen minns nu SJÄLV
+      // den här flikens senast skrivna revision per save-id, så en andra
+      // sparning i samma flik alltid lyckas (skriver nästa revision) även
+      // om anroparens egen kopia av `game.revision` var stale. En RIKTIG
+      // annan flik har sin egen modulinstans/tomma Map — dess konflikt
+      // upptäcks fortfarande, se testet ovan.
       const id = 'save_cas_stale_self'
       const game = makeGame(id, 'club_forsbacka', '2025-10-01T10:00:00.000Z')
       const r1 = await saveSaveGame(game)
       expect(r1.newRevision).toBe(1)
       const r2 = await saveSaveGame(game) // samma objekt, revision fortfarande 0
-      expect(r2.success).toBe(false)
-      expect(r2.conflict).toBe(true)
+      expect(r2.success).toBe(true)
+      expect(r2.conflict).toBeUndefined()
+      expect(r2.newRevision).toBe(2)
+    })
+
+    it('två SAMTIDIGA sparningar i samma flik (t.ex. newGame() + en omedelbar autosave för samma nya karriär) konfliktar aldrig falskt (M3)', async () => {
+      // Reproducerar racet rakt av: två saveSaveGame-anrop för samma
+      // nyskapade save-id, avfyrade parallellt (ingen await emellan) —
+      // exakt formen på newGame()s eget fire-and-forget-anrop och
+      // completeScene→persistAutosave som kan hinna köra innan det första
+      // löst ut. Båda ska lyckas, i turordning, ingen dataförlust.
+      const id = 'save_cas_concurrent_same_tab'
+      const game = makeGame(id, 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      const [r1, r2] = await Promise.all([saveSaveGame(game), saveSaveGame(game)])
+      expect([r1.success, r2.success]).toEqual([true, true])
+      expect([r1.conflict, r2.conflict]).toEqual([undefined, undefined])
+      expect([r1.newRevision, r2.newRevision].sort()).toEqual([1, 2])
     })
 
     it('force:true (importSaveFromJson-flödet) skriver över trots att disken ligger före', async () => {
