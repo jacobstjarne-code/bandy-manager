@@ -1,6 +1,10 @@
 import { get, set, del } from 'idb-keyval'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { migrateSaveGame } from './saveGameMigration'
+import { broadcastSaveWritten } from './saveConflictChannel'
+import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
+import { getBoardPatienceZone } from '../../domain/services/portal/boardPatienceZone'
+import { pickTopActiveArcs, getArcHeadline } from '../../domain/data/activeArcStrings'
 
 // U7 (SLUTTEST_KO.md, 2026-08-17) — export/import fanns redan men var inte
 // nåbara från UI. Automatisk lokal återställningspunkt: rotation på två
@@ -109,7 +113,15 @@ export async function importSaveFromJson(): Promise<SaveGame | null> {
           return
         }
         const migrated = migrateSaveGame(parsed)
-        await saveSaveGame(migrated)
+        // M2: force — GameHeader.tsx:handleImportSave() har redan visat ett
+        // window.confirm om att detta ersätter den aktuella karriären. En
+        // konflikt-avvisning här vore inkonsekvent med det löftet.
+        const result = await saveSaveGame(migrated, { force: true })
+        if (!result.success) {
+          console.error('[importSaveFromJson] saveSaveGame misslyckades:', result.error)
+          resolve(null)
+          return
+        }
         resolve(migrated)
       } catch {
         resolve(null)
@@ -134,7 +146,14 @@ export async function migrateLocalStorageIfNeeded(): Promise<SaveGame | null> {
     const game = parsed?.state?.game
     if (!game || !game.id) return null
     const migrated = migrateSaveGame(game)
-    await saveSaveGame(migrated)
+    const result = await saveSaveGame(migrated)
+    if (!result.success) {
+      // C1: rör ALDRIG den gamla nyckeln om den nya skrivningen inte
+      // bekräftat lyckades — annars raderas spelarens enda kopia innan
+      // en ny finns, exakt den klassen av tyst dataförlust C1 handlar om.
+      console.error('[migrateLocalStorageIfNeeded] saveSaveGame misslyckades, legacy-nyckeln behålls:', result.error)
+      return null
+    }
     localStorage.removeItem('bandy-game-store')
     return migrated
   } catch {
@@ -148,6 +167,22 @@ export interface SaveGameSummary {
   clubName: string
   season: number
   lastSavedAt: string
+  /**
+   * M7 (audit 5c9a7a8, 2026-08-24): "kall återkomst saknar sammanhang —
+   * startsidan säger bara Fortsätt, save-väljaren visar bara namn/klubb/
+   * säsong/tid." Alla fälten nedan härleds ur game-objektet som ändå redan
+   * är i minnet vid varje saveSaveGame()-anrop (se därnere) — noll extra
+   * I/O, ingen ny laddning. "Som av senaste sparning", samma färskhets-
+   * kontrakt som lastSavedAt redan har.
+   */
+  nextFixtureOpponent?: string
+  nextFixtureIsHome?: boolean
+  nextFixtureMatchday?: number
+  leaguePosition?: number
+  record?: { w: number; d: number; l: number }
+  boardZone?: 'stabilt' | 'under_press' | 'ultimatum'
+  boardZoneLabel?: string
+  storylineHook?: string
 }
 
 const SAVE_PREFIX = 'bandy_save_'
@@ -157,12 +192,125 @@ function isLocalStorageAvailable(): boolean {
   return typeof localStorage !== 'undefined'
 }
 
-export async function saveSaveGame(game: SaveGame): Promise<void> {
-  try {
-    const key = `${SAVE_PREFIX}${game.id}`
-    await set(key, game)
+export interface SaveWriteResult {
+  success: boolean
+  error?: string
+  /** true = avvisad p.g.a. compare-and-swap, INTE ett lagringsfel. Spelaren måste ladda om, inte försöka spara igen. */
+  conflict?: boolean
+  newRevision?: number
+}
 
+/**
+ * C1 (oberoende speltest- och produktaudit, deploy 5c9a7a8, 2026-08-24) —
+ * DET VÄRSTA fyndet i hela serien. Funktionen svalde tidigare ALLA undantag
+ * och returnerade `Promise<void>` — anroparen (persistGameSnapshot,
+ * gameStore.ts) hade en try/catch som förväntade sig att den skulle KASTA
+ * vid fel, men den kastade aldrig, så catch-blocket var död kod. Resultat:
+ * en spelare i privat läge, med full lagringskvot, eller med ett avbrutet
+ * IndexedDB-anrop fick "✓ Sparat" — en bekräftelse på en sparning som
+ * aldrig skedde. Kan radera en hel karriär tyst, med ett kvitto.
+ *
+ * M2 (samma auditsvit, 2026-08-24) — SÅG LIVE: flik A valde Taktik, en
+ * stale flik B (öppnad tidigare, aldrig omladdad) valde Hård; B:s
+ * skrivning landade EFTER A:s och skrev tyst över A:s val. Ren
+ * last-write-wins, ingen av flikarna visste att den andra existerade.
+ * Fixen är optimistisk concurrency-kontroll (OCC): `game.revision` på det
+ * OBJEKT som skickas in är per definition "vilken version denna skrivning
+ * bygger vidare på" — det är exakt samma revision som fanns på disk när
+ * flikens kopia av `game` senast lästes eller skrevs (spread:as vidare
+ * genom hela store:t, `{...game, ...ändringar}`, aldrig tappat på vägen).
+ * Skrivningen jämför den mot vad som FAKTISKT ligger på disk just nu. Är
+ * disken längre fram har en annan flik skrivit emellan — skrivningen
+ * avvisas (conflict:true) istället för att skriva över. Detta stoppar
+ * exakt B:s skrivning i reproduktionen ovan: B:s `game.revision` är den
+ * gamla (B laddades/synkade aldrig om), disken är redan ett steg längre
+ * fram (A:s skrivning), B:s försök avvisas.
+ *
+ * OBS: ett flik-lokalt cache-fält (t.ex. en Map i denna modul) hade INTE
+ * fungerat här — en flik som laddats om (F5, eller helt enkelt en ny
+ * boot) startar med ett tomt modul-scope, men behöver ändå veta vilken
+ * revision den redan känner till. Zustand-storet (gameStore.ts) håller
+ * KVAR det i `game.revision` genom sin egen persist-återhydrering — det är
+ * därför baslinjen måste komma från det inskickade objektet, inte från
+ * något denna modul kommer ihåg själv. Anroparen (persistGameSnapshot/
+ * persistAutosave) MÅSTE skriva tillbaka `newRevision` in i store:ts
+ * `game.revision` efter en lyckad sparning — annars konfliktar samma flik
+ * med SIG SJÄLV redan vid sitt andra sparförsök.
+ *
+ * Tre skrivningar, inte transaktionella (IndexedDB + localStorage-index +
+ * BroadcastChannel-notis) — i EXPLICIT ORDNING med olika fel-semantik:
+ * 1. Konflikt-kollen (ingen skrivning sker om disken redan är längre fram).
+ * 2. Speldatan (IndexedDB, `set()`). Misslyckas den → total fel, indexet
+ *    rörs ALDRIG (så indexet aldrig kan peka på ett save som inte finns).
+ * 3. Sparlistans index (localStorage). Misslyckas BARA den → speldatan är
+ *    fortfarande säker på disk (nåbar via loadSaveGame(id) direkt), men
+ *    saven syns inte i SaveManagerScreen. Fortfarande `success:false` —
+ *    spelaren ska aldrig se "✓ Sparat" när något faktiskt gick fel, även
+ *    om skadan här är mindre än fall 2.
+ */
+export async function saveSaveGame(game: SaveGame, opts?: { force?: boolean }): Promise<SaveWriteResult> {
+  const key = `${SAVE_PREFIX}${game.id}`
+
+  let onDiskRevision = 0
+  try {
+    const onDisk = await get<SaveGame>(key)
+    if (onDisk !== undefined) onDiskRevision = onDisk.revision ?? 0
+  } catch {
+    // Kan inte läsa disken för att jämföra — samma fel dyker upp igen på
+    // skrivförsöket nedan, som redan har en egen felhantering. Behandla
+    // inte en misslyckad läsning som en konflikt.
+  }
+
+  const knownRevision = game.revision ?? 0
+  // force: explicit, redan spelarbekräftad ersättning (t.ex. importSaveFromJson,
+  // som redan kört ett window.confirm — "din aktuella karriär ersätts, går inte
+  // att ångra"). Den flödet KÄNNER per definition inte den importerade filens
+  // relation till vad som händer stå på disk just nu, och ska inte blockeras
+  // av en konflikt-kontroll byggd för att skydda mot en helt annan sak (två
+  // flikar som omedvetet racear).
+  if (!opts?.force && onDiskRevision > knownRevision) {
+    return {
+      success: false,
+      conflict: true,
+      error: 'En annan flik har sparat en nyare version av den här karriären. Ladda om för att fortsätta säkert.',
+    }
+  }
+
+  const nextRevision = onDiskRevision + 1
+  const gameToWrite: SaveGame = { ...game, revision: nextRevision }
+
+  try {
+    await set(key, gameToWrite)
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('saveSaveGame: IndexedDB-skrivning misslyckades — speldata INTE sparad', e)
+    return { success: false, error: `Kunde inte spara: lagringen är full eller otillgänglig (${msg})` }
+  }
+
+  broadcastSaveWritten(game.id, nextRevision)
+
+  try {
     const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? ''
+
+    // M7: nästa match.
+    const nextFixture = getNextManagedFixture(game)
+    const nextFixtureOpponentId = nextFixture
+      ? (nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId)
+      : undefined
+    const nextFixtureOpponent = nextFixtureOpponentId
+      ? game.clubs.find(c => c.id === nextFixtureOpponentId)?.name
+      : undefined
+
+    // M7: tabellplacering + facit — ren uppslagning, redan beräknat av roundProcessor.
+    const standing = game.standings.find(s => s.clubId === game.managedClubId)
+
+    // M7: styrelsezon — samma delade funktion boardpatience-UI:t redan visar live.
+    const boardZoneInfo = getBoardPatienceZone(game)
+
+    // M7: "olöst huvudtråd" — samma urval som portalens ActiveArcsSecondary.
+    const topArc = pickTopActiveArcs(game.activeArcs, 1)[0]
+    const arcPlayer = topArc?.playerId ? game.players.find(p => p.id === topArc.playerId) : undefined
+    const storylineHook = topArc ? getArcHeadline(topArc, arcPlayer) : undefined
 
     const summary: SaveGameSummary = {
       id: game.id,
@@ -170,8 +318,19 @@ export async function saveSaveGame(game: SaveGame): Promise<void> {
       clubName,
       season: game.currentSeason,
       lastSavedAt: game.lastSavedAt,
+      ...(nextFixture ? {
+        nextFixtureOpponent: nextFixtureOpponent ?? undefined,
+        nextFixtureIsHome: nextFixture.homeClubId === game.managedClubId,
+        nextFixtureMatchday: nextFixture.matchday,
+      } : {}),
+      ...(standing ? {
+        leaguePosition: standing.position,
+        record: { w: standing.wins, d: standing.draws, l: standing.losses },
+      } : {}),
+      boardZone: boardZoneInfo.zone,
+      boardZoneLabel: boardZoneInfo.label,
+      ...(storylineHook ? { storylineHook } : {}),
     }
-
     const existing = listSaveGames()
     const filtered = existing.filter(s => s.id !== game.id)
     filtered.push(summary)
@@ -179,8 +338,12 @@ export async function saveSaveGame(game: SaveGame): Promise<void> {
       localStorage.setItem(INDEX_KEY, JSON.stringify(filtered))
     }
   } catch (e) {
-    console.warn('saveSaveGame: kunde inte spara', e)
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('saveSaveGame: speldata sparad, men sparlistans index kunde INTE uppdateras', e)
+    return { success: false, error: `Sparat, men syns inte i sparlistan just nu (${msg})`, newRevision: nextRevision }
   }
+
+  return { success: true, newRevision: nextRevision }
 }
 
 export async function loadSaveGame(id: string): Promise<SaveGame | null> {

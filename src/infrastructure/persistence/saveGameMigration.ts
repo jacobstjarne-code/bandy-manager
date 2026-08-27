@@ -7,6 +7,8 @@ import { CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
 import type { ClubBoardTemplate } from '../../domain/services/worldGenerator'
 import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { FACILITY_NODE_DEFS } from '../../domain/services/facilityService'
+import { computeSeasonVerdictRating, expectationVerdictFromRating } from '../../domain/services/boardService'
+import { buildExpectationVerdictSentence } from '../../domain/services/seasonSummaryService'
 
 // B1 §5 — migrera gamla facilityProjects → ny facilityState. SJÄLVSTÄNDIG legacy-shape
 // (importerar inte den borttagna FacilityProject-typen) så den överlever utfasningen.
@@ -113,7 +115,7 @@ function mergeLegacyBoard(
   return result
 }
 
-export const CURRENT_SAVE_VERSION = '0.3.4'
+export const CURRENT_SAVE_VERSION = '0.3.7'
 
 export function migrateSaveGame(raw: unknown): SaveGame {
   const data = raw as Record<string, unknown>
@@ -127,6 +129,14 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   }
 
   // ── top-level optional fields introduced after v0.1.0 ─────────────────
+  // M1 (audit 5c9a7a8, 2026-08-24): backfyll 'tilltrade' (INTE 'arrival') för
+  // gamla saves som redan är mitt i onboarding — bevarar exakt tidigare
+  // routerbeteende (som alltid skickade till /tilltrade). Bara NYA saves
+  // (createNewGame.ts) sätter 'arrival' explicit. En redan färdig save
+  // (onboardingComplete !== false) behöver inte fältet alls.
+  if (data.onboardingScreen === undefined && data.onboardingComplete === false) {
+    data.onboardingScreen = 'tilltrade'
+  }
   if (data.fanMood === undefined) data.fanMood = 50
   if (data.boardPatience === undefined) data.boardPatience = 70
   if (data.consecutiveFailures === undefined) data.consecutiveFailures = 0
@@ -136,6 +146,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.lastRumorRound === undefined) data.lastRumorRound = 0
   if (data.lastEventQueueRound === undefined) data.lastEventQueueRound = 0
   if (data.resolvedEventIds === undefined) data.resolvedEventIds = []
+  if (data.resolvedChoices === undefined) data.resolvedChoices = []
   if (data.transferBids === undefined) data.transferBids = []
   if (data.seasonSummaries === undefined) data.seasonSummaries = []
   // SeasonSummary.id (2026-08-22) — förutsättning för delbarhet, tillagt efter
@@ -146,6 +157,45 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     data.seasonSummaries = (data.seasonSummaries as Record<string, unknown>[]).map(s => {
       if (s.id !== undefined) return s
       return { ...s, id: `${data.id as string}_s${s.season as number}_${s.clubId as string}` }
+    })
+  }
+  // M8 (audit 5c9a7a8, 2026-08-24): "2:a plats sägs uppfylla krav att vinna
+  // serien; 1:a plats sägs överträffa krav att vinna." A5 (2026-08-17,
+  // commit 6f1d36a1) rättade VILKEN dom som väljs live (computeSeasonVerdict-
+  // Rating/expectationVerdictFromRating, boardService.ts) — men en
+  // SeasonSummary skapad FÖRE den commiten bär fortfarande den gamla,
+  // bevisligen felaktiga domen frusen i expectationVerdict/metExpectation
+  // och i den bakade narrativeSummary-textens FÖRSTA mening. Ingen tidigare
+  // migrering rörde detta. Räkna om domen från redan lagrade, stabila fält
+  // (boardExpectation, finalPosition, playoffResult — ingen gissning) och,
+  // BARA om den skiljer sig från vad som redan bakats in: skriv rätt dom
+  // till de strukturerade fälten och bygg om ENDAST domsmeningen som en
+  // separat verdictSentence. Resten av narrativeSummary (formtrend,
+  // toppmålskytt, cupresultat, storylines) rörs ALDRIG — den är inte bevisat
+  // fel, och att gissa ihop den på nytt för en gammal säsong är en annan,
+  // riskablare operation än att rätta en binär dom. HistoryScreen.tsx visar
+  // verdictSentence som en synlig rättelse bredvid den arkiverade
+  // originaltexten när legacyVerdictWasCorrected är satt — skriver aldrig
+  // tyst över den gamla texten.
+  if (Array.isArray(data.seasonSummaries)) {
+    data.seasonSummaries = (data.seasonSummaries as Record<string, unknown>[]).map(s => {
+      const boardExpectation = s.boardExpectation as import('../../domain/enums').ClubExpectation | undefined
+      const finalPosition = s.finalPosition as number | undefined
+      if (boardExpectation === undefined || typeof finalPosition !== 'number') return s
+      const isChampion = s.playoffResult === 'champion'
+      const rating = computeSeasonVerdictRating(boardExpectation, finalPosition, 12)
+      const correctVerdict = expectationVerdictFromRating(boardExpectation, rating, isChampion)
+      if (s.expectationVerdict === correctVerdict) return s
+      const clubName = (s.clubName as string | undefined) ?? ''
+      const season = (s.season as number | undefined) ?? 0
+      const verdictSentence = buildExpectationVerdictSentence(clubName, correctVerdict, finalPosition, boardExpectation, isChampion, season)
+      return {
+        ...s,
+        expectationVerdict: correctVerdict,
+        metExpectation: correctVerdict !== 'failed',
+        verdictSentence,
+        legacyVerdictWasCorrected: true,
+      }
     })
   }
   if (data.scoutReports === undefined) data.scoutReports = {}
@@ -194,6 +244,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.mecenater === undefined) data.mecenater = []
   if (data.facilityState === undefined) data.facilityState = migrateFacilityState((data.facilityProjects as LegacyFacilityProject[] | undefined) ?? [])
   if (data.boardObjectives === undefined) data.boardObjectives = []
+  if (data.aiTransferLog === undefined) data.aiTransferLog = []
   // SLUTTEST RUNDA 3 (2026-08-08, punkt 3): startValue är ett nytt fält (krävs
   // för en riktig avståndsbaserad progressbar på lägre-är-bättre-mål). Saves
   // från före detta saknar det. currentValue som fallback-start är inte
@@ -332,10 +383,10 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.matchWeathers === undefined) data.matchWeathers = []
   if (data.mentorships === undefined) data.mentorships = []
   if (data.mentorshipHistory === undefined) data.mentorshipHistory = []
-  if (data.managerProfile && typeof data.managerProfile === 'object') {
-    const mp = data.managerProfile as Record<string, unknown>
-    if (!mp.narrativeLog) mp.narrativeLog = []
-  }
+  // managerProfile.diary (tidigare .narrativeLog) — se PÅSTÅENDEKARTAN-blocket
+  // nedan, precis före version stamp: den flyttar BEFINTLIG data dit, denna
+  // gamla raden satte bara tomt om saknat och skulle annars köras FÖRE
+  // flytten och kollidera med den.
   if (data.loanDeals === undefined) data.loanDeals = []
   if (data.talentSearchResults === undefined) data.talentSearchResults = []
   if (data.youthIntakeHistory === undefined) data.youthIntakeHistory = []
@@ -554,6 +605,56 @@ export function migrateSaveGame(raw: unknown): SaveGame {
         return { ...item, expiresRound: currentRound + 2 }
       }
       return item
+    })
+  }
+
+  // ── H1-uppföljning (människoupplevelse-audit 7024f8a, 2026-08-24): ledare_crisis
+  // borttagen (Jacobs dom — captainSpeech är kanon, se eventFactories.ts). En
+  // save med en ledare_crisis-arc mid-flight (building/peak/resolving) skulle
+  // annars bli permanent spärrad: arcen matchar ingen typ-gren i progressArcs()
+  // längre, räknas ändå mot canAddArc()s tak på 2 samtidiga icke-derby-arcer,
+  // och kan aldrig själv resolvera/expira ur den koden. Ett kvarliggande
+  // ledare_peak_event_-GameEvent (typ 'playerArc', delad med de andra
+  // spelararcerna — kan inte filtreras på type) skulle bli en dinglande,
+  // oresolverbar kort. Städas här, inte lämnat som en tyst landmine.
+  if (Array.isArray(data.activeArcs)) {
+    data.activeArcs = (data.activeArcs as Record<string, unknown>[]).filter(a => a.type !== 'ledare_crisis')
+  }
+  if (Array.isArray(data.pendingEvents)) {
+    data.pendingEvents = (data.pendingEvents as { id?: string }[]).filter(
+      e => !e.id?.startsWith('ledare_peak_event_')
+    )
+  }
+  if (Array.isArray(data.inbox)) {
+    data.inbox = (data.inbox as { id?: string }[]).filter(
+      i => !i.id?.startsWith('inbox_ledare_building_inbox_')
+    )
+  }
+
+  // ── PÅSTÅENDEKARTAN (2026-08-24): narrativeLog döpt om på tre olika register
+  // (namnkollision, inte samma register — se SLUTTEST_KO.md post 58). Flyttar
+  // BEFINTLIG DATA till de nya fältnamnen, rör inte bara `undefined` — en save
+  // med en manager som redan har burnout/era-shift-poster eller en spelare med
+  // en fylld karriärdagbok får annars den historiken tyst amputerad vid nästa
+  // laddning, exakt den klass av fel dagens pass fixat sju andra instanser av.
+  if (data.narrativeLog !== undefined) {
+    data.narrativeBeatLog = data.narrativeLog
+    delete data.narrativeLog
+  }
+  if (data.managerProfile && typeof data.managerProfile === 'object') {
+    const mp = data.managerProfile as Record<string, unknown>
+    if (mp.narrativeLog !== undefined) {
+      mp.diary = mp.narrativeLog
+      delete mp.narrativeLog
+    } else if (mp.diary === undefined) {
+      mp.diary = []
+    }
+  }
+  if (Array.isArray(data.players)) {
+    data.players = (data.players as Record<string, unknown>[]).map(p => {
+      if (p.narrativeLog === undefined) return p
+      const { narrativeLog, ...rest } = p
+      return { ...rest, diary: narrativeLog }
     })
   }
 

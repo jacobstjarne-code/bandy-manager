@@ -51,7 +51,7 @@ import { processNarrative, processUpcomingDerbyNotification } from './processors
 import { detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
 import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
-import { processGameEvents, applyMecenatSpawn, processScandals, checkForPlayThroughInjuryOffer } from './processors/eventProcessor'
+import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas, describeRippleChain, rippleChainSignificance } from '../../domain/services/rippleEffectService'
 import type { RippleChain } from '../../domain/entities/SaveGame'
@@ -475,9 +475,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // Suspension notifications
+  // PÅSTÅENDEKARTAN (2026-08-24): hårdkodade tidigare 3 matcher oavsett
+  // faktisk längd — sanningen (`player.suspensionGamesRemaining`, satt till
+  // 1 av matchstraffet några steg tidigare i playerStateProcessor.ts) fanns
+  // redan på samma objekt men lästes aldrig. Maskerat idag av att
+  // SUSPENSION_INCIDENT_LINES saknar {kvar}-token, men den icke-mallade
+  // fallback-raden ("avstängd i {gamesOut} match(er)") hade visat "3" rakt av.
   for (const { player } of newlySuspended) {
     if (player.clubId === game.managedClubId) {
-      newInboxItems.push(createSuspensionItem(player, 3, game.currentDate))
+      newInboxItems.push(createSuspensionItem(player, player.suspensionGamesRemaining, game.currentDate))
     }
   }
 
@@ -986,7 +992,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   )
   const allNewEvents = [...eventResult.gameEvents, ...playoffResult.gameEvents]
   let updatedMecenater = eventResult.updatedMecenater
-  const updatedPatron = eventResult.updatedPatron
+  let updatedPatron = eventResult.updatedPatron
   newInboxItems.push(...eventResult.inboxItems)
 
   // Legibel konsekvens: mecenat_left ripple (VILANDE i eventProcessor, wiras här)
@@ -1304,6 +1310,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     )
     updatedMecenater = mecenatResult.updatedMecenater
     allNewEvents.push(...mecenatResult.newEvents)
+
+    // "Takmodellen" (Jacobs dom 2026-08-26): om communityStanding fallit
+    // så taket ligger under antalet aktiva mecenater, tvinga fram ett
+    // avhopp — se applyMecenatCapEviction i eventProcessor.ts.
+    const evictionResult = applyMecenatCapEviction(game, updatedMecenater)
+    updatedMecenater = evictionResult.updatedMecenater
+    allNewEvents.push(...evictionResult.newEvents)
   }
 
   // ── Pool 1c: spela-på-erbjudandet ─────────────────────────────────────────
@@ -1362,6 +1375,38 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         const emergeEvent = generatePatronEmergenceEvent(game, localRand)
         if (emergeEvent) allNewEvents.push(emergeEvent)
       }
+    }
+  }
+
+  // "Takmodellen", patronens del (Jacobs dom 2026-08-26, RAPPORT_FYRA_
+  // UTREDNINGAR_2026-08-26.md punkt 4): relationen var bekräftat
+  // enkelriktad — communityStanding avgjorde bara ANKOMST (PATRON_EMERGE_CS
+  // ovan), aldrig AVHOPP. Om ortstödet faller under samma tröskel medan en
+  // patron är aktiv ska den lämna — annars är orten en spärr man passerar
+  // en gång, inte en spak i båda riktningarna. Samma effekttyp
+  // ('patronWithdrawn') som den befintliga happiness-baserade avgångsvägen
+  // återanvänds för resolutionen — ETT ställe sätter patronWithdrawnSeason.
+  let patronWithdrawnSeasonAfterCsEviction = game.patronWithdrawnSeason
+  if (updatedPatron?.isActive && (game.communityStanding ?? 50) < PATRON_EMERGE_CS) {
+    const evictionId = `patron_cs_eviction_${game.currentSeason}`
+    const alreadyQueued = (game.pendingEvents ?? []).some(e => e.id === evictionId) ||
+      game.inbox.some(i => i.id === evictionId) ||
+      allNewEvents.some(e => e.id === evictionId)
+    if (!alreadyQueued) {
+      updatedPatron = { ...updatedPatron, isActive: false }
+      patronWithdrawnSeasonAfterCsEviction = game.currentSeason
+      allNewEvents.push({
+        id: evictionId,
+        type: 'patronWithdrawal',
+        // SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md). Platshållare tills
+        // Opus levererar en text om att ORTEN, inte relationen till
+        // patronen själv, är orsaken — skild från den befintliga
+        // happiness-baserade avgångstexten.
+        title: '[Opus]',
+        body: '[Opus]',
+        choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'patronWithdrawn' } }],
+        resolved: false,
+      })
     }
   }
 
@@ -1474,6 +1519,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,
     patron: updatedPatron,
+    patronWithdrawnSeason: patronWithdrawnSeasonAfterCsEviction,
     // Spara förra omgångens seed — pick()-funktionen hoppar över det värdet för att undvika upprepning
     lastCoffeeQuoteHash: currentLeagueRound !== null ? (currentLeagueRound - 1) * 11 + game.currentSeason * 31 : game.lastCoffeeQuoteHash,
     lastEconomicStressRound: eventResult.lastEconomicStressRound,
@@ -1571,11 +1617,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     sourceCooldowns: decrementCooldowns(game.sourceCooldowns ?? {}),
     // C-B2 — klack echo
     klackEcho: updatedKlackEcho,
-    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 7/9 — bara vid
+    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 7/9 — bara vid
     // en FAKTISKT ny eko (inte ren decay av en befintlig).
-    narrativeLog: newKlackEchoType
+    narrativeBeatLog: newKlackEchoType
       ? logNarrativeBeat(game, `klack_echo_${newKlackEchoType}`, game.currentSeason, nextMatchday)
-      : game.narrativeLog,
+      : game.narrativeBeatLog,
     // C-K1 — Landslagsuttagning
     activeNationalTeamCamp: nationalTeamCampState,
     lastNationalSnub: nationalTeamSnub,
@@ -1597,14 +1643,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // av omgången.
   updatedGame = applyRiskySponsorMaturation(updatedGame, nextMatchday, newDate, localRand)
 
-  // High 4 (Skutskär-auditen, 2026-08-22): press-storylinens narrativeLog-post
+  // High 4 (Skutskär-auditen, 2026-08-22): press-storylinens narrativeBeatLog-post
   // skrivs här, NÄR FRÅGAN VISAS — inte vid resolution. storylineBudgetOk()
   // (pressConferenceService.ts) läser samma logg för att stoppa en tredje
   // gång. Se GameEvent.storylinePressKey.
   if (updatedGame.pendingPressConference?.storylinePressKey) {
     updatedGame = {
       ...updatedGame,
-      narrativeLog: logNarrativeBeat(
+      narrativeBeatLog: logNarrativeBeat(
         updatedGame,
         updatedGame.pendingPressConference.storylinePressKey,
         updatedGame.currentSeason,
@@ -1614,7 +1660,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // Medium 2 (Skutskär-auditen, 2026-08-22): mecenat-socialpoolens
-  // narrativeLog-post skrivs här, en per genererat social-event denna
+  // narrativeBeatLog-post skrivs här, en per genererat social-event denna
   // omgång (upp till två kan förekomma i SAMMA omgång om två mecenater
   // rullar samtidigt — budget/typ-uteslutning redan applicerad vid
   // genereringen, se GameEvent.mecenatSocialKey).
@@ -1622,7 +1668,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (event.mecenatSocialKey) {
       updatedGame = {
         ...updatedGame,
-        narrativeLog: logNarrativeBeat(updatedGame, event.mecenatSocialKey, updatedGame.currentSeason, nextMatchday),
+        narrativeBeatLog: logNarrativeBeat(updatedGame, event.mecenatSocialKey, updatedGame.currentSeason, nextMatchday),
       }
     }
   }
@@ -1672,15 +1718,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       isRead: false,
     }))
 
-    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 5/9. En post per
+    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 5/9. En post per
     // ny storyline (den faktiska narrativa "beat" som visas för spelaren) —
     // semanticKey = storyline.type, grovkornigt (skiljer inte per spelare;
     // det finkorniga per-karaktär-beslutet är medvetet skjutet till senare,
     // per DOM:en). Detta är exakt felklassen "Finalen. Birger…" upprepades.
-    let narrativeLogWithArcs = updatedGame.narrativeLog
+    let narrativeBeatLogWithArcs = updatedGame.narrativeBeatLog
     for (const storyline of arcResult.newStorylines) {
-      narrativeLogWithArcs = logNarrativeBeat(
-        { ...updatedGame, narrativeLog: narrativeLogWithArcs },
+      narrativeBeatLogWithArcs = logNarrativeBeat(
+        { ...updatedGame, narrativeBeatLog: narrativeBeatLogWithArcs },
         storyline.type, storyline.season, storyline.matchday,
       )
     }
@@ -1691,7 +1737,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       pendingEvents: [...(updatedGame.pendingEvents ?? []), ...arcOtherEvents, ...arcLowAllowed],
       storylines: [...(updatedGame.storylines ?? []), ...arcResult.newStorylines],
       inbox: [...updatedGame.inbox, ...arcInbox, ...arcDroppedInbox],
-      narrativeLog: narrativeLogWithArcs,
+      narrativeBeatLog: narrativeBeatLogWithArcs,
     }
   }
 
@@ -2034,21 +2080,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const zoneRose = (prevBurnoutZone === 'frisk' && newBurnoutZone !== 'frisk') ||
                        (prevBurnoutZone === 'markbar' && newBurnoutZone === 'hog')
       if (zoneRose) {
-        const alreadyLogged = (enrichedProfile.narrativeLog ?? []).some(
+        const alreadyLogged = (enrichedProfile.diary ?? []).some(
           e => e.type === 'burnout_peak' && e.season === game.currentSeason)
         if (!alreadyLogged) {
-          enrichedProfile = { ...enrichedProfile, narrativeLog: [
-            ...(enrichedProfile.narrativeLog ?? []),
+          enrichedProfile = { ...enrichedProfile, diary: [
+            ...(enrichedProfile.diary ?? []),
             { season: game.currentSeason, matchday: nextMatchday, type: 'burnout_peak' as const, text: newBurnoutZone === 'hog' ? 'Den säsongen tog nästan slut på dig. Du stannade ändå.' : 'Det började ta på dig den säsongen. Du sa inget om det.' },
           ]}
         }
       }
       if (eraChanged) {
-        const alreadyLogged = (enrichedProfile.narrativeLog ?? []).some(
+        const alreadyLogged = (enrichedProfile.diary ?? []).some(
           e => e.type === 'era_shift' && e.season === game.currentSeason)
         if (!alreadyLogged) {
-          enrichedProfile = { ...enrichedProfile, narrativeLog: [
-            ...(enrichedProfile.narrativeLog ?? []),
+          enrichedProfile = { ...enrichedProfile, diary: [
+            ...(enrichedProfile.diary ?? []),
             { season: game.currentSeason, matchday: nextMatchday, type: 'era_shift' as const, text: newClubEra === 'establishment' ? 'Klubben reste sig under dig. Orten började tro igen.' : newClubEra === 'legacy' ? 'Det blev mer än bandy under dig. Det blev ortens identitet.' : 'Tunga tider kom. Det var nu det gällde.' },
           ]}
         }
@@ -2069,13 +2115,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const opponentClubId = isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId
       let profileWithH2H = updateH2HRecord(updatedGame.managerProfile, opponentClubId, mScore, oScore)
       // Log rivalry once when a clear nemesis emerges (3+ losses, losses > wins)
-      const existingRivalryLog = (profileWithH2H.narrativeLog ?? []).some(e => e.type === 'rivalry')
+      const existingRivalryLog = (profileWithH2H.diary ?? []).some(e => e.type === 'rivalry')
       if (!existingRivalryLog) {
         const nemesisCandidate = (profileWithH2H.coachRivalries ?? [])
           .find(r => r.h2hLosses >= 3 && r.h2hLosses > r.h2hWins)
         if (nemesisCandidate) {
-          profileWithH2H = { ...profileWithH2H, narrativeLog: [
-            ...(profileWithH2H.narrativeLog ?? []),
+          profileWithH2H = { ...profileWithH2H, diary: [
+            ...(profileWithH2H.diary ?? []),
             { season: game.currentSeason, matchday: nextMatchday, type: 'rivalry' as const, text: `${game.clubs.find(c => c.id === nemesisCandidate.clubId)?.name ?? 'rivalen'} blev din nemesis. Det satte sig i kroppen, det här.` },
           ]}
         }

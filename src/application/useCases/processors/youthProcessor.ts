@@ -129,6 +129,9 @@ export function processYouth(
         type: 'communityEvent',
         title: `Juniorlandslagssamling — ${names}`,
         body: `${names} är kallade till Sveriges P19-samling. ${pronoun} missar 2 P19-matcher men kan få värdefull landslagserfarenhet.`,
+        // M3: exakt de spelare kortet namnger — resolvern (eventResolver.ts)
+        // ska verka på dessa, inte återfiltrera potentialAbility>50 på nytt.
+        selectedPlayerIds: selected.map(p => p.id),
         choices: [
           {
             id: 'send',

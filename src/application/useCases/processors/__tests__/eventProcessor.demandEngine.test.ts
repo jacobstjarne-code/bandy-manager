@@ -66,8 +66,10 @@ describe('processGameEvents — kravmotor integration (Mecenat)', () => {
         happiness: 60,
         demands: [{ type: 'league_position', description: '[Opus]' }], // tidigare konsekutivt misslyckande
       }],
+      // played: 10 — LÄST-FÖRE-INITIERING-golvet (PASTAENDEKARTAN, 2026-08-26)
+      // kräver minst en spelad match innan position räknas som verklig.
       standings: gameBase.standings.map(s => s.clubId === gameBase.managedClubId
-        ? { ...s, position: 1 }
+        ? { ...s, position: 1, played: 10 }
         : s),
     }
     const result = processGameEvents(pendingGame, [], null, 5, () => 0.99)
@@ -122,7 +124,8 @@ describe('processGameEvents — kravmotor integration (Patron)', () => {
         demands: ['[Opus]'],
         goodwill: 70,
       },
-      standings: game.standings.map(s => s.clubId === game.managedClubId ? { ...s, position: 1 } : s),
+      // played: 10 — LÄST-FÖRE-INITIERING-golvet (PASTAENDEKARTAN, 2026-08-26).
+      standings: game.standings.map(s => s.clubId === game.managedClubId ? { ...s, position: 1, played: 10 } : s),
     }
     const result = processGameEvents(pendingGame, [], null, 5, () => 0.99)
     expect(result.updatedPatron?.pendingDemand).toBeUndefined()

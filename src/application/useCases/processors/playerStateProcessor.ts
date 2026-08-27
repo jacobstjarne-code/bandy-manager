@@ -116,7 +116,7 @@ export function applyPlayerStateUpdates(
         // Narrative: recovery entry for managed players
         if (player.clubId === game.managedClubId) {
           const recoveryEntry = generateReturnFromInjuryEntry(game.currentSeason, nextRound)
-          updated.narrativeLog = [...(updated.narrativeLog ?? []), recoveryEntry].slice(-20)
+          updated.diary = [...(updated.diary ?? []), recoveryEntry].slice(-20)
         }
       }
     }
@@ -275,15 +275,25 @@ export function applyPlayerStateUpdates(
 
   // Utvisning i bandy = 10 minuters penalty på isen (spelaren kommer tillbaka).
   // Det är INTE en spelande avstängning. Ingen suspensionGamesRemaining sätts.
-  // Matchstraff är extremt sällsynt (~2% av utvisningar) och ger 1 match.
+  //
+  // PÅSTÅENDEGRINDEN väg 1 (2026-08-24, Jacobs dom): matchstraff härlett ur
+  // befintlig data, inte slumpat. REGLER.md: "Tredje utvisningen på samma
+  // spelare = automatiskt matchstraff." matchCore.ts:s playerRedCards
+  // räknade redan detta internt men lästes aldrig (skrivbart, oläst — samma
+  // klass av fynd som resten av PÅSTÅENDEKARTAN-passet). Räkningen görs här
+  // istället, direkt ur fixture.events — ingen ny mekanism i matchmotorn
+  // behövs, bara en läsning av data som redan finns på fixturen. Ingen
+  // slumpkomponent kvar: matchstraff inträffar av en anledning spelaren kan
+  // se i händelselistan (tre utvisningar), aldrig av tur.
   const newlyInjured: Array<{ player: Player; days: number }> = []
   const newlySuspended: Array<{ player: Player }> = []
 
   for (const fixture of simulatedFixtures) {
+    const suspensionCountThisMatch: Record<string, number> = {}
     for (const event of fixture.events) {
       if (event.type === MatchEventType.Suspension && event.playerId) {
-        // ~2% sannolikhet för matchstraff (grovt foul) → 1 match avstängd
-        const isMatchPenalty = localRand() < 0.02
+        suspensionCountThisMatch[event.playerId] = (suspensionCountThisMatch[event.playerId] ?? 0) + 1
+        const isMatchPenalty = suspensionCountThisMatch[event.playerId] >= 3
         if (isMatchPenalty) {
           const idx = updatedPlayers.findIndex(p => p.id === event.playerId)
           if (idx !== -1) {
@@ -293,10 +303,20 @@ export function applyPlayerStateUpdates(
               ? fixture.awayClubId : fixture.homeClubId
             const opponentClub = game.clubs.find(c => c.id === opponentClubId)
             const opponentName = opponentClub?.shortName ?? opponentClub?.name ?? 'motståndet'
+            // PÅSTÅENDEGRINDEN väg 2 (2026-08-24, Jacobs dom): disciplinnämndens
+            // vikt — en eller tre matcher, aldrig ett mellanting (skälet är
+            // läsbarhet, inte en uppfunnen skala). durationMinutes på den
+            // utvisning som UTLÖSTE matchstraffet är den enda existerande
+            // severitetsaxeln (M15, kalibrerad mot docs/kunskapsbas/DATA.md
+            // §7) och betyder samma sak i REGLER.md ("10 minuter — grövre
+            // regelbrott, farligt spel av allvarligare art" mot "5 minuter —
+            // ... lättare förseelser"). Ingen orsaksklassificering (tackling
+            // mot armbåge) — den datan finns inte och uppfinns inte här.
+            const gamesOut = event.durationMinutes === 10 ? 3 : 1
             updatedPlayers[idx] = {
               ...suspendedPlayer,
-              suspensionGamesRemaining: 1,
-              suspensionCause: { sinceMatchday: fixture.matchday, opponentName, matches: 1 },
+              suspensionGamesRemaining: gamesOut,
+              suspensionCause: { sinceMatchday: fixture.matchday, opponentName, matches: gamesOut },
             }
             if (prev === 0) {
               newlySuspended.push({ player: updatedPlayers[idx] })
@@ -342,7 +362,7 @@ export function applyPlayerStateUpdates(
       // Narrative: injury entry for managed players
       if (player.clubId === game.managedClubId) {
         const injuryEntry = generateInjuryEntry(game.currentSeason, nextRound, days)
-        injuredPlayer.narrativeLog = [...(player.narrativeLog ?? []), injuryEntry].slice(-20)
+        injuredPlayer.diary = [...(player.diary ?? []), injuryEntry].slice(-20)
         // DREAM-012: human injury narrative
         const { narrative, familyContext } = generateInjuryNarrative(player.familyContext, injuryType, localRand)
         injuredPlayer.injuryNarrative = narrative

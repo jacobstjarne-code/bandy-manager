@@ -3,6 +3,7 @@ import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame, snapshotSave
 import { migrateSaveGame, CURRENT_SAVE_VERSION } from '../saveGameMigration'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { createNewGame } from '../../../application/useCases/createNewGame'
+import { set as idbSetMock } from 'idb-keyval'
 
 // ── idb-keyval mock ───────────────────────────────────────────────────────────
 
@@ -124,6 +125,162 @@ describe('saveGameStorage', () => {
     const loaded2 = await loadSaveGame('save_002')
     expect(loaded2).not.toBeNull()
     expect(loaded2?.id).toBe('save_002')
+  })
+
+  // C1 (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24) — VÄRSTA
+  // fyndet i serien. saveSaveGame() svalde tidigare ALLA undantag och
+  // returnerade Promise<void>, så persistGameSnapshot (gameStore.ts) fick
+  // aldrig sitt catch-block att köra och returnerade alltid success:true.
+  // En spelare i privat läge/full kvot fick "✓ Sparat" på en sparning som
+  // aldrig skedde. Dessa tester reproducerar exakt de tre fallen ordern
+  // efterfrågade: quota-fel, indexfel, avbruten skrivning.
+  describe('saveSaveGame — C1: felet ska rapporteras, aldrig sväljas', () => {
+    it('quota-fel (IndexedDB set() kastar) ger success:false, inte en tyst success:true', async () => {
+      const game = makeGame('save_quota', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      vi.mocked(idbSetMock).mockRejectedValueOnce(new DOMException('Quota exceeded', 'QuotaExceededError'))
+
+      const result = await saveSaveGame(game)
+      expect(result.success).toBe(false)
+      expect(result.error).toBeTruthy()
+
+      // Indexet ska ALDRIG peka på ett save som inte faktiskt skrevs.
+      const summaries = listSaveGames()
+      expect(summaries.find(s => s.id === 'save_quota')).toBeUndefined()
+      const loaded = await loadSaveGame('save_quota')
+      expect(loaded).toBeNull()
+    })
+
+    it('avbruten IndexedDB-skrivning (t.ex. privat läge) ger success:false', async () => {
+      const game = makeGame('save_aborted', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      vi.mocked(idbSetMock).mockRejectedValueOnce(new Error('The operation was aborted'))
+
+      const result = await saveSaveGame(game)
+      expect(result.success).toBe(false)
+
+      const loaded = await loadSaveGame('save_aborted')
+      expect(loaded).toBeNull()
+    })
+
+    it('indexfel (localStorage.setItem kastar) ger success:false även om speldatan skrevs', async () => {
+      const game = makeGame('save_indexfail', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      const originalSetItem = localStorageMock.setItem
+      vi.spyOn(localStorageMock, 'setItem').mockImplementationOnce(() => {
+        throw new DOMException('Quota exceeded', 'QuotaExceededError')
+      })
+
+      const result = await saveSaveGame(game)
+      expect(result.success).toBe(false)
+      expect(result.error).toBeTruthy()
+
+      // Not i god tro: speldatan ÄR faktiskt säker (IndexedDB-skrivningen
+      // lyckades) — bara indexet missade. success ska ändå vara false,
+      // spelaren ska aldrig se "✓ Sparat" när något gick fel, även om
+      // skadan här är mindre allvarlig än ett totalt misslyckande.
+      vi.mocked(localStorageMock.setItem).mockImplementation(originalSetItem)
+      const loaded = await loadSaveGame('save_indexfail')
+      expect(loaded).not.toBeNull()
+      expect(loaded?.id).toBe('save_indexfail')
+    })
+
+    it('en lyckad sparning ger fortfarande success:true (kontrollfall)', async () => {
+      const game = makeGame('save_ok', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      const result = await saveSaveGame(game)
+      expect(result).toEqual({ success: true, newRevision: 1 })
+    })
+  })
+
+  // M2 (audit 5c9a7a8, 2026-08-24) — SÅG LIVE: flik A valde Taktik, en
+  // stale flik B (öppnad tidigare, aldrig omladdad) valde Hård, B:s
+  // skrivning landade EFTER A:s och skrev tyst över A:s val. Testerna
+  // nedan reproducerar den situationen genom att skriva en "annan fliks"
+  // revision DIREKT till den mockade idb-butiken (utan att gå via
+  // saveSaveGame/loadSaveGame i den här processen) — det motsvarar exakt
+  // vad en verkligt annan flik gör: den delar disken, inte denna moduls
+  // interna lastKnownRevision-cache.
+  describe('saveSaveGame — M2: compare-and-swap mot flik-race', () => {
+    it('en flik som aldrig sett saven kan skriva den FÖRSTA gången utan konflikt', async () => {
+      const game = makeGame('save_cas_first', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      const result = await saveSaveGame(game)
+      expect(result).toEqual({ success: true, newRevision: 1 })
+    })
+
+    it('avvisar en skrivning när disken redan ligger steget före (annan flik hann skriva emellan)', async () => {
+      const id = 'save_cas_conflict'
+      const key = `bandy_save_${id}`
+      const aheadGame = makeGame(id, 'club_soderfors', '2025-10-02T09:00:00.000Z')
+      // Simulerar att en ANNAN flik redan skrivit revision 3 — direkt i den
+      // delade "disken" (idbStore), aldrig via denna processens saveSaveGame,
+      // så lastKnownRevision för id:t är fortfarande sin startpunkt (0) här.
+      idbStore[key] = { ...aheadGame, revision: 3 }
+
+      const staleGame = makeGame(id, 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      const result = await saveSaveGame(staleGame)
+
+      expect(result.success).toBe(false)
+      expect(result.conflict).toBe(true)
+      expect(result.error).toBeTruthy()
+
+      // Den viktigaste assertionen: den nyare kopian på disk är ORÖRD.
+      // Ingen dataförlust skedde — skrivningen avvisades, skrev inte över.
+      expect((idbStore[key] as SaveGame).managedClubId).toBe('club_soderfors')
+      expect((idbStore[key] as SaveGame).revision).toBe(3)
+    })
+
+    it('loadSaveGame synkar flikens kända revision — en efterföljande sparning konfliktar INTE falskt', async () => {
+      const id = 'save_cas_resync'
+      const game = makeGame(id, 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      const first = await saveSaveGame(game)
+      expect(first).toEqual({ success: true, newRevision: 1 })
+
+      const loaded = await loadSaveGame(id)
+      expect(loaded?.revision).toBe(1)
+
+      const second = await saveSaveGame({ ...loaded! })
+      expect(second).toEqual({ success: true, newRevision: 2 })
+    })
+
+    it('samma flik kan skriva flera gånger i följd utan att konfliktera med sig själv, SÅ LÄNGE anroparen matar tillbaka newRevision', async () => {
+      // Kontraktet: game.revision är baslinjen skrivningen jämför mot — det
+      // är anroparens (gameStore.ts:persistGameSnapshot / gameFlowActions.ts:
+      // persistAutosave) ansvar att skriva tillbaka result.newRevision in i
+      // sitt state innan nästa sparning, exakt som denna test gör manuellt.
+      const id = 'save_cas_self_sequence'
+      let game = makeGame(id, 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      const r1 = await saveSaveGame(game)
+      game = { ...game, revision: r1.newRevision }
+      const r2 = await saveSaveGame(game)
+      game = { ...game, revision: r2.newRevision }
+      const r3 = await saveSaveGame(game)
+      expect([r1.newRevision, r2.newRevision, r3.newRevision]).toEqual([1, 2, 3])
+      expect([r1.conflict, r2.conflict, r3.conflict]).toEqual([undefined, undefined, undefined])
+    })
+
+    it('samma flik som INTE matar tillbaka newRevision konfliktar med sig själv vid nästa sparning', async () => {
+      // Negativ kontrollpunkt till testet ovan — dokumenterar VARFÖR
+      // gameStore.ts/gameFlowActions.ts måste skriva tillbaka revision (se
+      // deras kommentarer): utan det avvisas den fliktens EGET nästa
+      // sparförsök, som om en annan flik hade skrivit emellan.
+      const id = 'save_cas_stale_self'
+      const game = makeGame(id, 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      const r1 = await saveSaveGame(game)
+      expect(r1.newRevision).toBe(1)
+      const r2 = await saveSaveGame(game) // samma objekt, revision fortfarande 0
+      expect(r2.success).toBe(false)
+      expect(r2.conflict).toBe(true)
+    })
+
+    it('force:true (importSaveFromJson-flödet) skriver över trots att disken ligger före', async () => {
+      const id = 'save_cas_force'
+      const key = `bandy_save_${id}`
+      const existing = makeGame(id, 'club_soderfors', '2025-10-02T09:00:00.000Z')
+      idbStore[key] = { ...existing, revision: 5 }
+
+      const importedGame = makeGame(id, 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+      const result = await saveSaveGame(importedGame, { force: true })
+
+      expect(result.success).toBe(true)
+      expect((idbStore[key] as SaveGame).managedClubId).toBe('club_forsbacka')
+    })
   })
 })
 

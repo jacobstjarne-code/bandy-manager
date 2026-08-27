@@ -156,9 +156,9 @@ export function processGameEvents(
 
   // Medium 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): säsongsminne DELAT
   // över alla mecenater i denna omgång — sätts en gång före loopen (läser
-  // game.narrativeLog) och uppdateras lokalt vid varje genererat event, så
+  // game.narrativeBeatLog) och uppdateras lokalt vid varje genererat event, så
   // två mecenater som båda rullar i SAMMA omgång inte kan välja samma typ
-  // (narrativeLog skrivs först i roundProcessor.ts, efter denna funktion
+  // (narrativeBeatLog skrivs först i roundProcessor.ts, efter denna funktion
   // returnerat — en stale läsning av `game` hade missat den racen).
   let mecenatSocialUsedTypes = getMecenatSocialUsedTypes(game)
 
@@ -447,6 +447,16 @@ export function processGameEvents(
 
 // ── Mecenat spawn ─────────────────────────────────────────────────────────
 
+/**
+ * Taket på samtidiga mecenater — DISKRET, oförändrat (Jacobs dom 2026-08-26,
+ * "takmodellen"). Delad mellan `applyMecenatSpawn` (gate för nya) och
+ * `applyMecenatCapEviction` (tvingar ut en om taket sjunker under antalet
+ * aktiva) — en sanning, ett ställe, kan inte glida isär.
+ */
+export function mecenatCapForCs(cs: number): number {
+  return cs >= 85 ? 3 : cs >= 70 ? 2 : 1
+}
+
 export function applyMecenatSpawn(
   game: SaveGame,
   postTransferClubs: Club[],
@@ -471,11 +481,19 @@ export function applyMecenatSpawn(
   const cs = game.communityStanding ?? 50
   const rep = postTransferClubs.find(c => c.id === game.managedClubId)?.reputation ?? 50
   const activeMecenater = updatedMecenater.filter(m => m.isActive)
-  const maxMecenater = cs >= 85 ? 3 : cs >= 70 ? 2 : 1
+  const maxMecenater = mecenatCapForCs(cs)
   const alreadySpawnedThisSeason = updatedMecenater.some(m => m.arrivedSeason === game.currentSeason)
 
+  // "Takmodellen" (Jacobs dom 2026-08-26, ARBETSKARTAN fråga 3 —
+  // sannolikhetsrampen mättes och kastades: 1-15%/omgång upprepad 130-220
+  // gånger över en karriär konvergerar mot säkerhet oavsett cs, se
+  // RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md). Ortstödet ska avgöra HUR
+  // MÅNGA (taket ovan, redan diskret), inte HUR OFTA — därför borttaget:
+  // det tidigare `cs >= 65`-försöksgrindet. Golvet på taket är 1 (aldrig
+  // 0) — en klubb kan ALLTID ha en mecenat, oavsett hur lågt ortstödet är,
+  // bara långsammare (samma 15%-chans, oförändrad) och begränsat till en
+  // åt gången tills taket stiger.
   if (
-    cs >= 65 &&
     rep >= 55 &&
     activeMecenater.length < maxMecenater &&
     !alreadySpawnedThisSeason &&
@@ -489,6 +507,53 @@ export function applyMecenatSpawn(
     }
   }
   return { updatedMecenater, newEvents: [] }
+}
+
+/**
+ * "Takmodellen", andra halvan (Jacobs dom 2026-08-26): relationen var
+ * enkelriktad — communityStanding avgjorde bara ANKOMST, aldrig AVHOPP
+ * (bekräftat kodläst, RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md punkt 4). Om
+ * taket sjunker under antalet aktiva mecenater (orten har svikit klubben)
+ * ska en lämna — annars är orten en spärr man passerar en gång, inte en
+ * spak i båda riktningarna. Den MINST NÖJDA (lägst happiness) lämnar
+ * först — samma "vem har mest att förlora"-logik som redan används för
+ * att välja VILKEN mecenat en ekonomisk kris drabbar
+ * (economicCrisisService.ts). Ingen ekonomisk straffavgift här (skiljer
+ * denna väg från kravmotorns avhopp) — orsaken är omständighet, inte ett
+ * brutet löfte klubben gav, så kostnaden är bara den förlorade relationen,
+ * inte ytterligare ett kronbelopp.
+ */
+export function applyMecenatCapEviction(
+  game: SaveGame,
+  updatedMecenater: NonNullable<SaveGame['mecenater']>,
+): { updatedMecenater: NonNullable<SaveGame['mecenater']>; newEvents: GameEvent[] } {
+  const cs = game.communityStanding ?? 50
+  const cap = mecenatCapForCs(cs)
+  const active = updatedMecenater.filter(m => m.isActive)
+  if (active.length <= cap) return { updatedMecenater, newEvents: [] }
+
+  const toEvict = [...active].sort((a, b) => a.happiness - b.happiness)[0]
+  const withdrawalId = `mecenat_cs_eviction_${toEvict.id}_${game.currentSeason}`
+  const alreadyQueued = (game.pendingEvents ?? []).some(e => e.id === withdrawalId) ||
+    game.inbox.some(i => i.id === withdrawalId)
+  if (alreadyQueued) return { updatedMecenater, newEvents: [] }
+
+  const newUpdated = updatedMecenater.map(m =>
+    m.id === toEvict.id ? { ...m, isActive: false, happiness: 0, permanentlyWithdrawn: true } : m,
+  )
+  const withdrawalEvent: GameEvent = {
+    id: withdrawalId,
+    type: 'mecenatWithdrawal',
+    // SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md). Platshållare tills
+    // Opus levererar en text som säger VARFÖR: orten har svikit klubben,
+    // inte att mecenaten kände sig ignorerad (skild orsak från
+    // kravmotorns avhopp, se eventProcessor.ts:254).
+    title: '[Opus]',
+    body: '[Opus]',
+    choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'noOp' } }],
+    resolved: false,
+  }
+  return { updatedMecenater: newUpdated, newEvents: [withdrawalEvent] }
 }
 
 // ── Pool 1c: spela-på-erbjudandet (injuryDoctorText.ts) ──────────────────────

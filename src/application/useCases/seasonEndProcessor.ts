@@ -1,4 +1,4 @@
-import type { SaveGame, InboxItem, AllTimeRecords, SeasonTransitionEvent } from '../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem, AllTimeRecords, SeasonTransitionEvent, BoardAssessment } from '../../domain/entities/SaveGame'
 import { resolveContractExtension, getManagerDisplayName } from '../../domain/services/managerProfileService'
 
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
@@ -20,7 +20,7 @@ import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/pla
 import { generateRetirementData, generateFarewellQuote } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
-import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate } from '../../domain/services/boardService'
+import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 import { pickSeasonDecision } from '../../domain/services/seasonDecisionCaptureService'
 import { evaluateSeasonGoal, deriveSeasonPersonChange, deriveRivalryStanding } from '../../domain/services/seasonGoalService'
@@ -87,32 +87,35 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // Board verdict at season end
   const managedClubStanding = standings.find(s => s.clubId === game.managedClubId)
   // U6 (SLUTTEST_KO.md, 2026-08-17): renommé kunde inte FALLA vid misslyckande
-  // — bara skandal/nekad licens sänkte det. Ratingen (1-5, samma som redan
-  // driver styrelseutlåtandet nedan) återanvänds för ett säsongsvis delta,
-  // se D028 för magnituden och proportionsresonemanget mot skandal (-5/-8).
-  let seasonVerdictRating: 1 | 2 | 3 | 4 | 5 | null = null
+  // — bara skandal/nekad licens sänkte det, se D028 för magnitud/proportions-
+  // resonemanget mot skandal (-5/-8). Ratingen härifrån drev tidigare ENDAST
+  // den hanterade klubbens renommédelta; sedan H4 Heros-uppföljningen
+  // (2026-08-25) räknas rating om oberoende för alla tolv klubbar i loopen
+  // nedan (varje klubb mot sin EGEN boardExpectation/placering), så denna
+  // ratingen behövs bara för styrelseutlåtandets inboxtext.
+  // Påståendesvepet #13 (MASTER.md, 2026-08-24), Jacobs dom 2026-08-26: kortet
+  // pushas INTE här längre — bara titel/body beräknas nu (position-baserat,
+  // orört). Den faktiska pushen sker efter computeBoardPatienceUpdate nedan,
+  // som lägger till lägesraden (seasonVerdictZoneLine) med det SLUTGILTIGA,
+  // säsongsslut-uppdaterade boardPatience-värdet — inte det som gällde vid
+  // säsongens start, annars skulle kortet visa ett läge som redan hunnit
+  // bli inaktuellt samma dag det skrevs.
+  let boardVerdictTitle: string | undefined
+  let boardVerdictBody: string | undefined
   if (managedClubStanding) {
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
     if (managedClub) {
-      const { title, body, rating } = generateSeasonVerdict(
+      const { title, body } = generateSeasonVerdict(
         managedClub.boardExpectation,
         managedClubStanding.position,
         game.clubs.length,
       )
-      seasonVerdictRating = rating
-      newInboxItems.push({
-        id: `inbox_board_verdict_${game.currentSeason}`,
-        date: game.currentDate,
-        type: InboxItemType.BoardFeedback,
-        title,
-        body,
-        isRead: false,
-      } as InboxItem)
+      boardVerdictTitle = title
+      boardVerdictBody = body
     }
   }
 
   // ── License check (V0.9) ──────────────────────────────────────────────────
-  const licenseRand = mulberry32((seed ?? game.currentSeason * 12345) + 777123)
   const managedClubForLicense = game.clubs.find(c => c.id === game.managedClubId)
   let licenseReview: LicenseReview | undefined = game.licenseReview
   let licenseWarningCount = game.licenseWarningCount ?? 0
@@ -210,13 +213,22 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // U6 (SLUTTEST_KO.md, 2026-08-17) / D028: säsongsvist renommédelta ur
   // placering mot förväntan.
-  if (seasonVerdictRating !== null) {
-    const managedIdx = updatedClubs.findIndex(c => c.id === game.managedClubId)
-    if (managedIdx !== -1) {
-      const repDelta = seasonReputationDelta(seasonVerdictRating)
-      const current = updatedClubs[managedIdx].reputation ?? 50
-      updatedClubs[managedIdx] = { ...updatedClubs[managedIdx], reputation: Math.max(0, Math.min(100, current + repDelta)) }
-    }
+  //
+  // H4 Heros-uppföljning (Jacobs dom 2026-08-25): körde tidigare BARA den
+  // hanterade klubben — de elva AI-klubbarnas rykte rörde sig aldrig av
+  // ligaresultat, bara av det separata (och betydligt mer sällsynta)
+  // skandalsystemet. Konsekvens: en tioårig karriär spelades mot en liga
+  // vars rykten var frusna vid generering — "Lesjöfors har rustat" gick
+  // inte att belägga eftersom ingenting i datan förändrades. Nu körd för
+  // ALLA tolv klubbar, var och en mot sin EGEN boardExpectation/placering
+  // (inte den hanterade klubbens rating återanvänd för andra klubbar).
+  for (let i = 0; i < updatedClubs.length; i++) {
+    const clubStanding = standings.find(s => s.clubId === updatedClubs[i].id)
+    if (!clubStanding) continue
+    const rating = computeSeasonVerdictRating(updatedClubs[i].boardExpectation, clubStanding.position, game.clubs.length)
+    const repDelta = seasonReputationDelta(rating)
+    const current = updatedClubs[i].reputation ?? 50
+    updatedClubs[i] = { ...updatedClubs[i], reputation: Math.max(0, Math.min(100, current + repDelta)) }
   }
 
   let youthIntakeResultForManagedClub: ReturnType<typeof generateYouthIntake> | null = null
@@ -342,31 +354,45 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   const nextSeason = game.currentSeason + 1
 
-  // Board pre-season message for managed club
-  const managedClubAfterPrize = updatedClubs.find(c => c.id === game.managedClubId)
-  if (managedClubAfterPrize) {
-    const clubStanding = standings.find(s => s.clubId === managedClubAfterPrize.id)
+  // H4 Heros-uppföljning (Jacobs dom 2026-08-25): boardExpectation-stegningen
+  // körde tidigare BARA den hanterade klubben — precis som renommédeltat
+  // ovan, elva klubbars förväntan stod still i evighet. Körd nu för ALLA
+  // tolv, var och en mot sin EGEN standing/finansförändring. Bara den
+  // hanterade klubben får inboxtext (AI-klubbar har ingen spelare som läser
+  // sin egen inbox) — texten diskas för de andra elva, bara newExpectation
+  // används.
+  // Förutsättningsfasen, steg 1 (Jacobs dom 2026-08-25): samma varv som
+  // beräknar boardExpectation-stegningen för hanterad klubb — deriveBoardAssessment
+  // läser club.boardExpectation FÖRE denna iterations skrivning (samma
+  // pre-mutation-värde generatePreSeasonMessage redan läser), så steg/riktning
+  // beräknas en gång, inte två separata gissningar om samma sak.
+  let boardAssessment: BoardAssessment | undefined
+
+  for (let i = 0; i < updatedClubs.length; i++) {
+    const club = updatedClubs[i]
+    const clubStanding = standings.find(s => s.clubId === club.id)
     const lastPos = clubStanding?.position ?? 12
-    const finChange = managedClubAfterPrize.finances - (game.seasonStartFinances ?? managedClubAfterPrize.finances)
+    const finChange = club.id === game.managedClubId
+      ? club.finances - (game.seasonStartFinances ?? club.finances)
+      : 0
+    const { title, body, newExpectation } = generatePreSeasonMessage(club, standings, lastPos, finChange)
+    updatedClubs[i] = { ...club, boardExpectation: newExpectation }
 
-    const { title, body, newExpectation } = generatePreSeasonMessage(
-      managedClubAfterPrize, standings, lastPos, finChange
-    )
+    if (club.id === game.managedClubId) {
+      newInboxItems.push({
+        id: `inbox_board_preseason_${nextSeason}`,
+        date: `${nextSeason}-09-15`,
+        type: InboxItemType.BoardFeedback,
+        title,
+        body,
+        isRead: false,
+      } as InboxItem)
 
-    // Update club expectation for next season
-    const managedIdx = updatedClubs.findIndex(c => c.id === game.managedClubId)
-    if (managedIdx !== -1) {
-      updatedClubs[managedIdx] = { ...updatedClubs[managedIdx], boardExpectation: newExpectation }
+      boardAssessment = {
+        ...deriveBoardAssessment(club, lastPos, nextSeason),
+        seasonAcknowledgment: BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER,
+      }
     }
-
-    newInboxItems.push({
-      id: `inbox_board_preseason_${nextSeason}`,
-      date: `${nextSeason}-09-15`,
-      type: InboxItemType.BoardFeedback,
-      title,
-      body,
-      isRead: false,
-    } as InboxItem)
   }
 
   // Generate new schedule for next season
@@ -457,6 +483,16 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         games: player.seasonStats?.gamesPlayed ?? 0,
         rating: Math.round((player.seasonStats?.averageRating ?? 0) * 10) / 10,
         clubId: player.clubId,
+        // E-GRIND0-1 (2026-08-24): läst HÄR, från `player` (funktionens
+        // mottagna game-parameter) — INNAN seasonCupStats nollställs nedan,
+        // och EFTER att en eventuell tyst extra-runda (roundProcessor.ts:1928)
+        // redan applicerat sina increment. Detta ÄR den korrekta, kompletta
+        // säsongstotalen — till skillnad från en extern snapshot tagen INNAN
+        // anropet till handleSeasonEnd, som kan bli stale av just den
+        // rekursionen.
+        cupGames: player.seasonCupStats?.gamesPlayed ?? 0,
+        cupGoals: player.seasonCupStats?.goals ?? 0,
+        cupAssists: player.seasonCupStats?.assists ?? 0,
       },
     ].slice(-10),
     seasonStats: {
@@ -736,9 +772,18 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // (inget mutex/reassignment av `game` sker mellan gamla och nya platsen,
   // verifierat), så flytten ändrar inget om VAD som utvärderas.
   //
-  // Jacobs andra villkor: bufferten skyddar INTE upprepat missade mål — se
-  // isRepeatedObjectiveFailure() (boardObjectiveService.ts) för den fulla
-  // motiveringen och rapporten om vad boardObjectiveHistory:s typ faktiskt bär.
+  // Jacobs reviderade villkor (styrelseobjektiv-tier-domen, 2026-08-25):
+  // bufferten skyddade tidigare INTE upprepat missade mål alls (0% — se
+  // isRepeatedObjectiveFailure() i boardObjectiveService.ts för den fulla
+  // motiveringen). Jacobs korrigering: "Ett upprepat missat mål ska kosta
+  // mer än ett nytt, det var min dom — men att det förbigår krediten helt
+  // betyder att bra år aldrig kan hjälpa." Upprepningen ska alltså
+  // fortfarande kosta MER än en färsk miss (mindre av kostnaden är
+  // buffer-berättigad), men inte förbigå krediten helt. REPEATED_FAILURE_
+  // BUFFER_PROTECTION = hur stor andel av kostnaden bufferten FÅR absorbera
+  // vid en upprepning — 0.5 vald som mittpunkt (halva skyddet, inte inget)
+  // i avsaknad av en egen kalibreringsanledning att avvika.
+  const REPEATED_FAILURE_BUFFER_PROTECTION = 0.5
   const objectiveResults: Array<{ season: number; objectiveId: string; result: 'met' | 'failed'; ownerReaction: string; label: string }> = []
   const objectiveStatuses: Array<'met' | 'failed' | 'at_risk' | 'active'> = []
   const OBJECTIVE_PATIENCE_COST: Record<'met' | 'failed' | 'at_risk' | 'active', number> = {
@@ -769,7 +814,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
     const cost = OBJECTIVE_PATIENCE_COST[result.status]
     if (isRepeatedObjectiveFailure(obj.id, cost, objectiveHistory)) {
-      unprotectedObjectiveDelta += cost
+      bufferEligibleObjectiveDelta += cost * REPEATED_FAILURE_BUFFER_PROTECTION
+      unprotectedObjectiveDelta += cost * (1 - REPEATED_FAILURE_BUFFER_PROTECTION)
     } else {
       bufferEligibleObjectiveDelta += cost
     }
@@ -806,8 +852,26 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   let newBoardPatience = patienceUpdate.newBoardPatience
   let newConsecutiveFailures = patienceUpdate.newConsecutiveFailures
   const newMeritBuffer = patienceUpdate.newMeritBuffer
-  // Upprepade objektivmissar — ALDRIG buffer-skyddade, träffar patiensen direkt.
+  // Upprepade objektivmissar — halva kostnaden (REPEATED_FAILURE_BUFFER_
+  // PROTECTION ovan) är ALDRIG buffer-skyddad, träffar patiensen direkt.
+  // Den andra halvan gick in i bufferEligibleObjectiveDelta ovan och kunde
+  // absorberas av computeBoardPatienceUpdate precis som en färsk miss.
   newBoardPatience = Math.max(0, Math.min(100, newBoardPatience + unprotectedObjectiveDelta))
+
+  // Påståendesvepet #13: pushar styrelsebetyg-kortet HÄR, nu att det
+  // slutgiltiga newBoardPatience är känt — säsongsdomen (orörd) följt av
+  // en egen lägesmening, aldrig ihopvävda till en sats.
+  if (boardVerdictTitle !== undefined && boardVerdictBody !== undefined) {
+    newInboxItems.push({
+      id: `inbox_board_verdict_${game.currentSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.BoardFeedback,
+      title: boardVerdictTitle,
+      body: `${boardVerdictBody} ${seasonVerdictZoneLine(newBoardPatience)}`,
+      isRead: false,
+    } as InboxItem)
+  }
+
   let managerFired = false
 
   // NOTE: Firing check moved AFTER board objectives evaluation (line ~699)
@@ -829,29 +893,51 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     s => !s.expiresSeason || s.expiresSeason >= nextSeason,
   )
 
+  // 2026-08-26 (Jacobs dom, RAPPORT_ATERKOPPLINGSSLINGAN_HITTAD_2026-08-26.md):
+  // "Kaskaden ska bort, inte mjukas. Ett diskret straff med tre samtidiga
+  // effekter vid en godtycklig kassagräns kan inte balanseras — bara flyttas."
+  // Gamla beteendet (borttaget): 3 SLUMPADE spelare bort utan spelarval, fast
+  // -15 rykte, 60% av sponsorerna på en gång — en självförstärkande kaskad
+  // (sämre kassa → kaskad → ännu sämre kassa → samma kaskad igen).
+  //
+  // Nytt: kontinuerliga konsekvenser som skalar med hur djupt under -200 000
+  // kassan ligger, ALDRIG en spelarborttagning utan val. Spelaren väljer
+  // fortfarande vem som säljs — det gör redan `checkEconomicCrisis`
+  // (economicCrisisService.ts, fas 3: sälj/kommunlån/mecenat), en redan
+  // byggd, testad, spelarvals-driven mekanism som triggar på SAMMA -200 000-
+  // gräns. Ingen ny händelse behövs för "tvinga fram ett val" — den finns.
   if (licenseReview?.status === 'denied' && managedClubForLicense) {
-    // Remove 3 random managed players
-    const managedSquadIds = clubsAfterLicense.find(c => c.id === game.managedClubId)?.squadPlayerIds ?? []
-    const shuffledIds = [...managedSquadIds].sort(() => licenseRand() - 0.5)
-    const removedIds = new Set(shuffledIds.slice(0, Math.min(3, shuffledIds.length)))
-    playersAfterLicense = playersAfterLicense.map(p =>
-      removedIds.has(p.id) && p.clubId === game.managedClubId
-        ? { ...p, clubId: 'free_agent' }
-        : p
-    )
+    // Ryktesförlust skalar med underskottets djup istf ett fast tal.
+    // Magnitud FÖRESLAGEN, inte dömd: -5 vid tröskeln, +5 extra per
+    // ytterligare 50 000 kr under -200 000, tak -30 (samma golv som förut
+    // var det enda möjliga utfallet, nu det VÄRSTA möjliga).
+    const deficitDepth = Math.max(0, -200_000 - managedClubForLicense.finances)
+    const reputationLoss = Math.min(30, 5 + Math.floor(deficitDepth / 50_000) * 5)
     clubsAfterLicense = clubsAfterLicense.map(c =>
       c.id === game.managedClubId
-        ? {
-            ...c,
-            reputation: Math.max(0, (c.reputation ?? 50) - 15),
-            squadPlayerIds: c.squadPlayerIds.filter(id => !removedIds.has(id)),
-          }
+        ? { ...c, reputation: Math.max(0, (c.reputation ?? 50) - reputationLoss) }
         : c
     )
-    // Remove 60% of sponsors
-    const keepCount = Math.ceil(sponsorsAfterLicense.length * 0.4)
-    sponsorsAfterLicense = sponsorsAfterLicense.slice(0, keepCount)
 
+    // En sponsor i taget, inte 60% på en gång — den minst värdefulla lämnar
+    // först. Om underskottet fortsätter flera säsonger i rad lämnar en till
+    // varje gång, aldrig en engångskaskad.
+    if (sponsorsAfterLicense.length > 0) {
+      const leavingSponsor = [...sponsorsAfterLicense].sort((a, b) => a.weeklyIncome - b.weeklyIncome)[0]
+      sponsorsAfterLicense = sponsorsAfterLicense.filter(s => s.id !== leavingSponsor.id)
+      // SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]' tills en riktig rad om
+      // VARFÖR sponsorn lämnar finns. Strukturerade fält bär fakta (namn,
+      // belopp) så Opus kan skriva raden utan att gissa siffrorna.
+      newInboxItems.push({
+        id: `inbox_sponsor_leaves_license_${nextSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.EconomicCrisis,
+        title: '[Opus]',
+        body: '[Opus]',
+        relatedClubId: game.managedClubId,
+        isRead: false,
+      } as InboxItem)
+    }
   }
 
   // ── Kommunval — every 4th season, 50% chance of new politician ───────────
@@ -946,9 +1032,20 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // ── Lager 3: Licensnämnden — consecutive loss season check ───────────────
+  // Flyttad hit (2026-08-26, RAPPORT_LICENSVARNING_RENDERING_2026-08-26.md)
+  // FÖRE handlingsplan-händelsen — den ska triggas av SAMMA system som
+  // faktiskt avskedar (licenseStatus/checkLicenseStatus), inte det parallella
+  // licenseReview som bara var kopplat av misstag. checkLicenseStatus läser
+  // bara `game` (oförändrad in-parameter) + baseSeed, så flytten ändrar
+  // ingenting om VAD som beräknas.
+  const licenseCheck = checkLicenseStatus(game, baseSeed)
+  const newLicenseStatus = licenseCheck.newLicenseStatus
+  const newLicenseRiskScore = licenseCheck.newLicenseRiskScore
+
   // ── Build handlingsplan pending event if needed ───────────────────────────
   const seasonEndPendingEvents: GameEvent[] = [...retirementCeremonyEvents]
-  if (licenseReview?.status === 'warning' || licenseReview?.status === 'continued_review') {
+  if (newLicenseStatus === 'first_warning' || newLicenseStatus === 'point_deduction') {
     const handlingsplanEvent: GameEvent = {
       id: `licenseHandlingsplan_${game.currentSeason}`,
       type: 'licenseHandlingsplan',
@@ -959,7 +1056,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
           id: 'sparplan',
           label: 'Sparplan — dra ner på löner och kostnader',
           effect: { type: 'multiEffect', subEffects: JSON.stringify([
-            { type: 'income', amount: Math.round((licenseReview.requiredCapital ?? 50000) * 0.8) },
+            { type: 'income', amount: Math.round((licenseReview?.requiredCapital ?? 50000) * 0.8) },
           ]) },
         },
         {
@@ -984,14 +1081,25 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   // Firing check — AFTER objectives so success/failure affects the decision
-  if (newBoardPatience <= 15 || newConsecutiveFailures >= 3) {
+  //
+  // Survive-tierns eget avskedskontrakt (Jacobs dom 2026-08-25, efter fjärde
+  // H4-mätningen — RAPPORT_SURVIVE_AVSKEDSMEKANIK_AVGRANSNING_2026-08-25.md):
+  // "Att förlora är förväntat — det är premissen." boardPatience<=15 OCH
+  // consecutiveFailures>=3 är BÅDA sportsligt utfall (det senare byggs av
+  // finalPos>=relegationZoneStart — Survive-ankaret ÄR 12=nedflyttningszonen,
+  // så en Survive-klubb som presterar exakt som väntat annars ackumulerar
+  // consecutiveFailures nästan varje säsong). Stängs av för Survive. Två
+  // oberoende finansiella vägar kvarstår ORÖRDA och redan aktiva: licensnekan
+  // (rad ~1044 nedan, computeNetResult — ren kassaförändring) och per-omgångs-
+  // konkurs (postRoundFlagsProcessor.ts, finances<-2M). En Survive-klubb är
+  // alltså inte osparkbar — bara inte sparkbar på ENBART resultat.
+  const isSurviveTier = managedClubExpectation === ClubExpectation.Survive
+  if (!isSurviveTier && (newBoardPatience <= 15 || newConsecutiveFailures >= 3)) {
     managerFired = true
   }
 
-  // ── Lager 3: Licensnämnden — consecutive loss season check ───────────────
-  const licenseCheck = checkLicenseStatus(game, baseSeed)
-  const newLicenseStatus = licenseCheck.newLicenseStatus
-  const newConsecutiveLossSeasons = licenseCheck.newConsecutiveLossSeasons
+  // licenseCheck/newLicenseStatus/newLicenseRiskScore flyttade ovan
+  // (före handlingsplan-blocket) — se kommentaren där.
   const licensePendingDeductions: Record<string, number> = {}
   if (licenseCheck.action) {
     if (licenseCheck.action.type === 'license_denied') {
@@ -1000,7 +1108,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     if (licenseCheck.action.type === 'point_deduction') {
       licensePendingDeductions[game.managedClubId] = 3
     }
-    newInboxItems.push(buildLicenseInboxItem(licenseCheck.action, game.currentDate, game.currentSeason))
+    newInboxItems.push(buildLicenseInboxItem(licenseCheck.action, game.currentDate, game.currentSeason, licenseCheck.newLicenseStatus))
   }
 
   const objRand = mulberry32((seed ?? 42) + game.currentSeason * 777)
@@ -1202,7 +1310,17 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // AVSLUTADE säsongen här — resetPlayers/updatedClubs för nästa säsong har
   // inte skrivits tillbaka till `game` än). contractExpiredIds/retiredPlayerIds
   // är redan beräknade ovan (kontraktsutgång/pensionering samma rollover).
-  const seasonEndGameView = { ...game, clubs: updatedClubs }
+  //
+  // Ordningsbuggen (RAPPORT_ORDNINGSBUGGEN_SEASONENDPROCESSOR_2026-08-25,
+  // Jacobs dom "latent räcker inte som skäl att lämna"): clubs: här användes
+  // updatedClubs (fryst innan licenseffekter/AI-transfers/truppkomplettering)
+  // istf clubsAfterLicense (den array som FAKTISKT sparas för nästa säsong,
+  // rad ~1386). Ingen befintlig läsare av seasonEndGameView visade fel
+  // (verifierat) — men en framtida läsare av en AI-klubbs finances/
+  // squadPlayerIds/reputation härifrån hade fått föråldrad data. clubsAfterLicense
+  // är redan fullt beräknad vid denna punkt (sista skrivning rad ~1226, före
+  // denna rad) — enrads-bytet lägger ingen ny beräkning, bara rätt källa.
+  const seasonEndGameView = { ...game, clubs: clubsAfterLicense }
   const activeGoal = game.activeSeasonGoal?.chosenSeason === game.currentSeason ? game.activeSeasonGoal : undefined
   const personalGoal = activeGoal
     ? evaluateSeasonGoal(seasonEndGameView, activeGoal, { contractExpiredIds, retiredPlayerIds })
@@ -1261,7 +1379,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
           m => profile.careerWins < m && newTotalWins >= m)
         const crossedSeasonsMilestone = SEASONS_MILESTONES.find(
           m => profile.seasonsAtClub < m && newTotalSeasons >= m)
-        let updatedLog = profile.narrativeLog ?? []
+        let updatedLog = profile.diary ?? []
         if (crossedWinMilestone) {
           updatedLog = [...updatedLog, {
             season: game.currentSeason, matchday: game.currentMatchday,
@@ -1282,7 +1400,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
           careerWins: newTotalWins,
           careerDraws: profile.careerDraws + sDraws,
           careerLosses: profile.careerLosses + sLosses,
-          narrativeLog: updatedLog,
+          diary: updatedLog,
         } as import('../../domain/entities/ManagerProfile').ManagerProfile
       })()
     : undefined
@@ -1342,6 +1460,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // (academyActions.ts) + retired/contractExpired/aged från denna körning.
     // Sommaren tömmer listan när den visas, inte denna funktion.
     pendingSeasonTransitionEvents: [...(game.pendingSeasonTransitionEvents ?? []), ...seasonTransitionEvents],
+    // Förutsättningsfasen, steg 1: senaste säsongens bedömning, ren
+    // visningsläsning i SeasonTransitionScene.tsx, ingen egen beräkning där.
+    boardAssessment,
     fixtures: newFixtures,
     league: newLeague,
     standings: calculateStandings(updatedClubs.map(c => c.id), []),
@@ -1548,6 +1669,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       gravId,
       raddId,
     ].slice(-200),
+    aiTransferLog: [
+      ...(game.aiTransferLog ?? []),
+      ...aiTransferResult.transfers.map(t => ({ ...t, season: nextSeason })),
+    ].slice(-200),
     // DREAM-013: flag that a team photo should be generated for this season
     lastTeamPhotoSeason: game.currentSeason,
     // DREAM-016/DREAM-010: reset per-season trackers
@@ -1559,7 +1684,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     financeWarningGivenThisSeason: false,
     // Lager 3: Licensnämnden
     licenseStatus: newLicenseStatus,
-    consecutiveLossSeasons: newConsecutiveLossSeasons,
+    licenseRiskScore: newLicenseRiskScore,
     // pendingPointDeductions from this season → pointDeductions for next season
     pointDeductions: game.pendingPointDeductions ?? {},
     // pendingPointDeductions for next season: merge scandal-accumulated + license-generated

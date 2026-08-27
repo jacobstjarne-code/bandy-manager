@@ -4,11 +4,14 @@ import { advanceToNextEvent } from '../advanceToNextEvent'
 import { executeTransfer } from '../../../domain/services/transferService'
 import { autoAssignFormation, FORMATIONS } from '../../../domain/entities/Formation'
 import type { FormationType } from '../../../domain/entities/Formation'
-import { FixtureStatus, InboxItemType, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../../../domain/enums'
+import { FixtureStatus, InboxItemType, MatchEventType, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../../../domain/enums'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { TransferBid } from '../../../domain/entities/GameEvent'
-import type { TeamSelection } from '../../../domain/entities/Fixture'
+import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
+import type { Player } from '../../../domain/entities/Player'
 import { checkForPlayThroughInjuryOffer } from '../processors/eventProcessor'
+import { applyPlayerStateUpdates } from '../processors/playerStateProcessor'
+import { createSuspensionItem } from '../../../domain/services/inboxService'
 import { getInjurySeverity, PLAY_THROUGH_AFTERMATH } from '../../../domain/data/injuryDoctorText'
 import { fixtureSeed } from '../../../domain/utils/random'
 import { advanceUntilManagedFixture as drainUntilManagedFixture } from '../../../testing/advanceUntilManagedFixture'
@@ -111,6 +114,122 @@ describe('roundProcessor — suspension handling', () => {
     const result = advanceToNextEvent(game, 1)
     const after = result.game.players.find(p => p.id === player.id)!
     expect(after.suspensionGamesRemaining).toBe(0)
+  })
+
+  // PÅSTÅENDEKARTAN (2026-08-24): roundProcessor.ts:s avstängningsinkorgrad
+  // hårdkodade tidigare createSuspensionItem(player, 3, ...) — 3 matcher —
+  // oavsett faktisk längd. Sanningen (player.suspensionGamesRemaining) fanns
+  // redan på samma objekt.
+  //
+  // PÅSTÅENDEGRINDEN väg 1+2 (2026-08-24, Jacobs dom): matchstraffet är inte
+  // längre en 2%-slump — det härleds ur REGLER.md:s verkliga regel ("Tredje
+  // utvisningen på samma spelare = automatiskt matchstraff") och längden ur
+  // durationMinutes på den utlösande utvisningen (10 min → 3 matcher, 5 min
+  // → 1 match, den enda existerande severitetsaxeln). Testerna nedan
+  // konstruerar därför RIKTIGA tre-utvisningar-i-samma-match-fixturer istf
+  // att leta seeds — mekaniken är deterministisk nu, ingen sådan sökning
+  // behövs längre.
+  function makeFixtureWithSuspensions(
+    game: SaveGame, player: { id: string; clubId: string }, opponentId: string,
+    durations: (5 | 10)[],
+  ): Fixture {
+    return {
+      id: 'fx_suspension_test', leagueId: 'league_1', season: game.currentSeason,
+      roundNumber: 5, matchday: 5,
+      homeClubId: player.clubId, awayClubId: opponentId,
+      status: FixtureStatus.Completed, homeScore: 1, awayScore: 1,
+      events: durations.map((d, i) => ({
+        minute: 20 + i * 15, type: MatchEventType.Suspension, clubId: player.clubId, playerId: player.id,
+        description: 'Utvisning', durationMinutes: d,
+      })),
+    }
+  }
+
+  it('tredje utvisningen (10 min) utlöser matchstraff — 3 matcher, deterministiskt utan slump', () => {
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const opponentId = game.clubs.find(c => c.id !== player.clubId)!.id
+    const fixture = makeFixtureWithSuspensions(game, player, opponentId, [10, 5, 10])
+
+    // seed=0 (ingen sökning behövs — mekaniken är deterministisk)
+    const result = applyPlayerStateUpdates(
+      game.players, new Set(), new Set(), game, null, undefined, undefined,
+      0, 6, [fixture],
+    )
+    const found = result.newlySuspended.find(s => s.player.id === player.id)
+    expect(found).toBeDefined()
+    expect(found!.player.suspensionGamesRemaining).toBe(3)
+    expect(found!.player.suspensionCause?.matches).toBe(3)
+
+    const item = createSuspensionItem(found!.player, found!.player.suspensionGamesRemaining, '2026-01-01')
+    expect(item.body).toContain('3')
+  })
+
+  it('tredje utvisningen (5 min) utlöser matchstraff — 1 match, inte 3', () => {
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const opponentId = game.clubs.find(c => c.id !== player.clubId)!.id
+    const fixture = makeFixtureWithSuspensions(game, player, opponentId, [5, 5, 5])
+
+    const result = applyPlayerStateUpdates(
+      game.players, new Set(), new Set(), game, null, undefined, undefined,
+      0, 6, [fixture],
+    )
+    const found = result.newlySuspended.find(s => s.player.id === player.id)
+    expect(found).toBeDefined()
+    expect(found!.player.suspensionGamesRemaining).toBe(1)
+    expect(found!.player.suspensionCause?.matches).toBe(1)
+  })
+
+  it('två utvisningar samma match: INGET matchstraff, spelaren stängs inte av', () => {
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const opponentId = game.clubs.find(c => c.id !== player.clubId)!.id
+    const fixture = makeFixtureWithSuspensions(game, player, opponentId, [10, 10])
+
+    const result = applyPlayerStateUpdates(
+      game.players, new Set(), new Set(), game, null, undefined, undefined,
+      0, 6, [fixture],
+    )
+    expect(result.newlySuspended.find(s => s.player.id === player.id)).toBeUndefined()
+    const after = result.updatedPlayers.find(p => p.id === player.id)!
+    expect(after.suspensionGamesRemaining).toBe(0)
+  })
+
+  it('tre utvisningar på OLIKA spelare samma match: ingen av dem får matchstraff', () => {
+    const game = makeGame()
+    const squad = game.players.filter(p => p.clubId === game.managedClubId)
+    const [p1, p2, p3] = squad
+    const opponentId = game.clubs.find(c => c.id !== p1.clubId)!.id
+    const fixture: Fixture = {
+      id: 'fx_suspension_spread', leagueId: 'league_1', season: game.currentSeason,
+      roundNumber: 5, matchday: 5,
+      homeClubId: p1.clubId, awayClubId: opponentId,
+      status: FixtureStatus.Completed, homeScore: 1, awayScore: 1,
+      events: [p1, p2, p3].map((p, i) => ({
+        minute: 20 + i * 15, type: MatchEventType.Suspension, clubId: p.clubId, playerId: p.id,
+        description: 'Utvisning', durationMinutes: 10 as const,
+      })),
+    }
+
+    const result = applyPlayerStateUpdates(
+      game.players, new Set(), new Set(), game, null, undefined, undefined,
+      0, 6, [fixture],
+    )
+    expect(result.newlySuspended.length).toBe(0)
+  })
+
+  it('createSuspensionItem: 1 match läser SUSPENSION_INCIDENT_LINES (singel), 3 matcher läser SUSPENSION_INCIDENT_MULTI_LINES', () => {
+    const game = makeGame()
+    const player = { ...game.players.find(p => p.clubId === game.managedClubId)!, suspensionCause: { sinceMatchday: 5, opponentName: 'Testmotståndet', matches: 1 } }
+
+    const singleItem = createSuspensionItem({ ...player, suspensionCause: { ...player.suspensionCause, matches: 1 } }, 1, '2026-01-01')
+    const multiItem = createSuspensionItem({ ...player, suspensionCause: { ...player.suspensionCause, matches: 3 } }, 3, '2026-01-01')
+
+    // Singel-poolen nämner aldrig "Disciplinnämnden" eller "Grovt matchstraff" — det är multi-poolens språk.
+    expect(singleItem.body).not.toMatch(/Disciplinnämnden|Grovt matchstraff/)
+    expect(multiItem.body).toMatch(/Disciplinnämnden|Grovt matchstraff/)
+    expect(multiItem.body).toContain('3')
   })
 })
 

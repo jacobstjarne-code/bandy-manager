@@ -89,6 +89,8 @@ export function processEconomy(
       Boolean(managedHomeMatch?.isFinaldag || managedHomeMatch?.isAnnandagen || (managedHomeMatch?.matchday ?? 0) > 22),
     ),
     builtFacilityUpkeepCosts,
+    matchAttendance: managedHomeMatch?.attendance,
+    builtNodeIds: game.facilityState?.builtNodeIds,
   })
 
   if (managedIncome.weeklyBase !== 0) {

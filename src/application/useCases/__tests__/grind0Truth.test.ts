@@ -31,6 +31,24 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
  * garanterat, inte runtime-testat — HistoryScreen.tsx/CeremonyRetirement.tsx/
  * retirementService.ts läser alla player.careerStats direkt, ingen egen
  * parallell summering (kod-läst 2026-08-21). Håller K1 håller det med.
+ *
+ * E-GRIND0-1 (2026-08-24) — K1:s jämförelsemetod bytt, rotorsak spårad och
+ * fixad. Den gamla metoden snapshottade seasonStats/seasonCupStats i
+ * TESTETS EGEN loop, EN GÅNG per externt advanceToNextEvent-anrop, och
+ * antog att "anropet som returnerar seasonEnded:true spelar aldrig en
+ * match". Det antagandet är falskt: roundProcessor.ts:1928 ("Auto-advance
+ * playoff rounds when managed club is eliminated") REKURSERAR internt när
+ * den hanterade klubben är slutspelsutslagen — en enda extern
+ * advanceToNextEvent-retur kan då både spela en RIKTIG match för en annan
+ * klubb OCH nå säsongsslut i samma anrop, osynligt för en extern
+ * loop-snapshot tagen FÖRE anropet. careerStats och seasonStats+
+ * seasonCupStats höll hela tiden ihop perfekt (verifierat instrumenterat,
+ * steg för steg) — bara testets egen jämförelsepunkt var stale. Fixen läser
+ * i stället den nya seasonHistory-posten (seasonEndProcessor.ts skriver nu
+ * cupGames/cupGoals/cupAssists dit, läst från SAMMA `game`-parameter
+ * handleSeasonEnd() faktiskt tar emot — som redan reflekterar en eventuell
+ * tyst rekursion, eftersom rekursionen händer FÖRE handleSeasonEnd anropas,
+ * inte efter). Se SLUTTEST_KO.md för fullständig spårning.
  */
 
 const SEASONS = 2
@@ -55,7 +73,12 @@ function runOne(clubId: string, seed: number): Discrepancy[] {
     let guardRounds = 0
     // K1: careerStats vid SÄSONGENS BÖRJAN (fångad en gång, inte per varv)
     // — jämförs mot careerStats vid säsongsslut. Ökningen ska exakt matcha
-    // seasonStats+seasonCupStats (liga+cup) vid samma tidpunkt.
+    // seasonHistory-postens games+cupGames/goals+cupGoals/assists+cupAssists
+    // för säsongen som just avslutades (E-GRIND0-1: den posten skrivs av
+    // seasonEndProcessor.ts från SAMMA game-parameter som handleSeasonEnd()
+    // faktiskt tar emot, och reflekterar därför korrekt en eventuell tyst
+    // extra-runda från roundProcessor.ts:1928:s auto-advance-rekursion — en
+    // extern snapshot tagen FÖRE anropet kan inte det).
     const seasonStartCareer = new Map<string, { totalGames: number; totalGoals: number; totalAssists: number }>()
     for (const p of game.players) {
       seasonStartCareer.set(p.id, {
@@ -64,27 +87,10 @@ function runOne(clubId: string, seed: number): Discrepancy[] {
         totalAssists: p.careerStats?.totalAssists ?? 0,
       })
     }
-    // Snapshot varje spelares seasonStats/seasonCupStats precis innan den
-    // sista rundan som kan trigga rollover — uppdateras varje varv, håller
-    // alltid "senaste kända läge före ett season-end-anrop". Rollover-
-    // anropet spelar aldrig en match (roundPlayed:null), så vid det anropet
-    // är detta redan säsongens KOMPLETTA totaler.
-    let preRolloverSeason = new Map<string, { games: number; goals: number; assists: number; cupGames: number; cupGoals: number; cupAssists: number }>()
 
     while (!seasonDone) {
       guardRounds++
       if (guardRounds > 2000) throw new Error(`season ${season} never ended — round guard tripped (${clubId} seed=${seed})`)
-
-      for (const p of game.players) {
-        preRolloverSeason.set(p.id, {
-          games: p.seasonStats?.gamesPlayed ?? 0,
-          goals: p.seasonStats?.goals ?? 0,
-          assists: p.seasonStats?.assists ?? 0,
-          cupGames: p.seasonCupStats?.gamesPlayed ?? 0,
-          cupGoals: p.seasonCupStats?.goals ?? 0,
-          cupAssists: p.seasonCupStats?.assists ?? 0,
-        })
-      }
 
       game = autoSelectLineup(game)
       const result = advanceToNextEvent(game, stepSeed++)
@@ -93,16 +99,17 @@ function runOne(clubId: string, seed: number): Discrepancy[] {
       if (result.seasonEnded) {
         for (const p of game.players) {
           const before = seasonStartCareer.get(p.id)
-          const seasonBefore = preRolloverSeason.get(p.id)
-          if (!before || !seasonBefore) continue // ny spelare (youth intake) denna säsong — inget att jämföra
+          if (!before) continue // ny spelare (youth intake) denna säsong — inget att jämföra
+          const seasonEntry = (p.seasonHistory ?? []).find(h => h.season === season)
+          if (!seasonEntry) continue // avstängd/inte spelklar hela säsongen — ingen post skriven, inget att jämföra
 
           const after = { totalGames: p.careerStats?.totalGames ?? 0, totalGoals: p.careerStats?.totalGoals ?? 0, totalAssists: p.careerStats?.totalAssists ?? 0 }
           const deltaGames = after.totalGames - before.totalGames
           const deltaGoals = after.totalGoals - before.totalGoals
           const deltaAssists = after.totalAssists - before.totalAssists
-          const expectedGames = seasonBefore.games + seasonBefore.cupGames
-          const expectedGoals = seasonBefore.goals + seasonBefore.cupGoals
-          const expectedAssists = seasonBefore.assists + seasonBefore.cupAssists
+          const expectedGames = seasonEntry.games + (seasonEntry.cupGames ?? 0)
+          const expectedGoals = seasonEntry.goals + (seasonEntry.cupGoals ?? 0)
+          const expectedAssists = seasonEntry.assists + (seasonEntry.cupAssists ?? 0)
           if (deltaGames !== expectedGames || deltaGoals !== expectedGoals || deltaAssists !== expectedAssists) {
             discrepancies.push({
               kind: 'K1-careerStats',

@@ -10,6 +10,7 @@
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../createNewGame'
 import { handleSeasonEnd } from '../seasonEndProcessor'
+import { deriveEpokVariant, seasonOrdinalSwedish } from '../../../domain/services/seasonTransitionService'
 
 function makeGame() {
   return createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 42 })
@@ -84,5 +85,43 @@ describe('seasonEndProcessor — pendingSeasonTransitionEvents (5.1 Sommaren)', 
     const result = handleSeasonEnd(game, 1)
 
     expect(result.game.managerProfile?.burnoutScore).toBe(55)
+  })
+})
+
+describe('H6 (människoupplevelse-audit 7024f8a, 2026-08-24) — epokLinens säsongsordinal', () => {
+  // Regression: "Säsong tre kallades 'Din andra säsong'". Rotorsak:
+  // SeasonTransitionScene.tsx läste trainerArc.seasonCount (0-indexerat,
+  // "antal AVSLUTADE säsonger", inkrementeras i checkSeasonEndArc) istf
+  // managerProfile.seasonsAtClub (1-indexerat vid start, "vilken säsong är
+  // det här", inkrementeras i SAMMA handleSeasonEnd-anrop) — en säsong för
+  // sent i deriveEpokVariant()s seasonCount===2-gren. Detta test kör RIKTIGA
+  // handleSeasonEnd-anrop i följd (samma mönster som testerna ovan i denna
+  // fil) och verifierar att managerProfile.seasonsAtClub — fältet scenen nu
+  // faktiskt läser — stämmer med den säsong spelaren FAKTISKT är på väg in
+  // i, inte en säsong efter.
+  it('managerProfile.seasonsAtClub ökar i takt med currentSeason genom tre övergångar', () => {
+    let game = makeGame()
+    expect(game.managerProfile?.seasonsAtClub).toBe(1) // spelarens första säsong
+
+    const r1 = handleSeasonEnd(game, 1)
+    game = r1.game
+    expect(game.managerProfile?.seasonsAtClub).toBe(2) // på väg in i säsong 2
+
+    const r2 = handleSeasonEnd(game, 2)
+    game = r2.game
+    expect(game.managerProfile?.seasonsAtClub).toBe(3) // på väg in i säsong 3 — INTE "andra" längre
+  })
+
+  it('deriveEpokVariant ger sasong2 exakt vid övergången TILL säsong 2, inte säsong 3', () => {
+    const base = makeGame()
+    const r1 = handleSeasonEnd(base, 1)
+    const enteringSeason2 = r1.game.managerProfile?.seasonsAtClub ?? -1
+
+    const r2 = handleSeasonEnd(r1.game, 2)
+    const enteringSeason3 = r2.game.managerProfile?.seasonsAtClub ?? -1
+
+    expect(deriveEpokVariant({ seasonCount: enteringSeason2, wonTitleLastSeason: false, worsePlacementOrEarlierExit: false })).toBe('sasong2')
+    expect(deriveEpokVariant({ seasonCount: enteringSeason3, wonTitleLastSeason: false, worsePlacementOrEarlierExit: false })).not.toBe('sasong2')
+    expect(seasonOrdinalSwedish(enteringSeason3)).toBe('tredje')
   })
 })

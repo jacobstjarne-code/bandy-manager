@@ -13,6 +13,7 @@ import {
   generateGoodMatchEntry,
   generatePoorMatchEntry,
   generateDebutEntry,
+  generateFirstGoalEntry,
   generateMilestoneGoalEntry,
   generateMilestoneGamesEntry,
 } from '../../../domain/services/narrativeService'
@@ -86,6 +87,14 @@ export function updatePlayerMatchStats(
 
       if (isManaged) {
         const playerName = `${p.firstName} ${p.lastName}`
+        // PÅSTÅENDEKARTAN SANNINGEN-SAKNAS-fix (2026-08-25, Jacobs dom: "lägg
+        // motståndarnamnet"): hattrick-milstolpens description saknade motståndare
+        // — retirementService.ts:s bestMoment läser denna sträng direkt, och en
+        // veterans bästa ögonblick utan motståndare var halvfärdigt.
+        const isHomeMs = fixture.homeClubId === game.managedClubId
+        const opponentIdMs = isHomeMs ? fixture.awayClubId : fixture.homeClubId
+        const opponentMs = game.clubs.find(c => c.id === opponentIdMs)
+        const oppNameMs = opponentMs?.shortName ?? opponentMs?.name ?? 'motståndet'
 
         // Hat trick milestone (3+ goals this fixture)
         if (goals >= 3) {
@@ -94,7 +103,7 @@ export function updatePlayerMatchStats(
               type: 'hatTrick',
               season: game.currentSeason,
               round: nextRound,
-              description: `${playerName} satte ${goals} mål i en match`,
+              description: `${playerName} satte ${goals} mål mot ${oppNameMs}`,
             })
             newMilestoneInboxItems.push({
               id: `inbox_milestone_hatTrick_${p.id}_r${nextRound}_${game.currentSeason}`,
@@ -154,13 +163,13 @@ export function updatePlayerMatchStats(
       }
 
       // Build narrative entries for managed players
-      let updatedNarrativeLog = p.narrativeLog
+      let updatedNarrativeLog = p.diary
       if (isManaged) {
         const isHome = fixture.homeClubId === game.managedClubId
         const opponentId = isHome ? fixture.awayClubId : fixture.homeClubId
         const opponent = game.clubs.find(c => c.id === opponentId)
         const oppName = opponent?.shortName ?? opponent?.name ?? 'motståndet'
-        const newEntries: NonNullable<Player['narrativeLog']> = []
+        const newEntries: NonNullable<Player['diary']> = []
 
         // A-lagsdebut — bara meningsfull för en akademispelare som gör sin första A-match.
         // Grundtruppen "debuterar" INTE: de var etablerade när spelet började (alla skapas med
@@ -168,6 +177,18 @@ export function updatePlayerMatchStats(
         // när akademin levererar en spelare till A-laget.
         if (prevCareerGames === 0 && p.promotedFromAcademy) {
           newEntries.push(generateDebutEntry(oppName, game.currentSeason, nextRound))
+        }
+
+        // PÅSTÅENDEKARTAN omsvep (2026-08-24), MISSING-GATE + ÅTKOMST-FANNS-
+        // ANVÄNDES-INTE: generateFirstGoalEntry hade noll anropsställen i
+        // hela repot — texten fanns, sanningen (prevCareerGoals, redan
+        // beräknad ovan för goalMilestones-blocket) fanns i scope, men
+        // ingenting wire:ade in dem. Samma "grundtruppen debuterar inte"-
+        // undantag gäller INTE här: en spelare som redan var i A-laget vid
+        // spelstart men ännu inte gjort mål gör ett äkta första mål första
+        // gången det händer, oavsett hur han kom in i truppen.
+        if (prevCareerGoals === 0 && goals >= 1) {
+          newEntries.push(generateFirstGoalEntry(oppName, game.currentSeason, nextRound))
         }
 
         if (rating !== undefined) {
@@ -197,7 +218,7 @@ export function updatePlayerMatchStats(
         }
 
         if (newEntries.length > 0) {
-          updatedNarrativeLog = [...(p.narrativeLog ?? []), ...newEntries].slice(-20)
+          updatedNarrativeLog = [...(p.diary ?? []), ...newEntries].slice(-20)
         }
       }
 
@@ -223,7 +244,7 @@ export function updatePlayerMatchStats(
           totalAssists: newCareerAssists,
         },
         careerMilestones: isManaged ? newMilestones : p.careerMilestones,
-        narrativeLog: updatedNarrativeLog,
+        diary: updatedNarrativeLog,
       }
     }
 

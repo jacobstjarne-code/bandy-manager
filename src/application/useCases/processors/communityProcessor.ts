@@ -5,6 +5,8 @@ import { getRivalry } from '../../../domain/data/rivalries'
 import { advanceFacilityState } from '../../../domain/services/facilityService'
 import { getJournalistCommunityModifier } from '../../../domain/services/journalistVisibilityService'
 import { generateVolunteerRoster } from '../../../domain/services/volunteerService'
+import { getCsDiminishingFactor } from '../../../domain/services/communityStandingScaling'
+import { safeStandingPosition } from '../../../domain/services/standingsService'
 
 export interface CommunityProcessorResult {
   csBoost: number
@@ -94,7 +96,12 @@ export function processCommunity(
     csBoost += Math.min(1.5, rosterCsBoost)
   }
 
-  const csPos = standings.find(s => s.clubId === game.managedClubId)?.position ?? 6
+  // LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26): `standings` här är
+  // redan den lokalt omräknade tabellen (roundProcessor.ts, efter denna
+  // omgångs resultat) — normalt säker, men en klubb som har bye denna
+  // omgång kan fortfarande visa played=0 vid omgång 1. safeStandingPosition
+  // stänger den kvarvarande luckan.
+  const csPos = safeStandingPosition(standings, game.managedClubId) ?? 6
   if (csPos <= 3) csBoost += 0.2
   else if (csPos >= 10) csBoost -= 0.15
 
@@ -301,10 +308,21 @@ export function processCommunity(
 
   // ── Diminishing returns on positive CS boosts ─────────────────────────────
   // Negative effects (losses, scandals) are unaffected — equally easy to fall from 90 as from 50
+  //
+  // Tröskelsvepet (RAPPORT_COMMUNITYSTANDING_TROSKELSVEP_2026-08-26, fynd #1,
+  // Jacobs dom 2026-08-26): var tidigare ett 4-stegs trappsteg (>85/>70/>55)
+  // — en boost delades exakt på hälften mellan cs=70 (faktor 0.5) och cs=71
+  // (faktor 0.75), på EXAKT samma linje som tre andra system slår om (H4-
+  // tröskelfamiljen). "En vägg mitt i det spelaren ska klättra på" (Jacobs
+  // ord). Ersatt av en kontinuerlig linjär ramp: oförändrad full effekt
+  // (1.0) vid/under cs=55 (samma golv gamla plattån hade), linjärt fallande
+  // till 0.25 vid cs=100 (samma tak gamla trappans sista steg hade) — inga
+  // trappsteg kvar, men ändpunkterna oförändrade så den övergripande
+  // balansen inte hoppar okontrollerat.
   const positiveBoost = Math.max(0, csBoost)
   const negativeBoost = Math.min(0, csBoost)
   const currentCS = game.communityStanding ?? 50
-  const diminishingFactor = currentCS > 85 ? 0.25 : currentCS > 70 ? 0.5 : currentCS > 55 ? 0.75 : 1.0
+  const diminishingFactor = getCsDiminishingFactor(currentCS) // se communityStandingScaling.ts
   csBoost = positiveBoost * diminishingFactor + negativeBoost
 
   return { csBoost, klackMoodDelta, inboxItems, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, completedNodeId, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }

@@ -13,6 +13,7 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import type { BoardObjective } from '../../domain/entities/Community'
 import type { BoardMeetingState } from '../../domain/data/boardMeetingCopy'
+import { getBoardPatienceZone } from '../../domain/services/portal/boardPatienceZone'
 
 export interface BoardMeetingEvalRow {
   label: string
@@ -55,6 +56,14 @@ function shortLabel(entry: HistoryEntry): string {
   return first.length > 32 ? first.slice(0, 30) + '…' : first
 }
 
+/**
+ * PÅSTÅENDEKARTAN (2026-08-24): mötets ton läste tidigare fulfillmentPct
+ * (förra säsongens målpoäng), en fjärde oberoende nöjdhetsformel — läser nu
+ * getBoardPatienceZone(game).zone, samma tröskel som portalBeats.ts:s
+ * board_failure-beat redan är kalibrerad mot.
+ *
+ * @cites boardPatience, fulfillmentPct
+ */
 export function resolveBoardMeetingState(game: SaveGame): BoardMeetingData {
   const prevSeason = game.currentSeason - 1
   const history = (game.boardObjectiveHistory ?? []) as HistoryEntry[]
@@ -65,15 +74,20 @@ export function resolveBoardMeetingState(game: SaveGame): BoardMeetingData {
   const fulfillmentPct = total > 0 ? Math.round((met / total) * 100) : -1
 
   // State-resolver
+  // PÅSTÅENDEKARTAN (2026-08-24): läste tidigare fulfillmentPct (förra
+  // säsongens boardObjectives-måluppfyllelse) för att avgöra mötets HELA ton
+  // — en FJÄRDE, oberoende formel för styrelsens nöjdhet. boardService.ts:s
+  // egen kommentar (rad 34-37, 60-75) dokumenterar redan att boardPatience
+  // är den enda sanningen efter sex kalibreringspass på att ena de tre andra
+  // (evaluateBoard, getBoardPatienceZone, growFanbase-fyndet). Återanvänder
+  // getBoardPatienceZone rakt av — samma 50-tröskel som redan är kalibrerad
+  // och synlig på andra ställen (portalBeats.ts:s board_failure), inte en ny
+  // siffra uppfunnen här.
   let state: BoardMeetingState
   if ((game.seasonSummaries?.length ?? 0) <= 1 || fulfillmentPct < 0) {
     state = 'A'
-  } else if (fulfillmentPct >= 80) {
-    state = 'B'
-  } else if (fulfillmentPct < 50) {
-    state = 'C'
   } else {
-    state = fulfillmentPct >= 65 ? 'B' : 'C'
+    state = getBoardPatienceZone(game).zone === 'stabilt' ? 'B' : 'C'
   }
 
   // Eval-rader — misslyckade mål först (mest informativa), max 3

@@ -352,6 +352,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     pendingScreen: null,
     coachMarksSeen: false,
     onboardingComplete: false,
+    onboardingScreen: 'arrival',
     seasonStartFinances: managedClub.finances,
     financeLog: [],
     storylines: [],
@@ -359,6 +360,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     trainerArc: createTrainerArc(),
     boardObjectives: generateBoardObjectives(managedClub, { players, clubs: clubsFixed, rivalryHistory: {}, fanMood: 50, currentSeason: season, boardObjectiveHistory: [] }, board, rand),
     boardObjectiveHistory: [],
+    aiTransferLog: [],
     onboardingStep: 0,
     mecenater: initialMecenater,
     facilityState: { builtNodeIds: [] },
@@ -442,7 +444,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
       return {
         ...base, firstName, lastName,
         coachRivalries: generateCoachRivalries(opponentIds, (input.seed ?? 42) + 88002),
-        narrativeLog: [{ season, matchday: 0, type: 'arrival' as const, text: `Du tog över ${managedClub.name}. Ingen visste riktigt vad du skulle med det till — inte du heller.` }],
+        diary: [{ season, matchday: 0, type: 'arrival' as const, text: `Du tog över ${managedClub.name}. Ingen visste riktigt vad du skulle med det till — inte du heller.` }],
       }
     })(),
     mentorshipHistory: [],
