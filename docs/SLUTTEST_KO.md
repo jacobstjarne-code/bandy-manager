@@ -87,7 +87,7 @@ Två rötter bär nästan allt.
 | A-COMMIT | **203 filer / ~94 600 rader okommitterade**, HEAD på `5c9a7a8b` sedan 24 aug. Vi tömde 27 worktrees av misstag den här sessionen. Committa och pusha i logiska block | Code | `KLAR (2026-08-27)` — allt committat i 18 logiska block och pushat, `5c9a7a8b..594be0f7`. |
 | A-M8 | Avsked avslutar karriären — = `O13`, tränarmarknaden, dömd `DOM_TRANARMARKNADEN_2026-08-26.md` | Code | `EJ` |
 | A-M9 | Samma finaluppladdning två raka finaler — ingår i `A-H4a` | Code | `EJ` |
-| A-H9 | Årsbokens "säsongens beslut" är inte spelarens minne. Rangordningen känns mekanisk, och år två saknades raden helt trots många beslut | **Opus** | `EJ DÖMD` |
+| A-H9 | Årsbokens "säsongens beslut" är inte spelarens minne. **DÖMD 2026-08-27** — `docs/DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md`. Ny rangordning: namngiven person först, sedan irreversibilitet, sedan om två system pekade isär, antal system SIST. Kandidatmängden vidgas från `O19`-märkta till varje löst beslut som uppfyller minst två av de tre första — `resolvedChoices` bär underlaget. Saknas kandidat: "Inget beslut stack ut i vintras." **Två rapportfrågor före bygge**, se domen | Code | `RAPPORTERAD (2026-08-27)` — `docs/RAPPORT_AH9_KANDIDATVOLYM_2026-08-27.md`. Mätning (6 seeds×3 säsonger, slumpat val): 2-7 kvalificerande/säsong, snitt 4,6 — INTE tjugo, kriteriet är inte för brett. `resolvedChoices` bär INTE tillräckligt ({eventId,choiceId,label} bara) — kriterierna måste beräknas och persisteras VID resolution (samma ställe BUILDERS redan har gameBefore/gameAfter), ingen efterhandsrekonstruktion möjlig. Väntar på din dom om datavägen (utöka resolvedChoices vs ny parallell logg) innan bygge. |
 
 ---
 
