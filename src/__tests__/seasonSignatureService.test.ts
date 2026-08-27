@@ -165,4 +165,44 @@ describe('summarizeSignature', () => {
     const result = summarizeSignature(sig)
     expect(result).toContain('9 matcher i 3x30')
   })
+
+  // SEXSÄSONGSAUDITEN 2026-08-26: "Skandalsäsongen 2027. 2 skandaler..."
+  // trots att spelaren inte såg någon skandal i spel. Rotorsak: den frusna
+  // observedFacts[0]-texten räknade scandalHistory "de senaste åren" VID
+  // SIGNATURSKAPANDET (säsongsstart, ofta föregående säsonger), inte
+  // skandaler som faktiskt inträffade UNDER den sammanfattade säsongen.
+  it('scandal_season räknar bara skandaler från DEN HÄR säsongen, inte gamla facts[0]-siffran', () => {
+    const sig: SeasonSignature = {
+      id: 'scandal_season',
+      modifiers: {},
+      startedSeason: 2027,
+      // Stale förhandsfaktum från signaturskapandet — ska INTE styra siffran.
+      observedFacts: ['5 skandaler i ligan de senaste åren. Pressen luktar redan på nästa.'],
+    }
+    // Två riktiga skandaler faktiskt registrerade UNDER säsong 2027.
+    const scandalHistory = [{ season: 2027 }, { season: 2027 }, { season: 2025 }, { season: 2026 }]
+    const result = summarizeSignature(sig, scandalHistory)
+    expect(result).toContain('2 skandaler i ligan i år')
+    expect(result).not.toContain('5 skandaler')
+  })
+
+  it('scandal_season faller tillbaka till observedFacts[0] om säsongen faktiskt hade noll skandaler', () => {
+    const sig: SeasonSignature = {
+      id: 'scandal_season',
+      modifiers: {},
+      startedSeason: 2027,
+      observedFacts: ['3 skandaler i ligan de senaste åren. Pressen luktar redan på nästa.'],
+    }
+    // Skandalerna finns bara i FÖREGÅENDE säsonger, ingen under 2027 självt.
+    const scandalHistory = [{ season: 2025 }, { season: 2026 }, { season: 2026 }]
+    const result = summarizeSignature(sig, scandalHistory)
+    expect(result).toContain('3 skandaler i ligan de senaste åren')
+  })
+
+  it('scandal_season hanterar singular korrekt (1 skandal, inte 1 skandaler)', () => {
+    const sig: SeasonSignature = { id: 'scandal_season', modifiers: {}, startedSeason: 2030, observedFacts: [] }
+    const result = summarizeSignature(sig, [{ season: 2030 }])
+    expect(result).toContain('1 skandal i ligan i år')
+    expect(result).not.toContain('1 skandaler')
+  })
 })

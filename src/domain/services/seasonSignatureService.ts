@@ -90,8 +90,29 @@ export function recordSignatureFact(game: SaveGame, fact: string): SaveGame {
 /**
  * Genererar säsongsslutets rubricerande mening.
  * Returnerar null för calm_season — inget läggs till i SeasonSummary.
+ *
+ * `scandalHistory` (SEXSÄSONGSAUDITEN 2026-08-26, "Skandalsäsongen 2027.
+ * 2 skandaler..." trots att spelaren inte sett någon skandal): rotorsak var
+ * att observedFacts[0] för scandal_season fryses vid SIGNATURSKAPANDET
+ * (säsongsSTART, se SIGNATURE_INITIAL_FACT ovan) och räknar scandalHistory
+ * "de senaste åren" — dvs FÖREGÅENDE säsonger, ligavitt (de flesta
+ * skandaltyper kan aldrig träffa den managerade klubben, se
+ * scandalService.ts's pickAffectedClub/includeManaged). Den frusna texten
+ * återanvändes sedan ordagrant i årsbokens rubrik för den säsong som PRECIS
+ * slutat, vilket läser som ett påstående om just den säsongen — även om
+ * exakt noll skandaler inträffade under den. recordSignatureFact (avsedd
+ * att uppdatera observedFacts LÖPANDE under säsongen) anropas aldrig
+ * någonstans i produktionskoden (grep bekräftar 2026-08-27) — text-utan-
+ * yta, se CLAUDE.md princip 7, dödmarkerad men inte borttagen här eftersom
+ * en riktig fix (koppla in den vid varje faktisk skandal/kallvinter/etc)
+ * är större scope än denna rotorsak. Den här fixen adresserar bara
+ * SIFFRAN: räkna om skandalantalet från game.scandalHistory filtrerat på
+ * DEN HÄR säsongen (signature.startedSeason) vid summeringstillfället,
+ * istället för att lita på den frusna förhandssiffran. Om säsongen
+ * faktiskt hade noll skandaler faller meningen tillbaka till den gamla
+ * (fortfarande sanna, bara förhands-) texten.
  */
-export function summarizeSignature(signature: SeasonSignature): string | null {
+export function summarizeSignature(signature: SeasonSignature, scandalHistory?: { season: number }[]): string | null {
   const season = signature.startedSeason
   const facts = signature.observedFacts
 
@@ -106,8 +127,14 @@ export function summarizeSignature(signature: SeasonSignature): string | null {
   switch (signature.id) {
     case 'cold_winter':
       return facts[0] ? `Köldvintern ${season}. ${facts[0]}` : `Köldvintern ${season}.`
-    case 'scandal_season':
+    case 'scandal_season': {
+      const seasonScandalCount = (scandalHistory ?? []).filter(s => s.season === season).length
+      if (seasonScandalCount > 0) {
+        const noun = seasonScandalCount === 1 ? 'skandal' : 'skandaler'
+        return `Skandalsäsongen ${season}. ${seasonScandalCount} ${noun} i ligan i år.`
+      }
       return facts[0] ? `Skandalsäsongen ${season}. ${facts[0]}` : `Skandalsäsongen ${season}.`
+    }
     case 'hot_transfer_market':
       return facts[0] ? `Den heta transfersommaren ${season}. ${facts[0]}` : `Den heta transfersommaren ${season}.`
     case 'injury_curve':
