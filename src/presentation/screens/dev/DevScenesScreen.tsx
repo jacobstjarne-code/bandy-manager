@@ -531,6 +531,16 @@ function MatchLiveDevScene({ locationState }: { locationState: MatchLiveLocation
     navigate(location.pathname + location.search, { state: locationState, replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  // A-C1-testet (halftimeDockBlock.visual.ts, 2026-08-27) blottade en race:
+  // <MatchLiveScreen/> monterade INNAN location.state fanns (barnets effekter
+  // körs före förälderns, se React-ordningen), så dess egen mount-effekt
+  // (simulateMatchStepByStep-anropet, tomt dep-array — kör EXAKT en gång)
+  // såg fixture=undefined på den enda gången den fick köra och avbröt
+  // simuleringen permanent. Matchen såg ut att starta (fixture/lag-namn
+  // kommer separat via location.state-läsning i render) men klockan/steps
+  // rörde sig aldrig — omöjligt att skilja från A-C1:s egna hängningssymptom
+  // utan att gräva. Montera aldrig skärmen innan statet faktiskt finns.
+  if (!location.state) return null
   return <MatchLiveScreen />
 }
 

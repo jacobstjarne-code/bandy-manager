@@ -1533,7 +1533,11 @@ export function MatchLiveScreen() {
 
   const spelStamp = (() => {
     if (matchDone) return { label: 'TILL GRANSKNING →', onClick: () => navigate('/game/review', { replace: true }) }
-    if (showHalftime) return { label: 'PAUSSNACK →', onClick: () => {} } // modal täcker stampen; onClick når aldrig spelaren
+    // A-C1 (SLUTTEST_KO.md): 'PAUSSNACK →'-stampen med tom onClick togs bort —
+    // halvtidsmodalen täcker stampen ändå, och en tom onClick var död kod som
+    // bara fanns "under antagandet att modalens lager alltid täcker den"
+    // (BANDY_MANAGER_AUDIT_6_SASONGER_2026-08-26.md, C1). Under halvtid syns
+    // ingen stamp — modalen är enda vägen vidare.
     return null
   })()
 
@@ -1554,9 +1558,15 @@ export function MatchLiveScreen() {
       }}
       style={postIntroFade ? { animation: 'fadeIn 300ms ease-out both' } : undefined}
       dock={
-        <>
+        // A-C1 (SLUTTEST_KO.md): BottomDock peek/block ligger på z-index 400/500
+        // (--z-overlay/--z-interaction) — över halvtidsmodalens --z-modal (300).
+        // Ingenting stängde dockarna när showHalftime blev sant, så deras
+        // hit-yta (synlig eller ej) kunde fånga tap ovanför modalens CTA och
+        // frysa matchen. Stäng SiffrorDrawer visuellt OCH gör hela dock-sloten
+        // icke-interaktiv under halvtid — dubbel spärr, inte bara den ena.
+        <div data-testid="match-dock-slot" style={{ pointerEvents: showHalftime ? 'none' : undefined }}>
           <SiffrorDrawer
-            open={siffrorOpen}
+            open={siffrorOpen && !showHalftime}
             onClose={() => setSiffrorOpen(false)}
             currentMatchStep={currentMatchStep}
             momentumHistory={momentumHistory}
@@ -1580,7 +1590,7 @@ export function MatchLiveScreen() {
             onLastMinutePress={handleLastMinutePressChoice}
             coach={game?.assistantCoach ?? undefined}
           />
-        </>
+        </div>
       }
     >
       {showSubModal && (
