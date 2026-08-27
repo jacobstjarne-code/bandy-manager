@@ -239,10 +239,12 @@ describe('getPreSeasonChoices', () => {
 describe('matchhall node definition', () => {
   const hallDef = FACILITY_NODE_DEFS.find(d => d.id === 'matchhall')!
   it('is marked isHall', () => expect(hallDef.isHall).toBe(true))
-  it('has pris-före-vinst in consequences (publik↓ and sjal↓ first)', () => {
-    const [first, second] = hallDef.consequences
+  // Påståendekartan (2026-08-27, Jacobs dom): "Klacken glesnar" struken —
+  // koden gör motsatsen (hasIndoorArena skyddar mot väder, höjer publiken).
+  // Kvar: sjal↓ (dokumenterat pris) före de två sanna ekonomi/ungdom-upp.
+  it('has pris-före-vinst i consequences (sjal↓ först)', () => {
+    const [first] = hallDef.consequences
     expect(first.dir).toBe('ned')
-    expect(second.dir).toBe('ned')
   })
   it('requires laktare_ostra', () => {
     expect(hallDef.requires).toContain('laktare_ostra')

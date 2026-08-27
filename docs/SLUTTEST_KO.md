@@ -9,6 +9,88 @@
 
 **Blockerad på CI, deploy eller ett svar: ta nästa post här. Fråga inte, schemalägg ingen väckning.**
 
+---
+
+# ▶▶ SEXSÄSONGSAUDITEN 2026-08-26 — FYRA SPÅR, GÅR FÖRE ALLT ANNAT
+
+**Källa:** `docs/incoming/BANDY_MANAGER_AUDIT_6_SASONGER_2026-08-26.md`. Sex säsonger, två karriärer, mobil 390×844.
+**Auditens egen slutsats:** *spelet kan nu göra förlust begriplig, men det kan ännu inte göra långvarig framgång dyr.*
+
+**Spår 1 och 3 körs parallellt — olika filer, inga beslut krävs.**
+
+## SPÅR 1 — det som stoppar spel
+
+| ID | Post | Status |
+|---|---|---|
+| A-B1 | Byggfel: oänvend `safeStandingPosition`-import (`opponentAnalysisService.ts:6`), från vår egen LÄST-FÖRE-INITIERING-fix. **Plus:** rapportera varför tsc-grinden inte fångade det — körs produktionsbygget i CI alls? | `EJ` |
+| A-C1 | Full match blockerad vid halvtid i mobilbredd. Dock på 400/500 fångar input ovanför modalen på 300. Stäng alla docks + `pointer-events: none` när `showHalftime`. Ta bort död PAUSSNACK-stamp. **390×844-test till minut 46** | `EJ` |
+| A-H7 | Delningsknappen fastnar i "Genererar bild…", återgår aldrig. `try/finally`, timeout, cancelled/failed-state, explicit "Ladda ner PNG"-fallback | `EJ` |
+| A-H10 | Granska låser nästa steg när ett kriskort saknar val. Invariant: `unresolvedBlockingCount > 0` ⇒ minst en synlig enabled action | `EJ` |
+| A-M6 | Skadeeventet visar "0 dagar kvar". Gata på `> 0` | `EJ` |
+
+## SPÅR 3 — innehållets livslängd (en rotorsak, inte tolv fixar)
+
+| ID | Post | Status |
+|---|---|---|
+| A-H4a | **`narrativeBeatLog` används inte av innehållspoolerna.** Wira: journalisten (Anna Hedlund/Ludvig Nieminen, två raka slutspelsmatcher), finaluppladdningen (Birger, två raka finaler), burnout-raderna, akademiraderna, kafferummet. `semanticKey` per båge. Journalisten: högst en gång per säsong totalt, inte samma spelare igen förrän poolen roterat | `EJ` |
+| A-H4b | **`[Opus]` syns för spelaren varje sommar.** Releasegrind som failar bygget om strängen finns i någon produktionsväg. Rapportera vilka platshållare som är kvar — Opus skriver texterna | `EJ` |
+| A-L1 | Efterklang: "Relation Relation" och "omg 0". Formatterings- och nollvärdesvakt | `EJ` |
+
+## SPÅR 2 — sanningen (svep efter ROTORSAK, inte post för post)
+
+Två rötter bär nästan allt.
+
+**(a) Ett fält med flera semantiker:**
+
+| ID | Post | Status |
+|---|---|---|
+| A-H1 | **Vår förutsättningsfas orsakade den.** `seasonEndProcessor` stegar `boardExpectation` INNAN `generateSeasonSummary` — årsboken dömer den avslutade säsongen mot nästa års krav. Historiken skriver att kravet uppfylldes medan samma resultat gav sparken. Frys `seasonStartBoardExpectation` i säsongsstartens snapshot, alla retrospektiva ytor läser exakt det fältet. Regressionstesta kedjan mål → resultat → patience → avsked → årsbok → historik | `EJ` |
+| A-H8 | Kontraktskronologin: `contractUntilSeason` presenteras olika på olika ytor. En semantik, en gemensam formatterare, invariant som förbjuder aktiva kontrakt med slutsäsong före nuvarande. Plus: nyvärvning + omedelbart pensionsval ska avslöjas före signering eller spärras | `EJ` |
+
+**(b) Ytor som visar rått eller ogatat data:**
+
+| ID | Post | Status |
+|---|---|---|
+| A-M3 | Tekniska eventnycklar läcker (`playoffEvent`, `dayJobConflict`, `criticalEconomy`…). Exhaustiv speltextsmappning; okända typer får generisk mänsklig etikett + telemetri, aldrig rå kod | `EJ` |
+| A-M1 | "Säsongen är slut" visas före slutspelet. Lägg playofffas före fixture-gaten i `getNextActionCue` | `EJ` |
+| A-M2 | Lag som missar slutspel får "Ni är utslagna". Skilj `!managedQF` från `managedQF && !managedAdvanced` | `EJ` |
+| A-M7 | "Halva säsongen kvar" efter säsongsslut. Gata på kalenderfas | `EJ` |
+| A-M10 | Matchkommentar tillskriver målvakten fel lag. Härled lag ur eventets `clubId` | `EJ` |
+| A-M4 | "Beslutsbörda: Lugn" vid 44–51 inboxnotiser. Mät obesvarade, eller döp om måttet | `EJ` |
+| A-M5 | Offseason-räddning utan begriplig berättelse (−322 → −35 tkr). Avstämning med varje större post och avsändare | `EJ` |
+| A-LOW | Språk och format: "1 nästa veckan", "Match av matchen", dubbel interpunktion, förbättringsaritmetik 43→52 som +10, omgångsidentitet, `0 ass` på toppskyttar, falsk multislot-varning, skandalpåstående utan synlig skandal | `EJ` |
+
+**A-H9** (årsbokens "säsongens beslut" är inte spelarens minne) är Opus att döma — se egen rad längre ner.
+
+## SPÅR 4 — framgångskurvan
+
+**Dom skriven:** `docs/DOM_FRAMGANGSKURVAN_2026-08-27.md`. Ersätter `O5`:s scope; krafterna står kvar, scopet var fel.
+
+`O5` byggdes som tre **kostnader**. Ingen är ett **konkurrerande anspåk**. En kostnad du kan betala är ingen kostnad — med 2,3 mkr i kassan är 10 tkr/mån för en 91-spelare en kvittering, inte ett beslut.
+
+**Principen:** framgång ska skapa anspåk som konkurrerar om samma resurs. Ett ja ska vara ett nej någon annanstans.
+
+| ID | Post | Status |
+|---|---|---|
+| A-H2 | Fyra samtidiga anspåk: truppens lönekrav efter egen prestation · bud som kommer oftare vid framgång · `investSurplus` som mäter investering istället för saldo · `communityStanding` som kostar mer att hålla när klubben växt | `RAPPORT-VÄNTAR` |
+| A-H3 | Trötthet ska kosta **tillgänglighet**, inte prestation. En spelare under tröskeln kan bli otillgänglig nästa match. Att sänka prestationen är ett dolt straff; att ta spelaren ur laget går att planera runt | `RAPPORT-VÄNTAR` |
+| A-H6 | SM-guldets CTA lovar en ceremoni som inte kommer i snabbläget. Bygg den gemensamma vägen — `CeremonySmFinal` finns och är wirad i fullmatchskärmen. Döp inte om knappen | `EJ` |
+
+**Fem rapportfrågor före bygge**, se domen. Fråga 5 (kan trötthet göra en spelare otillgänglig?) avgör om `A-H3` är kalibrering eller bygge.
+
+## Övrigt ur auditen
+
+| ID | Post | Ägare | Status |
+|---|---|---|---|
+| A-FAC | **Facilitetsnodernas löften — `consequences[]` läses aldrig programmatiskt.** Strålkastarens "+10 % sponsorintäkt" och matchhallens "tv-avtal" är rena påhitt. Matchhallens "Klacken glesnar" är **motsagd av koden** (inomhusarena höjer publiken). Gymmets "+15 %" är verklig mekanism med påhittad siffra. Stryk de tre första, avtalisera gymmets. Kiosken wiras. `capacityBonus` är korrekt — rör inte | Code | `EJ` |
+| A-GRIND | `consequences[]` ska antingen läsas programmatiskt eller inte finnas. Rapportera vad deklarerade effekter kostar — samma fråga som `contentContract`, en nivå ner | Code | `EJ` |
+| A-COMMIT | **203 filer / ~94 600 rader okommitterade**, HEAD på `5c9a7a8b` sedan 24 aug. Vi tömde 27 worktrees av misstag den här sessionen. Committa och pusha i logiska block | Code | `EJ` |
+| A-M8 | Avsked avslutar karriären — = `O13`, tränarmarknaden, dömd `DOM_TRANARMARKNADEN_2026-08-26.md` | Code | `EJ` |
+| A-M9 | Samma finaluppladdning två raka finaler — ingår i `A-H4a` | Code | `EJ` |
+| A-H9 | Årsbokens "säsongens beslut" är inte spelarens minne. Rangordningen känns mekanisk, och år två saknades raden helt trots många beslut | **Opus** | `EJ DÖMD` |
+
+---
+
 Allt som ska byggas före release står här, i ordning. Detaljer finns i respektive post längre ner och i de dömda underlagsfilerna.
 
 ## Etapp I — smått och låst
