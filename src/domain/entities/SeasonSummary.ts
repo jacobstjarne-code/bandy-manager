@@ -1,5 +1,6 @@
 import type { ClubExpectation } from '../enums'
 import type { ClubEra } from './SaveGame'
+import type { FinanceReason } from '../services/economyService'
 
 // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål, valt i
 // Sommaren. Sex fasta typer, interpolerade namn, ingen AI-generering.
@@ -132,6 +133,14 @@ export interface SeasonSummary {
   startFinances: number
   endFinances: number
   financialChange: number
+  /** A-M5 (SEXSÄSONGSAUDITEN 2026-08-26): avstämning för säsongsväxlingens
+   *  finansiella hopp (t.ex. −322 → −35 tkr) — de faktiska rollover-posterna
+   *  (ligaprispengar/mecenatbidrag/kommunbidrag), frusna här precis som
+   *  retiredPlayers/topScorer ovan, oberoende av game.financeLog's 50-cap.
+   *  undefined = inga sådana poster utbetalades denna rollover (t.ex. ingen
+   *  aktiv mecenat/politiker) — absent, inte en tom lista. Satt i
+   *  seasonEndProcessor.ts. */
+  offseasonFinanceEntries?: Array<{ label: string; amount: number; reason: FinanceReason }>
 
   youthIntakeCount: number
   bestYouthProspect: { name: string; position: string; potential: number } | null

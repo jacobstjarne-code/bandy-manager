@@ -37,6 +37,7 @@ import { checkLicenseStatus, buildLicenseInboxItem } from '../../domain/services
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 import { getRetirementCandidate, getRetirementQuote } from '../../domain/services/retirementDecisionService'
+import { appendFinanceLog, type FinanceEntry } from '../../domain/services/economyService'
 
 // ── Position-aware replenishment helpers ──────────────────────────────────────
 const POSITION_MINIMUMS: Record<PlayerPosition, number> = {
@@ -105,8 +106,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   if (managedClubStanding) {
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
     if (managedClub) {
+      // A-H1: retrospektiv dom över den AVSLUTADE säsongen — läs den frusna
+      // säsongsstarts-förväntan, aldrig club.boardExpectation live (den
+      // stegas till nästa säsongs krav längre ned i denna funktion, rad ~379).
       const { title, body } = generateSeasonVerdict(
-        managedClub.boardExpectation,
+        game.seasonStartBoardExpectation ?? managedClub.boardExpectation,
         managedClubStanding.position,
         game.clubs.length,
       )
@@ -260,6 +264,20 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // A-M5 (SEXSÄSONGSAUDITEN 2026-08-26): offseasonFinanceLog samlar samma
+  // FinanceEntry-form som roundProcessor/transferService redan loggar varje
+  // omgång (economyService.ts's FinanceReason) — bara för den hanterade
+  // klubben, tre kända rollover-poster (ligaprispengar, mecenatbidrag,
+  // kommunbidrag). Rotorsak till M5: dessa tre gick tidigare direkt på
+  // `finances` utan en enda appendFinanceLog-rad, så säsongsväxlingens
+  // −322→−35 tkr-hopp (Lesjöfors, auditen) inte gick att härleda ur
+  // financeLog — det fanns inget att härleda, posterna loggades aldrig.
+  // `round: game.currentMatchday` — den avslutade säsongens sista spelade
+  // omgång, satt HÄR (innan updatedGame nollställer currentMatchday till 0
+  // för nästa säsong nedan).
+  const offseasonFinanceLog: FinanceEntry[] = []
+  const offseasonRound = game.currentMatchday ?? 0
+
   // Prize money and transfer budget update for all clubs
   const PRIZE_MONEY = [200000, 150000, 120000, 100000, 80000,
     60000, 50000, 40000, 30000, 25000, 20000, 15000]
@@ -268,6 +286,14 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     const clubStanding = standings.find(s => s.clubId === updatedClubs[i].id)
     const position = clubStanding?.position ?? 12
     const prize = PRIZE_MONEY[position - 1] ?? 10000
+    if (updatedClubs[i].id === game.managedClubId) {
+      offseasonFinanceLog.push({
+        round: offseasonRound,
+        amount: prize,
+        reason: 'league_prize',
+        label: `Prispengar (plats ${position})`,
+      })
+    }
     updatedClubs[i] = {
       ...updatedClubs[i],
       finances: updatedClubs[i].finances + prize,
@@ -279,6 +305,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   if (game.patron?.isActive && (game.patron.contribution ?? 0) > 0) {
     const patronIdx = updatedClubs.findIndex(c => c.id === game.managedClubId)
     if (patronIdx !== -1) {
+      offseasonFinanceLog.push({
+        round: offseasonRound,
+        amount: game.patron.contribution,
+        reason: 'patron',
+        label: `Mecenatbidrag (${game.patron.name})`,
+      })
       updatedClubs[patronIdx] = {
         ...updatedClubs[patronIdx],
         finances: updatedClubs[patronIdx].finances + game.patron.contribution,
@@ -303,6 +335,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       const dynamicBidrag = calculateKommunBidrag(game.localPolitician, polClub, commStanding, game)
       // Update the stored kommunBidrag value for display
       // (we update the politician below in the updatedGame)
+      offseasonFinanceLog.push({
+        round: offseasonRound,
+        amount: dynamicBidrag,
+        reason: 'kommunbidrag',
+        label: 'Kommunbidrag (säsongsslut)',
+      })
       updatedClubs[politIdx] = {
         ...updatedClubs[politIdx],
         finances: updatedClubs[politIdx].finances + dynamicBidrag,
@@ -838,7 +876,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const currentPatience = game.boardPatience ?? 70
   const currentFailures = game.consecutiveFailures ?? 0
   const currentMeritBuffer = game.meritBuffer ?? 0
-  const managedClubExpectation = game.clubs.find(c => c.id === game.managedClubId)?.boardExpectation ?? ClubExpectation.MidTable
+  // A-H1: samma frusna säsongsstarts-fält som boardVerdict ovan — patiensen
+  // ska mätas mot vad styrelsen KRÄVDE den här säsongen, inte mot vad den
+  // redan hunnit kräva för nästa (stegningen sker längre ned, rad ~379).
+  const managedClubExpectation = game.seasonStartBoardExpectation
+    ?? game.clubs.find(c => c.id === game.managedClubId)?.boardExpectation
+    ?? ClubExpectation.MidTable
 
   // U1 (SLUTTEST_KO.md, 2026-08-17): "nedflyttningsstrid" gav tidigare ingen
   // verklig tålamodsförlust förrän i botten-tre av en totalTeams/3-gissning
@@ -1335,6 +1378,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     ),
     retiredPlayers: retiredManagedPlayers.length > 0 ? retiredManagedPlayers : undefined,
     matchOfTheSeason: matchHighlight ?? undefined,
+    // A-M5: fryst kopia av offseasonFinanceLog, oberoende av game.financeLog's
+    // 50-postars-cap — samma motivering som retiredPlayers/topScorer ovan
+    // (frusna namn, ny säsongs data ska aldrig kunna tränga undan historiken
+    // innan spelaren hunnit läsa den).
+    offseasonFinanceEntries: offseasonFinanceLog.length > 0
+      ? offseasonFinanceLog.map(e => ({ label: e.label, amount: e.amount, reason: e.reason }))
+      : undefined,
     personalGoal,
     personChange,
     rivalryStanding,
@@ -1497,6 +1547,14 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ],
     },
     youthIntakeHistory: youthRecords,
+    // A-M5: skriv rollover-posterna till den löpande financeLog:en (samma
+    // appendFinanceLog/cap-vid-50 som roundProcessor.ts:1504-1507 använder
+    // varje omgång) — annars härleder EkonomiTab/deriveKassaHistory fel
+    // saldo för perioden mellan sista ligaomgången och säsong N+1 omg 1.
+    financeLog: offseasonFinanceLog.reduce(
+      (log, entry) => appendFinanceLog(log, entry),
+      game.financeLog ?? []
+    ),
     managedClubPendingLineup: undefined,
     matchWeathers: [],
     trainingHistory: [],
@@ -1545,6 +1603,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ? Math.max(0, (game.fanMood ?? 50) - 15)
       : game.fanMood,
     seasonStartFinances: updatedClubs.find(c => c.id === game.managedClubId)?.finances,
+    // A-H1: rullar fram den frusna förväntan till NÄSTA säsongs "säsongsstart"
+    // — updatedClubs bär redan den stegade boardExpectation (rad ~379), så
+    // detta är samma värde som clubsAfterLicense[managedClubId].boardExpectation
+    // vid det här laget. Retrospektiva ytor (generateSeasonSummary m.fl. ovan)
+    // har redan läst det GAMLA värdet via game.seasonStartBoardExpectation
+    // innan denna skrivning sker.
+    seasonStartBoardExpectation: updatedClubs.find(c => c.id === game.managedClubId)?.boardExpectation,
     scoutReports: Object.fromEntries(
       Object.entries(game.scoutReports ?? {})
         .filter(([, r]) => nextSeason - r.scoutedSeason < 2)

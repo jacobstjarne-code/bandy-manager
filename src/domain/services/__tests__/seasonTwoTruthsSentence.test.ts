@@ -79,4 +79,36 @@ describe('seasonTwoTruthsSentence', () => {
     const s = { expectationVerdict: 'failed' as const, objectiveOutcome: { met: 0, atRisk: 2, active: 0, failed: 0 } }
     expect(seasonTwoTruthsSentence(s, 'X')).toBeNull()
   })
+
+  // SEXSÄSONGSAUDITEN 2026-08-26, "Dubbel interpunktion": årsboken visade
+  // "Förstaplatsen överträffade det de bad om., men ett uppdrag missades."
+  // — placeringsdom kommer ALLTID färdigpunkterad från placeringsdomText
+  // (se PLACERINGSDOM_TEMPLATES), men alla tre grenarna i denna funktion
+  // tejpade på ny interpunktion utan att kolla om en redan fanns. Dessa
+  // tester använder ett RIKTIGT placeringsdomText-resultat (inte 'X') just
+  // för att fånga att indata redan slutar på punkt.
+  it('placeringsdom slutar redan på punkt (riktig placeringsdomText) — ingen dubbel interpunktion vid "men"', () => {
+    const dom = placeringsdomText(ClubExpectation.WinLeague, 1, 12)
+    expect(dom).toBe('Förstaplatsen överträffade det de bad om.')
+    const s = { expectationVerdict: 'exceeded' as const, objectiveOutcome: { met: 0, atRisk: 0, active: 0, failed: 1 } }
+    const result = seasonTwoTruthsSentence(s, dom)
+    expect(result).toBe('Förstaplatsen överträffade det de bad om, men ett uppdrag missades.')
+    expect(result).not.toContain('.,')
+  })
+
+  it('placeringsdom slutar redan på punkt — ingen dubbel punkt före "Uppdragen höll ni däremot"', () => {
+    const dom = placeringsdomText(ClubExpectation.AvoidBottom, 12, 12)
+    const s = { expectationVerdict: 'failed' as const, objectiveOutcome: { met: 1, atRisk: 0, active: 0, failed: 0 } }
+    const result = seasonTwoTruthsSentence(s, dom)
+    expect(result).not.toMatch(/\.\./)
+    expect(result).toBe(`${dom} Uppdragen höll ni däremot.`)
+  })
+
+  it('placeringsdom slutar redan på punkt — ingen dubbel punkt före "hängde löst"', () => {
+    const dom = placeringsdomText(ClubExpectation.WinLeague, 1, 12)
+    const s = { expectationVerdict: 'exceeded' as const, objectiveOutcome: { met: 0, atRisk: 1, active: 0, failed: 0 } }
+    const result = seasonTwoTruthsSentence(s, dom)
+    expect(result).not.toMatch(/\.\./)
+    expect(result).toBe(`${dom} Ett uppdrag hängde löst ända in i mars.`)
+  })
 })

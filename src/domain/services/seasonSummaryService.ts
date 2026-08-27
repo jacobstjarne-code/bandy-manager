@@ -80,7 +80,17 @@ type MomentWithScore = NonNullable<SeasonSummary['keyMoments']>[number] & { scor
  * SÅLDES senare under säsongen hittas fortfarande, se kommentarerna vid
  * game.players.find nedan.
  *
- * @cites game.players, clubFixtures, Fixture.roundNumber
+ * Rotorsak (SEXSÄSONGSAUDITEN 2026-08-26, "bästa match och tidslinje
+ * använde olika omgångsnummer i ett fall"): moments taggades tidigare med
+ * `round: f.roundNumber` (per-tävling — ligarond 1-22 ELLER cuprond 1-4,
+ * satt en gång i cupService.ts), medan "Säsongens match"-kortet i
+ * SeasonSummaryScreen.tsx och storylineItems (samma tidslinje, se
+ * DIN SÄSONG-mergen längre ned i screen-filen) redan använde `matchday`
+ * (global spelordning). Samma fixture kunde alltså visas med två olika
+ * "Omgång"-nummer beroende på VILKEN yta som renderade den. CLAUDE.md:s
+ * hårda regel: all rond-identitet ska använda matchday, aldrig roundNumber.
+ *
+ * @cites game.players, clubFixtures, Fixture.matchday
  */
 function computeKeyMoments(
   game: SaveGame,
@@ -134,12 +144,12 @@ function computeKeyMoments(
   for (const f of clubFixtures) {
     const { margin, oppName, scoreStr, rivalry, isDerby } = deriveFixtureOutcome(f, game.managedClubId, game.clubs)
     const seed = fixtureSeed(f.id)
-    const roundLabel = `Omgång ${String(f.roundNumber).padStart(2, '0')}`
+    const roundLabel = `Omgång ${String(f.matchday).padStart(2, '0')}`
 
     // Big win (3+ goal margin)
     if (margin >= 3) {
       const fn = seededPick(BIG_WIN_POOL, seed)
-      moments.push({ round: f.roundNumber, type: 'bigWin', fixtureId: f.id,
+      moments.push({ round: f.matchday, type: 'bigWin', fixtureId: f.id,
         headline: `Stor seger mot ${oppName} (${scoreStr})`,
         body: `${roundLabel}: ${fn(margin, oppName)}`,
         score: margin * 10 + (isDerby ? 20 : 0) })
@@ -148,7 +158,7 @@ function computeKeyMoments(
     // Big loss (3+ goal margin)
     if (margin <= -3) {
       const fn = seededPick(BIG_LOSS_POOL, seed)
-      moments.push({ round: f.roundNumber, type: 'bigLoss', fixtureId: f.id,
+      moments.push({ round: f.matchday, type: 'bigLoss', fixtureId: f.id,
         headline: `Tung förlust mot ${oppName} (${scoreStr})`,
         body: `${roundLabel}: ${fn(Math.abs(margin), oppName)}`,
         score: Math.abs(margin) * 8 + (isDerby ? 20 : 0) })
@@ -158,13 +168,13 @@ function computeKeyMoments(
     if (isDerby && margin !== 0) {
       if (margin > 0) {
         const fn = seededPick(DERBY_WIN_POOL, seed)
-        moments.push({ round: f.roundNumber, type: 'derbyWin', fixtureId: f.id,
+        moments.push({ round: f.matchday, type: 'derbyWin', fixtureId: f.id,
           headline: `Derbyvinst! ${rivalry!.name} (${scoreStr})`,
           body: `${roundLabel}: ${fn(oppName, scoreStr)}`,
           score: 35 + margin * 5 })
       } else {
         const fn = seededPick(DERBY_LOSS_POOL, seed)
-        moments.push({ round: f.roundNumber, type: 'derbyLoss', fixtureId: f.id,
+        moments.push({ round: f.matchday, type: 'derbyLoss', fixtureId: f.id,
           headline: `Derbyförlust — ${rivalry!.name} (${scoreStr})`,
           body: `${roundLabel}: ${fn(oppName)}`,
           score: 25 })
@@ -185,7 +195,7 @@ function computeKeyMoments(
         const p = game.players.find(pl => pl.id === pid)
         const name = p ? `${p.firstName} ${p.lastName}` : 'Okänd'
         const fn = seededPick(HAT_TRICK_POOL, seed)
-        moments.push({ round: f.roundNumber, type: 'hatTrick', fixtureId: f.id, relatedPlayerId: pid,
+        moments.push({ round: f.matchday, type: 'hatTrick', fixtureId: f.id, relatedPlayerId: pid,
           headline: `Hattrick — ${name} mot ${oppName}`,
           body: `${roundLabel}: ${fn(name, goals)}`,
           score: 30 + (goals - 3) * 10 })
@@ -202,7 +212,7 @@ function computeKeyMoments(
         const p = scorer.playerId ? game.players.find(pl => pl.id === scorer.playerId) : null
         const scorerName = p ? `${p.firstName} ${p.lastName}` : 'Avslutning'
         const fn = seededPick(LATE_WINNER_POOL, seed)
-        moments.push({ round: f.roundNumber, type: 'lateWinner', fixtureId: f.id, relatedPlayerId: scorer.playerId,
+        moments.push({ round: f.matchday, type: 'lateWinner', fixtureId: f.id, relatedPlayerId: scorer.playerId,
           headline: `Sent avgörande mot ${oppName} (${scoreStr})`,
           body: `${roundLabel}: ${fn(scorerName)}`,
           score: 25 + (isDerby ? 20 : 0) })
@@ -212,7 +222,7 @@ function computeKeyMoments(
     // Comeback: we trailed (first goal was opponent's) but won
     if (isComeback(f, game.managedClubId, margin)) {
       const fn = seededPick(COMEBACK_POOL, seed)
-      moments.push({ round: f.roundNumber, type: 'comeback', fixtureId: f.id,
+      moments.push({ round: f.matchday, type: 'comeback', fixtureId: f.id,
         headline: `Comeback mot ${oppName} (${scoreStr})`,
         body: `${roundLabel}: ${fn(oppName)}`,
         score: 28 + margin * 5 })
@@ -361,7 +371,7 @@ export function buildExpectationVerdictSentence(
  * säsongen — känt, INTE fixat, kräver en ny säsongsstarts-trupp-snapshot
  * (BACKLOG.md). Citera inte mostImproved som om den vore källkorrekt.
  *
- * @cites StandingRow.finalPosition, StandingRow.points, StandingRow.wins, StandingRow.draws, StandingRow.losses, StandingRow.goalsFor, StandingRow.goalsAgainst, StandingRow.goalDifference, SaveGame.standings, SaveGame.playoffBracket, SeasonSummary.championClubId, SeasonSummary.eliminatedByClubId, Club.boardExpectation, Fixture.roundNumber, Club.finances
+ * @cites StandingRow.finalPosition, StandingRow.points, StandingRow.wins, StandingRow.draws, StandingRow.losses, StandingRow.goalsFor, StandingRow.goalsAgainst, StandingRow.goalDifference, SaveGame.standings, SaveGame.playoffBracket, SeasonSummary.championClubId, SeasonSummary.eliminatedByClubId, SaveGame.seasonStartBoardExpectation, Club.boardExpectation, Fixture.roundNumber, Club.finances
  */
 export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: number): SeasonSummary {
   const managedClubId = game.managedClubId
@@ -446,7 +456,16 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   // computeSeasonVerdictRating, och expectationVerdictFromRating hanterar
   // WinLeague-specialfallet (binärt mål — "vinna ligan" betyder plats 1,
   // inget "nästan").
-  const boardExpectation = club.boardExpectation
+  // A-H1 (SEXSÄSONGSAUDITEN 2026-08-26, spår 2 rot a): club.boardExpectation
+  // kan redan vara stegad till NÄSTA säsongs krav vid det här anropet —
+  // seasonEndProcessor.ts stegar den (rad ~379) INNAN denna funktion anropas
+  // (rad ~1332), så `game.clubs`/`club` här är post-stegning. game.
+  // seasonStartBoardExpectation är den frusna snapshotten från säsongens
+  // START (SaveGame.ts) och är vad årsboken faktiskt ska döma mot. Fallback
+  // till club.boardExpectation kvar för gamla saves som saknar fältet
+  // (saveGameMigration.ts backfyller inte detta specifikt, men fallbacken
+  // gör gamla saves degraderande korrekta snarare än trasiga).
+  const boardExpectation = game.seasonStartBoardExpectation ?? club.boardExpectation
   const isChampion = playoffResult === 'champion'
 
   const seasonVerdictRating = computeSeasonVerdictRating(boardExpectation, finalPosition, game.clubs.length)
@@ -501,12 +520,22 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     .filter(x => x.gain > 0)
     .sort((a, b) => b.gain - a.gain)
 
+  // Rotorsak (SEXSÄSONGSAUDITEN 2026-08-26, Lesjöfors "43 → 52" visat som
+  // "+10"): caGain räknades tidigare ur RÅA (oavrundade) currentAbility/
+  // startSeasonCA-värden, medan startCA/endCA avrundades var för sig.
+  // Två oberoende avrundningar kan tappa/vinna 1 mot en avrundning av
+  // differensen (t.ex. 42.6→43 och 52.4→52 avrundar var för sig, men
+  // differensen 52.4-42.6=9.8 avrundar till 10) — de visade siffrorna
+  // 43/52 och den visade deltan +10 hörde då inte ihop. Fix: härled
+  // caGain ur de REDAN avrundade start/slut-värdena, aldrig ur råa float.
+  const mostImprovedStartCA = Math.round(improvedCandidates[0]?.p.startSeasonCA ?? 0)
+  const mostImprovedEndCA = Math.round(improvedCandidates[0]?.p.currentAbility ?? 0)
   const mostImproved = improvedCandidates[0] ? {
     playerId: improvedCandidates[0].p.id,
     name: `${improvedCandidates[0].p.firstName} ${improvedCandidates[0].p.lastName}`,
-    caGain: Math.round(improvedCandidates[0].gain),
-    startCA: Math.round(improvedCandidates[0].p.startSeasonCA ?? 0),
-    endCA: Math.round(improvedCandidates[0].p.currentAbility),
+    caGain: mostImprovedEndCA - mostImprovedStartCA,
+    startCA: mostImprovedStartCA,
+    endCA: mostImprovedEndCA,
   } : null
 
   // U21 best player — rating/mål event-sourcede (samma seasonRatings/
@@ -805,7 +834,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     communityStandingEnd: communityStandingEnd ?? game.communityStanding ?? 50,
     communityHighlights: [],
     signatureRubric: game.currentSeasonSignature
-      ? (summarizeSignature(game.currentSeasonSignature) ?? undefined)
+      ? (summarizeSignature(game.currentSeasonSignature, game.scandalHistory) ?? undefined)
       : undefined,
   }
 }
@@ -875,16 +904,26 @@ export function seasonTwoTruthsSentence(
   const placeringBra = summary.expectationVerdict !== 'failed'
   const { met, atRisk, failed } = outcome
 
+  // Rotorsak (SEXSÄSONGSAUDITEN 2026-08-26, "det de bad om., men..."):
+  // placeringsdom kommer alltid färdigpunkterad från placeringsdomText/
+  // PLACERINGSDOM_TEMPLATES ovan. De tre grenarna nedan tejpade tidigare
+  // fast en andra skiljetecken direkt efter den punkten (", men" eller ". ")
+  // utan att kolla om en redan fanns där — dubbel interpunktion. Strippa
+  // en eventuell befintlig sluttpunkt innan ny interpunktion läggs på, så
+  // meningen alltid får EN skiljetecken mellan de två halvorna, oavsett
+  // vad anroparen skickade in.
+  const dom = placeringsdom.endsWith('.') ? placeringsdom.slice(0, -1) : placeringsdom
+
   if (placeringBra && failed > 0) {
     const missedClause = failed === 1 ? 'ett uppdrag missades' : `${failed} uppdrag missades`
-    return `${placeringsdom}, men ${missedClause}.`
+    return `${dom}, men ${missedClause}.`
   }
   if (!placeringBra && failed === 0 && atRisk === 0 && met > 0) {
-    return `${placeringsdom}. Uppdragen höll ni däremot.`
+    return `${dom}. Uppdragen höll ni däremot.`
   }
   if (placeringBra && failed === 0 && atRisk > 0) {
     const atRiskClause = atRisk === 1 ? 'Ett uppdrag hängde löst' : `${atRisk} uppdrag hängde löst`
-    return `${placeringsdom}. ${atRiskClause} ända in i mars.`
+    return `${dom}. ${atRiskClause} ända in i mars.`
   }
   // Båda pekar åt samma håll (eller ingen av de tre fallen ovan matchar,
   // t.ex. dålig placering + hotade-men-ej-missade uppdrag — domen ger inget

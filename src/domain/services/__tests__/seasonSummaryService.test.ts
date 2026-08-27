@@ -100,6 +100,35 @@ describe('generateSeasonSummary', () => {
     }
   }, 60000)
 
+  // SEXSÄSONGSAUDITEN 2026-08-26 ("toppskyttar med många mål visades som
+  // '0 ass'"): en full simulerad säsong producerar riktiga Assist-events i
+  // matchCore.ts (trackAssist/MatchEventType.Assist) för de allra flesta
+  // mål — countSeasonAssistsByPlayer (seasonSummaryService.ts) ska faktiskt
+  // hitta dem. Testet är medvetet löst (>0 räcker) eftersom exakt antal
+  // beror på seedad matchsimulering, men en regression till "alltid 0"
+  // (stub/fel fält/fel filter) ska fångas här.
+  it('topScorer/topAssister har verkliga assists — inte alltid 0 (regression: countSeasonAssistsByPlayer)', () => {
+    const game = makeFullSeasonGame()
+    const summary = generateSeasonSummary(game)
+    const totalAssistEvents = game.fixtures
+      .filter(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+      .flatMap(f => f.events ?? [])
+      .filter(e => e.type === 'assist' && e.clubId === game.managedClubId)
+      .length
+    // En hel säsong ska generera minst några assister för den managerade klubben.
+    expect(totalAssistEvents).toBeGreaterThan(0)
+    if (summary.topScorer) {
+      expect(summary.topScorer.assists).toBeGreaterThanOrEqual(0)
+    }
+    if (summary.topAssister) {
+      expect(summary.topAssister.assists).toBeGreaterThan(0)
+    } else {
+      // Om ingen topAssister valdes trots assist-events i state, är
+      // summeringen trasig — precis det audit-fyndet varnade för.
+      expect(totalAssistEvents).toBe(0)
+    }
+  }, 60000)
+
   it('roundPoints array has 22 entries', () => {
     const game = makeFullSeasonGame()
     const summary = generateSeasonSummary(game)
@@ -402,5 +431,75 @@ describe('getClubPositionTrend (2026-08-25, Jacobs order "AI-klubbarnas föränd
       ],
     }
     expect(getClubPositionTrend(withHistory, 'club_heros')?.direction).toBe('rising')
+  })
+})
+
+// SEXSÄSONGSAUDITEN 2026-08-26, "Förbättringsaritmetik": Lesjöfors visade
+// "43 → 52" som "+10" (skulle vara +9). Rotorsak: caGain räknades ur RÅA
+// (oavrundade) currentAbility/startSeasonCA, medan de visade start/slut-
+// siffrorna avrundades var för sig — två oberoende avrundningar kan tappa/
+// vinna 1 mot en avrundning av differensen. Fix: caGain härleds nu ur de
+// REDAN avrundade start/slut-värdena, aldrig ur rå float.
+describe('generateSeasonSummary — mostImproved.caGain matchar de visade start/slut-siffrorna', () => {
+  it('42.6 → 52.4 (rått): avrundas till 43/52, caGain ska vara 9 — inte 10', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const gameWithPlayer = {
+      ...game,
+      players: game.players.map(p => p.id === player.id
+        ? { ...p, startSeasonCA: 42.6, currentAbility: 52.4 }
+        : p),
+    }
+    const summary = generateSeasonSummary(gameWithPlayer)
+    expect(summary.mostImproved).not.toBeNull()
+    expect(summary.mostImproved!.startCA).toBe(43)
+    expect(summary.mostImproved!.endCA).toBe(52)
+    // Bevisar buggklassen: displayed delta ska ALLTID vara endCA - startCA,
+    // aldrig ett tal som inte går att härleda ur de två siffrorna spelaren ser.
+    expect(summary.mostImproved!.caGain).toBe(summary.mostImproved!.endCA - summary.mostImproved!.startCA)
+    expect(summary.mostImproved!.caGain).toBe(9)
+  })
+})
+
+// SEXSÄSONGSAUDITEN 2026-08-26, "Omgångsidentitet": årsbokens bästa match
+// (matchOfTheSeason, matchHighlightService.ts) och tidslinjen (keyMoments,
+// computeKeyMoments ovan) visade olika omgångsnummer för SAMMA fixture i
+// ett fall. Rotorsak: computeKeyMoments taggade moments med roundNumber
+// (per-tävling, cup 1-4 skilt från liga 1-22) medan resten av årsboken
+// (matchOfTheSeason, storylineItems i SeasonSummaryScreen.tsx) redan
+// använde matchday (global spelordning) — CLAUDE.md:s hårda regel. Testet
+// sätter matchday och roundNumber till OLIKA värden (simulerar en cup-
+// insticksoffset) för att bevisa att keyMoments nu läser matchday.
+describe('generateSeasonSummary — keyMoments använder matchday, inte roundNumber, för omgångsidentitet', () => {
+  it('en bigWin-fixture med matchday ≠ roundNumber taggas med matchday i keyMoments', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const opponentId = game.clubs.find(c => c.id !== game.managedClubId)!.id
+    const bigWinFixtureId = 'test_matchday_identity_fx'
+
+    const gameWithFixture = {
+      ...game,
+      fixtures: [
+        ...game.fixtures,
+        {
+          id: bigWinFixtureId,
+          season: game.currentSeason,
+          matchday: 8,       // global spelordning (t.ex. förskjuten av en cup-omgång)
+          roundNumber: 5,    // ligans EGEN rondräkning — medvetet olika från matchday
+          homeClubId: game.managedClubId,
+          awayClubId: opponentId,
+          homeScore: 5,
+          awayScore: 0,
+          status: FixtureStatus.Completed,
+          isCup: false,
+          events: [],
+        } as never,
+      ],
+    }
+
+    const summary = generateSeasonSummary(gameWithFixture as never)
+    const moment = (summary.keyMoments ?? []).find(m => m.fixtureId === bigWinFixtureId)
+    expect(moment, JSON.stringify(summary.keyMoments)).toBeDefined()
+    expect(moment!.round).toBe(8)
+    expect(moment!.round).not.toBe(5)
   })
 })
