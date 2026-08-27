@@ -111,8 +111,6 @@ export function generateHalfTimeSummary(game: SaveGame): HalfTimeSummary {
         arcText = `🏅 ${name}s kontrakt tickar — beslut krävs före mars.`
       } else if (activeArc.type === 'contract_drama') {
         arcText = `📋 ${name} i blåsväder — kontraktsfrågan hänger i luften.`
-      } else if (activeArc.type === 'ledare_crisis') {
-        arcText = `🦁 ${name} försöker hålla ihop laget under krisperioden.`
       } else if (activeArc.type === 'joker_redemption') {
         arcText = `${name} delar fansen — vad händer i vår?`
       }

@@ -37,6 +37,9 @@ const SIGNATURES = [
 
 // ── Generate insändare ────────────────────────────────────────────────────────
 
+/**
+ * @cites lastFixture.homeScore, lastFixture.awayScore, getRivalry
+ */
 export function generateInsandare(game: SaveGame, lastFixture: Fixture): Insandare | null {
   const isHome = lastFixture.homeClubId === game.managedClubId
   const myScore = isHome ? lastFixture.homeScore : lastFixture.awayScore

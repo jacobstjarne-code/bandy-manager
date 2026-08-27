@@ -263,6 +263,17 @@ const SCANDAL_DASHBOARD_OTHER: Partial<Record<ScandalType, Array<[string, string
  */
 function pickCoffeeRoomEventReaction(game: SaveGame, round: number, seed: number):
   { exchange: [string, string, string, string] } | { line: CoffeeNarratorLine } | null {
+  // PÅSTÅENDEKARTAN dubbelskale-fix (2026-08-25): `round` (parametern ovan)
+  // är roundNumber-skala — rätt för TRANSFER_DEADLINE_ROUND (transferTriggers.ts
+  // dokumenterar uttryckligen "omgång 15", samma skala som konstantens egen
+  // kanoniska beräkning). Men `Scandal.triggerRound`, `lastRivalSaleMatchday`
+  // och `lastIncomingBidMatchday` skrivs alla i matchday-skala (bekräftat:
+  // scandalService.ts skriver nextMatchday, roundProcessor.ts skriver
+  // nextMatchday för båda Matchday-fälten) — att jämföra dem mot `round`
+  // gav fel svar varje gång en cupmatch legat emellan, exakt samma buggklass
+  // som denna sessions signedRound-fix. Egen matchday-skalig variabel,
+  // används bara där fältet som jämförs faktiskt är matchday-skaligt.
+  const matchdayNow = game.currentMatchday ?? round
   let soldItem: typeof game.inbox[number] | undefined
   let boughtItem: typeof game.inbox[number] | undefined
   for (const item of (game.inbox ?? []).slice(-10)) {
@@ -312,7 +323,7 @@ function pickCoffeeRoomEventReaction(game: SaveGame, round: number, seed: number
   // Scandal reference (25% chance when recent scandal this season)
   const recentScandal = (game.scandalHistory ?? []).find(s =>
     s.season === game.currentSeason &&
-    s.triggerRound >= round - 1 &&
+    s.triggerRound >= matchdayNow - 1 &&
     s.type !== 'small_absurdity'
   )
   if (recentScandal && seed % 4 === 0) {
@@ -337,8 +348,8 @@ function pickCoffeeRoomEventReaction(game: SaveGame, round: number, seed: number
   // C-T9: rival sale kafferum — show within 3 matchdays of sale
   if (
     game.lastRivalSaleMatchday !== undefined &&
-    round - (game.lastRivalSaleMatchday ?? 0) <= 3 &&
-    round - (game.lastRivalSaleMatchday ?? 0) >= 0 &&
+    matchdayNow - (game.lastRivalSaleMatchday ?? 0) <= 3 &&
+    matchdayNow - (game.lastRivalSaleMatchday ?? 0) >= 0 &&
     seed % 2 === 0
   ) {
     const idx = Math.abs(seed * 19) % RIVAL_SALE_KAFFERUM.length
@@ -346,7 +357,7 @@ function pickCoffeeRoomEventReaction(game: SaveGame, round: number, seed: number
   }
 
   // C-O2: incoming bid kafferum — show within 2 matchdays when AI bids on managed player
-  const incomingBidAge = round - (game.lastIncomingBidMatchday ?? -99)
+  const incomingBidAge = matchdayNow - (game.lastIncomingBidMatchday ?? -99)
   if (
     game.lastIncomingBidMatchday !== undefined &&
     incomingBidAge >= 0 && incomingBidAge <= 2 &&

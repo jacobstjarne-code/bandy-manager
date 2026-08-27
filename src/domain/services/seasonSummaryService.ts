@@ -1,7 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { SeasonSummary } from '../entities/SeasonSummary'
 import type { Fixture } from '../entities/Fixture'
-import { ClubExpectation, FixtureStatus, PlayoffRound } from '../enums'
+import { ClubExpectation, FixtureStatus, MatchEventType, PlayoffRound } from '../enums'
 import { summarizeSignature } from './seasonSignatureService'
 import { seededPick, fixtureSeed } from '../utils/random'
 import { ordinal } from '../utils/numberFormat'
@@ -9,6 +9,9 @@ import { deriveFixtureOutcome, countGoalsByPlayer, findLateWinnerGoal, isComebac
 import { formatRating } from '../format'
 import { computeSeasonVerdictRating, expectationVerdictFromRating } from './boardService'
 
+/**
+ * @cites Player.promotedFromAcademy, Player.seasonStats.gamesPlayed, Player.seasonStats.averageRating, Player.seasonStats.goals, Player.careerMilestones, Player.diary, Player.isInjured
+ */
 function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
   const managedClubId = game.managedClubId
   const managedPlayers = game.players.filter(p => p.clubId === managedClubId)
@@ -44,13 +47,13 @@ function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
     }
   }
 
-  // 3. Comeback king: was injured this season (actual narrativeLog entry,
+  // 3. Comeback king: was injured this season (actual diary entry,
   // not injuryProneness — det är en benägenhets-egenskap, inte historik),
   // came back, ≥5 goals, ≤15 games
   if (triggers.length < 3) {
     const comebackKing = managedPlayers.find(p =>
       p.isInjured === false &&
-      (p.narrativeLog ?? []).some(e => e.type === 'injury' && e.season === game.currentSeason) &&
+      (p.diary ?? []).some(e => e.type === 'injury' && e.season === game.currentSeason) &&
       p.seasonStats.goals >= 5 &&
       p.seasonStats.gamesPlayed <= 15 &&
       p.seasonStats.gamesPlayed > 0
@@ -70,10 +73,18 @@ function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
 
 type MomentWithScore = NonNullable<SeasonSummary['keyMoments']>[number] & { score: number }
 
+/**
+ * PÅSTÅENDEKARTAN (2026-08-24, fixat samma dag): namnuppslag för hattrick/
+ * sent avgörande mål läser game.players (ofiltrerad) — inte den klubb-
+ * filtrerade managedPlayers-parametern — så en spelare som gjorde målet men
+ * SÅLDES senare under säsongen hittas fortfarande, se kommentarerna vid
+ * game.players.find nedan.
+ *
+ * @cites game.players, clubFixtures, Fixture.roundNumber
+ */
 function computeKeyMoments(
   game: SaveGame,
   clubFixtures: Fixture[],
-  managedPlayers: { id: string; firstName: string; lastName: string }[],
 ): NonNullable<SeasonSummary['keyMoments']> {
   const moments: MomentWithScore[] = []
 
@@ -164,7 +175,14 @@ function computeKeyMoments(
     const goalsByPlayer = countGoalsByPlayer(f, game.managedClubId)
     for (const [pid, goals] of Object.entries(goalsByPlayer)) {
       if (goals >= 3) {
-        const p = managedPlayers.find(pl => pl.id === pid)
+        // PÅSTÅENDEKARTAN omsvep (2026-08-24), VAR-fel-entitet: namnet slogs
+        // upp i managedPlayers (klubb-filtrerad VID SÄSONGSSLUT) — en spelare
+        // som gjorde hattricket men SÅLDES senare under säsongen hittades
+        // inte där och blev "Okänd", trots att matchhändelsen (goalsByPlayer,
+        // ovan) redan korrekt identifierat VILKEN match/vilket lag det gällde.
+        // game.players (ofiltrerad) har spelarens namn oavsett nuvarande
+        // clubId — namnet ändras inte av att spelaren bytt klubb.
+        const p = game.players.find(pl => pl.id === pid)
         const name = p ? `${p.firstName} ${p.lastName}` : 'Okänd'
         const fn = seededPick(HAT_TRICK_POOL, seed)
         moments.push({ round: f.roundNumber, type: 'hatTrick', fixtureId: f.id, relatedPlayerId: pid,
@@ -179,7 +197,9 @@ function computeKeyMoments(
     if (margin === 1) {
       const scorer = findLateWinnerGoal(f, game.managedClubId, 80)
       if (scorer) {
-        const p = scorer.playerId ? managedPlayers.find(pl => pl.id === scorer.playerId) : null
+        // Samma fix som hattrick-namnet ovan — game.players, inte den
+        // klubb-filtrerade managedPlayers-parametern.
+        const p = scorer.playerId ? game.players.find(pl => pl.id === scorer.playerId) : null
         const scorerName = p ? `${p.firstName} ${p.lastName}` : 'Avslutning'
         const fn = seededPick(LATE_WINNER_POOL, seed)
         moments.push({ round: f.roundNumber, type: 'lateWinner', fixtureId: f.id, relatedPlayerId: scorer.playerId,
@@ -216,6 +236,133 @@ function computeKeyMoments(
 
 export type { SeasonSummary }
 
+/**
+ * topScorer/topAssister/topRated/youngPlayer-refaktorn (2026-08-25, Jacobs
+ * order: "seasonStats ackumulerar efter försäljning... rapportera ytorna,
+ * sedan bygg"). Samma B12-mönster som computeKeyMoments ovan: läs målen/
+ * assisten direkt ur clubFixtures's egna MatchEvent-poster (clubId=managerad
+ * klubb VID DEN MATCHEN, oberoende av spelarens NUVARANDE clubId) i stället
+ * för player.seasonStats, som fortsätter räkna för en köpande klubb efter
+ * en försäljning eftersom transferService.ts aldrig nollställer den och
+ * statsProcessor.ts uppdaterar ALLA spelare i ALLA fixtures varje omgång.
+ * Rating har ingen MatchEvent-motsvarighet — läses istället ur
+ * Fixture.report.playerRatings, samma härledning, samma oberoende av
+ * NUVARANDE clubId (bara den historiska lineupen för just den matchen
+ * avgör vem som räknas).
+ *
+ * mostImproved är INTE omfattad — currentAbility/startSeasonCA har ingen
+ * per-match-händelse-motsvarighet i clubFixtures, en riktig fix kräver en
+ * ny lagrad säsongsstarts-trupp-snapshot (vilka spelare var i klubben vid
+ * säsongsstart, inte bara vid säsongsslut). Större scope, inte byggt här,
+ * se BACKLOG.md.
+ */
+/**
+ * @cites Fixture.events
+ */
+function countSeasonGoalsByPlayer(clubFixtures: Fixture[], managedClubId: string): Record<string, number> {
+  const goals: Record<string, number> = {}
+  for (const f of clubFixtures) {
+    for (const evt of f.events ?? []) {
+      if (evt.type === MatchEventType.Goal && evt.playerId && evt.clubId === managedClubId) {
+        goals[evt.playerId] = (goals[evt.playerId] ?? 0) + 1
+      }
+    }
+  }
+  return goals
+}
+
+/**
+ * @cites Fixture.events
+ */
+function countSeasonAssistsByPlayer(clubFixtures: Fixture[], managedClubId: string): Record<string, number> {
+  const assists: Record<string, number> = {}
+  for (const f of clubFixtures) {
+    for (const evt of f.events ?? []) {
+      if (evt.type === MatchEventType.Assist && evt.playerId && evt.clubId === managedClubId) {
+        assists[evt.playerId] = (assists[evt.playerId] ?? 0) + 1
+      }
+    }
+  }
+  return assists
+}
+
+/**
+ * @cites Fixture.report.playerRatings
+ */
+function computeSeasonRatings(clubFixtures: Fixture[], managedClubId: string): Record<string, { sum: number; games: number }> {
+  const ratings: Record<string, { sum: number; games: number }> = {}
+  for (const f of clubFixtures) {
+    const isHome = f.homeClubId === managedClubId
+    const lineup = isHome ? f.homeLineup : f.awayLineup
+    const playerIds = new Set<string>([
+      ...(lineup?.startingPlayerIds ?? []),
+      ...(lineup?.benchPlayerIds ?? []),
+    ])
+    for (const pid of playerIds) {
+      const rating = f.report?.playerRatings?.[pid]
+      if (rating === undefined) continue
+      const entry = ratings[pid] ?? { sum: 0, games: 0 }
+      entry.sum += rating
+      entry.games += 1
+      ratings[pid] = entry
+    }
+  }
+  return ratings
+}
+
+/**
+ * M8 (audit 5c9a7a8, 2026-08-24) — extraherad ur generateSeasonSummary()
+ * (var tidigare inline) så EXAKT samma mening kan byggas om för en gammal,
+ * felaktigt migrerad SeasonSummary i saveGameMigration.ts, utan en andra
+ * kopia av templaten (EN SANNING, ETT STÄLLE). A5 (2026-08-17) fixade redan
+ * VILKEN dom (expectationVerdict) som väljs live — den här funktionen
+ * bygger bara MENINGEN från en redan korrekt dom, oavsett var domen kom
+ * ifrån (live-generering eller en efterhandsrättad gammal post).
+ */
+export function buildExpectationVerdictSentence(
+  clubName: string,
+  expectationVerdict: SeasonSummary['expectationVerdict'],
+  finalPosition: number,
+  boardExpectation: ClubExpectation,
+  isChampion: boolean,
+  season: number,
+): string {
+  // H4 Heros: Survive väntar på Opus-text, se boardService.ts:s BOARD_EXPECTATION_TEXT.
+  const expectationText: Record<ClubExpectation, string> = {
+    [ClubExpectation.Survive]: '[Opus]',
+    [ClubExpectation.AvoidBottom]: 'undvika nedflyttning',
+    [ClubExpectation.MidTable]: 'hålla mittentabellen',
+    [ClubExpectation.ChallengeTop]: 'utmana toppen',
+    [ClubExpectation.WinLeague]: 'vinna ligan',
+  }
+  if (isChampion) {
+    return `En historisk säsong! ${clubName} tog SM-guldet ${season + 1} i en strålande slutspelskampanj.`
+  }
+  if (expectationVerdict === 'exceeded') {
+    return `${clubName} överträffade alla förväntningar och slutade på ${ordinal(finalPosition)} plats — styrelsen förväntade sig bara att ${expectationText[boardExpectation]}.`
+  }
+  if (expectationVerdict === 'met') {
+    return `En solid säsong för ${clubName}. ${ordinal(finalPosition)} plats uppfyller styrelsens krav på att ${expectationText[boardExpectation]}.`
+  }
+  return `En besvikelse. ${clubName} slutade på ${ordinal(finalPosition)} plats — långt ifrån styrelsens mål att ${expectationText[boardExpectation]}.`
+}
+
+/**
+ * PÅSTÅENDEKARTAN (2026-08-24, uppdaterad 2026-08-25): denna @cites-
+ * deklaration täcker MEDVETET bara delmängden av funktionens fält som är
+ * verifierad Sanning (placering, slutspel, matchstatistik, ekonomi).
+ * topScorer/topAssister/topRated/youngPlayer läser nu clubFixtures's
+ * MatchEvent/playerRatings — FIXAT, men via de tre helperfunktionerna ovan
+ * (countSeasonGoalsByPlayer/countSeasonAssistsByPlayer/computeSeasonRatings),
+ * som är de FAKTISKA verifierarna och bär sina egna @cites-taggar. Denna
+ * funktion citerar bara sådant den själv läser direkt.
+ * mostImproved beräknas fortfarande över managedPlayers (klubb-filtrerad
+ * VID SÄSONGSSLUT) och missar en spelare som förbättrades men SÅLDES under
+ * säsongen — känt, INTE fixat, kräver en ny säsongsstarts-trupp-snapshot
+ * (BACKLOG.md). Citera inte mostImproved som om den vore källkorrekt.
+ *
+ * @cites StandingRow.finalPosition, StandingRow.points, StandingRow.wins, StandingRow.draws, StandingRow.losses, StandingRow.goalsFor, StandingRow.goalsAgainst, StandingRow.goalDifference, SaveGame.standings, SaveGame.playoffBracket, SeasonSummary.championClubId, SeasonSummary.eliminatedByClubId, Club.boardExpectation, Fixture.roundNumber, Club.finances
+ */
 export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: number): SeasonSummary {
   const managedClubId = game.managedClubId
   const club = game.clubs.find(c => c.id === managedClubId)!
@@ -248,6 +395,11 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   let eliminatedByClubId: string | undefined
   let decidingFixtureId: string | undefined
   let decidingRound: number | undefined
+  // PÅSTÅENDEKARTAN (2026-08-24): snapshottas HÄR av samma skäl som
+  // eliminatedByClubId — se SeasonSummary.ts. Oavsett om managedClub själv
+  // blev mästare, för att smWinnerSentence i SeasonSummaryScreen.tsx ska
+  // kunna nämna vinnaren utan att läsa den nollställda live-bracketen.
+  const championClubId = bracket?.champion ?? undefined
   if (bracket) {
     if (bracket.champion === managedClubId) {
       playoffResult = 'champion'
@@ -305,31 +457,41 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   // second computation.
   const metExpectation = expectationVerdict !== 'failed'
 
-  // Player stats
-  const sortedByGoals = [...managedPlayers].sort((a, b) => b.seasonStats.goals - a.seasonStats.goals)
-  const sortedByAssists = [...managedPlayers].sort((a, b) => b.seasonStats.assists - a.seasonStats.assists)
-  const sortedByRating = [...managedPlayers]
-    .filter(p => p.seasonStats.gamesPlayed >= 5)
-    .sort((a, b) => b.seasonStats.averageRating - a.seasonStats.averageRating)
+  // Player stats — event-sourced (2026-08-25, se helpers ovan): läser
+  // clubFixtures direkt, inte player.seasonStats, så en spelare som gjorde
+  // poängen men SÅLDES under säsongen räknas fortfarande.
+  const seasonGoals = countSeasonGoalsByPlayer(clubFixtures, managedClubId)
+  const seasonAssists = countSeasonAssistsByPlayer(clubFixtures, managedClubId)
+  const seasonRatings = computeSeasonRatings(clubFixtures, managedClubId)
 
-  const topScorer = sortedByGoals[0]?.seasonStats.goals > 0 ? {
-    playerId: sortedByGoals[0].id,
-    name: `${sortedByGoals[0].firstName} ${sortedByGoals[0].lastName}`,
-    goals: sortedByGoals[0].seasonStats.goals,
-    assists: sortedByGoals[0].seasonStats.assists,
+  function lookupPlayer(playerId: string) {
+    const p = game.players.find(pl => pl.id === playerId)
+    return p ? `${p.firstName} ${p.lastName}` : 'Okänd'
+  }
+
+  const topScorerEntry = Object.entries(seasonGoals).sort((a, b) => b[1] - a[1])[0]
+  const topScorer = topScorerEntry && topScorerEntry[1] > 0 ? {
+    playerId: topScorerEntry[0],
+    name: lookupPlayer(topScorerEntry[0]),
+    goals: topScorerEntry[1],
+    assists: seasonAssists[topScorerEntry[0]] ?? 0,
   } : null
 
-  const topAssister = sortedByAssists[0]?.seasonStats.assists > 0 ? {
-    playerId: sortedByAssists[0].id,
-    name: `${sortedByAssists[0].firstName} ${sortedByAssists[0].lastName}`,
-    assists: sortedByAssists[0].seasonStats.assists,
+  const topAssisterEntry = Object.entries(seasonAssists).sort((a, b) => b[1] - a[1])[0]
+  const topAssister = topAssisterEntry && topAssisterEntry[1] > 0 ? {
+    playerId: topAssisterEntry[0],
+    name: lookupPlayer(topAssisterEntry[0]),
+    assists: topAssisterEntry[1],
   } : null
 
-  const topRated = sortedByRating[0] ? {
-    playerId: sortedByRating[0].id,
-    name: `${sortedByRating[0].firstName} ${sortedByRating[0].lastName}`,
-    avgRating: Math.round(sortedByRating[0].seasonStats.averageRating * 10) / 10,
-    games: sortedByRating[0].seasonStats.gamesPlayed,
+  const topRatedEntry = Object.entries(seasonRatings)
+    .filter(([, r]) => r.games >= 5)
+    .sort((a, b) => (b[1].sum / b[1].games) - (a[1].sum / a[1].games))[0]
+  const topRated = topRatedEntry ? {
+    playerId: topRatedEntry[0],
+    name: lookupPlayer(topRatedEntry[0]),
+    avgRating: Math.round((topRatedEntry[1].sum / topRatedEntry[1].games) * 10) / 10,
+    games: topRatedEntry[1].games,
   } : null
 
   // Most improved (using startSeasonCA)
@@ -347,17 +509,25 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     endCA: Math.round(improvedCandidates[0].p.currentAbility),
   } : null
 
-  // U21 best player
-  const u21Players = managedPlayers
-    .filter(p => p.age <= 21 && p.seasonStats.gamesPlayed >= 3)
-    .sort((a, b) => b.seasonStats.averageRating - a.seasonStats.averageRating)
+  // U21 best player — rating/mål event-sourcede (samma seasonRatings/
+  // seasonGoals ovan), men ålder är en levande Player-egenskap utan
+  // matchhändelse-motsvarighet, läst ur OFILTRERAD game.players (samma
+  // "hittas trots senare försäljning"-mönster som topScorer). Gaten
+  // (seasonRatings-post med >=3 matcher) begränsar redan kandidaterna till
+  // spelare som faktiskt spelat FÖR managerad klubb denna säsong — samma
+  // isHome-lineup-läsning som computeSeasonRatings gör, ingen extra
+  // clubId-filtrering behövs.
+  const u21Candidates = game.players
+    .filter(p => p.age <= 21 && (seasonRatings[p.id]?.games ?? 0) >= 3)
+    .map(p => ({ p, ratingEntry: seasonRatings[p.id] }))
+    .sort((a, b) => (b.ratingEntry.sum / b.ratingEntry.games) - (a.ratingEntry.sum / a.ratingEntry.games))
 
-  const youngPlayer = u21Players[0] ? {
-    playerId: u21Players[0].id,
-    name: `${u21Players[0].firstName} ${u21Players[0].lastName}`,
-    age: u21Players[0].age,
-    goals: u21Players[0].seasonStats.goals,
-    avgRating: Math.round(u21Players[0].seasonStats.averageRating * 10) / 10,
+  const youngPlayer = u21Candidates[0] ? {
+    playerId: u21Candidates[0].p.id,
+    name: `${u21Candidates[0].p.firstName} ${u21Candidates[0].p.lastName}`,
+    age: u21Candidates[0].p.age,
+    goals: seasonGoals[u21Candidates[0].p.id] ?? 0,
+    avgRating: Math.round((u21Candidates[0].ratingEntry.sum / u21Candidates[0].ratingEntry.games) * 10) / 10,
   } : null
 
   // Team stats from fixtures
@@ -507,23 +677,10 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   }))
 
   // Narrative summary
-  const expectationText: Record<ClubExpectation, string> = {
-    [ClubExpectation.AvoidBottom]: 'undvika nedflyttning',
-    [ClubExpectation.MidTable]: 'hålla mittentabellen',
-    [ClubExpectation.ChallengeTop]: 'utmana toppen',
-    [ClubExpectation.WinLeague]: 'vinna ligan',
-  }
-
-  let narrative = ''
-  if (isChampion) {
-    narrative = `En historisk säsong! ${club.name} tog SM-guldet ${game.currentSeason + 1} i en strålande slutspelskampanj.`
-  } else if (expectationVerdict === 'exceeded') {
-    narrative = `${club.name} överträffade alla förväntningar och slutade på ${ordinal(finalPosition)} plats — styrelsen förväntade sig bara att ${expectationText[boardExpectation]}.`
-  } else if (expectationVerdict === 'met') {
-    narrative = `En solid säsong för ${club.name}. ${ordinal(finalPosition)} plats uppfyller styrelsens krav på att ${expectationText[boardExpectation]}.`
-  } else {
-    narrative = `En besvikelse. ${club.name} slutade på ${ordinal(finalPosition)} plats — långt ifrån styrelsens mål att ${expectationText[boardExpectation]}.`
-  }
+  const verdictSentence = buildExpectationVerdictSentence(
+    club.name, expectationVerdict, finalPosition, boardExpectation, isChampion, game.currentSeason
+  )
+  let narrative = verdictSentence
 
   if (formTrend === 'improving') {
     narrative += ' Formen förbättrades tydligt under säsongens andra halva.'
@@ -567,7 +724,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   }
 
   const storyTriggers = generateStoryTriggers(game)
-  const baseKeyMoments = computeKeyMoments(game, clubFixtures, managedPlayers)
+  const baseKeyMoments = computeKeyMoments(game, clubFixtures)
 
   // Merge resolved arc storylines into keyMoments (max 7 total, arcs ranked at 80 impact)
   const arcStorylineTypes = new Set([
@@ -580,7 +737,10 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   type KeyMoment = NonNullable<SeasonSummary['keyMoments']>[number]
   const arcMoments: KeyMoment[] = resolvedArcStories.slice(0, 2).map(arc => ({
     round: arc.matchday,
-    type: 'bigWin' as const, // placeholder type — displayed via displayText
+    // Påståendesvepet #5: 'storyline', inte 'bigWin' — en arc-upplösning kan
+    // vara bitter (contract_drama_resolved, veteran_farewell) och ska inte
+    // få en ✅-ikon bara för att det var den placeholder som fanns.
+    type: 'storyline' as const,
     headline: arc.displayText,
     body: arc.description,
     relatedPlayerId: arc.playerId,
@@ -605,9 +765,11 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     eliminatedByClubId,
     decidingFixtureId,
     decidingRound,
+    championClubId,
     boardExpectation,
     metExpectation,
     expectationVerdict,
+    verdictSentence,
     topScorer,
     topAssister,
     topRated,
@@ -700,6 +862,8 @@ export function placeringsdomText(
  * inte mekaniskt böjas till en grammatisk sats utan att uppfinna ny text.
  * Räkneformen ("ett uppdrag missades") används därför även vid N=1 tills
  * Opus dömer den namngivna formen per uppdragstyp.
+ *
+ * @cites SeasonSummary.expectationVerdict, SeasonSummary.objectiveOutcome.met, SeasonSummary.objectiveOutcome.atRisk, SeasonSummary.objectiveOutcome.failed
  */
 export function seasonTwoTruthsSentence(
   summary: Pick<SeasonSummary, 'expectationVerdict' | 'objectiveOutcome'>,
@@ -726,4 +890,39 @@ export function seasonTwoTruthsSentence(
   // t.ex. dålig placering + hotade-men-ej-missade uppdrag — domen ger inget
   // fjärde fall för den kombinationen) — ingen tvåsanningsmening.
   return null
+}
+
+export interface ClubPositionTrend {
+  clubId: string
+  positions: number[]   // äldst→nyast, en per säsong som faktiskt har data
+  direction: 'rising' | 'falling' | 'stable'
+}
+
+/**
+ * Positionstrend för EN klubb (hanterad eller AI) över de senaste säsonger
+ * denna manager-karriär spelat. Ren härledning ur game.seasonSummaries[].
+ * standingsSnapshot — fältet skrivs redan för ALLA tolv klubbar varje
+ * säsongsslut (generateSeasonSummary ovan, standingsSnapshot = hela
+ * game.standings), bara aldrig LÄST för en AI-klubb förrän nu. Jacobs order
+ * 2026-08-25, efter fjärde H4-mätningen: "AI-klubbarnas förändring: bygg
+ * transfers och positionstrend, det är billigt och sant." Inget nytt fält,
+ * ingen ny simulering — bara en diff över data som redan finns.
+ *
+ * null om färre än två säsonger har en registrerad position för klubben
+ * (ingen trend går att uttala sig om på en enda datapunkt — 'stable' hade
+ * varit en gissning förklädd till mätning).
+ */
+export function getClubPositionTrend(game: SaveGame, clubId: string, lastNSeasons = 3): ClubPositionTrend | null {
+  const positions = [...game.seasonSummaries]
+    .sort((a, b) => a.season - b.season)
+    .slice(-lastNSeasons)
+    .map(s => s.standingsSnapshot?.find(c => c.clubId === clubId)?.position)
+    .filter((p): p is number => p !== undefined)
+
+  if (positions.length < 2) return null
+
+  const first = positions[0]
+  const last = positions[positions.length - 1]
+  const direction = last < first ? 'rising' : last > first ? 'falling' : 'stable'
+  return { clubId, positions, direction }
 }

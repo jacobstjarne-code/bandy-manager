@@ -17,6 +17,49 @@ export interface LicenseAction {
   inboxTitle: string
 }
 
+/**
+ * 2026-08-26 (Jacobs dom, RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md):
+ * licenseRiskScore ersätter den binära, minneslösa räknaren — "kaskaden ska
+ * bort" gällde licenseReview (System A, seasonEndProcessor.ts), det här är
+ * den PARALLELLA domen för System B (det som faktiskt avskedar): "en positiv
+ * säsong nollställde ALLT, en klubb som ändå inte kan gå plus varje år
+ * (Survive per definition) skulle bara röra sig uppåt." Ackumulator, 0-100,
+ * samma princip som meritBuffer: dåliga år fyller på, bra år tömmer DELVIS.
+ *
+ * Magnituder, Jacobs dom: 20 straff, 18 lättnad (INTE 12 — "med -12 tar det
+ * nästan två bra år att radera ett dåligt... med -18 väger ett bra år nästan
+ * upp ett dåligt men inte riktigt — en klubb som växlar plus/minus håller
+ * sig stabil, en som förlorar två av tre glider sakta mot tröskeln").
+ * Trösklar 40/60/80 bevarar exakt dagens 4-årskadens för en konsekvent dålig
+ * klubb (20→40→60→80).
+ */
+export const LICENSE_RISK_BAD_SEASON_PENALTY = 20
+export const LICENSE_RISK_GOOD_SEASON_RELIEF = 18
+export const LICENSE_RISK_WARNING_THRESHOLD = 40
+export const LICENSE_RISK_POINT_DEDUCTION_THRESHOLD = 60
+export const LICENSE_RISK_DENIED_THRESHOLD = 80
+export const LICENSE_RISK_SCORE_CAP = 100
+
+/**
+ * Zon-texten, LÅST av Jacob (2026-08-26, samma dom som magnituderna) — "ingen
+ * siffra visas, poängen är ett internt tal... zonen och tidshorisonten
+ * räcker." Denna text, inte en siffra, är vad EkonomiTab och inbox-posterna
+ * visar för spelaren.
+ */
+export const LICENSE_ZONE_TEXT: Record<LicenseStatus, string> = {
+  clear: 'Ekonomin bär.',
+  first_warning: 'Ekonomin är ansträngd.',
+  point_deduction: 'Licensen är hotad. Vänd resultatet inom två säsonger.',
+  license_denied: 'Licensen dras in om ni inte vänder det i år.',
+}
+
+export function licenseZoneFromScore(score: number): LicenseStatus {
+  if (score >= LICENSE_RISK_DENIED_THRESHOLD) return 'license_denied'
+  if (score >= LICENSE_RISK_POINT_DEDUCTION_THRESHOLD) return 'point_deduction'
+  if (score >= LICENSE_RISK_WARNING_THRESHOLD) return 'first_warning'
+  return 'clear'
+}
+
 // ── Text ───────────────────────────────────────────────────────────────────
 
 const TEXT: Record<LicenseActionType, { titles: string[]; bodies: string[] }> = {
@@ -88,79 +131,69 @@ function computeNetResult(game: SaveGame): number {
 export function checkLicenseStatus(
   game: SaveGame,
   seasonSeed: number,
-): { action: LicenseAction | null; newConsecutiveLossSeasons: number; newLicenseStatus: LicenseStatus } {
+): { action: LicenseAction | null; newLicenseRiskScore: number; newLicenseStatus: LicenseStatus } {
   const netResult = computeNetResult(game)
-  const currentStatus: LicenseStatus = game.licenseStatus ?? 'clear'
-  const consecutiveLoss = game.consecutiveLossSeasons ?? 0
+  const currentScore = game.licenseRiskScore ?? 0
+  const currentZone = licenseZoneFromScore(currentScore)
   const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'Klubben'
 
-  if (netResult > 0) {
-    const newConsecutive = 0
-    if (currentStatus !== 'clear') {
-      const t = TEXT.cleared
-      return {
-        action: {
-          type: 'cleared',
-          message: fillTokens(pick(t.bodies, seasonSeed), clubName),
-          inboxTitle: fillTokens(pick(t.titles, seasonSeed + 1), clubName),
-        },
-        newConsecutiveLossSeasons: newConsecutive,
-        newLicenseStatus: 'clear',
-      }
-    }
-    return { action: null, newConsecutiveLossSeasons: newConsecutive, newLicenseStatus: 'clear' }
+  const delta = netResult > 0 ? -LICENSE_RISK_GOOD_SEASON_RELIEF : LICENSE_RISK_BAD_SEASON_PENALTY
+  const newScore = Math.max(0, Math.min(LICENSE_RISK_SCORE_CAP, currentScore + delta))
+  const newZone = licenseZoneFromScore(newScore)
+
+  if (newZone === currentZone) {
+    // Ingen zonövergång — poängen rör sig men inget att meddela spelaren om.
+    return { action: null, newLicenseRiskScore: newScore, newLicenseStatus: newZone }
   }
 
-  const newConsecutive = consecutiveLoss + 1
-
-  if (newConsecutive === 2 && currentStatus === 'clear') {
-    const t = TEXT.first_warning
+  // Tillbaka till clear från en sämre zon — samma "cleared"-narrativ som förut.
+  if (newZone === 'clear') {
+    const t = TEXT.cleared
     return {
       action: {
-        type: 'first_warning',
+        type: 'cleared',
         message: fillTokens(pick(t.bodies, seasonSeed), clubName),
         inboxTitle: fillTokens(pick(t.titles, seasonSeed + 1), clubName),
       },
-      newConsecutiveLossSeasons: newConsecutive,
-      newLicenseStatus: 'first_warning',
+      newLicenseRiskScore: newScore,
+      newLicenseStatus: newZone,
     }
   }
 
-  if (newConsecutive === 3 && currentStatus === 'first_warning') {
-    const t = TEXT.point_deduction
+  // Försämring till en ny, sämre zon (aldrig vid förbättring TILL en
+  // fortsatt dålig zon, t.ex. point_deduction→first_warning — ingen text
+  // finns för "bättre men inte bra", och det motsvarar inget av de fyra
+  // narrativen TEXT redan bär). newZone !== 'clear' är redan garanterat av
+  // return:en ovan.
+  const worsened =
+    (newZone === 'first_warning' && currentZone === 'clear') ||
+    (newZone === 'point_deduction' && (currentZone === 'clear' || currentZone === 'first_warning')) ||
+    (newZone === 'license_denied')
+  if (worsened) {
+    const t = TEXT[newZone]
     return {
       action: {
-        type: 'point_deduction',
+        type: newZone,
         message: fillTokens(pick(t.bodies, seasonSeed), clubName),
         inboxTitle: fillTokens(pick(t.titles, seasonSeed + 1), clubName),
       },
-      newConsecutiveLossSeasons: newConsecutive,
-      newLicenseStatus: 'point_deduction',
+      newLicenseRiskScore: newScore,
+      newLicenseStatus: newZone,
     }
   }
 
-  if (newConsecutive === 4 && currentStatus === 'point_deduction') {
-    const t = TEXT.license_denied
-    return {
-      action: {
-        type: 'license_denied',
-        message: fillTokens(pick(t.bodies, seasonSeed), clubName),
-        inboxTitle: fillTokens(pick(t.titles, seasonSeed + 1), clubName),
-      },
-      newConsecutiveLossSeasons: newConsecutive,
-      newLicenseStatus: 'license_denied',
-    }
-  }
-
-  // Consecutive loss but no new threshold crossed — keep current status
-  return { action: null, newConsecutiveLossSeasons: newConsecutive, newLicenseStatus: currentStatus }
+  return { action: null, newLicenseRiskScore: newScore, newLicenseStatus: newZone }
 }
 
 export function buildLicenseInboxItem(
   action: LicenseAction,
   currentDate: string,
   season: number,
+  licenseStatus: LicenseStatus,
 ): InboxItem {
+  // 2026-08-26 (Jacobs dom): ingen siffra visas — zonens LÅSTA text bär
+  // kravet, mätbart utan att ge spelaren ett tal att optimera istf klubben.
+  // 'cleared' har ingen zon-oro att visa.
   return {
     id: `inbox_license_status_${season}`,
     date: currentDate,
@@ -168,5 +201,6 @@ export function buildLicenseInboxItem(
     title: action.inboxTitle,
     body: action.message,
     isRead: false,
+    ...(action.type !== 'cleared' ? { licenseZoneLabel: LICENSE_ZONE_TEXT[licenseStatus] } : {}),
   } as InboxItem
 }

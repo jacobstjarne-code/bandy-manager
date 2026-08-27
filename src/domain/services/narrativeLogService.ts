@@ -4,7 +4,7 @@ import type { NarrativeLogEntry } from '../entities/Narrative'
 /**
  * U5 (SLUTTEST_KO.md, 2026-08-17) — DOM GIVEN: "EN mekanism, ny liten logg".
  *
- * En delad, tidsstämplad logg (SaveGame.narrativeLog) med EN skrivväg
+ * En delad, tidsstämplad logg (SaveGame.narrativeBeatLog) med EN skrivväg
  * (logNarrativeBeat) och TVÅ läsvägar:
  *   - isOnCooldown: per-semanticKey-slagning, svarar U5:s "har vi visat DEN
  *     HÄR bågen nyligen?" (Birger-finaltalet, Helena/Folke-profilen).
@@ -35,7 +35,7 @@ export function logNarrativeBeat(
   systemhandelse?: boolean,
 ): NarrativeLogEntry[] {
   const entry: NarrativeLogEntry = { semanticKey, season, round, ...(systemhandelse !== undefined && { systemhandelse }) }
-  return [...(game.narrativeLog ?? []), entry]
+  return [...(game.narrativeBeatLog ?? []), entry]
 }
 
 /**
@@ -44,7 +44,7 @@ export function logNarrativeBeat(
  * `minSeasonsApart=3` betyder "inte förrän tre säsonger har passerat".
  */
 export function isOnCooldown(game: SaveGame, semanticKey: string, minSeasonsApart: number, currentSeason: number): boolean {
-  const log = game.narrativeLog ?? []
+  const log = game.narrativeBeatLog ?? []
   return log.some(e => e.semanticKey === semanticKey && currentSeason - e.season < minSeasonsApart)
 }
 
@@ -61,7 +61,7 @@ export function systemhandelseBudgetOk(
   maxPerSeason = 3,
   minRoundsBetween = 1,
 ): boolean {
-  const log = game.narrativeLog ?? []
+  const log = game.narrativeBeatLog ?? []
   const thisSeason = log.filter(e => e.systemhandelse && e.season === currentSeason)
   if (thisSeason.length >= maxPerSeason) return false
   const mostRecentRound = thisSeason.reduce((max, e) => Math.max(max, e.round), -Infinity)
@@ -72,7 +72,7 @@ export function systemhandelseBudgetOk(
 /**
  * U5 forts (SLUTTEST_KO.md, 2026-08-20) — systemhandelseBudgetOk:s faktiska
  * gating, applicerad på en BATCH nygenererade items (t.ex. en omgångs
- * `allNewEvents`) i ordning. `game.narrativeLog` uppdateras bara vid
+ * `allNewEvents`) i ordning. `game.narrativeBeatLog` uppdateras bara vid
  * RESOLUTION (spelaren svarar), inte vid generering — utan den provisoriska,
  * ALDRIG persisterade räkningen här hade två systemhandelse-items genererade
  * i SAMMA batch (innan någotdera hunnit resolvas) båda slunkit igenom, trots
@@ -91,7 +91,7 @@ export function filterSystemhandelseBudget<T extends { id: string; systemhandels
   return items.filter(item => {
     if (!item.systemhandelse) return true
     if (!systemhandelseBudgetOk(provisional, currentSeason, currentRound, maxPerSeason, minRoundsBetween)) return false
-    provisional = { ...provisional, narrativeLog: logNarrativeBeat(provisional, `provisional_${item.id}`, currentSeason, currentRound, true) }
+    provisional = { ...provisional, narrativeBeatLog: logNarrativeBeat(provisional, `provisional_${item.id}`, currentSeason, currentRound, true) }
     return true
   })
 }

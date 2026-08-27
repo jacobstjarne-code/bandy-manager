@@ -235,6 +235,90 @@ describe('deriveSeasonPersonChange — prioritetsordning', () => {
     expect(derivePersonChangeLine({ kind: 'establishedStarter', playerId: 'p1', name: 'Erik Berg' }))
       .toBe('Erik Berg gick från reserv till given.')
   })
+
+  // PÅSTÅENDEKARTAN (2026-08-24): establishedStarter jämförde tidigare bara
+  // mot FÖREGÅENDE säsong (prevGames <= 8) — en redan etablerad ordinarie som
+  // fick en skadedrabbad säsong och sen återhämtade sig fick "bragden"
+  // påstådd igen. Nu krävs, som breakthrough redan gör, att spelaren aldrig
+  // haft en säsong med >= 15 matcher tidigare.
+  it('spelaren var redan etablerad två säsonger tillbaka: ingen ny "reserv till given"', () => {
+    // PÅSTÅENDEKARTAN topScorer-familjens fix (2026-08-25): samma event-
+    // sourcing som testet nedan — bygger riktiga completed fixtures så att
+    // spelaren FAKTISKT når >=15 event-sourcade matcher denna säsong, annars
+    // testar detta bara "0 matcher, ingen kandidat" vilket är sant oavsett
+    // seasonHistory-kollen den ska verifiera.
+    const game = baseGame()
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const playerId = club.squadPlayerIds[0]
+    const template = game.fixtures.find(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)!
+    const seasonFixtures = Array.from({ length: 20 }, (_, i) => ({
+      ...template,
+      id: `everest_f${i}`,
+      season: game.currentSeason,
+      isCup: false,
+      roundNumber: i + 1,
+      status: FixtureStatus.Completed,
+      homeClubId: game.managedClubId,
+      awayClubId: template.homeClubId === game.managedClubId ? template.awayClubId : template.homeClubId,
+      homeScore: 2, awayScore: 1,
+      homeLineup: { startingPlayerIds: [playerId], benchPlayerIds: [], tactic: {} as never },
+      awayLineup: { startingPlayerIds: [], benchPlayerIds: [], tactic: {} as never },
+      report: { playerRatings: { [playerId]: 6.5 } } as never,
+    }))
+    const gameWithHistory = {
+      ...game,
+      fixtures: [...game.fixtures, ...seasonFixtures],
+      players: game.players.map(p => p.id === playerId ? {
+        ...p,
+        seasonHistory: [
+          { season: 2023, goals: 5, assists: 3, games: 22, rating: 6.5, clubId: p.clubId }, // redan etablerad då
+          { season: 2024, goals: 1, assists: 0, games: 4, rating: 6.0, clubId: p.clubId },  // skadedrabbad säsong (prevGames <= 8)
+        ],
+      } : p),
+    }
+    const change = deriveSeasonPersonChange(gameWithHistory, [])
+    expect(change?.playerId).not.toBe(playerId)
+  })
+
+  it('spelaren ALDRIG haft >=15 matcher förut: räknas som genuin "reserv till given"', () => {
+    // PÅSTÅENDEKARTAN topScorer-familjens fix (2026-08-25): deriveSeasonPersonChange
+    // läser inte längre p.seasonStats.gamesPlayed (kan divergera efter en
+    // försäljning) — den räknar event-sourcat ur game.fixtures direkt (lineup +
+    // en registrerad rating = en riktig matchappearance). Testet måste därför
+    // bygga riktiga completed fixtures med spelaren i startelvan och ett
+    // ratingvärde, inte bara sätta seasonStats-fältet.
+    const game = baseGame()
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const playerId = club.squadPlayerIds[0]
+    const template = game.fixtures.find(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)!
+    const seasonFixtures = Array.from({ length: 15 }, (_, i) => ({
+      ...template,
+      id: `est_f${i}`,
+      season: game.currentSeason,
+      isCup: false,
+      roundNumber: i + 1,
+      status: FixtureStatus.Completed,
+      homeClubId: game.managedClubId,
+      awayClubId: template.homeClubId === game.managedClubId ? template.awayClubId : template.homeClubId,
+      homeScore: 2, awayScore: 1,
+      homeLineup: { startingPlayerIds: [playerId], benchPlayerIds: [], tactic: {} as never },
+      awayLineup: { startingPlayerIds: [], benchPlayerIds: [], tactic: {} as never },
+      report: { playerRatings: { [playerId]: 6.5 } } as never,
+    }))
+    const gameWithHistory = {
+      ...game,
+      fixtures: [...game.fixtures, ...seasonFixtures],
+      players: game.players.map(p => p.id === playerId ? {
+        ...p,
+        seasonHistory: [
+          { season: 2024, goals: 1, assists: 0, games: 4, rating: 6.0, clubId: p.clubId },
+        ],
+      } : p),
+    }
+    const change = deriveSeasonPersonChange(gameWithHistory, [])
+    expect(change?.kind).toBe('establishedStarter')
+    expect(change?.playerId).toBe(playerId)
+  })
 })
 
 describe('deriveRivalryStanding / deriveRivalryLine', () => {

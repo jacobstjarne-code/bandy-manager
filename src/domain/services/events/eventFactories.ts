@@ -37,6 +37,17 @@ export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
   }
 }
 
+/**
+ * PÅSTÅENDEKARTAN omsvep (2026-08-25): denna funktion RENDERAR bara
+ * påståendet ("din klubb är ett steg ner i ambitionsnivå") — den
+ * VERIFIERAR det inte själv. Den faktiska reputation-jämförelsen
+ * (bid.sellingClubId mot bid.buyingClubId) sitter i anropande gaten,
+ * `generatePostAdvanceEvents` (postAdvanceEvents.ts), som är rätt ställe
+ * för den @cites-deklarationen — inte här (sellingClubId förekommer
+ * aldrig i denna funktions egen kropp).
+ *
+ * @cites bid.buyingClubId
+ */
 export function hesitantPlayerEvent(bid: TransferBid, game: SaveGame): GameEvent {
   const player = game.players.find(p => p.id === bid.playerId)
   const playerName = player ? `${player.firstName} ${player.lastName}` : 'okänd spelare'
@@ -117,6 +128,9 @@ export function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
   }
 }
 
+/**
+ * @cites player.contractUntilSeason
+ */
 export function contractRequestEvent(game: SaveGame, playerId: string): GameEvent {
   const player = game.players.find(p => p.id === playerId)!
   const playerName = `${player.firstName} ${player.lastName}`
@@ -309,6 +323,29 @@ export function generatePlayerPraiseEvent(
 // påverkades trots "+8 moral hela laget". teamBoostMorale (redan i resolvern,
 // aldrig konstruerad någonstans förut) är rätt mekanik för HELA laget —
 // kräver clubId, aldrig utelämnat (se eventResolver.ts:s vakt).
+//
+// H1-uppföljning (människoupplevelse-audit 7024f8a, 2026-08-24) — Jacobs dom:
+// captainSpeech är kanon, arcService.ts:s ledare_crisis (samma trigger,
+// "3 förluster i rad", byggd oberoende) borttagen. Skäl: captainPlayerId är
+// den faktiska kaptenen (spelaren vet vem det är) — ledare_crisis krävde
+// istället trait 'ledare'/'veteran', som kunde vara en ANNAN spelare.
+// captainSpeech exkluderar dessutom cup korrekt — en ligaförlustsvit är
+// något annat än blandade cupmatcher.
+//
+// Två saker portade över från ledare_crisis, INTE bara raderade med den:
+// (1) 'support' kostade tidigare NOLL — exakt det nollkostnadsmönster O2
+//     städade bort på sex ställen samma dag (2026-08-24), missat här för att
+//     detta system låg utanför den auditens synfält. boardPatience −3
+//     tillagd, samma magnitud som give_word hade.
+// (2) Ett nytt tredje val, 'take_charge' — ledare_crisis hade det som ett
+//     äkta alternativ (kaptenens EGEN moral kostar, inte laget), 'decline'
+//     täckte inte det utfallet. Behållet oförändrat som fjärde... nej,
+//     TREDJE väg: support (kostar styrelsen) / take_charge (kostar kaptenen)
+//     / decline (no-op, kaptenen tar det med ro — oförändrad).
+// Båda underradstexterna är ledare_crisis:s BEFINTLIGA, redan dömda text
+// (Jacobs order: återanvänd, skriv inte nytt) — subtitle-strängarna nedan
+// är ordagranna kopior av give_word/take_charge (arcService.ts, före denna
+// commit).
 export function generateCaptainSpeechEvent(captain: Player, clubId: string, season: number): GameEvent {
   const isHighForm = captain.morale >= 70
   return {
@@ -320,8 +357,20 @@ export function generateCaptainSpeechEvent(captain: Player, clubId: string, seas
       {
         id: 'support',
         label: 'Ja — kör på, det behövs',
-        subtitle: isHighForm ? '+8 moral hela laget' : '+5 moral hela laget',
-        effect: { type: 'teamBoostMorale', value: isHighForm ? 8 : 5, targetClubId: clubId },
+        subtitle: 'Du låter honom tala. Laget lyssnar på honom, inte på dig.',
+        effect: {
+          type: 'multiEffect',
+          subEffects: JSON.stringify([
+            { type: 'teamBoostMorale', amount: isHighForm ? 8 : 5, targetClubId: clubId },
+            { type: 'boardPatience', amount: -3 },
+          ]),
+        },
+      },
+      {
+        id: 'take_charge',
+        label: 'Jag sköter det',
+        subtitle: '💛 Kaptenens moral −5',
+        effect: { type: 'boostMorale', value: -5, targetPlayerId: captain.id },
       },
       {
         id: 'decline',

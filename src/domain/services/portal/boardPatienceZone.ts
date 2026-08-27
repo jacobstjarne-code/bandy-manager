@@ -13,6 +13,15 @@ import type { BoardObjective } from '../../entities/Community'
  */
 export type BoardPatienceZone = 'stabilt' | 'under_press' | 'ultimatum'
 
+/**
+ * Utbruten (påståendesvepet #13, MASTER.md, 2026-08-24, Jacobs dom
+ * 2026-08-26) så boardService.ts:s "Styrelsebetyg"-inkorgskort kan använda
+ * SAMMA tröskel som portalens zon-visning, istf en andra kopia av 30/50.
+ */
+export function boardPatienceZoneFromScore(patience: number): BoardPatienceZone {
+  return patience < 30 ? 'ultimatum' : patience < 50 ? 'under_press' : 'stabilt'
+}
+
 export interface BoardPatienceZoneInfo {
   zone: BoardPatienceZone
   /** Ordet Jacob gav i SLUTTEST_KO.md — inte Code-författad speltext. */
@@ -73,7 +82,7 @@ function pickConcernCause(game: SaveGame): { cause: ConcernCause; objective?: Bo
 
 export function getBoardPatienceZone(game: SaveGame): BoardPatienceZoneInfo {
   const patience = game.boardPatience ?? 70
-  const zone: BoardPatienceZone = patience < 30 ? 'ultimatum' : patience < 50 ? 'under_press' : 'stabilt'
+  const zone = boardPatienceZoneFromScore(patience)
   const label = zone === 'ultimatum' ? 'Ultimatum' : zone === 'under_press' ? 'Under press' : 'Stabilt'
   const headline = HEADLINES[zone]
 

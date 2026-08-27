@@ -105,9 +105,9 @@ export function buildEventFromFixture(
   return null
 }
 
-// ── Player.narrativeLog → MemoryEvent ────────────────────────────────────────
+// ── Player.diary → MemoryEvent ────────────────────────────────────────
 
-type NarrativeEntry = NonNullable<Player['narrativeLog']>[number]
+type NarrativeEntry = NonNullable<Player['diary']>[number]
 
 export function buildEventFromNarrativeLog(
   player: Player,

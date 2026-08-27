@@ -15,6 +15,34 @@ export function getCurrentLeaguePosition(clubId: string, game: SaveGame): number
   return game.standings.find(s => s.clubId === clubId)?.position ?? null
 }
 
+/**
+ * PÅSTÅENDEKARTAN, LÄST-FÖRE-INITIERING (2026-08-26, sjätte arten,
+ * `PASTAENDEKARTAN_2026-08-24.md`). Sex bekräftade instanser av samma bugg
+ * (GRIND1-skriptet, `cupProcessor.ts`, `bestFinish`, och fem till hittade i
+ * ett fullt svep) delade en rotorsak: `standings.find(s => s.clubId ===
+ * X)?.position` läses som om det alltid vore en verklig placering — men
+ * vid noll spelade matcher (säsongsstart, eller precis efter
+ * `seasonEndProcessor.ts`s nästa-säsongs-överskrivning) är ALLA klubbar på
+ * 0 poäng och tie-breaken (`calculateStandings` ovan, `localeCompare`) ger
+ * en alfabetisk skuggposition, inte en verklig.
+ *
+ * Denna funktion är den kanoniska, säkra vägen att läsa en enskild klubbs
+ * position: `null` om raden saknas ELLER om `played === 0`, annars den
+ * verkliga positionen. Skiljer sig från `getCurrentLeaguePosition` ovan
+ * genom att kolla den SPECIFIKA radens `played` istf "finns någon
+ * ligamatch spelad NÅGONSTANS i spelet" — mer precist vid udda schema-
+ * kombinationer (cupmatcher interfolierade med liga).
+ *
+ * Nya konsumenter av `standing.position`: använd DENNA, inte
+ * `standings.find(...)?.position` direkt — se förbudslistan/grinden
+ * (`tests/grind/standingPositionReadGate.ts`) som fångar den råa formen.
+ */
+export function safeStandingPosition(standings: StandingRow[], clubId: string): number | null {
+  const row = standings.find(s => s.clubId === clubId)
+  if (!row || row.played === 0) return null
+  return row.position
+}
+
 export function calculateStandings(teamIds: string[], fixtures: Fixture[], pointDeductions?: Record<string, number>): StandingRow[] {
   const rowMap = new Map<string, StandingRow>()
 

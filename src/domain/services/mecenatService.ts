@@ -11,14 +11,14 @@ export const MECENAT_SOCIAL_MAX_PER_SEASON = 2
  * minne PER mecenat, ingen koppling mellan mecenater eller mellan typer.
  * Samma bastuinbjudan (eller vilken typ som helst) kunde upprepas obegränsat
  * — samma klass av fel som pressminnet (High 4), löst med samma mekanism
- * (narrativeLog, Jacobs order: "den byggdes för detta"). Läses från
- * game.narrativeLog VID GENERERINGSTILLFÄLLET, inte vid resolution —
+ * (narrativeBeatLog, Jacobs order: "den byggdes för detta"). Läses från
+ * game.narrativeBeatLog VID GENERERINGSTILLFÄLLET, inte vid resolution —
  * matchar storylinePressKey-mönstret.
  */
 export function getMecenatSocialUsedTypes(
-  game: Pick<SaveGame, 'narrativeLog' | 'currentSeason'>,
+  game: Pick<SaveGame, 'narrativeBeatLog' | 'currentSeason'>,
 ): Set<SocialEvent['type']> {
-  const types = (game.narrativeLog ?? [])
+  const types = (game.narrativeBeatLog ?? [])
     .filter(e => e.semanticKey.startsWith(MECENAT_SOCIAL_KEY_PREFIX) && e.season === game.currentSeason)
     .map(e => e.semanticKey.slice(MECENAT_SOCIAL_KEY_PREFIX.length) as SocialEvent['type'])
   return new Set(types)

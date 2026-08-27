@@ -3,6 +3,9 @@ import type { GameEvent } from '../../entities/GameEvent'
 import { TacticMentality } from '../../enums'
 import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS, PATRON_PROFILES } from '../../data/patronData'
 
+/**
+ * @cites patronGame.totalContributed, patronGame.contribution
+ */
 export function generatePatronEvents(
   game: SaveGame,
   currentRound: number,

@@ -17,7 +17,21 @@ import { getCurrentLeagueRound } from '../../data/seasonPhases'
 import { logNarrativeBeat } from '../narrativeLogService'
 import { captureSystemDecision } from '../seasonDecisionCaptureService'
 
+/**
+ * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
+ * — se SaveGame.ts:s resolvedChoices-kommentar. EN skrivväg, anropad på alla
+ * fem exit-punkter i resolveEvent() (1 kanonisk + 4 tidiga specialfall som
+ * går förbi den: sponsorOffer×2, riskySponsorOffer×2). Samma cap-mönster
+ * (senaste 200) som resolvedEventIds.
+ */
+function recordResolvedChoice(game: SaveGame, eventId: string, choiceId: string, label: string): SaveGame['resolvedChoices'] {
+  return [...(game.resolvedChoices ?? []), { eventId, choiceId, label }].slice(-200)
+}
+
 // ── resolveEvent ───────────────────────────────────────────────────────────
+/**
+ * @cites resolvedChoices, roundNumber, fanMood
+ */
 export function resolveEvent(
   game: SaveGame,
   eventId: string,
@@ -98,6 +112,7 @@ export function resolveEvent(
         communityStanding,
         inbox,
         riskySponsorContract,
+        resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
       }
     }
     const rejectedOffer = choiceId === 'reject' && rivalName && event.sponsorData
@@ -117,6 +132,7 @@ export function resolveEvent(
       ...game,
       pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
       inbox,
+      resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
     }
   }
 
@@ -149,6 +165,7 @@ export function resolveEvent(
               acceptedRound: sponsorData.signedRound,
               season: game.currentSeason,
             },
+            resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
           }
         } catch {}
       }
@@ -156,6 +173,7 @@ export function resolveEvent(
     return {
       ...game,
       pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
+      resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
     }
   }
 
@@ -1453,8 +1471,17 @@ export function resolveEvent(
   }
 
   // Special: detOmojligaValet sell — remove player from squad
-  if (event.type === 'detOmojligaValet' && choiceId === 'sell' && event.relatedPlayerId) {
+  // H3 (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24): O18
+  // fält 2 (seasonDecisionCaptureService.ts) skriver "Du sålde {namn}" för
+  // detta val — den meningen får bara skrivas när övergången faktiskt
+  // hände. Hård assertion HÄR (inte bara ett hopp att sentence-byggaren
+  // råkar stämma överens) — om `event.relatedPlayerId` saknas, eller
+  // spelaren av någon anledning inte kan hittas/tas bort, ska resolutionen
+  // krascha synligt, inte tyst lämna spelaren kvar medan årsboken ändå
+  // påstår att han lämnade.
+  if (event.type === 'detOmojligaValet' && choiceId === 'sell') {
     const pid = event.relatedPlayerId
+    if (!pid) throw new Error("detOmojligaValet/sell saknar obligatoriskt fält relatedPlayerId")
     updatedGame = {
       ...updatedGame,
       players: updatedGame.players.map(p => p.id === pid ? { ...p, clubId: 'free_agent' } : p),
@@ -1471,6 +1498,12 @@ export function resolveEvent(
         body: 'Klubben säljer sin akademiprodukt för att lösa den ekonomiska krisen. Lokaltidningen skriver kritiskt om beslutet.',
         isRead: false,
       }],
+    }
+    const soldPlayer = updatedGame.players.find(p => p.id === pid)
+    const stillInSquad = updatedGame.clubs
+      .find(c => c.id === updatedGame.managedClubId)?.squadPlayerIds.includes(pid)
+    if (!soldPlayer || soldPlayer.clubId === updatedGame.managedClubId || stillInSquad) {
+      throw new Error(`detOmojligaValet/sell: spelare ${pid} finns fortfarande i managedClub efter sell — invariant bruten`)
     }
   }
 
@@ -1553,22 +1586,34 @@ export function resolveEvent(
     }
   }
 
-  // Special: district callup — affect confidence + development of high-potential youth players
+  // Special: district callup — affect confidence + development of EXACTLY
+  // the named players (M3, audit 5c9a7a8, 2026-08-24). Tidigare filtrerade
+  // detta blocket om truppen på nytt (potentialAbility > 50) vid
+  // resolveringstillfället — kunde träffa fler/andra spelare än kortet
+  // faktiskt namngav (truppen kan ha ändrats sedan kortet visades, t.ex.
+  // efter en P19-match). Läser nu event.selectedPlayerIds, satt vid
+  // korttillfället (youthProcessor.ts). "send" sätter också
+  // availabilityUntilRound — kortets löfte "Ej tillgänglig 2 omg" hade
+  // tidigare ingen mekanik alls (simulateYouthMatch, academyService.ts).
   if (eventId.startsWith('event_district_callup_') && updatedGame.youthTeam) {
-    const candidates = updatedGame.youthTeam.players.filter(p => p.potentialAbility > 50)
-    if (candidates.length > 0) {
+    const selectedIds = event.selectedPlayerIds ?? []
+    if (selectedIds.length > 0) {
       const confidenceDelta = choiceId === 'send' ? 15 : -5
       const devDelta = choiceId === 'send' ? 2 : 0
+      // P19-matcher spelas var annan omgång (nextMatchday % 2 === 0) —
+      // +4 matchdays täcker exakt de två nästa P19-omgångarna kortet lovar.
+      const availabilityUntilRound = updatedGame.currentMatchday + 4
       updatedGame = {
         ...updatedGame,
         youthTeam: {
           ...updatedGame.youthTeam,
           players: updatedGame.youthTeam.players.map(p =>
-            candidates.some(c => c.id === p.id)
+            selectedIds.includes(p.id)
               ? {
                   ...p,
                   confidence: Math.max(0, Math.min(100, p.confidence + confidenceDelta)),
                   developmentRate: Math.min(100, p.developmentRate + devDelta),
+                  ...(choiceId === 'send' ? { availabilityUntilRound } : {}),
                 }
               : p
           ),
@@ -1816,7 +1861,7 @@ export function resolveEvent(
   }
 
   // Mark event resolved and remove from pendingEvents
-  // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 1/9. semanticKey =
+  // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 1/9. semanticKey =
   // event.type — grovkornigt (skiljer inte t.ex. varsel mot olika
   // arbetsgivare), avsiktligt: DOM:en säger uttryckligen att finkorniga
   // semanticKey-beslut tas EFTER att loggen finns, inte som förarbete här.
@@ -1824,21 +1869,29 @@ export function resolveEvent(
     ...updatedGame,
     pendingEvents: (updatedGame.pendingEvents ?? []).filter(e => e.id !== eventId),
     resolvedEventIds: [...(updatedGame.resolvedEventIds ?? []), eventId].slice(-200), // keep last 200
-    narrativeLog: logNarrativeBeat(
+    resolvedChoices: recordResolvedChoice(updatedGame, eventId, choiceId, choice.label),
+    narrativeBeatLog: logNarrativeBeat(
       updatedGame, event.type, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame),
       event.systemhandelse,
     ),
   }
 
   // O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md, Jacobs dom 2026-08-24):
-  // kandidatinsamling för "säsongens viktigaste beslut". Läser `game` — den
-  // ORIGINELLA, oförändrade parametern, inte `updatedGame` — offer_pro-
-  // byggaren behöver spelarnas lön FÖRE höjningen för att räkna ut
-  // ökningen; updatedGame:s lön är redan den NYA (effekten har redan
-  // applicerats i switchen ovan). Tyst no-op (null) för alla event/val
-  // utanför den slutna listan av åtta — det normala fallet.
+  // kandidatinsamling för "säsongens viktigaste beslut".
+  //
+  // H3-uppföljning (5c9a7a8, 2026-08-24): captureSystemDecision() fick
+  // tidigare BARA `game` (den ORIGINELLA, oförändrade parametern) — dess
+  // EGEN docstring påstod "game här är alltså redan updatedGame", vilket
+  // var fel (dokumentation och kod hade glidit isär). detOmojligaValet/
+  // sell-byggaren kunde alltså aldrig VERIFIERA att spelaren faktiskt
+  // togs bort — den skrev "Du sålde X" baserat enbart på choiceId, inte på
+  // bekräftad state. Nu tar den emot BÅDA: `game` (före, offer_pro
+  // behöver lönen FÖRE höjningen) och `updatedGame` (efter, effekten är
+  // redan applicerad — detOmojligaValet/sell verifierar mot den). Tyst
+  // no-op (null) för alla event/val utanför den slutna listan av åtta —
+  // det normala fallet.
   if (event.systemhandelse) {
-    const candidate = captureSystemDecision(game, event, choiceId)
+    const candidate = captureSystemDecision(game, updatedGame, event, choiceId)
     if (candidate) {
       updatedGame = {
         ...updatedGame,
@@ -2026,13 +2079,13 @@ export function resolveEvent(
       updatedGame.sourceCooldowns ?? {},
       eventSource as SourceKey,
     )
-    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeLog-skrivväg 6/9. Egen
+    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 6/9. Egen
     // semanticKey (source_{eventSource}) — grovare gruppering än event.type
     // (skriv väg 1), flera event-typer kan dela samma källa.
     updatedGame = {
       ...updatedGame,
       sourceCooldowns: newCooldowns,
-      narrativeLog: logNarrativeBeat(updatedGame, `source_${eventSource}`, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame)),
+      narrativeBeatLog: logNarrativeBeat(updatedGame, `source_${eventSource}`, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame)),
     }
   }
 

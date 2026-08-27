@@ -31,6 +31,7 @@ import {
   computeSeasonVerdictRating,
   expectationVerdictFromRating,
   generateSeasonVerdict,
+  seasonVerdictText,
 } from '../boardService'
 import { generateSeasonSummary } from '../seasonSummaryService'
 import { createNewGame } from '../../../application/useCases/createNewGame'
@@ -201,5 +202,45 @@ describe('generateSeasonSummary narrative sentence agrees with expectationVerdic
     // field (used by the badge) agrees, and the narrative says something
     // championship-flavored.
     expect(summary.narrativeSummary).toContain('historisk')
+  })
+})
+
+// ── Påståendesvepet #4 (MASTER.md, 2026-08-24), Jacobs dom 2026-08-26 ─────
+// seasonVerdictText dömer bara SÄSONGEN (rating), aldrig ställningen hos
+// styrelsen — ingen av de fem meningarna får nämna spelaren/managern, bara
+// vintern som var. Låst text.
+describe('seasonVerdictText — låst text, en mening per rating, aldrig ett omdöme om managern', () => {
+  const CASES: [1 | 2 | 3 | 4 | 5, string][] = [
+    [5, 'Styrelsen hade inte väntat sig det här.'],
+    [4, 'Styrelsen fick mer än de bad om.'],
+    [3, 'Säsongen blev vad styrelsen räknade med.'],
+    [2, 'Styrelsen hade hoppats på mer av vintern.'],
+    [1, 'Vintern blev en besvikelse för styrelsen.'],
+  ]
+
+  for (const [rating, expectedText] of CASES) {
+    it(`rating ${rating} → "${expectedText}"`, () => {
+      // AvoidBottom pos=1 → rating 5, pos=12 → rating 1, m.fl. — hitta EN
+      // (expectation, position)-kombination per rating via samma tabell
+      // testet ovan redan validerat, istf att duplicera trösklarna här.
+      for (const expectation of EXPECTATIONS) {
+        for (const position of POSITIONS) {
+          if (computeSeasonVerdictRating(expectation, position, TOTAL) === rating) {
+            expect(seasonVerdictText(expectation, position, TOTAL)).toBe(expectedText)
+            return
+          }
+        }
+      }
+      throw new Error(`Ingen (expectation, position) gav rating ${rating} — testtabellen själv är trasig`)
+    })
+  }
+
+  it('texten nämner aldrig managern/spelaren — bara styrelsen och säsongen/vintern', () => {
+    for (const expectation of EXPECTATIONS) {
+      for (const position of POSITIONS) {
+        const text = seasonVerdictText(expectation, position, TOTAL)
+        expect(text.toLowerCase()).not.toMatch(/du |dig |manager|tränare/)
+      }
+    }
   })
 })

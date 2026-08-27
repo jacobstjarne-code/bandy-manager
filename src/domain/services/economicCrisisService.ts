@@ -12,6 +12,9 @@ export interface EconomicCrisisCheckResult {
   economicCrisisState: SaveGame['economicCrisisState']
 }
 
+/**
+ * @cites game.sponsors, roundNumber
+ */
 export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): EconomicCrisisCheckResult {
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   if (!managedClub || managedClub.finances >= -200_000) return { event: null, economicCrisisState: game.economicCrisisState }
@@ -66,13 +69,28 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): Econo
     if ((game.resolvedEventIds ?? []).includes(eventId)) return { event: null, economicCrisisState: game.economicCrisisState }
     if ((game.pendingEvents ?? []).some(e => e.id === eventId)) return { event: null, economicCrisisState: game.economicCrisisState }
 
+    // PÅSTÅENDEKARTAN omsvep (2026-08-24), ÅTKOMST-FANNS-ANVÄNDES-INTE: texten
+    // hårdkodade "Holmström Bygg" och "elva år" — game.sponsors fanns i scope
+    // men lästes aldrig. Fixat till "sponsorn med högst veckointäkt" (den
+    // rimligaste definitionen av "huvudsponsor" — ingen tier==='fixed'-
+    // markering existerar någonstans i kodbasen, grep bekräftat). "Elva år"
+    // strukets medvetet, inte ersatt med en beräkning: Sponsor.signedRound
+    // finns, men dess skopning (global spelordning vs. per-säsong) är inte
+    // verifierad, och en gissad årsberäkning vore samma sorts fabricerat
+    // tal som det som ströks — Jacobs egen regel (2026-08-24): hellre en
+    // sann, tidlös rad än en uppfunnen siffra.
+    const mainSponsor = [...(game.sponsors ?? [])]
+      .filter(s => s.contractRounds > 0)
+      .sort((a, b) => b.weeklyIncome - a.weeklyIncome)[0]
+    const sponsorName = mainSponsor?.name ?? 'Huvudsponsorn'
+
     return {
       event: {
         id: eventId,
         type: 'criticalEconomy',
         title: '⚠️ Huvudsponsorn hotar lämna',
-        body: `Huvudsponsorns VD har ringt ordföranden.\n\n"Vi har varit med i elva år. Men vi kan inte vara klubbens lösning på allt. Antingen visar ni en plan inom två veckor, eller så står vår logga inte på tröjan nästa säsong."`,
-        sender: { name: 'Holmström Bygg', role: 'Huvudsponsor' },
+        body: `Huvudsponsorns VD har ringt ordföranden.\n\n"Vi har varit med länge nu. Men vi kan inte vara klubbens lösning på allt. Antingen visar ni en plan inom två veckor, eller så står vår logga inte på tröjan nästa säsong."`,
+        sender: { name: sponsorName, role: 'Huvudsponsor' },
         choices: [
           {
             id: 'present_plan',
@@ -133,6 +151,17 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): Econo
           {
             id: 'sell_star',
             label: `Sälj ${bestName} (+350 000 kr)`,
+            // L4 (2026-08-26): D1 punkt 3s fält var byggda men ospårade tills
+            // nu (contentContract.ts:287) — sell_star är det enda av de tre
+            // valen som är irreversibelt (spelaren försvinner permanent), och
+            // etiketten visar bara vinsten. Utan en egen konsekvensrad ser
+            // valet ut som ett rent plus. consequenceLevel='costly' + ett
+            // namngivet resurs-costLabel (samma mönster som D1s eget exempel
+            // "Kostar en plats i truppen") gör den verkliga kostnaden synlig
+            // utan att märka ut valet som "fel" (facit-förbudet, O12).
+            consequenceLevel: 'costly',
+            costLabel: `Kostar ${bestName} i truppen`,
+            irreversible: true,
             effect: { type: 'resolveEconomicCrisis', value: 350_000, crisisPhase: 'sold_star', removePlayerId: bestPlayer?.id },
           },
           {

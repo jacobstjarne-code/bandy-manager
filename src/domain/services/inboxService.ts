@@ -1,12 +1,12 @@
 import type { Fixture } from '../entities/Fixture'
 import type { Player } from '../entities/Player'
 import type { Club } from '../entities/Club'
-import type { InboxItem, StandingRow } from '../entities/SaveGame'
+import type { InboxItem } from '../entities/SaveGame'
 import type { YouthIntakeResult } from './youthIntakeService'
 import type { NotableDevelopment } from './playerDevelopmentService'
 import type { TrainingFocus } from '../entities/Training'
-import { InboxItemType, ClubExpectation } from '../enums'
-import { SUSPENSION_INCIDENT_LINES } from '../data/suspensionText'
+import { InboxItemType } from '../enums'
+import { SUSPENSION_INCIDENT_LINES, SUSPENSION_INCIDENT_MULTI_LINES } from '../data/suspensionText'
 import { trainingTypeLabel, trainingIntensityLabel } from './trainingService'
 import { getInjurySeverity, DIAGNOSIS_LINES, pickRecoveryLine } from '../data/injuryDoctorText'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
@@ -90,6 +90,9 @@ export function createInjuryItem(
   }
 }
 
+/**
+ * @cites Player.suspensionCause, gamesOut
+ */
 export function createSuspensionItem(
   player: Player,
   gamesOut: number,
@@ -99,7 +102,14 @@ export function createSuspensionItem(
   const spelareStr = `${player.firstName} ${player.lastName}`
   let body: string
   if (cause) {
-    const template = SUSPENSION_INCIDENT_LINES[Math.abs(player.id.charCodeAt(0) + cause.sinceMatchday) % SUSPENSION_INCIDENT_LINES.length]
+    // PÅSTÅENDEGRINDEN väg 2 (2026-08-24, Jacobs dom): gamesOut > 1 (alltid
+    // 3, aldrig ett mellanting — se playerStateProcessor.ts) väljer nu
+    // SUSPENSION_INCIDENT_MULTI_LINES, textpoolen som legat oåtkomlig sedan
+    // C-U1 (2026-05-25) eftersom suspensionGamesRemaining aldrig kunde bli
+    // mer än 1 förrän nu. Ingen orsaksklassificering i texten (tackling mot
+    // armbåge finns inte i datan) — bara att nämnden såg allvarligt på det.
+    const pool = gamesOut > 1 ? SUSPENSION_INCIDENT_MULTI_LINES : SUSPENSION_INCIDENT_LINES
+    const template = pool[Math.abs(player.id.charCodeAt(0) + cause.sinceMatchday) % pool.length]
     body = template
       .replace('{spelare}', spelareStr)
       .replace('{motståndare}', cause.opponentName)
@@ -249,70 +259,14 @@ export function createContractExpiringItem(
   }
 }
 
-export function createBoardFeedbackItem(
-  club: Club,
-  standing: StandingRow,
-  totalTeams: number,
-  currentDate: string,
-): InboxItem {
-  let expectedPosition: number
-  switch (club.boardExpectation) {
-    case ClubExpectation.WinLeague:
-      expectedPosition = 1
-      break
-    case ClubExpectation.ChallengeTop:
-      expectedPosition = 3
-      break
-    case ClubExpectation.MidTable:
-      expectedPosition = Math.round(totalTeams * 0.5)
-      break
-    case ClubExpectation.AvoidBottom:
-      expectedPosition = totalTeams - 2
-      break
-  }
-
-  const actual = standing.position
-  let body: string
-
-  if (actual <= expectedPosition) {
-    // Positive feedback
-    const options = [
-      `Styrelsen är mycket nöjd med lagets insatser. Position ${actual} överstiger förväntningarna och vi ser ljust på fortsättningen.`,
-      `Bra jobbat! Laget levererar mer än vi hade hoppats. Håll den nivån så kan vi nå något riktigt bra i år.`,
-      `Styrelsen är imponerad. Position ${actual} är bättre än vad vi förväntade oss, och det märks i hela klubben.`,
-      `Ni har överträffat förväntningarna. Styrelsen vill uppmuntra det arbete som görs — fortsätt på den vägen.`,
-    ]
-    body = options[Math.abs(actual + standing.points) % options.length]
-  } else if (actual > expectedPosition + 2) {
-    // Negative feedback
-    const options = [
-      `Styrelsen är orolig. Position ${actual} är klart under vad vi hade förväntat oss, och vi vill se en tydlig förbättring.`,
-      `Vi är inte nöjda med läget. En plats på ${actual} räcker inte — vi behöver se en annan riktning framåt.`,
-      `Det är dags att ta situationen på allvar. Position ${actual} ger inte det vi behöver, och styrelsen vill ha ett samtal om vägen framåt.`,
-      `Resultaten är inte acceptabla. Styrelsen förväntar sig att ni tar ansvar och vänder trenden inom kort.`,
-    ]
-    body = options[Math.abs(actual + standing.points) % options.length]
-  } else {
-    // Neutral
-    const options = [
-      `Styrelsen noterar att laget befinner sig på position ${actual}. Det är okej för stunden, men vi förväntar oss en bättre placering framöver.`,
-      `Läget är godkänt men inte tillfredsställande. Position ${actual} är nära förväntningarna, men det finns mer att hämta.`,
-      `Styrelsen följer läget noga. Ni är inte långt ifrån det vi hoppas på — men det krävs mer konsistens.`,
-      `En godkänd men inte imponerande period. Position ${actual} är acceptabelt för nu, men vi vill se mer.`,
-    ]
-    body = options[Math.abs(actual + standing.points) % options.length]
-  }
-
-  return {
-    id: generateId(InboxItemType.BoardFeedback),
-    date: currentDate,
-    type: InboxItemType.BoardFeedback,
-    title: 'Styrelsens syn på läget',
-    body,
-    isRead: false,
-  }
-}
-
+/**
+ * roundNumber här är bara en etikett för omgången som just nu processas
+ * (anroparen skickar in nextRound direkt, trainingProcessor.ts) — ingen
+ * sortering/ordning över fixtures, så det är inte samma klass av fel som
+ * roundNumber-som-spelordning (se batch-05.md).
+ *
+ * @cites focus.type, focus.intensity, roundNumber, injuredPlayers
+ */
 export function createTrainingItem(
   focus: TrainingFocus,
   roundNumber: number,

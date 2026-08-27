@@ -38,7 +38,7 @@ describe('getActiveBeat — pivotal cooldown (U5 forts)', () => {
     // Med en loggad post på board_failure FÖRRA säsongen (inom cooldown-fönstret): hoppas över.
     const onCooldown = {
       ...gameWithFailure,
-      narrativeLog: [{ semanticKey: 'board_failure', season: 4, round: 20 }],
+      narrativeBeatLog: [{ semanticKey: 'board_failure', season: 4, round: 20 }],
     }
     const activeOnCooldown = getActiveBeat(onCooldown)
     expect(activeOnCooldown?.id).not.toBe('board_failure')
@@ -51,7 +51,7 @@ describe('getActiveBeat — pivotal cooldown (U5 forts)', () => {
       ...base,
       boardObjectives: [failedObjective, ...base.boardObjectives!.slice(1)],
       boardPatience: 70,
-      narrativeLog: [{ semanticKey: 'board_failure', season: 5 - PIVOTAL_BEAT_COOLDOWN_SEASONS, round: 20 }],
+      narrativeBeatLog: [{ semanticKey: 'board_failure', season: 5 - PIVOTAL_BEAT_COOLDOWN_SEASONS, round: 20 }],
     }
     const active = getActiveBeat(gameWithFailure)
     expect(active?.id).toBe('board_failure')

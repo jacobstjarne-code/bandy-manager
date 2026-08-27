@@ -131,6 +131,9 @@ export function getWelcomeSong(game: SaveGame): string | null {
 
 // ── Away trip narrative ───────────────────────────────────────────────────────
 
+/**
+ * @cites won
+ */
 export function getAwayTripNarrative(
   game: SaveGame,
   phase: 'before' | 'after',

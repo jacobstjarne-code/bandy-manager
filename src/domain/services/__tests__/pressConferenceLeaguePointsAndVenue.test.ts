@@ -87,6 +87,52 @@ describe('generatePressConference — symptom 3: hemma/borta-gaten', () => {
   })
 })
 
+function makeReport(overrides: Partial<Fixture['report']> = {}) {
+  return {
+    playerRatings: {}, shotsHome: 10, shotsAway: 10, onTargetHome: 5, onTargetAway: 5,
+    savesHome: 3, savesAway: 3, cornersHome: 4, cornersAway: 4,
+    penaltiesHome: 0, penaltiesAway: 0, possessionHome: 50, possessionAway: 50,
+    ...overrides,
+  }
+}
+
+describe('generatePressConference — PÅSTÅENDEKARTAN (2026-08-24): mittfälts-dominans-gaten', () => {
+  it('hemmaseger med JÄMNA skott visar aldrig "dominerade mittfältet"', () => {
+    const game = makeGame()
+    const fixture = makeFixture(game, {
+      homeScore: 2, awayScore: 1, roundNumber: 8,
+      report: makeReport({ shotsHome: 10, shotsAway: 9 }),
+    })
+    const texts = allQuestionTexts(game, fixture, 60)
+    expect(texts.length).toBeGreaterThan(0)
+    expect(texts.some(t => t.includes('dominerade mittfältet'))).toBe(false)
+  })
+
+  it('hemmaseger med FAKTISKT skottöverläge (>4) KAN visa "dominerade mittfältet"', () => {
+    const game = makeGame()
+    const fixture = makeFixture(game, {
+      homeScore: 2, awayScore: 1, roundNumber: 8,
+      report: makeReport({ shotsHome: 16, shotsAway: 8 }),
+    })
+    const texts = allQuestionTexts(game, fixture, 200)
+    expect(texts.some(t => t.includes('dominerade mittfältet'))).toBe(true)
+  })
+
+  it('bortaseger där MOTSTÅNDAREN faktiskt dominerade skotten visar aldrig "dominerade mittfältet"', () => {
+    const game = makeGame()
+    const opponent = game.clubs.find(c => c.id !== game.managedClubId)!
+    const fixture = makeFixture(game, {
+      homeClubId: opponent.id, awayClubId: game.managedClubId!,
+      homeScore: 1, awayScore: 2, roundNumber: 8,
+      // Managed club (borta) vann matchen men opponenten (hemma) hade fler skott.
+      report: makeReport({ shotsHome: 16, shotsAway: 8 }),
+    })
+    const texts = allQuestionTexts(game, fixture, 60)
+    expect(texts.length).toBeGreaterThan(0)
+    expect(texts.some(t => t.includes('dominerade mittfältet'))).toBe(false)
+  })
+})
+
 describe('generatePressConference — symptom 1: straffseger är inte "oavgjort"', () => {
   it('en cupsemifinal-straffseger frågar inte "En poäng på bortaplan"', () => {
     const game = makeGame()

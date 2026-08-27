@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { canScoreGate, getGoalScorerWeight, pickMatchProfileFromSeed, MATCH_TOTAL_GOAL_CAP, MATCH_GOAL_DIFFERENCE_CAP } from '../matchCore'
+import { canScoreGate, getGoalScorerWeight, pickMatchProfileFromSeed, MATCH_TOTAL_GOAL_CAP, MATCH_GOAL_DIFFERENCE_CAP, pickLegendCommentary } from '../matchCore'
+import type { Player } from '../../entities/Player'
 
 describe('canScoreGate', () => {
   it('blockerar mål när totalCap är nådd', () => {
@@ -118,5 +119,39 @@ describe('pickMatchProfileFromSeed', () => {
       if (pickMatchProfileFromSeed(seed, { largeCaDiff: true }) === 'open_game') largeDiffOpen++
     }
     expect(largeDiffOpen).toBeGreaterThan(neutralOpen)
+  })
+})
+
+/**
+ * PÅSTÅENDEKARTAN NÄR-mutation-fix (2026-08-25, Jacobs order, mutation-
+ * VerificationGate-utökning i matchCore, det uppskjutna "halvdagsjobbet").
+ * legend_goal-poolens "{totalGoals} mål för klubben nu" läste tidigare
+ * player.careerStats.totalGoals direkt — förra matchens värde, eftersom
+ * statsProcessor.ts bara uppdaterar det EFTER hela matchen. Om legenden
+ * redan gjort mål TIDIGARE i samma match saknades de i "nu"-påståendet.
+ * Fixen är aritmetisk (ingen separat trigger/avfyrnings-fas att haka i,
+ * matchCore.ts kör allt synkront i samma steg): pickLegendCommentary tar
+ * nu emot goalsThisMatchSoFar och lägger till den på career-basen.
+ */
+describe('pickLegendCommentary — totalGoals inkluderar matchens egna redan gjorda mål', () => {
+  const legend = {
+    lastName: 'Pålsson',
+    careerStats: { seasonsPlayed: 12, totalGoals: 150 },
+  } as Player
+
+  // Pool-index 6 (0-baserat) i legend_goal är den enda raden som använder
+  // {totalGoals} (matchCommentary.ts) — rand() styrs för att alltid träffa
+  // just den raden, pool.length=12.
+  const forceTotalGoalsLine = () => 6.5 / 12
+
+  it('adderar 0 tidigare mål i matchen: visar career-basen oförändrad', () => {
+    const text = pickLegendCommentary(legend, 'goal', 42, forceTotalGoalsLine, 0)
+    expect(text).toContain('150 mål för klubben nu')
+  })
+
+  it('legenden har redan gjort 2 mål TIDIGARE i samma match: 152, inte 150', () => {
+    const text = pickLegendCommentary(legend, 'goal', 78, forceTotalGoalsLine, 2)
+    expect(text).toContain('152 mål för klubben nu')
+    expect(text).not.toContain('150 mål för klubben nu')
   })
 })

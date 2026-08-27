@@ -271,6 +271,12 @@ const SCANDAL_TEXT: Record<Exclude<ScandalType, 'small_absurdity'>, {
       'Ordföranden: "Skatteverket är klart med {KLUBB}."\nMaterialaren: "Och?"\nOrdföranden: "Två poäng och tillbakabetalning."',
     ],
   },
+  // PÅSTÅENDEKARTAN (2026-08-24): tre av texterna nedan pekade tidigare ut
+  // {ANDRA_KLUBB} som den poängbestraffade klubben. Den faktiska effekten
+  // (resolveScandalOutcome nedan, `pendingPointDeductions[scandal.affectedClubId]`)
+  // straffar alltid {KLUBB} (affectedClubId) — {ANDRA_KLUBB} (secondaryClubId)
+  // är bara den inblandade grannklubben, aldrig den som bestraffas. Bytt till
+  // {KLUBB} i de rader som uttryckligen namnger vem som betalar.
   club_to_club_loan: {
     titles: [
       '{KLUBB} och {ANDRA_KLUBB} delade pengar — Förbundet utreder',
@@ -278,9 +284,9 @@ const SCANDAL_TEXT: Record<Exclude<ScandalType, 'small_absurdity'>, {
       'Två klubbar, samma kommun, samma kassa',
     ],
     bodies: [
-      '{KLUBB} och {ANDRA_KLUBB} har skiftat 600 000 mellan sig under hösten. Förbundet kallar det "kreativ bokföring". {ANDRA_KLUBB} får 3 poängs avdrag nästa säsong.',
+      '{KLUBB} och {ANDRA_KLUBB} har skiftat 600 000 mellan sig under hösten. Förbundet kallar det "kreativ bokföring". {KLUBB} får 3 poängs avdrag nästa säsong.',
       'Att stötta grannklubben är vacker tanke, säger Förbundet, men inte tillåten. Pengarna gick fram och tillbaka mellan {KLUBB} och {ANDRA_KLUBB} tre gånger. Det räckte för poängavdrag.',
-      'Två klubbar i samma kommun. Samma styrelseledamot på båda kanslierna. Samma 800 000 som dök upp i båda kassorna. {ANDRA_KLUBB} betalar med 3 poäng nästa säsong.',
+      'Två klubbar i samma kommun. Samma styrelseledamot på båda kanslierna. Samma 800 000 som dök upp i båda kassorna. {KLUBB} betalar med 3 poäng nästa säsong.',
     ],
     headlines: [
       '{KLUBB}: Poängavdrag bekräftat',
@@ -288,7 +294,7 @@ const SCANDAL_TEXT: Record<Exclude<ScandalType, 'small_absurdity'>, {
     ],
     coffeeRoom: [
       'Ordföranden: "Hörde att {KLUBB} och {ANDRA_KLUBB} har samma kassör."\nKassören: "Inte konstigt det rörde sig pengar."',
-      'Vaktmästaren: "Förbundet kollade bokföringen i {ANDRA_KLUBB}."\nMaterialaren: "Och?"\nVaktmästaren: "Tre poäng nästa år."',
+      'Vaktmästaren: "Förbundet kollade bokföringen i {KLUBB}."\nMaterialaren: "Och?"\nVaktmästaren: "Tre poäng nästa år."',
     ],
   },
   fundraiser_vanished: {

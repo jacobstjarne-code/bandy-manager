@@ -262,7 +262,7 @@ function checkSaveGameSize(game: SaveGame): InvariantFinding[] {
     return [{
       name: 'saveGameSize',
       severity: 'warn',
-      message: `SaveGame is ${(bytes / 1_000_000).toFixed(2)} MB (möjlig memory leak i narrativeLog e.dyl.)`,
+      message: `SaveGame is ${(bytes / 1_000_000).toFixed(2)} MB (möjlig memory leak i narrativeBeatLog e.dyl.)`,
     }]
   }
   return []

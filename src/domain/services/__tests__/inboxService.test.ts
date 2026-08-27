@@ -6,14 +6,12 @@ import {
   createYouthIntakeItem,
   createPlayerDevelopmentItem,
   createContractExpiringItem,
-  createBoardFeedbackItem,
   createTrainingItem,
 } from '../inboxService'
 import { DIAGNOSIS_LINES } from '../../data/injuryDoctorText'
 import type { Fixture } from '../../entities/Fixture'
 import type { Player } from '../../entities/Player'
 import type { Club } from '../../entities/Club'
-import type { StandingRow } from '../../entities/SaveGame'
 import type { YouthIntakeResult } from '../youthIntakeService'
 import type { NotableDevelopment } from '../playerDevelopmentService'
 import {
@@ -123,22 +121,6 @@ function makeFixture(overrides: Partial<Fixture> = {}): Fixture {
     homeScore: 3,
     awayScore: 1,
     events: [],
-    ...overrides,
-  }
-}
-
-function makeStanding(overrides: Partial<StandingRow> = {}): StandingRow {
-  return {
-    clubId: 'club_test',
-    played: 8,
-    wins: 5,
-    draws: 1,
-    losses: 2,
-    goalsFor: 14,
-    goalsAgainst: 8,
-    goalDifference: 6,
-    points: 16,
-    position: 2,
     ...overrides,
   }
 }
@@ -282,40 +264,6 @@ describe('createContractExpiringItem', () => {
   })
 })
 
-describe('createBoardFeedbackItem', () => {
-  it('returns positive feedback when team overperforms (position 1, expected mid-table)', () => {
-    const club = makeClub({ boardExpectation: ClubExpectation.MidTable })
-    const standing = makeStanding({ position: 1, points: 20 })
-    const item = createBoardFeedbackItem(club, standing, 12, TEST_DATE)
-
-    expect(item.type).toBe(InboxItemType.BoardFeedback)
-    expect(item.title).toBe('Styrelsens syn på läget')
-    // Should be positive — contains words like nöjd, imponerad, or överträffat
-    const bodyLower = item.body.toLowerCase()
-    const isPositive = bodyLower.includes('nöjd') || bodyLower.includes('imponerad') || bodyLower.includes('överträffat') || bodyLower.includes('bra')
-    expect(isPositive).toBe(true)
-    expect(item.isRead).toBe(false)
-  })
-
-  it('returns negative feedback when team underperforms (position 10, expected top 3)', () => {
-    const club = makeClub({ boardExpectation: ClubExpectation.ChallengeTop })
-    const standing = makeStanding({ position: 10, points: 8 })
-    const item = createBoardFeedbackItem(club, standing, 12, TEST_DATE)
-
-    expect(item.type).toBe(InboxItemType.BoardFeedback)
-    const bodyLower = item.body.toLowerCase()
-    const isNegative = bodyLower.includes('orolig') || bodyLower.includes('inte nöjda') || bodyLower.includes('acceptabla') || bodyLower.includes('allvar')
-    expect(isNegative).toBe(true)
-  })
-
-  it('returns valid date on all items', () => {
-    const club = makeClub()
-    const standing = makeStanding({ position: 6, points: 12 })
-    const item = createBoardFeedbackItem(club, standing, 12, TEST_DATE)
-    expect(item.date).toBe(TEST_DATE)
-  })
-})
-
 describe('createTrainingItem — AUDIT DEL 3 (2026-08-11), strukturerat fält istf ⚠️-räkning', () => {
   it('injuredPlayerCount matchar antalet skadade spelare, body bär fortfarande ⚠️ (chrome, oförändrat)', () => {
     const focus = { type: TrainingType.Physical, intensity: TrainingIntensity.Normal }
@@ -339,16 +287,13 @@ describe('createTrainingItem — AUDIT DEL 3 (2026-08-11), strukturerat fält is
 describe('general inbox item properties', () => {
   it('all items have isRead: false and valid date', () => {
     const player = makePlayer()
-    const club = makeClub()
     const fixture = makeFixture()
-    const standing = makeStanding()
 
     const items = [
       createMatchResultItem(fixture, 'club_test', TEST_DATE, TEST_CLUBS),
       createInjuryItem(player, 7, TEST_DATE),
       createSuspensionItem(player, 1, TEST_DATE),
       createContractExpiringItem(player, 2027, TEST_DATE),
-      createBoardFeedbackItem(club, standing, 12, TEST_DATE),
     ]
 
     for (const item of items) {

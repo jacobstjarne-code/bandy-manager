@@ -1,12 +1,17 @@
 import type { SaveGame, BoardObjective, BoardMember } from '../entities/SaveGame'
 import type { Club } from '../entities/Club'
 import type { Player } from '../entities/Player'
+import type { SupporterGroup } from '../entities/Community'
+import { ClubExpectation } from '../enums'
+import { getRivalClubId } from '../data/rivalries'
+import { RELEGATION_ZONE_SIZE } from './boardService'
 
 interface BoardObjectiveGameContext {
   currentSeason: number
   boardObjectiveHistory?: Array<{ season: number; objectiveId: string; result: 'met' | 'failed'; ownerReaction: string }>
   players: Player[]
   fanMood?: number
+  supporterGroup?: SupporterGroup
   rivalryHistory?: Record<string, { wins: number; losses: number; draws: number; lastResult?: 'win' | 'loss' | 'draw'; currentStreak: number }>
   clubs: Club[]
 }
@@ -56,6 +61,14 @@ function balanceBudget(owner: BoardMember, season: number): BoardObjective {
   )
 }
 
+/**
+ * Reward-strängens sanningshalt grundas av syskonfunktionen
+ * evaluateObjective('growFinances'), som läser club.finances mot
+ * game.seasonStartFinances vid utvärderingstillfället — citatdeklarationen
+ * hör hemma DÄR (den funktionen läser fältet i sin egen kropp), inte här
+ * (denna fabrik läser ingen speldata alls, se PÅSTÅENDEKARTAN-kommentaren
+ * vid evaluateObjective).
+ */
 function growFinances(owner: BoardMember, season: number): BoardObjective {
   return makeObjective(
     'growFinances', 'economic',
@@ -124,7 +137,10 @@ function cupRun(owner: BoardMember, season: number): BoardObjective {
     'Gå långt i cupen',
     `${displayName(owner)}: "Semifinal — det är allt jag ber om. Ge oss en cupresa att minnas."`,
     owner, 'cupRun', 3,
-    `${displayName(owner)}: "SEMIFINAL! Jag har väntat 15 år på det här!"`,
+    // PÅSTÅENDEKARTAN SANNINGEN-SAKNAS-fix, låst av Jacob 2026-08-27: "15 år"
+    // hävdade en cup-historik som aldrig spårats (ingen cupHistory/lastCupWin-
+    // data finns). Ersatt med en sann, tidlös rad — ingen siffra att belägga.
+    `${displayName(owner)}: "SEMIFINAL! Det var länge sedan sist."`,
     `${displayName(owner)}: "Cupen blev en besvikelse. Men ligan är viktigast."`,
     false, season,
   )
@@ -159,6 +175,12 @@ function improveYouth(owner: BoardMember, season: number): BoardObjective {
   )
 }
 
+/**
+ * Reward-strängens sanningshalt grundas av syskonfunktionen
+ * evaluateObjective('reduceInjuries'), som räknar game.players filtrerat
+ * på clubId och isInjured vid utvärderingstillfället — citatdeklarationen
+ * hör hemma DÄR, inte här (denna fabrik läser ingen speldata alls).
+ */
 function reduceInjuries(owner: BoardMember, season: number): BoardObjective {
   const descs = [
     'Skadeläget var en katastrof. Håll truppen frisk den här säsongen.',
@@ -193,6 +215,12 @@ function topHalfFinish(owner: BoardMember, season: number): BoardObjective {
   )
 }
 
+/**
+ * Reward-strängens sanningshalt grundas av syskonfunktionen
+ * evaluateObjective('beatRival'), som läser game.rivalryHistory[rivalId].lastResult
+ * vid utvärderingstillfället — citatdeklarationen hör hemma DÄR, inte här
+ * (denna fabrik läser ingen speldata alls).
+ */
 function beatRival(owner: BoardMember, rivalName: string, season: number): BoardObjective {
   return makeObjective(
     'beatRival', 'sporting',
@@ -205,7 +233,106 @@ function beatRival(owner: BoardMember, rivalName: string, season: number): Board
   )
 }
 
+/**
+ * NY objektivtyp (Jacobs dom 2026-08-25, styrelseobjektiv-tier-uppdraget):
+ * "En Survive-klubb ska inte få lättare krav, den ska få ANDRA krav:
+ * överleva nedflyttning..." Fanns ingen befintlig objektivtyp för detta —
+ * closest (topHalf) mäter fel sak för en klubb vars identitet är att
+ * existera, inte klättra. targetValue = säkert-position (totalTeams minus
+ * RELEGATION_ZONE_SIZE, delad konstant med boardService.ts:s egen
+ * nedflyttningszon — aldrig en egen gissning om var gränsen går).
+ *
+ * SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md): label/description/
+ * successReward/failureConsequence är genuint NY text för en genuint ny
+ * objektivtyp, ingen befintlig sträng att återanvända. '[Opus]'-platshållare
+ * tills Opus skriver dem — samma disciplin som H4 Heros CEREMONIAL-texten.
+ */
+function avoidRelegation(owner: BoardMember, season: number, totalTeams: number): BoardObjective {
+  const safePosition = totalTeams - RELEGATION_ZONE_SIZE
+  return makeObjective(
+    'avoidRelegation', 'sporting',
+    '[Opus]',
+    '[Opus]',
+    owner, 'avoidRelegation', safePosition,
+    '[Opus]',
+    '[Opus]',
+    false, season,
+  )
+}
+
+/**
+ * Styrelseobjektiv-tiern (Jacobs dom 2026-08-25): "objektiven HÄRLEDS ur
+ * ClubExpectation. Skala inte kostnaden — byt uppsättningen." Ersätter den
+ * gamla slumpmässiga rollbaserade poolen (kassör/traditionalist/modernist/
+ * supporter, gated på klubbfält, aldrig på tier) — se RAPPORT_STYRELSEOBJEKTIV_
+ * TIER_2026-08-25.md för den fullständiga utredningen bakom bytet.
+ *
+ * Två till tre objektiv per tier, överlapp där det är rimligt (Jacobs krav):
+ * - Survive/AvoidBottom delar avoidRelegation (båda existentiellt oroade).
+ * - Survive/MidTable delar improveYouth (utveckling värderas i båda ändar).
+ * - ChallengeTop/WinLeague delar cupRun+beatRival (genuin ambition).
+ * - MidTable/WinLeague delar topHalf — MidTables egen ankarposition (6) OCH
+ *   WinLeagues golv (om ribban ändå inte hålls, håll åtminstone denna).
+ *
+ * Till skillnad från den gamla poolen är UPPSÄTTNINGEN FAST per tier — samma
+ * objektiv återkommer så länge klubben ligger kvar på samma tier (det ÄR
+ * identitetspoängen, inte en bugg att laga med variationslogik). Gamla
+ * `lastSeasonObjectiveIds`-variationslogiken borttagen av samma skäl.
+ */
+const EXPECTATION_OBJECTIVE_TYPES: Record<ClubExpectation, string[]> = {
+  [ClubExpectation.Survive]: ['avoidRelegation', 'balanceBudget', 'improveYouth'],
+  [ClubExpectation.AvoidBottom]: ['avoidRelegation', 'reduceInjuries', 'growFinances'],
+  [ClubExpectation.MidTable]: ['topHalf', 'growFanbase', 'improveYouth'],
+  [ClubExpectation.ChallengeTop]: ['cupRun', 'beatRival', 'investSurplus'],
+  [ClubExpectation.WinLeague]: ['topHalf', 'cupRun', 'beatRival'],
+}
+
+/**
+ * Dispatcher: bygger EN BoardObjective för en given objektivtyp-id.
+ * Returnerar null när förutsättningen för typen saknas för denna klubb just
+ * nu (t.ex. ingen rival definierad) — anroparen hoppar över typen den
+ * säsongen i stället för att krascha eller gissa en ersättare.
+ */
+function buildObjectiveByType(
+  type: string, owner: BoardMember, season: number,
+  club: Club, game: BoardObjectiveGameContext,
+): BoardObjective | null {
+  switch (type) {
+    case 'balanceBudget': return balanceBudget(owner, season)
+    case 'growFinances': return growFinances(owner, season)
+    case 'investSurplus': return investSurplus(owner, season)
+    case 'playHomegrown': return playHomegrown(owner, season)
+    case 'improveYouth': return improveYouth(owner, season)
+    case 'growFanbase': return growFanbase(owner, season)
+    case 'improveFacilities': return improveFacilities(owner, season)
+    case 'cupRun': return cupRun(owner, season)
+    case 'reduceInjuries': return reduceInjuries(owner, season)
+    case 'topHalf': return topHalfFinish(owner, season)
+    case 'avoidRelegation': return avoidRelegation(owner, season, game.clubs.length)
+    case 'beatRival': {
+      const rivalId = getRivalClubId(club.id)
+      const rivalClub = rivalId ? game.clubs.find(c => c.id === rivalId) : undefined
+      return rivalClub ? beatRival(owner, rivalClub.name, season) : null
+    }
+    default: return null
+  }
+}
+
 // ── Generate objectives for a new season ────────────────────────────────────
+
+function ownerForObjectiveType(
+  type: string,
+  kassör: BoardMember | undefined, traditionalist: BoardMember | undefined,
+  modernist: BoardMember | undefined, supporter: BoardMember | undefined,
+): BoardMember | undefined {
+  switch (type) {
+    case 'balanceBudget': case 'growFinances': case 'investSurplus': return kassör
+    case 'playHomegrown': case 'improveYouth': return traditionalist
+    case 'growFanbase': case 'improveFacilities': return modernist
+    case 'cupRun': case 'reduceInjuries': case 'topHalf': case 'beatRival': case 'avoidRelegation': return supporter
+    default: return undefined
+  }
+}
 
 export function generateBoardObjectives(
   club: Club,
@@ -219,79 +346,17 @@ export function generateBoardObjectives(
   const modernist = boardMembers.find(m => m.personality === 'modernist')
   const supporter = boardMembers.find(m => m.personality === 'supporter')
 
-  // All possible objectives — build candidates first, then pick 1-2
-  const allCandidates: BoardObjective[] = []
-
-  // Economy objectives (from kassör)
-  if (kassör) {
-    if (club.finances < 0) {
-      allCandidates.push(balanceBudget(kassör, season))
-    } else if (club.finances < 500000) {
-      allCandidates.push(growFinances(kassör, season))
-    } else if (club.finances >= SURPLUS_CEILING) {
-      // O5 kraft 3: fullkassan är inte längre konsekvenslös.
-      allCandidates.push(investSurplus(kassör, season))
-    }
-  }
-
-  // Objective IDs used last season (for variety)
-  const lastSeasonObjectiveIds = new Set(
-    (game.boardObjectiveHistory ?? [])
-      .filter(o => o.season === season - 1)
-      .map(o => o.objectiveId)
-  )
-
-  // Academy / homegrown (from traditionalist) — 50/50 between playHomegrown and improveYouth
-  if (traditionalist) {
-    const homegrown = game.players.filter(p => p.clubId === club.id && p.isHomegrown).length
-    if (homegrown >= 2) {
-      const useImprove = rand() < 0.5 || lastSeasonObjectiveIds.has('playHomegrown')
-      allCandidates.push(useImprove ? improveYouth(traditionalist, season) : playHomegrown(traditionalist, season))
-    } else {
-      allCandidates.push(improveYouth(traditionalist, season))
-    }
-  }
-
-  // Community / fans (from modernist)
-  if (modernist) {
-    if ((game.fanMood ?? 50) < 60) allCandidates.push(growFanbase(modernist, season))
-    if (club.facilities < 50) allCandidates.push(improveFacilities(modernist, season))
-  }
-
-  // Sporting (from supporter) — more variety
-  if (supporter) {
-    const sportingCandidates: BoardObjective[] = []
-    if (!lastSeasonObjectiveIds.has('cupRun')) sportingCandidates.push(cupRun(supporter, season))
-    if (!lastSeasonObjectiveIds.has('topHalf')) sportingCandidates.push(topHalfFinish(supporter, season))
-    if (!lastSeasonObjectiveIds.has('reduceInjuries')) sportingCandidates.push(reduceInjuries(supporter, season))
-    // Always allow beatRival if on a losing streak
-    const rivalHistory = Object.entries(game.rivalryHistory ?? {})
-      .find(([, h]) => h.currentStreak < 0)
-    if (rivalHistory) {
-      const rivalClub = game.clubs.find(c => c.id === rivalHistory[0])
-      if (rivalClub) sportingCandidates.push(beatRival(supporter, rivalClub.name, season))
-    }
-    // If all filtered out by history, fall back to the full pool
-    const pool = sportingCandidates.length > 0 ? sportingCandidates : [cupRun(supporter, season), topHalfFinish(supporter, season)]
-    allCandidates.push(pool[Math.floor(rand() * pool.length)])
-  }
-
-  // Shuffle candidates for variety
-  for (let i = allCandidates.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1))
-    ;[allCandidates[i], allCandidates[j]] = [allCandidates[j], allCandidates[i]]
-  }
-
-  // Pick 2-3 objectives with different types
-  const targetCount = 2 + (rand() < 0.3 ? 1 : 0)
+  const types = EXPECTATION_OBJECTIVE_TYPES[club.boardExpectation] ?? EXPECTATION_OBJECTIVE_TYPES[ClubExpectation.MidTable]
   const objectives: BoardObjective[] = []
-  for (const candidate of allCandidates) {
-    if (objectives.length >= targetCount) break
-    if (objectives.some(o => o.type === candidate.type)) continue
-    objectives.push(candidate)
+  for (const type of types) {
+    const owner = ownerForObjectiveType(type, kassör, traditionalist, modernist, supporter)
+    if (!owner) continue
+    const objective = buildObjectiveByType(type, owner, season, club, game)
+    if (objective) objectives.push(objective)
   }
 
-  // Guarantee at least 1 objective: fallback to cupRun or growFinances
+  // Guarantee at least 1 objektiv: samma fallback som innan tier-bytet,
+  // oförändrat skäl (en styrelse utan ett enda krav är inte trovärdig).
   if (objectives.length === 0) {
     const fallbackOwner = supporter ?? kassör ?? boardMembers[0]
     if (fallbackOwner) {
@@ -307,6 +372,25 @@ export function generateBoardObjectives(
 
 // ── Evaluate objectives ─────────────────────────────────────────────────────
 
+/**
+ * PÅSTÅENDEKARTAN (2026-08-24): growFanbase-fallet mättes tidigare mot
+ * game.fanMood (matchmotor/attendance-fält), läser nu supporterGroup.mood
+ * (klackens faktiska humör). playHomegrown-fallet sorterar på matchday med
+ * roundNumber som fallback ENDAST när matchday saknas (äldre fixtures) —
+ * inte den primära ordningen, se sort-uttryckets ?? .
+ *
+ * PÅSTÅENDEKARTAN omsvep (2026-08-24): growFinances/reduceInjuries/
+ * beatRival är rena reward-textfabriker (ingen speldata läst i dem själva —
+ * se deras egna kommentarer) — deras reward-strängars sanningshalt grundas
+ * HÄR, i evaluateObjective, inte i fabrikerna. seasonStartFinances/isInjured/
+ * rivalryHistory hör därför hemma i DENNA funktions @cites, inte fabrikernas.
+ *
+ * Styrelseobjektiv-tiern (2026-08-25): avoidRelegation tillagd, läser
+ * game.standings (samma fält topHalf redan läste, saknades i taggen sedan
+ * innan — fixat i samma pass, inte introducerat av avoidRelegation).
+ *
+ * @cites SupporterGroup.mood, matchday, roundNumber, game.seasonStartFinances, player.isInjured, game.rivalryHistory, game.standings
+ */
 export function evaluateObjective(
   objective: BoardObjective,
   game: SaveGame,
@@ -354,7 +438,14 @@ export function evaluateObjective(
       return { value: Math.round(avg * 10) / 10, status: avg >= 3 ? 'met' : avg >= 2 ? 'at_risk' : 'active' }
     }
     case 'growFanbase': {
-      const fm = game.fanMood ?? 50
+      // PÅSTÅENDEKARTAN (2026-08-24): objektivets egen text talar om
+      // "stämning på läktarna"/"publikens humör" — klackens domän — men
+      // mättes tidigare mot game.fanMood, ett annat fält (matchmotor/
+      // hemmaplansfördel/attendance). game.supporterGroup.mood är fältet
+      // resten av kodbasen (rippleEffectService.ts, gameInvariants.ts:s
+      // supporterMood-koll, hallProcessService.ts) redan behandlar som
+      // klackens/publikens verkliga humör.
+      const fm = game.supporterGroup?.mood ?? 50
       return { value: fm, status: fm >= 70 ? 'met' : fm >= 55 ? 'active' : 'at_risk' }
     }
     case 'cupRun': {
@@ -405,6 +496,15 @@ export function evaluateObjective(
     case 'topHalf': {
       const pos = game.standings?.find(s => s.clubId === game.managedClubId)?.position ?? 12
       return { value: pos, status: pos <= 6 ? 'met' : pos <= 8 ? 'active' : 'at_risk' }
+    }
+    case 'avoidRelegation': {
+      // objective.targetValue = safePosition (totalTeams - RELEGATION_ZONE_SIZE,
+      // satt vid generering, se avoidRelegation()-fabriken ovan) — samma
+      // nedflyttningszon boardService.ts:s RELEGATION_ZONE_SIZE definierar,
+      // aldrig en egen gissning om var gränsen går.
+      const pos = game.standings?.find(s => s.clubId === game.managedClubId)?.position ?? 12
+      const safe = objective.targetValue
+      return { value: pos, status: pos <= safe ? 'met' : pos <= safe + 1 ? 'at_risk' : 'failed' }
     }
     default:
       return { value: 0, status: 'active' }

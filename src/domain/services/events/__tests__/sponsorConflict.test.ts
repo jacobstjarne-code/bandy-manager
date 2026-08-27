@@ -56,7 +56,10 @@ describe('buildSponsorOfferEvent — konfliktdetektering', () => {
     const accept = event.choices.find(c => c.id === 'accept')!
     const reject = event.choices.find(c => c.id === 'reject')!
     expect(accept.label).toBe('Ta avtalet')
-    expect(accept.subtitle).toBe('Rivalen AB var med när det var tunnare än nu. · ⭐ Anseende -6 · Platsen är er i 10 omgångar. Kommer något bättre i vinter får ni tacka nej.')
+    // Påståendesvepet #16 (2026-08-26): "var med när det var tunnare än nu"
+    // (obelagt historiepåstående) ersatt med "får beskedet av er" (sant i
+    // nuet, ingen tenure-data krävs).
+    expect(accept.subtitle).toBe('Rivalen AB får beskedet av er. · ⭐ Anseende -6 · Platsen är er i 10 omgångar. Kommer något bättre i vinter får ni tacka nej.')
     expect(reject.label).toBe('Tacka nej')
     expect(reject.subtitle).toBe('Ni behåller det ni har.')
   })

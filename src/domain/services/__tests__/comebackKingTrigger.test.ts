@@ -3,7 +3,7 @@
  * (en statisk 0-100-benägenhetsegenskap) istf faktisk skadehistorik.
  * Nästan vilken spelare som helst hade kunnat kvalificera trots att hen
  * aldrig varit skadad. Låser: kräver en verklig 'injury'-post i
- * narrativeLog denna säsong.
+ * diary denna säsong.
  */
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
@@ -11,7 +11,7 @@ import { generateSeasonSummary } from '../seasonSummaryService'
 
 const base = createNewGame({ managerName: 'T', clubId: 'club_forsbacka', season: 2025, seed: 7 })
 
-function withCandidate(narrativeLog: NonNullable<import('../../entities/Player').Player['narrativeLog']>) {
+function withCandidate(diary: NonNullable<import('../../entities/Player').Player['diary']>) {
   const candidateId = base.players.find(p => p.clubId === base.managedClubId)!.id
   return {
     ...base,
@@ -20,7 +20,7 @@ function withCandidate(narrativeLog: NonNullable<import('../../entities/Player')
           ...p,
           isInjured: false,
           injuryProneness: 40,
-          narrativeLog,
+          diary,
           seasonStats: { ...p.seasonStats, goals: 6, gamesPlayed: 10 },
         }
       : p),

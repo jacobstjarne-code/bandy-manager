@@ -138,14 +138,14 @@ describe('conditionScore', () => {
 // ─── injuryScore ───────────────────────────────────────────────────────────────
 
 describe('injuryScore', () => {
-  it('returns 0 with no narrativeLog', () => {
+  it('returns 0 with no diary', () => {
     const p = makePlayer()
     expect(injuryScore(p)).toBe(0)
   })
 
   it('returns 0 with non-injury narrative entries', () => {
     const p = makePlayer({
-      narrativeLog: [
+      diary: [
         { season: 2025, matchday: 5, text: 'Hat-trick', type: 'milestone' },
       ],
     })
@@ -154,7 +154,7 @@ describe('injuryScore', () => {
 
   it('returns 0.5 per injury entry', () => {
     const p = makePlayer({
-      narrativeLog: [
+      diary: [
         { season: 2024, matchday: 3, text: 'Knäskada', type: 'injury' },
         { season: 2025, matchday: 7, text: 'Vadskada', type: 'injury' },
       ],
@@ -175,7 +175,7 @@ describe('getCandidateScore', () => {
     const p = makePlayer({
       age: 35,                       // ageScore = 2 (Forward threshold 33)
       fitness: 20,                   // conditionScore = (40-20)/10 = 2.0
-      narrativeLog: [
+      diary: [
         { season: 2024, matchday: 1, text: '', type: 'injury' },  // injuryScore = 0.5
       ],
     })

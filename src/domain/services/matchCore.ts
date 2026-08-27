@@ -286,11 +286,24 @@ type RefStyle = 'strict' | 'lenient' | 'inconsistent'
 
 // Sprint 28-B: Pick a legend commentary string and fill template vars.
 // eventType: 'goal' | 'assist' | 'gk_save' | 'late_goal'
-function pickLegendCommentary(
+//
+// PÅSTÅENDEKARTAN NÄR-mutation-fix (2026-08-25, Jacobs order, mutation-
+// VerificationGate-utökning): player.careerStats.totalGoals uppdateras bara
+// EFTER hela matchen (statsProcessor.ts, anropad från roundProcessor.ts efter
+// simulateMatchCore returnerat) — legend_goal-poolens "{totalGoals} mål för
+// klubben nu" påstod alltså förra matchens värde, mitt i EN match där
+// spelaren just gjort mål (inklusive detta), ett "nu" som saknade matchens
+// egna redan gjorda mål. Ingen separat trigger/avfyrnings-fas att haka
+// reverifiering i (till skillnad från arcService.ts:s building/peak/resolving
+// — matchCore.ts kör allt i samma synkrona steg), så fixen är aritmetisk:
+// lägg till goalsThisMatchSoFar (playerGoals-tallyn, redan uppdaterad av
+// trackGoal() FÖRE denna funktion anropas i samma steg) till career-basen.
+export function pickLegendCommentary(
   player: import('../entities/Player').Player,
   eventType: 'goal' | 'assist' | 'gk_save' | 'late_goal',
   minute: number,
   rand: () => number,
+  goalsThisMatchSoFar: number,
 ): string {
   const pool =
     eventType === 'assist'   ? commentary.legend_assist   :
@@ -301,7 +314,7 @@ function pickLegendCommentary(
   return fillTemplate(template, {
     lastName:   player.lastName,
     seasons:    String(player.careerStats?.seasonsPlayed ?? '?'),
-    totalGoals: String(player.careerStats?.totalGoals    ?? '?'),
+    totalGoals: String((player.careerStats?.totalGoals ?? 0) + goalsThisMatchSoFar),
     minute:     String(minute),
   })
 }
@@ -1573,11 +1586,11 @@ function* simulateMatchCore(
         // Scorer legend takes precedence; fall through to assister legend if scorer isn't one.
         if (scorerIsManaged && scorerPlayer?.isClubLegend && rand() < 0.70) {
           const eventType = (minute >= 80 && currentMargin <= 1) ? 'late_goal' : 'goal'
-          commentaryText = pickLegendCommentary(scorerPlayer, eventType, minute, rand)
+          commentaryText = pickLegendCommentary(scorerPlayer, eventType, minute, rand, playerGoals[scorerPlayer.id] ?? 0)
         } else if (scorerIsManaged && assisterPlayerId && rand() < 0.70) {
           const assisterPlayer = allPlayers.find(p => p.id === assisterPlayerId)
           if (assisterPlayer?.isClubLegend) {
-            commentaryText = pickLegendCommentary(assisterPlayer, 'assist', minute, rand)
+            commentaryText = pickLegendCommentary(assisterPlayer, 'assist', minute, rand, playerGoals[assisterPlayer.id] ?? 0)
           }
         } else if (fixture.isCup && input.isCupFinalhelgen && fixture.roundNumber === 4 && rand() < 0.60) {
           commentaryText = fillTemplate(pickCommentary(commentary.cup_final_goal, rand, commentaryHistory), templateVars)
@@ -1666,7 +1679,7 @@ function* simulateMatchCore(
         const gkPlayer    = allPlayers.find(p => p.id === gkPlayerId)
         const gkIsManaged = managedIsHome !== undefined ? (managedIsHome ? !isHomeAttacking : isHomeAttacking) : false
         if (gkIsManaged && gkPlayer?.isClubLegend && rand() < 0.70) {
-          commentaryText = pickLegendCommentary(gkPlayer, 'gk_save', minute, rand)
+          commentaryText = pickLegendCommentary(gkPlayer, 'gk_save', minute, rand, playerGoals[gkPlayer.id] ?? 0)
         } else {
           commentaryText = fillTemplate(pickCommentary(commentary.save, rand, commentaryHistory), templateVars)
         }
@@ -1928,9 +1941,35 @@ function* simulateMatchCore(
       lastMinutePressData,
       // Spår A steg 0 — motortillstånd exponerat för ärlig MomentumBar (§8). Surfacing, ej
       // dynamik: homeInitiative/equalizeMomentum* läses ur motorns egna i-scope-variabler;
-      // lateFactor/postBreakUrgency är rena step-funktioner (speglar rad 843 resp. 868-873).
+      // lateFactor är en ren step-funktion (speglar rad 843).
+      //
+      // H2-uppföljning (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24):
+      // postBreakUrgency var TIDIGARE också en ren step-funktion, frikopplad från
+      // pauseLean — MomentumBar.tsx:s "{lag} trycker på. Det jagande laget får
+      // luft."-text (BRYTPUNKT.postPaus) fyrade alltså ALLTID steg 31-39,
+      // oavsett om spelaren valt 'calm' specifikt för att dämpa just den
+      // luften. Filens egen kommentar hävdade "speglar aktiv motordynamik,
+      // inte dekoration" — det gjorde den inte. Nu SAMMA faktor som faktiskt
+      // appliceras på attackMult (rad 945-956 ovan), inte en egen formel:
+      // om managed leder och valt 'calm' och motståndaren är den jagande
+      // sidan, dämpas den exponerade urgencyn med precis PAUSE_LEAN_FACTOR.calm.
       homeInitiative,
-      postBreakUrgency: (step >= 30 && step <= 40) ? (40 - step) / 10 : 0,
+      postBreakUrgency: (() => {
+        if (step < 30 || step > 40) return 0
+        const baseDecay = (40 - step) / 10
+        if (pauseLean === 'calm' && managedIsHome !== undefined && step >= 31 && step <= 40) {
+          // homeMode/awayMode (getSecondHalfMode) är ur scope här — samma
+          // 'chasing'-tröskel (diff <= -1, se getSecondHalfMode) inline mot
+          // homeScore/awayScore istf en frikopplad andra formel.
+          const chasingIsOpponent = managedIsHome ? (homeScore - awayScore >= 1) : (awayScore - homeScore >= 1)
+          if (chasingIsOpponent) {
+            const leanDecay = (40 - step) / 9
+            const dampFactor = 1 + (PAUSE_LEAN_FACTOR.calm - 1) * leanDecay
+            return Math.max(0, baseDecay * dampFactor)
+          }
+        }
+        return baseDecay
+      })(),
       postEqualizerMomentum: equalizeMomentumTimer > 0 ? equalizeMomentumTimer / EQUALIZE_MOMENTUM_STEPS : 0,
       postEqualizerTeam: equalizeMomentumTimer > 0 ? equalizeMomentumTeam : null,
       lateFactor: step <= 44 ? 0 : Math.min(1, (step - 44) / 12),

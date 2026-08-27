@@ -87,15 +87,17 @@ describe('isDemandFulfilled', () => {
   it('league_position: fulfilled when standing is in the top half', () => {
     const demand = { category: 'league_position' as const, description: 'x', createdRound: 1, deadlineRound: 9 }
     const totalTeams = base.standings.length
+    // played: 10 — LÄST-FÖRE-INITIERING-golvet (PASTAENDEKARTAN, 2026-08-26)
+    // kräver att minst en match är spelad innan position räknas som verklig.
     const topHalfGame = {
       ...base,
-      standings: base.standings.map(s => s.clubId === base.managedClubId ? { ...s, position: 1 } : s),
+      standings: base.standings.map(s => s.clubId === base.managedClubId ? { ...s, position: 1, played: 10 } : s),
     }
     expect(isDemandFulfilled(topHalfGame, demand, base.managedClubId)).toBe(true)
 
     const bottomGame = {
       ...base,
-      standings: base.standings.map(s => s.clubId === base.managedClubId ? { ...s, position: totalTeams } : s),
+      standings: base.standings.map(s => s.clubId === base.managedClubId ? { ...s, position: totalTeams, played: 10 } : s),
     }
     expect(isDemandFulfilled(bottomGame, demand, base.managedClubId)).toBe(false)
   })

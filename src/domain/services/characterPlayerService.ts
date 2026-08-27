@@ -133,7 +133,10 @@ export function generateCharacterPlayerEvents(
           id: eid,
           type: 'communityEvent',
           title: `${name} — en sann klubblegend`,
-          body: `${name} är en av de mest lojala spelarna föreningen har haft. Orten märker det. Vill du uppmärksamma det offentligt?`,
+          // O20 (2026-08-21, Opus): K1-textbeslutet ur DOM_VARSLET_KLASSIFICERING —
+          // en extern aktör (Klacken, samma K1-logik som varsel-mallens exempel 2)
+          // agerar på klubben i texten. Effekterna orörda.
+          body: `${name} är en av de mest lojala spelarna föreningen har haft. Klacken har redan börjat samla in till en banderoll, och lokaltidningen hör av sig om ett uppslag. Vill du uppmärksamma det offentligt?`,
           relatedPlayerId: player.id,
           choices: [
             {

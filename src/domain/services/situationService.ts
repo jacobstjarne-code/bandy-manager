@@ -31,16 +31,23 @@ export function getSituation(game: SaveGame): Situation {
       (f.homeClubId === managedId || f.awayClubId === managedId)
   ).sort((a, b) => b.matchday - a.matchday)
 
-  const form = completedLeague.slice(0, 5).map(f => {
+  // Påståendesvepet #24 (MASTER.md, 2026-08-24): streaken räknades tidigare
+  // ur `form` (ett 5-matchers fönster satt FÖRE räkningen), så en verklig
+  // svit på 6+ matcher alltid visades som "5 RAKA SEGRAR/FÖRLUSTER" — taket
+  // satt av fönstret, inte av den faktiska sviten. Räknar nu ur HELA
+  // completedLeague (obegränsad), samma mönster som csPressEventService.ts:s
+  // redan korrekta computeCSStreak. `form` (5-fönstret) fanns bara för att
+  // driva streak/lastResult här — inget annat i filen läser det separat.
+  const results = completedLeague.map(f => {
     const isHome = f.homeClubId === managedId
     return (isHome ? f.homeScore : f.awayScore) > (isHome ? f.awayScore : f.homeScore)
       ? 'V' : (isHome ? f.homeScore : f.awayScore) < (isHome ? f.awayScore : f.homeScore)
       ? 'F' : 'O'
   })
 
-  const lastResult = form[0]
-  const streakIdx = form.findIndex(r => r !== lastResult)
-  const streak = streakIdx === -1 ? form.length : streakIdx
+  const lastResult = results[0]
+  const streakIdx = results.findIndex(r => r !== lastResult)
+  const streak = streakIdx === -1 ? results.length : streakIdx
   const leagueRoundsPlayed = completedLeague.length
 
   const standing = game.standings.find(s => s.clubId === managedId)
@@ -107,7 +114,17 @@ export function getSituation(game: SaveGame): Situation {
       const theirWins = managedIsHome ? activeSeries.awayWins : activeSeries.homeWins
       const score = `${ourWins}–${theirWins}`
 
-      const seriesBody = ourWins > theirWins
+      // PÅSTÅENDEKARTAN, LÄST-FÖRE-INITIERING (2026-08-27, Jacobs dom): "0–0.
+      // Allt kan hända härifrån." antydde ett läge som inte fanns — samma
+      // familj som HalftimeModals "förra året". Låst text för en serie som
+      // inte spelat sin första match än; N härlett ur seriens format
+      // (samma tröskel som isSeriesDecided i playoffService.ts), inte
+      // hårdkodat. Efter första matchen tar den vanliga texten över — då
+      // FINNS något att härifrån.
+      const winsNeeded = activeSeries.round === PlayoffRound.Final ? 1 : 3
+      const seriesBody = (ourWins === 0 && theirWins === 0)
+        ? `Serien börjar. Först till ${winsNeeded} vinster.`
+        : ourWins > theirWins
         ? `Ni leder ${score}. Slutspelet är inte gjort förrän det är gjort.`
         : ourWins < theirWins
         ? `${score}. Det är dags att svara.`
@@ -177,12 +194,14 @@ export function getSituation(game: SaveGame): Situation {
   }
 
   // ── Seriepremiär ─────────────────────────────────────────────────
+  // PÅSTÅENDEKARTAN, LÄST-FÖRE-INITIERING (2026-08-26, Jacobs dom): "Före
+  // första matchen är ställningen inte okänd — den är obefintlig, och det
+  // är två olika saker." Låst text, ingen position, ingen antydan om läge
+  // — inga fragment heller (getOpponentStandingFragment är redan gated,
+  // men principen är att INGENTING om tabellen ska antydas här, inte bara
+  // att det råkar bli tomt).
   if (leagueRoundsPlayed === 0) {
-    const body = joinFragments([
-      getSeasonPhaseFragment(game),
-      getOpponentStandingFragment(game),
-    ])
-    return { label: 'SERIEPREMIÄR', body: body || '22 omgångar, en cup och ett slutspel framför er.' }
+    return { label: 'SERIEPREMIÄR', body: 'Serien har inte börjat.' }
   }
 
   // ── Slutspurt (sista 3 omg) ───────────────────────────────────────

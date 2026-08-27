@@ -9,9 +9,15 @@ interface ContextualSponsorResult {
   newMoments: Moment[]
 }
 
-// One-time payment amount for kommunstöd
+// One-time payment amount for kommunstöd — nu ett TAK, inte ett fast belopp.
+// Se checkContextualSponsors nedan (H4-uppföljning, 2026-08-26): beloppet
+// skalar kontinuerligt med communityStanding istf ett fast belopp bakom en
+// hård tröskel.
 const KOMMUNSTOD_AMOUNT = 80_000
 
+/**
+ * @cites StandingRow.position, game.communityStanding, fixture.attendance
+ */
 export function checkContextualSponsors(
   game: SaveGame,
   standings: StandingRow[],
@@ -53,11 +59,23 @@ export function checkContextualSponsors(
     })
   }
 
-  // cs_over_70 → kommunalt engagemang (one-time payment)
-  // Only fires at specific check-points to prevent repeated triggering when CS stays above 70
+  // H4-uppföljning (2026-08-26): "cs_over_70" var en hård tröskel (cs > 70)
+  // som gav ETT fast belopp (80 000 kr) eller NOLL — ett steg på precis en
+  // enhet communityStanding (70→71) gav en diskret ~80k intäktsskillnad,
+  // bekräftat generellt (kodverifierat: gäller alla 12 klubbar, alla säsonger,
+  // ingen region-/tier-scoping) och en av flera bidragande orsaker till
+  // avskedsfrekvens-klippan mellan cs=70/71 (H4, docs/BACKLOG.md). Ersatt av
+  // en kontinuerlig skala: beloppet växer jämnt med communityStanding
+  // (0 kr vid/under 50, taket KOMMUNSTOD_AMOUNT vid cs>=90) istf ett
+  // allt-eller-inget-hopp vid exakt 71. Golvet vid 50 (inte 0) speglar att
+  // en klubb med genomsnittligt/svagt lokalt stöd inte rimligen får ett
+  // kommunalt engångsbidrag alls — bara den övre halvan av skalan gör det,
+  // gradvis.
+  const csFactor = Math.max(0, Math.min(1, (cs - 50) / 40))
   const hasCsSponsor = existing.some(s => s.triggeredBy === 'cs_over_70' && s.triggeredSeason === season)
-  if (!hasCsSponsor && cs > 70 && [5, 11, 18].includes(currentRound)) {
+  if (!hasCsSponsor && csFactor > 0 && [5, 11, 18].includes(currentRound)) {
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+    const amount = Math.round(KOMMUNSTOD_AMOUNT * csFactor)
     newSponsors.push({
       id: `contextual_cs70_${season}`,
       name: `${managedClub?.region ?? 'Kommunen'} Kommunstöd`,
@@ -70,6 +88,7 @@ export function checkContextualSponsors(
       triggeredSeason: season,
       expiresSeason: season,
       isOneTime: true,
+      oneTimeAmount: amount,
     })
     newMoments.push({
       id: `moment_sponsor_cs70_${season}`,
@@ -77,7 +96,7 @@ export function checkContextualSponsors(
       matchday: currentRound,
       season,
       title: 'Kommunen beviljar engångsstöd',
-      body: `Kommunen erkänner klubbens roll i orten och beviljar ${KOMMUNSTOD_AMOUNT.toLocaleString('sv-SE')} kr i engångsbidrag. Pengarna betalas ut direkt.`,
+      body: `Kommunen erkänner klubbens roll i orten och beviljar ${amount.toLocaleString('sv-SE')} kr i engångsbidrag. Pengarna betalas ut direkt.`,
     })
   }
 
@@ -136,8 +155,13 @@ export function applyOneTimeKommunstod(
 
   if (!game.clubs.find(c => c.id === game.managedClubId)) return { updatedGame: game, paid: false }
 
+  // H4-uppföljning: läs det skalade beloppet satt vid skapandetillfället —
+  // fall tillbaka till hela KOMMUNSTOD_AMOUNT bara för gamla sparfiler vars
+  // sponsor skapades innan detta fält fanns (annars 0 kr utbetalt, tystare
+  // fel än det gamla fasta beloppet).
+  const amount = kommunSponsor.oneTimeAmount ?? KOMMUNSTOD_AMOUNT
   const updatedClubs = game.clubs.map(c =>
-    c.id === game.managedClubId ? { ...c, finances: c.finances + KOMMUNSTOD_AMOUNT } : c,
+    c.id === game.managedClubId ? { ...c, finances: c.finances + amount } : c,
   )
   const updatedSponsors = (game.sponsors ?? []).map(s =>
     s.id === kommunSponsor.id ? { ...s, paidOutSeason: season } : s,

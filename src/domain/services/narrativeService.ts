@@ -1,7 +1,7 @@
 import type { Player } from '../entities/Player'
 import { formatRating } from '../format'
 
-type NarrativeEntry = NonNullable<Player['narrativeLog']>[number]
+type NarrativeEntry = NonNullable<Player['diary']>[number]
 
 export function addNarrativeEntry(
   player: Player,
@@ -11,10 +11,17 @@ export function addNarrativeEntry(
   type: NarrativeEntry['type'],
 ): Player {
   const entry: NarrativeEntry = { season, matchday, text, type }
-  const log = [...(player.narrativeLog ?? []), entry].slice(-20) // keep last 20 entries
-  return { ...player, narrativeLog: log }
+  const log = [...(player.diary ?? []), entry].slice(-20) // keep last 20 entries
+  return { ...player, diary: log }
 }
 
+/**
+ * Ren renderare — tar redan verifierade parametrar (opponent/season/matchday).
+ * Den faktiska "är detta verkligen första målet"-verifieringen
+ * (prevCareerGoals === 0) sker i anroparen (statsProcessor.ts), inte här —
+ * citatdeklarationen hör hemma där, inte i en formaterare utan egen
+ * speldataåtkomst.
+ */
 export function generateFirstGoalEntry(opponent: string, season: number, matchday: number): NarrativeEntry {
   return {
     season, matchday, type: 'milestone',
@@ -43,6 +50,11 @@ export function generateReturnFromInjuryEntry(season: number, matchday: number):
   }
 }
 
+/**
+ * Ren renderare, samma mönster som generateFirstGoalEntry ovan —
+ * verifieringen (prevCareerGames === 0 && p.promotedFromAcademy) sker i
+ * statsProcessor.ts, inte här.
+ */
 export function generateDebutEntry(opponent: string, season: number, matchday: number): NarrativeEntry {
   return {
     season, matchday, type: 'milestone',
@@ -78,6 +90,10 @@ export function generateAcademyPromotionEntry(season: number, matchday: number):
   }
 }
 
+/**
+ * Ren renderare, samma mönster som ovan — rating/goals är redan lästa och
+ * verifierade av statsProcessor.ts innan de skickas in.
+ */
 export function generateGoodMatchEntry(rating: number, goals: number, opponent: string, season: number, matchday: number): NarrativeEntry {
   const goalText = goals > 0 ? ` Stod för ${goals} mål.` : ''
   return {

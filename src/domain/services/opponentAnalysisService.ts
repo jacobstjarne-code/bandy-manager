@@ -3,6 +3,7 @@ import type { Player } from '../entities/Player'
 import type { Fixture } from '../entities/Fixture'
 import type { StandingRow } from '../entities/SaveGame'
 import { PlayerPosition, TacticMentality, TacticPress } from '../enums'
+import { safeStandingPosition } from './standingsService'
 
 export interface OpponentAnalysis {
   opponentClubId: string
@@ -200,8 +201,6 @@ export function generateBasicAnalysis(
   fixtures: Fixture[],
   fixtureId: string,
 ): OpponentAnalysis {
-  const standing = standings.find(s => s.clubId === opponentClub.id)
-
   const sorted = [...opponentPlayers]
     .filter(p => !p.isInjured)
     .sort((a, b) => b.currentAbility - a.currentAbility)
@@ -236,7 +235,11 @@ export function generateBasicAnalysis(
     strengths: [],
     weaknesses: [],
     recentForm,
-    tablePosition: standing?.position,
+    // LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26): safeStandingPosition
+    // ger undefined om motståndaren ännu inte spelat en ligamatch denna
+    // säsong, istf en cachad alfabetisk skuggposition som annars satt kvar
+    // i scoutrapporten tills klubben scoutas om.
+    tablePosition: safeStandingPosition(standings, opponentClub.id) ?? undefined,
     keyPlayers,
   }
 }

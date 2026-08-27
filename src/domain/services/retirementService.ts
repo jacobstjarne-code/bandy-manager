@@ -48,13 +48,17 @@ const FAREWELL_TEMPLATES_DAYJOB = [
   (name: string) => `"Halvtid på jobbet, heltid på hjärtat." — ${name}`,
 ]
 
+// PÅSTÅENDEKARTAN SANNINGEN-SAKNAS-fix (2026-08-27, kvitterat mot fynd #2):
+// de fyra tidigare raderna som hävdade en SPECIFIK händelse (straff i
+// cupfinalen, bortamatch i snöyran, semifinalsäsong, "mot rivalerna") gick
+// aldrig via careerMilestones och kunde alltså fyras för en spelare som
+// aldrig upplevt något av det. Kvar är bara rader som är sanna för VARJE
+// spelare med ≥10 matcher (games<10-gaten ovanför garanterar en A-lagsdebut
+// finns) — ingen specifik utfallssiffra att belägga.
 const BEST_MOMENT_TEMPLATES = [
-  (_name: string) => `Hattricket mot rivalerna stannade länge i minnet.`,
-  (_name: string) => `En säsong med laget som tog sig hela vägen till semifinal.`,
-  (name: string) => `Den avgörande straffen i cupfinalen — ${name} satte den säkert.`,
-  (name: string) => `En bortamatch i snöyran där ${name} avgjorde med fem minuter kvar.`,
-  (_name: string) => `Kampanjen när laget kämpade sig kvar i serien mot alla odds.`,
   (_name: string) => `Debuten i A-laget — nervig, men minnet sitter kvar.`,
+  (name: string) => `${name} minns fortfarande sin första säsong bäst.`,
+  (_name: string) => `Åren i laget, inte en enskild match, är det som stannar.`,
 ]
 
 /**
@@ -109,10 +113,33 @@ export function generateFarewellQuote(player: Player): string {
   return pool[Math.floor((player.age + seasons * 3) % pool.length)](name)
 }
 
+/**
+ * PÅSTÅENDEKARTAN SANNINGEN-SAKNAS-fix (2026-08-25, Jacobs dom): en riktig
+ * hattrick-milstolpe (statsProcessor.ts, nu med motståndarnamn) väger tyngre
+ * än en slumpad mall och används i första hand. Ingen ny prosa skriven här —
+ * milstolpens redan lagrade description återanvänds ordagrant.
+ *
+ * @cites player.careerMilestones, player.careerStats.totalGames
+ */
 function generateBestMoment(player: Player): string | undefined {
   const goals = player.careerStats?.totalGoals ?? 0
   const games = player.careerStats?.totalGames ?? 0
   if (games < 10) return undefined  // Too few games to have a standout moment
+
+  const milestones = player.careerMilestones ?? []
+  const hatTrick = milestones
+    .filter(m => m.type === 'hatTrick')
+    .sort((a, b) => b.season - a.season || b.round - a.round)[0]
+  if (hatTrick) return hatTrick.description
+
+  // goals50/games100 hade riktiga, lagrade beskrivningar (statsProcessor.ts)
+  // som aldrig lästes här — samma slags miss som hattricket hade innan
+  // 2026-08-25-fixen, upptäckt vid samma genomgång 2026-08-27.
+  const goals50 = milestones.find(m => m.type === 'goals50')
+  if (goals50) return goals50.description
+  const games100 = milestones.find(m => m.type === 'games100')
+  if (games100) return games100.description
+
   const pool = BEST_MOMENT_TEMPLATES
   const name = `${player.firstName} ${player.lastName}`
   return pool[Math.floor((player.age + goals * 3) % pool.length)](name)

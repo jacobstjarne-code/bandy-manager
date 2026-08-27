@@ -95,17 +95,25 @@ export function summarizeSignature(signature: SeasonSignature): string | null {
   const season = signature.startedSeason
   const facts = signature.observedFacts
 
+  // Påståendesvepet #21 (MASTER.md, 2026-08-24): fallbacken (`|| '...'`)
+  // påstod ett SPECIFIKT observerat faktum ("Is och minusgrader satte
+  // tonen.") även om observedFacts var tom — ogated. I praktiken oåtkomlig
+  // (createSeasonSignature seedar alltid minst ett faktum, recordSignatureFact
+  // bara lägger till), men om något framtida anrop någonsin konstruerar en
+  // signatur förbi den vägen ska raden inte hitta på ett faktum som aldrig
+  // observerades — samma princip som #1/#20. Ingen fallback-text, bara
+  // rubrikmeningen ensam.
   switch (signature.id) {
     case 'cold_winter':
-      return `Köldvintern ${season}. ${facts[0] || 'Is och minusgrader satte tonen.'}`
+      return facts[0] ? `Köldvintern ${season}. ${facts[0]}` : `Köldvintern ${season}.`
     case 'scandal_season':
-      return `Skandalsäsongen ${season}. ${facts[0] || 'Rubrikerna drog blicken från spelet.'}`
+      return facts[0] ? `Skandalsäsongen ${season}. ${facts[0]}` : `Skandalsäsongen ${season}.`
     case 'hot_transfer_market':
-      return `Den heta transfersommaren ${season}. ${facts[0] || 'Telefonen gick varm, fönstret stängde med drama.'}`
+      return facts[0] ? `Den heta transfersommaren ${season}. ${facts[0]}` : `Den heta transfersommaren ${season}.`
     case 'injury_curve':
-      return `Skadekurvan ${season}. ${facts[0] || 'Mellansäsongen kostade hårt på truppen.'}`
+      return facts[0] ? `Skadekurvan ${season}. ${facts[0]}` : `Skadekurvan ${season}.`
     case 'dream_round':
-      return `Drömrundan ${season}. ${facts[0] || 'En öppen serie gav ligan ett nytt ansikte.'}`
+      return facts[0] ? `Drömrundan ${season}. ${facts[0]}` : `Drömrundan ${season}.`
     case 'calm_season':
     default:
       return null

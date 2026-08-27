@@ -24,9 +24,21 @@ import {
 import { formatValue, formatDecimalComma } from '../../format'
 import { findEmployerForJob } from '../../data/localEmployers'
 import { generateSilentShoutEvent, generateMecenatConflictEvent, generateMecenatAllianceEvent } from '../mecenatService'
-import { captainRallyAlreadyEngagedThisSeason } from '../captainRallyGuard'
+import { getCsDetOmojligaValetProbability } from '../communityStandingScaling'
 
 // ── generatePostAdvanceEvents ──────────────────────────────────────────────
+/**
+ * PÅSTÅENDEGRINDEN nivå 2 (2026-08-24): fyra sorteringar i denna funktion
+ * bytta från roundNumber till matchday (CLAUDE.md: "Använd ALDRIG
+ * roundNumber ... All ordning via matchday").
+ *
+ * PÅSTÅENDEKARTAN omsvep (2026-08-25): hesitantPlayerEvent-gaten (6b) läser
+ * här — inte i eventFactories.ts:s hesitantPlayerEvent själv — den
+ * dokumenterade reputation-jämförelsen (contentContract.ts:222) mellan
+ * bid.sellingClubId och bid.buyingClubId.
+ *
+ * @cites Fixture.matchday, bid.sellingClubId, bid.buyingClubId
+ */
 export function generatePostAdvanceEvents(
   game: SaveGame,
   newBids: TransferBid[],
@@ -126,9 +138,14 @@ export function generatePostAdvanceEvents(
   if (events.length >= 2) return events
 
   // 3. Unhappy players (morale < 35, bänkad 3+ matcher) — simplified check
+  // PÅSTÅENDEGRINDEN nivå 2 (2026-08-24): roundNumber → matchday. Samma
+  // syskonbugg som de tre andra sorteringarna i denna fil (rad ~197/324/380
+  // hade den redan) — global spelordning via matchday, aldrig roundNumber
+  // (CLAUDE.md, Matchday-systemet). Cup/liga-interfoliering ger fel "senaste
+  // matcher" annars.
   const recentFixtures = game.fixtures
     .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))
     .slice(0, 3)
 
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId && !p.isInjured)
@@ -195,7 +212,7 @@ export function generatePostAdvanceEvents(
         f.status === 'completed' &&
         (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
       )
-      .sort((a, b) => b.roundNumber - a.roundNumber)
+      .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))
       .slice(0, 5)
 
     const dayJobCandidates = game.players.filter(p =>
@@ -322,7 +339,7 @@ export function generatePostAdvanceEvents(
       // Check: played < 3 of last 10 fixtures
       const recentFixtures = game.fixtures
         .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-        .sort((a, b) => b.roundNumber - a.roundNumber)
+        .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))
         .slice(0, 10)
       const gamesStarted = recentFixtures.filter(f => {
         const lineup = f.homeClubId === game.managedClubId ? f.homeLineup : f.awayLineup
@@ -362,16 +379,29 @@ export function generatePostAdvanceEvents(
   }
 
   // 5h. Captain speech — 3+ losses in a row, captain morale > 50, max 1 per season
+  // H2-uppföljning (människoupplevelse-audit 7024f8a, 2026-08-24): sorterade
+  // tidigare på roundNumber — CLAUDE.md förbjuder det uttryckligen ("Använd
+  // ALDRIG roundNumber... All ordning via matchday"). Symptomet matchade:
+  // kaptenens why-now-text kunde peka på en förlustsvit som inte längre var
+  // de tre senast spelade matcherna. matchday är den enda globala spelordningen.
+  //
+  // captainRallyAlreadyEngagedThisSeason(game)-vakten BORTTAGEN (H1-
+  // uppföljning, 2026-08-24, Jacobs dom): den fanns för att reconcilera mot
+  // arcService.ts:s ledare_crisis, nu borttagen — captainSpeech är kanon.
+  // eid-kollen två rader ned (alreadyQueued, satt från pendingEvents+
+  // resolvedEventIds längst upp i denna funktion) gjorde redan exakt samma
+  // jobb för DETTA system (id:t är säsongsscopat: event_captain_speech_s{season}),
+  // så vakten var dubbelarbete, inte skydd, sedan den andra källan försvann.
   if (events.length < 2) {
     const recentResults = game.fixtures
       .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
-      .sort((a, b) => b.roundNumber - a.roundNumber)
+      .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))
       .slice(0, 3)
     const allLosses = recentResults.length >= 3 && recentResults.every(f => {
       const isHome = f.homeClubId === game.managedClubId
       return isHome ? f.homeScore < f.awayScore : f.awayScore < f.homeScore
     })
-    if (allLosses && !captainRallyAlreadyEngagedThisSeason(game)) {
+    if (allLosses) {
       const eid = `event_captain_speech_s${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const managedClub = game.clubs.find(c => c.id === game.managedClubId)
@@ -480,19 +510,24 @@ export function generatePostAdvanceEvents(
 
   if (events.length >= 2) return events
 
-  // 6b. Hesitant player (outgoing bid just resolved as accepted, player CA > club avg)
+  // 6b. Hesitant player (outgoing bid just resolved as accepted, buying club
+  // has LOWER reputation than the player's current club — PÅSTÅENDEKARTAN
+  // omsvep 2026-08-24, VAR-fel-fält: contentContract.ts:222 dokumenterar
+  // triggern som "bid.buyingClubId har lägre reputation än spelarens
+  // nuvarande klubb", men koden gated tidigare enbart på target.currentAbility
+  // > truppens CA-snitt — ingen reputation-jämförelse gjordes någonsin, trots
+  // att texten uttryckligen påstår "din klubb är ett steg ner i
+  // ambitionsnivå". Bytt till den dokumenterade jämförelsen: sellingClubId
+  // (spelarens nuvarande klubb) mot buyingClubId (oss, managedClubId).
   const justAccepted = (game.transferBids ?? []).filter(
     b => b.direction === 'outgoing' && b.status === 'accepted' && b.expiresRound === roundPlayed
   )
   if (justAccepted.length > 0) {
-    const managedPlayersForHesitant = game.players.filter(p => p.clubId === game.managedClubId)
-    const avgCA = managedPlayersForHesitant.length > 0
-      ? managedPlayersForHesitant.reduce((s, p) => s + p.currentAbility, 0) / managedPlayersForHesitant.length
-      : 0
     for (const bid of justAccepted) {
       if (events.length >= 2) break
-      const target = game.players.find(p => p.id === bid.playerId)
-      if (!target || target.currentAbility <= avgCA) continue
+      const sellingClub = game.clubs.find(c => c.id === bid.sellingClubId)
+      const buyingClub = game.clubs.find(c => c.id === bid.buyingClubId)
+      if (!sellingClub || !buyingClub || buyingClub.reputation >= sellingClub.reputation) continue
       const eid = `event_hesitant_${bid.id}`
       if (!alreadyQueued.has(eid)) {
         events.push(hesitantPlayerEvent(bid, game))
@@ -545,14 +580,24 @@ export function generatePostAdvanceEvents(
     }
   }
 
-  // Det omöjliga valet — one-time financial crisis
+  // Det omöjliga valet — one-time financial crisis. Tröskelsvepet (fynd
+  // #11, Jacobs dom 2026-08-26): var `cs > 60` — en klubb under 60 kunde
+  // ALDRIG se en av spelets nio 5/5-systemhändelser (DOM_VARSLET_
+  // KLASSIFICERING_2026-08-17.md), oavsett hur länge den satt i finanskris
+  // med en älskad akademispelare — exakt den klubbprofil händelsen handlar
+  // om. "Samma klass som contract_drama som var strukturellt onåbar"
+  // (Jacobs ord) — skillnaden här är graden, inte arten: inte 0% för alla,
+  // men 0% för EN HEL KLUBBKLASS (låg-CS), permanent. Ersatt av en
+  // sannolikhet som prövas varje kvalificerande omgång (samma idiom som
+  // filens övriga rand()-villkor, t.ex. spöksponsorn ovan) — se
+  // communityStandingScaling.ts.
   if (events.length < 2) {
     const omojligId = `detOmojligaValet_${game.currentSeason}`
     const managedClubOmojlig = game.clubs.find(c => c.id === game.managedClubId)
     if (
       !alreadyQueued.has(omojligId) &&
       (managedClubOmojlig?.finances ?? 0) < -50000 &&
-      (game.communityStanding ?? 50) > 60
+      rand() < getCsDetOmojligaValetProbability(game.communityStanding ?? 50)
     ) {
       const academyProspect = game.players.find(p =>
         p.clubId === game.managedClubId &&
@@ -643,6 +688,16 @@ export function generatePostAdvanceEvents(
  * Text skriven av Opus 2026-08-22, klistrad ordagrant (SPEC-LYDNAD). Sista
  * raden i utfallstexterna ("{GamleSponsor} fick aldrig veta") är avsiktligt
  * bärande — spelaren vet något funktionärerna i spelvärlden inte vet.
+ *
+ * @cites offer.weeklyIncome, offer.contractRounds, maxSponsors
+ *
+ * OBS (PÅSTÅENDESVEP batch-05, 2026-08-24): rivalTenureLine ("{RivalSponsor}
+ * var med när det var tunnare än nu.") är MEDVETET INTE citerad ovan — den
+ * grenen är en känd Proxy/SANNINGEN-SAKNAS (rivalSponsor bevisar bara att en
+ * aktiv sponsor i samma kategori finns, inte att klubben faktiskt var
+ * ekonomiskt svagare då). Kvarstår ofixad i väntan på Jacobs/Opus beslut —
+ * se docs/pastaende_sweep_2026-08-24/batch-05.md, raden för
+ * buildSponsorOfferEvent.
  */
 export function buildSponsorOfferEvent(
   offer: Sponsor,
@@ -670,12 +725,16 @@ export function buildSponsorOfferEvent(
   const rivalSponsor = activeSponsors.find(s => s.category === offer.category)
   const COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT = -6
 
-  // Text för konfliktvarianten (Jacob, 2026-08-22, klistrad ordagrant —
-  // SPEC-LYDNAD: ändra ingenting). En flerårig tenure-rad ströks ur specen
-  // (Jacobs dom 2026-08-22): en vanlig sponsors contractRounds är 8-16
-  // omgångar, alltid under en säsong — ingen rival här hinner någonsin bli
-  // flerårig, så bara den här raden finns kvar, inte en gren som aldrig nås.
-  const rivalTenureLine = rivalSponsor ? `${rivalSponsor.name} var med när det var tunnare än nu.` : undefined
+  // Påståendesvepet #16 (MASTER.md, 2026-08-24), Jacobs dom 2026-08-26:
+  // den tidigare raden ("{RivalSponsor} var med när det var tunnare än
+  // nu.") påstod en historia som inte finns i data — koden vet bara ATT en
+  // rivalsponsor finns i samma kategori NU, inget om NÄR den skrev på eller
+  // hur klubbens ekonomi såg ut då. Struken, samma princip som HalftimeModal
+  // #1 och ismaskinens "tre vintrar" — kan påståendet inte beläggas ska det
+  // inte göras. Vad raden GJORDE (sa att en relation bryts) överlever utan
+  // historik: sponsorn finns här I NUET, och det är spelaren som väljer
+  // bort den. Ny låst text (Jacob, 2026-08-26).
+  const rivalNoticeLine = rivalSponsor ? `${rivalSponsor.name} får beskedet av er.` : undefined
 
   // Synlighetsraden (Jacob, 2026-08-24, klistrad ordagrant — SPEC-LYDNAD:
   // ändra ingenting). "Platsen är er i {N} omgångar. Kommer något bättre i
@@ -709,10 +768,10 @@ export function buildSponsorOfferEvent(
         // (Jacobs låsta text ovan) ersätter den tidigare bara-siffra
         // "⏳ N omg" — samma fakta, sagt som en mening istället för en
         // ikon. Samma " · "-format som redan dokumenterat på
-        // EventChoice.subtitle ovan — rivalTenureLine (Jacob, 2026-08-22,
-        // låst text) rörs inte.
+        // EventChoice.subtitle ovan — rivalNoticeLine (Jacob, 2026-08-26,
+        // ersätter det tidigare obelagda rivalTenureLine, se #16 ovan).
         subtitle: rivalSponsor
-          ? `${rivalTenureLine} · ⭐ Anseende ${COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT} · ${visibilityLine}`
+          ? `${rivalNoticeLine} · ⭐ Anseende ${COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT} · ${visibilityLine}`
           : `💰 +${totalFmt} totalt · ${visibilityLine}`,
         effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) },
       },

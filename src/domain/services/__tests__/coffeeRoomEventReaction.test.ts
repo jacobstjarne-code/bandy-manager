@@ -86,12 +86,19 @@ describe('D4-regressionsfix — portade reaktioner i getCoffeeRoomScene', () => 
   const completed = makeFixture({ roundNumber: 1, matchday: 1 })
 
   it('skandalreaktion (egen klubb) syns i scenen', () => {
+    // PÅSTÅENDEKARTAN dubbelskale-fix (2026-08-25): triggerRound är
+    // matchday-skala (scandalService.ts skriver nextMatchday). Ett fixt
+    // triggerRound:1 utnyttjade tidigare en bugg (coffeeRoomService.ts
+    // jämförde mot en roundNumber-skalig `round` som förblev konstant=1
+    // hela scanet oavsett md, vilket gav ett obegränsat "nyligen"-fönster).
+    // Med skalan rättad ska triggerRound spåra den scannade matchdagen så
+    // att "nyligen"-fönstret (±1 matchday) fortfarande håller i hela loopen.
     const found = findAcrossMatchdays(
       md => makeGame({
         fixtures: [completed],
         currentMatchday: md,
         scandalHistory: [{
-          id: 's1', season: 1, triggerRound: 1, type: 'sponsor_collapse',
+          id: 's1', season: 1, triggerRound: md, type: 'sponsor_collapse',
           affectedClubId: 'managed', resolutionRound: 5, isResolved: false,
         }] as never,
       }),
@@ -106,13 +113,34 @@ describe('D4-regressionsfix — portade reaktioner i getCoffeeRoomScene', () => 
         fixtures: [completed],
         currentMatchday: md,
         scandalHistory: [{
-          id: 's1', season: 1, triggerRound: 1, type: 'sponsor_collapse',
+          id: 's1', season: 1, triggerRound: md, type: 'sponsor_collapse',
           affectedClubId: 'opp', resolutionRound: 5, isResolved: false,
         }] as never,
       }),
       scene => (scene?.exchanges.flat().join(' ') ?? '').includes('Motståndarklubben förlorade en sponsor'),
     )
     expect(found).toBe(true)
+  })
+
+  it('PÅSTÅENDEKARTAN dubbelskale-fix: en skandal 9 matchdagar gammal syns INTE, trots att bara EN ligarunda hunnit spelas klart (cupmatcher emellan)', () => {
+    // Reproducerar buggen direkt: roundNumber (ligarundor) och matchday (global
+    // ordning) divergerar när cupmatcher konsumerat matchday-platser utan att
+    // öka roundNumber — precis scenariot Jacob beskrev för signedRound, samma
+    // klass här. completed har roundNumber=1 (en enda avklarad ligarunda) men
+    // currentMatchday=10 (nio globala omgångar senare, cup/slutspel emellan).
+    // Utan fixen jämförs skandalen mot roundNumber (=1, konstant) och verkar
+    // "nyligen" i evighet. Med fixen jämförs den mot currentMatchday (=10) och
+    // faller utanför ±1-fönstret, som avsett.
+    const scene = getCoffeeRoomScene(makeGame({
+      fixtures: [completed], // roundNumber: 1, matchday: 1
+      currentMatchday: 10,
+      scandalHistory: [{
+        id: 's1', season: 1, triggerRound: 1, type: 'sponsor_collapse',
+        affectedClubId: 'managed', resolutionRound: 5, isResolved: false,
+      }] as never,
+    }))
+    const text = scene?.exchanges.flat().join(' ') ?? ''
+    expect(text).not.toContain('Tröjorna ska tryckas om')
   })
 
   it('transferreaktion — sålt (TRANSFER_SALE_EXCHANGES) interpolerar spelarnamn', () => {

@@ -30,8 +30,14 @@ export function generateQuarterFinalEvent(game: SaveGame): GameEvent {
 
 export function generateSemiFinalEvent(game: SaveGame): GameEvent {
   const mecenat = (game.mecenater ?? []).find(m => m.isActive)
+  // Påståendesvepet #20 (MASTER.md, 2026-08-24): "Det är första gången hen
+  // säger något sådant" ströks — koden kollar bara ATT en aktiv mecenat
+  // finns, aldrig OM den redan sagt exakt detta i en tidigare säsong (till
+  // skillnad från generateQuarterFinalEvent ovan, som korrekt kollar
+  // seasonSummaries-historiken). Samma princip som #1/#16: kan påståendet
+  // inte beläggas ska det inte göras.
   const body = mecenat
-    ? `Semifinalen. ${mecenat.name} ringer. "Om ni tar er till final — jag och hela kontoret är där. Alla biljetter är mitt ansvar." Det är första gången hen säger något sådant.`
+    ? `Semifinalen. ${mecenat.name} ringer. "Om ni tar er till final — jag och hela kontoret är där. Alla biljetter är mitt ansvar."`
     : 'Semifinalen. Ordföranden skrev ett sms klockan fem på morgonen. "Jag sov två timmar i natt. Är det normalt?"'
 
   return {

@@ -93,14 +93,14 @@ describe('generatePressConference — High 4: dagjobbs-state-gate', () => {
 })
 
 describe('generatePressConference — High 4: storylineBudgetOk (max huvudfråga + en uppföljning per säsong)', () => {
-  it('en frisk storyline (ingen tidigare narrativeLog-post) KAN ge sin fråga', () => {
+  it('en frisk storyline (ingen tidigare narrativeBeatLog-post) KAN ge sin fråga', () => {
     let game = makeGame()
     const managedPlayer = game.players.find(p => p.clubId === game.managedClubId)!
     game = {
       ...game,
       players: game.players.map(p => p.id === managedPlayer.id ? { ...p, isFullTimePro: true } : p),
       storylines: [proStory(game, managedPlayer.id)],
-      narrativeLog: [],
+      narrativeBeatLog: [],
     }
     const fixture = makeFixture(game)
     const events = runMany(game, fixture, 300)
@@ -115,7 +115,7 @@ describe('generatePressConference — High 4: storylineBudgetOk (max huvudfråga
       ...game,
       players: game.players.map(p => p.id === managedPlayer.id ? { ...p, isFullTimePro: true } : p),
       storylines: [story],
-      narrativeLog: [
+      narrativeBeatLog: [
         { semanticKey: `press_storyline_${story.id}`, season: game.currentSeason, round: 2 },
         { semanticKey: `press_storyline_${story.id}`, season: game.currentSeason, round: 6 },
       ],
@@ -133,7 +133,7 @@ describe('generatePressConference — High 4: storylineBudgetOk (max huvudfråga
       ...game,
       players: game.players.map(p => p.id === managedPlayer.id ? { ...p, isFullTimePro: true } : p),
       storylines: [{ ...story, season: game.currentSeason }],
-      narrativeLog: [
+      narrativeBeatLog: [
         { semanticKey: `press_storyline_${story.id}`, season: game.currentSeason - 1, round: 20 },
         { semanticKey: `press_storyline_${story.id}`, season: game.currentSeason - 1, round: 21 },
       ],

@@ -26,6 +26,9 @@ function transition(arc: TrainerArc, to: ArcPhase, matchday: number, season: num
 
 // ── Update arc after each matchday ──────────────────────────────────────────
 
+/**
+ * @cites matchday
+ */
 export function updateTrainerArc(game: SaveGame): TrainerArc {
   const arc: TrainerArc = { ...(game.trainerArc ?? createTrainerArc()) }
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
@@ -33,13 +36,13 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
   const totalTeams = game.clubs.length
   const md = game.fixtures
     .filter(f => f.status === 'completed' && !f.isCup)
-    .reduce((m, f) => Math.max(m, f.roundNumber), 0)
+    .reduce((m, f) => Math.max(m, f.matchday), 0)
   const season = game.currentSeason
 
   // Update win/loss streaks from last match
   const lastFixtures = game.fixtures
     .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
-    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .sort((a, b) => b.matchday - a.matchday)
   const last = lastFixtures[0]
   if (last && last.id !== arc.lastCountedFixtureId) {
     arc.lastCountedFixtureId = last.id
@@ -92,7 +95,7 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
         const recentFixtures = game.fixtures
           .filter(f => f.status === 'completed' && !f.isCup &&
             (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-          .sort((a, b) => b.roundNumber - a.roundNumber)
+          .sort((a, b) => b.matchday - a.matchday)
           .slice(0, 8)
         const wins = recentFixtures.filter(f => {
           const isHome = f.homeClubId === game.managedClubId
@@ -145,7 +148,17 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
       break
   }
 
-  if (pos < arc.bestFinish) arc.bestFinish = pos
+  // PÅSTÅENDEKARTAN, LÄST-FÖRE-INITIERING (2026-08-26, RAPPORT_FYRA_
+  // UTREDNINGAR_2026-08-26.md): `updateTrainerArc` körs varje omgång,
+  // inklusive säsongens ALLRA FÖRSTA anrop innan en match spelats. Vid
+  // matchday 0 är alla klubbar på 0 poäng, och `standing.position` är då
+  // bara tabellens alfabetiska tie-break — inte en verklig placering.
+  // Eftersom bestFinish bara minskar (aldrig återställs) blev den
+  // alfabetiska spökpositionen tidigare PERMANENT (bekräftat: Heros fick
+  // bestFinish=4, Forsbacka bestFinish=1, båda vid spelade=0). Golvet
+  // `standing.played > 0` säkerställer att position bara citeras efter att
+  // minst en match faktiskt avgjort tabellens ordning denna säsong.
+  if (standing && standing.played > 0 && pos < arc.bestFinish) arc.bestFinish = pos
 
   return arc
 }

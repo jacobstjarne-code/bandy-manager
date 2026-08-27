@@ -217,8 +217,15 @@ describe('applyScandalEffect', () => {
       resolutionRound: 7,
       isResolved: false,
     }
-    const { pendingPointDeductions } = applyScandalEffect(game, scandal, alwaysRand(0))
+    const { pendingPointDeductions, inboxItems } = applyScandalEffect(game, scandal, alwaysRand(0))
     expect(pendingPointDeductions['ai1']).toBe(3)
+    // PÅSTÅENDEKARTAN (2026-08-24): body-texten pekade tidigare ut FEL klubb
+    // (secondaryClubId, "Klub ai2") som poängbestraffad, trots att effekten
+    // ovan bevisar att det är affectedClubId ("Klub ai1") som faktiskt
+    // straffas. Body-texten ska nämna att DEN som straffas är Klub ai1,
+    // aldrig påstå att Klub ai2 tar smällen.
+    const body = inboxItems.find(i => i.body?.includes('poäng'))?.body ?? ''
+    expect(body).not.toMatch(/Klub ai2 (får|betalar)/)
   })
 
   it('fundraiser_vanished reduces reputation', () => {

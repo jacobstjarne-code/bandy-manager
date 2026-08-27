@@ -79,6 +79,9 @@ export function getOpponentStandingFragment(game: SaveGame): string | null {
 
 // ── Fragment: senaste mötet ──────────────────────────────────────────────────
 
+/**
+ * @cites Fixture.status, Fixture.homeClubId, Fixture.awayClubId, Fixture.matchday, Fixture.homeScore, Fixture.awayScore
+ */
 export function getLastMeetingFragment(game: SaveGame): string | null {
   const next = nextManagedFixture(game)
   if (!next) return null

@@ -18,6 +18,9 @@ export interface FreeKickOutcome {
   description: string
 }
 
+/**
+ * @cites kicker.attributes.shooting, kicker.attributes.passing, gk.attributes.goalkeeping, data.distanceMeters, data.wallSize
+ */
 export function resolveFreeKick(
   choice: FreeKickChoice,
   kicker: Player,

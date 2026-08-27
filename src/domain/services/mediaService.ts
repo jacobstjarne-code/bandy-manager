@@ -128,9 +128,15 @@ export function generateTrendArticles(
       !f.isCup &&
       (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
     )
-    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .sort((a, b) => b.matchday - a.matchday)
 
-  const lastResults = completedManaged.slice(0, 5).map(f => {
+  // Påståendesvepet #24 (MASTER.md, 2026-08-24, samma bugg loggad som
+  // E-M24-1 för just denna fil): `lastResults` var tidigare kapad till de
+  // fem senaste matcherna INNAN sviten räknades, så en verklig svit på 6+
+  // visades alltid som "5 RAKA" — taket satt av fönstret, inte den faktiska
+  // sviten. Räknar nu ur HELA `completedManaged` (obegränsad), samma fix
+  // som situationService.ts:s `getSituation` fick 2026-08-26.
+  const lastResults = completedManaged.map(f => {
     const isHome = f.homeClubId === managedClubId
     const myScore = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
     const theirScore = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
@@ -138,7 +144,7 @@ export function generateTrendArticles(
   })
 
   // M55 (textaudit 2026-07-04): findIndex ger -1 (inte lastResults.length) när
-  // ALLA fem senaste är W/L — svitartikeln uteblev just för de starkaste
+  // ALLA senaste matcherna är W/L — svitartikeln uteblev just för de starkaste
   // sviterna eftersom -1 >= 3 alltid är falskt.
   const winIdx = lastResults.findIndex(r => r !== 'W')
   const winStreak = winIdx === -1 ? lastResults.length : winIdx

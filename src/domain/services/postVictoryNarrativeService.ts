@@ -41,6 +41,9 @@ export function classifyVictory(fixture: Fixture, managedClubId: string): Victor
   return null
 }
 
+/**
+ * @cites fixture.homeClubId, fixture.homeScore, fixture.awayScore, type
+ */
 export function generateVictoryEcho(
   type: VictoryType,
   fixture: Fixture,

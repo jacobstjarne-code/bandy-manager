@@ -1,9 +1,17 @@
 import { ClubExpectation } from '../enums'
-import type { StandingRow, SaveGame } from '../entities/SaveGame'
+import type { StandingRow, SaveGame, BoardAssessment } from '../entities/SaveGame'
 import { ordinal } from '../utils/numberFormat'
 import type { Club } from '../entities/Club'
+import { boardPatienceZoneFromScore } from './portal/boardPatienceZone'
 
+// SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md): Survive-raderna nedan i
+// BOARD_EXPECTATION_TEXT/BOARD_EXPECTATION_CEREMONIAL är '[Opus]'-platshållare.
+// Jacob har låst EN text för H4 (klubbvalsskärmens rad: "LÅGA FÖRVÄNTNINGAR" /
+// "Styrelsen begär bara att klubben finns kvar nästa år" — wired separat,
+// se ClubExpandedCard.tsx) men INTE styrelsemötets kortfras/ceremoniella
+// replik. Väntar på Opus.
 export const BOARD_EXPECTATION_TEXT: Record<ClubExpectation, string> = {
+  [ClubExpectation.Survive]: '[Opus]',
   [ClubExpectation.AvoidBottom]: 'undvika botten av tabellen',
   [ClubExpectation.MidTable]: 'hålla oss i mitten av tabellen',
   [ClubExpectation.ChallengeTop]: 'utmana om topplaceringar',
@@ -20,6 +28,7 @@ export const BOARD_EXPECTATION_TEXT: Record<ClubExpectation, string> = {
  * denna är hela repliken för styrelsemötets "Målet i år"-rad.
  */
 export const BOARD_EXPECTATION_CEREMONIAL: Record<ClubExpectation, string> = {
+  [ClubExpectation.Survive]: '[Opus]',
   [ClubExpectation.AvoidBottom]: 'Håll oss ovanför strecket. Mer begär vi inte i år. Allt därutöver är bonus.',
   [ClubExpectation.MidTable]: 'Plats fem till åtta. Inget kvalspel.',
   [ClubExpectation.ChallengeTop]: 'Topp fyra. Och när slutspelet börjar ska ingen vilja möta oss.',
@@ -47,11 +56,18 @@ export const RELEGATION_ZONE_SIZE = 2
 // computeBoardPatienceUpdate — tre gissningar om samma sak som kunde
 // divergera tyst. Denna konstant är den ENDA källan; evaluateBoard och
 // computeBoardPatienceUpdate läser båda den nedan, aldrig en egen kopia.
+// H4 Heros (Jacobs dom 2026-08-25): Survive-ankaret satt till 12 (sista
+// platsen i den fasta 12-lags-ligan) — "positionen som exakt motsvarar
+// förväntan" är alltså bokstavligen sistaplats. gap = anchor-position kan
+// därför aldrig bli negativt för Survive; se BOARD_PATIENCE_SLOPE.below
+// nedan, matematiskt oåtkomlig men kvar för typfullständighet. Ingen ny
+// formel — samma delade-ankare-mönster som de fyra andra tierna.
 export const BOARD_EXPECTATION_ANCHOR_POSITION: Record<ClubExpectation, number> = {
   [ClubExpectation.WinLeague]: 1,
   [ClubExpectation.ChallengeTop]: 4,
   [ClubExpectation.MidTable]: 6,
   [ClubExpectation.AvoidBottom]: 9,
+  [ClubExpectation.Survive]: 12,
 }
 
 /**
@@ -204,6 +220,16 @@ export function computeSeasonVerdictRating(
       else if (finalPosition === totalTeams - 1) return 2
       else return 1
 
+    // H4 Heros (Jacobs dom 2026-08-25): samma tre-bandsmönster som AvoidBottom
+    // ovan, förskjutet ett steg — sistaplats ("else"-grenen) ger 3 (möter
+    // förväntan), aldrig 1 (misslyckande). "Sistaplats är inte ett
+    // misslyckande så länge klubben finns kvar." Ingen ny formeltyp, samma
+    // positionsband-mönster som alla andra tiers, bara skiftat.
+    case ClubExpectation.Survive:
+      if (finalPosition <= totalTeams - 2) return 5
+      else if (finalPosition === totalTeams - 1) return 4
+      else return 3
+
     default:
       return 3
   }
@@ -223,11 +249,18 @@ export function seasonReputationDelta(rating: 1 | 2 | 3 | 4 | 5): number {
 // — "above" (positionen är bättre än ankaret, belönar) och "below" (sämre
 // än ankaret, straffar hårdare). WinLeague har ankare=1 — går inte att slå,
 // så above används aldrig i praktiken (kvar för typfullständighet).
+// H4 Heros: Survive.below är matematiskt oåtkomlig (ankaret=12=sämsta
+// möjliga placering, gap kan aldrig bli negativt) — värdet spelar ingen
+// roll i praktiken, satt till samma som AvoidBottom.below för typskäl.
+// Survive.above lägre än AvoidBottoms (1 mot 2) — varje placering är per
+// definition "över" ankaret här, så en mildare lutning undviker att
+// patiensen rusar uppåt för fort av att bara existera.
 const BOARD_PATIENCE_SLOPE: Record<ClubExpectation, { above: number; below: number }> = {
   [ClubExpectation.WinLeague]: { above: 0, below: 5 },
   [ClubExpectation.ChallengeTop]: { above: 2.5, below: 4 },
   [ClubExpectation.MidTable]: { above: 2, below: 3 },
   [ClubExpectation.AvoidBottom]: { above: 2, below: 4 },
+  [ClubExpectation.Survive]: { above: 1, below: 4 },
 }
 
 /**
@@ -337,6 +370,26 @@ export function computeBoardPatienceUpdate(
 const RUNNING_PATIENCE_DELTA = { win: 1.0, draw: 0.5, loss: -1.5 } as const
 
 /**
+ * H4 Heros-fixet (Jacobs dom 2026-08-25): den löpande förlustterm ovan var
+ * medvetet expectation-blind sedan Grind 1 (Jacobs dom 2026-08-22) — för att
+ * bevara ortogonaliteten mot förlustsviten nedan. Rätt för Skutskär (AvoidBottom,
+ * sund ekonomi, borde inte straffas extra för enskilda förluster), FEL för
+ * Heros (Survive, canoniskt 14-23% vinstandel — samma flata -1,5 per förlust
+ * som en WinLeague-klubb gav 100% avskedsfrekvens, se BACKLOG.md). Multiplicerar
+ * BARA basförlusten (RUNNING_PATIENCE_DELTA.loss) — losingStreakSurcharge
+ * förblir OSKALAD, sviten är fortfarande ortogonal: fem raka är kollaps
+ * oavsett tier. Siffror Jacobs egna, döm-själv-klausul inte utnyttjad —
+ * ingen egen kalibreringsanledning att avvika från förslaget.
+ */
+const RUNNING_LOSS_EXPECTATION_MULTIPLIER: Record<ClubExpectation, number> = {
+  [ClubExpectation.Survive]: 0.4,
+  [ClubExpectation.AvoidBottom]: 0.7,
+  [ClubExpectation.MidTable]: 1.0,
+  [ClubExpectation.ChallengeTop]: 1.2,
+  [ClubExpectation.WinLeague]: 1.4,
+}
+
+/**
  * Förlustsviten som bärande signal (ändring 2): ortogonal mot både
  * slutposition och difficulty — straffar inte en svår klubb som grindar
  * fram en bra placering genom många jämna resultat, men fångar en klubb
@@ -383,7 +436,11 @@ export function updateRunningBoardPatience(
   const myScore = isHome ? last.homeScore : last.awayScore
   const theirScore = isHome ? last.awayScore : last.homeScore
   const outcome = (myScore ?? 0) > (theirScore ?? 0) ? 'win' : (myScore ?? 0) < (theirScore ?? 0) ? 'loss' : 'draw'
-  const baseDelta = RUNNING_PATIENCE_DELTA[outcome]
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const expectation = managedClub?.boardExpectation ?? ClubExpectation.MidTable
+  const baseDelta = outcome === 'loss'
+    ? RUNNING_PATIENCE_DELTA.loss * RUNNING_LOSS_EXPECTATION_MULTIPLIER[expectation]
+    : RUNNING_PATIENCE_DELTA[outcome]
   const surcharge = outcome === 'loss' ? losingStreakSurcharge(consecutiveLossesAfterThisRound) : 0
   const boardPatience = Math.max(0, Math.min(100, currentPatience + baseDelta + surcharge))
   return { boardPatience, boardPatienceLastCountedFixtureId: last.id }
@@ -412,6 +469,31 @@ export function expectationVerdictFromRating(
   if (rating === 5) return 'exceeded'
   if (rating >= 3) return 'met'
   return 'failed'
+}
+
+/**
+ * Påståendesvepet #4 (MASTER.md, 2026-08-24), Jacobs dom 2026-08-26: årsbokens
+ * gamla 3-grenade text ("Styrelsen är nöjd/besviken", SeasonSummaryScreen.tsx)
+ * lät som ett omdöme om ställningen hos styrelsen — kunde motsäga portalens
+ * löpande boardPatience-zon (som har minne, meritkredit från tidigare
+ * framgångar) i samma stund en spelare såg båda. De två axlarna är MEDVETET
+ * separata (se BACKLOG.md): denna text dömer bara SÄSONGEN, aldrig
+ * relationen. Låst text, en mening per rating — ingen av dem säger något om
+ * spelaren/managern, bara om vintern som var.
+ */
+export function seasonVerdictText(
+  expectation: ClubExpectation,
+  finalPosition: number,
+  totalTeams: number,
+): string {
+  const rating = computeSeasonVerdictRating(expectation, finalPosition, totalTeams)
+  switch (rating) {
+    case 5: return 'Styrelsen hade inte väntat sig det här.'
+    case 4: return 'Styrelsen fick mer än de bad om.'
+    case 3: return 'Säsongen blev vad styrelsen räknade med.'
+    case 2: return 'Styrelsen hade hoppats på mer av vintern.'
+    case 1: return 'Vintern blev en besvikelse för styrelsen.'
+  }
 }
 
 export function generateSeasonVerdict(
@@ -447,23 +529,59 @@ export function generateSeasonVerdict(
   return { ...ratingTexts[rating], rating }
 }
 
+/**
+ * Påståendesvepet #13 (MASTER.md, 2026-08-24), Jacobs dom 2026-08-26:
+ * TILL SKILLNAD FRÅN årsbokens seasonVerdictText (#4, som dömdes till att
+ * MEDVETET hålla säsongsbetyget och styrelsens tålamod isär) är detta
+ * inkorgskortet ett AKTIVT meddelande vid säsongsslut — ytan spelaren
+ * agerar på inför nästa vinter. Domen: fortfarande INGEN sammanvävning —
+ * generateSeasonVerdict()s betyg (ovan) står FÖRST, ORÖRT — men denna
+ * lägesmening läggs till EFTER, som sin egen sats. Ingen förklaring till
+ * VARFÖR (det är BoardPatienceMinimal/Sommaren-förutsättningsfasens jobb)
+ * — kortet bara konstaterar. Låst text, tre lägen, ingen av dem nämner
+ * orsaken. Ta EMOT det slutgiltiga (efter säsongsslutets egen uppdatering)
+ * boardPatience-värdet, inte det som gällde vid säsongsstart — annars
+ * skulle kortet visa ett läge som redan hunnit bli fel samma dag.
+ */
+export function seasonVerdictZoneLine(boardPatience: number): string {
+  const zone = boardPatienceZoneFromScore(boardPatience)
+  if (zone === 'ultimatum') return 'Det här kan inte upprepas.'
+  if (zone === 'under_press') return 'Vi förväntar oss att nästa vinter ser annorlunda ut.'
+  return 'Ni har vårt förtroende.'
+}
+
+// H4 Heros-uppföljning (Jacobs dom 2026-08-25): stegkedjan täckte tidigare
+// bara MidTable↔ChallengeTop↔WinLeague fullt ut — AvoidBottom kunde bara
+// befordras uppåt (aldrig degraderas, gated `!== AvoidBottom`) och Survive
+// (tillagd samma dag, H4) fanns inte med i någon gren alls, ett strukturellt
+// tak/golv en klubb aldrig kunde lämna. Jacobs skäl: "en Survive-klubb som
+// slutar tvåa ska inte förbli Survive; en WinLeague-klubb som kollapsar tre
+// år ska kunna hamna i AvoidBottom." Ersatt med en ordnad stege — samma
+// ≤2/≥10-trösklar, ett steg per anrop (en säsong), bara golvet/taket är nu
+// Survive/WinLeague i stället för AvoidBottom/WinLeague.
+const EXPECTATION_LADDER: ClubExpectation[] = [
+  ClubExpectation.Survive,
+  ClubExpectation.AvoidBottom,
+  ClubExpectation.MidTable,
+  ClubExpectation.ChallengeTop,
+  ClubExpectation.WinLeague,
+]
+
 export function generatePreSeasonMessage(
   club: Club,
   standings: StandingRow[],
   lastSeasonPosition: number,
   financialChange: number,
 ): { title: string; body: string; newExpectation: ClubExpectation } {
-  let newExpectation = club.boardExpectation
-
-  if (lastSeasonPosition <= 2 && club.boardExpectation !== ClubExpectation.WinLeague) {
-    if (club.boardExpectation === ClubExpectation.AvoidBottom) newExpectation = ClubExpectation.MidTable
-    else if (club.boardExpectation === ClubExpectation.MidTable) newExpectation = ClubExpectation.ChallengeTop
-    else if (club.boardExpectation === ClubExpectation.ChallengeTop) newExpectation = ClubExpectation.WinLeague
+  const currentIdx = EXPECTATION_LADDER.indexOf(club.boardExpectation)
+  let newIdx = currentIdx
+  if (lastSeasonPosition <= 2 && currentIdx < EXPECTATION_LADDER.length - 1) {
+    newIdx = currentIdx + 1
   }
-  if (lastSeasonPosition >= 10 && club.boardExpectation !== ClubExpectation.AvoidBottom) {
-    if (club.boardExpectation === ClubExpectation.WinLeague) newExpectation = ClubExpectation.ChallengeTop
-    else if (club.boardExpectation === ClubExpectation.ChallengeTop) newExpectation = ClubExpectation.MidTable
+  if (lastSeasonPosition >= 10 && currentIdx > 0) {
+    newIdx = currentIdx - 1
   }
+  const newExpectation = EXPECTATION_LADDER[newIdx]
 
   const expectationText = BOARD_EXPECTATION_TEXT
 
@@ -500,4 +618,68 @@ export function generatePreSeasonMessage(
 
   void standings
   return { title, body, newExpectation }
+}
+
+// Förutsättningsfasen, steg 1 (Jacobs dom 2026-08-25, texter låsta ordagrant
+// i chatten samma dag). Nivåetiketterna Survive/WinLeague var engelska
+// platshållare i ClubExpectation-enumet, aldrig avsedda som visad text —
+// detta är den första skarpa användningen.
+export const BOARD_EXPECTATION_LEVEL_LABEL: Record<ClubExpectation, string> = {
+  [ClubExpectation.Survive]: 'Överleva',
+  [ClubExpectation.AvoidBottom]: 'Undvika botten',
+  [ClubExpectation.MidTable]: 'Mitten',
+  [ClubExpectation.ChallengeTop]: 'Slutspel',
+  [ClubExpectation.WinLeague]: 'Vinna ligan',
+}
+
+/**
+ * Skälsraden Jacob gav sex av (tre per riktning). Regeln: "Raden väljs efter
+ * vad som faktiskt drev ändringen — ligarörelser, egen försvagning, eller
+ * föregående resultat." STEG 1 har bara föregående resultat att peka på
+ * (ligarörelser väntar på steg 2: aiTransferLog + standingsSnapshot-trend,
+ * ej byggda). Rad 1/3 per riktning citerar rivaler ("fältet bakom er
+ * stärktes", "två lag som låg under er har rustat") — kan INTE beläggas
+ * förrän steg 2 finns, medvetet outnyttjade. Rad 2 per riktning är den enda
+ * som är sant grundad i placeringen ensam — den enda som används här.
+ */
+const RAISED_REASON_LINE = 'Ni har visat att ni kan mer. Då begär vi mer.'
+const LOWERED_REASON_LINE = 'Ni tappade för mycket för att vi ska kunna kräva samma sak.'
+
+// SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md). Del 1 ("vad de såg" — en
+// kort kvittens av föregående säsong, DOM:s ord: "styrelsens läsning",
+// INTE en upprepning av årsboken) fick ingen låst text i Jacobs order —
+// bara nivåetiketterna + skälsraderna var låsta. Platshållare tills Opus
+// skriver den, per BoardAssessment.seasonAcknowledgment.
+export const BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER = '[Opus]'
+
+/**
+ * @cites club.boardExpectation, lastSeasonPosition
+ */
+export function deriveBoardAssessment(
+  club: Club,
+  lastSeasonPosition: number,
+  season: number,
+): Omit<BoardAssessment, 'seasonAcknowledgment'> {
+  const currentIdx = EXPECTATION_LADDER.indexOf(club.boardExpectation)
+  let newIdx = currentIdx
+  if (lastSeasonPosition <= 2 && currentIdx < EXPECTATION_LADDER.length - 1) {
+    newIdx = currentIdx + 1
+  }
+  if (lastSeasonPosition >= 10 && currentIdx > 0) {
+    newIdx = currentIdx - 1
+  }
+  const newExpectation = EXPECTATION_LADDER[newIdx]
+
+  const direction: BoardAssessment['direction'] =
+    newIdx > currentIdx ? 'raised' : newIdx < currentIdx ? 'lowered' : 'unchanged'
+
+  return {
+    season,
+    previousExpectation: club.boardExpectation,
+    newExpectation,
+    direction,
+    reasonLine: direction === 'raised' ? RAISED_REASON_LINE
+      : direction === 'lowered' ? LOWERED_REASON_LINE
+      : undefined,
+  }
 }

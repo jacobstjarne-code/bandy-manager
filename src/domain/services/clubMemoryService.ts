@@ -84,11 +84,11 @@ function collectSeasonEvents(game: SaveGame, season: number, managedClubId: stri
 
   // Player narrative logs
   for (const player of game.players) {
-    if (!player.narrativeLog) continue
+    if (!player.diary) continue
     const isOurs = player.clubId === managedClubId ||
       (player.seasonHistory ?? []).some(h => h.clubId === managedClubId && h.season === season)
     if (!isOurs) continue
-    for (const entry of player.narrativeLog) {
+    for (const entry of player.diary) {
       if (entry.season !== season) continue
       const ev = buildEventFromNarrativeLog(player, entry)
       if (ev) events.push(ev)

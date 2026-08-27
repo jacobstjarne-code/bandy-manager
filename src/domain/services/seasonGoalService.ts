@@ -211,7 +211,11 @@ function deriveGoalPhrase(record: SeasonGoalRecord, game: SaveGame): string {
   }
 }
 
-/** Årsbokens målrad (O3/O18 fält 1). All text låst av Opus, kopierad ordagrant. */
+/**
+ * Årsbokens målrad (O3/O18 fält 1). All text låst av Opus, kopierad ordagrant.
+ *
+ * @cites SeasonGoalRecord.outcome
+ */
 export function deriveGoalOutcomeLine(record: SeasonGoalRecord | undefined, game: SaveGame): string {
   if (!record) return 'Du lovade ingenting i somras. Det höll du.'
   const phrase = deriveGoalPhrase(record, game)
@@ -241,6 +245,40 @@ export interface SeasonPersonChange {
  * intakta. `retiredManagedPlayers` är samma lista seasonEndProcessor.ts
  * redan bygger (generateRetirementData-resultat) — ingen ny retirement-logik.
  */
+/**
+ * PÅSTÅENDEKARTAN topScorer-familjens fix (2026-08-25), samma rotorsak:
+ * p.seasonStats.gamesPlayed fortsätter räkna för en köpande klubb efter en
+ * mittsäsongsförsäljning (transferService.ts rör aldrig seasonStats,
+ * statsProcessor.ts uppdaterar alla spelare i alla fixtures). Event-sourcat
+ * härifrån istf — räknar faktiska matchappearances (lineup + en registrerad
+ * rating, dvs. spelaren faktiskt användes) ur game.fixtures direkt, samma
+ * B12-mönster som seasonSummaryService.ts:s computeSeasonRatings.
+ */
+function countSeasonGamesPlayedByPlayer(game: SaveGame): Record<string, number> {
+  const managedClubId = game.managedClubId
+  const clubFixtures = game.fixtures.filter(f =>
+    f.status === FixtureStatus.Completed &&
+    f.season === game.currentSeason &&
+    !f.isCup &&
+    f.roundNumber <= 22 &&
+    (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
+  )
+  const games: Record<string, number> = {}
+  for (const f of clubFixtures) {
+    const isHome = f.homeClubId === managedClubId
+    const lineup = isHome ? f.homeLineup : f.awayLineup
+    const playerIds = new Set<string>([
+      ...(lineup?.startingPlayerIds ?? []),
+      ...(lineup?.benchPlayerIds ?? []),
+    ])
+    for (const pid of playerIds) {
+      if (f.report?.playerRatings?.[pid] === undefined) continue
+      games[pid] = (games[pid] ?? 0) + 1
+    }
+  }
+  return games
+}
+
 export function deriveSeasonPersonChange(
   game: SaveGame,
   retiredManagedPlayers: Array<{ playerId: string; name: string; seasons: number; isLegend: boolean }>,
@@ -250,25 +288,36 @@ export function deriveSeasonPersonChange(
     return { kind: 'retired', playerId: legend.playerId, name: legend.name, seasons: legend.seasons }
   }
 
-  const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+  // Event-sourcad matchräkning (fixad 2026-08-25) — ersätter p.seasonStats.
+  // gamesPlayed. Kandidaterna hämtas ur OFILTRERAD game.players (inte
+  // clubId-filtrerad managedPlayers) så en spelare som slog igenom/etablerade
+  // sig och SEDAN såldes fortfarande hittas — samma mönster som topScorer.
+  const seasonGamesPlayed = countSeasonGamesPlayedByPlayer(game)
 
-  const breakthrough = managedPlayers.find(p =>
+  const breakthrough = game.players.find(p =>
+    (seasonGamesPlayed[p.id] ?? 0) >= 3 &&
     p.promotedFromAcademy === true &&
     p.age < CARRY_AGE_LIMIT &&
     p.isHomegrown === true &&
-    p.seasonStats.gamesPlayed >= 3 &&
     !(p.seasonHistory ?? []).some(h => h.games >= 3)
   )
   if (breakthrough) {
     return { kind: 'breakthrough', playerId: breakthrough.id, name: `${breakthrough.firstName} ${breakthrough.lastName}` }
   }
 
-  const reserveToStarter = managedPlayers
+  // PÅSTÅENDEKARTAN (2026-08-24): saknade den fullhistorik-idempotenskoll
+  // grannen `breakthrough` ovan redan har (!seasonHistory.some(h => h.games >= 3)).
+  // Jämförde bara mot FÖREGÅENDE säsong — en redan etablerad ordinarie som
+  // fick en skadedrabbad säsong (≤8 matcher) och sen återhämtade sig
+  // (≥15 matcher) fick "bragden" påstådd på nytt, trots att den redan hänt.
+  const reserveToStarter = game.players
+    .filter(p => (seasonGamesPlayed[p.id] ?? 0) > 0)
     .map(p => {
       const prevGames = (p.seasonHistory ?? []).at(-1)?.games ?? 0
-      return { p, prevGames, thisGames: p.seasonStats.gamesPlayed }
+      const everEstablished = (p.seasonHistory ?? []).some(h => h.games >= 15)
+      return { p, prevGames, thisGames: seasonGamesPlayed[p.id] ?? 0, everEstablished }
     })
-    .filter(x => x.prevGames <= 8 && x.thisGames >= 15)
+    .filter(x => x.prevGames <= 8 && x.thisGames >= 15 && !x.everEstablished)
     .sort((a, b) => (b.thisGames - b.prevGames) - (a.thisGames - a.prevGames))[0]
   if (reserveToStarter) {
     return { kind: 'establishedStarter', playerId: reserveToStarter.p.id, name: `${reserveToStarter.p.firstName} ${reserveToStarter.p.lastName}` }
@@ -277,7 +326,11 @@ export function deriveSeasonPersonChange(
   return undefined
 }
 
-/** Historikens personrad (O18, text låst). */
+/**
+ * Historikens personrad (O18, text låst).
+ *
+ * @cites SeasonPersonChange.kind, SeasonPersonChange.name, SeasonPersonChange.seasons
+ */
 export function derivePersonChangeLine(change: SeasonPersonChange): string {
   switch (change.kind) {
     case 'retired': return `${change.name} la av efter ${change.seasons} säsonger.`

@@ -2,6 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import type { NotableEventType } from '../data/klackEchoText'
 import { getRivalry } from '../data/rivalries'
+import { safeStandingPosition } from './standingsService'
 
 export interface KlackEchoEvent {
   type: NotableEventType
@@ -38,7 +39,12 @@ export function detectNotableResult(fixture: Fixture, game: SaveGame): KlackEcho
     return { type, resultMatchday: fixture.matchday, initialWeight: 1.0, decayPerRound: 0.5 }
   }
 
-  const oppPos = game.standings.find(s => s.clubId === oppId)?.position ?? 6
+  // LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26): matchSimProcessor
+  // anropar detectNotableResult mot game.standings INNAN omgångens egna
+  // resultat räknats om (roundProcessor.ts, calculateStandings-anropet
+  // kommer senare) — vid omgång 1 (eller precis efter säsongsrollover) är
+  // det en 0-poängstabell, alfabetisk skuggposition.
+  const oppPos = safeStandingPosition(game.standings, oppId) ?? 6
 
   // heavy_home_loss: home + loss by >= 4
   if (isHome && theirScore - myScore >= 4) {

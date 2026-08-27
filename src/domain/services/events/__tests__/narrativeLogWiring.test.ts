@@ -5,7 +5,7 @@ import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { GameEvent } from '../../../entities/GameEvent'
 
 /**
- * U5 (SLUTTEST_KO.md, 2026-08-17) — narrativeLog-skrivväg 1/9 (resolvedEventIds)
+ * U5 (SLUTTEST_KO.md, 2026-08-17) — narrativeBeatLog-skrivväg 1/9 (resolvedEventIds)
  * och 6/9 (sourceCooldowns), båda i eventResolver.ts:s resolveEvent().
  */
 function makeGame() {
@@ -23,14 +23,14 @@ function pendingWith(type: string, effect: unknown): GameEvent {
   }
 }
 
-describe('resolveEvent skriver till narrativeLog (U5, skrivväg 1/9)', () => {
+describe('resolveEvent skriver till narrativeBeatLog (U5, skrivväg 1/9)', () => {
   it('en resolverad event loggas med event.type som semanticKey', () => {
     let game = makeGame()
     game = { ...game, pendingEvents: [pendingWith('communityEvent', { type: 'noOp' })] }
     game = resolveEvent(game, 'test_narrativelog_event', 'go')
 
-    expect(game.narrativeLog).toBeDefined()
-    const entry = game.narrativeLog!.find(e => e.semanticKey === 'communityEvent')
+    expect(game.narrativeBeatLog).toBeDefined()
+    const entry = game.narrativeBeatLog!.find(e => e.semanticKey === 'communityEvent')
     expect(entry).toBeDefined()
     expect(entry!.season).toBe(game.currentSeason)
   })
@@ -41,7 +41,7 @@ describe('resolveEvent skriver till narrativeLog (U5, skrivväg 1/9)', () => {
     game = { ...game, pendingEvents: [event] }
     game = resolveEvent(game, 'test_narrativelog_event', 'go')
 
-    const entry = game.narrativeLog!.find(e => e.semanticKey === 'detOmojligaValet')
+    const entry = game.narrativeBeatLog!.find(e => e.semanticKey === 'detOmojligaValet')
     expect(entry?.systemhandelse).toBe(true)
   })
 
@@ -50,7 +50,7 @@ describe('resolveEvent skriver till narrativeLog (U5, skrivväg 1/9)', () => {
     game = { ...game, pendingEvents: [pendingWith('communityEvent', { type: 'noOp' })] }
     game = resolveEvent(game, 'test_narrativelog_event', 'go')
 
-    const entry = game.narrativeLog!.find(e => e.semanticKey === 'communityEvent')
+    const entry = game.narrativeBeatLog!.find(e => e.semanticKey === 'communityEvent')
     expect(entry?.systemhandelse).toBeUndefined()
   })
 })

@@ -60,7 +60,7 @@ describe('storyline-/arc-frågornas preferIds — tabelltest', () => {
       isDerby: false, isHome: true, isPlayoff: false, isCup: false, isFinal: false,
       gavLigapoang: true, streak: 0, lossStreak: 0, drawStreak: 0,
       opponentPosition: 6, position: 5,
-      trailedAtHalf: false, lateEqualizer: false, youngsterScored: false,
+      trailedAtHalf: false, lateEqualizer: false, youngsterScored: false, midfieldDominance: false,
       rand: () => 0.5,
     }
     for (const tag of TOPIC_TAGS) {

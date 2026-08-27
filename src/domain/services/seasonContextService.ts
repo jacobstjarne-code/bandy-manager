@@ -1,5 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { FixtureStatus } from '../enums'
+import { safeStandingPosition } from './standingsService'
 
 export type SeasonContext = 'firstSeason' | 'relegationFight' | 'topRace' | 'midTable'
 
@@ -13,7 +14,10 @@ export function getSeasonContext(game: SaveGame): SeasonContext {
 
   if (completedLeague < 8) return 'midTable'
 
-  const pos = game.standings.find(s => s.clubId === game.managedClubId)?.position ?? 6
+  // Redan gated av completedLeague<8 ovan, men safeStandingPosition
+  // (PASTAENDEKARTAN, LÄST-FÖRE-INITIERING, 2026-08-26) är den kanoniska
+  // vägen — konsekvent med övriga fixade instanser, inte en ny gissning.
+  const pos = safeStandingPosition(game.standings, game.managedClubId) ?? 6
   if (pos >= 9) return 'relegationFight'
   if (pos <= 3) return 'topRace'
   return 'midTable'

@@ -32,9 +32,9 @@ export function conditionScore(player: Player): number {
   return Math.max(0, (40 - cond) / 10)
 }
 
-/** Injury history component: injury entries in narrativeLog add risk */
+/** Injury history component: injury entries in diary add risk */
 export function injuryScore(player: Player): number {
-  const injuryCount = (player.narrativeLog ?? []).filter(e => e.type === 'injury').length
+  const injuryCount = (player.diary ?? []).filter(e => e.type === 'injury').length
   return injuryCount * 0.5
 }
 

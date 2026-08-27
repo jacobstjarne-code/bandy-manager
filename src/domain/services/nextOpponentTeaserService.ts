@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { getNextManagedFixture } from './portal/triggers/matchTriggers'
 import { getUpcomingAnchor, type UpcomingAnchor } from './calendarLookahead'
+import { safeStandingPosition } from './standingsService'
 
 /**
  * B3 (2026-07-19): Granska slutar i dag i administration ("KLAR — NÄSTA
@@ -104,8 +105,12 @@ export function getNextOpponentTeaserFacts(game: SaveGame): NextOpponentTeaserFa
     matchday: nextFixture.matchday,
     date: nextFixture.date ?? null,
     opponentForm,
-    opponentLeaguePosition: game.standings.find(s => s.clubId === opponentId)?.position ?? null,
-    managedLeaguePosition: game.standings.find(s => s.clubId === managedId)?.position ?? null,
+    // LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26): safeStandingPosition
+    // ger null om klubben ännu inte spelat en ligamatch denna säsong, istf
+    // en alfabetisk skuggposition. .points lämnas orört — 0 poäng vid 0
+    // spelade matcher är sant, inte vilseledande som en gissad rang är.
+    opponentLeaguePosition: safeStandingPosition(game.standings, opponentId),
+    managedLeaguePosition: safeStandingPosition(game.standings, managedId),
     opponentLeaguePoints: game.standings.find(s => s.clubId === opponentId)?.points ?? null,
     managedLeaguePoints: game.standings.find(s => s.clubId === managedId)?.points ?? null,
     opponentUnbeatenStreakAtVenue: unbeatenStreak,

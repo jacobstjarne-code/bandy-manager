@@ -1,5 +1,6 @@
 import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import { InboxItemType } from '../enums'
+import { getCsNeighborContactAmount } from './communityStandingScaling'
 
 export type ReputationTrigger =
   | 'academyNoticed'
@@ -55,8 +56,12 @@ export function checkReputationMilestones(game: SaveGame): ReputationMilestone[]
     }
   }
 
-  // Grannklubb vill samarbeta (CS > 70)
-  if (cs > 70) {
+  // Grannklubb vill samarbeta. Tröskelsvepet (fynd #2, Jacobs dom
+  // 2026-08-26): var `cs > 70` → fast +2 CS, på samma 70/71-linje som fyra
+  // andra system. Golvet flyttat till 55 (samma ankare som diminishing-
+  // returns-kurvan, communityProcessor.ts — inte ett nytt godtyckligt tal),
+  // beloppet skalar 1→3 istf ett fast 2. Se communityStandingScaling.ts.
+  if (cs > 55) {
     const eid = `rep_neighbor_${season}`
     if (!alreadySeen.has(eid)) {
       const neighbors = game.clubs.filter(c => c.id !== game.managedClubId).slice(0, 3)
@@ -66,7 +71,7 @@ export function checkReputationMilestones(game: SaveGame): ReputationMilestone[]
         trigger: 'neighborClubContact',
         title: `🤝 ${neighbor?.name ?? 'Grannklubben'} hör av sig`,
         body: `"Vi ser hur ni jobbar med orten. Kan vi träffas och prata om ett ungdomssamarbete?"\n\nEtt tecken på att ert arbete uppmärksammas.`,
-        effect: { type: 'communityStanding', amount: 2 },
+        effect: { type: 'communityStanding', amount: getCsNeighborContactAmount(cs) },
       })
     }
   }

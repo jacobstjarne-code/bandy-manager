@@ -40,7 +40,26 @@ function expectationSeverity(exp: ClubExpectation): 0 | 1 | 2 | 3 {
   }
 }
 
-/** D029: poäng, inte ett facit i sig — bucket:as till easy/medium/hard nedanför. */
+/**
+ * D029 rev. 2026-08-25 (Jacobs dom, efter H4-mätning 5): Rögle (rep 50,
+ * AvoidBottom, marginal 4,17x) etiketterades "medium" trots uppmätt 100%
+ * avskedsfrekvens — en osanning i klubbvalet, samma klass som 2026-08-17-
+ * fyndet (då gick felet åt andra hållet: Skutskär märktes "hard" trots att
+ * jobbet var lätt). Roten denna gång: marginaltermens gamla bestraffning
+ * (-10 under 4x) var för svag och för smalt satt för att fånga den finansiella
+ * skörhet H4-mätningarna faktiskt bevisat driver avsked (licensnekan,
+ * dominerande orsak för rep <55-klubbar sedan Survive-fixet stängde av den
+ * sportsliga vägen för Heros). Marginalen är inte längre en sidojustering —
+ * den är den bäst belagda kvarvarande signalen för avskedsrisk, se
+ * RAPPORT_SURVIVE_VERIFIERAD_OCH_ROGLE_TIERFRAGAN_2026-08-25.md.
+ *
+ * Löser INTE hela etikett-avskedsrisk-gapet: MidTable-klubbar med sund
+ * marginal men ändå hög uppmätt avskedsfrekvens (Söderfors 85%, Lesjöfors
+ * 90%) drivs av styrelsemodellens boardPatience-formel, som är avstängd
+ * för vidare kalibrering ("sluta bygga i den", Jacobs dom samma dag). Den
+ * här fixen fångar den finansiella klassen felmärkning (Rögle/Skutskär),
+ * inte den boardPatience-drivna.
+ */
 export function computeDifficultyScore(t: DifficultyInput): number {
   let score = t.reputation
 
@@ -48,8 +67,10 @@ export function computeDifficultyScore(t: DifficultyInput): number {
   score -= gap * 12  // styrelsen begär mer än ryktet motiverar → svårare jobb
 
   const margin = t.wageBudget > 0 ? t.finances / t.wageBudget : 0
-  if (margin < 4) score -= 10       // tunn kassabuffert mot lönerna — skört läge
-  else if (margin >= 6) score += 5  // rejäl marginal — stabilt läge
+  if (margin < 4.5) score -= 20       // skör marginal — den signal som faktiskt
+                                       // korrelerar med uppmätt licensnekan
+  else if (margin < 5.5) score -= 5   // svagt tunn — mild bestraffning
+  else if (margin >= 6) score += 5    // rejäl marginal — stabilt läge (oförändrad)
 
   return score
 }

@@ -6,7 +6,6 @@ import { InboxItemType, MatchEventType } from '../enums'
 import { getRivalry } from '../data/rivalries'
 import { mulberry32 } from '../utils/random'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
-import { captainRallyAlreadyEngagedThisSeason } from './captainRallyGuard'
 
 // 4.6 (SLUTTEST_KO.md, 2026-08-17): alla newStorylines.push(...)-anrop nedan
 // sätter matchday: getCurrentLeagueRound(game), INTE den lokala
@@ -58,9 +57,17 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
     nonDerbyActive.length + newArcs.filter(a => a.type !== 'derby_echo').length < 2
 
   // ── hungrig_breakthrough ──
+  // H1-uppföljning (människoupplevelse-audit 7024f8a, 2026-08-24, Jacobs
+  // dom): åldersgränsen höjd 21 → 24. characterPlayerService.ts:s
+  // initCharacterPlayers() kan tilldela 'hungrig' till en spelare upp till
+  // 24 år (samma fil, kandidatfiltret `p.age <= 24`) — en spelare som fick
+  // traiten vid 22-24 kunde ALDRIG utlösa arcen, för alltid (åldern bara
+  // ökar). Två tal om samma sak i två filer, nu samma tal. Bekräftat i
+  // simulering (scripts/h1-arc-eligibility-sim.ts, 20 karriärer): traiten
+  // är den smalare grinden och ska förbli det.
   if (!hasArcType('hungrig_breakthrough') && canAddArc()) {
     const hungrigPlayers = managedPlayers.filter(
-      p => p.trait === 'hungrig' && p.age <= 21 && !activePlayerIds.has(p.id)
+      p => p.trait === 'hungrig' && p.age <= 24 && !activePlayerIds.has(p.id)
     )
     for (const p of hungrigPlayers) {
       // Count consecutive games without a goal where player was in the lineup
@@ -166,50 +173,16 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
     }
   }
 
-  // ── ledare_crisis ── (förlustsvit ≥ 3)
-  // 4.6 (SLUTTEST_KO.md, 2026-08-17): "dubbla kaptensevent" — postAdvanceEvents.ts:s
-  // captainSpeech-event triggar på EXAKT samma villkor (3+ förluster i rad) och
-  // producerar samma captain_rallied_team-storyline. De byggdes oberoende och
-  // kunde båda fyra samma säsong. captainRallyAlreadyEngagedThisSeason är den
-  // delade spärren — se captainRallyGuard.ts.
-  if (!hasArcType('ledare_crisis') && canAddArc() && !captainRallyAlreadyEngagedThisSeason(game)) {
-    const recentResults = completedManagedFixtures
-      .slice(-5)
-      .map(f => {
-        const isHome = f.homeClubId === game.managedClubId
-        const our = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
-        const their = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-        return our < their ? 'loss' : our > their ? 'win' : 'draw'
-      })
-    const lossStreak = (() => {
-      let streak = 0
-      for (let i = recentResults.length - 1; i >= 0; i--) {
-        if (recentResults[i] === 'loss') streak++
-        else break
-      }
-      return streak
-    })()
-
-    if (lossStreak >= 3) {
-      const ledare = managedPlayers.find(
-        p => (p.trait === 'ledare' || p.trait === 'veteran') && !activePlayerIds.has(p.id)
-      )
-      if (ledare) {
-        newArcs.push({
-          id: genId('arc', currentMatchday, `ledare_${ledare.id}`),
-          type: 'ledare_crisis',
-          playerId: ledare.id,
-          subject: `${ledare.firstName[0]}. ${ledare.lastName}`,
-          startedMatchday: currentMatchday,
-          phase: 'building',
-          eventsFired: [],
-          decisionsMade: [],
-          expiresMatchday: currentMatchday + 4,
-          data: { lossStreak },
-        })
-      }
-    }
-  }
+  // ledare_crisis BORTTAGEN (H1-uppföljning, människoupplevelse-audit
+  // 7024f8a, 2026-08-24, Jacobs dom). Triggade på exakt samma villkor som
+  // postAdvanceEvents.ts:s captainSpeech ("3 förluster i rad") men kunde
+  // peka ut en ANNAN spelare än den faktiska kaptenen (trait 'ledare'/
+  // 'veteran', inte captainPlayerId) och räknade in cupmatcher i strecket.
+  // captainSpeech är kanon — give_words boardPatience-kostnad och
+  // take_charges moralkostnad flyttades in i generateCaptainSpeechEvent()
+  // (eventFactories.ts) i samma commit. Se BACKLOG.md "Två läsare, en
+  // sanning" och SLUTTEST_KO.md post 53 för full historik. Migration för
+  // saves med en ledare_crisis-arc mid-flight: saveGameMigration.ts.
 
   // ── lokal_hero ── (mål i just spelat derby)
   if (justCompletedFixture && !hasArcType('lokal_hero') && canAddArc()) {
@@ -239,35 +212,43 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
     }
   }
 
-  // ── contract_drama ── (≥ 2 speculation messages in inbox about same player)
+  // ── contract_drama ── (utgående kontrakt + ett faktiskt bud, inte textmatchning)
+  // H1-uppföljning (människoupplevelse-audit 7024f8a, 2026-08-24, Jacobs dom):
+  // villkoret letade tidigare efter InboxItemType.Media-poster vars body
+  // innehöll substrängen "spekulationer" — ingen generator i kodbasen
+  // (mediaService/journalistService/rumorService/midSeasonEventService)
+  // skrev NÅGONSIN den strängen. `grep -rln spekulationer src/domain` gav
+  // ETT träffställe: denna kontrollen. Bekräftat i simulering (scripts/
+  // h1-arc-eligibility-sim.ts, 20 karriärer × 4 säsonger): 0/20, strukturellt
+  // onåbart, inte bara smalt. "Ett kontraktsdrama som inte kan inträffa är
+  // sämre än inget" — omskrivet mot faktisk state: `game.transferBids`
+  // (transferService.ts, `direction:'incoming'` = ett bud på VÅR spelare,
+  // satt av sellingClubId===managedClubId, se createOutgoingBid-motparten)
+  // och `Player.contractUntilSeason` (samma fält veteran_farewell/
+  // veteran_final_season redan använder för "utgående kontrakt").
   if (!hasArcType('contract_drama') && canAddArc()) {
-    const speculationInbox = game.inbox.filter(
-      i => i.type === InboxItemType.Media && i.body.toLowerCase().includes('spekulationer')
+    const biddedPlayerIds = new Set(
+      game.transferBids
+        .filter(b => b.direction === 'incoming' && b.status === 'pending' && b.sellingClubId === game.managedClubId)
+        .map(b => b.playerId)
     )
-    const playerSpecCount: Record<string, number> = {}
-    for (const item of speculationInbox) {
-      if (item.relatedPlayerId) {
-        playerSpecCount[item.relatedPlayerId] = (playerSpecCount[item.relatedPlayerId] ?? 0) + 1
-      }
-    }
-    for (const [playerId, count] of Object.entries(playerSpecCount)) {
-      if (count >= 2 && !activePlayerIds.has(playerId)) {
-        const p = managedPlayers.find(pp => pp.id === playerId)
-        if (p && p.form > 65) {
-          newArcs.push({
-            id: genId('arc', currentMatchday, `contract_${p.id}`),
-            type: 'contract_drama',
-            playerId: p.id,
-            subject: `${p.firstName[0]}. ${p.lastName}`,
-            startedMatchday: currentMatchday,
-            phase: 'building',
-            eventsFired: [],
-            decisionsMade: [],
-            expiresMatchday: currentMatchday + 6,
-          })
-          break
-        }
-      }
+    for (const p of managedPlayers) {
+      if (!biddedPlayerIds.has(p.id)) continue
+      if (activePlayerIds.has(p.id)) continue
+      if (p.contractUntilSeason !== game.currentSeason) continue
+      if (p.form <= 65) continue
+      newArcs.push({
+        id: genId('arc', currentMatchday, `contract_${p.id}`),
+        type: 'contract_drama',
+        playerId: p.id,
+        subject: `${p.firstName[0]}. ${p.lastName}`,
+        startedMatchday: currentMatchday,
+        phase: 'building',
+        eventsFired: [],
+        decisionsMade: [],
+        expiresMatchday: currentMatchday + 6,
+      })
+      break
     }
   }
 
@@ -316,6 +297,20 @@ export interface ArcProgressResult {
   newStorylines: StorylineEntry[]
 }
 
+/**
+ * PÅSTÅENDEKARTAN batch-03 (2026-08-24), uppdaterad 2026-08-25: denna
+ * funktion grenar per arc-typ, och grenarna har olika sanningshalt.
+ * hungrig_breakthroughs och contract_dramas peak-event REVERIFIERAR nu sitt
+ * triggervillkor innan eventet skapas (mutationVerificationGate-utökning,
+ * Jacobs order) — inte längre utelämnade. derby_echo och veteran_final_season
+ * fick låst text av Jacob 2026-08-25 (SANNINGEN-SAKNAS-fix): derby_echo
+ * släppte kausalpåståendet ("satte tonen") och citerar nu bara det utfall
+ * som faktiskt lagras; veteran_final_seasons dagboksrader väljs på
+ * p.morale/p.seasonForm i stället för matchday-modulo. Ingen gren
+ * utelämnad längre av denna anledning.
+ *
+ * @cites arc.data.derbyResult, completedSinceStart, arc.decisionsMade, p.age, p.careerStats.seasonsPlayed, p.salary, updatedArc.phase, game.transferBids, p.morale, p.seasonForm
+ */
 export function progressArcs(
   game: SaveGame,
   currentMatchday: number,
@@ -391,9 +386,13 @@ export function progressArcs(
             type: 'derby_echo_resolved',
             season: game.currentSeason,
             matchday: getCurrentLeagueRound(game),
+            // Text låst av Jacob 2026-08-25 (SANNINGEN-SAKNAS-fix): den
+            // gamla texten hävdade en kausal effekt ("satte tonen") som var
+            // overifierbar även med ett nytt fält. Säger nu bara att derbyt
+            // spelades och hur det känns, inte vad det orsakade.
             description: derbyResult === 'win'
-              ? `Derbysegern mot ${opponentName} satte tonen för resten av säsongen.`
-              : `Derby-förlusten mot ${opponentName} satt kvar länge i omklädningsrummet.`,
+              ? `Derbysegern mot ${opponentName} pratas det fortfarande om.`
+              : `Derbyförlusten mot ${opponentName} sitter kvar i omklädningsrummet.`,
             displayText: derbyResult === 'win'
               ? `🏆 Derby-triumf mot ${opponentName}`
               : `💔 Derby-förlust mot ${opponentName}`,
@@ -447,8 +446,24 @@ export function progressArcs(
     // ────────────────────────────────────────────────────────────────────────
     if (arc.type === 'hungrig_breakthrough') {
       if (updatedArc.phase === 'peak' && p) {
+        // mutationVerificationGate-utökning (2026-08-25, Jacobs order: "30–60
+        // min, gör den"): villkoret (gamesWithoutGoal >= 3) verifierades bara
+        // vid TRIGGER (building-fasen). Utan denna reverifiering kunde
+        // journalisten fråga "han har inte gjort mål på länge" trots att
+        // spelaren gjort mål i en match MELLAN building och peak (2-4
+        // omgångar senare) — exakt samma stale-claim-mönster som redan
+        // reverifieras nedan i resolving-grenen, flyttat hit och körd innan
+        // peak-eventet skapas.
+        const completedSinceStart = game.fixtures.filter(
+          f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
+               f.status === 'completed' &&
+               (f.matchday ?? 0) > arc.startedMatchday
+        )
+        const alreadyScored = completedSinceStart.some(f =>
+          (f.events ?? []).some(e => e.type === 'goal' && e.playerId === arc.playerId)
+        )
         const eventId = `hungrig_peak_event_${arc.id}`
-        if (!arc.eventsFired.includes(eventId)) {
+        if (!alreadyScored && !arc.eventsFired.includes(eventId)) {
           newEvents.push({
             id: eventId,
             type: 'playerArc',
@@ -722,18 +737,27 @@ export function progressArcs(
       if (p) {
         const diaryId = `vetfinal_diary_${arc.id}_r${Math.floor(currentMatchday / 4)}`
         if (!arc.eventsFired.includes(diaryId) && currentMatchday > 0 && currentMatchday % 4 === 0) {
-          const diaryTexts = [
-            `${name} har börjat prata om vad som kommer sen. Ungdomslaget, kanske.`,
-            `${name} drev sista träningspasset med en intensitet som om kroppen visste något.`,
-            `${name} hälsade på de yngsta efter träningen. Satt länge. Ingen frågade varför.`,
-            `${name} sa lite mer i omklädningsrummet idag. Laget lyssnar.`,
-          ]
-          const textIdx = Math.floor(currentMatchday / 4) % diaryTexts.length
+          // Text låst av Jacob 2026-08-25 (SANNINGEN-SAKNAS-fix): raderna
+          // roterade tidigare på currentMatchday%4 — ingen koppling till
+          // spelarens faktiska tillstånd. Grundas nu i morale/seasonForm.
+          // Prioritetsordning: låg moral (mest angeläget) → hög moral →
+          // stark form → svag form (fallback, matchar alltid). Moral-
+          // trösklarna (<30/≥70) matchar etablerad konvention i kodbasen
+          // (playerVoiceService.ts, eventFactories.ts isHighForm). seasonForm-
+          // trösklarna (≥75/annars svag) saknar motsvarande prejudikat i
+          // koden — satta symmetriskt kring basvärdet 60, flaggat öppet.
+          const diaryText = p.morale < 30
+            ? `${name} satt kvar en stund efter träningen. Ingen frågade varför.`
+            : p.morale >= 70
+              ? `${name} sa lite mer i omklädningsrummet idag. Laget lyssnar.`
+              : p.seasonForm >= 75
+                ? `${name} drev sista passet som om kroppen visste något.`
+                : `${name} har börjat prata om vad som kommer sen. Ungdomslaget, kanske.`
           newInboxItems.push({
             id: `inbox_${diaryId}`,
             type: InboxItemType.Community,
             title: `📓 ${name}`,
-            body: diaryTexts[textIdx],
+            body: diaryText,
             relatedPlayerId: p.id,
             isRead: false,
             date: currentDate,
@@ -807,94 +831,28 @@ export function progressArcs(
       continue
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    if (arc.type === 'ledare_crisis') {
-      if (arc.phase === 'building' && p) {
-        const inboxId = `ledare_building_inbox_${arc.id}`
-        if (!arc.eventsFired.includes(inboxId)) {
-          newInboxItems.push({
-            id: `inbox_${inboxId}`,
-            type: InboxItemType.Community,
-            title: 'Kaptenen har samlat spelarna',
-            body: `${name} tog initiativet efter förlusterna och kallade till spelarmöte. Omklädningsrummet svarar.`,
-            relatedPlayerId: p.id,
-            isRead: false,
-            date: currentDate,
-          })
-          updatedArc = { ...updatedArc, eventsFired: [...updatedArc.eventsFired, inboxId] }
-        }
-      }
-
-      if (updatedArc.phase === 'peak' && p) {
-        const eventId = `ledare_peak_event_${arc.id}`
-        if (!arc.eventsFired.includes(eventId)) {
-          newEvents.push({
-            id: eventId,
-            type: 'playerArc',
-            title: `${name} vill prata`,
-            body: `${name} ber om ett möte. Han har synpunkter om lagets krisperiod och vill ta ett ansvar.`,
-            choices: [
-              {
-                id: 'give_word',
-                label: 'Ge honom ordet',
-                // O2 lager 3 (Jacobs dom 2026-08-24, reviderad samma dag):
-                // var ren teamBoostMorale, zero cost — dominerade take_charge
-                // fullständigt (helar laget, kostar tränaren ingenting).
-                // Behåller samma +10 moral hela laget, kostar nu boardPatience.
-                // Texten nämner INTE styrelsen alls (Jacobs andra dom, efter
-                // den första): konsekvensen syns i mätaren, inte i meningen —
-                // ett steg längre än O12-förbudet mot att säga vad styrelsen
-                // tycker, hit säger texten inte ens att den märker. Text låst
-                // av Jacob, ordagrant.
-                subtitle: 'Du låter honom tala. Laget lyssnar på honom, inte på dig.',
-                effect: {
-                  type: 'multiEffect',
-                  subEffects: JSON.stringify([
-                    { type: 'teamBoostMorale', amount: 10, targetClubId: game.managedClubId },
-                    { type: 'boardPatience', amount: -3 },
-                  ]),
-                },
-              },
-              {
-                id: 'take_charge',
-                label: 'Jag sköter det',
-                subtitle: '💛 Kaptenens moral −5',
-                effect: { type: 'boostMorale', value: -5, targetPlayerId: p.id },
-              },
-            ],
-            sender: { name: name, role: 'Kapten' },
-            relatedPlayerId: p.id,
-            resolved: false,
-          })
-          updatedArc = { ...updatedArc, eventsFired: [...updatedArc.eventsFired, eventId] }
-        }
-      }
-
-      if (updatedArc.phase === 'resolving' && p) {
-        const storylineId = `storyline_${arc.id}_resolved`
-        if (!arc.eventsFired.includes(storylineId)) {
-          newStorylines.push({
-            id: storylineId,
-            type: 'captain_rallied_team',
-            season: game.currentSeason,
-            matchday: getCurrentLeagueRound(game),
-            playerId: p.id,
-            description: `${name} steg upp under krisperioden och samlade laget.`,
-            displayText: `🦁 ${name} samlade laget`,
-            resolved: true,
-          })
-        }
-        continue
-      }
-      updatedArcs.push(updatedArc)
-      continue
-    }
+    // ledare_crisis-progressionen BORTTAGEN i samma pass som triggern
+    // (se kommentaren vid detectArcTriggers()) — captainSpeech (kanon)
+    // hanterar hela kedjan själv, en enda GameEvent i postAdvanceEvents.ts,
+    // ingen egen building/peak/resolving-fas behövs för den.
 
     // ────────────────────────────────────────────────────────────────────────
     if (arc.type === 'contract_drama') {
       if (updatedArc.phase === 'peak' && p) {
+        // mutationVerificationGate-utökning (2026-08-25, Jacobs order, samma
+        // pass som hungrig_breakthrough ovan): triggerns villkor (ett
+        // pending, incoming bud från en annan klubb på spelaren) verifierades
+        // bara vid TRIGGER. Utan reverifiering kunde peak-eventet påstå
+        // "Rykten om intresse utifrån cirkulerar" trots att budet dragits
+        // tillbaka/gått ut/besvarats 2-4 omgångar tidigare — samma
+        // trigger-vs-verifiering-mönster som hungrig_breakthrough. Återanvänder
+        // exakt samma filter som skapade arcen (raden ovan i denna fil).
+        const stillHasPendingBid = game.transferBids.some(
+          b => b.direction === 'incoming' && b.status === 'pending' &&
+               b.sellingClubId === game.managedClubId && b.playerId === arc.playerId
+        )
         const eventId = `contract_peak_event_${arc.id}`
-        if (!arc.eventsFired.includes(eventId)) {
+        if (stillHasPendingBid && !arc.eventsFired.includes(eventId)) {
           newEvents.push({
             id: eventId,
             type: 'playerArc',

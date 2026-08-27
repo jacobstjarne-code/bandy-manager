@@ -15,6 +15,14 @@ interface ScoredFixture {
   lateGoalMinute?: number
 }
 
+/**
+ * w.f.roundNumber används här bara som cupens kategoriska rundidentitet
+ * (1-4, satt en gång i cupService.ts) för att avgöra "är detta finalen" —
+ * inte som global spelordning (matchday används separat för säsongskalendern,
+ * se batch-05.md).
+ *
+ * @cites w.category, w.ourScore, w.theirScore, w.lateGoalMinute, w.f.roundNumber
+ */
 function buildMatchNarrative(w: ScoredFixture, oppName: string, ourName: string): string {
   switch (w.category) {
     case 'late_winner':

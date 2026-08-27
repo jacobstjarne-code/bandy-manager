@@ -53,6 +53,9 @@ function interpolate(text: string, vars: Record<string, string>): string {
   return Object.entries(vars).reduce((t, [k, v]) => t.replace(new RegExp(`\\{${k}\\}`, 'g'), v), text)
 }
 
+/**
+ * @cites game.activeAnniversaries, game.klackEcho.currentWeight, game.journalist.memory, game.bandyLetters, game.boardObjectiveHistory, game.nemesisTracker, game.economicCrisisState, game.lastRivalSaleInfo, game.lastRivalSaleMatchday
+ */
 export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   // A3: gate på spelade ligamatcher (inte currentMatchday) — visa inte efterklang för tidigt
   const playedLeague = game.fixtures.filter(f =>

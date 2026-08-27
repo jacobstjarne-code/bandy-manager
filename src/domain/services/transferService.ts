@@ -23,6 +23,9 @@ interface TransferStoryFlags {
   isHomegrown: boolean
 }
 
+/**
+ * @cites isCaptain, isFanFavorite, isHomegrown, isLegend, hasActiveArc, careerStats.totalGames, careerStats.totalGoals
+ */
 function buildTransferStory(
   player: import('../entities/Player').Player,
   flags: TransferStoryFlags,

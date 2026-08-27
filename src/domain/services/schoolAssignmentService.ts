@@ -5,6 +5,9 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import type { SeasonSummary } from '../entities/SeasonSummary'
 
+/**
+ * @cites SeasonSummary.playoffResult, SeasonSummary.finalPosition, SeasonSummary.season
+ */
 function summarizeSeason(s: SeasonSummary): string {
   if (s.playoffResult === 'champion') return 'säsongen vi blev SM'
   if (s.playoffResult === 'finalist') return 'SM-final-säsongen'
@@ -12,6 +15,9 @@ function summarizeSeason(s: SeasonSummary): string {
   return `säsong ${s.season}`
 }
 
+/**
+ * @cites SeasonSummary.finalPosition, SeasonSummary.playoffResult, SeasonSummary.season, ClubLegend.name, ClubLegend.seasons, ClubLegend.totalGoals
+ */
 export function generateSchoolAssignmentEvent(game: SaveGame, nextMatchday: number): GameEvent | null {
   // Once per season, trigger around matchday 10-12
   if ((game.schoolAssignmentThisSeason ?? 0) >= game.currentSeason) return null

@@ -141,6 +141,9 @@ function avbrytaChoice(season: number): EventChoice {
 
 // ── Förankrings-decisions ────────────────────────────────────────────────
 
+/**
+ * @cites trial.support
+ */
 function buildForankringEvent(
   game: SaveGame,
   currentRound: number,

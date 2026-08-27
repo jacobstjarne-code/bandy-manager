@@ -94,6 +94,7 @@ export function generateYouthTeam(
       seasonGoals: 0,
       seasonAssists: 0,
       readyForPromotion: false,
+      roundsReadyForPromotion: 0,
     })
   }
 
@@ -135,6 +136,7 @@ export function carryOverYouthTeam(
       seasonGoals: 0,
       seasonAssists: 0,
       readyForPromotion: false,
+      roundsReadyForPromotion: 0,
       schoolConflict: (p.age + 1) <= 17 ? rand() < 0.40 : false,
     }))
     .filter(p => p.age < 20)  // 20+ must leave (aged out)
@@ -162,6 +164,7 @@ export function carryOverYouthTeam(
       seasonGoals: 0,
       seasonAssists: 0,
       readyForPromotion: false,
+      roundsReadyForPromotion: 0,
     })
   }
 
@@ -186,12 +189,21 @@ export function simulateYouthMatch(
   rand: () => number,
   round: number,
 ): YouthSimResult {
+  // M3 (audit 5c9a7a8, 2026-08-24): spelare kallade till juniorlandslaget
+  // (availabilityUntilRound, satt av event_district_callup_-resolvern) är
+  // inte med i DENNA match — varken i lagstyrkan, som målskytt/bästa
+  // spelare, eller i matchens form-/utvecklingspåverkan nedan. De var inte
+  // där. Faller tillbaka till hela truppen om alla råkar vara borta
+  // samtidigt (aldrig i praktiken, max 1-2 spelare kallas upp åt gången).
+  const availablePlayers = team.players.filter(p => !p.availabilityUntilRound || p.availabilityUntilRound < round)
+  const squadForMatch = availablePlayers.length > 0 ? availablePlayers : team.players
+
   // Team strength affects win probability
-  const avgCA = team.players.length > 0
-    ? team.players.reduce((s, p) => s + p.currentAbility, 0) / team.players.length
+  const avgCA = squadForMatch.length > 0
+    ? squadForMatch.reduce((s, p) => s + p.currentAbility, 0) / squadForMatch.length
     : 15
-  const avgConf = team.players.length > 0
-    ? team.players.reduce((s, p) => s + p.confidence, 0) / team.players.length
+  const avgConf = squadForMatch.length > 0
+    ? squadForMatch.reduce((s, p) => s + p.confidence, 0) / squadForMatch.length
     : 50
 
   const levelBonus = academyLevel === 'elite' ? 8 : academyLevel === 'developing' ? 4 : 0
@@ -218,8 +230,9 @@ export function simulateYouthMatch(
   const won = goalsFor > goalsAgainst
   const drew = goalsFor === goalsAgainst
 
-  // Pick scorers from forwards + midfielders
-  const attackers = team.players.filter(p =>
+  // Pick scorers from forwards + midfielders — squadForMatch only, en
+  // spelare som är borta med landslaget kan inte göra mål i den här matchen.
+  const attackers = squadForMatch.filter(p =>
     p.position === PlayerPosition.Forward || p.position === PlayerPosition.Midfielder
   )
   const scorers: string[] = []
@@ -228,8 +241,8 @@ export function simulateYouthMatch(
     scorers.push(scorer.firstName)
   }
 
-  const bestPlayerIdx = Math.floor(rand() * team.players.length)
-  const bestPlayer = team.players[bestPlayerIdx]?.firstName
+  const bestPlayerIdx = Math.floor(rand() * squadForMatch.length)
+  const bestPlayer = squadForMatch[bestPlayerIdx]?.firstName
 
   const opponent = YOUTH_OPPONENTS[Math.floor(rand() * YOUTH_OPPONENTS.length)]
 
@@ -242,9 +255,12 @@ export function simulateYouthMatch(
     bestPlayer,
   }
 
-  // Update player confidence based on result
+  // Update player confidence based on result — hoppar över spelare som var
+  // borta med landslaget den här omgången (availabilityUntilRound), de
+  // spelade inte matchen och ska varken vinna eller förlora på dess utfall.
   const confidenceDelta = won ? 2 : drew ? 0 : -1
   const updatedPlayers = team.players.map((p) => {
+    if (p.availabilityUntilRound && p.availabilityUntilRound >= round) return p
     const goalCount = scorers.filter(n => n === p.firstName).length
     const newGoals = p.seasonGoals + goalCount
     const newConf = clamp(p.confidence + confidenceDelta + (goalCount > 0 ? 2 : 0), 10, 100)
@@ -254,6 +270,10 @@ export function simulateYouthMatch(
     const newCA = clamp(p.currentAbility + devGain, p.currentAbility, p.potentialAbility * 0.95)
 
     const readyForPromotion = newCA >= 25 && newConf >= 50
+    // PÅSTÅENDEKARTAN SANNINGEN-SAKNAS-fix (2026-08-25, Jacobs dom: "bygg
+    // räknaren"): tickar en P19-omgång i taget (samma kadens som denna
+    // funktion anropas i), nollställs om readyForPromotion faller tillbaka.
+    const roundsReadyForPromotion = readyForPromotion ? (p.roundsReadyForPromotion ?? 0) + 1 : 0
 
     return {
       ...p,
@@ -261,6 +281,7 @@ export function simulateYouthMatch(
       currentAbility: Math.round(newCA * 10) / 10,
       seasonGoals: newGoals,
       readyForPromotion,
+      roundsReadyForPromotion,
     }
   })
 

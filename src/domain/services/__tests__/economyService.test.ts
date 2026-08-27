@@ -3,6 +3,8 @@ import {
   applyFinanceChange,
   appendFinanceLog,
   calcRoundIncome,
+  calcAttendance,
+  computeAttendanceRate,
   FINANCE_LOG_MAX,
 } from '../economyService'
 import type { FinanceEntry } from '../economyService'
@@ -383,6 +385,80 @@ describe('calcRoundIncome — match revenue', () => {
   })
 })
 
+// ── Group 5b: computeAttendanceRate / communityStanding (2026-08-25) ─────────
+// Jacobs dom (RAPPORT_MATCHINTAKT_VIKT_OCH_COMMUNITYSTANDING_2026-08-25.md):
+// "en klubb som betyder något för orten fyller läktaren" — communityStanding
+// ska vara den DOMINERANDE termen (0,45), större än fanMood (0,25), eftersom
+// fanMood strukturellt inte kan rädda en förlorande Survive-klubb men
+// communityStanding är ortogonal mot resultat.
+
+describe('computeAttendanceRate — communityStanding är nu den dominerande termen', () => {
+  it('hög communityStanding ger högre rate än låg, vid samma fanMood', () => {
+    const low = computeAttendanceRate(30, 20, 8)
+    const high = computeAttendanceRate(30, 90, 8)
+    expect(high).toBeGreaterThan(low)
+  })
+
+  it('communityStanding väger MER än fanMood (0,45 mot 0,25) — samma delta i endera ger olika utslag', () => {
+    const base = computeAttendanceRate(50, 50, 8)
+    const moodUp = computeAttendanceRate(90, 50, 8) - base
+    const standingUp = computeAttendanceRate(50, 90, 8) - base
+    expect(standingUp).toBeGreaterThan(moodUp)
+  })
+
+  it('golvet (fanMood=0, communityStanding=0) är 0,20 — ignorera orten kostar mer än den gamla neutrala baslinjen (0,35)', () => {
+    expect(computeAttendanceRate(0, 0, 8)).toBeCloseTo(0.20, 5)
+  })
+
+  it('taket är 0,95 — klampat vid maximal fanMood+communityStanding+topp-3-bonus', () => {
+    expect(computeAttendanceRate(100, 100, 1)).toBe(0.95)
+  })
+
+  it('moodWeight (neutral cupfinalhelg) dämpar BÅDE fanMood- och communityStanding-termen', () => {
+    const full = computeAttendanceRate(80, 80, 8, 1.0)
+    const halved = computeAttendanceRate(80, 80, 8, 0.5)
+    expect(halved).toBeLessThan(full)
+    expect(halved).toBeCloseTo(0.20 + (0.80 * 0.25 + 0.80 * 0.45) * 0.5, 5)
+  })
+})
+
+describe('calcRoundIncome — communityStanding driver för matchRevenue', () => {
+  it('en Survive-liknande klubb (lågt rykte, dåligt fanMood) får högre matchRevenue vid hög communityStanding än vid låg', () => {
+    const base = {
+      club: makeClub({ reputation: 45 }), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 30, isHomeMatch: true, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: makeStanding({ position: 11 }), rand: deterministicRand,
+    }
+    const lowStanding = calcRoundIncome({ ...base, communityStanding: 20 })
+    const highStanding = calcRoundIncome({ ...base, communityStanding: 90 })
+    expect(highStanding.matchRevenue).toBeGreaterThan(lowStanding.matchRevenue)
+  })
+})
+
+describe('calcAttendance — communityStanding driver för den synliga publiksiffran', () => {
+  it('hög communityStanding ger fler åskådare än låg, allt annat lika', () => {
+    const base = {
+      club: { reputation: 45 }, fanMood: 30, position: 11,
+      isKnockout: false, isCup: false, isDerby: false,
+    }
+    const low = calcAttendance({ ...base, communityStanding: 20 })
+    const high = calcAttendance({ ...base, communityStanding: 90 })
+    expect(high).toBeGreaterThan(low)
+  })
+
+  it('saknad communityStanding defaultar till 50 — inte till 0 eller krasch', () => {
+    const withDefault = calcAttendance({
+      club: { reputation: 45 }, fanMood: 30, position: 11,
+      isKnockout: false, isCup: false, isDerby: false,
+    })
+    const explicit50 = calcAttendance({
+      club: { reputation: 45 }, fanMood: 30, position: 11, communityStanding: 50,
+      isKnockout: false, isCup: false, isDerby: false,
+    })
+    expect(withDefault).toBe(explicit50)
+  })
+})
+
 // ── Group 6: calcRoundIncome — community match income ────────────────────────
 
 describe('calcRoundIncome — communityMatchIncome (per home match)', () => {
@@ -408,7 +484,7 @@ describe('calcRoundIncome — communityMatchIncome (per home match)', () => {
     expect(result.communityMatchIncome).toBe(0)
   })
 
-  it('kiosk basic gives positive net income per home match', () => {
+  it('kiosk basic gives a number for net income per home match', () => {
     const ca: CommunityActivities = {
       kiosk: 'basic', lottery: 'none', bandyplay: false,
       functionaries: false, julmarknad: false,
@@ -418,8 +494,9 @@ describe('calcRoundIncome — communityMatchIncome (per home match)', () => {
       fanMood: 50, isHomeMatch: true, matchIsKnockout: false, matchIsCup: false,
       matchHasRivalry: false, standing: null, rand: deterministicRand,
     })
-    // kiosk basic gross - running cost. At fanMood 50: 1250*1.0 - 1500 = -250 (net negative due to costs)
-    // This is the real game logic — basic kiosk can be net negative at low fanMood
+    // Åskådarekonomin kandidat 2 (2026-08-27): kiosk basic kan vara netto-
+    // negativt vid låg publik — det är avsett (golvet är en ANDEL av
+    // driftskostnaden, inte en garanti om vinst).
     expect(typeof result.communityMatchIncome).toBe('number')
   })
 
@@ -465,8 +542,96 @@ describe('calcRoundIncome — communityMatchIncome (per home match)', () => {
     const withVip = calcRoundIncome({
       ...base, communityActivities: { kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false, vipTent: true },
     })
-    // VIP-tält: 1250 + 0.5*2500 (rand=0.5) - 2000 running = 500 net
     expect(withVip.communityMatchIncome).toBeGreaterThan(without.communityMatchIncome)
+  })
+})
+
+// ── Åskådarekonomin kandidat 2 (2026-08-27) — sqrt(publik) + kostnadsrelativt golv ──
+// RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md. Golvet (50% av driftskostnaden)
+// och sqrt-skalningen är de två delarna som skiljer denna formel från den kastade
+// kandidat 1 (linjär kr/huvud, exploderade 27-34x för starka klubbar).
+describe('calcRoundIncome — Åskådarekonomin kandidat 2 (sqrt + golv)', () => {
+  const base = {
+    club: makeClub(), players: [], sponsors: [],
+    fanMood: 50, isHomeMatch: true, matchIsKnockout: false, matchIsCup: false,
+    matchHasRivalry: false, standing: null, rand: deterministicRand,
+  }
+
+  it('golvet slår in vid mycket låg publik (Heros-liknande) — kiosk upgraded ger exakt 50% av driftskostnaden', () => {
+    const result = calcRoundIncome({
+      ...base,
+      matchAttendance: 1, // sqrt(1)=1, 150*1=150 << golvet 0.5*2500=1250
+      communityActivities: { kiosk: 'upgraded', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false },
+    })
+    // golv 1250 - driftskostnad 2500 = -1250 netto
+    expect(result.communityMatchIncome).toBe(-1250)
+  })
+
+  it('vid hög publik dominerar sqrt-termen över golvet, inte linjärt mot publiken', () => {
+    const low = calcRoundIncome({
+      ...base, matchAttendance: 200,
+      communityActivities: { kiosk: 'upgraded', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false },
+    })
+    const high = calcRoundIncome({
+      ...base, matchAttendance: 1800, // 9x publiken
+      communityActivities: { kiosk: 'upgraded', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false },
+    })
+    // sqrt(1800)/sqrt(200) = 3x, inte 9x — bruttot skalar med kvadratroten
+    expect(high.communityMatchIncome).toBeGreaterThan(low.communityMatchIncome)
+    const lowGross = low.communityMatchIncome + 2500
+    const highGross = high.communityMatchIncome + 2500
+    expect(highGross / lowGross).toBeLessThan(9)
+    expect(highGross / lowGross).toBeGreaterThan(2)
+  })
+
+  it('vipTent-golvet slår in separat från kiosk-golvet vid låg publik', () => {
+    const result = calcRoundIncome({
+      ...base, matchAttendance: 1,
+      communityActivities: { kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false, vipTent: true },
+    })
+    // golv 0.5*2000=1000 - driftskostnad 2000 = -1000 netto
+    expect(result.communityMatchIncome).toBe(-1000)
+  })
+
+  it('functionaries och bandyplay är oförändrade av sqrt/golv-ändringen (flat tillägg)', () => {
+    const without = calcRoundIncome({
+      ...base, matchAttendance: 300,
+      communityActivities: { kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false },
+    })
+    const withFunc = calcRoundIncome({
+      ...base, matchAttendance: 300,
+      communityActivities: { kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: true, julmarknad: false },
+    })
+    expect(withFunc.communityMatchIncome - without.communityMatchIncome).toBe(1000)
+  })
+
+  it('utan matchAttendance faller formeln tillbaka på capacity × attendanceRate (ingen krasch, inget NaN)', () => {
+    const result = calcRoundIncome({
+      ...base,
+      communityActivities: { kiosk: 'upgraded', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false, vipTent: true },
+    })
+    expect(Number.isFinite(result.communityMatchIncome)).toBe(true)
+  })
+
+  it('byggträdets kiosk-nod (builtNodeIds) höjer kiosk-sqrt-intäkten — löftet "Försäljningsintäkter" nu wirat', () => {
+    const withoutNode = calcRoundIncome({
+      ...base, matchAttendance: 900,
+      communityActivities: { kiosk: 'upgraded', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false },
+    })
+    const withNode = calcRoundIncome({
+      ...base, matchAttendance: 900, builtNodeIds: ['kiosk'],
+      communityActivities: { kiosk: 'upgraded', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false },
+    })
+    expect(withNode.communityMatchIncome).toBeGreaterThan(withoutNode.communityMatchIncome)
+  })
+
+  it('golvet får INTE kiosk-nodens bonus (golvet är kostnadsrelativt, inte en försäljningssiffra)', () => {
+    const result = calcRoundIncome({
+      ...base, matchAttendance: 1, builtNodeIds: ['kiosk'],
+      communityActivities: { kiosk: 'upgraded', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false },
+    })
+    // sqrt(1)=1, 150*1.25=187.5 << golvet 0.5*2500=1250 — golvet vinner oavsett bonus
+    expect(result.communityMatchIncome).toBe(-1250)
   })
 })
 

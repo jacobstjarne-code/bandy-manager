@@ -25,6 +25,11 @@ interface PressQuestion {
   // ligapoäng-gates saknades helt, bara requireHome fanns.
   requireAway?: boolean
   requireLeaguePoints?: boolean   // matchen gav faktiskt ligapoäng (liga, inte cup/slutspel)
+  // PÅSTÅENDEKARTAN (2026-08-24): "Ni dominerade mittfältet" saknade helt en
+  // gate — ställdes så fort contextKey==='win', oavsett skotten. fixture.report
+  // .shotsHome/shotsAway/onTargetHome/onTargetAway ligger redan nedskrivna
+  // (samma fält GranskaShotmap.tsx läser), bara aldrig kopplade hit.
+  requireMidfieldDominance?: boolean
 }
 
 const QUESTIONS: Record<string, PressQuestion[]> = {
@@ -52,7 +57,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Hur håller ni den här formen uppe?', preferIds: ['w_c4', 'w_d4', 'cl03'], minRound: 3 },
     { text: 'Ni vände underläge till seger. Vad hände i pausen?', preferIds: ['w_p5', 'w_h5', 'w_d5'], requireTrailedAtHalf: true },
     { text: 'Två poäng till. Kan ni utmana toppen nu?', preferIds: ['w_c6', 'w_h6', 'cl08'], minRound: 5 },
-    { text: 'Ni dominerade mittfältet idag. Är det er styrka just nu?', preferIds: ['w_c7', 'w_h7', 'bw_d2'] },
+    { text: 'Ni dominerade mittfältet idag. Är det er styrka just nu?', preferIds: ['w_c7', 'w_h7', 'bw_d2'], requireMidfieldDominance: true },
     { text: 'Hur var stämningen på {arenaName} idag?', preferIds: ['w_p3', 'bw_p7'], minRound: 3, requireHome: true },
     { text: 'Kaptenen {captainName} — hur ser han på insatsen?', preferIds: ['w_p2', 'w_h3'], minRound: 3 },
   ],
@@ -344,6 +349,7 @@ export interface PressContext {
   trailedAtHalf: boolean
   lateEqualizer: boolean
   youngsterScored: boolean
+  midfieldDominance: boolean
   rand: () => number
 }
 
@@ -445,10 +451,17 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
     ? (fixture.report.shotsHome ?? 0) + (fixture.report.shotsAway ?? 0)
     : undefined
 
+  // PÅSTÅENDEKARTAN (2026-08-24): samma tröskel (>4) som matchCore.ts:s
+  // getMatchSituation använder för 'dominating_home'/'dominating_away' —
+  // "dominans" ska betyda samma sak här som i själva matchmotorn.
+  const myShots = fixture.report ? (isHome ? fixture.report.shotsHome : fixture.report.shotsAway) : undefined
+  const theirShots = fixture.report ? (isHome ? fixture.report.shotsAway : fixture.report.shotsHome) : undefined
+  const midfieldDominance = myShots !== undefined && theirShots !== undefined && (myShots - theirShots) > 4
+
   return {
     won, lost, draw, margin, isDerby, isHome, isPlayoff, isCup, isFinal, gavLigapoang,
     streak, lossStreak, drawStreak, opponentPosition, position,
-    temperature, totalShots, trailedAtHalf, lateEqualizer, youngsterScored, rand,
+    temperature, totalShots, trailedAtHalf, lateEqualizer, youngsterScored, midfieldDominance, rand,
   }
 }
 
@@ -655,6 +668,16 @@ function findFollowUpQuestion(journalist: import('../entities/SaveGame').Journal
 
 // ── generatePressConference ────────────────────────────────────────────────────
 
+/**
+ * Rättad citatdeklaration (2026-08-25): den ursprungliga taggen nämnde
+ * deriveUtfall/shotsHome/shotsAway direkt, men den här funktionen läser dem
+ * INTE själv sedan U2-fixet (2026-08-17) — den läser `ctx` från
+ * buildPressContext(), som äger won/lost/isDerby/margin/midfieldDominance.
+ * roundNumber läses bara som en minRound-gate (filtrerar vilka frågor som
+ * är tillåtna), aldrig för ordning — deklarerad öppet ändå.
+ *
+ * @cites buildPressContext, roundNumber, game.scandalHistory, game.narrativeBeatLog, game.activeArcs
+ */
 export function generatePressConference(
   fixture: Fixture,
   game: SaveGame,
@@ -688,7 +711,8 @@ export function generatePressConference(
     (!q.requireDrawStreak3 || ctx.drawStreak >= 3) &&
     (!q.requireHome || ctx.isHome) &&
     (!q.requireAway || !ctx.isHome) &&
-    (!q.requireLeaguePoints || ctx.gavLigapoang)
+    (!q.requireLeaguePoints || ctx.gavLigapoang) &&
+    (!q.requireMidfieldDominance || ctx.midfieldDominance)
   )
   const questionPool = questions.length > 0 ? questions : allQuestions
 
@@ -725,16 +749,16 @@ export function generatePressConference(
   // fick tidigare rulla om och om igen (samma kontraktsfråga sex raka
   // matcher, kaptenfrågan ~åtta gånger) eftersom ENDA spärren var en
   // slumpchans per match — ingen räkning av hur många gånger DEN HÄR
-  // storylinen redan fått sin fråga. storylineBudgetOk läser narrativeLog
+  // storylinen redan fått sin fråga. storylineBudgetOk läser narrativeBeatLog
   // (Jacobs order: "den byggdes för detta") — max en huvudfråga plus en
   // uppföljning per storyline-INSTANS (story.id, inte bara story.type — två
   // olika spelares went_fulltime_pro-bågar samma säsong ska räknas separat).
   // Callern (matchSimProcessor.ts → roundProcessor.ts) läser event.storylinePressKey
-  // och skriver den faktiska narrativeLog-posten när eventet genereras, inte
+  // och skriver den faktiska narrativeBeatLog-posten när eventet genereras, inte
   // här — den här funktionen är en ren fråga, ingen mutation.
   function storylineBudgetOk(story: { id: string }): boolean {
     const key = `press_storyline_${story.id}`
-    const usedThisSeason = (game.narrativeLog ?? []).filter(
+    const usedThisSeason = (game.narrativeBeatLog ?? []).filter(
       e => e.semanticKey === key && e.season === game.currentSeason,
     ).length
     return usedThisSeason < 2

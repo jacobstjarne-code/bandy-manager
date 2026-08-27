@@ -1,5 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { DemandCategory, PendingDemand } from '../entities/Demand'
+import { safeStandingPosition } from './standingsService'
 import {
   PATRON_PLAYTIME_DEMANDS,
   DEMAND_LEAGUE_POSITION_LINES,
@@ -104,10 +105,14 @@ export function isDemandFulfilled(game: SaveGame, demand: PendingDemand, managed
       return gamesSinceCreated >= 3
     }
     case 'league_position': {
-      const standing = game.standings?.find(s => s.clubId === managedClubId)
-      if (!standing) return false
+      // LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26): safeStandingPosition
+      // ger null om klubben ännu inte spelat en ligamatch denna säsong —
+      // ett krav ska inte kunna räknas som uppfyllt av en alfabetisk
+      // skuggposition i en 0-poängstabell.
+      const position = safeStandingPosition(game.standings ?? [], managedClubId)
+      if (position === null) return false
       const totalTeams = game.standings?.length ?? 12
-      return standing.position <= Math.ceil(totalTeams / 2)
+      return position <= Math.ceil(totalTeams / 2)
     }
     case 'youth_focus': {
       return game.academyLevel !== 'basic' || game.communityActivities?.bandySchool === true

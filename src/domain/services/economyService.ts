@@ -1,9 +1,14 @@
-import type { CommunityActivities, Sponsor, StandingRow } from '../entities/SaveGame'
+import type { CommunityActivities, Sponsor, StandingRow, SaveGame } from '../entities/SaveGame'
 import type { Club } from '../entities/Club'
 import type { Player } from '../entities/Player'
+import type { Fixture } from '../entities/Fixture'
 import { getActiveVolunteerBonus } from './volunteerService'
 import type { Volunteer } from './volunteerService'
 import { CUP_FINAL_VENUE } from '../data/specialDateStrings'
+import { getRivalry } from '../data/rivalries'
+import { getJournalistAttendanceModifier } from './journalistVisibilityService'
+import { FixtureStatus } from '../enums'
+import { safeStandingPosition } from './standingsService'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
 
@@ -106,6 +111,47 @@ export function deriveKassaHistory(log: FinanceEntry[], currentBalance: number):
 // ── Weather attendance (wirar in WeatherEffects.attendanceModifier — SYSTEMKARTA fynd 1) ──
 
 /**
+ * Publikandelen (0-1), delad av calcRoundIncome (intäkt) och calcAttendance
+ * (den siffra spelaren faktiskt ser) — var tidigare duplicerad, oberoende,
+ * identisk formel på två ställen (samma klass av risk som "två licenssystem",
+ * RAPPORT_LICENSNEKAN_MEKANIK_OCH_RADDNINGSBARHET_2026-08-25.md).
+ *
+ * communityStanding-termen (Jacobs dom 2026-08-25, RAPPORT_MATCHINTAKT_VIKT_
+ * OCH_COMMUNITYSTANDING_2026-08-25.md): "en klubb som betyder något för orten
+ * fyller läktaren". Tidigare läste attendanceRate BARA fanMood (matchhumör,
+ * strukturellt lågt för en förlorande klubb) + rykte — communityStanding
+ * skickades in men användes ALDRIG i matchintäktskedjan, bara i kommunbidraget.
+ * Ny vikt gör communityStanding till den DOMINERANDE termen (0,45 mot
+ * fanMoods 0,25) medvetet: fanMood kan aldrig rädda en Survive-klubb (det
+ * FÖRUTSÄTTER goda resultat), communityStanding är ortogonal mot resultat
+ * och exakt den spak Survive-kontraktet ska ge spelaren. Golvet sänkt
+ * (0,35→0,20): att ignorera orten kostar nu mer än att bara missa den gamla
+ * neutrala baslinjen. moodWeight (calcAttendances neutrala-cupfinal-dämpning)
+ * appliceras på BÅDA fanMood- och communityStanding-termerna av samma skäl
+ * som redan gällde fanMood: på en neutral plan är ingen "hemma", varken i
+ * matchhumör eller lokal lojalitet.
+ */
+const ATTENDANCE_FLOOR = 0.20
+const ATTENDANCE_MOOD_WEIGHT = 0.25
+const ATTENDANCE_STANDING_WEIGHT = 0.45
+const ATTENDANCE_CAP = 0.95
+
+export function computeAttendanceRate(
+  fanMood: number,
+  communityStanding: number,
+  position: number,
+  moodWeight = 1,
+): number {
+  return Math.min(
+    ATTENDANCE_CAP,
+    ATTENDANCE_FLOOR
+      + (fanMood / 100) * ATTENDANCE_MOOD_WEIGHT * moodWeight
+      + (communityStanding / 100) * ATTENDANCE_STANDING_WEIGHT * moodWeight
+      + (position <= 3 ? 0.08 * moodWeight : 0),
+  )
+}
+
+/**
  * Effektiv väderpublikfaktor. weatherService beräknar attendanceModifier per match
  * (snöstorm 0.60 … klart 1.0) men den konsumerades aldrig före 2026-06-12.
  * - Inomhusarena: alltid 1.0 (vädret når inte läktaren).
@@ -160,6 +206,20 @@ export interface CalcRoundIncomeParams {
   journalistAttendanceModifier?: number  // from journalistVisibilityService (0.95 / 1.0 / 1.10)
   weatherAttendanceModifier?: number     // from MatchWeather.effects via effectiveWeatherAttendance (1.0 om frånvarande)
   builtFacilityUpkeepCosts?: number[]    // O5 kraft 2: upkeepCost för varje byggd nod (FacilityState.builtNodeIds → FACILITY_NODE_DEFS)
+  /** Påståendekartan, byggnodernas löften (2026-08-27): FacilityState.builtNodeIds
+   *  rakt av, så kiosk-noden kan höja kioskens sqrt-rate och stralkastare-noden
+   *  kan höja sponsorintäkten — de två löften i facilityNodes.ts som var
+   *  BILLIGA att wira mot en redan existerande mekanism (se RAPPORT_
+   *  BYGGNODLOFTEN_2026-08-27.md för alla nio nodernas genomgång). */
+  builtNodeIds?: string[]
+  /** Åskådarekonomin v2 (2026-08-27): den FAKTISKA publiksiffran för
+   *  hemmamatchen, läst direkt från `Fixture.attendance` (satt av
+   *  matchSimProcessor.ts:s calcAttendance()-anrop — SAMMA tal, inte en ny
+   *  beräkning). Saknas för display-estimat-anropare (EkonomiTab/
+   *  EkonomiSecondary) som inte har en simulerad fixture än — dessa faller
+   *  tillbaka till den lokala capacity×attendanceRate-uppskattningen (samma
+   *  tal matchRevenue redan använder). */
+  matchAttendance?: number
 }
 
 // O5 kraft 1 — löneinflation med rykte (Jacobs dom 2026-08-17,
@@ -170,6 +230,57 @@ export interface CalcRoundIncomeParams {
 // (oförändrat golv), rep 90 ≈ 1.4x, rep 45 ≈ 0.95x.
 export function reputationSalaryMultiplier(reputation: number): number {
   return 0.5 + (reputation / 100) * 1.0
+}
+
+export interface RoundIncomeParamsForNextFixture {
+  isHomeMatch: boolean
+  matchIsKnockout: boolean
+  matchIsCup: boolean
+  matchHasRivalry: boolean
+  communityStanding: number | undefined
+  journalistAttendanceModifier: number
+  weatherAttendanceModifier: number
+  isFirstRound: boolean
+}
+
+/**
+ * Preview-mönstret, "samma funktion, samma indata" (2026-08-26,
+ * RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md, andra bekräftade instansen).
+ * `EkonomiTab.tsx` och `EkonomiSecondary.tsx` anropade `calcRoundIncome()`
+ * med `isHomeMatch: true` HÅRDKODAT — oavsett om klubbens nästa faktiska
+ * match är hemma eller borta — och utelämnade communityStanding/väder/
+ * journalist-modifierarna helt. Spelaren såg en "veckointäkt" som
+ * beskrev en påhittad genomsnittsmatch, inte den verkliga kommande
+ * omgången. Denna funktion härleder samma parametrar `economyProcessor.ts`
+ * (den riktiga mutationen) skulle använt för klubbens NÄSTA schemalagda
+ * match — samma sanning, en delad väg dit.
+ *
+ * Om ingen match är schemalagd (säsongsuppehåll, mellan säsonger):
+ * `isHomeMatch: false` är korrekt — "ingen match denna omgång" är ett
+ * riktigt svar, inte ett saknat värde att gissa bort.
+ */
+export function buildRoundIncomeParamsForNextFixture(game: SaveGame): RoundIncomeParamsForNextFixture {
+  const managedId = game.managedClubId
+  const club = game.clubs.find(c => c.id === managedId)
+  const nextFixture = game.fixtures
+    .filter(f => f.status === FixtureStatus.Scheduled && (f.homeClubId === managedId || f.awayClubId === managedId))
+    .sort((a, b) => (a.matchday ?? 0) - (b.matchday ?? 0))[0]
+  const rivalry = nextFixture ? getRivalry(nextFixture.homeClubId, nextFixture.awayClubId) : null
+
+  return {
+    isHomeMatch: nextFixture?.homeClubId === managedId,
+    matchIsKnockout: !!nextFixture?.isKnockout,
+    matchIsCup: !!nextFixture?.isCup,
+    matchHasRivalry: !!rivalry,
+    communityStanding: game.communityStanding,
+    journalistAttendanceModifier: getJournalistAttendanceModifier(game),
+    weatherAttendanceModifier: effectiveWeatherAttendance(
+      game.matchWeathers?.find(mw => mw.fixtureId === nextFixture?.id)?.effects.attendanceModifier,
+      club?.hasIndoorArena,
+      Boolean(nextFixture?.isFinaldag || nextFixture?.isAnnandagen || (nextFixture?.matchday ?? 0) > 22),
+    ),
+    isFirstRound: nextFixture?.matchday === 1,
+  }
 }
 
 /**
@@ -184,12 +295,54 @@ export function reputationSalaryMultiplier(reputation: number): number {
  * bandyplay appears in both: per-match deltagaravgifter + per-round bandyskola-drift.
  * This matches the existing roundProcessor behaviour and is preserved intentionally.
  */
+// Lotteriets hemmabonus (Jacobs order: "Lotter säljs i bygden, mest på
+// match"): bara försäljningsdelen skalar upp på hemmamatch-omgångar — den
+// flata driftskostnaden (800/500) är opåverkad, samma logik som kioskens
+// golv (overhead ändras inte av matchdag). Mätt, säker — skalar inte med
+// attendance, bara med isHomeMatch (binärt), ingen explosionsrisk.
+const LOTTERY_HOME_MULT = 1.5
+
+// Åskådarekonomin v2 (2026-08-27, Jacobs dom efter mätning — RAPPORT_
+// ASKADAREKONOMIN_V2_MATNING_2026-08-27.md). Första kandidaten (linjär
+// kr/huvud) kastades — exploderade 27-34× för starka klubbar över ett
+// attendance-spann på >10× (Heros ~172, Forsbacka ~1859). Denna skalar med
+// sqrt(publik) istf linjärt — komprimerar samma spann till ~3,3×, en
+// avtagande marginalintäkt (fler åskådare ger fortfarande mer kiosk-
+// intäkt, men inte proportionellt mer).
+//
+// Golvet är en ANDEL av driftskostnaden (50%), inte ett fritt valt
+// kronbelopp — samma golv-mot-kostnad-relation oavsett tier, så det inte
+// blir en ny gissning per magnitud. Jacobs uttryckliga ord efter mätning:
+// "Höj inte golvet för Heros... Golvet relativt driftskostnaden är rätt
+// konstruktion — att skruva det tills en klubb går plus är att kalibrera
+// mot ett symptom." Heros (kanoniskt sämst, Survive-kontraktet) SKA kunna
+// gå back på den dyraste anläggningsnivån — det är inte en bugg, det är
+// kontraktet ("överlever om orten kommer, inte att den blir lönsam").
+const KIOSK_SQRT_RATE_BASIC = 75
+const KIOSK_SQRT_RATE_UPGRADED = 150
+const VIP_SQRT_RATE = 150
+const FLOOR_SHARE_OF_RUNNING_COST = 0.5
+const KIOSK_RUNNING_COST_BASIC = 1500
+const KIOSK_RUNNING_COST_UPGRADED = 2500
+const VIP_RUNNING_COST = 2000
+
+// Påståendekartan, byggnodernas löften (2026-08-27, Jacobs dom per nod —
+// RAPPORT_BYGGNODLOFTEN_2026-08-27.md): facilityNodes.ts's "Kiosk &
+// servering" lovade "Ekonomi ↑" utan att någon kod läste vilka noder som
+// var byggda. Kiosk-noden höjer nu kiosk-sqrt-raterna — en investering i
+// den fysiska anläggningen höjer försäljningen per besökare. Strålkastarens
+// "+10% sponsorintäkt" DÖMDES ATT STRYKAS, inte wiras (rent påhitt, samma
+// klass som matchhallens tv-avtal) — se facilityNodes.ts för den strukna
+// texten. Ingen sponsor-bonus här.
+const KIOSK_NODE_SALES_BONUS_MULT = 1.25
+
 export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreakdown {
   const { club, players, sponsors, communityActivities, volunteers, volunteerRoster,
     sponsorNetworkMood, fanMood, isHomeMatch,
     matchIsKnockout, matchIsCup, matchHasRivalry, standing, rand,
     communityStanding, isFirstRound, legendSalaryCost, journalistAttendanceModifier,
-    weatherAttendanceModifier } = params
+    weatherAttendanceModifier, matchAttendance, builtNodeIds } = params
+  const hasKioskNode = (builtNodeIds ?? []).includes('kiosk')
 
   // ── Wages ─────────────────────────────────────────────────────────────────
   const totalSalary = players.reduce((sum, p) => sum + p.salary, 0)
@@ -214,7 +367,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   if (isHomeMatch) {
     const capacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
     const position = standing?.position ?? 8
-    const attendanceRate = Math.min(0.90, 0.35 + (fanMood / 100) * 0.40 + (position <= 3 ? 0.08 : 0))
+    const attendanceRate = computeAttendanceRate(fanMood, communityStanding ?? 50, position)
     const ticketPrice = 50 + Math.round((club.reputation ?? 50) * 0.3)
     const baseRevenue = Math.round(capacity * attendanceRate * ticketPrice * (journalistAttendanceModifier ?? 1.0) * (weatherAttendanceModifier ?? 1.0))
 
@@ -227,24 +380,54 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     )
 
     // Community income tied to a home match
+    //
+    // Åskådarekonomin, kandidat 2 (2026-08-27, Jacobs dom): kandidat 1
+    // (linjär kr/huvud) kastades — exploderade 27-34x för starka klubbar
+    // (RAPPORT_ASKADAREKONOMIN_MATNING_2026-08-26.md). Kandidat 2 mättes och
+    // godkändes som den är (RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md):
+    // kiosk/VIP skalar med sqrt(publik) istf linjärt, golvet är en ANDEL av
+    // driftskostnaden (50%) istf ett fritt kronbelopp. Heros går fortsatt
+    // sämre på dyraste tiern (5472→2173) — det är MEDVETET, inte en bugg:
+    // Heros Survive-kontrakt garanterar överlevnad, inte lönsamhet, och ett
+    // golv skruvat tills Heros går plus vore en specialregel för en enskild
+    // klubb (samma felklass som de fem oberoende cs=70-trösklarna). Golvet
+    // ska inte justeras per klubb.
     if (communityActivities) {
-      const moodMult = 0.7 + (fanMood / 100) * 0.6
-      const kioskBase = communityActivities.kiosk === 'upgraded' ? 2500
-        : communityActivities.kiosk === 'basic' ? 1250 : 0
-      communityMatchIncome += Math.round(kioskBase * moodMult)
+      const attendanceForCommunity = matchAttendance ?? Math.round(capacity * attendanceRate)
+      const sqrtAttendance = Math.sqrt(Math.max(0, attendanceForCommunity))
+      // Byggträdets "Kiosk & servering"-nod (facilityNodes.ts, id 'kiosk')
+      // höjer försäljningsraten — den fysiska investeringen i anläggningen
+      // gör att SAMMA publik köper mer per besök. Golvet (kostnadsrelativt,
+      // se ovan) får INTE bonusen — det är en säkerhetsspärr mot
+      // driftskostnaden, inte en försäljningssiffra att multiplicera.
+      const kioskSalesMult = hasKioskNode ? KIOSK_NODE_SALES_BONUS_MULT : 1
+      if (communityActivities.kiosk === 'upgraded') {
+        communityMatchIncome += Math.max(
+          FLOOR_SHARE_OF_RUNNING_COST * KIOSK_RUNNING_COST_UPGRADED,
+          Math.round(KIOSK_SQRT_RATE_UPGRADED * kioskSalesMult * sqrtAttendance),
+        )
+      } else if (communityActivities.kiosk === 'basic') {
+        communityMatchIncome += Math.max(
+          FLOOR_SHARE_OF_RUNNING_COST * KIOSK_RUNNING_COST_BASIC,
+          Math.round(KIOSK_SQRT_RATE_BASIC * kioskSalesMult * sqrtAttendance),
+        )
+      }
       communityMatchIncome += communityActivities.functionaries ? 1000 : 0
       communityMatchIncome += communityActivities.bandyplay
         ? 250 + Math.round(rand() * 250) : 0
       if (communityActivities.vipTent) {
-        communityMatchIncome += 1250 + Math.round(rand() * 2500)
+        communityMatchIncome += Math.max(
+          FLOOR_SHARE_OF_RUNNING_COST * VIP_RUNNING_COST,
+          Math.round(VIP_SQRT_RATE * sqrtAttendance),
+        )
       }
 
       // Running costs per home match
       let runningCost = 0
-      if (communityActivities.kiosk === 'upgraded') runningCost += 2500
-      else if (communityActivities.kiosk === 'basic') runningCost += 1500
+      if (communityActivities.kiosk === 'upgraded') runningCost += KIOSK_RUNNING_COST_UPGRADED
+      else if (communityActivities.kiosk === 'basic') runningCost += KIOSK_RUNNING_COST_BASIC
       if (communityActivities.bandyplay) runningCost += 1000
-      if (communityActivities.vipTent) runningCost += 2000
+      if (communityActivities.vipTent) runningCost += VIP_RUNNING_COST
       communityMatchIncome -= runningCost
     }
   }
@@ -252,10 +435,11 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   // ── Per-round community income (lottery, bandySchool, socialMedia) ─────────
   let communityRoundIncome = 0
   if (communityActivities) {
+    const lotteryHomeMult = isHomeMatch ? LOTTERY_HOME_MULT : 1.0
     if (communityActivities.lottery === 'intensive') {
-      communityRoundIncome += (1500 + Math.round(rand() * 1000)) - 800
+      communityRoundIncome += Math.round((1500 + Math.round(rand() * 1000)) * lotteryHomeMult) - 800
     } else if (communityActivities.lottery === 'basic') {
-      communityRoundIncome += (500 + Math.round(rand() * 750)) - 500
+      communityRoundIncome += Math.round((500 + Math.round(rand() * 750)) * lotteryHomeMult) - 500
     }
     if (communityActivities.bandyplay) {
       // Per-round participant fees minus operational cost
@@ -326,6 +510,58 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
 // commit-meddelandet för de faktiska talen.
 const NEUTRAL_EVENT_FACTOR = 1.5
 
+export type AttendanceParams = Parameters<typeof calcAttendance>[0]
+
+/**
+ * PÅSTÅENDEKARTAN, preview-mönstret (2026-08-26, RAPPORT_ASKADAREKONOMIN_
+ * MATNING_2026-08-26.md + RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md, "Fixa —
+ * samma funktion, samma indata"). Innan denna fanns TVÅ separata
+ * härledningar av calcAttendance-parametrar: matchSimProcessor.ts:s
+ * auktoritativa (facit, satt på `fixture.attendance` efter simulering) och
+ * MatchScreen.tsx:s FÖRHANDSVISNING (Sätt Laget-kortet + live-matchstart) —
+ * de senare utelämnade `communityStanding`, hårdkodade `isDerby: false`,
+ * och utelämnade `fixtureMonth`. Spelaren kunde se ett annat publiktal
+ * FÖRE matchen än det som faktiskt registrerades efteråt. En delad
+ * byggfunktion eliminerar det strukturellt — samma härledning, kan inte
+ * glida isär igen av misstag.
+ *
+ * `isFinal`/`isSemiFinal` läses ur `game.playoffBracket` (matchar
+ * matchSimProcessor.ts:s ursprungliga härledning exakt). `isAnnandagen`
+ * läses direkt av `fixture.isAnnandagen` (ett riktigt Fixture-fält) istf
+ * en separat kalenderslot-uppslagning — samma sanning, en enklare väg dit,
+ * ingen kalenderarray behöver trådas till anropsställena.
+ */
+export function buildAttendanceParams(game: SaveGame, fixture: Fixture): AttendanceParams | undefined {
+  const homeClub = game.clubs.find(c => c.id === fixture.homeClubId)
+  if (!homeClub) return undefined
+  const awayClub = game.clubs.find(c => c.id === fixture.awayClubId)
+  const isFinalFixture = fixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(fixture.id)
+  const isSemiFixture = fixture.roundNumber > 22 && game.playoffBracket?.semiFinals.some(s => s.fixtures.includes(fixture.id))
+  const fixtureWeather = game.matchWeathers?.find(mw => mw.fixtureId === fixture.id)
+  const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
+
+  return {
+    club: homeClub,
+    awayClub,
+    isNeutralVenue: !!fixture.isNeutralVenue,
+    fanMood: game.fanMood ?? 50,
+    communityStanding: fixture.homeClubId === game.managedClubId ? (game.communityStanding ?? 50) : undefined,
+    // LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26): safeStandingPosition
+    // ger null (→ neutral 6:a) om hemmalaget ännu inte spelat en ligamatch
+    // denna säsong, istf en alfabetisk skuggposition från en 0-poängstabell.
+    position: safeStandingPosition(game.standings, fixture.homeClubId) ?? 6,
+    isKnockout: !!fixture.isKnockout,
+    isCup: !!fixture.isCup,
+    isDerby: !!rivalry,
+    isFinal: !!(isFinalFixture || (fixture.isCup && fixture.roundNumber === 4)),
+    isSemiFinal: !!(isSemiFixture || (fixture.isCup && fixture.roundNumber === 3)),
+    isAnnandagen: !!fixture.isAnnandagen,
+    fixtureMonth: new Date(game.currentDate).getMonth() + 1,
+    weatherAttendanceModifier: fixtureWeather?.effects.attendanceModifier,
+    hasIndoorArena: (fixture.isCup && fixture.isNeutralVenue) ? CUP_FINAL_VENUE.hallInomhus : homeClub.hasIndoorArena,
+  }
+}
+
 export function calcAttendance(params: {
   club: { reputation: number; arenaCapacity?: number }
   /** SLUTTEST RUNDA 4 (punkt 1): motståndarens klubb — krävs för att räkna
@@ -338,6 +574,7 @@ export function calcAttendance(params: {
    *  RUNDA 3 punkt 1:s hemmafördel-fix). */
   isNeutralVenue?: boolean
   fanMood: number
+  communityStanding?: number  // 0-100, se computeAttendanceRate — default 50 om saknas
   position: number
   isKnockout: boolean
   isCup: boolean
@@ -350,7 +587,7 @@ export function calcAttendance(params: {
   weatherAttendanceModifier?: number     // raw MatchWeather.effects.attendanceModifier — dämpas/neutraliseras internt
   hasIndoorArena?: boolean               // arena-golvet: väder påverkar inte inomhuspublik
 }): number {
-  const { club, awayClub, isNeutralVenue, fanMood, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen, fixtureMonth, journalistAttendanceModifier, weatherAttendanceModifier, hasIndoorArena } = params
+  const { club, awayClub, isNeutralVenue, fanMood, communityStanding, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen, fixtureMonth, journalistAttendanceModifier, weatherAttendanceModifier, hasIndoorArena } = params
   const homeBaseCapacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
 
   // SLUTTEST RUNDA 4 (punkt 1): neutral plan — bägge lagens publikunderlag
@@ -381,7 +618,7 @@ export function calcAttendance(params: {
   // hemmaklacks-effekt) halveras istf att ges fullt till vilken klubb som
   // råkar stå som homeClubId.
   const moodWeight = isNeutralCupVenue ? 0.5 : 1.0
-  const attendanceRate = Math.min(0.95, 0.35 + (fanMood / 100) * 0.40 * moodWeight + (position <= 3 ? 0.08 * moodWeight : 0))
+  const attendanceRate = computeAttendanceRate(fanMood, communityStanding ?? 50, position, moodWeight)
   const eventBonus = isFinal ? 2.5 : isSemiFinal ? 1.8 : isKnockout ? 1.40 : isCup ? 1.20 : 1.0
   const derbyBonus = isDerby ? 1.30 : 1.0
   // Annandagen is the most-attended league match of the year — whole village turns up

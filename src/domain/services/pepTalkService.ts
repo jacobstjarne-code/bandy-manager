@@ -1,6 +1,27 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { getCurrentAct } from './seasonActService'
 
+/**
+ * TVÅ SORTERS DÖD KOD — TEXT-UTAN-YTA (CLAUDE.md), dödmarkerad 2026-08-27
+ * (Jacobs dom, `RAPPORT_DODA_FUNKTIONER_2026-08-27.md`): "Den hade en yta
+ * som togs bort medvetet och Portal fick aldrig rollen. Det är text som
+ * väntar på en yta, inte skräp."
+ *
+ * Byggd i `f7580371` ("pep-talk — tränarcitat på dashboard efter varje
+ * omgång") MED en hemvist — den gamla `DashboardScreen`. Konsumenten
+ * försvann i `4a417895` ("remove dead DashboardScreen + 6 orphaned
+ * dependencies") när Dashboard byttes ut mot Portal. `getPepTalk` fick
+ * ALDRIG en ny anropare — noll träffar i `src/` idag utanför denna fil.
+ * Texten (21 låsta repliker, fem kategorier) och mekaniken (deterministiskt
+ * seedad på rundnummer, redan `played===0`-gated) är oförändrat kvalitativa
+ * — det är hemvisten som saknas, inte innehållet.
+ *
+ * RADERA INTE. Om Portal ska få en peptalk hör den hemma som en PortalBeat-
+ * rad på D1:s ambient-nivå, inte som ett eget kort (Jacobs anteckning,
+ * `docs/BACKLOG.md`, "BYGGT MEN OSYNLIGT") — en designfråga, inte
+ * prioriterad.
+ */
+
 const PEP_WIN = [
   'Vi vann inte för att vi var bäst. Vi vann för att vi ville mest.',
   'Två poäng. Inget snack. Nu fokuserar vi framåt.',

@@ -432,7 +432,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     youthDevelopment: 42,
     facilities: 45,
     hasArtificialIce: false,
-    boardExpectation: ClubExpectation.AvoidBottom,
+    // H4 Heros (Jacobs dom 2026-08-25, DOM_FRAMGANGSEKONOMIN_HEROS_2026-08-23.md
+    // A2-alternativet, nu byggt): Heros vinner canoniskt under 25% av matcherna
+    // (14-23%, GRIND1_STRESSTEST_RESULTAT_2026-08-23.md) — den enda klubb där
+    // "det går inte att lyckas, bara att hålla ut" är sann. W012 (kanon: svagast
+    // i ligan) står orörd, det är förväntan som ändras, inte laget.
+    boardExpectation: ClubExpectation.Survive,
     preferredStyle: ClubStyle.Defensive,
     arenaName: 'Hedvallen',
     supporterGroupName: 'Hjältarna',

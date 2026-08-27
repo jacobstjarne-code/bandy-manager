@@ -4,6 +4,7 @@
 import type { SaveGame, RippleChain, RippleChainStep } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
 import type { TransferBid } from '../entities/GameEvent'
+import { safeStandingPosition } from './standingsService'
 
 // M15: fields that ripple effects can modify — used for targeted merging
 export const RIPPLE_AFFECTED_FIELDS = [
@@ -259,7 +260,11 @@ function applyBigDerbyWinRipples(game: SaveGame, fixtureId: string): SaveGame {
 
     const oppId = managedIsHome ? fixture.awayClubId : fixture.homeClubId
     const totalClubs = game.standings.length || 12
-    const oppPosition = game.standings.find(s => s.clubId === oppId)?.position ?? Math.ceil(totalClubs / 2)
+    // LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26): gameAfterRipples
+    // bär game.standings OMRÄKNAD (roundProcessor.ts:453/715, gameAfterRipples
+    // = game, aldrig patchad med den lokala omräkningen) — vid omgång 1
+    // eller precis efter säsongsrollover en alfabetisk skuggposition.
+    const oppPosition = safeStandingPosition(game.standings, oppId) ?? Math.ceil(totalClubs / 2)
     // Position 1 (serieledaren) → ~1.4-1.5, mittenlag → 1.0, sistalaget → 0.5.
     const oppWeight = clamp(1.5 - (oppPosition / totalClubs), 0.5, 1.5)
 

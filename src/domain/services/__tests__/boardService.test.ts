@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience } from '../boardService'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL } from '../boardService'
 import { ClubExpectation } from '../../enums'
+import type { Club } from '../../entities/Club'
 const TOTAL = 12
 
 // Skutskär-auditens test 2, Jacobs dom 2026-08-24: evaluateBoard läser nu
@@ -64,6 +65,30 @@ describe('generateSeasonVerdict', () => {
   })
 })
 
+/**
+ * H4 Heros (Jacobs dom 2026-08-25): Survive-tiern, "sistaplats är inte ett
+ * misslyckande så länge klubben finns kvar" — samma tre-bandsmönster som
+ * AvoidBottom, förskjutet så att sistaplats aldrig ger rating 1.
+ */
+describe('generateSeasonVerdict — Survive (H4 Heros)', () => {
+  it('rating 3 (möter förväntan, INTE misslyckande) för sistaplats', () => {
+    expect(generateSeasonVerdict(ClubExpectation.Survive, TOTAL, TOTAL).rating).toBe(3)
+  })
+  it('rating 4 för näst sist', () => {
+    expect(generateSeasonVerdict(ClubExpectation.Survive, TOTAL - 1, TOTAL).rating).toBe(4)
+  })
+  it('rating 5 för allt bättre än näst sist', () => {
+    expect(generateSeasonVerdict(ClubExpectation.Survive, TOTAL - 2, TOTAL).rating).toBe(5)
+    expect(generateSeasonVerdict(ClubExpectation.Survive, 1, TOTAL).rating).toBe(5)
+  })
+  it('aldrig rating 1 eller 2 — Survive kan inte "misslyckas" på position ensamt', () => {
+    for (let pos = 1; pos <= TOTAL; pos++) {
+      const rating = generateSeasonVerdict(ClubExpectation.Survive, pos, TOTAL).rating
+      expect(rating).toBeGreaterThanOrEqual(3)
+    }
+  })
+})
+
 describe('computeBoardPatienceUpdate — U1 andra halvan (Jacobs dom 2026-08-22, efter Skutskär-auditen)', () => {
   const TOTAL = 12  // RELEGATION_ZONE_SIZE=2 → zon = plats 11-12
   const AB = ClubExpectation.AvoidBottom  // ankare 9, slope above=2/below=4
@@ -115,6 +140,146 @@ describe('computeBoardPatienceUpdate — U1 andra halvan (Jacobs dom 2026-08-22,
 // O5-acceptanstestets fynd: en klubb med tre raka SM-guld sparkades efter en
 // normal svacka två säsonger senare). PROPOSAL — magnituderna (MERIT_BUFFER_CAP=20)
 // är Codes förslag, inte Jacobs låsta dom.
+/**
+ * H4 Heros-uppföljning (Jacobs dom 2026-08-25): stegkedjan täckte tidigare
+ * bara MidTable↔ChallengeTop↔WinLeague fullt ut. AvoidBottom kunde befordras
+ * uppåt men aldrig degraderas (gated `!== AvoidBottom`), och Survive fanns
+ * inte i någon gren alls — ett golv/tak en klubb aldrig kunde lämna. Nu en
+ * ordnad femstegs-stege, samma ≤2/≥10-trösklar, ett steg per anrop.
+ */
+describe('generatePreSeasonMessage — femstegs-stegen, båda riktningar (H4 Heros-uppföljning)', () => {
+  function makeClub(expectation: ClubExpectation): Club {
+    return { boardExpectation: expectation } as Club
+  }
+
+  it('Survive → AvoidBottom vid topp-2 (tidigare omöjligt, Survive var inte i kedjan)', () => {
+    const result = generatePreSeasonMessage(makeClub(ClubExpectation.Survive), [], 2, 0)
+    expect(result.newExpectation).toBe(ClubExpectation.AvoidBottom)
+  })
+
+  it('AvoidBottom → Survive vid botten-3 (tidigare omöjligt, AvoidBottom var ett golv)', () => {
+    const result = generatePreSeasonMessage(makeClub(ClubExpectation.AvoidBottom), [], 10, 0)
+    expect(result.newExpectation).toBe(ClubExpectation.Survive)
+  })
+
+  it('WinLeague kan nu falla ända till AvoidBottom via tre raka dåliga säsonger', () => {
+    let expectation = ClubExpectation.WinLeague
+    for (let i = 0; i < 3; i++) {
+      expectation = generatePreSeasonMessage(makeClub(expectation), [], 10, 0).newExpectation
+    }
+    expect(expectation).toBe(ClubExpectation.AvoidBottom)
+  })
+
+  it('Survive kan nu stiga ända till WinLeague via fyra raka topp-2-säsonger', () => {
+    let expectation = ClubExpectation.Survive
+    for (let i = 0; i < 4; i++) {
+      expectation = generatePreSeasonMessage(makeClub(expectation), [], 2, 0).newExpectation
+    }
+    expect(expectation).toBe(ClubExpectation.WinLeague)
+  })
+
+  it('Survive vid topp-2 stannar på AvoidBottom, går inte längre på EN säsong (ett steg per anrop)', () => {
+    const result = generatePreSeasonMessage(makeClub(ClubExpectation.Survive), [], 1, 0)
+    expect(result.newExpectation).toBe(ClubExpectation.AvoidBottom)
+    expect(result.newExpectation).not.toBe(ClubExpectation.MidTable)
+  })
+
+  it('Survive vid botten kan inte falla längre — redan golvet', () => {
+    const result = generatePreSeasonMessage(makeClub(ClubExpectation.Survive), [], 12, 0)
+    expect(result.newExpectation).toBe(ClubExpectation.Survive)
+  })
+
+  it('WinLeague vid topp kan inte stiga längre — redan taket', () => {
+    const result = generatePreSeasonMessage(makeClub(ClubExpectation.WinLeague), [], 1, 0)
+    expect(result.newExpectation).toBe(ClubExpectation.WinLeague)
+  })
+
+  it('mellanplacering (position 6): ingen förändring, oavsett tier', () => {
+    for (const exp of [ClubExpectation.Survive, ClubExpectation.MidTable, ClubExpectation.WinLeague]) {
+      const result = generatePreSeasonMessage(makeClub(exp), [], 6, 0)
+      expect(result.newExpectation).toBe(exp)
+    }
+  })
+})
+
+/**
+ * Förutsättningsfasen, steg 1 (Jacobs dom 2026-08-25). deriveBoardAssessment
+ * återanvänder exakt samma stege som generatePreSeasonMessage — testar
+ * bara riktning/skälsrad-härledningen, inte kedjan igen (redan täckt ovan).
+ */
+describe('deriveBoardAssessment — Förutsättningsfasen steg 1', () => {
+  function makeClub(expectation: ClubExpectation): Club {
+    return { boardExpectation: expectation } as Club
+  }
+
+  it('höjd ribba: direction=raised, skälsraden är den enda beläggbara (låst text)', () => {
+    const result = deriveBoardAssessment(makeClub(ClubExpectation.MidTable), 2, 2026)
+    expect(result.direction).toBe('raised')
+    expect(result.previousExpectation).toBe(ClubExpectation.MidTable)
+    expect(result.newExpectation).toBe(ClubExpectation.ChallengeTop)
+    expect(result.reasonLine).toBe('Ni har visat att ni kan mer. Då begär vi mer.')
+  })
+
+  it('sänkt ribba: direction=lowered, skälsraden är den enda beläggbara (låst text)', () => {
+    const result = deriveBoardAssessment(makeClub(ClubExpectation.ChallengeTop), 10, 2026)
+    expect(result.direction).toBe('lowered')
+    expect(result.newExpectation).toBe(ClubExpectation.MidTable)
+    expect(result.reasonLine).toBe('Ni tappade för mycket för att vi ska kunna kräva samma sak.')
+  })
+
+  it('oförändrad: ingen skälsrad — frånvaron av skäl är korrekt, inte en lucka', () => {
+    const result = deriveBoardAssessment(makeClub(ClubExpectation.MidTable), 6, 2026)
+    expect(result.direction).toBe('unchanged')
+    expect(result.newExpectation).toBe(ClubExpectation.MidTable)
+    expect(result.reasonLine).toBeUndefined()
+  })
+
+  it('golv/tak ger unchanged, inte raised/lowered, trots kvalificerande position', () => {
+    const atFloor = deriveBoardAssessment(makeClub(ClubExpectation.Survive), 12, 2026)
+    expect(atFloor.direction).toBe('unchanged')
+    const atCeiling = deriveBoardAssessment(makeClub(ClubExpectation.WinLeague), 1, 2026)
+    expect(atCeiling.direction).toBe('unchanged')
+  })
+
+  it('season-fältet speglar det inskickade värdet', () => {
+    const result = deriveBoardAssessment(makeClub(ClubExpectation.MidTable), 6, 2031)
+    expect(result.season).toBe(2031)
+  })
+})
+
+describe('BOARD_EXPECTATION_LEVEL_LABEL — nivåetiketter (Förutsättningsfasen, låsta av Jacob 2026-08-25)', () => {
+  it('alla fem nivåer har den låsta svenska etiketten', () => {
+    expect(BOARD_EXPECTATION_LEVEL_LABEL[ClubExpectation.Survive]).toBe('Överleva')
+    expect(BOARD_EXPECTATION_LEVEL_LABEL[ClubExpectation.AvoidBottom]).toBe('Undvika botten')
+    expect(BOARD_EXPECTATION_LEVEL_LABEL[ClubExpectation.MidTable]).toBe('Mitten')
+    expect(BOARD_EXPECTATION_LEVEL_LABEL[ClubExpectation.ChallengeTop]).toBe('Slutspel')
+    expect(BOARD_EXPECTATION_LEVEL_LABEL[ClubExpectation.WinLeague]).toBe('Vinna ligan')
+  })
+})
+
+describe('computeBoardPatienceUpdate — Survive (H4 Heros, 2026-08-25)', () => {
+  const TOTAL = 12
+  const SURVIVE = ClubExpectation.Survive  // ankare 12, slope above=1/below=4 (below oåtkomlig)
+
+  it('sistaplats (pos=12=ankaret): patiens oförändrad, INTE ett straff — men den SEPARATA nedflyttningszons-räknaren (oberoende av expectation, Jacobs "en klubb som ändå kollapsar ska kunna kosta jobbet") tickar fortfarande', () => {
+    const r = computeBoardPatienceUpdate(12, TOTAL, 70, 0, SURVIVE)
+    expect(r.newBoardPatience).toBe(70)
+    expect(r.newConsecutiveFailures).toBe(1)
+  })
+
+  it('bättre än sistaplats (pos=8): patiens ÖKAR, aldrig minskar', () => {
+    // gap = 12-8 = 4, delta = above(1) × 4 = +4
+    expect(computeBoardPatienceUpdate(8, TOTAL, 70, 0, SURVIVE).newBoardPatience).toBe(74)
+  })
+
+  it('genomgår alla positioner 1-12: patiens minskar ALDRIG under Survive', () => {
+    for (let pos = 1; pos <= TOTAL; pos++) {
+      const r = computeBoardPatienceUpdate(pos, TOTAL, 70, 0, SURVIVE)
+      expect(r.newBoardPatience).toBeGreaterThanOrEqual(70)
+    }
+  })
+})
+
 describe('computeBoardPatienceUpdate — meritbuffert (fjärde koefficientrundan, 2026-08-23)', () => {
   const TOTAL = 12
   const CT = ClubExpectation.ChallengeTop  // ankare 4, above=2.5, below=4
@@ -212,11 +377,17 @@ describe('computeBoardPatienceUpdate — meritbuffert täcker position+objektiv 
 })
 
 describe('updateRunningBoardPatience — U1 andra halvan, ändring 1+2 (Jacobs dom 2026-08-22)', () => {
-  function makeGameWithLastFixture(overrides: { homeScore: number; awayScore: number; fixtureId?: string; boardPatience?: number; boardPatienceLastCountedFixtureId?: string }) {
+  // H4 Heros (2026-08-25): den löpande förlustterm skalas nu mot
+  // ClubExpectation — helpern behöver därför en clubs-array. MidTable
+  // (multiplikator 1,0×) hålls som default så de befintliga, redan
+  // etablerade förväntningarna nedan (-1.5 osv) förblir numeriskt oförändrade
+  // utan att varje assertion behöver skrivas om.
+  function makeGameWithLastFixture(overrides: { homeScore: number; awayScore: number; fixtureId?: string; boardPatience?: number; boardPatienceLastCountedFixtureId?: string; expectation?: ClubExpectation }) {
     return {
       managedClubId: 'club_a',
       boardPatience: overrides.boardPatience ?? 70,
       boardPatienceLastCountedFixtureId: overrides.boardPatienceLastCountedFixtureId,
+      clubs: [{ id: 'club_a', boardExpectation: overrides.expectation ?? ClubExpectation.MidTable }],
       fixtures: [{
         id: overrides.fixtureId ?? 'fx1',
         status: 'completed',
@@ -273,6 +444,33 @@ describe('updateRunningBoardPatience — U1 andra halvan, ändring 1+2 (Jacobs d
   it('klämd till [0, 100]', () => {
     const game = makeGameWithLastFixture({ homeScore: 0, awayScore: 1, boardPatience: 1 })
     expect(updateRunningBoardPatience(game, 5).boardPatience).toBe(0)
+  })
+
+  /**
+   * H4 Heros (Jacobs dom 2026-08-25): basförlusten skalas mot ClubExpectation
+   * — Survive 0,4×, AvoidBottom 0,7×, MidTable 1,0×, ChallengeTop 1,2×,
+   * WinLeague 1,4×. Svit-tillägget (losingStreakSurcharge) förblir OSKALAT.
+   */
+  it('Survive (0,4×): basförlusten dämpad till -0,6, ingen svit', () => {
+    const game = makeGameWithLastFixture({ homeScore: 0, awayScore: 1, expectation: ClubExpectation.Survive })
+    expect(updateRunningBoardPatience(game, 1).boardPatience).toBe(70 - 0.6)
+  })
+
+  it('WinLeague (1,4×): basförlusten förstärkt till -2,1, ingen svit', () => {
+    const game = makeGameWithLastFixture({ homeScore: 0, awayScore: 1, expectation: ClubExpectation.WinLeague })
+    expect(updateRunningBoardPatience(game, 1).boardPatience).toBe(70 - 2.1)
+  })
+
+  it('Survive + förlustsvit ≥5: svit-tillägget (-8) är OSKALAT, bara basförlusten dämpas', () => {
+    const game = makeGameWithLastFixture({ homeScore: 0, awayScore: 1, expectation: ClubExpectation.Survive })
+    expect(updateRunningBoardPatience(game, 5).boardPatience).toBe(70 - 0.6 - 8)
+  })
+
+  it('vinst/oavgjort är OPÅVERKADE av expectation-skalan, oavsett tier', () => {
+    const survive = makeGameWithLastFixture({ homeScore: 2, awayScore: 1, expectation: ClubExpectation.Survive })
+    const winLeague = makeGameWithLastFixture({ homeScore: 2, awayScore: 1, expectation: ClubExpectation.WinLeague })
+    expect(updateRunningBoardPatience(survive, 0).boardPatience).toBe(71)
+    expect(updateRunningBoardPatience(winLeague, 0).boardPatience).toBe(71)
   })
 })
 

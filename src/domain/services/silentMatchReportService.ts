@@ -4,6 +4,9 @@
 import type { Fixture } from '../entities/Fixture'
 import { MatchEventType } from '../enums'
 
+/**
+ * @cites Fixture.homeScore, Fixture.awayScore, Fixture.events, Fixture.homeClubId, MatchEvent.type, MatchEvent.minute
+ */
 export function generateSilentMatchReport(
   fixture: Fixture,
   homeClubName: string,

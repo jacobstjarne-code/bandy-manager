@@ -42,17 +42,17 @@ const zeroRand = () => 0
 
 describe('getMecenatSocialUsedTypes', () => {
   it('räknar bara mecenat_social_-nycklar för aktuell säsong', () => {
-    const narrativeLog: NarrativeLogEntry[] = [
+    const narrativeBeatLog: NarrativeLogEntry[] = [
       { semanticKey: 'mecenat_social_middag', season: 3, round: 5 },
       { semanticKey: 'mecenat_social_jakt', season: 2, round: 2 },
       { semanticKey: 'press_storyline_x', season: 3, round: 4 },
     ]
-    const used = getMecenatSocialUsedTypes({ narrativeLog, currentSeason: 3 })
+    const used = getMecenatSocialUsedTypes({ narrativeBeatLog, currentSeason: 3 })
     expect(used).toEqual(new Set(['middag']))
   })
 
   it('tom logg → tom mängd', () => {
-    expect(getMecenatSocialUsedTypes({ narrativeLog: undefined, currentSeason: 1 }).size).toBe(0)
+    expect(getMecenatSocialUsedTypes({ narrativeBeatLog: undefined, currentSeason: 1 }).size).toBe(0)
   })
 })
 

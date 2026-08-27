@@ -145,7 +145,16 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
     {
       id: 'ismaskin_offer',
       category: 'community',
-      question: 'Kommunen erbjuder en begagnad ismaskin till rabatterat pris (15 000 kr).',
+      // O20 (2026-08-21, Opus): K2-textbeslutet ur DOM_VARSLET_KLASSIFICERING —
+      // kravet får ett namngivet mål (veteranen) i texten. Effekterna orörda.
+      // Påståendesvepet #25 (2026-08-24), Jacobs dom 2026-08-26: "tre vintrar"
+      // struket — ingen tjänstetidsräknare finns för funktionärer (game.
+      // supporterGroup.founded mäter klackens ålder, inte HANS, och hade gett
+      // falsk precision — farligare än en hårdkodad trea). "Många vintrar"
+      // säger det som betyder något (han har gjort det länge, han är veteran)
+      // utan att påstå ett tal ingen data backar. Se BACKLOG.md för den
+      // saknade tjänstetidsräknaren (samma lucka som "år i klubben"/O18 fält 3).
+      question: `Kommunen erbjuder en begagnad ismaskin för 15 000 kr. ${veteran} har spolat isen för hand i många vintrar och frågar varje vecka när maskinen kommer.`,
       optionA: { label: 'Köp den', effect: '−15 tkr · +kommunstatus', effectColor: 'success' },
       optionB: { label: 'Tacka nej', effect: 'Ingen effekt', effectColor: 'muted' },
     },

@@ -160,6 +160,14 @@ export function generateGalaEvent(
 
 // ── Generate gala inbox items + storylines ──────────────────────────────────
 
+/**
+ * roundNumber läses bara som en gate (senaste avslutade omgången, för att
+ * avgöra TIMING på galan) — inte för att ordna eller attribuera specifika
+ * matcher, som är den förbjudna genvägen (CLAUDE.md). Deklarerad öppet
+ * ändå, per grindens krav på ingen tyst läsning av kända proxy-tokens.
+ *
+ * @cites nom.playerName, nom.stat, player.clubId, roundNumber
+ */
 export function generateGalaInbox(
   nominations: GalaNomination[],
   game: SaveGame,

@@ -66,6 +66,10 @@ const SCANDAL_AFFECTED_GENERIC = [
   '"Vi spelade. Det är vad jag bryr mig om idag."',
 ]
 
+/**
+ * Ren renderare — theyWon/hasScandal är redan beräknade och verifierade av
+ * anroparen (postMatchEventService.ts) innan de skickas in.
+ */
 export function generatePostMatchOpponentQuote(opponentClub: Club, theyWon: boolean, hasScandal: boolean | undefined, seed: string): string {
   const mgr = opponentClub.opponentManager
   if (!mgr) return ''
