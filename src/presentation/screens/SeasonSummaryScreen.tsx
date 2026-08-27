@@ -443,7 +443,7 @@ export function SeasonSummaryScreen() {
 
               {h.potmName && (
                 <p style={{ fontSize: 11, color: 'var(--accent)', margin: '0 0 14px', fontWeight: 600, fontFamily: 'var(--font-body)' }}>
-                  ⭐ Match av matchen: {h.potmName}
+                  ⭐ Matchens spelare: {h.potmName}
                 </p>
               )}
 
