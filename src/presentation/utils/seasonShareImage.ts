@@ -372,42 +372,74 @@ function isAbortError(e: unknown): boolean {
   return e instanceof DOMException ? e.name === 'AbortError' : (e as { name?: string } | undefined)?.name === 'AbortError'
 }
 
-export async function shareSeasonImage(summary: SeasonSummary): Promise<SeasonShareResult> {
-  const blob = await generateSeasonShareImage(summary)
-  if (!blob) return 'failed'
+function seasonImageFileName(summary: SeasonSummary): string {
+  return `bandy-${seasonStartYear(summary.season)}-${summary.clubName.replace(/\s/g, '_')}.png`
+}
 
-  const fileName = `bandy-${seasonStartYear(summary.season)}-${summary.clubName.replace(/\s/g, '_')}.png`
-
-  // Web Share API (mobile)
-  if (navigator.share && navigator.canShare) {
-    const file = new File([blob], fileName, { type: 'image/png' })
-    if (navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: `${summary.clubName} — Säsong ${seasonSpanLabel(summary.season)}`,
-          // narrativeSummary är redan genererad, redan visad text (HistoryScreen,
-          // SeasonSummaryScreen) — ingen ny svensk prosa, bara samma sträng återanvänd.
-          text: summary.narrativeSummary,
-          url: window.location.origin,
-        })
-        return 'shared'
-      } catch (e) {
-        // AbortError = användaren avbröt medvetet i delningsarket. Nedladdning
-        // efter ett avbrott vore att tvinga fram artefakten trots att spelaren
-        // sa nej — därför ingen fallback här, bara här.
-        if (isAbortError(e)) return 'cancelled'
-        // Annat delningsfel (t.ex. filen för stor för mottagaren) — fall through till nedladdning.
-      }
-    }
-  }
-
-  // Fallback: download
+function downloadBlobAsPng(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = fileName
   a.click()
   URL.revokeObjectURL(url)
+}
+
+/**
+ * H7 (SLUTTEST_KO.md, SEXSÄSONGSAUDITEN): direkt nedladdning utan Web Share.
+ * Explicit fallback-väg för "Ladda ner PNG"-knappen — ingen OS-delningsyta
+ * inblandad, så den kan aldrig fastna i väntan på ett share-anrop som inte
+ * avslutas. Används både som knapp-handler vid `failed`-läge och internt av
+ * shareSeasonImage när Web Share saknas eller nekar filen.
+ */
+export async function downloadSeasonImage(summary: SeasonSummary): Promise<'downloaded' | 'failed'> {
+  const blob = await generateSeasonShareImage(summary)
+  if (!blob) return 'failed'
+  downloadBlobAsPng(blob, seasonImageFileName(summary))
+  return 'downloaded'
+}
+
+export async function shareSeasonImage(summary: SeasonSummary): Promise<SeasonShareResult> {
+  const blob = await generateSeasonShareImage(summary)
+  if (!blob) return 'failed'
+
+  const fileName = seasonImageFileName(summary)
+
+  // Web Share API (mobile)
+  if (navigator.share && navigator.canShare) {
+    // H7-rotorsak: `new File(...)` och `navigator.canShare(...)` låg tidigare
+    // UTANFÖR try-blocket. Vissa webviews/inbäddade browsers kastar här
+    // (t.ex. restriktiv MIME-policy) — ett okatchat kast propagerade rakt
+    // igenom shareSeasonImage, förbi anroparens try/finally-lösa
+    // handleShare, och lämnade "Genererar bild…"-knappen låst för evigt.
+    try {
+      const file = new File([blob], fileName, { type: 'image/png' })
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: `${summary.clubName} — Säsong ${seasonSpanLabel(summary.season)}`,
+            // narrativeSummary är redan genererad, redan visad text (HistoryScreen,
+            // SeasonSummaryScreen) — ingen ny svensk prosa, bara samma sträng återanvänd.
+            text: summary.narrativeSummary,
+            url: window.location.origin,
+          })
+          return 'shared'
+        } catch (e) {
+          // AbortError = användaren avbröt medvetet i delningsarket. Nedladdning
+          // efter ett avbrott vore att tvinga fram artefakten trots att spelaren
+          // sa nej — därför ingen fallback här, bara här.
+          if (isAbortError(e)) return 'cancelled'
+          // Annat delningsfel (t.ex. filen för stor för mottagaren) — fall through till nedladdning.
+        }
+      }
+    } catch {
+      // navigator.canShare/File-konstruktionen kastade själv (H7) — fall
+      // through till nedladdning precis som ett ordinärt delningsfel.
+    }
+  }
+
+  // Fallback: download
+  downloadBlobAsPng(blob, fileName)
   return 'downloaded'
 }

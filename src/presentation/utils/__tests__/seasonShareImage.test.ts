@@ -22,7 +22,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { generateSeasonSummary } from '../../../domain/services/seasonSummaryService'
-import { computeSeasonShareImageHeight, generateSeasonShareImage, assertWithinContentBounds, shareSeasonImage } from '../seasonShareImage'
+import { computeSeasonShareImageHeight, generateSeasonShareImage, assertWithinContentBounds, shareSeasonImage, downloadSeasonImage } from '../seasonShareImage'
 import type { SeasonSummary, MatchHighlight } from '../../../domain/entities/SeasonSummary'
 
 function baseSummary(): SeasonSummary {
@@ -261,6 +261,80 @@ describe('shareSeasonImage — returvärde (4.13)', () => {
 
     expect(result).toBe('downloaded')
     expect(createObjectURL).toHaveBeenCalledTimes(1)
+    createElementSpy.mockRestore()
+  })
+
+  /**
+   * H7 (SLUTTEST_KO.md, SEXSÄSONGSAUDITEN): rotorsaken för "fastnar i
+   * 'Genererar bild…' för evigt" var att `navigator.canShare(...)` (och
+   * `new File(...)`) låg UTANFÖR try-blocket i shareSeasonImage — ett kast
+   * här propagerade okatchat rakt igenom, förbi anroparens try/finality-lösa
+   * handleShare. Detta test bevisar att ett sådant kast nu fångas och faller
+   * igenom till nedladdning, precis som ett Web Share-fel gör — resultatet
+   * är alltid ett upplöst tillstånd, aldrig ett kastat undantag.
+   */
+  it('"downloaded" när navigator.canShare självt kastar (H7-rotorsaken)', async () => {
+    const createElementSpy = mockCanvasCreation()
+    // @ts-expect-error — testfixtur
+    navigator.share = vi.fn()
+    // @ts-expect-error — testfixtur: canShare kastar direkt, inte ett avvisat share()-anrop
+    navigator.canShare = () => { throw new Error('canShare not supported in this webview') }
+    const { createObjectURL } = stubObjectURL()
+
+    await expect(shareSeasonImage(minimalCase())).resolves.toBe('downloaded')
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    createElementSpy.mockRestore()
+  })
+})
+
+/**
+ * H7: downloadSeasonImage är den fristående "Ladda ner PNG"-fallbacken —
+ * ingen Web Share inblandad, så den kan aldrig fastna i väntan på ett
+ * share-anrop som inte avslutas.
+ */
+describe('downloadSeasonImage — fristående nedladdning utan Web Share (H7)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+    // @ts-expect-error — testfixtur
+    delete URL.createObjectURL
+    // @ts-expect-error — testfixtur
+    delete URL.revokeObjectURL
+  })
+
+  it('"downloaded" när canvas-generering lyckas', async () => {
+    const { ctx } = makeRecordingCtx()
+    const canvasStub = {
+      width: 0, height: 0,
+      getContext: () => ctx,
+      toBlob: (cb: (b: Blob | null) => void) => cb(new Blob(['x'], { type: 'image/png' })),
+    }
+    const realCreateElement = document.createElement.bind(document)
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tag: string) =>
+      tag === 'canvas' ? (canvasStub as unknown as HTMLElement) : realCreateElement(tag)
+    )
+    const createObjectURL = vi.fn().mockReturnValue('blob:mock')
+    const revokeObjectURL = vi.fn()
+    // @ts-expect-error — testfixtur
+    URL.createObjectURL = createObjectURL
+    // @ts-expect-error — testfixtur
+    URL.revokeObjectURL = revokeObjectURL
+
+    const result = await downloadSeasonImage(minimalCase())
+
+    expect(result).toBe('downloaded')
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    expect(revokeObjectURL).toHaveBeenCalledTimes(1)
+    createElementSpy.mockRestore()
+  })
+
+  it('"failed" när canvas-generering misslyckas (ingen 2d-context) — löser sig ändå, kastar aldrig', async () => {
+    const canvasStub = { width: 0, height: 0, getContext: () => null }
+    const realCreateElement = document.createElement.bind(document)
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tag: string) =>
+      tag === 'canvas' ? (canvasStub as unknown as HTMLElement) : realCreateElement(tag)
+    )
+
+    await expect(downloadSeasonImage(minimalCase())).resolves.toBe('failed')
     createElementSpy.mockRestore()
   })
 })

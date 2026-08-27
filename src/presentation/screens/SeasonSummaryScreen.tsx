@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { seasonTwoTruthsSentence, placeringsdomText } from '../../domain/services/seasonSummaryService'
@@ -8,7 +8,7 @@ import { ClubBadge } from '../components/ClubBadge'
 import { SectionLabel } from '../components/SectionLabel'
 import { csColor, formatFinanceAbs, positionShort, playoffResultLabel, cupResultLabel } from '../utils/formatters'
 import type { PlayerPosition } from '../../domain/enums'
-import { shareSeasonImage } from '../utils/seasonShareImage'
+import { shareSeasonImage, downloadSeasonImage } from '../utils/seasonShareImage'
 import { collectSeasonDecisions } from '../../domain/services/seasonDecisionsService'
 import { generateTeamPhotoSvg } from '../utils/teamPhotoGenerator'
 import { saveTeamPhoto, loadTeamPhoto } from '../../infrastructure/teamPhotoStorage'
@@ -184,14 +184,58 @@ export function SeasonSummaryScreen() {
     )
   }
 
-  const [sharing, setSharing] = useState(false)
+  // H7 (SLUTTEST_KO.md, SEXSÄSONGSAUDITEN): "Delningsknappen fastnar i
+  // 'Genererar bild…', återgår aldrig". Rotorsak: handleShare hade varken
+  // try/finally (ett okatchat kast i shareSeasonImage — se seasonShareImage.ts
+  // — lämnade `sharing` på true för evigt) eller en bortre gräns för hur
+  // länge anropet fick hänga. Ersätter den enkla boolean med ett litet
+  // tillståndsschema (samma flash-state-mönster som FeedbackButton.tsx
+  // använder för "✓ Kopierat") + ett request-id som gör att ett sent svar
+  // från ett övergivet anrop aldrig skriver över ett senare klicks tillstånd.
+  const SHARE_TIMEOUT_MS = 12000
+  type ShareUiState = 'idle' | 'generating' | 'cancelled' | 'failed'
+  const [shareState, setShareState] = useState<ShareUiState>('idle')
+  const shareRequestId = useRef(0)
 
   async function handleShare() {
     if (!summary) return
-    setSharing(true)
-    await shareSeasonImage(summary)
-    setSharing(false)
+    const requestId = ++shareRequestId.current
+    setShareState('generating')
+    let outcome: ShareUiState = 'idle'
+    try {
+      const result = await Promise.race([
+        shareSeasonImage(summary),
+        new Promise<'failed'>((resolve) => setTimeout(() => resolve('failed'), SHARE_TIMEOUT_MS)),
+      ])
+      outcome = result === 'shared' || result === 'downloaded' ? 'idle' : result
+    } catch {
+      // Ett oväntat kast (t.ex. om ett framtida delningsfel inte redan är
+      // fångat i seasonShareImage.ts) ska aldrig lämna knappen låst —
+      // behandlas som ett vanligt misslyckande med nedladdnings-fallback.
+      outcome = 'failed'
+    } finally {
+      // Ett senare klick (ny requestId) har redan tagit över UI:t — skriv
+      // aldrig över det tillståndet med ett sent svar från detta anrop.
+      if (shareRequestId.current === requestId) setShareState(outcome)
+    }
   }
+
+  async function handleDownloadFallback() {
+    if (!summary) return
+    const requestId = ++shareRequestId.current
+    setShareState('generating')
+    let outcome: ShareUiState = 'idle'
+    try {
+      const result = await downloadSeasonImage(summary)
+      outcome = result === 'downloaded' ? 'idle' : 'failed'
+    } catch {
+      outcome = 'failed'
+    } finally {
+      if (shareRequestId.current === requestId) setShareState(outcome)
+    }
+  }
+
+  const sharing = shareState === 'generating'
 
   const handleNextSeason = () => {
     clearSeasonSummary()
@@ -874,10 +918,22 @@ export function SeasonSummaryScreen() {
               onClick={handleShare}
               disabled={sharing}
               className="btn btn-outline"
-              style={{ width: '100%', marginBottom: 10 }}
+              style={{ width: '100%', marginBottom: shareState === 'failed' ? 6 : 10 }}
             >
-              {sharing ? 'Genererar bild...' : '📤 Dela din säsong'}
+              {shareState === 'generating' ? 'Genererar bild...'
+                : shareState === 'failed' ? 'Kunde inte dela — försök igen'
+                : shareState === 'cancelled' ? 'Avbrutet — 📤 Dela din säsong'
+                : '📤 Dela din säsong'}
             </button>
+            {shareState === 'failed' && (
+              <button
+                onClick={handleDownloadFallback}
+                className="btn btn-outline"
+                style={{ width: '100%', marginBottom: 10, opacity: 0.85 }}
+              >
+                Ladda ner PNG
+              </button>
+            )}
             <button
               onClick={() => navigate('/game/history')}
               className="btn btn-outline"
