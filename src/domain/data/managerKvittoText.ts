@@ -38,6 +38,28 @@ export const HALFTIME_OUTCOMES: Record<'lugna' | 'pressa' | 'prata', Record<Kvit
   },
 }
 
+// H2-uppföljning (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24),
+// Jacobs text, låst. Två fasta rader, ingen good/bad/neutral-variation:
+//
+// PEP_TALK_HOLD — pauseLean='hold' (Spak A, live match, matchLiveText.ts).
+// PAUSSNACK:s egen etikett för hold är "→ oförändrat" — ingen mätbar
+// spelmässig effekt att variera texten på, så en enda rad är rätt, inte en
+// pool. Fanns ingen kvittotext för hold förrän nu (H2-uppföljningen).
+export const PEP_TALK_HOLD_KVITTO = 'Du sa åt dem att hålla i det. Inga nya instruktioner.'
+
+// PRATA_KVITTO — ersätter HALFTIME_OUTCOMES.pratas tre good/bad/neutral-
+// varianter ovan. Mekaniken (applyHalftimeDecision, gameFlowActions.ts) ger
+// samma +12 moral-effekt oavsett andra halvlekens utfall — en utfalls-
+// beroende kvittotext var därför aldrig sann för just detta valet. Jacobs
+// rad förklarar VARFÖR effekten är lagbred trots att valet framställs som
+// "individuellt": andra spelare hör av sig ändå — även om mekaniken inte
+// modellerar den spridningen som en egen effekt (Jacobs egen formulering,
+// 2026-08-24). HALFTIME_OUTCOMES.prata ovan är därmed superseterad för
+// denna konsument (GranskaOversikt.tsx) men INTE raderad — den är fortsatt
+// data om `entry.type==='halftime_tactic'` nånsin får en good/bad/neutral-
+// läsare igen.
+export const PRATA_KVITTO = 'Du tog några åt sidan. Resten fick höra det ändå.'
+
 /**
  * Lineup-rotation (jämfört med förra matchen) → energi vs rytm.
  * M44 (textaudit 2026-07-04): "{spelare} avgjorde" borttagen — {spelare} binds

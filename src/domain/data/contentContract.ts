@@ -5,9 +5,11 @@
  * Fyra separata källor, ingen av dem en tabell: `GameEventType` (49 värden,
  * GameEvent.ts — 48 vid O11:s ursprungsleverans, `burnoutRelief` tillagd
  * 2026-08-23 samma pass som täckningsgrinden nedan byggdes), `StorylineType`
- * (22, Narrative.ts), `ArcType` (8, Narrative.ts), `PORTAL_BEATS` (17 id:n,
- * portalBeats.ts — den enda som redan ÄR en array, inte bara en typ).
- * 49+22+8+17 = 96 distinkta narrativa former.
+ * (22, Narrative.ts), `ArcType` (7, Narrative.ts — 8 vid O11:s leverans,
+ * 'ledare_crisis' borttagen 2026-08-24, H1-uppföljningen, se BACKLOG.md
+ * "Två läsare, en sanning"), `PORTAL_BEATS` (17 id:n, portalBeats.ts — den
+ * enda som redan ÄR en array, inte bara en typ).
+ * 49+22+7+17 = 95 distinkta narrativa former.
  * Samma arbete som `U5`:s semanticKey-kartläggning, byggda ihop per domens
  * egen instruktion ("gör dem tillsammans, inte två gånger") — U5 var klar
  * (`4e341891`) innan detta pass startade.
@@ -169,9 +171,12 @@ const STORYLINE_TYPE_IDS = [
   'lokal_hero_moment', 'contract_drama_resolved', 'derby_echo_resolved',
 ] as const
 
+// 'ledare_crisis' BORTTAGEN (H1-uppföljning, 2026-08-24) — se Narrative.ts:s
+// ArcType-kommentar. AssertNoMissingIds nedan hade failat tsc annars
+// (Covered extends readonly ArcType[], 'ledare_crisis' är inte längre ett).
 const ARC_TYPE_IDS = [
   'hungrig_breakthrough', 'joker_redemption', 'veteran_farewell', 'veteran_final_season',
-  'ledare_crisis', 'lokal_hero', 'contract_drama', 'derby_echo',
+  'lokal_hero', 'contract_drama', 'derby_echo',
 ] as const
 
 // O11 (2026-08-23) — ENFORCEMENT, den del av domen som INTE byggdes i
@@ -279,7 +284,7 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     systems: ['ekonomi', 'spelartrupp (fas 3, sälj-alternativet)', 'mecenatrelation (fas 3, mecenat-alternativet)'],
     lifespan: 'en sammanhängande båge över minst 5 omgångar (fas 1→2→3), sedan löst för säsongen',
     recallSurface: 'ingen',
-    notes: 'whyNow WIRAD INSTANS-NIVÅ (O2 lager 1, 2026-08-24): fas 3s event (economicCrisisService.ts) sätter whyNowPerson="Johan Bergstedt" (ekonomichefen) direkt på GameEvent.whyNow — inte via denna typ-nivå-rad, som förblir avsiktligt osatt. Fas 1/2s kroppstext antyder deadlines ("Jag vill träffa dig. I morgon.", "inom två veckor") men INGEN är en mekanisk deadline i koden (fas 3 triggar strikt matchday-baserat) — att sätta deadlineLabel från dessa citat vore att koda in ett löfte texten inte håller, samma klass av fel som playerPraise-fyndet. sell_star-valet saknar fortfarande consequenceLevel/irreversible (D1 punkt 3s fält) — värt att sätta separat, litet jobb, ospårat.',
+    notes: 'whyNow WIRAD INSTANS-NIVÅ (O2 lager 1, 2026-08-24): fas 3s event (economicCrisisService.ts) sätter whyNowPerson="Johan Bergstedt" (ekonomichefen) direkt på GameEvent.whyNow — inte via denna typ-nivå-rad, som förblir avsiktligt osatt. Fas 1/2s kroppstext antyder deadlines ("Jag vill träffa dig. I morgon.", "inom två veckor") men INGEN är en mekanisk deadline i koden (fas 3 triggar strikt matchday-baserat) — att sätta deadlineLabel från dessa citat vore att koda in ett löfte texten inte håller, samma klass av fel som playerPraise-fyndet. sell_star-valet fick consequenceLevel="costly"/costLabel/irreversible (D1 punkt 3s fält) 2026-08-26 (L4) — var den enda verkliga instansen av dessa fält i hela kodbasen, tidigare bara testade i consequenceMarker.test.ts.',
   },
 }
 

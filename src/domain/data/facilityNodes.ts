@@ -82,16 +82,26 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 20,
     capacityBonus: 5000,
     isHall: true,
+    // Påståendekartan, byggnodernas löften (2026-08-27, Jacobs dom): "Klacken
+    // glesnar" struken — koden gör MOTSATSEN (hasIndoorArena skyddar mot
+    // väder, HÖJER publiken, effectiveWeatherAttendance). Att lova en
+    // nackdel som inte finns är lika illa som att lova en fördel som inte
+    // finns. "+ tv-avtal" struket — rent påhitt, noll kod, och ett tv-avtal
+    // i en fiktiv bandyliga är ett nytt system, inte en nodeffekt. "Bandy
+    // året om" och "Träningstid året om" är sanna av konstruktion (en
+    // inomhushall tillåter faktiskt det, oavsett årstid) — kvar.
     consequences: [
-      { dim: 'publik',  dir: 'ned', label: 'Klacken glesnar' },
       { dim: 'sjal',    dir: 'ned', label: 'De trognaste i öppet brott' },
-      { dim: 'ekonomi', dir: 'upp', label: 'Bandy året om + tv-avtal' },
+      { dim: 'ekonomi', dir: 'upp', label: 'Bandy året om' },
       { dim: 'ungdom',  dir: 'upp', label: 'Träningstid året om' },
     ],
   },
 
   // ── VERKSAMHET ──────────────────────────────────────────────────────────
   {
+    // Påståendekartan, byggnodernas löften (2026-08-27): "Försäljnings-
+    // intäkter" var tidigare oviart — nu WIRAD (economyService.ts,
+    // KIOSK_NODE_SALES_BONUS_MULT), byggd nod höjer kiosk-sqrt-raten 25%.
     id: 'kiosk',
     gren: 'verksamhet',
     label: 'Kiosk & servering',
@@ -108,7 +118,11 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     ],
   },
   {
-    // B1 §8 — portad från gamla modellen (strålkastare, +10% sponsor)
+    // B1 §8 — portad från gamla modellen (strålkastare, +10% sponsor).
+    // Påståendekartan (2026-08-27, Jacobs dom): "+10% sponsorintäkt" var
+    // rent påhitt (noll kod) — struket, INTE wirat. En sponsor-bonus hade
+    // varit billig att koda, men domen behandlar den som samma klass av
+    // fabricerat löfte som matchhallens tv-avtal, inte som en att fylla i.
     id: 'stralkastare',
     gren: 'verksamhet',
     label: 'Strålkastare',
@@ -119,13 +133,16 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 5,
     financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
     consequences: [
-      { dim: 'ekonomi', dir: 'upp', label: '+10% sponsorintäkt' },
       { dim: 'publik',  dir: 'upp', label: 'Kvällsmatcher i bättre ljus' },
       { dim: 'ekonomi', dir: 'ned', label: 'Kassa −80 tkr' },
     ],
   },
   {
-    // B1 §8 — portad från gamla modellen (gym, +15% träningseffekt)
+    // B1 §8 — portad från gamla modellen (gym). Påståendekartan (2026-08-27,
+    // Jacobs dom): mekanismen (facilitiesBonus→club.facilities→
+    // facilityMultiplier, trainingService.ts) FINNS men är generisk — delad
+    // av alla nio noder, inte gym-specifik, och aldrig bokstavligen 15%.
+    // "+15% träningseffekt" struket, siffran var påhittad.
     id: 'gym',
     gren: 'verksamhet',
     label: 'Gym',
@@ -136,7 +153,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 8,
     financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
     consequences: [
-      { dim: 'ungdom',  dir: 'upp', label: '+15% träningseffekt' },
+      { dim: 'ungdom',  dir: 'upp', label: 'Snabbare utveckling' },
       { dim: 'sjal',    dir: 'upp', label: 'Spelarna kan bygga styrka året om' },
       { dim: 'ekonomi', dir: 'ned', label: 'Kassa −150 tkr' },
     ],

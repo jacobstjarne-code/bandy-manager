@@ -44,6 +44,9 @@ function buildStatusText(relationship: number, lastName: string): string {
   return `Varm. ${lastName} skriver om er nästan varje vecka.`
 }
 
+/**
+ * @cites pressRefusals
+ */
 function buildOutlookText(journalist: Journalist): string {
   const rel = journalist.relationship
   const refusals = journalist.pressRefusals ?? 0

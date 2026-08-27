@@ -26,6 +26,8 @@ export interface NextOpponentHook {
  * 4. De ligger strax under oss — verkligen en placering under
  * 5. Fallback — obligatorisk, inte valfri. Utan den går kroken sönder
  *    när ingen fakta är stark nog (vanligt tidigt på säsongen).
+ *
+ * @cites opponentUnbeatenStreakAtVenue, opponentUnbeatenStreakSinceDate, previousMeetingThisSeason, managedLeaguePoints, opponentLeaguePoints, managedLeaguePosition, opponentLeaguePosition
  */
 export function buildNextOpponentHook(facts: NextOpponentTeaserFacts): NextOpponentHook {
   const title = `Nästa: ${facts.opponentShortName} ${facts.isHome ? 'hemma' : 'borta'}`

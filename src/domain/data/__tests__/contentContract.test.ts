@@ -7,18 +7,22 @@ import { PORTAL_BEATS } from '../portalBeats'
  * registrets STRUKTUR (fullständighet + intern konsistens), inte innehållets
  * korrekthet — att sextiofältet är rätt ifyllt kan bara verifieras genom att
  * läsa källkoden, inte genom en assertion. Se contentContract.ts:s
- * huvudkommentar för täckningsläget (96 rader, en delmängd `filled: true`).
+ * huvudkommentar för täckningsläget (95 rader, en delmängd `filled: true`).
+ *
+ * 95, inte 96 (H1-uppföljning, 2026-08-24): ArcType 8 → 7, 'ledare_crisis'
+ * borttagen (Jacobs dom — captainSpeech, postAdvanceEvents.ts, är kanon för
+ * "kaptenen samlar laget"). Se BACKLOG.md "Två läsare, en sanning".
  */
 describe('CONTENT_CONTRACT — struktur', () => {
-  it('har 96 rader — 49 GameEventType + 22 StorylineType + 8 ArcType + 17 PortalBeat', () => {
-    expect(CONTENT_CONTRACT).toHaveLength(96)
+  it('har 95 rader — 49 GameEventType + 22 StorylineType + 7 ArcType + 17 PortalBeat', () => {
+    expect(CONTENT_CONTRACT).toHaveLength(95)
     const bySource = CONTENT_CONTRACT.reduce((acc, e) => {
       acc[e.source] = (acc[e.source] ?? 0) + 1
       return acc
     }, {} as Record<string, number>)
     expect(bySource.GameEventType).toBe(49)
     expect(bySource.StorylineType).toBe(22)
-    expect(bySource.ArcType).toBe(8)
+    expect(bySource.ArcType).toBe(7)
     expect(bySource.PortalBeat).toBe(17)
   })
 
