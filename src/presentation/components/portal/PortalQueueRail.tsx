@@ -1,4 +1,5 @@
 import { getFatigueState, getItemAge } from '../../../domain/services/decisionFatigueService'
+import { getEventTypeMeta } from '../../../domain/data/eventTypeLabels'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
@@ -10,15 +11,24 @@ interface Props {
   demotedMarks?: { icon: string; label: string }[]
 }
 
-const SOURCE_META: Record<string, { icon: string; label: string }> = {
-  communityEvent:     { icon: '🏘️', label: 'Orten' },
-  hallDebate:         { icon: '🏛️', label: 'Kommunen' },
-  journalistExclusive:{ icon: '📰', label: 'Lokaltidningen' },
-  playerMediaComment: { icon: '📰', label: 'Lokaltidningen' },
-  sponsorOffer:       { icon: '💼', label: 'Sponsor' },
-  academyEvent:       { icon: '🎓', label: 'Akademin' },
-  supporterEvent:     { icon: '📣', label: 'Klacken' },
-  weeklyDecision:     { icon: '📋', label: 'Veckans beslut' },
+/**
+ * A-M3 (SEXSÄSONGSAUDITEN 2026-08-26): rotorsaken till den råa läckan.
+ * Denna karta täckte bara 8/49 GameEventType-värden — allt annat föll
+ * tillbaka på `sourceKey` (den råa camelCase-strängen, se getSourceMeta
+ * nedan). `weeklyDecision` är INTE ett GameEventType (game.deferredDecisions
+ * är typad GameEvent[], se SaveGame.ts:464) — behålls här som en egen,
+ * icke-GameEventType källnyckel, ingen deferred-post har någonsin haft det
+ * värdet i praktiken, men skadar inget att bevara.
+ */
+const EXTRA_SOURCE_META: Record<string, { icon: string; label: string }> = {
+  weeklyDecision: { icon: '📋', label: 'Veckans beslut' },
+}
+
+/** EXTRA_SOURCE_META (icke-GameEventType-nycklar) först, sedan den
+ *  exhaustiva EVENT_TYPE_LABELS-kartan (eventTypeLabels.ts) — som ALDRIG
+ *  faller tillbaka på den råa strängen, bara en generisk etikett + telemetri. */
+function getSourceMeta(sourceKey: string): { icon: string; label: string } {
+  return EXTRA_SOURCE_META[sourceKey] ?? getEventTypeMeta(sourceKey)
 }
 
 function getAgedClass(age: number): string {
@@ -79,7 +89,7 @@ export function PortalQueueRail({ game, demotedMarks = [] }: Props) {
       <div className="portal-queue-rail-head">
         <span className="portal-queue-rail-eyebrow">⏳ I kö</span>
         <span className="portal-queue-rail-count">
-          <strong>{totalCount}</strong> nästa veckan
+          <strong>{totalCount}</strong> beslut i kö
         </span>
       </div>
       <div className="portal-queue-chips">
@@ -91,9 +101,7 @@ export function PortalQueueRail({ game, demotedMarks = [] }: Props) {
         ))}
         {uniqueItems.map((item, idx) => {
           const sourceKey = item.source ?? item.type ?? 'unknown'
-          const meta = SOURCE_META[sourceKey]
-          const icon = meta?.icon ?? '📋'
-          const label = meta?.label ?? sourceKey
+          const { icon, label } = getSourceMeta(sourceKey)
           const age = getItemAge(item, matchday)
           const agedClass = getAgedClass(age)
           return (
