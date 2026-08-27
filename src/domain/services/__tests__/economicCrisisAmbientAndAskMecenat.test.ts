@@ -13,6 +13,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkEconomicCrisis } from '../economicCrisisService'
 import { resolveEvent } from '../events/eventResolver'
+import { classifyEventNature } from '../granskaEventClassifier'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
 import type { SaveGame } from '../../entities/SaveGame'
@@ -67,6 +68,18 @@ describe('event_crisis_awareness (fas 1) — ambient, ingen fejkad valkontrast',
     let g = { ...game, pendingEvents: [event!] }
     g = resolveEvent(g, event!.id, 'ambient_dismiss')
     expect(g.pendingEvents).toEqual([])
+  })
+
+  // A-H10 (SEXSÄSONGSAUDITEN 2026-08-26): innan fixen klassade
+  // classifyEventNature() ALLA criticalEconomy-typer som 'critical' oavsett
+  // choices.length. Det gav ett kriskort utan knappar i Granska (fas 1 har
+  // choices:[] avsiktligt) samtidigt som unresolvedCritical-räknaren blockerade
+  // "Fortsätt" — soft-lock, observerat efter en förlorad slutspelsmatch med
+  // aktiv ekonomisk kris. Detta är regressionstestet för det.
+  it('regression: fas 1-eventet klassas ALDRIG critical i Granska (skulle blockera Fortsätt utan ett synligt val)', () => {
+    const game = makeGame()
+    const { event } = checkEconomicCrisis(game, 1)
+    expect(classifyEventNature(event!)).toBe('reactions')
   })
 })
 
@@ -144,5 +157,48 @@ describe('ask_mecenat (fas 3) — generationsgrind + tie-break', () => {
     game = resolveEvent(game, event!.id, 'ask_mecenat')
 
     expect(game.mecenater!.find(m => m.id === 'mec1')!.happiness).toBe(0)
+  })
+})
+
+// A-H10 invariant sweep: kör alla tre kriskort-faser under sämsta möjliga
+// spelläge (noll mecenater, noll sponsorer, ingen aktiv spelare i truppen) och
+// bekräfta att INGEN fas ger ett event som Granska skulle klassa 'critical'
+// med noll val. Detta är precis det scenario auditen bad om: "iterera alla
+// crisis-card-definitioner och action-filtreringen under ett worst-case
+// spelläge, assert att varje fortfarande ger ≥1 enabled action".
+describe('A-H10 invariant: unresolvedBlockingCount > 0 ⇒ minst en synlig enabled action', () => {
+  function assertNeverBlockedWithoutAction(event: SaveGame['pendingEvents'][number] | null) {
+    if (!event) return
+    const nature = classifyEventNature(event)
+    if (nature === 'critical') {
+      expect(event.choices.length).toBeGreaterThan(0)
+    }
+  }
+
+  it('fas 1 (awareness), noll resurser', () => {
+    const game = makeGame({ mecenater: [], sponsors: [], players: [] })
+    const { event } = checkEconomicCrisis(game, 1)
+    assertNeverBlockedWithoutAction(event)
+  })
+
+  it('fas 2 (pressure), noll resurser', () => {
+    const crisis: SaveGame['economicCrisisState'] = {
+      startedSeason: 1, startedMatchday: 1, phase: 'awareness', eventsFired: ['awareness'],
+    }
+    const game = makeGame({ economicCrisisState: crisis, mecenater: [], sponsors: [], players: [] })
+    const { event } = checkEconomicCrisis(game, 10)
+    assertNeverBlockedWithoutAction(event)
+  })
+
+  it('fas 3 (decision), noll resurser (inga mecenater, ingen kvarvarande spelare)', () => {
+    const crisis: SaveGame['economicCrisisState'] = {
+      startedSeason: 1, startedMatchday: 1, phase: 'pressure', eventsFired: ['pressure'],
+    }
+    const game = makeGame({ economicCrisisState: crisis, mecenater: [], sponsors: [], players: [] })
+    const { event } = checkEconomicCrisis(game, 10)
+    assertNeverBlockedWithoutAction(event)
+    // fas 3 ska fortfarande erbjuda minst take_loan även utan spelare att sälja
+    // eller mecenat att fråga.
+    expect(event!.choices.map(c => c.id)).toContain('take_loan')
   })
 })

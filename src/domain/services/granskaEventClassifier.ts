@@ -61,21 +61,41 @@ export const REACTION_TYPES = new Set<GameEventType>([
  * Pure function: classify a pending event by its nature for Granska routing.
  *
  * Routing rules:
- * - CRITICAL_GRANSKA_TYPES → 'critical' (decision required in Översikt)
+ * - CRITICAL_GRANSKA_TYPES with choices.length === 0 → 'reactions' (auto-resolved,
+ *   see Ambient-regeln note below)
+ * - CRITICAL_GRANSKA_TYPES with choices.length > 0 → 'critical' (decision required
+ *   in Översikt)
  * - PLAYER_TYPES → 'player' (Spelare-fliken)
  * - REACTION_TYPES with choices.length === 0 → 'reactions' (auto-resolved)
  * - REACTION_TYPES with choices.length > 0 → 'critical' (decision required —
  *   side-effects in eventResolver only fire on a real choiceId)
- * - Any other type with priority='critical' escalates to 'critical'
+ * - Any other type with priority='critical' AND choices.length === 0 → 'reactions'
+ * - Any other type with priority='critical' AND choices.length > 0 → 'critical'
  * - Otherwise → 'inbox-only'
+ *
+ * Ambient-regeln (A-H10, SEXSÄSONGSAUDITEN 2026-08-26 + D1
+ * DOM_D1_EVENTVIKTNING_2026-08-19.md): ett event utan val (choices.length === 0)
+ * får ALDRIG räknas som ett blockerande 'critical'-event — Granskas
+ * unresolvedCritical-räknare (GranskaScreen.tsx) stänger av "Fortsätt" så länge
+ * räknaren är > 0, men DecisionCard har inga knappar att rendera för ett event
+ * utan val. Innan denna fix gällde choices.length-kollen bara REACTION_TYPES;
+ * economicCrisisService.ts:s fas 1 (awareness) skapar avsiktligt ett
+ * criticalEconomy-event med choices:[] (ambient, tänkt att auto-resolveras som
+ * en reaktion) — det landade ändå i 'critical' och gav ett kriskort utan val,
+ * ett soft-lock av "Fortsätt"-knappen (observerat: förlorad slutspelsmatch +
+ * aktiv ekonomisk kris). Samma gap fanns i priority==='critical'-fallgrenen.
  */
 export function classifyEventNature(event: GameEvent): EventNature {
-  if (CRITICAL_GRANSKA_TYPES.has(event.type)) return 'critical'
+  if (CRITICAL_GRANSKA_TYPES.has(event.type)) {
+    return event.choices.length === 0 ? 'reactions' : 'critical'
+  }
   if (PLAYER_TYPES.has(event.type)) return 'player'
   if (REACTION_TYPES.has(event.type)) {
     return event.choices.length === 0 ? 'reactions' : 'critical'
   }
-  if (event.priority === 'critical') return 'critical'
+  if (event.priority === 'critical') {
+    return event.choices.length === 0 ? 'reactions' : 'critical'
+  }
   return 'inbox-only'
 }
 

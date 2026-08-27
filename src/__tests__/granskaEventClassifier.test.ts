@@ -23,10 +23,31 @@ function makeEvent(type: GameEvent['type'], overrides: Partial<GameEvent> = {}):
 }
 
 describe('classifyEventNature', () => {
-  it('classifies critical types correctly', () => {
+  it('classifies critical types with a real choice as critical', () => {
+    const withChoice = { choices: [{ id: 'yes', label: 'Ja', effect: {} }] }
     for (const type of CRITICAL_GRANSKA_TYPES) {
-      expect(classifyEventNature(makeEvent(type))).toBe('critical')
+      expect(classifyEventNature(makeEvent(type, withChoice))).toBe('critical')
     }
+  })
+
+  // A-H10 (SEXSÄSONGSAUDITEN 2026-08-26): CRITICAL_GRANSKA_TYPES med
+  // choices:[] (ambient, t.ex. economicCrisisService.ts:s fas 1) fick
+  // tidigare 'critical' och blockerade Granskas "Fortsätt" med ett
+  // kriskort utan knappar. Ambient-regeln (D1) kräver att choices.length===0
+  // ALLTID routar bort från 'critical', oavsett typ.
+  it('CRITICAL_GRANSKA_TYPES with choices:[] → reactions (never a blocking card without actions)', () => {
+    for (const type of CRITICAL_GRANSKA_TYPES) {
+      expect(classifyEventNature(makeEvent(type))).toBe('reactions')
+    }
+  })
+
+  it('an ad hoc priority=critical event with choices:[] → reactions, not a dead-end critical card', () => {
+    expect(classifyEventNature(makeEvent('communityEvent', { priority: 'critical' }))).toBe('reactions')
+  })
+
+  it('an ad hoc priority=critical event with a real choice → critical', () => {
+    const withChoice = { priority: 'critical' as const, choices: [{ id: 'yes', label: 'Ja', effect: {} }] }
+    expect(classifyEventNature(makeEvent('communityEvent', withChoice))).toBe('critical')
   })
 
   it('classifies player types correctly', () => {
@@ -65,11 +86,15 @@ describe('classifyEventNature', () => {
 })
 
 describe('getCriticalEventsForGranska cap', () => {
+  // A-H10: kritiska event-instanser i dessa tester behöver en riktig choice —
+  // choices:[] routar numera till 'reactions' (Ambient-regeln), inte 'critical'.
+  const withChoice = { choices: [{ id: 'yes', label: 'Ja', effect: {} }] }
+
   it('returns only unresolved critical events', () => {
     const events: GameEvent[] = [
-      makeEvent('patronEvent', { id: 'p1' }),
-      makeEvent('patronEvent', { id: 'p2', resolved: true }),
-      makeEvent('criticalEconomy', { id: 'ce1' }),
+      makeEvent('patronEvent', { id: 'p1', ...withChoice }),
+      makeEvent('patronEvent', { id: 'p2', resolved: true, ...withChoice }),
+      makeEvent('criticalEconomy', { id: 'ce1', ...withChoice }),
       makeEvent('communityEvent', { id: 'c1' }),
     ]
     const result = getCriticalEventsForGranska(events)
@@ -81,10 +106,10 @@ describe('getCriticalEventsForGranska cap', () => {
 
   it('slice(0, 3) caps at 3 critical events', () => {
     const events: GameEvent[] = [
-      makeEvent('patronEvent', { id: 'p1' }),
-      makeEvent('criticalEconomy', { id: 'ce1' }),
-      makeEvent('transferBidReceived', { id: 'tb1' }),
-      makeEvent('patronEvent', { id: 'p2' }),
+      makeEvent('patronEvent', { id: 'p1', ...withChoice }),
+      makeEvent('criticalEconomy', { id: 'ce1', ...withChoice }),
+      makeEvent('transferBidReceived', { id: 'tb1', ...withChoice }),
+      makeEvent('patronEvent', { id: 'p2', ...withChoice }),
     ]
     const result = getCriticalEventsForGranska(events).slice(0, 3)
     expect(result.length).toBe(3)
@@ -97,7 +122,9 @@ describe('getReactionEventsForGranska', () => {
       makeEvent('fanLetter', { id: 'fl1' }),
       makeEvent('opponentQuote', { id: 'oq1' }),
       makeEvent('fanLetter', { id: 'fl2', resolved: true }),
-      makeEvent('patronEvent', { id: 'pe1' }),
+      // patronEvent med en riktig choice förblir 'critical' (utesluts här) —
+      // med choices:[] hade den (post-A-H10) själv klassats 'reactions'.
+      makeEvent('patronEvent', { id: 'pe1', choices: [{ id: 'yes', label: 'Ja', effect: {} }] }),
     ]
     const result = getReactionEventsForGranska(events)
     expect(result.length).toBe(2)
