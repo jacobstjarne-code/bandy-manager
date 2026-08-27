@@ -87,12 +87,15 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
                     Relation
                   </span>
                   <div style={{ width: 70 }}>
+                    {/* Rotorsak (A-L1, SLUTTEST_KO.md): aria-label="Relation" här dubblerade
+                        den synliga "Relation"-etiketten på raden ovan — läses som
+                        "Relation Relation" av allt som konkatenerar DOM-text (skärmläsare,
+                        design-audit). Etiketten finns redan visuellt, SVG:n behöver ingen egen. */}
                     <Sparkline
                       points={journalistPoints}
                       stroke="cold"
                       height={14}
                       markers={declining ? [{ index: journalistPoints.length - 1, color: 'var(--danger)', size: 2 }] : undefined}
-                      label="Relation"
                     />
                   </div>
                 </div>

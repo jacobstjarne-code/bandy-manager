@@ -124,7 +124,12 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     // på good/bad/refused). {N} = första (äldsta) entryns matchday.
     const firstMem = sortedMemories[0]
     const ev = firstMem?.event ?? ''
-    const premissN = firstMem?.matchday ?? round
+    // A-L1 (SLUTTEST_KO.md) — nollvärdesvakt: matchday 0 är alltid en
+    // föregångare-sentinel (preseason/uninitialiserat, currentMatchday startar
+    // på 0 i createNewGame.ts), aldrig en riktig omgång att visa. `?? round`
+    // fångar bara null/undefined — 0 är varken, så det slank igenom och
+    // renderades ordagrant som "omg 0". `||` fångar 0 också.
+    const premissN = firstMem?.matchday || round
     const opp = firstMem?.opponentShort
     const stem = interpolate(JOURNALIST_PREMISS_STEM[ev] ?? '{journalist} hörde av sig', { journalist: name })
     const canAppendOpp = !!opp && (ev === 'good_answer' || ev === 'bad_answer' || ev === 'refused_press')
@@ -139,8 +144,11 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
         echo,
         objectName: name,
         sinceMatchday: sortedMemories[0]?.matchday,
+        // Samma nollvärdesvakt i tråden (EfterklangThreadModal renderar "OMG {matchday}")
+        // — annars kunde en enskild förkorrigerad post (0, gammalt save) fortfarande
+        // synas i tidslinjen även efter att premissen ovan gatats.
         threadEntries: sortedMemories.map(m => ({
-          matchday: m.matchday,
+          matchday: m.matchday || round,
           text: JOURNALIST_EVENT_LABEL[m.event] ?? m.event,
         })),
         journalistName: name,

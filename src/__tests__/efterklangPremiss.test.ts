@@ -102,6 +102,25 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
     expect(find(game, 'journalist')?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg, omg 2.')
   })
 
+  it('journalist: nollvärdesvakt — matchday 0 (preseason-sentinel/gammalt save) visas ALDRIG som "omg 0", faller till currentMatchday', () => {
+    // A-L1 (SLUTTEST_KO.md): matchday 0 är alltid en föregångare-sentinel
+    // (createNewGame.ts sätter currentMatchday:0 innan omgång 1), aldrig en
+    // riktig omgång att referera i text. Testar display-vakten i
+    // pickEfterklang.ts oberoende av var 0:an ursprungligen kom ifrån.
+    const game = makeGame({
+      journalist: {
+        name: 'Britta Sandström', relationship: 60, pressRefusals: 0,
+        memory: [{ season: 3, matchday: 0, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' }],
+      } as never,
+    })
+    const mem = find(game, 'journalist')
+    expect(mem?.premiss).not.toContain('omg 0')
+    expect(mem?.premiss).toBe(`Du gav Britta Sandström ett rakt svar efter Karlsborg, omg ${game.currentMatchday}.`)
+    // Tidslinjen (EfterklangThreadModal renderar "OMG {matchday}") ska inte
+    // heller bära en synlig 0:a.
+    expect(mem?.threadEntries.every(e => e.matchday !== 0)).toBe(true)
+  })
+
   it('journalist: utan opponentShort faller tillbaka på ", omg {N}."', () => {
     const game = makeGame({
       journalist: {

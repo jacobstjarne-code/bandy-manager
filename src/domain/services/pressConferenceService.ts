@@ -923,5 +923,10 @@ export function generatePressConference(
       ? { name: namedJournalist.name, role: namedJournalist.outlet }
       : { name: journalist, role: '' },
     storylinePressKey,
+    // A-L1 (SLUTTEST_KO.md): så eventResolver.ts:s 'pressResponse'-hantering kan
+    // slå upp DEN HÄR matchens .matchday direkt istf att gissa fram "senaste
+    // ligamatchen" ur game.fixtures i efterhand (den gissningen läste roundNumber,
+    // fel fält per arkitekturregeln, och kunde falla till 0 — "omg 0" i Efterklang).
+    relatedFixtureId: fixture.id,
   }
 }

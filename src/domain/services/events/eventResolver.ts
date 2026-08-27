@@ -468,13 +468,28 @@ export function resolveEvent(
       }
       // Update journalist memory
       if (updatedGame.journalist) {
-        // B1 — premiss-anchor: senaste ligamatchens motståndare (lätt åtkomligt här,
-        // pressfrågan gäller den just spelade matchen)
-        const lastLeagueFixture = updatedGame.fixtures
-          .filter(f => f.status === 'completed' && !f.isCup)
+        // B1 — premiss-anchor: matchen presskonferensen faktiskt gäller.
+        // A-L1 (SLUTTEST_KO.md, rotorsak): tidigare gissades "senaste ligamatchen"
+        // fram genom att skanna HELA game.fixtures (alla säsonger) efter högst
+        // .roundNumber — fel fält (roundNumber nollställs varje säsong, är inte
+        // den globala spelordningen — se CLAUDE.md: använd ALDRIG roundNumber för
+        // ordning, bara matchday) och utan säsongsfilter. När skanningen inte
+        // hittade något föll den till en hårdkodad 0, som sedan visades ordagrant
+        // som "omg 0" i Efterklangs journalist-premiss. Läs nu matchen direkt via
+        // event.relatedFixtureId (satt av generatePressConference), fältet som
+        // finns exakt för detta. Fallback (äldre pending events utan fältet)
+        // scopas till innevarande säsong och läser .matchday, aldrig .roundNumber.
+        const relatedFixture = event.relatedFixtureId
+          ? updatedGame.fixtures.find(f => f.id === event.relatedFixtureId)
+          : undefined
+        const lastLeagueFixture = relatedFixture ?? updatedGame.fixtures
+          .filter(f => f.status === 'completed' && !f.isCup && f.season === updatedGame.currentSeason)
           .reduce<typeof updatedGame.fixtures[number] | undefined>(
-            (latest, f) => (f.roundNumber > (latest?.roundNumber ?? -1) ? f : latest), undefined)
-        const matchday = lastLeagueFixture?.roundNumber ?? 0
+            (latest, f) => (f.matchday > (latest?.matchday ?? -1) ? f : latest), undefined)
+        // Sista utväg om ingen matchande fixture alls hittas: nuvarande matchday
+        // (aldrig 0 här — pressResponse kan bara ske efter en spelad match).
+        // Aldrig en hårdkodad 0-sentinel som riskerar att renderas ordagrant.
+        const matchday = lastLeagueFixture?.matchday ?? updatedGame.currentMatchday
         const oppId = lastLeagueFixture
           ? (lastLeagueFixture.homeClubId === updatedGame.managedClubId
               ? lastLeagueFixture.awayClubId : lastLeagueFixture.homeClubId)
