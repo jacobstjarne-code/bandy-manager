@@ -1674,7 +1674,10 @@ function* simulateMatchCore(
           if (tc) commentaryText = tc
         }
       } else if (saveOccurred && gkPlayerId) {
-        templateVars = { ...templateVars, goalkeeper: findPlayerName(gkPlayerId) }
+        // Målvakten hör till FÖRSVARANDE lag, inte anfallande — templateVars.team/opponent
+        // sattes ovan utifrån isHomeAttacking (anfallssidan) och pekade därför fel klubb
+        // i {team}-tokens i save-poolen (t.ex. "Han höll {team} kvar i matchen där!").
+        templateVars = { ...templateVars, goalkeeper: findPlayerName(gkPlayerId), team: defendingTeam, opponent: attackingTeam }
         // Sprint 28-B: Legend GK save commentary (70% override)
         const gkPlayer    = allPlayers.find(p => p.id === gkPlayerId)
         const gkIsManaged = managedIsHome !== undefined ? (managedIsHome ? !isHomeAttacking : isHomeAttacking) : false
