@@ -1,0 +1,18 @@
+{
+  "//": "M9-uppföljning (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24): scripts/ ingick tidigare i INGEN tsconfig — tsconfig.json:s include är ['src'] enbart. En hel klass fel (t.ex. MatchEventType.RedCard, ett borttaget enum-medlem — bandy tidsutvisning heter nu Suspension) satt osynlig i stressharnesset/data-warehouse och rapporterade tyst noll istf att fela. Separat config, inte en utökning av tsconfig.json:s include, eftersom den senare har rootDir:'src' för sin faktiska dist-emit (npm run build) — scripts/ är en syskonkatalog och skulle bryta det. Denna configen emitterar aldrig (noEmit), den är enbart en typkontrollsgrind.",
+  "//exclude": "BASELINESKULD, ratchet, inte en frihandsbiljett. Tre RedCard-referenser (data-warehouse/generate.ts×2, stress/stats.ts) och fem triviala unused-var/import-fel fixade samma commit denna gate byggdes. De 15 filerna nedan (106 fel) HAR EJ fixats — kategoriserat i BACKLOG.md 'Två läsare, en sanning'. Ta bort en fil härifrån när den fixas. Lägg ALDRIG till en ny fil här utan en rad i BACKLOG om varför — en ny scripts/-fil ska type-checka rent från dag ett.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": ["src", "scripts"],
+  "exclude": [
+    "node_modules", "dist", "src/**/__tests__/**", "src/**/*.test.ts", "src/**/*.test.tsx",
+    "scripts/data-warehouse/generate.ts", "scripts/data-warehouse/validate.ts",
+    "scripts/sprint26_audit.ts",
+    "scripts/compare-modes.ts", "scripts/calibrate.ts", "scripts/calibrate_v2.ts", "scripts/calibrate-pause-lean.ts", "scripts/analyze-stress.ts",
+    "scripts/measure_htlead.ts", "scripts/measure_htlead_equalca.ts", "scripts/measure_structure.ts", "scripts/measure_style.ts",
+    "scripts/measure_sp6_interrupts.ts", "scripts/fatigue-vs-fresh-test.ts", "scripts/sim-remaining-test.ts"
+  ]
+}

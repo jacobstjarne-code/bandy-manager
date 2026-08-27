@@ -37,6 +37,15 @@ jobs:
       - run: npm ci
       - name: Type-check (tsc)
         run: npx tsc --noEmit
+      # M9 (oberoende speltest- och produktaudit, 5c9a7a8, 2026-08-24):
+      # scripts/ ingick i INGEN tsconfig — ett helt borttaget enum-medlem
+      # (MatchEventType.RedCard) satt osynligt i stressharnesset i okänt
+      # antal pass och rapporterade tyst noll istf att fela. tsconfig.json
+      # kan inte bara utökas (rootDir:'src' för den riktiga dist-emitten) —
+      # egen config, ratchet-exkluderad för 15 filer med redan existerande
+      # fel (se tsconfig.scripts.json:s egen kommentar + BACKLOG.md).
+      - name: Type-check (tsc, scripts/)
+        run: npx tsc -p tsconfig.scripts.json
       - name: Tests (vitest)
         run: npm test
       # ETAPP 1.2 (Skutskär-auditen, 2026-08-17): tsc --noEmit ensam missade
