@@ -159,6 +159,11 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     ],
   },
   {
+    // Påståendekartan, byggnodernas löften (2026-08-27, Jacobs dom): "Ungdomarna
+    // väljer att stanna" struken — samma klass som strålkastarens sponsorlöfte
+    // och matchhallens tv-avtal. En anläggning som håller kvar ungdomar är en
+    // mekanism vi inte har; akademispelares utveckling styrs av developmentRate
+    // (arcService.ts), inte av byggnader. Ett lojalitetslöfte inget system bär.
     id: 'traningshall',
     gren: 'verksamhet',
     label: 'Träningshall (ungdom)',
@@ -170,7 +175,6 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     financing: { kommun: { share: 0.4, minRelation: 50 }, mecenat: { share: 0.5 } },
     consequences: [
       { dim: 'ungdom',  dir: 'upp', label: 'Inomhusträning hela året' },
-      { dim: 'sjal',    dir: 'upp', label: 'Ungdomarna väljer att stanna' },
       { dim: 'ekonomi', dir: 'ned', label: 'Kassa −380 tkr' },
     ],
   },
