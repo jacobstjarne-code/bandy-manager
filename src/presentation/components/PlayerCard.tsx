@@ -12,7 +12,7 @@ import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
 import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
 import { Icon } from './primitives/Icon'
-import { formatSalary, positionShort } from '../utils/formatters'
+import { formatSalary, positionShort, formatContractUntil } from '../utils/formatters'
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { mentorshipBondAdeptInForm, mentorshipBondAdeptResting } from '../../domain/data/mentorshipStrings'
 import { pickRehabStageLine } from '../../domain/data/injuryDoctorText'
@@ -485,7 +485,7 @@ export function PlayerCard({
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 9, borderTop: '1px solid var(--border)', fontSize: 10, color: 'var(--text-secondary)' }}>
-            <span>📋 Kontrakt t.o.m. {player.contractUntilSeason + 1}</span>
+            <span>📋 Kontrakt {formatContractUntil(player.contractUntilSeason)}</span>
             {onExtendContract && currentSeason !== undefined && player.contractUntilSeason <= currentSeason + 1 && (
               <button onClick={e => { e.stopPropagation(); onExtendContract() }}
                 style={{ background: 'none', border: 'none', color: 'var(--accent-dark)', fontWeight: 700, fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
@@ -830,7 +830,7 @@ export function PlayerCard({
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>📋</span>
               <span style={{ color: 'var(--text-secondary)' }}>
-                Kontrakt t.o.m. <strong>{player.contractUntilSeason + 1}</strong>
+                Kontrakt <strong>{formatContractUntil(player.contractUntilSeason)}</strong>
                 {onExtendContract && currentSeason !== undefined && player.contractUntilSeason <= currentSeason + 1 && (
                   <button
                     onClick={e => { e.stopPropagation(); onExtendContract() }}

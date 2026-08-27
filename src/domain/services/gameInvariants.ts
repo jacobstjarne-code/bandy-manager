@@ -290,12 +290,37 @@ function checkNoNaN(game: SaveGame): InvariantFinding[] {
   return findings
 }
 
+// 4.14 staleContracts — SEXSÄSONGSAUDITEN 2026-08-26, SPÅR 2a: en spelare som
+// fortfarande sitter på en klubb (clubId pekar på en riktig klubb, inte
+// 'free_agent') ska aldrig ha contractUntilSeason < currentSeason. Frigjorda/
+// pensionerade spelare hanteras separat (clubId → 'free_agent', eller helt
+// borttagna ur game.players — se seasonEndProcessor.ts:s activePlayers/
+// retiredPlayerIds och eventResolver.ts:s releasePlayer-effekt) INNAN
+// currentSeason räknas upp (seasonEndProcessor.ts, rad ~727-765 löper före
+// rad ~1454 där currentSeason faktiskt sätts till nextSeason) — så detta
+// fynd pekar på ett skrivfel i en annan kodväg, inte ett förväntat tillstånd.
+function checkStaleContracts(game: SaveGame): InvariantFinding[] {
+  const findings: InvariantFinding[] = []
+  const clubIds = new Set(game.clubs.map(c => c.id))
+  for (const p of game.players) {
+    if (!clubIds.has(p.clubId)) continue // fri agent — inte "aktiv" i denna mening
+    if (p.contractUntilSeason < game.currentSeason) {
+      findings.push({
+        name: 'staleContracts',
+        severity: 'crash',
+        message: `${p.firstName} ${p.lastName} (id=${p.id}, clubId=${p.clubId}) har contractUntilSeason=${p.contractUntilSeason} < currentSeason=${game.currentSeason} men är inte fri agent`,
+      })
+    }
+  }
+  return findings
+}
+
 // ── Sammanslagen export ──────────────────────────────────────────────────────
 
 export const INVARIANT_NAMES = [
   'tableSum', 'fixtureCount', 'playerAges', 'squadSize', 'positionCoverage',
   'finance', 'cupBracket', 'playoffBracket', 'noUndefined', 'matchdayMonotonic',
-  'pendingScreenConsistency', 'saveGameSize', 'noNaN',
+  'pendingScreenConsistency', 'saveGameSize', 'noNaN', 'staleContracts',
 ] as const
 
 export function checkInvariants(game: SaveGame): InvariantFinding[] {
@@ -313,5 +338,6 @@ export function checkInvariants(game: SaveGame): InvariantFinding[] {
     ...checkPendingScreenConsistency(game),
     ...checkSaveGameSize(game),
     ...checkNoNaN(game),
+    ...checkStaleContracts(game),
   ]
 }

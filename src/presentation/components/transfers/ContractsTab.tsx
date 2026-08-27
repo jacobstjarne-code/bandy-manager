@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X, ArrowRight } from 'lucide-react'
 import { useGameStore } from '../../store/gameStore'
-import { positionShort, formatValue, formatSalary } from '../../utils/formatters'
+import { positionShort, formatValue, formatSalary, formatContractUntil } from '../../utils/formatters'
 import { SectionLabel } from '../SectionLabel'
 import { RenewContractModal } from './RenewContractModal'
 import { WageOverrunWarning } from './WageOverrunWarning'
@@ -140,7 +140,7 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
                   {player.firstName} {player.lastName}
                 </p>
                 <p className="transfers-list-meta">
-                  {positionShort(player.position)} · {formatValue(player.marketValue)} · {formatSalary(player.salary)} · t.o.m. {player.contractUntilSeason}
+                  {positionShort(player.position)} · {formatValue(player.marketValue)} · {formatSalary(player.salary)} · {formatContractUntil(player.contractUntilSeason)}
                 </p>
               </div>
               <button onClick={() => setRenewingPlayerId(player.id)} className="btn btn-outline" style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, fontWeight: 600 }}>

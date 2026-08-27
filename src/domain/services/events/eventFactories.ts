@@ -3,7 +3,7 @@ import type { GameEvent, EventChoice, TransferBid } from '../../entities/GameEve
 import type { Player } from '../../entities/Player'
 import type { Mecenat } from '../../entities/Mecenat'
 import { pickPlayerPraiseText, pickCaptainSpeechText } from '../../data/eventCardInlineStrings'
-import { formatValue, formatSalary } from '../../format'
+import { formatValue, formatSalary, formatContractRemaining } from '../../format'
 
 // ── Transfer drama events ──────────────────────────────────────────────────
 export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
@@ -85,7 +85,7 @@ export function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
   const playerName = player ? `${player.firstName} ${player.lastName}` : 'okänd spelare'
   const clubName = buyingClub?.name ?? 'okänd klubb'
   const contractInfo = player
-    ? `Kontrakt: ${player.contractUntilSeason - game.currentSeason} säsong(er) kvar`
+    ? `Kontrakt: ${formatContractRemaining(player.contractUntilSeason, game.currentSeason)}`
     : ''
   const mvText = player ? `Marknadsvärde: ${formatValue(player.marketValue ?? 0)}` : ''
   const playerMarketVal = player?.marketValue ?? 50000

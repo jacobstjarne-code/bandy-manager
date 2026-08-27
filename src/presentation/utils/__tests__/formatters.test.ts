@@ -7,7 +7,7 @@
  * tillbaka isär om någon justerar en av skärmarna separat igen.
  */
 import { describe, it, expect } from 'vitest'
-import { playoffResultLabel, cupResultLabel, formatFinanceAbs } from '../formatters'
+import { playoffResultLabel, cupResultLabel, formatFinanceAbs, formatContractUntil, formatContractRemaining, contractSeasonsRemaining } from '../formatters'
 
 describe('playoffResultLabel', () => {
   it('mappar alla kända utfall', () => {
@@ -50,5 +50,45 @@ describe('formatFinanceAbs', () => {
 
   it('kr för belopp under 1 000 — saknades innan konsolideringen (visade "0 tkr")', () => {
     expect(formatFinanceAbs(600)).toBe('600 kr')
+  })
+})
+
+// SEXSÄSONGSAUDITEN 2026-08-26, SPÅR 2a: contractUntilSeason presenterades
+// tidigare i minst fyra olika former (PlayerCard.tsx +1-buggen adderade ett
+// helt fel årtal, ContractsTab.tsx/RenewContractModal.tsx visade rått tal med
+// olika ordval, eventFactories.ts räknade "N kvar" separat). Dessa tester
+// låser den kanoniska semantiken: rå säsongssiffra, inget offset.
+describe('formatContractUntil', () => {
+  it('visar den rå säsongssiffran utan offset (INGET +1 — det var PlayerCard.tsx-buggen)', () => {
+    expect(formatContractUntil(2028)).toBe('t.o.m. säsong 2028')
+  })
+})
+
+describe('contractSeasonsRemaining', () => {
+  it('0 när kontraktet gäller ut innevarande säsong', () => {
+    expect(contractSeasonsRemaining(2026, 2026)).toBe(0)
+  })
+
+  it('positivt för framtida utgång, negativt för redan utgånget', () => {
+    expect(contractSeasonsRemaining(2028, 2026)).toBe(2)
+    expect(contractSeasonsRemaining(2025, 2026)).toBe(-1)
+  })
+})
+
+describe('formatContractRemaining', () => {
+  it('"Sista säsongen" när contractUntilSeason === currentSeason', () => {
+    expect(formatContractRemaining(2026, 2026)).toBe('Sista säsongen')
+  })
+
+  it('singular för exakt 1 säsong kvar', () => {
+    expect(formatContractRemaining(2027, 2026)).toBe('1 säsong kvar')
+  })
+
+  it('plural för fler säsonger kvar', () => {
+    expect(formatContractRemaining(2029, 2026)).toBe('3 säsonger kvar')
+  })
+
+  it('"Kontrakt utgånget" för ett redan trasigt (invariant-brytande) tillstånd', () => {
+    expect(formatContractRemaining(2025, 2026)).toBe('Kontrakt utgånget')
   })
 })

@@ -83,3 +83,37 @@ export function formatDecimalComma(n: number): string {
 export function formatRating(rating: number): string {
   return formatDecimalComma(rating)
 }
+
+// ── Kontraktskronologi (SEXSÄSONGSAUDITEN 2026-08-26, SPÅR 2a) ──────────────
+// `contractUntilSeason` är den SISTA säsongen kontraktet gäller (inklusive) —
+// samma säsongstal som `game.currentSeason` (kalenderår, se createNewGame.ts
+// — säsong 2026 osv), INGET offset. `contractUntilSeason === currentSeason`
+// betyder "gäller ut den här säsongen" (fortfarande giltigt, sista året).
+// `contractUntilSeason < currentSeason` för en aktiv spelare (kvar på en
+// klubb, inte fri agent) är ett trasigt tillstånd — se
+// gameInvariants.ts:checkStaleContracts.
+//
+// Innan denna formatterare fanns minst tre skilda presentationer av samma
+// tal: PlayerCard.tsx adderade +1 (bugg — visade fel årtal), ContractsTab.tsx
+// och RenewContractModal.tsx visade rått tal med olika ordval ("t.o.m. 2028"
+// vs "t.o.m. säsong 2028"), och eventFactories.ts räknade "N säsong(er) kvar"
+// separat med egen `-`-uträkning. Detta är nu enda källan för båda formerna.
+
+/** "t.o.m. säsong 2028" — kanonisk text för kontraktets sista säsong. Rå säsongssiffra, inget offset. */
+export function formatContractUntil(contractUntilSeason: number): string {
+  return `t.o.m. säsong ${contractUntilSeason}`
+}
+
+/** Säsonger kvar på kontraktet. 0 = sista/innevarande säsongen. Negativt = redan utgånget (invariant-brott för en aktiv spelare). */
+export function contractSeasonsRemaining(contractUntilSeason: number, currentSeason: number): number {
+  return contractUntilSeason - currentSeason
+}
+
+/** "2 säsonger kvar" / "1 säsong kvar" / "Sista säsongen" / "Kontrakt utgånget" — kanonisk kvar-text. */
+export function formatContractRemaining(contractUntilSeason: number, currentSeason: number): string {
+  const remaining = contractSeasonsRemaining(contractUntilSeason, currentSeason)
+  if (remaining < 0) return 'Kontrakt utgånget'
+  if (remaining === 0) return 'Sista säsongen'
+  if (remaining === 1) return '1 säsong kvar'
+  return `${remaining} säsonger kvar`
+}
