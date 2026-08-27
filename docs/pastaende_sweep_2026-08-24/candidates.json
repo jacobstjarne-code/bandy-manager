@@ -1,0 +1,427 @@
+[
+  {
+    "file": "src/presentation/components/club/AkademiTab.tsx",
+    "name": "AkademiTab",
+    "sample": "Uppgradering beställd! Träder i kraft nästa säsong."
+  },
+  {
+    "file": "src/presentation/components/club/EkonomiTab.tsx",
+    "name": "EkonomiTab",
+    "sample": "Bandyskola för barn"
+  },
+  {
+    "file": "src/presentation/components/match/HalftimeModal.tsx",
+    "name": "HalftimeModal",
+    "sample": "Ledningen hade vi i en match förra året på samma plan, och vi tappade den."
+  },
+  {
+    "file": "src/presentation/components/portal/AnnandagsValEvent.tsx",
+    "name": "buildOptions",
+    "sample": "Annandagen blir som annandagen brukar bli. Det räcker långt."
+  },
+  {
+    "file": "src/presentation/components/transfers/BidModal.tsx",
+    "name": "BidModal",
+    "sample": "Lägg bud"
+  },
+  {
+    "file": "src/presentation/components/transfers/ScoutingTab.tsx",
+    "name": "ScoutingTab",
+    "sample": " skickar ut din scout för att hitta okända spelare som matchar dina kriterier. T"
+  },
+  {
+    "file": "src/presentation/screens/ChampionScreen.tsx",
+    "name": "ChampionScreen",
+    "sample": "\n              Svenska Mästare!\n            "
+  },
+  {
+    "file": "src/presentation/screens/HistoryScreen.tsx",
+    "name": "HistoryScreen",
+    "sample": "Inga mentorband ännu"
+  },
+  {
+    "file": "src/presentation/screens/PlayoffIntroScreen.tsx",
+    "name": "PlayoffIntroScreen",
+    "sample": "22 omgångar. Nu börjar det som räknas."
+  },
+  {
+    "file": "src/presentation/screens/QFSummaryScreen.tsx",
+    "name": "QFSummaryScreen",
+    "sample": "Semifinalerna väntar. Bäst av fem."
+  },
+  {
+    "file": "src/presentation/screens/SeasonSummaryScreen.tsx",
+    "name": "SeasonSummaryScreen",
+    "sample": "\n        Ingen säsongssammanfattning tillgänglig.\n        "
+  },
+  {
+    "file": "src/presentation/screens/TabellScreen.tsx",
+    "name": "TabellScreen",
+    "sample": "Aktuell tabell med form och målskillnad."
+  },
+  {
+    "file": "src/presentation/screens/TilltradeScreen.tsx",
+    "name": "TilltradeScreen",
+    "sample": "⬩  Klart för avslag  ⬩"
+  },
+  {
+    "file": "src/presentation/screens/granska/GranskaAnalys.tsx",
+    "name": "GranskaAnalys",
+    "sample": "Svagaste länken: "
+  },
+  {
+    "file": "src/presentation/screens/granska/GranskaOversikt.tsx",
+    "name": "dittValCornerText",
+    "sample": "säkra hörnor"
+  },
+  {
+    "file": "src/presentation/screens/granska/GranskaOversikt.tsx",
+    "name": "GranskaOversikt",
+    "sample": "\n                Spelades på "
+  },
+  {
+    "file": "src/presentation/screens/granska/GranskaShotmap.tsx",
+    "name": "GranskaShotmap",
+    "sample": "🎯 DITT SKOTTMÖNSTER"
+  },
+  {
+    "file": "src/presentation/screens/granska/helpers.ts",
+    "name": "generateQuickSummary",
+    "sample": " satte det enda målet."
+  },
+  {
+    "file": "src/presentation/screens/match/MatchLiveScreen.tsx",
+    "name": "MatchLiveScreen",
+    "sample": "Matchen pågår. Lämnar du nu simuleras resten automatiskt."
+  },
+  {
+    "file": "src/presentation/store/actions/academyActions.ts",
+    "name": "academyActions",
+    "sample": "Inte tillräckligt med pengar (kräver "
+  },
+  {
+    "file": "src/presentation/store/actions/matchActions.ts",
+    "name": "matchActions",
+    "sample": "Du lämnade matchen innan den var klar. Assistenten tog över. Resultat: "
+  },
+  {
+    "file": "src/presentation/store/actions/transferActions.ts",
+    "name": "transferActions",
+    "sample": "Spaning pågår — vänta tills den är klar"
+  },
+  {
+    "file": "src/presentation/utils/finalJourneys.ts",
+    "name": "getFinalJourney",
+    "sample": "Klarade sig till finalen"
+  },
+  {
+    "file": "src/presentation/utils/tacticData.ts",
+    "name": "getTacticDeltaLine",
+    "sample": "Ny säsong. Planen står som du lämnade den."
+  },
+  {
+    "file": "src/presentation/utils/weatherAdvice.ts",
+    "name": "getDetailedWeatherAdvice",
+    "sample": "Direktspel i tungt snöfall: -10 extra bollkontrollpenalty"
+  },
+  {
+    "file": "src/domain/services/arcService.ts",
+    "name": "progressArcs",
+    "sample": "Tung förlust mot "
+  },
+  {
+    "file": "src/domain/services/assistantCoachService.ts",
+    "name": "generateCoachQuote",
+    "sample": " är trött. Ta det säkra och slå nära."
+  },
+  {
+    "file": "src/domain/services/bandyGalaService.ts",
+    "name": "generateGalaInbox",
+    "sample": " utsågs till "
+  },
+  {
+    "file": "src/domain/services/bandyLetterService.ts",
+    "name": "generateBandyLetterEvent",
+    "sample": " och är "
+  },
+  {
+    "file": "src/domain/services/boardObjectiveService.ts",
+    "name": "growFinances",
+    "sample": "Öka klubbkassan med 100 tkr"
+  },
+  {
+    "file": "src/domain/services/boardObjectiveService.ts",
+    "name": "cupRun",
+    "sample": ": \"Semifinal — det är allt jag ber om. Ge oss en cupresa att minnas.\""
+  },
+  {
+    "file": "src/domain/services/boardObjectiveService.ts",
+    "name": "reduceInjuries",
+    "sample": "Skadeläget var en katastrof. Håll truppen frisk den här säsongen."
+  },
+  {
+    "file": "src/domain/services/boardObjectiveService.ts",
+    "name": "beatRival",
+    "sample": ": \"Vi MÅSTE slå "
+  },
+  {
+    "file": "src/domain/services/boardService.ts",
+    "name": "generateSeasonVerdict",
+    "sample": "Styrelsebetyg: Utmärkt säsong"
+  },
+  {
+    "file": "src/domain/services/coffeeRoomService.ts",
+    "name": "pickCoffeeRoomLegendReaction",
+    "sample": " var nere på akademiträningen igår. Grabbarna lyssnade."
+  },
+  {
+    "file": "src/domain/services/contextualSponsorService.ts",
+    "name": "checkContextualSponsors",
+    "sample": "Regionalt Näringsliv AB"
+  },
+  {
+    "file": "src/domain/services/cornerInteractionService.ts",
+    "name": "resolveCorner",
+    "sample": "Ingen nådde bollen. Försvaret klarerade."
+  },
+  {
+    "file": "src/domain/services/economicCrisisService.ts",
+    "name": "checkEconomicCrisis",
+    "sample": "Styrelsen ringer — krismöte"
+  },
+  {
+    "file": "src/domain/services/events/communityActivitiesEvents.ts",
+    "name": "generateCommunityActivitiesEvents",
+    "sample": "Föreningen saknar ordentlig kioskverksamhet. Vill ni starta en enkel kiosk? Det "
+  },
+  {
+    "file": "src/domain/services/events/eventFactories.ts",
+    "name": "hesitantPlayerEvent",
+    "sample": "okänd spelare"
+  },
+  {
+    "file": "src/domain/services/events/eventFactories.ts",
+    "name": "contractRequestEvent",
+    "sample": "Förläng 1 år (samma lön, "
+  },
+  {
+    "file": "src/domain/services/events/eventFactories.ts",
+    "name": "createEconomicStressEvent",
+    "sample": "Materialarens fråga"
+  },
+  {
+    "file": "src/domain/services/events/eventResolver.ts",
+    "name": "resolveEvent",
+    "sample": " är med från nästa match. "
+  },
+  {
+    "file": "src/domain/services/events/hallProcessService.ts",
+    "name": "buildForankringEvent",
+    "sample": "Röstlängden är räknad. Det blev ja."
+  },
+  {
+    "file": "src/domain/services/events/patronEvents.ts",
+    "name": "generatePatronEvents",
+    "sample": " har hört om er förening och vill diskutera ett samarbete.\n\n\"Jag har alltid brun"
+  },
+  {
+    "file": "src/domain/services/events/postAdvanceEvents.ts",
+    "name": "generatePostAdvanceEvents",
+    "sample": " godkänner det höjda kravet på "
+  },
+  {
+    "file": "src/domain/services/events/postAdvanceEvents.ts",
+    "name": "buildSponsorOfferEvent",
+    "sample": " var med när det var tunnare än nu."
+  },
+  {
+    "file": "src/domain/services/events/sponsorEvents.ts",
+    "name": "generateSponsorEvents",
+    "sample": "ICA Maxi erbjuder 5 000 kr extra/omg om en spelare besöker butiken och träffar k"
+  },
+  {
+    "file": "src/domain/services/freeKickInteractionService.ts",
+    "name": "resolveFreeKick",
+    "sample": " skruvar bollen förbi muren och in! Frislagsmål!"
+  },
+  {
+    "file": "src/domain/services/inboxService.ts",
+    "name": "createTrainingItem",
+    "sample": " skadades under träning. Beräknad frånvaro: "
+  },
+  {
+    "file": "src/domain/services/insandareService.ts",
+    "name": "generateInsandare",
+    "sample": "Jag har varit "
+  },
+  {
+    "file": "src/domain/services/klackPresenter.ts",
+    "name": "pickQuote",
+    "sample": "Senast vi vann tre i rad köpte jag en ny fana. Den hänger fortfarande kvar."
+  },
+  {
+    "file": "src/domain/services/matchCore.ts",
+    "name": "simulateMatchCore",
+    "sample": "Straffmål av "
+  },
+  {
+    "file": "src/domain/services/matchHighlightService.ts",
+    "name": "buildMatchNarrative",
+    "sample": ". Vi gav oss inte. "
+  },
+  {
+    "file": "src/domain/services/matchMoodService.ts",
+    "name": "getFinalWhistleSummary",
+    "sample": "Dominans från start till slut."
+  },
+  {
+    "file": "src/domain/services/mecenatDinnerService.ts",
+    "name": "generateDinnerScene",
+    "sample": "\"Hur trivs du egentligen i den här orten?\" frågar "
+  },
+  {
+    "file": "src/domain/services/narrativeService.ts",
+    "name": "generateFirstGoalEntry",
+    "sample": "Satte sitt första A-lagsmål mot "
+  },
+  {
+    "file": "src/domain/services/narrativeService.ts",
+    "name": "generateDebutEntry",
+    "sample": ". Nerverna satt — men benen höll."
+  },
+  {
+    "file": "src/domain/services/narrativeService.ts",
+    "name": "generateGoodMatchEntry",
+    "sample": " Stod för "
+  },
+  {
+    "file": "src/domain/services/opponentManagerService.ts",
+    "name": "generatePostMatchOpponentQuote",
+    "sample": ": \"Vi visste att vi hade det i oss.\""
+  },
+  {
+    "file": "src/domain/services/playerVoiceService.ts",
+    "name": "getPlayerVoice",
+    "sample": "\"Det läker. Men det går för långsamt.\""
+  },
+  {
+    "file": "src/domain/services/playoffNarrativeService.ts",
+    "name": "generateSemiFinalEvent",
+    "sample": " ringer. \"Om ni tar er till final — jag och hela kontoret är där. Alla biljetter"
+  },
+  {
+    "file": "src/domain/services/playoffNarrativeService.ts",
+    "name": "generateFinalEvent",
+    "sample": " skrev i klubbens chatt i morse: \"Det var förra generationens dröm. Nu är det vå"
+  },
+  {
+    "file": "src/domain/services/portal/pickEfterklang.ts",
+    "name": "pickEfterklang",
+    "sample": "Ett år sedan "
+  },
+  {
+    "file": "src/domain/services/postVictoryNarrativeService.ts",
+    "name": "generateVictoryEcho",
+    "sample": "Triumfen över "
+  },
+  {
+    "file": "src/domain/services/pressConferenceService.ts",
+    "name": "generatePressConference",
+    "sample": " har det tungt. Tror du fortfarande på honom?"
+  },
+  {
+    "file": "src/domain/services/schoolAssignmentService.ts",
+    "name": "summarizeSeason",
+    "sample": "säsongen vi blev SM"
+  },
+  {
+    "file": "src/domain/services/schoolAssignmentService.ts",
+    "name": "generateSchoolAssignmentEvent",
+    "sample": "Berätta om "
+  },
+  {
+    "file": "src/domain/services/seasonGoalService.ts",
+    "name": "deriveGoalOutcomeLine",
+    "sample": "Du lovade ingenting i somras. Det höll du."
+  },
+  {
+    "file": "src/domain/services/seasonGoalService.ts",
+    "name": "derivePersonChangeLine",
+    "sample": " kom upp och blev kvar."
+  },
+  {
+    "file": "src/domain/services/seasonSignatureService.ts",
+    "name": "summarizeSignature",
+    "sample": "Is och minusgrader satte tonen."
+  },
+  {
+    "file": "src/domain/services/seasonSummaryService.ts",
+    "name": "generateStoryTriggers",
+    "sample": " klev fram ur akademin och spelade "
+  },
+  {
+    "file": "src/domain/services/seasonSummaryService.ts",
+    "name": "computeKeyMoments",
+    "sample": "Två poäng och "
+  },
+  {
+    "file": "src/domain/services/seasonSummaryService.ts",
+    "name": "generateSeasonSummary",
+    "sample": "hålla mittentabellen"
+  },
+  {
+    "file": "src/domain/services/seasonSummaryService.ts",
+    "name": "seasonTwoTruthsSentence",
+    "sample": "ett uppdrag missades"
+  },
+  {
+    "file": "src/domain/services/silentMatchReportService.ts",
+    "name": "generateSilentMatchReport",
+    "sample": "första halvlek"
+  },
+  {
+    "file": "src/domain/services/situationFragments.ts",
+    "name": "getLastMeetingFragment",
+    "sample": "Senast ni möttes vann ni "
+  },
+  {
+    "file": "src/domain/services/situationFragments.ts",
+    "name": "getSeasonPhaseFragment",
+    "sample": "Säsongen börjar nu. 22 omgångar, en cup, ett slutspel."
+  },
+  {
+    "file": "src/domain/services/situationService.ts",
+    "name": "getSituation",
+    "sample": "Allt ni gjort har lett hit. En match. Det finns inget bortom."
+  },
+  {
+    "file": "src/domain/services/supporterRituals.ts",
+    "name": "getAwayTripNarrative",
+    "sample": " organiserade bortaresan till "
+  },
+  {
+    "file": "src/domain/services/trainerArcService.ts",
+    "name": "updateTrainerArc",
+    "sample": " raka förluster"
+  },
+  {
+    "file": "src/domain/services/transferService.ts",
+    "name": "buildTransferStory",
+    "sample": "Kaptenen är borta. "
+  },
+  {
+    "file": "src/domain/services/weeklyDecisionService.ts",
+    "name": "makeDecisions",
+    "sample": "motståndarens hemmaarena"
+  },
+  {
+    "file": "src/domain/data/nextOpponentHookText.ts",
+    "name": "buildNextOpponentHook",
+    "sample": "De har inte förlorat hemma sedan "
+  },
+  {
+    "file": "src/domain/data/scenes/journalistRelationshipScene.ts",
+    "name": "buildOutlookText",
+    "sample": " nekade presskonferenser. Det syns i rubrikerna."
+  }
+]

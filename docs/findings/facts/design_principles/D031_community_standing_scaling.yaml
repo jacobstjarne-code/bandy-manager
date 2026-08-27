@@ -1,0 +1,70 @@
+fact_id: D031
+category: design_principles
+claim: "communityStanding (0-100) är en kontinuerlig mätare — nya konsumenter ska skala kontinuerligt (csLinearRamp), aldrig gata bakom en diskret cs > N-tröskel"
+value: [0, 100]
+unit: "communityStanding-skalans intervall"
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/communityStandingScaling.ts"
+verified_at: 2026-08-26
+verified_by: code
+status: active
+invariants:
+  - "value[0] < value[1]"
+  - "value[0] == 0"
+  - "value[1] == 100"
+related_facts:
+  - D004
+notes: |
+  Bakgrund (RAPPORT_COMMUNITYSTANDING_TROSKELSVEP_2026-08-26): 274 träffar på
+  communityStanding grep:ades, 13 var binära trösklar, noll var
+  dokumenterade eller kalibrerade — noll D-facts täckte fältet innan detta.
+  Fem oberoende system råkade slå om på EXAKT samma tal (cs=70/71) utan att
+  någon skrev det avsiktligt: sponsortröskeln (kommunstöd), diminishing-
+  returns-faktorn på positiva CS-boostar, en ryktesmilstolpe, ett
+  spelarinitierat politikerbidrag, och en era-gräns. "Fem system slår om på
+  exakt 70 och ingen skrev det avsiktligt" är fyndets verkliga innebörd —
+  inte de enskilda buggarna var för sig.
+
+  REGEL FÖR NYA KONSUMENTER (src/domain/services/communityStandingScaling.ts):
+  - En AMOUNT/FAKTOR (pengar, multiplikator) som communityStanding ska
+    påverka: skala VÄRDET direkt med `csLinearRamp(cs, golvCs, takCs,
+    golvVärde, takVärde)`. Exempel: kommunstöd, diminishingFactor,
+    grannklubbsmilstolpen, politikerbidraget.
+  - Ett HELTALSRESULTAT som inte kan vara bråkdelar (en mecenatplats är ett
+    heltal, en engångshändelse inträffar eller inte): skala istället
+    SANNOLIKHETEN att det prövas, aldrig till exakt 0% för en hel
+    klubbklass. Exempel: "det omöjliga valet" (postAdvanceEvents.ts).
+    Mecenat-/patron-trösklarna löses med samma probability-princip men i en
+    egen runda (RAPPORT_MECENATGENERERING_2026-08-26.md) eftersom de redan
+    har en existerande genereringspipeline att foga in i.
+
+  Kända konsumenter (2026-08-26): contextualSponsorService.ts (kommunstöd,
+  golv cs50/tak cs90), communityProcessor.ts (diminishingFactor, golv
+  cs55/tak cs100), reputationMilestoneService.ts (grannklubbskontakt, golv
+  cs55/tak cs90), gameStore.ts politician apply-action (golv cs50/tak
+  cs90), postAdvanceEvents.ts (det omöjliga valet, sannolikhet golv
+  cs0/tak cs100).
+
+  Kända KVARSTÅENDE binära trösklar, INTE fixade ännu (Jacobs omprioritering
+  2026-08-26, se BACKLOG.md för fullständig lista): #7-#8
+  (reputationMilestoneService, engångsbonusar, lägst prioritet), #9-#10
+  (clubEraService — era-upplåsningar, egen runda ihop med mecenat/patron
+  eftersom en diskret upplåsning här kan vara AVSIKTLIG, bara måste bli
+  medveten/dokumenterad), #12-#13 (pressConferenceService — väljer bara
+  VILKEN fråga som ställs, harmlöst, lämnas).
+
+  Mönsterfynd (2026-08-26, Jacobs fråga besvarad): av spelets nio 5/5-
+  systemhändelser (DOM_VARSLET_KLASSIFICERING_2026-08-17.md) var TVÅ
+  strukturellt gated bakom en diskret communityStanding-tröskel — "det
+  omöjliga valet" (cs>60 direkt) och legacy_naming_arena (indirekt, via
+  clubEraService.era==='legacy' som kräver cs>=70). De sju övriga
+  systemhändelserna har inga CS-gate på sina triggers (CS förekommer bara
+  som EFFEKT/konsekvens i dem, aldrig som villkor). Ett mönster, inte en
+  isolerad bugg — men de två fallen behandlas olika: "det omöjliga valet"
+  fixades direkt (probability-skalning, ingen legitim anledning att
+  exkludera låg-CS-klubbar från en händelse om just deras finanskris),
+  legacy_naming_arena's era-gate flyttades till mecenat-/patron-rundan
+  eftersom en legacy-era-exklusiv händelse kan vara ett avsiktligt
+  designval — kräver ett medvetet beslut, inte en tyst kontinuerlig fix.

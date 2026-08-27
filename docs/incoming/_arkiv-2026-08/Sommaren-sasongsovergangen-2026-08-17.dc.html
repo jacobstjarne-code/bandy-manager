@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+<script src="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/_ds_bundle.js"></script>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  html,body{margin:0;padding:0;background:#cfc7b6;}
+  *{box-sizing:border-box;}
+  :root{--warm-light:#c8a058;}
+  a{color:var(--accent-deep);}
+  code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.85em;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent-deep);padding:1px 5px;border-radius:4px;}
+  .phone{width:340px;background:var(--bg);border-radius:24px;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.26);border:1px solid rgba(0,0,0,.14);flex-shrink:0;}
+  .lbl{font-family:system-ui,sans-serif;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
+  .seclbl{font-family:system-ui,sans-serif;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;}
+  .cs{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;}
+  .quote{font-family:Georgia,serif;font-style:italic;}
+  .cta{background:linear-gradient(180deg,#DD9555,#8B4820);color:#fff;font-family:system-ui;font-size:12px;font-weight:700;letter-spacing:1px;padding:13px;border-radius:12px;text-align:center;box-shadow:0 4px 14px rgba(162,88,40,.38);}
+  .obj{padding:9px 11px;}
+  .obj-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .obj-t{font-size:12px;font-weight:600;color:var(--text-primary);}
+  .obj-o{font-size:10px;}
+  .obj-pv{font-family:Georgia,serif;font-size:11px;color:var(--text-secondary);}
+  .obj-track{height:5px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:5px;}
+  .rat{width:340px;background:var(--bg-dark);border-radius:12px;padding:15px 17px;color:var(--text-light-secondary);}
+  .rat h4{font-family:Georgia,serif;color:var(--text-light);font-size:14px;margin:0 0 7px;font-weight:700;}
+  .rat p{font-size:12px;line-height:1.55;margin:0 0 7px;}
+  .rat b{color:#DD9555;}
+  .badge{position:absolute;top:-13px;left:20px;background:var(--accent);color:#fff;font-family:Georgia,serif;font-weight:800;font-size:13px;padding:2px 13px;border-radius:99px;box-shadow:0 3px 10px rgba(162,88,40,.4);z-index:5;}
+  .badge-rec{background:var(--success);}
+  .rec-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff;background:var(--success);padding:2px 8px;border-radius:99px;vertical-align:middle;}
+</style>
+</helmet>
+
+<section style="background:#cfc7b6;background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.22),transparent 45%);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text-primary);padding:34px 40px 60px;">
+  <div style="max-width:1240px;margin:0 auto;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-deep);font-weight:700;">Tur 3 · med tänder</div>
+    <h1 style="font-family:Georgia,serif;font-size:30px;font-weight:800;margin:8px 0 10px;letter-spacing:-.5px;">1e — erkänn specifikt, visa vad du kliver in i</h1>
+    <p style="font-size:14px;line-height:1.6;max-width:860px;margin:0 0 22px;color:var(--text-secondary);text-wrap:pretty;">1d blev lamt för att erkännande och push låg på samma temperatur — ingen stegring. 1e fixar två saker: <strong>erkännandet blir personligt</strong> (din klubbs epok + vilken säsong i ordningen — inte en generisk "Sommaren", utan "din sjätte, ni är inte nykomlingar längre"), och <strong>pushen blir konkret</strong> — hela säsongen läggs ut framför dig som en väg (cup ▸ serie ▸ slutspel) med första matchen tänd. Du ser vad du skriver under på. Nya rader märkta <span style="color:var(--accent-deep);font-weight:600;">[Opus]</span>.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:46px;align-items:flex-start;">
+      <!-- ══════════ 1e ══════════ -->
+      <div id="1e" style="position:relative;display:flex;flex-direction:column;gap:14px;width:340px;">
+        <div class="badge badge-rec">1e</div>
+        <div style="padding-top:4px;">
+          <div style="font-family:Georgia,serif;font-size:20px;font-weight:800;">Kombo v2 · med tänder</div>
+          <div style="font-size:12px;color:var(--text-secondary);">Personligt erkännande + säsongsvägen som push.</div>
+        </div>
+        <div class="phone">
+          <!-- CHAPTER HEADER: specific acknowledge -->
+          <div style="background:radial-gradient(ellipse at 50% -10%,color-mix(in srgb,var(--accent) 26%,var(--bg-dark)),var(--bg-dark) 70%);padding:24px 18px 20px;position:relative;overflow:hidden;">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(92deg,rgba(255,255,255,.014) 0 2px,transparent 2px 7px);"></div>
+            <div style="position:relative;text-align:center;">
+              <div class="lbl" style="color:#DD9555;letter-spacing:4px;margin-bottom:9px;">☀ Sommaren 2027 · din 6:e säsong</div>
+              <div style="font-family:Georgia,serif;font-size:15px;font-weight:400;font-style:italic;color:var(--text-light-secondary);line-height:1.4;margin-bottom:14px;">Forsbacka är inte nykomlingar längre.</div>
+              <div class="quote" style="font-size:14px;color:var(--text-light);line-height:1.5;max-width:250px;margin:0 auto;">Halva sommaren gick åt till att inte tänka på bandy. Det gick sådär.</div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:10px;letter-spacing:.5px;">[Opus] epok-rad: härledd ur clubEra + säsongsnummer</div>
+            </div>
+          </div>
+          <!-- PAPER BODY -->
+          <div style="padding:13px;display:flex;flex-direction:column;gap:11px;">
+            <div>
+              <div class="seclbl" style="color:var(--text-muted);margin-bottom:6px;">Medan du var borta</div>
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <div style="display:flex;gap:9px;align-items:baseline;"><span style="width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;transform:translateY(-2px);"></span><span style="font-size:12.5px;color:var(--text-primary);">Berglund la av.</span></div>
+                <div style="display:flex;gap:9px;align-items:baseline;"><span style="width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;transform:translateY(-2px);"></span><span style="font-size:12.5px;color:var(--text-primary);">Åberg fyllde 34.</span></div>
+                <div style="display:flex;gap:9px;align-items:baseline;"><span style="width:5px;height:5px;border-radius:50%;background:var(--success);flex-shrink:0;transform:translateY(-2px);"></span><span style="font-size:12.5px;color:var(--text-primary);">Nilsson kom upp från P19.</span></div>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--border);"></div>
+            <div>
+              <div class="seclbl" style="color:var(--text-muted);margin-bottom:4px;">Styrelsen har satt nya mål</div>
+              <div style="font-size:11px;color:var(--text-secondary);line-height:1.45;margin-bottom:8px;">De minns förra året, men de bryr sig mest om nästa.</div>
+              <div class="cs" style="padding:0;overflow:hidden;">
+                <div class="obj" style="border-bottom:1px solid var(--border);">
+                  <div class="obj-h"><span class="obj-t">📌 Nå slutspel</span><span class="obj-o" style="color:var(--text-light-secondary);">O. Ström</span></div>
+                  <div style="display:flex;justify-content:space-between;"><span class="lbl" style="margin:0;">Framsteg</span><span class="obj-pv">3 / 8</span></div>
+                  <div class="obj-track"><div style="width:38%;height:100%;background:var(--accent);"></div></div>
+                </div>
+                <div class="obj">
+                  <div class="obj-h"><span class="obj-t">📌 Balansera budgeten</span><span class="obj-o" style="color:var(--text-light-secondary);">B. Lund</span></div>
+                  <div style="font-size:12px;color:var(--success);font-weight:600;">+120 tkr <span style="color:var(--text-muted);font-weight:400;">av mål +0 tkr</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- PUSH: the season laid out ahead, first match lit -->
+          <div style="background:var(--bg-dark);padding:16px 15px 15px;position:relative;overflow:hidden;">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(92deg,rgba(255,255,255,.014) 0 2px,transparent 2px 7px);"></div>
+            <div style="position:relative;">
+              <div class="seclbl" style="color:#DD9555;text-align:center;margin-bottom:13px;">Säsongen framför dig</div>
+              <!-- roadmap -->
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;padding:0 4px;">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:70px;">
+                  <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(180deg,#DD9555,#8B4820);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent);">🏆</div>
+                  <div style="font-size:10px;font-weight:700;color:var(--text-light);text-align:center;line-height:1.2;">Cupen<br><span style="font-size:8px;font-weight:400;color:#DD9555;">nu</span></div>
+                </div>
+                <div style="flex:1;height:2px;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 20%,transparent));margin-top:16px;"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:70px;opacity:.5;">
+                  <div style="width:34px;height:34px;border-radius:50%;background:var(--bg-leather);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:14px;">🏒</div>
+                  <div style="font-size:10px;color:var(--text-light-secondary);text-align:center;line-height:1.2;">Serien<br><span style="font-size:8px;">22 omg</span></div>
+                </div>
+                <div style="flex:1;height:2px;background:rgba(255,255,255,.1);margin-top:16px;"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:70px;opacity:.5;">
+                  <div style="width:34px;height:34px;border-radius:50%;background:var(--bg-leather);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:14px;">⚔️</div>
+                  <div style="font-size:10px;color:var(--text-light-secondary);text-align:center;line-height:1.2;">Slutspel<br><span style="font-size:8px;">i mars</span></div>
+                </div>
+              </div>
+              <!-- ignition line + CTA -->
+              <div class="quote" style="font-size:13px;color:var(--text-light);text-align:center;line-height:1.45;margin-bottom:12px;">Det börjar med Skutskär. Det slutar i mars.</div>
+              <div class="cta" style="box-shadow:0 4px 18px rgba(162,88,40,.5);">KVARTSFINAL MOT SKUTSKÄR →</div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:8px;text-align:center;letter-spacing:.5px;">[Opus] tändrad — ett stake, inte en sammanfattning</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11.5px;color:var(--text-secondary);width:340px;line-height:1.5;">Nu <b>stegrar</b> skärmen: dämpat läder-erkännande överst → skannbar paper-mitt → mörkt, varmt push-block där hela säsongen fläcks ut och första matchen lyser. Du ser vägen du skriver under på. Samma "inga beslut", men den ber dig luta dig in.</div>
+      </div>
+
+      <!-- RATIONALE -->
+      <div style="display:flex;flex-direction:column;gap:14px;width:340px;">
+        <div class="rat"><h4>Varför det inte längre är lamt</h4><p>1d hade två lika tysta läderrutor. 1e ger skärmen en <b>temperaturkurva</b>: erkännandet är svalt och stilla, pushen är varm och ljus (kopparglöd, tänd nod, glow på CTA). Ögat dras neråt mot värmen — mot matchen. Det är stegringen som saknades.</p></div>
+        <div class="rat"><h4>Säsongsvägen är pushen</h4><p>Att lägga ut <b>cup ▸ serie ▸ slutspel</b> gör åtagandet synligt — du ser att du skriver under på åtta månader, inte en match. Första noden lyser (kvartsfinal), resten är dämpade milstolpar. Det väcker lust <em>och</em> erkänner storleken på beslutet, i ett element. Alla tre är riktiga strukturer i spelet.</p></div>
+        <div class="rat"><h4>Två [Opus]-rader att låsa</h4><p><b>Epok-raden</b> ("inte nykomlingar längre") — härledd ur <code>clubEra</code> + säsongsnummer, gör erkännandet personligt. <b>Tändraden</b> ("börjar med Skutskär, slutar i mars") — ett stake med riktning. Båda beskrivna, ej färdig copy.</p></div>
+        <div class="rat"><h4>Kostnad &amp; nästa</h4><p>~1,6 skärmhöjd, ett rikare push-block. Fortfarande inga beslut, fortfarande passerbar. Om detta känns rätt: säg till så låser jag 1e och lägger upp HTML + synkfil. Vill du ännu hårdare push (t.ex. en siffra — "82 dagar till slutspel") säger du bara till.</p></div>
+      </div>
+    </div>
+    <hr style="border:none;border-top:1px solid #c0b8a6;margin:34px 0 0;">
+  </div>
+
+  <div style="max-width:1240px;margin:26px auto 0;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-deep);font-weight:700;">Tur 2 · kombon (tidigare)</div>
+    <h1 style="font-family:Georgia,serif;font-size:30px;font-weight:800;margin:8px 0 10px;letter-spacing:-.5px;">1d — kapitel som erkänner, band som pushar</h1>
+    <p style="font-size:14px;line-height:1.6;max-width:840px;margin:0 0 22px;color:var(--text-secondary);text-wrap:pretty;">Din instinkt: att skriva under på en säsong till är stort — det förtjänar ett <em>erkännande</em> (kapitlets tyngd ur <a href="#1c">1c</a>) och en <em>push</em> som väcker lust (aktiviteten ur <a href="#1b">1b</a>, plus något nytt). Så: läderkapitel överst = vad du byggt och hur sommaren kändes. Paper-kropp = de tre händelserna, sakliga mål. Och ett nytt <strong>horisont-band</strong> före knappen — säsongens insats, en rad som lutar framåt. Den raden finns inte i låst copy; jag beskriver vad den ska göra och märker <span style="color:var(--accent-deep);font-weight:600;">[Opus]</span>.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:46px;align-items:flex-start;">
+      <!-- ══════════ 1d ══════════ -->
+      <div id="1d" style="position:relative;display:flex;flex-direction:column;gap:14px;width:340px;">
+        <div class="badge badge-rec" style="background:var(--accent-deep);">1d</div>
+        <div style="padding-top:4px;">
+          <div style="font-family:Georgia,serif;font-size:20px;font-weight:800;">Kombo · erkänn + push</div>
+          <div style="font-size:12px;color:var(--text-secondary);">Kapitel-header, aktiv kropp, horisont-band.</div>
+        </div>
+        <div class="phone">
+          <!-- CHAPTER HEADER (acknowledge, from C) -->
+          <div style="background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--accent) 22%,var(--bg-dark)),var(--bg-dark));padding:24px 18px 18px;position:relative;overflow:hidden;">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(92deg,rgba(255,255,255,.014) 0 2px,transparent 2px 7px);"></div>
+            <div style="position:relative;text-align:center;">
+              <div class="lbl" style="color:#DD9555;letter-spacing:4px;margin-bottom:8px;">☀ Säsong 2027</div>
+              <div style="font-family:Georgia,serif;font-size:30px;font-weight:900;color:var(--text-light);line-height:1;margin-bottom:6px;">Sommaren</div>
+              <div style="width:30px;height:2px;background:var(--accent);margin:0 auto 14px;"></div>
+              <div class="quote" style="font-size:14px;color:var(--text-light);line-height:1.5;max-width:240px;margin:0 auto;">Halva sommaren gick åt till att inte tänka på bandy. Det gick sådär.</div>
+            </div>
+          </div>
+          <!-- PAPER BODY (activity, from B) -->
+          <div style="padding:13px;display:flex;flex-direction:column;gap:11px;">
+            <div>
+              <div class="seclbl" style="color:var(--text-muted);margin-bottom:6px;">Medan du var borta</div>
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <div style="display:flex;gap:9px;align-items:baseline;"><span style="width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;transform:translateY(-2px);"></span><span style="font-size:12.5px;color:var(--text-primary);">Berglund la av.</span></div>
+                <div style="display:flex;gap:9px;align-items:baseline;"><span style="width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;transform:translateY(-2px);"></span><span style="font-size:12.5px;color:var(--text-primary);">Åberg fyllde 34.</span></div>
+                <div style="display:flex;gap:9px;align-items:baseline;"><span style="width:5px;height:5px;border-radius:50%;background:var(--success);flex-shrink:0;transform:translateY(-2px);"></span><span style="font-size:12.5px;color:var(--text-primary);">Nilsson kom upp från P19.</span></div>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--border);"></div>
+            <div>
+              <div class="seclbl" style="color:var(--text-muted);margin-bottom:4px;">Styrelsen har satt nya mål</div>
+              <div style="font-size:11px;color:var(--text-secondary);line-height:1.45;margin-bottom:8px;">De minns förra året, men de bryr sig mest om nästa.</div>
+              <div class="cs" style="padding:0;overflow:hidden;">
+                <div class="obj" style="border-bottom:1px solid var(--border);">
+                  <div class="obj-h"><span class="obj-t">📌 Nå slutspel</span><span class="obj-o" style="color:var(--text-light-secondary);">O. Ström</span></div>
+                  <div style="display:flex;justify-content:space-between;"><span class="lbl" style="margin:0;">Framsteg</span><span class="obj-pv">3 / 8</span></div>
+                  <div class="obj-track"><div style="width:38%;height:100%;background:var(--accent);"></div></div>
+                </div>
+                <div class="obj">
+                  <div class="obj-h"><span class="obj-t">📌 Balansera budgeten</span><span class="obj-o" style="color:var(--text-light-secondary);">B. Lund</span></div>
+                  <div style="font-size:12px;color:var(--success);font-weight:600;">+120 tkr <span style="color:var(--text-muted);font-weight:400;">av mål +0 tkr</span></div>
+                </div>
+              </div>
+            </div>
+            <!-- PUSH: horizon band (new) -->
+            <div style="background:var(--bg-dark);border-radius:10px;padding:13px 15px;position:relative;overflow:hidden;border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);">
+              <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);"></div>
+              <div class="seclbl" style="color:#DD9555;margin-bottom:5px;">På andra sidan</div>
+              <div class="quote" style="font-size:14px;color:var(--text-light);line-height:1.45;">Elva lag till. Åtta månader. En sista chans för Berglunds arvtagare att ta klivet.</div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:6px;letter-spacing:.5px;">[Opus] framåtblick — reser säsongens insats i en rad, hämtad ur klubbens läge (utmanare/titelförsvar/nykomling). Ej låst copy.</div>
+            </div>
+            <!-- CTA -->
+            <div style="margin-top:1px;">
+              <div class="lbl" style="text-align:center;color:var(--accent-deep);letter-spacing:1.5px;margin-bottom:7px;">🏆 Cup · kvartsfinal</div>
+              <div class="cta">CUPEN BÖRJAR. KVARTSFINAL MOT SKUTSKÄR →</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11.5px;color:var(--text-secondary);width:340px;line-height:1.5;">Kapitlet erkänner (Georgia-hero + sommarrad), kroppen håller aktiviteten, och <b>horisont-bandet är det nya</b>: en framåtlutande rad som gör nästa säsong till något man vill in i — inte bara nästa klick. Två läder-moment (topp + push) ramar in paper-kroppen.</div>
+      </div>
+
+      <!-- RATIONALE -->
+      <div style="display:flex;flex-direction:column;gap:14px;width:340px;">
+        <div class="rat"><h4>Varför bandet, inte bara en längre header</h4><p>Erkännandet (kapitlet) tittar <em>bakåt</em> — vad sommaren gjorde, vad som hände. Pushen måste titta <em>framåt</em>, annars är det bara ännu en final-känsla. Att skilja dem i två element (topp = bakåt, band = framåt) gör att skärmen bär både "det tog slut" och "nu börjar det" utan att blanda ihop dem.</p></div>
+        <div class="rat"><h4>Horisont-raden [Opus]</h4><p>Beskrivning, inte färdig copy: <b>en rad som reser säsongens insats</b>, hämtad ur klubbens läge — utmanare ("i år ska strecket nås"), titelförsvarare ("guld att försvara"), nykomling ("hålla sig kvar"). Den ska väcka lust, inte sammanfatta. Behöver Opus lås.</p></div>
+        <div class="rat"><h4>Kostnad</h4><p>1d är ~1,5 skärmhöjd mot 1b:s ~1 — ett extra läderband. Fortfarande inga beslut, fortfarande passerbar. Tyngre än 1b, men pushen är motiverad av just din poäng: det <em>är</em> ett åtagande. Om svepet visar att övergången tröttar mer för varje säsong, är 1d rätt; om den bara saknades en gång, räcker 1b.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:#cfc7b6;background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.22),transparent 45%);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text-primary);padding:20px 40px 130px;">
+
+  <!-- INTRO -->
+  <div style="max-width:1200px;margin:0 auto 30px;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-deep);font-weight:700;">Designuppdrag · Sommaren (säsongsövergången) · M-03</div>
+    <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:800;margin:8px 0 10px;letter-spacing:-.5px;">Steget mellan årsboken och första matchen</h1>
+    <p style="font-size:14px;line-height:1.65;max-width:820px;margin:0 0 14px;color:var(--text-secondary);text-wrap:pretty;">Idag: tryck "Starta säsong 2027/28" i årsboken → nästa skärm är cupkvartsfinal med nio beslut i kö. Ingen andhämtning. <strong>Sommaren</strong> är en skärm man <em>passerar</em> på två sekunder — inga beslut, bara rytm. Copyn är låst (Opus); jag ritar mot den. Briefens egen kärnfråga är <strong>vikten</strong> — den går bara att avgöra genom att se den, så här är samma skärm, samma text, i tre vikter. Referera som <a href="#1a">1a</a>, <a href="#1b">1b</a>, <a href="#1c">1c</a>.</p>
+    <div style="max-width:820px;background:var(--bg-dark);border-radius:12px;padding:13px 17px;">
+      <div class="lbl" style="color:#DD9555;margin-bottom:6px;">Mitt anrop</div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--text-light-secondary);margin:0;"><b style="color:#DD9555;">1b (mellan) rekommenderas.</b> Ett läderband med en rad om sommaren + tre händelser som egna rader + sakliga styrelsemål + en CTA som namnger matchen. Väger något, men släpper igenom på två sekunder. 1a är för lätt att missa; 1c blir en tredje ceremoni så nära årsboken. Live-verifierat mot bandy-manager.vercel.app @2539fb2.</p>
+    </div>
+  </div>
+
+  <!-- OPTIONS ROW -->
+  <div style="display:flex;flex-wrap:wrap;gap:46px;align-items:flex-start;max-width:1240px;margin:0 auto;">
+
+    <!-- ══════════ 1a · LÄTT ══════════ -->
+    <div id="1a" style="position:relative;display:flex;flex-direction:column;gap:14px;width:340px;">
+      <div class="badge">1a</div>
+      <div style="padding-top:4px;">
+        <div style="font-family:Georgia,serif;font-size:20px;font-weight:800;">Lätt · notering</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Nästan portaltäthet. Ett mellanblad.</div>
+      </div>
+      <div class="phone">
+        <div style="padding:14px 13px;display:flex;flex-direction:column;gap:9px;">
+          <div class="lbl" style="text-align:center;color:var(--accent-deep);">☀ Sommaren · 2027</div>
+          <div class="cs" style="padding:11px 13px;">
+            <div class="quote" style="font-size:13px;color:var(--text-primary);line-height:1.5;">Halva sommaren gick åt till att inte tänka på bandy. Det gick sådär.</div>
+          </div>
+          <div class="cs" style="padding:10px 13px;">
+            <div class="seclbl" style="color:var(--text-muted);margin-bottom:4px;">Medan du var borta</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;">Berglund la av. Åberg fyllde 34. Nilsson kom upp från P19.</div>
+          </div>
+          <div class="cs" style="padding:10px 13px;">
+            <div class="seclbl" style="color:var(--text-muted);margin-bottom:6px;">Styrelsens nya mål</div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.45;margin-bottom:8px;">De minns förra året, men bryr sig mest om nästa.</div>
+            <div class="obj">
+              <div class="obj-h"><span class="obj-t">📌 Nå slutspel</span><span class="obj-o" style="color:var(--text-light-secondary);">O. Ström</span></div>
+              <div style="display:flex;justify-content:space-between;"><span class="lbl" style="margin:0;">Framsteg</span><span class="obj-pv">3 / 8</span></div>
+              <div class="obj-track"><div style="width:38%;height:100%;background:var(--accent);"></div></div>
+            </div>
+          </div>
+          <div class="lbl" style="text-align:center;color:var(--accent-deep);letter-spacing:1.5px;">🏆 Cup · kvartsfinal</div>
+          <div class="cta">CUPEN BÖRJAR — SKUTSKÄR →</div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);width:340px;line-height:1.5;">Passeras på under två sekunder. <b>Risk:</b> läses som ett portalkort och swajpas förbi — sommaren blir aldrig kännbar. Väger för lite.</div>
+    </div>
+
+    <!-- ══════════ 1b · MELLAN (REKOMMENDERAD) ══════════ -->
+    <div id="1b" style="position:relative;display:flex;flex-direction:column;gap:14px;width:340px;">
+      <div class="badge badge-rec">1b</div>
+      <div style="padding-top:4px;">
+        <div style="font-family:Georgia,serif;font-size:20px;font-weight:800;">Mellan · uppslag <span class="rec-tag">Rekommenderad</span></div>
+        <div style="font-size:12px;color:var(--text-secondary);">Ett läderband + tre andetag. Väger, men släpper igenom.</div>
+      </div>
+      <div class="phone">
+        <!-- leather header band -->
+        <div style="background:var(--bg-dark);padding:18px 16px 15px;position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(92deg,rgba(255,255,255,.015) 0 2px,transparent 2px 7px);"></div>
+          <div style="position:relative;">
+            <div class="lbl" style="color:#DD9555;letter-spacing:3px;margin-bottom:6px;">☀ Sommaren</div>
+            <div style="font-family:Georgia,serif;font-size:24px;font-weight:800;color:var(--text-light);line-height:1;margin-bottom:9px;">2027</div>
+            <div class="quote" style="font-size:13px;color:var(--text-light-secondary);line-height:1.5;">Halva sommaren gick åt till att inte tänka på bandy. Det gick sådär.</div>
+          </div>
+        </div>
+        <div style="padding:13px;display:flex;flex-direction:column;gap:11px;">
+          <!-- three events as own lines -->
+          <div>
+            <div class="seclbl" style="color:var(--text-muted);margin-bottom:6px;">Medan du var borta</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="display:flex;gap:9px;align-items:baseline;"><span style="width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;transform:translateY(-2px);"></span><span style="font-size:12.5px;color:var(--text-primary);">Berglund la av.</span></div>
+              <div style="display:flex;gap:9px;align-items:baseline;"><span style="width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;transform:translateY(-2px);"></span><span style="font-size:12.5px;color:var(--text-primary);">Åberg fyllde 34.</span></div>
+              <div style="display:flex;gap:9px;align-items:baseline;"><span style="width:5px;height:5px;border-radius:50%;background:var(--success);flex-shrink:0;transform:translateY(-2px);"></span><span style="font-size:12.5px;color:var(--text-primary);">Nilsson kom upp från P19.</span></div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <!-- board objectives, sachlig -->
+          <div>
+            <div class="seclbl" style="color:var(--text-muted);margin-bottom:4px;">Styrelsen har satt nya mål</div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.45;margin-bottom:8px;">De minns förra året, men de bryr sig mest om nästa.</div>
+            <div class="cs" style="padding:0;overflow:hidden;">
+              <div class="obj" style="border-bottom:1px solid var(--border);">
+                <div class="obj-h"><span class="obj-t">📌 Nå slutspel</span><span class="obj-o" style="color:var(--text-light-secondary);">O. Ström</span></div>
+                <div style="display:flex;justify-content:space-between;"><span class="lbl" style="margin:0;">Framsteg</span><span class="obj-pv">3 / 8</span></div>
+                <div class="obj-track"><div style="width:38%;height:100%;background:var(--accent);"></div></div>
+              </div>
+              <div class="obj">
+                <div class="obj-h"><span class="obj-t">📌 Balansera budgeten</span><span class="obj-o" style="color:var(--text-light-secondary);">B. Lund</span></div>
+                <div style="font-size:12px;color:var(--success);font-weight:600;">+120 tkr <span style="color:var(--text-muted);font-weight:400;">av mål +0 tkr</span></div>
+              </div>
+            </div>
+          </div>
+          <!-- CTA with match type -->
+          <div style="margin-top:2px;">
+            <div class="lbl" style="text-align:center;color:var(--accent-deep);letter-spacing:1.5px;margin-bottom:7px;">🏆 Cup · kvartsfinal</div>
+            <div class="cta">CUPEN BÖRJAR. KVARTSFINAL MOT SKUTSKÄR →</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);width:340px;line-height:1.5;">Läderbandet ger <b>ett</b> ögonblick av tyngd (samma familj som NextMatchCard/årsboken) utan att bli en helskärmsceremoni. Tre händelser som egna rader = tre andetag. Sakliga mål. Två sekunder som ändå väger.</div>
+    </div>
+
+    <!-- ══════════ 1c · TUNG ══════════ -->
+    <div id="1c" style="position:relative;display:flex;flex-direction:column;gap:14px;width:340px;">
+      <div class="badge">1c</div>
+      <div style="padding-top:4px;">
+        <div style="font-family:Georgia,serif;font-size:20px;font-weight:800;">Tung · kapitel</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Nästan årsbokens register. Full-bleed.</div>
+      </div>
+      <div class="phone">
+        <div style="background:radial-gradient(ellipse at 50% 15%,color-mix(in srgb,var(--accent) 20%,var(--bg-dark)),var(--bg-dark));min-height:560px;padding:26px 18px 16px;display:flex;flex-direction:column;">
+          <div class="lbl" style="text-align:center;color:#DD9555;letter-spacing:4px;margin-bottom:10px;">Säsong 2027</div>
+          <div style="font-family:Georgia,serif;font-size:34px;font-weight:900;color:var(--text-light);text-align:center;line-height:1;margin-bottom:6px;">Sommaren</div>
+          <div style="width:32px;height:2px;background:var(--accent);margin:0 auto 18px;"></div>
+          <div class="quote" style="font-size:16px;color:var(--text-light);text-align:center;line-height:1.5;max-width:250px;margin:0 auto 22px;">Halva sommaren gick åt till att inte tänka på bandy. Det gick sådär.</div>
+          <div style="margin-bottom:18px;">
+            <div class="seclbl" style="color:#DD9555;text-align:center;margin-bottom:10px;">Medan du var borta</div>
+            <div style="display:flex;flex-direction:column;gap:9px;align-items:center;">
+              <div class="quote" style="font-size:14px;color:var(--text-light-secondary);">Berglund la av.</div>
+              <div class="quote" style="font-size:14px;color:var(--text-light-secondary);">Åberg fyllde 34.</div>
+              <div class="quote" style="font-size:14px;color:var(--text-light-secondary);">Nilsson kom upp från P19.</div>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:12px 14px;margin-bottom:auto;">
+            <div class="seclbl" style="color:var(--text-light-secondary);text-align:center;margin-bottom:8px;">Styrelsen har satt nya mål</div>
+            <div style="font-size:12px;color:var(--text-primary);"><span style="color:var(--text-light);font-weight:600;">📌 Nå slutspel</span> <span style="color:var(--text-light-secondary);float:right;">O. Ström</span></div>
+            <div style="clear:both;height:6px;"></div>
+            <div style="font-size:12px;color:var(--text-light);font-weight:600;">📌 Balansera budgeten <span style="color:var(--text-light-secondary);font-weight:400;float:right;">B. Lund</span></div>
+          </div>
+          <div style="margin-top:18px;">
+            <div class="lbl" style="text-align:center;color:#DD9555;letter-spacing:1.5px;margin-bottom:8px;">🏆 Cup · kvartsfinal</div>
+            <div class="cta">CUPEN BÖRJAR. KVARTSFINAL MOT SKUTSKÄR →</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);width:340px;line-height:1.5;"><b>Risk:</b> så nära årsbokens mästarvy blir det en <em>tredje</em> ceremoni i rad (final → årsbok → sommar) och tröttar. Rätt tyngd fel plats. Bra referens för vad vi inte ska göra.</div>
+    </div>
+
+  </div>
+
+  <!-- ANSWERS TO BRIEF -->
+  <div style="max-width:1240px;margin:52px auto 0;">
+    <div class="lbl" style="font-size:10px;letter-spacing:2px;color:var(--accent-deep);margin-bottom:12px;">Svar på briefens fyra frågor</div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;">
+      <div class="rat"><h4>Vikten</h4><p><b>1b.</b> En enda tung gest — läderbandet med sommarraden — sedan paper-täthet. Ceremoni bor i <em>ett</em> element, inte hela skärmen. Det skiljer den från årsboken (helskärm) och portalen (ingen tyngd alls).</p></div>
+      <div class="rat"><h4>Tre händelser — en rad eller tre?</h4><p><b>Tre rader.</b> Var och en är en namngiven konsekvens — en spelare som slutade väger som en egen mening. Punkt-dot i accent (avslut/ålder) vs success (uppflyttning) ger tyst riktning utan att bli en severity-skylt. En rad sparar 2 mm och tappar tre andetag.</p></div>
+      <div class="rat"><h4>Styrelsekraven utan ceremoni</h4><p><b>Återanvänder <code>BoardObjectivesList</code></b> rakt av — rätt siffror/enheter sedan sluttestet (tkr, delad enhet på snedstreck, avståndsbaserad framstegsstapel). Ledraden gör registret sakligt; ArrivalScenes ceremoni ligger kvar där, en gång per karriär.</p></div>
+      <div class="rat"><h4>Två sekunder som väger</h4><p>Läderbandet läser man på ett ögonkast; resten är skannbart. Ingen knapp utom CTA:n → inget att <em>göra</em>, bara att se. CTA:n namnger matchen så steget känns som en tröskel, inte en vägg. Passeras snabbt, men man vet att man passerade något.</p></div>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div style="max-width:1240px;margin:22px auto 0;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;">
+    <div class="lbl" style="color:var(--accent-deep);margin-bottom:8px;">Anteckningar till Code</div>
+    <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.7;color:var(--text-secondary);">
+      <li><b>Sommarraden</b> varierar med utbrändhet vid säsongsslut (inte resultat): Utvilad / Något sliten / Nära gränsen — de tre låsta varianterna. Visad här: "Något sliten".</li>
+      <li><b>Tre händelser</b> = faktiska poster ur säsongsavslutet (slutad / åldrad / uppflyttad). Tomt fall: "Ingenting hände. Isen låg och väntade." → rendera som en enda rad, inte tre tomma punkter.</li>
+      <li><b>Styrelsemål</b>: <code>BoardObjectivesList</code> med <code>max=2</code> här (portalen kör redan max 2). Ledrad ovanför, ingen ceremoni-inramning.</li>
+      <li><b>CTA</b>: matchtyp-etiketten härleds ur <code>tävlingstyp + skede</code> (se Granska del 4) — "🏆 Cup · kvartsfinal", "⚔️ Slutspel · semifinal", eller "🏒 Omgång 1" för ligastart. Knapptexten namnger motståndaren.</li>
+      <li><b>Utbrändhetens återhämtning</b> är Codes mekanik, inte min: hälften av avståndet ner till 30, aldrig under 30 om värdet låg över 60. <span style="color:var(--accent-deep);">[Opus]</span></li>
+      <li><b>Inga beslut på skärmen.</b> Kön på nio väntande beslut ligger kvar i portalen — portalfråga, inte Sommaren-fråga.</li>
+    </ul>
+  </div>
+
+  <div style="text-align:center;margin-top:26px;color:var(--text-muted);font-size:11px;font-style:italic;font-family:Georgia,serif;">— Sommaren · steget som ger säsongen ett andetag —</div>
+
+</section>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,12 @@
+fact_id: Q209
+category: questions
+claim: Spetsar tabelläget till matcherna i slutfasen? Skiljer sig målsnitt och hemmafördel
+  mellan slutfasmatcher där något står på spel (slutspels-, kval- eller nedflyttningsstrid)
+  och matcher mellan lag utan tabellincitament?
+spawned_by: finding:065
+spawned_at: '2026-07-07'
+status: open
+domain: bandy
+notes: Testbar med befintlig data — tabelläge vid matchtillfället kan rekonstrueras
+  ur resultathistoriken. Den enda av 065:s tre mekanismkandidater (tabelläge,
+  isförhållanden, formtoppning) som är körbar utan nya datakällor.

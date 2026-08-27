@@ -165,3 +165,29 @@ Båda är samma felklass: kod som är korrekt byggd och grönt testad, men aldri
 - **Summa: 70 + 4,5 + 10,0 + 1,0 = 85,5** (klämd, gott och väl "Stabil")
 
 Detta bekräftar att förslaget INTE återintroducerar Grind-1s överdrivna avsked-fynd GENOM boardPatience — en svår klubb som slutar bra utan en riktig förlustsvit förblir starkt skyddad, om något MER skyddad än idag (dagens flata +15 vägs upp av den löpande termens egna +4,5). Om Heros fortfarande sparkas 80 % av gångerna i praktiken kommer det avskedet från något annat (objektiv-/licensmekanik utanför `computeBoardPatienceUpdate`) — värt en separat riktad koll, inte något dessa fem/sex ändringar borde förväntas fixa på egen hand.
+
+---
+
+## Del 4 — Opus granskning av Del 3 + stresstestorder (2026-08-21)
+
+**Först en datumrättelse:** Del 3 är stämplad 2026-08-22, som är i morgon. Samma drift finns i flera SLUTTEST-poster från samma pass. Code: kör tidssteget i CLAUDE.md:s sessionsstart, gärna varje långt pass.
+
+Förslaget håller i sina huvuddrag — piggyback-punkten är rätt, ortogonaliteten via `arc.consecutiveLosses` är rätt, och handräkningen visar rätt riktning. Tre saker måste dock avgöras eller skärpas INNAN bygget, annars byggs de fel av bara farten:
+
+1. **Avskedskontrollen mitt i säsongen — odefinierad i förslaget.** Den löpande termen skriver `game.boardPatience` varje omgång, men `managerFired`-kontrollen (`seasonEndProcessor.ts:947`) körs bara vid säsongsslut. Förslaget säger inte om ett mittsäsongsvärde ≤ 15 ska få sparka. **Min dom: nej, inte i den här leveransen.** Mittsäsongsvärdet är tryck och synlighet (zonbanden i `boardPatienceZone` börjar röra sig under säsongen — det är hela vinsten); själva avskedet förblir en säsongsslutshändelse. Mittsäsongsavsked är en egen mekanik (ersättartränare, kontraktsläge, UI) och hör inte hemma i en kalibreringsfix före release.
+2. **Dubbelräkningen är avsiktlig men ska namnges i koden.** Löpande term och säsongsslutsterm härleds båda ur samma matchresultat — variansen på en säsong blir grovt dubbelt dagens. Det är rätt (position och form är olika signaler), men skriv det som kommentar vid båda termerna så att nästa kalibrering inte "rättar" den ena i tron att den är en bugg.
+3. **Anropsordningen vid `roundProcessor.ts:878`:** den nya `updateRunningBoardPatience()` måste anropas EFTER `updateTrainerArc(game)` i samma omgång, annars läser den förra omgångens svit. "Bredvid" i Del 3 är inte tillräckligt precist för en byggorder.
+
+Två mindre påpekanden: (a) ankarpositionerna i punkt 3 är påhittade tal — rätt sorts påhitt, men de ska in som namngivna konstanter (`EXPECTATION_ANCHOR`) med kommentar om härledningen ur `evaluateBoard()`-banden, inte inlinade; (b) `boardObjectiveHistory`-typutökningen (`'at_risk'`) kräver en migrationsrad för gamla saves, samma mönster som `SeasonSummary.id`.
+
+### Stresstestorder till Code — GATED PÅ JACOBS "KÖR", bygg inget innan dess
+
+**Steg 1.** Bygg ändring 1–5 ur Del 3 på en arbetsgren (inte main), med domarna ovan: ingen mittsäsongsavskedning, anrop efter `updateTrainerArc`, namngivna ankarkonstanter, migrationsrad för `'at_risk'`. Ändring 6 (tvåsanningsmeningen) byggs INTE i detta svep — den är UI/text och förorenar mätningen.
+
+**Steg 2.** Kör `scripts/grind1-boardpatience-sim.ts` oförändrad mot grenen: samma 25 säsonger, samma klubbar (`club_slottsbron`, `club_heros`), plus en tredje profil som replikerar Skutskär-formen (AvoidBottom, mittenplacering, minst en ≥5-svit). Rapportera per klubb: sparkad-andel, patience-fördelning vid säsongsslut (min/median/max), andel säsonger i under_press-bandet.
+
+**Steg 3.** Kör `npm run stress` före/efter på samma seed. Kravet är INTE byte-identiskt (boardPatience får ändras) — kravet är att MATCHRESULTATEN är byte-identiska: målsnitt, hemmavinst, oavgjort, hörnmål, utvisningar oförändrade. `matchCore` läser inte patience i dag; testet bevisar att det förblir så.
+
+**Godkänt-kriterier (Jacob låser koefficienterna mot dessa, inte mot handräkningen):** Slottsbron-sparkningar stannar låga (≤ 12 %); Heros-sparkningar VIA patience ökar inte mot i dag; Skutskär-profilen hamnar i under_press-bandet i en majoritet av säsongerna och korsar ≤ 15 i en minoritet men inte noll — "icke-noll men inte säkert", över fördelningen, precis som Del 3 formulerar det. Faller något kriterium: rapportera fördelningarna och vänta på ny koefficientdom, kalibrera inte själv.
+
+**En commit per ändring (1–5), rotorsak i meddelandet, ingen merge till main förrän Jacob låst koefficienterna mot steg 2-rapporten.**

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+<script src="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/_ds_bundle.js"></script>
+<style>
+  html,body{margin:0;padding:0;background:var(--bg);}
+  *{box-sizing:border-box;}
+  :root{--warm-light:#c8a058;--warm:#8c6e3a;}
+  a{color:var(--accent-deep);}
+  code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.84em;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent-deep);padding:1px 5px;border-radius:4px;}
+  .lbl{font-family:system-ui,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+  .row{background:var(--bg-surface);border:1px solid var(--border);border-radius:9px;padding:0;overflow:hidden;margin-bottom:9px;}
+  .rowhead{display:flex;align-items:flex-start;gap:13px;padding:14px 16px;}
+  .idx{font-family:Georgia,serif;font-weight:800;font-size:22px;min-width:30px;text-align:center;line-height:1;flex-shrink:0;}
+  .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+  .pill{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 8px;border-radius:99px;text-transform:uppercase;}
+  .body{padding:0 16px 14px 59px;font-size:12.5px;line-height:1.6;color:var(--text-secondary);}
+  .body b{color:var(--text-primary);}
+  .src{font-size:11px;color:var(--text-muted);margin-top:6px;}
+</style>
+</helmet>
+<div style="min-height:100vh;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text-primary);padding:0 16px 90px;">
+
+  <!-- MASTHEAD -->
+  <header style="max-width:900px;margin:22px auto 0;background:var(--bg-dark);border-bottom:3px solid var(--accent);border-radius:10px 10px 0 0;padding:32px 38px 26px;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(92deg,rgba(255,255,255,.015) 0 2px,transparent 2px 7px);"></div>
+    <div style="position:relative;">
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);font-weight:600;">Komplett åtgärdslista · allt sammanvägt</div>
+      <h1 style="font-family:Georgia,serif;font-weight:800;color:var(--text-light);font-size:34px;line-height:1.05;margin:11px 0 8px;letter-spacing:-.5px;">Hela auditen, i ordning</h1>
+      <p style="color:var(--text-light-secondary);font-size:13.5px;line-height:1.55;max-width:620px;margin:9px 0 0;">GPT:s live-genomgång (@b805a82, 390 px) sammanvägd med vår källbaserade auditserie (del 1–5 + Granska del 4). <strong>Inget är bortprioriterat</strong> — 21 poster, bara ordnade. Ordningen väger: läsbarhetsbuggar → hierarki → träffytor → dramaturgi → skuld → infra.</p>
+    </div>
+  </header>
+
+  <div style="max-width:900px;margin:0 auto;background:var(--bg-leather);color:var(--text-light-secondary);display:flex;flex-wrap:wrap;font-size:12px;">
+    <div style="flex:1 1 150px;padding:11px 18px;border-right:1px solid rgba(255,255,255,.07);"><span class="lbl" style="color:var(--text-muted);font-size:8px;display:block;margin-bottom:3px;">Live-källa</span>GPT @b805a82 · 390px</div>
+    <div style="flex:1 1 150px;padding:11px 18px;border-right:1px solid rgba(255,255,255,.07);"><span class="lbl" style="color:var(--text-muted);font-size:8px;display:block;margin-bottom:3px;">Källaudit</span>vår del 1–5 + Granska 4</div>
+    <div style="flex:1 1 150px;padding:11px 18px;border-right:1px solid rgba(255,255,255,.07);"><span class="lbl" style="color:var(--text-muted);font-size:8px;display:block;margin-bottom:3px;">Poster</span>21 · inget struket</div>
+    <div style="flex:1 1 150px;padding:11px 18px;"><span class="lbl" style="color:var(--text-muted);font-size:8px;display:block;margin-bottom:3px;">Bygg</span>godkänd · bundle-varning</div>
+  </div>
+
+  <!-- LEGEND -->
+  <div style="max-width:900px;margin:0 auto;background:var(--bg-surface);border:1px solid var(--border);border-top:none;padding:12px 18px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:11px;color:var(--text-secondary);">
+    <span style="font-weight:700;color:var(--text-primary);">Källa:</span>
+    <span><span class="pill" style="background:color-mix(in srgb,var(--ice) 18%,transparent);color:#3f6e8c;">LIVE</span> bara synlig i rendering</span>
+    <span><span class="pill" style="background:color-mix(in srgb,var(--success) 15%,transparent);color:var(--success);">BEKRÄFTAR</span> vi hittade den, GPT verifierade live</span>
+    <span><span class="pill" style="background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent-deep);">VÅR</span> vår audit, ej i GPT:s</span>
+  </div>
+
+  <main style="max-width:900px;margin:0 auto;background:var(--bg-surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:22px 22px 40px;">
+
+    <!-- BLOCK A -->
+    <div class="lbl" style="color:var(--danger-text);font-size:11px;margin:6px 0 4px;">▎Block A · Läsbarhet — buggar, går först</div>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;padding-left:2px;">Inte tondiskussioner. Text man inte kan läsa / mål man inte kan träffa. Billigast och mest akut.</p>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--danger);">1</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">Kritiskt portalkort — nästan osynlig text (~1,06:1)</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger-text);">HIGH 1</span><span class="pill" style="background:color-mix(in srgb,var(--ice) 18%,transparent);color:#3f6e8c;">LIVE</span></div>
+        </div>
+      </div>
+      <div class="body"><b>Nästan vit text (rgb 245,241,235) på ljust card-sharp (250,248,244).</b> Krisen ska vara portalens mest läsbara budskap; den är i praktiken osynlig. <code>EventPrimary.tsx</code> använder <code>--text-light</code> på ljust skal. Fix: mörkt <code>primary-card</code>-skal med ljus text, ELLER behåll skalet och byt till <code>--text-primary/secondary</code>. + kontrastgrind för alla portal-primary-varianter.<div class="src">Ren bugg. Högsta prio i hela dokumentet.</div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--danger);">2</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">Taktiksegment ~22 px + FÖRESLÅS överlappar knapp 6,75 px</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger-text);">HIGH 3</span><span class="pill" style="background:color-mix(in srgb,var(--ice) 18%,transparent);color:#3f6e8c;">LIVE</span></div>
+        </div>
+      </div>
+      <div class="body">Segmentknappar ~22,5–23 px höga mot systemets egen 44 px-regel; FÖRESLÅS-badgen skär knappens box. <code>TacticBoardCard.tsx</code> <code>padding:6px 3px</code> + badge <code>top:-6</code>. Fix: ≥36 px synlig / 44 px träffyta, riktig badgelinje i layouten (ej negativ position). <b>Deldel av den större Taktik-omkomponeringen (post 9)</b> — men själva träffytan är en A-bugg.<div class="src">Bekräftar även vår del 4-flödesnotering om taktikens platta viktning.</div></div>
+    </div>
+
+    <!-- BLOCK B -->
+    <div class="lbl" style="color:var(--accent-deep);font-size:11px;margin:22px 0 4px;">▎Block B · En primär handling per skärm</div>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;padding-left:2px;">Hierarkin faller när flera kopparknappar delar toppnivå. Takregeln väljer rätt — presentationen sviker efter valet.</p>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--accent-dark);">3</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">Portal: två konkurrerande primär-CTA:er</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger-text);">HIGH 2</span><span class="pill" style="background:color-mix(in srgb,var(--success) 15%,transparent);color:var(--success);">BEKRÄFTAR</span></div>
+        </div>
+      </div>
+      <div class="body">Huvudkortets knapp ("Sätt lineup för finalen") + den fasta bottenknappen ("Redo — spela") är båda koppar-primära. <code>SMFinalPrimary</code>/<code>EventPrimary</code> bäddar egen <code>.btn-primary</code> medan <code>PortalScreen</code> alltid renderar den fasta. Fix: låt taket bestämma <em>enda</em> primärhandlingen — huvudkortet blir sekundärt, eller fasta knappen ärver kortets label+mål.<div class="src">Din egen Portal-taknotering, nu live-verifierad.</div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--accent-dark);">4</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">Marknad: tre bud = tre primärknappar + motsägande tomstatus</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger-text);">HIGH 4</span><span class="pill" style="background:color-mix(in srgb,var(--success) 15%,transparent);color:var(--success);">BEKRÄFTAR</span></div>
+        </div>
+      </div>
+      <div class="body">Tre "Acceptera"-primärer staplade 16 px isär; under dem "Marknaden är tom" trots tre aktiva bud ovanför; undertext dämpad mot koppar = svårläst. <code>IncomingBidCard</code> skickar <code>primaryChoiceId="accept"</code> per kort; <code>TransfersScreen</code> tomstatus ser bara tillgängliga spelare. Fix: neutrala val tills ett bud är aktivt, en skärmprimär åt gången, tät skala, tomstatus → "Inga spelare listade" under egen rubrik.<div class="src">Vår audit del 2 (Transfers) — och vår poaching-krok bor i just detta kort.</div></div>
+    </div>
+
+    <!-- BLOCK C -->
+    <div class="lbl" style="color:var(--accent-deep);font-size:11px;margin:22px 0 4px;">▎Block C · Datarader som spricker</div>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--accent-dark);">5</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">Trupp/Nu: skadeporträtt blåses upp till ~150 px + kapat namn</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger-text);">HIGH 5</span><span class="pill" style="background:color-mix(in srgb,var(--success) 15%,transparent);color:var(--success);">BEKRÄFTAR</span></div>
+        </div>
+      </div>
+      <div class="body">Porträtt-SVG utan bredd/höjd i wrappern expanderar till ~150 px; SeasonArc-raden packar position+namn+stapel+varning+2 knappar → "Karl …". <code>SquadScreen.tsx</code>. Fix: wrapper 40×40, <code>flex-shrink:0</code>, <code>overflow:hidden</code>; dela ReactionRow i två nivåer (identitet/status + handlingar).<div class="src">Vår audit del 1 (Squad) — GPT gav den exakta pixeln.</div></div>
+    </div>
+
+    <!-- BLOCK D -->
+    <div class="lbl" style="color:var(--accent-deep);font-size:11px;margin:22px 0 4px;">▎Block D · Dramaturgi — konsolideringen behöver återfå viktning</div>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;padding-left:2px;">Gemensamt språk finns; nu ska kontexten styra densitet och klimax. Detta är vår tes och GPT:s huvudslutsats — samma.</p>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--accent);">6</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">Granska: final &amp; avsked saknar crescendo</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--warm-light) 22%,transparent);color:#8c6e3a;">MEDIUM 1</span><span class="pill" style="background:color-mix(in srgb,var(--success) 15%,transparent);color:var(--success);">BEKRÄFTAR</span></div>
+        </div>
+      </div>
+      <div class="body">Matrisen rensar rätt (cup/slutspel renare), men cupfinal/SM-final blir nästan vanlig rapport + litet "TURNERINGSLÄGE"-kort. <code>GranskaOversikt.tsx</code> återanvänder samma komposition. Fix: en matchtypsägd kapitelpunkt före statistiken — finalhero / avskedstribut / serie-status. Återinför ej ligatabell.<div class="src">Exakt vårt Granska del 4-uppdrag. Turneringsläge-kortet vi la till = det GPT ser.</div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--accent);">7</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">DecisionCard: inline-rytmen för likriktad på Granska</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--warm-light) 22%,transparent);color:#8c6e3a;">MEDIUM 2</span><span class="pill" style="background:color-mix(in srgb,var(--ice) 18%,transparent);color:#3f6e8c;">LIVE</span></div>
+        </div>
+      </div>
+      <div class="body">Familjen hör ihop (EventOverlay rund/stor, Granska skarp/liten, Press bespok — rätt). Men flera inline-beslut får samma fullbredds staplade outline-val → lika tunga som matchresultatet. Skarpa skalet lägger extra <code>10px 12px</code> inuti card-sharp (dubbel padding-risk). Fix: kontextstyrd densitet, ett dominant beslut åt gången, anropssidan äger komposition.</div>
+    </div>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--accent);">8</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">Taktiktavlan: åtta lika viktade rader = inställningspanel, inte matchplan</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--warm-light) 22%,transparent);color:#8c6e3a;">HIGH 3-komp</span><span class="pill" style="background:color-mix(in srgb,var(--success) 15%,transparent);color:var(--success);">BEKRÄFTAR</span></div>
+        </div>
+      </div>
+      <div class="body">Grupperingen (Spelplan/Bollspel/Fasta) är begriplig och 2 av 8 FÖRESLÅS betyder något — men alla åtta har nästan samma vikt, så rådet bryter igenom svagt. + engelska förkortningar <code>DEF/MID/HAL/GOA</code> mot systemets svenska <code>B/MF/YH/MV/A</code>. Fix: nedtonad helradston för föreslagen rad; svensk vokabulär. <b>Kompositionshalvan av post 2.</b><div class="src">Bekräftar vår del 4-notering; träffytan är post 2 (bugg), viktningen är denna.</div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--accent);">9</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">Granska-dubbletten: RoundSummary vs GranskaScreen</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent-deep);">VÅR</span></div>
+        </div>
+      </div>
+      <div class="body">Två omgångs-ceremonier gör samma jobb; RoundSummary ser legacy ut (emoji-rubriker, <code>TODO:piktogram</code>). <b>Beslut hos dig:</b> vilken är kanon → ta bort den andra. GPT granskade bara GranskaScreen-grenen, så dubbletten syns inte i live-svepet — men den står kvar.<div class="src">Vår audit del 3. Inte struken — väntar på ditt kanon-besked.</div></div>
+    </div>
+
+    <!-- BLOCK E -->
+    <div class="lbl" style="color:var(--accent-deep);font-size:11px;margin:22px 0 4px;">▎Block E · Modaler &amp; tomma kort</div>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--accent);">10</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">TacticChangeModal ser ut som otillåten bottom sheet + emoji-chrome</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--warm-light) 22%,transparent);color:#8c6e3a;">MEDIUM 3</span><span class="pill" style="background:color-mix(in srgb,var(--success) 15%,transparent);color:var(--success);">BEKRÄFTAR</span></div>
+        </div>
+      </div>
+      <div class="body"><code>match-modal-dock</code> ligger som bottom sheet mot DS-regel 8 (centrerade modaler); kugghjulsemoji som chrome mot Lucide-regeln. Fix: centrera som SubstitutionModal, ELLER ratificera "matchdocka" som egen namngiven regel; byt emoji → Lucide.<div class="src">Vårt återkommande emoji-i-chrome-tema.</div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--accent);">11</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">Säsongsboken: tomt "Säsongens bästa"-kort</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--warm-light) 22%,transparent);color:#8c6e3a;">MEDIUM 4</span><span class="pill" style="background:color-mix(in srgb,var(--ice) 18%,transparent);color:#3f6e8c;">LIVE</span></div>
+        </div>
+      </div>
+      <div class="body">"TRUPPEN / SÄSONGENS BÄSTA" följs av tomt kort utan kandidat — mot DS-regel 12 (tom struktur förbjuden). Fix: gata kapitlet på faktisk data, eller skriv narrativ status. Behåll övrig kapitelstruktur.<div class="src">Samma tomma-struktur-familj som vår Squad/Portal-notering.</div></div>
+    </div>
+
+    <!-- BLOCK F -->
+    <div class="lbl" style="color:var(--accent-deep);font-size:11px;margin:22px 0 4px;">▎Block F · Lågprioriterad skuld — behålls, sist</div>
+
+    <div class="row"><div class="rowhead"><div class="idx" style="color:var(--text-muted);">12</div><div style="flex:1;"><div style="font-weight:700;font-size:14px;color:var(--text-primary);">Dok-drift: README/SYNC säger 6 navflikar, regeln tillåter 7 (Värvning)</div><div class="meta"><span class="pill" style="background:var(--bg-elevated);color:var(--text-muted);">LÅG · DOK</span></div></div></div><div class="body">Sjufliksläget fungerar i 390 px — ingen produktbugg, men dokumentationen bör synkas.</div></div>
+
+    <div class="row"><div class="rowhead"><div class="idx" style="color:var(--text-muted);">13</div><div style="flex:1;"><div style="font-weight:700;font-size:14px;color:var(--text-primary);">Emoji-prefix i Granska-rapportsektioner mot senare textregel</div><div class="meta"><span class="pill" style="background:var(--bg-elevated);color:var(--text-muted);">LÅG</span><span class="pill" style="background:color-mix(in srgb,var(--success) 15%,transparent);color:var(--success);">BEKRÄFTAR</span></div></div></div><div class="body">Skadar ej användbarhet men gör regelverket otydligt. Del av det samlade emoji→fält/Lucide-svepet (Inbox, Club, RoundSummary, History, Granska).</div></div>
+
+    <div class="row"><div class="rowhead"><div class="idx" style="color:var(--text-muted);">14</div><div style="flex:1;"><div style="font-weight:700;font-size:14px;color:var(--text-primary);">Egna skuggor: FÖRESLÅS-skugga + EventOverlay stor modalskugga mot skuggkanon</div><div class="meta"><span class="pill" style="background:var(--bg-elevated);color:var(--text-muted);">LÅG</span></div></div></div><div class="body">Mindre viktigt än träffytor/hierarki. Justera mot <code>--shadow-*</code>-skalan när övrigt är gjort.</div></div>
+
+    <div class="row"><div class="rowhead"><div class="idx" style="color:var(--text-muted);">15</div><div style="flex:1;"><div style="font-weight:700;font-size:14px;color:var(--text-primary);">Vite-bundle 2 106 kB (644 kB gzip)</div><div class="meta"><span class="pill" style="background:var(--bg-elevated);color:var(--text-muted);">LÅG · PERF</span></div></div></div><div class="body">Byggvarning, ej blockerande. Code-splitting när tillfälle ges.</div></div>
+
+    <!-- BLOCK G -->
+    <div class="lbl" style="color:var(--accent-deep);font-size:11px;margin:22px 0 4px;">▎Block G · Regressionssuite — infra före ytorna</div>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;padding-left:2px;">Varje audit vilar på den här suiten. Den startar inte idag — så post 16 måste gå <em>före</em> ytfixarna, annars saknar de nät.</p>
+
+    <div class="row" style="border-color:#e4c3b8;">
+      <div class="rowhead">
+        <div class="idx" style="color:var(--danger);">16</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14.5px;color:var(--text-primary);">test:visual startar inte (testfil importerar testfil)</div>
+          <div class="meta"><span class="pill" style="background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger-text);">BLOCKERANDE</span><span class="pill" style="background:color-mix(in srgb,var(--ice) 18%,transparent);color:#3f6e8c;">LIVE</span></div>
+        </div>
+      </div>
+      <div class="body"><code>tapTargetGate.visual.ts</code> importerar <code>SCENES</code> från <code>scenes.visual.ts</code> — Playwright avvisar testfil-import-testfil; server dog → <code>ERR_CONNECTION_REFUSED</code>. Fix: flytta <code>SCENES</code> till neutral fixture-fil; stabil serverlivscykel; dela pixel / träffyta / semantik i tre CI-statusar; Linux kanonisk pixelmiljö, macOS rapporterar strukturfel utan lokala baselines.<div class="src">Grundbulten. Utan den har posterna 1–11 inget regressionsnät.</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:2px;">
+      <div class="row" style="margin:0;"><div style="padding:12px 14px;"><div style="font-weight:700;font-size:12.5px;">17 · Kontrastgrind</div><div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;margin-top:3px;">Varje portal-primary mot faktisk bakgrund, ≥4,5:1 / 3:1. Fångar post 1.</div></div></div>
+      <div class="row" style="margin:0;"><div style="padding:12px 14px;"><div style="font-weight:700;font-size:12.5px;">18 · En primär per skärm</div><div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;margin-top:3px;">Räkna synliga <code>.btn-primary</code> i Portal/Marknad. Fångar 3, 4.</div></div></div>
+      <div class="row" style="margin:0;"><div style="padding:12px 14px;"><div style="font-weight:700;font-size:12.5px;">19 · Träffytor &amp; överlapp</div><div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;margin-top:3px;">≥36 px synlig / 44 px effektiv; 375/390/430. Fångar 2.</div></div></div>
+      <div class="row" style="margin:0;"><div style="padding:12px 14px;"><div style="font-weight:700;font-size:12.5px;">20 · Matchtypsmatris</div><div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;margin-top:3px;">Frånvaro av irrelevant + närvaro av matchtypens ankare. Fångar 6.</div></div></div>
+      <div class="row" style="margin:0;grid-column:1 / -1;"><div style="padding:12px 14px;"><div style="font-weight:700;font-size:12.5px;">21 · Datakortens robusthet + DecisionCard-kontextmatris + takregel-scenmatris</div><div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;margin-top:3px;">Långa namn / svensk pos / skada / tomt pris-kort (post 5, 11); sex DecisionCard-lägen utan dubbel padding (post 7); två samtidiga takkandidater → en vinnande CTA (post 3).</div></div></div>
+    </div>
+
+    <!-- ORDER RATIONALE -->
+    <div style="margin-top:24px;background:var(--bg-dark);border-radius:12px;padding:18px 20px;">
+      <div class="lbl" style="color:var(--accent);margin-bottom:8px;">Varför ordningen</div>
+      <p style="color:var(--text-light-secondary);font-size:12.5px;line-height:1.6;margin:0;">Inget är bortprioriterat — allt 21 finns med. Men <b style="color:#DD9555;">post 16 (suiten) går egentligen först</b>: den är nätet posterna 1–11 landar i. Sedan Block A (läsbarhet — man kan inte läsa/träffa), Block B (en primär per skärm — hierarkin), Block C (spruckna rader), Block D (dramaturgi — vår och GPT:s gemensamma huvudtes), Block E (modaler/tomt), och sist Block F (dokument- och perf-skuld som inte syns för spelaren). Grön "BEKRÄFTAR" = vi och GPT landade i samma sak från var sitt håll; det är de säkraste att bygga.</p>
+    </div>
+
+    <div style="text-align:center;margin-top:22px;color:var(--text-muted);font-size:11px;font-style:italic;font-family:Georgia,serif;">— Komplett åtgärdslista · 21 poster, inget struket, bara ordnat —</div>
+
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

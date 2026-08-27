@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+<script src="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/_ds_bundle.js"></script>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  html,body{margin:0;padding:0;background:#cfc7b6;}
+  *{box-sizing:border-box;}
+  :root{--warm-light:#c8a058;--cold-light:#7095b8;}
+  a{color:var(--accent-deep);}
+  code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.84em;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent-deep);padding:1px 5px;border-radius:4px;}
+  .lbl{font-family:system-ui,sans-serif;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
+  .cs{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;}
+  .rat{background:var(--bg-dark);border-radius:12px;padding:16px 18px;color:var(--text-light-secondary);}
+  .rat h4{font-family:Georgia,serif;color:var(--text-light);font-size:15px;margin:0 0 8px;font-weight:700;}
+  .rat p{font-size:12.5px;line-height:1.55;margin:0 0 7px;}
+  .rat b{color:#DD9555;}
+  .phone{width:290px;background:var(--bg-dark);border-radius:22px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.28);border:1px solid rgba(0,0,0,.14);flex-shrink:0;}
+  .pbody{padding:12px 12px 14px;min-height:300px;display:flex;flex-direction:column;gap:6px;background:var(--bg);}
+  /* matrix */
+  .mx{border-collapse:separate;border-spacing:0;width:100%;font-family:system-ui,sans-serif;background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .mx th,.mx td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--border);border-right:1px solid var(--border);vertical-align:top;}
+  .mx th{background:var(--bg-dark);color:var(--text-light);font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+  .mx th:first-child{width:196px;}
+  .mx td:first-child{font-weight:600;font-size:12px;color:var(--text-primary);background:color-mix(in srgb,var(--accent) 5%,transparent);}
+  .mx tr:last-child td{border-bottom:none;}
+  .mx th:last-child,.mx td:last-child{border-right:none;}
+  .cell{display:flex;flex-direction:column;gap:2px;}
+  .mk{font-family:Georgia,serif;font-weight:800;font-size:13px;line-height:1;}
+  .mk-keep{color:var(--success);}
+  .mk-tone{color:var(--warm-light);}
+  .mk-cut{color:var(--danger);}
+  .cell .note{font-size:10.5px;line-height:1.35;color:var(--text-secondary);}
+  .legend-chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary);}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#cfc7b6;background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.22),transparent 45%);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text-primary);padding:34px 40px 130px;">
+
+  <!-- INTRO -->
+  <div style="max-width:1200px;margin:0 auto 26px;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-deep);font-weight:700;">Designuppdrag · Granska · del 4</div>
+    <h1 style="font-family:Georgia,serif;font-size:33px;font-weight:800;margin:8px 0 10px;letter-spacing:-.5px;">En mall byggd för ligamatchen</h1>
+    <p style="font-size:14.5px;line-height:1.65;max-width:840px;margin:0 0 14px;color:var(--text-secondary);text-wrap:pretty;"><code>GranskaScreen</code> är efter-match-ceremonin — <strong>och den antar att matchen var en ligaomgång.</strong> Cup, slutspel, SM-final och avskedsmatch går genom exakt samma mall, och faller ut fel på olika sätt: en tabellplacering på en cupkväll, en "andra matcher"-lista efter en final som inte hade några andra matcher, en "💰 +2 tkr/omg"-rad under själva guldet. Uppdraget nedan är en <strong>matchtypsmatris</strong> — sektion för sektion, matchtyp för matchtyp — plus två saker Design inte haft med sig: att snabbläget inte ger någon matchtext alls, och att koden redan hunnit ikapp delar av del 1–3.</p>
+
+    <div style="max-width:840px;background:var(--bg-dark);border-radius:12px;padding:14px 18px;">
+      <div class="lbl" style="color:#DD9555;margin-bottom:6px;">↻ Verklighetskoll — läst mot commit <code style="background:rgba(255,255,255,.06);color:#e8b98a;">d94aac6</code> (2026-08-11)</div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--text-light-secondary);margin:0 0 6px;">Koden har hunnit ikapp: <code style="background:rgba(255,255,255,.06);color:#e8b98a;">GranskaOversikt</code> bär redan <b style="color:#DD9555;">SLUTTEST RUNDA 4</b>-fixar — väderraden syns nu oavsett simuleringsläge, neutral-plan-arenanamn läses ur <code style="background:rgba(255,255,255,.06);color:#e8b98a;">fixture.arenaName</code>, och straffavgjord match har egen flavor-gren. Uppdraget bygger vidare på det, inte om det.</p>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--text-light-secondary);margin:0;"><b style="color:#DD9555;">Live-verifierat 2026-08-11</b> (cupsemifinal på neutral plan, snabbläge) — tre rättelser mot första utkastet: Form-cellen för cup är nu <span style="color:var(--danger);font-weight:700;">✕</span> (falskt "Inga matcher ännu", inte fel ton), Tabell "—" och Omgångssammanfattning "−53 tkr/omg" bekräftade ordagrant, och en ny sektion — <b style="color:#DD9555;">Turneringsläge</b> — tillagd. Källa: @<code style="background:rgba(255,255,255,.06);color:#e8b98a;">d94aac6</code>.</p>
+    </div>
+  </div>
+
+  <!-- HYPOTES -->
+  <div style="max-width:1200px;margin:0 auto 24px;background:var(--bg-surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:16px 20px;">
+    <div class="lbl" style="color:var(--accent-deep);margin-bottom:6px;">Hypotesen sluttestet gav gratis</div>
+    <p style="font-size:14px;line-height:1.6;margin:0;text-wrap:pretty;">Granska är skriven med ligamatchen som mall och antar den. Ju mer ceremoniell matchen är, desto fler ligaformade sektioner faller ut fel — en tydlig diagonal av fel från vänster till höger i matrisen. Koden vet redan <em>lite</em> om matchtyp (<code>isNeutralVenue</code>, <code>isKnockout</code>, <code>penResult</code>, kaptenens <code>final/slutspel/derby/vardag</code>-kontext), men det är <strong>utspritt per sektion</strong>, inte en genomgående matchtyps-medvetenhet. Uppdraget: gör matchtyp till en förstaklass-parameter, och för varje sektion avgör om den ska <span class="mk mk-keep">hållas</span>, <span class="mk mk-tone">tonas/grenas</span> eller <span class="mk mk-cut">utelämnas</span>.</p>
+  </div>
+
+  <!-- MATRIS -->
+  <div style="max-width:1200px;margin:0 auto 14px;display:flex;align-items:baseline;gap:12px;">
+    <span style="font-family:Georgia,serif;font-size:24px;font-weight:800;color:var(--accent-deep);">1</span>
+    <h2 style="font-family:Georgia,serif;font-size:22px;font-weight:800;margin:0;">Matchtypsmatrisen</h2>
+  </div>
+  <div style="max-width:1200px;margin:0 auto 10px;display:flex;gap:20px;flex-wrap:wrap;">
+    <span class="legend-chip"><span class="mk mk-keep">✓</span> meningsfull — håll</span>
+    <span class="legend-chip"><span class="mk mk-tone">⚠</span> tonas eller grenas per matchtyp</span>
+    <span class="legend-chip"><span class="mk mk-cut">✕</span> meningslös men renderas → <b style="color:var(--danger);">utelämna</b></span>
+  </div>
+
+  <div style="max-width:1200px;margin:0 auto 12px;">
+    <table class="mx">
+      <thead>
+        <tr>
+          <th>Sektion i Översikt</th>
+          <th>🏒 Ligamatch</th>
+          <th>🏆 Cup</th>
+          <th>⚔️ Slutspel</th>
+          <th>SM-final</th>
+          <th>Avskedsmatch</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Resultat-hero<br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">score · flavor · arena</span></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span><span class="note">Kärnan. Fungerar.</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span><span class="note">Arenanamn redan fixat.</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note">Lägg serieställning: "2–1 i matcher".</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note">Flavor-svansen "hemmaseger" fel på neutral plan. Trophy-ton.</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note">Score underordnas hyllningen.</span></div></td>
+        </tr>
+        <tr>
+          <td>Tabell<br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">ligaplacering</span></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span><span class="note"><b style="color:var(--danger);">Live:</b> visar "—". → visa cupträd, annars utelämna.</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span><span class="note">→ ersätt med serie/bracket.</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span><span class="note">Det ÄR matchen. Utelämna.</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span></div></td>
+        </tr>
+        <tr>
+          <td>Form<br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">senaste 5</span></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span><span class="note"><b style="color:var(--danger);">Live:</b> säger "Inga matcher ännu" direkt efter spelad match — falskt påstående.</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span></div></td>
+        </tr>
+        <tr>
+          <td>Statistik<br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">skott/hörnor/innehav</span></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span><span class="note">Ett avsked behöver inte skottkonton.</span></div></td>
+        </tr>
+        <tr>
+          <td>Nyckelmoment<br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">mål/utvisningar</span></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note">Rama legendens sista mål.</span></div></td>
+        </tr>
+        <tr>
+          <td>Dina val · utfall<br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">manager-kvitto</span></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span><span class="note">Kaptenkontext grenar redan.</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span><span class="note">Högsta insats — bäst här.</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span><span class="note">Ingen taktik-obduktion på ett avsked.</span></div></td>
+        </tr>
+        <tr>
+          <td>Omgångssammanfattning<br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">ekonomi/puls/träning</span></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note"><b style="color:var(--danger);">Live:</b> "−53 tkr/omg" — cup är ingen "omgång". Töna ramen.</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span><span class="note">Inte "+2 tkr/omg" under guldet. Skjut upp.</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span></div></td>
+        </tr>
+        <tr>
+          <td>Andra matcher<br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">samma omgång</span></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note"><b style="color:var(--danger);">Live:</b> visade Karlsborg–Målilla efter cupsemin. Kolla mot cupträdet: andra semin → <span style="color:var(--success);font-weight:700;">✓</span>; två ligalag på samma matchday → bugg, ej ton.</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note">Andra slutspelsserier — värdefullt om wirat.</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span><span class="note">Fanns inga andra matcher.</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span></div></td>
+        </tr>
+        <tr>
+          <td>Scouting</td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note">Säsongen i princip slut.</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span></div></td>
+        </tr>
+        <tr>
+          <td>Press / Media<br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">presskonf · journalist</span></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note">Ton eskalerar till trophy-nivå.</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note">Hyllningsvinkel, inte analys.</span></div></td>
+        </tr>
+        <tr>
+          <td>Nästa match-pekare<br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">§11.3 viskning</span></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span><span class="note">Pekar mot nästa ligamatch.</span></div></td>
+          <td><div class="cell"><span class="mk mk-tone">⚠</span><span class="note">Måste peka in i serien, inte "nästa fixture".</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span><span class="note">Säsongen slut — ingen nästa match. → säsongsavslut.</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span></div></td>
+        </tr>
+        <tr style="background:color-mix(in srgb,var(--accent) 7%,transparent);">
+          <td>Turneringsläge <span style="font-size:8px;background:var(--accent);color:#fff;padding:1px 6px;border-radius:99px;letter-spacing:1px;vertical-align:middle;">NY</span><br><span style="font-weight:400;font-size:10px;color:var(--text-muted);">vidare eller ut — båda osagda idag</span></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span><span class="note">Ingen utslagning i ligan.</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span><span class="note"><b style="color:var(--danger);">Live-lucka:</b> förlorad semi → "cup" syns aldrig. Men vunnen semi = <em>till final</em> — lika osagt. Säg båda.</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span><span class="note">Ut = seriens slut · vidare = nästa omgång.</span></div></td>
+          <td><div class="cell"><span class="mk mk-keep">✓</span><span class="note">Vunnen = mästare · förlorad = silver.</span></div></td>
+          <td><div class="cell"><span class="mk mk-cut">✕</span></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="max-width:1200px;margin:0 auto 12px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.5;">Diagonalen är tesen: ligakolumnen är nästan helgrön, avskedskolumnen nästan helröd. Ju mer ceremoniell matchen, desto mer av mallen bör <em>försvinna</em> — inte kläs i ett snyggare tomt tillstånd. <b style="color:var(--danger);font-style:normal;">Turneringsläge</b> är den enda raden som går andra hållet: en sektion som ska <em>läggas till</em> där mallen idag är helt tyst om turneringsutfallet — både när du åker ut och när du går vidare.</p>
+  <div style="max-width:1200px;margin:0 auto 30px;background:var(--bg-surface);border:1px solid var(--border);border-left:3px solid var(--ice);border-radius:0 10px 10px 0;padding:14px 18px;">
+    <div class="lbl" style="color:#3f6e8c;margin-bottom:6px;">⚠ Kolumnerna är inte modellen — läs steg 1</div>
+    <p style="font-size:13px;line-height:1.6;margin:0;text-wrap:pretty;">De fem kolumnerna är läsbara <em>kombinationer</em>, inte ett femvärdesenum. Matchen som verifierades var <b>cup + utslag + neutral plan samtidigt</b>. Plats (hemma/borta/neutral) är en egen axel — en cupkvartsfinal hemma och en cupsemifinal i Bollnäs är samma tävlingstyp men ska rendera arenaraden olika. Härled <b>två fält</b>, inte ett (se steg 1), annars går arenaraden vi just lagade sönder igen.</p>
+  </div>
+
+  <!-- PRINCIP -->
+  <div style="max-width:1200px;margin:0 auto 30px;display:flex;flex-wrap:wrap;gap:20px;align-items:stretch;">
+    <div class="rat" style="flex:1;min-width:340px;">
+      <h4>Regeln: utelämna, förskönra inte</h4>
+      <p>Där en cell är <b style="color:var(--danger);">✕</b> — "meningslös men renderas" — ska förslaget vara att sektionen <b>inte renderas</b>. Inte ett snyggare tomt tillstånd, inte en gråtonad platshållare. DS-regel 12 säger redan: <em>tom struktur är förbjuden — ett kort utan innehåll renderas inte, eller talar.</em> På en final <em>talar</em> inte en tabellrad; den ska bort.</p>
+      <p><b>Precedens:</b> vi tog nyss bort tre falska påståenden ur portalen på exakt den grunden. Samma disciplin här — en sektion som ljuger om matchtypen är värre än en sektion som saknas.</p>
+    </div>
+    <div class="rat" style="flex:1;min-width:340px;background:var(--bg-leather);">
+      <h4 style="color:var(--text-light);">Fast-läget: Översikt bär hela matchen</h4>
+      <p style="color:var(--text-light-secondary);"><code style="background:rgba(255,255,255,.06);color:#e8b98a;">mode: 'fast'</code> (snabbsimulera omgången) genererar <b>ingen kommentartext alls</b> under matchen. Live-läget nämner väder, moment, drama löpande — snabbläget säger ingenting. Det gör <b>Granska Översikt till den enda ytan där en snabbsimulerande spelare möter någon text om matchen över huvud taget.</b></p>
+      <p style="color:var(--text-light-secondary);">Konsekvens för uppdraget: <code style="background:rgba(255,255,255,.06);color:#e8b98a;">generateQuickSummary</code> (helpers.ts) är lastbärande, inte en garnering. Den måste bära <b>matchtypens vikt</b> i prosan — en SM-final i snabbläge får idag samma 2–3 generiska meningar som en tisdagsmatch i mars. Det räcker inte.</p>
+    </div>
+  </div>
+
+  <!-- SÅ HÄR: två ytterligheter -->
+  <div style="max-width:1200px;margin:0 auto 14px;display:flex;align-items:baseline;gap:12px;">
+    <span style="font-family:Georgia,serif;font-size:24px;font-weight:800;color:var(--accent-deep);">2</span>
+    <h2 style="font-family:Georgia,serif;font-size:22px;font-weight:800;margin:0;">Ytterligheterna, som mock</h2>
+  </div>
+  <p style="max-width:1200px;margin:0 auto 20px;font-size:13.5px;color:var(--text-secondary);line-height:1.6;">Samma skärm, tre matchtyper. Ligamatchen är mallen som den är. SM-finalen och avskedsmatchen visar hur mycket som ska falla bort — och vad som bör ta dess plats.</p>
+
+  <div style="max-width:1200px;margin:0 auto 30px;display:flex;flex-wrap:wrap;gap:26px;">
+    <!-- LIGA -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="phone">
+        <div class="pbody">
+          <div style="display:flex;align-items:center;gap:6px;margin:0 2px;"><span class="lbl" style="margin:0;">⬩ Resultatet</span><span style="flex:1;height:1px;background:var(--border);"></span></div>
+          <div class="cs" style="padding:12px;text-align:center;"><div class="lbl" style="margin-bottom:6px;">🏒 Matchen</div><div style="font-family:Georgia;font-size:26px;font-weight:800;">4–2</div><div style="font-size:10px;color:var(--success);font-weight:700;margin-top:3px;">SEGER · 💪 Dominant · hemmaseger</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div class="cs" style="padding:8px 10px;"><div class="lbl">📊 Tabell</div><div style="font-family:Georgia;font-size:18px;">3:a</div></div>
+            <div class="cs" style="padding:8px 10px;"><div class="lbl">📈 Form</div><div style="display:flex;gap:3px;margin-top:3px;"><span style="width:14px;height:14px;border-radius:4px;background:var(--success);"></span><span style="width:14px;height:14px;border-radius:4px;background:var(--success);"></span><span style="width:14px;height:14px;border-radius:4px;background:var(--danger);"></span></div></div>
+          </div>
+          <div class="cs" style="padding:8px 10px;"><div class="lbl">Andra matcher</div><div style="font-size:10px;color:var(--text-secondary);margin-top:3px;">Slottsbron 3–1 · Målilla 2–2</div></div>
+          <div style="font-size:10px;color:var(--text-muted);font-style:italic;text-align:center;margin-top:auto;">Derbyt mot Skutskär väntar ›</div>
+        </div>
+      </div>
+      <div style="width:290px;text-align:center;"><span class="lbl" style="letter-spacing:1.5px;color:var(--text-secondary);">🏒 Ligamatch · mallen som den är</span></div>
+    </div>
+
+    <!-- SM-FINAL -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="phone">
+        <div class="pbody" style="background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--accent) 22%,var(--bg-dark)),var(--bg-dark));">
+          <div style="text-align:center;padding:6px 0 2px;"><span class="lbl" style="color:var(--accent);">Säsong 34/35 · Final</span></div>
+          <div style="text-align:center;"><div style="font-family:Georgia;font-weight:900;font-size:26px;color:var(--text-light);line-height:1.05;">SVENSKA<br>MÄSTARE</div><div style="font-family:Georgia;font-size:24px;font-weight:800;color:#DD9555;margin-top:6px;">4–3 <span style="font-size:11px;color:var(--text-light-secondary);">(förl.)</span></div></div>
+          <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;"><div class="lbl" style="color:#c9b89a;">Statistik</div><div style="font-size:10px;color:var(--text-light-secondary);margin-top:3px;">Skott 14–11 · Hörnor 6–5</div></div>
+          <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;"><div class="lbl" style="color:#c9b89a;">📋 Dina val · utfall</div><div style="font-size:11px;color:var(--text-light);margin-top:3px;">Kapten Holmgren bar laget ✓</div></div>
+          <div style="background:linear-gradient(180deg,#DD9555,#8B4820);color:#fff;font-size:11px;font-weight:700;letter-spacing:1.5px;padding:11px;border-radius:8px;text-align:center;margin-top:auto;">LYFT POKALEN →</div>
+        </div>
+      </div>
+      <div style="width:290px;"><span class="lbl" style="letter-spacing:1.5px;color:var(--text-secondary);">SM-final · <span style="color:var(--danger);">bort:</span> tabell, form, andra matcher, nästa-match, omgångssammanfattning. <span style="color:var(--success);">Kvar:</span> hero (trophy), statistik, kvitto, press.</span></div>
+    </div>
+
+    <!-- AVSKEDSMATCH -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="phone">
+        <div class="pbody" style="background:linear-gradient(180deg,var(--bg-leather),var(--bg-dark));">
+          <div style="text-align:center;padding:4px 0;"><span class="lbl" style="color:#c9b89a;">Avskedsmatch</span></div>
+          <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-surface);border:2px solid var(--accent);align-self:center;"></div>
+          <div style="text-align:center;"><div style="font-family:Georgia;font-weight:800;font-size:19px;color:var(--text-light);">Tack, Nyström</div><div style="font-size:11px;color:#c9b89a;font-style:italic;margin-top:2px;font-family:Georgia;">412 matcher · 147 mål · 14 säsonger</div></div>
+          <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;"><div class="lbl" style="color:#c9b89a;margin-bottom:3px;">Sista ögonblicket</div><div style="font-family:Georgia;font-style:italic;font-size:12px;color:var(--text-light);line-height:1.5;">76' — han rullar in 3–1 och klacken reser sig en sista gång.</div></div>
+          <div style="background:linear-gradient(180deg,#DD9555,#8B4820);color:#fff;font-size:11px;font-weight:700;letter-spacing:1.5px;padding:11px;border-radius:8px;text-align:center;margin-top:auto;">TILL KRÖNIKAN →</div>
+        </div>
+      </div>
+      <div style="width:290px;"><span class="lbl" style="letter-spacing:1.5px;color:var(--text-secondary);">Avskedsmatch · <span style="color:var(--danger);">nästan allt bort.</span> Resultatet är inte poängen — sändningen är. En egen ceremoni-gren, inte matchmallen.</span></div>
+    </div>
+  </div>
+
+  <!-- UPPDRAGET -->
+  <div style="max-width:1200px;margin:0 auto 14px;display:flex;align-items:baseline;gap:12px;">
+    <span style="font-family:Georgia,serif;font-size:24px;font-weight:800;color:var(--accent-deep);">3</span>
+    <h2 style="font-family:Georgia,serif;font-size:22px;font-weight:800;margin:0;">Uppdraget — så här levereras det</h2>
+  </div>
+  <div style="max-width:1200px;margin:0 auto 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;">
+    <div class="cs" style="padding:14px 16px;border-left:3px solid var(--ice);"><div style="font-family:Georgia;font-weight:700;font-size:14px;margin-bottom:4px;">1 · två axlar, inte ett enum</div><p style="font-size:12.5px;line-height:1.55;color:var(--text-secondary);margin:0 0 6px;">Härled <b>två oberoende fält</b>: <code>tävlingstyp</code> = <code>liga · cup · slutspel · avsked</code>, och <code>plats</code> = <code>hemma · borta · neutral</code>. Knockout-typerna bär dessutom ett <code>skede</code> — och <b>cupens och slutspelets skeden är olika mängder</b>, härledda ur koden, inte ur hur en cup brukar se ut: cup = <code>förstarunda · kvartsfinal · semifinal · final</code> (12 lag, topp 4 bye; <code>getCupRoundName</code>, rundor 1–4 — inget gruppspel, ingen åttondel), slutspel = <code>kvartsfinal · semifinal · final</code> (<code>PlayoffRound</code>-enum).</p><p style="font-size:12.5px;line-height:1.55;color:var(--text-secondary);margin:0;"><b>SM-final = <code>tävlingstyp:slutspel</code> + <code>skede:final</code></b> (cupfinal = <code>cup</code>+<code>final</code>) — finalen är inget eget axelvärde, den identifieras av skedet. Sektionsregler läser tävlingstyp+skede; arena/flavor läser plats. Ett femvärdesenum slår ihop cupkvart hemma och cupsemi i Bollnäs och bryter arenaraden.</p></div>
+    <div class="cs" style="padding:14px 16px;"><div style="font-family:Georgia;font-weight:700;font-size:14px;margin-bottom:4px;">2 · sektionsregister</div><p style="font-size:12.5px;line-height:1.55;color:var(--text-secondary);margin:0;">Gör Översikts sektioner till en lista med en <code>visasFör(tävlingstyp, skede, plats)</code>-regel — matrisen ovan i kod. En ✕ = sektionen renderas inte, punkt.</p></div>
+    <div class="cs" style="padding:14px 16px;"><div style="font-family:Georgia;font-weight:700;font-size:14px;margin-bottom:4px;">3 · trophy-/tribute-grenar</div><p style="font-size:12.5px;line-height:1.55;color:var(--text-secondary);margin:0;">Final = trophy-ton på hero. Konkret förlaga: <code>SeasonSummary</code>-mästarvyns fullbleed-hero (byggd, se audit del 2). Avsked = egen tribute-gren, inte matchmallen. (Ceremoni-tiern quiet/protocol/trophy är ett <em>förslag</em> i scen-flödesauditen, inte byggd kod — referera inte till den som befintlig.)</p></div>
+    <div class="cs" style="padding:14px 16px;"><div style="font-family:Georgia;font-weight:700;font-size:14px;margin-bottom:4px;">4 · fast-läges-prosa</div><p style="font-size:12.5px;line-height:1.55;color:var(--text-secondary);margin:0;"><code>generateQuickSummary</code> tar <code>matchType</code> → egna meningar för final/slutspel/avsked. Det är den enda texten en snabbsimmare ser.</p></div>
+    <div class="cs" style="padding:14px 16px;"><div style="font-family:Georgia;font-weight:700;font-size:14px;margin-bottom:4px;">5 · serie-/bracket + Turneringsläge</div><p style="font-size:12.5px;line-height:1.55;color:var(--text-secondary);margin:0;">Ersätt tabell-kortet i cup/slutspel med serieställning/bracket-steg. Lägg till <b>Turneringsläge</b>-sektionen som namnger tävlingen och säger utfallet rakt ut — <em>ut</em> (seriens slut) <em>eller vidare</em> (till final/nästa omgång). Datakällan finns: <code>getManagedClubCupStatus</code> returnerar redan <code>{eliminated, eliminatedInRound, isInFinal, won}</code>. Ny liten komponent, house-tokens.</p></div>
+    <div class="cs" style="padding:14px 16px;"><div style="font-family:Georgia;font-weight:700;font-size:14px;margin-bottom:4px;">6 · baseline per matchtyp</div><p style="font-size:12.5px;line-height:1.55;color:var(--text-secondary);margin:0;">Playwright-snapshot: liga / cup / slutspel / final / avsked. Låser att rätt sektioner försvinner och att inget läcker tillbaka. <code>playwright.config.ts</code> finns.</p></div>
+  </div>
+
+  <div style="max-width:1200px;margin:20px auto 0;background:var(--bg-dark);border-radius:14px;padding:18px 22px;">
+    <div class="lbl" style="color:#DD9555;margin-bottom:6px;">Leverabel</div>
+    <p style="color:var(--text-light-secondary);font-size:13px;line-height:1.6;margin:0;">Denna sida + companion-<code style="background:rgba(255,255,255,.06);color:#e8b98a;">docs/DESIGN_UPPDRAG_GRANSKA_DEL4_2026-08-10.md</code> (matrisen som tabell, per-cell-motivering, de sex stegen). Varje <span style="color:var(--warm-light);font-weight:700;">⚠</span>/<span style="color:var(--danger);font-weight:700;">✕</span>-cell bör bekräftas mot produktionssajten innan bygge — det är den verifiering jag inte kan göra åt dig.</p>
+  </div>
+
+  <div style="text-align:center;margin-top:30px;color:var(--text-muted);font-size:11px;font-style:italic;font-family:Georgia,serif;">— Granska del 4 · en mall som lär sig vilken match den granskar —</div>
+
+</div>
+</x-dc>
+</body>
+</html>

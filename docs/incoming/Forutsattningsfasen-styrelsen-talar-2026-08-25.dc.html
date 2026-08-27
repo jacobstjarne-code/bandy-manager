@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+<script src="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/_ds_bundle.js"></script>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  html,body{margin:0;padding:0;background:#cfc7b6;}
+  *{box-sizing:border-box;}
+  :root{--warm:#8c6e3a;--warm-light:#c8a058;--cold:#4a6680;}
+  a{color:var(--accent-deep);}
+  code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.82em;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent-deep);padding:1px 5px;border-radius:4px;}
+  .phone{width:335px;background:var(--bg);border-radius:22px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.26);border:1px solid rgba(0,0,0,.14);flex-shrink:0;}
+  .lbl{font-family:system-ui;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
+  .seclbl{font-family:system-ui;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-secondary);}
+  .quote{font-family:Georgia,serif;font-style:italic;}
+  .cs{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;}
+  .rat{width:335px;background:var(--bg-dark);border-radius:12px;padding:15px 17px;color:var(--text-light-secondary);}
+  .rat h4{font-family:Georgia,serif;color:var(--text-light);font-size:14px;margin:0 0 7px;font-weight:700;}
+  .rat p{font-size:12px;line-height:1.55;margin:0 0 7px;}
+  .rat b{color:#DD9555;}
+  .tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 9px;border-radius:99px;}
+  .rec{background:var(--success);color:#fff;}
+  .badge{position:absolute;top:-13px;left:20px;background:var(--accent);color:#fff;font-family:Georgia,serif;font-weight:800;font-size:13px;padding:2px 13px;border-radius:99px;box-shadow:0 3px 10px rgba(162,88,40,.4);z-index:5;}
+  .badge-rec{background:var(--success);}
+  .chair{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#5a5048,#2a251f);border:1.5px solid var(--border-dark);flex-shrink:0;}
+</style>
+</helmet>
+
+<section style="min-height:100vh;background:#cfc7b6;background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.22),transparent 45%);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text-primary);padding:34px 40px 130px;">
+
+  <!-- INTRO -->
+  <div style="max-width:1200px;margin:0 auto 30px;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-deep);font-weight:700;">Designuppdrag · förutsättningsfasen · 2026-08-24</div>
+    <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:800;margin:8px 0 10px;letter-spacing:-.5px;">Styrelsen talar</h1>
+    <p style="font-size:14px;line-height:1.65;max-width:850px;margin:0 0 14px;color:var(--text-secondary);text-wrap:pretty;">En ny sektion i Sommaren, mellan årsboken och säsongsmålet: styrelsen säger vad de begär i år <em>och varför det ändrats</em>. Idag är <code>boardExpectation</code> frusen vid klubbgenerering — den som tog Heros från jumbo till fyra bedöms fortfarande efter att överleva. Formen är bestämd: <strong>ordföranden säger det</strong>, tre delar i följd (vad de såg · vad de vet · vad de begär). Sektionen ligger <em>inuti</em> Sommarens temperaturkurva, mellan ljust papper och varm push. Referera vikterna som <a href="#1a">1a</a>/<a href="#1b">1b</a>, riktningarna som <a href="#1c">1c</a>.</p>
+    <div style="max-width:850px;background:var(--bg-dark);border-radius:12px;padding:13px 17px;">
+      <div class="lbl" style="color:#DD9555;margin-bottom:6px;">Mitt anrop</div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--text-light-secondary);margin:0;"><b style="color:#DD9555;">1b — omvärlden är substansen.</b> Din säsong kan du redan från årsboken — så den kvitteras på en rad, och <b style="color:#DD9555;">ligarörelserna</b> (vem rustade, vem tappade, vem bytte tränare) blir sektionens tyngdpunkt. Kravet faller ut som en <em>följd</em> av dem, i ett läderband med obligatorisk skälsrad. Riktning bärs av <b>ton och temperatur</b>, aldrig av rött/grönt — en ribba är aldrig en dom.</p>
+    </div>
+  </div>
+
+  <!-- WEIGHTS -->
+  <div style="max-width:1240px;margin:0 auto 12px;"><div class="lbl" style="font-size:11px;color:var(--accent-deep);">▎Vikten — hur tre delar undviker att bli tre likvärdiga rutor</div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;max-width:1240px;margin:0 auto 30px;">
+
+    <!-- 1a · three boxes (the trap) -->
+    <div id="1a" style="position:relative;display:flex;flex-direction:column;gap:12px;width:335px;">
+      <div class="badge">1a</div>
+      <div style="padding-top:4px;">
+        <div style="font-family:Georgia,serif;font-size:17px;font-weight:800;">Tre rutor</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Fällan briefen varnar för — likvärdig tredelning.</div>
+      </div>
+      <div class="phone">
+        <div style="padding:13px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(180deg,#efe9dd,#e9e1d2);">
+          <div class="lbl" style="text-align:center;color:var(--accent-deep);margin-bottom:2px;">Styrelsen</div>
+          <div class="cs" style="padding:10px 12px;"><div class="seclbl" style="margin-bottom:4px;">Vad de såg</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.45;">Fjärdeplats. Bäst i klubbens historia.</div></div>
+          <div class="cs" style="padding:10px 12px;"><div class="seclbl" style="margin-bottom:4px;">Vad de vet</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.45;">Lesjöfors har rustat. Två lag bytte tränare.</div></div>
+          <div class="cs" style="padding:10px 12px;"><div class="seclbl" style="margin-bottom:4px;">Vad de begär</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.45;">Nå slutspel.</div></div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;">Tre lika kort bryter temperaturkurvan — samma platta rytm som Sommarens block hade före kurvan. Kravet drunknar bland informationen. <b>Avrådes.</b></div>
+    </div>
+
+    <!-- 1b · spoken flow (REC) -->
+    <div id="1b" style="position:relative;display:flex;flex-direction:column;gap:12px;width:335px;">
+      <div class="badge badge-rec">1b</div>
+      <div style="padding-top:4px;">
+        <div style="font-family:Georgia,serif;font-size:17px;font-weight:800;">Omvärlden i fokus <span class="tag rec">Rek</span></div>
+<div style="font-size:12px;color:var(--text-secondary);">Kort kvittens → ligan rör sig → kravet följer.</div>
+      </div>
+      <div class="phone">
+        <div style="padding:0;">
+          <!-- header band, part of Sommaren -->
+          <div style="background:var(--bg-dark);padding:14px 15px 12px;position:relative;overflow:hidden;">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(92deg,rgba(255,255,255,.015) 0 2px,transparent 2px 7px);"></div>
+            <div style="position:relative;display:flex;gap:10px;align-items:center;">
+              <div class="chair"></div>
+              <div><div class="lbl" style="color:#DD9555;margin-bottom:2px;">Ordföranden</div><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--text-light);">Styrelsen har sett er säsong</div></div>
+            </div>
+          </div>
+          <div style="padding:14px 15px;background:linear-gradient(180deg,#efe9dd,#e9e1d2);display:flex;flex-direction:column;gap:10px;">
+            <!-- part 1: one short acknowledging line, NOT a season recap -->
+            <div class="quote" style="font-size:12.5px;color:var(--text-secondary);line-height:1.5;">"Ni gjorde ett bra år. Men medan ni firade rörde sig serien."</div>
+            <!-- part 2: THE SUBSTANCE — what happened in the league while you were away -->
+            <div>
+              <div class="seclbl" style="color:var(--accent-deep);margin-bottom:7px;">Medan ni var borta · serien</div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+                <div style="display:flex;gap:9px;align-items:flex-start;"><span style="color:var(--accent);font-size:11px;flex-shrink:0;transform:translateY(1px);">▲</span><div><div style="font-size:12.5px;color:var(--text-primary);font-weight:600;">Lesjöfors köpte Nyström från Rogle</div><div style="font-size:11px;color:var(--text-secondary);line-height:1.4;">Ligans dyraste sommar. De siktar på guld.</div></div></div>
+                <div style="display:flex;gap:9px;align-items:flex-start;"><span style="color:var(--text-muted);font-size:11px;flex-shrink:0;transform:translateY(1px);">↻</span><div><div style="font-size:12.5px;color:var(--text-primary);font-weight:600;">Skutskär &amp; Målilla bytte tränare</div><div style="font-size:11px;color:var(--text-secondary);line-height:1.4;">Båda låg under er i fjol. Båda vill förbi.</div></div></div>
+                <div style="display:flex;gap:9px;align-items:flex-start;"><span style="color:var(--ice);font-size:11px;flex-shrink:0;transform:translateY(1px);">▼</span><div><div style="font-size:12.5px;color:var(--text-primary);font-weight:600;">Heros tappade sin målvakt till Rogle</div><div style="font-size:11px;color:var(--text-secondary);line-height:1.4;">Fjolårets tvåa ser svagare ut i år.</div></div></div>
+              </div>
+            </div>
+            <!-- part 3: the demand, as a consequence OF the league moves -->
+            <div style="height:1px;background:color-mix(in srgb,var(--accent) 25%,transparent);"></div>
+            <div style="background:var(--bg-leather);border-radius:10px;padding:13px 14px;position:relative;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent);">
+              <div class="lbl" style="color:#DD9555;margin-bottom:6px;">Därför begär styrelsen i år</div>
+              <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+                <span style="font-family:Georgia,serif;font-size:12px;color:var(--text-light-secondary);">Mitten</span>
+                <span style="color:var(--accent);font-size:13px;">→</span>
+                <span style="font-family:Georgia,serif;font-size:16px;font-weight:800;color:var(--text-light);">Slutspel</span>
+              </div>
+              <div class="quote" style="font-size:12px;color:var(--text-light-secondary);line-height:1.5;border-left:2px solid var(--accent);padding-left:9px;">"Fältet bakom er stärktes. Står ni still blir ni omsprungna — därför höjer vi ribban."</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;"><b>Tyngdpunkten ligger på omvärlden</b> — inte på din säsong (den kan du från årsboken). En rad erkänner året, sedan är <b>ligarörelserna</b> sektionens substans, och kravet faller ut <em>som en följd av dem</em>. Skälsraden knyter ribban direkt till vad som hänt i serien.</div>
+    </div>
+
+    <!-- rationale -->
+    <div style="flex:1;min-width:335px;display:flex;flex-direction:column;gap:14px;">
+      <div class="rat">
+        <h4>Fråga 1 — omvärlden bär, inte din säsong</h4>
+        <p><b>Din säsong kvitteras, ligan får kroppen.</b> Del 1 (vad de såg) krymper till en rad — du kommer direkt från årsboken och vet den. Del 2 (vad de vet om läget) blir sektionens substans: tre konkreta ligarörelser med riktningsglyf. Kravet är del 3 och faller ut <em>som en följd</em> av rörelserna, inte som ett fristående mål.</p>
+        <p><b>Var i kurvan:</b> ordförandebandet är svalt (läder, som Sommarens ingång), kravet värms av kopparramen — sedan lämnar sektionen över till den varma säsongsmål-pushen. Ett steg i uppvärmningen, inte en egen topp.</p>
+      </div>
+      <div class="rat" style="background:var(--bg-leather);">
+        <h4 style="color:var(--text-light);">Skälsraden är strukturell, inte dekor</h4>
+        <p style="color:var(--text-light-secondary);">Skälet ligger <b>inuti kravbandet</b>, under ribban — inte som en fotnot. En ny ribba kan inte renderas utan sin rad. Det stänger H1 från Skutskär-auditen: portalen sa "Stabilt" medan uppdrag låg i fara, utan att någon yta förklarade motsägelsen. <span style="color:#DD9555;">[Opus]</span> äger skälsraden — uppdragets svåraste text.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIRECTIONS -->
+  <div id="1c" style="max-width:1240px;margin:0 auto 12px;"><div class="lbl" style="font-size:11px;color:var(--accent-deep);">▎Fråga 2 — höjd / sänkt / oförändrad · samma komponent, aldrig en dom</div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;max-width:1240px;margin:0 auto 20px;">
+
+    <!-- RAISED -->
+    <div style="display:flex;flex-direction:column;gap:10px;width:300px;">
+      <div style="font-family:Georgia,serif;font-size:15px;font-weight:800;">Höjd ribba</div>
+      <div class="phone" style="width:300px;">
+        <div style="padding:13px;background:linear-gradient(180deg,#efe9dd,#e9e1d2);">
+          <div style="background:var(--bg-leather);border-radius:10px;padding:13px 14px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 34%,transparent);">
+            <div class="lbl" style="color:#DD9555;margin-bottom:6px;">Vad styrelsen begär i år</div>
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+              <span style="font-family:Georgia,serif;font-size:12px;color:var(--text-light-secondary);">Mitten</span>
+              <span style="color:var(--accent);font-size:13px;">↗</span>
+              <span style="font-family:Georgia,serif;font-size:16px;font-weight:800;color:var(--text-light);">Slutspel</span>
+            </div>
+            <div class="quote" style="font-size:12px;color:var(--text-light-secondary);line-height:1.5;border-left:2px solid var(--accent);padding-left:9px;">"Ni har visat att ni kan mer. Då begär vi mer."</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-secondary);line-height:1.5;">Koppar, uppåt-pil. Beröm <em>och</em> varning i samma andetag. Värme, inte grönt "rätt".</div>
+    </div>
+
+    <!-- LOWERED -->
+    <div style="display:flex;flex-direction:column;gap:10px;width:300px;">
+      <div style="font-family:Georgia,serif;font-size:15px;font-weight:800;">Sänkt ribba</div>
+      <div class="phone" style="width:300px;">
+        <div style="padding:13px;background:linear-gradient(180deg,#efe9dd,#e9e1d2);">
+          <div style="background:var(--bg-leather);border-radius:10px;padding:13px 14px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ice) 30%,transparent);">
+            <div class="lbl" style="color:var(--ice);margin-bottom:6px;">Vad styrelsen begär i år</div>
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+              <span style="font-family:Georgia,serif;font-size:12px;color:var(--text-light-secondary);">Slutspel</span>
+              <span style="color:var(--ice);font-size:13px;">↘</span>
+              <span style="font-family:Georgia,serif;font-size:16px;font-weight:800;color:var(--text-light);">Mitten</span>
+            </div>
+            <div class="quote" style="font-size:12px;color:var(--text-light-secondary);line-height:1.5;border-left:2px solid var(--ice);padding-left:9px;">"Vi vet vad ni gick igenom i vintras. I år begär vi mindre."</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-secondary);line-height:1.5;">Is, nedåt-pil. Omtanke <em>och</em> nedvärdering. Svalt, inte rött "fel". Ribban byter <b>temperatur</b>, inte semantik.</div>
+    </div>
+
+    <!-- UNCHANGED -->
+    <div style="display:flex;flex-direction:column;gap:10px;width:300px;">
+      <div style="font-family:Georgia,serif;font-size:15px;font-weight:800;">Oförändrad</div>
+      <div class="phone" style="width:300px;">
+        <div style="padding:13px;background:linear-gradient(180deg,#efe9dd,#e9e1d2);">
+          <div style="background:var(--bg-leather);border-radius:10px;padding:13px 14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);">
+            <div class="lbl" style="color:var(--text-light-secondary);margin-bottom:6px;">Vad styrelsen begär i år</div>
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="font-family:Georgia,serif;font-size:16px;font-weight:800;color:var(--text-light);">Slutspel</span>
+              <span style="font-size:11px;color:var(--text-muted);font-style:italic;font-family:Georgia;">— som i fjol</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-secondary);line-height:1.5;"><b>Ingen skälsrad</b> — står förväntan still finns inget att förklara. Ingen pil, ingen färgram. Frånvaron av skäl är korrekt, inte en lucka.</div>
+    </div>
+  </div>
+
+  <div style="max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;gap:16px;">
+    <div class="rat" style="width:auto;flex:1;min-width:300px;">
+      <h4>Riktning utan dom</h4>
+      <p>Höjd = <b>koppar/varm</b> (husets accent, inte "success-grön"); sänkt = <b>is/sval</b> (<code>--ice</code>, inte "danger-röd"). Ingen av dem använder <code>--success</code>/<code>--danger</code> — de är reserverade för rätt/fel, och en ribba är ingetdera. Riktningen bärs av temperatur + pil + ordval, aldrig av semantikfärg.</p>
+    </div>
+    <div class="rat" style="width:auto;flex:1;min-width:300px;">
+      <h4>Fem nivåer, båda riktningar</h4>
+      <p>Ribban visar <code>fjolåret → i år</code> som två namn ur skalan (Survive · Undvik botten · Mitten · Slutspel · WinLeague — <span style="color:#DD9555;">[Opus]</span> äger etiketterna). Komponenten är densamma för alla fem nivåer och båda riktningar; bara namnen, pilen och ramens temperatur skiljer. Oförändrad = ett namn, ingen pil, ingen skälsrad.</p>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:26px;color:var(--text-muted);font-size:11px;font-style:italic;font-family:Georgia,serif;">— förutsättningsfasen · ordföranden säger vad som väntas, och varför —</div>
+
+</section>
+</x-dc>
+</body>
+</html>

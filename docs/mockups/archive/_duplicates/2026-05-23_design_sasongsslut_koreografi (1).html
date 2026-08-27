@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>C-SD1 Säsongsslutets koreografi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg-portal: #1a1612; --bg-portal-surface: #221d18; --bg-portal-elevated: #2a241e;
+    --bg-leather: #3D3A32; --bg-leather-dk: #1d1b18;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --accent: #C47A3A; --cold: #4a6680; --cold-light: #7095b8;
+    --warm: #8c6e3a; --warm-light: #c8a058; --gold: #E8B95C;
+    --danger: #B05040; --success: #5A9A4A;
+    --font-display: 'Georgia', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+    --font-mono: ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-leather); color: var(--text-light); font-family: var(--font-body); padding: 32px 16px 80px; min-height: 100vh; }
+
+  .page-head { max-width: 1640px; margin: 0 auto 24px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 6px; }
+  .page-head p { font-size: 13px; color: rgba(245,241,235,0.7); line-height: 1.6; max-width: 820px; }
+  .page-head p strong { color: var(--accent); }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 28px; max-width: 1640px; margin: 0 auto;
+  }
+  .col {
+    background: var(--bg-portal); border-radius: 12px; overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    width: 100%; max-width: 380px; justify-self: center;
+  }
+  .col-head {
+    padding: 12px 16px; background: var(--bg-leather-dk);
+    font-family: var(--font-display); font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .col-head .num { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; color: var(--accent); background: rgba(196,122,58,0.1); padding: 2px 6px; border-radius: 2px; margin-right: 8px; vertical-align: 2px; }
+  .col-head .phase { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; color: var(--text-light-secondary); background: rgba(245,241,235,0.05); padding: 2px 6px; border-radius: 2px; margin-left: 6px; vertical-align: 2px; text-transform: uppercase; }
+  .col-head .sub { display: block; font-size: 11px; color: rgba(245,241,235,0.6); margin-top: 6px; line-height: 1.5; }
+  .body { padding: 14px 14px 16px; }
+
+  /* State-machine-spalt ───────────────── */
+  .sm-frame { background: var(--bg-portal-surface); border-radius: 6px; padding: 14px 12px; }
+  .sm-row { padding: 10px 0; border-bottom: 1px dashed rgba(196,122,58,0.18); display: grid; grid-template-columns: 14px 1fr; gap: 12px; align-items: start; }
+  .sm-row:last-child { border-bottom: none; }
+  .sm-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); margin-top: 6px; }
+  .sm-row.idle .sm-dot { background: var(--cold); }
+  .sm-row.done .sm-dot { background: var(--success); }
+  .sm-row.warm .sm-dot { background: var(--warm); }
+  .sm-row.gold .sm-dot { background: var(--gold); }
+  .sm-row.danger .sm-dot { background: var(--danger); }
+  .sm-phase {
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 3px;
+  }
+  .sm-row.idle .sm-phase { color: var(--cold-light); }
+  .sm-row.done .sm-phase { color: var(--success); }
+  .sm-row.warm .sm-phase { color: var(--warm-light); }
+  .sm-row.gold .sm-phase { color: var(--gold); }
+  .sm-row.danger .sm-phase { color: var(--danger); }
+  .sm-name {
+    font-family: var(--font-display); font-size: 14px;
+    font-weight: 700; color: var(--text-light); margin-bottom: 4px;
+  }
+  .sm-fires {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 11.5px; color: var(--text-light-secondary); line-height: 1.45;
+  }
+  .sm-fires .lit { color: var(--accent); font-style: normal; font-weight: 600; }
+  .sm-rule {
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.18); border-radius: 3px;
+    font-family: var(--font-mono); font-size: 9px;
+    color: var(--text-muted); line-height: 1.4;
+  }
+
+  /* Före/efter-spalt ───────────────── */
+  .compare-block { padding: 12px 13px; background: var(--bg-portal-surface); border-left: 2px solid var(--danger); border-radius: 0 6px 6px 0; margin-bottom: 10px; }
+  .compare-block.after { border-left-color: var(--success); }
+  .compare-eyebrow { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--danger); font-weight: 700; margin-bottom: 6px; }
+  .compare-block.after .compare-eyebrow { color: var(--success); }
+  .compare-step {
+    font-family: var(--font-display); font-size: 12px;
+    color: var(--text-light); line-height: 1.45; margin-bottom: 4px;
+    padding-left: 12px; position: relative;
+  }
+  .compare-step::before { content: '·'; position: absolute; left: 0; color: var(--text-muted); }
+  .compare-step.bad { color: var(--danger); }
+  .compare-step.bad::before { color: var(--danger); }
+  .compare-step strong { font-weight: 700; }
+
+  /* Implementation-block ─────────── */
+  .impl-block { background: var(--bg-portal-surface); border-radius: 6px; padding: 12px 13px; margin-bottom: 12px; }
+  .impl-label { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
+  .impl-code {
+    font-family: var(--font-mono); font-size: 11px;
+    background: rgba(0,0,0,0.25); padding: 9px 11px;
+    border-radius: 3px; line-height: 1.55;
+    color: var(--text-light-secondary); overflow-x: auto;
+  }
+  .impl-code .kw  { color: var(--accent); }
+  .impl-code .str { color: var(--gold); }
+  .impl-code .com { color: var(--text-muted); font-style: italic; }
+  .impl-note {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 11px; color: var(--text-light-secondary);
+    line-height: 1.5; margin-top: 8px;
+  }
+
+  .notes {
+    max-width: 1640px; margin: 40px auto 0; padding: 24px;
+    background: rgba(245,241,235,0.04); border-radius: 8px;
+    color: rgba(245,241,235,0.85); line-height: 1.65; font-size: 13px;
+  }
+  .notes h3 { font-family: var(--font-display); font-size: 18px; margin-bottom: 14px; color: var(--text-light); }
+  .notes h4 { font-family: var(--font-body); font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 18px 0 8px; }
+  .notes p { margin-bottom: 8px; max-width: 880px; }
+  .notes ul { margin: 4px 0 8px 18px; max-width: 880px; }
+  .notes code { font-family: var(--font-mono); font-size: 11.5px; background: rgba(245,241,235,0.06); padding: 1px 5px; border-radius: 2px; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>C-SD1 Säsongsslutets koreografi</h1>
+  <p>Idag finns två oberoende system som båda producerar avslutsskärmar: <code>sceneTriggerService</code> (boolean-kedja för scener) och <code>SeasonPhase + anslagService</code> (för fas-bytena). Inget koordinerar mellan dem. <strong>Sommaren glider in före slutspelet</strong>, halvvägs-portal + halvvägs-scen säger samma sak i rad, granska-CTA tror serien är klar när den inte är.</p>
+  <p>Förslag: <strong>SeasonEndChoreographer</strong> — en explicit state machine som vet säsongsfasen. Scen- och anslags-systemen frågar koreografen "<em>är jag rätt nu?</em>" istället för att gissa.</p>
+</div>
+
+<div class="grid">
+
+  <!-- 01 · State-machine -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">01</span>STATE-MACHINE<span class="phase">säsongsfaser</span>
+      <span class="sub">Sex explicita faser. Varje yta som vill fyra något frågar koreografen vilken fas vi är i. Ingen fas hoppas — övergångar är medvetna.</span>
+    </div>
+    <div class="body">
+      <div class="sm-frame">
+
+        <div class="sm-row done">
+          <div class="sm-dot"></div>
+          <div>
+            <div class="sm-phase">⬩ Pre-season ⬩</div>
+            <div class="sm-name">PRE_SEASON</div>
+            <div class="sm-fires">Sommaren-scen <span class="lit">avslutad</span>. Anslag: <span class="lit">säsongs-kickoff</span>. Söndagsträningen.</div>
+            <div class="sm-rule">enter: nyår-rollover · exit: omg 1 spelad</div>
+          </div>
+        </div>
+
+        <div class="sm-row">
+          <div class="sm-dot"></div>
+          <div>
+            <div class="sm-phase">⬩ Grundserie ⬩</div>
+            <div class="sm-name">REGULAR_ACTIVE</div>
+            <div class="sm-fires">Cup-final-scener om managed når dit. Kafferum, journalist, signatur — alla aktiva.</div>
+            <div class="sm-rule">enter: omg 1 · exit: omg 22 spelad</div>
+          </div>
+        </div>
+
+        <div class="sm-row warm">
+          <div class="sm-dot"></div>
+          <div>
+            <div class="sm-phase">⬩ Mellanperiod ⬩</div>
+            <div class="sm-name">REGULAR_DONE</div>
+            <div class="sm-fires"><span class="lit">EN</span> övergångs-skärm: "Grundserien är slut". Inte två. Halvvägs-scen tas bort.</div>
+            <div class="sm-rule">enter: omg 22 klar · exit: playoffBracket skapad</div>
+          </div>
+        </div>
+
+        <div class="sm-row gold">
+          <div class="sm-dot"></div>
+          <div>
+            <div class="sm-phase">⬩ Slutspel ⬩</div>
+            <div class="sm-name">PLAYOFF_ACTIVE</div>
+            <div class="sm-fires">PhaseMark "Slutspelet börjar" en gång. RoundMark per omg. SM-finalseger-scen om vinst.</div>
+            <div class="sm-rule">enter: bracket skapad · exit: SM-final klar ELLER managed eliminated</div>
+          </div>
+        </div>
+
+        <div class="sm-row danger">
+          <div class="sm-dot"></div>
+          <div>
+            <div class="sm-phase">⬩ Spectator ⬩</div>
+            <div class="sm-name">PLAYOFF_SPECTATOR</div>
+            <div class="sm-fires">SpectatorMark + WatchOthers (om managed elim:ad innan SM). Kafferum tillbaka.</div>
+            <div class="sm-rule">enter: managed elim:ad · exit: SM-final klar</div>
+          </div>
+        </div>
+
+        <div class="sm-row">
+          <div class="sm-dot"></div>
+          <div>
+            <div class="sm-phase">⬩ Säsong klar ⬩</div>
+            <div class="sm-name">SEASON_DONE</div>
+            <div class="sm-fires">SeasonSummary + ClubMemory-uppdatering. <span class="lit">Inget</span> annat utöver det.</div>
+            <div class="sm-rule">enter: SM-final klar · exit: spelaren klickar "Avsluta"</div>
+          </div>
+        </div>
+
+        <div class="sm-row idle">
+          <div class="sm-dot"></div>
+          <div>
+            <div class="sm-phase">⬩ Sommaren ⬩</div>
+            <div class="sm-name">SUMMER</div>
+            <div class="sm-fires">Sommaren-scen ("i oktober igen") — får BARA fyra här. Sedan rollover till nästa PRE_SEASON.</div>
+            <div class="sm-rule">enter: spelaren accepterar SEASON_DONE · exit: nyår</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 · FÖRE / EFTER ── -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">02</span>FÖRE / EFTER<span class="phase">tre buggar löses</span>
+      <span class="sub">Tre konkreta symptom från Jacobs playtest — och hur koreografen löser var och en. Inte tre olika fixar, en arkitektur.</span>
+    </div>
+    <div class="body">
+
+      <h4 style="font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Bugg 1 · Sommaren före slutspel</h4>
+
+      <div class="compare-block">
+        <div class="compare-eyebrow">Idag</div>
+        <div class="compare-step bad">Omg 22 spelad</div>
+        <div class="compare-step bad">Anslag: "Grundserien är klar"</div>
+        <div class="compare-step bad"><strong>Sommaren-scen</strong> ("oktober igen")</div>
+        <div class="compare-step bad">→ Spelaren förvirrad: jag har ju kvartsfinal kvar</div>
+        <div class="compare-step bad">PhaseMark: "Slutspelet börjar"</div>
+      </div>
+
+      <div class="compare-block after">
+        <div class="compare-eyebrow">Med koreograf</div>
+        <div class="compare-step">Omg 22 spelad</div>
+        <div class="compare-step"><strong>REGULAR_DONE</strong>: anslag "Grundserien klar"</div>
+        <div class="compare-step"><strong>PLAYOFF_ACTIVE</strong>: PhaseMark "Slutspelet börjar"</div>
+        <div class="compare-step">… playoff spelas …</div>
+        <div class="compare-step"><strong>SEASON_DONE</strong> → spelaren klickar</div>
+        <div class="compare-step"><strong>SUMMER</strong>: sommaren-scen ("oktober igen")</div>
+      </div>
+
+      <h4 style="font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin: 18px 0 8px;">Bugg 2 · Halvvägs-portal + halvvägs-scen</h4>
+
+      <div class="compare-block">
+        <div class="compare-eyebrow">Idag</div>
+        <div class="compare-step bad">Omg 11 klar</div>
+        <div class="compare-step bad">Halvvägs-anslag fyras</div>
+        <div class="compare-step bad">Halvvägs-scen fyras direkt efter</div>
+        <div class="compare-step bad">Två skärmar säger samma sak</div>
+      </div>
+
+      <div class="compare-block after">
+        <div class="compare-eyebrow">Med koreograf</div>
+        <div class="compare-step">Halvvägs är ingen <em>fas</em> — det är ett <em>event</em></div>
+        <div class="compare-step">Anslag äger budskapet (modal-format passar bättre)</div>
+        <div class="compare-step">Halvvägs-scen <strong>tas bort</strong></div>
+      </div>
+
+      <h4 style="font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin: 18px 0 8px;">Bugg 3 · Granska-CTA fel tillstånd</h4>
+
+      <div class="compare-block">
+        <div class="compare-eyebrow">Idag</div>
+        <div class="compare-step bad">Vunnit serie 3-0</div>
+        <div class="compare-step bad">CTA: "Granska serien" — som om allt är slut</div>
+        <div class="compare-step bad">… men semifinalen kvar</div>
+      </div>
+
+      <div class="compare-block after">
+        <div class="compare-eyebrow">Med koreograf</div>
+        <div class="compare-step"><code>getSeasonPhase()</code> returnerar <strong>PLAYOFF_ACTIVE</strong></div>
+        <div class="compare-step">CTA frågar fas → "Spela semifinal"</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 03 · IMPLEMENTATION ── -->
+  <div class="col">
+    <div class="col-head">
+      <span class="num">03</span>IMPLEMENTATION<span class="phase">arkitektur</span>
+      <span class="sub">En ny pure function. Alla scener + anslag frågar den. Inga side-effects, ingen state. Lätt att testa, lätt att utöka.</span>
+    </div>
+    <div class="body">
+
+      <div class="impl-block">
+        <div class="impl-label">Ny helper · seasonEndPhase.ts</div>
+        <div class="impl-code"><span class="kw">type</span> SeasonEndPhase =
+  | <span class="str">'pre_season'</span>
+  | <span class="str">'regular_active'</span>
+  | <span class="str">'regular_done'</span>
+  | <span class="str">'playoff_active'</span>
+  | <span class="str">'playoff_spectator'</span>
+  | <span class="str">'season_done'</span>
+  | <span class="str">'summer'</span>
+
+<span class="kw">function</span> getSeasonEndPhase(game) {
+  <span class="com">// pure — läser game-state, returnerar fas</span>
+  <span class="kw">if</span> (game.inSummerScene)        <span class="kw">return</span> <span class="str">'summer'</span>
+  <span class="kw">if</span> (game.seasonDoneAck)        <span class="kw">return</span> <span class="str">'season_done'</span>
+  <span class="kw">if</span> (smFinalCompleted(game))    <span class="kw">return</span> <span class="str">'season_done'</span>
+  <span class="kw">if</span> (managedEliminated(game))   <span class="kw">return</span> <span class="str">'playoff_spectator'</span>
+  <span class="kw">if</span> (game.playoffBracket)       <span class="kw">return</span> <span class="str">'playoff_active'</span>
+  <span class="kw">if</span> (regularSeasonDone(game))   <span class="kw">return</span> <span class="str">'regular_done'</span>
+  <span class="kw">if</span> (anyMatchPlayed(game))      <span class="kw">return</span> <span class="str">'regular_active'</span>
+  <span class="kw">return</span> <span class="str">'pre_season'</span>
+}</div>
+      </div>
+
+      <div class="impl-block">
+        <div class="impl-label">sceneTriggerService — gateway-pattern</div>
+        <div class="impl-code"><span class="kw">function</span> shouldTriggerSummerScene(game) {
+  <span class="kw">if</span> (getSeasonEndPhase(game) !== <span class="str">'summer'</span>)
+    <span class="kw">return</span> <span class="kw">false</span>
+  <span class="com">// resten av summer-villkoren …</span>
+}
+
+<span class="kw">function</span> shouldTriggerHalftimeScene(_game) {
+  <span class="kw">return</span> <span class="kw">false</span>  <span class="com">// tas bort — anslag äger</span>
+}</div>
+      </div>
+
+      <div class="impl-block">
+        <div class="impl-label">anslagService — samma gateway</div>
+        <div class="impl-code"><span class="kw">function</span> shouldShowSummerAnslag(game) {
+  <span class="com">// gateway: bara om koreografen säger summer</span>
+  <span class="kw">if</span> (getSeasonEndPhase(game) !== <span class="str">'summer'</span>)
+    <span class="kw">return</span> <span class="kw">false</span>
+  <span class="com">// resten …</span>
+}</div>
+      </div>
+
+      <div class="impl-note">
+        <strong>Nyckelinsikt:</strong> alla befintliga trigger-funktioner stannar oförändrade i sin egen logik — de får bara en gateway-check i början. Migrering kan göras inkrementellt (en scen i taget) utan att gå sönder.
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Designval öppna till Opus + Jacob</h3>
+
+  <h4>Q1 · "Mellanperiod" — egen skärm eller bara övergång?</h4>
+  <p>När omg 22 är klar men playoff-bracket inte skapad — ska den fasen ha en egen skärm (REGULAR_DONE) eller bara vara övergångsögonblicket mellan grundserie och playoff? <strong>Föreslag:</strong> egen skärm med ETT anslag ("Grundserien är klar. Slutspelet börjar nästa vecka."). Halvvägs-scen tas bort.</p>
+
+  <h4>Q2 · Söndagsträningen — egen pre-season-trigger eller hård in i SUMMER?</h4>
+  <p>Söndagsträning fyras idag enbart vid omg 1, första spelet. Med koreografen — flyttas den till SUMMER → PRE_SEASON-övergången så den fyras varje säsong? <strong>Föreslag:</strong> nej. Söndagsträningen är intro-flödet, en gång hela spelets gång. Behåll one-shot.</p>
+
+  <h4>Q3 · Spectator-fasen — separat eller alias för playoff_active?</h4>
+  <p>Spec'en i sceneTriggerService skiljer inte mellan "managed i playoff" och "managed elim:ad". Men <code>isManagedClubInPlayoff()</code> finns redan (R3-fix). <strong>Föreslag:</strong> egen fas. Då kan kafferum/journalist återkomma utan att vänta på att alla playoff-matcher spelas (som idag).</p>
+
+  <h4>Q4 · SEASON_DONE vs SUMMER — vad triggar övergången?</h4>
+  <p>SEASON_DONE = SM-finalen klar, men spelaren har inte sett summary än. SUMMER = spelaren har klickat "Avsluta säsongen" och summary är visat. <strong>Föreslag:</strong> spelaren MÅSTE klicka för att gå från SEASON_DONE → SUMMER. SUMMER är medvetet val, inte automatisk.</p>
+
+  <h4>Implementations-konsekvens</h4>
+  <ul>
+    <li><strong>Ny fil:</strong> <code>src/domain/data/seasonEndPhase.ts</code> (~80 rader pure function)</li>
+    <li><strong>SaveGame-tillägg:</strong> <code>seasonDoneAck?: boolean</code>, <code>inSummerScene?: boolean</code> (två booleans för att skilja faserna)</li>
+    <li><strong>Gateway-checks</strong> i 5 ställen: <code>shouldTriggerSummerScene</code>, <code>shouldShowSummerAnslag</code>, <code>shouldTriggerHalftimeScene</code> (returnerar false), <code>shouldTriggerSMFinalVictory</code> (gateway: phase är inte spectator/season_done än), playoffIntroScreen-trigger</li>
+    <li><strong>Tester:</strong> snapshot av fas per game-state. Lätt — en test per kombination av flags.</li>
+  </ul>
+
+  <h4>Konsekvenser för andra spår</h4>
+  <ul>
+    <li><strong>R3 PhaseMark</strong>: använder redan <code>isManagedClubInPlayoff</code>. Bara byt till <code>getSeasonEndPhase(game) === 'playoff_active'</code>. En linje ändras.</li>
+    <li><strong>Spectator-säsongen</strong>: <code>isManagedClubSpectator</code> blir ekvivalent med <code>getSeasonEndPhase(game) === 'playoff_spectator'</code>. Bytas ut, eller behållas som tunn wrapper.</li>
+    <li><strong>C-SP1 granska-CTA</strong>: CTA-text fattar beslut baserat på fas. En linje ändras.</li>
+    <li><strong>C-SD2 portal-eskalering</strong>: redan löst (R3+ Klimax). Inget extra arbete.</li>
+  </ul>
+
+  <h4>Estimat</h4>
+  <p><strong>Pure helper:</strong> ~45 min<br>
+  <strong>SaveGame state + migration:</strong> ~30 min<br>
+  <strong>Gateway-injects på 5 ställen:</strong> ~1.5h<br>
+  <strong>Tester (snapshots per fas):</strong> ~1h<br>
+  <strong>Halvvägs-scen tas bort + anslag-omformulering:</strong> ~45 min<br>
+  <strong>Total:</strong> ~4.5h Code. Lite kod, stor arkitektur-vinst.</p>
+
+  <h4>Meta · vad C-SD1 INTE rör</h4>
+  <ul>
+    <li><strong>Innehåll i scener/anslag</strong> — koreografen säger bara "denna fas", inte vad scenen ska säga. Opus copy berörs inte.</li>
+    <li><strong>Cup-finalen</strong> — den triggas mitt i grundserien. Egen klubb-pipeline, inte berörd.</li>
+    <li><strong>R3 PhaseMark / SpectatorMark</strong> — befintliga. Refaktoreras till koreograf-baserat utan att ändra utseende.</li>
+  </ul>
+
+</div>
+
+</body>
+</html>

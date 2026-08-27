@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+<script src="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/_ds_bundle.js"></script>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  html,body{margin:0;padding:0;background:#cfc7b6;}
+  *{box-sizing:border-box;}
+  :root{--warm-light:#c8a058;--warm:#8c6e3a;--cold:#4a6680;}
+  a{color:var(--accent-deep);}
+  code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.83em;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent-deep);padding:1px 5px;border-radius:4px;}
+  .phone{width:360px;background:var(--bg);border-radius:24px;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.26);border:1px solid rgba(0,0,0,.14);flex-shrink:0;}
+  .lbl{font-family:system-ui,sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
+  .hlabel{font-family:system-ui;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
+  .cs{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;}
+  .quote{font-family:Georgia,serif;font-style:italic;}
+  .seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  .seg button,.seg span{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;font-family:system-ui;color:var(--text-muted);border:none;border-right:1px solid var(--border);background:transparent;padding:0 2px;line-height:1;}
+  .seg .on{background:var(--accent);color:var(--text-light);}
+  .seg .last{border-right:none;}
+  .cta{background:linear-gradient(180deg,#DD9555,#8B4820);color:#fff;font-family:system-ui;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:12px;border-radius:12px;text-align:center;box-shadow:0 4px 14px rgba(162,88,40,.38);}
+  .rat{width:360px;background:var(--bg-dark);border-radius:12px;padding:15px 17px;color:var(--text-light-secondary);}
+  .rat h4{font-family:Georgia,serif;color:var(--text-light);font-size:14px;margin:0 0 7px;font-weight:700;}
+  .rat p{font-size:12px;line-height:1.55;margin:0 0 7px;}
+  .rat b{color:#DD9555;}
+  .badge{position:absolute;top:-13px;left:20px;background:var(--accent);color:#fff;font-family:Georgia,serif;font-weight:800;font-size:13px;padding:2px 13px;border-radius:99px;box-shadow:0 3px 10px rgba(162,88,40,.4);z-index:5;}
+  .badge-rec{background:var(--success);}
+  .rec-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff;background:var(--success);padding:2px 8px;border-radius:99px;vertical-align:middle;}
+</style>
+</helmet>
+
+<section style="min-height:100vh;background:#cfc7b6;background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.22),transparent 45%);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text-primary);padding:34px 40px 130px;">
+
+  <!-- INTRO -->
+  <div style="max-width:1200px;margin:0 auto 30px;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-deep);font-weight:700;">Designuppdrag O15 · Taktikens två lägen · M-01 / Å2</div>
+    <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:800;margin:8px 0 10px;letter-spacing:-.5px;">Vid match 20 läser man inte åtta rader — man letar efter vad som ändrats</h1>
+    <p style="font-size:14px;line-height:1.65;max-width:840px;margin:0 0 14px;color:var(--text-secondary);text-wrap:pretty;">Åtta dimensioner, tre grupper, allt når matchmotorn — inget rör vi. Problemet är ritualen. <strong>Progressiv disclosure:</strong> standardläge visar vad analysen vill ändra + vad som skiljer mot förra matchen + vägen in till allt; avancerat läge visar alla åtta med större träffytor och historik. Standard är default. Tre vikter av standardläget, samma delade avancerat-läge. Referera <a href="#1a">1a</a>, <a href="#1b">1b</a>, <a href="#1c">1c</a>.</p>
+    <div style="max-width:840px;background:var(--bg-dark);border-radius:12px;padding:13px 17px;">
+      <div class="lbl" style="color:#DD9555;margin-bottom:6px;">Mitt anrop</div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--text-light-secondary);margin:0;"><b style="color:#DD9555;">1b rekommenderas.</b> Förslaget som ett sammanhållet kort (två namngivna delar, en "Följ rådet"), en "vad som skiljer"-rad överst, och Spelplan-gruppen öppen som förhandsvisning — resten en omgång bort via "Visa alla åtta". 1a är för naken (bara förslaget, gruppgruppen gömd), 1c drar in för mycket av avancerat i standard. Verifierat mot körande app @fc5d64d (TacticBoardCard i klubbvyn).</p>
+    </div>
+  </div>
+
+  <!-- OPTIONS ROW -->
+  <div style="display:flex;flex-wrap:wrap;gap:46px;align-items:flex-start;max-width:1240px;margin:0 auto;">
+
+    <!-- ══════════ 1a · NAKEN ══════════ -->
+    <div id="1a" style="position:relative;display:flex;flex-direction:column;gap:14px;width:360px;">
+      <div class="badge">1a</div>
+      <div style="padding-top:4px;">
+        <div style="font-family:Georgia,serif;font-size:20px;font-weight:800;">Naken · bara förslaget</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Standard = förslagskortet + en väg in. Grupperna gömda.</div>
+      </div>
+      <div class="phone">
+        <div style="padding:13px;display:flex;flex-direction:column;gap:10px;">
+          <!-- mode toggle -->
+          <div class="seg" style="height:30px;"><span class="on">Standard</span><span class="last">Avancerat</span></div>
+          <!-- opponent line -->
+          <div class="cs" style="border-left:2px solid var(--accent);border-radius:0 8px 8px 0;padding:7px 11px;display:flex;gap:9px;align-items:center;"><span class="hlabel">Skutskär</span><span style="font-size:11.5px;color:var(--text-primary);">3-3-4 · stark: kanter · svag: mittfält</span></div>
+          <!-- the suggestion card -->
+          <div class="cs" style="padding:12px 13px;border:1px solid color-mix(in srgb,var(--warm) 40%,var(--border));">
+            <div class="hlabel" style="color:var(--warm);margin-bottom:8px;">2 ändringar föreslås mot Skutskär</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:9px;"><span style="font-size:11px;color:var(--text-secondary);min-width:64px;">Mentalitet</span><span style="font-size:11px;color:var(--text-muted);">Balanserad</span><span style="color:var(--warm);">→</span><span style="font-size:11px;font-weight:700;color:var(--text-primary);">Offensiv</span></div>
+              <div style="display:flex;align-items:center;gap:9px;"><span style="font-size:11px;color:var(--text-secondary);min-width:64px;">Press</span><span style="font-size:11px;color:var(--text-muted);">Medium</span><span style="color:var(--warm);">→</span><span style="font-size:11px;font-weight:700;color:var(--text-primary);">Hög</span></div>
+            </div>
+            <div class="quote" style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.4;">Sixten ser en svag mitt — gå offensivt och pressa högt.</div>
+            <div style="border:1.5px solid var(--accent);color:var(--accent-deep);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:9px;border-radius:8px;text-align:center;margin-top:10px;">Följ rådet</div>
+          </div>
+          <div class="cs" style="padding:11px 12px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:var(--text-secondary);">Visa alla åtta dimensioner</span><span style="width:16px;height:16px;border:1px solid var(--accent);border-radius:4px;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;">›</span></div>
+          <div class="cta">NÄSTA: STARTA →</div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);width:360px;line-height:1.5;"><b>Risk:</b> den som vill justera <em>en</em> sak (t.ex. tempo inför snö) måste först öppna allt. Förslaget är starkt men skärmen känns tom — och "vad skiljer mot förra matchen" saknas helt.</div>
+    </div>
+
+    <!-- ══════════ 1b · MELLAN (REK) ══════════ -->
+    <div id="1b" style="position:relative;display:flex;flex-direction:column;gap:14px;width:360px;">
+      <div class="badge badge-rec">1b</div>
+      <div style="padding-top:4px;">
+        <div style="font-family:Georgia,serif;font-size:20px;font-weight:800;">Mellan · förslag + delta + en grupp <span class="rec-tag">Rek</span></div>
+        <div style="font-size:12px;color:var(--text-secondary);">Vad som ändrats sedan sist, förslaget, en öppen grupp.</div>
+      </div>
+      <div class="phone">
+        <!-- leather GameHeader — canonical chrome -->
+        <div style="background:var(--bg-dark);border-bottom:2px solid var(--accent);padding:9px 13px 8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="width:16px;height:16px;border:1px solid var(--accent);border-radius:4px;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;">‹</span>
+            <div style="text-align:center;line-height:1;"><div style="font-family:Georgia,serif;font-weight:700;font-size:14px;color:var(--text-light);">Taktik</div><div class="hlabel" style="color:var(--text-light-secondary);margin-top:2px;">Förbered · omg 15</div></div>
+            <span style="font-size:13px;color:var(--text-light-secondary);">⚙</span>
+          </div>
+        </div>
+        <!-- phase dots -->
+        <div style="background:var(--bg-dark);display:flex;justify-content:center;gap:14px;padding:0 0 8px;">
+          <span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);">Förbered</span>
+          <span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);font-weight:700;">● Taktik</span>
+          <span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);">Spela</span>
+        </div>
+        <div style="padding:13px;display:flex;flex-direction:column;gap:10px;">
+          <div class="seg" style="height:32px;"><span class="on">Standard</span><span class="last">Avancerat</span></div>
+          <!-- delta line — the thing you actually look for -->
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:1px 2px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--cold);flex-shrink:0;margin-top:4px;"></span>
+            <span style="font-size:11.5px;color:var(--text-primary);line-height:1.4;">Sedan Målilla höjde du <b>tempot</b>. Inget annat rört.</span>
+          </div>
+          <!-- opponent band, weather-tinted leather -->
+          <div style="background:var(--bg-leather);border-radius:8px;padding:9px 12px;display:flex;gap:10px;align-items:center;">
+            <div style="text-align:center;line-height:1;flex-shrink:0;"><div style="font-family:Georgia,serif;font-weight:800;font-size:15px;color:var(--text-light);">Skutskär</div><div class="hlabel" style="color:var(--ice);margin-top:3px;">borta · −4°</div></div>
+            <div style="width:1px;height:26px;background:rgba(255,255,255,.12);"></div>
+            <span style="font-size:11px;color:var(--text-light-secondary);line-height:1.4;">3-3-4 · stark: kanter · svag: mittfält</span>
+          </div>
+          <!-- suggestion card — warm leather register -->
+          <div style="background:var(--bg-surface);border:1px solid color-mix(in srgb,var(--warm) 45%,var(--border));border-left:3px solid var(--warm);border-radius:0 8px 8px 0;padding:12px 13px;">
+            <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:9px;"><span style="font-family:Georgia,serif;font-weight:800;font-size:22px;color:var(--warm);line-height:.9;">2</span><span class="hlabel" style="color:var(--warm);">ändringar föreslås</span></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:9px;"><span style="font-size:11px;color:var(--text-secondary);min-width:64px;">Mentalitet</span><span style="font-size:11px;color:var(--text-muted);text-decoration:line-through;">Balanserad</span><span style="color:var(--warm);font-weight:700;">→</span><span style="font-family:Georgia,serif;font-size:12.5px;font-weight:700;color:var(--accent-deep);">Offensiv</span></div>
+              <div style="display:flex;align-items:center;gap:9px;"><span style="font-size:11px;color:var(--text-secondary);min-width:64px;">Press</span><span style="font-size:11px;color:var(--text-muted);text-decoration:line-through;">Medium</span><span style="color:var(--warm);font-weight:700;">→</span><span style="font-family:Georgia,serif;font-size:12.5px;font-weight:700;color:var(--accent-deep);">Hög</span></div>
+            </div>
+            <div class="quote" style="font-size:11px;color:var(--text-secondary);margin-top:9px;line-height:1.45;">"Sixten ser en svag mitt — gå offensivt och pressa högt."</div>
+            <div style="background:linear-gradient(180deg,#DD9555,#8B4820);color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px;border-radius:8px;text-align:center;margin-top:11px;box-shadow:0 4px 14px rgba(162,88,40,.38);">Följ rådet</div>
+          </div>
+          <!-- one open group: Spelplan (preview) -->
+          <div>
+            <p class="hlabel" style="margin:2px 0 6px;">🏒 Spelplan</p>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Mentalitet</span><div class="seg" style="height:32px;position:relative;"><span>Def</span><span>Bal</span><span class="on last">Off&nbsp;★</span></div></div>
+              <div style="display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Tempo</span><div class="seg" style="height:32px;"><span>Lågt</span><span class="on">Normalt</span><span class="last">Högt</span></div></div>
+              <div style="display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Press</span><div class="seg" style="height:32px;"><span>Låg</span><span>Med</span><span class="on last">Hög&nbsp;★</span></div></div>
+            </div>
+          </div>
+          <div class="cs" style="padding:11px 12px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:var(--text-secondary);">🏒 Bollspel · Fasta situationer</span><span style="font-size:10px;color:var(--accent-deep);font-weight:700;letter-spacing:.5px;">VISA ALLA ÅTTA ›</span></div>
+          <!-- diamond divider + CTA -->
+          <div style="display:flex;align-items:center;gap:8px;margin-top:2px;"><span style="flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border));"></span><span style="color:var(--accent);font-size:8px;">◆</span><span style="flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);"></span></div>
+          <div class="cta">NÄSTA: STARTA →</div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);width:360px;line-height:1.5;">Delta-raden överst är det man letar efter vid match 20. Förslaget är ett sammanhållet kort. Spelplan öppen (bär de två förslagen ★) så justering av <em>en</em> sak går direkt; de andra två grupperna en tap bort. ★ = föreslås, i layouten — ingen klippande pill (Å2 löst).</div>
+    </div>
+
+    <!-- ══════════ 1c · AVANCERAT ══════════ -->
+    <div id="1c" style="position:relative;display:flex;flex-direction:column;gap:14px;width:360px;">
+      <div class="badge">1c</div>
+      <div style="padding-top:4px;">
+        <div style="font-family:Georgia,serif;font-size:20px;font-weight:800;">Avancerat läge · alla åtta</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Delat mellan alla vikter. Större träffytor + historik.</div>
+      </div>
+      <div class="phone">
+        <div style="padding:13px;display:flex;flex-direction:column;gap:9px;">
+          <div class="seg" style="height:30px;"><span>Standard</span><span class="on last">Avancerat</span></div>
+          <!-- change history -->
+          <div class="cs" style="padding:9px 11px;background:var(--bg-leather);border:none;">
+            <div class="hlabel" style="color:var(--warm-light);margin-bottom:5px;">Vad du ändrat i år</div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <div style="font-size:10.5px;color:var(--text-light-secondary);">Omg 14 · Tempo → Högt</div>
+              <div style="font-size:10.5px;color:var(--text-light-secondary);">Omg 9 · Press → Hög · Bredd → Bred</div>
+              <div style="font-size:10.5px;color:var(--text-light-secondary);">Omg 1 · utgångsläge satt</div>
+            </div>
+          </div>
+          <!-- group: Spelplan, big targets -->
+          <div>
+            <p class="hlabel" style="margin:2px 0 6px;">Spelplan</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Mentalitet</span><div class="seg" style="height:44px;"><span>Def</span><span>Bal</span><span class="on last">Off&nbsp;★</span></div></div>
+              <div style="display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Tempo</span><div class="seg" style="height:44px;"><span>Lågt</span><span class="on">Normalt</span><span class="last">Högt</span></div></div>
+              <div style="display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Press</span><div class="seg" style="height:44px;"><span>Låg</span><span>Med</span><span class="on last">Hög&nbsp;★</span></div></div>
+            </div>
+          </div>
+          <div>
+            <p class="hlabel" style="margin:2px 0 6px;">Bollspel</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Passning</span><div class="seg" style="height:44px;"><span>Säker</span><span class="on">Blandat</span><span class="last">Direkt</span></div></div>
+              <div style="display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Bredd</span><div class="seg" style="height:44px;"><span>Smal</span><span>Normal</span><span class="on last">Bred</span></div></div>
+              <div style="display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Anfall</span><div class="seg" style="height:44px;"><span>Centralt</span><span>Kanter</span><span class="on last">Blandat</span></div></div>
+            </div>
+          </div>
+          <div>
+            <p class="hlabel" style="margin:2px 0 6px;">Fasta situationer</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Hörnor</span><div class="seg" style="height:44px;"><span>Säker</span><span class="on">Standard</span><span class="last">Aggr</span></div></div>
+              <div style="display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center;"><span style="font-size:10px;color:var(--text-secondary);font-weight:600;">Utvisning</span><div class="seg" style="height:44px;"><span>Passivt</span><span class="on">Aktivt</span><span class="last">Aggr</span></div></div>
+            </div>
+          </div>
+          <div class="cta">NÄSTA: STARTA →</div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);width:360px;line-height:1.5;">Alla åtta, 44px träffytor, ändringshistorik överst. Nås via toggle från vilken standardvikt som helst — <b>inte</b> en egen skärm. ★ sitter i knappen (Off ★), aldrig som negativt positionerad pill.</div>
+    </div>
+
+  </div>
+
+  <!-- ANSWERS -->
+  <div style="max-width:1240px;margin:52px auto 0;">
+    <div class="lbl" style="font-size:10px;letter-spacing:2px;color:var(--accent-deep);margin-bottom:12px;">Svar på briefens fyra frågor</div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;">
+      <div class="rat"><h4>1 · Förslaget som en sak</h4><p>Ett kort, inte två mikromarkörer: rubrik "2 ändringar föreslås", varje del som <b>nuläge → förslag</b> med dimensionens namn, en varför-rad (assistentens röst), en <b>Följ rådet</b>. Läses som en plan, inte som prickar i en matris.</p></div>
+      <div class="rat"><h4>2 · Vad som skiljer mot sist</h4><p><b>En rad överst</b> (kall prick), inte markörer i matrisen — det är det man letar efter och det ska synas utan att öppna något. Ändrade dimensioner får dessutom en diskret markör i avancerat. Inget ändrat → <span style="color:#DD9555;">[Opus]</span> "Samma plan som mot Målilla." Svåraste texten — märkt för dig.</p></div>
+      <div class="rat"><h4>3 · Avancerat utan två skärmar</h4><p>Samma skärm, <b>lägestoggle</b> överst (Standard/Avancerat) + en "Visa alla åtta"-rad som fäller ut i standard. <b>Spelplan</b> är den öppna gruppen i standard (den bär båda förslagen); Bollspel + Fasta situationer ligger bakom raden. Grupperingen är redan rätt i koden.</p></div>
+      <div class="rat"><h4>4 · Träffytorna (Å2)</h4><p>Standard: få rader → segmenten får 30px+ naturligt. Avancerat: explicit <b>44px träffyta</b> som egen regel (visas ovan). ★-markören ligger <b>i knappens layout</b> (t.ex. "Off ★"), aldrig <code>position:absolute; top:-6</code> i en <code>overflow:hidden</code>-container — det var buggen. ≥36px synlig, badge klipps aldrig.</p></div>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div style="max-width:1240px;margin:22px auto 0;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;">
+    <div class="lbl" style="color:var(--accent-deep);margin-bottom:8px;">Anteckningar till Code</div>
+    <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.7;color:var(--text-secondary);">
+      <li><b>Villkor hålls:</b> alla åtta dimensioner kvar, når matchmotorn via <code>tacticModifiers</code>. Detta är progressiv disclosure, inte förenkling.</li>
+      <li><b>"Följ rådet"</b> sätter <em>bara</em> de föreslagna fälten (idag <code>suggestedMentality</code> + <code>suggestedPress</code> ur <code>opponentAnalysisService</code>) — aldrig alla åtta. Hörnrekommendationen (specialist-beroende) ingår <em>inte</em> i standard; den lever i avancerat/matchvyn som förut.</li>
+      <li><b>Passivt tills tryck</b> (Granska del 4-regeln): inget förväljs, inget auto-appliceras. "Följ rådet" och segmenten sätter värden först on-click.</li>
+      <li><b>Å2-fix:</b> ta bort den negativt positionerade FÖRESLÅS-pillen (<code>top:-6</code> i <code>overflow:hidden</code>) — markören blir "★" i knappens egen layout. Avancerat: 44px träffyta, ≥36px synlig.</li>
+      <li><b>Delta-raden</b> härleds ur diff mot förra matchens sparade <code>activeTactic</code>. Ändringshistoriken (avancerat) = logg av tidigare tactic-diffar per omgång. <span style="color:var(--accent-deep);">[Opus]</span> skriver: delta-raden (ändrat), noll-fallet (inget ändrat), och historik-radernas format.</li>
+      <li><b>D1 tillsammans med detta:</b> taktikens interna viktning (förslag &gt; delta &gt; öppen grupp &gt; dolda grupper) är samma fråga som eventvikterna mellan skärmar — håll skalan konsekvent.</li>
+      <li><b>Modal-placering (post 10):</b> separat dom, ej denna leverans — men <code>TacticChangeModal</code> under match berörs inte här; standard/avancerat gäller förberedelsevyn (<code>TacticStep</code> + <code>TacticBoardCard</code>, delad <code>tacticRows</code>).</li>
+    </ul>
+  </div>
+
+  <div style="text-align:center;margin-top:26px;color:var(--text-muted);font-size:11px;font-style:italic;font-family:Georgia,serif;">— Taktikens två lägen · den som vill spela nästa match ska inte behöva stänga av något —</div>
+
+</section>
+</x-dc>
+</body>
+</html>

@@ -85,3 +85,20 @@ Analyser (från befintliga `INTERNAL_referee_*.json`):
 ## Leveransordning
 
 A1 → A2 → A3 levereras först (var för sig, inte i klump — Fable skriver finding per analys medan nästa körs). A4 därefter. A5–A8 i mån av tid. Vid varje leverans: JSON + rapport + en rad i rapporten om vilka öppna Q-nummer i `docs/findings/facts/questions/` analysen berör.
+
+---
+
+## Utfall (svepet stängt 7 juli 2026)
+
+| Analys | Utfall |
+|---|---|
+| A1 win probability | Finding 060 |
+| A2 powerplay (rigorös extension) | Finding 061 (grundnivån täcktes av 057–059) |
+| A3 Allsvenskan | Finding 062 (+ reviderad efter loggningsutredning) |
+| A4 domare, anonymiserad | Finding 063 (aggregerad) + INTERNAL-outputs utanför git |
+| A5 momentum/svarsmål | Finding 064 (+ öppen motorkalibreringskandidat) |
+| A6 kalendereffekter | Finding 065; Q004/Q167/Q174 var redan besvarade av 006 |
+| A7 publik × hemmafördel | Grind ej passerad (dam-täckning 20 % < 50 %) — täckningsrapport, ingen finding |
+| A8 restposter | Rapport + JSON räcker — ingen finding. Overtime- och own_goal-fälten saknas i datan (datagap, ej analysbrist); fas-breakdown bekräftar Finding 006; kvalets 38 matcher är deskriptivt redovisade. |
+
+Öppna spår ur svepet: motorkalibrering från A5 (Jacob-beslut), A4-scriptets commit (Jacob-beslut), attendance-datatäckning för dam (blockerar A7 tills bättre källa finns), overtime/own_goal-fält vid framtida omscrape av Bandygrytan, samt mekanismfrågorna bakom 065:s slutfaslyft (ej spawnade som questions ännu).

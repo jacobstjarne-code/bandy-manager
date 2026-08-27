@@ -5,10 +5,17 @@ source:
   type: design_decision
   decided_by: jacob
   doc: "src/domain/services/worldGenerator.ts:339"
-verified_at: 2026-04-25
+verified_at: 2026-08-25
 verified_by: code
 status: active
 notes: |
   reputation: 45 (lägst av 12 klubbar). hasArtificialIce: false. Region: Dalarna.
-  boardExpectation: AvoidBottom. preferredStyle: Defensive.
+  boardExpectation VID GENERERING: Survive (H4 Heros, Jacobs dom 2026-08-25 —
+  ändrad från AvoidBottom, den enda klubb som canoniskt vinner under 25% av
+  matcherna). Sedan samma dag är boardExpectation DYNAMISKT för alla tolv
+  klubbar (generatePreSeasonMessage körs per säsong, femstegs-stege) — detta
+  fält beskriver startvärdet, inte ett fruset faktum. preferredStyle: Defensive.
   Startkapital: 160 000 kr.
+  Tidigare version av denna fil sa "boardExpectation: AvoidBottom" efter att
+  koden redan bytts till Survive — tredje dokumentationsdriften samma
+  session (samma mönster som statusfältet, contextualSponsorService).

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+<script src="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/_ds_bundle.js"></script>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  html,body{margin:0;padding:0;background:#cfc7b6;}
+  *{box-sizing:border-box;}
+  :root{--warm-light:#c8a058;--cold-light:#7095b8;}
+  a{color:var(--accent-deep);}
+  code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.85em;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent-deep);padding:1px 5px;border-radius:4px;}
+  .phone{width:390px;background:var(--bg);border-radius:24px;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.26);border:1px solid rgba(0,0,0,.14);}
+  .ph-head{height:44px;background:var(--bg-dark);border-bottom:2px solid var(--accent);display:flex;align-items:center;justify-content:space-between;padding:0 14px;}
+  .lbl{font-family:system-ui,sans-serif;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
+  .cs{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;}
+  .rat{width:390px;background:var(--bg-dark);border-radius:12px;padding:16px 18px;color:var(--text-light-secondary);}
+  .rat h4{font-family:Georgia,serif;color:var(--text-light);font-size:15px;margin:0 0 8px;font-weight:700;}
+  .rat p{font-size:12.5px;line-height:1.55;margin:0 0 7px;}
+  .rat b{color:#DD9555;}
+  .diff{background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:390px;}
+  .diff-h{background:var(--bg-leather);color:var(--text-light);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;padding:9px 14px;}
+  .diff-row{padding:10px 14px;border-bottom:1px solid var(--border);font-size:12.5px;line-height:1.5;}
+  .diff-row:last-child{border:none;}
+  .del{color:var(--danger-text);}
+  .add{color:var(--success-light);}
+  .col{display:flex;flex-direction:column;gap:16px;width:390px;}
+  .before{position:relative;}
+  .before::after{content:'FÖRE — som det renderas nu';position:absolute;top:8px;right:10px;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--danger-text);background:color-mix(in srgb,var(--danger) 12%,transparent);padding:2px 7px;border-radius:99px;font-weight:700;z-index:5;}
+  .after{position:relative;}
+  .after::after{content:'EFTER — omkomponerad';position:absolute;top:8px;right:10px;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--success-light);background:color-mix(in srgb,var(--success) 14%,transparent);padding:2px 7px;border-radius:99px;font-weight:700;z-index:5;}
+  .keep::after{content:'MESTADELS BEHÅLL';color:var(--accent-deep);background:color-mix(in srgb,var(--accent) 12%,transparent);}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#cfc7b6;background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.22),transparent 45%);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text-primary);padding:34px 40px 130px;">
+
+  <!-- INTRO -->
+  <div style="max-width:1280px;margin:0 auto 30px;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-deep);font-weight:700;">Implementationsaudit · del 2</div>
+    <h1 style="font-family:Georgia,serif;font-size:33px;font-weight:800;margin:8px 0 10px;letter-spacing:-.5px;">SeasonSummary · Inbox · Transfers</h1>
+    <p style="font-size:14.5px;line-height:1.65;max-width:820px;margin:0 0 14px;color:var(--text-secondary);text-wrap:pretty;">Samma fyra steg som del 1 (verkliga tillstånd → omkomposition i husets tokens → diff mot riktig fil → regressionsnot), läst mot <code>SeasonSummaryScreen.tsx</code>, <code>InboxScreen.tsx</code>, <code>TransfersScreen.tsx</code>. Mönstret från del 1 håller: koden är stark, gapet sitter i <strong>komposition och prioritering</strong> — och två av ytorna knyter direkt till visionens spår.</p>
+    <div style="max-width:820px;background:var(--bg-dark);border-radius:12px;padding:14px 18px;">
+      <div class="lbl" style="color:#DD9555;margin-bottom:6px;">Vad som skiljer dessa tre</div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--text-light-secondary);margin:0;"><b style="color:#DD9555;">SeasonSummary</b> = ceremoni utan kapitel (17 sektioner i en scroll) + delar atom med History (visionens "en atom, två tätheter"). <b style="color:#DD9555;">Inbox</b> = redan stark, som Tabell — två fixar. <b style="color:#DD9555;">Transfers</b> = där poaching-äventyret ska synas men ligger begravt.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ YTA 4 · SEASONSUMMARY ═══════════ -->
+  <section style="max-width:1320px;margin:0 auto 56px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+      <span style="font-family:Georgia,serif;font-size:26px;font-weight:800;color:var(--accent-deep);">04</span>
+      <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:800;margin:0;">SeasonSummary — ceremonin utan kapitel</h2>
+    </div>
+    <p style="font-size:13.5px;color:var(--text-secondary);max-width:820px;margin:0 0 24px;line-height:1.6;">Spelets största fil (38k) och dess viktigaste ceremoni. Den renderar <strong>~17 sektioner i en enda scroll</strong> — hero, signatur, narrativ, årets match, DIN SÄSONG, SÄSONGENS BERÄTTELSER, BÄSTA, cup, statistik, hemma/borta, streaks, poängkurva, ungdomskull, Orten, karriärer, val, ekonomi. Ceremonin förtjänar längd — men utan kapitel blir den en vägg, och två sektioner läser samma <code>storylines</code>-källa.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+      <!-- FÖRE -->
+      <div class="col before">
+        <div class="phone">
+          <div class="ph-head"><span class="lbl" style="color:var(--text-light-secondary);">Årsbok</span><span class="lbl" style="color:var(--text-light-secondary);">2034/35</span></div>
+          <div style="background:var(--bg);padding:10px;display:flex;flex-direction:column;gap:5px;max-height:520px;overflow:hidden;">
+            <div style="text-align:center;padding:6px 0;"><div class="lbl" style="color:var(--accent);letter-spacing:3px;">ÅRSBOK</div><div style="font-family:Georgia;font-size:26px;font-weight:900;">SÄSONG 34/35</div></div>
+            <div style="background:var(--bg-leather);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:8px 10px;"><span style="color:var(--text-light);font-family:Georgia;font-size:12px;">Köldvinterns säsong</span></div>
+            <div class="cs" style="padding:6px 10px;font-size:10px;color:var(--text-muted);">"narrativ…"</div>
+            <div class="lbl">⭐ SÄSONGENS MATCH</div><div class="cs" style="padding:6px 10px;height:22px;"></div>
+            <div class="lbl">🏒 DIN SÄSONG</div><div class="cs" style="padding:6px 10px;height:18px;"></div>
+            <div class="lbl">📖 SÄSONGENS BERÄTTELSER</div><div class="cs" style="padding:6px 10px;height:18px;background:color-mix(in srgb,var(--danger) 6%,transparent);"></div>
+            <div class="lbl">SÄSONGENS BÄSTA</div><div class="cs" style="padding:6px 10px;height:16px;"></div>
+            <div class="lbl">STATISTIK</div><div class="cs" style="padding:6px 10px;height:16px;"></div>
+            <div class="lbl">STREAKS · POÄNGKURVA · UNGDOM · ORTEN…</div><div class="cs" style="padding:6px 10px;height:16px;"></div>
+            <div class="lbl" style="color:var(--danger-text);">…+ 6 sektioner till →</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">17 sektioner, ingen paus. "DIN SÄSONG" och "SÄSONGENS BERÄTTELSER" (röd) drar båda ur <code>storylines</code> — samma berättelse kan dyka upp två gånger. Och <code>card-stagger-7</code> saknas i CSS (bara 1–6 finns) → de sista korten animeras inte.</div>
+      </div>
+
+      <!-- EFTER -->
+      <div class="col after">
+        <div class="phone">
+          <div class="ph-head"><span class="lbl" style="color:var(--text-light-secondary);">Årsbok</span><span class="lbl" style="color:var(--text-light-secondary);">2034/35</span></div>
+          <div style="background:var(--bg);padding:10px;display:flex;flex-direction:column;gap:6px;">
+            <div style="text-align:center;padding:6px 0;"><div class="lbl" style="color:var(--accent);letter-spacing:3px;">ÅRSBOK</div><div style="font-family:Georgia;font-size:26px;font-weight:900;">SÄSONG 34/35</div><div style="font-size:11px;color:var(--text-secondary);">3:e plats · 🥈 Finalist</div></div>
+            <!-- chapter divider -->
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-family:Georgia;font-size:13px;font-weight:700;color:var(--accent-deep);">I · Resultatet</span><span style="flex:1;height:1px;background:color-mix(in srgb,var(--accent) 30%,transparent);"></span></div>
+            <div class="cs" style="padding:8px 10px;"><div class="lbl">SLUTPLACERING &amp; STYRELSEDOM</div><div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">✅ Styrelsen är nöjd · 52 poäng</div></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-family:Georgia;font-size:13px;font-weight:700;color:var(--accent-deep);">II · Berättelsen</span><span style="flex:1;height:1px;background:color-mix(in srgb,var(--accent) 30%,transparent);"></span></div>
+            <div class="cs" style="padding:8px 10px;border:2px solid var(--accent);"><div class="lbl" style="color:var(--accent);">⭐ SÄSONGENS MATCH + DIN SÄSONG (sammanslagen tidslinje)</div><div style="font-size:11px;color:var(--text-muted);font-style:italic;margin-top:3px;">En källa, en lista — ingen dubblett.</div></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-family:Georgia;font-size:13px;font-weight:700;color:var(--accent-deep);">III · Truppen</span><span style="flex:1;height:1px;background:color-mix(in srgb,var(--accent) 30%,transparent);"></span></div>
+            <div class="cs" style="padding:8px 10px;"><div class="lbl">SÄSONGENS BÄSTA · KARRIÄRER</div></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span style="font-family:Georgia;font-size:13px;font-weight:700;color:var(--accent-deep);">IV · Siffrorna</span><span style="flex:1;height:1px;background:color-mix(in srgb,var(--accent) 30%,transparent);"></span></div>
+            <div class="cs" style="padding:8px 10px;"><div class="lbl">STATISTIK · POÄNGKURVA · ORTEN · EKONOMI</div></div>
+            <div style="background:var(--bg-leather);border-radius:8px;padding:10px;text-align:center;margin-top:4px;"><span style="color:var(--text-light);font-family:Georgia;font-weight:700;font-size:13px;">Starta säsong 35/36 →</span></div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">Fyra kapitel ger ceremonin andning och paus. Samma sektioner, samma tokens — bara indelade och avdubblade. Kapitel-dividern är Georgia + kopparlinje (förstärkning, inte ny komponent).</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:26px;align-items:flex-start;">
+      <div class="rat">
+        <h4>Vad auditen hittade</h4>
+        <p><b>Dubbelkälla.</b> DIN SÄSONG och SÄSONGENS BERÄTTELSER dedupar var för sig men läser samma <code>game.storylines</code> — en storyline kan synas i båda.</p>
+        <p><b>card-stagger-7 finns inte</b> i <code>global.css</code> (bara 1–6). De fem sista korten får ingen entré-animation — tyst avvikelse.</p>
+        <p><b>Delar atom med History men inte kod.</b> Sektionerna är bespoke inline här; History bygger sina egna. Visionens "en atom, två tätheter" är inte förverkligad.</p>
+      </div>
+      <div class="diff">
+        <div class="diff-h">Diff · SeasonSummaryScreen.tsx</div>
+        <div class="diff-row"><span class="add">+</span> Fyra kapitel-dividers (Georgia + <code>--accent</code>-linje) mellan de befintliga sektionsgrupperna. Ingen ny komponent.</div>
+        <div class="diff-row"><span class="del">−</span> Dubbelrenderingen: slå ihop DIN SÄSONG + SÄSONGENS BERÄTTELSER till en dedupad tidslinje (en <code>seenTypes</code>-mängd delad).</div>
+        <div class="diff-row"><span class="add">+</span> <code>.card-stagger-7</code> i global.css (280ms, 360ms delay) — eller kapa till stagger-6.</div>
+        <div class="diff-row"><span class="add">+</span> Extrahera <code>SeasonBits</code> (Headline/Timeline/Awards/EconomyDelta) med <code>density</code>-prop; SeasonSummary=full, History=mini. Förverkligar visionens byggsats.</div>
+      </div>
+      <div class="rat" style="background:var(--bg-leather);">
+        <h4 style="color:var(--text-light);">Regressionsnot</h4>
+        <p style="color:var(--text-light-secondary);">Baseline på tre säsongsutfall: <b>mästare</b> (guld-hero + cup), <b>mittenlag</b> (ingen slutspel), <b>sparkad</b> (→ game-over-gren). Fångar att kapitelindelningen håller när sektioner saknas.</p>
+        <p style="color:var(--text-light-secondary);">Samma snapshot körd mot History mini-läge bevisar att den delade byggsatsen renderar båda tätheterna.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ YTA 5 · INBOX ═══════════ -->
+  <section style="max-width:1320px;margin:0 auto 56px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+      <span style="font-family:Georgia,serif;font-size:26px;font-weight:800;color:var(--accent-deep);">05</span>
+      <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:800;margin:0;">Inbox — stark, som Tabell</h2>
+    </div>
+    <p style="font-size:13.5px;color:var(--text-secondary);max-width:820px;margin:0 0 24px;line-height:1.6;">Ärligt: den här är redan genomtänkt. Severity-grupper (KRÄVER SVAR / NYHETER / RAPPORTER), tunna rader för nyheter, roll-ups för dubbletter, sammanslagen träningsrapport, tom-tillstånd med scen-röst, olästa som 2px kopparkant. Två fixar — inte en omritning.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+      <div class="col after keep" style="width:390px;">
+        <div class="phone">
+          <div class="ph-head"><span style="font-family:Georgia;color:var(--text-light);font-size:14px;">Inkorg</span><span style="font-size:10px;color:var(--accent);">3 olästa</span></div>
+          <div style="background:var(--bg);padding:10px 12px;display:flex;flex-direction:column;gap:4px;">
+            <div style="display:flex;align-items:center;gap:5px;margin:6px 0 3px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--danger);"></span><span class="lbl" style="margin:0;">KRÄVER SVAR</span><span style="margin-left:auto;font-family:Georgia;font-size:12px;color:var(--text-secondary);">2</span></div>
+            <div class="cs" style="overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-left:2px solid var(--accent);border-bottom:1px solid var(--border);"><span style="width:26px;height:26px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-secondary);">⇄</span><div style="flex:1;"><div style="font-size:11.5px;font-weight:600;">Bud på Ohlsson — Rogle</div></div><span style="font-size:8.5px;padding:2px 7px;border-radius:99px;background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger-text);font-weight:600;">svar senast omg 16</span></div>
+              <div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-left:2px solid var(--accent);"><span style="width:26px;height:26px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-secondary);">◷</span><div style="flex:1;"><div style="font-size:11.5px;font-weight:600;">Styrelsen vill ha ett möte</div></div><span style="color:var(--accent);font-size:13px;">›</span></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;margin:8px 0 3px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);"></span><span class="lbl" style="margin:0;">NYHETER</span><span style="margin-left:auto;font-family:Georgia;font-size:12px;color:var(--text-secondary);">6</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:color-mix(in srgb,var(--accent) 5%,var(--bg-surface));border:1px dashed var(--border-dark);border-radius:8px;"><span style="width:20px;height:20px;border-radius:8px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;">3</span><span style="flex:1;font-size:10.5px;font-weight:600;">Mediaröster · Målilla-Kuriren</span><span style="font-size:9px;color:var(--accent-dark);font-weight:700;">Visa ›</span></div>
+            <div style="display:flex;align-items:center;gap:5px;margin:8px 0 3px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--text-muted);"></span><span class="lbl" style="margin:0;">RAPPORTER</span></div>
+            <div class="cs" style="padding:8px 11px;display:flex;align-items:center;gap:9px;"><span style="width:26px;height:26px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;">🏋</span><div style="flex:1;"><div style="font-family:Georgia;font-style:italic;font-size:11px;color:var(--text-secondary);">Träning omg 11–14: inga incidenter.</div><div class="lbl" style="margin:0;">4 veckorapporter, sammanslagna</div></div></div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">Behålls i stort. Rätt severity-hierarki, roll-ups, aggregerad träning — precis vad de andra ytorna behöver lära av.</div>
+      </div>
+
+      <div class="rat">
+        <h4>De två fixarna</h4>
+        <p><b>Emoji läcker in i copy.</b> <code>groupNyheter</code> nycklar på <code>title.startsWith('⚠️ Nemesis:')</code>, och media-outlet parsas med regex ur <code>body</code>. Strängberoende + <code>⚠️</code> ligger utanför den bundna emoji-kartan (bryter emoji=chrome-regeln). Flytta nemesis-flaggan till ett <code>type</code>/fält, inte en titelsträng.</p>
+        <p><b>Sticky-rubrik på <code>--bg</code></b> mot scrollande innehåll: verifiera att den inte lämnar en kant på seasonal-tonad bakgrund.</p>
+        <p style="color:#9fcf8a;"><b>Slutsats:</b> mönsterbiblioteket bor här — roll-up + aggregering är exakt det Squad "Nu" och SeasonSummary ska återanvända.</p>
+      </div>
+      <div class="diff">
+        <div class="diff-h">Diff · InboxScreen.tsx (litet)</div>
+        <div class="diff-row"><span class="del">−</span> <code>title.startsWith('⚠️ Nemesis:')</code> → ett <code>item.kind==='nemesis'</code>-fält på <code>InboxItem</code>; markören blir en <code>Dot</code>/Lucide, inte emoji i texten.</div>
+        <div class="diff-row"><span class="del">−</span> Regex-parsning av outlet ur <code>body</code> → strukturerat <code>item.outlet</code>-fält.</div>
+        <div class="diff-row"><span class="lbl" style="letter-spacing:1px;">Ingen layoutändring · severity/roll-up-arkitekturen orörd</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ YTA 6 · TRANSFERS ═══════════ -->
+  <section style="max-width:1320px;margin:0 auto 30px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+      <span style="font-family:Georgia,serif;font-size:26px;font-weight:800;color:var(--accent-deep);">06</span>
+      <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:800;margin:0;">Transfers — där äventyret är begravt</h2>
+    </div>
+    <p style="font-size:13.5px;color:var(--text-secondary);max-width:820px;margin:0 0 24px;line-height:1.6;">Fyra flikar (Marknad/Scouting/Fria/Sälj), var och en med eget tom-tillstånd — bra. Men <strong>inkommande bud på dina spelare</strong> — poaching, själva hjärtat i äventyrsspåret — syns bara som en liten <code>🔥</code>-badge nere på Sälj-fliken. Koden noterar det själv (en kommentar om att pricken satt på "fel flik"). Det är den yta där öppna trådar / nemesis-signed ska landa.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+      <!-- FÖRE -->
+      <div class="col before">
+        <div class="phone">
+          <div class="ph-head"><span class="lbl" style="color:var(--text-light-secondary);">Transfers · Sälj</span><span class="lbl" style="color:var(--text-light-secondary);">omg 14</span></div>
+          <div style="background:var(--bg);padding:10px 12px;">
+            <div class="lbl" style="margin-bottom:6px;">SÄTT SPELARE TILL SALU</div>
+            <div class="cs" style="overflow:hidden;">
+              <div style="display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid var(--border);"><div style="flex:1;"><div style="font-size:13px;font-weight:600;">Ohlsson</div><div style="font-size:11px;color:var(--text-muted);">MF · Styrka 71 · MV 2,4 mkr <span style="font-size:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent-deep);padding:1px 6px;border-radius:99px;">🔥 1 klubb intresserad</span></div></div><span class="cs" style="padding:6px 10px;font-size:12px;color:var(--text-secondary);">Till salu</span></div>
+              <div style="display:flex;align-items:center;padding:10px 12px;"><div style="flex:1;"><div style="font-size:13px;font-weight:600;">Holmgren</div><div style="font-size:11px;color:var(--text-muted);">A · Styrka 78 · MV 3,1 mkr</div></div><span class="cs" style="padding:6px 10px;font-size:12px;color:var(--text-secondary);">Till salu</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">Att en storklubb jagar din bästa unge — den mest dramatiska händelsen på ytan — är en 9px-badge på en flik man sällan öppnar. Ingen deadline, inget vem, ingen berättelse.</div>
+      </div>
+
+      <!-- EFTER -->
+      <div class="col after">
+        <div class="phone">
+          <div class="ph-head"><span class="lbl" style="color:var(--text-light-secondary);">Transfers · Marknad</span><span style="font-size:10px;color:var(--accent);">1 bud</span></div>
+          <div style="background:var(--bg);padding:10px 12px;display:flex;flex-direction:column;gap:8px;">
+            <!-- incoming bid as first-class KRÄVER SVAR card -->
+            <div style="background:var(--bg-surface);border:1px solid color-mix(in srgb,var(--danger) 30%,transparent);border-left:3px solid var(--danger);border-radius:0 8px 8px 0;padding:11px 13px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><span class="lbl" style="color:var(--danger-text);margin:0;">⚔ BUD PÅ DIN SPELARE</span><span style="font-size:8.5px;padding:2px 7px;border-radius:99px;background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger-text);font-weight:600;">svar senast omg 16</span></div>
+              <div style="font-family:Georgia;font-size:15px;font-weight:700;">Rogle vill ha Ohlsson</div>
+              <div style="font-size:11.5px;color:var(--text-secondary);line-height:1.4;margin-top:2px;">Bud 3,2 mkr · egenfostrad, landslagsuttagen. <span style="font-style:italic;color:var(--warm-light);">Han drömmer om spel högre upp.</span></div>
+              <div style="display:flex;gap:6px;margin-top:9px;"><span style="flex:1;background:linear-gradient(180deg,#DD9555,#8B4820);color:#fff;font-size:11px;font-weight:700;padding:7px;border-radius:8px;text-align:center;">Förhandla</span><span style="flex:1;border:1.5px solid var(--accent);color:var(--accent-dark);font-size:11px;font-weight:700;padding:7px;border-radius:8px;text-align:center;">Behåll &amp; förläng</span></div>
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);font-style:italic;padding:0 2px;">↳ Säljer du: planterar en öppen tråd — nemesis om två säsonger (visionsspåret).</div>
+            <div class="lbl" style="margin-top:2px;">📋 KONTRAKT GÅR UT</div>
+            <div class="cs" style="padding:9px 12px;font-size:12px;color:var(--text-secondary);">3 spelare · kan värvas gratis efter säsongen</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">Budet lyft till ett förstaklass-kort överst på Marknad, med vem/deadline/motiv och två vägval — och en krok till öppna trådar. Samma severity-språk som Inbox KRÄVER SVAR.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:26px;align-items:flex-start;">
+      <div class="rat">
+        <h4>Vad auditen hittade</h4>
+        <p><b>Poaching är begravt.</b> Inkommande bud → bara <code>saljHasDot</code> + en 🔥-badge på Sälj. Kodens egen kommentar erkänner att pricken satt på fel flik.</p>
+        <p><b>slice(0,10) utan spill-cue</b> i Marknad-grupperna (samma mönster som Squad-chipsen) — dolt utan "+N".</p>
+        <p><b>Kroken till visionen.</b> Detta är den enda ytan där öppna trådar / nemesis-signed naturligt börjar. Ett förstaklass-budkort är också steg 1 i äventyrs-wiringen.</p>
+      </div>
+      <div class="diff">
+        <div class="diff-h">Diff · TransfersScreen.tsx</div>
+        <div class="diff-row"><span class="add">+</span> <code>IncomingBidCard</code> överst på Marknad (och som Portal-mark) — vem, deadline (<code>expiresRound</code>), motiv (<code>dreamClubId</code>/<code>loyaltyScore</code>), två CTA.</div>
+        <div class="diff-row"><span class="del">−</span> Degradera 🔥-badgen på Sälj till sekundär referens (behåll, men den är inte längre enda platsen).</div>
+        <div class="diff-row"><span class="add">+</span> Marknad-grupper: <code>slice(0,10)</code> + "+N fler"-rad.</div>
+        <div class="diff-row"><span class="lbl" style="letter-spacing:1px;">Wiring-krok: säljbeslut → <code>OpenThread(nemesis)</code> (se Wiring-del 5)</span></div>
+      </div>
+      <div class="rat" style="background:var(--bg-leather);">
+        <h4 style="color:var(--text-light);">Regressionsnot</h4>
+        <p style="color:var(--text-light-secondary);">Baseline på fyra fönster-tillstånd: <b>stängt</b>, <b>öppet utan bud</b>, <b>ett inkommande bud</b> (kortet syns), <b>flera bud</b>. Fångar att budkortet inte försvinner när fönstret växlar.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <div style="max-width:1000px;margin:44px auto 0;background:var(--bg-dark);border-radius:14px;padding:22px 26px;">
+    <div class="lbl" style="color:#DD9555;margin-bottom:8px;">Efter sex ytor — mönstret är tydligt</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+      <div><div style="color:var(--text-light);font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">Koden är stark</div><p style="color:var(--text-light-secondary);font-size:12px;line-height:1.55;margin:0;">Inget av gapet är ful CSS. Tabell och Inbox når redan kanon — de är mönsterbiblioteket.</p></div>
+      <div><div style="color:var(--text-light);font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">Gapet = komposition</div><p style="color:var(--text-light-secondary);font-size:12px;line-height:1.55;margin:0;">Ackumulering (Portal), tomma rubriker (Squad), avsaknad av kapitel (SeasonSummary), begravd händelse (Transfers).</p></div>
+      <div><div style="color:var(--text-light);font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">Två ytor rör visionen</div><p style="color:var(--text-light-secondary);font-size:12px;line-height:1.55;margin:0;">SeasonSummary↔History delar atom; Transfers är där öppna trådar börjar. Implementering och vision möts.</p></div>
+      <div><div style="color:#DD9555;font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">Baseline först, alltid</div><p style="color:var(--text-light-secondary);font-size:12px;line-height:1.55;margin:0;">Varje yta får sina tillstånds-snapshots före ombyggnad. <code style="background:rgba(255,255,255,.06);color:#e8b98a;">playwright.config.ts</code> finns redan.</p></div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:30px;color:var(--text-muted);font-size:11px;font-style:italic;font-family:Georgia,serif;">— Implementationsaudit del 2 · sex ytor granskade, mönstret hållet —</div>
+
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,12 +1,14 @@
 fact_id: D029
 category: design_principles
-claim: "Svårighetsgrad = reputation + expectationGap*(-12) + finansiell marginal-justering (-10 om <4x lönebudget, +5 om >=6x); tröskel easy>=75, medium>=50. Nedflyttningszon = RELEGATION_ZONE_SIZE=2 platser (konstant, delad mellan evaluateBoard och seasonEndProcessor)."
+claim: "Svårighetsgrad = reputation + expectationGap*(-12) + finansiell marginal-justering (-20 om <4.5x lönebudget, -5 om <5.5x, +5 om >=6x); tröskel easy>=75, medium>=50. Nedflyttningszon = RELEGATION_ZONE_SIZE=2 platser (konstant, delad mellan evaluateBoard och seasonEndProcessor)."
 value:
   DIFFICULTY_EASY_THRESHOLD: 75
   DIFFICULTY_MEDIUM_THRESHOLD: 50
   DIFFICULTY_GAP_PENALTY_PER_STEP: -12
-  DIFFICULTY_THIN_MARGIN_PENALTY: -10
-  DIFFICULTY_THIN_MARGIN_RATIO: 4
+  DIFFICULTY_THIN_MARGIN_PENALTY: -20
+  DIFFICULTY_THIN_MARGIN_RATIO: 4.5
+  DIFFICULTY_MILD_MARGIN_PENALTY: -5
+  DIFFICULTY_MILD_MARGIN_RATIO: 5.5
   DIFFICULTY_HEALTHY_MARGIN_BONUS: 5
   DIFFICULTY_HEALTHY_MARGIN_RATIO: 6
   RELEGATION_ZONE_SIZE: 2
@@ -16,7 +18,7 @@ source:
   type: design_decision
   decided_by: jacob
   doc: "src/domain/services/offerSelectionService.ts (computeDifficultyScore), src/domain/services/boardService.ts (RELEGATION_ZONE_SIZE, computeBoardPatienceUpdate, evaluateBoard AvoidBottom)"
-verified_at: 2026-08-17
+verified_at: 2026-08-25
 verified_by: code
 status: active
 invariants:
@@ -60,3 +62,24 @@ notes: |
   Varningszon (plats 9-10 av 12): ny, svag tålamodsstraff (-5, ingen
   failure-räknare) precis ovanför den faktiska zonen — trycket ska byggas
   upp innan klippan, inte bara vid den. Samma bredd som RELEGATION_ZONE_SIZE.
+
+  REVISION 2026-08-25 (Jacobs dom, efter H4-mätning 5 — RAPPORT_SURVIVE_
+  VERIFIERAD_OCH_ROGLE_TIERFRAGAN_2026-08-25.md): 2026-08-17-slutsatsen
+  ovan är INVALIDERAD av senare data, inte av ett kodfel. Mellan de två
+  datumen byggdes en hel serie styrelsemodell-kalibreringar (RUNNING_LOSS_
+  EXPECTATION_MULTIPLIER, tier-härledda styrelseobjektiv, meritbufferns
+  partiella skydd, Survive-tierns avskedsundantag) som tillsammans gjorde
+  licensnekan (ren finansiell marginal) till den FAKTISKT dominerande
+  avskedsorsaken för klubbar under rep ~55 — uppmätt, inte antaget: Rögle
+  100% avsked (15/20 licensnekan), Skutskär 85% (14/20 licensnekan). Den
+  gamla marginalbestraffningen (-10 under 4x) var för svag för att fånga
+  detta. Ny bestraffning: -20 under 4,5x (var -10 under 4x), ny mellanzon
+  -5 under 5,5x. Effekt på de tolv klubbmallarna: Rögle (score 50→30) och
+  Skutskär (52→32) flyttar medium→hard — motsatt riktning mot 2026-08-17-
+  fixet, men samma underliggande princip (marginalen ska spegla verklig
+  avskedsrisk). D029:s ursprungliga princip står kvar: en genuint sund
+  marginal (>=6x) skyddar fortfarande mot hard oavsett hur lågt ryktet är.
+  Löser INTE MidTable-klubbar vars höga avskedsfrekvens drivs av boardPatience-
+  formeln snarare än marginal (Söderfors 85%, Lesjöfors 90%, båda kvar
+  medium) — den vägen är avstängd för vidare kalibrering samma dag ("sluta
+  bygga i styrelsemodellen").

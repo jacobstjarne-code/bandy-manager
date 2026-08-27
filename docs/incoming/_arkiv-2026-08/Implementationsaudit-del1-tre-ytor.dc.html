@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+<script src="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/_ds_bundle.js"></script>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  html,body{margin:0;padding:0;background:#cfc7b6;}
+  *{box-sizing:border-box;}
+  a{color:var(--accent-deep);}
+  :root{--warm-light:#c8a058;--cold-light:#7095b8;}
+  code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.85em;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent-deep);padding:1px 5px;border-radius:4px;}
+  .phone{width:390px;background:var(--bg);border-radius:24px;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.26);border:1px solid rgba(0,0,0,.14);}
+  .ph-head{height:44px;background:var(--bg-dark);border-bottom:2px solid var(--accent);display:flex;align-items:center;justify-content:space-between;padding:0 14px;}
+  .lbl{font-family:system-ui,sans-serif;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
+  .cs{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;}
+  .rat{width:390px;background:var(--bg-dark);border-radius:12px;padding:16px 18px;color:var(--text-light-secondary);}
+  .rat h4{font-family:Georgia,serif;color:var(--text-light);font-size:15px;margin:0 0 8px;font-weight:700;}
+  .rat p{font-size:12.5px;line-height:1.55;margin:0 0 7px;}
+  .rat b{color:#DD9555;}
+  .diff{background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:390px;}
+  .diff-h{background:var(--bg-leather);color:var(--text-light);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;padding:9px 14px;}
+  .diff-row{padding:10px 14px;border-bottom:1px solid var(--border);font-size:12.5px;line-height:1.5;}
+  .diff-row:last-child{border:none;}
+  .del{color:var(--danger-text);}
+  .add{color:var(--success-light);}
+  .badge{position:absolute;top:-13px;left:20px;background:var(--accent);color:#fff;font-family:Georgia,serif;font-weight:800;font-size:13px;padding:2px 13px;border-radius:99px;box-shadow:0 3px 10px rgba(162,88,40,.4);}
+  .col{display:flex;flex-direction:column;gap:16px;width:390px;}
+  .before{position:relative;}
+  .before::after{content:'FÖRE — som det renderas nu';position:absolute;top:8px;right:10px;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--danger-text);background:color-mix(in srgb,var(--danger) 12%,transparent);padding:2px 7px;border-radius:99px;font-weight:700;z-index:5;}
+  .after{position:relative;}
+  .after::after{content:'EFTER — omkomponerad';position:absolute;top:8px;right:10px;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--success-light);background:color-mix(in srgb,var(--success) 14%,transparent);padding:2px 7px;border-radius:99px;font-weight:700;z-index:5;}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#cfc7b6;background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.22),transparent 45%);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text-primary);padding:34px 40px 130px;">
+
+  <!-- INTRO -->
+  <div style="max-width:1280px;margin:0 auto 30px;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-deep);font-weight:700;">Implementationsaudit · den ärliga vägen</div>
+    <h1 style="font-family:Georgia,serif;font-size:33px;font-weight:800;margin:8px 0 10px;letter-spacing:-.5px;">Tre ytor — verklighet, omkomposition, diff</h1>
+    <p style="font-size:14.5px;line-height:1.65;max-width:800px;margin:0 0 14px;color:var(--text-secondary);text-wrap:pretty;">Läst mot den riktiga koden (<code>PortalScreen.tsx</code>, <code>SquadScreen.tsx</code>, <code>TabellScreen.tsx</code>, <code>global.css</code>). Gapet du känner är <strong>inte ful CSS</strong> — token- och komponentlagret är disciplinerat. Gapet är <strong>komposition under riktig data</strong>: för mycket vill synas samtidigt. Därför är varje "efter" här byggd i husets <em>befintliga</em> tokens/klasser, och varje diff pekar på en riktig fil. Ingen ny färg uppfinns.</p>
+    <div style="max-width:800px;background:var(--bg-dark);border-radius:12px;padding:14px 18px;">
+      <div class="lbl" style="color:#DD9555;margin-bottom:6px;">Regel för hela auditen</div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--text-light-secondary);margin:0;">Varje "efter" måste (1) endast använda tokens/klasser som redan finns i <code style="background:rgba(255,255,255,.06);color:#e8b98a;">global.css</code>, (2) överleva de stökiga tillstånden (tom / lång / låst / tät), och (3) knytas till en regressions-baseline så den håller efter överlämning.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ YTA 1 · PORTAL ═══════════ -->
+  <section style="max-width:1320px;margin:0 auto 56px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+      <span style="font-family:Georgia,serif;font-size:26px;font-weight:800;color:var(--accent-deep);">01</span>
+      <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:800;margin:0;">Portal — ackumuleringen</h2>
+    </div>
+    <p style="font-size:13.5px;color:var(--text-secondary);max-width:820px;margin:0 0 24px;line-height:1.6;">Största upplevda gapet, och det är ren komposition. <code>PortalScreen</code> renderar upp till <strong>tolv</strong> mark-komponenter i följd före primary-kortet: <code>SituationCard · PhaseMark · Upptakt · SpectatorMark · AnniversaryMark · Beat · RoundMark · ObjectiveAlert · EventSlot · tutorial-frame · AnnandagsVal · Callup</code>. Var för sig fina; staplade blir det en vägg innan spelaren når det som betyder något.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+      <!-- FÖRE -->
+      <div class="col before">
+        <div class="phone">
+          <div class="ph-head"><span class="lbl" style="color:var(--text-light-secondary);">Forsbacka · nov</span><span class="lbl" style="color:var(--text-light-secondary);">omg 14</span></div>
+          <div style="background:#1a1612;padding:10px;display:flex;flex-direction:column;gap:6px;">
+            <div style="background:#221d18;border:1px solid #2a241e;border-radius:8px;padding:8px 10px;"><div class="lbl" style="color:#8a7a5a;">SituationCard</div><div style="color:#c4baa8;font-size:11px;">Läget: mittfält, lugnt</div></div>
+            <div style="background:#221d18;border-radius:8px;padding:7px 10px;color:#8a7a5a;font-size:11px;">PhaseMark · Förbered</div>
+            <div style="background:#221d18;border-radius:8px;padding:7px 10px;color:#8a7a5a;font-size:11px;">Upptakt</div>
+            <div style="background:#221d18;border-radius:8px;padding:7px 10px;color:#8a7a5a;font-size:11px;">AnniversaryMark · "3 år sedan…"</div>
+            <div style="background:#221d18;border-radius:8px;padding:7px 10px;color:#8a7a5a;font-size:11px;">PortalBeat · "Vinden river i flaggan"</div>
+            <div style="background:#221d18;border-radius:8px;padding:7px 10px;color:#8a7a5a;font-size:11px;">RoundMark · omg 14</div>
+            <div style="background:#221d18;border-radius:8px;padding:7px 10px;color:#8a7a5a;font-size:11px;">ObjectiveAlert</div>
+            <div style="background:#2a241e;border:1px solid rgba(196,122,58,.3);border-radius:8px;padding:10px;color:#e8b98a;font-size:12px;font-weight:600;">▸ Primary: Nästa match ← målet, långt ned</div>
+            <div style="background:#221d18;border-radius:8px;padding:7px 10px;color:#8a7a5a;font-size:11px;">QueueRail · 3 väntar</div>
+            <div style="background:#221d18;border-radius:8px;padding:7px 10px;color:#8a7a5a;font-size:11px;">Secondary ×3 · MinimalBar</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">Sju atmosfäriska rader innan primary-kortet. Alla är "sekundära" — men ingenting prioriterar mellan dem, så scrollen bär allt lika tungt.</div>
+      </div>
+
+      <!-- EFTER -->
+      <div class="col after">
+        <div class="phone">
+          <div class="ph-head"><span style="font-family:Georgia;color:var(--text-light);font-size:14px;">Forsbacka IF</span><span class="lbl" style="color:var(--text-light-secondary);">omg 14</span></div>
+          <div style="background:#1a1612;padding:12px;display:flex;flex-direction:column;gap:8px;">
+            <!-- ONE atmospheric line -->
+            <div style="display:flex;align-items:center;gap:8px;padding:2px 2px 4px;"><span style="color:#b8884c;font-size:11px;font-style:italic;font-family:Georgia;">Vinden river i flaggan. Målilla väntar.</span></div>
+            <!-- primary first -->
+            <div style="background:linear-gradient(180deg,#2a241e,#221d18);border:1px solid rgba(196,122,58,.35);border-radius:12px;padding:14px;">
+              <div class="lbl" style="color:#DD9555;margin-bottom:6px;">🏒 NÄSTA MATCH · HEMMA</div>
+              <div style="font-family:Georgia;color:var(--text-light);font-size:19px;font-weight:700;">Forsbacka — Målilla</div>
+              <div style="color:#c4baa8;font-size:12px;margin-top:2px;">Lör 15:00 · Stålvallen · 🔥 Derby</div>
+              <div style="display:flex;gap:6px;margin-top:10px;"><span style="background:rgba(196,122,58,.16);color:#e8b98a;font-size:9px;font-weight:600;padding:3px 9px;border-radius:99px;">V2 · O1 · F0</span><span style="background:rgba(126,179,212,.14);color:#9fc3dc;font-size:9px;font-weight:600;padding:3px 9px;border-radius:99px;">−4° klart</span></div>
+            </div>
+            <!-- collapsed rail: everything else, one line -->
+            <div style="background:rgba(196,122,58,.05);border:1px solid rgba(196,122,58,.18);border-radius:8px;padding:9px 11px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;"><span class="lbl" style="color:#b8884c;">Denna vecka</span><span style="font-family:ui-monospace;font-size:10px;color:#c4baa8;"><b style="color:#DD9555;">3</b> väntar</span></div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;"><span style="background:#221d18;border:1px solid rgba(196,122,58,.2);border-radius:99px;padding:4px 9px;font-size:9.5px;color:#c4baa8;">📋 Styrelsemål</span><span style="background:#221d18;border:1px solid rgba(196,122,58,.2);border-radius:99px;padding:4px 9px;font-size:9.5px;color:#c4baa8;">◷ 3 år sedan</span><span style="background:#221d18;border:1px solid rgba(196,122,58,.2);border-radius:99px;padding:4px 9px;font-size:9.5px;color:#c4baa8;">📬 2 nya</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <div style="background:#221d18;border:1px solid #2a241e;border-radius:8px;padding:9px 10px;"><div class="lbl" style="color:#8a7a5a;">Puls</div><div style="font-family:Georgia;color:#e8b98a;font-size:16px;font-weight:800;">68</div></div>
+              <div style="background:#221d18;border:1px solid #2a241e;border-radius:8px;padding:9px 10px;"><div class="lbl" style="color:#8a7a5a;">Kassa</div><div style="font-family:Georgia;color:var(--text-light);font-size:16px;font-weight:800;">412<span style="font-size:10px;color:#8a7a5a;"> tkr</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">En atmosfärsrad, primary överst, allt annat kollapsat i "Denna vecka"-raden. Samma komponenter, samma tokens — en prioritering.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:26px;align-items:flex-start;">
+      <div class="rat">
+        <h4>Vad auditen hittade</h4>
+        <p><b>Empty-marks staplas.</b> Flera marks renderar även när de har lite att säga. Designsystemets regel 12 ("tom struktur förbjuden") gäller varje kort — men <em>inte</em> summan av tolv nästan-tomma.</p>
+        <p><b>Ingen prioritetsbudget.</b> Inget avgör vilka 1–2 marks som får synas denna omgång. Alla passerar.</p>
+        <p><b>Primary hamnar under vikningen</b> på en fylld omgång — målet är längst bort.</p>
+      </div>
+      <div class="diff">
+        <div class="diff-h">Diff · PortalScreen.tsx (komposition, ej CSS)</div>
+        <div class="diff-row"><span class="add">+</span> Inför <code>selectPortalMarks(game)</code> → returnera max <strong>2</strong> marks efter vikt (situation &gt; årsdag &gt; beat).</div>
+        <div class="diff-row"><span class="del">−</span> De 7 ovillkorliga <code>&lt;Portal*Mark&gt;</code>-raderna i render; ersätt med den valda listan.</div>
+        <div class="diff-row"><span class="add">+</span> Flytta primary-kortet <strong>ovanför</strong> resterande marks; behåll ordning bara i "Denna vecka"-raden.</div>
+        <div class="diff-row"><span class="add">+</span> Ny <code>PortalWeekRail</code> (återanvänder <code>.portal-queue-*</code>-klasserna) som kollapsar QueueRail + kvarvarande marks.</div>
+        <div class="diff-row"><span class="lbl" style="letter-spacing:1px;">Noll nya tokens · noll nya färger · endast befintliga <code>--bg-portal-*</code></span></div>
+      </div>
+      <div class="rat" style="background:var(--bg-leather);">
+        <h4 style="color:var(--text-light);">Regressionsnot</h4>
+        <p style="color:var(--text-light-secondary);">Playwright-baseline på tre Portal-tillstånd: <b>tom vecka</b> (0 marks → bara primary), <b>normal</b> (1 mark), <b>full</b> (2 marks + rail). Fångar återfall till stapling.</p>
+        <p style="color:var(--text-light-secondary);">Mockanteckning: <em>Visad: november · routine primary · ingen signatur.</em> Byt månad → bakgrund skiftar; aktivera signatur → atmosfärsraden byter copy.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ YTA 2 · SQUAD NU ═══════════ -->
+  <section style="max-width:1320px;margin:0 auto 56px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+      <span style="font-family:Georgia,serif;font-size:26px;font-weight:800;color:var(--accent-deep);">02</span>
+      <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:800;margin:0;">Trupp · "Nu" — fyra rubriker som alltid syns</h2>
+    </div>
+    <p style="font-size:13.5px;color:var(--text-secondary);max-width:820px;margin:0 0 24px;line-height:1.6;">"Nu"-vyn renderar fyra fasta sektioner — <code>🚑 SKADADE · 🟥 AVSTÄNGDA · 😟 LÅG MORAL · 📄 KONTRAKT UTGÅR</code> — var och en med rubrik <em>även när tom</em> ("Ingen avstängd."). När allt är lugnt blir det fyra rubriker som säger "ingenting". Och <code>PlayerRow</code> i truppen skär ned till 3 chips ur ~9 möjliga — prioriteringen finns i koden men syns inte som hierarki.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+      <!-- FÖRE -->
+      <div class="col before">
+        <div class="phone">
+          <div class="ph-head"><span class="lbl" style="color:var(--text-light-secondary);">Trupp · Nu</span><span class="lbl" style="color:var(--text-light-secondary);">Forsbacka</span></div>
+          <div style="background:var(--bg);padding:12px;display:flex;flex-direction:column;gap:12px;">
+            <div><div class="lbl" style="color:var(--text-muted);margin-bottom:6px;">🚑 SKADADE</div><div class="cs" style="padding:10px 12px;color:var(--text-muted);font-size:12px;">Inga skadade just nu.</div></div>
+            <div><div class="lbl" style="color:var(--text-muted);margin-bottom:6px;">🟥 AVSTÄNGDA</div><div class="cs" style="padding:10px 12px;color:var(--text-muted);font-size:12px;">Ingen avstängd.</div></div>
+            <div><div class="lbl" style="color:var(--text-muted);margin-bottom:6px;">😟 LÅG MORAL</div><div class="cs" style="padding:10px 12px;color:var(--text-muted);font-size:12px;">Truppen är på topp.</div></div>
+            <div><div class="lbl" style="color:var(--text-muted);margin-bottom:6px;">📄 KONTRAKT UTGÅR</div><div class="cs" style="padding:10px 12px;color:var(--text-muted);font-size:12px;">Inga kontrakt löper ut.</div></div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">Fyra rubriker, fyra "ingenting". Vyn är som tyngst exakt när det finns minst att göra.</div>
+      </div>
+
+      <!-- EFTER -->
+      <div class="col after">
+        <div class="phone">
+          <div class="ph-head"><span class="lbl" style="color:var(--text-light-secondary);">Trupp · Nu</span><span class="lbl" style="color:var(--text-light-secondary);">Forsbacka</span></div>
+          <div style="background:var(--bg);padding:12px;display:flex;flex-direction:column;gap:10px;">
+            <!-- Season arc kept -->
+            <div class="cs" style="padding:11px 13px;background:var(--bg-leather);border:none;"><div class="lbl" style="color:#c9b89a;margin-bottom:3px;">SÄSONGENS BÅGE</div><div style="font-family:Georgia;font-style:italic;color:var(--text-light);font-size:13px;">Sjunde raka utan förlust. Orten börjar tro.</div></div>
+            <!-- collapsed calm state: one line -->
+            <div class="cs" style="padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;"></span>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">Truppen är hel</div><div style="font-size:11px;color:var(--text-muted);">Inga skador, avstängningar, moralfall eller utgående kontrakt.</div></div>
+            </div>
+            <!-- formation kept -->
+            <div><div class="lbl" style="margin-bottom:6px;">📋 FORMATION</div>
+              <div class="cs" style="padding:12px 14px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text-muted);">Nuvarande</span><span style="font-size:14px;font-weight:700;">3-3-4</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--text-muted);">Rekommenderad</span><span style="font-size:14px;font-weight:700;color:var(--success);">3-3-4</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">Lugnt läge = <strong>en</strong> grön statusrad, inte fyra tomma. När något brinner expanderar just den sektionen (nästa mockup).</div>
+      </div>
+
+      <!-- EFTER, aktivt läge -->
+      <div class="col after">
+        <div class="phone">
+          <div class="ph-head"><span class="lbl" style="color:var(--text-light-secondary);">Trupp · Nu</span><span class="lbl" style="color:var(--text-light-secondary);">omg 14</span></div>
+          <div style="background:var(--bg);padding:12px;display:flex;flex-direction:column;gap:10px;">
+            <div class="cs" style="padding:11px 13px;background:var(--bg-leather);border:none;"><div class="lbl" style="color:#c9b89a;margin-bottom:3px;">SÄSONGENS BÅGE</div><div style="font-family:Georgia;font-style:italic;color:var(--text-light);font-size:13px;">Två tunga besked inför derbyt.</div></div>
+            <!-- only what's actionable, with severity stripe -->
+            <div class="cs" style="padding:0;overflow:hidden;border-left:3px solid var(--danger);border-radius:0 8px 8px 0;">
+              <div style="padding:9px 12px;"><div class="lbl" style="color:var(--danger-text);margin-bottom:6px;">🚑 SKADADE · 1</div>
+                <div style="display:flex;align-items:center;gap:9px;"><span style="width:34px;height:34px;border-radius:50%;background:var(--border);flex-shrink:0;"></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;">Holmgren</div><div style="font-size:11px;color:var(--danger);">Ute ~2 veckor · vrist</div></div><span style="font-size:11px;color:var(--text-muted);">A</span></div>
+              </div>
+            </div>
+            <div class="cs" style="padding:0;overflow:hidden;border-left:3px solid var(--warm);border-radius:0 8px 8px 0;">
+              <div style="padding:9px 12px;"><div class="lbl" style="color:var(--warm-light);margin-bottom:6px;">📄 KONTRAKT UTGÅR · 1</div>
+                <div style="display:flex;align-items:center;gap:9px;"><span style="width:34px;height:34px;border-radius:50%;background:var(--border);flex-shrink:0;"></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;">Ohlsson</div><div style="font-size:11px;color:var(--warm-light);">Går ut i sommar</div></div><span style="font-size:11px;color:var(--text-muted);">MF</span></div>
+              </div>
+            </div>
+            <!-- calm categories collapsed to one line -->
+            <div style="display:flex;align-items:center;gap:8px;padding:2px 4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--success);"></span><span style="font-size:11px;color:var(--text-muted);">Avstängda &amp; moral: allt lugnt</span></div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">Aktivt läge: bara de sektioner som har något visas med rubrik + severity-stripe; de lugna kollapsar till en rad. Hierarki syns i formen.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:26px;align-items:flex-start;">
+      <div class="rat">
+        <h4>Vad auditen hittade</h4>
+        <p><b>Fyra ovillkorliga sektioner.</b> Koden renderar alltid alla fyra med rubrik, även de tomma. <code>allEmpty</code> visar redan <code>StillnessSection</code> — men bara när <em>alla</em> är tomma; blandat läge ger tomma rubriker mellan de fyllda.</p>
+        <p><b>Chip-prioritet är osynlig.</b> <code>allChips.slice(0,3)</code> döljer 6 möjliga utan att visa att det finns mer.</p>
+      </div>
+      <div class="diff">
+        <div class="diff-h">Diff · SquadScreen.tsx "Nu"-vyn</div>
+        <div class="diff-row"><span class="add">+</span> Rendera bara sektioner där <code>list.length &gt; 0</code>; räkna resten.</div>
+        <div class="diff-row"><span class="add">+</span> En <code>CalmRow</code> (grön dot + "allt lugnt: X, Y") för de tomma — ersätter fyra tomma kort.</div>
+        <div class="diff-row"><span class="del">−</span> De fyra ovillkorliga <code>&lt;div className="h-label"&gt;…&lt;/div&gt;</code>-blocken med sina <code>nuEmpty</code>-rader.</div>
+        <div class="diff-row"><span class="add">+</span> PlayerRow: när &gt;3 chips, visa 3 + <code>+N</code>-pill (samma <code>chipStyle</code>).</div>
+        <div class="diff-row"><span class="lbl" style="letter-spacing:1px;">Återanvänder <code>.card-sharp</code>, severity-stripe-mönstret (<code>stripeColor</code>) &amp; <code>.h-label</code></span></div>
+      </div>
+      <div class="rat" style="background:var(--bg-leather);">
+        <h4 style="color:var(--text-light);">Regressionsnot</h4>
+        <p style="color:var(--text-light-secondary);">Baseline på tre lag-tillstånd: <b>helt lugnt</b> (1 rad), <b>blandat</b> (1 skada + 1 kontrakt, resten kollapsat), <b>kris</b> (alla fyra aktiva). Skyddar mot att tomma rubriker smyger tillbaka.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ YTA 3 · TABELL ═══════════ -->
+  <section style="max-width:1320px;margin:0 auto 30px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+      <span style="font-family:Georgia,serif;font-size:26px;font-weight:800;color:var(--accent-deep);">03</span>
+      <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:800;margin:0;">Tabell — närmast kanon redan</h2>
+    </div>
+    <p style="font-size:13.5px;color:var(--text-secondary);max-width:820px;margin:0 0 24px;line-height:1.6;">Ärligt: den här är <strong>redan stark</strong>. Zonstreck (slutspel/nedflyttning), form-dots, positionspilar, vi-stripe, expander med H2H och karriärhistorik — allt token-drivet och stramt. Jag skulle inte rita om den. De två små sakerna auditen hittar är hierarki i statistik-fliken och en tät radhöjd.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+      <div class="col after" style="width:390px;">
+        <div class="phone">
+          <div class="ph-head"><span class="lbl" style="color:var(--text-light-secondary);">Tabell</span><span class="lbl" style="color:var(--text-light-secondary);">omg 14</span></div>
+          <div style="background:var(--bg);padding:10px 12px;">
+            <div class="cs" style="padding:9px 13px;margin-bottom:8px;"><div style="font-size:12px;color:var(--accent);font-weight:700;">3. plats · I slutspelszonen · 4p till ledaren</div></div>
+            <div style="display:grid;grid-template-columns:20px 26px 1fr 40px 24px;gap:4px;padding:5px 10px;background:var(--bg-dark-surface);border-radius:8px;margin-bottom:4px;"><span class="lbl" style="color:#c4baa8;">#</span><span></span><span class="lbl" style="color:#c4baa8;">Lag</span><span class="lbl" style="color:#c4baa8;text-align:center;">Form</span><span class="lbl" style="color:#c4baa8;text-align:right;">P</span></div>
+            <div class="cs" style="overflow:hidden;">
+              <div style="display:grid;grid-template-columns:20px 26px 1fr 40px 24px;gap:4px;padding:7px 10px;align-items:center;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 5%,transparent);"><span style="font-size:13px;font-weight:700;color:var(--accent);">1</span><span style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#6a86b0,#2c4066);"></span><span style="font-size:13px;font-weight:500;">Slottsbron</span><span style="display:flex;gap:2px;justify-content:center;"><span style="width:7px;height:7px;border-radius:50%;background:var(--success);"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--success);"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);"></span></span><span style="font-size:13px;font-weight:700;text-align:right;">30</span></div>
+              <div style="display:grid;grid-template-columns:20px 26px 1fr 40px 24px;gap:4px;padding:7px 10px;align-items:center;border-top:1px solid var(--border);border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent);"><span style="font-size:13px;font-weight:700;color:var(--accent);">3</span><span style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#c78a3a,#7a3f14);"></span><span style="font-size:13px;font-weight:700;color:var(--accent);">★ Forsbacka 🔥</span><span style="display:flex;gap:2px;justify-content:center;"><span style="width:7px;height:7px;border-radius:50%;background:var(--success);"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--success);"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--success);"></span></span><span style="font-size:13px;font-weight:700;text-align:right;color:var(--accent);">26</span></div>
+              <div class="lbl" style="padding:5px 10px;border-top:1px solid color-mix(in srgb,var(--accent) 40%,transparent);color:color-mix(in srgb,var(--accent) 60%,transparent);background:color-mix(in srgb,var(--accent) 3%,transparent);margin:0;">━━ Slutspelsstrecket ━━</div>
+              <div style="display:grid;grid-template-columns:20px 26px 1fr 40px 24px;gap:4px;padding:7px 10px;align-items:center;border-top:1px solid var(--border);"><span style="font-size:13px;font-weight:700;color:var(--text-muted);">9</span><span style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#5a8a5a,#2f5a2f);"></span><span style="font-size:13px;">Söderfors</span><span style="display:flex;gap:2px;justify-content:center;"><span style="width:7px;height:7px;border-radius:50%;background:var(--danger);"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--success);"></span></span><span style="font-size:13px;font-weight:700;text-align:right;">17</span></div>
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:8px;">Tryck en rad för H2H &amp; karriärhistorik</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:0 4px;">Behålls i stort sett som den är — den lever redan upp till kanon. Detta är "efter" = "nästan som förut".</div>
+      </div>
+
+      <div class="rat">
+        <h4>De två små sakerna</h4>
+        <p><b>Statistik-fliken staplar 5 <code>StatTable</code></b> (toppskytt, assist, hörnmål, betyg, utvisningsmin) med lika vikt. Överväg en primär (toppskytt, öppen) + fyra hopfällbara — eller en segmenterad väljare.</p>
+        <p><b>Radhöjden 6px padding</b> på 12 lag + zonstreck kan bli tight på 375px. En 7px-höjd testas mot baseline.</p>
+        <p style="color:#9fcf8a;"><b>Slutsats:</b> lämna motorn i fred. Detta är beviset på att teamet <em>kan</em> nå kanon — Tabell gör det redan.</p>
+      </div>
+      <div class="diff">
+        <div class="diff-h">Diff · TabellScreen.tsx (litet)</div>
+        <div class="diff-row"><span class="add">+</span> Statistik: <code>defaultOpen</code> på första <code>StatTable</code>, övriga i <code>&lt;details&gt;</code> eller segmenterad väljare (<code>.btn-segmented</code> finns).</div>
+        <div class="diff-row"><span class="lbl" style="letter-spacing:1px;">Tabell-fliken: ingen strukturell ändring. Endast baseline-lås.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <div style="max-width:1000px;margin:44px auto 0;background:var(--bg-dark);border-radius:14px;padding:22px 26px;">
+    <div class="lbl" style="color:#DD9555;margin-bottom:8px;">Så här undviker vi gapet nästa gång</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;">
+      <div><div style="color:var(--text-light);font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">1 · Mockup = spec</div><p style="color:var(--text-light-secondary);font-size:12px;line-height:1.55;margin:0;">Varje "efter" namnger befintliga tokens/klasser. Ny färg måste försvaras mot de tre principerna.</p></div>
+      <div><div style="color:var(--text-light);font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">2 · Rita de stökiga tillstånden</div><p style="color:var(--text-light-secondary);font-size:12px;line-height:1.55;margin:0;">Tom / lång / låst / tät — inte bara hjälte-ögonblicket. Där bor gapet.</p></div>
+      <div><div style="color:var(--text-light);font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">3 · Diff mot riktig fil</div><p style="color:var(--text-light-secondary);font-size:12px;line-height:1.55;margin:0;">Varje ändring pekar på en komponent + rad, inte "gör det snyggare".</p></div>
+      <div><div style="color:var(--text-light);font-weight:700;font-size:13px;font-family:Georgia;margin-bottom:3px;">4 · Baseline låser</div><p style="color:var(--text-light-secondary);font-size:12px;line-height:1.55;margin:0;">Playwright-snapshot per tillstånd så ackumulering inte kryper tillbaka.</p></div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:30px;color:var(--text-muted);font-size:11px;font-style:italic;font-family:Georgia,serif;">— Implementationsaudit · komposition, inte kosmetik —</div>
+
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+<script src="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/_ds_bundle.js"></script>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  html,body{margin:0;padding:0;background:#cfc7b6;}
+  *{box-sizing:border-box;}
+  :root{--warm:#8c6e3a;--warm-light:#c8a058;--cold:#4a6680;}
+  a{color:var(--accent-deep);}
+  code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.84em;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent-deep);padding:1px 5px;border-radius:4px;}
+  .phone{width:330px;background:var(--bg);border-radius:22px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.26);border:1px solid rgba(0,0,0,.14);flex-shrink:0;}
+  .pbody{padding:13px;min-height:150px;}
+  .lbl{font-family:system-ui;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
+  .seclbl{font-family:system-ui;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-secondary);}
+  .quote{font-family:Georgia,serif;font-style:italic;}
+  .btn-o{border:1.5px solid var(--accent);color:var(--accent-dark);font-size:12px;font-weight:600;padding:9px 12px;border-radius:8px;text-align:center;background:transparent;}
+  .btn-p{background:linear-gradient(180deg,#DD9555,#8B4820);color:#fff;font-size:12px;font-weight:700;padding:9px 12px;border-radius:8px;text-align:center;box-shadow:0 2px 8px rgba(162,88,40,.34);}
+  .cs{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;}
+  .rat{width:330px;background:var(--bg-dark);border-radius:12px;padding:15px 17px;color:var(--text-light-secondary);}
+  .rat h4{font-family:Georgia,serif;color:var(--text-light);font-size:14px;margin:0 0 7px;font-weight:700;}
+  .rat p{font-size:12px;line-height:1.55;margin:0 0 7px;}
+  .rat b{color:#DD9555;}
+  .tier-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 9px;border-radius:99px;}
+  .rec{background:var(--success);color:#fff;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:99px;}
+</style>
+</helmet>
+
+<section style="min-height:100vh;background:#cfc7b6;background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.22),transparent 45%);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text-primary);padding:34px 40px 130px;">
+
+  <!-- INTRO -->
+  <div style="max-width:1200px;margin:0 auto 30px;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-deep);font-weight:700;">Designuppdrag · D1 · eventköns viktning</div>
+    <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:800;margin:8px 0 10px;letter-spacing:-.5px;">Tre vikter — utan en fjärde ceremoni</h1>
+    <p style="font-size:14px;line-height:1.65;max-width:840px;margin:0 0 14px;color:var(--text-secondary);text-wrap:pretty;">Idag renderas varje event lika tungt: samma <code>DecisionCard</code>, samma plats i kön, oavsett om det är väderprat eller en spelare som vill lämna. D1 ger kön <strong>tre vikter</strong> (ambient · normal · pivotal) plus en <strong>konsekvensnivå</strong> på valen inuti kortet. Nyckeln: <code>DecisionCard</code> har redan <code>shape: none | sharp | round</code> och <code>size: sm | lg</code> — vikterna är inte nya komponenter, de är de lägen som redan finns, kopplade till eventets tyngd. Grundat mot körande app (<code>b7d133f</code>). Referera som <a href="#1a">1a</a>, <a href="#1b">1b</a>, <a href="#1c">1c</a>.</p>
+    <div style="max-width:840px;background:var(--bg-dark);border-radius:12px;padding:13px 17px;">
+      <div class="lbl" style="color:#DD9555;margin-bottom:6px;">Mitt anrop</div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--text-light-secondary);margin:0;"><b style="color:#DD9555;">Ambient = ingen kort alls</b> (en PortalBeat-rad, <code>shape:none</code>), <b style="color:#DD9555;">normal = <code>card-sharp</code></b> i flödet, <b style="color:#DD9555;">pivotal = <code>card-round</code>+<code>lg</code> men INTE full scen</b> — den väger via mörkad backdrop + kopparram + en enda rad "därför nu", inte via en hero. Konsekvensnivån är en diskret markör på valet, aldrig matchresultat-tyngd. Det håller D1 till progressiv tyngd, inte till en fjärde ceremoni.</p>
+    </div>
+  </div>
+
+  <!-- THE THREE TIERS -->
+  <div id="1a" style="max-width:1240px;margin:0 auto 10px;"><div class="lbl" style="font-size:11px;color:var(--accent-deep);">▎De tre vikterna — ett system, inte tre val</div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;max-width:1240px;margin:0 auto 46px;">
+
+    <!-- AMBIENT -->
+    <div style="display:flex;flex-direction:column;gap:12px;width:330px;">
+      <div>
+        <span class="tier-tag" style="background:color-mix(in srgb,var(--ice) 16%,transparent);color:var(--cold);">Ambient</span>
+        <div style="font-family:Georgia,serif;font-size:17px;font-weight:800;margin-top:6px;">Ingen kort — en rad</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Väder, stämning, bakgrund. Läses, inte beslutas.</div>
+      </div>
+      <div class="phone">
+        <div class="pbody" style="min-height:auto;">
+          <div class="lbl" style="margin-bottom:8px;">🏒 Portalen · omg 14</div>
+          <!-- PortalBeat ambient line -->
+          <div style="background:var(--bg-surface);border-radius:8px;padding:9px 12px;margin-bottom:6px;">
+            <div class="quote" style="font-size:13px;color:var(--text-secondary);line-height:1.45;">Vinden river i flaggan. Snö väntas till lördag.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:2px 4px;">
+            <span style="width:5px;height:5px;border-radius:50%;background:var(--ice);flex-shrink:0;"></span>
+            <span style="font-size:11.5px;color:var(--text-muted);">Kioskkön ringlade lång. Bygden lever.</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;">Ambient <b>är inte ett kort och har inga knappar</b> — det är PortalBeat-raden + ev. en dämpad rad i flödet. Ingen kö-plats, inget "N kvar". Om det inte kräver ett val ska det aldrig bära en kortram.</div>
+    </div>
+
+    <!-- NORMAL -->
+    <div id="1b" style="display:flex;flex-direction:column;gap:12px;width:330px;">
+      <div>
+        <span class="tier-tag" style="background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent-deep);">Normal</span> <span class="rec">Vardagsvikten</span>
+        <div style="font-family:Georgia,serif;font-size:17px;font-weight:800;margin-top:6px;">card-sharp i flödet</div>
+        <div style="font-size:12px;color:var(--text-secondary);">De flesta beslut. Ett kort, två val.</div>
+      </div>
+      <div class="phone">
+        <div class="pbody">
+          <div class="cs" style="padding:10px 12px;">
+            <div class="seclbl" style="margin-bottom:6px;">📬 Kontraktsfråga</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary);line-height:1.3;margin-bottom:5px;">Åberg vill förlänga</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.45;margin-bottom:8px;">Rutinerad back, 34 år. Vill ha ett år till på nuvarande lön.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+              <span style="font-size:11px;border-radius:99px;padding:3px 8px;font-weight:600;background:color-mix(in srgb,var(--accent) 10%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);color:var(--accent);">Åberg · Styrka 71</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div class="btn-o" style="text-align:left;">Förläng ett år</div>
+              <div class="btn-o" style="text-align:left;">Tacka nej</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;">Oförändrad vardagsvikt — <code>card-sharp</code>, <code>size:sm</code>, <code>shape:sharp</code>. Detta är kön idag; D1 rör den inte, bara ramar in de andra två runt den.</div>
+    </div>
+
+    <!-- PIVOTAL -->
+    <div id="1c" style="display:flex;flex-direction:column;gap:12px;width:330px;">
+      <div>
+        <span class="tier-tag" style="background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--accent-deep);">Pivotal</span>
+        <div style="font-family:Georgia,serif;font-size:17px;font-weight:800;margin-top:6px;">card-round · väger, ceremoniar ej</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Sällsynt. Ett beslut som ändrar banan.</div>
+      </div>
+      <div class="phone">
+        <div style="background:rgba(0,0,0,.55);padding:22px 16px 16px;min-height:150px;">
+          <!-- pivotal = round card on dark backdrop, copper ring, one "därför nu" line -->
+          <div style="background:var(--bg);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.3);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent),0 10px 40px rgba(0,0,0,.4);padding:18px 17px;">
+            <div class="lbl" style="color:var(--accent-deep);margin-bottom:3px;">💼 Rogle · bud</div>
+            <div style="font-size:10px;color:var(--accent-deep);font-style:italic;margin-bottom:9px;">Detta avgör din bästa ungdoms framtid.</div>
+            <div style="font-family:Georgia,serif;font-size:17px;font-weight:800;color:var(--text-primary);line-height:1.1;margin-bottom:7px;">Rogle vill köpa Ohlsson</div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:11px;">3,2 mkr för din egenfostrade 19-åring. Han drömmer om spel högre upp — men klacken har redan gjort honom till sin.</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div class="btn-o" style="text-align:left;">Förhandla <span style="display:block;font-size:10px;color:var(--text-muted);font-weight:400;margin-top:1px;">Möt budet, be om mer</span></div>
+              <div class="btn-o" style="text-align:left;border-color:var(--danger);color:var(--danger);">Sälj — och plantera ett groll <span style="display:block;font-size:10px;color:var(--text-muted);font-weight:400;margin-top:1px;">⚠ Permanent · nemesis om 2 säsonger</span></div>
+              <div class="btn-p" style="text-align:left;">Behåll &amp; förläng</div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:8px;font-size:12px;color:rgba(255,255,255,.5);">Ett avgörande väntar</div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;">Pivotal = <code>shape:round</code> + <code>size:lg</code> + mörk backdrop (finns i EventOverlay) + <b>kopparram</b> + <b>en kursiv "därför nu"-rad</b>. Tyngden kommer av ram och backdrop, inte av en trofé-hero — det skiljer den från SM-final-scenen.</div>
+    </div>
+  </div>
+
+  <!-- FOUR QUESTIONS -->
+  <div style="max-width:1240px;margin:0 auto 16px;"><div class="lbl" style="font-size:11px;color:var(--accent-deep);">▎Svar på briefens fyra frågor</div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:16px;max-width:1240px;margin:0 auto 40px;">
+    <div class="rat"><h4>1 · Ambient när det inte är ett kort</h4><p>En <b>PortalBeat-rad</b> (väder/stämning) eller en dämpad flödesrad med en liten <code>--ice</code>-dot. Ingen ram, inga knappar, ingen kö-räknare. Regeln: <b>saknar val → saknar kort.</b> Det tömmer kön på brus så normal/pivotal får sin tyngd tillbaka.</p></div>
+    <div class="rat"><h4>2 · Pivotal utan fjärde ceremoni</h4><p>Återanvänd EventOverlays mörka backdrop + <code>card-round/lg</code>, lägg till <b>kopparram + en "därför nu"-rad</b>. Ingen egen bakgrundsbild, ingen trofé, ingen full-bleed. Den <em>markerar</em> att något stort avgörs — den <em>firar</em> inte. Firandet är scenernas jobb (SMFinalVictoryScene).</p></div>
+    <div class="rat"><h4>3 · Hur mycket får konsekvensnivåerna skilja?</h4><p>Konsekvens visas som <b>en markör på valet</b>, inte som olika kortvikt: neutral = ingen markör, tung = <code>⚠</code> + en rad ("Permanent · nemesis om 2 säsonger"), i <code>--danger</code>. <b>Taket:</b> markören får aldrig ändra kortets ram, storlek eller bakgrund — då slutar korten i samma kö höra ihop. Samma lärdom som eventvikterna mellan skärmar (D1) och Granskas inline-rytm (Å7).</p></div>
+    <div class="rat"><h4>4 · En batch av tre normal-beslut</h4><p>Inte tre modaler i följd. En <b>stapel av <code>card-sharp</code></b> under en räknare ("3 beslut denna vecka · 1/3"), 3px mellanrum, samma vikt. Se stapeln nedan. Pivotal bryter alltid ut ur stapeln till egen backdrop; ambient hamnar aldrig i den.</p></div>
+  </div>
+
+  <!-- BATCH OF THREE -->
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;max-width:1240px;margin:0 auto 44px;">
+    <div style="display:flex;flex-direction:column;gap:12px;width:330px;">
+      <div style="font-family:Georgia,serif;font-size:17px;font-weight:800;">Batch · tre normal i rad</div>
+      <div class="phone">
+        <div class="pbody">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span class="seclbl">📬 Denna vecka</span>
+            <span style="font-family:Georgia,serif;font-size:12px;color:var(--text-secondary);">1 / 3</span>
+          </div>
+          <div style="display:flex;gap:3px;margin-bottom:9px;">
+            <span style="flex:1;height:3px;border-radius:99px;background:var(--accent);"></span>
+            <span style="flex:1;height:3px;border-radius:99px;background:var(--border);"></span>
+            <span style="flex:1;height:3px;border-radius:99px;background:var(--border);"></span>
+          </div>
+          <div class="cs" style="padding:10px 12px;margin-bottom:3px;">
+            <div class="seclbl" style="margin-bottom:5px;">📋 Kontrakt</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">Åberg vill förlänga</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div class="btn-o" style="text-align:left;">Förläng ett år</div>
+              <div class="btn-o" style="text-align:left;">Tacka nej</div>
+            </div>
+          </div>
+          <div class="cs" style="padding:9px 12px;margin-bottom:3px;opacity:.5;">
+            <div class="seclbl" style="margin-bottom:3px;">🏋️ Träning</div>
+            <div style="font-size:12px;color:var(--text-secondary);">Väntar…</div>
+          </div>
+          <div class="cs" style="padding:9px 12px;opacity:.5;">
+            <div class="seclbl" style="margin-bottom:3px;">🔍 Scouting</div>
+            <div style="font-size:12px;color:var(--text-secondary);">Väntar…</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);line-height:1.5;">Ett aktivt kort i taget, de väntande dämpade under. Räknaren + progress­streck ger rytm utan tre fullskärmar. Ersätter EventOverlays "N händelser kvar" med en synlig kö.</div>
+    </div>
+
+    <!-- Å7 FIX + notes -->
+    <div style="flex:1;min-width:330px;display:flex;flex-direction:column;gap:14px;">
+      <div class="cs" style="padding:15px 17px;">
+        <div class="lbl" style="color:var(--danger-text);margin-bottom:8px;">Å7 · mätbar bugg (ingår)</div>
+        <div style="font-size:12.5px;line-height:1.6;color:var(--text-secondary);">
+          <p style="margin:0 0 8px;">Granskas inline-beslut fick samma fullbredds staplade outline-val som matchresultatet → lika tungt som resultatet. Det är eventvikterna på en specifik yta: inline-beslut på Granska ska rendera som <b>normal</b>-vikt, aldrig konkurrera med scoreblocket.</p>
+          <p style="margin:0;">Och den konkreta dubbelpaddingen: <code>DecisionCard</code> med <code>shape:sharp</code> sätter <code>padding:10px 12px</code> <em>inuti</em> <code>.card-sharp</code> som redan padder → dubbel. Fix: låt skalet inte pinna egen padding när klassen redan bär den, eller använd <code>shape:none</code> inne i ett kort som redan är <code>card-sharp</code>.</p>
+        </div>
+      </div>
+      <div class="rat" style="width:auto;">
+        <h4>Kartläggning till koden</h4>
+        <p><b>Ingen ny komponent.</b> Vikterna är en <code>weight: 'ambient'|'normal'|'pivotal'</code> på <code>GameEvent</code> → mappas: ambient ⇒ PortalBeat (ingen DecisionCard), normal ⇒ <code>shape:sharp/size:sm</code>, pivotal ⇒ <code>shape:round/size:lg</code> + backdrop + kopparram.</p>
+        <p><b>Konsekvens</b> = fält på <code>EventChoice</code> (<code>consequence?: 'permanent'|'heavy'</code>) → <code>DecisionChoices</code> ritar <code>⚠</code> + subtitle i <code>--danger</code>. Passivt tills tryck (Granska del 4 gäller). <span style="color:#DD9555;">[Opus]</span> äger "därför nu"-raden och konsekvens-copyn.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:20px;color:var(--text-muted);font-size:11px;font-style:italic;font-family:Georgia,serif;">— D1 · tre vikter på en spine som redan finns —</div>
+
+</section>
+</x-dc>
+</body>
+</html>
