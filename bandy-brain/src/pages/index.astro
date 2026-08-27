@@ -1,27 +1,39 @@
 ---
 import Base from '../layouts/Base.astro';
 import { loadFacts } from '../lib/facts';
-import { latestFinding } from '../data/findings';
+import { latestFinding, findings } from '../data/findings';
 
 const facts = loadFacts();
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const statsCount = facts.filter(f => f.category === 'stats').length;
 const rulesCount = facts.filter(f => f.category === 'rules').length;
 const latest = latestFinding;
+
+// Kuraterad ingång för nya läsare — fem findings som bär helheten.
+const startHere = [
+  { num: '052', why: 'Utvisningarna ökade 16 % — reformen 2025-26 syns i datan.' },
+  { num: '063', why: 'Och ökningen är bred: åtta av tio domare höjde sin egen takt.' },
+  { num: '056', why: 'Dam och herr är samma sport med skild struktur — hemmafördelen finns bara på herrsidan.' },
+  { num: '060', why: 'En tvåmålsledning är inte säker förrän minut 84. Bandy är en comeback-sport.' },
+  { num: '062', why: 'En division ner är samma sport — Allsvenskan har samma dramaturgi som Elitserien.' },
+].map(s => ({ ...s, f: findings.find(f => f.num === s.num) })).filter(s => s.f);
 ---
 
 <Base title="Bandy-Brain">
   <section class="hero">
     <div class="hero__inner">
       <p class="hero__kicker">Datadriven bandyanalys</p>
-      <h1 class="hero__title">Mönster i verklig bandydata — och i tusentals simulerade matcher</h1>
+      <h1 class="hero__title">Vad 2 000 bandymatcher vet som vi inte visste</h1>
       <p class="hero__body">
-        Bandy Brain letar systematiskt efter mönster i Elitseriens verkliga
-        matchdata från Bandygrytan — comeback-fönster, domarreformer,
-        matchtemperatur, spelstil. Där verklig data tar slut kompletterar
-        Bandy Managers simuleringsmotor, som kan köra tusentals matcher på ett
-        dygn. Inget är verifierat mot bandykunskap ännu; se det som en
-        idégenerator, inte färdiga slutsatser.
+        Bandy Brain letar systematiskt efter mönster i Elitseriens och
+        Allsvenskans verkliga matchdata från Bandygrytan — när matcher avgörs,
+        vad utvisningar kostar, hur domarreformer slår igenom, vad som skiljer
+        dam från herr. Där verklig data tar slut kompletterar Bandy Managers
+        simuleringsmotor, som är kalibrerad mot samma matchdata. Varje finding
+        redovisar metod, osäkerhet och begränsningar — och när vi haft fel
+        står felet kvar, markerat och förklarat. Inget är ännu verifierat av
+        bandykunniga; se sajten som en idégenerator som söker sina första
+        kritiska läsare, inte som färdiga slutsatser.
       </p>
       <a href={`${base}/findings/`} class="hero__cta">Läs findings →</a>
     </div>
@@ -29,6 +41,20 @@ const latest = latestFinding;
 
   <div class="page-container">
     <div style="max-width: 720px">
+
+      <section style="margin-bottom: 3rem">
+        <h2 style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-muted); margin-bottom: 1.5rem; font-weight: 700;">
+          Börja här — fem findings som bär helheten
+        </h2>
+        <ol style="font-family: var(--font-ui); font-size: 0.92rem; line-height: 1.6; padding-left: 1.2rem; margin: 0;">
+          {startHere.map(s => (
+            <li style="margin-bottom: 0.9rem;">
+              <a href={`${base}/findings/${s.num}/`} style="font-weight: 600;">{s.f.title}</a>
+              <span style="color: var(--color-muted); display: block;">{s.why}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <section style="margin-bottom: 3rem">
         <h2 style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-muted); margin-bottom: 1.5rem; font-weight: 700;">
