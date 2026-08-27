@@ -238,6 +238,19 @@ export interface SaveGame {
   pendingScreen?: PendingScreen | null
   seasonSummaries: SeasonSummary[]
   seasonStartFinances?: number  // club finances at season start
+  /** A-H1 (SEXSÄSONGSAUDITEN 2026-08-26, spår 2 rot a — "ett fält med flera
+   *  semantiker"): managedClub.boardExpectation stegas till NÄSTA säsongs
+   *  krav i seasonEndProcessor.ts INNAN generateSeasonSummary läser den —
+   *  årsboken/historiken riskerade då att döma den AVSLUTADE säsongen mot
+   *  ett krav som aldrig gällde under den. Samma mönster som seasonStartFinances
+   *  ovan: satt i createNewGame.ts (initialt boardExpectation) och skrivs om
+   *  i seasonEndProcessor.ts EFTER att generateSeasonSummary/generateSeasonVerdict/
+   *  computeBoardPatienceUpdate redan läst det gamla värdet, till klubbens nya
+   *  (stegade) boardExpectation — som då blir "säsongsstart" för NÄSTA
+   *  varv. Alla retrospektiva ytor (årsbok, historik, styrelsebetyg-kortet,
+   *  avskedsbeslutet) läser detta fältet, aldrig club.boardExpectation direkt,
+   *  eftersom det senare kan redan vara framåtstegat vid läsningstillfället. */
+  seasonStartBoardExpectation?: ClubExpectation
 
   scoutReports: Record<string, ScoutReport>    // key = playerId
   activeScoutAssignment: ScoutAssignment | null

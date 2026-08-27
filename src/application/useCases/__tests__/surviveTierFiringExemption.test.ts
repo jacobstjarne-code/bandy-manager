@@ -34,6 +34,12 @@ function makeBase(expectation: ClubExpectation): SaveGame {
   return {
     ...game,
     clubs: game.clubs.map(c => c.id === game.managedClubId ? { ...c, boardExpectation: expectation } : c),
+    // A-H1: seasonEndProcessor.ts läser nu game.seasonStartBoardExpectation
+    // (den frusna säsongsstarts-förväntan), inte längre club.boardExpectation
+    // live, för retrospektiva beräkningar som denna avskedskontrollen. Måste
+    // sättas i lås med overriden ovan, annars läses createNewGame's default
+    // (club_heros' mall-värde Survive) istf testets avsedda `expectation`.
+    seasonStartBoardExpectation: expectation,
     boardPatience: -500,
   }
 }

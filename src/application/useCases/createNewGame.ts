@@ -354,6 +354,8 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     onboardingComplete: false,
     onboardingScreen: 'arrival',
     seasonStartFinances: managedClub.finances,
+    // A-H1: fryser säsongens boardExpectation vid start — se SaveGame.ts.
+    seasonStartBoardExpectation: managedClub.boardExpectation,
     financeLog: [],
     storylines: [],
     clubLegends: [],

@@ -117,6 +117,12 @@ function makeGameWithResult(
   const managedIdx = game.clubs.findIndex(c => c.id === game.managedClubId)
   const clubs = [...game.clubs]
   clubs[managedIdx] = { ...clubs[managedIdx], boardExpectation: expectation }
+  // A-H1 (DOM_AH1..., SEXSÅNGSAUDITEN 2026-08-26): generateSeasonSummary läser
+  // nu game.seasonStartBoardExpectation (frusen vid säsongsstart av
+  // createNewGame.ts/seasonEndProcessor.ts) före club.boardExpectation — den
+  // här fixturen måste sätta BÅDA, annars läser summary den frusna
+  // ursprungsförväntan från createNewGame istf testets avsedda expectation.
+  const seasonStartBoardExpectation = expectation
 
   // Build a full standings table with the managed club pinned at
   // finalPosition and every other club filling the remaining slots in a
@@ -138,6 +144,7 @@ function makeGameWithResult(
     ...game,
     clubs,
     standings,
+    seasonStartBoardExpectation,
     playoffBracket: opts.isChampion
       ? { season: game.currentSeason, status: 'complete' as never, quarterFinals: [], semiFinals: [], final: null, champion: game.managedClubId }
       : undefined,
