@@ -25,6 +25,7 @@ import { useGameStore } from '../../store/gameStore'
 import { getActionsForEvent } from '../../../domain/services/eventActions'
 import { getItemAge } from '../../../domain/services/decisionFatigueService'
 import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
+import { getEventTypeMeta } from '../../../domain/data/eventTypeLabels'
 import { DecisionChoices } from '../DecisionChoices'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { Player } from '../../../domain/entities/Player'
@@ -75,48 +76,16 @@ interface Props {
 /**
  * Exporterad (D1, 2026-08-19) så AmbientEventRow.tsx kan återanvända samma
  * emoji+etikett-mappning — en källa, inte en dubblett (Port 4).
+ *
+ * A-M3 (SEXSÄSONGSAUDITEN 2026-08-26): läste tidigare en egen switch med
+ * bara 17/49 GameEventType-fall (generisk '📋 HÄNDELSE'-fallback för
+ * resten — läckte aldrig rått här, men dubblerade PortalQueueRail.tsx:s
+ * SOURCE_META-logik, som VAR hålig). Läser nu den exhaustiva
+ * src/domain/data/eventTypeLabels.ts — en sanning, delad av båda ytorna.
  */
 export function getEventTypeLabel(event: GameEvent): string {
-  switch (event.type) {
-    case 'communityEvent':
-      return '🏘️ ORTEN'
-    case 'supporterEvent':
-      return '📣 KLACKEN'
-    case 'starPerformance':
-      return '⭐ SPELAREN'
-    case 'playerPraise':
-      return '💬 SPELAREN'
-    case 'playerMediaComment':
-      return '📰 LOKALTIDNINGEN'
-    case 'captainSpeech':
-      return 'Ⓒ KAPTENEN'
-    case 'bandyLetter':
-      return '✉️ INSÄNDARE'
-    case 'academyEvent':
-      return '🎓 AKADEMIN'
-    case 'refereeMeeting':
-      return '⚖️ DOMAREN'
-    case 'journalistExclusive':
-      return '📰 LOKALTIDNINGEN'
-    case 'politicianEvent':
-      return '🏛️ KOMMUNEN'
-    case 'hallDebate':
-      return '🏛️ KOMMUNEN'
-    case 'schoolAssignment':
-      return '🎓 SKOLAN'
-    case 'playoffEvent':
-      return '🏆 SLUTSPELET'
-    case 'retirementCeremony':
-      return '🎖️ AVSKED'
-    case 'economicStress':
-      return '💰 EKONOMI'
-    case 'sponsorOffer':
-      return '💼 SPONSOR'
-    case 'seasonGoalHalfway':
-      return '🎯 SÄSONGSMÅLET'
-    default:
-      return '📋 HÄNDELSE'
-  }
+  const { icon, label } = getEventTypeMeta(event.type)
+  return `${icon} ${label.toUpperCase()}`
 }
 
 export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) {

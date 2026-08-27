@@ -147,7 +147,10 @@ export function getEffectiveWhyNowLine(event: { type: string; whyNow?: Pick<Cont
   return getWhyNowLine(getContentContractEntry('GameEventType', event.type))
 }
 
-const GAME_EVENT_TYPE_IDS = [
+// Exporterad (A-M3, SEXSÄSONGSAUDITEN 2026-08-26) så eventTypeLabels.test.ts
+// kan iterera EXAKT samma 49 id:n utan att skriva en tredje, driftbenägen
+// kopia av listan — en sanning, ett ställe (Port 4/OPUS-regel #4).
+export const GAME_EVENT_TYPE_IDS = [
   'transferBidReceived', 'contractRequest', 'playerUnhappy', 'starPerformance', 'sponsorOffer',
   'pressConference', 'dayJobConflict', 'bidWar', 'hesitantPlayer', 'communityEvent', 'patronEvent',
   'politicianEvent', 'hallDebate', 'hallProcess', 'licenseHandlingsplan', 'kommunMote', 'gentjanst',
