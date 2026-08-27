@@ -49,6 +49,33 @@ export function isOnCooldown(game: SaveGame, semanticKey: string, minSeasonsApar
 }
 
 /**
+ * A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): generisk poolrotation för fasta
+ * textpooler (Birger-citat, burnout-rader, akademirader) som tidigare
+ * valdes med en ren `hash(season, clubId) % poolLength`-formel — deterministisk,
+ * men UTAN minne av vad som redan visats, så samma index kunde återkomma
+ * (t.ex. samma Birger-uppladdning i två raka finaler, se journalistreportagets
+ * likadana rotorsak i postAdvanceEvents.ts). Väljer det tie-break-index som
+ * INTE är på cooldown; om HELA poolen är på cooldown (poolen har rullat ett
+ * fullt varv) släpper spärren och tie-break avgör som vanligt.
+ */
+export const BIRGER_SM_QUOTE_PREFIX = 'birger_sm_quote_'
+export const BIRGER_CUP_QUOTE_PREFIX = 'birger_cup_quote_'
+
+export function pickPoolIndexAvoidingCooldown(
+  game: SaveGame,
+  currentSeason: number,
+  poolLength: number,
+  semanticKeyPrefix: string,
+  tieBreakSeed: number,
+  minSeasonsApart = 2,
+): number {
+  const eligible = Array.from({ length: poolLength }, (_, i) => i)
+    .filter(i => !isOnCooldown(game, `${semanticKeyPrefix}${i}`, minSeasonsApart, currentSeason))
+  const pool = eligible.length > 0 ? eligible : Array.from({ length: poolLength }, (_, i) => i)
+  return pool[Math.abs(tieBreakSeed) % pool.length]
+}
+
+/**
  * Säsongsbudget: får ännu en systemhändelse trigga denna omgång? Nej om
  * budgeten (maxPerSeason) redan är nådd för säsongen, och nej om den
  * senaste systemhändelsen låg för nära (minRoundsBetween) — "aldrig två i

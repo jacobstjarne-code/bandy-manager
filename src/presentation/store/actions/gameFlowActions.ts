@@ -19,7 +19,9 @@ import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService
 import { getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
 import { navigateTo } from '../../navigation/globalNavigate'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
-import { logNarrativeBeat } from '../../../domain/services/narrativeLogService'
+import { logNarrativeBeat, pickPoolIndexAvoidingCooldown, BIRGER_SM_QUOTE_PREFIX, BIRGER_CUP_QUOTE_PREFIX } from '../../../domain/services/narrativeLogService'
+import { SM_FINAL_VICTORY_TEMPLATES } from '../../../domain/data/scenes/smFinalVictoryScene'
+import { CUP_FINAL_VICTORY_TEMPLATES } from '../../../domain/data/scenes/cupFinalVictoryScene'
 import { PIVOTAL_BEAT_IDS } from '../../../domain/data/portalBeats'
 import { hasManagedClubFutureFixture } from '../../utils/nextActionCue'
 
@@ -716,6 +718,21 @@ export function gameFlowActions(get: Get, set: Set) {
             ]
           }
         }
+      } else if (sceneId === 'sm_final_victory' || sceneId === 'cup_final_victory') {
+        // A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): loggar Birger-citatets index
+        // NÄR SCENEN VISATS (samma skrivmönster som coffee_pool_ ovan) —
+        // useSMFinalData.ts/useCupFinalData.ts läser samma logg för att
+        // undvika citat på cooldown. Härleder SAMMA index scenen just
+        // visade genom att anropa samma rena funktion med samma indata
+        // (game-snapshot före denna mutation), istf att tråda index genom props.
+        const isSm = sceneId === 'sm_final_victory'
+        const templates = isSm ? SM_FINAL_VICTORY_TEMPLATES : CUP_FINAL_VICTORY_TEMPLATES
+        const prefix = isSm ? BIRGER_SM_QUOTE_PREFIX : BIRGER_CUP_QUOTE_PREFIX
+        const tieBreakSeed = isSm
+          ? game.currentSeason * 13 + game.managedClubId.length
+          : game.currentSeason * 11 + game.managedClubId.length * 3
+        const shownIdx = pickPoolIndexAvoidingCooldown(game, game.currentSeason, templates.birgerQuotes.length, prefix, tieBreakSeed)
+        updatedGame.narrativeBeatLog = logNarrativeBeat(updatedGame, `${prefix}${shownIdx}`, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame))
       } else if (sceneId === 'season_signature_reveal') {
         // Track per-season with dedicated field (not SceneId[] — needs season number)
         updatedGame.shownSeasonSignatureRevealSeason = updatedGame.currentSeason

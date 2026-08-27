@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { logNarrativeBeat, isOnCooldown, systemhandelseBudgetOk, filterSystemhandelseBudget } from '../narrativeLogService'
+import { logNarrativeBeat, isOnCooldown, systemhandelseBudgetOk, filterSystemhandelseBudget, pickPoolIndexAvoidingCooldown } from '../narrativeLogService'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
 
@@ -169,5 +169,56 @@ describe('filterSystemhandelseBudget — U5 forts gating', () => {
     const items = [{ id: 'e1', systemhandelse: true }, { id: 'e2', systemhandelse: true }]
     filterSystemhandelseBudget(items, game, 3, 10)
     expect(game.narrativeBeatLog).toBeUndefined()
+  })
+})
+
+/**
+ * A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): Birger-citaten (SM-final/cupfinal)
+ * valdes tidigare med en ren hash(season, clubId)-formel utan minne — samma
+ * citat kunde återkomma i två raka finaler. pickPoolIndexAvoidingCooldown
+ * är den delade fixen, återanvänd av useSMFinalData.ts/useCupFinalData.ts.
+ */
+describe('pickPoolIndexAvoidingCooldown', () => {
+  const game = makeGame()
+
+  it('utan logg: tie-break-seedet avgör (deterministiskt, ingen cooldown att undvika)', () => {
+    const idx = pickPoolIndexAvoidingCooldown(game, 5, 3, 'birger_sm_quote_', 7)
+    expect(idx).toBe(7 % 3)
+  })
+
+  it('tie-break-index är på cooldown — väljer ett annat index i poolen', () => {
+    const tieBreakSeed = 6 // 6 % 3 === 0
+    const gameWithCooldown = {
+      ...game,
+      narrativeBeatLog: [{ semanticKey: 'birger_sm_quote_0', season: 5, round: 10 }],
+    }
+    const idx = pickPoolIndexAvoidingCooldown(gameWithCooldown, 5, 3, 'birger_sm_quote_', tieBreakSeed)
+    expect(idx).not.toBe(0)
+  })
+
+  it('HELA poolen på cooldown (poolen har rullat ett fullt varv) — spärren släpper, tie-break avgör igen', () => {
+    const gameFullyOnCooldown = {
+      ...game,
+      narrativeBeatLog: [0, 1, 2].map(i => ({ semanticKey: `birger_sm_quote_${i}`, season: 5, round: 10 })),
+    }
+    const idx = pickPoolIndexAvoidingCooldown(gameFullyOnCooldown, 5, 3, 'birger_sm_quote_', 7)
+    expect(idx).toBe(7 % 3)
+  })
+
+  it('cooldown är per säsong (minSeasonsApart) — en gammal post släpper efter tillräckligt många säsonger', () => {
+    const oldEntry = { semanticKey: 'birger_sm_quote_0', season: 1, round: 10 }
+    const gameWithOldEntry = { ...game, narrativeBeatLog: [oldEntry] }
+    // minSeasonsApart default 2: currentSeason=5, entry.season=1 → 5-1=4 >= 2, inte på cooldown
+    const idx = pickPoolIndexAvoidingCooldown(gameWithOldEntry, 5, 3, 'birger_sm_quote_', 6)
+    expect(idx).toBe(0) // fritt valt igen, tie-break 6%3===0
+  })
+
+  it('sm- och cup-prefix delar aldrig cooldown-utrymme (skilda pooler, skilda semanticKeys)', () => {
+    const gameWithSmOnCooldown = {
+      ...game,
+      narrativeBeatLog: [{ semanticKey: 'birger_sm_quote_0', season: 5, round: 10 }],
+    }
+    const cupIdx = pickPoolIndexAvoidingCooldown(gameWithSmOnCooldown, 5, 3, 'birger_cup_quote_', 6)
+    expect(cupIdx).toBe(0) // cup-poolen opåverkad av sm-poolens cooldown
   })
 })

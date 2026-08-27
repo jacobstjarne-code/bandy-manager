@@ -311,6 +311,20 @@ export interface GameEvent {
    *  (mecenatService.ts) läser samma logg: max två sociala mecenatbeats per säsong
    *  totalt, aldrig samma typ två gånger. */
   mecenatSocialKey?: string
+  /** SPÅR 3, A-H4a (SEXSÄSONGSAUDITEN 2026-08-26, docs/incoming/
+   *  BANDY_MANAGER_AUDIT_6_SASONGER_2026-08-26.md #H4): journalistreportagets
+   *  säsongs- och spelarrotationsminne. Satt av `generateJournalistExclusiveEvent`
+   *  (eventFactories.ts) till `journalist_exclusive_player_${player.id}` —
+   *  den gamla dedupen jämförde `roundPlayed` mot sig självt (alltid sant,
+   *  aldrig en spärr) och valde alltid lagets högst rankade friska spelare,
+   *  vilket lät samma spelare (och samma citat) återkomma flera gånger per
+   *  karriär, inklusive två raka slutspelsmatcher. Callern (roundProcessor.ts)
+   *  loggar denna som en narrativeBeatLog-post NÄR EVENTET GENERERAS — samma
+   *  skrivmönster som storylinePressKey/mecenatSocialKey. Läses av
+   *  `journalistExclusiveBudgetOk`/`pickJournalistExclusiveSubject`
+   *  (postAdvanceEvents.ts): högst en gång per säsong totalt, och inte samma
+   *  spelare igen förrän hela den aktuella truppen rullat ett varv. */
+  journalistExclusiveKey?: string
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

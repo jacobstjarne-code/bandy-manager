@@ -6,6 +6,7 @@
 import { useMemo } from 'react'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { SM_FINAL_VICTORY_TEMPLATES } from '../../../../domain/data/scenes/smFinalVictoryScene'
+import { pickPoolIndexAvoidingCooldown, BIRGER_SM_QUOTE_PREFIX } from '../../../../domain/services/narrativeLogService'
 
 export interface SMFinalData {
   homeScore: number
@@ -68,12 +69,20 @@ export function useSMFinalData(game: SaveGame): SMFinalData {
         .replace('{yearsAgo}', String(academyHero.yearsAgo))
     : SM_FINAL_VICTORY_TEMPLATES.fallbackBodyText
 
+  // A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): ren hash-formel utan minne av vad
+  // som redan visats lät samma Birger-citat återkomma (bl.a. i två raka
+  // finaler) — läser nu narrativeBeatLog och undviker citat på cooldown.
+  // Skrivsidan: gameFlowActions.ts:s completeScene('sm_final_victory').
   const birger = useMemo(() => {
-    const idx =
-      Math.abs(game.currentSeason * 13 + game.managedClubId.length) %
-      SM_FINAL_VICTORY_TEMPLATES.birgerQuotes.length
+    const idx = pickPoolIndexAvoidingCooldown(
+      game,
+      game.currentSeason,
+      SM_FINAL_VICTORY_TEMPLATES.birgerQuotes.length,
+      BIRGER_SM_QUOTE_PREFIX,
+      game.currentSeason * 13 + game.managedClubId.length,
+    )
     return SM_FINAL_VICTORY_TEMPLATES.birgerQuotes[idx]
-  }, [game.currentSeason, game.managedClubId])
+  }, [game.currentSeason, game.managedClubId, game.narrativeBeatLog])
 
   return {
     homeScore: finalFixture?.homeScore ?? 0,

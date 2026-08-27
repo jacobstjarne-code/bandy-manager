@@ -10,6 +10,9 @@ import {
   suppressTacticRecommendation,
   generateBurnoutReliefEvent,
   burnoutEffectSeed,
+  pickBurnoutQuoteIndex,
+  pickBurnoutHelperIndex,
+  BURNOUT_QUOTE_PREFIX,
 } from '../burnoutReliefService'
 import type { ManagerProfile } from '../../entities/ManagerProfile'
 import type { OpponentAnalysis } from '../opponentAnalysisService'
@@ -169,5 +172,55 @@ describe('generateBurnoutReliefEvent', () => {
     const a = generateBurnoutReliefEvent(10, 3, 'hog')
     const b = generateBurnoutReliefEvent(11, 3, 'hog')
     expect(a.id).not.toBe(b.id)
+  })
+})
+
+/**
+ * A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): BurnoutMark.tsx:s gamla
+ * `round % quotes.length` hade ingen koll mot vad som redan visats — en
+ * envis burnoutzon lät den lilla poolen (5 citat/zon) cykla och kännas som
+ * tapet. pickBurnoutQuoteIndex/pickBurnoutHelperIndex läser narrativeBeatLog
+ * med no-repeat INOM säsongen (managerKaraktarText.ts:s egen dokumenterade
+ * målbild, aldrig byggd förrän nu).
+ */
+describe('pickBurnoutQuoteIndex — no-repeat inom säsongen', () => {
+  const baseGame = { currentSeason: 3, currentMatchday: 10, narrativeBeatLog: undefined }
+
+  it('utan logg: deterministiskt via tie-break (matchday)', () => {
+    const idx = pickBurnoutQuoteIndex(baseGame, 'markbar', 5)
+    expect(idx).toBe(10 % 5)
+  })
+
+  it('citat 0 redan visat DENNA säsong — väljer ett annat', () => {
+    const game = {
+      ...baseGame,
+      narrativeBeatLog: [{ semanticKey: `${BURNOUT_QUOTE_PREFIX}markbar_${10 % 5}`, season: 3, round: 5 }],
+    }
+    const idx = pickBurnoutQuoteIndex(game, 'markbar', 5)
+    expect(idx).not.toBe(10 % 5)
+  })
+
+  it('citatet visades en TIDIGARE säsong — inte på cooldown, kan väljas igen', () => {
+    const game = {
+      ...baseGame,
+      narrativeBeatLog: [{ semanticKey: `${BURNOUT_QUOTE_PREFIX}markbar_${10 % 5}`, season: 1, round: 5 }],
+    }
+    const idx = pickBurnoutQuoteIndex(game, 'markbar', 5)
+    expect(idx).toBe(10 % 5)
+  })
+
+  it('markbar och hög delar aldrig cooldown-utrymme (skilda semanticKeys per zon)', () => {
+    const game = {
+      ...baseGame,
+      narrativeBeatLog: [{ semanticKey: `${BURNOUT_QUOTE_PREFIX}markbar_${10 % 5}`, season: 3, round: 5 }],
+    }
+    const idx = pickBurnoutQuoteIndex(game, 'hog', 5)
+    expect(idx).toBe(10 % 5) // hög-poolen opåverkad av markbar-poolens cooldown
+  })
+
+  it('pickBurnoutHelperIndex fungerar oberoende av quote-indexet (egen prefix)', () => {
+    const idx = pickBurnoutHelperIndex(baseGame, 'hog', 2)
+    expect(idx).toBeGreaterThanOrEqual(0)
+    expect(idx).toBeLessThan(2)
   })
 })

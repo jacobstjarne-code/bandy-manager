@@ -25,6 +25,35 @@ import { formatValue, formatDecimalComma } from '../../format'
 import { findEmployerForJob } from '../../data/localEmployers'
 import { generateSilentShoutEvent, generateMecenatConflictEvent, generateMecenatAllianceEvent } from '../mecenatService'
 import { getCsDetOmojligaValetProbability } from '../communityStandingScaling'
+import type { Player } from '../../entities/Player'
+
+// ── Journalistreportagets säsongsspärr + spelarrotation (A-H4a) ────────────
+// Se GameEvent.journalistExclusiveKey för hela rotorsaksförklaringen.
+const JOURNALIST_EXCLUSIVE_PREFIX = 'journalist_exclusive_player_'
+
+export function journalistExclusiveFiredThisSeason(game: SaveGame, currentSeason: number): boolean {
+  return (game.narrativeBeatLog ?? []).some(
+    e => e.semanticKey.startsWith(JOURNALIST_EXCLUSIVE_PREFIX) && e.season === currentSeason,
+  )
+}
+
+/**
+ * "Inte samma spelare igen förrän poolen roterat": utesluter spelare som
+ * redan figurerat (någonsin, career-brett) i journalistreportaget. Om ALLA
+ * nuvarande truppspelare redan figurerat har poolen rullat ett fullt varv —
+ * spärren släpper och hela truppen blir valbar igen.
+ */
+export function pickJournalistExclusiveSubject(game: SaveGame, managedPlayers: Player[]): Player | null {
+  if (managedPlayers.length === 0) return null
+  const featuredIds = new Set(
+    (game.narrativeBeatLog ?? [])
+      .filter(e => e.semanticKey.startsWith(JOURNALIST_EXCLUSIVE_PREFIX))
+      .map(e => e.semanticKey.slice(JOURNALIST_EXCLUSIVE_PREFIX.length)),
+  )
+  const unfeatured = managedPlayers.filter(p => !featuredIds.has(p.id))
+  const pool = unfeatured.length > 0 ? unfeatured : managedPlayers
+  return pool.reduce((best, p) => (p.currentAbility > best.currentAbility ? p : best), pool[0])
+}
 
 // ── generatePostAdvanceEvents ──────────────────────────────────────────────
 /**
@@ -477,17 +506,28 @@ export function generatePostAdvanceEvents(
 
   if (events.length >= 2) return events
 
-  // 5m. Journalist exclusive offer — relationship >= 65, ~15% chance, once per season per player
+  // 5m. Journalist exclusive offer — relationship >= 65, ~15% chance.
+  // SPÅR 3, A-H4a (SEXSÄSONGSAUDITEN 2026-08-26, BANDY_MANAGER_AUDIT_6_
+  // SASONGER_2026-08-26.md #H4): den gamla "alreadyThisSeason"-kollen jämförde
+  // eventets EGET roundPlayed mot sig självt — alltid sant, aldrig en spärr —
+  // och subject var alltid lagets högst rankade friska spelare. Resultat:
+  // samma spelare (och samma citat) kunde återkomma flera gånger per karriär,
+  // ibland i två raka slutspelsmatcher. Fix: en riktig säsongsspärr
+  // (journalistExclusiveFiredThisSeason, narrativeBeatLog) plus en
+  // spelarrotation som utesluter redan figurerade spelare tills HELA den
+  // nuvarande truppen rullat ett varv (pickJournalistExclusiveSubject).
   if (events.length < 2) {
     const j = game.journalist
-    if (j && j.relationship >= 65 && rand() < 0.15) {
+    if (j && j.relationship >= 65 && rand() < 0.15 && !journalistExclusiveFiredThisSeason(game, game.currentSeason)) {
       const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId && !p.isInjured)
-      if (managedPlayers.length > 0) {
-        const subject = managedPlayers.reduce((best, p) => p.currentAbility > best.currentAbility ? p : best, managedPlayers[0])
+      const subject = pickJournalistExclusiveSubject(game, managedPlayers)
+      if (subject) {
         const eid = `event_journalist_exclusive_${subject.id}_r${roundPlayed}`
-        const alreadyThisSeason = [...alreadyQueued].some(id => id.startsWith(`event_journalist_exclusive_`) && id.includes(`_r${roundPlayed}`))
-        if (!alreadyQueued.has(eid) && !alreadyThisSeason) {
-          events.push(generateJournalistExclusiveEvent(j.name, j.outlet, subject, roundPlayed))
+        if (!alreadyQueued.has(eid)) {
+          events.push({
+            ...generateJournalistExclusiveEvent(j.name, j.outlet, subject, roundPlayed),
+            journalistExclusiveKey: `${JOURNALIST_EXCLUSIVE_PREFIX}${subject.id}`,
+          })
         }
       }
     }

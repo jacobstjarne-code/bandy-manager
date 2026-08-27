@@ -6,6 +6,7 @@
 import { useMemo } from 'react'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { CUP_FINAL_VICTORY_TEMPLATES } from '../../../../domain/data/scenes/cupFinalVictoryScene'
+import { pickPoolIndexAvoidingCooldown, BIRGER_CUP_QUOTE_PREFIX } from '../../../../domain/services/narrativeLogService'
 
 export interface CupFinalData {
   homeScore: number
@@ -63,12 +64,19 @@ export function useCupFinalData(game: SaveGame): CupFinalData {
         .replace('{yearsAgo}', String(academyHero.yearsAgo))
     : CUP_FINAL_VICTORY_TEMPLATES.fallbackBodyText
 
+  // A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): samma rotorsak/fix som useSMFinalData.ts
+  // — läser nu narrativeBeatLog och undviker citat på cooldown. Skrivsidan:
+  // gameFlowActions.ts:s completeScene('cup_final_victory').
   const birger = useMemo(() => {
-    const idx =
-      Math.abs(game.currentSeason * 11 + game.managedClubId.length * 3) %
-      CUP_FINAL_VICTORY_TEMPLATES.birgerQuotes.length
+    const idx = pickPoolIndexAvoidingCooldown(
+      game,
+      game.currentSeason,
+      CUP_FINAL_VICTORY_TEMPLATES.birgerQuotes.length,
+      BIRGER_CUP_QUOTE_PREFIX,
+      game.currentSeason * 11 + game.managedClubId.length * 3,
+    )
     return CUP_FINAL_VICTORY_TEMPLATES.birgerQuotes[idx]
-  }, [game.currentSeason, game.managedClubId])
+  }, [game.currentSeason, game.managedClubId, game.narrativeBeatLog])
 
   const attendance = finalFixture?.attendance
   const arenaCapacity = attendance

@@ -5,6 +5,25 @@ import type { OpponentAnalysis } from './opponentAnalysisService'
 import { getBurnoutZone } from './managerProfileService'
 import { BURNOUT_ZONE_LABELS } from '../data/managerKaraktarText'
 import { mulberry32 } from '../utils/random'
+import { pickPoolIndexAvoidingCooldown } from './narrativeLogService'
+
+export const BURNOUT_QUOTE_PREFIX = 'burnout_quote_'
+export const BURNOUT_HELPER_PREFIX = 'burnout_helper_'
+
+/**
+ * A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): no-repeat INOM säsongen (minSeasonsApart=1
+ * — en post från INNEVARANDE säsong räknas som cooldown, en från en tidigare
+ * säsong gör det inte, så poolen är fri igen varje ny säsong). Detta var
+ * redan den dokumenterade målbilden i managerKaraktarText.ts (rad 38-40),
+ * bara aldrig byggd — BurnoutMark.tsx läste tidigare `round % quotes.length`.
+ */
+export function pickBurnoutQuoteIndex(game: Pick<SaveGame, 'currentSeason' | 'currentMatchday' | 'narrativeBeatLog'>, zone: 'markbar' | 'hog', poolLength: number): number {
+  return pickPoolIndexAvoidingCooldown(game as SaveGame, game.currentSeason, poolLength, `${BURNOUT_QUOTE_PREFIX}${zone}_`, game.currentMatchday, 1)
+}
+
+export function pickBurnoutHelperIndex(game: Pick<SaveGame, 'currentSeason' | 'currentMatchday' | 'narrativeBeatLog'>, zone: 'markbar' | 'hog', poolLength: number): number {
+  return pickPoolIndexAvoidingCooldown(game as SaveGame, game.currentSeason, poolLength, `${BURNOUT_HELPER_PREFIX}${zone}_`, game.currentMatchday * 7, 1)
+}
 
 /**
  * O4 (DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23 — D1 var blockeraren,

@@ -75,7 +75,9 @@ import { selectNationalTeam, applyCallupEffects, applyReturnEffects, LANDSLAGS_C
 import {
   SNUB_SCENE_LINES,
 } from '../../domain/data/landslagText'
-import { updateManagerBurnout, updateH2HRecord, getBurnoutZone } from '../../domain/services/managerProfileService'
+import { updateManagerBurnout, updateH2HRecord, getBurnoutZone, shouldShowBurnoutMark } from '../../domain/services/managerProfileService'
+import { pickBurnoutQuoteIndex, pickBurnoutHelperIndex, BURNOUT_QUOTE_PREFIX, BURNOUT_HELPER_PREFIX } from '../../domain/services/burnoutReliefService'
+import { BURNOUT_MARK } from '../../domain/data/managerKaraktarText'
 import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
 import { PATRON_EMERGE_CS } from '../../domain/data/patronData'
 
@@ -1673,6 +1675,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): journalistreportagets säsongs- och
+  // spelarrotationsminne, samma skrivmönster som mecenatSocialKey ovan —
+  // loggas NÄR EVENTET GENERERAS, inte vid resolution. Se
+  // GameEvent.journalistExclusiveKey.
+  for (const event of allNewEvents) {
+    if (event.journalistExclusiveKey) {
+      updatedGame = {
+        ...updatedGame,
+        narrativeBeatLog: logNarrativeBeat(updatedGame, event.journalistExclusiveKey, updatedGame.currentSeason, nextMatchday),
+      }
+    }
+  }
+
   // Release-svepet 2026-07-21 (Block 2c) — landslagsuttagningens +5 tkr/uttagen
   // (HANDOFF-C-K1-LANDSLAG-2026-05-23.md Q3, låst av Jacob). Samma efterhands-
   // mönster som marketValueInbox ovan, se kommentaren vid nationalTeamCallupBonusTkr.
@@ -2100,6 +2115,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         }
       }
       updatedGame = { ...updatedGame, managerProfile: enrichedProfile }
+
+      // A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): loggar BurnoutMark.tsx:s
+      // visade citat/hjälprad NÄR DE VISAS (samma skrivmönster som
+      // coffee_pool_/journalist_exclusive_ ovan) — pickBurnoutQuoteIndex/
+      // pickBurnoutHelperIndex läser samma logg för att undvika rader som
+      // redan visats denna säsong.
+      if (shouldShowBurnoutMark(enrichedProfile) && newBurnoutZone !== 'frisk') {
+        const quoteIdx = pickBurnoutQuoteIndex(updatedGame, newBurnoutZone, BURNOUT_MARK.quotesByZone[newBurnoutZone].length)
+        const helperIdx = pickBurnoutHelperIndex(updatedGame, newBurnoutZone, BURNOUT_MARK.helpersByZone[newBurnoutZone].length)
+        let burnoutLog = logNarrativeBeat(updatedGame, `${BURNOUT_QUOTE_PREFIX}${newBurnoutZone}_${quoteIdx}`, updatedGame.currentSeason, nextMatchday)
+        burnoutLog = logNarrativeBeat({ ...updatedGame, narrativeBeatLog: burnoutLog }, `${BURNOUT_HELPER_PREFIX}${newBurnoutZone}_${helperIdx}`, updatedGame.currentSeason, nextMatchday)
+        updatedGame = { ...updatedGame, narrativeBeatLog: burnoutLog }
+      }
     }
 
     // H2H rivalry update after managed match result + rivalry narrative log

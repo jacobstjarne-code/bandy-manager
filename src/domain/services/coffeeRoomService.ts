@@ -794,8 +794,17 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   // B9 T1A: seed på matchday (inte ligarunda) — ändras varje matchdag, inte bara per ligarunda
   const seed = matchday * 11 + game.currentSeason * 31
 
-  // B9 T1B: anti-upprepning — undvik index som visades senast om poolen är stor nog
-  const lastIndices = new Set(game.lastCoffeeSceneIndices ?? [])
+  // B9 T1B: anti-upprepning — undvik index som visades senast.
+  // A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): den gamla gaten (`pool.length >
+  // count + lastIndices.size`) var allt-eller-inget — så fort den rullande
+  // 12-historiken (gameFlowActions.ts) växte förbi poolstorleken (GENERIC_
+  // EXCHANGES har bara sju rader, se TODO nedan) slocknade undvikandet helt
+  // och samma rader kunde återkomma varje besök. Storleksanpassar nu
+  // undvikandefönstret till poolen — en liten pool undviker ändå de senast
+  // visade, bara färre av dem, istf noll.
+  const lastIndicesAll = game.lastCoffeeSceneIndices ?? []
+  const maxAvoidable = Math.max(0, pool.length - count - 1)
+  const lastIndices = new Set(lastIndicesAll.slice(-maxAvoidable))
 
   // Plocka `count` distinkta index
   // TODO: GENERIC_EXCHANGES bör utökas — sju utbyten är för få för ett återkommande inslag (Opus levererar fler om önskat)
@@ -805,9 +814,10 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   for (let i = 0; i < count; i++) {
     let idx = hashSeed(seed * 1000 + i) % pool.length
     let guard = 0
-    // Hoppa över index som redan valts ELLER som visades senast, om poolen tillåter det
+    // Hoppa över index som redan valts ELLER som visades senast (inom det
+    // storleksanpassade fönstret)
     while (
-      (used.has(idx) || (lastIndices.has(idx) && pool.length > count + lastIndices.size)) &&
+      (used.has(idx) || lastIndices.has(idx)) &&
       guard < pool.length
     ) {
       idx = (idx + 1) % pool.length
