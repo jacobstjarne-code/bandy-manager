@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X, ArrowRight } from 'lucide-react'
 import { useGameStore } from '../../store/gameStore'
+import { computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import { positionShort, formatValue, formatSalary, formatContractUntil } from '../../utils/formatters'
 import { SectionLabel } from '../SectionLabel'
 import { RenewContractModal } from './RenewContractModal'
@@ -52,10 +53,11 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
     const squadPlayers = game.players.filter(p => p.clubId === game.managedClubId)
     const currentPlayer = squadPlayers.find(p => p.id === playerId)
     if (!currentPlayer) return
-    const isFullTimePro = !currentPlayer.dayJob
-    const minSalary = Math.round((isFullTimePro
-      ? currentPlayer.currentAbility * 200 * 0.80
-      : currentPlayer.currentAbility * 80 * 0.80) / 500) * 500
+    // O5 kraft 1, prestationsfaktor (DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 1):
+    // computeContractMinSalary (economyService.ts) är EN SANNING, ETT STÄLLE —
+    // var duplicerad här, transferActions.ts och transferService.ts.
+    const leagueAverages = computeLeaguePositionAverages(game)
+    const minSalary = computeContractMinSalary(currentPlayer, club, leagueAverages)
     if (newSalary < minSalary) {
       setRenewError(`${currentPlayer.firstName} avslår — kräver minst ${formatSalary(minSalary)}`)
       return
@@ -152,10 +154,9 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
       )}
 
       {renewingPlayer && (() => {
-        const isFullTimePro = !renewingPlayer.dayJob
-        const minSalary = Math.round((isFullTimePro
-          ? renewingPlayer.currentAbility * 200 * 0.80
-          : renewingPlayer.currentAbility * 80 * 0.80) / 500) * 500
+        const club = game.clubs.find(c => c.id === game.managedClubId)
+        const leagueAverages = computeLeaguePositionAverages(game)
+        const minSalary = club ? computeContractMinSalary(renewingPlayer, club, leagueAverages) : 0
         return (
           <RenewContractModal
             player={renewingPlayer}

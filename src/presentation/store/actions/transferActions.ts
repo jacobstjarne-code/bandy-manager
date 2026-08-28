@@ -2,7 +2,7 @@ import type { SaveGame, TalentSearchRequest, Sponsor } from '../../../domain/ent
 import { startScoutAssignment } from '../../../domain/services/scoutingService'
 import { createOutgoingBid } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
-import { applyFinanceChange, reputationSalaryMultiplier } from '../../../domain/services/economyService'
+import { applyFinanceChange, computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import { bidReceivedEvent } from '../../../domain/services/events/eventFactories'
 import { resolveEvent } from '../../../domain/services/eventService'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
@@ -24,7 +24,15 @@ type Set = (partial: Partial<{ game: SaveGame | null }>) => void
  * (samma bugg fanns även i `LoanDeal.startRound/endRound`, fixad separat
  * i academyActions.ts).
  *
- * @cites minSalary, player.currentAbility, club.reputation, player.dayJob
+ * O5 kraft 1, prestationsfaktor (DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 1):
+ * player.currentAbility/player.dayJob citerades tidigare här, men läses nu
+ * INTE längre direkt i denna funktionskropp — de läses i
+ * computeContractMinSalary (economyService.ts), som är den funktion som
+ * faktiskt fattar beslutet om golvet. Flyttat dit i samma anda som denna
+ * grinds egen princip: @cites ska sitta på den funktion som LÄSER fältet,
+ * inte varje anropare uppåt i kedjan.
+ *
+ * @cites minSalary, club.reputation
  */
 export function transferActions(get: Get, set: Set) {
   return {
@@ -90,9 +98,12 @@ export function transferActions(get: Get, set: Set) {
       // O5 kraft 1 (Jacobs dom 2026-08-17, byggd 2026-08-23): rykte skalar
       // lönekravet, samma kurva som economyService.ts:s kommunbidrag —
       // rot: intäktssidan skalade redan med rykte, lönesidan gjorde det inte.
-      const isFullTimePro = !player.dayJob
-      const repFactor = reputationSalaryMultiplier(club.reputation)
-      const minSalary = Math.round((isFullTimePro ? player.currentAbility * 200 * 0.80 : player.currentAbility * 80 * 0.80) * repFactor / 500) * 500
+      // Prestationsfaktor (DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 1) lades
+      // till 2026-08-27 — formeln bor nu i computeContractMinSalary
+      // (economyService.ts), EN SANNING, ETT STÄLLE (var duplicerad på tre
+      // ställen: här, ContractsTab.tsx och transferService.ts).
+      const leagueAverages = computeLeaguePositionAverages(game)
+      const minSalary = computeContractMinSalary(player, club, leagueAverages)
       if (newSalary < minSalary) return { success: false, error: `${player.firstName} avslår — kräver minst ${formatSalary(minSalary)}` }
 
       const currentWageBill = game.players

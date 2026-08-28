@@ -5,12 +5,15 @@ import {
   calcRoundIncome,
   calcAttendance,
   computeAttendanceRate,
+  computeContractMinSalary,
+  computeLeaguePositionAverages,
+  MIN_LEAGUE_GAMES_FOR_PERFORMANCE_FACTOR,
   FINANCE_LOG_MAX,
 } from '../economyService'
-import type { FinanceEntry } from '../economyService'
+import type { FinanceEntry, LeaguePositionAverage } from '../economyService'
 import type { Club } from '../../entities/Club'
-import type { Player } from '../../entities/Player'
-import type { Sponsor, CommunityActivities, StandingRow } from '../../entities/SaveGame'
+import type { Player, PlayerSeasonStats } from '../../entities/Player'
+import type { Sponsor, CommunityActivities, StandingRow, SaveGame } from '../../entities/SaveGame'
 import { PlayerPosition, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle, ClubExpectation, ClubStyle } from '../../enums'
 
 // ── Test helpers ──────────────────────────────────────────────────────────────
@@ -710,5 +713,138 @@ describe('calcRoundIncome — communityRoundIncome (per round regardless of home
       matchHasRivalry: false, standing: null, rand: deterministicRand,
     })
     expect(result.communityRoundIncome).not.toBe(0)
+  })
+})
+
+// ── O5 kraft 1, prestationsfaktor på lönekravet (DOM_FRAMGANGSKURVAN_2026-08-27,
+// anspråk 1: "Truppen vill ha det den är värd") ─────────────────────────────
+// computeContractMinSalary/computeLeaguePositionAverages ersätter de tre
+// dubblerade inline-formlerna i transferActions.ts, ContractsTab.tsx och
+// transferService.ts. Se skäl-kommentarer i economyService.ts.
+
+function makeSeasonStats(overrides: Partial<PlayerSeasonStats> = {}): PlayerSeasonStats {
+  return {
+    gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0,
+    yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0,
+    ...overrides,
+  }
+}
+
+// Fast liga-genomsnitt (oberoende av computeLeaguePositionAverages, som
+// testas separat nedan) — isolerar computeContractMinSalary-testerna mot
+// en känd, kontrollerad baslinje.
+function makeLeagueAverages(overrides: Partial<Record<PlayerPosition, LeaguePositionAverage>> = {}): Record<PlayerPosition, LeaguePositionAverage> {
+  const flat: LeaguePositionAverage = { avgRating: 6.0, avgGoals: 3, avgAssists: 2 }
+  return {
+    [PlayerPosition.Goalkeeper]: { ...flat },
+    [PlayerPosition.Defender]: { ...flat },
+    [PlayerPosition.Half]: { ...flat },
+    [PlayerPosition.Midfielder]: { ...flat },
+    [PlayerPosition.Forward]: { ...flat },
+    ...overrides,
+  }
+}
+
+describe('computeContractMinSalary — prestationsfaktor', () => {
+  // CA 60, isFullTimePro (inget dayJob), rep 50 → repFactor 1.0, base = 60*200*0.8 = 9600.
+  // Utan prestationsfaktor: round(9600/500)*500 = 9500 — detta är golvet
+  // "ren ability/rykte-formel" som alla nedanstående jämförs mot.
+  const club = makeClub({ reputation: 50 })
+  const leagueAverages = makeLeagueAverages()
+
+  it('en spelare som matchar ligasnittet exakt får performanceFactor 1 (oförändrat golv)', () => {
+    const atAverage = makePlayer({
+      currentAbility: 60,
+      seasonStats: makeSeasonStats({ gamesPlayed: 10, averageRating: 6.0, goals: 3, assists: 2 }),
+    })
+    expect(computeContractMinSalary(atAverage, club, leagueAverages)).toBe(9500)
+  })
+
+  it('(a) en toppspelare kostar märkbart mer än en reserv med samma currentAbility', () => {
+    const benchPlayer = makePlayer({
+      currentAbility: 60,
+      seasonStats: makeSeasonStats({ gamesPlayed: 10, averageRating: 6.0, goals: 3, assists: 2 }),  // = ligasnitt
+    })
+    const starPlayer = makePlayer({
+      currentAbility: 60,
+      // +1.0 rating, +5 mål, +3 assist över ligasnittet
+      seasonStats: makeSeasonStats({ gamesPlayed: 20, averageRating: 7.0, goals: 8, assists: 5 }),
+    })
+    const benchMinSalary = computeContractMinSalary(benchPlayer, club, leagueAverages)
+    const starMinSalary = computeContractMinSalary(starPlayer, club, leagueAverages)
+    expect(benchMinSalary).toBe(9500)
+    // factor = 1 + 1.0*0.08 + 5*0.015 + 3*0.012 = 1.191 → round(9600*1.191/500)*500 = 11500
+    expect(starMinSalary).toBe(11500)
+    expect(starMinSalary).toBeGreaterThan(benchMinSalary)
+  })
+
+  it('(b) under 5 ligamatcher: performanceFactor === 1 oavsett hur extrema delstatistiken är', () => {
+    const cameo = makePlayer({
+      currentAbility: 60,
+      seasonStats: makeSeasonStats({ gamesPlayed: MIN_LEAGUE_GAMES_FOR_PERFORMANCE_FACTOR - 1, averageRating: 10, goals: 100, assists: 100 }),
+    })
+    expect(computeContractMinSalary(cameo, club, leagueAverages)).toBe(9500)
+  })
+
+  it('exakt 5 ligamatcher är gränsen där prestationsfaktorn SLÅR IGENOM (inklusive, inte exklusive)', () => {
+    const fiveGames = makePlayer({
+      currentAbility: 60,
+      seasonStats: makeSeasonStats({ gamesPlayed: MIN_LEAGUE_GAMES_FOR_PERFORMANCE_FACTOR, averageRating: 7.0, goals: 8, assists: 5 }),
+    })
+    expect(computeContractMinSalary(fiveGames, club, leagueAverages)).toBe(11500)
+  })
+
+  it('(c) performanceFactor klampas vid 1.40 för extrem överprestation', () => {
+    const extremeStar = makePlayer({
+      currentAbility: 60,
+      // ratingDelta 5, goalsDelta 50, assistsDelta 50 → rå faktor 2.75, klampad till 1.40
+      seasonStats: makeSeasonStats({ gamesPlayed: 20, averageRating: 11, goals: 53, assists: 52 }),
+    })
+    // round(9600*1.40/500)*500 = 13500
+    expect(computeContractMinSalary(extremeStar, club, leagueAverages)).toBe(13500)
+  })
+
+  it('(c) performanceFactor klampas vid 0.85 för extrem underprestation', () => {
+    const extremeBench = makePlayer({
+      currentAbility: 60,
+      // ratingDelta -5, goalsDelta -50 (golvat vid 0 mål ändå negativ delta), assistsDelta -50 → rå faktor -0.75, klampad till 0.85
+      seasonStats: makeSeasonStats({ gamesPlayed: 20, averageRating: 1, goals: 0, assists: 0 }),
+    })
+    // round(9600*0.85/500)*500 = 8000
+    expect(computeContractMinSalary(extremeBench, club, leagueAverages)).toBe(8000)
+  })
+})
+
+describe('computeLeaguePositionAverages', () => {
+  function makeGameWithPlayers(players: Player[]): SaveGame {
+    return { players } as unknown as SaveGame
+  }
+
+  it('(d) exkluderar spelare med färre än 5 matcher ur ligasnittet (cameo-spelare drar inte ner snittet)', () => {
+    const f1 = makePlayer({ id: 'f1', position: PlayerPosition.Forward, seasonStats: makeSeasonStats({ gamesPlayed: 10, goals: 10, assists: 5, averageRating: 7.0 }) })
+    const f2 = makePlayer({ id: 'f2', position: PlayerPosition.Forward, seasonStats: makeSeasonStats({ gamesPlayed: 8, goals: 6, assists: 3, averageRating: 6.0 }) })
+    // Cameo-forward: bara 2 matcher, men 50 mål — SKA INTE räknas in, annars skulle
+    // den ensam dra snittet uppåt mot ett orimligt tal.
+    const cameo = makePlayer({ id: 'f3-cameo', position: PlayerPosition.Forward, seasonStats: makeSeasonStats({ gamesPlayed: 2, goals: 50, assists: 20, averageRating: 9.9 }) })
+
+    const averages = computeLeaguePositionAverages(makeGameWithPlayers([f1, f2, cameo]))
+    expect(averages[PlayerPosition.Forward].avgGoals).toBe(8)      // (10+6)/2, INTE (10+6+50)/3
+    expect(averages[PlayerPosition.Forward].avgAssists).toBe(4)    // (5+3)/2
+    expect(averages[PlayerPosition.Forward].avgRating).toBe(6.5)   // (7.0+6.0)/2
+  })
+
+  it('(d) separerar snittet per position — en anfallares snitt påverkas inte av en backs statistik', () => {
+    const forward = makePlayer({ id: 'fwd', position: PlayerPosition.Forward, seasonStats: makeSeasonStats({ gamesPlayed: 10, goals: 10, assists: 5, averageRating: 7.0 }) })
+    const defender = makePlayer({ id: 'def', position: PlayerPosition.Defender, seasonStats: makeSeasonStats({ gamesPlayed: 10, goals: 1, assists: 1, averageRating: 5.5 }) })
+
+    const averages = computeLeaguePositionAverages(makeGameWithPlayers([forward, defender]))
+    expect(averages[PlayerPosition.Forward]).toEqual({ avgGoals: 10, avgAssists: 5, avgRating: 7.0 })
+    expect(averages[PlayerPosition.Defender]).toEqual({ avgGoals: 1, avgAssists: 1, avgRating: 5.5 })
+  })
+
+  it('en position utan kvalificerade spelare (0 med ≥5 matcher) faller tillbaka till ett neutralt default', () => {
+    const onlyForward = makePlayer({ id: 'fwd', position: PlayerPosition.Forward, seasonStats: makeSeasonStats({ gamesPlayed: 10, goals: 10, assists: 5, averageRating: 7.0 }) })
+    const averages = computeLeaguePositionAverages(makeGameWithPlayers([onlyForward]))
+    expect(averages[PlayerPosition.Goalkeeper]).toEqual({ avgRating: 6.0, avgGoals: 0, avgAssists: 0 })
   })
 })

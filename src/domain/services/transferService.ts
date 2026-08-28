@@ -4,7 +4,7 @@ import type { Player } from '../entities/Player'
 import type { Club } from '../entities/Club'
 import { getTransferWindowStatus } from './transferWindowService'
 import { InboxItemType } from '../enums'
-import { applyFinanceChange, appendFinanceLog, reputationSalaryMultiplier } from './economyService'
+import { applyFinanceChange, appendFinanceLog, computeContractMinSalary, computeLeaguePositionAverages } from './economyService'
 import type { FinanceEntry } from './economyService'
 import { getRegionDistance } from '../data/regionGeography'
 import { getRivalry } from '../data/rivalries'
@@ -170,10 +170,11 @@ export function createOutgoingBid(
   // formel som transferActions.ts:s renewContract, skalad mot KÖPANDE
   // klubbs rykte (spelaren är alltid köpare i utgående bud, se kommentaren
   // "Spelaren lägger bud" ovan). Innan detta hade offeredSalary ingen
-  // valideringsgräns alls.
-  const isFullTimePro = !target.dayJob
-  const repFactor = reputationSalaryMultiplier(managedClub.reputation)
-  const minSalary = Math.round((isFullTimePro ? target.currentAbility * 200 * 0.80 : target.currentAbility * 80 * 0.80) * repFactor / 500) * 500
+  // valideringsgräns alls. Prestationsfaktor (DOM_FRAMGANGSKURVAN_2026-08-27,
+  // anspråk 1) tillagd 2026-08-27 — computeContractMinSalary (economyService.ts)
+  // är nu EN SANNING, ETT STÄLLE för hela golv-formeln.
+  const leagueAverages = computeLeaguePositionAverages(game)
+  const minSalary = computeContractMinSalary(target, managedClub, leagueAverages)
   if (offeredSalary < minSalary) {
     return { success: false, error: `${target.firstName} tackar nej — kräver minst ${formatSalary(minSalary)}` }
   }

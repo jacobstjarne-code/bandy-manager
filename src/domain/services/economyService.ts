@@ -7,7 +7,7 @@ import type { Volunteer } from './volunteerService'
 import { CUP_FINAL_VENUE } from '../data/specialDateStrings'
 import { getRivalry } from '../data/rivalries'
 import { getJournalistAttendanceModifier } from './journalistVisibilityService'
-import { FixtureStatus } from '../enums'
+import { FixtureStatus, PlayerPosition } from '../enums'
 import { safeStandingPosition } from './standingsService'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
@@ -230,6 +230,115 @@ export interface CalcRoundIncomeParams {
 // (oförändrat golv), rep 90 ≈ 1.4x, rep 45 ≈ 0.95x.
 export function reputationSalaryMultiplier(reputation: number): number {
   return 0.5 + (reputation / 100) * 1.0
+}
+
+// ── O5 kraft 1, prestationsfaktor på lönekravet (Jacobs dom 2026-08-27,
+// DOM_FRAMGANGSKURVAN_2026-08-27.md, anspråk 1 — "Truppen vill ha det den
+// är värd"). Rykte skalade redan lönekravet (ovan); denna faktor lägger
+// SÄSONGSPRESTATION ovanpå — en skyttekung ska kosta mer än en reserv med
+// samma currentAbility. Formeln (och trösklarna) var duplicerad på tre
+// ställen (transferActions.ts, ContractsTab.tsx, transferService.ts) —
+// bruten ut hit, EN SANNING, ETT STÄLLE.
+//
+// Minsta stickprov: under 5 ligamatcher denna säsong är signalen för
+// svag för att få slå igenom på lönekravet (tidig-säsong-brus) — då
+// faller spelaren tillbaka till performanceFactor = 1 (ren ability/
+// rykte-formel). Samma tröskel exkluderar cameo-spelare ur själva
+// LIGASNITTET, så att en handfull minuter för en djupbänkad spelare
+// inte drar ner positionens snitt mot noll.
+export const MIN_LEAGUE_GAMES_FOR_PERFORMANCE_FACTOR = 5
+
+export interface LeaguePositionAverage {
+  avgRating: number
+  avgGoals: number
+  avgAssists: number
+}
+
+/**
+ * Ligasnitt per position, denna säsong, ÖVER ALLA KLUBBAR — inte bara den
+ * hanterade. `player.seasonStats` (Player.ts) är redan en genuint liga-
+ * bred, kumulativ per-spelare-räknare (statsProcessor.ts:s
+ * `updatePlayerMatchStats` itererar VARJE simulerad omgångs alla fixtures,
+ * hemma- och bortalag, oavsett klubb — inte bara den hanterade klubbens
+ * matcher) och nollställs vid säsongsrollover (seasonEndProcessor.ts).
+ * Det gör att detta INTE behöver skanna `game.fixtures`/events själv —
+ * samma mönster som `seasonSummaryService.ts`s countSeasonGoalsByPlayer/
+ * countSeasonAssistsByPlayer/computeSeasonRatings löser klubb-scopat,
+ * men här är källan redan aggregerad på spelaren och äkta liga-bred.
+ *
+ * @cites Player.seasonStats.gamesPlayed, Player.seasonStats.averageRating,
+ * Player.seasonStats.goals, Player.seasonStats.assists, Player.position
+ */
+export function computeLeaguePositionAverages(game: SaveGame): Record<PlayerPosition, LeaguePositionAverage> {
+  const sums: Record<PlayerPosition, { rating: number; goals: number; assists: number; count: number }> = {
+    [PlayerPosition.Goalkeeper]: { rating: 0, goals: 0, assists: 0, count: 0 },
+    [PlayerPosition.Defender]: { rating: 0, goals: 0, assists: 0, count: 0 },
+    [PlayerPosition.Half]: { rating: 0, goals: 0, assists: 0, count: 0 },
+    [PlayerPosition.Midfielder]: { rating: 0, goals: 0, assists: 0, count: 0 },
+    [PlayerPosition.Forward]: { rating: 0, goals: 0, assists: 0, count: 0 },
+  }
+
+  for (const player of game.players) {
+    const stats = player.seasonStats
+    if (!stats || stats.gamesPlayed < MIN_LEAGUE_GAMES_FOR_PERFORMANCE_FACTOR) continue
+    const bucket = sums[player.position]
+    bucket.rating += stats.averageRating
+    bucket.goals += stats.goals
+    bucket.assists += stats.assists
+    bucket.count += 1
+  }
+
+  const result = {} as Record<PlayerPosition, LeaguePositionAverage>
+  for (const pos of Object.values(PlayerPosition)) {
+    const bucket = sums[pos]
+    result[pos] = bucket.count > 0
+      ? { avgRating: bucket.rating / bucket.count, avgGoals: bucket.goals / bucket.count, avgAssists: bucket.assists / bucket.count }
+      : { avgRating: 6.0, avgGoals: 0, avgAssists: 0 }
+  }
+  return result
+}
+
+// Klamp på prestationsfaktorn (Jacobs dom): 0.85–1.40. En extrem
+// underprestation kan bara sänka lönekravet 15% under den rena
+// ability/rykte-formeln; en extrem toppsäsong kan höja det 40% däröver.
+const PERFORMANCE_FACTOR_MIN = 0.85
+const PERFORMANCE_FACTOR_MAX = 1.40
+
+function clampPerformanceFactor(value: number): number {
+  return Math.max(PERFORMANCE_FACTOR_MIN, Math.min(PERFORMANCE_FACTOR_MAX, value))
+}
+
+/**
+ * Enda källan till ett spelarkontrakts minimilönekrav — ersätter de tre
+ * dubblerade inline-formlerna i transferActions.ts (renewContract),
+ * ContractsTab.tsx (display + handleRenew), och transferService.ts
+ * (createOutgoingBid). Bas + rykte var redan delad väg (reputationSalary-
+ * Multiplier ovan); prestationsfaktorn är ny (O5 kraft 1, denna commit).
+ *
+ * @cites Player.currentAbility, Player.dayJob, Player.seasonStats, Club.reputation
+ */
+export function computeContractMinSalary(
+  player: Player,
+  club: Club,
+  leagueAverages: Record<PlayerPosition, LeaguePositionAverage>,
+): number {
+  const isFullTimePro = !player.dayJob
+  const repFactor = reputationSalaryMultiplier(club.reputation)
+  const base = isFullTimePro ? player.currentAbility * 200 * 0.80 : player.currentAbility * 80 * 0.80
+
+  const stats = player.seasonStats
+  let performanceFactor = 1
+  if (stats && stats.gamesPlayed >= MIN_LEAGUE_GAMES_FOR_PERFORMANCE_FACTOR) {
+    const positionAverage = leagueAverages[player.position]
+    const ratingDelta = stats.averageRating - positionAverage.avgRating
+    const goalsDelta = stats.goals - positionAverage.avgGoals
+    const assistsDelta = stats.assists - positionAverage.avgAssists
+    performanceFactor = clampPerformanceFactor(
+      1 + ratingDelta * 0.08 + goalsDelta * 0.015 + assistsDelta * 0.012,
+    )
+  }
+
+  return Math.round((base * repFactor * performanceFactor) / 500) * 500
 }
 
 export interface RoundIncomeParamsForNextFixture {
