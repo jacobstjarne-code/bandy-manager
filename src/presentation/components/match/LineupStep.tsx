@@ -441,17 +441,17 @@ export function LineupStep({
                       {Math.round(player.currentAbility)}
                     </span>
                     {isInjured && (
-                      <span className="tag tag-red" style={{ fontSize: 9, padding: '2px 5px' }}>
+                      <span className="tag tag-red" style={{ padding: '2px 5px' }}>
                         {player.injuryDaysRemaining > 0 ? `${player.injuryDaysRemaining} dgr` : 'Skadad'}
                       </span>
                     )}
                     {isSuspended && (
-                      <span className="tag tag-copper" style={{ fontSize: 9, padding: '2px 5px' }}>
+                      <span className="tag tag-copper" style={{ padding: '2px 5px' }}>
                         Avstängd
                       </span>
                     )}
                     {isRestingOut && (
-                      <span className="tag tag-copper" style={{ fontSize: 9, padding: '2px 5px' }}>
+                      <span className="tag tag-copper" style={{ padding: '2px 5px' }}>
                         {/* SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]' är en
                             medveten placeholder för etiketten (vilande/
                             överbelastad — inte skadad, inte avstängd). */}
@@ -461,7 +461,7 @@ export function LineupStep({
                     {isFatigueRisk && (
                       <span
                         className="tag tag-red"
-                        style={{ fontSize: 9, padding: '2px 5px', display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                        style={{ padding: '2px 5px', display: 'inline-flex', alignItems: 'center', gap: 3 }}
                         title="Startar under fitness-golvet — risk att förlora honom till nästa match"
                       >
                         <Icon icon={AlertTriangle} size={9} style={{ flexShrink: 0 }} />
@@ -473,7 +473,7 @@ export function LineupStep({
                       </span>
                     )}
                     {isStarting && !isUnavailable && !isFatigueRisk && (
-                      <span className="tag tag-green" style={{ fontSize: 9, padding: '2px 5px' }}>
+                      <span className="tag tag-green" style={{ padding: '2px 5px' }}>
                         Start
                       </span>
                     )}
