@@ -58,21 +58,6 @@ const EXCLUDE_DIR_PATTERNS = [
  */
 const ALLOWLIST: { file: string; maxAllowed: number; reason: string }[] = [
   {
-    file: 'src/application/useCases/roundProcessor.ts',
-    maxAllowed: 2,
-    reason: 'patronWithdrawal-eventets title/body (mecenat lämnar p.g.a. orten, inte relationen) — väntar Opus.',
-  },
-  {
-    file: 'src/application/useCases/seasonEndProcessor.ts',
-    maxAllowed: 2,
-    reason: 'Sponsor-lämnar-vid-licensöverskridande-inboxradens title/body. Triggas vid säsongsslut — sommaren.',
-  },
-  {
-    file: 'src/application/useCases/processors/eventProcessor.ts',
-    maxAllowed: 2,
-    reason: 'mecenatWithdrawal-eventets title/body (samma mönster som roundProcessor, skild orsak).',
-  },
-  {
     file: 'src/domain/services/turneringslageService.ts',
     maxAllowed: 1,
     reason: 'Strukturellt onåbar fallback-gren (deriveTurneringslageMode ger aldrig detta läget) — men literalen finns i koden, inte bara en kommentar.',
@@ -91,26 +76,6 @@ const ALLOWLIST: { file: string; maxAllowed: number; reason: string }[] = [
     file: 'src/domain/data/contentContract.ts',
     maxAllowed: 1,
     reason: 'INTE en spelartextplatshållare — literalen förekommer bara i sponsorOffer-radens `notes`-dokumentationsfält (metadata för Innehållskontraktet), aldrig renderad för spelaren. Kvar på listan för att grinden inte ska false-positive på dokumentation, men detta är inte ett H4b-läckage.',
-  },
-  {
-    file: 'src/application/useCases/setLineup.ts',
-    maxAllowed: 1,
-    reason: 'A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): felmeddelandet för "vilar/överbelastad efter förra matchens sannolikhetskast" — skild orsak från isInjured/avstängd, väntar Opus.',
-  },
-  {
-    file: 'src/presentation/components/match/LineupStep.tsx',
-    maxAllowed: 3,
-    reason: 'A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): tre platser — radtaggen "vilar" (isRestingOut), förhandsvarnings-taggen (isFatigueRisk, domens icke förhandlingsbara krav) och valideringsboxens tredje textgren. Alla väntar Opus.',
-  },
-  {
-    file: 'src/presentation/components/match/NodtruppScene.tsx',
-    maxAllowed: 1,
-    reason: 'A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): nödtrupp-statusradens tredje otillgänglighetsorsak ("X [Opus]" bredvid "Y skadade, Z avstängda") — väntar Opus.',
-  },
-  {
-    file: 'src/presentation/screens/SeasonContractDemandsScreen.tsx',
-    maxAllowed: 2,
-    reason: 'A-H2b (DOM_AH2B_RETENTION_2026-08-28.md): säsongsövergångens lönekravskort — rubrik + förklaringsrad. Doktrinen skärper explicit: "any new UI copy... must use the literal placeholder string [Opus]" tills mekanik/magnituder står. Funktionella knapp-/sektionsetiketter på samma yta är inte gated (samma kategori som befintliga Förläng/Avslå-knappar). Väntar Opus.',
   },
 ]
 

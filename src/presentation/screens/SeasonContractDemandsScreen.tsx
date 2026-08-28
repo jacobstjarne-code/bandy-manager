@@ -70,10 +70,10 @@ export function SeasonContractDemandsScreen() {
           💰 LÖNEKRAV
         </p>
         <p style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Georgia, serif', lineHeight: 1.3, marginBottom: 6 }}>
-          [Opus]
+          Truppen vill ha det den är värd
         </p>
         <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-          [Opus]
+          De som bar laget i år vet det. Möter du inte kravet finns alltid en klubb som gör det — och då är det inte längre ditt beslut.
         </p>
       </div>
 

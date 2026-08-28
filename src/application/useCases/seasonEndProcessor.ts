@@ -992,15 +992,15 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     if (sponsorsAfterLicense.length > 0) {
       const leavingSponsor = [...sponsorsAfterLicense].sort((a, b) => a.weeklyIncome - b.weeklyIncome)[0]
       sponsorsAfterLicense = sponsorsAfterLicense.filter(s => s.id !== leavingSponsor.id)
-      // SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]' tills en riktig rad om
-      // VARFÖR sponsorn lämnar finns. Strukturerade fält bär fakta (namn,
-      // belopp) så Opus kan skriva raden utan att gissa siffrorna.
+      // Orsaken är licensbeskedet, inte orten: en kommersiell partner som
+      // drar sig ur för att skydda sig mot associationen — sakligare röst
+      // än mecenatens/patronens ort-avhopp. weeklyIncome bär beloppet.
       newInboxItems.push({
         id: `inbox_sponsor_leaves_license_${nextSeason}`,
         date: game.currentDate,
         type: InboxItemType.EconomicCrisis,
-        title: '[Opus]',
-        body: '[Opus]',
+        title: `${leavingSponsor.name} bryter avtalet`,
+        body: `Licensbeskedet gick inte klubbens väg, och ${leavingSponsor.name} vill inte synas på tröjan medan klubben står under licensnämndens villkor. "Inget ont om laget. Men vi kan inte försvara det mot vår egen styrelse just nu." Samarbetet avslutas i förtid, och klubben tappar ${leavingSponsor.weeklyIncome.toLocaleString('sv-SE')} kr i veckan.`,
         relatedClubId: game.managedClubId,
         isRead: false,
       } as InboxItem)

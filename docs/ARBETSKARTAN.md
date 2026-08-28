@@ -54,6 +54,14 @@ Två läsare av samma sanning som drar olika slutsatser är seriens vanligaste f
 
 *Fångade: styrelsens fyra formler. `fanMood` mot `supporterGroup.mood`. Och `board_failure` som hade varit oense med sig själv.*
 
+### 5b · Är mätstickan jag använder själv rörlig?
+
+Inte bara "vem mer läser fältet" — **förändras fältet av det jag mäter med det?** Ett villkor byggt på ett tröskelvärde som självt stiger med framgång blir hårdare ju bättre spelaren presterar, alltså tvärtemot avsikten.
+
+**Regeln:** en gate som ska belöna framgång måste mätas mot något **absolut**, aldrig mot ett krav som självt anpassas efter samma framgång.
+
+*Missade: `A-H2b`:s villkor 2 använde `expectationVerdict`, som är tierrelativ. En dominant klubb klattrar till `WinLeague` där bara förstaplats räknas — gaten fyrade oftare för mittenlag än för mästare. Två mekaniker som var för sig är rätt och tillsammans motsäger varandra.*
+
 ### 6 · Vad säger domen att den vet, och varifrån?
 
 Varje påstående i domen ska gå att spåra till en fil, en mätning eller en källa. Kan det inte det ska domen säga att det är en gissning.

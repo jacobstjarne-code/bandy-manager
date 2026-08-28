@@ -544,12 +544,12 @@ export function applyMecenatCapEviction(
   const withdrawalEvent: GameEvent = {
     id: withdrawalId,
     type: 'mecenatWithdrawal',
-    // SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md). Platshållare tills
-    // Opus levererar en text som säger VARFÖR: orten har svikit klubben,
-    // inte att mecenaten kände sig ignorerad (skild orsak från
-    // kravmotorns avhopp, se eventProcessor.ts:254).
-    title: '[Opus]',
-    body: '[Opus]',
+    // Orsaken är orten, inte relationen: mecenaten lämnar för att bygden
+    // hen ville stötta har tunnats ut, inte för att hen känt sig ignorerad
+    // (skild orsak från kravmotorns avhopp ovan). Ingen ekonomisk straff-
+    // avgift — bara den förlorade relationen.
+    title: `${toEvict.name} drar sig tillbaka`,
+    body: `${toEvict.name} ber om ett möte. Ingen ilska den här gången, ingenting du gjort fel.\n\n"Jag gav inte pengarna för klubbens skull i första hand. Jag gav dem för bygden. Men den bygd jag ville hålla vid liv tunnas ut. Folk flyttar, läktaren glesnar, det pratas knappt bandy på orten längre. Då räcker inte jag till. Det är inte ert fel, det är bara tiden."\n\n${toEvict.name} lämnar. Det blir tyst — tystare än förr.`,
     choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'noOp' } }],
     resolved: false,
   }

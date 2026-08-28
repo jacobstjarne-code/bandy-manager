@@ -452,10 +452,7 @@ export function LineupStep({
                     )}
                     {isRestingOut && (
                       <span className="tag tag-copper" style={{ padding: '2px 5px' }}>
-                        {/* SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]' är en
-                            medveten placeholder för etiketten (vilande/
-                            överbelastad — inte skadad, inte avstängd). */}
-                        [Opus]
+                        Vilar
                       </span>
                     )}
                     {isFatigueRisk && (
@@ -465,11 +462,7 @@ export function LineupStep({
                         title="Startar under fitness-golvet — risk att förlora honom till nästa match"
                       >
                         <Icon icon={AlertTriangle} size={9} style={{ flexShrink: 0 }} />
-                        {/* SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]' är en
-                            medveten placeholder för förhandsvarningen
-                            (domens icke förhandlingsbara krav — synlig INNAN
-                            matchen, inte en post-match-överraskning). */}
-                        [Opus]
+                        Sliten
                       </span>
                     )}
                     {isStarting && !isUnavailable && !isFatigueRisk && (
@@ -496,10 +489,7 @@ export function LineupStep({
                 ? 'är skadad'
                 : p.suspensionGamesRemaining > 0
                 ? `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`
-                /* A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): tredje grenen,
-                   vilande/överbelastad. SVENSK TEXT — CODE SKRIVER ALDRIG:
-                   '[Opus]' är en medveten placeholder. */
-                : '[Opus]'}
+                : 'vilar efter förra matchen'}
             </span>
           ))}
         </div>

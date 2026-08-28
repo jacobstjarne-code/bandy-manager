@@ -64,12 +64,10 @@ export function setLineup(input: SetLineupInput): SetLineupResult {
     // efter att ha förlorat sannolikhetskastet (playerStateProcessor.ts) om han
     // startade förra matchen under FATIGUE_AVAILABILITY_FLOOR. SKILD kontroll
     // från isInjured — han är inte skadad, texten får aldrig säga det.
-    // SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]' är en medveten placeholder,
-    // inte färdig text. Opus skriver den riktiga raden.
     if ((player.restGamesRemaining ?? 0) > 0) {
       return {
         success: false,
-        error: `${player.firstName} ${player.lastName} — [Opus]`,
+        error: `${player.firstName} ${player.lastName} vilar efter förra matchen.`,
       }
     }
   }

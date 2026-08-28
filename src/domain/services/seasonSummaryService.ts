@@ -339,7 +339,7 @@ export function buildExpectationVerdictSentence(
 ): string {
   // H4 Heros: Survive väntar på Opus-text, se boardService.ts:s BOARD_EXPECTATION_TEXT.
   const expectationText: Record<ClubExpectation, string> = {
-    [ClubExpectation.Survive]: '[Opus]',
+    [ClubExpectation.Survive]: 'finnas kvar i serien',
     [ClubExpectation.AvoidBottom]: 'undvika nedflyttning',
     [ClubExpectation.MidTable]: 'hålla mittentabellen',
     [ClubExpectation.ChallengeTop]: 'utmana toppen',

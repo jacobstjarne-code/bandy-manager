@@ -15,6 +15,7 @@ export const HALFTIME_LABELS = {
   lugna: 'Lugna ner det.',
   pressa: 'Pressa hårdare.',
   prata: 'Prata individuellt.',
+  hold: 'Håll i det.',
 }
 
 export type KvittoOutcomeDir = 'good' | 'bad' | 'neutral'

@@ -251,11 +251,11 @@ function avoidRelegation(owner: BoardMember, season: number, totalTeams: number)
   const safePosition = totalTeams - RELEGATION_ZONE_SIZE
   return makeObjective(
     'avoidRelegation', 'sporting',
-    '[Opus]',
-    '[Opus]',
+    'Undvik nedflyttning',
+    `${displayName(owner)}: "Jag begär inte mycket. Håll oss kvar i serien till våren, så är jag nöjd."`,
     owner, 'avoidRelegation', safePosition,
-    '[Opus]',
-    '[Opus]',
+    `${displayName(owner)}: "Vi klarade oss! Ett år till i serien."`,
+    `${displayName(owner)}: "Nedflyttning. Det får inte hända en klubb som vår."`,
     false, season,
   )
 }

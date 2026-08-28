@@ -11,7 +11,7 @@ import { boardPatienceZoneFromScore } from './portal/boardPatienceZone'
 // se ClubExpandedCard.tsx) men INTE styrelsemötets kortfras/ceremoniella
 // replik. Väntar på Opus.
 export const BOARD_EXPECTATION_TEXT: Record<ClubExpectation, string> = {
-  [ClubExpectation.Survive]: '[Opus]',
+  [ClubExpectation.Survive]: 'hålla oss kvar i serien',
   [ClubExpectation.AvoidBottom]: 'undvika botten av tabellen',
   [ClubExpectation.MidTable]: 'hålla oss i mitten av tabellen',
   [ClubExpectation.ChallengeTop]: 'utmana om topplaceringar',
@@ -28,7 +28,7 @@ export const BOARD_EXPECTATION_TEXT: Record<ClubExpectation, string> = {
  * denna är hela repliken för styrelsemötets "Målet i år"-rad.
  */
 export const BOARD_EXPECTATION_CEREMONIAL: Record<ClubExpectation, string> = {
-  [ClubExpectation.Survive]: '[Opus]',
+  [ClubExpectation.Survive]: 'Bara ni finns kvar till nästa vinter har ni gjort ert jobb. Slutar vi sist får det vara så. Vi bygger vidare därifrån.',
   [ClubExpectation.AvoidBottom]: 'Håll oss ovanför strecket. Mer begär vi inte i år. Allt därutöver är bonus.',
   [ClubExpectation.MidTable]: 'Plats fem till åtta. Inget kvalspel.',
   [ClubExpectation.ChallengeTop]: 'Topp fyra. Och när slutspelet börjar ska ingen vilja möta oss.',
@@ -650,7 +650,7 @@ const LOWERED_REASON_LINE = 'Ni tappade för mycket för att vi ska kunna kräva
 // INTE en upprepning av årsboken) fick ingen låst text i Jacobs order —
 // bara nivåetiketterna + skälsraderna var låsta. Platshållare tills Opus
 // skriver den, per BoardAssessment.seasonAcknowledgment.
-export const BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER = '[Opus]'
+export const BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER = 'Vi har vägt in hela säsongen, inte bara sista omgången.'
 
 /**
  * @cites club.boardExpectation, lastSeasonPosition

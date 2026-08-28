@@ -790,10 +790,7 @@ export function GranskaOversikt({
             // mätbar effekt att variera på, en enda rad är rätt.
             if (entry.detail === 'hold') {
               rows.push({
-                // TODO(Opus): ingen låst rubrik-text finns ännu för hold
-                // (HALFTIME_LABELS har bara lugna/pressa/prata) — '[Opus]'
-                // tills en finns, per CLAUDE.md:s regel om platshållare.
-                stripe: 'neutral', heading: '[Opus]', playerName: '',
+                stripe: 'neutral', heading: HALFTIME_LABELS.hold, playerName: '',
                 outcome: PEP_TALK_HOLD_KVITTO,
                 value: '—', valueLabel: 'neutral',
               })

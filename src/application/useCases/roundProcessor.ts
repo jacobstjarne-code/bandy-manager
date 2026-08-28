@@ -1400,12 +1400,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       allNewEvents.push({
         id: evictionId,
         type: 'patronWithdrawal',
-        // SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md). Platshållare tills
-        // Opus levererar en text om att ORTEN, inte relationen till
-        // patronen själv, är orsaken — skild från den befintliga
+        // Orsaken är orten, inte relationen till patronen själv: ortstödet
+        // (communityStanding) har fallit under tröskeln som förde patronen
+        // hit, så premissen — en klubb bygden bär — är borta. Skild från den
         // happiness-baserade avgångstexten.
-        title: '[Opus]',
-        body: '[Opus]',
+        title: `${updatedPatron.name ?? 'Patronen'} drar sig ur`,
+        body: `${updatedPatron.name ?? 'Patronen'} ber att få träffas en sista gång. Lugnt, sakligt, utan bitterhet.\n\n"Jag gick in i det här när orten stod bakom laget. Det var det jag ville vara med och bära — en klubb som bygden trodde på. Nu har läktaren tunnats ut och samtalet tystnat, och då är det inte min klubb att bära längre. Jag drar mig ur medan det ännu är i godo."\n\n${updatedPatron.name ?? 'Patronen'} lämnar. Det som byggts står kvar ett tag till, men handen under är borta.`,
         choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'patronWithdrawn' } }],
         resolved: false,
       })

@@ -73,9 +73,7 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
             {[
               injured > 0 ? `${injured} skadade` : null,
               suspended > 0 ? `${suspended} avstängda` : null,
-              // SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]' är en medveten
-              // placeholder för ordet som beskriver vilande/överbelastad.
-              resting > 0 ? `${resting} [Opus]` : null,
+              resting > 0 ? `${resting} vilande` : null,
             ].filter(Boolean).join(', ')}
             {(injured > 0 || suspended > 0 || resting > 0) ? '. ' : ''}
             Du behöver kalla in {need} till innan ni kan spela.

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../createNewGame'
 import { advanceToNextEvent } from '../roundProcessor'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
+import { BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER } from '../../../domain/services/boardService'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { autoSelectLineup, autoResolvePendingScreen } from '../../../../scripts/stress/fixtures'
 
@@ -39,7 +40,7 @@ describe('game.boardAssessment fylls efter säsongsslut', () => {
     expect(seasonEnded, 'säsongen borde ha avslutats inom 200 rundor').toBe(true)
     expect(game.boardAssessment, 'boardAssessment ska vara satt efter säsongsslut').toBeDefined()
     expect(['raised', 'lowered', 'unchanged']).toContain(game.boardAssessment!.direction)
-    expect(game.boardAssessment!.seasonAcknowledgment).toBe('[Opus]')
+    expect(game.boardAssessment!.seasonAcknowledgment).toBe(BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER)
     if (game.boardAssessment!.direction === 'unchanged') {
       expect(game.boardAssessment!.reasonLine).toBeUndefined()
     } else {
