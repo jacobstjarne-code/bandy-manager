@@ -1692,7 +1692,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // (HANDOFF-C-K1-LANDSLAG-2026-05-23.md Q3, låst av Jacob). Samma efterhands-
   // mönster som marketValueInbox ovan, se kommentaren vid nationalTeamCallupBonusTkr.
   if (nationalTeamCallupBonusTkr > 0) {
-    updatedGame = { ...updatedGame, clubs: applyFinanceChange(updatedGame.clubs, game.managedClubId, nationalTeamCallupBonusTkr * 1000) }
+    updatedGame = {
+      ...updatedGame,
+      clubs: applyFinanceChange(updatedGame.clubs, game.managedClubId, nationalTeamCallupBonusTkr * 1000),
+      financeLog: appendFinanceLog(updatedGame.financeLog ?? [], {
+        round: nextMatchday,
+        amount: nationalTeamCallupBonusTkr * 1000,
+        reason: 'event',
+        label: 'Landslagsuttagning (bonus)',
+      }),
+    }
   }
 
   // ── Arc processing ──────────────────────────────────────────────────────

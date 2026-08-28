@@ -168,6 +168,9 @@ export function processEconomy(
   for (const [clubId, amount] of Object.entries(prizeMoneyByClub)) {
     if (amount > 0) {
       updatedClubs = applyFinanceChange(updatedClubs, clubId, amount)
+      if (clubId === game.managedClubId) {
+        roundFinanceLog.push({ round: nextMatchday, amount, reason: 'cup_prize', label: 'Cupvinstpengar' })
+      }
     }
   }
 
