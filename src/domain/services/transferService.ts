@@ -397,6 +397,12 @@ export function executeTransfer(
   const soldPlayerName = soldPlayer ? `${soldPlayer.firstName} ${soldPlayer.lastName}` : 'spelaren'
   const buyingClubName = game.clubs.find(c => c.id === buyingClubId)?.name ?? 'köparklubben'
 
+  // Framgångskurvan steg 3 fix (2026-08-28): dedikerad, ocappad säsongsräknare
+  // för investSurplus — financeLog-posterna nedan trängs ut av FINANCE_LOG_MAX
+  // (50) i en händelserik säsong, se SaveGame.ts's kommentar på fältet.
+  // Samma teckenkonvention som FinanceEntry.amount (verifierad ovan): sålt =
+  // positivt/intäkt, köpt = negativt/utgift.
+  let updatedSeasonNetTransferSpend = game.seasonNetTransferSpend ?? 0
   let updatedFinanceLog = game.financeLog ?? []
   if (isSoldFromManagedClub) {
     const saleEntry: FinanceEntry = {
@@ -406,6 +412,7 @@ export function executeTransfer(
       label: `Spelarförsäljning — ${soldPlayerName} till ${buyingClubName}`,
     }
     updatedFinanceLog = appendFinanceLog(updatedFinanceLog, saleEntry)
+    updatedSeasonNetTransferSpend += offerAmount
   } else if (buyingClubId === game.managedClubId) {
     const buyEntry: FinanceEntry = {
       round: latestRound,
@@ -414,6 +421,7 @@ export function executeTransfer(
       label: `Spelarköp — ${soldPlayerName}`,
     }
     updatedFinanceLog = appendFinanceLog(updatedFinanceLog, buyEntry)
+    updatedSeasonNetTransferSpend -= offerAmount
   }
 
   // DEV-011: Nemesis becomes lagkamrat — generate diary follow-ups
@@ -449,6 +457,7 @@ export function executeTransfer(
     clubs: updatedClubs,
     transferBids: updatedBids,
     financeLog: updatedFinanceLog,
+    seasonNetTransferSpend: updatedSeasonNetTransferSpend,
     pendingFollowUps: nemesisFollowUps.length > 0
       ? [...(game.pendingFollowUps ?? []), ...nemesisFollowUps]
       : game.pendingFollowUps,

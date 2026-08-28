@@ -196,3 +196,32 @@ describe('renewContract — O5 kraft 1, löneinflation med rykte', () => {
     expect(belowHighRepFloor.success).toBe(false)  // hade accepterats vid rykte 60 (golv 12500)
   })
 })
+
+// Framgångskurvan steg 3, del 1 (DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 3):
+// kontraktsförlängningar loggades tidigare inte alls till financeLog —
+// investSurplus (boardObjectiveService.ts) kan nu bara mäta verklig
+// investering om denna post skrivs.
+describe('renewContract — loggar till financeLog (Framgångskurvan steg 3, del 1)', () => {
+  it('skriver en contract_extension-post med amount 0 vid en godkänd förlängning', () => {
+    const store = makeStore(makeGame({ financeLog: [] }))
+    const actions = transferActions(store.get, store.set)
+    const result = actions.renewContract('berg', 12500, 2)
+    expect(result.success).toBe(true)
+
+    const game = store.getGame()!
+    expect(game.financeLog).toHaveLength(1)
+    const entry = game.financeLog![0]
+    expect(entry.reason).toBe('contract_extension')
+    expect(entry.amount).toBe(0)
+    expect(entry.round).toBe(14)  // game.currentMatchday i makeGame()
+    expect(entry.label).toMatch(/Anders Berg/)
+  })
+
+  it('skriver INGEN financeLog-post vid en avvisad förlängning (under golvet)', () => {
+    const store = makeStore(makeGame({ financeLog: [] }))
+    const actions = transferActions(store.get, store.set)
+    const result = actions.renewContract('berg', 12000, 2)
+    expect(result.success).toBe(false)
+    expect(store.getGame()!.financeLog).toEqual([])
+  })
+})

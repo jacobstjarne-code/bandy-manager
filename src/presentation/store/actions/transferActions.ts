@@ -2,7 +2,8 @@ import type { SaveGame, TalentSearchRequest, Sponsor } from '../../../domain/ent
 import { startScoutAssignment } from '../../../domain/services/scoutingService'
 import { createOutgoingBid } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
-import { applyFinanceChange, computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
+import { applyFinanceChange, appendFinanceLog, computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
+import type { FinanceEntry } from '../../../domain/services/economyService'
 import { bidReceivedEvent } from '../../../domain/services/events/eventFactories'
 import { resolveEvent } from '../../../domain/services/eventService'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
@@ -118,7 +119,28 @@ export function transferActions(get: Get, set: Set) {
           : p
       )
 
-      set({ game: { ...game, players: updatedPlayers } })
+      // Framgångskurvan steg 3, del 1 (DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 3):
+      // kontraktsförlängningar loggades tidigare inte alls — investSurplus (nästa
+      // steg) behöver kunna se att en förlängning HÄNT under säsongen. amount=0:
+      // det är en händelsemarkör ("ett investeringsbeslut togs"), inte en
+      // kassaflödespost — själva lönekostnaden bärs redan av den befintliga
+      // veckovisa 'wages'-raden i calcRoundIncome/economyProcessor.ts, som läser
+      // player.salary (redan uppdaterat ovan) varje omgång. Att lägga en icke-noll
+      // summa här hade dubbelräknat lönehöjningen.
+      const extensionEntry: FinanceEntry = {
+        round: game.currentMatchday ?? 0,
+        amount: 0,
+        reason: 'contract_extension',
+        label: `Kontraktsförlängning — ${player.firstName} ${player.lastName} (${formatSalary(newSalary)}/${game.currentSeason + years})`,
+      }
+      const updatedFinanceLog = appendFinanceLog(game.financeLog ?? [], extensionEntry)
+
+      // Framgångskurvan steg 3 fix (2026-08-28): dedikerad, ocappad säsongsräknare
+      // för investSurplus — financeLog-posten ovan trängs ut av FINANCE_LOG_MAX
+      // (50) i en händelserik säsong, se SaveGame.ts's kommentar på fältet.
+      const updatedExtensionCount = (game.seasonContractExtensionCount ?? 0) + 1
+
+      set({ game: { ...game, players: updatedPlayers, financeLog: updatedFinanceLog, seasonContractExtensionCount: updatedExtensionCount } })
       return {
         success: true,
         wageWarning: projectedWageBill > club.wageBudget

@@ -64,7 +64,23 @@ describe('generateBoardObjectives — investSurplus tilldelas av tier, inte fina
   })
 })
 
-describe('evaluateObjective — investSurplus (O5 kraft 3)', () => {
+// Framgångskurvan steg 3, del 2 (DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 3):
+// investSurplus mätte tidigare bara kassasaldot (fjärde koefficientrundan,
+// historik nedan i boardObjectiveService.ts) — rot: spårning av VERKLIG
+// investeringsaktivitet (byggda noder, kontraktsförlängningar, netto-
+// transferutgift) fanns inte förrän Part 1 (renewContract → financeLog) och
+// FacilityState.builtSeasons (redan fanns, saknade konsument) kopplades ihop.
+//
+// FIX (2026-08-28): läste ursprungligen kontraktsförlängningar/nettotransfer
+// direkt ur financeLog — trasigt, financeLog är capad till FINANCE_LOG_MAX=50
+// DELAT över alla kategorier och en händelserik säsong trängde ut tidiga
+// poster innan säsongsslut (empiriskt bevisat, se
+// scripts/framgangskurvan-ansprak3-investsurplus-matning-2026-08-28.ts).
+// Testerna nedan bygger nu game.seasonContractExtensionCount/
+// seasonNetTransferSpend direkt (de dedikerade, ocappade fälten) i stället
+// för financeLog, plus en explicit regressionstest som bevisar att en
+// URTRÄNGD financeLog-post ändå räknas rätt.
+describe('evaluateObjective — investSurplus (Framgångskurvan steg 3, del 2)', () => {
   const objective = {
     id: 'investSurplus', type: 'economic' as const, label: 'Investera överskottet', description: '',
     ownerId: 'Britt Nord', ownerPersonality: 'ekonom' as const,
@@ -76,27 +92,85 @@ describe('evaluateObjective — investSurplus (O5 kraft 3)', () => {
   function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     const club = makeClub({ finances: SURPLUS_CEILING })
     return {
-      managedClubId: 'c1', clubs: [club], currentSeason: 2025,
+      managedClubId: 'c1', clubs: [club], currentSeason: 2025, currentMatchday: 10,
+      financeLog: [], seasonStartFinances: SURPLUS_CEILING,
+      seasonContractExtensionCount: 0, seasonNetTransferSpend: 0,
       ...overrides,
     } as unknown as SaveGame
   }
 
-  it('met: kassan tillbaka under taket', () => {
-    const club = makeClub({ finances: SURPLUS_CEILING - 1 })
-    const game = makeGame({ clubs: [club], seasonStartFinances: SURPLUS_CEILING + 500000 })
-    expect(evaluateObjective(objective, game).status).toBe('met')
+  it('met: en facility-nod byggd denna säsong (builtSeasons)', () => {
+    const game = makeGame({
+      facilityState: { builtNodeIds: ['x'], builtSeasons: { x: 2025 } },
+    })
+    const result = evaluateObjective(objective, game)
+    expect(result.status).toBe('met')
+    expect(result.value).toBe(1)
   })
 
-  it('active: fortfarande över taket, kassan minskande sen säsongsstart (aldrig sämre än active, fjärde koefficientrundan 2026-08-23)', () => {
-    const club = makeClub({ finances: SURPLUS_CEILING + 200000 })
-    const game = makeGame({ clubs: [club], seasonStartFinances: SURPLUS_CEILING + 500000 })
-    expect(evaluateObjective(objective, game).status).toBe('active')
+  it('met: en kontraktsförlängning denna säsong (seasonContractExtensionCount)', () => {
+    const game = makeGame({ seasonContractExtensionCount: 1 })
+    const result = evaluateObjective(objective, game)
+    expect(result.status).toBe('met')
+    expect(result.value).toBe(1)
   })
 
-  it('active (INTE at_risk): fortfarande över taket och kassan växer — får aldrig faila bara för att ha pengar', () => {
-    const club = makeClub({ finances: SURPLUS_CEILING + 500000 })
-    const game = makeGame({ clubs: [club], seasonStartFinances: SURPLUS_CEILING + 200000 })
-    expect(evaluateObjective(objective, game).status).toBe('active')
+  it('met: nettotransferutgift denna säsong (seasonNetTransferSpend negativ — köpt mer än sålt)', () => {
+    const game = makeGame({ seasonNetTransferSpend: -300000 })
+    const result = evaluateObjective(objective, game)
+    expect(result.status).toBe('met')
+    expect(result.value).toBe(1)
+  })
+
+  it('failed: ingen investeringsaktivitet och stor kassatillväxt (>1 mkr) — hamstring', () => {
+    const club = makeClub({ finances: SURPLUS_CEILING + 1_200_000 })
+    const game = makeGame({ clubs: [club], seasonStartFinances: SURPLUS_CEILING })
+    const result = evaluateObjective(objective, game)
+    expect(result.status).toBe('failed')
+    expect(result.value).toBe(0)
+  })
+
+  it('active: ingen investeringsaktivitet men liten/ingen kassatillväxt — inte straffat tidigt i säsongen', () => {
+    const club = makeClub({ finances: SURPLUS_CEILING + 50000 })
+    const game = makeGame({ clubs: [club], seasonStartFinances: SURPLUS_CEILING })
+    const result = evaluateObjective(objective, game)
+    expect(result.status).toBe('active')
+    expect(result.value).toBe(0)
+  })
+
+  it('nettoförsäljning (sålt mer än köpt) räknas INTE som investering — inget utflöde', () => {
+    const club = makeClub({ finances: SURPLUS_CEILING + 1_200_000 })
+    const game = makeGame({
+      clubs: [club], seasonStartFinances: SURPLUS_CEILING,
+      seasonNetTransferSpend: 300000,
+    })
+    const result = evaluateObjective(objective, game)
+    expect(result.status).toBe('failed')
+    expect(result.value).toBe(0)
+  })
+
+  // REGRESSION (2026-08-28): den empiriskt bevisade buggen — en tidig
+  // kontraktsförlängning/transfer i financeLog trängs ut av FINANCE_LOG_MAX
+  // (50) innan säsongsslut i en händelserik säsong. Simulerar 60 orelaterade
+  // 'wages'-poster (pushar en tidig extension/transfer-post ur loggen helt)
+  // och bevisar att investSurplus ÄNDÅ räknar rätt via de dedikerade fälten.
+  it('REGRESSION: kontraktsförlängning+transfer räknas trots att financeLog-posterna trängts ut av cappen', () => {
+    const floodedLog = Array.from({ length: 60 }, (_, i) => ({
+      round: i + 1, amount: -5000, reason: 'wages' as const, label: `Löner v${i + 1}`,
+    }))
+    // De "riktiga" investeringsposterna (matchday 6/10) skulle i en verklig
+    // säsong redan vara borta ur financeLog vid det här laget — testet
+    // lämnar dem HELT UTANFÖR financeLog för att bevisa att evaluateObjective
+    // inte längre är beroende av att de finns kvar där.
+    const game = makeGame({
+      financeLog: floodedLog,
+      seasonContractExtensionCount: 1,
+      seasonNetTransferSpend: -150000,
+    })
+    expect(game.financeLog?.some(e => e.reason === 'contract_extension' || e.reason === 'transfer_in')).toBe(false)
+    const result = evaluateObjective(objective, game)
+    expect(result.status).toBe('met')
+    expect(result.value).toBe(2)
   })
 })
 

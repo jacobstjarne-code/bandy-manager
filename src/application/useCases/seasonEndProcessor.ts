@@ -1610,6 +1610,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // har redan läst det GAMLA värdet via game.seasonStartBoardExpectation
     // innan denna skrivning sker.
     seasonStartBoardExpectation: updatedClubs.find(c => c.id === game.managedClubId)?.boardExpectation,
+    // Framgångskurvan steg 3 fix (2026-08-28): nollställ investSurplus'
+    // säsongsräknare vid rollover — en klubb som investerade hårt i säsong N
+    // ska inte bära det över till säsong N+1's utvärdering. Se SaveGame.ts.
+    seasonContractExtensionCount: 0,
+    seasonNetTransferSpend: 0,
     scoutReports: Object.fromEntries(
       Object.entries(game.scoutReports ?? {})
         .filter(([, r]) => nextSeason - r.scoutedSeason < 2)

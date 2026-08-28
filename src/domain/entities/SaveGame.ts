@@ -252,6 +252,28 @@ export interface SaveGame {
    *  eftersom det senare kan redan vara framåtstegat vid läsningstillfället. */
   seasonStartBoardExpectation?: ClubExpectation
 
+  /** Framgångskurvan steg 3 fix (2026-08-28) — DEDIKERADE, ocappade
+   *  säsongsräknare för investSurplus (boardObjectiveService.ts). financeLog
+   *  är arkitektoniskt en ROLLANDE VISNINGSLOGG (EkonomiTab "senaste
+   *  transaktioner"), capad till FINANCE_LOG_MAX=50 poster DELAT över ALLA
+   *  kategorier (economyService.ts) — en dominant klubbs säsong skriver
+   *  180-330+ poster (5-9/omgång × 35-40 omgångar via cup/slutspel), så en
+   *  tidig kontraktsförlängning eller transfer trängs ut ur loggen långt
+   *  innan säsongsslut (empiriskt bevisat, se
+   *  scripts/framgangskurvan-ansprak3-investsurplus-matning-2026-08-28.ts).
+   *  Dessa två fält räknas i stället direkt vid handlingstillfället
+   *  (renewContract i transferActions.ts, executeTransfer i
+   *  transferService.ts) och nollställs vid säsongsstart, samma mönster
+   *  som seasonStartFinances ovan (satt i createNewGame.ts, rullat i
+   *  seasonEndProcessor.ts). financeLog-posterna skrivs fortfarande —
+   *  detta ersätter bara COUNT-källan för investSurplus, inte visningsloggen. */
+  seasonContractExtensionCount?: number
+  /** Nettosumma av transfer_in/transfer_out DENNA säsong, samma teckenkonvention
+   *  som FinanceEntry.amount: positivt = nettoINTÄKT (sålt mer än köpt),
+   *  negativt = nettoUTGIFT (köpt mer än sålt). Se seasonContractExtensionCount
+   *  ovan för varför detta inte längre härleds ur financeLog. */
+  seasonNetTransferSpend?: number
+
   scoutReports: Record<string, ScoutReport>    // key = playerId
   activeScoutAssignment: ScoutAssignment | null
   scoutBudget: number

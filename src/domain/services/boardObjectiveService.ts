@@ -408,21 +408,49 @@ export function evaluateObjective(
       return { value: delta, status: delta >= objective.targetValue ? 'met' : delta >= 0 ? 'active' : 'at_risk' }
     }
     case 'investSurplus': {
-      // Fjärde koefficientrundan (Jacobs dom 2026-08-23, O5-acceptanstestets
-      // fynd: 0/59 met, 40/59 failed — "0% met betyder att målet är ett
-      // straff för att ha pengar"). Gamla versionen krävde att kassan
-      // MINSKAT sen säsongsstart för 'active' — mekaniskt omöjligt för en
-      // framgångsrik klubb (ingen stress-infrastruktur spenderade något,
-      // se BACKLOG E-STRESS1), så objectivet kunde bara landa på 'at_risk'
-      // (→ 'failed' i den binära historiken) varje gång den triggades.
-      // Rapporterat billigast av två alternativ: aldrig sämre än 'active'
-      // så länge kassan är över taket (denna rad) mot att mäta faktisk
-      // INVESTERING (t.ex. byggda noder) istf kassaminskning — det senare
-      // kräver ny spårning, det förra är en radändring. met kräver
-      // fortfarande att kassan faktiskt kommit under taket.
+      // Framgångskurvan steg 3, del 2 (DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 3):
+      // rot till varför femte koefficientrundan (nedan, historik) bara kunde mäta
+      // kassasaldo — spårning av VERKLIG investeringsaktivitet (byggda noder,
+      // kontraktsförlängningar, nettotransferutgift) fanns inte förrän nu:
+      // FacilityState.builtSeasons var text-utan-konsument, och
+      // kontraktsförlängningar loggades inte alls till financeLog (fixat i
+      // renewContract, transferActions.ts, samma leverans).
+      //
+      // FIX (2026-08-28): läste tidigare financeLog direkt (filtrerat på
+      // round <= currentMatchday) för kontraktsförlängningar/nettotransfer.
+      // Empiriskt bevisat trasigt (scripts/framgangskurvan-ansprak3-
+      // investsurplus-matning-2026-08-28.ts): financeLog är en ROLLANDE
+      // VISNINGSLOGG capad till FINANCE_LOG_MAX=50 DELAT över alla kategorier
+      // (wages, match_revenue, m.fl.) — en dominant klubbs säsong (cup+slutspel,
+      // 35-40 omgångar × 5-9 poster/omgång = 180-330+ poster) trängde ut en
+      // matchday 6/10-post innan säsongsslut, vilket tystnade räkningen just
+      // för de klubbar featuren är till för att belöna. Läser nu i stället
+      // game.seasonContractExtensionCount/seasonNetTransferSpend — dedikerade,
+      // ocappade fält som räknas direkt vid handlingstillfället och nollställs
+      // vid säsongsstart (samma mönster som seasonStartFinances, se SaveGame.ts).
       const club = game.clubs.find(c => c.id === game.managedClubId)!
-      const value = club.finances
-      return { value, status: value <= objective.targetValue ? 'met' : 'active' }
+      const builtSeasons = game.facilityState?.builtSeasons ?? {}
+      const builtNodesThisSeason = Object.values(builtSeasons)
+        .filter(s => s === game.currentSeason).length
+
+      const contractExtensionsThisSeason = game.seasonContractExtensionCount ?? 0
+
+      // Teckenkonvention (oförändrad, verifierad mot transferService.ts):
+      // netTransferSpend = summan av transfer_in/transfer_out denna säsong;
+      // negativ = nettoutgift (köpt mer än sålt).
+      const netTransferSpend = game.seasonNetTransferSpend ?? 0
+
+      const investmentCount = builtNodesThisSeason + contractExtensionsThisSeason
+        + (netTransferSpend < 0 ? 1 : 0)
+
+      const cashGrowth = club.finances - (game.seasonStartFinances ?? 0)
+
+      const status: 'met' | 'failed' | 'active' =
+        investmentCount >= 1 ? 'met'
+        : cashGrowth > 1_000_000 ? 'failed'
+        : 'active'
+
+      return { value: investmentCount, status }
     }
     case 'playHomegrown': {
       const recent = game.fixtures

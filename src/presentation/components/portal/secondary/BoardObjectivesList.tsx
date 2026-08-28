@@ -55,7 +55,19 @@ export function formatMoneyPair(current: number, target: number): [string, strin
 // med currentValue som startpunkt.
 const LOWER_IS_BETTER: ReadonlyArray<BoardObjective['measureFn']> = ['topHalf', 'reduceInjuries']
 
+// Framgångskurvan steg 3, del 2 (DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 3):
+// investSurplus.currentValue bytte betydelse från kassasaldo (kr, jämförbart
+// med targetValue=SURPLUS_CEILING=2 mkr) till investmentCount (ett litet
+// heltal — byggda noder + förlängningar + ev. nettotransferutgift denna
+// säsong). targetValue är oförändrat kvar som taket som AKTIVERAR kravet,
+// inte som något currentValue längre närmar sig — binärt mål (>=1 = klart),
+// inte en kvot mot 2 miljoner. Måste särbehandlas i både formeln nedan och
+// i render-grenen (obj.type === 'economic' hade annars kört currentValue
+// genom formatMoneyPair och visat "0 kr / 2.0 mkr" för ett antal-fält).
+const INVEST_SURPLUS_MEASURE = 'investSurplus'
+
 export function computeProgressPct(obj: BoardObjective): number {
+  if (obj.measureFn === INVEST_SURPLUS_MEASURE) return obj.currentValue >= 1 ? 100 : 0
   if (obj.targetValue <= 0) return 0
   if (LOWER_IS_BETTER.includes(obj.measureFn)) {
     // Fallback (binärt, samma som interimsfixen) när startValue saknas ELLER
@@ -129,7 +141,9 @@ function ObjRow({ obj, onNavigate, hideProgress = false }: ObjRowProps) {
                 kunde ge OLIKA enheter på de två sidorna ("0 kr / 100 tkr") —
                 formatMoneyPair väljer en delad enhet på det större talet. */}
             <span className="obj-progress-value">
-              {obj.type === 'economic'
+              {obj.measureFn === INVEST_SURPLUS_MEASURE
+                ? `${obj.currentValue} investering${obj.currentValue === 1 ? '' : 'ar'}`
+                : obj.type === 'economic'
                 ? formatMoneyPair(obj.currentValue, obj.targetValue).join(' / ')
                 : `${obj.currentValue} / ${obj.targetValue}`}
             </span>

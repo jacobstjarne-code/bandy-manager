@@ -356,6 +356,10 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     seasonStartFinances: managedClub.finances,
     // A-H1: fryser säsongens boardExpectation vid start — se SaveGame.ts.
     seasonStartBoardExpectation: managedClub.boardExpectation,
+    // Framgångskurvan steg 3 fix (2026-08-28): nollställda säsongsräknare,
+    // se SaveGame.ts's kommentar på seasonContractExtensionCount.
+    seasonContractExtensionCount: 0,
+    seasonNetTransferSpend: 0,
     financeLog: [],
     storylines: [],
     clubLegends: [],

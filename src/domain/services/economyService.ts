@@ -30,6 +30,7 @@ export type FinanceReason =
   | 'scout'
   | 'academy'
   | 'event'
+  | 'contract_extension'
 
 export interface FinanceEntry {
   round: number
