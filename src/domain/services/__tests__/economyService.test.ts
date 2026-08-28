@@ -388,6 +388,46 @@ describe('calcRoundIncome — match revenue', () => {
   })
 })
 
+// ── Group 5a: calcRoundIncome — formBonus, vidgat spann (knapp 2, DOM_AH2_ ──
+// BASEKONOMI_INTAKT_2026-08-28). Gamla spannet var 1.15/1.05/0.88/1.0 (samma
+// tre trösklar: topp-3, topp-6, botten-3). Vidgat efter mätning (D033) —
+// dessa tester låser TROSKLARNAS ORDNING och riktning, inte de exakta
+// magnituderna (de kan omkalibreras utan att testerna behöver röras, så
+// länge hierarkin topp3 > topp6 > mitt > botten3 hålls).
+describe('calcRoundIncome — formBonus, vidgat spann (knapp 2)', () => {
+  function revenueAtPosition(position: number): number {
+    return calcRoundIncome({
+      club: makeClub(), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: true, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: makeStanding({ position }), rand: deterministicRand,
+    }).matchRevenue
+  }
+
+  it('hierarkin topp3 > topp6 > mitten > botten3 håller, i denna ordning', () => {
+    const top3 = revenueAtPosition(2)
+    const top6 = revenueAtPosition(5)
+    const mid = revenueAtPosition(8)
+    const bottom3 = revenueAtPosition(11)
+    expect(top3).toBeGreaterThan(top6)
+    expect(top6).toBeGreaterThan(mid)
+    expect(mid).toBeGreaterThan(bottom3)
+  })
+
+  it('spannet är vidgat mot gamla 1.15/1.0-kvoten mellan topp3 och mitten', () => {
+    const top3 = revenueAtPosition(2)
+    const mid = revenueAtPosition(8)
+    // Gamla formBonus gav topp3/mid = 1.15/1.0 = 1.15. Det nya spannet ska
+    // vara STÖRRE än det (inte bara lika stort) — annars är "vidga" inte gjort.
+    expect(top3 / mid).toBeGreaterThan(1.15)
+  })
+
+  it('spannet är vidgat mot gamla 1.0/0.88-kvoten mellan mitten och botten3', () => {
+    const mid = revenueAtPosition(8)
+    const bottom3 = revenueAtPosition(11)
+    expect(mid / bottom3).toBeGreaterThan(1.0 / 0.88)
+  })
+})
+
 // ── Group 5b: computeAttendanceRate / communityStanding (2026-08-25) ─────────
 // Jacobs dom (RAPPORT_MATCHINTAKT_VIKT_OCH_COMMUNITYSTANDING_2026-08-25.md):
 // "en klubb som betyder något för orten fyller läktaren" — communityStanding
@@ -409,19 +449,67 @@ describe('computeAttendanceRate — communityStanding är nu den dominerande ter
     expect(standingUp).toBeGreaterThan(moodUp)
   })
 
-  it('golvet (fanMood=0, communityStanding=0) är 0,20 — ignorera orten kostar mer än den gamla neutrala baslinjen (0,35)', () => {
-    expect(computeAttendanceRate(0, 0, 8)).toBeCloseTo(0.20, 5)
+  // position=12 (sist i tabellen, 12-lagsligan) valt istf 8 i dessa två
+  // tester (DOM_AH2_BASEKONOMI_INTAKT_2026-08-28, knapp 1): den kontinuerliga
+  // positionstermen är per definition 0 vid position=12 (se
+  // 'computeAttendanceRate — kontinuerlig positionsterm (knapp 1)' nedan),
+  // så dessa två tester kan fortsätta isolera golvet/moodWeight-matematiken
+  // utan att bindas till knapp 1:s magnitud (TOP_POSITION_BONUS_MAX) — en
+  // framtida omkalibrering av magnituden ska inte behöva röra dessa.
+  it('golvet (fanMood=0, communityStanding=0, position=12) är 0,20 — ignorera orten kostar mer än den gamla neutrala baslinjen (0,35)', () => {
+    expect(computeAttendanceRate(0, 0, 12)).toBeCloseTo(0.20, 5)
   })
 
-  it('taket är 0,95 — klampat vid maximal fanMood+communityStanding+topp-3-bonus', () => {
+  it('taket är 0,95 — klampat vid maximal fanMood+communityStanding+positionsterm', () => {
     expect(computeAttendanceRate(100, 100, 1)).toBe(0.95)
   })
 
   it('moodWeight (neutral cupfinalhelg) dämpar BÅDE fanMood- och communityStanding-termen', () => {
-    const full = computeAttendanceRate(80, 80, 8, 1.0)
-    const halved = computeAttendanceRate(80, 80, 8, 0.5)
+    const full = computeAttendanceRate(80, 80, 12, 1.0)
+    const halved = computeAttendanceRate(80, 80, 12, 0.5)
     expect(halved).toBeLessThan(full)
     expect(halved).toBeCloseTo(0.20 + (0.80 * 0.25 + 0.80 * 0.45) * 0.5, 5)
+  })
+})
+
+// ── Group 5c: computeAttendanceRate — kontinuerlig positionsterm (knapp 1) ───
+// DOM_AH2_BASEKONOMI_INTAKT_2026-08-28: den gamla termen var binär
+// (position<=3 → +0,08, annars 0) — en trea och en fyra skildes åt av ett
+// stup, en fyra och en tia inte alls. Ersatt med en linjär funktion av
+// placeringen över hela 12-lagsligan: etta ger TOP_POSITION_BONUS_MAX (0,25),
+// tolva ger 0, allt däremellan interpolerat. Se D033 (design_principles) för
+// den mätta motiveringen bakom 0,25.
+describe('computeAttendanceRate — kontinuerlig positionsterm (knapp 1)', () => {
+  it('position 1 ger mer än position 6, som ger mer än position 12, vid identiskt fanMood/standing', () => {
+    const pos1 = computeAttendanceRate(50, 50, 1)
+    const pos6 = computeAttendanceRate(50, 50, 6)
+    const pos12 = computeAttendanceRate(50, 50, 12)
+    expect(pos1).toBeGreaterThan(pos6)
+    expect(pos6).toBeGreaterThan(pos12)
+  })
+
+  it('position 4 ger mer än position 8 — kontinuerlig, inte en stupkant vid gamla top3-gränsen', () => {
+    const pos4 = computeAttendanceRate(50, 50, 4)
+    const pos8 = computeAttendanceRate(50, 50, 8)
+    expect(pos4).toBeGreaterThan(pos8)
+  })
+
+  it('position 12 bidrar exakt 0 — golvet är oförändrat av positionstermen vid tabellens botten', () => {
+    const withPosition = computeAttendanceRate(50, 50, 12)
+    const floorOnly = 0.20 + (50 / 100) * 0.25 + (50 / 100) * 0.45
+    expect(withPosition).toBeCloseTo(floorOnly, 5)
+  })
+
+  it('position 1 bidrar exakt TOP_POSITION_BONUS_MAX (0,25) före tak-klampningen', () => {
+    // Låg fanMood/standing håller totalen under 0,95-taket så termen syns orört.
+    const withPosition = computeAttendanceRate(10, 10, 1)
+    const floorOnly = 0.20 + (10 / 100) * 0.25 + (10 / 100) * 0.45
+    expect(withPosition - floorOnly).toBeCloseTo(0.25, 5)
+  })
+
+  it('position utanför 1-12 klampas till giltigt intervall (defensivt, ligan är alltid 12 lag)', () => {
+    expect(computeAttendanceRate(50, 50, 0)).toBeCloseTo(computeAttendanceRate(50, 50, 1), 5)
+    expect(computeAttendanceRate(50, 50, 20)).toBeCloseTo(computeAttendanceRate(50, 50, 12), 5)
   })
 })
 

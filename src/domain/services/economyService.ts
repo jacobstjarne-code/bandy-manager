@@ -138,18 +138,30 @@ const ATTENDANCE_MOOD_WEIGHT = 0.25
 const ATTENDANCE_STANDING_WEIGHT = 0.45
 const ATTENDANCE_CAP = 0.95
 
+// DOM_AH2_BASEKONOMI_INTAKT_2026-08-28, knapp 1: den gamla termen var binär
+// (position<=3 → +0.08, annars 0) — en trea och en fyra skildes åt av ett
+// stup, en fyra och en tia inte alls. Ersatt med en kontinuerlig, linjär
+// funktion av tabellplaceringen över HELA ligan (12 klubbar, se CLAUDE.md):
+// etta ger full TOP_POSITION_BONUS_MAX, tolva ger 0, allt däremellan
+// interpolerat rakt av. D033 (design_principles) har den mätta motiveringen
+// för TOP_POSITION_BONUS_MAX-värdet.
+const LEAGUE_SIZE = 12
+const TOP_POSITION_BONUS_MAX = 0.25
+
 export function computeAttendanceRate(
   fanMood: number,
   communityStanding: number,
   position: number,
   moodWeight = 1,
 ): number {
+  const clampedPosition = Math.max(1, Math.min(LEAGUE_SIZE, position))
+  const positionTerm = TOP_POSITION_BONUS_MAX * (LEAGUE_SIZE - clampedPosition) / (LEAGUE_SIZE - 1)
   return Math.min(
     ATTENDANCE_CAP,
     ATTENDANCE_FLOOR
       + (fanMood / 100) * ATTENDANCE_MOOD_WEIGHT * moodWeight
       + (communityStanding / 100) * ATTENDANCE_STANDING_WEIGHT * moodWeight
-      + (position <= 3 ? 0.08 * moodWeight : 0),
+      + positionTerm * moodWeight,
   )
 }
 
@@ -429,6 +441,14 @@ const LOTTERY_HOME_MULT = 1.5
 // mot ett symptom." Heros (kanoniskt sämst, Survive-kontraktet) SKA kunna
 // gå back på den dyraste anläggningsnivån — det är inte en bugg, det är
 // kontraktet ("överlever om orten kommer, inte att den blir lönsam").
+// DOM_AH2_BASEKONOMI_INTAKT_2026-08-28, knapp 2: matchintäktens formBonus
+// (multiplikator på baseRevenue för hemmamatch, position i tabellen).
+// Gamla spannet (1.15/1.05/0.88/1.0) var för smalt för att själva bära
+// framgångens intäktssvar — vidgat efter mätning (D033).
+const FORM_BONUS_TOP3 = 1.35
+const FORM_BONUS_TOP6 = 1.15
+const FORM_BONUS_BOTTOM3 = 0.72
+
 const KIOSK_SQRT_RATE_BASIC = 75
 const KIOSK_SQRT_RATE_UPGRADED = 150
 const VIP_SQRT_RATE = 150
@@ -482,7 +502,11 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     const ticketPrice = 50 + Math.round((club.reputation ?? 50) * 0.3)
     const baseRevenue = Math.round(capacity * attendanceRate * ticketPrice * (journalistAttendanceModifier ?? 1.0) * (weatherAttendanceModifier ?? 1.0))
 
-    const formBonus = position <= 3 ? 1.15 : position <= 6 ? 1.05 : position >= 10 ? 0.88 : 1.0
+    // DOM_AH2_BASEKONOMI_INTAKT_2026-08-28, knapp 2: vidgat spann mot det
+    // gamla (1.15/1.05/0.88/1.0) — skarpare belöning i toppen, skarpare
+    // straff i botten. D033 har den mätta motiveringen för spannet.
+    const formBonus = position <= 3 ? FORM_BONUS_TOP3 : position <= 6 ? FORM_BONUS_TOP6
+      : position >= 10 ? FORM_BONUS_BOTTOM3 : 1.0
     const eventBonus = matchIsKnockout ? 1.40 : matchIsCup ? 1.20 : 1.0
     const derbyBonus = matchHasRivalry ? 1.25 : 1.0
 

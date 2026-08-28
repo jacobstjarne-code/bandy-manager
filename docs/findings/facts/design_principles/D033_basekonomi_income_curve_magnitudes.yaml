@@ -1,0 +1,90 @@
+fact_id: D033
+category: design_principles
+claim: "DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md, väg B: intäktssidan svarar snabbare på resultat/form via två befintliga positionslänkade knappar i economyService.ts. Knapp 1 (computeAttendanceRate): den gamla binära topp-3-bonusen (+0,08, annars 0) ersatt med en kontinuerlig, linjär funktion av tabellplaceringen över hela 12-lagsligan — etta ger TOP_POSITION_BONUS_MAX (0,25), tolva ger 0. Knapp 2 (calcRoundIncome, matchintäktens formBonus): spannet vidgat från 1.15/1.05/0.88/1.0 (samma tre trösklar: topp-3/topp-6/botten-3/mitten) till 1.35/1.15/0.72/1.0."
+value:
+  TOP_POSITION_BONUS_MAX: 0.25
+  FORM_BONUS_TOP3: 1.35
+  FORM_BONUS_TOP6: 1.15
+  FORM_BONUS_BOTTOM3: 0.72
+  LEAGUE_SIZE: 12
+unit: mixed (attendance-andel / intäktsmultiplikator / antal klubbar — se respektive fält)
+source:
+  type: measurement
+  doc: "docs/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md; scripts/ah2-basekonomi-intakt-matning-2026-08-28.ts; src/domain/services/economyService.ts:computeAttendanceRate,calcRoundIncome"
+  decided_by: code
+verified_at: 2026-08-28
+verified_by: code
+status: active
+invariants:
+  - "value.TOP_POSITION_BONUS_MAX > 0"
+  - "value.TOP_POSITION_BONUS_MAX < 0.45"
+  - "value.FORM_BONUS_TOP3 > value.FORM_BONUS_TOP6"
+  - "value.FORM_BONUS_TOP6 > 1.0"
+  - "value.FORM_BONUS_BOTTOM3 < 1.0"
+  - "value.LEAGUE_SIZE == 12"
+notes: |
+  MÄTMETOD: scripts/ah2-basekonomi-intakt-matning-2026-08-28.ts kör den
+  RIKTIGA produktionsvägen (createNewGame → advanceToNextEvent →
+  economyProcessor.ts → calcRoundIncome → applyFinanceChange) och läser av
+  club.finances-deltat per omgång direkt — ingen ombyggd kopia av formeln.
+  Tre klubbar mättes, samma STEG 0-konstruktion som redan verifierats
+  icke-mättande i anspark1-budgettryck-matning-2026-08-28.ts (+10 CA på
+  club_vastanfors, ingen ny gissning):
+    - KONTROLL: club_malilla, ingen boost (huvudseed 2 + pool 10 seeds × 3
+      säsonger, 754 rundor totalt).
+    - DOMINANT: club_vastanfors, +10 CA (huvudseed 100 + pool 10 seeds × 3
+      säsonger, 999 rundor totalt).
+    - HEROS: club_heros, dyraste anläggningstiern (kiosk 'upgraded' +
+      vipTent, samma tier RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md
+      mätte "5472→2173" på), kanonisk styrka, ingen tvingad
+      communityStanding (huvudseed 91000 + pool 5 seeds × 1 säsong, 137
+      rundor totalt).
+
+  BASELINE (oförändrad kod, före denna commit):
+    KONTROLL poolat snitt: -7666 kr/omgång
+    DOMINANT poolat snitt: -39 kr/omgång
+    HEROS poolat snitt: -12246 kr/omgång
+  Detta BEKRÄFTAR doktrinens fyndet rakt av: även den dominanta klubben
+  (+10 CA, topp-3 i 10/10 provsäsonger) var i praktiken lika illa ute som
+  kontrollklubben — lönebasens obegränsade skalning med currentAbility åt
+  upp hela framgångens intäktsvinst.
+
+  EFTER (TOP_POSITION_BONUS_MAX=0,25, FORM_BONUS=1.35/1.15/0.72):
+    KONTROLL poolat snitt: -4988 kr/omgång (35% mindre back än baseline)
+    DOMINANT poolat snitt: +6371 kr/omgång (från -39 till klart positivt)
+    HEROS poolat snitt: -11413 kr/omgång (fortsatt tydligt back, jfr
+      baseline -12246 — knapp 1:s kontinuerliga term ger Heros något
+      (tidigare botten-lag fick alltid 0 i positionsterm), men knapp 2:s
+      hårdare botten-straff (0,72 mot gamla 0,88) väger mer än upp det)
+
+  KRITERIUM-FÖR-KRITERIUM (GODKÄNT NÄR, doktrinen):
+  1. Kontroll ≈ 0: -4988 kr/omgång. INTE exakt 0 — se ÖPPEN FRÅGA nedan.
+     35% förbättring mot baseline, men residualen är verklig, inte brus:
+     poolens spridning (per-seed-snitt -14420…+5376) gör att -4988 ligger
+     inom ~0,6 standardavvikelser av 0, men medelvärdet är konsekvent
+     negativt över tre separata magnitud-mätningar (0,08/0,20/0,30/0,40
+     testade för knapp 1 isolerat innan knapp 2 lades på).
+  2. Inget uppgångsfönster: dominant säsong 1 (klättrande, slutplacering 5)
+     ger -10444 kr/omgång, UNDER kontrollens poolade -4988. Detta ligger
+     dock inom kontrollens EGEN observerade variationsbredd (sämsta
+     kontroll-seed: -14420) — se ÖPPEN FRÅGA.
+  3. Dominant ≤ ~3× kontroll: kvot dominant/|kontroll| = 6371/4988 = 1,28.
+     Klart innanför taket.
+  4. Heros-golvet intakt: -11413 kr/omgång, back. OK, ej rört.
+
+  ÖPPEN FRÅGA (rapporterad, ej löst av Code — kräver Opus/Jacobs dom):
+  Kriterium 1 nådde inte exakt ≈0 med rimliga magnituder. Extrapolation
+  visade att TOP_POSITION_BONUS_MAX skulle behöva ~0,80 (mer än den
+  SKYDDADE communityStanding-vikten 0,45) för att pressa kontrollen till
+  noll — det bedömdes IMPLAUSIBELT (skulle göra tabellplacering ensam
+  viktigare för läktarfyllnad än vad orten/lojaliteten är, tvärtemot
+  RAPPORT_MATCHINTAKT_VIKT_OCH_COMMUNITYSTANDING_2026-08-25.md:s uttryckliga
+  hierarki) och restes ALDRIG mot den skyddade konstanten. Rotorsaken till
+  residualen är sannolikt lönesidan (obegränsad skalning med currentAbility
+  × auto-möt-alla-krav-policyn, DOM_AH2B_RETENTION_2026-08-28) — uttryckligt
+  UTANFÖR scope för denna dom (ruling A skyddar lönen). Kriterium 1 och 2:s
+  gränsfall bedöms här som "inom brusgolvet, inte en artefakt av knapparna"
+  men är INTE en hård siffra — flaggat för Opus-granskning enligt doktrinens
+  egen eskaleringsklausul (gäller strikt kriterium 1/3-konflikt om
+  CS-vikten, men samma princip — stanna hellre än att pressa en implausibel
+  magnitud — tillämpad analogt här).
