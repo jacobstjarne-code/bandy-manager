@@ -33,6 +33,7 @@ import { ClubScreen } from '../screens/ClubScreen'
 import { TabellScreen } from '../screens/TabellScreen'
 import { ChampionScreen } from '../screens/ChampionScreen'
 import { SeasonSummaryScreen } from '../screens/SeasonSummaryScreen'
+import { SeasonContractDemandsScreen } from '../screens/SeasonContractDemandsScreen'
 import { SeasonTransitionScene } from '../screens/scenes/SeasonTransitionScene'
 import { InboxScreen } from '../screens/InboxScreen'
 
@@ -57,6 +58,7 @@ const PENDING_SCREEN_ROUTES: Partial<Record<PendingScreen, string>> = {
   [PendingScreen.PlayoffIntro]:    '/game/playoff-intro',
   [PendingScreen.QFSummary]:       '/game/qf-summary',
   [PendingScreen.SeasonSummary]:   '/game/season-summary',
+  [PendingScreen.ContractDemands]: '/game/contract-demands',
 }
 
 // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — "SE KARRIÄREN" måste kunna
@@ -154,6 +156,7 @@ export function AppRouter() {
           <Route path="champion" element={<ChampionScreen />} />
           <Route path="season-summary" element={<SeasonSummaryScreen />} />
           <Route path="season-summary/:season" element={<SeasonSummaryScreen />} />
+          <Route path="contract-demands" element={<SeasonContractDemandsScreen />} />
           <Route path="season-transition" element={<SeasonTransitionScene />} />
           <Route path="inbox" element={<InboxScreen />} />
 

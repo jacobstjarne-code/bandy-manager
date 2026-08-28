@@ -10,6 +10,7 @@ import { CLUB_TEMPLATES } from '../../src/domain/services/worldGenerator'
 import { PlayerPosition } from '../../src/domain/enums'
 import { canStartBuild, startFacilityBuild, getFacilityNodeViews, createInitialFacilityState } from '../../src/domain/services/facilityService'
 import { applyFinanceChange } from '../../src/domain/services/economyService'
+import { applyContractDemandResolutions } from '../../src/domain/services/contractDemandService'
 
 // ── Game creation ─────────────────────────────────────────────────────────────
 
@@ -99,6 +100,7 @@ export interface ResolveResult {
 
 const KNOWN_SCREENS = new Set([
   'season_summary',
+  'contract_demands',
   'board_meeting',
   'pre_season',
   'half_time_summary',
@@ -112,6 +114,15 @@ const KNOWN_SCREENS = new Set([
  * there is no user to dismiss them, so we just clear the flag.
  *
  * Unknown screen types are returned as unresolvable=true (seed gets skipped).
+ *
+ * A-H2b (DOM_AH2B_RETENTION_2026-08-28): 'contract_demands' gets a real
+ * default POLICY instead of a bare clear — "meet every qualifying demand" —
+ * so `npm run stress` actually exercises Leg 2 (morale) and, downstream,
+ * Leg 3 (bud-targeting/acceptance) instead of leaving pendingContractDemands
+ * silently dropped. Calibration scripts that need to COMPARE policies
+ * (meet-all vs meet-none) should NOT use this helper — call
+ * applyContractDemandResolutions directly with their own policy, same as
+ * scripts/anspark1-retention-matning-2026-08-28.ts.
  */
 export function autoResolvePendingScreen(game: SaveGame): ResolveResult {
   const ps = game.pendingScreen
@@ -119,6 +130,17 @@ export function autoResolvePendingScreen(game: SaveGame): ResolveResult {
 
   if (!KNOWN_SCREENS.has(ps)) {
     return { game, unresolvable: true, screenType: ps }
+  }
+
+  if (ps === 'contract_demands') {
+    const demands = game.pendingContractDemands ?? []
+    const meetAll = Object.fromEntries(demands.map(d => [d.playerId, 'met' as const]))
+    const updatedPlayers = applyContractDemandResolutions(game.players, demands, meetAll)
+    return {
+      game: { ...game, players: updatedPlayers, pendingContractDemands: undefined, pendingScreen: null },
+      unresolvable: false,
+      screenType: ps,
+    }
   }
 
   return {

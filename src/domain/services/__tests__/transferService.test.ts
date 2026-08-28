@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { generateIncomingBids, resolveOutgoingBid, executeTransfer, createOutgoingBid, computeBidChance, computePositionFactor, weightedPickIndex } from '../transferService'
+import { generateIncomingBids, resolveOutgoingBid, executeTransfer, createOutgoingBid, computeBidChance, computePositionFactor, weightedPickIndex, weightedPickIndexByWeights, computeMoraleBidWeight, computeMoraleAcceptanceBonus, playerAcceptsTransfer } from '../transferService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { TransferBid } from '../../entities/GameEvent'
 import type { Player } from '../../entities/Player'
@@ -321,5 +321,73 @@ describe('createOutgoingBid', () => {
       const belowHighRepFloor = createOutgoingBid(lowRepGame, 'p1', 200000, 9000, 3, 5)
       expect(belowHighRepFloor.success).toBe(true)  // hade avvisats vid rykte 60 (golv 11500)
     })
+  })
+})
+
+// DOM_AH2B_RETENTION_2026-08-28, Leg 3 — moral matar de två befintliga
+// budhookarna (generateIncomingBids urval, playerAcceptsTransfer ja-chans).
+describe('weightedPickIndexByWeights', () => {
+  it('väljer alltid index 0 med en enda vikt', () => {
+    expect(weightedPickIndexByWeights([5], () => 0.99)).toBe(0)
+  })
+
+  it('respekterar godtyckliga vikter (index 1 dominerar när dess vikt är störst)', () => {
+    const trials = 5000
+    let seed = 7
+    const rand = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff
+      return seed / 0x7fffffff
+    }
+    const counts = [0, 0, 0]
+    for (let i = 0; i < trials; i++) counts[weightedPickIndexByWeights([1, 10, 1], rand)]++
+    expect(counts[1] / trials).toBeGreaterThan(0.6)
+  })
+})
+
+describe('computeMoraleBidWeight — A-H2b Leg 3', () => {
+  it('är neutral (×1) vid/över tröskeln (60)', () => {
+    expect(computeMoraleBidWeight(60)).toBe(1)
+    expect(computeMoraleBidWeight(90)).toBe(1)
+  })
+
+  it('ökar linjärt under tröskeln', () => {
+    expect(computeMoraleBidWeight(40)).toBeCloseTo(1.8, 5)  // (60-40)*0.04=0.8
+  })
+
+  it('är capad vid 3.0 för mycket låg moral', () => {
+    expect(computeMoraleBidWeight(0)).toBe(3.0)
+  })
+})
+
+describe('computeMoraleAcceptanceBonus — A-H2b Leg 3', () => {
+  it('är 0 vid/över tröskeln (50)', () => {
+    expect(computeMoraleAcceptanceBonus(50)).toBe(0)
+    expect(computeMoraleAcceptanceBonus(80)).toBe(0)
+  })
+
+  it('ökar linjärt under tröskeln, capad vid 0.30', () => {
+    expect(computeMoraleAcceptanceBonus(30)).toBeCloseTo(0.12, 5)  // (50-30)*0.006
+    expect(computeMoraleAcceptanceBonus(0)).toBe(0.30)
+  })
+})
+
+describe('playerAcceptsTransfer — moral höjer ja-sannolikheten', () => {
+  it('en missnöjd spelare accepterar oftare än en nöjd, allt annat lika', () => {
+    const buyer = makeClub({ id: 'c1', region: 'Mälardalen' })
+    const seller = makeClub({ id: 'c2', region: 'Mälardalen' })
+    const happy = makePlayer({ morale: 80, transferPersonality: 'default' })
+    const unhappy = makePlayer({ morale: 10, transferPersonality: 'default' })
+    const trials = 4000
+    let seed = 3
+    const rand = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff
+      return seed / 0x7fffffff
+    }
+    let happyAccepts = 0, unhappyAccepts = 0
+    for (let i = 0; i < trials; i++) {
+      if (playerAcceptsTransfer(happy, buyer, seller, rand)) happyAccepts++
+      if (playerAcceptsTransfer(unhappy, buyer, seller, rand)) unhappyAccepts++
+    }
+    expect(unhappyAccepts / trials).toBeGreaterThan(happyAccepts / trials)
   })
 })

@@ -24,6 +24,7 @@ import { SM_FINAL_VICTORY_TEMPLATES } from '../../../domain/data/scenes/smFinalV
 import { CUP_FINAL_VICTORY_TEMPLATES } from '../../../domain/data/scenes/cupFinalVictoryScene'
 import { PIVOTAL_BEAT_IDS } from '../../../domain/data/portalBeats'
 import { hasManagedClubFutureFixture } from '../../utils/nextActionCue'
+import { applyContractDemandResolutions } from '../../../domain/services/contractDemandService'
 
 interface GetState {
   game: SaveGame | null
@@ -445,8 +446,36 @@ export function gameFlowActions(get: Get, set: Set) {
     clearSeasonSummary: () => {
       const { game } = get()
       if (!game) return
-      // BoardMeeting fires via detectSceneTrigger on säsong 2+, matchday 0
-      set({ game: { ...game, pendingScreen: null } })
+      // A-H2b (DOM_AH2B_RETENTION_2026-08-28): om säsongsslutet lämnade
+      // obemötta marknadskrav att ta ställning till, visas de SAMLAT härnäst
+      // (samma pendingScreen-mekanik som redan gate:ar board_meeting-scenen
+      // bakom SeasonSummary — attentionRouter.ts prioriterar pendingScreen
+      // före pendingScene, så den redan köade styrelsemötesscenen väntar
+      // patient tills resolveContractDemands nollställer pendingScreen).
+      // Annars: BoardMeeting fires via detectSceneTrigger on säsong 2+, matchday 0
+      const hasDemands = (game.pendingContractDemands ?? []).length > 0
+      set({ game: { ...game, pendingScreen: hasDemands ? PendingScreen.ContractDemands : null } })
+    },
+
+    // A-H2b (DOM_AH2B_RETENTION_2026-08-28), Leg 2: spelarens beslut per
+    // obemött marknadskrav. `resolutions` nycklas på playerId — saknad post
+    // = obemött (samma som explicit 'skipped', se applyContractDemandResolutions).
+    // Möter kravet: lön höjs till minSalary, ingen morale-effekt. Obemött:
+    // morale eroderas (UNMET_DEMAND_MORALE_PENALTY), synligt/planeringsbart
+    // — spelaren ser missnöjet byggas och kan ändra sig nästa fönster.
+    resolveContractDemands: (resolutions: Record<string, 'met' | 'skipped'>) => {
+      const { game } = get()
+      if (!game) return
+      const demands = game.pendingContractDemands ?? []
+      const updatedPlayers = applyContractDemandResolutions(game.players, demands, resolutions)
+      const updatedGame: SaveGame = {
+        ...game,
+        players: updatedPlayers,
+        pendingContractDemands: undefined,
+        pendingScreen: null,
+      }
+      set({ game: updatedGame })
+      void persistAutosave(updatedGame, 'resolveContractDemands', set)
     },
 
     clearRoundSummary: () => set({ roundSummary: null }),

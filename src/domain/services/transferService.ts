@@ -49,25 +49,65 @@ export function computeBidChance(
   return clamp(0.15 * bidMult * successFactor, 0, 0.6)
 }
 
+// Generisk viktat-urval på en godtycklig viktvektor — bruten ut ur
+// weightedPickIndex (A-H2b, DOM_AH2B_RETENTION_2026-08-28) så
+// morale-viktningen nedan kan återanvända SAMMA urvalslogik istf en
+// parallell, oberoende implementation.
+export function weightedPickIndexByWeights(weights: number[], rand: () => number): number {
+  if (weights.length <= 1) return 0
+  const totalWeight = weights.reduce((s, w) => s + w, 0)
+  const r = rand() * totalWeight
+  let cumulative = 0
+  for (let i = 0; i < weights.length; i++) {
+    cumulative += weights[i]
+    if (r < cumulative) return i
+  }
+  return weights.length - 1
+}
+
 // Rank-viktat urval — bud ska rikta sig mot klubbens BÄSTA spelare oftare än mot
 // en godtycklig spelare i toppskiktet. `candidates` antas redan sorterad fallande
 // på currentAbility (bäst = index 0). Harmonisk viktning: vikt(i) = 1/(i+1).
 export function weightedPickIndex(poolSize: number, rand: () => number): number {
   if (poolSize <= 1) return 0
   const weights: number[] = []
-  let totalWeight = 0
-  for (let i = 0; i < poolSize; i++) {
-    const w = 1 / (i + 1)
-    weights.push(w)
-    totalWeight += w
-  }
-  const r = rand() * totalWeight
-  let cumulative = 0
-  for (let i = 0; i < poolSize; i++) {
-    cumulative += weights[i]
-    if (r < cumulative) return i
-  }
-  return poolSize - 1
+  for (let i = 0; i < poolSize; i++) weights.push(1 / (i + 1))
+  return weightedPickIndexByWeights(weights, rand)
+}
+
+// ── A-H2b (DOM_AH2B_RETENTION_2026-08-28), Leg 3 — moral matar de två
+// befintliga budhookarna nedan. Ingen kronmått, bara moral (0-100).
+//
+// computeMoraleBidWeight: hur mycket MER sannolikt en missnöjd spelare är
+// att BLI MÅLTAVLA för ett inkommande bud (generateIncomingBids nedan).
+// Neutral (×1, ingen boost) vid/över MORALE_BID_WEIGHT_THRESHOLD — de allra
+// flesta spelare (baseline 50-90, se createNewGame.ts/worldGenerator.ts)
+// påverkas alltså inte alls. Under tröskeln: linjär boost, capped —
+// "en missnöjd underbetald stjärna är den marknaden kommer efter" utan att
+// göra urvalet deterministiskt (fortfarande weightedPickIndexByWeights,
+// inte en hård filter/sortering).
+const MORALE_BID_WEIGHT_THRESHOLD = 60
+const MORALE_BID_WEIGHT_PER_POINT = 0.04
+const MORALE_BID_WEIGHT_CAP = 3.0
+
+export function computeMoraleBidWeight(morale: number): number {
+  const deficit = Math.max(0, MORALE_BID_WEIGHT_THRESHOLD - morale)
+  return Math.min(MORALE_BID_WEIGHT_CAP, 1 + deficit * MORALE_BID_WEIGHT_PER_POINT)
+}
+
+// computeMoraleAcceptanceBonus: hur mycket en missnöjd spelares ja-sannolikhet
+// (playerAcceptsTransfer nedan) höjs. Additiv, inte multiplikativ — baseRates
+// spänner redan 0.25-0.85 (transferPersonality), en multiplikativ boost hade
+// slagit olika hårt beroende på personlighet av ett skäl som inte har med
+// personlighet att göra. Capped vid 0.30 — märkbart (kan avgöra en 50/50-
+// gränsdragen affär) men aldrig ensamt garanterar ett ja.
+const MORALE_ACCEPTANCE_BONUS_THRESHOLD = 50
+const MORALE_ACCEPTANCE_BONUS_PER_POINT = 0.006
+const MORALE_ACCEPTANCE_BONUS_CAP = 0.30
+
+export function computeMoraleAcceptanceBonus(morale: number): number {
+  const deficit = Math.max(0, MORALE_ACCEPTANCE_BONUS_THRESHOLD - morale)
+  return Math.min(MORALE_ACCEPTANCE_BONUS_CAP, deficit * MORALE_ACCEPTANCE_BONUS_PER_POINT)
 }
 
 // WEAK-015 + DEV-004: build a rich narrative body when a historically significant player leaves
@@ -155,8 +195,12 @@ export function generateIncomingBids(
 
   // Rank-viktat urval — bud ska rikta sig mot klubbens BÄSTA spelare oftare
   // (DOM_FRAMGANGSKURVAN_2026-08-27 anspråk 2). candidates är redan sorterad
-  // fallande på currentAbility, så index 0 = bäst.
-  const idx = weightedPickIndex(candidates.length, rand)
+  // fallande på currentAbility, så index 0 = bäst. A-H2b (DOM_AH2B_RETENTION_
+  // 2026-08-28) lägger moral som en ANDRA viktfaktor ovanpå rank-vikten —
+  // en missnöjd spelare (t.ex. efter ett obemött lönekrav vid säsongsslutet)
+  // är mer sannolik måltavla, oavsett var hen råkar ligga i ability-rangen.
+  const weights = candidates.map((p, i) => (1 / (i + 1)) * computeMoraleBidWeight(p.morale))
+  const idx = weightedPickIndexByWeights(weights, rand)
   const targetPlayer = candidates[idx]
 
   // Pick a buying club that is NOT the managed club
@@ -504,6 +548,11 @@ export function playerAcceptsTransfer(
     const rivalPenalty: Record<number, number> = { 1: -0.10, 2: -0.20, 3: -0.30 }
     acceptChance += rivalPenalty[rivalry.intensity] ?? 0
   }
+
+  // A-H2b (DOM_AH2B_RETENTION_2026-08-28), Leg 3: "den underbetalde säger ja
+  // när budet kommer" — låg moral höjer ja-sannolikheten, oavsett
+  // personlighet/geografi/rivalitet ovan (additiv, se computeMoraleAcceptanceBonus).
+  acceptChance += computeMoraleAcceptanceBonus(player.morale)
 
   acceptChance = Math.max(0.05, Math.min(0.95, acceptChance))
   return rand() < acceptChance

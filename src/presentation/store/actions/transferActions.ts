@@ -112,10 +112,24 @@ export function transferActions(get: Get, set: Set) {
         .reduce((sum, p) => sum + p.salary, 0)
       const projectedWageBill = currentWageBill - player.salary + newSalary
 
-      const isMinSalary = newSalary === minSalary
+      // A-H2b (DOM_AH2B_RETENTION_2026-08-28), rapportfråga 2 — feltecknad
+      // straff, RÄTTAD: PT-13 (2026-08-?, "fix: PT-4/13/14/15") skrev denna
+      // −12:a när `minSalary` var en ren ability/rykte-formel utan
+      // performanceFactor — "signing at minimum salary costs goodwill" (att
+      // pruta ner spelaren till lagligt golv utan påslag). O5 kraft 1
+      // (2026-08-27) lade performanceFactor OVANPÅ golvet i
+      // computeContractMinSalary — minSalary ÄR NU marknadskravet självt
+      // (höjt för överpresterare), inte ett lågt golv man kan pruta till.
+      // isMinSalary betyder alltså idag "betalade EXAKT vad marknaden kräver",
+      // inte "prutade ner spelaren" — att straffa det är exakt det domen
+      // varnade för ("att betala marknadsnivå ska inte förolämpa"). A-H2b:s
+      // egen mekanik (contractDemandService.ts) äger nu morale-konsekvensen
+      // av lönebeslut: möta kravet = neutral, INTE möta det = erosion. Denna
+      // manuella förlängningsväg ska spegla samma princip, inte en egen,
+      // motsatt regel.
       const updatedPlayers = game.players.map(p =>
         p.id === playerId
-          ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary, morale: isMinSalary ? Math.max(20, p.morale - 12) : p.morale }
+          ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary }
           : p
       )
 

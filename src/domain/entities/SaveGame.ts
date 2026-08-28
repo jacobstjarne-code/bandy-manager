@@ -274,6 +274,18 @@ export interface SaveGame {
    *  ovan för varför detta inte längre härleds ur financeLog. */
   seasonNetTransferSpend?: number
 
+  /** A-H2b (DOM_AH2B_RETENTION_2026-08-28) — obemötta marknadskrav beräknade
+   *  vid säsongsslut (seasonEndProcessor.ts), för den hanterade klubbens
+   *  aktiva förstalagsspelare vars `salary` ligger under
+   *  `computeContractMinSalary` (economyService.ts). Presenteras samlat på
+   *  PendingScreen.ContractDemands (mellan SeasonSummary och styrelsemötets
+   *  scen) — se contractDemandService.ts för beräkning/tillämpning.
+   *  Tömd (undefined) av resolveContractDemands (gameFlowActions.ts) när
+   *  spelaren tagit ställning till varje krav. minSalary/currentSalary är
+   *  ett ÖGONBLICKSVÄRDE från säsongsslutet — rörs inte om spelaren dröjer
+   *  med beslutet. */
+  pendingContractDemands?: import('../services/contractDemandService').ContractDemand[]
+
   scoutReports: Record<string, ScoutReport>    // key = playerId
   activeScoutAssignment: ScoutAssignment | null
   scoutBudget: number

@@ -38,6 +38,7 @@ import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 import { getRetirementCandidate, getRetirementQuote } from '../../domain/services/retirementDecisionService'
 import { appendFinanceLog, type FinanceEntry } from '../../domain/services/economyService'
+import { computeSeasonEndContractDemands } from '../../domain/services/contractDemandService'
 
 // ── Position-aware replenishment helpers ──────────────────────────────────────
 const POSITION_MINIMUMS: Record<PlayerPosition, number> = {
@@ -801,6 +802,29 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const activePlayers = resetPlayers
     .filter(p => !retiredPlayerIds.has(p.id))
     .map(p => contractExpiredIds.has(p.id) ? { ...p, clubId: 'free_agent' } : p)
+
+  // ── A-H2b (DOM_AH2B_RETENTION_2026-08-28) — obemötta marknadskrav ────────
+  // Beräknas HÄR, mot `game` (PRE-rollover — seasonStats är den avslutade
+  // säsongens, inte resetPlayers nollställda värden) och `updatedClubs`
+  // (reputation redan uppdaterad ovan, rad ~235 — vad det KOSTAR att hålla
+  // truppen NÄSTA säsong). Bara aktiva förstalagsspelare (inte pensionerande/
+  // kontraktsutgångna — de lämnar oavsett) och bara EXISTERANDE spelare
+  // (game.players, inte youthPlayers — en nyintagen akademist har 0 matcher
+  // denna säsong, performanceFactor faller redan tillbaka till 1 för dem,
+  // men de ska ändå inte in i "obemött krav"-beslutet vid sin allra första
+  // säsongsövergång). Presenteras samlat på PendingScreen.ContractDemands
+  // (se pendingContractDemands nedan + gameFlowActions.ts:s clearSeasonSummary).
+  const activeManagedPlayerIds = new Set(
+    game.players
+      .filter(p => p.clubId === game.managedClubId)
+      .filter(p => !retiredPlayerIds.has(p.id) && !contractExpiredIds.has(p.id))
+      .map(p => p.id),
+  )
+  const managedClubForDemands = updatedClubs.find(c => c.id === game.managedClubId)
+  const contractDemands = managedClubForDemands
+    ? computeSeasonEndContractDemands(game, managedClubForDemands, activeManagedPlayerIds)
+    : []
+
   // ── Board objectives — evaluate FÖRE patiensuppdateringen ────────────────
   // Femte koefficientrundan (Jacobs dom 2026-08-23, O5_FEMTE_PASSET_
   // AVSKEDSDIAGNOS_2026-08-23.md): meritbufferten utökad till HELA
@@ -1581,6 +1605,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // (SeasonTransitionScene) skriver ett nytt activeSeasonGoal när spelaren väljer.
     activeSeasonGoal: undefined,
     pendingScreen: PendingScreen.SeasonSummary,
+    // A-H2b: tom/undefined om inga krav kvalificerar — clearSeasonSummary
+    // (gameFlowActions.ts) läser detta för att avgöra om ContractDemands-
+    // steget ska visas mellan SeasonSummary och styrelsemötet.
+    pendingContractDemands: contractDemands.length > 0 ? contractDemands : undefined,
     seasonStartSnapshot: managerFired ? game.seasonStartSnapshot : (() => {
       const managedClub = game.clubs.find(c => c.id === game.managedClubId)
       const standing = game.standings.find(s => s.clubId === game.managedClubId)

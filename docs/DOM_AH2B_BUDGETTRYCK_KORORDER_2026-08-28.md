@@ -95,3 +95,28 @@ Filkonvention: `scripts/anspark1-budgettryck-matning-2026-08-28.ts`. MEASUREMENT
 **Code:** kör steg 0 → 1 → metriken, rapportera enligt ovan. Parallellt med A-H9:s två rapportfrågor (annan fil, inga beroenden).
 **Opus:** håller A-H2b-texten tills mätningen visar att mekaniken bär och lönebudgeten är en verklig resurs. Ingen copy skrivs mot en fantombudget.
 **Jacob:** inget beslut krävs förrän mätningen är inne — om inte steg 1 visar att `wageBudget` är oupprätthållet, då är det en domfråga (bygga taket först) som kommer tillbaka till dig.
+
+---
+
+## STEG 1-DOM (2026-08-28): wageBudget är rådgivande — mät mot ekonomi, bygg inget hårt tak
+
+**Fyndet, grundat i kod:**
+- `renewContract` (transferActions.ts): `computeContractMinSalary` är ett HÅRT golv (förlängning nekas under det). `wageBudget` prövas INTE — förlängningen genomförs oavsett och returnerar bara ett mjukt `wageWarning = projectedWageBill − wageBudget` till UI:t.
+- `createOutgoingBid` (transferService.ts): prövar `transferBudget` (hårt) och `minSalary` (hårt), `wageBudget` inte alls.
+- `executeTransfer`: prövar `finances` (>−100k) och `transferBudget`, inte `wageBudget`.
+
+→ wageBudget är en visningssiffra med en mjuk varning. Aldrig ett bindande tak.
+
+**Domen:**
+
+1. **Bygg INGET hårt lönetak.** Att göra wageBudget bindande skulle tyst balansera om hela ekonomin — den befintliga "svaga klubbar kan överspendera och blöda"-dynamiken (O5/Skutskär) förutsätter att man KAN gå över. Rör den inte.
+
+2. **Anchor budgettrycket till EKONOMI, inte wageBudget.** Det är dessutom mer troget domen: framgångskurvan säger "anspråk som konkurrerar om SAMMA resurs — ett ja är ett nej någon annanstans." Den resursen är kassan, inte en separat lönepott. Att möta alla lönekrav ska betyda att pengarna inte räcker till anläggning (anspråk 3) eller värvning — precis den konkurrensen.
+
+3. **Metriken byts:** total kravsumma (Σ raise-delta, årsbelopp) jämförs mot klubbens FINANSIELLA utrymme, inte wageBudget. Utrymmet: klubbens säsongsöverskott (`cashGrowth = endFinances − seasonStartFinances` som proxy för vad klubben normalt går plus) — Code väljer och rapporterar den exakta affordability-signalen, men den ska vara ekonomisk. Lastkvot > 1 = att möta alla krav skulle äta hela överskottet, dvs tvinga ett nej någon annanstans.
+
+4. **Bygget kräver ett MOMENT:** lönekraven ska landa TILLSAMMANS vid säsongsslut som ETT beslut (välj vilka du möter), inte dribblas genom individuella `renewContract`-klick. `computeContractMinSalary` är passiv idag (SLUTTEST: "noll rader kod" för själva kravmekaniken) — det är mekaniken som saknas, inte en kalibrering av en befintlig.
+
+**Jacobs confirm (en rad, blockerar INTE mätningen):** OK att INTE införa ett hårt lönetak — budgettrycket blir en ekonomisk avvägning (möta kraven kostar dig annat), inte en fast pott. Vill du hellre ha en fast pott (hårt tak) säger du till, men då balanserar vi om O5/Skutskär-dynamiken.
+
+**Code:** mät mot ekonomiskt utrymme enligt punkt 3, fortsätt steg 0 (fixa dominant-sim) → metrik. Mekaniken (punkt 4) byggs efter mätningen och Jacobs confirm.

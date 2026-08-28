@@ -125,6 +125,7 @@ interface GameState {
   simulateAbandonedMatch: (fixtureId: string) => void
   concedeWalkover: (fixtureId: string) => void
   clearSeasonSummary: () => void
+  resolveContractDemands: (resolutions: Record<string, 'met' | 'skipped'>) => void
   clearBoardMeeting: () => void
   requestDetailedAnalysis: (opponentClubId: string, fixtureId: string) => { success: boolean; error?: string }
   startTalentSearch: (position: string, maxAge: number, maxSalary: number, currentRound: number) => { success: boolean; error?: string }

@@ -199,6 +199,12 @@ export enum PlayoffRound {
 
 export enum PendingScreen {
   SeasonSummary = 'season_summary',
+  // A-H2b (DOM_AH2B_RETENTION_2026-08-28): säsongsövergångens samlade
+  // lönekravsbeslut — visas mellan SeasonSummary och styrelsemötets scen
+  // (board_meeting, pendingScene-systemet) NÄR det finns obemötta krav att
+  // ta ställning till för den hanterade klubben. Se seasonEndProcessor.ts
+  // (beräkning) och gameFlowActions.ts:s clearSeasonSummary (routing).
+  ContractDemands = 'contract_demands',
   BoardMeeting = 'board_meeting',
   PreSeason = 'pre_season',
   HalfTimeSummary = 'half_time_summary',

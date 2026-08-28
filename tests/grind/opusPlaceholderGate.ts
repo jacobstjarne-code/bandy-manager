@@ -83,11 +83,6 @@ const ALLOWLIST: { file: string; maxAllowed: number; reason: string }[] = [
     reason: 'VALET_CONFIRM_CTA-fallback för en facilitetsnod utan CTA-text — verifierad 2026-07-21 att alla 10 dåvarande noder är täckta, men typmässigt overifierad (Record<string,string>) mot framtida noder.',
   },
   {
-    file: 'src/presentation/screens/granska/GranskaOversikt.tsx',
-    maxAllowed: 1,
-    reason: '"hold"-halvtidsvalets paussnack-kvitto saknar rubrik-text (HALFTIME_LABELS har bara lugna/pressa/prata).',
-  },
-  {
     file: 'src/presentation/components/KlubbparmOverlay.tsx',
     maxAllowed: 1,
     reason: 'chapterAwaitsText-säkerhetsnät — verifierad 2026-07-21 att alla 6 nuvarande kapitel har text, men strukturellt overifierad mot ett sjunde kapitel.',
@@ -111,6 +106,11 @@ const ALLOWLIST: { file: string; maxAllowed: number; reason: string }[] = [
     file: 'src/presentation/components/match/NodtruppScene.tsx',
     maxAllowed: 1,
     reason: 'A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): nödtrupp-statusradens tredje otillgänglighetsorsak ("X [Opus]" bredvid "Y skadade, Z avstängda") — väntar Opus.',
+  },
+  {
+    file: 'src/presentation/screens/SeasonContractDemandsScreen.tsx',
+    maxAllowed: 2,
+    reason: 'A-H2b (DOM_AH2B_RETENTION_2026-08-28.md): säsongsövergångens lönekravskort — rubrik + förklaringsrad. Doktrinen skärper explicit: "any new UI copy... must use the literal placeholder string [Opus]" tills mekanik/magnituder står. Funktionella knapp-/sektionsetiketter på samma yta är inte gated (samma kategori som befintliga Förläng/Avslå-knappar). Väntar Opus.',
   },
 ]
 

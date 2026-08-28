@@ -16,7 +16,11 @@ import { getGameRoutes, getUncoveredGameRoutes } from '../../tests/visual/routeS
 // game-over/historik lyfta ur skulden samma dag de identifierades — inte
 // lämnade som ratchet-TODO. Kvar: champion, inbox, history, playoff-intro,
 // qf-summary, sim-summary, hall-provning.
-const BASELINE_UNCOVERED_GAME_ROUTES = 7
+// Höjd 7 → 8 (2026-08-28, A-H2b DOM_AH2B_RETENTION_2026-08-28.md): ny rutt
+// /game/contract-demands (SeasonContractDemandsScreen) — nåbar i normalt
+// spel, bara utan en dev-scene ännu (texten är fortfarande [Opus]-platshållare).
+// Se docs/BACKLOG.md ("BYGGT MEN OSYNLIGT/ONÅBART") för stäng-villkoret.
+const BASELINE_UNCOVERED_GAME_ROUTES = 8
 
 describe('route → dev-scene-täckning (H1 meta-grind)', () => {
   it('varje /game-rutt i AppRouter.tsx har minst ett registrerat SCENES-id i ROUTE_SCENE_MAP', () => {
