@@ -59,6 +59,7 @@ import { LedgerFrame } from '../../components/ledger/LedgerFrame'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
 import { InteraktionsDock } from '../../components/match/InteraktionsDock'
+import { buildCeremonyOnlyStep } from '../matchLiveHelpers'
 
 interface LocationState {
   fixture: Fixture
@@ -69,6 +70,11 @@ interface LocationState {
   isManaged: boolean
   matchWeather?: MatchWeather
   matchMode?: 'full' | 'commentary' | 'quicksim'
+  // A-H6 (ceremonivägen, 2026-08-28): satt av MatchScreen.tsx:s quicksim-gren när den
+  // just avancerade en SM-final via advance(true). `fixture` är då redan COMPLETED med
+  // det facitresultat matchSimProcessor.ts skrev — screenen ska ALDRIG re-simulera den,
+  // bara återge ceremonin. Se buildCeremonyOnlyStep i matchLiveHelpers.ts.
+  skipToCeremony?: boolean
 }
 
 /**
@@ -137,6 +143,8 @@ export function MatchLiveScreen() {
 
   const rivalry = fixture ? getRivalry(fixture.homeClubId, fixture.awayClubId) : null
   const isSmFinal = fixture?.isNeutralVenue === true
+  // A-H6: quicksimmad SM-final, redan avgjord — visa bara ceremonin, simulera aldrig.
+  const isCeremonyOnly = state?.skipToCeremony === true
 
   const matchPhase: MatchPhaseContext = (() => {
     if (!fixture || !game) return 'regular'
@@ -161,7 +169,9 @@ export function MatchLiveScreen() {
   // Reducer — EN sanning för score + per-spelare-räknare (steg 4)
   const [matchState, dispatch] = useReducer(matchReducer, initialMatchState)
 
-  const [steps, setSteps] = useState<MatchStep[]>([])
+  const [steps, setSteps] = useState<MatchStep[]>(() =>
+    isCeremonyOnly && fixture ? [buildCeremonyOnlyStep(fixture)] : []
+  )
   const [currentStep, setCurrentStep] = useState(-1)
   const [isPaused, setIsPaused] = useState(false)
   const [isFastForward, setIsFastForward] = useState(false)
@@ -189,8 +199,10 @@ export function MatchLiveScreen() {
   const [pauseLean, setPauseLean] = useState<PauseLean | null>(null)
   const [halftimeDecisionForLog, setHalftimeDecisionForLog] = useState<PauseLean | null>(null)
   const [showSubModal, setShowSubModal] = useState(false)
-  const [ceremonySlide, setCeremonySlide] = useState(0)
-  const [finalIntroSlide, setFinalIntroSlide] = useState(() => (isSmFinal || !!isCupFinal) ? 1 : 0)
+  const [ceremonySlide, setCeremonySlide] = useState(() => (isCeremonyOnly ? 1 : 0))
+  const [finalIntroSlide, setFinalIntroSlide] = useState(() =>
+    !isCeremonyOnly && (isSmFinal || !!isCupFinal) ? 1 : 0
+  )
   const [postIntroFade, setPostIntroFade] = useState(false)
   const [hintVisible, setHintVisible] = useState(() => !(game?.dismissedHints ?? []).includes('matchLive'))
   const [siffrorOpen, setSiffrorOpen] = useState(false)
@@ -216,6 +228,9 @@ export function MatchLiveScreen() {
   const hasSimulated = useRef(false)
 
   useEffect(() => {
+    // A-H6: fixture ÄR redan completed i ceremony-only-läget — det är förväntat,
+    // inte ett övergivet/redan-visat läge att navigera bort ifrån.
+    if (isCeremonyOnly) return
     if (!fixture || !game) return
     const liveFixture = game.fixtures.find(f => f.id === fixture.id)
     if (liveFixture?.status === 'completed') {
@@ -239,6 +254,12 @@ export function MatchLiveScreen() {
 
   useEffect(() => {
     if (hasSimulated.current) return
+    // A-H6: ceremony-only bär redan facit (steps seedades syntetiskt vid mount,
+    // se buildCeremonyOnlyStep) — en re-simulering här hade riskerat att skriva
+    // över det med ett ANNAT resultat (matchSimProcessor.ts och denna effekts
+    // simulateMatchStepByStep-anrop skickar olika extra kontextfält till samma
+    // seedade motor, se matchLiveHelpers.ts-kommentaren för detaljer).
+    if (isCeremonyOnly) return
     if (!fixture || !homeLineup || !awayLineup || !game) return
     hasSimulated.current = true
     markMatchStarted(fixture.id, homeLineup, awayLineup)
@@ -303,7 +324,7 @@ export function MatchLiveScreen() {
 
   // Tick displayed minute +1 every 1000ms toward next step's minute (FIX-34)
   useEffect(() => {
-    if (isPaused || isFastForward || matchDone) return
+    if (isPaused || isFastForward || matchDone || isCeremonyOnly) return
     if (activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress) return
     if (showHalftime || showOvertimeOverlay || showPenaltiesOverlay) return
     const interval = setInterval(() => {
@@ -339,16 +360,24 @@ export function MatchLiveScreen() {
   }, [ceremonySlide]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (matchDone) return
+    // A-H6: matchen är redan färdigspelad i ceremony-only-läget — inget
+    // "resten simuleras automatiskt" väntar, varningen skulle bara vilseleda.
+    if (matchDone || isCeremonyOnly) return
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault()
       e.returnValue = 'Matchen pågår. Lämnar du nu simuleras resten automatiskt.'
     }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
-  }, [matchDone])
+  }, [matchDone, isCeremonyOnly])
 
   useEffect(() => {
+    // A-H6: ceremony-only har redan sparat facit via advance(true) i
+    // MatchScreen.tsx innan navigeringen hit — matchDone ska aldrig bli
+    // true i detta läge (se guarden i hasSimulated-effekten ovan), men
+    // denna extra spärr gör invarianten explicit: spara/advancera ALDRIG
+    // en andra gång för samma match.
+    if (isCeremonyOnly) return
     if (!matchDone || !fixture || !homeLineup || !awayLineup || steps.length === 0) return
     const lastStep = steps[steps.length - 1]
     const allEvents = steps.flatMap(s => s.events)
@@ -1302,9 +1331,11 @@ export function MatchLiveScreen() {
   })()
   // MomentumBar (ärlig): homeInitiative-kadens från visade steg (homeShort/awayShort finns nedan)
   const momentumHistory = displayedSteps.map(s => s.homeInitiative ?? 0.5)
-  // Score läses från reducer-state — EN sanning (steg 4)
-  const homeScore = matchState.homeScore
-  const awayScore = matchState.awayScore
+  // Score läses från reducer-state — EN sanning (steg 4). A-H6: reducern
+  // dispatchas aldrig i ceremony-only-läget (ingen step-progression körs),
+  // så där läses facit direkt från den redan sparade fixturen istället.
+  const homeScore = isCeremonyOnly ? fixture.homeScore : matchState.homeScore
+  const awayScore = isCeremonyOnly ? fixture.awayScore : matchState.awayScore
 
   const homeClub = fixture ? game?.clubs.find(c => c.id === fixture.homeClubId) : undefined
   const awayClub = fixture ? game?.clubs.find(c => c.id === fixture.awayClubId) : undefined

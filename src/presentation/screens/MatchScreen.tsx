@@ -26,6 +26,7 @@ import { getRitualText } from '../../domain/services/supporterRituals'
 import { computeLaddningBeat, type LaddningBeat } from '../../domain/data/matchLaddningGrind'
 import { MatchLaddningScene } from '../components/match/MatchLaddningScene'
 import { MatchLaddningBand } from '../components/match/MatchLaddningBand'
+import { shouldRouteQuicksimToCeremony } from './matchLiveHelpers'
 
 export function MatchScreen() {
   const { game, advance, updateMatchMode, updateMatchLaddningBand } = useGameStore()
@@ -219,6 +220,32 @@ export function MatchScreen() {
           const result = advance(true) // suppress auto-navigation — we navigate manually
           if (!result) {
             setLineupError('Kunde inte simulera matchen')
+            return
+          }
+          // A-H6 (ceremonivägen, Jacobs order 2026-08-28): rotorsak — quicksim-grenen
+          // navigerade alltid rakt till /game/review oavsett om matchen var SM-finalen,
+          // så en snabbsimmad final gav noll ceremoni-payoff. completedFixture läses
+          // ur result.game (facit, redan skrivet av advance(true)/matchSimProcessor) —
+          // vi navigerar in i samma live-matchskärm men i ett "ceremony-only"-läge som
+          // ALDRIG re-simulerar (se buildCeremonyOnlyStep i matchLiveHelpers.ts för
+          // varför en efterhands-resimulering hade riskerat ett annat resultat än det
+          // redan sparade).
+          const completedFixture = result.game.fixtures.find(f => f.id === nextFixture.id)
+          if (shouldRouteQuicksimToCeremony(completedFixture)) {
+            const homeClub = game!.clubs.find(c => c.id === completedFixture.homeClubId)
+            const awayClub = game!.clubs.find(c => c.id === completedFixture.awayClubId)
+            navigate('/game/match/live', {
+              state: {
+                fixture: completedFixture,
+                homeLineup: completedFixture.homeLineup,
+                awayLineup: completedFixture.awayLineup,
+                homeClubName: homeClub?.name ?? '',
+                awayClubName: awayClub?.name ?? '',
+                isManaged: true,
+                matchMode,
+                skipToCeremony: true,
+              },
+            })
             return
           }
           navigate('/game/review')
