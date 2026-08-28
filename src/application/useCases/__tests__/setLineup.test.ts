@@ -153,6 +153,52 @@ describe('setLineup', () => {
     expect(result.success).toBe(true)
   })
 
+  it('A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): vilande spelare (restGamesRemaining) i lineup returnerar fel, SKILT från isInjured', () => {
+    const game = makeGame()
+    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')
+
+    const restedPlayerId = startingPlayerIds[0]
+    const modifiedPlayers = game.players.map(p =>
+      p.id === restedPlayerId ? { ...p, restGamesRemaining: 1 } : p,
+    )
+    const modifiedGame = { ...game, players: modifiedPlayers }
+
+    const result = setLineup({
+      game: modifiedGame,
+      clubId: 'club_forsbacka',
+      startingPlayerIds,
+      benchPlayerIds,
+    })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const restedPlayer = game.players.find(p => p.id === restedPlayerId)!
+      expect(result.error).toContain(restedPlayer.firstName)
+      // Texten får ALDRIG säga "skadad" om orsaken är vila/överbelastning.
+      expect(result.error).not.toContain('skadad')
+      expect(result.error).not.toContain('avstängd')
+    }
+  })
+
+  it('A-H3: restGamesRemaining=0 (nedräknat klart) blockerar INTE — spelaren är åter valbar', () => {
+    const game = makeGame()
+    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')
+
+    const modifiedPlayers = game.players.map(p =>
+      p.id === startingPlayerIds[0] ? { ...p, restGamesRemaining: 0 } : p,
+    )
+    const modifiedGame = { ...game, players: modifiedPlayers }
+
+    const result = setLineup({
+      game: modifiedGame,
+      clubId: 'club_forsbacka',
+      startingPlayerIds,
+      benchPlayerIds,
+    })
+
+    expect(result.success).toBe(true)
+  })
+
   it('player from wrong club returns error', () => {
     const game = makeGame()
     const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')

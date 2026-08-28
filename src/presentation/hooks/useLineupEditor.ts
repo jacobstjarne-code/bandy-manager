@@ -76,7 +76,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
 
   const defaultStarting = useMemo(() => {
     return [...squadPlayers]
-      .filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
+      .filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0)
       .sort((a, b) => b.currentAbility - a.currentAbility)
       .slice(0, 11)
       .map(p => p.id)
@@ -96,7 +96,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
       )
       .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0]
     if (!pendingFixture) return null
-    const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
+    const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0)
     const formationName = (managedClub?.activeTactic?.formation ?? '5-3-2') as FormationType
     const template = FORMATIONS[formationName]
     return buildNudgeLineup(available, template, pendingFixture.id)
@@ -146,7 +146,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     // Avsiktligt tomma nudge-slots (< 11 men ingen savedLineup) triggar INTE auto-fill.
     const hasInvalid = startingIds.some(id => {
       const p = squadPlayers.find(pl => pl.id === id)
-      return !p || p.isInjured || p.suspensionGamesRemaining > 0
+      return !p || p.isInjured || p.suspensionGamesRemaining > 0 || (p.restGamesRemaining ?? 0) > 0
     })
     const slotPlayerIds = new Set(
       Object.values(tacticState.lineupSlots ?? {}).filter((v): v is string => v !== null)
@@ -158,9 +158,13 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): namnet är historiskt (från
+  // innan suspension delade denna lista) — bär nu tre skilda otillgänglighets-
+  // orsaker: skadad, avstängd, vilande/överbelastad efter förra matchens
+  // sannolikhetskast. LineupStep.tsx grenar på vilken av de tre det är.
   const injuredInStarting = startingIds
     .map(id => squadPlayers.find(p => p.id === id))
-    .filter((p): p is Player => !!p && (p.isInjured || p.suspensionGamesRemaining > 0))
+    .filter((p): p is Player => !!p && (p.isInjured || p.suspensionGamesRemaining > 0 || (p.restGamesRemaining ?? 0) > 0))
 
   const canPlay = startingIds.length === 11 && injuredInStarting.length === 0
 
@@ -177,7 +181,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
 
   function togglePlayer(playerId: string) {
     const player = squadPlayers.find(p => p.id === playerId)
-    if (!player || player.isInjured || player.suspensionGamesRemaining > 0) return
+    if (!player || player.isInjured || player.suspensionGamesRemaining > 0 || (player.restGamesRemaining ?? 0) > 0) return
     if (selectedSlotId) {
       assignPlayerToSlot(playerId, selectedSlotId)
       return
@@ -208,7 +212,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     // elvan" — den knapp auditen faktiskt testade. Delar nu pickBestEleven()
     // med lineupNudge.ts:s buildNudgeLineup istf en egen, tredje kopia av
     // samma urvalslogik med en annan (CA-dominant) formel.
-    const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
+    const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0)
     const { starters, rest } = pickBestEleven(available)
     const starterIds = starters.map(p => p.id)
     const bench = rest.slice(0, 5)

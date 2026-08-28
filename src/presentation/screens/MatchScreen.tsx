@@ -337,7 +337,9 @@ export function MatchScreen() {
   // CODE_ORDER_NODTRUPP: soft-lock-skydd. Färre än 11 spelklara → nödtrupp-vyn
   // (akademi/fri agent/walkover) FÖRE LineupSteps disablade vägg. När truppen
   // fyllts till 11 faller detta igenom till lineup automatiskt (re-render).
-  const availableForMatch = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
+  const availableForMatch = squadPlayers.filter(
+    p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0
+  )
   if (effectiveStep === 'lineup' && availableForMatch.length < 11) {
     return <NodtruppScene game={game} availableCount={availableForMatch.length} nextFixtureId={nextFixture.id} />
   }

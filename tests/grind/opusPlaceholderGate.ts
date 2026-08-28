@@ -78,29 +78,9 @@ const ALLOWLIST: { file: string; maxAllowed: number; reason: string }[] = [
     reason: 'Strukturellt onåbar fallback-gren (deriveTurneringslageMode ger aldrig detta läget) — men literalen finns i koden, inte bara en kommentar.',
   },
   {
-    file: 'src/domain/services/boardObjectiveService.ts',
-    maxAllowed: 4,
-    reason: 'avoidRelegation-objektivets label/description/successReward/failureConsequence — ny objektivtyp för Survive-tiern (2026-08-25), ingen text skriven än.',
-  },
-  {
-    file: 'src/domain/services/boardService.ts',
-    maxAllowed: 3,
-    reason: 'BOARD_EXPECTATION_TEXT[Survive], BOARD_EXPECTATION_CEREMONIAL[Survive], BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER — styrelsemötet varje säsongsväxling för en Survive-klubb. Trolig huvudkälla till "[Opus] syns varje sommar".',
-  },
-  {
-    file: 'src/domain/services/seasonSummaryService.ts',
-    maxAllowed: 1,
-    reason: 'expectationText[Survive] i buildExpectationVerdictSentence — säsongssammanfattningsskärmen, visas varje säsongsslut.',
-  },
-  {
     file: 'src/domain/data/scenes/valetScene.ts',
     maxAllowed: 1,
     reason: 'VALET_CONFIRM_CTA-fallback för en facilitetsnod utan CTA-text — verifierad 2026-07-21 att alla 10 dåvarande noder är täckta, men typmässigt overifierad (Record<string,string>) mot framtida noder.',
-  },
-  {
-    file: 'src/presentation/utils/seasonShareImage.ts',
-    maxAllowed: 1,
-    reason: 'FORVANTANSSATS[Survive] på säsongens delningsbild — visas varje säsongsslut för en Survive-klubb.',
   },
   {
     file: 'src/presentation/screens/granska/GranskaOversikt.tsx',
@@ -116,6 +96,21 @@ const ALLOWLIST: { file: string; maxAllowed: number; reason: string }[] = [
     file: 'src/domain/data/contentContract.ts',
     maxAllowed: 1,
     reason: 'INTE en spelartextplatshållare — literalen förekommer bara i sponsorOffer-radens `notes`-dokumentationsfält (metadata för Innehållskontraktet), aldrig renderad för spelaren. Kvar på listan för att grinden inte ska false-positive på dokumentation, men detta är inte ett H4b-läckage.',
+  },
+  {
+    file: 'src/application/useCases/setLineup.ts',
+    maxAllowed: 1,
+    reason: 'A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): felmeddelandet för "vilar/överbelastad efter förra matchens sannolikhetskast" — skild orsak från isInjured/avstängd, väntar Opus.',
+  },
+  {
+    file: 'src/presentation/components/match/LineupStep.tsx',
+    maxAllowed: 3,
+    reason: 'A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): tre platser — radtaggen "vilar" (isRestingOut), förhandsvarnings-taggen (isFatigueRisk, domens icke förhandlingsbara krav) och valideringsboxens tredje textgren. Alla väntar Opus.',
+  },
+  {
+    file: 'src/presentation/components/match/NodtruppScene.tsx',
+    maxAllowed: 1,
+    reason: 'A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): nödtrupp-statusradens tredje otillgänglighetsorsak ("X [Opus]" bredvid "Y skadade, Z avstängda") — väntar Opus.',
   },
 ]
 

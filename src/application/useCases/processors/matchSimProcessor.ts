@@ -59,7 +59,12 @@ export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => n
     p =>
       club.squadPlayerIds.includes(p.id) &&
       !p.isInjured &&
-      p.suspensionGamesRemaining <= 0,
+      p.suspensionGamesRemaining <= 0 &&
+      // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): symmetri med den
+      // hanterade klubben (samma princip som C-FT1 — "AI tröttnar också").
+      // En AI-spelare som förlorat sannolikhetskastet om vila är lika
+      // otillgänglig som en skadad, för alla klubbar.
+      (p.restGamesRemaining ?? 0) === 0,
   )
 
   const sorted = [...available].sort((a, b) => b.currentAbility - a.currentAbility)

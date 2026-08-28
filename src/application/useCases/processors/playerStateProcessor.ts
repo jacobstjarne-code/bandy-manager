@@ -31,6 +31,7 @@ import {
 } from '../../../domain/services/periodisationService'
 import type { PeriodisationMode } from '../../../domain/services/periodisationService'
 import { clamp } from '../../../domain/utils/clamp'
+import { FATIGUE_AVAILABILITY_FLOOR } from '../../../domain/services/squadEvaluator'
 
 export interface PlayerStateResult {
   updatedPlayers: Player[]
@@ -39,6 +40,27 @@ export interface PlayerStateResult {
   /** Pool 1c: spelare vars spela-på-gambling avgjordes (eller kansellerades
    *  utan risk om de aldrig faktiskt startade matchen) denna runda. */
   playThroughResolutions: Array<{ player: Player; relapsed: boolean; aftermathLine: string }>
+  /** A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md), ben 2: spelare som förlorade
+   *  sannolikhetskastet om vila/överbelastning denna runda (startade under
+   *  FATIGUE_AVAILABILITY_FLOOR). restGamesRemaining redan satt på player. */
+  newlyRested: Array<{ player: Player }>
+}
+
+/**
+ * A-H3 ben 2 — sannolikhet att "förlora" en spelare till vila/överbelastning
+ * till NÄSTA match, om han startade DENNA match under
+ * FATIGUE_AVAILABILITY_FLOOR (samma golv som ben 1 och HIGH2 delar).
+ * Linjär ramp: 0% exakt vid golvet, REST_RISK_AT_ZERO_FITNESS vid 0% fitness.
+ * Domen bad bara om kalibrering av ben 1:s skaderisk-tak (se
+ * scripts/ah3-fatiguemult-kalibrering-2026-08-28.ts) — denna sannolikhet är
+ * ett resonerat startvärde, inte mätt mot spelData. Playtest-justerbar.
+ */
+export const FATIGUE_RESTOUT_MAX_PROB = 0.5
+
+export function restOutRiskProbability(fitness: number): number {
+  if (fitness >= FATIGUE_AVAILABILITY_FLOOR) return 0
+  const t = (FATIGUE_AVAILABILITY_FLOOR - Math.max(0, fitness)) / FATIGUE_AVAILABILITY_FLOOR
+  return FATIGUE_RESTOUT_MAX_PROB * t
 }
 
 function getPlayerRating(playerId: string, fixtures: Fixture[]): number | null {
@@ -127,6 +149,12 @@ export function applyPlayerStateUpdates(
       if (updated.suspensionGamesRemaining === 0) {
         updated.suspensionCause = undefined
       }
+    }
+
+    // ── A-H3 ben 2: vila/överbelastning-återhämtning (decrementeras varje
+    // runda, precis som suspensionGamesRemaining) — kostar exakt EN match. ──
+    if ((updated.restGamesRemaining ?? 0) > 0) {
+      updated.restGamesRemaining = Math.max(0, (updated.restGamesRemaining ?? 0) - 1)
     }
 
     // Periodisation — only for managed club players
@@ -373,6 +401,33 @@ export function applyPlayerStateUpdates(
     }
   }
 
+  // ── A-H3 ben 2 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): sannolikhetskast om
+  // vila/överbelastning för spelare som startade UNDER FATIGUE_AVAILABILITY_FLOOR.
+  // Läser PRE-match-fitness (playersById — spelaren SOM HAN VAR VID MATCHSTART),
+  // inte post-match-förlusten — det är trötthet HAN STARTADE MED som är risken,
+  // inte tröttheten matchen orsakade. Sätts INTE på en spelare som redan är
+  // otillgänglig av annan anledning (skadad, denna runda eller sedan tidigare)
+  // — isInjured/suspensionGamesRemaining täcker redan den otillgängligheten,
+  // ingen anledning att stapla en andra.
+  const newlyRested: Array<{ player: Player }> = []
+  for (const playerId of startersThisRound) {
+    const originalPlayer = playersById.get(playerId)
+    const idx = updatedPlayers.findIndex(p => p.id === playerId)
+    if (!originalPlayer || idx === -1) continue
+    const updatedPlayer = updatedPlayers[idx]
+    if (updatedPlayer.isInjured || updatedPlayer.suspensionGamesRemaining > 0) continue
+    if ((updatedPlayer.restGamesRemaining ?? 0) > 0) continue
+    const riskProb = restOutRiskProbability(originalPlayer.fitness)
+    if (riskProb <= 0) continue
+    const fixture = simulatedFixtures.find(f => f.homeClubId === originalPlayer.clubId || f.awayClubId === originalPlayer.clubId)
+    const seedKey = `${fixture?.id ?? 'unknown'}:${playerId}:restrisk`
+    const roll = mulberry32(fixtureSeed(seedKey))()
+    if (roll < riskProb) {
+      updatedPlayers[idx] = { ...updatedPlayer, restGamesRemaining: 1 }
+      newlyRested.push({ player: updatedPlayers[idx] })
+    }
+  }
+
   // Player development every 2 rounds (AI clubs only — managed club is handled per-round
   // by applyRoundDevelopment in roundProcessor with match context)
   let finalPlayers = updatedPlayers
@@ -395,6 +450,7 @@ export function applyPlayerStateUpdates(
     newlyInjured,
     newlySuspended,
     playThroughResolutions,
+    newlyRested,
   }
 }
 

@@ -81,6 +81,30 @@ const INJURY_COMMENTARY: Record<MatchInjuryType, string[]> = {
   ],
 }
 
+// ── A-H3 ben 1: förhöjd skaderisk vid start under fitness-tröskel ──────────
+//
+// DOM_AH3_TILLGANGLIGHET_2026-08-28.md: checkForMatchInjury() läste tidigare
+// aldrig fitness — en spelare på 22% och en på 95% löpte exakt samma risk.
+// Kalibrerad med scripts/ah3-fatiguemult-kalibrering-2026-08-28.ts (2M
+// trials/nivå) mot tre kandidattak (1.5/2.0/2.5): tak=2.0 ger ungefär en
+// FÖRDUBBLING av per-match-skaderisken exakt vid 0% fitness (den punkt domen
+// bad om) — 2.67% → 5.26% per match för en start-varje-match-spelare. I ett
+// realistiskt rotationsscenario (5 av 30 matcher under 20% fitness, resten
+// normalt) höjer tak=2.0 säsongsrisken för minst en skada med +3.4 procent-
+// enheter (55.5% → 58.9%) ovanpå en redan hög baslinje som INTE ändras av
+// detta bygge (bas-skaderaterna nedan är oförändrade). Rampen börjar vid 50
+// — samma punkt där playerModifier() (squadEvaluator.ts) redan halverar
+// spelarens prestationsbidrag, så de två benen (prestation, skaderisk)
+// pekar åt samma håll utan att dela en formel.
+export const FATIGUE_INJURY_RISK_CAP = 2.0
+const FATIGUE_INJURY_RAMP_START_FITNESS = 50
+
+export function fatigueInjuryMult(fitness: number): number {
+  if (fitness >= FATIGUE_INJURY_RAMP_START_FITNESS) return 1.0
+  const t = (FATIGUE_INJURY_RAMP_START_FITNESS - Math.max(0, fitness)) / FATIGUE_INJURY_RAMP_START_FITNESS
+  return 1.0 + (FATIGUE_INJURY_RISK_CAP - 1.0) * t
+}
+
 // ── Context for injury check ─────────────────────────────────────────────────
 
 export interface InjuryCheckContext {
@@ -118,7 +142,11 @@ export function checkForMatchInjury(
   // Player injury proneness
   const pronenessMult = 0.5 + (player.injuryProneness ?? 50) / 100
 
-  const totalMult = weatherMult * derbyMult * moraleMult * tacticMult * pronenessMult
+  // A-H3 ben 1: trötthet komponerar med de andra fem — en trött spelare i
+  // töväder i ett derby blir en verklig risk, inte en teoretisk.
+  const fatigueMult = fatigueInjuryMult(player.fitness)
+
+  const totalMult = weatherMult * derbyMult * moraleMult * tacticMult * pronenessMult * fatigueMult
 
   // Build eligible injury pool
   const eligible: MatchInjuryType[] = isGoalkeeperInjury

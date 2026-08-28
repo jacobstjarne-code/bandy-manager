@@ -67,7 +67,11 @@ export function PitchLineupView({
   const pillPlayers = squadPlayers.filter(p =>
     !placedPids.has(p.id) &&
     !p.isInjured &&
-    p.suspensionGamesRemaining === 0
+    p.suspensionGamesRemaining === 0 &&
+    // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): vilande/överbelastad efter
+    // förra matchens sannolikhetskast — skild från isInjured, men samma
+    // konsekvens för valbarhet.
+    (p.restGamesRemaining ?? 0) === 0
   )
 
   // ── Tap handlers ──────────────────────────────────────────────────────────

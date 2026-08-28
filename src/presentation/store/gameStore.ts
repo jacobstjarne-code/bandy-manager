@@ -1198,7 +1198,11 @@ export const useHasPendingLineup = () => {
   const players = game.players
   const starters = lineup.startingPlayerIds.map(id => players.find(p => p.id === id)).filter(Boolean)
   if (starters.length !== 11) return false
-  return !starters.some(p => p!.isInjured || p!.suspensionGamesRemaining > 0)
+  // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): restGamesRemaining läggs till
+  // samma redundanta gate som isInjured/suspensionGamesRemaining redan har
+  // här — setLineup.ts avvisar redan detta vid commit, denna check speglar
+  // bara samma sanning för badge/advance-knappen.
+  return !starters.some(p => p!.isInjured || p!.suspensionGamesRemaining > 0 || (p!.restGamesRemaining ?? 0) > 0)
 }
 
 // Returns count of injured players in the pending lineup (for badge)
@@ -1210,7 +1214,7 @@ export const useInjuredInLineup = () => {
   const players = game.players
   return lineup.startingPlayerIds.filter(id => {
     const p = players.find(pl => pl.id === id)
-    return p && (p.isInjured || p.suspensionGamesRemaining > 0)
+    return p && (p.isInjured || p.suspensionGamesRemaining > 0 || (p.restGamesRemaining ?? 0) > 0)
   }).length
 }
 
@@ -1258,7 +1262,7 @@ export const useCanAdvance = () => {
     .map(id => game.players.find(p => p.id === id))
     .filter(Boolean)
   if (starters.length !== 11) return false
-  return !starters.some(p => p!.isInjured || p!.suspensionGamesRemaining > 0)
+  return !starters.some(p => p!.isInjured || p!.suspensionGamesRemaining > 0 || (p!.restGamesRemaining ?? 0) > 0)
 }
 
 // Returns count of unread inbox items

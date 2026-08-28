@@ -6,6 +6,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { PlayerPosition } from '../../../domain/enums'
 import { positionShort, positionLong } from '../../utils/formatters'
 import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
+import { FATIGUE_AVAILABILITY_FLOOR } from '../../../domain/services/squadEvaluator'
 import { getConditionLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
 import { FORMATIONS, getRecommendedFormation, type FormationType } from '../../../domain/entities/Formation'
 import { LineupFormationView } from './LineupFormationView'
@@ -190,7 +191,7 @@ export function LineupStep({
     : (PRACTICE_COACH_QUOTES[practiceBeat] ?? PRACTICE_COACH_QUOTES[0])
 
   function handlePlayerClick(player: Player) {
-    if (player.isInjured || player.suspensionGamesRemaining > 0) return
+    if (player.isInjured || player.suspensionGamesRemaining > 0 || (player.restGamesRemaining ?? 0) > 0) return
     if (selectedSlotId) {
       onAssignPlayer(player.id, selectedSlotId)
     } else {
@@ -395,11 +396,19 @@ export function LineupStep({
                 const isStarting = startingIds.includes(player.id)
                 const isInjured = player.isInjured
                 const isSuspended = player.suspensionGamesRemaining > 0
-                const isUnavailable = isInjured || isSuspended
+                // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md), ben 2: vilande/
+                // överbelastad efter förra matchens sannolikhetskast — skild
+                // orsak, skild etikett, aldrig kallad "skadad".
+                const isRestingOut = (player.restGamesRemaining ?? 0) > 0
+                const isUnavailable = isInjured || isSuspended || isRestingOut
+                // Ben 2, förhandsvarningen (den icke förhandlingsbara delen av
+                // domen): en spelare som SKULLE starta idag under golvet —
+                // innan matchen är spelad, innan kastet är gjort.
+                const isFatigueRisk = isStarting && !isUnavailable && player.fitness < FATIGUE_AVAILABILITY_FLOOR
 
                 const rowBorderLeft = isInjured
                   ? '3px solid var(--danger)'
-                  : isSuspended
+                  : isSuspended || isRestingOut
                   ? '2px solid var(--warm-light)'
                   : '2px solid transparent'
 
@@ -441,7 +450,29 @@ export function LineupStep({
                         Avstängd
                       </span>
                     )}
-                    {isStarting && !isUnavailable && (
+                    {isRestingOut && (
+                      <span className="tag tag-copper" style={{ fontSize: 9, padding: '2px 5px' }}>
+                        {/* SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]' är en
+                            medveten placeholder för etiketten (vilande/
+                            överbelastad — inte skadad, inte avstängd). */}
+                        [Opus]
+                      </span>
+                    )}
+                    {isFatigueRisk && (
+                      <span
+                        className="tag tag-red"
+                        style={{ fontSize: 9, padding: '2px 5px', display: 'inline-flex', alignItems: 'center', gap: 3 }}
+                        title="Startar under fitness-golvet — risk att förlora honom till nästa match"
+                      >
+                        <Icon icon={AlertTriangle} size={9} style={{ flexShrink: 0 }} />
+                        {/* SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]' är en
+                            medveten placeholder för förhandsvarningen
+                            (domens icke förhandlingsbara krav — synlig INNAN
+                            matchen, inte en post-match-överraskning). */}
+                        [Opus]
+                      </span>
+                    )}
+                    {isStarting && !isUnavailable && !isFatigueRisk && (
                       <span className="tag tag-green" style={{ fontSize: 9, padding: '2px 5px' }}>
                         Start
                       </span>
@@ -459,7 +490,17 @@ export function LineupStep({
         <div style={{ margin: '0 14px 8px', background: 'color-mix(in srgb, var(--danger) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 25%, transparent)', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--danger)', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {startingIds.length !== 11 && <span>Välj exakt 11 startspelare (du har {startingIds.length})</span>}
           {injuredInStarting.map(p => (
-            <span key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Icon icon={AlertTriangle} size={12} style={{ flexShrink: 0 }} /> {p.firstName} {p.lastName} {p.isInjured ? 'är skadad' : `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`}</span>
+            <span key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <Icon icon={AlertTriangle} size={12} style={{ flexShrink: 0 }} /> {p.firstName} {p.lastName}{' '}
+              {p.isInjured
+                ? 'är skadad'
+                : p.suspensionGamesRemaining > 0
+                ? `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`
+                /* A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): tredje grenen,
+                   vilande/överbelastad. SVENSK TEXT — CODE SKRIVER ALDRIG:
+                   '[Opus]' är en medveten placeholder. */
+                : '[Opus]'}
+            </span>
           ))}
         </div>
       )}

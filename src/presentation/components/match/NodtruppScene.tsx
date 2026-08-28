@@ -30,11 +30,16 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
   const squad = game.players.filter(p => p.clubId === game.managedClubId)
   const injured = squad.filter(p => p.isInjured).length
   const suspended = squad.filter(p => p.suspensionGamesRemaining > 0).length
+  // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): en tredje, skild orsak till
+  // otillgänglighet — inte skadad, inte avstängd, bara vilande/överbelastad.
+  const resting = squad.filter(p => (p.restGamesRemaining ?? 0) > 0).length
   const need = Math.max(0, MIN_PLAYABLE - availableCount)
 
   // Positionsbrist: hur många spelklara per position (för att prioritera rätt junior).
   const availByPos = (pos: PlayerPosition) =>
-    squad.filter(p => p.position === pos && !p.isInjured && p.suspensionGamesRemaining <= 0).length
+    squad.filter(
+      p => p.position === pos && !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0
+    ).length
   const posDeficit = (pos: PlayerPosition) => (pos === ('goalkeeper' as PlayerPosition) ? 1 : 2) - availByPos(pos)
 
   const youth = [...(game.youthTeam?.players ?? [])].sort((a, b) => {
@@ -65,8 +70,14 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
             {availableCount} spelklara. Det krävs elva.
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            {injured > 0 ? `${injured} skadade` : ''}{injured > 0 && suspended > 0 ? ', ' : ''}{suspended > 0 ? `${suspended} avstängda` : ''}
-            {(injured > 0 || suspended > 0) ? '. ' : ''}
+            {[
+              injured > 0 ? `${injured} skadade` : null,
+              suspended > 0 ? `${suspended} avstängda` : null,
+              // SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]' är en medveten
+              // placeholder för ordet som beskriver vilande/överbelastad.
+              resting > 0 ? `${resting} [Opus]` : null,
+            ].filter(Boolean).join(', ')}
+            {(injured > 0 || suspended > 0 || resting > 0) ? '. ' : ''}
             Du behöver kalla in {need} till innan ni kan spela.
           </p>
         </div>

@@ -1,0 +1,56 @@
+fact_id: D032
+category: design_principles
+claim: "A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): trötthet kostar tillgänglighet via två ben som delar ETT golv med HIGH2 (D-fact saknades tidigare för det golvet — infört här). Ben 1: skaderisk-multiplikator rampar från 1.0 (fitness>=50) till taket 2.0 (fitness=0), kalibrerad mot scripts/ah3-fatiguemult-kalibrering-2026-08-28.ts. Ben 2: sannolikhet att stå över nästa match rampar från 0 (fitness>=golvet 22) till 0.5 (fitness=0) för spelare som startade under golvet."
+value:
+  FATIGUE_AVAILABILITY_FLOOR: 22
+  FATIGUE_INJURY_RISK_CAP: 2.0
+  FATIGUE_INJURY_RAMP_START_FITNESS: 50
+  FATIGUE_RESTOUT_MAX_PROB: 0.5
+unit: mixed (points / multiplier / probability — se respektive fält)
+source:
+  type: design_decision
+  doc: "docs/DOM_AH3_TILLGANGLIGHET_2026-08-28.md; src/domain/services/matchInjuryService.ts; src/domain/services/squadEvaluator.ts:FATIGUE_AVAILABILITY_FLOOR; src/application/useCases/processors/playerStateProcessor.ts:restOutRiskProbability"
+  decided_by: jacob
+verified_at: 2026-08-28
+verified_by: code
+status: active
+invariants:
+  - "value.FATIGUE_AVAILABILITY_FLOOR >= 1"
+  - "value.FATIGUE_AVAILABILITY_FLOOR <= 30"
+  - "value.FATIGUE_INJURY_RISK_CAP >= 1"
+  - "value.FATIGUE_INJURY_RISK_CAP <= 3"
+  - "value.FATIGUE_INJURY_RAMP_START_FITNESS > 0"
+  - "value.FATIGUE_INJURY_RAMP_START_FITNESS < 100"
+  - "value.FATIGUE_RESTOUT_MAX_PROB >= 0"
+  - "value.FATIGUE_RESTOUT_MAX_PROB <= 1"
+notes: |
+  FATIGUE_AVAILABILITY_FLOOR (22) är INTE nytt — det är HIGH2s
+  SPELKLARHET_FITNESS_FLOOR (Jacobs dom 2026-08-22, mitten av det redan
+  låsta 20–25%-spannet), flyttad från presentation/utils/lineupNudge.ts till
+  domain/services/squadEvaluator.ts i detta pass så application-lagret
+  (setLineup.ts, playerStateProcessor.ts) kan dela EXAKT samma konstant utan
+  lagerbrott. lineupNudge.ts re-exporterar den under det gamla namnet —
+  ingen befintlig import bröts. Detta D-fact fanns inte tidigare för
+  golvet (HIGH2-passet 2026-08-22 skapade konstanten men inget D-fact) —
+  skapat nu i samma commit som ben 1/ben 2 eftersom alla tre tal delar en
+  och samma "trötthet blir bindande"-mekanism.
+
+  FATIGUE_INJURY_RISK_CAP (2.0): kalibreringsscriptet mätte per-match-
+  skaderisk vid tre kandidattak (1.5/2.0/2.5) för en spelare som startar
+  under 30% fitness, 2M trials/nivå. Tak=2.0 ger en nästan exakt FÖRDUBBLING
+  av per-match-risken vid 0% fitness (2.67% → 5.26%) — den punkt domen bad
+  om att träffa. I ett realistiskt rotationsscenario (5 av 30 matcher under
+  20% fitness, resten normalt) höjer tak=2.0 säsongsrisken för minst en
+  skada med +3.4 procentenheter (55.5% → 58.9%) ovanpå en oförändrad
+  baslinje. Rampen börjar vid fitness 50 — samma punkt där playerModifier()
+  (D-fact saknas för den formeln separat) redan halverar prestations-
+  bidraget, så prestationsstraffet och skaderisk-straffet trappar upp
+  samtidigt utan att dela en formel.
+
+  FATIGUE_RESTOUT_MAX_PROB (0.5): INTE kalibrerad mot spelData (domen bad
+  bara om ben 1:s tak, se claim/kalibreringsscriptet ovan) — ett resonerat
+  startvärde. Linjär ramp: ~0% risk precis under golvet, 50% risk vid
+  literal 0% fitness. Playtest-justerbar; om Jacob vill flippa till hårt
+  (deterministiskt "står över" istf sannolikhet) beskrivs det i domen som
+  en enradsändring i restOutRiskProbability()/setLineup.ts-gaten, inte en
+  omskrivning.

@@ -68,6 +68,20 @@ export function getSelectionScore(player: Player): number {
   return player.currentAbility * playerModifier(player)
 }
 
+/**
+ * A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md), "Tröskeln — dela tal med
+ * HIGH2, inför inte ett tredje": samma golv som HIGH2s
+ * `SPELKLARHET_FITNESS_FLOOR` (lineupNudge.ts, Jacobs dom 2026-08-22, redan
+ * byggt) — flyttad hit (domain-lager) eftersom A-H3s konsumenter
+ * (setLineup.ts, playerStateProcessor.ts, båda application-lager) inte kan
+ * importera från presentation/utils utan att bryta lagerriktningen.
+ * `lineupNudge.ts`s `SPELKLARHET_FITNESS_FLOOR` är nu en re-export av denna
+ * — EN sanning, ETT värde (22, mitten av Jacobs låsta 20–25%-spann), två
+ * konsekvenser: under den exkluderas spelaren ur "Fyll bästa" (HIGH2) OCH
+ * riskerar att stå över nästa match (A-H3 ben 2).
+ */
+export const FATIGUE_AVAILABILITY_FLOOR = 22
+
 function effectivePlayerModifier(player: Player, tactic: Tactic): number {
   const base = playerModifier(player)
   const lineupSlots = tactic.lineupSlots

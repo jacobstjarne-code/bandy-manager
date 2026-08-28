@@ -9,7 +9,7 @@ import type { Player } from '../../domain/entities/Player'
 import type { FormationTemplate } from '../../domain/entities/Formation'
 import { autoAssignFormation } from '../../domain/entities/Formation'
 import { fixtureSeed, mulberry32 } from '../../domain/utils/random'
-import { getSelectionScore } from '../../domain/services/squadEvaluator'
+import { getSelectionScore, FATIGUE_AVAILABILITY_FLOOR } from '../../domain/services/squadEvaluator'
 
 export const PREFILL_COUNT = 8
 export const EMPTY_SLOTS = 3
@@ -22,8 +22,14 @@ export const EMPTY_SLOTS = 3
  * AI:n, inte en mildare. En tunn trupp (Skutskär-scenariot) tvingas ändå
  * välja NÅGON — poolen under golvet finns kvar som fallback, den kastas
  * aldrig, bara nedprioriteras.
+ *
+ * A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): re-export av
+ * `FATIGUE_AVAILABILITY_FLOOR` (squadEvaluator.ts) — flyttad dit så
+ * application-lagret (setLineup.ts, playerStateProcessor.ts) kan dela EXAKT
+ * samma konstant utan att importera från presentation. Namnet här behålls
+ * oförändrat för att inte bryta befintliga imports/tester.
  */
-export const SPELKLARHET_FITNESS_FLOOR = 22
+export const SPELKLARHET_FITNESS_FLOOR = FATIGUE_AVAILABILITY_FLOOR
 
 /**
  * High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): partitionerar i två

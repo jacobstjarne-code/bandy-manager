@@ -113,6 +113,17 @@ export interface Player {
   suspensionGamesRemaining: number
   recentlyInjuredUntil?: number  // matchday — "Ramp först" warn om Bygg/Toppa sätts före detta
   suspensionCause?: { sinceMatchday: number; opponentName: string; matches: number }
+  /** A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md), ben 2: satt när en spelare
+   *  som startade matchen under FATIGUE_AVAILABILITY_FLOOR (squadEvaluator.ts
+   *  — samma golv som HIGH2s SPELKLARHET_FITNESS_FLOOR) förlorade
+   *  sannolikhetskastet om vila/överbelastning (playerStateProcessor.ts,
+   *  applyPlayerStateUpdates). SKILD från isInjured — spelaren är inte
+   *  skadad, bara vilande/överbelastad. setLineup.ts:s urvalsspärr läser
+   *  detta separat så texten aldrig kallar en vilande spelare skadad.
+   *  Rullas ut (decrementeras mot 0) i playerStateProcessor.ts:s
+   *  recovery-block i BÖRJAN av nästa rundas körning — kostar exakt EN
+   *  match, som domen kräver. undefined/0 = tillgänglig. */
+  restGamesRemaining?: number
 
   seasonStats: PlayerSeasonStats       // A5: liga-only (cup separeras till seasonCupStats)
   seasonCupStats?: PlayerSeasonStats   // A5: cup-only denna säsong; careerStats är fortsatt all-tävling
