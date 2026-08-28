@@ -31,6 +31,7 @@ export type FinanceReason =
   | 'academy'
   | 'event'
   | 'contract_extension'
+  | 'national_team_bonus'
 
 export interface FinanceEntry {
   round: number

@@ -1698,7 +1698,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       financeLog: appendFinanceLog(updatedGame.financeLog ?? [], {
         round: nextMatchday,
         amount: nationalTeamCallupBonusTkr * 1000,
-        reason: 'event',
+        reason: 'national_team_bonus',
         label: 'Landslagsuttagning (bonus)',
       }),
     }
