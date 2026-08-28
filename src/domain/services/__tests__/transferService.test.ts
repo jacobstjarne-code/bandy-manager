@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { generateIncomingBids, resolveOutgoingBid, executeTransfer, createOutgoingBid } from '../transferService'
+import { generateIncomingBids, resolveOutgoingBid, executeTransfer, createOutgoingBid, computeBidChance, computePositionFactor, weightedPickIndex } from '../transferService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { TransferBid } from '../../entities/GameEvent'
 import type { Player } from '../../entities/Player'
@@ -123,6 +123,82 @@ describe('generateIncomingBids', () => {
         expect(ratio).toBeLessThanOrEqual(1.42)
       }
     }
+  })
+})
+
+// DOM_FRAMGANGSKURVAN_2026-08-27 anspråk 2 — "Framgång kostar folk". Jacobs dom:
+// budfrekvensen ska skala med föregående säsongs slutplacering + rykte, och
+// buden ska rikta sig mot klubbens bästa spelare oftare än slumpmässigt.
+describe('computeBidChance — framgångskurvan skalar bud-frekvensen', () => {
+  it('en nykrönt mästare (position 1, rykte 60) har högre bud-chans än ett mittenlag (position 8, rykte 60)', () => {
+    const champion = makeClub({ id: 'c1', reputation: 60 })
+    const midTable = makeClub({ id: 'c1', reputation: 60 })
+    const championChance = computeBidChance(champion, { finalPosition: 1 }, 1.0)
+    const midTableChance = computeBidChance(midTable, { finalPosition: 8 }, 1.0)
+    expect(championChance).toBeGreaterThan(midTableChance)
+    // Konkreta värden: positionFactor 2.2 vs 1.0, reputationFactor 1.1 båda →
+    // successFactor 2.42 vs 1.1 → bidChance 0.15*2.42=0.363 vs 0.15*1.1=0.165
+    expect(championChance).toBeCloseTo(0.363, 3)
+    expect(midTableChance).toBeCloseTo(0.165, 3)
+  })
+
+  it('positionFactor trappar korrekt över alla placeringsband', () => {
+    expect(computePositionFactor(1)).toBe(2.2)
+    expect(computePositionFactor(2)).toBe(1.6)
+    expect(computePositionFactor(3)).toBe(1.6)
+    expect(computePositionFactor(4)).toBe(1.2)
+    expect(computePositionFactor(6)).toBe(1.2)
+    expect(computePositionFactor(7)).toBe(1.0)
+    expect(computePositionFactor(9)).toBe(1.0)
+    expect(computePositionFactor(10)).toBe(0.6)
+    expect(computePositionFactor(12)).toBe(0.6)
+  })
+
+  it('säsong 1 (ingen seasonStartSnapshot) faller tillbaka till neutral positionFactor (1.0)', () => {
+    expect(computePositionFactor(undefined)).toBe(1.0)
+    const club = makeClub({ id: 'c1', reputation: 60 })
+    const chance = computeBidChance(club, undefined, 1.0)
+    // positionFactor 1.0 * reputationFactor 1.1 = successFactor 1.1 → 0.15*1.1=0.165
+    expect(chance).toBeCloseTo(0.165, 3)
+  })
+
+  it('bidChance är alltid begränsad till [0, 0.6] — även en extremt framgångsrik, populär klubb', () => {
+    const club = makeClub({ id: 'c1', reputation: 100 })
+    const chance = computeBidChance(club, { finalPosition: 1 }, 3.0) // högsta bidMult samtidigt
+    expect(chance).toBeLessThanOrEqual(0.6)
+  })
+
+  it('bidMult (hot_transfer_market-signaturen) förblir en oberoende multiplikativ faktor', () => {
+    const club = makeClub({ id: 'c1', reputation: 60 })
+    const normal = computeBidChance(club, { finalPosition: 8 }, 1.0)
+    const hot = computeBidChance(club, { finalPosition: 8 }, 1.5)
+    expect(hot).toBeCloseTo(normal * 1.5, 5)
+  })
+})
+
+describe('weightedPickIndex — rank-viktat urval favoriserar de bästa spelarna', () => {
+  it('index 0 (bäst) väljs oftare än en jämn fördelning skulle ge, över många försök', () => {
+    const poolSize = 5
+    const trials = 20_000
+    let seed = 1
+    // enkel deterministisk pseudo-rand (LCG) för reproducerbarhet
+    const rand = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff
+      return seed / 0x7fffffff
+    }
+    const counts = new Array(poolSize).fill(0)
+    for (let i = 0; i < trials; i++) {
+      counts[weightedPickIndex(poolSize, rand)]++
+    }
+    const uniformShare = 1 / poolSize // 0.20
+    const bestShare = counts[0] / trials
+    const worstShare = counts[poolSize - 1] / trials
+    expect(bestShare).toBeGreaterThan(uniformShare * 1.5) // meningsfullt över jämnt (0.30+)
+    expect(bestShare).toBeGreaterThan(worstShare)
+  })
+
+  it('poolSize 1 väljer alltid index 0 utan att anropa rand meningsfullt', () => {
+    expect(weightedPickIndex(1, () => 0.99)).toBe(0)
   })
 })
 

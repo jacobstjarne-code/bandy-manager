@@ -9,9 +9,65 @@ import type { FinanceEntry } from './economyService'
 import { getRegionDistance } from '../data/regionGeography'
 import { getRivalry } from '../data/rivalries'
 import { formatSalary } from '../format'
+import { clamp } from '../utils/clamp'
 
 function bidId(round: number, playerId: string, buyingClubId: string): string {
   return `bid_${round}_${playerId}_${buyingClubId}`
+}
+
+// DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 2 — "Framgång kostar folk". Jacobs dom:
+// budfrekvensen ska skala med klubbens renommé OCH föregående säsongs slutplacering,
+// inte ligga på en flat 15%. En nykrönt mästare ska tappa spelare oftare än ett
+// mittenlag — priset för att vinna.
+//
+// positionFactor-trapporna är absoluta placeringstal (1 / 2-3 / 4-6 / 7-9 / 10-12),
+// inte proportionella mot totalTeams — matchar Bandy Managers fasta 12-lagsliga.
+export function computePositionFactor(finalPosition: number | undefined): number {
+  if (typeof finalPosition !== 'number') return 1.0 // ingen data (säsong 1, eller klubben var inte med) — neutralt
+  if (finalPosition === 1) return 2.2
+  if (finalPosition <= 3) return 1.6
+  if (finalPosition <= 6) return 1.2
+  if (finalPosition <= 9) return 1.0
+  return 0.6 // 10-12, botten
+}
+
+export function computeReputationFactor(reputation: number): number {
+  return clamp(0.5 + reputation / 100, 0.5, 1.5)
+}
+
+/**
+ * @cites managedClub.reputation, seasonStartSnapshot.finalPosition
+ */
+export function computeBidChance(
+  managedClub: Club,
+  seasonStartSnapshot: { finalPosition: number } | undefined,
+  bidMult: number,
+): number {
+  const positionFactor = computePositionFactor(seasonStartSnapshot?.finalPosition)
+  const reputationFactor = computeReputationFactor(managedClub.reputation)
+  const successFactor = clamp(positionFactor * reputationFactor, 0.4, 3.0)
+  return clamp(0.15 * bidMult * successFactor, 0, 0.6)
+}
+
+// Rank-viktat urval — bud ska rikta sig mot klubbens BÄSTA spelare oftare än mot
+// en godtycklig spelare i toppskiktet. `candidates` antas redan sorterad fallande
+// på currentAbility (bäst = index 0). Harmonisk viktning: vikt(i) = 1/(i+1).
+export function weightedPickIndex(poolSize: number, rand: () => number): number {
+  if (poolSize <= 1) return 0
+  const weights: number[] = []
+  let totalWeight = 0
+  for (let i = 0; i < poolSize; i++) {
+    const w = 1 / (i + 1)
+    weights.push(w)
+    totalWeight += w
+  }
+  const r = rand() * totalWeight
+  let cumulative = 0
+  for (let i = 0; i < poolSize; i++) {
+    cumulative += weights[i]
+    if (r < cumulative) return i
+  }
+  return poolSize - 1
 }
 
 // WEAK-015 + DEV-004: build a rich narrative body when a historically significant player leaves
@@ -66,12 +122,15 @@ export function generateIncomingBids(
   )
   if (hasActiveBid) return []
 
-  // 15% chance per round (hot_transfer_market signature can raise this)
-  const bidMult = game.currentSeasonSignature?.modifiers.incomingBidMultiplier ?? 1.0
-  if (rand() > 0.15 * bidMult) return []
-
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   if (!managedClub) return []
+
+  // DOM_FRAMGANGSKURVAN_2026-08-27 anspråk 2: bud-chansen skalar med föregående
+  // säsongs slutplacering + rykte (computeBidChance), istf en flat 15%.
+  // hot_transfer_market-signaturens bidMult är oförändrad, oberoende faktor.
+  const bidMult = game.currentSeasonSignature?.modifiers.incomingBidMultiplier ?? 1.0
+  const bidChance = computeBidChance(managedClub, game.seasonStartSnapshot, bidMult)
+  if (rand() > bidChance) return []
 
   const managedPlayers = game.players.filter(
     p => p.clubId === game.managedClubId && !p.isInjured,
@@ -82,7 +141,7 @@ export function generateIncomingBids(
   // Use last played match lineup since pendingLineup is cleared after each advance
   const lastPlayedFixture = [...game.fixtures]
     .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-    .sort((a, b) => b.roundNumber - a.roundNumber)[0]
+    .sort((a, b) => b.matchday - a.matchday)[0]
   const lastLineup = lastPlayedFixture?.homeClubId === game.managedClubId
     ? lastPlayedFixture.homeLineup
     : lastPlayedFixture?.awayLineup
@@ -94,8 +153,10 @@ export function generateIncomingBids(
 
   if (candidates.length === 0) return []
 
-  // Pick a candidate — weight towards expiring contracts
-  const idx = Math.floor(rand() * candidates.length)
+  // Rank-viktat urval — bud ska rikta sig mot klubbens BÄSTA spelare oftare
+  // (DOM_FRAMGANGSKURVAN_2026-08-27 anspråk 2). candidates är redan sorterad
+  // fallande på currentAbility, så index 0 = bäst.
+  const idx = weightedPickIndex(candidates.length, rand)
   const targetPlayer = candidates[idx]
 
   // Pick a buying club that is NOT the managed club
