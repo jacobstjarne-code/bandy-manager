@@ -155,13 +155,41 @@ describe('computeSeasonEndContractDemands', () => {
     expect(demands.length).toBe(1)
   })
 
-  it('produces demands when the club improved its table position vs the previous season (door c)', () => {
+  // D035 (mätning 2026-08-29, scripts/anspark1-villkorc-troskel-matning-
+  // 2026-08-29.ts): dörr (c) kräver nu minst IMPROVEMENT_THRESHOLD_POSITIONS
+  // (5) platsers förbättring, inte "vilken förbättring som helst" — ett
+  // mittenlags ±1-brus (37.8-50 % av säsongerna, uppmätt) fyrade tidigare
+  // dörren utan ett genuint framgångstecken.
+  it('produces demands when the club improved its table position by AT LEAST the threshold (door c)', () => {
     const player = makePlayer({ salary: 5000 })
     const club = makeClub()
     const game = makeGame([player], [club])
-    game.seasonStartSnapshot = { season: 2024, finalPosition: 8, finances: 0, communityStanding: 50, squadSize: 1, supporterMembers: 0, academyPromotions: 0 }
-    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), 6)
+    // previousPosition 10 -> finalPosition 5: delta 5, exakt tröskeln,
+    // ingen top-3/titel-konflikt (dörr a/b förblir false).
+    game.seasonStartSnapshot = { season: 2024, finalPosition: 10, finances: 0, communityStanding: 50, squadSize: 1, supporterMembers: 0, academyPromotions: 0 }
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), 5)
     expect(demands.length).toBe(1)
+  })
+
+  it('produces zero demands for a ±1 improvement — within the measured noise band, no longer satisfies door c alone', () => {
+    const player = makePlayer({ salary: 5000 })
+    const club = makeClub()
+    const game = makeGame([player], [club])
+    // previousPosition 7 -> finalPosition 6: delta 1, precis det brus som
+    // motiverade D035.
+    game.seasonStartSnapshot = { season: 2024, finalPosition: 7, finances: 0, communityStanding: 50, squadSize: 1, supporterMembers: 0, academyPromotions: 0 }
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), 6)
+    expect(demands.length).toBe(0)
+  })
+
+  it('produces zero demands for an improvement one place short of the threshold (delta 4 < 5)', () => {
+    const player = makePlayer({ salary: 5000 })
+    const club = makeClub()
+    const game = makeGame([player], [club])
+    // previousPosition 10 -> finalPosition 6: delta 4.
+    game.seasonStartSnapshot = { season: 2024, finalPosition: 10, finances: 0, communityStanding: 50, squadSize: 1, supporterMembers: 0, academyPromotions: 0 }
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), 6)
+    expect(demands.length).toBe(0)
   })
 
   it('produces zero demands when the club did NOT improve vs the previous season (same or worse position)', () => {
@@ -192,6 +220,20 @@ describe('clubSatisfiesSeasonSuccessGate', () => {
     const game = makeGame([], [club])
     game.playoffBracket = { season: 2025, status: 'completed' as never, quarterFinals: [], semiFinals: [], final: null, champion: 'c1' }
     expect(clubSatisfiesSeasonSuccessGate(game, club, 9)).toBe(true)
+  })
+
+  it('is false for a door-c improvement of exactly threshold-minus-one (D035 boundary)', () => {
+    const club = makeClub()
+    const game = makeGame([], [club])
+    game.seasonStartSnapshot = { season: 2024, finalPosition: 10, finances: 0, communityStanding: 50, squadSize: 1, supporterMembers: 0, academyPromotions: 0 }
+    expect(clubSatisfiesSeasonSuccessGate(game, club, 6)).toBe(false) // delta 4
+  })
+
+  it('is true for a door-c improvement of exactly the threshold (D035 boundary)', () => {
+    const club = makeClub()
+    const game = makeGame([], [club])
+    game.seasonStartSnapshot = { season: 2024, finalPosition: 10, finances: 0, communityStanding: 50, squadSize: 1, supporterMembers: 0, academyPromotions: 0 }
+    expect(clubSatisfiesSeasonSuccessGate(game, club, 5)).toBe(true) // delta 5
   })
 })
 

@@ -96,3 +96,40 @@ Implementerat exakt som doktrinens tre dörrar specificerar — fyndet ovan är
 en rapport, inte en avvikelse. Om "sällsynt för mittenlag" är ett hårt krav
 snarare än en riktningsförväntan är det en ny domfråga (skärp dörr c, eller
 stryk den och luta på a+b) — inte löst av detta bygge.
+
+---
+
+## NOT (2026-08-29): Dörr (c) fick en tröskel — D035
+
+Jacob godkände att skärpa dörr (c) med en mätt tröskel, inte en gissad
+rund siffra (`scripts/anspark1-villkorc-troskel-matning-2026-08-29.ts`,
+D035). `game.seasonStartSnapshot.finalPosition` överlever i det returnerade
+game-objektet efter varje säsongsslut, vilket gjorde hela tidsserien av
+slutplaceringar mätbar utifrån utan källkodspatch (till skillnad från
+villkor-2-mätningen ovan, som behövde en tillfällig env-patch för att
+isolera playoffBracket/cupBracket).
+
+Mittenlagets (club_malilla) säsong-till-säsong-placeringsförändring har
+uppmätt standardavvikelse ~4.6 platser — nästan lika stor som om
+placeringen vore en ny oberoende dragning varje säsong. Tröskeln
+`IMPROVEMENT_THRESHOLD_POSITIONS = 5` (avrundat uppåt från 4.56) sänker
+dörr-(c)-frekvensen för samma klubbtyp från 37.8 % (17/45 uppmätta
+övergångar, N>=1) till 20.0 % (9/45, N>=5) — som konvergerar med samma
+klubbtyps empiriska sannolikhet att sluta topp tre (dörr a: 20.3 %). Fullt
+villkor 2 (a+b+c) för mittenlaget: 3.61 → 2.33–2.83 krav/säsong. Dominant
+klubb i princip opåverkad (7.46–7.52 → 7.07–7.39), väntat eftersom dörr a/b
+redan bär hela lasten för den klubbtypen.
+
+Kontrastmätningen (dominant klubb, för att se om en genuint förbättrande
+klubb visar större svängningar) gav ett fynd som AVVEK från hypotesen som
+motiverade den: dominantens placeringsdelta var INTE större än
+mittenlagets — vid högre trösklar (N=4) tvärtom mindre (12.2 % mot 22.2 %),
+eftersom en klubb som redan pendlar runt plats 1-3 saknar utrymme att
+förbättras FRÅN (ett tak, inte ett golv). Det underminerar inte tröskelvalet
+— dörr a/b gör redan allt arbete för en dominant klubb, dörr (c) behöver
+bara diskriminera inom mittenlagets EGEN fördelning, vilket N=5 gör. Full
+fördelning och metodik i D035
+(`docs/findings/facts/design_principles/D035_contract_demand_door_c_improvement_threshold.yaml`).
+
+Dörr a/b orörda. SLUTTEST_KO.md A-H2b "dörr (c)"-fyndet är nu åtgärdat, inte
+bara rapporterat.

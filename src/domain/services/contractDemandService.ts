@@ -30,10 +30,18 @@
  * eller förbättrat placeringen mot föregående säsong" — fanns bara i
  * doktrintexten fram tills nu. Se clubSatisfiesSeasonSuccessGate nedan.
  * Mätt effekt (scripts/anspark1-villkor2-matning-2026-08-29.ts): mittenlagets
- * kravfrekvens halveras (6.85→3.61/säsong) men blir inte "sällsynt" som
- * förutspått — dörr (c) slår in ~50 % av säsongerna av ren positionsbrus.
- * Dörr a+b ensamma ger 1.88/säsong (sällsynt). Rapporterat, inte åtgärdat —
- * implementerat exakt som doktrinen specificerar.
+ * kravfrekvens halveras (6.85→3.61/säsong) men blev INTE "sällsynt" som
+ * förutspått — dörr (c) implementerad ordagrant (VILKEN förbättring som
+ * helst) slog in i ~38-50 % av säsongerna av ren positionsbrus. Dörr a+b
+ * ensamma gav 1.88/säsong (sällsynt).
+ *
+ * ÅTGÄRDAT 2026-08-29 (D035, samma dag, uppföljande mätpass — Jacobs
+ * uttryckliga godkännande, se scripts/anspark1-villkorc-troskel-matning-
+ * 2026-08-29.ts): dörr (c) kräver nu en tröskel, inte "vilken förbättring
+ * som helst" — se IMPROVEMENT_THRESHOLD_POSITIONS nedan. Mittenlagets
+ * kravfrekvens sjönk vidare, 3.61→2.33-2.83/säsong (dominant i princip
+ * oförändrad, 7.46-7.52→7.07-7.39, väntat eftersom dörr a/b redan gör allt
+ * arbete för den klubbtypen).
  */
 
 import type { SaveGame } from '../entities/SaveGame'
@@ -61,7 +69,8 @@ export interface ContractDemand {
  * lösare). Klubben kvalificerar om den gjort MINST ETT av tre denna säsong:
  *   (a) slutat topp tre i serien
  *   (b) vunnit serien (playoffmästare) ELLER cupen
- *   (c) förbättrat sin slutplacering mot föregående säsong
+ *   (c) förbättrat sin slutplacering mot föregående säsong med minst
+ *       IMPROVEMENT_THRESHOLD_POSITIONS platser (D035, se konstanten nedan)
  *
  * `finalPosition` — den AVSLUTADE säsongens tabellplacering. Måste komma
  * från den färskt beräknade `standings` i seasonEndProcessor.ts (t.ex.
@@ -76,7 +85,24 @@ export interface ContractDemand {
  * alltså "positionen säsongen INNAN den som just avslutats", vilket är
  * exakt jämförelsepunkten (c) kräver. Saknas fältet (säsong 1, inget att
  * jämföra mot) räknas dörr (c) som ouppfylld — dörr (a)/(b) kan ändå slå in.
+ *
+ * TRÖSKEL (D035, mätning 2026-08-29 — scripts/anspark1-villkorc-troskel-
+ * matning-2026-08-29.ts): dörr (c) implementerad ordagrant ur doktrinen
+ * (`finalPosition < previousPosition`, VILKEN förbättring som helst) fyrade
+ * i 37.8 % av ett mittenlags säsonger (17/45 uppmätta säsong-till-säsong-
+ * övergångar) — nästan alltid ren tabellbrus, inte ett genuint
+ * framgångstecken (SLUTTEST_KO.md A-H2b, "dörr (c)"). Den uppmätta
+ * standardavvikelsen för ett mittenlags säsong-till-säsong-placerings-
+ * FÖRÄNDRING (inte bara riktning) var ~4.6 placeringar — dvs. en klubb utan
+ * dominans studsar nästan lika mycket år för år som om placeringen vore
+ * oberoende slumpmässig varje säsong. IMPROVEMENT_THRESHOLD_POSITIONS=5
+ * (avrundat uppåt från 4.56, dvs. ~1 standardavvikelse) sänker mittenlagets
+ * dörr-(c)-frekvens till 20.0 % (9/45) — som konvergerar med samma
+ * mittenlags empiriska sannolikhet att sluta topp tre (dörr a, 20.3 %,
+ * 13/64 uppmätta säsonger) i samma mätning. Se D035 för full fördelning.
  */
+export const IMPROVEMENT_THRESHOLD_POSITIONS = 5 // D035
+
 export function clubSatisfiesSeasonSuccessGate(
   game: SaveGame,
   club: Club,
@@ -86,7 +112,8 @@ export function clubSatisfiesSeasonSuccessGate(
   const wonLeague = game.playoffBracket?.champion === club.id
   const wonCup = game.cupBracket?.winnerId === club.id
   const previousPosition = game.seasonStartSnapshot?.finalPosition
-  const improvedPosition = previousPosition !== undefined && finalPosition < previousPosition
+  const improvedPosition = previousPosition !== undefined
+    && (previousPosition - finalPosition) >= IMPROVEMENT_THRESHOLD_POSITIONS
   return topThree || wonLeague || wonCup || improvedPosition
 }
 

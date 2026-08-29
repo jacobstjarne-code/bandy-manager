@@ -1,0 +1,123 @@
+fact_id: D035
+category: design_principles
+claim: "A-H2b retention-domens villkor 2, dörr (c) (DOM_AH2B_RETENTION_2026-08-28.md, contractDemandService.ts:clubSatisfiesSeasonSuccessGate) kräver nu att slutplaceringen förbättrats med minst IMPROVEMENT_THRESHOLD_POSITIONS (5) platser mot föregående säsong, inte 'vilken förbättring som helst' (den ursprungliga ordagranna doktrintolkningen, finalPosition < previousPosition). Uppmätt: ett mittenlags (club_malilla) säsong-till-säsong-placeringsförändring har standardavvikelse ~4.6 platser — praktiskt taget lika stor som om placeringen vore oberoende slumpmässig år för år. Tröskeln 5 (avrundat uppåt från 4.56) sänker mittenlagets dörr-(c)-frekvens från 37.8% (17/45 övergångar, N>=1) till 20.0% (9/45, N>=5) — vilket konvergerar med samma mittenlags empiriska sannolikhet att sluta topp tre (dörr a: 20.3%, 13/64 säsonger)."
+value:
+  IMPROVEMENT_THRESHOLD_POSITIONS: 5
+unit: tabellplatser
+source:
+  type: measurement
+  doc: "scripts/anspark1-villkorc-troskel-matning-2026-08-29.ts; src/domain/services/contractDemandService.ts:clubSatisfiesSeasonSuccessGate,IMPROVEMENT_THRESHOLD_POSITIONS"
+  decided_by: code
+verified_at: 2026-08-29
+verified_by: code
+status: active
+invariants:
+  - "value.IMPROVEMENT_THRESHOLD_POSITIONS >= 1"
+  - "value.IMPROVEMENT_THRESHOLD_POSITIONS <= 11"
+related_facts: [D029]
+notes: |
+  BAKGRUND. scripts/anspark1-villkor2-matning-2026-08-29.ts implementerade
+  villkor 2:s tre dörrar ordagrant ur doktrinen (topp-3 / titel-eller-cup /
+  "förbättrat placeringen mot föregående säsong" — den sistnämnda kodad som
+  finalPosition < previousPosition, VILKEN förbättring som helst). Effekten
+  mätt då: mittenlagets kravfrekvens (villkor 1, obemötta lönekrav) sjönk
+  6.85 -> 3.61/säsong, men blev INTE "sällsynt" som SLUTTEST_KO.md
+  förutspådde — dörr (c) ensam slog in i ~50% av mittenlagets säsonger
+  (grov uppskattning i den mätningen; dörr a+b ensamma gav 1.88/säsong,
+  klart sällsynt). Rotorsak, inte åtgärdad då (uttrycklig instruktion att
+  implementera doktrinen ordagrant först): dörr (c) belönade ±1-placerings-
+  studs likvärdigt med en verklig turnaround.
+
+  DENNA MÄTNING (2026-08-29, Jacobs godkännande att gå vidare och låsa en
+  tröskel). METOD: `game.seasonStartSnapshot.finalPosition` sätts av
+  seasonEndProcessor.ts VARJE säsongsslut till den nyss avslutade säsongens
+  sanna tabellplacering (samma fält villkor 2:s dörr (c) själv läser för
+  "föregående säsong") och ÖVERLEVER i det returnerade game-objektet — till
+  skillnad från villkor-2-mätningens playoffBracket/cupBracket (som byts ut
+  vid samma rollover) kräver detta INGEN källkodspatch. Scriptet läser av
+  fältet efter varje säsongsslut och bygger hela tidsserien av
+  slutplaceringar per körning, headless (samma harness som stress-test.ts:
+  createNewGame -> autoSelectLineup -> advanceToNextEvent, kontraktskrav
+  lösta med policy "möt inga", inkommande bud olösta/expirerande — ingen
+  avgångskedja mäts här, bara ren tabellrörelse).
+
+  ROBUSTHETSPOOL (samma klubbkonstruktioner som hela A-H2b-mätserien,
+  seed-range utökad från 5 till 20/klubbtyp eftersom headless auto-play
+  avskedar managern efter i snitt 4-5 säsonger oavsett policy/klubbtyp —
+  bekräftat mot ALLA 18 körningar i anspark1-retention-matning-2026-08-28.ts,
+  som samtliga slutade avskedade inom 8 säsonger. 5 seeds/klubbtyp gav bara
+  20 (dominant) resp. 9 (mittenlag) säsong-till-säsong-övergångar, för få
+  för en percentilfördelning; 20 seeds/klubbtyp x 15 säsonger gav 123 resp.
+  45 övergångar):
+    - DOMINANT: club_vastanfors, +10 CA-boost, seeds 100-119.
+    - MITTENLAG: club_malilla, orörd, seeds 2-21.
+
+  FÖRDELNING (placeringsdelta = föregående minus nuvarande säsongs
+  placering; positivt = förbättring, lägre placeringssiffra = bättre bord):
+
+  MITTENLAG (45 övergångar):
+    delta  -9..-5: 7   (15.6%)     delta 0:      4   (8.9%)
+    delta  -4..-1: 16  (35.6%)     delta +1..+4: 8   (17.8%)
+                                   delta +5..+10: 9   (20.0%)
+    Kumulativt (andel övergångar med delta >= N):
+      N=1: 37.8% (17/45)   N=2: 33.3% (15/45)   N=3: 28.9% (13/45)
+      N=4: 22.2% (10/45)   N=5: 20.0% (9/45)    N=6: 11.1% (5/45)
+    Median av ENDAST de positiva deltana (17 st): +5 — dvs. när ett
+    mittenlag väl förbättras, är den TYPISKA förbättringen redan stor;
+    delta exakt +1 förekom bara 2 ggr av 45 (4.4%), delta +1 ELLER +2
+    tillsammans bara 4 ggr (8.9%) — mindre brus-vid-liten-delta än den
+    tidigare grova ~50%-uppskattningen antydde, men samma riktning och
+    samma slutsats: dörr (c) utan tröskel belönar utfall som inte skiljer
+    sig från slumpen.
+    Standardavvikelse (alla 45 delta, medelvärde ~-0.07): ~4.56 platser —
+    dvs. en klubb utan dominans studsar i tabellen nästan som om
+    placeringen vore en ny oberoende dragning varje säsong (jämför:
+    standardavvikelsen för en likformig slumpvariabel över 1-12 är ~3.46).
+    Empirisk topp-3-frekvens (dörr a) för samma klubbtyp, räknat direkt på
+    de 64 uppmätta säsongsplaceringarna: 13/64 = 20.3%.
+
+  DOMINANT (123 övergångar, kontrast):
+    N=1: 38.2% (47/123)  N=2: 26.0% (32/123)  N=3: 19.5% (24/123)
+    N=4: 12.2% (15/123)  N=5: 6.5% (8/123)    N=6: 4.9% (6/123)
+  VIKTIGT FYND, AVVIKER FRÅN DEN HYPOTES SOM MOTIVERADE KONTRASTMÄTNINGEN:
+  en dominant klubb visar INTE större placeringssvängningar än mittenlaget
+  — snarare mindre vid högre trösklar (N=4: dominant 12.2% mot mittenlag
+  22.2%). Rotorsak: taket. En klubb som redan pendlar mellan plats 1-3 kan
+  per definition inte förbättras mer än ett par platser (delta 0 stod för
+  23.6% av dominantens övergångar, mot 8.9% för mittenlaget) — stora
+  POSITIVA delta kräver utrymme att förbättras FRÅN, vilket en redan-stark
+  klubb saknar. Det här är INTE ett problem för tröskeln: dörr a/b
+  (topp-3/titel) gör redan allt arbete för en dominant klubb (bekräftat i
+  villkor-2-mätningen, 2026-08-29) — dörr (c) behöver bara diskriminera
+  INOM mittenlagets egen fördelning, vilket N=5 gör (se ovan).
+
+  TRÖSKELVAL: N=5, avrundat uppåt från den uppmätta standardavvikelsen
+  (4.56) — kräver alltså att en förbättring överskrider ungefär en
+  standardavvikelse av det normala bruset för att räknas som "framgång",
+  inte ren tabellvariation. Sammanfaller (oplanerat, bekräftar valet) med
+  att mittenlagets dörr-(c)-frekvens vid N=5 (20.0%) hamnar praktiskt taget
+  identisk med samma klubbtyps dörr-a-frekvens (20.3%) — dörr (c) blir
+  ungefär lika sällsynt som att faktiskt sluta topp tre, snarare än ett
+  kryphål som slår in dubbelt så ofta som en riktig framgång.
+
+  EFTER-MÄTNING (samma produktionspipeline, oförändrad
+  scripts/anspark1-retention-matning-2026-08-28.ts, körd EFTER att N=5
+  applicerades i källkoden):
+    Fullt villkor 2 (dörr a+b+c), krav/säsong:
+      Dominant:   7.46-7.52 (N=1, tidigare) -> 7.07-7.39 (N=5) — i princip
+                  oförändrat, väntat (dörr a/b redan bär hela lasten).
+      Mittenlag:  3.61 (N=1, tidigare) -> 2.33-2.83 (N=5) — ytterligare
+                  nedgång, närmare dörr a+b-ensamma-golvet (1.88/säsong).
+    Dörr (c) ISOLERAD (topp-3/titel/cup tillfälligt avstängda via env-flagga,
+    samma mätkonvention som villkor2-matningens AH2B_DISABLE_DOOR_C,
+    patchen reverterad direkt efter körning — se scripts/anspark1-
+    villkorc-troskel-matning-2026-08-29.ts filhuvud för metodiknoten):
+      Dominant:   0.58 krav/säsong (N=5, isolerad)
+      Mittenlag:  0.79 krav/säsong (N=5, isolerad)
+    (Jämförelse mot N=1: villkor-2-mätningen hade ingen renodlad isolerad
+    dörr-c-siffra, bara differensen fullt-gate-minus-dörr-a+b — för
+    mittenlaget 3.61-1.88=1.73/säsong "överskott" tillskrivet dörr c vid
+    N=1, mot 0.79 vid N=5 — ungefär en halvering av dörr (c):s egna bidrag.)
+
+  DÖRR A/B RÖRS INTE. Ingen ändring i clubSatisfiesSeasonSuccessGate:s
+  topThree/wonLeague/wonCup-logik — uttrycklig avgränsning i uppdraget.
