@@ -67,3 +67,32 @@ Ingen lastkvot. Ingen denominator. Måttet är folk som går.
 **Opus (jag):** texten (kravkortet vid säsongsslut, moralbeskeden) skrivs när mekaniken och dess magnituder står — inte mot en ospecad mekanik.
 **Code:** rapportera 1–4, bygg de tre leden, kalibrera mot avgångar. Parallellt med A-H9 och A-H3 (olika filer).
 **Jacob:** inget mer beslut krävs — väg 1 + mellanled är dömt. Delfrågan hård-vs-sannolikhet från A-H3 gäller inte här; mellanledet ÄR det mjuka valet.
+
+---
+
+## NOT (2026-08-29): Villkor 2 byggt — SLUTTEST_KO A-H2b-fyndet stängt
+
+Leg 1 ovan levererades (`a55d4139`) med bara villkor 1 (individuellt obemött
+marknadskrav). Den ABSOLUTA klubbframgångsgrinden — "minst ETT av tre: topp
+tre, vunnit serien/cupen, eller förbättrat placeringen mot föregående
+säsong" (definitionen i sin helhet står i `DOM_AH2B_BUDGETTRYCK_KORORDER_
+2026-08-28.md`, ärvd ordagrant hit) — implementerades aldrig, vilket ett
+kodläst fynd (SLUTTEST_KO.md A-H2b-raden, 2026-08-28) upptäckte: mittenlag
+såg 6-7 krav/säsong trots att klubben själv inte lyckats.
+
+Byggt 2026-08-29 i `contractDemandService.ts` (`clubSatisfiesSeasonSuccessGate`,
+AND:ad in i `computeSeasonEndContractDemands` FÖRE per-spelar-loopen).
+
+**Mätt effekt** (`scripts/anspark1-villkor2-matning-2026-08-29.ts`): mittenlagets
+kravfrekvens går från 6.85 → 3.61/säsong — en halvering, men INTE "sällsynt"
+som förutspått. Rotorsak: dörr (c), positionsförbättring mot föregående
+säsong, slår in ~50 % av säsongerna för ett mittenlag av ren positionsbrus
+(ett lag utan dominans studsar upp och ner i tabellen år för år). Dörr a+b
+ensamma (topp-3/titel/cup, utan positionsjämförelsen) ger 1.88/säsong — det
+ÄR sällsynt. Dominant klubb opåverkad av dörr c (9.36→7.24 med bara a+b,
+7.46–7.52 med alla tre) — den träffar a/b nästan varje säsong ändå.
+
+Implementerat exakt som doktrinens tre dörrar specificerar — fyndet ovan är
+en rapport, inte en avvikelse. Om "sällsynt för mittenlag" är ett hårt krav
+snarare än en riktningsförväntan är det en ny domfråga (skärp dörr c, eller
+stryk den och luta på a+b) — inte löst av detta bygge.

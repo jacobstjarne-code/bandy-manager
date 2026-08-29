@@ -820,9 +820,20 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       .filter(p => !retiredPlayerIds.has(p.id) && !contractExpiredIds.has(p.id))
       .map(p => p.id),
   )
+  // Villkor 2 (SLUTTEST_KO.md A-H2b-fyndet, 2026-08-28): finalPosition måste
+  // komma från den färskt beräknade `managedClubStanding` (rad ~90), inte
+  // `game.standings` — det fältet är den alfabetiska dummytabellen tills
+  // nästa säsongs matcher spelats. `?? 12` matchar samma fallback som
+  // seasonStartSnapshot nedan (botten av en 12-lagsserie) för den osannolika
+  // raden managedClubStanding saknas helt.
   const managedClubForDemands = updatedClubs.find(c => c.id === game.managedClubId)
   const contractDemands = managedClubForDemands
-    ? computeSeasonEndContractDemands(game, managedClubForDemands, activeManagedPlayerIds)
+    ? computeSeasonEndContractDemands(
+        game,
+        managedClubForDemands,
+        activeManagedPlayerIds,
+        managedClubStanding?.position ?? 12,
+      )
     : []
 
   // ── Board objectives — evaluate FÖRE patiensuppdateringen ────────────────

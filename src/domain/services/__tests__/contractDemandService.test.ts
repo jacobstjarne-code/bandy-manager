@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeSeasonEndContractDemands, applyContractDemandResolutions, UNMET_DEMAND_MORALE_PENALTY } from '../contractDemandService'
+import { computeSeasonEndContractDemands, applyContractDemandResolutions, clubSatisfiesSeasonSuccessGate, UNMET_DEMAND_MORALE_PENALTY } from '../contractDemandService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { Player } from '../../entities/Player'
 import type { Club } from '../../entities/Club'
@@ -64,6 +64,10 @@ function makeGame(players: Player[], clubs: Club[]): SaveGame {
   } as unknown as SaveGame
 }
 
+// Villkor 2 satisfied via top-3 (finalPosition=1) in every test below unless
+// the test is specifically about villkor 2 — isolates villkor 1 behaviour.
+const TOP_THREE_POSITION = 1
+
 describe('computeSeasonEndContractDemands', () => {
   it('flags a player whose salary is below computeContractMinSalary as a demand', () => {
     // Ability 65, rep 60 → repFactor 0.5+0.6=1.1, isFullTimePro → base = 65*200*0.8=10400
@@ -74,7 +78,7 @@ describe('computeSeasonEndContractDemands', () => {
     const player = makePlayer({ salary: 5000 })
     const club = makeClub()
     const game = makeGame([player], [club])
-    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']))
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), TOP_THREE_POSITION)
     expect(demands.length).toBe(1)
     expect(demands[0].playerId).toBe('p1')
     expect(demands[0].currentSalary).toBe(5000)
@@ -85,7 +89,7 @@ describe('computeSeasonEndContractDemands', () => {
     const player = makePlayer({ salary: 999999 })
     const club = makeClub()
     const game = makeGame([player], [club])
-    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']))
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), TOP_THREE_POSITION)
     expect(demands.length).toBe(0)
   })
 
@@ -93,7 +97,7 @@ describe('computeSeasonEndContractDemands', () => {
     const player = makePlayer({ salary: 5000 })
     const club = makeClub()
     const game = makeGame([player], [club])
-    const demands = computeSeasonEndContractDemands(game, club, new Set())
+    const demands = computeSeasonEndContractDemands(game, club, new Set(), TOP_THREE_POSITION)
     expect(demands.length).toBe(0)
   })
 
@@ -102,7 +106,7 @@ describe('computeSeasonEndContractDemands', () => {
     const other = makePlayer({ id: 'p2', clubId: 'c2', salary: 5000 })
     const club = makeClub()
     const game = makeGame([own, other], [club, makeClub({ id: 'c2', squadPlayerIds: ['p2'] })])
-    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1', 'p2']))
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1', 'p2']), TOP_THREE_POSITION)
     expect(demands.map(d => d.playerId)).toEqual(['p1'])
   })
 
@@ -110,8 +114,84 @@ describe('computeSeasonEndContractDemands', () => {
     const player = makePlayer({ salary: 999999, seasonStats: { gamesPlayed: 2, goals: 3, assists: 1, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 9.0, minutesPlayed: 160 } })
     const club = makeClub()
     const game = makeGame([player], [club])
-    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']))
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), TOP_THREE_POSITION)
     expect(demands.length).toBe(0)
+  })
+
+  // ── Villkor 2 (SLUTTEST_KO.md A-H2b-fyndet, 2026-08-28) ──────────────────
+  it('produces zero demands when the club fails all three success doors, even with a qualifying individual demand', () => {
+    const player = makePlayer({ salary: 5000 })
+    const club = makeClub()
+    // finalPosition 6, no playoff/cup win, no seasonStartSnapshot (no prior
+    // season to compare against, or a prior position that wasn't improved).
+    const game = makeGame([player], [club])
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), 6)
+    expect(demands.length).toBe(0)
+  })
+
+  it('produces demands when the club finished top three (door a) even at finalPosition 3', () => {
+    const player = makePlayer({ salary: 5000 })
+    const club = makeClub()
+    const game = makeGame([player], [club])
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), 3)
+    expect(demands.length).toBe(1)
+  })
+
+  it('produces demands when the club won the league (door b), regardless of table position', () => {
+    const player = makePlayer({ salary: 5000 })
+    const club = makeClub()
+    const game = makeGame([player], [club])
+    game.playoffBracket = { season: 2025, status: 'completed' as never, quarterFinals: [], semiFinals: [], final: null, champion: 'c1' }
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), 6)
+    expect(demands.length).toBe(1)
+  })
+
+  it('produces demands when the club won the cup (door b), regardless of table position', () => {
+    const player = makePlayer({ salary: 5000 })
+    const club = makeClub()
+    const game = makeGame([player], [club])
+    game.cupBracket = { season: 2025, matches: [], winnerId: 'c1', completed: true }
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), 6)
+    expect(demands.length).toBe(1)
+  })
+
+  it('produces demands when the club improved its table position vs the previous season (door c)', () => {
+    const player = makePlayer({ salary: 5000 })
+    const club = makeClub()
+    const game = makeGame([player], [club])
+    game.seasonStartSnapshot = { season: 2024, finalPosition: 8, finances: 0, communityStanding: 50, squadSize: 1, supporterMembers: 0, academyPromotions: 0 }
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), 6)
+    expect(demands.length).toBe(1)
+  })
+
+  it('produces zero demands when the club did NOT improve vs the previous season (same or worse position)', () => {
+    const player = makePlayer({ salary: 5000 })
+    const club = makeClub()
+    const game = makeGame([player], [club])
+    game.seasonStartSnapshot = { season: 2024, finalPosition: 6, finances: 0, communityStanding: 50, squadSize: 1, supporterMembers: 0, academyPromotions: 0 }
+    const demands = computeSeasonEndContractDemands(game, club, new Set(['p1']), 6)
+    expect(demands.length).toBe(0)
+  })
+})
+
+describe('clubSatisfiesSeasonSuccessGate', () => {
+  it('is true for top-3 finish alone', () => {
+    const club = makeClub()
+    const game = makeGame([], [club])
+    expect(clubSatisfiesSeasonSuccessGate(game, club, 3)).toBe(true)
+  })
+
+  it('is false for a mid-table finish with no title, no cup, and no improvement', () => {
+    const club = makeClub()
+    const game = makeGame([], [club])
+    expect(clubSatisfiesSeasonSuccessGate(game, club, 6)).toBe(false)
+  })
+
+  it('is true for a league title regardless of tier (absolute, not tier-relative)', () => {
+    const club = makeClub()
+    const game = makeGame([], [club])
+    game.playoffBracket = { season: 2025, status: 'completed' as never, quarterFinals: [], semiFinals: [], final: null, champion: 'c1' }
+    expect(clubSatisfiesSeasonSuccessGate(game, club, 9)).toBe(true)
   })
 })
 
