@@ -3,6 +3,7 @@ import type { StandingRow, SaveGame, BoardAssessment } from '../entities/SaveGam
 import { ordinal } from '../utils/numberFormat'
 import type { Club } from '../entities/Club'
 import { boardPatienceZoneFromScore } from './portal/boardPatienceZone'
+import type { SeasonBoardTruth } from '../entities/SeasonSummary'
 
 // SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md): Survive-raderna nedan i
 // BOARD_EXPECTATION_TEXT/BOARD_EXPECTATION_CEREMONIAL är '[Opus]'-platshållare.
@@ -682,4 +683,75 @@ export function deriveBoardAssessment(
       : direction === 'lowered' ? LOWERED_REASON_LINE
       : undefined,
   }
+}
+
+/**
+ * A-H4 (TRIAGE_AUDIT_2026-08-29.md, HIGH 4) — enda källan för
+ * `SeasonSummary.boardTruth` (se entities/SeasonSummary.ts för den fulla
+ * motiveringen). Anropas EN gång, i seasonEndProcessor.ts, efter att
+ * säsongsslutets boardPatience-uppdatering och avskedskontroll redan är
+ * klara — denna funktion räknar inte om NÅGOT nytt, den bara paketerar tre
+ * redan beräknade sanningar (mål/utfall/relation) i EN frusen struktur, med
+ * samma pure functions (computeSeasonVerdictRating/
+ * expectationVerdictFromRating/boardPatienceZoneFromScore) som
+ * styrelsebetyget och portalzonen redan delar. Ingen ny tröskeltabell.
+ */
+export function buildSeasonBoardTruth(params: {
+  expectation: ClubExpectation
+  finalPosition: number
+  totalTeams: number
+  isChampion: boolean
+  boardPatienceAfter: number
+  consecutiveFailuresAfter: number
+  managerFired: boolean
+  firedReason?: SeasonBoardTruth['relationship']['firedReason']
+}): SeasonBoardTruth {
+  const {
+    expectation, finalPosition, totalTeams, isChampion,
+    boardPatienceAfter, consecutiveFailuresAfter, managerFired, firedReason,
+  } = params
+
+  const rating = computeSeasonVerdictRating(expectation, finalPosition, totalTeams)
+  const verdict = expectationVerdictFromRating(expectation, rating, isChampion)
+
+  return {
+    statedGoal: {
+      expectation,
+      anchorPosition: BOARD_EXPECTATION_ANCHOR_POSITION[expectation],
+      label: BOARD_EXPECTATION_TEXT[expectation],
+    },
+    outcome: { finalPosition, rating, verdict, isChampion },
+    relationship: {
+      boardPatienceAfter,
+      zone: boardPatienceZoneFromScore(boardPatienceAfter),
+      consecutiveFailuresAfter,
+      managerFired,
+      // Namngiven orsak är bara meningsfull när avsked faktiskt skedde —
+      // annars alltid undefined, oavsett vad anroparen skickade in.
+      firedReason: managerFired ? firedReason : undefined,
+    },
+  }
+}
+
+/**
+ * A-H4 — Game Over-skärmens styrelseuttalande, härlett ur SAMMA
+ * SeasonBoardTruth-snapshot som årsbokens expectationVerdict, i stället för
+ * att GameOverScreen.tsx läser game.boardPatience/consecutiveFailures LIVE
+ * vid rendertillfället (den ursprungliga bugkällan — två oberoende
+ * härledningar av samma säsongs utfall som kunde säga emot varandra).
+ * De tre texterna är ORÖRDA, flyttade ordagrant ur GameOverScreen.tsx —
+ * ingen ny svensk text skriven här.
+ */
+export function gameOverBoardStatement(
+  truth: Pick<SeasonBoardTruth, 'relationship'>,
+  clubName: string | undefined,
+): string {
+  const { firedReason } = truth.relationship
+  if (firedReason === 'consecutiveFailures') {
+    return `Efter tre säsonger på rad utan förbättring ser styrelsen sig tvingad att göra en förändring. ${clubName ?? 'Klubben'} tackar för insatsen men önskar dig lycka till i framtiden.`
+  }
+  if (firedReason === 'boardPatience') {
+    return `Styrelsen har förlorat förtroendet för dig som tränare efter de ihållande besvikelserna. Beslutet är fattat — du lämnar ${clubName ?? 'klubben'} med omedelbar verkan.`
+  }
+  return `Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i ${clubName ?? 'klubben'}.`
 }

@@ -3,6 +3,9 @@ import { useGameStore } from '../store/gameStore'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { canEnterCareerBreak } from '../../application/useCases/simulateCareerBreak'
 import { CAREER_BREAK_START_CTA } from '../../domain/data/careerBreakText'
+import { gameOverBoardStatement } from '../../domain/services/boardService'
+import { boardPatienceZoneFromScore } from '../../domain/services/portal/boardPatienceZone'
+import type { SeasonBoardTruth } from '../../domain/entities/SeasonSummary'
 
 export function GameOverScreen() {
   const game = useGameStore(s => s.game)
@@ -35,17 +38,39 @@ export function GameOverScreen() {
     ? game.seasonSummaries.reduce((sum, s) => sum + s.wins, 0)
     : 0
 
+  // A-H4 (TRIAGE_AUDIT_2026-08-29.md, HIGH 4): läser numera
+  // lastSummary.boardTruth — SAMMA frusna snapshot årsboken (SeasonSummaryScreen)
+  // dömer säsongen mot — i stället för att räkna om ett eget omdöme ur
+  // game.boardPatience/consecutiveFailures LIVE vid rendertillfället. Det var
+  // rotorsaken till att denna skärm och årsboken kunde motsäga varandra om
+  // samma säsong (t.ex. "överträffade alla förväntningar" i årsboken,
+  // "ihållande besvikelser" här). gameOverBoardStatement (boardService.ts)
+  // är den enda platsen texten härleds nu.
+  //
+  // Fallback (legacyTruth) täcker bara saves skapade FÖRE denna fix — deras
+  // seasonSummaries saknar boardTruth. Samma tre texter, samma tre villkor
+  // som den gamla koden hade, bara paketerade i samma SeasonBoardTruth-form
+  // så gameOverBoardStatement förblir den enda textkällan.
   function getBoardStatement(): string {
+    const truth = lastSummary?.boardTruth
+    if (truth?.relationship.managerFired) {
+      return gameOverBoardStatement(truth, managedClub?.name)
+    }
+
     const patience = game!.boardPatience ?? 70
     const failures = game!.consecutiveFailures ?? 0
-
-    if (failures >= 3) {
-      return `Efter tre säsonger på rad utan förbättring ser styrelsen sig tvingad att göra en förändring. ${managedClub?.name ?? 'Klubben'} tackar för insatsen men önskar dig lycka till i framtiden.`
+    const legacyTruth: Pick<SeasonBoardTruth, 'relationship'> = {
+      relationship: {
+        boardPatienceAfter: patience,
+        zone: boardPatienceZoneFromScore(patience),
+        consecutiveFailuresAfter: failures,
+        managerFired: true,
+        firedReason: failures >= 3 ? 'consecutiveFailures'
+          : patience <= 15 ? 'boardPatience'
+          : undefined,
+      },
     }
-    if (patience <= 15) {
-      return `Styrelsen har förlorat förtroendet för dig som tränare efter de ihållande besvikelserna. Beslutet är fattat — du lämnar ${managedClub?.name ?? 'klubben'} med omedelbar verkan.`
-    }
-    return `Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i ${managedClub?.name ?? 'klubben'}.`
+    return gameOverBoardStatement(legacyTruth, managedClub?.name)
   }
 
   // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — två vägar, inte en. "Se

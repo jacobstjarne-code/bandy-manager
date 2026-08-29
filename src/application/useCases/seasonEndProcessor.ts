@@ -20,12 +20,13 @@ import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/pla
 import { generateRetirementData, generateFarewellQuote } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
-import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine } from '../../domain/services/boardService'
+import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine, buildSeasonBoardTruth } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 import { pickSeasonDecision, SEASON_DECISION_NONE_TEXT } from '../../domain/services/seasonDecisionCaptureService'
 import { evaluateSeasonGoal, deriveSeasonPersonChange, deriveRivalryStanding } from '../../domain/services/seasonGoalService'
 import { calculateClubEra } from '../../domain/services/clubEraService'
 import { applyBurnoutRecoveryAtTransition } from '../../domain/services/seasonTransitionService'
+import { summerFitnessTarget, summerSeasonForm } from '../../domain/services/fitnessRecoveryService'
 import { updateLoyaltyScores } from '../../domain/services/characterPlayerService'
 import { processAITransfers } from '../../domain/services/aiTransferService'
 import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
@@ -492,7 +493,18 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   let resetPlayers = allPlayers.map(player => ({
     ...player,
     age: player.age + 1,
-    fitness: Math.min(100, player.fitness + 15),
+    // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 2 — "sommaren måste ge
+    // en begriplig återställning till rimlig matchberedskap". `+15` var ett
+    // symboliskt påslag: mätningen 2026-08-29 visade en trupp som gick in i
+    // säsong 2 på ~40 % trots hela sommaren. Nu ett MÅL (78–92 efter
+    // uthållighet), aldrig en sänkning.
+    fitness: Math.max(player.fitness, summerFitnessTarget(player.attributes?.stamina)),
+    // A3, rotorsak 1: `seasonForm` nollställdes ALDRIG mellan säsonger. Med
+    // Vila (−1.0/omgång) landade den på ~20 i säsong 2 och 0 i säsong 4 — och
+    // eftersom playerModifier klipper effekten vid seasonForm+3 spelade hela
+    // truppen på några få procents effektivitet resten av karriären. Sommaren
+    // drar tillbaka mot försäsongsbaslinjen, med en fjärdedel bärighet kvar.
+    seasonForm: summerSeasonForm(player.seasonForm),
     startSeasonCA: player.currentAbility,
     // 2026-08-17 (Stickiness-audit, karriärstatistik-dubblering): totalGames/
     // totalGoals/totalAssists ägs av statsProcessor.ts (uppdateras EN gång per
@@ -1189,6 +1201,22 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     newInboxItems.push(buildLicenseInboxItem(licenseCheck.action, game.currentDate, game.currentSeason, licenseCheck.newLicenseStatus))
   }
 
+  // A-H4 (TRIAGE_AUDIT_2026-08-29.md, HIGH 4): namngiven avskedsorsak, satt
+  // HÄR (samma svep som managerFired ovan) för SeasonSummary.boardTruth —
+  // aldrig omderiverad senare av en läsare. Samma prioritetsordning som
+  // GameOverScreen.tsx's tidigare (nu ersatta) live-läsning använde: raka
+  // förluster/tabellmiss (consecutiveFailures) före utsliten patience, båda
+  // avstängda för Survive-tiern (samma isSurviveTier-grind som ovan);
+  // licensnekan är den enda vägen kvar när ingen av de två sportsliga skälen
+  // stämmer (t.ex. en Survive-klubb, eller en klubb sparkad enbart på
+  // licensnämndens beslut).
+  let firedReason: 'boardPatience' | 'consecutiveFailures' | 'licenseDenied' | undefined
+  if (managerFired) {
+    if (!isSurviveTier && newConsecutiveFailures >= 3) firedReason = 'consecutiveFailures'
+    else if (!isSurviveTier && newBoardPatience <= 15) firedReason = 'boardPatience'
+    else firedReason = 'licenseDenied'
+  }
+
   const objRand = mulberry32((seed ?? 42) + game.currentSeason * 777)
   const managedClubForObj = updatedClubs.find(c => c.id === game.managedClubId)
   // SLUTTEST 2026-08-08 (punkt 4b): currentValue satt till 0 vid generering,
@@ -1437,6 +1465,26 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // inte tiga. Låst fallback-text (Jacobs ord, ordagrant).
     mostImportantDecision: pickSeasonDecision(game.seasonDecisionCandidates ?? [])?.sentence ?? SEASON_DECISION_NONE_TEXT,
   }
+
+  // A-H4 (TRIAGE_AUDIT_2026-08-29.md, HIGH 4): den gemensamma sanningsmodellen
+  // — se entities/SeasonSummary.ts (`boardTruth`) och boardService.ts
+  // (`buildSeasonBoardTruth`) för den fulla motiveringen. isChampion läses ur
+  // seasonSummary.playoffResult (redan beräknat av generateSeasonSummary ovan
+  // ur SAMMA bracket) i stället för att omhärledas här ur game.playoffBracket
+  // en andra gång. finalPos/totalTeams/managedClubExpectation och
+  // newBoardPatience/newConsecutiveFailures/managerFired/firedReason är redan
+  // de exakta värden som skrivs till game.boardPatience/consecutiveFailures/
+  // managerFired nedan — ingen ny beräkning, bara en frusen paketering.
+  seasonSummary.boardTruth = buildSeasonBoardTruth({
+    expectation: managedClubExpectation,
+    finalPosition: finalPos,
+    totalTeams,
+    isChampion: seasonSummary.playoffResult === 'champion',
+    boardPatienceAfter: newBoardPatience,
+    consecutiveFailuresAfter: newConsecutiveFailures,
+    managerFired,
+    firedReason,
+  })
 
   // Manager profile — career record, contract extension, age/seasonsAtClub tick
   let updatedManagerProfile = game.managerProfile

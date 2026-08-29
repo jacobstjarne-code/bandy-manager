@@ -1,6 +1,7 @@
 import type { ClubExpectation } from '../enums'
 import type { ClubEra } from './SaveGame'
 import type { FinanceReason } from '../services/economyService'
+import type { BoardPatienceZone } from '../services/portal/boardPatienceZone'
 
 // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål, valt i
 // Sommaren. Sex fasta typer, interpolerade namn, ingen AI-generering.
@@ -251,4 +252,78 @@ export interface SeasonSummary {
    *  säsong, vilket är korrekt: "en säsong utan tungt beslut ska se ut som
    *  en säsong utan tungt beslut." Färdig mening, ingen mall kvar att fylla. */
   mostImportantDecision?: string
+
+  /** A-H4 (TRIAGE_AUDIT_2026-08-29.md, HIGH 4 i
+   *  BANDY_MANAGER_AUDIT_5_SASONGER_KUL_STICKINESS_VISUELL_2026-08-29.md):
+   *  en gemensam sanningsmodell för säsongen — uttalat mål, utfall,
+   *  relationens slutläge — frusen i EN handling (seasonEndProcessor.ts,
+   *  buildSeasonBoardTruth() i boardService.ts) i stället för att årsboken
+   *  (expectationVerdict/verdictSentence ovan) och Game Over
+   *  (GameOverScreen.tsx) räknar ut varsin partiell dom vid olika tillfällen.
+   *  Rotfelet: årsboken dömde mot den grova `seasonStartBoardExpectation`-
+   *  enumen medan Game Over läste LIVE game.boardPatience/consecutiveFailures
+   *  vid rendertillfället — två ytor, två separata härledningar av "gick
+   *  säsongen bra?", som kunde säga emot varandra (8:e plats "överträffade
+   *  alla förväntningar" i årsboken, "ihållande besvikelser" i Game Over,
+   *  samma säsong).
+   *
+   *  Absent = summary genererad före A-H4 (gamla saves) — läsare ska falla
+   *  tillbaka på de äldre, separata fälten (expectationVerdict resp. live
+   *  game.boardPatience/consecutiveFailures), aldrig låtsas att fältet finns.
+   *
+   *  De tre axlarna är AVSIKTLIGT oberoende (samma princip som
+   *  seasonVerdictText i boardService.ts dokumenterar) — en säsong kan vara
+   *  `outcome.verdict === 'exceeded'` OCH `relationship.zone === 'ultimatum'`
+   *  samtidigt (ackumulerad historik väger tyngre än en enskild bra säsong).
+   *  Det är inte en bugg att slå ihop till en gemensam dom — det är två
+   *  sanna fakta om samma säsong, och snapshotten håller isär dem medan den
+   *  garanterar att alla ytor läser SAMMA två fakta. */
+  boardTruth?: SeasonBoardTruth
+}
+
+/**
+ * A-H4 — se `SeasonSummary.boardTruth` ovan för den fulla motiveringen.
+ * Byggs ENDAST av `buildSeasonBoardTruth()` (boardService.ts) — aldrig
+ * konstruerad direkt av en anropare, så alla tre fält alltid är beräknade
+ * av samma pure functions (computeSeasonVerdictRating/
+ * expectationVerdictFromRating/boardPatienceZoneFromScore) som resten av
+ * styrelsekoden redan delar.
+ */
+export interface SeasonBoardTruth {
+  /** Vad styrelsen konkret krävde denna säsong — inte bara enumnamnet. */
+  statedGoal: {
+    expectation: ClubExpectation
+    /** Positionen ClubExpectation-nivån konkret motsvarar
+     *  (BOARD_EXPECTATION_ANCHOR_POSITION, boardService.ts) — "utmana
+     *  toppen" blir siffran 4, inte bara etiketten. */
+    anchorPosition: number
+    /** Styrelsens egen kortfras för målet (BOARD_EXPECTATION_TEXT). */
+    label: string
+  }
+  /** Vad som faktiskt hände — samma rating/dom som styrelsebetyget och
+   *  årsboken (computeSeasonVerdictRating/expectationVerdictFromRating),
+   *  aldrig en egen tröskeltabell. */
+  outcome: {
+    finalPosition: number
+    /** 1–5, samma skala som inkorgens styrelsebetyg. */
+    rating: 1 | 2 | 3 | 4 | 5
+    verdict: 'exceeded' | 'met' | 'failed'
+    isChampion: boolean
+  }
+  /** Var relationen stod i SAMMA ögonblick — efter säsongsslutets fulla
+   *  boardPatience-uppdatering (löpande delen UNDER säsongen +
+   *  säsongsslutets egen term + objektivkostnad), samma värde som skrivs
+   *  till `game.boardPatience`/`game.consecutiveFailures` för nästa säsong. */
+  relationship: {
+    boardPatienceAfter: number
+    zone: BoardPatienceZone
+    consecutiveFailuresAfter: number
+    managerFired: boolean
+    /** Varför avskedet skedde — undefined när managerFired===false.
+     *  'boardPatience'/'consecutiveFailures' speglar samma två sportsliga
+     *  avskedsvägar seasonEndProcessor.ts redan avgör (avstängda för
+     *  Survive-tiern), 'licenseDenied' den finansiella/administrativa
+     *  vägen som gäller även för Survive. */
+    firedReason?: 'boardPatience' | 'consecutiveFailures' | 'licenseDenied'
+  }
 }
