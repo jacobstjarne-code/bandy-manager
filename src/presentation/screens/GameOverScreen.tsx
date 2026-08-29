@@ -1,14 +1,27 @@
+import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
+import { canEnterCareerBreak } from '../../application/useCases/simulateCareerBreak'
+import { CAREER_BREAK_START_CTA } from '../../domain/data/careerBreakText'
 
 export function GameOverScreen() {
   const game = useGameStore(s => s.game)
   const clearFiredGame = useGameStore(s => s.clearFiredGame)
+  const startCareerBreak = useGameStore(s => s.startCareerBreak)
   const navigate = useNavigate()
+  const [simulating, setSimulating] = useState(false)
 
   if (!game) {
     navigate('/', { replace: true })
     return null
+  }
+
+  // O13: ett pågående uppehåll äger skärmen. Utan detta landade en omladdning
+  // (eller en hård navigering till /game/game-over) på avskedsbeskedet igen,
+  // efter att säsongen redan spelats — spelaren hade fått samma slag två
+  // gånger och tappat vägen tillbaka till frågan.
+  if (game.careerBreak) {
+    return <Navigate to="/game/career-break" replace />
   }
 
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
@@ -48,6 +61,26 @@ export function GameOverScreen() {
   function handleNewGame() {
     clearFiredGame()
     navigate('/', { replace: true })
+  }
+
+  // O13 (DOM_TRANARMARKNADEN_2026-08-26): den tredje vägen. Knappen lovar
+  // ingenting om ett nytt jobb — den startar bara uppehållet. Att erbjudandet
+  // (eller uteblivandet av det) visas FÖRST efter att säsongen spelats är
+  // domens uttryckliga ordning, och det är därför den här knappen inte heter
+  // "sök nytt jobb". Simuleringen är synkron och tar ~1s; knappen låser sig
+  // så den inte kan startas två gånger.
+  const careerBreakAvailable = canEnterCareerBreak(game)
+
+  function handleCareerBreak() {
+    if (simulating) return
+    setSimulating(true)
+    // Ett tick så knappens låsta tillstånd hinner målas innan den synkrona
+    // tvåsäsongerssimuleringen blockerar tråden.
+    setTimeout(() => {
+      const result = startCareerBreak()
+      if (result) navigate('/game/career-break', { replace: true })
+      else setSimulating(false)
+    }, 0)
   }
 
   return (
@@ -166,13 +199,33 @@ export function GameOverScreen() {
             width: '100%',
             letterSpacing: '1.5px',
             textTransform: 'uppercase',
-            marginBottom: 44,
+            marginBottom: careerBreakAvailable ? 12 : 44,
           }}
         >
           SE KARRIÄREN
         </button>
+        {/* O13: den tredje vägen. Primär när den finns — domen gör
+            fortsättningen till huvudspåret och "Ny karriär" till alternativet,
+            inte tvärtom. Endast EN .btn-primary per skärm (designsystemet),
+            därför tappar "NY KARRIÄR" sin primärstil när den här visas. */}
+        {careerBreakAvailable && (
+          <button
+            className="btn btn-primary"
+            onClick={handleCareerBreak}
+            disabled={simulating}
+            style={{
+              width: '100%',
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              marginBottom: 44,
+              opacity: simulating ? 0.6 : 1,
+            }}
+          >
+            {CAREER_BREAK_START_CTA}
+          </button>
+        )}
         <button
-          className="btn btn-primary"
+          className={careerBreakAvailable ? 'btn' : 'btn btn-primary'}
           onClick={handleNewGame}
           style={{
             width: '100%',

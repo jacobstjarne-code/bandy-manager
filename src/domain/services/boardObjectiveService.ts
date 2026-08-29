@@ -6,7 +6,9 @@ import { ClubExpectation } from '../enums'
 import { getRivalClubId } from '../data/rivalries'
 import { RELEGATION_ZONE_SIZE } from './boardService'
 
-interface BoardObjectiveGameContext {
+// O13 (DOM_TRANARMARKNADEN_2026-08-26): exporterad så setupManagedClub.ts kan
+// tråda kontexten vidare typat i stället för att gissa formen med en cast.
+export interface BoardObjectiveGameContext {
   currentSeason: number
   boardObjectiveHistory?: Array<{ season: number; objectiveId: string; result: 'met' | 'failed'; ownerReaction: string }>
   players: Player[]

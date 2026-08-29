@@ -73,6 +73,16 @@ const ALLOWLIST: { file: string; maxAllowed: number; reason: string }[] = [
     reason: 'chapterAwaitsText-säkerhetsnät — verifierad 2026-07-21 att alla 6 nuvarande kapitel har text, men strukturellt overifierad mot ett sjunde kapitel.',
   },
   {
+    file: 'src/domain/data/careerBreakText.ts',
+    maxAllowed: 15,
+    reason: 'O13/M11 TRÄNARMARKNADEN (DOM_TRANARMARKNADEN_2026-08-26.md), byggd 2026-08-29. HELA tränarmarknadens spelartext väntar på Opus: uppehållsskärmens rubriker/ingress/säsongsrader/dom, marknadsskärmens rubriker/ingress/klubbkortstext, "ingen ringde"-brödtexten och de tre knapptexterna. Varje export i filen har en docstring som säger vad meningen ska göra och vilken data den får. CAREER_BREAK_NO_CALL_TITLE räknas INTE här — den är citerad ordagrant ur domen och är alltså redan skriven. Ta bort HELA raden när Opus levererat filen.',
+  },
+  {
+    file: 'src/domain/services/careerBreakService.ts',
+    maxAllowed: 1,
+    reason: 'O13/M11, samma leverans: CareerOffer.pitch — klubbens egen mening om varför managern ska komma dit. Sitter på dataobjektet (inte i textpoolen) eftersom den varierar per erbjudande och behöver klubbens läge; Opus kan antingen skriva en pool här eller flytta fältet till careerBreakText.ts. Ta bort raden när den är skriven.',
+  },
+  {
     file: 'src/domain/data/contentContract.ts',
     maxAllowed: 1,
     reason: 'INTE en spelartextplatshållare — literalen förekommer bara i sponsorOffer-radens `notes`-dokumentationsfält (metadata för Innehållskontraktet), aldrig renderad för spelaren. Kvar på listan för att grinden inte ska false-positive på dokumentation, men detta är inte ett H4b-läckage.',

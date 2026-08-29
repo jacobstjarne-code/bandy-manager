@@ -20,7 +20,15 @@ import { getGameRoutes, getUncoveredGameRoutes } from '../../tests/visual/routeS
 // /game/contract-demands (SeasonContractDemandsScreen) — nåbar i normalt
 // spel, bara utan en dev-scene ännu (texten är fortfarande [Opus]-platshållare).
 // Se docs/BACKLOG.md ("BYGGT MEN OSYNLIGT/ONÅBART") för stäng-villkoret.
-const BASELINE_UNCOVERED_GAME_ROUTES = 8
+// Höjd 8 → 9 (2026-08-29, O13 DOM_TRANARMARKNADEN_2026-08-26.md): ny rutt
+// /game/career-break (CareerBreakScreen) — nåbar från Game Over efter ett
+// avsked, men utan dev-scene ännu av exakt samma skäl som contract-demands
+// ovan: hela ytans text är [Opus]-platshållare, och skärmen läser sitt
+// tillstånd ur store:t i stället för ur en prop (till skillnad från
+// HistoryScreens `snapshot`), så den kan inte monteras i dev-skalet med ett
+// påhittat spel förrän den tar emot careerBreak som prop. Stäng-villkor och
+// ägare i docs/BACKLOG.md ("BYGGT MEN OSYNLIGT/ONÅBART").
+const BASELINE_UNCOVERED_GAME_ROUTES = 9
 
 describe('route → dev-scene-täckning (H1 meta-grind)', () => {
   it('varje /game-rutt i AppRouter.tsx har minst ett registrerat SCENES-id i ROUTE_SCENE_MAP', () => {

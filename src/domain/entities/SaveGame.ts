@@ -309,6 +309,22 @@ export interface SaveGame {
   boardPatienceLastCountedFixtureId?: string
   consecutiveFailures?: number   // seasons ended in bottom half without improvement
   managerFired?: boolean
+  /**
+   * O13 (DOM_TRANARMARKNADEN_2026-08-26): säsongen avskedet BESLUTADES.
+   * Skrivs på båda avskedsvägarna — seasonEndProcessor (sportsligt/licens,
+   * där rollovern redan hunnit stega currentSeason ett steg när flaggan
+   * läses) och postRoundFlagsProcessor (konkurs mitt i säsongen, där den
+   * inte har det). Utan fältet kan uppehållssimuleringen inte veta hur
+   * mycket som återstår att spela — de två vägarna ser identiska ut i
+   * efterhand men betyder olika saker.
+   */
+  firedAtSeason?: number
+  /**
+   * O13: uppehållet mellan två jobb. Sätts när spelaren väljer att låta
+   * säsongen spelas utan sig, bär vad som hände och vilka klubbar som
+   * ringde. `undefined` = ingen pågående tränarmarknad.
+   */
+  careerBreak?: import('../services/careerBreakService').CareerBreakState
   /** Meritbuffert (Jacobs koefficientdom 2026-08-23, DOM_MERITBUFFERT_2026-08-23.md,
    *  O5-acceptanstestets fynd: en klubb med tre raka SM-guld sparkades två
    *  säsonger senare efter en normal svacka, eftersom boardPatience-formeln

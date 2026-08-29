@@ -1,0 +1,91 @@
+fact_id: D034
+category: design_principles
+claim: "Managerrenommé (0-100) härleds ur seasonSummaries + antal avsked: bas 40, SM-guld +20, cupvinst +10, ligavinst +8, pallplats +4, slutspelskval +3, nedflyttningszon -6, per avsked -12. Antal erbjudanden på tränarmarknaden: >=55 ger 3, >=30 ger 2, >=15 ger 1, under 15 ger 0. Tredje avskedet (MAX_FIRINGS=3) ger 0 oavsett renommé. Lediga tränarstolar = klubbar i tabellens bottentredjedel (vacancyZoneSize = max(RELEGATION_ZONE_SIZE, round(totalTeams/3)) = 4 i en 12-lagsliga) sista säsongen av uppehållet."
+value:
+  RENOMME_BASE: 40
+  RENOMME_SM_GOLD: 20
+  RENOMME_CUP_WIN: 10
+  RENOMME_LEAGUE_WIN: 8
+  RENOMME_PODIUM: 4
+  RENOMME_PLAYOFF_QUALIFIED: 3
+  RENOMME_RELEGATION_ZONE: -6
+  RENOMME_FIRING: -12
+  RENOMME_TIER_THREE: 55
+  RENOMME_TIER_TWO: 30
+  RENOMME_TIER_ONE: 15
+  MAX_FIRINGS: 3
+  VACANCY_ZONE_FRACTION: 0.3333
+  BURNOUT_FLOOR_AFTER_BREAK: 30
+unit: renommépoäng / antal erbjudanden / tabellplatser
+source:
+  type: design_decision
+  decided_by: code
+  doc: "src/domain/services/careerBreakService.ts (computeManagerRenomme, offerCountForRenomme, vacancyZoneSize, findVacantClubs, buildCareerOffers), src/application/useCases/simulateCareerBreak.ts (BURNOUT_FLOOR_AFTER_BREAK)"
+verified_at: 2026-08-29
+verified_by: code
+status: active
+invariants:
+  - "value.RENOMME_TIER_THREE > value.RENOMME_TIER_TWO"
+  - "value.RENOMME_TIER_TWO > value.RENOMME_TIER_ONE"
+  - "value.RENOMME_FIRING < 0"
+  - "value.RENOMME_RELEGATION_ZONE < 0"
+  - "value.MAX_FIRINGS >= 1"
+related_facts: [D029]
+notes: |
+  O13/M11 — TRÄNARMARKNADEN (DOM_TRANARMARKNADEN_2026-08-26.md), byggd
+  2026-08-29.
+
+  MAGNITUDERNA ÄR FÖRESLAGNA, INTE DÖMDA. (Validatorn tillåter bara
+  active/deprecated/disputed/open/answered/closed, så posten står som
+  `active` — den beskriver vad koden GÖR i dag.) Domen säger "hög managerrenommé ger tre
+  erbjudanden, låg ger ett eller inget" men sätter INGEN siffra. Samtliga tal
+  ovan är Codes förslag, framräknade mot fördelningen av faktiska karriärer —
+  de väntar på Jacobs dom och ska inte behandlas som klubbade.
+
+  METOD (fördelning före magnitud). Tre referensfall räknades först för hand:
+    A. Sparkad efter mittenmässiga säsonger + en bottenplacering:
+       40 − 6 − 12 = 22 → ETT samtal.
+    B. Liga- och SM-vinnare som sparkas: 40 + 20 + 8 + 3 − 12 = 59 → TRE.
+       (Domens uttryckliga exempel.)
+    C. Tredje avskedet: spärrat av MAX_FIRINGS → INGET.
+
+  Sedan mättes tolv riktiga karriärer headless (tre spelade säsonger per
+  klubbmall, seed 900-911, avsked framtvingat vid säsongsslut, uppehållet
+  simulerat). Utfall:
+    3 erbjudanden: 2/12 (renommé 93 och 100 — båda titelvinnare)
+    2 erbjudanden: 7/12 (renommé 31-44)
+    1 erbjudande:  2/12 (renommé 22 och 28 — båda gamla klubben som ringer
+                        tillbaka, domens skärpning 2)
+    0 erbjudanden: 1/12 (Heros, renommé 10 — Survive-tierns karriär tar slut)
+  Ingen tier är tom och ingen dominerar. Det var måttstocken.
+
+  AVSKEDSAVDRAGET (−12) är medvetet större än en enskild bottenplacering
+  (−6): i tränarkretsar väger styrelsens beslut tyngre än tabellraden i sig.
+  Basen 40 gör att en meritlös men icke-katastrofal karriär landar strax över
+  ett-samtal-gränsen — "någon ringer, men inte många".
+
+  VACANCY_ZONE (bottentredjedelen, inte nedflyttningszonen). Domen vill kunna
+  ge tre samtal "ur ligans botten". RELEGATION_ZONE_SIZE=2 (D029) kan aldrig
+  producera tre. En tredjedel av tabellen är det minsta bandet som kan, och
+  läses fortfarande som botten (plats 9-12 av 12).
+
+  SURVIVE-UNDANTAGET GÄLLER INTE AI-KLUBBAR — mätt, inte antaget. Ett första
+  utkast extrapolerade seasonEndProcessors Survive-undantag ("att förlora är
+  förväntat", Jacobs dom 2026-08-25) till AI-klubbarnas tränarbyten. Mätningen
+  visade att boardExpectation-stegningen efter tre säsonger gjort hela
+  bottenbandet Survive-klassat i flera världar: en manager med renommé 100
+  fick NOLL samtal, rakt emot domen. Undantaget handlar om vad spelet lovar
+  SPELAREN i sitt eget kontrakt, inte om huruvida små klubbar byter tränare.
+  Prestigeaxeln hanteras i stället av spärren `betterClubUnlocked` (domens
+  skärpning 1: en bättre klubb än den du lämnade kräver renommé >= 55 OCH en
+  topphalvsplacering eller titel i den klubb du lämnade).
+
+  ORDNING: lediga klubbar sorteras BÄST placerad först. Renommén styr hur
+  många dörrar som är öppna, inte kvaliteten på den enskilda dörren — en
+  manager med ett enda samtal ska inte dessutom straffas med det sämsta
+  jobbet i bunten.
+
+  BURNOUT_FLOOR_AFTER_BREAK: samma golv (30) som säsongsövergångens egen
+  återhämtning siktar mot (applyBurnoutRecoveryAtTransition,
+  managerProfileService.ts, O4/DOM_BURNOUT_2026-08-17). Ett år utan jobb ska
+  läka minst lika mycket som en sommar.

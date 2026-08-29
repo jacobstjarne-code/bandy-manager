@@ -1638,6 +1638,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       }
     })(),
     managerFired: managerFired ? true : undefined,
+    // O13 (DOM_TRANARMARKNADEN_2026-08-26): `game.currentSeason` är säsongen
+    // som just SPELATS KLART — updatedGame bär redan nextSeason. Uppehålls-
+    // simuleringen behöver veta vilken av dem avskedet gällde, annars kan
+    // den inte skilja "resten av säsongen återstår" (konkursvägen) från
+    // "säsongen är redan spelad" (den här vägen).
+    firedAtSeason: managerFired ? game.currentSeason : game.firedAtSeason,
     fanMood: licenseReview?.status === 'denied'
       ? Math.max(0, (game.fanMood ?? 50) - 15)
       : game.fanMood,

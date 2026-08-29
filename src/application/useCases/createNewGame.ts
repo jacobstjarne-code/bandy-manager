@@ -1,179 +1,28 @@
-import type { SaveGame, Patron, LocalPolitician, BoardMember, CommunityActivities, MediaProfile, PersonalInterest } from '../../domain/entities/SaveGame'
-import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
+import type { SaveGame } from '../../domain/entities/SaveGame'
+import type { Fixture } from '../../domain/entities/Fixture'
 import type { League } from '../../domain/entities/League'
-import type { Player } from '../../domain/entities/Player'
-import { FixtureStatus, TrainingType, TrainingIntensity, PlayerPosition, ClubStyle } from '../../domain/enums'
-import { generateWorld, CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
-import { generateYouthTeam } from '../../domain/services/academyService'
+import { FixtureStatus, TrainingType, TrainingIntensity } from '../../domain/enums'
+import { generateWorld } from '../../domain/services/worldGenerator'
 import { generateSchedule, buildSeasonCalendar, stampFixturesFromCalendar } from '../../domain/services/scheduleGenerator'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { generateCupFixtures } from '../../domain/services/cupService'
 import { mulberry32 } from '../../domain/utils/random'
-import { PATRON_PROFILES, PATRON_RELATIONS } from '../../domain/data/patronData'
-import { FUNCTIONARY_TEMPLATES } from '../../domain/data/functionaries'
-import { POLITICIAN_PROFILES } from '../../domain/data/politicianData'
-import { BOARD_PROFILES } from '../../domain/data/boardData'
-import { VOLUNTEER_FIRST_NAMES, LOCAL_PAPER_NAMES } from '../../domain/data/communityNames'
 import { initCharacterPlayers } from '../../domain/services/characterPlayerService'
 import { CURRENT_RULE_VERSION } from '../../domain/data/ruleVersion'
-import { createJournalist } from '../../domain/services/journalistService'
-import { createDoctor } from '../../domain/data/injuryDoctorText'
 import { createTrainerArc } from '../../domain/services/trainerArcService'
-import { generateBoardObjectives, evaluateObjective } from '../../domain/services/boardObjectiveService'
-import { generateMecenat } from '../../domain/services/mecenatService'
-import { generateSupporterGroup } from '../../domain/services/supporterService'
 import { generateAICoaches } from '../../domain/services/aiCoachService'
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 import { updatePlayerAvailability } from '../../domain/services/playerAvailabilityService'
 import { generateReferees } from '../../domain/services/refereeService'
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
 import { generateManagerProfile, generateCoachRivalries } from '../../domain/services/managerProfileService'
-
-function pickRandom<T>(arr: T[], rand: () => number): T {
-  return arr[Math.floor(rand() * arr.length)]
-}
-
-function pickUnique<T>(arr: T[], count: number, rand: () => number): T[] {
-  const shuffled = [...arr].sort(() => rand() - 0.5)
-  return shuffled.slice(0, count)
-}
-
-function generatePatron(
-  clubReputation: number,
-  managedPlayers: Player[],
-  rand: () => number,
-): Patron | undefined {
-  if (clubReputation < 35 || rand() > 0.75) return undefined
-  const profile = pickRandom(PATRON_PROFILES, rand)
-  const influence = 30 + Math.floor(rand() * 60)
-  const contribution = Math.round(
-    (influence * 500 + clubReputation * 300 + rand() * 30000) / 1000
-  ) * 1000
-  const lowAbilityPlayers = managedPlayers.filter(p => p.currentAbility < 50)
-  const favPlayer = rand() < 0.40 && lowAbilityPlayers.length > 0
-    ? pickRandom(lowAbilityPlayers, rand)
-    : undefined
-  const relation = favPlayer ? pickRandom(PATRON_RELATIONS, rand) : undefined
-  const wantsStyle = rand() < 0.50
-    ? (rand() < 0.5 ? ClubStyle.Attacking : ClubStyle.Physical)
-    : undefined
-
-  return {
-    name: `${profile.first} ${profile.last}`,
-    business: profile.biz,
-    influence,
-    happiness: 60,
-    contribution,
-    favoritePlayerId: favPlayer?.id,
-    favoriteRelation: relation,
-    wantsStyle,
-    isActive: true,
-    hasBeenWarned: false,
-    backstory: profile.backstory,
-  }
-}
-
-// M33 (textaudit 2026-07-03, profilering klar 2026-07-05): V/MP/SD fanns i
-// POLITICIAN_PROFILES men saknade vikt här — föll till den likformiga
-// default-poolen. Jacobs beslut: V → inclusion (tyngst) + infrastructure,
-// MP → infrastructure + inclusion, SD → prestige + savings. Samma vikter
-// som PARTY_AGENDA_WEIGHTS i politicianService.ts (duplicerad struktur,
-// se den filens kommentar om de två separata generatorerna).
-const PARTY_AGENDA_WEIGHTS_CNG: Record<string, Array<'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'>> = {
-  S:      ['youth', 'inclusion', 'youth', 'inclusion'],
-  M:      ['savings', 'prestige', 'savings', 'prestige'],
-  C:      ['youth', 'infrastructure', 'youth'],
-  L:      ['infrastructure', 'prestige'],
-  KD:     ['youth', 'inclusion'],
-  V:      ['inclusion', 'infrastructure', 'inclusion'],
-  MP:     ['infrastructure', 'inclusion'],
-  SD:     ['prestige', 'savings'],
-  lokalt: ['youth', 'inclusion', 'prestige', 'savings', 'infrastructure'],
-}
-
-const CAMPAIGN_PROMISES_CNG: Record<string, string[]> = {
-  youth:          ['Satsa på ungdomsidrott i alla skolor', 'Ny idrottshall för ungdomar senast nästa år', 'Fler kommunala idrottsstipendier'],
-  inclusion:      ['Idrott ska vara tillgängligt för alla oavsett plånbok', 'Avgiftsfria aktiviteter för barn under 16', 'Integrationsprojekt via föreningslivet'],
-  prestige:       ['Sätt orten på kartan med toppklass-idrott', 'Bygga ett kommunalt varumärke vi kan vara stolta över', 'Attrahera regionalt intresse till vår ort'],
-  savings:        ['Hålla kommunbudgeten i balans utan nya lån', 'Effektivisera alla kommunala bidrag', 'Varje skattekrona ska synas i resultaten'],
-  infrastructure: ['Bygg en modern idrottsanläggning senast 2028', 'Uppgradera kommunens sportinfrastruktur', 'Konstfryst is till alla utomhusanläggningar'],
-}
-
-function generatePolitician(rand: () => number, currentSeason: number): LocalPolitician {
-  const profile = pickRandom(POLITICIAN_PROFILES, rand)
-  // M33 (textaudit 2026-07-03): profile.party är parentiserat ("(S)") för visning
-  // i titeln, men PARTY_AGENDA_WEIGHTS_CNG är nyckelad på bara koden ("S") — lagrad
-  // party måste vara den strippade formen, annars matchar varken agendavikten här
-  // eller scandalService.ts:355 (som själv lägger på parenteser runt party-fältet).
-  const partyCode = profile.party.replace(/[()]/g, '')
-  const agendaPool = PARTY_AGENDA_WEIGHTS_CNG[partyCode] ?? ['youth', 'inclusion', 'prestige', 'savings', 'infrastructure']
-  const agenda = agendaPool[Math.floor(rand() * agendaPool.length)] as 'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'
-  const generosity = agenda === 'savings'
-    ? Math.round(20 + rand() * 20)
-    : Math.round(50 + rand() * 40)
-  const mediaProfiles: MediaProfile[] = ['tystlåten', 'utåtriktad', 'populist']
-  const interests: PersonalInterest[] = ['bandy', 'fotboll', 'kultur', 'ingenting']
-  const promisePool = CAMPAIGN_PROMISES_CNG[agenda] ?? []
-  return {
-    name: `${profile.first} ${profile.last}`,
-    title: `${profile.title} (${partyCode})`,
-    party: partyCode,
-    agenda,
-    relationship: 50,
-    kommunBidrag: 50000 + Math.round(rand() * 100000),
-    generosity,
-    // M33: new Date().getFullYear() bröt determinismen (samma seed gav olika
-    // mandatExpires beroende på VILKET ÅR SPELET KÖRDES) — säsongsbaserat som
-    // politicianService.ts:s ersättningsgenerator.
-    mandatExpires: currentSeason + 4,
-    corruption: Math.round(rand() * 60),
-    campaignPromise: promisePool[Math.floor(rand() * promisePool.length)],
-    personalInterest: interests[Math.floor(rand() * interests.length)],
-    mediaProfile: mediaProfiles[Math.floor(rand() * mediaProfiles.length)],
-  }
-}
-
-// KF4 (2026-06-21): EN styrelsemodell. Namn/kön/ålder kommer från den managed klubbens
-// CLUB_TEMPLATES.board (handskrivna namn vinner). Personlighet slumpas in med samma
-// diversitets-logik som tidigare (kassör ≠ ordf, ledamot helst ny). BOARD_PROFILES
-// degraderad till ren personlighetspool — dess namn visas inte längre.
-function generateBoardMembers(clubId: string, rand: () => number): BoardMember[] {
-  const template = CLUB_TEMPLATES.find(t => t.id === clubId)?.board
-
-  // Personlighetspool per roll (från BOARD_PROFILES, namnen ignoreras nu)
-  const ordfPers = BOARD_PROFILES.filter(p => p.role === 'ordförande').map(p => p.personality)
-  const kassPers = BOARD_PROFILES.filter(p => p.role === 'kassör').map(p => p.personality)
-  const ledaPers = BOARD_PROFILES.filter(p => p.role === 'ledamot').map(p => p.personality)
-
-  const chairPersonality = pickRandom(ordfPers, rand)
-
-  // Kassör: annan personlighet än ordförande om möjligt
-  const treasurerCandidates = kassPers.filter(p => p !== chairPersonality)
-  const treasurerPersonality = treasurerCandidates.length > 0
-    ? pickRandom(treasurerCandidates, rand)
-    : pickRandom(kassPers, rand)
-
-  // Ledamot: helst en personlighet som inte redan används
-  const used = new Set([chairPersonality, treasurerPersonality])
-  const diverse = ledaPers.filter(p => !used.has(p))
-  const memberPersonality = diverse.length > 0
-    ? pickRandom(diverse, rand)
-    : pickRandom(ledaPers, rand)
-
-  // Namn/kön/ålder från template. Fallback (defensivt — alla klubbar har template):
-  const fallback = { firstName: 'Okänd', lastName: 'Styrelseledamot', age: 55, gender: 'm' as const }
-  const chair = template?.chairman ?? fallback
-  const treasurer = template?.treasurer ?? fallback
-  const member = template?.member ?? fallback
-
-  return [
-    { id: 'ordforande-0', firstName: chair.firstName, lastName: chair.lastName, age: chair.age, gender: chair.gender, role: 'ordförande' as const, personality: chairPersonality },
-    { id: 'kassor-0', firstName: treasurer.firstName, lastName: treasurer.lastName, age: treasurer.age, gender: treasurer.gender, role: 'kassör' as const, personality: treasurerPersonality },
-    { id: 'ledamot-0', firstName: member.firstName, lastName: member.lastName, age: member.age, gender: member.gender, role: 'ledamot' as const, personality: memberPersonality },
-  ]
-}
+// O13 (DOM_TRANARMARKNADEN_2026-08-26): det klubbspecifika steget är utbrutet
+// till setupManagedClub.ts så att tränarmarknadens klubbyte kan köra EXAKT
+// samma generering mot en redan existerande värld. rand-ordningen där är
+// ordagrant den som stod här — se den filens huvud.
+import { buildDefaultLineup, generateManagedClubEntourage, generateNamedCharacters, stampObjectiveStartValues } from './setupManagedClub'
 
 export interface CreateNewGameInput {
   managerName: string
@@ -231,29 +80,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
 
   // Auto-select best valid lineup for the managed club
   const managedClubForLineup = clubs.find(c => c.id === input.clubId)!
-  const available = players.filter(
-    p => p.clubId === input.clubId && !p.isInjured && p.suspensionGamesRemaining <= 0
-  )
-  const sortedByCA = [...available].sort((a, b) => b.currentAbility - a.currentAbility)
-  const gkPool = sortedByCA.filter(p => p.position === PlayerPosition.Goalkeeper)
-  const outfieldPool = sortedByCA.filter(p => p.position !== PlayerPosition.Goalkeeper)
-  const starters = gkPool.length > 0 ? [gkPool[0]] : []
-  for (const p of outfieldPool) {
-    if (starters.length >= 11) break
-    starters.push(p)
-  }
-  for (const p of gkPool.slice(1)) {
-    if (starters.length >= 11) break
-    starters.push(p)
-  }
-  const starterSet = new Set(starters.map(p => p.id))
-  const bench = sortedByCA.filter(p => !starterSet.has(p.id)).slice(0, 5)
-  const defaultLineup: TeamSelection = {
-    startingPlayerIds: starters.map(p => p.id),
-    benchPlayerIds: bench.map(p => p.id),
-    captainPlayerId: starters[0]?.id,
-    tactic: managedClubForLineup.activeTactic,
-  }
+  const defaultLineup = buildDefaultLineup(input.clubId, players, managedClubForLineup)
 
   // Generate cup fixtures
   const cupSeed = (input.seed ?? 42) + 99999
@@ -284,43 +111,23 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   )
 
   const managedClub = clubsFixed.find(c => c.id === input.clubId)!
-  const managedPlayers = players.filter(p => p.clubId === input.clubId)
 
-  const volunteers = pickUnique(VOLUNTEER_FIRST_NAMES, 6 + Math.floor(rand() * 3), rand)
-  const localPaperName = pickRandom(LOCAL_PAPER_NAMES, rand)
-
-  const journalist = createJournalist(localPaperName, rand)
-  const doctor = createDoctor(rand)
-  const initialMecenater = rand() < 0.5 ? [generateMecenat(input.clubId, input.season ?? 2025, rand)] : []
-  const patron = generatePatron(managedClub.reputation, managedPlayers, rand)
-  const localPolitician = generatePolitician(rand, input.season ?? 2025)
-  const board = generateBoardMembers(input.clubId, rand)
-
-  const communityActivities: CommunityActivities = {
-    kiosk: 'none',
-    lottery: 'none',
-    bandyplay: false,
-    functionaries: false,
-    julmarknad: false,
-    bandySchool: false,
-    socialMedia: false,
-    vipTent: false,
-  }
-
-  // Generate ICA Maxi sponsor if reputation > 40 (50% chance)
-  const icaMaxiSponsors: import('../../domain/entities/SaveGame').Sponsor[] = []
-  if (managedClub.reputation > 40 && rand() < 0.5) {
-    const shortName = managedClub.shortName || managedClub.name.split(' ')[0]
-    icaMaxiSponsors.push({
-      id: `sponsor_icamaxi_start`,
-      name: `ICA Maxi ${shortName}`,
-      category: 'Dagligvaruhandel',
-      weeklyIncome: 3000 + Math.round(rand() * 2000),
-      contractRounds: 8,
-      signedRound: 0,
-      icaMaxi: true,
-    })
-  }
+  // O13: allt klubbspecifikt genereras nu av setupManagedClub.ts, i EXAKT den
+  // ordning rand konsumerades här tidigare. Enda skillnaden är att youthTeam
+  // och supporterGroup — som har egna seeds och därför inte rör rand-strömmen
+  // — nu produceras i samma anrop i stället för nere i objektlitteralen.
+  const entourage = generateManagedClubEntourage({
+    clubId: input.clubId,
+    season,
+    // Se ManagedClubEntourageInput.civicSeason: `input.season ?? 2025` är
+    // createNewGames egen, bevarade egenhet — inte samma default som `season`.
+    civicSeason: input.season ?? 2025,
+    clubs: clubsFixed,
+    players,
+    rand,
+    entourageSeed: input.seed ?? 42,
+    objectiveContext: { players, clubs: clubsFixed, rivalryHistory: {}, fanMood: 50, currentSeason: season, boardObjectiveHistory: [] },
+  })
 
   const game: SaveGame = {
     id: saveId,
@@ -364,11 +171,11 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     storylines: [],
     clubLegends: [],
     trainerArc: createTrainerArc(),
-    boardObjectives: generateBoardObjectives(managedClub, { players, clubs: clubsFixed, rivalryHistory: {}, fanMood: 50, currentSeason: season, boardObjectiveHistory: [] }, board, rand),
+    boardObjectives: entourage.boardObjectives,
     boardObjectiveHistory: [],
     aiTransferLog: [],
     onboardingStep: 0,
-    mecenater: initialMecenater,
+    mecenater: entourage.mecenater,
     facilityState: { builtNodeIds: [] },
     previousMarketValues: {},
     scoutReports: {},
@@ -378,7 +185,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     deferredDecisions: [],
     transferBids: [],
     handledContractPlayerIds: [],
-    sponsors: icaMaxiSponsors,
+    sponsors: entourage.sponsors,
     fanMood: 50,
     boardPatience: 70,
     consecutiveFailures: 0,
@@ -387,17 +194,17 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     activeTalentSearch: null,
     talentSearchResults: [],
     doctorQuestionsUsed: 0,
-    communityActivities,
-    volunteers,
-    localPaperName,
-    journalist,
-    doctor,
-    patron,
-    localPolitician,
-    board,
+    communityActivities: entourage.communityActivities,
+    volunteers: entourage.volunteers,
+    localPaperName: entourage.localPaperName,
+    journalist: entourage.journalist,
+    doctor: entourage.doctor,
+    patron: entourage.patron,
+    localPolitician: entourage.localPolitician,
+    board: entourage.board,
     hallDebateCount: 0,
     lastHallDebateRound: 0,
-    youthTeam: generateYouthTeam(managedClub, 'basic', season, (input.seed ?? 42) + 77777),
+    youthTeam: entourage.youthTeam,
     academyLevel: 'basic',
     mentorships: [],
     loanDeals: [],
@@ -408,28 +215,8 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     journalistRelationship: 50,
     sponsorNetworkMood: 70,
     licenseWarningCount: 0,
-    supporterGroup: generateSupporterGroup(
-      input.clubId,
-      season,
-      players.filter(p => p.clubId === input.clubId),
-      input.seed ?? 42,
-      CLUB_TEMPLATES.find(t => t.id === input.clubId)?.supporterGroupName,
-      'Birger',
-    ),
-    namedCharacters: [
-      ...(() => {
-        let s = (input.seed ?? 1) + 99991
-        function rand() { s = ((s * 1664525 + 1013904223) | 0) >>> 0; return s / 0xffffffff }
-        return FUNCTIONARY_TEMPLATES.map((t, i) => ({
-          id: `func_${i}`,
-          name: t.namePool[Math.floor(rand() * t.namePool.length)],
-          role: t.role,
-          age: 45 + Math.floor(rand() * 25),
-          isAlive: true,
-          morale: 60 + Math.floor(rand() * 30),
-        }))
-      })(),
-    ],
+    supporterGroup: entourage.supporterGroup,
+    namedCharacters: generateNamedCharacters((input.seed ?? 1) + 99991),
     aiCoaches: generateAICoaches(clubs.map(c => c.id), input.seed ?? 42),
     assistantCoach: generateAssistantCoach(saveId),
     averageAttendance: undefined,
@@ -469,14 +256,13 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     // initiala currentValue — "läget när målet sattes" är per definition läget
     // just nu, vid generering. Krävs av computeProgressPct (BoardObjectivesList.tsx)
     // för lägre-är-bättre-mål.
-    boardObjectives: (finalGame.boardObjectives ?? []).map(obj => {
-      const startingValue = evaluateObjective(obj, finalGame).value
-      return { ...obj, currentValue: startingValue, startValue: startingValue }
-    }),
+    boardObjectives: stampObjectiveStartValues(finalGame.boardObjectives ?? [], finalGame),
     // K4 (SLUTTEST-KÖN, 2026-08-17): faktiskt använt seed (samma värde som
     // generateWorld/initCharacterPlayers fick), inte input.seed rakt av —
     // om den någonsin blir undefined ska fältet spegla defaulten 42, inte
-    // "okänt". Ingen konsument läser detta ännu.
+    // "okänt". O13 (2026-08-29): fältet HAR nu sin första konsument —
+    // switchManagedClub.ts läser det för att generera den nya klubbens folk
+    // deterministiskt utan att röra världen.
     worldSeed: input.seed ?? 42,
     ruleVersion: CURRENT_RULE_VERSION,
   }

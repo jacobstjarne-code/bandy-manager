@@ -29,6 +29,7 @@ import { transferActions } from './actions/transferActions'
 import { academyActions } from './actions/academyActions'
 import { gameFlowActions } from './actions/gameFlowActions'
 import { periodisationActions } from './actions/periodisationActions'
+import { careerBreakActions } from './actions/careerBreakActions'
 import { computeCardStaleTracking } from '../../domain/services/portal/portalBuilder'
 import { safeStandingPosition } from '../../domain/services/standingsService'
 import { getCsPoliticianGrantBonus } from '../../domain/services/communityStandingScaling'
@@ -90,6 +91,11 @@ interface GameState {
   // KORREKT beteende (den ska kunna dyka upp i SaveManagerScreen efteråt),
   // inte en kvarglömd rensning.
   clearFiredGame: () => void
+  // O13 (DOM_TRANARMARKNADEN_2026-08-26) — tränarmarknadens tre steg, i
+  // domens ordning. Se careerBreakActions.ts.
+  startCareerBreak: () => SaveGame | null
+  revealCareerMarket: () => void
+  acceptCareerOffer: (clubId: string) => boolean
   loadGame: (id: string) => Promise<boolean>
   // Multi-slot (2026-08-22): byte MELLAN två befintliga karriärer, från
   // SaveManagerScreen. Persisterar den utgående karriären till sin egen
@@ -1080,6 +1086,8 @@ export const useGameStore = create<GameState>()(
       ...academyActions(get, set),
       ...gameFlowActions(get, set),
       ...periodisationActions(get, set),
+      // O13 (DOM_TRANARMARKNADEN_2026-08-26): uppehållet + klubbytet.
+      ...careerBreakActions(get, set),
     }),
     {
       name: 'bandy-game-store',

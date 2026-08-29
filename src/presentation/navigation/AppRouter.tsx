@@ -38,6 +38,7 @@ import { SeasonTransitionScene } from '../screens/scenes/SeasonTransitionScene'
 import { InboxScreen } from '../screens/InboxScreen'
 
 import { GameOverScreen } from '../screens/GameOverScreen'
+import { CareerBreakScreen } from '../screens/CareerBreakScreen'
 import { GranskaScreen } from '../screens/granska/GranskaScreen'
 import { TaktikScreen } from '../screens/TaktikScreen'
 import FacilityScreen from '../screens/FacilityScreen'
@@ -175,6 +176,11 @@ export function AppRouter() {
         <Route element={<GameGuard />}>
           <Route path="/game/game-over" element={<GameOverScreen />} />
           <Route path="/game/game-over/historik" element={<FiredCareerHistoryScreen />} />
+          {/* O13 (DOM_TRANARMARKNADEN_2026-08-26): ligger under GameGuard, inte
+              GameShell — GameShell redirectar bort varje managerFired-spel till
+              /game/game-over, och uppehållet ÄR ett managerFired-spel. Samma
+              motivering som game-over/historik ovan. */}
+          <Route path="/game/career-break" element={<CareerBreakScreen />} />
         </Route>
         {import.meta.env.DEV && DevScenesScreen && (
           <Route path="/dev/scenes" element={

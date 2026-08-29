@@ -35,7 +35,10 @@ export function applyPostRoundFlags(
       const finStatus = evaluateFinanceStatus(managedClubCurrent.finances)
       const warnedThisSeason = updatedGame.financeWarningGivenThisSeason ?? false
       if (finStatus.status === 'game-over') {
-        updatedGame = { ...updatedGame, managerFired: true }
+        // O13: konkursvägen sparkar MITT i säsongen — currentSeason är den
+        // säsong som fortfarande pågår, och resten av den ska spelas utan
+        // spelaren. Jämför seasonEndProcessor, där rollovern redan skett.
+        updatedGame = { ...updatedGame, managerFired: true, firedAtSeason: updatedGame.currentSeason }
       } else if ((finStatus.status === 'license-denial' || finStatus.status === 'warning') && !warnedThisSeason) {
         const isCritical = finStatus.status === 'license-denial'
         updatedGame = {
