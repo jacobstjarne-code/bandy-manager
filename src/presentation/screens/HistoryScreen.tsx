@@ -40,10 +40,68 @@ function cupLabel(result: SeasonSummary['cupResult']): string | null {
   return label === '' ? null : label
 }
 
+/**
+ * O13 / M11 (DOM_TRANARMARKNADEN_2026-08-26) — årsbokens klubbgräns.
+ *
+ * `SeasonSummary` bär redan `clubId`/`clubName`, frysta vid genereringen
+ * (seasonSummaryService.ts:783). Presentationslagret läste dem aldrig — det
+ * antog att HELA årsboken tillhörde `game.managedClubId`. Det antagandet höll
+ * så länge en karriär bara kunde ha en klubb. Domens förutsättning ("En
+ * spelare kan berätta om två klubbar i samma karriär") kräver att ytan slutar
+ * anta det, och det är därför denna fix byggs FÖRE själva tränarmarknaden.
+ *
+ * Grupperar kronologiskt ordnade säsonger i sammanhängande klubbperioder.
+ * En manager som återvänder till samma klubb efter ett mellanspel får TVÅ
+ * poster — perioderna är sammanhängande, inte unika klubbar.
+ */
+export interface CareerSpell {
+  clubId: string
+  clubName: string
+  fromSeason: number
+  toSeason: number
+  seasonCount: number
+}
+
+export function deriveCareerSpells(summariesChronological: SeasonSummary[]): CareerSpell[] {
+  const spells: CareerSpell[] = []
+  for (const s of summariesChronological) {
+    const last = spells[spells.length - 1]
+    if (last && last.clubId === s.clubId) {
+      last.toSeason = s.season
+      last.seasonCount++
+    } else {
+      spells.push({ clubId: s.clubId, clubName: s.clubName, fromSeason: s.season, toSeason: s.season, seasonCount: 1 })
+    }
+  }
+  return spells
+}
+
+/**
+ * Epokraden jämför säsong N mot säsong N−1. Över en klubbgräns jämför den
+ * två OLIKA klubbars epoker och rapporterar ett epokskifte som aldrig hänt —
+ * "Det här året slutade X vara i sin storhetstid" om den föregående posten
+ * råkade tillhöra en annan klubb. Raden får bara visas när båda säsongerna
+ * är samma klubb.
+ */
+export function shouldShowEraChangeForSummary(
+  current: SeasonSummary,
+  previous: SeasonSummary | undefined,
+): boolean {
+  if (!previous || previous.clubId !== current.clubId) return false
+  return shouldShowEraChangeLine(current.clubEra, previous.clubEra)
+}
+
 function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
   if (summaries.length < 2) return null
 
-  const chronological = [...summaries].reverse()
+  // O13-fynd (2026-08-29): anroparen skickar `game.seasonSummaries` — som
+  // ALLTID är äldst-först (seasonEndProcessor.ts appendar). Det gamla
+  // `.reverse()` här vände den till nyast-först och kallade resultatet
+  // `chronological`, så "Resan" ritades baklänges i tiden (x-axelns årtal
+  // räknade nedåt). Upptäckt när klubbytesmarkören nedan hamnade på fel
+  // sida av bytet. Rotorsak: variabelnamnet påstod en ordning som anroparen
+  // aldrig levererade.
+  const chronological = summaries
   const W = 300
   const H = 100
   const padL = 28
@@ -81,6 +139,19 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
             {pos}
           </text>
         ))}
+        {/* O13: klubbytesmarkör — en lodrät linje mellan de två säsonger där
+            managern bytte klubb. Resan är managerns, inte klubbens, så kurvan
+            bryts inte; men bytet ska gå att se, annars läser en tvåklubbskarriär
+            som en enda klubbs upp- och nedgång. */}
+        {chronological.map((s, i) => {
+          if (i === 0 || chronological[i - 1].clubId === s.clubId) return null
+          const x = xOf(i) - xStep / 2
+          return (
+            <line key={`spell_${s.season}`} x1={x} x2={x} y1={padT - 4} y2={H - padB + 4}
+              stroke="color-mix(in srgb, var(--text-muted) 60%, transparent)"
+              strokeWidth="0.8" strokeDasharray="2,2" />
+          )
+        })}
         {/* Line */}
         <polyline points={points} fill="none" stroke="color-mix(in srgb, var(--accent) 70%, transparent)" strokeWidth="1.8" strokeLinejoin="round" />
         {/* Dots + season labels */}
@@ -161,6 +232,14 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
 
   const summaries = [...(game.seasonSummaries ?? [])].reverse()
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+  const currentClubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? ''
+
+  // O13 (DOM_TRANARMARKNADEN_2026-08-26): en karriär kan spänna över flera
+  // klubbar. `spells` är sanningen om vilka — härledd ur varje SeasonSummarys
+  // EGNA frysta clubId, aldrig ur game.managedClubId (som bara vet var
+  // managern är NU).
+  const spells = deriveCareerSpells(game.seasonSummaries ?? [])
+  const isMultiClubCareer = spells.length > 1
 
   // Hall of Fame — top 5 per category
   const topGoalScorers = [...managedPlayers]
@@ -195,9 +274,17 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
           ←
         </button>
         <div>
-  <h1 className="h-display-sm">Klubbhistorik</h1>
+          {/* O13: rubriken står ORÖRD. En tvåklubbskarriär skulle antagligen
+              vilja heta något annat än "Klubbhistorik" — men vad den ska heta
+              är en textfråga, och Code skriver aldrig svensk spelartext
+              (CLAUDE.md). Underrubriken bär i stället hela sanningen som ren
+              data: varje klubbperiod med sina årtal. Öppen fråga till Opus,
+              noterad i docs/BACKLOG.md. */}
+          <h1 className="h-display-sm">Klubbhistorik</h1>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
-            {game.clubs.find(c => c.id === game.managedClubId)?.name}
+            {isMultiClubCareer
+              ? spells.map(sp => `${sp.clubName} ${seasonStartYear(sp.fromSeason)}–${seasonStartYear(sp.toSeason)}`).join(' · ')
+              : currentClubName}
           </p>
         </div>
       </div>
@@ -392,6 +479,20 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                   ── Säsong {seasonSpanLabel(s.season)} ──
                 </p>
 
+                {/* O13: vilken klubb säsongen tillhörde. Läser postens EGNA
+                    frysta clubName, aldrig den klubb managern sitter i nu.
+                    Visas bara när karriären faktiskt har mer än en klubb —
+                    på en enklubbskarriär står klubbnamnet redan i sidhuvudet
+                    och raden hade bara upprepat det på var enda kort. */}
+                {isMultiClubCareer && (
+                  <p style={{
+                    fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)',
+                    marginTop: -6, marginBottom: 8,
+                  }}>
+                    {s.clubName}
+                  </p>
+                )}
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <p style={{ fontSize: 14 }}>
                     📊 <strong>{ordinal(s.finalPosition)} plats</strong>{' '}
@@ -439,9 +540,16 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                       ⚔️ {deriveRivalryLine(s.rivalryStanding)}
                     </p>
                   )}
-                  {shouldShowEraChangeLine(s.clubEra, summaries[i + 1]?.clubEra) && (
+                  {/* O13-buggfix: epokraden namngav `game.managedClubId`s klubb
+                      — alltså den klubb managern sitter i NU — för en säsong
+                      som kunde tillhöra en helt annan klubb. Och den jämförde
+                      epok mot föregående KORT, oavsett om det kortet var samma
+                      klubb; över en klubbgräns rapporterade den ett epokskifte
+                      som aldrig inträffat. Båda leden läser nu postens egna
+                      frysta identitet (se shouldShowEraChangeForSummary). */}
+                  {shouldShowEraChangeForSummary(s, summaries[i + 1]) && (
                     <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                      🏛️ {deriveEraChangeLine(game.clubs.find(c => c.id === game.managedClubId)?.name ?? '', summaries[i + 1].clubEra!)}
+                      🏛️ {deriveEraChangeLine(s.clubName, summaries[i + 1].clubEra!)}
                     </p>
                   )}
                   {/* O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — målraden, sista raden före
@@ -452,7 +560,12 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                       K2/K3: bara verklig data, aldrig ett antagande om vad som hänt tidigare. */}
                   {s.personalGoal && (
                     <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                      🎯 {deriveGoalOutcomeLine(s.personalGoal, game)}
+                      {/* O13: målraden slår upp derbyrival/spelarnamn via
+                          game.managedClubId. För en säsong i en TIDIGARE klubb
+                          gav det fel rival. Skickar in postens egen klubb som
+                          "managed" för just den uppslagningen — game i övrigt
+                          orört (spelarregistret är världsbrett). */}
+                      🎯 {deriveGoalOutcomeLine(s.personalGoal, { ...game, managedClubId: s.clubId })}
                     </p>
                   )}
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
@@ -519,7 +632,12 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                         .sort((a, b) => a.position - b.position)
                         .map(row => {
                           const club = game.clubs.find(c => c.id === row.clubId)
-                          const isManaged = row.clubId === game.managedClubId
+                          // O13-buggfix: markerade raden för den klubb managern
+                          // sitter i NU. I en tvåklubbskarriär highlightade den
+                          // nya klubben i den GAMLA klubbens arkiverade tabell —
+                          // och lämnade den klubb säsongen faktiskt handlade om
+                          // omarkerad. Postens egen frysta clubId är sanningen.
+                          const isManaged = row.clubId === s.clubId
                           return (
                             <div key={row.clubId} style={{
                               display: 'flex', alignItems: 'center', gap: 6,
@@ -568,6 +686,16 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
           }}>
             ── Rekord ──
           </p>
+          {/* O13: klubbrekorden gäller den klubb managern sitter i nu —
+              allTimeRecords byggs per managed klubb och nollställs vid
+              klubbyte (switchManagedClub). På en tvåklubbskarriär måste det
+              stå, annars läses den föregående klubbens tomma rekordlista som
+              "karriären saknar rekord". */}
+          {isMultiClubCareer && (
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: -8, marginBottom: 14 }}>
+              {currentClubName}
+            </p>
+          )}
           {game.allTimeRecords.bestFinish && (
             <RecordRow label="Bästa tabellplacering" value={`${ordinal(game.allTimeRecords.bestFinish.position)} plats`} sub={`Säsong ${seasonSpanLabel(game.allTimeRecords.bestFinish.season)}`} />
           )}
@@ -604,6 +732,16 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
         }}>
           ── Hall of Fame ──
         </p>
+        {/* O13: listorna är filtrerade på p.clubId === game.managedClubId —
+            alltså BARA nuvarande klubbs spelare. Filtret var tyst: efter ett
+            klubbyte försvann den gamla klubbens legendarer utan förklaring,
+            och listan såg ut att påstå att karriären inte haft några. Namnge
+            skopan istället för att dölja den. */}
+        {isMultiClubCareer && (
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: -8, marginBottom: 14 }}>
+            {currentClubName}
+          </p>
+        )}
 
         {topGoalScorers.length > 0 && (
           <div style={{ marginBottom: 20 }}>
