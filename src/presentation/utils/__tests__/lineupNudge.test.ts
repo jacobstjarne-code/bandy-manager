@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { buildNudgeLineup, pickBestEleven, SPELKLARHET_FITNESS_FLOOR, PREFILL_COUNT, EMPTY_SLOTS } from '../lineupNudge'
+import { buildNudgeLineup, pickBestEleven, assessFatigueFloorBreach, SPELKLARHET_FITNESS_FLOOR, PREFILL_COUNT, EMPTY_SLOTS } from '../lineupNudge'
 import { getSelectionScore } from '../../../domain/services/squadEvaluator'
 import { FORMATIONS } from '../../../domain/entities/Formation'
 import type { Player } from '../../../domain/entities/Player'
@@ -176,6 +176,54 @@ describe('lineupNudge (B10 T2)', () => {
     ]
     const { starters } = pickBestEleven(squad)
     expect(starters.length).toBe(11)
+  })
+
+  // ── A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 ──────────────────────
+  // "Autofyll får aldrig TYST starta under golvet." Fallbacken under golvet
+  // fanns redan (HIGH2) — det som saknades var att den RAPPORTERADE sig.
+  // Testerna nedan låser att den gör det: tyst fyllning är en regression.
+
+  it('A3: pickBestEleven rapporterar `forced` när poolen över golvet inte räcker till elva', () => {
+    const squad = [
+      makePlayer('gk', PlayerPosition.Goalkeeper, { fitness: 80 }),
+      // Bara 8 över golvet — elva krävs, alltså saknas 3.
+      ...Array.from({ length: 7 }, (_, i) => makePlayer(`ok${i}`, PlayerPosition.Defender, { fitness: 80, currentAbility: 60 })),
+      ...Array.from({ length: 5 }, (_, i) => makePlayer(`slut${i}`, PlayerPosition.Forward, { fitness: SPELKLARHET_FITNESS_FLOOR - 8, currentAbility: 60 })),
+    ]
+    const result = pickBestEleven(squad)
+    expect(result.starters.length).toBe(11)
+    expect(result.forced).toBe(true)
+    expect(result.shortfall).toBe(3)
+    expect(result.belowFloorStarters.length).toBe(3)
+    // Rapporten ska namnge exakt de spelare som faktiskt står i elvan under golvet.
+    for (const p of result.belowFloorStarters) {
+      expect(result.starters.some(s => s.id === p.id)).toBe(true)
+      expect(p.fitness).toBeLessThan(SPELKLARHET_FITNESS_FLOOR)
+    }
+  })
+
+  it('A3: pickBestEleven rapporterar INTE `forced` när elva finns över golvet', () => {
+    const squad = makeFullSquad()
+    const result = pickBestEleven(squad)
+    expect(result.forced).toBe(false)
+    expect(result.shortfall).toBe(0)
+    expect(result.belowFloorStarters).toHaveLength(0)
+  })
+
+  it('A3: assessFatigueFloorBreach fångar en MANUELLT ihopsatt elva under golvet — grinden sitter på beslutet, inte på autofyll-knappen', () => {
+    // Poolen HAR elva spelklara över golvet; managern har ändå valt in en
+    // utsliten favorit. Det är samma dolda straff och ska rapporteras.
+    const exhausted = makePlayer('favorit', PlayerPosition.Forward, { fitness: 5, currentAbility: 90 })
+    const available = [
+      ...makeFullSquad(),
+      exhausted,
+    ]
+    const manualEleven = [exhausted, ...makeFullSquad().slice(0, 10)]
+    const breach = assessFatigueFloorBreach(manualEleven, available)
+    expect(breach.belowFloorStarters.map(p => p.id)).toEqual(['favorit'])
+    // Truppen HADE elva över golvet → inte tvingad. Valet var managerns eget.
+    expect(breach.forced).toBe(false)
+    expect(breach.shortfall).toBe(0)
   })
 
   it('buildNudgeLineup: returnerar exakt PREFILL_COUNT startspelares IDs', () => {

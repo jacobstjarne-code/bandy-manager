@@ -50,6 +50,32 @@ export interface BestElevenResult {
   starters: Player[]
   /** Resten, sorterad bästa-först — anroparen trimmar till bänkstorlek själv. */
   rest: Player[]
+  /**
+   * A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1. Blocket under golvet
+   * fanns redan som fallback (HIGH2) — men fyllningen därifrån var TYST. Nu
+   * rapporteras den: vilka som togs under golvet, och hur många spelare över
+   * golvet som saknades. `forced` är sant exakt när urvalet inte hade elva
+   * spelklara över golvet att välja bland.
+   */
+  belowFloorStarters: Player[]
+  shortfall: number
+  forced: boolean
+}
+
+/**
+ * A3 krav 1 — samma bedömning som `pickBestEleven` gör internt, men körbar mot
+ * en GODTYCKLIG elva. Behövs för att grinden ska sitta på beslutet ("dessa elva
+ * startar"), inte bara på autofyll-knappen: en manuellt ihopsatt elva under
+ * golvet är exakt samma dolda straff, och skulle annars gå obemärkt förbi.
+ */
+export function assessFatigueFloorBreach(
+  starters: Player[],
+  available: Player[],
+): { belowFloorStarters: Player[]; shortfall: number; forced: boolean } {
+  const belowFloorStarters = starters.filter(p => p.fitness < SPELKLARHET_FITNESS_FLOOR)
+  const aboveFloorAvailable = available.filter(p => p.fitness >= SPELKLARHET_FITNESS_FLOOR).length
+  const shortfall = Math.max(0, 11 - aboveFloorAvailable)
+  return { belowFloorStarters, shortfall, forced: shortfall > 0 }
 }
 
 /**
@@ -76,7 +102,7 @@ export function pickBestEleven(available: Player[]): BestElevenResult {
 
   const starterSet = new Set(starters.map(p => p.id))
   const rest = sorted.filter(p => !starterSet.has(p.id))
-  return { starters, rest }
+  return { starters, rest, ...assessFatigueFloorBreach(starters, available) }
 }
 
 export interface NudgeLineup {

@@ -335,6 +335,10 @@ export function TilltradeScreen() {
                 onRemovePlayer={lineupEditor.removePlayer}
                 onError={lineupEditor.setLineupError}
                 onNext={commitLineupAndAdvance}
+                floorBreach={lineupEditor.floorBreach}
+                pendingForcedAutoFill={lineupEditor.pendingForcedAutoFill}
+                onConfirmForcedAutoFill={lineupEditor.confirmPendingAutoFill}
+                onCancelForcedAutoFill={lineupEditor.cancelPendingAutoFill}
               />
             </div>
           </div>

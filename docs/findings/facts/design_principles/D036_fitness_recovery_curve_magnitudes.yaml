@@ -1,0 +1,116 @@
+fact_id: D036
+category: design_principles
+claim: "A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md): konditionens återhämtning är PROPORTIONELL mot gapet till taket (100), inte en platt konstant — en platt drän mot en platt återhämtning har ingen inre jämvikt och faller alltid mot 0 eller stiger mot taket. Tre takter per arbetsbelastning (startade/bänk/vilade) plus en sommaråterställning av både kondition och seasonForm. PRODUKTKRAVET X (domens punkt 4): normal rotation + Vila lämnar aldrig majoriteten av truppen under 25 % kondition inför match."
+value:
+  PRODUKTKRAV_X_SQUAD_MEDIAN_FITNESS_FLOOR: 25
+  RECOVERY_RATE_STARTED: 0.16
+  RECOVERY_RATE_BENCH: 0.32
+  RECOVERY_RATE_RESTED: 0.42
+  FITNESS_RECOVERY_CEILING: 100
+  SUMMER_FITNESS_BASE: 78
+  SUMMER_FITNESS_STAMINA_SPAN: 14
+  SUMMER_SEASON_FORM_BASE: 62
+  SUMMER_SEASON_FORM_RETENTION: 0.25
+unit: mixed (procent kondition / andel av gapet per omgång — se respektive fält)
+source:
+  type: measurement
+  doc: "docs/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md; scripts/a3-konditionsspiral-matning-2026-08-29.ts; src/domain/services/fitnessRecoveryService.ts"
+  decided_by: code
+verified_at: 2026-08-29
+verified_by: code
+status: active
+invariants:
+  - "value.PRODUKTKRAV_X_SQUAD_MEDIAN_FITNESS_FLOOR >= 20"
+  - "value.PRODUKTKRAV_X_SQUAD_MEDIAN_FITNESS_FLOOR <= 40"
+  - "value.RECOVERY_RATE_STARTED > 0"
+  - "value.RECOVERY_RATE_STARTED < value.RECOVERY_RATE_BENCH"
+  - "value.RECOVERY_RATE_BENCH < value.RECOVERY_RATE_RESTED"
+  - "value.RECOVERY_RATE_RESTED < 1"
+  - "value.FITNESS_RECOVERY_CEILING == 100"
+  - "value.SUMMER_FITNESS_BASE > 0"
+  - "value.SUMMER_FITNESS_BASE + value.SUMMER_FITNESS_STAMINA_SPAN <= 100"
+  - "value.SUMMER_SEASON_FORM_RETENTION >= 0"
+  - "value.SUMMER_SEASON_FORM_RETENTION <= 1"
+notes: |
+  ── X = 25: SATT AV MÄTNINGEN, INTE ANTAGET ────────────────────────────────
+  Auditen FÖRESLOG 25 % som hypotes. Domen krävde att X "sätts av mätningen".
+  Mätningen (uthållighetstest B, 8 säsonger × 5 frön × truppstorlek 18/20/24 ×
+  tre kompetenta periodiseringspolicyer = 9 celler à ~13 800 starter) prövade
+  kandidaterna 20/25/30/35/40/45 och räknade andelen matcher där truppMEDIANEN
+  (= "majoriteten av truppen", domens formulering) låg under nivån:
+
+      nivå   andel matcher under nivån, värsta kompetenta cell
+      <20 %  0.0 %
+      <25 %  0.0 %      ← högsta nivån där ALLA nio celler är 0.0 %
+      <30 %  0.5 %      ← löftet går redan sönder här (hall, 24-manna)
+      <35 %  2.9 %
+      <40 %  11.2 %
+
+  X=25 är alltså inte auditens hypotes övertagen på förtroende — den är den
+  högsta nivå datan bär. X=30 hade varit ett löfte systemet bryter en gång på
+  200 matcher, och ett produktkrav som bryts ibland är sämre än inget.
+
+  ── VARFÖR PROPORTIONELL, INTE KALIBRERAD KONSTANT ─────────────────────────
+  Den gamla modellen var additiv i båda riktningarna: startare −15..−25, bänk
+  +5, vilande +8×kalender×stamina. En sådan modell har ingen inre jämvikt —
+  nettot per omgång är antingen negativt (hela truppen faller till 0) eller
+  positivt (hela truppen ligger i taket). Att "kalibrera om konstanterna" hade
+  bara flyttat kanten. Baslinjemätningen visade den negativa sidan av den
+  kanten: truppmedian 12–20 %, 60 % av alla starter under golvet 22, autofyllen
+  tvingad under golvet i 22–25 av ~29 omgångar per säsong.
+
+  Proportionell återhämtning (andel av gapet till 100) ger en äkta inre jämvikt
+  som dessutom SKALAR MED TRUPPDJUPET — fler vilande spelare per omgång höjer
+  jämvikten — vilket är precis den produktegenskap ett managerspel vill ha.
+
+  ── TAKTERNA 0.16 / 0.32 / 0.42 ────────────────────────────────────────────
+  Två mätiterationer. Iteration 1 (0.25/0.45/0.55) tog bort spiralen men gick
+  för långt: sub-golv-starter föll till 0.0–1.3 % ÄVEN för den naive managern
+  som alltid startar sina elva bästa på currentAbility. Det hade lagat A3
+  genom att i praktiken avliva A-H3 — trötthet hade slutat kosta något.
+  Iteration 2 (0.16/0.32/0.42) håller båda sidorna:
+
+      kompetent spel (pickBestEleven + Vila), 18/20/24 manna:
+        truppmedian säsong 2→8: platt band 52–59, ingen monoton nedgång
+        starter under golvet 22: 0.20–0.57 %
+        offseason-lyft på de slitna (10:e percentilen): typiskt +40..+63
+
+      naiv manager (elva bästa på CA, kondition ignorerad):
+        starter under golvet 22: 26–30 %
+        sämsta enskilda match: startelvans median 13–16 %
+
+  Skillnaden mellan de två raderna ÄR domens poäng: kostnaden finns kvar och
+  är stor, men den är nu en följd av managerns eget val och inte av kurvan.
+
+  En äkta ständig startare (aldrig roterad) har fortfarande jämvikt kring 6 %
+  — trötthet spiralerar för den som vägrar rotera, precis som avsett.
+
+  ── SOMMARÅTERSTÄLLNINGEN ──────────────────────────────────────────────────
+  Gamla `fitness + 15` var symboliskt: mätningen visade en trupp som gick in i
+  säsong 2 på ~40 % trots hela sommaren. Nu ett MÅL (78 + 14×stamina/100 →
+  78–92), aldrig en sänkning (Math.max mot nuvarande värde).
+
+  seasonForm nollställdes ALDRIG mellan säsonger — grep 2026-08-29 gav bara
+  worldGenerator/youthIntake/academy/migration + Vila-driften som skrivare.
+  Med Vila (−1.0/omgång × ~29 omgångar) landade den på ~20 i säsong 2 och 0 i
+  säsong 4. Eftersom playerModifier (squadEvaluator.ts:42, SKYDDAT i domen)
+  klipper EFFEKTEN vid seasonForm+3 spelade hela truppen på några få procents
+  effektivitet resten av karriären. Sommaren drar nu tillbaka mot 62 med en
+  fjärdedel bärighet från förra säsongen. En permanent Vila-manager landar i
+  jämvikt kring seasonForm 52 (säsongsstart) / 23 (säsongsslut) — ett verkligt
+  och dokumenterat pris för att alltid vila, men inte längre en enkelriktad
+  gata mot noll.
+
+  ── VAD SOM INTE ÄNDRADES ──────────────────────────────────────────────────
+  Matchkostnaden (bas 15–25 × taktik × väder × position + Bygg-tillägg) står
+  oförändrad — A3 rör återhämtningen, inte dränet. playerModifiers 60 %
+  fitnessvikt på prestation står oförändrad (SKYDDAT i domen). D032:s golv 22
+  och båda A-H3-benen står oförändrade.
+
+  ── KÄND, OWIRAD SPAK ──────────────────────────────────────────────────────
+  `daysBetweenFixtures` skickas ALDRIG av roundProcessor.ts (grep 2026-08-29:
+  noll träffar vid anropsstället) — parametern faller alltid tillbaka på
+  default 7, så kalenderfaktorn är i praktiken konstant 1.0 och matchtäthet
+  påverkar inte återhämtningen. Detta är förbefintligt, inte infört av A3, och
+  ligger utanför denna doms scope. Formeln bär spaken; den är bara inte
+  inkopplad. Loggat som fynd i doktrinens tillägg.

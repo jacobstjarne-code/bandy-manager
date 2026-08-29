@@ -73,19 +73,19 @@ const ALLOWLIST: { file: string; maxAllowed: number; reason: string }[] = [
     reason: 'chapterAwaitsText-säkerhetsnät — verifierad 2026-07-21 att alla 6 nuvarande kapitel har text, men strukturellt overifierad mot ett sjunde kapitel.',
   },
   {
-    file: 'src/domain/data/careerBreakText.ts',
-    maxAllowed: 15,
-    reason: 'O13/M11 TRÄNARMARKNADEN (DOM_TRANARMARKNADEN_2026-08-26.md), byggd 2026-08-29. HELA tränarmarknadens spelartext väntar på Opus: uppehållsskärmens rubriker/ingress/säsongsrader/dom, marknadsskärmens rubriker/ingress/klubbkortstext, "ingen ringde"-brödtexten och de tre knapptexterna. Varje export i filen har en docstring som säger vad meningen ska göra och vilken data den får. CAREER_BREAK_NO_CALL_TITLE räknas INTE här — den är citerad ordagrant ur domen och är alltså redan skriven. Ta bort HELA raden när Opus levererat filen.',
-  },
-  {
-    file: 'src/domain/services/careerBreakService.ts',
-    maxAllowed: 1,
-    reason: 'O13/M11, samma leverans: CareerOffer.pitch — klubbens egen mening om varför managern ska komma dit. Sitter på dataobjektet (inte i textpoolen) eftersom den varierar per erbjudande och behöver klubbens läge; Opus kan antingen skriva en pool här eller flytta fältet till careerBreakText.ts. Ta bort raden när den är skriven.',
-  },
-  {
     file: 'src/domain/data/contentContract.ts',
     maxAllowed: 1,
     reason: 'INTE en spelartextplatshållare — literalen förekommer bara i sponsorOffer-radens `notes`-dokumentationsfält (metadata för Innehållskontraktet), aldrig renderad för spelaren. Kvar på listan för att grinden inte ska false-positive på dokumentation, men detta är inte ett H4b-läckage.',
+  },
+  {
+    file: 'src/presentation/components/match/LineupStep.tsx',
+    maxAllowed: 1,
+    reason: 'A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md) krav 3: teckenförklaringen ovanför spelarlistan för den nya prognoskolumnen — "kondition nu → efter nästa match (ungefärlig), och för otillgängliga: omgångar tills han är valbar igen". Själva talen är språkneutrala och renderas redan; bara den förklarande meningen väntar Opus. (A-H3:s tre tidigare platshållare i samma fil är fyllda och borttagna ur listan.)',
+  },
+  {
+    file: 'src/presentation/components/match/FatigueFloorConfirm.tsx',
+    maxAllowed: 7,
+    reason: 'A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md) krav 1 — hela bekräftelsegrinden när elvan går under konditionsgolvet. Sju strängar: (1) rubriken för det tvingade läget, (2) brödtexten som namnger kostnaden av att gå in kort över golvet (A-H3:s två ben: höjd skaderisk + risk att förlora dem till nästa match), (3) sektionslabel för listan över spelare under golvet, (4) förklaringen av de två prognostalen (startar / vilas) och att det är en förväntan, inte ett löfte — matchkostnaden slumpas 15–25, (5) sektionslabel för akademikallelsen som konkret utväg, (6) avbryt-knappen, (7) bekräfta-knappen "gå in med dem ändå" — domens synliga beslut. Talen i ytan (N/11, golvet, prognosprocenten) är språkneutrala och står redan renderade.',
   },
 ]
 

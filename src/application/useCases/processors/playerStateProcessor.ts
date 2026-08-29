@@ -26,9 +26,9 @@ import {
   VILA_SEASON_FORM_DECAY,
   VILA_EXTRA_FITNESS_REC,
   VILA_SHARPNESS_PENALTY,
-  SEASON_FORM_FITNESS_SLACK,
   RAMP_ROUNDS,
 } from '../../../domain/services/periodisationService'
+import { recoveryGain, FITNESS_RECOVERY_CEILING } from '../../../domain/services/fitnessRecoveryService'
 import type { PeriodisationMode } from '../../../domain/services/periodisationService'
 import { clamp } from '../../../domain/utils/clamp'
 import { FATIGUE_AVAILABILITY_FLOOR } from '../../../domain/services/squadEvaluator'
@@ -177,7 +177,18 @@ export function applyPlayerStateUpdates(
       const byggExtraCost = isManaged && effectiveMode === 'bygg' ? BYGG_EXTRA_FITNESS_COST : 0
       const positionFatigueMult = positionFatigueNormMult.get(player.id) ?? 1.0
       const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue * weatherTacticFatigue * positionFatigueMult) + byggExtraCost
-      updated.fitness = Math.max(0, updated.fitness - fitnessLoss)
+      // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), rotorsak 2: matchkostnaden
+      // är oförändrad — men veckan MELLAN matcherna ger nu tillbaka något även
+      // åt den som spelade. Tidigare var en startares omgång rent −15..−25,
+      // vilket gjorde trupploopen strukturellt negativ oavsett truppstorlek.
+      const afterMatchCost = Math.max(0, updated.fitness - fitnessLoss)
+      updated.fitness = Math.min(
+        FITNESS_RECOVERY_CEILING,
+        afterMatchCost + recoveryGain(afterMatchCost, 'started', {
+          stamina: player.attributes?.stamina,
+          daysBetweenFixtures,
+        }),
+      )
 
       // Form update based on match rating
       const rating = getPlayerRating(player.id, simulatedFixtures)
@@ -193,20 +204,33 @@ export function applyPlayerStateUpdates(
       updated.sharpness = Math.min(100, updated.sharpness + sharpnessGain)
 
     } else if (benchThisRound.has(player.id)) {
+      // A3, rotorsak 1: `seasonForm + SLACK` var en KLAMP på råvärdet, inte ett
+      // återhämtningstak — en bänkspelare ÖVER klampen drogs NER av att sitta på
+      // bänken. Taket lever kvar där det hör hemma: på EFFEKTEN, i playerModifier
+      // (squadEvaluator.ts:42), som är SKYDDAT i domen och orört.
       updated.fitness = Math.min(
-        (updated.seasonForm ?? 60) + SEASON_FORM_FITNESS_SLACK,
-        Math.min(100, updated.fitness + 5),
+        FITNESS_RECOVERY_CEILING,
+        updated.fitness + recoveryGain(updated.fitness, 'bench', {
+          stamina: player.attributes?.stamina,
+          daysBetweenFixtures,
+        }),
       )
       updated.sharpness = Math.max(0, updated.sharpness - 5)
     } else {
-      // Did not play — calendar-scaled recovery capped by seasonForm
-      const calendarFactor = Math.min(3.0, daysBetweenFixtures / 7)
-      const staminaFactor = 0.7 + 0.3 * ((player.attributes?.stamina ?? 50) / 100)
-      let baseRecovery = Math.round(8 * calendarFactor * staminaFactor)
-      if (isManaged && effectiveMode === 'toppa') baseRecovery += TOPPA_EXTRA_FITNESS_REC
-      if (isManaged && effectiveMode === 'vila')  baseRecovery += VILA_EXTRA_FITNESS_REC
-      const fitnessCapFromSeasonForm = (updated.seasonForm ?? 60) + SEASON_FORM_FITNESS_SLACK
-      updated.fitness = Math.min(fitnessCapFromSeasonForm, Math.min(100, updated.fitness + baseRecovery))
+      // Did not play — proportionell, kalenderskalad återhämtning (A3).
+      // Periodiseringens extrapoäng är fortsatt ADDITIVA ovanpå den
+      // proportionella basen, så D-SAB-001:s magnituder behåller sin betydelse.
+      let modeBonus = 0
+      if (isManaged && effectiveMode === 'toppa') modeBonus += TOPPA_EXTRA_FITNESS_REC
+      if (isManaged && effectiveMode === 'vila')  modeBonus += VILA_EXTRA_FITNESS_REC
+      updated.fitness = Math.min(
+        FITNESS_RECOVERY_CEILING,
+        updated.fitness + recoveryGain(updated.fitness, 'rested', {
+          stamina: player.attributes?.stamina,
+          daysBetweenFixtures,
+          modeBonus,
+        }),
+      )
 
       let sharpnessPenalty = 3
       if (isManaged && effectiveMode === 'vila') sharpnessPenalty += VILA_SHARPNESS_PENALTY

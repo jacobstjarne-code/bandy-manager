@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useGameStore, type SaveActionResult } from '../store/gameStore'
-import { pickBestEleven, buildNudgeLineup } from '../utils/lineupNudge'
+import { pickBestEleven, buildNudgeLineup, assessFatigueFloorBreach } from '../utils/lineupNudge'
 import {
   PlayerPosition,
   FixtureStatus,
@@ -39,6 +39,22 @@ export interface LineupEditor {
   canPlay: boolean
   togglePlayer: (playerId: string) => void
   handleAutoFill: () => void
+  /**
+   * A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: nuvarande elvas
+   * golvbrott. `forced` = truppen HADE inte elva spelklara över golvet;
+   * `belowFloorStarters` = de som faktiskt står i elvan under det. Läses av
+   * bekräftelsegrinden, som sitter på BESLUTET (elvan är satt), inte bara på
+   * autofyll-knappen — en manuellt ihopsatt elva under golvet är samma dolda
+   * straff.
+   */
+  floorBreach: { belowFloorStarters: Player[]; shortfall: number; forced: boolean }
+  /**
+   * A3 krav 1: en autofyllning som TVINGADES under golvet appliceras inte
+   * direkt — den parkeras här tills managern bekräftar. `null` = inget väntar.
+   */
+  pendingForcedAutoFill: { belowFloorStarters: Player[]; shortfall: number } | null
+  confirmPendingAutoFill: () => void
+  cancelPendingAutoFill: () => void
   assignPlayerToSlot: (playerId: string, slotId: string) => void
   swapSlots: (fromSlotId: string, toSlotId: string) => void
   handleTacticChange: <K extends keyof Tactic>(key: K, value: Tactic[K]) => void
@@ -73,6 +89,11 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
       .filter(p => p.clubId === managedClubId)
       .sort((a, b) => POSITION_ORDER[a.position] - POSITION_ORDER[b.position])
   }, [game, managedClubId])
+
+  // A3 krav 1 — parkerad, ej applicerad, tvingad autofyllning (se handleAutoFill).
+  const [pendingForcedAutoFill, setPendingForcedAutoFill] = useState<
+    { starters: Player[]; rest: Player[]; belowFloorStarters: Player[]; shortfall: number } | null
+  >(null)
 
   const defaultStarting = useMemo(() => {
     return [...squadPlayers]
@@ -166,6 +187,19 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     .map(id => squadPlayers.find(p => p.id === id))
     .filter((p): p is Player => !!p && (p.isInjured || p.suspensionGamesRemaining > 0 || (p.restGamesRemaining ?? 0) > 0))
 
+  // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: golvbrottet i den elva
+  // som FAKTISKT står nu — oavsett om den kom från autofyll, nudge-förfyllningen
+  // eller managerns egna tryck. Grinden sitter på beslutet, inte på en knapp.
+  const floorBreach = useMemo(() => {
+    const available = squadPlayers.filter(
+      p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0,
+    )
+    const starters = startingIds
+      .map(id => squadPlayers.find(p => p.id === id))
+      .filter((p): p is Player => !!p)
+    return assessFatigueFloorBreach(starters, available)
+  }, [squadPlayers, startingIds])
+
   const canPlay = startingIds.length === 11 && injuredInStarting.length === 0
 
   const groupedPlayers: GroupedPlayers[] = [
@@ -207,13 +241,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     }
   }
 
-  function handleAutoFill() {
-    // High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): "Fyll bästa
-    // elvan" — den knapp auditen faktiskt testade. Delar nu pickBestEleven()
-    // med lineupNudge.ts:s buildNudgeLineup istf en egen, tredje kopia av
-    // samma urvalslogik med en annan (CA-dominant) formel.
-    const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0)
-    const { starters, rest } = pickBestEleven(available)
+  function applyAutoFill(starters: Player[], rest: Player[]) {
     const starterIds = starters.map(p => p.id)
     const bench = rest.slice(0, 5)
     const formation = tacticState.formation ?? '5-3-2'
@@ -227,6 +255,36 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     setCaptainId(starterIds[0])
     setSelectedSlotId(null)
     setLineupError(null)
+  }
+
+  function handleAutoFill() {
+    // High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): "Fyll bästa
+    // elvan" — den knapp auditen faktiskt testade. Delar nu pickBestEleven()
+    // med lineupNudge.ts:s buildNudgeLineup istf en egen, tredje kopia av
+    // samma urvalslogik med en annan (CA-dominant) formel.
+    const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0)
+    const { starters, rest, belowFloorStarters, shortfall, forced } = pickBestEleven(available)
+    // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: "Autofyll får aldrig
+    // TYST starta under golvet." Den tvingade fyllningen APPLICERAS INTE — den
+    // parkeras tills managern bekräftat. Att lägga grinden här (före) istället
+    // för som en ångra-knapp (efter) är det enda som gör valet till hans:
+    // en applicerad elva han inte bad om är redan det dolda straffet.
+    if (forced && belowFloorStarters.length > 0) {
+      setPendingForcedAutoFill({ starters, rest, belowFloorStarters, shortfall })
+      return
+    }
+    applyAutoFill(starters, rest)
+  }
+
+  function confirmPendingAutoFill() {
+    if (!pendingForcedAutoFill) return
+    applyAutoFill(pendingForcedAutoFill.starters, pendingForcedAutoFill.rest)
+    setPendingForcedAutoFill(null)
+  }
+
+  function cancelPendingAutoFill() {
+    // Avbryt = elvan står orörd. Ingen halvapplicerad fyllning lämnas kvar.
+    setPendingForcedAutoFill(null)
   }
 
   const assignPlayerToSlot = useCallback((playerId: string, slotId: string) => {
@@ -359,6 +417,12 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     canPlay,
     togglePlayer,
     handleAutoFill,
+    floorBreach,
+    pendingForcedAutoFill: pendingForcedAutoFill
+      ? { belowFloorStarters: pendingForcedAutoFill.belowFloorStarters, shortfall: pendingForcedAutoFill.shortfall }
+      : null,
+    confirmPendingAutoFill,
+    cancelPendingAutoFill,
     assignPlayerToSlot,
     swapSlots,
     handleTacticChange,

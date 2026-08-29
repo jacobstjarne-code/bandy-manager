@@ -79,6 +79,7 @@ export function MatchScreen() {
     selectedSlotId, lineupError, setLineupError, injuredInStarting, canPlay,
     togglePlayer, handleAutoFill, assignPlayerToSlot, swapSlots, handleTacticChange,
     setCaptain, onSlotClick, onFormationChange, removePlayer, commitLineup,
+    floorBreach, pendingForcedAutoFill, confirmPendingAutoFill, cancelPendingAutoFill,
   } = editor
 
   const eliminatedBracket = game.playoffBracket
@@ -480,6 +481,10 @@ export function MatchScreen() {
           onRemovePlayer={removePlayer}
           onError={setLineupError}
           onNext={() => canPlay && setMatchStep('tactic')}
+          floorBreach={floorBreach}
+          pendingForcedAutoFill={pendingForcedAutoFill}
+          onConfirmForcedAutoFill={confirmPendingAutoFill}
+          onCancelForcedAutoFill={cancelPendingAutoFill}
         />
       )}
 

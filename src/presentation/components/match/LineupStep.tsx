@@ -15,6 +15,8 @@ import { Icon } from '../primitives/Icon'
 import { PitchLineupView, getPositionFit } from './PitchLineupView'
 import { OpponentAnalysisCard } from './OpponentAnalysisCard'
 import { CoachFraming } from '../CoachFraming'
+import { FatigueFloorConfirm } from './FatigueFloorConfirm'
+import { getFitnessProjection } from '../../../domain/services/fitnessRecoveryService'
 
 interface GroupedPlayers {
   position: string
@@ -55,6 +57,13 @@ interface LineupStepProps {
   onSwapPlayers: (fromSlotId: string, toSlotId: string) => void
   onError: (err: string) => void
   onNext: () => void
+  /** A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 — golvbrottet i den
+   *  elva som står nu, oavsett hur den kom dit. */
+  floorBreach: { belowFloorStarters: Player[]; shortfall: number; forced: boolean }
+  /** A3 krav 1 — parkerad, ej applicerad, tvingad autofyllning. */
+  pendingForcedAutoFill: { belowFloorStarters: Player[]; shortfall: number } | null
+  onConfirmForcedAutoFill: () => void
+  onCancelForcedAutoFill: () => void
 }
 
 const GROUP_LABELS: Partial<Record<string, string>> = {
@@ -111,9 +120,28 @@ export function LineupStep({
   onSwapPlayers,
   onError,
   onNext,
+  floorBreach,
+  pendingForcedAutoFill,
+  onConfirmForcedAutoFill,
+  onCancelForcedAutoFill,
 }: LineupStepProps) {
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>(practice ? 'pitch' : 'list')
   const [justFilled, setJustFilled] = useState(false)
+  // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 (c): bekräftelsegrinden
+  // sitter på BESLUTET — CTA:n som lämnar uppställningen — och inte bara på
+  // autofyll-knappen. En manuellt ihopsatt elva under golvet är exakt samma
+  // dolda straff, och hade annars gått rakt igenom.
+  const [confirmingOnNext, setConfirmingOnNext] = useState(false)
+
+  // Tillträdet (practice=true) får ALDRIG mötas av grinden: intron är en
+  // scripta d sekvens där autofyllningen måste landa, och truppen är dessutom
+  // nygenererad (full kondition — läget kan i praktiken inte uppstå). Skulle
+  // det ändå göra det bekräftas fyllningen automatiskt, så intron aldrig
+  // stannar på en tom elva. Matchdags-editorn (practice=false) är den enda
+  // yta grinden gäller — samma avgränsning som resten av practice-läget.
+  useEffect(() => {
+    if (practice && pendingForcedAutoFill) onConfirmForcedAutoFill()
+  }, [practice, pendingForcedAutoFill]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-fill when switching to pitch view with no lineupSlots at all (defensive fallback).
   // IMPORTANT: Only triggers when lineupSlots is undefined or has zero keys.
@@ -383,6 +411,15 @@ export function LineupStep({
       {/* 7. List-mode additions — player list */}
       {viewMode === 'list' && (
         <div style={{ padding: '0 14px 8px' }}>
+          {/* A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 3 — teckenförklaring
+              för prognoskolumnen. SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]'
+              bär meningen "kondition nu → efter nästa match (ungefärlig), och
+              för otillgängliga: omgångar tills han är valbar igen". */}
+          {!practice && (
+            <p style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px', margin: '0 0 6px 4px' }}>
+              [Opus]
+            </p>
+          )}
           {groupedPlayers.map(group => (
             <div key={group.position} style={{ marginBottom: 6 }}>
               <p style={{
@@ -405,6 +442,9 @@ export function LineupStep({
                 // domen): en spelare som SKULLE starta idag under golvet —
                 // innan matchen är spelad, innan kastet är gjort.
                 const isFatigueRisk = isStarting && !isUnavailable && player.fitness < FATIGUE_AVAILABILITY_FLOOR
+                // A3 krav 3 — synlig prognos. Samma formel som motorn räknar
+                // med (fitnessRecoveryService), aldrig en avskrift här.
+                const projection = getFitnessProjection(player)
 
                 const rowBorderLeft = isInjured
                   ? '3px solid var(--danger)'
@@ -439,6 +479,44 @@ export function LineupStep({
                     </span>
                     <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text-primary)', width: 26, textAlign: 'right', fontSize: 12 }}>
                       {Math.round(player.currentAbility)}
+                    </span>
+                    {/* A3 krav 3 — prognoskolumnen. Valbar spelare: kondition nu
+                        → efter nästa match (startar han) respektive om han vilas.
+                        Otillgänglig: omgångar tills han är valbar igen. */}
+                    <span
+                      style={{
+                        fontFamily: 'ui-monospace, monospace',
+                        fontSize: 9,
+                        letterSpacing: '-0.2px',
+                        color: 'var(--text-muted)',
+                        width: 46,
+                        textAlign: 'right',
+                        flexShrink: 0,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {isUnavailable
+                        ? projection.availableInRounds > 0
+                          ? `⟳${projection.availableInRounds}`
+                          : ''
+                        : (
+                          <>
+                            {player.fitness}
+                            <span style={{ opacity: 0.55 }}>→</span>
+                            <span
+                              style={{
+                                color: isStarting
+                                  ? projection.ifStarting < FATIGUE_AVAILABILITY_FLOOR
+                                    ? 'var(--danger-text)'
+                                    : 'var(--text-secondary)'
+                                  : 'var(--success)',
+                                fontWeight: 700,
+                              }}
+                            >
+                              {isStarting ? projection.ifStarting : projection.ifRested}
+                            </span>
+                          </>
+                        )}
                     </span>
                     {isInjured && (
                       <span className="tag tag-red" style={{ padding: '2px 5px' }}>
@@ -507,7 +585,14 @@ export function LineupStep({
       {!practice && (
         <div style={{ padding: '4px 14px 24px', borderTop: '0.5px solid var(--border)', marginTop: 4 }}>
           <button
-            onClick={onNext}
+            onClick={() => {
+              // A3 krav 1: elva under golvet → bekräftelse först, aldrig tyst vidare.
+              if (floorBreach.belowFloorStarters.length > 0) {
+                setConfirmingOnNext(true)
+                return
+              }
+              onNext()
+            }}
             disabled={!canPlay}
             className="btn btn-cta btn-primary"
             style={{ width: '100%', cursor: canPlay ? 'pointer' : 'not-allowed', opacity: canPlay ? 1 : 0.5 }}
@@ -515,6 +600,31 @@ export function LineupStep({
             Nästa: Taktik →
           </button>
         </div>
+      )}
+
+      {/* A3 krav 1 — den tvingade autofyllningen väntar på ett ja. */}
+      {!practice && pendingForcedAutoFill && (
+        <FatigueFloorConfirm
+          game={game}
+          belowFloorStarters={pendingForcedAutoFill.belowFloorStarters}
+          shortfall={pendingForcedAutoFill.shortfall}
+          onConfirm={onConfirmForcedAutoFill}
+          onCancel={onCancelForcedAutoFill}
+        />
+      )}
+
+      {/* A3 krav 1 (c) — samma grind på vägen ut ur uppställningen. */}
+      {confirmingOnNext && (
+        <FatigueFloorConfirm
+          game={game}
+          belowFloorStarters={floorBreach.belowFloorStarters}
+          shortfall={floorBreach.shortfall}
+          onConfirm={() => {
+            setConfirmingOnNext(false)
+            onNext()
+          }}
+          onCancel={() => setConfirmingOnNext(false)}
+        />
       )}
     </>
   )
