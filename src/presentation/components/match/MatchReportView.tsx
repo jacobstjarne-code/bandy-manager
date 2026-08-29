@@ -41,7 +41,11 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
     : 'FT' as const
 
   // Determine playoff final status
-  const isPlayoffFinal = fixture.roundNumber > 36 || fixture.isNeutralVenue === true
+  // Audit 2026-08-29 CRITICAL 1 (falska SM-guld): isNeutralVenue ensam räckte
+  // inte — cupfinaler spelas också på neutral plan (samma flagga). Uteslut
+  // cupfixturer explicit; playoffTierLabel nedan gör redan den robusta
+  // bracket-medlemskapskontrollen för att särskilja kvarts/semi/final.
+  const isPlayoffFinal = !fixture.isCup && (fixture.roundNumber > 36 || fixture.isNeutralVenue === true)
   const playoffTierLabel = (() => {
     if (!isPlayoffFinal) return undefined
     const bracket = game.playoffBracket

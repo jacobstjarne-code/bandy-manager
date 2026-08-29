@@ -142,7 +142,11 @@ export function MatchLiveScreen() {
   const isCommentaryMode = matchMode === 'commentary'
 
   const rivalry = fixture ? getRivalry(fixture.homeClubId, fixture.awayClubId) : null
-  const isSmFinal = fixture?.isNeutralVenue === true
+  // Audit 2026-08-29 CRITICAL 1 (falska SM-guld): isNeutralVenue ensam räckte
+  // inte — cupfinaler spelas också på neutral plan. SM-final = ligans final
+  // OCH inte en cupmatch (samma bracket-medlemskapskontroll som matchPhase
+  // nedan använder för att skilja slutspelsfaser åt).
+  const isSmFinal = !fixture?.isCup && !!fixture && !!game?.playoffBracket?.final?.fixtures.includes(fixture.id)
   // A-H6: quicksimmad SM-final, redan avgjord — visa bara ceremonin, simulera aldrig.
   const isCeremonyOnly = state?.skipToCeremony === true
 

@@ -762,6 +762,12 @@ export function gameFlowActions(get: Get, set: Set) {
           : game.currentSeason * 11 + game.managedClubId.length * 3
         const shownIdx = pickPoolIndexAvoidingCooldown(game, game.currentSeason, templates.birgerQuotes.length, prefix, tieBreakSeed)
         updatedGame.narrativeBeatLog = logNarrativeBeat(updatedGame, `${prefix}${shownIdx}`, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame))
+        // Audit 2026-08-29 BLOCKER (cupscenen låser Hem): denna gren loggade
+        // bara citatet, la ALDRIG sceneId i shownScenes (jmf default-grenen
+        // nedan) — sceneTriggerService.ts re-triggade scenen om och om igen
+        // eftersom den aldrig såg som "visad". sm_final_victory hade samma
+        // hål, bara mindre synligt eftersom SM-final är sällsyntare.
+        updatedGame.shownScenes = [...(updatedGame.shownScenes ?? []), sceneId]
       } else if (sceneId === 'season_signature_reveal') {
         // Track per-season with dedicated field (not SceneId[] — needs season number)
         updatedGame.shownSeasonSignatureRevealSeason = updatedGame.currentSeason

@@ -64,11 +64,21 @@ export function buildCeremonyOnlyStep(fixture: Fixture): MatchStep {
  * homeLineup/awayLineup är optional på Fixture-typen men sätts alltid av
  * både matchEngine.ts (quicksim) och matchActions.ts (live) när en match
  * completas — kravet här är en defensiv spärr, inte en förväntad avslag.
+ *
+ * Audit 2026-08-29 CRITICAL 1 (falska SM-guld): tog tidigare bara
+ * fixture.isNeutralVenue === true som SM-final-tecken — cupfinalen sätter
+ * samma flagga (Studenternas IP-mönstret, se economyService.ts). En
+ * quicksimmad cupfinal routades då felaktigt till SM-ceremonin. Kräver nu
+ * samma bracket-medlemskapskontroll som MatchLiveScreen.tsx:s isSmFinal.
  */
-export function shouldRouteQuicksimToCeremony(fixture: Fixture | undefined): fixture is Fixture & { homeLineup: NonNullable<Fixture['homeLineup']>; awayLineup: NonNullable<Fixture['awayLineup']> } {
+export function shouldRouteQuicksimToCeremony(
+  fixture: Fixture | undefined,
+  smFinalFixtureIds: ReadonlySet<string> | undefined,
+): fixture is Fixture & { homeLineup: NonNullable<Fixture['homeLineup']>; awayLineup: NonNullable<Fixture['awayLineup']> } {
   return (
     fixture?.status === FixtureStatus.Completed &&
-    fixture.isNeutralVenue === true &&
+    !fixture.isCup &&
+    !!smFinalFixtureIds?.has(fixture.id) &&
     !!fixture.homeLineup &&
     !!fixture.awayLineup
   )

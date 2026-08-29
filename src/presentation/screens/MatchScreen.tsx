@@ -231,7 +231,10 @@ export function MatchScreen() {
           // varför en efterhands-resimulering hade riskerat ett annat resultat än det
           // redan sparade).
           const completedFixture = result.game.fixtures.find(f => f.id === nextFixture.id)
-          if (shouldRouteQuicksimToCeremony(completedFixture)) {
+          const smFinalFixtureIds = result.game.playoffBracket?.final
+            ? new Set(result.game.playoffBracket.final.fixtures)
+            : undefined
+          if (shouldRouteQuicksimToCeremony(completedFixture, smFinalFixtureIds)) {
             const homeClub = game!.clubs.find(c => c.id === completedFixture.homeClubId)
             const awayClub = game!.clubs.find(c => c.id === completedFixture.awayClubId)
             navigate('/game/match/live', {

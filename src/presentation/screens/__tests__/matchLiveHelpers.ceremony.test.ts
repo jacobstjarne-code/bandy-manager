@@ -157,39 +157,48 @@ function makeEvent(overrides: Partial<MatchEvent> = {}): MatchEvent {
 // ── (a) routing-predikatet ───────────────────────────────────────────────────
 
 describe('shouldRouteQuicksimToCeremony (A-H6)', () => {
-  it('true: avslutad, neutral-venue-fixtur med bägge lineups sparade', () => {
+  it('true: avslutad SM-final-bracket-fixtur (inte cup) med bägge lineups sparade', () => {
     const f = makeFinalFixture({
       status: FixtureStatus.Completed,
       homeScore: 3, awayScore: 2,
       homeLineup: makeSelection(makeSquad('h', 'club1')),
       awayLineup: makeSelection(makeSquad('a', 'club2')),
     })
-    expect(shouldRouteQuicksimToCeremony(f)).toBe(true)
+    expect(shouldRouteQuicksimToCeremony(f, new Set([f.id]))).toBe(true)
   })
 
-  it('false: fixturen är inte SM-final (isNeutralVenue saknas) — vanlig quicksim-match påverkas inte', () => {
+  it('false: fixturens id finns inte i SM-final-bracketen — vanlig quicksim-match påverkas inte', () => {
     const f = makeFinalFixture({
-      isNeutralVenue: undefined,
-      isFinaldag: undefined,
       status: FixtureStatus.Completed,
       homeLineup: makeSelection(makeSquad('h', 'club1')),
       awayLineup: makeSelection(makeSquad('a', 'club2')),
     })
-    expect(shouldRouteQuicksimToCeremony(f)).toBe(false)
+    expect(shouldRouteQuicksimToCeremony(f, new Set(['some_other_fixture']))).toBe(false)
+    expect(shouldRouteQuicksimToCeremony(f, undefined)).toBe(false)
+  })
+
+  it('false: audit 2026-08-29 CRITICAL 1-regression — en cupfinal delar samma neutral-venue-flagga men ska ALDRIG routas till SM-ceremonin, även om id:t (felaktigt) funnes i bracketen', () => {
+    const f = makeFinalFixture({
+      status: FixtureStatus.Completed,
+      isCup: true,
+      homeLineup: makeSelection(makeSquad('h', 'club1')),
+      awayLineup: makeSelection(makeSquad('a', 'club2')),
+    })
+    expect(shouldRouteQuicksimToCeremony(f, new Set([f.id]))).toBe(false)
   })
 
   it('false: fixturen är inte completed än', () => {
     const f = makeFinalFixture({ status: FixtureStatus.Scheduled })
-    expect(shouldRouteQuicksimToCeremony(f)).toBe(false)
+    expect(shouldRouteQuicksimToCeremony(f, new Set([f.id]))).toBe(false)
   })
 
   it('false: lineups saknas (defensiv spärr — ska aldrig hända i praktiken)', () => {
     const f = makeFinalFixture({ status: FixtureStatus.Completed, homeScore: 1, awayScore: 0 })
-    expect(shouldRouteQuicksimToCeremony(f)).toBe(false)
+    expect(shouldRouteQuicksimToCeremony(f, new Set([f.id]))).toBe(false)
   })
 
   it('false: fixture undefined (t.ex. hittades inte i result.game.fixtures)', () => {
-    expect(shouldRouteQuicksimToCeremony(undefined)).toBe(false)
+    expect(shouldRouteQuicksimToCeremony(undefined, new Set(['fixture_final']))).toBe(false)
   })
 })
 
@@ -286,7 +295,7 @@ describe('A-H6 mot riktiga matchEngine.simulateMatch — ingen divergens mellan 
       const completed = result.fixture
 
       // (a) routar korrekt givet att lineups sparats av motorn
-      expect(shouldRouteQuicksimToCeremony(completed)).toBe(true)
+      expect(shouldRouteQuicksimToCeremony(completed, new Set([completed.id]))).toBe(true)
 
       // (b) ceremoni-steppet avviker aldrig från facit
       const step = buildCeremonyOnlyStep(completed)
