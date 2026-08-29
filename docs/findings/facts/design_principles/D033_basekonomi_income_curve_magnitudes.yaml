@@ -72,6 +72,42 @@ notes: |
      Klart innanför taket.
   4. Heros-golvet intakt: -11413 kr/omgång, back. OK, ej rört.
 
+  KARRIÄRBANA-SOLVENSMÄTNING (2026-08-29, uppföljning av interim-beslutet i
+  DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md): kontrollklubben (samma
+  konstruktion, huvudseed 2 + pool [3..12]) simulerad 12 säsonger istf 3,
+  club.finances läst varje omgång (scripts/ah2-karriarbana-solvens-matning-
+  2026-08-29.ts). Svar: -4988/omg är INTE en jämn nivå cuppengar/transfers
+  absorberar över en karriär — 3/11 seeds (27%) föll i en självförstärkande
+  ryktekollaps (bottenplaceringar → rykte mot 0 → weeklyBase/kapacitet vid
+  golvet → nya förluster) som nådde FAKTISKT finansiellt game-over
+  (< -2M, managerFired) inom säsong 8-12. 7/11 (64%) återhämtade sig och
+  blev tydligt plus; 1/11 gränsfall (warning vid s12, ej game-over).
+
+  KANDIDATFIX (MÄTT, EJ LÅST — inte i value-blocket ovan): WEEKLY_BASE_FLAT
+  i economyService.ts (weeklyBase = WEEKLY_BASE_FLAT + reputation×50),
+  3000 → 8000 (+5000, flat, ryktemässigt oberoende, rör ej
+  ATTENDANCE_STANDING_WEIGHT eller lönen). Re-mätning (samma robusthetspool):
+    Kontroll: -4988 → +1340
+    Dominant: +6371 → +11969
+    Heros:    -11413 → -4916 (fortsatt back, OK)
+  Karriärbana efter fix: 0/11 game-overs (var 3/11) — de tre tidigare
+  krascherna slutar nu säsong 12 på +1,06M / +1,47M / +3,87M.
+  Kriterium 2: dominant S1 (-5158) under nya kontroll-snittet (+1340) men
+  inom kontrollens egen spridning (sämst -8240) — brusgolv, som innan fixen.
+  Kriterium 3: kvot dominant/kontroll = 8,94x — LÅNGT över ~3x-taket. Testat
+  svagare lyft (+3000): kvot 9,38x, SÄMRE trots mindre lyft — bekräftar att
+  kvoten degenererar nära noll-nämnare, inte att dominanten drar ifrån.
+  Dominantens ABSOLUTA förskott över kontroll: 11359 (innan lyft) → 10629
+  (efter) — i praktiken oförändrat. Ingen WEEKLY_BASE_FLAT-magnitud kan
+  både nolla kontrollen OCH hålla en meningsfull kvot ≤3x (matematisk
+  motsägelse när nämnaren går mot noll). Opus separata oro (dominantens
+  ABSOLUTA basöverskott ~175 tkr/säsong extra, ingen anspåk-4-mekanism
+  äter det ännu) kvarstår oavsett kvot-degenereringen.
+  STATUS: kandidaten ligger i arbetsträdet (ocommittad), grönt
+  tsc/vitest(3185/3185)/build. Ej flyttad till value-blocket — kräver
+  Opus/Jacobs lås-beslut (kriterium 1 och 3 drar isär, doktrinens egen
+  gråzonsklausul, nu i en form ingen tidigare mätning förutsåg).
+
   ÖPPEN FRÅGA (rapporterad, ej löst av Code — kräver Opus/Jacobs dom):
   Kriterium 1 nådde inte exakt ≈0 med rimliga magnituder. Extrapolation
   visade att TOP_POSITION_BONUS_MAX skulle behöva ~0,80 (mer än den

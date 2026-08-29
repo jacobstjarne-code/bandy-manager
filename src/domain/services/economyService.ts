@@ -449,6 +449,21 @@ const FORM_BONUS_TOP3 = 1.35
 const FORM_BONUS_TOP6 = 1.15
 const FORM_BONUS_BOTTOM3 = 0.72
 
+// KARRIÄRBANA-SOLVENSMÄTNING 2026-08-29 (D033 uppföljning, docs/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md
+// öppen fråga): D033s -4988 kr/omgång kontroll-residual visade sig, mätt över
+// 10-12 säsonger istf 3, vara en STEADY-STATE-siffra som döljer ett bimodalt
+// utfall — de flesta kontrollklubbar återhämtar sig (rykte växer, blir plus),
+// men en betydande minoritet (3/11 seeds, 27%) föll i en självförstärkande
+// ryktekollaps (upprepade bottenplaceringar → rykte mot 0 → weeklyBase/kapacitet
+// mot golvet → nya förluster → rykte kvar på 0) som slutade i FAKTISKT
+// finansiellt game-over (< -2M, managerFired). Detta är INSOLVENT per
+// uppdragets definition. Flat höjning av weeklyBase-golvet (oberoende av
+// placering/rykte) valdes eftersom den (till skillnad från positions-/
+// formBonus-knapparna) ger de ryktekollapsade klubborna (rep≈0) MER golv utan
+// att röra den skyddade communityStanding-vikten eller löneformeln.
+// scripts/ah2-karriarbana-solvens-matning-2026-08-29.ts + D033 har full mätning.
+const WEEKLY_BASE_FLAT = 8000 // var 3000 (Sprint 26b) — höjt +5000 efter mätning, se D033
+
 const KIOSK_SQRT_RATE_BASIC = 75
 const KIOSK_SQRT_RATE_UPGRADED = 150
 const VIP_SQRT_RATE = 150
@@ -481,7 +496,10 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
 
   // ── Weekly base (reputation) ───────────────────────────────────────────────
   // Sprint 26b: 3000 + rep × 50 (was 2000). Raises floor for mid-table clubs (Sprint 26b).
-  const weeklyBase = Math.round(3000 + club.reputation * 50)
+  // 2026-08-29: flat-termen höjd 3000→WEEKLY_BASE_FLAT (se konstant ovan, D033
+  // uppföljning) — löser INSOLVENT-fyndet i karriärbane-mätningen utan att röra
+  // positions-/formBonus-knapparna eller den skyddade communityStanding-vikten.
+  const weeklyBase = Math.round(WEEKLY_BASE_FLAT + club.reputation * 50)
 
   // ── Sponsors ──────────────────────────────────────────────────────────────
   // 0.0086 ratificerat 2026-06-23 (Opus-balansbeslut): flaggskepp×3 ≈ +5% säsongsintäkt,
