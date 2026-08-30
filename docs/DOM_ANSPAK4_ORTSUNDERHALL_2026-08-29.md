@@ -158,3 +158,81 @@ Ingen svensk text skriven, inga `'[Opus]'`-platshållare: anspråk 4 är en ren 
 `npx tsc --noEmit` rent. Full svit **3296/3296 grön** (321 filer), inga förbefintliga röda. `npm run build` grönt inklusive ds-guard och content-contract-guard. `npm run stress` FÖRE och EFTER (produktionsfilerna stashade för före-körningen): båda **0 krascher, 0 invariantbrott** över 50 säsonger, identiska textmått.
 
 Nya tester: 20 i `communityStandingScaling.test.ts` (rampernas form — full effekt på golvet, reducerad på taket, kontinuitet steg för steg över hela ryktespannet, monotoni, och att produkten mot `getCsDiminishingFactor` aldrig närmar sig noll) och 9 i `communityProcessorUpkeep.test.ts` (wiringen — att bara ortsinsatsen skalas, att matchresultatets boost är oskalad, att en storförlust kostar en stor klubb exakt lika mycket som en liten, att draget inte dämpas av CS-faktorn, och att en liten klubb får exakt samma csBoost som före anspråk 4).
+
+---
+
+# TILLÄGG 2026-08-30 (2) — OMMÄTNING under korrigerade mätvillkor
+
+**Av:** Code · **Script:** `scripts/remat-ansprak4-ortsunderhall-2026-08-30.ts` (nytt; originalet orört) · **Status:** MÄTT, ingen magnitud ändrad, inget committat.
+
+Uppdraget: verifiera D037:s fem GODKÄNT NÄR mot `3914a5e6` (socialMedia-ryktesticken grindad på topp-3) och `06b86b29` (patronen nåbar headless). Verifiering, **inte omkalibrering** — `CS_UPKEEP_REP_FLOOR/CEIL`, `CS_UPKEEP_FACTOR_CEIL` och `CS_EXPECTATION_DRAG_CEIL` är orörda, liksom `communityStandingScaling.ts` och `communityProcessor.ts`.
+
+Tre mätpunkter, samma script, samma seeds: **`368d135b`** (före anspråk 4), **`96deea39`** (D037:s egen commit) och **`HEAD`**. `368d135b` och `96deea39` reproducerar tillägg 1:s tabeller siffra för siffra (baslinjen 87,0 / 93,1 / 4 % / 69 % / 63 % / 827 778 kr; efter-läget 75,3 / 720 748 kr) — uppställningen är alltså validerad innan något tolkas.
+
+## 1 · Premissen korrigerad: patronen var INTE inaktiv i det tal hypotesen gäller
+
+Tillägg 1:s punkt 5C skrev att patronen var aktiv 0/20 säsonger. Det gällde en tidig baslinjekörning. Det **låsta mätscriptets** egen `autoResolvePatronEvents` var på när D037:s siffror producerades, och ommätningen bekräftar det: på `96deea39` var patronen aktiv **2/20 säsonger i HÅLLER och 1/20 i GLIDER**, med årsbidrag 5 500 respektive 3 650 kr/säsong. **`+299 tkr`-talet i GODKÄNT NÄR 1 mättes alltså redan med en nåbar patron.** Harnessfixen `06b86b29` generaliserar den policyn till alla andra script — den tillför ingenting till anspråk 4:s egen mätning.
+
+## 2 · HYPOTESEN "patronen vidgar kriterium 1:s gap" — REFUTERAD
+
+Hypotesen: att låta CS glida riskerar patronrelationen, vilket borde göra glid-sidan dyrare och vidga gapet. Mätt, dominantklubben, HÅLLER − GLIDER:
+
+| mätpunkt | Δnetto/säsong (D037:s mått) | Δsäsongstotal (inkl. patronbidrag) |
+|---|---|---|
+| `368d135b` (före anspråk 4) | +325 963 | +336 345 |
+| `96deea39` (D037) | **+298 805** | +305 405 |
+| `HEAD` (ryktesfix + patron via harnesset) | **+291 252** | **+296 859** |
+
+**Gapet vidgades inte — det krympte med 7,5 tkr/säsong.** Att inkludera patronpengarna i måttet (säsongstotalen, som fångar säsongsövergången där bidraget faktiskt betalas) ändrar inte tecknet: +296 859. Att hålla orten är fortfarande netto **lönsamt**, precis som tillägg 1 fann.
+
+Varför hypotesen faller, i tre mätta led:
+
+1. **Patronpengarnas skillnad är två tiopotenser för liten.** 5 400 kr/säsong (HÅLLER) mot 3 650 (GLIDER) = **1 750 kr/säsong**, mot ett gap på 291 000 kr/säsong. Även om patronen försvunnit helt på glid-sidan hade det inte flyttat kriteriet.
+2. **Patronen straffar inte glid-sidan asymmetriskt.** Patronuttåg: **5 i HÅLLER mot 6 i GLIDER**. Patronbärande säsonger: 2/20 mot 1/20. Skillnaden finns, men är en säsong.
+3. **Rotorsaken är fortfarande premiss A i tillägg 1, oförändrad.** Aktivitetsblocket är intäktspositivt och frivilliga är gratis. Sidan som ska svida gör vinst, och ingen patronrelation i världen betalar tillbaka de +326 tkr ortsprogrammet tjänar in. Patronen var aldrig kandidat till den tredje spaken.
+
+**GODKÄNT NÄR 1 är alltså fortsatt DELVIS UPPFYLLT, av exakt samma skäl som förut.** Inget i ommätningen ändrar tillägg 1:s öppna fråga A, och den tredje spaken är fortsatt ingenting Code bygger utan order.
+
+## 3 · GODKÄNT NÄR — utfall, punkt för punkt
+
+Dominantklubben, 20 säsongsprover per policy:
+
+| | HÅLLER baslinje | HÅLLER D037 | **HÅLLER HEAD** | GLIDER (alla tre) |
+|---|---|---|---|---|
+| CS-snitt | 87,0 | 75,3 | **76,2** | 77,1 → 69,9 → 69,9 |
+| CS-slut | 93,1 | 82,1 | **80,9** | 83,4 → 76,6 → 76,6 |
+| omg <60 (patrontröskeln) | 4 % | 12 % | **11 %** | 14 % → 26 % → 26 % |
+| omg ≥85 (mecenattak 3) | 69 % | 25 % | **28 %** | 34 % → 17 % → 17 % |
+| publiktakets andel | 63 % | 42 % | **43 %** | 49 % → 39 % → 39 % |
+| netto/säsong | 827 778 | 720 748 | **713 195** | 501 815 → 421 943 → 421 943 |
+| säsongstotal | 1 033 396 | — | **906 408** | 697 052 → — → 609 549 |
+| rykte (snitt) | 96,8 | 96,5 | **95,2** | 90,6 → 90,0 → 90,0 |
+| `csUpkeepFactor` | 1,000 | 0,877 | **0,886** | 1,000 → 0,925 → 0,925 |
+
+**1. Synligt säsongsval — DELVIS UPPFYLLT, oförändrat.** Se avsnitt 2. Exponeringen mot patronens tröskel är 11 % om man håller mot 26 % om man glider; topplatån 28 % mot 17 %. Konsekvenssidan står. Finansieringssidan svider fortfarande inte.
+
+**2. Namngivbar konsekvens — UPPFYLLT, oförändrat.** Publikkvot 0,869 mot 0,852, taket träffat i 43 % mot 39 % av omgångarna (mot 63 % i baslinjen — CS-vikten 0,45 är fortsatt omättad för en dominant klubb). Patronuttåg 5 mot 6, mecenatuttåg 0 mot 1. Inga nya texter behövdes.
+
+**3. Konsumerar överskottet — UPPFYLLT, marginellt starkare än i D037.** Dominantens netto faller **827 778 → 713 195 kr/säsong = −114 583** (D037: −107 030), alltså ca **65 %** av solvensfixens ~175 tkr (var 61 %). Mätt på säsongstotalen, som inkluderar patronbidraget: 1 033 396 → 906 408 = **−126 988**. **Patronen ändrar inte överskottsmatematiken** — dess bidragsskillnad mellan policyerna är 1 750 kr/säsong, under en procent av konsumtionen. Mekanismen är fortfarande intäktsvägen (lägre CS → lägre kommunbidrag, publikkvot och mecenatunderlag), inte utgiftsvägen.
+
+**4. Liten klubb opåverkad — UPPFYLLT, och FÖRSTÄRKT av ryktesfixen.** Detta är ommätningens enda materiella förändring, och den går åt rätt håll:
+
+| klubb, HÅLLER-policy | rykte D037 | rykte HEAD | säsonger rykte ≥80 | `csUpkeepFactor` |
+|---|---|---|---|---|
+| KONTROLL (`club_malilla`) | 84,2 | **73,9** | 67 % → **25 %** | 0,951 → **0,998** |
+| HEROS | 72,0 | **49,0** | 40 % → **0 %** | 0,984 → **1,000** |
+| DOMINANT | 96,5 | **95,2** | 100 % → **100 %** | 0,877 → **0,886** |
+
+På `96deea39` bet anspråk 4 mätbart på både mittenklubben (faktor 0,951) och Heros (0,984) — därför att `socialMedia`-ticken lyfte deras rykte in i 80-100-bandet utan sportslig grund. Det var precis den inflation tillägg 1:s öppna fråga B flaggade, och `3914a5e6` har stängt den: **under rykte 80 känner en mittenklubb och en Survive-klubb nu ingenting alls av anspråk 4**, vilket är exakt vad kriterium 4 begär. Survive-golvet är intakt; `club_malilla` i GLIDER-policyn är fortsatt bit-för-bit identisk med baslinjen (CS-snitt 44,9, netto 130 045 kr).
+
+**5. Ingen dubbelräkning; holdbarheten intakt — UPPFYLLT, oförändrat.** Ingen tröskel i uttågen rörd. Holdbarheten: dominanten når fortfarande CS ≥85 i 28 % av omgångarna och slutar säsonger på 80,9 i snitt.
+
+## 4 · Utlöses mekaniken fortfarande för genuint dominanta klubbar? JA — verifierat
+
+Frågan var reell: om rykte inte längre inflateras gratis, når en dominant klubb ens `CS_UPKEEP_REP_FLOOR` (80)? Svar: **ja, med marginal, och genom sportslig framgång ensam.** `club_vastanfors` +10 CA når rykte 95,2 i snitt och ligger ≥80 i **100 %** av säsongerna, driven av `SEASON_REPUTATION_DELTA` (boardService.ts) — mätt även i väg B-scriptet, som kör med `socialMedia: false` och ändå ser dominanten nå rykte 100 säsong 4. `csUpkeepFactor` landar på 0,886 mot ryktesfixens 0,877, en försumbar uppmjukning. **Mekaniken triggar alltså inte mer sällan än avsett — den triggar nu på RÄTT klubbar.**
+
+## 5 · Verdikt
+
+**D037:s fyra magnituder står.** Ingen slutsats i tillägg 1 vänder, ingen PASS blir FAIL, och kriterium 4 blev strikt bättre. Den enda substansändringen är att ryktesaxeln nu mäter det den påstår mäta — vilket är den bekräftelse tillägg 1 självt efterfrågade innan anspråk 4 låses. Öppen fråga A (den tredje spaken) är oförändrat öppen och kräver Jacobs mandat, inte mer mätning; öppen fråga B är **stängd av `3914a5e6`**; öppen fråga C är stängd av `06b86b29`, med reservationen i D033:s tillägg 2026-08-30 punkt 3 (`autoResolvePendingEvents` accepterar varje transferbud och duger inte som ekonomiskt mätinstrument — patron-only gäller).
+
+`npx tsc --noEmit` rent. Ingen produktionsfil ändrad; jämförelsebaslinjerna kördes i en engångs-worktree som raderats efteråt.

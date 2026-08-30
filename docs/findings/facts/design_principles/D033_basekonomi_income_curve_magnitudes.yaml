@@ -124,3 +124,51 @@ notes: |
   egen eskaleringsklausul (gäller strikt kriterium 1/3-konflikt om
   CS-vikten, men samma princip — stanna hellre än att pressa en implausibel
   magnitud — tillämpad analogt här).
+
+  ── OMMÄTNING 2026-08-30 (RE-MÄTNING, INTE NY KALIBRERING) ─────────────────
+  value-blocket ovan är OFÖRÄNDRAT. Detta är en verifiering av att D033/D036:s
+  slutsatser står efter två mätförgiftande buggfixar (3914a5e6 socialMedia-
+  ryktesticken, 06b86b29 pendingEvents-dräneringen). Script:
+  scripts/remat-ah2-basekonomi-2026-08-30.ts. Full redovisning i doktrinens
+  tillägg 2026-08-30.
+
+  1. Ryktesfixen påverkar INTE denna mätning. Väg B-scriptet kör med
+     createNewGame-defaults (socialMedia: false), så ticken kunde aldrig fyra.
+     Verifierat: originalscriptet ger bit-identiska tal på 96deea39 och HEAD.
+
+  2. Patronen (nu nåbar) ändrar inte talen materiellt: kontroll 6438 → 6234,
+     dominant 12391 → 12242, Heros oförändrat −2385 kr/omgång. Patronbidraget
+     betalas på säsongsövergången (seasonEndProcessor.ts:306-320) och syns
+     därför per konstruktion inte i netto/omgång-måttet; mätt även som
+     säsongstotal (288 397 → 280 626 kr/säsong för kontrollen) — ingen ny
+     intäktskälla av betydelse.
+
+  3. TALEN I value-blockets EGEN MÄTNING REPRODUCERAR INTE LÄNGRE, av skäl
+     som ligger utanför D033. Det låsta originalscriptet kört per commit:
+       af760bec (D036:s egen commit):  kontroll +1340, dominant +11969,
+                                       Heros −4916, kvot 8,94×
+       765fdcb7 (konditionsspiralen):  kontroll +6325, dominant +13188,
+                                       Heros −2385, kvot 2,09×
+       HEAD:                           kontroll +6438, dominant +12391,
+                                       Heros −2385, kvot 1,92×
+     Hela skiftet ligger i 765fdcb7 ("autofyll tystnar aldrig under golvet") —
+     bättre truppurval → bättre resultat → den resultatresponsiva intäkten
+     (D033:s egna två knappar) svarar. Ingen av de övriga tolv commitarna i
+     spannet rör talen.
+
+  4. Kriterieutfall under korrigerade villkor: kriterium 2 uppfyllt renare än
+     förut (dominantens säsong 1, +6790, ligger nu ÖVER kontrollens steady-
+     state); kriterium 3 uppfyllt BOKSTAVLIGT (kvot 1,92× — D036:s
+     degenererade 8,94× är borta); kriterium 4 uppfyllt men med halverad
+     marginal (−4916 → −2385); kriterium 1 ÖVERSKJUTET åt andra hållet
+     (kontroll +6438 kr/omgång ≈ +212 tkr/säsong för en klubb som inget gör).
+
+  5. FLAGGAT, EJ ÄNDRAT — WEEKLY_BASE_FLAT=8000 (D036). Låstes på bevisbördan
+     "3/11 seeds fick faktiskt finansiellt game-over". Karriärbanescriptet
+     omkört: HEAD med 8000 ger 0/11 game-over (sämst +1 525 450); HEAD med
+     3000 (kontrafaktiskt, mätt i en engångs-worktree, produktionen orörd) ger
+     också 0/11 game-over, men 1/11 license-denial (−1 137 986). Ryktekollaps-
+     spiralen som fixen skrevs mot är alltså borta även utan lyftet — 765fdcb7
+     löste den. Lyftet köper nu marginal, inte överlevnad. Om det ska stå kvar
+     är ett omkalibreringsbeslut för Jacob; konstanten är oförändrad i
+     economyService.ts.

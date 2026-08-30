@@ -138,3 +138,59 @@ notes: |
   Eftersom anspråk 4 nu läser rykte som storleksaxel är den inflationen en
   förutsättning som bör granskas separat (D028 äger säsongsdeltat, som toppar
   på +4). Inte ändrad här.
+
+  ── OMMÄTNING 2026-08-30 (RE-MÄTNING, INTE NY KALIBRERING) ─────────────────
+  value-blocket ovan är OFÖRÄNDRAT — alla fyra magnituder står. Detta är en
+  verifiering mot 3914a5e6 (socialMedia-ryktesticken grindad på topp-3) och
+  06b86b29 (patronen nåbar headless). Script:
+  scripts/remat-ansprak4-ortsunderhall-2026-08-30.ts, kört på tre commits
+  (368d135b före anspråk 4, 96deea39 = denna D-facts egen mätning, HEAD).
+  368d135b och 96deea39 reproducerar D037:s tabeller siffra för siffra.
+  Full redovisning i doktrinens tillägg 2026-08-30 (2).
+
+  1. PREMISSKORRIGERING: patronen var INTE inaktiv i +299 tkr-talet. Det låsta
+     mätscriptets egna autoResolvePatronEvents var på — patronen var aktiv
+     2/20 säsonger (HÅLLER) mot 1/20 (GLIDER) redan på 96deea39. Noteringen om
+     "0/20" i doktrinens tillägg 1 punkt 5C gällde en tidig baslinjekörning.
+
+  2. HYPOTESEN "patronen vidgar kriterium 1:s gap" är REFUTERAD. Gapet
+     HÅLLER − GLIDER (dominant, netto/säsong): 325 963 (före anspråk 4) →
+     298 805 (96deea39) → 291 252 (HEAD). Det KRYMPTE med 7,5 tkr. Mätt även
+     som säsongstotal, vilket inkluderar patronbidraget som betalas på
+     säsongsövergången: +296 859 — tecknet oförändrat. Skälen: patronbidragets
+     skillnad mellan policyerna är 1 750 kr/säsong (5 400 mot 3 650) mot ett
+     gap på 291 000, och patronuttågen är nästan symmetriska (5 i HÅLLER mot
+     6 i GLIDER). GODKÄNT NÄR 1 är fortsatt DELVIS UPPFYLLT av oförändrat skäl
+     (aktivitetsblocket är intäktspositivt — doktrinens öppna fråga A).
+
+  3. GODKÄNT NÄR 3 (konsumerar överskottet) står, marginellt starkare:
+     dominantens netto 827 778 → 713 195 kr/säsong = −114 583 (D037: −107 030),
+     ca 65 % av solvensfixens ~175 tkr. På säsongstotalen (inkl. patronbidrag)
+     1 033 396 → 906 408 = −126 988. Patronen ändrar inte överskottsmatematiken.
+
+  4. GODKÄNT NÄR 4 (liten klubb opåverkad) blev STRIKT BÄTTRE av ryktesfixen —
+     detta är ommätningens enda materiella förändring. HÅLLER-policyns rykte
+     och csUpkeepFactor, 96deea39 → HEAD:
+       KONTROLL (club_malilla): 84,2 → 73,9 rykte; ≥80 i 67 % → 25 % av
+         säsongerna; faktor 0,951 → 0,998 (i praktiken opåverkad)
+       HEROS:                   72,0 → 49,0 rykte; ≥80 i 40 % → 0 %;
+         faktor 0,984 → 1,000 (helt utanför mekaniken)
+       DOMINANT:                96,5 → 95,2 rykte; ≥80 i 100 % → 100 %;
+         faktor 0,877 → 0,886
+     Före fixen bet anspråk 4 mätbart på en mittenklubb och på Heros, eftersom
+     socialMedia-ticken lyfte dem in i 80-100-bandet utan sportslig grund —
+     precis den inflation doktrinens öppna fråga B flaggade. Den frågan är
+     härmed STÄNGD.
+
+  5. Mekaniken utlöses fortfarande för genuint dominanta klubbar: club_vastanfors
+     +10 CA når rykte 95,2 i snitt och ligger ≥80 i 100 % av säsongerna genom
+     SEASON_REPUTATION_DELTA ensam (verifierat även i väg B-scriptet, som kör
+     med socialMedia: false och ändå ser rykte 100 säsong 4). Ingen risk att
+     rampen 80-100 blivit oåtkomlig.
+
+  6. VARNING om mätinstrument: autoResolvePendingEvents (stress/fixtures.ts,
+     06b86b29) duger INTE för ekonomimätning. transferBidReceived saknar
+     noOp-val, så policyns fallback "första valet" accepterar varje inkommande
+     bud — vilket både blåser upp intäkten och dränerar truppen under 11
+     spelare tills säsongen deadlockar (verifierad repro i båda scripten).
+     Anspråk 4-mätningen kör patron-only. Se D033:s ommätningsnotering punkt 3.
