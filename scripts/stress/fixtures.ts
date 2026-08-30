@@ -4,6 +4,7 @@
 
 import type { SaveGame } from '../../src/domain/entities/SaveGame'
 import type { TeamSelection } from '../../src/domain/entities/Fixture'
+import type { GameEvent } from '../../src/domain/entities/GameEvent'
 import { createNewGame } from '../../src/application/useCases/createNewGame'
 import { setLineup } from '../../src/application/useCases/setLineup'
 import { CLUB_TEMPLATES } from '../../src/domain/services/worldGenerator'
@@ -11,6 +12,7 @@ import { PlayerPosition } from '../../src/domain/enums'
 import { canStartBuild, startFacilityBuild, getFacilityNodeViews, createInitialFacilityState } from '../../src/domain/services/facilityService'
 import { applyFinanceChange } from '../../src/domain/services/economyService'
 import { applyContractDemandResolutions } from '../../src/domain/services/contractDemandService'
+import { resolveEvent } from '../../src/domain/services/events/eventResolver'
 
 // ── Game creation ─────────────────────────────────────────────────────────────
 
@@ -148,6 +150,86 @@ export function autoResolvePendingScreen(game: SaveGame): ResolveResult {
     unresolvable: false,
     screenType: ps,
   }
+}
+
+// ── Pending EVENT resolution (patron-inbox-gap, found in anspråk 4's own
+//    measurement, commit 96deea39, 2026-08-30) ──────────────────────────────
+
+/**
+ * autoResolvePendingScreen above only ever touched `game.pendingScreen`
+ * (season summary, contract demands, etc.) — it never touched
+ * `game.pendingEvents`, the inbox/decision-card queue that carries GameEvents
+ * requiring a player choice (patron intro/unhappy/withdraw/style/bonus,
+ * transfer bids, sponsor offers, press conferences, ...). Every headless
+ * measurement script in this project's history that called
+ * autoResolvePendingScreen but never separately drained pendingEvents left
+ * those events sitting unanswered — most critically the patron mechanic,
+ * which is GATED entirely behind a player choice (welcome/cautious/decline
+ * on generatePatronEmergenceEvent, patronEvents.ts:248): with nobody ever
+ * answering "welcome", `game.patron` never spawns, no matter how high
+ * communityStanding climbs. Confirmed empirically: anspråk 4's own baseline
+ * (docs/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md) measured patron active in
+ * 0/20 simulated seasons despite communityStanding averaging 92 — nine
+ * points above PATRON_EMERGE_CS (60).
+ *
+ * POLICY — patron events (type patronEvent / patronWithdrawal /
+ * patronInfluence): ALWAYS resolve with the FIRST choice.
+ * Chosen deliberately, not just "pick something": every patron-event
+ * generator in patronEvents.ts constructs its choices affirmative-first —
+ * 'welcome' (intro/emergence), 'promise' (unhappy), 'meet' (withdraw-threat),
+ * 'agree' (style complaint), 'thank' (bonus), 'listen' (influence-60),
+ * 'apologize' (ignored) are all choices[0], with the declining/costly
+ * alternative always choices[1] (or choices[2]'s 'decline'/noOp on the
+ * emergence event). A measurement trying to observe the patron mechanic's
+ * DOWNSTREAM effects (cash flow, happiness decay, eventual withdrawal —
+ * exactly what anspråk 4 needed) needs the patron to actually become and
+ * stay active; picking the affirmative choice is what makes that possible.
+ * This mirrors the ad-hoc `autoResolvePatronEvents` already written locally
+ * in scripts/ansprak4-ortsunderhall-matning-2026-08-30.ts — generalized here
+ * so every OTHER measurement script gets it for free instead of
+ * reinventing it (or silently running with an inert patron).
+ *
+ * POLICY — everything else: prefer an explicit `noOp` choice if the event
+ * offers one, otherwise fall back to the first choice. `noOp` is the
+ * deliberate "hold position" / decline option on nearly every non-patron
+ * event this codebase generates (bidWarEvent's 'hold', sponsorEvents'
+ * decline branches, communityActivitiesEvents' pass options, hallProcess's
+ * wait options, mecenatService's 'ok'/decline branches — all literally
+ * `effect: { type: 'noOp' }`) — so defaulting to it is the choice with the
+ * smallest, most predictable footprint on a measurement that isn't
+ * specifically about that event type. A script measuring something that
+ * DOES care about a specific event type (transfer bids, contract demands,
+ * sponsor offers) should keep constructing/resolving its own policy
+ * directly via resolveEvent — same convention as
+ * scripts/anspark1-retention-matning-2026-08-28.ts's incoming-bid policy
+ * (accept at ≥130% market value always, or ≥85% + morale<40) — this
+ * function is a REASONABLE DEFAULT for events a script does not otherwise
+ * care about, not a replacement for a script's own deliberate policy.
+ *
+ * Iterates the pendingEvents snapshot as it was when this was called — an
+ * event's own resolution can enqueue a NEW pendingEvent (e.g. patronHappiness
+ * dropping to 0 queues `patron_withdrawal_*`); that new event is picked up
+ * on the NEXT call (next round), same cadence a human player would see it,
+ * not resolved within the same pass.
+ */
+export function autoResolvePendingEvents(
+  game: SaveGame,
+  rand: () => number = Math.random,
+): SaveGame {
+  let g = game
+  for (const e of (game.pendingEvents ?? [])) {
+    const choiceId = pickEventResolutionPolicy(e)
+    g = resolveEvent(g, e.id, choiceId, rand)
+  }
+  return g
+}
+
+function pickEventResolutionPolicy(event: GameEvent): string {
+  if (event.type === 'patronEvent' || event.type === 'patronWithdrawal' || event.type === 'patronInfluence') {
+    return event.choices[0]?.id ?? ''
+  }
+  const noOpChoice = event.choices.find(c => c.effect.type === 'noOp')
+  return (noOpChoice ?? event.choices[0])?.id ?? ''
 }
 
 // ── Facility auto-build (E-STRESS1, 2026-08-23) ─────────────────────────────
