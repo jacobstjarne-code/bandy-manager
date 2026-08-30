@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { findings, statusBadge } from '../../data/findings';
+import { editorialStatusLabel, findings } from '../../data/findings';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
@@ -15,29 +15,35 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       matchdata från Bandygrytan och Bandy Managers simuleringsmotor.
     </p>
     <p style="max-width: 620px; color: var(--color-muted); font-size: 0.95rem; margin-bottom: 2.5rem; font-family: var(--font-ui); line-height: 1.6;">
-      Inget här är verifierat mot bandykunskap ännu, och det är själva poängen:
-      findingarna är råmaterial för en bandykunnig att bedöma — vilka är värda att
-      gräva i, vilka är brus, vilka säger något vi inte visste? Se det som ett
-      proof of concept och en idéväckare, inte som färdiga slutsatser. När en nyare
-      analys ersätter en äldre — ofta för att metoden förbättrats — markeras det.
-      Att findings revideras är inte en svaghet i ansatsen, det är hur den ska fungera.
+      Inget här är verifierat mot bandykunskap ännu. Därför skiljer vi mellan kärna,
+      stöd, öppna spår, ersatta analyser och tekniska motorstudier. Öppna spår är
+      intressanta frågor som ännu inte är belagda — de ligger kvar för att historiken
+      och möjligheterna ska vara synliga. Kända sakfel märks separat med
+      ”Korrigering krävs”. Se sajten som ett proof of concept och en idéväckare,
+      inte som färdiga slutsatser.
     </p>
 
     <div class="filter-bar" id="filter-bar">
       <button class="filter-btn is-active" data-filter="all">Alla</button>
-      <button class="filter-btn" data-filter="verified" disabled title="Inga findings är verifierade ännu">Verifierade</button>
+      <button class="filter-btn" data-filter="core">Kärna</button>
+      <button class="filter-btn" data-filter="support">Stöd</button>
+      <button class="filter-btn" data-filter="open_thread">Öppna spår</button>
+      <button class="filter-btn" data-filter="superseded">Ersatta</button>
+      <button class="filter-btn" data-filter="manager_lab">Bandy Manager Lab</button>
     </div>
 
     <ul class="findings-list" id="findings-list">
       {findings.map(f => (
         <li>
-          <div class="finding-card" data-verified={f.verified_by ? 'true' : 'false'} data-status={f.status}>
+          <div class="finding-card" data-editorial-status={f.editorial_status}>
             <p class="finding-card__number">
               Finding {f.num} · {f.date}
-              {statusBadge(f.status) && (
-                <span class={`finding-badge finding-badge--${f.status}`}>
-                  {statusBadge(f.status)}{f.superseded_by ? ` av ${f.superseded_by}` : ''}
-                </span>
+              <span class={`finding-badge finding-badge--${f.editorial_status}`}>
+                {editorialStatusLabel(f.editorial_status)}
+                {f.canonical_finding ? ` av ${f.canonical_finding}` : ''}
+              </span>
+              {f.correction_required && (
+                <span class="finding-badge finding-badge--correction">Korrigering krävs</span>
               )}
             </p>
             <h2 class="finding-card__title">
@@ -50,6 +56,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             )}
             {!f.verified_by && f.excerpt && (
               <p class="finding-card__excerpt">{f.excerpt}</p>
+            )}
+            {f.editorial_status === 'open_thread' && !f.excerpt && (
+              <p class="finding-card__excerpt">Intressant fråga, men underlaget räcker ännu inte för en säker slutsats.</p>
             )}
           </div>
         </li>
@@ -69,11 +78,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           const filter = btn.dataset.filter;
           list.querySelectorAll<HTMLLIElement>('li').forEach(li => {
             const card = li.querySelector('.finding-card');
-            if (filter === 'all') {
-              li.style.display = '';
-            } else {
-              li.style.display = card?.dataset.verified === 'true' ? '' : 'none';
-            }
+            li.style.display = filter === 'all' || card?.dataset.editorialStatus === filter ? '' : 'none';
           });
         });
       });

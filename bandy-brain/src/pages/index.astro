@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { loadFacts } from '../lib/facts';
-import { latestFinding, findings } from '../data/findings';
+import { editorialStatusLabel, latestFinding, findings } from '../data/findings';
 
 const facts = loadFacts();
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -9,13 +9,18 @@ const statsCount = facts.filter(f => f.category === 'stats').length;
 const rulesCount = facts.filter(f => f.category === 'rules').length;
 const latest = latestFinding;
 
-// Kuraterad ingång för nya läsare — fem findings som bär helheten.
+// Kuraterad ingång för nya läsare — den redaktionellt prioriterade kärnan.
 const startHere = [
-  { num: '052', why: 'Utvisningarna ökade 16 % — reformen 2025-26 syns i datan.' },
-  { num: '063', why: 'Och ökningen är bred: åtta av tio domare höjde sin egen takt.' },
-  { num: '056', why: 'Dam och herr är samma sport med skild struktur — hemmafördelen finns bara på herrsidan.' },
   { num: '060', why: 'En tvåmålsledning är inte säker förrän minut 84. Bandy är en comeback-sport.' },
+  { num: '051', why: 'Comebacks har ett tydligt fönster tidigt i andra halvlek.' },
+  { num: '052', why: 'Utvisningarna ökade 16 % — reformen 2025-26 syns i datan.' },
+  { num: '055', why: 'Ökningen kom från lätta tekniska utvisningar, inte grovt våld.' },
+  { num: '056', why: 'Dam och herr är samma sport med skild struktur — hemmafördelen finns bara på herrsidan.' },
+  { num: '057', why: 'Ledande lag får oftare sabotageutvisningar än lag som jagar.' },
+  { num: '058', why: 'Nästan två av tre straffar blir mål, med en tydlig dam–herr-skillnad.' },
+  { num: '061', why: 'En tiominutare leder till baklängesmål i fyra av tio överlägen.' },
   { num: '062', why: 'En division ner är samma sport — Allsvenskan har samma dramaturgi som Elitserien.' },
+  { num: '005', why: 'Grundmönstret: mål faller inte jämnt över en bandymatch.' },
 ].map(s => ({ ...s, f: findings.find(f => f.num === s.num) })).filter(s => s.f);
 ---
 
@@ -44,7 +49,7 @@ const startHere = [
 
       <section style="margin-bottom: 3rem">
         <h2 style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-muted); margin-bottom: 1.5rem; font-weight: 700;">
-          Börja här — fem findings som bär helheten
+          Börja här — tio findings som bär helheten
         </h2>
         <ol style="font-family: var(--font-ui); font-size: 0.92rem; line-height: 1.6; padding-left: 1.2rem; margin: 0;">
           {startHere.map(s => (
@@ -62,7 +67,12 @@ const startHere = [
         </h2>
 
         <div class="finding-card">
-          <p class="finding-card__number">Finding {latest.num} · {latest.date}</p>
+          <p class="finding-card__number">
+            Finding {latest.num} · {latest.date}
+            <span class={`finding-badge finding-badge--${latest.editorial_status}`}>
+              {editorialStatusLabel(latest.editorial_status)}
+            </span>
+          </p>
           <h3 class="finding-card__title">
             <a href={`${base}/findings/${latest.num}/`}>{latest.title}</a>
           </h3>

@@ -1,4 +1,6 @@
 ---
+import { editorialStatusLabel, findings } from '../data/findings';
+
 export interface Props {
   title: string;
   description?: string;
@@ -8,6 +10,16 @@ export interface Props {
 const { title, description = 'Datadriven bandyanalys från verkliga matchdata och Bandy Manager-simuleringar.', noindex = true } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const findingMatch = Astro.url.pathname.match(/\/findings\/(\d{3})\/?$/);
+const pageFinding = findingMatch ? findings.find((finding) => finding.num === findingMatch[1]) : undefined;
+
+const editorialDescriptions = {
+  core: 'En prioriterad analys som bär Bandy-Brains huvuderbjudande. Den väntar fortfarande på extern bandygranskning.',
+  support: 'En relevant fördjupning med tydliga begränsningar. Den är stöd till kärnan, inte en fristående huvudslutsats.',
+  open_thread: 'Den här analysen pekar ut en intressant fråga, men underlaget räcker ännu inte för en säker slutsats.',
+  superseded: 'En senare analys ger ett bättre eller mer komplett svar. Sidan ligger kvar som en öppen del av historiken.',
+  manager_lab: 'Detta är främst en teknisk analys av Bandy Managers simuleringsmotor, snarare än ett fynd om sporten.',
+};
 ---
 <!doctype html>
 <html lang="sv">
@@ -40,6 +52,29 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </header>
 
     <main>
+      {pageFinding && (
+        <div class="editorial-notices" aria-label="Redaktionell bedömning">
+          <div class={`editorial-notice editorial-notice--${pageFinding.editorial_status}`}>
+            <p class="editorial-notice__label">
+              {pageFinding.editorial_status === 'open_thread'
+                ? 'Öppna spår — intressanta men ännu inte belagda'
+                : editorialStatusLabel(pageFinding.editorial_status)}
+            </p>
+            <p>{editorialDescriptions[pageFinding.editorial_status]}</p>
+            {pageFinding.editorial_status === 'superseded' && pageFinding.canonical_finding && (
+              <a href={`${base}/findings/${pageFinding.canonical_finding}/`}>
+                Läs den nyare analysen: finding {pageFinding.canonical_finding} →
+              </a>
+            )}
+          </div>
+          {pageFinding.correction_required && (
+            <div class="editorial-notice editorial-notice--correction" role="alert">
+              <p class="editorial-notice__label">Korrigering krävs</p>
+              <p>Analysen innehåller ett känt sak- eller beräkningsfel och ska inte användas som underlag i nuvarande form.</p>
+            </div>
+          )}
+        </div>
+      )}
       <slot />
     </main>
 

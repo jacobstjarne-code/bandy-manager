@@ -281,6 +281,76 @@ a:hover {
   color: #c08a2e;
 }
 
+.finding-badge--core {
+  background: rgba(31, 111, 76, 0.14);
+  color: #1f6f4c;
+}
+
+.finding-badge--support {
+  background: rgba(36, 91, 144, 0.12);
+  color: #245b90;
+}
+
+.finding-badge--open_thread {
+  background: rgba(192, 138, 46, 0.15);
+  color: #8d631c;
+}
+
+.finding-badge--manager_lab {
+  background: rgba(104, 83, 145, 0.13);
+  color: #685391;
+}
+
+.finding-badge--correction {
+  background: rgba(165, 44, 44, 0.12);
+  color: #a52c2c;
+}
+
+.editorial-notices {
+  max-width: var(--measure);
+  margin: var(--spacing-l) auto 0;
+  padding: 0 var(--spacing-l);
+  display: grid;
+  gap: var(--spacing-s);
+}
+
+.editorial-notice {
+  border: 1px solid var(--color-border);
+  border-left: 4px solid #245b90;
+  background: var(--color-surface);
+  padding: var(--spacing-m);
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.editorial-notice p {
+  margin: 0;
+}
+
+.editorial-notice p + p,
+.editorial-notice p + a {
+  display: block;
+  margin-top: var(--spacing-xs);
+}
+
+.editorial-notice__label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.editorial-notice--core { border-left-color: #1f6f4c; }
+.editorial-notice--support { border-left-color: #245b90; }
+.editorial-notice--open_thread,
+.editorial-notice--superseded { border-left-color: #c08a2e; }
+.editorial-notice--manager_lab { border-left-color: #685391; }
+.editorial-notice--correction {
+  border-left-color: #a52c2c;
+  background: rgba(165, 44, 44, 0.04);
+}
+
 .finding-card__title {
   font-size: 1.3rem;
   font-weight: normal;
