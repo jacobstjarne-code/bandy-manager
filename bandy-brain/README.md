@@ -43,4 +43,4 @@ npm run build    # statisk build till ./dist/
 
 ## Status
 
-Aktivt utvecklad. Senaste finding: 056 (dam/herr-strukturjämförelse). Feedback per finding går via GitHub-issues — tumme upp/ner-knapparna längst ner på varje finding-sida.
+Aktivt utvecklad. Senaste finding: 065 (slutfas och vila). Feedback per finding går via GitHub-issues — tumme upp/ner-knapparna längst ner på varje finding-sida.

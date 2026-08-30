@@ -544,11 +544,11 @@ Säsong 2025-26 visar ett tydligt uppåthopp i utvisningsfrekvens i både herr- 
 
 Nyckelresultat per dimension:
 - **Fas (D1):** Hoppet är tydligast i grundserien. Slutspelsdata 2025-26 är begränsad.
-- **Period (D2):** Andelen tidiga utvisningar (0–29 min) har inte ökat mer än sent — reformen syns jämnt fördelat över matchen.
+- **Period (D2):** Volymökningen syns genom hela matchen, men herrserien har också en mätbar förskjutning mot 0–29 min.
 - **Matchtemperatur (D3):** Störst relativ ökning i "kalla" matchups (Q1), men ökning syns i alla kvartilar.
 - **Domare (D4):** Herr {herr_d4_okning} av {herr_d4_total} kvalificerade domare klassas som "tydlig ökning", Dam {dam_d4_okning} av {dam_d4_total}.
 - **Röda kort (D5):** Inga röda kort eller matchstraff separerade i datasetet — alla foulhändelser har duration={herr_d5['unique_durations']}.
-- **Tidiga utvisningar 0–29 (D6):** Andelen har inte ökat statistiskt signifikant i herr (p_bonf={fmt_p(herr_d6_p_bonf)}), svagt i dam (p_bonf={fmt_p(dam_d6_p_bonf)}).
+- **Tidiga utvisningar 0–29 (D6):** Andelen ökade statistiskt signifikant i herr (p_bonf={fmt_p(herr_d6_p_bonf)}), men inte i dam (p_bonf={fmt_p(dam_d6_p_bonf)}).
 
 ---
 
@@ -600,7 +600,7 @@ Welch t = {fmt_f(herr_d2_t,3)}, p_raw = {fmt_p(herr_d2_p)}, p_bonf = {fmt_p(bonf
 **Per-match tidig andel (0–29): 2025-26 {fmt_f(dam_d2_cur*100,1)}% vs pre {fmt_f(dam_d2_pre*100,1)}%**
 Welch t = {fmt_f(dam_d2_t,3)}, p_raw = {fmt_p(dam_d2_p)}, p_bonf = {fmt_p(bonferroni_p(dam_d2_p, N_BONF))}, Cohen's d = {fmt_f(dam_d2_d,3) if dam_d2_d is not None else 'n/a'}
 
-**Tolkning:** Om reformens mål är att domarna ska "visa rött tidigt" borde andelen 0–29 öka mer än övriga perioder. Datan visar inte ett tydligt sådant mönster — ökningen är bred och inte primärt koncentrerad till matchens inledning.
+**Tolkning:** Volymökningen syns genom hela matchen. I herr ökade samtidigt andelen 0–29 min tydligt; matchnivåtestet i D6 visar att förskjutningen är statistiskt signifikant efter Bonferroni-korrektion. Damserien visar inte samma mönster.
 
 ---
 
@@ -693,7 +693,7 @@ Welch t = {fmt_f(herr_d6_t,3)}, p_raw = {fmt_p(herr_d6_p)}, p_bonf = {fmt_p(herr
 **2025-26 vs pre-säsonger:** {fmt_f(dam_d6_cur*100,1)}% vs {fmt_f(dam_d6_pre*100,1)}%
 Welch t = {fmt_f(dam_d6_t,3)}, p_raw = {fmt_p(dam_d6_p)}, p_bonf = {fmt_p(dam_d6_p_bonf)}, Cohen's d = {fmt_f(dam_d6_d,3) if dam_d6_d is not None else 'n/a'}
 
-**Tolkning:** Reformens specifika mål om tidiga ingripanden bekräftas inte statistiskt med Bonferroni-korrektion. Den totala volymsökningen (+25/+{dam_delta_pct:.0f}%) är tydlig, men den är fördelad över hela matchen — inte primärt inledningen.
+**Tolkning:** I herr ökade andelen tidiga utvisningar statistiskt signifikant efter Bonferroni-korrektion (p_bonf={fmt_p(herr_d6_p_bonf)}). I dam finns inget motsvarande stöd (p_bonf={fmt_p(dam_d6_p_bonf)}). Volymökningen är bred i båda serierna, men herrdata visar dessutom en oproportionerlig förskjutning mot matchens inledning.
 
 ---
 
@@ -892,13 +892,12 @@ dam_delta_str = f"+{dam_delta_pct:.0f}" if dam_delta_pct >= 0 else f"{dam_delta_
 
 finding_astro = f"""---
 import Base from '../../../layouts/Base.astro';
-import {{ factHref }} from '../../../lib/facts';
 const base = import.meta.env.BASE_URL.replace(/\\/$/, '');
 ---
 
 <Base
-  title="Finding 052 — Säsong 25/26: utvisningsfrekvensen steg 25 % — reformen syns i datan"
-  description="Herr +{herr_delta_pct:.0f}%, dam +{dam_delta_pct:.0f}% jämfört med genomsnittet av de fem föregående säsongerna. Ökningen är bred och konsistent, men inte primärt koncentrerad till matchens inledning."
+  title="Finding 052 — Säsong 25/26: utvisningsfrekvensen steg {herr_delta_pct:.0f} % — reformen syns i datan"
+  description="Herr +{herr_delta_pct:.0f}%, dam +{dam_delta_pct:.0f}% jämfört med genomsnittet av de fem föregående säsongerna. I herr ökade även andelen tidiga utvisningar signifikant; i dam gjorde den inte det."
 >
   <div class="finding-layout">
 
@@ -949,7 +948,7 @@ const base = import.meta.env.BASE_URL.replace(/\\/$/, '');
       <p>Hoppet är tydligast och statistiskt stabilt i grundserien. Slutspelsdata för 2025-26 är begränsad och ska tolkas med försiktighet.</p>
 
       <h3>Dimension 2: Fördelning över matchens perioder</h3>
-      <p>Andelen utvisningar i varje 15-minutersperiod är relativt stabil över säsonger. Reformen syns som en generell volymökning — inte primärt som en ökning i matchens inledning (0–29 min).</p>
+      <p>Den större utvisningsvolymen syns genom hela matchen. I herr ökade samtidigt andelen under de första 30 minuterna till {fmt_f(herr_d2["2025-26"]["pct"][0],1)} %, jämfört med {fmt_f(min(herr_d2[s]["pct"][0] for s in PRE_SEASONS),1)}–{fmt_f(max(herr_d2[s]["pct"][0] for s in PRE_SEASONS),1)} % under de fem tidigare säsongerna. Dimension 6 testar denna förskjutning på matchnivå.</p>
       <table>
         <thead><tr><th>Säsong</th><th>0–29</th><th>30–44</th><th>45–59</th><th>60–74</th><th>75–90</th></tr></thead>
         <tbody>
@@ -969,7 +968,7 @@ const base = import.meta.env.BASE_URL.replace(/\\/$/, '');
       </table>
 
       <h3>Dimension 6: Tidiga utvisningar (0–29 min) som andel</h3>
-      <p>Reformens specifika mål var ökade tidiga ingripanden. Testet — andelen utvisningar under de första 30 minuterna per match — ger inte statistiskt signifikant resultat efter Bonferroni-korrektion (herr p_bonf={fmt_p(herr_d6_p_bonf)}, dam p_bonf={fmt_p(dam_d6_p_bonf)}). Den totala volymökningen är alltså bred, inte period-specifik.</p>
+      <p>Reformens specifika mål var ökade tidiga ingripanden. I herr ökade andelen utvisningar under de första 30 minuterna statistiskt signifikant även efter Bonferroni-korrektion (p_bonf={fmt_p(herr_d6_p_bonf)}). I dam finns inget motsvarande stöd (p_bonf={fmt_p(dam_d6_p_bonf)}). Volymökningen är bred i båda serierna, men herrdata visar dessutom en oproportionerlig förskjutning mot matchens inledning.</p>
       <table>
         <thead><tr><th>Säsong</th><th>n matcher</th><th>Andel 0–29</th><th>95% CI</th></tr></thead>
         <tbody>
@@ -986,7 +985,7 @@ const base = import.meta.env.BASE_URL.replace(/\\/$/, '');
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
       <p>Det är ett mätbart datamönster att utvisningsfrekvensen steg i säsong 2025-26. Det sammanfaller med ett kommunicerat direktiv, men datasetet innehåller ingen kontrolleringsvariabel för direktiv — samvariansen kan inte direkt tolkas som kausal effekt av direktivet. Alternativen (taktiktrendskifte, matchmixförändring, specifik domaruppsättning) kan inte uteslutas utan ytterligare data.</p>
-      <p>Att ökningen är bred — syns i grundserie, i alla matchtemperaturkvartilar, i båda serierna — är konsistent med ett systemnivåskifte snarare än en föreningsspecifik eller domarspecifik rörelse. Men det är ett mätbart mönster i datan, inte en slutsats om avsikt eller effekt.</p>
+      <p>Att volymökningen syns i grundserie, i alla matchtemperaturkvartilar och i båda serierna är konsistent med ett systemnivåskifte snarare än en föreningsspecifik eller domarspecifik rörelse. Herrseriens signifikanta ökning av andelen tidiga utvisningar ligger dessutom i linje med direktivets uttalade inriktning; damserien visar inte samma tidsförskjutning. Det är mätbara mönster i datan, inte i sig bevis för direktivets kausala effekt.</p>
     </div>
 
     <hr class="finding-divider" />

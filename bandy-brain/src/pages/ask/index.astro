@@ -1,7 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const token = import.meta.env.PUBLIC_ISSUES_TOKEN ?? '';
 ---
 
 <Base title="Ställ en fråga" description="Skicka in en fråga om bandy till Bandy-Brain-pipelinen.">
@@ -10,7 +9,8 @@ const token = import.meta.env.PUBLIC_ISSUES_TOKEN ?? '';
 
     <h1 class="finding-title" style="font-size: 1.8rem;">Ställ en fråga</h1>
     <p style="color: var(--color-muted); font-family: var(--font-ui); font-size: 0.95rem; max-width: 52ch; margin-bottom: 2rem;">
-      Undrar du något om bandy? Skriv frågan nedan — pipelinen analyserar Bandygrytans matchdata och publicerar ett svar som en finding.
+      Undrar du något om bandy? Skriv frågan nedan. Du får granska den på GitHub innan den skickas till analyskön.
+      Ett GitHub-konto krävs.
     </p>
 
     <form id="ask-form">
@@ -22,6 +22,8 @@ const token = import.meta.env.PUBLIC_ISSUES_TOKEN ?? '';
           id="question"
           name="question"
           rows="3"
+          required
+          maxlength="200"
           placeholder="T.ex. Hur ofta vinner laget som leder vid halvtid med två mål?"
           style="width: 100%; padding: 10px 12px; font-family: var(--font-body); font-size: 1rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); resize: vertical; line-height: 1.5;"
         ></textarea>
@@ -32,59 +34,25 @@ const token = import.meta.env.PUBLIC_ISSUES_TOKEN ?? '';
         id="submit-btn"
         style="font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: white; background: var(--color-accent); border: none; padding: 10px 20px; cursor: pointer;"
       >
-        Skicka fråga
+        Fortsätt till GitHub
       </button>
     </form>
-
-    <div id="status" style="display: none; margin-top: 1.5rem; font-family: var(--font-ui); font-size: 0.9rem;"></div>
   </div>
 </Base>
 
-<script define:vars={{ token }}>
+<script>
   const form = document.getElementById('ask-form');
-  const status = document.getElementById('status');
-  const btn = document.getElementById('submit-btn');
 
-  form.addEventListener('submit', async (e) => {
+  form?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const question = document.getElementById('question').value.trim();
+    const questionField = document.getElementById('question') as HTMLTextAreaElement | null;
+    const question = questionField?.value.trim() ?? '';
     if (!question) return;
 
-    btn.disabled = true;
-    btn.textContent = 'Skickar…';
-    status.style.display = 'none';
-
-    try {
-      const res = await fetch('https://api.github.com/repos/jacobstjarne-code/bandy-manager/issues', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github+json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: question,
-          labels: ['new-question'],
-        }),
-      });
-
-      if (res.ok) {
-        form.style.display = 'none';
-        status.style.display = 'block';
-        status.style.color = 'var(--color-text)';
-        status.innerHTML = `
-          <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Frågan är registrerad.</p>
-          <p style="color: var(--color-muted); font-size: 0.875rem;">Pipelinen kör en analys och publicerar svaret som en finding — brukar ta någon minut.</p>
-        `;
-      } else {
-        throw new Error(`${res.status}`);
-      }
-    } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'Skicka fråga';
-      status.style.display = 'block';
-      status.style.color = '#c0392b';
-      status.textContent = 'Något gick fel. Försök igen.';
-    }
+    const issueUrl = new URL('https://github.com/jacobstjarne-code/bandy-manager/issues/new');
+    issueUrl.searchParams.set('title', question);
+    issueUrl.searchParams.set('labels', 'new-question');
+    issueUrl.searchParams.set('body', 'Fråga inskickad via Bandy-Brain.');
+    window.location.assign(issueUrl.toString());
   });
 </script>

@@ -5,7 +5,7 @@ export interface Props {
   noindex?: boolean;
 }
 
-const { title, description = 'Insikter om bandy från Bandy Manager — simuleringsbaserad analys.', noindex = true } = Astro.props;
+const { title, description = 'Datadriven bandyanalys från verkliga matchdata och Bandy Manager-simuleringar.', noindex = true } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -44,7 +44,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </main>
 
     <footer class="site-footer">
-      Bandy-Brain — insikter ur Bandy Manager-simuleringar.
+      Bandy-Brain — insikter ur verkliga matchdata och Bandy Manager-simuleringar.
       Datan är offentlig, metoden är öppen, begränsningarna erkänns.
       <span class="site-footer__links">
         <a href={`${base}/bandy/`}>Källor om bandy</a>

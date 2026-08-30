@@ -3,64 +3,29 @@ import Base from '../../layouts/Base.astro';
 import { readFileSync, readdirSync } from 'fs';
 import yaml from 'js-yaml';
 import { resolve } from 'path';
+import { findings } from '../../data/findings';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 // ── Sektion 1: Findings att verifiera ────────────────────────────────────────
-
-// findings/index.astro uses a hardcoded list; we replicate that list here
-// and enrich it with verification state from the finding files themselves.
-const findingsDir = resolve(process.cwd(), '..', 'bandy-brain', 'src', 'pages', 'findings');
 
 interface FindingMeta {
   num: string;
   title: string;
   date: string;
   verified_by: string | null;
-  factRefCount: number;
   href: string;
 }
 
-function extractFindingMeta(dir: string): FindingMeta[] {
-  let entries: string[] = [];
-  try {
-    entries = readdirSync(dir).filter((d) => /^\d{3}$/.test(d));
-  } catch {
-    return [];
-  }
-
-  return entries.map((num) => {
-    const astroPath = `${dir}/${num}/index.astro`;
-    let content = '';
-    try { content = readFileSync(astroPath, 'utf8'); } catch { /* skip */ }
-
-    // verified_by from JS variable in frontmatter script
-    const verifiedMatch = content.match(/const verified_by[:\s]+[^=]*=\s*([^;\n]+)/);
-    let verified_by: string | null = null;
-    if (verifiedMatch) {
-      const raw = verifiedMatch[1].trim().replace(/['"]/g, '');
-      if (raw !== 'null' && raw !== '') verified_by = raw;
-    }
-
-    // Count factHref calls as proxy for importance
-    const factRefCount = (content.match(/factHref\(/g) || []).length;
-
-    // Title from <Base title="...">
-    const titleMatch = content.match(/title="Finding \d+ — (.+?)"/);
-    const title = titleMatch ? titleMatch[1] : `Finding ${num}`;
-
-    // Date from finding-meta paragraph
-    const dateMatch = content.match(/<p class="finding-meta">Finding \d+ · (.+?)<\/p>/);
-    const date = dateMatch ? dateMatch[1].trim() : '';
-
-    return { num, title, date, verified_by, factRefCount, href: `${base}/findings/${num}/` };
-  });
-}
-
-const allFindings = extractFindingMeta(findingsDir);
+const allFindings: FindingMeta[] = findings.map((finding) => ({
+  num: finding.num,
+  title: finding.title,
+  date: finding.date,
+  verified_by: finding.verified_by ?? null,
+  href: `${base}/findings/${finding.num}/`,
+}));
 const unverified = allFindings
-  .filter((f) => !f.verified_by)
-  .sort((a, b) => b.factRefCount - a.factRefCount);
+  .filter((f) => !f.verified_by);
 
 const top10 = unverified.slice(0, 10);
 const hasMore = unverified.length > 10;
@@ -110,11 +75,11 @@ function normalizeDate(d: string | Date | undefined): string {
   return String(d);
 }
 
-const today = new Date('2026-04-26');
+const today = new Date();
 function daysSince(d: string | Date | undefined): number {
   const str = normalizeDate(d);
   if (!str) return 0;
-  return Math.floor((today.getTime() - new Date(str).getTime()) / (1000 * 60 * 60 * 24));
+  return Math.max(0, Math.floor((today.getTime() - new Date(str).getTime()) / (1000 * 60 * 60 * 24)));
 }
 
 function loadOpenQFacts(): QFact[] {
@@ -144,8 +109,8 @@ const openQFacts = loadOpenQFacts().slice(0, 15);
     </h1>
     <p style="max-width: 560px; color: var(--color-muted); font-size: 0.9rem; margin-bottom: 2.5rem; font-family: var(--font-ui);">
       Findings och frågor som inte granskats av en domänexpert.
-      Verifiering sker via git: sätt <code>verified_by</code> + <code>verified_at</code>
-      i finding-frontmatter. Problem? Öppna en issue med label <code>review-flagged</code>.
+      Verifiering lagras i <code>src/data/findings.yaml</code>: sätt <code>verified_by</code>
+      och <code>verified_at</code>. Problem? Öppna en issue med label <code>review-flagged</code>.
     </p>
 
     <!-- Sektion 1: Findings att verifiera -->
@@ -172,7 +137,7 @@ const openQFacts = loadOpenQFacts().slice(0, 15);
                 <a href={f.href} style="color: var(--color-text); text-decoration: none;">{f.title}</a>
               </span>
               <span style="font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted); white-space: nowrap;">
-                {f.factRefCount} fact-ref{f.factRefCount !== 1 ? 's' : ''}
+                {f.date}
               </span>
             </div>
           </li>

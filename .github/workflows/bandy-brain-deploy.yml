@@ -1,7 +1,8 @@
-# Bandy-Brain — Deploy to GitHub Pages
+# Bandy-Brain — manuell reservdeploy till GitHub Pages
 #
-# STATUS: CREATED BUT NOT YET ENABLED
-# Jacob must review and approve before this is triggered.
+# KANONISK PRODUKTION: Vercel-projektet bandy-manager-8dru + bandybrain.se.
+# Den här workflowen körs därför endast manuellt och ska inte konkurrera med
+# Vercels automatiska deploy från main.
 #
 # Prerequisites before enabling:
 #   1. Create a new GitHub repo (e.g. bandy-brain or use this repo with gh-pages branch)
@@ -9,21 +10,12 @@
 #   3. Optionally add custom domain (bandy-brain.bury-fen.se) in Pages settings
 #      and create CNAME file in bandy-brain/public/
 #
-# To enable: remove the "if: false" line in the trigger section, or
-# manually trigger via GitHub Actions → Run workflow.
+# Kör vid behov via GitHub Actions → Run workflow.
 
 name: Deploy Bandy-Brain
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'bandy-brain/**'
-      - 'docs/findings/facts/**'
-      - 'docs/findings/*.md'
-      - '.github/workflows/bandy-brain-deploy.yml'
-  workflow_dispatch:   # Manual trigger from GitHub Actions UI
+  workflow_dispatch:
 
 # Prevent concurrent deployments
 concurrency:
@@ -61,6 +53,9 @@ jobs:
       - name: Verify fact links
         run: python3 scripts/check_links.py
 
+      - name: Validate fact structure
+        run: python3 scripts/validate_brain.py
+
       - name: Install dependencies
         run: npm ci
         working-directory: bandy-brain
@@ -68,8 +63,6 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: bandy-brain
-        env:
-          PUBLIC_ISSUES_TOKEN: ${{ secrets.ISSUES_TOKEN }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

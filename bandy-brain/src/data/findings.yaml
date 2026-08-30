@@ -1,5 +1,6 @@
 # Bandy Brain — findings-index (enda sanningskälla).
-# Fält: num, title, date, status (active|superseded|corrected), superseded_by, excerpt.
+# Fält: num, title, date, status (active|superseded|corrected), superseded_by,
+# excerpt, verified_by, verified_at.
 # Renderas av src/data/findings.ts → findings/index.astro + pages/index.astro.
 # Lägg nya findings här; sidorna genereras.
 

@@ -23,11 +23,11 @@ interface QFact {
   domain?: string;
 }
 
-const today = new Date('2026-04-26');
+const today = new Date();
 
 function daysSince(dateStr: string | Date): number {
   const d = dateStr instanceof Date ? dateStr : new Date(dateStr);
-  return Math.floor((today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+  return Math.max(0, Math.floor((today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24)));
 }
 
 function findingHref(spawnedBy: string): { num: string; href: string } | null {
@@ -189,8 +189,7 @@ const otherClosed = allQuestions.filter(q => q.status === 'closed' && q.closed_r
     <!-- Blockerade frågor -->
     <ul id="list-blocked" class="q-list" style="list-style: none; padding: 0; margin: 0; display: none;">
       <li style="padding: 0.75rem; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 4px; margin-bottom: 1rem; font-family: var(--font-ui); font-size: 0.875rem; color: #f59e0b;">
-        Dessa frågor väntar på damdata — se <a href="/findings/" style="color: #f59e0b; text-decoration: underline;">META_DAMDATA</a> för detaljer.
-        Frågorna återöppnas när Damelitserien skrapats.
+        Dessa frågor väntar på data som saknas i nuvarande dataset. De kan återöppnas när datatäckningen förbättrats.
       </li>
       {blockedQuestions.map(q => {
         const finding = findingHref(q.spawned_by);

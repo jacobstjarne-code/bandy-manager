@@ -598,8 +598,28 @@ a:hover {
 /* ---- Responsive ---- */
 
 @media (max-width: 600px) {
+  .site-header { padding: 0 var(--spacing-m); }
+  .site-header__inner { align-items: flex-start; flex-direction: column; }
+  .site-header__inner nav { max-width: 100%; }
+  .site-header__nav {
+    gap: var(--spacing-s);
+    max-width: 100%;
+    overflow-x: auto;
+    padding-bottom: var(--spacing-s);
+  }
+  .site-header__nav a { white-space: nowrap; }
+  .page-container, .finding-layout, .fact-detail {
+    padding-left: var(--spacing-m);
+    padding-right: var(--spacing-m);
+  }
   .finding-title { font-size: 1.5rem; }
   .hero__title   { font-size: 1.5rem; }
+  .key-numbers { gap: var(--spacing-m); }
+  .prose table, .sources-table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
   .sources-table { font-size: 0.8rem; }
 }
 

@@ -1,14 +1,13 @@
 ---
 import Base from '../../../layouts/Base.astro';
 import { findings as _findings } from '../../../data/findings';
-import { factHref } from '../../../lib/facts';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const _finding = _findings.find((f) => f.num === '052');
 ---
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="Herr +16%, dam +22% jämfört med genomsnittet av de fem föregående säsongerna. Ökningen är bred och konsistent, men inte primärt koncentrerad till matchens inledning."
+  description="Herr +16%, dam +22% jämfört med genomsnittet av de fem föregående säsongerna. I herr ökade även andelen tidiga utvisningar signifikant; i dam gjorde den inte det."
 >
   <div class="finding-layout">
 
@@ -59,7 +58,7 @@ const _finding = _findings.find((f) => f.num === '052');
       <p>Hoppet är tydligast och statistiskt stabilt i grundserien. Slutspelsdata för 2025-26 är begränsad och ska tolkas med försiktighet.</p>
 
       <h3>Dimension 2: Fördelning över matchens perioder</h3>
-      <p>Andelen utvisningar i varje 15-minutersperiod är relativt stabil över säsonger. Reformen syns som en generell volymökning — inte primärt som en ökning i matchens inledning (0–29 min).</p>
+      <p>Den större utvisningsvolymen syns genom hela matchen. I herr ökade samtidigt andelen under de första 30 minuterna till 24,5 %, jämfört med 18,0–21,9 % under de fem tidigare säsongerna. Dimension 6 testar denna förskjutning på matchnivå.</p>
       <table>
         <thead><tr><th>Säsong</th><th>0–29</th><th>30–44</th><th>45–59</th><th>60–74</th><th>75–90</th></tr></thead>
         <tbody>
@@ -93,7 +92,7 @@ const _finding = _findings.find((f) => f.num === '052');
       </table>
 
       <h3>Dimension 6: Tidiga utvisningar (0–29 min) som andel</h3>
-      <p>Reformens specifika mål var ökade tidiga ingripanden. Testet — andelen utvisningar under de första 30 minuterna per match — ger inte statistiskt signifikant resultat efter Bonferroni-korrektion (herr p_bonf=0.006, dam p_bonf=1.000). Den totala volymökningen är alltså bred, inte period-specifik.</p>
+      <p>Reformens specifika mål var ökade tidiga ingripanden. I herr ökade andelen utvisningar under de första 30 minuterna statistiskt signifikant även efter Bonferroni-korrektion (p_bonf=0.006). I dam finns inget motsvarande stöd (p_bonf=1.000). Volymökningen är bred i båda serierna, men herrdata visar dessutom en oproportionerlig förskjutning mot matchens inledning.</p>
       <table>
         <thead><tr><th>Säsong</th><th>n matcher</th><th>Andel 0–29</th><th>95% CI</th></tr></thead>
         <tbody>
@@ -116,7 +115,7 @@ const _finding = _findings.find((f) => f.num === '052');
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
       <p>Det är ett mätbart datamönster att utvisningsfrekvensen steg i säsong 2025-26. Det sammanfaller med ett kommunicerat direktiv, men datasetet innehåller ingen kontrolleringsvariabel för direktiv — samvariansen kan inte direkt tolkas som kausal effekt av direktivet. Alternativen (taktiktrendskifte, matchmixförändring, specifik domaruppsättning) kan inte uteslutas utan ytterligare data.</p>
-      <p>Att ökningen är bred — syns i grundserie, i alla matchtemperaturkvartilar, i båda serierna — är konsistent med ett systemnivåskifte snarare än en föreningsspecifik eller domarspecifik rörelse. Men det är ett mätbart mönster i datan, inte en slutsats om avsikt eller effekt.</p>
+      <p>Att volymökningen syns i grundserie, i alla matchtemperaturkvartilar och i båda serierna är konsistent med ett systemnivåskifte snarare än en föreningsspecifik eller domarspecifik rörelse. Herrseriens signifikanta ökning av andelen tidiga utvisningar ligger dessutom i linje med direktivets uttalade inriktning; damserien visar inte samma tidsförskjutning. Det är mätbara mönster i datan, inte i sig bevis för direktivets kausala effekt.</p>
     </div>
 
     <hr class="finding-divider" />

@@ -14,6 +14,8 @@ export interface Finding {
   status: FindingStatus;
   superseded_by?: string | null;
   excerpt?: string;
+  verified_by?: string | null;
+  verified_at?: string | null;
 }
 
 // process.cwd() vid Astro-bygget = bandy-brain/-roten (samma mönster som lib/facts.ts).
