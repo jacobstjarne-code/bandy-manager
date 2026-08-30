@@ -4,6 +4,12 @@ import type { Fixture } from '../entities/Fixture'
 import { getRivalry } from '../data/rivalries'
 import { MatchEventType } from '../enums'
 import { deriveUtfall } from './matchTypeAxes'
+import {
+  isTemplateEligible,
+  type TemplateEligibility,
+  type EligibilityContext,
+} from './templateEligibilityService'
+import { isOnCooldown } from './narrativeLogService'
 
 export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
 
@@ -127,6 +133,12 @@ interface ManagerResponse {
   label: string
   moraleEffect: number
   mediaQuote: string
+  // HIGH 7 (audit 2026-08-29): valfri, EXPLICIT eligibility-override för
+  // svar vars kontextkrav inte redan täcks av TAG_ELIGIBILITY (nedan,
+  // tag-nivå). De flesta retrofit:ade svar behöver ALDRIG sätta detta
+  // fältet direkt — deras tag räcker (se TAG_ELIGIBILITY). Fältet finns
+  // för framtida svar vars text är smalare än sina syskon med samma tag.
+  eligibility?: TemplateEligibility
 }
 
 // Exporterad enbart för tabelltestet (storylineArcPreferIds.table.test.ts) —
@@ -549,6 +561,110 @@ export function isGenericMatch(tag: string, won: boolean, lost: boolean, draw: b
   }
 }
 
+// ── HIGH 7 (audit 2026-08-29) — strukturell eligibility för PLAYER_RESPONSES ──
+//
+// Rotorsaken auditen fann: TAG_DEFS/isGenericMatch (ovan) avgör bara om en
+// tagg får plats i den BREDA win/loss/draw-hinken, inte om en enskild
+// replik i den hinken faktiskt stämmer med den SMALARE situationen dess
+// EGEN TEXT förutsätter. Två separata läckor bevisade i produktionskoden:
+//
+// 1. preferIds kringgick ALL kontextkontroll. cl07 ("Derby vinner man med
+//    hjärtat") låg i preferIds på FYRA icke-derby-frågor (rad ~39/47/52/91,
+//    "Tidningarna pratar mer om ekonomi...", "Publiken sjöng hela vägen") —
+//    tag win_derby/TAG_DEFS.matches() spelade ingen roll, för preferIds-
+//    slotten (buildPressResponses nedan) läste bara `preferredById`, aldrig
+//    matchesContext(). Samma sak för cl14 ("Att förlora hemma...") i den
+//    ogaterade 'loss'-frågan "Supportrarna är besvikna" (rad ~71) — kunde
+//    alltså visas efter en BORTAförlust, exakt auditens citerade exempel.
+// 2. Generic-bucketen (TAG_DEFS.generic) är grövre än sina medlemmars text.
+//    cup_win/playoff_win/final_pre ligger alla i den breda 'win'-bucketen
+//    (facit-låst av pressConferenceGeneric.table.test.ts — ändras INTE här)
+//    men deras repliker ("Cupen har sin magi...", "SM-finalen på
+//    Studenternas...") förutsätter en cupvinst/slutspelsvinst/finalvinst
+//    specifikt, inte "en vinst av vilket slag som helst".
+//
+// TAG_ELIGIBILITY nedan är den STRUKTURELLA, ADDITIVA spärren: den ändrar
+// INGET i TAG_DEFS/isGenericMatch (de är facit-testade och förblir exakt
+// som de var), utan lägger till ett extra AND-villkor som körs i BÅDA
+// vägarna in (preferIds OCH contextMatched/generic) innan slump/vikt sker.
+// En tagg behöver bara klassificeras EN gång här — alla repliker som delar
+// taggen ärver samma spärr (grupp-justering, inte per-rad-duplicering).
+const TAG_ELIGIBILITY: Partial<Record<string, TemplateEligibility>> = {
+  // dw_*/dl_*-sektionerna ("Befintliga svar: derbyWin/derbyLoss") plus
+  // cl07/cl17 (i "32 klassiska tränarcitat") är skrivna EXKLUSIVT för ett
+  // derbyresultat — flera nämner "derby"/"rivaler" explicit (dw_p3, cl07,
+  // cl17), övriga hör obetingat till derbyWin/derbyLoss-frågepoolerna.
+  win_derby: { derby: 'required' },
+  loss_derby: { derby: 'required' },
+  // cl26: "Cupen har sin egen magi. Allt kan hända. Idag hände det för
+  // oss." — förutsätter uttryckligen att matchen VAR en cupmatch.
+  cup_win: { competition: 'cup' },
+  // cl24: "Allt vi gjort i serien — det var bara uppvärmningen." —
+  // förutsätter slutspel, inte en vanlig ligaseger.
+  playoff_win: { competition: 'playoff' },
+  // cl25 är redan generic:'none' (kan inte läcka via bucketen) — satt ändå
+  // för konsekvens och som skydd om en framtida preferIds-referens skulle
+  // peka hit från en icke-slutspelsfråga.
+  playoff_loss_not_final: { competition: 'playoff', result: 'loss' },
+  // cl27: "SM-finalen på Studenternas..." — den mest specifika raden i
+  // poolen, förutsätter bokstavligen att DEN HÄR matchen ÄR finalen, inte
+  // bara "en slutspelsmatch". finalOnly stoppar läckan till kvarts-/
+  // semifinalvinster som competition:'playoff' ensamt inte hade fångat.
+  final_pre: { competition: 'playoff', finalOnly: true },
+  // cl05 ("En bortaseger är alltid speciell...") och cl14 ("Att förlora
+  // hemma...", auditens citerade exempel) är ensamma i sina taggar men
+  // följer samma tabellprincip som övriga rader här.
+  win_away: { homeAway: 'away' },
+  loss_home: { homeAway: 'home' },
+  // dr_c3/cl22 ("Borta mot ett topplag...") — redan skyddade av
+  // requireAway på frågenivå, men strukturellt korrekt att även spärra på
+  // svarsnivå (samma disciplin som övriga rader, inte en genväg).
+  draw_away_top: { homeAway: 'away' },
+}
+
+function getResponseEligibility(r: ManagerResponse): TemplateEligibility | undefined {
+  return r.eligibility ?? TAG_ELIGIBILITY[r.tag]
+}
+
+// HIGH 7 — cooldown för pressvarssvar. Återanvänder narrativeLogService.ts:s
+// isOnCooldown/game.narrativeBeatLog (samma mekanism som Birger-citat/
+// burnout/akademirader), ingen ny parallell logg. minSeasonsApart=1 betyder
+// "inte redan visad DENNA säsong" — svaret öppnas upp igen nästa säsong.
+// Exporterad så roundProcessor.ts (skrivvägen, se GameEvent.pressResponseKeys)
+// och tester kan bygga samma nyckel.
+export const PRESS_RESPONSE_COOLDOWN_PREFIX = 'press_response_'
+
+function preferOffCooldown(pool: ManagerResponse[], game: SaveGame): ManagerResponse[] {
+  const offCooldown = pool.filter(
+    r => !isOnCooldown(game, `${PRESS_RESPONSE_COOLDOWN_PREFIX}${r.id}`, 1, game.currentSeason),
+  )
+  // Släpp spärren om HELA poolen redan är på cooldown denna säsong (samma
+  // fallback-princip som pickPoolIndexAvoidingCooldown) — annars kunde ett
+  // smalt sammanhang (t.ex. bara två derbysvar kvar) tystna helt istället
+  // för att återanvända en replik.
+  return offCooldown.length > 0 ? offCooldown : pool
+}
+
+/**
+ * PressContext → EligibilityContext. `phase` är alltid 'in_season' här:
+ * generatePressConference() körs bara direkt efter en SPELAD match, så det
+ * finns aldrig en "avslutad säsong"-situation att uttrycka för den här
+ * poolen specifikt — fältet är ändå en del av den delade EligibilityContext-
+ * formen (templateEligibilityService.ts) så andra pooler (t.ex. framtida
+ * dashboard-/portal-copy som INTE är bundna till en enskild match) kan
+ * återanvända samma kontrakt utan att uppfinna ett eget.
+ */
+function buildEligibilityContext(ctx: PressContext): EligibilityContext {
+  return {
+    competition: ctx.isCup ? 'cup' : ctx.isPlayoff ? 'playoff' : 'league',
+    homeAway: ctx.isHome ? 'home' : 'away',
+    phase: 'in_season',
+    result: ctx.won ? 'win' : ctx.lost ? 'loss' : 'draw',
+    isDerby: ctx.isDerby,
+    isFinal: ctx.isFinal,
+  }
+}
+
 // ── Build 3 contextually-weighted responses ────────────────────────────────────
 
 // Skutskär-auditen High 4 (2026-08-22): state-gate på svarspool-nivå — ett
@@ -557,9 +673,16 @@ export function isGenericMatch(tag: string, won: boolean, lost: boolean, draw: b
 // filtreras bort HELT, inte bara nedprioriteras. Gäller alla tre slottar och
 // fallback-poolen, inte bara preferIds — annars kan den fortfarande smyga
 // in via den generiska poolen.
-function buildPressResponses(ctx: PressContext, preferIds: string[] = [], excludedResponseIds: string[] = []): ManagerResponse[] {
+function buildPressResponses(ctx: PressContext, game: SaveGame, preferIds: string[] = [], excludedResponseIds: string[] = []): ManagerResponse[] {
   const excluded = new Set(excludedResponseIds)
-  const eligibleResponses = excluded.size > 0 ? PLAYER_RESPONSES.filter(r => !excluded.has(r.id)) : PLAYER_RESPONSES
+  const eligCtx = buildEligibilityContext(ctx)
+  // HIGH 7: strukturellt AND-villkor, körs FÖRE preferIds/contextMatched/
+  // generic delas upp nedan — en ineligible replik kan alltså aldrig nås
+  // via NÅGON av de tre vägarna, preferIds inkluderat (se motiveringen
+  // ovanför TAG_ELIGIBILITY).
+  const eligibleResponses = PLAYER_RESPONSES.filter(r =>
+    !excluded.has(r.id) && isTemplateEligible(getResponseEligibility(r), eligCtx),
+  )
   const preferredById = new Map(eligibleResponses.map(r => [r.id, r]))
   const contextMatched: ManagerResponse[] = []
   const generic: ManagerResponse[] = []
@@ -572,6 +695,19 @@ function buildPressResponses(ctx: PressContext, preferIds: string[] = [], exclud
     }
   }
 
+  // HIGH 7 cooldown: bland de strukturellt behöriga, föredra svar som inte
+  // redan visats denna säsong. Appliceras på ALLA icke-preferId-vägar in
+  // (slot 1/2:s pooler OCH slot 3/fallback-poolen) — annars kunde ett svar
+  // som stängdes ute ur slot 1/2 ändå smyga in via slot 3 eller fallbacken.
+  // preferIds (kuraterade per fråga) lämnas MEDVETET utanför cooldownen —
+  // se motiveringen ovanför TAG_ELIGIBILITY: den spärren gäller struktur
+  // (matchar mallen situationen alls), cooldown gäller upprepning, och en
+  // fråga som explicit valt ETT visst svar ska inte tvingas byta bara för
+  // att svaret visades förra matchen.
+  const contextMatchedPref = preferOffCooldown(contextMatched, game)
+  const genericPref = preferOffCooldown(generic, game)
+  const cooldownAwareEligible = preferOffCooldown(eligibleResponses, game)
+
   const result: ManagerResponse[] = []
   const used = new Set<string>()
 
@@ -582,7 +718,7 @@ function buildPressResponses(ctx: PressContext, preferIds: string[] = [], exclud
     result.push(pick)
     used.add(pick.id)
   } else {
-    const slot1pool = ctx.rand() < 0.80 ? contextMatched : [...contextMatched, ...generic]
+    const slot1pool = ctx.rand() < 0.80 ? contextMatchedPref : [...contextMatchedPref, ...genericPref]
     if (slot1pool.length > 0) {
       const pick = slot1pool[Math.floor(ctx.rand() * slot1pool.length)]
       result.push(pick)
@@ -597,7 +733,7 @@ function buildPressResponses(ctx: PressContext, preferIds: string[] = [], exclud
     result.push(pick)
     used.add(pick.id)
   } else {
-    const slot2pool = (ctx.rand() < 0.5 ? contextMatched : generic).filter(r => !used.has(r.id))
+    const slot2pool = (ctx.rand() < 0.5 ? contextMatchedPref : genericPref).filter(r => !used.has(r.id))
     if (slot2pool.length > 0) {
       const pick = slot2pool[Math.floor(ctx.rand() * slot2pool.length)]
       result.push(pick)
@@ -612,7 +748,7 @@ function buildPressResponses(ctx: PressContext, preferIds: string[] = [], exclud
     result.push(pick)
     used.add(pick.id)
   } else {
-    const allPool = eligibleResponses.filter(r => !used.has(r.id) && isGenericMatch(r.tag, ctx.won, ctx.lost, ctx.draw))
+    const allPool = cooldownAwareEligible.filter(r => !used.has(r.id) && isGenericMatch(r.tag, ctx.won, ctx.lost, ctx.draw))
     if (allPool.length > 0) {
       const pick = allPool[Math.floor(ctx.rand() * allPool.length)]
       result.push(pick)
@@ -621,7 +757,7 @@ function buildPressResponses(ctx: PressContext, preferIds: string[] = [], exclud
 
   // Fallback: fill from full pool if needed
   while (result.length < 3) {
-    const fallback = eligibleResponses.filter(r => !used.has(r.id))
+    const fallback = cooldownAwareEligible.filter(r => !used.has(r.id))
     if (fallback.length === 0) break
     const pick = fallback[Math.floor(ctx.rand() * fallback.length)]
     result.push(pick)
@@ -873,7 +1009,7 @@ export function generatePressConference(
     }
   }
 
-  const responses = buildPressResponses(ctx, question.preferIds, excludedResponseIds)
+  const responses = buildPressResponses(ctx, game, question.preferIds, excludedResponseIds)
 
   if (responses.length === 0) return null
 
@@ -923,6 +1059,11 @@ export function generatePressConference(
       ? { name: namedJournalist.name, role: namedJournalist.outlet }
       : { name: journalist, role: '' },
     storylinePressKey,
+    // HIGH 7 (audit 2026-08-29): cooldown-nycklarna för DE ERBJUDNA svaren
+    // (inte bara det spelaren till slut klickar) — se GameEvent.pressResponseKeys.
+    // Callern (roundProcessor.ts) loggar dem som narrativeBeatLog-poster NÄR
+    // EVENTET GENERERAS (frågan visas), samma skrivmönster som storylinePressKey.
+    pressResponseKeys: responses.map(r => `${PRESS_RESPONSE_COOLDOWN_PREFIX}${r.id}`),
     // A-L1 (SLUTTEST_KO.md): så eventResolver.ts:s 'pressResponse'-hantering kan
     // slå upp DEN HÄR matchens .matchday direkt istf att gissa fram "senaste
     // ligamatchen" ur game.fixtures i efterhand (den gissningen läste roundNumber,

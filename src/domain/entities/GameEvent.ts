@@ -287,6 +287,18 @@ export interface GameEvent {
    *  tillåter högst två poster per storyline-id och säsong (en huvudfråga,
    *  en uppföljning). undefined för icke-storyline-frågor. */
   storylinePressKey?: string
+  /** HIGH 7 (audit 2026-08-29, docs/incoming/
+   *  BANDY_MANAGER_AUDIT_5_SASONGER_KUL_STICKINESS_VISUELL_2026-08-29.md):
+   *  cooldown-nycklarna för de manager-svar som ERBJÖDS i den här
+   *  presskonferensen (`press_response_${response.id}`, en per choice —
+   *  inte bara det svaret spelaren till slut klickar). Satt av
+   *  generatePressConference() (pressConferenceService.ts). Callern
+   *  (roundProcessor.ts) loggar var och en som en narrativeBeatLog-post
+   *  NÄR EVENTET GENERERAS (frågan visas) — samma skrivmönster som
+   *  storylinePressKey/mecenatSocialKey. buildPressResponses() läser samma
+   *  logg (isOnCooldown, minSeasonsApart=1) för att undvika att exakt
+   *  samma replik erbjuds igen samma säsong. undefined för icke-press-events. */
+  pressResponseKeys?: string[]
   /** Medium 4 (Skutskär-auditen, 2026-08-22): per-INSTANS "därför nu"-signal
    *  — samma fyra former och samma låsta copy som contentContract.ts:s
    *  typ-nivå-fält (getWhyNowLine, oförändrad), men satt på EVENTET, inte

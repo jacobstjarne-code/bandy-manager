@@ -1661,6 +1661,25 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // HIGH 7 (audit 2026-08-29): pressvarssvarens narrativeBeatLog-poster —
+  // en per ERBJUDET svar (inte bara det spelaren klickar), skrivna NÄR
+  // FRÅGAN VISAS, samma mönster som storylinePressKey ovan. Läses av
+  // buildPressResponses() (pressConferenceService.ts) för att undvika att
+  // exakt samma replik ("Derby vinner man med hjärtat", "Att förlora
+  // hemma...") erbjuds igen samma säsong. Se GameEvent.pressResponseKeys.
+  if (updatedGame.pendingPressConference?.pressResponseKeys) {
+    let pressResponseLog = updatedGame.narrativeBeatLog
+    for (const key of updatedGame.pendingPressConference.pressResponseKeys) {
+      pressResponseLog = logNarrativeBeat(
+        { ...updatedGame, narrativeBeatLog: pressResponseLog },
+        key,
+        updatedGame.currentSeason,
+        nextMatchday,
+      )
+    }
+    updatedGame = { ...updatedGame, narrativeBeatLog: pressResponseLog }
+  }
+
   // Medium 2 (Skutskär-auditen, 2026-08-22): mecenat-socialpoolens
   // narrativeBeatLog-post skrivs här, en per genererat social-event denna
   // omgång (upp till två kan förekomma i SAMMA omgång om två mecenater
