@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { logNarrativeBeat, isOnCooldown, systemhandelseBudgetOk, filterSystemhandelseBudget, pickPoolIndexAvoidingCooldown } from '../narrativeLogService'
+import { logNarrativeBeat, isOnCooldown, systemhandelseBudgetOk, filterSystemhandelseBudget, pickPoolIndexAvoidingCooldown, wasLoggedThisRound } from '../narrativeLogService'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
 
@@ -220,5 +220,33 @@ describe('pickPoolIndexAvoidingCooldown', () => {
     }
     const cupIdx = pickPoolIndexAvoidingCooldown(gameWithSmOnCooldown, 5, 3, 'birger_cup_quote_', 6)
     expect(cupIdx).toBe(0) // cup-poolen opåverkad av sm-poolens cooldown
+  })
+})
+
+/**
+ * HIGH 10-följdfix (2026-08-30, DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md).
+ * Tredje läsvägen — hittad nödvändig när burnoutens "har vi redan narrerat
+ * det här" (lastShownBurnoutZone, stämplat i SAMMA steg som beslutet fattas)
+ * gjorde att en render-komponent som återkör samma predikat alltid fick nej.
+ * Se narrativeLogService.ts:s docstring för wasLoggedThisRound.
+ */
+describe('wasLoggedThisRound', () => {
+  it('hittar en post loggad exakt denna omgång', () => {
+    const game = { ...makeGame(), narrativeBeatLog: [{ semanticKey: 'burnout_beat_mark', season: 3, round: 12 }] }
+    expect(wasLoggedThisRound(game, 'burnout_beat_mark', 12)).toBe(true)
+  })
+
+  it('en post från en annan omgång räknas inte, ens samma säsong', () => {
+    const game = { ...makeGame(), narrativeBeatLog: [{ semanticKey: 'burnout_beat_mark', season: 3, round: 11 }] }
+    expect(wasLoggedThisRound(game, 'burnout_beat_mark', 12)).toBe(false)
+  })
+
+  it('annan semanticKey samma omgång räknas inte', () => {
+    const game = { ...makeGame(), narrativeBeatLog: [{ semanticKey: 'burnout_beat_relief', season: 3, round: 12 }] }
+    expect(wasLoggedThisRound(game, 'burnout_beat_mark', 12)).toBe(false)
+  })
+
+  it('tom logg: aldrig loggad', () => {
+    expect(wasLoggedThisRound(makeGame(), 'burnout_beat_mark', 12)).toBe(false)
   })
 })

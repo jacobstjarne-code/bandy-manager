@@ -5,7 +5,7 @@ import { ManagerPortrait } from '../squad/ManagerPortrait'
 import {
   getManagerBio,
   getBurnoutZone,
-  shouldShowBurnoutMark,
+  isSustainedHighBurnout,
   getContractStatusText,
   getManagerDisplayName,
 } from '../../../domain/services/managerProfileService'
@@ -43,7 +43,11 @@ export function TranareTab({ game }: Props) {
   const { opener, family } = getManagerBio(profile, seed)
   const zone = getBurnoutZone(profile.burnoutScore)
   const zoneLabel = BURNOUT_ZONE_LABELS[zone]
-  const burnoutTriggered = shouldShowBurnoutMark(profile)
+  // HIGH 10-FÖLJDFIX (2026-08-30): isSustainedHighBurnout, INTE
+  // shouldShowBurnoutMark — den flikens citat ska ligga kvar hela tiden
+  // zonen är hög (persistent statusflik), inte bara flasha den enda
+  // omgången beaten narrerades (Portal-kortets semantik).
+  const burnoutTriggered = isSustainedHighBurnout(profile)
 
   const zoneColor = zone === 'hog'
     ? 'var(--danger)'

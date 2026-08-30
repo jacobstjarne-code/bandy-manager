@@ -69,6 +69,23 @@ export const BURNOUT_MARK = {
   },
 }
 
+/** Opus levererar. En rad per orsak — Code härleder orsaken (deriveBurnoutCause,
+ *  managerProfileService.ts), visar BURNOUT_CAUSE_LINES[orsak] om poolen inte är
+ *  tom. Tomma pooler = ingen orsaksrad visas (ingen krasch, bara utelämnad). */
+export const BURNOUT_CAUSE_LINES: Record<'losses' | 'inbox' | 'fatigue', string[]> = {
+  losses: [],
+  inbox: [],
+  fatigue: [],
+}
+
+/** Opus levererar. Visas när burnout-zonen sjunker men inte når 'frisk' än
+ *  (shouldShowBurnoutRelief, managerProfileService.ts). */
+export const BURNOUT_RELIEF_LINES: string[] = []
+
+/** Opus levererar. Visas EN gång när zonen återgår till 'frisk' efter att ha
+ *  varit markbar/hög (shouldShowBurnoutClose, managerProfileService.ts). */
+export const BURNOUT_CLOSE_LINES: string[] = []
+
 // ── Coach-rivalry-citat ────────────────────────────────────────────────────────
 // Rival-tränarens citat OM {manager}. Code genererar rivalens namn + personlighet.
 

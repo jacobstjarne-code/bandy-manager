@@ -1,24 +1,26 @@
 fact_id: D026
 category: design_principles
-claim: "Manager-burnout-formeln: förlust +10, fatigue ×0.3, inbox ×0.3 (tak +6/omg), seger −5, naturlig decay −3. Burnout-mark visas vid ≥70 i 2+ omgångar."
+claim: "Manager-burnout-formeln: press (förlust +10, fatigue ×0.3, inbox ×0.3 med tak +6/omg) minus återhämtning (seger −5, naturlig decay −14 VARJE omgång, ovillkorligt). Burnout-mark visas vid ≥70 i 2+ omgångar OCH bara när zonen ändrats sedan den senast narrerades."
 value:
   BURNOUT_LOSS_PER_RECENT: 10
   BURNOUT_FATIGUE_WEIGHT: 0.3
   BURNOUT_INBOX_WEIGHT: 0.3
   BURNOUT_INBOX_MAX_DELTA: 6
   BURNOUT_WIN_RECOVERY: 5
-  BURNOUT_NATURAL_DECAY: 3
+  BURNOUT_NATURAL_DECAY: 14
   BURNOUT_TRIGGER_THRESHOLD: 70
   BURNOUT_TRIGGER_ROUNDS: 2
 unit: points
 source:
   type: design_decision
-  doc: "src/domain/services/managerProfileService.ts:15-23"
-  decided_by: jacob
-verified_at: 2026-05-25
+  doc: "src/domain/services/managerProfileService.ts; docs/DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md; scripts/high10-burnout-arc-matning-2026-08-30.ts"
+  decided_by: code
+verified_at: 2026-08-30
 verified_by: code
 status: active
 revisions:
+  - date: 2026-08-30
+    change: "BURNOUT_NATURAL_DECAY 3 → 14, och decayen dras nu VARJE omgång i stället för bara vid `delta === 0`. Root: gaten var strukturellt död — en enda oläst inkorgspost (+0.3) gjorde summan nollskild, så återhämtningen fyrade aldrig och burnout kunde bara gå uppåt inom en säsong (HIGH 10, DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md). Magnituden 3 var därmed aldrig prövad mot något; 14 är satt av mätning (se notes). Samtidigt: press-fixturefiltret bytt från `homeScore !== undefined` till `status === Completed`."
   - date: 2026-05-25
     change: "BURNOUT_INBOX_WEIGHT sänkt 2→0.3, BURNOUT_INBOX_MAX_DELTA=6 tillagd. Root: 40 olästa inkorgstitems gav +80/omgång → burnout permanent pinnad på 100. Inbox ska vara en svag signal, inte dominerande driver."
 invariants:
@@ -30,6 +32,8 @@ invariants:
   - "value.BURNOUT_TRIGGER_THRESHOLD >= 50"
   - "value.BURNOUT_TRIGGER_THRESHOLD <= 100"
   - "value.BURNOUT_TRIGGER_ROUNDS >= 1"
+  - "value.BURNOUT_NATURAL_DECAY > 0"
+  - "value.BURNOUT_NATURAL_DECAY < value.BURNOUT_TRIGGER_THRESHOLD"
 notes: |
   Burnout ska drivas av match-resultat (förluster) + beslutsfatigue,
   inte av oläst inbox. Med 40 olästa items och gammalt weight=2 gav
@@ -38,3 +42,64 @@ notes: |
   Naturlig trigger: 3 förluster i rad utan seger ≈ +30, decay −3×2 = −6,
   netto ~+24. Burnout 100→70 tar ~10 omgångar, 100→0 ~34 omgångar utan
   förluster — rimlig recovery-bana.
+
+  ── HIGH 10, 2026-08-30: DECAYEN VAR ALDRIG PÅSLAGEN ───────────────────────
+  Recovery-banan ovan (2026-05-25) räknade som om decayen fyrade. Den gjorde
+  den inte. Koden var `if (delta === 0) delta -= BURNOUT_NATURAL_DECAY`, och
+  delta var summan av ALLA komponenter — en enda oläst inkorgspost räckte för
+  att den skulle vara nollskild. Mätningen 2026-08-30 (fyra regimer × fem
+  frön × tre säsonger) fann att gaten var blockerad i 100,0 % av alla mätta
+  omgångar (87/87 till 110/110 per körning, ingen enda undantagsomgång i
+  någon regim). Beskrivningen "naturlig decay −3" var alltså sann om koden
+  och falsk om spelet.
+
+  Fixen är strukturell: press (förlust + fatigue + inkorg) och återhämtning
+  (seger + decay) räknas var för sig, och decayen dras ovillkorligt varje
+  omgång. Den är inte förhandlingsbar och ersätter inte O4:s tre
+  relief-handlingar, som står oförändrade.
+
+  ── VARFÖR 14 OCH INTE 3 ───────────────────────────────────────────────────
+  Med decayen påslagen är magnituden för första gången avläsbar. Sweepen
+  prövade 3/4/5/6/8/10/12/14/16 mot domens krav 1 (en manager som svarar ska
+  se bågen SLUTA inom en säsong) och krav 2 (en som inte svarar ska eskalera):
+
+      decay  svarande når 'frisk' inom säsong 1   passiv i 'hög'
+        3     0/5 frön (2–8 omg i 'hög' → 90+)      ~91 %
+        5     0/5                                    ~91 %
+        8     0/5                                    ~90 %
+       10     1/5                                    ~90 %
+       12     4/5                                    ~88 %
+       14     5/5, vid omgång 13–22                  87–91 %
+       16     5/5, vid omgång 11–13                  86–89 %
+
+  14 är den lägsta nivån där ALLA frön klarar krav 1, och den gör det
+  mitt i säsongen (omgång 13–22 av ~29) snarare än på ett par veckor. 16
+  klarar också kravet men gör återhämtningen så billig att den manager som
+  IGNORERAR alla relief-erbjudanden ändå tar sig ner (5–25 omgångar i 'hög'
+  mot 12–54 vid 14) — då hade O4:s tre handlingar tappat sin poäng. 12 föll
+  på ett av fem frön.
+
+  Baslinjen som decayen måste överstiga är inte noll: en manager som gör allt
+  rätt bär ändå ~12–15 press per omgång från inkorg (taket +6 nås redan vid
+  20 olästa; auditen observerade 44–51) och beslutsbörda (fatigue 20–40 →
+  +6–12). Det är därför tröskeln ligger så högt som den gör — under ~12 finns
+  ingen väg ner alls för någon.
+
+  Tänderna sitter kvar: tre förluster på de tre senaste omgångarna ger +30
+  press, och 30 − 14 = +16 per omgång driver en manager från 0 till 100 på
+  6–8 omgångar. Mätningen bekräftar: den passive når 'hög' vid omgång 6–7 och
+  tillbringar 87–91 % av alla omgångar där, över tre säsonger.
+
+  ── TREDJE FYNDET: MATCHRESULTATEN RÄKNADES ALDRIG ─────────────────────────
+  Under mätningen upptäcktes att press-fixturefiltret (`homeScore !==
+  undefined`) aldrig kunde utesluta ospelade matcher: scheduleGenerator
+  sätter homeScore/awayScore till 0 redan när fixturen SKAPAS. Sorteringen på
+  fallande matchday plockade därför de tre högsta matchdagarna i hela
+  säsongsprogrammet — nästan alltid ospelade 0–0-platshållare, alltså tre
+  "oavgjorda". Följden: lossDelta var permanent 0 och lastWon permanent false
+  hela säsongen utom de allra sista omgångarna. Burnout drevs alltså i
+  praktiken ALDRIG av matchresultat, tvärtemot den här filens egen första
+  mening ("ska drivas av match-resultat (förluster) + beslutsfatigue").
+  Fixat med `status === FixtureStatus.Completed`, kodbasens kanoniska
+  spelat-predikat. Utan den fixen hade decay-kalibreringen ovan mätts mot en
+  formel där segrar och förluster inte fanns.

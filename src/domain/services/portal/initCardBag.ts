@@ -61,9 +61,11 @@ import { WatchOthersSecondary } from '../../../presentation/components/portal/se
 import { LandslagsFranvaroSecondary } from '../../../presentation/components/portal/secondary/LandslagsFranvaroSecondary'
 import { DeferredQueueSecondary } from '../../../presentation/components/portal/secondary/DeferredQueueSecondary'
 import { BurnoutMark } from '../../../presentation/components/portal/BurnoutMark'
+import { BurnoutReliefMark } from '../../../presentation/components/portal/BurnoutReliefMark'
 import { EfterklangSecondary } from '../../../presentation/components/portal/secondary/EfterklangSecondary'
 import { pickEfterklang } from '../portal/pickEfterklang'
-import { shouldShowBurnoutMark } from '../managerProfileService'
+import { BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../managerProfileService'
+import { wasLoggedThisRound } from '../narrativeLogService'
 import { SpectatorPrimary } from '../../../presentation/components/portal/primary/SpectatorPrimary'
 import type { CardRenderProps } from './dashboardCardBag'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
@@ -317,16 +319,41 @@ const PORTAL_CARDS: DashboardCard[] = [
     triggers: [(game) => isManagedClubSpectator(game)],
     Component: WatchOthersSecondary,
   },
-  // C-MK1 — BurnoutMark: danger-tonad, visas när tränaren är utbränd 2+ omgångar i rad
+  // C-MK1 — BurnoutMark: danger-tonad, visas när tränaren är utbränd 2+ omgångar i rad.
+  // HIGH 10-FÖLJDFIX (2026-08-30): triggern läser INTE shouldShowBurnoutMark
+  // direkt — roundProcessor stämplar profilens lastShownBurnoutZone i samma
+  // steg som beslutet fattas, så en re-körning av samma predikat mot det
+  // lagrade tillståndet ger alltid nej (before===after). wasLoggedThisRound
+  // läser istället narrativeBeatLog-posten roundProcessor skrev NÄR beaten
+  // fyrade — se BURNOUT_MARK_FIRED_KEY:s docstring (managerProfileService.ts).
   {
     id: 'burnout_mark',
     tier: 'secondary',
     weight: 95,
     triggers: [(game) => {
       const profile = game.managerProfile
-      return !!profile && shouldShowBurnoutMark(profile)
+      return !!profile && wasLoggedThisRound(game, BURNOUT_MARK_FIRED_KEY, game.currentMatchday)
     }],
     Component: BurnoutMark,
+  },
+  // HIGH 10 (DOM_HIGH10_BURNOUT_BAGE_2026-08-29) — bågens andra halva:
+  // lättnad (zonen sjunker) och slut (tillbaka i frisk). Vikt 96, strax över
+  // burnout_mark (95) och under presskonferens (98): de tre villkoren kan
+  // aldrig vara sanna samtidigt, så ordningen dem emellan är formell — men
+  // ett arc-slut ska inte kunna trängas undan av eskaleringskortet om
+  // framtida villkorsändringar råkar överlappa. Samma logg-baserade trigger
+  // som burnout_mark ovan, av samma anledning.
+  {
+    id: 'burnout_relief_mark',
+    tier: 'secondary',
+    weight: 96,
+    triggers: [(game) => {
+      const profile = game.managerProfile
+      if (!profile) return false
+      return wasLoggedThisRound(game, BURNOUT_RELIEF_FIRED_KEY, game.currentMatchday) ||
+        wasLoggedThisRound(game, BURNOUT_CLOSE_FIRED_KEY, game.currentMatchday)
+    }],
+    Component: BurnoutReliefMark,
   },
   // C-SY1#1 — Efterklang: memory-eko, max 2 minnen, --cold stripe
   {

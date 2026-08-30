@@ -75,7 +75,7 @@ import { selectNationalTeam, applyCallupEffects, applyReturnEffects, LANDSLAGS_C
 import {
   SNUB_SCENE_LINES,
 } from '../../domain/data/landslagText'
-import { updateManagerBurnout, updateH2HRecord, getBurnoutZone, shouldShowBurnoutMark } from '../../domain/services/managerProfileService'
+import { updateManagerBurnout, updateH2HRecord, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
 import { pickBurnoutQuoteIndex, pickBurnoutHelperIndex, BURNOUT_QUOTE_PREFIX, BURNOUT_HELPER_PREFIX } from '../../domain/services/burnoutReliefService'
 import { BURNOUT_MARK } from '../../domain/data/managerKaraktarText'
 import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
@@ -2166,6 +2166,30 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           ]}
         }
       }
+      // HIGH 10 (DOM_HIGH10_BURNOUT_BAGE_2026-08-29) — bågens tre beats,
+      // ömsesidigt uteslutande i prioritetsordningen slut → lättnad →
+      // eskalering. Villkoren kan per konstruktion inte överlappa (slut
+      // kräver frisk, lättnad kräver sjunkande men inte frisk, eskalering
+      // kräver ihållande hög), men ordningen är explicit if/else-if så att
+      // en framtida villkorsändring inte tyst kan fyra två beats samma
+      // omgång.
+      //
+      // Vilken som än fyrar stämplas lastShownBurnoutZone till NUVARANDE
+      // zon i samma profiluppdatering. Det är hela systemets invariant:
+      // fältet betyder alltid "zonen vi senast berättade om för spelaren",
+      // och det är den som hindrar att ett oförändrat tillstånd
+      // återpresenteras som en ny händelse varje omgång.
+      //
+      // lastBurnoutCause stämplas inte här — updateManagerBurnout sätter
+      // det redan, på det enda stället där press-komponenterna räknas.
+      const showBurnoutClose = shouldShowBurnoutClose(enrichedProfile)
+      const showBurnoutRelief = !showBurnoutClose && shouldShowBurnoutRelief(enrichedProfile)
+      const showBurnoutMark = !showBurnoutClose && !showBurnoutRelief &&
+        shouldShowBurnoutMark(enrichedProfile) && newBurnoutZone !== 'frisk'
+      if (showBurnoutClose || showBurnoutRelief || showBurnoutMark) {
+        enrichedProfile = { ...enrichedProfile, lastShownBurnoutZone: newBurnoutZone }
+      }
+
       updatedGame = { ...updatedGame, managerProfile: enrichedProfile }
 
       // A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): loggar BurnoutMark.tsx:s
@@ -2173,12 +2197,28 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       // coffee_pool_/journalist_exclusive_ ovan) — pickBurnoutQuoteIndex/
       // pickBurnoutHelperIndex läser samma logg för att undvika rader som
       // redan visats denna säsong.
-      if (shouldShowBurnoutMark(enrichedProfile) && newBurnoutZone !== 'frisk') {
+      //
+      // HIGH 10-FÖLJDFIX (2026-08-30, upptäckt vid granskning): utöver
+      // citat/hjälprad loggas nu också en FAST nyckel per beat-typ
+      // (BURNOUT_*_FIRED_KEY). Anledning: portalkorten (BurnoutMark.tsx,
+      // BurnoutReliefMark.tsx) kan INTE avgöra "fyrade det HÄR just nu"
+      // genom att återköra shouldShowBurnoutMark/Relief/Close mot det
+      // lagrade profil-tillståndet — lastShownBurnoutZone stämplas till
+      // NUVARANDE zon i samma steg ovan, så en sådan återkörning skulle
+      // alltid ge nej (before===after efter stämplingen). Utan denna logg
+      // hade korten aldrig renderats en enda gång — verifierat innan denna
+      // fix landade. Se wasLoggedThisRound (narrativeLogService.ts).
+      if (showBurnoutMark) {
         const quoteIdx = pickBurnoutQuoteIndex(updatedGame, newBurnoutZone, BURNOUT_MARK.quotesByZone[newBurnoutZone].length)
         const helperIdx = pickBurnoutHelperIndex(updatedGame, newBurnoutZone, BURNOUT_MARK.helpersByZone[newBurnoutZone].length)
         let burnoutLog = logNarrativeBeat(updatedGame, `${BURNOUT_QUOTE_PREFIX}${newBurnoutZone}_${quoteIdx}`, updatedGame.currentSeason, nextMatchday)
         burnoutLog = logNarrativeBeat({ ...updatedGame, narrativeBeatLog: burnoutLog }, `${BURNOUT_HELPER_PREFIX}${newBurnoutZone}_${helperIdx}`, updatedGame.currentSeason, nextMatchday)
+        burnoutLog = logNarrativeBeat({ ...updatedGame, narrativeBeatLog: burnoutLog }, BURNOUT_MARK_FIRED_KEY, updatedGame.currentSeason, nextMatchday)
         updatedGame = { ...updatedGame, narrativeBeatLog: burnoutLog }
+      } else if (showBurnoutRelief) {
+        updatedGame = { ...updatedGame, narrativeBeatLog: logNarrativeBeat(updatedGame, BURNOUT_RELIEF_FIRED_KEY, updatedGame.currentSeason, nextMatchday) }
+      } else if (showBurnoutClose) {
+        updatedGame = { ...updatedGame, narrativeBeatLog: logNarrativeBeat(updatedGame, BURNOUT_CLOSE_FIRED_KEY, updatedGame.currentSeason, nextMatchday) }
       }
     }
 

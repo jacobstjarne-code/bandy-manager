@@ -1,4 +1,5 @@
 import type { CoachPersonality } from '../data/managerKaraktarText'
+import type { BurnoutZone, BurnoutCause } from '../services/managerProfileService'
 
 export interface CoachRivalry {
   clubId: string
@@ -72,4 +73,21 @@ export interface ManagerProfile {
   careerSeasons?: number
   /** Klubbperioder, äldst först. Den nuvarande perioden saknar toSeason. */
   clubSpells?: ManagerClubSpell[]
+
+  // ── HIGH 10, burnout som båge (DOM_HIGH10_BURNOUT_BAGE_2026-08-29) ────────
+  /**
+   * Den zon som SENAST narrerades för spelaren (mark/lättnad/slut). Skiljd
+   * från nuvarande zon, som härleds ur burnoutScore: det här fältet är
+   * minnet av vad vi redan berättat, och är det som hindrar att ett
+   * oförändrat tillstånd återpresenteras som en ny händelse varje omgång.
+   * Saknas på gamla saves ⇒ läs som undefined (= ingen beat har visats
+   * ännu; ingenting undertrycks och ingenting dubbelfyras).
+   */
+  lastShownBurnoutZone?: BurnoutZone
+  /**
+   * Den dominerande press-källan bakom nuvarande nivå, satt av
+   * updateManagerBurnout de omgångar det finns en press alls. Saknas på
+   * gamla saves ⇒ läs som undefined (ingen orsaksrad visas).
+   */
+  lastBurnoutCause?: BurnoutCause
 }

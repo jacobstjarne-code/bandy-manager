@@ -49,6 +49,25 @@ export function isOnCooldown(game: SaveGame, semanticKey: string, minSeasonsApar
 }
 
 /**
+ * HIGH 10 (DOM_HIGH10_BURNOUT_BAGE_2026-08-29) — tredje läsvägen. Skiljer sig
+ * från isOnCooldown (som frågar "har vi visat DEN HÄR bågen NYLIGEN, över
+ * säsonger") genom att fråga "loggades DEN HÄR posten just DENNA omgång".
+ *
+ * Behövs när en render-lagerkomponent (ett portalkort) måste veta att en
+ * beat precis fyrat, UTAN att kunna återanvända samma tillståndsjämförelse
+ * som beslutade att fyra den. roundProcessor stämplar ofta det jämförda
+ * tillståndet i SAMMA steg som beaten fyrar (t.ex. burnout: profilens
+ * `lastShownBurnoutZone` sätts till nuvarande zon exakt när beaten skrivs)
+ * — en render som återkör samma jämförelse mot det redan stämplade
+ * tillståndet får då alltid nej, eftersom "före" och "efter" blivit samma
+ * värde. Loggens `round`-fält är opåverkat av den stämplingen, så det är
+ * den säkra platsen att läsa "hände det HÄR" ifrån.
+ */
+export function wasLoggedThisRound(game: SaveGame, semanticKey: string, round: number): boolean {
+  return (game.narrativeBeatLog ?? []).some(e => e.semanticKey === semanticKey && e.round === round)
+}
+
+/**
  * A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): generisk poolrotation för fasta
  * textpooler (Birger-citat, burnout-rader, akademirader) som tidigare
  * valdes med en ren `hash(season, clubId) % poolLength`-formel — deterministisk,
