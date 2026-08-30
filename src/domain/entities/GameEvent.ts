@@ -198,6 +198,33 @@ export interface EventEffect {
 
 export type EventPriority = 'critical' | 'high' | 'normal' | 'low'
 
+/**
+ * HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — NÄR/VAR ett beslut
+ * surfar. HELT SKILD AXEL FRÅN EventPriority ovan: priority styr sorteringen
+ * inom kön och overlay-vs-inline-routningen (eventQueueService.ts), tier styr
+ * om beslutet över huvud taget får en dashboard-yta och om det är undantaget
+ * throttlen. De klassificerar olika och mappar inte 1:1 — ett 'low'-prioriterat
+ * licenskrav är 'must', ett 'critical'-prioriterat playerUnhappy är 'month'.
+ *
+ *  - 'must'       Deadline-drivet, oåterkalleligt om det ignoreras. Medlemskapet
+ *                 är STÄNGT (Jacobs dom): kontraktsdeadline + licenskrav.
+ *                 Undantaget throttlen — surfar alltid, defereras aldrig.
+ *  - 'month'      Väntar begripligt men syns. Sponsor/mecenat/anläggning/kommun.
+ *                 Throttlas som förut. Batchas till ETT sekundärt kort.
+ *  - 'background' Press, orten, småval. Får ALDRIG ett dashboard-kort.
+ */
+export type DecisionTier = 'must' | 'month' | 'background'
+
+/**
+ * HIGH 11 — HUR kortet ser ut. Tredje, oberoende axeln (tier = när/var,
+ * priority = köordning, mode = visuell vikt). "Tre lägen i samma system, inte
+ * sex komponenter": lågmäld notis · verkligt dilemma · dramatisk brytpunkt.
+ * Typ-nivå-default i decisionTierService.getDecisionMode(); en enskild instans
+ * får åsidosätta via GameEvent.mode (samma per-instans-konvention som
+ * priority?/whyNow).
+ */
+export type DecisionMode = 'notis' | 'dilemma' | 'brytpunkt'
+
 export function getEventPriority(type: GameEventType): EventPriority {
   switch (type) {
     case 'mecenatEvent':
@@ -256,6 +283,19 @@ export interface GameEvent {
   followUpText?: string      // Simple follow-up inbox text (3-5 matchdays later)
   priority?: EventPriority   // defaults to getEventPriority(type) if not set
   deferredAt?: number        // matchday när eventet hamnade i kön (R1 age tracking)
+  /** HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — per-instans
+   *  åsidosättande av typ-nivåns läge (getDecisionMode, decisionTierService.ts).
+   *  Domen: "En måste kan vara ett dilemma (kontrakt: betala/sälj) eller en
+   *  brytpunkt (licens nekad)" — samma GameEventType, olika dramatisk vikt
+   *  beroende på situationen. Sätts bara vid konstruktionsstället när DEN HÄR
+   *  instansen faktiskt bär en annan vikt än sin typ. undefined = typ-läget. */
+  mode?: DecisionMode
+  /** HIGH 11 — matchdagen då fristen går ut. Satt på måste-nivåns event
+   *  (contractRequest, licenseHandlingsplan) så förvarningen
+   *  (getUpcomingMustDeadlines, decisionTierService.ts) kan räkna omgångar
+   *  kvar. Samma valfria-fält-konvention som deferredAt ovan. undefined =
+   *  ingen känd frist (alla icke-måste-event idag). */
+  deadlineRound?: number
   systemhandelse?: boolean   // O19 (SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
                               // (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
                               // ingen räknare/cooldown/säsongsbudget läser fältet ännu.

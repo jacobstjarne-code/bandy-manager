@@ -64,7 +64,7 @@ import {
   type SpecialDateContext,
 } from '../../domain/data/specialDateStrings'
 import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
-import { canAddDecision, MAX_ACTIVE_DECISIONS, MAX_DEFERRED_DECISIONS } from '../../domain/services/decisionBudgetService'
+import { canAddDecision, partitionInterruptBudget, MAX_DEFERRED_DECISIONS } from '../../domain/services/decisionBudgetService'
 import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { detectNotableResult, decayKlackEcho } from '../../domain/services/klackEchoService'
@@ -1851,29 +1851,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     // Slå ihop: äldre deferrade beslut har prioritet (prepend → surfar först)
     const allPending = [...priorDeferred, ...(updatedGame.pendingEvents ?? [])]
 
-    const actionable = allPending.filter(e => (e.choices?.length ?? 0) > 0)
-    const nonActionable = allPending.filter(e => (e.choices?.length ?? 0) === 0)
-
-    // Imminent-skydd: event med expiresRound ≤ nextMatchday+1 surfar alltid.
-    // (expiresRound finns ej på GameEvent ännu — imminentSet är alltid tom tills tillagt.)
-    const imminentSet = new Set(
-      actionable
-        .filter(e => (e as unknown as { expiresRound?: number }).expiresRound != null &&
-          (e as unknown as { expiresRound?: number }).expiresRound! <= nextMatchday + 1)
-        .map(e => e.id)
-    )
-    const imminent = actionable.filter(e => imminentSet.has(e.id))
-    const flexible = actionable
-      .filter(e => !imminentSet.has(e.id))
-      .sort((a, b) => {
-        const aExp = (a as unknown as { expiresRound?: number }).expiresRound ?? Infinity
-        const bExp = (b as unknown as { expiresRound?: number }).expiresRound ?? Infinity
-        return aExp - bExp
-      })
-
-    const budget = Math.max(0, MAX_ACTIVE_DECISIONS - imminent.length)
-    const surface = [...imminent, ...flexible.slice(0, budget)]
-    const newDeferred = flexible.slice(budget)
+    // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): logiken är
+    // extraherad till partitionInterruptBudget (decisionBudgetService.ts) —
+    // oförändrad, plus måste-undantaget. Det här blocket ÄR kodbasens
+    // faktiska deferrings-mekanism (tryQueueDecision har inget
+    // produktionsanropsställe), så undantaget måste bo här för att vara
+    // verkligt; extraktionen gör det testbart utan att köra en hel omgång.
+    const { nonActionable, surface, deferred: newDeferred } =
+      partitionInterruptBudget(allPending, nextMatchday)
 
     if (newDeferred.length > 0 || priorDeferred.length > 0) {
       updatedGame = {

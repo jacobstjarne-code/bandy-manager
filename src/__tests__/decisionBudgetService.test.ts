@@ -12,10 +12,14 @@ import { describe, it, expect } from 'vitest'
 import {
   tryQueueDecision,
   promoteFromQueue,
+  canAddDecision,
+  getActiveDecisionCount,
+  getThrottledActiveDecisionCount,
+  partitionInterruptBudget,
   MAX_DEFERRED_DECISIONS,
 } from '../domain/services/decisionBudgetService'
 import type { SaveGame } from '../domain/entities/SaveGame'
-import type { GameEvent } from '../domain/entities/GameEvent'
+import type { GameEvent, GameEventType } from '../domain/entities/GameEvent'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -143,6 +147,127 @@ describe('tryQueueDecision — cap vid 10', () => {
     expect(result.deferredDecisions.map(e => e.id)).not.toContain('old_0')
     // Nyaste ska finnas
     expect(result.deferredDecisions.map(e => e.id)).toContain('newest')
+  })
+})
+
+// ── HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) ─────────────────────
+// "Måste-nivån är UNDANTAGEN throttlen — den surfar alltid som det primära
+// kortet, throttlas aldrig bakom 3-taket, defereras aldrig."
+
+function makeTypedEvent(id: string, type: GameEventType): GameEvent {
+  return {
+    id,
+    type,
+    title: `Event ${id}`,
+    body: 'Test event',
+    choices: [{ id: 'c1', label: 'Ja', effect: { type: 'noOp' } }],
+    resolved: false,
+  }
+}
+
+function fullBudgetGame(): SaveGame {
+  return makeGame({
+    pendingEvents: [
+      makeTypedEvent('a', 'sponsorOffer'),
+      makeTypedEvent('b', 'mecenatEvent'),
+      makeTypedEvent('c', 'kommunMote'),
+    ],
+    deferredDecisions: [],
+  })
+}
+
+describe('HIGH 11 — måste-nivån undantagen throttlen', () => {
+  it('canAddDecision: månad nekas vid fullt tak, måste släpps alltid igenom', () => {
+    const game = fullBudgetGame()
+    expect(canAddDecision(game, 5)).toBe(false)
+    expect(canAddDecision(game, 5, 'month')).toBe(false)
+    expect(canAddDecision(game, 5, 'must')).toBe(true)
+  })
+
+  it('canAddDecision: måste passerar även säsong 1 omgång 1 (tak = 1)', () => {
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 1,
+      seasonSummaries: [],
+      pendingEvents: [makeTypedEvent('a', 'sponsorOffer')],
+    })
+    expect(canAddDecision(game, 1)).toBe(false)
+    expect(canAddDecision(game, 1, 'must')).toBe(true)
+  })
+
+  it('tryQueueDecision: ett kontraktskrav blir AKTIVT trots fullt tak — aldrig deferrerat', () => {
+    const game = fullBudgetGame()
+    const must = makeTypedEvent('contract', 'contractRequest')
+    const result = tryQueueDecision(game, must)
+    expect(result.pendingEvents.map(e => e.id)).toContain('contract')
+    expect(result.deferredDecisions).toHaveLength(0)
+  })
+
+  it('tryQueueDecision: ett licenskrav blir AKTIVT trots fullt tak', () => {
+    const result = tryQueueDecision(fullBudgetGame(), makeTypedEvent('lic', 'licenseHandlingsplan'))
+    expect(result.pendingEvents.map(e => e.id)).toContain('lic')
+    expect(result.deferredDecisions).toHaveLength(0)
+  })
+
+  it('tryQueueDecision: ett månadsbeslut deferreras fortfarande vid fullt tak (throttlen står kvar)', () => {
+    const result = tryQueueDecision(fullBudgetGame(), makeTypedEvent('sponsor', 'sponsorOffer'))
+    expect(result.pendingEvents).toHaveLength(3)
+    expect(result.deferredDecisions.map(e => e.id)).toContain('sponsor')
+  })
+
+  it('måste räknas inte mot budgeten — ett aktivt kontraktskrav blockerar inte nya månadsbeslut', () => {
+    const game = makeGame({
+      pendingEvents: [
+        makeTypedEvent('must1', 'contractRequest'),
+        makeTypedEvent('must2', 'licenseHandlingsplan'),
+        makeTypedEvent('a', 'sponsorOffer'),
+      ],
+    })
+    // Spelaren SER tre beslut (UI-räknaren är oförändrad) ...
+    expect(getActiveDecisionCount(game)).toBe(3)
+    // ... men bara ett av dem tär på budgeten.
+    expect(getThrottledActiveDecisionCount(game)).toBe(1)
+    expect(canAddDecision(game, 5)).toBe(true)
+  })
+})
+
+describe('partitionInterruptBudget — KF3-avbrottsbudgeten (roundProcessors faktiska mekanism)', () => {
+  it('cappar månadsbeslut vid 3 och deferrerar resten', () => {
+    const pending = ['a', 'b', 'c', 'd', 'e'].map(id => makeTypedEvent(id, 'sponsorOffer'))
+    const { surface, deferred } = partitionInterruptBudget(pending, 5)
+    expect(surface.map(e => e.id)).toEqual(['a', 'b', 'c'])
+    expect(deferred.map(e => e.id)).toEqual(['d', 'e'])
+  })
+
+  it('måste surfar FÖRST och trängs aldrig undan — även när taket redan är fyllt', () => {
+    const pending = [
+      ...['a', 'b', 'c', 'd'].map(id => makeTypedEvent(id, 'sponsorOffer')),
+      makeTypedEvent('must', 'contractRequest'),
+    ]
+    const { surface, deferred } = partitionInterruptBudget(pending, 5)
+    expect(surface[0].id).toBe('must')
+    expect(surface.map(e => e.id)).toEqual(['must', 'a', 'b', 'c'])
+    expect(deferred.map(e => e.id)).toEqual(['d'])
+  })
+
+  it('två samtidiga måsten surfar båda, utöver de tre månadsplatserna', () => {
+    const pending = [
+      makeTypedEvent('m1', 'contractRequest'),
+      makeTypedEvent('m2', 'licenseHandlingsplan'),
+      ...['a', 'b', 'c'].map(id => makeTypedEvent(id, 'sponsorOffer')),
+    ]
+    const { surface, deferred } = partitionInterruptBudget(pending, 5)
+    expect(surface).toHaveLength(5)
+    expect(deferred).toHaveLength(0)
+  })
+
+  it('event utan val passerar oräknade (banden)', () => {
+    const ambient = { ...makeTypedEvent('amb', 'seasonGoalHalfway'), choices: [] }
+    const pending = [ambient, ...['a', 'b', 'c', 'd'].map(id => makeTypedEvent(id, 'sponsorOffer'))]
+    const { nonActionable, surface, deferred } = partitionInterruptBudget(pending, 5)
+    expect(nonActionable.map(e => e.id)).toEqual(['amb'])
+    expect(surface).toHaveLength(3)
+    expect(deferred).toHaveLength(1)
   })
 })
 

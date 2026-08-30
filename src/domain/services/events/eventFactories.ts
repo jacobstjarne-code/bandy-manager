@@ -4,6 +4,7 @@ import type { Player } from '../../entities/Player'
 import type { Mecenat } from '../../entities/Mecenat'
 import { pickPlayerPraiseText, pickCaptainSpeechText } from '../../data/eventCardInlineStrings'
 import { formatValue, formatSalary, formatContractRemaining } from '../../format'
+import { getSeasonDeadlineMatchday } from '../decisionTierService'
 
 // ── Transfer drama events ──────────────────────────────────────────────────
 export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
@@ -166,6 +167,12 @@ export function contractRequestEvent(game: SaveGame, playerId: string): GameEven
     choices,
     relatedPlayerId: playerId,
     resolved: false,
+    // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): måste-nivåns frist.
+    // Kontraktet löper ut EFTER säsong `contractUntilSeason` och utgången
+    // tillämpas vid rollovern (seasonEndProcessor.ts) — sista tillfället att
+    // svara är därför regelsäsongens sista matchdag. Läst ur speletsegen
+    // kalender, inte en gissad konstant.
+    deadlineRound: getSeasonDeadlineMatchday(game),
   }
 }
 

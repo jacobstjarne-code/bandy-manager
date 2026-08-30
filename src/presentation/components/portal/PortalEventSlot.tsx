@@ -10,10 +10,26 @@
  * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — ambienta events (utan val)
  * fångas HÄR oavsett priority, som AmbientEventRow — de får aldrig ett kort.
  * Medium och atmosfäriska events (med val) visas som EventCardInline.
+ *
+ * HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md, 2026-08-31): VILKET
+ * beslut som får kortet avgörs inte längre av köordningen (getNextEvent →
+ * attentionRouter) utan av visningsregeln — översta måste, annars översta
+ * månad (selectDashboardDecisions, decisionTierService.ts). Bakgrundsnivån
+ * (press, orten, småval) får ALDRIG ett dashboardkort; den besvaras där den
+ * hör hemma (Granska-flikarna, presskonferensskärmen, EventOverlay för de
+ * kritiska). Resten av månadskön batchas till ETT sekundärt kort
+ * (MonthDecisionsSecondary, registrerat i initCardBag.ts) — aldrig som flera
+ * likvärdiga kort här.
+ *
+ * OFÖRÄNDRAT av HIGH 11, medvetet: ambient-raden (D1 punkt 2),
+ * overlay-routningen (EventOverlay äger de kritiska) och avskedsceremonin
+ * (CeremonyRetirement är en helskärmsceremoni, inte ett beslutskort — samma
+ * undantag som PressConferenceScene).
  */
 
 import { getCurrentAttention } from '../../../domain/services/attentionRouter'
 import { getEventRenderTarget, getBatchSiblings } from '../../../domain/services/eventQueueService'
+import { selectDashboardDecisions } from '../../../domain/services/decisionTierService'
 import { EventCardInline } from './EventCardInline'
 import { AmbientEventRow } from './AmbientEventRow'
 import { CeremonyRetirement } from './CeremonyRetirement'
@@ -56,18 +72,26 @@ export function PortalEventSlot({ game }: Props) {
     return <CeremonyRetirement game={game} event={event} />
   }
 
+  // HIGH 11 — visningsregeln. Kortet är inte längre "nästa i kön" utan det
+  // primära beslutet: översta måste, annars översta månad. Bakgrund ger null
+  // (inget dashboardkort), även när den ligger först i kön.
+  const primary = selectDashboardDecisions(game).primary
+  if (!primary) return null
+  // Skulle det primära vara overlay-routat äger EventOverlay det.
+  if (getEventRenderTarget(primary) === 'overlay') return null
+
   // Batch-av-tre: bara chrome när det faktiskt finns ≥1 syskon med samma
   // triggerGroupId. Ett enskilt event (ingen delad orsak) ser ut som innan.
-  const siblings = getBatchSiblings(game, event)
+  const siblings = getBatchSiblings(game, primary)
   if (siblings.length > 0) {
     return (
       <BatchStack siblingCount={siblings.length} totalInBatch={siblings.length + 1}>
-        <EventCardInline key={event.id} event={event} currentMatchday={game.currentMatchday} exitDelayMs={BATCH_EXIT_DELAY_MS} />
+        <EventCardInline key={primary.id} event={primary} currentMatchday={game.currentMatchday} exitDelayMs={BATCH_EXIT_DELAY_MS} />
       </BatchStack>
     )
   }
 
   return (
-    <EventCardInline event={event} currentMatchday={game.currentMatchday} />
+    <EventCardInline event={primary} currentMatchday={game.currentMatchday} />
   )
 }

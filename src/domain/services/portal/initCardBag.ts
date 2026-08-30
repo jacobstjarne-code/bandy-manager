@@ -60,6 +60,9 @@ import { BoardObjectivesSecondary } from '../../../presentation/components/porta
 import { WatchOthersSecondary } from '../../../presentation/components/portal/secondary/WatchOthersSecondary'
 import { LandslagsFranvaroSecondary } from '../../../presentation/components/portal/secondary/LandslagsFranvaroSecondary'
 import { DeferredQueueSecondary } from '../../../presentation/components/portal/secondary/DeferredQueueSecondary'
+import { MonthDecisionsSecondary } from '../../../presentation/components/portal/secondary/MonthDecisionsSecondary'
+import { MustDeadlineWarning } from '../../../presentation/components/portal/secondary/MustDeadlineWarning'
+import { selectDashboardDecisions, getUpcomingMustDeadlines } from '../decisionTierService'
 import { BurnoutMark } from '../../../presentation/components/portal/BurnoutMark'
 import { BurnoutReliefMark } from '../../../presentation/components/portal/BurnoutReliefMark'
 import { EfterklangSecondary } from '../../../presentation/components/portal/secondary/EfterklangSecondary'
@@ -375,6 +378,29 @@ const PORTAL_CARDS: DashboardCard[] = [
       return game.players.some(p => camp.playerIds.includes(p.id) && p.clubId === game.managedClubId)
     }],
     Component: LandslagsFranvaroSecondary,
+  },
+
+  // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — måste-nivåns
+  // förvarning (auditens MEDIUM 16). Vikt 97: över burnout-bågen (95/96) och
+  // under presskonferensen — en oåterkallelig frist är det tyngsta sekundära
+  // budskapet portalen kan bära. Kortet renderar ingenting förrän Opus
+  // levererat raden (MustDeadlineWarning returnerar null vid tom text).
+  {
+    id: 'must_deadline_warning',
+    tier: 'secondary',
+    weight: 97,
+    triggers: [(game) => getUpcomingMustDeadlines(game).length > 0],
+    Component: MustDeadlineWarning,
+  },
+  // HIGH 11 — det ENDA batchade månadskortet ("3 väntar"). Vikt 46, strax
+  // över deferred_queue (45): båda är räknekort om beslut som väntar, och det
+  // SYNLIGA (månad, går att öppna nu) ska stå före det undanträngda (kön).
+  {
+    id: 'month_decisions_batch',
+    tier: 'secondary',
+    weight: 46,
+    triggers: [(game) => selectDashboardDecisions(game).batched.length > 0],
+    Component: MonthDecisionsSecondary,
   },
 
   // §D avbrottsbudget — beslut i kö, synliggörs på portalen

@@ -113,6 +113,11 @@ export enum InboxItemType {
   SchoolAssignment = 'schoolAssignment',
   EconomicCrisis = 'economicCrisis',
   Scandal = 'scandal',
+  /** HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): utfallsraden för ett
+   *  beslut som låg obesvarat i avbrottskön när säsongen tog slut — antingen
+   *  ett tillämpat default-utfall eller en uttrycklig utrinning. Egen typ, inte
+   *  BoardFeedback: "aldrig tyst" ska gå att hitta och räkna som sin egen sort. */
+  DecisionRollover = 'decisionRollover',
 }
 
 export enum TrainingType {

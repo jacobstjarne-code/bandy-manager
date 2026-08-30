@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../createNewGame'
 import { advanceToNextEvent } from '../advanceToNextEvent'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
-import { PlayoffStatus, PendingScreen } from '../../../domain/enums'
+import { PlayoffStatus, PendingScreen, InboxItemType } from '../../../domain/enums'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { AdvanceResult } from '../advanceTypes'
 import {
@@ -157,6 +157,11 @@ describe('season rollover — stale event cleanup (final → ceremoni → årsbo
 
     // ── One more advance(): the "no scheduled fixtures left" guard should
     // now fire handleSeasonEnd (rollover). ──────────────────────────────
+    // HIGH 11 (2026-08-31): snapshot av kön EXAKT före rollovern — den
+    // används nedan för "aldrig tyst"-assertionen (varje post ska lämna en
+    // inboxrad efter sig, inte bara försvinna).
+    const deferredJustBeforeRollover = (game.deferredDecisions ?? []).map(e => e.id)
+    const inboxIdsBeforeRollover = new Set(game.inbox.map(i => i.id))
     game = autoSelectLineup(game)
     let result: AdvanceResult = advanceToNextEvent(game, stepSeed++)
     game = result.game
@@ -168,7 +173,25 @@ describe('season rollover — stale event cleanup (final → ceremoni → årsbo
 
     // Core regression assertion: deferredDecisions is the field that leaked.
     // It must be wholesale-cleared at rollover, exactly like pendingEvents.
+    // OFÖRÄNDRAD garanti efter HIGH 11 — kön töms fortfarande helt.
     expect(game.deferredDecisions ?? []).toEqual([])
+
+    // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md), §"Rollover — aldrig
+    // tyst": tomningen får inte längre vara TYST. Varje post som låg i kön
+    // ska ha lämnat exakt EN inboxrad efter sig (tillämpat default-utfall
+    // eller uttrycklig utrinning). Texten är Opus och ännu tom — därför
+    // räknas rader, inte innehåll.
+    const rolloverLines = game.inbox.filter(
+      i => i.type === InboxItemType.DecisionRollover && !inboxIdsBeforeRollover.has(i.id)
+    )
+    expect(
+      rolloverLines.length,
+      `deferrade beslut vid rollover: ${JSON.stringify(deferredJustBeforeRollover)}`
+    ).toBe(deferredJustBeforeRollover.length)
+    // Icke-vakuum-grind: kön ska faktiskt ha innehållit något vid rollovern,
+    // annars bevisar raden ovan (0 === 0) ingenting. Verifierat 2026-08-31 —
+    // seeden som når SM-final har deferrade beslut i kön vid säsongsbytet.
+    expect(deferredJustBeforeRollover.length).toBeGreaterThan(0)
 
     // No pendingEvents id should reference the OLD season's playoff Fokusera
     // cards — those phases are long over.

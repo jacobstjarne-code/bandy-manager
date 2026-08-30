@@ -7,6 +7,7 @@ import { MecenatDinnerEvent } from './events/MecenatDinnerEvent'
 import type { GameEvent } from '../../domain/entities/GameEvent'
 import { getNextEvent } from '../../domain/services/eventQueueService'
 import { getEffectiveWhyNowLine } from '../../domain/data/contentContract'
+import { getEffectiveDecisionMode } from '../../domain/services/decisionTierService'
 import { DecisionCard } from './DecisionCard'
 
 interface EventOverlayProps {
@@ -102,6 +103,7 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
         size="lg"
         entityId={entityId}
         entitySource="EventOverlay"
+        mode={getEffectiveDecisionMode(event)}
         label={event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
         title={event.title}
         body={event.body}

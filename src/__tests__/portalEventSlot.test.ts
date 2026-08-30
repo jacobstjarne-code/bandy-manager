@@ -11,6 +11,7 @@
 import { describe, it, expect } from 'vitest'
 import { getCurrentAttention } from '../domain/services/attentionRouter'
 import { getEventPriority } from '../domain/entities/GameEvent'
+import { selectDashboardDecisions } from '../domain/services/decisionTierService'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { GameEvent } from '../domain/entities/GameEvent'
 import type { EventPriority } from '../domain/entities/GameEvent'
@@ -73,7 +74,12 @@ function makeEvent(id: string, overrides: Partial<GameEvent> = {}): GameEvent {
     type: 'communityEvent',
     title: `Event ${id}`,
     body: 'Test body',
-    choices: [],
+    // HIGH 11 (2026-08-31): ett val tillagt i default-fabriken. Testerna här
+    // handlar om BESLUTS-routningen; ett event utan val är per D1 punkt 2
+    // ambient och får aldrig ett beslutskort — utan val testade fixturen en
+    // annan gren än den beskrivna. Overlay-repliken nedan läser bara
+    // priority och påverkas inte.
+    choices: [{ id: 'c1', label: 'OK', effect: { type: 'noOp' as const } }],
     resolved: false,
     ...overrides,
   }
@@ -96,10 +102,17 @@ function computeShouldShowOverlay(game: SaveGame, pathname: string): boolean {
 }
 
 // ─── Hjälp-funktion som replikerar PortalEventSlot-logiken ─────────────────
+// HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md, 2026-08-31): repliken
+// uppdaterad tillsammans med komponenten. Vilket beslut som får kortet avgörs
+// inte längre av köordningen utan av visningsregeln (översta måste, annars
+// översta månad); bakgrundsnivån får aldrig ett dashboardkort.
+// Attention-grinden och overlay-undantaget nedan är oförändrade.
 function portalSlotShouldRender(game: SaveGame): boolean {
   const attention = getCurrentAttention(game)
   if (attention.kind !== 'event') return false
-  const priority = attention.event.priority ?? getEventPriority(attention.event.type)
+  const primary = selectDashboardDecisions(game).primary
+  if (!primary) return false
+  const priority = primary.priority ?? getEventPriority(primary.type)
   return priority !== 'critical'
 }
 
@@ -131,9 +144,12 @@ describe('PortalEventSlot — render-logik', () => {
     expect(portalSlotShouldRender(game)).toBe(false)
   })
 
+  // HIGH 11: prioritetsgrinden gäller fortfarande — men bara för beslut som
+  // över huvud taget får ett dashboardkort (måste/månad). Typerna nedan är
+  // därför bytta till månadsnivå med samma prioritet som tidigare fall.
   it('renderar för high-prioritets event', () => {
     const highEvent = makeEvent('e2', {
-      type: 'pressConference',  // getEventPriority → high
+      type: 'patronEvent',  // getEventPriority → high, månadsnivå
     })
     const game = makeGame({ pendingEvents: [highEvent] })
     expect(portalSlotShouldRender(game)).toBe(true)
@@ -149,10 +165,34 @@ describe('PortalEventSlot — render-logik', () => {
 
   it('renderar för low-prioritets event (atmosfärisk)', () => {
     const lowEvent = makeEvent('e4', {
-      type: 'communityEvent',  // getEventPriority → low
+      type: 'sponsorOffer',  // getEventPriority → low (default), månadsnivå
     })
     const game = makeGame({ pendingEvents: [lowEvent] })
     expect(portalSlotShouldRender(game)).toBe(true)
+  })
+
+  // HIGH 11 — bakgrundsnivån (press, orten, småval) får ALDRIG ett kort här,
+  // oavsett prioritet. Den besvaras i sitt eget system (Granska-flikarna,
+  // presskonferensskärmen), inte på dashboarden.
+  it('renderar INTE för presskonferens (bakgrund, high)', () => {
+    const game = makeGame({ pendingEvents: [makeEvent('e5', { type: 'pressConference' })] })
+    expect(portalSlotShouldRender(game)).toBe(false)
+  })
+
+  it('renderar INTE för orts-event (bakgrund, low)', () => {
+    const game = makeGame({ pendingEvents: [makeEvent('e6', { type: 'communityEvent' })] })
+    expect(portalSlotShouldRender(game)).toBe(false)
+  })
+
+  it('en bakgrund först i kön skymmer inte månadsbeslutet — månaden får kortet', () => {
+    const game = makeGame({
+      pendingEvents: [
+        makeEvent('bg', { type: 'communityEvent' }),
+        makeEvent('month', { type: 'sponsorOffer' }),
+      ],
+    })
+    expect(portalSlotShouldRender(game)).toBe(true)
+    expect(selectDashboardDecisions(game).primary?.id).toBe('month')
   })
 })
 

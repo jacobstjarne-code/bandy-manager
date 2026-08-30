@@ -8,6 +8,7 @@ import { getPortraitSvg } from '../../../domain/services/portraitService'
 import { ratingColor } from './helpers'
 import { classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { DecisionCard } from '../../components/DecisionCard'
+import { getEffectiveDecisionMode } from '../../../domain/services/decisionTierService'
 
 interface GranskaSpelareProps {
   game: SaveGame
@@ -56,6 +57,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
               <div key={event.id} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
                 <DecisionCard
                   shape="none"
+                  mode={getEffectiveDecisionMode(event)}
                   label={event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
                   title={event.title}
                   body={event.body}

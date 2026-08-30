@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { EventChoice } from '../../domain/entities/GameEvent'
+import type { EventChoice, DecisionMode } from '../../domain/entities/GameEvent'
 import { DecisionChoices } from './DecisionChoices'
 import { SectionLabel } from './SectionLabel'
 
@@ -49,6 +49,13 @@ interface DecisionCardProps {
   shape?: 'sharp' | 'round' | 'none'
   theme?: 'light' | 'dark'
   accent?: boolean
+  /** HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — den semantiska
+   *  nivån: "Tre lägen i samma system, inte sex komponenter: lågmäld notis ·
+   *  verkligt dilemma · dramatisk brytpunkt." Bara VISUELL VIKT inom det
+   *  befintliga skalet, bara tokens. Default 'dilemma' = exakt dagens
+   *  utseende (inga extra stilar appliceras alls), så de sju befintliga
+   *  anropsställena är oförändrade tills de medvetet skickar ett läge. */
+  mode?: DecisionMode
   entityId?: string
   entitySource?: string
   style?: CSSProperties
@@ -87,12 +94,43 @@ const TAG_TONE_STYLE: Record<DecisionCardTag['tone'], CSSProperties> = {
   },
 }
 
+/**
+ * HIGH 11 — lägenas visuella vikt. ENDAST tokens (design-system/
+ * colors_and_type.css), inga råa hex/rgba (CLAUDE.md PORT 2). 'dilemma'
+ * returnerar tomma objekt: default-läget ska vara bit-identiskt med hur
+ * korten ser ut idag, annars är detta en omdesign av sju ytor i smyg.
+ */
+function modeWrapperStyle(mode: DecisionMode, isRound: boolean): CSSProperties {
+  if (mode === 'notis') {
+    // Lägst vikt: tunnare, dovare ram — kortet ska kunna passeras.
+    return {
+      border: '1px solid color-mix(in srgb, var(--border) 55%, transparent)',
+      boxShadow: 'none',
+    }
+  }
+  if (mode === 'brytpunkt') {
+    // Högst vikt: accentkant (samma grepp som `accent`-flaggan redan
+    // etablerat) + upplyft skugga. Radien följer formen — en round-modal
+    // ska inte plötsligt bli asymmetrisk.
+    return {
+      borderLeft: '3px solid var(--accent)',
+      ...(isRound ? {} : { borderRadius: '0 8px 8px 0' }),
+      boxShadow: 'var(--shadow-raised)',
+    }
+  }
+  return {}
+}
+
 function DecisionCardContent({
-  size = 'sm', theme = 'light', label, title, subtitle, body, bodyAsQuote, tags, whyNowLine,
+  size = 'sm', theme = 'light', mode = 'dilemma', label, title, subtitle, body, bodyAsQuote, tags, whyNowLine,
   resolved, chosenLabel, choices, onChoose, choicesLayout = 'stack', primaryChoiceId,
 }: Omit<DecisionCardProps, 'shape' | 'accent' | 'entityId' | 'entitySource' | 'style'>) {
+  const isNotis = mode === 'notis'
   const bodyColor = theme === 'dark' ? 'var(--text-light)' : 'var(--text-primary)'
-  const secondaryColor = theme === 'dark' ? 'var(--text-light-secondary)' : 'var(--text-secondary)'
+  const secondaryColor = isNotis
+    ? 'var(--text-muted)'
+    : (theme === 'dark' ? 'var(--text-light-secondary)' : 'var(--text-secondary)')
+  const titleWeight = isNotis ? 600 : 700
   const isLg = size === 'lg'
   return (
     <>
@@ -107,7 +145,7 @@ function DecisionCardContent({
           {title && (
             isLg
               ? <h2 className="h-display-sm" style={{ marginBottom: 14 }}>{title}</h2>
-              : <p style={{ fontSize: 13, fontWeight: 700, color: bodyColor, marginBottom: 5, lineHeight: 1.3 }}>{title}</p>
+              : <p style={{ fontSize: 13, fontWeight: titleWeight, color: bodyColor, marginBottom: 5, lineHeight: 1.3 }}>{title}</p>
           )}
           {subtitle && (
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{subtitle}</p>
@@ -148,13 +186,21 @@ export function DecisionCard({ shape = 'sharp', accent, entityId, entitySource, 
     return <DecisionCardContent {...content} />
   }
   const isRound = shape === 'round'
+  const mode = content.mode ?? 'dilemma'
   return (
     <div
       className={isRound ? 'card-round' : 'card-sharp'}
       data-decision-card="true"
+      data-decision-mode={mode}
       style={{
         margin: isRound ? '0 0 20px' : '0 0 3px',
         padding: isRound ? '24px 20px' : '10px 12px',
+        // Ordningen är avsiktlig och OFÖRÄNDRAD från före HIGH 11 vad gäller
+        // accent↔isRound (isRound:s `border: none` nollar en accent-kant på
+        // en round-modal — så har det alltid fungerat). Läget läggs FÖRST,
+        // alltså underst: en explicit `accent` (presskonferens/CS-pressfråga)
+        // och round-modalens egen chrome vinner över lägets vikt.
+        ...modeWrapperStyle(mode, isRound),
         ...(accent ? { borderLeft: '3px solid var(--warm)', borderRadius: '0 8px 8px 0' } : {}),
         ...(isRound ? { minWidth: 280, maxWidth: 360, width: '90%', background: 'var(--bg)', border: 'none', boxShadow: 'var(--shadow-modal)' } : {}),
         ...style,

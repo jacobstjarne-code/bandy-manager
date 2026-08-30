@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import { getEventRenderTarget } from '../../../../domain/services/eventQueueService'
+import { getEventDecisionTier } from '../../../../domain/services/decisionTierService'
 
 /**
  * Primary-kort för kritiska events som kräver svar.
@@ -17,9 +18,14 @@ import { getEventRenderTarget } from '../../../../domain/services/eventQueueServ
 export function EventPrimary({ game }: CardRenderProps) {
   const navigate = useNavigate()
 
+  // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): bakgrundsnivån får
+  // aldrig ett dashboardkort. Samma filter som hasCriticalEvent-triggern —
+  // trigger och komponent måste läsa samma villkor, annars kan bag:en välja
+  // kortet och komponenten rendera null (tom primärplats).
   const criticalEvent = (game.pendingEvents ?? []).find(
     e => !e.resolved &&
          e.type !== 'pressConference' &&
+         getEventDecisionTier(e) !== 'background' &&
          getEventRenderTarget(e) === 'overlay'
   )
 

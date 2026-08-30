@@ -40,6 +40,8 @@ import type { AdvanceResult } from './advanceTypes'
 import { getRetirementCandidate, getRetirementQuote } from '../../domain/services/retirementDecisionService'
 import { appendFinanceLog, type FinanceEntry } from '../../domain/services/economyService'
 import { computeSeasonEndContractDemands } from '../../domain/services/contractDemandService'
+import { resolveDeferredAtRollover } from '../../domain/services/deferredRolloverService'
+import { FALLBACK_SEASON_DEADLINE_MATCHDAY } from '../../domain/services/decisionTierService'
 
 // ── Position-aware replenishment helpers ──────────────────────────────────────
 const POSITION_MINIMUMS: Record<PlayerPosition, number> = {
@@ -1166,6 +1168,14 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         }] : []),
       ],
       resolved: false,
+      // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): måste-nivåns
+      // frist. Eventet skapas VID rollovern och landar i den KOMMANDE
+      // säsongens pendingEvents — handlingsplanen ska vara på plats innan
+      // licensnämnden prövar igen, och checkLicenseStatus() körs vid nästa
+      // säsongsslut. Fristen är därför den kommande regelsäsongens sista
+      // matchdag (nextSeasonCalendar, samma kalender spelet självt får).
+      deadlineRound: nextSeasonCalendar[nextSeasonCalendar.length - 1]?.matchday
+        ?? FALLBACK_SEASON_DEADLINE_MATCHDAY,
     }
     seasonEndPendingEvents.push(handlingsplanEvent)
   }
@@ -1725,6 +1735,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // i säsong N+1 — daterade och kontextuellt fel. pendingEvents fick redan
     // samma typ av wholesale-clear vid rollover; deferredDecisions är samma
     // sorts i-flight beslutskö och ska rensas på samma sätt, inte selektivt.
+    //
+    // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md, 2026-08-31): kön
+    // töms fortfarande här — läckage-garantin ovan är oförändrad — men
+    // besluten försvinner inte längre TYST. Passet nedan (efter det här
+    // objektet, resolveDeferredAtRollover) kör resolve-or-expire över exakt
+    // den här kön: default-utfall tillämpat + EN inboxrad, eller en
+    // uttrycklig utrinning. Slutläget är identiskt ([]), spåret är nytt.
     deferredDecisions: [],
     handledContractPlayerIds: [],
     sponsors: sponsorsAfterLicense,
@@ -1891,7 +1908,40 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     pendingAnnandagsKlack: undefined,
   }
 
-  return { game: { ...updatedGame, allTimeRecords: updateAllTimeRecords(updatedGame, seasonSummary) }, roundPlayed: null, seasonEnded: true }
+  // ── HIGH 11: rollover — aldrig tyst ────────────────────────────────────
+  // Domen (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): den tidigare engros-
+  // nollställningen av deferredDecisions är förbjuden. Kön töms fortfarande i
+  // objektet ovan (samma läckage-garanti som 2026-08-17-fixen, skyddad av
+  // seasonRolloverStaleEvents.test.ts), men varje post får först sitt utfall:
+  // default-val tillämpat + EN inboxrad, eller en uttrycklig utrinning.
+  // Körs MOT den rollade-över staten — effekterna landar i den säsong
+  // spelaren faktiskt går in i, och inboxraden daterar sig därefter.
+  const deferredAtRollover = game.deferredDecisions ?? []
+  const rolloverResolution = deferredAtRollover.length > 0
+    ? resolveDeferredAtRollover(updatedGame, deferredAtRollover, game.currentSeason, mulberry32(baseSeed + 4242))
+    : null
+  // Granskning innan commit (2026-08-31): `.slice(-75)` tog fel ände av en
+  // osorterad array — roundProcessor.ts:s etablerade konvention (rad ~1099,
+  // MAX_INBOX=50) sorterar NYAST-FÖRST (`b.date.localeCompare(a.date)`) och
+  // tar sedan `slice(0, MAX_INBOX)`. En omvänd `.slice(-N)` på en osorterad
+  // lista behåller de ÄLDSTA posterna och tappar de nyaste så fort listan
+  // växer förbi N — ofarligt just nu (inbox ≤50 + högst 10 deferrade poster,
+  // långt under 75) men fel om säsongsslutets egna dussintals inbox_*-
+  // tillägg (kontrakt/pension/styrelse/kommun ovan i filen) någonsin växer
+  // förbi gränsen utan att nästa omgångs roundProcessor-trim hunnit köra
+  // först. Samma sortering+gräns som roundProcessor.ts, inte en ny konvention.
+  const gameAfterDeferred: SaveGame = rolloverResolution
+    ? {
+        ...rolloverResolution.game,
+        // resolveDeferredAtRollover rör aldrig kön själv — håll den tom.
+        deferredDecisions: [],
+        inbox: [...rolloverResolution.game.inbox, ...rolloverResolution.inboxItems]
+          .sort((a, b) => b.date.localeCompare(a.date))
+          .slice(0, 50),
+      }
+    : updatedGame
+
+  return { game: { ...gameAfterDeferred, allTimeRecords: updateAllTimeRecords(gameAfterDeferred, seasonSummary) }, roundPlayed: null, seasonEnded: true }
 }
 
 function updateAllTimeRecords(
