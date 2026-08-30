@@ -172,3 +172,21 @@ notes: |
      löste den. Lyftet köper nu marginal, inte överlevnad. Om det ska stå kvar
      är ett omkalibreringsbeslut för Jacob; konstanten är oförändrad i
      economyService.ts.
+
+  ── FÖLJDFIX 2026-08-30 (fynd 3, ej en ny mätning) ─────────────────────────
+  scripts/stress/fixtures.ts:autoResolvePendingEvents hade en säkerhetsbugg
+  (fallback-policyn accepterade tyst varje transferBidReceived-bud, eftersom
+  eventet saknar noOp-val — se eventFactories.ts:96-115). Konsekvens:
+  --events-läget kunde dränera truppen under 11 spelare och deadlocka
+  säsongen (verifierat vid DOMINANT seed=100 säsong 5, trupp 12→10, matchday
+  låst på 23). PÅVERKAR INTE talen i sektionen ovan — D033:s officiella
+  ommätning körde --patron-läget (bara patronevents), aldrig --events, så
+  bug och fix är osynliga i de redovisade siffrorna. Fixat i fixtures.ts:
+  transferBidReceived resolveras nu explicit mot sitt 'rejectTransfer'-val
+  (hold-position, samma princip som noOp-defaulten för alla andra
+  eventtyper). autoSelectLineup rapporterar nu synligt (console.error) när
+  truppen är för liten för att bygga en laguppställning, istället för att
+  tyst returnera oförändrat game — så framtida deadlocks syns i
+  skriptutdata istället för att bara pinna matchday i tysthet. Verifierat:
+  remat-ah2-basekonomi-2026-08-30.ts --events kör nu DOMINANT seed=100 hela
+  vägen genom 5 säsonger utan deadlock (tidigare fastnade i säsong 5).

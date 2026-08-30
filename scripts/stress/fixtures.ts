@@ -44,7 +44,22 @@ export function autoSelectLineup(game: SaveGame): SaveGame {
     .sort((a, b) => b.currentAbility - a.currentAbility)
 
   if (allClubPlayers.length < 11) {
-    // Squad too small — invariant 4.4 will catch this; can't build lineup
+    // Squad too small to field a lineup at all — the round can never advance
+    // past this point (advanceToNextEvent needs a confirmed lineup for the
+    // managed club's fixture). npm run stress's own reporter.ts catches this
+    // via its own invariant check (crashReason 'invariant:squadSize'), but
+    // ad-hoc measurement scripts calling autoSelectLineup directly have no
+    // such surrounding harness — for them this was a SILENT deadlock (season
+    // pinned at one matchday forever, no error, no exit). Found 2026-08-30:
+    // autoResolvePendingEvents' fallback policy (fixtures.ts, this file)
+    // blindly accepted every transferBidReceived bid it had no noOp choice
+    // for, draining a squad from 12 to 10 mid-season. Reporting here — not
+    // just relying on the caller's own invariant checks — is what surfaces
+    // that class of bug in every script, not just npm run stress.
+    console.error(
+      `[autoSelectLineup] FEL: ${clubId} har bara ${allClubPlayers.length} spelare (kräver 11+). ` +
+      `Matchday ${game.currentMatchday ?? '?'}, säsong ${game.currentSeason ?? '?'}. Laguppställning kan inte byggas — omgången fastnar.`
+    )
     return game
   }
 
@@ -206,6 +221,15 @@ export function autoResolvePendingScreen(game: SaveGame): ResolveResult {
  * function is a REASONABLE DEFAULT for events a script does not otherwise
  * care about, not a replacement for a script's own deliberate policy.
  *
+ * POLICY — transferBidReceived: explicit reject, not the noOp fallback.
+ * This event type has no noOp choice (accept/counter/reject only — see
+ * eventFactories.ts:96-115) and 'accept' is choices[0], so the generic
+ * fallback used to silently accept every incoming bid. Fixed 2026-08-30
+ * after that drained a managed squad below 11 players mid-season and
+ * deadlocked the fixture calendar (autoSelectLineup couldn't build a
+ * lineup, the round never advanced). Same "smallest footprint" reasoning
+ * as the noOp default elsewhere — reject is this event's hold-position.
+ *
  * Iterates the pendingEvents snapshot as it was when this was called — an
  * event's own resolution can enqueue a NEW pendingEvent (e.g. patronHappiness
  * dropping to 0 queues `patron_withdrawal_*`); that new event is picked up
@@ -228,8 +252,20 @@ function pickEventResolutionPolicy(event: GameEvent): string {
   if (event.type === 'patronEvent' || event.type === 'patronWithdrawal' || event.type === 'patronInfluence') {
     return event.choices[0]?.id ?? ''
   }
-  const noOpChoice = event.choices.find(c => c.effect.type === 'noOp')
-  return (noOpChoice ?? event.choices[0])?.id ?? ''
+  // transferBidReceived has no noOp choice — 'accept' is choices[0]
+  // (eventFactories.ts:96-115), so the generic noOp-or-first-choice fallback
+  // below silently ACCEPTED every incoming bid. Found 2026-08-30 via HIGH
+  // 5/6's re-measurement: this drained the managed squad below 11 players
+  // over several seasons (verified at DOMINANT seed=100 season 5, 12→10;
+  // also seed=105), at which point autoSelectLineup can't build a lineup and
+  // the fixture stays 'scheduled' forever — a silent deadlock, not a crash.
+  // Explicit hold-position policy: reject every bid this harness doesn't
+  // otherwise have a deliberate policy for, same "smallest footprint"
+  // reasoning as the noOp default for every other event type.
+  const explicitChoice = event.type === 'transferBidReceived'
+    ? event.choices.find(c => c.effect.type === 'rejectTransfer')
+    : event.choices.find(c => c.effect.type === 'noOp')
+  return (explicitChoice ?? event.choices[0])?.id ?? ''
 }
 
 // ── Facility auto-build (E-STRESS1, 2026-08-23) ─────────────────────────────
