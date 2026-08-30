@@ -12,6 +12,12 @@ import {
   getCsNeighborContactAmount,
   getCsPoliticianGrantBonus,
   getCsDetOmojligaValetProbability,
+  csUpkeepFactor,
+  csExpectationDrag,
+  CS_UPKEEP_REP_FLOOR,
+  CS_UPKEEP_REP_CEIL,
+  CS_UPKEEP_FACTOR_CEIL,
+  CS_EXPECTATION_DRAG_CEIL,
 } from '../communityStandingScaling'
 
 describe('csLinearRamp', () => {
@@ -68,5 +74,70 @@ describe('getCsDetOmojligaValetProbability — #11, tidigare cs>60 en absolut v�
   })
   it('aldrig garanterat (100%) ens vid taket', () => {
     expect(getCsDetOmojligaValetProbability(100)).toBeLessThan(1)
+  })
+})
+
+// ── ANSPRÅK 4 (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md, D037) ──────────────
+
+describe('csUpkeepFactor — knapp 1, ortsunderhållets storleksskalning', () => {
+  it('full effekt (1,0) för en liten klubb — H4/Survive-golvet', () => {
+    // De sex minsta klubbarnas startrykte (CLUB_TEMPLATES): Heros 45,
+    // Slottsbron 48, Rögle 50, Skutskär 52, Söderfors 55, Hälleforsnäs 60.
+    for (const rep of [0, 45, 48, 50, 52, 55, 60, 70, CS_UPKEEP_REP_FLOOR]) {
+      expect(csUpkeepFactor(rep)).toBe(1.0)
+    }
+  })
+
+  it('reducerad för en stor klubb, som mest CS_UPKEEP_FACTOR_CEIL', () => {
+    expect(csUpkeepFactor(CS_UPKEEP_REP_CEIL)).toBeCloseTo(CS_UPKEEP_FACTOR_CEIL, 10)
+    expect(csUpkeepFactor(200)).toBeCloseTo(CS_UPKEEP_FACTOR_CEIL, 10)
+    expect(csUpkeepFactor(CS_UPKEEP_REP_CEIL)).toBeLessThan(1.0)
+  })
+
+  it('är KONTINUERLIG, inte en tröskel — inget hopp mellan två intilliggande rykten', () => {
+    // D031: felklassen är en diskret omslagspunkt på ett kontinuerligt fält.
+    // Ett hopp får aldrig överstiga rampens egen lutning per ryktepoäng.
+    const maxStep = (1.0 - CS_UPKEEP_FACTOR_CEIL) / (CS_UPKEEP_REP_CEIL - CS_UPKEEP_REP_FLOOR)
+    for (let rep = 0; rep < 120; rep++) {
+      expect(Math.abs(csUpkeepFactor(rep + 1) - csUpkeepFactor(rep))).toBeLessThanOrEqual(maxStep + 1e-12)
+    }
+  })
+
+  it('faller monotont med rykte och når aldrig noll (holdbarheten, SKYDDAT)', () => {
+    for (let rep = 0; rep < 120; rep++) {
+      expect(csUpkeepFactor(rep + 1)).toBeLessThanOrEqual(csUpkeepFactor(rep))
+    }
+    // Kombinerad med den hårdaste CS-dämpningen (getCsDiminishingFactor vid
+    // cs=100) måste produkten fortfarande vara klart skild från noll — en
+    // faktor nära noll är samma fel som en hård vägg, bara gömd bakom en kurva.
+    expect(csUpkeepFactor(100) * getCsDiminishingFactor(100)).toBeGreaterThan(0.15)
+  })
+})
+
+describe('csExpectationDrag — knapp 2, ortens stigande förväntan', () => {
+  it('noll för en liten klubb — Survive-golvet orört', () => {
+    for (const rep of [0, 45, 50, 60, 70, CS_UPKEEP_REP_FLOOR]) {
+      expect(csExpectationDrag(rep)).toBe(0)
+    }
+  })
+
+  it('når CS_EXPECTATION_DRAG_CEIL vid rykte-taket och stannar där', () => {
+    expect(csExpectationDrag(CS_UPKEEP_REP_CEIL)).toBeCloseTo(CS_EXPECTATION_DRAG_CEIL, 10)
+    expect(csExpectationDrag(200)).toBeCloseTo(CS_EXPECTATION_DRAG_CEIL, 10)
+  })
+
+  it('är kontinuerlig och stiger monotont med rykte', () => {
+    const maxStep = CS_EXPECTATION_DRAG_CEIL / (CS_UPKEEP_REP_CEIL - CS_UPKEEP_REP_FLOOR)
+    for (let rep = 0; rep < 120; rep++) {
+      expect(csExpectationDrag(rep + 1)).toBeGreaterThanOrEqual(csExpectationDrag(rep))
+      expect(Math.abs(csExpectationDrag(rep + 1) - csExpectationDrag(rep))).toBeLessThanOrEqual(maxStep + 1e-12)
+    }
+  })
+
+  it('delar golv och tak med csUpkeepFactor — en storleksaxel, inte två', () => {
+    // Två ramper med olika brytpunkter hade blivit två olika svar på frågan
+    // "när är klubben stor?" — samma sorts drift som cs=70-familjen.
+    expect(csUpkeepFactor(CS_UPKEEP_REP_FLOOR)).toBe(1.0)
+    expect(csExpectationDrag(CS_UPKEEP_REP_FLOOR)).toBe(0)
   })
 })

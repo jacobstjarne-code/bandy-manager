@@ -5,7 +5,7 @@ import { getRivalry } from '../../../domain/data/rivalries'
 import { advanceFacilityState } from '../../../domain/services/facilityService'
 import { getJournalistCommunityModifier } from '../../../domain/services/journalistVisibilityService'
 import { generateVolunteerRoster } from '../../../domain/services/volunteerService'
-import { getCsDiminishingFactor } from '../../../domain/services/communityStandingScaling'
+import { getCsDiminishingFactor, csUpkeepFactor, csExpectationDrag } from '../../../domain/services/communityStandingScaling'
 import { safeStandingPosition } from '../../../domain/services/standingsService'
 
 export interface CommunityProcessorResult {
@@ -72,16 +72,22 @@ export function processCommunity(
     if (matchRivalryCs && wonCs) klackMoodDelta += 4
     if (matchRivalryCs && lostCs) klackMoodDelta -= 4
   }
+  // ── Ortsunderhållet: managerns egen spak (ANSPRÅK 4) ──────────────────────
+  // Aktiviteterna och frivilliga summeras SEPARAT från matchresultat/placering
+  // eftersom bara DE skalas av csUpkeepFactor(rykte). Summan är per konstruktion
+  // aldrig negativ (varje term är ett tillägg) — domens krav att bara positiva
+  // boostar skalas är alltså uppfyllt av formen, inte av ett villkor.
+  let upkeepBoost = 0
   const csActivities = game.communityActivities
-  if (csActivities?.kiosk && csActivities.kiosk !== 'none') csBoost += 0.08
-  if (csActivities?.lottery && csActivities.lottery !== 'none') csBoost += 0.05
-  if (csActivities?.bandyplay) csBoost += 0.08
-  if (csActivities?.functionaries) csBoost += 0.05
-  if (csActivities?.bandySchool) csBoost += 0.08
-  if (csActivities?.socialMedia) csBoost += 0.03
-  if (csActivities?.pensionarskaffe) csBoost += 0.10
-  if (csActivities?.soppkvall) csBoost += 0.08
-  if (csActivities?.skolbesok) csBoost += 0.12
+  if (csActivities?.kiosk && csActivities.kiosk !== 'none') upkeepBoost += 0.08
+  if (csActivities?.lottery && csActivities.lottery !== 'none') upkeepBoost += 0.05
+  if (csActivities?.bandyplay) upkeepBoost += 0.08
+  if (csActivities?.functionaries) upkeepBoost += 0.05
+  if (csActivities?.bandySchool) upkeepBoost += 0.08
+  if (csActivities?.socialMedia) upkeepBoost += 0.03
+  if (csActivities?.pensionarskaffe) upkeepBoost += 0.10
+  if (csActivities?.soppkvall) upkeepBoost += 0.08
+  if (csActivities?.skolbesok) upkeepBoost += 0.12
   // ── Frivilligbonus (puls) ─────────────────────────────────────────────────
   // Roster-baserat: regenerera från seed (samma som OrtenTab) → sum csBoost/10 per roll.
   // Kioskvakt=0.2, Matchvärd=0.4, Bandyskoleledare=0.5 etc. Cap +1.5/omg.
@@ -93,8 +99,18 @@ export function processCommunity(
       const v = roster.find(r => r.name === name)
       return sum + (v ? v.csBoost / 10 : 0.32)
     }, 0)
-    csBoost += Math.min(1.5, rosterCsBoost)
+    upkeepBoost += Math.min(1.5, rosterCsBoost)
   }
+
+  // ANSPRÅK 4, knapp 1 (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md): samma insats
+  // håller mindre när klubben vuxit. Skalas HÄR, alltså före den CS-baserade
+  // dämpningen längre ned — en stor klubb vid hög CS träffas medvetet av BÅDA
+  // (rep-faktor × cs-faktor), och att kombinationen lämnar holdbarheten intakt
+  // är mätt, se D037. Matchresultat, placering och journalistmodifieraren
+  // ligger UTANFÖR — de är inte managerns ortsinsats.
+  const managedClubForUpkeep = game.clubs.find(c => c.id === game.managedClubId)
+  const clubReputation = managedClubForUpkeep?.reputation ?? 50
+  csBoost += Math.max(0, upkeepBoost) * csUpkeepFactor(clubReputation)
 
   // LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26): `standings` här är
   // redan den lokalt omräknade tabellen (roundProcessor.ts, efter denna
@@ -323,7 +339,20 @@ export function processCommunity(
   const negativeBoost = Math.min(0, csBoost)
   const currentCS = game.communityStanding ?? 50
   const diminishingFactor = getCsDiminishingFactor(currentCS) // se communityStandingScaling.ts
-  csBoost = positiveBoost * diminishingFactor + negativeBoost
+
+  // ANSPRÅK 4, knapp 2: ortens stigande förväntan som baslinjedrag, rykte-skalat
+  // och kontinuerligt (csExpectationDrag). Dras EFTER dämpningen, inte före:
+  // splitten ovan delar totalsumman, så ett drag som lagts in tidigare hade
+  // ätits upp av positiveBoost och sedan skalats av diminishingFactor — alltså
+  // dämpats bort precis för den klubb den ska bita på. Dragets uppgift är att
+  // bita ÄVEN på en klubb som coastar på segrar (baslinjemätningen: en dominant
+  // klubb utan en enda aktivitet låg ändå på CS-snitt 77).
+  //
+  // Detta är TRYCKET, inte konsekvensen: mecenat-/patron-/sponsoruttågen fyrar
+  // exakt som förut när CS faktiskt korsar sina egna trösklar. Anspråk 4 rör
+  // inte de trösklarna och räknar dem inte en andra gång.
+  const expectationDrag = csExpectationDrag(clubReputation)
+  csBoost = positiveBoost * diminishingFactor + negativeBoost - expectationDrag
 
   return { csBoost, klackMoodDelta, inboxItems, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, completedNodeId, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
 }

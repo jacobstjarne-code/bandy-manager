@@ -86,3 +86,73 @@ export function getCsPoliticianGrantBonus(cs: number): number {
 export function getCsDetOmojligaValetProbability(cs: number): number {
   return csLinearRamp(cs, 0, 100, 0.03, 0.15)
 }
+
+// ── ANSPRÅK 4: ortsunderhållet (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md) ────
+//
+// De två funktionerna nedan kör på csLinearRamp men matar in KLUBBENS RYKTE,
+// inte communityStanding. Det är avsiktligt och är samma disciplin, inte ett
+// undantag från den: rykte är spelets kontinuerliga storleksaxel, och domen
+// är uttrycklig om att storleken INTE får gata detta bakom `calculateClubEra`
+// (diskret) eller någon annan tröskel — exakt den felklass D031 finns för att
+// stoppa, bara flyttad från cs-axeln till rykte-axeln. csLinearRamp är därför
+// återanvänd rakt av; parameternamnet `cs` i signaturen är historiskt, primitiven
+// är en ren linjär interpolator.
+//
+// Domen: "När klubben vuxit har orten stigit i sina förväntningar: samma insats
+// håller mindre." En liten klubbs skolbesök är en händelse; en stor klubbs
+// skolbesök är väntat.
+
+/** Rykte där ortsunderhållet fortfarande har FULL effekt (faktor 1,0, drag 0).
+ *  Elva av tolv klubbar startar under detta (Forsbacka 85 är ensam över), och de
+ *  sex minsta (Heros 45, Slottsbron 48, Rögle 50, Skutskär 52, Söderfors 55,
+ *  Hälleforsnäs 60 — CLUB_TEMPLATES) ligger 20-35 poäng under.
+ *  H4/Survive-golvet, domens SKYDDAT-punkt 3: mätningen visar Heros CS-bana
+ *  IDENTISK med baslinjen säsong 1-4 (rykte 56/63/70/80, faktor 1,00 hela vägen). */
+export const CS_UPKEEP_REP_FLOOR = 80
+/** Rykte där ortsunderhållet är som dyrast. En dominant klubb i mätningen ligger
+ *  på 95-100 från säsong 2 och framåt. */
+export const CS_UPKEEP_REP_CEIL = 100
+/** Faktor vid rykte-taket. 0,85 och inte doktrinens förslag ~0,4-0,5: mätningen
+ *  visade att knapp 1 per konstruktion BARA träffar klubben som redan gör rätt
+ *  (en klubb utan aktiviteter/frivilliga har ingen boost att skala — dess CS-snitt
+ *  var identiskt 77,1 vid faktor 1,00/0,85/0,70/0,55). Ett hårt golv beskattar
+ *  alltså enbart insatsen och rör inte den coastande klubben alls, samtidigt som
+ *  det krymper skillnaden mellan att hålla och att glida — domens GODKÄNT NÄR 1.
+ *  Se D037 för hela svepet. */
+export const CS_UPKEEP_FACTOR_CEIL = 0.85
+/** Baslinjedrag i CS/omgång vid rykte-taket (knapp 2). Se D037: bortom 1,6 faller
+ *  valets synlighet snabbt (ΔCS 5,5 → 4,9 vid 1,8 → 4,3 vid 2,0) utan att den
+ *  coastande klubben pressas nämnvärt längre ned. */
+export const CS_EXPECTATION_DRAG_CEIL = 1.6
+
+/**
+ * ANSPRÅK 4, knapp 1: hur mycket av aktivitets- och volontärboosten som faktiskt
+ * biter, som funktion av klubbens storlek (rykte). 1,0 för en liten klubb,
+ * fallande linjärt till CS_UPKEEP_FACTOR_CEIL för en stor. Bara den POSITIVA
+ * aktivitets-/volontärsumman skalas — negativ csBoost (förlust, skandal) är
+ * orörd, det ska vara lika lätt att falla oavsett storlek.
+ *
+ * Kombineras multiplikativt med getCsDiminishingFactor (som dämpar efter CS-nivå,
+ * inte efter storlek). Den kombinationen är mätt och holdbarheten verifierad —
+ * se D037 och doktrinens tillägg.
+ */
+export function csUpkeepFactor(reputation: number): number {
+  return csLinearRamp(reputation, CS_UPKEEP_REP_FLOOR, CS_UPKEEP_REP_CEIL, 1.0, CS_UPKEEP_FACTOR_CEIL)
+}
+
+/**
+ * ANSPRÅK 4, knapp 2: ortens stigande förväntan som ett baslinjedrag i CS per
+ * omgång, oberoende av matchresultat. Returnerar en POSITIV magnitud som
+ * anropsstället drar av.
+ *
+ * Byggd först efter mätning, inte spekulativt (domens krav). Baslinjen visade
+ * coasting-hålet svart på vitt: en dominant klubb UTAN en enda aktivitet och
+ * UTAN en enda frivillig låg ändå kvar på CS-snitt 77 och slutade säsonger på 83
+ * — hela ortsspaken var värd bara 9,2 CS för den klubben (mot 25,4 för
+ * mittenklubben och 42,7 för Heros). Knapp 1 kan per konstruktion aldrig röra
+ * de 77 poängen; de kommer från segrar, som inte skalas. Utan knapp 2 hade
+ * anspråk 4 varit verkningslöst på precis den klubbklass det handlar om.
+ */
+export function csExpectationDrag(reputation: number): number {
+  return csLinearRamp(reputation, CS_UPKEEP_REP_FLOOR, CS_UPKEEP_REP_CEIL, 0, CS_EXPECTATION_DRAG_CEIL)
+}

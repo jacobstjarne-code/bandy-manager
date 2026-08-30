@@ -1,0 +1,140 @@
+fact_id: D037
+category: design_principles
+claim: "Anspråk 4 / ortsunderhållet (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md): när klubben vuxit har orten stigit i sina förväntningar. Managerns ortsinsats (aktivitets- + volontär-csBoost) skalas med en KONTINUERLIG rykte-ramp (csUpkeepFactor), och en rykte-skalad baslinjedrag (csExpectationDrag) biter oavsett matchresultat. Båda ramperna delar golv/tak — EN storleksaxel, aldrig en diskret era-/ryktetröskel (D031:s felklass, flyttad från cs-axeln till rykte-axeln). Bara positiva boostar skalas; negativ csBoost (förlust, skandal) är orörd."
+value:
+  CS_UPKEEP_REP_FLOOR: 80
+  CS_UPKEEP_REP_CEIL: 100
+  CS_UPKEEP_FACTOR_CEIL: 0.85
+  CS_EXPECTATION_DRAG_CEIL: 1.6
+unit: "rykte (0-100) för golv/tak; faktor (andel) för FACTOR_CEIL; communityStanding-poäng per omgång för DRAG_CEIL"
+source:
+  type: measurement
+  doc: "docs/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md; scripts/ansprak4-ortsunderhall-matning-2026-08-30.ts; src/domain/services/communityStandingScaling.ts"
+  decided_by: code
+verified_at: 2026-08-30
+verified_by: code
+status: active
+related_facts:
+  - D031
+  - D033
+invariants:
+  - "value.CS_UPKEEP_REP_FLOOR > 0"
+  - "value.CS_UPKEEP_REP_FLOOR < value.CS_UPKEEP_REP_CEIL"
+  - "value.CS_UPKEEP_REP_CEIL <= 100"
+  - "value.CS_UPKEEP_FACTOR_CEIL > 0.15"
+  - "value.CS_UPKEEP_FACTOR_CEIL < 1.0"
+  - "value.CS_EXPECTATION_DRAG_CEIL > 0"
+  - "value.CS_EXPECTATION_DRAG_CEIL < 3.0"
+notes: |
+  ── STEG 0: MÄTT MOT EN RIKTIG STOR KLUBB ──────────────────────────────────
+  DOMINANT = club_vastanfors + 10 CA, huvudseed 100 + pool 101-105 — samma
+  konstruktion som ah2-basekonomi-intakt-matning-2026-08-28.ts och
+  anspark1-budgettryck-matning-2026-08-28.ts, återanvänd rakt av, ingen ny
+  gissning om vad "stor klubb" betyder. 20 säsongsprover per ortspolicy.
+  KONTROLL = club_malilla seed 2 + pool 3-5. HEROS = club_heros seed 91000.
+
+  Två ortspolicyer per klubb, tvingade varje omgång, som operationalisering av
+  domens "synliga säsongsval":
+    HÅLLER — alla nio CS-positiva aktiviteter på + hela volontärrostern
+    GLIDER — inga aktiviteter, inga frivilliga
+
+  ── BASLINJEN — TRE FYND SOM STYRDE MAGNITUDERNA ───────────────────────────
+  1. DOMINANTKLUBBENS CS BÄRS AV SEGRAR, INTE AV ORTEN. En dominant klubb utan
+     EN ENDA aktivitet och utan EN ENDA frivillig låg ändå på CS-snitt 77,1 och
+     slutade säsonger på 83,4. Hela ortsspaken var värd 9,9 CS för den klubben
+     — mot 22,1 för mittenklubben och 36,2 för Heros. Knapp 1 kan per
+     konstruktion aldrig röra de 77 poängen (matchresultat skalas inte), och
+     kan definitionsmässigt inte röra en klubb som inte gör något. Coasting-
+     hålet i domens knapp-2-villkor är alltså inte hypotetiskt utan är
+     dominantfallet. DÄRFÖR byggdes knapp 2.
+  2. ATT HÅLLA ORTEN KOSTAR INTE PENGAR — DET TJÄNAR PENGAR. Kodläst i
+     economyService.ts:s community-block: tre av nio CS-aktiviteter
+     (pensionärskaffe/soppkväll/skolbesök) har noll löpande kostnad (bara
+     engångsavgift 0/1000/0 kr, academyActions.ts), fyra är netto
+     intäktspositiva per omgång (kiosk, lotteri, funktionärer, bandyskola),
+     en är ungefär neutral (bandyplay) och en kostar 500 kr/omgång
+     (sociala medier). Frivilliga är gratis att rekrytera OCH ger 340-800
+     kr/omgång var. Uppmätt: HÅLLER gav +326 tkr/säsong MER än GLIDER redan i
+     baslinjen. Domens premiss "var och en kostar löpande pengar" stämmer
+     alltså inte mot koden — se doktrinens tillägg 2026-08-30 för vad det
+     betyder för GODKÄNT NÄR 1 och 3.
+  3. PUBLIKTAKET MASKERAR CS VID TOPPEN. computeAttendanceRate cappar på 0,95.
+     En dominant klubb som höll orten låg i taket 63 % av omgångarna — väg B:s
+     CS-vikt 0,45 var i praktiken mättad och kunde inte belöna mer CS.
+
+  ── VARFÖR 0,85 OCH INTE DOMENS FÖRESLAGNA ~0,4-0,5 ────────────────────────
+  Domen sa uttryckligen "kalibreras" och att förslaget inte skulle övertas
+  okritiskt. Svepet (4 faktorer × 4 dragvärden = 16 hela körningar, 5+3×5
+  säsonger per cell) visade den avgörande asymmetrin:
+
+    GLIDER-klubbens CS-snitt vid drag 0, faktor 1,00 / 0,85 / 0,70 / 0,55:
+      77,1  ·  77,1  ·  77,1  ·  77,1     ← IDENTISKT
+
+  Knapp 1 träffar per konstruktion BARA klubben som redan gör rätt — en klubb
+  utan aktiviteter har ingen boost att skala. Ett hårt golv (0,45) beskattar
+  alltså enbart insatsen, rör inte coastaren alls, och krymper samtidigt
+  skillnaden mellan att hålla och att glida (ΔCS-snitt föll 10,2 → 7,7 när
+  faktorn gick 1,00 → 0,55) — vilket går RAKT EMOT domens GODKÄNT NÄR 1
+  ("ett synligt säsongsval"). 0,85 håller domens anspråk verkligt (en
+  rykte-100-klubbs ortsprogram håller 15 % mindre) utan att göra knapp 1 till
+  en skatt på det enda beteende domen vill uppmuntra.
+
+  ── VARFÖR DRAG 1,6 ────────────────────────────────────────────────────────
+  Draget är det ENDA som flyttar en coastande dominant klubb (GLIDER CS-snitt
+  77,1 → 73,4 → 69,9 → 65,8 vid drag 0 / 0,8 / 1,6 / 2,4). Men det komprimerar
+  också valet, eftersom en hög-CS-klubb faller snabbare än en låg-CS-klubb
+  (getCsDiminishingFactor gör återhämtningen svagare ju högre CS är):
+
+    drag   HÅLL CS-snitt   GLID CS-snitt   ΔCS   HÅLL netto/säs   konsumerat
+    0,0        87,0            77,1        9,9      827 778 kr         0 kr
+    1,2        78,6            71,7        7,0      767 162 kr    60 616 kr
+    1,4        77,4            70,8        6,7      756 738 kr    71 040 kr
+    1,6        75,3            69,9        5,5      720 748 kr   107 030 kr   ← låst
+    1,8        73,6            68,7        4,9      703 765 kr   124 013 kr
+    2,0        72,3            68,0        4,3      691 395 kr   136 383 kr
+    2,4        71,4            65,8        5,5*     698 225 kr   129 553 kr
+    (* vid faktor 0,70/0,55 INVERTERAR mekaniken vid drag 2,4 — ΔCS-slut blir
+       negativ, dvs. den som håller orten hamnar UNDER den som struntar i den.
+       Hård övre gräns.)
+
+  1,6 är den högsta nivå som samtidigt (a) konsumerar över hälften av
+  solvensfixens ~175 tkr/säsong-överskott (107 tkr, 61 %), (b) håller valet
+  synligt (ΔCS 5,5 och dubblerad tröskelexponering, se nedan), och (c) ligger
+  med marginal under inversionen. Att äta HELA överskottet vore att göra
+  basekonomi-fixen meningslös — domen säger "krymper", inte "raderas".
+
+  ── VAD SOM FAKTISKT ÄNDRADES FÖR DOMINANTKLUBBEN (20 säsongsprover) ───────
+                          baslinje                 efter
+    HÅLLER  CS-snitt        87,0                    75,3
+            CS-slut         93,1                    82,1
+            omg <60          4 %                    12 %
+            omg ≥85         69 %                    25 %
+            publiktak       63 %                    42 %
+            netto/säs   827 778 kr              720 748 kr
+    GLIDER  CS-snitt        77,1                    69,9
+            omg <60         14 %                    26 %
+            omg <70         29 %                    43 %
+            netto/säs   501 815 kr              421 943 kr
+
+  Den permanenta topplatån är borta: en dominant klubb som betalar för orten
+  låg tidigare på CS ≥85 i 69 % av alla omgångar (mecenattak 3, patronen
+  aldrig i närheten av sin tröskel) — nu 25 %. Exponeringen mot patronens
+  tröskel (PATRON_EMERGE_CS = 60) är 12 % om man håller orten mot 26 % om man
+  låter den glida: en fördubbling, och det är den namngivbara konsekvensen.
+
+  ── SURVIVE-GOLVET (H4), MÄTT ──────────────────────────────────────────────
+  Heros CS-bana är IDENTISK med baslinjen säsong 1-4 (rykte 56/63/70/80,
+  faktor 1,00, drag 0 hela vägen); först säsong 5, när rykte nått 91, biter
+  faktorn (0,92). club_malilla i GLIDER-policyn är likaså bit-för-bit
+  identisk med baslinjen (CS-snitt 44,9, netto 130 045 kr). En klubb under
+  rykte 80 känner ingenting av anspråk 4 — vilket är hela poängen: orten är
+  Survive-klubbens spak, inte dess kostnad.
+
+  ── KÄNT SIDOFYND, UTANFÖR DENNA DOMS SCOPE ────────────────────────────────
+  `communityActivities.socialMedia` ger +1 RYKTE var femte matchday
+  (economyProcessor.ts:177-184) — ca +6 rykte/säsong för 500 kr/omgång, utan
+  koppling till placering. Mätt konsekvens: club_malilla (mittenlag,
+  placeringar 5/8/6) når rykte 100 på tre säsonger under HÅLLER-policyn.
+  Eftersom anspråk 4 nu läser rykte som storleksaxel är den inflationen en
+  förutsättning som bör granskas separat (D028 äger säsongsdeltat, som toppar
+  på +4). Inte ändrad här.
