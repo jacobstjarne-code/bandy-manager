@@ -7,37 +7,37 @@ const _finding = _findings.find((f) => f.num === '060');
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="En empirisk win probability-modell över 1 124 Elitseriematcher: en tvåmålsledning är inte 95-procentigt säker förrän minut 84 i herrserien — i damserien redan minut 31. Bandy är en comeback-sport, men bara på herrsidan."
+  description="En rå empirisk vinstsannolikhetsmodell över 1 124 Elitseriematcher. Herrkurvans tvåmålsledning passerar och stannar över 95 procent från minut 84; damkurvan är för gles och ojämn för samma slutsats."
 >
   <div class="finding-layout">
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
     <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
-    <h1 class="finding-title">När dör en bandymatch?<br>Tvåmålsledningen är säker först i minut 84</h1>
+    <h1 class="finding-title">När passerar en bandyledning<br>95 procent i råmodellen?</h1>
 
     <hr class="finding-divider" />
 
     <div class="key-numbers">
       <div class="key-number">
         <span class="key-number__value">Minut 84</span>
-        <span class="key-number__label">Först då är +2 ≥ 95 % säker (herr)</span>
-        <span class="key-number__note">En tvåmålsledning lever i 83 minuter</span>
+        <span class="key-number__label">+2 passerar och stannar över 95 % (herr)</span>
+        <span class="key-number__note">Rå empirisk grid, n=115 i minut 84</span>
       </div>
       <div class="key-number">
         <span class="key-number__value">Aldrig</span>
-        <span class="key-number__label">+1 når inte 95 % före minut 90</span>
+        <span class="key-number__label">+1 når inte 95 % i reliable celler</span>
         <span class="key-number__note">En uddamålsledning är öppen match hela vägen</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">Minut 31</span>
-        <span class="key-number__label">Samma tröskel i damserien</span>
-        <span class="key-number__note">Dam-matcher avgörs 53 minuter tidigare</span>
+        <span class="key-number__value">31 → under igen</span>
+        <span class="key-number__label">Dam +2: första passagen är instabil</span>
+        <span class="key-number__note">Kurvan faller därefter under 95 % flera gånger</span>
       </div>
       <div class="key-number">
         <span class="key-number__value">61 %</span>
-        <span class="key-number__label">Vinstchans vid +1 i halvtid</span>
-        <span class="key-number__note">De berömda 78 % bärs av flermålsledningarna</span>
+        <span class="key-number__label">Hemmavinst vid +1 i rå minut 45</span>
+        <span class="key-number__note">Inte samma sak som registrerat halvtidsresultat</span>
       </div>
     </div>
 
@@ -52,28 +52,29 @@ const _finding = _findings.find((f) => f.num === '060');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Datan</p>
-      <p>Ur målsekvenserna i Bandygrytan byggs en tillståndslinje per match: för varje matchminut 1–90 och målskillnad (hemma−borta, trunkerad till ±3) mäts den empiriska utfallsfördelningen — hemmavinst, oavgjort, bortavinst. Underlaget är 1 124 herrmatchar och 376 dammatchar i grundserien 2019–2026 (exkl. 2023–24). Celler med minst 30 observationer räknas som pålitliga; för herr är 585 av 620 celler pålitliga, för dam 447 av 621.</p>
+      <p>Ur målsekvenserna i Bandygrytan byggs en tillståndslinje per match: för varje rå matchminut 1–90 och målskillnad (hemma−borta, trunkerad till ±3) mäts den empiriska utfallsfördelningen. Underlaget är 1 124 herrmatchar och 376 dammatchar i grundserien 2019–2026 (exkl. 2023–24). Celler med minst 30 observationer markeras som mer tillförlitliga; för herr gäller det 585 av 620 celler, för dam 447 av 621. Modellen är inte utjämnad eller justerad för lagstyrka.</p>
     </div>
 
     <hr class="finding-divider" />
 
     <div class="finding-section prose">
       <p class="finding-section-label">Vad vi fann</p>
-      <p><strong>Bandymatchen dör sent.</strong> Definiera "död" som första minut där utfallet är minst 95 % säkert. I herrserien är en trémålsledning död vid minut 30 — men en tvåmålsledning håller sig levande ända till minut 84, och en uddamålsledning når aldrig tröskeln före slutsignalen. Herrbandy är, mätt så här, en sport där nästan varje match med mindre än tre måls marginal är öppen på riktigt.</p>
+      <p><strong>Herrkurvans tvåmålsledning passerar sent.</strong> Om tröskeln sätts till 95 procent passerar och stannar en tvåmålsledning över nivån från minut 84 i den råa herrgriden. En uddamålsledning når inte tröskeln i reliable celler. För andra tillstånd kan den första passagen följas av ett fall under tröskeln, så ”första minut” får inte automatiskt kallas att matchen är säker.</p>
       <table>
-        <thead><tr><th>Målskillnad</th><th>Herr — död vid</th><th>Dam — död vid</th></tr></thead>
+        <thead><tr><th>Målskillnad</th><th>Herr — första / varaktig 95 %-passage</th><th>Dam — första / varaktig 95 %-passage</th></tr></thead>
         <tbody>
-          <tr><td>+3</td><td>minut 30</td><td>minut 19</td></tr>
-          <tr><td>+2</td><td>minut 84</td><td>minut 31</td></tr>
-          <tr><td>+1</td><td>aldrig före 90</td><td>aldrig före 90</td></tr>
-          <tr><td>−1</td><td>aldrig före 90</td><td>aldrig före 90</td></tr>
-          <tr><td>−2</td><td>minut 84</td><td>minut 52</td></tr>
-          <tr><td>−3</td><td>minut 55</td><td>minut 18</td></tr>
+          <tr><td>+3</td><td>minut 30 / 37</td><td>minut 19 / 19</td></tr>
+          <tr><td>+2</td><td>minut 84 / 84</td><td>minut 31 / 88*</td></tr>
+          <tr><td>+1</td><td>ingen / ingen</td><td>ingen / ingen</td></tr>
+          <tr><td>−1</td><td>ingen / ingen</td><td>ingen / ingen</td></tr>
+          <tr><td>−2</td><td>minut 84 / 84</td><td>minut 52 / 52*</td></tr>
+          <tr><td>−3</td><td>minut 55 / 55</td><td>minut 18 / 18</td></tr>
         </tbody>
       </table>
-      <p><strong>Damserien avgörs dramatiskt tidigare.</strong> Tvåmålsledningen som lever till minut 84 i herr är säker redan i minut 31 i dam — 53 minuter tidigare. Mönstret gäller hela tabellen. Halvtidstillstånden säger samma sak från ett annat håll: ett hemmalag som ligger under med ett mål i halvtid vinner 27 % av herrmatcherna men bara 7 % av dammatcherna.</p>
-      <p><strong>Hemmafördelen syns som comeback-förmåga.</strong> I herr är +3 (hemmalaget leder med tre) död vid minut 30, men −3 (bortalaget leder med tre) först vid minut 55. Ett hemmalag i brant underläge stör utfallet i 25 minuter längre än ett bortalag i samma sits — hemmafördelen är inte bara fler vinster, den är längre livslängd i förlorade lägen.</p>
-      <p><strong>Och 78-procentssiffran får sin dekomposition.</strong> Findings 001, 011 och 038 har etablerat att halvtidsledning ger ~78 % vinstchans i herrserien. Modellen reproducerar aggregatet (viktat ≈ 79 %) men visar vad det består av: +1 i halvtid ger 61 %, +2 ger 80 %, +3 ger 98 %. Den berömda halvtidsledningen är alltså ingen garanti alls när den är ett enda mål — genomsnittet bärs av flermålsledningarna.</p>
+      <p><em>* Damgriden är gles och har inte reliable celler genom hela matchen för alla målskillnader. ”Varaktig” betyder därför bara att senare celler som klarar n≥30 ligger över tröskeln.</em></p>
+      <p><strong>Damjämförelsen är inte mogen för rubrikslutsats.</strong> +2 passerar 95 procent redan i minut 31, men faller sedan under nivån upprepade gånger. Den tidigare slutsatsen att dammatcher därmed avgörs 53 minuter tidigare var för stark. Däremot visar det registrerade halvtidsmåttet i Finding 056 att ledningar oftare håller i damserien; det är ett separat och bättre underbyggt resultat.</p>
+      <p><strong>Griden är asymmetrisk mellan hemma och borta.</strong> För klassen +3 är första och varaktig passage minut 30 respektive 37; för −3 är båda minut 55. Det är förenligt med hemmafördel, men modellen kontrollerar inte lagstyrka eller vilka lag som hamnar i tillstånden och fastställer därför ingen comeback-mekanism.</p>
+      <p><strong>Rå minut 45 visar hur ledningsstorleken spelar roll.</strong> +1 ger 61 procent hemmavinst, +2 ger 80 procent och +3 ger 98 procent. Detta är inte en exakt dekomposition av halvtidsmåttet: första halvlekens tilläggstid gör att rå minut 45 och registrerad halvtid inte alltid sammanfaller.</p>
       <table>
         <thead><tr><th>Ställning vid min 45</th><th>P(hemmavinst) herr</th><th>n</th><th>P(hemmavinst) dam</th><th>n</th></tr></thead>
         <tbody>
@@ -93,9 +94,7 @@ const _finding = _findings.find((f) => f.num === '060');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>Modellen sätter siffror på något bandypubliken vet i magen: herrbandy är en comeback-sport. Kombinationen högt måltempo och lång effektiv speltid gör att ledningar under tre mål aldrig är trygga — det är samma struktur som Finding 051 (comeback-fönstret tidigt i andra halvlek) och Finding 059 (utvisningen som sent målfönster) belyser från andra vinklar. En tränare som stänger matchen i minut 60 med +2 gör det 24 minuter innan datan säger att den är stängd.</p>
-      <p>Att damserien dör tidigare ansluter till Finding 056: dam och herr är samma sport med skild struktur. Ledningar är dödligare, underlägen mer definitiva — vilket i sin tur gör 056:s fynd om den frånvarande dam-hemmafördelen mer begripligt: den herr-mekanism som syns här som förlängd livslängd i underläge saknar motsvarighet på damsidan.</p>
-      <p>För Bandy Managers del är detta motorvalidering på systemnivå: motorns simulerade matcher ska reproducera den här ytan — inte bara måltotaler och minutfördelningar utan själva förloppsdynamiken. Och för matchupplevelsen är griden direkt användbar som live-vinstsannolikhet.</p>
+      <p>Herrresultatet stödjer att även tvåmålsledningar kan förbli osäkra sent. Griden är däremot en deskriptiv prototyp, inte en kalibrerad liveprognos. Innan den används i Bandy Manager bör sannolikheterna jämnas ut eller modelleras med tid, målskillnad, hemmafördel och lagstyrka, och sedan valideras på matcher som inte ingick i träningen.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -104,8 +103,10 @@ const _finding = _findings.find((f) => f.num === '060');
       <p class="finding-section-label">Begränsningar</p>
       <ul>
         <li>Grundserie endast. Slutspel har annan dramaturgi (bäst-av-serier, högre insats) och är inte inkluderat.</li>
-        <li>Empirisk grid utan utjämning eller regression — glesa celler är brusiga och är flaggade (n &lt; 30), inte utelämnade. Dam-griden är väsentligt glesare (376 matcher).</li>
-        <li>Tröskeln 95 % är ett val, inte en naturlag. Vid 90 % eller 99 % flyttar "dödsminuterna" på sig; riktningen och dam–herr-gapet består.</li>
+        <li>Empirisk grid utan utjämning eller regression — även celler med n≥30 kan hoppa upp och ned. Dam-griden är väsentligt glesare (376 matcher).</li>
+        <li>Tröskeln 95 % är ett val, inte en naturlag. Vid 90 % eller 99 % flyttar passagerna och seriejämförelsen kan ändras.</li>
+        <li>Första tröskelpassage och varaktig passage är olika mått. Glesa sena celler gör särskilt den senare känslig.</li>
+        <li>Rå minut 45 är inte alltid halvtid; jämförelsen med registrerade halvtidsmått är därför ungefärlig.</li>
         <li>Minutfönstret 45–50 blandar tilläggstid i första halvlek med tidig andra halvlek i speltid. Det påverkar bucketing i det fönstret, inte tillståndslogiken.</li>
         <li>2023–24 saknas i datasetet.</li>
       </ul>

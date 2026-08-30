@@ -18,7 +18,7 @@ const bars = deciles.map(d => ({
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="Två kluster sticker ut i Elitseriematchernas målfördelning: minuterna 40–50 och 80–90. Resten av matchen är anmärkningsvärt jämn."
+  description="Två råa minutintervall sticker ut i Elitseriematchernas målfördelning: runt halvtid och i slutminuterna. Intervallen beskriver fördelningen men fastställer inte mekanismen."
 >
   <div class="finding-layout">
 
@@ -86,8 +86,9 @@ const bars = deciles.map(d => ({
       </p>
       <ul>
         <li>
-          <strong>Minuter 40–50:</strong> 11,8% — det högsta intervallet
-          förutom slutminuterna. Klustret sträcker sig över halvtidsgränsen.
+          <strong>Minuter 40–50:</strong> 11,8% — det högsta råminutsintervallet
+          förutom slutminuterna. Med halvleksflaggan syns att klustret är tyngre
+          i första halvlekens slut än i andra halvlekens början.
         </li>
         <li>
           <strong>Minuter 80–90:</strong> 12,9% — matchens tätaste
@@ -108,21 +109,17 @@ const bars = deciles.map(d => ({
       </p>
 
       <p>
-        Halvtidsgräns-klustret är mer intressant. Att minuterna 40–50
-        producerar 11,8% av alla mål — mer än vilket annat 10-minutersintervall
-        som helst utom slutminuterna — kan ha flera förklaringar.
-        En möjlig: lag som vill in i halvtid med ledning pressar hårdare
-        i matchens sista fem minuter. Motståndaren, som ännu inte dragit
-        sig tillbaka taktiskt, är mer exponerad. Samma press fortsätter
-        precis efter halvtid när lag vill etablera kontroll tidigt.
+        Halvtidsklustret kan ha flera förklaringar, men råminuten blandar
+        ordinarie tid och tilläggstid. En halvleksmedveten omräkning visar
+        att ungefär 60% av målen kring gränsen hör till första halvlekens slut
+        och 40% till andra halvlekens början. Datan visar därför ett kluster,
+        inte ett symmetriskt taktiskt skifte över pausen.
       </p>
 
       <p>
-        Det är också värt att notera vad som <em>inte</em> syns: ingen
-        trötthetsdipp i mitten av halvlekarna (25–35 min är helt normalt),
-        inget "öppningsrusning" i minut 1–5 utöver det förväntade.
-        Bandys fria substitution verkar effektivt motverka konditionen
-        som faktor under matchens mitt.
+        Det syns ingen motsvarande rå topp mitt i halvlekarna. Det räcker
+        däremot inte för att avgöra om fria byten, kondition eller taktik är
+        förklaringen; sådana mekanismer kräver data om byten och matchläge.
       </p>
     </div>
 
@@ -140,6 +137,7 @@ const bars = deciles.map(d => ({
           Tidsstämpling i Bandygrytan kan ha systematiska fel
           (avrundning, sen registrering).
         </li>
+        <li>Råa matchminuter kring halvtid blandar ordinarie tid, tilläggstid och andra halvlek. Halvleksflaggan behövs för tolkning.</li>
         <li>
           Datan exkluderar övertidsmål (3,9% av alla mål faller efter
           minut 90 i databasen — dessa är inte med i fördelningen).

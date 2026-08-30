@@ -20,20 +20,22 @@ Per-match tillståndslinje ur `goals[]`. För varje matchminut 1–90 och målsk
 - **diff -2:** min15: 19% (n=73) | min30: 19% (n=94) | min45: 17% (n=95) | min60: 12% (n=106) | min75: 6% (n=90) | min89: 0% (n=83)
 - **diff -3:** min15: 4%* (n=23) | min30: 10% (n=88) | min45: 3% (n=133) | min60: 1% (n=159) | min75: 0% (n=204) | min89: 0% (n=243)
 
-## "Match död"-tröskel — första minut där utfallet är ≥95 % säkert (reliable)
+## 95 %-tröskel — första respektive varaktiga passage i rågrid (reliable)
 
-| Målskillnad | Herr | Dam |
-|---|---|---|
-| 3 | min 30 | min 19 |
-| 2 | min 84 | min 31 |
-| 1 | aldrig <90 | aldrig <90 |
-| -1 | aldrig <90 | aldrig <90 |
-| -2 | min 84 | min 52 |
-| -3 | min 55 | min 18 |
+En första passage är inte en garanti: en ojämnad empirisk kurva kan falla under tröskeln igen. Varaktig passage betyder att alla senare reliable celler ligger på minst 95 %, men är också känslig för gles täckning.
 
-## Halvtid (minut 45) — jämförelse mot findings 001/011/038
+| Målskillnad | Herr första | Herr varaktig | Dam första | Dam varaktig |
+|---|---|---|---|---|
+| 3 | min 29 | min 37 | min 19 | min 19 |
+| 2 | min 84 | min 84 | min 31 | min 88 |
+| 1 | ingen | ingen | ingen | ingen |
+| -1 | ingen | ingen | ingen | ingen |
+| -2 | min 84 | min 84 | min 52 | min 52 |
+| -3 | min 55 | min 55 | min 18 | min 18 |
 
-Findings 001/011/038 anger halvtidsledning→vinst ~78 % (herr). Denna modell ger tillståndet vid exakt minut 45:
+## Rå minut 45 — inte nödvändigtvis halvtid
+
+Findings 001/011/038 använder registrerat halvtidsresultat. Denna modell ger i stället tillståndet vid exakt rå minut 45, som inte är samma sak när första halvleken har tilläggstid:
 
 | diff vid min 45 | P_home herr | n | P_home dam | n |
 |---|---|---|---|---|
@@ -45,7 +47,7 @@ Findings 001/011/038 anger halvtidsledning→vinst ~78 % (herr). Denna modell ge
 | -2 | 17% | 95 | 11% | 37 |
 | -3 | 3% | 133 | 0% | 75 |
 
-*Not:* modellens "+1 vid minut 45"-cell är den direkta motsvarigheten till findings 001/011/038:s halvtidsledning. Findingsen aggregerar alla ledningar ≥1; denna modell särskiljer +1/+2/+3.
+*Not:* minut 45-cellen är en närliggande kontrollpunkt, inte en direkt motsvarighet till registrerat halvtidsresultat. Den särskiljer +1/+2/+3.
 
 ## Täckning
 

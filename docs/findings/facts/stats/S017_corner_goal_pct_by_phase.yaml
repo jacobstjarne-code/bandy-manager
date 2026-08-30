@@ -27,7 +27,7 @@ notes: |
   slutspelslag är bättre på att försvara hörnor, alternativt spelar de mer
   direkt spel när målen är avgörande.
 
-  Final-siffran (16.7 %) baseras på n≈29 matcher och är osäker.
+  Final-siffran (16.7 %) baseras på 12 matcher och är osäker.
 
   Simulatorn (sprint 25-K) replikerar grundserie (23.0 %) och KVF/SF (≈22.9/22.6 %)
   väl, men modellerar inte fas-variation — cornerGoalPct är konstant i motorn.

@@ -88,18 +88,28 @@ def grid_to_json(grid):
             }
     return out
 
-def dead_thresholds(gridjson):
-    """Första minut där P_home>0.95 (per diff≥+1) resp P_away>0.95 (diff≤-1), med reliable=True."""
-    res = {}
+def threshold_crossings(gridjson):
+    """First and sustained reliable crossings of the 95 percent threshold."""
+    first_res = {}
+    sustained_res = {}
     for diff in ['1', '2', '3', '-1', '-2', '-3']:
         target = 'P_home' if int(diff) > 0 else 'P_away'
-        first = None
+        cells = []
         for minute in range(1, MAX_MIN + 1):
             cell = gridjson.get(str(minute), {}).get(diff)
-            if cell and cell['reliable'] and cell[target] > 0.95:
-                first = minute; break
-        res[diff] = first
-    return res
+            if cell and cell['reliable']:
+                cells.append((minute, cell[target]))
+        first_res[diff] = next((minute for minute, probability in cells if probability >= 0.95), None)
+        sustained_res[diff] = next(
+            (
+                minute
+                for index, (minute, probability) in enumerate(cells)
+                if probability >= 0.95
+                and all(later_probability >= 0.95 for _, later_probability in cells[index:])
+            ),
+            None,
+        )
+    return {'first': first_res, 'sustained': sustained_res}
 
 def ht_snapshot(gridjson):
     """Tillstånd vid minut 45 (halvtid) per diff — jämförelse mot findings 001/011/038."""
@@ -133,8 +143,8 @@ def main():
                 'cells_reliable': n_reliable,
             },
             'grid': gj,
-            'dead_thresholds': dead_thresholds(gj),
-            'ht_minute45': ht_snapshot(gj),
+            'threshold_crossings_95pct': threshold_crossings(gj),
+            'minute45_snapshot': ht_snapshot(gj),
         }
         json.dump(out, open(f'docs/data/{fname}', 'w'), ensure_ascii=False, indent=2)
         reports[label] = out
@@ -174,30 +184,37 @@ def write_report(reports):
         lines.append(f"- **diff {diff:+d}:** {curve_line(h, diff)}")
     lines.append("")
 
-    lines.append("## \"Match död\"-tröskel — första minut där utfallet är ≥95 % säkert (reliable)\n")
-    lines.append("| Målskillnad | Herr | Dam |")
-    lines.append("|---|---|---|")
+    lines.append("## 95 %-tröskel — första respektive varaktiga passage i rågrid (reliable)\n")
+    lines.append("En första passage är inte en garanti: en ojämnad empirisk kurva kan falla under "
+                 "tröskeln igen. Varaktig passage betyder att alla senare reliable celler ligger "
+                 "på minst 95 %, men är också känslig för gles täckning.\n")
+    lines.append("| Målskillnad | Herr första | Herr varaktig | Dam första | Dam varaktig |")
+    lines.append("|---|---|---|---|---|")
     for diff in ['3', '2', '1', '-1', '-2', '-3']:
-        hv = h['dead_thresholds'].get(diff); dv = dm['dead_thresholds'].get(diff)
-        lines.append(f"| {diff} | {'min '+str(hv) if hv else 'aldrig <90'} | {'min '+str(dv) if dv else 'aldrig <90'} |")
+        hf = h['threshold_crossings_95pct']['first'].get(diff)
+        hs = h['threshold_crossings_95pct']['sustained'].get(diff)
+        df = dm['threshold_crossings_95pct']['first'].get(diff)
+        ds = dm['threshold_crossings_95pct']['sustained'].get(diff)
+        fmt = lambda value: f"min {value}" if value else "ingen"
+        lines.append(f"| {diff} | {fmt(hf)} | {fmt(hs)} | {fmt(df)} | {fmt(ds)} |")
     lines.append("")
 
-    lines.append("## Halvtid (minut 45) — jämförelse mot findings 001/011/038\n")
-    lines.append("Findings 001/011/038 anger halvtidsledning→vinst ~78 % (herr). Denna modell "
-                 "ger tillståndet vid exakt minut 45:\n")
+    lines.append("## Rå minut 45 — inte nödvändigtvis halvtid\n")
+    lines.append("Findings 001/011/038 använder registrerat halvtidsresultat. Denna modell ger i "
+                 "stället tillståndet vid exakt rå minut 45, som inte är samma sak när första "
+                 "halvleken har tilläggstid:\n")
     lines.append("| diff vid min 45 | P_home herr | n | P_home dam | n |")
     lines.append("|---|---|---|---|---|")
     for diff in ['3', '2', '1', '0', '-1', '-2', '-3']:
-        hc = h['ht_minute45'].get(diff); dc = dm['ht_minute45'].get(diff)
+        hc = h['minute45_snapshot'].get(diff); dc = dm['minute45_snapshot'].get(diff)
         hp = f"{hc['P_home']*100:.0f}%{'' if hc['reliable'] else '*'}" if hc else '—'
         hn = hc['n'] if hc else '—'
         dp = f"{dc['P_home']*100:.0f}%{'' if dc['reliable'] else '*'}" if dc else '—'
         dn = dc['n'] if dc else '—'
         lines.append(f"| {diff} | {hp} | {hn} | {dp} | {dn} |")
     lines.append("")
-    lines.append("*Not:* modellens \"+1 vid minut 45\"-cell är den direkta motsvarigheten till "
-                 "findings 001/011/038:s halvtidsledning. Findingsen aggregerar alla ledningar "
-                 "≥1; denna modell särskiljer +1/+2/+3.\n")
+    lines.append("*Not:* minut 45-cellen är en närliggande kontrollpunkt, inte en direkt "
+                 "motsvarighet till registrerat halvtidsresultat. Den särskiljer +1/+2/+3.\n")
 
     lines.append("## Täckning\n")
     lines.append(f"- Herr: {h['_meta']['cells_reliable']}/{h['_meta']['cells_total']} celler reliable (n≥30).")

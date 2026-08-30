@@ -7,14 +7,14 @@ const _finding = _findings.find((f) => f.num === '051');
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="Lag som reducerar i matchens sjätte till tionde minut av andra halvlek vänder i 27,0 % av fallen — mot 13,3 % i snitt. Sju dimensioners analys av comeback-mekaniken i herrbandy."
+  description="Matcher där det jagande laget gör sitt första mål i minut 6–10 av andra halvlek slutar med comeback i 27,0 procent av fallen, mot 13,3 procent i hela urvalet med halvtidsunderläge."
 >
   <div class="finding-layout">
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
     <p class="finding-meta">Finding 051 · 31 maj 2026</p>
-    <h1 class="finding-title">Comeback-fönstret: sex minuter<br>tidigt i andra halvlek</h1>
+    <h1 class="finding-title">Comeback-fönstret: fem minuter<br>tidigt i andra halvlek</h1>
 
     <hr class="finding-divider" />
 
@@ -32,7 +32,7 @@ const _finding = _findings.find((f) => f.num === '051');
       <div class="key-number">
         <span class="key-number__value">2,03×</span>
         <span class="key-number__label">Relativ risk vs. baslinje</span>
-        <span class="key-number__note">Fönstret ger drygt dubbelt så hög comeback-andel</span>
+        <span class="key-number__note">Gruppen har drygt dubbelt så hög comeback-andel</span>
       </div>
       <div class="key-number">
         <span class="key-number__value">39,0 %</span>
@@ -40,7 +40,7 @@ const _finding = _findings.find((f) => f.num === '051');
         <span class="key-number__note">Om reducering sker i fönstret vid exakt ett måls underläge</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">0 av 147</span>
+        <span class="key-number__value">0 av 150</span>
         <span class="key-number__label">Comebacks utan reducerande mål</span>
         <span class="key-number__note">Inget halvtidsunderläge vändes utan minst ett mål i 2H</span>
       </div>
@@ -66,7 +66,7 @@ const _finding = _findings.find((f) => f.num === '051');
     <div class="finding-section prose">
       <p class="finding-section-label">Vad vi fann</p>
 
-      <p><strong>Fönstereffekten håller — och skärps vid ett måls underläge.</strong> Grundläggande comeback-andel i hela herr-datasetet är 13,3 % (141/1 061). Fönstret 51–55 (6–10 min in i 2H) ger 27,0 % (43/159), vilket är statistiskt signifikant (p &lt; 0,0001). Fönstret 46–50 (1–5 min) ger 21,3 % (40/188) — förhöjt men inte lika starkt. Från rådata-minut 56 och framåt faller andelen tillbaka mot baseline.</p>
+      <p><strong>Den starkaste associationen ligger i ett femminutersfönster — och skärps vid ett måls underläge.</strong> Grundläggande comeback-andel i hela herr-datasetet är 13,3 % (141/1 061). Bland matcher där det jagande lagets första mål i andra halvlek kommer i rådata-minut 51–55 är andelen 27,0 % (43/159; ojusterat p &lt; 0,0001 mot baslinjen). Fönstret 46–50 ger 21,3 % (40/188). Från minut 56 faller andelen tillbaka mot baslinjen.</p>
 
       <table>
         <thead>
@@ -110,9 +110,9 @@ const _finding = _findings.find((f) => f.num === '051');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>Det finns ett relativt stabilt och statistiskt signifikant fönster tidigt i andra halvlek — ungefär minut 6–10 — där en reducering ger mer än dubbelt så hög comeback-sannolikhet som baslinjen. Effekten är koncentrerad till matcher med ett måls halvtidsunderläge: vid exakt ett måls underläge och reducering i det fönstret vänder laget i 39,0 % av fallen.</p>
+      <p>Det finns en tydlig association tidigt i andra halvlek — minut 6–10 — mellan tidpunkten för det första jagande målet och slutlig comeback. Gruppen har mer än dubbelt så hög comeback-andel som hela urvalet. Det är inte samma sak som att ett mål just då orsakar en comeback: jämförelsen villkorar på att laget faktiskt gör mål, och en tidig reducering lämnar mer tid än en sen.</p>
       <p>Mekanismen är sannolikt sammansatt. En tidig reducering ger det jagande laget tillräckligt med tid för att hinna score ytterligare — det är ett nödvändigt villkor, inte ett tillräckligt. Domarmönstret i fönstret (ledande lag straffas 12 % oftare än genomsnittet för 2H) antyder att det ledande lagets spel förändras tidigt i andra halvlek på ett sätt som leder till fler utvisningar, vilket i sin tur skapar möjligheter för det jagande laget. Att ungefär 28 % av comeback-målen föregås av en utvisning mot motståndaren de senaste tio minuterna stöder att spelläge och numerärt övertag spelar roll, men mekaniken är inte isolerbar utan mer detaljerad tidsstämpling.</p>
-      <p>Det faktum att måltypsfördelningen är i princip identisk i fönstret jämfört med resten av 2H tyder på att det inte är en specifik taktisk manöver — som att satsa på hörnor — som driver fönstereffekten. Det är tajmingen i sig, inte sättet målet faller, som verkar ha förklaringsvärde.</p>
+      <p>Att måltypsfördelningen är nästan identisk i fönstret och resten av andra halvlek talar emot att en enda måltyp, exempelvis hörna, ensam förklarar mönstret. Datan isolerar däremot inte tajming som orsak.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -121,10 +121,11 @@ const _finding = _findings.find((f) => f.num === '051');
       <p class="finding-section-label">Begränsningar</p>
       <ul>
         <li>Utvisningsdata saknar exakt sluttidpunkt — om utvisningen fortfarande pågick vid comeback-målet kan inte avgöras från rådata.</li>
-        <li>Power-play-proxyn (utvisning inom 10 min före mål) är konservativ och kan underskatta andelen man-up-situationer.</li>
+        <li>Power-play-proxyn (utvisning inom 10 min före mål) är oskarp och kan både över- och underskatta faktisk tid i numerärt överläge.</li>
+        <li>Flera tidsfönster jämförs mot samma baslinje. De redovisade p-värdena är ojusterade och analysen är explorativ.</li>
         <li>Baslinjen skiljer sig från Finding 041 och 042 (13,3 % mot 15,7 %) eftersom datasetet har utökats med ytterligare säsonger sedan aprils analys.</li>
         <li>Dam-serien analyseras inte på djupet här; dam-baselinen är 7,2 % (27/375) och avviker markant från herrserien.</li>
-        <li>Klubbdistributionen baseras på fiktiva klubbnamn ur Bandygrytans data och bör tolkas som ett mönstermått, inte som en rekryteringsanalys.</li>
+        <li>Klubbdistributionen är inte justerad för lagstyrka, säsong eller antal halvtidsunderlägen per klubb.</li>
         <li>Vi separerar inte rena matchomständigheter (t.ex. väder, is-förhållanden, frånvaro av nyckelspelare) från de strukturella mönstren.</li>
       </ul>
     </div>

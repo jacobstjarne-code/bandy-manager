@@ -11,15 +11,15 @@ const latest = latestFinding;
 
 // Kuraterad ingång för nya läsare — den redaktionellt prioriterade kärnan.
 const startHere = [
-  { num: '060', why: 'En tvåmålsledning är inte säker förrän minut 84. Bandy är en comeback-sport.' },
-  { num: '051', why: 'Comebacks har ett tydligt fönster tidigt i andra halvlek.' },
-  { num: '052', why: 'Utvisningarna ökade 16 % — reformen 2025-26 syns i datan.' },
-  { num: '055', why: 'Ökningen kom från lätta tekniska utvisningar, inte grovt våld.' },
-  { num: '056', why: 'Dam och herr är samma sport med skild struktur — hemmafördelen finns bara på herrsidan.' },
-  { num: '057', why: 'Ledande lag får oftare sabotageutvisningar än lag som jagar.' },
+  { num: '002', why: 'Drygt vart femte mål kommer ur hörnläge — med korrekt åtskilda mått för andel och konvertering.' },
+  { num: '051', why: 'Comebackandelen är tydligt förhöjd för tidiga reduceringar i andra halvlek.' },
+  { num: '052', why: 'Den registrerade utvisningsfrekvensen ökade 16 % säsongen 2025-26.' },
+  { num: '055', why: 'Nästan hela ökningen bestod av femminutare, medan tiominutarna låg still.' },
+  { num: '056', why: 'Dam och herr har liknande mål- och utvisningsnivå men olika resultatstruktur.' },
+  { num: '057', why: 'Sabotagekategorin är vanligare bland utvisningar när laget leder.' },
   { num: '058', why: 'Nästan två av tre straffar blir mål, med en tydlig dam–herr-skillnad.' },
-  { num: '061', why: 'En tiominutare leder till baklängesmål i fyra av tio överlägen.' },
-  { num: '062', why: 'En division ner är samma sport — Allsvenskan har samma dramaturgi som Elitserien.' },
+  { num: '061', why: 'Fyra av tio rena tiominutersöverlägen innehåller minst ett mål.' },
+  { num: '062', why: 'Allsvenskan och Elitserien är mycket lika på flera matchmått, men utvisningarna skiljer.' },
   { num: '005', why: 'Grundmönstret: mål faller inte jämnt över en bandymatch.' },
 ].map(s => ({ ...s, f: findings.find(f => f.num === s.num) })).filter(s => s.f);
 ---
@@ -32,11 +32,11 @@ const startHere = [
       <p class="hero__body">
         Bandy Brain letar systematiskt efter mönster i Elitseriens och
         Allsvenskans verkliga matchdata från Bandygrytan — när matcher avgörs,
-        vad utvisningar kostar, hur domarreformer slår igenom, vad som skiljer
+        vad utvisningar kostar, hur domningen förändras över tid, vad som skiljer
         dam från herr. Där verklig data tar slut kompletterar Bandy Managers
         simuleringsmotor, som är kalibrerad mot samma matchdata. Varje finding
         redovisar metod, osäkerhet och begränsningar — och när vi haft fel
-        står felet kvar, markerat och förklarat. Inget är ännu verifierat av
+        står felet kvar, markerat och förklarat. Inget är ännu oberoende granskat av
         bandykunniga; se sajten som en idégenerator som söker sina första
         kritiska läsare, inte som färdiga slutsatser.
       </p>

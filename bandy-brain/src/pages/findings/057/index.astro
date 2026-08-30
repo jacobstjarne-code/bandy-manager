@@ -7,14 +7,14 @@ const _finding = _findings.find((f) => f.num === '057');
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="Lag som leder begår sabotage-utvisningar 1,8 gånger så ofta som lag i underläge. Det taktiska stoppfoulet är ett ledningsförsvar — mönstret finns i både herr- och damserien."
+  description="Bland utvisningar är kategorin sabotage 1,8 gånger vanligare när det utvisade laget leder än när det ligger under i herrserien. Mönstret säger inget säkert om spelarens avsikt."
 >
   <div class="finding-layout">
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
     <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
-    <h1 class="finding-title">Det cyniska foulet:<br>ledande lag saboterar mer</h1>
+    <h1 class="finding-title">Sabotageutvisningar är vanligare<br>när laget leder</h1>
 
     <hr class="finding-divider" />
 
@@ -45,7 +45,7 @@ const _finding = _findings.find((f) => f.num === '057');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Frågan</p>
-      <p>Det taktiska stoppfoulet — att medvetet sabotera motståndarens speluppbyggnad för att bryta ett anfall — är ett välkänt fenomen i lagsport. I bandy loggas den förseelsetypen som "sabotage". Frågan är om den fördelar sig jämnt över matchen, eller om den är knuten till spelläget: begår ett lag som leder fler sådana foul för att skydda försprånget?</p>
+      <p>Bandygrytan innehåller en utvisningskategori som heter ”sabotage”. Fördelar sig den kategorin jämnt över spellägen, eller är den vanligare bland utvisningar när det utvisade laget leder?</p>
     </div>
 
     <hr class="finding-divider" />
@@ -77,15 +77,14 @@ const _finding = _findings.find((f) => f.num === '057');
           <tr><td>Under</td><td>4,8 %</td><td>[3,5–6,5]</td></tr>
         </tbody>
       </table>
-      <p>Effekten är specifik för sabotage. De vanligaste övriga förseelsetyperna — fasthållning, våldsamt slag, slag på klubban, hakning — skiftar bara marginellt med spelläget. Det är alltså inte så att ledande lag foular mer generellt; det är just den taktiska, spelavbrytande kategorin som stiger.</p>
+      <p>Skillnaden är specifik för kategorin sabotage. De vanligaste övriga förseelsetyperna skiftar bara marginellt i andel med spelläget. Analysen mäter dock fördelningen <em>bland utvisningar</em>, inte alla begångna foul eller utvisningar per spelminut.</p>
     </div>
 
     <hr class="finding-divider" />
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>Mönstret är förenligt med det taktiska stoppfoulet som ledningsförsvar: laget som leder har mer att förlora på en snabb kontring och avbryter därför motståndarens uppbyggnad oftare, medan laget i underläge inte har samma incitament att stoppa spelet. Att övriga förseelsetyper ligger stilla stärker den läsningen — det handlar inte om att ledande lag spelar smutsigare rakt av, utan om en specifik spelavbrytande handling som tjänar ett syfte just när man ligger över.</p>
-      <p>Riktningen är entydig, men datan säger inget om avsikt. En sabotage-utvisning kan vara kylt beräknad eller ett ögonblicks frustration; kategorin fångar handlingen, inte motivet.</p>
+      <p>Mönstret är förenligt med taktiska spelavbrott som ledningsförsvar, men det är en tolkning. Kategorin fångar domarens eller matchsekreterarens rubricering, inte spelarens motiv. Därför går det inte att kalla foulen cyniska eller medvetna utifrån denna data.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -94,7 +93,8 @@ const _finding = _findings.find((f) => f.num === '057');
       <p class="finding-section-label">Begränsningar</p>
       <ul>
         <li>Orsakskategorin sätts av domaren/matchsekreteraren. Vad som rubriceras "sabotage" kan variera mellan matcher och domare.</li>
-        <li>Korrelation, inte kausalitet. Spellägets koppling till foultypen betyder inte att ledningen orsakar foulet — men den entydiga riktningen och mönstrets närvaro i båda serierna talar för en verklig effekt.</li>
+        <li>Korrelation, inte kausalitet. Spellägets koppling till foultypen betyder inte att ledningen orsakar handlingen.</li>
+        <li>Nämnaren är alla utvisningar i respektive spelläge. Analysen visar inte om ledande lag får fler utvisningar per minut.</li>
         <li>Analysen ser bara utvisade förseelser. Sabotage-handlingar som stannade vid frislag utan utvisning syns inte.</li>
         <li>2023–24 saknas i datasetet.</li>
       </ul>

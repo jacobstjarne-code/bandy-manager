@@ -7,7 +7,7 @@ const _finding = _findings.find((f) => f.num === '056');
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="Mål/match, hemmavinst och utvisningsfrekvens är nästan identiska. Men damserien har nästan ingen hemmaplansfördel, färre oavgjorda och leder-som-håller — sannolikt samma sak: bredare styrkespann. Hörnberoendet är lägre och står separat."
+  description="Mål/match, hemmavinst och utvisningsfrekvens är lika i underlaget. Damserien har samtidigt nästan ingen hemmaplansfördel, färre oavgjorda och ledningar som håller oftare — mönster som är förenliga med ett bredare styrkespann."
 >
   <div class="finding-layout">
 
@@ -45,7 +45,7 @@ const _finding = _findings.find((f) => f.num === '056');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Frågan</p>
-      <p>Dam och herr spelar efter identiska regler — samma planmått, samma offside, samma utvisningar (se regelreferensen). Skiljer sig spelet ändå strukturellt? Och i så fall var? Eftersom regelverket är detsamma är varje äkta skillnad ett genuint strukturellt fenomen, inte en regelartefakt. Jämförelsen görs symmetriskt: ingen sida är norm, ingen är avvikelse.</p>
+      <p>Dam och herr omfattas av samma spelregler. Skiljer sig de observerade serierna ändå strukturellt? Regelverket är gemensamt, men tävlingsformat, antal lag och styrkespridning kan skilja. Jämförelsen görs symmetriskt: ingen sida är norm, ingen är avvikelse.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -107,8 +107,8 @@ const _finding = _findings.find((f) => f.num === '056');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p><strong>Tre av de fyra skillnaderna är troligen samma sak.</strong> Ingen hemmafördel, färre oavgjorda och ledningar som håller pekar alla åt ett håll: dammatcher har lägre inommatch-varians — utfallet är mer bestämt på förhand. Den mest sparsamma förklaringen är inte tre separata fenomen utan en enda drivare: ett bredare styrkespann i damserien. När skillnaden mellan bästa och sämsta lag är stor avgörs matcherna av vem som är bäst, inte av plan eller paus — då sköljs hemmafördelen bort, oavgjorda blir sällsynta och den som leder i halvtid vinner.</p>
-      <p><strong>Detta är testbart — och testat.</strong> Spridningen i måldifferens per lag-säsong är mer än dubbelt så stor i damserien: standardavvikelse 5,4 mål/match mot herrarnas 2,3, med ett spann från −12,7 till +10,6 i dam mot −5,6 till +5,0 i herr. Styrkespannet är alltså påtagligt bredare, vilket är förenligt med att de tre skillnaderna har en gemensam orsak snarare än tre.</p>
+      <p><strong>Tre av de fyra skillnaderna pekar åt samma håll.</strong> Nästan ingen hemmafördel, färre oavgjorda och ledningar som håller oftare är förenliga med större skillnader mellan lagen. Det är en samlad hypotes, inte en fastställd mekanism.</p>
+      <p><strong>Ett stödjande mått är styrkespridningen.</strong> Spridningen i måldifferens per lag-säsong är mer än dubbelt så stor i damserien: standardavvikelse 5,4 mål/match mot herrarnas 2,3, med ett spann från −12,7 till +10,6 i dam mot −5,6 till +5,0 i herr. Måttet stärker hypotesen men kan också påverkas av serieformat, lagantal och enskilda extremsezoner.</p>
       <p><strong>Hörnberoendet står separat.</strong> Att en lägre andel av dammålen kommer på hörna (15,2 % mot 21,9 %) förklaras inte av styrkespann — det är en stilskillnad i hur mål skapas, oberoende av hur jämn serien är. Den hör inte ihop med varians-historien.</p>
       <p>Damserien är sitt eget strukturella objekt, inte en svagare kopia av herrserien. Grundläggande målrikedom, utvisningsnivå och rå hemmavinst-frekvens ligger i nivå med herr.</p>
     </div>
@@ -119,7 +119,7 @@ const _finding = _findings.find((f) => f.num === '056');
       <p class="finding-section-label">Begränsningar</p>
       <ul>
         <li>Damdatasetet (428 matcher) är ungefär en tredjedel av herr. Subgruppsanalyser (post-paus-fönstret) blir snabbt för tunna.</li>
-        <li>Hörnmålsandel bygger på en heuristik (hörnevent ≤2 min före mål), inte ett källattribut.</li>
+        <li>Hörnmålsandel bygger på källans måltyp ”corner”. Exakt hur källan avgränsar en hörnsekvens är inte dokumenterat.</li>
         <li>2023–24 saknas i båda serierna.</li>
         <li><strong>Styrkespanns-drivaren är en hypotes, inte belagd.</strong> Variansmåttet (måldiff-spridning 5,4 mot 2,3) är förenligt med att de tre skillnaderna har en gemensam orsak, men bevisar inte den. Att bredare spann <em>orsakar</em> den lägre inommatch-variansen är en rimlig mekanism, inte ett fastställt orsakssamband.</li>
       </ul>

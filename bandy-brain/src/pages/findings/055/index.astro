@@ -7,14 +7,14 @@ const _finding = _findings.find((f) => f.num === '055');
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="Utvisningsökningen 25/26 är till 89 % femminutare. Grova tiominutare är oförändrade och våldsamt slag minskade 30 %. Reformen sanktionerar tekniska förseelser, inte fysiskt våld."
+  description="Utvisningsökningen 2025/26 består till 89 procent av femminutare i herrserien. Tiominutarna är nästan oförändrade, medan registrerade orsaker har förskjutits."
 >
   <div class="finding-layout">
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
     <p class="finding-meta">Finding 055 · 3 juni 2026</p>
-    <h1 class="finding-title">Reformens mekanism:<br>lätta utvisningar, inte grova</h1>
+    <h1 class="finding-title">Utvisningsökningen bestod nästan helt<br>av femminutare</h1>
 
     <hr class="finding-divider" />
 
@@ -45,14 +45,14 @@ const _finding = _findings.find((f) => f.num === '055');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Frågan</p>
-      <p>Finding 052 visade att utvisningsfrekvensen steg 16–22 % säsong 2025/26 i samband med domardirektivet "Våga visa rött". Den frågan som följde var: <em>vilka</em> utvisningar ökade? Direktivets namn antyder fler grova utvisningar — hårdare tag mot fysiskt våld. Vi ville pröva det mot datan i stället för att anta det.</p>
+      <p>Finding 052 visade att den registrerade utvisningsfrekvensen steg 16–22 % säsong 2025/26. Vilka utvisningar stod för ökningen: fem- eller tiominutare, och vilka registrerade orsaker?</p>
     </div>
 
     <hr class="finding-divider" />
 
     <div class="finding-section prose">
       <p class="finding-section-label">Datan</p>
-      <p>Bandygrytan loggar för varje utvisning både dess längd (5 eller 10 minuter) och dess orsak i klartext ("Våldsamt slag", "Slag på klubban", "Friläge" och så vidare). Dessa fält har verifierats vara komplett loggade i alla sex säsonger 2019–20 till 2025–26 — trenden är alltså inte en effekt av att loggningen blivit bättre med tiden, utan en verklig förändring i vad som döms. Analysen jämför säsong 2025/26 mot snittet av de fem föregående säsongerna (2023/24 saknas i datasetet).</p>
+      <p>Bandygrytan loggar utvisningens längd och orsak i klartext. Fälten finns genom alla sex säsonger 2019–20 till 2025–26, så mönstret förklaras inte av att just dessa fält helt saknas tidigt. Det utesluter däremot inte förändrad registrerings- eller rubriceringspraxis. Analysen jämför 2025/26 med snittet av de fem övriga säsongerna; 2023/24 saknas.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -94,11 +94,9 @@ const _finding = _findings.find((f) => f.num === '055');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>Reformen syns i datan som strängare bedömning av lätta tekniska förseelser — främst slag på klubban och frilägessituationer — sanktionerade med femminutersutvisningar. De grova tiominutarna är oförändrade och våldsamt slag minskade i herrserien.</p>
-      <p>Det kan låta som att reformen gjorde motsatsen till vad den hette — “Våga visa rött” antyder ju fler grova utvisningar. Men det är att läsa parollen för bokstavligt. “Visa rött” är en uppmaning att <em>låta färre saker passera</em>, inte ett löfte om fler matchstraff. Och då är en ökning av lätta tekniska utvisningar precis den förväntade signaturen: det som tidigare viftades bort för att det inte var “värt tio minuter” passerar inte längre — men får logiskt fem minuter, inte tio. Reformen gjorde alltså vad den var avsedd att göra; den syns där en sänkt tröskel ska synas — i marginalen, på det lätta.</p>
-      <p>Noterbart är att kåren inte verkar ha svarat med gradinflation. Hade domarna tolkat direktivet som “var hårdare överlag” skulle de grova kategorierna växt — fler tiominutare, fler våldsamt slag. I stället är tiominutarna oförändrade och de grövsta kategorierna stilla eller fallande. Det är förenligt med en kår som utökade frekvensen i en befintlig kategori (5-min teknisk) snarare än skruvade upp graderingen — proportionerligt, inte trubbigt. (Om “proportionerligt” ska läsas som disciplinerad kalibrering eller som fler avbrott i spelet är delvis en värdering datan inte avgör.)</p>
-      <p>Att våldsamt slag samtidigt <em>minskade</em> förklaras inte av en sänkt tröskel — den skulle förutsäga oförändrat eller fler. En möjlig men obevisad förklaring är att stramare beivran av småförseelser tidigt de-eskalerar matcher innan de hettar upp — en sorts “broken windows”-effekt. Det är en hypotes datan inte kan bekräfta, och den skulle kräva incidentgranskning för att prövas.</p>
-      <p>Vad som ytterst orsakar förändringen — ändrat spel, ändrad domarinstruktion eller ändrad benägenhet att blåsa — kan datan inte avgöra. Orsakskategorierna sätts dessutom av domaren själv, så en del av förskjutningen mellan kategorier kan vara ändrad etikettering snarare än ändrat beteende — men volymökningen i de tekniska kategorierna är för stor för att enbart vara omklassificerad grovhet.</p>
+      <p>Den robusta dekompositionen är att nästan hela volymökningen ligger i femminutare, medan tiominutarna är stabila. I regelverket används fem- och tiominutersstraff för olika typer och grader av förseelser, så uppdelningen är sportsligt meningsfull.</p>
+      <p>Orsaksfältet pekar samtidigt mot fler registreringar av bland annat slag på klubban och friläge, medan ”våldsamt slag” minskar. Det är förenligt med en lägre ingripandetröskel för vissa tekniska förseelser, men datan visar inte om spelarbeteendet, domningen eller rubriceringen förändrades.</p>
+      <p>Påståendet att en viss reform gjorde exakt vad den avsåg gick längre än underlaget. Den offentligt verifierbara slutsatsen stannar vid säsongsförändringen och dess sammansättning.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -107,6 +105,7 @@ const _finding = _findings.find((f) => f.num === '055');
       <p class="finding-section-label">Begränsningar</p>
       <ul>
         <li>Korrelation är inte kausalitet. Att förseelsemönstret förändrades samtidigt som direktivet infördes betyder inte att direktivet orsakade det.</li>
+        <li>Den offentliga primärkällan för det namngivna direktivet har inte kunnat verifieras.</li>
         <li>Orsakskategorierna sätts av matchsekreteraren/domaren och kan i sig ha påverkats av direktivet (samma handling kan rapporteras under en annan etikett).</li>
         <li>Säsong 2023/24 saknas i datasetet — jämförelsen hoppar över ett år.</li>
         <li>Analysen är på liganivå. Uppdelning per enskild domare är intern och rapporteras inte här.</li>

@@ -8,7 +8,7 @@ Körkommando:
 Output:
   docs/data/INTERNAL_reform_effect_complete.md   (intern, inkl. domarnamn)
   docs/data/reform_effect_data.json              (publik, inga domarnamn)
-  bandy-brain/src/pages/findings/052/index.astro (publik finding)
+  Finding 052-sidan skrivs inte av analysen; den är redaktionellt underhållen.
   + appendix i INTERNAL_REFEREE_DEEP_DIVE.md
 """
 
@@ -1032,9 +1032,7 @@ const base = import.meta.env.BASE_URL.replace(/\\/$/, '');
 </Base>
 """
 
-finding_path = finding_dir / "index.astro"
-finding_path.write_text(finding_astro, encoding="utf-8")
-print(f"✓ Finding 052: {finding_path}")
+print("ℹ Finding 052 är redaktionellt underhållen; analysen skriver bara data och rapporter")
 
 # ── Update INTERNAL_REFEREE_DEEP_DIVE.md ──────────────────────────────────────
 

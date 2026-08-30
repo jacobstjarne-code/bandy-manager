@@ -1,0 +1,29 @@
+fact_id: S018
+category: stats
+claim: "11,44 procent av hörnorna i Herr-Elitseriens grundserie 2019–2026 resulterade i hörnmål"
+value: 11.44
+unit: percent
+breakdown:
+  matches: 1124
+  corners: 19922
+  corner_goals: 2279
+  corner_goals_per_match: 2.03
+  vasteras_sk_conversion_pct: 11.09
+  vetlanda_bk_conversion_pct: 11.57
+source:
+  type: derived
+  name: bandygrytan
+  match_count: 1124
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+  doc: "docs/data/finding_corrections_002_018_025_045.json"
+verified_at: 2026-08-31
+verified_by: code
+status: active
+invariants:
+  - "value > 10"
+  - "value < 13"
+related_facts: [S007, S008]
+notes: |
+  Detta är hörnmål dividerat med antal hörnor och ska inte blandas ihop med
+  S008, som är hörnmålens andel av alla mål. Västerås SK:s två namnvarianter
+  är sammanslagna med den kanoniska namnlistan i scripts/pipeline/club_names.py.

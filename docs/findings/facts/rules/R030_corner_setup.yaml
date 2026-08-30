@@ -1,0 +1,15 @@
+fact_id: R030
+category: rules
+claim: "Vid hörnslag står anfallarna utanför straffområdet och minst fem meter från den förlängda mållinjen; försvararna står på eller bakom mållinjerna inom eget straffområde"
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 9.6, sida 29"
+  url: "https://foreningsinfo.svenskbandy.se/domare/regler-och-rutiner-2/regelboken"
+verified_at: 2026-08-31
+verified_by: code
+status: active
+notes: |
+  Hörnslaget ska sättas i spel inom fem sekunder efter domarens signal.
+  Regeln beskriver tydliga placeringskrav för både anfallare och försvarare;
+  det är därför fel att beskriva hörnan som fri från placeringsbegränsningar.

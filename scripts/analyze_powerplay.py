@@ -15,7 +15,7 @@ Metod (kunskapsbas-förankrad, docs/kunskapsbas/DATA.md):
   redovisas separat. Null är försumbart (~4 fouls herr), spec:ens null-
   kontingens därmed inaktuell — redovisas ändå.
 - Per-minut boxräkning per lag → advantage-nivå (en man mer = adv +1,
-  två man mer = adv +2 = "5v3"). Överlapp (adv≥2) särredovisas.
+  två man mer = adv +2). Överlapp (adv≥2) särredovisas.
 - Rate ratio med log-baserat Poisson-CI. Konvertering med Wilson-CI.
 - Reform: pre-reform (2019-25) poolad vs 2025-26; Cohen's h + Bonferroni.
 - 2023-24 saknas i datan (hanteras som gap, ej nolltolkat).
@@ -248,8 +248,8 @@ def write_report(r):
              "duration 5/10 (schemaVersion 5, 100% täckning); anomalier (grovt matchstraff `60`, "
              "enstaka `30/3/6`, `null`) exkluderas ur PP-fönstren och redovisas separat. "
              "Rate ratio med log-baserat Poisson-CI; konvertering per utvisning med Wilson-CI. "
-             "Ren 5v4 = utvisade laget har exakt 1 i box och motståndaren 0 under hela fönstret; "
-             "överlapp (5v3) särredovisas. Reform: pre-reform (2019-25, 2023-24 saknas) poolad mot "
+             "Rent enmansöverläge = utvisade laget har exakt 1 i box och motståndaren 0 under hela fönstret; "
+             "överlapp med två man mer särredovisas. Säsongsjämförelse: 2019-25 (2023-24 saknas) poolad mot "
              f"{r['_meta']['reform_season']}, Cohen's h + Bonferroni.\n")
 
     for lbl, x in (('Herr', h), ('Dam', dm)):
@@ -259,11 +259,11 @@ def write_report(r):
                  f"(95% CI {rr['ci'][0]}–{rr['ci'][1]}). "
                  f"PP {rr['pp_rate_pct']} %/lag-min mot ES {rr['es_rate_pct']} %/lag-min.")
         if rr2:
-            L.append(f"**Två man mer (5v3):** {rr2['rr']}× (CI {rr2['ci'][0]}–{rr2['ci'][1]}, "
+            L.append(f"**Två man mer:** {rr2['rr']}× (CI {rr2['ci'][0]}–{rr2['ci'][1]}, "
                      f"n={rr2['g_pp']} mål på {rr2['m_pp']} lag-minuter).")
         c5, c10 = x['conversion_5min'], x['conversion_10min']
-        L.append("\n**Konvertering per utvisning (ren 5v4 — minst ett mål under fönstret):**\n")
-        L.append("| Duration | Rena utv. | Gav mål | Konvertering | 95% CI | Mål/utv. | Överlapp (5v3) |")
+        L.append("\n**Konvertering per utvisning (rent enmansöverläge — minst ett mål under fönstret):**\n")
+        L.append("| Duration | Rena utv. | Gav mål | Konvertering | 95% CI | Mål/utv. | Överlapp (två man mer) |")
         L.append("|---|---|---|---|---|---|---|")
         L.append(f"| 5 min | {c5['clean_n']} | {c5['clean_scored']} | {c5['conversion_pct']} % | "
                  f"[{c5['ci'][0]}–{c5['ci'][1]}] | {c5['goals_per_susp']} | {c5['overlap_n']} ({c5['overlap_scored']} gav mål) |")
@@ -283,10 +283,10 @@ def write_report(r):
             L.append(f"| {s} | {sd['rr']}× | {conv} | {sd['share_5min_pct']} % | {sd['susp_total']} |")
         rc = x['reform_comparison']
         if rc:
-            L.append(f"\n**Reform {r['_meta']['reform_season']} vs pre-reform (poolad):**\n")
+            L.append(f"\n**Säsong {r['_meta']['reform_season']} vs tidigare säsonger (poolade):**\n")
             L.append(f"- **5-min-andel:** {rc['share_5min']['pre_pct']} % → {rc['share_5min']['reform_pct']} % "
-                     f"(Cohen's h = {rc['share_5min']['cohens_h']}). Reformsignalen — fler lätta utvisningar.")
-            L.append(f"- **Konvertering (ren 5v4):** {rc['conversion']['pre_pct']} % "
+                     f"(Cohen's h = {rc['share_5min']['cohens_h']}).")
+            L.append(f"- **Konvertering (rent enmansöverläge):** {rc['conversion']['pre_pct']} % "
                      f"(n={rc['conversion']['pre_n']}) → {rc['conversion']['reform_pct']} % "
                      f"(n={rc['conversion']['reform_n']}), Cohen's h = {rc['conversion']['cohens_h']}.")
         L.append("")
@@ -294,7 +294,7 @@ def write_report(r):
     L.append("## Begränsningar\n")
     L.append("- Utvisningslängden antas löpa fullt ut; bryts en utvisning tidigt (mål mot i vissa "
              "regelvarianter) överskattas PP-minuterna något.")
-    L.append("- Ren 5v4 kräver att motståndaren har 0 i box hela fönstret; sekvenser med utvisningar "
+    L.append("- Rent enmansöverläge kräver att motståndaren har 0 i box hela fönstret; sekvenser med utvisningar "
              "på båda håll hamnar i överlapp-kolumnen, inte i ren konvertering.")
     L.append("- Alla faser inkluderade (grundserie + slutspel). Reformsplit på season-fältet.")
     L.append("- 2023-24 saknas i datasetet — pre-reform-poolen är 2019-20…2022-23 + 2024-25.")
@@ -302,8 +302,8 @@ def write_report(r):
              "vilket trycker ihop skillnaden marginellt.\n")
     L.append("## Öppna Q-nummer som berörs\n")
     L.append("Underlag till varje Q i `docs/findings/facts/questions/` som rör utvisningars "
-             "måleffekt och reformens 25/26-genomslag. Kompletterar findings 052/055/057/059 "
-             "med per-duration-konvertering och reform-kvantifiering.\n")
+             "måleffekt och säsongsskiftet 25/26. Kompletterar findings 052/055/057/059 "
+             "med per-duration-konvertering och säsongskvantifiering.\n")
     open('docs/data/ANALYS_POWERPLAY.md', 'w').write('\n'.join(L))
     print("→ docs/data/ANALYS_POWERPLAY.md")
 

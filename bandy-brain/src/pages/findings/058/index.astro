@@ -1,13 +1,14 @@
 ---
 import Base from '../../../layouts/Base.astro';
 import { findings as _findings } from '../../../data/findings';
+import { factHref } from '../../../lib/facts';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const _finding = _findings.find((f) => f.num === '058');
 ---
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="Straffar i bandy går i mål i 65 % av fallen i herrserien och 54 % i damserien — lägre än i fotboll, och med en tydlig skillnad mellan serierna."
+  description="Straffar går direkt i mål i 65 procent av fallen i herrserien och 54 procent i damserien. Skillnaden mellan serierna är tydlig i detta sexsäsongsunderlag."
 >
   <div class="finding-layout">
 
@@ -33,11 +34,6 @@ const _finding = _findings.find((f) => f.num === '058');
         <span class="key-number__value">≈ 11 pp</span>
         <span class="key-number__label">Skillnad herr − dam</span>
         <span class="key-number__note">Konfidensintervallen överlappar inte</span>
-      </div>
-      <div class="key-number">
-        <span class="key-number__value">Lägre</span>
-        <span class="key-number__label">Än i fotboll</span>
-        <span class="key-number__note">Där straffar går i mål klart oftare</span>
       </div>
     </div>
 
@@ -66,15 +62,15 @@ const _finding = _findings.find((f) => f.num === '058');
           <tr><td>Dam</td><td>430</td><td>234</td><td>54,4 %</td><td>[50–59]</td></tr>
         </tbody>
       </table>
-      <p>Två saker sticker ut. För det första är konverteringen <strong>lägre än i fotboll</strong>, där straffen går i mål klart oftare — en tredjedel av bandystrafferna i herrserien räddas eller missas. För det andra är <strong>dam-konverteringen påtagligt lägre än herr</strong>, 54 mot 65 procent; konfidensintervallen överlappar inte, så skillnaden är statistiskt robust.</p>
+      <p>I herrserien blir ungefär två av tre registrerade straffar direkt mål. I damserien är andelen drygt hälften. Skillnaden är cirka 11 procentenheter och de redovisade Wilson-intervallen överlappar inte.</p>
     </div>
 
     <hr class="finding-divider" />
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>Att straffen är svårare i bandy än i fotboll är rimligt: avståndet är tolv meter mot fotbollens elva, bollen är liten och hård, och bandymålvakten har en stor målbur men också stora rörelseytor att täcka. En tredjedel som inte blir mål är en betydande andel för en till synes ren situation.</p>
-      <p>Dam–herr-skillnaden är svårare att förklara utan mer data. Den kan bottna i skytteteknik, målvaktsspel eller något annat — mönstret är observerat, inte förklarat. Den ansluter till bilden från Finding 056 av damserien som ett eget strukturellt objekt snarare än en kopia av herrserien.</p>
+      <p>Straffslaget sker från tolv meter <a href={factHref('R008')} class="fact-ref">R008</a> och har särskilda placeringsregler för målvakt och övriga spelare <a href={factHref('R013')} class="fact-ref">R013</a>. Själva konverteringstalen beskriver dock bara utfallet, inte varför en straff missas eller räddas.</p>
+      <p>Dam–herr-skillnaden kan bero på skyttar, målvakter, lagmix eller andra faktorer. Utan skytt- och målvaktsdata är mönstret observerat men inte förklarat.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -83,7 +79,7 @@ const _finding = _findings.find((f) => f.num === '058');
       <p class="finding-section-label">Begränsningar</p>
       <ul>
         <li>Straffmål räknas ur måltypen "straff" i händelseloggen. En missad straff som ledde till retur och mål i öppet spel räknas inte som straffmål — konverteringen mäter alltså direkt straffmål, inte hela värdet av en tilldelad straff.</li>
-        <li>Jämförelsen med fotboll är kvalitativ; ingen exakt siffra hämtas från extern källa här.</li>
+        <li>Ingen jämförelse med andra sporter görs eftersom situationer och definitioner inte är direkt jämförbara i detta underlag.</li>
         <li>Dam-underlaget (430 straffar) är mindre än herr, vilket ger bredare intervall.</li>
         <li>2023–24 saknas i datasetet.</li>
       </ul>

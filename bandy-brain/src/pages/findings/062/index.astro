@@ -7,14 +7,14 @@ const _finding = _findings.find((f) => f.num === '062');
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="887 Bandyallsvenskan-matcher mot 1 124 Elitseriematcher: mål per match, hemmafördel, oavgjortandel och halvtidsprediktion är statistiskt omöjliga att skilja åt — men Allsvenskan har ~22 % fler utvisningar. En division ner är samma sport med hårdare händer, vilket gör dam–herr-skillnaden i Finding 056 mer anmärkningsvärd, inte mindre."
+  description="887 Bandyallsvenskan-matcher jämförs med 1 124 Elitseriematcher. De uppmätta skillnaderna i mål, resultatfördelning och halvtidsprediktion är små; Allsvenskan har samtidigt cirka 22 procent fler registrerade utvisningar."
 >
   <div class="finding-layout">
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
     <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
-    <h1 class="finding-title">En division ner, samma dramaturgi<br>— utvisningarna är enda skillnaden</h1>
+    <h1 class="finding-title">En division ner,<br>nästan samma dramaturgi</h1>
 
     <hr class="finding-divider" />
 
@@ -22,7 +22,7 @@ const _finding = _findings.find((f) => f.num === '062');
       <div class="key-number">
         <span class="key-number__value">9,16 / 9,12</span>
         <span class="key-number__label">Mål per match, Allsvenskan / Elitserien</span>
-        <span class="key-number__note">Cohen's d = 0,01 — ingen skillnad</span>
+        <span class="key-number__note">Cohen's d = 0,01 — mycket liten uppmätt skillnad</span>
       </div>
       <div class="key-number">
         <span class="key-number__value">51,2 / 50,2 %</span>
@@ -32,11 +32,11 @@ const _finding = _findings.find((f) => f.num === '062');
       <div class="key-number">
         <span class="key-number__value">79,5 / 80,1 %</span>
         <span class="key-number__label">Halvtidsledning → vinst</span>
-        <span class="key-number__note">Samma dramaturgi en division ner</span>
+        <span class="key-number__note">Mycket likt i detta urval</span>
       </div>
       <div class="key-number">
         <span class="key-number__value">4,6 / 3,77</span>
-        <span class="key-number__label">Utvisningar per match — enda avvikelsen</span>
+        <span class="key-number__label">Utvisningar per match — tydligaste avvikelsen</span>
         <span class="key-number__note">~22 % fler i Allsvenskan — robust riktning</span>
       </div>
     </div>
@@ -59,7 +59,7 @@ const _finding = _findings.find((f) => f.num === '062');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Vad vi fann</p>
-      <p><strong>Divisionerna går inte att skilja åt.</strong> På varje robust mått är skillnaden försumbar och konfidensintervallen överlappande:</p>
+      <p><strong>De uppmätta skillnaderna är små på flera centrala matchmått.</strong> Effektstorlekarna är nära noll och konfidensintervallen överlappar:</p>
       <table>
         <thead><tr><th>Mått</th><th>Allsvenskan</th><th>Elitserien herr</th><th>Effektstorlek</th></tr></thead>
         <tbody>
@@ -71,17 +71,17 @@ const _finding = _findings.find((f) => f.num === '062');
         </tbody>
       </table>
       <p>Målminutfördelningen har samma form i båda serierna — svag stigning över matchen, mest mål i sista kvarten (18,6 % respektive 19,1 % i minut 76–90), och samma lyft direkt efter paus. Inget av de sex femtonminutersfönstren skiljer serierna åt med mer än 0,5 procentenheter.</p>
-      <p><strong>Den enda avvikelsen är utvisningarna</strong> — 4,6 per match i Allsvenskan mot Elitseriens 3,77, cirka 22 % fler. Skillnaden är robust inom datan: utvisningsfrekvensen samvarierar inte med loggningskvaliteten och är jämn över säsonger. Det enda förbehållet är på serienivå — en systematisk skillnad i hur serierna loggas kan inte helt uteslutas — men riktningen håller: det döms mer i Allsvenskan.</p>
+      <p><strong>Den tydligaste avvikelsen bland de testade måtten är utvisningarna</strong> — 4,6 per match i Allsvenskan mot Elitseriens 3,77, cirka 22 % fler registrerade utvisningar. Frekvensen samvarierar inte med den interna loggningsetiketten och är jämn över säsonger. En systematisk skillnad mellan seriernas registreringspraxis kan ändå inte uteslutas.</p>
     </div>
 
     <hr class="finding-divider" />
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>Nästan-nollresultatet är fyndet. En hel divisionsskillnad i spelarkvalitet, ekonomi och förutsättningar lämnar ett enda spår i spelets struktur — fler utvisningar — och inga alls i det som bär matchupplevelsen: samma målproduktion, samma hemmafördel, samma dramaturgi, samma prediktiva kraft i en halvtidsledning. Strukturen ser ut att sättas av spelets regler och format — inte av vilka som spelar.</p>
+      <p>Nästan-nollresultaten är fyndet: i just dessa data syns ingen praktiskt stor skillnad i målproduktion, resultatfördelning eller halvtidsledningens prediktiva kraft. Det är förenligt med att regler och format sätter en stark gemensam grundstruktur, men ett icke-signifikant resultat bevisar inte full likvärdighet.</p>
       <p>Utvisningsöverskottet på ~22 % är i sig en öppen fråga: hårdare spel på lägre nivå, sämre disciplin, eller strängare dömning i en serie där domarna oftare är på väg uppåt? Datan skiljer inte förklaringarna åt ännu.</p>
-      <p>Det gör Finding 056 skarpare. Dam- och herrserien skiljer sig strukturellt på punkt efter punkt — hemmafördel, hörnberoende, ledningars dödlighet (Finding 060). Om en hel nivåskillnad knappt producerar någon strukturskillnad, vilket divisionsjämförelsen visar, kan dam–herr-skillnaderna inte viftas bort som en nivåeffekt. Något annat skiljer serierna åt, och datan har ännu inte sagt vad.</p>
-      <p>För Bandy Manager är konsekvensen direkt: lägre divisioner i spelet kan använda samma motorkalibrering som Elitserien. Datan säger att det inte är en förenkling — det är så sporten beter sig.</p>
+      <p>Jämförelsen ger kontext till Finding 056 men avgör inte varför dam- och herrserierna skiljer sig. Division och serie är olika jämförelser med olika lagantal, format och populationer.</p>
+      <p>För Bandy Manager är detta stöd för att börja med en gemensam grundkalibrering mellan herrdivisioner. Utvisningsnivån bör skiljas ut, och antagandet behöver testas mot ytterligare säsonger och divisioner innan samma motorprofil görs permanent.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -93,6 +93,7 @@ const _finding = _findings.find((f) => f.num === '062');
         <li>Målminutfördelningen är i rå matchminut utan halvleksuppdelning — halvleksflagga saknas i Allsvenskan-filen, och minut ≥ 46-regeln är förbjuden (se Finding 051).</li>
         <li>Ingen per-lag-utvisningsanalys — lagfältet saknas i Allsvenskan-filens utvisningsdata.</li>
         <li>Fyra huvudjämförelser; slutsatserna vilar på effektstorlekar och CI-överlapp, inte enskilda p-värden.</li>
+        <li>Överlappande konfidensintervall är inte ett formellt likvärdighetstest. Små men relevanta skillnader kan finnas.</li>
         <li>2023–24 saknas; 2024–25 är partiell för Allsvenskan (28 matcher).</li>
       </ul>
     </div>

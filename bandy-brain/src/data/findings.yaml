@@ -15,12 +15,12 @@
   status: active
 
 - num: '063'
-  title: 'Reformen är bred: åtta av tio domare höjde sin egen utvisningstakt'
+  title: 'Åtta av tio jämförbara domare höjde sin utvisningstakt 2025–26'
   date: '7 juli 2026'
   status: active
 
 - num: '062'
-  title: 'En division ner, samma dramaturgi — utvisningarna är enda skillnaden'
+  title: 'En division ner, nästan samma dramaturgi'
   date: '7 juli 2026'
   status: active
 
@@ -31,13 +31,17 @@
   excerpt: >-
     Isärplockat är överläget värt 1,33× med en man mer och 1,81× med två —
     en skärpning av 059:s poolade 1,40. Konverteringen per fönster: 29 % för
-    femminutare, 40 % för tiominutare. Reformens många nya lätta utvisningar
-    ändrade frekvensen, inte dödligheten per överläge.
+    femminutare och 40 % för tiominutare. Skillnaden påverkas både av fönstrets
+    längd och av att utvisningstyperna inte är slumpmässigt jämförbara.
 
 - num: '060'
-  title: 'När dör en bandymatch? Tvåmålsledningen är säker först i minut 84'
+  title: 'När passerar en bandyledning 95 procent i råmodellen?'
   date: '5 juli 2026'
   status: active
+  excerpt: >-
+    Herrkurvans tvåmålsledning passerar och stannar över 95 procent från minut 84.
+    Damkurvan är gles och ojämn; den tidigare slutsatsen om minut 31 håller inte
+    som säkerhetströskel och analysen är därför ett öppet spår.
 
 - num: '059'
   title: 'Power play: överläget höjer måltempot 40 %'
@@ -50,7 +54,7 @@
   status: active
 
 - num: '057'
-  title: 'Det cyniska foulet: ledande lag saboterar mer'
+  title: 'Sabotageutvisningar är vanligare när laget leder'
   date: '5 juli 2026'
   status: active
 
@@ -61,11 +65,11 @@
   excerpt: >-
     Mål/match, hemmavinst och utvisningsnivå är nästan identiska mellan serierna.
     Men damserien har nästan ingen hemmaplansfördel, färre oavgjorda och
-    ledningar som håller — tre skillnader som troligen är samma sak: ett bredare
+    ledningar som håller — tre skillnader som är förenliga med ett bredare
     styrkespann. Hörnberoendet är lägre och står separat.
 
 - num: '055'
-  title: 'Reformens mekanism: lätta utvisningar, inte grova'
+  title: 'Utvisningsökningen bestod nästan helt av femminutare'
   date: '3 juni 2026'
   status: active
 
@@ -80,12 +84,12 @@
   status: active
 
 - num: '052'
-  title: 'Säsong 25/26: utvisningsfrekvensen steg 16 % — reformen syns i datan'
+  title: 'Säsong 25/26: utvisningsfrekvensen steg 16 %'
   date: '1 juni 2026'
   status: active
 
 - num: '051'
-  title: 'Comeback-fönstret: sex minuter tidigt i andra halvlek'
+  title: 'Comeback-fönstret: fem minuter tidigt i andra halvlek'
   date: '31 maj 2026'
   status: active
 
@@ -115,7 +119,7 @@
   status: active
 
 - num: '045'
-  title: 'VSK och Vetlanda nära ligasnittet i hörnakonvertering'
+  title: 'VSK och Vetlanda ligger nära ligans hörnkonvertering'
   date: '25 april 2026'
   status: active
 
@@ -253,7 +257,7 @@
   status: active
 
 - num: '018'
-  title: 'VSK och Nässjö: hörnamål jämfört'
+  title: 'VSK får fler hörnor än Vetlanda — konverteringen är likvärdig'
   date: '25 april 2026'
   status: active
 
@@ -334,7 +338,7 @@
   status: active
 
 - num: '002'
-  title: 'Hörnornas värde i bandy'
+  title: 'Drygt vart femte mål kommer ur hörnläge'
   date: '25 april 2026'
   status: active
 

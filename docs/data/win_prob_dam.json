@@ -4538,15 +4538,25 @@
       }
     }
   },
-  "dead_thresholds": {
-    "1": null,
-    "2": 31,
-    "3": 19,
-    "-1": null,
-    "-2": 52,
-    "-3": 18
+  "threshold_crossings_95pct": {
+    "first": {
+      "1": null,
+      "2": 31,
+      "3": 19,
+      "-1": null,
+      "-2": 52,
+      "-3": 18
+    },
+    "sustained": {
+      "1": null,
+      "2": 88,
+      "3": 19,
+      "-1": null,
+      "-2": 52,
+      "-3": 18
+    }
   },
-  "ht_minute45": {
+  "minute45_snapshot": {
     "-3": {
       "P_home": 0.0,
       "P_draw": 0.0,

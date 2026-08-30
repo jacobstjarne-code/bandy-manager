@@ -1,0 +1,42 @@
+fact_id: S019
+category: stats
+claim: "Halvtidsledande lag vann 93,2 procent av kvartsfinalerna och 75,0 procent av semifinalerna i herrarnas slutspelsdata 2019–2026"
+value: 18.22
+unit: percentage points (quarterfinal minus semifinal)
+breakdown:
+  quarterfinal:
+    matches: 68
+    matches_with_ht_lead: 59
+    ht_leader_wins: 55
+    ht_lead_win_pct: 93.22
+    ci95_pct: [83.82, 97.33]
+  semifinal:
+    matches: 38
+    matches_with_ht_lead: 28
+    ht_leader_wins: 21
+    ht_lead_win_pct: 75.0
+    ci95_pct: [56.64, 87.32]
+  final:
+    matches: 12
+    matches_with_ht_lead: 8
+    ht_leader_wins: 7
+    ht_lead_win_pct: 87.5
+    ci95_pct: [52.91, 97.76]
+  fisher_exact_qf_vs_sf_p: 0.0333
+source:
+  type: derived
+  name: bandygrytan
+  match_count: 118
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+  doc: "docs/data/finding_corrections_002_018_025_045.json"
+verified_at: 2026-08-31
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+  - "value < 30"
+related_facts: [S013]
+notes: |
+  Fisher-testet är ojusterat och beskriver skillnaden i detta sexsäsongsurval.
+  Faserna skiljer sig samtidigt i lagurval, serielängd och matchkontext, så
+  skillnaden visar inte i sig varför halvtidsledningar håller olika ofta.

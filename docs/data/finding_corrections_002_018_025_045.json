@@ -1,0 +1,106 @@
+{
+  "_meta": {
+    "analysis": "Recomputation for findings 002, 018, 025 and 045",
+    "source": "docs/data/bandygrytan_detailed.json",
+    "phase_for_corner_metrics": "regular",
+    "club_names": "normalized with scripts/pipeline/club_names.py"
+  },
+  "league_corner_metrics": {
+    "matches": 1124,
+    "goals": 10253,
+    "corners": 19922,
+    "corner_goals": 2279,
+    "goals_per_match": 9.1219,
+    "corners_per_match": 17.7242,
+    "corner_goals_per_match": 2.0276,
+    "corner_goal_share_pct": 22.2276,
+    "corner_conversion_pct": 11.4396,
+    "corner_conversion_ci95_pct": [
+      11.005,
+      11.8891
+    ]
+  },
+  "team_corner_metrics": {
+    "Västerås SK": {
+      "variants": [
+        "Västerås SK",
+        "Västerås SK/BK"
+      ],
+      "matches": 158,
+      "corners": 1542,
+      "corner_goals": 171,
+      "goals": 900,
+      "corners_per_match": 9.7595,
+      "corner_goals_per_match": 1.0823,
+      "corner_goal_share_pct": 19.0,
+      "corner_conversion_pct": 11.0895,
+      "corner_conversion_ci95_pct": [
+        9.6179,
+        12.7545
+      ]
+    },
+    "Vetlanda BK": {
+      "variants": [
+        "Vetlanda BK"
+      ],
+      "matches": 158,
+      "corners": 1314,
+      "corner_goals": 152,
+      "goals": 772,
+      "corners_per_match": 8.3165,
+      "corner_goals_per_match": 0.962,
+      "corner_goal_share_pct": 19.6891,
+      "corner_conversion_pct": 11.5677,
+      "corner_conversion_ci95_pct": [
+        9.9493,
+        13.4102
+      ]
+    }
+  },
+  "vsk_vs_vetlanda": {
+    "difference_percentage_points_vsk_minus_vetlanda": -0.4782,
+    "fisher_exact_two_sided_p": 0.722175
+  },
+  "playoff_ht_lead_by_phase": {
+    "quarterfinal": {
+      "matches": 68,
+      "goals": 599,
+      "goals_per_match": 8.8088,
+      "matches_with_ht_lead": 59,
+      "ht_leader_wins": 55,
+      "ht_lead_win_pct": 93.2203,
+      "ht_lead_win_ci95_pct": [
+        83.8245,
+        97.3321
+      ]
+    },
+    "semifinal": {
+      "matches": 38,
+      "goals": 319,
+      "goals_per_match": 8.3947,
+      "matches_with_ht_lead": 28,
+      "ht_leader_wins": 21,
+      "ht_lead_win_pct": 75.0,
+      "ht_lead_win_ci95_pct": [
+        56.6443,
+        87.3235
+      ]
+    },
+    "final": {
+      "matches": 12,
+      "goals": 84,
+      "goals_per_match": 7.0,
+      "matches_with_ht_lead": 8,
+      "ht_leader_wins": 7,
+      "ht_lead_win_pct": 87.5,
+      "ht_lead_win_ci95_pct": [
+        52.9112,
+        97.7583
+      ]
+    }
+  },
+  "quarterfinal_vs_semifinal": {
+    "difference_percentage_points_qf_minus_sf": 18.2203,
+    "fisher_exact_two_sided_p": 0.033294
+  }
+}
