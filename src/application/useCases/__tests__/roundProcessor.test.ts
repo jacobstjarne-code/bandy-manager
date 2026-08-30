@@ -585,6 +585,78 @@ describe('checkForPlayThroughInjuryOffer', () => {
   })
 })
 
+describe('HIGH 9 (audit 2026-08-29): stale playThroughInjury-kort purgas varje omgång', () => {
+  it('purgar kortet om spelaren blivit frisk sedan det köades', () => {
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const staleGame: SaveGame = {
+      ...game,
+      players: game.players.map(p => p.id === player.id ? { ...p, isInjured: false } : p),
+      pendingEvents: [{
+        id: `playthrough_${player.id}_${game.currentMatchday + 50}`,
+        type: 'playThroughInjury', title: 'x', body: 'x',
+        choices: [
+          { id: 'play', label: 'Han spelar', effect: { type: 'playThroughInjury', targetPlayerId: player.id } },
+          { id: 'rest', label: 'Han vilar', effect: { type: 'noOp' } },
+        ],
+        relatedPlayerId: player.id, resolved: false,
+      }],
+    }
+    const result = advanceToNextEvent(staleGame, 1)
+    expect((result.game.pendingEvents ?? []).some(e => e.id.startsWith('playthrough_'))).toBe(false)
+  })
+
+  it('purgar kortet om kalendern passerat matchdagen det gällde', () => {
+    // club_forsbacka (seed 42) har bye i cup-kvalet — den FÖRSTA riktiga
+    // advanceToNextEvent-anropet processar matchdag 1 (andra klubbars
+    // cupmatcher), inte klubbens egen första fixture (matchday 5). Ett kort
+    // daterat till matchdag 0 ligger därför garanterat bakom VILKEN omgång
+    // som helst som faktiskt processas — sentinel, ingen riktig matchdag
+    // är någonsin 0, bara numeriskt "före allt".
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const staleGame: SaveGame = {
+      ...game,
+      players: game.players.map(p => p.id === player.id ? { ...p, isInjured: true, injuryDaysRemaining: 10 } : p),
+      pendingEvents: [{
+        id: `playthrough_${player.id}_0`,
+        type: 'playThroughInjury', title: 'x', body: 'x',
+        choices: [
+          { id: 'play', label: 'Han spelar', effect: { type: 'playThroughInjury', targetPlayerId: player.id } },
+          { id: 'rest', label: 'Han vilar', effect: { type: 'noOp' } },
+        ],
+        relatedPlayerId: player.id, resolved: false,
+      }],
+    }
+    const result = advanceToNextEvent(staleGame, 1)
+    expect((result.game.pendingEvents ?? []).some(e => e.id.startsWith('playthrough_'))).toBe(false)
+  })
+
+  it('behåller kortet om spelaren fortfarande är skadad och matchdagen inte passerat', () => {
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const nextFixture = game.fixtures.find(
+      f => !f.isCup && f.status === FixtureStatus.Scheduled &&
+           (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )!
+    const validGame: SaveGame = {
+      ...game,
+      players: game.players.map(p => p.id === player.id ? { ...p, isInjured: true, injuryDaysRemaining: 10 } : p),
+      pendingEvents: [{
+        id: `playthrough_${player.id}_${nextFixture.matchday + 10}`,
+        type: 'playThroughInjury', title: 'x', body: 'x',
+        choices: [
+          { id: 'play', label: 'Han spelar', effect: { type: 'playThroughInjury', targetPlayerId: player.id } },
+          { id: 'rest', label: 'Han vilar', effect: { type: 'noOp' } },
+        ],
+        relatedPlayerId: player.id, resolved: false,
+      }],
+    }
+    const result = advanceToNextEvent(validGame, 1)
+    expect((result.game.pendingEvents ?? []).some(e => e.id.startsWith('playthrough_'))).toBe(true)
+  })
+})
+
 /**
  * club_forsbacka (seed 42) har bye i cup-kvalet — dess FÖRSTA schemalagda
  * fixture är matchday 5, inte 1 (matchday 1-4 är andra klubbars cupmatcher).

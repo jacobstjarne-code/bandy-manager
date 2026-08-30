@@ -1810,6 +1810,30 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // Audit 2026-08-29 HIGH 9 (skadad-spela-vidare-kort på en frisk spelare):
+  // checkForPlayThroughInjuryOffer gatar korrekt VID GENERERING (isInjured +
+  // schemalagd match), men ett redan köat kort renderades ändå efter att
+  // spelaren hann bli frisk eller efter att kalendern passerat den match
+  // kortet gällde. Re-validera preconditionen varje omgång, inte bara vid
+  // skapandet — "kasta eller konvertera inaktuella events" (auditens ord).
+  // ID-formatet playthrough_${playerId}_${matchday} bär matchdagen (GameEvent
+  // saknar ett generellt createdMatchday-fält, till skillnad från FollowUp/
+  // TransferBid) — splittar på sista understreck, inte första, eftersom
+  // player-id kan innehålla understreck.
+  {
+    const beforePlaythroughPurge = updatedGame.pendingEvents ?? []
+    const stillValid = beforePlaythroughPurge.filter(e => {
+      if (e.type !== 'playThroughInjury' || e.resolved) return true
+      const player = updatedGame.players.find(p => p.id === e.relatedPlayerId)
+      if (!player || !player.isInjured || player.playingThroughInjury) return false
+      const forMatchday = Number(e.id.slice(e.id.lastIndexOf('_') + 1))
+      return Number.isFinite(forMatchday) && forMatchday >= nextMatchday
+    })
+    if (stillValid.length < beforePlaythroughPurge.length) {
+      updatedGame = { ...updatedGame, pendingEvents: stillValid }
+    }
+  }
+
   // ── B5: Rensa resolved events från state (sparar localStorage-utrymme) ──
   {
     const beforeClean = updatedGame.pendingEvents ?? []
