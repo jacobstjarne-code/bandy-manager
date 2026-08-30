@@ -5,6 +5,16 @@ export type EventNature = 'critical' | 'player' | 'reactions' | 'inbox-only'
 /**
  * Event types that require a decision — shown inline in Översikt (max 3).
  * pressConference is handled separately via game.pendingPressConference.
+ *
+ * HIGH 11-uppföljning (2026-08-31, communityEvent tillagd): communityEvent
+ * (background-tier, decisionTierService.ts — får aldrig en dashboard-yta)
+ * hade INGEN resolverbar yta alls innan detta — det matchade ingen av de
+ * tre kategorierna nedan och föll till 'inbox-only', som inte renderar
+ * något att klicka på. Riktiga val med riktiga effekter (t.ex.
+ * characterPlayerService.ts:s veteran-avsked, +3 samhällsstöd) blev
+ * därmed olösbara: observerat kvarliggande 62 raka omgångar i HIGH 11:s
+ * simulering. Bakgrund ska besvaras "där den hör hemma" (doktrinen) — för
+ * communityEvent är det här, Granskas Översikt, inte dashboarden.
  */
 export const CRITICAL_GRANSKA_TYPES = new Set<GameEventType>([
   'transferBidReceived',
@@ -19,6 +29,7 @@ export const CRITICAL_GRANSKA_TYPES = new Set<GameEventType>([
   'detOmojligaValet',
   'riskySponsorOffer',
   'bidWar',
+  'communityEvent',
 ])
 
 /**

@@ -41,13 +41,19 @@ describe('classifyEventNature', () => {
     }
   })
 
+  // 2026-08-31: communityEvent flyttades IN i CRITICAL_GRANSKA_TYPES (se
+  // filens egen docstring) för att ge den en resolverbar yta den saknade —
+  // den kan alltså inte längre stå som exempel på en typ UTANFÖR de tre
+  // namngivna seten. seasonGoalHalfway är background/notis (samma HIGH
+  // 11-klassning som communityEvent var) men matchar fortfarande ingen av
+  // de tre seten, så den prövar samma fjärde gren (ad hoc priority=critical).
   it('an ad hoc priority=critical event with choices:[] → reactions, not a dead-end critical card', () => {
-    expect(classifyEventNature(makeEvent('communityEvent', { priority: 'critical' }))).toBe('reactions')
+    expect(classifyEventNature(makeEvent('seasonGoalHalfway', { priority: 'critical' }))).toBe('reactions')
   })
 
   it('an ad hoc priority=critical event with a real choice → critical', () => {
     const withChoice = { priority: 'critical' as const, choices: [{ id: 'yes', label: 'Ja', effect: {} }] }
-    expect(classifyEventNature(makeEvent('communityEvent', withChoice))).toBe('critical')
+    expect(classifyEventNature(makeEvent('seasonGoalHalfway', withChoice))).toBe('critical')
   })
 
   it('classifies player types correctly', () => {
@@ -63,8 +69,16 @@ describe('classifyEventNature', () => {
   })
 
   it('classifies unknown types as inbox-only', () => {
-    expect(classifyEventNature(makeEvent('communityEvent'))).toBe('inbox-only')
+    // communityEvent tillagd i CRITICAL_GRANSKA_TYPES 2026-08-31 (se ovan) —
+    // seasonGoalHalfway ersätter den som "hör inte hemma i något set"-exempel.
+    expect(classifyEventNature(makeEvent('seasonGoalHalfway'))).toBe('inbox-only')
     expect(classifyEventNature(makeEvent('sponsorOffer'))).toBe('inbox-only')
+  })
+
+  it('communityEvent (HIGH 11-följdfix 2026-08-31: fick en resolverbar yta) klassas nu som CRITICAL_GRANSKA_TYPES, samma ambient-regel som övriga', () => {
+    expect(classifyEventNature(makeEvent('communityEvent'))).toBe('reactions')
+    const withChoice = { choices: [{ id: 'yes', label: 'Ja', effect: {} }] }
+    expect(classifyEventNature(makeEvent('communityEvent', withChoice))).toBe('critical')
   })
 
   it('REACTION_TYPES with choices:[] → reactions (safe for auto-resolve)', () => {

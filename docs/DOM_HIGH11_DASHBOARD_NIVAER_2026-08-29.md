@@ -36,3 +36,13 @@ Throttlen (max 3 aktiva, säsong 1 omg 1 = 1) står kvar för månad/bakgrund �
 
 ## Ägarskap
 Mest Code: tier- + läges-taggar på event-typerna, undantag för måste från throttlen, visningsregeln (ett primärt + ett batchat), och rollover-passet (resolve-or-expire per event-typ i stället för engros-clear). Opus-text: rollover-raderna (default-utfall + utrinning, per event-typ när Code:s pass finns), förvarningsraden ("N kontrakt löper ut om M omgångar"), och ev. läges-etiketter. Jacob: tier-medlemskapet är dömt (måste = kontraktsdeadline + licenskrav).
+
+## KLARGÖRANDE (2026-08-30, efter grundning av budget-systemet)
+
+**Throttlen är `getActiveDecisionCount` (live), inte `tryQueueDecision` (död kod, noll produktionsanrop).** Den levande grinden är `canAddDecision` → `getActiveDecisionCount`, anropad i roundProcessor (KF3-blocket, extraherat till `partitionInterruptBudget`), mediaProcessor och eventProcessor. Både måste-exemptionen OCH background-exkluderingen måste sitta där — `getActiveDecisionCount` räknar bara icke-background handlingsbara event mot taket. I `tryQueueDecision` vore de dekorativa.
+
+**Två budgetar, skilda axlar — sammanblandningen är doktrinens förvirringskälla:**
+- **Samtidighetsbudget** (`decisionBudgetService`): hur många aktiva beslut spelaren har framför sig NU (`pendingEvents`/`deferredDecisions`, tak `MAX_ACTIVE_DECISIONS`). **Tier-systemet styr ENBART denna.**
+- **Kadensbudget** (`systemhandelseBudgetOk`/`filterSystemhandelseBudget`, `narrativeLogService`): hur OFTA systemhändelse-taggade beats får fyra per säsong (`maxPerSeason`, `minRoundsBetween`, läser `narrativeBeatLog`). Ortogonal — tiern rör den inte. De komponeras vid samma call site (roundProcessor:2269) men är två oberoende grindar.
+
+**EventPriority är en TREDJE axel, oförändrad.** Tiern kartlägger inte mot och ersätter inte `EventPriority` (critical/high/normal/low) — priority äger köordning + overlay-routing och rörs inte. Gap att bedöma separat (INTE rör priority blint): `licenseHandlingsplan` faller på `default: 'low'` i `getEventPriority`. Must-tiern fixar redan surfacingen; verifiera om 'low' felroutar overlay-vs-inline innan priority ändras.

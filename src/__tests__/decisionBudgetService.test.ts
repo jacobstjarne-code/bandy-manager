@@ -231,6 +231,48 @@ describe('HIGH 11 — måste-nivån undantagen throttlen', () => {
   })
 })
 
+// KLARGÖRANDE 2026-08-30/31 (doktrinfilen): bakgrundsnivån är undantagen
+// throttlen av samma skäl som måste, fast åt andra hållet — den tar aldrig
+// en dashboard-yta och ska därför inte kunna TRÄNGA UNDAN en synlig
+// månads-yta. Mätt i HIGH 11-simuleringen: bakgrundshändelser nådde 3
+// samtidiga (hela taket) och kunde svälta ut månadskön inom en säsong.
+describe('HIGH 11-följdfix (2026-08-31) — bakgrundsnivån undantagen throttlen', () => {
+  it('canAddDecision: bakgrund passerar alltid, oavsett tak', () => {
+    const game = fullBudgetGame()
+    expect(canAddDecision(game, 5, 'background')).toBe(true)
+  })
+
+  it('bakgrund räknas inte mot budgeten — tre aktiva bakgrundsevent blockerar inte ett nytt månadsbeslut', () => {
+    const game = makeGame({
+      pendingEvents: [
+        makeTypedEvent('bg1', 'communityEvent'),
+        makeTypedEvent('bg2', 'fanLetter'),
+        makeTypedEvent('bg3', 'mediaReaction'),
+        makeTypedEvent('a', 'sponsorOffer'),
+      ],
+    })
+    // Spelaren SER fyra beslut (UI-räknaren är oförändrad) ...
+    expect(getActiveDecisionCount(game)).toBe(4)
+    // ... men bara ett av dem (månadsbeslutet) tär på budgeten.
+    expect(getThrottledActiveDecisionCount(game)).toBe(1)
+    expect(canAddDecision(game, 5)).toBe(true)
+  })
+
+  it('partitionInterruptBudget: bakgrund surfar alltid, tränger aldrig undan ett månadsbeslut och defereras aldrig', () => {
+    const pending = [
+      makeTypedEvent('bg1', 'communityEvent'),
+      makeTypedEvent('bg2', 'fanLetter'),
+      makeTypedEvent('bg3', 'mediaReaction'),
+      ...['a', 'b', 'c', 'd'].map(id => makeTypedEvent(id, 'sponsorOffer')),
+    ]
+    const { surface, deferred } = partitionInterruptBudget(pending, 5)
+    // Alla tre bakgrundsevent surfar, plus de tre första månadsplatserna.
+    expect(surface.map(e => e.id)).toEqual(['bg1', 'bg2', 'bg3', 'a', 'b', 'c'])
+    // Bara den fjärde MÅNADS-posten trängs undan — inget bakgrundsevent.
+    expect(deferred.map(e => e.id)).toEqual(['d'])
+  })
+})
+
 describe('partitionInterruptBudget — KF3-avbrottsbudgeten (roundProcessors faktiska mekanism)', () => {
   it('cappar månadsbeslut vid 3 och deferrerar resten', () => {
     const pending = ['a', 'b', 'c', 'd', 'e'].map(id => makeTypedEvent(id, 'sponsorOffer'))
