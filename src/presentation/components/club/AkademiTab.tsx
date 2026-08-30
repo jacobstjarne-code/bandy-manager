@@ -98,7 +98,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
 
           {/* Player list */}
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 8 }}>
-            ★ = potential · CA = nuläge
+            ★ = potential · Styrka = nuläge
           </p>
 
           {[

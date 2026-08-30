@@ -5,6 +5,7 @@ import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { MatchEventType } from '../../../domain/enums'
 import { SectionLabel } from '../../components/SectionLabel'
 import { getPortraitSvg } from '../../../domain/services/portraitService'
+import { positionShort } from '../../../domain/format'
 import { ratingColor } from './helpers'
 import { classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { DecisionCard } from '../../components/DecisionCard'
@@ -106,7 +107,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                   {p.firstName[0]}. {p.lastName}
                 </p>
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
-                  {p.position}{statParts.length > 0 ? ` · ${statParts.join(' · ')}` : ''}
+                  {positionShort(p.position)}{statParts.length > 0 ? ` · ${statParts.join(' · ')}` : ''}
                 </p>
               </div>
               <span style={{ fontSize: 15, fontFamily: 'var(--font-display)', fontWeight: 700, color: ratingColor(r), flexShrink: 0 }}>

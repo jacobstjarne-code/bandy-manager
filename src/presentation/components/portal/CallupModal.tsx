@@ -85,7 +85,7 @@ export function CallupModal({ game }: Props) {
               {p.firstName} {p.lastName}
             </span>
             <span className="h-micro" style={{ fontFamily: 'ui-monospace, monospace', color: 'var(--gold)', fontWeight: 700 }}>
-              CA {p.currentAbility}
+              Styrka {p.currentAbility}
             </span>
           </div>
         ))}

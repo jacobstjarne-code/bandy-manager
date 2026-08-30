@@ -5,6 +5,7 @@ import type { FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS, autoAssignFormation, getRecommendedFormation, FORMATION_META } from '../../../domain/entities/Formation'
 import type { Tactic } from '../../../domain/entities/Club'
 import { positionShort } from '../../../domain/format'
+import { TACTIC_MENTALITY_LABELS, TACTIC_TEMPO_LABELS, TACTIC_PRESS_LABELS } from '../../../domain/data/enumLabels'
 import { PlayerDot } from './PlayerDot'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
@@ -16,16 +17,6 @@ interface FormationViewProps {
 }
 
 const FORMATION_OPTIONS: FormationType[] = ['3-3-4', '5-3-2', '4-3-3', '3-4-3', '2-3-2-3', '4-2-4']
-
-const MENTALITY_LABELS: Record<string, string> = {
-  defensive: 'Defensiv', balanced: 'Balanserad', offensive: 'Offensiv',
-}
-const TEMPO_LABELS: Record<string, string> = {
-  low: 'Lågt', normal: 'Normal', high: 'Högt',
-}
-const PRESS_LABELS: Record<string, string> = {
-  low: 'Lågt', medium: 'Medel', high: 'Högt',
-}
 
 function PitchLines() {
   return (
@@ -199,15 +190,15 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
         marginBottom: 10, flexWrap: 'wrap',
       }}>
         <span className="h-micro" style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
-          {MENTALITY_LABELS[tactic.mentality] ?? tactic.mentality}
+          {TACTIC_MENTALITY_LABELS[tactic.mentality]}
         </span>
         <span className="h-micro" style={{ color: 'var(--border)' }}>·</span>
         <span className="h-micro" style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
-          Tempo: {TEMPO_LABELS[tactic.tempo] ?? tactic.tempo}
+          Tempo: {TACTIC_TEMPO_LABELS[tactic.tempo]}
         </span>
         <span className="h-micro" style={{ color: 'var(--border)' }}>·</span>
         <span className="h-micro" style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
-          Press: {PRESS_LABELS[tactic.press] ?? tactic.press}
+          Press: {TACTIC_PRESS_LABELS[tactic.press]}
         </span>
         <button
           onClick={() => navigate('/game/squad')}
