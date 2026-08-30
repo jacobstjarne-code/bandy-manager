@@ -145,11 +145,24 @@ describe('resolveDeferredAtRollover — aldrig tyst', () => {
     expect(result.game).toBe(g)
   })
 
-  it('texten är Opus — strukturen är wirad, raderna är tomma tills dess', () => {
+  it('Opus-texten interpolerar titel och valt utfall korrekt (resolved)', () => {
     const deferred = [evt('d1', 'kommunMote', [{ id: 'skip', label: 'Avstå', effect: { type: 'noOp' } }])]
     const result = resolveDeferredAtRollover(game(), deferred, 2026)
-    // Ingen Code-skriven svensk prosa har smugit sig in i kodbasen.
-    expect(result.inboxItems[0].title).toBe('')
-    expect(result.inboxItems[0].body).toBe('')
+    // 2026-08-31: mustDeadlineWarningText.ts/deferredRolloverText.ts levererade —
+    // ingen Code-skriven prosa här, bara interpolation av Opus egna mallar
+    // (deferredRolloverText.ts:s RESOLVED_VARIANTS[0]).
+    expect(result.inboxItems[0].title).toBe('Titel d1 — avgjort')
+    expect(result.inboxItems[0].body).toBe(
+      'Beslutet blev liggande över säsongsskiftet. Klubben lät det gå åt det håll som krävde minst: Avstå.'
+    )
+  })
+
+  it('Opus-texten interpolerar titel korrekt (expired, inget outcome-ord)', () => {
+    const deferred = [evt('d1', 'criticalEconomy', [{ id: 'wait', label: 'Avvakta', effect: { type: 'noOp' } }])]
+    const result = resolveDeferredAtRollover(game(), deferred, 2026)
+    expect(result.inboxItems[0].title).toBe('Titel d1 — rann ut')
+    expect(result.inboxItems[0].body).toBe(
+      'Beslutet blev aldrig behandlat och föll bort när säsongen tog slut. Chansen är borta.'
+    )
   })
 })

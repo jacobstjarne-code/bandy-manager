@@ -44,10 +44,20 @@ function fill(template: string, ctx: DeferredRolloverTextContext): string {
 }
 
 // Opus levererar — lämna tom tills dess. ALDRIG en placeholder-mening.
-const RESOLVED_VARIANTS: DeferredRolloverText[] = []
+const RESOLVED_VARIANTS: DeferredRolloverText[] = [
+  {
+    title: '{title} — avgjort',
+    body: 'Beslutet blev liggande över säsongsskiftet. Klubben lät det gå åt det håll som krävde minst: {outcome}.',
+  },
+]
 
 // Opus levererar — lämna tom tills dess. ALDRIG en placeholder-mening.
-const EXPIRED_VARIANTS: DeferredRolloverText[] = []
+const EXPIRED_VARIANTS: DeferredRolloverText[] = [
+  {
+    title: '{title} — rann ut',
+    body: 'Beslutet blev aldrig behandlat och föll bort när säsongen tog slut. Chansen är borta.',
+  },
+]
 
 /** "X löstes av sig självt: [utfall]" — default-utfallet tillämpades. */
 export function getDeferredResolvedText(ctx: DeferredRolloverTextContext): DeferredRolloverText {

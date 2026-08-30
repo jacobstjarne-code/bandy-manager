@@ -49,15 +49,25 @@ export function buildWarningTokens(deadlines: MustDeadline[]): MustDeadlineWarni
   }
 }
 
-// Opus levererar — lämna tom tills dess. ALDRIG en placeholder-mening.
-const TEMPLATE: string = ''
+/**
+ * Substantivet per måste-typ (Opus). Homogent urval → specifikt ord; blandat
+ * urval → 'beslut'. Måste-listan är stängd (contractRequest, licenseHandlingsplan).
+ */
+const MUST_NOUN: Partial<Record<GameEventType, string>> = {
+  contractRequest: 'kontrakt',
+  licenseHandlingsplan: 'licenskrav',
+}
 
-/** Förvarningsraden, eller '' så länge Opus inte levererat mallen. */
+/** Förvarningsraden (auditens MEDIUM 16). Böjer omgång/omgångar och väljer
+ *  substantiv efter urvalets typ. '' när inget måste är nära sin frist. */
 export function getMustDeadlineWarningLine(deadlines: MustDeadline[]): string {
   if (deadlines.length === 0) return ''
-  if (!TEMPLATE) return ''
   const t = buildWarningTokens(deadlines)
-  return TEMPLATE
-    .replace(/\{count\}/g, String(t.count))
-    .replace(/\{rounds\}/g, String(t.rounds))
+  const types = new Set(deadlines.map(d => d.event.type))
+  const noun = types.size === 1 ? (MUST_NOUN[[...types][0] as GameEventType] ?? 'beslut') : 'beslut'
+  if (t.rounds <= 0) {
+    return `${t.count} ${noun} löper ut den här omgången.`
+  }
+  const omg = t.rounds === 1 ? 'omgång' : 'omgångar'
+  return `${t.count} ${noun} löper ut om ${t.rounds} ${omg}.`
 }
