@@ -6,6 +6,7 @@ import { InboxItemType } from '../../../domain/enums'
 import { simulateYouthMatch } from '../../../domain/services/academyService'
 import { mulberry32 } from '../../../domain/utils/random'
 import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConstants'
+import { academyBreakthroughQuote } from '../../../domain/data/academyBreakthroughText'
 
 export interface YouthProcessorResult {
   updatedYouthTeam: YouthTeam | undefined
@@ -176,7 +177,7 @@ export function processYouth(
         id: breakthroughId,
         type: 'academyEvent',
         title: `${player.firstName} ${player.lastName} slår igenom`,
-        body: `I debuten mot ${opponent?.name ?? 'motståndaren'}. Minut ${goal.minute ?? '?'}. ${player.age} år gammal. Akademitränaren har ringt redan. "Han har varit den mest hungrige på träning i två år. Det är inte tur."`,
+        body: `I debuten mot ${opponent?.name ?? 'motståndaren'}. Minut ${goal.minute ?? '?'}. ${player.age} år gammal. Akademitränaren har ringt redan. "${academyBreakthroughQuote(player.id)}"`,
         choices: [{ id: 'ack', label: 'Grattis akademin', effect: { type: 'noOp' } }],
         resolved: false,
       })
