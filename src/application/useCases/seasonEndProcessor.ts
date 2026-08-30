@@ -194,7 +194,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         date: game.currentDate,
         type: InboxItemType.LicenseReview,
         title: 'LICENSNÄMNDEN: LICENS NEKAD — TVÅNGSNEDFLYTTNING',
-        body: `Licensnämnden beslutar om nedflyttning för ${managedClubForLicense.name}. Efter överläggning beviljas respit — klubben får spela kvar, mot hårda villkor. Tre spelare lämnar via elitserieklausul. Majoriteten av sponsorerna drar sig ur. Styrelsen låter tränaren stanna. Under hårt tryck.`,
+        body: `Licensnämnden beslutar om nedflyttning för ${managedClubForLicense.name}. Efter överläggning beviljas respit — klubben får spela kvar, mot hårda villkor. En sponsor drar sig ur, och ekonomin är så pressad att truppen kan behöva bantas. Klubbens rykte tar skada. Styrelsen låter tränaren stanna. Under hårt tryck.`,
         isRead: false,
       } as InboxItem)
     }

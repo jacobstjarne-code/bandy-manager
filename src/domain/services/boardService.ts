@@ -739,11 +739,17 @@ export function buildSeasonBoardTruth(params: {
  * att GameOverScreen.tsx läser game.boardPatience/consecutiveFailures LIVE
  * vid rendertillfället (den ursprungliga bugkällan — två oberoende
  * härledningar av samma säsongs utfall som kunde säga emot varandra).
- * De tre texterna är ORÖRDA, flyttade ordagrant ur GameOverScreen.tsx —
- * ingen ny svensk text skriven här.
+ *
+ * Tvåsanning på Game Over (Jacobs dom 2026-08-29): när avskedet beror på
+ * ackumulerat tålamod (boardPatience) men SISTA säsongen faktiskt höll
+ * (verdict !== 'failed'), nämner texten BÄGGE sanningarna — annars läser en
+ * godkänd årsbok plus "ihållande besvikelser" som förvirrande. Bara det
+ * divergerande fallet är nytt; consecutiveFailures (tre bottensäsonger, ingen
+ * divergens) och den generiska raden är orörda. `outcome` är valfri — gamla
+ * saves (legacyTruth i GameOverScreen) saknar den och faller på relationsraden.
  */
 export function gameOverBoardStatement(
-  truth: Pick<SeasonBoardTruth, 'relationship'>,
+  truth: Pick<SeasonBoardTruth, 'relationship'> & Partial<Pick<SeasonBoardTruth, 'outcome'>>,
   clubName: string | undefined,
 ): string {
   const { firedReason } = truth.relationship
@@ -751,6 +757,9 @@ export function gameOverBoardStatement(
     return `Efter tre säsonger på rad utan förbättring ser styrelsen sig tvingad att göra en förändring. ${clubName ?? 'Klubben'} tackar för insatsen men önskar dig lycka till i framtiden.`
   }
   if (firedReason === 'boardPatience') {
+    if (truth.outcome && truth.outcome.verdict !== 'failed') {
+      return `Vintern som gick höll måttet. Men för mycket hade redan gått förlorat innan den, och där tog styrelsens tålamod slut. Du lämnar ${clubName ?? 'klubben'} med omedelbar verkan.`
+    }
     return `Styrelsen har förlorat förtroendet för dig som tränare efter de ihållande besvikelserna. Beslutet är fattat — du lämnar ${clubName ?? 'klubben'} med omedelbar verkan.`
   }
   return `Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i ${clubName ?? 'klubben'}.`

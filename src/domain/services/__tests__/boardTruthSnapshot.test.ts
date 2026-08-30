@@ -49,11 +49,13 @@ describe('buildSeasonBoardTruth — de tre axlarna kollapsas aldrig till en dom'
     expect(truth.relationship.zone).toBe('ultimatum')
     expect(truth.relationship.managerFired).toBe(true)
 
-    // Game Over-texten pratar om relationen (den soured axeln) — inte om
-    // säsongens placeringsdom. De två fakta motsäger inte varandra: båda
-    // är sanna, och båda går att läsa ur SAMMA objekt.
+    // Tvåsanning (Jacobs dom 2026-08-29): när säsongen höll (exceeded) men
+    // tålamodet tagit slut nämner avskedstexten BÄGGE sanningarna — "vintern
+    // höll, men för mycket hade redan gått förlorat". De två fakta motsäger
+    // inte varandra: båda är sanna, båda ur SAMMA objekt.
     const statement = gameOverBoardStatement(truth, 'Lesjöfors BK')
-    expect(statement).toContain('ihållande besvikelserna')
+    expect(statement).toContain('höll måttet')
+    expect(statement).toContain('tålamod')
     expect(statement).toContain('Lesjöfors BK')
   })
 
