@@ -174,13 +174,40 @@ export function processEconomy(
     }
   }
 
-  // Social media reputation boost (+1 every 5th matchday)
+  // Social media reputation boost (+1 every 5th matchday) — TIDIGARE helt
+  // frikopplat från placering (sidofynd B, DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md):
+  // club_malilla (mittenklubb, placering 5/8/6 tre säsonger i rad) nådde
+  // rykte 100 på tre säsonger av bara denna tick, oavsett sportslig
+  // prestation — ca +6 rykte/säsong ovanpå D028:s säsongsdelta (boardService.ts
+  // SEASON_REPUTATION_DELTA, som toppar på +4/säsong och ÄGER det
+  // prestationskopplade ryktedeltat).
+  //
+  // Gate på absolut tabellplacering (topp 3), inte på D028:s
+  // förväntansband (computeSeasonVerdictRating) — det bandet är redan
+  // generöst för MidTable (4-8 av 12 klubbar ger högsta betyg där), så att
+  // återanvända det hade INTE stoppat club_malilla. Topp 3 matchar
+  // tröskeln "dominant klubb" redan används i mätfamiljen
+  // (ansprak4-ortsunderhall-matning-2026-08-30.ts: club_vastanfors,
+  // verifierad topp-3 i 10/10 säsonger) — en genuint dominant klubb
+  // fortsätter få tick:en nästan varje gång, en mittenklubb med ordinära
+  // resultat får den nästan aldrig.
+  //
+  // `played > 0`-kravet undviker PÅSTÅENDEKARTAN-fällan (standingsService.ts):
+  // vid noll spelade matcher är alla klubbar på 0 poäng och tie-breaken ger
+  // en alfabetisk skuggplacering, inte en verklig.
+  const TOP_TABLE_REPUTATION_THRESHOLD = 3
   if (game.communityActivities?.socialMedia && nextMatchday % 5 === 0) {
-    updatedClubs = updatedClubs.map(c =>
-      c.id === game.managedClubId
-        ? { ...c, reputation: Math.min(100, c.reputation + 1) }
-        : c,
-    )
+    const managedStanding = standings.find(s => s.clubId === game.managedClubId)
+    const isNearTopOfTable = !!managedStanding
+      && managedStanding.played > 0
+      && managedStanding.position <= TOP_TABLE_REPUTATION_THRESHOLD
+    if (isNearTopOfTable) {
+      updatedClubs = updatedClubs.map(c =>
+        c.id === game.managedClubId
+          ? { ...c, reputation: Math.min(100, c.reputation + 1) }
+          : c,
+      )
+    }
   }
 
   return { updatedClubs, roundFinanceLog, clearAnnandagsGratisentreVal }
