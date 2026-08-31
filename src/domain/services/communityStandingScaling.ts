@@ -182,9 +182,20 @@ export function csExpectationDrag(reputation: number): number {
 
 /** Andel av en aktivitets färskhet som ÖVERLEVER en säsong vid rykte-taket.
  *  Domen: "Behåll knapp 1:s mätta faktor (0,85) som utgångspunkt, mät om mot
- *  det nya stalenessgolvet." 0,85 är alltså ankaret, inte ett övertaget svar —
- *  se D038 för svepet som låste värdet. */
-export const ACTIVITY_STALENESS_RETENTION_CEIL = 0.85
+ *  det nya stalenessgolvet." 0,85 var ankaret, inte ett övertaget svar.
+ *
+ *  0,85 → 0,75 (2026-08-31, väg C-kalibreringen — D038:s VÄG C-MÄTNING).
+ *  Under CS-vägen spelade takten knappt någon roll: staleness bet inte ändå.
+ *  Under väg C ÄR takten avståndet mellan att förnya och att glida — den avgör
+ *  hur fort en klubb som slutat förnya faktiskt tappar publik. Mätt över tio
+ *  säsonger, dominant klubb, aldrig förnyat: 0,85 gav färskhet 0,874 (−13 %
+ *  publikdrag), 0,75 ger 0,822 (−18 %) och planar ut kring 0,74-0,78, dvs.
+ *  långt över golvet — en glidning, aldrig en kollaps. Holdbarheten mätt i
+ *  samma körning: en klubb som betalar VARJE förnyelse ligger kvar på
+ *  0,92-0,95 och glider inte nedåt över tio säsonger.
+ *  Mellansteget 0,80 mättes också (färskhet 0,846) och är den konservativa
+ *  återgången om Jacob vill ha mindre erosion — en konstant, inget annat. */
+export const ACTIVITY_STALENESS_RETENTION_CEIL = 0.75
 /** Golvet en aldrig-förnyad aktivitet asymptotiskt närmar sig. Aldrig 0
  *  (D031:s anti-vägg), och samma tal som getCsDiminishingFactor redan använder
  *  som sitt eget golv — ett ankare som finns i kodbasen, inte ett nytt gissat. */
@@ -215,8 +226,34 @@ export function getActivityStalenessMultiplier(seasonsActive: number, reputation
   return ACTIVITY_STALENESS_FLOOR + (1 - ACTIVITY_STALENESS_FLOOR) * Math.pow(retention, s)
 }
 
-/** Grundkostnad för att förnya EN aktivitet, för en klubb på/under rykte 80. */
-export const ACTIVITY_RENEWAL_BASE_COST = 25_000
+/**
+ * Grundkostnad för att förnya EN aktivitet, för en klubb på/under rykte 80.
+ *
+ * 25 000 → 10 000 (2026-08-31, väg C-kalibreringen — D038:s VÄG C-MÄTNING).
+ * Detta är passets viktigaste fynd och rotorsaken till att väg C inte bet:
+ * priset var aldrig satt mot vad förnyelsen KÖPER. D038:s ursprungliga svep
+ * valde kostnadsmultiplikatorn som "den högsta nivå som fortfarande lämnar ett
+ * tydligt positivt incitament mot GLIDER" — dvs. priset kalibrerades mot hur
+ * mycket överskott det skulle beta av, i ett läge där förnyelsen bevisligen
+ * köpte +0,3 CS, alltså ingenting. Priset ärvdes rakt in i väg C.
+ *
+ * Räkningen som avgör (dominant klubb, mätt): hela den publikbundna intäkten är
+ * ~0,98 Mkr/säsong, och färskheten multiplicerar den inom [0,65, 1]. Mekanikens
+ * HELA spann är alltså ~343 tkr/säsong, och det bara mellan två oåtkomliga
+ * ytterligheter; det verkligt uppnåeliga avståndet mellan att alltid förnya och
+ * att aldrig förnya mättes till 88-119 tkr/säsong. Vid 25 000 kostade
+ * förnyelsepolicyn 409 tkr/säsong (4,4-4,5 kort à ~93 tkr) — 3,4-4,6 gånger mer
+ * än mekanikens hela realistiska värde. Ingen kurv-, golv- eller
+ * aggregeringsändring kan laga det: kostnaden låg över taket.
+ *
+ * 10 000 med samma rykte-ramp ger 10 / 25 / 40 tkr vid rykte 80 / 90 / 100 —
+ * fortfarande fyra gånger dyrare i toppen (domens "ett topplag betalar både MER
+ * och OFTARE" orörd), fortfarande 130-165 tkr/säsong för en dominant klubb, och
+ * nu i samma storleksordning som de 119 tkr färskheten är värd. Golvet
+ * (ORT_FRESHNESS_FLOOR) rördes INTE — domens SKYDDAT väger tyngre än att få
+ * kalkylen att gå jämnt ut, se D038.
+ */
+export const ACTIVITY_RENEWAL_BASE_COST = 10_000
 /** Kostnadsmultiplikator vid rykte-taket. Domen: "Kostnaden och den takt den
  *  behövs skalar med storlek." Ett topplag betalar både MER och OFTARE. */
 export const ACTIVITY_RENEWAL_COST_REP_MULT_CEIL = 4.0
@@ -230,6 +267,35 @@ export function getActivityRenewalCost(reputation: number): number {
 
 /** Multiplikatorn där aktiviteten blivit tillräckligt sliten för att
  *  förnyelsebeslutet ska surfa. Vid rykte 100 nås den efter EN hel säsong
- *  (0,8875); vid rykte 90 efter två (0,8917); vid rykte ≤80 aldrig — där är
- *  multiplikatorn konstant 1,0 och inget beslut genereras någonsin. */
+ *  (0,8125); vid rykte 90 likaså efter en (0,9063); vid rykte ≤80 aldrig — där
+ *  är multiplikatorn konstant 1,0 och inget beslut genereras någonsin.
+ *  (Talen omräknade 2026-08-31 när retentionstaket gick 0,85 → 0,75; tröskeln
+ *  själv är oförändrad och fortsatt mätt i D038.) */
 export const ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER = 0.95
+
+// ── VÄG C (Jacobs beslut 2026-08-31): konsekvensen flyttar CS → PUBLIK ─────
+// DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". D038:s mätning visade
+// att staleness-på-CS var tandlös: att förnya köpte +0,3 CS för 318 tkr/säsong,
+// eftersom staleness per konstruktion bara kan röra aktiviteternas 0,67 CS/omg
+// medan volontärbonusen (upp till 1,5) bär hela ortsspaken. Jacobs egen ram —
+// "supportrarna tröttnar" — betyder att de SLUTAR KOMMA. Alltså är konsekvensen
+// publik, inte CS: rent pengar-mot-pengar, och det sidsteppar volontärbonusens
+// dominans helt.
+//
+// KURVAN ÄR OFÖRÄNDRAD (domens "BEHÅLL … staleness-KURVAN"). Det enda som är
+// nytt är vad multiplikatorerna KONSUMERAS av: getOrtFreshnessFactor
+// (communityRenewalService.ts) aggregerar dem till EN klubbnivå-faktor som
+// multipliceras in i computeAttendanceRate.
+
+/** Publikandelen en HELT sliten dominant klubb fortfarande drar — golvet för
+ *  `getOrtFreshnessFactor`. Skilt från ACTIVITY_STALENESS_FLOOR (0,25) med
+ *  avsikt: 0,25 är hur mycket en ENSKILD aktivitets färskhet kan falla,
+ *  0,65 är hur mycket av HELA klubbens publikdrag som får hänga på färskhet.
+ *  Domens SKYDDAT: "en helt stale stor klubb drar fortfarande MERPARTEN av sin
+ *  publik — freshness-golvet är den marginella 'uttråkade'-förlusten, aldrig en
+ *  kollaps." 0,65 är den nivå mätsvepet (D038, VÄG C-tillägget) landade på:
+ *  den lägsta som gör förnyelsen konkurrenskraftig i kronor utan att någon arm
+ *  kraterar. Ett obundet golv (dvs. att låta aktivitetsgolvet 0,25 slå igenom
+ *  rakt) hade tagit 75 % av publiken för en klubb som slutat förnya — en vägg,
+ *  inte en marginal. */
+export const ORT_FRESHNESS_FLOOR = 0.65

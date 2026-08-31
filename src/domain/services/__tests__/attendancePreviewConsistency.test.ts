@@ -69,3 +69,65 @@ describe('buildRoundIncomeParamsForNextFixture — isHomeMatch läser den VERKLI
     expect(params.isHomeMatch).toBe(false)
   })
 })
+
+// ── ANSPRÅK 4, spak 3 / VÄG C (2026-08-31) ─────────────────────────────────
+// freshnessFactor trådas genom SAMMA två byggfunktioner som communityStanding,
+// med samma managed-only-villkor. Utan det hade förhandsvisningen (MatchScreen,
+// EkonomiTab) visat ett publiktal som inte kände till nyhetstretmillen medan
+// matchsimuleringen tog betalt för den — precis den drift dessa byggfunktioner
+// finns för att omöjliggöra.
+describe('freshnessFactor trådas genom de delade byggfunktionerna (väg C)', () => {
+  const ALL_ON = {
+    kiosk: 'upgraded' as const, lottery: 'intensive' as const, bandyplay: true,
+    functionaries: true, julmarknad: false, bandySchool: true, socialMedia: true,
+    vipTent: true, pensionarskaffe: true, soppkvall: true, skolbesok: true,
+  }
+  const KEYS = ['kiosk', 'lottery', 'bandyplay', 'functionaries', 'bandySchool',
+    'socialMedia', 'pensionarskaffe', 'soppkvall', 'skolbesok'] as const
+
+  function wornBigClub(seasonsActive: number): SaveGame {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 1 })
+    return {
+      ...base,
+      communityActivities: { ...ALL_ON },
+      communityActivitiesSince: Object.fromEntries(
+        KEYS.map(k => [k, base.currentSeason - seasonsActive]),
+      ),
+      clubs: base.clubs.map(c => (c.id === base.managedClubId ? { ...c, reputation: 100 } : c)),
+    }
+  }
+
+  it('buildAttendanceParams sätter freshnessFactor < 1 för den hanterade klubbens hemmamatch', () => {
+    const game = wornBigClub(5)
+    const fixture = game.fixtures.find(f => f.homeClubId === game.managedClubId)!
+    const params = buildAttendanceParams(game, fixture)
+    expect(params?.freshnessFactor).toBeDefined()
+    expect(params!.freshnessFactor!).toBeLessThan(1)
+    expect(params!.freshnessFactor!).toBeGreaterThan(0.5)
+  })
+
+  it('buildAttendanceParams lämnar freshnessFactor undefined när hemmalaget är en AI-klubb', () => {
+    const game = wornBigClub(5)
+    const awayFixture = game.fixtures.find(
+      f => f.awayClubId === game.managedClubId && f.homeClubId !== game.managedClubId,
+    )!
+    expect(buildAttendanceParams(game, awayFixture)?.freshnessFactor).toBeUndefined()
+  })
+
+  it('en helt färsk klubb får exakt 1,0 — mekaniken syns inte för den som just startat', () => {
+    const game = wornBigClub(0)
+    const fixture = game.fixtures.find(f => f.homeClubId === game.managedClubId)!
+    expect(buildAttendanceParams(game, fixture)?.freshnessFactor).toBe(1)
+  })
+
+  it('buildRoundIncomeParamsForNextFixture bär samma freshness till intäktsvägen', () => {
+    const worn = wornBigClub(5)
+    const fresh = wornBigClub(0)
+    const wornParams = buildRoundIncomeParamsForNextFixture(worn)
+    expect(buildRoundIncomeParamsForNextFixture(fresh).freshnessFactor).toBe(1)
+    expect(wornParams.freshnessFactor).toBeLessThan(1)
+    // EN SANNING: samma tal som publikvägen härleder.
+    const fixture = worn.fixtures.find(f => f.homeClubId === worn.managedClubId)!
+    expect(wornParams.freshnessFactor).toBe(buildAttendanceParams(worn, fixture)?.freshnessFactor)
+  })
+})

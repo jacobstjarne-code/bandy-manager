@@ -297,9 +297,9 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
 
 const FILLED_ANSPRAK4: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' | 'filled'>>> = {
   communityActivityRenewal: {
-    trigger: 'En aktiv CS-aktivitet vars staleness-multiplikator fallit till ≤ ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER (0,90) — nås bara över rykte 80, aldrig av en liten klubb. Utöver det: source cooldown "orten" (6 omgångar) inte aktiv, canAddDecision-budgeten öppen, klubben har råd med kostnaden, och aktiviteten har inte redan fått ett förnyelsebeslut denna säsong. Genereras i eventProcessor.ts, konstrueras i communityRenewalService.ts:generateCommunityRenewalEvent.',
-    stateEffect: `'renew': effect 'renewCommunityActivity' — club.finances −getActivityRenewalCost(rykte) (25 tkr vid rykte 80, 75 tkr vid rykte 100) OCH communityActivitiesSince[key] = currentSeason (staleness-klockan nollställd, aktivitetens csBoost tillbaka på full effekt). Ingen communityStanding-ändring — domens SKYDDAT-punkt. 'decline': noOp — aktiviteten står kvar och fortsätter tappa effekt nästa säsong.`,
-    systems: ['communityStanding (via aktivitetens csBoost)', 'ekonomi (klubbkassan)'],
+    trigger: 'En aktiv ortsaktivitet vars staleness-multiplikator fallit till ≤ ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER (0,95) — nås bara över rykte 80, aldrig av en liten klubb. Utöver det: source cooldown "orten" (6 omgångar) inte aktiv, canAddDecision-budgeten öppen, klubben har råd med kostnaden, och aktiviteten har inte redan fått ett förnyelsebeslut denna säsong. Genereras i eventProcessor.ts, konstrueras i communityRenewalService.ts:generateCommunityRenewalEvent.',
+    stateEffect: `'renew': effect 'renewCommunityActivity' — club.finances −getActivityRenewalCost(rykte) (10 tkr vid rykte 80, 40 tkr vid rykte 100) OCH communityActivitiesSince[key] = currentSeason (staleness-klockan nollställd, aktiviteten tillbaka på full färskhet). VÄG C (2026-08-31): färskheten konsumeras av getOrtFreshnessFactor → computeAttendanceRate, alltså av PUBLIKEN — inte av csBoost, som sedan dess är oberoende av staleness. Ingen communityStanding-ändring — domens SKYDDAT-punkt. 'decline': noOp — aktiviteten står kvar och fortsätter tappa dragningskraft nästa säsong.`,
+    systems: ['publikintäkt (ortFreshnessFactor → computeAttendanceRate)', 'ekonomi (klubbkassan)'],
     lifespan: 'engångs per aktivitet och säsong; återkommer så länge klubben är stor nog att aktiviteten hinner slitas igen',
     semanticKey: 'community_activity_renewal',
     cooldownSeasons: 0,

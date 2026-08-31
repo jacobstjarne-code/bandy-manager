@@ -936,3 +936,92 @@ describe('computeLeaguePositionAverages', () => {
     expect(averages[PlayerPosition.Goalkeeper]).toEqual({ avgRating: 6.0, avgGoals: 0, avgAssists: 0 })
   })
 })
+
+// ── Group 5d: freshnessFactor — ANSPRÅK 4, spak 3 / VÄG C (2026-08-31) ───────
+//
+// DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". Nyhetstretmillens
+// konsekvens flyttade från communityStanding till PUBLIKEN. Testerna låser
+// tre saker: att default 1,0 är en exakt no-op (regressionsspärr för varje
+// äldre anropare), att faktorn appliceras EFTER ATTENDANCE_CAP (annars hade
+// den absorberats av taket för precis den dominanta klubb domen handlar om),
+// och att den aldrig kan lyfta raten över taket.
+
+describe('computeAttendanceRate — freshnessFactor (väg C)', () => {
+  it('freshness 1,0 är en exakt no-op — identiskt med att utelämna parametern', () => {
+    for (const [mood, cs, pos] of [[30, 20, 8], [50, 50, 6], [100, 100, 1], [0, 0, 12]]) {
+      expect(computeAttendanceRate(mood, cs, pos, 1, 1)).toBe(computeAttendanceRate(mood, cs, pos))
+      expect(computeAttendanceRate(mood, cs, pos, 1)).toBe(computeAttendanceRate(mood, cs, pos))
+    }
+  })
+
+  it('en sliten klubb tappar publikandel proportionellt', () => {
+    const fresh = computeAttendanceRate(70, 80, 2)
+    expect(computeAttendanceRate(70, 80, 2, 1, 0.8)).toBeCloseTo(fresh * 0.8, 10)
+    expect(computeAttendanceRate(70, 80, 2, 1, 0.65)).toBeCloseTo(fresh * 0.65, 10)
+  })
+
+  it('biter ÄVEN på en klubb som ligger på ATTENDANCE_CAP — appliceras efter klampen', () => {
+    // Råsumman för det här laget ligger över taket (0,95). Hade freshness
+    // multiplicerats in FÖRE min() hade den absorberats helt.
+    expect(computeAttendanceRate(100, 100, 1)).toBe(0.95)
+    expect(computeAttendanceRate(100, 100, 1, 1, 0.8)).toBeCloseTo(0.76, 10)
+  })
+
+  it('kan aldrig lyfta raten över taket — faktorn klampas till [0, 1]', () => {
+    expect(computeAttendanceRate(100, 100, 1, 1, 1.5)).toBe(0.95)
+    expect(computeAttendanceRate(100, 100, 1, 1, 5)).toBe(0.95)
+    expect(computeAttendanceRate(50, 50, 6, 1, -2)).toBe(0)
+  })
+
+  it('kombineras multiplikativt med moodWeight utan att röra dess semantik', () => {
+    const neutral = computeAttendanceRate(80, 80, 12, 0.5)
+    expect(computeAttendanceRate(80, 80, 12, 0.5, 0.7)).toBeCloseTo(neutral * 0.7, 10)
+  })
+})
+
+describe('calcAttendance / calcRoundIncome — freshnessFactor (väg C)', () => {
+  const attendanceBase = {
+    club: { reputation: 90, arenaCapacity: 1500 },
+    fanMood: 70, communityStanding: 85, position: 2,
+    isKnockout: false, isCup: false, isDerby: false,
+  }
+
+  it('calcAttendance: utelämnad freshness ⇒ identisk med freshness 1,0', () => {
+    expect(calcAttendance({ ...attendanceBase, freshnessFactor: 1 }))
+      .toBe(calcAttendance(attendanceBase))
+  })
+
+  it('calcAttendance: den VISADE publiksiffran faller när ortsprogrammet slitits', () => {
+    const fresh = calcAttendance(attendanceBase)
+    const worn = calcAttendance({ ...attendanceBase, freshnessFactor: 0.65 })
+    expect(worn).toBeLessThan(fresh)
+    // Holdbarhet: merparten av publiken kommer fortfarande.
+    expect(worn / fresh).toBeGreaterThan(0.5)
+  })
+
+  const incomeBase = {
+    club: makeClub({ reputation: 90, arenaCapacity: 1500 }), players: [], sponsors: [],
+    communityActivities: undefined, fanMood: 70, isHomeMatch: true,
+    matchIsKnockout: false, matchIsCup: false, matchHasRivalry: false,
+    standing: makeStanding({ position: 2 }), rand: deterministicRand,
+    communityStanding: 85,
+  }
+
+  it('calcRoundIncome: utelämnad freshness ⇒ identisk matchintäkt som freshness 1,0', () => {
+    expect(calcRoundIncome({ ...incomeBase, freshnessFactor: 1 }).matchRevenue)
+      .toBe(calcRoundIncome(incomeBase).matchRevenue)
+  })
+
+  it('calcRoundIncome: matchintäkten faller med färskheten — den kostnad domen ville ha', () => {
+    const fresh = calcRoundIncome(incomeBase).matchRevenue
+    const worn = calcRoundIncome({ ...incomeBase, freshnessFactor: 0.65 }).matchRevenue
+    expect(worn).toBeLessThan(fresh)
+    expect(worn).toBeGreaterThan(0)
+  })
+
+  it('calcRoundIncome: en BORTAMATCH är opåverkad — freshness biter bara på hemmapubliken', () => {
+    const away = { ...incomeBase, isHomeMatch: false }
+    expect(calcRoundIncome({ ...away, freshnessFactor: 0.65 }).netPerRound)
+      .toBe(calcRoundIncome(away).netPerRound)
+  })
+})

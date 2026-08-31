@@ -2,16 +2,17 @@ fact_id: D038
 category: design_principles
 claim: "Anspråk 4, spak 3 / nyhetstretmillen (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md): en ortsaktivitet är färskvara. Varje CS-bärande aktivitets flata csBoost multipliceras med en egen staleness-multiplikator som faller geometriskt med antal säsonger aktiviteten varit klubbens stående erbjudande, mot ett golv > 0. Avtrappningstakten skalar med klubbstorlek via SAMMA rykte-ramp som knapp 1 och 2 (csLinearRamp 80→100) — en klubb på/under rykte 80 har retention exakt 1,0 och ligger därmed helt utanför mekaniken. Färskheten återställs bara av en NYHETSINVESTERING i riktiga kronor, erbjuden som ett synligt dashboardbeslut (GameEventType communityActivityRenewal, tier month, mode dilemma) med två val: förnya (betala) eller avböj (noOp). Förnyelsen rör aldrig communityStanding direkt och aldrig aktiviteternas intäktssida."
 value:
-  ACTIVITY_STALENESS_RETENTION_CEIL: 0.85
+  ACTIVITY_STALENESS_RETENTION_CEIL: 0.75
   ACTIVITY_STALENESS_FLOOR: 0.25
   ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER: 0.95
-  ACTIVITY_RENEWAL_BASE_COST: 25000
+  ACTIVITY_RENEWAL_BASE_COST: 10000
   ACTIVITY_RENEWAL_COST_REP_MULT_CEIL: 4.0
   SOURCE_COOLDOWN_ROUNDS_ORTEN: 6
-unit: "andel (retention/golv/tröskel); kronor (BASE_COST); multiplikator (COST_REP_MULT_CEIL); omgångar (cooldown)"
+  ORT_FRESHNESS_FLOOR: 0.65
+unit: "andel (retention/golv/tröskel/freshness-golv); kronor (BASE_COST); multiplikator (COST_REP_MULT_CEIL); omgångar (cooldown)"
 source:
   type: measurement
-  doc: "docs/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md; scripts/ansprak4-nyhetstretmill-matning-2026-08-31.ts; src/domain/services/communityStandingScaling.ts; src/domain/services/communityRenewalService.ts"
+  doc: "docs/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md; scripts/ansprak4-nyhetstretmill-matning-2026-08-31.ts; src/domain/services/communityStandingScaling.ts; src/domain/services/communityRenewalService.ts; src/domain/services/economyService.ts:computeAttendanceRate"
   decided_by: code
 verified_at: 2026-08-31
 verified_by: code
@@ -20,6 +21,48 @@ related_facts:
   - D031
   - D033
   - D037
+revisions:
+  - date: 2026-08-31
+    change: >-
+      VÄG C (Jacobs beslut, DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C").
+      Staleness KONSUMERAS INTE LÄNGRE AV communityStanding. De nio flata
+      csBoost-konstanterna i communityProcessor.ts är återställda till oskalade
+      (väg A:s `* stale(key)` borttagen); i stället aggregerar
+      getOrtFreshnessFactor (communityRenewalService.ts) per-aktivitets-
+      multiplikatorerna till EN klubbfaktor som multipliceras in i
+      computeAttendanceRate (economyService.ts) och därmed i både matchintäkten
+      och den visade publiksiffran. Rot: den ursprungliga mätningen (se ÖPPEN
+      FRÅGA nedan) visade att staleness per konstruktion bara kunde röra de 0,67
+      CS/omgång aktiviteterna ger, medan volontärbonusen ensam ger upp till 1,5
+      — att förnya köpte +0,3 CS för 318 tkr/säsong och "håll men förnya aldrig"
+      var dominant. NYTT VÄRDE: ORT_FRESHNESS_FLOOR 0,65 (svept, se
+      OMHÄRLEDNING nedan). Inget befintligt value-fält ändrat — kurvan,
+      tröskeln, kostnaden och cooldownen är återanvända exakt som domen kräver
+      ("BEHÅLL … staleness-KURVAN").
+  - date: 2026-08-31
+    change: >-
+      VÄG C, KALIBRERINGEN (samma dag, efter att flytten ovan mätts). Väg C
+      flyttade konsekvensen rätt men löste inte kriterium 1: FÖRNYAR låg
+      −288 tkr/säsong mot SPARAR, dvs. "förnya aldrig" var fortfarande
+      dominant, nu i kronor i stället för i CS. Rotorsak, mätt: förnyelsens
+      PRIS var aldrig satt mot vad förnyelsen KÖPER. D038:s första svep valde
+      kostnadsmultiplikatorn som "den högsta nivå som fortfarande lämnar ett
+      tydligt positivt incitament mot GLIDER" — priset kalibrerades alltså mot
+      hur mycket ÖVERSKOTT det skulle beta av, i ett läge där förnyelsen
+      bevisligen köpte +0,3 CS (= ingenting), och ärvdes sedan rakt in i väg C
+      där den plötsligt skulle betalas av publikintäkt. Publikintäkten är
+      ~0,98 Mkr/säsong och färskheten multiplicerar den inom [0,65, 1], så hela
+      mekanikens spann är ~343 tkr/säsong mellan två oåtkomliga ytterligheter —
+      medan förnyelsepolicyn kostade 409 tkr/säsong. Priset låg ÖVER taket:
+      ingen kurv-, golv- eller aggregeringsändring kunde ha lagat det.
+      ÄNDRADE VÄRDEN: ACTIVITY_RENEWAL_BASE_COST 25000 → 10000 (10/25/40 tkr
+      vid rykte 80/90/100; rykte-rampen ×4 orörd) och
+      ACTIVITY_STALENESS_RETENTION_CEIL 0,85 → 0,75 (erosionen behövde vara
+      läsbar inom en karriärlängd — kriterium 2). ORT_FRESHNESS_FLOOR,
+      ACTIVITY_STALENESS_FLOOR, tröskeln, cooldownen och kostnadens
+      rykte-multiplikator är ORÖRDA. Golvet rördes medvetet INTE trots att en
+      sänkning hade gjort kalkylen jämnare — Jacobs prioritetsordning
+      2026-08-31: holdbarheten vinner över att få förnyelsen att gå plus.
 invariants:
   - "value.ACTIVITY_STALENESS_RETENTION_CEIL > 0"
   - "value.ACTIVITY_STALENESS_RETENTION_CEIL < 1.0"
@@ -30,19 +73,29 @@ invariants:
   - "value.ACTIVITY_RENEWAL_BASE_COST > 0"
   - "value.ACTIVITY_RENEWAL_COST_REP_MULT_CEIL > 1.0"
   - "value.SOURCE_COOLDOWN_ROUNDS_ORTEN > 0"
+  - "value.ORT_FRESHNESS_FLOOR > value.ACTIVITY_STALENESS_FLOOR"
+  - "value.ORT_FRESHNESS_FLOOR > 0.5"
+  - "value.ORT_FRESHNESS_FLOOR < 1.0"
 notes: |
   ── FORMEL ─────────────────────────────────────────────────────────────────
-  retention(rykte) = csLinearRamp(rykte, 80, 100, 1,0, 0,85)
+  retention(rykte) = csLinearRamp(rykte, 80, 100, 1,0, 0,75)
   multiplikator(s, rykte) = GOLV + (1 − GOLV) · retention(rykte)^s
     där s = currentSeason − communityActivitiesSince[aktivitet]
 
   Exakt 1,0 vid s = 0 och för varje rykte ≤ 80 (retention = 1,0 ⇒ 1^s = 1).
   Asymptot mot 0,25, aldrig 0 — D031:s anti-vägg, samma golv som
-  getCsDiminishingFactor redan använder. Vid rykte 100: 1,000 / 0,888 / 0,791 /
-  0,710 / 0,583 för s = 0/1/2/3/5.
+  getCsDiminishingFactor redan använder. Vid rykte 100: 1,000 / 0,813 / 0,672 /
+  0,566 / 0,428 för s = 0/1/2/3/5.
+  (Talen omräknade 2026-08-31 när retentionstaket gick 0,85 → 0,75; de gamla
+  var 1,000 / 0,888 / 0,791 / 0,710 / 0,583.)
 
-  Nyhetskostnad = 25 000 · csLinearRamp(rykte, 80, 100, 1, 4,0), avrundat till
-  hela tusenlappar: 25 tkr vid rykte ≤80, 63 tkr vid 90, 100 tkr vid 100.
+  ortFreshnessFactor = 0,65 + 0,35 · (vägt medel av multiplikatorerna − 0,25)/0,75,
+  vikt = aktivitetens ACTIVITY_CS_BOOST. Multipliceras in i den FÄRDIGKLAMPADE
+  publikandelen (computeAttendanceRate), inte i summan innan ATTENDANCE_CAP.
+
+  Nyhetskostnad = 10 000 · csLinearRamp(rykte, 80, 100, 1, 4,0), avrundat till
+  hela tusenlappar: 10 tkr vid rykte ≤80, 25 tkr vid 90, 40 tkr vid 100.
+  (Var 25 000 · samma ramp = 25/63/100 tkr fram till 2026-08-31.)
 
   ── MÄTHARNESS: EN INSTRUMENTFIX SOM MÅSTE STÅ FÖRST ───────────────────────
   Första körningen gav 0,4 förnyelsebeslut per säsong för en dominant klubb —
@@ -91,8 +144,13 @@ notes: |
   siffra i samma register som spelets övriga engångsinvesteringar
   (akademiuppgradering 50/150 tkr, anläggningsuppgradering 200 tkr).
 
-  ── GODKÄNT NÄR, KRITERIUM FÖR KRITERIUM ───────────────────────────────────
-  Slutkörning: kostnad ×4,0, tröskel 0,95, cooldown 6, WEEKLY_BASE_FLAT 3000
+  ── ⛔ HISTORISK: GODKÄNT NÄR PÅ CS-VÄGEN (före väg C) ──────────────────────
+  ⛔ BESKRIVER INTE NULÄGET. Den här genomgången mättes när staleness bet på
+  communityStanding. Sedan 2026-08-31 (väg C) biter den på PUBLIKEN i stället,
+  och kostnaden/kurvan är omkalibrerade. Gällande siffror står i
+  "VÄG C: MÄTNING 2026-08-31" längst ned. Bygg aldrig på talen nedan —
+  de är kvar för att visa VARFÖR vägen byttes, inte vad som gäller.
+  Slutkörning (då): kostnad ×4,0, tröskel 0,95, cooldown 6, WEEKLY_BASE_FLAT 3000
   (den konsoliderade omhärledningen, se D033:s notering 2026-08-31).
 
   1. BÄGGE SIDOR SVIDER — UPPFYLLT. Dominant, netto/säsong:
@@ -125,8 +183,13 @@ notes: |
      omgångsintäkter är exakt som förut.
   4. D-FACT — detta dokument.
 
-  ── ÖPPEN FRÅGA TILL OPUS/JACOB: FÖRNYELSEN KÖPER NÄSTAN INGEN CS ──────────
-  Mätt, och det viktigaste fyndet i passet. Dominantens CS-snitt:
+  ── ⛔ STÄNGD FRÅGA (var: "FÖRNYELSEN KÖPER NÄSTAN INGEN CS") ──────────────
+  ⛔ BESVARAD OCH ÖVERSPELAD 2026-08-31. Jacob valde väg (c) nedan: utebliven
+  förnyelse fick en ANNAN konsekvens än CS — publiken. Frågan "vad köper
+  förnyelsen i CS?" har därmed ett avsiktligt svar: ingenting, och det är
+  poängen. Texten står kvar oförändrad som diagnosen som motiverade bytet;
+  den beskriver INTE nuläget och ingen ska agera på a/b/c-listan igen.
+  Mätt, och det viktigaste fyndet i det passet. Dominantens CS-snitt:
     FÖRNYAR 77,7 · SPARAR 77,4 · GLIDER 67,9
   Att betala 318 tkr per säsong för färskhet köper alltså +0,3 CS mot att låta
   allt slitas. Rotorsaken är strukturell och är D037:s egen finding 1, en nivå
@@ -168,3 +231,132 @@ notes: |
   communityRenewalText.ts är TOM (title/body/valetiketter) tills Opus levererar.
   Interpolationen är wirad: {activity} {cost} {seasons} {wear}. Kortet renderar
   ingen prosa i mellantiden — avsiktligt, per CLAUDE.md:s hårda regel.
+
+  ── VÄG C: MÄTNING 2026-08-31 ──────────────────────────────────────────────
+  Detta är den GÄLLANDE genomgången. Den ersätter både CS-vägens GODKÄNT NÄR
+  ovan och den stängda ÖPPNA FRÅGAN. Script: samma harness
+  (scripts/ansprak4-nyhetstretmill-matning-2026-08-31.ts), samma klubbar, samma
+  seeds, samma tre armar. Kalibrering: retentionstak 0,75, grundkostnad 10 000,
+  kostnadsramp ×4,0, tröskel 0,95, cooldown 6, ORT_FRESHNESS_FLOOR 0,65.
+
+  HORISONTEN ÄR EN DEL AV MÄTNINGEN, inte en detalj. Harnessens default (20
+  säsongsprover, varav 15 från poolens 3-säsongskörningar) UNDERSKATTAR
+  mekaniken systematiskt: en klubb som slutat förnya har efter tre säsonger
+  knappt hunnit erodera. Därför redovisas båda horisonterna nedan, och
+  A4_POOL_SEASONS lades till i scriptet (default oförändrad) för att kunna läsa
+  steady state. Läs 10-säsongersraden som mekanikens verkliga form.
+
+  1. BÄGGE SIDOR SVIDER I KRONOR — TYDLIGT FÖRBÄTTRAT, INTE HELT LÖST.
+     DOMINANT, FÖRNYAR − SPARAR (netto/säsong; negativt = förnyelsen kostar mer
+     än den drar in):
+                        5 säsonger      10 säsonger
+       före kalibrering   −288 395        −320 169
+       efter              − 78 476        − 45 125
+     Förbättring 3,7× respektive 7,1×. Att FÖRNYA kostar 130-164 tkr/säsong och
+     drar in 52-119 tkr/säsong mer publikintäkt än att glida. Kvoten gick från
+     ~13× till ~1,3×.
+     ÄRLIGT OM RESTEN: att alltid förnya är fortfarande marginellt sämre än att
+     aldrig göra det, −45 tkr/säsong på ett netto kring 460-505 tkr, dvs. ~9 %.
+     Domens ord är "konkurrenskraftig, inte 'förnya aldrig'-dominant" — den
+     tröskeln är passerad; "förnyelsen vinner" är den inte. Två skäl att det är
+     rätt läge och inte en halvfärdig kalibrering:
+       (a) HALLER_FORNYAR är den SÄMSTA möjliga förnyelsepolicyn. Den betalar
+           varje kort så fort det surfar, dvs. vid slitage ~0,81, och köper då
+           bara tillbaka en säsongs färskhet för fullt pris. En spelare som
+           väntar tills en TUNG aktivitet (skolbesok väger 0,12 av 0,67, sociala
+           medier 0,03) blivit ordentligt sliten får flera gånger mer färskhet
+           per krona. Mätningens negativa tal är alltså golvet för vad
+           förnyelse är värd, inte snittet.
+       (b) Att trycka priset ytterligare tills även den blinda policyn går plus
+           gör förnyelsen till gratis pengar — då är valet borta åt andra
+           hållet. Jacobs formulering 2026-08-31: målet är "en avvägning som
+           ibland talar för att förnya och ibland inte".
+  2. SYNLIG EROSION FÖR DEN SOM ALDRIG FÖRNYAR — UPPFYLLT.
+     DOMINANT HALLER_SPARAR, ortFreshnessFactor säsong för säsong (huvudseed):
+       1,000 → 0,945 → 0,847 → 0,798 → 0,761 → 0,741 → 0,782 → 0,752
+     och publiken med den: 588 → 625 → 541 → 524 → 480 → 330 → 373 → 388.
+     Vid säsong 5 drar den klubb som förnyat 579 mot 480 för den som inte gjort
+     det — 17 % skillnad på samma lag, samma tabellplacering, samma CS. Det är
+     läsbart som "supportrarna slutade komma". Före kalibreringen var samma
+     10-säsongersgenomsnitt 0,874 (−13 %); nu 0,822 (−18 %).
+  3. SMÅ KLUBBAR OCH SURVIVE OPÅVERKADE — UPPFYLLT.
+     HEROS (club_heros, rykte 40,7-47,0): färskhet 1,000 på VARJE rad, noll
+     förnyelsekort, FÖRNYAR och SPARAR BIT-IDENTISKA (netto −144 355 vid 5
+     säsonger, −167 784 vid 10). Garanterat av formen: rykte ≤ 80 ⇒ retention
+     exakt 1,0 ⇒ 1^s = 1 ⇒ vägt medel 1,0 ⇒ faktor exakt 1,0.
+     KONTROLL (club_malilla): färskhet 0,997-0,998 vid 5 säsonger (rykte-snitt
+     75,3) och 0,975 vid 10 (rykte-snitt 82,0 — klubben har då vuxit förbi
+     rykte-golvet och är inte längre en liten klubb den säsongen).
+     AVVIKELSE ATT NOTERA ÄRLIGT: vid 5 säsonger är KONTROLL inte längre
+     bit-identisk mellan armarna som den var före kalibreringen — den ser 0,6
+     kort/säsong och −8 591 kr/säsong, mot 0 och 0 tidigare. Det är den brantare
+     erosionen som gör att enstaka seeds som nuddar rykte 82 hinner passera
+     tröskeln. Storleksordningen är Δfärskhet 0,001. Motsvarande tal före
+     kalibreringen på TIO säsonger var −91 658 kr/säsong; efter är det −21 437.
+     Mellanklubben är alltså MINDRE exponerad i kronor än förut, bara synligare
+     i korträkningen. En hård "händer aldrig under rykte X" hade varit precis
+     den vägg D031 finns för att stoppa.
+  4. HOLDBARHET — UPPFYLLT, OCH DET ÄR DEN BINDANDE RANDEN.
+     En klubb som betalar VARJE förnyelse ligger på ortFreshnessFactor
+     0,92-0,95 och glider INTE nedåt över tio säsonger (huvudseed: 1,000 /
+     0,962 / 0,929 / 0,926 / 0,919 / 0,923 / 0,947 / 0,947). Mekaniken går att
+     motverka; den är dyr, aldrig omöjlig.
+     Den som aldrig förnyar planar ut kring 0,74-0,78 — långt över golvet 0,65,
+     som bara nås asymptotiskt efter decennier. Ingen kollaps, ingen vägg.
+     GOLVET RÖRDES INTE, TROTS ATT DET HADE VARIT DEN ENKLA KNAPPEN. Δfärskhet
+     skalar linjärt med (1 − golv), så ett golv på 0,30 hade fördubblat
+     förnyelsens värde och tagit kriterium 1 hela vägen. Domens SKYDDAT säger
+     att en helt sliten stor klubb ska dra MERPARTEN av sin publik, och Jacobs
+     prioritetsordning 2026-08-31 är uttrycklig: holdbarheten vinner, backa på
+     fixens aggressivitet i stället för på golvet. Det är gjort, och det är
+     skälet till att kriterium 1 landar på "nära jämvikt" och inte på "löst".
+  5. KONSUMERAR ÖVERSKOTTET — OMFORMULERAT, INTE BORTFALLET (Jacobs anvisning
+     2026-08-31). Kriteriet formulerades när WEEKLY_BASE_FLAT var 8000; efter
+     omhärledningen till 3000 (D033) är dominantöverskottet mindre, och att
+     dimensionera priset för att beta av en specifik kronsumma vore att
+     kalibrera mot ett tal som mätts under andra antaganden. Överskottet finns
+     kvar men är mindre: SPARAR − GLIDER är 320 530 kr/säsong (5 säsonger) och
+     253 095 (10). Nyhetskostnaden tar 130-164 tkr/säsong av det, dvs. 41-65 %,
+     och tar det numera för att den ÄR värd publiken — inte som en avgift.
+     Kriteriet läses hädanefter som proportionalitet: priset ska ligga i samma
+     storleksordning som färskheten det köper. 164 tkr kostnad mot 119 tkr
+     värde vid tio säsonger är den relationen.
+
+  ── VÄG C: SVEPET SOM LEDDE HIT (dominant, FÖRNYAR − SPARAR kr/säsong) ─────
+    retention  grundkostn.   5 säs      10 säs   Δfärskhet(10)  FÖRNYAR   SPARAR
+      0,85       25 000    −288 395   −320 169     0,091         0,965    0,874
+      0,75       25 000        —      −290 371     0,120         0,942    0,822
+      0,85       10 000    − 94 543   − 75 413     0,091         0,965    0,874
+      0,80       10 000    − 87 186   − 57 819     0,108         0,953    0,846
+      0,75       10 000    − 78 476   − 45 125     0,120         0,942    0,822  ← låst
+  Läsningen: KOSTNADEN bär fyra femtedelar av förbättringen (rad 1 → rad 3:
+  −320 → −75 tkr utan att röra kurvan alls), retentionstakten den sista
+  femtedelen plus hela vinsten i kriterium 2. 0,80 är den mätta, konservativa
+  återgången om erosionen visar sig för brant i spel — en konstant, inget annat.
+
+  ── VÄG C: AGGREGERINGSHYPOTESEN, MÄTT OCH FÖRKASTAD ──────────────────────
+  Hypotesen var att getOrtFreshnessFactor:s vägda aritmetiska medel utspäder
+  den enskilda förnyelsen (max vikt 0,12 av 0,67 ≈ 18 %), och att ett
+  min()-lutande potensmedel skulle låta en försummad aktivitet dra mer och
+  därmed göra förnyelsen mer värd. Det gör tvärtom, och orsaken är strukturell:
+  den klubb som ALDRIG förnyar har alla nio aktiviteter exakt lika gamla, så
+  varje potensmedel returnerar samma tal för den. Uppmätt, DOMINANT över tio
+  säsonger, potensordning p = 1 / 0,25 / −1 / −4:
+    SPARAR färskhet   0,822  0,822  0,822  0,822   (bit-identisk, som väntat)
+    FÖRNYAR färskhet  0,942  0,941  0,939  0,934   (faller — trappan av åldrar
+                                                    är just det min() straffar)
+    FÖRNYAR − SPARAR  −45 125  −46 487  −49 153  −55 647 kr/säsong
+  Det vägda aritmetiska medlet (p = 1) är alltså inte bara det disciplinerade
+  valet (D031: ingen ny gissad viktvektor), det är också det mätt bästa.
+  Sonderingen kördes med en tillfällig env-styrd potens i getOrtFreshnessFactor
+  som ÄR BORTTAGEN igen — produktionskoden har bara p = 1.
+
+  ── VÄG C: HYPOTESER SOM INTE ÄR LEVERANSEN ───────────────────────────────
+  Förnyelsefrekvensen (cooldown 6 → tätare) prövades INTE och ska inte prövas:
+  den är kapacitetsbunden redan (tröskeln surfar efter EN säsong vid rykte 100,
+  så efterfrågan är nio kort/säsong och cooldownen släpper igenom 3,7-4,5).
+  Tätare kort hade höjt både kostnad och färskhet ungefär proportionellt och
+  inte flyttat kvoten — och domen säger uttryckligen BEHÅLL cooldown 6.
+  Ett eget känslighetstal mellan färskhet och publik (en multiplikator utöver
+  [golv, 1]) byggdes INTE: det hade varit ett andra, dolt golv och därmed en
+  omväg runt SKYDDAT-punkten om holdbarhet.

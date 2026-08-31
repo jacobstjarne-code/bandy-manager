@@ -14,6 +14,7 @@ import type { FinanceEntry } from '../../../domain/services/economyService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { generateVolunteerRoster } from '../../../domain/services/volunteerService'
 import { FACILITY_NODE_DEFS } from '../../../domain/data/facilityNodes'
+import { getOrtFreshnessFactor } from '../../../domain/services/communityRenewalService'
 
 export interface EconomyProcessorResult {
   updatedClubs: Club[]
@@ -91,6 +92,10 @@ export function processEconomy(
     builtFacilityUpkeepCosts,
     matchAttendance: managedHomeMatch?.attendance,
     builtNodeIds: game.facilityState?.builtNodeIds,
+    // ANSPRÅK 4, spak 3 / väg C (2026-08-31): ortsprogrammets färskhet
+    // multipliceras in i publikandelen. Bara den hanterade klubben — AI-klubbar
+    // nedan har en egen flat uppskattning och ingen staleness-klocka.
+    freshnessFactor: getOrtFreshnessFactor(game, managedClub.reputation),
   })
 
   if (managedIncome.weeklyBase !== 0) {

@@ -35,3 +35,53 @@ Valet som svider: betala för nästa nyhet (pengar från truppen) ELLER låt ort
 
 ## Ägarskap & timing
 Detta är del av den KONSOLIDERADE baskonomi-omhärledningen (A-H2-raden): bygg tretmillen, omhärled WEEKLY_BASE_FLAT och mittenlag-break-even, och mät anspåk 4 mot kriterium 1 — allt i ETT pass mot de fixade ingångarna (rykte, patron), inte fler punktfixar. Opus: denna dom + texterna ("supportrarna tröttnar på X", förnyelse-beslutets copy, nyhetsvarianterna) när Code:s stalenessmodell finns. Code: bygg → mät 1–4 → D-fact → commit. Jacob: mandatet är givet (väg A); nästa gång du behövs är om mätningen kräver en magnitud- eller balanskall.
+
+---
+
+## VÄG C — konsekvensen flyttar från CS till PUBLIK (Jacobs beslut 2026-08-31)
+
+**Varför:** D038 mätte att nyheten inte bet — att förnya köpte +0,3 CS för 318 tkr, så "håll men förnya aldrig" dominerade. Rotorsak: staleness rör bara aktiviteternas 0,67 CS medan volontärbonusen (1,5) bär hela ortsspaken. CS är fel spak. Jacobs ram — "supportrarna tröttnar" — ÄR att de slutar komma. Alltså: nyhetens konsekvens är PUBLIK, inte CS. Rent pengar-mot-pengar, och det sidsteppar att CS domineras av volontärer.
+
+### Mekanik (Code, kodläst mot economyService.ts)
+- **TA BORT staleness från aktiviteternas csBoost** (D038:s nyhets-på-CS-bit — den tandlösa). BEHÅLL: förnyelsemekaniken (kostnad 25→100 tkr rep-skalad, cooldown 6), staleness-KURVAN (retention^s per aktivitet), och knob 1/2 (rep-skalad CS-baslinje). Bara KONSEKVENSEN av staleness flyttar.
+- **Aggregera** klubbens per-aktivitets-staleness till en `ortFreshnessFactor` ∈ [golv, 1,0]. Färsk klubb → 1,0; stor klubb med stale aktiviteter → mot golvet.
+- **`computeAttendanceRate` får en `freshnessFactor`-parameter (default 1,0)**, multiplicerad in i den slutliga raten (inom det befintliga `ATTENDANCE_CAP`). Båda anroparna — `calcRoundIncome` (intäkt) och `calcAttendance` (den visade siffran) — skickar klubbens freshness. SAMMA delade funktion, forka den inte (den är medvetet en sanning, ett ställe).
+- **Förnyelse** återställer staleness → freshness → publik. Den konkurrerande fordran är nu ren: förnyelsekostnad mot tappad publikintäkt.
+
+### SKYDDAT
+- **Freshness är OBEROENDE av CS** — det är hela poängen. En separat multiplikator, inte en CS-term. En stor klubb tappar de uttråkade marginalfansen även med hög CS.
+- **Små/Survive:** vid låg rep är staleness ~1,0 → freshness 1,0 → opåverkade. Verifiera.
+- **Golv > 0 (holdbarhet):** en helt stale stor klubb drar fortfarande MERPARTEN av sin publik — freshness-golvet är den marginella "uttråkade"-förlusten, aldrig en kollaps. Aldrig omöjligt att hålla.
+- **Väg B:s attendance-vikter** (fanMood/CS/position/cap) orörda — freshness är en ny multiplikator ovanpå. **economyService aktivitetsintäkter orörda.**
+
+### GODKÄNT NÄR (ommätt)
+1. **Bägge sidor svider I KRONOR:** FÖRNYA vs SPARA (coasta, låt stale) netto/säsong — coasting tappar nu nog publikintäkt att förnyelse är konkurrenskraftig, inte "förnya aldrig"-dominant. +0,3 CS-problemet borta; frågan är kronor mot kronor.
+2. En stor klubb som aldrig förnyar ser publik/intäkt synligt erodera (läsbart "supportrarna slutade komma").
+3. Små/Survive opåverkade (freshness 1,0, mätt).
+4. Holdbarhet: förnyelse återställer alltid publiken till en kostnad; en stale klubb kraterar aldrig (golvet).
+5. Konsumerar överskottet (förnyelsekostnaden, nu genuint betald för att den är värd publiken).
+Magnitud (freshness-golv, staleness→freshness-aggregeringen, per-aktivitets-vikt) via mätning. **D-fact (D038-tillägg) innan commit.**
+
+### Text — orörd
+Förnyelsetexten (`communityRenewalText.ts`, skriven 2026-08-31) passar väg c ord för ord: "{wear} av **dragningskraften** finns kvar" — dragningskraften ÄR publikdraget. `{wear}`-token pekas bara om från CS-staleness-multiplikatorn till `ortFreshnessFactor` (samma begrepp, publiksidan).
+
+### Ägarskap
+Code: flytta konsekvensen (bort staleness-på-CS, in freshness-på-publik), mät 1–5, D-fact, commit. Opus: dömer ommätningen om den landar i gråzon — särskilt holdbarhets-golvet och Survive.
+
+### MÄTNING 1 MISSLYCKADES → REKALIBRERING (2026-08-31)
+
+Mätning 1: SPARAR (aldrig förnya) netto **+288 tkr/säsong MER** än FÖRNYAR för dominant. Förnyelse kostar 318 tkr, köper +0,028 freshness / +18 åskådare ≈ 21 tkr publikintäkt. ~15× fel håll — SAMMA fel som väg a, flyttat från CS till kronor.
+
+**Diagnos — två fel, kopplade. Naiv "bit hårdare på freshness" fixar det INTE (holdbarhetsväggen):**
+1. **Staleness rör knappt freshness (+0,028).** En dominant klubb som aldrig förnyar ska driva till LÅG freshness (~0,6–0,7), inte 0,97. Aggregeringen/kurvan är för flat — erosionen när man INTE förnyar måste vara brant.
+2. **Förnyelsekostnaden (318 tkr) sattes för SURPLUS-KONSUMTION, men publikspaken — bunden av holdbarhet — kan inte motivera den kostnaden.** För att 318 tkr ska betala sig måste staleness förstöra >318 tkr publikintäkt = ~60 % av en dominant klubbs matchintäkt. Det kraterar en stale klubb → bryter holdbarhet.
+
+**Rekalibrering (KOPPLAD, inte bara freshness-magnituden):**
+- a. Staleness ska FAKTISKT flytta freshness — brant erosion när man inte förnyar.
+- b. Förnyelsekostnaden NER till under den holdbarhets-bundna publikintäkten-i-risk. Kostnaden var dimensionerad för surplus; den måste rymmas under holdbarhetstaket.
+
+**Prioritet (medveten avvägning, Opus-dom):** kriterium 1 (förnyelse BETALAR) VINNER över surplus-konsumtion. Förnyelse blir ett proportionerligt betalande val; konsumerar mindre surplus. Holdbarhet är den HÅRDA gränsen — en helt stale dominant klubb tappar en meningsfull men inte kraterande andel.
+
+**Strukturell gräns (ärlig):** väg c kan vara ett proportionerligt betalande val ELLER en stor surplus-sink, inte båda — holdbarhet kapar hur mycket publik staleness får förstöra, vilket kapar kostnaden. Om dominantöverskottet fortfarande behöver konsumeras (verifiera först att det ens är stort vid `WEEKLY_BASE_FLAT`=3000) är det en SEPARAT spak, inte tretmillen. Försök inte tvinga tretmillen att bära båda — det var det som gick sönder.
+
+**GODKÄNT (oändrat i andan):** FÖRNYA ≥ SPARAR (förnyelse betalar), en aldrig-förnyande dominant klubb tappar synlig publik, stale klubb kraterar aldrig (golv), små/Survive orörda. Magnitud (freshness-erosion, kostnad, golv) via mätning + D-fact.

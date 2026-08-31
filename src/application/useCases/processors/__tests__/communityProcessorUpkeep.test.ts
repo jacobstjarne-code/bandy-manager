@@ -163,3 +163,48 @@ describe('processCommunity — anspråk 4 sänker inte CS för en liten klubb al
     expect(result.csBoost).toBeCloseTo(2 + ALLA_AKTIVITETER_RAW, 6)
   })
 })
+
+// ── VÄG C (2026-08-31): staleness rör INTE längre csBoost ──────────────────
+//
+// DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". Spak 3 byggdes först
+// som en multiplikator på var och en av de nio aktivitetskonstanterna (väg A,
+// commit 12c58609). D038 mätte den som tandlös — att förnya köpte +0,3 CS för
+// 318 tkr/säsong — och Jacob flyttade konsekvensen till publiken. Testerna
+// nedan är REGRESSIONSSPÄRREN mot att staleness smyger tillbaka in i CS-vägen:
+// om någon återinför en `* stale(key)` här faller de.
+describe('processCommunity — VÄG C: csBoost är oberoende av staleness', () => {
+  /** Samma spel, men ortsprogrammet har varit igång i N säsonger. */
+  function aged(game: SaveGame, seasonsActive: number): SaveGame {
+    const keys = ['kiosk', 'lottery', 'bandyplay', 'functionaries', 'bandySchool',
+      'socialMedia', 'pensionarskaffe', 'soppkvall', 'skolbesok'] as const
+    return {
+      ...game,
+      communityActivitiesSince: Object.fromEntries(
+        keys.map(k => [k, game.currentSeason - seasonsActive]),
+      ),
+    }
+  }
+
+  it('en STOR klubb får samma csBoost av ett 20 säsonger gammalt ortsprogram som av ett nystartat', () => {
+    const game = makeGame(CS_UPKEEP_REP_CEIL, ALLA_AKTIVITETER)
+    const fersk = processCommunity(aged(game, 0), null, 0, neutralStandings(game), 10)
+    const sliten = processCommunity(aged(game, 20), null, 0, neutralStandings(game), 10)
+    expect(sliten.csBoost).toBe(fersk.csBoost)
+  })
+
+  it('aktivitetsboosten är den råa summan (0,67) × csUpkeepFactor, oavsett ålder', () => {
+    const game = aged(makeGame(CS_UPKEEP_REP_CEIL, ALLA_AKTIVITETER), 20)
+    const utan = processCommunity(makeGame(CS_UPKEEP_REP_CEIL, INGA_AKTIVITETER), null, 0, neutralStandings(game), 10)
+    const med = processCommunity(game, null, 0, neutralStandings(game), 10)
+    expect(med.csBoost - utan.csBoost).toBeCloseTo(ALLA_AKTIVITETER_RAW * csUpkeepFactor(CS_UPKEEP_REP_CEIL), 6)
+  })
+
+  it('klockan backfylls fortfarande — freshness-vägen och förnyelsekortet behöver den', () => {
+    const game = makeGame(CS_UPKEEP_REP_CEIL, ALLA_AKTIVITETER)
+    const result = processCommunity({ ...game, communityActivitiesSince: undefined }, null, 0, neutralStandings(game), 10)
+    expect(Object.keys(result.updatedCommunityActivitiesSince)).toHaveLength(9)
+    for (const v of Object.values(result.updatedCommunityActivitiesSince)) {
+      expect(v).toBe(game.currentSeason)
+    }
+  })
+})

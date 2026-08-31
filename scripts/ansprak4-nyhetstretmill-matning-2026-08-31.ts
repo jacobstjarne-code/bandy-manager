@@ -39,13 +39,26 @@
  * medvetet (se autoResolveMeasuredEvents nedan) — därför mäts GLIDER om i
  * samma körning som egen baslinje. Resultaten står i D038.
  *
+ * ── VÄG C-TILLÄGG (2026-08-31, Jacobs beslut) ──────────────────────────────
+ * Konsekvensen av staleness flyttade från CS till PUBLIK. Scriptet är i övrigt
+ * oförändrat (samma klubbar, seeds, armar) men läser nu också klubbens
+ * `ortFreshnessFactor` per omgång och skickar den till computeAttendanceRate,
+ * så den modellerade publiksiffran i tabellerna beskriver samma tal som
+ * produktionsvägen (economyProcessor → calcRoundIncome) faktiskt tog betalt
+ * för. Nettotalen kom alltid från produktionsvägen och behövde ingen ändring.
+ *
+ * Sveps: ORT_FRESHNESS_FLOOR (communityStandingScaling.ts). 1,00 = mekaniken
+ * avstängd, dvs. mätningens egen "före väg C"-punkt i SAMMA arbetsträd.
+ *
+ * A4_MAIN_SEASONS=N ger en längre huvudkörning (erosionskurvan, kriterium 2).
+ *
  * Kör: node_modules/.bin/vite-node scripts/ansprak4-nyhetstretmill-matning-2026-08-31.ts [etikett]
  */
 import { createNewGame } from '../src/application/useCases/createNewGame'
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { generateVolunteerRoster } from '../src/domain/services/volunteerService'
 import * as csScaling from '../src/domain/services/communityStandingScaling'
-import { getActivityStaleness } from '../src/domain/services/communityRenewalService'
+import { getActivityStaleness, getOrtFreshnessFactor } from '../src/domain/services/communityRenewalService'
 import { computeAttendanceRate } from '../src/domain/services/economyService'
 import { getCurrentLeaguePosition } from '../src/domain/services/standingsService'
 import { autoSelectLineup, autoResolvePendingScreen } from './stress/fixtures'
@@ -55,8 +68,14 @@ import { getDefaultRolloverChoice } from '../src/domain/services/deferredRollove
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 import type { CommunityActivities } from '../src/domain/entities/Community'
 
-const MAIN_SEASONS = 5
-const POOL_SEASONS = 3
+const MAIN_SEASONS = Number(process.env.A4_MAIN_SEASONS ?? 5)
+/** A4_POOL_SEASONS tillagd 2026-08-31 (väg C-kalibreringen). DEFAULT OFÖRÄNDRAD
+ *  (3) — men sammanfattningsraden är ett snitt över 20 säsongsprover av vilka 15
+ *  kommer från poolens 3-säsongskörningar, och en klubb som slutat förnya har
+ *  efter tre säsonger knappt hunnit erodera (färskhet 1,00/0,97/0,90). Snittet
+ *  UNDERSKATTAR därför mekanikens värde systematiskt. Med A4_POOL_SEASONS=N kan
+ *  samma mätning läsas på en horisont där steady state faktiskt nås. */
+const POOL_SEASONS = Number(process.env.A4_POOL_SEASONS ?? 3)
 const DOMINANCE_BOOST = 10
 
 const DOMINANT_CLUB = 'club_vastanfors'
@@ -135,6 +154,8 @@ interface SeasonAgg {
   renewalSpend: number
   /** Snittet av de aktiva aktiviteternas staleness-multiplikator, sista omgången. */
   stalenessMean: number
+  /** VÄG C: klubbens ortFreshnessFactor, snitt över säsongens spelade omgångar. */
+  freshnessMean: number
 }
 
 interface RunResult {
@@ -274,6 +295,7 @@ function runClub(label: string, clubId: string, boost: number, seed: number, sea
     const csStart = game.communityStanding ?? 50
     const csSamples: number[] = []
     const rateSamples: number[] = []
+    const freshnessSamples: number[] = []
     const modeledAttendance: number[] = []
     let patronWithdrawals = 0
     let renewalOffers = 0
@@ -316,7 +338,10 @@ function runClub(label: string, clubId: string, boost: number, seed: number, sea
         const fanMoodNow = game.fanMood ?? 50
         const posNow = getCurrentLeaguePosition(clubId, game) ?? 8
         const clubNow = game.clubs.find(c => c.id === clubId)!
-        const rate = computeAttendanceRate(fanMoodNow, csNow, posNow)
+        // VÄG C: samma freshness produktionsvägen just tog betalt för.
+        const freshNow = getOrtFreshnessFactor(game, clubNow.reputation)
+        freshnessSamples.push(freshNow)
+        const rate = computeAttendanceRate(fanMoodNow, csNow, posNow, 1, freshNow)
         rateSamples.push(rate)
         modeledAttendance.push(rate * (clubNow.arenaCapacity ?? Math.round(clubNow.reputation * 7 + 150)))
       }
@@ -371,6 +396,9 @@ function runClub(label: string, clubId: string, boost: number, seed: number, sea
         return delta
       })(),
       upkeepFactor: csScaling.csUpkeepFactor(club.reputation),
+      freshnessMean: freshnessSamples.length
+        ? freshnessSamples.reduce((a, b) => a + b, 0) / freshnessSamples.length
+        : 1,
       renewalOffers,
       renewalsPaid,
       renewalSpend,
@@ -392,11 +420,11 @@ function fmt(n: number, d = 0): string {
 
 function printTable(label: string, aggs: SeasonAgg[]): void {
   console.log(`\n--- ${label} ---`)
-  console.log('Säs | rykte | faktor | färskhet | CS start→slut (min) | CS snitt | plac | pubkvot | publik | netto/säs | nyhet (st/kr) | patron | mecenat')
+  console.log('Säs | rykte | faktor | slitage | FÄRSK | CS start→slut (min) | CS snitt | plac | pubkvot | publik | netto/säs | nyhet (st/kr) | patron | mecenat')
   for (const s of aggs) {
     console.log(
       `${String(s.season).padStart(3)} | ${String(s.reputation).padStart(5)} | ${s.upkeepFactor.toFixed(2).padStart(6)} | ` +
-      `${s.stalenessMean.toFixed(3).padStart(8)} | ` +
+      `${s.stalenessMean.toFixed(3).padStart(7)} | ${s.freshnessMean.toFixed(3).padStart(5)} | ` +
       `${fmt(s.csStart, 1).padStart(5)}→${fmt(s.csEnd, 1).padStart(5)} (${fmt(s.csMin, 1).padStart(5)}) | ${fmt(s.csMean, 1).padStart(8)} | ` +
       `${String(s.finalPosition ?? '-').padStart(4)} | ${s.attendanceRateMean.toFixed(3).padStart(7)} | ` +
       `${(s.homeAttendanceMean !== null ? fmt(s.homeAttendanceMean) : '-').padStart(6)} | ` +
@@ -425,6 +453,7 @@ interface Summary {
   renewalsPaidMean: number
   renewalSpendMean: number
   stalenessMean: number
+  freshnessMean: number
   repMean: number
 }
 
@@ -451,13 +480,14 @@ function summarize(runs: RunResult[]): Summary {
     renewalsPaidMean: all.reduce((s, a) => s + a.renewalsPaid, 0) / n,
     renewalSpendMean: all.reduce((s, a) => s + a.renewalSpend, 0) / n,
     stalenessMean: all.reduce((s, a) => s + a.stalenessMean, 0) / n,
+    freshnessMean: all.reduce((s, a) => s + a.freshnessMean, 0) / n,
     repMean: all.reduce((s, a) => s + a.reputation, 0) / n,
   }
 }
 
 function printSummary(name: string, s: Summary): void {
   console.log(
-    `  ${name.padEnd(26)} rykte ${fmt(s.repMean, 1).padStart(5)} | färskhet ${s.stalenessMean.toFixed(3)} | ` +
+    `  ${name.padEnd(26)} rykte ${fmt(s.repMean, 1).padStart(5)} | slitage ${s.stalenessMean.toFixed(3)} | färskhet ${s.freshnessMean.toFixed(3)} | ` +
     `CS-slut ${fmt(s.csEndMean, 1).padStart(5)} | CS-snitt ${fmt(s.csMeanMean, 1).padStart(5)} | ` +
     `<60 ${fmt(s.below60 * 100).padStart(3)}% <70 ${fmt(s.below70 * 100).padStart(3)}% ≥85 ${fmt(s.atOrAbove85 * 100).padStart(3)}% | ` +
     `pubkvot ${s.rateMean.toFixed(3)} (tak ${fmt(s.cappedShare * 100)}%) | publik ${fmt(s.attendanceMean).padStart(5)} | ` +
@@ -470,6 +500,7 @@ function main(): void {
   const label = process.argv[2] ?? '(ingen etikett)'
   console.log('\n============================================================')
   console.log(`ANSPRÅK 4, SPAK 3 — NYHETSTRETMILLEN, mätning · ${label}`)
+  console.log(`Publikgolv (väg C): ORT_FRESHNESS_FLOOR ${csScaling.ORT_FRESHNESS_FLOOR} · huvudkörning ${MAIN_SEASONS} säsonger`)
   console.log(`Kurva: retention-tak ${csScaling.ACTIVITY_STALENESS_RETENTION_CEIL}, golv ${csScaling.ACTIVITY_STALENESS_FLOOR}, ` +
     `tröskel ${csScaling.ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER}, kostnad ${csScaling.ACTIVITY_RENEWAL_BASE_COST}×[1..${csScaling.ACTIVITY_RENEWAL_COST_REP_MULT_CEIL}]`)
   console.log(`Dominant: ${DOMINANT_CLUB}+${DOMINANCE_BOOST} CA seed ${DOMINANT_SEED} (+pool ${DOMINANT_POOL_SEEDS.join(',')})`)
@@ -524,6 +555,8 @@ function main(): void {
       `ΔCS-snitt ${fmt(f.csMeanMean - g.csMeanMean, 1).padStart(5)}  |  ` +
       `SPARAR−GLIDER: Δnetto ${fmt(sp.netSeasonMean - g.netSeasonMean).padStart(9)} kr/säs, ` +
       `ΔCS-snitt ${fmt(sp.csMeanMean - g.csMeanMean, 1).padStart(5)}  |  ` +
+      `FÖRNYAR−SPARAR: Δnetto ${fmt(f.netSeasonMean - sp.netSeasonMean).padStart(9)} kr/säs, ` +
+      `Δfärskhet ${(f.freshnessMean - sp.freshnessMean).toFixed(3)}, Δpublik ${fmt(f.attendanceMean - sp.attendanceMean)}  |  ` +
       `nyhetskostnad ${fmt(f.renewalSpendMean).padStart(7)} kr/säs (${fmt(f.renewalsPaidMean, 1)} st)`,
     )
   }

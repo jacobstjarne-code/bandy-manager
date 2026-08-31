@@ -9,6 +9,7 @@ import { getRivalry } from '../data/rivalries'
 import { getJournalistAttendanceModifier } from './journalistVisibilityService'
 import { FixtureStatus, PlayerPosition } from '../enums'
 import { safeStandingPosition } from './standingsService'
+import { getOrtFreshnessFactor } from './communityRenewalService'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
 
@@ -148,21 +149,38 @@ const ATTENDANCE_CAP = 0.95
 const LEAGUE_SIZE = 12
 const TOP_POSITION_BONUS_MAX = 0.25
 
+/**
+ * ANSPRÅK 4, spak 3 — VÄG C (Jacobs beslut 2026-08-31,
+ * DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C"). `freshnessFactor` är
+ * klubbens `getOrtFreshnessFactor` (communityRenewalService.ts): hur färskt
+ * ortsprogrammet är, ∈ [ORT_FRESHNESS_FLOOR, 1]. Default 1 = ingen påverkan,
+ * vilket gäller varje anropare som inte är den hanterade klubben (AI-klubbar
+ * har ingen staleness-mekanik — den ska inte uppfinnas åt dem).
+ *
+ * Multipliceras in i den FÄRDIGKLAMPADE raten, inte i summan innan taket. Det
+ * är avsiktligt och är hela skillnaden mellan att mekaniken syns och inte: en
+ * dominant klubb ligger ofta ÖVER ATTENDANCE_CAP i råsumman, så en freshness
+ * inuti min() hade absorberats av taket precis för den klubbklass domen handlar
+ * om. Faktorn klampas till [0, 1] så den aldrig kan lyfta raten över taket —
+ * "inom det befintliga ATTENDANCE_CAP", domens ord.
+ */
 export function computeAttendanceRate(
   fanMood: number,
   communityStanding: number,
   position: number,
   moodWeight = 1,
+  freshnessFactor = 1,
 ): number {
   const clampedPosition = Math.max(1, Math.min(LEAGUE_SIZE, position))
   const positionTerm = TOP_POSITION_BONUS_MAX * (LEAGUE_SIZE - clampedPosition) / (LEAGUE_SIZE - 1)
-  return Math.min(
+  const cappedRate = Math.min(
     ATTENDANCE_CAP,
     ATTENDANCE_FLOOR
       + (fanMood / 100) * ATTENDANCE_MOOD_WEIGHT * moodWeight
       + (communityStanding / 100) * ATTENDANCE_STANDING_WEIGHT * moodWeight
       + positionTerm * moodWeight,
   )
+  return cappedRate * Math.max(0, Math.min(1, freshnessFactor))
 }
 
 /**
@@ -234,6 +252,11 @@ export interface CalcRoundIncomeParams {
    *  tillbaka till den lokala capacity×attendanceRate-uppskattningen (samma
    *  tal matchRevenue redan använder). */
   matchAttendance?: number
+  /** ANSPRÅK 4, spak 3 / väg C: den hanterade klubbens `getOrtFreshnessFactor`.
+   *  Multipliceras in i publikandelen (computeAttendanceRate) och därmed i BÅDE
+   *  matchRevenue och den publikberoende communityMatchIncome. Utelämnad ⇒ 1
+   *  (ingen påverkan). */
+  freshnessFactor?: number
 }
 
 // O5 kraft 1 — löneinflation med rykte (Jacobs dom 2026-08-17,
@@ -364,6 +387,10 @@ export interface RoundIncomeParamsForNextFixture {
   journalistAttendanceModifier: number
   weatherAttendanceModifier: number
   isFirstRound: boolean
+  /** ANSPRÅK 4, spak 3 / väg C. calcRoundIncome anropas bara för den hanterade
+   *  klubben (economyProcessor.ts; AI-klubbar har en egen flat uppskattning),
+   *  så den här är alltid den hanterade klubbens. */
+  freshnessFactor: number
 }
 
 /**
@@ -403,6 +430,7 @@ export function buildRoundIncomeParamsForNextFixture(game: SaveGame): RoundIncom
       Boolean(nextFixture?.isFinaldag || nextFixture?.isAnnandagen || (nextFixture?.matchday ?? 0) > 22),
     ),
     isFirstRound: nextFixture?.matchday === 1,
+    freshnessFactor: club ? getOrtFreshnessFactor(game, club.reputation) : 1,
   }
 }
 
@@ -506,7 +534,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     sponsorNetworkMood, fanMood, isHomeMatch,
     matchIsKnockout, matchIsCup, matchHasRivalry, standing, rand,
     communityStanding, isFirstRound, legendSalaryCost, journalistAttendanceModifier,
-    weatherAttendanceModifier, matchAttendance, builtNodeIds } = params
+    weatherAttendanceModifier, matchAttendance, builtNodeIds, freshnessFactor } = params
   const hasKioskNode = (builtNodeIds ?? []).includes('kiosk')
 
   // ── Wages ─────────────────────────────────────────────────────────────────
@@ -536,7 +564,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   if (isHomeMatch) {
     const capacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
     const position = standing?.position ?? 8
-    const attendanceRate = computeAttendanceRate(fanMood, communityStanding ?? 50, position)
+    const attendanceRate = computeAttendanceRate(fanMood, communityStanding ?? 50, position, 1, freshnessFactor ?? 1)
     const ticketPrice = 50 + Math.round((club.reputation ?? 50) * 0.3)
     const baseRevenue = Math.round(capacity * attendanceRate * ticketPrice * (journalistAttendanceModifier ?? 1.0) * (weatherAttendanceModifier ?? 1.0))
 
@@ -719,6 +747,12 @@ export function buildAttendanceParams(game: SaveGame, fixture: Fixture): Attenda
     isNeutralVenue: !!fixture.isNeutralVenue,
     fanMood: game.fanMood ?? 50,
     communityStanding: fixture.homeClubId === game.managedClubId ? (game.communityStanding ?? 50) : undefined,
+    // ANSPRÅK 4, spak 3 / väg C: samma managed-only-villkor som raden ovan.
+    // En AI-klubbs hemmamatch har ingen staleness-klocka att läsa — och ska
+    // inte få en påhittad. undefined ⇒ computeAttendanceRate får 1.
+    freshnessFactor: fixture.homeClubId === game.managedClubId
+      ? getOrtFreshnessFactor(game, homeClub.reputation)
+      : undefined,
     // LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26): safeStandingPosition
     // ger null (→ neutral 6:a) om hemmalaget ännu inte spelat en ligamatch
     // denna säsong, istf en alfabetisk skuggposition från en 0-poängstabell.
@@ -759,8 +793,13 @@ export function calcAttendance(params: {
   journalistAttendanceModifier?: number  // from journalistVisibilityService
   weatherAttendanceModifier?: number     // raw MatchWeather.effects.attendanceModifier — dämpas/neutraliseras internt
   hasIndoorArena?: boolean               // arena-golvet: väder påverkar inte inomhuspublik
+  /** ANSPRÅK 4, spak 3 / väg C: hemmaklubbens `getOrtFreshnessFactor`. Sätts
+   *  bara när hemmalaget ÄR den hanterade klubben (samma villkor som
+   *  communityStanding ovan — AI-klubbar har ingen staleness-mekanik).
+   *  Utelämnad ⇒ 1. */
+  freshnessFactor?: number
 }): number {
-  const { club, awayClub, isNeutralVenue, fanMood, communityStanding, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen, fixtureMonth, journalistAttendanceModifier, weatherAttendanceModifier, hasIndoorArena } = params
+  const { club, awayClub, isNeutralVenue, fanMood, communityStanding, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen, fixtureMonth, journalistAttendanceModifier, weatherAttendanceModifier, hasIndoorArena, freshnessFactor } = params
   const homeBaseCapacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
 
   // SLUTTEST RUNDA 4 (punkt 1): neutral plan — bägge lagens publikunderlag
@@ -791,7 +830,7 @@ export function calcAttendance(params: {
   // hemmaklacks-effekt) halveras istf att ges fullt till vilken klubb som
   // råkar stå som homeClubId.
   const moodWeight = isNeutralCupVenue ? 0.5 : 1.0
-  const attendanceRate = computeAttendanceRate(fanMood, communityStanding ?? 50, position, moodWeight)
+  const attendanceRate = computeAttendanceRate(fanMood, communityStanding ?? 50, position, moodWeight, freshnessFactor ?? 1)
   const eventBonus = isFinal ? 2.5 : isSemiFinal ? 1.8 : isKnockout ? 1.40 : isCup ? 1.20 : 1.0
   const derbyBonus = isDerby ? 1.30 : 1.0
   // Annandagen is the most-attended league match of the year — whole village turns up
