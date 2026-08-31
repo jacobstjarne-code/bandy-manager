@@ -73,18 +73,43 @@ export const BURNOUT_MARK = {
  *  managerProfileService.ts), visar BURNOUT_CAUSE_LINES[orsak] om poolen inte är
  *  tom. Tomma pooler = ingen orsaksrad visas (ingen krasch, bara utelämnad). */
 export const BURNOUT_CAUSE_LINES: Record<'losses' | 'inbox' | 'fatigue', string[]> = {
-  losses: [],
-  inbox: [],
-  fatigue: [],
+  losses: [
+    'Förlusterna radar upp sig. Det sätter sig.',
+    'Svårt att sova efter en förlust. Ännu svårare efter flera.',
+    'Varje måndag känns tyngre än den förra just nu.',
+    'Det är resultaten som tär. Man bär dem med sig hem.',
+  ],
+  inbox: [
+    'Det ligger för mycket olöst på bordet.',
+    'Högen växer fortare än den krymper.',
+    'Det är inte matcherna. Det är allt runtomkring som samlas på hög.',
+    'För många beslut väntar på svar samtidigt.',
+  ],
+  fatigue: [
+    'De sena kvällarna vid isen tar ut sin rätt.',
+    'Det tar längre tid att ladda om mellan omgångarna nu.',
+    'Kroppen hänger inte riktigt med i takten längre.',
+    'Allt går, det tar bara mer ur en än förut.',
+  ],
 }
 
 /** Opus levererar. Visas när burnout-zonen sjunker men inte når 'frisk' än
  *  (shouldShowBurnoutRelief, managerProfileService.ts). */
-export const BURNOUT_RELIEF_LINES: string[] = []
+export const BURNOUT_RELIEF_LINES: string[] = [
+  'Det släpper något. Inte allt, men något.',
+  'Lite lättare den här veckan. Det räckte tydligen.',
+  'Axlarna sitter inte lika högt längre.',
+  'Det går att se fram emot en match igen.',
+]
 
 /** Opus levererar. Visas EN gång när zonen återgår till 'frisk' efter att ha
  *  varit markbar/hög (shouldShowBurnoutClose, managerProfileService.ts). */
-export const BURNOUT_CLOSE_LINES: string[] = []
+export const BURNOUT_CLOSE_LINES: string[] = [
+  'Det gick att andas igen. Man glömmer att det ska kännas så.',
+  'Formen är tillbaka, både lagets och den egna.',
+  'Ingen frågar längre om allt står rätt till. Det är ett gott tecken.',
+  'Tillbaka på benen. Bandyn hann vänta.',
+]
 
 // ── Coach-rivalry-citat ────────────────────────────────────────────────────────
 // Rival-tränarens citat OM {manager}. Code genererar rivalens namn + personlighet.
