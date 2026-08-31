@@ -78,7 +78,7 @@ describe('eventResolver — plain sponsorOffer riskkoppling', () => {
         sponsorData: JSON.stringify(offer),
       }],
     }
-    game = resolveEvent(game, 'event_sponsor_risk', 'accept', () => 0.01)
+    game = resolveEvent(game, 'event_sponsor_risk', 'accept', () => 0.01, true)
 
     expect(game.riskySponsorContract).toBeDefined()
     expect(game.riskySponsorContract!.sponsorId).toBe('sponsor_new')
@@ -104,7 +104,7 @@ describe('eventResolver — plain sponsorOffer riskkoppling', () => {
         sponsorData: JSON.stringify(offer),
       }],
     }
-    game = resolveEvent(game, 'event_sponsor_norisk', 'accept', () => 0.5)
+    game = resolveEvent(game, 'event_sponsor_norisk', 'accept', () => 0.5, true)
 
     expect(game.riskySponsorContract).toBeUndefined()
   })
@@ -129,7 +129,7 @@ describe('eventResolver — plain sponsorOffer riskkoppling', () => {
         sponsorData: JSON.stringify(offer),
       }],
     }
-    game = resolveEvent(game, 'event_sponsor_already', 'accept', () => 0.01)
+    game = resolveEvent(game, 'event_sponsor_already', 'accept', () => 0.01, true)
 
     expect(game.riskySponsorContract).toEqual(existing)
   })
@@ -155,7 +155,7 @@ describe('eventResolver — plain sponsorOffer riskkoppling', () => {
     // riskySponsorOffer-eventet hanteras via sitt eget specialfall (event.type
     // === 'riskySponsorOffer') INNAN effect-switchen når 'acceptSponsor' —
     // 8%-grenen i case 'acceptSponsor' körs aldrig för denna väg.
-    game = resolveEvent(game, 'event_risky_sponsor', 'accept', () => 0.01)
+    game = resolveEvent(game, 'event_risky_sponsor', 'accept', () => 0.01, true)
 
     expect(game.sponsors!.find(s => s.id === 'sponsor_risky')).toBeTruthy()
   })

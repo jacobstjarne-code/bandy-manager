@@ -66,7 +66,7 @@ describe('event_crisis_awareness (fas 1) — ambient, ingen fejkad valkontrast',
     const game = makeGame()
     const { event } = checkEconomicCrisis(game, 1)
     let g = { ...game, pendingEvents: [event!] }
-    g = resolveEvent(g, event!.id, 'ambient_dismiss')
+    g = resolveEvent(g, event!.id, 'ambient_dismiss', undefined, true)
     expect(g.pendingEvents).toEqual([])
   })
 
@@ -127,7 +127,7 @@ describe('ask_mecenat (fas 3) — generationsgrind + tie-break', () => {
     const { event } = checkEconomicCrisis(game, 10)
     game = { ...game, pendingEvents: [event!] }
 
-    game = resolveEvent(game, event!.id, 'ask_mecenat')
+    game = resolveEvent(game, event!.id, 'ask_mecenat', undefined, true)
 
     const updatedTarget = game.mecenater!.find(m => m.id === 'mec-target')!
     const updatedOther = game.mecenater!.find(m => m.id === 'mec-other')!
@@ -142,7 +142,7 @@ describe('ask_mecenat (fas 3) — generationsgrind + tie-break', () => {
     const { event } = checkEconomicCrisis(game, 10)
     game = { ...game, pendingEvents: [event!] }
 
-    game = resolveEvent(game, event!.id, 'ask_mecenat')
+    game = resolveEvent(game, event!.id, 'ask_mecenat', undefined, true)
 
     const endFinances = game.clubs.find(c => c.id === game.managedClubId)!.finances
     expect(endFinances).toBe(startFinances + 200_000)
@@ -154,7 +154,7 @@ describe('ask_mecenat (fas 3) — generationsgrind + tie-break', () => {
     const { event } = checkEconomicCrisis(game, 10)
     game = { ...game, pendingEvents: [event!] }
 
-    game = resolveEvent(game, event!.id, 'ask_mecenat')
+    game = resolveEvent(game, event!.id, 'ask_mecenat', undefined, true)
 
     expect(game.mecenater!.find(m => m.id === 'mec1')!.happiness).toBe(0)
   })

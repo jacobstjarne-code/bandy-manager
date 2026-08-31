@@ -50,7 +50,7 @@ describe('csPress — individual: oförändrad uppsida, ny 18%-jealousyrisk', ()
     const event = makeCSPressEvent(playerId, 'no_such_fixture')
     let g = { ...game, pendingCSPress: event }
     // rand() alltid högt — ingen jealousy-risk triggas
-    g = resolveEvent(g, event.id, 'individual', () => 0.99)
+    g = resolveEvent(g, event.id, 'individual', () => 0.99, true)
 
     const after = g.players.find(p => p.id === playerId)!
     expect(after.morale).toBe(Math.min(100, before.morale + 5))
@@ -68,7 +68,7 @@ describe('csPress — individual: oförändrad uppsida, ny 18%-jealousyrisk', ()
     // Första rand()-anropet (<0.18) triggar risken, andra (0) väljer första lagkamraten i listan
     const calls: number[] = [0.1, 0]
     let i = 0
-    g = resolveEvent(g, event.id, 'individual', () => calls[i++] ?? 0)
+    g = resolveEvent(g, event.id, 'individual', () => calls[i++] ?? 0, true)
 
     const teammateAfter = g.players.find(p => p.id === teammateId)!
     expect(teammateAfter.morale).toBe(Math.max(0, teammateBefore.morale - 4))
@@ -81,7 +81,7 @@ describe('csPress — individual: oförändrad uppsida, ny 18%-jealousyrisk', ()
     const beforeMorales = new Map(game.players.map(p => [p.id, p.morale]))
     const event = makeCSPressEvent(playerId, 'no_such_fixture')
     let g = { ...game, pendingCSPress: event }
-    g = resolveEvent(g, event.id, 'individual', () => 0.5)
+    g = resolveEvent(g, event.id, 'individual', () => 0.5, true)
 
     for (const p of g.players) {
       if (p.id === playerId) continue
@@ -99,7 +99,7 @@ describe('csPress — team: bredd-nisch, hela truppen +2 moral', () => {
     const beforeRel = game.journalist!.relationship
     const event = makeCSPressEvent(playerId, 'no_such_fixture')
     let g = { ...game, pendingCSPress: event }
-    g = resolveEvent(g, event.id, 'team')
+    g = resolveEvent(g, event.id, 'team', undefined, true)
 
     for (const pid of club.squadPlayerIds) {
       const after = g.players.find(p => p.id === pid)!
@@ -118,7 +118,7 @@ describe('csPress — system: riskfri journalistnisch, ingen overksam moral-pena
     const beforeRel = game.journalist!.relationship
     const event = makeCSPressEvent(playerId, 'no_such_fixture')
     let g = { ...game, pendingCSPress: event }
-    g = resolveEvent(g, event.id, 'system')
+    g = resolveEvent(g, event.id, 'system', undefined, true)
 
     const after = g.players.find(p => p.id === playerId)!
     expect(after.morale).toBe(before.morale)

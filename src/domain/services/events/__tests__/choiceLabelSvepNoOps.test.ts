@@ -25,7 +25,7 @@ describe('captainSpeech — teamBoostMorale (var boostMorale utan targetPlayerId
 
     const event = generateCaptainSpeechEvent(captain, game.managedClubId, game.currentSeason)
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, event.id, 'support')
+    game = resolveEvent(game, event.id, 'support', undefined, true)
 
     const updatedSquad = game.players.filter(p => p.clubId === game.managedClubId)
     expect(updatedSquad.every(p => p.morale > 50)).toBe(true)
@@ -36,7 +36,7 @@ describe('captainSpeech — teamBoostMorale (var boostMorale utan targetPlayerId
     const captain = game.players.find(p => p.clubId === game.managedClubId)!
     const event = generateCaptainSpeechEvent(captain, game.managedClubId, game.currentSeason)
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, event.id, 'support')
+    game = resolveEvent(game, event.id, 'support', undefined, true)
 
     expect(game.storylines?.some(s => s.type === 'captain_rallied_team')).toBe(true)
   })
@@ -47,10 +47,27 @@ describe('captainSpeech — teamBoostMorale (var boostMorale utan targetPlayerId
     const captain = game.players.find(p => p.clubId === game.managedClubId)!
     const event = generateCaptainSpeechEvent(captain, game.managedClubId, game.currentSeason)
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, event.id, 'decline')
+    game = resolveEvent(game, event.id, 'decline', undefined, true)
 
     const updatedSquad = game.players.filter(p => p.clubId === game.managedClubId)
     expect(updatedSquad.every(p => p.morale === 50)).toBe(true)
+    expect(game.storylines?.some(s => s.type === 'captain_rallied_team')).toBeFalsy()
+  })
+
+  // HIGH 6, attributionshålet (Jacobs körorder 2026-08-31): 'support' HÖJER
+  // fortfarande moralen (mekanisk effekt, oberoende av vem som "tryckte") men
+  // ska INTE skriva karriärminnet när det var sim-the-rest/rollover som
+  // auto-valde 'support' åt en AI-styrd säsong — spelaren var inte med.
+  it("'support' AUTO-RESOLVAD (madeByPlayer=false) höjer moral men skriver INTE storylinen", () => {
+    let game = makeGameWithSquad()
+    game = { ...game, players: game.players.map(p => p.clubId === game.managedClubId ? { ...p, morale: 50 } : p) }
+    const captain = game.players.find(p => p.clubId === game.managedClubId)!
+    const event = generateCaptainSpeechEvent(captain, game.managedClubId, game.currentSeason)
+    game = { ...game, pendingEvents: [event] }
+    game = resolveEvent(game, event.id, 'support', undefined, false)
+
+    const updatedSquad = game.players.filter(p => p.clubId === game.managedClubId)
+    expect(updatedSquad.every(p => p.morale > 50)).toBe(true)
     expect(game.storylines?.some(s => s.type === 'captain_rallied_team')).toBeFalsy()
   })
 })
@@ -67,7 +84,7 @@ describe('varsel — de berörda spelarnas moral (var boostMorale utan targetPla
     game = { ...game, players: game.players.map(p => ({ ...p, morale: 50 })) }
     const { event, affectedIds } = makeVarselEvent(game)
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, event.id, 'support')
+    game = resolveEvent(game, event.id, 'support', undefined, true)
 
     const affected = game.players.filter(p => affectedIds.includes(p.id))
     const rest = game.players.filter(p => !affectedIds.includes(p.id))
@@ -80,7 +97,7 @@ describe('varsel — de berörda spelarnas moral (var boostMorale utan targetPla
     game = { ...game, players: game.players.map(p => ({ ...p, morale: 50 })) }
     const { event, affectedIds } = makeVarselEvent(game)
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, event.id, 'nothing')
+    game = resolveEvent(game, event.id, 'nothing', undefined, true)
 
     const affected = game.players.filter(p => affectedIds.includes(p.id))
     expect(affected.every(p => p.morale === 42)).toBe(true)
@@ -90,12 +107,28 @@ describe('varsel — de berörda spelarnas moral (var boostMorale utan targetPla
     let game = makeGameWithSquad()
     const { event, affectedIds } = makeVarselEvent(game)
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, event.id, 'offer_pro')
+    game = resolveEvent(game, event.id, 'offer_pro', undefined, true)
 
     const affected = game.players.filter(p => affectedIds.includes(p.id))
     expect(affected.every(p => p.isFullTimePro === true)).toBe(true)
     expect(affected.every(p => p.dayJob === undefined)).toBe(true)
     expect(game.storylines?.some(s => s.type === 'went_fulltime_pro' || s.type === 'rescued_from_unemployment')).toBeTruthy()
+  })
+
+  // HIGH 6, attributionshålet (Jacobs körorder 2026-08-31): effekten (heltids-
+  // proffs, lönehöjning) är mekanisk och sker oavsett vem som "tryckte" —
+  // bara karriärminnena (went_fulltime_pro/rescued_from_unemployment) ska
+  // utebli när sim-the-rest/rollover auto-valde 'offer_pro' åt en AI-styrd
+  // säsong.
+  it("'offer_pro' AUTO-RESOLVAD (madeByPlayer=false) gör spelarna proffs men skriver INGA storylines", () => {
+    let game = makeGameWithSquad()
+    const { event, affectedIds } = makeVarselEvent(game)
+    game = { ...game, pendingEvents: [event] }
+    game = resolveEvent(game, event.id, 'offer_pro', undefined, false)
+
+    const affected = game.players.filter(p => affectedIds.includes(p.id))
+    expect(affected.every(p => p.isFullTimePro === true)).toBe(true)
+    expect(game.storylines?.some(s => s.type === 'went_fulltime_pro' || s.type === 'rescued_from_unemployment')).toBeFalsy()
   })
 
   it("'offer_pro' skriver INGEN rescued_from_unemployment-storyline om effekten inte lyckades (var tidigare oberoende av utfall)", () => {
@@ -108,7 +141,7 @@ describe('varsel — de berörda spelarnas moral (var boostMorale utan targetPla
       resolved: false,
     }
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, event.id, 'offer_pro')
+    game = resolveEvent(game, event.id, 'offer_pro', undefined, true)
 
     expect(game.storylines?.some(s => s.type === 'rescued_from_unemployment')).toBeFalsy()
   })
@@ -128,26 +161,26 @@ describe('vakten — obligatoriska fält kastar i stället för att tystna', () 
   it("boostMorale utan targetPlayerId kastar", () => {
     let game = makeGameWithSquad()
     game = { ...game, pendingEvents: [pendingWith({ type: 'boostMorale', value: 5 })] }
-    expect(() => resolveEvent(game, 'test_guard_event', 'go')).toThrow(/targetPlayerId/)
+    expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).toThrow(/targetPlayerId/)
   })
 
   it("makeFullTimePro utan targetPlayerId kastar", () => {
     let game = makeGameWithSquad()
     game = { ...game, pendingEvents: [pendingWith({ type: 'makeFullTimePro', value: 0 })] }
-    expect(() => resolveEvent(game, 'test_guard_event', 'go')).toThrow(/targetPlayerId/)
+    expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).toThrow(/targetPlayerId/)
   })
 
   it("teamBoostMorale utan targetClubId kastar", () => {
     let game = makeGameWithSquad()
     game = { ...game, pendingEvents: [pendingWith({ type: 'teamBoostMorale', value: 5 })] }
-    expect(() => resolveEvent(game, 'test_guard_event', 'go')).toThrow(/targetClubId/)
+    expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).toThrow(/targetClubId/)
   })
 
   it("teamBoostMorale MED targetClubId fungerar fortfarande", () => {
     let game = makeGameWithSquad()
     game = { ...game, players: game.players.map(p => ({ ...p, morale: 50 })) }
     game = { ...game, pendingEvents: [pendingWith({ type: 'teamBoostMorale', value: 5, targetClubId: game.managedClubId })] }
-    game = resolveEvent(game, 'test_guard_event', 'go')
+    game = resolveEvent(game, 'test_guard_event', 'go', undefined, true)
     expect(game.players.filter(p => p.clubId === game.managedClubId).every(p => p.morale === 55)).toBe(true)
   })
 
@@ -157,7 +190,7 @@ describe('vakten — obligatoriska fält kastar i stället för att tystna', () 
       ...game,
       pendingEvents: [pendingWith({ type: 'multiEffect', subEffects: JSON.stringify([{ type: 'boostMorale', amount: 5 }]) })],
     }
-    expect(() => resolveEvent(game, 'test_guard_event', 'go')).toThrow(/targetPlayerId/)
+    expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).toThrow(/targetPlayerId/)
   })
 
   it("multiEffect-subEffect makeFullTimePro utan targetPlayerId kastar", () => {
@@ -166,7 +199,7 @@ describe('vakten — obligatoriska fält kastar i stället för att tystna', () 
       ...game,
       pendingEvents: [pendingWith({ type: 'multiEffect', subEffects: JSON.stringify([{ type: 'makeFullTimePro' }]) })],
     }
-    expect(() => resolveEvent(game, 'test_guard_event', 'go')).toThrow(/targetPlayerId/)
+    expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).toThrow(/targetPlayerId/)
   })
 
   it("ett trasigt JSON i subEffects tystas fortfarande (annan felklass, inte ett saknat fält)", () => {
@@ -175,6 +208,6 @@ describe('vakten — obligatoriska fält kastar i stället för att tystna', () 
       ...game,
       pendingEvents: [pendingWith({ type: 'multiEffect', subEffects: '{not valid json' })],
     }
-    expect(() => resolveEvent(game, 'test_guard_event', 'go')).not.toThrow()
+    expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).not.toThrow()
   })
 })

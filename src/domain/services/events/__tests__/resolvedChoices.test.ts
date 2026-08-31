@@ -35,7 +35,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
       resolved: false,
     }
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, 'event_canonical', 'ack')
+    game = resolveEvent(game, 'event_canonical', 'ack', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_canonical')
     expect(entry).toEqual({ eventId: 'event_canonical', choiceId: 'ack', label: 'Notera det' })
@@ -56,7 +56,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
         resolved: false, sponsorData: JSON.stringify(offer),
       }],
     }
-    game = resolveEvent(game, 'event_sponsor_accept', 'accept', () => 0.5)
+    game = resolveEvent(game, 'event_sponsor_accept', 'accept', () => 0.5, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_sponsor_accept')
     expect(entry).toEqual({ eventId: 'event_sponsor_accept', choiceId: 'accept', label: 'Acceptera sponsorn' })
@@ -77,7 +77,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
         resolved: false, sponsorData: JSON.stringify(offer),
       }],
     }
-    game = resolveEvent(game, 'event_sponsor_reject', 'reject')
+    game = resolveEvent(game, 'event_sponsor_reject', 'reject', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_sponsor_reject')
     expect(entry).toEqual({ eventId: 'event_sponsor_reject', choiceId: 'reject', label: 'Tacka nej' })
@@ -98,7 +98,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
         resolved: false,
       }],
     }
-    game = resolveEvent(game, 'event_risky_accept', 'accept')
+    game = resolveEvent(game, 'event_risky_accept', 'accept', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_risky_accept')
     expect(entry).toEqual({ eventId: 'event_risky_accept', choiceId: 'accept', label: 'Ta risken' })
@@ -119,7 +119,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
         resolved: false,
       }],
     }
-    game = resolveEvent(game, 'event_risky_reject', 'reject')
+    game = resolveEvent(game, 'event_risky_reject', 'reject', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_risky_reject')
     expect(entry).toEqual({ eventId: 'event_risky_reject', choiceId: 'reject', label: 'Nej tack' })
@@ -136,7 +136,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
         resolved: false,
       }],
     }
-    game = resolveEvent(game, 'event_overflow', 'ack')
+    game = resolveEvent(game, 'event_overflow', 'ack', undefined, true)
 
     expect(game.resolvedChoices).toHaveLength(200)
     expect(game.resolvedChoices!.some(c => c.eventId === 'old_0')).toBe(false)
@@ -153,7 +153,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
       }],
     }
     const before = game.resolvedChoices ?? []
-    game = resolveEvent(game, 'event_no_choices', 'irrelevant')
+    game = resolveEvent(game, 'event_no_choices', 'irrelevant', undefined, false)
 
     expect(game.resolvedChoices ?? []).toEqual(before)
   })

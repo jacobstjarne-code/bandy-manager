@@ -126,7 +126,9 @@ interface GameState {
   signFreeAgent: (agentId: string) => { success: boolean; error?: string }
   listPlayerForSale: (playerId: string) => { success: boolean; error?: string }
   respondToIncomingBid: (bidId: string, choiceId: string) => { success: boolean; error?: string }
-  resolveEvent: (eventId: string, choiceId: string) => void
+  // HIGH 6 (Jacobs körorder 2026-08-31): madeByPlayer obligatorisk, ingen
+  // default — se eventResolver.ts:s resolveEvent för rotorsak/regel.
+  resolveEvent: (eventId: string, choiceId: string, madeByPlayer: boolean) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number, halftimeDecision?: import('../components/match/HalftimeModal').PauseLean) => void
   markMatchStarted: (fixtureId: string, homeLineup?: import('../../domain/entities/Fixture').TeamSelection, awayLineup?: import('../../domain/entities/Fixture').TeamSelection) => void
   simulateAbandonedMatch: (fixtureId: string) => void
@@ -568,10 +570,10 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, inbox: game.inbox.map(i => ({ ...i, isRead: true })) } })
       },
 
-      resolveEvent: (eventId, choiceId) => {
+      resolveEvent: (eventId, choiceId, madeByPlayer) => {
         const { game } = get()
         if (!game) return
-        const afterResolve = resolveEventFn(game, eventId, choiceId)
+        const afterResolve = resolveEventFn(game, eventId, choiceId, undefined, madeByPlayer)
         const afterPromote = (afterResolve.deferredDecisions ?? []).length > 0
           ? promoteFromQueue(afterResolve)
           : afterResolve

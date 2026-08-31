@@ -264,7 +264,9 @@ export function transferActions(get: Get, set: Set) {
         ...game,
         pendingEvents: [...(game.pendingEvents ?? []), event],
       }
-      const afterResolve = resolveEvent(gameWithEvent, event.id, choiceId)
+      // HIGH 6 (Jacobs körorder 2026-08-31): respondToIncomingBid är alltid
+      // spelarens svar på Marknad-skärmen — aldrig en auto-resolution.
+      const afterResolve = resolveEvent(gameWithEvent, event.id, choiceId, undefined, true)
 
       // Syskon-undanstädningen från den gamla implementationen — resolveEvents
       // egen tail rensar bara event.id, inte AI-svarsvarianterna.

@@ -174,12 +174,14 @@ export function GranskaScreen() {
     playSound('click')
     setResolvedEventIds(prev => new Set([...prev, eventId]))
     setChosenLabels(prev => ({ ...prev, [eventId]: choiceLabel }))
-    resolveEvent(eventId, choiceId)
+    resolveEvent(eventId, choiceId, true)
   }
 
   function handleResolveReactions(ids: string[]) {
     setResolvedEventIds(prev => new Set([...prev, ...ids]))
-    ids.forEach(id => resolveEvent(id, 'auto'))
+    // HIGH 6 (Jacobs körorder 2026-08-31): bulk-avfärdning av reaktions-
+    // events ('auto' som choiceId) — inget riktigt val, ingen player-tap.
+    ids.forEach(id => resolveEvent(id, 'auto', false))
   }
 
   function handleContinue() {

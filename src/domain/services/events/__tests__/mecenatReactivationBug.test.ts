@@ -68,7 +68,7 @@ describe('K5 — permanent avskedad mecenat kan inte röras av mecenatHappiness'
     game = { ...game, pendingEvents: [staleSocialEvent] }
     const startFinances = game.clubs.find(c => c.id === game.managedClubId)!.finances
 
-    game = resolveEvent(game, 'test_stale_social_event', 'attend')
+    game = resolveEvent(game, 'test_stale_social_event', 'attend', undefined, true)
 
     const after = game.mecenater!.find(m => m.id === 'mecenat_test_withdrawn')!
     expect(after.isActive).toBe(false)
@@ -96,7 +96,7 @@ describe('K5 — permanent avskedad mecenat kan inte röras av mecenatHappiness'
     }
     game = { ...game, pendingEvents: [staleMultiEvent] }
 
-    game = resolveEvent(game, 'test_stale_multi_event', 'attend')
+    game = resolveEvent(game, 'test_stale_multi_event', 'attend', undefined, true)
 
     const after = game.mecenater!.find(m => m.id === 'mecenat_test_withdrawn')!
     expect(after.isActive).toBe(false)

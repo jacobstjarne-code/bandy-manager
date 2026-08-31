@@ -47,7 +47,7 @@ describe('eventResolver — effect schema (amount vs value, multiEffect sub-type
     }
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, 'test_finance_event', 'acknowledge')
+    game = resolveEvent(game, 'test_finance_event', 'acknowledge', undefined, true)
 
     const endFinances = game.clubs.find(c => c.id === game.managedClubId)!.finances
     expect(endFinances).toBe(startFinances - 1_000_000)
@@ -69,7 +69,7 @@ describe('eventResolver — effect schema (amount vs value, multiEffect sub-type
     }
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, 'test_reputation_event', 'welcome')
+    game = resolveEvent(game, 'test_reputation_event', 'welcome', undefined, true)
 
     const endRep = game.clubs.find(c => c.id === game.managedClubId)!.reputation
     expect(endRep).toBe(Math.min(100, startRep + 5))
@@ -97,7 +97,7 @@ describe('eventResolver — effect schema (amount vs value, multiEffect sub-type
     }
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, 'test_kommunbidrag_event', 'start_program')
+    game = resolveEvent(game, 'test_kommunbidrag_event', 'start_program', undefined, true)
 
     expect(game.localPolitician!.kommunBidrag).toBe(16_000)
   })

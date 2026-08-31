@@ -94,7 +94,7 @@ describe('pendingEvents-invarianten — beforeIds − resolvedId = afterIds (H3)
     let g = { ...game, pendingEvents: [captainEvent(), sponsorEvent(), contractEvent(playerId)] }
     const beforeIds = new Set(g.pendingEvents.map(e => e.id))
 
-    g = resolveEvent(g, 'ev_sponsor', 'accept')
+    g = resolveEvent(g, 'ev_sponsor', 'accept', undefined, true)
     const afterIds = new Set(g.pendingEvents.map(e => e.id))
 
     beforeIds.delete('ev_sponsor')
@@ -110,7 +110,7 @@ describe('pendingEvents-invarianten — beforeIds − resolvedId = afterIds (H3)
     }
     const beforeIds = new Set(g.pendingEvents.map(e => e.id))
 
-    g = resolveEvent(g, 'ev_captain', 'support')
+    g = resolveEvent(g, 'ev_captain', 'support', undefined, true)
     const afterIds = new Set(g.pendingEvents.map(e => e.id))
 
     beforeIds.delete('ev_captain')
@@ -126,7 +126,7 @@ describe('pendingEvents-invarianten — beforeIds − resolvedId = afterIds (H3)
     }
     const beforeIds = new Set(g.pendingEvents.map(e => e.id))
 
-    g = resolveEvent(g, 'ev_multi', 'offer_pro')
+    g = resolveEvent(g, 'ev_multi', 'offer_pro', undefined, true)
     const afterIds = new Set(g.pendingEvents.map(e => e.id))
 
     beforeIds.delete('ev_multi')
@@ -139,7 +139,7 @@ describe('pendingEvents-invarianten — beforeIds − resolvedId = afterIds (H3)
     let g = { ...game, pendingEvents: [fanLetterEvent(), captainEvent(), contractEvent(playerId)] }
     const beforeIds = new Set(g.pendingEvents.map(e => e.id))
 
-    g = resolveEvent(g, 'ev_fanletter', 'auto')
+    g = resolveEvent(g, 'ev_fanletter', 'auto', undefined, true)
     const afterIds = new Set(g.pendingEvents.map(e => e.id))
 
     beforeIds.delete('ev_fanletter')
@@ -151,13 +151,13 @@ describe('pendingEvents-invarianten — beforeIds − resolvedId = afterIds (H3)
     const playerId = game.clubs[0].squadPlayerIds[0]
     let g = { ...game, pendingEvents: [captainEvent(), sponsorEvent(), contractEvent(playerId)] }
 
-    g = resolveEvent(g, 'ev_captain', 'support')
+    g = resolveEvent(g, 'ev_captain', 'support', undefined, true)
     expect(new Set(g.pendingEvents.map(e => e.id))).toEqual(new Set(['ev_sponsor', 'ev_contract']))
 
-    g = resolveEvent(g, 'ev_sponsor', 'accept')
+    g = resolveEvent(g, 'ev_sponsor', 'accept', undefined, true)
     expect(new Set(g.pendingEvents.map(e => e.id))).toEqual(new Set(['ev_contract']))
 
-    g = resolveEvent(g, 'ev_contract', 'reject')
+    g = resolveEvent(g, 'ev_contract', 'reject', undefined, true)
     expect(g.pendingEvents.map(e => e.id)).toEqual([])
   })
 })

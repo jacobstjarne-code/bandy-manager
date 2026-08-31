@@ -243,7 +243,7 @@ export function autoResolvePendingEvents(
   let g = game
   for (const e of (game.pendingEvents ?? [])) {
     const choiceId = pickEventResolutionPolicy(e)
-    g = resolveEvent(g, e.id, choiceId, rand)
+    g = resolveEvent(g, e.id, choiceId, rand, false)
   }
   return g
 }

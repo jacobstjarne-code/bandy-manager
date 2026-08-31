@@ -226,7 +226,7 @@ function autoResolveMeasuredEvents(game: SaveGame, arm: Arm, rand: () => number)
 
   for (const e of (g.pendingEvents ?? [])) {
     if ((e.type === 'patronEvent' || e.type === 'patronWithdrawal') && e.choices.length > 0) {
-      g = resolveEvent(g, e.id, e.choices[0].id, rand)
+      g = resolveEvent(g, e.id, e.choices[0].id, rand, false)
       continue
     }
     if (e.type === 'communityActivityRenewal' && e.choices.length > 0) {
@@ -234,9 +234,9 @@ function autoResolveMeasuredEvents(game: SaveGame, arm: Arm, rand: () => number)
       if (arm === 'HALLER_FORNYAR') {
         renewalSpend += Math.abs(e.choices[0].effect.amount ?? 0)
         renewalsPaid += 1
-        g = resolveEvent(g, e.id, 'renew', rand)
+        g = resolveEvent(g, e.id, 'renew', rand, false)
       } else {
-        g = resolveEvent(g, e.id, 'decline', rand)
+        g = resolveEvent(g, e.id, 'decline', rand, false)
       }
     }
   }
@@ -249,7 +249,7 @@ function autoResolveMeasuredEvents(game: SaveGame, arm: Arm, rand: () => number)
     if (getEventDecisionTier(e) !== 'month') continue
     if (e.type === 'communityActivityRenewal' || e.type === 'patronEvent' || e.type === 'patronWithdrawal') continue
     const hold = getDefaultRolloverChoice(e)
-    if (hold) g = resolveEvent(g, e.id, hold.id, rand)
+    if (hold) g = resolveEvent(g, e.id, hold.id, rand, false)
     else dropIds.push(e.id)
   }
   if (dropIds.length > 0) {

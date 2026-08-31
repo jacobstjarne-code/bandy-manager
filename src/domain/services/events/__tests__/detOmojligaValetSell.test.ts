@@ -39,7 +39,7 @@ function makeGameWithSellEvent() {
 describe('detOmojligaValet/sell — spelaren tas faktiskt bort ur klubben (H3)', () => {
   it('clubId blir free_agent och spelaren försvinner ur squadPlayerIds', () => {
     const { game, player } = makeGameWithSellEvent()
-    const resolved = resolveEvent(game, 'ev_omojlig', 'sell')
+    const resolved = resolveEvent(game, 'ev_omojlig', 'sell', undefined, true)
 
     const club = resolved.clubs.find(c => c.id === resolved.managedClubId)!
     const updatedPlayer = resolved.players.find(p => p.id === player.id)!
@@ -49,7 +49,7 @@ describe('detOmojligaValet/sell — spelaren tas faktiskt bort ur klubben (H3)',
 
   it('O18-kandidaten "Du sålde X" skrivs bara EFTER att övergången faktiskt hände', () => {
     const { game, player } = makeGameWithSellEvent()
-    const resolved = resolveEvent(game, 'ev_omojlig', 'sell')
+    const resolved = resolveEvent(game, 'ev_omojlig', 'sell', undefined, true)
 
     const candidate = resolved.seasonDecisionCandidates?.find(c => c.eventId === 'ev_omojlig')
     expect(candidate).toBeDefined()
@@ -64,12 +64,12 @@ describe('detOmojligaValet/sell — spelaren tas faktiskt bort ur klubben (H3)',
       relatedPlayerId: undefined,
     }
     const brokenGame = { ...game, pendingEvents: [brokenEvent] }
-    expect(() => resolveEvent(brokenGame, 'ev_omojlig', 'sell')).toThrow(/relatedPlayerId/)
+    expect(() => resolveEvent(brokenGame, 'ev_omojlig', 'sell', undefined, true)).toThrow(/relatedPlayerId/)
   })
 
   it('keep-valet lämnar spelaren i truppen', () => {
     const { game, player } = makeGameWithSellEvent()
-    const resolved = resolveEvent(game, 'ev_omojlig', 'keep')
+    const resolved = resolveEvent(game, 'ev_omojlig', 'keep', undefined, true)
 
     const club = resolved.clubs.find(c => c.id === resolved.managedClubId)!
     expect(club.squadPlayerIds).toContain(player.id)
@@ -83,7 +83,7 @@ describe('detOmojligaValet/sell — spelaren tas faktiskt bort ur klubben (H3)',
   // längre till seasonDecisionCandidates.
   it('keep-valet skriver INGEN seasonDecisionCandidates-post (kvalificerar inte under A-H9)', () => {
     const { game } = makeGameWithSellEvent()
-    const resolved = resolveEvent(game, 'ev_omojlig', 'keep')
+    const resolved = resolveEvent(game, 'ev_omojlig', 'keep', undefined, true)
     const candidate = resolved.seasonDecisionCandidates?.find(c => c.eventId === 'ev_omojlig')
     expect(candidate).toBeUndefined()
   })

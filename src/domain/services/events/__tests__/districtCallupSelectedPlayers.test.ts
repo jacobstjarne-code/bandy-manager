@@ -81,7 +81,7 @@ function makeGameWithYouthCallupEvent(): { game: SaveGame; event: GameEvent } {
 describe('event_district_callup_ resolver — M3: bara namngivna spelare, inte hela potentialAbility>50-truppen', () => {
   it('"send" ger confidence/development-bonus ENDAST till selectedPlayerIds, inte notSelected', () => {
     const { game } = makeGameWithYouthCallupEvent()
-    const result = resolveEvent(game, 'event_district_callup_8_2025', 'send')
+    const result = resolveEvent(game, 'event_district_callup_8_2025', 'send', undefined, true)
 
     const selected1 = result.youthTeam!.players.find(p => p.id === 'yp_selected_1')!
     const selected2 = result.youthTeam!.players.find(p => p.id === 'yp_selected_2')!
@@ -96,7 +96,7 @@ describe('event_district_callup_ resolver — M3: bara namngivna spelare, inte h
 
   it('"send" sätter availabilityUntilRound på exakt de skickade spelarna, ingen annan', () => {
     const { game } = makeGameWithYouthCallupEvent()
-    const result = resolveEvent(game, 'event_district_callup_8_2025', 'send')
+    const result = resolveEvent(game, 'event_district_callup_8_2025', 'send', undefined, true)
 
     const selected1 = result.youthTeam!.players.find(p => p.id === 'yp_selected_1')!
     const notSelected = result.youthTeam!.players.find(p => p.id === 'yp_not_selected')!
@@ -107,7 +107,7 @@ describe('event_district_callup_ resolver — M3: bara namngivna spelare, inte h
 
   it('"keep" ger INGEN availabilityUntilRound, bara confidence-avdrag', () => {
     const { game } = makeGameWithYouthCallupEvent()
-    const result = resolveEvent(game, 'event_district_callup_8_2025', 'keep')
+    const result = resolveEvent(game, 'event_district_callup_8_2025', 'keep', undefined, true)
 
     const selected1 = result.youthTeam!.players.find(p => p.id === 'yp_selected_1')!
     expect(selected1.confidence).toBe(40 - 5)

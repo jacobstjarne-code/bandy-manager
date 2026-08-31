@@ -107,11 +107,11 @@ export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) 
 
   function handleAction(choiceId: string) {
     if (!exitDelayMs) {
-      resolveEvent(event.id, choiceId)
+      resolveEvent(event.id, choiceId, true)
       return
     }
     setIsExiting(true)
-    setTimeout(() => resolveEvent(event.id, choiceId), exitDelayMs)
+    setTimeout(() => resolveEvent(event.id, choiceId, true), exitDelayMs)
   }
 
   return (

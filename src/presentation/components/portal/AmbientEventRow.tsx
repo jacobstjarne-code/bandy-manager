@@ -34,7 +34,7 @@ export function AmbientEventRow({ event }: Props) {
 
   const dismiss = (e: React.MouseEvent) => {
     e.stopPropagation()
-    resolveEvent(event.id, 'ambient_dismiss')
+    resolveEvent(event.id, 'ambient_dismiss', true)
   }
 
   return (

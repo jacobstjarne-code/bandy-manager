@@ -123,7 +123,7 @@ async function main(): Promise<void> {
           for (const choice of item.choices) {
             totalChoicesProbed++
             try {
-              resolveEvent(cloneGame(game), item.id, choice.id, rand)
+              resolveEvent(cloneGame(game), item.id, choice.id, rand, false)
               survivingChoiceIds.push(choice.id)
             } catch (e) {
               throws.push({
@@ -142,7 +142,7 @@ async function main(): Promise<void> {
             : item.choices[0]?.id
           if (pickId === undefined) continue
           try {
-            game = resolveEvent(game, item.id, pickId, rand)
+            game = resolveEvent(game, item.id, pickId, rand, false)
           } catch (e) {
             throws.push({
               seed: seedIdx, season, round: roundPlayed,

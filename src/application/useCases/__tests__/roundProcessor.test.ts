@@ -717,7 +717,7 @@ describe('HIGH 9 (audit 2026-08-29): stale playThroughInjury-kort purgas varje o
         p.id === player.id ? { ...p, isInjured: false, injuryDaysRemaining: 0 } : p),
     }
 
-    const after = resolveEvent(healedGame, cardId, 'play')
+    const after = resolveEvent(healedGame, cardId, 'play', undefined, true)
     const resolvedPlayer = after.players.find(p => p.id === player.id)!
     expect(resolvedPlayer.playingThroughInjury).toBeFalsy()
     expect(resolvedPlayer.isInjured).toBe(false)
@@ -726,7 +726,7 @@ describe('HIGH 9 (audit 2026-08-29): stale playThroughInjury-kort purgas varje o
 
     // Kontrollprov: samma resolution på en FORTFARANDE skadad spelare ska
     // fortsätta fungera exakt som förut.
-    const stillInjured = resolveEvent(injuredGame, cardId, 'play')
+    const stillInjured = resolveEvent(injuredGame, cardId, 'play', undefined, true)
     const p2 = stillInjured.players.find(p => p.id === player.id)!
     expect(p2.playingThroughInjury).toBe(true)
     expect(p2.isInjured).toBe(false)

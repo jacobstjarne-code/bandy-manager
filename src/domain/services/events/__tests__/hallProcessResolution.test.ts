@@ -36,7 +36,7 @@ describe('eventResolver — hallProcess resolution → inbox + eko (Block 3c)', 
     const event = forankringResEvent(2025, 'bordlagd')
     const game = withTrial({ ...base, pendingEvents: [event] }, trial)
 
-    const result = resolveEvent(game, event.id, 'ok')
+    const result = resolveEvent(game, event.id, 'ok', undefined, true)
 
     expect(result.facilityState?.hallTrial?.stage).toBe('bordlagd')
     expect(result.pendingHallEcho?.text).toBe(PROVNING_RESOLUTION.bordlagd)
@@ -50,7 +50,7 @@ describe('eventResolver — hallProcess resolution → inbox + eko (Block 3c)', 
     const event = forankringResEvent(2025, 'nedlagd')
     const game = withTrial({ ...base, pendingEvents: [event] }, trial)
 
-    const result = resolveEvent(game, event.id, 'ok')
+    const result = resolveEvent(game, event.id, 'ok', undefined, true)
 
     expect(result.pendingHallEcho?.text).toBe(PROVNING_RESOLUTION.nedlagd_fall)
     expect(result.pendingHallEcho?.text).not.toBe(PROVNING_RESOLUTION.nedlagd_egen)
@@ -72,7 +72,7 @@ describe('eventResolver — hallProcess resolution → inbox + eko (Block 3c)', 
     }
     const game = withTrial({ ...base, pendingEvents: [avbrytEvent] }, trial)
 
-    const result = resolveEvent(game, avbrytEvent.id, 'avbryta')
+    const result = resolveEvent(game, avbrytEvent.id, 'avbryta', undefined, true)
 
     expect(result.pendingHallEcho?.text).toBe(PROVNING_RESOLUTION.nedlagd_egen)
     expect(result.inbox.find(i => i.title === 'Hallfrågan')?.body).toBe(PROVNING_RESOLUTION.nedlagd_egen)
@@ -94,7 +94,7 @@ describe('eventResolver — hallProcess resolution → inbox + eko (Block 3c)', 
     }
     const game = withTrial({ ...base, pendingEvents: [fhNejEvent] }, trial)
 
-    const result = resolveEvent(game, fhNejEvent.id, 'noterat')
+    const result = resolveEvent(game, fhNejEvent.id, 'noterat', undefined, true)
 
     expect(result.facilityState?.hallTrial?.stage).toBe('nedlagd')
     expect(result.pendingHallEcho).toBeUndefined()
@@ -107,9 +107,9 @@ describe('eventResolver — hallProcess resolution → inbox + eko (Block 3c)', 
     const event = forankringResEvent(2025, 'bordlagd')
     const game = withTrial({ ...base, pendingEvents: [event] }, trial)
 
-    const once = resolveEvent(game, event.id, 'ok')
+    const once = resolveEvent(game, event.id, 'ok', undefined, true)
     const gameWithExistingInbox = { ...once, pendingEvents: [event] }
-    const twice = resolveEvent(gameWithExistingInbox, event.id, 'ok')
+    const twice = resolveEvent(gameWithExistingInbox, event.id, 'ok', undefined, true)
 
     expect(twice.inbox.filter(i => i.title === 'Hallfrågan')).toHaveLength(1)
   })

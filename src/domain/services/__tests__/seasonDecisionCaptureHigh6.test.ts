@@ -152,10 +152,29 @@ describe('HIGH 6 — eventResolver fångar beslut UTAN systemhandelse (regressio
       ],
       pendingEvents: [event],
     })
-    const resolved = resolveEvent(game, event.id, 'side_mec1')
+    const resolved = resolveEvent(game, event.id, 'side_mec1', undefined, true)
     const candidate = resolved.seasonDecisionCandidates?.find(c => c.eventId === event.id)
     expect(candidate).toBeDefined()
     expect(candidate!.namedPerson).toBe('Björn Lindqvist')
+  })
+
+  // HIGH 6, attributionshålet (Jacobs körorder 2026-08-31): den STALE-grinden
+  // ovan doldes en andra bugg — anropet saknade en kontroll av VEM som löste
+  // eventet. Samma mecenatkonflikt, men auto-resolvad (sim-the-rest/rollover,
+  // madeByPlayer=false), ska INTE producera en kandidat — spelaren var inte
+  // med om att fatta beslutet, och årsboken ska inte hävda att de var det.
+  it('mecenatEvent/side_mec1 AUTO-RESOLVAD (madeByPlayer=false) ger INGEN kandidat', () => {
+    const event = conflictEvent()
+    const game = makeGame({
+      mecenater: [
+        makeMecenat({ id: 'mec1', name: 'Björn Lindqvist', happiness: 60 }),
+        makeMecenat({ id: 'mec2', name: 'Astrid Wahl', gender: 'female', happiness: 60 }),
+      ],
+      pendingEvents: [event],
+    })
+    const resolved = resolveEvent(game, event.id, 'side_mec1', undefined, false)
+    const candidate = resolved.seasonDecisionCandidates?.find(c => c.eventId === event.id)
+    expect(candidate).toBeUndefined()
   })
 })
 

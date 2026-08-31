@@ -41,7 +41,7 @@ describe('extend_veteran — extendContract, inte boostMorale', () => {
       resolved: false,
     }
     let g = { ...game, pendingEvents: [event] }
-    g = resolveEvent(g, event.id, 'extend_veteran')
+    g = resolveEvent(g, event.id, 'extend_veteran', undefined, true)
 
     const after = g.players.find(p => p.id === targetId)!
     expect(after.contractUntilSeason).toBe(g.currentSeason + 2)
@@ -75,7 +75,7 @@ describe('let_go — multiEffect (moral −25 + releasePlayer), inte boostMorale
       resolved: false,
     }
     let g = { ...game, pendingEvents: [event] }
-    g = resolveEvent(g, event.id, 'let_go')
+    g = resolveEvent(g, event.id, 'let_go', undefined, true)
 
     const updatedClub = g.clubs.find(c => c.id === g.managedClubId)!
     expect(updatedClub.squadPlayerIds).not.toContain(targetId)
@@ -108,7 +108,7 @@ describe('let_go — multiEffect (moral −25 + releasePlayer), inte boostMorale
       resolved: false,
     }
     let g = { ...game, pendingEvents: [event] }
-    g = resolveEvent(g, event.id, 'let_go')
+    g = resolveEvent(g, event.id, 'let_go', undefined, true)
 
     const player = g.players.find(p => p.id === targetId)!
     expect(player.morale).toBe(Math.min(100, before.morale - 25))

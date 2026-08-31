@@ -145,7 +145,7 @@ function autoResolvePatronEvents(game: SaveGame, rand: () => number): SaveGame {
   let g = game
   for (const e of (game.pendingEvents ?? [])) {
     if ((e.type === 'patronEvent' || e.type === 'patronWithdrawal') && e.choices.length > 0) {
-      g = resolveEvent(g, e.id, e.choices[0].id, rand)
+      g = resolveEvent(g, e.id, e.choices[0].id, rand, false)
     }
   }
   return g

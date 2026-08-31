@@ -40,7 +40,7 @@ describe('hungrig_peak_event — back_him: moral oförändrad, developmentRate �
       { type: 'developmentRateDelta', amount: -4, targetPlayerId: playerId },
     ])
     let g = { ...game, pendingEvents: [event] }
-    g = resolveEvent(g, event.id, 'back_him')
+    g = resolveEvent(g, event.id, 'back_him', undefined, true)
 
     const after = g.players.find(p => p.id === playerId)!
     expect(after.morale).toBe(Math.min(100, before.morale + 5))
@@ -60,7 +60,7 @@ describe('hungrig_peak_event — back_him: moral oförändrad, developmentRate �
       { type: 'developmentRateDelta', amount: -4, targetPlayerId: playerId },
     ])
     g = { ...g, pendingEvents: [event] }
-    g = resolveEvent(g, event.id, 'back_him')
+    g = resolveEvent(g, event.id, 'back_him', undefined, true)
 
     expect(g.players.find(p => p.id === playerId)!.developmentRate).toBe(0)
   })
@@ -77,7 +77,7 @@ describe('joker_peak_event — back_joker: moral oförändrad, discipline −4',
       { type: 'disciplineDelta', amount: -4, targetPlayerId: playerId },
     ])
     let g = { ...game, pendingEvents: [event] }
-    g = resolveEvent(g, event.id, 'back_joker')
+    g = resolveEvent(g, event.id, 'back_joker', undefined, true)
 
     const after = g.players.find(p => p.id === playerId)!
     expect(after.morale).toBe(Math.min(100, before.morale + 8))
@@ -96,7 +96,7 @@ describe('vetfinal_ceremony — ceremony_flowers: hela laget +15 moral, −10 00
       { type: 'income', amount: -10000 },
     ])
     let g = { ...game, pendingEvents: [event] }
-    g = resolveEvent(g, event.id, 'ceremony_flowers')
+    g = resolveEvent(g, event.id, 'ceremony_flowers', undefined, true)
 
     for (const pid of club.squadPlayerIds) {
       const after = g.players.find(p => p.id === pid)!
@@ -118,7 +118,7 @@ describe('ledare_peak_event — give_word: hela laget +10 moral, boardPatience �
       { type: 'boardPatience', amount: -3 },
     ])
     let g = { ...game, pendingEvents: [event] }
-    g = resolveEvent(g, event.id, 'give_word')
+    g = resolveEvent(g, event.id, 'give_word', undefined, true)
 
     for (const pid of club.squadPlayerIds) {
       const after = g.players.find(p => p.id === pid)!

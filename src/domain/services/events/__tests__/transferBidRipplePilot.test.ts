@@ -87,7 +87,7 @@ describe('ÖVERLÄMNING 2 steg 1-pilot: transferbud → ripple', () => {
     const event = bidReceivedEvent(bid, game)
     const gameWithEvent = { ...game, pendingEvents: [event] }
 
-    const after = resolveEvent(gameWithEvent, event.id, 'accept')
+    const after = resolveEvent(gameWithEvent, event.id, 'accept', undefined, true)
     const chain = after.pilotTransferBidRippleChain
 
     console.log('=== ACCEPT ===')
@@ -109,7 +109,7 @@ describe('ÖVERLÄMNING 2 steg 1-pilot: transferbud → ripple', () => {
     const event = bidReceivedEvent(bid, game)
     const gameWithEvent = { ...game, pendingEvents: [event] }
 
-    const after = resolveEvent(gameWithEvent, event.id, 'reject')
+    const after = resolveEvent(gameWithEvent, event.id, 'reject', undefined, true)
     const chain = after.pilotTransferBidRippleChain
 
     console.log('=== AVSLAG ===')
@@ -132,7 +132,7 @@ describe('ÖVERLÄMNING 2 steg 1-pilot: transferbud → ripple', () => {
     console.log('counter-alternativet fanns i choices?', hasCounterChoice)
     const gameWithEvent = { ...game, pendingEvents: [event] }
 
-    const after = resolveEvent(gameWithEvent, event.id, 'counter')
+    const after = resolveEvent(gameWithEvent, event.id, 'counter', undefined, true)
     const chain = after.pilotTransferBidRippleChain
 
     console.log('=== KRÄV MER ===')

@@ -192,7 +192,9 @@ export function resolveDeferredAtRollover(
         ...g,
         pendingEvents: [...(g.pendingEvents ?? []), { ...event, resolved: false }],
       }
-      const afterResolve = resolveEvent(injected, event.id, choice.id, rand)
+      // HIGH 6 (Jacobs körorder 2026-08-31): rollover väljer choice.id åt
+      // spelaren (getDefaultRolloverChoice) — aldrig ett spelar-tryck.
+      const afterResolve = resolveEvent(injected, event.id, choice.id, rand, false)
       g = {
         ...afterResolve,
         pendingEvents: (afterResolve.pendingEvents ?? []).filter(e => e.id !== event.id),

@@ -27,7 +27,7 @@ describe('resolveEvent skriver till narrativeBeatLog (U5, skrivväg 1/9)', () =>
   it('en resolverad event loggas med event.type som semanticKey', () => {
     let game = makeGame()
     game = { ...game, pendingEvents: [pendingWith('communityEvent', { type: 'noOp' })] }
-    game = resolveEvent(game, 'test_narrativelog_event', 'go')
+    game = resolveEvent(game, 'test_narrativelog_event', 'go', undefined, true)
 
     expect(game.narrativeBeatLog).toBeDefined()
     const entry = game.narrativeBeatLog!.find(e => e.semanticKey === 'communityEvent')
@@ -39,7 +39,7 @@ describe('resolveEvent skriver till narrativeBeatLog (U5, skrivväg 1/9)', () =>
     let game = makeGame()
     const event = { ...pendingWith('detOmojligaValet', { type: 'noOp' }), systemhandelse: true }
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, 'test_narrativelog_event', 'go')
+    game = resolveEvent(game, 'test_narrativelog_event', 'go', undefined, true)
 
     const entry = game.narrativeBeatLog!.find(e => e.semanticKey === 'detOmojligaValet')
     expect(entry?.systemhandelse).toBe(true)
@@ -48,7 +48,7 @@ describe('resolveEvent skriver till narrativeBeatLog (U5, skrivväg 1/9)', () =>
   it('ett icke-systemhandelse-event loggas utan flaggan satt', () => {
     let game = makeGame()
     game = { ...game, pendingEvents: [pendingWith('communityEvent', { type: 'noOp' })] }
-    game = resolveEvent(game, 'test_narrativelog_event', 'go')
+    game = resolveEvent(game, 'test_narrativelog_event', 'go', undefined, true)
 
     const entry = game.narrativeBeatLog!.find(e => e.semanticKey === 'communityEvent')
     expect(entry?.systemhandelse).toBeUndefined()

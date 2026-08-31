@@ -34,7 +34,7 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
     if (!event) return
     if (event.type === 'pressConference' && !game?.journalist) {
       console.warn('[EventOverlay] Missing journalist, auto-resolving event', { eventId: event.id })
-      resolveEvent(event.id, event.choices[0]?.id ?? 'no_choice')
+      resolveEvent(event.id, event.choices[0]?.id ?? 'no_choice', false)
     }
   }, [event?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -51,7 +51,7 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
   const activeEvent = event  // non-null: guarded by early return above
   function handleChoice(choiceId: string) {
     playSound('click')
-    resolveEvent(activeEvent.id, choiceId)
+    resolveEvent(activeEvent.id, choiceId, true)
   }
 
   const total = game.pendingEvents?.filter(e => !e.resolved).length ?? 1

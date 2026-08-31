@@ -39,7 +39,7 @@ describe('resolveEvent — captain_rallied_team-storylinens matchday är en liga
     const GLOBAL_PLAYOFF_MATCHDAY = 33
     game = { ...game, currentMatchday: GLOBAL_PLAYOFF_MATCHDAY, pendingEvents: [speechEvent], captainPlayerId: captain.id }
 
-    const result = resolveEvent(game, speechEvent.id, 'support', () => 0.5)
+    const result = resolveEvent(game, speechEvent.id, 'support', () => 0.5, true)
 
     const storyline = (result.storylines ?? []).find(s => s.type === 'captain_rallied_team')
     expect(storyline).toBeTruthy()

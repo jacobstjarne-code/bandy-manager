@@ -91,7 +91,7 @@ describe('veteran_farewell peak event — O1 kandidat 2', () => {
     const generated = progressArcs(game, 16)
     let g = { ...game, pendingEvents: generated.newEvents }
 
-    g = resolveEvent(g, generated.newEvents[0].id, 'extend_veteran')
+    g = resolveEvent(g, generated.newEvents[0].id, 'extend_veteran', undefined, true)
 
     const after = g.players.find(p => p.id === veteranId)!
     expect(after.contractUntilSeason).toBe(g.currentSeason + 2)
@@ -110,7 +110,7 @@ describe('veteran_farewell peak event — O1 kandidat 2', () => {
     const generated = progressArcs(game, 16)
     let g = { ...game, pendingEvents: generated.newEvents }
 
-    g = resolveEvent(g, generated.newEvents[0].id, 'farewell_veteran')
+    g = resolveEvent(g, generated.newEvents[0].id, 'farewell_veteran', undefined, true)
 
     const after = g.players.find(p => p.id === veteranId)!
     expect(after.clubId).toBe('free_agent')

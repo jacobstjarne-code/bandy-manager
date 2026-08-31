@@ -28,7 +28,7 @@ describe('community_bandyplay — tecknet ska matcha texten (kostnad, inte vinst
     game = { ...game, pendingEvents: [bandyplayEvent] }
 
     const clubBefore = game.clubs.find(c => c.id === game.managedClubId)!
-    game = resolveEvent(game, bandyplayEvent.id, 'start')
+    game = resolveEvent(game, bandyplayEvent.id, 'start', undefined, true)
     const clubAfter = game.clubs.find(c => c.id === game.managedClubId)!
 
     expect(clubAfter.finances).toBeLessThan(clubBefore.finances)

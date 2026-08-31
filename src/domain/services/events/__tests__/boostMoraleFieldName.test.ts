@@ -35,7 +35,7 @@ describe('generatePlayerPraiseEvent — "great"-valet ger exakt +3 moral, inte +
     expect(event.choices[0].subtitle).toBe('+3 moral båda')
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, event.id, 'great')
+    game = resolveEvent(game, event.id, 'great', undefined, true)
 
     const updatedPraiser = game.players.find(p => p.id === praiser.id)!
     const updatedPraised = game.players.find(p => p.id === praised.id)!
@@ -58,7 +58,7 @@ describe('generateCoworkerBondEvent — "great"-valet ger exakt +5 moral (redan 
     expect(event.choices[0].subtitle).toBe('+5 moral båda')
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, event.id, 'great')
+    game = resolveEvent(game, event.id, 'great', undefined, true)
 
     const updated1 = game.players.find(p => p.id === player1.id)!
     const updated2 = game.players.find(p => p.id === player2.id)!

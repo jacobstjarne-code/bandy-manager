@@ -160,7 +160,7 @@ describe('resolveEvent — sponsorbesluten skriver resolvedEventIds', () => {
     for (const choiceId of ['accept', 'reject'] as const) {
       it(`${type} / ${choiceId} lämnar eventets id i resolvedEventIds`, () => {
         const event = offerEvent(type)
-        const after = resolveEvent(gameWith(event), event.id, choiceId, () => 0.99)
+        const after = resolveEvent(gameWith(event), event.id, choiceId, () => 0.99, true)
         expect(after.resolvedEventIds ?? []).toContain(event.id)
         expect((after.pendingEvents ?? []).some(e => e.id === event.id)).toBe(false)
       })

@@ -32,7 +32,7 @@ function pendingWith(effect: unknown, eventOverrides: Partial<GameEvent> = {}): 
 
 function expectThrows(effect: unknown, pattern: RegExp, eventOverrides: Partial<GameEvent> = {}) {
   const game = { ...makeGame(), pendingEvents: [pendingWith(effect, eventOverrides)] }
-  expect(() => resolveEvent(game, 'test_guard_event', 'go')).toThrow(pattern)
+  expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).toThrow(pattern)
 }
 
 describe('vakt-svepet — transferbud-effekter kräver bidId', () => {
@@ -60,7 +60,7 @@ describe('vakt-svepet — sponsor/patron-effekter kräver payload + nyckelfält 
     expectThrows({ type: 'acceptSponsor', sponsorData: JSON.stringify({ name: 'X' }) }, /id/))
   it('acceptSponsor med trasig JSON kastar INTE (parse-fel tystas)', () => {
     const game = { ...makeGame(), pendingEvents: [pendingWith({ type: 'acceptSponsor', sponsorData: '{not json' })] }
-    expect(() => resolveEvent(game, 'test_guard_event', 'go')).not.toThrow()
+    expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).not.toThrow()
   })
   it('spawnPatron utan patronData/sponsorData kastar', () => expectThrows({ type: 'spawnPatron' }, /patronData/))
   it('spawnPatron med data utan name/business kastar', () =>
@@ -80,7 +80,7 @@ describe('vakt-svepet — övriga case-specifika obligatoriska fält', () => {
     expectThrows({ type: 'resolveEconomicCrisis', crisisPhase: 'sold_star', value: 350000 }, /removePlayerId/))
   it('resolveEconomicCrisis med crisisPhase loan (inget removePlayerId krävs) kastar INTE', () => {
     const game = { ...makeGame(), pendingEvents: [pendingWith({ type: 'resolveEconomicCrisis', crisisPhase: 'loan', value: -300000 })] }
-    expect(() => resolveEvent(game, 'test_guard_event', 'go')).not.toThrow()
+    expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).not.toThrow()
   })
   it('refereeRelationship utan refereeId kastar', () => expectThrows({ type: 'refereeRelationship', value: 1 }, /refereeId/))
   it('setLegendRole utan legendRole kastar', () =>
@@ -89,6 +89,6 @@ describe('vakt-svepet — övriga case-specifika obligatoriska fält', () => {
     expectThrows({ type: 'setLegendRole', legendRole: 'scout' }, /relatedPlayerId/))
   it('saveBandyLetter utan replyText kastar INTE (arkivera-utan-svar är ett giltigt val)', () => {
     const game = { ...makeGame(), pendingEvents: [pendingWith({ type: 'saveBandyLetter' })] }
-    expect(() => resolveEvent(game, 'test_guard_event', 'go')).not.toThrow()
+    expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).not.toThrow()
   })
 })

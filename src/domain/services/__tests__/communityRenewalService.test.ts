@@ -267,7 +267,7 @@ describe('renewCommunityActivity (effekten)', () => {
     const gameWithEvent: SaveGame = { ...g, communityStanding: 88, pendingEvents: [event] }
 
     const financesBefore = gameWithEvent.clubs.find(c => c.id === g.managedClubId)!.finances
-    const after = resolveEvent(gameWithEvent, event.id, 'renew', () => 0.5)
+    const after = resolveEvent(gameWithEvent, event.id, 'renew', () => 0.5, true)
     const financesAfter = after.clubs.find(c => c.id === g.managedClubId)!.finances
 
     // 100 000 → 40 000, se ovan. Egenskapen som skyddas är oförändrad:
@@ -288,7 +288,7 @@ describe('renewCommunityActivity (effekten)', () => {
     const gameWithEvent: SaveGame = { ...g, communityStanding: 88, pendingEvents: [event] }
 
     const financesBefore = gameWithEvent.clubs.find(c => c.id === g.managedClubId)!.finances
-    const after = resolveEvent(gameWithEvent, event.id, 'decline', () => 0.5)
+    const after = resolveEvent(gameWithEvent, event.id, 'decline', () => 0.5, true)
 
     expect(after.clubs.find(c => c.id === g.managedClubId)!.finances).toBe(financesBefore)
     expect(after.communityActivitiesSince?.[key]).toBe(g.communityActivitiesSince?.[key])

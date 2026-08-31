@@ -109,7 +109,7 @@ const resolvePendingEvents: (g: SaveGame, rand: () => number) => SaveGame =
   ?? ((game: SaveGame, rand: () => number): SaveGame => {
     let g = game
     for (const e of (game.pendingEvents ?? [])) {
-      g = resolveEvent(g, e.id, pickChoice(e), rand)
+      g = resolveEvent(g, e.id, pickChoice(e), rand, false)
     }
     return g
   })
@@ -119,7 +119,7 @@ function resolvePatronEventsOnly(game: SaveGame, rand: () => number): SaveGame {
   let g = game
   for (const e of (game.pendingEvents ?? [])) {
     if ((e.type === 'patronEvent' || e.type === 'patronWithdrawal') && e.choices.length > 0) {
-      g = resolveEvent(g, e.id, e.choices[0].id, rand)
+      g = resolveEvent(g, e.id, e.choices[0].id, rand, false)
     }
   }
   return g

@@ -153,7 +153,7 @@ async function main(): Promise<void> {
           const gameBefore = game
           let gameAfter: SaveGame
           try {
-            gameAfter = resolveEvent(game, item.id, pickId, rand)
+            gameAfter = resolveEvent(game, item.id, pickId, rand, false)
           } catch {
             game = { ...game, pendingEvents: (game.pendingEvents ?? []).filter(e => e.id !== item.id) }
             continue

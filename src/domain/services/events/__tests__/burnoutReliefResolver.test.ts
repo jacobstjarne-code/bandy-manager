@@ -33,7 +33,7 @@ describe("eventResolver — multiEffect sub-typ 'reduceBurnout'", () => {
     const event = multiEffectEvent('test_burnout_1', [{ type: 'reduceBurnout', amount: -15 }])
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, 'test_burnout_1', 'choice')
+    game = resolveEvent(game, 'test_burnout_1', 'choice', undefined, true)
 
     expect(game.managerProfile!.burnoutScore).toBe(25)
   })
@@ -44,7 +44,7 @@ describe("eventResolver — multiEffect sub-typ 'reduceBurnout'", () => {
     const event = multiEffectEvent('test_burnout_2', [{ type: 'reduceBurnout', amount: -25 }])
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, 'test_burnout_2', 'choice')
+    game = resolveEvent(game, 'test_burnout_2', 'choice', undefined, true)
 
     expect(game.managerProfile!.burnoutScore).toBe(0)
   })
@@ -54,7 +54,7 @@ describe("eventResolver — multiEffect sub-typ 'reduceBurnout'", () => {
     const event = multiEffectEvent('test_burnout_3', [{ type: 'reduceBurnout', amount: -15 }])
     game = { ...game, pendingEvents: [event] }
 
-    expect(() => resolveEvent(game, 'test_burnout_3', 'choice')).not.toThrow()
+    expect(() => resolveEvent(game, 'test_burnout_3', 'choice', undefined, true)).not.toThrow()
   })
 })
 
@@ -64,7 +64,7 @@ describe("eventResolver — multiEffect sub-typ 'startTrainingSlowdown'", () => 
     const event = multiEffectEvent('test_slowdown_1', [{ type: 'startTrainingSlowdown', amount: 4 }])
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, 'test_slowdown_1', 'choice')
+    game = resolveEvent(game, 'test_slowdown_1', 'choice', undefined, true)
 
     expect(game.burnoutTrainingSlowdownUntilRound).toBe(14)
   })
@@ -84,7 +84,7 @@ describe('eventResolver — burnoutRelief multiEffect, kombinerad (delegera-vale
     ])
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, 'test_combined_1', 'choice')
+    game = resolveEvent(game, 'test_combined_1', 'choice', undefined, true)
 
     expect(game.managerProfile!.burnoutScore).toBe(48)
     expect(game.journalistRelationship).toBe(40)

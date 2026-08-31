@@ -31,7 +31,7 @@ interface GetState {
   game: SaveGame | null
   roundSummary: RoundSummaryData | null
   lastAdvanceResult: AdvanceResult | null
-  resolveEvent: (eventId: string, choiceId: string) => void
+  resolveEvent: (eventId: string, choiceId: string, madeByPlayer: boolean) => void
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string, autoSelected?: boolean) => { success: boolean; error?: string }
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
   resolveWeeklyDecision: (choice: 'A' | 'B') => void
@@ -695,7 +695,9 @@ export function gameFlowActions(get: Get, set: Set) {
               c.id.includes('reject') || c.id.includes('decline') || c.id.includes('no') ||
               (c.effect as { type?: string })?.type === 'noOp'
             ) ?? event.choices[0]).id
-        resolveEvent(event.id, neutralChoiceId)
+        // HIGH 6 (Jacobs körorder 2026-08-31): simulateRemainingStep är
+        // sim-the-rest-auto-resolven — aldrig ett spelar-tryck.
+        resolveEvent(event.id, neutralChoiceId, false)
         return { game: get().game!, roundPlayed: null, seasonEnded: false }
       }
       if (!game.managedClubPendingLineup) {

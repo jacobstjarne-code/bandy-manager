@@ -54,7 +54,7 @@ describe('resolveEconomicCrisis — stämpling', () => {
       economicCrisisState: { ...baseCrisis },
       pendingEvents: [crisisResolveEvent('sold_star', 'p_star')] as never,
     })
-    const after = resolveEvent(game, 'ev_crisis', 'pick')
+    const after = resolveEvent(game, 'ev_crisis', 'pick', undefined, true)
     expect(after.economicCrisisState?.phase).toBe('resolved')
     expect(after.economicCrisisState?.outcome).toBe('sold_star')
     expect(after.economicCrisisState?.soldToSurvivePlayerName).toBe('Viktor Ahlén')
@@ -70,7 +70,7 @@ describe('resolveEconomicCrisis — stämpling', () => {
         economicCrisisState: { ...baseCrisis },
         pendingEvents: [crisisResolveEvent(path)] as never,
       })
-      const after = resolveEvent(game, 'ev_crisis', 'pick')
+      const after = resolveEvent(game, 'ev_crisis', 'pick', undefined, true)
       expect(after.economicCrisisState?.outcome).toBe(path)
       expect(after.economicCrisisState?.resolvedMatchday).toBe(14)
       expect(after.economicCrisisState?.soldToSurvivePlayerName).toBeUndefined()
@@ -82,7 +82,7 @@ describe('resolveEconomicCrisis — stämpling', () => {
       economicCrisisState: { ...baseCrisis },
       pendingEvents: [crisisResolveEvent('')] as never,
     })
-    const after = resolveEvent(game, 'ev_crisis', 'pick')
+    const after = resolveEvent(game, 'ev_crisis', 'pick', undefined, true)
     expect(after.economicCrisisState?.outcome).toBe('natural_recovery')
   })
 })

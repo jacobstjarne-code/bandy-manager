@@ -22,6 +22,16 @@ Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av 
 
 ---
 
+## Fynd EFTER skörden — Jacobs egen verifiering, kör genom hela tillstånds-maskinen
+
+| id | beskrivning | status | ägare | källa | nästa-åtgärd |
+|---|---|---|---|---|---|
+| high6-attributionshal-madebyplayer | `resolveEvent()` gated aldrig VEM som löste ett event — auto-resolvade mecenatkonflikter/kaptensmöten/varsel kunde bli `seasonDecisionCandidates`/`captain_rallied_team`/`rescued_from_unemployment`/`went_fulltime_pro` som om spelaren själv fattat beslutet. | **klar** | Code | Jacobs egen kodläsning + körorder 2026-08-31 (auditens critical #1) | Byggt: `madeByPlayer: boolean` obligatorisk sist-parameter (tsc-tvingad vid alla ~50 anropsställen — UI/store/scripts/32 testfiler). Fyra skrivningar gated (captureSystemDecision-kandidaten, captainSpeech/captain_rallied_team, varsel/rescued_from_unemployment, went_fulltime_pro). narrativeBeatLog/resolvedChoices/resolvedEventIds MEDVETET ogated (mekanik). Tre nya regressionstester (mecenat/captainSpeech/varsel auto-resolve → ingen kandidat/storyline, effekten sker ändå). tsc rent (huvud + scripts), 3494/3494 gröna, build rent. |
+
+Detta är det första exemplet på tillstånds-maskinens fulla cykel: `rapporterad` (aldrig skördad separat — hittad direkt av Jacob, inte av de tre skördepassen) → `verifierad` (Jacobs egen kodläsning innan körordern skrevs) → `bygger` (denna session) → `klar` (commit + push, se git-loggen).
+
+---
+
 # KÄLLA: docs/INVENTERING_2026-08-31.md (58 rader)
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |

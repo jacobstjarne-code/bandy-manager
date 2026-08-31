@@ -57,11 +57,28 @@ function recordResolvedId(game: SaveGame, eventId: string): string[] {
 /**
  * @cites resolvedChoices, roundNumber, fanMood
  */
+/**
+ * HIGH 6 (audit 2026-08-29), attributionshålet, Jacobs körorder 2026-08-31:
+ * `madeByPlayer` är OBLIGATORISK, sist, ingen default — samma disciplin som
+ * 2.5-vakt-svepets obligatoriska fält. Fel default hade varit farligt åt
+ * BÅDA håll: `true` som default hade missat en auto-väg och låtit spelet
+ * fortsätta ljuga ("Kaptenen samlade laget" i EN AI-simulerad säsong); `false`
+ * hade missat en spelar-väg och tystat årsboken helt. Kompilatorn tvingar nu
+ * fram ett medvetet val vid varje anropsställe — `grep resolveEvent(` gav
+ * listan, tsc gav resten gratis.
+ *
+ * Flaggan styr ENDAST spelar-tillskriven BERÄTTELSE (captureSystemDecision-
+ * kandidaten, captainSpeech/varsel-storylines) — se gaterna längre ner.
+ * `narrativeBeatLog` och `resolvedChoices`/`resolvedEventIds` grindas
+ * MEDVETET INTE: de är mekanik (cooldowns, dedup), inte spelar-berättelse,
+ * och sim behöver dem oavsett vem som "tryckte".
+ */
 export function resolveEvent(
   game: SaveGame,
   eventId: string,
   choiceId: string,
   rand: () => number = Math.random,
+  madeByPlayer: boolean,
 ): SaveGame {
   const event = (game.pendingEvents ?? []).find(e => e.id === eventId)
     ?? (game.pendingPressConference?.id === eventId ? game.pendingPressConference : undefined)
@@ -585,34 +602,41 @@ export function resolveEvent(
                 }
               : p
           ),
-          storylines: [
-            ...(updatedGame.storylines ?? []),
-            {
-              id: `story_pro_${pid}_${updatedGame.currentSeason}`,
-              type: 'went_fulltime_pro' as const,
-              season: updatedGame.currentSeason,
-              // 4.6 (SLUTTEST_KO.md, 2026-08-17): var en inline-reimplementation av
-              // getCurrentLeagueRound — samma logik, dubblerad. Bytt till den delade
-              // funktionen så en framtida läsare inte kopierar mönstret fel (arcService.ts
-              // gjorde precis det misstaget med sin egen, GLOBALA currentMatchday-variabel).
-              matchday: getCurrentLeagueRound(updatedGame),
-              playerId: pid,
-              // 4.6 (SLUTTEST_KO.md, 2026-08-17): description var den råa
-              // typnyckeln ('went_fulltime_pro') — läcker som synlig text där
-              // seasonSummaryService.ts:s arcMoments använder .description som
-              // body (t.ex. SeasonSummaryScreen.tsx:s "DIN SÄSONG"-kort).
-              // Ingen ny svensk text författad här (SVENSK TEXT-regeln,
-              // CLAUDE.md) — återanvänder samma redan godkända mening som
-              // displayText, inte en påhittad andra rad.
-              description: proPlayer
-                ? `${proPlayer.firstName} ${proPlayer.lastName} slutade som ${oldJob} för att satsa heltid på bandyn`
-                : 'Blev heltidsproffs',
-              displayText: proPlayer
-                ? `${proPlayer.firstName} ${proPlayer.lastName} slutade som ${oldJob} för att satsa heltid på bandyn`
-                : 'Blev heltidsproffs',
-              resolved: true,
-            },
-          ],
+          // HIGH 6 (Jacobs körorder 2026-08-31): gated på madeByPlayer — samma
+          // klass som captainSpeech/varsel nedan. Denna storyline hävdar en
+          // spelar-berättad milstolpe ("X slutade som Y") och effekten kan
+          // triggas antingen av spelarens egen tap ('goPro') eller av sim-the-
+          // rest/rollover som auto-väljer choiceId 'offer_pro'/'goPro' åt AI:n.
+          ...(madeByPlayer ? {
+            storylines: [
+              ...(updatedGame.storylines ?? []),
+              {
+                id: `story_pro_${pid}_${updatedGame.currentSeason}`,
+                type: 'went_fulltime_pro' as const,
+                season: updatedGame.currentSeason,
+                // 4.6 (SLUTTEST_KO.md, 2026-08-17): var en inline-reimplementation av
+                // getCurrentLeagueRound — samma logik, dubblerad. Bytt till den delade
+                // funktionen så en framtida läsare inte kopierar mönstret fel (arcService.ts
+                // gjorde precis det misstaget med sin egen, GLOBALA currentMatchday-variabel).
+                matchday: getCurrentLeagueRound(updatedGame),
+                playerId: pid,
+                // 4.6 (SLUTTEST_KO.md, 2026-08-17): description var den råa
+                // typnyckeln ('went_fulltime_pro') — läcker som synlig text där
+                // seasonSummaryService.ts:s arcMoments använder .description som
+                // body (t.ex. SeasonSummaryScreen.tsx:s "DIN SÄSONG"-kort).
+                // Ingen ny svensk text författad här (SVENSK TEXT-regeln,
+                // CLAUDE.md) — återanvänder samma redan godkända mening som
+                // displayText, inte en påhittad andra rad.
+                description: proPlayer
+                  ? `${proPlayer.firstName} ${proPlayer.lastName} slutade som ${oldJob} för att satsa heltid på bandyn`
+                  : 'Blev heltidsproffs',
+                displayText: proPlayer
+                  ? `${proPlayer.firstName} ${proPlayer.lastName} slutade som ${oldJob} för att satsa heltid på bandyn`
+                  : 'Blev heltidsproffs',
+                resolved: true,
+              },
+            ],
+          } : {}),
         }
       }
       break
@@ -1989,9 +2013,17 @@ export function resolveEvent(
   // O19:s säsongsbudget-klassning (narrativeLogService.systemhandelseBudgetOk)
   // och sitter på ett dussintal fabriker — varken mecenatkonflikten eller
   // kaptensmötet sätter den, så deras byggare hade aldrig kunnat köra ens
-  // efter att de lagts till i BUILDERS. Anropet är nu ovillkorat:
-  // BUILDERS-uppslaget är den enda grinden, som filhuvudet redan påstod.
-  const candidate = captureSystemDecision(game, updatedGame, event, choiceId)
+  // efter att de lagts till i BUILDERS. Anropet är nu ovillkorat mot
+  // `event.systemhandelse` — BUILDERS-uppslaget är den enda ÄMNES-grinden.
+  //
+  // HIGH 6, attributionshålet (Jacobs körorder 2026-08-31): den STALE-grinden
+  // ovan döljde en ANDRA bugg — anropet saknade helt en kontroll av VEM som
+  // löste eventet. "Säsongens viktigaste beslut" är per definition ett beslut
+  // SPELAREN fattade; ett mecenatEvent som sim-the-rest auto-resolvade åt en
+  // AI-styrd säsong (eller rollover som auto-väljer default-choice) kunde
+  // ändå bli kandidat, och årsboken skulle då hävda ett beslut spelaren
+  // aldrig var med om att fatta. Gated nu på madeByPlayer.
+  const candidate = madeByPlayer ? captureSystemDecision(game, updatedGame, event, choiceId) : null
   if (candidate) {
     updatedGame = {
       ...updatedGame,
@@ -2009,7 +2041,12 @@ export function resolveEvent(
   // valde 'decline' ("Nej — jag tar det här samtalet själv", ingen moralboost
   // alls). Effekt och historikpost i samma operation: bara 'support', bara
   // när teamBoostMorale faktiskt kan verka (managedClubId finns).
-  if (event.type === 'captainSpeech' && choiceId === 'support' && updatedGame.managedClubId) {
+  // HIGH 6, attributionshålet (Jacobs körorder 2026-08-31): samma klass som
+  // captureSystemDecision ovan — "Kaptenen samlade laget" är en spelar-
+  // berättad milstolpe (karriärminnet), inte en mekanisk sanning. Ett
+  // auto-resolvat captainSpeech (sim-the-rest, rollover) fick den tidigare
+  // in i karriären som om spelaren varit med.
+  if (madeByPlayer && event.type === 'captainSpeech' && choiceId === 'support' && updatedGame.managedClubId) {
     updatedGame = {
       ...updatedGame,
       storylines: [
@@ -2034,7 +2071,11 @@ export function resolveEvent(
   // någon spelare — samma "storyline oberoende av effektutfall"-mönster som
   // captainSpeech ovan. Gated nu på att minst en berörd spelare verkligen
   // blev isFullTimePro efter resolutionen, inte bara på choiceId.
-  if (event.type === 'varsel' && choiceId === 'offer_pro') {
+  // HIGH 6, attributionshålet (Jacobs körorder 2026-08-31): samma klass —
+  // "Klubben räddade spelare..." är en spelar-berättad handling. Auto-
+  // resolverad varsel/offer_pro (sim-the-rest, rollover) fick den tidigare
+  // in i karriären utan att spelaren gjort valet.
+  if (madeByPlayer && event.type === 'varsel' && choiceId === 'offer_pro') {
     let hasSuccessfulRescue = false
     try {
       const subList = JSON.parse(choice.effect.subEffects ?? '[]') as Array<{ type: string; targetPlayerId?: string }>

@@ -90,7 +90,7 @@ export function CeremonyRetirement({ game, event }: Props) {
       <div style={{ width: '100%', maxWidth: 300 }}>
         <DecisionChoices
           choices={event.choices}
-          onChoose={(choiceId) => resolveEvent(event.id, choiceId)}
+          onChoose={(choiceId) => resolveEvent(event.id, choiceId, true)}
           primaryChoiceId={event.choices[0]?.id}
         />
       </div>

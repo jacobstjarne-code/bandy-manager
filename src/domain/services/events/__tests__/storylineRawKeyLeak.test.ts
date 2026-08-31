@@ -31,7 +31,7 @@ describe('storyline.description är aldrig den råa type-nyckeln', () => {
     let game = makeGame()
     const target = game.players.find(p => p.clubId === game.managedClubId)!
     game = { ...game, pendingEvents: [pendingWith({ type: 'makeFullTimePro', targetPlayerId: target.id, value: 20000 })] }
-    game = resolveEvent(game, 'test_rawkey_event', 'go')
+    game = resolveEvent(game, 'test_rawkey_event', 'go', undefined, true)
 
     const storyline = game.storylines?.find(s => s.type === 'went_fulltime_pro')
     expect(storyline).toBeTruthy()

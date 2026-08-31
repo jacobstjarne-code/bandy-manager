@@ -124,7 +124,7 @@ function resolveIncomingBids(game: SaveGame, rand: () => number): { game: SaveGa
       || (bid.offerAmount >= marketVal * ACCEPT_UNHAPPY_MULTIPLIER && player.morale < UNHAPPY_MORALE_THRESHOLD)
     const event = bidReceivedEvent(bid as TransferBid, g)
     const withEvent: SaveGame = { ...g, pendingEvents: [...(g.pendingEvents ?? []), event] }
-    g = resolveEvent(withEvent, event.id, accept ? 'accept' : 'reject', rand)
+    g = resolveEvent(withEvent, event.id, accept ? 'accept' : 'reject', rand, false)
     // Städa bort eventet ur pendingEvents igen — det här scriptet bryr sig
     // bara om den domän-mutation resolveEvent gör, inte om UI-kön.
     g = { ...g, pendingEvents: (g.pendingEvents ?? []).filter(e => e.id !== event.id) }

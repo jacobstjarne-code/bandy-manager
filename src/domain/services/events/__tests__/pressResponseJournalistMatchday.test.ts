@@ -87,7 +87,7 @@ describe('resolveEvent — pressResponse läser matchday via relatedFixtureId, i
     const event = pressEvent({ relatedFixtureId: 'this-match' })
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, event.id, 'good')
+    game = resolveEvent(game, event.id, 'good', undefined, true)
 
     const entry = game.journalist!.memory.at(-1)!
     expect(entry.matchday).toBe(23)
@@ -100,7 +100,7 @@ describe('resolveEvent — pressResponse läser matchday via relatedFixtureId, i
     const event = pressEvent() // ingen relatedFixtureId (äldre pending event)
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, event.id, 'good')
+    game = resolveEvent(game, event.id, 'good', undefined, true)
 
     const entry = game.journalist!.memory.at(-1)!
     expect(entry.matchday).toBe(12)
@@ -117,7 +117,7 @@ describe('resolveEvent — pressResponse läser matchday via relatedFixtureId, i
     const event = pressEvent() // ingen relatedFixtureId, ingen match i säsong 3
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, event.id, 'good')
+    game = resolveEvent(game, event.id, 'good', undefined, true)
 
     const entry = game.journalist!.memory.at(-1)!
     expect(entry.matchday).toBe(30) // currentMatchday, inte den gamla säsongens 5

@@ -113,7 +113,7 @@ describe('resolveEvent with acceptTransfer', () => {
       relatedPlayerId: 'p1', relatedClubId: 'c2', relatedBidId: 'b1', resolved: false,
     }
     const game = makeGame({ transferBids: [bid], pendingEvents: [event] })
-    const result = resolveEvent(game, 'e1', 'accept')
+    const result = resolveEvent(game, 'e1', 'accept', undefined, true)
     const movedPlayer = result.players.find(p => p.id === 'p1')!
     expect(movedPlayer.clubId).toBe('c2')
     expect(result.pendingEvents.length).toBe(0)
@@ -129,7 +129,7 @@ describe('resolveEvent with extendContract', () => {
       relatedPlayerId: 'p1', resolved: false,
     }
     const game = makeGame({ players: [player], pendingEvents: [event] })
-    const result = resolveEvent(game, 'e1', 'extend3')
+    const result = resolveEvent(game, 'e1', 'extend3', undefined, true)
     const updatedPlayer = result.players.find(p => p.id === 'p1')!
     expect(updatedPlayer.contractUntilSeason).toBe(2028)
     expect(updatedPlayer.salary).toBe(12000)

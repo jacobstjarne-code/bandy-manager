@@ -24,7 +24,7 @@ describe('auto-resolve for no-choice events', () => {
 
     expect(gameWithEvent.pendingEvents.some(e => e.id === evt.id)).toBe(true)
 
-    const resolved = resolveEvent(gameWithEvent, evt.id, 'auto')
+    const resolved = resolveEvent(gameWithEvent, evt.id, 'auto', undefined, false)
     expect(resolved.pendingEvents.some(e => e.id === evt.id)).toBe(false)
   })
 
@@ -33,7 +33,7 @@ describe('auto-resolve for no-choice events', () => {
     const evt = makeNoChoiceEvent('opponentQuote')
     const gameWithEvent = { ...game, pendingEvents: [...(game.pendingEvents ?? []), evt] }
 
-    const resolved = resolveEvent(gameWithEvent, evt.id, 'auto')
+    const resolved = resolveEvent(gameWithEvent, evt.id, 'auto', undefined, false)
     expect(resolved.pendingEvents.some(e => e.id === evt.id)).toBe(false)
   })
 
@@ -50,7 +50,7 @@ describe('auto-resolve for no-choice events', () => {
     const gameWithEvent = { ...game, pendingEvents: [...(game.pendingEvents ?? []), evt] }
 
     // Calling with wrong choiceId on event with choices — should return game unchanged
-    const result = resolveEvent(gameWithEvent, evt.id, 'nonexistent_choice')
+    const result = resolveEvent(gameWithEvent, evt.id, 'nonexistent_choice', undefined, false)
     expect(result.pendingEvents.some(e => e.id === evt.id)).toBe(true)
   })
 

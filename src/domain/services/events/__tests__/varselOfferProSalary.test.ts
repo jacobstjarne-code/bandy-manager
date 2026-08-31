@@ -31,7 +31,7 @@ describe('generateVarselEvent — "offer_pro" höjer lönen ×1.5, sätter den a
     const event = generateVarselEvent(targets.map(t => ({ ...t, salary: 20000 })), 'ICA Maxi', game.currentSeason)
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, event.id, 'offer_pro')
+    game = resolveEvent(game, event.id, 'offer_pro', undefined, true)
 
     for (const t of targets) {
       const updated = game.players.find(p => p.id === t.id)!
@@ -50,7 +50,7 @@ describe('generateVarselEvent — "offer_pro" höjer lönen ×1.5, sätter den a
     const event = generateVarselEvent([{ ...target, salary: 45000 }], 'ICA Maxi', game.currentSeason)
     game = { ...game, pendingEvents: [event] }
 
-    game = resolveEvent(game, event.id, 'offer_pro')
+    game = resolveEvent(game, event.id, 'offer_pro', undefined, true)
 
     const updated = game.players.find(p => p.id === target.id)!
     expect(updated.salary).not.toBe(0)

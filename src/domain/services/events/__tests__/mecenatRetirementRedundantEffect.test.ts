@@ -38,7 +38,7 @@ describe('mecenat-avgångsvalet — kraschar inte, applicerar rätt effekt via p
       const event = checkMecenatRetirement(game)!
       expect(event).toBeTruthy()
       game = { ...game, pendingEvents: [event] }
-      expect(() => resolveEvent(game, event.id, choiceId)).not.toThrow()
+      expect(() => resolveEvent(game, event.id, choiceId, undefined, true)).not.toThrow()
     })
   }
 
@@ -48,7 +48,7 @@ describe('mecenat-avgångsvalet — kraschar inte, applicerar rätt effekt via p
     game = { ...game, mecenater: [makeMecenat({ happiness: 50 })] }
     const event = checkMecenatRetirement(game)!
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, event.id, 'listen')
+    game = resolveEvent(game, event.id, 'listen', undefined, true)
 
     const mec = game.mecenater!.find(m => m.id === 'mec-1')!
     expect(mec.happiness).toBe(55)
@@ -64,7 +64,7 @@ describe('mecenat-avgångsvalet — kraschar inte, applicerar rätt effekt via p
     const financesBefore = club.finances
     const event = checkMecenatRetirement(game)!
     game = { ...game, pendingEvents: [event] }
-    game = resolveEvent(game, event.id, 'offer_tribute')
+    game = resolveEvent(game, event.id, 'offer_tribute', undefined, true)
 
     const mec = game.mecenater!.find(m => m.id === 'mec-1')!
     expect(mec.happiness).toBe(55)

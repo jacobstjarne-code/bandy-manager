@@ -162,7 +162,7 @@ function resolveReliefEvents(game: SaveGame, take: boolean, rand: () => number):
     if (!take) continue
     const choice = e.choices.find(c => c.id === 'train') ?? e.choices[0]
     if (!choice) continue
-    g = resolveEvent(g, e.id, choice.id, rand)
+    g = resolveEvent(g, e.id, choice.id, rand, false)
     taken++
   }
   return { game: g, taken }

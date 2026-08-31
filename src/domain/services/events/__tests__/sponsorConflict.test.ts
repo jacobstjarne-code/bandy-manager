@@ -108,7 +108,7 @@ describe('eventResolver — sponsorOffer konfliktvariant', () => {
       }],
     }
 
-    game = resolveEvent(game, 'event_sponsor_test', 'accept')
+    game = resolveEvent(game, 'event_sponsor_test', 'accept', undefined, true)
 
     const newSponsor = game.sponsors!.find(s => s.id === 'sponsor_new')
     const rivalAfter = game.sponsors!.find(s => s.id === 'sponsor_rival')
@@ -146,7 +146,7 @@ describe('eventResolver — sponsorOffer konfliktvariant', () => {
       }],
     }
 
-    game = resolveEvent(game, 'event_sponsor_test2', 'reject')
+    game = resolveEvent(game, 'event_sponsor_test2', 'reject', undefined, true)
 
     expect(game.sponsors!.find(s => s.id === 'sponsor_new')).toBeUndefined()
     expect(game.sponsors!.find(s => s.id === 'sponsor_rival')!.contractRounds).toBe(10)
@@ -179,7 +179,7 @@ describe('eventResolver — sponsorOffer konfliktvariant', () => {
     }
 
     const inboxLenBefore = game.inbox.length
-    game = resolveEvent(game, 'event_sponsor_plain', 'accept')
+    game = resolveEvent(game, 'event_sponsor_plain', 'accept', undefined, true)
 
     expect(game.sponsors!.find(s => s.id === 'sponsor_new')).toBeTruthy()
     expect(game.communityStanding).toBe(startCS)
@@ -211,7 +211,7 @@ describe('eventResolver — sponsorOffer konfliktvariant', () => {
       }],
     }
 
-    game = resolveEvent(game, 'event_sponsor_clamp', 'accept')
+    game = resolveEvent(game, 'event_sponsor_clamp', 'accept', undefined, true)
 
     expect(game.communityStanding).toBe(0)
   })
