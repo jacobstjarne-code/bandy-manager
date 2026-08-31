@@ -45,7 +45,6 @@ import {
   applySurfacingBudget,
   isExemptFromSurfacingBudget,
   recentlySurfaced,
-  rotateSubject,
   CHANNEL_BY_EVENT_TYPE,
   RECENCY_WINDOW_BY_CHANNEL,
   SURFACING_GLOBAL_CAP,
