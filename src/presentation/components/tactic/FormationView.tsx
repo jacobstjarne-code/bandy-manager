@@ -9,6 +9,7 @@ import { TACTIC_MENTALITY_LABELS, TACTIC_TEMPO_LABELS, TACTIC_PRESS_LABELS } fro
 import { PlayerDot } from './PlayerDot'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
+import { prioritizeByFitnessFloor } from '../../utils/lineupNudge'
 interface FormationViewProps {
   tactic: Tactic
   players: Player[]  // entire squad
@@ -83,11 +84,18 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
   const benchPlayers = players.filter(p => !starterIds.has(p.id) && !p.isInjured && p.suspensionGamesRemaining === 0)
 
   function handleAutoFill() {
-    const available = players.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
+    // A3-residualen (2026-08-31, Jacobs körorder): denna var kandidaturvalets
+    // TREDJE, oberoende kopia — saknade både vilofiltret (restGamesRemaining,
+    // A-H3 ben 2) och golv-medvetenheten (sorterade rå currentAbility, ingen
+    // fitness-hänsyn). Ingen egen bekräftelsemodal här — matchtidens
+    // FatigueFloorConfirm (LineupStep, via assessFatigueFloorBreach på den
+    // faktiska elvan) fångar redan varje tvingad golvbrytning nedströms.
+    // Den här fixen stoppar bara den tysta PREFERENSEN för slitna spelare.
+    const available = players.filter(
+      p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0,
+    )
     const placedIds = new Set(Object.values(lineupSlots).filter(Boolean) as string[])
-    const sorted = [...available]
-      .filter(p => !placedIds.has(p.id))
-      .sort((a, b) => b.currentAbility - a.currentAbility)
+    const sorted = prioritizeByFitnessFloor(available.filter(p => !placedIds.has(p.id)))
 
     const newLineupSlots = { ...lineupSlots }
     const emptySlots = template.slots.filter(s => !newLineupSlots[s.id])

@@ -38,8 +38,15 @@ export const SPELKLARHET_FITNESS_FLOOR = FATIGUE_AVAILABILITY_FLOOR
  * matchmotorn faktiskt använder — se squadEvaluator.ts). Blocket under
  * golvet läggs sist, inte bort — `pickBestEleven()` fyller därifrån bara om
  * poolen ovanför golvet inte räcker till 11 spelare.
+ *
+ * Exporterad 2026-08-31 (A3-residualen, Jacobs körorder): FormationView.tsx:s
+ * egen "Fyll bästa elvan" hade en TREDJE, oberoende sortering (rå
+ * currentAbility, ingen golv-medvetenhet alls) — exakt det HIGH 2:s
+ * kommentar ovan redan en gång stängde två kopior av. Nu delar alla tre
+ * "Fyll bästa elvan"-ytor EN funktion, som `pickBestEleven`-docstringen
+ * redan påstod.
  */
-function prioritizeByFitnessFloor(players: Player[]): Player[] {
+export function prioritizeByFitnessFloor(players: Player[]): Player[] {
   const byScore = (a: Player, b: Player) => getSelectionScore(b) - getSelectionScore(a)
   const aboveFloor = players.filter(p => p.fitness >= SPELKLARHET_FITNESS_FLOOR).sort(byScore)
   const belowFloor = players.filter(p => p.fitness < SPELKLARHET_FITNESS_FLOOR).sort(byScore)
