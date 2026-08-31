@@ -1,4 +1,15 @@
-# INVENTERING 2026-08-26 — läst ur källorna, inte ur minnet
+# ⛔ ERSATT AV `INVENTERING_2026-08-31.md` — BYGG INTE PÅ DENNA
+
+Fem dagars arbete (HIGH 5-12, MEDIUM 13-16, anspråk 4/väg C, väg B-ommätning
+m.m.) har landat sedan denna skrevs. Ett sex-agents källsvep 2026-08-31
+verifierade varje rad i den här filen mot faktisk kod: av 7 "BLOCKERAR
+AUDITEN"-poster var 5 redan byggda, alla 13 påstående-sweep-poster stängda,
+och "åskådarekonomin" (påstådd obyggd här) visade sig redan levererad
+2026-08-27. Läs `INVENTERING_2026-08-31.md` istället.
+
+---
+
+# INVENTERING 2026-08-26 — läst ur källorna, inte ur minnet (HISTORISK)
 
 **Av:** Opus. Ersätter `INVENTERING_2026-08-25.md`, som skrevs ur konversationsminnet och missade minst en post (åskådarekonomin) som stod i en order jag själv skrivit.
 

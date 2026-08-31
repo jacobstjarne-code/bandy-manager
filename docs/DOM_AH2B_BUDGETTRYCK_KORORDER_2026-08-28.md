@@ -1,4 +1,14 @@
-# DOM + KÖRORDER — A-H2b BUDGETTRYCK (ersätter marginalmåttet)
+# ⛔ ERSATT AV `DOM_AH2B_RETENTION_2026-08-28.md` — BYGG INTE PÅ DENNA
+
+**Upptäckt i 2026-08-31-inventeringen:** denna dom saknade en supersede-pekare
+trots att `DOM_AH2B_RETENTION_2026-08-28.md` (skriven samma dag) uttryckligen
+säger "den körordern är därmed avslutad" om just detta dokument. Retentions-
+domen är den som byggdes (`a55d4139`+`f5c3c8c6`+`ab7eb08d`, `contractDemandService.ts`).
+Läs den, inte denna.
+
+---
+
+# DOM + KÖRORDER — A-H2b BUDGETTRYCK (HISTORISK — ersätter marginalmåttet)
 
 **Datum:** 2026-08-28 · **Av:** Opus
 **Ersätter:** de tre kalibreringspassen `anspark1-condition2-boardexpectation-`, `anspark1-condition2-absolut-` och `anspark1-villkor-omdesign-matning-2026-08-28.ts`. Alla tre pensioneras. Ingen av dem mätte rätt sak.

@@ -1,4 +1,8 @@
-# INVENTERING 2026-08-25 — allt öppet, ingenting parkerat
+# ⛔ ERSATT AV `INVENTERING_2026-08-31.md` (via `INVENTERING_2026-08-26.md`) — BYGG INTE PÅ DENNA
+
+---
+
+# INVENTERING 2026-08-25 — allt öppet, ingenting parkerat (HISTORISK)
 
 **Av:** Opus. Regel för den här filen: **varje post har en ägare och ett nästa steg.** Ingen rad får sluta i "senare".
 

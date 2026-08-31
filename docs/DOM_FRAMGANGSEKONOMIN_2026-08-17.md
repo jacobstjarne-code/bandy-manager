@@ -1,4 +1,14 @@
-# DESIGNDOM — FRAMGÅNGSEKONOMIN
+# ⛔ ERSATT AV `DOM_FRAMGANGSKURVAN_2026-08-27.md` — BYGG INTE PÅ DENNA
+
+**Upptäckt i 2026-08-31-inventeringen:** denna dom saknade en supersede-pekare
+trots att `DOM_FRAMGANGSKURVAN_2026-08-27.md` uttryckligen ersätter dess hela
+ramverk med fyra konkurrerande anspråk (1–4), alla nu byggda. De tre krafterna
+nedan (löneinflation/driftskostnad/styrelsekrav) lever vidare, men omtolkade
+inom anspråk-strukturen — läs `DOM_FRAMGANGSKURVAN_2026-08-27.md` först.
+
+---
+
+# DESIGNDOM — FRAMGÅNGSEKONOMIN (HISTORISK)
 
 **Datum:** 2026-08-17 · **Av:** Opus (chat)
 **Underlag:** långspelsauditen, Västanfors 10 säsonger. Kassa 420 tkr → 11,0 mkr. Tio av tio säsonger med positiv kassaförändring, inklusive svaga år och trots byggande. Kvarvarande byggnoder år 10: 80–380 tkr mot en kassa på 9,9–11,0 mkr.

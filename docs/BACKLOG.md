@@ -4,7 +4,7 @@
 **Senast rensad:** 2026-05-25
 **Syfte:** ENDA SANNING för "specat men ej byggt" + "idéer som ska bli spec". Uppdateras VARJE gång vi parkerar något — inte "vid tillfälle".
 
-**RISK — 203 filer / ~94 600 rader okommitterat (upptäckt 2026-08-27, vid MASTER.md-kvitteringen).** `git log` visar HEAD på `5c9a7a8b` (2026-08-24) — allt arbete sedan dess (samtliga "FIXAT 2026-08-26/2026-08-27"-rader i `docs/pastaende_sweep_2026-08-24/MASTER.md`, hela åskådarekonomins kandidat 2, O2/O4/O5/O17/O18/O11 m.fl.) finns ENDAST i arbetsträdet. Ingen sha, ingen backup utöver den lokala disken. Två stashade WIP-commits ligger också kvar (`stash@{0}`, `stash@{1}`) — ospårade i den här räkningen. Ägare: Jacob — committa (i lämpliga logiska steg, inte en jättecommit) innan mer arbete staplas ovanpå, annars är en enda disk-incident flera dagars arbete.
+**RISK — STÄNGD 2026-08-27, raden stod kvar stale i fyra dygn (upptäckt av 2026-08-31-inventeringen).** Ursprungsfyndet (203 filer/~94 600 rader okommitterat, HEAD fastfruset på `5c9a7a8b`) löstes samma dag det upptäcktes: SLUTTEST A-COMMIT loggar "allt committat i 18 logiska block, `5c9a7a8b..594be0f7`". `git status --porcelain` är rent och HEAD har flyttat sig i över tjugo commits sedan dess. De två stashade WIP-commits (`stash@{0}`, `stash@{1}`) ligger dock fortfarande kvar — ospårat vad de innehåller, ägare Jacob om de ska tas bort eller poppas.
 
 **LEVERERAT 2026-08-26 (samma session som fynd 1-4 nedan, se raderna längre ner för full bakgrund):**
 1. **`bestFinish`-fixen (LÄST-FÖRE-INITIERING)** — `trainerArcService.ts`s `updateTrainerArc()` citerar nu bara `standing.position` när `standing.played > 0`. Två regressionstester (`trainerArcBestFinish.test.ts`). PÅSTÅENDEKARTAN fick en sjätte art, se `PASTAENDEKARTAN_2026-08-24.md`.
@@ -331,23 +331,16 @@ Skärmdumpar + Jacobs öga. **OBS: allt nedan verifierat BARA för CUP-matcher**
 
 ## A. AKTIVA SPRINTAR (Code arbetar eller väntar Code-start)
 
-### TEXT-AUDITEN — AKTIV (Fable; domän 1 KLAR 2026-07-03, domän 2–4 kvar)
+### TEXT-AUDITEN — STÄNGD 2026-07-05 (raden stod kvar "AKTIV" i nästan två månader, korrigerad av 2026-08-31-inventeringen)
 
-ENDA detaljkälla: `docs/TEXT-AUDIT-PROTOKOLL.md` → tabellen **ÖPPNA ÄRENDEN**
-överst (supersede-disciplin — läs tabellen, inte LOGG:en).
-- **Code-kö — KLART 2026-07-03:** domän 1-commit (73 rättade rader, 18
-  filer) · `SPEC_REGELBOKSANPASSNING_2026-07-03.md` Del 1-3 (M1 förlängning
-  20 min `ad9f97a1`, M15 utvisning 5/10 `d7a0315a`, M16 landslagsuttag 0-2
-  `2ce3b4d0`, alla med kalibrering i commit) · M12-fix `baa190f4`.
-  **Kvar i Code-kön:** M9-grep (injuryDoctorText/DIAGNOSIS_LINES-anrop) ·
-  DOMÄN 2-BUGGAR M17-M25 (anropskodsverifierade rotorsaker, se ÖPPNA
-  ÄRENDEN → CODE GÖR i protokollet för detaljer per fynd).
-- **Fable-kö NU:** Del 4 i regelboksspecen (textbyte "10/30/120 minuter"
-  mot {minuter}-token/nya förlängningsrader) — grep-listorna finns i
-  `d7a0315a`/`ad9f97a1`.
-- **Jacob:** inget öppet just nu. M5–M7 godkända 2026-07-03.
-- **Kvar:** domän 2 (orten/röster, FÄRSK Fable-session, lärdom #4 först),
-  domän 3 (UI), domän 4 (väder/övrigt). Därefter text-guard-lint (Code).
+Denna sektion påstod att domän 2–4 var kvar och att Code hade en öppen kö
+(M9-grep, M17-M25). Falskt sedan 2026-07-05: `docs/TEXT-AUDIT-PROTOKOLL.md`s
+egen **ÖPPNA ÄRENDEN**-tabell (den här sektionens egen "ENDA detaljkälla")
+säger ordagrant "HELA TEXTAUDITEN + HELA ÄRENDEKÖN KOMPLETT 2026-07-05 …
+Kön är tom." Domän 1–4 dömda, M17–M66 + hela uppföljningsomgången körda och
+committade. Enda VILANDE resterna (M14 publikhistorik-token, M50
+clubOfferQuotes) väntar på funktioner som inte finns än, inte på arbete.
+Se protokollet direkt för detaljer — inget att göra här.
 
 ### FÖRSONINGSSPRINTEN — AKTIV (Design-rundan landade 2026-06-11)
 

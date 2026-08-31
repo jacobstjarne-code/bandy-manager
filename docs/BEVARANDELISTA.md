@@ -26,21 +26,28 @@ Väntar på: en dagbok/krönika-yta som inte finns.
 
 ---
 
-## KAN HA FÅTT ETT HEM — VERIFIERA
+## ÅTERUPPLIVAD 2026-08-31 — förlorad en gång, nu räddad
 
 **`HALL_NEWS_POSITIVE` · `HALL_NEWS_NEGATIVE` · `HALL_NEWS_OUTDOOR_PRIDE` ·
-`BOARD_HALL_QUOTES`** — `hallDebateData.ts`
+`BOARD_HALL_QUOTES`** — nu i `hallProvningData.ts` (var `hallDebateData.ts`)
 Dödmarkerade i M67b (2026-07-13) med motiveringen "framtidsinnehåll för
 hallprocessen (B1), auditerat och klart att wira när processtegen byggs".
+**Den här radens egen "verifiera"-uppmaning hann aldrig utföras** —
+`hallDebateData.ts` (och därmed dessa fyra pooler) raderades hel i `d0d4d923`
+(2026-08-17, "radera hallDebateEvents.ts — död kod"). Den commitens motivering
+gällde bara `HALL_DEBATE_EVENTS`; de fyra poolerna fick aldrig sin egen
+bedömning innan filen föll med den. Upptäckt i 2026-08-31-inventeringen,
+återställda ordagrant ur git-historiken (`git show d0d4d923^:...`) samma dag —
+ingen ny text skriven, ingen rad ändrad.
 
-**Processtegen är nu byggda.** Release-svepets block 3 wirade hallprövningens
-fyra pooler och byggde H·1-hubben (`/game/hall-provning`) med stödmätare och
-krav-checklista. Förutsättningen dessa fyra pooler väntade på finns alltså.
-
-Att verifiera: har hallprocessen nu en debatt-/nyhetsyta som kan bära dem, eller
-väntar de fortfarande på en egen? Obs M61-flaggan som fortfarande gäller:
-`{hallclub}` får inte substitueras med en av spelets tolv Elitserieklubbar — de
-är utomhusklubbar, hallen är drömbyggnation. Ska vara omvärldsklubb.
+**Frågan från 2026-07-21 är fortfarande obesvarad och nu ÄNNU mer relevant:**
+har hallprocessen (H·1-hubben, `/game/hall-provning`, byggd i release-svepet)
+en debatt-/nyhetsyta som kan bära dem, eller väntar de fortfarande på en egen?
+Obs M61-flaggan som fortfarande gäller: `{hallclub}` får inte substitueras med
+en av spelets tolv Elitserieklubbar — de är utomhusklubbar, hallen är
+drömbyggnation. Ska vara omvärldsklubb, samma mönster som `rumorService.ts`.
+Ägare: Opus/Jacob avgör wiring eller permanent radering — se
+`docs/INVENTERING_2026-08-31.md`.
 
 ---
 
