@@ -16,9 +16,21 @@ const AGE_THRESHOLDS: Partial<Record<string, number>> = {
   [PlayerPosition.Forward]:    33,
 }
 
-function getPositionThreshold(position: string): number {
+export function getPositionThreshold(position: string): number {
   return AGE_THRESHOLDS[position] ?? 33
 }
+
+/**
+ * Auditens critical #2 (Jacobs körorder 2026-08-31, kodläst): getCandidateScore
+ * har inget golv — conditionScore ensam når upp till 4 (fitness 0) och
+ * injuryScore lägger 0,5 per skadepost, så en 24-åring med dålig fitness och
+ * skadehistorik kunde bli pensionskandidat trots att ageScore(24) = 0. Fitness/
+ * skador ska kunna ACCELERERA en spelare som redan är i pensionsåldern, aldrig
+ * TRIGGA en ung. Marginalen är en känslofråga (Jacobs, inte Codes) — 4 år
+ * default ger forward/halv valbara från ~29, målvakt från ~32. Justera
+ * konstanten, inte golv-logiken, om känslan är fel i spel.
+ */
+export const RETIREMENT_AGE_MARGIN = 4
 
 /** Age component: how many years above the position-specific threshold */
 export function ageScore(player: Player): number {
@@ -55,6 +67,10 @@ export function getRetirementCandidate(game: SaveGame): Player | null {
 
   const candidates = game.players
     .filter(p => p.clubId === game.managedClubId)
+    // Åldersgolvet FÖRE poängen (kritiskt — se RETIREMENT_AGE_MARGIN ovan):
+    // exkluderar en spelare helt oavsett fitness/skadehistorik om de inte
+    // ens är i närheten av pensionsåldern för sin position.
+    .filter(p => p.age >= getPositionThreshold(p.position) - RETIREMENT_AGE_MARGIN)
     .map(p => ({ player: p, score: getCandidateScore(p) }))
     .filter(({ score }) => score >= 1)
     .sort((a, b) => b.score - a.score)

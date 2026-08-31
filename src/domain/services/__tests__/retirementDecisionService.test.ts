@@ -5,6 +5,8 @@ import {
   injuryScore,
   getCandidateScore,
   getRetirementCandidate,
+  getPositionThreshold,
+  RETIREMENT_AGE_MARGIN,
 } from '../retirementDecisionService'
 import type { Player } from '../../entities/Player'
 import type { SaveGame } from '../../entities/SaveGame'
@@ -221,5 +223,59 @@ describe('getRetirementCandidate', () => {
     const p = makePlayer({ age: 32, position: PlayerPosition.Forward, fitness: 90 })
     const game = makeGame({ players: [p] })
     expect(getRetirementCandidate(game)).toBeNull()
+  })
+})
+
+// ─── Auditens critical #2 — åldersgolvet (Jacobs körorder 2026-08-31) ─────────
+//
+// Roten: getCandidateScore hade inget golv. conditionScore ensam når 4
+// (fitness 0), injuryScore lägger 0,5/post — en 24-åring med dålig fitness
+// och skadehistorik kunde nå score >= 1 trots ageScore(24) = 0. Golvet
+// exkluderar varje spelare under (positionens tröskel − RETIREMENT_AGE_MARGIN)
+// FÖRE poängen ens räknas — fitness/skador kan bara accelerera en spelare
+// som redan är i pensionsåldern, aldrig trigga en ung.
+describe('getRetirementCandidate — åldersgolvet (auditens critical #2)', () => {
+  it('24-åring med fitness 20 och tre skador är INTE kandidat (golvet stoppar innan poängen räknas)', () => {
+    const young = makePlayer({
+      id: 'p_young', age: 24, position: PlayerPosition.Forward, fitness: 20,
+      diary: [
+        { season: 2024, matchday: 1, text: '', type: 'injury' },
+        { season: 2025, matchday: 4, text: '', type: 'injury' },
+        { season: 2025, matchday: 9, text: '', type: 'injury' },
+      ],
+    })
+    // Utan golvet hade denna spelare fått score = 0 (ålder) + 2 (fitness) + 1.5 (skador) = 3.5 — ruvat gott över 1.
+    expect(getCandidateScore(young)).toBeGreaterThanOrEqual(1)
+    const game = makeGame({ players: [young] })
+    expect(getRetirementCandidate(game)).toBeNull()
+  })
+
+  it('33-årig forward med låg fitness ÄR kandidat (på golvet, poängen bär den)', () => {
+    // Forward-tröskel 33, golv = 33 − 4 = 29. Ålder 33 är över golvet.
+    const veteran = makePlayer({ id: 'p_vet', age: 33, position: PlayerPosition.Forward, fitness: 15 })
+    const game = makeGame({ players: [veteran] })
+    expect(getRetirementCandidate(game)?.id).toBe('p_vet')
+  })
+
+  it('30-åring med tung skadehistorik ÄR kandidat (över golvet, skadorna bär poängen)', () => {
+    // Forward-golv 29 — 30 är över. Fitness normal, ageScore(30, tröskel 33) = 0,
+    // men fyra skadeposter (2.0) räcker gott över score-tröskeln 1.
+    const injuryProne = makePlayer({
+      id: 'p_injured', age: 30, position: PlayerPosition.Forward, fitness: 75,
+      diary: [
+        { season: 2023, matchday: 2, text: '', type: 'injury' },
+        { season: 2024, matchday: 5, text: '', type: 'injury' },
+        { season: 2024, matchday: 15, text: '', type: 'injury' },
+        { season: 2025, matchday: 3, text: '', type: 'injury' },
+      ],
+    })
+    const game = makeGame({ players: [injuryProne] })
+    expect(getRetirementCandidate(game)?.id).toBe('p_injured')
+  })
+
+  it('golvet är exakt tröskel − RETIREMENT_AGE_MARGIN för positionen', () => {
+    expect(RETIREMENT_AGE_MARGIN).toBe(4)
+    expect(getPositionThreshold(PlayerPosition.Forward) - RETIREMENT_AGE_MARGIN).toBe(29)
+    expect(getPositionThreshold(PlayerPosition.Goalkeeper) - RETIREMENT_AGE_MARGIN).toBe(32)
   })
 })
