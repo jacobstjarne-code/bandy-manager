@@ -566,6 +566,16 @@ function MatchLiveDevScene({ locationState }: { locationState: MatchLiveLocation
 // väljer tier:'band' (kräver streak ≥3) istf tier:'scene'. Ingen egen fixture-
 // generering — återanvänder factoryMidSeasonGames redan validerade historik,
 // skriver bara om resultatet på de sista matcherna för den styrda klubben.
+//
+// ROTORSAK (audit-taptargetgate-failande, MASTER_OPPET.md 2026-08-31): denna
+// funktion skrev BARA om game.fixtures — men getStreakState() (roundCharacter.ts)
+// läser inte fixtures, den läser game.trainerArc.consecutiveWins/consecutiveLosses,
+// ett separat räknat fält som trainerArcService.ts underhåller under riktig
+// omgångsprocessering. factoryMidSeasonGames trainerArc bar vad den ärvde ur sin
+// egen simulering — nästan aldrig exakt streakLength — så computeLaddningBeat
+// föll alltid till tier:'none', "SÄTT LAGET"-knappen renderades aldrig, och
+// testet floppade på ett timeout, inte en overlap. Två läsare (fixtures vs
+// trainerArc), en sanning (trainerArc) — funktionen skrev bara till den ena.
 function withWinStreak(game: SaveGame, streakLength: number): SaveGame {
   const managedId = game.managedClubId
   const targetIds = new Set(
@@ -580,7 +590,13 @@ function withWinStreak(game: SaveGame, streakLength: number): SaveGame {
     const managedIsHome = f.homeClubId === managedId
     return { ...f, homeScore: managedIsHome ? 4 : 1, awayScore: managedIsHome ? 1 : 4 }
   })
-  return { ...game, fixtures, matchLaddningBandShown: undefined }
+  const trainerArc: SaveGame['trainerArc'] = game.trainerArc
+    ? { ...game.trainerArc, consecutiveWins: streakLength, consecutiveLosses: 0 }
+    : {
+        current: 'established', history: [], seasonCount: 1, bestFinish: 1, titlesWon: 0,
+        consecutiveWins: streakLength, consecutiveLosses: 0, boardWarningGiven: false,
+      }
+  return { ...game, fixtures, trainerArc, matchLaddningBandShown: undefined }
 }
 const matchLaddningBandGame = withWinStreak(factoryMidSeasonGame, 3)
 
