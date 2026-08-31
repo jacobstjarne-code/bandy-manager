@@ -1,5 +1,6 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import { PlayoffRound } from '../../enums'
+import { deriveUtfall } from '../matchTypeAxes'
 
 export interface PlayoffSeriesContext {
   round: PlayoffRound
@@ -36,12 +37,20 @@ export function getPlayoffSeriesContext(game: SaveGame): PlayoffSeriesContext | 
     .map(fid => game.fixtures.find(f => f.id === fid))
     .filter((f): f is NonNullable<typeof f> => !!f && f.status === 'completed')
 
+  // DOMLOGG §4 (2026-08-31): rå homeScore/awayScore gav en straffseger som
+  // förlust — förlängning/straff är oavgjort i grundtiden (homeScore===
+  // awayScore), rå jämförelse (myGoals>theirGoals) föll då på else-grenen.
+  // Samma mönster som deriveUtfall (matchTypeAxes.ts) redan löser: läs
+  // wentToPenalties/overtimeResult FÖRE råscore. Återanvänd den direkt i
+  // stället för en tredje kopia av samma utfallslogik.
   let wins = 0, losses = 0
   for (const g of completedGames) {
-    const isHome = g.homeClubId === game.managedClubId
-    const myGoals = isHome ? g.homeScore : g.awayScore
-    const theirGoals = isHome ? g.awayScore : g.homeScore
-    if (myGoals > theirGoals) wins++; else losses++
+    const utfall = deriveUtfall(g, game.managedClubId)
+    if (utfall === 'vunnet') wins++
+    else if (utfall === 'forlorat') losses++
+    // 'oavgjort' ska inte förekomma i en avslutad slutspelsmatch (R027 —
+    // förlängning/straff avgör alltid) — räknas medvetet inte som vare sig
+    // vinst eller förlust om datan ändå skulle säga det.
   }
 
   const nextGame = wins + losses + 1

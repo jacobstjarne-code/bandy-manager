@@ -240,4 +240,55 @@ describe('getPlayoffSeriesContext', () => {
     expect(getPlayoffSeriesContext(game)).toBeNull()
   })
 
+  // DOMLOGG §4 (2026-08-31): rotorsak var att wins/losses räknades ur rå
+  // homeScore/awayScore — en straffavgjord match har homeScore===awayScore
+  // i grundtiden, så raw-jämförelsen föll alltid på förlust-grenen oavsett
+  // vem som faktiskt vann på straffar. Regressionstest, en straffseger.
+  it('penalty shootout win counts as a win, not homeScore===awayScore→loss', () => {
+    const g1: Fixture = {
+      ...makeFixture('g1', 'club_a', 'club_b', 2, 2),
+      wentToPenalties: true,
+      penaltyResult: { home: 3, away: 1 }, // club_a (home) wins on penalties
+    }
+    const g2 = makeScheduledFixture('g2', 'club_b', 'club_a')
+    const series = makeSeries('s1', PlayoffRound.QuarterFinal, 'club_a', 'club_b', ['g1', 'g2'], 1, 0)
+    const bracket = makeBracket({ quarterFinals: [series] })
+    const game = makeGame('club_a', bracket, [g1, g2])
+    const ctx = getPlayoffSeriesContext(game)
+    expect(ctx).not.toBeNull()
+    expect(ctx!.wins).toBe(1)
+    expect(ctx!.losses).toBe(0)
+  })
+
+  it('overtime win counts as a win despite homeScore===awayScore', () => {
+    const g1: Fixture = {
+      ...makeFixture('g1', 'club_a', 'club_b', 3, 3),
+      overtimeResult: 'home', // club_a (home) wins in overtime
+    }
+    const g2 = makeScheduledFixture('g2', 'club_b', 'club_a')
+    const series = makeSeries('s1', PlayoffRound.QuarterFinal, 'club_a', 'club_b', ['g1', 'g2'], 1, 0)
+    const bracket = makeBracket({ quarterFinals: [series] })
+    const game = makeGame('club_a', bracket, [g1, g2])
+    const ctx = getPlayoffSeriesContext(game)
+    expect(ctx).not.toBeNull()
+    expect(ctx!.wins).toBe(1)
+    expect(ctx!.losses).toBe(0)
+  })
+
+  it('away team penalty win counts as an away loss for the managed home club', () => {
+    const g1: Fixture = {
+      ...makeFixture('g1', 'club_a', 'club_b', 1, 1),
+      wentToPenalties: true,
+      penaltyResult: { home: 2, away: 4 }, // club_b (away) wins on penalties
+    }
+    const g2 = makeScheduledFixture('g2', 'club_b', 'club_a')
+    const series = makeSeries('s1', PlayoffRound.QuarterFinal, 'club_a', 'club_b', ['g1', 'g2'], 0, 1)
+    const bracket = makeBracket({ quarterFinals: [series] })
+    const game = makeGame('club_a', bracket, [g1, g2])
+    const ctx = getPlayoffSeriesContext(game)
+    expect(ctx).not.toBeNull()
+    expect(ctx!.wins).toBe(0)
+    expect(ctx!.losses).toBe(1)
+  })
+
 })
