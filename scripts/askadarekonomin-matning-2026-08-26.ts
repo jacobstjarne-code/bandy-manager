@@ -21,7 +21,6 @@ import { CLUB_TEMPLATES } from '../src/domain/services/worldGenerator'
 import { FixtureStatus } from '../src/domain/enums'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 
-const SEASONS = 1
 const SEED = 90_000
 
 interface HomeMatchSample {
@@ -77,7 +76,7 @@ function runSeason(clubId: string): { samples: HomeMatchSample[]; crashed: boole
 }
 
 // ── Gamla formeln (moodMult) ────────────────────────────────────────────────
-function oldKioskVipLottery(tier: 'none' | 'basic' | 'upgraded', vip: boolean, attendance: number, fanMood: number, isHomeMatch: boolean, lotteryOn: boolean): number {
+function oldKioskVipLottery(tier: 'none' | 'basic' | 'upgraded', vip: boolean, _attendance: number, fanMood: number, _isHomeMatch: boolean, lotteryOn: boolean): number {
   const moodMult = 0.7 + (fanMood / 100) * 0.6
   const kioskBase = tier === 'upgraded' ? 2500 : tier === 'basic' ? 1250 : 0
   let income = Math.round(kioskBase * moodMult)
@@ -132,7 +131,7 @@ function main(): void {
   const allResults: { name: string; rep: number; results: TierResult[] }[] = []
 
   for (const template of CLUB_TEMPLATES) {
-    const { samples, crashed, finalRep } = runSeason(template.id)
+    const { samples, crashed } = runSeason(template.id)
     if (crashed) { console.log(`${template.name}: KRASCH`); continue }
 
     const results: TierResult[] = TIERS.map(t => {

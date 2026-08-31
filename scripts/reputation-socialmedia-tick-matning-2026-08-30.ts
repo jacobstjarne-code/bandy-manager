@@ -32,7 +32,11 @@ const DOMINANT_SEED = 100
 
 function makeGame(clubId: string, boost: number, seed: number): SaveGame {
   const base = createNewGame({ managerName: `REP-${clubId}`, clubId, seed })
-  let g: SaveGame = { ...base, pendingScreen: null, communityActivities: { ...base.communityActivities, socialMedia: true } }
+  // communityActivities är optional PÅ SaveGame (kan i teorin saknas helt),
+  // men createNewGame() sätter den alltid — icke-null-assert är säkert här,
+  // annars sprids optional-statusen in i varje enskilt fält (kiosk m.fl.
+  // blir 'X | undefined' trots att CommunityActivities kräver dem satta).
+  let g: SaveGame = { ...base, pendingScreen: null, communityActivities: { ...base.communityActivities!, socialMedia: true } }
   if (boost !== 0) {
     g = {
       ...g,
@@ -65,7 +69,7 @@ function runClub(label: string, clubId: string, boost: number, seed: number, sea
     while (!seasonDone) {
       guard++
       if (guard > 2000) throw new Error(`${label} säsong ${season}: round guard tripped`)
-      game = { ...game, communityActivities: { ...game.communityActivities, socialMedia: true } }
+      game = { ...game, communityActivities: { ...game.communityActivities!, socialMedia: true } }
       game = autoSelectLineup(game)
       const result = advanceToNextEvent(game, stepSeed++)
       game = result.game

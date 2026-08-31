@@ -26,7 +26,6 @@ import { CLUB_TEMPLATES } from '../src/domain/services/worldGenerator'
 import { FixtureStatus } from '../src/domain/enums'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 
-const SEASONS = 1
 const SEED = 90_000
 
 interface HomeMatchSample {
@@ -80,7 +79,7 @@ function runSeason(clubId: string): { samples: HomeMatchSample[]; crashed: boole
 }
 
 // ── Gamla formeln (moodMult) — oförändrad referens ─────────────────────────
-function oldKioskVipLottery(tier: 'none' | 'basic' | 'upgraded', vip: boolean, fanMood: number, isHomeMatch: boolean, lotteryOn: boolean): number {
+function oldKioskVipLottery(tier: 'none' | 'basic' | 'upgraded', vip: boolean, fanMood: number, _isHomeMatch: boolean, lotteryOn: boolean): number {
   const moodMult = 0.7 + (fanMood / 100) * 0.6
   const kioskBase = tier === 'upgraded' ? 2500 : tier === 'basic' ? 1250 : 0
   let income = Math.round(kioskBase * moodMult)
