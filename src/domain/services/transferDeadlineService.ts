@@ -1,5 +1,6 @@
 import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import { InboxItemType } from '../enums'
+import { positionShort } from '../format'
 
 export interface DeadlineBid {
   clubId: string
@@ -112,7 +113,11 @@ export function generateDiscountOffer(game: SaveGame, rand: () => number): Deadl
     clubId: offeringClub.id,
     clubName: offeringClub.name,
     playerId: target.id,
-    playerName: `${target.firstName} ${target.lastName} (${target.position}, ${target.currentAbility} CA)`,
+    // Språkläcka (audit 2026-08-29): rå positions-enum ("forward") och rå "CA"
+    // gick ut i inbox-rubriken. positionShort är kanonisk källa; "styrka" är
+    // ordet resten av UI:t redan använder för currentAbility (TransfersScreen,
+    // ScoutingTab, FreeAgentList, TransferPlayerCard).
+    playerName: `${target.firstName} ${target.lastName} (${positionShort(target.position)}, styrka ${target.currentAbility})`,
     amount,
     reason,
   }

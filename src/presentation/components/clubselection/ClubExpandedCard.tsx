@@ -1,10 +1,14 @@
 import type { ClubExtendedInfo } from '../../../domain/data/clubExtendedInfo'
 import type { ClubOfferQuote } from '../../../domain/data/clubOfferQuotes'
 import { ClubExpectation } from '../../../domain/enums'
+import { DifficultyTag } from './DifficultyTag'
 
 interface Props {
   clubId: string
   clubName: string
+  /** Samma svårighetsgrad OfferCard visar — detaljvyn ska bära jämförelsen
+      lika mycket som erbjudandekortet (audit 2026-08-29). */
+  difficulty: 'easy' | 'medium' | 'hard'
   region: string
   arenaName: string
   supporterGroupName: string
@@ -17,6 +21,7 @@ interface Props {
 export function ClubExpandedCard({
   clubId,
   clubName,
+  difficulty,
   region,
   arenaName,
   supporterGroupName,
@@ -50,6 +55,7 @@ export function ClubExpandedCard({
             {region}
           </div>
         </div>
+        <DifficultyTag difficulty={difficulty} />
       </div>
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 6, fontSize: 11, lineHeight: 1.5 }}>

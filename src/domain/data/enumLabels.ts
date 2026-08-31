@@ -1,3 +1,4 @@
+import type { SupporterRole } from '../entities/Community'
 import {
   TacticMentality,
   TacticTempo,
@@ -61,6 +62,25 @@ export const TACTIC_ATTACKING_FOCUS_LABELS: Record<TacticAttackingFocus, string>
  * Kategorietiketterna (för "Tryck: Lågt"-formen). Håller isär kategori och
  * värde så inget renderas som "Press low".
  */
+/**
+ * Klackens roller. Språkläckan "leader" (audit 2026-08-29): OrtenTab renderade
+ * `SupporterRole` rått med textTransform: capitalize → "Leader" / "Youth" /
+ * "Family". "Veteran" råkade se svensk ut, vilket är varför bara `leader`
+ * rapporterades — alla fyra läckte.
+ *
+ * ⚠️ TOMMA — OPUS LEVERERAR. Code skriver aldrig svensk speltext (CLAUDE.md).
+ * Det finns ingen godkänd svensk klack-rolluppsättning i kodbasen att kopiera:
+ * TRAIT_META i playerTraits.ts har 'Ledare'/'Veteran', men det är SPELAR-traits,
+ * en annan domän — klackens register är Birgers, inte truppens.
+ * Tills de fylls renderar OrtenTab ingen rolletikett alls (tomt > engelskt).
+ */
+export const SUPPORTER_ROLE_LABELS: Record<SupporterRole, string> = {
+  leader: '',   // Opus levererar
+  veteran: '',  // Opus levererar
+  youth: '',    // Opus levererar
+  family: '',   // Opus levererar
+}
+
 export const TACTIC_CATEGORY_LABELS = {
   mentality: 'Mentalitet',
   tempo: 'Tempo',

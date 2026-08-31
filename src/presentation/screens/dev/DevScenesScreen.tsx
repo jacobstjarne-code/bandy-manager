@@ -50,6 +50,7 @@ import FacilityScreen from '../FacilityScreen'
 import { GameOverScreen } from '../GameOverScreen'
 import { HistoryScreen } from '../HistoryScreen'
 import { EventOverlay } from '../../components/EventOverlay'
+import { DecisionCard } from '../../components/DecisionCard'
 import { PressConferenceScene } from '../../components/PressConferenceScene'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
@@ -134,6 +135,9 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // data GameOverScreen.tsx:s handleViewHistory() annars skickar via
   // location.state) — ingen MemoryRouter-omväg som match-live behövde.
   | 'game-over' | 'game-over-historik'
+  // Mobilhierarki-regressioner (2026-08-31): riktiga, deterministiska lägen
+  // för månadskön och DecisionCards tre visuella vikter.
+  | 'portal-month-decisions' | 'decision-modes' | 'event-overlay-breakpoint'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -208,6 +212,9 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'bygget-avveckling', label: 'Bygget — riktig nav, H1-regressionstest (avveckling/finansiering)' },
   { id: 'game-over',          label: 'GameOverScreen — sparkad efter tre säsonger utan förbättring' },
   { id: 'game-over-historik', label: 'HistoryScreen (snapshot-prop) — avslutad karriär, "Se karriären"' },
+  { id: 'portal-month-decisions', label: 'Portal — tre månadsbeslut (1 primärt + 2 väntar)' },
+  { id: 'decision-modes', label: 'DecisionCard — notis, dilemma, brytpunkt' },
+  { id: 'event-overlay-breakpoint', label: 'EventOverlay — brytpunkt med accentkant' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -589,6 +596,46 @@ const portalFullBase = atRound(makeBaseGame({ seed: 2 }), 24)
 const portalFullGame = withAnniversary(withActiveBeat(portalFullBase))
 const portalGrindGame = withObjectiveAlertWarning(withPendingWeeklyDecision(factoryMidSeasonGame))
 
+const mobileDecisionEvents = [
+  {
+    id: 'dev-month-sponsor', type: 'sponsorOffer' as const, resolved: false,
+    title: 'Ett nytt sponsoravtal', body: 'Ett lokalt företag vill synas på matchtröjan.',
+    choices: [
+      { id: 'accept', label: 'Skriv på', effect: { type: 'noOp' as const } },
+      { id: 'decline', label: 'Tacka nej', effect: { type: 'noOp' as const } },
+    ],
+  },
+  {
+    id: 'dev-month-hall', type: 'hallDebate' as const, resolved: false,
+    title: 'Ishallens framtid', body: 'Kommunen vill ha besked innan nästa möte.',
+    choices: [
+      { id: 'push', label: 'Driv frågan', effect: { type: 'noOp' as const } },
+      { id: 'wait', label: 'Avvakta', effect: { type: 'noOp' as const } },
+    ],
+  },
+  {
+    id: 'dev-month-politics', type: 'politicianEvent' as const, resolved: false,
+    title: 'Möte i kommunhuset', body: 'Kommunalrådet vill diskutera klubbens planer.',
+    choices: [
+      { id: 'meet', label: 'Ta mötet', effect: { type: 'noOp' as const } },
+      { id: 'skip', label: 'Prioritera laget', effect: { type: 'noOp' as const } },
+    ],
+  },
+]
+const portalMonthDecisionsGame = {
+  ...factoryMidSeasonGame,
+  pendingEvents: mobileDecisionEvents,
+} as unknown as SaveGame
+
+const breakpointEvent = {
+  id: 'dev-breakpoint-economy', type: 'criticalEconomy' as const, resolved: false,
+  title: 'Kassan räcker inte', body: 'Klubben måste välja vad som ska skyddas.',
+  choices: [
+    { id: 'squad', label: 'Skydda truppen', effect: { type: 'noOp' as const } },
+    { id: 'facility', label: 'Skydda anläggningen', effect: { type: 'noOp' as const } },
+  ],
+}
+
 // AUDIT DEL 4 (2026-08-12) — täckningslucka i takregel-baselinen: alla fyra
 // tillstånd ovan varierar bara atmosfärslagret. Primary-urvalet (initCardBag.ts,
 // SM-final 100 · cupfinal 98 · event_critical 95 · deadline 90 · avsked 82 ·
@@ -729,6 +776,7 @@ const gameOverGame = {
   ],
   boardPatience: 12,
   consecutiveFailures: 3,
+  managerFired: true,
 } as unknown as SaveGame
 
 // Granska IA — fingerad spelad match (md 20) + andra matcher + roundSummary
@@ -1185,10 +1233,11 @@ export function DevScenesScreen() {
       : scene === 'portal-grind' ? portalGrindGame
       : scene === 'portal-bid-single' ? portalBidSingleGame
       : scene === 'portal-bid-multi' ? portalBidMultiGame
+      : scene === 'portal-month-decisions' ? portalMonthDecisionsGame
       : scene === 'club-fresh' ? clubFreshGame
       : scene === 'club-established' ? clubEstablishedGame
       : scene === 'taktik' ? taktikGame
-      : scene === 'event-overlay' || scene === 'press-conference' ? granskaGame
+      : scene === 'event-overlay' || scene === 'event-overlay-breakpoint' || scene === 'press-conference' || scene === 'decision-modes' ? granskaGame
       : scene === 'primary-smfinal-vs-deadline' ? primarySmfinalVsDeadlineGame
       : scene === 'primary-event-vs-farewell' ? primaryEventVsFarewellGame
       : scene === 'halftime-summary' ? portalGame
@@ -1349,6 +1398,7 @@ export function DevScenesScreen() {
         )}
         {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind'
           || scene === 'portal-bid-single' || scene === 'portal-bid-multi'
+          || scene === 'portal-month-decisions'
           || scene === 'primary-smfinal-vs-deadline' || scene === 'primary-event-vs-farewell') && (
           <div style={{ height: '1400px', overflow: 'hidden', position: 'relative' }}>
             <PortalScreen />
@@ -1608,6 +1658,36 @@ export function DevScenesScreen() {
         {scene === 'event-overlay' && (
           <div style={{ position: 'relative', minHeight: 500 }}>
             <EventOverlay event={granskaPendingEvents[0]} />
+          </div>
+        )}
+
+        {scene === 'event-overlay-breakpoint' && (
+          <div style={{ position: 'relative', minHeight: 500 }}>
+            <EventOverlay event={breakpointEvent} />
+          </div>
+        )}
+
+        {scene === 'decision-modes' && (
+          <div data-decision-mode-gallery style={{ position: 'fixed', inset: 0, zIndex: 51, overflowY: 'auto', background: 'var(--bg)', padding: '20px 14px' }}>
+            {([
+              { mode: 'notis' as const, label: 'Notis', title: 'En röst från läktaren', body: 'Supportern vill att laget visar mer tålamod.' },
+              { mode: 'dilemma' as const, label: 'Dilemma', title: 'Två vägar framåt', body: 'Båda alternativen hjälper klubben men kostar något.' },
+              { mode: 'brytpunkt' as const, label: 'Brytpunkt', title: 'Klubben måste välja', body: 'Beslutet förändrar förutsättningarna för resten av säsongen.' },
+            ]).map(item => (
+              <DecisionCard
+                key={item.mode}
+                mode={item.mode}
+                label={item.label}
+                title={item.title}
+                body={item.body}
+                resolved={false}
+                choices={[
+                  { id: 'left', label: 'Välj den ena vägen', effect: { type: 'noOp' as const } },
+                  { id: 'right', label: 'Välj den andra vägen', effect: { type: 'noOp' as const } },
+                ]}
+                onChoose={() => {}}
+              />
+            ))}
           </div>
         )}
 

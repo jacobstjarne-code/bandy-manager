@@ -75,7 +75,7 @@ export function computeDifficultyScore(t: DifficultyInput): number {
   return score
 }
 
-function getDifficulty(t: DifficultyInput): 'easy' | 'medium' | 'hard' {
+export function getDifficulty(t: DifficultyInput): 'easy' | 'medium' | 'hard' {
   const score = computeDifficultyScore(t)
   if (score >= 75) return 'easy'
   if (score >= 50) return 'medium'

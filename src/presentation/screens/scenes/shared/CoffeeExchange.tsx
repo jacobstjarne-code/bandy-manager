@@ -5,12 +5,10 @@
  * Pixel-värden från docs/mockups/kafferummet_mockup.html. Justera inte.
  */
 
-const FADE_KEYFRAMES = `
-@keyframes scene-fade-in-exchange {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-`
+// scene-fade-in-exchange bor i global.css (2026-08-31). Den låg tidigare i en
+// inline <style> här, vilket gjorde keyframet beroende av att MINST en exchange
+// renderades — en enradig scen (narratorLine, noll exchanges) fick då aldrig
+// keyframet och blev liggande på opacity: 0.
 
 interface SpeakerRowProps {
   initial: string
@@ -99,7 +97,6 @@ export function CoffeeExchange({ exchange, delay }: Props) {
         animationDelay: `${delay}ms`,
       }}
     >
-      <style>{FADE_KEYFRAMES}</style>
       <SpeakerRow initial={initialA} speakerName={speakerA} text={textA} align="left" />
       <SpeakerRow initial={initialB} speakerName={speakerB} text={textB} align="right" />
     </div>

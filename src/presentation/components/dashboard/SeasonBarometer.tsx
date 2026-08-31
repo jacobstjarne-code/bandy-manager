@@ -75,7 +75,8 @@ export function SeasonBarometer({ game }: Props) {
         </div>
 
         <div style={{ display: 'flex', gap: 0 }}>
-          <Stat label="Snitt CA" value={`${avgCA}`} />
+          {/* "Snitt CA" → "Styrka" (snittet är kortets enda styrketal) — audit 2026-08-29 */}
+          <Stat label="Styrka" value={`${avgCA}`} />
           <Stat label="Form" value={`${avgForm}`} />
           <Stat label="Vinst%" value={`${winRate}%`} />
           <Stat label="Kassa" value={formatTkr(financeDelta)} color={financeDelta >= 0 ? 'var(--success)' : 'var(--danger)'} />

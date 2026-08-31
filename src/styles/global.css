@@ -1636,6 +1636,15 @@ a {
   animation: fade-in-static 0.7s ease-out forwards;
 }
 
+/* Kafferums-scenens fade-in. Låg HÄR, inte i CoffeeExchange.tsx:s inline <style>:
+   en scen med noll exchanges (narratorLine-varianten, ensam replik) monterar
+   aldrig CoffeeExchange, så keyframet fanns inte — narratorLine/frågan låg kvar
+   på opacity: 0 och var osynlig för spelaren. En sanning, ett ställe. */
+@keyframes scene-fade-in-exchange {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── F1 Beslutsekonomi — Portal decision economy components ────────── */
 
 /* Active section header */

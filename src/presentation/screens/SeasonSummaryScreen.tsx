@@ -405,17 +405,21 @@ export function SeasonSummaryScreen() {
               background: 'var(--bg-elevated)',  // DB-8: dekorativ yt-gradient → solid (accent-ramen är cuen)
               border: '2px solid var(--accent)',
               borderRadius: 'var(--radius-md)',
-              padding: '20px 18px',
+              padding: '14px 18px 20px',
               textAlign: 'center',
               position: 'relative',
               marginBottom: 8,
             }}>
-              {/* Pill label */}
+              {/* Pill label — I DOKUMENTFLÖDET, inte absolut över kortets överkant.
+                  Rot till audit-fyndet "årsbokens guld-pill överlappar ram/text"
+                  (2026-08-29): pillen låg på position:absolute/top:-10 och satt
+                  därmed ovanpå den 2px accent-ramen. Kortets toppadding sänkt
+                  20 → 14 så pillen får sin höjd utan att kortet växer i onödan. */}
               <div className="h-label" style={{
-                position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
+                display: 'inline-block',
                 background: 'var(--accent)', color: 'var(--text-light)',
                 padding: '4px 16px', borderRadius: 99,
-                whiteSpace: 'nowrap', marginBottom: 0,
+                whiteSpace: 'nowrap', margin: '0 0 2px',
               }}>⭐ SÄSONGENS MATCH</div>
 
               <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '6px 0 12px', letterSpacing: 1, fontFamily: 'var(--font-body)' }}>
@@ -630,8 +634,10 @@ export function SeasonSummaryScreen() {
           <SectionLabel>SÄSONGENS BÄSTA</SectionLabel>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {summary.topScorer && (
+              /* "ass" → "assist": grannkortet fyra rader ned skrev redan
+                 "assist"; "ass" fanns bara här i hela kodbasen (audit 2026-08-29) */
               <AwardCard icon="🏒" title="Toppskyttar" name={summary.topScorer.name}
-                value={`${summary.topScorer.goals} mål, ${summary.topScorer.assists} ass`} />
+                value={`${summary.topScorer.goals} mål, ${summary.topScorer.assists} assist`} />
             )}
             {summary.topAssister && (
               <AwardCard icon="🅰️" title="Mest assist" name={summary.topAssister.name}

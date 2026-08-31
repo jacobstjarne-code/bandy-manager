@@ -6,6 +6,7 @@ import type { YouthIntakeResult } from './youthIntakeService'
 import type { NotableDevelopment } from './playerDevelopmentService'
 import type { TrainingFocus } from '../entities/Training'
 import { InboxItemType } from '../enums'
+import { positionShort } from '../format'
 import { SUSPENSION_INCIDENT_LINES, SUSPENSION_INCIDENT_MULTI_LINES } from '../data/suspensionText'
 import { trainingTypeLabel, trainingIntensityLabel } from './trainingService'
 import { getInjurySeverity, DIAGNOSIS_LINES, pickRecoveryLine } from '../data/injuryDoctorText'
@@ -179,7 +180,9 @@ export function createYouthIntakeItem(
   if (result.record.topProspectId) {
     const prospect = result.newPlayers.find((p) => p.id === result.record.topProspectId)
     if (prospect) {
-      body += `Topptalang: ${prospect.firstName} ${prospect.lastName} (${prospect.position}, PA ${prospect.potentialAbility})\n`
+      // Språkläcka (audit 2026-08-29): rå positions-enum ("goalkeeper") + rå "PA".
+      // positionShort är kanonisk; "potential" är ordet ScoutingTab redan använder.
+      body += `Topptalang: ${prospect.firstName} ${prospect.lastName} (${positionShort(prospect.position)}, potential ${prospect.potentialAbility})\n`
       const scoutText = scoutTexts[prospect.id]
       if (scoutText) {
         body += `Scout: "${scoutText}"\n`

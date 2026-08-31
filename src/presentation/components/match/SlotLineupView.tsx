@@ -208,7 +208,8 @@ export function SlotLineupView({
                       </p>
                     </div>
                     <p style={{ fontSize: 10, color: player.position !== slot.position ? 'var(--warning)' : 'var(--text-muted)', marginTop: 0 }}>
-                      {positionShort(player.position)} · {Math.round(player.currentAbility)} CA
+                      {/* "CA" → "styrka": ordet resten av UI:t använder (audit 2026-08-29) */}
+                      {positionShort(player.position)} · styrka {Math.round(player.currentAbility)}
                       {player.position !== slot.position && ' · felpos'}
                     </p>
                     {player.fitness < 60 && (

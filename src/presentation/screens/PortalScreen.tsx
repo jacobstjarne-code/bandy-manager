@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState, useCallback, Fragment } from 'react'
+import { useMemo, useEffect, useState, useCallback, useRef, Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FastForward } from 'lucide-react'
 import { Icon } from '../components/primitives/Icon'
@@ -308,6 +308,27 @@ export function PortalScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [atmosphereSelection.shown.join(','), recordPortalShown])
 
+  // Sticky-CTA:ns FAKTISKA höjd, mätt — inte gissad.
+  // Rot till audit-fyndet "fast CTA krockar med innehåll längst ned" (2026-08-29):
+  // kortstacken reserverade ett fast +72px medan den fixerade CTA-containern i
+  // praktiken är clearance (48) + cue-rad + gap + btn-cta (~48) ≈ 117px, och
+  // ytterligare ~60px när "Simulera resterande säsong" finns. Skillnaden är exakt
+  // det överlapp spelaren såg med 7–9 köade beslut. Höjden varierar per tillstånd
+  // (sim-knapp, cue-radens längd, textstorlek) så den kan inte vara en konstant —
+  // den mäts med ResizeObserver och matas in i kortstackens paddingBottom.
+  const ctaRef = useRef<HTMLDivElement | null>(null)
+  const [ctaHeight, setCtaHeight] = useState(0)
+  useEffect(() => {
+    const el = ctaRef.current
+    if (!el) return
+    const measure = () => setCtaHeight(el.getBoundingClientRect().height)
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  })
+
   return (
     <>
       {nextAnslag && (
@@ -323,7 +344,10 @@ export function PortalScreen() {
           background: 'var(--bg-portal)',
           padding: '14px',
           minHeight: '100%',
-          paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 72px)',
+          // Reservera nav + safe-area + CTA-clearance + CTA-stackens uppmätta höjd
+          // + 12px andrum. Ersätter det tidigare fasta +72px som var mindre än
+          // CTA-stacken faktiskt tar (se ctaHeight-mätningen ovan).
+          paddingBottom: `calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance) + ${Math.round(ctaHeight)}px + 12px)`,
         }}
       >
         {/* Finalhelg-portal: ceremoniellt header-band (final.jpg, fallback tills bilden droppas).
@@ -381,7 +405,7 @@ export function PortalScreen() {
           ("Redo — spela omgång N", "Fortsätt slutspel", "Säsong över").
           --cta-nav-clearance (48px) är samma token B-01/MatchLaddningScene
           redan etablerade för exakt den här bugklassen. */}
-      <div style={{
+      <div ref={ctaRef} style={{
         position: 'fixed',
         bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
         left: 14,

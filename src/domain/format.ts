@@ -117,3 +117,14 @@ export function formatContractRemaining(contractUntilSeason: number, currentSeas
   if (remaining === 1) return '1 säsong kvar'
   return `${remaining} säsonger kvar`
 }
+
+/**
+ * "1 vecka" / "4 veckor" — kanonisk veckoform, samma böjningsdisciplin som
+ * formatContractRemaining. Skrevs 2026-08-31 för audit-fyndet "4 veckor":
+ * "4 veckor" var korrekt svenska, felet var SINGULAR-fallet — PlayerCard
+ * renderade "1 veckor kvar" för en skada med 1–7 dagar kvar.
+ * Mönstret fanns redan inline i inboxService.ts:285 — här blir det ett ställe.
+ */
+export function formatWeeks(weeks: number): string {
+  return weeks === 1 ? '1 vecka' : `${weeks} veckor`
+}

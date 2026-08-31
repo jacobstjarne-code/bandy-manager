@@ -90,7 +90,15 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
       <div className="arrival-scrim" />
       <div className="arrival-lamp-overlay" />
 
-      <button className="scene-skip" aria-label="Hoppa över introduktionen" onClick={onComplete}>Hoppa över ↘</button>
+      {/* MEDIUM 14 (audit 2026-08-29): etiketten lovade "introduktionen" men
+          knappen stänger bara ankomstscenen — lag- och hörnövningarna ligger
+          kvar. Alternativ (b), en riktig "Snabbstart" för återvändande spelare,
+          saknar fundament: kodbasen har ingen karriärräknare och inget
+          returning-player-begrepp alls (grep: careerCount/previousCareer/
+          isReturning → noll träffar utanför ett orelaterat testnamn). Etiketten
+          rättas till vad knappen FAKTISKT gör; "Ankomsten" är scenens eget
+          rubrikord tio rader ned. */}
+      <button className="scene-skip" aria-label="Hoppa över ankomsten" onClick={onComplete}>Hoppa över ↘</button>
 
       {/* Header */}
       <div style={{ position: 'relative', zIndex: 2, padding: '32px 24px 0', textAlign: 'center' }}>

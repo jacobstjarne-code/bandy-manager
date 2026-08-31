@@ -11,6 +11,100 @@ interface GranskaShotmapProps {
 }
 
 /**
+ * Audit-fynd 2026-08-29: "skottkartan överlappar etiketter nära målet".
+ * Rot: alla mål slumpas in i samma 60×38-ruta framför mål, och namnetiketten
+ * lades på en fast 12px-radie i en av åtta vinklar härledd ur namnets FÖRSTA
+ * BOKSTAV — två målskyttar på samma bokstav fick identisk vinkel, och täta
+ * prickar la etiketter ovanpå varandra oavsett vinkel.
+ *
+ * Två åtgärder, båda deterministiska (ingen ny slump, samma seed ger samma bild):
+ *  1. separateDots — relaxationspass som knuffar isär prickar närmare varandra
+ *     än summan av radierna + 1px, klämt till zonens gränser.
+ *  2. placeLabel — testar kandidatpositioner runt pricken och tar första som
+ *     inte krockar med en redan placerad etikett; ingen plats → ingen etikett
+ *     (översikten hålls ren, hellre färre namn än oläslig gyttja).
+ * Flera mål av samma skytt aggregeras till "Namn ×2" — en etikett, inte fler.
+ */
+function separateDots<T extends { x: number; y: number; r: number }>(
+  items: T[],
+  bounds: { minX: number; maxX: number; minY: number; maxY: number },
+): void {
+  const PAD = 1
+  for (let pass = 0; pass < 12; pass++) {
+    let moved = false
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        const a = items[i], b = items[j]
+        const dx = b.x - a.x, dy = b.y - a.y
+        const distSq = dx * dx + dy * dy
+        const minDist = a.r + b.r + PAD
+        if (distSq >= minDist * minDist) continue
+        const dist = Math.sqrt(distSq) || 0.001
+        // Deterministisk knuff även vid exakt sammanfall (dist ~0)
+        const nx = distSq === 0 ? ((i % 2) === 0 ? 1 : -1) : dx / dist
+        const ny = distSq === 0 ? ((j % 2) === 0 ? 1 : -1) : dy / dist
+        const push = (minDist - dist) / 2
+        a.x -= nx * push; a.y -= ny * push
+        b.x += nx * push; b.y += ny * push
+        moved = true
+      }
+    }
+    for (const it of items) {
+      it.x = Math.max(bounds.minX + it.r, Math.min(bounds.maxX - it.r, it.x))
+      it.y = Math.max(bounds.minY + it.r, Math.min(bounds.maxY - it.r, it.y))
+    }
+    if (!moved) break
+  }
+}
+
+type LabelBox = { x: number; y: number; w: number; h: number }
+
+/** Cirkel mot rektangel — närmaste punkt i boxen, jämför mot radien. */
+function circleHitsBox(c: { x: number; y: number; r: number }, b: LabelBox): boolean {
+  const nx = Math.max(b.x, Math.min(c.x, b.x + b.w))
+  const ny = Math.max(b.y, Math.min(c.y, b.y + b.h))
+  const dx = c.x - nx, dy = c.y - ny
+  return dx * dx + dy * dy < c.r * c.r
+}
+
+/**
+ * Första kandidatposition utan krock — mot både redan placerade etiketter OCH
+ * mot prickarna själva (annars lägger sig ett namn tvärs över en granne, vilket
+ * var precis det auditen såg). null = ingen plats fanns, etiketten hoppas över.
+ */
+function placeLabel(
+  cx: number, cy: number, dotR: number, text: string,
+  placed: LabelBox[],
+  dots: Array<{ x: number; y: number; r: number }>,
+  bounds: { minX: number; maxX: number; minY: number; maxY: number },
+): { x: number; y: number; anchor: 'start' | 'end' } | null {
+  const w = text.length * 4.0 + 2  // fontSize 7, grov men stabil bredduppskattning
+  const h = 7
+  for (const radius of [dotR + 5, dotR + 10, dotR + 16, dotR + 22]) {
+    for (let a = 0; a < 12; a++) {
+      const angle = (a / 12) * Math.PI * 2
+      const ox = Math.cos(angle) * radius
+      const oy = Math.sin(angle) * radius
+      const anchor: 'start' | 'end' = ox < 0 ? 'end' : 'start'
+      const tx = cx + ox + (anchor === 'end' ? -2 : 2)
+      const ty = cy + oy + 2.5
+      const box: LabelBox = { x: anchor === 'end' ? tx - w : tx, y: ty - h, w, h }
+      if (box.x < bounds.minX || box.x + box.w > bounds.maxX) continue
+      if (box.y < bounds.minY || box.y + box.h > bounds.maxY) continue
+      const hitsLabel = placed.some(p =>
+        box.x < p.x + p.w && box.x + box.w > p.x && box.y < p.y + p.h && box.y + box.h > p.y)
+      if (hitsLabel) continue
+      // Egen prick undantagen: etiketten startar redan utanför dess radie.
+      const hitsDot = dots.some(d => !(d.x === cx && d.y === cy) && circleHitsBox(d, box))
+      if (hitsDot) continue
+      placed.push(box)
+      return { x: tx, y: ty, anchor }
+    }
+  }
+  return null
+}
+
+/**
  * @cites fixture.report.shotsHome, fixture.report.shotsAway, fixture.events, fixture.report.savesHome, fixture.report.savesAway, game.fixtures
  */
 export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
@@ -39,9 +133,10 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
   const TOP_MAX = 100  // bottom edge of our-attack zone
   const BOT_MIN = 130  // top edge of opponent-attack zone
 
-  type ShotDot = { x: number; y: number; kind: 'goal' | 'save' | 'miss'; label?: string }
+  type ShotDot = { x: number; y: number; r: number; kind: 'goal' | 'save' | 'miss'; label?: string }
   const dots: ShotDot[] = []
   let seed = 0
+  const DOT_R = { goal: 6, save: 3, miss: 2 } as const
 
   function nextPos(kind: 'goal' | 'save' | 'miss', playerId?: string): { x: number; y: number } {
     seed++
@@ -58,13 +153,21 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
     return { x: Math.max(6, Math.min(W - 6, x)), y: Math.max(GT + 4, Math.min(TOP_MAX - 4, y)) }
   }
 
+  // Kluster-och-räkna: flera mål av samma skytt blir EN etikett ("Pålsson ×2"),
+  // inte samma namn upprepat ovanpå sig självt.
+  const goalCountByName = new Map<string, number>()
+  for (const e of goals) {
+    const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
+    if (scorer?.lastName) goalCountByName.set(scorer.lastName, (goalCountByName.get(scorer.lastName) ?? 0) + 1)
+  }
   goals.forEach(e => {
     const pos = nextPos('goal', e.playerId)
     const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
-    dots.push({ ...pos, kind: 'goal', label: scorer?.lastName })
+    dots.push({ ...pos, r: DOT_R.goal, kind: 'goal', label: scorer?.lastName })
   })
-  for (let i = 0; i < savedCount; i++) dots.push({ ...nextPos('save'), kind: 'save' })
-  for (let i = 0; i < missCount; i++) dots.push({ ...nextPos('miss'), kind: 'miss' })
+  for (let i = 0; i < savedCount; i++) dots.push({ ...nextPos('save'), r: DOT_R.save, kind: 'save' })
+  for (let i = 0; i < missCount; i++) dots.push({ ...nextPos('miss'), r: DOT_R.miss, kind: 'miss' })
+  separateDots(dots, { minX: 4, maxX: W - 4, minY: GT + 2, maxY: TOP_MAX - 2 })
 
   const oppClubId = isHome ? fixture.awayClubId : fixture.homeClubId
   const managedClub = game.clubs.find(c => c.id === managedClubId)
@@ -73,9 +176,10 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
   const oppGoals = fixture.events.filter(e => e.type === MatchEventType.Goal && e.clubId !== managedClubId).length
   const oppSavedByUs = isHome ? (fixture.report.savesHome ?? 0) : (fixture.report.savesAway ?? 0)
 
-  type OppDot = { x: number; y: number; kind: 'goal' | 'save' | 'miss' }
+  type OppDot = { x: number; y: number; r: number; kind: 'goal' | 'save' | 'miss' }
   const oppDots: OppDot[] = []
   let oppSeed = 100
+  const OPP_DOT_R = { goal: 5, save: 2.5, miss: 2 } as const
 
   function nextOppPos(kind: 'goal' | 'save' | 'miss'): { x: number; y: number } {
     oppSeed++
@@ -94,9 +198,10 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
 
   const oppSavedCount = oppSavedByUs
   const oppMissCount = Math.max(0, oppShots - oppGoals - oppSavedCount)
-  for (let i = 0; i < oppGoals; i++) oppDots.push({ ...nextOppPos('goal'), kind: 'goal' })
-  for (let i = 0; i < oppSavedCount; i++) oppDots.push({ ...nextOppPos('save'), kind: 'save' })
-  for (let i = 0; i < oppMissCount; i++) oppDots.push({ ...nextOppPos('miss'), kind: 'miss' })
+  for (let i = 0; i < oppGoals; i++) oppDots.push({ ...nextOppPos('goal'), r: OPP_DOT_R.goal, kind: 'goal' })
+  for (let i = 0; i < oppSavedCount; i++) oppDots.push({ ...nextOppPos('save'), r: OPP_DOT_R.save, kind: 'save' })
+  for (let i = 0; i < oppMissCount; i++) oppDots.push({ ...nextOppPos('miss'), r: OPP_DOT_R.miss, kind: 'miss' })
+  separateDots(oppDots, { minX: 4, maxX: W - 4, minY: BOT_MIN + 2, maxY: GB - 2 })
 
   return (
     <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
@@ -139,24 +244,28 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
           {/* Our shot dots (top zone) */}
           {(() => {
             const seenLabels = new Set<string>()
+            const placedLabels: LabelBox[] = []
+            const labelBounds = { minX: 2, maxX: W - 2, minY: GT + 1, maxY: TOP_MAX - 1 }
             return dots.map((d, i) => {
               const showLabel = d.label != null && !seenLabels.has(d.label)
               if (d.label && showLabel) seenLabels.add(d.label)
+              const count = d.label ? (goalCountByName.get(d.label) ?? 1) : 1
+              const labelText = d.label ? (count > 1 ? `${d.label} ×${count}` : d.label) : ''
+              const pos = showLabel && labelText
+                ? placeLabel(d.x, d.y, d.r, labelText, placedLabels, dots, labelBounds)
+                : null
               return (
                 <g key={i}>
                   <circle
                     cx={d.x} cy={d.y}
-                    r={d.kind === 'goal' ? 6 : d.kind === 'save' ? 3 : 2}
+                    r={d.r}
                     fill={d.kind === 'goal' ? 'color-mix(in srgb, var(--success) 85%, transparent)' : d.kind === 'save' ? 'color-mix(in srgb, var(--accent) 70%, transparent)' : 'rgba(0,0,0,0.15)'}
                     stroke={d.kind === 'goal' ? 'var(--success)' : d.kind === 'save' ? 'var(--accent)' : 'rgba(0,0,0,0.3)'}
                     strokeWidth="1"
                   />
-                  {showLabel && d.label && (() => {
-                    const angle = (d.label.charCodeAt(0) % 8) * (Math.PI / 4)
-                    const lx = d.x + Math.cos(angle) * 12
-                    const ly = d.y + Math.sin(angle) * 12 + 2
-                    return <text x={lx} y={ly} fontSize="7" fill="rgba(0,0,0,0.55)">{d.label}</text>
-                  })()}
+                  {pos && (
+                    <text x={pos.x} y={pos.y} fontSize="7" textAnchor={pos.anchor} fill="rgba(0,0,0,0.55)">{labelText}</text>
+                  )}
                 </g>
               )
             })
@@ -170,7 +279,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
               <circle
                 key={`opp-${i}`}
                 cx={d.x} cy={d.y}
-                r={(d.kind === 'goal' ? 5 : d.kind === 'save' ? 2.5 : 2) * oppDotScale}
+                r={d.r * oppDotScale}
                 fill={d.kind === 'goal' ? 'color-mix(in srgb, var(--danger) 60%, transparent)' : d.kind === 'save' ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'rgba(0,0,0,0.1)'}
                 stroke={d.kind === 'goal' ? 'color-mix(in srgb, var(--danger) 90%, transparent)' : 'rgba(0,0,0,0.25)'}
                 strokeWidth="1"

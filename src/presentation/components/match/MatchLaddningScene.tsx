@@ -385,6 +385,24 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
   }
 
   // ── Standard single-step scene (non-final or other occasions) ──
+  //
+  // HIGH-fyndet "den första matchillustrationen är i praktiken tom" (audit
+  // 2026-08-29): för de tillfällen som saknar asset (premiar, cup, derby, nyar
+  // — bara annandagen.jpg/final.jpg/intro.jpg finns i repot) renderades
+  // IllustrationPlaceholder, dvs en stor mörk fond med etiketten "⬩ PREMIÄR ⬩"
+  // och dev-texten "illustration på väg" mitt i bilden. Två fel samtidigt:
+  // dev-copy nådde spelaren, och eyebrown stod två gånger på samma skärm
+  // (placeholderns mitt + den riktiga eyebrown nere till vänster).
+  //
+  // Åtgärd per auditens egen rekommendation ("ett medvetet typografiskt
+  // helskärmsögonblick är bättre än en uppenbar platshållare"): utan asset
+  // finns ingen bildyta alls. Scenen blir en centrerad titelkomposition på
+  // scen-fonden, byggd av EXAKT samma strängar som redan når komponenten
+  // (eyebrow, motståndarens namn, plats · relation, laddningsraden, stake).
+  // Ingen ny text. Typskalan lyfts ett steg (h-display-md → h-display-lg,
+  // båda befintliga klasser) eftersom typografin nu bär hela skärmen.
+  const hasImage = !!assetName
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 300,
@@ -394,47 +412,60 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
       overflow: 'hidden',
     }}>
       {/* Scene area — fills everything above the CTA row */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
-        {assetName ? (
-          <img
-            src={`/assets/illustrations/${assetName}.jpg`}
-            alt={texts.eyebrow}
-            style={{
-              position: 'absolute', inset: 0,
-              width: '100%', height: '100%',
-              objectFit: 'cover', objectPosition: 'center 30%',
-            }}
-          />
+      <div style={{
+        flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0,
+        ...(hasImage ? {} : { display: 'flex', alignItems: 'center', justifyContent: 'center' }),
+      }}>
+        {hasImage ? (
+          <>
+            <img
+              src={`/assets/illustrations/${assetName}.jpg`}
+              alt={texts.eyebrow}
+              style={{
+                position: 'absolute', inset: 0,
+                width: '100%', height: '100%',
+                objectFit: 'cover', objectPosition: 'center 30%',
+              }}
+            />
+
+            {/* Top scrim (mock: top 26%, rgba(12,14,20,0.6) → transparent) */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: '26%',
+              background: 'linear-gradient(180deg, rgba(12,14,20,0.6), transparent)',
+              pointerEvents: 'none',
+            }} />
+
+            {/* Bottom scrim (mock: bottom 70%, transparent → deep dark) */}
+            <div style={{
+              position: 'absolute', left: 0, right: 0, bottom: 0, height: '70%',
+              background: 'linear-gradient(180deg, transparent 0%, rgba(16,18,24,0.55) 42%, rgba(12,14,20,0.94) 100%)',
+              pointerEvents: 'none',
+            }} />
+          </>
         ) : (
-          <IllustrationPlaceholder name={texts.eyebrow.toLowerCase()} />
+          // Typografisk fond — inte en tom bildruta. Samma iskalla scen-antydan
+          // som IllustrationPlaceholder använder, men utan etikett och utan
+          // dev-copy: den ska läsa som scenens grund, inte som ett hål.
+          <div aria-hidden style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'radial-gradient(ellipse 130% 85% at 50% 24%, color-mix(in srgb, var(--ice) 9%, var(--bg-portal)) 0%, var(--bg-portal) 72%)',
+          }} />
         )}
 
-        {/* Top scrim (mock: top 26%, rgba(12,14,20,0.6) → transparent) */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: '26%',
-          background: 'linear-gradient(180deg, rgba(12,14,20,0.6), transparent)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Bottom scrim (mock: bottom 70%, transparent → deep dark) */}
-        <div style={{
-          position: 'absolute', left: 0, right: 0, bottom: 0, height: '70%',
-          background: 'linear-gradient(180deg, transparent 0%, rgba(16,18,24,0.55) 42%, rgba(12,14,20,0.94) 100%)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Text overlay — bottomed with breathing room above CTA */}
-        <div style={{
-          position: 'absolute', left: 18, right: 18, bottom: 44, zIndex: 2,
-        }}>
-          <p className="h-label h-label-light" style={{ color: eyebrowColor, marginBottom: 9, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+        {/* Text — över bilden när det finns en bild, annars ÄR texten scenen. */}
+        <div style={hasImage
+          ? { position: 'absolute', left: 18, right: 18, bottom: 44, zIndex: 2 }
+          : { position: 'relative', zIndex: 2, width: '100%', padding: '0 26px', textAlign: 'center' }
+        }>
+          <p className="h-label h-label-light" style={{ color: eyebrowColor, marginBottom: hasImage ? 9 : 16, ...(hasImage ? { textShadow: '0 1px 4px rgba(0,0,0,0.6)' } : {}) }}>
             ⬩ {texts.eyebrow} ⬩
           </p>
 
           {opponent && (
-            <p className="h-display-md" style={{
-              color: 'var(--text-light)', lineHeight: 1.1, marginBottom: 4,
-              textShadow: '0 1px 8px rgba(0,0,0,0.7)', letterSpacing: '-0.4px',
+            <p className={hasImage ? 'h-display-md' : 'h-display-lg'} style={{
+              color: 'var(--text-light)', lineHeight: 1.1, marginBottom: hasImage ? 4 : 8,
+              letterSpacing: '-0.4px',
+              ...(hasImage ? { textShadow: '0 1px 8px rgba(0,0,0,0.7)' } : {}),
             }}>
               {opponent.name}
             </p>
@@ -443,13 +474,22 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
           <p className="h-micro" style={{
             fontFamily: 'var(--font-mono)',
             color: 'var(--text-light-secondary)',
-            letterSpacing: '0.5px', marginBottom: 12,
-            textShadow: '0 1px 4px rgba(0,0,0,0.7)',
+            letterSpacing: '0.5px', marginBottom: hasImage ? 12 : 18,
+            ...(hasImage ? { textShadow: '0 1px 4px rgba(0,0,0,0.7)' } : {}),
           }}>
             {plats} · {relation}
           </p>
 
-          <p className="h-quote h-quote-light" style={{ lineHeight: 1.5, textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>
+          {/* Hårfin kopparlinje som ankare mellan fakta och laddningsraden —
+              bara i det bildlösa läget, där kompositionen saknar bildens kant. */}
+          {!hasImage && (
+            <div aria-hidden style={{
+              width: 40, height: 1, margin: '0 auto 18px',
+              background: `color-mix(in srgb, ${eyebrowColor} 55%, transparent)`,
+            }} />
+          )}
+
+          <p className="h-quote h-quote-light" style={{ lineHeight: 1.5, ...(hasImage ? { textShadow: '0 1px 6px rgba(0,0,0,0.7)' } : {}) }}>
             {charge}
           </p>
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
+import { getDifficulty } from '../../../domain/services/offerSelectionService'
 import { CLUB_EXTENDED_INFO } from '../../../domain/data/clubExtendedInfo'
 import { CLUB_OFFER_QUOTES } from '../../../domain/data/clubOfferQuotes'
 import { SverigeBackdrop } from './SverigeBackdrop'
@@ -67,10 +68,13 @@ export function AllClubsView({ onSelect, onBack }: Props) {
               const extInfo = CLUB_EXTENDED_INFO[club.id]
               const quotePool = CLUB_OFFER_QUOTES[club.id] ?? []
               const quote = quotePool.length > 0 ? quotePool[0] : null
+              // Samma källa som OfferCard använder — inte en andra bedömning.
+              const difficulty = getDifficulty(club)
               return (
                 <div key={club.id}>
                   <ClubListItem
                     name={club.name}
+                    difficulty={difficulty}
                     isSelected={selectedClubId === club.id}
                     alignment={alignment}
                     onClick={() => handlePillClick(club.id)}
@@ -79,6 +83,7 @@ export function AllClubsView({ onSelect, onBack }: Props) {
                     <ClubExpandedCard
                       clubId={club.id}
                       clubName={club.name}
+                      difficulty={difficulty}
                       region={club.region}
                       arenaName={club.arenaName}
                       supporterGroupName={club.supporterGroupName}

@@ -23,7 +23,7 @@ export function MonthDecisionsSecondary({ game }: CardRenderProps) {
     <div className="portal-secondary-card">
       <div className="portal-card-stripe portal-card-stripe-copper-dim" />
       <div className="portal-card-eyebrow">Denna månad</div>
-      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-light)', lineHeight: 1.3 }}>
         {batched.length} väntar
       </div>
     </div>

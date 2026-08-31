@@ -3,7 +3,7 @@ import { PlayerPosition, MatchEventType } from '../../domain/enums'
 // Kanoniska positionsetiketter + pengar bor i domain/format (delas med domänlagret,
 // som inte får importera presentation). Re-exporteras här så befintliga import-ställen
 // (positionShort/formatValue/formatSalary från '../utils/formatters') är oförändrade.
-export { positionShort, positionLong, formatValue, formatSalary, formatRating, formatDecimalComma, formatContractUntil, formatContractRemaining, contractSeasonsRemaining } from '../../domain/format'
+export { positionShort, positionLong, formatValue, formatSalary, formatRating, formatDecimalComma, formatContractUntil, formatContractRemaining, contractSeasonsRemaining, formatWeeks } from '../../domain/format'
 
 export function truncate(s: string, n: number): string {
   return s.length > n ? s.slice(0, n) + '…' : s

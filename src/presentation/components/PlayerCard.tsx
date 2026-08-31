@@ -12,7 +12,7 @@ import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
 import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
 import { Icon } from './primitives/Icon'
-import { formatSalary, positionShort, formatContractUntil } from '../utils/formatters'
+import { formatSalary, positionShort, formatContractUntil, formatWeeks } from '../utils/formatters'
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { mentorshipBondAdeptInForm, mentorshipBondAdeptResting } from '../../domain/data/mentorshipStrings'
 import { pickRehabStageLine } from '../../domain/data/injuryDoctorText'
@@ -146,7 +146,8 @@ function CaSparkline({ history, currentCa }: { history: Array<{ season: number; 
   return (
     <div style={{ marginTop: 8 }}>
       <p className="h-label">
-        CA-UTVECKLING
+        {/* "CA-UTVECKLING" → "STYRKA": ordet resten av UI:t använder (audit 2026-08-29) */}
+        STYRKA
       </p>
       <svg width={W} height={H + 4} viewBox={`0 0 ${W} ${H + 4}`} style={{ display: 'block' }}>
         <polyline
@@ -547,7 +548,8 @@ export function PlayerCard({
           {player.isInjured && player.injuryNarrative && (
             <div style={{ padding: '8px 10px', background: 'color-mix(in srgb, var(--danger) 8%, transparent)', borderLeft: '3px solid var(--danger)', marginTop: 8, borderRadius: '0 4px 4px 0' }}>
               <p className="h-label" style={{ color: 'var(--danger)' }}>
-                🏥 SKADAD — {Math.ceil(player.injuryDaysRemaining / 7)} veckor kvar
+                {/* formatWeeks: 1–7 dagar kvar renderade tidigare "1 veckor kvar" */}
+                🏥 SKADAD — {formatWeeks(Math.ceil(player.injuryDaysRemaining / 7))} kvar
               </p>
               <p className="h-quote-sm" style={{ lineHeight: 1.5 }}>
                 {player.injuryNarrative}

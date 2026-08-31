@@ -116,8 +116,8 @@ export function GameOverScreen() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px 20px',
+      overflowY: 'auto',
+      padding: '24px 20px calc(24px + var(--safe-bottom, 0px))',
       zIndex: 1000,
       maxWidth: 430,
       margin: '0 auto',
@@ -130,6 +130,7 @@ export function GameOverScreen() {
         width: '100%',
         maxWidth: 390,
         textAlign: 'center',
+        margin: 'auto 0',
       }}>
         {/* Red warning icon */}
         <div style={{
@@ -217,49 +218,52 @@ export function GameOverScreen() {
             räknar båda knapparna som "sticky CTA" — 10px fri kant mätt,
             kräver 44px (samma tröskel som navkollisionen i Bygget). Upptäckt
             i samma svep som registrerade denna, tidigare helt otäckta, yta. */}
-        <button
-          className="btn"
-          onClick={handleViewHistory}
-          style={{
-            width: '100%',
-            letterSpacing: '1.5px',
-            textTransform: 'uppercase',
-            marginBottom: careerBreakAvailable ? 12 : 44,
-          }}
-        >
-          SE KARRIÄREN
-        </button>
-        {/* O13: den tredje vägen. Primär när den finns — domen gör
-            fortsättningen till huvudspåret och "Ny karriär" till alternativet,
-            inte tvärtom. Endast EN .btn-primary per skärm (designsystemet),
-            därför tappar "NY KARRIÄR" sin primärstil när den här visas. */}
-        {careerBreakAvailable && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <button
-            className="btn btn-primary"
-            onClick={handleCareerBreak}
-            disabled={simulating}
+            className="btn"
+            onClick={handleViewHistory}
             style={{
               width: '100%',
+              minHeight: 44,
               letterSpacing: '1.5px',
               textTransform: 'uppercase',
-              marginBottom: 44,
-              opacity: simulating ? 0.6 : 1,
             }}
           >
-            {CAREER_BREAK_START_CTA}
+            SE KARRIÄREN
           </button>
-        )}
-        <button
-          className={careerBreakAvailable ? 'btn' : 'btn btn-primary'}
-          onClick={handleNewGame}
-          style={{
-            width: '100%',
-            letterSpacing: '1.5px',
-            textTransform: 'uppercase',
-          }}
-        >
-          NY KARRIÄR
-        </button>
+          {/* O13: den tredje vägen. Primär när den finns — domen gör
+              fortsättningen till huvudspåret och "Ny karriär" till alternativet,
+              inte tvärtom. Endast EN .btn-primary per skärm (designsystemet),
+              därför tappar "NY KARRIÄR" sin primärstil när den här visas. */}
+          {careerBreakAvailable && (
+            <button
+              className="btn btn-primary"
+              onClick={handleCareerBreak}
+              disabled={simulating}
+              style={{
+                width: '100%',
+                minHeight: 44,
+                letterSpacing: '1.5px',
+                textTransform: 'uppercase',
+                opacity: simulating ? 0.6 : 1,
+              }}
+            >
+              {CAREER_BREAK_START_CTA}
+            </button>
+          )}
+          <button
+            className={careerBreakAvailable ? 'btn' : 'btn btn-primary'}
+            onClick={handleNewGame}
+            style={{
+              width: '100%',
+              minHeight: 44,
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+            }}
+          >
+            NY KARRIÄR
+          </button>
+        </div>
       </div>
     </div>
   )

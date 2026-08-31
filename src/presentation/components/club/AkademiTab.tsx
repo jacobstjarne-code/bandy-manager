@@ -121,7 +121,8 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>CA {Math.round(p.currentAbility)}</span>
+                      {/* "CA" → "Styrka": ordet resten av UI:t använder (audit 2026-08-29) */}
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>Styrka {Math.round(p.currentAbility)}</span>
                       <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{stars}</span>
                       {group.canPromote && (
                         <button

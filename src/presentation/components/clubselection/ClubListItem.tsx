@@ -1,5 +1,10 @@
+import { DifficultyTag } from './DifficultyTag'
+
 interface Props {
   name: string
+  /** Samma svårighetsgrad som OfferCard visar — hela 12-klubbslistan ska kunna
+      jämföras, inte bara de tre föreslagna (audit 2026-08-29). */
+  difficulty: 'easy' | 'medium' | 'hard'
   isSelected: boolean
   alignment: 'left' | 'center' | 'right'
   onClick: () => void
@@ -11,7 +16,7 @@ const JUSTIFY: Record<Props['alignment'], string> = {
   right: 'flex-end',
 }
 
-export function ClubListItem({ name, isSelected, alignment, onClick }: Props) {
+export function ClubListItem({ name, difficulty, isSelected, alignment, onClick }: Props) {
   return (
     <div
       style={{
@@ -39,6 +44,7 @@ export function ClubListItem({ name, isSelected, alignment, onClick }: Props) {
         }}
       >
         {name}
+        <DifficultyTag difficulty={difficulty} />
       </button>
     </div>
   )

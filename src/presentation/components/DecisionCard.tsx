@@ -102,9 +102,11 @@ const TAG_TONE_STYLE: Record<DecisionCardTag['tone'], CSSProperties> = {
  */
 function modeWrapperStyle(mode: DecisionMode, isRound: boolean): CSSProperties {
   if (mode === 'notis') {
-    // Lägst vikt: tunnare, dovare ram — kortet ska kunna passeras.
+    // Lägst vikt: tunnare, dovare ram och en bakgrund närmare sidans papper
+    // än dilemmats vita yta — kortet ska kunna passeras vid en blick.
     return {
       border: '1px solid color-mix(in srgb, var(--border) 55%, transparent)',
+      background: 'color-mix(in srgb, var(--bg-surface) 40%, var(--bg) 60%)',
       boxShadow: 'none',
     }
   }
@@ -115,7 +117,7 @@ function modeWrapperStyle(mode: DecisionMode, isRound: boolean): CSSProperties {
     return {
       borderLeft: '3px solid var(--accent)',
       ...(isRound ? {} : { borderRadius: '0 8px 8px 0' }),
-      boxShadow: 'var(--shadow-raised)',
+      boxShadow: isRound ? 'var(--shadow-modal)' : 'var(--shadow-raised)',
     }
   }
   return {}
@@ -195,14 +197,11 @@ export function DecisionCard({ shape = 'sharp', accent, entityId, entitySource, 
       style={{
         margin: isRound ? '0 0 20px' : '0 0 3px',
         padding: isRound ? '24px 20px' : '10px 12px',
-        // Ordningen är avsiktlig och OFÖRÄNDRAD från före HIGH 11 vad gäller
-        // accent↔isRound (isRound:s `border: none` nollar en accent-kant på
-        // en round-modal — så har det alltid fungerat). Läget läggs FÖRST,
-        // alltså underst: en explicit `accent` (presskonferens/CS-pressfråga)
-        // och round-modalens egen chrome vinner över lägets vikt.
+        // Formen läggs först och den semantiska vikten sist. Då behåller en
+        // rund brytpunkt modalens chrome men tappar inte sin accentkant.
+        ...(isRound ? { minWidth: 280, maxWidth: 360, width: '90%', background: 'var(--bg)', border: 'none', boxShadow: 'var(--shadow-modal)' } : {}),
         ...modeWrapperStyle(mode, isRound),
         ...(accent ? { borderLeft: '3px solid var(--warm)', borderRadius: '0 8px 8px 0' } : {}),
-        ...(isRound ? { minWidth: 280, maxWidth: 360, width: '90%', background: 'var(--bg)', border: 'none', boxShadow: 'var(--shadow-modal)' } : {}),
         ...style,
       }}
       {...(entityId ? { 'data-entity-id': entityId } : {})}

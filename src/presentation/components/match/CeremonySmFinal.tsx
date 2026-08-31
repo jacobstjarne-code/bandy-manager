@@ -1,7 +1,7 @@
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
-import { truncate } from '../../utils/formatters'
+import { truncate, positionLong } from '../../utils/formatters'
 import { computePlayerRatings } from '../../utils/matchRatings'
 import { didManagedWinFinal } from '../../utils/finalResult'
 import { GoldConfetti } from './GoldConfetti'
@@ -132,7 +132,9 @@ export function CeremonySmFinal({
   const [mvpId, mvpRating] = Object.entries(playerRatings).sort((a, b) => b[1] - a[1])[0] ?? ['', 0]
   const mvpPlayer = mvpId ? players.find(p => p.id === mvpId) : undefined
   const mvpName = mvpPlayer ? `${mvpPlayer.firstName} ${mvpPlayer.lastName}` : 'Okänd spelare'
-  const mvpPos = mvpPlayer?.position ?? ''
+  // Språkläcka (audit 2026-08-29): renderades versalt som "FORWARD"/"GOALKEEPER"
+  // i SM-finalens MVP-slide. positionLong är kanonisk källa.
+  const mvpPos = mvpPlayer ? positionLong(mvpPlayer.position) : ''
 
   return (
     <div style={{

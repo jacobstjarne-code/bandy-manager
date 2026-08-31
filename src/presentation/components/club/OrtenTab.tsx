@@ -10,6 +10,7 @@ import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteSe
 import { OrtenMap } from './OrtenMap'
 import { generateVolunteerRoster, getActiveVolunteerBonus } from '../../../domain/services/volunteerService'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
+import { SUPPORTER_ROLE_LABELS } from '../../../domain/data/enumLabels'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {
@@ -275,14 +276,19 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
                 +{Math.round(volunteerBonus.weeklyIncome / 1000)} tkr · +{volunteerBonus.csBoostPerRound.toFixed(1)} puls/omg
               </span>
             </div>
-            <div style={{ display: 'flex', gap: 2, marginBottom: 8 }}>
+            {/* Rot till audit-fyndet "Orten-volontärer går horisontellt sönder"
+                (2026-08-29): containern saknade flexDirection: 'column', så de
+                fyra namn+moral-raderna — som var skrivna som fullbreddsrader
+                (justify-content: space-between, padding 2px 0) — lades sida vid
+                sida med 2px emellan och klipptes/flöt ihop på 390px. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 8 }}>
               {activeVolunteers.map((name, i) => {
                 const morale = (game.volunteerMorale ?? {})[name] ?? 70
                 const moraleColor = morale >= 60 ? 'var(--success)' : morale >= 35 ? 'var(--accent)' : 'var(--danger)'
                 return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 0' }}>
-                    <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{name}</span>
-                    <span style={{ fontSize: 10, color: moraleColor, marginLeft: 6 }}>{morale}</span>
+                  <div key={i} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, padding: '2px 0' }}>
+                    <span style={{ fontSize: 10, color: 'var(--text-secondary)', minWidth: 0, overflowWrap: 'anywhere' }}>{name}</span>
+                    <span style={{ fontSize: 10, color: moraleColor, flexShrink: 0 }}>{morale}</span>
                   </div>
                 )
               })}
@@ -610,7 +616,13 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
               {chars.map((c, i) => (
                 <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', minWidth: 90 }}>{c.name}</span>
-                  <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{c.role}</span>
+                  {/* Språkläcka (audit 2026-08-29): renderade rå SupporterRole med
+                      capitalize → "Leader"/"Youth"/"Family". Etiketterna är tomma
+                      tills Opus levererat dem (SUPPORTER_ROLE_LABELS) — inget
+                      renderas hellre än engelska. */}
+                  {SUPPORTER_ROLE_LABELS[c.role] && (
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{SUPPORTER_ROLE_LABELS[c.role]}</span>
+                  )}
                 </div>
               ))}
             </div>
