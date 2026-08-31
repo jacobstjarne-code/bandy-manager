@@ -14,6 +14,7 @@ import { RETIREMENT_RESPONSES } from '../../../domain/data/retirementText'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { canStartBuild, startFacilityBuild, FACILITY_NODE_DEFS } from '../../../domain/services/facilityService'
+import { captureFacilityBuildDecision } from '../../../domain/services/seasonDecisionCaptureService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
 import { getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
@@ -783,6 +784,18 @@ export function gameFlowActions(get: Get, set: Set) {
             if (def) {
               updatedGame.clubs = applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, -def.cost)
               updatedGame.facilityState = startFacilityBuild(choiceId, facilityState, updatedGame.currentMatchday)
+              // HIGH 6 (auditen 2026-08-29): försäsongens "Valet" är den ANDRA
+              // vägen in i ett anläggningsbygge (den första är
+              // gameStore.startFacilityBuildNode). Samma beslut, samma
+              // infångare — att bara haka på den ena hade återskapat precis
+              // den halvt applicerade fixen HIGH 6 handlar om.
+              const facilityCandidate = captureFacilityBuildDecision(game, updatedGame, choiceId, def.cost)
+              if (facilityCandidate) {
+                updatedGame.seasonDecisionCandidates = [
+                  ...(updatedGame.seasonDecisionCandidates ?? []),
+                  facilityCandidate,
+                ]
+              }
             }
           }
         }

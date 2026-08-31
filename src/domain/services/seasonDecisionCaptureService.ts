@@ -24,6 +24,28 @@
  * för de åtta som redan har text, plus fallback-texten när ingen av dem
  * kvalificerar denna säsong.
  *
+ * HIGH 6 (auditen 2026-08-29, `docs/incoming/BANDY_MANAGER_AUDIT_5_SASONGER_
+ * KUL_STICKINESS_VISUELL_2026-08-29.md`): den kvarstående begränsningen ovan
+ * var precis den auditen mätte — två hela säsonger med heltidskontrakt,
+ * kaptensmöte, värmestugebygge, mecenatkonflikt och slutspelsbåge gav ändå
+ * "Inget beslut stack ut i vintras." Vidgningen är nu gjord, med de nya
+ * meningsmallarna i `src/domain/data/seasonDecisionSentences.ts` (TOMMA tills
+ * Opus levererar — en byggare med tom mall returnerar `null`, aldrig en
+ * kandidat med tom mening). Tre nya källor:
+ *   1. mecenatEvent/side_mec1 + side_mec2 — välja sida i en personkonflikt
+ *   2. captainSpeech/take_charge + support — kaptensmötet, namngiven person
+ *   3. anläggningsbygge — går INTE via resolveEvent/GameEvent alls (direkt
+ *      store-action), därför en parallell infångare: captureFacilityBuild-
+ *      Decision() längst ned, samma kandidatform och samma qualifies()-grind.
+ *
+ * HIGH 6, rotorsak som blockerade 1 och 2: `eventResolver.ts` lindade sitt
+ * anrop till captureSystemDecision i `if (event.systemhandelse)` trots att
+ * A-H9 tog bort exakt den grinden inne i funktionen. Varken mecenat-
+ * konflikten eller kaptensmötet sätter `systemhandelse: true` (flaggan är
+ * O19:s säsongsbudget-klassning, inte en kandidatgrind), så deras byggare
+ * hade aldrig kunnat köra. Den yttre grinden är borttagen — BUILDERS-
+ * uppslaget är den enda grinden, precis som filhuvudet redan påstod.
+ *
  * Formregeln (Jacobs dom): Form 1 (påtvingat — händelsen fanns i kön för att
  * något tvingade fram den: ekonomikris, varsel, deadline) nämner ALDRIG
  * vinsten, bara kostnaden. Form 2 (sökt — ett bud, ett erbjudande, en
@@ -34,6 +56,14 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import { positionDefinite, formatValue } from '../format'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
+import { FACILITY_NODE_DEFS } from '../data/facilityNodes'
+import {
+  buildFacilityBuildTokens,
+  getCaptainSupportSentence,
+  getCaptainTakeChargeSentence,
+  getFacilityBuildSentence,
+  getMecenatConflictSideSentence,
+} from '../data/seasonDecisionSentences'
 
 /** A-H9: låst text (Jacobs ord, ordagrant) för när ingen kandidat kvalificerar. */
 export const SEASON_DECISION_NONE_TEXT = 'Inget beslut stack ut i vintras.'
@@ -60,8 +90,11 @@ export interface SeasonDecisionCandidate {
   sentence: string
 }
 
-/** A-H9: kandidat kräver minst två av {namedPerson, irreversible, tension}. */
-function qualifies(c: Pick<SeasonDecisionCandidate, 'namedPerson' | 'irreversible' | 'tension'>): boolean {
+/** A-H9: kandidat kräver minst två av {namedPerson, irreversible, tension}.
+ *  HIGH 6: exporterad så att den parallella, händelselösa infångaren
+ *  (captureFacilityBuildDecision) går genom EXAKT samma grind som BUILDERS —
+ *  inte en andra kopia som kan glida isär. */
+export function qualifies(c: Pick<SeasonDecisionCandidate, 'namedPerson' | 'irreversible' | 'tension'>): boolean {
   const score = (c.namedPerson ? 1 : 0) + (c.irreversible ? 1 : 0) + (c.tension ? 1 : 0)
   return score >= 2
 }
@@ -79,6 +112,69 @@ type Builder = (gameBefore: SaveGame, gameAfter: SaveGame, event: GameEvent, cho
 function findManagedPlayer(game: SaveGame, playerId: string | undefined) {
   if (!playerId) return undefined
   return game.players.find(p => p.id === playerId)
+}
+
+/** HIGH 6: multiEffect-subeffekterna ligger som JSON-sträng på choice.effect. */
+interface SubEffect { type?: string; targetMecenatId?: string; targetPlayerId?: string; targetClubId?: string; amount?: number; value?: number }
+function parseSubEffects(raw: string | undefined): SubEffect[] {
+  if (!raw) return []
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    return Array.isArray(parsed) ? (parsed as SubEffect[]) : []
+  } catch { return [] }
+}
+
+/**
+ * HIGH 6, källa 1 — mecenatkonflikten (mecenatService.generateMecenatConflict-
+ * Event). side_mec1 och side_mec2 är spegelbilder: valets subEffects håller
+ * ALLTID exakt en mecenatHappiness med +15 (den du ställde dig bakom) och en
+ * med −10 (den som fick stå tillbaka). Byggaren läser sidan ur EFFEKTEN, inte
+ * ur choiceId eller event-id:t — så samma funktion tjänar båda valen och en
+ * eventuell framtida ändring av magnituderna inte tyst byter person.
+ *
+ * PÅSTÅENDEKARTAN: påståendet är "du valde X framför Y". Båda halvorna
+ * verifieras mot gameAfter — X:s happiness ska ha STIGIT och Y:s ska ha
+ * FALLIT. Klamras ett av värdena (happiness ligger redan på 100 respektive 0)
+ * syns inte övergången i state, och då är null rätt svar: hellre ingen mening
+ * än en som påstår ett skifte spelvärlden inte visar.
+ *
+ * Kvalificering: namngiven person (mecenaten du valde) + spänning (två
+ * relationer pekade åt varsitt håll, och du gjorde en av dem besviken) = 2/3.
+ * `irreversible: false` — en mecenatrelation är löpande, den går att reparera,
+ * till skillnad från en försäljning.
+ *
+ * `neutral` (medla, båda +3) har medvetet INGEN byggare: ingen part valdes
+ * bort, ingen relation föll, och ingen av de två namnen kan ärligt sägas vara
+ * beslutets person. Den kan inte nå 2 av 3 utan att flaggorna sätts osant.
+ */
+function buildMecenatConflictSide(gameBefore: SaveGame, gameAfter: SaveGame, event: GameEvent, choiceId: string): SeasonDecisionCandidate | null {
+  const choice = event.choices.find(c => c.id === choiceId)
+  const subs = parseSubEffects(choice?.effect.subEffects)
+    .filter(s => s.type === 'mecenatHappiness' && s.targetMecenatId && s.amount !== undefined)
+  const backedId = subs.find(s => (s.amount ?? 0) > 0)?.targetMecenatId
+  const otherId = subs.find(s => (s.amount ?? 0) < 0)?.targetMecenatId
+  if (!backedId || !otherId || backedId === otherId) return null
+
+  const before = gameBefore.mecenater ?? []
+  const after = gameAfter.mecenater ?? []
+  const backedBefore = before.find(m => m.id === backedId)
+  const backedAfter = after.find(m => m.id === backedId)
+  const otherBefore = before.find(m => m.id === otherId)
+  const otherAfter = after.find(m => m.id === otherId)
+  if (!backedBefore || !backedAfter || !otherBefore || !otherAfter) return null
+  if (backedAfter.happiness <= backedBefore.happiness) return null
+  if (otherAfter.happiness >= otherBefore.happiness) return null
+
+  const sentence = getMecenatConflictSideSentence({ backed: backedAfter.name, other: otherAfter.name })
+  if (!sentence) return null
+  return {
+    eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
+    systemsAffectedCount: 2, // två mecenatrelationer
+    irreversible: false,
+    tension: true, // en av två namngivna personer blev besviken, oavsett vad du valde
+    namedPerson: backedAfter.name,
+    sentence,
+  }
 }
 
 const BUILDERS: Record<string, Record<string, Builder>> = {
@@ -276,6 +372,90 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         sentence: `Du tackade av ${mecenat.name} som han förtjänade. Det gav ett avsked ingen glömmer, och tog 25 tkr.`,
       }
     },
+    // HIGH 6, källa 1. Spegelbilder — samma verifiering, sidan läses ur
+    // effekten (se buildMecenatConflictSide ovan för hela påståendekartan).
+    // Skrivna som inline-pilar, INTE som `side_mec1: buildMecenatConflictSide`:
+    // mutationsverifieringsgrinden (tests/grind/mutationVerificationGate.ts)
+    // inspekterar bara pil-/funktionsuttryck i BUILDERS och hoppar tyst över
+    // en ren funktionsreferens — en byggare skriven i den formen hade legat
+    // utanför grindens synfält helt.
+    side_mec1: (gameBefore, gameAfter, event, choiceId) => buildMecenatConflictSide(gameBefore, gameAfter, event, choiceId),
+    side_mec2: (gameBefore, gameAfter, event, choiceId) => buildMecenatConflictSide(gameBefore, gameAfter, event, choiceId),
+    // 'neutral' saknar byggare med avsikt — se buildMecenatConflictSide:s
+    // docstring: ingen part valdes bort, ingen relation föll, ingen av de två
+    // namnen är ärligt beslutets person. Kan inte nå 2 av 3.
+  },
+  // ── HIGH 6, källa 2 — kaptensmötet (eventFactories.generateCaptainSpeech-
+  // Event). Eventet saknar `relatedPlayerId`; kaptenens identitet finns bara
+  // i 'take_charge'-valets `effect.targetPlayerId` (fabriken sätter den till
+  // captain.id). BÅDA byggarna nedan läser därifrån — inte ur
+  // `game.captainPlayerId`, som är lineup-fältet och kan ha bytt person sedan
+  // eventet köades (postAdvanceEvents.ts faller dessutom tillbaka på en
+  // annan spelare helt om captainPlayerId saknas).
+  captainSpeech: {
+    // 'take_charge': du sa nej och tog samtalet själv. Priset är kaptenens
+    // egen moral (−5) — en namngiven relation som betalar.
+    // PÅSTÅENDEKARTAN: verifierar att moralen faktiskt SJÖNK i gameAfter.
+    // Ligger den redan på 0 syns ingen övergång och null är rätt svar.
+    // Kvalificering: namngiven person + spänning = 2/3. Spänningen är äkta
+    // och inte påklistrad: alternativet på bordet var en mätbar lagmoralboost
+    // åt hela truppen, och valet lägger i stället en kostnad på en enskild
+    // namngiven spelare. Laget och kaptenen pekade åt varsitt håll.
+    take_charge: (gameBefore, gameAfter, event) => {
+      const choice = event.choices.find(c => c.id === 'take_charge')
+      const captainId = choice?.effect.targetPlayerId
+      const before = findManagedPlayer(gameBefore, captainId)
+      const after = findManagedPlayer(gameAfter, captainId)
+      if (!before || !after) return null
+      if (after.morale >= before.morale) return null
+      const name = `${after.firstName} ${after.lastName}`
+      const sentence = getCaptainTakeChargeSentence({ captain: name, last: after.lastName })
+      if (!sentence) return null
+      return {
+        eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
+        systemsAffectedCount: 1, // kaptenens moral
+        irreversible: false,
+        tension: true,
+        namedPerson: name,
+        sentence,
+      }
+    },
+    // 'support': du lät honom tala. Laget lyfte, styrelsens tålamod föll (−3)
+    // — två system åt varsitt håll, precis definitionen av `tension` i den
+    // här filen. Kaptenens namn hämtas ur syskonvalet 'take_charge' (samma
+    // event, samma kapten, garanterat av fabriken).
+    // PÅSTÅENDEKARTAN: påståendet är "laget vann något, styrelsen förlorade
+    // något". BÅDA halvorna verifieras — minst en spelare i den styrda
+    // klubben ska ha högre moral i gameAfter, och boardPatience ska ha
+    // fallit. Klamras endera (hela truppen redan på 100 moral, eller
+    // boardPatience redan på 0) är null rätt svar.
+    support: (gameBefore, gameAfter, event) => {
+      const captainId = event.choices.find(c => c.id === 'take_charge')?.effect.targetPlayerId
+      const captain = findManagedPlayer(gameAfter, captainId)
+      if (!captain) return null
+      const patienceBefore = gameBefore.boardPatience ?? 70
+      const patienceAfter = gameAfter.boardPatience ?? 70
+      if (patienceAfter >= patienceBefore) return null
+      const moraleRose = gameAfter.players.some(p => {
+        if (p.clubId !== gameAfter.managedClubId) return false
+        const wasBefore = gameBefore.players.find(b => b.id === p.id)
+        return wasBefore !== undefined && p.morale > wasBefore.morale
+      })
+      if (!moraleRose) return null
+      const name = `${captain.firstName} ${captain.lastName}`
+      const sentence = getCaptainSupportSentence({ captain: name, last: captain.lastName })
+      if (!sentence) return null
+      return {
+        eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
+        systemsAffectedCount: 2, // lagmoral, styrelsens tålamod
+        irreversible: false,
+        tension: true,
+        namedPerson: name,
+        sentence,
+      }
+    },
+    // 'decline' saknar byggare med avsikt: effekten är `noOp`, ingen namngiven
+    // person betalar något och inget system rör sig. 0 av 3.
   },
 }
 
@@ -313,6 +493,74 @@ export function captureSystemDecision(
   if (!builder) return null
   const candidate = builder(gameBefore, gameAfter, event as GameEvent, choiceId)
   if (!candidate) return null
+  return qualifies(candidate) ? candidate : null
+}
+
+/**
+ * HIGH 6, källa 3 — anläggningsbygget. Auditens egen säsongstest-formulering
+ * ("bygg en anläggning, välj sida i en personkonflikt och betala en kostnad")
+ * räknar bygget som ett av säsongens beslut, men det passerar ALDRIG
+ * resolveEvent: det finns varken GameEvent, DecisionCard eller choiceId. Det
+ * är en direkt store-action (gameStore.startFacilityBuildNode) och ett val i
+ * försäsongsscenen "Valet" (gameFlowActions.completeScene). Därför en
+ * parallell infångare med SAMMA kandidatform och SAMMA qualifies()-grind —
+ * inte ett andra spår med egna regler.
+ *
+ * PÅSTÅENDEKARTAN: påståendet är "du band kassan i ett bygge". Båda halvorna
+ * verifieras mot gameAfter — noden ska faktiskt ligga som `activeProject`
+ * (eller redan vara byggd, om en framtida väg hoppar över byggtiden), och
+ * klubbens kassa ska faktiskt ha minskat. Ingen av delarna antas av att
+ * anroparen sa att den gjorde det.
+ *
+ * Kvalificering: irreversibelt + spänning = 2/3. `namedPerson` är med rätta
+ * undefined — ett bygge har ingen person. `irreversible: true`: ett påbörjat
+ * bygge kan inte ångras, och en färdig nod bär dessutom en löpande driftkostnad
+ * (FacilityNodeDef.upkeepCost) som följer klubben resten av spelet.
+ * `tension: true`: kapitalet som går in i anläggningen är kapital som inte går
+ * till truppen — samma "konkurrerar med truppen"-ram som resten av doktrinen
+ * använder (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+ *
+ * `systemsAffectedCount` räknas ur nodens EGEN konsekvenstabell
+ * (FacilityNodeDef.consequences) — antalet distinkta dimensioner som faktiskt
+ * pekar någonstans (`dir !== 'noll'`). Värmestugan ger 3 (publik, själ,
+ * ekonomi), belysningen 2 (ungdom, ekonomi — publik är uttryckligen 'noll').
+ * Ingen gissad siffra: samma data som ytan redan visar spelaren.
+ */
+export function captureFacilityBuildDecision(
+  gameBefore: SaveGame,
+  gameAfter: SaveGame,
+  nodeId: string,
+  clubCostKr: number,
+): SeasonDecisionCandidate | null {
+  const def = FACILITY_NODE_DEFS.find(d => d.id === nodeId)
+  if (!def) return null
+
+  const stateAfter = gameAfter.facilityState
+  const started = stateAfter?.activeProject?.nodeId === nodeId
+    || (stateAfter?.builtNodeIds ?? []).includes(nodeId)
+  if (!started) return null
+
+  const clubBefore = gameBefore.clubs.find(c => c.id === gameBefore.managedClubId)
+  const clubAfter = gameAfter.clubs.find(c => c.id === gameAfter.managedClubId)
+  if (!clubBefore || !clubAfter) return null
+  const actuallyPaid = clubAfter.finances < clubBefore.finances
+  if (!actuallyPaid) return null
+  const paid = clubBefore.finances - clubAfter.finances
+
+  const sentence = getFacilityBuildSentence(buildFacilityBuildTokens(def.label, clubCostKr))
+  if (!sentence) return null
+
+  const dims = new Set(def.consequences.filter(c => c.dir !== 'noll').map(c => c.dim))
+  const candidate: SeasonDecisionCandidate = {
+    eventId: `facility_${nodeId}_s${gameAfter.currentSeason}`,
+    round: getCurrentLeagueRound(gameAfter),
+    season: gameAfter.currentSeason,
+    systemsAffectedCount: Math.max(1, dims.size),
+    irreversible: true,
+    tension: true,
+    moneyAmount: paid,
+    sentence,
+  }
   return qualifies(candidate) ? candidate : null
 }
 

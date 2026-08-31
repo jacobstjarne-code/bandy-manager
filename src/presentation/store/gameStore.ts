@@ -22,6 +22,7 @@ import { applyFinanceChange } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
 import { canStartBuild, startFacilityBuild, canDecommission, decommissionFacilityNode, getFinancingOptions, DECOMMISSION_COMMUNITY_STANDING_COST, FACILITY_NODE_DEFS, type FinancingContext } from '../../domain/services/facilityService'
 import type { FacilityFinancingMode } from '../../domain/entities/Community'
+import { captureFacilityBuildDecision } from '../../domain/services/seasonDecisionCaptureService'
 
 import { matchActions } from './actions/matchActions'
 import { trainingActions } from './actions/trainingActions'
@@ -884,7 +885,18 @@ export const useGameStore = create<GameState>()(
           )
         }
 
-        set({ game: { ...game, facilityState: newState, clubs: updatedClubs, localPolitician: updatedPol ?? game.localPolitician, mecenater: updatedMecenater } })
+        // HIGH 6 (auditen 2026-08-29): anläggningsbygget är ett av säsongens
+        // beslut men går aldrig via resolveEvent — det finns varken GameEvent
+        // eller choiceId här. Kandidaten fångas därför med den parallella
+        // infångaren, och läggs på seasonDecisionCandidates i exakt samma form
+        // som eventResolver.ts:s händelsebaserade väg gör.
+        const gameAfter: SaveGame = { ...game, facilityState: newState, clubs: updatedClubs, localPolitician: updatedPol ?? game.localPolitician, mecenater: updatedMecenater }
+        const decisionCandidate = captureFacilityBuildDecision(game, gameAfter, nodeId, chosen.clubCost)
+        set({
+          game: decisionCandidate
+            ? { ...gameAfter, seasonDecisionCandidates: [...(gameAfter.seasonDecisionCandidates ?? []), decisionCandidate] }
+            : gameAfter,
+        })
         return { success: true }
       },
 

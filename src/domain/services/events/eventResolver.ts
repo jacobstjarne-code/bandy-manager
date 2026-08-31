@@ -1942,13 +1942,22 @@ export function resolveEvent(
   // redan applicerad — detOmojligaValet/sell verifierar mot den). Tyst
   // no-op (null) för alla event/val utanför den slutna listan av åtta —
   // det normala fallet.
-  if (event.systemhandelse) {
-    const candidate = captureSystemDecision(game, updatedGame, event, choiceId)
-    if (candidate) {
-      updatedGame = {
-        ...updatedGame,
-        seasonDecisionCandidates: [...(updatedGame.seasonDecisionCandidates ?? []), candidate],
-      }
+  //
+  // HIGH 6 (auditen 2026-08-29): anropet låg tidigare bakom
+  // `if (event.systemhandelse)`. Den grinden var STALE — A-H9 tog bort exakt
+  // den kollen INNE i captureSystemDecision ("domen kräver att kandidat-
+  // mängden är 'varje löst beslut', inte bara O19-märkta systemhandelser"),
+  // men anropsstället här smalnade tyst av poolen igen. `systemhandelse` är
+  // O19:s säsongsbudget-klassning (narrativeLogService.systemhandelseBudgetOk)
+  // och sitter på ett dussintal fabriker — varken mecenatkonflikten eller
+  // kaptensmötet sätter den, så deras byggare hade aldrig kunnat köra ens
+  // efter att de lagts till i BUILDERS. Anropet är nu ovillkorat:
+  // BUILDERS-uppslaget är den enda grinden, som filhuvudet redan påstod.
+  const candidate = captureSystemDecision(game, updatedGame, event, choiceId)
+  if (candidate) {
+    updatedGame = {
+      ...updatedGame,
+      seasonDecisionCandidates: [...(updatedGame.seasonDecisionCandidates ?? []), candidate],
     }
   }
 

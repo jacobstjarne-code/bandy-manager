@@ -23,9 +23,18 @@ describe('Mutationsverifieringsgrinden', () => {
     expect(violations, JSON.stringify(violations, null, 2)).toHaveLength(0)
   })
 
-  it('rapporterar antal byggare (facit: 8, ett per (event.type, choiceId)-par i O18 fält 2:s slutna mängd)', () => {
+  // HIGH 6 (auditen 2026-08-29): facit 8 → 12. Fyra nya (event.type, choiceId)-
+  // par lades till när kandidatmängden vidgades — mecenatEvent/side_mec1,
+  // mecenatEvent/side_mec2, captainSpeech/take_charge, captainSpeech/support.
+  // Siffran är ett FACIT över registrets storlek, inte en spärr mot tillväxt:
+  // den ska räknas upp när mängden växer, och baseline-testet ovan (0
+  // violations) är det som faktiskt bevakar kvaliteten på varje ny byggare.
+  // Anläggningsbygget är en FEMTE ny källa men syns inte här — det går inte
+  // via GameEvent alls och fångas av captureFacilityBuildDecision(), utanför
+  // BUILDERS-registret.
+  it('rapporterar antal byggare (facit: 12, ett per (event.type, choiceId)-par i O18 fält 2:s mängd)', () => {
     const checks = findBuilderChecks(REAL_FILE)
-    expect(checks.length).toBe(8)
+    expect(checks.length).toBe(12)
     console.log(`Byggare: ${checks.map(c => `${c.eventType}/${c.choiceId}`).join(', ')}`)
   })
 

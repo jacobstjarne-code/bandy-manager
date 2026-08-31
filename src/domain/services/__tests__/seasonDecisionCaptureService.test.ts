@@ -4,7 +4,14 @@
  * Meningarna i assertions är Jacobs egna, klistrade ordagrant.
  */
 import { describe, it, expect } from 'vitest'
-import { captureSystemDecision, pickSeasonDecision, SEASON_DECISION_NONE_TEXT } from '../seasonDecisionCaptureService'
+import { captureSystemDecision, captureFacilityBuildDecision, pickSeasonDecision, SEASON_DECISION_NONE_TEXT } from '../seasonDecisionCaptureService'
+import {
+  buildFacilityBuildTokens,
+  sentenceForCaptainSupport,
+  sentenceForCaptainTakeCharge,
+  sentenceForFacilityBuild,
+  sentenceForMecenatConflictSide,
+} from '../../data/seasonDecisionSentences'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
 import { formatValue } from '../../format'
@@ -495,5 +502,83 @@ describe('SEASON_DECISION_NONE_TEXT — A-H9 fallback', () => {
 
   it('används av mönstret seasonEndProcessor.ts faktiskt kör: pickSeasonDecision(...)?.sentence ?? SEASON_DECISION_NONE_TEXT', () => {
     expect(pickSeasonDecision([])?.sentence ?? SEASON_DECISION_NONE_TEXT).toBe('Inget beslut stack ut i vintras.')
+  })
+})
+
+// ── HIGH 6 (auditen 2026-08-29) — invarianten "tom mall ⇒ ingen kandidat" ──
+//
+// De tre nya kandidatkällorna (mecenatkonflikt, kaptensmöte, anläggningsbygge)
+// har sina meningsmallar i src/domain/data/seasonDecisionSentences.ts, och de
+// är TOMMA tills Opus levererar. Den här filen kör OMOCKAT — precis som
+// produktionen gör idag — och bevisar att en tom mall ger `null` hela vägen ut,
+// inte en kandidat med tom mening. Den skillnaden är hela poängen:
+// pickSeasonDecision skulle glatt välja en kandidat med sentence === '' och
+// årsboken skulle rendera en blank rad, vilket är sämre än
+// SEASON_DECISION_NONE_TEXT. Byggarnas ÖVRIGA logik (verifiering mot
+// speltillståndet, namedPerson/tension/irreversible) testas med injicerad mall
+// i seasonDecisionCaptureHigh6.test.ts.
+describe('HIGH 6 — tom meningsmall ger ingen kandidat alls (aldrig en blank rad)', () => {
+  it('interpolationen fungerar när en mall FINNS (injicerad, inte den tomma konstanten)', () => {
+    expect(sentenceForMecenatConflictSide('{backed} före {other}.', { backed: 'Björn', other: 'Astrid' }))
+      .toBe('Björn före Astrid.')
+    expect(sentenceForCaptainTakeCharge('{captain} ({last}).', { captain: 'Erik Ros', last: 'Ros' }))
+      .toBe('Erik Ros (Ros).')
+    expect(sentenceForCaptainSupport('{last} fick ordet.', { captain: 'Erik Ros', last: 'Ros' }))
+      .toBe('Ros fick ordet.')
+    expect(sentenceForFacilityBuild('{facility} för {cost}.', buildFacilityBuildTokens('Värmestuga', 120000)))
+      .toBe('Värmestuga för 120 tkr.')
+  })
+
+  it('tom mall ger null, aldrig tom sträng — signalen byggarna läser', () => {
+    expect(sentenceForMecenatConflictSide('', { backed: 'A', other: 'B' })).toBeNull()
+    expect(sentenceForCaptainTakeCharge('', { captain: 'A', last: 'A' })).toBeNull()
+    expect(sentenceForCaptainSupport('', { captain: 'A', last: 'A' })).toBeNull()
+    expect(sentenceForFacilityBuild('', { facility: 'A', cost: '1 tkr' })).toBeNull()
+  })
+
+  it('mecenatkonflikten: verifieringen går igenom men kandidaten blir ändå null', () => {
+    const gameBefore = makeGame({ mecenater: [
+      makeMecenat({ id: 'mec1', name: 'Björn Lindqvist', happiness: 60 }),
+      makeMecenat({ id: 'mec2', name: 'Astrid Wahl', happiness: 60 }),
+    ] })
+    const gameAfter: SaveGame = { ...gameBefore, mecenater: [
+      { ...gameBefore.mecenater![0], happiness: 75 },
+      { ...gameBefore.mecenater![1], happiness: 50 },
+    ] }
+    const event: GameEvent = {
+      id: 'event_conflict_mec1_mec2', type: 'mecenatEvent', title: 't', body: 'b',
+      choices: [{ id: 'side_mec1', label: 'l', effect: { type: 'multiEffect', subEffects: JSON.stringify([
+        { type: 'mecenatHappiness', targetMecenatId: 'mec1', amount: 15 },
+        { type: 'mecenatHappiness', targetMecenatId: 'mec2', amount: -10 },
+      ]) } }],
+      resolved: false,
+    }
+    expect(captureSystemDecision(gameBefore, gameAfter, event, 'side_mec1')).toBeNull()
+  })
+
+  it('kaptensmötet: verifieringen går igenom men kandidaten blir ändå null', () => {
+    const base = makeGame({ boardPatience: 70 })
+    const captain = base.players.find(p => p.clubId === base.managedClubId && p.morale > 10)!
+    const event: GameEvent = {
+      id: 'event_captain_speech_s1', type: 'captainSpeech', title: 't', body: 'b',
+      choices: [{ id: 'take_charge', label: 'l', effect: { type: 'boostMorale', value: -5, targetPlayerId: captain.id } }],
+      resolved: false,
+    }
+    const gameAfter: SaveGame = {
+      ...base,
+      players: base.players.map(p => p.id === captain.id ? { ...p, morale: p.morale - 5 } : p),
+    }
+    expect(captureSystemDecision(base, gameAfter, event, 'take_charge')).toBeNull()
+  })
+
+  it('anläggningsbygget: verifieringen går igenom men kandidaten blir ändå null', () => {
+    const gameBefore = makeGame({ facilityState: { builtNodeIds: [] } })
+    const club = gameBefore.clubs.find(c => c.id === gameBefore.managedClubId)!
+    const gameAfter: SaveGame = {
+      ...gameBefore,
+      facilityState: { builtNodeIds: [], activeProject: { nodeId: 'varmestuga', startedMatchday: 0, etaMatchday: 8 } },
+      clubs: gameBefore.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 120000 } : c),
+    }
+    expect(captureFacilityBuildDecision(gameBefore, gameAfter, 'varmestuga', 120000)).toBeNull()
   })
 })
