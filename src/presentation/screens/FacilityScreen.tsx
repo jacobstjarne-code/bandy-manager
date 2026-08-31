@@ -34,6 +34,11 @@ export default function FacilityScreen() {
   const isTab = useLocation().pathname === '/game/bygget'
   const [mode, setMode] = useState<'betrakta' | 'valj'>('betrakta')
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+  // MEDIUM 13a (audit 2026-08-29): "val av finansieringskälla startade bygget
+  // direkt utan slutlig bekräftelse". Finansieringsknappen väljer nu bara KÄLLA;
+  // bygget startar först efter bekräftelsesheeten. Samma två-stegsform som
+  // avvecklingen redan har (nodval → sheet med hela bilden → en egen CTA).
+  const [pendingFinancing, setPendingFinancing] = useState<FinancingOption['mode'] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   if (!game) return null
@@ -62,16 +67,25 @@ export default function FacilityScreen() {
   }
   const options = selectedDef ? getFinancingOptions(selectedDef, ctx) : []
 
-  function handleBuild(financingMode: FinancingOption['mode']) {
-    if (!selectedNodeId) return
-    const res = startFacilityBuildNode(selectedNodeId, financingMode)
+  const pendingOption = pendingFinancing ? options.find(o => o.mode === pendingFinancing) ?? null : null
+
+  function handleConfirmBuild() {
+    if (!selectedNodeId || !pendingFinancing) return
+    const res = startFacilityBuildNode(selectedNodeId, pendingFinancing)
     if (res.success) {
       setSelectedNodeId(null)
+      setPendingFinancing(null)
       setMode('betrakta')
       setError(null)
     } else {
       setError(res.error ?? 'Kunde inte starta bygget')
     }
+  }
+
+  function closeSheets() {
+    setSelectedNodeId(null)
+    setPendingFinancing(null)
+    setError(null)
   }
 
   function handleDecommission() {
@@ -155,8 +169,8 @@ export default function FacilityScreen() {
       {/* B1 §2/§4 — finansieringsval (bottensheet). M4 (audit 5c9a7a8,
           2026-08-24): migrerad till Overlay-primitiven — hade tidigare
           varken role/aria-modal, fokusfälla, Escape eller inert bakgrund. */}
-      {selectedDef && !selectedIsBuilt && (
-        <Overlay onClose={() => setSelectedNodeId(null)} variant="sheet" ariaLabel={`Finansiering — ${selectedDef.label}`}>
+      {selectedDef && !selectedIsBuilt && !pendingFinancing && (
+        <Overlay onClose={closeSheets} variant="sheet" ariaLabel={`Finansiering — ${selectedDef.label}`}>
           <div
             style={{ padding: '18px 16px calc(var(--bottom-nav-height, 60px) + var(--safe-bottom, 0px) + 44px)', display: 'flex', flexDirection: 'column', gap: 12 }}
           >
@@ -175,7 +189,7 @@ export default function FacilityScreen() {
                 <button
                   key={o.mode}
                   disabled={!o.available}
-                  onClick={() => handleBuild(o.mode)}
+                  onClick={() => { setPendingFinancing(o.mode); setError(null) }}
                   className="btn"
                   style={{
                     textAlign: 'left', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 2,
@@ -201,6 +215,61 @@ export default function FacilityScreen() {
                 </button>
               ))}
             </div>
+            {error && <p style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</p>}
+          </div>
+        </Overlay>
+      )}
+
+      {/* MEDIUM 13a — bekräftelsesheet. Rotorsak till att den behövs: bygget
+          committades på finansieringsknappens FÖRSTA tryck, och den vyn visade
+          bara engångskostnaden. Den löpande driften (upkeepCost, en kostnad per
+          säsong i all framtid) syntes ingenstans före commit — exakt den sortens
+          dolda återkommande åtagande som anspråk 4 / väg C jagar på andra håll.
+          Brödtexten är Jacobs låsta ordalydelse (2026-08-31); konsekvensraderna
+          är nodens egna redan svenska labels, inte ny text. */}
+      {selectedDef && !selectedIsBuilt && pendingOption && (
+        <Overlay onClose={() => setPendingFinancing(null)} variant="sheet" ariaLabel={`Bekräfta bygget — ${selectedDef.label}`}>
+          <div
+            style={{ padding: '18px 16px calc(var(--bottom-nav-height, 60px) + var(--safe-bottom, 0px) + 44px)', display: 'flex', flexDirection: 'column', gap: 12 }}
+          >
+            <div>
+              <div className="h-label">Bekräfta bygget</div>
+              <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedDef.label}</p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.4 }}>
+                Full kostnad {tkr(selectedDef.cost)}, sedan {tkr(selectedDef.upkeepCost)}/säsong i drift.
+                {' '}
+                {selectedDef.buildRounds === 1 ? 'Klart om 1 omgång.' : `Klart om ${selectedDef.buildRounds} omgångar.`}
+              </p>
+              {/* Vald finansieringskälla — samma rad spelaren just tryckte på. */}
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                {optionTitle(pendingOption)} · {optionSub(pendingOption)}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 8 }}>
+                {selectedDef.consequences.map((c, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      fontSize: 11,
+                      color: c.dir === 'upp'
+                        ? 'var(--success)'
+                        : c.dir === 'ned' ? 'var(--danger-text)' : 'var(--text-muted)',
+                    }}
+                  >
+                    {c.dir === 'upp' ? '↑' : c.dir === 'ned' ? '↓' : '—'} {c.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {/* Samma 44px-clearance som finansieringsknapparna ovan: hela sheeten
+                är en position:fixed-förfader, så tapTargetOverlap.ts räknar den
+                här CTA:n som en sticky CTA. */}
+            <button
+              onClick={handleConfirmBuild}
+              className="btn btn-primary"
+              style={{ marginTop: 32, padding: '12px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+            >
+              Starta bygget
+            </button>
             {error && <p style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</p>}
           </div>
         </Overlay>

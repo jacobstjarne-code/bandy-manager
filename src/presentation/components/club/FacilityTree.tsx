@@ -88,7 +88,7 @@ function CooldownDots({ total, filled }: { total: number; filled: number }) {
   )
 }
 
-function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive, builtNodeIds }: {
+function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive, builtNodeIds, currentMatchday }: {
   view: FacilityNodeView
   mode: 'betrakta' | 'valj'
   selected: boolean
@@ -96,6 +96,7 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
   hallNodeSub?: string
   hallTrialActive?: boolean
   builtNodeIds: string[]
+  currentMatchday: number
 }) {
   const { def, status } = view
   const isHall = def.isHall
@@ -192,12 +193,22 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
         </span>
       </div>
 
-      {status === 'ongoing' && view.etaMatchday !== undefined && view.cooldownTotal !== undefined && (
-        <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2 }}>
-          Klar omg {view.etaMatchday}
-          <CooldownDots total={view.cooldownTotal} filled={view.cooldownFilled ?? 0} />
-        </div>
-      )}
+      {/* MEDIUM 13c (audit 2026-08-29): `Klar omg {etaMatchday}` var en RÅ
+          `Omg ${matchday}`-identitet — precis den form roundLabel.ts:s huvud
+          kallar en regression, och dessutom fel sorts uppgift: ett bygge har
+          ingen rond-IDENTITET, det har en nedräkning. Samma fil pekar också ut
+          att rena räknare INTE ska gå genom getRoundLabel(). Alltså en ren
+          nedräkning här. Skalan stämmer först efter 13b (startedMatchday
+          stämplas nu i matchdagar, som läsvägen alltid har gjort). */}
+      {status === 'ongoing' && view.etaMatchday !== undefined && view.cooldownTotal !== undefined && (() => {
+        const remaining = Math.max(0, view.etaMatchday - currentMatchday)
+        return (
+          <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2 }}>
+            {remaining === 1 ? '1 omgång kvar' : `${remaining} omgångar kvar`}
+            <CooldownDots total={view.cooldownTotal} filled={view.cooldownFilled ?? 0} />
+          </div>
+        )
+      })()}
 
       {(status === 'available' || isHall) && (
         <ConsekvensRad consequences={def.consequences} />
@@ -316,6 +327,7 @@ export function FacilityTree({
                     hallNodeSub={view.def.isHall ? hallNodeSub : undefined}
                     hallTrialActive={view.def.isHall ? hallTrialActive : undefined}
                     builtNodeIds={facilityState.builtNodeIds}
+                    currentMatchday={currentMatchday}
                   />
                 </div>
               ))}

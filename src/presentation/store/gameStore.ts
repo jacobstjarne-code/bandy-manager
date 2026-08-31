@@ -870,8 +870,21 @@ export const useGameStore = create<GameState>()(
         if (!chosen || !chosen.available) return { success: false, error: chosen?.reason ?? 'Finansiering ej tillgänglig' }
         if (club.finances < chosen.clubCost) return { success: false, error: `Otillräcklig kassa (kräver ${Math.round(chosen.clubCost / 1000)} tkr ur kassan)` }
 
-        const currentMatchday = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
-        const newState = startFacilityBuild(nodeId, state, currentMatchday)
+        // MEDIUM 13b (audit 2026-08-29): "Värmestugan blev färdig ungefär vid
+        // ligaomgång fem" trots `8 omgångar att bygga`.
+        //
+        // Rotorsak: skrivningen och läsningen använde två olika skalor. Här
+        // stämplades `startedMatchday` med högsta AVKLARADE ligaomgångens
+        // roundNumber (1–22), medan båda läsvägarna — advanceFacilityState
+        // (communityProcessor.ts) och getFacilityNodeViews (FacilityScreen/
+        // FacilityTree) — jämför mot den globala matchdagen, som ligger före
+        // ligaomgången så snart cupomgångar flikats in. etaMatchday hamnade
+        // därför flera omgångar för tidigt, och cooldown-prickarna startade
+        // delvis ifyllda (currentMatchday − startedMatchday var redan > 0 vid
+        // byggstart). Den andra byggingången (gameFlowActions.ts:786) och
+        // save-migrationen använde matchdagen hela tiden — det här stället var
+        // ensamt om fel skala.
+        const newState = startFacilityBuild(nodeId, state, game.currentMatchday)
         const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -chosen.clubCost)
 
         let updatedPol = pol

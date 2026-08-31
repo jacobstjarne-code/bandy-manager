@@ -7,6 +7,7 @@ import { updateCupBracketAfterRound, generateNextCupRound } from '../../../domai
 import { stampFixturesFromCalendar } from '../../../domain/services/scheduleGenerator'
 import { updateSeriesAfterMatch, advancePlayoffRound, nextPlayoffStart } from '../../../domain/services/playoffService'
 import { isPlayoffNarrativeCardStillValid } from '../../../domain/services/playoffNarrativeService'
+import { isPlayThroughInjuryCardStillValid } from '../../../application/useCases/processors/eventProcessor'
 import { simulateMatch } from '../../../domain/services/matchEngine'
 import { fixtureSeed } from '../../../domain/utils/random'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
@@ -29,11 +30,26 @@ type Set = (partial: Partial<{ game: SaveGame | null }>) => void
  * vid mutationstillfället — det är den faktiska konsumtionstidpunkten:
  * Portalen läser game.pendingEvents/deferredDecisions nästa gång den renderas,
  * inte först vid nästa advance().
+ *
+ * HIGH 9 (audit 2026-08-29): samma resonemang gäller ordagrant för
+ * `playThroughInjury`-kortet — det handlar om EN specifik kommande match, och
+ * livematchvägen fullbordar just den matchen utan att gå via advanceToNextEvent.
+ * Portalen renderade därför "Han vill spela" om en match som redan var spelad,
+ * ibland om en spelare som hunnit bli frisk. Grinden (eventProcessor.ts) prövas
+ * mot fixturelistan EFTER matchen, därav `fixtures`-parametern.
  */
-function purgeStalePlayoffCards(game: SaveGame, bracket: SaveGame['playoffBracket']): Pick<SaveGame, 'pendingEvents' | 'deferredDecisions'> {
+function purgeStalePlayoffCards(
+  game: SaveGame,
+  bracket: SaveGame['playoffBracket'],
+  fixtures: SaveGame['fixtures'],
+): Pick<SaveGame, 'pendingEvents' | 'deferredDecisions'> {
+  const postMatchGame = { ...game, fixtures }
+  const stillValid = (e: SaveGame['pendingEvents'][number]) =>
+    isPlayoffNarrativeCardStillValid(e.id, bracket, game.managedClubId) &&
+    isPlayThroughInjuryCardStillValid(e, postMatchGame)
   return {
-    pendingEvents: (game.pendingEvents ?? []).filter(e => isPlayoffNarrativeCardStillValid(e.id, bracket, game.managedClubId)),
-    deferredDecisions: (game.deferredDecisions ?? []).filter(e => isPlayoffNarrativeCardStillValid(e.id, bracket, game.managedClubId)),
+    pendingEvents: (game.pendingEvents ?? []).filter(stillValid),
+    deferredDecisions: (game.deferredDecisions ?? []).filter(stillValid),
   }
 }
 
@@ -223,7 +239,7 @@ export function matchActions(get: Get, set: Set) {
       // A3: bracket may have just been advanced directly above (bypassing
       // processPlayoffRound) — re-derive playoff-card validity now, at the
       // real consumption point, not just on the next advanceToNextEvent().
-      const playoffCardCleanup = purgeStalePlayoffCards(game, updatedPlayoffBracket)
+      const playoffCardCleanup = purgeStalePlayoffCards(game, updatedPlayoffBracket, updatedFixtures)
 
       set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket, managedClubPendingLineup: undefined, lastHalftimeDecision: undefined, ...playoffCardCleanup } })
     },
@@ -366,7 +382,7 @@ export function matchActions(get: Get, set: Set) {
 
       // A3: same bracket-validity re-check as saveLiveMatchResult — walkover
       // can also advance the bracket directly, bypassing processPlayoffRound.
-      const playoffCardCleanup = purgeStalePlayoffCards(game, updatedPlayoffBracket)
+      const playoffCardCleanup = purgeStalePlayoffCards(game, updatedPlayoffBracket, updatedFixtures)
 
       set({ game: {
         ...game,

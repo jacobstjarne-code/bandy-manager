@@ -51,7 +51,7 @@ import { processNarrative, processUpcomingDerbyNotification } from './processors
 import { detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
 import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
-import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer } from './processors/eventProcessor'
+import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, isPlayThroughInjuryCardStillValid } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas, describeRippleChain, rippleChainSignificance } from '../../domain/services/rippleEffectService'
 import type { RippleChain } from '../../domain/entities/SaveGame'
@@ -1813,30 +1813,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Audit 2026-08-29 HIGH 9 (skadad-spela-vidare-kort på en frisk spelare):
-  // checkForPlayThroughInjuryOffer gatar korrekt VID GENERERING (isInjured +
-  // schemalagd match), men ett redan köat kort renderades ändå efter att
-  // spelaren hann bli frisk eller efter att kalendern passerat den match
-  // kortet gällde. Re-validera preconditionen varje omgång, inte bara vid
-  // skapandet — "kasta eller konvertera inaktuella events" (auditens ord).
-  // ID-formatet playthrough_${playerId}_${matchday} bär matchdagen (GameEvent
-  // saknar ett generellt createdMatchday-fält, till skillnad från FollowUp/
-  // TransferBid) — splittar på sista understreck, inte första, eftersom
-  // player-id kan innehålla understreck.
-  {
-    const beforePlaythroughPurge = updatedGame.pendingEvents ?? []
-    const stillValid = beforePlaythroughPurge.filter(e => {
-      if (e.type !== 'playThroughInjury' || e.resolved) return true
-      const player = updatedGame.players.find(p => p.id === e.relatedPlayerId)
-      if (!player || !player.isInjured || player.playingThroughInjury) return false
-      const forMatchday = Number(e.id.slice(e.id.lastIndexOf('_') + 1))
-      return Number.isFinite(forMatchday) && forMatchday >= nextMatchday
-    })
-    if (stillValid.length < beforePlaythroughPurge.length) {
-      updatedGame = { ...updatedGame, pendingEvents: stillValid }
-    }
-  }
-
   // ── B5: Rensa resolved events från state (sparar localStorage-utrymme) ──
   {
     const beforeClean = updatedGame.pendingEvents ?? []
@@ -1869,6 +1845,30 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         pendingEvents: [...nonActionable, ...surface],
         deferredDecisions: newDeferred.slice(0, MAX_DEFERRED_DECISIONS),
       }
+    }
+  }
+
+  // Audit 2026-08-29 HIGH 9 (skadad-spela-vidare-kort på en frisk spelare).
+  // Rotorsak: preconditionen prövades bara vid GENERERING, aldrig vid konsumtion.
+  // Grinden bor nu i isPlayThroughInjuryCardStillValid (eventProcessor.ts, bredvid
+  // generatorn) och körs på varje konsumtionspunkt — här, plus livematchvägen i
+  // matchActions.ts (samma två-punkts-mönster som slutspelskorten redan har).
+  //
+  // Placerad EFTER KF3-avbrottsbudgeten, inte före: den gamla spärren låg ovanför
+  // och rörde bara `pendingEvents`, så ett kort som trängts undan till
+  // `deferredDecisions` promotades tillbaka in i poolen utan att någonsin ha
+  // omprövats. Båda köerna filtreras nu, efter promoteringen.
+  {
+    const beforePending = updatedGame.pendingEvents ?? []
+    const beforeDeferred = updatedGame.deferredDecisions ?? []
+    const validPending = beforePending.filter(
+      e => e.resolved || isPlayThroughInjuryCardStillValid(e, updatedGame),
+    )
+    const validDeferred = beforeDeferred.filter(
+      e => e.resolved || isPlayThroughInjuryCardStillValid(e, updatedGame),
+    )
+    if (validPending.length < beforePending.length || validDeferred.length < beforeDeferred.length) {
+      updatedGame = { ...updatedGame, pendingEvents: validPending, deferredDecisions: validDeferred }
     }
   }
 

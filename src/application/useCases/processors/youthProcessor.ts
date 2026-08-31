@@ -153,6 +153,28 @@ export function processYouth(
   }
 
   // ── WEAK-017: Breakthrough event — young player debut + goal ─────────────────
+  //
+  // HIGH 8 (audit 2026-08-29). Rotorsak till att samma debuttext återkom 4+ ggr
+  // per säsong: `latestManaged` är "senast spelade managed-match i HELA säsongen",
+  // inte "matchen som spelades denna omgång" (`game` är förrunds-saven — dess
+  // fixtures innehåller aldrig den match som simuleras just nu). Så länge klubben
+  // inte hunnit spela en NY match återfann varje omgång exakt samma fixture och
+  // samma mål — och eftersom event-id:t bar `nextMatchday` blev id:t nytt varje
+  // gång, så alreadyFired-spärren bet aldrig.
+  //
+  // Tre lager i fixen, som tillsammans ger "högst en gång per spelare, någonsin":
+  //  1. Event-id utan matchdag → stabilt per spelare, så resolvedEventIds/
+  //     pendingEvents-spärren faktiskt bet inom det fönster där samma fixture
+  //     återfinns. (resolvedEventIds är cappad till 200 i eventResolver.ts och
+  //     är därför inte ensam en evig spärr — därav lager 2.)
+  //  2. `totalGames === 1` — verklig förstamatch. `game.players` bär statistiken
+  //     T.O.M. `latestManaged` (statsProcessor har redan fällt in den föregående
+  //     omgången), så 1 betyder "matchen vi tittar på var hans första". Så snart
+  //     spelaren spelat match två blir villkoret permanent falskt — det är det
+  //     som gör spärren evig, oberoende av 200-cappen.
+  //  3. `promotedFromAcademy` — samma "äkta debut"-grind som statsProcessor.ts:178
+  //     redan använder för dagboksdebuten. En ung extern värvning ska inte få
+  //     "akademitränaren har ringt redan".
   const managedCompletedThisRound = game.fixtures.filter(
     f => f.status === 'completed' &&
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
@@ -165,8 +187,11 @@ export function processYouth(
       if (!player) continue
       if (player.clubId !== game.managedClubId) continue
       if (player.age > 21) continue
-      if ((player.careerStats?.totalGames ?? 0) > 3) continue
-      const breakthroughId = `event_breakthrough_${player.id}_${nextMatchday}`
+      // Akademiprodukt, inte ung extern värvning (lager 3 ovan).
+      if (!player.promotedFromAcademy) continue
+      // Verklig första seniormatch (lager 2 ovan) — inte "någon av de tre första".
+      if ((player.careerStats?.totalGames ?? 0) !== 1) continue
+      const breakthroughId = `event_breakthrough_${player.id}`
       const alreadyFired = (game.pendingEvents ?? []).some(e => e.id === breakthroughId) ||
         (game.resolvedEventIds ?? []).includes(breakthroughId)
       if (alreadyFired) continue

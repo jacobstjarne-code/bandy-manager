@@ -687,7 +687,25 @@ export function generatePostAdvanceEvents(
   // redan genererat men obesvarat erbjudande räknades inte som "aktivt",
   // så ett nytt kunde skapas ovanpå varje omgång. Dedupe: högst ett öppet
   // (obesvarat) sponsorOffer-event åt gången, oavsett auto-loopar.
-  const hasOpenSponsorOffer = (game.pendingEvents ?? []).some(e => e.type === 'sponsorOffer' && !e.resolved)
+  //
+  // MEDIUM 15 (audit 2026-08-29): "samma ursprungliga 45-tkr-erbjudande igen".
+  // Rotorsak, andra halvan: dedupen ovan tittar bara på `pendingEvents`, och
+  // resolutionen tar bort eventet därifrån. I samma sekund som spelaren svarade
+  // öppnade grinden alltså igen — och seeden är deterministisk per matchdag
+  // (baseSeed = nextMatchday * 1000 + säsong * 7), så managed-matchens ANDRA pass
+  // producerade ett byte-identiskt erbjudande med samma id. Enda utvägen var att
+  // acceptera, eftersom accept höjer activeSponsors (grindens andra villkor).
+  //
+  // Två tillägg: (1) `deferredDecisions` räknas nu som ett öppet erbjudande — ett
+  // kort som KF3-avbrottsbudgeten trängt undan låg utanför `pendingEvents` och
+  // öppnade grinden på exakt samma sätt. (2) id:t prövas mot `alreadyQueued`
+  // (pendingEvents ∪ resolvedEventIds, byggd överst i funktionen) precis som varje
+  // annan händelsetyp i den här filen redan gör — nu när resolutionen faktiskt
+  // skriver resolvedEventIds (eventResolver.ts) bär den spärren.
+  const hasOpenSponsorOffer = [
+    ...(game.pendingEvents ?? []),
+    ...(game.deferredDecisions ?? []),
+  ].some(e => e.type === 'sponsorOffer' && !e.resolved)
   if (activeSponsors.length < maxSponsors && !hasOpenSponsorOffer) {
     const offer = generateSponsorOffer(
       managedClub?.reputation ?? 50,
@@ -697,7 +715,10 @@ export function generatePostAdvanceEvents(
       rand
     )
     if (offer) {
-      events.push(buildSponsorOfferEvent(offer, activeSponsors, managedClub?.name, maxSponsors))
+      const sponsorEvent = buildSponsorOfferEvent(offer, activeSponsors, managedClub?.name, maxSponsors)
+      if (!alreadyQueued.has(sponsorEvent.id)) {
+        events.push(sponsorEvent)
+      }
     }
   }
 

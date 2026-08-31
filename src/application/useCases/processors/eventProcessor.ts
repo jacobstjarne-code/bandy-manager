@@ -623,6 +623,54 @@ export function checkForPlayThroughInjuryOffer(
   return events
 }
 
+/**
+ * HIGH 9 (audit 2026-08-29): "skadad-spela-vidare-kort kan visa en frisk spelare".
+ *
+ * Rotorsak: generatorn ovan gatar korrekt VID SKAPANDET, men ingenting omprövade
+ * preconditionen vid konsumtionstillfället. Tre vägar förbi den gamla, inline:ade
+ * spärren i roundProcessor.ts:
+ *   1. Kortet fyller sin egen match. Managed-matchen simuleras i ett ANDRA
+ *      advance-pass (matchSimProcessor hoppar över den i pass 1 tills laguppställning
+ *      finns) — och `forMatchday >= nextMatchday` var sant även i pass 2, när matchen
+ *      redan var spelad.
+ *   2. Livematchvägen (matchActions.saveLiveMatchResult) fullbordar fixturen helt
+ *      utan att gå via advanceToNextEvent — Portalen renderar då kortet direkt,
+ *      innan någon omgångsrensning körts. Exakt samma hål som H-02 hade för
+ *      slutspelskorten (se purgeStalePlayoffCards).
+ *   3. Ett kort som trängts undan till `deferredDecisions` av KF3-avbrottsbudgeten
+ *      rensades aldrig — den gamla spärren rörde bara `pendingEvents`, och den
+ *      deferrade kön promotas tillbaka in i poolen EFTER att spärren kört. Kortet
+ *      kunde därför surfa upp omgångar senare, även efter säsongsslut när ingen
+ *      match längre fanns (auditens observation).
+ *
+ * Predikatet är därför skrivet som samma sorts fristående giltighetsgrind som
+ * `isPlayoffNarrativeCardStillValid` — anropas på varje konsumtionspunkt, mot
+ * levande state, inte en gång vid skapandet.
+ */
+export function isPlayThroughInjuryCardStillValid(event: GameEvent, game: SaveGame): boolean {
+  if (event.type !== 'playThroughInjury') return true
+
+  const player = game.players.find(p => p.id === event.relatedPlayerId)
+  // Spelaren borta, frisk, eller redan fritagen för matchen → kortet ljuger.
+  if (!player) return false
+  if (player.clubId !== game.managedClubId) return false
+  if (!player.isInjured || player.playingThroughInjury) return false
+
+  // Matchdagen kortet gäller ligger i id:t (GameEvent saknar ett generellt
+  // createdMatchday-fält, till skillnad från FollowUp/TransferBid). Splitta på
+  // SISTA understrecket — player-id:n innehåller själva understreck.
+  const forMatchday = Number(event.id.slice(event.id.lastIndexOf('_') + 1))
+  if (!Number.isFinite(forMatchday)) return false
+
+  // Matchen kortet handlar om måste fortfarande vara ospelad. Detta täcker både
+  // pass 2 (matchen simulerad, samma nextMatchday) och säsongsslut (ingen fixture
+  // alls kvar) — till skillnad från den gamla `forMatchday >= nextMatchday`.
+  return game.fixtures.some(
+    f => f.matchday === forMatchday && f.status === 'scheduled' &&
+         (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+  )
+}
+
 // ── Scandals (Lager 1 — Världshändelser) ─────────────────────────────────
 
 export interface ScandalProcessorResult {

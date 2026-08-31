@@ -10,6 +10,7 @@ import type { TransferBid } from '../../../domain/entities/GameEvent'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import { checkForPlayThroughInjuryOffer } from '../processors/eventProcessor'
+import { resolveEvent } from '../../../domain/services/events/eventResolver'
 import { applyPlayerStateUpdates } from '../processors/playerStateProcessor'
 import { createSuspensionItem } from '../../../domain/services/inboxService'
 import { getInjurySeverity, PLAY_THROUGH_AFTERMATH } from '../../../domain/data/injuryDoctorText'
@@ -654,6 +655,81 @@ describe('HIGH 9 (audit 2026-08-29): stale playThroughInjury-kort purgas varje o
     }
     const result = advanceToNextEvent(validGame, 1)
     expect((result.game.pendingEvents ?? []).some(e => e.id.startsWith('playthrough_'))).toBe(true)
+  })
+
+  // ── HIGH 9, andra vändan (audit 2026-08-29) ──────────────────────────────
+  // Den ursprungliga rensningen låg FÖRE KF3-avbrottsbudgeten och rörde bara
+  // `pendingEvents`. Ett kort som trängts undan till `deferredDecisions`
+  // promotades tillbaka in i poolen EFTER rensningen och omprövades aldrig —
+  // det kunde därför surfa upp omgångar senare, även efter säsongsslut när
+  // ingen match längre fanns. Samma hål som H-02 hade för slutspelskorten.
+  it('purgar ett stale-kort som ligger undanträngt i deferredDecisions', () => {
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const staleCard = {
+      id: `playthrough_${player.id}_0`,
+      type: 'playThroughInjury' as const, title: 'x', body: 'x',
+      choices: [
+        { id: 'play', label: 'Han spelar', effect: { type: 'playThroughInjury' as const, targetPlayerId: player.id } },
+        { id: 'rest', label: 'Han vilar', effect: { type: 'noOp' as const } },
+      ],
+      relatedPlayerId: player.id, resolved: false,
+    }
+    const staleGame: SaveGame = {
+      ...game,
+      players: game.players.map(p => p.id === player.id ? { ...p, isInjured: true, injuryDaysRemaining: 10 } : p),
+      pendingEvents: [],
+      deferredDecisions: [staleCard],
+    }
+    const result = advanceToNextEvent(staleGame, 1)
+    const anywhere = [
+      ...(result.game.pendingEvents ?? []),
+      ...(result.game.deferredDecisions ?? []),
+    ]
+    expect(anywhere.some(e => e.id === staleCard.id)).toBe(false)
+  })
+
+  it('applicerar aldrig playThroughInjury-effekten på en spelare som hunnit bli frisk', () => {
+    // Reproducerar det rapporterade felet exakt: kortet skapas medan spelaren
+    // är skadad, spelaren blir frisk innan valet görs, och resolutionen körs
+    // ändå. Effekten (playingThroughInjury=true) får INTE landa — den gör att
+    // playerStateProcessorns återfallsrullning dubblar en skada som inte finns.
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const cardId = `playthrough_${player.id}_${game.currentMatchday + 1}`
+    const injuredGame: SaveGame = {
+      ...game,
+      players: game.players.map(p => p.id === player.id ? { ...p, isInjured: true, injuryDaysRemaining: 10 } : p),
+      pendingEvents: [{
+        id: cardId, type: 'playThroughInjury', title: 'x', body: 'x',
+        choices: [
+          { id: 'play', label: 'Han spelar', effect: { type: 'playThroughInjury', targetPlayerId: player.id } },
+          { id: 'rest', label: 'Han vilar', effect: { type: 'noOp' } },
+        ],
+        relatedPlayerId: player.id, resolved: false,
+      }],
+    }
+
+    // Skadan läker innan spelaren hinner svara på kortet.
+    const healedGame: SaveGame = {
+      ...injuredGame,
+      players: injuredGame.players.map(p =>
+        p.id === player.id ? { ...p, isInjured: false, injuryDaysRemaining: 0 } : p),
+    }
+
+    const after = resolveEvent(healedGame, cardId, 'play')
+    const resolvedPlayer = after.players.find(p => p.id === player.id)!
+    expect(resolvedPlayer.playingThroughInjury).toBeFalsy()
+    expect(resolvedPlayer.isInjured).toBe(false)
+    // Kortet försvinner ur kön som vanligt — inget spöke lämnas kvar.
+    expect((after.pendingEvents ?? []).some(e => e.id === cardId)).toBe(false)
+
+    // Kontrollprov: samma resolution på en FORTFARANDE skadad spelare ska
+    // fortsätta fungera exakt som förut.
+    const stillInjured = resolveEvent(injuredGame, cardId, 'play')
+    const p2 = stillInjured.players.find(p => p.id === player.id)!
+    expect(p2.playingThroughInjury).toBe(true)
+    expect(p2.isInjured).toBe(false)
   })
 })
 

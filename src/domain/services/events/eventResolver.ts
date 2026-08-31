@@ -24,9 +24,33 @@ import { captureSystemDecision } from '../seasonDecisionCaptureService'
  * fem exit-punkter i resolveEvent() (1 kanonisk + 4 tidiga specialfall som
  * går förbi den: sponsorOffer×2, riskySponsorOffer×2). Samma cap-mönster
  * (senaste 200) som resolvedEventIds.
+ *
+ * MEDIUM 15 (2026-08-29): de fyra tidiga specialfallen gick förbi den kanoniska
+ * vägens ANDRA skrivning också — `resolvedEventIds`. Se recordResolvedId nedan.
  */
 function recordResolvedChoice(game: SaveGame, eventId: string, choiceId: string, label: string): SaveGame['resolvedChoices'] {
   return [...(game.resolvedChoices ?? []), { eventId, choiceId, label }].slice(-200)
+}
+
+/**
+ * MEDIUM 15 (audit 2026-08-29): "sponsorernas motbud återställer förhandlingen".
+ *
+ * Rotorsak: sponsorOffer/riskySponsorOffer är fyra TIDIGA returer som går förbi
+ * den kanoniska skrivvägen längst ned i resolveEvent — och den kanoniska vägen är
+ * det enda ställe som skriver `resolvedEventIds`. Ett besvarat sponsorerbjudande
+ * lämnade därför inget spår alls utom `resolvedChoices` (som bara Granska läser).
+ * Generatorn (postAdvanceEvents.ts) gatar på `pendingEvents` — så i det ögonblick
+ * resolutionen plockade bort eventet ur kön öppnade grinden igen, och eftersom
+ * seeden är deterministisk per matchdag (baseSeed = nextMatchday * 1000 + säsong * 7)
+ * återskapades ett BYTE-IDENTISKT erbjudande med samma id på managed-matchens
+ * andra pass. Spelaren såg samma 45 tkr igen. Att acceptera var enda vägen ut,
+ * eftersom accept höjer activeSponsors — den andra halvan av grindens villkor.
+ *
+ * De fyra returerna delar nu denna hjälpare, med samma cap (senaste 200) som
+ * den kanoniska vägen.
+ */
+function recordResolvedId(game: SaveGame, eventId: string): string[] {
+  return [...(game.resolvedEventIds ?? []), eventId].slice(-200)
 }
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
@@ -114,6 +138,7 @@ export function resolveEvent(
         inbox,
         riskySponsorContract,
         resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
+        resolvedEventIds: recordResolvedId(game, eventId),
       }
     }
     const rejectedOffer = choiceId === 'reject' && rivalName && event.sponsorData
@@ -134,6 +159,7 @@ export function resolveEvent(
       pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
       inbox,
       resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
+      resolvedEventIds: recordResolvedId(game, eventId),
     }
   }
 
@@ -167,6 +193,7 @@ export function resolveEvent(
               season: game.currentSeason,
             },
             resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
+            resolvedEventIds: recordResolvedId(game, eventId),
           }
         } catch {}
       }
@@ -175,6 +202,7 @@ export function resolveEvent(
       ...game,
       pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
       resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
+      resolvedEventIds: recordResolvedId(game, eventId),
     }
   }
 
@@ -402,11 +430,21 @@ export function resolveEvent(
       // valet "han spelar" skulle tyst inte ändra någon spelares status.
       const pid = effect.targetPlayerId
       if (!pid) throw new Error("effect 'playThroughInjury' saknar obligatoriskt fält targetPlayerId")
-      updatedGame = {
-        ...updatedGame,
-        players: updatedGame.players.map(p =>
-          p.id === pid ? { ...p, isInjured: false, playingThroughInjury: true } : p,
-        ),
+      // HIGH 9 (audit 2026-08-29): sista spärren. Rensningen av inaktuella kort
+      // (isPlayThroughInjuryCardStillValid) körs på omgångsadvance och efter
+      // livematch, men resolutionen är den punkt där EFFEKTEN faktiskt landar —
+      // och effekten är destruktiv på en frisk spelare: playingThroughInjury=true
+      // gör att playerStateProcessorns återfallsrullning DUBBLAR en skada som
+      // inte finns. En frisk spelare ska aldrig "spela vidare på skadan"; valet
+      // no-op:ar då i stället, och kortet försvinner ur kön som vanligt nedan.
+      const target = updatedGame.players.find(p => p.id === pid)
+      if (target?.isInjured) {
+        updatedGame = {
+          ...updatedGame,
+          players: updatedGame.players.map(p =>
+            p.id === pid ? { ...p, isInjured: false, playingThroughInjury: true } : p,
+          ),
+        }
       }
       break
     }
