@@ -43,6 +43,8 @@ export interface CommunityRenewalTokens {
   /** Färdigformaterat pris, t.ex. "75 tkr". */
   cost: string
   seasons: number
+  /** 'säsong' (1) / 'säsonger' (fler) — böjs så "{seasons} {seasonWord}" aldrig blir "1 säsonger". */
+  seasonWord: string
   /** Kvarvarande effekt i procent, t.ex. "71 %". */
   wear: string
 }
@@ -57,6 +59,7 @@ export function buildRenewalTokens(
     activity: ACTIVITY_LABEL[key],
     cost: `${Math.round(costKr / 1000)} tkr`,
     seasons: seasonsActive,
+    seasonWord: seasonsActive === 1 ? 'säsong' : 'säsonger',
     wear: `${Math.round(stalenessMultiplier * 100)} %`,
   }
 }
@@ -67,14 +70,15 @@ function fill(template: string, t: CommunityRenewalTokens): string {
     .replace(/\{activity\}/g, t.activity)
     .replace(/\{cost\}/g, t.cost)
     .replace(/\{seasons\}/g, String(t.seasons))
+    .replace(/\{seasonWord\}/g, t.seasonWord)
     .replace(/\{wear\}/g, t.wear)
 }
 
-// Opus levererar — lämna tomma tills dess. ALDRIG en placeholder-mening.
-const TITLE = ''
-const BODY = ''
-const RENEW_LABEL = ''
-const DECLINE_LABEL = ''
+// Opus levererar 2026-08-31.
+const TITLE = 'Supportrarna tröttnar på {activity}'
+const BODY = 'Orten har sett {activity} i {seasons} {seasonWord}. Nyhetens behag har lagt sig — {wear} av dragningskraften finns kvar. En nysatsning väcker liv i det igen, men kostar {cost}.'
+const RENEW_LABEL = 'Satsa på nytt ({cost})'
+const DECLINE_LABEL = 'Låt det bero'
 
 export function getRenewalTitle(t: CommunityRenewalTokens): string {
   return fill(TITLE, t)

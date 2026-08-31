@@ -190,12 +190,25 @@ describe('generateCommunityRenewalEvent', () => {
     expect(event!.choices[1].effect.type).toBe('noOp')
   })
 
-  it('SVENSK TEXT: title/body/valetiketter är tomma tills Opus levererar', () => {
+  it('Opus-texten interpolerar aktivitet/säsonger/slitage/pris korrekt', () => {
+    // 2026-08-31: communityRenewalText.ts levererad. bigClubGame(3, 100) gör
+    // ALLA nio aktiviteter lika slitna (samma seasonsActive) — kiosk vinner
+    // (stabil sortering, STALEABLE_ACTIVITY_KEYS:s första nyckel).
     const event = generateCommunityRenewalEvent(bigClubGame(3, 100), 5)!
-    expect(event.title).toBe('')
-    expect(event.body).toBe('')
-    expect(event.choices[0].label).toBe('')
-    expect(event.choices[1].label).toBe('')
+    expect(event.title).toBe('Supportrarna tröttnar på Bandykiosken')
+    expect(event.body).toBe(
+      'Orten har sett Bandykiosken i 3 säsonger. Nyhetens behag har lagt sig ' +
+      '— 71 % av dragningskraften finns kvar. En nysatsning väcker liv i det ' +
+      'igen, men kostar 100 tkr.'
+    )
+    expect(event.choices[0].label).toBe('Satsa på nytt (100 tkr)')
+    expect(event.choices[1].label).toBe('Låt det bero')
+  })
+
+  it('böjer "1 säsong" i singular, aldrig "1 säsonger"', () => {
+    const event = generateCommunityRenewalEvent(bigClubGame(1, 100), 5)!
+    expect(event.body).toContain('i 1 säsong.')
+    expect(event.body).not.toContain('1 säsonger')
   })
 
   it('erbjuds inte när klubben inte har råd — ett obetalbart kort är ingen fråga', () => {
