@@ -3,14 +3,11 @@
  * "säsongens viktigaste beslut": mecenatkonflikten, kaptensmötet och
  * anläggningsbygget.
  *
- * Varför en egen fil med `vi.mock`: byggarnas meningsmallar
- * (`src/domain/data/seasonDecisionSentences.ts`) är TOMMA tills Opus levererar,
- * och en byggare med tom mall returnerar med avsikt `null` — invarianten som
- * håller blanka rader ute ur årsboken. Den invarianten bevakas OMOCKAD i
- * seasonDecisionCaptureService.test.ts. HÄR mockas mallarna till en icke-tom
- * sträng så att den FAKTISKA verifierings- och klassificeringslogiken
- * (namedPerson, irreversible, tension, moneyAmount, systemsAffectedCount, och
- * kollen mot speltillståndet) kan testas i isolering från textleveransen.
+ * Varför en egen fil med `vi.mock`: mallarna ersätts med maskinläsbara strängar
+ * så att den FAKTISKA verifierings- och klassificeringslogiken (namedPerson,
+ * irreversible, tension, moneyAmount, systemsAffectedCount och kollen mot
+ * speltillståndet) kan testas i isolering från den levererade prosan. De riktiga
+ * omockade årsboksraderna bevakas i seasonDecisionCaptureService.test.ts.
  */
 import { describe, it, expect, vi } from 'vitest'
 

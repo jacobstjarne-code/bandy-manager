@@ -21,6 +21,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { SeasonSummary } from '../entities/SeasonSummary'
 import { ClubExpectation } from '../enums'
 import { RELEGATION_ZONE_SIZE } from './boardService'
+import { careerOfferPitch } from '../data/careerBreakText'
 
 // ── Renommé ────────────────────────────────────────────────────────────────
 
@@ -317,8 +318,7 @@ export function buildCareerOffers(input: BuildOffersInput): CareerOffer[] {
       departedCoachName: c.isFormerClub
         ? report.replacementCoachName
         : (game.aiCoaches?.[club.id]?.name ?? ''),
-      // SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md). Opus skriver pitchen.
-      pitch: '[Opus]',
+      pitch: careerOfferPitch({ isFormerClub: c.isFormerClub, reputation: club.reputation ?? 50 }),
     }
   })
 }

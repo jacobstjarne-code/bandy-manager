@@ -29,8 +29,8 @@
  * var precis den auditen mätte — två hela säsonger med heltidskontrakt,
  * kaptensmöte, värmestugebygge, mecenatkonflikt och slutspelsbåge gav ändå
  * "Inget beslut stack ut i vintras." Vidgningen är nu gjord, med de nya
- * meningsmallarna i `src/domain/data/seasonDecisionSentences.ts` (TOMMA tills
- * Opus levererar — en byggare med tom mall returnerar `null`, aldrig en
+ * meningsmallarna i `src/domain/data/seasonDecisionSentences.ts` (levererade
+ * av Opus; en byggare med tom mall returnerar fortfarande `null`, aldrig en
  * kandidat med tom mening). Tre nya källor:
  *   1. mecenatEvent/side_mec1 + side_mec2 — välja sida i en personkonflikt
  *   2. captainSpeech/take_charge + support — kaptensmötet, namngiven person

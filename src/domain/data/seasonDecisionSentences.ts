@@ -100,15 +100,15 @@ function fill(template: string, tokens: Record<string, string>): string | null {
 
 // ── Mallar — Opus levererar. ALDRIG en placeholder-mening. ─────────────────
 
-const MECENAT_CONFLICT_SIDE = ''
-const CAPTAIN_TAKE_CHARGE = ''
-const CAPTAIN_SUPPORT = ''
-const FACILITY_BUILD = ''
+const MECENAT_CONFLICT_SIDE = 'Du valde {backed}s sida när mecenaterna drabbade samman. {other} glömmer inte vem du släppte.'
+const CAPTAIN_TAKE_CHARGE = '{captain} bad om att få ta kommandot i krisen. Du tog det själv, och {last} kände av det.'
+const CAPTAIN_SUPPORT = 'Du ställde dig bakom {captain} inför laget. Omklädningsrummet slöt sig, men styrelsen noterade att du valde {last} före dem.'
+const FACILITY_BUILD = '{facility} stod klar. Den kostade {cost} ur kassan, men blir kvar längre än de flesta beslut.'
 
 // ── Meningsbyggare (mall injicerbar för test) ─────────────────────────────
 // `sentenceFor*` tar mallen som parameter så att interpolationslogiken kan
-// testas mot en injicerad mall medan de riktiga konstanterna ovan är tomma.
-// `get*Sentence` är produktionsvägen och läser den låsta konstanten.
+// testas mot en injicerad mall oberoende av prosan. `get*Sentence` är
+// produktionsvägen och läser den låsta, levererade konstanten.
 
 export function sentenceForMecenatConflictSide(template: string, t: MecenatConflictSideTokens): string | null {
   return fill(template, { backed: t.backed, other: t.other })

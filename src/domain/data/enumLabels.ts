@@ -75,10 +75,10 @@ export const TACTIC_ATTACKING_FOCUS_LABELS: Record<TacticAttackingFocus, string>
  * Tills de fylls renderar OrtenTab ingen rolletikett alls (tomt > engelskt).
  */
 export const SUPPORTER_ROLE_LABELS: Record<SupporterRole, string> = {
-  leader: '',   // Opus levererar
-  veteran: '',  // Opus levererar
-  youth: '',    // Opus levererar
-  family: '',   // Opus levererar
+  leader: 'Klackledaren',
+  veteran: 'Trotjänaren',
+  youth: 'Ungdomen',
+  family: 'Familjefaren',
 }
 
 export const TACTIC_CATEGORY_LABELS = {

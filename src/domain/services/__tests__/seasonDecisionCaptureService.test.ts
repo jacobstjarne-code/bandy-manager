@@ -505,19 +505,14 @@ describe('SEASON_DECISION_NONE_TEXT — A-H9 fallback', () => {
   })
 })
 
-// ── HIGH 6 (auditen 2026-08-29) — invarianten "tom mall ⇒ ingen kandidat" ──
+// ── HIGH 6 (auditen 2026-08-29) — levererade mallar + tom-mall-invariant ──
 //
 // De tre nya kandidatkällorna (mecenatkonflikt, kaptensmöte, anläggningsbygge)
-// har sina meningsmallar i src/domain/data/seasonDecisionSentences.ts, och de
-// är TOMMA tills Opus levererar. Den här filen kör OMOCKAT — precis som
-// produktionen gör idag — och bevisar att en tom mall ger `null` hela vägen ut,
-// inte en kandidat med tom mening. Den skillnaden är hela poängen:
-// pickSeasonDecision skulle glatt välja en kandidat med sentence === '' och
-// årsboken skulle rendera en blank rad, vilket är sämre än
-// SEASON_DECISION_NONE_TEXT. Byggarnas ÖVRIGA logik (verifiering mot
-// speltillståndet, namedPerson/tension/irreversible) testas med injicerad mall
-// i seasonDecisionCaptureHigh6.test.ts.
-describe('HIGH 6 — tom meningsmall ger ingen kandidat alls (aldrig en blank rad)', () => {
+// har nu sina levererade meningsmallar i seasonDecisionSentences.ts. Den här
+// filen kör OMOCKAT — precis som produktionen — och bevisar både de faktiska
+// årsboksraderna och den kvarvarande hjälparinvarianten: en explicit tom mall
+// ger `null`, aldrig en kandidat med blank mening.
+describe('HIGH 6 — levererade årsboksmeningar och tom-mall-invariant', () => {
   it('interpolationen fungerar när en mall FINNS (injicerad, inte den tomma konstanten)', () => {
     expect(sentenceForMecenatConflictSide('{backed} före {other}.', { backed: 'Björn', other: 'Astrid' }))
       .toBe('Björn före Astrid.')
@@ -536,7 +531,7 @@ describe('HIGH 6 — tom meningsmall ger ingen kandidat alls (aldrig en blank ra
     expect(sentenceForFacilityBuild('', { facility: 'A', cost: '1 tkr' })).toBeNull()
   })
 
-  it('mecenatkonflikten: verifieringen går igenom men kandidaten blir ändå null', () => {
+  it('mecenatkonflikten: verifieringen ger den levererade årsboksraden', () => {
     const gameBefore = makeGame({ mecenater: [
       makeMecenat({ id: 'mec1', name: 'Björn Lindqvist', happiness: 60 }),
       makeMecenat({ id: 'mec2', name: 'Astrid Wahl', happiness: 60 }),
@@ -553,10 +548,11 @@ describe('HIGH 6 — tom meningsmall ger ingen kandidat alls (aldrig en blank ra
       ]) } }],
       resolved: false,
     }
-    expect(captureSystemDecision(gameBefore, gameAfter, event, 'side_mec1')).toBeNull()
+    const candidate = captureSystemDecision(gameBefore, gameAfter, event, 'side_mec1')
+    expect(candidate?.sentence).toBe('Du valde Björn Lindqvists sida när mecenaterna drabbade samman. Astrid Wahl glömmer inte vem du släppte.')
   })
 
-  it('kaptensmötet: verifieringen går igenom men kandidaten blir ändå null', () => {
+  it('kaptensmötet: verifieringen ger den levererade årsboksraden', () => {
     const base = makeGame({ boardPatience: 70 })
     const captain = base.players.find(p => p.clubId === base.managedClubId && p.morale > 10)!
     const event: GameEvent = {
@@ -568,10 +564,11 @@ describe('HIGH 6 — tom meningsmall ger ingen kandidat alls (aldrig en blank ra
       ...base,
       players: base.players.map(p => p.id === captain.id ? { ...p, morale: p.morale - 5 } : p),
     }
-    expect(captureSystemDecision(base, gameAfter, event, 'take_charge')).toBeNull()
+    const candidate = captureSystemDecision(base, gameAfter, event, 'take_charge')
+    expect(candidate?.sentence).toBe(`${captain.firstName} ${captain.lastName} bad om att få ta kommandot i krisen. Du tog det själv, och ${captain.lastName} kände av det.`)
   })
 
-  it('anläggningsbygget: verifieringen går igenom men kandidaten blir ändå null', () => {
+  it('anläggningsbygget: verifieringen ger den levererade årsboksraden', () => {
     const gameBefore = makeGame({ facilityState: { builtNodeIds: [] } })
     const club = gameBefore.clubs.find(c => c.id === gameBefore.managedClubId)!
     const gameAfter: SaveGame = {
@@ -579,6 +576,7 @@ describe('HIGH 6 — tom meningsmall ger ingen kandidat alls (aldrig en blank ra
       facilityState: { builtNodeIds: [], activeProject: { nodeId: 'varmestuga', startedMatchday: 0, etaMatchday: 8 } },
       clubs: gameBefore.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 120000 } : c),
     }
-    expect(captureFacilityBuildDecision(gameBefore, gameAfter, 'varmestuga', 120000)).toBeNull()
+    const candidate = captureFacilityBuildDecision(gameBefore, gameAfter, 'varmestuga', 120000)
+    expect(candidate?.sentence).toBe('Värmestuga stod klar. Den kostade 120 tkr ur kassan, men blir kvar längre än de flesta beslut.')
   })
 })
