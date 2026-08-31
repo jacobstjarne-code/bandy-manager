@@ -332,18 +332,28 @@ export function generateCommunityActivitiesEvents(
         type: 'communityEvent',
         title: 'Anläggningsrenovering',
         body: 'Omklädningsrummen behöver renoveras. Kostar 25 000 men ger +5 reputation och håller spelarna nöjdare.',
+        // DOMLOGG 2026-08-31 §3-A: undertexten ÄR speccen — effekten var
+        // buggen, inte texten. renovate lovade "-25 tkr · +15 faciliteter"
+        // men gav bara reputation +5; wait lovade "faciliteter försämras"
+        // men gav noOp. Facilities-sänkningen på wait har ingen egen
+        // magnitud i domen (bara riktningen) — satt till -5, samma
+        // modesta standardmagnitud som facilitiesUpgrade-effekten redan
+        // använder som sitt eget default (effect.amount ?? 5).
         choices: [
           {
             id: 'renovate',
             label: 'Renovera (−25 000 kr)',
             subtitle: '💰 -25 tkr · 🏗️ +15 faciliteter',
-            effect: { type: 'reputation', amount: 5 },
+            effect: { type: 'multiEffect', subEffects: JSON.stringify([
+              { type: 'income', amount: -25000 },
+              { type: 'facilitiesUpgrade', amount: 15 },
+            ]) },
           },
           {
             id: 'wait',
             label: 'Får vänta',
             subtitle: '⚠️ faciliteter försämras',
-            effect: { type: 'noOp' },
+            effect: { type: 'facilitiesUpgrade', amount: -5 },
           },
         ],
         resolved: false,

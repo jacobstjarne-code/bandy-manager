@@ -1046,6 +1046,21 @@ export function resolveEvent(
                     : c
                 ),
               }
+            } else if (sub.type === 'facilitiesUpgrade') {
+              // DOMLOGG 2026-08-31 §3-A: samma failure-mode som reputation-
+              // grenen ovan dokumenterar — communityActivitiesEvents.ts:s
+              // renovate-val lovade "🏗️ +15 faciliteter" i undertexten, men
+              // multiEffect-resolvern saknade en facilitiesUpgrade-gren, så
+              // löftet förblev tyst noll. Samma matte som top-level case
+              // 'facilitiesUpgrade' (rad ~815).
+              updatedGame = {
+                ...updatedGame,
+                clubs: updatedGame.clubs.map(c =>
+                  c.id === updatedGame.managedClubId
+                    ? { ...c, facilities: Math.min(100, (c.facilities ?? 50) + (sub.amount ?? 5)) }
+                    : c
+                ),
+              }
             } else if (sub.type === 'supporterMood') {
               if (updatedGame.supporterGroup) {
                 updatedGame = {
