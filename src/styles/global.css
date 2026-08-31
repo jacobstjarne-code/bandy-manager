@@ -1243,10 +1243,17 @@ a {
    ARRIVAL SCENE — ArrivalScene.tsx
    ═══════════════════════════════════════════════════════════ */
 
-/* Full-viewport dark container, no GameHeader, no BottomNav */
+/* Full-viewport dark container, no GameHeader, no BottomNav.
+   z-index:300 matchar .anslag-overlay (samma scen-klass: fixed, inset:0,
+   ingen header/bottomnav) — utan den låg scenen bakom /dev/scenes-navets
+   sticky z-index:50 (DOM helt korrekt, bara osynlig — samma failure-mode
+   som CLAUDE.md redan dokumenterar för EventOverlay/PressConferenceScene).
+   Upptäckt 2026-08-31 när squadGame fick game.board (DOMLOGG §4) och scenen
+   kunde rendera för första gången istf att omdirigera tomt. */
 .arrival-scene {
   position: fixed;
   inset: 0;
+  z-index: 300;
   background: var(--bg-scene);
   color: var(--text-light);
   display: flex;

@@ -447,11 +447,21 @@ const efterklangCrisisVariants: Array<{ label: string; game: SaveGame }> = [
 
 // ── Component ────────────────────────────────────────────────────────────────
 
+// KF4 (2026-06-21): EN styrelsemodell — full BoardMember[] på game.board (find-by-role).
+// Flyttad hit (var tidigare bara deklarerad vid board-a/b/c, rad ~1135) — arrival-scenen
+// (DOMLOGG_2026-08-31.md §4) redirectar till dashboard utan game.board (ArrivalScene.tsx:204-207),
+// så grinden fotograferade en tom omdirigering. squadGame behöver den nu också.
+const board = [
+  { id: 'ordforande-0', firstName: 'Margareta', lastName: 'Sahlin', age: 61, gender: 'f' as const, role: 'ordförande' as const, personality: 'traditionalist' as const },
+  { id: 'kassor-0', firstName: 'Bengt', lastName: 'Ek', age: 58, gender: 'm' as const, role: 'kassör' as const, personality: 'ekonom' as const },
+  { id: 'ledamot-0', firstName: 'Sture', lastName: 'Almqvist', age: 67, gender: 'm' as const, role: 'ledamot' as const, personality: 'supporter' as const },
+]
+
 const cupGame    = makeGame([...makeLeagueFixtures(), cupFinalFixture])
 const smGame     = makeGame([...makeLeagueFixtures(), smFinalFixture])
 const arcGame    = makeGame(makeLeagueFixtures())
 const portalGame = makeGame(makeLeagueFixtures())
-const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1' })
+const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1', board })
 // Lugn trupp (allEmpty) för NU-stiltje: inga skador/avstängningar/låg moral
 const calmPlayers = devPlayers.map(p => ({ ...p, isInjured: false, injuryDaysRemaining: 0, suspensionGamesRemaining: 0, morale: 70 }))
 const stillnessGame = makeGame(makeLeagueFixtures(), { players: calmPlayers, captainPlayerId: 'p-d1' })
@@ -1131,12 +1141,7 @@ const granskaFarewellGame = makeGame([...makeLeagueFixtures(), granskaFarewellFi
 const granskaFarewellRoundSummary = { ...granskaRoundSummary }
 
 // BoardMeeting fingered state — season 2+, prev-season objective history + new goals
-// KF4 (2026-06-21): EN styrelsemodell — full BoardMember[] på game.board (find-by-role).
-const board = [
-  { id: 'ordforande-0', firstName: 'Margareta', lastName: 'Sahlin', age: 61, gender: 'f' as const, role: 'ordförande' as const, personality: 'traditionalist' as const },
-  { id: 'kassor-0', firstName: 'Bengt', lastName: 'Ek', age: 58, gender: 'm' as const, role: 'kassör' as const, personality: 'ekonom' as const },
-  { id: 'ledamot-0', firstName: 'Sture', lastName: 'Almqvist', age: 67, gender: 'm' as const, role: 'ledamot' as const, personality: 'supporter' as const },
-]
+// (board flyttad till fixturblocket ovanför squadGame, se kommentaren där)
 const newGoalsSet = [
   { id: 'g-sport', type: 'sporting', label: 'Topp 6', description: 'Ett steg upp', ownerId: 'b1', ownerPersonality: 'traditionalist', targetValue: 6, currentValue: 0, measureFn: 'placement', status: 'active', assignedSeason: 3, successReward: '', failureConsequence: '', carryOver: false },
   { id: 'g-acad', type: 'academy', label: 'En egenfostrad i startelvan', description: 'Akademin ska synas', ownerId: 'b1', ownerPersonality: 'traditionalist', targetValue: 1, currentValue: 0, measureFn: 'academy', status: 'active', assignedSeason: 3, successReward: '', failureConsequence: '', carryOver: false },

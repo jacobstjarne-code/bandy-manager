@@ -612,7 +612,7 @@ Mest konkreta buggar Code kan ta direkt (ej Design). Opus hann EJ lokalisera all
 | # | Idé | Plats | Estimat |
 |---|---|---|---|
 *(C-MK1 LEVERERAD 2026-05-25: ManagerProfile-entity + CoachRivalry + burnout + tränaravtal + H2H-tracking. 6 filer. C-SY1#4 LEVERERAD 2026-05-25: managerKvittoText.ts + GranskaOversikt-integration.)*
-| — | **Resterande-tickets** = rena Code/CSS (`HANDOFF-RESTERANDE-TICKETS`): gold-tokens (5 min), SMFinalPrimary fel guld (1h), SimSummary tokens (15 min), C-SP5 crossfade (1h), D-ST1 tokens-doc (1h), klubbminne-CSS (3h), transfers-refaktor. Ingen Opus-text. Inkrementella, prioordning i handoffen. | — | ~10h Code spridda. |
+| — | **Resterande-tickets** (skriven om 2026-08-31, Code-verifieringspasset — se MASTER_OPPET.md `rest-*`-raderna): 6 av 7 ursprungliga tickets stale (gold-tokens, SMFinalPrimary-guld, SimSummary tokens, C-SP5 vinstscenens crossfade, D-ST1 tokens-doc, klubbminne-CSS — alla levererade). Kvar: **transfers-refaktor**, Sprint 1 halvlandad — token-fixen klar (0 Tailwind-rgba), men css-extraktion bara 2 av 9 filer (`transfers.css` finns, importeras bara av `TransfersScreen.tsx`+`ContractsTab.tsx`), 107 inline-style-objekt kvar (ScoutingTab 38, RenewContractModal 11), emoji-cleanup orört (`TransfersScreen.tsx` 📋😤🔻💰📤🔥). Sprint 2 (den ursprungliga handoffens resten) inte påbörjad. | — | Transfers-refaktorn, resten av handoffen avverkad. |
 
 ### Portal-systemet (skissat 2026-05-17)
 
