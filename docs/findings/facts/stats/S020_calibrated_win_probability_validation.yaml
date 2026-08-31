@@ -1,0 +1,37 @@
+fact_id: S020
+category: stats
+claim: "Den rullande tidsvaliderade vinstsannolikhetsmodellen nådde log loss 0,5646 över tre senare herrsäsonger, jämfört med 0,5882 för den gamla exakta cellgriden"
+value: 0.5646
+unit: log_loss
+breakdown:
+  eligible_complete_matches: 1066
+  excluded_incomplete_goal_logs: 58
+  rolling_test_seasons: ["2022-23", "2024-25", "2025-26"]
+  rolling_test_matches: 484
+  rolling_test_snapshots: 3388
+  calibrated_log_loss: 0.5646
+  raw_grid_log_loss: 0.5882
+  calibrated_multiclass_brier: 0.3179
+  raw_grid_multiclass_brier: 0.3337
+  paired_log_loss_improvement: 0.0236
+  paired_bootstrap_95pct_ci: [0.0040, 0.0421]
+source:
+  type: derived
+  name: bandygrytan
+  match_count: 1066
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+  doc: "docs/data/win_prob_calibrated_herr.json"
+verified_at: 2026-08-31
+verified_by: code
+status: active
+invariants:
+  - "value > 0.50"
+  - "value < 0.59"
+related_facts: [S001, S004, S005, S006, S013]
+notes: |
+  Lägre log loss och Brier är bättre. Tre rullande foldar delar träning,
+  kalibrering och test kronologiskt per säsong. Måtten bygger på sju minuter per
+  match. Bootstrapintervallet använder matchen som omsamplingsenhet. Den gamla
+  cellgriden har marginellt lägre tiobins-ECE; den nya modellen är alltså inte
+  bättre på varje enskilt mått. Modellformen har utvecklats med kännedom om
+  befintliga säsonger, så nästa kompletta säsong är den verkligt orörda kontrollen.

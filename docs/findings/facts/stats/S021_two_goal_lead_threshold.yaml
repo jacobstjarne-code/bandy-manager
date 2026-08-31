@@ -1,0 +1,31 @@
+fact_id: S021
+category: stats
+claim: "För jämnstarka lag i den kalibrerade herrmodellen passerar en tvåmålsledning 95 procents vinstsannolikhet från rå minut 76 för hemmalaget och minut 81 för bortalaget"
+value: 76
+unit: raw_match_minute
+breakdown:
+  threshold_pct: 95
+  home_leader_two_goals_from_minute: 76
+  away_leader_two_goals_from_minute: 81
+  home_leader_one_goal_reaches_threshold: false
+  away_leader_one_goal_reaches_threshold: false
+  home_leader_three_goals_from_minute: 47
+  away_leader_three_goals_from_minute: 64
+  scenario: "equal pre-match Elo"
+source:
+  type: derived
+  name: bandygrytan_calibrated_win_probability_model
+  match_count: 1066
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+  doc: "docs/data/win_prob_calibrated_herr.json"
+verified_at: 2026-08-31
+verified_by: code
+status: active
+invariants:
+  - "value >= 70"
+  - "value <= 85"
+related_facts: [S020, S004, S006, S013]
+notes: |
+  Trösklarna är modellskattningar för grundserie och jämnstarka lag, inte
+  observerade naturlagar. Rå minut är tidslinjens index och ska inte blandas
+  ihop med registrerad halvtid. Slutspel och damserie ingår inte.

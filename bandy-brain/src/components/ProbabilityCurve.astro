@@ -1,0 +1,97 @@
+---
+export interface Point {
+  minute: number;
+  probability: number;
+}
+
+export interface Series {
+  label: string;
+  points: Point[];
+  color: string;
+}
+
+export interface Props {
+  series: Series[];
+  caption: string;
+}
+
+const { series, caption } = Astro.props;
+const width = 680;
+const height = 310;
+const margin = { top: 22, right: 24, bottom: 46, left: 52 };
+const plotWidth = width - margin.left - margin.right;
+const plotHeight = height - margin.top - margin.bottom;
+const yMin = 0.5;
+const yMax = 1;
+const x = (minute: number) => margin.left + ((minute - 1) / 89) * plotWidth;
+const y = (probability: number) => margin.top + ((yMax - probability) / (yMax - yMin)) * plotHeight;
+const xTicks = [1, 15, 30, 45, 60, 75, 90];
+const yTicks = [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1];
+---
+
+<figure class="probability-chart">
+  <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="probability-chart-title probability-chart-description">
+    <title id="probability-chart-title">Vinstsannolikhet vid tvåmålsledning</title>
+    <desc id="probability-chart-description">Två kurvor visar modellens vinstsannolikhet för ett jämnstarkt hemma- respektive bortalag som leder med två mål.</desc>
+
+    {yTicks.map((tick) => (
+      <g>
+        <line
+          x1={margin.left}
+          x2={width - margin.right}
+          y1={y(tick)}
+          y2={y(tick)}
+          class:list={["probability-chart__grid", tick === 0.95 && "probability-chart__threshold"]}
+        />
+        <text x={margin.left - 9} y={y(tick) + 4} text-anchor="end" class="probability-chart__tick">
+          {Math.round(tick * 100)} %
+        </text>
+      </g>
+    ))}
+
+    {xTicks.map((tick) => (
+      <g>
+        <line x1={x(tick)} x2={x(tick)} y1={margin.top} y2={height - margin.bottom} class="probability-chart__grid" />
+        <text x={x(tick)} y={height - margin.bottom + 22} text-anchor="middle" class="probability-chart__tick">
+          {tick}
+        </text>
+      </g>
+    ))}
+
+    {series.map((item) => (
+      <polyline
+        points={item.points.map((point) => `${x(point.minute)},${y(point.probability)}`).join(' ')}
+        fill="none"
+        stroke={item.color}
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    ))}
+
+    <text x={margin.left + plotWidth / 2} y={height - 5} text-anchor="middle" class="probability-chart__axis-label">Rå matchminut</text>
+  </svg>
+
+  <div class="probability-chart__legend" aria-hidden="true">
+    {series.map((item) => (
+      <span><i style={`background: ${item.color}`}></i>{item.label}</span>
+    ))}
+    <span><i class="probability-chart__legend-threshold"></i>95-procentströskel</span>
+  </div>
+  <figcaption>{caption}</figcaption>
+</figure>
+
+<style>
+  .probability-chart { margin: 1.5rem 0; }
+  .probability-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .probability-chart__grid { stroke: var(--color-border); stroke-width: 1; }
+  .probability-chart__threshold { stroke: #8d631c; stroke-width: 1.5; stroke-dasharray: 5 4; }
+  .probability-chart__tick,
+  .probability-chart__axis-label { fill: var(--color-muted); font: 12px var(--font-ui); }
+  .probability-chart__axis-label { font-weight: 600; }
+  .probability-chart__legend { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; font: 0.75rem var(--font-ui); color: var(--color-muted); }
+  .probability-chart__legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .probability-chart__legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+  .probability-chart__legend .probability-chart__legend-threshold { height: 0; border-top: 2px dashed #8d631c; background: none; }
+  .probability-chart figcaption { margin-top: 0.6rem; color: var(--color-muted); font: 0.75rem/1.5 var(--font-ui); }
+</style>

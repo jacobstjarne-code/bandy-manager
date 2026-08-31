@@ -35,13 +35,13 @@
     längd och av att utvisningstyperna inte är slumpmässigt jämförbara.
 
 - num: '060'
-  title: 'När passerar en bandyledning 95 procent i råmodellen?'
+  title: 'Tvåmålsledningen når 95 procent först sent i matchen'
   date: '5 juli 2026'
-  status: active
+  status: corrected
   excerpt: >-
-    Herrkurvans tvåmålsledning passerar och stannar över 95 procent från minut 84.
-    Damkurvan är gles och ojämn; den tidigare slutsatsen om minut 31 håller inte
-    som säkerhetströskel och analysen är därför ett öppet spår.
+    En rullande tidsvaliderad modell sätter 95-procentpassagen för jämnstarka
+    lag till minut 76 när hemmalaget leder med två mål och minut 81 när
+    bortalaget gör det.
 
 - num: '059'
   title: 'Power play: överläget höjer måltempot 40 %'

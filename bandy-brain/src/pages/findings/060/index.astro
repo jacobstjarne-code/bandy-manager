@@ -1,43 +1,70 @@
 ---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import Base from '../../../layouts/Base.astro';
+import ProbabilityCurve from '../../../components/ProbabilityCurve.astro';
 import { findings as _findings } from '../../../data/findings';
+
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const _finding = _findings.find((f) => f.num === '060');
+const _finding = _findings.find((finding) => finding.num === '060');
+const model = JSON.parse(
+  readFileSync(resolve(process.cwd(), '../docs/data/win_prob_calibrated_herr.json'), 'utf8')
+);
+const validation = model.validation;
+const quality = model.data_quality;
+const homeTwo = model.scenarios['home_+2'];
+const awayTwo = model.scenarios['away_+2'];
+const displayMinutes = [45, 60, 75, 84, 89];
+const pct = (value: number) => `${(value * 100).toFixed(1).replace('.', ',')} %`;
+const threshold = (scenario: any) => scenario.sustained_95pct_from_minute
+  ? `minut ${scenario.sustained_95pct_from_minute}`
+  : 'når inte 95 %';
+const chartSeries = [
+  {
+    label: 'Hemmalaget leder med två mål',
+    color: '#1a4f8c',
+    points: homeTwo.probabilities_by_minute.map((probability: number, index: number) => ({ minute: index + 1, probability })),
+  },
+  {
+    label: 'Bortalaget leder med två mål',
+    color: '#a45b2a',
+    points: awayTwo.probabilities_by_minute.map((probability: number, index: number) => ({ minute: index + 1, probability })),
+  },
+];
 ---
 
 <Base
   title={`Finding ${_finding?.num} — ${_finding?.title}`}
-  description="En rå empirisk vinstsannolikhetsmodell över 1 124 Elitseriematcher. Herrkurvans tvåmålsledning passerar och stannar över 95 procent från minut 84; damkurvan är för gles och ojämn för samma slutsats."
+  description="En rullande tidsvaliderad vinstsannolikhetsmodell för Herr-Elitserien. För jämnstarka lag når en tvåmålsledning 95 procent i minut 76 för hemmalaget och minut 81 för bortalaget."
 >
   <div class="finding-layout">
-
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
-    <p class="finding-meta">Finding {_finding?.num} · {_finding?.date}</p>
-    <h1 class="finding-title">När passerar en bandyledning<br>95 procent i råmodellen?</h1>
+    <p class="finding-meta">Finding {_finding?.num} · {_finding?.date} · ombyggd 31 augusti 2026</p>
+    <h1 class="finding-title">Tvåmålsledningen når 95 procent<br>först sent i matchen</h1>
 
     <hr class="finding-divider" />
 
     <div class="key-numbers">
       <div class="key-number">
-        <span class="key-number__value">Minut 84</span>
-        <span class="key-number__label">+2 passerar och stannar över 95 % (herr)</span>
-        <span class="key-number__note">Rå empirisk grid, n=115 i minut 84</span>
+        <span class="key-number__value">Minut 76</span>
+        <span class="key-number__label">Hemma +2 når 95 %</span>
+        <span class="key-number__note">Jämnstarka lag före match</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">Aldrig</span>
-        <span class="key-number__label">+1 når inte 95 % i reliable celler</span>
-        <span class="key-number__note">En uddamålsledning är öppen match hela vägen</span>
+        <span class="key-number__value">Minut 81</span>
+        <span class="key-number__label">Borta +2 når 95 %</span>
+        <span class="key-number__note">Samma modell och lagstyrka</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">31 → under igen</span>
-        <span class="key-number__label">Dam +2: första passagen är instabil</span>
-        <span class="key-number__note">Kurvan faller därefter under 95 % flera gånger</span>
+        <span class="key-number__value">0,565</span>
+        <span class="key-number__label">Log loss i rullande tidstest</span>
+        <span class="key-number__note">Rå cellmodell: 0,588 · lägre är bättre</span>
       </div>
       <div class="key-number">
-        <span class="key-number__value">61 %</span>
-        <span class="key-number__label">Hemmavinst vid +1 i rå minut 45</span>
-        <span class="key-number__note">Inte samma sak som registrerat halvtidsresultat</span>
+        <span class="key-number__value">1 066</span>
+        <span class="key-number__label">Fullständiga matchloggar</span>
+        <span class="key-number__note">58 ofullständiga loggar exkluderades</span>
       </div>
     </div>
 
@@ -45,56 +72,96 @@ const _finding = _findings.find((f) => f.num === '060');
 
     <div class="finding-section prose">
       <p class="finding-section-label">Frågan</p>
-      <p>Varje matchögonblick har en ställning och en klocka. Tillsammans borde de räcka för att svara på sportens mest grundläggande lägesfråga: hur sannolikt är det att laget som leder faktiskt vinner? Och följdfrågan som varje publik känner i kroppen — när är matchen avgjord på riktigt?</p>
+      <p>När blir en ledning faktiskt så stark att en vändning är ovanlig — och går det att göra den bedömningen utan att låta enstaka, glest observerade matchlägen styra kurvan?</p>
+      <p>Den första versionen av finding 060 räknade varje kombination av minut och målskillnad separat. Det gav hoppiga sannolikheter och kallade den första passagen över 95 procent för en säker gräns. Den här versionen ersätter den metoden med en sammanhängande modell och prövar den i tre rullande tidstest.</p>
     </div>
 
     <hr class="finding-divider" />
 
     <div class="finding-section prose">
       <p class="finding-section-label">Datan</p>
-      <p>Ur målsekvenserna i Bandygrytan byggs en tillståndslinje per match: för varje rå matchminut 1–90 och målskillnad (hemma−borta, trunkerad till ±3) mäts den empiriska utfallsfördelningen. Underlaget är 1 124 herrmatchar och 376 dammatchar i grundserien 2019–2026 (exkl. 2023–24). Celler med minst 30 observationer markeras som mer tillförlitliga; för herr gäller det 585 av 620 celler, för dam 447 av 621. Modellen är inte utjämnad eller justerad för lagstyrka.</p>
+      <p>Utgångspunkten är Herr-Elitseriens 1 124 grundseriematcher 2019–2026, med säsongen 2023–24 saknad. En tidsmodell kräver att händelselogg och slutresultat beskriver samma match. I 58 matcher gjorde de inte det: antalet loggade hemma- eller bortamål återskapade inte slutresultatet. De matcherna exkluderades, vilket lämnar {quality.included_matches.toLocaleString('sv-SE')} fullständiga tidslinjer.</p>
+      <p>Ställningen avser början av varje rå matchminut. Ett mål registrerat i minut 60 påverkar alltså tillståndet från minut 61. Det är konsekvent genom hela analysen men innebär att rå minut 45 inte alltid är samma sak som den registrerade halvtiden.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Metoden</p>
+      <p>Modellen skattar tre utfall — hemmavinst, oavgjort och bortavinst — från rå matchminut, aktuell målskillnad och lagens styrkeskillnad före match. Lagstyrkan är en enkel Elo-skattning som uppdateras kronologiskt efter varje match; den match som ska bedömas får därför aldrig påverka sitt eget ingångsvärde.</p>
+      <p>Materialet delas i tid, inte slumpmässigt. Testet upprepas tre gånger; varje testsäsong ligger efter både tränings- och kalibreringsperioden:</p>
+      <table>
+        <thead><tr><th>Träning</th><th>Kalibrering</th><th>Tidstest</th><th>Matcher</th></tr></thead>
+        <tbody>
+          {validation.folds.map((fold: any) => (
+            <tr>
+              <td>{fold.train_seasons[0]}–{fold.train_seasons.at(-1)}</td>
+              <td>{fold.calibration_season}</td>
+              <td>{fold.test_season}</td>
+              <td>{fold.test_matches}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p>Totalt omfattar tidstesten {validation.test_matches} matcher och {validation.test_snapshots.toLocaleString('sv-SE')} matchlägen. Kalibreringen justerar hur försiktig eller tvärsäker modellen är; varje fold låser koefficienterna innan dess testsäsong beräknas. Den publicerade kurvan kommer från den senaste folden: träning till och med 2022–23 och sannolikhetskalibrering på 2024–25.</p>
     </div>
 
     <hr class="finding-divider" />
 
     <div class="finding-section prose">
       <p class="finding-section-label">Vad vi fann</p>
-      <p><strong>Herrkurvans tvåmålsledning passerar sent.</strong> Om tröskeln sätts till 95 procent passerar och stannar en tvåmålsledning över nivån från minut 84 i den råa herrgriden. En uddamålsledning når inte tröskeln i reliable celler. För andra tillstånd kan den första passagen följas av ett fall under tröskeln, så ”första minut” får inte automatiskt kallas att matchen är säker.</p>
+      <p><strong>Två mål är en stark men inte tidigt säker ledning.</strong> För två lag med samma skattade styrka passerar hemmalagets tvåmålsledning 95 procent i minut {homeTwo.sustained_95pct_from_minute}. När bortalaget leder med två mål sker motsvarande passage i minut {awayTwo.sustained_95pct_from_minute}. Skillnaden är modellens uttryck för hemmaplansfördelen: hemmalaget har bättre möjlighet att vända ett bortaunderläge än bortalaget har att vända samma underläge.</p>
+
+      <ProbabilityCurve
+        series={chartSeries}
+        caption="Modellskattning för jämnstarka lag före match. Kurvorna visar sannolikheten att laget som leder med två mål vinner."
+      />
+
       <table>
-        <thead><tr><th>Målskillnad</th><th>Herr — första / varaktig 95 %-passage</th><th>Dam — första / varaktig 95 %-passage</th></tr></thead>
+        <thead><tr><th>Rå minut</th><th>Hemma leder +2</th><th>Borta leder +2</th></tr></thead>
         <tbody>
-          <tr><td>+3</td><td>minut 30 / 37</td><td>minut 19 / 19</td></tr>
-          <tr><td>+2</td><td>minut 84 / 84</td><td>minut 31 / 88*</td></tr>
-          <tr><td>+1</td><td>ingen / ingen</td><td>ingen / ingen</td></tr>
-          <tr><td>−1</td><td>ingen / ingen</td><td>ingen / ingen</td></tr>
-          <tr><td>−2</td><td>minut 84 / 84</td><td>minut 52 / 52*</td></tr>
-          <tr><td>−3</td><td>minut 55 / 55</td><td>minut 18 / 18</td></tr>
+          {displayMinutes.map((minute) => (
+            <tr>
+              <td>{minute}</td>
+              <td>{pct(homeTwo.snapshots[String(minute)])}</td>
+              <td>{pct(awayTwo.snapshots[String(minute)])}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
-      <p><em>* Damgriden är gles och har inte reliable celler genom hela matchen för alla målskillnader. ”Varaktig” betyder därför bara att senare celler som klarar n≥30 ligger över tröskeln.</em></p>
-      <p><strong>Damjämförelsen är inte mogen för rubrikslutsats.</strong> +2 passerar 95 procent redan i minut 31, men faller sedan under nivån upprepade gånger. Den tidigare slutsatsen att dammatcher därmed avgörs 53 minuter tidigare var för stark. Däremot visar det registrerade halvtidsmåttet i Finding 056 att ledningar oftare håller i damserien; det är ett separat och bättre underbyggt resultat.</p>
-      <p><strong>Griden är asymmetrisk mellan hemma och borta.</strong> För klassen +3 är första och varaktig passage minut 30 respektive 37; för −3 är båda minut 55. Det är förenligt med hemmafördel, men modellen kontrollerar inte lagstyrka eller vilka lag som hamnar i tillstånden och fastställer därför ingen comeback-mekanism.</p>
-      <p><strong>Rå minut 45 visar hur ledningsstorleken spelar roll.</strong> +1 ger 61 procent hemmavinst, +2 ger 80 procent och +3 ger 98 procent. Detta är inte en exakt dekomposition av halvtidsmåttet: första halvlekens tilläggstid gör att rå minut 45 och registrerad halvtid inte alltid sammanfaller.</p>
+
+      <p><strong>En uddamålsledning når inte 95 procent i modellen.</strong> Inte ens vid början av rå minut 90 passerar den valda säkerhetströskeln. Det ska inte läsas som att sena uddamålsledningar är svaga, utan att 95 procent är en mycket hög gräns i en målrik sport med tilläggstid och sena mål.</p>
+
       <table>
-        <thead><tr><th>Ställning vid min 45</th><th>P(hemmavinst) herr</th><th>n</th><th>P(hemmavinst) dam</th><th>n</th></tr></thead>
+        <thead><tr><th>Ledning</th><th>Hemmalag, varaktigt ≥95 %</th><th>Bortalag, varaktigt ≥95 %</th></tr></thead>
         <tbody>
-          <tr><td>+3</td><td>98 %</td><td>191</td><td>100 %</td><td>90</td></tr>
-          <tr><td>+2</td><td>80 %</td><td>123</td><td>93 %</td><td>30</td></tr>
-          <tr><td>+1</td><td>61 %</td><td>209</td><td>62 %</td><td>55</td></tr>
-          <tr><td>0</td><td>40 %</td><td>226</td><td>44 %</td><td>45</td></tr>
-          <tr><td>−1</td><td>27 %</td><td>147</td><td>7 %</td><td>44</td></tr>
-          <tr><td>−2</td><td>17 %</td><td>95</td><td>11 %</td><td>37</td></tr>
-          <tr><td>−3</td><td>3 %</td><td>133</td><td>0 %</td><td>75</td></tr>
+          {[1, 2, 3].map((goals) => (
+            <tr>
+              <td>+{goals} mål</td>
+              <td>{threshold(model.scenarios[`home_+${goals}`])}</td>
+              <td>{threshold(model.scenarios[`away_+${goals}`])}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
-      <p>En läsanvisning för jämna lägen: hemmalagets vinstchans vid oavgjort sjunker från 50 % i minut 1 till 18 % i minut 89. Det betyder inte att bortalaget gynnas av jämnt sent — det är oavgjort som utfall som växer och äter sannolikhetsmassa från båda vinstutfallen ju mindre tid som återstår.</p>
+
+      <p><strong>Den nya modellen förutsäger de senare säsongerna bättre än den gamla cellgriden.</strong> Sammanlagt över de tre tidstesten sjunker log loss från {validation.raw_exact_cell_grid.log_loss.toFixed(4).replace('.', ',')} till {validation.calibrated_model.log_loss.toFixed(4).replace('.', ',')}; Brier-värdet sjunker från {validation.raw_exact_cell_grid.multiclass_brier.toFixed(4).replace('.', ',')} till {validation.calibrated_model.multiclass_brier.toFixed(4).replace('.', ',')}. I ett matchvis bootstraptest är log-lossförbättringens 95-procentiga intervall {validation.paired_log_loss_improvement.bootstrap_95pct_ci[0].toFixed(4).replace('.', ',')}–{validation.paired_log_loss_improvement.bootstrap_95pct_ci[1].toFixed(4).replace('.', ',')}.</p>
+      <p>Det enklare tiobinsmåttet för kalibreringsfel är däremot marginellt bättre för den gamla griden: {validation.raw_exact_cell_grid.calibration_error_10_bins.toFixed(4).replace('.', ',')} mot {validation.calibrated_model.calibration_error_10_bins.toFixed(4).replace('.', ',')}. Resultatet är därför inte ”bättre på allt”; den nya modellen ger sammantaget bättre sannolikhetsprognoser och en stabil kurva, medan den gamla fortfarande råkar ligga något närmare på just detta grova kalibreringsmått.</p>
     </div>
 
     <hr class="finding-divider" />
 
     <div class="finding-section prose">
       <p class="finding-section-label">Tolkning</p>
-      <p>Herrresultatet stödjer att även tvåmålsledningar kan förbli osäkra sent. Griden är däremot en deskriptiv prototyp, inte en kalibrerad liveprognos. Innan den används i Bandy Manager bör sannolikheterna jämnas ut eller modelleras med tid, målskillnad, hemmafördel och lagstyrka, och sedan valideras på matcher som inte ingick i träningen.</p>
+      <p>Den försiktiga slutsatsen är att tvåmålsledningen i Herr-Elitserien inte bör behandlas som avgjord förrän långt in i slutkvarten. Hemmafördelen syns även från det andra hållet: ett hemmalag som ligger under med två mål behåller mer vändningsutrymme än ett bortalag i samma läge.</p>
+      <p>Minut 76 och 81 är inte universella bandylagar. De gäller modellens referensfall — jämnstarka lag, grundserie och den valda 95-procentströskeln. Ett starkare lag som leder når gränsen tidigare; ett svagare lag senare.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">För Bandy Manager</p>
+      <p>Modellen är nu tillräckligt väl avgränsad för att fungera som kalibreringsreferens för matchpresentation och kommentatorspråk. Den bör ännu inte kopplas direkt till matchmotorns utfall. Ett lämpligt första användningsfall är att styra formuleringar som ”matchen lever”, ”starkt grepp” och ”nära avgjort” från minut, målskillnad och lagstyrka — utan att ändra själva simuleringen.</p>
     </div>
 
     <hr class="finding-divider" />
@@ -102,15 +169,18 @@ const _finding = _findings.find((f) => f.num === '060');
     <div class="finding-section prose">
       <p class="finding-section-label">Begränsningar</p>
       <ul>
-        <li>Grundserie endast. Slutspel har annan dramaturgi (bäst-av-serier, högre insats) och är inte inkluderat.</li>
-        <li>Empirisk grid utan utjämning eller regression — även celler med n≥30 kan hoppa upp och ned. Dam-griden är väsentligt glesare (376 matcher).</li>
-        <li>Tröskeln 95 % är ett val, inte en naturlag. Vid 90 % eller 99 % flyttar passagerna och seriejämförelsen kan ändras.</li>
-        <li>Första tröskelpassage och varaktig passage är olika mått. Glesa sena celler gör särskilt den senare känslig.</li>
-        <li>Rå minut 45 är inte alltid halvtid; jämförelsen med registrerade halvtidsmått är därför ungefärlig.</li>
-        <li>Minutfönstret 45–50 blandar tilläggstid i första halvlek med tidig andra halvlek i speltid. Det påverkar bucketing i det fönstret, inte tillståndslogiken.</li>
-        <li>2023–24 saknas i datasetet.</li>
+        <li>Rullande tidstest minskar risken för säsongsberoende, men modellformen har utvecklats med kännedom om den befintliga datan. Nästa kompletta säsong blir den verkligt orörda kontrollen.</li>
+        <li>Sju matchminuter per testmatch används för huvudmåtten för att täcka tidig, mitten och sen match utan att en match räknas 90 gånger.</li>
+        <li>Elo fångar tidigare resultat men inte laguppställning, skador, väder, is eller taktiska förändringar.</li>
+        <li>Grundserie endast. Slutspel och final ska inte ärva trösklarna utan en separat kontroll.</li>
+        <li>Damserien ingår inte. Dess mindre och föränderliga serieformat kräver en separat modell och ett eget testupplägg.</li>
+        <li>Rå minut 45 är inte alltid halvtid, och modellen försöker inte lösa tilläggstidens exakta klocka.</li>
+        <li>95 procent är en redaktionell tröskel, inte en naturlig definition av när en match är avgjord.</li>
       </ul>
     </div>
 
+    <div class="finding-sources-list">
+      Källor i denna finding: S020 · S021 · reproducerbar analys i <code>scripts/analyze_win_prob_calibrated.py</code>
+    </div>
   </div>
 </Base>

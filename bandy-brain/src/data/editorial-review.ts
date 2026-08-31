@@ -68,7 +68,7 @@ export const editorialReview: Record<string, EditorialReview> = {
   '057': { status: 'core' },
   '058': { status: 'core' },
   '059': { status: 'support' },
-  '060': { status: 'open_thread' },
+  '060': { status: 'support' },
   '061': { status: 'core' },
   '062': { status: 'core' },
   '063': { status: 'support' },

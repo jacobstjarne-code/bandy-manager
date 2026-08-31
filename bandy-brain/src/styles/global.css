@@ -351,6 +351,37 @@ a:hover {
   background: rgba(165, 44, 44, 0.04);
 }
 
+/* ---- Shared reading guide for findings ---- */
+
+.method-guide {
+  max-width: var(--measure);
+  margin: var(--spacing-s) auto 0;
+  border: 1px solid var(--color-border);
+  background: rgba(36, 91, 144, 0.035);
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+}
+
+.method-guide summary {
+  cursor: pointer;
+  padding: 0.7rem var(--spacing-m);
+  color: var(--color-accent);
+  font-weight: 650;
+  list-style-position: inside;
+}
+
+.method-guide summary:hover { color: var(--color-accent-hover); }
+
+.method-guide__body {
+  border-top: 1px solid var(--color-border);
+  padding: var(--spacing-m);
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
+.method-guide__body p { margin: 0 0 0.65rem; }
+.method-guide__body p:last-child { margin-bottom: 0; }
+
 .finding-card__title {
   font-size: 1.3rem;
   font-weight: normal;
@@ -682,6 +713,7 @@ a:hover {
     padding-left: var(--spacing-m);
     padding-right: var(--spacing-m);
   }
+  .method-guide { margin-left: var(--spacing-m); margin-right: var(--spacing-m); }
   .finding-title { font-size: 1.5rem; }
   .hero__title   { font-size: 1.5rem; }
   .key-numbers { gap: var(--spacing-m); }
