@@ -1,7 +1,7 @@
 import type { Fixture } from '../entities/Fixture'
 import type { PlayoffBracket } from '../entities/Playoff'
 import { getRivalry } from '../data/rivalries'
-import { PlayoffRound } from '../enums'
+import { PlayoffRound, MatchEventType } from '../enums'
 import { getPlayoffRoundForFixture } from './playoffService'
 
 /**
@@ -76,6 +76,24 @@ export function deriveUtfall(fixture: Fixture, managedClubId: string): Utfall {
   if (fixture.homeScore === fixture.awayScore) return 'oavgjort'
   const homeWon = fixture.homeScore > fixture.awayScore
   return homeWon === isHome ? 'vunnet' : 'forlorat'
+}
+
+/**
+ * O9 (DOMLOGG_2026-08-31.md, Code-actionable-listan): extraherad ur
+ * pressConferenceService.ts:s buildPressContext (var tidigare en lokal,
+ * oexporterad beräkning där) — matchHighlightService.ts behöver samma
+ * "låg vi under vid paus?"-fråga för comeback-kategorin. En sanning, ett
+ * ställe, i stället för en andra kopia av samma minut≤45-räkning.
+ */
+export function computeTrailedAtHalf(fixture: Fixture, managedClubId: string): boolean {
+  const evts = fixture.events ?? []
+  let htManaged = 0, htOpp = 0
+  for (const e of evts) {
+    if (e.type !== MatchEventType.Goal) continue
+    if ((e.minute ?? 100) > 45) continue
+    if (e.clubId === managedClubId) htManaged++; else htOpp++
+  }
+  return htOpp > htManaged
 }
 
 /**

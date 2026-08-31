@@ -3,7 +3,7 @@ import type { GameEvent } from '../entities/GameEvent'
 import type { Fixture } from '../entities/Fixture'
 import { getRivalry } from '../data/rivalries'
 import { MatchEventType } from '../enums'
-import { deriveUtfall } from './matchTypeAxes'
+import { deriveUtfall, computeTrailedAtHalf } from './matchTypeAxes'
 import {
   isTemplateEligible,
   type TemplateEligibility,
@@ -422,15 +422,13 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
     }
   }
 
-  // Trailed at half: check if opponent was winning at minute 45
   const evts = fixture.events ?? []
-  let htManaged = 0, htOpp = 0
-  for (const e of evts) {
-    if (e.type !== MatchEventType.Goal) continue
-    if ((e.minute ?? 100) > 45) continue
-    if (e.clubId === game.managedClubId) htManaged++; else htOpp++
-  }
-  const trailedAtHalf = htOpp > htManaged
+
+  // Trailed at half: check if opponent was winning at minute 45.
+  // O9-uppföljning (DOMLOGG_2026-08-31.md): extraherad till matchTypeAxes.ts
+  // (computeTrailedAtHalf) — matchHighlightService.ts behöver samma fråga
+  // för comeback-kategorin, en sanning i stället för två kopior.
+  const trailedAtHalf = computeTrailedAtHalf(fixture, game.managedClubId)
 
   // M54(b) (textaudit 2026-07-04): sen kvittering — matchen slutade oavgjord
   // OCH nivelleringen (samma antal mål båda lagen) skedde senast vid minut ≥75.
