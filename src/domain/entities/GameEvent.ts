@@ -340,6 +340,17 @@ export interface GameEvent {
    *  tillåter högst två poster per storyline-id och säsong (en huvudfråga,
    *  en uppföljning). undefined för icke-storyline-frågor. */
   storylinePressKey?: string
+  /** Centralredaktören, punkt 2 (DOM_CENTRALREDAKTOREN_2026-08-31.md):
+   *  frågetextens EGEN recency, skild från storylinePressKey (som bara
+   *  gäller storyline-override-frågor). Satt av generatePressConference()
+   *  till `press_q_${question.text}` för DEN FAKTISKA frågan som till slut
+   *  ställs (efter arc-/storyline-/CS-/uppföljnings-överstyrning och
+   *  platshållarfyllning). Callern (roundProcessor.ts) loggar denna NÄR
+   *  EVENTET GENERERAS, samma mönster som storylinePressKey. Läses via
+   *  recentlySurfaced (narrativeCoordinatorService.ts) av det GRUNDläggande
+   *  slumpvalet i generatePressConference — auditens "samma frågor snabbt"
+   *  och "gamla svar följer med". */
+  pressQuestionKey?: string
   /** HIGH 7 (audit 2026-08-29, docs/incoming/
    *  BANDY_MANAGER_AUDIT_5_SASONGER_KUL_STICKINESS_VISUELL_2026-08-29.md):
    *  cooldown-nycklarna för de manager-svar som ERBJÖDS i den här
@@ -390,6 +401,18 @@ export interface GameEvent {
    *  (postAdvanceEvents.ts): högst en gång per säsong totalt, och inte samma
    *  spelare igen förrän hela den aktuella truppen rullat ett varv. */
   journalistExclusiveKey?: string
+  /** Centralredaktören (DOM_CENTRALREDAKTOREN_2026-08-31.md, punkt 3:
+   *  subjekts-rotation). Samma skrivmönster som journalistExclusiveKey/
+   *  mecenatSocialKey — satt av generatorn till `${prefix}${subjectId}`
+   *  när ett personal-beat (starPerformance/playerPraise/
+   *  playerMediaComment) väljer VEM eventet handlar om via den delade
+   *  `rotateSubject` (narrativeCoordinatorService.ts). Callern
+   *  (roundProcessor.ts) loggar denna NÄR EVENTET GENERERAS, precis som
+   *  de två syskonfälten ovan. journalistExclusive använder sitt EGET
+   *  fält (journalistExclusiveKey) — det career-breda varvet är en annan
+   *  exkluderingsstorlek (se rotateSubject-dokumentationen) och ska inte
+   *  blandas ihop med den generiska K=5-poolen detta fält loggar för. */
+  rotationKey?: string
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

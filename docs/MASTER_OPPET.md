@@ -604,6 +604,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 | sluttest-validering-journal | Valideringsexperiment: följ-en-karriär-journalen — ej kört | rapporterad | Jacob | SLUTTEST_KO.md:1268 | vänta Jacobs körning |
 | sluttest-kvalitativ-uppfoljning | Kvalitativ uppföljning med 6–8 riktiga spelare (paus efter omg 3, 11, 22, fem frågor) — ej genomförd | rapporterad | Jacob | SLUTTEST_KO.md:1270 | vänta Jacobs genomförande |
 | sluttest-backlog-pekare | "Lägg en pekare från BACKLOG §A hit" — konkret åtgärd, ej bekräftad utförd | rapporterad | Opus | SLUTTEST_KO.md:267 | verifiera mot kod |
+| centralredaktoren-surfacing-koordinator | Centralredaktören byggd: applySurfacingBudget/recentlySurfaced/rotateSubject (narrativeCoordinatorService.ts), event-blocket + pressen pekade dit, journalistExclusive omdirigerad, D039 skriven, 2-säsongsmätning 0 kanal-/rotationsbrott (press-recency 10 co-occurrences, huvudorsak pool-djup #5, dokumenterad i D039, inte fixad) | klar | Code | DOM_CENTRALREDAKTOREN_2026-08-31.md | Opus dömer kriterium 4 (playtest) + ev. #5 pool-djup som egen order |
 
 ---
 

@@ -25,11 +25,18 @@ import { formatValue, formatDecimalComma } from '../../format'
 import { findEmployerForJob } from '../../data/localEmployers'
 import { generateSilentShoutEvent, generateMecenatConflictEvent, generateMecenatAllianceEvent } from '../mecenatService'
 import { getCsDetOmojligaValetProbability } from '../communityStandingScaling'
+import { rotateSubject, genericBeatExcludeCount } from '../narrativeCoordinatorService'
 import type { Player } from '../../entities/Player'
 
 // ── Journalistreportagets säsongsspärr + spelarrotation (A-H4a) ────────────
 // Se GameEvent.journalistExclusiveKey för hela rotorsaksförklaringen.
 const JOURNALIST_EXCLUSIVE_PREFIX = 'journalist_exclusive_player_'
+
+// ── Centralredaktören, punkt 3 (DOM_CENTRALREDAKTOREN_2026-08-31.md) ───────
+// Generiska personal-beats' subjekts-rotation. Se GameEvent.rotationKey.
+const STAR_PERFORMANCE_PREFIX = 'star_performance_'
+const PLAYER_MEDIA_PREFIX = 'player_media_'
+const PLAYER_PRAISE_PREFIX = 'player_praise_'
 
 export function journalistExclusiveFiredThisSeason(game: SaveGame, currentSeason: number): boolean {
   return (game.narrativeBeatLog ?? []).some(
@@ -42,17 +49,23 @@ export function journalistExclusiveFiredThisSeason(game: SaveGame, currentSeason
  * redan figurerat (någonsin, career-brett) i journalistreportaget. Om ALLA
  * nuvarande truppspelare redan figurerat har poolen rullat ett fullt varv —
  * spärren släpper och hela truppen blir valbar igen.
+ *
+ * Centralredaktören (DOM_CENTRALREDAKTOREN_2026-08-31.md): pekad om till
+ * den delade rotateSubject (narrativeCoordinatorService.ts) — domens ord,
+ * "rör inte, det är mallen". excludeCount=Infinity reproducerar EXAKT det
+ * gamla beteendet (utesluter ALLA distinkta ever-featured id ur hela
+ * loggen, inte bara de N senaste) — den generiska K=5-varianten som
+ * övriga personal-beats använder nedan är en AVSIKTLIGT annan, snävare
+ * exkludering (se genericBeatExcludeCount), inte tillämplig här.
  */
 export function pickJournalistExclusiveSubject(game: SaveGame, managedPlayers: Player[]): Player | null {
-  if (managedPlayers.length === 0) return null
-  const featuredIds = new Set(
-    (game.narrativeBeatLog ?? [])
-      .filter(e => e.semanticKey.startsWith(JOURNALIST_EXCLUSIVE_PREFIX))
-      .map(e => e.semanticKey.slice(JOURNALIST_EXCLUSIVE_PREFIX.length)),
+  return rotateSubject(
+    managedPlayers,
+    JOURNALIST_EXCLUSIVE_PREFIX,
+    game,
+    Infinity,
+    candidates => candidates.reduce((best, p) => (p.currentAbility > best.currentAbility ? p : best), candidates[0]),
   )
-  const unfeatured = managedPlayers.filter(p => !featuredIds.has(p.id))
-  const pool = unfeatured.length > 0 ? unfeatured : managedPlayers
-  return pool.reduce((best, p) => (p.currentAbility > best.currentAbility ? p : best), pool[0])
 }
 
 // ── generatePostAdvanceEvents ──────────────────────────────────────────────
@@ -80,6 +93,16 @@ export function generatePostAdvanceEvents(
     ...(game.pendingEvents ?? []).map(e => e.id),
     ...(game.resolvedEventIds ?? []),
   ])
+
+  // Centralredaktören, punkt 3: K=5-formeln (genericBeatExcludeCount) ska
+  // storleksbedömas mot den TRUPP rotationen ska kännas naturlig över
+  // ("en trupp på ~15 roterar naturligt", domen) — INTE mot antalet
+  // kandidater som råkar kvalificera SIG DENNA OMGÅNG (typiskt 1–3 för
+  // star-performance/media/praise, vilket golvar excludeCount till 0 och
+  // gör rotationen i praktiken verkningslös). Mätningen
+  // (centralredaktoren-matning-2026-08-31.ts) fångade detta: samma spelare
+  // två raka gånger i samma beat-typ.
+  const managedSquadSize = game.players.filter(p => p.clubId === game.managedClubId).length
 
   // 1. Incoming transfer bids → events
   for (const bid of newBids) {
@@ -199,36 +222,54 @@ export function generatePostAdvanceEvents(
   if (events.length >= 2) return events
 
   // 4. Star performance (8.5+ rating, auto-resolve with morale boost — add as resolved=false with single choice)
+  //
+  // Centralredaktören, punkt 3 (DOM_CENTRALREDAKTOREN_2026-08-31.md): när
+  // FLERA spelare hade 8.5+ i samma match väljer rotateSubject bland de
+  // kvalificerade, inte alltid rakt av högst rating — så samma spelares
+  // stjärnprestation inte trycker undan en annan lagkamrats i flera raka
+  // matcher. En ENSAM kandidat väljs alltid (rotateSubject faller tillbaka
+  // till hela poolen om alla nyligen uteslutits) — en verklig 9.0-insats
+  // trycks aldrig bort, bara ORDNINGEN mellan flera samtidiga kandidater
+  // påverkas.
   const lastFixture = recentFixtures[0]
   if (lastFixture?.report?.playerRatings && rand() > 0.5) {
-    const sortedRatings = Object.entries(lastFixture.report.playerRatings)
-      .sort(([, a], [, b]) => b - a)
-    for (const [pid, rating] of sortedRatings) {
-      if (events.length >= 2) break
-      if (rating < 8.5) continue
-
-      const player = game.players.find(p => p.id === pid)
-      if (!player || player.clubId !== game.managedClubId) continue
-      const eid = `event_star_${pid}_${roundPlayed}`
-      if (alreadyQueued.has(eid)) continue
-
-      events.push({
-        id: eid,
-        type: 'starPerformance',
-        title: `⭐ Stjärnprestation — ${player.firstName} ${player.lastName}`,
-        body: pickStarPerformanceText(player, rating, roundPlayed),
-        choices: [
-          {
-            id: 'ok',
-            label: 'Bra jobbat!',
-            subtitle: '+5 moral',
-            effect: { type: 'boostMorale', targetPlayerId: pid, value: 5 },
-          },
-        ],
-        relatedPlayerId: pid,
-        resolved: false,
+    const eligibleStars = Object.entries(lastFixture.report.playerRatings)
+      .filter(([pid, rating]) => {
+        if (rating < 8.5) return false
+        const player = game.players.find(p => p.id === pid)
+        if (!player || player.clubId !== game.managedClubId) return false
+        return !alreadyQueued.has(`event_star_${pid}_${roundPlayed}`)
       })
-      break
+      .map(([pid, rating]) => ({ id: pid, pid, rating, player: game.players.find(p => p.id === pid)! }))
+
+    if (eligibleStars.length > 0 && events.length < 2) {
+      const excludeCount = genericBeatExcludeCount(managedSquadSize)
+      const picked = rotateSubject(
+        eligibleStars,
+        STAR_PERFORMANCE_PREFIX,
+        game,
+        excludeCount,
+        candidates => candidates.reduce((best, c) => (c.rating > best.rating ? c : best), candidates[0]),
+      )
+      if (picked) {
+        events.push({
+          id: `event_star_${picked.pid}_${roundPlayed}`,
+          type: 'starPerformance',
+          title: `⭐ Stjärnprestation — ${picked.player.firstName} ${picked.player.lastName}`,
+          body: pickStarPerformanceText(picked.player, picked.rating, roundPlayed),
+          choices: [
+            {
+              id: 'ok',
+              label: 'Bra jobbat!',
+              subtitle: '+5 moral',
+              effect: { type: 'boostMorale', targetPlayerId: picked.pid, value: 5 },
+            },
+          ],
+          relatedPlayerId: picked.pid,
+          resolved: false,
+          rotationKey: `${STAR_PERFORMANCE_PREFIX}${picked.pid}`,
+        })
+      }
     }
   }
 
@@ -377,11 +418,23 @@ export function generatePostAdvanceEvents(
       return gamesStarted < 3
     })
     if (mediaCandidates.length > 0) {
-      const pick = mediaCandidates[Math.floor(rand() * mediaCandidates.length)]
-      const eid = `event_media_${pick.id}_r${roundPlayed}`
-      if (!alreadyQueued.has(eid)) {
-        const journalist = game.localPaperName ?? 'Lokaltidningen'
-        events.push(generatePlayerMediaEvent(pick, journalist))
+      // Centralredaktören, punkt 3: rotateSubject utesluter de senast
+      // uttalade spelarna (K=5-formeln) innan rand() väljer bland det som
+      // blir kvar — samma slumpkälla som förut, bara ett smalare urval.
+      const excludeCount = genericBeatExcludeCount(managedSquadSize)
+      const pick = rotateSubject(
+        mediaCandidates,
+        PLAYER_MEDIA_PREFIX,
+        game,
+        excludeCount,
+        candidates => candidates[Math.floor(rand() * candidates.length)],
+      )
+      if (pick) {
+        const eid = `event_media_${pick.id}_r${roundPlayed}`
+        if (!alreadyQueued.has(eid)) {
+          const journalist = game.localPaperName ?? 'Lokaltidningen'
+          events.push({ ...generatePlayerMediaEvent(pick, journalist), rotationKey: `${PLAYER_MEDIA_PREFIX}${pick.id}` })
+        }
       }
     }
   }
@@ -394,14 +447,24 @@ export function generatePostAdvanceEvents(
     const goalScorers = justCompletedFixture.events
       .filter(e => e.type === 'goal' && e.clubId === game.managedClubId && e.playerId)
       .map(e => game.players.find(p => p.id === e.playerId))
-      .filter(Boolean)
+      .filter(Boolean) as Player[]
     if (happyPlayers.length > 0 && goalScorers.length > 0) {
       const praiser = happyPlayers[Math.floor(rand() * happyPlayers.length)]
-      const praised = goalScorers[Math.floor(rand() * goalScorers.length)]!
-      if (praiser.id !== praised.id) {
+      // Centralredaktören, punkt 3: subjektet (den PRISADE, inte prisaren —
+      // samma "vem handlar eventet om"-konvention som journalistExclusive)
+      // roteras bort från de senast prisade lagkamraterna.
+      const excludeCount = genericBeatExcludeCount(managedSquadSize)
+      const praised = rotateSubject(
+        goalScorers,
+        PLAYER_PRAISE_PREFIX,
+        game,
+        excludeCount,
+        candidates => candidates[Math.floor(rand() * candidates.length)],
+      )
+      if (praised && praiser.id !== praised.id) {
         const eid = `event_praise_${praiser.id}_${praised.id}_s${game.currentSeason}`
         if (!alreadyQueued.has(eid)) {
-          events.push(generatePlayerPraiseEvent(praiser, praised))
+          events.push({ ...generatePlayerPraiseEvent(praiser, praised), rotationKey: `${PLAYER_PRAISE_PREFIX}${praised.id}` })
         }
       }
     }

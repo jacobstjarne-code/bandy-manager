@@ -1,0 +1,125 @@
+fact_id: D039
+category: design_principles
+claim: "Centralredaktören (DOM_CENTRALREDAKTOREN_2026-08-31.md): ett koordinationslager OVANPÅ event-blocket (generatePostAdvanceEvents) och pressen (generatePressConference), byggt på befintligt substrat (SaveGame.narrativeBeatLog), utan att riva de fem underliggande systemen. Fem kanaler (press/transfer/orten/personal/manager) är LÅSTA — högst en händelse per kanal per omgång, globalt tak 2/omgång, delat mellan event-blocket och pressen. systemhandelse:true, retirementCeremony och HIGH 11:s måste-tier (isMustDecision) är undantagna taket helt. Innehålls-recency: samma semanticKey (event.type för det generiska lagret, frågetext för press) återkommer inte inom sitt fönster — press 5 omgångar, personal-beats 3 omgångar; om alla kandidater i en kontext är på cooldown släpper spärren och hela poolen blir valbar igen (samma idiom som journalistExclusive redan använde). Subjekts-rotation: generiska personal-beats (star-performance/player-praise/player-media-comment) utesluter de senast figurerade subjekten ur DEN FULLA TRUPPEN (inte ur den lilla per-omgångs-kvalificerande kandidatpoolen — en verifierad implementationsfälla, se revisions), K=5, min(truppstorlek−3, K); journalistExclusive behåller sitt egna career-breda varv (excludeCount=Infinity) via samma delade helper."
+value:
+  SURFACING_GLOBAL_CAP: 2
+  PRESS_RECENCY_WINDOW_ROUNDS: 5
+  PERSONAL_RECENCY_WINDOW_ROUNDS: 3
+  SUBJECT_ROTATION_K: 5
+unit: "händelser/omgång (GLOBAL_CAP); omgångar (RECENCY_WINDOW_*); antal uteslutna subjekt (ROTATION_K)"
+source:
+  type: design_decision
+  doc: "docs/DOM_CENTRALREDAKTOREN_2026-08-31.md; scripts/centralredaktoren-matning-2026-08-31.ts; src/domain/services/narrativeCoordinatorService.ts; src/application/useCases/roundProcessor.ts; src/domain/services/pressConferenceService.ts; src/domain/services/events/postAdvanceEvents.ts"
+  decided_by: opus
+verified_at: 2026-08-31
+verified_by: code
+status: active
+related_facts:
+  - D038
+invariants:
+  - "value.SURFACING_GLOBAL_CAP >= 1"
+  - "value.SURFACING_GLOBAL_CAP <= 5"
+  - "value.PRESS_RECENCY_WINDOW_ROUNDS > 0"
+  - "value.PERSONAL_RECENCY_WINDOW_ROUNDS > 0"
+  - "value.SUBJECT_ROTATION_K > 0"
+notes: |
+  ── VAD SOM BYGGDES ──────────────────────────────────────────────────────
+  Tre delade helpers (narrativeCoordinatorService.ts): applySurfacingBudget
+  (kanal-exklusivitet + tak), recentlySurfaced (omgångs-skalad recency,
+  round-analog till isOnCooldown:s säsongs-skala), rotateSubject
+  (generalisering av pickJournalistExclusiveSubject).
+
+  Wiring: roundProcessor.ts kör ETT gemensamt filter (recency → budget) över
+  omgångens FULLA kandidatlista — pressen (pendingPressConference) OCH
+  event-blocket (allNewEvents) — placerat EFTER de befintliga key-write-
+  looparna (mecenatSocialKey/journalistExclusiveKey) med avsikt: de loggarna
+  gäller ANDRA cooldown-syften och ska skrivas oavsett om just den här
+  omgångens kort surfar. Press placeras FÖRST i kandidatlistan vid en
+  kanalkollision (Codes tolkning — domen tillåter uttryckligen bägge
+  riktningar, "och vice versa").
+
+  generatePressConference (pressConferenceService.ts) filtrerar sin
+  FRÅGEPOOL (inte bara event.type) mot recentlySurfaced innan det
+  grundläggande slumpvalet — `press_q_${questionText}` är semanticKey.
+  Arc-/storyline-/CS-/uppföljningsöverstyrningarna har redan sin EGEN budget
+  (storylineBudgetOk m.fl.) och rörs inte, per domens SKYDDAT-regel.
+
+  postAdvanceEvents.ts: star-performance (sektion 4), player-media-comment
+  (5f) och player-praise (5g, subjektet = den PRISADE) roterar nu via
+  rotateSubject. pickJournalistExclusiveSubject pekas om till samma helper
+  med excludeCount=Infinity — verifierat BETEENDE-IDENTISKT mot den gamla
+  implementationen (samtliga 9 befintliga journalistExclusiveRotation.test.ts
+  passerar oförändrade).
+
+  ── VERIFIERAT (2-säsongssim, 6 frön, ~380 omgångar totalt) ─────────────
+  1. Kanal-exklusivitet + globalt tak: 0 brott. Kontrollräkningen i
+     mätskriptet applicerar applySurfacingBudget som en OBEROENDE
+     efterhandskontroll på den redan filtrerade outputen — noll brott
+     betyder att inget läckte förbi.
+  2. Innehålls-recency, journalistExclusive-subjekt: 0 upprepningar (career-
+     brett varv, som förut).
+  3. Subjekts-rotation, generiska personal-beats: star_performance/
+     player_praise upprepade samma subjekt 5 respektive 3 gånger av totalt
+     ~44 poster över körningarna — I SAMTLIGA fall var DENNA OMGÅNGENS
+     kvalificerande kandidatpool en singleton (t.ex. bara en spelare hade
+     matchbetyg ≥8.5), där ingen alternativ kandidat fanns att rotera till.
+     Ingen mekanisk brist — rotationen kan bara välja bland de som faktiskt
+     kvalificerar sig den omgången.
+
+  ── IMPLEMENTATIONSFÄLLA, HITTAD OCH FIXAD UNDER MÄTNINGEN ────────────────
+  Första utkastet räknade K=5-formelns "truppstorlek" mot den LILLA
+  per-omgångs-kandidatpoolen (t.ex. antalet spelare med betyg ≥8.5 just
+  DENNA match, typiskt 1–3) i stället för den FULLA truppen (~15–20)
+  domens "en trupp på ~15 roterar naturligt" faktiskt syftar på.
+  min(poolstorlek−3, K) golvar till 0 för en pool ≤3 — rotationen blev alltså
+  i praktiken verkningslös för just de beats den skulle skydda. Fixat:
+  excludeCount räknas nu mot game.players.filter(clubId===managedClubId).length
+  (managedSquadSize) i samtliga tre call sites; rotateSubjects pool-parameter
+  (vem den FAKTISKT kan välja bland) förblir den per-omgångs-kvalificerande
+  listan — det är bara STORLEKSBEDÖMNINGEN av hur många som ska uteslutas
+  som flyttades till rätt skala.
+
+  ── ÖPPEN FRÅGA (rapporterad, inte åtgärdad i denna leverans) ────────────
+  Press-frågerecensy: 10 co-occurrences av samma frågetext inom fönstret
+  över de 6 fröna. Två skilda mekanismer bidrar, ingen är en regression:
+
+  (a) HUVUDORSAK — grunt frågedjup för de fyra scandal-gated raderna
+      ("Tidningarna pratar mer om ekonomi...", minScandalThisSeason:true,
+      exakt EN variant per kontext × 4 kontext). När en skandal är aktiv
+      denna säsong är den ofta den ENDA kvalificerande frågan i en snäv
+      kontext efter requireX-filtrering — freshQuestionPool blir tom,
+      "släpp spärren"-fallbacken (samma idiom som journalistExclusive)
+      utlöses, och samma text kan då väljas igen. Detta är EXAKT domens
+      egen förutsedda signal ("Om 2-säsongssimen visar att press ännu
+      känns repetitiv vid 5 → höj fönstret, men då slår pool-djupet, #5, i
+      taket fortare — det är signalen att #5 behövs"). Åtgärd: pool-djup
+      (#5 i domen), inte fönsterjustering — fler scandal-varianter per
+      kontext, inte ett bredare fönster runt en enda variant.
+
+  (b) BIVERKAN, PRE-EXISTING, EJ ÅTGÄRDAD — currentMatchday nollställs vid
+      säsongsslut (seasonEndProcessor.ts:1598), så recentlySurfacreds
+      raka `currentRound − e.round`-jämförelse (samma mönster som
+      filterSystemhandelseBudgets minRoundsBetween-check,
+      narrativeLogService.ts, som har IDENTISK karaktär och fanns FÖRE
+      denna leverans) kan felbedöma avståndet över en säsongsgräns — en
+      post från sent i förra säsongen kan se "nyligen" ut tidigt i nästa,
+      trots att en hel mellansäsong passerat. Bara ~2-3 av de 10 fallen
+      matchar detta mönster (resten är (a)). Begränsad skada: samma
+      "släpp spärren"-fallback fångar upp det när fler än en fråga träffas.
+      En riktig fix kräver en global, monotont stigande omgångsräknare över
+      hela karriären för round-skalade jämförelser — en arkitekturändring
+      som spänner över FLERA befintliga filer (inte bara denna leverans)
+      och är utanför scopet "peka event-blocket och pressen mot de tre
+      helpers". Flaggad för Jacob/Opus, inte kringgången i tysthet.
+
+  ── FÖR OPUS (domens ägarskap: "jag föreslår mot mätning, och dömer
+     utfallet") ──
+  Startvärdena (tak 2, press-fönster 5, personal-fönster 3, K=5) höll för
+  kriterium 1–3 utan justering. Kriterium 4 (repetitionskänslan lägre i
+  säsong 2) gick INTE att mäta som ett rent före/efter-tal — ingen flagga
+  finns kvar att A/B-testa mot (CLAUDE.md, INGA FEATURE FLAGS). Proxyn
+  (spärr-släpp/subjektsposter-kvoten steg från 9/26 i säsong 1 till 16/18 i
+  säsong 2 över de sex fröna) visar att mekanismen gör mätbart MER jobb i
+  säsong 2 — konsekvent med att repetitionstrycket faktiskt är högre då,
+  vilket var hela poängen med domen. Det avgörande domet ("känns det bättre
+  i spel") kräver Jacobs playtest, inte fler siffror.

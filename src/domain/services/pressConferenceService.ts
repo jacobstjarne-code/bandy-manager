@@ -10,6 +10,7 @@ import {
   type EligibilityContext,
 } from './templateEligibilityService'
 import { isOnCooldown } from './narrativeLogService'
+import { recentlySurfaced, RECENCY_WINDOW_BY_CHANNEL } from './narrativeCoordinatorService'
 
 export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
 
@@ -852,7 +853,19 @@ export function generatePressConference(
   )
   const questionPool = questions.length > 0 ? questions : allQuestions
 
-  let question = questionPool[Math.floor(rand() * questionPool.length)]
+  // Centralredaktören, punkt 2 (DOM_CENTRALREDAKTOREN_2026-08-31.md):
+  // frågetextens egen recency (startvärde 5 omgångar) — auditens "samma
+  // frågor snabbt"/"gamla svar följer med" är bägge denna gate. Gäller
+  // bara det GRUNDLÄGGANDE slumpvalet nedan — arc-/storyline-/CS-/
+  // uppföljningsöverstyrningarna längre ned har redan sin EGEN budget
+  // (storylineBudgetOk, findFollowUpQuestion) och rörs inte.
+  const pressRecencyWindow = RECENCY_WINDOW_BY_CHANNEL.press ?? 5
+  const freshQuestionPool = questionPool.filter(
+    q => !recentlySurfaced(game, `press_q_${q.text}`, pressRecencyWindow, round),
+  )
+  const finalQuestionPool = freshQuestionPool.length > 0 ? freshQuestionPool : questionPool
+
+  let question = finalQuestionPool[Math.floor(rand() * finalQuestionPool.length)]
   const journalist = JOURNALISTS[Math.floor(rand() * JOURNALISTS.length)]
 
   // Arc-aware question override (40% chance if arc in peak phase)
@@ -1059,6 +1072,10 @@ export function generatePressConference(
       ? { name: namedJournalist.name, role: namedJournalist.outlet }
       : { name: journalist, role: '' },
     storylinePressKey,
+    // Centralredaktören, punkt 2: den FAKTISKA frågans recency-nyckel,
+    // beräknad efter alla överstyrningar/platshållarfyllning ovan — inte
+    // bara det initiala slumpvalet.
+    pressQuestionKey: `press_q_${question.text}`,
     // HIGH 7 (audit 2026-08-29): cooldown-nycklarna för DE ERBJUDNA svaren
     // (inte bara det spelaren till slut klickar) — se GameEvent.pressResponseKeys.
     // Callern (roundProcessor.ts) loggar dem som narrativeBeatLog-poster NÄR

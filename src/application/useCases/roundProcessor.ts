@@ -47,6 +47,13 @@ import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
 import { logNarrativeBeat, filterSystemhandelseBudget } from '../../domain/services/narrativeLogService'
+import {
+  applySurfacingBudget,
+  isExemptFromSurfacingBudget,
+  recentlySurfaced,
+  CHANNEL_BY_EVENT_TYPE,
+  RECENCY_WINDOW_BY_CHANNEL,
+} from '../../domain/services/narrativeCoordinatorService'
 import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
@@ -1652,6 +1659,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // skrivs här, NÄR FRÅGAN VISAS — inte vid resolution. storylineBudgetOk()
   // (pressConferenceService.ts) läser samma logg för att stoppa en tredje
   // gång. Se GameEvent.storylinePressKey.
+  if (updatedGame.pendingPressConference?.pressQuestionKey) {
+    updatedGame = {
+      ...updatedGame,
+      // Centralredaktören, punkt 2 (DOM_CENTRALREDAKTOREN_2026-08-31.md):
+      // frågetextens egen recency, skrivs NÄR FRÅGAN VISAS — samma
+      // mönster som storylinePressKey nedan. Se GameEvent.pressQuestionKey.
+      narrativeBeatLog: logNarrativeBeat(
+        updatedGame,
+        updatedGame.pendingPressConference.pressQuestionKey,
+        updatedGame.currentSeason,
+        nextMatchday,
+      ),
+    }
+  }
+
   if (updatedGame.pendingPressConference?.storylinePressKey) {
     updatedGame = {
       ...updatedGame,
@@ -1708,6 +1730,59 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         narrativeBeatLog: logNarrativeBeat(updatedGame, event.journalistExclusiveKey, updatedGame.currentSeason, nextMatchday),
       }
     }
+  }
+
+  // Centralredaktören, punkt 3 (DOM_CENTRALREDAKTOREN_2026-08-31.md):
+  // generiska personal-beats' subjekts-rotation (starPerformance/
+  // playerPraise/playerMediaComment). Samma skrivmönster som
+  // journalistExclusiveKey ovan — loggas NÄR EVENTET GENERERAS. Se
+  // GameEvent.rotationKey.
+  for (const event of allNewEvents) {
+    if (event.rotationKey) {
+      updatedGame = {
+        ...updatedGame,
+        narrativeBeatLog: logNarrativeBeat(updatedGame, event.rotationKey, updatedGame.currentSeason, nextMatchday),
+      }
+    }
+  }
+
+  // Centralredaktören (DOM_CENTRALREDAKTOREN_2026-08-31.md): kanal-
+  // exklusivitet + innehålls-recency, EN gemensam gate som event-blocket
+  // (allNewEvents) OCH pressen (pendingPressConference) konsulterar — se
+  // narrativeCoordinatorService.ts. Placerad EFTER key-write-looparna ovan
+  // med avsikt: mecenatSocialKey/journalistExclusiveKey loggar cooldown
+  // för ANDRA syften (socialpool-/spelarrotation) och ska skrivas oavsett
+  // om just DEN HÄR omgångens kort surfar eller trängs undan av taket
+  // nedan — samma resonemang som gör att storylinePressKey/
+  // pressResponseKeys ovan loggas även för en presskonferens som sedan
+  // kan trängas undan här.
+  //
+  // Press placeras FÖRST i kandidatlistan: en presskonferens efter en
+  // nyss spelad match är en starkare narrativ förpliktelse än
+  // event-blockets valfria press-liknande flavor (playerMediaComment/
+  // mediaReaction/journalistExclusive). Domen tillåter uttryckligen bägge
+  // riktningar ("håller event-blocket tillbaka en press-lik kanal, och
+  // vice versa") — ordningen här är Codes tolkning, inte en explicit
+  // ordning i domen.
+  {
+    const pressCandidate = updatedGame.pendingPressConference
+    const roundCandidates = pressCandidate ? [pressCandidate, ...allNewEvents] : allNewEvents
+    const recencyFiltered = roundCandidates.filter(event => {
+      if (isExemptFromSurfacingBudget(event)) return true
+      const channel = CHANNEL_BY_EVENT_TYPE[event.type]
+      const window = channel ? RECENCY_WINDOW_BY_CHANNEL[channel] : undefined
+      if (!window) return true
+      return !recentlySurfaced(updatedGame, event.type, window, nextMatchday)
+    })
+    const { kept } = applySurfacingBudget(recencyFiltered)
+    const keptSet = new Set(kept)
+
+    if (pressCandidate && !keptSet.has(pressCandidate)) {
+      updatedGame = { ...updatedGame, pendingPressConference: undefined }
+    }
+    const survivingEvents = allNewEvents.filter(event => keptSet.has(event))
+    allNewEvents.length = 0
+    allNewEvents.push(...survivingEvents)
   }
 
   // Release-svepet 2026-07-21 (Block 2c) — landslagsuttagningens +5 tkr/uttagen
