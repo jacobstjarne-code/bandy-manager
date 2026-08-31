@@ -1,5 +1,4 @@
 import {
-  PlayerPosition,
   TacticMentality,
   TacticTempo,
   TacticPress,
@@ -9,38 +8,18 @@ import {
 } from '../enums'
 
 /**
- * HIGH 8 / språkläckor (audit 2026-08-29): position- och taktik-enum
- * renderades rått på engelska i UI (`forward`, `goalkeeper`, `Press low`).
+ * HIGH 8 / språkläckor (audit 2026-08-29): taktik-enum renderades rått på
+ * engelska i UI ("Press low" m.fl.).
+ *
+ * POSITIONER BOR INTE HÄR. Den etablerade enda källan för positionsetiketter
+ * är domain/format.ts (positionShort/positionLong/positionDefinite, kanon
+ * MV/B/YH/MF/A). En kopia här skapade tre strata igen — borttagen 2026-08-30.
+ * Den här filen är taktik.
  *
  * Samma disciplin som eventTypeLabels.ts: `Record<Enum, string>` gör
  * kompilatorn till täckningsgrind — en ny enum-medlem utan etikett failar
- * `npx tsc`. Uppslagningen faller aldrig tillbaka på den råa strängen.
- *
- * Positionstermerna är Jacobs (bandyterminologi, 2026-08-29): central
- * mittfältare styr spelet centralt; yttermittfältare (halv) ligger längs
- * kanterna; forward heter forward i bandy. SVENSK TEXT AV OPUS — Code skriver
- * aldrig egen prosa här (CLAUDE.md).
- *
- * Roller (leader/veteran) och stat-förkortningen CA ligger i andra källor och
- * läggs till när de mappats.
+ * `npx tsc`. SVENSK TEXT AV OPUS — Code skriver aldrig egen prosa här (CLAUDE.md).
  */
-
-export const POSITION_LABELS: Record<PlayerPosition, string> = {
-  [PlayerPosition.Goalkeeper]: 'Målvakt',
-  [PlayerPosition.Defender]: 'Back',
-  [PlayerPosition.Half]: 'Yttermittfältare',
-  [PlayerPosition.Midfielder]: 'Central mittfältare',
-  [PlayerPosition.Forward]: 'Forward',
-}
-
-/** Kort form för trånga ytor (laguppställning, spelarkort). */
-export const POSITION_LABELS_SHORT: Record<PlayerPosition, string> = {
-  [PlayerPosition.Goalkeeper]: 'MV',
-  [PlayerPosition.Defender]: 'Back',
-  [PlayerPosition.Half]: 'Halv',
-  [PlayerPosition.Midfielder]: 'Mittfält',
-  [PlayerPosition.Forward]: 'Forward',
-}
 
 export const TACTIC_MENTALITY_LABELS: Record<TacticMentality, string> = {
   [TacticMentality.Defensive]: 'Defensiv',
@@ -90,8 +69,3 @@ export const TACTIC_CATEGORY_LABELS = {
   width: 'Bredd',
   attackingFocus: 'Anfallsfokus',
 } as const
-
-/** Position → svensk etikett. Enum är strikt, så uppslag träffar alltid. */
-export function positionLabel(position: PlayerPosition, short = false): string {
-  return short ? POSITION_LABELS_SHORT[position] : POSITION_LABELS[position]
-}
