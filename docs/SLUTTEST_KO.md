@@ -1,7 +1,9 @@
-# SLUTTEST-KÖN — ENDA SANNINGEN
+# SLUTTEST-KÖN (CHANGELOG + HISTORISK ARBETSLOGG)
 
-**Skapad:** 2026-08-17 · **Omskriven:** 2026-08-17 (djupversion) · **Ägare:** Opus
-**Uppdateras post för post. Skriv ingen ny fil.**
+**⚠️ DEGRADERAD 2026-08-31 — INTE LÄNGRE "ENDA SANNINGEN".** `docs/MASTER_OPPET.md` är nu den enda levande statuskällan, med tillstånds-maskinen `rapporterad → verifierad → bygger → klar`. Den här filen skördades dit (231 rader, 2026-08-31 — den enskilt största källan, hela filen läst chunk för chunk) och behåller sin roll som historisk arbetslogg/changelog för sluttestperioden: vad som undersöktes, i vilken ordning, och vad varje pass faktiskt levererade. **Lägg inte nya öppna poster här — lägg dem i MASTER_OPPET.md.** Filen är dessutom bekräftat självmotsägande på minst fyra ställen (samma sak KLAR på en rad, EJ på en annan — se MASTER_OPPET.md:s metodnoteringar) vilket var en direkt bidragande orsak till degraderingen.
+
+**Skapad:** 2026-08-17 · **Omskriven:** 2026-08-17 (djupversion) · **Ägare:** Opus · **Degraderad:** 2026-08-31
+**Uppdateras post för post som historisk logg. Nya öppna poster hör hemma i MASTER_OPPET.md.**
 
 ---
 

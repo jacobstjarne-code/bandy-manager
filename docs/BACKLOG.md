@@ -1,8 +1,8 @@
-# BANDY MANAGER — BACKLOG
+# BANDY MANAGER — BACKLOG (CHANGELOG + PARKERAD-IDÉ-KATALOG)
 
-**Etablerad:** 2026-05-17
-**Senast rensad:** 2026-05-25
-**Syfte:** ENDA SANNING för "specat men ej byggt" + "idéer som ska bli spec". Uppdateras VARJE gång vi parkerar något — inte "vid tillfälle".
+**⚠️ DEGRADERAD 2026-08-31 — INTE LÄNGRE STATUSKÄLLA.** `docs/MASTER_OPPET.md` är nu den enda levande listan över vad som är öppet, med tillstånds-maskinen `rapporterad → verifierad → bygger → klar`. Den här filen skördades dit (185 rader, 2026-08-31) och behåller sin roll som (a) historisk changelog för beslut och leveranser, och (b) katalog för parkerade idéer utan spec (sektion C, D) som ännu inte förtjänar en MASTER_OPPET-rad förrän någon plockar upp dem. **Lägg inte nya öppna poster här — lägg dem i MASTER_OPPET.md.** Uppdatera denna fil när något stängs (changelog) eller när en ny idé parkeras utan spec.
+
+**Etablerad:** 2026-05-17 · **Senast rensad:** 2026-05-25 · **Degraderad:** 2026-08-31
 
 **RISK — STÄNGD 2026-08-27, raden stod kvar stale i fyra dygn (upptäckt av 2026-08-31-inventeringen).** Ursprungsfyndet (203 filer/~94 600 rader okommitterat, HEAD fastfruset på `5c9a7a8b`) löstes samma dag det upptäcktes: SLUTTEST A-COMMIT loggar "allt committat i 18 logiska block, `5c9a7a8b..594be0f7`". `git status --porcelain` är rent och HEAD har flyttat sig i över tjugo commits sedan dess. De två stashade WIP-commits (`stash@{0}`, `stash@{1}`) ligger dock fortfarande kvar — ospårat vad de innehåller, ägare Jacob om de ska tas bort eller poppas.
 
@@ -326,6 +326,10 @@ Skärmdumpar + Jacobs öga. **OBS: allt nedan verifierat BARA för CUP-matcher**
 5. **Inget hamnar bara i chatten.** Om Opus säger "framtid" eller "senare" måste det skrivas hit. Annars är det förlorat.
 6. **Regelbunden rensning.** Tabeller som växer av tröghet blir oanvändbara. Klara rader raderas vid commit. Idéer som inte längre är aktuella droppas aktivt vid genomgång — inte behållas av artighet.
 7. **En stale statusrad kostar lika mycket som en saknad.** `docs/SLUTTEST_KO.md` (2026-08-28-inventeringen, 171 SHA:n verifierade) hittade sju rader där kön var mer pessimistisk än koden — ingen rad påstod klart något som inte var gjort, alla fel gick åt samma håll (underskattning). Dyrast: O2 (pairwise-dominansanalysen) stängdes 2026-08-23 (`31eb85cc` + sex byggcommits, egen auditfil), men kön stod kvar som öppen i fem dygn. Effekt: Jacob beställde 2026-08-27 en ny mätning av något som redan fanns, och O20:s fem K5-fall låg felaktigt blockerade i väntan på en post som redan var stängd. **Fjärde gången ett stale statusfält kostar dubblerat arbete i det här projektet.** Uppdatera statusraden SAMMA session en post stängs — inte "när det finns tid" — annars är kön en källa till fel, inte till sanning.
+
+8. **"Rapporterad" ≠ "verifierad" — bara det kodlästa byggs mot.** En öppen-post ur en rapport, inventering eller agent-svep är en HYPOTES tills någon läst den faktiska filen. Ingen post routas till bygge, spec eller statusändring förrän den är kodläst — inte på rapportens ord, inte på minnet, inte på en sammanfattning. (2026-08-31: en overifierad agent-lista routades som "sanning"; Code:s spot-check visade att bara 2 av 7 höll. Detta är regeln som fångar det.)
+9. **Adversariell stickprovskontroll som default.** En öppen-lista över ~10 poster får ett slumpat stickprov verifierat av en ANNAN instans än den som skrev listan, före åtgärd. Träffgraden rapporteras. Under `HITRATE_MIN` (default 70 %) = hela listan är otillförlitlig, verifieras om post för post. Låt aldrig en enda instans äga både arbetet OCH domen över arbetet.
+10. **Härledda git-fakta genereras eller utelämnas — skrivs aldrig för hand.** En statusrad som är ett härledbart faktum (okommitterat antal, "HEAD på X", "filen finns/raderad", "KLAR <hash>") får inte stå som handskriven prosa — den genereras vid behov eller utelämnas. ("203 filer okommitterat" satt stale i fyra dagar överst i BACKLOG för att den handskrevs.)
 
 ---
 
