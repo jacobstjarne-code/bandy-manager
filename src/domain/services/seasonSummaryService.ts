@@ -7,6 +7,7 @@ import { seededPick, fixtureSeed } from '../utils/random'
 import { ordinal } from '../utils/numberFormat'
 import { deriveFixtureOutcome, countGoalsByPlayer, findLateWinnerGoal, isComeback } from './matchUtils'
 import { formatRating } from '../format'
+import { getRoundLabel } from '../roundLabel'
 import { computeSeasonVerdictRating, expectationVerdictFromRating } from './boardService'
 
 /**
@@ -90,7 +91,15 @@ type MomentWithScore = NonNullable<SeasonSummary['keyMoments']>[number] & { scor
  * "Omgång"-nummer beroende på VILKEN yta som renderade den. CLAUDE.md:s
  * hårda regel: all rond-identitet ska använda matchday, aldrig roundNumber.
  *
- * @cites game.players, clubFixtures, Fixture.matchday
+ * HIGH 5 (2026-08-29): `matchday` är fortfarande rätt fält för moments
+ * SORTERING och tidslinje — men inte som synlig rond-etikett. Prefixet i
+ * varje moments body kommer nu ur domain/roundLabel.ts, som behöver
+ * game.playoffBracket för att kunna namnge slutspelsfasen. Bracketen läses
+ * ENBART för den fasuppslagningen (getPlayoffRoundForFixture), aldrig för att
+ * avgöra mästare/eliminering — de påståendena görs på annat håll i filen med
+ * snapshottade fält.
+ *
+ * @cites game.players, clubFixtures, Fixture.matchday, playoffBracket
  */
 function computeKeyMoments(
   game: SaveGame,
@@ -144,7 +153,11 @@ function computeKeyMoments(
   for (const f of clubFixtures) {
     const { margin, oppName, scoreStr, rivalry, isDerby } = deriveFixtureOutcome(f, game.managedClubId, game.clubs)
     const seed = fixtureSeed(f.id)
-    const roundLabel = `Omgång ${String(f.matchday).padStart(2, '0')}`
+    // HIGH 5 (2026-08-29): var `Omgång ${matchday}` — global spelordning
+    // presenterad som ligaomgång, så ett derby i ligaomgång 4 fick prefixet
+    // "Omgång 08" i årsboken medan portalen sa "Omgång 4". Nollutfyllnaden
+    // följde med bort: en tävlingsmedveten etikett är inte alltid ett tal.
+    const roundLabel = getRoundLabel(f, game.playoffBracket).long
 
     // Big win (3+ goal margin)
     if (margin >= 3) {
@@ -594,11 +607,15 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     const diff = clubScore - oppScore
     if (diff > maxWinDiff) {
       maxWinDiff = diff
-      biggestWin = { opponent: oppName, score: `${clubScore}-${oppScore}`, round: f.roundNumber }
+      // HIGH 5 (2026-08-29): `round` bar tävlingsrelativt roundNumber medan
+      // resten av filen redan gått över till matchday (se filhuvudet) — en
+      // eftersläntrare. `round` = matchday (kronologi, samma skala som allt
+      // annat här); det spelaren SER kommer ur roundLabel.
+      biggestWin = { opponent: oppName, score: `${clubScore}-${oppScore}`, round: f.matchday, roundLabel: getRoundLabel(f, game.playoffBracket).long }
     }
     if (diff < -maxLossDiff) {
       maxLossDiff = Math.abs(diff)
-      worstLoss = { opponent: oppName, score: `${clubScore}-${oppScore}`, round: f.roundNumber }
+      worstLoss = { opponent: oppName, score: `${clubScore}-${oppScore}`, round: f.matchday, roundLabel: getRoundLabel(f, game.playoffBracket).long }
     }
   }
 

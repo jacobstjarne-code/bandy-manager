@@ -6,6 +6,7 @@ import { calculateStandings } from '../../domain/services/standingsService'
 import {
   generatePlayoffBracket,
   generatePlayoffFixtures,
+  nextPlayoffStart,
 } from '../../domain/services/playoffService'
 import type { AdvanceResult } from './advanceTypes'
 import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
@@ -28,12 +29,14 @@ export function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResul
   const bracket = generatePlayoffBracket(standings, game.currentSeason)
   const allQFFixtures: ReturnType<typeof generatePlayoffFixtures> = []
 
-  const startMatchday = Math.max(0, ...game.fixtures.map(f => f.matchday ?? 0)) + 1
+  // HIGH 5 (2026-08-29): startRound härleds nu på SAMMA sätt som startMatchday
+  // (max+1) istället för hårdkodade 23 — se nextPlayoffStart i playoffService.ts.
+  const { startRound, startMatchday } = nextPlayoffStart(game.fixtures)
 
   const bracketWithFixtures = {
     ...bracket,
     quarterFinals: bracket.quarterFinals.map(series => {
-      const fixtures = generatePlayoffFixtures(series, game.currentSeason, 23, startMatchday)
+      const fixtures = generatePlayoffFixtures(series, game.currentSeason, startRound, startMatchday)
       allQFFixtures.push(...fixtures)
       return { ...series, fixtures: fixtures.map(f => f.id) }
     }),

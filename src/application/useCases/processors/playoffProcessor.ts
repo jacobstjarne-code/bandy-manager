@@ -3,7 +3,7 @@ import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { PlayoffBracket, PlayoffEliminationInfo } from '../../../domain/entities/Playoff'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayoffStatus } from '../../../domain/enums'
-import { updateSeriesAfterMatch, advancePlayoffRound } from '../../../domain/services/playoffService'
+import { updateSeriesAfterMatch, advancePlayoffRound, nextPlayoffStart } from '../../../domain/services/playoffService'
 import { generateSemiFinalEvent, generateFinalEvent } from '../../../domain/services/playoffNarrativeService'
 import { seasonChampionYear } from '../../../domain/utils/seasonYear'
 
@@ -114,17 +114,14 @@ export function processPlayoffRound(
     const wasQFPhase = result.updatedBracket!.status === PlayoffStatus.QuarterFinals
     const wasSFPhase = result.updatedBracket!.status === PlayoffStatus.SemiFinals
     const wasFinalPhase = result.updatedBracket!.status === PlayoffStatus.Final
-    const nextRoundStart =
-      wasQFPhase ? 28
-      : wasSFPhase ? 33
-      : 36
-    const currentMaxMatchday = Math.max(0, ...allFixtures.map(f => f.matchday ?? 0))
-    const nextMatchdayStart = currentMaxMatchday + 1
+    // HIGH 5 (2026-08-29): startRound härleds nu (max+1) istället för
+    // hårdkodade 28/33/36 — se nextPlayoffStart i playoffService.ts.
+    const { startRound, startMatchday } = nextPlayoffStart(allFixtures)
     const { bracket: newBracket, newFixtures } = advancePlayoffRound(
       result.updatedBracket!,
       game.currentSeason,
-      nextRoundStart,
-      nextMatchdayStart,
+      startRound,
+      startMatchday,
     )
     result.updatedBracket = newBracket
     result.bracketNewFixtures = newFixtures

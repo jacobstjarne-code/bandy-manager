@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import type { MatchHighlight, MatchHighlightCategory } from '../entities/SeasonSummary'
+import { getRoundLabel } from '../roundLabel'
 import { FixtureStatus, MatchEventType } from '../enums'
 import { getRivalry } from '../data/rivalries'
 
@@ -96,6 +97,7 @@ export function selectMatchOfTheSeason(game: SaveGame): MatchHighlight | null {
   return {
     fixtureId: winner.f.id,
     matchday: winner.f.matchday ?? 0,
+    roundLabel: getRoundLabel(winner.f, game.playoffBracket).long,
     opponentName: opp?.name ?? 'okänd',
     homeScore: winner.f.homeScore ?? 0,
     awayScore: winner.f.awayScore ?? 0,

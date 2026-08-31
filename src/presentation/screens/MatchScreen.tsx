@@ -12,6 +12,7 @@ import type { Fixture } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
 import { getRivalry } from '../../domain/data/rivalries'
 import { getCupRoundLabel } from '../../domain/services/cupService'
+import { getRoundLabel, playoffRoundNameUpper } from '../../domain/roundLabel'
 import { LastMatchCard } from '../components/match/LastMatchCard'
 import { MatchReportView } from '../components/match/MatchReportView'
 import { PreMatchContext } from '../components/match/PreMatchContext'
@@ -364,18 +365,16 @@ export function MatchScreen() {
   const cupMatchEntry = isCupFixture ? game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id) : null
   const isCupFinal = cupMatchEntry?.round === 4
   const isFinalMatch = playoffSeries?.round === PlayoffRound.Final
-  const playoffRoundLabel = playoffSeries
-    ? playoffSeries.round === PlayoffRound.QuarterFinal ? 'KVARTSFINAL'
-      : playoffSeries.round === PlayoffRound.SemiFinal ? 'SEMIFINAL'
-      : 'SM-FINAL'
-    : ''
+  // HIGH 5: rondnamnet kommer nu ur roundLabel.ts (samma uppslag som
+  // GameHeader/ChampionScreen/MatchReportView), inte ur en lokal ternary.
+  const playoffRoundLabel = playoffSeries ? playoffRoundNameUpper(playoffSeries.round) : ''
   const roundLabel = isPlayoffRound && playoffSeries
     ? isFinalMatch
       ? `SM-FINAL · Studenternas IP, Uppsala`
       : `${playoffRoundLabel} · Serie ${myWins}–${theirWins} (bäst av 5)`
     : isCupFixture
       ? `🏆 SVENSKA CUPEN · ${isCupFinal ? 'FINAL' : getCupRoundLabel(cupMatchEntry?.round ?? 1)}`
-      : rivalry ? `🔥 ${rivalry.name}` : `Omgång ${nextFixture.roundNumber}`
+      : rivalry ? `🔥 ${rivalry.name}` : getRoundLabel(nextFixture, playoffBracket).long
   const matchWeatherData = game.matchWeathers?.find(w => w.fixtureId === nextFixture.id)
 
   return (

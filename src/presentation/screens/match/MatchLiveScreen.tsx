@@ -19,6 +19,7 @@ import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import { MatchEventType, TacticMentality, TacticTempo, TacticPress, PlayerPosition } from '../../../domain/enums'
 import { getRivalry } from '../../../domain/data/rivalries'
+import { getRoundLabel } from '../../../domain/roundLabel'
 import { fixtureSeed } from '../../../domain/utils/random'
 import { computePlayerRatings } from '../../utils/matchRatings'
 import { playSound, isMuted, toggleMute } from '../../audio/soundEffects'
@@ -1562,7 +1563,7 @@ export function MatchLiveScreen() {
     const homeClubForArena = game?.clubs.find(c => c.id === savedFixture.homeClubId)
     const arenaRaw = homeClubForArena?.arenaName ?? ''
     const arena = arenaRaw ? formatArenaName(arenaRaw).toUpperCase() : ''
-    const omg = savedFixture.roundNumber <= 22 ? ` · OMG. ${savedFixture.roundNumber}` : ''
+    const omg = ` · ${getRoundLabel(savedFixture, game?.playoffBracket).short.toUpperCase()}`
     return `${arena}${omg}`
   })()
 
@@ -1582,7 +1583,11 @@ export function MatchLiveScreen() {
       clubName={managedClub?.name ?? ''}
       managerName={game ? getManagerDisplayName(game) : ''}
       season={seasonSpanLabel(game?.currentSeason ?? fixture.season)}
-      round={fixture.matchday}
+      // HIGH 5 (2026-08-29): mastheaden matade in matchday ("OMG. 8") medan
+      // portalen visade roundNumber ("Omgång 4") för SAMMA fixture. Nu samma
+      // etikett som alla andra ytor. matchday är kvar där det hör hemma —
+      // sortering och kronologi — men inte som rond-IDENTITET.
+      roundLabel={getRoundLabel(fixture, game?.playoffBracket).short.toUpperCase()}
       phase="spela"
       stamp={spelStamp}
       liveScore={{

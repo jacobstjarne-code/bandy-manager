@@ -5,12 +5,9 @@ import { formatArenaName } from '../../../domain/utils/arenaName'
 import { generateMatchStory } from '../../../domain/utils/matchStory'
 import { ScoreboardStalvallen } from './scoreboard/ScoreboardStalvallen'
 import type { ScoreboardEvent } from './scoreboard/ScoreboardStalvallen'
+import { playoffRoundNameUpper, getRoundLabel } from '../../../domain/roundLabel'
+import { getPlayoffRoundForFixture } from '../../../domain/services/playoffService'
 
-function getPlayoffRoundLabel(round: PlayoffRound): string {
-  if (round === PlayoffRound.QuarterFinal) return 'KVARTSFINAL'
-  if (round === PlayoffRound.SemiFinal) return 'SEMIFINAL'
-  return 'SM-FINAL'
-}
 
 
 interface MatchReportViewProps {
@@ -45,17 +42,20 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
   // inte — cupfinaler spelas också på neutral plan (samma flagga). Uteslut
   // cupfixturer explicit; playoffTierLabel nedan gör redan den robusta
   // bracket-medlemskapskontrollen för att särskilja kvarts/semi/final.
-  const isPlayoffFinal = !fixture.isCup && (fixture.roundNumber > 36 || fixture.isNeutralVenue === true)
+  //
+  // HIGH 5 (2026-08-29): `fixture.roundNumber > 36` var en rest av de gamla
+  // hårdkodade slutspels-roundNumber (28/33/36) och var i praktiken redan
+  // aldrig sann — finalens roundNumber blev 36, inte >36. Med den härledda
+  // numreringen (nextPlayoffStart) är den definitivt död. Ersatt av det exakta
+  // bracket-uppslaget; isFinaldag/isNeutralVenue kvar som fallback för
+  // sparfiler där bracketen redan nollställts vid rollover.
+  const playoffRound = getPlayoffRoundForFixture(game.playoffBracket, fixture.id)
+  const isPlayoffFinal = !fixture.isCup && (
+    playoffRound === PlayoffRound.Final || fixture.isFinaldag === true || fixture.isNeutralVenue === true
+  )
   const playoffTierLabel = (() => {
     if (!isPlayoffFinal) return undefined
-    const bracket = game.playoffBracket
-    const allSeries = bracket ? [
-      ...bracket.quarterFinals,
-      ...bracket.semiFinals,
-      ...(bracket.final ? [bracket.final] : []),
-    ] : []
-    const series = allSeries.find(s => s.fixtures.includes(fixture.id))
-    if (series) return getPlayoffRoundLabel(series.round)
+    if (playoffRound) return playoffRoundNameUpper(playoffRound)
     return 'SLUTSPEL'
   })()
 
@@ -103,10 +103,13 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
               <span className="report-arena-attendance">{fixture.attendance} ÅSKÅDARE</span>
             </>
           )}
-          {fixture.roundNumber <= 22 && (
+          {/* HIGH 5: `roundNumber <= 22` gömde slutspelet men släppte igenom
+              cupen — en cupkvartsfinal (roundNumber 2) visades som "OMG. 2".
+              Utelämnas för SM-finalen, där scoreboarden redan bär tiern. */}
+          {!isPlayoffFinal && (
             <>
               <span className="report-arena-sep">·</span>
-              <span>OMG. {fixture.roundNumber}</span>
+              <span>{getRoundLabel(fixture, game.playoffBracket).short.toUpperCase()}</span>
             </>
           )}
         </div>

@@ -5,6 +5,7 @@ import { useGameStore, useManagedClub } from '../store/gameStore'
 import { PlayoffRound } from '../../domain/enums'
 import { ScoreBlock } from '../components/primitives'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
+import { playoffRoundName } from '../../domain/roundLabel'
 
 interface ConfettiParticle {
   id: number
@@ -81,12 +82,6 @@ export function ChampionScreen() {
   const managedSeries = allSeries.filter(
     s => s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId
   )
-
-  function getRoundLabel(round: PlayoffRound): string {
-    if (round === PlayoffRound.QuarterFinal) return 'Kvartsfinal'
-    if (round === PlayoffRound.SemiFinal) return 'Semifinal'
-    return 'SM-Final'
-  }
 
   return (
     <div style={{
@@ -176,7 +171,7 @@ export function ChampionScreen() {
             const opponentId = isHome ? s.awayClubId : s.homeClubId
             const opponent = game.clubs.find(c => c.id === opponentId)
             const won = s.winnerId === game.managedClubId
-            const roundLabel = getRoundLabel(s.round)
+            const roundLabel = playoffRoundName(s.round)
             const myWins = isHome ? s.homeWins : s.awayWins
             const theirWins = isHome ? s.awayWins : s.homeWins
             return (

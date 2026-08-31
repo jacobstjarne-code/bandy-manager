@@ -33,6 +33,7 @@ import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { PortalObjectiveAlert } from '../components/portal/PortalObjectiveAlert'
 import { getNextActionCue } from '../utils/nextActionCue'
 import { selectAtmosphereMarks, type AtmosphereMarkKind } from '../../domain/services/portal/atmosphereResolver'
+import { playoffRoundName } from '../../domain/roundLabel'
 
 // Initialisera bag-of-cards en gång vid modulimport
 initCardBag()
@@ -165,9 +166,7 @@ export function PortalScreen() {
         ]
         const thisSeries = allSeries.find(s => s.fixtures.includes(nextManaged.id))
         if (thisSeries) {
-          const label = thisSeries.round === PlayoffRound.QuarterFinal ? 'Kvartsfinal'
-            : thisSeries.round === PlayoffRound.SemiFinal ? 'Semifinal'
-            : 'SM-Final'
+          const label = playoffRoundName(thisSeries.round)
           return `Redo — spela ${label} →`
         }
         return 'Fortsätt slutspel →'

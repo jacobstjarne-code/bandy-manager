@@ -17,7 +17,15 @@ interface LedgerFrameProps {
   managerName: string
   /** Alltid via seasonSpanLabel(game.currentSeason) — aldrig hårdkodad */
   season: string
-  round: number
+  /**
+   * HIGH 5 (2026-08-29): färdig rond-ETIKETT, inte ett rått tal. Var tidigare
+   * `round: number` + hårdkodat "OMG."-prefix i JSX — MatchLiveScreen matade
+   * in `fixture.matchday` (global spelordning) medan portalen visade
+   * `roundNumber`, så samma derby stod som "Omgång 4" i portalen och
+   * "OMG. 8" i mastheaden. Anropsstället bygger nu strängen via
+   * getRoundLabel (domain/roundLabel.ts); ramen formaterar inget själv.
+   */
+  roundLabel: string
   phase: LedgerPhase
   /** null = ingen stämpel (aktiv speltid) */
   stamp: { label: string; onClick: () => void } | null
@@ -48,7 +56,7 @@ export function LedgerFrame({
   clubName,
   managerName,
   season,
-  round,
+  roundLabel,
   phase,
   stamp,
   tabs,
@@ -69,7 +77,7 @@ export function LedgerFrame({
           <span className="lf-slim-score">
             {liveScore.homeName} <b>{liveScore.homeScore}–{liveScore.awayScore}</b> {liveScore.awayName}
           </span>
-          <span className="lf-slim-meta">OMG.&nbsp;{round} · SPELA</span>
+          <span className="lf-slim-meta">{roundLabel} · SPELA</span>
         </div>
       ) : (
         <>
@@ -87,7 +95,7 @@ export function LedgerFrame({
               <span className="lf-club-name">{clubName}</span>
               <span className="lf-club-sub">{managerName} · {season}</span>
             </div>
-            <div className="lf-round">OMG.&nbsp;{round}</div>
+            <div className="lf-round">{roundLabel}</div>
           </div>
 
           {/* ── RPS-strip ── */}

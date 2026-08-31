@@ -133,10 +133,25 @@ const GROUP_ORDER: InboxGroup[] = ['kräver-svar', 'nyheter', 'rapporter']
 
 // ── Helpers ──────────────────────────────────────────────────────
 
+/**
+ * HIGH 5 (2026-08-29): InboxItem bär ingen fixture-referens, bara två tal —
+ * `createdRound` (ligaomgång, tävlingsrelativ; null = cup/slutspel) och
+ * `createdMatchday` (global spelordning, satt för gallringen). Funktionen
+ * stämplade tidigare BÅDA med exakt samma mall, `Omg ${n}`, så en rad från
+ * ligaomgång 4 och en rad från matchday 4 (= cupens andra rond) blev
+ * omöjliga att skilja åt — och en rad som bara hade matchday visades som en
+ * ligaomgång den inte var.
+ *
+ * matchday-fallbacken är borttagen: en rad utan `createdRound` har ingen
+ * KÄND omgångsidentitet, och en etikett som gissar är sämre än ingen. De tre
+ * producenter som bara sätter createdMatchday (seasonEndProcessor.ts,
+ * transferService.ts, events/eventResolver.ts) tappar därmed sin
+ * omgångs-chip — medvetet. Vill vi ha den tillbaka sätter de createdRound
+ * vid skapandet, som roundProcessor.ts redan gör för alla andra rader.
+ */
 function getRoundLabel(item: InboxItem): string | null {
   if (item.createdRound === null) return 'Cupen'
   if (item.createdRound !== undefined) return `Omg ${item.createdRound}`
-  if (item.createdMatchday != null) return `Omg ${item.createdMatchday}`
   return null
 }
 
@@ -374,6 +389,12 @@ export function splitOldInboxItems(items: InboxItem[], currentMatchday: number):
   const recent: InboxItem[] = []
   const old: InboxItem[] = []
   for (const item of items) {
+    // HIGH 5 (2026-08-29): createdRound (ligaomgång 1-22) jämförs här mot
+    // currentMatchday (global spelordning) — två skalor i samma variabel. Ett
+    // ÖPPET fynd, inte fixat i denna omgång: M7:s egna tester
+    // (splitOldInboxItems.test.ts) fastställer uttryckligen createdRound som
+    // primärfält med createdMatchday som fallback, så en ändring är ett
+    // produktbeslut om gallringsfönstret, inte en etikettfix. Rapporterat.
     const round = item.createdRound ?? item.createdMatchday ?? undefined
     const isOld = item.isRead && round !== undefined && round <= (currentMatchday - OLD_INBOX_ROUND_THRESHOLD)
     ;(isOld ? old : recent).push(item)

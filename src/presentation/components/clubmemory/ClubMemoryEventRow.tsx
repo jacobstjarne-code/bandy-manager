@@ -60,7 +60,9 @@ export function ClubMemoryEventRow({ event, activeAnniversaries = [] }: Props) {
         {event.emoji}
       </span>
       <span className="memory-row-matchday">
-        Omg {event.matchday}
+        {/* HIGH 5: matchday är kronologi. Rond-identiteten stämplas i
+            clubMemoryEventBuilders.ts; fallbacken gäller icke-fixture-rader. */}
+        {event.roundLabel ?? `Omg ${event.matchday}`}
       </span>
       <div className="memory-row-body">
         <span className="memory-row-text">

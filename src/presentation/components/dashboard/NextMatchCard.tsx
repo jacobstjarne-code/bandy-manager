@@ -13,12 +13,8 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Club } from '../../../domain/entities/Club'
 import type { MatchWeather } from '../../../domain/entities/Weather'
+import { playoffRoundName, getRoundLabel } from '../../../domain/roundLabel'
 
-function getPlayoffLabel(round: PlayoffRound): string {
-  if (round === PlayoffRound.QuarterFinal) return 'Kvartsfinal'
-  if (round === PlayoffRound.SemiFinal) return 'Semifinal'
-  return 'SM-Final'
-}
 
 /** Series score as V/F boxes + score string */
 function SeriesBoxes({
@@ -181,7 +177,7 @@ export function NextMatchCard({
     headerTagStyle = { background: 'color-mix(in srgb, var(--match-gold) 20%, transparent)', color: 'var(--match-gold)', fontSize: 8, padding: '2px 7px', border: '1px solid color-mix(in srgb, var(--match-gold) 30%, transparent)' }
   } else if (isPlayoff && playoffSeries) {
     headerIcon = '⚔️'
-    headerLabel = getPlayoffLabel(playoffSeries.round)
+    headerLabel = playoffRoundName(playoffSeries.round)
     headerTagText = 'TOPP 8'
     headerTagStyle = { background: 'color-mix(in srgb, var(--match-gold) 15%, transparent)', color: 'var(--match-gold)', fontSize: 8, padding: '2px 7px', border: '1px solid color-mix(in srgb, var(--match-gold) 25%, transparent)' }
   } else if (isCup) {
@@ -202,7 +198,9 @@ export function NextMatchCard({
     headerTagStyle = { background: 'color-mix(in srgb, var(--match-positive) 15%, transparent)', color: 'var(--match-positive)', fontSize: 8, padding: '2px 7px', border: '1px solid color-mix(in srgb, var(--match-positive) 25%, transparent)' }
   } else {
     // Normal: show home/away + round
-    headerTagText = `${isHome ? 'HEMMA' : 'BORTA'} · Omg ${nextFixture.roundNumber}`
+    // HIGH 5: rondetiketten via getRoundLabel — grenen nås bara av ligamatcher
+    // idag, men den råa mallen var en av de ~20 som kunde driva isär.
+    headerTagText = `${isHome ? 'HEMMA' : 'BORTA'} · ${getRoundLabel(nextFixture, game.playoffBracket).short}`
   }
 
   // Header label text color per variant
@@ -385,7 +383,7 @@ export function NextMatchCard({
           return (
             <>
               <p style={{ fontSize: 9, color: 'var(--text-muted)', textAlign: 'center', margin: '2px 0 0', fontFamily: 'var(--font-body)' }}>
-                Omgång {nextFixture.roundNumber}
+                {getRoundLabel(nextFixture, game.playoffBracket).long}
               </p>
               {arenaLabel && (
                 <p style={{ fontSize: 8, color: 'var(--text-muted)', textAlign: 'center', margin: '1px 0 0', fontFamily: 'var(--font-body)', fontStyle: 'italic' }}>

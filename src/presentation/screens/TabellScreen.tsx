@@ -8,14 +8,21 @@ import { FormDots } from '../components/FormDots'
 import { getFormResults } from '../utils/formUtils'
 import { Target } from 'lucide-react'
 import { TabBar } from '../components/shared/TabBar'
+import { getRoundLabel } from '../../domain/roundLabel'
 
 /**
  * PÅSTÅENDEKARTAN nivå 1 (2026-08-25): två roundNumber-sorteringar hittade
- * och fixade till matchday (se kommentarerna vid dem). Kvarvarande
- * roundNumber-läsning är bara en visningsetikett ("Omgång N"), deklarerad
- * öppet.
+ * och fixade till matchday (se kommentarerna vid dem).
  *
- * @cites bracket.winnerId, game.rivalryHistory.currentStreak, fixture.homeScore, fixture.awayScore, roundNumber
+ * HIGH 5 (2026-08-29): den sista roundNumber-läsningen (visningsetiketten
+ * "Omgång N" på nästa möte) är borta — etiketten kommer nu ur
+ * domain/roundLabel.ts, som behöver game.playoffBracket för att kunna säga
+ * VILKEN slutspelsfas matchen är. Bracketen läses ENBART för den
+ * fasuppslagningen (getPlayoffRoundForFixture), aldrig för att avgöra vem som
+ * blev mästare eller eliminerades — de påståendena görs inte på den här
+ * skärmen.
+ *
+ * @cites bracket.winnerId, game.rivalryHistory.currentStreak, fixture.homeScore, fixture.awayScore, playoffBracket
  */
 export function TabellScreen() {
   const game = useGameStore(s => s.game)
@@ -423,7 +430,9 @@ export function TabellScreen() {
                   }}>
                     {fix ? (
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Omgång {fix.roundNumber}</span>
+                        {/* HIGH 5: getNextMeeting filtrerar inte bort cup/slutspel — råa
+                            `Omgång {roundNumber}` visade en cupkvartsfinal som "Omgång 2". */}
+                        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{getRoundLabel(fix, game!.playoffBracket).long}</span>
                         <span>·</span>
                         <span>{isHome ? 'Hemma' : 'Borta'}</span>
                         {isDerby && <span>· 🔥 Derby</span>}

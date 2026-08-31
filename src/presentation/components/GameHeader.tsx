@@ -6,17 +6,13 @@ import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/game
 import { TownSilhouette } from './TownSilhouette'
 import { KlubbparmOverlay } from './KlubbparmOverlay'
 import { Logo } from './Logo'
-import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
+import { PlayoffStatus } from '../../domain/enums'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 import { getManagerDisplayName } from '../../domain/services/managerProfileService'
 import { exportSaveAsJson, importSaveFromJson } from '../../infrastructure/persistence/saveGameStorage'
+import { playoffRoundName } from '../../domain/roundLabel'
 
-const ROUND_NAME: Record<PlayoffRound, string> = {
-  [PlayoffRound.QuarterFinal]: 'Kvartsfinal',
-  [PlayoffRound.SemiFinal]: 'Semifinal',
-  [PlayoffRound.Final]: 'SM-Final',
-}
 
 // C1 (5c9a7a8, 2026-08-24) — "senast bekräftad sparningstid" i UI.
 function formatRelativeSaveTime(iso: string): string {
@@ -157,7 +153,7 @@ export function GameHeader() {
     if (playoffCtx) {
       const critLabel = CRIT_LABEL[playoffCtx.criticality]
       const suffix = critLabel ?? `match ${playoffCtx.nextGame}`
-      playoffLabel = `${ROUND_NAME[playoffCtx.round]} · ${suffix}`
+      playoffLabel = `${playoffRoundName(playoffCtx.round)} · ${suffix}`
     } else {
       playoffLabel = 'Slutspel'
     }

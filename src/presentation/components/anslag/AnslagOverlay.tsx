@@ -1,7 +1,9 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { PlayoffRound } from '../../../domain/enums'
 import type { AnslagKey } from '../../../domain/services/anslagService'
 import { pickAnslagVariant, getAnslagData, isClubDirektkvalad } from '../../../domain/services/anslagService'
 import { IllustrationScene } from '../illustration/IllustrationScene'
+import { playoffRoundDefinite } from '../../../domain/roundLabel'
 
 // Anslag som bär en hero-band-illustration (band-läge). Bilden droppas i public/; tills
 // dess fallback-gradient + stämpel. Fler anslag (derby, nedflyttning) läggs till här.
@@ -80,10 +82,9 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
   //      elimineringen skapas (se PlayoffEliminationInfo i Playoff.ts). Bracket-
   //      härledningen finns kvar som fallback för sparfiler från innan detta fält
   //      fanns (en pågående elimineringsanslag utan lastPlayoffElimination satt).
-  const getPlayoffRoundLabel = (round: string) =>
-    round === 'quarterFinal' ? 'kvartsfinalen' :
-    round === 'semiFinal' ? 'semifinalen' :
-    'SM-finalen'
+  // HIGH 5 (2026-08-29): bestämd form ur roundLabel.ts — samma uppslag som
+  // resten av UI:t, bara ett annat kasus.
+  const getPlayoffRoundLabel = (round: PlayoffRound) => playoffRoundDefinite(round)
   if (anslagKey.startsWith('playoff_eliminated_')) {
     const info = game.lastPlayoffElimination
     if (info) {

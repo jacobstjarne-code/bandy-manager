@@ -38,6 +38,51 @@ export function maxMatchesInSeries(round: PlayoffRound): number {
   return round === PlayoffRound.Final ? 1 : 5
 }
 
+/**
+ * Vilken slutspelsfas en fixture tillhör — enda uppslaget fixture → PlayoffRound.
+ *
+ * PlayoffSeries har ingen fixture→fas-pekare, bara `fixtures: string[]` per
+ * gren, så uppslaget måste gå åt andra hållet. Fanns tidigare duplicerat i
+ * matchTypeAxes.deriveSkede, PortalScreen, MatchScreen, ChampionScreen och
+ * situationService — nu ett ställe.
+ */
+export function getPlayoffRoundForFixture(
+  bracket: PlayoffBracket | null | undefined,
+  fixtureId: string,
+): PlayoffRound | null {
+  if (!bracket) return null
+  if (bracket.final?.fixtures.includes(fixtureId)) return PlayoffRound.Final
+  if (bracket.semiFinals.some(s => s.fixtures.includes(fixtureId))) return PlayoffRound.SemiFinal
+  if (bracket.quarterFinals.some(s => s.fixtures.includes(fixtureId))) return PlayoffRound.QuarterFinal
+  return null
+}
+
+/**
+ * Nästa lediga (roundNumber, matchday) för en slutspelsomgångs fixtures.
+ *
+ * ROTORSAK (HIGH 5, audit 2026-08-29): `startRound` var tidigare ett HÅRDKODAT
+ * tal på tre anropsställen som beskrev SAMMA övergång och inte var överens —
+ * playoffTransition.ts sa 23 för kvartsfinalstarten, matchActions.ts sa
+ * 26/29/32 för QF→SF→final, playoffProcessor.ts sa 28/33/36 för samma
+ * övergångar. Ingen av dem härleddes ur något; det var tre gissningar.
+ * `matchday` däremot härleddes redan korrekt (max+1) på alla tre ställen.
+ *
+ * Fixen är att härleda `roundNumber` PÅ SAMMA SÄTT: räkna vidare från där
+ * ligan slutade. Två anropsställen kan då inte längre säga olika, för de
+ * hårdkodar inget. Slutspelets roundNumber är fortfarande inget spelaren ska
+ * SE (använd getRoundLabel), men fältet är nu monotont och > 22, vilket
+ * `fixture.roundNumber > 22`-grindarna i matchSimProcessor.ts och
+ * economyService.ts redan förutsätter.
+ */
+export function nextPlayoffStart(
+  fixtures: Array<Pick<Fixture, 'roundNumber' | 'matchday'>>,
+): { startRound: number; startMatchday: number } {
+  return {
+    startRound: Math.max(0, ...fixtures.map(f => f.roundNumber ?? 0)) + 1,
+    startMatchday: Math.max(0, ...fixtures.map(f => f.matchday ?? 0)) + 1,
+  }
+}
+
 export function generatePlayoffFixtures(
   series: PlayoffSeries,
   season: number,

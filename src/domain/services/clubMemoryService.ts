@@ -18,7 +18,13 @@ export type MemoryEventType =
 export interface MemoryEvent {
   type: MemoryEventType
   season: number
+  /** Kronologi/sortering — ALDRIG rond-identitet i UI, se roundLabel. */
   matchday: number
+  /** HIGH 5 (2026-08-29): färdig tävlingsmedveten rond-etikett, satt vid
+   *  byggtillfället för fixture-baserade händelser (buildEventFromFixture).
+   *  Icke-fixture-händelser (spelardagbok, storyline, pension) saknar den —
+   *  ClubMemoryEventRow faller då tillbaka på matchday som förut. */
+  roundLabel?: string
   text: string
   emoji: string
   significance: number

@@ -34,6 +34,15 @@ export type MatchHighlightCategory =
 export interface MatchHighlight {
   fixtureId: string
   matchday: number
+  /**
+   * HIGH 5 (2026-08-29): färdig, tävlingsmedveten rond-etikett ("Omgång 4",
+   * "Cup · kvartsfinal", "Slutspel · semifinal"), satt EN gång vid
+   * genereringstillfället via domain/roundLabel.ts. SeasonSummaryScreen
+   * renderade tidigare `Omgång {matchday}` — global spelordning presenterad
+   * som ligaomgång, vilket gjorde samma derby till "Omgång 8" i årsboken och
+   * "Omgång 4" i portalen. Saknas på summaries skapade före detta fält;
+   * skärmen faller då tillbaka på matchday som förut. */
+  roundLabel?: string
   opponentName: string
   homeScore: number
   awayScore: number
@@ -119,8 +128,10 @@ export interface SeasonSummary {
   totalCleanSheets: number
   longestWinStreak: number
   longestLossStreak: number
-  biggestWin: { opponent: string; score: string; round: number } | null
-  worstLoss: { opponent: string; score: string; round: number } | null
+  /** `round` = matchday (kronologi). `roundLabel` = det spelaren ska SE —
+   *  se MatchHighlight.roundLabel ovan (HIGH 5, 2026-08-29). */
+  biggestWin: { opponent: string; score: string; round: number; roundLabel?: string } | null
+  worstLoss: { opponent: string; score: string; round: number; roundLabel?: string } | null
 
   homeRecord: { wins: number; draws: number; losses: number }
   awayRecord: { wins: number; draws: number; losses: number }

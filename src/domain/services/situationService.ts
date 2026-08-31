@@ -10,6 +10,7 @@ import {
   getSeasonPhaseFragment,
   getDeadlineDayFragment,
 } from './situationFragments'
+import { playoffRoundNameUpper } from '../roundLabel'
 
 export interface Situation {
   label: string
@@ -106,9 +107,7 @@ export function getSituation(game: SaveGame): Situation {
       })
     )
     if (activeSeries) {
-      const roundLabel =
-        activeSeries.round === PlayoffRound.QuarterFinal ? 'KVARTSFINAL' :
-        activeSeries.round === PlayoffRound.SemiFinal ? 'SEMIFINAL' : 'SM-FINAL'
+      const roundLabel = playoffRoundNameUpper(activeSeries.round)
       const managedIsHome = activeSeries.homeClubId === managedId
       const ourWins = managedIsHome ? activeSeries.homeWins : activeSeries.awayWins
       const theirWins = managedIsHome ? activeSeries.awayWins : activeSeries.homeWins

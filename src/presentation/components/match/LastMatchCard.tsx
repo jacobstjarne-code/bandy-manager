@@ -1,5 +1,6 @@
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import { getRoundLabel } from '../../../domain/roundLabel'
 
 interface LastMatchCardProps {
   fixture: Fixture
@@ -53,9 +54,9 @@ export function LastMatchCard({ fixture, game, managedClubId }: LastMatchCardPro
           {homeClub?.shortName ?? homeClub?.name} {fixture.homeScore}–{fixture.awayScore} {awayClub?.shortName ?? awayClub?.name}
         </p>
         <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-          {fixture.isCup
-            ? `Cup · ${fixture.roundNumber === 1 ? 'Förstarunda' : fixture.roundNumber === 2 ? 'Kvartsfinal' : fixture.roundNumber === 3 ? 'Semifinal' : 'Final'}`
-            : `Omgång ${fixture.roundNumber}`}
+          {/* HIGH 5: egen cup-gren + rå ligamall ersatt av getRoundLabel — den
+              gamla else-grenen visade slutspelsmatcher som "Omgång 24". */}
+          {getRoundLabel(fixture, game.playoffBracket).long}
         </p>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import type { Fixture } from '../entities/Fixture'
 import type { PlayoffBracket } from '../entities/Playoff'
 import { getRivalry } from '../data/rivalries'
+import { PlayoffRound } from '../enums'
+import { getPlayoffRoundForFixture } from './playoffService'
 
 /**
  * GRANSKA DEL 4 (2026-08-11), steg 1 — axelhärledningen.
@@ -111,10 +113,13 @@ function deriveSkede(fixture: Fixture, tavlingstyp: Tavlingstyp, bracket: Playof
     }
   }
   if (tavlingstyp === 'slutspel') {
-    if (!bracket) return undefined
-    if (bracket.final?.fixtures.includes(fixture.id)) return 'final'
-    if (bracket.semiFinals.some(s => s.fixtures.includes(fixture.id))) return 'semifinal'
-    if (bracket.quarterFinals.some(s => s.fixtures.includes(fixture.id))) return 'kvartsfinal'
+    // Uppslaget bor i playoffService.getPlayoffRoundForFixture (HIGH 5,
+    // 2026-08-29) — samma tre grenar låg tidigare kopierade här och i fem
+    // UI-filer. Bara mappningen PlayoffRound→Skede är kvar lokalt.
+    const round = getPlayoffRoundForFixture(bracket, fixture.id)
+    if (round === PlayoffRound.Final) return 'final'
+    if (round === PlayoffRound.SemiFinal) return 'semifinal'
+    if (round === PlayoffRound.QuarterFinal) return 'kvartsfinal'
     return undefined
   }
   return undefined

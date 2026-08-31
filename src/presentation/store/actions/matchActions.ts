@@ -5,7 +5,7 @@ import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../../domain/enu
 import { calculateStandings } from '../../../domain/services/standingsService'
 import { updateCupBracketAfterRound, generateNextCupRound } from '../../../domain/services/cupService'
 import { stampFixturesFromCalendar } from '../../../domain/services/scheduleGenerator'
-import { updateSeriesAfterMatch, advancePlayoffRound } from '../../../domain/services/playoffService'
+import { updateSeriesAfterMatch, advancePlayoffRound, nextPlayoffStart } from '../../../domain/services/playoffService'
 import { isPlayoffNarrativeCardStillValid } from '../../../domain/services/playoffNarrativeService'
 import { simulateMatch } from '../../../domain/services/matchEngine'
 import { fixtureSeed } from '../../../domain/utils/random'
@@ -208,11 +208,11 @@ export function matchActions(get: Get, set: Set) {
         })()
 
         if (phaseComplete) {
-          const nextRoundStart = updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals ? 26
-            : updatedPlayoffBracket.status === PlayoffStatus.SemiFinals ? 29 : 32
-          const currentMaxMatchday = Math.max(0, ...updatedFixtures.map(f => f.matchday ?? 0))
+          // HIGH 5 (2026-08-29): startRound härleds nu (max+1) istället för
+          // hårdkodade 26/29/32 — se nextPlayoffStart i playoffService.ts.
+          const { startRound, startMatchday } = nextPlayoffStart(updatedFixtures)
           const { bracket: advancedBracket, newFixtures: newPlayoffFixtures } =
-            advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, nextRoundStart, currentMaxMatchday + 1)
+            advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, startRound, startMatchday)
           updatedPlayoffBracket = advancedBracket
           if (newPlayoffFixtures.length > 0) {
             updatedFixtures.push(...newPlayoffFixtures)
@@ -345,10 +345,9 @@ export function matchActions(get: Get, set: Set) {
           : updatedPlayoffBracket.status === PlayoffStatus.Final ? updatedPlayoffBracket.final?.winnerId !== null
           : false
         if (phaseComplete) {
-          const nextRoundStart = updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals ? 26
-            : updatedPlayoffBracket.status === PlayoffStatus.SemiFinals ? 29 : 32
-          const currentMaxMatchday = Math.max(0, ...updatedFixtures.map(f => f.matchday ?? 0))
-          const { bracket: advancedBracket, newFixtures } = advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, nextRoundStart, currentMaxMatchday + 1)
+          // HIGH 5 (2026-08-29): samma härledning som i saveLiveMatchResult ovan.
+          const { startRound, startMatchday } = nextPlayoffStart(updatedFixtures)
+          const { bracket: advancedBracket, newFixtures } = advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, startRound, startMatchday)
           updatedPlayoffBracket = advancedBracket
           if (newFixtures.length > 0) updatedFixtures.push(...newFixtures)
         }
