@@ -2,6 +2,8 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { LoanDeal, MentorshipRecord } from '../../../domain/entities/Academy'
 import { PlayerPosition, InboxItemType } from '../../../domain/enums'
 import { applyFinanceChange } from '../../../domain/services/economyService'
+import { STALEABLE_ACTIVITY_KEYS } from '../../../domain/services/communityRenewalService'
+import type { StaleableActivityKey } from '../../../domain/entities/Community'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -83,7 +85,16 @@ export function academyActions(get: Get, set: Set) {
         )
       }
 
-      set({ game: { ...game, clubs: updatedClubs, communityActivities: updatedCA } })
+      // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md): en
+      // nyaktiverad (eller uppgraderad) aktivitet är NY — starta/nollställ dess
+      // staleness-klocka. En kioskuppgradering basic→upgraded räknas som ett
+      // nytt grepp, precis som domen beskriver ("en uppgraderad variant").
+      // julmarknad/vipTent har ingen csBoost och därmed ingen klocka.
+      const updatedSince = STALEABLE_ACTIVITY_KEYS.includes(key as StaleableActivityKey)
+        ? { ...(game.communityActivitiesSince ?? {}), [key as StaleableActivityKey]: game.currentSeason }
+        : game.communityActivitiesSince
+
+      set({ game: { ...game, clubs: updatedClubs, communityActivities: updatedCA, communityActivitiesSince: updatedSince } })
       return { success: true }
     },
 

@@ -164,6 +164,10 @@ export const GAME_EVENT_TYPE_IDS = [
   // O11:s täckningsgrind byggdes. Den grinden hade fångat DENNA rad som
   // saknad om den funnits ett par timmar tidigare samma session.
   'burnoutRelief',
+  // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md), 2026-08-31.
+  // Raden nedan är ifylld direkt (FILLED) — en ny typ som läggs till ofylld
+  // hade höjt TODO-antalet och failat content-contract-guard.
+  'communityActivityRenewal',
 ] as const
 
 const STORYLINE_TYPE_IDS = [
@@ -291,6 +295,19 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
   },
 }
 
+const FILLED_ANSPRAK4: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' | 'filled'>>> = {
+  communityActivityRenewal: {
+    trigger: 'En aktiv CS-aktivitet vars staleness-multiplikator fallit till ≤ ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER (0,90) — nås bara över rykte 80, aldrig av en liten klubb. Utöver det: source cooldown "orten" (6 omgångar) inte aktiv, canAddDecision-budgeten öppen, klubben har råd med kostnaden, och aktiviteten har inte redan fått ett förnyelsebeslut denna säsong. Genereras i eventProcessor.ts, konstrueras i communityRenewalService.ts:generateCommunityRenewalEvent.',
+    stateEffect: `'renew': effect 'renewCommunityActivity' — club.finances −getActivityRenewalCost(rykte) (25 tkr vid rykte 80, 75 tkr vid rykte 100) OCH communityActivitiesSince[key] = currentSeason (staleness-klockan nollställd, aktivitetens csBoost tillbaka på full effekt). Ingen communityStanding-ändring — domens SKYDDAT-punkt. 'decline': noOp — aktiviteten står kvar och fortsätter tappa effekt nästa säsong.`,
+    systems: ['communityStanding (via aktivitetens csBoost)', 'ekonomi (klubbkassan)'],
+    lifespan: 'engångs per aktivitet och säsong; återkommer så länge klubben är stor nog att aktiviteten hinner slitas igen',
+    semanticKey: 'community_activity_renewal',
+    cooldownSeasons: 0,
+    recallSurface: 'Ortsfliken (aktivitetens status) + kassaförändringen i financeLog. Ingen egen loggpost.',
+    notes: 'Domens formulering "denna månad-nivå för normalt, måste-nivå bara om CS är på väg under en uttågströskel" är bara HALVT byggd: tier är statiskt month. Den villkorade eskaleringen kräver ett per-instans tier-åsidosättande som arkitekturen inte har, och måste-listan är stängd (Jacobs dom) — flaggat till Jacob, medvetet inte kringgått. Texten (title/body/valetiketter) är TOM i communityRenewalText.ts tills Opus levererar; kortet renderar då ingen prosa, per CLAUDE.md:s hårda regel.',
+  },
+}
+
 const PIVOTAL_FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' | 'filled'>>> = {
   board_failure: {
     trigger: `boardObjectives.some(status==='failed') (portalBeats.ts:134)`,
@@ -315,7 +332,10 @@ const PIVOTAL_FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | '
 }
 
 export const CONTENT_CONTRACT: ContentContractEntry[] = [
-  ...GAME_EVENT_TYPE_IDS.map(id => ({ ...basePlaceholder(id, 'GameEventType'), ...(FILLED[id] ? { ...FILLED[id], filled: true } : {}) })),
+  ...GAME_EVENT_TYPE_IDS.map(id => {
+    const filled = FILLED[id] ?? FILLED_ANSPRAK4[id]
+    return { ...basePlaceholder(id, 'GameEventType'), ...(filled ? { ...filled, filled: true } : {}) }
+  }),
   ...STORYLINE_TYPE_IDS.map(id => basePlaceholder(id, 'StorylineType')),
   ...ARC_TYPE_IDS.map(id => basePlaceholder(id, 'ArcType')),
   ...PORTAL_BEAT_IDS_ALL.map(id => ({ ...basePlaceholder(id, 'PortalBeat'), ...(PIVOTAL_FILLED[id] ? { ...PIVOTAL_FILLED[id], filled: true } : {}) })),

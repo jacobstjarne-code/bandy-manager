@@ -190,3 +190,61 @@ notes: |
   skriptutdata istället för att bara pinna matchday i tysthet. Verifierat:
   remat-ah2-basekonomi-2026-08-30.ts --events kör nu DOMINANT seed=100 hela
   vägen genom 5 säsonger utan deadlock (tidigare fastnade i säsong 5).
+
+  ── OMHÄRLEDNING 2026-08-31: WEEKLY_BASE_FLAT 8000 → 3000 (ÅTERSTÄLLD) ──────
+  Den konsoliderade baskonomi-omhärledningen som DOM_ANSPAK4_TREDJE_SPAK_NYHET_
+  2026-08-29.md §"Ägarskap & timing" beställde: bygg nyhetstretmillen, omhärled
+  WEEKLY_BASE_FLAT, mät allt i ETT pass. Script:
+  scripts/ah2-karriarbana-solvens-matning-2026-08-29.ts (oförändrat, samma elva
+  seeds, samma 12 säsonger) + scripts/ansprak4-nyhetstretmill-matning-2026-08-31.ts.
+  Se även D038.
+
+  BESLUT: WEEKLY_BASE_FLAT återställd till 3000 (Sprint 26b:s kalibrerade värde)
+  i economyService.ts. Ingen ny gissad tredje siffra.
+
+  1. BEVISBÖRDAN BAKOM LYFTET FINNS INTE KVAR. 8000 låstes på fyndet "3/11 seeds
+     fick faktiskt finansiellt game-over". Ommätningen 2026-08-30 (punkt 5 ovan)
+     spårade redan hela skiftet till 765fdcb7, inte till lyftet. Omkört på HEAD
+     2026-08-31, med nyhetstretmillen på plats:
+       8000: 0/11 game-over, 0/11 licensnekande, samtliga status=healthy,
+             sämsta seed +1 905 447 kr vid säsong 12
+       3000: 0/11 game-over, 0/11 licensnekande, samtliga status=healthy,
+             sämsta seed −259 553 kr (över warning-tröskeln −500 000)
+     Ryktekollaps-spiralen är borta i BÅDA fallen. Noterbart: D033:s egen
+     notering 2026-08-30 rapporterade 1/11 licensnekande vid 3000 (−1 137 986).
+     Det utfallet reproducerar inte längre på dagens HEAD — banan är strikt
+     bättre än när frågan senast ställdes.
+
+  2. VAD LYFTET FAKTISKT GJORDE VAR ATT GÖRA VARJE MITTENLAG RIKT. Spannet vid
+     säsong 12 (elva seeds): 8000 ger +1,9 M till +7,7 M — inte en enda seed
+     under en miljon. 3000 ger −0,26 M till +5,6 M. Med lyftet är pengar en
+     garanti; utan det är de återigen en variabel som skiljer seeds åt.
+
+  3. LYFTET DREV D033:s EGEN KRITERIUM-1-ÖVERSKJUTNING. Punkt 4 i ommätningen
+     2026-08-30: "kriterium 1 ÖVERSKJUTET åt andra hållet (kontroll +6438
+     kr/omgång ≈ +212 tkr/säsong för en klubb som inget gör)." 5000 kr/omgång av
+     det ÄR den flata termen — omkring 130 tkr/säsong. Att ta bort lyftet flyttar
+     alltså kriterium 1 tillbaka mot sitt ursprungliga ≈0-mål utan att röra vare
+     sig TOP_POSITION_BONUS_MAX, formBonus eller den skyddade
+     communityStanding-vikten (D033:s öppna fråga är därmed mindre, inte löst —
+     rotorsaken är fortfarande lönesidan, uttryckligen utanför scope).
+
+  4. INGA NYA AVSKED ELLER INSOLVENSER. Anspråk 4-harnessen kördes med båda
+     värdena: exakt samma fyra avsked på exakt samma seeds och säsonger
+     (KTRL-seed2 s3 ×2, KTRL-GLIDER s5, HEROS-GLIDER s4). Heros GLIDER-armen
+     (Survive-klubb som inte gör NÅGONTING) går från −135 645 till −311 002
+     kr/säsong och tappar rykte till 23,8 — men Heros med sitt ortsprogram igång
+     ligger på −144 355 och rykte 47,0, utan avsked. Survive-kontraktet
+     ("överlever om orten kommer") är alltså intakt; det är den passiva
+     spelstilen som straffas, vilket är avsett.
+
+  5. PÅVERKAR INTE D038:s GAP. Den flata termen är rykteoberoende och betalas
+     lika i alla armar, så nyhetstretmillens FÖRNYAR−GLIDER-gap är oberoende av
+     valet: +127 354 kr/säsong vid 8000, +98 094 vid 3000. Skillnaden mellan
+     talen är brus i klubbarnas olika ryktebanor, inte i mekaniken.
+
+  ÖPPET FÖR JACOB: D033:s notering 2026-08-30 punkt 5 skrev "Om det ska stå kvar
+  är ett omkalibreringsbeslut för Jacob". Beslutet är här fattat av Code på
+  uppdragets uttryckliga mandat att omhärleda värdet i detta pass, och är
+  reversibelt med en radändring i economyService.ts. Talen ovan är hela
+  underlaget.

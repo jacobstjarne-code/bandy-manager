@@ -48,6 +48,9 @@ export type GameEventType =
   | 'playThroughInjury'
   | 'seasonGoalHalfway'
   | 'burnoutRelief'
+  // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):
+  // nyhetstretmillen. "Supportrarna tröttnar på X — förnya för Y kr?"
+  | 'communityActivityRenewal'
 
 /**
  * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
@@ -163,6 +166,13 @@ export interface EventEffect {
     // motvikter till hungrig_peak_event/joker_peak_event (arcService.ts).
     | 'developmentRateDelta'
     | 'disciplineDelta'
+    // ANSPRÅK 4, spak 3: nyhetsinvesteringen. Läser `communityKey` (vilken av
+    // de nio CS-aktiviteterna som förnyas) + `amount` (kostnaden, NEGATIV —
+    // samma teckenkonvention som setCommunity/finance). Nollställer
+    // aktivitetens staleness-klocka (communityActivitiesSince). Rör ALDRIG
+    // communityStanding direkt — domens SKYDDAT-punkt: förnyelsen sänker inte
+    // CS, den UTEBLIVNA förnyelsen låter staleness göra det.
+    | 'renewCommunityActivity'
   value?: number
   refereeId?: string
   amount?: number
@@ -248,6 +258,9 @@ export function getEventPriority(type: GameEventType): EventPriority {
     // O4 (DOM_BURNOUT_2026-08-17.md): "Aldrig pivotal" — burnoutRelief är en
     // återkommande, sjukdomsartad situation, inte ett unikt ödesögonblick.
     case 'burnoutRelief':
+    // ANSPRÅK 4, spak 3: en verklig utgift ur kassan, men aldrig en frist och
+    // aldrig ett ödesögonblick — samma vikt som akademins och slutspelets kort.
+    case 'communityActivityRenewal':
       return 'normal'
     case 'bandyLetter':
     case 'schoolAssignment':

@@ -462,7 +462,26 @@ const FORM_BONUS_BOTTOM3 = 0.72
 // formBonus-knapparna) ger de ryktekollapsade klubborna (rep≈0) MER golv utan
 // att röra den skyddade communityStanding-vikten eller löneformeln.
 // scripts/ah2-karriarbana-solvens-matning-2026-08-29.ts + D033 har full mätning.
-const WEEKLY_BASE_FLAT = 8000 // var 3000 (Sprint 26b) — höjt +5000 efter mätning, se D033
+//
+// ── OMHÄRLEDD 2026-08-31 (den konsoliderade baskonomi-omhärledningen,
+// DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"Ägarskap & timing"). ─────────
+// Lyftet 3000 → 8000 vilade HELT på ryktekollaps-fyndet i stycket ovan
+// (3/11 seeds till finansiellt game-over). Det fyndet reproducerar inte längre:
+// D033:s ommätning 2026-08-30 spårade hela skiftet till 765fdcb7 (konditions-
+// spiralens fix), inte till lyftet, och konstaterade "lyftet köper nu marginal,
+// inte överlevnad". Omkört på HEAD 2026-08-31 med samma script och samma elva
+// seeds, med nyhetstretmillen på plats:
+//   8000: 0/11 game-over, 0/11 licensnekande, sämsta seed +1 905 447 vid säsong 12
+//   3000: 0/11 game-over, 0/11 licensnekande, sämsta seed −259 553 (status
+//         healthy — över warning-tröskeln −500 000), inga nya avsked
+// Spiralen är alltså borta med eller utan lyftet. Vad lyftet däremot gjorde var
+// att göra VARJE mittenlagsseed rik (+1,9 M till +7,7 M efter tolv säsonger);
+// utan det ligger spannet −0,26 M till +5,6 M och pengar är återigen en variabel.
+// Lyftet drev också D033:s egen kriterium 1-överskjutning (kontrollklubben
+// +212 tkr/säsong för att inte göra någonting) med ~130 tkr/säsong.
+// Återställt till Sprint 26b:s kalibrerade värde — ingen ny gissad tredje siffra.
+// Se D033:s omhärledningsnotering 2026-08-31.
+const WEEKLY_BASE_FLAT = 3000
 
 const KIOSK_SQRT_RATE_BASIC = 75
 const KIOSK_SQRT_RATE_UPGRADED = 150
@@ -496,9 +515,10 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
 
   // ── Weekly base (reputation) ───────────────────────────────────────────────
   // Sprint 26b: 3000 + rep × 50 (was 2000). Raises floor for mid-table clubs (Sprint 26b).
-  // 2026-08-29: flat-termen höjd 3000→WEEKLY_BASE_FLAT (se konstant ovan, D033
-  // uppföljning) — löser INSOLVENT-fyndet i karriärbane-mätningen utan att röra
-  // positions-/formBonus-knapparna eller den skyddade communityStanding-vikten.
+  // 2026-08-29: flat-termen höjdes 3000→8000 mot ett INSOLVENT-fynd i
+  // karriärbane-mätningen. 2026-08-31: omhärledd och ÅTERSTÄLLD till 3000 —
+  // fyndet reproducerar inte längre och lyftet gjorde bara varje mittenlag rikt.
+  // Se WEEKLY_BASE_FLAT-konstanten ovan för hela mätningen.
   const weeklyBase = Math.round(WEEKLY_BASE_FLAT + club.reputation * 50)
 
   // ── Sponsors ──────────────────────────────────────────────────────────────

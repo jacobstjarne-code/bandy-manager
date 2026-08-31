@@ -59,6 +59,10 @@ const EXPECTED_TIER: Record<GameEventType, DecisionTier> = {
   detOmojligaValet: 'month',
   playoffEvent: 'month',
   burnoutRelief: 'month',
+  // ANSPRÅK 4, spak 3: statiskt 'month'. Den villkorade måste-eskaleringen i
+  // domen är INTE byggd (måste-listan är stängd, tier saknar per-instans-
+  // åsidosättande) — se decisionTierService.ts.
+  communityActivityRenewal: 'month',
 
   // BAKGRUND
   pressConference: 'background',
@@ -116,6 +120,7 @@ const EXPECTED_MODE: Record<GameEventType, DecisionMode> = {
   playoffEvent: 'dilemma',
   playThroughInjury: 'dilemma',
   burnoutRelief: 'dilemma',
+  communityActivityRenewal: 'dilemma',
   dayJobConflict: 'dilemma',
 
   pressConference: 'notis',

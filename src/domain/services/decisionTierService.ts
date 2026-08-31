@@ -70,6 +70,15 @@ export const DECISION_TIER_BY_TYPE: Record<GameEventType, DecisionTier> = {
   politicianEvent: 'month',
   gentjanst: 'month',
   academyEvent: 'month',
+  // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+  // Domen skriver "'denna månad'-nivå för normalt, 'måste'-nivå bara om CS är
+  // på väg under en uttågströskel" — den villkorade halvan är INTE byggd, och
+  // ska inte byggas härifrån: måste-medlemskapet är stängt på TYP-nivå (se
+  // rubriken ovan) och tier saknar per-instans-åsidosättande (till skillnad
+  // från mode/priority). En villkorad eskalering kräver ett arkitekturbeslut
+  // av Jacob (ett `tier?`-fält på GameEvent, analogt med `mode?`, eller något
+  // annat) — flaggat, inte kringgått. Statiskt 'month' är rätt tills dess.
+  communityActivityRenewal: 'month',
   // Ekonomi (pengar-konsekvens — syns, väntar begripligt)
   economicStress: 'month',
   criticalEconomy: 'month',
@@ -186,6 +195,9 @@ export const DECISION_MODE_BY_TYPE: Record<GameEventType, DecisionMode> = {
   playThroughInjury: 'dilemma',
   burnoutRelief: 'dilemma',
   dayJobConflict: 'dilemma',
+  // Två försvarbara sidor: pengarna till nästa nyhet är pengar som inte går
+  // till truppen — eller så låter man orten tröttna. Domens egen inramning.
+  communityActivityRenewal: 'dilemma',
 
   // notis
   pressConference: 'notis',

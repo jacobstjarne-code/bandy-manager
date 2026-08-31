@@ -15,6 +15,7 @@ import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAs
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
 import { getBurnoutZone } from '../../../domain/services/managerProfileService'
 import { generateBurnoutReliefEvent } from '../../../domain/services/burnoutReliefService'
+import { generateCommunityRenewalEvent } from '../../../domain/services/communityRenewalService'
 import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
 import type { Scandal } from '../../../domain/services/scandalService'
 import { checkScandalTrigger, applyScandalEffect, resolveExpiredScandals } from '../../../domain/services/scandalService'
@@ -143,6 +144,17 @@ export function processGameEvents(
     !isInCooldown(game.sourceCooldowns ?? {}, 'burnout')
   ) {
     gameEvents.push(generateBurnoutReliefEvent(nextMatchday, game.currentSeason, burnoutZone))
+  }
+
+  // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):
+  // nyhetstretmillen. Samma mönster som burnout-relief och mecenatens middag —
+  // budget gate + source cooldown ('orten', 6 omgångar). Domens "synligt val,
+  // inte dränering": kostnaden är ALDRIG en automatisk avdragspost, alltid ett
+  // kort spelaren svarar på. Genereras aldrig för en klubb under rykte 80
+  // (staleness-multiplikatorn är då konstant 1,0 → inga kandidater).
+  if (canAddDecision(game, nextMatchday) && !isInCooldown(game.sourceCooldowns ?? {}, 'orten')) {
+    const renewalEvent = generateCommunityRenewalEvent(game, nextMatchday)
+    if (renewalEvent) gameEvents.push(renewalEvent)
   }
 
   let updatedMecenater = (game.mecenater ?? []).map(mec => {

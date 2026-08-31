@@ -75,6 +75,11 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   politicianEvent: 'decline',
   gentjanst: 'decline',
   academyEvent: 'decline',
+  // ANSPRÅK 4, spak 3: eventet bär ett uttryckligt 'decline'-val med
+  // effect.type === 'noOp' ("låt den stå kvar sliten"). Ett obesvarat
+  // förnyelsebeslut ska landa där, inte rinna ut tyst — utfallet är ändå
+  // synligt nästa säsong, som en aktivitet som fortsatt tappa effekt.
+  communityActivityRenewal: 'decline',
 
   // Ekonomi/trupp: avvakta om eventet erbjuder det.
   economicStress: 'decline',

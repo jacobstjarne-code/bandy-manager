@@ -195,6 +195,9 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     talentSearchResults: [],
     doctorQuestionsUsed: 0,
     communityActivities: entourage.communityActivities,
+    // ANSPRÅK 4, spak 3: staleness-klockan startar tom — inga aktiviteter är
+    // igång vid tillträdet (setupManagedClub.ts sätter alla till av).
+    communityActivitiesSince: {},
     volunteers: entourage.volunteers,
     localPaperName: entourage.localPaperName,
     journalist: entourage.journalist,

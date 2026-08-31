@@ -28,7 +28,7 @@ import type { PendingScene, SceneId } from './Scene'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'
-import type { CommunityActivities, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
+import type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
 import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry } from './Narrative'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
 
@@ -59,7 +59,7 @@ export interface RippleChain {
 
 // ── Re-exports so existing `import from '../entities/SaveGame'` still works ──
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
-export type { CommunityActivities, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
+export type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
 export type { BoardMember, BoardRole, BoardPersonality }
 export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry }
 export type { StandingRow }
@@ -372,6 +372,12 @@ export interface SaveGame {
   revision?: number
 
   communityActivities?: CommunityActivities
+  /** ANSPRÅK 4, spak 3 — nyhetstretmillen (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+   *  Säsongen varje CS-bärande ortsaktivitet senast var NY (aktiverad eller
+   *  förnyad). Läses av communityProcessor.ts (staleness-avtrappningen) och
+   *  communityRenewalService.ts (förnyelsebeslutet). Saknat fält/saknad nyckel
+   *  backfylls med innevarande säsong — aldrig bakåtdaterat. */
+  communityActivitiesSince?: CommunityActivitiesSince
   volunteers?: string[]
   volunteerMorale?: Record<string, number>  // name → morale 0-100
   localPaperName?: string

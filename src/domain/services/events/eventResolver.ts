@@ -1,5 +1,6 @@
 import type { SaveGame, Sponsor, CommunityActivities } from '../../entities/SaveGame'
-import type { HallTrial, HallTrialStage } from '../../entities/Community'
+import type { HallTrial, HallTrialStage, StaleableActivityKey } from '../../entities/Community'
+import { STALEABLE_ACTIVITY_KEYS } from '../communityRenewalService'
 import type { GameEvent } from '../../entities/GameEvent'
 import type { DinnerScene } from '../mecenatDinnerService'
 import { InboxItemType } from '../../enums'
@@ -616,6 +617,42 @@ export function resolveEvent(
         updatedGame = { ...updatedGame, communityActivities: { ...(updatedGame.communityActivities ?? current), functionaries: true } }
       } else if (effect.communityKey === 'julmarknad') {
         updatedGame = { ...updatedGame, communityActivities: { ...(updatedGame.communityActivities ?? current), julmarknad: true } }
+      }
+      // ANSPRÅK 4, spak 3: en aktivitet som SÄTTS PÅ (eller uppgraderas) här är
+      // ny — starta dess staleness-klocka. Samma stämpling som
+      // academyActions.ts:s activateCommunity gör på den andra aktiveringsvägen.
+      // julmarknad saknar csBoost och har därför ingen klocka.
+      if (STALEABLE_ACTIVITY_KEYS.includes(effect.communityKey as StaleableActivityKey)) {
+        updatedGame = {
+          ...updatedGame,
+          communityActivitiesSince: {
+            ...(updatedGame.communityActivitiesSince ?? {}),
+            [effect.communityKey as StaleableActivityKey]: updatedGame.currentSeason,
+          },
+        }
+      }
+      break
+    }
+    case 'renewCommunityActivity': {
+      // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+      // Samma 2.5-vaktsdisciplin som setCommunity ovan: utan communityKey vet
+      // resolvern inte VILKEN klocka som ska nollställas, och en tyst no-op
+      // hade tagit betalt utan att ge något.
+      if (!effect.communityKey) throw new Error("effect 'renewCommunityActivity' saknar obligatoriskt fält communityKey")
+      const renewKey = effect.communityKey as StaleableActivityKey
+      if (!STALEABLE_ACTIVITY_KEYS.includes(renewKey)) {
+        throw new Error(`effect 'renewCommunityActivity': okänd communityKey "${effect.communityKey}"`)
+      }
+      updatedGame = {
+        ...updatedGame,
+        clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, effect.amount ?? 0),
+        // Klockan nollställs till innevarande säsong — aktiviteten är ny igen.
+        // INGEN communityStanding-ändring: förnyelsen förhindrar avtrappningen,
+        // den lyfter inte CS av egen kraft (domens SKYDDAT-punkt).
+        communityActivitiesSince: {
+          ...(updatedGame.communityActivitiesSince ?? {}),
+          [renewKey]: updatedGame.currentSeason,
+        },
       }
       break
     }

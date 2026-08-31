@@ -14,13 +14,13 @@ import { PORTAL_BEATS } from '../portalBeats'
  * "kaptenen samlar laget"). Se BACKLOG.md "Två läsare, en sanning".
  */
 describe('CONTENT_CONTRACT — struktur', () => {
-  it('har 95 rader — 49 GameEventType + 22 StorylineType + 7 ArcType + 17 PortalBeat', () => {
-    expect(CONTENT_CONTRACT).toHaveLength(95)
+  it('har 96 rader — 50 GameEventType + 22 StorylineType + 7 ArcType + 17 PortalBeat', () => {
+    expect(CONTENT_CONTRACT).toHaveLength(96)
     const bySource = CONTENT_CONTRACT.reduce((acc, e) => {
       acc[e.source] = (acc[e.source] ?? 0) + 1
       return acc
     }, {} as Record<string, number>)
-    expect(bySource.GameEventType).toBe(49)
+    expect(bySource.GameEventType).toBe(50)
     expect(bySource.StorylineType).toBe(22)
     expect(bySource.ArcType).toBe(7)
     expect(bySource.PortalBeat).toBe(17)

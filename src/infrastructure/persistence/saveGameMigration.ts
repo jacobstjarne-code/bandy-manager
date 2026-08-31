@@ -128,6 +128,27 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     if (ca.bandySchool === undefined) ca.bandySchool = false
   }
 
+  // ── communityActivitiesSince: staleness-klockan (ANSPRÅK 4, spak 3) ────
+  // DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md. BACKFYLLNING, INTE
+  // BAKÅTDATERING: en save där kiosken varit igång sedan säsong 1 får
+  // startsäsong = INNEVARANDE säsong, inte 1. Ingen spelare ska vakna upp till
+  // en ort som redan tröttnat på allt hen byggt under det gamla systemet.
+  // (Samma backfyllning sker även i communityProcessor.ts varje omgång — den
+  // här raden är för att fältet ska finnas direkt vid laddning, inte först
+  // efter nästa advance.)
+  if (data.communityActivitiesSince === undefined) {
+    const ca = (data.communityActivities ?? {}) as Record<string, unknown>
+    const season = typeof data.currentSeason === 'number' ? data.currentSeason : 1
+    const since: Record<string, number> = {}
+    for (const key of ['bandyplay', 'functionaries', 'bandySchool', 'socialMedia', 'pensionarskaffe', 'soppkvall', 'skolbesok']) {
+      if (ca[key] === true) since[key] = season
+    }
+    for (const key of ['kiosk', 'lottery']) {
+      if (typeof ca[key] === 'string' && ca[key] !== 'none') since[key] = season
+    }
+    data.communityActivitiesSince = since
+  }
+
   // ── top-level optional fields introduced after v0.1.0 ─────────────────
   // M1 (audit 5c9a7a8, 2026-08-24): backfyll 'tilltrade' (INTE 'arrival') för
   // gamla saves som redan är mitt i onboarding — bevarar exakt tidigare

@@ -186,6 +186,8 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     volunteerMorale: {},
     localPaperName: entourage.localPaperName,
     communityActivities: entourage.communityActivities,
+    // ANSPRÅK 4, spak 3: ny klubb, ny ort — klockan börjar om.
+    communityActivitiesSince: {},
     sponsors: entourage.sponsors,
     namedCharacters: generateNamedCharacters(entourageSeed + 99991),
     assistantCoach: generateAssistantCoach(`${game.id}_${newClubId}`),

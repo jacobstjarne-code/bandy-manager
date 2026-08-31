@@ -1,0 +1,170 @@
+fact_id: D038
+category: design_principles
+claim: "Anspråk 4, spak 3 / nyhetstretmillen (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md): en ortsaktivitet är färskvara. Varje CS-bärande aktivitets flata csBoost multipliceras med en egen staleness-multiplikator som faller geometriskt med antal säsonger aktiviteten varit klubbens stående erbjudande, mot ett golv > 0. Avtrappningstakten skalar med klubbstorlek via SAMMA rykte-ramp som knapp 1 och 2 (csLinearRamp 80→100) — en klubb på/under rykte 80 har retention exakt 1,0 och ligger därmed helt utanför mekaniken. Färskheten återställs bara av en NYHETSINVESTERING i riktiga kronor, erbjuden som ett synligt dashboardbeslut (GameEventType communityActivityRenewal, tier month, mode dilemma) med två val: förnya (betala) eller avböj (noOp). Förnyelsen rör aldrig communityStanding direkt och aldrig aktiviteternas intäktssida."
+value:
+  ACTIVITY_STALENESS_RETENTION_CEIL: 0.85
+  ACTIVITY_STALENESS_FLOOR: 0.25
+  ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER: 0.95
+  ACTIVITY_RENEWAL_BASE_COST: 25000
+  ACTIVITY_RENEWAL_COST_REP_MULT_CEIL: 4.0
+  SOURCE_COOLDOWN_ROUNDS_ORTEN: 6
+unit: "andel (retention/golv/tröskel); kronor (BASE_COST); multiplikator (COST_REP_MULT_CEIL); omgångar (cooldown)"
+source:
+  type: measurement
+  doc: "docs/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md; scripts/ansprak4-nyhetstretmill-matning-2026-08-31.ts; src/domain/services/communityStandingScaling.ts; src/domain/services/communityRenewalService.ts"
+  decided_by: code
+verified_at: 2026-08-31
+verified_by: code
+status: active
+related_facts:
+  - D031
+  - D033
+  - D037
+invariants:
+  - "value.ACTIVITY_STALENESS_RETENTION_CEIL > 0"
+  - "value.ACTIVITY_STALENESS_RETENTION_CEIL < 1.0"
+  - "value.ACTIVITY_STALENESS_FLOOR > 0"
+  - "value.ACTIVITY_STALENESS_FLOOR < 1.0"
+  - "value.ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER > value.ACTIVITY_STALENESS_FLOOR"
+  - "value.ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER < 1.0"
+  - "value.ACTIVITY_RENEWAL_BASE_COST > 0"
+  - "value.ACTIVITY_RENEWAL_COST_REP_MULT_CEIL > 1.0"
+  - "value.SOURCE_COOLDOWN_ROUNDS_ORTEN > 0"
+notes: |
+  ── FORMEL ─────────────────────────────────────────────────────────────────
+  retention(rykte) = csLinearRamp(rykte, 80, 100, 1,0, 0,85)
+  multiplikator(s, rykte) = GOLV + (1 − GOLV) · retention(rykte)^s
+    där s = currentSeason − communityActivitiesSince[aktivitet]
+
+  Exakt 1,0 vid s = 0 och för varje rykte ≤ 80 (retention = 1,0 ⇒ 1^s = 1).
+  Asymptot mot 0,25, aldrig 0 — D031:s anti-vägg, samma golv som
+  getCsDiminishingFactor redan använder. Vid rykte 100: 1,000 / 0,888 / 0,791 /
+  0,710 / 0,583 för s = 0/1/2/3/5.
+
+  Nyhetskostnad = 25 000 · csLinearRamp(rykte, 80, 100, 1, 4,0), avrundat till
+  hela tusenlappar: 25 tkr vid rykte ≤80, 63 tkr vid 90, 100 tkr vid 100.
+
+  ── MÄTHARNESS: EN INSTRUMENTFIX SOM MÅSTE STÅ FÖRST ───────────────────────
+  Första körningen gav 0,4 förnyelsebeslut per säsong för en dominant klubb —
+  mekaniken syntes knappt. En diagnoskörning visade varför, och det var INTE
+  mekaniken: ansprak4-ortsunderhall-matning-2026-08-30.ts besvarar bara
+  patron-events och låter allt annat ligga kvar obesvarat i pendingEvents.
+  getThrottledActiveDecisionCount låg därför konstant på taket 3 och
+  canAddDecision blockerade 168 av 175 omgångar. Varje budgetgrindad händelse
+  (mecenatens middag, burnout-lättnaden, förnyelsebeslutet) var i praktiken
+  ogenererbar i den harnessen. Det spelade ingen roll för D037 (som mätte en
+  budgetoberoende csBoost-faktor) men gör spak 3 omätbar.
+
+  Det nya scriptet håller kön ren med kodbasens EGEN dokumenterade "håll
+  ställningen"-policy — getDefaultRolloverChoice (deferredRolloverService.ts),
+  samma funktion produktionen kör vid säsongsbytet. Månadsbeslut utan noOp/
+  rejectTransfer plockas bort utan att någon effekt tillämpas. Alla tre armar
+  kör identisk rensning, så jämförelsen är intern och giltig — men ABSOLUTTALEN
+  ÄR INTE JÄMFÖRBARA MED D037:s. Därför mäts GLIDER om i samma körning som egen
+  baslinje. Läs aldrig ett tal härifrån mot ett tal i D037 utan att gå via
+  respektive körnings egen GLIDER-arm.
+
+  ── SVEPET (dominant, 20 säsongsprover per cell) ───────────────────────────
+  Fast: retention-tak 0,85, golv 0,25, cooldown 6 omgångar.
+  Två knappar svepta — förnyelsetröskeln och kostnadsmultiplikatorn.
+
+  Tröskeln 0,90 → 0,95: antal förnyelsebeslut per säsong 0,4 → 3,6. Vid 0,90
+  krävs TVÅ hela säsonger innan ett rykte-95-lags aktivitet blir erbjudbar;
+  vid 0,95 räcker en. 0,95 valdes för att en säsong är den takt domen beskriver
+  ("ett topplag måste rotera hela tiden"), och för att ~3,6 kort per säsong
+  ligger inom vad en dashboard tål utan att bli en kortskur.
+
+  Kostnadsmultiplikatorn, med tröskel 0,95 och kön rensad (WEEKLY_BASE_FLAT
+  fortfarande 8000 i dessa tre celler):
+    mult   pris@rep100   nyhetskostnad/säs   DOM netto/säs   FÖRNYAR−GLIDER
+    3,0        75 tkr        242 200 kr         541 665         +206 806
+    4,0       100 tkr        318 450 kr         462 212         +127 354   ← låst
+    5,0       125 tkr        395 000 kr         385 662          +50 804
+  (GLIDER-referens i samtliga: 334 858 kr/säsong. SPARAR, dvs. ortsprogrammet
+  igång men aldrig förnyat: 781 720 kr/säsong, +446 862 mot GLIDER — det är
+  gapet UTAN någon nyhetskostnad, dvs. mätningens egen "före spak 3"-punkt.)
+
+  4,0 låstes som den högsta nivå som fortfarande lämnar ett TYDLIGT POSITIVT
+  incitament att finansiera orten. Domen säger "krymper", inte "inverterar";
+  D037 hade redan inversionen som hård övre gräns för knapp 2, och 5,0 ligger
+  nära den (+51 tkr, och 6,0 hade vänt tecknet). 100 tkr är dessutom en rund
+  siffra i samma register som spelets övriga engångsinvesteringar
+  (akademiuppgradering 50/150 tkr, anläggningsuppgradering 200 tkr).
+
+  ── GODKÄNT NÄR, KRITERIUM FÖR KRITERIUM ───────────────────────────────────
+  Slutkörning: kostnad ×4,0, tröskel 0,95, cooldown 6, WEEKLY_BASE_FLAT 3000
+  (den konsoliderade omhärledningen, se D033:s notering 2026-08-31).
+
+  1. BÄGGE SIDOR SVIDER — UPPFYLLT. Dominant, netto/säsong:
+       FÖRNYAR 281 070 · SPARAR 603 780 · GLIDER 182 976
+       FÖRNYAR − GLIDER = +98 094 kr/säsong
+       SPARAR  − GLIDER = +420 804 kr/säsong  (mätningens egen "före"-punkt)
+     Överskjutningen krympte med 77 %. D037:s referenstal (+291 252 i den
+     harnessen) är inte direkt jämförbart, men åt samma håll och samma
+     storleksordning. Att finansiera orten är inte längre gratis pengar; det
+     är fortfarande marginellt lönsamt, vilket är avsiktligt — en inversion
+     hade gjort ortsspaken till en fälla.
+  2. KONSUMERAR ÖVERSKOTTET — UPPFYLLT. Dominantens nettoöverskott faller
+     603 780 → 281 070 kr/säsong när orten hålls fräsch, dvs. −322 710 eller
+     53 %. Nyhetskostnaden är 318 450 kr/säsong fördelat på 3,6 investeringar.
+  3. SMÅ KLUBBAR OCH SURVIVE ORÖRDA — UPPFYLLT, mätt och inte antaget.
+       KONTROLL (club_malilla, rykte-snitt 75,3): 0,0 förnyelsebeslut på 12
+         säsongsprover, staleness-snitt 0,988, och FÖRNYAR/SPARAR är
+         BIT-IDENTISKA på varje rad (netto 256 441, CS-snitt 67,0, publik 433).
+       HEROS (club_heros, rykte-snitt 47,0): 0,0 förnyelsebeslut på 5
+         säsongsprover, staleness 1,000, FÖRNYAR/SPARAR bit-identiska.
+     KONTROLLENS 0,988 är inte ett fel: enskilda seeds passerar rykte 80 under
+     goda säsonger och får då en avtrappning på 1,2 % — exakt vad en
+     kontinuerlig ramp ska göra vid gränsen, i stället för att slå om.
+     HOLDBARHET: en dominant klubb som betalar håller staleness-snittet på
+     0,883 mot 0,806 om den låter bli — mekaniken går att motverka, aldrig en
+     vägg. Att den inte når 1,000 är cooldownens verk (nio aktiviteter slits
+     parallellt, som mest ~4 förnyelser hinns med per säsong).
+     INGEN DUBBELRÄKNING: economyService.ts är helt orörd. Staleness biter
+     bara på csBoost-vägen i communityProcessor.ts; aktiviteternas match- och
+     omgångsintäkter är exakt som förut.
+  4. D-FACT — detta dokument.
+
+  ── ÖPPEN FRÅGA TILL OPUS/JACOB: FÖRNYELSEN KÖPER NÄSTAN INGEN CS ──────────
+  Mätt, och det viktigaste fyndet i passet. Dominantens CS-snitt:
+    FÖRNYAR 77,7 · SPARAR 77,4 · GLIDER 67,9
+  Att betala 318 tkr per säsong för färskhet köper alltså +0,3 CS mot att låta
+  allt slitas. Rotorsaken är strukturell och är D037:s egen finding 1, en nivå
+  ned: hela ortsspaken är värd ~10 CS för en dominant klubb, och av den bärs
+  merparten av VOLONTÄRBONUSEN (upp till 1,5 CS/omgång) medan de nio
+  aktiviteterna tillsammans bara ger 0,67 CS/omgång före skalning. Staleness
+  kan per konstruktion bara röra de 0,67, och efter csUpkeepFactor (0,89) och
+  getCsDiminishingFactor (~0,3 vid hög CS) blir hela skillnaden mellan färskt
+  och slitet ~0,015 CS/omgång.
+
+  Konsekvens för spelaren: HÅLL ORTEN MEN FÖRNYA ALDRIG är i dagens balans den
+  dominanta strategin — aktiviteterna är intäktspositiva (D037 finding 2, orört
+  per domens SKYDDAT), avböj är gratis, och CS-priset för att avböja är inom
+  bruset. Domens kriterium 1 (finansiera-vs-släppa) är uppfyllt; domens
+  INRE val (förnya-vs-låt-tröttna) är det inte.
+
+  Tre vägar finns, ingen av dem tagen här eftersom alla tre är balanskall,
+  inte klassificeringsfrågor:
+    a) Låt staleness även träffa volontärbonusen (uttryckligen utanför detta
+       pass scope — frivilliga har redan en egen moral-/avhoppsmekanik).
+    b) Höj de nio aktivitetskonstanterna så CS-vägen väger tyngre (rör D037:s
+       mätta balans).
+    c) Ge den uteblivna förnyelsen en ANNAN konsekvens än CS (t.ex. en
+       mecenat-/patron-reaktion), dvs. en fjärde spak.
+  Ägare: Opus formulerar frågan, Jacob dömer. Code bygger inget av a–c utan
+  en dom.
+
+  ── EJ BYGGT, KRÄVER JACOBS ARKITEKTURBESLUT ───────────────────────────────
+  Domen: "förnyelsebehovet surfar som ett dashboard-beslut (HIGH 11: 'denna
+  månad'-nivå för normalt, 'måste'-nivå bara om CS är på väg under en
+  uttågströskel)." Andra halvan är INTE byggd. decisionTierService.ts:s
+  måste-medlemskap är stängt på TYP-nivå (Jacobs dom, ordagrant i filen) och
+  tier saknar det per-instans-åsidosättande som mode/priority har. En villkorad
+  eskalering kräver därför antingen ett nytt `tier?`-fält på GameEvent (analogt
+  med `mode?`) eller någon annan mekanism — ett arkitekturbeslut, inte en
+  klassificering. Eventet är statiskt 'month' tills dess.
+
+  ── TEXT ───────────────────────────────────────────────────────────────────
+  communityRenewalText.ts är TOM (title/body/valetiketter) tills Opus levererar.
+  Interpolationen är wirad: {activity} {cost} {seasons} {wear}. Kortet renderar
+  ingen prosa i mellantiden — avsiktligt, per CLAUDE.md:s hårda regel.

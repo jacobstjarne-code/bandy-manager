@@ -1235,6 +1235,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   )
   newInboxItems.push(...communityResult.inboxItems)
   let { csBoost, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, updatedVolunteers, updatedVolunteerMorale } = communityResult
+  // ANSPRÅK 4, spak 3: staleness-klockan (backfylld i processCommunity).
+  const updatedCommunityActivitiesSince = communityResult.updatedCommunityActivitiesSince
 
   // Sprint 26: mean reversion — puls driftar mot 60 med 3% per omgång.
   // Tillämpas INNAN övriga puls-ändringar så att matchresultat/aktiviteter aktivt motverkar driften.
@@ -1515,6 +1517,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     facilityState: updatedFacilityState ?? game.facilityState,
     volunteers: updatedVolunteers,
     volunteerMorale: updatedVolunteerMorale,
+    communityActivitiesSince: updatedCommunityActivitiesSince,
     trainerArc: updatedArc,
     boardPatience: runningPatienceUpdate.boardPatience,
     boardPatienceLastCountedFixtureId: runningPatienceUpdate.boardPatienceLastCountedFixtureId,

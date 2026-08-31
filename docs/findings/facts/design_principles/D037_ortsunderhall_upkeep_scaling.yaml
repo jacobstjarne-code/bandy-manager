@@ -194,3 +194,19 @@ notes: |
      bud — vilket både blåser upp intäkten och dränerar truppen under 11
      spelare tills säsongen deadlockar (verifierad repro i båda scripten).
      Anspråk 4-mätningen kör patron-only. Se D033:s ommätningsnotering punkt 3.
+
+  ── FRAMÅTPEKARE 2026-08-31: SPAK 3 BYGGD, SE D038 ─────────────────────────
+  value-blocket ovan är OFÖRÄNDRAT — alla fyra magnituder står. Det som ändrats
+  är att ommätningens slutsats ("GODKÄNT NÄR 1 fortsatt DELVIS UPPFYLLT av
+  oförändrat skäl — aktivitetsblocket är intäktspositivt") nu har fått sin
+  åtgärd: DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md (Jacobs mandat, väg A) och
+  D038, nyhetstretmillen. En tredje spak lägger en VERKLIG kostnad på att hålla
+  orten fräsch och krymper överskjutningen med 77 %.
+  Två saker att veta när du läser den här filens tal:
+    - csUpkeepFactor multipliceras nu MED en per-aktivitet staleness-
+      multiplikator (communityProcessor.ts). Formen är oförändrad; insatsen som
+      går in i faktorn är mindre för en klubb som inte förnyar.
+    - D038:s mätharness rensar beslutskön (D037:s script gjorde det inte, och
+      hade därför canAddDecision blockerad i 168 av 175 omgångar). Absoluttal
+      från D038 är därför INTE direkt jämförbara med den här filens — jämför
+      alltid via respektive körnings egen GLIDER-arm.

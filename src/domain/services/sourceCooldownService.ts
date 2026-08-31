@@ -1,4 +1,4 @@
-export type SourceKey = 'kommunen' | 'mecenat' | 'lokaltidningen' | 'burnout'
+export type SourceKey = 'kommunen' | 'mecenat' | 'lokaltidningen' | 'burnout' | 'orten'
 
 export interface SourceCooldown {
   roundsLeft: number
@@ -16,6 +16,12 @@ export const SOURCE_COOLDOWN_ROUNDS: Record<SourceKey, number> = {
   // förblir markbar/hög (burnoutScore rör sig långsamt, ofta över fler
   // omgångar än så).
   burnout: 6,
+  // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md, 2026-08-31):
+  // förnyelsebeslutet. En dominant klubb har nio aktiviteter som alla slits
+  // parallellt — utan en gemensam frekvensspärr hade tretmillen blivit en
+  // kortskur, inte ett synligt val. 6 omgångar (samma takt som burnout) ger
+  // som mest ~4 förnyelsebeslut per 26-omgångarssäsong.
+  orten: 6,
 }
 
 // Event types that map to each source
@@ -30,6 +36,10 @@ export const EVENT_SOURCE_MAP: Partial<Record<string, SourceKey>> = {
   // generiska cooldown-start (eventResolver.ts) räcker — ingen egen
   // startCooldown-anropsplats behövs.
   burnoutRelief: 'burnout',
+  // Cooldownen startas generiskt vid resolution (eventResolver.ts) — den
+  // gäller därmed BÅDA utfallen, förnya och avböj. Att bara spärra efter en
+  // betalning hade gjort avböj till en gratis väg till nästa kort.
+  communityActivityRenewal: 'orten',
 }
 
 export function startCooldown(

@@ -89,6 +89,9 @@ export const EVENT_TYPE_LABELS: Record<GameEventType, EventTypeLabel> = {
   csPress:              { icon: '📰', label: 'Lokaltidningen' },
   playThroughInjury:    { icon: '🩹', label: 'Spelaren' },
   burnoutRelief:        { icon: '💬', label: 'Spelaren' },
+  // ANSPRÅK 4, spak 3 — samma etikett som communityEvent/icaMaxiEvent: det är
+  // orten som tröttnar, ingen ny kategori.
+  communityActivityRenewal: { icon: '🏘️', label: 'Orten' },
 }
 
 /** Genomsläpps ALDRIG rått — samma register som HÄNDELSE-defaulten i

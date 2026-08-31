@@ -5,7 +5,9 @@ import { getRivalry } from '../../../domain/data/rivalries'
 import { advanceFacilityState } from '../../../domain/services/facilityService'
 import { getJournalistCommunityModifier } from '../../../domain/services/journalistVisibilityService'
 import { generateVolunteerRoster } from '../../../domain/services/volunteerService'
-import { getCsDiminishingFactor, csUpkeepFactor, csExpectationDrag } from '../../../domain/services/communityStandingScaling'
+import { getCsDiminishingFactor, csUpkeepFactor, csExpectationDrag, getActivityStalenessMultiplier } from '../../../domain/services/communityStandingScaling'
+import { backfillActivitiesSince, getSeasonsActive } from '../../../domain/services/communityRenewalService'
+import type { CommunityActivitiesSince, StaleableActivityKey } from '../../../domain/entities/Community'
 import { safeStandingPosition } from '../../../domain/services/standingsService'
 
 export interface CommunityProcessorResult {
@@ -21,6 +23,10 @@ export interface CommunityProcessorResult {
   completedNodeId: string | null
   updatedVolunteers: string[]
   updatedVolunteerMorale: Record<string, number>
+  /** ANSPRÅK 4, spak 3: staleness-klockan efter backfyllning. Skrivs vidare av
+   *  roundProcessor.ts. Samma referens som gick in när ingenting behövde
+   *  backfyllas — ingen onödig state-skrivning. */
+  updatedCommunityActivitiesSince: CommunityActivitiesSince
 }
 
 /**
@@ -77,17 +83,42 @@ export function processCommunity(
   // eftersom bara DE skalas av csUpkeepFactor(rykte). Summan är per konstruktion
   // aldrig negativ (varje term är ett tillägg) — domens krav att bara positiva
   // boostar skalas är alltså uppfyllt av formen, inte av ett villkor.
+  //
+  // ANSPRÅK 4, SPAK 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):
+  // varje konstant nedan multipliceras med SIN EGEN staleness-multiplikator
+  // innan den summeras. Per aktivitet, inte på totalen — en kiosk som funnits i
+  // fem säsonger och ett skolbesök som startade i år har olika klockor och ska
+  // tappa olika mycket. Multiplikatorn är exakt 1,0 för varje klubb på/under
+  // rykte 80, så en liten klubb ser exakt samma tal som före spak 3.
+  const managedClubForUpkeep = game.clubs.find(c => c.id === game.managedClubId)
+  const clubReputation = managedClubForUpkeep?.reputation ?? 50
+
+  // Backfyllning FÖRE avläsning: en aktivitet utan känd startsäsong får
+  // innevarande säsong, aldrig en bakåtdaterad. Returneras till roundProcessor
+  // som skriver den vidare — utan den skrivningen hade backfyllningen räknats
+  // om varje omgång och aktiviteten aldrig hunnit bli gammal.
+  const activitiesSince = backfillActivitiesSince(
+    game.communityActivitiesSince,
+    game.communityActivities,
+    game.currentSeason,
+  )
+  const stale = (key: StaleableActivityKey): number =>
+    getActivityStalenessMultiplier(
+      getSeasonsActive(activitiesSince, key, game.currentSeason),
+      clubReputation,
+    )
+
   let upkeepBoost = 0
   const csActivities = game.communityActivities
-  if (csActivities?.kiosk && csActivities.kiosk !== 'none') upkeepBoost += 0.08
-  if (csActivities?.lottery && csActivities.lottery !== 'none') upkeepBoost += 0.05
-  if (csActivities?.bandyplay) upkeepBoost += 0.08
-  if (csActivities?.functionaries) upkeepBoost += 0.05
-  if (csActivities?.bandySchool) upkeepBoost += 0.08
-  if (csActivities?.socialMedia) upkeepBoost += 0.03
-  if (csActivities?.pensionarskaffe) upkeepBoost += 0.10
-  if (csActivities?.soppkvall) upkeepBoost += 0.08
-  if (csActivities?.skolbesok) upkeepBoost += 0.12
+  if (csActivities?.kiosk && csActivities.kiosk !== 'none') upkeepBoost += 0.08 * stale('kiosk')
+  if (csActivities?.lottery && csActivities.lottery !== 'none') upkeepBoost += 0.05 * stale('lottery')
+  if (csActivities?.bandyplay) upkeepBoost += 0.08 * stale('bandyplay')
+  if (csActivities?.functionaries) upkeepBoost += 0.05 * stale('functionaries')
+  if (csActivities?.bandySchool) upkeepBoost += 0.08 * stale('bandySchool')
+  if (csActivities?.socialMedia) upkeepBoost += 0.03 * stale('socialMedia')
+  if (csActivities?.pensionarskaffe) upkeepBoost += 0.10 * stale('pensionarskaffe')
+  if (csActivities?.soppkvall) upkeepBoost += 0.08 * stale('soppkvall')
+  if (csActivities?.skolbesok) upkeepBoost += 0.12 * stale('skolbesok')
   // ── Frivilligbonus (puls) ─────────────────────────────────────────────────
   // Roster-baserat: regenerera från seed (samma som OrtenTab) → sum csBoost/10 per roll.
   // Kioskvakt=0.2, Matchvärd=0.4, Bandyskoleledare=0.5 etc. Cap +1.5/omg.
@@ -108,8 +139,6 @@ export function processCommunity(
   // (rep-faktor × cs-faktor), och att kombinationen lämnar holdbarheten intakt
   // är mätt, se D037. Matchresultat, placering och journalistmodifieraren
   // ligger UTANFÖR — de är inte managerns ortsinsats.
-  const managedClubForUpkeep = game.clubs.find(c => c.id === game.managedClubId)
-  const clubReputation = managedClubForUpkeep?.reputation ?? 50
   csBoost += Math.max(0, upkeepBoost) * csUpkeepFactor(clubReputation)
 
   // LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26): `standings` här är
@@ -354,5 +383,5 @@ export function processCommunity(
   const expectationDrag = csExpectationDrag(clubReputation)
   csBoost = positiveBoost * diminishingFactor + negativeBoost - expectationDrag
 
-  return { csBoost, klackMoodDelta, inboxItems, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, completedNodeId, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
+  return { csBoost, klackMoodDelta, inboxItems, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, completedNodeId, updatedVolunteers, updatedVolunteerMorale: volunteerMorale, updatedCommunityActivitiesSince: activitiesSince }
 }

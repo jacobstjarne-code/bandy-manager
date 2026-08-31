@@ -16,6 +16,39 @@ export interface CommunityActivities {
   skolbesok?: boolean         // Skolbesök — nästa generations supportrar
 }
 
+/**
+ * ANSPRÅK 4, spak 3 — nyhetstretmillen (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+ * De NIO aktiviteter som bär en csBoost i communityProcessor.ts, och därmed de
+ * enda vars färskhet kan falla. `julmarknad` och `vipTent` ingår INTE: de har
+ * ingen csBoost alls (julmarknad är säsongsfönstrad och nollställs varje
+ * säsongsslut, vipTent ligger enbart på intäktssidan i economyService.ts).
+ * Intäktssidan är oberörd av staleness — domens SKYDDAT-punkt "ingen
+ * dubbelräkning".
+ */
+export type StaleableActivityKey =
+  | 'kiosk'
+  | 'lottery'
+  | 'bandyplay'
+  | 'functionaries'
+  | 'bandySchool'
+  | 'socialMedia'
+  | 'pensionarskaffe'
+  | 'soppkvall'
+  | 'skolbesok'
+
+/**
+ * Säsongen varje aktivitet SENAST blev ny — satt vid aktivering
+ * (academyActions.ts, eventResolver.ts:s setCommunity) och nollställd på nytt
+ * vid varje förnyelse (effekten `renewCommunityActivity`). Samma fältform som
+ * `Mecenat.arrivedSeason`.
+ *
+ * Saknad nyckel = aktiviteten har ingen känd startsäsong. Den BACKFYLLS då med
+ * innevarande säsong (communityProcessor.ts / saveGameMigration.ts), aldrig
+ * bakåtdaterad — en spelare som haft kiosken i fem säsonger under det gamla
+ * systemet ska inte straffas retroaktivt när mekaniken införs.
+ */
+export type CommunityActivitiesSince = Partial<Record<StaleableActivityKey, number>>
+
 // KF4 (2026-06-21): BoardMember, BoardRole, BoardPersonality bor nu i Club.ts (EN modell).
 // BoardPersonality används i BoardObjective.ownerPersonality (importeras överst).
 

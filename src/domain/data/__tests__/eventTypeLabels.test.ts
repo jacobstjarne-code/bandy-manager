@@ -17,7 +17,7 @@ import { GAME_EVENT_TYPE_IDS } from '../contentContract'
  * nyckel finns i EVENT_TYPE_LABELS.
  */
 describe('eventTypeLabels — exhaustiv täckning', () => {
-  it('har exakt en rad per av de 49 kända GameEventType-värdena', () => {
+  it('har exakt en rad per av de 50 kända GameEventType-värdena', () => {
     expect(Object.keys(EVENT_TYPE_LABELS).sort()).toEqual([...GAME_EVENT_TYPE_IDS].sort())
   })
 
