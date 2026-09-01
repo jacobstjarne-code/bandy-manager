@@ -3,6 +3,7 @@ import type { Sponsor } from '../entities/Sponsor'
 import type { Moment } from '../entities/Moment'
 import type { StandingRow } from '../entities/Standing'
 import { FixtureStatus } from '../enums'
+import { applyFinanceChange } from './economyService'
 
 interface ContextualSponsorResult {
   newSponsors: Sponsor[]
@@ -165,9 +166,7 @@ export function applyOneTimeKommunstod(
   // sponsor skapades innan detta fält fanns (annars 0 kr utbetalt, tystare
   // fel än det gamla fasta beloppet).
   const amount = kommunSponsor.oneTimeAmount ?? KOMMUNSTOD_AMOUNT
-  const updatedClubs = game.clubs.map(c =>
-    c.id === game.managedClubId ? { ...c, finances: c.finances + amount } : c,
-  )
+  const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, amount)
   const updatedSponsors = (game.sponsors ?? []).map(s =>
     s.id === kommunSponsor.id ? { ...s, paidOutSeason: season } : s,
   )

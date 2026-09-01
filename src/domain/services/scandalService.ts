@@ -2,6 +2,7 @@ import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Club } from '../entities/Club'
 import { InboxItemType } from '../enums'
 import { POLITICIAN_PROFILES } from '../data/politicianData'
+import { applyFinanceChange } from './economyService'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -415,9 +416,7 @@ export function applyScandalEffect(
   // Apply mechanical effects
   switch (scandal.type) {
     case 'sponsor_collapse': {
-      updatedClubs = updatedClubs.map(c =>
-        c.id === scandal.affectedClubId ? { ...c, finances: c.finances - 30_000 } : c,
-      )
+      updatedClubs = applyFinanceChange(updatedClubs, scandal.affectedClubId, -30_000)
       break
     }
     case 'club_to_club_loan': {
@@ -453,9 +452,7 @@ export function applyScandalEffect(
       const delta = isPositiveMunicipal
         ? Math.round(kommunBidrag * 0.2)
         : -Math.round(kommunBidrag * 0.3)
-      updatedClubs = updatedClubs.map(c =>
-        c.id === scandal.affectedClubId ? { ...c, finances: c.finances + delta } : c,
-      )
+      updatedClubs = applyFinanceChange(updatedClubs, scandal.affectedClubId, delta)
       break
     }
   }

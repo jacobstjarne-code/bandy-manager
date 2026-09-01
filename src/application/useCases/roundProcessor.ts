@@ -1280,10 +1280,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     )
   }
   // M13: apply kommunstöd one-time bonus to club finances
+  // §6-arkitekturen (D042-fyndet, Jacobs körorder 2026-09-01): routad genom
+  // applyFinanceChange, economyService.ts:s ENDA dokumenterade mutationspunkt.
   if (kommunstodBonus > 0) {
-    postTransferClubs = postTransferClubs.map(c =>
-      c.id === game.managedClubId ? { ...c, finances: c.finances + kommunstodBonus } : c
-    )
+    postTransferClubs = applyFinanceChange(postTransferClubs, game.managedClubId, kommunstodBonus)
   }
 
   // ── Matchhall completion: stage → 'klar' + hasIndoorArena ─────────────────
@@ -1309,12 +1309,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       if (!baseline) continue
       const fd = scandalClub.finances - baseline.finances
       const rd = scandalClub.reputation - baseline.reputation
-      if (fd !== 0 || rd !== 0) {
+      if (rd !== 0) {
         postTransferClubs = postTransferClubs.map(c =>
           c.id === scandalClub.id
-            ? { ...c, finances: c.finances + fd, reputation: Math.max(0, Math.min(100, c.reputation + rd)) }
+            ? { ...c, reputation: Math.max(0, Math.min(100, c.reputation + rd)) }
             : c,
         )
+      }
+      // §6-arkitekturen (D042-fyndet, Jacobs körorder 2026-09-01): finansdelen
+      // routad genom applyFinanceChange, reputationen hanteras separat (samma
+      // funktion rör inte det fältet).
+      if (fd !== 0) {
+        postTransferClubs = applyFinanceChange(postTransferClubs, scandalClub.id, fd)
       }
     }
   }
@@ -1962,13 +1968,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   if (boardObjForetroendepott > 0) {
     updatedGame = {
       ...updatedGame,
-      clubs: updatedGame.clubs.map(c =>
-        c.id === game.managedClubId ? { ...c, finances: c.finances + boardObjForetroendepott } : c
-      ),
       // financelog-gap-diagnos-2026-09-01.ts (Jacobs körorder 2026-09-01):
       // förtroendepotten mutade tidigare club.finances utan en enda
       // financeLog-post — en av flera källor till en ~150-220k/säsong
-      // ospårad differens.
+      // ospårad differens. §6-arkitekturen: routad genom applyFinanceChange.
+      clubs: applyFinanceChange(updatedGame.clubs, game.managedClubId, boardObjForetroendepott),
       financeLog: appendFinanceLog(updatedGame.financeLog ?? [], {
         round: nextMatchday,
         amount: boardObjForetroendepott,

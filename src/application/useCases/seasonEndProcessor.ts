@@ -38,7 +38,7 @@ import { checkLicenseStatus, buildLicenseInboxItem } from '../../domain/services
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 import { getRetirementCandidate, getRetirementQuote } from '../../domain/services/retirementDecisionService'
-import { appendFinanceLog, type FinanceEntry } from '../../domain/services/economyService'
+import { appendFinanceLog, applyFinanceChange, type FinanceEntry } from '../../domain/services/economyService'
 import { computeSeasonEndContractDemands } from '../../domain/services/contractDemandService'
 import { resolveDeferredAtRollover } from '../../domain/services/deferredRolloverService'
 import { FALLBACK_SEASON_DEADLINE_MATCHDAY } from '../../domain/services/decisionTierService'
@@ -217,7 +217,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // Youth intake for all clubs
   const youthPlayers: Player[] = []
   const youthRecords = [...game.youthIntakeHistory]
-  const updatedClubs = game.clubs.map(club => ({ ...club }))
+  let updatedClubs = game.clubs.map(club => ({ ...club }))
 
   // U6 (SLUTTEST_KO.md, 2026-08-17) / D028: säsongsvist renommédelta ur
   // placering mot förväntan.
@@ -298,10 +298,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         label: `Prispengar (plats ${position})`,
       })
     }
+    // §6-arkitekturen (D042-fyndet, Jacobs körorder 2026-09-01): route direkt-
+    // skrivningar till finances genom applyFinanceChange, economyService.ts:s
+    // ENDA dokumenterade mutationspunkt, istf en egen { ...c, finances: ... }.
+    updatedClubs = applyFinanceChange(updatedClubs, updatedClubs[i].id, prize)
     updatedClubs[i] = {
       ...updatedClubs[i],
-      finances: updatedClubs[i].finances + prize,
-      transferBudget: Math.max(0, Math.round((updatedClubs[i].finances + prize) * 0.15)),
+      transferBudget: Math.max(0, Math.round(updatedClubs[i].finances * 0.15)),
     }
   }
 
@@ -315,10 +318,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         reason: 'patron',
         label: `Mecenatbidrag (${game.patron.name})`,
       })
-      updatedClubs[patronIdx] = {
-        ...updatedClubs[patronIdx],
-        finances: updatedClubs[patronIdx].finances + game.patron.contribution,
-      }
+      updatedClubs = applyFinanceChange(updatedClubs, updatedClubs[patronIdx].id, game.patron.contribution)
       newInboxItems.push({
         id: `inbox_patron_contribution_${game.currentSeason + 1}`,
         date: game.currentDate,
@@ -345,10 +345,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         reason: 'kommunbidrag_politiker',
         label: 'Kommunbidrag (säsongsslut)',
       })
-      updatedClubs[politIdx] = {
-        ...updatedClubs[politIdx],
-        finances: updatedClubs[politIdx].finances + dynamicBidrag,
-      }
+      updatedClubs = applyFinanceChange(updatedClubs, updatedClubs[politIdx].id, dynamicBidrag)
       newInboxItems.push({
         id: `inbox_kommunbidrag_${game.currentSeason + 1}`,
         date: game.currentDate,
