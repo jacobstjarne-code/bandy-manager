@@ -203,6 +203,70 @@ describe('generatePreSeasonMessage — femstegs-stegen, båda riktningar (H4 Her
 })
 
 /**
+ * DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md — H5-fällan: en klubb på WinLeague
+ * som håller 3:e-9:e plats fastnar för alltid (botten-3 kräver plats>=10,
+ * men WinLeague-verdicten är binär — bara plats 1 "möter" den). Testerna
+ * trädar consecutiveExpectationMisses mellan anrop (till skillnad från
+ * describe-blocket ovan, som medvetet INTE gör det) för att simulera flera
+ * säsonger i rad, precis som seasonEndProcessor.ts faktiskt gör.
+ */
+describe('generatePreSeasonMessage/deriveBoardAssessment — tröghets-demotering', () => {
+  function makeClub(expectation: ClubExpectation, misses?: number): Club {
+    return { boardExpectation: expectation, consecutiveExpectationMisses: misses } as Club
+  }
+
+  it('GODKÄNT NÄR 1: WinLeague-klubb som håller 3:e plats demoteras till ChallengeTop efter TVÅ säsonger, inte tidigare', () => {
+    let club = makeClub(ClubExpectation.WinLeague)
+    const r1 = generatePreSeasonMessage(club, [], 3, 0)
+    expect(r1.newExpectation).toBe(ClubExpectation.WinLeague) // GODKÄNT NÄR 2: en enda svacka demoterar inte
+    expect(r1.newConsecutiveExpectationMisses).toBe(1)
+
+    club = { ...club, boardExpectation: r1.newExpectation, consecutiveExpectationMisses: r1.newConsecutiveExpectationMisses }
+    const r2 = generatePreSeasonMessage(club, [], 3, 0)
+    expect(r2.newExpectation).toBe(ClubExpectation.ChallengeTop) // andra raka missen → demotering
+    expect(r2.newConsecutiveExpectationMisses).toBe(0) // räknaren nollställs av demoteringen
+  })
+
+  it('sparkas INTE i säsong 5 för en 3:e plats — H5-scenariot löst (klubben demoteras innan patiensen dör)', () => {
+    let club = makeClub(ClubExpectation.WinLeague)
+    for (let season = 0; season < 4; season++) {
+      const r = generatePreSeasonMessage(club, [], 3, 0)
+      club = { ...club, boardExpectation: r.newExpectation, consecutiveExpectationMisses: r.newConsecutiveExpectationMisses }
+    }
+    // efter fyra säsonger av 3:e plats: demoterad en gång (efter säsong 2),
+    // sitter nu på ChallengeTop där plats 3 MÖTER förväntan (rating>=3 → met)
+    expect(club.boardExpectation).toBe(ClubExpectation.ChallengeTop)
+    expect(club.consecutiveExpectationMisses).toBe(0)
+  })
+
+  it('GODKÄNT NÄR 3: en genuint kollapsande klubb degraderas fortfarande direkt via botten-3, inte bara tröghet', () => {
+    const club = makeClub(ClubExpectation.WinLeague, 1) // redan en miss från förra säsongen
+    const result = generatePreSeasonMessage(club, [], 10, 0) // kollapsar till botten-3
+    expect(result.newExpectation).toBe(ClubExpectation.ChallengeTop) // botten-3-vägen, ETT steg, ingen dubbel-demotering
+  })
+
+  it('GODKÄNT NÄR 4: en demoterad klubb som återhämtar sig (topp-2) re-promoveras och räknaren nollställs', () => {
+    let club = makeClub(ClubExpectation.ChallengeTop, 1) // en miss ackumulerad
+    const result = generatePreSeasonMessage(club, [], 2, 0) // toppresultat
+    expect(result.newExpectation).toBe(ClubExpectation.WinLeague) // upp-ratchet
+    expect(result.newConsecutiveExpectationMisses).toBe(0) // met/exceeded nollställer
+  })
+
+  it('GODKÄNT NÄR 5: Survive-golvet intakt — tröghet kan aldrig demotera under Survive', () => {
+    const club = makeClub(ClubExpectation.Survive, 5) // hypotetiskt högt missantal
+    const result = generatePreSeasonMessage(club, [], 12, 0)
+    expect(result.newExpectation).toBe(ClubExpectation.Survive)
+  })
+
+  it('deriveBoardAssessment (Game Over-ytan) speglar samma tröghets-demotering och direction=lowered', () => {
+    const club = makeClub(ClubExpectation.WinLeague, 1)
+    const result = deriveBoardAssessment(club, 3, 2028, 12)
+    expect(result.newExpectation).toBe(ClubExpectation.ChallengeTop)
+    expect(result.direction).toBe('lowered')
+  })
+})
+
+/**
  * Förutsättningsfasen, steg 1 (Jacobs dom 2026-08-25). deriveBoardAssessment
  * återanvänder exakt samma stege som generatePreSeasonMessage — testar
  * bara riktning/skälsrad-härledningen, inte kedjan igen (redan täckt ovan).
@@ -213,7 +277,7 @@ describe('deriveBoardAssessment — Förutsättningsfasen steg 1', () => {
   }
 
   it('höjd ribba: direction=raised, skälsraden är den enda beläggbara (låst text)', () => {
-    const result = deriveBoardAssessment(makeClub(ClubExpectation.MidTable), 2, 2026)
+    const result = deriveBoardAssessment(makeClub(ClubExpectation.MidTable), 2, 2026, 12)
     expect(result.direction).toBe('raised')
     expect(result.previousExpectation).toBe(ClubExpectation.MidTable)
     expect(result.newExpectation).toBe(ClubExpectation.ChallengeTop)
@@ -221,28 +285,28 @@ describe('deriveBoardAssessment — Förutsättningsfasen steg 1', () => {
   })
 
   it('sänkt ribba: direction=lowered, skälsraden är den enda beläggbara (låst text)', () => {
-    const result = deriveBoardAssessment(makeClub(ClubExpectation.ChallengeTop), 10, 2026)
+    const result = deriveBoardAssessment(makeClub(ClubExpectation.ChallengeTop), 10, 2026, 12)
     expect(result.direction).toBe('lowered')
     expect(result.newExpectation).toBe(ClubExpectation.MidTable)
     expect(result.reasonLine).toBe('Ni tappade för mycket för att vi ska kunna kräva samma sak.')
   })
 
   it('oförändrad: ingen skälsrad — frånvaron av skäl är korrekt, inte en lucka', () => {
-    const result = deriveBoardAssessment(makeClub(ClubExpectation.MidTable), 6, 2026)
+    const result = deriveBoardAssessment(makeClub(ClubExpectation.MidTable), 6, 2026, 12)
     expect(result.direction).toBe('unchanged')
     expect(result.newExpectation).toBe(ClubExpectation.MidTable)
     expect(result.reasonLine).toBeUndefined()
   })
 
   it('golv/tak ger unchanged, inte raised/lowered, trots kvalificerande position', () => {
-    const atFloor = deriveBoardAssessment(makeClub(ClubExpectation.Survive), 12, 2026)
+    const atFloor = deriveBoardAssessment(makeClub(ClubExpectation.Survive), 12, 2026, 12)
     expect(atFloor.direction).toBe('unchanged')
-    const atCeiling = deriveBoardAssessment(makeClub(ClubExpectation.WinLeague), 1, 2026)
+    const atCeiling = deriveBoardAssessment(makeClub(ClubExpectation.WinLeague), 1, 2026, 12)
     expect(atCeiling.direction).toBe('unchanged')
   })
 
   it('season-fältet speglar det inskickade värdet', () => {
-    const result = deriveBoardAssessment(makeClub(ClubExpectation.MidTable), 6, 2031)
+    const result = deriveBoardAssessment(makeClub(ClubExpectation.MidTable), 6, 2031, 12)
     expect(result.season).toBe(2031)
   })
 })

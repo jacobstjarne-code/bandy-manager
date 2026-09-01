@@ -414,8 +414,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     const finChange = club.id === game.managedClubId
       ? club.finances - (game.seasonStartFinances ?? club.finances)
       : 0
-    const { title, body, newExpectation } = generatePreSeasonMessage(club, standings, lastPos, finChange)
-    updatedClubs[i] = { ...club, boardExpectation: newExpectation }
+    const { title, body, newExpectation, newConsecutiveExpectationMisses } = generatePreSeasonMessage(club, standings, lastPos, finChange)
+    updatedClubs[i] = { ...club, boardExpectation: newExpectation, consecutiveExpectationMisses: newConsecutiveExpectationMisses }
 
     if (club.id === game.managedClubId) {
       newInboxItems.push({
@@ -428,7 +428,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       } as InboxItem)
 
       boardAssessment = {
-        ...deriveBoardAssessment(club, lastPos, nextSeason),
+        ...deriveBoardAssessment(club, lastPos, nextSeason, updatedClubs.length),
         seasonAcknowledgment: BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER,
       }
     }

@@ -1,0 +1,74 @@
+fact_id: D044
+category: design_principles
+claim: "DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md (Jacobs mandat: trög demotering). generatePreSeasonMessage/deriveBoardAssessment delade tidigare identisk ≤2/≥10-ladderlogik (dubblett) och saknade en väg ner för en klubb som fastnar 'för bra för nedgradering (botten-3), inte bra nog för sin nuvarande höga förväntan' (t.ex. WinLeague, binärt — bara plats 1 'möter' den). Ny ENDA-källa recalibrateExpectationLadder (boardService.ts) lägger till en TREDJE väg ner: ny Club.consecutiveExpectationMisses-räknare (+1 vid verdict='failed', nollställs av met/exceeded), demoterar ETT steg när räknaren når TROGHET_THRESHOLD=2 — men BARA när positionsratcharna (upp-vid-topp2/ner-vid-botten3) inte redan ändrat idx samma säsong (ingen dubbel-demotering, botten-3-kollaps hanteras redan av sin egen omedelbara väg)."
+value:
+  TROGHET_THRESHOLD: 2
+unit: "säsonger i rad (heltal)"
+source:
+  type: measurement
+  doc: "docs/DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md; src/domain/services/boardService.ts (recalibrateExpectationLadder); src/domain/entities/Club.ts (consecutiveExpectationMisses); src/domain/services/__tests__/boardService.test.ts"
+  decided_by: jacob
+verified_at: 2026-09-01
+verified_by: code
+status: active
+related_facts: []
+invariants:
+  - "value.TROGHET_THRESHOLD > 0"
+  - "value.TROGHET_THRESHOLD < 5"
+notes: |
+  ── ENHETSNIVÅ: alla fem GODKÄNT NÄR-kriterier verifierade, gröna ────────
+  6 nya regressionstester (boardService.test.ts), trädar consecutive-
+  ExpectationMisses mellan säsongsanrop (till skillnad från befintliga
+  ladder-tester som medvetet INTE gör det, för att hålla dem oberoende):
+  1. WinLeague-klubb på 3:e plats demoteras till ChallengeTop efter EXAKT
+     två säsonger, inte en (miss=1 → oförändrad, miss=2 → demoterad+
+     nollställd).
+  2. En enda svacka demoterar inte (samma test, första hälften).
+  3. Botten-3-kollaps degraderar fortfarande direkt, ingen dubbel-demotering
+     samma säsong när båda vägarna skulle kunna trigga.
+  4. Re-promotion vid topp-2 nollställer räknaren (met/exceeded-vägen).
+  5. Survive-golvet strukturellt oåtkomligt för tröghet (currentIdx>0-gaten,
+     delad med den befintliga botten-3-logiken).
+  deriveBoardAssessment (Game Over-ytans direction/reasonLine) verifierad
+  att spegla SAMMA demotering.
+
+  ── INTEGRATIONSNIVÅ: H5-scenariot löses INTE av denna leverans ensam,
+     ärligt uppmätt ──────────────────────────────────────────────────────
+  scripts/h5-renommetak-matning-2026-09-01.ts omkörd (samma seed, samma
+  dominanta klubb som ursprungsfyndet): klubben AVSKEDAS I SÄSONG 2 (inte
+  säsong 5 som i det ursprungliga fyndet), boardPatience=14.5, zon
+  'ultimatum' — INNAN säsong 2 ens hunnit avslutas och ge tröghets-
+  recalibreringen sin ANDRA chans att fyra. Bekräftat med git stash: samma
+  utfall UTAN denna leverans också — INGEN REGRESSION, men INGEN LÖSNING
+  på integrationsnivå heller.
+
+  Rotorsak: `updateRunningBoardPatience` (boardService.ts:424) körs PER
+  OMGÅNG (inte bara vid säsongsslut), och en WinLeague-klubbs förlust-
+  multiplikator (`RUNNING_LOSS_EXPECTATION_MULTIPLIER[WinLeague]`, den
+  högsta av alla tiers) kan dränera patience till ultimatum-zonen INOM
+  en enda säsong — en helt SEPARAT, snabbare mekanism än den säsongsslut-
+  bundna ladder-demoteringen denna leverans bygger. Domens egen "self-
+  korrigerande via demoteringen"-argument (§"Varför det inte öppnar en
+  ny fälla") förutsatte implicit att demoteringen hinner verka INNAN
+  patience-utflödet gör det — den branten höll inte för DENNA klubbs
+  faktiska matchutfall (position 3-4 upprepade gånger, tillräckligt
+  många förluster/oavgjorda för att dränera patience snabbare än två
+  säsongers tröghetsfönster tillåter).
+
+  Detta ÄR bygget som beställdes (ladder-demoteringen, exakt spec:ad) —
+  men löser inte HELA H5-upplevelsen ensam. En fullständig lösning skulle
+  kräva att ANTINGEN patience-utflödets hastighet för WinLeague dämpas,
+  ELLER att tröghetsfönstret görs kortare/patience-medvetet — bägge är
+  designbeslut UTANFÖR denna doms scope, rapporterade här som öppen
+  uppföljning.
+
+  ── VEM GÖR VAD ────────────────────────────────────────────────────────
+  Code: byggt exakt enligt spec, mätt 1-5 (alla gröna på enhetsnivå),
+  ÄRLIGT rapporterat att integrationsnivån (full H5-sim) inte är löst av
+  detta ensamt — samma "verifiera innan claim, rapportera motsägelser"-
+  disciplin som match_revenue-fyndet tidigare i sessionen. tsc + 75 test
+  (boardService.test.ts) + build gröna.
+  Opus/Jacob: avgör om `RUNNING_LOSS_EXPECTATION_MULTIPLIER[WinLeague]`
+  ska dämpas, eller om H5-scenariots specifika matchutfall (mycket
+  förluster för en "dominant" klubb) är en annan, separat brist att
+  utreda (t.ex. matchmotorns styrkeberäkning för en +30-boostad trupp).

@@ -63,6 +63,18 @@ export interface Club {
   facilities: number          // 0-100
 
   boardExpectation: ClubExpectation
+  /**
+   * DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md: räknar SÄSONGER I RAD där
+   * expectationVerdictFromRating gav 'failed' mot boardExpectation — skild
+   * från consecutiveFailures (som räknar botten-2, den separata avskeds-
+   * vägen). "Under förväntan" är inte samma sak som "i nedflyttningszon".
+   * Nollställs av 'met'/'exceeded'. Vid TROGHET_THRESHOLD (boardService.ts)
+   * demoteras klubben ETT steg i EXPECTATION_LADDER och räknaren nollställs
+   * — löser en klubb som fastnar för bra för nedgradering (botten-3) men
+   * inte bra nog för sin nuvarande höga förväntan (t.ex. WinLeague, som
+   * binärt kräver 1:a plats). Default 0 för nya/gamla saves (migration).
+   */
+  consecutiveExpectationMisses?: number
   fanExpectation: ClubExpectation
   preferredStyle: ClubStyle
   hasArtificialIce: boolean   // förberedd för V0.2 vädersystem

@@ -568,12 +568,29 @@ const EXPECTATION_LADDER: ClubExpectation[] = [
   ClubExpectation.WinLeague,
 ]
 
-export function generatePreSeasonMessage(
-  club: Club,
-  standings: StandingRow[],
+/**
+ * DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md: en klubb som håller sig på 3:e-9:e
+ * plats kan fastna för alltid vid WinLeague (bara 1:a-plats "möter" den,
+ * botten-3 är den enda vägen ner) — sparkas i gapet innan den kollapsar dit.
+ * Antal säsonger i rad med 'failed'-verdict innan en tröghets-demotering
+ * (ETT steg, aldrig kaskad) — tunbart, mätt mot H5-scenariot (D044).
+ */
+export const TROGHET_THRESHOLD = 2
+
+/**
+ * ENDA källan för ladder-logiken — generatePreSeasonMessage och
+ * deriveBoardAssessment bar tidigare IDENTISK ≤2/≥10-kod (dubblett, en
+ * bugklass om de fick driva isär). Lägger till tröghets-demoteringen som en
+ * TREDJE väg ner, bara aktiv när positionsratcharna (upp/botten-3) INTE
+ * redan ändrat idx denna säsong — en genuin kollaps hanteras redan av
+ * botten-3-vägen omedelbart, tröghet fyller bara gapet däremellan (SKYDDAT:
+ * "ett steg per trigger", ingen dubbel-demotering samma säsong).
+ */
+function recalibrateExpectationLadder(
+  club: Pick<Club, 'boardExpectation' | 'consecutiveExpectationMisses'>,
   lastSeasonPosition: number,
-  financialChange: number,
-): { title: string; body: string; newExpectation: ClubExpectation } {
+  totalTeams: number,
+): { newExpectation: ClubExpectation; newConsecutiveExpectationMisses: number } {
   const currentIdx = EXPECTATION_LADDER.indexOf(club.boardExpectation)
   let newIdx = currentIdx
   if (lastSeasonPosition <= 2 && currentIdx < EXPECTATION_LADDER.length - 1) {
@@ -582,7 +599,31 @@ export function generatePreSeasonMessage(
   if (lastSeasonPosition >= 10 && currentIdx > 0) {
     newIdx = currentIdx - 1
   }
-  const newExpectation = EXPECTATION_LADDER[newIdx]
+
+  // isChampion=false är avsiktligt: rating=5 (position 1) ger alltid 'met'
+  // eller 'exceeded' oavsett isChampion, aldrig 'failed' — så räknarens
+  // nollställning påverkas inte av att AI-klubbars faktiska slutspelsutfall
+  // inte spåras här.
+  const rating = computeSeasonVerdictRating(club.boardExpectation, lastSeasonPosition, totalTeams)
+  const verdict = expectationVerdictFromRating(club.boardExpectation, rating, false)
+  const prevMisses = club.consecutiveExpectationMisses ?? 0
+  let newMisses = verdict === 'failed' ? prevMisses + 1 : 0
+
+  if (newIdx === currentIdx && newMisses >= TROGHET_THRESHOLD && currentIdx > 0) {
+    newIdx = currentIdx - 1
+    newMisses = 0
+  }
+
+  return { newExpectation: EXPECTATION_LADDER[newIdx], newConsecutiveExpectationMisses: newMisses }
+}
+
+export function generatePreSeasonMessage(
+  club: Club,
+  standings: StandingRow[],
+  lastSeasonPosition: number,
+  financialChange: number,
+): { title: string; body: string; newExpectation: ClubExpectation; newConsecutiveExpectationMisses: number } {
+  const { newExpectation, newConsecutiveExpectationMisses } = recalibrateExpectationLadder(club, lastSeasonPosition, standings.length)
 
   const expectationText = BOARD_EXPECTATION_TEXT
 
@@ -617,8 +658,7 @@ export function generatePreSeasonMessage(
     ? `Styrelsemöte — Nya förväntningar inför säsongen`
     : `Styrelsemöte inför säsongen`
 
-  void standings
-  return { title, body, newExpectation }
+  return { title, body, newExpectation, newConsecutiveExpectationMisses }
 }
 
 // Förutsättningsfasen, steg 1 (Jacobs dom 2026-08-25, texter låsta ordagrant
@@ -671,16 +711,11 @@ export function deriveBoardAssessment(
   club: Club,
   lastSeasonPosition: number,
   season: number,
+  totalTeams: number,
 ): Omit<BoardAssessment, 'seasonAcknowledgment'> {
   const currentIdx = EXPECTATION_LADDER.indexOf(club.boardExpectation)
-  let newIdx = currentIdx
-  if (lastSeasonPosition <= 2 && currentIdx < EXPECTATION_LADDER.length - 1) {
-    newIdx = currentIdx + 1
-  }
-  if (lastSeasonPosition >= 10 && currentIdx > 0) {
-    newIdx = currentIdx - 1
-  }
-  const newExpectation = EXPECTATION_LADDER[newIdx]
+  const { newExpectation } = recalibrateExpectationLadder(club, lastSeasonPosition, totalTeams)
+  const newIdx = EXPECTATION_LADDER.indexOf(newExpectation)
 
   const direction: BoardAssessment['direction'] =
     newIdx > currentIdx ? 'raised' : newIdx < currentIdx ? 'lowered' : 'unchanged'
