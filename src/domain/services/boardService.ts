@@ -636,12 +636,23 @@ export const BOARD_EXPECTATION_LEVEL_LABEL: Record<ClubExpectation, string> = {
 /**
  * Skälsraden Jacob gav sex av (tre per riktning). Regeln: "Raden väljs efter
  * vad som faktiskt drev ändringen — ligarörelser, egen försvagning, eller
- * föregående resultat." STEG 1 har bara föregående resultat att peka på
- * (ligarörelser väntar på steg 2: aiTransferLog + standingsSnapshot-trend,
- * ej byggda). Rad 1/3 per riktning citerar rivaler ("fältet bakom er
- * stärktes", "två lag som låg under er har rustat") — kan INTE beläggas
- * förrän steg 2 finns, medvetet outnyttjade. Rad 2 per riktning är den enda
- * som är sant grundad i placeringen ensam — den enda som används här.
+ * föregående resultat." STEG 1 har bara föregående resultat att peka på.
+ * Rad 1/3 per riktning citerar rivaler ("fältet bakom er stärktes", "två
+ * lag som låg under er har rustat") — kan INTE beläggas förrän steg 2
+ * finns, medvetet outnyttjade. Rad 2 per riktning är den enda som är sant
+ * grundad i placeringen ensam — den enda som används här.
+ *
+ * MASTER_OPPET.md inv-4-forutsattningsfasen-steg2-blocker-stale (2026-09-01):
+ * steg 2:s BÅDA datakällor finns nu (aiTransferLog — seasonEndProcessor.ts:1853,
+ * standingsSnapshot — seasonSummaryService.ts:719/847), så påståendet ovan om
+ * "ej byggda" var stale och rättat. Steg 2 är därmed TEKNISKT körbart, men de
+ * fullständiga sex raderna (bara rad 2/riktning finns som konstant här; rad
+ * 1/3 finns bara som paraffraserade citat i denna kommentar, inte verifierat
+ * ordagrant mot Jacobs ursprungliga chattbeslut) är inte tillräckligt
+ * dokumenterade i repot för att koda urvalslogiken utan att gissa på texten
+ * — se BOARD_EXPECTATION_LEVEL_LABEL-kommentaren ovan för hur STEG 1:s texter
+ * i stället citerades ordagrant. Nästa steg innan bygge: Opus bekräftar/
+ * återger de fyra saknade raderna ordagrant.
  */
 const RAISED_REASON_LINE = 'Ni har visat att ni kan mer. Då begär vi mer.'
 const LOWERED_REASON_LINE = 'Ni tappade för mycket för att vi ska kunna kräva samma sak.'
