@@ -26,6 +26,7 @@ import { CUP_FINAL_VICTORY_TEMPLATES } from '../../../domain/data/scenes/cupFina
 import { PIVOTAL_BEAT_IDS } from '../../../domain/data/portalBeats'
 import { hasManagedClubFutureFixture } from '../../utils/nextActionCue'
 import { applyContractDemandResolutions } from '../../../domain/services/contractDemandService'
+import { fixtureSeed, mulberry32 } from '../../../domain/utils/random'
 
 interface GetState {
   game: SaveGame | null
@@ -297,10 +298,10 @@ export function gameFlowActions(get: Get, set: Set) {
       // Determine display round: use league round number, not matchday
       // For cup-only rounds, show the most recently completed league round + context
       const displayRound = (() => {
-        if (managedFixture && !managedFixture.isCup) return managedFixture.roundNumber
+        if (managedFixture && !managedFixture.isCup && !managedFixture.isKnockout) return managedFixture.roundNumber
         // No managed fixture or it was a cup match: show latest completed league round
         const lastLeagueRound = resultGame.fixtures
-          .filter(f => f.status === 'completed' && !f.isCup && f.roundNumber <= 22)
+          .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout && f.roundNumber <= 22)
           .reduce((max, f) => Math.max(max, f.roundNumber), 0)
         return lastLeagueRound || result.roundPlayed || 0
       })()
@@ -417,7 +418,8 @@ export function gameFlowActions(get: Get, set: Set) {
         }
         if (decision === 'pressa') {
           // 15% chance of minor injury setback for field players
-          const injuryHit = p.position !== 'goalkeeper' && Math.random() < 0.15
+          const injuryRoll = mulberry32(fixtureSeed(`${game.id}:halftime:${game.lastCompletedFixtureId ?? game.currentMatchday ?? 0}:${p.id}`))()
+          const injuryHit = p.position !== 'goalkeeper' && injuryRoll < 0.15
           return {
             ...p,
             form: clamp(p.form + 10),
@@ -852,7 +854,7 @@ export function gameFlowActions(get: Get, set: Set) {
       const { game } = get()
       if (!game) return { retired: false, response: '' }
 
-      const rand = Math.random()
+      const rand = mulberry32(fixtureSeed(`${game.id}:retirement:${game.currentSeason}:${playerId}:${choice}`))()
       let retired: boolean
       if (choice === 'thank') retired = rand < 0.9
       else if (choice === 'respect') retired = rand < 0.5

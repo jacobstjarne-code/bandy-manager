@@ -14,6 +14,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Club } from '../../../domain/entities/Club'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import { playoffRoundName, getRoundLabel } from '../../../domain/roundLabel'
+import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
 
 /** Series score as V/F boxes + score string */
@@ -479,10 +480,8 @@ export function NextMatchCard({
             .slice(0, 3)
 
           const getResult = (f: typeof myRecent[0], clubId: string): 'W' | 'D' | 'L' => {
-            const isHome = f.homeClubId === clubId
-            if (f.homeScore === f.awayScore) return 'D'
-            const won = isHome ? f.homeScore > f.awayScore : f.awayScore > f.homeScore
-            return won ? 'W' : 'L'
+            const utfall = deriveUtfall(f, clubId)
+            return utfall === 'vunnet' ? 'W' : utfall === 'forlorat' ? 'L' : 'D'
           }
 
           const dotColor = (r: 'W' | 'D' | 'L') =>

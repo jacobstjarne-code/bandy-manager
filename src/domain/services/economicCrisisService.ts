@@ -13,7 +13,7 @@ export interface EconomicCrisisCheckResult {
 }
 
 /**
- * @cites game.sponsors, roundNumber
+ * @cites game.sponsors, matchday
  */
 export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): EconomicCrisisCheckResult {
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
@@ -40,8 +40,8 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): Econo
     // events — just remove from queue"). Samma init-logik som tidigare låg
     // i eventResolver.ts:s 'startEconomicCrisis'-gren, flyttad hit.
     const currentMatchday = game.fixtures
-      .filter(f => f.status === 'completed' && !f.isCup)
-      .reduce((m, f) => Math.max(m, f.roundNumber), 0)
+      .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
+      .reduce((m, f) => Math.max(m, f.matchday ?? 0), 0)
     return {
       event: {
         id: eventId,

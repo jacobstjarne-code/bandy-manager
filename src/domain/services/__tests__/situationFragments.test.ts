@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getOpponentStandingFragment } from '../situationFragments'
+import { getLastMeetingFragment, getOpponentStandingFragment } from '../situationFragments'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { Fixture } from '../../entities/Fixture'
 import { FixtureStatus } from '../../enums'
@@ -111,5 +111,27 @@ describe('getOpponentStandingFragment — early-season guard', () => {
     const game = makeGame({ fixtures: [...cupFixtures, makeScheduledFixture()] })
     // 5 completed but all are cup — should still be null
     expect(getOpponentStandingFragment(game)).toBeNull()
+  })
+
+  it('slutspels-fixtures räknas inte mot completedLeague', () => {
+    const playoffFixtures = Array.from({ length: 5 }, (_, i) =>
+      makeLeagueFixture({ id: `po${i}`, isKnockout: true, roundNumber: 23 + i, matchday: 30 + i })
+    )
+    const game = makeGame({ fixtures: [...playoffFixtures, makeScheduledFixture()] })
+    expect(getOpponentStandingFragment(game)).toBeNull()
+  })
+})
+
+describe('getLastMeetingFragment — slutresultat', () => {
+  it('beskriver en straffseger som vinst, inte delade poäng', () => {
+    const previous = makeLeagueFixture({
+      id: 'previous',
+      homeScore: 3,
+      awayScore: 3,
+      isKnockout: true,
+      penaltyResult: { home: 5, away: 4 },
+    })
+    const game = makeGame({ fixtures: [previous, makeScheduledFixture()] })
+    expect(getLastMeetingFragment(game)).toBe('Senast ni möttes vann ni efter straffar 3–3. Det glömmer de inte.')
   })
 })

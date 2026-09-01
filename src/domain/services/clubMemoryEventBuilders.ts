@@ -5,6 +5,7 @@ import { FixtureStatus } from '../enums'
 import { getRivalry } from '../data/rivalries'
 import { getRoundLabel } from '../roundLabel'
 import type { MemoryEvent, MemoryEventType } from './clubMemoryService'
+import { deriveUtfall } from './matchTypeAxes'
 
 // ── Fixture → MemoryEvent ────────────────────────────────────────────────────
 
@@ -22,8 +23,10 @@ export function buildEventFromFixture(
   const theirScore = isHome ? fixture.awayScore : fixture.homeScore
   const margin = myScore - theirScore
   const opponentId = isHome ? fixture.awayClubId : fixture.homeClubId
-  const won = margin > 0
-  const lost = margin < 0
+  const utfall = deriveUtfall(fixture, managedClubId)
+  const won = utfall === 'vunnet'
+  const lost = utfall === 'forlorat'
+  const decider = fixture.penaltyResult ? ' efter straffar' : fixture.overtimeResult ? ' efter förlängning' : ''
 
   const outcome: 'won' | 'lost' | 'neutral' = won ? 'won' : lost ? 'lost' : 'neutral'
 
@@ -40,8 +43,8 @@ export function buildEventFromFixture(
     const type: MemoryEventType = 'sm_final'
     const significance = won ? 95 : 85
     const text = won
-      ? `SM-guld! Vann finalen ${myScore}–${theirScore}.`
-      : `SM-final förlust ${myScore}–${theirScore}. Silvermedalj.`
+      ? `SM-guld! Vann finalen${decider} ${myScore}–${theirScore}.`
+      : `SM-finalförlust${decider} ${myScore}–${theirScore}. Silvermedalj.`
     return {
       type, season: fixture.season, matchday: fixture.matchday, roundLabel,
       text, emoji: won ? '🥇' : '🥈', significance,
@@ -55,8 +58,8 @@ export function buildEventFromFixture(
     const type: MemoryEventType = 'cup_final'
     const significance = won ? 80 : 70
     const text = won
-      ? `Cupfinalen vanns ${myScore}–${theirScore}. Cupen hemma!`
-      : `Cupfinalen förlorades ${myScore}–${theirScore}.`
+      ? `Cupfinalen vanns${decider} ${myScore}–${theirScore}. Cupen hemma!`
+      : `Cupfinalen förlorades${decider} ${myScore}–${theirScore}.`
     return {
       type, season: fixture.season, matchday: fixture.matchday, roundLabel,
       text, emoji: won ? '🏆' : '🥈', significance,
@@ -80,8 +83,17 @@ export function buildEventFromFixture(
     if (lost) {
       return {
         type: 'derby_result', season: fixture.season, matchday: fixture.matchday, roundLabel,
-        text: `Derby förlust ${myScore}–${theirScore}.`,
+        text: `Derbyförlust${decider} ${myScore}–${theirScore}.`,
         emoji: '⚔️', significance: 35,
+        outcome,
+        subjectClubId: opponentId,
+      }
+    }
+    if (won && decider) {
+      return {
+        type: 'derby_result', season: fixture.season, matchday: fixture.matchday, roundLabel,
+        text: `Derby vunnet${decider} ${myScore}–${theirScore}.`,
+        emoji: '⚔️', significance: 45,
         outcome,
         subjectClubId: opponentId,
       }

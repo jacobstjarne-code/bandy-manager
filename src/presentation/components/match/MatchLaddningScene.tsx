@@ -15,6 +15,7 @@ import { seededPick } from '../../../domain/utils/random'
 import { IllustrationPlaceholder } from '../illustration/IllustrationScene'
 import { getFarewellMatchPlayer } from '../../../domain/services/retirementService'
 import { FAREWELL_MATCH_ATMOSPHERE, FAREWELL_MATCH_KLACK } from '../../../domain/data/retirementText'
+import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
 // Assets confirmed in repo; others fall back to IllustrationPlaceholder.
 const OCCASION_ASSET: Partial<Record<LaddningOccasion, string>> = {
@@ -43,12 +44,8 @@ function getClubForm(game: SaveGame, clubId: string): FormResult[] {
     .sort((a, b) => b.matchday - a.matchday)
     .slice(0, 5)
   return completed.map(f => {
-    const isHome = f.homeClubId === clubId
-    const myScore = isHome ? f.homeScore : f.awayScore
-    const theirScore = isHome ? f.awayScore : f.homeScore
-    if (myScore > theirScore) return 'V'
-    if (myScore < theirScore) return 'F'
-    return 'O'
+    const utfall = deriveUtfall(f, clubId)
+    return utfall === 'vunnet' ? 'V' : utfall === 'forlorat' ? 'F' : 'O'
   }).reverse()
 }
 

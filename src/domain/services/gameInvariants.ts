@@ -42,7 +42,7 @@ function checkTableSum(game: SaveGame): InvariantFinding[] {
 function checkFixtureCount(game: SaveGame): InvariantFinding[] {
   const currentSeason = game.currentSeason
   // Exclude playoff fixtures (roundNumber > 22, matchday 27+) — they're not cup but not league either
-  const leagueFixtures = game.fixtures.filter(f => !f.isCup && f.season === currentSeason && f.roundNumber <= 22)
+  const leagueFixtures = game.fixtures.filter(f => !f.isCup && !f.isKnockout && f.season === currentSeason && f.roundNumber <= 22)
   if (leagueFixtures.length === 0) return []  // säsong ej igång ännu
 
   const findings: InvariantFinding[] = []

@@ -2,6 +2,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { SaveGame } from '../entities/SaveGame'
 import { MatchEventType } from '../enums'
 import { formatArenaName } from './arenaName'
+import { deriveUtfall } from '../services/matchTypeAxes'
 
 export function generateMatchStory(fixture: Fixture, game: SaveGame): string {
   const managedIsHome = fixture.homeClubId === game.managedClubId
@@ -9,6 +10,7 @@ export function generateMatchStory(fixture: Fixture, game: SaveGame): string {
   const oppClub = game.clubs.find(c => c.id !== game.managedClubId && (c.id === fixture.homeClubId || c.id === fixture.awayClubId))
   const myScore = managedIsHome ? fixture.homeScore : fixture.awayScore
   const theirScore = managedIsHome ? fixture.awayScore : fixture.homeScore
+  const utfall = deriveUtfall(fixture, game.managedClubId)
 
   function getPlayerName(playerId?: string): string {
     if (!playerId) return ''
@@ -36,16 +38,24 @@ export function generateMatchStory(fixture: Fixture, game: SaveGame): string {
 
   const sentences: string[] = []
 
-  if (myScore > theirScore) {
-    if (wasTrailing) {
+  if (utfall === 'vunnet') {
+    if (fixture.wentToPenalties || fixture.penaltyResult) {
+      sentences.push(`Seger efter straffar mot ${oppClub?.shortName ?? 'motståndet'}.`)
+    } else if (fixture.overtimeResult) {
+      sentences.push(`Seger efter förlängning mot ${oppClub?.shortName ?? 'motståndet'}.`)
+    } else if (wasTrailing) {
       sentences.push(`Seger efter vändning — ni låg under men tog två poäng till slut.`)
     } else if (myScore - theirScore >= 4) {
       sentences.push(`Övertygande seger mot ${oppClub?.shortName ?? 'motståndet'}.`)
     } else {
       sentences.push(`${myScore}–${theirScore} till slut mot ${oppClub?.shortName ?? 'motståndet'}.`)
     }
-  } else if (myScore === theirScore) {
+  } else if (utfall === 'oavgjort') {
     sentences.push(`Oavgjort — ni delade poängen med ${oppClub?.shortName ?? 'motståndet'}.`)
+  } else if (fixture.wentToPenalties || fixture.penaltyResult) {
+    sentences.push(`Förlust efter straffar mot ${oppClub?.shortName ?? 'motståndet'}.`)
+  } else if (fixture.overtimeResult) {
+    sentences.push(`Förlust efter förlängning mot ${oppClub?.shortName ?? 'motståndet'}.`)
   } else {
     sentences.push(`Förlust mot ${oppClub?.shortName ?? 'motståndet'} — ${myScore}–${theirScore}.`)
   }

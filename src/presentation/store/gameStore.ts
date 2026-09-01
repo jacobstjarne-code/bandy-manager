@@ -19,7 +19,7 @@ import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysis
 import { diffTactics } from '../utils/tacticData'
 import { loadSaveGame, migrateLocalStorageIfNeeded, saveSaveGame, snapshotSave } from '../../infrastructure/persistence/saveGameStorage'
 import { subscribeToSaveWrites } from '../../infrastructure/persistence/saveConflictChannel'
-import { applyFinanceChange } from '../../domain/services/economyService'
+import { applyFinanceChange, appendFinanceLog } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
 import { canStartBuild, startFacilityBuild, canDecommission, decommissionFacilityNode, getFinancingOptions, DECOMMISSION_COMMUNITY_STANDING_COST, FACILITY_NODE_DEFS, type FinancingContext } from '../../domain/services/facilityService'
 import type { FacilityFinancingMode } from '../../domain/entities/Community'
@@ -35,6 +35,7 @@ import { careerBreakActions } from './actions/careerBreakActions'
 import { computeCardStaleTracking } from '../../domain/services/portal/portalBuilder'
 import { safeStandingPosition } from '../../domain/services/standingsService'
 import { getCsPoliticianGrantBonus } from '../../domain/services/communityStandingScaling'
+import { fixtureSeed, mulberry32, seededPick } from '../../domain/utils/random'
 
 export type SaveActionResult = { success: boolean; error?: string }
 
@@ -642,8 +643,8 @@ export const useGameStore = create<GameState>()(
                 id: `inbox_sponsor_counter_walked_${original.id}`,
                 date: game.currentDate,
                 type: InboxItemType.BoardFeedback,
-                title: '[Opus]',
-                body: '[Opus]',
+                title: `${original.name} drog sig ur`,
+                body: `Ni krävde mer än de var beredda att ge. ${original.name} drog tillbaka erbjudandet — det finns inget kvar att ta.`,
                 isRead: false,
               }],
             },
@@ -701,7 +702,8 @@ export const useGameStore = create<GameState>()(
         let inboxTriggered = false
         const name = player.firstName
 
-        const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
+        const actionSeed = `${game.id}:${game.currentSeason}:${currentRound}:${playerId}:${choice}`
+        const pick = (arr: string[]) => seededPick(arr, actionSeed)
 
         if (choice === 'encourage') {
           moraleChange = 5
@@ -821,10 +823,10 @@ export const useGameStore = create<GameState>()(
             : ['Tränaren bekräftade att jag är med i planerna. Skönt.', 'Framtiden känns trygg här. Går att fokusera på spelet.'],
         }
         const narrativePool = narrativeTexts[choice] ?? []
-        const narrativeText = narrativePool[Math.floor(Math.random() * narrativePool.length)]
+        const narrativeText = narrativePool.length > 0 ? seededPick(narrativePool, `${actionSeed}:diary`) : undefined
         const narrativeEntry = narrativeText ? {
           season: game.currentSeason,
-          matchday: game.fixtures.filter(f => f.status === 'completed').length,
+          matchday: Math.max(0, ...game.fixtures.filter(f => f.status === 'completed').map(f => f.matchday)),
           text: narrativeText,
           type: 'storyline' as const,
         } : null
@@ -851,7 +853,7 @@ export const useGameStore = create<GameState>()(
         if (inboxTriggered) {
           updatedInbox = [
             {
-              id: `inbox_talk_${playerId}_${Date.now()}`,
+              id: `inbox_talk_${playerId}_${game.currentSeason}_${currentRound}`,
               date: game.currentDate,
               type: InboxItemType.ContractExpiring,
               title: `${player.firstName} ${player.lastName} vill ha besked`,
@@ -928,7 +930,17 @@ export const useGameStore = create<GameState>()(
         const club = game.clubs.find(c => c.id === game.managedClubId)
         if (!club || club.finances < 15000) return
         const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -15000)
-        set({ game: { ...game, clubs: updatedClubs, scoutBudget: (game.scoutBudget ?? 10) + 5 } })
+        set({ game: {
+          ...game,
+          clubs: updatedClubs,
+          scoutBudget: (game.scoutBudget ?? 10) + 5,
+          financeLog: appendFinanceLog(game.financeLog ?? [], {
+            round: game.currentMatchday ?? 0,
+            amount: -15000,
+            reason: 'scout',
+            label: 'Fem scoutronder',
+          }),
+        } })
       },
 
       recruitVolunteer: (name: string) => {
@@ -996,7 +1008,21 @@ export const useGameStore = create<GameState>()(
         // eller choiceId här. Kandidaten fångas därför med den parallella
         // infångaren, och läggs på seasonDecisionCandidates i exakt samma form
         // som eventResolver.ts:s händelsebaserade väg gör.
-        const gameAfter: SaveGame = { ...game, facilityState: newState, clubs: updatedClubs, localPolitician: updatedPol ?? game.localPolitician, mecenater: updatedMecenater }
+        const gameAfter: SaveGame = {
+          ...game,
+          facilityState: newState,
+          clubs: updatedClubs,
+          localPolitician: updatedPol ?? game.localPolitician,
+          mecenater: updatedMecenater,
+          financeLog: chosen.clubCost > 0
+            ? appendFinanceLog(game.financeLog ?? [], {
+                round: game.currentMatchday ?? 0,
+                amount: -chosen.clubCost,
+                reason: 'event',
+                label: `Anläggningsbygge: ${def.label}`,
+              })
+            : game.financeLog,
+        }
         const decisionCandidate = captureFacilityBuildDecision(game, gameAfter, nodeId, chosen.clubCost)
         set({
           game: decisionCandidate
@@ -1031,8 +1057,9 @@ export const useGameStore = create<GameState>()(
         const club = game.clubs.find(c => c.id === game.managedClubId)!
         const lastInteraction = game.politicianLastInteraction ?? {}
         const currentRound = game.fixtures
-          .filter(f => f.status === 'completed' && !f.isCup)
+          .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
           .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+        const rand = mulberry32(fixtureSeed(`${game.id}:politician:${action}:${game.currentSeason}:${currentRound}`))
 
         if (action === 'invite') {
           // Cooldown: 5 rounds between invites. Note: invite stored as round number (may be 0)
@@ -1044,7 +1071,7 @@ export const useGameStore = create<GameState>()(
           if (lastInteraction.inviteSeasonStart === game.currentSeason && invitesThisSeason >= 2) {
             return { success: false, message: 'Bjudit in maximalt antal gånger den här säsongen.' }
           }
-          let boost = 5 + Math.floor(Math.random() * 4)
+          let boost = 5 + Math.floor(rand() * 4)
           // Agenda-bonus. LÄST-FÖRE-INITIERING (PASTAENDEKARTAN, 2026-08-26):
           // safeStandingPosition ger null om klubben ännu inte spelat en
           // ligamatch denna säsong, istf en alfabetisk skuggposition.
@@ -1082,7 +1109,7 @@ export const useGameStore = create<GameState>()(
             return { success: false, message: 'Ni har redan presenterat budget denna säsong.' }
           }
           const positive = club.finances > 0
-          const relChange = positive ? 3 + Math.floor(Math.random() * 3) : -(3 + Math.floor(Math.random() * 3))
+          const relChange = positive ? 3 + Math.floor(rand() * 3) : -(3 + Math.floor(rand() * 3))
           const newRel = Math.max(0, Math.min(100, pol.relationship + relChange))
           const updatedPol = { ...pol, relationship: newRel }
           const msg = positive
@@ -1124,7 +1151,7 @@ export const useGameStore = create<GameState>()(
           // fast +10 000 kr, samma 70/71-linje som fyra andra system. Delar
           // nu kurva med kommunstödet (communityStandingScaling.ts).
           grant += getCsPoliticianGrantBonus(game.communityStanding ?? 50)
-          if (pol.agenda === 'savings' && Math.random() < 0.5) {
+          if (pol.agenda === 'savings' && rand() < 0.5) {
             const updatedPol2 = { ...pol, relationship: Math.max(0, pol.relationship - 3) }
             set({ game: { ...game, localPolitician: updatedPol2, politicianLastInteraction: { ...lastInteraction, apply: currentRound, applySeason: game.currentSeason } } })
             return { success: false, message: `${pol.name} avslår: "Vi måste vara restriktiva med bidrag just nu." Relation -3.` }
@@ -1134,6 +1161,12 @@ export const useGameStore = create<GameState>()(
           set({ game: {
             ...game,
             clubs: updatedClubs,
+            financeLog: appendFinanceLog(game.financeLog ?? [], {
+              round: game.currentMatchday ?? currentRound,
+              amount: grant,
+              reason: 'kommunstod',
+              label: `Extra kommunbidrag (${pol.name})`,
+            }),
             politicianLastInteraction: { ...lastInteraction, apply: currentRound, applySeason: game.currentSeason },
             inbox: [{
               id: `inbox_pol_grant_${game.currentSeason}`,
@@ -1367,7 +1400,7 @@ export const useNextRoundNumber = () => {
   if (!game) return null
   const next = game.fixtures
     .filter(f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && f.status === 'scheduled')
-    .sort((a, b) => a.roundNumber - b.roundNumber)[0]
+    .sort((a, b) => a.matchday - b.matchday)[0]
   return next?.roundNumber ?? null
 }
 

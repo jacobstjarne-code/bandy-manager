@@ -89,7 +89,11 @@ export function TransfersScreen() {
   const activeAssignment = game.activeScoutAssignment ?? null
   const scoutBudget = game.scoutBudget ?? 10
 
-  const currentRound = game.fixtures.filter(f => f.status === 'scheduled').sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 1
+  // Budfrister och talangspaning räknas i global matchordning. Cupens
+  // roundNumber börjar om på 1 och kunde därför flytta klockan bakåt.
+  const currentRound = game.currentMatchday ?? game.fixtures
+    .filter(f => f.status === 'completed')
+    .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0)
   const incomingBids = (game.transferBids ?? []).filter(b => b.direction === 'incoming' && b.status === 'pending')
 
   const availablePlayersForDot = game.players.filter(p =>

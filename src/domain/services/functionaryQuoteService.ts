@@ -2,6 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import { FUNCTIONARY_TEMPLATES } from '../data/functionaries'
 import { getFunctionaryPhase } from '../data/seasonPhases'
 import { nextManagedFixture } from './situationFragments'
+import { deriveUtfall } from './matchTypeAxes'
 
 export interface FunctionaryQuote {
   name: string
@@ -28,11 +29,9 @@ export function getFunctionaryQuote(
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
 
   if (lastFixture) {
-    const isHome = lastFixture.homeClubId === game.managedClubId
-    const myScore = isHome ? (lastFixture.homeScore ?? 0) : (lastFixture.awayScore ?? 0)
-    const theirScore = isHome ? (lastFixture.awayScore ?? 0) : (lastFixture.homeScore ?? 0)
-    if (myScore > theirScore) condition = 'afterWin'
-    else if (myScore < theirScore) condition = 'afterLoss'
+    const utfall = deriveUtfall(lastFixture, game.managedClubId)
+    if (utfall === 'vunnet') condition = 'afterWin'
+    else if (utfall === 'forlorat') condition = 'afterLoss'
   }
   // M30 (textaudit 2026-07-03): derby-repliker ("Hela byn är på läktaren",
   // "Orten vaknar till liv inför derbyt") är förberedande hype och ska visas

@@ -3,6 +3,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { FixtureStatus } from '../../../domain/enums'
 import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
+import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import {
   pickPreMatchContextText,
   type PreMatchTrigger,
@@ -58,13 +59,11 @@ function deriveContext(
   let lossStreak = 0
   for (let i = completedOwn.length - 1; i >= 0; i--) {
     const f = completedOwn[i]
-    const isManagedHome = f.homeClubId === managedClubId
-    const myScore = isManagedHome ? f.homeScore : f.awayScore
-    const theirScore = isManagedHome ? f.awayScore : f.homeScore
-    if (myScore > theirScore) {
+    const utfall = deriveUtfall(f, managedClubId)
+    if (utfall === 'vunnet') {
       if (lossStreak > 0) break
       winStreak++
-    } else if (myScore < theirScore) {
+    } else if (utfall === 'forlorat') {
       if (winStreak > 0) break
       lossStreak++
     } else {

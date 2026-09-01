@@ -10,6 +10,36 @@ Ingen rad här är en uppgift. Det är ett lager.
 
 ---
 
+## MASKINLÄSBAR — grind 2 (`SPEC_SANNINGSGRINDAR_2026-08-31.md`) läser detta block
+
+Skyddade textpool-exporter. `tests/grind/preservationGate.ts` greppar `src/`
+för varje namn — noll förekomster = bygget failar (bevarad text raderad, som
+`hallDebateData` i `d0d4d923`). Synka blocket när en pool läggs till eller får
+en yta. Bara textpooler — typ-only-exporterna längst ner hör inte hit.
+
+```bevarandelista
+LOBBY_PRESS
+diaryLine
+HALL_NEWS_POSITIVE
+HALL_NEWS_NEGATIVE
+HALL_NEWS_OUTDOOR_PRIDE
+BOARD_HALL_QUOTES
+KIOSK_FLAVORS
+LOTTERY_FLAVORS
+EVENT_FLAVORS
+STUDAN_FACTS
+SAVSTAAS_FACTS
+SUSPENSION_INCIDENT_MULTI_LINES
+SUSPENSION_RETURN_LINES
+DEADLINE_KAFFERUM_TEXT
+anniversaryRowDetail
+FACILITY_AVAILABLE_BEAT
+HALL_PROCESS_BEATS
+MUSTWIN_CRIT_TAGS
+```
+
+---
+
 ## VÄNTAR PÅ MEKANIK (blockerad av mer än en yta)
 
 **`LOBBY_PRESS`** — `landslagText.ts`

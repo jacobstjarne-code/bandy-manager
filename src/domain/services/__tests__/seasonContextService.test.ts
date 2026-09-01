@@ -59,6 +59,7 @@ function makeCompletedLeagueFixtures(count: number, managedClubId = 'managed') {
     awayClubId: `opp_${i}`,
     status: FixtureStatus.Completed,
     isCup: false,
+    isKnockout: false,
     homeScore: 2,
     awayScore: 1,
     events: [],
@@ -114,6 +115,19 @@ describe('getSeasonContext', () => {
       fixtures: makeCompletedLeagueFixtures(10),
       standings: [
         { clubId: 'managed', position: 6, played: 10, won: 4, drawn: 2, lost: 4, goalsFor: 15, goalsAgainst: 18, points: 10 },
+      ],
+    })
+    expect(getSeasonContext(game)).toBe('midTable')
+  })
+
+  it('does not count playoff matches as league progress', () => {
+    const fixtures = makeCompletedLeagueFixtures(10).map(f => ({ ...f, isKnockout: true })) as never[]
+    const game = makeGame({
+      currentSeason: 2,
+      seasonSummaries: [{ season: 1 } as never],
+      fixtures,
+      standings: [
+        { clubId: 'managed', position: 10, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0 },
       ],
     })
     expect(getSeasonContext(game)).toBe('midTable')

@@ -19,6 +19,7 @@ import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
 import { evaluateBoard, generateBoardMessage, updateRunningBoardPatience } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
+import { deriveUtfall } from '../../domain/services/matchTypeAxes'
 
 import type { AdvanceResult } from './advanceTypes'
 import { derivePreRoundContext } from './processors/preRoundContextProcessor'
@@ -306,7 +307,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   )
 
   // Update standings — exclude cup fixtures so they don't inflate played/goal counts
-  const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+  const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
   const standings = calculateStandings(game.league.teamIds, completedFixtures, game.pointDeductions)
 
   // Snapshot injury state before updates (for recovery notifications)
@@ -715,10 +716,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   if (justCompletedManagedFixture) {
     const isDerby = getRivalry(justCompletedManagedFixture.homeClubId, justCompletedManagedFixture.awayClubId) !== null
     if (isDerby) {
-      const managedIsHome = justCompletedManagedFixture.homeClubId === game.managedClubId
-      const managedScore = managedIsHome ? (justCompletedManagedFixture.homeScore ?? 0) : (justCompletedManagedFixture.awayScore ?? 0)
-      const oppScore = managedIsHome ? (justCompletedManagedFixture.awayScore ?? 0) : (justCompletedManagedFixture.homeScore ?? 0)
-      if (managedScore > oppScore) {
+      if (deriveUtfall(justCompletedManagedFixture, game.managedClubId) === 'vunnet') {
         const rivalClub = game.clubs.find(c => c.id === (justCompletedManagedFixture.homeClubId === game.managedClubId ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId))
         const beforeDerbyRipple = gameAfterRipples
         gameAfterRipples = applyRipples(gameAfterRipples, { type: 'big_derby_win', fixtureId: justCompletedManagedFixture.id })
@@ -2318,10 +2316,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       updatedGame.managerProfile?.coachRivalries?.length
     ) {
       const isHome = justCompletedManagedFixture.homeClubId === updatedGame.managedClubId
-      const mScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
-      const oScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
       const opponentClubId = isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId
-      let profileWithH2H = updateH2HRecord(updatedGame.managerProfile, opponentClubId, mScore, oScore)
+      const h2hOutcome = deriveUtfall(justCompletedManagedFixture, updatedGame.managedClubId)
+      let profileWithH2H = updateH2HRecord(
+        updatedGame.managerProfile,
+        opponentClubId,
+        h2hOutcome === 'vunnet' ? 1 : 0,
+        h2hOutcome === 'forlorat' ? 1 : 0,
+      )
       // Log rivalry once when a clear nemesis emerges (3+ losses, losses > wins)
       const existingRivalryLog = (profileWithH2H.diary ?? []).some(e => e.type === 'rivalry')
       if (!existingRivalryLog) {

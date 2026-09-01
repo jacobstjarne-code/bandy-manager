@@ -5,7 +5,7 @@ const TRAINING_ROUNDS = [3, 8, 14, 20]
 
 export function getTrainingScene(game: SaveGame): string | null {
   const round = game.fixtures
-    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+    .filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 
   if (!TRAINING_ROUNDS.includes(round)) return null

@@ -18,7 +18,7 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
   const managedId = game.managedClubId
 
   // Räkna omgångar kvar till deadline (omg 15)
-  const completedLeague = game.fixtures.filter(f => f.status === 'completed' && !f.isCup)
+  const completedLeague = game.fixtures.filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
   const currentRound = completedLeague.length > 0
     ? Math.max(...completedLeague.map(f => f.roundNumber))
     : 0

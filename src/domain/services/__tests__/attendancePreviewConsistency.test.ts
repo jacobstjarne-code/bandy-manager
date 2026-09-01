@@ -68,6 +68,27 @@ describe('buildRoundIncomeParamsForNextFixture — isHomeMatch läser den VERKLI
     const params = buildRoundIncomeParamsForNextFixture(noScheduled)
     expect(params.isHomeMatch).toBe(false)
   })
+
+  it('bär alla ekonomiska sidokostnader och bonusar som EkonomiTab behöver för samma prognos som motorn', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 1 })
+    const game: SaveGame = {
+      ...base,
+      volunteers: ['Testvolontär'],
+      sponsorNetworkMood: 73,
+      facilityState: { builtNodeIds: ['varmestuga'] },
+      clubLegends: [{
+        id: 'legend_1', playerId: 'p1', name: 'Legend', role: 'scout',
+        joinedSeason: 2024, seasonsAtClub: 8,
+      } as never],
+    }
+    const params = buildRoundIncomeParamsForNextFixture(game)
+    expect(params.volunteers).toEqual(['Testvolontär'])
+    expect(params.sponsorNetworkMood).toBe(73)
+    expect(params.builtNodeIds).toEqual(['varmestuga'])
+    expect(params.builtFacilityUpkeepCosts).toEqual([10000])
+    expect(params.legendSalaryCost).toBe(500)
+    expect(params.volunteerRoster).toHaveLength(4)
+  })
 })
 
 // ── ANSPRÅK 4, spak 3 / VÄG C (2026-08-31) ─────────────────────────────────

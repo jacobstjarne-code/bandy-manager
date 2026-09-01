@@ -1,5 +1,6 @@
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { Club } from '../../domain/entities/Club'
+import { deriveUtfall } from '../../domain/services/matchTypeAxes'
 
 export interface RecentMatchRating {
   rating: number
@@ -29,13 +30,8 @@ export function getRecentMatchRatings(
   return played.map(f => {
     const rating = f.report!.playerRatings[playerId]
     const isHome = f.homeClubId === managedClubId
-    const homeScore = f.homeScore
-    const awayScore = f.awayScore
-    const managedScore = isHome ? homeScore : awayScore
-    const opponentScore = isHome ? awayScore : homeScore
-    const result: 'V' | 'O' | 'F' =
-      managedScore > opponentScore ? 'V' :
-      managedScore < opponentScore ? 'F' : 'O'
+    const utfall = deriveUtfall(f, managedClubId)
+    const result: 'V' | 'O' | 'F' = utfall === 'vunnet' ? 'V' : utfall === 'forlorat' ? 'F' : 'O'
     const opponentId = isHome ? f.awayClubId : f.homeClubId
     const opponentShortName = clubMap.get(opponentId)?.shortName ?? '???'
     return { rating, result, opponentShortName }

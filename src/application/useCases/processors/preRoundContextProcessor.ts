@@ -26,10 +26,11 @@ export function derivePreRoundContext(
   seed?: number,
 ): PreRoundResult {
   const scheduledFixtures = game.fixtures.filter(f => f.status === FixtureStatus.Scheduled)
-  const scheduledLeagueFixtures = scheduledFixtures.filter(f => !f.isCup)
+  const scheduledLeagueFixtures = scheduledFixtures.filter(f => !f.isCup && !f.isKnockout)
+  const scheduledPlayoffFixtures = scheduledFixtures.filter(f => !!f.isKnockout && !f.isCup)
 
   // Season-end / playoff-start guard
-  if (scheduledLeagueFixtures.length === 0) {
+  if (scheduledLeagueFixtures.length === 0 && scheduledPlayoffFixtures.length === 0) {
     if (!game.playoffBracket) {
       return { kind: 'earlyReturn', result: handlePlayoffStart(game, seed) }
     }
@@ -52,8 +53,8 @@ export function derivePreRoundContext(
   )
 
   const isCupRound = roundFixtures.some(f => f.isCup)
-  const isPlayoffRound = !isCupRound && game.playoffBracket !== null && nextMatchday > 26
-  const currentLeagueRound = roundFixtures.find(f => !f.isCup && f.roundNumber <= 22)?.roundNumber ?? null
+  const isPlayoffRound = roundFixtures.some(f => !!f.isKnockout && !f.isCup)
+  const currentLeagueRound = roundFixtures.find(f => !f.isCup && !f.isKnockout)?.roundNumber ?? null
 
   // Second-pass detection (verbatim from roundProcessor)
   let aiCount = 0, aiCompletedCount = 0, hasManagedScheduled = false

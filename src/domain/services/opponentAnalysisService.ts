@@ -4,6 +4,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { StandingRow } from '../entities/SaveGame'
 import { PlayerPosition, TacticMentality, TacticPress } from '../enums'
 import { safeStandingPosition } from './standingsService'
+import { deriveUtfall } from './matchTypeAxes'
 
 export interface OpponentAnalysis {
   opponentClubId: string
@@ -215,12 +216,11 @@ export function generateBasicAnalysis(
   const recentResults = fixtures
     .filter(f => f.status === 'completed' &&
       (f.homeClubId === opponentClub.id || f.awayClubId === opponentClub.id))
-    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .sort((a, b) => b.matchday - a.matchday)
     .slice(0, 5)
 
   const recentWins = recentResults.filter(f => {
-    const isHome = f.homeClubId === opponentClub.id
-    return isHome ? f.homeScore > f.awayScore : f.awayScore > f.homeScore
+    return deriveUtfall(f, opponentClub.id) === 'vunnet'
   }).length
 
   const recentForm = recentResults.length === 0 ? 'Okänd form'

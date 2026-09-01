@@ -81,13 +81,13 @@ function cupIsDone(game: SaveGame): boolean {
 }
 
 function leagueHasStarted(game: SaveGame): boolean {
-  return game.fixtures.some(f => f.status === 'completed' && !f.isCup)
+  return game.fixtures.some(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
 }
 
 // Returns highest completed league roundNumber, or 0 if none played.
 export function currentLeagueRound(game: SaveGame): number {
   const rounds = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
+    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
     .map(f => f.roundNumber)
   if (rounds.length === 0) return 0
   return Math.max(...rounds)
@@ -96,7 +96,7 @@ export function currentLeagueRound(game: SaveGame): number {
 function leagueComplete(game: SaveGame): boolean {
   const id = game.managedClubId
   const count = game.fixtures.filter(
-    f => f.status === 'completed' && !f.isCup &&
+    f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
       (f.homeClubId === id || f.awayClubId === id)
   ).length
   return count >= 22

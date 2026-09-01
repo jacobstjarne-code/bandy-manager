@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { getPortalPhase, getFunctionaryPhase } from '../seasonPhases'
+import { getPortalPhase, getFunctionaryPhase, getCurrentLeagueRound } from '../seasonPhases'
+import type { SaveGame } from '../../entities/SaveGame'
 
 describe('getPortalPhase — B1 (2026-07-19)', () => {
   it('returnerar spectator/playoff oavsett rundnummer', () => {
@@ -21,5 +22,17 @@ describe('getPortalPhase — B1 (2026-07-19)', () => {
 
   it('playoff vinner över allt annat, även om rundnumret skulle ge vinterkris', () => {
     expect(getPortalPhase(14, 10, 12, true, false)).toBe('playoff')
+  })
+})
+
+describe('getCurrentLeagueRound', () => {
+  it('ignorerar slutspelsmatcher när ligarundan bestäms', () => {
+    const game = {
+      fixtures: [
+        { status: 'completed', isCup: false, isKnockout: false, roundNumber: 22 },
+        { status: 'completed', isCup: false, isKnockout: true, roundNumber: 27 },
+      ],
+    } as SaveGame
+    expect(getCurrentLeagueRound(game)).toBe(22)
   })
 })

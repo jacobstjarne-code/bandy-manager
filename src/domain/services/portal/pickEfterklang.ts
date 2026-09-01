@@ -59,7 +59,7 @@ function interpolate(text: string, vars: Record<string, string>): string {
 export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   // A3: gate på spelade ligamatcher (inte currentMatchday) — visa inte efterklang för tidigt
   const playedLeague = game.fixtures.filter(f =>
-    f.status === FixtureStatus.Completed && !f.isCup && f.season === game.currentSeason
+    f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout && f.season === game.currentSeason
   ).length
   if (playedLeague < 5) return []
 

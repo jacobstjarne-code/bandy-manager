@@ -12,6 +12,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import { getRivalry } from '../data/rivalries'
 import { DEADLINE_PORTAL_TEXT } from '../data/windowDeadlineText'
 import { getSeasonContext } from './seasonContextService'
+import { deriveUtfall } from './matchTypeAxes'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -50,10 +51,10 @@ function ordinalSv(n: number): string {
 
 export function getOpponentStandingFragment(game: SaveGame): string | null {
   const next = nextManagedFixture(game)
-  if (!next || next.isCup) return null
+  if (!next || next.isCup || next.isKnockout) return null
   const managedId = game.managedClubId
   const completedLeague = game.fixtures.filter(
-    f => f.status === 'completed' && !f.isCup &&
+    f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
       (f.homeClubId === managedId || f.awayClubId === managedId)
   ).length
   if (completedLeague < 5) return null
@@ -102,9 +103,15 @@ export function getLastMeetingFragment(game: SaveGame): string | null {
   const isHome = lastMeeting.homeClubId === managedId
   const scored = isHome ? lastMeeting.homeScore : lastMeeting.awayScore
   const conceded = isHome ? lastMeeting.awayScore : lastMeeting.homeScore
+  const outcome = deriveUtfall(lastMeeting, managedId)
+  const decided = lastMeeting.penaltyResult
+    ? ' efter straffar'
+    : lastMeeting.overtimeResult
+      ? ' efter förlängning'
+      : ''
 
-  if (scored > conceded) return `Senast ni möttes vann ni ${scored}–${conceded}. Det glömmer de inte.`
-  if (scored < conceded) return `Senast: ${conceded}–${scored} till dem. Revanschchans.`
+  if (outcome === 'vunnet') return `Senast ni möttes vann ni${decided} ${scored}–${conceded}. Det glömmer de inte.`
+  if (outcome === 'forlorat') return `Senast: ${conceded}–${scored} till dem${decided}. Revanschchans.`
   return `Senaste mötet ${scored}–${scored}. Delade poäng den gången.`
 }
 
@@ -129,7 +136,7 @@ export function getRivalryFragment(game: SaveGame): string | null {
 export function getPlayoffContextFragment(game: SaveGame): string | null {
   const managedId = game.managedClubId
   const completedLeague = game.fixtures.filter(
-    f => f.status === 'completed' && !f.isCup &&
+    f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
       (f.homeClubId === managedId || f.awayClubId === managedId)
   ).length
   if (completedLeague < 3) return null  // för tidigt
@@ -217,7 +224,7 @@ export function getInjuryImpactFragment(game: SaveGame): string | null {
 export function getSeasonPhaseFragment(game: SaveGame): string | null {
   const managedId = game.managedClubId
   const completedLeague = game.fixtures.filter(
-    f => f.status === 'completed' && !f.isCup &&
+    f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
       (f.homeClubId === managedId || f.awayClubId === managedId)
   ).length
 

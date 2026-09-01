@@ -2,6 +2,7 @@ import type { Journalist, JournalistPersona, JournalistMemory, InboxItem } from 
 import type { Fixture } from '../entities/Fixture'
 import { InboxItemType } from '../enums'
 import { pickHeadline } from '../data/journalistHeadlineStrings'
+import { deriveUtfall } from './matchTypeAxes'
 
 // ── Swedish journalist first + last names ─────────────────────────────────
 
@@ -149,8 +150,9 @@ export function generatePostMatchHeadline(
   const margin = myScore - theirScore
   const bigWin = margin >= 4
   const bigLoss = margin <= -4
-  const win = margin > 0
-  const loss = margin < 0
+  const utfall = deriveUtfall(fixture, managedClubId)
+  const win = utfall === 'vunnet'
+  const loss = utfall === 'forlorat'
 
   const { persona } = journalist
 

@@ -45,11 +45,26 @@ describe('collectSeasonDecisions — excludeStorylineTypes', () => {
 
   it('exclude-set påverkar inte icke-storyline-beslut (akademi, styrelse, etc)', () => {
     const game = makeGame({
-      players: [{ id: 'p1', clubId: 'club_home', promotedFromAcademy: true, promotionRound: 5, firstName: 'Nils', lastName: 'Berg', age: 17 }] as never,
+      players: [{ id: 'p1', clubId: 'club_home', promotedFromAcademy: true, promotionRound: 5, promotionSeason: 8, firstName: 'Nils', lastName: 'Berg', age: 17 }] as never,
       boardObjectiveHistory: [{ season: 8, objectiveId: 'topp6', result: 'met' }] as never,
     })
     const decisions = collectSeasonDecisions(game, new Set(['underdog_season']))
     expect(decisions.some(d => d.text.includes('Nils Berg'))).toBe(true)
     expect(decisions.some(d => d.text.includes('topp6'))).toBe(true)
+  })
+
+  it('tar inte med en akademiuppflyttning från en tidigare säsong', () => {
+    const game = makeGame({ players: [
+      { id: 'new_8', clubId: 'club_home', promotedFromAcademy: true, promotionRound: 5, promotionSeason: 8, firstName: 'Ny', lastName: 'Spelare', age: 17 },
+      { id: 'old_7', clubId: 'club_home', promotedFromAcademy: true, promotionRound: 5, promotionSeason: 7, firstName: 'Gammal', lastName: 'Spelare', age: 18 },
+    ] as never })
+    const text = collectSeasonDecisions(game).map(d => d.text).join(' ')
+    expect(text).toContain('Ny Spelare')
+    expect(text).not.toContain('Gammal Spelare')
+  })
+
+  it('visar styrelseuppdragets spelarnamn, inte rått objectiveId', () => {
+    const game = makeGame({ boardObjectiveHistory: [{ season: 8, objectiveId: 'cupRun', result: 'met' }] as never })
+    expect(collectSeasonDecisions(game)[0].text).toBe('Styrelseuppdrag: Gå långt i cupen — uppfyllt')
   })
 })

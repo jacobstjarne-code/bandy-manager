@@ -37,6 +37,7 @@ export function PlayoffIntroScreen() {
     .filter(f =>
       f.status === FixtureStatus.Completed &&
       !f.isCup &&
+      !f.isKnockout &&
       (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId)
     )
     .sort((a, b) => b.matchday - a.matchday)

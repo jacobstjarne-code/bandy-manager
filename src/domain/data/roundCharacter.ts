@@ -2,6 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import { isRivalryMatch } from './rivalries'
 import { getNextManagedFixture } from '../services/portal/triggers/matchTriggers'
+import { deriveUtfall } from '../services/matchTypeAxes'
 
 export type RoundCharacter =
   | 'standard'
@@ -13,10 +14,8 @@ export type RoundCharacter =
   | 'losing_streak'
 
 function outcome(f: Fixture, managedId: string): 'win' | 'loss' | 'draw' {
-  const isHome = f.homeClubId === managedId
-  const us = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
-  const them = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-  return us > them ? 'win' : us < them ? 'loss' : 'draw'
+  const utfall = deriveUtfall(f, managedId)
+  return utfall === 'vunnet' ? 'win' : utfall === 'forlorat' ? 'loss' : 'draw'
 }
 
 export function getRoundCharacter(game: SaveGame): RoundCharacter {

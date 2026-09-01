@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { generateQuickSummary } from '../presentation/screens/granska/helpers'
 import type { Fixture } from '../domain/entities/Fixture'
+import { MatchEventType } from '../domain/enums'
 
 function makeFixture(overrides: Partial<Fixture> = {}): Fixture {
   return {
@@ -63,5 +64,29 @@ describe('generateQuickSummary — GRANSKA DEL 4 steg 4 (2026-08-11/12)', () => 
   it('tavlingstyp:avsked, äkta oavgjort — tredje raden (2026-08-12)', () => {
     const out = generateQuickSummary(makeFixture({ homeScore: 2, awayScore: 2 }), true, [], 'avsked', undefined)
     expect(out).toBe('Sista matchen på hemmaisen. Oavgjort, och ingen brydde sig särskilt.')
+  })
+
+  it('default-prosan följer straffavgörandet i stället för råa 2–2', () => {
+    const fixture = makeFixture({ homeScore: 2, awayScore: 2, wentToPenalties: true, penaltyResult: { home: 4, away: 3 } })
+    expect(generateQuickSummary(fixture, true, [])).toContain('seger')
+    expect(generateQuickSummary(fixture, false, [])).toContain('förlust')
+  })
+
+  it('målskyttsraden tar bara med den hanterade klubbens spelare', () => {
+    const fixture = makeFixture({ events: [
+      { type: MatchEventType.Goal, clubId: 'home', playerId: 'ours', minute: 12 },
+      { type: MatchEventType.Goal, clubId: 'away', playerId: 'theirs', minute: 20 },
+    ] as never })
+    const players = [{ id: 'ours', lastName: 'Berg' }, { id: 'theirs', lastName: 'Borta' }] as never
+    const out = generateQuickSummary(fixture, true, players)
+    expect(out).toContain('Berg')
+    expect(out).not.toContain('Borta')
+  })
+
+  it('minut 55 är inte längre slutminuter; minut 84 är det', () => {
+    const at55 = makeFixture({ events: [{ type: MatchEventType.Goal, clubId: 'home', minute: 55 }] as never })
+    const at84 = makeFixture({ events: [{ type: MatchEventType.Goal, clubId: 'home', minute: 84 }] as never })
+    expect(generateQuickSummary(at55, true, [])).not.toContain('slutminuterna')
+    expect(generateQuickSummary(at84, true, [])).toContain('slutminuterna')
   })
 })

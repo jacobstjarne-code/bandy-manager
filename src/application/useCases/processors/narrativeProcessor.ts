@@ -7,6 +7,7 @@ import { getRivalry } from '../../../domain/data/rivalries'
 import { updateSupporterMembers, reevaluateFavoritePlayer } from '../../../domain/services/supporterService'
 import { classifyVictory, generateVictoryEcho } from '../../../domain/services/postVictoryNarrativeService'
 import { generatePreMatchOpponentQuote } from '../../../domain/services/opponentManagerService'
+import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
 export interface NarrativeResult {
   fanMood: number
@@ -41,8 +42,9 @@ export function processNarrative(
     const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
     const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
     const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
-    const won = (myScore ?? 0) > (theirScore ?? 0)
-    const lost = (myScore ?? 0) < (theirScore ?? 0)
+    const utfall = deriveUtfall(justCompletedManagedFixture, game.managedClubId)
+    const won = utfall === 'vunnet'
+    const lost = utfall === 'forlorat'
     const bigWin = won && (myScore ?? 0) >= (theirScore ?? 0) + 3
     const bigLoss = lost && (theirScore ?? 0) >= (myScore ?? 0) + 3
     // Oavgjort ger 0 (var +1) — en oavgjord match ska inte långsamt lyfta fanMood.
@@ -116,12 +118,11 @@ export function processNarrative(
   let rivalryHistory = { ...(game.rivalryHistory ?? {}) }
   if (justCompletedManagedFixture) {
     const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
-    const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
-    const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
     const opponentId = isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId
 
-    const won = myScore > theirScore
-    const lost = myScore < theirScore
+    const utfall = deriveUtfall(justCompletedManagedFixture, game.managedClubId)
+    const won = utfall === 'vunnet'
+    const lost = utfall === 'forlorat'
     const resultLabel: 'win' | 'loss' | 'draw' = won ? 'win' : lost ? 'loss' : 'draw'
 
     const prev = rivalryHistory[opponentId] ?? { wins: 0, losses: 0, draws: 0, currentStreak: 0 }

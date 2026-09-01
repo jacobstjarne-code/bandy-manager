@@ -16,6 +16,7 @@ import { FAREWELL_MATCH_STRINGS } from '../data/retirementText'
 import { getFarewellMatchPlayer } from './retirementService'
 import { COFFEE_ROOM_QUESTIONS, COFFEE_ROOM_QUESTION_SPEAKER, type CoffeeRoomAnswerOption } from '../data/coffeeRoomQuestionsText'
 import { PROVNING_AMBIENT, HALL_KLACK_BASE } from '../data/hallProvningData'
+import { deriveUtfall } from './matchTypeAxes'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -393,10 +394,8 @@ function pickCoffeeRoomResultReaction(game: SaveGame, seed: number): { line: Cof
     .sort((a, b) => b.matchday - a.matchday)[0]
   if (!lastFixture || seed % 2 !== 0) return null
 
-  const isHome = lastFixture.homeClubId === game.managedClubId
-  const myScore = isHome ? lastFixture.homeScore : lastFixture.awayScore
-  const theirScore = isHome ? lastFixture.awayScore : lastFixture.homeScore
-  const result: 'win' | 'loss' | 'draw' = myScore > theirScore ? 'win' : myScore < theirScore ? 'loss' : 'draw'
+  const utfall = deriveUtfall(lastFixture, game.managedClubId)
+  const result: 'win' | 'loss' | 'draw' = utfall === 'vunnet' ? 'win' : utfall === 'forlorat' ? 'loss' : 'draw'
   const pool = RESULT_EXCHANGES[result]
   const [speaker, text] = pool[Math.abs(seed * 5) % pool.length]
   return { line: { speaker, text } }
@@ -547,7 +546,7 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   }
 
   const round = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
+    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
   if (round === 0) return null
 
@@ -772,6 +771,7 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
       f =>
         f.status === 'completed' &&
         !f.isCup &&
+        !f.isKnockout &&
         (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId),
     )
     .sort((a, b) => b.matchday - a.matchday)

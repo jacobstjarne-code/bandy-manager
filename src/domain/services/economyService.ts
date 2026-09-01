@@ -2,7 +2,7 @@ import type { CommunityActivities, Sponsor, StandingRow, SaveGame } from '../ent
 import type { Club } from '../entities/Club'
 import type { Player } from '../entities/Player'
 import type { Fixture } from '../entities/Fixture'
-import { getActiveVolunteerBonus } from './volunteerService'
+import { generateVolunteerRoster, getActiveVolunteerBonus } from './volunteerService'
 import type { Volunteer } from './volunteerService'
 import { CUP_FINAL_VENUE } from '../data/specialDateStrings'
 import { getRivalry } from '../data/rivalries'
@@ -11,6 +11,7 @@ import { FixtureStatus, PlayerPosition } from '../enums'
 import { safeStandingPosition } from './standingsService'
 import { getOrtFreshnessFactor } from './communityRenewalService'
 import { getCsDiminishingFactor, getMatchRevenueRepDampFactor } from './communityStandingScaling'
+import { FACILITY_NODE_DEFS } from '../data/facilityNodes'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
 
@@ -395,6 +396,12 @@ export interface RoundIncomeParamsForNextFixture {
    *  klubben (economyProcessor.ts; AI-klubbar har en egen flat uppskattning),
    *  så den här är alltid den hanterade klubbens. */
   freshnessFactor: number
+  volunteers: string[]
+  volunteerRoster: Volunteer[]
+  sponsorNetworkMood: number | undefined
+  legendSalaryCost: number
+  builtFacilityUpkeepCosts: number[]
+  builtNodeIds: string[]
 }
 
 /**
@@ -420,6 +427,8 @@ export function buildRoundIncomeParamsForNextFixture(game: SaveGame): RoundIncom
     .filter(f => f.status === FixtureStatus.Scheduled && (f.homeClubId === managedId || f.awayClubId === managedId))
     .sort((a, b) => (a.matchday ?? 0) - (b.matchday ?? 0))[0]
   const rivalry = nextFixture ? getRivalry(nextFixture.homeClubId, nextFixture.awayClubId) : null
+  const volunteerSeedNum = managedId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + game.currentSeason * 17
+  const builtNodeIds = game.facilityState?.builtNodeIds ?? []
 
   return {
     isHomeMatch: nextFixture?.homeClubId === managedId,
@@ -435,6 +444,13 @@ export function buildRoundIncomeParamsForNextFixture(game: SaveGame): RoundIncom
     ),
     isFirstRound: nextFixture?.matchday === 1,
     freshnessFactor: club ? getOrtFreshnessFactor(game, club.reputation) : 1,
+    volunteers: game.volunteers ?? [],
+    volunteerRoster: generateVolunteerRoster(volunteerSeedNum, 4),
+    sponsorNetworkMood: game.sponsorNetworkMood,
+    legendSalaryCost: ((game.clubLegends ?? [])
+      .filter(l => l.role === 'youth_coach' || l.role === 'scout').length) * 500,
+    builtFacilityUpkeepCosts: builtNodeIds.map(id => FACILITY_NODE_DEFS.find(def => def.id === id)?.upkeepCost ?? 0),
+    builtNodeIds,
   }
 }
 
@@ -869,4 +885,3 @@ export function calcAttendance(params: {
   const base = Math.round(calcBase * attendanceRate * eventBonus * derbyBonus * annandagenBonus * christmasBonus * neutralEventFactor * weatherFactor * (journalistAttendanceModifier ?? 1.0))
   return Math.min(capCeiling, Math.max(50, base))
 }
-

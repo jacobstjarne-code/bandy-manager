@@ -332,6 +332,21 @@ button {
   font-family: var(--font-body);
 }
 
+/* Mobile interaction floor. Every standalone control must remain reliably
+   tappable even when a compact component supplies smaller inline padding.
+   Inline links are intentionally unaffected: min dimensions do not alter
+   their inline formatting context. */
+button,
+input,
+select,
+textarea,
+[role='button'] {
+  /* One CSS pixel of headroom prevents fractional layout/zoom rounding from
+     exposing a 43.5px hit box to the 44px runtime gate. */
+  min-width: 45px;
+  min-height: 45px;
+}
+
 button:focus:not(:focus-visible) { outline: none; }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
@@ -441,6 +456,8 @@ a {
   box-shadow: 0 2px 5px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
   transition: box-shadow 0.15s, transform 0.1s, filter 0.15s;
   border: none;
+  min-width: 45px;
+  min-height: 45px;
 }
 
 .btn:hover {
@@ -621,8 +638,8 @@ a {
 /* ── Icon-only buttons ── */
 .btn-icon {
   padding: 7px;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
 }
 .btn-icon-lg {
   padding: 11px;

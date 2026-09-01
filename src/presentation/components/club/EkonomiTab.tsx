@@ -8,6 +8,22 @@ import { LICENSE_ZONE_TEXT } from '../../../domain/services/licenseService'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import '../../styles/economy.css'
 
+const EMPTY_COMMUNITY = {
+  kiosk: 'none' as const,
+  lottery: 'none' as const,
+  bandyplay: false,
+  functionaries: false,
+  julmarknad: false,
+  bandySchool: false,
+  socialMedia: false,
+  vipTent: false,
+}
+
+function formatSignedFinance(amount: number): string {
+  if (amount === 0) return '0 kr'
+  return `${amount > 0 ? '+' : '−'}${formatFinanceAbs(Math.abs(amount))}`
+}
+
 interface EkonomiTabProps {
   club: Club
   game: SaveGame
@@ -37,8 +53,6 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
   const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
   const ca = game.communityActivities
-  const legendSalaryCost = ((game.clubLegends ?? [])
-    .filter(l => l.role === 'youth_coach' || l.role === 'scout').length) * 500
   // Preview-mönstret, "samma funktion, samma indata" (2026-08-26): läser
   // klubbens VERKLIGA nästa match istf ett hårdkodat isHomeMatch:true — se
   // buildRoundIncomeParamsForNextFixture-kommentaren i economyService.ts.
@@ -52,12 +66,18 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
     ...nextFixtureIncomeParams,
     standing: game.standings.find(s => s.clubId === game.managedClubId) ?? null,
     rand: () => 0.5,
-    legendSalaryCost,
   })
   const weeklySponsors = income.sponsorIncome
-  const weeklyIncome = income.weeklyBase + income.sponsorIncome + income.communityMatchIncome + income.communityRoundIncome
+  const variableCashflows = [
+    income.weeklyBase, income.sponsorIncome, income.matchRevenue,
+    income.communityMatchIncome, income.communityRoundIncome,
+    income.volunteerIncome, income.kommunBidrag,
+  ]
+  const projectedIncome = variableCashflows.reduce((sum, amount) => sum + Math.max(0, amount), 0)
+  const projectedCosts = income.weeklyWages + income.weeklyArenaCost + income.weeklyLegendCost + income.facilityUpkeep
+    + variableCashflows.reduce((sum, amount) => sum + Math.max(0, -amount), 0)
   const weeklyWages = income.weeklyWages
-  const netPerRound = weeklyIncome - weeklyWages
+  const netPerRound = income.netPerRound
   const actualMonthlyWages = weeklyWages * 4
   const communityTotal = income.communityMatchIncome + income.communityRoundIncome
   const activeMecenater = (game.mecenater ?? []).filter(m => m.isActive && m.contribution > 0)
@@ -91,16 +111,58 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   interface CommunityRow {
     icon: string; name: string; active: boolean; status: string
     income: string
+    incomeDelta?: number
     actionKey?: string; actionLevel?: string; actionCost?: number; actionLabel?: string
     upgradeKey?: string; upgradeLevel?: string; upgradeCost?: number; upgradeLabel?: string
     noAction?: boolean
   }
+  const currentCommunity = { ...EMPTY_COMMUNITY, ...ca }
+  const activityDelta = (
+    withActivity: Partial<typeof currentCommunity>,
+    withoutActivity: Partial<typeof currentCommunity>,
+  ) => {
+    const withIncome = calcRoundIncome({
+      club,
+      players: managedPlayers,
+      sponsors: game.sponsors ?? [],
+      communityActivities: { ...currentCommunity, ...withActivity },
+      fanMood: game.fanMood ?? 50,
+      ...nextFixtureIncomeParams,
+      standing: game.standings.find(s => s.clubId === game.managedClubId) ?? null,
+      rand: () => 0.5,
+    })
+    const withoutIncome = calcRoundIncome({
+      club,
+      players: managedPlayers,
+      sponsors: game.sponsors ?? [],
+      communityActivities: { ...currentCommunity, ...withoutActivity },
+      fanMood: game.fanMood ?? 50,
+      ...nextFixtureIncomeParams,
+      standing: game.standings.find(s => s.clubId === game.managedClubId) ?? null,
+      rand: () => 0.5,
+    })
+    return withIncome.netPerRound - withoutIncome.netPerRound
+  }
+  const activityIncome = (delta: number) => `Nästa omg: ${formatSignedFinance(delta)}`
+  const kioskDelta = activityDelta(
+    { kiosk: ca?.kiosk === 'upgraded' ? 'upgraded' : 'basic' },
+    { kiosk: 'none' },
+  )
+  const lotteryDelta = activityDelta(
+    { lottery: ca?.lottery === 'intensive' ? 'intensive' : 'basic' },
+    { lottery: 'none' },
+  )
+  const bandyplayDelta = activityDelta({ bandyplay: true }, { bandyplay: false })
+  const functionariesDelta = activityDelta({ functionaries: true }, { functionaries: false })
+  const bandySchoolDelta = activityDelta({ bandySchool: true }, { bandySchool: false })
+  const socialMediaDelta = activityDelta({ socialMedia: true }, { socialMedia: false })
+  const vipTentDelta = activityDelta({ vipTent: true }, { vipTent: false })
   const communityRows: CommunityRow[] = [
     {
       icon: '🌭', name: 'Bandykiosken',
       active: ca?.kiosk !== 'none' && !!ca?.kiosk,
       status: ca?.kiosk === 'upgraded' ? 'Uppgraderad' : ca?.kiosk === 'basic' ? 'Aktiv' : 'Ej startad',
-      income: ca?.kiosk === 'upgraded' ? '~8 500 netto/match' : ca?.kiosk === 'basic' ? '~3 500 netto/match' : '—',
+      income: activityIncome(kioskDelta), incomeDelta: kioskDelta,
       ...(ca?.kiosk === 'none' || !ca?.kiosk
         ? { actionKey: 'kiosk', actionLevel: 'basic', actionCost: 3000, actionLabel: 'Starta kiosk — 3 tkr' }
         : ca?.kiosk === 'basic'
@@ -111,7 +173,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       icon: '🎫', name: 'Föreningslotteriet',
       active: ca?.lottery !== 'none' && !!ca?.lottery,
       status: ca?.lottery === 'intensive' ? 'Intensiv' : ca?.lottery === 'basic' ? 'Aktiv' : 'Ej startad',
-      income: ca?.lottery === 'intensive' ? '~3 200 netto/omg' : ca?.lottery === 'basic' ? '~1 250 netto/omg' : '—',
+      income: activityIncome(lotteryDelta), incomeDelta: lotteryDelta,
       ...(ca?.lottery === 'none' || !ca?.lottery
         ? { actionKey: 'lottery', actionLevel: 'basic', actionCost: 1000, actionLabel: 'Starta lotteri — 1 tkr' }
         : ca?.lottery === 'basic'
@@ -122,7 +184,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       icon: '⛸️', name: 'Bandyskola för barn',
       active: !!ca?.bandyplay,
       status: ca?.bandyplay ? 'Aktiv' : 'Ej startad',
-      income: ca?.bandyplay ? '~1 500/match' : '—',
+      income: activityIncome(bandyplayDelta), incomeDelta: bandyplayDelta,
       ...(!ca?.bandyplay
         ? { actionKey: 'bandyplay', actionLevel: 'active', actionCost: 0, actionLabel: 'Starta — gratis' }
         : {}),
@@ -131,7 +193,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       icon: '🏋️', name: 'Funktionärer',
       active: !!ca?.functionaries,
       status: ca?.functionaries ? 'Aktiv' : 'Ej rekryterade',
-      income: ca?.functionaries ? '~4 000 besparing/match' : '—',
+      income: activityIncome(functionariesDelta), incomeDelta: functionariesDelta,
       ...(!ca?.functionaries
         ? { actionKey: 'functionaries', actionLevel: 'active', actionCost: 2000, actionLabel: 'Rekrytera — 2 tkr' }
         : {}),
@@ -140,16 +202,14 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       icon: '🎄', name: 'Julmarknad',
       active: !!ca?.julmarknad,
       status: ca?.julmarknad ? 'Genomförd ✓' : 'Väntar (omg 8–12)',
-      income: ca?.julmarknad ? 'Klar' : '~8–18 tkr (engång)',
-      ...(!ca?.julmarknad
-        ? { actionKey: 'julmarknad', actionLevel: 'active', actionCost: 2000, actionLabel: 'Anordna — 2 tkr' }
-        : {}),
+      income: ca?.julmarknad ? 'Genomförd' : 'Kommer som vinterbeslut',
+      noAction: true,
     },
     {
       icon: '🏫', name: 'Bandyskola',
       active: !!ca?.bandySchool,
       status: ca?.bandySchool ? 'Aktiv' : 'Ej startad',
-      income: ca?.bandySchool ? '~1 000/omg + ungdom' : '—',
+      income: activityIncome(bandySchoolDelta), incomeDelta: bandySchoolDelta,
       ...(!ca?.bandySchool
         ? { actionKey: 'bandySchool', actionLevel: 'active', actionCost: 5000, actionLabel: 'Starta bandyskola — 5 tkr' }
         : {}),
@@ -158,7 +218,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       icon: '📱', name: 'Sociala medier',
       active: !!ca?.socialMedia,
       status: ca?.socialMedia ? 'Aktiv' : 'Ej startad',
-      income: ca?.socialMedia ? '+reputation' : '—',
+      income: `${activityIncome(socialMediaDelta)} · rykte`, incomeDelta: socialMediaDelta,
       ...(!ca?.socialMedia
         ? { actionKey: 'socialMedia', actionLevel: 'active', actionCost: 2000, actionLabel: 'Starta konto — 2 tkr' }
         : {}),
@@ -167,7 +227,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       icon: '🍺', name: 'VIP-tält',
       active: !!ca?.vipTent,
       status: ca?.vipTent ? 'Aktiv' : club.facilities > 60 ? 'Ej startad' : 'Kräver anläggning > 60',
-      income: ca?.vipTent ? '~10 000/match' : '—',
+      income: activityIncome(vipTentDelta), incomeDelta: vipTentDelta,
       ...(!ca?.vipTent && club.facilities > 60
         ? { actionKey: 'vipTent', actionLevel: 'active', actionCost: 10000, actionLabel: 'Sätt upp VIP-tält — 10 tkr' }
         : {}),
@@ -195,22 +255,25 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           </div>
         )}
         <div className="eco-row-mb">
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Intäkter / omg</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatFinanceAbs(weeklyIncome)}</span>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Beräknade intäkter nästa omg</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatFinanceAbs(projectedIncome)}</span>
         </div>
         <div className="eco-row-mb">
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lönekostnader / omg</span>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Beräknade kostnader nästa omg</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: wagePressure ? 'var(--danger)' : 'var(--text-primary)' }}>
-            -{formatFinanceAbs(weeklyWages)}
+            −{formatFinanceAbs(projectedCosts)}
           </span>
         </div>
+        <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, lineHeight: 1.4 }}>
+          {nextFixtureIncomeParams.isHomeMatch ? 'Hemmatch' : 'Bortamatch eller matchfri omgång'} · inkluderar match, sponsorer, aktiviteter, löner och drift.
+        </p>
         {wagePressure && (
           <p style={{ fontSize: 11, color: 'var(--danger)', marginBottom: 6 }}>
             Lönekostnader överstiger lönebudget ({formatSalary(club.wageBudget)})
           </p>
         )}
         <div className="eco-row-top-border">
-          <span style={{ fontSize: 13, fontWeight: 700 }}>Netto / omg</span>
+          <span style={{ fontSize: 13, fontWeight: 700 }}>Netto nästa omg</span>
           <span style={{ fontSize: 14, fontWeight: 800, color: netPerRound >= 0 ? 'var(--success)' : 'var(--danger)' }}>
             {netPerRound >= 0 ? '+' : ''}{formatFinanceAbs(netPerRound)}
           </span>
@@ -225,12 +288,17 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           {licenseZoneText}
         </p>
         {communityStanding !== undefined && (
-          <div className="eco-row-total" style={{ paddingTop: 6, marginTop: 6 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Lokal ställning</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: communityStanding > 70 ? 'var(--success)' : communityStanding > 40 ? 'var(--text-primary)' : 'var(--danger)' }}>
-              {communityStanding}/100
-            </span>
-          </div>
+          <>
+            <div className="eco-row-total" style={{ paddingTop: 6, marginTop: 6 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Lokal förankring</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: communityStanding > 70 ? 'var(--success)' : communityStanding > 40 ? 'var(--text-primary)' : 'var(--danger)' }}>
+                {communityStanding}/100
+              </span>
+            </div>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>
+              Starkare förankring kan ge större publik och bättre kommunbidrag.
+            </p>
+          </>
         )}
       </SectionCard>
 
@@ -327,7 +395,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                 <span style={{ fontSize: 13, opacity: row.active ? 1 : 0.6 }}>{row.icon} {row.name}</span>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{row.status}</span>
               </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: row.active ? 'var(--success)' : 'var(--text-muted)' }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: row.incomeDelta === undefined ? 'var(--text-muted)' : row.incomeDelta > 0 ? 'var(--success)' : row.incomeDelta < 0 ? 'var(--danger)' : 'var(--text-muted)' }}>
                 {row.income}
               </span>
             </div>
@@ -353,10 +421,10 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
             )}
           </div>
         ))}
-        {communityTotal > 0 && (
+        {communityTotal !== 0 && (
           <div className="eco-row-top-border" style={{ paddingTop: 10, marginTop: 2 }}>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Totalt / hemmamatch</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--success)' }}>~+{Math.round(communityTotal / 1000)} tkr</span>
+            <span style={{ fontSize: 13, fontWeight: 700 }}>Aktivitetsnetto nästa omg</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: communityTotal > 0 ? 'var(--success)' : 'var(--danger)' }}>{formatSignedFinance(communityTotal)}</span>
           </div>
         )}
       </SectionCard>
@@ -376,10 +444,10 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           {kommunBidrag > 0 && (
             <div>
               <div className="eco-mecenat-row">
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag{politician ? ` — ${politician.name}` : ''}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatFinanceAbs(kommunBidrag)}/sä</span>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Beräknat säsongsbidrag{politician ? ` — ${politician.name}` : ''}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatFinanceAbs(kommunBidrag)}</span>
               </div>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>Baseras på lokal ställning och ungdomsverksamhet.</p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>Omräknas och betalas vid säsongsslutet utifrån lokal förankring, ungdomsverksamhet och relation.</p>
             </div>
           )}
           {onNavigateTab && (

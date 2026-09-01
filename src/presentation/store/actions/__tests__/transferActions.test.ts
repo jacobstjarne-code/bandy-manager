@@ -197,6 +197,21 @@ describe('renewContract — O5 kraft 1, löneinflation med rykte', () => {
   })
 })
 
+describe('seekSponsor — kostnaden syns i transaktionshistoriken', () => {
+  it('loggar 2,5 tkr även när sökningen inte hittar någon sponsor', () => {
+    const store = makeStore(makeGame({ sponsors: [], financeLog: [] }))
+    const actions = transferActions(store.get, store.set)
+
+    actions.seekSponsor()
+
+    expect(store.getGame()?.financeLog).toContainEqual(expect.objectContaining({
+      amount: -2500,
+      reason: 'event',
+      label: 'Sponsorsökning',
+    }))
+  })
+})
+
 // Framgångskurvan steg 3, del 1 (DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 3):
 // kontraktsförlängningar loggades tidigare inte alls till financeLog —
 // investSurplus (boardObjectiveService.ts) kan nu bara mäta verklig

@@ -26,12 +26,12 @@ export function PhaseOverlay({ phase, onContinue }: PhaseOverlayProps) {
           {isOT ? 'FÖRLÄNGNING' : 'STRAFFAR'}
         </h2>
         <p style={{ fontSize: 15, color: 'var(--text-secondary)', marginBottom: 4 }}>
-          {isOT ? 'Oavgjort efter 60 minuter.' : 'Fortfarande oavgjort efter förlängning.'}
+          {isOT ? 'Oavgjort efter 90 minuter.' : 'Fortfarande oavgjort efter förlängning.'}
         </p>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
           {isOT ? 'Ytterligare 2 × 15 minuter spelas.' : 'Nu avgör straffarna!'}
         </p>
-        <button onClick={onContinue} className="h-micro" style={{
+        <button type="button" onClick={onContinue} className="h-micro" style={{
           width: '100%', padding: '13px 0',
           background: isOT ? 'var(--accent)' : 'var(--danger)',
           color: isOT ? 'var(--bg)' : 'var(--text-on-dark)',

@@ -8,6 +8,7 @@ import { bidReceivedEvent } from '../../../domain/services/events/eventFactories
 import { resolveEvent } from '../../../domain/services/eventService'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { formatSalary } from '../../../domain/format'
+import { fixtureSeed, seededPick } from '../../../domain/utils/random'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -198,14 +199,16 @@ export function transferActions(get: Get, set: Set) {
       const otherClubs = game.clubs.filter(c => c.id !== game.managedClubId)
       if (otherClubs.length === 0) return { success: false, error: 'Inga motståndarklubbar tillgängliga' }
 
-      const buyingClub = otherClubs[Math.floor(Math.random() * otherClubs.length)]
+      const existingListings = (game.transferBids ?? []).filter(b => b.playerId === playerId).length
+      const listingSeed = `${game.id}:${game.currentSeason}:${playerId}:${existingListings}`
+      const buyingClub = seededPick(otherClubs, listingSeed)
       const marketVal = player.marketValue ?? 50000
       const offerAmount = Math.round(marketVal * 0.9 / 5000) * 5000
       const offeredSalary = Math.round(player.salary * 1.1 / 1000) * 1000
       // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday.
-      const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.matchday ?? 0))
+      const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout).map(f => f.matchday ?? 0))
       const bid = {
-        id: `bid_sell_${Date.now()}_${playerId}`,
+        id: `bid_sell_${fixtureSeed(listingSeed)}_${playerId}`,
         playerId,
         buyingClubId: buyingClub.id,
         sellingClubId: game.managedClubId,
@@ -313,15 +316,21 @@ export function transferActions(get: Get, set: Set) {
       const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
       if (activeSponsors.length >= maxSponsors) return { success: false, error: 'Alla sponsorplatser är fyllda' }
       // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday.
-      const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.matchday ?? 0))
+      const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout).map(f => f.matchday ?? 0))
       const rand = Math.random.bind(Math)
       const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -SEEK_COST)
+      const financeLog = appendFinanceLog(game.financeLog ?? [], {
+        round: game.currentMatchday ?? currentRound,
+        amount: -SEEK_COST,
+        reason: 'event',
+        label: 'Sponsorsökning',
+      })
       const sponsor = generateSponsorOffer(club.reputation, activeSponsors.length, maxSponsors, currentRound, rand)
       if (!sponsor) {
-        set({ game: { ...game, clubs: updatedClubs } })
+        set({ game: { ...game, clubs: updatedClubs, financeLog } })
         return { success: false, error: 'Ingen sponsor intresserad den här gången' }
       }
-      set({ game: { ...game, clubs: updatedClubs, sponsors: [...(game.sponsors ?? []), sponsor] } })
+      set({ game: { ...game, clubs: updatedClubs, sponsors: [...(game.sponsors ?? []), sponsor], financeLog } })
       return { success: true, sponsor }
     },
   }

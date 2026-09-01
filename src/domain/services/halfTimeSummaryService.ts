@@ -43,6 +43,7 @@ export function generateHalfTimeSummary(game: SaveGame): HalfTimeSummary {
     f => (f.homeClubId === managedClubId || f.awayClubId === managedClubId) &&
          f.status === 'completed' &&
          !f.isCup &&
+         !f.isKnockout &&
          f.roundNumber <= 11
   )
 

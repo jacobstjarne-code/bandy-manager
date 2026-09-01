@@ -65,7 +65,9 @@ export function deriveMatchTypeAxes(
  */
 export function deriveUtfall(fixture: Fixture, managedClubId: string): Utfall {
   const isHome = fixture.homeClubId === managedClubId
-  if (fixture.wentToPenalties && fixture.penaltyResult) {
+  // penaltyResult är i sig den starkaste sanningen. Äldre sparfiler och
+  // vissa test/dev-fixtures kan sakna den redundanta wentToPenalties-flaggan.
+  if (fixture.penaltyResult) {
     if (fixture.penaltyResult.home === fixture.penaltyResult.away) return 'oavgjort'
     const penaltyWinnerIsHome = fixture.penaltyResult.home > fixture.penaltyResult.away
     return penaltyWinnerIsHome === isHome ? 'vunnet' : 'forlorat'

@@ -8,6 +8,7 @@ import { computePlayerRatings } from '../../utils/matchRatings'
 import { PAUSSNACK, PAUSSNACK_EYEBROW, PAUSSNACK_PREVIEW_LABEL } from '../../../domain/data/matchLiveText'
 import type { MatchSituation } from '../../../domain/data/matchLiveText'
 import { PAUSE_LEAN_FACTOR } from '../../../domain/services/matchCore'
+import { seededPick } from '../../../domain/utils/random'
 
 export type PauseLean = 'push' | 'calm' | 'hold'
 
@@ -131,7 +132,7 @@ export function HalftimeModal({
     'Det blir andra halvlek hur som helst.',
   ]
   const pool = diff >= 2 ? HT_WIN_BIG : diff === 1 ? HT_WIN_ONE : diff === 0 ? HT_DRAW : diff === -1 ? HT_DOWN_ONE : HT_DOWN_BIG
-  const analysis = pool[Math.floor(Math.random() * pool.length)]
+  const analysis = seededPick(pool, `${fixture.id}:halftime:${managedGoals}-${oppGoals}`)
 
   const currentTactic = managedIsHome ? homeLineup.tactic : awayLineup.tactic
   const mentality = htMentality ?? currentTactic.mentality

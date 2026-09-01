@@ -1,6 +1,25 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { FACILITY_NODE_DEFS } from './facilityService'
 
+function objectiveDisplayName(game: SaveGame, objectiveId: string): string {
+  const liveLabel = game.boardObjectives?.find(o => o.id === objectiveId)?.label
+  if (liveLabel) return liveLabel
+  const known: Record<string, string> = {
+    balanceBudget: 'Håll ekonomin i balans',
+    growFinances: 'Öka klubbkassan',
+    investSurplus: 'Investera överskottet',
+    playHomegrown: 'Spela egenfostrade',
+    improveYouth: 'Utveckla akademin',
+    growFanbase: 'Väx supporterbasen',
+    reduceInjuries: 'Minska skadorna',
+    cupRun: 'Gå långt i cupen',
+    topHalf: 'Sluta på övre halvan',
+    beatRival: 'Besegra rivalen',
+    avoidRelegation: 'Undvik nedflyttning',
+  }
+  return known[objectiveId] ?? objectiveId.replace(/([a-zåäö])([A-ZÅÄÖ])/g, '$1 $2').toLowerCase()
+}
+
 export interface SeasonDecision {
   icon: string
   text: string
@@ -26,7 +45,8 @@ export function collectSeasonDecisions(game: SaveGame, excludeStorylineTypes?: S
   const promoted = game.players.filter(p =>
     p.clubId === game.managedClubId &&
     p.promotedFromAcademy &&
-    p.promotionRound !== undefined
+    p.promotionRound !== undefined &&
+    (p.promotionSeason === season || (p.promotionSeason === undefined && p.id.endsWith(`_${season}`)))
   )
   for (const p of promoted) {
     decisions.push({
@@ -48,7 +68,7 @@ export function collectSeasonDecisions(game: SaveGame, excludeStorylineTypes?: S
     if (obj.season === season) {
       decisions.push({
         icon: obj.result === 'met' ? '✅' : '❌',
-        text: `Styrelseuppdrag: ${obj.objectiveId} — ${obj.result === 'met' ? 'uppfyllt' : 'misslyckat'}`,
+        text: `Styrelseuppdrag: ${objectiveDisplayName(game, obj.objectiveId)} — ${obj.result === 'met' ? 'uppfyllt' : 'misslyckat'}`,
       })
     }
   }

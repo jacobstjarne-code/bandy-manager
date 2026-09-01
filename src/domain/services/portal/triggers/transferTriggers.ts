@@ -41,7 +41,7 @@ export function hasOpenBids(game: SaveGame): boolean {
 export function transferDeadlineWithin3Rounds(game: SaveGame): boolean {
   const currentRound = (() => {
     const completedLeague = game.fixtures.filter(
-      f => f.status === 'completed' && !f.isCup
+      f => f.status === 'completed' && !f.isCup && !f.isKnockout
     )
     return completedLeague.length > 0
       ? Math.max(...completedLeague.map(f => f.roundNumber))

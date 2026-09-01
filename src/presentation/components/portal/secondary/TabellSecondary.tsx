@@ -11,7 +11,7 @@ function getContextLine(game: SaveGame): string | null {
   if (!standing) return null
 
   const completedLeague = game.fixtures.filter(
-    f => f.status === 'completed' && !f.isCup &&
+    f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
       (f.homeClubId === managedId || f.awayClubId === managedId)
   ).length
 
@@ -52,7 +52,7 @@ export function TabellSecondary({ game }: CardRenderProps) {
   const managedId = game.managedClubId
 
   const hasLeagueStarted = game.fixtures.some(
-    f => f.status === 'completed' && !f.isCup
+    f => f.status === 'completed' && !f.isCup && !f.isKnockout
   )
   if (!hasLeagueStarted) return null
 

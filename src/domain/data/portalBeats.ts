@@ -59,7 +59,7 @@ function nextManagedLeagueFixture(game: SaveGame) {
   const id = game.managedClubId
   return game.fixtures
     .filter(f =>
-      f.status === 'scheduled' && !f.isCup &&
+      f.status === 'scheduled' && !f.isCup && !f.isKnockout &&
       (f.homeClubId === id || f.awayClubId === id)
     )
     .sort((a, b) => a.matchday - b.matchday)[0] ?? null
@@ -78,7 +78,7 @@ function _deriveNemesis(rivalries: CoachRivalry[]): CoachRivalry | null {
 function completedLeagueCount(game: SaveGame): number {
   const id = game.managedClubId
   return game.fixtures.filter(
-    f => f.status === 'completed' && !f.isCup &&
+    f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
       (f.homeClubId === id || f.awayClubId === id)
   ).length
 }
@@ -252,7 +252,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
     trigger: (g) => firesBeforeNextFixture(g, (_fx, opp) => {
       if (!getRivalry(g.managedClubId, opp)) return false
       return g.fixtures.some(f =>
-        f.status === 'completed' && !f.isCup &&
+        f.status === 'completed' && !f.isCup && !f.isKnockout &&
         ((f.homeClubId === g.managedClubId && f.awayClubId === opp) ||
          (f.awayClubId === g.managedClubId && f.homeClubId === opp))
       )
@@ -263,7 +263,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
       const oppClub = g.clubs.find(c => c.id === opp)
       const pastDerby = g.fixtures
         .filter(f =>
-          f.status === 'completed' && !f.isCup &&
+          f.status === 'completed' && !f.isCup && !f.isKnockout &&
           ((f.homeClubId === g.managedClubId && f.awayClubId === opp) ||
            (f.awayClubId === g.managedClubId && f.homeClubId === opp))
         )
@@ -511,7 +511,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
       if (!getRivalry(g.managedClubId, oppId)) return false
       // Kolla att inget derby spelats den här säsongen
       const completedDerbies = g.fixtures.filter(f =>
-        f.status === 'completed' && !f.isCup &&
+        f.status === 'completed' && !f.isCup && !f.isKnockout &&
         f.season === g.currentSeason &&
         (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId) &&
         getRivalry(g.managedClubId, f.homeClubId === g.managedClubId ? f.awayClubId : f.homeClubId) !== null

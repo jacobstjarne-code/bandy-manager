@@ -17,6 +17,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import type { MatchPhaseContext } from '../../../domain/services/matchUtils'
+import { fixtureSeed } from '../../../domain/utils/random'
 
 type GeneratorSetup = {
   fixture: Fixture
@@ -60,7 +61,7 @@ export function useMatchGenerator(setup: GeneratorSetup) {
     const gen = simulateMatchStepByStep({
       fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
       homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
-      seed: Date.now(),
+      seed: fixtureSeed(fixture.id),
       weather: matchWeather?.weather,
       homeClubName: homeClubName || undefined,
       awayClubName: awayClubName || undefined,
@@ -125,7 +126,7 @@ export function useMatchGenerator(setup: GeneratorSetup) {
       fixture, homeLineup, awayLineup,
       homePlayers, awayPlayers,
       homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
-      seed: Date.now(),
+      seed: fixtureSeed(fixture.id, fromStep * 10_000 + newHomeScore * 100 + newAwayScore),
       weather: matchWeather?.weather,
       homeClubName: homeClubName || undefined,
       awayClubName: awayClubName || undefined,

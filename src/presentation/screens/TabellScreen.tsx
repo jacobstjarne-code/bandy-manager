@@ -45,7 +45,7 @@ export function TabellScreen() {
   const managedClubId = game.managedClubId
 
   // Calculate previous round standings for position movement arrows
-  const completedLeague = (game.fixtures ?? []).filter(f => f.status === 'completed' && !f.isCup)
+  const completedLeague = (game.fixtures ?? []).filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
   const hasLeagueStarted = completedLeague.length > 0
   // PÅSTÅENDEKARTAN nivå 1 (2026-08-25): roundNumber → matchday. CLAUDE.md:
   // "Använd ALDRIG roundNumber ... All ordning via matchday" — gäller även

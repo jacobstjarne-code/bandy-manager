@@ -95,7 +95,7 @@ export function getRitualText(
 
   const sg = game.supporterGroup
   const round = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
+    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 
   // Only show rituals when mood >= 30 and round >= 2

@@ -96,12 +96,16 @@ export function generateQuickSummary(
   const totalGoals = homeScore + awayScore
 
   const goals = fixture.events.filter(e => e.type === MatchEventType.Goal)
-  const lateGoals = goals.filter(e => (e.minute ?? 0) >= 55)
+  // Bandy spelas i 90 minuter. Den gamla 55-minutersgränsen kom från den
+  // tidiga 60-minutersprototypen och kallade en stor del av andra halvlek
+  // för "slutminuterna".
+  const lateGoals = goals.filter(e => (e.minute ?? 0) >= 80)
   const lateDecider = lateGoals.length > 0 && Math.abs(margin) <= 1
 
   const scorerCounts: Record<string, number> = {}
   const scorerNames: Record<string, string> = {}
-  goals.forEach(e => {
+  const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
+  goals.filter(e => e.clubId === managedClubId).forEach(e => {
     if (e.playerId) {
       scorerCounts[e.playerId] = (scorerCounts[e.playerId] ?? 0) + 1
       const p = players.find(pl => pl.id === e.playerId)
@@ -124,13 +128,13 @@ export function generateQuickSummary(
 
   const lines: string[] = []
 
-  if (myScore > theirScore) {
+  if (won) {
     if (margin >= 4) lines.push('En övertygande seger.')
     else if (margin === 3) lines.push('En klar seger.')
     else if (margin === 2) lines.push('En välförtjänt seger.')
     else if (lateDecider) lines.push('En dramatisk seger i slutminuterna.')
     else lines.push('En knapp men viktig seger.')
-  } else if (myScore < theirScore) {
+  } else if (lost) {
     if (margin <= -4) lines.push('En tung matchdag att glömma.')
     else if (margin === -3) lines.push('En klar förlust.')
     else if (lateDecider) lines.push('En bitter förlust i matchens slutskede.')

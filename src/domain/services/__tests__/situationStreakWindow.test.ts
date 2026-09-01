@@ -69,4 +69,16 @@ describe('getSituation — M24: segersvit räknas ur HELA completedLeague, inte 
     const situation = getSituation(game)
     expect(situation.label).toBe('12 RAKA SEGRAR')
   })
+
+  it('en efterföljande slutspelsförlust ändrar inte den avslutade ligans segersvit', () => {
+    const game = makeWinStreakGame(7)
+    const playoff = {
+      id: 'playoff_loss', season: game.currentSeason, matchday: 30, roundNumber: 25,
+      homeClubId: game.managedClubId, awayClubId: game.clubs.find(c => c.id !== game.managedClubId)!.id,
+      homeScore: 1, awayScore: 4, status: FixtureStatus.Completed,
+      isCup: false, isKnockout: true,
+    } as unknown as Fixture
+    const situation = getSituation({ ...game, fixtures: [...game.fixtures, playoff] })
+    expect(situation.label).toBe('7 RAKA SEGRAR')
+  })
 })

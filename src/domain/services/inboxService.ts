@@ -11,6 +11,7 @@ import { SUSPENSION_INCIDENT_LINES, SUSPENSION_INCIDENT_MULTI_LINES } from '../d
 import { trainingTypeLabel, trainingIntensityLabel } from './trainingService'
 import { getInjurySeverity, DIAGNOSIS_LINES, pickRecoveryLine } from '../data/injuryDoctorText'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
+import { deriveUtfall } from './matchTypeAxes'
 
 function generateId(type: InboxItemType): string {
   return `inbox_${type}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
@@ -35,14 +36,16 @@ export function createMatchResultItem(
   const title = `${prefix}: ${homeShort}–${awayShort} ${fixture.homeScore}–${fixture.awayScore}`
 
   let result: string
-  if (myScore > opponentScore) {
+  const utfall = deriveUtfall(fixture, managedClubId)
+  const decider = fixture.penaltyResult ? ' efter straffar' : fixture.overtimeResult ? ' efter förlängning' : ''
+  if (utfall === 'vunnet') {
     result = isHome
-      ? `Ni vann ${myScore}–${opponentScore} hemma.`
-      : `Ni vann ${myScore}–${opponentScore} borta.`
-  } else if (myScore < opponentScore) {
+      ? `Ni vann${decider} ${myScore}–${opponentScore} hemma.`
+      : `Ni vann${decider} ${myScore}–${opponentScore} borta.`
+  } else if (utfall === 'forlorat') {
     result = isHome
-      ? `Ni förlorade ${myScore}–${opponentScore} hemma.`
-      : `Ni förlorade ${myScore}–${opponentScore} borta.`
+      ? `Ni förlorade${decider} ${myScore}–${opponentScore} hemma.`
+      : `Ni förlorade${decider} ${myScore}–${opponentScore} borta.`
   } else {
     result = `Oavgjort ${myScore}–${opponentScore}.`
   }

@@ -8,7 +8,7 @@ export function getSeasonContext(game: SaveGame): SeasonContext {
   if ((game.seasonSummaries?.length ?? 0) === 0) return 'firstSeason'
 
   const completedLeague = game.fixtures.filter(
-    f => f.status === FixtureStatus.Completed && !f.isCup &&
+    f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout &&
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
   ).length
 

@@ -159,6 +159,16 @@ describe('createMatchResultItem', () => {
     const item = createMatchResultItem(fixture, 'club_test', TEST_DATE, TEST_CLUBS)
     expect(item.body.toLowerCase()).toContain('oavgjort')
   })
+
+  it('describes a tied raw score as a penalty win when penalties decided it', () => {
+    const fixture = makeFixture({
+      homeClubId: 'club_test', homeScore: 2, awayScore: 2,
+      isCup: true, isKnockout: true, penaltyResult: { home: 4, away: 3 },
+    })
+    const item = createMatchResultItem(fixture, 'club_test', TEST_DATE, TEST_CLUBS)
+    expect(item.body.toLowerCase()).toContain('vann efter straffar')
+    expect(item.body.toLowerCase()).not.toContain('oavgjort')
+  })
 })
 
 describe('createInjuryItem', () => {

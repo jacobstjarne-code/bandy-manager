@@ -49,7 +49,7 @@ export function getPortalPhase(
 
 export function getCurrentLeagueRound(game: import('../entities/SaveGame').SaveGame): number {
   return game.fixtures
-    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+    .filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 }
 

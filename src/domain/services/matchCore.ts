@@ -1995,11 +1995,11 @@ function* simulateMatchCore(
     fullTimeText = scoreStrFT
   } else if (rivalry) {
     fullTimeText = fillTemplate(pickCommentary(commentary.derby_fullTime, rand, commentaryHistory), { ...ftVars, rivalry: rivalry.name })
-  } else if (fixture.isCup && input.isCupFinalhelgen && fixture.roundNumber === 4) {
+  } else if (fixture.isCup && input.isCupFinalhelgen && fixture.roundNumber === 4 && homeScore !== awayScore) {
     const homeWon = homeScore > awayScore
     const cupFinalFtPool = homeWon ? commentary.cup_final_fullTime_win : commentary.cup_final_fullTime_loss
     fullTimeText = fillTemplate(pickCommentary(cupFinalFtPool, rand, commentaryHistory), ftVars)
-  } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
+  } else if (fixture.isCup && !input.isCupFinalhelgen && homeScore !== awayScore && rand() < 0.60) {
     const homeWon = homeScore > awayScore
     const cupFtPool = homeWon ? commentary.cup_fullTime_win : commentary.cup_fullTime_loss
     fullTimeText = fillTemplate(pickCommentary(cupFtPool, rand, commentaryHistory), ftVars)

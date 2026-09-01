@@ -18,9 +18,9 @@ export function SeasonBarometer({ game }: Props) {
 
   // Win rate this season
   const seasonFixtures = game.fixtures.filter(f =>
-    f.status === 'completed' && !f.isCup &&
+    f.status === 'completed' && !f.isCup && !f.isKnockout &&
     (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-  )
+  ).sort((a, b) => a.matchday - b.matchday)
   const wins = seasonFixtures.filter(f => {
     const isHome = f.homeClubId === game.managedClubId
     return isHome ? f.homeScore > f.awayScore : f.awayScore > f.homeScore

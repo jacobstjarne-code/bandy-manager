@@ -7,6 +7,7 @@ import { generateTransferRumor } from '../../../domain/services/rumorService'
 import { canAddDecision } from '../../../domain/services/decisionBudgetService'
 import { checkReputationMilestones, milestonesToInbox } from '../../../domain/services/reputationMilestoneService'
 import { generateDeadlineBids, generateDiscountOffer, deadlineBidToInbox, deadlineOfferToInbox } from '../../../domain/services/transferDeadlineService'
+import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
 export interface MediaResult {
   inboxItems: InboxItem[]
@@ -47,10 +48,7 @@ export function processMedia(
       )
       .sort((a, b) => b.matchday - a.matchday)[0]
     const prevLoss = prevManagedFixture != null && (() => {
-      const isHome = prevManagedFixture.homeClubId === game.managedClubId
-      const myScore = isHome ? prevManagedFixture.homeScore : prevManagedFixture.awayScore
-      const theirScore = isHome ? prevManagedFixture.awayScore : prevManagedFixture.homeScore
-      return (myScore ?? 0) < (theirScore ?? 0)
+      return deriveUtfall(prevManagedFixture, game.managedClubId) === 'forlorat'
     })()
     const oppClubId = justCompletedManagedFixture.homeClubId === game.managedClubId
       ? justCompletedManagedFixture.awayClubId

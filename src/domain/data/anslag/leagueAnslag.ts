@@ -28,7 +28,7 @@ export const LEAGUE_ANSLAG: Record<LeagueAnslagKey, AnslagText> = {
     chapter: '⬩ Januari ⬩',
     variants: [
       {
-        body: `Det är mitten av januari. Halva serien är kvar.<br><br>Ingen pratar om januari som om den var rolig — den är det inte. Mörkt över halva dagen, tisdagsträning i blöt vinter, helgmatcher där isen är mjuk i andra halvlek.<br><br>Det är ändå nu det avgörs. Inte när det är ljust och alla mår bra, utan när det är fyrtio dagar kvar till våren och ingen orkar längre. Bandy är bandy.`,
+        body: `Det är mitten av januari. Halva serien är kvar.<br><br>Ingen pratar om januari som om den var rolig — det är den inte. Mörkt över halva dagen, tisdagsträning i blöt vinter, helgmatcher där isen är mjuk i andra halvlek.<br><br>Det är ändå nu det avgörs. Inte när det är ljust och alla mår bra, utan när det är fyrtio dagar kvar till våren och ingen orkar längre. Bandy är bandy.`,
       },
       {
         body: `Januari är inte rolig. Det är det inget lag som påstår.<br><br>Bilar startar inte. Spelare tappar tändning. Halva ledarstaben funderar på det de skulle gjort istället. Sen kommer lördagen, då spelar man bandy igen — och det är ändå anledningen till att vi finns.<br><br>Halva serien är kvar. Det är där vi bestämmer vad vi är.`,

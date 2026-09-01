@@ -486,7 +486,7 @@ export function generatePostAdvanceEvents(
   // så vakten var dubbelarbete, inte skydd, sedan den andra källan försvann.
   if (events.length < 2) {
     const recentResults = game.fixtures
-      .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
+      .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup && !f.isKnockout)
       .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))
       .slice(0, 3)
     const allLosses = recentResults.length >= 3 && recentResults.every(f => {
@@ -911,11 +911,10 @@ export function buildSponsorOfferEvent(
       // Y-inmatning, samma "konfigurera-sen-bekräfta"-mönster som BidModal).
       // effect:noOp är bara ett harmlöst fallback om interceptionen någonsin
       // missar — den faktiska logiken körs via useGameStore.counterSponsorOffer.
-      // Label är [Opus] (SVENSK TEXT-regeln, CLAUDE.md): "kräv mer — men de
-      // kan gå"-inramningen är domens egen text-post, inte skriven här.
+      // Label levererad av Opus 2026-09-01 (grind-1-sveps stale-fynd, MASTER_OPPET.md).
       {
         id: 'counter',
-        label: '[Opus]',
+        label: 'Kräv mer',
         effect: { type: 'noOp' },
       },
     ],

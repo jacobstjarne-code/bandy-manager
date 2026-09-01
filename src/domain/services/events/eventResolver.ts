@@ -6,7 +6,7 @@ import type { DinnerScene } from '../mecenatDinnerService'
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
 import { describeRippleChain, transferRejectMoraleWeight } from '../rippleEffectService'
-import { applyFinanceChange } from '../economyService'
+import { applyFinanceChange, appendFinanceLog } from '../economyService'
 import { startFacilityBuild } from '../facilityService'
 import { recordInteraction, recordPressRefusal, generateCriticalArticle } from '../journalistService'
 import { pickCSPressPublishedQuote, buildCSPressMemoryEntry } from '../../data/csPressEventText'
@@ -55,7 +55,7 @@ function recordResolvedId(game: SaveGame, eventId: string): string[] {
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
 /**
- * @cites resolvedChoices, roundNumber, fanMood
+ * @cites resolvedChoices, matchday, fanMood
  */
 /**
  * HIGH 6 (audit 2026-08-29), attributionshålet, Jacobs körorder 2026-08-31:
@@ -96,6 +96,13 @@ export function resolveEvent(
 
   const choice = event.choices.find(c => c.id === choiceId)
   if (!choice) return game
+
+  // Alla ekonomiska eventeffekter går genom många olika effect-typer
+  // (income, finance, setCommunity, multiEffect, krisutfall osv). Fånga den
+  // faktiska nettoskillnaden en gång här så spelarens transaktionshistorik
+  // aldrig behöver känna till varje intern effekttyp.
+  const financesBeforeEvent = game.clubs.find(c => c.id === game.managedClubId)?.finances
+  const financeLogBeforeEvent = game.financeLog
 
   // Handle sponsor events by type (not effect)
   if (event.type === 'sponsorOffer') {
@@ -539,7 +546,7 @@ export function resolveEvent(
           ? updatedGame.fixtures.find(f => f.id === event.relatedFixtureId)
           : undefined
         const lastLeagueFixture = relatedFixture ?? updatedGame.fixtures
-          .filter(f => f.status === 'completed' && !f.isCup && f.season === updatedGame.currentSeason)
+          .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout && f.season === updatedGame.currentSeason)
           .reduce<typeof updatedGame.fixtures[number] | undefined>(
             (latest, f) => (f.matchday > (latest?.matchday ?? -1) ? f : latest), undefined)
         // Sista utväg om ingen matchande fixture alls hittas: nuvarande matchday
@@ -1392,8 +1399,8 @@ export function resolveEvent(
     case 'startEconomicCrisis': {
       // DREAM-002: initialise or advance the crisis state
       const currentMatchday = updatedGame.fixtures
-        .filter(f => f.status === 'completed' && !f.isCup)
-        .reduce((m, f) => Math.max(m, f.roundNumber), 0)
+        .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
+        .reduce((m, f) => Math.max(m, f.matchday ?? 0), 0)
       // pressure_rejected → treat as 'pressure' phase (sponsor left without plan)
       const rawPhase = effect.crisisPhase ?? 'awareness'
       const phase = (rawPhase === 'pressure_rejected' ? 'pressure' : rawPhase) as 'awareness' | 'pressure' | 'decision' | 'resolved'
@@ -1441,8 +1448,8 @@ export function resolveEvent(
       // Efterdyning-stämpel: senaste spelade ligamatch denna säsong (counter-oberoende,
       // samma mönster som journalist-premissen ovan — rör inte currentMatchday-räknaren).
       const resolvedMatchday = updatedGame.fixtures
-        .filter(f => f.status === 'completed' && !f.isCup && f.season === updatedGame.currentSeason)
-        .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+        .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout && f.season === updatedGame.currentSeason)
+        .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0)
       // sold_star: fånga namnet FÖRE removePlayerId tar bort spelaren ur truppen
       const soldToSurvivePlayerName = outcome === 'sold_star' && effect.removePlayerId
         ? (() => {
@@ -2180,6 +2187,23 @@ export function resolveEvent(
         game, updatedGame, pilotTransferBidTrigger, pilotTransferBidPlayerName,
         game.currentMatchday, game.currentSeason, pilotTransferBidRelatedPlayerId,
       ),
+    }
+  }
+
+  const financesAfterEvent = updatedGame.clubs.find(c => c.id === updatedGame.managedClubId)?.finances
+  if (financesBeforeEvent !== undefined && financesAfterEvent !== undefined
+      && updatedGame.financeLog === financeLogBeforeEvent) {
+    const eventFinanceDelta = financesAfterEvent - financesBeforeEvent
+    if (eventFinanceDelta !== 0) {
+      updatedGame = {
+        ...updatedGame,
+        financeLog: appendFinanceLog(updatedGame.financeLog ?? [], {
+          round: updatedGame.currentMatchday ?? currentMatchday,
+          amount: eventFinanceDelta,
+          reason: 'event',
+          label: `Beslut: ${event.title}`,
+        }),
+      }
     }
   }
 

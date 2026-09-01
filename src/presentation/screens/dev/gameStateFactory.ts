@@ -78,8 +78,11 @@ export function atRound(game: SaveGame, targetMatchday: number): SaveGame {
     if (f.status === FixtureStatus.Completed) return f
     // Seedad, plausibel — inte kalibrerad matchmotor-realism (behövs inte för en dev-snap).
     const homeScore = Math.floor(rand() * 6) + 2
-    const awayScore = Math.floor(rand() * 6) + 1
-    if (f.isCup) cupWinners.set(f.id, homeScore >= awayScore ? f.homeClubId : f.awayClubId)
+    let awayScore = Math.floor(rand() * 6) + 1
+    // Dev-bracketen måste vara lika sann som produktionen: en cupmatch får
+    // aldrig få en vinnare på ett oavgjort råresultat utan avgörande.
+    if (f.isCup && awayScore === homeScore) awayScore = Math.max(0, awayScore - 1)
+    if (f.isCup) cupWinners.set(f.id, homeScore > awayScore ? f.homeClubId : f.awayClubId)
     return { ...f, status: FixtureStatus.Completed, homeScore, awayScore }
   })
 
@@ -367,4 +370,3 @@ export function withActiveIncomingBidEvent(game: SaveGame): SaveGame {
   const event = bidReceivedEvent(bid, game)
   return { ...game, pendingEvents: [...(game.pendingEvents ?? []), event] }
 }
-

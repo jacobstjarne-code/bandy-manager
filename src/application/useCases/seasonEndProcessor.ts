@@ -23,6 +23,7 @@ import { calculateKommunBidrag, generateNewPolitician } from '../../domain/servi
 import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine, buildSeasonBoardTruth } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 import { pickSeasonDecision, SEASON_DECISION_NONE_TEXT } from '../../domain/services/seasonDecisionCaptureService'
+import { deriveUtfall } from '../../domain/services/matchTypeAxes'
 import { evaluateSeasonGoal, deriveSeasonPersonChange, deriveRivalryStanding } from '../../domain/services/seasonGoalService'
 import { calculateClubEra } from '../../domain/services/clubEraService'
 import { applyBurnoutRecoveryAtTransition } from '../../domain/services/seasonTransitionService'
@@ -80,7 +81,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   let seasonSummary: ReturnType<typeof generateSeasonSummary>
 
   const allFixtures = game.fixtures
-  const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+  const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
   // 4.1 (SLUTTEST_KO.md, 2026-08-17): samma saknade pointDeductions-argument
   // som playoffTransition.ts — styrelsens säsongsutlåtande (genereras från
   // managedClubStanding.position nedan) kunde annars beskriva fel placering
@@ -1505,11 +1506,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         )
         let sWins = 0, sDraws = 0, sLosses = 0
         for (const f of managedFixtures) {
-          const isHome = f.homeClubId === game.managedClubId
-          const ms = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
-          const os = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-          if (ms > os) sWins++
-          else if (ms < os) sLosses++
+          const utfall = deriveUtfall(f, game.managedClubId)
+          if (utfall === 'vunnet') sWins++
+          else if (utfall === 'forlorat') sLosses++
           else sDraws++
         }
         const CAREER_WIN_MILESTONES = [10, 25, 50, 100, 200]

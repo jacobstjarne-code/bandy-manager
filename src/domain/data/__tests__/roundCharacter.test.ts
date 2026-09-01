@@ -3,7 +3,7 @@
 // mäter — aldrig en egen omräkning ur fixtures. Ingen testfil fanns tidigare för denna
 // fil; täcker bara getStreakState, inte hela roundCharacter.ts.
 import { describe, it, expect } from 'vitest'
-import { getStreakState } from '../roundCharacter'
+import { getRoundCharacter, getStreakState } from '../roundCharacter'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { TrainerArc } from '../../entities/Narrative'
 
@@ -49,5 +49,19 @@ describe('getStreakState', () => {
     ] as unknown as SaveGame['fixtures']
     const game = { managedClubId: 'c1', fixtures, trainerArc: makeArc({ consecutiveWins: 3 }) } as unknown as SaveGame
     expect(getStreakState(game)).toEqual({ length: 3, type: 'winning_streak' })
+  })
+})
+
+describe('getRoundCharacter — avgjorda utslagsmatcher', () => {
+  it('en straffseger blir inte post_loss', () => {
+    const game = {
+      managedClubId: 'c1', trainerArc: makeArc(),
+      fixtures: [{
+        id: 'cup', status: 'completed', isCup: true, isKnockout: true,
+        matchday: 5, roundNumber: 4, homeClubId: 'c1', awayClubId: 'c2',
+        homeScore: 2, awayScore: 2, penaltyResult: { home: 4, away: 3 },
+      }],
+    } as unknown as SaveGame
+    expect(getRoundCharacter(game)).toBe('standard')
   })
 })

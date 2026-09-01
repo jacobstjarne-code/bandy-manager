@@ -133,6 +133,8 @@ export interface Player {
   loanClubName?: string
   promotedFromAcademy?: boolean
   promotionRound?: number
+  /** Säsongen spelaren kallades upp. Krävs för säsongsvisa återblickar. */
+  promotionSeason?: number
   isCharacterPlayer?: boolean
   trait?: PlayerTrait
   loyaltyScore?: number  // 0–10

@@ -134,4 +134,21 @@ describe('derivePreRoundContext', () => {
       expect(result.context.currentLeagueRound).toBe(4)
     }
   })
+
+  it('classifies an actual knockout fixture as playoff regardless of matchday numbering', () => {
+    const game = makeGame({
+      fixtures: [
+        makeFixture({ id: 'po1', isCup: false, isKnockout: true, matchday: 23, roundNumber: 23 }),
+        makeFixture({ id: 'cup-future', isCup: true, matchday: 30, roundNumber: 4 }),
+      ],
+      playoffBracket: { status: PlayoffStatus.InProgress } as SaveGame['playoffBracket'],
+    })
+    const result = derivePreRoundContext(game)
+    expect(result.kind).toBe('proceed')
+    if (result.kind === 'proceed') {
+      expect(result.context.isPlayoffRound).toBe(true)
+      expect(result.context.currentLeagueRound).toBe(null)
+      expect(result.context.scheduledLeagueFixtures).toEqual([])
+    }
+  })
 })

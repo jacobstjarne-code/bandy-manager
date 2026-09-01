@@ -60,7 +60,7 @@ export function getNextOpponentTeaserFacts(game: SaveGame): NextOpponentTeaserFa
 
   // Motståndarens form — senaste 5 avslutade ligamatcher (alla motståndare, inte bara mot oss)
   const opponentCompleted = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup && (f.homeClubId === opponentId || f.awayClubId === opponentId))
+    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout && (f.homeClubId === opponentId || f.awayClubId === opponentId))
     .sort((a, b) => a.matchday - b.matchday)
   const opponentForm = opponentCompleted.slice(-5).map(f =>
     resultFor(opponentId, f.homeClubId, f.homeScore ?? 0, f.awayScore ?? 0)
@@ -85,7 +85,7 @@ export function getNextOpponentTeaserFacts(game: SaveGame): NextOpponentTeaserFa
   // Tidigare möte denna säsong (om spelat)
   const priorMeeting = game.fixtures
     .filter(f =>
-      f.status === 'completed' && !f.isCup && f.season === game.currentSeason &&
+      f.status === 'completed' && !f.isCup && !f.isKnockout && f.season === game.currentSeason &&
       ((f.homeClubId === managedId && f.awayClubId === opponentId) ||
        (f.homeClubId === opponentId && f.awayClubId === managedId))
     )

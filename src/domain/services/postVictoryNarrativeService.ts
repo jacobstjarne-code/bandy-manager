@@ -1,6 +1,7 @@
 import type { Fixture } from '../entities/Fixture'
 import type { SaveGame } from '../entities/SaveGame'
 import { getRivalry } from '../data/rivalries'
+import { deriveUtfall } from './matchTypeAxes'
 
 export type VictoryType = 'playoff_derby_win' | 'playoff_win' | 'big_derby_win' | 'derby_win' | 'blowout'
 
@@ -26,10 +27,10 @@ export function classifyVictory(fixture: Fixture, managedClubId: string): Victor
   const isHome = fixture.homeClubId === managedClubId
   const myScore = isHome ? (fixture.homeScore ?? 0) : (fixture.awayScore ?? 0)
   const theirScore = isHome ? (fixture.awayScore ?? 0) : (fixture.homeScore ?? 0)
-  if (myScore <= theirScore) return null
+  if (deriveUtfall(fixture, managedClubId) !== 'vunnet') return null
 
   const isDerby = getRivalry(fixture.homeClubId, fixture.awayClubId) !== null
-  const isPlayoff = fixture.matchday > 22
+  const isPlayoff = !!fixture.isKnockout && !fixture.isCup
   const scoreDiff = myScore - theirScore
 
   if (isPlayoff && isDerby) return 'playoff_derby_win'

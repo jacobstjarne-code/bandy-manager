@@ -423,7 +423,8 @@ function maybeAddBackground(coach: AssistantCoach, base: string, seed: number): 
 /**
  * Returnerar ett citat från assistenttränaren baserat på kontext och personlighet.
  */
-export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext, seed = Date.now()): string {
+export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext, seed?: number): string {
+  const stableSeed = seed ?? simpleHash(`${coach.name}:${JSON.stringify(context)}`)
   const p = coach.personality
   let quotes: string[]
 
@@ -786,8 +787,8 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
       break
   }
 
-  const base = pickQuote(quotes, seed)
-  return maybeAddBackground(coach, base, seed)
+  const base = pickQuote(quotes, stableSeed)
+  return maybeAddBackground(coach, base, stableSeed)
 }
 
 // ── Use case helpers (2–6) — ej wired i UI än ─────────────────

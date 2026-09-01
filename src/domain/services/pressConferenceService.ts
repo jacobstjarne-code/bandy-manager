@@ -415,19 +415,17 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
   // Streak from recent completed league fixtures
   const completedManaged = game.fixtures
     .filter(f =>
-      f.status === 'completed' && !f.isCup && f.id !== fixture.id &&
+      f.status === 'completed' && !f.isCup && !f.isKnockout && f.id !== fixture.id &&
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
-    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .sort((a, b) => b.matchday - a.matchday)
 
   let streak = 0
   let lossStreak = 0
   let drawStreak = 0
   for (const f of completedManaged) {
-    const fHome = f.homeClubId === game.managedClubId
-    const my = fHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
-    const their = fHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-    const result = my > their ? 'win' : my < their ? 'loss' : 'draw'
+    const outcome = deriveUtfall(f, game.managedClubId)
+    const result = outcome === 'vunnet' ? 'win' : outcome === 'forlorat' ? 'loss' : 'draw'
     if (streak === 0 && lossStreak === 0 && drawStreak === 0) {
       if (result === 'win') streak = 1
       else if (result === 'loss') lossStreak = 1

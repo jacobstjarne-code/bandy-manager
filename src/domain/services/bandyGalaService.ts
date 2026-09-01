@@ -166,7 +166,7 @@ export function generateGalaEvent(
  * matcher, som är den förbjudna genvägen (CLAUDE.md). Deklarerad öppet
  * ändå, per grindens krav på ingen tyst läsning av kända proxy-tokens.
  *
- * @cites nom.playerName, nom.stat, player.clubId, roundNumber
+ * @cites nom.playerName, nom.stat, player.clubId, matchday
  */
 export function generateGalaInbox(
   nominations: GalaNomination[],
@@ -175,8 +175,8 @@ export function generateGalaInbox(
   const inboxItems: InboxItem[] = []
   const storylines: StorylineEntry[] = []
   const currentMatchday = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
-    .reduce((m, f) => Math.max(m, f.roundNumber), 0)
+    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
+    .reduce((m, f) => Math.max(m, f.matchday ?? 0), 0)
 
   for (const nom of nominations) {
     const player = game.players.find(p => p.id === nom.playerId)

@@ -1,7 +1,7 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { LoanDeal, MentorshipRecord } from '../../../domain/entities/Academy'
 import { PlayerPosition, InboxItemType } from '../../../domain/enums'
-import { applyFinanceChange } from '../../../domain/services/economyService'
+import { applyFinanceChange, appendFinanceLog } from '../../../domain/services/economyService'
 import { STALEABLE_ACTIVITY_KEYS } from '../../../domain/services/communityRenewalService'
 import type { StaleableActivityKey } from '../../../domain/entities/Community'
 
@@ -44,7 +44,7 @@ export function academyActions(get: Get, set: Set) {
       const currentRound = Math.max(
         0,
         ...game.fixtures
-          .filter(f => f.status === 'completed' && !f.isCup)
+          .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
           .map(f => f.roundNumber),
       )
 
@@ -94,7 +94,21 @@ export function academyActions(get: Get, set: Set) {
         ? { ...(game.communityActivitiesSince ?? {}), [key as StaleableActivityKey]: game.currentSeason }
         : game.communityActivitiesSince
 
-      set({ game: { ...game, clubs: updatedClubs, communityActivities: updatedCA, communityActivitiesSince: updatedSince } })
+      const financeLog = cost > 0
+        ? appendFinanceLog(game.financeLog ?? [], {
+            round: game.currentMatchday ?? currentRound,
+            amount: -cost,
+            reason: 'event',
+            label: `Föreningsaktivitet: ${({
+              kiosk: 'Bandykiosken', lottery: 'Föreningslotteriet', bandyplay: 'Bandyskola för barn',
+              functionaries: 'Funktionärer', julmarknad: 'Julmarknad', bandySchool: 'Bandyskola',
+              socialMedia: 'Sociala medier', vipTent: 'VIP-tält', pensionarskaffe: 'Pensionärskaffe',
+              soppkvall: 'Soppkväll', skolbesok: 'Skolbesök',
+            } as Record<string, string>)[key] ?? key}`,
+          })
+        : game.financeLog
+
+      set({ game: { ...game, clubs: updatedClubs, communityActivities: updatedCA, communityActivitiesSince: updatedSince, financeLog } })
       return { success: true }
     },
 
@@ -131,6 +145,12 @@ export function academyActions(get: Get, set: Set) {
           clubs: updatedClubs,
           academyUpgradeInProgress: true,
           academyUpgradeSeason: game.currentSeason + 1,
+          financeLog: appendFinanceLog(game.financeLog ?? [], {
+            round: game.currentMatchday ?? 0,
+            amount: -cost,
+            reason: 'academy',
+            label: `Akademiuppgradering (${currentLevel === 'basic' ? 'satsningsnivå' : 'elitnivå'})`,
+          }),
         }
       })
       return { success: true }
@@ -160,7 +180,17 @@ export function academyActions(get: Get, set: Set) {
       )
       const updatedClubsWithFinance = applyFinanceChange(updatedClubs, game.managedClubId, -cost)
 
-      set({ game: { ...game, clubs: updatedClubsWithFinance, facilityUpgradeSeason: game.currentSeason } })
+      set({ game: {
+        ...game,
+        clubs: updatedClubsWithFinance,
+        facilityUpgradeSeason: game.currentSeason,
+        financeLog: appendFinanceLog(game.financeLog ?? [], {
+          round: game.currentMatchday ?? 0,
+          amount: -cost,
+          reason: 'event',
+          label: 'Anläggningsuppgradering',
+        }),
+      } })
       return { success: true }
     },
 
@@ -187,7 +217,7 @@ export function academyActions(get: Get, set: Set) {
       // promotionRound skrivs vidare till clubMemoryService.ts:s MemoryEvent.matchday
       // och jämförs där direkt mot game.currentMatchday — måste vara samma skala.
       const currentRound = game.fixtures
-        .filter(f => f.status === 'completed' && !f.isCup)
+        .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
         .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0) + 1
 
       let hash = 0
@@ -260,6 +290,7 @@ export function academyActions(get: Get, set: Set) {
         careerStats: { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 0 },
         promotedFromAcademy: true,
         promotionRound: currentRound,
+        promotionSeason: game.currentSeason,
       }
 
       const updatedYouthPlayers = game.youthTeam!.players.filter(p => p.id !== youthPlayerId)
@@ -337,7 +368,7 @@ export function academyActions(get: Get, set: Set) {
       // AkademiTab.tsx), ingen läsare jämför den mot matchday. Att byta skala här
       // skulle tyst ändra det visade omgångsnumret utan att fixa en bugg.
       const currentRound = game.fixtures
-        .filter(f => f.status === 'completed' && !f.isCup)
+        .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
         .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 
       const mentorship = { seniorPlayerId, youthPlayerId, startRound: currentRound, isActive: true }
@@ -377,7 +408,7 @@ export function academyActions(get: Get, set: Set) {
       // — transferProcessor.ts jämför LoanDeal.startRound/endRound direkt mot
       // nextMatchday (matchday-skala).
       const currentRound = game.fixtures
-        .filter(f => f.status === 'completed' && !f.isCup)
+        .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
         .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0)
 
       const loanDeal: LoanDeal = {

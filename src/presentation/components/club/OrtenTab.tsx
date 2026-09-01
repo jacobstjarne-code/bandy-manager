@@ -77,7 +77,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
 
   const cs = game.communityStanding ?? 50
   const currentRound = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
+    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
   const quote = getFunctionaryQuote(game, currentRound, game.lastCompletedFixtureId)
   const ca = game.communityActivities
@@ -477,7 +477,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
           <div style={{ border: '1px solid var(--accent)', borderRadius: 'var(--radius-md)', padding: 8, opacity: 0.95 }}>
           {(() => {
             const li = game.politicianLastInteraction ?? {}
-            const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
+            const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout).reduce((max, f) => Math.max(max, f.roundNumber), 0)
             const inviteCooldown = li.invite !== undefined ? Math.max(0, li.invite + 5 - currentRound) : 0
             const budgetUsed = li.budgetSeason === game.currentSeason
             const applyUsed = li.applySeason === game.currentSeason

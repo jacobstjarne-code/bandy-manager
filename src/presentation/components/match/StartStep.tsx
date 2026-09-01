@@ -10,6 +10,7 @@ import { Film, Zap, MessageSquare } from 'lucide-react'
 import { Icon } from '../primitives/Icon'
 import { tacticRows } from '../../utils/tacticData'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
+import { seededPick } from '../../../domain/utils/random'
 
 function tacticLabel(key: keyof Tactic, value: string): string {
   const row = tacticRows.find(r => r.key === key)
@@ -34,12 +35,12 @@ function getPreMatchPepTalk(
     const t = ['Det här är matchen vi alla väntat på. Nu kör vi.',
       'Inget att förklara idag. Bara spela bandy.',
       `${rivalry.name}. Ni vet vad ni ska göra.`]
-    return t[Math.floor(Math.random() * t.length)]
+    return seededPick(t, `${fixture.id}:rivalry-pep`)
   }
   if (fixture.isKnockout) {
     const t = ['Det avgörs idag. Inget mer att spara på.',
       'En match. Allt eller hem. Ni vet vad det betyder.']
-    return t[Math.floor(Math.random() * t.length)]
+    return seededPick(t, `${fixture.id}:knockout-pep`)
   }
   if (fixture.isCup) return 'Cupmatch. En chans. Vi tar den.'
   if (weather?.weather.condition === WeatherCondition.HeavySnow)
@@ -51,14 +52,14 @@ function getPreMatchPepTalk(
   if (isHome && fanMood > 65) {
     const t = ['Vår is. Vår klack. Ingen ursäkt idag.',
       'Hemma idag. Våra egna är på plats. Visa dem.']
-    return t[Math.floor(Math.random() * t.length)]
+    return seededPick(t, `${fixture.id}:home-pep`)
   }
   if (isHome && fanMood < 35)
     return 'Få som tror just nu. De som är här tror ändå. Bevisa det.'
   if (!isHome) {
     const t = ['Borta. Vi har inget att förlora och allt att vinna.',
       'De räknar med att vinna. Det är deras misstag.']
-    return t[Math.floor(Math.random() * t.length)]
+    return seededPick(t, `${fixture.id}:away-pep`)
   }
   return 'Omklädningsrummet är tyst. Ni vet vad ni har att göra.'
 }
@@ -93,7 +94,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
 
   const atmosphere = useMemo(
     () => fixture ? getPreMatchPepTalk(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50) : '',
-    [fixture?.id]
+    [fixture?.id, matchWeatherData, isHome, fanMood]
   )
 
   return (

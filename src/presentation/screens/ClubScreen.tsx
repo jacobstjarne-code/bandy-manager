@@ -117,6 +117,7 @@ export function ClubScreen() {
           tabs={TAB_LABELS.map(({ key, label }) => ({ id: key, label }))}
           activeId={activeTab}
           onSelect={(id) => setActiveTab(id as ClubTab)}
+          variant="pills"
         />
       </div>
 

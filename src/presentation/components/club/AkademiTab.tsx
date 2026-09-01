@@ -63,7 +63,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
   const loanablePlayers = managedPlayers.filter(p => p.age <= 23 && !p.isOnLoan)
 
   const currentRound = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
+    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 
   return (

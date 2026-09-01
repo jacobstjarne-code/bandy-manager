@@ -98,6 +98,15 @@ describe('detectNotableResult', () => {
     expect(result?.type).toBe('derby_draw')
   })
 
+  it('triggers derby_win for a tied raw score won on penalties', () => {
+    const game = makeGame()
+    const fixture = {
+      ...makeFixture('club_soderfors', 'club_skutskar', 2, 2),
+      isCup: true, isKnockout: true, penaltyResult: { home: 5, away: 4 },
+    }
+    expect(detectNotableResult(fixture, game)?.type).toBe('derby_win')
+  })
+
   it('triggers heavy_home_loss when home loss by >= 4 goals', () => {
     const game = makeGame()
     // Managed club is home and loses by 5

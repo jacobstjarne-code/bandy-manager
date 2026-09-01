@@ -12,10 +12,9 @@ const PERF_DOTS = Array.from({ length: 8 })
  * inte ett fördefinierat val. Öppnas av EventCardInline när choiceId==='counter'
  * fångas FÖRE resolveEvent.
  *
- * Text (label, personlighets-hintar, de tre utfallsmeddelandena) är [Opus]
- * — SVENSK TEXT-regeln (CLAUDE.md): Code skriver aldrig svensk speltext.
- * Numeriska/strukturella delar (belopp, knappar för att stänga/skicka) är
- * inte narrativ prosa och lämnas som fungerande UI-kod.
+ * Text (titel, resultatmeddelanden, knappar) levererad av Opus 2026-09-01
+ * (grind-1-sveps stale-fynd, MASTER_OPPET.md) — SVENSK TEXT-regeln
+ * (CLAUDE.md): Code skriver aldrig svensk speltext.
  */
 
 interface SponsorCounterModalProps {
@@ -55,7 +54,7 @@ export function SponsorCounterModal({ sponsor, onClose, onPreview, onCommit }: S
       >
         <div className="transfers-modal-header-sm" style={{ padding: '16px 12px 12px' }}>
           <div>
-            <h3 className="transfers-modal-title">[Opus]</h3>
+            <h3 className="transfers-modal-title">Motbud</h3>
             <p className="transfers-modal-player-name">{sponsor.name}</p>
           </div>
           <button onClick={handleDismiss} className="btn btn-ghost transfers-close-btn"><X size={16} /></button>
@@ -66,7 +65,13 @@ export function SponsorCounterModal({ sponsor, onClose, onPreview, onCommit }: S
           </div>
           <div style={{ flex: 1, padding: '4px 12px 16px 10px' }}>
             {result ? (
-              <div className="transfers-info-box">[Opus]</div>
+              <div className="transfers-info-box">
+                {result.outcome === 'accepted'
+                  ? `De går med på det — ${requestedAmount.toLocaleString('sv-SE')} kr/vecka. Kontraktet skrivs om.`
+                  : result.outcome === 'stood_firm'
+                  ? `De står fast vid sitt bud. ${sponsor.weeklyIncome.toLocaleString('sv-SE')} kr/vecka ligger kvar — ta det eller lämna det.`
+                  : 'De drar sig ur. Erbjudandet är borta.'}
+              </div>
             ) : (
               <>
                 <div className="transfers-info-box">
@@ -91,7 +96,7 @@ export function SponsorCounterModal({ sponsor, onClose, onPreview, onCommit }: S
             className="lf-stamp"
             style={{ cursor: isValid ? 'pointer' : 'not-allowed', opacity: isValid ? 1 : 0.5 }}
           >
-            [Opus] →
+            Skicka →
           </button>
         )}
       </div>

@@ -33,8 +33,8 @@ export function generateDeadlineBids(game: SaveGame, rand: () => number): Deadli
   const alreadySeen = new Set(game.resolvedEventIds ?? [])
   const season = game.currentSeason
   const currentRound = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
-    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+    .filter(f => f.status === 'completed')
+    .reduce((max, f) => Math.max(max, f.matchday), 0)
 
   // Max 2 deadline-bud per transferfönster
   const deadlineBidsThisWindow = (game.resolvedEventIds ?? []).filter(id =>
@@ -85,8 +85,8 @@ export function generateDiscountOffer(game: SaveGame, rand: () => number): Deadl
   const season = game.currentSeason
   const alreadySeen = new Set(game.resolvedEventIds ?? [])
   const currentRound = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
-    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+    .filter(f => f.status === 'completed')
+    .reduce((max, f) => Math.max(max, f.matchday), 0)
 
   const offerId = `deadline_offer_${season}_r${currentRound}`
   if (alreadySeen.has(offerId)) return null

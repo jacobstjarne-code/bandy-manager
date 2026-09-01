@@ -8,6 +8,7 @@ import { SectionLabel } from '../SectionLabel'
 import { RenewContractModal } from './RenewContractModal'
 import { WageOverrunWarning } from './WageOverrunWarning'
 import '../../styles/transfers.css'
+import { fixtureSeed, mulberry32 } from '../../../domain/utils/random'
 
 interface ContractsTabProps {
   /** Deep-link: öppna renew-modalen direkt för denna spelare (PlayerCard "Förläng"). */
@@ -67,7 +68,8 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
       if (currentPlayer.currentAbility > 60) rejectChance += 0.40
       if (currentPlayer.form > 65) rejectChance += 0.20
       if ((currentPlayer.potentialAbility ?? 0) > 70) rejectChance += 0.15
-      if (Math.random() < rejectChance) {
+      const negotiationRoll = mulberry32(fixtureSeed(`${game.id}:${playerId}:${game.currentSeason}:${newSalary}:${years}`))()
+      if (negotiationRoll < rejectChance) {
         const counterSalary = Math.round(minSalary * 1.15 / 500) * 500
         setRenewError(`${currentPlayer.firstName} avvisar erbjudandet — vill ha minst ${formatSalary(counterSalary)}`)
         return

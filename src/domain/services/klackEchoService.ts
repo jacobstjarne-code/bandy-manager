@@ -3,6 +3,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { NotableEventType } from '../data/klackEchoText'
 import { getRivalry } from '../data/rivalries'
 import { safeStandingPosition } from './standingsService'
+import { deriveUtfall } from './matchTypeAxes'
 
 export interface KlackEchoEvent {
   type: NotableEventType
@@ -26,6 +27,7 @@ export function detectNotableResult(fixture: Fixture, game: SaveGame): KlackEcho
   const myScore = isHome ? fixture.homeScore : fixture.awayScore
   const theirScore = isHome ? fixture.awayScore : fixture.homeScore
   if (myScore === undefined || theirScore === undefined) return null
+  const utfall = deriveUtfall(fixture, managedId)
 
   const oppId = isHome ? fixture.awayClubId : fixture.homeClubId
   const oppClub = game.clubs.find(c => c.id === oppId)
@@ -33,8 +35,8 @@ export function detectNotableResult(fixture: Fixture, game: SaveGame): KlackEcho
 
   // derby_*: always if opponent in rivalry list
   if (hasRivalry) {
-    const won = myScore > theirScore
-    const drew = myScore === theirScore
+    const won = utfall === 'vunnet'
+    const drew = utfall === 'oavgjort'
     const type: NotableEventType = won ? 'derby_win' : drew ? 'derby_draw' : 'derby_loss'
     return { type, resultMatchday: fixture.matchday, initialWeight: 1.0, decayPerRound: 0.5 }
   }
@@ -52,7 +54,7 @@ export function detectNotableResult(fixture: Fixture, game: SaveGame): KlackEcho
   }
 
   // top_team_win: win against team in position <= 3
-  if (myScore > theirScore && oppPos <= 3) {
+  if (utfall === 'vunnet' && oppPos <= 3) {
     return { type: 'top_team_win', resultMatchday: fixture.matchday, initialWeight: 1.0, decayPerRound: 0.33 }
   }
 
@@ -60,7 +62,7 @@ export function detectNotableResult(fixture: Fixture, game: SaveGame): KlackEcho
   // fallbacken borttagen — tabellplacering ≠ storstad, en bruksklubb kan
   // ligga topp 2 en säsong utan att vara en storstadsklubb)
   const isStorstad = oppClub && STORSTAD_SHORT_NAMES.includes(oppClub.shortName ?? '')
-  if (myScore < theirScore && isStorstad) {
+  if (utfall === 'forlorat' && isStorstad) {
     return { type: 'storstad_loss', resultMatchday: fixture.matchday, initialWeight: 1.0, decayPerRound: 0.5 }
   }
 

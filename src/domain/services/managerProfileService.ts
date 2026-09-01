@@ -12,6 +12,7 @@ import {
 } from '../data/managerKaraktarText'
 import { mulberry32 } from '../utils/random'
 import { FixtureStatus } from '../enums'
+import { deriveUtfall } from './matchTypeAxes'
 
 const BURNOUT_HISTORY_MAX = 22
 
@@ -214,6 +215,7 @@ export function computeBurnoutPress(game: SaveGame): BurnoutPress {
   const recentFixtures = game.fixtures
     .filter(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     .filter(f => f.status === FixtureStatus.Completed)
+    .filter(f => !f.isCup && !f.isKnockout)
     .filter(f => f.homeScore !== undefined && f.awayScore !== undefined)
     .sort((a, b) => b.matchday - a.matchday)
     .slice(0, 3)
@@ -221,12 +223,10 @@ export function computeBurnoutPress(game: SaveGame): BurnoutPress {
   // Losses in last 3 rounds
   let lossDelta = 0
   let lastWon = false
-  for (const f of recentFixtures) {
-    const isHome = f.homeClubId === game.managedClubId
-    const scored = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
-    const conceded = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-    if (scored < conceded) lossDelta += BURNOUT_LOSS_PER_RECENT
-    if (scored > conceded && recentFixtures.indexOf(f) === 0) lastWon = true
+  for (const [index, f] of recentFixtures.entries()) {
+    const outcome = deriveUtfall(f, game.managedClubId)
+    if (outcome === 'forlorat') lossDelta += BURNOUT_LOSS_PER_RECENT
+    if (outcome === 'vunnet' && index === 0) lastWon = true
   }
 
   // Decision fatigue

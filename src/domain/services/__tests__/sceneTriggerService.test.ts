@@ -247,6 +247,14 @@ describe('sceneTriggerService — cup-finalseger', () => {
     expect(shouldTriggerCupFinalVictory(g)).toBe(false)
   })
 
+  it('triggar cup_final_victory efter förlängningsseger trots lika råscore', () => {
+    const g = makeGame({ fixtures: [makeFixture({
+      isCup: true, isKnockout: true, roundNumber: 4, matchday: 14,
+      homeScore: 2, awayScore: 2, overtimeResult: 'home',
+    })] })
+    expect(shouldTriggerCupFinalVictory(g)).toBe(true)
+  })
+
   it('shownScenes blockerar re-trigger av cup_final_victory', () => {
     const g = makeGame({
       fixtures: [

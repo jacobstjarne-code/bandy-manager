@@ -7,6 +7,20 @@
 
 ---
 
+## Checkpoint 2026-09-01 — Codex +100 (historisk leveransnot)
+
+**Bas:** `55b2aa9d`. **Status:** byggt och verifierat i arbetsträdet, ännu inte committat. Den levande statusen finns i `MASTER_OPPET.md`; detta block är bara changelog.
+
+- Mobil 390×844, 72 dev-scener: 273 kontrollinstanser under golvet före rundan, 11 efter. 262 instanser stängdes med 45×45 kontrollgolv och 44px ikongolv. De 11 återstående är täta SVG-`PlayerDot` på taktiktavlan och kräver ett eget hit-area/layoutbeslut. Full visuell snapshot-svit återstår; `mobileDecisionHierarchy` är 4/4 grön.
+- Cup/bracket: en separat, bekräftad råscore-bugg i `updateCupBracketAfterRound()` är stängd — olöst oavgjort ger inte längre hemmalaget avancemang; straffutfall går via `deriveUtfall()`. Tre nya regressionstester. Den äldre observerade UI-ytan ”över vid 5–5” är fortfarande inte identifierad och är fortsatt öppen endast i MASTER.
+- Slutspelsserie: `getPlayoffSeriesContext()` går nu via `deriveUtfall()` för förlängning/straff; 12 tester gröna.
+- Omgång/säsong: knockout separerad från ordinarie ligafixturer i pre-round-kontexten, playoffklassning härleds ur fixturflagga och knockout skjuts inte längre upp av ligans väderinställning.
+- Sannings-/ordningspass: tränarbågar, press, medier, säsongssummering och nästa-omgångsval använder kanoniskt utfall och/eller sorterad matchday där de tidigare litade på rå score eller arrayordning.
+- Reproducerbarhet: render- och återöppningsslump i bland annat peptalk, halvtidsanalys, matchgenerator/resume, assistentcitat, kontrakt, transfer, spelarsamtal, politiker, halvtidsskador och pension har ersatts med stabilt seed/hash från spelkontext.
+- Verifiering: full Vitest **346 filer / 3611 tester**, produktionsbuild, TypeScript, design guard, content-contract och `git diff --check` gröna. Full visuell snapshot-svit är uttryckligen inte körd ännu.
+
+---
+
 # ▶ HELA KÖN — ta nästa rad
 
 **Blockerad på CI, deploy eller ett svar: ta nästa post här. Fråga inte, schemalägg ingen väckning.**
@@ -676,7 +690,7 @@ Rapportera vad som finns tillgängligt att visa mitt i en serie — matchställn
 
 **Cup är en annan fråga, inte samma lucka.** Cup har ingen serie — varje rond är EN match, avgjord direkt (`CupBracket`/`CupMatch`, inget `homeWins`/`awayWins`-koncept). Det finns alltså ingen "matchställning mitt i en rond" att visa för cup. Den motsvarande luckan för cup är en ANNAN: mellan ronder (vunnit rond 2, inte spelat rond 3 än) visar `deriveTurneringslageMode` heller ingenting där (`isInFinal` är false tills finalen), men det som går att visa är bara "vidare till [rondnamn], hemma/borta mot [nästa motståndare]" — ingen ställning, ingen "segrar som krävs" (alltid 1, hela poängen med cup). Om Sommaren/Turneringsläge ska täcka båda är det två separata texter, inte en delad mall.
 
-**Flaggat, inte fixat — datakvalitetsfynd i den återanvända funktionen:** `getPlayoffSeriesContext()`s `wins`/`losses`-räkning (rad 39-45) jämför RÅ `homeScore`/`awayScore` (`myGoals > theirGoals ? wins++ : losses++`) — ingen `else if`, ren binär. En match avgjord i förlängning/straff har `homeScore === awayScore` i grundtiden (samma mönster U2 redan fixade för `MatchTypeAxes.utfall`, som läser `wentToPenalties`/`overtimeResult` FÖRE råscore) — här faller en sådan match rakt in i `else`-grenen och räknas som förlust, oavsett vem som faktiskt vann. Inte rapporterat tidigare eftersom ingen UI hittills visat serieställningen självständigt (bara vikt/kritikalitet, som inte bryr sig om VILKEN sida som vann matchpucken). Om 5.3 bygger på denna funktion ärver texten samma bugg — värt att fixa i samma sving, inte en separat post.
+**Flaggat 2026-08-19; STÄNGT I OKOMMITTERAD CHECKPOINT 2026-09-01:** `getPlayoffSeriesContext()`s `wins`/`losses`-räkning jämförde RÅ `homeScore`/`awayScore` och räknade förlängnings-/straffavgjorda matcher som förlust. Funktionen går nu via kanoniska `deriveUtfall()`. Verifierat med 12 tester i `playoffSeriesContext.test.ts` samt full Vitest 346 filer / 3611 tester. Den överordnade 5.3-design-/textfrågan är fortfarande separat; levande status finns i MASTER.
 
 **Status:** `RAPPORT-LEVERERAD` — väntar på Jacobs text
 

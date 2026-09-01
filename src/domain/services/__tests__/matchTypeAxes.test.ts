@@ -166,6 +166,14 @@ describe('deriveUtfall — U2 (SLUTTEST_KO.md, 2026-08-17), symptom 1', () => {
     expect(deriveUtfall(fixture, HOME)).toBe('forlorat')
   })
 
+  it('penaltyResult räcker även om en äldre fixture saknar wentToPenalties-flaggan', () => {
+    const fixture = makeFixture({
+      homeScore: 2, awayScore: 2, penaltyResult: { home: 4, away: 3 },
+    })
+    expect(deriveUtfall(fixture, HOME)).toBe('vunnet')
+    expect(deriveUtfall(fixture, AWAY)).toBe('forlorat')
+  })
+
   it('förlängningsseger utan straffar', () => {
     const fixture = makeFixture({ homeScore: 3, awayScore: 3, overtimeResult: 'away' })
     expect(deriveUtfall(fixture, AWAY)).toBe('vunnet')

@@ -12,6 +12,7 @@ import { getCoffeeRoomScene } from './coffeeRoomService'
 import { getSeasonEndPhase } from '../data/seasonEndPhase'
 import { shouldTriggerBoardMeeting as boardMeetingCheck } from '../data/scenes/boardMeetingScene'
 import { shouldTriggerValet } from '../data/scenes/valetScene'
+import { deriveUtfall } from './matchTypeAxes'
 
 const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
 const COFFEE_ROOM_OVERRIDE_COOLDOWN = 2
@@ -88,16 +89,7 @@ export function shouldTriggerSMFinalVictory(game: SaveGame): boolean {
   const isSMFinal = lastManaged.isFinaldag === true && !lastManaged.isCup
   if (!isSMFinal) return false
 
-  const isHome = lastManaged.homeClubId === game.managedClubId
-  const myScore = isHome ? lastManaged.homeScore : lastManaged.awayScore
-  const theirScore = isHome ? lastManaged.awayScore : lastManaged.homeScore
-  // Räkna med ev. straffläggning
-  if (lastManaged.penaltyResult) {
-    const myPen = isHome ? lastManaged.penaltyResult.home : lastManaged.penaltyResult.away
-    const theirPen = isHome ? lastManaged.penaltyResult.away : lastManaged.penaltyResult.home
-    return myPen > theirPen
-  }
-  return myScore > theirScore
+  return deriveUtfall(lastManaged, game.managedClubId) === 'vunnet'
 }
 
 /**
@@ -118,15 +110,7 @@ export function shouldTriggerCupFinalVictory(game: SaveGame): boolean {
   const isCupFinal = lastManaged.isCup === true && lastManaged.roundNumber >= 4
   if (!isCupFinal) return false
 
-  const isHome = lastManaged.homeClubId === game.managedClubId
-  const myScore = isHome ? lastManaged.homeScore : lastManaged.awayScore
-  const theirScore = isHome ? lastManaged.awayScore : lastManaged.homeScore
-  if (lastManaged.penaltyResult) {
-    const myPen = isHome ? lastManaged.penaltyResult.home : lastManaged.penaltyResult.away
-    const theirPen = isHome ? lastManaged.penaltyResult.away : lastManaged.penaltyResult.home
-    return myPen > theirPen
-  }
-  return (myScore ?? 0) > (theirScore ?? 0)
+  return deriveUtfall(lastManaged, game.managedClubId) === 'vunnet'
 }
 
 export function shouldTriggerCoffeeRoom(game: SaveGame): boolean {
@@ -156,6 +140,7 @@ function hasOverrideTrigger(game: SaveGame): boolean {
       f =>
         f.status === FixtureStatus.Completed &&
         !f.isCup &&
+        !f.isKnockout &&
         (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId),
     )
     .sort((a, b) => b.matchday - a.matchday)

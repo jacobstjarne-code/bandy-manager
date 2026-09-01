@@ -9,6 +9,7 @@ import { getCsDiminishingFactor, csUpkeepFactor, csExpectationDrag } from '../..
 import { backfillActivitiesSince, getActiveStaleableActivities, ACTIVITY_CS_BOOST } from '../../../domain/services/communityRenewalService'
 import type { CommunityActivitiesSince } from '../../../domain/entities/Community'
 import { safeStandingPosition } from '../../../domain/services/standingsService'
+import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
 export interface CommunityProcessorResult {
   csBoost: number
@@ -57,8 +58,9 @@ export function processCommunity(
     const isHomeCs = justCompletedManagedFixture.homeClubId === game.managedClubId
     const myScoreCs = isHomeCs ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
     const theirScoreCs = isHomeCs ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
-    const wonCs = (myScoreCs ?? 0) > (theirScoreCs ?? 0)
-    const lostCs = (myScoreCs ?? 0) < (theirScoreCs ?? 0)
+    const utfallCs = deriveUtfall(justCompletedManagedFixture, game.managedClubId)
+    const wonCs = utfallCs === 'vunnet'
+    const lostCs = utfallCs === 'forlorat'
     const bigWinCs = wonCs && (myScoreCs ?? 0) >= (theirScoreCs ?? 0) + 3
     const bigLossCs = lostCs && (theirScoreCs ?? 0) >= (myScoreCs ?? 0) + 3
     if (bigWinCs) csBoost += 5
@@ -154,11 +156,9 @@ export function processCommunity(
   // ── Politiker inbox-notiser ────────────────────────────────────────────────
   const pol = game.localPolitician
   if (pol && justCompletedManagedFixture && pol.relationship > 50) {
-    const isHomeNotif = justCompletedManagedFixture.homeClubId === game.managedClubId
-    const myScoreNotif = isHomeNotif ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
-    const theirScoreNotif = isHomeNotif ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
-    const wonNotif = (myScoreNotif ?? 0) > (theirScoreNotif ?? 0)
+    const wonNotif = deriveUtfall(justCompletedManagedFixture, game.managedClubId) === 'vunnet'
     if (wonNotif) {
+      const isHomeNotif = justCompletedManagedFixture.homeClubId === game.managedClubId
       const opponent = game.clubs.find(c => c.id === (isHomeNotif ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId))
       inboxItems.push({
         id: `inbox_pol_match_${nextMatchday}_${game.currentSeason}`,
@@ -307,7 +307,7 @@ export function processCommunity(
     const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
     const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
     const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
-    const won = (myScore ?? 0) > (theirScore ?? 0)
+    const won = deriveUtfall(justCompletedManagedFixture, game.managedClubId) === 'vunnet'
     const bigLoss = (theirScore ?? 0) - (myScore ?? 0) >= 3
     const baseShift = won ? 5 : bigLoss ? -8 : -2
     for (const name of volunteers) {

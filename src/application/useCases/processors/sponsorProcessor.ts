@@ -5,6 +5,7 @@ import { InboxItemType, TrainingType, TrainingIntensity } from '../../../domain/
 import { mulberry32 } from '../../../domain/utils/random'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { RISKY_SPONSOR_CONTRACT_ROUNDS } from '../../../domain/data/eventProcessorStrings'
+import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
 export interface SponsorProcessorResult {
   updatedSponsors: Sponsor[]
@@ -96,10 +97,7 @@ export function processSponsors(
   }
 
   if (justCompletedManagedFixture) {
-    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
-    const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
-    const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
-    const wonMatch = (myScore ?? 0) > (theirScore ?? 0)
+    const wonMatch = deriveUtfall(justCompletedManagedFixture, game.managedClubId) === 'vunnet'
     if (wonMatch && v09Rand() < 0.05) {
       inboxItems.push({
         id: `inbox_sponsor_win_${nextMatchday}_${game.currentSeason}`,

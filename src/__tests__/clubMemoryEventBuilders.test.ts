@@ -50,6 +50,27 @@ describe('buildEventFromFixture', () => {
     expect(event!.significance).toBe(85)
   })
 
+  it('SM-final won on penalties is stored as gold with the decider named', () => {
+    const f = makeFixture({
+      isFinaldag: true, isKnockout: true, homeScore: 2, awayScore: 2,
+      penaltyResult: { home: 4, away: 3 },
+    })
+    const event = buildEventFromFixture(f, MANAGED_CLUB_ID)
+    expect(event?.outcome).toBe('won')
+    expect(event?.emoji).toBe('🥇')
+    expect(event?.text).toContain('efter straffar')
+  })
+
+  it('cup-final lost in overtime is stored as a loss, not a draw or win', () => {
+    const f = makeFixture({
+      isCup: true, isKnockout: true, roundNumber: 4, homeScore: 2, awayScore: 2,
+      overtimeResult: 'away',
+    })
+    const event = buildEventFromFixture(f, MANAGED_CLUB_ID)
+    expect(event?.outcome).toBe('lost')
+    expect(event?.text).toContain('förlängning')
+  })
+
   it('big win ≥6 margin → significance 65', () => {
     const f = makeFixture({ homeScore: 7, awayScore: 1 })
     const event = buildEventFromFixture(f, MANAGED_CLUB_ID)

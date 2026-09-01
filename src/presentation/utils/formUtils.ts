@@ -1,5 +1,6 @@
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { Club } from '../../domain/entities/Club'
+import { deriveUtfall } from '../../domain/services/matchTypeAxes'
 
 export interface FormResult {
   result: 'V' | 'O' | 'F'
@@ -16,8 +17,8 @@ export function getFormResults(
   count: number = 5,
 ): FormResult[] {
   const completed = fixtures
-    .filter(f => f.status === 'completed' && !f.isCup && (f.homeClubId === clubId || f.awayClubId === clubId))
-    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout && (f.homeClubId === clubId || f.awayClubId === clubId))
+    .sort((a, b) => b.matchday - a.matchday)
     .slice(0, count)
 
   return completed.map(f => {
@@ -26,7 +27,8 @@ export function getFormResults(
     const theirScore = isHome ? f.awayScore : f.homeScore
     const opponentId = isHome ? f.awayClubId : f.homeClubId
     const opponentClub = clubs.find(c => c.id === opponentId)
-    const result: 'V' | 'O' | 'F' = myScore > theirScore ? 'V' : myScore < theirScore ? 'F' : 'O'
+    const utfall = deriveUtfall(f, clubId)
+    const result: 'V' | 'O' | 'F' = utfall === 'vunnet' ? 'V' : utfall === 'forlorat' ? 'F' : 'O'
     return {
       result,
       score: `${myScore}–${theirScore}`,

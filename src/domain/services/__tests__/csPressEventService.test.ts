@@ -124,6 +124,12 @@ describe('shouldTriggerCSPress', () => {
     expect(shouldTriggerCSPress(game, fixture, 1, () => 0.1)).toBe(false)
   })
 
+  it('never triggers for playoff matches', () => {
+    const game = makeGame()
+    const fixture = makeFixture({ isKnockout: true, awayScore: 0 })
+    expect(shouldTriggerCSPress(game, fixture, 1, () => 0.1)).toBe(false)
+  })
+
   it('never triggers for away matches', () => {
     const game = makeGame()
     const fixture = makeFixture({

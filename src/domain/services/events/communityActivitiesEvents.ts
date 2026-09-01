@@ -225,7 +225,13 @@ export function generateCommunityActivitiesEvents(
             id: 'repair',
             label: 'Reparera nu (−15 000 kr)',
             subtitle: '💰 -15 tkr · 🏗️ anläggningen reparerad',
-            effect: { type: 'tempFacilities', amount: 1 },
+            effect: {
+              type: 'multiEffect',
+              subEffects: JSON.stringify([
+                { type: 'income', amount: -15000 },
+                { type: 'facilitiesUpgrade', amount: 5 },
+              ]),
+            },
           },
           {
             id: 'postpone',

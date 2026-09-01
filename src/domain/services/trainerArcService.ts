@@ -1,4 +1,5 @@
 import type { SaveGame, TrainerArc, ArcPhase, ArcTransition } from '../entities/SaveGame'
+import { deriveUtfall } from './matchTypeAxes'
 
 // ── Default arc for new game ────────────────────────────────────────────────
 
@@ -35,24 +36,22 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
   const pos = standing?.position ?? 8
   const totalTeams = game.clubs.length
   const md = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
+    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
     .reduce((m, f) => Math.max(m, f.matchday), 0)
   const season = game.currentSeason
 
   // Update win/loss streaks from last match
   const lastFixtures = game.fixtures
-    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
+    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup && !f.isKnockout)
     .sort((a, b) => b.matchday - a.matchday)
   const last = lastFixtures[0]
   if (last && last.id !== arc.lastCountedFixtureId) {
     arc.lastCountedFixtureId = last.id
-    const isHome = last.homeClubId === game.managedClubId
-    const myScore = isHome ? last.homeScore : last.awayScore
-    const theirScore = isHome ? last.awayScore : last.homeScore
-    if (myScore > theirScore) {
+    const outcome = deriveUtfall(last, game.managedClubId)
+    if (outcome === 'vunnet') {
       arc.consecutiveWins++
       arc.consecutiveLosses = 0
-    } else if (myScore < theirScore) {
+    } else if (outcome === 'forlorat') {
       arc.consecutiveLosses++
       arc.consecutiveWins = 0
     } else {
@@ -93,14 +92,11 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
         transition(arc, 'established', md, season, 'Stabil topposition')
       } else if (md >= 18) {
         const recentFixtures = game.fixtures
-          .filter(f => f.status === 'completed' && !f.isCup &&
+          .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
             (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
           .sort((a, b) => b.matchday - a.matchday)
           .slice(0, 8)
-        const wins = recentFixtures.filter(f => {
-          const isHome = f.homeClubId === game.managedClubId
-          return (isHome ? f.homeScore : f.awayScore) > (isHome ? f.awayScore : f.homeScore)
-        }).length
+        const wins = recentFixtures.filter(f => deriveUtfall(f, game.managedClubId) === 'vunnet').length
         if (wins >= 5) {
           transition(arc, 'established', md, season, 'Jämn stark form')
         }

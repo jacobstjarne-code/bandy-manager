@@ -3,6 +3,7 @@
 
 import type { Fixture } from '../entities/Fixture'
 import { MatchEventType } from '../enums'
+import { deriveUtfall } from './matchTypeAxes'
 
 /**
  * @cites Fixture.homeScore, Fixture.awayScore, Fixture.events, Fixture.homeClubId, MatchEvent.type, MatchEvent.minute
@@ -17,8 +18,6 @@ export function generateSilentMatchReport(
   const away = fixture.awayScore ?? 0
   const diff = Math.abs(home - away)
   const managedIsHome = fixture.homeClubId === managedClubId
-  const managedScore = managedIsHome ? home : away
-  const oppScore = managedIsHome ? away : home
   const oppName = managedIsHome ? awayClubName : homeClubName
 
   const goals = (fixture.events ?? []).filter(e => e.type === MatchEventType.Goal)
@@ -31,16 +30,18 @@ export function generateSilentMatchReport(
     return `mål i ${half} (${min}')`
   })
 
-  const result = managedScore > oppScore ? 'seger' : managedScore < oppScore ? 'förlust' : 'oavgjort'
+  const utfall = deriveUtfall(fixture, managedClubId)
+  const result = utfall === 'vunnet' ? 'seger' : utfall === 'forlorat' ? 'förlust' : 'oavgjort'
   const flavor = result === 'seger'
-    ? (diff >= 4 ? 'en klar seger' : diff >= 2 ? 'en välförtjänt seger' : 'en knapp men viktig seger')
+    ? (diff >= 4 ? 'en klar seger' : diff >= 2 ? 'en välförtjänt seger' : diff === 0 ? 'en dramatisk seger' : 'en knapp men viktig seger')
     : result === 'förlust'
     ? (diff >= 4 ? 'ett tungt nederlag' : diff >= 2 ? 'en tydlig förlust' : 'ett bittert slutresultat')
     : 'en rättvis poängdelning'
 
-  const opener = diff === 0
+  const decider = (fixture.wentToPenalties || fixture.penaltyResult) ? ' efter straffar' : fixture.overtimeResult ? ' efter förlängning' : ''
+  const opener = result === 'oavgjort'
     ? `${homeClubName} och ${awayClubName} delade på poängen i en jämn tillställning där lagen tog ut varandra väl.`
-    : `${homeClubName} ${home}–${away} ${awayClubName}. Det blev ${flavor} för ${managedIsHome ? homeClubName : awayClubName} mot ${oppName}.`
+    : `${homeClubName} ${home}–${away} ${awayClubName}${decider}. Det blev ${flavor} för ${managedIsHome ? homeClubName : awayClubName} mot ${oppName}.`
 
   const middle = goalTexts.length > 0
     ? `Avgörande händelser: ${goalTexts.join(', ')}.`

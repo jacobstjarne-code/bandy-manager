@@ -4,6 +4,7 @@ import type { Journalist } from '../entities/SaveGame'
 import { FixtureStatus, InboxItemType } from '../enums'
 import { SMALL_ABSURDITIES } from '../data/smallAbsurditiesData'
 import { formatRating } from '../format'
+import { deriveUtfall } from './matchTypeAxes'
 
 function buildByline(journalist: Journalist | undefined, suppressName?: boolean): string {
   if (!journalist) return ''
@@ -29,17 +30,15 @@ function countRecentResults(game: SaveGame, lastN: number): { wins: number; loss
       f.status === FixtureStatus.Completed &&
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
-    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .sort((a, b) => b.matchday - a.matchday)
     .slice(0, lastN)
 
   let wins = 0
   let losses = 0
   for (const f of completed) {
-    const isHome = f.homeClubId === game.managedClubId
-    const myScore = isHome ? f.homeScore : f.awayScore
-    const theirScore = isHome ? f.awayScore : f.homeScore
-    if ((myScore ?? 0) > (theirScore ?? 0)) wins++
-    else if ((myScore ?? 0) < (theirScore ?? 0)) losses++
+    const utfall = deriveUtfall(f, game.managedClubId)
+    if (utfall === 'vunnet') wins++
+    else if (utfall === 'forlorat') losses++
   }
   return { wins, losses }
 }
@@ -65,6 +64,7 @@ export function generateMediaHeadlines(
   const theirScore = isHome ? (managedFixture.awayScore ?? 0) : (managedFixture.homeScore ?? 0)
   const myClub = game.clubs.find(c => c.id === game.managedClubId)
   const opponentClub = game.clubs.find(c => c.id === (isHome ? managedFixture.awayClubId : managedFixture.homeClubId))
+  const utfall = deriveUtfall(managedFixture, game.managedClubId)
 
   const id = `inbox_media_r${round}_${game.currentSeason}`
   const { wins, losses } = countRecentResults(game, 5)
@@ -83,14 +83,14 @@ export function generateMediaHeadlines(
     )]
   }
 
-  if (myScore > theirScore && wins >= 4) {
+  if (utfall === 'vunnet' && wins >= 4) {
     return [mediaItem(
       `${myClub?.name} i strålande form — ${wins} segrar på de fem senaste`,
       game.currentDate, id, game, suppressJournalistName
     )]
   }
 
-  if (theirScore > myScore && losses >= 3) {
+  if (utfall === 'forlorat' && losses >= 3) {
     return [mediaItem(
       `Kris i ${myClub?.name}? ${losses} förluster på de fem senaste`,
       game.currentDate, id, game, suppressJournalistName
@@ -126,6 +126,7 @@ export function generateTrendArticles(
     .filter(f =>
       f.status === FixtureStatus.Completed &&
       !f.isCup &&
+      !f.isKnockout &&
       (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
     )
     .sort((a, b) => b.matchday - a.matchday)

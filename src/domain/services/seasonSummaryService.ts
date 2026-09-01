@@ -396,9 +396,10 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     f.status === FixtureStatus.Completed &&
     f.season === game.currentSeason &&
     !f.isCup &&
+    !f.isKnockout &&
     f.roundNumber <= 22 &&
     (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
-  ).sort((a, b) => a.roundNumber - b.roundNumber)
+  ).sort((a, b) => a.matchday - b.matchday)
 
   const standing = game.standings.find(s => s.clubId === managedClubId)
   const finalPosition = standing?.position ?? 12

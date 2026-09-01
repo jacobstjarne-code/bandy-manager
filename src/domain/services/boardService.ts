@@ -427,8 +427,8 @@ export function updateRunningBoardPatience(
 ): { boardPatience: number; boardPatienceLastCountedFixtureId?: string } {
   const currentPatience = game.boardPatience ?? 70
   const lastFixtures = game.fixtures
-    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
-    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup && !f.isKnockout)
+    .sort((a, b) => b.matchday - a.matchday)
   const last = lastFixtures[0]
   if (!last || last.id === game.boardPatienceLastCountedFixtureId) {
     return { boardPatience: currentPatience, boardPatienceLastCountedFixtureId: game.boardPatienceLastCountedFixtureId }

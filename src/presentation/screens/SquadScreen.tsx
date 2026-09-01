@@ -874,8 +874,8 @@ export function SquadScreen() {
             {(game?.loanDeals ?? []).map((deal: LoanDeal) => {
               const player = game?.players.find(p => p.id === deal.playerId)
               if (!player) return null
-              const completedLeague = game?.fixtures.filter(f => f.status === 'completed' && !f.isCup).length ?? 0
-              const roundsLeft = (deal.endRound ?? 22) - completedLeague
+              const currentMatchday = game?.currentMatchday ?? 0
+              const roundsLeft = (deal.endRound ?? currentMatchday) - currentMatchday
               return (
                 <div key={deal.playerId} className="card-sharp" style={{
                   padding: '10px 14px', marginBottom: 8,

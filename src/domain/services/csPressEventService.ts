@@ -33,6 +33,7 @@ export function computeCSStreak(game: SaveGame, currentFixture: Fixture): number
       f.id !== currentFixture.id &&
       f.status === 'completed' &&
       !f.isCup &&
+      !f.isKnockout &&
       f.homeClubId === managedId &&
       f.season === game.currentSeason,
     )
@@ -59,7 +60,7 @@ export function shouldTriggerCSPress(
   rand: () => number,
 ): boolean {
   // Only home league matches
-  if (currentFixture.isCup) return false
+  if (currentFixture.isCup || currentFixture.isKnockout) return false
   if (currentFixture.homeClubId !== game.managedClubId) return false
 
   // Opponent must have 0 goals (CS)

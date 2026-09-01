@@ -28,7 +28,7 @@ export function getSituation(game: SaveGame): Situation {
 
   // ── Hjälpdata ─────────────────────────────────────────────────────
   const completedLeague = game.fixtures.filter(
-    f => f.status === 'completed' && !f.isCup &&
+    f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
       (f.homeClubId === managedId || f.awayClubId === managedId)
   ).sort((a, b) => b.matchday - a.matchday)
 

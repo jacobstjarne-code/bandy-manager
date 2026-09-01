@@ -11,6 +11,7 @@ import { isPlayThroughInjuryCardStillValid } from '../../../application/useCases
 import { simulateMatch } from '../../../domain/services/matchEngine'
 import { fixtureSeed } from '../../../domain/utils/random'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
+import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -165,7 +166,7 @@ export function matchActions(get: Get, set: Set) {
             }
           : f
       )
-      const completedFixtures = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+      const completedFixtures = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
       // 4.1 (SLUTTEST_KO.md, 2026-08-17): pointDeductions saknades — samma
       // klass som playoffTransition.ts/seasonEndProcessor.ts, se rotorsak där.
       const standings = calculateStandings(game.league.teamIds, completedFixtures, game.pointDeductions)
@@ -271,7 +272,7 @@ export function matchActions(get: Get, set: Set) {
 
       const completed = result.fixture
       const updatedFixtures = game.fixtures.map(f => f.id === fixtureId ? completed : f)
-      const completedLeague = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+      const completedLeague = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
       // 4.1 (SLUTTEST_KO.md, 2026-08-17): pointDeductions saknades — se rotorsak i playoffTransition.ts.
       const standings = calculateStandings(game.league.teamIds, completedLeague, game.pointDeductions)
 
@@ -280,8 +281,9 @@ export function matchActions(get: Get, set: Set) {
       const oppScore     = isHome ? completed.awayScore ?? 0 : completed.homeScore ?? 0
       const opponent = game.clubs.find(c => c.id === (isHome ? fixture.awayClubId : fixture.homeClubId))
 
+      const utfall = deriveUtfall(completed, game.managedClubId)
       const matchResult: 'win' | 'draw' | 'loss' =
-        managedScore > oppScore ? 'win' : managedScore < oppScore ? 'loss' : 'draw'
+        utfall === 'vunnet' ? 'win' : utfall === 'forlorat' ? 'loss' : 'draw'
       const score = `${managedScore}–${oppScore}`
       const coach = game.assistantCoach
       const coachBody = coach
@@ -322,7 +324,7 @@ export function matchActions(get: Get, set: Set) {
       const completed = { ...fixture, homeScore, awayScore, events: [], status: FixtureStatus.Completed }
 
       const updatedFixtures = game.fixtures.map(f => f.id === fixtureId ? completed : f)
-      const completedLeague = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+      const completedLeague = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
       // 4.1 (SLUTTEST_KO.md, 2026-08-17): pointDeductions saknades — se rotorsak i playoffTransition.ts.
       const standings = calculateStandings(game.league.teamIds, completedLeague, game.pointDeductions)
 

@@ -2,6 +2,7 @@ import type { CupBracket, CupMatch } from '../entities/Cup'
 import type { Fixture } from '../entities/Fixture'
 import { FixtureStatus } from '../enums'
 import { CUP_FINAL_VENUE } from '../data/specialDateStrings'
+import { deriveUtfall } from './matchTypeAxes'
 
 // Matchdays for cup rounds — försäsong aug-okt, before liga starts at matchday 5
 const CUP_MATCHDAYS: Record<number, number> = {
@@ -220,17 +221,12 @@ export function updateCupBracketAfterRound(
     const fixture = completedFixtures.find(f => f.id === match.fixtureId)
     if (!fixture || fixture.status !== FixtureStatus.Completed) return match
 
-    let homeWon: boolean
-    if (fixture.homeScore !== fixture.awayScore) {
-      homeWon = fixture.homeScore > fixture.awayScore
-    } else if (fixture.overtimeResult) {
-      homeWon = fixture.overtimeResult === 'home'
-    } else if (fixture.penaltyResult) {
-      homeWon = fixture.penaltyResult.home > fixture.penaltyResult.away
-    } else {
-      homeWon = true // fallback
-    }
-    const winnerId = homeWon ? fixture.homeClubId : fixture.awayClubId
+    const outcome = deriveUtfall(fixture, fixture.homeClubId)
+    // A completed knockout fixture without an actual decider is corrupt or
+    // incomplete data. Keep the bracket unresolved instead of silently
+    // gifting the tie to the home club.
+    if (outcome === 'oavgjort') return match
+    const winnerId = outcome === 'vunnet' ? fixture.homeClubId : fixture.awayClubId
 
     return { ...match, winnerId }
   })

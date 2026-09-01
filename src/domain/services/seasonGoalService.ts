@@ -107,7 +107,7 @@ function getFacilityGoalOffer(game: SaveGame): SeasonGoalOffer | null {
  */
 function tallyVsClub(game: SaveGame, opponentClubId: string): { wins: number; draws: number; losses: number } {
   const fixtures = game.fixtures.filter(f =>
-    f.season === game.currentSeason && !f.isCup && f.status === FixtureStatus.Completed &&
+    f.season === game.currentSeason && !f.isCup && !f.isKnockout && f.status === FixtureStatus.Completed &&
     ((f.homeClubId === game.managedClubId && f.awayClubId === opponentClubId) ||
      (f.awayClubId === game.managedClubId && f.homeClubId === opponentClubId))
   )
@@ -261,6 +261,7 @@ function countSeasonGamesPlayedByPlayer(game: SaveGame): Record<string, number> 
     f.status === FixtureStatus.Completed &&
     f.season === game.currentSeason &&
     !f.isCup &&
+    !f.isKnockout &&
     f.roundNumber <= 22 &&
     (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
   )
