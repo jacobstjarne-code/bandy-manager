@@ -138,6 +138,9 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // Mobilhierarki-regressioner (2026-08-31): riktiga, deterministiska lägen
   // för månadskön och DecisionCards tre visuella vikter.
   | 'portal-month-decisions' | 'decision-modes' | 'event-overlay-breakpoint'
+  // DOM_SPONSOR_MOTBUD_2026-08-31.md: verifiering av motbudsflödet (egen
+  // scen, rör inte portal-month-decisions befintliga baseline).
+  | 'sponsor-motbud'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -215,6 +218,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'portal-month-decisions', label: 'Portal — tre månadsbeslut (1 primärt + 2 väntar)' },
   { id: 'decision-modes', label: 'DecisionCard — notis, dilemma, brytpunkt' },
   { id: 'event-overlay-breakpoint', label: 'EventOverlay — brytpunkt med accentkant' },
+  { id: 'sponsor-motbud', label: 'Sponsor-motbud (DOM_SPONSOR_MOTBUD)' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -651,6 +655,31 @@ const mobileDecisionEvents = [
 const portalMonthDecisionsGame = {
   ...factoryMidSeasonGame,
   pendingEvents: mobileDecisionEvents,
+} as unknown as SaveGame
+
+// DOM_SPONSOR_MOTBUD_2026-08-31.md — verifiering. Realistisk sponsorData
+// (personality satt, matchar generateSponsorOffer:s form) så motbudsknappen
+// och SponsorCounterModal går att klicka igenom med riktig kod, inte en
+// förenklad dev-approximation (mobileDecisionEvents ovan saknar sponsorData
+// helt — byggd för ett annat syfte, HIGH 11:s månadskö-batchning).
+const sponsorMotbudOffer = {
+  id: 'sponsor_dev_1', name: 'Nordins Bygg AB', category: 'Bygg', weeklyIncome: 2000,
+  contractRounds: 12, signedRound: 1, personality: 'regional' as const,
+}
+const sponsorMotbudEvent = {
+  id: 'event_sponsor_dev', type: 'sponsorOffer' as const, resolved: false,
+  title: `Sponsorerbjudande — ${sponsorMotbudOffer.name}`,
+  body: `${sponsorMotbudOffer.name} vill sponsra klubben med ${sponsorMotbudOffer.weeklyIncome} kr/vecka i ${sponsorMotbudOffer.contractRounds} omgångar.`,
+  sponsorData: JSON.stringify(sponsorMotbudOffer),
+  choices: [
+    { id: 'accept', label: `Acceptera (${sponsorMotbudOffer.weeklyIncome} kr/vecka)`, effect: { type: 'acceptSponsor' as const, sponsorData: JSON.stringify(sponsorMotbudOffer) } },
+    { id: 'reject', label: 'Avslå', effect: { type: 'noOp' as const } },
+    { id: 'counter', label: '[Opus]', effect: { type: 'noOp' as const } },
+  ],
+}
+const sponsorMotbudGame = {
+  ...factoryMidSeasonGame,
+  pendingEvents: [sponsorMotbudEvent],
 } as unknown as SaveGame
 
 const breakpointEvent = {
@@ -1255,6 +1284,7 @@ export function DevScenesScreen() {
       : scene === 'portal-bid-single' ? portalBidSingleGame
       : scene === 'portal-bid-multi' ? portalBidMultiGame
       : scene === 'portal-month-decisions' ? portalMonthDecisionsGame
+      : scene === 'sponsor-motbud' ? sponsorMotbudGame
       : scene === 'club-fresh' ? clubFreshGame
       : scene === 'club-established' ? clubEstablishedGame
       : scene === 'taktik' ? taktikGame
@@ -1419,7 +1449,7 @@ export function DevScenesScreen() {
         )}
         {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind'
           || scene === 'portal-bid-single' || scene === 'portal-bid-multi'
-          || scene === 'portal-month-decisions'
+          || scene === 'portal-month-decisions' || scene === 'sponsor-motbud'
           || scene === 'primary-smfinal-vs-deadline' || scene === 'primary-event-vs-farewell') && (
           <div style={{ height: '1400px', overflow: 'hidden', position: 'relative' }}>
             <PortalScreen />

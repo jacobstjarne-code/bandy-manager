@@ -64,5 +64,20 @@ export function generateSponsorOffer(
     weeklyIncome: Math.round(baseIncome / 500) * 500,
     contractRounds,
     signedRound: round,
+    personality: pickSponsorPersonality(rand),
   }
+}
+
+/**
+ * DOM_SPONSOR_MOTBUD_2026-08-31.md: personality var deklarerad på Sponsor
+ * (typen) men aldrig satt av någon generator (verifierat — noll skrivställen
+ * innan denna rad). Motbudsmekaniken kräver ett verkligt värde att läsa
+ * reservationsnivån ur. Fördelning: mest lokala (småstadsbandyns verklighet
+ * — bygdens egna företag), färre regionala kedjor, sällsynta stiftelser.
+ */
+function pickSponsorPersonality(rand: () => number): NonNullable<import('../entities/Sponsor').Sponsor['personality']> {
+  const r = rand()
+  if (r < 0.55) return 'local'
+  if (r < 0.90) return 'regional'
+  return 'foundation'
 }

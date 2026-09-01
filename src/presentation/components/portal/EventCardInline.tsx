@@ -27,8 +27,10 @@ import { getItemAge } from '../../../domain/services/decisionFatigueService'
 import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
 import { getEventTypeMeta } from '../../../domain/data/eventTypeLabels'
 import { DecisionChoices } from '../DecisionChoices'
+import { SponsorCounterModal } from './SponsorCounterModal'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { Player } from '../../../domain/entities/Player'
+import type { Sponsor } from '../../../domain/entities/Sponsor'
 
 /**
  * High 6 (Skutskär-auditen, 2026-08-22): eventet bar redan relatedPlayerId
@@ -90,8 +92,15 @@ export function getEventTypeLabel(event: GameEvent): string {
 
 export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
+  const previewSponsorCounter = useGameStore(s => s.previewSponsorCounter)
+  const commitSponsorCounter = useGameStore(s => s.commitSponsorCounter)
   const players = useGameStore(s => s.game?.players)
   const [isExiting, setIsExiting] = useState(false)
+  // DOM_SPONSOR_MOTBUD_2026-08-31.md: choiceId==='counter' fångas HÄR, före
+  // resolveEvent — Y är fri inmatning (SponsorCounterModal), inte ett
+  // fördefinierat val. Detta är den enda platsen sponsorOffer faktiskt
+  // renderas (PortalEventSlot → EventCardInline), se rotorsak i D-fact.
+  const [showCounterModal, setShowCounterModal] = useState(false)
   const actions = getActionsForEvent(event)
   const typeLabel = getEventTypeLabel(event)
   const injuryTag = getInjuryTag(event, players)
@@ -106,12 +115,25 @@ export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) 
   const agedClass = age >= 5 ? 'aged-2' : age >= 3 ? 'aged-1' : ''
 
   function handleAction(choiceId: string) {
+    if (event.type === 'sponsorOffer' && choiceId === 'counter') {
+      setShowCounterModal(true)
+      return
+    }
     if (!exitDelayMs) {
       resolveEvent(event.id, choiceId, true)
       return
     }
     setIsExiting(true)
     setTimeout(() => resolveEvent(event.id, choiceId, true), exitDelayMs)
+  }
+
+  let sponsorForCounter: Sponsor | null = null
+  if (showCounterModal && event.sponsorData) {
+    try {
+      sponsorForCounter = JSON.parse(event.sponsorData)
+    } catch {
+      sponsorForCounter = null
+    }
   }
 
   return (
@@ -187,6 +209,14 @@ export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) 
         layout="inline"
       />
 
+      {sponsorForCounter && (
+        <SponsorCounterModal
+          sponsor={sponsorForCounter}
+          onClose={() => setShowCounterModal(false)}
+          onPreview={(requestedWeeklyIncome) => previewSponsorCounter(event.id, requestedWeeklyIncome)}
+          onCommit={(requestedWeeklyIncome, outcome) => commitSponsorCounter(event.id, requestedWeeklyIncome, outcome)}
+        />
+      )}
     </div>
   )
 }

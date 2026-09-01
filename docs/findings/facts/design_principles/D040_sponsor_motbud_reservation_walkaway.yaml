@@ -1,0 +1,86 @@
+fact_id: D040
+category: design_principles
+claim: "Sponsor-motbud (DOM_SPONSOR_MOTBUD_2026-08-31.md): ett sponsorerbjudande (X kr/vecka) kan besvaras med ett motbud (Y > X) i stället för bara acceptera/avslå. Enkelrunda, tre utfall avgjorda av Y mot sponsorns dolda reservationsnivå R (härledd ur personlighet × en communityStanding-hävstångsramp): Y ≤ R → accepteras (till Y); R < Y ≤ R×STAND_FIRM_BAND → sponsorn står fast (originalet X finns kvar, ingen förlust); Y > R×STAND_FIRM_BAND → drar sig ur med en sannolikhet som stiger med avståndet, tak MAX_WALKAWAY_PROBABILITY. personality (local/regional/foundation) var deklarerad på Sponsor.ts men aldrig satt av någon generator före denna leverans — tilldelas nu i generateSponsorOffer (55% local / 35% regional / 10% foundation)."
+value:
+  PERSONALITY_RESERVATION_MULT_LOCAL: 1.15
+  PERSONALITY_RESERVATION_MULT_REGIONAL: 1.35
+  PERSONALITY_RESERVATION_MULT_FOUNDATION: 1.25
+  PERSONALITY_WALKAWAY_SENSITIVITY_LOCAL: 0.55
+  PERSONALITY_WALKAWAY_SENSITIVITY_REGIONAL: 1.30
+  PERSONALITY_WALKAWAY_SENSITIVITY_FOUNDATION: 0.90
+  RESERVATION_CS_LEVERAGE_CEIL: 1.20
+  STAND_FIRM_BAND: 1.15
+  MAX_WALKAWAY_PROBABILITY: 0.90
+unit: "multiplikator på originalerbjudandet X (RESERVATION_MULT, STAND_FIRM_BAND, CS_LEVERAGE_CEIL); sannolikhet per andel överskott (WALKAWAY_SENSITIVITY); andel (MAX_WALKAWAY_PROBABILITY)"
+source:
+  type: measurement
+  doc: "docs/DOM_SPONSOR_MOTBUD_2026-08-31.md; scripts/sponsor-motbud-matning-2026-09-01.ts; src/domain/services/sponsorCounterService.ts; src/domain/services/sponsorService.ts; src/presentation/store/gameStore.ts; src/presentation/components/portal/SponsorCounterModal.tsx"
+  decided_by: code
+verified_at: 2026-09-01
+verified_by: code
+status: active
+related_facts:
+  - D031
+invariants:
+  - "value.PERSONALITY_RESERVATION_MULT_LOCAL > 1.0"
+  - "value.PERSONALITY_RESERVATION_MULT_REGIONAL > value.PERSONALITY_RESERVATION_MULT_LOCAL"
+  - "value.PERSONALITY_WALKAWAY_SENSITIVITY_REGIONAL > value.PERSONALITY_WALKAWAY_SENSITIVITY_LOCAL"
+  - "value.STAND_FIRM_BAND > 1.0"
+  - "value.MAX_WALKAWAY_PROBABILITY < 1.0"
+  - "value.MAX_WALKAWAY_PROBABILITY > 0.5"
+notes: |
+  ── VERIFIERAT FÖRE BYGGE: INTE redan byggt ──────────────────────────────
+  grep efter motbud/counterOffer/CounterOffer i src/ gav bara träffar i
+  TRANSFER-bud-filerna (ett annat, redan byggt system — en FAST förhandsberäknad
+  bump, inte fri spelarinmatning). Sponsor-domänen hade noll motbudslogik.
+
+  ── VERIFIERAT UNDER BYGGET: personality var aldrig satt ─────────────────
+  Sponsor.ts deklarerade `personality?: 'local'|'regional'|'foundation'` men
+  0 skrivställen fanns i sponsorService.ts/contextualSponsorService.ts. Domen
+  antog "härledd ur det som redan finns" — fältet fanns, men var alltid
+  undefined i produktion. Löst genom att TILLDELA personality i
+  generateSponsorOffer (viktad slump: 55/35/10, en småstads verklighet —
+  mest lokala företag). Detta är en förutsättning bygget behövde, inte ett
+  scope-brott: utan den hade reservationsnivån inte haft något att läsa.
+
+  ── ARKITEKTUR: varför UI:t inte bara är en fjärde choice ────────────────
+  sponsorOffer-events renders ENDAST via EventCardInline.tsx (spårat via
+  PortalEventSlot → selectDashboardDecisions, decisionTierService.ts —
+  sponsorOffer är 'month'-tier, aldrig 'overlay', så EventPrimary/EventOverlay
+  är aldrig i bilden). Motbudet kräver FRI Y-inmatning (domens ord: "UI:t
+  rider BidModal-mönstret") — inte uttryckbart som ett statiskt
+  choice+effect-par. choiceId==='counter' fångas i EventCardInline FÖRE
+  resolveEvent och öppnar SponsorCounterModal i stället.
+
+  ── BUGG HITTAD OCH FIXAD UNDER EGEN VERIFIERING: unmount-race ───────────
+  Första utkastet lät modalens "skicka motbud"-knapp mutera game-state
+  DIREKT (ta bort eventet ur pendingEvents vid walked_away/accepted). Det
+  hade orsakat att PortalEventSlot omedelbart väljer en NY primary och
+  unmountar EventCardInline (som äger modalen) INNAN spelaren hunnit läsa
+  sponsorns slutbesked. Löst genom att dela store-anropet i
+  previewSponsorCounter (rullar tärningen, RÖR INTE state) och
+  commitSponsorCounter (applicerar det redan avgjorda utfallet, kallas när
+  spelaren stänger modalen efter att ha läst resultatet).
+
+  ── MÄTT (Monte Carlo, 5000 rullningar/cell, scripts/sponsor-motbud-
+     matning-2026-09-01.ts) — samtliga GODKÄNT NÄR-kriterier gröna på FÖRSTA
+     kalibreringen, ingen omkalibrering behövdes ──
+  1. Aggressivt motbud (2× reservation) walkaway: local 49%, regional 90%,
+     foundation 77% — genuint riskabelt, spelaren tvekar.
+  2. Modest motbud (halvvägs mot reservationen): 100% accept för alla tre
+     personligheter, en verklig men liten vinst (+75 till +175 kr/vecka på
+     ett X=1000-exempel).
+  3. Personlighet avläsbar: regional har HÖGRE tak (1.35×X mot lokalt
+     1.15×X) MEN bryter lättare vid samma aggressiva Y (47% mot 34% walk-
+     chans) — exakt domens "djupare ficka, går lättare".
+  4. "Kräv alltid maximalt" (5× reservation): EV-delta ≈ −900 kr/vecka mot
+     att bara acceptera originalet, för ALLA tre personligheter. Ingen
+     freebie.
+
+  ── ÖPPET — Opus-text ────────────────────────────────────────────────────
+  SVENSK TEXT-regeln (CLAUDE.md): Code skriver aldrig speltext. Sex
+  '[Opus]'-platshållare kvar (allowlistade i tests/grind/opusPlaceholderGate.ts):
+  motbudsknappens etikett (postAdvanceEvents.ts), modalens titel/resultat-
+  ruta/skicka-knapp (SponsorCounterModal.tsx, 3 st), walked-away-inboxnotisens
+  title+body (gameStore.ts, 2 st). Domens egen text-plan: "ett register per
+  utfall, personlighets-neutralt räcker för v1."

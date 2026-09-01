@@ -11,6 +11,7 @@ import { createNewGame } from '../../application/useCases/createNewGame'
 import { detectSceneTrigger } from '../../domain/services/sceneTriggerService'
 import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
+import { resolveSponsorCounter } from '../../domain/services/sponsorCounterService'
 import { promoteFromQueue } from '../../domain/services/decisionBudgetService'
 import { type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
@@ -129,6 +130,13 @@ interface GameState {
   // HIGH 6 (Jacobs körorder 2026-08-31): madeByPlayer obligatorisk, ingen
   // default — se eventResolver.ts:s resolveEvent för rotorsak/regel.
   resolveEvent: (eventId: string, choiceId: string, madeByPlayer: boolean) => void
+  // DOM_SPONSOR_MOTBUD_2026-08-31.md: enkelrunda motbud, utanför den
+  // generiska choices/effect-dispatchen (Y är fri inmatning, inte ett
+  // fördefinierat val). Delad i preview (rullar tärningen, ingen mutation)
+  // + commit (applicerar utfallet) — se gameStore.ts:s implementation för
+  // rotorsaken (undviker att modalen unmountas innan spelaren läst svaret).
+  previewSponsorCounter: (eventId: string, requestedWeeklyIncome: number) => import('../../domain/services/sponsorCounterService').SponsorCounterResult | null
+  commitSponsorCounter: (eventId: string, requestedWeeklyIncome: number, outcome: import('../../domain/services/sponsorCounterService').SponsorCounterOutcome) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number, halftimeDecision?: import('../components/match/HalftimeModal').PauseLean) => void
   markMatchStarted: (fixtureId: string, homeLineup?: import('../../domain/entities/Fixture').TeamSelection, awayLineup?: import('../../domain/entities/Fixture').TeamSelection) => void
   simulateAbandonedMatch: (fixtureId: string) => void
@@ -578,6 +586,89 @@ export const useGameStore = create<GameState>()(
           ? promoteFromQueue(afterResolve)
           : afterResolve
         set({ game: afterPromote })
+      },
+
+      // Delad i preview (rullar tärningen, RÖR INTE state) + commit (applicerar
+      // ett REDAN AVGJORT utfall). Rotorsak till uppdelningen: en direkt
+      // mutation på "skicka motbud" (walked_away/accepted) tar bort eventet ur
+      // pendingEvents omedelbart — PortalEventSlot väljer då en NY primary och
+      // EventCardInline (som äger modalen) unmountas innan spelaren hunnit LÄSA
+      // slutbeskedet. Preview låter modalen visa resultatet först; commit körs
+      // när spelaren stänger modalen (se SponsorCounterModal/EventCardInline).
+      previewSponsorCounter: (eventId, requestedWeeklyIncome) => {
+        const { game } = get()
+        if (!game) return null
+        const event = (game.pendingEvents ?? []).find(e => e.id === eventId)
+        if (!event?.sponsorData) return null
+        let original: import('../../domain/entities/Sponsor').Sponsor
+        try {
+          original = JSON.parse(event.sponsorData)
+        } catch {
+          return null
+        }
+        return resolveSponsorCounter(
+          requestedWeeklyIncome,
+          original.weeklyIncome,
+          original.personality ?? 'local',
+          game.communityStanding ?? 50,
+          Math.random,
+        )
+      },
+
+      commitSponsorCounter: (eventId, requestedWeeklyIncome, outcome) => {
+        const { game } = get()
+        if (!game) return
+        if (outcome === 'stood_firm') {
+          // Originalet finns kvar oförändrat (domens SKYDDAT-punkt) — inget
+          // state att ändra, spelaren kan fortfarande trycka Acceptera/Avslå.
+          return
+        }
+        const event = (game.pendingEvents ?? []).find(e => e.id === eventId)
+        if (!event?.sponsorData) return
+        let original: import('../../domain/entities/Sponsor').Sponsor
+        try {
+          original = JSON.parse(event.sponsorData)
+        } catch {
+          return
+        }
+
+        if (outcome === 'walked_away') {
+          set({
+            game: {
+              ...game,
+              pendingEvents: (game.pendingEvents ?? []).filter(e => e.id !== eventId),
+              resolvedEventIds: [...(game.resolvedEventIds ?? []), eventId].slice(-200),
+              inbox: [...game.inbox, {
+                id: `inbox_sponsor_counter_walked_${original.id}`,
+                date: game.currentDate,
+                type: InboxItemType.BoardFeedback,
+                title: '[Opus]',
+                body: '[Opus]',
+                isRead: false,
+              }],
+            },
+          })
+          return
+        }
+
+        // accepted: samma acceptSponsor-väg som ett vanligt accept, bara med
+        // Y i stället för X — patchar event.sponsorData + 'accept'-choicets
+        // sponsorData innan resolveEvent körs, så den befintliga, testade
+        // acceptSponsor-hanteringen (inbox, game.sponsors) återanvänds rakt av.
+        const higherOffer = { ...original, weeklyIncome: requestedWeeklyIncome }
+        const patchedEvent = {
+          ...event,
+          sponsorData: JSON.stringify(higherOffer),
+          choices: event.choices.map(c =>
+            c.id === 'accept' ? { ...c, effect: { ...c.effect, sponsorData: JSON.stringify(higherOffer) } } : c
+          ),
+        }
+        const patchedGame = {
+          ...game,
+          pendingEvents: (game.pendingEvents ?? []).map(e => e.id === eventId ? patchedEvent : e),
+        }
+        const afterResolve = resolveEventFn(patchedGame, eventId, 'accept', undefined, true)
+        set({ game: afterResolve })
       },
 
       requestDetailedAnalysis: (opponentClubId, fixtureId) => {

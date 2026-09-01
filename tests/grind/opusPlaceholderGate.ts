@@ -87,6 +87,21 @@ const ALLOWLIST: { file: string; maxAllowed: number; reason: string }[] = [
     maxAllowed: 7,
     reason: 'A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md) krav 1 — hela bekräftelsegrinden när elvan går under konditionsgolvet. Sju strängar: (1) rubriken för det tvingade läget, (2) brödtexten som namnger kostnaden av att gå in kort över golvet (A-H3:s två ben: höjd skaderisk + risk att förlora dem till nästa match), (3) sektionslabel för listan över spelare under golvet, (4) förklaringen av de två prognostalen (startar / vilas) och att det är en förväntan, inte ett löfte — matchkostnaden slumpas 15–25, (5) sektionslabel för akademikallelsen som konkret utväg, (6) avbryt-knappen, (7) bekräfta-knappen "gå in med dem ändå" — domens synliga beslut. Talen i ytan (N/11, golvet, prognosprocenten) är språkneutrala och står redan renderade.',
   },
+  {
+    file: 'src/domain/services/events/postAdvanceEvents.ts',
+    maxAllowed: 1,
+    reason: 'DOM_SPONSOR_MOTBUD_2026-08-31.md: sponsorOffer-eventets tredje choice ("counter", motbudsknappen). Domens egen text-plan ("Text (Opus, skrivs när Code:s struktur står)") — strukturen (reservation/enkelrunda/tre utfall) är byggd och mätt (D040), knappetiketten väntar bara Opus-inramningen.',
+  },
+  {
+    file: 'src/presentation/components/portal/SponsorCounterModal.tsx',
+    maxAllowed: 3,
+    reason: 'DOM_SPONSOR_MOTBUD_2026-08-31.md, samma leverans som ovan. Tre strängar: modalens titel/inramning, resultatrutans slutbesked (ett register, personlighets-neutralt per domens egen v1-avgränsning), och skicka-knappens etikett.',
+  },
+  {
+    file: 'src/presentation/store/gameStore.ts',
+    maxAllowed: 2,
+    reason: 'DOM_SPONSOR_MOTBUD_2026-08-31.md: inbox-notisen när sponsorn drar sig ur efter ett för aggressivt motbud (title + body). Samma leverans som posterna ovan.',
+  },
 ]
 
 function walk(dir: string, out: string[]): void {

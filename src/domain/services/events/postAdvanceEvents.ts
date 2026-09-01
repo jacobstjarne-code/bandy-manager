@@ -905,6 +905,19 @@ export function buildSponsorOfferEvent(
         subtitle: rivalSponsor ? 'Ni behåller det ni har.' : 'Inga effekter',
         effect: { type: 'noOp' },
       },
+      // DOM_SPONSOR_MOTBUD_2026-08-31.md: motbudet är INTE ett vanligt val
+      // som resolveEvent kör direkt — EventCardInline fångar choiceId==='counter'
+      // FÖRE resolveEvent och öppnar SponsorCounterModal i stället (fri
+      // Y-inmatning, samma "konfigurera-sen-bekräfta"-mönster som BidModal).
+      // effect:noOp är bara ett harmlöst fallback om interceptionen någonsin
+      // missar — den faktiska logiken körs via useGameStore.counterSponsorOffer.
+      // Label är [Opus] (SVENSK TEXT-regeln, CLAUDE.md): "kräv mer — men de
+      // kan gå"-inramningen är domens egen text-post, inte skriven här.
+      {
+        id: 'counter',
+        label: '[Opus]',
+        effect: { type: 'noOp' },
+      },
     ],
     resolved: false,
     sponsorData: JSON.stringify(offer),
