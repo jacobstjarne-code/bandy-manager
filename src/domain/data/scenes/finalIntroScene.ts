@@ -62,22 +62,32 @@ const KEYLINE_POOL: Record<CoachPersonality, string[]> = {
   calm: [
     'De har rutinen. Vi har ingenting att förlora. Jag vet vilket jag hellre har i en final.',
     'Vi har gjort det vi kan på träningarna. Nu är det bara att spela. Det är skönt, faktiskt.',
+    'Ingen av oss har varit här förr. Det gör det enklare. Man kan inte tappa något man aldrig haft.',
+    'Isen är sig lik. Målet är lika stort. Vi har spelat hundra matcher — det här är en till.',
   ],
   sharp: [
     'Alla pratar om dem. Bra. Då tittar ingen på vad vi gör de första tio minuterna.',
     'En final avgörs på detaljer. Vi har gått igenom deras. Frågan är om de gått igenom våra.',
+    'De vann serien. Vi tog oss hit ändå. Fundera på vad det säger om vem som är trött.',
+    'Vi vet exakt hur de spelar sista kvarten. Frågan är om de orkar dit.',
   ],
   jovial: [
     'Halva bandysverige på läktarna och is under skridskorna. Vad mer ska en gammal bandytok begära?',
     'Killarna är spända. Bra. Spänd betyder att man bryr sig. Jag hade oroat mig om de gäspade.',
+    'Jag lovade far min att stå på Studenternas en gång till innan jag la av. Här är vi.',
+    'Titta upp på läktaren, killar. Halva orten har åkt hit. Sånt glömmer man inte.',
   ],
   grumpy: [
     'Favoriter. Underdogs. Strunt i allt det. Två lag, en plan, nitti minuter. Resten är prat.',
     'Jag har sett finaler vinnas av sämre lag än det här. Och förloras av bättre. Spela bara.',
+    'Finalnerver. Alla har dem. Den som låtsas annat ljuger. Spela ändå.',
+    'Jag bryr mig inte om vad tidningarna skrev. Tidningar spelar inte bandy.',
   ],
   philosophical: [
     'En final minns man hela livet. Åt ena hållet eller det andra. Det är det som gör den värd något.',
     'Vi har rest hit på vårt sätt. De på sitt. Idag möts de två berättelserna. Bara den ena får slutet den ville ha.',
+    'Man vinner inte en final. Man förtjänar den, eller så gör man det inte. Idag får vi veta vilket.',
+    'Nittio minuter mot allt som lett hit. Det är en rättvis byteshandel.',
   ],
 }
 
@@ -90,43 +100,83 @@ const COPPER_KEYLINE_POOL: Record<CoachPersonality, string[]> = {
   calm: [
     'Vinn, så spelar vi igen på lördag. Det är hela planen.',
     'Slutspel är slutspel. Samma is, högre pris. Vi gör det vi brukar.',
+    'Ta en match i taget. Bokstavligt. Det är det enda som finns nu.',
+    'Vi har gjort det förr — vunnit när det gällde. Kroppen minns.',
   ],
   sharp: [
     'De har tittat på oss i två dagar. Vi har tittat på dem i tre.',
     'Serien är glömd nu. Det som räknas börjar vid avslaget.',
+    'De sparade nog benen till final. Vi ska se till att det inte blir någon.',
+    'Först till tre. Vinn de rätta kvällarna, inte alla.',
   ],
   jovial: [
     'Slutspelsbandy! Det är nu det luktar riktig vinter om det.',
     'Killarna sov dåligt i natt. Jag med. Det är så det ska kännas.',
+    'Slutspel! Nu blir det trångt vid kaffet i pausen.',
+    'Ingen frågar hur man kom till final. Bara att man kom dit.',
   ],
   grumpy: [
     'Slutspel. Folk gör det större än det är. Samma regler som i oktober.',
     'Fem matcher, först till tre. Resten är prat.',
+    'Serien sa en sak. Slutspelet säger en annan. Lyssna på det senare.',
+    'Vinn ikväll så slipper vi prata om det imorgon.',
   ],
   philosophical: [
     'Serier belönar tålamod. Slutspel belönar mod. Vi får se vilka vi är.',
     'Allt sedan oktober var för att få stå här. Nu står vi här.',
+    'Fem matcher är en liten säsong. Den som håller ihop bäst går vidare.',
+    'Det är nu det avgörs vilka som var på riktigt.',
   ],
 }
 
-function buildHero(tier: FinalTier): string {
-  // Ej hårdkodad annandag (se kanon-not). Gold bär finalarenan; copper är kvarts/semi —
-  // spelas hos lagen (INTE Studenternas) och är bäst av fem, så ingen venue, inget ödesspråk.
-  if (tier === 'gold') return `Final.\n${VENUE}.`
-  return `Slutspel.\nFörst till tre.`
+// D-E (DOMLOGG 2026-08-31): hjälte + ingress var en enda hårdkodad ram per tier
+// — den mest exponerade repetitionen i spelet, eftersom hela långloopen siktar
+// hit. Nu pooler. Venue är kanon (Studenternas, tredje lördagen i mars) så den
+// står kvar; det är RAMEN som varierar. seededPick på fixture.id ger stabil-per-
+// match, varierad-mellan-finaler. CODE SVEPER SEDAN seededPick → rotateSubject
+// (narrativeCoordinatorService, nyckel 'final-hero'/'final-ingress' per tier) så
+// två raka finaler aldrig får samma ram förrän poolen rullat — samma garanti som
+// journalistExclusive, inte bara en 1/N-chans.
+const HERO_POOL_GOLD = [
+  `Final.\n${VENUE}.`,
+  `Sista lördagen.\n${VENUE}.`,
+  `Hit ledde allt.\n${VENUE}.`,
+  `En match kvar.\n${VENUE}.`,
+]
+const HERO_POOL_COPPER = [
+  'Slutspel.\nFörst till tre.',
+  'Bäst av fem.\nDet börjar nu.',
+  'Inte serien längre.\nFörst till tre.',
+]
+
+const INGRESS_POOL_GOLD = [
+  `Finaldag. {väder}\nDet här är matchen alla i {klubb}\nkommer att minnas — åt ena hållet\neller det andra.`,
+  `{väder} Tredje lördagen i mars,\noch {klubb} står kvar när det räknas.\nEn match skiljer.`,
+  `Finaldag på ${VENUE}. {väder}\n{klubb} har rest långt för det här.\nNu är det bara att spela.`,
+  `{väder}\nAllt sedan oktober var för det här.\nNu står {klubb} här. En match.`,
+]
+const INGRESS_POOL_COPPER = [
+  `{väder} Bäst av fem.\nDet räcker inte att vinna en kväll —\ndet ska göras om, och om igen.`,
+  `{väder} Slutspel. Serien är glömd;\ndet som räknas börjar vid avslaget.`,
+  `Slutspelskväll. {väder}\nVinn, så spelas det igen.\nFörlora tre, och vintern är slut.`,
+]
+
+function buildHero(tier: FinalTier, seed: number): string {
+  // Ej hårdkodad annandag (se kanon-not). Venue är kanon i gold-poolen; copper
+  // spelas hos lagen (INTE Studenternas), bäst av fem, inget ödesspråk.
+  return seededPick(tier === 'gold' ? HERO_POOL_GOLD : HERO_POOL_COPPER, seed)
 }
 
 function buildIngress(
   tier: FinalTier,
   managedClubName: string,
+  seed: number,
   weather?: MatchWeather,
 ): string {
   const cond = weather ? getConditionLabel(weather.weather.condition).toLowerCase() : null
   const väder = cond ? `${cond}.` : 'Vinterljus över planen.'
-  if (tier === 'gold') {
-    return `Finaldag. ${väder}\nDet här är matchen alla i ${managedClubName}\nkommer att minnas — åt ena hållet\neller det andra.`
-  }
-  return `${väder} Bäst av fem.\nDet räcker inte att vinna en kväll —\ndet ska göras om, och om igen.`
+  const template = seededPick(tier === 'gold' ? INGRESS_POOL_GOLD : INGRESS_POOL_COPPER, seed + 1)
+  return template.replace(/\{väder\}/g, väder).replace(/\{klubb\}/g, managedClubName)
 }
 
 // E-FS1 (BACKLOG.md): SM-final-uppspelet renderas i två komponenter (Förbered/
@@ -158,8 +208,8 @@ export function getFinalIntroScene(
 
   return {
     eyebrow,
-    hero: buildHero(tier),
-    ingress: buildIngress(tier, managedClubName, weather),
+    hero: buildHero(tier, seed),
+    ingress: buildIngress(tier, managedClubName, seed, weather),
     statLabels: FINAL_STAT_LABELS,
     keyline: { quote, speaker },
     ctaToLineup: 'LAGEN →',

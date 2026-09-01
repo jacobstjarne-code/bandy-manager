@@ -37,8 +37,10 @@ export function pickBurnoutHelperIndex(game: Pick<SaveGame, 'currentSeason' | 'c
  * - Motståndaranalysens detaljnivå ("farliga forwards" istf namn+siffror):
  *   domens EGEN exempelfras är sedan `BANDYSPRAK_KALLASNING_2026-08-19.md`
  *   (B4, OpponentAnalysisCard.tsx:98-100) uttryckligen underkänd som
- *   speltext — "inte 'de har farliga forwards'". Ingen ersättningstext
- *   finns. Byggs inte förrän Opus skriver den.
+ *   speltext — "inte 'de har farliga forwards'". **Ersättningstext skriven
+ *   2026-08-31 (BURNOUT_OPPONENT_READ nedan) — vagheten som managerns ERKÄNNANDE
+ *   att förberedelsen uteblev, inte som en falsk-säker generik. Code wirar in
+ *   den i OpponentAnalysisCard:s burnout-väg (ersätter detaljraden).**
  * - "Inkorgens sammanfattning slutar prioritera": mekanismen domen
  *   förutsätter (en dailyBriefingService-liknande sammanfattning) finns
  *   inte i kodbasen — InboxScreen.tsx sorterar rakt på datum, ingen
@@ -94,6 +96,29 @@ const BURNOUT_TRAINING_SLOWDOWN_ROUNDS = 4
 const BURNOUT_RELIEF_BODY: Record<'markbar' | 'hog', string> = {
   markbar: 'Du hinner inte förbereda som du vill. Det märks på vad du ser.',
   hog: 'Du läser inte rapporterna längre. Du bläddrar förbi dem.',
+}
+
+/**
+ * Den degraderade motståndarläsningen (O4, äntligen skriven — se docstringen
+ * ovan om varför den saknades). När managern är utbränd byts den SKARPA
+ * motståndaranalysen (B4:s namn+egenskap+konsekvens) mot en TUNN läsning: inte
+ * en falsk-säker generik ("de har farliga forwards", underkänd av BANDYSPRAK),
+ * utan managerns ärliga erkännande att förberedelsen uteblev. Vagheten ÄR
+ * kostnaden. Code wirar in den i OpponentAnalysisCard när burnoutzonen är
+ * markbar/hog (ersätter detaljraden, inte hela kortet), vald via
+ * pickPoolIndexAvoidingCooldown så den inte upprepas.
+ */
+export const BURNOUT_OPPONENT_READ: Record<'markbar' | 'hog', string[]> = {
+  markbar: [
+    'Du hann skumma deras senaste matcher. Inte mer.',
+    'Du vet ungefär vad de vill. Detaljerna fick vänta.',
+    'Något om deras främre femma. Du gick aldrig till botten med det.',
+  ],
+  hog: [
+    'Du öppnade aldrig rapporten om dem. Det blir att lita på ögonen idag.',
+    'De har säkert någon farlig. Du hann inte ta reda på vem.',
+    'Vad de har? Du borde veta det bättre än så här.',
+  ],
 }
 
 export function generateBurnoutReliefEvent(matchday: number, season: number, zone: 'markbar' | 'hog'): GameEvent {

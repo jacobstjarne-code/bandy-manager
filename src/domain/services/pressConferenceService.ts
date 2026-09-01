@@ -67,6 +67,11 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Ni dominerade mittfältet idag. Är det er styrka just nu?', preferIds: ['w_c7', 'w_h7', 'bw_d2'], requireMidfieldDominance: true },
     { text: 'Hur var stämningen på {arenaName} idag?', preferIds: ['w_p3', 'bw_p7'], minRound: 3, requireHome: true },
     { text: 'Kaptenen {captainName} — hur ser han på insatsen?', preferIds: ['w_p2', 'w_h3'], minRound: 3 },
+    // #5 pooldjup (DOMLOGG D039): fler ogaterade seger-frågor.
+    { text: 'Det lossnar för er just nu. Vad är skillnaden?', preferIds: ['w_c4', 'w_h5', 'cl03'], minRound: 3 },
+    { text: 'Ni styrde matchen. Är det så du vill se laget spela?', preferIds: ['w_c7', 'w_h1', 'cl04'] },
+    { text: 'En stabil insats. Vad är du mest nöjd med?', preferIds: ['w_h1', 'w_c3', 'w_p4'] },
+    { text: 'Bra kväll på isen. Vad tar laget med sig till nästa?', preferIds: ['w_d1', 'w_h1', 'cl01'] },
   ],
   loss: [
     { text: 'Skandalerna rör om i bandysverige den här säsongen. Påverkar det stämningen i omklädningsrummet?', preferIds: ['l_h9', 'l_p5', 'cl11'], minScandalThisSeason: true },
@@ -82,6 +87,10 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Ni hade chanser men förvaltade dem inte. Stressar det er?', preferIds: ['l_c7', 'l_h7', 'cl16'] },
     { text: 'Motståndarna hade långa stunder av övertag. Vad säger du om ert försvarsspel?', preferIds: ['l_h8', 'l_h1', 'l_a1'] },
     { text: 'Ni har det tufft just nu. Hur håller du moralen uppe?', preferIds: ['l_p9', 'l_h9', 'cl13'], minRound: 3 },
+    // #5 pooldjup (DOMLOGG D039): fler ogaterade förlust-frågor.
+    { text: 'Hur ser du på lagets riktning efter det här?', preferIds: ['l_h1', 'l_c4', 'cl18'] },
+    { text: 'Ni skapade inte nog framåt. Var sitter det?', preferIds: ['l_h4', 'l_c7', 'l_h7'] },
+    { text: 'Vad krävs för att vända det här?', preferIds: ['l_c4', 'l_d1', 'cl18'] },
   ],
   bigLoss: [
     { text: 'Skandalerna rör om i bandysverige den här säsongen. Påverkar det stämningen i omklädningsrummet?', preferIds: ['bl_p3', 'bl_d2', 'cl13'], minScandalThisSeason: true },
@@ -92,6 +101,9 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Motståndarna verkade veta exakt vad ni skulle göra. Läckta planer?', preferIds: ['bl_h4', 'bl_c4', 'bl_h1'] },
     { text: 'Många mål insläppta. Är det ett strukturproblem i försvaret?', preferIds: ['bl_h5', 'bl_a1', 'bl_h1'] },
     { text: 'Behöver du ta in ny spetskompetens för att vända skutan?', preferIds: ['bl_c6', 'bl_c2', 'bl_p1'] },
+    // #5 pooldjup (DOMLOGG D039): fler storförlust-frågor.
+    { text: 'En riktigt tung kväll. Vad säger du till laget härnäst?', preferIds: ['bl_h1', 'bl_p1', 'cl12'] },
+    { text: 'Sånt här får inte hända. Hur ser upparbetningen ut?', preferIds: ['bl_h2', 'bl_h5', 'bl_c2'] },
   ],
   draw: [
     { text: 'En match i en orolig säsong — för bandyn i stort. Vad säger du om läget i bandysverige?', preferIds: ['dr_h1', 'bw_d1', 'dr_d1'], minScandalThisSeason: true },
@@ -103,6 +115,13 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Det satt i detaljerna idag. Vilken är viktigast att förbättra?', preferIds: ['dr_h4', 'dr_c4', 'dr_h6'] },
     { text: 'Ert spel var ojämnt idag. Vad berodde det på?', preferIds: ['dr_h5', 'dr_h4', 'dr_c4'] },
     { text: 'Ni har oavgjort i tre raka. Är det en trend att oroa sig för?', preferIds: ['dr_c6', 'dr_h6', 'dr_h3'], requireDrawStreak3: true },
+    // #5 pooldjup (DOMLOGG D039): fler OGATERADE oavgjort-frågor — den grundaste
+    // kontexten (~3 före detta), så recency=5 har något att rotera mot.
+    { text: 'Ni tog en poäng men tappade två. Hur landar det i truppen?', preferIds: ['dr_c1', 'dr_h3', 'dr_d1'] },
+    { text: 'Matchen jämnade ut sig. Kändes det rättvist?', preferIds: ['dr_d1', 'dr_h1', 'dr_c4'] },
+    { text: 'Vad tar ni med er från den här kvällen?', preferIds: ['dr_c4', 'dr_h4', 'cl21'] },
+    { text: 'En jämn tillställning. Saknades marginalerna eller modet?', preferIds: ['dr_h4', 'dr_h6', 'dr_c1'] },
+    { text: 'Poäng men inte seger. Räcker det i längden?', preferIds: ['dr_c6', 'dr_c1', 'cl21'], minRound: 4 },
   ],
   derbyWin: [
     { text: 'Derbyseger! Vad betyder det för laget?', preferIds: ['dw_p1', 'dw_c1', 'dw_p2'] },
