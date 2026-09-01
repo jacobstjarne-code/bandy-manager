@@ -5,18 +5,27 @@ import { selectThreeOffers } from '../../domain/services/offerSelectionService'
 import { OffersView } from '../components/clubselection/OffersView'
 import { AllClubsView } from '../components/clubselection/AllClubsView'
 
-export function ClubSelectionScreen() {
+interface ClubSelectionScreenProps {
+  /** Deterministisk test-/dev-seam. Produktion använder route-state som förut. */
+  managerNameOverride?: string
+  /** Deterministisk test-/dev-seam. Produktion får fortfarande ett nytt urval per mount. */
+  offerSeed?: number
+}
+
+export function ClubSelectionScreen({ managerNameOverride, offerSeed }: ClubSelectionScreenProps = {}) {
   const navigate = useNavigate()
   const location = useLocation()
   const { newGame } = useGameStore()
 
-  const managerName = (location.state as { managerName?: string } | null)?.managerName ?? ''
+  const managerName = managerNameOverride
+    ?? (location.state as { managerName?: string } | null)?.managerName
+    ?? ''
 
   const [view, setView] = useState<'offers' | 'all'>('offers')
   const [isStarting, setIsStarting] = useState(false)
 
   // Seed sätts en gång vid mount och ändras inte — samma seed = samma tre klubbar
-  const seed = useMemo(() => Date.now(), [])
+  const seed = useMemo(() => offerSeed ?? Date.now(), [offerSeed])
   const offers = useMemo(() => selectThreeOffers(seed), [seed])
 
   // Om managerName saknas — tillbaka till namnformulär

@@ -52,6 +52,8 @@ import { HistoryScreen } from '../HistoryScreen'
 import { EventOverlay } from '../../components/EventOverlay'
 import { DecisionCard } from '../../components/DecisionCard'
 import { PressConferenceScene } from '../../components/PressConferenceScene'
+import { ClubSelectionScreen } from '../ClubSelectionScreen'
+import { CallupModal } from '../../components/portal/CallupModal'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
@@ -141,6 +143,9 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // DOM_SPONSOR_MOTBUD_2026-08-31.md: verifiering av motbudsflödet (egen
   // scen, rör inte portal-month-decisions befintliga baseline).
   | 'sponsor-motbud'
+  // Dev-scen-integritet 2026-09-01: tre tidigare byggda men helt osynliga
+  // produktlägen, nu med deterministisk data och permanent grindsvep.
+  | 'club-selection' | 'season-share' | 'callup-modal'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -219,6 +224,9 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'decision-modes', label: 'DecisionCard — notis, dilemma, brytpunkt' },
   { id: 'event-overlay-breakpoint', label: 'EventOverlay — brytpunkt med accentkant' },
   { id: 'sponsor-motbud', label: 'Sponsor-motbud (DOM_SPONSOR_MOTBUD)' },
+  { id: 'club-selection', label: 'Klubbval — LÄTT/MEDEL/SVÅR' },
+  { id: 'season-share', label: 'SeasonSummary — SÄSONGENS MATCH + delning' },
+  { id: 'callup-modal', label: 'Landslagsuttagning — två spelare' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -834,6 +842,15 @@ const gameOverGame = {
   managerFired: true,
 } as unknown as SaveGame
 
+const callupGame = {
+  ...squadGame,
+  pendingCallupModal: {
+    playerIds: ['p-h1', 'p-f1'],
+    names: ['Erik Johansson', 'Karl Lindström'],
+    bonusTkr: 10,
+  },
+} as SaveGame
+
 // Granska IA — fingerad spelad match (md 20) + andra matcher + roundSummary
 const granskaFixture = {
   id: 'fx-granska', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
@@ -977,6 +994,16 @@ function makeSeasonSummary(overrides: Record<string, unknown>) {
 const seasonSumChampion = makeSeasonSummary({ finalPosition: 1, playoffResult: 'champion', cupResult: 'winner' as const, expectedVerdict: 'exceeded', expectationVerdict: 'exceeded' as const })
 const seasonSumTopThree = makeSeasonSummary({ finalPosition: 2, playoffResult: 'finalist', expectationVerdict: 'met' as const })
 const seasonSumMidtable = makeSeasonSummary({ finalPosition: 6, playoffResult: 'quarterfinal', expectationVerdict: 'met' as const, formTrend: 'stable' as const })
+const seasonSumShare = makeSeasonSummary({
+  finalPosition: 3,
+  playoffResult: 'semifinal',
+  matchOfTheSeason: {
+    fixtureId: 'fx-season-share', matchday: 18, roundLabel: 'Omgång 14',
+    opponentName: 'Bollnäs GoIF', homeScore: 5, awayScore: 4, isHome: true,
+    category: 'late_winner', narrative: 'Karl Lindström avgjorde på tilläggstid efter vinterns stora vändning.',
+    potmName: 'Karl Lindström', shareImageReady: true,
+  },
+})
 
 // Full-täcknings-scener (audit-spec task #1) — renderar riktiga skärmar headless.
 // SeasonSummary läser game.seasonSummaries (sista) → hela skärmen inkl. ÅRSBOK/hero-titel/CTA.
@@ -989,6 +1016,7 @@ const seasonNoPlayoffsGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [
 // styr handleNextSeason-routningen (→ /game/game-over istf /game/dashboard).
 const seasonSumFired = makeSeasonSummary({ finalPosition: 11, playoffResult: 'didNotQualify', expectationVerdict: 'failed' as const, formTrend: 'declining' as const })
 const seasonFiredGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumFired], managerFired: true } as never)
+const seasonShareGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumShare] })
 // Finalhelg: playoffBracket med managed i en pågående final (winnerId null) → isSmFinal.
 const finalhelgGame = makeGame(makeLeagueFixtures(), {
   playoffBracket: {
@@ -1265,6 +1293,7 @@ export function DevScenesScreen() {
       : scene === 'season-header' ? seasonHeaderGame
       : scene === 'season-noplayoffs' ? seasonNoPlayoffsGame
       : scene === 'season-fired' ? seasonFiredGame
+      : scene === 'season-share' ? seasonShareGame
       : scene === 'sommaren-s2' ? sommarenS2Game
       : scene === 'sommaren-titelforsvarare' ? sommarenTitelforsvarareGame
       : scene === 'sommaren-tomt' ? sommarenTomtGame
@@ -1298,6 +1327,7 @@ export function DevScenesScreen() {
       : scene === 'halftime-summary' ? portalGame
       : scene === 'bygget' || scene === 'bygget-avveckling' ? facilityGame
       : scene === 'game-over' || scene === 'game-over-historik' ? gameOverGame
+      : scene === 'callup-modal' ? callupGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -1471,9 +1501,19 @@ export function DevScenesScreen() {
             <TabellScreen />
           </div>
         )}
-        {(scene === 'season-header' || scene === 'season-noplayoffs' || scene === 'season-fired') && seasonReady && (
+        {(scene === 'season-header' || scene === 'season-noplayoffs' || scene === 'season-fired' || scene === 'season-share') && seasonReady && (
           <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
             <SeasonSummaryScreen />
+          </div>
+        )}
+        {scene === 'club-selection' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <ClubSelectionScreen managerNameOverride="Testtränaren" offerSeed={42} />
+          </div>
+        )}
+        {scene === 'callup-modal' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative', background: 'var(--bg-portal)' }}>
+            <CallupModal game={callupGame} />
           </div>
         )}
         {(scene === 'sommaren-s2' || scene === 'sommaren-titelforsvarare' || scene === 'sommaren-tomt' || scene === 'sommaren-siffra') && (
