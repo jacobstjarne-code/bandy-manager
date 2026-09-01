@@ -1,0 +1,64 @@
+fact_id: D042
+category: design_principles
+claim: "Jacobs körorder 2026-09-01 ('hitta och spåra de ~150-220k/säsong som rör kassan utan financeLog-post'), uppföljning på D041. Rotorsak spårad till en verklig ÖVERBETALNINGSBUGG, inte bara en loggningslucka: contextualSponsorService.ts's kommunstöd (engångsbidrag, kontinuerlig CS-skala, tak 80 000 kr) dedup:ade via en sponsor-post i game.sponsors — men den posten skapades med contractRounds:1, och sponsorProcessor.ts's GENERISKA decrement+filter-svep (körs varje omgång, för ALLA sponsorer) rensade bort den efter EN enda omgång. Resultat: bidraget betalades ut på nytt vid varje kontrollomgång (5/11/18) — upp till 3x/säsong istf 1x. Fixat med ett persistent SaveGame-fält (kommunstodPaidSeason, lagrar säsongsnumret) som inte är beroende av sponsor-arrayens livslängd. Samtidigt hittades och åtgärdades en OBESLÄKTAD, ren loggningslucka: boardObjectiveService.ts's 'förtroendepott' (62 500 kr vid två raka flagship-mål godkända) mutade club.finances utan en enda financeLog-post."
+value:
+  TOTAL_UNTRACKED_GAP_BEFORE_FIX_S1_TO_S3: [157985, 219742, 142500]
+  TOTAL_UNTRACKED_GAP_AFTER_FIX_S1_TO_S3: [31985, -38758, 0]
+  KOMMUNSTOD_OVERPAYMENT_CONFIRMED_S1_TO_S3: [126000, 122000, 60000]
+  FORETROENDEPOTT_UNLOGGED_CONFIRMED_S2_S3: [62500, 62500]
+unit: "kr (belopp per säsong)"
+source:
+  type: measurement
+  doc: "scripts/financelog-gap-diagnos-2026-09-01.ts; src/domain/services/contextualSponsorService.ts; src/domain/entities/SaveGame.ts (kommunstodPaidSeason); src/application/useCases/roundProcessor.ts"
+  decided_by: code
+verified_at: 2026-09-01
+verified_by: code
+status: active
+related_facts:
+  - D041
+invariants:
+  - "value.TOTAL_UNTRACKED_GAP_AFTER_FIX_S1_TO_S3.0 < value.TOTAL_UNTRACKED_GAP_BEFORE_FIX_S1_TO_S3.0"
+  - "value.TOTAL_UNTRACKED_GAP_AFTER_FIX_S1_TO_S3.1 < value.TOTAL_UNTRACKED_GAP_BEFORE_FIX_S1_TO_S3.1"
+  - "value.TOTAL_UNTRACKED_GAP_AFTER_FIX_S1_TO_S3.2 < value.TOTAL_UNTRACKED_GAP_BEFORE_FIX_S1_TO_S3.2"
+notes: |
+  ── ARKITEKTURFYND: 8+ ställen bryter mot economyService.ts's egen
+     dokumenterade regel ────────────────────────────────────────────────────
+  economyService.ts:52 säger explicit: "Pure function — the single place
+  where Club.finances is mutated. All callers must go through this instead
+  of writing { ...c, finances: c.finances + x }." Grep bekräftade minst 8
+  ställen (roundProcessor.ts×3, seasonEndProcessor.ts×3, scandalService.ts×2,
+  contextualSponsorService.ts×1) som bryter mot regeln med direkta
+  `{ ...c, finances: c.finances + x }`-skrivningar. applyFinanceChange
+  loggar dessutom INTE till financeLog själv — även "rätta" anrop måste
+  komma ihåg att logga separat, ett andra ställe att glömma. Detta är INTE
+  fixat i denna runda (scope var att SPÅRA och fixa GAPET, inte refaktorera
+  hela mönstret) — flaggat som ett strukturellt fynd för framtida arbete.
+
+  ── VERIFIERAT: scandalService.ts:s TVÅ unloggade mutationer (sponsor_
+     collapse -30 000 flat, municipal_scandal ±20/30% av kommunBidrag) är
+     INTE källan till de kvarvarande residualerna ──────────────────────────
+  TRIGGER_WINDOWS (scandalService.ts:40-45) är [6,8]/[12,14]/[18,20]/[24,26]
+  — ingen skandal kan alltså trigga vid omgång 31 eller 37 (de kvarvarande
+  OKÄNDA residualerna, 31 985 kr / −38 758 kr). Skandalernas egna unloggade
+  mutationer kvarstår som ett SEPARAT, mindre öppet fynd (ingen skandal
+  triggade i denna mätning, så deras faktiska bidrag till "det stora gapet"
+  är obekräftat — men de bryter fortfarande mot samma logg-disciplin och bör
+  fixas i en framtida runda om en skandal-tung mätning görs).
+
+  ── KVARVARANDE, OIDENTIFIERAD RESIDUAL: 31 985 kr (s1/omg31) och
+     −38 758 kr (s2/omg37), netto −6 773 kr över 3 säsonger ─────────────────
+  Efter de två bekräftade fixarna sjönk det totala ospårade gapet från
+  520 227 kr till −6 773 kr över 3 säsonger (98,7% löst). De två kvarvarande
+  posterna matchar INGEN av de kända mekanismernas belopp eller trigger-
+  villkor (kommunstöd, förtroendepott, skandal — samtliga uteslutna).
+  Neråtriktad netto-effekt (spelaren tjänar INTE extra pengar av detta,
+  snarare marginellt mindre) — nedprioriterat givet att de två dominerande,
+  spelbalans-påverkande bråden nu är fixade. Kandidat för en framtida,
+  smalare diagnosrunda om Jacob vill ha full 100%-spårbarhet.
+
+  ── VEM GÖR VAD ────────────────────────────────────────────────────────────
+  Code: byggt, testat (11 nya regressionstester: kommunstodSmoothing.test.ts
+  ×3 nya, existerande 5 gröna oförändrade), tsc+3549 test+build gröna.
+  Opus: dömer ommätningen mot ~600k-målet (nästa steg, match_revenue-
+  dampFactor) mot DENNA financeLog-breakdown, inte mot D041:s äldre
+  aggregat-siffror.

@@ -72,8 +72,13 @@ export function checkContextualSponsors(
   // kommunalt engångsbidrag alls — bara den övre halvan av skalan gör det,
   // gradvis.
   const csFactor = Math.max(0, Math.min(1, (cs - 50) / 40))
-  const hasCsSponsor = existing.some(s => s.triggeredBy === 'cs_over_70' && s.triggeredSeason === season)
-  if (!hasCsSponsor && csFactor > 0 && [5, 11, 18].includes(currentRound)) {
+  // Dedup via game.kommunstodPaidSeason (SaveGame.ts), INTE via en sponsor-
+  // post i `existing` — den posten skapas med contractRounds:1 och rensas
+  // bort av sponsorProcessor.ts:s generiska expiry-svep efter EN omgång,
+  // vilket lät detta bidraget betalas ut på nytt vid varje kontrollomgång
+  // (financelog-gap-diagnos-2026-09-01.ts, Jacobs körorder 2026-09-01).
+  const alreadyPaidThisSeason = game.kommunstodPaidSeason === season
+  if (!alreadyPaidThisSeason && csFactor > 0 && [5, 11, 18].includes(currentRound)) {
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
     const amount = Math.round(KOMMUNSTOD_AMOUNT * csFactor)
     newSponsors.push({
@@ -143,17 +148,17 @@ export function checkContextualSponsors(
 export function applyOneTimeKommunstod(
   game: SaveGame,
   options?: { skipSideEffects?: boolean },
-): { updatedGame: SaveGame; paid: boolean } {
+): { updatedGame: SaveGame; paid: boolean; amount: number } {
   if (options?.skipSideEffects) {
-    return { updatedGame: game, paid: false }
+    return { updatedGame: game, paid: false, amount: 0 }
   }
   const season = game.currentSeason
   const kommunSponsor = (game.sponsors ?? []).find(
     s => s.isOneTime && s.triggeredBy === 'cs_over_70' && s.triggeredSeason === season && !s.paidOutSeason,
   )
-  if (!kommunSponsor) return { updatedGame: game, paid: false }
+  if (!kommunSponsor) return { updatedGame: game, paid: false, amount: 0 }
 
-  if (!game.clubs.find(c => c.id === game.managedClubId)) return { updatedGame: game, paid: false }
+  if (!game.clubs.find(c => c.id === game.managedClubId)) return { updatedGame: game, paid: false, amount: 0 }
 
   // H4-uppföljning: läs det skalade beloppet satt vid skapandetillfället —
   // fall tillbaka till hela KOMMUNSTOD_AMOUNT bara för gamla sparfiler vars
@@ -168,7 +173,11 @@ export function applyOneTimeKommunstod(
   )
 
   return {
-    updatedGame: { ...game, clubs: updatedClubs, sponsors: updatedSponsors },
+    // kommunstodPaidSeason: dedup-minnet (SaveGame.ts) — se checkContextualSponsors.
+    // Satt HÄR, inte bara på sponsor-posten, eftersom sponsor-posten rensas
+    // bort av sponsorProcessor.ts:s expiry-svep inom en enda omgång.
+    updatedGame: { ...game, clubs: updatedClubs, sponsors: updatedSponsors, kommunstodPaidSeason: season },
     paid: true,
+    amount,
   }
 }

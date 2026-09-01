@@ -423,6 +423,22 @@ export interface SaveGame {
   licenseReview?: LicenseReview
   licenseWarningCount?: number   // consecutive seasons with warning/continued_review
   financeWarningGivenThisSeason?: boolean  // true once warning/license-denial inbox sent; reset at season end
+  /**
+   * Jacobs körorder 2026-09-01 (financelog-gap-diagnos): dedup-minne för
+   * kommunstöds engångsbidrag (contextualSponsorService.ts). Tidigare
+   * dedup:ades via en sponsor-post i game.sponsors med triggeredBy=
+   * 'cs_over_70' — men den posten skapades med contractRounds:1, och
+   * sponsorProcessor.ts:s GENERISKA decrement+filter-svep (körs varje
+   * omgång, för ALLA sponsorer) rensade bort den efter EN enda omgång.
+   * Resultat: bidraget (kontinuerligt CS-skalat, tak 80 000 kr) betalades
+   * ut på nytt vid varje kontrollomgång (5/11/18) — upp till 3x/säsong
+   * istf 1x, mätt till 60-136k kr extra per säsong (framgangsekonomin-
+   * kommunbidrag-matning). Lagras här (säsongsnumret, inte en boolean —
+   * återställs alltså aldrig aktivt, bara ointressant nästa säsong) EFTERSOM
+   * dedup-minnet måste överleva HELA säsongen, oavsett vad som händer med
+   * själva sponsor-arrayen.
+   */
+  kommunstodPaidSeason?: number
   previousRecommendedFormation?: string    // last known coach recommendation; inbox sent when it changes
   communityStanding?: number     // 0-100, starts 50
   communityStandingDelta?: number  // delta since last round (positive = up, negative = down)

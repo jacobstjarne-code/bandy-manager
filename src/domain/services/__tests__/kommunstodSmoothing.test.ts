@@ -88,3 +88,64 @@ describe('checkContextualSponsors — H4: kommunstöd skalar kontinuerligt, inge
     expect(financesDelta).toBe(80_000)
   })
 })
+
+// Jacobs körorder 2026-09-01 (financelog-gap-diagnos-2026-09-01.ts): kommunstöd
+// betalades ut på nytt vid VARJE kontrollomgång (5/11/18) — upp till 3x/säsong
+// istf 1x — eftersom dedup:en scannade game.sponsors efter en post som
+// sponsorProcessor.ts:s generiska expiry-svep (contractRounds:1 → 0 → filtrerad
+// bort) rensade bort inom en enda omgång. Fixat med ett persistent SaveGame-fält
+// (kommunstodPaidSeason) som INTE är beroende av sponsor-arrayens livslängd.
+describe('kommunstöd betalas EXAKT en gång per säsong, oavsett hur många kontrollomgångar (5/11/18) passerar', () => {
+  function simulateCheckRound(game: SaveGame, standings: StandingRow[], round: number): SaveGame {
+    const { newSponsors } = checkContextualSponsors(game, standings, round)
+    const gameWithNewSponsors = { ...game, sponsors: [...(game.sponsors ?? []), ...newSponsors] }
+    const { updatedGame } = applyOneTimeKommunstod(gameWithNewSponsors)
+    // Samma expiry-svep som sponsorProcessor.ts kör varje omgång (rotorsaken) —
+    // simulerad här explicit så testet inte tyst förlitar sig på att den ALDRIG
+    // körs (vilket hade dolt precis den bugg som ska vara fixad).
+    const expiredSponsors = (updatedGame.sponsors ?? [])
+      .map(s => ({ ...s, contractRounds: s.contractRounds - 1 }))
+      .filter(s => s.contractRounds > 0)
+    return { ...updatedGame, sponsors: expiredSponsors }
+  }
+
+  it('tre kontrollomgångar (5, 11, 18) i samma säsong → EN betalning, inte tre', () => {
+    let game = makeGame(95) // cs95 → taket, samma belopp varje gång om buggen fanns kvar
+    const standings = makeStandings(game)
+    const financesStart = game.clubs.find(c => c.id === game.managedClubId)!.finances
+
+    game = simulateCheckRound(game, standings, 5)
+    game = simulateCheckRound(game, standings, 11)
+    game = simulateCheckRound(game, standings, 18)
+
+    const financesEnd = game.clubs.find(c => c.id === game.managedClubId)!.finances
+    expect(financesEnd - financesStart).toBe(80_000) // INTE 240 000 (3×80k)
+    expect(game.kommunstodPaidSeason).toBe(game.currentSeason)
+  })
+
+  it('sponsor-posten är borta ur game.sponsors efter en omgång (bekräftar att dedupen INTE längre förlitar sig på den)', () => {
+    let game = makeGame(95)
+    const standings = makeStandings(game)
+    game = simulateCheckRound(game, standings, 5)
+    expect(game.sponsors?.some(s => s.triggeredBy === 'cs_over_70')).toBe(false)
+
+    // Ändå ingen ny betalning vid nästa kontrollomgång:
+    const financesBeforeSecondCheck = game.clubs.find(c => c.id === game.managedClubId)!.finances
+    game = simulateCheckRound(game, standings, 11)
+    const financesAfterSecondCheck = game.clubs.find(c => c.id === game.managedClubId)!.finances
+    expect(financesAfterSecondCheck).toBe(financesBeforeSecondCheck)
+  })
+
+  it('nästa säsong kan ta emot ett nytt kommunstöd (kommunstodPaidSeason gäller bara den säsong den sattes)', () => {
+    let game = makeGame(95)
+    const standings = makeStandings(game)
+    game = simulateCheckRound(game, standings, 5)
+    expect(game.kommunstodPaidSeason).toBe(game.currentSeason)
+
+    const nextSeasonGame = { ...game, currentSeason: game.currentSeason + 1, sponsors: [] }
+    const financesBefore = nextSeasonGame.clubs.find(c => c.id === game.managedClubId)!.finances
+    const afterNextSeasonCheck = simulateCheckRound(nextSeasonGame, standings, 5)
+    const financesAfter = afterNextSeasonCheck.clubs.find(c => c.id === game.managedClubId)!.finances
+    expect(financesAfter - financesBefore).toBe(80_000)
+  })
+})

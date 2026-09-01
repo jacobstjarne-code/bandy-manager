@@ -1149,13 +1149,23 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     updatedSponsors = [...updatedSponsors, ...contextualResult.newSponsors]
     newMoments.push(...contextualResult.newMoments)
   }
-  // Apply one-time kommunstöd payment if triggered (80k to managed club finances)
+  // Apply one-time kommunstöd payment if triggered (tak 80k, kontinuerlig CS-skala)
   let kommunstodBonus = 0
+  let kommunstodPaidSeason = game.kommunstodPaidSeason
   const kommunResult = applyOneTimeKommunstod({ ...game, sponsors: updatedSponsors }, { skipSideEffects: isSecondPassForManagedMatch })
   if (kommunResult.paid) {
     updatedSponsors = kommunResult.updatedGame.sponsors ?? updatedSponsors
-    kommunstodBonus = kommunResult.updatedGame.clubs.find(c => c.id === game.managedClubId)?.finances ?? 0
-    kommunstodBonus -= game.clubs.find(c => c.id === game.managedClubId)?.finances ?? 0
+    kommunstodBonus = kommunResult.amount
+    kommunstodPaidSeason = kommunResult.updatedGame.kommunstodPaidSeason
+    // financelog-gap-diagnos-2026-09-01.ts (Jacobs körorder 2026-09-01): denna
+    // utbetalningen mutade tidigare club.finances utan en enda financeLog-post
+    // — en av flera källor till en ~150-220k/säsong ospårad differens.
+    roundFinanceLog.push({
+      round: nextMatchday,
+      amount: kommunstodBonus,
+      reason: 'kommunstod',
+      label: 'Kommunstöd (engångsbidrag)',
+    })
   }
 
   // Persist regen players created this round: add to player list + club squads
@@ -1500,6 +1510,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       isPlayoffNarrativeCardStillValid(e.id, updatedBracket, game.managedClubId)
     ),
     sponsors: updatedSponsors,
+    kommunstodPaidSeason,
     activeTalentSearch: updatedTalentSearch,
     talentSearchResults: updatedTalentResults,
     rivalryHistory: updatedRivalryHistory,
@@ -1954,6 +1965,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       clubs: updatedGame.clubs.map(c =>
         c.id === game.managedClubId ? { ...c, finances: c.finances + boardObjForetroendepott } : c
       ),
+      // financelog-gap-diagnos-2026-09-01.ts (Jacobs körorder 2026-09-01):
+      // förtroendepotten mutade tidigare club.finances utan en enda
+      // financeLog-post — en av flera källor till en ~150-220k/säsong
+      // ospårad differens.
+      financeLog: appendFinanceLog(updatedGame.financeLog ?? [], {
+        round: nextMatchday,
+        amount: boardObjForetroendepott,
+        reason: 'board_objective',
+        label: 'Förtroendepott (två raka flagship-mål godkända)',
+      }),
     }
   }
 
