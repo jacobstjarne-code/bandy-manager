@@ -137,7 +137,10 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
           <div style={{ flex: cs, height: 7, background: csColor(cs), borderRadius: '4px 0 0 4px' }} />
           <div style={{ flex: 100 - cs, height: 7, background: 'var(--border-dark)', borderRadius: '0 4px 4px 0' }} />
         </div>
-        {/* Samhällsaktiviteter — påverkar bygdens puls, inte inkomst */}
+        {/* Samhällsaktiviteter — MASTER_OPPET.md sluttest-ortentab-falsk-kommentar
+            (2026-09-01): påstods tidigare bara påverka bygdens puls, inte inkomst
+            — falskt, motsagt av economyService.ts:626-627/655-662. Alla tre
+            (bandyplay/functionaries/bandySchool) ger communityMatchIncome. */}
         <p className="h-label" style={{ marginBottom: 6 }}>ENGAGEMANG</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
           {/* EkonomiTab äger aktivering — read-only status här */}

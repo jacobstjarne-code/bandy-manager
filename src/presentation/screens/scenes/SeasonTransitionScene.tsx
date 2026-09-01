@@ -276,8 +276,11 @@ export function SeasonTransitionScene() {
  * Forutsattningsfasen-styrelsen-talar-2026-08-25.dc.html, variant 1b).
  * "Styrelsen talar" — ordförandeband + kvittensrad + kravband (ribba,
  * riktning, skälsrad). Mellandelen ("vad de vet om läget", ligarörelser)
- * är MEDVETET UTELÄMNAD — blockerad tills aiTransferLog + standingsSnapshot-
- * trend finns (steg 2). "Hellre två sanna delar än tre där en hittar på"
+ * är MEDVETET UTELÄMNAD — steg 2, INTE längre blockerad av saknad data
+ * (MASTER_OPPET.md forutsattningsfas-steg2-blockerad, 2026-09-01: både
+ * aiTransferLog — seasonEndProcessor.ts — och standingsSnapshot/
+ * getClubPositionTrend — seasonSummaryService.ts — finns nu), bara
+ * orenderad än. "Hellre två sanna delar än tre där en hittar på"
  * (Jacobs ord). Ingen egen beräkning här — game.boardAssessment är redan
  * färdigt från seasonEndProcessor.ts.
  *
