@@ -2,7 +2,9 @@
  * ScoreboardStalvallen.tsx — Stålvallen scoreboard
  *
  * 5-modul board-system: bezel → main → pen → text → line
- * copper = managed club  |  steel = opponent
+ * --led-us (amber) = managed klubb  |  --led-them (is-LED) = motståndare
+ * (DESIGN-DECISIONS.md §Systempatch 2026-06-11, B1 — as-built-kodningen
+ * skördad som kanon. "copper/steel" var den föråldrade beskrivningen.)
  */
 import { useEffect, useRef, useState } from 'react'
 import { SevenSegText } from './sevenSegment'
@@ -138,7 +140,10 @@ export function ScoreboardStalvallen({
             <div className="clock-block">
               <span className="period-mark">{period}</span>
               <span className="time-mount">
-                <SevenSegText text={pad2(minute)} size="md" color="var(--led-red)" />
+                {/* DESIGN-DECISIONS.md §Systempatch 2026-06-11 (B1): tid+period
+                    ska vara --led-score, inte --led-red — token-namns-koll,
+                    fixad 2026-09-01 (MASTER_OPPET.md scoreboard-b1-kommentar-token). */}
+                <SevenSegText text={pad2(minute)} size="md" color="var(--led-score)" />
               </span>
             </div>
 
