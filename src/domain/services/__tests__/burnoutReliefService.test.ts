@@ -12,7 +12,10 @@ import {
   burnoutEffectSeed,
   pickBurnoutQuoteIndex,
   pickBurnoutHelperIndex,
+  pickBurnoutOpponentReadIndex,
   BURNOUT_QUOTE_PREFIX,
+  BURNOUT_OPPONENT_READ_PREFIX,
+  BURNOUT_OPPONENT_READ,
 } from '../burnoutReliefService'
 import type { ManagerProfile } from '../../entities/ManagerProfile'
 import type { OpponentAnalysis } from '../opponentAnalysisService'
@@ -222,5 +225,45 @@ describe('pickBurnoutQuoteIndex — no-repeat inom säsongen', () => {
     const idx = pickBurnoutHelperIndex(baseGame, 'hog', 2)
     expect(idx).toBeGreaterThanOrEqual(0)
     expect(idx).toBeLessThan(2)
+  })
+})
+
+/**
+ * O4, OpponentAnalysisCard.tsx-wiring (2026-09-01): motståndarläsningen
+ * varierar per MATCH (currentMatchday), inte per zon-inträde som quote/
+ * helper — en flerveckors utbrändhet ska inte visa samma rad varje match.
+ */
+describe('pickBurnoutOpponentReadIndex — per-match variation, egen prefix', () => {
+  const baseGame = { currentSeason: 3, currentMatchday: 12, narrativeBeatLog: undefined }
+
+  it('utan logg: deterministiskt via tie-break (matchday)', () => {
+    const idx = pickBurnoutOpponentReadIndex(baseGame, 'markbar', 3)
+    expect(idx).toBe(12 % 3)
+  })
+
+  it('samma rad redan visad DENNA säsong — väljer en annan', () => {
+    const game = {
+      ...baseGame,
+      narrativeBeatLog: [{ semanticKey: `${BURNOUT_OPPONENT_READ_PREFIX}markbar_${12 % 3}`, season: 3, round: 5 }],
+    }
+    const idx = pickBurnoutOpponentReadIndex(game, 'markbar', 3)
+    expect(idx).not.toBe(12 % 3)
+  })
+
+  it('delar aldrig cooldown-utrymme med burnout-citaten (egen prefix)', () => {
+    const game = {
+      ...baseGame,
+      narrativeBeatLog: [{ semanticKey: `${BURNOUT_QUOTE_PREFIX}markbar_${12 % 3}`, season: 3, round: 5 }],
+    }
+    const idx = pickBurnoutOpponentReadIndex(game, 'markbar', 3)
+    expect(idx).toBe(12 % 3) // opåverkad av quote-poolens cooldown
+  })
+
+  it('index är alltid giltigt mot BURNOUT_OPPONENT_READ:s faktiska poolstorlekar', () => {
+    for (const zone of ['markbar', 'hog'] as const) {
+      const pool = BURNOUT_OPPONENT_READ[zone]
+      const idx = pickBurnoutOpponentReadIndex(baseGame, zone, pool.length)
+      expect(pool[idx]).toBeDefined()
+    }
   })
 })

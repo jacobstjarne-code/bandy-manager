@@ -7,6 +7,8 @@ import { generateBasicAnalysis, displayThreatReasonLine } from '../../../domain/
 import { getCupRoundLabel } from '../../../domain/services/cupService'
 import { positionShort } from '../../utils/formatters'
 import type { PlayerPosition } from '../../../domain/enums'
+import { getBurnoutZone } from '../../../domain/services/managerProfileService'
+import { BURNOUT_OPPONENT_READ, pickBurnoutOpponentReadIndex } from '../../../domain/services/burnoutReliefService'
 // ordinal removed — no longer used in combined card
 
 interface OpponentAnalysisCardProps {
@@ -25,6 +27,17 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
   const displayAnalysis = savedAnalysis ?? basicAnalysis
 
   const opponentStanding = game.standings.find(s => s.clubId === opponent.id)
+
+  // O4 (DOM_BURNOUT_2026-08-17.md): en utbränd manager hinner inte förbereda
+  // den skarpa analysen — ersätter DETALJRADEN (inte hela kortet) med en
+  // degraderad läsning, managerns eget erkännande att förberedelsen uteblev.
+  const burnoutZone = getBurnoutZone(game.managerProfile?.burnoutScore ?? 0)
+  const isBurnedOut = burnoutZone === 'markbar' || burnoutZone === 'hog'
+  const opponentReadText = isBurnedOut
+    ? BURNOUT_OPPONENT_READ[burnoutZone][
+        pickBurnoutOpponentReadIndex(game, burnoutZone, BURNOUT_OPPONENT_READ[burnoutZone].length)
+      ]
+    : null
 
   return (
     <div className="card-sharp" style={{
@@ -94,31 +107,37 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
       )}
 
       {displayAnalysis.level === 'detailed' && (
-        <>
-          {/* B4 (BANDYSPRAK_KALLASNING_2026-08-19.md): ett namn plus ett skäl,
-              inte "de har farliga forwards". Renderar ingenting tills Opus
-              fyllt THREAT_REASON_LINES — ingen platshållartext till spelaren. */}
-          {displayAnalysis.threatPlayer && displayThreatReasonLine(displayAnalysis.threatPlayer) && (
-            <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 4 }}>
-              🎯 {displayAnalysis.threatPlayer.name}: {displayThreatReasonLine(displayAnalysis.threatPlayer)}
-            </p>
-          )}
-          {displayAnalysis.strengths.length > 0 && (
-            <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 4 }}>
-              ✅ {displayAnalysis.strengths.join(', ')}
-            </p>
-          )}
-          {displayAnalysis.weaknesses.length > 0 && (
-            <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 4 }}>
-              ⚠️ {displayAnalysis.weaknesses.join(', ')}
-            </p>
-          )}
-          {displayAnalysis.recommendation && (
-            <p style={{ fontSize: 12, color: 'var(--accent)', marginTop: 8, fontStyle: 'italic' }}>
-              💡 {displayAnalysis.recommendation}
-            </p>
-          )}
-        </>
+        opponentReadText ? (
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 4 }}>
+            😮‍💨 {opponentReadText}
+          </p>
+        ) : (
+          <>
+            {/* B4 (BANDYSPRAK_KALLASNING_2026-08-19.md): ett namn plus ett skäl,
+                inte "de har farliga forwards". Renderar ingenting tills Opus
+                fyllt THREAT_REASON_LINES — ingen platshållartext till spelaren. */}
+            {displayAnalysis.threatPlayer && displayThreatReasonLine(displayAnalysis.threatPlayer) && (
+              <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 4 }}>
+                🎯 {displayAnalysis.threatPlayer.name}: {displayThreatReasonLine(displayAnalysis.threatPlayer)}
+              </p>
+            )}
+            {displayAnalysis.strengths.length > 0 && (
+              <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 4 }}>
+                ✅ {displayAnalysis.strengths.join(', ')}
+              </p>
+            )}
+            {displayAnalysis.weaknesses.length > 0 && (
+              <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 4 }}>
+                ⚠️ {displayAnalysis.weaknesses.join(', ')}
+              </p>
+            )}
+            {displayAnalysis.recommendation && (
+              <p style={{ fontSize: 12, color: 'var(--accent)', marginTop: 8, fontStyle: 'italic' }}>
+                💡 {displayAnalysis.recommendation}
+              </p>
+            )}
+          </>
+        )
       )}
 
       {displayAnalysis.level === 'basic' && (

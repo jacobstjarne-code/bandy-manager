@@ -121,6 +121,22 @@ export const BURNOUT_OPPONENT_READ: Record<'markbar' | 'hog', string[]> = {
   ],
 }
 
+export const BURNOUT_OPPONENT_READ_PREFIX = 'burnout_oppread_'
+
+/**
+ * Läses per-match (OpponentAnalysisCard.tsx), inte per-zon-inträde som
+ * quote/helper ovan — matchdagen är den naturliga variationsaxeln (en
+ * flerveckors utbrändhetsperiod ska inte visa exakt samma rad varje match).
+ * Samma pickPoolIndexAvoidingCooldown-primitiv som quote/helper; ingen ny
+ * narrativeBeatLog-skrivning läggs till här (ren läsning, som BurnoutMark.tsx
+ * redan gör för sina två pooler) — om en framtida runda vill hård-garantera
+ * cooldown krävs en logNarrativeBeat-skrivning i roundProcessor.ts, samma
+ * ställe som BURNOUT_QUOTE_PREFIX/BURNOUT_HELPER_PREFIX redan loggas.
+ */
+export function pickBurnoutOpponentReadIndex(game: Pick<SaveGame, 'currentSeason' | 'currentMatchday' | 'narrativeBeatLog'>, zone: 'markbar' | 'hog', poolLength: number): number {
+  return pickPoolIndexAvoidingCooldown(game as SaveGame, game.currentSeason, poolLength, `${BURNOUT_OPPONENT_READ_PREFIX}${zone}_`, game.currentMatchday, 1)
+}
+
 export function generateBurnoutReliefEvent(matchday: number, season: number, zone: 'markbar' | 'hog'): GameEvent {
   return {
     id: `event_burnout_relief_${season}_${matchday}`,
