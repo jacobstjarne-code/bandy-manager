@@ -205,8 +205,6 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     patron: entourage.patron,
     localPolitician: entourage.localPolitician,
     board: entourage.board,
-    hallDebateCount: 0,
-    lastHallDebateRound: 0,
     youthTeam: entourage.youthTeam,
     academyLevel: 'basic',
     mentorships: [],

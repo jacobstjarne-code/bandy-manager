@@ -263,8 +263,6 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     coffeeRoomAnswers: {},
     coffeeRoomPendingReturns: [],
     lastCoffeeQuoteHash: undefined,
-    hallDebateCount: 0,
-    lastHallDebateRound: 0,
 
     // Inkorg och beslutsköer: allt i dem gällde den gamla klubben.
     inbox: [],

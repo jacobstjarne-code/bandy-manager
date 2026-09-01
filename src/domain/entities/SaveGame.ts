@@ -386,8 +386,6 @@ export interface SaveGame {
   previousKommunBidrag?: number
   politicianLastInteraction?: PoliticianInteractionLog
   board?: BoardMember[]   // KF4: EN styrelsemodell (ersätter boardPersonalities + club.board)
-  hallDebateCount?: number
-  lastHallDebateRound?: number
   lastEconomicStressRound?: number
   pendingPressConference?: import('../entities/GameEvent').GameEvent
   pendingCSPress?: import('../entities/GameEvent').GameEvent
