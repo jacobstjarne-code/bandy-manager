@@ -417,7 +417,7 @@ export function LineupStep({
               för otillgängliga: omgångar tills han är valbar igen". */}
           {!practice && (
             <p style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px', margin: '0 0 6px 4px' }}>
-              [Opus]
+              Kondition nu → efter nästa match. ⟳ = omgångar tills spelaren är valbar igen.
             </p>
           )}
           {groupedPlayers.map(group => (

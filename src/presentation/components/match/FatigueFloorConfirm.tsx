@@ -122,7 +122,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
             <Icon icon={AlertTriangle} size={11} style={{ flexShrink: 0 }} />
             {/* SVENSK TEXT — CODE SKRIVER ALDRIG: rubriken för den tvingade
                 fyllningen (elvan går inte ihop över konditionsgolvet). */}
-            [Opus]
+            ELVAN GÅR INTE IHOP
           </div>
           {/* Rent numerisk sats — ingen Code-skriven svenska. Talen bär läget
               (så många av elva är över golvet, så många saknas); '[Opus]'
@@ -136,7 +136,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
                 kostnaden — vad det innebär att gå in {shortfall} spelare kort
                 över golvet (höjd skaderisk + risk att förlora dem till nästa
                 match, A-H3:s två ben). */}
-            [Opus]
+            Du får inte ihop en elva över golvet. Startar du dem ändå stiger skaderisken, och några kan tvingas stå över nästa match.
           </p>
         </div>
 
@@ -145,7 +145,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
           <div className="h-label" style={{ marginBottom: 8 }}>
             {/* SVENSK TEXT — CODE SKRIVER ALDRIG: sektionslabel för listan
                 över de spelare som står under golvet. */}
-            [Opus]
+            UNDER GOLVET
           </div>
           {belowFloorStarters.map(p => {
             const proj = getFitnessProjection(p)
@@ -184,7 +184,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
             {/* SVENSK TEXT — CODE SKRIVER ALDRIG: förklaringen av de två talen
                 (efter nästa match om han startar / om han vilas) och att det är
                 en förväntan, inte ett löfte — matchkostnaden slumpas 15–25. */}
-            [Opus]
+            Talen är efter nästa match — vänster om han startar, höger om han vilas. En förväntan, inte ett löfte: en match tar olika mycket ur olika spelare.
           </p>
         </div>
 
@@ -195,7 +195,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
             <div className="h-label" style={{ marginBottom: 8 }}>
               {/* SVENSK TEXT — CODE SKRIVER ALDRIG: sektionslabel för
                   akademikallelsen som utväg ur golvbristen. */}
-              [Opus]
+              KALLA UPP EN JUNIOR
             </div>
             {youth.map(y => (
               <div
@@ -236,7 +236,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
           <button className="btn btn-outline" style={{ width: '100%', fontSize: 13 }} onClick={onCancel}>
             {/* SVENSK TEXT — CODE SKRIVER ALDRIG: avbryt-knappen (låt elvan
                 stå orörd, hitta en annan väg). */}
-            [Opus]
+            Låt elvan stå
           </button>
           <button
             className="btn btn-outline"
@@ -245,7 +245,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
           >
             {/* SVENSK TEXT — CODE SKRIVER ALDRIG: bekräfta-knappen — gå in med
                 dem ändå. Detta är det synliga beslutet domen kräver. */}
-            [Opus]
+            Gå in med dem ändå
           </button>
         </div>
       </div>
