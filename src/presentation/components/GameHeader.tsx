@@ -249,7 +249,6 @@ export function GameHeader() {
             color: unreadInbox > 0 ? 'var(--accent)' : 'rgba(245,241,235,0.45)',
           }}
         >
-          {/* TODO(FAS 1): kuvert-glyphen ersätts av finalt handritad ikon · se ICON-BRIEF.md */}
           <EnvelopeIcon size={17} color="currentColor" />
           {/* Notifikationsprick — separat element, kan visas/döljas oberoende */}
           {unreadInbox > 0 && (

@@ -5,17 +5,12 @@ import { useInjuredInLineup, useGameStore, useNavigationLock } from '../store/ga
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
 const tabs = [
-  // TODO(FAS 1): byt mot BottomNav-ikon "Hem" · se ICON-BRIEF.md
   { to: '/game/dashboard', label: 'Hem', Icon: Home },
-  // TODO(FAS 1): byt mot BottomNav-ikon "Trupp" · se ICON-BRIEF.md
   { to: '/game/squad', label: 'Trupp', Icon: Users },
-  // TODO(FAS 1): byt mot BottomNav-ikon "Match" · se ICON-BRIEF.md
   { to: '/game/match', label: 'Match', Icon: Swords },
-  // TODO(FAS 1): byt mot BottomNav-ikon "Tabell" · se ICON-BRIEF.md
   { to: '/game/tabell', label: 'Tabell', Icon: Table2 },
   // B1-nav 2026-06-19: Bygget ersätter Transfers permanent plats (Transfers blir villkorad, Fas 3)
   { to: '/game/bygget', label: 'Bygget', Icon: Hammer },
-  // TODO(FAS 1): byt mot BottomNav-ikon "Klubb" · se ICON-BRIEF.md
   { to: '/game/club', label: 'Klubb', Icon: Building2 },
 ]
 
