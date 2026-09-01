@@ -3,6 +3,7 @@ import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame, snapshotSave
 import { migrateSaveGame, CURRENT_SAVE_VERSION } from '../saveGameMigration'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { createNewGame } from '../../../application/useCases/createNewGame'
+import { advanceToNextEvent } from '../../../application/useCases/advanceToNextEvent'
 import { set as idbSetMock } from 'idb-keyval'
 
 // ── idb-keyval mock ───────────────────────────────────────────────────────────
@@ -56,6 +57,48 @@ describe('saveGameStorage', () => {
     expect(loaded?.id).toBe('save_001')
     expect(loaded?.managerName).toBe('Test Manager')
     expect(loaded?.managedClubId).toBe('club_forsbacka')
+  })
+
+  it('createNewGame → tre advances → save/load/migrate bevarar hela spelvärlden (D-RC-B)', async () => {
+    const created = createNewGame({
+      managerName: 'Roundtrip Manager',
+      clubId: 'club_forsbacka',
+      season: 2025,
+      seed: 777,
+    })
+    let advanced = created
+    for (let i = 0; i < 3; i++) {
+      advanced = advanceToNextEvent(advanced, 10_000 + i).game
+    }
+    expect(advanced.currentMatchday).toBeGreaterThan(created.currentMatchday)
+    expect(advanced.fixtures.some(fixture => fixture.status === 'completed')).toBe(true)
+
+    const write = await saveSaveGame(advanced)
+    expect(write.success).toBe(true)
+
+    // Den explicita migreringsdelen av kedjan: en ny värld kan fortfarande
+    // bära createNewGame:s äldre versionsstämpel och får de aktuella
+    // backfill-fälten först här.
+    const expectedMigrated = migrateSaveGame(structuredClone(advanced))
+    expect(expectedMigrated.version).toBe(CURRENT_SAVE_VERSION)
+
+    // loadSaveGame är produktionsvägen och kör migrateSaveGame på rådatan.
+    const loaded = await loadSaveGame(advanced.id)
+    expect(loaded).not.toBeNull()
+    expect(loaded?.version).toBe(CURRENT_SAVE_VERSION)
+
+    // Revisionen ägs av lagringslagret och ökas vid skrivning. Resten av den
+    // avancerade världen ska vara strukturellt identisk efter save/load/migrate.
+    const withoutRevision = (game: SaveGame) => {
+      const { revision: _revision, ...world } = game
+      return world
+    }
+    expect(withoutRevision(loaded!)).toEqual(withoutRevision(expectedMigrated))
+
+    // En redan aktuell save ska dessutom tåla en ny migreringspassage utan
+    // semantisk drift — viktigt när load/import-kedjor möts.
+    const migratedAgain = migrateSaveGame(structuredClone(loaded!))
+    expect(migratedAgain).toEqual(loaded)
   })
 
   it('listSaveGames returns summaries sorted by lastSavedAt (newest first)', async () => {

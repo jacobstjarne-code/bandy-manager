@@ -60,7 +60,7 @@ import { LedgerFrame } from '../../components/ledger/LedgerFrame'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
 import { InteraktionsDock } from '../../components/match/InteraktionsDock'
-import { buildCeremonyOnlyStep } from '../matchLiveHelpers'
+import { buildCeremonyOnlyStep, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed } from '../matchLiveHelpers'
 
 interface LocationState {
   fixture: Fixture
@@ -1492,16 +1492,7 @@ export function MatchLiveScreen() {
   const feedRows: FeedRow[] = [
     ...atmosphereFeedRows,
     ...displayedSteps
-      .filter(s =>
-        s.phase !== 'penalties' && (
-          s.commentary?.trim() ||
-          s.events.some(e =>
-            e.type === MatchEventType.Goal ||
-            e.type === MatchEventType.Suspension ||
-            e.type === MatchEventType.Save
-          )
-        )
-      )
+      .filter(s => s.phase !== 'penalties' && shouldIncludeMatchStepInFeed(s))
       .flatMap((s): FeedRow[] => {
         // Assistentens röstrad (FF-assisterade corner/counter/frislag) ska visas FÖRE
         // utfallsraden. Ordningen här är avsiktligt [utfall, röstrad] — hela feedRows
@@ -1543,6 +1534,8 @@ export function MatchLiveScreen() {
             text: deriveEventText(s.commentary, saveEvent, 'Räddning', feedPlayers),
           }, ...assistantRow]
         }
+        const substitutionRow = getSubstitutionFeedRow(s, fixture.homeClubId)
+        if (substitutionRow) return [substitutionRow, ...assistantRow]
         return [{ kind: 'atmosphere' as const, text: s.commentary ?? '' }, ...assistantRow]
       }),
     ...penaltyFeedRows,

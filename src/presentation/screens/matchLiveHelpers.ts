@@ -1,6 +1,7 @@
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { MatchStep } from '../../domain/services/matchSimulator'
-import { FixtureStatus } from '../../domain/enums'
+import { FixtureStatus, MatchEventType } from '../../domain/enums'
+import type { FeedRow } from '../components/match/commentary/CommentaryFeedStalvallen'
 
 /**
  * Determines whether a match event should be aligned to the home side (left)
@@ -11,6 +12,38 @@ import { FixtureStatus } from '../../domain/enums'
  */
 export function getEventAlignment(eventClubId: string, homeClubId: string): 'home' | 'away' {
   return eventClubId === homeClubId ? 'home' : 'away'
+}
+
+/**
+ * A1.5++ (2026-09-01): ett halvtidsbyte bär medvetet sin text på
+ * MatchEvent.description medan MatchStep.commentary kan vara tom. Den gamla
+ * feeden hade en särskild bytesrad, men Stålvallen-migreringen filtrerade bort
+ * hela steget eftersom bara mål/utvisning/räddning räknades som synliga event.
+ * Håll synlighetsregeln testbar och gemensam med mappern nedan.
+ */
+export function shouldIncludeMatchStepInFeed(step: MatchStep): boolean {
+  return Boolean(
+    step.commentary?.trim() ||
+    step.events.some(event =>
+      event.type === MatchEventType.Goal ||
+      event.type === MatchEventType.Suspension ||
+      event.type === MatchEventType.Save ||
+      event.type === MatchEventType.Substitution
+    )
+  )
+}
+
+/** Bygger Stålvallens dedikerade bytesrad utan att kräva commentary-text. */
+export function getSubstitutionFeedRow(step: MatchStep, homeClubId: string): FeedRow | null {
+  const event = step.events.find(candidate => candidate.type === MatchEventType.Substitution)
+  if (!event) return null
+  return {
+    kind: 'event',
+    tag: 'sub',
+    minute: event.minute,
+    team: getEventAlignment(event.clubId, homeClubId),
+    text: event.description || 'Byte',
+  }
 }
 
 /**
