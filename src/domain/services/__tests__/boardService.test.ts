@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL } from '../boardService'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL, boardGraceState } from '../boardService'
 import { ClubExpectation } from '../../enums'
 import type { Club } from '../../entities/Club'
 const TOTAL = 12
@@ -100,7 +100,10 @@ describe('computeBoardPatienceUpdate — U1 andra halvan (Jacobs dom 2026-08-22,
 
   it('varningszonen (plats 9-10): kontinuerlig, inte längre en fast -5', () => {
     expect(computeBoardPatienceUpdate(9, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 70, newConsecutiveFailures: 0, newMeritBuffer: 0 })   // pos == ankare → delta 0
-    expect(computeBoardPatienceUpdate(10, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 66, newConsecutiveFailures: 0, newMeritBuffer: 0 })  // 1 under ankaret × below(4)
+    // DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: plats 10 (1 under ankaret) är nu
+    // grace för AvoidBottom — nearMiss(2) i stället för below(4). Plats 11-12
+    // (den faktiska nedflyttningszonen) förblir OKLIPPT grace, se testet ovan.
+    expect(computeBoardPatienceUpdate(10, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 68, newConsecutiveFailures: 0, newMeritBuffer: 0 })  // grace: nearMiss(2) × gap(-1)
   })
 
   it('DÖDZONEN ÄR BORTA — plats 6 (tidigare noll effekt) rör nu siffran, AvoidBottom-klubb belönas för att slå ankaret', () => {
@@ -131,8 +134,40 @@ describe('computeBoardPatienceUpdate — U1 andra halvan (Jacobs dom 2026-08-22,
 
   it('WinLeague: ankare 1, above=0 (går inte att slå), below=5', () => {
     expect(computeBoardPatienceUpdate(1, TOTAL, 70, 0, ClubExpectation.WinLeague).newBoardPatience).toBe(70)
-    // gap = 1−2 = −1, delta = 5×−1 = −5
-    expect(computeBoardPatienceUpdate(2, TOTAL, 70, 0, ClubExpectation.WinLeague).newBoardPatience).toBe(65)
+    // DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: plats 2-4 är grace för WinLeague
+    // (nästa tier, ChallengeTop, har ankare 4) — nearMiss(2) i stället för
+    // below(5). gap = 1−2 = −1, delta = nearMiss(2) × −1 = −2.
+    expect(computeBoardPatienceUpdate(2, TOTAL, 70, 0, ClubExpectation.WinLeague).newBoardPatience).toBe(68)
+  })
+})
+
+describe('boardGraceState — DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md (ENDA definitionen av "nästan lyckad")', () => {
+  it('WinLeague: grace exakt plats 2-4, inte plats 1 (möter) eller plats 5+ (kollaps)', () => {
+    expect(boardGraceState(ClubExpectation.WinLeague, 1, TOTAL)).toBe(false)
+    expect(boardGraceState(ClubExpectation.WinLeague, 2, TOTAL)).toBe(true)
+    expect(boardGraceState(ClubExpectation.WinLeague, 3, TOTAL)).toBe(true)
+    expect(boardGraceState(ClubExpectation.WinLeague, 4, TOTAL)).toBe(true)
+    expect(boardGraceState(ClubExpectation.WinLeague, 5, TOTAL)).toBe(false)
+  })
+
+  it('ChallengeTop: grace exakt plats 5-6', () => {
+    expect(boardGraceState(ClubExpectation.ChallengeTop, 4, TOTAL)).toBe(false)
+    expect(boardGraceState(ClubExpectation.ChallengeTop, 5, TOTAL)).toBe(true)
+    expect(boardGraceState(ClubExpectation.ChallengeTop, 6, TOTAL)).toBe(true)
+    expect(boardGraceState(ClubExpectation.ChallengeTop, 7, TOTAL)).toBe(false)
+  })
+
+  it('AvoidBottom: grace ENDAST plats 10 — nedflyttningszonen (11-12) är klippt, aldrig grace', () => {
+    expect(boardGraceState(ClubExpectation.AvoidBottom, 9, TOTAL)).toBe(false)
+    expect(boardGraceState(ClubExpectation.AvoidBottom, 10, TOTAL)).toBe(true)
+    expect(boardGraceState(ClubExpectation.AvoidBottom, 11, TOTAL)).toBe(false)
+    expect(boardGraceState(ClubExpectation.AvoidBottom, 12, TOTAL)).toBe(false)
+  })
+
+  it('Survive: grace strukturellt tom på alla platser — inget golv under Survive', () => {
+    for (let pos = 1; pos <= TOTAL; pos++) {
+      expect(boardGraceState(ClubExpectation.Survive, pos, TOTAL)).toBe(false)
+    }
   })
 })
 
@@ -535,6 +570,54 @@ describe('updateRunningBoardPatience — U1 andra halvan, ändring 1+2 (Jacobs d
     const winLeague = makeGameWithLastFixture({ homeScore: 2, awayScore: 1, expectation: ClubExpectation.WinLeague })
     expect(updateRunningBoardPatience(survive, 0).boardPatience).toBe(71)
     expect(updateRunningBoardPatience(winLeague, 0).boardPatience).toBe(71)
+  })
+
+  /**
+   * DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md — löpande termen (klocka 4) läser
+   * nu boardGraceState via klubbens LIVE tabellplacering (game.standings),
+   * inte finalPos (okänd mitt i säsongen). Detta var rotorsaken till H5-
+   * scenariot D044 inte löste: en WinLeague-klubb på 2:a-4:e plats tömdes av
+   * DENNA klocka innan tröghetens säsongsslut-demotering hann fyra.
+   */
+  describe('grace-medveten (DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md)', () => {
+    function makeGraceGame(overrides: { homeScore: number; awayScore: number; expectation: ClubExpectation; position: number; played?: number }) {
+      // totalTeams läses av updateRunningBoardPatience som game.clubs.length —
+      // måste vara 12 (samma fasta ligastorlek som TOTAL överallt annars i
+      // denna testfil) för att boardGraceState:s nedflyttningszon-tak ska
+      // klippa vid rätt plats.
+      const clubs = [{ id: 'club_a', boardExpectation: overrides.expectation }, ...Array.from({ length: 11 }, (_, i) => ({ id: `club_other_${i}`, boardExpectation: ClubExpectation.MidTable }))]
+      return {
+        managedClubId: 'club_a',
+        boardPatience: 70,
+        clubs,
+        standings: [{ clubId: 'club_a', position: overrides.position, played: overrides.played ?? 10 }],
+        fixtures: [{
+          id: 'fx1', status: 'completed', isCup: false, isKnockout: false, roundNumber: 5,
+          homeClubId: 'club_a', awayClubId: 'club_b', homeScore: overrides.homeScore, awayScore: overrides.awayScore,
+        }],
+      } as unknown as Parameters<typeof updateRunningBoardPatience>[0]
+    }
+
+    it('WinLeague plats 3 (grace) + förlustsvit ≥5: bas OCH svit halveras', () => {
+      const game = makeGraceGame({ homeScore: 0, awayScore: 1, expectation: ClubExpectation.WinLeague, position: 3 })
+      // ograceat vore -1.5×1.4=-2.1 bas + -8 svit. Gracead: halva båda leden.
+      expect(updateRunningBoardPatience(game, 5).boardPatience).toBe(70 - 1.05 - 4)
+    })
+
+    it('WinLeague plats 8 (kollaps, bortom grace-taket 4): fullt bled, oförändrat', () => {
+      const game = makeGraceGame({ homeScore: 0, awayScore: 1, expectation: ClubExpectation.WinLeague, position: 8 })
+      expect(updateRunningBoardPatience(game, 5).boardPatience).toBe(70 - 2.1 - 8)
+    })
+
+    it('WinLeague plats 1 (möter ankaret, inte grace): oförändrat', () => {
+      const game = makeGraceGame({ homeScore: 0, awayScore: 1, expectation: ClubExpectation.WinLeague, position: 1 })
+      expect(updateRunningBoardPatience(game, 1).boardPatience).toBe(70 - 2.1)
+    })
+
+    it('played=0 (alfabetisk skuggposition vid säsongsstart, trainerArcService-mönstret): aldrig grace oavsett position', () => {
+      const game = makeGraceGame({ homeScore: 0, awayScore: 1, expectation: ClubExpectation.WinLeague, position: 3, played: 0 })
+      expect(updateRunningBoardPatience(game, 1).boardPatience).toBe(70 - 2.1)
+    })
   })
 })
 

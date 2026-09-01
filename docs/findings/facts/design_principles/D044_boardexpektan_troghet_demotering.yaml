@@ -11,7 +11,8 @@ source:
 verified_at: 2026-09-01
 verified_by: code
 status: active
-related_facts: []
+related_facts:
+  - D045
 invariants:
   - "value.TROGHET_THRESHOLD > 0"
   - "value.TROGHET_THRESHOLD < 5"
@@ -72,3 +73,15 @@ notes: |
   ska dämpas, eller om H5-scenariots specifika matchutfall (mycket
   förluster för en "dominant" klubb) är en annan, separat brist att
   utreda (t.ex. matchmotorns styrkeberäkning för en +30-boostad trupp).
+
+  ── UPPFÖLJNING 2026-09-01, D045 ────────────────────────────────────────
+  Integrationsluckan ovan (avsked säsong 2, INNAN tröghetens andra chans)
+  är löst av DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md/D045 — en delad
+  boardGraceState mjukar (1) säsongsslutets positionsterm och (4) löpande
+  omgångstermen när klubben är "nästan lyckad" (missar anchoren men
+  stannar inom en tier därunder), så de inte längre dränerar patiensen
+  innan DENNA tröghets-demotering (oförändrad, TROGHET_THRESHOLD=2 kvar)
+  hinner fyra. Se D045 för full H5-omkörning (samma seed/klubb): klubben
+  överlever nu säsong 1-5, sparkas först säsong 6 efter en GENUIN kollaps
+  (plac 7, utanför gracebandet) i säsong 5 — inte för en nästan-lyckad
+  säsong.

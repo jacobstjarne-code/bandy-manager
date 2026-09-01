@@ -265,6 +265,68 @@ const BOARD_PATIENCE_SLOPE: Record<ClubExpectation, { above: number; below: numb
 }
 
 /**
+ * DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md — svaret på "fem klockor, alla
+ * kalibrerade var för sig, ingen mot de andra": en klubb som missar sin
+ * anchor men stannar inom EN tier därunder (samma stege som
+ * EXPECTATION_LADDER/recalibrateExpectationLadder redan delar) är i GRACE
+ * — "nästan lyckad", inte kollaps. En genuin kollaps (bortom nästa tiers
+ * anchor, ELLER i den faktiska nedflyttningszonen) är ALDRIG grace.
+ *
+ * ENDA definitionen. Ingen klocka får en egen kopia — det var systemets
+ * ursprungssjuka (diagnosens ord). Härlett rent ur BOARD_EXPECTATION_
+ * ANCHOR_POSITION + EXPECTATION_LADDER, ingen egen tröskeltabell — MEN
+ * taket klipps vid nedflyttningszonens start (RELEGATION_ZONE_SIZE, samma
+ * konstant som newConsecutiveFailures redan använder): utan den klippen
+ * fick AvoidBottom (vars "ett steg ner" är Survive, ankare=12=sistaplats)
+ * ett graceband som bokstavligen SVALDE hela den faktiska nedflyttnings-
+ * zonen (plats 11-12 i en 12-lagsliga) — precis den kollaps domens SKYDDAT-
+ * paragraf säger ska förbli fullt bled. Fångat av computeBoardPatienceUpdate
+ * ovans befintliga regressionstester innan denna commit, inte gissat fram.
+ *   WinLeague (anchor 1, tak min(ChallengeTop 4, 10))   → grace 2-4
+ *   ChallengeTop (anchor 4, tak min(MidTable 6, 10))    → grace 5-6
+ *   MidTable (anchor 6, tak min(AvoidBottom 9, 10))     → grace 7-9
+ *   AvoidBottom (anchor 9, tak min(Survive 12, 10))     → grace 10 ENDAST (11-12 är nedflyttningszonen, klippt)
+ *   Survive (anchor 12, inget steg under golvet)         → grace tom
+ * (siffrorna ovan för den fasta 12-lagsligan; taket skalar med totalTeams.)
+ */
+export function boardGraceState(
+  expectation: ClubExpectation,
+  finalPos: number,
+  totalTeams: number,
+): boolean {
+  const anchor = BOARD_EXPECTATION_ANCHOR_POSITION[expectation]
+  if (finalPos <= anchor) return false
+  const idx = EXPECTATION_LADDER.indexOf(expectation)
+  if (idx === 0) return false // Survive — inget golv under sig, grace strukturellt tom
+  const lowerTierAnchor = BOARD_EXPECTATION_ANCHOR_POSITION[EXPECTATION_LADDER[idx - 1]]
+  const relegationZoneStart = totalTeams - RELEGATION_ZONE_SIZE + 1
+  const graceCeiling = Math.min(lowerTierAnchor, relegationZoneStart - 1)
+  return finalPos <= graceCeiling
+}
+
+/**
+ * DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md, GODKÄNT NÄR: "nearMiss-slope ~2"
+ * — PROPOSAL, magnitud via mätning (samma döm-siffrorna-mönster som
+ * MERIT_BUFFER_CAP ovan). Ersätter BOARD_PATIENCE_SLOPE.below i
+ * computeBoardPatienceUpdate NÄR klubben är i grace — en 3:e-plats under
+ * WinLeague (gap=-2) blir −4/säsong (2×−2) i stället för −10 (5×−2).
+ * Delad, EN siffra för alla tiers (inte en per-tier tabell) — matchar
+ * domens "en enda förlåtelse" och ger Jacob en enda ratt att tuna, inte
+ * fem. D-fact: D045_board_grace_state_magnitudes.yaml.
+ */
+export const NEAR_MISS_SLOPE = 2
+
+/**
+ * DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md, GODKÄNT NÄR: "grace-multiplikator
+ * ~0,5" — PROPOSAL, magnitud via mätning. Skalar ner den löpande omgångs-
+ * termens (updateRunningBoardPatience) förlustmultiplikator OCH
+ * losingStreakSurcharge när klubben är i grace — en nästan-lyckad klubb
+ * bleder hälften så snabbt per omgång, inte oförändrat. Kollaps (utanför
+ * grace) är fullt bled, oförändrat. D-fact: D045_board_grace_state_magnitudes.yaml.
+ */
+export const GRACE_MULTIPLIER = 0.5
+
+/**
  * U1 (SLUTTEST_KO.md, 2026-08-17) — säsongsslutets boardPatience-uppdatering,
  * utbruten ur seasonEndProcessor.ts som en ren funktion (samma disciplin som
  * seasonReputationDelta ovan) för att gå att regressionstesta utan en full
@@ -337,7 +399,12 @@ export function computeBoardPatienceUpdate(
   const anchor = BOARD_EXPECTATION_ANCHOR_POSITION[expectation]
   const slope = BOARD_PATIENCE_SLOPE[expectation]
   const gap = anchor - finalPos // positivt = bättre än ankaret
-  const positionDelta = gap >= 0 ? slope.above * gap : slope.below * gap
+  // DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: en nästan-lyckad säsong (grace)
+  // straffas med NEAR_MISS_SLOPE i stället för den branta slope.below — en
+  // genuin kollaps (utanför grace) är oförändrad.
+  const inGrace = gap < 0 && boardGraceState(expectation, finalPos, totalTeams)
+  const belowSlope = inGrace ? NEAR_MISS_SLOPE : slope.below
+  const positionDelta = gap >= 0 ? slope.above * gap : belowSlope * gap
   const delta = positionDelta + bufferEligibleObjectiveDelta // HELA säsongsslutstermen
 
   let effectiveDelta = delta
@@ -439,10 +506,24 @@ export function updateRunningBoardPatience(
   const outcome = (myScore ?? 0) > (theirScore ?? 0) ? 'win' : (myScore ?? 0) < (theirScore ?? 0) ? 'loss' : 'draw'
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   const expectation = managedClub?.boardExpectation ?? ClubExpectation.MidTable
+
+  // DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: löpande termen känner bara till
+  // klubbens LIVE tabellplacering, inte säsongsslutets finalPos — samma
+  // boardGraceState läses ändå, med den löpande standingen som proxy för
+  // "om säsongen slutade nu". Golvet `played > 0` (samma mönster som
+  // trainerArcService.ts:s bestFinish) undviker att en alfabetisk
+  // 0-omgångars skuggposition ger en falsk grace-lättnad vid säsongsstart.
+  const standing = game.standings?.find(s => s.clubId === game.managedClubId)
+  const inGrace = standing !== undefined && standing.played > 0
+    ? boardGraceState(expectation, standing.position, game.clubs.length)
+    : false
+
+  const lossMultiplier = RUNNING_LOSS_EXPECTATION_MULTIPLIER[expectation] * (inGrace ? GRACE_MULTIPLIER : 1)
   const baseDelta = outcome === 'loss'
-    ? RUNNING_PATIENCE_DELTA.loss * RUNNING_LOSS_EXPECTATION_MULTIPLIER[expectation]
+    ? RUNNING_PATIENCE_DELTA.loss * lossMultiplier
     : RUNNING_PATIENCE_DELTA[outcome]
-  const surcharge = outcome === 'loss' ? losingStreakSurcharge(consecutiveLossesAfterThisRound) : 0
+  const rawSurcharge = outcome === 'loss' ? losingStreakSurcharge(consecutiveLossesAfterThisRound) : 0
+  const surcharge = inGrace ? rawSurcharge * GRACE_MULTIPLIER : rawSurcharge
   const boardPatience = Math.max(0, Math.min(100, currentPatience + baseDelta + surcharge))
   return { boardPatience, boardPatienceLastCountedFixtureId: last.id }
 }

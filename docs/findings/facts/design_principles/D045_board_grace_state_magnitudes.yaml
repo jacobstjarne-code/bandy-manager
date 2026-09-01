@@ -1,0 +1,100 @@
+fact_id: D045
+category: design_principles
+claim: "DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md (ersätter D044:s punktfix, sammanhängande pass över hela boardService.ts): fem klockor läser boardPatience, kalibrerade var för sig, aldrig mot varandra — säsongsslutets positionsterm (1) och löpande omgångsterm (4) straffar ALLT utom att exakt möta anchoren, medan tröghets-demoteringen (5, D044), den enda som gör anchoren barmhärtig, kräver TVÅ fulla säsonger. En WinLeague-klubb som stabilt slutar 2:a-4:e (exceptionellt, inte ett misslyckande) tömdes av (1)+(4) innan (5) hann sänka anchoren — bekräftat i D044:s egen H5-mätning (avsked säsong 2, inte säsong 5). Lösning: EN delad boardGraceState(expectation, finalPos, totalTeams) — sann när klubben missar sin anchor men stannar inom en tier därunder PÅ SAMMA EXPECTATION_LADDER, klippt vid nedflyttningszonens start (RELEGATION_ZONE_SIZE) så en genuin kollaps aldrig mjuknar. Klocka 1 (computeBoardPatienceUpdate) använder NEAR_MISS_SLOPE i stället för slope.below när i grace. Klocka 4 (updateRunningBoardPatience, som bara känner klubbens LIVE tabellplacering mitt i säsongen — inte finalPos) skalar RUNNING_LOSS_EXPECTATION_MULTIPLIER och losingStreakSurcharge med GRACE_MULTIPLIER. Klockorna 2/3/5 orörda (SKYDDAT i domen)."
+value:
+  NEAR_MISS_SLOPE: 2
+  GRACE_MULTIPLIER: 0.5
+  GRACE_BAND_WINLEAGUE: [2, 4]
+  GRACE_BAND_CHALLENGETOP: [5, 6]
+  GRACE_BAND_MIDTABLE: [7, 9]
+  GRACE_BAND_AVOIDBOTTOM: [10, 10]
+  GRACE_BAND_SURVIVE: []
+unit: "slope-koefficient (patience/säsong) resp. multiplikator 0-1 (dampfaktor per omgång); positionsspann inom en fast 12-lagsliga"
+source:
+  type: measurement
+  doc: "docs/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md; src/domain/services/boardService.ts (boardGraceState, computeBoardPatienceUpdate, updateRunningBoardPatience); src/domain/services/__tests__/boardService.test.ts; scripts/h5-renommetak-matning-2026-09-01.ts"
+  decided_by: code
+verified_at: 2026-09-01
+verified_by: code
+status: active
+related_facts:
+  - D044
+invariants:
+  - "value.NEAR_MISS_SLOPE > 0"
+  - "value.NEAR_MISS_SLOPE < 5"
+  - "value.GRACE_MULTIPLIER > 0"
+  - "value.GRACE_MULTIPLIER < 1.0"
+  - "value.GRACE_BAND_AVOIDBOTTOM[1] < 11"
+notes: |
+  ── PROPOSAL-magnituderna (DOM:ens egna, ~2 och ~0,5) fungerade på FÖRSTA
+     försöket, ingen ytterligare tuning behövdes ──────────────────────────
+  Kört rakt av utan justering, GODKÄNT NÄR-kriterierna gröna direkt.
+  Jacobs döm-siffrorna-klausul (samma mönster som MERIT_BUFFER_CAP/
+  MATCH_REVENUE_REP_DAMP_FLOOR) alltså INTE utnyttjad denna gång — inget
+  gråzonsfynd att eskalera till Opus, per handoffens egen villkorssats
+  ("nästa gång du behövs är om mätningen säger att grace-bandet har fel
+  bredd" — bredden höll).
+
+  ── EN BUGG HITTAD OCH FIXAD UNDER BYGGET, INTE GISSAD FRAM ────────────────
+  Första versionen av boardGraceState härledde graceband som "upp till nästa
+  tiers ankare" rakt av, utan tak. För AvoidBottom (nästa tier nedåt är
+  Survive, ankare=12=sistaplats) gav det graceband 10-12 — vilket SVALDE hela
+  den faktiska nedflyttningszonen (plats 11-12, RELEGATION_ZONE_SIZE=2) och
+  bröt domens egen SKYDDAT-paragraf ("kollaps firar fortfarande"). Fångat av
+  boardService.test.ts:s BEFINTLIGA regressionstester (2026-08-22-sviten,
+  "nedflyttningszonen plats 11-12") INNAN commit — 4 tester failade, 2 var
+  äkta regressioner (fixade med ett tak vid `min(nästa tiers ankare,
+  nedflyttningszonens start − 1)`), 2 var korrekta konsekvenser av grace och
+  uppdaterades till de nya, avsiktliga värdena. Ingen av de fyra gissades —
+  varje diff spårades till antingen en kodbugg eller en avsiktlig
+  beteendeändring innan testet ändrades.
+
+  ── H5-MÄTNINGEN (scripts/h5-renommetak-matning-2026-09-01.ts, samma seed/
+     klubb som D044:s ursprungsfynd) ──────────────────────────────────────
+  Säsong | plac | boardExpectation (efter säsongen)
+    1    |  4   | winLeague  (miss 1 av 2, grace mjukade bägge klockorna)
+    2    |  2   | challengeTop  (miss 2 av 2 → tröghet demoterar, precis som
+                  D044 avsåg — klubben ÖVERLEVER för att slutamerätning inte
+                  längre dränerar patiensen till noll UNDER de två säsongerna)
+    3    |  2   | winLeague  (pos<=2 under challengeTop → 'exceeded' → ratchet
+                  upp igen)
+    4    |  2   | winLeague  (miss 1 av 2 igen)
+    5    |  7   | challengeTop  (GENUIN kollaps — plac 7 är UTANFÖR WinLeague-
+                  gracebandet (2-4) → miss 2 av 2, fullt bled samtidigt,
+                  demoterar)
+  AVSKEDAD säsong 6 (boardPatience=0) — EFTER en verklig kollaps (säsong 5:s
+  plac 7), inte för en nästan-lyckad säsong. Precis vad GODKÄNT NÄR krävde:
+  klubben sparkas ALDRIG säsong 2-5 för en 2:a-4:e plats, men en genuin
+  svacka (plac 7, bortom gracebandet) bestraffas fortfarande fullt ut och
+  bidrar till det senare avskedet. D044:s öppna fynd (avsked säsong 2, INNAN
+  tröghetens andra chans) är löst.
+
+  ── GODKÄNT NÄR, alla fem (DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md) ─────────
+  1. UPPFYLLT — se H5-tabellen ovan.
+  2. UPPFYLLT — säsong 5:s plac 7 (utanför grace) och de befintliga
+     "nedflyttningszonen"-testerna (plats 11-12, AvoidBottom) visar oförändrat
+     fullt bled.
+  3. UPPFYLLT — säsong 1 ensam (miss 1) demoterade inte, samma tröghets-
+     räknarlogik som D044, orörd.
+  4. STRUKTURELLT UPPFYLLT, inte H5-mätt (H5 är en WinLeague-scenario) —
+     boardGraceState(Survive, pos, 12) === false för alla 12 positioner,
+     regressionstestat direkt (boardService.test.ts).
+  5. UPPFYLLT för de TVÅ klockor domens Ägarskap-sektion faktiskt skopar
+     (computeBoardPatienceUpdate + updateRunningBoardPatience) — bägge
+     anropar SAMMA exporterade boardGraceState, ingen egen kopia. Domens
+     prosa nämner "alla fyra klockor" i GODKÄNT NÄR-rubriken men Ägarskap-
+     sektionen (och Jacobs handoff, "de två straffande klockorna") skopar
+     bygget till exakt två — klockorna 2/3/5 är explicit SKYDDADE/orörda i
+     domens egen §"Alla klockor mjuknar i grace, ingen i kollaps". Läst som
+     "de klockor som straffar läser samma boardGraceState", inte en
+     bokstavlig fyra-anropsplatser-räkning.
+
+  ── VEM GÖR VAD ────────────────────────────────────────────────────────────
+  Code: boardGraceState byggd (en källa), wirad i de två straffande
+  klockorna, 8 nya regressionstester (4 nya boardGraceState-tester + 4 nya
+  grace-medvetna updateRunningBoardPatience-tester), 2 befintliga tester
+  uppdaterade till nya avsiktliga värden, H5-mätt (6 säsonger). tsc rent,
+  boardService.test.ts 83/83 gröna.
+  Opus: dömer om NEAR_MISS_SLOPE/GRACE_MULTIPLIER hamnar i gråzon (för
+  snällt = ingen känner guldtryck, för hårt = D044 kvarstår) — proposal-
+  värdena höll på första försöket, ingen eskalering behövdes denna gång.
