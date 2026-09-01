@@ -4,7 +4,7 @@
  * Meningarna i assertions är Jacobs egna, klistrade ordagrant.
  */
 import { describe, it, expect } from 'vitest'
-import { captureSystemDecision, captureFacilityBuildDecision, pickSeasonDecision, SEASON_DECISION_NONE_TEXT } from '../seasonDecisionCaptureService'
+import { captureSystemDecision, captureFacilityBuildDecision, pickSeasonDecision, SEASON_DECISION_NONE_TEXT, buildDecisionLedgerEntry } from '../seasonDecisionCaptureService'
 import {
   buildFacilityBuildTokens,
   sentenceForCaptainSupport,
@@ -578,5 +578,111 @@ describe('HIGH 6 — levererade årsboksmeningar och tom-mall-invariant', () => 
     }
     const candidate = captureFacilityBuildDecision(gameBefore, gameAfter, 'varmestuga', 120000)
     expect(candidate?.sentence).toBe('Värmestuga stod klar. Den kostade 120 tkr ur kassan, men blir kvar längre än de flesta beslut.')
+  })
+})
+
+/**
+ * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — DUAL-WRITE.
+ * buildDecisionLedgerEntry är en ren konvertering (ingen ny verifiering) —
+ * testerna bekräftar att candidate.subject/irreversible/tension/
+ * systemsAffectedCount/moneyAmount bärs över orört, sentence INTE med, och
+ * att significance härleds deterministiskt ur samma rangordningsfält.
+ */
+describe('buildDecisionLedgerEntry — Fas 2 dual-write', () => {
+  it('sell_star: subject=player, sentence saknas, alla A-H9-fält bärs', () => {
+    const game = makeGame()
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const playerId = club.squadPlayerIds[0]
+    const event: GameEvent = {
+      id: 'ev1', type: 'criticalEconomy', title: 't', body: 'b',
+      choices: [{ id: 'sell_star', label: 'l', effect: { type: 'resolveEconomicCrisis', removePlayerId: playerId } }],
+      resolved: false, systemhandelse: true,
+    }
+    const gameAfter = applySale(game, playerId)
+    const candidate = captureSystemDecision(game, gameAfter, event, 'sell_star')!
+    const entry = buildDecisionLedgerEntry(candidate, 'criticalEconomy', 42)
+
+    expect(entry.type).toBe('decision')
+    expect(entry.semanticKey).toBe('criticalEconomy')
+    expect(entry.season).toBe(candidate.season)
+    expect(entry.matchday).toBe(42) // EGEN parameter, inte candidate.round (rond-identitet)
+    expect(entry.subject).toEqual({ kind: 'player', id: playerId })
+    expect(entry.irreversible).toBe(true)
+    expect(entry.tension).toBe(true)
+    expect(entry.systemsAffectedCount).toBe(2)
+    expect(entry.moneyAmount).toBe(350000)
+    expect(entry.madeByPlayer).toBe(true)
+    expect(entry).not.toHaveProperty('sentence')
+  })
+
+  it('ask_mecenat: subject=mecenat (inte player/club) — den tidigare fyndluckan', () => {
+    const mecBefore = makeMecenat({ id: 'mec1', name: 'Björn Lindqvist', happiness: 70 })
+    const gameBefore = makeGame({ mecenater: [mecBefore] })
+    const club = gameBefore.clubs.find(c => c.id === gameBefore.managedClubId)!
+    const event: GameEvent = {
+      id: 'ev1', type: 'criticalEconomy', title: 't', body: 'b',
+      choices: [{ id: 'ask_mecenat', label: 'l', effect: { type: 'resolveEconomicCrisis', targetMecenatId: 'mec1' } }],
+      resolved: false, systemhandelse: true,
+    }
+    const gameAfter: SaveGame = {
+      ...gameBefore,
+      mecenater: [{ ...mecBefore, happiness: 55 }],
+      clubs: gameBefore.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances + 200000 } : c),
+    }
+    const candidate = captureSystemDecision(gameBefore, gameAfter, event, 'ask_mecenat')!
+    const entry = buildDecisionLedgerEntry(candidate, 'criticalEconomy', 10)
+    expect(entry.subject).toEqual({ kind: 'mecenat', id: 'mec1' })
+  })
+
+  it('kandidat utan subject (t.ex. take_loan-formen — inget namedPerson) ⇒ subject undefined i liggarposten', () => {
+    // take_loan kvalificerar aldrig genom captureSystemDecision (score 1 av 3,
+    // se egen describe ovan) — konstruerad candidate direkt för att testa
+    // buildDecisionLedgerEntry:s hantering av "inget subject satt" isolerat.
+    const candidate = { eventId: 'x', round: 10, season: 1, systemsAffectedCount: 1, irreversible: false, tension: true, moneyAmount: 300000, sentence: 'Du tog lånet. Det kostade er varje månad sedan dess.' }
+    const entry = buildDecisionLedgerEntry(candidate, 'criticalEconomy', 10)
+    expect(entry.subject).toBeUndefined()
+    expect(entry.moneyAmount).toBe(300000)
+  })
+
+  it('significance: baseline 50 + tension(15) + subject(10) + systemsAffectedCount, INTE klampad (captainSpeech/take_charge)', () => {
+    const base = makeGame({ boardPatience: 70 })
+    const captain = base.players.find(p => p.clubId === base.managedClubId && p.morale > 10)!
+    const event: GameEvent = {
+      id: 'event_captain_speech_s1', type: 'captainSpeech', title: 't', body: 'b',
+      choices: [{ id: 'take_charge', label: 'l', effect: { type: 'boostMorale', value: -5, targetPlayerId: captain.id } }],
+      resolved: false,
+    }
+    const gameAfter: SaveGame = {
+      ...base,
+      players: base.players.map(p => p.id === captain.id ? { ...p, morale: p.morale - 5 } : p),
+    }
+    // take_charge: irreversible=false, tension=true, subject satt, systemsAffectedCount=1
+    const candidate = captureSystemDecision(base, gameAfter, event, 'take_charge')!
+    const entry = buildDecisionLedgerEntry(candidate, 'captainSpeech', 10)
+    expect(entry.significance).toBe(50 + 15 + 10 + 5) // + min(20, 1*5)=5, långt under 100-taket
+  })
+
+  it('significance klampas till 100 när summan skulle bli högre (detOmojligaValet/sell, alla fyra bonusar)', () => {
+    const game = makeGame()
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const playerId = club.squadPlayerIds[0]
+    const event: GameEvent = {
+      id: 'ev1', type: 'detOmojligaValet', title: 't', body: 'b',
+      choices: [{ id: 'sell', label: 'l', effect: { type: 'noOp' } }],
+      resolved: false, relatedPlayerId: playerId,
+    }
+    const gameAfter = applySale(game, playerId)
+    // irreversible=true, tension=true, subject satt, systemsAffectedCount=4 → 50+15+15+10+20=110
+    const candidate = captureSystemDecision(game, gameAfter, event, 'sell')!
+    const entry = buildDecisionLedgerEntry(candidate, 'detOmojligaValet', 10)
+    expect(entry.significance).toBe(100)
+  })
+
+  it('significance klampas till 100', () => {
+    // Konstruerad candidate direkt (ingen builder ger idag ett stort nog
+    // systemsAffectedCount för att i sig nå taket) — verifierar bara klampen.
+    const candidate = { eventId: 'x', round: 1, season: 1, systemsAffectedCount: 10, irreversible: true, tension: true, subject: { kind: 'player' as const, id: 'p1' }, sentence: 's' }
+    const entry = buildDecisionLedgerEntry(candidate, 'k', 1)
+    expect(entry.significance).toBe(100)
   })
 })

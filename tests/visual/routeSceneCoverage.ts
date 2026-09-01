@@ -92,6 +92,13 @@ export const ROUTE_SCENE_MAP: Record<string, string[]> = {
   // hela karriär tar slut. Lyft ur ratchet-skulden, inte kvar som TODO.
   'game-over': ['game-over'],
   'game-over/historik': ['game-over-historik'],
+  // Route-ratchet 2026-09-01: HistoryScreen var redan registrerad via
+  // game-over-historik men saknade bara denna kartläggning. De tre
+  // slutspelsrutterna har nu egna deterministiska, generellt svepta scener.
+  history: ['game-over-historik'],
+  'playoff-intro': ['playoff-intro'],
+  'qf-summary': ['qf-summary'],
+  champion: ['champion'],
 }
 
 export interface UncoveredRoute { route: string; reason: string }

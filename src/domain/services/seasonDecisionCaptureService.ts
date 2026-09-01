@@ -54,6 +54,7 @@
  */
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
+import type { EventLedgerEntry } from '../entities/Narrative'
 import { positionDefinite, formatValue } from '../format'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
 import { FACILITY_NODE_DEFS } from '../data/facilityNodes'
@@ -82,6 +83,16 @@ export interface SeasonDecisionCandidate {
   tension: boolean
   /** Rangordningsfält 1 (A-H9, nu FÖRST). */
   namedPerson?: string
+  /**
+   * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 (skärpning, Opus dom):
+   * samma entitet som `namedPerson`, men som en TYPAD identitet i stället för
+   * en formaterad visningssträng — så dual-write till EventLedgerEntry.subject
+   * kan ske utan att gissa. `kind: 'mecenat'` täcker de tre byggare vars
+   * namngivna person är en mecenat, inte en spelare eller klubb (subjectPlayerId/
+   * subjectClubId hade tyst tappat den namngivna-person-poängen för dem).
+   * `undefined` exakt när `namedPerson` är `undefined` — samma närvaro-signal.
+   */
+  subject?: { kind: 'player' | 'club' | 'mecenat'; id: string }
   /** Rangordningsfält 5, allra sista skiljedomaren. */
   moneyAmount?: number
   /** Färdigbyggd mening — sammansatt HÄR, vid resolution, ur data som är
@@ -173,6 +184,7 @@ function buildMecenatConflictSide(gameBefore: SaveGame, gameAfter: SaveGame, eve
     irreversible: false,
     tension: true, // en av två namngivna personer blev besviken, oavsett vad du valde
     namedPerson: backedAfter.name,
+    subject: { kind: 'mecenat', id: backedAfter.id },
     sentence,
   }
 }
@@ -195,6 +207,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         irreversible: true,
         tension: true, // sålde en spelare under ekonomisk press — kostade laget
         namedPerson: name,
+        subject: { kind: 'player', id: player.id },
         moneyAmount: 350_000,
         sentence: `Du sålde ${name}. Det kostade er ${positionDefinite(player.position)}.`,
       }
@@ -220,6 +233,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         irreversible: false,
         tension: true, // förtroende gick förlorat för att köpa sig ur krisen
         namedPerson: mecenatAfter.name,
+        subject: { kind: 'mecenat', id: mecenatAfter.id },
         moneyAmount: 200_000,
         sentence: `Du bad ${mecenatAfter.name} om hjälp. Det kostade er hans förtroende.`,
       }
@@ -275,6 +289,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         irreversible: false,
         tension: true, // en löneökning kostar löpande, betald för att behålla folk
         namedPerson: confirmedPlayers.length === 1 ? `${confirmedPlayers[0].firstName} ${confirmedPlayers[0].lastName}` : undefined,
+        subject: confirmedPlayers.length === 1 ? { kind: 'player', id: confirmedPlayers[0].id } : undefined,
         moneyAmount: annualIncrease,
         sentence,
       }
@@ -301,6 +316,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         irreversible: true,
         tension: true, // sålde en egenfostrad spelare innan han fick spela klart
         namedPerson: name,
+        subject: { kind: 'player', id: player.id },
         moneyAmount: 180_000,
         sentence: `Du sålde ${name} innan han hunnit spela klart. Det kostade er akademins bästa år.`,
       }
@@ -323,6 +339,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         irreversible: false,
         tension: false, // ett avstående utan uttalad kostnad — inget system pekade emot
         namedPerson: name,
+        subject: { kind: 'player', id: player.id },
         sentence: `Du lät det vara. ${name} spelar kvar.`,
       }
     },
@@ -342,6 +359,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         irreversible: true,
         tension: true, // pengarna gav, men laget tog — ett ja som var ett nej i truppen
         namedPerson: name,
+        subject: { kind: 'player', id: player.id },
         moneyAmount: bid.offerAmount,
         sentence: `Du tog budet på ${name}. Det gav ${formatValue(bid.offerAmount)}, och tog ${name}.`,
       }
@@ -368,6 +386,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         irreversible: false,
         tension: true, // ett avsked som gav minnen men tog pengar
         namedPerson: mecenat.name,
+        subject: { kind: 'mecenat', id: mecenat.id },
         moneyAmount: clubBefore!.finances - clubAfter!.finances,
         sentence: `Du tackade av ${mecenat.name} som han förtjänade. Det gav ett avsked ingen glömmer, och tog 25 tkr.`,
       }
@@ -417,6 +436,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         irreversible: false,
         tension: true,
         namedPerson: name,
+        subject: { kind: 'player', id: after.id },
         sentence,
       }
     },
@@ -451,6 +471,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         irreversible: false,
         tension: true,
         namedPerson: name,
+        subject: { kind: 'player', id: captain.id },
         sentence,
       }
     },
@@ -494,6 +515,51 @@ export function captureSystemDecision(
   const candidate = builder(gameBefore, gameAfter, event as GameEvent, choiceId)
   if (!candidate) return null
   return qualifies(candidate) ? candidate : null
+}
+
+/**
+ * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — DUAL-WRITE.
+ * "fortsätt returnera kandidaten OCH skriv en liggarpost (strukturerade
+ * delen — sentence:en INTE med)." Ren konvertering, ingen ny verifiering —
+ * candidate har redan passerat qualifies()/builderns egen gameAfter-koll.
+ *
+ * significance härledd ur samma rangordningsfält som posten själv bär
+ * (0-100, clubMemory-skalan): en baseline (varje kandidat har redan
+ * passerat qualifies(), 2/3 av kriterierna) plus tillägg per ytterligare
+ * sant kriterium. Oberoende av orsakVerkanService.ts:s egen significance-
+ * formel för de generiska ripple-fångade 'decision'-posterna (Fas 1) —
+ * de är en ANNAN fråga (vad skalvade) än denna (var det säsongens beslut?),
+ * inget krav att de sammanfaller.
+ *
+ * `matchday` tas som EGEN parameter (INTE candidate.round, som är
+ * getCurrentLeagueRound — samma "rond-identitet"-fälla schemat varnar för,
+ * se orsakVerkanService.ts:s motsvarande kommentar). Anroparen
+ * (eventResolver.ts) skickar in game.currentMatchday.
+ */
+export function buildDecisionLedgerEntry(
+  candidate: SeasonDecisionCandidate,
+  semanticKey: string,
+  matchday: number,
+): EventLedgerEntry {
+  const significance = Math.min(100, 50
+    + (candidate.irreversible ? 15 : 0)
+    + (candidate.tension ? 15 : 0)
+    + (candidate.subject ? 10 : 0)
+    + Math.min(20, candidate.systemsAffectedCount * 5),
+  )
+  return {
+    type: 'decision',
+    semanticKey,
+    season: candidate.season,
+    matchday,
+    subject: candidate.subject,
+    significance,
+    irreversible: candidate.irreversible,
+    tension: candidate.tension,
+    systemsAffectedCount: candidate.systemsAffectedCount,
+    moneyAmount: candidate.moneyAmount,
+    madeByPlayer: true,
+  }
 }
 
 /**

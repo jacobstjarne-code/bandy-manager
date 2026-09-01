@@ -8,10 +8,11 @@
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { PlayoffSeries } from '../../../domain/entities/Playoff'
 import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { TeamSelection } from '../../../domain/entities/Fixture'
 import { FORMATIONS } from '../../../domain/entities/Formation'
-import { PlayerPosition, CornerStrategy, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, PenaltyKillStyle } from '../../../domain/enums'
+import { PlayerPosition, CornerStrategy, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, PenaltyKillStyle, PlayoffRound, PlayoffStatus } from '../../../domain/enums'
 import { CupFinalVictoryScene } from '../scenes/CupFinalVictoryScene'
 import { SMFinalVictoryScene } from '../scenes/SMFinalVictoryScene'
 import { SeasonArcCard } from '../../components/squad/SeasonArcCard'
@@ -54,12 +55,16 @@ import { DecisionCard } from '../../components/DecisionCard'
 import { PressConferenceScene } from '../../components/PressConferenceScene'
 import { ClubSelectionScreen } from '../ClubSelectionScreen'
 import { CallupModal } from '../../components/portal/CallupModal'
+import { ChampionScreen } from '../ChampionScreen'
+import { PlayoffIntroScreen } from '../PlayoffIntroScreen'
+import { QFSummaryScreen } from '../QFSummaryScreen'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 import { generateDetailedAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids, withActiveIncomingBidEvent } from './gameStateFactory'
 import { CUP_FINAL_VENUE, SM_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
+import { generatePlayoffBracket } from '../../../domain/services/playoffService'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -146,6 +151,9 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // Dev-scen-integritet 2026-09-01: tre tidigare byggda men helt osynliga
   // produktlägen, nu med deterministisk data och permanent grindsvep.
   | 'club-selection' | 'season-share' | 'callup-modal'
+  // Route-ratchet 2026-09-01: tre slutspelsrutter som tidigare bara gick att
+  // nå genom en hel säsong, nu byggda på samma deterministiska slutspelsresa.
+  | 'playoff-intro' | 'qf-summary' | 'champion'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -227,6 +235,9 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'club-selection', label: 'Klubbval — LÄTT/MEDEL/SVÅR' },
   { id: 'season-share', label: 'SeasonSummary — SÄSONGENS MATCH + delning' },
   { id: 'callup-modal', label: 'Landslagsuttagning — två spelare' },
+  { id: 'playoff-intro', label: 'Slutspel — grundserien avklarad' },
+  { id: 'qf-summary', label: 'Slutspel — kvartsfinalerna avgjorda' },
+  { id: 'champion', label: 'Slutspel — svenska mästare' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -486,6 +497,83 @@ const stillnessGame = makeGame(makeLeagueFixtures(), { players: calmPlayers, cap
 // "laddning"-beat/IllustrationScene istf lineup-steget direkt, upptäckt genom
 // att faktiskt titta på skärmdumpen (inte bara läsa koden).
 const factoryMidSeasonGame = atRound(makeBaseGame({ seed: 2 }), 18)
+
+// Route-ratchet 2026-09-01: en sammanhängande, riktig slutspelsresa för tre
+// skärmar som tidigare var helt onåbara i dev-galleriet. Vi utgår från den
+// invariant-kontrollerade världen ovan, väljer serieledaren som managerklubb
+// och härleder varje nästa par ur föregående ronds vinnare. Vi anropar INTE
+// advancePlayoffRound här: det är en produktionsmutation som också kräver
+// rensning av narrativköer. En dev-fixtur beskriver rena post-state-snapshots
+// och ska inte bli en falsk tredje mutationsväg.
+const playoffManagedClubId = [...factoryMidSeasonGame.standings]
+  .sort((a, b) => a.position - b.position)[0]?.clubId ?? factoryMidSeasonGame.managedClubId
+const playoffJourneyBaseGame = {
+  ...factoryMidSeasonGame,
+  managedClubId: playoffManagedClubId,
+} as SaveGame
+const playoffOpeningBracket = generatePlayoffBracket(
+  playoffJourneyBaseGame.standings,
+  playoffJourneyBaseGame.currentSeason,
+)
+const playoffIntroGame = {
+  ...playoffJourneyBaseGame,
+  playoffBracket: playoffOpeningBracket,
+} as SaveGame
+
+function decideSeriesForHomeClub(series: PlayoffSeries, homeWins = 3): PlayoffSeries {
+  return {
+    ...series,
+    homeWins,
+    awayWins: Math.max(0, homeWins - 1),
+    winnerId: series.homeClubId,
+    loserId: series.awayClubId,
+  }
+}
+
+const decidedQuarterFinals = {
+  ...playoffOpeningBracket,
+  quarterFinals: playoffOpeningBracket.quarterFinals.map(series => decideSeriesForHomeClub(series)),
+}
+const quarterFinalWinners = decidedQuarterFinals.quarterFinals.map(series => series.winnerId!)
+const semiFinals: PlayoffSeries[] = [
+  {
+    id: 'dev-playoff-sf-1', round: PlayoffRound.SemiFinal,
+    homeClubId: quarterFinalWinners[0], awayClubId: quarterFinalWinners[3],
+    fixtures: [], homeWins: 0, awayWins: 0, winnerId: null, loserId: null,
+  },
+  {
+    id: 'dev-playoff-sf-2', round: PlayoffRound.SemiFinal,
+    homeClubId: quarterFinalWinners[1], awayClubId: quarterFinalWinners[2],
+    fixtures: [], homeWins: 0, awayWins: 0, winnerId: null, loserId: null,
+  },
+]
+const qfSummaryBracket = {
+  ...decidedQuarterFinals,
+  status: PlayoffStatus.SemiFinals,
+  semiFinals,
+}
+const qfSummaryGame = {
+  ...playoffJourneyBaseGame,
+  playoffBracket: qfSummaryBracket,
+} as SaveGame
+
+const decidedSemiFinals = semiFinals.map(series => decideSeriesForHomeClub(series))
+const finalSeries = decideSeriesForHomeClub({
+  id: 'dev-playoff-final', round: PlayoffRound.Final,
+  homeClubId: decidedSemiFinals[0].winnerId!, awayClubId: decidedSemiFinals[1].winnerId!,
+  fixtures: [], homeWins: 0, awayWins: 0, winnerId: null, loserId: null,
+}, 1)
+const championGame = {
+  ...playoffJourneyBaseGame,
+  playoffBracket: {
+    ...qfSummaryBracket,
+    status: PlayoffStatus.Completed,
+    semiFinals: decidedSemiFinals,
+    final: finalSeries,
+    champion: finalSeries.winnerId,
+  },
+} as SaveGame
+
 const truppBlandatGame = withExpiringContracts(withInjuries(factoryMidSeasonGame, 1), 1)
 const truppKrisGame = withExpiringContracts(withLowMorale(withSuspended(withInjuries(factoryMidSeasonGame, 1), 1), 1), 1)
 // "3 tomma slots": INTE withLineupSlots({emptyCount:3}) — setLineup-use caset
@@ -1328,6 +1416,9 @@ export function DevScenesScreen() {
       : scene === 'bygget' || scene === 'bygget-avveckling' ? facilityGame
       : scene === 'game-over' || scene === 'game-over-historik' ? gameOverGame
       : scene === 'callup-modal' ? callupGame
+      : scene === 'playoff-intro' ? playoffIntroGame
+      : scene === 'qf-summary' ? qfSummaryGame
+      : scene === 'champion' ? championGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -1514,6 +1605,21 @@ export function DevScenesScreen() {
         {scene === 'callup-modal' && (
           <div style={{ height: '844px', overflow: 'hidden', position: 'relative', background: 'var(--bg-portal)' }}>
             <CallupModal game={callupGame} />
+          </div>
+        )}
+        {scene === 'playoff-intro' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <PlayoffIntroScreen />
+          </div>
+        )}
+        {scene === 'qf-summary' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <QFSummaryScreen />
+          </div>
+        )}
+        {scene === 'champion' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <ChampionScreen />
           </div>
         )}
         {(scene === 'sommaren-s2' || scene === 'sommaren-titelforsvarare' || scene === 'sommaren-tomt' || scene === 'sommaren-siffra') && (

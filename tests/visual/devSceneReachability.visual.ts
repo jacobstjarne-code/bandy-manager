@@ -46,3 +46,34 @@ test('CallupModal-devscenen visar två uttagna spelare och bonusen', async ({ pa
   await expect(dialog.getByText('+10 tkr')).toBeVisible()
   await expect(dialog.getByRole('button', { name: 'Stäng' })).toBeVisible()
 })
+
+test('Slutspelsintroduktionen visar placering, topp 8 och nästa steg', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=playoff-intro&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('Grundserien avklarad', { exact: true })).toBeVisible()
+  await expect(scene.getByText('TOPP 8 — SLUTSPELSKLARA')).toBeVisible()
+  await expect(scene.getByRole('button', { name: /STARTA SLUTSPELET/ })).toBeVisible()
+})
+
+test('Kvartsfinalsammanfattningen visar avancemang och semifinalpar', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=qf-summary&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('KVARTSFINALERNA AVGJORDA')).toBeVisible()
+  await expect(scene.getByText('Semifinalerna väntar. Bäst av fem.')).toBeVisible()
+  await expect(scene.getByText('SEMIFINALER — BÄST AV 5')).toBeVisible()
+  await expect(scene.getByRole('button', { name: /STARTA SEMIFINALERNA/ })).toBeVisible()
+})
+
+test('Champion-scenen visar hela slutspelsresan och SM-guldet', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=champion&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByRole('heading', { name: 'Svenska Mästare!' })).toBeVisible()
+  await expect(scene.getByText('SLUTSPELSRESA')).toBeVisible()
+  await expect(scene.getByText(/^Kvartsfinal vs /)).toBeVisible()
+  await expect(scene.getByText(/^Semifinal vs /)).toBeVisible()
+  await expect(scene.getByText(/^SM-Final vs /)).toBeVisible()
+  await expect(scene.getByRole('button', { name: /Nästa säsong/ })).toBeVisible()
+})

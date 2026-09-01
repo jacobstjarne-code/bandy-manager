@@ -193,15 +193,47 @@ export interface EventLedgerEntry {
   /** Kronologi, ALDRIG rond-identitet i UI (roundLabel-regeln). */
   matchday: number
 
-  // ── VEM (valfritt, minst ett för entitets-händelser) ──
-  subjectPlayerId?: string
-  subjectClubId?: string
+  // ── VEM (valfritt) ──
+  // Skärpning 2026-09-01 (Fas 2-vägval #2, Opus dom): polymorft, inte
+  // subjectPlayerId/subjectClubId. Tre av A-H9:s beslutsbyggare bär en
+  // MECENAT som namngiven person — varken player- eller club-id täcker det.
+  // Ett fjärde subjectMecenatId? hade bara flyttat problemet till nästa
+  // entitetstyp (en domare? en sponsor? en politiker?); polymorfin bär
+  // vilken entitet som helst utan att schemat växer per typ. `kind` sluten
+  // union, växer medvetet, aldrig en fri sträng — samma disciplin som `type`.
+  // pickSeasonDecisions `namedPerson ? 1 : 0` blir `subject !== undefined`.
+  subject?: { kind: 'player' | 'club' | 'mecenat'; id: string }
 
   // ── VAD BLEV DET ──
   outcome?: 'won' | 'lost' | 'neutral'
   /** 0-100, samma skala som clubMemory/weights. */
   significance: number
+  /** = ripples åtta fält, VAD SOM SKALVADE — en läsning av describeRippleChain, inte ett andra minne. */
   consequences?: LedgerConsequence[]
+
+  // ── BESLUTS-NATUR (skärpning 2026-09-01, Opus dom, Fas 2-vägval) ──
+  // Sätts BARA av type:'decision'-byggare — A-H9:s rangordningsvektor
+  // (namngiven person → irreversibelt → spänning → antal system → kr) så
+  // pickSeasonDecision (seasonDecisionCaptureService.ts) kan rekonstrueras
+  // EXAKT ur liggaren, ingen kvalitetsförlust mot dagens rangordning.
+  // En derby-vinst/skada sätter ALDRIG dessa fält — annars luddar de upp
+  // schemat för alla andra händelsetyper. Beslutets natur, inte dekoration.
+  /** A-H9 rangordningsfält 2. */
+  irreversible?: boolean
+  /** A-H9 rangordningsfält 3 — pekade valet åt olika håll (gjorde det ont)? */
+  tension?: boolean
+  /**
+   * A-H9 rangordningsfält 4 — HUR BRETT beslutet rörde. EGET fält, INTE
+   * `consequences.length`: Code:s korskontroll mot alla nio byggare visade
+   * 6/9 underräkning (side_mec1/2 till NOLL) — "spelartrupp" (roster) och
+   * "mecenatrelation" (happiness) är verkliga A-H9-dimensioner utanför
+   * ripples åtta fält. `consequences` = VAD som skalvade (smalt, ripple-
+   * troget); `systemsAffectedCount` = HUR BRETT det rörde (bredare fråga).
+   * Två frågor, två fält — length var en elegant-men-fel genväg.
+   */
+  systemsAffectedCount?: number
+  /** A-H9 rangordningsfält 5, sista skiljedomaren. */
+  moneyAmount?: number
 
   // ── URSPRUNG ──
   /** HIGH 6:s attributions-skillnad (beslut vs systemhändelse) — ärvd, aldrig tappad. */

@@ -75,13 +75,22 @@ export function captureDecisionRipple(
     return field ? [{ field, dir: s.dir, magnitude: s.magnitude }] : []
   })
 
+  // Skärpning 2026-09-01 (Fas 2-vägval #2): polymorft subject, inte separata
+  // id-fält. Fas 1:s generiska infångare känner bara player/club (event.
+  // relatedPlayerId/relatedClubId) — 'mecenat' hör bara till A-H9:s
+  // beslutsbyggare (seasonDecisionCaptureService.ts), aldrig hit.
+  const subject: EventLedgerEntry['subject'] = subjectPlayerId
+    ? { kind: 'player', id: subjectPlayerId }
+    : subjectClubId
+    ? { kind: 'club', id: subjectClubId }
+    : undefined
+
   return {
     type: 'decision',
     semanticKey,
     season,
     matchday,
-    subjectPlayerId,
-    subjectClubId,
+    subject,
     significance: decisionRippleSignificance(chain.steps),
     consequences,
     madeByPlayer: true,

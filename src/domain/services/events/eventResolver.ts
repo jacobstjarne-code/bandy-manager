@@ -16,7 +16,7 @@ import type { SourceKey } from '../sourceCooldownService'
 import { PROVNING_RESOLUTION } from '../../data/hallProvningData'
 import { getCurrentLeagueRound } from '../../data/seasonPhases'
 import { logNarrativeBeat } from '../narrativeLogService'
-import { captureSystemDecision } from '../seasonDecisionCaptureService'
+import { captureSystemDecision, buildDecisionLedgerEntry } from '../seasonDecisionCaptureService'
 import { logEvent } from '../eventLedgerService'
 import { captureDecisionRipple } from '../orsakVerkanService'
 
@@ -1978,6 +1978,13 @@ export function resolveEvent(
     updatedGame = {
       ...updatedGame,
       seasonDecisionCandidates: [...(updatedGame.seasonDecisionCandidates ?? []), candidate],
+      // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — DUAL-WRITE.
+      // seasonDecisionCandidates orörd (ovan); samma candidate konverteras
+      // till en liggarpost UTAN sentence. Kan inte retireras än — Codes lane
+      // omfattar inte src/presentation/store/, där captureFacilityBuildDecision
+      // (den TREDJE kandidatkällan, HIGH 6) skriver, så seasonDecisionCandidates
+      // förblir aktiv tills den källan också dual-writer.
+      eventLedger: logEvent(updatedGame, buildDecisionLedgerEntry(candidate, event.type, updatedGame.currentMatchday)),
     }
   }
 

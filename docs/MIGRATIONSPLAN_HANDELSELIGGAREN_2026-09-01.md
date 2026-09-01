@@ -56,3 +56,67 @@ Från och med att liggaren finns: **varje ny konsekventiell händelse skriver en
 - **Jacob:** inget mer beslut behövs — strangler vald, sekvensen satt. Nästa gång du behövs är om en fas avslöjar att ett gammalt minne bar något schemat inte fångar (då är det ett vägval, inte en migrering).
 
 **Starta Fas 0. Allt annat hänger på att liggaren + skrivvägen finns.**
+
+---
+
+## EVENTLEDGERENTRY-SCHEMA (låst 2026-09-01, Opus)
+
+Grundregeln: liggaren bär det STRUKTURERADE, aldrig prosan. Varje fält är ett faktum en konsument tolkar fritt, eller en nyckel den slår på. Inget fält bär ton.
+
+```ts
+export interface EventLedgerEntry {
+  // VAD
+  type: EventLedgerType        // sluten union, se nedan — aldrig fri sträng
+  semanticKey: string          // narrativeBeatLogs nyckel, bärs från dag ett (Fas 3)
+  // NÄR
+  season: number
+  matchday: number             // kronologi, ALDRIG rond-identitet i UI
+  // VEM (valfritt — polymorft så en mecenat/framtida entitet får en VEM-plats
+  // utan att schemat växer per typ. `kind` är sluten union, växer medvetet.)
+  subject?: { kind: 'player' | 'club' | 'mecenat'; id: string }
+  // VAD BLEV DET
+  outcome?: 'won' | 'lost' | 'neutral'
+  significance: number         // 0-100, samma skala som clubMemory/weights
+  consequences?: LedgerConsequence[]  // = ripples åtta fält, vad som SKALVADE
+  // BESLUTS-NATUR (bara `type: 'decision'`-poster sätter dessa — A-H9:s
+  // rangordningsvektor, så pickSeasonDecision kan rekonstrueras EXAKT ur
+  // liggaren. En derby-vinst/skada sätter dem ALDRIG.)
+  irreversible?: boolean       // A-H9 fält 2 — beslutets natur, ej dekoration
+  tension?: boolean            // A-H9 fält 3 — pekade valet åt olika håll
+  systemsAffectedCount?: number // A-H9 fält 4 — HUR BRETT beslutet rörde. EGET
+                                // fält, INTE consequences.length: spelartrupp/
+                                // mecenatrelation är verkliga dimensioner utanför
+                                // ripples åtta fält (6/9 byggare underräknar annars)
+  moneyAmount?: number         // A-H9 fält 5, sista skiljedomaren
+  // URSPRUNG
+  madeByPlayer?: boolean       // HIGH 6:s attributions-skillnad, ärvd aldrig tappad
+}
+
+export interface LedgerConsequence {
+  field: 'fanMood' | 'communityStanding' | 'boardPatience'
+       | 'sponsorNetworkMood' | 'supporterMood' | 'playerMorale'
+       | 'finances' | 'transferBudget'   // = describeRippleChains fältmängd
+  dir: 'up' | 'down'
+  magnitude: 'knappt' | 'tydligt' | 'kraftigt'   // ripple-kedjans skala, återanvänd
+}
+```
+
+**`type` är en sluten union.** Startmängd = clubMemorys `MemoryEventType` + besluts-typen: `'decision' | 'season_finish' | 'cup_final' | 'sm_final' | 'derby_result' | 'big_win' | 'big_loss' | 'player_milestone' | 'academy_promotion' | 'retirement' | 'facility_built' | 'transfer_signed' | 'transfer_sold' | 'mecenat_change' | 'storyline_resolution' | 'scandal' | 'national_team_callup'`. Utöka unionen när en migrerande källa bär en typ den inte täcker — aldrig en fri sträng som flykt.
+
+**Motivering, där den inte är självklar:**
+- `semanticKey` bärs från Fas 0 även om Fas 3 är senare — så att narrativeBeatLogs tre läsvägar kan flytta utan bakåtfyllning.
+- `consequences` återanvänder `describeRippleChain`s fältmängd + magnitud-skala EXAKT — ripple-kedjan blir en LÄSNING av liggarposten, inte ett separat minne. `LedgerConsequence` = `RippleChainStep` utan `label`/`scope` (vy-beslut).
+- **Ingen `text`/`emoji`/`sentence`/`kind`/`title`** — prosan/tonen genereras i respektive vy ur fälten ovan. "Rå sanning i botten, all mening i ytorna" i typen.
+- **Ingen `id` på posten** — append-only + season+matchday+type+subject är identitet nog (clubMemorys `buildEventId` konstruerar den ur just de fälten — bevis att de räcker).
+
+**Skärpning 2026-09-01 (Fas 2-vägval, Opus dom):** `irreversible`/`tension`/`moneyAmount`/`systemsAffectedCount` tillagda + `subjectPlayerId`/`subjectClubId` ersatta av polymorft `subject`. Fas 2 avslöjade att jag mappade schemat mot RIPPLE-fältmängden och antog att den var samma som A-H9 rangordnar på — den är den inte, på två sätt:
+- **`systemsAffectedCount` är ett EGET fält, INTE `consequences.length`.** Code:s korskontroll mot alla nio byggare: 6/9 underräknar, side_mec1/2 till NOLL. "Spelartrupp" (roster) och "mecenatrelation" (happiness) är verkliga A-H9-dimensioner utanför ripples åtta fält. `consequences` behålls smalt (= ripples åtta, en LÄSNING av kedjan); `systemsAffectedCount` bär den bredare frågan. Två olika frågor, två fält — inte en genväg via length.
+- **`subject` är polymorft** (`kind: 'player'|'club'|'mecenat'`), inte `subjectPlayerId`/`subjectClubId`. Tre byggare bär en MECENAT som namngiven person, som varken player- eller club-id täcker — utan detta skulle deras `namedPerson`-tiebreak tyst scoras som namnlös. Ett fjärde `subjectMecenatId?` skulle bara flytta problemet till nästa entitetstyp; polymorfin bär alla utan att schemat växer per typ. `pickSeasonDecision`s `namedPerson ? 1 : 0` blir `subject !== undefined`.
+
+Bägge bärs BARA av beslutsbyggarna (utom `subject`, som också bär VEM för entitets-händelser). Lärdomen: ripples fältmängd är inte "alla system ett beslut rör" — att anta det var en elegant-men-fel genväg.
+
+**Två saker medvetet UTE (återinför inte):**
+- Ingen `text`/prosa (ovan).
+- **Ingen `rippleChainId`/`decisionCandidateId`-referens tillbaka till det gamla minnet.** Frestelsen under dual-write är att länka posten till sitt gamla jag "för säkerhets skull" — gör inte det, då blir liggaren beroende av det den ska ersätta och retire-steget kan aldrig köras. Posten står på egna ben från Fas 0.
+
+Om en migrerande källa bär något schemat inte fångar — STANNA och flagga, det är ett vägval (dom), inte en tyst fältutökning.

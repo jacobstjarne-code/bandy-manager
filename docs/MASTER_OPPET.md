@@ -505,10 +505,10 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 | sluttest-onadd-seasonsignature | `SeasonSignatureRevealScene` helt onåbar i `/dev/scenes` | verifierad | Code | SLUTTEST_KO.md:257, 261 | Samma mönster |
 | sluttest-onadd-inboxscreen | `InboxScreen` helt onåbar i `/dev/scenes` | verifierad | Code | SLUTTEST_KO.md:257, 261 | Nås bara via AppRouter, /game/inbox är en namngiven otäckt rutt |
 | sluttest-onadd-historyscreen | `HistoryScreen` helt onåbar i `/dev/scenes` | stale | Code | SLUTTEST_KO.md:257, 261 | STÄNG — Importerad + registrerad som 'game-over-historik' sedan 2026-08-24 (samma commit som game-over) |
-| sluttest-onadd-championscreen | `ChampionScreen` helt onåbar i `/dev/scenes` | verifierad | Code | SLUTTEST_KO.md:257, 261 | 0 träffar i registret, enda importör AppRouter.tsx |
+| sluttest-onadd-championscreen | `ChampionScreen` har en deterministisk SM-guld-scen med hela slutspelsresan | **klar** | Code | SLUTTEST_KO.md:257, 261 | `champion` härleder varje par ur föregående ronds vinnare utan att skapa en ny produktionsmutationsväg, ingår i hela grindsvepet och reachability-testet kräver kvartsfinal, semifinal, final och Nästa säsong. |
 | sluttest-onadd-introsequence | `IntroSequence` helt onåbar i `/dev/scenes` | verifierad | Code | SLUTTEST_KO.md:257, 261 | Samma mönster |
-| sluttest-onadd-playoffintro | `PlayoffIntroScreen` helt onåbar i `/dev/scenes` | verifierad | Code | SLUTTEST_KO.md:257, 261 | Samma mönster |
-| sluttest-onadd-qfsummary | `QFSummaryScreen` helt onåbar i `/dev/scenes` | verifierad | Code | SLUTTEST_KO.md:257, 261 | Samma mönster |
+| sluttest-onadd-playoffintro | `PlayoffIntroScreen` har en deterministisk scen med placering, topp 8 och kvartsfinalpar | **klar** | Code | SLUTTEST_KO.md:257, 261 | `playoff-intro` använder en invariant-kontrollerad 12-klubbsvärld och `generatePlayoffBracket`; scenen är route-mappad och reachability-testad. |
+| sluttest-onadd-qfsummary | `QFSummaryScreen` har en deterministisk scen efter fyra avgjorda kvartsfinaler | **klar** | Code | SLUTTEST_KO.md:257, 261 | `qf-summary` använder samma seedade slutspelsresa som rena post-state-fixturer; semifinalparen och rätt CTA krävs av browsergrinden. |
 | sluttest-onadd-tilltrade | `TilltradeScreen` helt onåbar i `/dev/scenes` | verifierad | Code | SLUTTEST_KO.md:257, 261 | Samma mönster |
 | sluttest-onadd-hallprovning | `HallProvningScreen` helt onåbar i `/dev/scenes` | verifierad | Code | SLUTTEST_KO.md:257, 261 | Samma mönster |
 | sluttest-onadd-simsummary | `SimSummaryScreen` helt onåbar i `/dev/scenes` | verifierad | Code | SLUTTEST_KO.md:257, 261 | Samma mönster |

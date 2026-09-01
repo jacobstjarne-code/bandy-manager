@@ -39,21 +39,24 @@ describe('logEvent', () => {
     expect(game.eventLedger?.[1]).toEqual(second)
   })
 
-  it('bär hela fältschemat (subject/outcome/consequences/madeByPlayer) utan att tappa något', () => {
+  it('bär hela fältschemat (subject/outcome/consequences/beslutsnatur/madeByPlayer) utan att tappa något', () => {
     const game = makeGame()
     const full: EventLedgerEntry = {
       type: 'decision',
       semanticKey: 'sell_academy_product',
       season: 4,
       matchday: 15,
-      subjectPlayerId: 'player_1',
-      subjectClubId: 'club_a',
+      subject: { kind: 'player', id: 'player_1' },
       outcome: 'neutral',
       significance: 80,
       consequences: [
         { field: 'communityStanding', dir: 'down', magnitude: 'tydligt' },
         { field: 'boardPatience', dir: 'down', magnitude: 'knappt' },
       ],
+      irreversible: true,
+      tension: true,
+      systemsAffectedCount: 2,
+      moneyAmount: 180000,
       madeByPlayer: true,
     }
     const updated = logEvent(game, full)

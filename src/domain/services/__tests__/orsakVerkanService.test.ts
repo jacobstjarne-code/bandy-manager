@@ -101,13 +101,28 @@ describe('captureDecisionRipple', () => {
     expect(entry?.semanticKey).toBe('sell_academy_product')
     expect(entry?.season).toBe(2025)
     expect(entry?.matchday).toBe(14)
-    expect(entry?.subjectPlayerId).toBe('berg')
-    expect(entry?.subjectClubId).toBe('c1')
+    // subjectPlayerId prioriteras framför subjectClubId när bägge finns (samma
+    // konvention som pilotTransferBidTrigger — spelaren är beslutets kärna).
+    expect(entry?.subject).toEqual({ kind: 'player', id: 'berg' })
     expect(entry?.madeByPlayer).toBe(true)
     expect(entry?.consequences).toEqual([
       { field: 'fanMood', dir: 'up', magnitude: 'kraftigt' }, // delta 10 >= humorMagnitude-tröskeln för kraftigt
       { field: 'boardPatience', dir: 'up', magnitude: 'tydligt' },
     ])
+  })
+
+  it('subject: kind club när ingen spelare finns', () => {
+    const before = makeGame()
+    const after = { ...before, fanMood: 60 }
+    const entry = captureDecisionRipple(before, after, 'k', 2025, 14, undefined, 'c1')
+    expect(entry?.subject).toEqual({ kind: 'club', id: 'c1' })
+  })
+
+  it('subject: undefined när varken spelare eller klubb anges', () => {
+    const before = makeGame()
+    const after = { ...before, fanMood: 60 }
+    const entry = captureDecisionRipple(before, after, 'k', 2025, 14)
+    expect(entry?.subject).toBeUndefined()
   })
 
   it('significance: Styrelse-inblandning ger bonus ovanpå den högsta stegmagnituden', () => {
@@ -150,14 +165,24 @@ describe('eventResolver — Fas 1 write-hook (samma tre transferbudsutfall som t
 
     const after = resolveEvent(gameWithEvent, event.id, 'accept', undefined, true)
 
-    expect(after.eventLedger).toHaveLength(1)
-    const entry = after.eventLedger?.[0]
-    expect(entry?.type).toBe('decision')
-    expect(entry?.semanticKey).toBe('transferBidReceived')
-    expect(entry?.subjectPlayerId).toBe('berg')
-    expect(entry?.subjectClubId).toBe('c2')
-    expect(entry?.madeByPlayer).toBe(true)
-    expect(entry?.consequences).toEqual([{ field: 'finances', dir: 'up', magnitude: 'kraftigt' }])
+    // TVÅ poster nu: transferBidReceived/accept kvalificerar SAMTIDIGT som
+    // A-H9-kandidat (Fas 2-dual-write, skriven först i eventResolver.ts) OCH
+    // producerar en ripple (Fas 1:s generiska infångare, skriven senare) —
+    // olika frågor (var det säsongens beslut? / vad skalvade?), samma resolution.
+    expect(after.eventLedger).toHaveLength(2)
+    const [decisionEntry, rippleEntry] = after.eventLedger ?? []
+    expect(decisionEntry.type).toBe('decision')
+    expect(decisionEntry.semanticKey).toBe('transferBidReceived')
+    expect(decisionEntry.subject).toEqual({ kind: 'player', id: 'berg' })
+    expect(decisionEntry.irreversible).toBe(true) // Fas 2:s A-H9-fält — bara på decision-kandidatens post
+    expect(decisionEntry).not.toHaveProperty('consequences')
+
+    expect(rippleEntry.type).toBe('decision')
+    expect(rippleEntry.semanticKey).toBe('transferBidReceived')
+    expect(rippleEntry.subject).toEqual({ kind: 'player', id: 'berg' }) // relatedPlayerId prioriterat framför relatedClubId
+    expect(rippleEntry.madeByPlayer).toBe(true)
+    expect(rippleEntry.consequences).toEqual([{ field: 'finances', dir: 'up', magnitude: 'kraftigt' }])
+    expect(rippleEntry.irreversible).toBeUndefined() // Fas 1:s generiska post sätter aldrig A-H9-fälten
   })
 
   it('avslag: skriver en liggarpost med Moralen-konsekvensen', () => {
@@ -203,6 +228,6 @@ describe('eventResolver — Fas 1 write-hook (samma tre transferbudsutfall som t
     const after = resolveEvent(gameWithEvent, event.id, 'accept', undefined, true)
 
     expect(after.pilotTransferBidRippleChain?.steps).toEqual([{ label: 'Kassan', dir: 'up', scope: 'club', magnitude: 'kraftigt' }])
-    expect(after.eventLedger).toHaveLength(1)
+    expect(after.eventLedger).toHaveLength(2) // Fas 2 (decision-kandidat) + Fas 1 (ripple) — se testet ovan
   })
 })
