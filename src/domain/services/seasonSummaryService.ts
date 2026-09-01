@@ -886,8 +886,19 @@ export function placeringsdomText(
   totalTeams: number,
 ): string {
   const rating = computeSeasonVerdictRating(boardExpectation, finalPosition, totalTeams)
+  const verdict = expectationVerdictFromRating(boardExpectation, rating, false)
+  // WinLeague is deliberately binary in expectationVerdictFromRating: winning
+  // meets the goal, every lower position fails it. The underlying five-grade
+  // rating is still useful to the board systems, but feeding rating 4 directly
+  // to the locked prose made second place read as "more than the goal". Keep
+  // the score and normalize only the prose bucket so text and verdict cannot
+  // point in opposite directions.
+  let templateRating: 1 | 2 | 3 | 4 | 5 = rating
+  if (verdict === 'failed' && rating > 2) templateRating = 2
+  else if (verdict === 'met') templateRating = 3
+  else if (verdict === 'exceeded' && rating < 4) templateRating = 4
   const placering = ORDINAL_DEFINITE[finalPosition] ?? `${finalPosition}:e platsen`
-  return PLACERINGSDOM_TEMPLATES[rating](placering)
+  return PLACERINGSDOM_TEMPLATES[templateRating](placering)
 }
 
 /**

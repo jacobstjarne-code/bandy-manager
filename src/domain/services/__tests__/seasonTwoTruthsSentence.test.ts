@@ -9,11 +9,17 @@ import { seasonTwoTruthsSentence, placeringsdomText } from '../seasonSummaryServ
 import { ClubExpectation } from '../../enums'
 
 describe('placeringsdomText — Jacobs låsta text, fem betyg', () => {
-  it('betyg 5 (WinLeague, 1:a): "överträffade det de bad om"', () => {
-    expect(placeringsdomText(ClubExpectation.WinLeague, 1, 12)).toBe('Förstaplatsen överträffade det de bad om.')
+  it('WinLeague, 1:a: den binära måluppfyllelsen läser som väntat, inte överträffat', () => {
+    expect(placeringsdomText(ClubExpectation.WinLeague, 1, 12)).toBe('Förstaplatsen var vad de väntade sig.')
   })
   it('betyg 3 säger "vad de väntade sig", INTE "precis vad de väntade sig"', () => {
-    expect(placeringsdomText(ClubExpectation.WinLeague, 4, 12)).toBe('Fjärdeplatsen var vad de väntade sig.')
+    expect(placeringsdomText(ClubExpectation.ChallengeTop, 6, 12)).toBe('Sjätteplatsen var vad de väntade sig.')
+  })
+  it('REGRESSION: WinLeague, 2:a kan aldrig beskrivas som mer än målet', () => {
+    expect(placeringsdomText(ClubExpectation.WinLeague, 2, 12)).toBe('Andraplatsen låg under målet.')
+  })
+  it('WinLeague-normaliseringen gäller hela spannet som missar det binära målet', () => {
+    expect(placeringsdomText(ClubExpectation.WinLeague, 4, 12)).toBe('Fjärdeplatsen låg under målet.')
   })
   it('betyg 1 (AvoidBottom, sist): "långt under det de bad om"', () => {
     expect(placeringsdomText(ClubExpectation.AvoidBottom, 12, 12)).toBe('Tolfteplatsen var långt under det de bad om.')
@@ -88,7 +94,7 @@ describe('seasonTwoTruthsSentence', () => {
   // tester använder ett RIKTIGT placeringsdomText-resultat (inte 'X') just
   // för att fånga att indata redan slutar på punkt.
   it('placeringsdom slutar redan på punkt (riktig placeringsdomText) — ingen dubbel interpunktion vid "men"', () => {
-    const dom = placeringsdomText(ClubExpectation.WinLeague, 1, 12)
+    const dom = placeringsdomText(ClubExpectation.ChallengeTop, 1, 12)
     expect(dom).toBe('Förstaplatsen överträffade det de bad om.')
     const s = { expectationVerdict: 'exceeded' as const, objectiveOutcome: { met: 0, atRisk: 0, active: 0, failed: 1 } }
     const result = seasonTwoTruthsSentence(s, dom)
@@ -105,7 +111,7 @@ describe('seasonTwoTruthsSentence', () => {
   })
 
   it('placeringsdom slutar redan på punkt — ingen dubbel punkt före "hängde löst"', () => {
-    const dom = placeringsdomText(ClubExpectation.WinLeague, 1, 12)
+    const dom = placeringsdomText(ClubExpectation.ChallengeTop, 1, 12)
     const s = { expectationVerdict: 'exceeded' as const, objectiveOutcome: { met: 0, atRisk: 1, active: 0, failed: 0 } }
     const result = seasonTwoTruthsSentence(s, dom)
     expect(result).not.toMatch(/\.\./)
