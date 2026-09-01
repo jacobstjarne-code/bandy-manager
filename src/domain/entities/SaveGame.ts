@@ -51,6 +51,14 @@ export interface RippleChain {
     // samma princip som star_injured/big_derby_win/mecenat_left redan följer
     // (en trigger per skild orsak, inte en generisk "transfer_bid_resolved").
     | 'transfer_bid_accepted' | 'transfer_bid_rejected' | 'transfer_bid_countered'
+    // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 1 (orsakVerkanService.ts):
+    // EN generisk trigger, medvetet annorlunda situation än raden ovan — den
+    // riktiga identiteten (event.type) bärs som EventLedgerEntry.semanticKey,
+    // inte som denna RippleChains trigger. Det returnerade RippleChain-objektet
+    // är transient (bara .steps läses, aldrig lagrat/routat på trigger-namnet),
+    // så ett enda värde för "vilket beslut som helst" duplicerar inte den
+    // narrativa routingen de tre transferbuds-triggarna ovan gör.
+    | 'decision'
   subjectName?: string
   round: number
   season: number

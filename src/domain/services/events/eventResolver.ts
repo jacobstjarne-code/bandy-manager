@@ -17,6 +17,8 @@ import { PROVNING_RESOLUTION } from '../../data/hallProvningData'
 import { getCurrentLeagueRound } from '../../data/seasonPhases'
 import { logNarrativeBeat } from '../narrativeLogService'
 import { captureSystemDecision } from '../seasonDecisionCaptureService'
+import { logEvent } from '../eventLedgerService'
+import { captureDecisionRipple } from '../orsakVerkanService'
 
 /**
  * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
@@ -2185,6 +2187,26 @@ export function resolveEvent(
         game, updatedGame, pilotTransferBidTrigger, pilotTransferBidPlayerName,
         game.currentMatchday, game.currentSeason, pilotTransferBidRelatedPlayerId,
       ),
+    }
+  }
+
+  // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 1 — orsak/verkan som
+  // FÖRSTA rena liggarkonsumenten. Generellt anropsställe (alla spelar-
+  // fattade beslut denna funktion resolvar), skiljt från pilotTransferBid-
+  // blocket ovan (smalare, transferbudsspecifikt, orört — se
+  // orsakVerkanService.ts:s filhuvud). `matchday` = det GLOBALA
+  // matchday-fältet (schemats regel: "ALDRIG rond-identitet"), inte
+  // getCurrentLeagueRound (som narrativeBeatLog-skrivningen ovan medvetet
+  // använder för ETT annat fält med andra semantik). Skriver ingen post om
+  // beslutet inte rörde något ripple-bärande fält (trivial-brus-golvet,
+  // se captureDecisionRipple).
+  if (madeByPlayer) {
+    const ledgerEntry = captureDecisionRipple(
+      game, updatedGame, event.type, updatedGame.currentSeason, updatedGame.currentMatchday,
+      event.relatedPlayerId, event.relatedClubId,
+    )
+    if (ledgerEntry) {
+      updatedGame = { ...updatedGame, eventLedger: logEvent(updatedGame, ledgerEntry) }
     }
   }
 
