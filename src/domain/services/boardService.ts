@@ -762,5 +762,9 @@ export function gameOverBoardStatement(
     }
     return `Styrelsen har förlorat förtroendet för dig som tränare efter de ihållande besvikelserna. Beslutet är fattat — du lämnar ${clubName ?? 'klubben'} med omedelbar verkan.`
   }
+  // 'bankruptcy' faller medvetet igenom till den generiska raden nedan —
+  // Code skriver aldrig ny svensk speltext (CLAUDE.md), och den generiska
+  // texten är inte FELAKTIG för konkurs, bara oattribuerad. En egen
+  // konkurs-rad är en Opus-textuppgift, inte en del av denna wiring-fix.
   return `Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i ${clubName ?? 'klubben'}.`
 }

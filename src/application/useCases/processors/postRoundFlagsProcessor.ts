@@ -38,7 +38,7 @@ export function applyPostRoundFlags(
         // O13: konkursvägen sparkar MITT i säsongen — currentSeason är den
         // säsong som fortfarande pågår, och resten av den ska spelas utan
         // spelaren. Jämför seasonEndProcessor, där rollovern redan skett.
-        updatedGame = { ...updatedGame, managerFired: true, firedAtSeason: updatedGame.currentSeason }
+        updatedGame = { ...updatedGame, managerFired: true, firedAtSeason: updatedGame.currentSeason, firedReason: 'bankruptcy' }
       } else if ((finStatus.status === 'license-denial' || finStatus.status === 'warning') && !warnedThisSeason) {
         const isCritical = finStatus.status === 'license-denial'
         updatedGame = {

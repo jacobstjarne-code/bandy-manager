@@ -158,6 +158,7 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     managerProfile,
     managerFired: undefined,
     firedAtSeason: undefined,
+    firedReason: undefined,
     careerBreak: undefined,
 
     // ── KLUBB: nollställd och omgenererad ────────────────────────────────

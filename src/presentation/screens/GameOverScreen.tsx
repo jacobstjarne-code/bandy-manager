@@ -52,6 +52,28 @@ export function GameOverScreen() {
   // som den gamla koden hade, bara paketerade i samma SeasonBoardTruth-form
   // så gameOverBoardStatement förblir den enda textkällan.
   function getBoardStatement(): string {
+    // managerfired-vag-osynlig (MASTER_OPPET.md, 2026-09-01): konkursvägen
+    // (postRoundFlagsProcessor.ts) sparkar MITT i säsongen — lastSummary,
+    // om den ens finns, är då FÖRRA säsongens frusna boardTruth och säger
+    // managerFired:false. Utan denna gren föll koden vidare till
+    // legacyTruth-gissningen nedan och kunde attribuera konkursen till
+    // boardPatience/consecutiveFailures — värden som fortsätter räknas
+    // under resten av den redan-förlorade säsongen och kan peka på fel skäl.
+    if (game!.firedReason === 'bankruptcy') {
+      const patience = game!.boardPatience ?? 70
+      const failures = game!.consecutiveFailures ?? 0
+      const bankruptcyTruth: Pick<SeasonBoardTruth, 'relationship'> = {
+        relationship: {
+          boardPatienceAfter: patience,
+          zone: boardPatienceZoneFromScore(patience),
+          consecutiveFailuresAfter: failures,
+          managerFired: true,
+          firedReason: 'bankruptcy',
+        },
+      }
+      return gameOverBoardStatement(bankruptcyTruth, managedClub?.name)
+    }
+
     const truth = lastSummary?.boardTruth
     if (truth?.relationship.managerFired) {
       return gameOverBoardStatement(truth, managedClub?.name)

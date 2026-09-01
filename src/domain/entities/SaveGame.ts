@@ -320,6 +320,17 @@ export interface SaveGame {
    */
   firedAtSeason?: number
   /**
+   * MASTER_OPPET.md managerfired-vag-osynlig (2026-09-01): konkursvägens
+   * avskedsorsak. Bara satt av postRoundFlagsProcessor (finansiellt
+   * game-over mitt i säsongen) — den sportsliga/licens-vägen har ingen
+   * motsvarighet här eftersom DEN avskedsorsaken redan lever frusen i
+   * SeasonSummary.boardTruth.relationship.firedReason vid det tillfället.
+   * Utan detta fält föll GameOverScreen tillbaka på att GISSA orsaken ur
+   * game.boardPatience/consecutiveFailures — värden som fortsätter räknas
+   * under resten av den redan-förlorade säsongen och kan peka på fel skäl.
+   */
+  firedReason?: 'boardPatience' | 'consecutiveFailures' | 'licenseDenied' | 'bankruptcy'
+  /**
    * O13: uppehållet mellan två jobb. Sätts när spelaren väljer att låta
    * säsongen spelas utan sig, bär vad som hände och vilka klubbar som
    * ringde. `undefined` = ingen pågående tränarmarknad.

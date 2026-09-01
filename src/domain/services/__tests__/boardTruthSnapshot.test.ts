@@ -152,4 +152,20 @@ describe('gameOverBoardStatement — samma tre låsta texter som GameOverScreen.
       'Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i Heros BK.'
     )
   })
+
+  it('bankruptcy-vägen (managerfired-vag-osynlig, MASTER_OPPET.md) — samma generiska text, medvetet ingen egen ännu', () => {
+    const truth = buildSeasonBoardTruth({
+      expectation: ClubExpectation.MidTable,
+      finalPosition: 6,
+      totalTeams: 12,
+      isChampion: false,
+      boardPatienceAfter: 65,
+      consecutiveFailuresAfter: 0,
+      managerFired: true,
+      firedReason: 'bankruptcy',
+    })
+    expect(gameOverBoardStatement(truth, 'Slottsbron BK')).toBe(
+      'Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i Slottsbron BK.'
+    )
+  })
 })

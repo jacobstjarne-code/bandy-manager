@@ -77,6 +77,17 @@ describe('applyPostRoundFlags', () => {
     expect(updatedGame.managerFired).toBe(true)
   })
 
+  it('managerfired-vag-osynlig: sets firedReason=bankruptcy on the finance game-over path', () => {
+    // Innan denna fix saknade konkursvägen helt attribuering — GameOverScreen
+    // fick gissa orsaken ur boardPatience/consecutiveFailures, som fortsätter
+    // räknas under resten av den redan-förlorade säsongen.
+    const game = makeGame({
+      clubs: [{ id: 'club_a', finances: -2_500_000 } as SaveGame['clubs'][0]],
+    })
+    const { updatedGame } = applyPostRoundFlags({ game, justCompletedManagedFixture: undefined, nextMatchday: 5 })
+    expect(updatedGame.firedReason).toBe('bankruptcy')
+  })
+
   it('adds finance warning inbox item at license-denial threshold (not warned yet)', () => {
     const game = makeGame({
       clubs: [{ id: 'club_a', finances: -600_000 } as SaveGame['clubs'][0]],

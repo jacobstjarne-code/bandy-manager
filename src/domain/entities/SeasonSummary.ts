@@ -334,7 +334,11 @@ export interface SeasonBoardTruth {
      *  'boardPatience'/'consecutiveFailures' speglar samma två sportsliga
      *  avskedsvägar seasonEndProcessor.ts redan avgör (avstängda för
      *  Survive-tiern), 'licenseDenied' den finansiella/administrativa
-     *  vägen som gäller även för Survive. */
-    firedReason?: 'boardPatience' | 'consecutiveFailures' | 'licenseDenied'
+     *  vägen som gäller även för Survive. 'bankruptcy' hör INTE hemma i en
+     *  boardTruth-snapshot (den avskedsvägen sker mitt i säsongen, innan
+     *  seasonEndProcessor någonsin körs för den säsongen — se
+     *  SaveGame.firedReason) men delar samma unionstyp så
+     *  gameOverBoardStatement kan hantera båda källorna utan cast. */
+    firedReason?: 'boardPatience' | 'consecutiveFailures' | 'licenseDenied' | 'bankruptcy'
   }
 }
