@@ -1,7 +1,7 @@
 # Bandy Brain — lösenordsgrind (aktiveringschecklista)
 
-**Uppdaterad:** 2026-07-23
-**Status:** Grind byggd + logikverifierad (`bandy-brain/middleware.ts`). Committad till main men **inert på Pages** (Astro/Pages ignorerar root-`middleware.ts` — den aktiveras först på Vercel). Config-flippen (`bandybrain.se`/no-base) är INTE committad: den skulle bryta den live Pages-sajten (root-relativa asset-paths 404:ar på github.io/bandy-manager), så den görs vid Vercel-cutovern.
+**Uppdaterad:** 2026-07-23. **Statusrad rättad 2026-09-01** (MASTER_OPPET.md `inv-1-losenordsgrind-stale`) — se not nedan.
+**Status:** Grind byggd + logikverifierad (`bandy-brain/middleware.ts`). Committad till main men **inert på Pages** (Astro/Pages ignorerar root-`middleware.ts` — den aktiveras först på Vercel). Config-flippen (`bandybrain.se`/no-base) VAR planerad att göras vid cutovern — men `bandy-brain/astro.config.mjs` har redan `site: 'https://bandybrain.se'` och ingen `base:`-rad, committad i `9e76ad43`. Om detta redan bröt den live Pages-sajten (root-relativa asset-paths 404:ar på github.io/bandy-manager, per denna sidas egen varning) är overifierat härifrån — Vercel-cutoverns faktiska status (DNS, Pages-workflowen avstängd eller ej) är Jacobs bord, inte kodläsbart.
 
 ---
 
@@ -32,7 +32,7 @@ utan cookie → lösenordssida (ej innehåll); rätt lösenord → 303 + signera
 2. **Env-vars** (Settings → Environment Variables), aldrig i repot:
    - `SITE_PASSWORD` — lösenordet Daniel får.
    - `COOKIE_SECRET` — en lång slumpsträng (t.ex. `openssl rand -hex 32`) som signerar cookien.
-3. **Config-flippen** (görs vid cutovern, bryter Pages så gör den sist före Vercel tar över): i `bandy-brain/astro.config.mjs` sätt `site: 'https://bandybrain.se'`, ta bort `base: '/bandy-manager'`, uppdatera redirect-paths (utan `/bandy-manager`-prefix). Den ändringen ligger redan i arbetsträdet (ocommittad) — committa den när Vercel är redo. `middleware.ts` är redan på main.
+3. **Config-flippen** — REDAN COMMITTAD (`9e76ad43`, upptäckt stale 2026-09-01): `bandy-brain/astro.config.mjs` har redan `site: 'https://bandybrain.se'`, ingen `base:`-rad. Om Pages-sajten redan är trasig av detta (root-relativa asset-paths 404:ar) är overifierat — kontrollera github.io/bandy-manager-URL:en om Pages fortfarande ska vara live. `middleware.ts` är redan på main.
 4. **Preview-deploy** och verifiera på preview-URL:en: `/findings/061/` direkt → lösenordssida; rätt lösenord → in, kvar vid omladdning; fel → tillbaka.
 5. **DNS:** peka `bandybrain.se` på Vercel.
 6. **Slå av Pages-deployen** — `.github/workflows/bandy-brain-deploy.yml`: lägg `if: false` på `build`-jobbet (workflowen kvar som `workflow_dispatch`). Annars finns en oskyddad + trasig kopia kvar på github.io-URL:en.

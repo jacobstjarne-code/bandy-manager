@@ -62,7 +62,7 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 
 **E. THE_BOMB-FRÅGOR:**
 - `docs/THE_BOMB.md` (vision)
-- `docs/THE_BOMB_STATUS_2026-04-26.md` (kod-verifierad status per subprojekt)
+- `docs/archive/completed-april/THE_BOMB_STATUS_2026-04-26.md` (kod-verifierad status per subprojekt, april 2026 — flyttad till arkiv, läs BACKLOG.md/MASTER_OPPET.md för aktuellt läge)
 
 **F. ARKITEKTUR / KEY FILES / BANDY-REGLER (slå-upp-vid-behov):**
 - `CLAUDE_REFERENCE.md` — läsbar referensfil med arkitektur-overview, bandy-specifika regler, key files, kalibreringsdata, Bandy-Brain-kunskapsbasen. För dessa: läs `CLAUDE_REFERENCE.md` istället för att grep:a `CLAUDE.md`.
@@ -482,7 +482,8 @@ En orphan-sweep (grep efter noll-konsument-exports) hittar en enda symtombild �
 
 **Superseterad kod.** Ett förstautkast som en levande version har ersatt: `getBoardMeetingBeats` mot `boardMeetingCopy.ts`, `getSeasonPhase` mot `getFunctionaryPhase`, `getCoffeeRoomQuote` mot `getCoffeeRoomScene`. Funktionen finns kvar i bättre form någon annanstans — inget innehåll går förlorat vid radering. Att LÅTA den ligga kvar är den aktiva risken: nästa läsare hittar den, tror den är kanon, och wirar mot fel version (hänt tre gånger denna session). **Åtgärd: radera.** Om texten/innehållet i den superseterade filen inte redan finns i den levande versionen — migrera det innehållet dit FÖRST, sedan radera skalet (se boardService.ts:s `BOARD_EXPECTATION_CEREMONIAL`, migrerad ur `getBoardMeetingBeats` innan den raderades, 2026-07-21).
 
-**Text-utan-yta.** Färdig, auditerad text vars konsumentyta aldrig byggdes eller revs bort utan att texten följde med. Den är INTE ersatt av något — den väntar. `hallProvningData.ts` (M67b, redan beslutat BEHÅLL dödmarkerad), `VictoryEcho.diaryLine` (klassad 2026-07-21: tänkta ytan var `dailyBriefingService.generateBriefing()`, som var död redan innan den raderades — texten nådde aldrig spelaren, men ingenting ersatte den, den väntar fortfarande). **Åtgärd: radera ALDRIG.** Dödmarkera i filhuvudet — vad det är, varför ingen yta finns, vad den väntar på — och rapportera till design→text-flödet. Radering här förstör arbete som inte går att återskapa utan att skrivas om från grunden.
+**Text-utan-yta.** Färdig, auditerad text vars konsumentyta aldrig byggdes eller revs bort utan att texten följde med. Den är INTE ersatt av något — den väntar. `VictoryEcho.diaryLine` (klassad 2026-07-21: tänkta ytan var `dailyBriefingService.generateBriefing()`, som var död redan innan den raderades — texten nådde aldrig spelaren, men ingenting ersatte den, den väntar fortfarande). **Åtgärd: radera ALDRIG.** Dödmarkera i filhuvudet — vad det är, varför ingen yta finns, vad den väntar på — och rapportera till design→text-flödet. Radering här förstör arbete som inte går att återskapa utan att skrivas om från grunden.
+(Exemplet `hallProvningData.ts` som stod här tidigare är stale — CLAUDE.md:485-fyndet 2026-09-01, MASTER_OPPET.md `inv-1-claude-md-princip7-example-wrong` — filen har numera sex verkliga konsumenter, `coffeeRoomService.ts`/`matchCore.ts`/`eventResolver.ts`/`hallProcessService.ts`/`HallProvningScreen.tsx`, inte längre text-utan-yta.)
 
 **Regeln i en mening:** en orphan-rapport ska namnge vilken av de två varje fynd är INNAN något föreslås raderat — "superseterad, radera" eller "text-utan-yta, dödmarkera och rapportera". Ett fynd utan den klassningen är inte färdigutrett.
 
