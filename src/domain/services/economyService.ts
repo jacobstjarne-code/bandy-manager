@@ -10,7 +10,7 @@ import { getJournalistAttendanceModifier } from './journalistVisibilityService'
 import { FixtureStatus, PlayerPosition } from '../enums'
 import { safeStandingPosition } from './standingsService'
 import { getOrtFreshnessFactor } from './communityRenewalService'
-import { getCsDiminishingFactor } from './communityStandingScaling'
+import { getCsDiminishingFactor, getMatchRevenueRepDampFactor } from './communityStandingScaling'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
 
@@ -579,9 +579,15 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
       : position >= 10 ? FORM_BONUS_BOTTOM3 : 1.0
     const eventBonus = matchIsKnockout ? 1.40 : matchIsCup ? 1.20 : 1.0
     const derbyBonus = matchHasRivalry ? 1.25 : 1.0
+    // VÄG A (Jacobs beslut 2026-09-01, D041/D042): arenaCapacity fryses vid
+    // world-gen och omräknas aldrig från levande rykte, så match_revenue är
+    // PLATT i praktiken — men platt och stort håller saldot lika uppe som
+    // växande hade gjort. Dämpar SUMMAN vid högt rykte istf att låtsas
+    // kapaciteten är den rörliga delen. Se communityStandingScaling.ts.
+    const repDampFactor = getMatchRevenueRepDampFactor(club.reputation)
 
     matchRevenue = Math.round(
-      baseRevenue * formBonus * eventBonus * derbyBonus + rand() * 2000
+      baseRevenue * formBonus * eventBonus * derbyBonus * repDampFactor + rand() * 2000
     )
 
     // Community income tied to a home match

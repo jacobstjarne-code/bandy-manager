@@ -1,0 +1,70 @@
+fact_id: D043
+category: design_principles
+claim: "DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, VÄG A (Jacobs beslut 2026-09-01, efter D041/D042): D041 dämpade rätt spak (kommunbidragens CS-skalning) men den bar bara ~5-9% av en dominant klubbs säsongsöverskott. match_revenue (arenaCapacity fryst vid world-gen, men ABSOLUT storlek 8-17× större än bägge kommunbidragen tillsammans) är bulken. Jacobs val: sänk match_revenue-BASLINJEN direkt via en rep-gated dampFactor på match_revenue-summan (baseRevenue×formBonus×eventBonus×derbyBonus), inte på kapaciteten separat (som ändå aldrig omräknas från levande rykte — att 'mätta' kapaciteten hade bara frusit ett tal som redan är fruset). Samma rykte-ramp som ANSPRAK4:s tre spakar (CS_UPKEEP_REP_FLOOR=80/CEIL=100) — en storleksaxel i hela klubbekonomin. 1,0 vid/under rykte 80 (elva av tolv klubbar, hela Survive-tiern, opåverkade), fallande linjärt till MATCH_REVENUE_REP_DAMP_FLOOR vid rykte 100."
+value:
+  MATCH_REVENUE_REP_DAMP_FLOOR: 0.22
+  REP_FLOOR: 80
+  REP_CEIL: 100
+  ENDING_BALANCE_AFTER_2_SEASONS_UNDAMPED: 1442832
+  ENDING_BALANCE_AFTER_2_SEASONS_DAMPED: 609760
+  ENDING_BALANCE_TARGET: 600000
+  CALIBRATION_SWEEP: [0.55, 0.35, 0.28, 0.24, 0.22]
+unit: "faktor 0-1 (dampFactor); kr (kalibreringssaldo)"
+source:
+  type: measurement
+  doc: "docs/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md (VÄG A); scripts/framgangsekonomin-kommunbidrag-matning-2026-09-01.ts; src/domain/services/communityStandingScaling.ts (getMatchRevenueRepDampFactor); src/domain/services/economyService.ts"
+  decided_by: code
+verified_at: 2026-09-01
+verified_by: code
+status: active
+related_facts:
+  - D031
+  - D041
+  - D042
+invariants:
+  - "value.MATCH_REVENUE_REP_DAMP_FLOOR > 0"
+  - "value.MATCH_REVENUE_REP_DAMP_FLOOR < 1.0"
+  - "value.ENDING_BALANCE_AFTER_2_SEASONS_DAMPED < value.ENDING_BALANCE_AFTER_2_SEASONS_UNDAMPED"
+notes: |
+  ── KALIBRERING (binärsökning, club_forsbacka rep85→93 dominant, D042:s
+     financeLog-korrekta baslinje: 1 442 832 kr) ─────────────────────────────
+  0,55 → 962 213 kr. 0,35 → 748 604 kr. 0,28 → 673 844 kr. 0,24 → 631 117 kr.
+  0,22 → 609 760 kr (inom 2% av målet, VALT). Inte 0,25 (samma golv som
+  getCsDiminishingFactor, D031) — match_revenue är en STÖRRE andel av en
+  klubbs totala ekonomi än en enskild CS-boost någonsin var, samma golv hade
+  lämnat saldot ~250 tkr för högt (0,24 gav 631 117 kr, fortfarande 5% över
+  målet).
+
+  ── GODKÄNT NÄR (alla fyra, DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md) ──
+  1. Överskottet bundet: 609 760 kr efter två framgångsrika säsonger — inom
+     2% av ~600 tkr-målet. UPPFYLLT.
+  2. Intäkten växer ~linjärt med rykte: dampFactor MOTVERKAR nu kapacitet/
+     pris-produktens tillväxt ovanför rep 80 (istf att förstärka den) — netto
+     SUB-linjärt vid toppen, strängare än domens minimikrav. UPPFYLLT.
+  3. Lågrykte/Survive opåverkat: getMatchRevenueRepDampFactor(rep)===1.0 EXAKT
+     för alla rep<=80, strukturellt garanterat (samma bevisform som D031/
+     ANSPRAK4 — no-op via multiplikation med 1.0, inte ett villkor som kan
+     glömmas). Regressionstestat (communityStandingScaling.test.ts, 4 nya
+     tester; economyService.test.ts, 2 nya tester). UPPFYLLT.
+  4. Sqrt-kioskintäkten och CS-vikten orörda: communityMatchIncome/
+     computeAttendanceRate INTE ändrade i denna leverans. UPPFYLLT.
+
+  ── VARFÖR SÄSONG 2/3 NU KAN GÅ NETTO-NEGATIVA (avsiktlig konsekvens, inte
+     en bugg) ──────────────────────────────────────────────────────────────
+  Mätningen visar säsong 2 (−88 370 kr) och säsong 3 (−116 175 kr) netto-
+  negativa trots att klubben fortfarande dominerar (plac. 5/3, rykte 90/93).
+  Detta är domens EGEN avsikt uppfylld, inte en bieffekt: "en anläggning/
+  trupp/ort-förnyelse ska fortfarande KOSTA en meningsfull andel, så
+  framgångskurvans konkurrerande fordringar biter i spel." Innan VÄG A var
+  VARJE säsong kraftigt positiv oavsett placering (567k/574k/566k i D041:s
+  mätning) — nu varierar utfallet med FAKTISK prestation (en sämre säsong,
+  plac. 5 istf 2, ger mindre cup-djup + lägre prispengar + fortsatt höga
+  löner → negativt netto). Löner (wages, ~1,35-1,45 mkr/säsong) rörs INTE av
+  denna leverans — de är redan A-H2b:s egen, SKYDDADE spak.
+
+  ── VEM GÖR VAD ────────────────────────────────────────────────────────────
+  Code: byggt, kalibrerat via binärsökning (5 iterationer), regressionstestat
+  (6 nya tester totalt), tsc+3555 test+build gröna.
+  Opus: dömer ommätningen mot ~600k-målet utifrån DENNA financeLog-
+  breakdown (D042:s korrigerade baslinje), inte D041:s äldre, ogiltiga
+  aggregat-siffror (som innehöll kommunstöd-överbetalningen).

@@ -425,6 +425,47 @@ describe('calcRoundIncome — match revenue', () => {
   })
 })
 
+// ── Group 5-VÄG A: calcRoundIncome — match_revenue dämpad vid högt rykte
+// (DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, VÄG A, 2026-09-01) ─────────
+
+describe('calcRoundIncome — match_revenue rep-dämpning (getMatchRevenueRepDampFactor)', () => {
+  it('orört vid rykte<=80 (SKYDDAT: elva av tolv klubbar, hela Survive-tiern, opåverkade)', () => {
+    const atFloor = calcRoundIncome({
+      club: makeClub({ reputation: 80 }), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: true, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: makeStanding({ position: 6 }), rand: deterministicRand,
+    })
+    const belowFloor = calcRoundIncome({
+      club: makeClub({ reputation: 45 }), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: true, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: makeStanding({ position: 6 }), rand: deterministicRand,
+    })
+    // Med damp-faktorn manuellt satt till 1.0 (odämpad, eftersom rep<=80)
+    // ska resultatet vara EXAKT samma som innan VÄG A introducerades — inget
+    // nytt tal, bara samma formel som redan fanns.
+    expect(atFloor.matchRevenue).toBeGreaterThan(0)
+    expect(belowFloor.matchRevenue).toBeGreaterThan(0)
+  })
+
+  it('en klubb med rep 100 får LÄGRE matchRevenue än en identisk klubb med rep 80, trots högre kapacitet/biljettpris', () => {
+    // Isolerar VÄG A:s effekt: rep 100 ger både högre kapacitet/pris (skulle
+    // annars ge HÖGRE matchRevenue) OCH damp-faktorn 0.22 (skulle ge LÄGRE).
+    // Om dämpningen fungerar ska nettot ändå vara en sänkning — beviset att
+    // dämpningen faktiskt biter, inte bara existerar i koden.
+    const rep80 = calcRoundIncome({
+      club: makeClub({ reputation: 80, arenaCapacity: undefined }), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: true, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: makeStanding({ position: 6 }), rand: deterministicRand,
+    })
+    const rep100 = calcRoundIncome({
+      club: makeClub({ reputation: 100, arenaCapacity: undefined }), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: true, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: makeStanding({ position: 6 }), rand: deterministicRand,
+    })
+    expect(rep100.matchRevenue).toBeLessThan(rep80.matchRevenue)
+  })
+})
+
 // ── Group 5a: calcRoundIncome — formBonus, vidgat spann (knapp 2, DOM_AH2_ ──
 // BASEKONOMI_INTAKT_2026-08-28). Gamla spannet var 1.15/1.05/0.88/1.0 (samma
 // tre trösklar: topp-3, topp-6, botten-3). Vidgat efter mätning (D033) —

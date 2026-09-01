@@ -14,10 +14,12 @@ import {
   getCsDetOmojligaValetProbability,
   csUpkeepFactor,
   csExpectationDrag,
+  getMatchRevenueRepDampFactor,
   CS_UPKEEP_REP_FLOOR,
   CS_UPKEEP_REP_CEIL,
   CS_UPKEEP_FACTOR_CEIL,
   CS_EXPECTATION_DRAG_CEIL,
+  MATCH_REVENUE_REP_DAMP_FLOOR,
 } from '../communityStandingScaling'
 
 describe('csLinearRamp', () => {
@@ -111,6 +113,34 @@ describe('csUpkeepFactor — knapp 1, ortsunderhållets storleksskalning', () =>
     // cs=100) måste produkten fortfarande vara klart skild från noll — en
     // faktor nära noll är samma fel som en hård vägg, bara gömd bakom en kurva.
     expect(csUpkeepFactor(100) * getCsDiminishingFactor(100)).toBeGreaterThan(0.15)
+  })
+})
+
+describe('getMatchRevenueRepDampFactor — VÄG A, match_revenue-baslinjens rep-dämpning (D041/D042, 2026-09-01)', () => {
+  it('exakt 1,0 för alla klubbar på/under rykte 80 (SKYDDAT: elva av tolv klubbar, hela Survive-tiern)', () => {
+    for (const rep of [0, 45, 48, 50, 52, 55, 60, 70, CS_UPKEEP_REP_FLOOR]) {
+      expect(getMatchRevenueRepDampFactor(rep)).toBe(1.0)
+    }
+  })
+
+  it('reducerad för en elitklubb, som minst MATCH_REVENUE_REP_DAMP_FLOOR vid rykte 100', () => {
+    expect(getMatchRevenueRepDampFactor(CS_UPKEEP_REP_CEIL)).toBeCloseTo(MATCH_REVENUE_REP_DAMP_FLOOR, 10)
+    expect(getMatchRevenueRepDampFactor(200)).toBeCloseTo(MATCH_REVENUE_REP_DAMP_FLOOR, 10)
+    expect(getMatchRevenueRepDampFactor(100)).toBeLessThan(1.0)
+  })
+
+  it('är KONTINUERLIG — inget hopp mellan två intilliggande rykten', () => {
+    const maxStep = (1.0 - MATCH_REVENUE_REP_DAMP_FLOOR) / (CS_UPKEEP_REP_CEIL - CS_UPKEEP_REP_FLOOR)
+    for (let rep = 0; rep < 120; rep++) {
+      expect(Math.abs(getMatchRevenueRepDampFactor(rep + 1) - getMatchRevenueRepDampFactor(rep))).toBeLessThanOrEqual(maxStep + 1e-12)
+    }
+  })
+
+  it('faller monotont med rykte och når aldrig noll (holdbarheten, SKYDDAT)', () => {
+    for (let rep = 0; rep < 120; rep++) {
+      expect(getMatchRevenueRepDampFactor(rep + 1)).toBeLessThanOrEqual(getMatchRevenueRepDampFactor(rep))
+    }
+    expect(getMatchRevenueRepDampFactor(100)).toBeGreaterThan(0)
   })
 })
 

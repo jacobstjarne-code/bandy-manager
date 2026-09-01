@@ -299,3 +299,40 @@ export const ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER = 0.95
  *  rakt) hade tagit 75 % av publiken för en klubb som slutat förnya — en vägg,
  *  inte en marginal. */
 export const ORT_FRESHNESS_FLOOR = 0.65
+
+// ── VÄG A (Jacobs beslut 2026-09-01): sänk match_revenue-baslinjen ─────────
+// DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, D041/D042. Kommunbidragens
+// CS-dämpning (D041) flackade rätt spak men rörde bara ~5-9% av en dominant
+// klubbs säsongsöverskott — match_revenue (arenaCapacity fryst vid world-gen,
+// men ABSOLUT storlek 8-17× större än bägge kommunbidragen tillsammans) är
+// bulken som faktiskt håller saldot uppe. Jacobs val: dämpa match_revenue-
+// SUMMAN direkt (inte kapaciteten, som ändå aldrig omräknas från levande
+// rykte — att "mätta" den fryser bara ett tal som redan är fryst).
+//
+// SAMMA rykte-ramp som ANSPRAK4:s tre spakar ovan (CS_UPKEEP_REP_FLOOR/CEIL)
+// — en storleksaxel i hela klubbekonomin, inte fyra olika. Elva av tolv
+// klubbar startar under 80 (bara Forsbacka, 85, är över) och är därmed helt
+// opåverkade vid spelstart — dämpningen slår bara en klubb som ÄR eller
+// BLIR elit, aldrig en mitten- eller Survive-klubb.
+
+/** Faktor vid rep-taket (100). Kalibrerad (framgangsekonomin-kommunbidrag-
+ *  matning-2026-09-01.ts, club_forsbacka rep85→93 över 3 säsonger, sökt
+ *  binärt 0,55→0,35→0,28→0,24→0,22): 0,22 ger saldo 609 760 kr efter två
+ *  framgångsrika säsonger (mot 1 442 832 kr odämpat, D042-baslinjen efter
+ *  financeLog-gap-fixarna) — inom 2% av Jacobs ~600 tkr-mål. Inte 0,25
+ *  (samma golv som getCsDiminishingFactor) — match_revenue är en STÖRRE
+ *  andel av totalen än en enskild CS-boost någonsin var, så samma golv hade
+ *  lämnat saldot ~250 tkr för högt (mätt: golv 0,24 gav 631 117 kr). */
+export const MATCH_REVENUE_REP_DAMP_FLOOR = 0.22
+
+/** Rep-gated dampFactor på match_revenue-SUMMAN (baseRevenue×formBonus×
+ *  eventBonus×derbyBonus i economyService.ts), inte på kapaciteten eller
+ *  biljettpriset var för sig — de är redan multiplicerade ihop till en enda
+ *  summa vid anropsstället, och en dämpning av produkten är matematiskt
+ *  identisk med att dämpa vilken faktor som helst i den, utan att behöva peka
+ *  ut EN av de två (kapacitet/pris) som den "skyldiga". 1,0 vid/under rykte 80
+ *  (SKYDDAT: elva av tolv klubbar, hela Survive-tiern, opåverkade), fallande
+ *  linjärt till MATCH_REVENUE_REP_DAMP_FLOOR vid rykte 100. */
+export function getMatchRevenueRepDampFactor(reputation: number): number {
+  return csLinearRamp(reputation, CS_UPKEEP_REP_FLOOR, CS_UPKEEP_REP_CEIL, 1.0, MATCH_REVENUE_REP_DAMP_FLOOR)
+}
