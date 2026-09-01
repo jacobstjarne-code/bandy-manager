@@ -42,8 +42,9 @@ export function checkReputationMilestones(game: SaveGame): ReputationMilestone[]
     }
   }
 
-  // Mediaintresse (topp 3 + CS > 60)
-  if (pos <= 3 && cs > 60) {
+  // Mediaintresse. Samma ramp som grannklubbsmilstolpen: cs 56–90 ger
+  // gradvis +1→+3 rykte i stället för den gamla klippan cs 60/61 → 0/+3.
+  if (pos <= 3 && cs > 55) {
     const eid = `rep_media_${season}`
     if (!alreadySeen.has(eid)) {
       milestones.push({
@@ -51,7 +52,7 @@ export function checkReputationMilestones(game: SaveGame): ReputationMilestone[]
         trigger: 'mediaAttention',
         title: '📺 Bandypuls vill göra ett reportage',
         body: `"Er resa den här säsongen är en historia som förtjänas att berättas. Kan vi komma förbi på en träning?"\n\nBra publicitet — om ni fortsätter leverera.`,
-        effect: { type: 'reputation', amount: 3 },
+        effect: { type: 'reputation', amount: getCsNeighborContactAmount(cs) },
       })
     }
   }
@@ -95,8 +96,9 @@ export function checkReputationMilestones(game: SaveGame): ReputationMilestone[]
     }
   }
 
-  // Ryktet sjunker (position >= 10, CS < 40)
-  if (pos >= 10 && cs < 40) {
+  // Ryktet sjunker. Spegel av samma befintliga ramp runt mittpunkten 50:
+  // cs 44–10 ger gradvis −1→−3 i stället för klippan cs 40/39 → 0/−2.
+  if (pos >= 10 && cs < 45) {
     const eid = `rep_warning_${season}`
     if (!alreadySeen.has(eid)) {
       milestones.push({
@@ -104,7 +106,7 @@ export function checkReputationMilestones(game: SaveGame): ReputationMilestone[]
         trigger: 'reputationWarning',
         title: '📉 Ryktet bleknar',
         body: `Sponsorer drar sig undan. Talanger väljer andra klubbar. Kommunen frågar sig om pengarna gör nytta.\n\nDet här går åt fel håll.`,
-        effect: { type: 'reputation', amount: -2 },
+        effect: { type: 'reputation', amount: -getCsNeighborContactAmount(100 - cs) },
       })
     }
   }

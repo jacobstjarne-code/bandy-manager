@@ -114,6 +114,7 @@ import type { PenaltyInteractionData } from './penaltyInteractionService'
 import type { CounterInteractionData } from './counterAttackInteractionService'
 import type { FreeKickInteractionData } from './freeKickInteractionService'
 import type { LastMinutePressData } from './lastMinutePressService'
+import { deriveUtfall } from './matchTypeAxes'
 
 const CHEM_K = 0.12  // tie-breaker weight on the mean of SIGNIFICANT pairs
 const CHEM_SIGNIFICANCE = 0.15  // |strength| under detta = brus, exkluderas ur snittet
@@ -1985,22 +1986,37 @@ function* simulateMatchCore(
   if (!emitFullTime) return
 
   const scoreStrFT = `${homeScore}–${awayScore}`
+  // Det här steget kör FÖRE eventuell förlängning/straffläggning. Läs den
+  // kanoniska utfallsfunktionen mot den aktuella 90-minutersställningen,
+  // utan eventuella stale avgörandefält på en återupptagen fixture.
+  const fullTimeOutcome = deriveUtfall({
+    ...fixture,
+    homeScore,
+    awayScore,
+    overtimeResult: undefined,
+    penaltyResult: undefined,
+  }, fixture.homeClubId)
   const ftVars: Record<string, string> = {
     team: homeTeamRef, opponent: awayTeamRef, score: scoreStrFT,
     minute: '90', player: '', goalkeeper: '', rivalry: rivalry?.name ?? '',
-    result: homeScore > awayScore ? 'en seger' : homeScore < awayScore ? 'ingenting' : 'en poäng',
+    result: fullTimeOutcome === 'vunnet' ? 'en seger' : fullTimeOutcome === 'forlorat' ? 'ingenting' : 'en poäng',
   }
   let fullTimeText: string
   if (isFast) {
     fullTimeText = scoreStrFT
+  } else if (fixture.isKnockout && fullTimeOutcome === 'oavgjort') {
+    // Den generiska fulltidspoolen säger "Matchen är över"/"Nu är det
+    // färdigt". Vid t.ex. 5–5 i cupen är det falskt: nästa yield annonserar
+    // förlängning. Visa bara den sanna ställningen i mellansteget.
+    fullTimeText = scoreStrFT
   } else if (rivalry) {
     fullTimeText = fillTemplate(pickCommentary(commentary.derby_fullTime, rand, commentaryHistory), { ...ftVars, rivalry: rivalry.name })
-  } else if (fixture.isCup && input.isCupFinalhelgen && fixture.roundNumber === 4 && homeScore !== awayScore) {
-    const homeWon = homeScore > awayScore
+  } else if (fixture.isCup && input.isCupFinalhelgen && fixture.roundNumber === 4) {
+    const homeWon = fullTimeOutcome === 'vunnet'
     const cupFinalFtPool = homeWon ? commentary.cup_final_fullTime_win : commentary.cup_final_fullTime_loss
     fullTimeText = fillTemplate(pickCommentary(cupFinalFtPool, rand, commentaryHistory), ftVars)
-  } else if (fixture.isCup && !input.isCupFinalhelgen && homeScore !== awayScore && rand() < 0.60) {
-    const homeWon = homeScore > awayScore
+  } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
+    const homeWon = fullTimeOutcome === 'vunnet'
     const cupFtPool = homeWon ? commentary.cup_fullTime_win : commentary.cup_fullTime_loss
     fullTimeText = fillTemplate(pickCommentary(cupFtPool, rand, commentaryHistory), ftVars)
   } else {
