@@ -4,7 +4,6 @@ export interface TalentSearchRequest {
   maxAge: number
   maxSalary: number
   roundsRemaining: number
-  createdRound: number
 }
 
 export interface TalentSuggestion {

@@ -299,7 +299,6 @@ export function transferActions(get: Get, set: Set) {
         maxAge,
         maxSalary,
         roundsRemaining: 2,
-        createdRound: currentRound,
       }
       set({ game: { ...game, activeTalentSearch: search, scoutBudget: game.scoutBudget - 2 } })
       return { success: true }
