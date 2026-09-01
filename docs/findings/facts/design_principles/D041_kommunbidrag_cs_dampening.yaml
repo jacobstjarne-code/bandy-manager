@@ -1,0 +1,84 @@
+fact_id: D041
+category: design_principles
+claim: "DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD (2026-09-01): den ursprungliga kapacitets-diagnosen var falsifierad (arenaCapacity fryses vid world-gen, matchintäkten är PLATT — inte kvadratisk i levande rykte). De två faktiska framgång→rikedom-länkarna var kommunbidragets TVÅ oberoende mekanismer, bägge med en olimiterad/accelererande CS-skalning: economyService.ts's kommunBidrag (60000×repFactor×csFactor, csFactor KVADRATISK och därför konvex/accelererande vid högt CS) och politicianService.calculateKommunBidrag (30000×generosityMod×communityMod, communityMod=CS/50 helt olimiterad linjär 0-2). Bägge dämpade med D031:s redan ratificerade getCsDiminishingFactor (1,0 vid/under cs55, fallande till 0,25 vid cs100) — samma primitiv, konsekvent applicerad på båda mekanismerna, ingen ny kurva uppfunnen. repFactor (delad med lönernas reputationSalaryMultiplier) rördes INTE. lokStöd/agendaBonus/relBonus (ej CS-drivna) rördes INTE. De två mekanismernas reason-taggar delades upp ('kommunbidrag' säsongsstart vs 'kommunbidrag_politiker' säsongsslut) — bekräftat två avsiktliga källor, inte en dubbelbetalning."
+value:
+  KOMMUNBIDRAG_CS_DAMPING_FACTOR_FN: "getCsDiminishingFactor (communityStandingScaling.ts, D031)"
+  KOMMUNBIDRAG_START_UNDAMPED_S1_TO_S3: [34222, 69408, 33234]
+  KOMMUNBIDRAG_START_DAMPED_S1_TO_S3: [34222, 32390, 33234]
+  KOMMUNBIDRAG_SLUT_UNDAMPED_S1_TO_S3: [30554, 15848, 33920]
+  KOMMUNBIDRAG_SLUT_DAMPED_S1_TO_S3: [14685, 15848, 20120]
+  ENDING_BALANCE_AFTER_2_SEASONS_UNDAMPED: 1717719
+  ENDING_BALANCE_AFTER_2_SEASONS_DAMPED: 1664832
+  ENDING_BALANCE_TARGET: 600000
+unit: "kr (belopp), kvot (tillväxtfaktor kommunbidrag säsong1→säsong2: 2,03× → 0,95× för säsongsstart-mekanismen)"
+source:
+  type: measurement
+  doc: "docs/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md (DIAGNOS REVIDERAD); scripts/framgangsekonomin-kommunbidrag-matning-2026-09-01.ts; src/domain/services/economyService.ts; src/domain/services/politicianService.ts; src/domain/services/communityStandingScaling.ts (D031)"
+  decided_by: code
+verified_at: 2026-09-01
+verified_by: code
+status: active
+related_facts:
+  - D031
+invariants:
+  - "value.ENDING_BALANCE_AFTER_2_SEASONS_DAMPED < value.ENDING_BALANCE_AFTER_2_SEASONS_UNDAMPED"
+  - "value.ENDING_BALANCE_AFTER_2_SEASONS_DAMPED > value.ENDING_BALANCE_TARGET"
+notes: |
+  ── VAD DÄMPNINGEN FAKTISKT LÖSTE ─────────────────────────────────────────
+  Bägge kommunbidragsmekanismernas tillväxt från säsong 1→2 gick från en
+  verklig ~2×/1,08× ökning (compoundande med stigande rykte/CS) till nästan
+  helt FLAT (×0,95 / ×1,08 — brus, inte trend). Detta är EXAKT vad domens
+  "mätta så framgång inte compoundar kommunintäkten" bad om, och det är
+  byggt, mätt och regressionstestat (economyService.test.ts: 2 nya tester
+  "kommunBidrag dämpad vid högt CS"; politicianService.test.ts: nytt
+  testfiler, 3 tester). SKYDDAT-kriterium 3 (Survive/lågrykte orört) är
+  strukturellt garanterat, inte bara mätt: getCsDiminishingFactor(cs)===1.0
+  exakt för alla cs<=55 (redan bevisat i communityStandingScaling.test.ts),
+  och multiplikationen med 1.0 är ett no-op — ingen separat kontrollklubbs-
+  körning behövdes för att bevisa detta.
+
+  ── VAD DÄMPNINGEN INTE LÖSTE, ÄRLIGT RAPPORTERAT ─────────────────────────
+  Målet "~600 tkr efter två framgångsrika säsonger" NÅDDES INTE (1 664 832
+  kr, mot odämpat 1 717 719 kr — en minskning på bara ~53 tkr, ~3%). Rotorsak,
+  mätt med en fullständig financeLog-uppdelning per reason (samma script):
+  för en dominant klubb (club_forsbacka, +30 currentAbility-boost, samma
+  metod som framgangskurvan-ansprak3) är match_revenue ~1,2-1,4 MILJONER
+  KR PER SÄSONG — 8-17× större än de bägge kommunbidragen TILLSAMMANS
+  (49-54 tkr/säsong efter dämpning). Kommunbidraget var den korrekta
+  identifieringen av VILKEN mekanism som COMPOUNDAR med framgång (DIAGNOS
+  REVIDERAD hade rätt i det), men match_revenues absoluta STORLEK — inte
+  dess tillväxt — är vad som faktiskt håller saldot uppe. match_revenue är
+  redan FLAT (arenaCapacity fryst vid world-gen, exakt som diagnosen sa)
+  men "flat och redan stort" slår "litet och dämpat växande". Detta var
+  explicit UTANFÖR uppdragets scope (DIAGNOS REVIDERAD listar bara
+  kommunbidrag+league_prize som spakar) — rapporterat till Jacob/Opus som
+  öppen fråga, inget byggt mot match_revenue.
+
+  ── GRANSKAT: league_prize behöver INGEN ändring ──────────────────────────
+  league_prize är REDAN placeringsskalad (PRIZE_MONEY[position-1], 200000
+  för 1:a plats ner till 15000 för 12:e) och sjönk korrekt när klubben
+  tappade placering under mätningen (150000→80000→120000 i takt med
+  placering 2→5→3). Det är en liten (80-150 tkr/säsong, 5-9% av en stark
+  säsongs bruttoöverskott), redan självbegränsande post som inte compoundar
+  år efter år för en klubb som HÅLLER en topplacering (samma belöning varje
+  gång, ingen eskalering) — motsatsen till problemet kommunbidraget hade.
+  Ingen kod ändrad för league_prize.
+
+  ── SEKUNDÄRT FYND, EJ ÅTGÄRDAT: ospårad finansdifferens ──────────────────
+  byReason-summan matchar INTE den faktiska säsongsdeltan (faktisk Δ minus
+  SUMMA(byReason) = 158/220/143 tkr per säsong i mätningen) — pengar rör sig
+  via `club.finances` utan en enda financeLog-post (kandidater: budget_priority-
+  effekter, kontraktsdemander, scandal-böter — inte utrett här). Bryter mot
+  §6 "Den spårbara spelarkedjan" i CLAUDE.md, men var utanför detta uppdrags
+  scope. Flaggat, inte fixat.
+
+  ── DUBBEL-TAGGNING LÖST ──────────────────────────────────────────────────
+  De två kommunbidragsmekanismerna hade delat `reason: 'kommunbidrag'` trots
+  att labels redan var distinkta ("säsongsstart"/"säsongsslut") — ingen
+  nuvarande UI grupperar efter reason (EkonomiTab listar rå financeLog per
+  label, ingen aggregering), så ingen spelarsynlig bugg fanns, men en
+  framtida reason-baserad summering hade konflaterat två olika källor.
+  Season-slut-mekanismen fick ny reason 'kommunbidrag_politiker'. Bekräftat:
+  två AVSIKTLIGA källor (municipal grant vid säsongsstart baserad på
+  rykte+CS, politiker-styrt bidrag vid säsongsslut baserat på CS+ungdom+
+  agenda+relation) — inte en dubbelbetalning.

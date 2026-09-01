@@ -10,6 +10,7 @@ import { getJournalistAttendanceModifier } from './journalistVisibilityService'
 import { FixtureStatus, PlayerPosition } from '../enums'
 import { safeStandingPosition } from './standingsService'
 import { getOrtFreshnessFactor } from './communityRenewalService'
+import { getCsDiminishingFactor } from './communityStandingScaling'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
 
@@ -23,7 +24,8 @@ export type FinanceReason =
   | 'cup_prize'
   | 'league_prize'
   | 'patron'
-  | 'kommunbidrag'
+  | 'kommunbidrag'             // säsongsstart, economyService.ts (rykte+CS)
+  | 'kommunbidrag_politiker'   // säsongsslut, politicianService.ts (CS+ungdom+agenda+relation) — DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md: två avsiktliga källor, skilda etiketter så en framtida reason-aggregering inte konflaterar dem
   | 'facility_upkeep'
   | 'budget_priority'
   | 'transfer_in'
@@ -668,7 +670,19 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     // Sprint 26: kvadratisk csFactor — belönar hög puls, straffar låg (var linjär 0.7–1.3)
     const csNormalized = 0.3 + ((communityStanding ?? 50) / 100) * 0.7  // 0.3–1.0
     const csFactor = csNormalized * csNormalized                         // 0.09–1.0
-    kommunBidrag = Math.round(kommunBase * repFactor * csFactor)
+    // DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD
+    // (2026-09-01): Sprint 26:s kvadratiska csFactor är KONVEX — den
+    // ACCELERERAR vid högt CS istf att avta, vilket kombinerat med rep-
+    // skalningen gjorde kommunbidraget till en av de två verkliga
+    // framgång→rikedom-länkarna (mätt ~2,7× tillväxt över en 3-säsongskarriär,
+    // se scripts/framgangsekonomin-kommunbidrag-matning-2026-09-01.ts).
+    // Återanvänder D031:s redan ratificerade getCsDiminishingFactor (samma
+    // "dämpa positiva CS-boostar vid högt CS"-primitiv som communityProcessor.ts
+    // redan kör) istf att uppfinna en ny kurva — konsekvent med den andra
+    // kommunbidrags-mekanismen (politicianService.calculateKommunBidrag).
+    // repFactor rörs INTE (delad med lönernas reputationSalaryMultiplier,
+    // SKYDDAD av domen — "Lönerna/A-H2b rörs inte").
+    kommunBidrag = Math.round(kommunBase * repFactor * csFactor * getCsDiminishingFactor(communityStanding ?? 50))
   }
 
   const weeklyLegendCost = legendSalaryCost ?? 0

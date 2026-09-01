@@ -77,7 +77,7 @@ describe('seasonEndProcessor — offseasonFinanceLog (A-M5)', () => {
 
     const entries = result.game.seasonSummaries?.at(-1)?.offseasonFinanceEntries ?? []
     expect(entries.some(e => e.reason === 'patron')).toBe(false)
-    expect(entries.some(e => e.reason === 'kommunbidrag')).toBe(false)
+    expect(entries.some(e => e.reason === 'kommunbidrag_politiker')).toBe(false)
     // Prispengar ska ändå finnas — den är ovillkorad.
     expect(entries.some(e => e.reason === 'league_prize')).toBe(true)
   })

@@ -3,6 +3,7 @@ import type { Club } from '../entities/Club'
 import type { SaveGame } from '../entities/SaveGame'
 import { mulberry32 } from '../utils/random'
 import { POLITICIAN_PROFILES } from '../data/politicianData'
+import { getCsDiminishingFactor } from './communityStandingScaling'
 
 export function calculateKommunBidrag(
   politician: LocalPolitician,
@@ -12,7 +13,16 @@ export function calculateKommunBidrag(
 ): number {
   const base = 30000
   const generosityMod = (politician.generosity ?? 60) / 100
-  const communityMod = communityStanding / 50  // 0-2
+  // DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD
+  // (2026-09-01): communityMod var en OLIMITERAD linjär 0-2-skalning mot CS —
+  // en av de två verkliga framgång→rikedom-länkarna (mätt ~2,7× tillväxt
+  // över en 3-säsongskarriär, se scripts/framgangsekonomin-kommunbidrag-
+  // matning-2026-09-01.ts). Dämpad med D031:s redan ratificerade
+  // getCsDiminishingFactor, konsekvent med den andra kommunbidrags-
+  // mekanismen (economyService.ts's kommunBidrag). lokStöd/agendaBonus/
+  // relBonus rörs INTE — de skalar med ungdomsengagemang/agenda/relation,
+  // inte med CS, och domen pekar bara ut CS-skalningen.
+  const communityMod = (communityStanding / 50) * getCsDiminishingFactor(communityStanding)  // 0-2 × dämpning
   const activeYouth = (game.youthTeam?.players.length ?? 0) + (game.communityActivities?.bandyplay ? 15 : 0)
   const lokStod = activeYouth * 100
   let agendaBonus = 0

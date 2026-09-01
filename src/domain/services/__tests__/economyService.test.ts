@@ -294,6 +294,43 @@ describe('calcRoundIncome — facilityUpkeep (O5 kraft 2)', () => {
   })
 })
 
+// ── Group 3a: calcRoundIncome — kommunBidrag CS-dämpning (DIAGNOS REVIDERAD,
+// DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, 2026-09-01) ──────────────────
+
+describe('calcRoundIncome — kommunBidrag dämpad vid högt CS (getCsDiminishingFactor)', () => {
+  it('orört vid cs<=55 (SKYDDAT: låg-CS/Survive-klubbar opåverkade)', () => {
+    const atFloor = calcRoundIncome({
+      club: makeClub(), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+      isFirstRound: true, communityStanding: 55,
+    })
+    const belowFloor = calcRoundIncome({
+      club: makeClub(), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+      isFirstRound: true, communityStanding: 30,
+    })
+    // Odämpad formel: 60000 × repFactor(rykte60=1.1) × csFactor(cs55: 0.685²≈0.4692) ≈ 30969
+    expect(atFloor.kommunBidrag).toBe(30969)
+    // cs30 < cs55 ger lägre csFactor men SAMMA dämpningsfaktor 1.0 (ingen extra dämpning under golvet)
+    const csNormalized30 = 0.3 + (30 / 100) * 0.7
+    const expectedBelowFloor = Math.round(60000 * 1.1 * csNormalized30 * csNormalized30)
+    expect(belowFloor.kommunBidrag).toBe(expectedBelowFloor)
+  })
+
+  it('dämpat vid cs100 — inte längre den odämpade 90000-toppen', () => {
+    const result = calcRoundIncome({
+      club: makeClub(), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+      isFirstRound: true, communityStanding: 100,
+    })
+    // Odämpad hade varit 60000×1.1×1.0=66000 (rykte60). Med getCsDiminishingFactor(100)=0.25: 16500.
+    expect(result.kommunBidrag).toBe(16500)
+  })
+})
+
 // ── Group 4: calcRoundIncome — sponsors ───────────────────────────────────────
 
 describe('calcRoundIncome — sponsors', () => {

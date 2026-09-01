@@ -342,7 +342,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       offseasonFinanceLog.push({
         round: offseasonRound,
         amount: dynamicBidrag,
-        reason: 'kommunbidrag',
+        reason: 'kommunbidrag_politiker',
         label: 'Kommunbidrag (säsongsslut)',
       })
       updatedClubs[politIdx] = {
