@@ -1,3 +1,5 @@
+import { stringHash } from '../utils/random'
+
 /**
  * Akademins genombrottsrepliker (HIGH 8, audit 2026-08-29).
  *
@@ -29,10 +31,6 @@ const BREAKTHROUGH_QUOTES: readonly string[] = [
  * given spelare alltid får samma rad men olika spelare får olika.
  */
 export function academyBreakthroughQuote(playerId: string): string {
-  let hash = 0
-  for (let i = 0; i < playerId.length; i++) {
-    hash = (hash * 31 + playerId.charCodeAt(i)) | 0
-  }
-  const idx = Math.abs(hash) % BREAKTHROUGH_QUOTES.length
+  const idx = Math.abs(stringHash(playerId)) % BREAKTHROUGH_QUOTES.length
   return BREAKTHROUGH_QUOTES[idx]
 }

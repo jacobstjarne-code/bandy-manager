@@ -7,6 +7,7 @@ import { inboxItemToCardCandidate, FREKVENTA, SALLSYNTA } from './inboxToPortal'
 import type { InboxKind } from './inboxToPortal'
 import { getRoundCharacter } from '../../data/roundCharacter'
 import type { RoundCharacter } from '../../data/roundCharacter'
+import { stringHash } from '../../utils/random'
 
 // C1: endgame-kurering (R3-specen). I avgörande matchfönster (slutspel + slutspurt
 // omg ≥20) är portalen EN sak: matchen. Dessa secondary/minimal-kort ÖVERLEVER —
@@ -244,11 +245,5 @@ export function makeSeed(game: SaveGame): number {
 
 /** Enkel deterministisk hash av en sträng + nummer. */
 function simpleHash(input: string | number): number {
-  const str = String(input)
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i)
-    hash |= 0
-  }
-  return Math.abs(hash)
+  return Math.abs(stringHash(String(input)))
 }

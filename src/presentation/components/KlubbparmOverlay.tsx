@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Lock } from 'lucide-react'
 import { Icon } from './primitives/Icon'
+import { Overlay } from './primitives/Overlay'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { KLUBBPARM_CHAPTERS, chapterAwaitsText } from '../../domain/data/klubbparmContent'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
@@ -29,22 +30,18 @@ export function KlubbparmOverlay({ game, onClose }: KlubbparmOverlayProps) {
   const clubLabel = `${(club?.shortName ?? club?.name ?? '').toUpperCase()} · ${seasonSpanLabel(game.currentSeason)}`
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0,
-        background: 'rgba(0,0,0,0.6)',
-        zIndex: 'var(--z-overlay)',
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-        paddingTop: 60, overflowY: 'auto',
-      }}
+    <Overlay
+      onClose={onClose}
+      ariaLabel="Klubbpärmen"
+      maxWidth={380}
+      zIndex="var(--z-overlay)"
+      backdropStyle={{ alignItems: 'flex-start', padding: '60px 5% 40px', overflowY: 'auto' }}
     >
       <div
-        onClick={e => e.stopPropagation()}
         style={{
           background: 'var(--bg)',
           borderRadius: 'var(--radius-md)',
-          maxWidth: 380, width: '90%',
+          maxWidth: 380, width: '100%',
           maxHeight: 'calc(100vh - 100px)',
           overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
@@ -184,6 +181,6 @@ export function KlubbparmOverlay({ game, onClose }: KlubbparmOverlayProps) {
           )}
         </div>
       </div>
-    </div>
+    </Overlay>
   )
 }

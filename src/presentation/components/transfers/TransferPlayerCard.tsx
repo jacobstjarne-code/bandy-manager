@@ -33,6 +33,8 @@ export function TransferPlayerCard({
   return (
     <div
       className={`transfers-list-row-lg ${isScouted ? 'transfers-state-scouted-bg' : ''}`}
+      data-entity-id={`player:${player.id}`}
+      data-entity-source="TransferPlayerCard"
       style={{ borderBottom: isLast ? 'none' : '1px solid var(--border)' }}
     >
       <div className="transfers-list-content">

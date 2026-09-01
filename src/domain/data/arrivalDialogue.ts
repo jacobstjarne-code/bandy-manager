@@ -1,3 +1,5 @@
+import { stringHash } from '../utils/random'
+
 /**
  * ArrivalScene-dialog — Sture-replikens varianter.
  *
@@ -72,11 +74,7 @@ export function getStureLine(clubId: string): string {
   if (specific) return specific
 
   // Fallback för okända klubb-id: hash över generic-poolen
-  let hash = 0
-  for (let i = 0; i < clubId.length; i++) {
-    hash = ((hash << 5) - hash + clubId.charCodeAt(i)) | 0
-  }
-  const idx = Math.abs(hash) % STURE_VARIANTS.length
+  const idx = Math.abs(stringHash(clubId)) % STURE_VARIANTS.length
   return STURE_VARIANTS[idx]
 }
 

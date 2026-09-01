@@ -708,7 +708,6 @@ export interface SaveGame {
   riskySponsorContract?: {
     sponsorId: string
     riskMaturityRound: number          // earliest round when risk can fire
-    acceptedRound: number
     season: number
   }
   riskySponsorOfferSentThisSeason?: number  // season when last offer was generated

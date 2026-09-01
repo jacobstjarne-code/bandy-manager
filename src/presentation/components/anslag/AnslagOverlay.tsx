@@ -4,6 +4,7 @@ import type { AnslagKey } from '../../../domain/services/anslagService'
 import { pickAnslagVariant, getAnslagData, isClubDirektkvalad } from '../../../domain/services/anslagService'
 import { IllustrationScene } from '../illustration/IllustrationScene'
 import { playoffRoundDefinite } from '../../../domain/roundLabel'
+import { Overlay } from '../primitives/Overlay'
 
 // Anslag som bär en hero-band-illustration (band-läge). Bilden droppas i public/; tills
 // dess fallback-gradient + stämpel. Fler anslag (derby, nedflyttning) läggs till här.
@@ -128,8 +129,15 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
   const isWinner = anslagKey === 'cup_done_winner'
 
   return (
-    <div className="anslag-overlay" onClick={onDismiss}>
-      <div className={`anslag-card${isWinner ? ' winner' : ''}`} onClick={e => e.stopPropagation()}>
+    <Overlay
+      onClose={onDismiss}
+      ariaLabel={anslag.chapter}
+      maxWidth={320}
+      zIndex={300}
+      backdropStyle={{ background: 'var(--anslag-backdrop)', padding: '40px 28px', cursor: 'pointer' }}
+      contentStyle={{ background: 'transparent' }}
+    >
+      <div className={`anslag-card${isWinner ? ' winner' : ''}`}>
         {ANSLAG_BAND_IMAGE[anslagKey] && (
           <IllustrationScene
             mode="band"
@@ -145,6 +153,6 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
         />
         <div className="anslag-cta" onClick={onDismiss}>Tryck för att fortsätta</div>
       </div>
-    </div>
+    </Overlay>
   )
 }

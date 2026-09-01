@@ -11,6 +11,7 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest'
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
+import type { ComponentProps } from 'react'
 import { Overlay } from '../Overlay'
 
 beforeAll(() => {
@@ -33,12 +34,12 @@ afterEach(() => {
   appRoot.remove()
 })
 
-function renderOverlay(onClose: () => void, children: React.ReactNode) {
+function renderOverlay(onClose: () => void, children: React.ReactNode, props: Partial<ComponentProps<typeof Overlay>> = {}) {
   container = document.createElement('div')
   appRoot.appendChild(container) // renderas "inuti" #root, som de riktiga anropsställena
   root = createRoot(container)
   act(() => {
-    root!.render(<Overlay onClose={onClose} ariaLabel="Test-dialog">{children}</Overlay>)
+    root!.render(<Overlay onClose={onClose} ariaLabel="Test-dialog" {...props}>{children}</Overlay>)
   })
 }
 
@@ -81,6 +82,38 @@ describe('Overlay — M4: dialog-semantik, fokusfälla, Escape, inert bakgrund',
     const backdrop = document.body.querySelector('[role="dialog"]') as HTMLDivElement
     act(() => { backdrop.click() })
     expect(closed).toBe(true)
+  })
+
+  it('kan låsa Escape och bakgrund för blockerande flöden', () => {
+    let closeCount = 0
+    renderOverlay(() => { closeCount++ }, <button>Knapp</button>, {
+      closeOnEscape: false,
+      closeOnBackdrop: false,
+    })
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      ;(document.body.querySelector('[role="dialog"]') as HTMLDivElement).click()
+    })
+    expect(closeCount).toBe(0)
+  })
+
+  it('kan portaleras utan att göra app-roten inert för en lokal dock', () => {
+    renderOverlay(() => {}, <button>Knapp</button>, {
+      inertBackground: false,
+      trapFocus: false,
+      autoFocus: false,
+    })
+    expect(appRoot.hasAttribute('inert')).toBe(false)
+  })
+
+  it('kan stanna inline så en lokal dock ärver förälderns pointer-events', () => {
+    renderOverlay(() => {}, <button>Knapp</button>, {
+      portal: false,
+      inertBackground: false,
+    })
+    const dialog = appRoot.querySelector('[role="dialog"]')
+    expect(dialog).not.toBeNull()
+    expect(appRoot.contains(dialog)).toBe(true)
   })
 
   it('fokusfälla: Tab från sista knappen wrappar till första, inte ut ur dialogen', () => {

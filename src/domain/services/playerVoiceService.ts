@@ -1,22 +1,14 @@
 import type { Player } from '../entities/Player'
 import type { SaveGame } from '../entities/SaveGame'
+import { stringHash } from '../utils/random'
 
 // Genomgång II A: rösten lyfts till spelarkortets topp. Den måste därför vara
 // deterministisk (samma spelare + samma omgång → samma rad) och alltid finnas —
 // inte slumpa fram null 80 % av öppningarna som tidigare (Math.random bröt både
 // determinismkontraktet och hjälte-placeringen).
 
-function hashId(str: string): number {
-  let h = 0
-  for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) - h) + str.charCodeAt(i)
-    h |= 0
-  }
-  return Math.abs(h)
-}
-
 function pickFor(player: Player, game: SaveGame, arr: string[]): string {
-  const seed = hashId(player.id) + (game.currentMatchday ?? 0)
+  const seed = Math.abs(stringHash(player.id)) + (game.currentMatchday ?? 0)
   return arr[seed % arr.length]
 }
 

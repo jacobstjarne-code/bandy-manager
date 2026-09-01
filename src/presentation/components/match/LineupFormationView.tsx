@@ -2,6 +2,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { Tactic } from '../../../domain/entities/Club'
 import { FORMATIONS, autoAssignFormation } from '../../../domain/entities/Formation'
 import { BandyPitch } from '../BandyPitch'
+import { getPositionFit } from '../../../domain/utils/positionFit'
 
 interface LineupFormationViewProps {
   tacticState: Tactic
@@ -9,14 +10,6 @@ interface LineupFormationViewProps {
   squadPlayers: Player[]
   selectedSlotId: string | null
   onSlotClick: (slotId: string) => void
-}
-
-const ADJACENT_POS: Record<string, string[]> = {
-  goalkeeper: [],
-  defender: ['half'],
-  half: ['defender', 'midfielder'],
-  midfielder: ['half', 'forward'],
-  forward: ['midfielder'],
 }
 
 export function LineupFormationView({
@@ -60,8 +53,9 @@ export function LineupFormationView({
 
             let ringColor = 'var(--accent)'
             if (player) {
-              if (player.position === slot.position) ringColor = 'var(--success)'
-              else if (ADJACENT_POS[player.position]?.includes(slot.position)) ringColor = 'var(--warning)'
+              const positionFit = getPositionFit(player.position, slot.position)
+              if (positionFit === 1) ringColor = 'var(--success)'
+              else if (positionFit === 0.9) ringColor = 'var(--warning)'
               else ringColor = 'var(--danger)'
             }
 

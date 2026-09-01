@@ -150,7 +150,6 @@ export function resolveEvent(
         ? {
             sponsorId: sponsor.id,
             riskMaturityRound: game.currentMatchday + 6,
-            acceptedRound: game.currentMatchday,
             season: game.currentSeason,
           }
         : game.riskySponsorContract
@@ -213,7 +212,6 @@ export function resolveEvent(
             riskySponsorContract: {
               sponsorId: sponsor.id,
               riskMaturityRound: sponsorData.riskMaturityRound,
-              acceptedRound: sponsorData.signedRound,
               season: game.currentSeason,
             },
             resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),

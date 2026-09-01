@@ -1,6 +1,6 @@
 import type { AssistantCoach, CoachPersonality, CoachBackground } from '../entities/AssistantCoach'
 import type { NoteTag } from './playerNotesService'
-import { seededPick } from '../utils/random'
+import { seededPick, stringHash } from '../utils/random'
 
 // Svenska förnamn + efternamn — speglar aiCoachService
 const FIRST_NAMES = ['Leif', 'Björn', 'Håkan', 'Stefan', 'Per', 'Johan', 'Anders', 'Mikael', 'Lars', 'Gunnar', 'Ulf', 'Rolf', 'Kent', 'Peter', 'Sven']
@@ -10,11 +10,7 @@ const PERSONALITIES: CoachPersonality[] = ['calm', 'sharp', 'jovial', 'grumpy', 
 const BACKGROUNDS: CoachBackground[] = ['former-player', 'academy-coach', 'tactician', 'veteran']
 
 function simpleHash(str: string): number {
-  let h = 0
-  for (let i = 0; i < str.length; i++) {
-    h = Math.imul(31, h) + str.charCodeAt(i) | 0
-  }
-  return Math.abs(h)
+  return Math.abs(stringHash(str))
 }
 
 /**

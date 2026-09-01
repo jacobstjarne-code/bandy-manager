@@ -65,7 +65,12 @@ export function MatchDayProgram({ fixture, opponent, managedClub, game, myPlayer
   const myStanding = game.standings.find(s => s.clubId === game.managedClubId)
 
   return (
-    <div className="card-sharp" style={{ margin: '0 0 8px', padding: '10px 14px' }}>
+    <div
+      className="card-sharp"
+      data-entity-id={`fixture:${fixture.id}`}
+      data-entity-source="MatchDayProgram"
+      style={{ margin: '0 0 8px', padding: '10px 14px' }}
+    >
       <button
         onClick={() => setOpen(o => !o)}
         style={{

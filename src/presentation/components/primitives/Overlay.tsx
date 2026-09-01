@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom'
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { Z } from '../../utils/zIndices'
 
 interface OverlayProps {
@@ -10,12 +10,26 @@ interface OverlayProps {
   /** Required — role="dialog" needs an accessible name, and there's no visible <h2> guaranteed in every caller. */
   ariaLabel: string
   maxWidth?: number
-  zIndex?: number
+  zIndex?: CSSProperties['zIndex']
   /** Inset on the backdrop flex container — keeps a centered modal off screen edges on small viewports. */
   backdropPadding?: string
+  /** Escape/backdrop may be disabled for blocking flows that can only close through their own actions. */
+  closeOnEscape?: boolean
+  closeOnBackdrop?: boolean
+  /** Lokala dockar får inte inaktivera hela appens matchrot. */
+  inertBackground?: boolean
+  trapFocus?: boolean
+  autoFocus?: boolean
+  /** Lokala matchdockar måste stanna i sin stacking-context och ärver då förälderns pointer-events. */
+  portal?: boolean
+  backdropClassName?: string
+  contentClassName?: string
+  backdropStyle?: CSSProperties
+  contentStyle?: CSSProperties
 }
 
 const FOCUSABLE_SELECTOR = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+let inertOverlayCount = 0
 
 /**
  * M4 (audit 5c9a7a8, 2026-08-24): "Facility-sheeten är generic utan dialog/
@@ -33,28 +47,50 @@ const FOCUSABLE_SELECTOR = 'button:not([disabled]), [href], input:not([disabled]
  *
  * inert sätts på #root via ren DOM-API (setAttribute/removeAttribute), inte
  * en JSX-prop — React < 19 har ingen inbyggd inert-prop, och plain DOM-API
- * fungerar oavsett React-version. Overlayn själv ligger UTANFÖR #root
- * (portalerad till body), så den påverkas aldrig av sin egen inert-flagga.
+ * fungerar oavsett React-version. Overlayn portaleras normalt UTANFÖR #root
+ * och påverkas då aldrig av sin egen inert-flagga. Lokala dockar kan välja
+ * portal={false} och inertBackground={false} för att behålla sin stacking-context.
  */
-export function Overlay({ onClose, children, variant = 'modal', ariaLabel, maxWidth = 440, zIndex = Z.overlay, backdropPadding }: OverlayProps) {
+export function Overlay({
+  onClose,
+  children,
+  variant = 'modal',
+  ariaLabel,
+  maxWidth = 440,
+  zIndex = Z.overlay,
+  backdropPadding,
+  closeOnEscape = true,
+  closeOnBackdrop = true,
+  inertBackground = true,
+  trapFocus = true,
+  autoFocus = true,
+  portal = true,
+  backdropClassName,
+  contentClassName,
+  backdropStyle,
+  contentStyle,
+}: OverlayProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const previouslyFocused = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     previouslyFocused.current = document.activeElement as HTMLElement | null
     const root = document.getElementById('root')
-    root?.setAttribute('inert', '')
+    if (inertBackground) {
+      inertOverlayCount++
+      root?.setAttribute('inert', '')
+    }
 
     const focusables = contentRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-    ;(focusables?.[0] ?? contentRef.current)?.focus()
+    if (autoFocus) (focusables?.[0] ?? contentRef.current)?.focus()
 
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && closeOnEscape) {
         e.stopPropagation()
         onClose()
         return
       }
-      if (e.key !== 'Tab') return
+      if (e.key !== 'Tab' || !trapFocus) return
       const els = contentRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
       if (!els || els.length === 0) return
       const first = els[0]
@@ -70,16 +106,20 @@ export function Overlay({ onClose, children, variant = 'modal', ariaLabel, maxWi
     document.addEventListener('keydown', handleKeyDown, true)
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true)
-      root?.removeAttribute('inert')
-      previouslyFocused.current?.focus?.()
+      if (inertBackground) {
+        inertOverlayCount = Math.max(0, inertOverlayCount - 1)
+        if (inertOverlayCount === 0) root?.removeAttribute('inert')
+      }
+      if (autoFocus) previouslyFocused.current?.focus?.()
     }
-  }, [onClose])
+  }, [autoFocus, closeOnEscape, inertBackground, onClose, trapFocus])
 
-  return createPortal(
+  const overlay = (
     <div
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
+      className={backdropClassName}
       style={{
         position: 'fixed', inset: 0, zIndex,
         background: variant === 'sheet' ? 'color-mix(in srgb, var(--bg-dark) 70%, transparent)' : 'rgba(0,0,0,0.6)',
@@ -87,23 +127,27 @@ export function Overlay({ onClose, children, variant = 'modal', ariaLabel, maxWi
         alignItems: variant === 'sheet' ? 'flex-end' : 'center',
         justifyContent: 'center',
         ...(backdropPadding ? { padding: backdropPadding } : {}),
+        ...backdropStyle,
       }}
-      onClick={onClose}
+      onClick={closeOnBackdrop ? onClose : undefined}
     >
       <div
         ref={contentRef}
         tabIndex={-1}
+        className={contentClassName}
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%', maxWidth,
           ...(variant === 'sheet'
             ? { background: 'var(--bg-surface)', borderRadius: 'var(--radius) var(--radius) 0 0', borderTop: '1px solid var(--border)' }
             : {}),
+          ...contentStyle,
         }}
       >
         {children}
       </div>
-    </div>,
-    document.body,
+    </div>
   )
+
+  return portal ? createPortal(overlay, document.body) : overlay
 }

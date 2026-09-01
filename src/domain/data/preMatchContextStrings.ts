@@ -1,3 +1,5 @@
+import { stringHashUnsigned } from '../utils/random'
+
 export type PreMatchTrigger =
   | 'derby'
   | 'win_streak'
@@ -104,17 +106,9 @@ const POOLS: Record<PreMatchTrigger, string[]> = {
   ],
 }
 
-function hashSeed(fixtureId: string): number {
-  let h = 0
-  for (let i = 0; i < fixtureId.length; i++) {
-    h = (Math.imul(31, h) + fixtureId.charCodeAt(i)) >>> 0
-  }
-  return h
-}
-
 export function pickPreMatchContextText(trigger: PreMatchTrigger, subs: PreMatchSubs): string {
   const pool = POOLS[trigger]
-  const idx = hashSeed(subs.fixtureId) % pool.length
+  const idx = stringHashUnsigned(subs.fixtureId) % pool.length
   let text = pool[idx]
   text = text.replace(/\{opp\}/g, subs.opp ?? 'Motståndaren')
   text = text.replace(/\{rivalry\}/g, subs.rivalry ?? 'Derbyt')

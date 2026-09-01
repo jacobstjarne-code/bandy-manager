@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
 import { formatSalary, formatContractUntil } from '../../utils/formatters'
+import { Overlay } from '../primitives/Overlay'
 import '../../styles/ledger.css'
 
 const PERF_DOTS = Array.from({ length: 8 })
@@ -20,9 +21,8 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
   const [years, setYears] = useState(2)
 
   return (
-    <div onClick={onClose} className="transfers-modal-overlay">
+    <Overlay onClose={onClose} ariaLabel={`Förläng kontrakt med ${player.firstName} ${player.lastName}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
       <div
-        onClick={e => e.stopPropagation()}
         className="transfers-modal-box"
         style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
       >
@@ -80,6 +80,6 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
           Förläng →
         </button>
       </div>
-    </div>
+    </Overlay>
   )
 }

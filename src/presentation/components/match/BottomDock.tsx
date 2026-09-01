@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react'
+import { Overlay } from '../primitives/Overlay'
+
+const NOOP = () => {}
 
 /**
  * BottomDock — delad primitiv för SIFFROR-lådan (peek) och interaktionspaneler (block).
@@ -24,44 +27,45 @@ interface BottomDockProps {
 
 export function BottomDock({ open, variant, onClose, height, children }: BottomDockProps) {
   const resolvedHeight = height ?? (variant === 'peek' ? 280 : undefined)
+  if (!open) return null
 
   return (
     <>
-      {/* Fokus-dim för block-varianten — z 499, precis under docken */}
-      {variant === 'block' && (
-        <div
-          className={`lf-dock-scrim${open ? ' open' : ''}`}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* P-1: tap-utanför stänger peek (peek har ingen scrim) */}
-      {variant === 'peek' && open && onClose && (
-        <div
-          className="lf-dock-catch"
-          aria-hidden="true"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Dock-panel */}
-      <div
-        className={`lf-dock lf-dock--${variant}${open ? ' open' : ''}`}
-        style={resolvedHeight !== undefined ? { height: resolvedHeight } : undefined}
-        role={variant === 'block' ? 'dialog' : undefined}
-        aria-modal={variant === 'block' ? true : undefined}
+      {variant === 'block' && <div className="lf-dock-scrim open" aria-hidden="true" />}
+      <Overlay
+        onClose={onClose ?? NOOP}
+        variant="sheet"
+        ariaLabel={variant === 'peek' ? 'Matchsiffror' : 'Matchbeslut'}
+        maxWidth={430}
+        zIndex={variant === 'peek' ? 'var(--z-overlay)' : 'var(--z-interaction)'}
+        closeOnEscape={variant === 'peek' && !!onClose}
+        closeOnBackdrop={variant === 'peek' && !!onClose}
+        inertBackground={false}
+        trapFocus={variant === 'block'}
+        autoFocus={variant === 'block'}
+        portal={false}
+        backdropStyle={{ position: 'absolute', background: 'transparent' }}
+        contentStyle={{ background: 'transparent', border: 'none' }}
       >
-        {variant === 'peek' && onClose && (
-          <button
-            className="lf-dock-handle"
-            onClick={onClose}
-            aria-label="Stäng"
-          />
-        )}
-        <div className="lf-dock-content">
-          {children}
+        <div
+          className={`lf-dock lf-dock--${variant} open`}
+          style={{
+            ...(resolvedHeight !== undefined ? { height: resolvedHeight } : {}),
+            position: 'relative',
+          }}
+        >
+          {variant === 'peek' && onClose && (
+            <button
+              className="lf-dock-handle"
+              onClick={onClose}
+              aria-label="Stäng"
+            />
+          )}
+          <div className="lf-dock-content">
+            {children}
+          </div>
         </div>
-      </div>
+      </Overlay>
     </>
   )
 }

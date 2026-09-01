@@ -1,6 +1,7 @@
 import type { Player } from '../../../domain/entities/Player'
 import { PlayerPosition } from '../../../domain/enums'
 import { positionShort } from '../../utils/formatters'
+import { Overlay } from '../primitives/Overlay'
 
 interface PlayerPickerSheetProps {
   slotLabel: string
@@ -38,17 +39,14 @@ export function PlayerPickerSheet({
   })
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 300,
-        background: 'rgba(0,0,0,0.6)',
-        display: 'flex', flexDirection: 'column', justifyContent: 'center',
-        padding: 20,
-      }}
+    <Overlay
+      onClose={onClose}
+      ariaLabel={`Välj spelare för ${slotLabel}`}
+      maxWidth={380}
+      zIndex={300}
+      backdropPadding="20px"
     >
       <div
-        onClick={e => e.stopPropagation()}
         style={{
           background: 'var(--bg)',
           borderRadius: 'var(--radius-md)',
@@ -76,6 +74,7 @@ export function PlayerPickerSheet({
           </div>
           <button
             onClick={onClose}
+            aria-label="Stäng spelväljaren"
             style={{ background: 'none', border: 'none', fontSize: 20, color: 'var(--text-muted)', cursor: 'pointer', padding: '4px 8px' }}
           >
             ✕
@@ -93,6 +92,8 @@ export function PlayerPickerSheet({
             return (
               <div
                 key={player.id}
+                data-entity-id={`player:${player.id}`}
+                data-entity-source="PlayerPickerSheet"
                 onClick={() => !unavailable && !isOtherSlot && onSelect(player.id)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10,
@@ -155,6 +156,6 @@ export function PlayerPickerSheet({
           })}
         </div>
       </div>
-    </div>
+    </Overlay>
   )
 }

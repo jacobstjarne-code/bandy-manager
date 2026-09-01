@@ -3,13 +3,10 @@
 // garanterad. Utökad till 7-8 varianter per branch.
 
 import { SUSPENSION_AVAILABILITY_LABELS } from './suspensionText'
+import { stringHashUnsigned } from '../utils/random'
 
 function pick<T>(arr: T[], seed: string): T {
-  let h = 0
-  for (let i = 0; i < seed.length; i++) {
-    h = (Math.imul(31, h) + seed.charCodeAt(i)) >>> 0
-  }
-  return arr[h % arr.length]
+  return arr[stringHashUnsigned(seed) % arr.length]
 }
 
 export function getInjuryText(days: number, playerId: string): string {

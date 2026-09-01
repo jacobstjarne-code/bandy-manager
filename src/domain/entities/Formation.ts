@@ -1,5 +1,6 @@
 import { PlayerPosition } from '../enums'
 import type { Player } from './Player'
+import { getPositionFit } from '../utils/positionFit'
 
 export type FormationType = '3-3-4' | '4-3-3' | '3-4-3' | '2-3-2-3' | '4-2-4' | '5-3-2'
 
@@ -177,19 +178,11 @@ export function autoAssignFormation(
 
   // Second pass: adjacent position match (half↔midfielder, half↔defender, etc.)
   // Only place a player in an adjacent slot if no unfilled slots match their own position.
-  const ADJACENT: Record<string, string[]> = {
-    goalkeeper: [],
-    defender: ['half'],
-    half: ['defender', 'midfielder'],
-    midfielder: ['half', 'forward'],
-    forward: ['midfielder'],
-  }
   for (const slot of template.slots) {
     if (filledSlotIds.has(slot.id)) continue
-    const adj = ADJACENT[slot.position] ?? []
     const best = players
       .filter(p => {
-        if (!adj.includes(p.position)) return false
+        if (getPositionFit(p.position, slot.position) !== 0.9) return false
         if (usedIds.has(p.id)) return false
         // Only use this player here if there are no unfilled slots for their own position
         const hasOwnSlotOpen = template.slots.some(

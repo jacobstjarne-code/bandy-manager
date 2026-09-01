@@ -29,7 +29,12 @@ export function PortalObjectiveAlert({ game }: Props) {
         ⚠️ STYRELSEUPPDRAG I FARA
       </p>
       {atRisk.map(obj => (
-        <p key={obj.id} style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+        <p
+          key={obj.id}
+          data-entity-id={`boardObjective:${obj.id}`}
+          data-entity-source="PortalObjectiveAlert"
+          style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}
+        >
           {obj.label}
         </p>
       ))}

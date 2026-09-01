@@ -1,10 +1,4 @@
-function hashSeed(s: string): number {
-  let h = 0
-  for (let i = 0; i < s.length; i++) {
-    h = (Math.imul(31, h) + s.charCodeAt(i)) >>> 0
-  }
-  return h
-}
+import { stringHashUnsigned } from '../utils/random'
 
 type ResultBucket = 'big_win' | 'win' | 'draw' | 'loss' | 'big_loss'
 type Persona = 'supportive' | 'sensationalist' | 'analytical' | 'critical'
@@ -252,7 +246,7 @@ export function pickHeadline(
   // Include matchday in seed so consecutive rounds never repeat even if fixtureId hashes collide
   // Fynd 3: surface-diskriminator i seeden → samma händelse får tre formuleringar
   // (portal / inkorg / granska), så rubriken inte läser identiskt på tre ytor.
-  const idx = hashSeed(`${fixtureId}_${bucket}_${persona}_md${matchday}_${surface}`) % pool.length
+  const idx = stringHashUnsigned(`${fixtureId}_${bucket}_${persona}_md${matchday}_${surface}`) % pool.length
   let text = pool[idx]
 
   if (oppName) text = text.replace(/\{opp\}/g, oppName)

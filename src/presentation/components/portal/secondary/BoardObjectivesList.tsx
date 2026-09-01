@@ -106,6 +106,8 @@ function ObjRow({ obj, onNavigate, hideProgress = false }: ObjRowProps) {
 
   return (
     <div
+      data-entity-id={`boardObjective:${obj.id}`}
+      data-entity-source="BoardObjectivesList"
       onClick={onNavigate}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

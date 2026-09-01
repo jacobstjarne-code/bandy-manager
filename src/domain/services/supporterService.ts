@@ -2,6 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { SupporterGroup, SupporterCharacter } from '../entities/Community'
 import type { Player } from '../entities/Player'
 import { PlayerPosition } from '../enums'
+import { stringHash } from '../utils/random'
 
 // ── Name pools per role ───────────────────────────────────────────────────────
 
@@ -26,12 +27,6 @@ function pick<T>(arr: T[], seed: number): T {
   return arr[Math.abs(seed) % arr.length]
 }
 
-function hashStr(s: string): number {
-  let h = 0
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0
-  return Math.abs(h)
-}
-
 // ── Generate supporter group at game start ────────────────────────────────────
 
 export function generateSupporterGroup(
@@ -42,7 +37,7 @@ export function generateSupporterGroup(
   overrideName?: string,
   overrideLeaderName?: string,
 ): SupporterGroup {
-  const h = hashStr(clubId) + seed
+  const h = Math.abs(stringHash(clubId)) + seed
 
   const favoritePlayer = pickFavoritePlayer(players)
 

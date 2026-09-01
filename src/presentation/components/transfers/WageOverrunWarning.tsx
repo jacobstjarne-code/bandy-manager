@@ -1,3 +1,5 @@
+import { Overlay } from '../primitives/Overlay'
+
 interface WageOverrunWarningProps {
   overrunPct: number
   seasonSeed: number
@@ -35,9 +37,8 @@ export function WageOverrunWarning({ overrunPct, seasonSeed, onCancel, onConfirm
   const confirmLabel = variant === 'light' ? 'Bekräfta köp' : 'Bekräfta köp ändå'
 
   return (
-    <div onClick={onCancel} className="transfers-modal-overlay-high">
+    <Overlay onClose={onCancel} ariaLabel={title} maxWidth={430} zIndex="var(--z-overlay)" backdropPadding="20px" backdropStyle={{ background: 'rgba(0,0,0,0.7)' }}>
       <div
-        onClick={e => e.stopPropagation()}
         className="transfers-modal-box"
         style={{ border: `1px solid ${variant === 'severe' ? 'var(--danger)' : 'var(--warning)'}` }}
       >
@@ -64,6 +65,6 @@ export function WageOverrunWarning({ overrunPct, seasonSeed, onCancel, onConfirm
           </button>
         </div>
       </div>
-    </div>
+    </Overlay>
   )
 }

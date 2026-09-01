@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import { getRivalry } from '../data/rivalries'
+import { stringHash } from '../utils/random'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -21,9 +22,7 @@ function pick(arr: string[], seed: number): string {
 
 // Deterministic hash for fixture-based caching
 function fixtureHash(fixtureId: string): number {
-  let h = 0
-  for (let i = 0; i < fixtureId.length; i++) h = (h * 31 + fixtureId.charCodeAt(i)) | 0
-  return Math.abs(h)
+  return Math.abs(stringHash(fixtureId))
 }
 
 const SIGNATURES = [

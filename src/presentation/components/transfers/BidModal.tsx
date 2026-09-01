@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
 import { RIVALRY_WARNING_PER_INTENSITY } from '../../../domain/data/transferResponseText'
 import { formatValue } from '../../utils/formatters'
+import { Overlay } from '../primitives/Overlay'
 import '../../styles/ledger.css'
 
 const PERF_DOTS = Array.from({ length: 8 })
@@ -23,9 +24,8 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
   const canAfford = managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount >= -100000
 
   return (
-    <div onClick={onClose} className="transfers-modal-overlay">
+    <Overlay onClose={onClose} ariaLabel={`Lägg bud på ${player.firstName} ${player.lastName}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
       <div
-        onClick={e => e.stopPropagation()}
         className="transfers-modal-box"
         style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
       >
@@ -89,6 +89,6 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
           Lägg bud →
         </button>
       </div>
-    </div>
+    </Overlay>
   )
 }

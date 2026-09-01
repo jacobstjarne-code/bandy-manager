@@ -1,6 +1,6 @@
-import { createPortal } from 'react-dom'
 import type { EfterklangMemory } from '../../../../domain/services/portal/pickEfterklang'
 import { EFTERKLANG_TYPE_ICON } from '../../../../domain/data/efterklangText'
+import { Overlay } from '../../primitives/Overlay'
 
 interface Props {
   memory: EfterklangMemory
@@ -8,19 +8,14 @@ interface Props {
 }
 
 export function EfterklangThreadModal({ memory, onClose }: Props) {
-  // A2: renderas via portal till body — annars fångar Portal-innehållets
-  // stacking-context (.screen-enter animation: fadeIn) z-index:n lokalt och den
-  // sticky CTA-baren (z 200, root-kontext) målar över modalens nederkant + äter touch.
-  return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
-      style={{
-        position: 'fixed', inset: 0, zIndex: 400,
-        background: 'rgba(0,0,0,0.6)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-      }}
-      onClick={onClose}
+  return (
+    <Overlay
+      onClose={onClose}
+      variant="sheet"
+      ariaLabel={`Efterklang — ${memory.objectName}`}
+      maxWidth={430}
+      zIndex={400}
+      contentStyle={{ background: 'transparent', border: 'none' }}
     >
       <div
         style={{
@@ -30,7 +25,6 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
           padding: '20px 16px 32px',
           maxHeight: '70vh', overflowY: 'auto',
         }}
-        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -108,7 +102,6 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
           En linje som löper genom säsongen.
         </div>
       </div>
-    </div>,
-    document.body,
+    </Overlay>
   )
 }

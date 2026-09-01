@@ -1,4 +1,5 @@
 import { generatePlayerPortrait } from './svgPortraitService'
+import { stringHash } from '../utils/random'
 
 export function getPortraitSvg(playerId: string, age: number, position: string): string {
   return generatePlayerPortrait(playerId, age, position)
@@ -14,15 +15,6 @@ export function ageToPortraitTier(age: number): PortraitTier {
   return 'vet'
 }
 
-function hashId(str: string): number {
-  let h = 0
-  for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) - h) + str.charCodeAt(i)
-    h |= 0
-  }
-  return Math.abs(h)
-}
-
 /**
  * Illustrerat hjälteporträtt (genomgång II A): spelarens ålder → tier → seedat val (1..8)
  * inom tiern. 32 assets i public/assets/portraits/portrait_{tier}_{1..8}.png.
@@ -30,6 +22,6 @@ function hashId(str: string): number {
  */
 export function getPortraitImagePath(playerId: string, age: number): string {
   const tier = ageToPortraitTier(age)
-  const idx = (hashId(playerId) % 8) + 1
+  const idx = (Math.abs(stringHash(playerId)) % 8) + 1
   return `/assets/portraits/portrait_${tier}_${idx}.png`
 }

@@ -5,23 +5,18 @@ import type { FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS } from '../../../domain/entities/Formation'
 import { BandyPitch } from '../BandyPitch'
 import { PlayerPill } from './DraggablePlayerPill'
-
-const ADJACENT_POS: Record<string, string[]> = {
-  goalkeeper: [],
-  defender: ['half'],
-  half: ['defender', 'midfielder'],
-  midfielder: ['half', 'forward'],
-  forward: ['midfielder'],
-}
+import { PlayerPosition } from '../../../domain/enums'
+import { getPositionFit as getPositionFitScore } from '../../../domain/utils/positionFit'
 
 /** Position-fit — grön/gul/röd (DS-regel 13). Delad med LineupStep:s
  * practice-läge (Tillträdet, Sätt elvan) för spotlight-fyndet av en fel-
  * placerad spelare. */
 export type PositionFit = 'green' | 'amber' | 'red'
 
-export function getPositionFit(playerPosition: string, slotPosition: string): PositionFit {
-  if (playerPosition === slotPosition) return 'green'
-  if (ADJACENT_POS[playerPosition]?.includes(slotPosition)) return 'amber'
+export function getPositionFit(playerPosition: PlayerPosition, slotPosition: PlayerPosition): PositionFit {
+  const score = getPositionFitScore(playerPosition, slotPosition)
+  if (score === 1) return 'green'
+  if (score === 0.9) return 'amber'
   return 'red'
 }
 

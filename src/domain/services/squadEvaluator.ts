@@ -4,20 +4,9 @@ import { PlayerPosition } from '../enums'
 import { clamp } from '../utils/clamp'
 import { FORMATIONS } from '../entities/Formation'
 import { SEASON_FORM_FITNESS_SLACK } from './periodisationService'
+import { getPositionFit } from '../utils/positionFit'
 
-const ADJACENT: Record<PlayerPosition, PlayerPosition[]> = {
-  [PlayerPosition.Goalkeeper]: [],
-  [PlayerPosition.Defender]: [PlayerPosition.Half],
-  [PlayerPosition.Half]: [PlayerPosition.Defender, PlayerPosition.Midfielder],
-  [PlayerPosition.Midfielder]: [PlayerPosition.Half, PlayerPosition.Forward],
-  [PlayerPosition.Forward]: [PlayerPosition.Midfielder],
-}
-
-export function getPositionFit(playerPosition: PlayerPosition, slotPosition: PlayerPosition): number {
-  if (playerPosition === slotPosition) return 1.0
-  if (ADJACENT[playerPosition]?.includes(slotPosition)) return 0.90
-  return 0.75
-}
+export { getPositionFit } from '../utils/positionFit'
 
 export interface SquadEvaluation {
   offenseScore: number           // 0-100

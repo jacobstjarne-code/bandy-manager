@@ -1,14 +1,19 @@
-/** 31-polynomial string hash — preserves the hash used by pickVariant in eventCardInlineStrings + csPressEventText. */
-function hashString(s: string): number {
+/** Kanonisk signerad 31-polynomial-hash för deterministiska domänval. */
+export function stringHash(s: string): number {
   let h = 0
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0
   return h
 }
 
+/** Samma bitmönster som stringHash, tolkat som osignerat 32-bitars heltal. */
+export function stringHashUnsigned(s: string): number {
+  return stringHash(s) >>> 0
+}
+
 /** Deterministiskt val ur en array via numerisk eller sträng-seed. */
 export function seededPick<T>(arr: readonly T[], seed: number | string): T {
   if (arr.length === 0) throw new Error('seededPick: empty array')
-  const n = typeof seed === 'string' ? hashString(seed) : seed
+  const n = typeof seed === 'string' ? stringHash(seed) : seed
   return arr[Math.abs(n) % arr.length]
 }
 
@@ -19,7 +24,7 @@ export function seededPickNoRepeat<T>(
   seen: Set<number>,
 ): { item: T; index: number } {
   if (arr.length === 0) throw new Error('seededPickNoRepeat: empty array')
-  const n = typeof seed === 'string' ? hashString(seed) : seed
+  const n = typeof seed === 'string' ? stringHash(seed) : seed
   let idx = Math.abs(n) % arr.length
   let step = 0
   while (seen.has(idx) && step < arr.length) {

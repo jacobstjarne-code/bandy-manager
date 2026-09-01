@@ -1,4 +1,5 @@
 import type { Club, Tactic } from '../entities/Club'
+import { stringHashUnsigned } from '../utils/random'
 import { generateOpponentManager } from './opponentManagerService'
 import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats, PlayerDayJob, SuspensionProfile } from '../entities/Player'
 import {
@@ -695,9 +696,7 @@ function tierFromReputation(reputation: number): 'top' | 'mid' | 'under' {
 
 // C-T1 — deterministic personality from player id hash
 function strHashInt(s: string): number {
-  let h = 0
-  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) >>> 0
-  return h
+  return stringHashUnsigned(s)
 }
 
 function getPersonalityFromSeed(seed: number): 'homebound' | 'ambitious' | 'family' | 'dream_club' | 'default' {

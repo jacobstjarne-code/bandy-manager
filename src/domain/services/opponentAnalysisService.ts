@@ -5,6 +5,7 @@ import type { StandingRow } from '../entities/SaveGame'
 import { PlayerPosition, TacticMentality, TacticPress } from '../enums'
 import { safeStandingPosition } from './standingsService'
 import { deriveUtfall } from './matchTypeAxes'
+import { stringHashUnsigned } from '../utils/random'
 
 export interface OpponentAnalysis {
   opponentClubId: string
@@ -125,8 +126,7 @@ export const THREAT_REASON_LINES: Record<ThreatReasonKey, string[]> = {
 export function displayThreatReasonLine(threat: ThreatPlayer): string | undefined {
   const pool = THREAT_REASON_LINES[threat.reasonKey]
   if (!pool || pool.length === 0) return undefined
-  let hash = 0
-  for (let i = 0; i < threat.playerId.length; i++) hash = (hash * 31 + threat.playerId.charCodeAt(i)) >>> 0
+  const hash = stringHashUnsigned(threat.playerId)
   return pool[hash % pool.length].replaceAll('{Efternamn}', threat.lastName)
 }
 

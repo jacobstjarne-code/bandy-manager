@@ -1,7 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { CupBracket } from '../entities/Cup'
 import { getManagedClubCupStatus } from './cupService'
-import { mulberry32 } from '../utils/random'
+import { mulberry32, stringHashUnsigned } from '../utils/random'
 import type { AnslagText } from '../data/anslag/types'
 import type { CupAnslagKey } from '../data/anslag/cupAnslag'
 import { CUP_ANSLAG } from '../data/anslag/cupAnslag'
@@ -16,15 +16,6 @@ export type AnslagKey = CupAnslagKey | LeagueAnslagKey | PlayoffAnslagKey
 
 // ── Variant picker ────────────────────────────────────────────────
 
-function hashString(s: string): number {
-  let hash = 0
-  for (let i = 0; i < s.length; i++) {
-    hash = ((hash << 5) - hash) + s.charCodeAt(i)
-    hash |= 0
-  }
-  return hash >>> 0
-}
-
 export function pickAnslagVariant(
   text: AnslagText,
   season: number,
@@ -35,7 +26,7 @@ export function pickAnslagVariant(
   if (candidates.length === 0) throw new Error(`No variants for anslag ${anslagKey}`)
   if (candidates.length === 1) return candidates[0].body
 
-  const seed = hashString(`${season}_${anslagKey}_${clubId}`)
+  const seed = stringHashUnsigned(`${season}_${anslagKey}_${clubId}`)
   const rand = mulberry32(seed)
 
   const totalWeight = candidates.reduce((sum, v) => sum + (v.weight ?? 1), 0)
