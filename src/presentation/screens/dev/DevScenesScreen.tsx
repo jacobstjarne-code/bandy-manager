@@ -5,7 +5,7 @@
  * Add a scene: extend SCENES, create fingered game via makeGame(), render below.
  */
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Club, Tactic } from '../../../domain/entities/Club'
@@ -1216,6 +1216,7 @@ export function DevScenesScreen() {
     ? new URLSearchParams(window.location.search).get('scene')
     : null) as SceneId | null
   const [scene, setScene] = useState<SceneId>(initialScene ?? 'cup-victory')
+  const [seededScene, setSeededScene] = useState<SceneId | null>(null)
   // VISUELL_AUDIT punkt 1 (2026-08-09): data-scene-content var hårdkodad till
   // 375px oavsett Playwright-viewport — en "390px"-baseline hade i praktiken
   // screenshottat samma 375px-innehåll med mer grått runt om, inte bredare
@@ -1236,9 +1237,12 @@ export function DevScenesScreen() {
   const finalReady = useGameStore(s => !!s.game?.playoffBracket?.final)
 
   // Seed the store so all screens that call useGameStore() work.
-  // useMemo (ej useEffect) → körs UNDER render, före barnen, så t.ex. PortalScreen
-  // aldrig renderar först med null-game och sedan med game (→ "Rendered more hooks").
-  useMemo(() => {
+  // Detta låg tidigare i useMemo och anropade useGameStore.setState() UNDER
+  // render — React varnade på alla Portal-devscener. useLayoutEffect kör
+  // seedningen efter renderfasen men före paint; seededScene-gaten nedan gör
+  // att inget barn hinner rendera mot föregående/null game (och bevarar därmed
+  // skyddet mot "Rendered more hooks" som den gamla lösningen försökte ge).
+  useLayoutEffect(() => {
     const g = scene === 'cup-victory' ? cupGame
       : scene === 'sm-victory' ? smGame
       : scene === 'season-arc' ? arcGame
@@ -1304,8 +1308,13 @@ export function DevScenesScreen() {
       : scene === 'granska-avsked' ? granskaFarewellRoundSummary
       : null
     useGameStore.setState({ game: g, roundSummary: roundSummaryForScene } as never)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setSeededScene(scene)
   }, [scene])
+
+  // Vid första mount och scenbyte: låt layout-effekten installera rätt store-
+  // fixture innan någon produktskärm monteras. Effekten kör före paint, så
+  // detta skapar ingen synlig mellanbild i galleriet eller snapshots.
+  if (seededScene !== scene) return null
 
   return (
     // SKAL-REGEL (2026-08-12): #root är overflow:hidden (global.css) — riktiga

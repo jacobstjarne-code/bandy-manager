@@ -64,6 +64,7 @@ function renderAtHistory() {
       <MemoryRouter initialEntries={['/game/history']}>
         <Routes>
           <Route path="/" element={<div data-testid="titlescreen">TITEL</div>} />
+          <Route path="/game/game-over" element={<div data-testid="game-over">AVSKED</div>} />
           <Route path="/game" element={<GameShell />}>
             <Route path="history" element={<div data-testid="history">HISTORIK</div>} />
           </Route>
@@ -74,6 +75,21 @@ function renderAtHistory() {
 }
 
 describe('GameShell — deep-link rehydration (Skutskär-audit test 20)', () => {
+  it('släpper inte tillbaka en sparkad manager till interna spelvyer', () => {
+    const originalHasHydrated = useGameStore.persist.hasHydrated
+    useGameStore.persist.hasHydrated = () => true
+    const game = createNewGame({ managerName: 'Sparkad', clubId: 'club_skutskar', season: 2025, seed: 42 })
+    useGameStore.setState({ game: { ...game, managerFired: true } })
+
+    try {
+      renderAtHistory()
+      expect(container!.querySelector('[data-testid="history"]')).toBeNull()
+      expect(container!.querySelector('[data-testid="game-over"]')).not.toBeNull()
+    } finally {
+      useGameStore.persist.hasHydrated = originalHasHydrated
+    }
+  })
+
   it('redirectar INTE till "/" medan persist-rehydreringen fortfarande pågår, även om en giltig sparning finns', () => {
     const originalHasHydrated = useGameStore.persist.hasHydrated
     const originalOnFinish = useGameStore.persist.onFinishHydration
