@@ -29,7 +29,7 @@ import type { PendingScene, SceneId } from './Scene'
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'
 import type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
-import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry } from './Narrative'
+import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry, EventLedgerType, LedgerConsequence, EventLedgerEntry } from './Narrative'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
 
 // ── Legibel konsekvens — domino-kedje-typer (används av rippleEffectService + portalBeats) ──
@@ -61,7 +61,7 @@ export interface RippleChain {
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
 export type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
 export type { BoardMember, BoardRole, BoardPersonality }
-export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry }
+export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry, EventLedgerType, LedgerConsequence, EventLedgerEntry }
 export type { StandingRow }
 export type { InboxItem }
 export type { TransferOffer, TransferState }
@@ -477,6 +477,14 @@ export interface SaveGame {
   // omgång, ingen text) — Player/ManagerProfile:s textdagböcker heter nu
   // `diary`.
   narrativeBeatLog?: NarrativeLogEntry[]
+
+  // DOM_HANDELSELIGGAREN_2026-09-01.md / MIGRATIONSPLAN_HANDELSELIGGAREN_
+  // 2026-09-01.md, Fas 0 — kanonisk, intern, append-only händelseliggare.
+  // Spelaren ser den ALDRIG. EN skrivväg (eventLedgerService.logEvent,
+  // samma disciplin som logNarrativeBeat ovan). INGA konsumenter än —
+  // fundamentet, allt annat (orsak/verkan Fas 1, seasonDecisionCandidates
+  // Fas 2, narrativeBeatLog Fas 3) hänger på detta fält.
+  eventLedger?: EventLedgerEntry[]
 
   // O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md, Jacobs dom 2026-08-24):
   // kandidater till "säsongens viktigaste beslut" — en post per resolved

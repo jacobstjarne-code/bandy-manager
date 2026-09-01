@@ -133,6 +133,81 @@ export interface NarrativeLogEntry {
   systemhandelse?: boolean
 }
 
+/**
+ * DOM_HANDELSELIGGAREN_2026-09-01.md / MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md
+ * (Opus schema, låst 2026-09-01) — Fas 0. En kanonisk, intern, append-only
+ * händelseliggare. Spelaren ser den ALDRIG. "Rå sanning i botten, all mening
+ * i ytorna": inget fält bär ton — ingen `text`/`emoji`/`sentence`/`kind`/
+ * `title`. De genereras i respektive konsuments vy ur fälten nedan.
+ *
+ * Sluten union, inte fri sträng — samma disciplin som NarrativeLogEntry
+ * ovan redan slår fast (en fri kategori luddar upp det enda som gör loggen
+ * läsbar). Startmängden: clubMemoryService.ts's MemoryEventType plus
+ * besluts-typerna. Utöka när en migrerande källa (Fas 3+) bär en typ
+ * unionen inte täcker — ALDRIG en fri sträng som flykt; det är ett vägval
+ * (Opus dömer), inte en tyst fältutökning.
+ */
+export type EventLedgerType =
+  | 'season_finish' | 'cup_final' | 'sm_final' | 'derby_result'
+  | 'big_win' | 'big_loss' | 'player_milestone' | 'academy_promotion'
+  | 'retirement' | 'facility_built' | 'transfer_signed' | 'transfer_sold'
+  | 'patron_change' | 'storyline_resolution' | 'scandal' | 'national_team_callup'
+  | 'decision'
+
+/**
+ * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
+ * (etikett + vem den gäller), hör till konsumenten, inte liggaren. `field`
+ * är RippleChainSteps `label` uttryckt som fältnamn i stället för svensk
+ * text: Stämningen→fanMood, Klacken→supporterMood, Orten→communityStanding,
+ * Styrelsen→boardPatience, Sponsorerna→sponsorNetworkMood, Kassan→finances,
+ * Transferbudget→transferBudget, Moralen→playerMorale. `dir`/`magnitude`
+ * återanvänder ripple-kedjans egen skala rakt av — ingen ny form.
+ */
+export interface LedgerConsequence {
+  field: 'fanMood' | 'communityStanding' | 'boardPatience'
+        | 'sponsorNetworkMood' | 'supporterMood' | 'playerMorale'
+        | 'finances' | 'transferBudget'
+  dir: 'up' | 'down'
+  magnitude: 'knappt' | 'tydligt' | 'kraftigt'
+}
+
+/**
+ * Ingen `id`-post. Append-only + `season`+`matchday`+`type`+subject är
+ * identitet nog (samma mönster som clubMemoryService.ts's `buildEventId`,
+ * som konstruerar sin identitet ur exakt de fälten). Ingen syntetisk nyckel
+ * som kan divergera.
+ *
+ * Ingen referens tillbaka till det gamla minnet (rippleChainId/
+ * decisionCandidateId el. dyl.) — MEDVETET. En sådan länk gör liggaren
+ * beroende av det den ska ersätta, och retire-steget (migreringsplanens
+ * regel 2) kan då aldrig köras rent. Posten står på egna ben från Fas 0.
+ */
+export interface EventLedgerEntry {
+  // ── VAD ──
+  type: EventLedgerType
+  /** narrativeBeatLogs nyckel, bärs vidare redan nu så Fas 3 inte behöver bakåtfylla. */
+  semanticKey: string
+
+  // ── NÄR ──
+  season: number
+  /** Kronologi, ALDRIG rond-identitet i UI (roundLabel-regeln). */
+  matchday: number
+
+  // ── VEM (valfritt, minst ett för entitets-händelser) ──
+  subjectPlayerId?: string
+  subjectClubId?: string
+
+  // ── VAD BLEV DET ──
+  outcome?: 'won' | 'lost' | 'neutral'
+  /** 0-100, samma skala som clubMemory/weights. */
+  significance: number
+  consequences?: LedgerConsequence[]
+
+  // ── URSPRUNG ──
+  /** HIGH 6:s attributions-skillnad (beslut vs systemhändelse) — ärvd, aldrig tappad. */
+  madeByPlayer?: boolean
+}
+
 export interface BandyLetter {
   id: string
   senderName: string
