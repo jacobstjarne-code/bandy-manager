@@ -442,11 +442,14 @@ export function generateVarselEvent(
       },
       {
         // Samma bugg som 'support' — -8 nu korrekt levererad till de berörda
-        // spelarna. "risk att spelare lämnar" i subtitlen är EJ byggd här —
-        // ingen avhoppsmekanik finns, se choice-label-svepets rapport (b).
+        // spelarna. MASTER_OPPET.md sluttest-nothing-valet (2026-09-01):
+        // subtitlen lovade tidigare "risk att spelare lämnar" — ingen
+        // avhoppsmekanik finns, se choice-label-svepets rapport (b). Falska
+        // klausulen struken (borttagning, inte ny text — Code skriver aldrig
+        // ny speltext); ny avhoppsmekanik är en separat spec-fråga.
         id: 'nothing',
         label: 'Det är tråkigt, men inte vårt problem',
-        subtitle: '-8 moral · risk att spelare lämnar',
+        subtitle: '-8 moral',
         effect: { type: 'multiEffect', subEffects: JSON.stringify(
           players.map(p => ({ type: 'boostMorale', targetPlayerId: p.id, amount: -8 }))
         ) },
