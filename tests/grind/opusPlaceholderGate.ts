@@ -47,60 +47,67 @@ const EXCLUDE_DIR_PATTERNS = [
 ]
 
 /**
- * TEMPORÄR ALLOWLIST — TA BORT VARJE RAD NÄR OPUS LEVERERAR DEN RIKTIGA
- * TEXTEN. Detta är INTE en "verifierad säker"-lista (jmf
- * standingPositionReadGate.ts) — det är en ögonblicksbild av kända,
- * oadresserade platshållare per sex-säsonersauditen 2026-08-27. `maxAllowed`
- * är dagens exakta antal per fil, inte ett tak att växa mot: en NY
- * '[Opus]'-förekomst i en redan listad fil (t.ex. ett åttonde
- * boardObjective-fält) höjer antalet över `maxAllowed` och failar grinden
- * precis som i en helt ny fil.
+ * SPEC_SANNINGSGRINDAR_2026-08-31.md GRIND 1 (2026-09-01): grinden vände.
+ * Tidigare tillät `maxAllowed` en NÅBAR, blank platshållare att shippa för
+ * evigt så länge räkningen inte steg — precis så sju blanka strängar nådde
+ * FatigueFloorConfirm (en yta spelaren står på). Varje post är nu klassad:
+ *
+ *   reachable: true  → EN blank sträng räcker för hard fail, `maxAllowed`
+ *                       ignoreras helt. En spelaryta får ALDRIG shippa blank.
+ *   reachable: false → strukturellt overifierad fallback/dokumentation.
+ *                       Tillåten upp till `maxAllowed`, men bara till
+ *                       `since` + STALENESS_DAYS — spårad skuld med en
+ *                       klocka, inte ett permanent hem.
+ *
+ * TA BORT raden samma commit som texten levereras. Lägg ALDRIG till en ny
+ * rad för att få grön build — bara för att dokumentera en NY, medvetet
+ * tillfällig platshållare Opus ska fylla.
  */
-const ALLOWLIST: { file: string; maxAllowed: number; reason: string }[] = [
+export const STALENESS_DAYS = 30
+
+interface AllowlistEntry {
+  file: string
+  maxAllowed: number
+  reason: string
+  /** Når en spelare denna sträng i normalt spel? true → hard fail vid count>0, maxAllowed ignoreras. */
+  reachable: boolean
+  owner: 'Opus' | 'Code' | 'Jacob'
+  /** ISO-datum posten först loggades — styr STALENESS_DAYS för reachable:false-poster. */
+  since: string
+}
+
+const ALLOWLIST: AllowlistEntry[] = [
   {
     file: 'src/domain/services/turneringslageService.ts',
     maxAllowed: 1,
     reason: 'Strukturellt onåbar fallback-gren (deriveTurneringslageMode ger aldrig detta läget) — men literalen finns i koden, inte bara en kommentar.',
+    reachable: false,
+    owner: 'Opus',
+    since: '2026-08-31',
   },
   {
     file: 'src/domain/data/scenes/valetScene.ts',
     maxAllowed: 1,
     reason: 'VALET_CONFIRM_CTA-fallback för en facilitetsnod utan CTA-text — verifierad 2026-07-21 att alla 10 dåvarande noder är täckta, men typmässigt overifierad (Record<string,string>) mot framtida noder.',
+    reachable: false,
+    owner: 'Opus',
+    since: '2026-08-31',
   },
   {
     file: 'src/presentation/components/KlubbparmOverlay.tsx',
     maxAllowed: 1,
     reason: 'chapterAwaitsText-säkerhetsnät — verifierad 2026-07-21 att alla 6 nuvarande kapitel har text, men strukturellt overifierad mot ett sjunde kapitel.',
+    reachable: false,
+    owner: 'Opus',
+    since: '2026-08-31',
   },
   {
     file: 'src/domain/data/contentContract.ts',
     maxAllowed: 1,
     reason: 'INTE en spelartextplatshållare — literalen förekommer bara i sponsorOffer-radens `notes`-dokumentationsfält (metadata för Innehållskontraktet), aldrig renderad för spelaren. Kvar på listan för att grinden inte ska false-positive på dokumentation, men detta är inte ett H4b-läckage.',
-  },
-  {
-    file: 'src/presentation/components/match/LineupStep.tsx',
-    maxAllowed: 1,
-    reason: 'A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md) krav 3: teckenförklaringen ovanför spelarlistan för den nya prognoskolumnen — "kondition nu → efter nästa match (ungefärlig), och för otillgängliga: omgångar tills han är valbar igen". Själva talen är språkneutrala och renderas redan; bara den förklarande meningen väntar Opus. (A-H3:s tre tidigare platshållare i samma fil är fyllda och borttagna ur listan.)',
-  },
-  {
-    file: 'src/presentation/components/match/FatigueFloorConfirm.tsx',
-    maxAllowed: 7,
-    reason: 'A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md) krav 1 — hela bekräftelsegrinden när elvan går under konditionsgolvet. Sju strängar: (1) rubriken för det tvingade läget, (2) brödtexten som namnger kostnaden av att gå in kort över golvet (A-H3:s två ben: höjd skaderisk + risk att förlora dem till nästa match), (3) sektionslabel för listan över spelare under golvet, (4) förklaringen av de två prognostalen (startar / vilas) och att det är en förväntan, inte ett löfte — matchkostnaden slumpas 15–25, (5) sektionslabel för akademikallelsen som konkret utväg, (6) avbryt-knappen, (7) bekräfta-knappen "gå in med dem ändå" — domens synliga beslut. Talen i ytan (N/11, golvet, prognosprocenten) är språkneutrala och står redan renderade.',
-  },
-  {
-    file: 'src/domain/services/events/postAdvanceEvents.ts',
-    maxAllowed: 1,
-    reason: 'DOM_SPONSOR_MOTBUD_2026-08-31.md: sponsorOffer-eventets tredje choice ("counter", motbudsknappen). Domens egen text-plan ("Text (Opus, skrivs när Code:s struktur står)") — strukturen (reservation/enkelrunda/tre utfall) är byggd och mätt (D040), knappetiketten väntar bara Opus-inramningen.',
-  },
-  {
-    file: 'src/presentation/components/portal/SponsorCounterModal.tsx',
-    maxAllowed: 3,
-    reason: 'DOM_SPONSOR_MOTBUD_2026-08-31.md, samma leverans som ovan. Tre strängar: modalens titel/inramning, resultatrutans slutbesked (ett register, personlighets-neutralt per domens egen v1-avgränsning), och skicka-knappens etikett.',
-  },
-  {
-    file: 'src/presentation/store/gameStore.ts',
-    maxAllowed: 2,
-    reason: 'DOM_SPONSOR_MOTBUD_2026-08-31.md: inbox-notisen när sponsorn drar sig ur efter ett för aggressivt motbud (title + body). Samma leverans som posterna ovan.',
+    reachable: false,
+    owner: 'Code',
+    since: '2026-08-31',
   },
 ]
 
@@ -121,16 +128,24 @@ export interface OpusPlaceholderViolation {
   count: number
   allowed: number
   reason: string | null
+  /** Varför just DENNA violation triggade — grind-1-vändningen (2026-09-01). */
+  cause: 'reachable' | 'stale' | 'over-limit' | 'unlisted'
 }
 
 /**
  * Sveper hela `src/` (exkl. tester och dev-only-skalet) efter kvarvarande
- * '[Opus]'-platshållare utanför kommentarer. En fil UTAN allowlist-post som
- * innehåller literalen är alltid en violation (nytt läckage). En fil MED
- * allowlist-post är en violation bara om antalet överstiger `maxAllowed`
- * (ett nytt fält i en redan känd fil).
+ * '[Opus]'-platshållare utanför kommentarer.
+ *
+ * SPEC_SANNINGSGRINDAR_2026-08-31.md GRIND 1 — ordningen en fil prövas mot:
+ *   1. Ingen allowlist-post → violation (unlisted, oförändrat — nytt läckage).
+ *   2. `reachable: true` → violation OM count>0, ALLTID (cause 'reachable'),
+ *      `maxAllowed` ignoreras helt. En nåbar blank platshållare får aldrig
+ *      shippa, oavsett hur länge den stått eller hur många den är.
+ *   3. `reachable: false` → violation om count>maxAllowed (cause 'over-limit',
+ *      som tidigare) ELLER om `since` är äldre än STALENESS_DAYS (cause
+ *      'stale') — spårad skuld, men med en klocka så den inte bor för evigt.
  */
-export function scanOpusPlaceholders(): OpusPlaceholderViolation[] {
+export function scanOpusPlaceholders(now: Date = new Date()): OpusPlaceholderViolation[] {
   const allowMap = new Map(ALLOWLIST.map(a => [a.file, a]))
   const files: string[] = []
   for (const d of SCOPE_DIRS) walk(join(REPO_ROOT, d), files)
@@ -144,9 +159,24 @@ export function scanOpusPlaceholders(): OpusPlaceholderViolation[] {
     if (matches.length === 0) continue
 
     const allow = allowMap.get(rel)
-    const allowed = allow?.maxAllowed ?? 0
-    if (matches.length > allowed) {
-      violations.push({ file: rel, count: matches.length, allowed, reason: allow?.reason ?? null })
+    if (!allow) {
+      violations.push({ file: rel, count: matches.length, allowed: 0, reason: null, cause: 'unlisted' })
+      continue
+    }
+
+    if (allow.reachable) {
+      violations.push({ file: rel, count: matches.length, allowed: 0, reason: allow.reason, cause: 'reachable' })
+      continue
+    }
+
+    if (matches.length > allow.maxAllowed) {
+      violations.push({ file: rel, count: matches.length, allowed: allow.maxAllowed, reason: allow.reason, cause: 'over-limit' })
+      continue
+    }
+
+    const ageDays = (now.getTime() - new Date(allow.since).getTime()) / 86_400_000
+    if (ageDays > STALENESS_DAYS) {
+      violations.push({ file: rel, count: matches.length, allowed: allow.maxAllowed, reason: `${allow.reason} [stale: ${Math.floor(ageDays)} dagar sedan ${allow.since}, gräns ${STALENESS_DAYS}]`, cause: 'stale' })
     }
   }
   return violations
