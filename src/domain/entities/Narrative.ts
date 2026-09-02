@@ -153,6 +153,12 @@ export type EventLedgerType =
   | 'retirement' | 'facility_built' | 'transfer_signed' | 'transfer_sold'
   | 'patron_change' | 'storyline_resolution' | 'scandal' | 'national_team_callup'
   | 'decision'
+  // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Skärpning 3 (Opus dom,
+  // femte verklighetskollen) — Moments otäckta källor (Moment.ts's
+  // MomentSource, minus 'mecenat_left', som släpptes som död i samma dom).
+  | 'star_injury' | 'derby_win' | 'captain_crisis' | 'nemesis_signed'
+  | 'rival_sale' | 'sponsor_positive' | 'sponsor_negative'
+  | 'mecenat_costshare' | 'transfer_story' | 'season_highlight' | 'era_shift'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -203,6 +209,12 @@ export interface EventLedgerEntry {
   // union, växer medvetet, aldrig en fri sträng — samma disciplin som `type`.
   // pickSeasonDecisions `namedPerson ? 1 : 0` blir `subject !== undefined`.
   subject?: { kind: 'player' | 'club' | 'mecenat'; id: string }
+  // Skärpning 3 (Fas 4 Moment-vägval, 2026-09-01, Opus dom): för genuint
+  // två-parts-händelser — en Moment som redan bär BÅDA subjectPlayerId OCH
+  // subjectClubId (transfer_story: spelaren + köpande klubben; rival_sale:
+  // spelaren + rivalklubben). Legitimt bara när källan redan bär två
+  // identiteter — ALDRIG en dumpningsplats för en andra godtycklig referens.
+  subject2?: { kind: 'player' | 'club' | 'mecenat'; id: string }
 
   // ── VAD BLEV DET ──
   outcome?: 'won' | 'lost' | 'neutral'

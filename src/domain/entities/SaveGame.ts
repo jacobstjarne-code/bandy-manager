@@ -490,10 +490,11 @@ export interface SaveGame {
 
   // DOM_HANDELSELIGGAREN_2026-09-01.md / MIGRATIONSPLAN_HANDELSELIGGAREN_
   // 2026-09-01.md, Fas 0 — kanonisk, intern, append-only händelseliggare.
-  // Spelaren ser den ALDRIG. EN skrivväg (eventLedgerService.logEvent,
-  // samma disciplin som logNarrativeBeat ovan). INGA konsumenter än —
-  // fundamentet, allt annat (orsak/verkan Fas 1, seasonDecisionCandidates
-  // Fas 2, narrativeBeatLog Fas 3) hänger på detta fält.
+  // Spelaren ser den ALDRIG. Skrivvägar: eventLedgerService.logEvent
+  // (orsak/verkan Fas 1, seasonDecisionCandidates Fas 2) + Fas 4:s
+  // momentLedgerService.appendMomentsToLedger (recentMoments' 12 källor,
+  // roundProcessor/seasonEndProcessor). narrativeBeatLog subsumerades ALDRIG
+  // (Fas 3 struken, se migreringsplanen) — eget lager, egen norm.
   eventLedger?: EventLedgerEntry[]
 
   // O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md, Jacobs dom 2026-08-24):
@@ -686,7 +687,12 @@ export interface SaveGame {
   // DREAM-013 — Lagfotografiet (photos stored in IndexedDB, here just track last generated)
   lastTeamPhotoSeason?: number
 
-  // M7 — Orten feed: rolling window of narrative moments (max 5, newest first)
+  // M7 — Orten feed: rolling window of narrative moments (max 5, newest first).
+  // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4 (2026-09-01): dual-write, fältet
+  // skrivs ännu oförändrat (collectActiveMemories läser det fortfarande) —
+  // men ClubMemoryView (den enda text-renderande läsaren) läser numera
+  // game.eventLedger via momentLedgerService.getRecentMomentsFromLedger.
+  // Retireras när collectActiveMemories också flyttat (Fas 4+, opportunistiskt).
   recentMoments?: Moment[]
 
   // M14 — Klubbens era (beräknas varje säsongsstart)

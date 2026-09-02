@@ -3,6 +3,8 @@ import { resolveContractExtension, getManagerDisplayName } from '../../domain/se
 
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
 import type { Player } from '../../domain/entities/Player'
+import type { Moment } from '../../domain/entities/Moment'
+import { appendMomentsToLedger } from '../../domain/services/momentLedgerService'
 import type { GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype, ClubExpectation } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
@@ -1599,6 +1601,18 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4 — beräknad EN gång så både
+  // recentMoments (dual-write, oförändrad) och eventLedger (ny, durabel)
+  // kan mata från samma lista.
+  const seasonHighlightMoments: Moment[] = matchHighlight ? [{
+    id: `moment_season_highlight_${game.currentSeason}`,
+    source: 'season_highlight' as const,
+    matchday: matchHighlight.matchday,
+    season: game.currentSeason,
+    title: `Säsongens match — ${matchHighlight.opponentName}`,
+    body: matchHighlight.narrative,
+  }] : []
+
   const updatedGame: SaveGame = {
     ...game,
     captainPlayerId: nextCaptainPlayerId,
@@ -1838,19 +1852,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         }
       : game.localPolitician,
     politicianLastInteraction: {},
-    recentMoments: matchHighlight ? [
-      {
-        id: `moment_season_highlight_${game.currentSeason}`,
-        source: 'season_highlight' as const,
-        matchday: matchHighlight.matchday,
-        season: game.currentSeason,
-        title: `Säsongens match — ${matchHighlight.opponentName}`,
-        body: matchHighlight.narrative,
-      },
-      ...(game.recentMoments ?? [])
-    ]
+    recentMoments: [...seasonHighlightMoments, ...(game.recentMoments ?? [])]
       .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
-      .slice(0, 5) : (game.recentMoments ?? []),
+      .slice(0, 5),
+    eventLedger: appendMomentsToLedger(game.eventLedger ?? [], seasonHighlightMoments),
     nemesisTracker: updatedNemesisTracker,
     resolvedEventIds: [
       ...(game.resolvedEventIds ?? []),

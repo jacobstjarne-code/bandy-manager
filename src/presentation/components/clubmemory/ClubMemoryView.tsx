@@ -1,5 +1,7 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getClubMemory, momentKind } from '../../../domain/services/clubMemoryService'
+import { getRecentMomentsFromLedger, resolveSubjectName } from '../../../domain/services/momentLedgerService'
+import { MOMENT_VIEW_TEMPLATES } from '../../../domain/data/momentViewTemplates'
 import { ClubMemorySeasonSection } from './ClubMemorySeasonSection'
 import { ClubMemoryLegendsBlock } from './ClubMemoryLegendsBlock'
 import { ClubMemoryRecordsBlock } from './ClubMemoryRecordsBlock'
@@ -45,7 +47,9 @@ export function buildBlodslinje(game: SaveGame): SpineItem[] {
 
 export function ClubMemoryView({ game }: Props) {
   const clubMemory = getClubMemory(game)
-  const recentMoments = game.recentMoments ?? []
+  // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4 (Moment-läsytan): läser liggaren
+  // i stället för det cappade game.recentMoments — se momentLedgerService.ts.
+  const recentMoments = getRecentMomentsFromLedger(game, 5)
   const blodslinjeItems = buildBlodslinje(game)
 
   return (
@@ -55,16 +59,23 @@ export function ClubMemoryView({ game }: Props) {
         <div className="moment-block">
           <div className="moment-block-header">Det som hänt</div>
           <div className="moment-block-subheader">Säsongen</div>
-          {recentMoments.map(m => {
-            const kind = momentKind(m.source)
+          {recentMoments.map(entry => {
+            const kind = momentKind(entry.type)
+            const { title, body } = MOMENT_VIEW_TEMPLATES[entry.type]({
+              subjectName: resolveSubjectName(game, entry.subject),
+              subject2Name: resolveSubjectName(game, entry.subject2),
+              matchday: entry.matchday,
+              season: entry.season,
+              significance: entry.significance,
+            })
             return (
-              <div key={m.id} className={`moment-row ${kind}`}>
+              <div key={entry.semanticKey} className={`moment-row ${kind}`}>
                 <div className="moment-row-meta">
                   <span className={`moment-row-kt ${kind}`}>{KIND_LABEL[kind]}</span>
-                  <span className="moment-row-matchday">Omg {m.matchday}</span>
+                  <span className="moment-row-matchday">Omg {entry.matchday}</span>
                 </div>
-                <div className="moment-row-title">{m.title}</div>
-                <div className="moment-row-body">{m.body}</div>
+                <div className="moment-row-title">{title}</div>
+                <div className="moment-row-body">{body}</div>
               </div>
             )
           })}

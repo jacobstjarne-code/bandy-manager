@@ -1,7 +1,12 @@
+// MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Skärpning 3 (Opus dom,
+// 2026-09-01): 'mecenat_left' släppt — deklarerad här sedan tidigare men
+// aldrig faktiskt konstruerad som ett Moment någonstans (mecenatens avhopp
+// triggar bara en ripple, se rippleEffectService.ts's egen 'mecenat_left'-
+// trigger, en annan union). Alla kvarvarande källor nedan är nu även
+// EventLedgerType-medlemmar (Narrative.ts) — se momentLedgerService.ts.
 export type MomentSource =
   | 'derby_win'          // derbyseger
   | 'star_injury'        // stjärna skadad
-  | 'mecenat_left'       // mecenat avgick
   | 'mecenat_costshare'  // mecenat täckte del av transfer
   | 'captain_crisis'     // kapten demoraliserad → lagcascad
   | 'nemesis_signed'     // nemesis värvad (bara #1-raden)

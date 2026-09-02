@@ -48,6 +48,7 @@ import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
 import { logNarrativeBeat, filterSystemhandelseBudget } from '../../domain/services/narrativeLogService'
+import { appendMomentsToLedger } from '../../domain/services/momentLedgerService'
 import {
   applySurfacingBudget,
   isExemptFromSurfacingBudget,
@@ -1451,6 +1452,26 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     supporterGroupFallback: updatedSupporterGroup,
   })
 
+  // M14: check for era shift and push era_shift Moment. Beräknad EN gång här
+  // (inte i en IIFE inne i recentMoments längre) så samma lista kan mata
+  // BÅDE dual-write-fälten nedan — MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4.
+  const eraShiftMoments: Moment[] = []
+  if (game.currentEra && game.currentEra !== newClubEra) {
+    eraShiftMoments.push({
+      id: `moment_era_shift_${game.currentSeason}_${nextMatchday}`,
+      source: 'era_shift',
+      matchday: nextMatchday,
+      season: game.currentSeason,
+      title: eraLabel(newClubEra),
+      body: newClubEra === 'establishment'
+        ? 'Klubben reser sig. Något har förändrats i hur orten ser på laget.'
+        : newClubEra === 'legacy'
+        ? 'Det är inte längre bara bandy. Det är ortens identitet.'
+        : 'Tuffa tider. Men det är nu det verkligen gäller.',
+    })
+  }
+  const allNewMomentsThisRound = [...newMoments, ...eraShiftMoments]
+
   let updatedGame: SaveGame = {
     ...game,
     ...rippleMerged,
@@ -1594,29 +1615,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     resolvedEventIds: reputationResolvedIds,
     pendingVictoryEcho,
     victoryEchoExpires,
-    recentMoments: (() => {
-      // M14: check for era shift and push era_shift Moment
-      const newEra = newClubEra
-      const prevEra = game.currentEra
-      const eraShiftMoments: Moment[] = []
-      if (prevEra && prevEra !== newEra) {
-        eraShiftMoments.push({
-          id: `moment_era_shift_${game.currentSeason}_${nextMatchday}`,
-          source: 'era_shift',
-          matchday: nextMatchday,
-          season: game.currentSeason,
-          title: eraLabel(newEra),
-          body: newEra === 'establishment'
-            ? 'Klubben reser sig. Något har förändrats i hur orten ser på laget.'
-            : newEra === 'legacy'
-            ? 'Det är inte längre bara bandy. Det är ortens identitet.'
-            : 'Tuffa tider. Men det är nu det verkligen gäller.',
-        })
-      }
-      return [...(game.recentMoments ?? []), ...newMoments, ...eraShiftMoments]
-        .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
-        .slice(0, 5)
-    })(),
+    // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4 — dual-write, INVARIANTEN håller:
+    // fältet skrivs oförändrat (samma cap-5, samma konsumenter som idag,
+    // t.ex. collectActiveMemories) tills dess sista läsare flyttat till
+    // liggaren. Retireras sist, inte i denna omgång.
+    recentMoments: [...(game.recentMoments ?? []), ...allNewMomentsThisRound]
+      .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
+      .slice(0, 5),
+    // Liggarposten — durabel, ocappad. ClubMemoryView (Moment-läsytan) läser
+    // härifrån nu (getRecentMomentsFromLedger), se momentLedgerService.ts.
+    eventLedger: appendMomentsToLedger(game.eventLedger ?? [], allNewMomentsThisRound),
     currentEra: newClubEra,
     activeScandals: scandalResult.updatedScandals,
     scandalHistory: scandalResult.updatedScandalHistory,

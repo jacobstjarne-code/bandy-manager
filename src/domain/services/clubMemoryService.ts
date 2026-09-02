@@ -321,7 +321,6 @@ export function momentKind(source: MomentSource): ActiveMemoryKind {
     case 'season_highlight':
       return 'triumph'
     case 'star_injury':
-    case 'mecenat_left':
     case 'rival_sale':
     case 'captain_crisis':
     case 'sponsor_negative':
