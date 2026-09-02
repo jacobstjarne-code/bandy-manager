@@ -808,34 +808,14 @@ export const BOARD_EXPECTATION_LEVEL_LABEL: Record<ClubExpectation, string> = {
 }
 
 /**
- * Skälsraden Jacob gav sex av (tre per riktning). Regeln: "Raden väljs efter
- * vad som faktiskt drev ändringen — ligarörelser, egen försvagning, eller
- * föregående resultat." STEG 1 har bara föregående resultat att peka på.
- * Rad 1/3 per riktning citerar rivaler ("fältet bakom er stärktes", "två
- * lag som låg under er har rustat") — kan INTE beläggas förrän steg 2
- * finns, medvetet outnyttjade. Rad 2 per riktning är den enda som är sant
- * grundad i placeringen ensam — den enda som används här.
- *
- * MASTER_OPPET.md inv-4-forutsattningsfasen-steg2-blocker-stale (2026-09-01):
- * steg 2:s BÅDA datakällor finns nu (aiTransferLog — seasonEndProcessor.ts:1853,
- * standingsSnapshot — seasonSummaryService.ts:719/847), så påståendet ovan om
- * "ej byggda" var stale och rättat. Steg 2 är därmed TEKNISKT körbart, men de
- * fullständiga sex raderna (bara rad 2/riktning finns som konstant här; rad
- * 1/3 finns bara som paraffraserade citat i denna kommentar, inte verifierat
- * ordagrant mot Jacobs ursprungliga chattbeslut) är inte tillräckligt
- * dokumenterade i repot för att koda urvalslogiken utan att gissa på texten
- * — se BOARD_EXPECTATION_LEVEL_LABEL-kommentaren ovan för hur STEG 1:s texter
- * i stället citerades ordagrant. Nästa steg innan bygge: Opus bekräftar/
- * återger de fyra saknade raderna ordagrant.
- */
-/**
  * De SEX skälsraderna, tre per riktning (Jacob låst; rad 1/3 bekräftade
  * ordagrant 2026-09-02, "de duger"). Raden väljs efter vad som DREV
  * ändringen: `leagueMovement` (rad 1 — ligarörelser: vilka lag kom upp/
  * föll ur), `results` (rad 2 — föregående placering ensam, den enda steg 1
- * kunde belägga), `aiTransfers` (rad 3 — rivalernas rustning). Steg 2 (Code)
- * wirar urvalet mot aiTransferLog + standingsSnapshot; tills dess använder
- * deriveBoardAssessment `.results` som förut (RAISED/LOWERED_REASON_LINE nedan).
+ * kunde belägga), `aiTransfers` (rad 3 — rivalernas rustning). Steg 2:s
+ * urval läser aiTransferLog + standingsSnapshot i seasonSummaryService.
+ * `leagueMovement` förblir otillgänglig tills spelet faktiskt lagrar vilka
+ * lag som kom upp/föll ur; en färdig textrad är inte bevis för en händelse.
  */
 export const BOARD_REASON_LINES: Record<'raised' | 'lowered', { leagueMovement: string; results: string; aiTransfers: string }> = {
   raised: {
@@ -850,14 +830,17 @@ export const BOARD_REASON_LINES: Record<'raised' | 'lowered', { leagueMovement: 
   },
 }
 
-const RAISED_REASON_LINE = BOARD_REASON_LINES.raised.results
-const LOWERED_REASON_LINE = BOARD_REASON_LINES.lowered.results
+export function selectBoardReasonLine(
+  direction: BoardAssessment['direction'],
+  source: import('../entities/SaveGame').BoardReasonSource = 'results',
+): string | undefined {
+  if (direction === 'unchanged') return undefined
+  return BOARD_REASON_LINES[direction][source]
+}
 
-// SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md). Del 1 ("vad de såg" — en
-// kort kvittens av föregående säsong, DOM:s ord: "styrelsens läsning",
-// INTE en upprepning av årsboken) fick ingen låst text i Jacobs order —
-// bara nivåetiketterna + skälsraderna var låsta. Platshållare tills Opus
-// skriver den, per BoardAssessment.seasonAcknowledgment.
+// Del 1 ("vad de såg" — en kort kvittens av föregående säsong, DOM:s ord:
+// "styrelsens läsning", INTE en upprepning av årsboken). Variabelnamnet
+// bevaras för befintliga imports; värdet är riktig, Opus-levererad text.
 export const BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER = 'Vi har vägt in hela säsongen, inte bara sista omgången.'
 
 /**
@@ -881,9 +864,8 @@ export function deriveBoardAssessment(
     previousExpectation: club.boardExpectation,
     newExpectation,
     direction,
-    reasonLine: direction === 'raised' ? RAISED_REASON_LINE
-      : direction === 'lowered' ? LOWERED_REASON_LINE
-      : undefined,
+    reasonSource: direction === 'unchanged' ? undefined : 'results',
+    reasonLine: selectBoardReasonLine(direction),
   }
 }
 

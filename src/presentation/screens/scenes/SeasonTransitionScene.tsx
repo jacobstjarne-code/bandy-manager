@@ -17,7 +17,8 @@ import { seasonStartYear } from '../../../domain/utils/seasonYear'
 import { BoardObjectivesList } from '../../components/portal/secondary/BoardObjectivesList'
 import { getSeasonGoalOffers, type SeasonGoalOffer } from '../../../domain/services/seasonGoalService'
 import { BOARD_EXPECTATION_LEVEL_LABEL } from '../../../domain/services/boardService'
-import type { BoardAssessment } from '../../../domain/entities/SaveGame'
+import type { BoardAssessment, BoardLeagueMovement } from '../../../domain/entities/SaveGame'
+import { ordinal } from '../../utils/formatters'
 import {
   deriveEpokLine, deriveWonTitleLastSeason, deriveWorsePlacementOrEarlierExit,
   deriveSommarLine, selectAwayEventLines, deriveIsPlayoffUnlikely, deriveTandLine,
@@ -272,17 +273,12 @@ export function SeasonTransitionScene() {
 }
 
 /**
- * Förutsättningsfasen, steg 1 (Jacobs dom 2026-08-25, docs/incoming/
+ * Förutsättningsfasen (Jacobs dom 2026-08-25, docs/incoming/
  * Forutsattningsfasen-styrelsen-talar-2026-08-25.dc.html, variant 1b).
  * "Styrelsen talar" — ordförandeband + kvittensrad + kravband (ribba,
- * riktning, skälsrad). Mellandelen ("vad de vet om läget", ligarörelser)
- * är MEDVETET UTELÄMNAD — steg 2, INTE längre blockerad av saknad data
- * (MASTER_OPPET.md forutsattningsfas-steg2-blockerad, 2026-09-01: både
- * aiTransferLog — seasonEndProcessor.ts — och standingsSnapshot/
- * getClubPositionTrend — seasonSummaryService.ts — finns nu), bara
- * orenderad än. "Hellre två sanna delar än tre där en hittar på"
- * (Jacobs ord). Ingen egen beräkning här — game.boardAssessment är redan
- * färdigt från seasonEndProcessor.ts.
+ * riktning, skälsrad) + steg 2:s högst tre kanoniskt belagda ligarörelser.
+ * Ingen egen beräkning här — game.boardAssessment är redan färdigt från
+ * seasonEndProcessor.ts.
  *
  * Skälsraden ligger INUTI kravbandet, under ribban — strukturellt, inte en
  * fotnot. En ny ribba kan inte renderas utan sin rad (stänger H1, Skutskär-
@@ -328,6 +324,19 @@ function BoardTalksSection({ assessment }: { assessment: BoardAssessment }) {
           "{assessment.seasonAcknowledgment}"
         </div>
 
+        {assessment.leagueMovements && assessment.leagueMovements.length > 0 && (
+          <div>
+            <div className="h-label" style={{ color: 'var(--accent-deep)', marginBottom: 7 }}>
+              Medan ni var borta · serien
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              {assessment.leagueMovements.map((movement, index) => (
+                <BoardLeagueMovementRow key={`${movement.type}-${index}`} movement={movement} />
+              ))}
+            </div>
+          </div>
+        )}
+
         <div style={{
           background: 'var(--bg-leather)', borderRadius: 'var(--radius-md)', padding: '11px 12px',
           boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${frameColor} 30%, transparent)`,
@@ -365,6 +374,29 @@ function BoardTalksSection({ assessment }: { assessment: BoardAssessment }) {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  )
+}
+
+export function formatBoardLeagueMovement(movement: BoardLeagueMovement): string {
+  if (movement.type === 'transfer') {
+    return `${movement.playerName} flyttade från ${movement.fromClubName} till ${movement.toClubName}.`
+  }
+  const delta = Math.abs(movement.toPosition - movement.fromPosition)
+  const direction = movement.toPosition < movement.fromPosition ? 'upp' : 'ner'
+  return `${movement.clubName} slutade ${ordinal(movement.toPosition)} i år, ${delta} platser ${direction} mot i fjol.`
+}
+
+function BoardLeagueMovementRow({ movement }: { movement: BoardLeagueMovement }) {
+  const isDown = movement.type === 'positionTrend' && movement.toPosition > movement.fromPosition
+  return (
+    <div style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
+      <span style={{ color: isDown ? 'var(--ice)' : 'var(--accent)', fontSize: 11, flexShrink: 0, transform: 'translateY(1px)' }}>
+        {isDown ? '▼' : '▲'}
+      </span>
+      <div style={{ fontSize: 12.5, color: 'var(--text-primary)', fontWeight: 600, lineHeight: 1.4 }}>
+        {formatBoardLeagueMovement(movement)}
       </div>
     </div>
   )

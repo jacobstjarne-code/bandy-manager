@@ -1,4 +1,4 @@
-import type { SaveGame } from '../entities/SaveGame'
+import type { BoardAssessment, BoardLeagueMovement, BoardReasonSource, SaveGame } from '../entities/SaveGame'
 import type { SeasonSummary, SeasonBoardTruth } from '../entities/SeasonSummary'
 import type { Fixture } from '../entities/Fixture'
 import type { BoardPatienceZone } from './portal/boardPatienceZone'
@@ -1017,6 +1017,105 @@ export function getClubPositionTrend(game: SaveGame, clubId: string, lastNSeason
   const last = positions[positions.length - 1]
   const direction = last < first ? 'rising' : last > first ? 'falling' : 'stable'
   return { clubId, positions, direction }
+}
+
+export interface BoardLeagueContext {
+  movements: BoardLeagueMovement[]
+  reasonSource: BoardReasonSource
+}
+
+/**
+ * Förutsättningsfasen steg 2: en gemensam, ren läsning för både Sommarens
+ * mellanparti och skälsraden. AI-affärer kommer ur aiTransferLog och
+ * placeringsrörelser ur getClubPositionTrend; presentationen får aldrig
+ * rekonstruera dem på egen hand.
+ *
+ * `leagueMovement` väljs medvetet aldrig här: spelet har ingen kanonisk
+ * upp-/nedflyttningshistorik. De två låsta raderna finns redo, men en text om
+ * lag som "kom upp" eller "föll ur" får inte visas innan sådan state finns.
+ */
+export function deriveBoardLeagueContext(
+  game: SaveGame,
+  upcomingSeason: number,
+  assessmentDirection: BoardAssessment['direction'],
+): BoardLeagueContext {
+  const transfers: BoardLeagueMovement[] = (game.aiTransferLog ?? [])
+    .filter(transfer => transfer.season === upcomingSeason)
+    .sort((a, b) => (b.fee - a.fee) || a.playerName.localeCompare(b.playerName, 'sv'))
+    .map(transfer => ({
+      type: 'transfer' as const,
+      playerName: transfer.playerName,
+      fromClubName: transfer.fromClubName,
+      toClubName: transfer.toClubName,
+      fee: transfer.fee,
+    }))
+
+  const positionTrends: BoardLeagueMovement[] = game.clubs
+    .filter(club => club.id !== game.managedClubId)
+    .map(club => ({ club, trend: getClubPositionTrend(game, club.id, 2) }))
+    .filter(({ trend }) => trend !== null && trend.direction !== 'stable')
+    .sort((a, b) => {
+      const aDelta = Math.abs(a.trend!.positions[1] - a.trend!.positions[0])
+      const bDelta = Math.abs(b.trend!.positions[1] - b.trend!.positions[0])
+      return (bDelta - aDelta) || a.club.name.localeCompare(b.club.name, 'sv')
+    })
+    .map(({ club, trend }) => ({
+      type: 'positionTrend' as const,
+      clubId: club.id,
+      clubName: club.name,
+      fromPosition: trend!.positions[0],
+      toPosition: trend!.positions[1],
+    }))
+
+  // Båda kanoniska källorna ska få en plats när de har fakta; därefter fylls
+  // den beslutade tre-radersytan deterministiskt i respektive källas ordning.
+  const movements: BoardLeagueMovement[] = []
+  if (transfers[0]) movements.push(transfers[0])
+  if (positionTrends[0]) movements.push(positionTrends[0])
+  for (const movement of [...transfers.slice(1), ...positionTrends.slice(1)]) {
+    if (movements.length >= 3) break
+    movements.push(movement)
+  }
+
+  if (assessmentDirection === 'unchanged') {
+    return { movements, reasonSource: 'results' }
+  }
+
+  const latestSnapshot = [...game.seasonSummaries]
+    .sort((a, b) => a.season - b.season)
+    .at(-1)?.standingsSnapshot
+  const managedPosition = latestSnapshot?.find(row => row.clubId === game.managedClubId)?.position
+
+  const summaries = [...game.seasonSummaries]
+    .filter(summary => summary.standingsSnapshot)
+    .sort((a, b) => a.season - b.season)
+    .slice(-2)
+  if (summaries.length === 2) {
+    const previous = summaries[0].standingsSnapshot!
+    const current = summaries[1].standingsSnapshot!
+    const strengthDelta = (clubId: string): number | null => {
+      const before = previous.find(row => row.clubId === clubId)?.squadStrength
+      const after = current.find(row => row.clubId === clubId)?.squadStrength
+      return before === undefined || after === undefined ? null : after - before
+    }
+    const managedDelta = strengthDelta(game.managedClubId)
+    const nearbyRivalDeltas = current
+      .filter(row => row.clubId !== game.managedClubId)
+      .filter(row => managedPosition !== undefined && Math.abs(row.position - managedPosition) <= 3)
+      .map(row => strengthDelta(row.clubId))
+      .filter((delta): delta is number => delta !== null)
+
+    if (assessmentDirection === 'lowered' && managedDelta !== null
+      && nearbyRivalDeltas.filter(delta => delta > 0 && delta > managedDelta).length >= 2) {
+      return { movements, reasonSource: 'aiTransfers' }
+    }
+    if (assessmentDirection === 'raised' && managedDelta !== null && managedDelta > 0
+      && nearbyRivalDeltas.length >= 2 && nearbyRivalDeltas.every(delta => delta < managedDelta)) {
+      return { movements, reasonSource: 'aiTransfers' }
+    }
+  }
+
+  return { movements, reasonSource: 'results' }
 }
 
 export interface BoardRelationshipTrendPoint {

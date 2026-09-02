@@ -32,6 +32,7 @@ import { GranskaScreen } from '../granska/GranskaScreen'
 import { TabellScreen } from '../TabellScreen'
 import { SeasonSummaryScreen } from '../SeasonSummaryScreen'
 import { SeasonTransitionScene } from '../scenes/SeasonTransitionScene'
+import { BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER } from '../../../domain/services/boardService'
 import { TransfersScreen } from '../TransfersScreen'
 import { ArrivalScene } from '../ArrivalScene'
 import { AnslagOverlay } from '../../components/anslag/AnslagOverlay'
@@ -1511,7 +1512,15 @@ const sommarenS2Game = makeSommarenGame({
   managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 15, seasonsAtClub: 2 },
   pendingSeasonTransitionEvents: transitionEvents('retired', 'aged', 'promoted'),
   // Förutsättningsfasen, steg 1 — höjd ribba (dev-scene-verifiering).
-  boardAssessment: { season: 2, previousExpectation: 'midTable', newExpectation: 'challengeTop', direction: 'raised', reasonLine: 'Ni har visat att ni kan mer. Då begär vi mer.', seasonAcknowledgment: '[Opus]' },
+  boardAssessment: {
+    season: 2, previousExpectation: 'midTable', newExpectation: 'challengeTop', direction: 'raised',
+    reasonSource: 'results', reasonLine: 'Ni har visat att ni kan mer. Då begär vi mer.', seasonAcknowledgment: BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER,
+    leagueMovements: [
+      { type: 'transfer', playerName: 'Oskar Nyström', fromClubName: 'Rogle', toClubName: 'Lesjöfors', fee: 185000 },
+      { type: 'positionTrend', clubId: 'club_skutskar', clubName: 'Skutskär', fromPosition: 9, toPosition: 6 },
+      { type: 'positionTrend', clubId: 'club_heros', clubName: 'Heros', fromPosition: 2, toPosition: 5 },
+    ],
+  },
 })
 // Säsong 6, titelförsvarare, nära gränsen, tre händelser.
 const sommarenTitelforsvarareGame = makeSommarenGame({
@@ -1536,7 +1545,14 @@ const sommarenTomtGame = makeSommarenGame({
   managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 55, seasonsAtClub: 4 },
   pendingSeasonTransitionEvents: [],
   // Förutsättningsfasen, steg 1 — sänkt ribba (dev-scene-verifiering).
-  boardAssessment: { season: 4, previousExpectation: 'midTable', newExpectation: 'avoidBottom', direction: 'lowered', reasonLine: 'Ni tappade för mycket för att vi ska kunna kräva samma sak.', seasonAcknowledgment: '[Opus]' },
+  boardAssessment: {
+    season: 4, previousExpectation: 'midTable', newExpectation: 'avoidBottom', direction: 'lowered',
+    reasonSource: 'aiTransfers', reasonLine: 'Två lag omkring er har rustat på ett sätt ni inte matchat. Vi justerar därefter.', seasonAcknowledgment: BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER,
+    leagueMovements: [
+      { type: 'transfer', playerName: 'Oskar Nyström', fromClubName: 'Rogle', toClubName: 'Lesjöfors', fee: 185000 },
+      { type: 'positionTrend', clubId: 'club_skutskar', clubName: 'Skutskär', fromPosition: 9, toPosition: 6 },
+    ],
+  },
 })
 // Säsong 11 (siffervarianten), något sliten, en händelse.
 const sommarenSiffraGame = makeSommarenGame({
@@ -1546,7 +1562,7 @@ const sommarenSiffraGame = makeSommarenGame({
   managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 50, seasonsAtClub: 11 },
   pendingSeasonTransitionEvents: transitionEvents('retired'),
   // Förutsättningsfasen, steg 1 — oförändrad (dev-scene-verifiering).
-  boardAssessment: { season: 11, previousExpectation: 'challengeTop', newExpectation: 'challengeTop', direction: 'unchanged', seasonAcknowledgment: '[Opus]' },
+  boardAssessment: { season: 11, previousExpectation: 'challengeTop', newExpectation: 'challengeTop', direction: 'unchanged', seasonAcknowledgment: BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER },
 })
 
 const granskaRoundSummary = {

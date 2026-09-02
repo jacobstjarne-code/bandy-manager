@@ -22,8 +22,8 @@ import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/pla
 import { generateRetirementData, generateFarewellQuote, isRetiringClubLegendEligible, recordCompletedCaptainSeason } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
-import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine, buildSeasonBoardTruth, isUnderdogSeason, seasonVerdictText, RELEGATION_ZONE_SIZE } from '../../domain/services/boardService'
-import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
+import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine, buildSeasonBoardTruth, isUnderdogSeason, seasonVerdictText, RELEGATION_ZONE_SIZE, selectBoardReasonLine } from '../../domain/services/boardService'
+import { deriveBoardLeagueContext, generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 import { pickMostImportantDecisionText } from '../../domain/services/seasonDecisionCaptureService'
 import { deriveUtfall } from '../../domain/services/matchTypeAxes'
 import { evaluateSeasonGoal, deriveSeasonPersonChange, deriveRivalryStanding } from '../../domain/services/seasonGoalService'
@@ -1885,6 +1885,30 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     firedReason,
   })
 
+  const nextAiTransferLog = [
+    ...(game.aiTransferLog ?? []),
+    ...aiTransferResult.transfers.map(transfer => ({ ...transfer, season: nextSeason })),
+  ].slice(-200)
+
+  // Förutsättningsfasen steg 2: frys samma tre ligarörelser som UI:t visar
+  // och välj skälsrad ur samma kanoniska underlag. Den nyss färdiga
+  // seasonSummary läggs till i läsvyn så getClubPositionTrend jämför den
+  // avslutade säsongen med föregående; sommarens AI-affärer bär nextSeason.
+  if (boardAssessment) {
+    const boardContextGame: SaveGame = {
+      ...seasonEndGameView,
+      seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary],
+      aiTransferLog: nextAiTransferLog,
+    }
+    const context = deriveBoardLeagueContext(boardContextGame, nextSeason, boardAssessment.direction)
+    boardAssessment = {
+      ...boardAssessment,
+      leagueMovements: context.movements.length > 0 ? context.movements : undefined,
+      reasonSource: boardAssessment.direction === 'unchanged' ? undefined : context.reasonSource,
+      reasonLine: selectBoardReasonLine(boardAssessment.direction, context.reasonSource),
+    }
+  }
+
   // Manager profile — career record, contract extension, age/seasonsAtClub tick
   let updatedManagerProfile = game.managerProfile
     ? (() => {
@@ -2297,10 +2321,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       gravId,
       raddId,
     ].slice(-200),
-    aiTransferLog: [
-      ...(game.aiTransferLog ?? []),
-      ...aiTransferResult.transfers.map(t => ({ ...t, season: nextSeason })),
-    ].slice(-200),
+    aiTransferLog: nextAiTransferLog,
     // DREAM-013: flag that a team photo should be generated for this season
     lastTeamPhotoSeason: game.currentSeason,
     // DREAM-016/DREAM-010: reset per-season trackers

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL, boardGraceState, isUnderdogSeason, getBoardEscalationLevel } from '../boardService'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL, BOARD_REASON_LINES, boardGraceState, isUnderdogSeason, getBoardEscalationLevel, selectBoardReasonLine } from '../boardService'
 import { ClubExpectation } from '../../enums'
 import type { Club } from '../../entities/Club'
 import type { SaveGame } from '../../entities/SaveGame'
@@ -344,6 +344,22 @@ describe('deriveBoardAssessment — Förutsättningsfasen steg 1', () => {
   it('season-fältet speglar det inskickade värdet', () => {
     const result = deriveBoardAssessment(makeClub(ClubExpectation.MidTable), 6, 2031, 12)
     expect(result.season).toBe(2031)
+  })
+})
+
+describe('selectBoardReasonLine — Förutsättningsfasen steg 2', () => {
+  it.each(['leagueMovement', 'results', 'aiTransfers'] as const)(
+    'väljer den låsta höjningsraden för %s',
+    source => expect(selectBoardReasonLine('raised', source)).toBe(BOARD_REASON_LINES.raised[source]),
+  )
+
+  it.each(['leagueMovement', 'results', 'aiTransfers'] as const)(
+    'väljer den låsta sänkningsraden för %s',
+    source => expect(selectBoardReasonLine('lowered', source)).toBe(BOARD_REASON_LINES.lowered[source]),
+  )
+
+  it('oförändrad ribba har aldrig skälsrad, oavsett källa', () => {
+    expect(selectBoardReasonLine('unchanged', 'aiTransfers')).toBeUndefined()
   })
 })
 

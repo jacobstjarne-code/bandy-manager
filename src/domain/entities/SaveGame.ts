@@ -135,13 +135,35 @@ export interface SeasonTransitionEvent {
  * klubb (generatePreSeasonMessage). Läses rent av SeasonTransitionScene.tsx,
  * ingen egen beräkning där — samma mönster som pendingSeasonTransitionEvents.
  *
- * STEG 1 (byggt): kvittensrad + kravband, grundat ENDAST i egen placering
- * (föregående resultat). STEG 2:s datakällor (`aiTransferLog` och
- * `standingsSnapshot`-trend) finns nu, men mellandelen ("vad de vet om
- * läget", ligarörelser) väntar fortfarande på fyra ordagranna skälsrader
- * från Opus — se boardService.ts. "Hellre två sanna delar än tre där en
- * hittar på" (Jacobs ord).
+ * STEG 1: kvittensrad + kravband. STEG 2: högst tre ligarörelser från
+ * `aiTransferLog`/`standingsSnapshot` samt skälsradsurval från samma
+ * underlag. Upp-/nedflyttningsraderna är avsiktligt vilande eftersom spelet
+ * ännu saknar kanonisk divisionsrörelse; UI:t får aldrig hitta på den.
  */
+export type BoardReasonSource = 'leagueMovement' | 'results' | 'aiTransfers'
+
+/**
+ * Fryst, omedelbar presentationspayload för Sommarens ligarörelser. Kanon
+ * ligger kvar i aiTransferLog/SeasonSummary.standingsSnapshot; detta är bara
+ * de högst tre fakta som valdes ut vid rollover så att vyn aldrig behöver
+ * räkna om en gammal säsongs bedömning mot nyare historik.
+ */
+export type BoardLeagueMovement =
+  | {
+      type: 'transfer'
+      playerName: string
+      fromClubName: string
+      toClubName: string
+      fee: number
+    }
+  | {
+      type: 'positionTrend'
+      clubId: string
+      clubName: string
+      fromPosition: number
+      toPosition: number
+    }
+
 export interface BoardAssessment {
   season: number
   previousExpectation: ClubExpectation
@@ -149,10 +171,13 @@ export interface BoardAssessment {
   direction: 'raised' | 'lowered' | 'unchanged'
   /** Bara satt när direction !== 'unchanged' — "en ny ribba kan inte renderas utan sin rad." */
   reasonLine?: string
+  /** Vilken deklarerad faktaklass skälsraden läser. Saknas när ribban är oförändrad. */
+  reasonSource?: BoardReasonSource
+  /** Del 2, "vad de vet om läget". Högst tre frysta, kanoniskt belagda fakta. */
+  leagueMovements?: BoardLeagueMovement[]
   /**
    * Del 1, "vad de såg" — en kort kvittens av föregående säsong, INTE en
-   * upprepning av årsboken (DOM:s ord: "styrelsens läsning av den"). Väntar
-   * på Opus — se boardService.ts:s '[Opus]'-platshållare.
+   * upprepning av årsboken (DOM:s ord: "styrelsens läsning av den").
    */
   seasonAcknowledgment: string
 }
@@ -890,7 +915,7 @@ export interface SaveGame {
 
   // 5.1 Sommaren — se SeasonTransitionEvent-kommentaren ovan för skrivvägarna.
   pendingSeasonTransitionEvents?: SeasonTransitionEvent[]
-  /** Förutsättningsfasen, steg 1 — se BoardAssessment-kommentaren ovan. */
+  /** Förutsättningsfasen — se BoardAssessment-kommentaren ovan. */
   boardAssessment?: BoardAssessment
   /**
    * Återinträdesguard för Sommaren (Jacobs DOM, 2026-08-18): "skärmen är

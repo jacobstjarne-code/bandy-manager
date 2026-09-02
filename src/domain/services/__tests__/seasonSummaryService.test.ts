@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { advanceToNextEvent } from '../../../application/useCases/advanceToNextEvent'
-import { generateSeasonSummary, getClubPositionTrend, getBoardRelationshipTrend } from '../seasonSummaryService'
+import { deriveBoardLeagueContext, generateSeasonSummary, getClubPositionTrend, getBoardRelationshipTrend } from '../seasonSummaryService'
 import { FixtureStatus, PlayoffRound, PlayoffStatus } from '../../enums'
 import type { SeasonSummary } from '../../entities/SeasonSummary'
 
@@ -452,6 +452,81 @@ describe('getClubPositionTrend (2026-08-25, Jacobs order "AI-klubbarnas föränd
       ],
     }
     expect(getClubPositionTrend(withHistory, 'club_heros')?.direction).toBe('rising')
+  })
+})
+
+describe('deriveBoardLeagueContext — Förutsättningsfasen steg 2', () => {
+  it('väljer högst tre sanna rader och tar med både transferlogg och placeringstrend', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const rivals = game.clubs.filter(club => club.id !== game.managedClubId).slice(0, 3)
+    const withContext = {
+      ...game,
+      seasonSummaries: [
+        summaryAt(2025, { [game.managedClubId]: 5, [rivals[0].id]: 9, [rivals[1].id]: 4, [rivals[2].id]: 7 }),
+        summaryAt(2026, { [game.managedClubId]: 4, [rivals[0].id]: 6, [rivals[1].id]: 8, [rivals[2].id]: 7 }),
+      ],
+      aiTransferLog: [
+        { season: 2027, playerId: 'p1', playerName: 'A Spelare', fromClubId: rivals[1].id, fromClubName: rivals[1].name, toClubId: rivals[0].id, toClubName: rivals[0].name, fee: 150000 },
+        { season: 2027, playerId: 'p2', playerName: 'B Spelare', fromClubId: 'free_agent', fromClubName: 'Fri agent', toClubId: rivals[2].id, toClubName: rivals[2].name, fee: 0 },
+      ],
+    }
+
+    const context = deriveBoardLeagueContext(withContext, 2027, 'raised')
+    expect(context.movements).toHaveLength(3)
+    expect(context.movements[0]).toMatchObject({ type: 'transfer', playerName: 'A Spelare', fee: 150000 })
+    expect(context.movements.some(movement => movement.type === 'positionTrend')).toBe(true)
+    expect(context.movements.some(movement => movement.type === 'transfer' && movement.fee === 0)).toBe(true)
+  })
+
+  it('väljer AI-rustningsorsaken vid sänkt ribba först när två närliggande klubbar faktiskt blivit starkare', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const rivals = game.clubs.filter(club => club.id !== game.managedClubId).slice(0, 2)
+    const strengthSummary = (season: number, managed: number, rivalA: number, rivalB: number) => ({
+      season,
+      standingsSnapshot: [
+        { clubId: game.managedClubId, position: 6, points: 0, squadStrength: managed },
+        { clubId: rivals[0].id, position: 4, points: 0, squadStrength: rivalA },
+        { clubId: rivals[1].id, position: 8, points: 0, squadStrength: rivalB },
+      ],
+    }) as unknown as SeasonSummary
+
+    expect(deriveBoardLeagueContext({
+      ...game,
+      seasonSummaries: [strengthSummary(2025, 50, 52, 48), strengthSummary(2026, 51, 52.5, 48.5)],
+    }, 2027, 'lowered').reasonSource).toBe('results')
+
+    expect(deriveBoardLeagueContext({
+      ...game,
+      seasonSummaries: [strengthSummary(2025, 50, 52, 48), strengthSummary(2026, 50, 54, 51)],
+    }, 2027, 'lowered').reasonSource).toBe('aiTransfers')
+  })
+
+  it('väljer AI-rustningsorsaken vid höjd ribba bara när styrkesnapshots belägger påståendet', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const rivals = game.clubs.filter(club => club.id !== game.managedClubId).slice(0, 2)
+    const strengthSummary = (season: number, managed: number, rivalA: number, rivalB: number) => ({
+      season,
+      standingsSnapshot: [
+        { clubId: game.managedClubId, position: 4, points: 0, squadStrength: managed },
+        { clubId: rivals[0].id, position: 3, points: 0, squadStrength: rivalA },
+        { clubId: rivals[1].id, position: 6, points: 0, squadStrength: rivalB },
+      ],
+    }) as unknown as SeasonSummary
+    const withStrength = {
+      ...game,
+      seasonSummaries: [strengthSummary(2025, 50, 52, 48), strengthSummary(2026, 54, 53, 49)],
+    }
+
+    expect(deriveBoardLeagueContext(withStrength, 2027, 'raised').reasonSource).toBe('aiTransfers')
+    expect(deriveBoardLeagueContext({
+      ...withStrength,
+      seasonSummaries: [strengthSummary(2025, 50, 52, 48), strengthSummary(2026, 51, 55, 50)],
+    }, 2027, 'raised').reasonSource).toBe('results')
+  })
+
+  it('väljer aldrig leagueMovement utan kanonisk upp-/nedflyttningsstate', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    expect(deriveBoardLeagueContext(game, 2027, 'lowered').reasonSource).toBe('results')
   })
 })
 
