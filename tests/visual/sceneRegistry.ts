@@ -114,4 +114,6 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   // Route-ratchet 2026-09-02: de fem sista /game-rutterna har nu riktiga,
   // deterministiska produktkomponentscener.
   ['contract-demands'], ['career-break'], ['inbox'], ['sim-summary'], ['hall-provning'],
+  // Tidigare helt onåbara berättelsescener, nu riktiga produktkomponenter.
+  ['coffee-room'], ['valet'], ['journalist-relationship'], ['cup-intro'], ['sunday-training'], ['season-signature-reveal'],
 ]

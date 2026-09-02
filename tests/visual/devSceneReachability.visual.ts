@@ -124,3 +124,54 @@ test('Hallprövningen visar förankringsfas och stöd-mätare', async ({ page })
   await expect(scene.getByText('STÖD I BYGDEN')).toBeVisible()
   await expect(scene.getByText('56')).toBeVisible()
 })
+
+test('Kafferummet visar ett verkligt vardagsutbyte', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=coffee-room&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('I DETTA ÖGONBLICK')).toBeVisible()
+  await expect(scene.getByRole('button', { name: /Tillbaka/ })).toBeVisible()
+})
+
+test('Valet visar byggalternativ och ett likvärdigt avstå-val', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=valet&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText(/Vad bygger Edsbyn BK i år/)).toBeVisible()
+  await expect(scene.getByText('Värmestuga', { exact: true })).toBeVisible()
+  await expect(scene.getByText('Vi väntar i år', { exact: true })).toBeVisible()
+})
+
+test('Journalistrelationen visar namn, relation och minnen', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=journalist-relationship&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('Britta Sandström', { exact: true })).toBeVisible()
+  await expect(scene.getByText('Relation', { exact: true })).toBeVisible()
+  await expect(scene.getByText('Senast hörda')).toBeVisible()
+})
+
+test('Cupintrot visar första beatet och nästa CTA', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=cup-intro&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('CUPEN')).toBeVisible()
+  await expect(scene.getByText('Innan serien')).toBeVisible()
+  await expect(scene.getByRole('button')).toBeVisible()
+})
+
+test('Söndagsträningen visar plats, spelare och val', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=sunday-training&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('I DETTA ÖGONBLICK')).toBeVisible()
+  await expect(scene.getByRole('button')).toHaveCount(4)
+})
+
+test('Säsongssignaturen visar kall vinter som riktig scen', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=season-signature-reveal&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('KÖLDVINTERN')).toBeVisible()
+  await expect(scene.getByRole('button')).toBeVisible()
+})

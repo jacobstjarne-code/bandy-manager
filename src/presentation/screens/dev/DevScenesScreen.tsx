@@ -63,6 +63,12 @@ import { CareerBreakScreen } from '../CareerBreakScreen'
 import { InboxScreen } from '../InboxScreen'
 import { SimSummaryScreen } from '../SimSummaryScreen'
 import HallProvningScreen from '../HallProvningScreen'
+import { CoffeeRoomScene } from '../scenes/CoffeeRoomScene'
+import { ValetScene } from '../scenes/ValetScene'
+import { JournalistRelationshipScene } from '../scenes/JournalistRelationshipScene'
+import { CupIntroScene } from '../scenes/CupIntroScene'
+import { SundayTrainingScene } from '../scenes/SundayTrainingScene'
+import { SeasonSignatureRevealScene } from '../scenes/SeasonSignatureRevealScene'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
@@ -162,6 +168,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // Route-ratchet 2026-09-02: de fem sista /game-rutterna. Alla använder
   // riktiga produktskärmar och deterministisk state, inte ytkopior.
   | 'contract-demands' | 'career-break' | 'inbox' | 'sim-summary' | 'hall-provning'
+  | 'coffee-room' | 'valet' | 'journalist-relationship' | 'cup-intro' | 'sunday-training' | 'season-signature-reveal'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -251,6 +258,12 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'inbox', label: 'Inkorg — svar, nyheter och rapporter' },
   { id: 'sim-summary', label: 'Simulering — tre matcher och tabellrörelse' },
   { id: 'hall-provning', label: 'Hallprövning — förankring och stöd' },
+  { id: 'coffee-room', label: 'Kafferummet — vardagsutbyte' },
+  { id: 'valet', label: 'Valet — säsongens anläggningsbeslut' },
+  { id: 'journalist-relationship', label: 'Journalistrelation — minnen och utsikt' },
+  { id: 'cup-intro', label: 'Cupintro — innan serien' },
+  { id: 'sunday-training', label: 'Söndagsträning — sex spelare på isen' },
+  { id: 'season-signature-reveal', label: 'Säsongssignatur — kall vinter' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -498,6 +511,16 @@ const smGame     = makeGame([...makeLeagueFixtures(), smFinalFixture])
 const arcGame    = makeGame(makeLeagueFixtures())
 const portalGame = makeGame(makeLeagueFixtures())
 const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1', board })
+const journalistSceneGame = {
+  ...efterklangGame,
+  journalist: {
+    ...efterklangGame.journalist!,
+    outlet: 'Gefle Dagblad',
+    style: 'neutral' as const,
+    pressRefusals: 1,
+    memory: efterklangGame.journalist!.memory.map((m, i) => i === 2 ? { ...m, event: 'refused_press' } : m),
+  },
+}
 
 // De fem sista route-fixturerna använder bara fält respektive produktvy
 // faktiskt läser. Samma SaveGame-form som resten av galleriet, ingen egen
@@ -565,6 +588,15 @@ const hallProvningGame = makeGame(makeLeagueFixtures(), {
   facilityState: {
     builtNodeIds: [],
     hallTrial: { stage: 'forankring', support: 56, startedSeason: 8, stageStartedRound: 14 },
+  },
+})
+const valetGame = makeGame(makeLeagueFixtures(), { facilityState: { builtNodeIds: [] } })
+const seasonSignatureGame = makeGame(makeLeagueFixtures(), {
+  currentSeasonSignature: {
+    id: 'cold_winter',
+    modifiers: { threeBy30Probability: 0.30 },
+    startedSeason: 8,
+    observedFacts: ['tre matcher i sträng kyla'],
   },
 })
 // Lugn trupp (allEmpty) för NU-stiltje: inga skador/avstängningar/låg moral
@@ -1526,6 +1558,10 @@ export function DevScenesScreen() {
       : scene === 'inbox' ? inboxGame
       : scene === 'sim-summary' ? simSummaryGame
       : scene === 'hall-provning' ? hallProvningGame
+      : scene === 'valet' ? valetGame
+      : scene === 'journalist-relationship' ? journalistSceneGame
+      : scene === 'season-signature-reveal' ? seasonSignatureGame
+      : scene === 'coffee-room' || scene === 'cup-intro' || scene === 'sunday-training' ? squadGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -1753,6 +1789,24 @@ export function DevScenesScreen() {
           <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
             <HallProvningScreen />
           </div>
+        )}
+        {scene === 'coffee-room' && (
+          <CoffeeRoomScene game={squadGame} onComplete={() => {}} />
+        )}
+        {scene === 'valet' && (
+          <ValetScene game={valetGame} onComplete={() => {}} />
+        )}
+        {scene === 'journalist-relationship' && (
+          <JournalistRelationshipScene game={journalistSceneGame} onComplete={() => {}} />
+        )}
+        {scene === 'cup-intro' && (
+          <CupIntroScene game={squadGame} onComplete={() => {}} />
+        )}
+        {scene === 'sunday-training' && (
+          <SundayTrainingScene game={squadGame} onComplete={() => {}} />
+        )}
+        {scene === 'season-signature-reveal' && (
+          <SeasonSignatureRevealScene game={seasonSignatureGame} onComplete={() => {}} />
         )}
         {(scene === 'sommaren-s2' || scene === 'sommaren-titelforsvarare' || scene === 'sommaren-tomt' || scene === 'sommaren-siffra') && (
           <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
