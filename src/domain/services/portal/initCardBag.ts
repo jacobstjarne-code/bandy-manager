@@ -54,7 +54,7 @@ import { MecenatDemandSecondary } from '../../../presentation/components/portal/
 import { WeeklyDecisionSecondary } from '../../../presentation/components/portal/secondary/WeeklyDecisionSecondary'
 import { RetirementDecisionSecondary } from '../../../presentation/components/portal/secondary/RetirementDecisionSecondary'
 import { ActiveArcsSecondary } from '../../../presentation/components/portal/secondary/ActiveArcsSecondary'
-import { BoardObjectivesSecondary } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
+import { BoardObjectivesSecondary, getSecondaryBoardObjectives } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
 import { WatchOthersSecondary } from '../../../presentation/components/portal/secondary/WatchOthersSecondary'
 import { LandslagsFranvaroSecondary } from '../../../presentation/components/portal/secondary/LandslagsFranvaroSecondary'
 import { DeferredQueueSecondary } from '../../../presentation/components/portal/secondary/DeferredQueueSecondary'
@@ -166,7 +166,7 @@ const PORTAL_CARDS: DashboardCard[] = [
     id: 'board_objectives',
     tier: 'secondary',
     weight: 40,
-    triggers: [(game) => (game.boardObjectives ?? []).filter(o => o.status !== 'met').length > 0],
+    triggers: [(game) => getSecondaryBoardObjectives(game.boardObjectives ?? []).some(o => o.status !== 'met')],
     Component: BoardObjectivesSecondary,
   },
   {
