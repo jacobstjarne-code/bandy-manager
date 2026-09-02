@@ -245,12 +245,12 @@ function makeChain(overrides: Partial<RippleChain> = {}): RippleChain {
 }
 
 /**
- * MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (2026-09-02) — de tre
+ * MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (2026-09-02) — alla tre
  * systemtriggarna (star_injured/big_derby_win/mecenat_left) dual-writer nu
  * en EventLedgerEntry, samma consequences-form som orsak/verkan redan
- * använder. mecenat_left saknar en täckande EventLedgerType och skriver
- * ÄNNU ingen post (flaggat i roundProcessor.ts) — inget test för den här,
- * det vore att testa en avsiktlig lucka som en bugg.
+ * använder. mecenat_left → 'mecenat_withdrawal' (ny EventLedgerType-medlem,
+ * Opus dom 2026-09-02 — patron_change var fel entitet, mecenat_costshare
+ * fel händelse).
  */
 describe('buildSystemRippleLedgerEntry', () => {
   it('tom kedja (trivial-brus-golvet) → null, ingen post', () => {
@@ -294,6 +294,19 @@ describe('buildSystemRippleLedgerEntry', () => {
     expect(entryA?.semanticKey).not.toBe(entryB?.semanticKey)
   })
 
+  it('mecenat_left → mecenat_withdrawal, subject: kind mecenat, ingen madeByPlayer (systemhändelse), ingen substans utöver consequences', () => {
+    const chain = makeChain({
+      trigger: 'mecenat_left', round: 6, season: 2025,
+      steps: [{ label: 'Sponsorerna', dir: 'down', scope: 'club', magnitude: 'kraftigt' }],
+    })
+    const entry = buildSystemRippleLedgerEntry(chain, 'mecenat_withdrawal', { kind: 'mecenat', id: 'mec1' })
+    expect(entry?.type).toBe('mecenat_withdrawal')
+    expect(entry?.subject).toEqual({ kind: 'mecenat', id: 'mec1' })
+    expect(entry?.consequences).toEqual([{ field: 'sponsorNetworkMood', dir: 'down', magnitude: 'kraftigt' }])
+    expect(entry?.significance).toBe(75) // MAGNITUDE_SIGNIFICANCE.kraftigt, samma delade formel — inget mecenat-specifikt undantag
+    expect(entry?.madeByPlayer).toBeUndefined()
+  })
+
   it('en ripple omgång 6 är fortfarande läsbar i liggaren omgång 20 — till skillnad från pendingRippleChains, som ersätts helt varje omgång', () => {
     const chain6 = makeChain({ trigger: 'star_injured', round: 6, season: 2025 })
     const entry6 = buildSystemRippleLedgerEntry(chain6, 'star_injury', { kind: 'player', id: 'berg' })
@@ -312,6 +325,25 @@ describe('buildSystemRippleLedgerEntry', () => {
 
     const found = ledger.find(e => e.semanticKey === entry6!.semanticKey)
     expect(found).toBeDefined()
+    expect(found?.matchday).toBe(6)
+    expect(ledger).toHaveLength(15)
+  })
+
+  it('en mecenat-ripple omgång 6 är läsbar i liggaren omgång 20 — samma durabilitet som de andra två triggarna', () => {
+    const chain6 = makeChain({ trigger: 'mecenat_left', round: 6, season: 2025 })
+    const entry6 = buildSystemRippleLedgerEntry(chain6, 'mecenat_withdrawal', { kind: 'mecenat', id: 'mec1' })
+    expect(entry6).not.toBeNull()
+
+    let ledger: EventLedgerEntry[] = [entry6!]
+    for (let round = 7; round <= 20; round++) {
+      const chain = makeChain({ trigger: 'star_injured', round, season: 2025 })
+      const entry = buildSystemRippleLedgerEntry(chain, 'star_injury', { kind: 'player', id: `p_${round}` })
+      if (entry) ledger = [...ledger, entry]
+    }
+
+    const found = ledger.find(e => e.semanticKey === entry6!.semanticKey)
+    expect(found).toBeDefined()
+    expect(found?.type).toBe('mecenat_withdrawal')
     expect(found?.matchday).toBe(6)
     expect(ledger).toHaveLength(15)
   })

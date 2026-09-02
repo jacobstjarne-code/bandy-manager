@@ -163,6 +163,11 @@ export type EventLedgerType =
   | 'star_injury' | 'derby_win' | 'captain_crisis' | 'nemesis_signed'
   | 'rival_sale' | 'sponsor_positive' | 'sponsor_negative'
   | 'mecenat_costshare' | 'transfer_story' | 'season_highlight' | 'era_shift'
+  // Fas 4+ (2026-09-02, Opus dom) — mecenat_left-ripplens tredje och sista
+  // systemtrigger. `patron_change` fel entitet (Patron ≠ Mecenat),
+  // `mecenat_costshare` fel händelse (kostnadsdelning, inte avhopp) — ingen
+  // befintlig medlem täckte "en mecenat lämnade", därav ny medlem.
+  | 'mecenat_withdrawal'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut

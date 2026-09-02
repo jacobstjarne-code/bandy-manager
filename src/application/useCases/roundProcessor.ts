@@ -465,10 +465,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Injury notifications + DREAM-003 star injury ripple
   let gameAfterRipples = game
   const roundRippleChains: RippleChain[] = []
-  // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (2026-09-02) — dual-write av de
-  // tre systemtriggarna. mecenat_left saknar ännu en EventLedgerType (union
-  // täcker inte den, flaggat — se orderns svar) så bara star_injured/
-  // big_derby_win skriver hit tills vidare, en källa i taget.
+  // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (2026-09-02) — dual-write av alla
+  // tre systemtriggarna (star_injured/big_derby_win/mecenat_left).
   const rippleLedgerEntries: EventLedgerEntry[] = []
   for (const { player, days } of newlyInjured) {
     const clubId = player.clubId
@@ -1018,22 +1016,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Legibel konsekvens: mecenat_left ripple (VILANDE i eventProcessor, wiras här)
   //
-  // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (2026-09-02): denna kedjan skriver
-  // ÄNNU ingen liggarpost — EventLedgerType-unionen (Narrative.ts) har ingen
-  // medlem för "mecenat lämnade". `patron_change` finns men är fel entitet
-  // (Patron ≠ Mecenat, separata system: game.patron vs game.mecenater).
-  // `mecenat_costshare` finns men är fel HÄNDELSE (en mecenat som täcker en
-  // transferkostnad, inte en som avgår). FLAGGAT till Opus — en ny
-  // EventLedgerType-medlem (t.ex. mecenat_withdrawal) är ett vägval, inte en
-  // tyst fältutökning. star_injured/big_derby_win migrerade (samma commit),
-  // en källa i taget — denna väntar på domen.
+  // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (2026-09-02) — tredje och sista
+  // systemtriggern migrerad (mecenat_withdrawal, Narrative.ts). subject =
+  // mecenaten (id finns redan här), ingen madeByPlayer (systemhändelse).
   const previousActiveIds = new Set((game.mecenater ?? []).filter(m => m.isActive).map(m => m.id))
   for (const m of updatedMecenater) {
     if (!m.isActive && previousActiveIds.has(m.id)) {
       const beforeMecRipple = gameAfterRipples
       gameAfterRipples = applyRipples(gameAfterRipples, { type: 'mecenat_left', mecenatId: m.id })
-      roundRippleChains.push(describeRippleChain(beforeMecRipple, gameAfterRipples, 'mecenat_left',
-        m.name, nextMatchday, game.currentSeason))
+      const mecenatChain = describeRippleChain(beforeMecRipple, gameAfterRipples, 'mecenat_left',
+        m.name, nextMatchday, game.currentSeason)
+      roundRippleChains.push(mecenatChain)
+      const mecenatLedgerEntry = buildSystemRippleLedgerEntry(mecenatChain, 'mecenat_withdrawal', { kind: 'mecenat', id: m.id })
+      if (mecenatLedgerEntry) rippleLedgerEntries.push(mecenatLedgerEntry)
     }
   }
 
@@ -1650,7 +1645,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       .slice(0, 5),
     // Liggarposten — durabel, ocappad. ClubMemoryView (Moment-läsytan) läser
     // härifrån nu (getRecentMomentsFromLedger), se momentLedgerService.ts.
-    // rippleLedgerEntries: Fas 4+ (star_injured/big_derby_win) — se orsakVerkanService.ts.
+    // rippleLedgerEntries: Fas 4+, alla tre systemtriggarna — se orsakVerkanService.ts.
     eventLedger: [...appendMomentsToLedger(game.eventLedger ?? [], allNewMomentsThisRound), ...rippleLedgerEntries],
     currentEra: newClubEra,
     activeScandals: scandalResult.updatedScandals,
