@@ -1,5 +1,5 @@
-import type { SaveGame, RippleChainStep } from '../entities/SaveGame'
-import type { EventLedgerEntry, LedgerConsequence } from '../entities/Narrative'
+import type { SaveGame, RippleChain, RippleChainStep } from '../entities/SaveGame'
+import type { EventLedgerEntry, EventLedgerType, LedgerConsequence } from '../entities/Narrative'
 import { describeRippleChain } from './rippleEffectService'
 
 /**
@@ -40,10 +40,21 @@ const FIELD_BY_LABEL: Record<string, LedgerConsequence['field']> = {
 const MAGNITUDE_SIGNIFICANCE: Record<RippleChainStep['magnitude'], number> = { knappt: 35, tydligt: 55, kraftigt: 75 }
 const BOARD_INVOLVED_BONUS = 15
 
+// Namnet är kvar från Fas 1 (beslutsspecifikt) men funktionen är generisk —
+// MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (buildSystemRippleLedgerEntry nedan)
+// återanvänder den rakt av för system-triggade kedjor. Samma "Styrelsen
+// väger tyngst"-princip gäller oavsett vem som orsakade kedjan.
 function decisionRippleSignificance(steps: RippleChainStep[]): number {
   const base = steps.reduce((max, s) => Math.max(max, MAGNITUDE_SIGNIFICANCE[s.magnitude]), 0)
   const boardBonus = steps.some(s => s.label === 'Styrelsen') ? BOARD_INVOLVED_BONUS : 0
   return Math.min(100, base + boardBonus)
+}
+
+function chainToConsequences(steps: RippleChainStep[]): LedgerConsequence[] {
+  return steps.flatMap(s => {
+    const field = FIELD_BY_LABEL[s.label]
+    return field ? [{ field, dir: s.dir, magnitude: s.magnitude }] : []
+  })
 }
 
 /**
@@ -70,10 +81,7 @@ export function captureDecisionRipple(
   const chain = describeRippleChain(before, after, 'decision', undefined, matchday, season, subjectPlayerId)
   if (chain.steps.length === 0) return null
 
-  const consequences: LedgerConsequence[] = chain.steps.flatMap(s => {
-    const field = FIELD_BY_LABEL[s.label]
-    return field ? [{ field, dir: s.dir, magnitude: s.magnitude }] : []
-  })
+  const consequences = chainToConsequences(chain.steps)
 
   // Skärpning 2026-09-01 (Fas 2-vägval #2): polymorft subject, inte separata
   // id-fält. Fas 1:s generiska infångare känner bara player/club (event.
@@ -94,6 +102,35 @@ export function captureDecisionRipple(
     significance: decisionRippleSignificance(chain.steps),
     consequences,
     madeByPlayer: true,
+  }
+}
+
+/**
+ * MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (2026-09-02) — samma struktur→
+ * liggarpost-omvandling som captureDecisionRipple, men för de tre
+ * SYSTEMTRIGGARNA (star_injured/big_derby_win/mecenat_left) i stället för
+ * spelarfattade beslut. `chain` är redan beräknad av anroparen
+ * (describeRippleChain, roundProcessor.ts) — ingen andra before/after-diff
+ * här, bara samma steps→consequences-mappning och samma trivial-brus-golv.
+ *
+ * `madeByPlayer` sätts ALDRIG (till skillnad från captureDecisionRipple) —
+ * dessa tre är per definition systemhändelser, ingen spelare fattade beslutet.
+ */
+export function buildSystemRippleLedgerEntry(
+  chain: RippleChain,
+  type: EventLedgerType,
+  subject?: EventLedgerEntry['subject'],
+): EventLedgerEntry | null {
+  if (chain.steps.length === 0) return null
+
+  return {
+    type,
+    semanticKey: `ripple_${chain.trigger}_${subject?.id ?? 'na'}_${chain.season}_${chain.round}`,
+    season: chain.season,
+    matchday: chain.round,
+    subject,
+    significance: decisionRippleSignificance(chain.steps),
+    consequences: chainToConsequences(chain.steps),
   }
 }
 

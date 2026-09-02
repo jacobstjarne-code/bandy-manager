@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { captureDecisionRipple, getLatestDecisionConsequence } from '../orsakVerkanService'
+import { captureDecisionRipple, getLatestDecisionConsequence, buildSystemRippleLedgerEntry } from '../orsakVerkanService'
 import { resolveEvent } from '../events/eventResolver'
 import { bidReceivedEvent } from '../events/eventFactories'
-import type { SaveGame } from '../../entities/SaveGame'
+import type { SaveGame, RippleChain } from '../../entities/SaveGame'
 import type { EventLedgerEntry } from '../../entities/Narrative'
 import type { TransferBid } from '../../entities/GameEvent'
 import type { Player } from '../../entities/Player'
@@ -231,5 +231,88 @@ describe('eventResolver — Fas 1 write-hook (samma tre transferbudsutfall som t
 
     expect(after.pilotTransferBidRippleChain?.steps).toEqual([{ label: 'Kassan', dir: 'up', scope: 'club', magnitude: 'kraftigt' }])
     expect(after.eventLedger).toHaveLength(2) // Fas 2 (decision-kandidat) + Fas 1 (ripple) — se testet ovan
+  })
+})
+
+function makeChain(overrides: Partial<RippleChain> = {}): RippleChain {
+  return {
+    trigger: 'star_injured',
+    round: 6,
+    season: 2025,
+    steps: [{ label: 'Klacken', dir: 'down', scope: 'club', magnitude: 'tydligt' }],
+    ...overrides,
+  }
+}
+
+/**
+ * MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (2026-09-02) — de tre
+ * systemtriggarna (star_injured/big_derby_win/mecenat_left) dual-writer nu
+ * en EventLedgerEntry, samma consequences-form som orsak/verkan redan
+ * använder. mecenat_left saknar en täckande EventLedgerType och skriver
+ * ÄNNU ingen post (flaggat i roundProcessor.ts) — inget test för den här,
+ * det vore att testa en avsiktlig lucka som en bugg.
+ */
+describe('buildSystemRippleLedgerEntry', () => {
+  it('tom kedja (trivial-brus-golvet) → null, ingen post', () => {
+    const chain = makeChain({ steps: [] })
+    expect(buildSystemRippleLedgerEntry(chain, 'star_injury', { kind: 'player', id: 'berg' })).toBeNull()
+  })
+
+  it('bygger en EventLedgerEntry med consequences ur kedjans steg, ingen madeByPlayer (systemhändelse)', () => {
+    const chain = makeChain({
+      trigger: 'star_injured', round: 6, season: 2025,
+      steps: [
+        { label: 'Klacken', dir: 'down', scope: 'club', magnitude: 'tydligt' },
+        { label: 'Styrelsen', dir: 'down', scope: 'club', magnitude: 'knappt' },
+      ],
+    })
+    const entry = buildSystemRippleLedgerEntry(chain, 'star_injury', { kind: 'player', id: 'berg' })
+    expect(entry?.type).toBe('star_injury')
+    expect(entry?.season).toBe(2025)
+    expect(entry?.matchday).toBe(6) // chain.round är GLOBAL matchday-skalan (roundProcessor.ts skickar nextMatchday, aldrig ligarond)
+    expect(entry?.subject).toEqual({ kind: 'player', id: 'berg' })
+    expect(entry?.consequences).toEqual([
+      { field: 'supporterMood', dir: 'down', magnitude: 'tydligt' },
+      { field: 'boardPatience', dir: 'down', magnitude: 'knappt' },
+    ])
+    expect(entry?.significance).toBe(70) // MAGNITUDE_SIGNIFICANCE.tydligt (55) + BOARD_INVOLVED_BONUS (15), styrelsen inblandad
+    expect(entry?.madeByPlayer).toBeUndefined()
+  })
+
+  it('subject valfri — undefined när ingen anges (t.ex. rivalklubben hittades inte)', () => {
+    const chain = makeChain({ trigger: 'big_derby_win' })
+    const entry = buildSystemRippleLedgerEntry(chain, 'derby_win')
+    expect(entry?.subject).toBeUndefined()
+    expect(entry?.type).toBe('derby_win')
+  })
+
+  it('semanticKey är unik per trigger+subjekt+säsong+omgång — två spelare skadade samma omgång kolliderar inte', () => {
+    const chainA = makeChain({ round: 6, season: 2025 })
+    const chainB = makeChain({ round: 6, season: 2025 })
+    const entryA = buildSystemRippleLedgerEntry(chainA, 'star_injury', { kind: 'player', id: 'berg' })
+    const entryB = buildSystemRippleLedgerEntry(chainB, 'star_injury', { kind: 'player', id: 'lund' })
+    expect(entryA?.semanticKey).not.toBe(entryB?.semanticKey)
+  })
+
+  it('en ripple omgång 6 är fortfarande läsbar i liggaren omgång 20 — till skillnad från pendingRippleChains, som ersätts helt varje omgång', () => {
+    const chain6 = makeChain({ trigger: 'star_injured', round: 6, season: 2025 })
+    const entry6 = buildSystemRippleLedgerEntry(chain6, 'star_injury', { kind: 'player', id: 'berg' })
+    expect(entry6).not.toBeNull()
+
+    let ledger: EventLedgerEntry[] = [entry6!]
+    // 14 fler omgångar (7 t.o.m. 20), var och en skulle ha TÖMT
+    // pendingRippleChains helt (roundProcessor.ts ersätter den arrayen rakt
+    // av varje omgång — ingen ackumulering, till skillnad från recentMoments
+    // cap-5). Liggaren ackumulerar i stället.
+    for (let round = 7; round <= 20; round++) {
+      const chain = makeChain({ trigger: 'big_derby_win', round, season: 2025 })
+      const entry = buildSystemRippleLedgerEntry(chain, 'derby_win', { kind: 'club', id: `rival_${round}` })
+      if (entry) ledger = [...ledger, entry]
+    }
+
+    const found = ledger.find(e => e.semanticKey === entry6!.semanticKey)
+    expect(found).toBeDefined()
+    expect(found?.matchday).toBe(6)
+    expect(ledger).toHaveLength(15)
   })
 })
