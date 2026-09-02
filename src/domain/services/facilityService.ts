@@ -200,7 +200,7 @@ export function advanceFacilityState(
     // kommentar vid FacilityState.unseenCompletedFacilities för rotorsaken.
     unseenCompletedFacilities: [
       ...(state.unseenCompletedFacilities ?? []),
-      { nodeId: activeProject.nodeId, matchday: currentMatchday },
+      { nodeId: activeProject.nodeId, matchday: currentMatchday, season },
     ],
   }
   return {
@@ -239,6 +239,10 @@ export function decommissionFacilityNode(
   return {
     ...state,
     builtNodeIds: state.builtNodeIds.filter(id => id !== nodeId),
+    // En oläst invigning i presens får inte överleva att byggnaden rivs.
+    // Om noden byggs igen skapar completionen en ny season+matchday-post.
+    unseenCompletedFacilities: state.unseenCompletedFacilities?.filter(c => c.nodeId !== nodeId),
+    lastCompleted: state.lastCompleted?.nodeId === nodeId ? undefined : state.lastCompleted,
   }
 }
 
@@ -261,9 +265,15 @@ export function createInitialFacilityState(): FacilityState {
   return { builtNodeIds: [], builtSeasons: {} }
 }
 
-/** Samma dismiss-nyckel som portalBeats.ts's facility_completed-beat's keyFn. */
-export function facilityCompletedBeatKey(nodeId: string): string {
-  return `facility_completed_${nodeId}`
+export type FacilityCompletion = { nodeId: string; matchday: number; season?: number }
+
+/** Samma dismiss-nyckel som portalBeats.ts's facility_completed-beat's keyFn.
+ *  Nya completions bär sin verkliga tidsaxel så en återbyggd nod är ett nytt
+ *  ögonblick. Äldre köposter utan season behåller den gamla per-nod-nyckeln. */
+export function facilityCompletedBeatKey(completion: FacilityCompletion): string {
+  return completion.season === undefined
+    ? `facility_completed_${completion.nodeId}`
+    : `facility_completed_${completion.nodeId}_s${completion.season}_m${completion.matchday}`
 }
 
 /** Den äldsta klara byggnaden spelaren ännu inte sett invigningsbeatet för
@@ -272,7 +282,7 @@ export function facilityCompletedBeatKey(nodeId: string): string {
 export function getFirstUnseenCompletedFacility(
   state: FacilityState,
   shownBeats: string[],
-): { nodeId: string; matchday: number } | null {
+): FacilityCompletion | null {
   const queue = state.unseenCompletedFacilities ?? []
-  return queue.find(c => !shownBeats.includes(facilityCompletedBeatKey(c.nodeId))) ?? null
+  return queue.find(c => !shownBeats.includes(facilityCompletedBeatKey(c))) ?? null
 }

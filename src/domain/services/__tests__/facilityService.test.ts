@@ -301,14 +301,14 @@ describe('unseenCompletedFacilities — kö istället för enda-fält (Stickines
     }
     const first = advanceFacilityState(state, 3, 1)
     state = first.state
-    expect(state.unseenCompletedFacilities).toEqual([{ nodeId: 'kiosk', matchday: 3 }])
+    expect(state.unseenCompletedFacilities).toEqual([{ nodeId: 'kiosk', matchday: 3, season: 1 }])
 
     state = { ...state, activeProject: { nodeId: 'laktare', startedMatchday: 4, etaMatchday: 7 } }
     const second = advanceFacilityState(state, 7, 1)
     state = second.state
     expect(state.unseenCompletedFacilities).toEqual([
-      { nodeId: 'kiosk', matchday: 3 },
-      { nodeId: 'laktare', matchday: 7 },
+      { nodeId: 'kiosk', matchday: 3, season: 1 },
+      { nodeId: 'laktare', matchday: 7, season: 1 },
     ])
   })
 
@@ -334,14 +334,38 @@ describe('unseenCompletedFacilities — kö istället för enda-fält (Stickines
     const before = getFirstUnseenCompletedFacility(state, [])
     expect(before?.nodeId).toBe('kiosk')
 
-    const afterFirstDismissed = getFirstUnseenCompletedFacility(state, [facilityCompletedBeatKey('kiosk')])
+    const afterFirstDismissed = getFirstUnseenCompletedFacility(state, [
+      facilityCompletedBeatKey({ nodeId: 'kiosk', matchday: 3 }),
+    ])
     expect(afterFirstDismissed?.nodeId).toBe('laktare')
 
     const afterBothDismissed = getFirstUnseenCompletedFacility(state, [
-      facilityCompletedBeatKey('kiosk'),
-      facilityCompletedBeatKey('laktare'),
+      facilityCompletedBeatKey({ nodeId: 'kiosk', matchday: 3 }),
+      facilityCompletedBeatKey({ nodeId: 'laktare', matchday: 7 }),
     ])
     expect(afterBothDismissed).toBeNull()
+  })
+
+  it('ger en återbyggd nod en ny completion-nyckel på season+matchday', () => {
+    const first = { nodeId: 'kiosk', season: 2, matchday: 8 }
+    const rebuilt = { nodeId: 'kiosk', season: 4, matchday: 3 }
+    const state: FacilityState = {
+      builtNodeIds: ['kiosk'],
+      unseenCompletedFacilities: [first, rebuilt],
+    }
+    const firstKey = facilityCompletedBeatKey(first)
+
+    expect(firstKey).toBe('facility_completed_kiosk_s2_m8')
+    expect(facilityCompletedBeatKey(rebuilt)).toBe('facility_completed_kiosk_s4_m3')
+    expect(getFirstUnseenCompletedFacility(state, [firstKey])).toEqual(rebuilt)
+  })
+
+  it('behåller legacy-nyckeln för äldre köposter utan season', () => {
+    const legacy = { nodeId: 'kiosk', matchday: 3 }
+    const state: FacilityState = { builtNodeIds: ['kiosk'], unseenCompletedFacilities: [legacy] }
+
+    expect(facilityCompletedBeatKey(legacy)).toBe('facility_completed_kiosk')
+    expect(getFirstUnseenCompletedFacility(state, ['facility_completed_kiosk'])).toBeNull()
   })
 })
 
@@ -404,6 +428,23 @@ describe('decommissionFacilityNode', () => {
     const state: FacilityState = { builtNodeIds: ['kiosk', 'varmestuga'] }
     const result = decommissionFacilityNode('kiosk', state)
     expect(result.builtNodeIds).toEqual(['varmestuga'])
+  })
+
+  it('tar bort nodens olästa invigning men bevarar andra completioner', () => {
+    const state: FacilityState = {
+      builtNodeIds: ['kiosk', 'varmestuga'],
+      lastCompleted: { nodeId: 'kiosk', matchday: 8 },
+      unseenCompletedFacilities: [
+        { nodeId: 'varmestuga', season: 2, matchday: 4 },
+        { nodeId: 'kiosk', season: 2, matchday: 8 },
+      ],
+    }
+    const result = decommissionFacilityNode('kiosk', state)
+
+    expect(result.unseenCompletedFacilities).toEqual([
+      { nodeId: 'varmestuga', season: 2, matchday: 4 },
+    ])
+    expect(result.lastCompleted).toBeUndefined()
   })
 })
 

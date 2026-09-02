@@ -991,11 +991,15 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       const mentorProtégés = (game.mentorshipHistory ?? []).filter(r => r.seniorPlayerId === player.id)
       const protégéLine = (() => {
         const living = mentorProtégés
-          .map(r => game.players.find(p => p.id === r.youthPlayerId))
-          .filter(Boolean)
+          .map(r => resetPlayers.find(p => p.id === r.youthPlayerId))
+          .filter((p): p is NonNullable<typeof p> =>
+            p !== undefined
+            && p.clubId === game.managedClubId
+            && !retiredPlayerIds.has(p.id)
+          )
         if (living.length === 0) return ''
         const p = living[0]!
-        return ` Fostrade ${p.firstName} ${p.lastName}, ${p.age} år — som bär stafettpinnen en dag.`
+        return ` Fostrade ${p.firstName} ${p.lastName}, ${p.age} år.`
       })()
       retirementCeremonyEvents.push({
         id: `retirement_ceremony_${player.id}_${nextSeason}`,

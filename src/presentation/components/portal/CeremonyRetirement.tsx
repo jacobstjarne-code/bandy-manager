@@ -33,14 +33,18 @@ export function getRetirementCeremonyDisplayData(game: SaveGame, event: GameEven
   }
 }
 
+export function getRetirementCeremonyFarewellText(body: string): string {
+  const splitIdx = body.lastIndexOf(' Vill du')
+  return splitIdx > 0 ? body.slice(0, splitIdx).trim() : body
+}
+
 export function CeremonyRetirement({ game, event }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const { playerName, seasons, goals, games } = getRetirementCeremonyDisplayData(game, event)
 
   // Body contains farewell quote + protégé line + "Vill du erbjuda…"
   // Split at the last sentence starting with "Vill"
-  const splitIdx = event.body.lastIndexOf(' Vill du')
-  const farewellText = splitIdx > 0 ? event.body.slice(0, splitIdx).trim() : event.body
+  const farewellText = getRetirementCeremonyFarewellText(event.body)
   // Entitets-dedup-grinden (2026-08-12): se EventCardInline.tsx för samma resonemang.
   const entityId = event.relatedBidId ? `bid:${event.relatedBidId}` : `event:${event.id}`
 
@@ -89,7 +93,7 @@ export function CeremonyRetirement({ game, event }: Props) {
           fontSize: 12, color: 'var(--text-light-secondary)', fontStyle: 'italic',
           lineHeight: 1.6, textAlign: 'center', maxWidth: 300, marginBottom: 32,
         }}>
-          "{farewellText}"
+          {farewellText}
         </p>
       )}
 

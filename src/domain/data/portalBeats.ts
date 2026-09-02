@@ -16,7 +16,7 @@ import { deriveUtfall } from '../services/matchTypeAxes'
 import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from './facilityPortalBeats'
 import { FACILITY_NODE_DEFS } from './facilityNodes'
 import { getFirstUnseenCompletedFacility, facilityCompletedBeatKey } from '../services/facilityService'
-import { TRANSFER_DEADLINE_ROUND } from '../services/portal/triggers/transferTriggers'
+import { getTransferWindowStatus } from '../services/transferWindowService'
 
 export interface PortalBeat {
   id: string
@@ -556,24 +556,24 @@ export const PORTAL_BEATS: PortalBeat[] = [
     oncePerSeason: true,
   },
 
-  // ── Transferfönster öppnar (omg 5-7) ────────────────────────────
+  // ── Vinterfönstret öppnar (januari) ─────────────────────────────
   // Drag 2 (2026-07-02): första gången i karriären förklaras fönstret
-  // (+ stänger-tag). Återkommande säsonger räcker den korta formen —
-  // spelaren vet redan. shownBeats är redan den persistenta "sedd"-
-  // flaggan (ingen ny SaveGame-fält behövs).
+  // med transfermotorns egen beskrivning. Återkommande säsonger räcker
+  // den korta formen — spelaren vet redan. shownBeats är redan den
+  // persistenta "sedd"-flaggan (ingen ny SaveGame-fält behövs).
   {
     id: 'transfer_window_open',
     emoji: '📞',
     text: (game: SaveGame) => hasSeenTransferWindowBeatBefore(game)
       ? 'Transferfönstret öppet. Telefonen har redan börjat ringa hos någon — bara inte hos er än.'
-      : `Transferfönstret är öppet — spelare kan köpas och säljas fram till omg ${TRANSFER_DEADLINE_ROUND}.`,
+      : getTransferWindowStatus(game.currentDate).description,
     kicker: (game: SaveGame) => hasSeenTransferWindowBeatBefore(game)
       ? undefined
-      : `Stänger omg ${TRANSFER_DEADLINE_ROUND}`,
-    trigger: (g) => {
-      const played = completedLeagueCount(g)
-      return played >= 5 && played <= 7
-    },
+      : getTransferWindowStatus(game.currentDate).label,
+    // Savefilen börjar 1 oktober med försäsongsfönstret redan öppet. Beatets
+    // säsongsögonblick är därför återöppningen i januari; samma status styr
+    // TransfersScreen, navigationen, inkommande bud och utgående bud.
+    trigger: (g) => getTransferWindowStatus(g.currentDate).status === 'winter',
     oncePerSeason: true,
   },
 
@@ -582,7 +582,9 @@ export const PORTAL_BEATS: PortalBeat[] = [
     id: 'last_league_round',
     emoji: '◯',
     text: 'Sista omgången. Vad som än händer i dag — det är allt det blir av grundserien.',
-    trigger: (g) => completedLeagueCount(g) === 21,
+    trigger: (g) => completedLeagueCount(g) === 21 && firesBeforeNextFixture(g, fixture =>
+      !fixture.isCup && !fixture.isKnockout && fixture.roundNumber === 22
+    ),
     oncePerSeason: true,
   },
 
@@ -613,7 +615,9 @@ export const PORTAL_BEATS: PortalBeat[] = [
       const first = game.facilityState
         ? getFirstUnseenCompletedFacility(game.facilityState, game.shownBeats ?? [])
         : null
-      return facilityCompletedBeatKey(first?.nodeId ?? 'unknown')
+      return first
+        ? facilityCompletedBeatKey(first)
+        : 'facility_completed_unknown'
     },
     oncePerSeason: false,
   },

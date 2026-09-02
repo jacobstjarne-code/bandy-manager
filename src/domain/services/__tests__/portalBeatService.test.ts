@@ -727,3 +727,143 @@ describe('halftime — exakt halva den låsta 22-omgångarsserien', () => {
     })).toBe(false)
   })
 })
+
+describe('last_league_round — exakt nästa managed fixture är ligarunda 22', () => {
+  const beat = PORTAL_BEATS.find(candidate => candidate.id === 'last_league_round')!
+
+  it('triggar efter 21 currentSeason-ligamatcher när ronda 22 står exakt näst', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const opponent = base.clubs.find(club => club.id !== base.managedClubId)!
+    const leagueFixture = (roundNumber: number, status: 'completed' | 'scheduled') => ({
+      ...base.fixtures[0], id: `league_${roundNumber}`, season: 5,
+      matchday: roundNumber + 4, roundNumber, status,
+      isCup: false, isKnockout: false,
+      homeClubId: base.managedClubId, awayClubId: opponent.id,
+      homeScore: status === 'completed' ? 2 : undefined,
+      awayScore: status === 'completed' ? 1 : undefined,
+    })
+    const completed = Array.from({ length: 21 }, (_, index) => leagueFixture(index + 1, 'completed'))
+    const finalRound = leagueFixture(22, 'scheduled')
+    const game = { ...base, fixtures: [...completed, finalRound] }
+
+    expect(beat.trigger(game)).toBe(true)
+    expect(typeof beat.text === 'function' ? beat.text(game) : beat.text)
+      .toBe('Sista omgången. Vad som än händer i dag — det är allt det blir av grundserien.')
+    expect(getBeatKey(beat, game.currentSeason, game)).toBe('last_league_round_5')
+    expect(beat.trigger({ ...game, fixtures: [...completed.slice(0, 20), finalRound] })).toBe(false)
+    expect(beat.trigger({ ...game, fixtures: [...completed, { ...finalRound, status: 'completed' as const }] })).toBe(false)
+  })
+
+  it('väntar när en annan managed match ligger före ronda 22', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const opponent = base.clubs.find(club => club.id !== base.managedClubId)!
+    const completed = Array.from({ length: 21 }, (_, index) => ({
+      ...base.fixtures[0], id: `completed_${index + 1}`, season: 5,
+      matchday: index + 5, roundNumber: index + 1, status: 'completed' as const,
+      isCup: false, isKnockout: false,
+      homeClubId: base.managedClubId, awayClubId: opponent.id,
+    }))
+    const finalRound = {
+      ...base.fixtures[0], id: 'league_22', season: 5, matchday: 30, roundNumber: 22,
+      status: 'scheduled' as const, isCup: false, isKnockout: false,
+      homeClubId: base.managedClubId, awayClubId: opponent.id,
+    }
+    const interveningCup = {
+      ...finalRound, id: 'cup_before_final', matchday: 29, roundNumber: 5,
+      isCup: true, isKnockout: true,
+    }
+
+    expect(beat.trigger({ ...base, fixtures: [...completed, interveningCup, finalRound] })).toBe(false)
+  })
+
+  it('ignorerar historiska matcher men kräver currentSeason-ronda 22', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const opponent = base.clubs.find(club => club.id !== base.managedClubId)!
+    const currentCompleted = Array.from({ length: 21 }, (_, index) => ({
+      ...base.fixtures[0], id: `current_${index + 1}`, season: 5,
+      matchday: index + 5, roundNumber: index + 1, status: 'completed' as const,
+      isCup: false, isKnockout: false,
+      homeClubId: base.managedClubId, awayClubId: opponent.id,
+    }))
+    const historicalScheduled = {
+      ...base.fixtures[0], id: 'historical_22', season: 4, matchday: 1, roundNumber: 22,
+      status: 'scheduled' as const, isCup: false, isKnockout: false,
+      homeClubId: base.managedClubId, awayClubId: opponent.id,
+    }
+    const currentFinal = { ...historicalScheduled, id: 'current_22', season: 5, matchday: 30 }
+
+    expect(beat.trigger({ ...base, fixtures: [...currentCompleted, historicalScheduled, currentFinal] })).toBe(true)
+    expect(beat.trigger({
+      ...base,
+      fixtures: [...currentCompleted, { ...currentFinal, roundNumber: 23 }],
+    })).toBe(false)
+  })
+})
+
+describe('facility_completed — completion-kö, händelseidentitet och Bygget-route', () => {
+  const beat = PORTAL_BEATS.find(candidate => candidate.id === 'facility_completed')!
+
+  it('visar den äldsta olästa completionen med nodspecifik text och exakt händelsenyckel', () => {
+    const base = makeGame({ currentSeason: 5, shownBeats: [] })
+    const game = {
+      ...base,
+      facilityState: {
+        builtNodeIds: ['kiosk', 'varmestuga'],
+        unseenCompletedFacilities: [
+          { nodeId: 'kiosk', season: 5, matchday: 7 },
+          { nodeId: 'varmestuga', season: 5, matchday: 12 },
+        ],
+      },
+    }
+
+    expect(beat.trigger(game)).toBe(true)
+    expect(typeof beat.text === 'function' ? beat.text(game) : beat.text)
+      .toBe('Kiosken är öppen. Kaffe och korv i pausen — små pengar som blir stora över en säsong.')
+    expect(getBeatKey(beat, game.currentSeason, game)).toBe('facility_completed_kiosk_s5_m7')
+    expect(beat.route).toBe('/game/bygget')
+    expect(beat.kicker).toBe('Bygget')
+
+    const afterFirstDismiss = {
+      ...game,
+      shownBeats: ['facility_completed_kiosk_s5_m7'],
+    }
+    expect(beat.trigger(afterFirstDismiss)).toBe(true)
+    expect(typeof beat.text === 'function' ? beat.text(afterFirstDismiss) : beat.text)
+      .toBe('Värmestugan står klar. Folk stannar kvar i kylan nu, pratar färdigt.')
+    expect(getBeatKey(beat, afterFirstDismiss.currentSeason, afterFirstDismiss))
+      .toBe('facility_completed_varmestuga_s5_m12')
+  })
+
+  it('samma nod kan få en ny invigning efter avveckling och återbyggnad', () => {
+    const base = makeGame({ currentSeason: 6 })
+    const firstKey = 'facility_completed_kiosk_s4_m9'
+    const game = {
+      ...base,
+      shownBeats: [firstKey],
+      facilityState: {
+        builtNodeIds: ['kiosk'],
+        unseenCompletedFacilities: [
+          { nodeId: 'kiosk', season: 4, matchday: 9 },
+          { nodeId: 'kiosk', season: 6, matchday: 3 },
+        ],
+      },
+    }
+
+    expect(beat.trigger(game)).toBe(true)
+    expect(getBeatKey(beat, game.currentSeason, game)).toBe('facility_completed_kiosk_s6_m3')
+  })
+
+  it('legacy-kö utan season respekterar tidigare per-nod-dismiss', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const game = {
+      ...base,
+      shownBeats: ['facility_completed_kiosk'],
+      facilityState: {
+        builtNodeIds: ['kiosk'],
+        unseenCompletedFacilities: [{ nodeId: 'kiosk', matchday: 7 }],
+      },
+    }
+
+    expect(beat.trigger(game)).toBe(false)
+  })
+})

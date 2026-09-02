@@ -113,7 +113,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // VISUELL_AUDIT punkt 1 (2026-08-09): spelläges-fabriken (gameStateFactory.ts)
   | 'trupp-blandat' | 'trupp-kris' | 'lineup-empty' | 'lineup-filled'
   // PORTAL-TAKREGEL (2026-08-09): fyra baseline-tillstånd, §5 i ordern
-  | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind'
+  | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind' | 'portal-facility-completed'
   // AUDIT DEL 2 (2026-08-11): kontrollfall, Berg-budets dubbelrendering (dc3d771f)
   | 'portal-bid-single' | 'portal-bid-multi'
   // AUDIT DEL 3 (2026-08-11): baseline före ombyggnad, Club 'Klubben i korthet'
@@ -244,6 +244,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'portal-normal', label: 'Portal — normal (1 atmosfärsrad)' },
   { id: 'portal-full',   label: 'Portal — full (beat+eko+upptakt)' },
   { id: 'portal-grind',  label: 'Portal — grind-läge (veckobeslut olöst)' },
+  { id: 'portal-facility-completed', label: 'Portal — Bygget klart (navigerbart beat)' },
   { id: 'portal-bid-single', label: 'Portal — 1 bud, det är det aktiva HÄNDELSE-kortet' },
   { id: 'portal-bid-multi',  label: 'Portal — 3 bud, ett är det aktiva HÄNDELSE-kortet' },
   { id: 'club-fresh',       label: 'Club — säsong 1, inga öppna minnen' },
@@ -984,14 +985,15 @@ const tilltradeGame: SaveGame = {
 const retirementEvent: GameEvent = {
   id: 'dev-retirement-ceremony',
   type: 'retirementCeremony',
-  title: 'En sista kväll på isen',
-  body: 'Det här har varit mitt hem. Jag kommer sakna ljudet från läktaren. Vill du erbjuda en roll i klubben?',
-  sender: { name: 'Karl Lindström', role: 'Klubbikon' },
+  title: 'Pensionsceremoni — Karl Lindström',
+  body: '"Den här klubben är mitt hjärta. Det förändras inte för att jag slutar spela." — Karl Lindström Vill du erbjuda en roll i föreningen?',
+  sender: { name: 'Karl Lindström', role: 'Avgående spelare' },
   relatedPlayerId: 'p-f1',
   resolved: false,
   choices: [
-    { id: 'coach', label: 'Erbjud en roll i ledarstaben', subtitle: 'Erfarenheten stannar i klubben', effect: { type: 'setLegendRole', legendRole: 'youth_coach' } },
-    { id: 'honour', label: 'Tacka av honom på isen', subtitle: 'Låt kvällen tillhöra Karl', effect: { type: 'setLegendRole', legendRole: 'farewell' } },
+    { id: 'youth_coach', label: 'Erbjud roll som ungdomstränare', subtitle: '🌱 +ungdomskvalitet', effect: { type: 'setLegendRole', legendRole: 'youth_coach' } },
+    { id: 'scout', label: 'Erbjud roll som scout', subtitle: '🔍 +scoutresurser', effect: { type: 'setLegendRole', legendRole: 'scout' } },
+    { id: 'farewell', label: 'Tack och lycka till', effect: { type: 'setLegendRole', legendRole: 'farewell' } },
   ],
 }
 
@@ -1060,6 +1062,15 @@ const portalNormalGame = withActiveBeat(factoryMidSeasonGame)
 const portalFullBase = atRound(makeBaseGame({ seed: 2 }), 24)
 const portalFullGame = withAnniversary(withActiveBeat(portalFullBase))
 const portalGrindGame = withObjectiveAlertWarning(withPendingWeeklyDecision(factoryMidSeasonGame))
+const portalFacilityCompletedGame = {
+  ...portalTomGame,
+  facilityState: {
+    ...(portalTomGame.facilityState ?? { builtNodeIds: [] }),
+    builtNodeIds: [...new Set([...(portalTomGame.facilityState?.builtNodeIds ?? []), 'kiosk'])],
+    builtSeasons: { ...portalTomGame.facilityState?.builtSeasons, kiosk: portalTomGame.currentSeason },
+    unseenCompletedFacilities: [{ nodeId: 'kiosk', season: portalTomGame.currentSeason, matchday: portalTomGame.currentMatchday }],
+  },
+}
 
 const mobileDecisionEvents = [
   {
@@ -1755,6 +1766,7 @@ export function DevScenesScreen() {
       : scene === 'portal-normal' ? portalNormalGame
       : scene === 'portal-full' ? portalFullGame
       : scene === 'portal-grind' ? portalGrindGame
+      : scene === 'portal-facility-completed' ? portalFacilityCompletedGame
       : scene === 'portal-bid-single' ? portalBidSingleGame
       : scene === 'portal-bid-multi' ? portalBidMultiGame
       : scene === 'portal-month-decisions' ? portalMonthDecisionsGame
@@ -1952,6 +1964,7 @@ export function DevScenesScreen() {
           </div>
         )}
         {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind'
+          || scene === 'portal-facility-completed'
           || scene === 'portal-bid-single' || scene === 'portal-bid-multi'
           || scene === 'portal-month-decisions' || scene === 'sponsor-motbud'
           || scene === 'primary-smfinal-vs-deadline' || scene === 'primary-event-vs-farewell') && (

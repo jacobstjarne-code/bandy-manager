@@ -78,7 +78,7 @@ const EKONOMI: KlubbparmChapterContent = {
   paragraphs: [
     'Kassan håller klubben igång. Intäkterna kommer från läktaren, kiosken och sponsorerna, och röda siffror tär på styrelsens tålamod och skrämmer dom som annars satt sitt namn på arenan.',
     'Med tiden bygger du klubben sten för sten — värmestuga, läktare, belysning, en hall. Varje bygge flyttar tre saker på en gång: publik, själ och ekonomi. Det som är låst kräver att du rest något annat först.',
-    'Allt kostar mer än pengar. Tak över isen ger bandy året runt och tv-avtal, men klacken glesnar — de trognaste ser tak som ett svek mot utebandyn. Vad du bygger säger lika mycket om klubben som vad du köper till laget.',
+    'Allt kostar mer än pengar. Vad du bygger säger lika mycket om klubben som vad du köper till laget.',
   ],
   tumregel: 'Bygg det orten vill ha, inte bara det tabellen vill ha.',
 }

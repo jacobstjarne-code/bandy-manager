@@ -197,9 +197,11 @@ export interface FacilityState {
    *  permanent, och ett senare bygge kunde tyst SKRIVA ÖVER lastCompleted innan
    *  spelaren ens sett det första. Kö istället för ett enda fält — samma princip som
    *  pendingEvents/deferredDecisions: varje completion pushas hit, ingen försvinner
-   *  förrän spelaren faktiskt sett invigningsbeatet (game.shownBeats, per-nod keyFn).
+   *  förrän spelaren faktiskt sett invigningsbeatet. season är valfritt endast för
+   *  äldre saves; nya poster bär season+matchday så en avvecklad och återbyggd nod
+   *  får en ny händelseidentitet i stället för att spärras av första invigningen.
    *  Skrivs av advanceFacilityState, läses av portalBeats.ts's facility_completed. */
-  unseenCompletedFacilities?: { nodeId: string; matchday: number }[]
+  unseenCompletedFacilities?: { nodeId: string; matchday: number; season?: number }[]
   /** B1 §5 (06-12-modellen): matchhall-prövningens tillståndsmaskin. undefined = vilande.
    *  EN support-axel, tre förankrings-decisions, kommunförhandling via politicianData. */
   hallTrial?: HallTrial
