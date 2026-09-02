@@ -540,7 +540,12 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
           )
         })()}
         <InfoRow label="Styrelseförväntning" value={expectationLabel(club.boardExpectation)} />
-        <InfoRow label="Supporterförväntning" value={expectationLabel(club.fanExpectation)} />
+        {/* MASTER_OPPET.md fanexpectation-dott (2026-09-02): club.fanExpectation
+            sätts en gång i worldGenerator.ts och stegar aldrig med säsongen,
+            till skillnad från boardExpectation (recalibrateExpectationLadder,
+            boardService.ts). Rendera samma sanna värde här tills en egen,
+            oberoende supporterförväntans-mekanik faktiskt byggs. */}
+        <InfoRow label="Supporterförväntning" value={expectationLabel(club.boardExpectation)} />
         <InfoRow label="Spelstil" value={styleLabel(club.preferredStyle)} />
         <InfoRow label="Konstis" value={club.hasArtificialIce ? 'Ja' : 'Nej'} />
         {(game.boardObjectives ?? []).length > 0 && (
