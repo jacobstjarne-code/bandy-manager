@@ -7,11 +7,12 @@ import { seasonSpanLabel, seasonStartYear, seasonChampionYear } from '../../doma
 import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { shareSeasonImage } from '../utils/seasonShareImage'
-import { Swords } from 'lucide-react'
+import { Share2, Swords } from 'lucide-react'
 import { loadTeamPhoto, listTeamPhotoSeasons } from '../../infrastructure/teamPhotoStorage'
 import { buildBlodslinje } from '../components/clubmemory/ClubMemoryView'
 import { Spine } from '../components/shared/Spine'
 import { deriveGoalOutcomeLine, derivePersonChangeLine, deriveRivalryLine, deriveEraChangeLine, shouldShowEraChangeLine } from '../../domain/services/seasonGoalService'
+import { TabBar } from '../components/shared/TabBar'
 
 function RecordRow({ label, value, sub, isLast }: { label: string; value: string; sub: string; isLast?: boolean }) {
   return (
@@ -319,24 +320,19 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
       </div>
 
       {/* Archive tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 14, overflowX: 'auto' }}>
-        {(['seasons', 'letters', 'school', 'photos', 'blodslinje'] as ArchiveTab[]).map(tab => {
-          const labels: Record<ArchiveTab, string> = { seasons: '📅 Säsonger', letters: '✉️ Brev', school: '📚 Skoluppgifter', photos: '📷 Lagfoton', blodslinje: '🩸 Blodslinje' }
-          return (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: '6px 12px', borderRadius: 99, border: 'none', cursor: 'pointer',
-                fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
-                background: activeTab === tab ? 'var(--accent)' : 'var(--bg-elevated)',
-                color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-secondary)',
-              }}
-            >
-              {labels[tab]}
-            </button>
-          )
-        })}
+      <div style={{ marginBottom: 14 }}>
+        <TabBar
+          tabs={[
+            { id: 'seasons', label: 'Säsonger' },
+            { id: 'letters', label: 'Brev' },
+            { id: 'school', label: 'Skoluppgifter' },
+            { id: 'photos', label: 'Lagfoton' },
+            { id: 'blodslinje', label: 'Blodslinje' },
+          ]}
+          activeId={activeTab}
+          onSelect={id => setActiveTab(id as ArchiveTab)}
+          variant="pills"
+        />
       </div>
 
       {activeTab !== 'seasons' && activeTab !== 'blodslinje' && <div style={{ display: 'none' }}><JourneyGraph summaries={[]} /></div>}
@@ -473,7 +469,8 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
             borderRadius: 'var(--radius-md)', color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
           }}
         >
-          📤 Dela senaste säsongen
+          <Share2 size={15} aria-hidden="true" style={{ verticalAlign: 'text-bottom', marginRight: 5 }} />
+          Dela senaste säsongen
         </button>
       )}
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import { positionShort } from '../../utils/formatters'
+import { Zap } from 'lucide-react'
 
 interface SubstitutionModalProps {
   starters: Player[]
@@ -24,8 +25,8 @@ function PlayerRow({ player, isPick, onClick }: { player: Player; isPick?: boole
       </div>
       <div className="match-modal-row-meta">
         <span className="match-modal-row-ability">{Math.round(player.currentAbility)}</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: fitnessColor(player.fitness) }}>
-          ⚡ {Math.round(player.fitness)}
+        <span style={{ fontSize: 11, fontWeight: 600, color: fitnessColor(player.fitness), display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+          <Zap size={11} aria-hidden="true" /> {Math.round(player.fitness)}
         </span>
       </div>
     </button>

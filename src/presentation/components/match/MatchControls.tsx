@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Settings } from 'lucide-react'
+import { Activity, ArrowLeftRight, FastForward, Pause, Play, Settings, Volume2, VolumeX } from 'lucide-react'
 import { Icon } from '../primitives/Icon'
 
 interface MatchControlsProps {
@@ -42,7 +42,7 @@ export function MatchControls({
           className={`match-control-btn${!isPaused ? ' active' : ''}`}
           title={isPaused ? 'Spela' : 'Pausa'}
         >
-          {isPaused ? '▶' : '⏸'}
+          <Icon icon={isPaused ? Play : Pause} size={16} />
         </button>
 
         <button
@@ -50,7 +50,7 @@ export function MatchControls({
           className={`match-control-btn${isFastForward ? ' active' : ''}`}
           title="Snabbsim"
         >
-          ⏩
+          <Icon icon={FastForward} size={16} />
         </button>
 
         {!matchDone && (
@@ -80,7 +80,7 @@ export function MatchControls({
           className={`match-control-btn${muted ? ' active' : ''}`}
           title={muted ? 'Slå på ljud' : 'Stäng av ljud'}
         >
-          {muted ? '🔇' : '🔊'}
+          <Icon icon={muted ? VolumeX : Volume2} size={16} />
         </button>
 
         <button
@@ -88,7 +88,7 @@ export function MatchControls({
           className="match-control-btn"
           title="Siffror"
         >
-          〰
+          <Icon icon={Activity} size={16} />
         </button>
       </div>
     </div>

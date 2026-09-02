@@ -6,6 +6,7 @@ import { getSuggestionWhyLine, type OpponentAnalysis } from '../../../domain/ser
 import { tacticRows, TACTIC_GROUPS, type TacticRow } from '../../utils/tacticData'
 import { FormationView } from './FormationView'
 import { NotesView } from './NotesView'
+import { SlidersHorizontal } from 'lucide-react'
 
 interface TacticBoardCardProps {
   club: Club
@@ -227,7 +228,8 @@ export function TacticBoardCard({
               }}
             >
               <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                🏒 {hiddenGroups.map(g => g.label).join(' · ')}
+                <SlidersHorizontal size={13} aria-hidden="true" style={{ verticalAlign: 'text-bottom', marginRight: 4 }} />
+                {hiddenGroups.map(g => g.label).join(' · ')}
               </span>
               <span style={{ fontSize: 10, color: 'var(--accent-deep)', fontWeight: 700, letterSpacing: '0.5px' }}>
                 VISA ALLA ÅTTA ›

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Settings, BookOpen } from 'lucide-react'
+import { Settings, BookOpen, Save, FolderOpen, Download, Upload } from 'lucide-react'
 import { Icon } from './primitives/Icon'
 import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/gameStore'
 import { TownSilhouette } from './TownSilhouette'
@@ -312,19 +312,20 @@ export function GameHeader() {
             {lastConfirmedSaveAt ? `Senast sparat: ${formatRelativeSaveTime(lastConfirmedSaveAt)}` : 'Inte sparat än denna session'}
           </div>
           {[
-            { label: '💾 Spara spel', action: handleSaveGame },
-            { label: '📂 Ladda spel', action: () => navigate('/') },
-            { label: '⬇️ Exportera säkerhetskopia', action: handleExportSave },
-            { label: '⬇️ Exportera återställningsrapport', action: handleExportRecoveryReport },
-            { label: '⬆️ Importera säkerhetskopia', action: handleImportSave },
+            { label: 'Spara spel', icon: Save, action: handleSaveGame },
+            { label: 'Ladda spel', icon: FolderOpen, action: () => navigate('/') },
+            { label: 'Exportera säkerhetskopia', icon: Download, action: handleExportSave },
+            { label: 'Exportera återställningsrapport', icon: Download, action: handleExportRecoveryReport },
+            { label: 'Importera säkerhetskopia', icon: Upload, action: handleImportSave },
           ].map((item, i) => (
             <button key={i} onClick={() => { void item.action(); setShowMenu(false) }}
               style={{
-                display: 'block', width: '100%', textAlign: 'left',
+                display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left',
                 padding: '10px 14px', background: 'none', border: 'none',
                 fontSize: 13, color: 'var(--text-primary)',
                 cursor: 'pointer', fontFamily: 'var(--font-body)',
               }}>
+              <Icon icon={item.icon} size={14} />
               {item.label}
             </button>
           ))}

@@ -11,6 +11,7 @@ import { OrtenMap } from './OrtenMap'
 import { generateVolunteerRoster, getActiveVolunteerBonus } from '../../../domain/services/volunteerService'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SUPPORTER_ROLE_LABELS } from '../../../domain/data/enumLabels'
+import { BarChart3, ClipboardList, FilePenLine } from 'lucide-react'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {
@@ -483,32 +484,35 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
             const applyUsed = li.applySeason === game.currentSeason
             return (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button className="btn btn-ghost" disabled={inviteCooldown > 0} style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
+            <button className="btn btn-ghost" disabled={inviteCooldown > 0} style={{ flex: 1, padding: '8px 6px', fontSize: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
               onClick={() => {
                 if (!interactWithPolitician) return
                 const r = interactWithPolitician('invite')
                 setPolFeedback({ text: r.message, ok: r.success })
                 setTimeout(() => setPolFeedback(null), 4000)
               }}>
-              {inviteCooldown > 0 ? `📋 Omg ${currentRound + inviteCooldown}` : '📋 Bjud in'}
+              <ClipboardList size={13} aria-hidden="true" />
+              {inviteCooldown > 0 ? `Omg ${currentRound + inviteCooldown}` : 'Bjud in'}
             </button>
-            <button className="btn btn-ghost" disabled={budgetUsed} style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
+            <button className="btn btn-ghost" disabled={budgetUsed} style={{ flex: 1, padding: '8px 6px', fontSize: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
               onClick={() => {
                 if (!interactWithPolitician) return
                 const r = interactWithPolitician('budget')
                 setPolFeedback({ text: r.message, ok: r.success })
                 setTimeout(() => setPolFeedback(null), 4000)
               }}>
-              {budgetUsed ? '📊 Gjort' : '📊 Budget'}
+              <BarChart3 size={13} aria-hidden="true" />
+              {budgetUsed ? 'Gjort' : 'Budget'}
             </button>
-            <button className="btn btn-ghost" disabled={applyUsed || polData.relationship < 50} style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
+            <button className="btn btn-ghost" disabled={applyUsed || polData.relationship < 50} style={{ flex: 1, padding: '8px 6px', fontSize: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
               onClick={() => {
                 if (!interactWithPolitician) return
                 const r = interactWithPolitician('apply')
                 setPolFeedback({ text: r.message, ok: r.success })
                 setTimeout(() => setPolFeedback(null), 4000)
               }}>
-              {applyUsed ? '📝 Gjort' : polData.relationship < 50 ? '📝 Kräver 50+' : '📝 Bidrag'}
+              <FilePenLine size={13} aria-hidden="true" />
+              {applyUsed ? 'Gjort' : polData.relationship < 50 ? 'Kräver 50+' : 'Bidrag'}
             </button>
           </div>
             )

@@ -19,6 +19,7 @@ import { ScoreBlock } from '../components/primitives/ScoreBlock'
 import { Sparkline, MIN_POINTS } from '../components/primitives/Sparkline'
 import { seasonSpanLabel, seasonStartYear } from '../../domain/utils/seasonYear'
 import { seasonVerdictText } from '../../domain/services/boardService'
+import { BookOpen, Share2 } from 'lucide-react'
 
 function getSignatureEmojiFromRubric(rubric: string): string {
   if (rubric.includes('köldvintern')) return '🌨'
@@ -969,8 +970,8 @@ export function SeasonSummaryScreen() {
             >
               {shareState === 'generating' ? 'Genererar bild...'
                 : shareState === 'failed' ? 'Kunde inte dela — försök igen'
-                : shareState === 'cancelled' ? 'Avbrutet — 📤 Dela din säsong'
-                : '📤 Dela din säsong'}
+                : shareState === 'cancelled' ? <><Share2 size={15} aria-hidden="true" /> Avbrutet — dela din säsong</>
+                : <><Share2 size={15} aria-hidden="true" /> Dela din säsong</>}
             </button>
             {shareState === 'failed' && (
               <button
@@ -986,7 +987,7 @@ export function SeasonSummaryScreen() {
               className="btn btn-outline"
               style={{ width: '100%', marginBottom: 10 }}
             >
-              📖 Se hela karriärhistoriken
+              <BookOpen size={15} aria-hidden="true" /> Se hela karriärhistoriken
             </button>
             <button
               onClick={handleNextSeason}

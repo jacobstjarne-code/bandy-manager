@@ -1,6 +1,7 @@
 import type { TrainingProject } from '../../../domain/entities/Training'
 import { PROJECT_DEFINITIONS } from '../../../domain/services/trainingProjectService'
 import { SectionCard } from '../SectionCard'
+import { Zap } from 'lucide-react'
 
 const RISK_LABEL: Record<string, string> = {
   none: 'Ingen', low: 'Låg', medium: 'Medel', high: 'Hög',
@@ -117,14 +118,14 @@ export function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingPr
                     style={{ fontSize: 10, padding: '3px 8px', flexShrink: 0, color: 'var(--danger)' }}
                     title="Snabbare men högre skaderisk"
                   >
-                    ⚡ {def.roundsHard}
+                    <Zap size={11} aria-hidden="true" /> {def.roundsHard}
                   </button>
                 </div>
               )
             })}
           </div>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
-            ⚡ = intensiv (snabbare, men högre skaderisk)
+            <Zap size={10} aria-hidden="true" style={{ verticalAlign: 'text-bottom' }} /> = intensiv (snabbare, men högre skaderisk)
           </p>
         </>
       )}

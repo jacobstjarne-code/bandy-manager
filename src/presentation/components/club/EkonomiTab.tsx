@@ -7,6 +7,7 @@ import { calcRoundIncome, deriveKassaHistory, buildRoundIncomeParamsForNextFixtu
 import { LICENSE_ZONE_TEXT } from '../../../domain/services/licenseService'
 import { matchdayToLeagueRound } from '../../../domain/services/scheduleGenerator'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
+import { Phone } from 'lucide-react'
 import '../../styles/economy.css'
 
 const EMPTY_COMMUNITY = {
@@ -384,9 +385,9 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                   }
                   setTimeout(() => setSponsorFeedback(null), 4000)
                 }}
-                style={{ fontSize: 12, padding: '5px 10px' }}
+                style={{ fontSize: 12, padding: '5px 10px', display: 'inline-flex', alignItems: 'center', gap: 5 }}
               >
-                📞 Ragga sponsor — 2,5 tkr
+                <Phone size={13} aria-hidden="true" /> Ragga sponsor — 2,5 tkr
               </button>
             </div>
           </div>

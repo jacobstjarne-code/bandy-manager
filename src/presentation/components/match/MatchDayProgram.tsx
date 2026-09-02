@@ -6,6 +6,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { getConditionLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
+import { ChevronDown, ChevronUp, ClipboardList } from 'lucide-react'
 
 interface MatchDayProgramProps {
   fixture: Fixture
@@ -79,9 +80,11 @@ export function MatchDayProgram({ fixture, opponent, managedClub, game, myPlayer
         }}
       >
         <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
-          📋 MATCHDAGSPROGRAM
+          <ClipboardList size={12} aria-hidden="true" style={{ verticalAlign: 'text-bottom', marginRight: 4 }} /> MATCHDAGSPROGRAM
         </span>
-        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
+        <span style={{ color: 'var(--text-muted)', display: 'inline-flex' }}>
+          {open ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+        </span>
       </button>
 
       {/* Always visible: headline */}
