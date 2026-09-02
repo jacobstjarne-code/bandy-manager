@@ -434,7 +434,10 @@ export function SquadScreen() {
     const rawAnalysis = game.opponentAnalyses?.[oppId]
     // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): samma gate/seed som
     // TaktikScreen.tsx — de två skärmarna får aldrig ge olika svar samma omgång.
-    const suppressed = getBurnoutTacticSuppression(game.managerProfile, burnoutEffectSeed(game))
+    // DOM_BURNOUT_TAK_2026-09-02 (C): samma forceFullSuppression-avgörande
+    // som TaktikScreen.tsx, ur samma game-objekt.
+    const ceilingRecoveryActive = (game.burnoutCeilingRecoveryUntilRound ?? 0) >= game.currentMatchday
+    const suppressed = getBurnoutTacticSuppression(game.managerProfile, burnoutEffectSeed(game), ceilingRecoveryActive)
     return {
       nextOpponentName: opp?.shortName ?? opp?.name,
       nextOpponentAnalysis: suppressed ? suppressTacticRecommendation(rawAnalysis) : rawAnalysis,

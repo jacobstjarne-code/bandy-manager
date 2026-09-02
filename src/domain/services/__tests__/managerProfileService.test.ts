@@ -7,7 +7,10 @@ import {
   shouldShowBurnoutRelief,
   shouldShowBurnoutClose,
   isBurnoutRelapse,
+  shouldTriggerBurnoutCeilingChoice,
   BURNOUT_NATURAL_DECAY,
+  BURNOUT_CEILING_TRIGGER_ROUNDS,
+  BURNOUT_CEILING_RECOVERY_MAX_DELTA,
 } from '../managerProfileService'
 import { FixtureStatus } from '../../enums'
 import type { SaveGame } from '../../entities/SaveGame'
@@ -144,6 +147,127 @@ describe('updateManagerBurnout — decay-gaten (HIGH 10, bugg 1)', () => {
     const next = updateManagerBurnout(quiet)!
     expect(next.lastBurnoutCause).toBe('losses')
     expect(next.burnoutScore).toBe(50 - BURNOUT_NATURAL_DECAY)
+  })
+})
+
+/**
+ * DOM_BURNOUT_TAK_2026-09-02 (A) — episod-räknaren vid taket. Skild från
+ * burnoutHistory (rullande 22-omgångarsfönster) — detta är EN sammanhängande
+ * svit på exakt 100, nollställd så fort scoret sjunker en enda punkt.
+ */
+describe('updateManagerBurnout — roundsAtBurnoutCeiling', () => {
+  it('ökar med 1 varje omgång scoret landar på exakt 100', () => {
+    // Extrem press (tre förluster + max fatigue + full inkorg) garanterar
+    // att scoret stannar på taket trots den vanliga decayen.
+    const fixtures = [playedFixture(3, 0, 5), playedFixture(2, 0, 5), playedFixture(1, 0, 5)]
+    let game = makeGame({
+      profile: makeProfile({ burnoutScore: 100, burnoutHistory: [100], roundsAtBurnoutCeiling: 0 }),
+      fixtures, unreadInbox: 50, fatigue: 100,
+    })
+    const rounds: number[] = []
+    for (let i = 0; i < 3; i++) {
+      const next = updateManagerBurnout(game)!
+      rounds.push(next.roundsAtBurnoutCeiling ?? -1)
+      game = { ...game, managerProfile: next }
+    }
+    expect(rounds).toEqual([1, 2, 3])
+  })
+
+  it('nollställs så fort scoret sjunker under taket — en avbruten svit räknas inte vidare', () => {
+    const calmGame = makeGame({
+      profile: makeProfile({ burnoutScore: 100, burnoutHistory: [100], roundsAtBurnoutCeiling: 3 }),
+    })
+    const next = updateManagerBurnout(calmGame)!
+    expect(next.burnoutScore).toBeLessThan(100)
+    expect(next.roundsAtBurnoutCeiling).toBe(0)
+  })
+
+  it('burnoutCeilingChoiceOffered nollställs i samma steg episoden bryts', () => {
+    const calmGame = makeGame({
+      profile: makeProfile({ burnoutScore: 100, burnoutHistory: [100], roundsAtBurnoutCeiling: 5, burnoutCeilingChoiceOffered: true }),
+    })
+    const next = updateManagerBurnout(calmGame)!
+    expect(next.burnoutCeilingChoiceOffered).toBe(false)
+  })
+
+  it('burnoutCeilingChoiceOffered bevaras medan episoden fortsätter', () => {
+    const fixtures = [playedFixture(3, 0, 5), playedFixture(2, 0, 5), playedFixture(1, 0, 5)]
+    const pressedGame = makeGame({
+      profile: makeProfile({ burnoutScore: 100, burnoutHistory: [100], roundsAtBurnoutCeiling: 5, burnoutCeilingChoiceOffered: true }),
+      fixtures, unreadInbox: 50, fatigue: 100,
+    })
+    const next = updateManagerBurnout(pressedGame)!
+    expect(next.burnoutScore).toBe(100)
+    expect(next.burnoutCeilingChoiceOffered).toBe(true)
+  })
+})
+
+/**
+ * DOM_BURNOUT_TAK_2026-09-02 (C), Jacobs vägval (a) — nettodelta-golvet.
+ * INTE ett hårdsatt score: ett lågt press-läge behåller sitt naturligt
+ * större (mer negativa) delta oförändrat, golvet griper bara in när pressen
+ * annars hade ätit upp återhämtningen.
+ */
+describe('updateManagerBurnout — burnoutCeilingRecoveryUntilRound (nettodelta-golvet)', () => {
+  it('extrem press under fönstret nettar ändå negativt — aldrig positivt', () => {
+    // Tre förluster (+30) + max fatigue (+30) + full inkorg (+6) = pressDelta 66,
+    // långt över vad någon fast bonus-decay skulle garantera positivt-fritt
+    // utan golvet.
+    const fixtures = [playedFixture(3, 0, 5), playedFixture(2, 0, 5), playedFixture(1, 0, 5)]
+    const game = {
+      ...makeGame({
+        profile: makeProfile({ burnoutScore: 100, burnoutHistory: [100] }),
+        fixtures, unreadInbox: 50, fatigue: 100,
+      }),
+      currentMatchday: 10,
+      burnoutCeilingRecoveryUntilRound: 12,
+    } as unknown as SaveGame
+    const next = updateManagerBurnout(game)!
+    expect(next.burnoutScore).toBeLessThan(100)
+    expect(next.burnoutScore).toBe(100 + BURNOUT_CEILING_RECOVERY_MAX_DELTA)
+  })
+
+  it('lågt press-läge behåller sitt STÖRRE naturliga delta — golvet höjer det aldrig', () => {
+    // Ingen press alls: naturligt delta är -BURNOUT_NATURAL_DECAY (-14),
+    // mer negativt än golvet (-3) — Math.min ska välja det naturliga.
+    const game = {
+      ...makeGame({ profile: makeProfile({ burnoutScore: 100, burnoutHistory: [100] }) }),
+      currentMatchday: 10,
+      burnoutCeilingRecoveryUntilRound: 12,
+    } as unknown as SaveGame
+    const next = updateManagerBurnout(game)!
+    expect(next.burnoutScore).toBe(100 - BURNOUT_NATURAL_DECAY)
+  })
+
+  it('fönstret har gått ut (currentMatchday > burnoutCeilingRecoveryUntilRound) — ingen golv-effekt', () => {
+    const fixtures = [playedFixture(3, 0, 5), playedFixture(2, 0, 5), playedFixture(1, 0, 5)]
+    const game = {
+      ...makeGame({
+        profile: makeProfile({ burnoutScore: 100, burnoutHistory: [100] }),
+        fixtures, unreadInbox: 50, fatigue: 100,
+      }),
+      currentMatchday: 13,
+      burnoutCeilingRecoveryUntilRound: 12,
+    } as unknown as SaveGame
+    const next = updateManagerBurnout(game)!
+    expect(next.burnoutScore).toBe(100) // ohindrad press håller kvar taket, som förväntat utan fönstret
+  })
+})
+
+describe('shouldTriggerBurnoutCeilingChoice', () => {
+  it('nej under tröskeln', () => {
+    const profile = makeProfile({ roundsAtBurnoutCeiling: BURNOUT_CEILING_TRIGGER_ROUNDS - 1 })
+    expect(shouldTriggerBurnoutCeilingChoice(profile)).toBe(false)
+  })
+
+  it('ja vid tröskeln', () => {
+    const profile = makeProfile({ roundsAtBurnoutCeiling: BURNOUT_CEILING_TRIGGER_ROUNDS })
+    expect(shouldTriggerBurnoutCeilingChoice(profile)).toBe(true)
+  })
+
+  it('nej om redan erbjuden denna episod, även långt över tröskeln', () => {
+    const profile = makeProfile({ roundsAtBurnoutCeiling: BURNOUT_CEILING_TRIGGER_ROUNDS + 10, burnoutCeilingChoiceOffered: true })
+    expect(shouldTriggerBurnoutCeilingChoice(profile)).toBe(false)
   })
 })
 

@@ -775,8 +775,30 @@ export const BOARD_EXPECTATION_LEVEL_LABEL: Record<ClubExpectation, string> = {
  * i stället citerades ordagrant. Nästa steg innan bygge: Opus bekräftar/
  * återger de fyra saknade raderna ordagrant.
  */
-const RAISED_REASON_LINE = 'Ni har visat att ni kan mer. Då begär vi mer.'
-const LOWERED_REASON_LINE = 'Ni tappade för mycket för att vi ska kunna kräva samma sak.'
+/**
+ * De SEX skälsraderna, tre per riktning (Jacob låst; rad 1/3 bekräftade
+ * ordagrant 2026-09-02, "de duger"). Raden väljs efter vad som DREV
+ * ändringen: `leagueMovement` (rad 1 — ligarörelser: vilka lag kom upp/
+ * föll ur), `results` (rad 2 — föregående placering ensam, den enda steg 1
+ * kunde belägga), `aiTransfers` (rad 3 — rivalernas rustning). Steg 2 (Code)
+ * wirar urvalet mot aiTransferLog + standingsSnapshot; tills dess använder
+ * deriveBoardAssessment `.results` som förut (RAISED/LOWERED_REASON_LINE nedan).
+ */
+export const BOARD_REASON_LINES: Record<'raised' | 'lowered', { leagueMovement: string; results: string; aiTransfers: string }> = {
+  raised: {
+    leagueMovement: 'Lagen som kom upp är svagare än de som föll ur. Toppen är öppnare i år, och det ser vi också.',
+    results: 'Ni har visat att ni kan mer. Då begär vi mer.',
+    aiTransfers: 'Konkurrenterna har inte rustat som ni gjort. Det finns ett läge i år — ta det.',
+  },
+  lowered: {
+    leagueMovement: 'Serien fick tyngre lag i år. Ribban höjdes för alla, inte bara för er.',
+    results: 'Ni tappade för mycket för att vi ska kunna kräva samma sak.',
+    aiTransfers: 'Två lag omkring er har rustat på ett sätt ni inte matchat. Vi justerar därefter.',
+  },
+}
+
+const RAISED_REASON_LINE = BOARD_REASON_LINES.raised.results
+const LOWERED_REASON_LINE = BOARD_REASON_LINES.lowered.results
 
 // SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md). Del 1 ("vad de såg" — en
 // kort kvittens av föregående säsong, DOM:s ord: "styrelsens läsning",

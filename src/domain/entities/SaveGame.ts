@@ -474,6 +474,21 @@ export interface SaveGame {
    *  effekten (roundProcessor.ts tvingar 'light' fram till denna omgång,
    *  oavsett vad spelaren själv valt i Träna-fliken). */
   burnoutTrainingSlowdownUntilRound?: number
+  /**
+   * DOM_BURNOUT_TAK_2026-09-02 (C) — "Kliv tillbaka"-valets GARANTERADE
+   * nedgång. Roten till GPT:s 100→97-fynd: updateManagerBurnout()s vanliga
+   * press/återhämtning-dragkamp kan nettas nästan till noll under sustained
+   * press (en dominant men pressad säsong), så taket aldrig faktiskt släpper.
+   * Medan denna omgång ≤ detta fält gäller en STOR, garanterad bonus-decay
+   * OVANPÅ den vanliga formeln (managerProfileService.ts) — pressen kan
+   * fortfarande dämpa den, men aldrig helt äta upp den. Satt av
+   * 'startBurnoutCeilingRecovery'-subeffekten (eventResolver.ts), samma
+   * "tillfällig override tills omgång N"-mönster som burnoutTrainingSlowdown-
+   * UntilRound ovan. Under samma fönster tvingas även taktikrekommendationen
+   * bort helt (getBurnoutTacticSuppression, burnoutReliefService.ts) —
+   * "du tappar kontroll, laget driver" (domens ord).
+   */
+  burnoutCeilingRecoveryUntilRound?: number
 
   // Sprint 5: named characters
   namedCharacters?: NamedCharacter[]

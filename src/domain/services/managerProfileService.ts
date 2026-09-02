@@ -32,6 +32,31 @@ export const BURNOUT_WIN_RECOVERY = 5
 export const BURNOUT_NATURAL_DECAY = 14
 const BURNOUT_TRIGGER_THRESHOLD = 70
 const BURNOUT_TRIGGER_ROUNDS = 2     // consecutive rounds above threshold before BurnoutMark
+const BURNOUT_CEILING = 100
+
+/**
+ * DOM_BURNOUT_TAK_2026-09-02 — D-fact-platshållare, Jacobs känslo-kalibrering
+ * väntar en mätning (domens eget "Godkänt när", en dominant-men-pressad
+ * karriär). Rör inte utan att mäta, samma disciplin som BURNOUT_NATURAL_DECAY.
+ *
+ * TRIGGER_ROUNDS: antal RAKA omgångar på exakt taket innan valet fyrar.
+ * RECOVERY_WINDOW_ROUNDS: hur länge "Kliv tillbaka"s garanterade nedtrend pågår.
+ * RECOVERY_MAX_DELTA: Jacobs vägval (a), inte ett hårdsatt score. Under
+ *   fönstret klampas NETTODELTAT (press minus återhämtning, samma delta som
+ *   alltid beräknas) till som mest detta värde — `Math.min(delta, denna)`.
+ *   Ett lågt press-läge ger fortfarande sitt naturligt STÖRRE (mer negativt)
+ *   delta oförändrat; klampen aktiverar bara som ett GOLV när pressen annars
+ *   hade ätit upp återhämtningen (GPT:s 100→97-fynd, nettoresultat ~-0,3/
+ *   omgång). Mätaren förblir en ärlig läsning av press minus återhämtning —
+ *   den ljuger aldrig om ett bättre tillstånd än det faktiska (domens egen
+ *   princip: "mätaren måste fortsätta kommunicera"). Negativt värde =
+ *   garanterad nedgång, aldrig ett positivt nettodelta under fönstret.
+ * BOARD_PATIENCE_COST: "tålamodskostnaden" (kliv tillbaka-priset, domens C).
+ */
+export const BURNOUT_CEILING_TRIGGER_ROUNDS = 4
+export const BURNOUT_CEILING_RECOVERY_WINDOW_ROUNDS = 6
+export const BURNOUT_CEILING_RECOVERY_MAX_DELTA = -3
+export const BURNOUT_CEILING_BOARD_PATIENCE_COST = -10
 
 /** Burnout-zonen, namngiven. Läses av ManagerProfile.lastShownBurnoutZone. */
 export type BurnoutZone = 'frisk' | 'markbar' | 'hog'
@@ -282,7 +307,19 @@ export function updateManagerBurnout(game: SaveGame): ManagerProfile | undefined
   if (press.lastWon) recoveryDelta -= BURNOUT_WIN_RECOVERY
   recoveryDelta -= BURNOUT_NATURAL_DECAY
 
-  const delta = press.pressDelta + recoveryDelta
+  let delta = press.pressDelta + recoveryDelta
+
+  // DOM_BURNOUT_TAK_2026-09-02 (C), Jacobs vägval (a) — INTE ett hårdsatt
+  // score. Mätaren förblir en ärlig läsning av press minus återhämtning;
+  // klampen är ett GOLV på nettodeltat som bara griper in när pressen annars
+  // hade ätit upp återhämtningen helt (GPT:s 100→97-fynd). Ett lågt press-läge
+  // ger fortfarande sitt naturligt större (mer negativt) delta oförändrat —
+  // Math.min tar det MEST negativa av de två, aldrig ett positivt netto under
+  // fönstret.
+  const ceilingRecoveryActive = (game.burnoutCeilingRecoveryUntilRound ?? 0) >= game.currentMatchday
+  if (ceilingRecoveryActive) {
+    delta = Math.min(delta, BURNOUT_CEILING_RECOVERY_MAX_DELTA)
+  }
 
   const newScore = Math.max(0, Math.min(100, profile.burnoutScore + delta))
   const newHistory = [...profile.burnoutHistory, newScore].slice(-BURNOUT_HISTORY_MAX)
@@ -294,7 +331,32 @@ export function updateManagerBurnout(game: SaveGame): ManagerProfile | undefined
     ? deriveBurnoutCause(game)
     : profile.lastBurnoutCause
 
-  return { ...profile, burnoutScore: newScore, burnoutHistory: newHistory, lastBurnoutCause }
+  // DOM_BURNOUT_TAK_2026-09-02 (A) — episod-räknaren. Nollställs så fort
+  // scoret sjunker under taket (en avbruten svit räknas inte vidare); en NY
+  // episod (om taket nås igen senare i karriären) får då erbjuda valet på
+  // nytt (burnoutCeilingChoiceOffered nollställs i samma steg).
+  const atCeiling = newScore >= BURNOUT_CEILING
+  const roundsAtBurnoutCeiling = atCeiling ? (profile.roundsAtBurnoutCeiling ?? 0) + 1 : 0
+  const burnoutCeilingChoiceOffered = atCeiling ? profile.burnoutCeilingChoiceOffered : false
+
+  return {
+    ...profile,
+    burnoutScore: newScore,
+    burnoutHistory: newHistory,
+    lastBurnoutCause,
+    roundsAtBurnoutCeiling,
+    burnoutCeilingChoiceOffered,
+  }
+}
+
+/**
+ * DOM_BURNOUT_TAK_2026-09-02 (A) — tak-triggern. Fyrar EN gång per
+ * sammanhängande episod vid taket (ihållande MAX, inte en första mild
+ * burnout — SKYDDAT-punkten). Läses av eventProcessor.ts.
+ */
+export function shouldTriggerBurnoutCeilingChoice(profile: ManagerProfile): boolean {
+  if (profile.burnoutCeilingChoiceOffered) return false
+  return (profile.roundsAtBurnoutCeiling ?? 0) >= BURNOUT_CEILING_TRIGGER_ROUNDS
 }
 
 /**

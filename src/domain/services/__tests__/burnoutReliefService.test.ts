@@ -70,6 +70,23 @@ describe('getBurnoutTacticSuppression', () => {
     const b = getBurnoutTacticSuppression(profile, 123)
     expect(a).toBe(b)
   })
+
+  // DOM_BURNOUT_TAK_2026-09-02 (C) — "du tappar kontroll, laget driver".
+  it('forceFullSuppression=true undertrycker alltid, oavsett zon/seed', () => {
+    const frisk = makeProfile(10)
+    for (let seed = 0; seed < 20; seed++) {
+      expect(getBurnoutTacticSuppression(frisk, seed, true)).toBe(true)
+    }
+  })
+
+  it('forceFullSuppression=true undertrycker även utan profil', () => {
+    expect(getBurnoutTacticSuppression(undefined, 42, true)).toBe(true)
+  })
+
+  it('forceFullSuppression=false (default) — oförändrat beteende, inte alltid sant', () => {
+    const frisk = makeProfile(10)
+    expect(getBurnoutTacticSuppression(frisk, 1)).toBe(false)
+  })
 })
 
 describe('burnoutEffectSeed', () => {

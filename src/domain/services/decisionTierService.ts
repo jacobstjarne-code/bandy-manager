@@ -98,6 +98,15 @@ export const DECISION_TIER_BY_TYPE: Record<GameEventType, DecisionTier> = {
   // personlig, men det ENDA stället bågens andra halva kan besvaras — som
   // bakgrund hade den aldrig nått spelaren. Se rapporten.
   burnoutRelief: 'month',
+  // DOM_BURNOUT_TAK_2026-09-02 (A): domen kallar detta "samma icke-deferbara
+  // mekanik som andra måste-kort" — men måste-medlemskapet är EN STÄNGD LISTA
+  // (Jacobs HIGH 11-dom, se rubriken ovan: "kontraktsdeadline och licenskrav/
+  // handlingsplan", "Utöka ALDRIG listan på känsla"). Den nya domen namnger
+  // inte decisionTierService.ts eller en tredje måste-medlem explicit — bara
+  // 'month' till dess Jacob uttryckligen klassificerar den. FLAGGAT, inte
+  // kringgånget (samma mönster som communityActivityRenewal nedan följde för
+  // sitt eget måste-spörsmål). Se contentContract.ts:s burnoutCeiling-rad.
+  burnoutCeiling: 'month',
 
   // ── BAKGRUND ────────────────────────────────────────────────────────────
   // Press/media
@@ -168,6 +177,7 @@ export const DECISION_MODE_BY_TYPE: Record<GameEventType, DecisionMode> = {
   mecenatWithdrawal: 'brytpunkt',
   patronWithdrawal: 'brytpunkt',
   retirementCeremony: 'brytpunkt',
+  burnoutCeiling: 'brytpunkt',
 
   // dilemma
   contractRequest: 'dilemma',

@@ -13,8 +13,9 @@ import { checkEconomicCrisis } from '../../../domain/services/economicCrisisServ
 import { checkSeasonGoalHalfwayEvent } from '../../../domain/services/seasonGoalService'
 import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
-import { getBurnoutZone } from '../../../domain/services/managerProfileService'
+import { getBurnoutZone, shouldTriggerBurnoutCeilingChoice } from '../../../domain/services/managerProfileService'
 import { generateBurnoutReliefEvent } from '../../../domain/services/burnoutReliefService'
+import { generateBurnoutCeilingEvent } from '../../../domain/services/burnoutCeilingService'
 import { generateCommunityRenewalEvent } from '../../../domain/services/communityRenewalService'
 import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
 import type { Scandal } from '../../../domain/services/scandalService'
@@ -144,6 +145,15 @@ export function processGameEvents(
     !isInCooldown(game.sourceCooldowns ?? {}, 'burnout')
   ) {
     gameEvents.push(generateBurnoutReliefEvent(nextMatchday, game.currentSeason, burnoutZone))
+  }
+
+  // DOM_BURNOUT_TAK_2026-09-02 (A) — tak-triggern. INGEN canAddDecision/
+  // cooldown-spärr (samma mönster som contractRequest, postAdvanceEvents.ts:
+  // ett riktigt måste-kort gates bara på sitt eget domänvillkor, inte på
+  // budgeten övriga event delar) — episoden gates enbart av
+  // shouldTriggerBurnoutCeilingChoice:s egen "redan erbjuden"-stämpel.
+  if (game.managerProfile && shouldTriggerBurnoutCeilingChoice(game.managerProfile)) {
+    gameEvents.push(generateBurnoutCeilingEvent(nextMatchday, game.currentSeason))
   }
 
   // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):

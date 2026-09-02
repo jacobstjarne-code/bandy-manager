@@ -27,7 +27,10 @@ export function TaktikScreen() {
     // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): "assistentens taktik-
     // rekommendation uteblir ibland/oftare" — deterministisk per omgång,
     // samma seed som SquadScreen.tsx:s TacticBoardCard-montering.
-    const suppressed = getBurnoutTacticSuppression(game.managerProfile, burnoutEffectSeed(game))
+    // DOM_BURNOUT_TAK_2026-09-02 (C): under "Kliv tillbaka"s återhämtnings-
+    // fönster tvingas den bort HELT, oavsett zon/seed.
+    const ceilingRecoveryActive = (game.burnoutCeilingRecoveryUntilRound ?? 0) >= game.currentMatchday
+    const suppressed = getBurnoutTacticSuppression(game.managerProfile, burnoutEffectSeed(game), ceilingRecoveryActive)
     return {
       nextOpponentName: opp?.shortName ?? opp?.name,
       nextOpponentAnalysis: suppressed ? suppressTacticRecommendation(rawAnalysis) : rawAnalysis,

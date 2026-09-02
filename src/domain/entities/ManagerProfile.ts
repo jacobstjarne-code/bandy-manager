@@ -12,7 +12,10 @@ export interface CoachRivalry {
 export interface ManagerNarrativeEntry {
   season: number
   matchday: number
-  type: 'arrival' | 'burnout_peak' | 'era_shift' | 'rivalry' | 'milestone'
+  // 'burnout_scar' — DOM_BURNOUT_TAK_2026-09-02 (D). Skrivs OAVSETT vilken
+  // gren som valdes vid taket ('push_through'/'step_back') — se
+  // ManagerProfile.burnoutScar för vilken av de två.
+  type: 'arrival' | 'burnout_peak' | 'burnout_scar' | 'era_shift' | 'rivalry' | 'milestone'
   text: string
 }
 
@@ -90,4 +93,31 @@ export interface ManagerProfile {
    * gamla saves ⇒ läs som undefined (ingen orsaksrad visas).
    */
   lastBurnoutCause?: BurnoutCause
+
+  // ── Burnout-taket (DOM_BURNOUT_TAK_2026-09-02) ────────────────────────────
+  /**
+   * Antal I RAD omgångar burnoutScore legat på taket (100). Nollställs så
+   * fort scoret sjunker under 100 — en avbruten svit räknas inte vidare.
+   * Skild från burnoutHistory (rullande 22-omgångarsfönster, för volatila
+   * beat-kontroller) — den här räknaren mäter EN sammanhängande episod vid
+   * exakt taket, som kan sträcka sig längre än historikfönstret.
+   */
+  roundsAtBurnoutCeiling?: number
+  /**
+   * Sant från den stund tak-valet erbjudits, tills episoden vid taket tar
+   * slut (roundsAtBurnoutCeiling nollställs). Förhindrar att samma episod
+   * erbjuder valet om och om igen varje omgång den ligger kvar över tröskeln
+   * — samma "stämpla vid beslutet"-princip som lastShownBurnoutZone.
+   */
+  burnoutCeilingChoiceOffered?: boolean
+  /**
+   * Det permanenta ärret efter tak-valet — sätts EN gång, tas aldrig bort.
+   * 'hardened' = "Kör vidare" (härdad men märkt). 'stepped_back' = "Kliv
+   * tillbaka" (bröt mönstret, men det syns att du var där). Matar
+   * isBurnoutRelapse-mönstret vidare: en framtida klättring mot taket kan
+   * referera att det hänt förr, inte bara att en ZON hänt förr (det gör
+   * redan burnout_peak/isBurnoutRelapse — detta är ett djupare lager,
+   * specifikt om TAKET).
+   */
+  burnoutScar?: 'hardened' | 'stepped_back'
 }

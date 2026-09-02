@@ -168,6 +168,8 @@ export const GAME_EVENT_TYPE_IDS = [
   // Raden nedan är ifylld direkt (FILLED) — en ny typ som läggs till ofylld
   // hade höjt TODO-antalet och failat content-contract-guard.
   'communityActivityRenewal',
+  // DOM_BURNOUT_TAK_2026-09-02 — samma "fyll direkt"-disciplin.
+  'burnoutCeiling',
 ] as const
 
 const STORYLINE_TYPE_IDS = [
@@ -308,6 +310,19 @@ const FILLED_ANSPRAK4: Partial<Record<string, Omit<ContentContractEntry, 'id' | 
   },
 }
 
+const FILLED_BURNOUT_TAK: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' | 'filled'>>> = {
+  burnoutCeiling: {
+    trigger: 'managerProfile.burnoutScore legat på EXAKT 100 i ≥ BURNOUT_CEILING_TRIGGER_ROUNDS raka omgångar (shouldTriggerBurnoutCeilingChoice, managerProfileService.ts) OCH burnoutCeilingChoiceOffered inte redan satt för denna sammanhängande episod. Genereras i eventProcessor.ts, konstrueras i burnoutCeilingService.ts:generateBurnoutCeilingEvent.',
+    stateEffect: `'step_back': multiEffect — 'startBurnoutCeilingRecovery' sätter burnoutCeilingRecoveryUntilRound (garanterad bonus-decay + tvingad full taktikundertryckning under fönstret, se managerProfileService.ts/burnoutReliefService.ts), 'startTrainingSlowdown' (samma mekanik som burnoutRelief, återanvänd), 'boardPatience' −BURNOUT_CEILING_BOARD_PATIENCE_COST (tålamodskostnaden). 'push_through': noOp mekaniskt — inget omedelbart pris, risken är narrativ (permanens). BÅDA: en post i managerProfile.diary (type 'burnout_scar') och managerProfile.burnoutScar sätts permanent ('stepped_back'/'hardened') via en dedikerad eventResolver.ts-hook (samma mönster som varsel/offer_pro), inte via en generisk effekttyp.`,
+    systems: ['managerProfile (burnoutScore, diary, burnoutScar)', 'boardPatience (step_back)', 'taktikrekommendation (step_back, tvingad undertryckning)', 'träningsintensitet (step_back, återanvänd burnoutTrainingSlowdownUntilRound)'],
+    lifespan: 'engångs per sammanhängande takepisod (roundsAtBurnoutCeiling nollställs när scoret sjunker under 100, vilket öppnar för en ny episod senare i karriären)',
+    semanticKey: 'burnout_ceiling_choice',
+    cooldownSeasons: 0,
+    recallSurface: 'managerProfile.diary (TranareTab.tsx, permanent) — ärret syns där resten av karriären. Ingen egen loggpost utöver diaryn.',
+    notes: 'DOM_BURNOUT_TAK_2026-09-02 (Jacobs beslut A+C+D, GPT:s burnout-audit). FLAGGAT precis som communityActivityRenewal ovan: domen kallar mekaniken "icke-deferbar, samma som andra måste-kort" men namnger inte decisionTierService.ts:s stängda måste-lista explicit — tier satt till \'month\' tills Jacob uttryckligen utökar listan. C:s "verkliga release" är den faktiska buggfixen för GPT:s 100→97-fynd (updateManagerBurnout()s press/återhämtning-dragkamp kunde nettas nästan till noll under sustained press) — se burnoutCeilingRecoveryUntilRound (SaveGame.ts). Mallsträngar (title/body/choice-etiketter/ärr-diaryrad) är tomma platshållare tills Opus levererar — Code skriver aldrig speltext. Magnituderna (N omgångar vid taket, återhämtningsfönstrets längd/styrka, board-kostnaden) är D-fact-placeholders, Jacobs känslo-kalibrering väntar en mätning (dominant-men-pressad-scenariot, domens eget "godkänt när").',
+  },
+}
+
 const PIVOTAL_FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' | 'filled'>>> = {
   board_failure: {
     trigger: `boardObjectives.some(status==='failed') (portalBeats.ts:134)`,
@@ -333,7 +348,7 @@ const PIVOTAL_FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | '
 
 export const CONTENT_CONTRACT: ContentContractEntry[] = [
   ...GAME_EVENT_TYPE_IDS.map(id => {
-    const filled = FILLED[id] ?? FILLED_ANSPRAK4[id]
+    const filled = FILLED[id] ?? FILLED_ANSPRAK4[id] ?? FILLED_BURNOUT_TAK[id]
     return { ...basePlaceholder(id, 'GameEventType'), ...(filled ? { ...filled, filled: true } : {}) }
   }),
   ...STORYLINE_TYPE_IDS.map(id => basePlaceholder(id, 'StorylineType')),

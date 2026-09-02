@@ -1233,6 +1233,16 @@ export function resolveEvent(
                   ),
                 }
               }
+            } else if (sub.type === 'startBurnoutCeilingRecovery') {
+              // DOM_BURNOUT_TAK_2026-09-02 (C) — "Kliv tillbaka"-valets
+              // garanterade nedtrend. amount = antal omgångar. Läses av
+              // updateManagerBurnout (managerProfileService.ts, nettodelta-
+              // golvet) och getBurnoutTacticSuppression (burnoutReliefService.ts,
+              // tvingad full taktikundertryckning under samma fönster).
+              updatedGame = {
+                ...updatedGame,
+                burnoutCeilingRecoveryUntilRound: updatedGame.currentMatchday + (sub.amount ?? 0),
+              }
             }
           }
         }
@@ -2101,6 +2111,46 @@ export function resolveEvent(
             resolved: true,
           },
         ],
+      }
+    }
+  }
+
+  // DOM_BURNOUT_TAK_2026-09-02 (D) — ärret. Skrivs OAVSETT vilken gren som
+  // valdes (till skillnad från varsel/offer_pro ovan, som bara skriver vid
+  // FRAMGÅNG) — själva VALET vid taket lämnar spåret, inte utfallet. Matar
+  // isBurnoutRelapse-familjens mönster vidare (burnoutScar bär det djupare,
+  // takspecifika lagret; burnout_peak/isBurnoutRelapse bär zon-lagret sedan
+  // innan). Dedikerad hook, inte en generisk effekttyp — scar-skrivningen rör
+  // TVÅ fält samtidigt (diary + burnoutScar) och branchar på choiceId, ingen
+  // punktvis fält-mutation subEffects redan är byggt för.
+  //
+  // madeByPlayer-gated, samma HIGH 6-disciplin som varsel/offer_pro ovan —
+  // ett permanent ärr ska inte tillskrivas ett val spelaren aldrig gjorde.
+  // I praktiken ska detta eventet aldrig auto-resolveras alls (rollover-
+  // policyn är 'expire', se deferredRolloverService.ts): gaten är ett
+  // defensivt skydd, inte den förväntade vägen.
+  //
+  // updatedGame.currentMatchday (GLOBAL), INTE den lokala `currentMatchday`
+  // ovan (4.6, SLUTTEST_KO.md — den är medvetet getCurrentLeagueRound för
+  // storyline-generering). managerProfile.diary:s ANDRA poster (burnout_peak/
+  // era_shift, roundProcessor.ts) skrivs redan på GLOBAL skala — att blanda
+  // in en ligarond-stämplad post i samma array hade återskapat exakt den
+  // skalbugg-klass Fas 3 jagade (två numreringssystem i samma fält).
+  if (madeByPlayer && event.type === 'burnoutCeiling' && updatedGame.managerProfile) {
+    const scar: 'hardened' | 'stepped_back' = choiceId === 'step_back' ? 'stepped_back' : 'hardened'
+    const alreadyScarred = (updatedGame.managerProfile.diary ?? []).some(
+      e => e.type === 'burnout_scar' && e.season === updatedGame.currentSeason && e.matchday === updatedGame.currentMatchday)
+    if (!alreadyScarred) {
+      updatedGame = {
+        ...updatedGame,
+        managerProfile: {
+          ...updatedGame.managerProfile,
+          burnoutScar: scar,
+          diary: [
+            ...(updatedGame.managerProfile.diary ?? []),
+            { season: updatedGame.currentSeason, matchday: updatedGame.currentMatchday, type: 'burnout_scar' as const, text: scar === 'stepped_back' ? 'Den våren tog du ett steg tillbaka. Första gången du satte dig själv först. Det sätter sig, ett sånt beslut.' : 'Den våren var du nära att gå sönder och stannade kvar ändå. Något härdades, och gick inte att ta tillbaka.' },
+          ],
+        },
       }
     }
   }

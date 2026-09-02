@@ -53,6 +53,10 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   // Skulle en framtida ändring ändå släppa in dem: aldrig ett tyst utfall.
   contractRequest: 'expire',
   licenseHandlingsplan: 'expire',
+  // DOM_BURNOUT_TAK_2026-09-02: tier är 'month' (flaggat, ej ännu 'must' —
+  // se decisionTierService.ts), men samma "ska aldrig faktiskt nå rollover"-
+  // avsikt. expire = tyst noOp om det ändå händer, aldrig ett gissat val.
+  burnoutCeiling: 'expire',
 
   // Bud — eget håll-ställningen-val (avslå), inget noOp finns.
   transferBidReceived: 'rejectBid',

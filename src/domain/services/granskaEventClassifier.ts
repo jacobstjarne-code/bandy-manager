@@ -31,6 +31,13 @@ export const CRITICAL_GRANSKA_TYPES = new Set<GameEventType>([
   'riskySponsorOffer',
   'bidWar',
   'communityEvent',
+  // DOM_BURNOUT_TAK_2026-09-02 — samma klass som mecenatWithdrawal/varsel/
+  // detOmojligaValet ovan: en riktig, viktig händelse (brytpunkt-mode,
+  // irreversibla val, permanent ärr) som ändå defaultar till EventPriority
+  // 'low' (GameEvent.ts:s getEventPriority, samma som sina brytpunkt-syskon
+  // — tier/mode och priority är avsiktligt skilda axlar). Utan denna post
+  // hade Granska klassat den 'inbox-only' trots att den kräver ett svar.
+  'burnoutCeiling',
 ])
 
 /**

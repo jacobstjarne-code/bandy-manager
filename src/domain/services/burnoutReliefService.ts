@@ -91,8 +91,18 @@ export function burnoutEffectSeed(game: Pick<SaveGame, 'currentSeason' | 'curren
   return game.currentSeason * 1000 + game.currentMatchday
 }
 
-/** Deterministisk per omgång (seedad, inte Math.random) — se burnoutEffectSeed. */
-export function getBurnoutTacticSuppression(profile: ManagerProfile | undefined, seed: number): boolean {
+/**
+ * Deterministisk per omgång (seedad, inte Math.random) — se burnoutEffectSeed.
+ *
+ * `forceFullSuppression` — DOM_BURNOUT_TAK_2026-09-02 (C), "assistenten tar
+ * några omgångar (du tappar kontroll, laget driver)". Under "Kliv tillbaka"s
+ * återhämtningsfönster (game.burnoutCeilingRecoveryUntilRound) är detta
+ * ALLTID sant, oavsett zon eller seed — den probabilistiska markbar/hog-
+ * chansen nedan är den VANLIGA burnout-effekten, inte takets pris. Callern
+ * (SquadScreen.tsx/TaktikScreen.tsx) avgör flaggan ur samma game-objekt.
+ */
+export function getBurnoutTacticSuppression(profile: ManagerProfile | undefined, seed: number, forceFullSuppression = false): boolean {
+  if (forceFullSuppression) return true
   const zone = getBurnoutZone(profile?.burnoutScore ?? 0)
   if (zone === 'frisk') return false
   const rand = mulberry32(seed)

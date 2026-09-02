@@ -51,6 +51,12 @@ export type GameEventType =
   // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):
   // nyhetstretmillen. "Supportrarna tröttnar på X — förnya för Y kr?"
   | 'communityActivityRenewal'
+  // DOM_BURNOUT_TAK_2026-09-02 (A) — tak-triggern. Fyrar när burnoutScore
+  // legat på 100 i N raka omgångar (shouldTriggerBurnoutCeilingChoice,
+  // managerProfileService.ts). Två val: 'step_back' (öppnar en garanterad
+  // återhämtningsväg, kostar tålamod+kontroll) / 'push_through' (inget pris
+  // nu, risken är permanens). Bägge lämnar ett ärr (D) i managerProfile.diary.
+  | 'burnoutCeiling'
 
 /**
  * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
