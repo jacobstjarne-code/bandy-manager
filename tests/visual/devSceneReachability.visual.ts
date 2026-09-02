@@ -228,3 +228,39 @@ test('Avskedsceremonin visar spelaren, avskedet och båda valen', async ({ page 
   await expect(page.getByRole('button', { name: 'Erbjud en roll i ledarstaben' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Tacka av honom på isen' })).toBeVisible()
 })
+
+test('Granska nivå 3 visar det persisterade valet som belagt citat', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=granska-level3&width=390&inspect=1', { waitUntil: 'networkidle' })
+  const chosen = page.locator('[data-scene-content]').getByText('Godkänn kravet', { exact: true })
+
+  await chosen.scrollIntoViewIfNeeded()
+  await expect(chosen).toBeVisible()
+  await expect(chosen.locator('xpath=preceding-sibling::span[1]')).toHaveText('✓')
+})
+
+test('Styrelsens minimalkort visar ultimatum, orsak och väg tillbaka', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=board-patience-minimal&width=390&inspect=1', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('Ultimatum', { exact: true })).toBeVisible()
+  await expect(scene.getByText('Ni ligger under det de begärde.')).toBeVisible()
+  await expect(scene.getByText('Det som återstår: Nå topp 6.')).toBeVisible()
+})
+
+test('Derbykortets vs-gren renderas i portalens mörka kontext', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=next-match-derby&width=390&inspect=1', { waitUntil: 'networkidle' })
+  const primary = page.locator('[data-primary-card]')
+
+  await expect(primary).toBeVisible()
+  await expect(primary.getByText('DERBY', { exact: true })).toBeVisible()
+  await expect(primary.getByText('vs', { exact: true })).toBeVisible()
+})
+
+test('Annandagskortets vs-gren renderas i portalens mörka kontext', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=next-match-annandagen&width=390&inspect=1', { waitUntil: 'networkidle' })
+  const primary = page.locator('[data-primary-card]')
+
+  await expect(primary).toBeVisible()
+  await expect(primary.getByText('Annandagsbandyn', { exact: true })).toBeVisible()
+  await expect(primary.getByText('vs', { exact: true })).toBeVisible()
+})

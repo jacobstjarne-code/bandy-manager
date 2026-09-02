@@ -219,10 +219,9 @@ export function NextMatchCard({
   // grenarna läste --accent-dark (3.15:1 mot portal-bg, upptäckt via
   // NextMatchPrimary/.card--portal) — bytt till --accent-text (dedikerad
   // textroll, se global.css). isDerby/isAnnandagen-grenarna (--danger/
-  // --success-light) är INTE verifierade i portal-mörk kontext ännu —
-  // ingen dev-scen med derby/annandagen-nästa-match träffar denna komponent
-  // i dagens SCENES-svep, så grinden har inte kunnat pröva dem. Kvar som
-  // öppen lucka, inte tyst antagen OK.
+  // --success-light) verifieras nu av egna portal-mörka dev-scener
+  // (`next-match-derby`/`next-match-annandagen`) i den permanenta
+  // kontrastgrinden — båda grenarna är alltså mätta, inte visuellt antagna.
   const vsColor = isFinal ? 'var(--accent-text)'
     : isPlayoff ? 'var(--accent-text)'
     : isDerby ? 'var(--danger)'
@@ -276,7 +275,14 @@ export function NextMatchCard({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {headerIcon && <span style={{ fontSize: 12 }}>{headerIcon}</span>}
+          {headerIcon && (
+            <span
+              data-contrast-exempt="emoji-glyph har egen palett; CSS color är inte den renderade förgrunden"
+              style={{ fontSize: 12 }}
+            >
+              {headerIcon}
+            </span>
+          )}
           <span style={{ color: headerLabelColor, fontSize: derbyIntense || isFinal ? 10 : 8, letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 700 }}>
             {headerLabel}
           </span>

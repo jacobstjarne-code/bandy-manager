@@ -75,6 +75,7 @@ import { TilltradeScreen } from '../TilltradeScreen'
 import { NameInputScreen } from '../NameInputScreen'
 import { KlubbparmOverlay } from '../../components/KlubbparmOverlay'
 import { CeremonyRetirement } from '../../components/portal/CeremonyRetirement'
+import { BoardPatienceMinimal } from '../../components/portal/minimal/BoardPatienceMinimal'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
@@ -177,6 +178,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'contract-demands' | 'career-break' | 'inbox' | 'sim-summary' | 'hall-provning'
   | 'coffee-room' | 'valet' | 'journalist-relationship' | 'cup-intro' | 'sunday-training' | 'season-signature-reveal'
   | 'scouting' | 'intro-sequence' | 'tilltrade' | 'name-input' | 'klubbparm' | 'ceremony-retirement'
+  | 'granska-level3' | 'board-patience-minimal' | 'next-match-derby' | 'next-match-annandagen'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -278,6 +280,10 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'name-input', label: 'Nytt spel — tränarnamn' },
   { id: 'klubbparm', label: 'Klubbpärmen — första kapitlet' },
   { id: 'ceremony-retirement', label: 'Avskedsceremoni — klubbikon slutar' },
+  { id: 'granska-level3', label: 'Granska — löst val med belagt citat' },
+  { id: 'board-patience-minimal', label: 'Portal minimal — styrelsens ultimatum' },
+  { id: 'next-match-derby', label: 'Nästa match — derby i portal' },
+  { id: 'next-match-annandagen', label: 'Nästa match — annandagen i portal' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -902,6 +908,45 @@ const retirementEvent: GameEvent = {
   ],
 }
 
+const boardPatienceWarningGame = {
+  ...factoryMidSeasonGame,
+  boardPatience: 22,
+  boardObjectives: [{
+    id: 'dev-board-sporting', type: 'sporting', label: 'Nå topp 6',
+    description: 'Styrelsen kräver en plats på övre halvan.',
+    ownerId: 'dev-chair', ownerPersonality: 'ambitious',
+    targetValue: 6, currentValue: 10, startValue: 8,
+    measureFn: 'leaguePosition', status: 'at_risk', assignedSeason: factoryMidSeasonGame.currentSeason,
+    successReward: 'Ökat förtroende', failureConsequence: 'Minskat tålamod', carryOver: false,
+  }],
+} as unknown as SaveGame
+
+function makeSpecialNextMatchGame(kind: 'derby' | 'annandagen'): SaveGame {
+  const managedClubId = 'club_slottsbron'
+  const opponentId = kind === 'derby' ? 'club_lesjofors' : 'club_malilla'
+  const base = makeBaseGame({ seed: 41, clubId: managedClubId })
+  const source = base.fixtures.find(f =>
+    f.status === 'scheduled' && (f.homeClubId === managedClubId || f.awayClubId === managedClubId),
+  )
+  if (!source) throw new Error('Dev-fixturen saknar en schemalagd match')
+  const fixture = {
+    ...source,
+    id: `dev-next-${kind}`,
+    homeClubId: managedClubId,
+    awayClubId: opponentId,
+    roundNumber: kind === 'annandagen' ? 8 : 2,
+    matchday: kind === 'annandagen' ? 12 : 2,
+    date: kind === 'annandagen' ? '2026-12-26' : '2026-11-08',
+    isCup: false,
+    isKnockout: false,
+    isAnnandagen: kind === 'annandagen' ? true : undefined,
+  }
+  return { ...base, currentMatchday: 1, fixtures: [fixture] }
+}
+
+const nextMatchDerbyGame = makeSpecialNextMatchGame('derby')
+const nextMatchAnnandagenGame = makeSpecialNextMatchGame('annandagen')
+
 // PORTAL-TAKREGEL (2026-08-09) — §5-baselinen, fyra tillstånd.
 // portal-full: matchday 24 valt specifikt — inom upptakt-fönstret (sista 3
 // grundserieomgångarna) UTAN att vara "mittfalt" (cementerat, ingen upptakt).
@@ -1204,6 +1249,10 @@ const granskaGame = makeGame([...makeLeagueFixtures(), granskaFixture, ...gransk
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 20, communityStanding: 58,
   pendingEvents: granskaPendingEvents,
 })
+const granskaLevel3Game = {
+  ...granskaGame,
+  resolvedChoices: [{ eventId: 'dev-critical-1', choiceId: 'accept', label: 'Godkänn kravet' }],
+} as SaveGame
 // Upptakt sub-states — fingerade tabeller (played=19, 3 omg kvar)
 function makeUpptaktStandings(managedPoints: number, otherPoints: number[]) {
   const rows = [
@@ -1568,6 +1617,7 @@ export function DevScenesScreen() {
       : scene === 'board-c' ? boardGameC
       : scene === 'stillness' ? stillnessGame
       : scene === 'granska' ? granskaGame
+      : scene === 'granska-level3' ? granskaLevel3Game
       : scene === 'granska-cup' ? granskaCupGame
       : scene === 'granska-cup-final' ? granskaCupFinalGame
       : scene === 'granska-slutspel' ? granskaPlayoffGame
@@ -1629,10 +1679,13 @@ export function DevScenesScreen() {
       : scene === 'coffee-room' || scene === 'cup-intro' || scene === 'sunday-training' ? squadGame
       : scene === 'scouting' ? transfersOpenNoBidsGame
       : scene === 'tilltrade' ? tilltradeGame
+      : scene === 'board-patience-minimal' ? boardPatienceWarningGame
+      : scene === 'next-match-derby' ? nextMatchDerbyGame
+      : scene === 'next-match-annandagen' ? nextMatchAnnandagenGame
       : scene === 'intro-sequence' || scene === 'name-input' || scene === 'klubbparm' || scene === 'ceremony-retirement' ? squadGame
       : portalGame
     const roundSummaryForScene =
-      scene === 'granska' ? granskaRoundSummary
+      scene === 'granska' || scene === 'granska-level3' ? granskaRoundSummary
       : scene === 'granska-cup' ? granskaCupRoundSummary
       : scene === 'granska-cup-final' ? granskaCupFinalRoundSummary
       : scene === 'granska-slutspel' ? granskaPlayoffRoundSummary
@@ -1902,6 +1955,18 @@ export function DevScenesScreen() {
         {scene === 'ceremony-retirement' && (
           <CeremonyRetirement game={squadGame} event={retirementEvent} />
         )}
+        {scene === 'board-patience-minimal' && (
+          <div className="card--portal" style={{ minHeight: '844px', background: 'var(--bg-portal-surface)', padding: '28px 16px' }}>
+            <div className="card-sharp" style={{ background: 'var(--bg-portal-surface)', padding: '16px 12px' }}>
+              <BoardPatienceMinimal game={boardPatienceWarningGame} />
+            </div>
+          </div>
+        )}
+        {(scene === 'next-match-derby' || scene === 'next-match-annandagen') && (
+          <div style={{ minHeight: '844px', background: 'var(--bg-portal)', padding: '28px 12px' }}>
+            <NextMatchPrimary game={scene === 'next-match-derby' ? nextMatchDerbyGame : nextMatchAnnandagenGame} />
+          </div>
+        )}
         {(scene === 'sommaren-s2' || scene === 'sommaren-titelforsvarare' || scene === 'sommaren-tomt' || scene === 'sommaren-siffra') && (
           <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
             <SeasonTransitionScene />
@@ -2009,7 +2074,7 @@ export function DevScenesScreen() {
           </div>
         )}
 
-        {(scene === 'granska' || scene === 'granska-cup' || scene === 'granska-cup-final'
+        {(scene === 'granska' || scene === 'granska-level3' || scene === 'granska-cup' || scene === 'granska-cup-final'
           || scene === 'granska-slutspel' || scene === 'granska-sm-final' || scene === 'granska-avsked') && storeReady && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <GranskaScreen />

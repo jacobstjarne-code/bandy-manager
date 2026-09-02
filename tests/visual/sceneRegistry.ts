@@ -122,4 +122,8 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   ['scouting'], ['intro-sequence'], ['tilltrade'], ['name-input'],
   ['klubbparm', undefined, undefined, true],
   ['ceremony-retirement', undefined, undefined, true],
+  // Tre uttryckliga browserluckor ur SLUTTEST_KO: belagt Granska-citat,
+  // styrelsens förvarningszon och båda specialmatchernas portal-kontrast.
+  ['granska-level3'], ['board-patience-minimal'],
+  ['next-match-derby'], ['next-match-annandagen'],
 ]
