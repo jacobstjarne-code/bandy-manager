@@ -23,7 +23,8 @@ import { applyFinanceChange, appendFinanceLog } from '../../domain/services/econ
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
 import { canStartBuild, startFacilityBuild, canDecommission, decommissionFacilityNode, getFinancingOptions, DECOMMISSION_COMMUNITY_STANDING_COST, FACILITY_NODE_DEFS, type FinancingContext } from '../../domain/services/facilityService'
 import type { FacilityFinancingMode } from '../../domain/entities/Community'
-import { captureFacilityBuildDecision } from '../../domain/services/seasonDecisionCaptureService'
+import { buildDecisionLedgerEntry, captureFacilityBuildDecision } from '../../domain/services/seasonDecisionCaptureService'
+import { logEvent } from '../../domain/services/eventLedgerService'
 
 import { matchActions } from './actions/matchActions'
 import { trainingActions } from './actions/trainingActions'
@@ -1026,7 +1027,14 @@ export const useGameStore = create<GameState>()(
         const decisionCandidate = captureFacilityBuildDecision(game, gameAfter, nodeId, chosen.clubCost)
         set({
           game: decisionCandidate
-            ? { ...gameAfter, seasonDecisionCandidates: [...(gameAfter.seasonDecisionCandidates ?? []), decisionCandidate] }
+            ? {
+                ...gameAfter,
+                seasonDecisionCandidates: [...(gameAfter.seasonDecisionCandidates ?? []), decisionCandidate],
+                eventLedger: logEvent(
+                  gameAfter,
+                  buildDecisionLedgerEntry(decisionCandidate, decisionCandidate.eventId, gameAfter.currentMatchday),
+                ),
+              }
             : gameAfter,
         })
         return { success: true }

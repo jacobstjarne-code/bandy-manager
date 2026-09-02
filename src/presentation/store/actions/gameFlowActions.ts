@@ -14,7 +14,8 @@ import { RETIREMENT_RESPONSES } from '../../../domain/data/retirementText'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { canStartBuild, startFacilityBuild, FACILITY_NODE_DEFS } from '../../../domain/services/facilityService'
-import { captureFacilityBuildDecision } from '../../../domain/services/seasonDecisionCaptureService'
+import { buildDecisionLedgerEntry, captureFacilityBuildDecision } from '../../../domain/services/seasonDecisionCaptureService'
+import { logEvent } from '../../../domain/services/eventLedgerService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
 import { getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
@@ -799,6 +800,10 @@ export function gameFlowActions(get: Get, set: Set) {
                   ...(updatedGame.seasonDecisionCandidates ?? []),
                   facilityCandidate,
                 ]
+                updatedGame.eventLedger = logEvent(
+                  updatedGame,
+                  buildDecisionLedgerEntry(facilityCandidate, facilityCandidate.eventId, updatedGame.currentMatchday),
+                )
               }
             }
           }
