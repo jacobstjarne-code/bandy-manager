@@ -5,6 +5,7 @@ import { broadcastSaveWritten } from './saveConflictChannel'
 import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
 import { getBoardPatienceZone } from '../../domain/services/portal/boardPatienceZone'
 import { pickTopActiveArcs, getArcHeadline } from '../../domain/data/activeArcStrings'
+import { recordRestoreResult, recordSnapshotResult } from './saveRecoveryMetrics'
 
 // U7 (SLUTTEST_KO.md, 2026-08-17) — export/import fanns redan men var inte
 // nåbara från UI. Automatisk lokal återställningspunkt: rotation på två
@@ -37,7 +38,9 @@ export async function snapshotSave(reason: string, game: SaveGame): Promise<void
       if (oldest) await del(oldest).catch(() => {})
     }
     await set(`${SNAPSHOT_KEY_PREFIX}index`, updated)
+    recordSnapshotResult(reason, true)
   } catch (e) {
+    recordSnapshotResult(reason, false)
     // Snapshot är ett skyddsnät, inte en kritisk operation — ett misslyckat
     // snapshot ska aldrig blockera det faktiska sparflödet/newGame-flödet.
     console.warn('snapshotSave: kunde inte spara', e)
@@ -65,8 +68,14 @@ export async function listSaveSnapshots(): Promise<SaveSnapshotSummary[]> {
 }
 
 export async function loadSaveSnapshot(key: string): Promise<SaveGame | null> {
-  const raw = await get<SaveGame>(key)
-  return raw ?? null
+  try {
+    const raw = await get<SaveGame>(key)
+    recordRestoreResult(raw === undefined ? 'not_found' : 'succeeded')
+    return raw ?? null
+  } catch (error) {
+    recordRestoreResult('failed')
+    throw error
+  }
 }
 
 export function exportSaveAsJson(game: SaveGame): void {

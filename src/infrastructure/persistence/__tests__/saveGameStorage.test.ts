@@ -4,7 +4,8 @@ import { migrateSaveGame, CURRENT_SAVE_VERSION } from '../saveGameMigration'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { advanceToNextEvent } from '../../../application/useCases/advanceToNextEvent'
-import { set as idbSetMock } from 'idb-keyval'
+import { get as idbGetMock, set as idbSetMock } from 'idb-keyval'
+import { getSaveRecoveryReport } from '../saveRecoveryMetrics'
 
 // ── idb-keyval mock ───────────────────────────────────────────────────────────
 
@@ -365,6 +366,10 @@ describe('snapshotSave / listSaveSnapshots / loadSaveSnapshot — U7 (SLUTTEST_K
 
     const restored = await loadSaveSnapshot(snapshots[0].key)
     expect(restored?.id).toBe('save_snap1')
+    expect(getSaveRecoveryReport()).toMatchObject({
+      snapshots: { attempts: 1, succeeded: 1, failed: 0 },
+      restores: { attempts: 1, succeeded: 1, notFound: 0, failed: 0 },
+    })
   })
 
   it('rotation: fler än 2 snapshots behåller bara de 2 senaste', async () => {
@@ -387,6 +392,23 @@ describe('snapshotSave / listSaveSnapshots / loadSaveSnapshot — U7 (SLUTTEST_K
 
   it('loadSaveSnapshot returnerar null för en okänd nyckel', async () => {
     expect(await loadSaveSnapshot('bandy_snapshot_okand_123_0')).toBeNull()
+    expect(getSaveRecoveryReport().restores).toMatchObject({
+      attempts: 1, succeeded: 0, notFound: 1, failed: 0,
+    })
+  })
+
+  it('mäter snapshotfel och återläsningsfel på de verkliga kodvägarna', async () => {
+    const game = makeGame('save_snap_fail', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+    vi.mocked(idbSetMock).mockRejectedValueOnce(new Error('quota'))
+    await snapshotSave('pre_migration', game)
+
+    vi.mocked(idbGetMock).mockRejectedValueOnce(new Error('idb unavailable'))
+    await expect(loadSaveSnapshot('bandy_snapshot_x_1_0')).rejects.toThrow('idb unavailable')
+
+    expect(getSaveRecoveryReport()).toMatchObject({
+      snapshots: { attempts: 1, succeeded: 0, failed: 1 },
+      restores: { attempts: 1, succeeded: 0, notFound: 0, failed: 1 },
+    })
   })
 })
 

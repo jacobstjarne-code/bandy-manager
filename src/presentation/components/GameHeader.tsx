@@ -11,6 +11,7 @@ import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 import { getManagerDisplayName } from '../../domain/services/managerProfileService'
 import { exportSaveAsJson, importSaveFromJson } from '../../infrastructure/persistence/saveGameStorage'
+import { exportSaveRecoveryReportAsJson } from '../../infrastructure/persistence/saveRecoveryMetrics'
 import { playoffRoundName } from '../../domain/roundLabel'
 
 
@@ -107,6 +108,11 @@ export function GameHeader() {
     if (!game) return
     exportSaveAsJson(game)
     showToast(true, '✓ Exporterad')
+  }
+
+  function handleExportRecoveryReport() {
+    exportSaveRecoveryReportAsJson()
+    showToast(true, '✓ Återställningsrapport exporterad')
   }
 
   // U7 (SLUTTEST_KO.md, 2026-08-17): import skriver över den aktiva karriären
@@ -309,6 +315,7 @@ export function GameHeader() {
             { label: '💾 Spara spel', action: handleSaveGame },
             { label: '📂 Ladda spel', action: () => navigate('/') },
             { label: '⬇️ Exportera säkerhetskopia', action: handleExportSave },
+            { label: '⬇️ Exportera återställningsrapport', action: handleExportRecoveryReport },
             { label: '⬆️ Importera säkerhetskopia', action: handleImportSave },
           ].map((item, i) => (
             <button key={i} onClick={() => { void item.action(); setShowMenu(false) }}
