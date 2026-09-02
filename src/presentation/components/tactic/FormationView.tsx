@@ -7,6 +7,7 @@ import type { Tactic } from '../../../domain/entities/Club'
 import { positionShort } from '../../../domain/format'
 import { TACTIC_MENTALITY_LABELS, TACTIC_TEMPO_LABELS, TACTIC_PRESS_LABELS } from '../../../domain/data/enumLabels'
 import { PlayerDot } from './PlayerDot'
+import { BandyPitch } from '../BandyPitch'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
 import { prioritizeByFitnessFloor } from '../../utils/lineupNudge'
@@ -19,34 +20,6 @@ interface FormationViewProps {
 }
 
 const FORMATION_OPTIONS: FormationType[] = ['3-3-4', '5-3-2', '4-3-3', '3-4-3', '2-3-2-3', '4-2-4']
-
-function PitchLines() {
-  return (
-    <>
-      <defs>
-        <radialGradient id="dot-ok" cx="35%" cy="30%" r="65%">
-          <stop offset="0%" stopColor="var(--tactic-dot-ok-start)"/>
-          <stop offset="100%" stopColor="var(--tactic-dot-ok-end)"/>
-        </radialGradient>
-        <radialGradient id="dot-warn" cx="35%" cy="30%" r="65%">
-          <stop offset="0%" stopColor="var(--tactic-dot-warn-start)"/>
-          <stop offset="100%" stopColor="var(--tactic-dot-warn-end)"/>
-        </radialGradient>
-        <filter id="dot-shadow" x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.25"/>
-        </filter>
-      </defs>
-      {/* Center line */}
-      <line x1="0" y1="200" x2="280" y2="200" stroke="rgba(90,122,138,.4)" strokeWidth="0.5" strokeDasharray="3,3" />
-      {/* Center circle */}
-      <circle cx="140" cy="200" r="35" fill="none" stroke="rgba(90,122,138,.4)" strokeWidth="0.5" strokeDasharray="3,3" />
-      {/* Own goal area (top) */}
-      <rect x="90" y="0" width="100" height="28" fill="none" stroke="rgba(90,122,138,.4)" strokeWidth="0.5" />
-      {/* Opponent goal area (bottom) */}
-      <rect x="90" y="372" width="100" height="28" fill="none" stroke="rgba(90,122,138,.4)" strokeWidth="0.5" />
-    </>
-  )
-}
 
 export function FormationView({ tactic, players, onChange, chemistryStats = {}, lineupConfirmedThisRound = false }: FormationViewProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
@@ -293,9 +266,8 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         <p className="h-micro" style={{ marginTop: 2 }}>— Coachen</p>
       </div>
 
-      {/* Pitch SVG */}
-      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'linear-gradient(180deg, var(--ice-rink), var(--ice-rink-deep))', border: '1px solid color-mix(in srgb, var(--ice-dark) 50%, transparent)', boxShadow: 'inset 0 1px 4px color-mix(in srgb, var(--ice-dark) 15%, transparent)', borderRadius: 'var(--radius-md)', display: 'block', maxHeight: 400 }}>
-        <PitchLines />
+      {/* Gemensamt planskal; kemi och spelarinteraktioner är FormationViews lager. */}
+      <BandyPitch variant="tactical" style={{ width: '100%', maxHeight: 400 }}>
 
         {/* Kemi-lager: linjer mellan inspelta/svaga par, under spelarprickarna */}
         {chem?.topPairs.map(pair => {
@@ -330,7 +302,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
             />
           )
         })}
-      </svg>
+      </BandyPitch>
 
       {/* C-FT1: Lagstyrka — ärlig magnitud, samma evaluateSquad som motorn */}
       {styrka.utvilat > 0 && (
