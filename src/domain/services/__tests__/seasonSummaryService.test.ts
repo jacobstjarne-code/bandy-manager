@@ -461,6 +461,45 @@ describe('generateSeasonSummary — mostImproved.caGain matchar de visade start/
   })
 })
 
+// DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — managerSeason: managerProfile.
+// diary fryst till DENNA säsongs rader, samma motivering som retiredPlayers/topScorer.
+describe('generateSeasonSummary — managerSeason filtrerar dagboken till innevarande säsong', () => {
+  it('bara entries med season === game.currentSeason tas med, andra säsongers rader utelämnas', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const gameWithDiary = {
+      ...game,
+      managerProfile: {
+        ...game.managerProfile!,
+        diary: [
+          { season: 2026, matchday: 20, type: 'arrival' as const, text: 'Förra säsongens rad — ska INTE tas med.' },
+          { season: 2027, matchday: 5, type: 'era_shift' as const, text: 'Den här säsongens rad #1.' },
+          { season: 2027, matchday: 15, type: 'burnout_scar' as const, text: 'Den här säsongens rad #2.' },
+        ],
+      },
+    }
+    const summary = generateSeasonSummary(gameWithDiary)
+    expect(summary.managerSeason).toHaveLength(2)
+    expect(summary.managerSeason!.every(e => e.season === 2027)).toBe(true)
+    expect(summary.managerSeason!.map(e => e.text)).toEqual([
+      'Den här säsongens rad #1.',
+      'Den här säsongens rad #2.',
+    ])
+  })
+
+  it('ingen dagboksrad denna säsong → undefined, inte en tom lista', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const gameWithDiary = {
+      ...game,
+      managerProfile: {
+        ...game.managerProfile!,
+        diary: [{ season: 2026, matchday: 20, type: 'arrival' as const, text: 'Förra säsongen.' }],
+      },
+    }
+    const summary = generateSeasonSummary(gameWithDiary)
+    expect(summary.managerSeason).toBeUndefined()
+  })
+})
+
 // SEXSÄSONGSAUDITEN 2026-08-26, "Omgångsidentitet": årsbokens bästa match
 // (matchOfTheSeason, matchHighlightService.ts) och tidslinjen (keyMoments,
 // computeKeyMoments ovan) visade olika omgångsnummer för SAMMA fixture i

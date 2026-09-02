@@ -67,7 +67,7 @@ function ChapterDivider({ label }: { label: string }) {
 }
 
 /**
- * @cites summary.championClubId, summary.eliminatedByClubId, summary.mostImportantDecision, summary.matchOfTheSeason, h.narrative, h.homeScore, h.awayScore, h.potmName
+ * @cites summary.championClubId, summary.eliminatedByClubId, summary.mostImportantDecision, summary.matchOfTheSeason, summary.managerSeason, h.narrative, h.homeScore, h.awayScore, h.potmName
  */
 export function SeasonSummaryScreen() {
   const navigate = useNavigate()
@@ -908,6 +908,31 @@ export function SeasonSummaryScreen() {
             </div>
           )
         })()}
+
+        {/* DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — "Din säsong som
+            tränare". managerProfile.diary för säsongen. Rubrik + inramnings-
+            mening väntar på Opus (samma disciplin som resten av kortet);
+            dagboksradernas EGEN text är redan skriven vid entry-tillfället,
+            ingen platshållare där — sektionen renderar, skriver inte om. */}
+        {summary.managerSeason && summary.managerSeason.length > 0 && (
+          <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
+            <SectionLabel style={{ marginBottom: 6 }}>[Opus]</SectionLabel>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: 8 }}>
+              [Opus]
+            </p>
+            {summary.managerSeason.map((entry, i) => (
+              <p
+                key={i}
+                style={{
+                  fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.4,
+                  marginBottom: i < summary.managerSeason!.length - 1 ? 8 : 0,
+                }}
+              >
+                {entry.text}
+              </p>
+            ))}
+          </div>
+        )}
 
         {/* FINANCES */}
         <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>

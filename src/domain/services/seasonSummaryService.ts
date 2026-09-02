@@ -384,7 +384,7 @@ export function buildExpectationVerdictSentence(
  * säsongen — känt, INTE fixat, kräver en ny säsongsstarts-trupp-snapshot
  * (BACKLOG.md). Citera inte mostImproved som om den vore källkorrekt.
  *
- * @cites StandingRow.finalPosition, StandingRow.points, StandingRow.wins, StandingRow.draws, StandingRow.losses, StandingRow.goalsFor, StandingRow.goalsAgainst, StandingRow.goalDifference, SaveGame.standings, SaveGame.playoffBracket, SeasonSummary.championClubId, SeasonSummary.eliminatedByClubId, SaveGame.seasonStartBoardExpectation, Club.boardExpectation, Fixture.roundNumber, Club.finances
+ * @cites StandingRow.finalPosition, StandingRow.points, StandingRow.wins, StandingRow.draws, StandingRow.losses, StandingRow.goalsFor, StandingRow.goalsAgainst, StandingRow.goalDifference, SaveGame.standings, SaveGame.playoffBracket, SeasonSummary.championClubId, SeasonSummary.eliminatedByClubId, SaveGame.seasonStartBoardExpectation, Club.boardExpectation, Fixture.roundNumber, Club.finances, ManagerProfile.diary
  */
 export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: number): SeasonSummary {
   const managedClubId = game.managedClubId
@@ -795,6 +795,11 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   const allMoments = [...baseKeyMoments, ...arcMoments]
   const keyMoments = allMoments.slice(0, 7)
 
+  // DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — managerProfile.diary fryst
+  // till denna säsongs rader, se SeasonSummary.managerSeason för fullmotiveringen.
+  const managerSeasonEntries = (game.managerProfile?.diary ?? [])
+    .filter(entry => entry.season === game.currentSeason)
+
   return {
     id: `${game.id}_s${game.currentSeason}_${managedClubId}`,
     season: game.currentSeason,
@@ -854,6 +859,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     signatureRubric: game.currentSeasonSignature
       ? (summarizeSignature(game.currentSeasonSignature, game.scandalHistory) ?? undefined)
       : undefined,
+    managerSeason: managerSeasonEntries.length > 0 ? managerSeasonEntries : undefined,
   }
 }
 

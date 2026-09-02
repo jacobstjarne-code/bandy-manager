@@ -2,6 +2,7 @@ import type { ClubExpectation } from '../enums'
 import type { ClubEra } from './SaveGame'
 import type { FinanceReason } from '../services/economyService'
 import type { BoardPatienceZone } from '../services/portal/boardPatienceZone'
+import type { ManagerNarrativeEntry } from './ManagerProfile'
 
 // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål, valt i
 // Sommaren. Sex fasta typer, interpolerade namn, ingen AI-generering.
@@ -290,6 +291,19 @@ export interface SeasonSummary {
    *  sanna fakta om samma säsong, och snapshotten håller isär dem medan den
    *  garanterar att alla ytor läser SAMMA två fakta. */
   boardTruth?: SeasonBoardTruth
+
+  /** DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — "Din säsong som tränare".
+   *  managerProfile.diary filtrerad till denna säsong, fryst här av samma
+   *  skäl som retiredPlayers/topScorer ovan: game.managerProfile.diary
+   *  fortsätter växa efter att denna summary sparats, så en live-läsning år
+   *  senare hade kunnat visa fel säsongs rader. Texten (arrival/burnout_peak/
+   *  burnout_scar/era_shift/rivalry/milestone) är redan skriven vid entry-
+   *  tillfället (Opus, eller en dedikerad eventResolver.ts-hook som
+   *  burnout_scar) — sektionen RENDERAR den befintliga texten, genererar
+   *  ingen ny; bara rubrik + inramningsmening i SeasonSummaryScreen.tsx är
+   *  nya och väntar på Opus. Absent = ingen dagboksrad denna säsong, inte en
+   *  tom lista — en lugn säsong utan diary-drama får ingen managersektion. */
+  managerSeason?: ManagerNarrativeEntry[]
 }
 
 /**
