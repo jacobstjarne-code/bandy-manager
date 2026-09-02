@@ -1,3 +1,5 @@
+✅ **BYGGD 2026-09-02 (`404176f6`, "retire duplicate license review system").** Alla fem Code-halva-stegen klara: relief-grenen med de två texterna nedan, sidoeffekterna porterade till B:s zonövergångar, årsbokens rad omkopplad till `licenseStatus`, `licenseReview` verifierat oläst och raderat. Kvar på disk bara som spårning av resonemanget — bygg ingenting mot denna rad, se `docs/MASTER_OPPET.md` raden `tva-licenssystem-osynkade` för den levande statusen.
+
 # DOM — LICENS: "bättre men inte bra"-texterna + retire-last-täckningen
 
 **Datum:** 2026-09-02 · **Av:** Opus · **Utlöst av:** `tva-licenssystem-osynkade`. Code:s utredning bekräftade retire-last-vakten: System A (`licenseReview`, kaskad) kan INTE raderas förrän System B (`checkLicenseStatus`, ackumulator, kanon) täcker fyra gap. Detta är Opus-halvan (text + ett omdöme); Code-halvan (wiring) längst ner.
