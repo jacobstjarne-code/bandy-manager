@@ -197,7 +197,7 @@ describe('createInjuryItem', () => {
 describe('createSuspensionItem', () => {
   it('mentions player name and games out', () => {
     const player = makePlayer()
-    const item = createSuspensionItem(player, 2, TEST_DATE)
+    const item = createSuspensionItem(player, 2, TEST_DATE, 2026)
 
     expect(item.type).toBe(InboxItemType.Suspension)
     expect(item.title).toContain(player.firstName)
@@ -281,16 +281,31 @@ describe('createTrainingItem — AUDIT DEL 3 (2026-08-11), strukturerat fält is
       makePlayer({ id: 'p1', firstName: 'Nils', lastName: 'Berg', injuryDaysRemaining: 7 }),
       makePlayer({ id: 'p2', firstName: 'Ola', lastName: 'Sjö', injuryDaysRemaining: 14 }),
     ]
-    const item = createTrainingItem(focus, 5, injured, TEST_DATE)
+    const item = createTrainingItem(focus, 5, 9, injured, TEST_DATE)
     expect(item.injuredPlayerCount).toBe(2)
     expect(item.body).toContain('⚠️')
   })
 
   it('inga skador ger injuredPlayerCount 0', () => {
     const focus = { type: TrainingType.Physical, intensity: TrainingIntensity.Normal }
-    const item = createTrainingItem(focus, 5, [], TEST_DATE)
+    const item = createTrainingItem(focus, 5, 9, [], TEST_DATE)
     expect(item.injuredPlayerCount).toBe(0)
     expect(item.body).not.toContain('⚠️')
+  })
+
+  it('riktig serieomgång visas som "Omgång N" (SKALA-BUGGEN steg B)', () => {
+    const focus = { type: TrainingType.Physical, intensity: TrainingIntensity.Normal }
+    const item = createTrainingItem(focus, 5, 9, [], TEST_DATE)
+    expect(item.body).toContain('Omgång 5')
+    expect(item.title).toContain('omg 5')
+  })
+
+  it('cupvecka (leagueRound null) visas som "Matchdag N", aldrig ett påhittat rond-nummer (SKALA-BUGGEN steg B)', () => {
+    const focus = { type: TrainingType.Physical, intensity: TrainingIntensity.Normal }
+    const item = createTrainingItem(focus, null, 3, [], TEST_DATE)
+    expect(item.body).toContain('Matchdag 3')
+    expect(item.body).not.toContain('Omgång')
+    expect(item.title).toContain('matchdag 3')
   })
 })
 
@@ -302,7 +317,7 @@ describe('general inbox item properties', () => {
     const items = [
       createMatchResultItem(fixture, 'club_test', TEST_DATE, TEST_CLUBS),
       createInjuryItem(player, 7, TEST_DATE),
-      createSuspensionItem(player, 1, TEST_DATE),
+      createSuspensionItem(player, 1, TEST_DATE, 2026),
       createContractExpiringItem(player, 2027, TEST_DATE),
     ]
 

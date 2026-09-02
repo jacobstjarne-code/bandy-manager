@@ -6,22 +6,27 @@
 // fixturen + motståndare + omgång) men fångas aldrig i spelarvänd form.
 //
 // Den här texten ger avstängningen sin orsak på två ytor: inkorgen när den utlöses,
-// och availability-etiketten i trupp/lineup. {spelare}/{motståndare}/{omg}/{kvar}
+// och availability-etiketten i trupp/lineup. {spelare}/{motståndare}/{omgfras}/{kvar}
 // interpoleras av Code. Bandysvensk understatement — domaren och matchstraffet är
 // fakta, inte drama.
+//
+// {omgfras} (SKALA-BUGGEN steg B, 2026-09-02): hela omgångsfrasen som EN
+// enhet ("omgång 5"/"matchdag 2" för cup/slutspel utan serieomgång), inte
+// bara talet — matchstraffet kan ha skett i en cupmatch, och "omgång {tal}"
+// hårdkodat i mallen hade då visat ett påhittat rond-nummer.
 
 /** Inkorgsrad när matchstraffet utlöser avstängning. Namnger orsaken rakt. */
 export const SUSPENSION_INCIDENT_LINES: string[] = [
-  'Matchstraff mot {motståndare} i omgång {omg}. {spelare} är avstängd nästa match.',
+  'Matchstraff mot {motståndare} i {omgfras}. {spelare} är avstängd nästa match.',
   '{spelare} åkte på fullt matchstraff mot {motståndare}. Det betyder avstängning nästa omgång.',
   'Domaren tog inga genvägar mot {motståndare} — {spelare} fick matchstraff och är borta nästa match.',
-  '{spelare} fick lämna isen mot {motståndare} i omgång {omg}. Matchstraff, och en match på läktaren som följd.',
+  '{spelare} fick lämna isen mot {motståndare} i {omgfras}. Matchstraff, och en match på läktaren som följd.',
 ]
 
 /** Som ovan men flera matchers avstängning (grov förseelse). {kvar} = antal matcher. */
 export const SUSPENSION_INCIDENT_MULTI_LINES: string[] = [
   'Grovt matchstraff mot {motståndare}. {spelare} stängs av {kvar} matcher.',
-  '{spelare} gick över gränsen mot {motståndare} i omgång {omg}. Disciplinnämnden ger {kvar} matchers avstängning.',
+  '{spelare} gick över gränsen mot {motståndare} i {omgfras}. Disciplinnämnden ger {kvar} matchers avstängning.',
 ]
 
 /**
@@ -29,7 +34,7 @@ export const SUSPENSION_INCIDENT_MULTI_LINES: string[] = [
  * inte bara att han är grå. Kort, faktisk. {kvar} = matcher kvar.
  */
 export const SUSPENSION_AVAILABILITY_LABELS = {
-  single: 'Avstängd · matchstraff mot {motståndare} (omg {omg})',
+  single: 'Avstängd · matchstraff mot {motståndare} ({omgfras})',
   multi: 'Avstängd {kvar} matcher · matchstraff mot {motståndare}',
 }
 

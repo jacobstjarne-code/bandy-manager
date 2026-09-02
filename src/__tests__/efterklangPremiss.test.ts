@@ -93,13 +93,27 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
   })
 
   it('journalist: stam + opponentShort på good_answer', () => {
+    // matchday 9, säsong 3 → matchdag 5-26 är alltid liga (buildSeasonCalendar),
+    // leagueRound = matchday - 4 = 5.
+    const game = makeGame({
+      journalist: {
+        name: 'Britta Sandström', relationship: 60, pressRefusals: 0,
+        memory: [{ season: 3, matchday: 9, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' }],
+      } as never,
+    })
+    expect(find(game, 'journalist')?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg, omg 5.')
+  })
+
+  it('journalist: cup-/slutspelsmatchdag har ingen serieomgång — "matchdag N", aldrig ett påhittat rond-nummer (SKALA-BUGGEN steg B)', () => {
+    // matchday 2 är alltid en cupmatchdag (1-4) — matchdayToLeagueRound
+    // returnerar undefined, precis som cupbracket-precedenset i TabellScreen.tsx.
     const game = makeGame({
       journalist: {
         name: 'Britta Sandström', relationship: 60, pressRefusals: 0,
         memory: [{ season: 3, matchday: 2, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' }],
       } as never,
     })
-    expect(find(game, 'journalist')?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg, omg 2.')
+    expect(find(game, 'journalist')?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg, matchdag 2.')
   })
 
   it('journalist: nollvärdesvakt — matchday 0 (preseason-sentinel/gammalt save) visas ALDRIG som "omg 0", faller till currentMatchday', () => {
@@ -115,30 +129,34 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
     })
     const mem = find(game, 'journalist')
     expect(mem?.premiss).not.toContain('omg 0')
-    expect(mem?.premiss).toBe(`Du gav Britta Sandström ett rakt svar efter Karlsborg, omg ${game.currentMatchday}.`)
-    // Tidslinjen (EfterklangThreadModal renderar "OMG {matchday}") ska inte
-    // heller bära en synlig 0:a.
+    // currentMatchday 10, säsong 3 → leagueRound = 10 - 4 = 6 (SKALA-BUGGEN
+    // steg B: fallbacken konverteras nu också, visas inte längre rått).
+    expect(mem?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg, omg 6.')
+    // Tidslinjen (EfterklangThreadModal renderar den konverterade etiketten)
+    // ska inte heller bära en synlig 0:a.
     expect(mem?.threadEntries.every(e => e.matchday !== 0)).toBe(true)
   })
 
   it('journalist: utan opponentShort faller tillbaka på ", omg {N}."', () => {
+    // matchday 9 → leagueRound 5 (samma räkning som "stam + opponentShort"-testet).
     const game = makeGame({
       journalist: {
         name: 'Britta Sandström', relationship: 60, pressRefusals: 0,
-        memory: [{ season: 3, matchday: 5, event: 'bad_answer', sentiment: -4 }],
+        memory: [{ season: 3, matchday: 9, event: 'bad_answer', sentiment: -4 }],
       } as never,
     })
     expect(find(game, 'journalist')?.premiss).toBe('Du snäste av Britta Sandström, omg 5.')
   })
 
   it('journalist: big_win tar aldrig opponentShort-svansen', () => {
+    // matchday 9 → leagueRound 5.
     const game = makeGame({
       journalist: {
         name: 'Britta Sandström', relationship: 60, pressRefusals: 0,
-        memory: [{ season: 3, matchday: 4, event: 'big_win', sentiment: 6, opponentShort: 'Karlsborg' }],
+        memory: [{ season: 3, matchday: 9, event: 'big_win', sentiment: 6, opponentShort: 'Karlsborg' }],
       } as never,
     })
-    expect(find(game, 'journalist')?.premiss).toBe('Britta Sandström skrev om storsegern, omg 4.')
+    expect(find(game, 'journalist')?.premiss).toBe('Britta Sandström skrev om storsegern, omg 5.')
   })
 
   it('rivalSale: konkret namn när enrich finns', () => {

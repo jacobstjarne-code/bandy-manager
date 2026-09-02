@@ -3,6 +3,7 @@ import { EFTERKLANG_ECHO, ECONOMIC_SCAR_AFTERMATH, type EfterklangType } from '.
 import { mulberry32 } from '../../utils/random'
 import { FixtureStatus } from '../../enums'
 import { getNextManagedFixture } from './triggers/matchTriggers'
+import { matchdayToLeagueRound } from '../scheduleGenerator'
 
 const JOURNALIST_EVENT_LABEL: Record<string, string> = {
   refused_press: 'Refuserade pressen',
@@ -24,6 +25,10 @@ const JOURNALIST_PREMISS_STEM: Record<string, string> = {
 
 export interface EfterklangThreadEntry {
   matchday: number
+  /** SKALA-BUGGEN steg B (2026-09-02) — journalistminnet kan sträcka sig
+   *  över en säsongsgräns ("senaste 10 interaktionerna"); utan säsongen kan
+   *  matchday inte konverteras till rätt kalenders serieomgång vid visning. */
+  season: number
   text: string
 }
 
@@ -86,7 +91,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
       memory: {
         type: 'anniversary', primaryText: ann.originalEventText, premiss, echo,
         objectName: name,
-        threadEntries: [{ matchday: round, text: ann.originalEventText }],
+        threadEntries: [{ matchday: round, season, text: ann.originalEventText }],
       },
     })
   }
@@ -105,7 +110,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
       memory: {
         type: 'klackEcho', primaryText: '', premiss, echo,
         objectName: 'Klacken',
-        threadEntries: [{ matchday: round, text: echo }],
+        threadEntries: [{ matchday: round, season, text: echo }],
       },
     })
   }
@@ -130,10 +135,18 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     // fångar bara null/undefined — 0 är varken, så det slank igenom och
     // renderades ordagrant som "omg 0". `||` fångar 0 också.
     const premissN = firstMem?.matchday || round
+    const premissSeason = firstMem?.season ?? season
+    // SKALA-BUGGEN steg B — premissN är en global matchdag, inte en serie-
+    // omgång. Konverterad mot posten EGEN säsong (kan skilja sig från
+    // innevarande, "senaste 10 interaktionerna" kan sträcka sig tillbaka).
+    // Cup-/slutspelsmatchdagar har ingen omgång — samma ärliga fallback
+    // ("matchdag N") som cupbracket-precedenset i TabellScreen.tsx.
+    const premissRound = matchdayToLeagueRound(premissN, premissSeason)
+    const premissLabel = premissRound !== undefined ? `omg ${premissRound}` : `matchdag ${premissN}`
     const opp = firstMem?.opponentShort
     const stem = interpolate(JOURNALIST_PREMISS_STEM[ev] ?? '{journalist} hörde av sig', { journalist: name })
     const canAppendOpp = !!opp && (ev === 'good_answer' || ev === 'bad_answer' || ev === 'refused_press')
-    const premiss = canAppendOpp ? `${stem} efter ${opp}, omg ${premissN}.` : `${stem}, omg ${premissN}.`
+    const premiss = canAppendOpp ? `${stem} efter ${opp}, ${premissLabel}.` : `${stem}, ${premissLabel}.`
     candidates.push({
       type: 'journalist',
       score: 50 + Math.abs(notable.sentiment) * 3 + (game.journalist.relationship ?? 50) * 0.3,
@@ -149,6 +162,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
         // synas i tidslinjen även efter att premissen ovan gatats.
         threadEntries: sortedMemories.map(m => ({
           matchday: m.matchday || round,
+          season: m.season ?? season,
           text: JOURNALIST_EVENT_LABEL[m.event] ?? m.event,
         })),
         journalistName: name,
@@ -169,7 +183,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
       memory: {
         type: 'followUp', primaryText: letter.senderName, premiss, echo,
         objectName: letter.senderName,
-        threadEntries: [{ matchday: round, text: letter.senderName }],
+        threadEntries: [{ matchday: round, season, text: letter.senderName }],
       },
     })
   }
@@ -185,7 +199,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
       memory: {
         type: 'boardObjective', primaryText: recentObjective.ownerReaction, premiss, echo,
         objectName: 'Styrelsemålet',
-        threadEntries: [{ matchday: round, text: recentObjective.ownerReaction }],
+        threadEntries: [{ matchday: round, season, text: recentObjective.ownerReaction }],
       },
     })
   }
@@ -212,7 +226,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
       memory: {
         type: 'nemesis', primaryText: n.name, premiss, echo,
         objectName: n.name,
-        threadEntries: [{ matchday: round, text: `${n.goalsAgainstUs} mål mot oss` }],
+        threadEntries: [{ matchday: round, season, text: `${n.goalsAgainstUs} mål mot oss` }],
       },
     })
   }
@@ -230,7 +244,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
         memory: {
           type: 'economicScar', primaryText: '', premiss, echo,
           objectName: 'Budgetkrisen',
-          threadEntries: [{ matchday: round, text: echo }],
+          threadEntries: [{ matchday: round, season, text: echo }],
         },
       })
     } else if (crisis.resolvedMatchday !== undefined) {
@@ -247,7 +261,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
           memory: {
             type: 'economicScar', primaryText: '', premiss, echo,
             objectName: 'Budgetkrisen',
-            threadEntries: [{ matchday: crisis.resolvedMatchday, text: echo }],
+            threadEntries: [{ matchday: crisis.resolvedMatchday, season, text: echo }],
           },
         })
       }
@@ -274,7 +288,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
         memory: {
           type: 'rivalSale', primaryText: '', premiss, echo,
           objectName: info ? info.soldPlayerName : 'Rivalförsäljning',
-          threadEntries: [{ matchday: game.lastRivalSaleMatchday, text: echo }],
+          threadEntries: [{ matchday: game.lastRivalSaleMatchday, season, text: echo }],
           soldPlayerName: info?.soldPlayerName,
           buyerClubName: info?.buyerClubName,
         },

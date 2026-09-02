@@ -16,6 +16,7 @@ import { formatSalary, positionShort, formatContractUntil, formatWeeks } from '.
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { mentorshipBondAdeptInForm, mentorshipBondAdeptResting } from '../../domain/data/mentorshipStrings'
 import { pickRehabStageLine } from '../../domain/data/injuryDoctorText'
+import { matchdayToLeagueRound } from '../../domain/services/scheduleGenerator'
 import { MessageCircle, Crown, Wind, MessageSquare, Megaphone, Smile, Flame, Medal, Drama, Home } from 'lucide-react'
 
 export interface PlayerCardProps {
@@ -304,14 +305,17 @@ export function PlayerCard({
 
   // Spelarsamtal availability
   const lastTalked = game ? ((game.playerConversations ?? {})[player.id] ?? -Infinity) : -Infinity
-  const currentRound = game
+  // SKALA-BUGGEN steg B (2026-09-02) — felnamngiven sedan tidigare: filtret
+  // exkluderar inte cup/slutspel, så värdet är global matchdag, inte en
+  // serieomgång. Namnet bytt för att inte ärvas som mönster nästa gång.
+  const latestCompletedMatchday = game
     ? (game.fixtures.filter(f => f.status === 'completed').sort((a, b) => b.matchday - a.matchday)[0]?.matchday ?? 0)
     : 0
-  const canTalk = onTalkToPlayer != null && currentRound - Number(lastTalked) >= 3
+  const canTalk = onTalkToPlayer != null && latestCompletedMatchday - Number(lastTalked) >= 3
 
   const leadershipAvailable = onLeadershipAction != null && game != null
   const canLeadership = (action: LeadershipAction) =>
-    leadershipAvailable && canUseLeadershipAction(game!, player.id, action, currentRound)
+    leadershipAvailable && canUseLeadershipAction(game!, player.id, action, latestCompletedMatchday)
 
   const asAdept = game
     ? (game.mentorships ?? []).find(m => m.youthPlayerId === player.id && m.isActive)
@@ -812,13 +816,22 @@ export function PlayerCard({
               </div>
             )}
             {lastTalked !== -Infinity && (() => {
-              const roundsSince = currentRound - Number(lastTalked)
+              const roundsSince = latestCompletedMatchday - Number(lastTalked)
+              // SKALA-BUGGEN steg B — lastTalked är global matchdag, rebasas
+              // nu vid säsongsskifte (seasonEndProcessor.ts) så talet håller
+              // sig giltigt mot innevarande säsongs kalender. Kan ändå landa
+              // före matchdag 1 (samtalet skedde en tidigare säsong) — då
+              // finns ingen meningsfull etikett att visa, bara "sedan"-talet.
+              const lastTalkedRound = matchdayToLeagueRound(Number(lastTalked), game!.currentSeason)
+              const lastTalkedLabel = lastTalkedRound !== undefined
+                ? `Omg ${lastTalkedRound}`
+                : Number(lastTalked) >= 1 ? `Matchdag ${Number(lastTalked)}` : null
               return (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>🗣</span>
                     <span style={{ color: 'var(--text-secondary)' }}>
-                      Senaste samtalet: <strong>Omg {Number(lastTalked)}</strong> — för {roundsSince} omgång{roundsSince !== 1 ? 'ar' : ''} sedan
+                      Senaste samtalet: {lastTalkedLabel && <><strong>{lastTalkedLabel}</strong> — </>}för {roundsSince} omgång{roundsSince !== 1 ? 'ar' : ''} sedan
                     </span>
                   </div>
                   {roundsSince >= 5 && (

@@ -289,7 +289,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   let hasManagedCupPending = false
 
   // ── Apply training for all clubs this round ────────────────────────────
-  const trainingResult = applyRoundTraining(game, baseSeed, currentLeagueRound ?? nextMatchday, { skipSideEffects: isSecondPassForManagedMatch })
+  const trainingResult = applyRoundTraining(game, baseSeed, currentLeagueRound, nextMatchday, { skipSideEffects: isSecondPassForManagedMatch })
   let trainingPlayers = trainingResult.players
   const updatedTrainingHistory = trainingResult.trainingHistory
   newInboxItems.push(...trainingResult.inboxItems)
@@ -502,7 +502,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // fallback-raden ("avstängd i {gamesOut} match(er)") hade visat "3" rakt av.
   for (const { player } of newlySuspended) {
     if (player.clubId === game.managedClubId) {
-      newInboxItems.push(createSuspensionItem(player, player.suspensionGamesRemaining, game.currentDate))
+      newInboxItems.push(createSuspensionItem(player, player.suspensionGamesRemaining, game.currentDate, game.currentSeason))
     }
   }
 

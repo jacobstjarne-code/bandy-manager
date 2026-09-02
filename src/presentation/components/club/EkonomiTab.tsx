@@ -5,6 +5,7 @@ import { SectionCard } from '../SectionCard'
 import { formatFinanceAbs, formatFinance, formatSalary, seasonTrendStroke } from '../../utils/formatters'
 import { calcRoundIncome, deriveKassaHistory, buildRoundIncomeParamsForNextFixture } from '../../../domain/services/economyService'
 import { LICENSE_ZONE_TEXT } from '../../../domain/services/licenseService'
+import { matchdayToLeagueRound } from '../../../domain/services/scheduleGenerator'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import '../../styles/economy.css'
 
@@ -22,6 +23,20 @@ const EMPTY_COMMUNITY = {
 function formatSignedFinance(amount: number): string {
   if (amount === 0) return '0 kr'
   return `${amount > 0 ? '+' : '−'}${formatFinanceAbs(Math.abs(amount))}`
+}
+
+/**
+ * SKALA-BUGGEN steg B (2026-09-02) — entry.round är global matchdag, inte en
+ * serieomgång. financeLog rebasas vid säsongsskifte (seasonEndProcessor.ts)
+ * så talet håller sig kronologiskt begripligt, men en post kan ändå landa
+ * före matchdag 1 (skriven en tidigare säsong, hunnit bli gammal innan
+ * FINANCE_LOG_MAX (50) tryckte ut den) — då finns ingen meningsfull etikett.
+ */
+function financeRoundLabel(round: number, season: number): string {
+  const leagueRound = matchdayToLeagueRound(round, season)
+  if (leagueRound !== undefined) return `omg ${leagueRound}`
+  if (round >= 1) return `matchdag ${round}`
+  return 'tidigare säsong'
 }
 
 interface EkonomiTabProps {
@@ -524,7 +539,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
             }}>
               <div>
                 <span style={{ fontSize: 12 }}>{entry.label}</span>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>omg {entry.round}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{financeRoundLabel(entry.round, game.currentSeason)}</span>
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, color: entry.amount >= 0 ? 'var(--success)' : 'var(--danger)', whiteSpace: 'nowrap', marginLeft: 12 }}>
                 {entry.amount >= 0 ? '+' : ''}{formatFinanceAbs(entry.amount)}

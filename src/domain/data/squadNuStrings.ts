@@ -4,6 +4,7 @@
 
 import { SUSPENSION_AVAILABILITY_LABELS } from './suspensionText'
 import { stringHashUnsigned } from '../utils/random'
+import { matchdayToLeagueRound } from '../services/scheduleGenerator'
 
 function pick<T>(arr: T[], seed: string): T {
   return arr[stringHashUnsigned(seed) % arr.length]
@@ -37,15 +38,21 @@ export function getInjuryText(days: number, playerId: string): string {
 export function getSuspensionText(
   matches: number,
   playerId: string,
-  cause?: { sinceMatchday: number; opponentName: string; matches: number },
+  cause: { sinceMatchday: number; opponentName: string; matches: number } | undefined,
+  season: number,
 ): string {
   if (cause) {
     const template = matches > 1
       ? SUSPENSION_AVAILABILITY_LABELS.multi
       : SUSPENSION_AVAILABILITY_LABELS.single
+    // SKALA-BUGGEN steg B (2026-09-02) — sinceMatchday är global matchdag,
+    // en pågående avstängning är alltid samma säsong. Cup-/slutspelsmatch-
+    // dagar har ingen serieomgång — "matchdag N" (cupbracket-precedenset).
+    const leagueRound = matchdayToLeagueRound(cause.sinceMatchday, season)
+    const omgfras = leagueRound !== undefined ? `omgång ${leagueRound}` : `matchdag ${cause.sinceMatchday}`
     return template
       .replace('{motståndare}', cause.opponentName)
-      .replace('{omg}', String(cause.sinceMatchday))
+      .replace('{omgfras}', omgfras)
       .replace('{kvar}', String(matches))
   }
   if (matches === 1) {

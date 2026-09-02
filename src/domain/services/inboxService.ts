@@ -12,6 +12,7 @@ import { trainingTypeLabel, trainingIntensityLabel } from './trainingService'
 import { getInjurySeverity, DIAGNOSIS_LINES, pickRecoveryLine } from '../data/injuryDoctorText'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
 import { deriveUtfall } from './matchTypeAxes'
+import { matchdayToLeagueRound } from './scheduleGenerator'
 
 function generateId(type: InboxItemType): string {
   return `inbox_${type}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
@@ -101,6 +102,7 @@ export function createSuspensionItem(
   player: Player,
   gamesOut: number,
   currentDate: string,
+  season: number,
 ): InboxItem {
   const cause = player.suspensionCause
   const spelareStr = `${player.firstName} ${player.lastName}`
@@ -114,10 +116,17 @@ export function createSuspensionItem(
     // armbåge finns inte i datan) — bara att nämnden såg allvarligt på det.
     const pool = gamesOut > 1 ? SUSPENSION_INCIDENT_MULTI_LINES : SUSPENSION_INCIDENT_LINES
     const template = pool[Math.abs(player.id.charCodeAt(0) + cause.sinceMatchday) % pool.length]
+    // SKALA-BUGGEN steg B (2026-09-02) — sinceMatchday är global matchdag.
+    // Matchstraffet skedde samma omgång itemet skapas, så season är alltid
+    // rätt kalender att slå upp mot (ingen säsongsgräns-risk som journalist-
+    // minnet). Cup-/slutspelsmatchdagar har ingen serieomgång — samma ärliga
+    // fallback ("matchdag N") som cupbracket-precedenset i TabellScreen.tsx.
+    const leagueRound = matchdayToLeagueRound(cause.sinceMatchday, season)
+    const omgfras = leagueRound !== undefined ? `omgång ${leagueRound}` : `matchdag ${cause.sinceMatchday}`
     body = template
       .replace('{spelare}', spelareStr)
       .replace('{motståndare}', cause.opponentName)
-      .replace('{omg}', String(cause.sinceMatchday))
+      .replace('{omgfras}', omgfras)
       .replace('{kvar}', String(gamesOut))
   } else {
     body = `${spelareStr} är avstängd i ${gamesOut} match(er).`
@@ -266,23 +275,32 @@ export function createContractExpiringItem(
 }
 
 /**
- * roundNumber här är bara en etikett för omgången som just nu processas
- * (anroparen skickar in nextRound direkt, trainingProcessor.ts) — ingen
- * sortering/ordning över fixtures, så det är inte samma klass av fel som
- * roundNumber-som-spelordning (se batch-05.md).
+ * leagueRound/matchday är bara etiketter för omgången som just nu processas
+ * (anroparen skickar in dem direkt, trainingProcessor.ts) — ingen sortering/
+ * ordning över fixtures, så det är inte samma klass av fel som roundNumber-
+ * som-spelordning (se batch-05.md). SKALA-BUGGEN steg B (2026-09-02): en
+ * cupvecka har ingen serieomgång — leagueRound är då null och matchday
+ * (global) används för den ärliga "Matchdag N"-fallbacken i stället.
  *
- * @cites focus.type, focus.intensity, roundNumber, injuredPlayers
+ * @cites focus.type, focus.intensity, leagueRound, matchday, injuredPlayers
  */
 export function createTrainingItem(
   focus: TrainingFocus,
-  roundNumber: number,
+  leagueRound: number | null,
+  matchday: number,
   injuredPlayers: Player[],
   currentDate: string,
 ): InboxItem {
   const typeLabel = trainingTypeLabel(focus.type)
   const intensityLabel = trainingIntensityLabel(focus.intensity)
+  // SKALA-BUGGEN steg B (2026-09-02) — träning under en cupvecka har ingen
+  // serieomgång (leagueRound null). Tidigare visades matchday rått under
+  // "Omgång"-etiketten, som om det vore en ligaomgång. Samma ärliga fallback
+  // ("Matchdag N") som cupbracket-precedenset i TabellScreen.tsx.
+  const roundLabel = leagueRound !== null ? `Omgång ${leagueRound}` : `Matchdag ${matchday}`
+  const displayRound = leagueRound ?? matchday
 
-  let body = `Omgång ${roundNumber}: ${typeLabel} (${intensityLabel}).`
+  let body = `${roundLabel}: ${typeLabel} (${intensityLabel}).`
 
   if (injuredPlayers.length === 0) {
     body += ' Inga skador.'
@@ -297,7 +315,7 @@ export function createTrainingItem(
     id: generateId(InboxItemType.Training),
     date: currentDate,
     type: InboxItemType.Training,
-    title: `Träning omg ${roundNumber}: ${typeLabel}`,
+    title: `Träning ${leagueRound !== null ? `omg ${displayRound}` : `matchdag ${displayRound}`}: ${typeLabel}`,
     body,
     isRead: false,
     injuredPlayerCount: injuredPlayers.length,

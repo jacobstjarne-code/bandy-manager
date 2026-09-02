@@ -18,9 +18,15 @@ export interface TrainingProcessorResult {
 export function applyRoundTraining(
   game: SaveGame,
   baseSeed: number,
-  nextRound: number,
+  leagueRound: number | null,
+  matchday: number,
   options?: { skipSideEffects?: boolean },
 ): TrainingProcessorResult {
+  // SKALA-BUGGEN steg B (2026-09-02) — nextRound bevaras oförändrad för
+  // sessionens lagrade roundNumber/seed/ClubScreen-matchning (samma tal som
+  // tidigare). Bara textetiketten (createTrainingItem) behöver veta OM det är
+  // en riktig serieomgång eller en cupvecka — se leagueRound/matchday nedan.
+  const nextRound = leagueRound ?? matchday
   if (options?.skipSideEffects) {
     return {
       players: game.players,
@@ -63,7 +69,7 @@ export function applyRoundTraining(
 
       if (injuredInTraining.length > 0 || focusChanged) {
         newInboxItems.push(
-          createTrainingItem(focus, nextRound, injuredInTraining, game.currentDate),
+          createTrainingItem(focus, leagueRound, matchday, injuredInTraining, game.currentDate),
         )
       }
       // Record training session in history

@@ -162,7 +162,7 @@ describe('roundProcessor — suspension handling', () => {
     expect(found!.player.suspensionGamesRemaining).toBe(3)
     expect(found!.player.suspensionCause?.matches).toBe(3)
 
-    const item = createSuspensionItem(found!.player, found!.player.suspensionGamesRemaining, '2026-01-01')
+    const item = createSuspensionItem(found!.player, found!.player.suspensionGamesRemaining, '2026-01-01', game.currentSeason)
     expect(item.body).toContain('3')
   })
 
@@ -224,8 +224,8 @@ describe('roundProcessor — suspension handling', () => {
     const game = makeGame()
     const player = { ...game.players.find(p => p.clubId === game.managedClubId)!, suspensionCause: { sinceMatchday: 5, opponentName: 'Testmotståndet', matches: 1 } }
 
-    const singleItem = createSuspensionItem({ ...player, suspensionCause: { ...player.suspensionCause, matches: 1 } }, 1, '2026-01-01')
-    const multiItem = createSuspensionItem({ ...player, suspensionCause: { ...player.suspensionCause, matches: 3 } }, 3, '2026-01-01')
+    const singleItem = createSuspensionItem({ ...player, suspensionCause: { ...player.suspensionCause, matches: 1 } }, 1, '2026-01-01', game.currentSeason)
+    const multiItem = createSuspensionItem({ ...player, suspensionCause: { ...player.suspensionCause, matches: 3 } }, 3, '2026-01-01', game.currentSeason)
 
     // Singel-poolen nämner aldrig "Disciplinnämnden" eller "Grovt matchstraff" — det är multi-poolens språk.
     expect(singleItem.body).not.toMatch(/Disciplinnämnden|Grovt matchstraff/)

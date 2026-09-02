@@ -56,8 +56,12 @@ export function ClubScreen() {
   const history = game.trainingHistory ?? []
   const recentSessions = history.length > 0
     ? history.slice(-3).reverse().map(session => {
+        // SKALA-BUGGEN steg B (2026-09-02) — cupveckans träningsrapport visar
+        // nu "Matchdag N" i stället för ett påhittat "Omgång N" (samma tal på
+        // session.roundNumber i bägge fallen, se createTrainingItem).
         const inboxItem = game.inbox.find(item =>
-          item.type === 'training' && item.body.includes(`Omgång ${session.roundNumber}`)
+          item.type === 'training' &&
+          (item.body.includes(`Omgång ${session.roundNumber}`) || item.body.includes(`Matchdag ${session.roundNumber}`))
         )
         // AUDIT DEL 3 (2026-08-11): strukturerat fält istf ⚠️-räkning i body.
         const injuryCount = inboxItem?.injuredPlayerCount ?? 0

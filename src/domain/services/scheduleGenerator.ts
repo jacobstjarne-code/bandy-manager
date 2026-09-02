@@ -318,6 +318,23 @@ export function buildSeasonCalendar(season: number): MatchdaySlot[] {
   return calendar
 }
 
+/**
+ * SKALA-BUGGEN steg B (2026-09-02) — EN källa för "vilken serieomgång var
+ * global matchdag N?", för ytor som bara har ett löst matchday-tal (inget
+ * Fixture-objekt att läsa roundNumber ur direkt — se roundLabel.ts för det
+ * fallet). Härleds ur buildSeasonCalendar(season), inte en egen hårdkodad
+ * formel — cupens/ligans matchdagsindelning ska bara finnas på ETT ställe.
+ *
+ * Returnerar undefined för cup- (1-4) och slutspelsmatchdagar (27+) — de har
+ * ingen serieomgång. Anropsstället avgör då fallback (Jacobs princip,
+ * cupbracket-precedenset i TabellScreen.tsx: "Matchdag N", aldrig ett
+ * påhittat rond-nummer).
+ */
+export function matchdayToLeagueRound(matchday: number, season: number): number | undefined {
+  const slot = buildSeasonCalendar(season).find(s => s.matchday === matchday)
+  return slot?.type === 'league' ? slot.leagueRound : undefined
+}
+
 /** Returns the date of the third Saturday in March for a given year. */
 function thirdSaturdayInMarch(year: number): string {
   const march1DayOfWeek = new Date(Date.UTC(year, 2, 1)).getUTCDay()

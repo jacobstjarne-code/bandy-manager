@@ -1,6 +1,16 @@
 import type { EfterklangMemory } from '../../../../domain/services/portal/pickEfterklang'
 import { EFTERKLANG_TYPE_ICON } from '../../../../domain/data/efterklangText'
 import { Overlay } from '../../primitives/Overlay'
+import { matchdayToLeagueRound } from '../../../../domain/services/scheduleGenerator'
+
+// SKALA-BUGGEN steg B (2026-09-02) — entry.matchday är global, ingen serie-
+// omgång. Cup-/slutspelsmatchdagar har ingen omgång — samma ärliga fallback
+// ("MATCHDAG N") som cupbracket-precedenset i TabellScreen.tsx, aldrig ett
+// påhittat rond-nummer.
+function roundOrMatchdayLabel(matchday: number, season: number): string {
+  const round = matchdayToLeagueRound(matchday, season)
+  return round !== undefined ? `OMG ${round}` : `MATCHDAG ${matchday}`
+}
 
 interface Props {
   memory: EfterklangMemory
@@ -70,7 +80,7 @@ export function EfterklangThreadModal({ memory, onClose }: Props) {
                     boxSizing: 'border-box',
                   }} />
                   <div className="h-micro" style={{ fontFamily: 'var(--font-mono)', letterSpacing: '1px', color: isLatest ? 'var(--warm-light)' : 'var(--text-muted)', marginBottom: 2 }}> {/* ds-exempt: mono, dynamic color */}
-                    OMG {entry.matchday}{isLatest ? ' · senast' : ''}
+                    {roundOrMatchdayLabel(entry.matchday, entry.season)}{isLatest ? ' · senast' : ''}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-light-secondary)', lineHeight: 1.4 }}>
                     {entry.text}

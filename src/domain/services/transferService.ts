@@ -434,10 +434,13 @@ export function executeTransfer(
 
   const fanMoodPenalty = isAcademyProduct && isSoldFromManagedClub ? -8 : 0
 
-  const latestRound = Math.max(0, ...game.fixtures
-    .filter(f => f.status === 'completed')
-    .map(f => f.roundNumber),
-  )
+  // SKALA-BUGGEN steg B (2026-09-02) — rot: läste f.roundNumber (tävlings-
+  // relativt: liga 1-22, cup 1-4, slutspel egen skala) och tog max över ALLA
+  // fixturetyper utan diskriminant, så FinanceEntry.round blev en oskalad
+  // blandning beroende på vilken match som senast spelats. Alla andra ~14
+  // appendFinanceLog-anropsställen skriver konsekvent game.currentMatchday
+  // (global) — normaliserad hit, samma källa som resten av loggen.
+  const latestRound = game.currentMatchday
   const soldPlayerName = soldPlayer ? `${soldPlayer.firstName} ${soldPlayer.lastName}` : 'spelaren'
   const buyingClubName = game.clubs.find(c => c.id === buyingClubId)?.name ?? 'köparklubben'
 

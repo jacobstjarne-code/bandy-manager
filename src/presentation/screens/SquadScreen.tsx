@@ -179,7 +179,7 @@ function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversar
     allChips.push(<span key="injury" style={chipStyle('var(--danger-text)', 'color-mix(in srgb, var(--danger) 5%, transparent)', 'color-mix(in srgb, var(--danger) 30%, transparent)')}>🩹 {getInjuryText(player.injuryDaysRemaining, player.id)}</span>)
   }
   if (player.suspensionGamesRemaining > 0) {
-    allChips.push(<span key="suspension" style={chipStyle('var(--danger-text)', 'color-mix(in srgb, var(--danger) 5%, transparent)', 'color-mix(in srgb, var(--danger) 30%, transparent)')}>🚫 {getSuspensionText(player.suspensionGamesRemaining, player.id, player.suspensionCause)}</span>)
+    allChips.push(<span key="suspension" style={chipStyle('var(--danger-text)', 'color-mix(in srgb, var(--danger) 5%, transparent)', 'color-mix(in srgb, var(--danger) 30%, transparent)')}>🚫 {getSuspensionText(player.suspensionGamesRemaining, player.id, player.suspensionCause, currentSeason)}</span>)
   }
   if (player.morale < 45) {
     allChips.push(<span key="morale" style={chipStyle('var(--warm-light)', 'color-mix(in srgb, var(--warm) 6%, transparent)', 'color-mix(in srgb, var(--warm) 40%, transparent)')}>😟 {getMoraleText(player.morale, player.lowMoraleDays, player.id)}</span>)
@@ -415,7 +415,10 @@ export function SquadScreen() {
   const [talkFeedback, setTalkFeedback] = useState<{ text: string; moraleChange: number; formChange: number } | null>(null)
   const [leadershipFeedback, setLeadershipFeedback] = useState<string | null>(null)
 
-  const currentRound = game
+  // SKALA-BUGGEN steg B (2026-09-02) — felnamngiven sedan tidigare: filtret
+  // exkluderar inte cup/slutspel, så värdet är global matchdag, inte en
+  // serieomgång. Namnet bytt för att inte ärvas som mönster nästa gång.
+  const latestCompletedMatchday = game
     ? (game.fixtures.filter(f => f.status === 'completed').sort((a, b) => b.matchday - a.matchday)[0]?.matchday ?? 0)
     : 0
 
@@ -464,13 +467,13 @@ export function SquadScreen() {
   const tacticHistoryLines = getTacticChangeHistoryLines(game?.tacticChangeLog)
 
   function handleTalk(playerId: string, choice: 'encourage' | 'demand' | 'future') {
-    const result = talkToPlayer(playerId, choice, currentRound)
+    const result = talkToPlayer(playerId, choice, latestCompletedMatchday)
     setTalkFeedback({ text: result.feedback, moraleChange: result.moraleChange, formChange: result.formChange })
     setTimeout(() => setTalkFeedback(null), 4000)
   }
 
   function handleLeadership(playerId: string, action: import('../../domain/services/leadershipService').LeadershipAction) {
-    const result = useLeadershipAction(playerId, action, currentRound)
+    const result = useLeadershipAction(playerId, action, latestCompletedMatchday)
     if (result) {
       setLeadershipFeedback(result.feedback)
       setTimeout(() => setLeadershipFeedback(null), 4000)
@@ -652,7 +655,7 @@ export function SquadScreen() {
                 </>)}
                 {suspended.length > 0 && sectionWrap('var(--danger)', <>
                   <div className="h-label" style={{ marginBottom: 8 }}>🚫 AVSTÄNGDA</div>
-                  {suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id, p.suspensionCause)))}
+                  {suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id, p.suspensionCause, game.currentSeason)))}
                 </>)}
                 {lowMorale.length > 0 && sectionWrap('var(--warm)', <>
                   <div className="h-label" style={{ marginBottom: 8, color: moralDanger ? 'var(--danger)' : undefined }}>😟 LÅG MORAL</div>

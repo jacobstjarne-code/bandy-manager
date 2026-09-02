@@ -1,4 +1,6 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { MomentSource } from '../../../domain/entities/Moment'
+import type { MomentLedgerEntry } from '../../../domain/services/momentLedgerService'
 import { getClubMemory, momentKind } from '../../../domain/services/clubMemoryService'
 import { getRecentMomentsFromLedger, resolveSubjectName } from '../../../domain/services/momentLedgerService'
 import { MOMENT_VIEW_TEMPLATES } from '../../../domain/data/momentViewTemplates'
@@ -14,6 +16,29 @@ const KIND_LABEL: Record<string, string> = {
   scar:    'Ärr',
   tension: 'Laddat',
   neutral: 'Noterat',
+}
+
+/**
+ * SKALA-BUGGEN steg B (2026-09-02), gränsfallet — Moment-mängden är blandad:
+ * matchbundna källor (kan vara liga ELLER cup/slutspel) och rena system-
+ * händelser (ingen match alls). Jacobs vägval: gren på typ, inte en
+ * enhetlig etikett åt bägge håll — en ligamatch ska visa sin serieomgång,
+ * en systemhändelse (skada, mecenatbeslut) ska bara visa säsongen, samma
+ * mönster TranareTab.tsx redan använder för dagboksrader (Spine.tsx:37).
+ */
+const MATCH_BOUND_MOMENT_SOURCES = new Set<MomentSource>(['derby_win', 'season_highlight'])
+
+function momentRoundLabel(entry: MomentLedgerEntry, game: SaveGame): string {
+  if (!MATCH_BOUND_MOMENT_SOURCES.has(entry.type)) {
+    return `Säsong ${entry.season}`
+  }
+  const fixture = game.fixtures.find(f =>
+    f.matchday === entry.matchday && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+  )
+  if (fixture && !fixture.isCup && !fixture.isKnockout) return `Omg ${fixture.roundNumber}`
+  // Cup/slutspel, eller fixturen hittas inte längre — samma ärliga fallback
+  // ("Matchdag N") som cupbracket-precedenset i TabellScreen.tsx.
+  return `Matchdag ${entry.matchday}`
 }
 
 interface Props {
@@ -75,7 +100,7 @@ export function ClubMemoryView({ game }: Props) {
               <div key={entry.semanticKey} className={`moment-row ${kind}`}>
                 <div className="moment-row-meta">
                   <span className={`moment-row-kt ${kind}`}>{KIND_LABEL[kind]}</span>
-                  <span className="moment-row-matchday">Omg {entry.matchday}</span>
+                  <span className="moment-row-matchday">{momentRoundLabel(entry, game)}</span>
                 </div>
                 <div className="moment-row-title">{title}</div>
                 <div className="moment-row-body">{body}</div>
