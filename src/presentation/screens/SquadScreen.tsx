@@ -562,6 +562,7 @@ export function SquadScreen() {
             onToggleAdvancedMode={setTacticAdvancedMode}
             deltaLine={tacticDeltaLine}
             historyLines={tacticHistoryLines}
+            lineupConfirmedThisRound={game.lineupConfirmedThisRound}
           />
         </div>
       )}

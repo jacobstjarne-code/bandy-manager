@@ -126,6 +126,6 @@ export function selectMatchOfTheSeason(game: SaveGame): MatchHighlight | null {
     category: winner.category,
     narrative,
     potmName: potm ? `${potm.firstName} ${potm.lastName}` : undefined,
-    shareImageReady: false,
+    shareImageReady: true,
   }
 }

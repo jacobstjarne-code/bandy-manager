@@ -15,6 +15,7 @@ interface FormationViewProps {
   players: Player[]  // entire squad
   onChange: (tactic: Tactic) => void
   chemistryStats?: Record<string, number>
+  lineupConfirmedThisRound?: boolean
 }
 
 const FORMATION_OPTIONS: FormationType[] = ['3-3-4', '5-3-2', '4-3-3', '3-4-3', '2-3-2-3', '4-2-4']
@@ -47,7 +48,7 @@ function PitchLines() {
   )
 }
 
-export function FormationView({ tactic, players, onChange, chemistryStats = {} }: FormationViewProps) {
+export function FormationView({ tactic, players, onChange, chemistryStats = {}, lineupConfirmedThisRound = false }: FormationViewProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [autoFillMsg, setAutoFillMsg] = useState<string | null>(null)
   const autoFillTimerRef = useRef<number | null>(null)
@@ -74,7 +75,10 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {} }
     return slots
   }, [rawLineupSlots, players])
 
-  const recommended = getRecommendedFormation(players)
+  // En bekräftad elva är spelarens frusna val för omgången. Skador/form kan
+  // ändras efter bekräftelsen, men rekommendationsmarkeringen får då inte
+  // börja peka mot en annan formation och se ut som en ny uppmaning.
+  const recommended = lineupConfirmedThisRound ? formation : getRecommendedFormation(players)
 
   // Starters: players currently in slots
   const starterIds = useMemo(

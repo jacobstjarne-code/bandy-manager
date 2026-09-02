@@ -28,6 +28,7 @@ interface TacticBoardCardProps {
   /** Avancerat lägets "Vad du ändrat i år" — härledd i TaktikScreen via
    *  getTacticChangeHistoryLines. Alltid minst en rad ("utgångsläge satt"). */
   historyLines: string[]
+  lineupConfirmedThisRound?: boolean
 }
 
 // Genomgång II B: en taktik-hemvist, platt. Taktiken är samma sanningskälla
@@ -53,7 +54,7 @@ interface TacticBoardCardProps {
 // (renderRow nedan), aldrig som ett flytande element ovanpå/utanför knappen.
 export function TacticBoardCard({
   club, players, coach, captainPlayerId, chemistryStats, onTacticChange, matchday, nextOpponentName, opponentAnalysis,
-  advancedMode, onToggleAdvancedMode, deltaLine, historyLines,
+  advancedMode, onToggleAdvancedMode, deltaLine, historyLines, lineupConfirmedThisRound = false,
 }: TacticBoardCardProps) {
   const squadPlayers = players.filter(p => p.clubId === club.id)
   const tactic = club.activeTactic
@@ -282,6 +283,7 @@ export function TacticBoardCard({
           players={squadPlayers}
           onChange={onTacticChange}
           chemistryStats={chemistryStats}
+          lineupConfirmedThisRound={lineupConfirmedThisRound}
         />
         {/* Så spelar det — härlett ur spelstil + faktisk kemi */}
         <p className="h-quote-sm" style={{ textAlign: 'center', lineHeight: 1.45, marginTop: 8 }}>

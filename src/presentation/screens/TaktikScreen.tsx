@@ -100,6 +100,7 @@ export function TaktikScreen() {
           onToggleAdvancedMode={setTacticAdvancedMode}
           deltaLine={deltaLine}
           historyLines={historyLines}
+          lineupConfirmedThisRound={game.lineupConfirmedThisRound}
         />
       </div>
     </div>

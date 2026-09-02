@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { FeedbackButton } from '../components/FeedbackButton'
 import { PwaUpdateBanner } from '../components/PwaUpdateBanner'
 import { SaveConflictModal } from '../components/SaveConflictModal'
+import { RuleVersionNotice } from '../components/RuleVersionNotice'
 
 const DevScenesScreen = import.meta.env.DEV
   ? lazy(() => import('../screens/dev/DevScenesScreen').then(m => ({ default: m.DevScenesScreen })))
@@ -194,6 +195,7 @@ export function AppRouter() {
           sig själv (MatchLive är en fokus-yta, se FeedbackButton.tsx). */}
       <FeedbackButton />
       <PwaUpdateBanner />
+      <RuleVersionNotice />
       {/* M2: route-oberoende — en konflikt kan upptäckas på VILKEN skärm som
           helst (GameShell/GameGuard täcker bara /game/*, inte t.ex. /saves
           eller /intro). Läser saveConflict direkt ur gameStore. */}

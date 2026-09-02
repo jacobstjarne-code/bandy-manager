@@ -9,6 +9,7 @@ import { SectionLabel } from '../components/SectionLabel'
 import { csColor, formatFinanceAbs, positionShort, playoffResultLabel, cupResultLabel } from '../utils/formatters'
 import type { PlayerPosition } from '../../domain/enums'
 import { shareSeasonImage, downloadSeasonImage } from '../utils/seasonShareImage'
+import { shareMatchImage } from '../utils/matchShareImage'
 import { collectSeasonDecisions } from '../../domain/services/seasonDecisionsService'
 import { generateTeamPhotoSvg } from '../utils/teamPhotoGenerator'
 import { saveTeamPhoto, loadTeamPhoto } from '../../infrastructure/teamPhotoStorage'
@@ -216,6 +217,24 @@ export function SeasonSummaryScreen() {
     } finally {
       // Ett senare klick (ny requestId) har redan tagit över UI:t — skriv
       // aldrig över det tillståndet med ett sent svar från detta anrop.
+      if (shareRequestId.current === requestId) setShareState(outcome)
+    }
+  }
+
+  async function handleMatchShare() {
+    if (!summary?.matchOfTheSeason?.shareImageReady) return
+    const requestId = ++shareRequestId.current
+    setShareState('generating')
+    let outcome: ShareUiState = 'idle'
+    try {
+      const result = await Promise.race([
+        shareMatchImage(summary, summary.matchOfTheSeason),
+        new Promise<'failed'>((resolve) => setTimeout(() => resolve('failed'), SHARE_TIMEOUT_MS)),
+      ])
+      outcome = result === 'shared' || result === 'downloaded' ? 'idle' : result
+    } catch {
+      outcome = 'failed'
+    } finally {
       if (shareRequestId.current === requestId) setShareState(outcome)
     }
   }
@@ -454,7 +473,7 @@ export function SeasonSummaryScreen() {
               )}
 
               <button
-                onClick={handleShare}
+                onClick={handleMatchShare}
                 disabled={sharing}
                 style={{
                   display: 'inline-block',
@@ -472,13 +491,7 @@ export function SeasonSummaryScreen() {
                   opacity: sharing ? 0.5 : 1,
                 }}
               >
-                {/* 4.14 (SLUTTEST_KO.md, 2026-08-18): knappen anropar handleShare()
-                    → shareSeasonImage(summary), som alltid producerar SÄSONGSKORTET,
-                    inte en bild av just den här matchen (h.shareImageReady är permanent
-                    false — matchHighlightService.ts har ingen egen bildgenerator).
-                    "Spara som bild" lovade en matchartefakt knappen inte kan leverera.
-                    Text låst av Jacob 2026-08-18, verbatim tills matchartefakten finns. */}
-                {sharing ? 'Sparar...' : 'Dela säsongen'}
+                {sharing ? 'Sparar...' : 'Dela matchen'}
               </button>
             </div>
           )
