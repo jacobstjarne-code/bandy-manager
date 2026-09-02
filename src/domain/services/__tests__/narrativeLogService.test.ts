@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { logNarrativeBeat, isOnCooldown, systemhandelseBudgetOk, filterSystemhandelseBudget, pickPoolIndexAvoidingCooldown, wasLoggedThisRound } from '../narrativeLogService'
+import { resolveEvent } from '../events/eventResolver'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
+import type { GameEvent } from '../../entities/GameEvent'
 
 /**
  * U5 (SLUTTEST_KO.md, 2026-08-17) — DOM GIVEN: en delad logg, en skrivväg,
@@ -248,5 +250,81 @@ describe('wasLoggedThisRound', () => {
 
   it('tom logg: aldrig loggad', () => {
     expect(wasLoggedThisRound(makeGame(), 'burnout_beat_mark', 12)).toBe(false)
+  })
+})
+
+/**
+ * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 3 — FÖRE-karakterisering
+ * (Jacobs order: skriv regressionstestet FÖRE ändringen, så vi ser exakt
+ * vad som skiftar). Kodläst mot de nio skrivarna: eventResolver.ts (2
+ * ställen) + gameFlowActions.ts (5 ställen) loggade `round` via
+ * getCurrentLeagueRound (ligarond-skala), medan roundProcessor.ts:s nio
+ * ställen redan loggade `nextMatchday`/`storyline.matchday` (global
+ * matchday-skala) — SAMMA fält, TVÅ oförenliga skalor, beroende på VILKEN
+ * av de nio skrivarna som råkade fyra.
+ *
+ * Konkret: en cupomgång vid global matchday 3 (mellan ligaomgång 2 och 3,
+ * matchday-systemet i CLAUDE.md) höjer INTE ligaronden — en
+ * eventResolver.ts-skriven post från DEN omgången loggar round=2
+ * (getCurrentLeagueRound, oförändrad av cupmatchen), medan en
+ * roundProcessor.ts-skriven post SAMMA omgång loggar round=3 (nextMatchday,
+ * den globala matchdagen). Bägge fyrade samma verkliga ögonblick — men en
+ * konsument som frågar "hände X denna omgång" med det GLOBALA värdet
+ * hittar bara den ena.
+ *
+ * Detta är INTE en design-avsikt att bevara — det är precis den
+ * preexisterande bugg liggaren (och dess "matchday, ALDRIG rond-identitet"-
+ * regel) lyser upp. Efter Fas 3:s skalstandardisering (alla nio skrivare på
+ * global matchday) konvergerar bägge raderna nedan mot SAMMA round-värde —
+ * se "EFTER"-testet i samma fil.
+ */
+describe('FÖRE Fas 3 — round-skalans inkonsekvens (regressionstest)', () => {
+  it('KARAKTERISERING: en getCurrentLeagueRound-skriven post och en nextMatchday-skriven post för SAMMA verkliga omgång får OLIKA round-värden', () => {
+    // Simulerar exakt det scenariot: cupomgång vid global matchday 3,
+    // senast spelade ligaomgång = 2. eventResolver.ts:s huvudskrivväg
+    // (skrivväg 1/9) loggar 2 (getCurrentLeagueRound); roundProcessor.ts:s
+    // klackEcho-skrivväg loggar 3 (nextMatchday) — bägge för en händelse
+    // som inträffade under exakt samma spelade omgång.
+    const leagueRoundWriterEntry = { semanticKey: 'criticalEconomy', season: 5, round: 2 }
+    const globalMatchdayWriterEntry = { semanticKey: 'klack_echo_positive', season: 5, round: 3 }
+    const game = { ...makeGame(), narrativeBeatLog: [leagueRoundWriterEntry, globalMatchdayWriterEntry] }
+
+    // En konsument som frågar "hände det HÄR denna omgång" med det globala
+    // matchday-värdet (3, det enda värde en anropare i roundProcessor.ts
+    // faktiskt känner till) missar league-round-skrivarens post helt —
+    // trots att den fyrade samma verkliga omgång.
+    expect(wasLoggedThisRound(game, 'criticalEconomy', 3)).toBe(false) // FEL SVAR — borde vara true
+    expect(wasLoggedThisRound(game, 'klack_echo_positive', 3)).toBe(true)
+  })
+})
+
+/**
+ * EFTER Fas 3:s deluppdatering (2026-09-02) — eventResolver.ts:s två
+ * skrivvägar (1/9 huvudresolutionen, 6/9 källkylning) konverterade från
+ * getCurrentLeagueRound till game.currentMatchday (global). Bevisar
+ * fixen end-to-end genom RIKTIG resolveEvent(), inte hand-konstruerad data.
+ *
+ * DELVIS STÄNGT, INTE HELT: gameFlowActions.ts:s fem skrivvägar (3/9, 4/9,
+ * 8/9, plus källkylningens syskonrad) ligger i src/presentation/store/ —
+ * utanför Fas 3-ordens lane ("domän + årsboksvyn"). De fortsätter logga
+ * ligarond-skala tills en store-lane-pass (Codex, eller en uttrycklig
+ * lane-utökning) gör samma konvertering där. Full skalkonsekvens över alla
+ * nio skrivare är alltså INTE uppnådd av detta ensamt.
+ */
+describe('EFTER Fas 3 (delvis) — eventResolver.ts:s skrivvägar 1/9 och 6/9 nu global matchday', () => {
+  it('huvudresolutionens narrativeBeatLog-post bär game.currentMatchday, inte ligaronden', () => {
+    const template = CLUB_TEMPLATES[0]
+    const game = createNewGame({ managerName: 'Test', clubId: template.id, seed: 1 })
+    const event: GameEvent = {
+      id: 'ev1', type: 'criticalEconomy', title: 't', body: 'b',
+      choices: [{ id: 'take_loan', label: 'l', effect: { type: 'resolveEconomicCrisis' } }],
+      resolved: false, systemhandelse: true,
+    }
+    const gameWithEvent = { ...game, pendingEvents: [event] }
+    const resolved = resolveEvent(gameWithEvent, event.id, 'take_loan', undefined, true)
+
+    const entry = resolved.narrativeBeatLog?.find(e => e.semanticKey === 'criticalEconomy')
+    expect(entry).toBeDefined()
+    expect(entry!.round).toBe(resolved.currentMatchday)
   })
 })

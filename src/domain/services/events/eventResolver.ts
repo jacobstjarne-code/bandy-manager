@@ -1929,13 +1929,22 @@ export function resolveEvent(
   // event.type — grovkornigt (skiljer inte t.ex. varsel mot olika
   // arbetsgivare), avsiktligt: DOM:en säger uttryckligen att finkorniga
   // semanticKey-beslut tas EFTER att loggen finns, inte som förarbete här.
+  //
+  // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 3 (Jacobs dom
+  // 2026-09-02): round-fältet var getCurrentLeagueRound (ligarond) här men
+  // nextMatchday (global matchday) i roundProcessor.ts:s nio skrivvägar —
+  // samma fält, två skalor, en PREEXISTERANDE bugg (bekräftat: systemhandelse-
+  // BudgetOk:s currentRound-parameter matas alltid med den globala skalan av
+  // sina anropare, men mostRecentRound kom härifrån på ligarond-skala).
+  // Standardiserat till updatedGame.currentMatchday (global) — den globala
+  // skalan liggarens EventLedgerEntry.matchday redan kräver.
   updatedGame = {
     ...updatedGame,
     pendingEvents: (updatedGame.pendingEvents ?? []).filter(e => e.id !== eventId),
     resolvedEventIds: [...(updatedGame.resolvedEventIds ?? []), eventId].slice(-200), // keep last 200
     resolvedChoices: recordResolvedChoice(updatedGame, eventId, choiceId, choice.label),
     narrativeBeatLog: logNarrativeBeat(
-      updatedGame, event.type, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame),
+      updatedGame, event.type, updatedGame.currentSeason, updatedGame.currentMatchday,
       event.systemhandelse,
     ),
   }
@@ -2186,10 +2195,12 @@ export function resolveEvent(
     // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 6/9. Egen
     // semanticKey (source_{eventSource}) — grovare gruppering än event.type
     // (skriv väg 1), flera event-typer kan dela samma källa.
+    // Fas 3 (2026-09-02): global matchday, samma skalstandardisering som
+    // skrivväg 1/9 ovan.
     updatedGame = {
       ...updatedGame,
       sourceCooldowns: newCooldowns,
-      narrativeBeatLog: logNarrativeBeat(updatedGame, `source_${eventSource}`, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame)),
+      narrativeBeatLog: logNarrativeBeat(updatedGame, `source_${eventSource}`, updatedGame.currentSeason, updatedGame.currentMatchday),
     }
   }
 
