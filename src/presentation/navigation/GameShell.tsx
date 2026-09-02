@@ -47,7 +47,7 @@ export function routeOwnsLedgerChrome(pathname: string, state: unknown): boolean
   if (pathname.includes('/match/live')) return true
   if (pathname !== '/game/match') return false
   // Den äldre historiska rapportöppningen renderar ännu MatchReportView utan
-  // LedgerFrame och måste därför behålla GameShells chrome tills Granska-wiringen
+  // MatchFlowFrame och måste därför behålla GameShells chrome tills Granska-wiringen
   // får sin egen punkt. Alla verkliga Förbered-lägen äger däremot ramen själva.
   return !(state && typeof state === 'object' && 'showReport' in state && state.showReport === true)
 }
@@ -100,7 +100,7 @@ export function GameShell() {
     '/game/playoff-intro',
     '/game/qf-summary',
     '/game/sim-summary',
-    '/game/half-time-summary',
+    '/game/hamf-time-summary',
     '/game/champion',
     '/game/season-summary',
     '/game/season-transition',
@@ -118,7 +118,7 @@ export function GameShell() {
     location.pathname === '/game/review'
   const isReviewRoute = location.pathname === '/game/review'
   const isPressConferenceRoute = location.pathname.includes('/press-conference')
-  // Förbered och Spela äger sin chrome via LedgerFrame. Den äldre historiska
+  // Förbered och Spela äger sin chrome via MatchFlowFrame. Den äldre historiska
   // rapportöppningen på /game/match undantas tills Granska-wiringen byggs.
   const isLedgerOwnedChrome = routeOwnsLedgerChrome(location.pathname, location.state)
   const shouldShowEventOverlay =
@@ -135,11 +135,11 @@ export function GameShell() {
       <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: hideBottomNav ? 0 : `calc(var(--bottom-nav-height) + var(--safe-bottom))` }}>
         {/* B1/B2-fix (dockaudit p1, källgrundad diagnos 2026-07-02): height (inte
             min-height) — en golv-höjd tillåter obegränsad tillväxt uppåt, vilket
-            gjorde att .lf-root (match/live, height:100% + overflow:hidden) aldrig
+            gjorde att .mf-root (match/live, height:100% + overflow:hidden) aldrig
             fick en definit förälderhöjd att klippa mot. Resultat: hela dockflödet
             (inkl. interaktionspaneler + 5s-timer) renderades hundratals px under
             vikningen, onåbart även vid maxscroll. Med en definit höjd här löser
-            .lf-root:s height:100% korrekt mot en verklig viewport-bunden ram, och
+            .mf-root:s height:100% korrekt mot en verklig viewport-bunden ram, och
             .commentary-feed:s egna overflow-y:auto (redan korrekt) scrollar
             matchflödet internt istället för att hela sidan bara växer. */}
         <div key={location.pathname} className="screen-enter" style={{ height: '100%' }}>

@@ -1,10 +1,10 @@
-/* ── LedgerFrame — liggare-krom ─────────────────────────────────────────────── */
+/* ── MatchFlowFrame — rondflödets ram ──────────────────────────────────────────── */
 /*                                                                               */
 /* Chrome för rond-flödet: Förbered / Spela / Granska.                          */
 /* Aldrig Portal / Trupp / Transfers (DESIGN-DECISIONS §LF-1).                  */
 /* Inga nya tokens — hela ytan bygger på befintlig copper / paper / mono-palett.*/
 /*                                                                               */
-/* Tokenavvikelser mot handoff HANDOFF-LEDGERFRAME-2026-06-08.md (flaggade):    */
+/* Tokenavvikelser mot den historiska designhandoffen 2026-06-08 (flaggade):    */
 /*   club-name #e8e0d0 → var(--text-light) #F5F1EB (något ljusare/svalare)      */
 /*   rps-strip bg #1a1714 → var(--bg-dark-surface) #1E1D19 (4 steg ljusare)     */
 /*   paper body #ece4d4 → var(--bg) #EDE8DF (1-2 steg off — ej synligt ensamt) */
@@ -13,7 +13,7 @@
 /* ────────────────────────────────────────────────────────────────────────────── */
 
 /* Root */
-.lf-root {
+.mf-root {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -23,7 +23,7 @@
 }
 
 /* ── Masthead ── */
-.lf-masthead {
+.mf-masthead {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -32,7 +32,7 @@
   flex-shrink: 0;
 }
 
-.lf-crest {
+.mf-crest {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,7 +45,7 @@
   overflow: hidden;
 }
 
-.lf-club {
+.mf-club {
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -53,7 +53,7 @@
   min-width: 0;
 }
 
-.lf-club-name {
+.mf-club-name {
   font-family: Georgia, serif;
   font-size: 12px;
   line-height: 1.2;
@@ -63,7 +63,7 @@
   text-overflow: ellipsis;
 }
 
-.lf-club-sub {
+.mf-club-sub {
   font-family: var(--font-mono);
   font-size: 7px;
   line-height: 1.2;
@@ -75,7 +75,7 @@
   text-overflow: ellipsis;
 }
 
-.lf-round {
+.mf-round {
   font-family: var(--font-mono);
   font-size: 8px;
   font-weight: 600;
@@ -90,7 +90,7 @@
 /* ── Slim masthead (grepp 4 — phase=spela) ──
    Under spel ersätts masthead + RPS-strip av en tunn orienteringsrad:
    "Forsbacka 3–2 Skutskär · OMG. 2 · SPELA". Frigör ~30px till feeden. */
-.lf-masthead-slim {
+.mf-masthead-slim {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -100,7 +100,7 @@
   border-bottom: 1px solid var(--copper);
   flex-shrink: 0;
 }
-.lf-slim-score {
+.mf-slim-score {
   font-family: Georgia, serif;
   font-size: 11px;
   font-weight: 700;
@@ -112,10 +112,10 @@
   text-overflow: ellipsis;
   min-width: 0;
 }
-.lf-slim-score b {
+.mf-slim-score b {
   font-variant-numeric: tabular-nums;
 }
-.lf-slim-meta {
+.mf-slim-meta {
   font-family: var(--font-mono);
   font-size: 8px;
   font-weight: 600;
@@ -126,7 +126,7 @@
 }
 
 /* ── RPS-strip ── */
-.lf-rps {
+.mf-rps {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
@@ -141,38 +141,38 @@
   text-transform: uppercase;
 }
 
-.lf-rps-item {
+.mf-rps-item {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.lf-rps-item.active {
+.mf-rps-item.active {
   color: var(--copper);
   font-weight: 700;
 }
 
-.lf-rps-item.done {
+.mf-rps-item.done {
   color: color-mix(in srgb, var(--copper) 50%, transparent);
 }
 
-.lf-rps-item.pending {
+.mf-rps-item.pending {
   color: var(--ink-mute);
 }
 
-.lf-rps-icon {
+.mf-rps-icon {
   font-size: 8px;
   line-height: 1;
 }
 
-.lf-rps-sep {
+.mf-rps-sep {
   color: var(--line-stroke); /* rgba(255,255,255,0.12) — exakt match */
   margin: 0 6px;
   font-weight: 400;
 }
 
 /* ── Body: marginal + innehåll ── */
-.lf-body {
+.mf-body {
   display: flex;
   flex: 1;
   overflow: hidden;
@@ -180,7 +180,7 @@
 }
 
 /* Perforerad marginal */
-.lf-margin {
+.mf-margin {
   width: 20px;
   flex-shrink: 0;
   background: linear-gradient(
@@ -197,7 +197,7 @@
 }
 
 /* Perforerings-hål */
-.lf-perf {
+.mf-perf {
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -208,7 +208,7 @@
 }
 
 /* Innehållsyta */
-.lf-content {
+.mf-content {
   flex: 1;
   overflow: hidden;
   display: flex;
@@ -217,14 +217,14 @@
 }
 
 /* ── Subflikrad (Förbered) ── */
-.lf-subtabs {
+.mf-subtabs {
   display: flex;
   background: var(--paper-warm);
   border-bottom: 1px solid var(--border-strong);
   flex-shrink: 0;
 }
 
-.lf-subtab {
+.mf-subtab {
   flex: 1;
   position: relative;
   padding: 8px 6px;
@@ -238,12 +238,12 @@
   text-transform: uppercase;
 }
 
-.lf-subtab.active {
+.mf-subtab.active {
   color: var(--copper);
   font-weight: 700;
 }
 
-.lf-subtab.active::after {
+.mf-subtab.active::after {
   content: '';
   position: absolute;
   right: 0;
@@ -254,14 +254,14 @@
 }
 
 /* ── Flikrad (Granska) ── */
-.lf-tabs {
+.mf-tabs {
   display: flex;
   background: var(--paper-warm); /* #F5F1EB — handoff #f4eee1, flaggad */
   border-top: 1px solid var(--ink-faint);
   flex-shrink: 0;
 }
 
-.lf-tab {
+.mf-tab {
   flex: 1;
   font-family: var(--font-mono);
   font-size: 7.5px;
@@ -275,11 +275,11 @@
   position: relative;
 }
 
-.lf-tab.active {
+.mf-tab.active {
   color: var(--copper);
 }
 
-.lf-tab.active::before {
+.mf-tab.active::before {
   content: '';
   position: absolute;
   top: 0;
@@ -294,8 +294,8 @@
    händelseetiketter), inte till en knapp som navigerar UT ur matchen ("TILL GRANSKNING").
    font-body matchar CTA-typografin (.btn-cta i global.css, samma som "KLAR — NÄSTA
    OMGÅNG" i GranskaScreen och "Sätt igång" i ArrivalScene). Box-modellen (padding/
-   bakgrund/radie) är ledger-specifik och orörd — bara typografin var fel. */
-.lf-stamp {
+   bakgrund/radie) är matchflödesspecifik och orörd — bara typografin var fel. */
+.mf-stamp {
   display: block;
   width: calc(100% - 26px);
   margin: 10px 13px 12px;
@@ -315,19 +315,19 @@
   transition: background 0.1s ease, border-color 0.1s ease;
 }
 
-.lf-stamp:active {
+.mf-stamp:active {
   background: var(--copper-deep);
   border-color: var(--copper-deep);
 }
 
-.lf-stamp:disabled {
+.mf-stamp:disabled {
   opacity: var(--disabled-opacity);
   pointer-events: none;
   cursor: not-allowed;
 }
 
-/* ── Sektionsrubrik (.lf-sh) — shared across Förbered/Granska children ── */
-.lf-sh {
+/* ── Sektionsrubrik (.mf-sh) — shared across Förbered/Granska children ── */
+.mf-sh {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -341,7 +341,7 @@
   margin-bottom: 8px;
 }
 
-.lf-sh-note {
+.mf-sh-note {
   font-size: 8px;
   color: var(--ink-faint);
   font-weight: normal;
@@ -351,13 +351,13 @@
 
 /* ── Botten-dock (BottomDock) ──────────────────────────────────────────────
    Primitiv för SIFFROR-lådan (peek) och interaktionspaneler (block).
-   Positioneras absolut i .lf-root { position: relative } — stannar i
+   Positioneras absolut i .mf-root { position: relative } — stannar i
    430px-kolumnen, spiller inte ut till hela viewporten (ej fixed).
    z-skala: peek = 400 (--z-overlay), block = 500 (--z-interaction).
    Slide: translateY(100%) → translateY(0), 220ms ease-out.
    ────────────────────────────────────────────────────────────────────────── */
 
-.lf-dock {
+.mf-dock {
   position: absolute;
   left: 0;
   right: 0;
@@ -372,23 +372,23 @@
   flex-direction: column;
 }
 
-.lf-dock.open {
+.mf-dock.open {
   transform: translateY(0);
 }
 
-.lf-dock--peek {
+.mf-dock--peek {
   z-index: var(--z-overlay); /* 400 */
   /* P-2: cappa peek (inline height 280px) på korta skärmar. dvh + vh-fallback. */
   max-height: 42vh;
   max-height: 42dvh;
 }
 
-.lf-dock--block {
+.mf-dock--block {
   z-index: var(--z-interaction); /* 500 */
 }
 
 /* Pull-handtag — peek only */
-.lf-dock-handle {
+.mf-dock-handle {
   display: block;
   width: 100%;
   padding: 10px 0 8px;
@@ -398,7 +398,7 @@
   flex-shrink: 0;
 }
 
-.lf-dock-handle::after {
+.mf-dock-handle::after {
   content: '';
   display: block;
   width: 36px;
@@ -410,7 +410,7 @@
 
 /* P-1: transparent fångstyta bakom peek-lådan — tap utanför stänger.
    z 399 (under peek 400), fångar tap på tavla/feed/kontroller. */
-.lf-dock-catch {
+.mf-dock-catch {
   position: absolute;
   inset: 0;
   z-index: calc(var(--z-overlay) - 1); /* 399 */
@@ -418,7 +418,7 @@
 }
 
 /* Scrollbart innehåll med safe-bottom padding */
-.lf-dock-content {
+.mf-dock-content {
   flex: 1;
   overflow-y: auto;
   padding-bottom: var(--safe-bottom);
@@ -428,7 +428,7 @@
 /* K-2: z-skala tokeniserad, ingen hårdkodad siffra — z-index alltid ett uttryck
    av --z-interaction/--z-overlay, aldrig ett fristående tal som kan glida ur
    synk om skalan ändras. Fokus-dim för block-varianten, precis under docken. */
-.lf-dock-scrim {
+.mf-dock-scrim {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.65);
@@ -438,7 +438,7 @@
   transition: opacity 220ms ease-out;
 }
 
-.lf-dock-scrim.open {
+.mf-dock-scrim.open {
   opacity: 1;
   pointer-events: auto;
 }
@@ -448,6 +448,6 @@
    (--z-interaction - 1) i den delade contexten. :has() scopar det till öppen
    block-scrim, så modaler (z-modal 300) fortsatt täcker tavlan. Ingen hårdkodad
    topp-pixel → robust när tavlan växer (utvisningsraden). */
-.lf-root:has(.lf-dock-scrim.open) .scoreboard-root {
+.mf-root:has(.mf-dock-scrim.open) .scoreboard-root {
   z-index: var(--z-interaction); /* > scrim (z-interaction - 1); block-docken (z-interaction) kvar överst via DOM-ordning */
 }

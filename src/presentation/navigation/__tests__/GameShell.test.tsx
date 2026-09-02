@@ -154,7 +154,7 @@ describe('GameShell — deep-link rehydration (Skutskär-audit test 20)', () => 
   })
 })
 
-describe('GameShell — LedgerFrame äger rondflödets chrome', () => {
+describe('GameShell — MatchFlowFrame äger rondflödets chrome', () => {
   it('låter både Förbered och Spela äga sin chrome', () => {
     expect(routeOwnsLedgerChrome('/game/match', null)).toBe(true)
     expect(routeOwnsLedgerChrome('/game/match/live', null)).toBe(true)

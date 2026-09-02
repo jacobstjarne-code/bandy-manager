@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Sponsor } from '../../../domain/entities/Sponsor'
 import type { SponsorCounterResult } from '../../../domain/services/sponsorCounterService'
-import '../../styles/ledger.css'
+import '../../styles/match-flow.css'
 import '../../styles/transfers.css'
 import { Overlay } from '../primitives/Overlay'
 
@@ -58,8 +58,8 @@ export function SponsorCounterModal({ sponsor, onClose, onPreview, onCommit }: S
           <button onClick={handleDismiss} className="btn btn-ghost transfers-close-btn"><X size={16} /></button>
         </div>
         <div className="transfers-modal-body">
-          <div className="lf-margin" aria-hidden="true">
-            {PERF_DOTS.map((_, i) => <div key={i} className="lf-perf" />)}
+          <div className="mf-margin" aria-hidden="true">
+            {PERF_DOTS.map((_, i) => <div key={i} className="mf-perf" />)}
           </div>
           <div className="transfers-modal-content">
             {result ? (
@@ -86,12 +86,12 @@ export function SponsorCounterModal({ sponsor, onClose, onPreview, onCommit }: S
           </div>
         </div>
         {result ? (
-          <button onClick={handleDismiss} className="lf-stamp">OK</button>
+          <button onClick={handleDismiss} className="mf-stamp">OK</button>
         ) : (
           <button
             onClick={handleSubmit}
             disabled={!isValid}
-            className="lf-stamp"
+            className="mf-stamp"
           >
             Skicka →
           </button>

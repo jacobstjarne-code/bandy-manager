@@ -15,7 +15,7 @@ interface TacticStepProps {
   onChange: <K extends keyof Tactic>(key: K, value: Tactic[K]) => void
   onBack: () => void
   onNext: () => void
-  /** LedgerFrame äger fasens enda framåt-handling i matchförberedelsen. */
+  /** MatchFlowFrame äger fasens enda framåt-handling i matchförberedelsen. */
   showFooter?: boolean
 }
 

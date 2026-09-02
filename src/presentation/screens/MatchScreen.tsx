@@ -28,7 +28,7 @@ import { computeLaddningBeat, type LaddningBeat } from '../../domain/data/matchL
 import { MatchLaddningScene } from '../components/match/MatchLaddningScene'
 import { MatchLaddningBand } from '../components/match/MatchLaddningBand'
 import { FatigueFloorConfirm } from '../components/match/FatigueFloorConfirm'
-import { LedgerFrame } from '../components/ledger/LedgerFrame'
+import { MatchFlowFrame } from '../components/match-flow/MatchFlowFrame'
 import { getManagerDisplayName } from '../../domain/services/managerProfileService'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 import { shouldRouteQuicksimToCeremony } from './matchLiveHelpers'
@@ -278,7 +278,7 @@ export function MatchScreen() {
         : 'Skadade eller avstängda spelare i startuppställningen')
       return
     }
-    // A3-golvet ska ligga på beslutet att spela, även när LedgerFrame ersätter
+    // A3-golvet ska ligga på beslutet att spela, även när MatchFlowFrame ersätter
     // wizardens interna Nästa-knapp. Samma bekräftelse, ingen parallell regel.
     if (floorBreach.belowFloorStarters.length > 0) {
       setConfirmingMatchStart(true)
@@ -305,7 +305,7 @@ export function MatchScreen() {
 
   if (!nextFixture) {
     return (
-      <LedgerFrame
+      <MatchFlowFrame
         clubId={managedClub.id}
         clubName={managedClub.name}
         managerName={getManagerDisplayName(game)}
@@ -331,7 +331,7 @@ export function MatchScreen() {
             </div>
           )}
         </div>
-      </LedgerFrame>
+      </MatchFlowFrame>
     )
   }
 
@@ -405,7 +405,7 @@ export function MatchScreen() {
   )
   if (effectiveStep === 'lineup' && availableForMatch.length < 11) {
     return (
-      <LedgerFrame
+      <MatchFlowFrame
         clubId={managedClub.id}
         clubName={managedClub.name}
         managerName={getManagerDisplayName(game)}
@@ -416,14 +416,14 @@ export function MatchScreen() {
         subTabs={[{ id: 'lineup', label: 'Trupp', active: true, onClick: () => {} }]}
       >
         <NodtruppScene game={game} availableCount={availableForMatch.length} nextFixtureId={nextFixture.id} />
-      </LedgerFrame>
+      </MatchFlowFrame>
     )
   }
   const matchWeatherData = game.matchWeathers?.find(w => w.fixtureId === nextFixture.id)
   const activePreparationTab = effectiveStep === 'lineup' ? 'lineup' : 'tactic'
 
   return (
-    <LedgerFrame
+    <MatchFlowFrame
       clubId={managedClub.id}
       clubName={managedClub.name}
       managerName={getManagerDisplayName(game)}
@@ -582,6 +582,6 @@ export function MatchScreen() {
         />
       )}
       </div>
-    </LedgerFrame>
+    </MatchFlowFrame>
   )
 }

@@ -4,7 +4,7 @@ import type { Player } from '../../../domain/entities/Player'
 import { RIVALRY_WARNING_PER_INTENSITY } from '../../../domain/data/transferResponseText'
 import { formatValue } from '../../utils/formatters'
 import { Overlay } from '../primitives/Overlay'
-import '../../styles/ledger.css'
+import '../../styles/match-flow.css'
 
 const PERF_DOTS = Array.from({ length: 8 })
 
@@ -34,8 +34,8 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
           <button onClick={onClose} className="btn btn-ghost transfers-close-btn"><X size={16} /></button>
         </div>
         <div className="transfers-modal-body">
-          <div className="lf-margin" aria-hidden="true">
-            {PERF_DOTS.map((_, i) => <div key={i} className="lf-perf" />)}
+          <div className="mf-margin" aria-hidden="true">
+            {PERF_DOTS.map((_, i) => <div key={i} className="mf-perf" />)}
           </div>
           <div className="transfers-modal-content">
             <div className="transfers-info-box">
@@ -80,7 +80,7 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
         <button
           onClick={() => canAfford && onConfirm(player.id, offerAmount, offeredSalary, contractYears)}
           disabled={!canAfford}
-          className="lf-stamp"
+          className="mf-stamp"
         >
           Lägg bud →
         </button>

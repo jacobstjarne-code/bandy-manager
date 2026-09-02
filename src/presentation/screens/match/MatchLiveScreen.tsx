@@ -56,7 +56,7 @@ import { simulateMatchStepByStep } from '../../../domain/services/matchSimulator
 import { matchReducer, initialMatchState } from './matchReducer'
 import { generateMatchStory } from '../../../domain/utils/matchStory'
 import { formatArenaName } from '../../../domain/utils/arenaName'
-import { LedgerFrame } from '../../components/ledger/LedgerFrame'
+import { MatchFlowFrame } from '../../components/match-flow/MatchFlowFrame'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
 import { InteraktionsDock } from '../../components/match/InteraktionsDock'
@@ -1577,7 +1577,7 @@ export function MatchLiveScreen() {
   })()
 
   return (
-    <LedgerFrame
+    <MatchFlowFrame
       clubId={managedClub?.id ?? ''}
       clubName={managedClub?.name ?? ''}
       managerName={game ? getManagerDisplayName(game) : ''}
@@ -1803,6 +1803,6 @@ export function MatchLiveScreen() {
         />
       )}
 
-    </LedgerFrame>
+    </MatchFlowFrame>
   )
 }

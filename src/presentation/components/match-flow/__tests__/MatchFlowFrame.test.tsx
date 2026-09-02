@@ -1,7 +1,7 @@
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { LedgerFrame } from '../LedgerFrame'
+import { MatchFlowFrame } from '../MatchFlowFrame'
 
 beforeAll(() => {
   ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
@@ -17,13 +17,13 @@ afterEach(() => {
   container = null
 })
 
-function renderLedger(onTactic = vi.fn()) {
+function renderMatchFlow(onTactic = vi.fn()) {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
   act(() => {
     root!.render(
-      <LedgerFrame
+      <MatchFlowFrame
         clubId="club_forsbacka"
         clubName="Forsbacka IK"
         managerName="Test"
@@ -37,17 +37,17 @@ function renderLedger(onTactic = vi.fn()) {
         stamp={{ label: 'FYLL ELVAN FÖRST', onClick: () => {}, disabled: true }}
       >
         <div>Förberedelse</div>
-      </LedgerFrame>,
+      </MatchFlowFrame>,
     )
   })
   return { onTactic }
 }
 
-describe('LedgerFrame — Förbered', () => {
+describe('MatchFlowFrame — Förbered', () => {
   it('renderar subflikarna under RPS-stripen och aktiverar deras handlingar', () => {
-    const { onTactic } = renderLedger()
-    const subTabs = container!.querySelector('.lf-subtabs')!
-    const body = container!.querySelector('.lf-body')!
+    const { onTactic } = renderMatchFlow()
+    const subTabs = container!.querySelector('.mf-subtabs')!
+    const body = container!.querySelector('.mf-body')!
     expect(subTabs.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect([...subTabs.querySelectorAll('button')].map(button => button.textContent)).toEqual(['Trupp', 'Taktik'])
 
@@ -56,8 +56,8 @@ describe('LedgerFrame — Förbered', () => {
   })
 
   it('visar spärrad status i samma stämpel i stället för en separat CTA', () => {
-    renderLedger()
-    const stamp = container!.querySelector('.lf-stamp') as HTMLButtonElement
+    renderMatchFlow()
+    const stamp = container!.querySelector('.mf-stamp') as HTMLButtonElement
     expect(stamp.disabled).toBe(true)
     expect(stamp.textContent).toBe('FYLL ELVAN FÖRST')
   })

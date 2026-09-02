@@ -150,7 +150,7 @@ export function InteractionShell({
     timeLeftRef.current = totalSeconds
     setTimeLeft(totalSeconds)
     timedOut.current = false
-    // B-2: starta nedräkningen EFTER inglidningen (220ms slide, se .lf-dock),
+    // B-2: starta nedräkningen EFTER inglidningen (220ms slide, se .mf-dock),
     // så spelaren inte förlorar första sekunden på att panelen glider in.
     const startDelay = setTimeout(() => {
       timerRef.current = setInterval(() => {

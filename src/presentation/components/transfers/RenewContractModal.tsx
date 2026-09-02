@@ -3,7 +3,7 @@ import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
 import { formatSalary, formatContractUntil } from '../../utils/formatters'
 import { Overlay } from '../primitives/Overlay'
-import '../../styles/ledger.css'
+import '../../styles/match-flow.css'
 
 const PERF_DOTS = Array.from({ length: 8 })
 
@@ -31,8 +31,8 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
           <button onClick={onClose} className="btn btn-ghost transfers-close-btn"><X size={16} /></button>
         </div>
         <div className="transfers-modal-body">
-          <div className="lf-margin" aria-hidden="true">
-            {PERF_DOTS.map((_, i) => <div key={i} className="lf-perf" />)}
+          <div className="mf-margin" aria-hidden="true">
+            {PERF_DOTS.map((_, i) => <div key={i} className="mf-perf" />)}
           </div>
           <div className="transfers-modal-content">
             <div className="transfers-info-box transfers-info-box--lg">
@@ -72,7 +72,7 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
         </div>
         <button
           onClick={() => onConfirm(player.id, newSalary, years)}
-          className="lf-stamp"
+          className="mf-stamp"
         >
           Förläng →
         </button>

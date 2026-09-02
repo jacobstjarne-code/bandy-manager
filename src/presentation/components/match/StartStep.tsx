@@ -83,7 +83,7 @@ interface StartStepProps {
   ritualText?: string
   farewellPlayerName?: string  // C-B3: set for farewell matches
   squadPlayers?: Player[]
-  /** LedgerFrame äger fasens enda framåt-handling i matchförberedelsen. */
+  /** MatchFlowFrame äger fasens enda framåt-handling i matchförberedelsen. */
   showFooter?: boolean
 }
 

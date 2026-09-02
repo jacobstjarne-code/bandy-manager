@@ -64,7 +64,7 @@ interface LineupStepProps {
   pendingForcedAutoFill: { belowFloorStarters: Player[]; shortfall: number } | null
   onConfirmForcedAutoFill: () => void
   onCancelForcedAutoFill: () => void
-  /** LedgerFrame äger fasens enda framåt-handling i matchförberedelsen. */
+  /** MatchFlowFrame äger fasens enda framåt-handling i matchförberedelsen. */
   showFooter?: boolean
 }
 

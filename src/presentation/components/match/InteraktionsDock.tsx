@@ -17,7 +17,7 @@ import type { PressChoice } from '../../../domain/services/lastMinutePressServic
  *
  * Flyttar CornerInteraction m.fl. från inline-rendering (flexShrink:0 ovanför feeden,
  * reflowar vid varje hörna) till en bottendockad panel som glider upp över feeden.
- * Feeden behåller scroll bakom (docken är position:absolute i .lf-root, ingen reflow).
+ * Feeden behåller scroll bakom (docken är position:absolute i .mf-root, ingen reflow).
  *
  * open = någon interaktion aktiv. Stängs INTE manuellt — panelen löser sig själv
  * (svar → utfall → auto-dismiss nollställer active*-tillståndet → open blir false).

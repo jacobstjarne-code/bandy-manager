@@ -6,13 +6,13 @@ const NOOP = () => {}
 /**
  * BottomDock — delad primitiv för SIFFROR-lådan (peek) och interaktionspaneler (block).
  *
- * Positioneras absolut inom .lf-root { position: relative } så att den
+ * Positioneras absolut inom .mf-root { position: relative } så att den
  * stannar i 430px-matchkolumnen, inte viewporten (ej fixed).
  *
  * peek  → z-index 400 (--z-overlay).  Pull-handtag. Ingen scrim.
  * block → z-index 500 (--z-interaction). Scrim på z 499. Stängs programmatiskt.
  *
- * CSS: src/presentation/styles/ledger.css (.lf-dock, .lf-dock-scrim, m.fl.)
+ * CSS: src/presentation/styles/match-flow.css (.mf-dock, .mf-dock-scrim, m.fl.)
  */
 
 interface BottomDockProps {
@@ -31,7 +31,7 @@ export function BottomDock({ open, variant, onClose, height, children }: BottomD
 
   return (
     <>
-      {variant === 'block' && <div className="lf-dock-scrim open" aria-hidden="true" />}
+      {variant === 'block' && <div className="mf-dock-scrim open" aria-hidden="true" />}
       <Overlay
         onClose={onClose ?? NOOP}
         variant="sheet"
@@ -48,7 +48,7 @@ export function BottomDock({ open, variant, onClose, height, children }: BottomD
         contentStyle={{ background: 'transparent', border: 'none' }}
       >
         <div
-          className={`lf-dock lf-dock--${variant} open`}
+          className={`mf-dock mf-dock--${variant} open`}
           style={{
             ...(resolvedHeight !== undefined ? { height: resolvedHeight } : {}),
             position: 'relative',
@@ -56,12 +56,12 @@ export function BottomDock({ open, variant, onClose, height, children }: BottomD
         >
           {variant === 'peek' && onClose && (
             <button
-              className="lf-dock-handle"
+              className="mf-dock-handle"
               onClick={onClose}
               aria-label="Stäng"
             />
           )}
-          <div className="lf-dock-content">
+          <div className="mf-dock-content">
             {children}
           </div>
         </div>
