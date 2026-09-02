@@ -167,6 +167,64 @@ describe('getClubMemory', () => {
     expect(allEvents.filter(e => e.type === 'national_team_callup')).toHaveLength(1)
     expect(result.seasons.find(s => s.season === 3)!.events.some(e => e.type === 'national_team_callup')).toBe(false)
   })
+
+  it('builds a facility memory in the season declared by builtSeasons and reuses the completion matchday', () => {
+    const game = makeMinimalGame({
+      currentSeason: 4,
+      facilityState: {
+        builtNodeIds: ['kiosk'],
+        builtSeasons: { kiosk: 3 },
+        unseenCompletedFacilities: [{ nodeId: 'kiosk', season: 3, matchday: 9 }],
+      },
+    } as Partial<SaveGame>)
+
+    const event = getClubMemory(game).seasons
+      .find(s => s.season === 3)?.events
+      .find(e => e.type === 'facility_built')
+
+    expect(event).toMatchObject({
+      season: 3,
+      matchday: 9,
+      roundLabel: 'Matchdag 9',
+      significance: 35,
+      subjectClubId: MANAGED_CLUB_ID,
+    })
+    expect(event?.text).toBe('Kiosken är öppen. Kaffe och korv i pausen — små pengar som blir stora över en säsong.')
+  })
+
+  it('uses builtSeasons as canon and never promotes a completion queue entry into history by itself', () => {
+    const game = makeMinimalGame({
+      currentSeason: 2,
+      facilityState: {
+        builtNodeIds: ['kiosk'],
+        unseenCompletedFacilities: [{ nodeId: 'kiosk', season: 2, matchday: 7 }],
+      },
+    } as Partial<SaveGame>)
+
+    const events = getClubMemory(game).seasons.flatMap(s => s.events)
+    expect(events.some(e => e.type === 'facility_built')).toBe(false)
+  })
+
+  it('keeps the season memory after decommission and does not invent an exact matchday for old saves', () => {
+    const game = makeMinimalGame({
+      currentSeason: 3,
+      facilityState: {
+        builtNodeIds: [],
+        builtSeasons: { varmestuga: 2 },
+      },
+    } as Partial<SaveGame>)
+
+    const event = getClubMemory(game).seasons
+      .find(s => s.season === 2)?.events
+      .find(e => e.type === 'facility_built')
+
+    expect(event).toMatchObject({
+      season: 2,
+      matchday: 1,
+      roundLabel: 'Under säsongen',
+    })
+    expect(event?.text).toBe('Värmestugan står klar. Folk stannar kvar i kylan nu, pratar färdigt.')
+  })
 })
 
 describe('scoreEvent', () => {

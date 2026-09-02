@@ -204,8 +204,8 @@ export interface FacilityState {
   builtNodeIds: string[]
   /** AUDIT DEL 3 (2026-08-11): säsong per byggd nod, skriven vid completion
    *  (advanceFacilityState). Valfritt fält — saknas för noder byggda före denna
-   *  ändring, ingen gissning bakåt. Ingen konsument ännu (text-utan-yta,
-   *  se Krönikans årsdagar-hålet i HallTrial.completedSeason ovan). */
+   *  ändring, ingen gissning bakåt. Läses av FacilityTree, avvecklingsraden och
+   *  Krönikans facility_built-minne. */
   builtSeasons?: Record<string, number>
   activeProject?: {
     nodeId: string

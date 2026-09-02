@@ -8,6 +8,8 @@ import {
 } from './clubMemoryEventBuilders'
 import type { MomentSource } from '../entities/Moment'
 import { FIRST_CALLUP_MEMORY_LINES } from '../data/landslagText'
+import { FACILITY_NODE_DEFS } from '../data/facilityNodes'
+import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from '../data/facilityPortalBeats'
 
 export type MemoryEventType =
   | 'season_finish' | 'cup_final' | 'sm_final' | 'derby_result'
@@ -140,9 +142,32 @@ function collectSeasonEvents(game: SaveGame, season: number, managedClubId: stri
     })
   }
 
-  // Facility built: utelämnat efter B1 §5-utfasningen — nya facilityState.builtNodeIds saknar
-  // per-nod completedSeason, så händelsen kan inte säsongsförankras. Återställs om en
-  // completion-logg (builtLog {nodeId,season,matchday}) läggs till i FacilityState (flaggat till Opus).
+  // Facility completions. `builtSeasons` är den beständiga sanningen om
+  // VILKEN säsong noden stod klar; completion-kön kompletterar med den exakta
+  // globala matchdagen när den finns. Kön är inte producent — en legacy-post
+  // utan builtSeasons får därför inte hitta på ett historiskt bygge. Om den
+  // exakta dagen saknas visar UI:t "Under säsongen" i stället för en falsk
+  // ligaomgång. Invigningstexten återanvänds från portalbeatets Opus-låsta
+  // källa, så samma completion inte får två konkurrerande berättelser.
+  for (const [nodeId, builtSeason] of Object.entries(game.facilityState?.builtSeasons ?? {})) {
+    if (builtSeason !== season) continue
+    const def = FACILITY_NODE_DEFS.find(node => node.id === nodeId)
+    if (!def) continue
+    const completion = (game.facilityState?.unseenCompletedFacilities ?? [])
+      .filter(item => item.nodeId === nodeId && item.season === season)
+      .sort((a, b) => b.matchday - a.matchday)[0]
+    const matchday = completion?.matchday ?? 1
+    events.push({
+      type: 'facility_built',
+      season,
+      matchday,
+      roundLabel: completion ? `Matchdag ${matchday}` : 'Under säsongen',
+      text: FACILITY_COMPLETED_BEATS[nodeId] ?? FACILITY_COMPLETED_FALLBACK(def.label),
+      emoji: '🏗️',
+      significance: 35,
+      subjectClubId: managedClubId,
+    })
+  }
 
   // Storylines
   for (const sl of (game.storylines ?? [])) {
