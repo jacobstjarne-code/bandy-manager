@@ -63,6 +63,9 @@ const EXPECTED_TIER: Record<GameEventType, DecisionTier> = {
   // domen är INTE byggd (måste-listan är stängd, tier saknar per-instans-
   // åsidosättande) — se decisionTierService.ts.
   communityActivityRenewal: 'month',
+  // DOM_BURNOUT_TAK_2026-09-02: medvetet month tills den stängda måste-listan
+  // uttryckligen utökas; själva valet är fortfarande en brytpunkt nedan.
+  burnoutCeiling: 'month',
 
   // BAKGRUND
   pressConference: 'background',
@@ -95,6 +98,7 @@ const EXPECTED_MODE: Record<GameEventType, DecisionMode> = {
   mecenatWithdrawal: 'brytpunkt',
   patronWithdrawal: 'brytpunkt',
   retirementCeremony: 'brytpunkt',
+  burnoutCeiling: 'brytpunkt',
 
   contractRequest: 'dilemma',
   transferBidReceived: 'dilemma',
@@ -115,9 +119,7 @@ const EXPECTED_MODE: Record<GameEventType, DecisionMode> = {
   kommunMote: 'dilemma',
   politicianEvent: 'dilemma',
   gentjanst: 'dilemma',
-  academyEvent: 'dilemma',
   economicStress: 'dilemma',
-  playoffEvent: 'dilemma',
   playThroughInjury: 'dilemma',
   burnoutRelief: 'dilemma',
   communityActivityRenewal: 'dilemma',
@@ -140,6 +142,8 @@ const EXPECTED_MODE: Record<GameEventType, DecisionMode> = {
   schoolAssignment: 'notis',
   refereeMeeting: 'notis',
   seasonGoalHalfway: 'notis',
+  academyEvent: 'notis',
+  playoffEvent: 'notis',
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

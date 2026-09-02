@@ -31,7 +31,10 @@ export function calculateKommunBidrag(
   if (politician.agenda === 'prestige' && (club.reputation ?? 50) > 65) agendaBonus = 10000
   if (politician.agenda === 'infrastructure' && (club.facilities ?? 50) > 60) agendaBonus = 15000
   const relBonus = politician.relationship > 70 ? 10000 : 0
-  return Math.round(base * generosityMod * communityMod + lokStod + agendaBonus + relBonus)
+  return Math.max(0, Math.round(
+    base * generosityMod * communityMod + lokStod + agendaBonus + relBonus +
+    (politician.kommunBidragModifier ?? 0)
+  ))
 }
 
 // Parti → typiska agendor (duplicerat = dubbel sannolikhet)

@@ -14,6 +14,16 @@ const decision = (id: string): WeeklyDecision =>
   ({ id, question: '', category: 'training', optionA: { label: '', effect: '' }, optionB: { label: '', effect: '' } } as WeeklyDecision)
 
 describe('Fynd 11 — veckans beslut-effekter', () => {
+  it('respekterar en cooldown som rebasats till negativ matchday vid säsongsskifte', () => {
+    expect(generateWeeklyDecision({
+      ...game,
+      currentSeason: game.currentSeason + 1,
+      weeklyDecisionLastRound: -1,
+      pendingWeeklyDecision: undefined,
+      resolvedWeeklyDecisions: [],
+    }, 1)).toBeNull()
+  })
+
   it('PC-1: player_weekend_off A → moral +5 OCH kondition −1 (inte form)', () => {
     // wearyPlayer = en spelare med form < 40; injicera en.
     const g = { ...game, players: game.players.map((p, i) => i === 0 ? { ...p, form: 30 } : p) }

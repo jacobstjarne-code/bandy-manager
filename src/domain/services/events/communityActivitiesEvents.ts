@@ -130,12 +130,12 @@ export function generateCommunityActivitiesEvents(
         id: eid,
         type: 'communityEvent',
         title: 'Julmarknad på planen',
-        body: `${game.localPaperName ?? 'Lokaltidningen'} föreslår en julmarknad på planen. Kostar 4 000 men ger 12 000 i intäkter och gott rykte.`,
+        body: `${game.localPaperName ?? 'Lokaltidningen'} föreslår en julmarknad på planen. Den kostar 4 000 kr att ordna och väntas ge 12 000 kr i intäkter.`,
         choices: [
           {
             id: 'arrange',
             label: 'Arrangera julmarknad',
-            subtitle: '💰 engångskostnad · ⭐ +8-18 tkr intäkt + fanMood',
+            subtitle: '💰 +8 tkr netto',
             effect: { type: 'setCommunity', amount: 8000, communityKey: 'julmarknad', communityValue: 'true' },
           },
           {
@@ -164,7 +164,7 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'support',
             label: 'Stötta initiativet',
-            subtitle: '⭐ +streaming-intäkter per match',
+            subtitle: '💰 +5–8 tkr engångsintäkt',
             effect: { type: 'income', amount: loppisAmount },
           },
           {
@@ -187,12 +187,12 @@ export function generateCommunityActivitiesEvents(
         id: eid,
         type: 'communityEvent',
         title: 'Bandyskola för barn',
-        body: 'Kommunen erbjuder bidrag om ni startar en bandyskola för barn 8–12 år. Ger 6 000/säsong och rekryterar framtida spelare.',
+        body: 'Kommunen vill att ni startar en bandyskola för barn 8–12 år. Den kostar 5 000 kr att starta och ger sedan deltagarintäkter, löpande kostnader och en starkare ungdomsverksamhet.',
         choices: [
           {
             id: 'start',
             label: 'Starta bandyskolan',
-            subtitle: '💰 -5 tkr · ⭐ ungdomsrekrytering + intäkter',
+            subtitle: '💰 -5 tkr nu · löpande intäkter och kostnader',
             // 2.5 (choice-label-svepet, 2026-08-17): amount var +6000 (vinst)
             // trots att texten lovar en kostnad på 5 tkr — omkastat tecken,
             // spelaren fattade beslut på motsatt information mot vad koden
@@ -219,7 +219,7 @@ export function generateCommunityActivitiesEvents(
         id: eid,
         type: 'communityEvent',
         title: 'Ismaskinen krånglar',
-        body: 'Ismaskinens motor börjar krångla. Reparation kostar 15 000 kr. Skjuter ni upp det riskerar ni sämre is.',
+        body: 'Ismaskinens motor börjar krångla. Reparation kostar 15 000 kr. Om ni skjuter upp det försämras anläggningen.',
         choices: [
           {
             id: 'repair',
@@ -236,7 +236,7 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'postpone',
             label: 'Skjut upp det',
-            subtitle: '⚠️ risk för ytterligare skador',
+            subtitle: '🏗️ -5 faciliteter',
             effect: { type: 'tempFacilities', amount: -1 },
           },
         ],
@@ -253,12 +253,12 @@ export function generateCommunityActivitiesEvents(
         id: eid,
         type: 'communityEvent',
         title: 'Rekrytera funktionärer',
-        body: 'Föreningen behöver fler funktionärer. En rekryteringsdag kostar 2 000 men ger 15 nya frivilliga och sänker personalkostnader.',
+        body: 'Föreningen behöver fler funktionärer. En rekryteringsdag kostar 2 000 kr och ger därefter 1 000 kr extra per hemmamatch.',
         choices: [
           {
             id: 'arrange',
             label: 'Arrangera rekryteringsdag (−2 000 kr)',
-            subtitle: '💰 -2 tkr · ⭐ ungdomsrekrytering +5',
+            subtitle: '💰 -2 tkr · +1 tkr per hemmamatch',
             effect: { type: 'setCommunity', amount: -2000, communityKey: 'functionaries', communityValue: 'true' },
           },
           {
@@ -281,13 +281,16 @@ export function generateCommunityActivitiesEvents(
         id: eid,
         type: 'communityEvent',
         title: 'Fikakväll för supportrarna',
-        body: 'Arrangera en fikakväll med spelarna. Billigt (500 kr) men höjer fanMood med 8 poäng.',
+        body: 'Arrangera en fikakväll med spelarna. Den kostar 500 kr och höjer fanMood med 8 poäng.',
         choices: [
           {
             id: 'fika',
             label: 'Klart vi fixar fika',
-            subtitle: '💛 +3 fanMood · 🤝 volontärer nöjda',
-            effect: { type: 'fanMood', amount: 8 },
+            subtitle: '💰 -500 kr · 💛 +8 fanMood',
+            effect: { type: 'multiEffect', subEffects: JSON.stringify([
+              { type: 'income', amount: -500 },
+              { type: 'fanMood', amount: 8 },
+            ]) },
           },
           {
             id: 'skip',
@@ -315,7 +318,10 @@ export function generateCommunityActivitiesEvents(
             id: 'go',
             label: 'Vi kör bilbingo',
             subtitle: '💰 engångsintäkt · 💛 +5 fanMood',
-            effect: { type: 'income', amount: 20000 },
+            effect: { type: 'multiEffect', subEffects: JSON.stringify([
+              { type: 'income', amount: 20000 },
+              { type: 'fanMood', amount: 5 },
+            ]) },
           },
           {
             id: 'pass',
@@ -337,7 +343,7 @@ export function generateCommunityActivitiesEvents(
         id: eid,
         type: 'communityEvent',
         title: 'Anläggningsrenovering',
-        body: 'Omklädningsrummen behöver renoveras. Kostar 25 000 men ger +5 reputation och håller spelarna nöjdare.',
+        body: 'Omklädningsrummen behöver renoveras. Det kostar 25 000 kr och förbättrar faciliteterna med 15.',
         // DOMLOGG 2026-08-31 §3-A: undertexten ÄR speccen — effekten var
         // buggen, inte texten. renovate lovade "-25 tkr · +15 faciliteter"
         // men gav bara reputation +5; wait lovade "faciliteter försämras"

@@ -20,7 +20,22 @@ import {
 } from '../../data/hallProvningData'
 import { getRivalry } from '../../data/rivalries'
 import { clamp } from '../../utils/clamp'
-import { isFacilityTreeFull } from '../facilityService'
+import { FACILITY_NODE_DEFS, isFacilityTreeFull } from '../facilityService'
+
+const MATCHHALL_DEF = FACILITY_NODE_DEFS.find(def => def.id === 'matchhall')!
+
+function matchhallClubCost(finansiering: 'egen' | 'kommun' | 'patron'): number {
+  const share = finansiering === 'kommun'
+    ? (MATCHHALL_DEF.financing?.kommun?.share ?? 0)
+    : finansiering === 'patron'
+      ? (MATCHHALL_DEF.financing?.mecenat?.share ?? 0)
+      : 0
+  return Math.round(MATCHHALL_DEF.cost * (1 - share))
+}
+
+function withBuildCost(hint: string, cost: number): string {
+  return `${hint} · Kassa −${Math.round(cost / 1000).toLocaleString('sv-SE')} tkr`
+}
 
 // ── Trigger ───────────────────────────────────────────────────────────────
 
@@ -156,9 +171,14 @@ function buildForankringEvent(
   const d2Id = `hallprocess_d2_s${s}`
   const d3Id = `hallprocess_d3_s${s}`
   const resId = `hallprocess_res_s${s}`
+  const resolved = new Set(game.resolvedEventIds ?? [])
 
   // Resolution at stageStartedRound + 10
-  if (currentRound >= stageStartedRound + 10 && !alreadyQueued.has(resId)) {
+  if (
+    currentRound >= stageStartedRound + 10 &&
+    resolved.has(d1Id) && resolved.has(d2Id) && resolved.has(d3Id) &&
+    !alreadyQueued.has(resId)
+  ) {
     const passiveDelta = calcPassiveSupportDelta(game, trial, currentRound)
     const finalSupport = clamp((trial.support ?? 50) + passiveDelta, 0, 100)
 
@@ -202,7 +222,7 @@ function buildForankringEvent(
 
   // Decision 3 (enkaten) at +8, after d1 and d2 resolved
   if (currentRound >= stageStartedRound + 8 &&
-      !alreadyQueued.has(d1Id) && !alreadyQueued.has(d2Id) && !alreadyQueued.has(d3Id)) {
+      resolved.has(d1Id) && resolved.has(d2Id) && !alreadyQueued.has(d3Id)) {
     const def = PROVNING_DECISIONS_FORANKRING[2]
     const support = trial.support ?? 50
     return {
@@ -223,7 +243,7 @@ function buildForankringEvent(
 
   // Decision 2 (birger_mote) at +6, after d1 resolved
   if (currentRound >= stageStartedRound + 6 &&
-      !alreadyQueued.has(d1Id) && !alreadyQueued.has(d2Id)) {
+      resolved.has(d1Id) && !alreadyQueued.has(d2Id)) {
     const def = PROVNING_DECISIONS_FORANKRING[1]
     return {
       id: d2Id,
@@ -312,10 +332,12 @@ function buildForhandlingEvent(
   const fh1Id = `hallprocess_fh1_s${s}`
   const fh2Id = `hallprocess_fh2_s${s}`
   const fhNejId = `hallprocess_fhnej_s${s}`
+  const politician = game.localPolitician
+  const minRelation = MATCHHALL_DEF.financing?.kommun?.minRelation ?? 45
+  const municipalityWillFinance = (politician?.relationship ?? 0) >= minRelation
 
   // Patron-erbjudande at +6 (fallback om kommunvägen inte löst sig)
-  if (currentRound >= stageStartedRound + 6 && !alreadyQueued.has(fh1Id)) {
-    // fh1 resolved (not in queue) — check if patron available
+  if (currentRound >= stageStartedRound + 6 && !municipalityWillFinance) {
     const activePatron = (game.mecenater ?? []).find(m => m.isActive && m.happiness >= 50)
     if (activePatron && !alreadyQueued.has(fh2Id)) {
       const def = PROVNING_DECISIONS_FORHANDLING[1]
@@ -326,10 +348,10 @@ function buildForhandlingEvent(
         title,
         body: def.body,
         choices: [
-          { id: 'borgen',    label: def.choiceA.label, subtitle: def.choiceA.hint,
-            effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'patron', stage: 'bygge', stageStartedRound: currentRound }) } },
-          { id: 'tacka_nej', label: def.choiceB.label, subtitle: def.choiceB.hint,
-            effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'egen', stage: 'bygge', stageStartedRound: currentRound }) } },
+          { id: 'borgen',    label: def.choiceA.label, subtitle: withBuildCost(def.choiceA.hint, matchhallClubCost('patron')),
+            effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'patron', stage: 'bygge', stageStartedRound: currentRound, buildCost: matchhallClubCost('patron') }) } },
+          { id: 'tacka_nej', label: def.choiceB.label, subtitle: withBuildCost(def.choiceB.hint, matchhallClubCost('egen')),
+            effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'egen', stage: 'bygge', stageStartedRound: currentRound, buildCost: matchhallClubCost('egen') }) } },
         ],
         resolved: false,
       }
@@ -353,19 +375,19 @@ function buildForhandlingEvent(
 
   // Kommunens villkor at +2
   if (currentRound >= stageStartedRound + 2 && !alreadyQueued.has(fh1Id)) {
-    const politician = game.localPolitician
-    if (!politician) return null
+    if (!politician || !municipalityWillFinance) return null
     const def = PROVNING_DECISIONS_FORHANDLING[0]
+    const buildCost = matchhallClubCost('kommun')
     return {
       id: fh1Id,
       type: 'hallProcess',
       title: def.title,
       body: def.body,
       choices: [
-        { id: 'ungdomstimmar', label: def.choiceA.label, subtitle: def.choiceA.hint,
-          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'kommun', stage: 'bygge', stageStartedRound: currentRound }) } },
-        { id: 'delad_drift',   label: def.choiceB.label, subtitle: def.choiceB.hint,
-          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'kommun', stage: 'bygge', stageStartedRound: currentRound }) } },
+        // Den tidigare delad_drift-knappen hade byte-identisk effekt och en
+        // påhittad "högre ja-odds". En verklig kommunväg, inte två skenval.
+        { id: 'ungdomstimmar', label: def.choiceA.label, subtitle: withBuildCost(def.choiceA.hint, buildCost),
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ finansiering: 'kommun', stage: 'bygge', stageStartedRound: currentRound, buildCost }) } },
       ],
       resolved: false,
     }
@@ -400,7 +422,10 @@ function buildFordyringEvent(
       { id: 'skjut_till', label: def.choiceA.label, subtitle: def.choiceA.hint,
         effect: { type: 'finance', value: -360_000 } },  // −20 % av 1 800 000
       { id: 'pausa',      label: def.choiceB.label, subtitle: def.choiceB.hint,
-        effect: { type: 'noOp' } },
+        effect: { type: 'hallProcess', hallProcessData: JSON.stringify({
+          buildPausedUntilSeason: game.currentSeason + 1,
+          buildPausedAtMatchday: game.currentMatchday,
+        }) } },
     ],
     resolved: false,
   }
@@ -519,6 +544,9 @@ export function formatHallNodeSub(game: SaveGame): string {
       return template.replace('{x}', String(met))
     }
     case 'bygge': {
+      if ((trial?.buildPausedUntilSeason ?? 0) > game.currentSeason) {
+        return `Bygge · paus till säsong ${trial?.buildPausedUntilSeason}`
+      }
       const eta = fs?.activeProject?.etaMatchday
       return template.replace('{season}', eta !== undefined ? `omg ${eta}` : '—')
     }

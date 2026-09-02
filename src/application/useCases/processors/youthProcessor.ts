@@ -201,6 +201,9 @@ export function processYouth(
       gameEvents.push({
         id: breakthroughId,
         type: 'academyEvent',
+        // Kortet routes till Granska → Spelare. Bär samma canonical id som
+        // premissen redan bygger på så spelarytan kan visa vem händelsen gäller.
+        relatedPlayerId: player.id,
         title: `${player.firstName} ${player.lastName} slår igenom`,
         body: `I debuten mot ${opponent?.name ?? 'motståndaren'}. Minut ${goal.minute ?? '?'}. ${player.age} år gammal. Akademitränaren har ringt redan. "${academyBreakthroughQuote(player.id)}"`,
         choices: [{ id: 'ack', label: 'Grattis akademin', effect: { type: 'noOp' } }],

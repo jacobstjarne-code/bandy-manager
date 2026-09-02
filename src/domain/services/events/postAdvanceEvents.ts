@@ -323,7 +323,7 @@ export function generatePostAdvanceEvents(
       const pick = promoCandidates[Math.floor(rand() * promoCandidates.length)]
       const eid = `event_promotion_${pick.id}_s${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
-        events.push(generatePromotionOfferEvent(pick))
+        events.push(generatePromotionOfferEvent(pick, game.currentSeason))
       }
     }
   }
@@ -402,16 +402,18 @@ export function generatePostAdvanceEvents(
 
   // 5f. Player media comment — unhappy benched player talks to press
   if (events.length < 2 && rand() < 0.12) {
+    const mediaWindow = game.fixtures
+      .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+      .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))
+      .slice(0, 10)
     const mediaCandidates = game.players.filter(p => {
       if (p.clubId !== game.managedClubId) return false
       if (p.morale >= 30) return false
       if (p.currentAbility < 55) return false
-      // Check: played < 3 of last 10 fixtures
-      const recentFixtures = game.fixtures
-        .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-        .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))
-        .slice(0, 10)
-      const gamesStarted = recentFixtures.filter(f => {
+      // Minst tre spelade lagmatcher krävs innan "sällan få starta" är ett
+      // grundat påstående. Tidigare kvalificerade 0 starter av 0 matcher.
+      if (mediaWindow.length < 3) return false
+      const gamesStarted = mediaWindow.filter(f => {
         const lineup = f.homeClubId === game.managedClubId ? f.homeLineup : f.awayLineup
         return lineup?.startingPlayerIds?.includes(p.id)
       }).length
@@ -433,7 +435,7 @@ export function generatePostAdvanceEvents(
         const eid = `event_media_${pick.id}_r${roundPlayed}`
         if (!alreadyQueued.has(eid)) {
           const journalist = game.localPaperName ?? 'Lokaltidningen'
-          events.push({ ...generatePlayerMediaEvent(pick, journalist), rotationKey: `${PLAYER_MEDIA_PREFIX}${pick.id}` })
+          events.push({ ...generatePlayerMediaEvent(pick, journalist, roundPlayed), rotationKey: `${PLAYER_MEDIA_PREFIX}${pick.id}` })
         }
       }
     }
@@ -503,7 +505,10 @@ export function generatePostAdvanceEvents(
               p.clubId === game.managedClubId && p.morale > 50 &&
               p.age >= 25 && p.currentAbility >= 50
             )
-        if (captain && managedClub) {
+        // Samma >50-gate oavsett om kaptenen kommer från captainPlayerId
+        // eller fallback-urvalet. Tidigare kunde en explicit satt kapten med
+        // låg moral kringgå regeln som kommentaren och eventpremissen anger.
+        if (captain && captain.morale > 50 && managedClub) {
           events.push(generateCaptainSpeechEvent(captain, managedClub.id, game.currentSeason))
         }
       }
@@ -560,10 +565,11 @@ export function generatePostAdvanceEvents(
   for (const mec of game.mecenater ?? []) {
     if (events.length >= 2) break
     if (!mec.isActive || mec.happiness >= 40) continue
-    const eid = `event_mec_intervention_${mec.id}_r${roundPlayed}`
-    const alreadyHasIntervention = [...alreadyQueued].some(id => id.startsWith(`event_mec_intervention_${mec.id}`))
+    const interventionPrefix = `event_mec_intervention_${mec.id}_s${game.currentSeason}_`
+    const eid = `${interventionPrefix}r${roundPlayed}`
+    const alreadyHasIntervention = [...alreadyQueued].some(id => id.startsWith(interventionPrefix))
     if (!alreadyQueued.has(eid) && !alreadyHasIntervention) {
-      events.push(generateMecenatInterventionEvent(mec, roundPlayed))
+      events.push(generateMecenatInterventionEvent(mec, game.currentSeason, roundPlayed))
     }
   }
 
@@ -665,7 +671,7 @@ export function generatePostAdvanceEvents(
           {
             id: 'accept',
             label: 'Tacka ja — desperatläget kräver det',
-            subtitle: '💰 +150 tkr · ⭐ -5 communityStanding',
+            subtitle: '💰 +150 tkr · ⭐ -5 communityStanding · 👤 ny styrelseledamot',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'income', amount: 150000 },
               { type: 'communityStanding', amount: -5 },
@@ -713,13 +719,13 @@ export function generatePostAdvanceEvents(
           id: omojligId,
           type: 'detOmojligaValet',
           title: 'Det omöjliga valet',
-          body: `Licensnämnden kräver positivt kapital. Du har en akademiprodukt värd pengar — ${playerName}. Hela orten älskar honom. Säljer du honom räddar du klubben, men skadar ditt rykte.`,
+          body: `Licensnämnden kräver positivt kapital. Du har en akademiprodukt värd pengar — ${playerName}. Hela orten älskar honom. Säljer du honom stärker du kassan, men skadar ditt rykte.`,
           relatedPlayerId: academyProspect.id,
           choices: [
             {
               id: 'sell',
-              label: `Sälj ${playerName} — rädda klubben (180 000 kr)`,
-              subtitle: '💰 +180 tkr · ⭐ -12 communityStanding · 💛 -15 fanMood',
+              label: `Sälj ${playerName} — stärk kassan med 180 000 kr`,
+              subtitle: '💰 +180 tkr · ⭐ -12 communityStanding · 💛 -15 fanMood · 📰 -10 journalistrelation',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'income', amount: 180000 },
                 { type: 'communityStanding', amount: -12 },
@@ -729,8 +735,8 @@ export function generatePostAdvanceEvents(
             },
             {
               id: 'keep',
-              label: 'Behåll honom — riskera licensproblem',
-              subtitle: '⭐ +5 communityStanding · 💛 +8 fanMood',
+              label: 'Behåll honom — låt underskottet bestå',
+              subtitle: '💰 kassan oförändrad · ⭐ +5 communityStanding · 💛 +8 fanMood',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'communityStanding', amount: 5 },
                 { type: 'fanMood', amount: 8 },

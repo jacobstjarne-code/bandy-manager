@@ -19,7 +19,11 @@ export function generatePatronEvents(
     // Patron intro — round 3, first time
     if (currentRound === 3) {
       const eid = `patron_intro_${game.currentSeason}`
-      if (!alreadyQueued.has(eid)) {
+      // En patron som nyss accepterats via patron_emerge har redan fått sin
+      // introduktion. Utan den här grinden kom samma person tillbaka två
+      // omgångar senare och presenterade samma samarbete en gång till.
+      const emergedThisSeason = alreadyQueued.has(`patron_emerge_${game.currentSeason}`)
+      if (!alreadyQueued.has(eid) && !emergedThisSeason) {
         events.push({
           id: eid,
           type: 'patronEvent',
@@ -30,13 +34,13 @@ export function generatePatronEvents(
             {
               id: 'welcome',
               label: 'Välkomna samarbetet',
-              subtitle: '🤝 Patron-relation startar · 💰 bidrag varje säsong',
+              subtitle: '🤝 +20 relation · 💰 årligt bidrag fortsätter',
               effect: { type: 'patronHappiness', amount: 20 },
             },
             {
               id: 'cautious',
               label: 'Tack, men vi tar det lugnt',
-              subtitle: '🤝 Relation startar försiktigt',
+              subtitle: '🤝 +5 relation · 💰 årligt bidrag fortsätter',
               effect: { type: 'patronHappiness', amount: 5 },
             },
           ],
@@ -47,7 +51,7 @@ export function generatePatronEvents(
 
     // Patron unhappy — round 5–10, happiness < 60
     if (currentRound >= 5 && currentRound <= 10 && (patron.happiness ?? 50) < 60) {
-      const eid = `patron_unhappy_r${currentRound}`
+      const eid = `patron_unhappy_s${game.currentSeason}_r${currentRound}`
       if (!alreadyQueued.has(eid)) {
         const quoteIdx = Math.floor(rand() * PATRON_UNHAPPY_QUOTES.length)
         const quote = PATRON_UNHAPPY_QUOTES[quoteIdx]
@@ -59,7 +63,7 @@ export function generatePatronEvents(
           choices: [
             {
               id: 'promise',
-              label: 'Lova att ta hänsyn',
+              label: 'Visa förståelse',
               subtitle: '🤝 +15 relation',
               effect: { type: 'patronHappiness', amount: 15 },
             },
@@ -77,7 +81,7 @@ export function generatePatronEvents(
 
     // Patron about to withdraw — round >= 8, happiness < 30
     if (currentRound >= 8 && (patron.happiness ?? 50) < 30) {
-      const eid = `patron_withdraw_r${currentRound}`
+      const eid = `patron_withdraw_s${game.currentSeason}_r${currentRound}`
       if (!alreadyQueued.has(eid)) {
         events.push({
           id: eid,
@@ -88,7 +92,7 @@ export function generatePatronEvents(
             {
               id: 'meet',
               label: 'Boka ett möte',
-              subtitle: '🤝 +10 relation · chans att behålla',
+              subtitle: '🤝 +30 relation · bidraget behålls',
               effect: { type: 'patronHappiness', amount: 30 },
             },
             {
@@ -115,7 +119,7 @@ export function generatePatronEvents(
       currentRound >= 11 && currentRound <= 13 &&
       (patron.happiness ?? 50) >= 30 && (patron.happiness ?? 50) <= 70
     ) {
-      const eid = `patron_style_r${currentRound}`
+      const eid = `patron_style_s${game.currentSeason}_r${currentRound}`
       if (!alreadyQueued.has(eid)) {
         const quoteIdx = Math.floor(rand() * PATRON_STYLE_COMPLAINTS.length)
         events.push({
@@ -126,7 +130,7 @@ export function generatePatronEvents(
           choices: [
             {
               id: 'agree',
-              label: `Lova att spela mer ${
+              label: `Håll med om mer ${
                 patron.wantsStyle === 'attacking' ? 'anfallsspel'
                 : patron.wantsStyle === 'defensive' ? 'defensivt'
                 : patron.wantsStyle === 'physical' ? 'fysiskt'
@@ -140,13 +144,13 @@ export function generatePatronEvents(
               id: 'diplomatic',
               label: 'Förklara taktiska skälen',
               subtitle: '🤝 +5 relation',
-              effect: { type: 'patronHappiness', amount: 3 },
+              effect: { type: 'patronHappiness', amount: 5 },
             },
             {
               id: 'refuse',
               label: 'Taktiken är min sak',
               subtitle: '🤝 -15 relation',
-              effect: { type: 'patronHappiness', amount: -8 },
+              effect: { type: 'patronHappiness', amount: -15 },
             },
           ],
           resolved: false,
@@ -170,7 +174,13 @@ export function generatePatronEvents(
               id: 'thank',
               label: 'Tacka varmt',
               subtitle: '🤝 +10 relation · 💰 bidrag mottaget',
-              effect: { type: 'income', amount: 20000 },
+              effect: {
+                type: 'multiEffect',
+                subEffects: JSON.stringify([
+                  { type: 'income', amount: 20000 },
+                  { type: 'patronHappiness', amount: 10 },
+                ]),
+              },
             },
           ],
           resolved: false,
@@ -186,7 +196,7 @@ export function generatePatronEvents(
     const goodwill = patronGame.goodwill ?? 80
 
     // Influence crosses 60 — wants to affect decisions
-    if (influence >= 60 && influence < 80) {
+    if (influence >= 60 && influence < 80 && goodwill >= 20) {
       const eid = `patron_influence_60_${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         events.push({
@@ -198,8 +208,11 @@ export function generatePatronEvents(
             {
               id: 'listen',
               label: 'Bjud in till styrelsemöte',
-              subtitle: '🤝 +20 relation · ⚠️ inflytande ökar',
-              effect: { type: 'patronHappiness', amount: 15 },
+              subtitle: '🤝 +20 relation · ⚠️ +10 inflytande',
+              effect: { type: 'multiEffect', subEffects: JSON.stringify([
+                { type: 'patronHappiness', amount: 20 },
+                { type: 'patronInfluence', amount: 10 },
+              ]) },
             },
             {
               id: 'decline',
@@ -226,13 +239,13 @@ export function generatePatronEvents(
             {
               id: 'apologize',
               label: 'Be om ursäkt och bjud på lunch',
-              subtitle: '🤝 +15 relation',
+              subtitle: '🕰️ +20 tålamod',
               effect: { type: 'patronInfluence', amount: 0, value: 20 },
             },
             {
               id: 'ignore',
               label: 'Det är min klubb, inte hans',
-              subtitle: '🤝 -20 relation · ⚠️ risk att mecenaten lämnar',
+              subtitle: '🤝 -50 relation · ⚠️ patronen kan lämna',
               effect: { type: 'patronHappiness', amount: -50 },
             },
           ],
@@ -251,7 +264,11 @@ export function generatePatronEmergenceEvent(
 ): GameEvent | null {
   // Only one emergence per season
   const emergeId = `patron_emerge_${game.currentSeason}`
-  if ((game.pendingEvents ?? []).some(e => e.id === emergeId)) return null
+  if (
+    (game.pendingEvents ?? []).some(e => e.id === emergeId) ||
+    (game.resolvedEventIds ?? []).includes(emergeId) ||
+    game.inbox.some(item => item.id === emergeId)
+  ) return null
 
   const profile = PATRON_PROFILES[Math.floor(rand() * PATRON_PROFILES.length)]
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)

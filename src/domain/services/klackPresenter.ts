@@ -163,9 +163,9 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
       eventType: 'tifo',
       groupName: sg.name,
       founded: sg.founded,
-      title: 'Tifo inför derbyt',
-      body: `${sg.veteran.name} har jobbat i veckor. Igår hängde den från läktaren — en stor fana, texten "VI STANNAR". Hela truppen såg den.`,
-      note: `+12 mood · ${sg.members} medlemmar`,
+      title: 'Tifot tar form',
+      body: `${sg.youth.name} och hennes kompisar har fått en hörna av föreningslokalen. Där arbetar de vidare med den stora banderollen.`,
+      note: `Klackens stämning stärktes · ${sg.members} medlemmar`,
     }
   }
 
@@ -175,8 +175,8 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
       eventType: 'conflict',
       groupName: sg.name,
       founded: sg.founded,
-      title: 'Spricka i klacken',
-      body: `${sg.veteran.name} och ${sg.youth.name} ser saker på olika sätt nu. Det märks. Klacken är tystare än vanligt.`,
+      title: 'Konflikten i klacken',
+      body: `${sg.leader.name} och ${sg.youth.name} såg olika på klackens väg framåt. Klubben tog ställning i frågan.`,
       note: `mood påverkat · ${sg.members} medlemmar`,
     }
   }
@@ -187,9 +187,9 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
       eventType: 'away_trip',
       groupName: sg.name,
       founded: sg.founded,
-      title: 'Bortaresan — alla kom hem',
-      body: `Tretton stycken. Lång buss, sen natt. ${sg.leader.name} säger det var den bästa resan på år. Klacken är sammansvetsad.`,
-      note: `+8 mood · ${sg.members} medlemmar`,
+      title: 'Bortaresan planeras',
+      body: `${sg.leader.name}, ${sg.veteran.name}, ${sg.youth.name} och hennes kompisar planerar bussen till en kommande bortamatch.`,
+      note: `Klackens stämning stärktes · ${sg.members} medlemmar`,
     }
   }
 

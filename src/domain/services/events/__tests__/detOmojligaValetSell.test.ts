@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { resolveEvent } from '../eventResolver'
+import { generatePostAdvanceEvents } from '../postAdvanceEvents'
 import { composeSeasonDecisionSentence } from '../../seasonDecisionCaptureService'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
@@ -30,7 +31,10 @@ function makeGameWithSellEvent() {
           { type: 'journalistRelationship', amount: -10 },
         ]) },
       },
-      { id: 'keep', label: 'l', effect: { type: 'noOp' } },
+      { id: 'keep', label: 'l', effect: { type: 'multiEffect', subEffects: JSON.stringify([
+        { type: 'communityStanding', amount: 5 },
+        { type: 'fanMood', amount: 8 },
+      ]) } },
     ],
     resolved: false, systemhandelse: true,
   }
@@ -74,10 +78,46 @@ describe('detOmojligaValet/sell — spelaren tas faktiskt bort ur klubben (H3)',
 
   it('keep-valet lämnar spelaren i truppen', () => {
     const { game, player } = makeGameWithSellEvent()
+    const clubBefore = game.clubs.find(c => c.id === game.managedClubId)!
     const resolved = resolveEvent(game, 'ev_omojlig', 'keep', undefined, true)
 
     const club = resolved.clubs.find(c => c.id === resolved.managedClubId)!
     expect(club.squadPlayerIds).toContain(player.id)
+    expect(club.finances).toBe(clubBefore.finances)
+    expect(resolved.communityStanding).toBe((game.communityStanding ?? 50) + 5)
+    expect(resolved.fanMood).toBe((game.fanMood ?? 50) + 8)
+  })
+
+  it('produktionskortet lovar kassadeltat, inte en garanterad räddning eller ospårad licenseffekt', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 3 })
+    const prospect = base.players.find(p => p.clubId === base.managedClubId && p.currentAbility > 50)!
+    const game = {
+      ...base,
+      currentSeason: 2,
+      patron: { name: 'P', business: 'B', influence: 20, happiness: 50, contribution: 1, isActive: true },
+      mecenater: [],
+      transferBids: [],
+      pendingEvents: [],
+      resolvedEventIds: [],
+      players: base.players.map(p => p.id === prospect.id ? { ...p, promotedFromAcademy: true } : p),
+      clubs: base.clubs.map(c => c.id === base.managedClubId ? { ...c, finances: -100000 } : c),
+    }
+    let event: GameEvent | undefined
+    for (let lowAt = 0; lowAt < 40 && !event; lowAt += 1) {
+      let call = 0
+      const rand = () => call++ === lowAt ? 0.01 : 0.99
+      event = generatePostAdvanceEvents(game, [], 1, rand)
+        .find(candidate => candidate.type === 'detOmojligaValet')
+    }
+
+    expect(event).toBeDefined()
+    expect(event!.body).toContain('stärker du kassan')
+    expect(event!.body).not.toContain('räddar du klubben')
+    expect(event!.choices.find(choice => choice.id === 'sell')?.subtitle).toContain('journalistrelation')
+    expect(event!.choices.find(choice => choice.id === 'keep')).toMatchObject({
+      label: 'Behåll honom — låt underskottet bestå',
+      subtitle: expect.stringContaining('kassan oförändrad'),
+    })
   })
 
   // A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): "keep" har en namngiven

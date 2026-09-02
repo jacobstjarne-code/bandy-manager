@@ -89,7 +89,10 @@ export interface Player {
   isFullTimePro: boolean // true = no day job, full focus
 
   currentAbility: number    // 0-100
-  startSeasonCA?: number    // CA at start of season (for most improved tracking)
+  // Levande delta för trupp-/gala-ytor. Årsbokens klubbhistoriska
+  // mostImproved använder SaveGame.seasonStartSquadSnapshot, eftersom
+  // denna Player kan ha bytt klubb innan säsongen summeras.
+  startSeasonCA?: number
   caHistory?: Array<{ season: number; ca: number }>
   potentialAbility: number  // 0-100
   developmentRate: number   // 0-100

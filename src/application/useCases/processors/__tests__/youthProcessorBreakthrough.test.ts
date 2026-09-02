@@ -4,6 +4,10 @@ import type { Player } from '../../../../domain/entities/Player'
 import type { Fixture } from '../../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { PlayerPosition, PlayerArchetype, FixtureStatus, MatchEventType } from '../../../../domain/enums'
+import { classifyEventNature } from '../../../../domain/services/granskaEventClassifier'
+import { getEventRenderTarget } from '../../../../domain/services/eventQueueService'
+import { getDefaultRolloverChoice } from '../../../../domain/services/deferredRolloverService'
+import { resolveEvent } from '../../../../domain/services/events/eventResolver'
 
 /**
  * HIGH 8 (audit 2026-08-29) — akademidebuten återanvändes tills den slutade betyda något.
@@ -79,6 +83,30 @@ describe('processYouth — akademigenombrott (HIGH 8)', () => {
     const events = breakthroughEvents(game, 5)
     expect(events).toHaveLength(1)
     expect(events[0].id).toBe('event_breakthrough_p1')
+    expect(events[0].relatedPlayerId).toBe(player.id)
+    expect(classifyEventNature(events[0])).toBe('player')
+    expect(getEventRenderTarget(events[0])).toBe('inline')
+  })
+
+  it('kvitteringen är ett ärligt noOp och rollover väljer samma neutrala val', () => {
+    const player = makePlayer('p1')
+    const game = makeGame([player], [makeFixture('fx1', 4, 'p1')], {
+      currentMatchday: 5,
+      currentDate: '2026-01-01',
+    })
+    const [event] = breakthroughEvents(game, 5)
+    expect(event).toBeDefined()
+    expect(getDefaultRolloverChoice(event)?.id).toBe('ack')
+
+    const resolved = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'ack', undefined, true)
+    expect(resolved.players).toEqual(game.players)
+    expect(resolved.pendingEvents).toEqual([])
+    expect(resolved.resolvedChoices?.at(-1)).toMatchObject({
+      eventId: event.id,
+      eventType: 'academyEvent',
+      choiceId: 'ack',
+      madeByPlayer: true,
+    })
   })
 
   it('fyrar bara EN gång totalt — samma fixture återfinns omgång efter omgång', () => {

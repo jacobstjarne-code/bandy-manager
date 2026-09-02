@@ -95,6 +95,12 @@ export interface LocalPolitician {
   agenda: PoliticalAgenda
   relationship: number
   kommunBidrag: number
+  /**
+   * Bestående beslutsdelta ovanpå calculateKommunBidrag:s dynamiska belopp.
+   * Separat från kommunBidrag eftersom det senare räknas om varje säsong;
+   * annars försvinner utlovade +kr/säsong-effekter vid nästa utbetalning.
+   */
+  kommunBidragModifier?: number
   generosity?: number          // 0-100
   mandatExpires?: number       // season number when mandate expires
   demands?: string[]
@@ -216,6 +222,10 @@ export interface HallTrial {
   stageStartedRound: number
   cooldownUntilSeason?: number  // efter fall/nedläggning
   finansiering?: 'egen' | 'kommun' | 'patron'  // sätts i förhandlingen
+  /** Fördyringsvalets verkliga byggpaus; bygget återupptas denna säsong. */
+  buildPausedUntilSeason?: number
+  /** Matchdagen då pausen började, så pausrundor inte räknas som byggtid vid rollover. */
+  buildPausedAtMatchday?: number
   // Release-svepet 2026-07-21 (Block 3a/3e): satt av roundProcessor.ts precis
   // när stage → 'klar' (matchhall-completion). Utan detta hade HALLNODE_SUBS.klar
   // ("Byggd {year}") behövt gissa ett årtal — facilityService.ts:s FacilityNodeView

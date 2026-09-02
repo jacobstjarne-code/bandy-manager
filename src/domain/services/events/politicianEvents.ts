@@ -36,7 +36,7 @@ export function generatePoliticianEvents(
 
     // Youth push — round 4, agenda === 'youth', relationship > 30
     if (currentRound === 4 && agenda === 'youth' && rel > 30) {
-      const eid = 'politician_youth'
+      const eid = `politician_youth_${politician.mandatExpires ?? game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const quotes = AGENDA_QUOTES.youth
         const quote = quotes[Math.floor(rand() * quotes.length)]
@@ -48,7 +48,7 @@ export function generatePoliticianEvents(
           choices: [
             {
               id: 'promise',
-              label: 'Lova prioritera juniorverksamhet',
+              label: 'Lyft fram juniorverksamheten',
               subtitle: '🤝 +10 relation · politikern nöjd',
               // M29 (textaudit 2026-07-03): effekten var +15, subtitlen lovade +10 — synkad mot subtitlen.
               effect: { type: 'politicianRelationship', amount: 10 },
@@ -67,7 +67,7 @@ export function generatePoliticianEvents(
 
     // Savings — round 6, agenda === 'savings'
     if (currentRound === 6 && agenda === 'savings') {
-      const eid = 'politician_savings'
+      const eid = `politician_savings_${politician.mandatExpires ?? game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const quotes = AGENDA_QUOTES.savings
         const quote = quotes[Math.floor(rand() * quotes.length)]
@@ -79,9 +79,12 @@ export function generatePoliticianEvents(
           choices: [
             {
               id: 'comply',
-              label: 'Presentera budget och sparlöften',
+              label: 'Presentera budget och sparplan',
               subtitle: '🤝 +8 relation · 💰 kommunbidrag +5 tkr',
-              effect: { type: 'politicianRelationship', amount: 10 },
+              effect: { type: 'multiEffect', subEffects: JSON.stringify([
+                { type: 'politicianRelationship', amount: 8 },
+                { type: 'kommunBidragChange', amount: 5000 },
+              ]) },
             },
             {
               id: 'pushback',
@@ -99,7 +102,7 @@ export function generatePoliticianEvents(
 
     // Prestige — round 8, agenda === 'prestige'
     if (currentRound === 8 && agenda === 'prestige') {
-      const eid = 'politician_prestige'
+      const eid = `politician_prestige_${politician.mandatExpires ?? game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const quotes = AGENDA_QUOTES.prestige
         const quote = quotes[Math.floor(rand() * quotes.length)]
@@ -135,7 +138,7 @@ export function generatePoliticianEvents(
 
     // Inclusion — round 5, agenda === 'inclusion'
     if (currentRound === 5 && agenda === 'inclusion') {
-      const eid = 'politician_inclusion'
+      const eid = `politician_inclusion_${politician.mandatExpires ?? game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         events.push({
           id: eid,
@@ -153,6 +156,7 @@ export function generatePoliticianEvents(
                 { type: 'fanMood', amount: 5 },
                 { type: 'communityStanding', amount: 3 },
               ]) },
+              followUpText: `Inkluderingsprogrammet har kommit igång. ${politician.name} tackar för samarbetet.`,
             },
             {
               id: 'counter',
@@ -168,7 +172,6 @@ export function generatePoliticianEvents(
             },
           ],
           resolved: false,
-          followUpText: `Inkluderingsprogrammet har kommit igång. ${politician.name} tackar för samarbetet.`,
         })
       }
     }
@@ -235,7 +238,7 @@ export function generatePoliticianEvents(
   const politician2 = game.localPolitician
   if (politician2 && !politician2.demandsMet) {
     const eid = `kommot_demand_${politician2.mandatExpires ?? game.currentSeason}_${game.currentSeason}`
-    const agendaEid = `politician_${politician2.agenda}`
+    const agendaEid = `politician_${politician2.agenda}_${politician2.mandatExpires ?? game.currentSeason}`
     // Skip demand if player has already seen the agenda-specific event for this topic
     const agendaAlreadySeen = alreadyQueued.has(agendaEid)
     if (!alreadyQueued.has(eid) && !agendaAlreadySeen && currentRound === 3) {
@@ -247,33 +250,33 @@ export function generatePoliticianEvents(
       if (agenda === 'savings') {
         demandBody = `${politician2.name} ringer och vill diskutera kommunens bidrag. ${pro2.subj} oroar sig för föreningens ekonomi.`
         choices = [
-          { id: 'confirm', label: 'Lova inga löneökningar nästa år', subtitle: '🤝 +10 relation', effect: { type: 'politicianRelationship', amount: 10 } },
-          { id: 'pushback', label: 'Vi investerar för framtiden', subtitle: '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: -5 } },
+          { id: 'confirm', label: 'Lägg fram vår nuvarande lönebudget', subtitle: '🤝 +10 relation', effect: { type: 'politicianRelationship', amount: 10 } },
+          { id: 'pushback', label: 'Försvara investeringstakten', subtitle: '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: -5 } },
         ]
       } else if (agenda === 'youth') {
         const hasSchool = game.communityActivities?.bandySchool
         demandBody = `${politician2.name} vill att föreningen satsar mer på ungdomar. ${hasSchool ? `${pro2.subj} ser positivt på bandyskolan.` : `${pro2.subj} vill se en bandyskola.`}`
         choices = [
-          { id: 'confirm', label: hasSchool ? 'Vi är stolta över bandyskolan' : 'Vi planerar en bandyskola', subtitle: hasSchool ? '🤝 +15 relation' : '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: hasSchool ? 15 : -5 } },
+          { id: 'confirm', label: hasSchool ? 'Visa upp bandyskolan' : 'Bandyskola ryms inte i årets budget', subtitle: hasSchool ? '🤝 +15 relation' : '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: hasSchool ? 15 : -5 } },
           { id: 'focus', label: 'A-laget är vår prioritet', subtitle: '🤝 -8 relation', effect: { type: 'politicianRelationship', amount: -8 } },
         ]
       } else if (agenda === 'prestige') {
         demandBody = `${politician2.name} vill att kommunen syns med laget. ${pro2.subj} ser er som ett varumärke för regionen.`
         choices = [
-          { id: 'welcome', label: 'Välkomna samarbetet', subtitle: '🤝 +12 relation', effect: { type: 'politicianRelationship', amount: 12 } },
+          { id: 'welcome', label: 'Tacka ja till kommunens samarbete', subtitle: '🤝 +12 relation', effect: { type: 'politicianRelationship', amount: 12 } },
           { id: 'independent', label: 'Föreningen är fristående', subtitle: '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: -5 } },
         ]
       } else if (agenda === 'inclusion') {
         demandBody = `${politician2.name} vill att föreningen öppnar upp för fler grupper i samhället.`
         choices = [
-          { id: 'program', label: 'Starta ett inkluderingsprogram', subtitle: '⭐ +5 communityStanding', effect: { type: 'communityStanding', amount: 5 } },
-          { id: 'already', label: 'Vi är redan öppna för alla', subtitle: '🤝 -3 relation', effect: { type: 'politicianRelationship', amount: -3 } },
+          { id: 'program', label: 'Lyft föreningens öppna verksamhet tillsammans', subtitle: '⭐ +5 communityStanding', effect: { type: 'communityStanding', amount: 5 } },
+          { id: 'already', label: 'Avvisa behovet av en särskild satsning', subtitle: '🤝 -3 relation', effect: { type: 'politicianRelationship', amount: -3 } },
         ]
       } else if (agenda === 'infrastructure') {
         demandBody = `${politician2.name} vill säkerställa att era anläggningar håller hög standard.`
         choices = [
-          { id: 'confirm', label: 'Vi investerar i anläggningarna', subtitle: '🤝 +10 relation', effect: { type: 'politicianRelationship', amount: 10 } },
-          { id: 'later', label: 'Det får vänta', subtitle: '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: -5 } },
+          { id: 'confirm', label: 'Instäm: anläggningarna måste prioriteras', subtitle: '🤝 +10 relation', effect: { type: 'politicianRelationship', amount: 10 } },
+          { id: 'later', label: 'Säg att frågan inte är akut', subtitle: '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: -5 } },
         ]
       }
 
@@ -293,29 +296,37 @@ export function generatePoliticianEvents(
   // ── Gentjänst event (new politician, corruption >= 50, 40% chance) ───────
   const pol3 = game.localPolitician
   if (pol3 && (pol3.corruption ?? 0) >= 50 && currentRound === 2) {
-    const eid = `gentjanst_${pol3.mandatExpires ?? game.currentSeason}_${game.currentSeason}`
-    if (!alreadyQueued.has(eid) && rand() < 0.4) {
+    const mandateKey = pol3.mandatExpires ?? game.currentSeason
+    const eid = `gentjanst_${mandateKey}`
+    // Äldre saves använde ett säsongssuffix. Räkna även dem som sedda så en
+    // redan hanterad gentjänst inte återkommer en extra gång efter migration.
+    const legacyPrefix = `gentjanst_${mandateKey}_`
+    const alreadySeenForMandate = alreadyQueued.has(eid) ||
+      [...alreadyQueued].some(id => id.startsWith(legacyPrefix))
+    if (!alreadySeenForMandate && rand() < 0.4) {
+      const pronouns = getPronouns(pol3.name)
+      const relative = pronouns.subj === 'Hon' ? 'systerdotter' : 'brorson'
       events.push({
         id: eid,
         type: 'gentjanst',
         title: 'En gentjänst',
-        body: `${pol3.name} hör av sig diskret. ${getPronouns(pol3.name).poss} ${getPronouns(pol3.name).subj === 'Hon' ? 'systerdotter' : 'brorson'} är en ung talang och undrar om ${getPronouns(pol3.name).subj.toLowerCase()} kan komma och träna med truppen. "Inget officiellt, bara kolla läget."`,
+        body: `${pol3.name} hör av sig diskret. ${pronouns.poss} ${relative} vill hitta en väg in i bandyn och ${pronouns.subj.toLowerCase()} ber dig om personlig hjälp.`,
         choices: [
           {
             id: 'yes',
-            label: 'Klart, välkommen att prova',
+            label: 'Skicka kontaktvägen till öppna provträningar',
             subtitle: '🤝 +20 relation',
             effect: { type: 'politicianRelationship', amount: 20 },
           },
           {
             id: 'community',
-            label: 'Bara i ungdomsverksamheten',
+            label: 'Hänvisa till ungdomsverksamheten',
             subtitle: '🤝 +5 relation',
             effect: { type: 'politicianRelationship', amount: 5 },
           },
           {
             id: 'no',
-            label: 'Vi rekryterar efter merit — inga undantag',
+            label: 'Vi lämnar inga personliga rekommendationer',
             subtitle: '🤝 -10 relation · ⭐ +3 styrelsens tålamod',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'politicianRelationship', amount: -10 },

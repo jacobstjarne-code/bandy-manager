@@ -12,7 +12,9 @@ import type { SupporterGroup } from '../../../entities/Community'
  * fixturer) fångade den inte eftersom supporter_conflict_-eventet aldrig var
  * med bland de handkonstruerade pendingEvents i DevScenesScreen.tsx — grinden
  * skannar bara rendered DOM för de events någon manuellt lagt in som fixture,
- * inte det fulla universet av event-fabriker.
+ * inte det fulla universet av event-fabriker. O11-svepet 2026-09-02 tog
+ * därefter bort den ospårade personkonsekvensen helt: ingen relation till
+ * Elin lagras, så subtitlen ska nu bara beskriva supporterMood −2.
  */
 function makeSupporterGroup(): SupporterGroup {
   return {
@@ -28,8 +30,8 @@ function makeSupporterGroup(): SupporterGroup {
   }
 }
 
-describe("supporter_conflict_ — 'sture'-valets subtitle interpolerar namnet", () => {
-  it("subtitle innehåller det riktiga namnet, inte den råa mall-strängen ${elin}", () => {
+describe("supporter_conflict_ — 'sture'-valets subtitle är state-sann", () => {
+  it("subtitle innehåller varken rå mall eller ospårad personkonsekvens", () => {
     const template = CLUB_TEMPLATES[0]
     const game = { ...createNewGame({ managerName: 'Test', clubId: template.id, seed: 1 }), supporterGroup: makeSupporterGroup() }
     const events = generateSupporterEvents(game, 9, new Set(), () => 0)
@@ -37,6 +39,7 @@ describe("supporter_conflict_ — 'sture'-valets subtitle interpolerar namnet", 
     const stureChoice = conflictEvent.choices.find(c => c.id === 'sture')!
 
     expect(stureChoice.subtitle).not.toContain('${elin}')
-    expect(stureChoice.subtitle).toContain('Elin')
+    expect(stureChoice.subtitle).not.toContain('Elin')
+    expect(stureChoice.subtitle).toBe('💛 −2 klackens stämning')
   })
 })

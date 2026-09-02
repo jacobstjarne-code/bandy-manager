@@ -175,7 +175,10 @@ export function generateCharacterPlayerEvents(
               id: 'yes',
               label: `Utse ${player.firstName} till kapten`,
               subtitle: '⭐ +2 samhällsstöd',
-              effect: { type: 'communityStanding', amount: 2 },
+              effect: { type: 'multiEffect', subEffects: JSON.stringify([
+                { type: 'setCaptain', targetPlayerId: player.id },
+                { type: 'communityStanding', amount: 2 },
+              ]) },
             },
             {
               id: 'no',

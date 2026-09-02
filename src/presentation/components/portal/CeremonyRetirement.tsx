@@ -17,15 +17,25 @@ interface Props {
   event: GameEvent
 }
 
-export function CeremonyRetirement({ game, event }: Props) {
-  const resolveEvent = useGameStore(s => s.resolveEvent)
+export function getRetirementCeremonyDisplayData(game: SaveGame, event: GameEvent) {
   const player = event.relatedPlayerId
     ? game.players.find(p => p.id === event.relatedPlayerId)
-    : null
-  const playerName = event.sender?.name ?? (player ? `${player.firstName} ${player.lastName}` : 'Spelaren')
-  const seasons = player?.careerStats?.seasonsPlayed ?? 0
-  const goals = player?.careerStats?.totalGoals ?? 0
-  const games = player?.careerStats?.totalGames ?? 0
+    : undefined
+  const legend = event.relatedPlayerId
+    ? (game.clubLegends ?? []).find(l => l.playerId === event.relatedPlayerId)
+    : undefined
+
+  return {
+    playerName: event.sender?.name ?? (player ? `${player.firstName} ${player.lastName}` : legend?.name ?? 'Spelaren'),
+    seasons: player?.careerStats?.seasonsPlayed ?? legend?.seasons ?? 0,
+    goals: player?.careerStats?.totalGoals ?? legend?.totalGoals ?? 0,
+    games: player?.careerStats?.totalGames ?? legend?.totalGames ?? 0,
+  }
+}
+
+export function CeremonyRetirement({ game, event }: Props) {
+  const resolveEvent = useGameStore(s => s.resolveEvent)
+  const { playerName, seasons, goals, games } = getRetirementCeremonyDisplayData(game, event)
 
   // Body contains farewell quote + protégé line + "Vill du erbjuda…"
   // Split at the last sentence starting with "Vill"

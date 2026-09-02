@@ -7,20 +7,20 @@ import { PORTAL_BEATS } from '../portalBeats'
  * registrets STRUKTUR (fullständighet + intern konsistens), inte innehållets
  * korrekthet — att sextiofältet är rätt ifyllt kan bara verifieras genom att
  * läsa källkoden, inte genom en assertion. Se contentContract.ts:s
- * huvudkommentar för täckningsläget (95 rader, en delmängd `filled: true`).
+ * huvudkommentar för täckningsläget (97 rader, en delmängd `filled: true`).
  *
- * 95, inte 96 (H1-uppföljning, 2026-08-24): ArcType 8 → 7, 'ledare_crisis'
- * borttagen (Jacobs dom — captainSpeech, postAdvanceEvents.ts, är kanon för
- * "kaptenen samlar laget"). Se BACKLOG.md "Två läsare, en sanning".
+ * Sedan ursprungsläget har `burnoutRelief` och `burnoutCeiling` tillkommit;
+ * båda lades direkt i det kanoniska registret. ArcType 8 → 7 när
+ * 'ledare_crisis' togs bort (H1-uppföljning 2026-08-24).
  */
 describe('CONTENT_CONTRACT — struktur', () => {
-  it('har 96 rader — 50 GameEventType + 22 StorylineType + 7 ArcType + 17 PortalBeat', () => {
-    expect(CONTENT_CONTRACT).toHaveLength(96)
+  it('har 97 rader — 51 GameEventType + 22 StorylineType + 7 ArcType + 17 PortalBeat', () => {
+    expect(CONTENT_CONTRACT).toHaveLength(97)
     const bySource = CONTENT_CONTRACT.reduce((acc, e) => {
       acc[e.source] = (acc[e.source] ?? 0) + 1
       return acc
     }, {} as Record<string, number>)
-    expect(bySource.GameEventType).toBe(50)
+    expect(bySource.GameEventType).toBe(51)
     expect(bySource.StorylineType).toBe(22)
     expect(bySource.ArcType).toBe(7)
     expect(bySource.PortalBeat).toBe(17)
@@ -124,5 +124,104 @@ describe('getContentContractEntry', () => {
 
   it('returnerar undefined för okänt (source, id)', () => {
     expect(getContentContractEntry('GameEventType', 'not_a_real_type')).toBeUndefined()
+  })
+
+  it('låser den verifierade transferbudsraden och dess medvetna avsaknad av cooldown', () => {
+    const entry = getContentContractEntry('GameEventType', 'transferBidReceived')
+    expect(entry).toMatchObject({
+      filled: true,
+      semanticKey: 'transferBidReceived',
+      systems: expect.arrayContaining(['spelartrupp och kontrakt', 'klubbekonomi och transferbudget']),
+    })
+    expect(entry?.cooldownSeasons).toBeUndefined()
+    expect(entry?.stateEffect).toContain("'accept': executeTransfer")
+    expect(entry?.stateEffect).toContain("'reject': bid.status='rejected'")
+    expect(entry?.stateEffect).toContain("'counter':")
+  })
+
+  it('låser contractRequest-raden och att avslag inte påstår en förlängning', () => {
+    const entry = getContentContractEntry('GameEventType', 'contractRequest')
+    expect(entry).toMatchObject({ filled: true, semanticKey: 'contractRequest' })
+    expect(entry?.cooldownSeasons).toBeUndefined()
+    expect(entry?.stateEffect).toContain("'reject': kontrakt/lön lämnas orörda")
+    expect(entry?.stateEffect).toContain('handled-markeringen ger inte längre ett gratis extraår')
+  })
+
+  it('låser starPerformance-radens två nyckelroller utan påhittad säsongscooldown', () => {
+    const entry = getContentContractEntry('GameEventType', 'starPerformance')
+    expect(entry).toMatchObject({ filled: true })
+    expect(entry?.semanticKey).toContain('starPerformance vid resolution')
+    expect(entry?.semanticKey).toContain('star_performance_{playerId}')
+    expect(entry?.cooldownSeasons).toBeUndefined()
+    expect(entry?.stateEffect).toContain('boostMorale +5')
+  })
+
+  it('låser presskonferensens svarseffekter, minnesnycklar och relationsgränser', () => {
+    const entry = getContentContractEntry('GameEventType', 'pressConference')
+    expect(entry).toMatchObject({ filled: true })
+    expect(entry?.semanticKey).toContain('press_q_{faktisk frågetext}')
+    expect(entry?.semanticKey).toContain('press_response_{responseId}')
+    expect(entry?.cooldownSeasons).toBeUndefined()
+    expect(entry?.stateEffect).toContain('Båda journalistrelationerna klampas 0–100')
+    expect(entry?.stateEffect).toContain('exakt tredje vägran')
+  })
+
+  it('låser dayJobConflict-varianternas verkliga vila, heltidssteg och deduplicering', () => {
+    const entry = getContentContractEntry('GameEventType', 'dayJobConflict')
+    expect(entry).toMatchObject({ filled: true, semanticKey: expect.stringContaining('dayJobConflict') })
+    expect(entry?.cooldownSeasons).toBeUndefined()
+    expect(entry?.trigger).toContain('en gång per spelare och säsong')
+    expect(entry?.stateEffect).toContain('restGamesRemaining=1')
+    expect(entry?.stateEffect).toContain('went_fulltime_pro-storyline')
+    expect(entry?.stateEffect).toContain("'risk för skada' är borttagen")
+  })
+
+  it('låser bidWar till budändring nu och betalning först vid faktisk transfer', () => {
+    const entry = getContentContractEntry('GameEventType', 'bidWar')
+    expect(entry).toMatchObject({ filled: true, semanticKey: expect.stringContaining('bidWar') })
+    expect(entry?.cooldownSeasons).toBeUndefined()
+    expect(entry?.stateEffect).toContain('offerAmount till avrundat 1,3×')
+    expect(entry?.stateEffect).toContain('klubbkassa och transferBudget ändras inte')
+    expect(entry?.notes).toContain('garanterar inget utfall')
+  })
+
+  it('låser communityEvent-familjens kapten-, orts- och P19-effekter', () => {
+    const entry = getContentContractEntry('GameEventType', 'communityEvent')
+    expect(entry).toMatchObject({ filled: true, semanticKey: expect.stringContaining('communityEvent') })
+    expect(entry?.cooldownSeasons).toBeUndefined()
+    expect(entry?.stateEffect).toContain('captainPlayerId')
+    expect(entry?.stateEffect).toContain('selectedPlayerIds')
+    expect(entry?.stateEffect).toContain('fika +8')
+    expect(entry?.notes).toContain('kunde gå under noll')
+  })
+
+  it('låser patronEvent till säsongsdeduplicering, gemensam relationseffekt och verklig bonus', () => {
+    const entry = getContentContractEntry('GameEventType', 'patronEvent')
+    expect(entry).toMatchObject({ filled: true, semanticKey: expect.stringContaining('patronEvent') })
+    expect(entry?.cooldownSeasons).toBeUndefined()
+    expect(entry?.trigger).toContain('communityStanding är minst 60')
+    expect(entry?.stateEffect).toContain('20 000 kr')
+    expect(entry?.stateEffect).toContain('+10 happiness')
+    expect(entry?.lifespan).toContain('säsong+omgång-id:n')
+    expect(entry?.notes).toContain('dubbelt intro')
+  })
+
+  it('låser politicianEvent till mandatdeduplicering och verkliga återkommande bidragsdeltan', () => {
+    const entry = getContentContractEntry('GameEventType', 'politicianEvent')
+    expect(entry).toMatchObject({ filled: true, semanticKey: expect.stringContaining('mandatExpires') })
+    expect(entry?.cooldownSeasons).toBeUndefined()
+    expect(entry?.stateEffect).toContain('kommunBidragModifier +5 000 kr')
+    expect(entry?.stateEffect).toContain('kommunBidragModifier +6 000 kr/säsong')
+    expect(entry?.lifespan).toContain('per politikermandat')
+    expect(entry?.notes).toContain('skickades även efter avslag')
+  })
+
+  it('låser hallDebate som legacy-tombstone och pekar på den enda levande hallprocessen', () => {
+    const entry = getContentContractEntry('GameEventType', 'hallDebate')
+    expect(entry).toMatchObject({ filled: true })
+    expect(entry?.cooldownSeasons).toBeUndefined()
+    expect(entry?.trigger).toContain('Ingen levande trigger')
+    expect(entry?.stateEffect).toContain('ingen hallDebate-specifik specialgren')
+    expect(entry?.notes).toContain('nästa rad, hallProcess')
   })
 })

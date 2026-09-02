@@ -26,6 +26,7 @@ export function generateSchoolAssignmentEvent(game: SaveGame, nextMatchday: numb
   const eventId = `event_school_assignment_${game.currentSeason}`
   if ((game.resolvedEventIds ?? []).includes(eventId)) return null
   if ((game.pendingEvents ?? []).some(e => e.id === eventId)) return null
+  if ((game.deferredDecisions ?? []).some(e => e.id === eventId)) return null
 
   // Find youngest managed academy player (age ≤ 21)
   const youngPlayers = game.players

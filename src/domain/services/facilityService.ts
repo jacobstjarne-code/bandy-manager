@@ -177,6 +177,13 @@ export function advanceFacilityState(
   season: number,
 ): { state: FacilityState; completedNodeId: string | null; facilitiesBonus: number; capacityBonus: number } {
   const { activeProject } = state
+  if (
+    activeProject?.nodeId === 'matchhall' &&
+    state.hallTrial?.buildPausedUntilSeason !== undefined &&
+    season < state.hallTrial.buildPausedUntilSeason
+  ) {
+    return { state, completedNodeId: null, facilitiesBonus: 0, capacityBonus: 0 }
+  }
   if (!activeProject || currentMatchday < activeProject.etaMatchday) {
     return { state, completedNodeId: null, facilitiesBonus: 0, capacityBonus: 0 }
   }
@@ -269,4 +276,3 @@ export function getFirstUnseenCompletedFacility(
   const queue = state.unseenCompletedFacilities ?? []
   return queue.find(c => !shownBeats.includes(facilityCompletedBeatKey(c.nodeId))) ?? null
 }
-

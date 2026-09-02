@@ -83,6 +83,7 @@ export function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResul
   if (isInPlayoffs) {
     const qfEventId = `playoff_qf_${game.currentSeason}`
     const alreadyFired = (game.pendingEvents ?? []).some(e => e.id === qfEventId) ||
+      (game.deferredDecisions ?? []).some(e => e.id === qfEventId) ||
       (game.resolvedEventIds ?? []).includes(qfEventId)
     if (!alreadyFired) {
       newPendingEvents.push(generateQuarterFinalEvent(game))

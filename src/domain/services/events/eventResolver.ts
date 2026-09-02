@@ -14,6 +14,7 @@ import type { PressChoice } from '../../data/csPressEventText'
 import { EVENT_SOURCE_MAP, startCooldown } from '../sourceCooldownService'
 import type { SourceKey } from '../sourceCooldownService'
 import { PROVNING_RESOLUTION } from '../../data/hallProvningData'
+import { FACILITY_NODE_DEFS } from '../../data/facilityNodes'
 import { getCurrentLeagueRound } from '../../data/seasonPhases'
 import { logNarrativeBeat } from '../narrativeLogService'
 import { captureSystemDecision, buildDecisionLedgerEntry } from '../seasonDecisionCaptureService'
@@ -65,6 +66,52 @@ function recordResolvedChoice(
  */
 function recordResolvedId(game: SaveGame, eventId: string): string[] {
   return [...(game.resolvedEventIds ?? []), eventId].slice(-200)
+}
+
+/**
+ * En gemensam patronrelationsväg för både top-level- och multiEffect-val.
+ * Nollpunkten är inte bara en siffra: den avaktiverar patronen, sätter
+ * cooldown-säsongen och köar avhoppskortet. Därför får multiEffect inte ha
+ * en förenklad parallell implementation som missar följdeffekterna.
+ */
+function applyPatronHappiness(game: SaveGame, amount: number): SaveGame {
+  if (!game.patron?.isActive) return game
+
+  const patronBeforeUpdate = game.patron
+  const newHappiness = Math.max(0, Math.min(100, (patronBeforeUpdate.happiness ?? 50) + amount))
+  let updatedGame: SaveGame = {
+    ...game,
+    patron: { ...patronBeforeUpdate, happiness: newHappiness, isActive: newHappiness > 0 },
+  }
+
+  if (newHappiness === 0) {
+    updatedGame = { ...updatedGame, patronWithdrawnSeason: updatedGame.currentSeason }
+    const withdrawalId = `patron_withdrawal_${updatedGame.currentSeason}`
+    const alreadyQueued = (updatedGame.pendingEvents ?? []).some(e => e.id === withdrawalId)
+    if (!alreadyQueued) {
+      const tkr = Math.round(patronBeforeUpdate.contribution / 1000)
+      const withdrawalEvent: GameEvent = {
+        id: withdrawalId,
+        type: 'patronWithdrawal',
+        title: `${patronBeforeUpdate.name} drar sig ur`,
+        body: `${patronBeforeUpdate.name} har bestämt sig. Det grundläggande bidraget — ${tkr} tkr/säsong — upphör. Klubben tappar sin dolda grundpelare.`,
+        choices: [
+          {
+            id: 'acknowledge',
+            label: 'Noterat',
+            effect: { type: 'patronWithdrawn' },
+          },
+        ],
+        resolved: false,
+      }
+      updatedGame = {
+        ...updatedGame,
+        pendingEvents: [...(updatedGame.pendingEvents ?? []), withdrawalEvent],
+      }
+    }
+  }
+
+  return updatedGame
 }
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
@@ -419,9 +466,31 @@ export function resolveEvent(
       updatedGame = {
         ...updatedGame,
         players: updatedGame.players.map(p =>
-          p.id === pid ? { ...p, morale: Math.min(100, p.morale + (effect.value ?? 5)) } : p,
+          p.id === pid ? { ...p, morale: Math.max(0, Math.min(100, p.morale + (effect.value ?? 5))) } : p,
         ),
       }
+      break
+    }
+    case 'restPlayer': {
+      const pid = effect.targetPlayerId
+      if (!pid) throw new Error("effect 'restPlayer' saknar obligatoriskt fält targetPlayerId")
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.id === pid
+            ? { ...p, restGamesRemaining: Math.max(p.restGamesRemaining ?? 0, effect.amount ?? 1) }
+            : p,
+        ),
+      }
+      break
+    }
+    case 'setCaptain': {
+      const pid = effect.targetPlayerId
+      if (!pid) throw new Error("effect 'setCaptain' saknar obligatoriskt fält targetPlayerId")
+      if (!updatedGame.players.some(p => p.id === pid && p.clubId === updatedGame.managedClubId)) {
+        throw new Error("effect 'setCaptain' kräver en spelare i den hanterade klubben")
+      }
+      updatedGame = { ...updatedGame, captainPlayerId: pid }
       break
     }
     case 'developmentRateDelta': {
@@ -581,7 +650,8 @@ export function resolveEvent(
                 moraleBoost > 0 ? 'good_answer' : 'bad_answer', moraleBoost > 0 ? 3 : -3, opponentShort),
           journalistRelationship: isRefusal
             ? Math.max(0, (updatedGame.journalistRelationship ?? 50) - 8)
-            : (updatedGame.journalistRelationship ?? 50) + (moraleBoost > 0 ? 3 : -3),
+            : Math.max(0, Math.min(100,
+                (updatedGame.journalistRelationship ?? 50) + (moraleBoost > 0 ? 3 : -3))),
         }
       }
       // Add media quote to inbox if present
@@ -738,43 +808,7 @@ export function resolveEvent(
       break
     }
     case 'patronHappiness': {
-      if (!updatedGame.patron?.isActive) break
-      const patronBeforeUpdate = updatedGame.patron
-      const newHappiness = Math.max(0, Math.min(100, (patronBeforeUpdate.happiness ?? 50) + (effect.amount ?? 0)))
-      updatedGame = {
-        ...updatedGame,
-        patron: { ...patronBeforeUpdate, happiness: newHappiness, isActive: newHappiness > 0 },
-      }
-      if (newHappiness === 0) {
-        // Set cooldown immediately so it holds across season boundaries even if withdrawal event goes unacknowledged
-        updatedGame = { ...updatedGame, patronWithdrawnSeason: updatedGame.currentSeason }
-        // Patron withdrawal kris-event
-        const withdrawalId = `patron_withdrawal_${updatedGame.currentSeason}`
-        const alreadyQueued = (updatedGame.pendingEvents ?? []).some(e => e.id === withdrawalId)
-        if (!alreadyQueued) {
-          const patronName = patronBeforeUpdate.name
-          const contribution = patronBeforeUpdate.contribution
-          const tkr = Math.round(contribution / 1000)
-          const withdrawalEvent: GameEvent = {
-            id: withdrawalId,
-            type: 'patronWithdrawal',
-            title: `${patronName} drar sig ur`,
-            body: `${patronName} har bestämt sig. Det grundläggande bidraget — ${tkr} tkr/säsong — upphör. Klubben tappar sin dolda grundpelare.`,
-            choices: [
-              {
-                id: 'acknowledge',
-                label: 'Noterat',
-                effect: { type: 'patronWithdrawn' },
-              },
-            ],
-            resolved: false,
-          }
-          updatedGame = {
-            ...updatedGame,
-            pendingEvents: [...(updatedGame.pendingEvents ?? []), withdrawalEvent],
-          }
-        }
-      }
+      updatedGame = applyPatronHappiness(updatedGame, effect.amount ?? 0)
       break
     }
     case 'spawnPatron': {
@@ -824,10 +858,15 @@ export function resolveEvent(
     }
     case 'kommunBidragChange': {
       if (!updatedGame.localPolitician) break
-      const newBidrag = Math.max(0, (updatedGame.localPolitician.kommunBidrag ?? 0) + (effect.amount ?? 0))
+      const delta = effect.amount ?? 0
+      const newBidrag = Math.max(0, (updatedGame.localPolitician.kommunBidrag ?? 0) + delta)
       updatedGame = {
         ...updatedGame,
-        localPolitician: { ...updatedGame.localPolitician, kommunBidrag: newBidrag },
+        localPolitician: {
+          ...updatedGame.localPolitician,
+          kommunBidrag: newBidrag,
+          kommunBidragModifier: (updatedGame.localPolitician.kommunBidragModifier ?? 0) + delta,
+        },
       }
       break
     }
@@ -836,7 +875,7 @@ export function resolveEvent(
         ...updatedGame,
         clubs: updatedGame.clubs.map(c =>
           c.id === updatedGame.managedClubId
-            ? { ...c, facilities: Math.min(100, (c.facilities ?? 50) + (effect.amount ?? 5)) }
+            ? { ...c, facilities: Math.max(0, Math.min(100, (c.facilities ?? 50) + (effect.amount ?? 5))) }
             : c
         ),
       }
@@ -893,9 +932,15 @@ export function resolveEvent(
       break
     }
     case 'journalistRelationship': {
+      const relationship = Math.max(0, Math.min(100,
+        (updatedGame.journalist?.relationship ?? updatedGame.journalistRelationship ?? 50) + (effect.amount ?? 0),
+      ))
       updatedGame = {
         ...updatedGame,
-        journalistRelationship: Math.max(0, Math.min(100, (updatedGame.journalistRelationship ?? 50) + (effect.amount ?? 0))),
+        journalistRelationship: relationship,
+        journalist: updatedGame.journalist
+          ? { ...updatedGame.journalist, relationship, lastInteractionMatchday: updatedGame.currentMatchday }
+          : updatedGame.journalist,
       }
       break
     }
@@ -931,15 +976,11 @@ export function resolveEvent(
       if (target.permanentlyWithdrawn) break
       if (!target.isActive) {
         // Intro activation — pending mecenat accepts relationship
-        const completedFixtures = (updatedGame.fixtures ?? []).filter(f => (f.status as string) === 'completed')
-        const currentMatchday = completedFixtures.length > 0
-          ? Math.max(...completedFixtures.map(f => f.matchday))
-          : 0
         updatedGame = {
           ...updatedGame,
           mecenater: updatedGame.mecenater.map(m =>
             m.id === targetId
-              ? { ...m, isActive: true, happiness: Math.min(100, 50 + delta), lastInteractionRound: currentMatchday }
+              ? { ...m, isActive: true, happiness: Math.min(100, 50 + delta), lastInteractionRound: updatedGame.currentMatchday }
               : m
           ),
         }
@@ -948,7 +989,11 @@ export function resolveEvent(
           ...updatedGame,
           mecenater: updatedGame.mecenater.map(m =>
             m.id === targetId
-              ? { ...m, happiness: Math.max(0, Math.min(100, m.happiness + delta)) }
+              ? {
+                  ...m,
+                  happiness: Math.max(0, Math.min(100, m.happiness + delta)),
+                  lastInteractionRound: updatedGame.currentMatchday,
+                }
               : m
           ),
         }
@@ -998,15 +1043,30 @@ export function resolveEvent(
                 fanMood: Math.max(0, Math.min(100, (updatedGame.fanMood ?? 50) + (sub.amount ?? 0))),
               }
             } else if (sub.type === 'journalistRelationship') {
+              // Narrative.ts markerar journalist.relationship som canonical
+              // ersättare för legacyfältet. Alla generiska relationseffekter
+              // måste ändå dual-write:a tills legacyfältet är migrerat bort.
+              const relationship = Math.max(0, Math.min(100,
+                (updatedGame.journalist?.relationship ?? updatedGame.journalistRelationship ?? 50) + (sub.amount ?? 0),
+              ))
               updatedGame = {
                 ...updatedGame,
-                journalistRelationship: Math.max(0, Math.min(100, (updatedGame.journalistRelationship ?? 50) + (sub.amount ?? 0))),
+                journalistRelationship: relationship,
+                journalist: updatedGame.journalist
+                  ? { ...updatedGame.journalist, relationship, lastInteractionMatchday: updatedGame.currentMatchday }
+                  : updatedGame.journalist,
               }
             } else if (sub.type === 'boardPatience') {
               updatedGame = {
                 ...updatedGame,
                 boardPatience: Math.max(0, Math.min(100, (updatedGame.boardPatience ?? 70) + (sub.amount ?? 0))),
               }
+            } else if (sub.type === 'setCaptain') {
+              if (!sub.targetPlayerId) throw new Error("multiEffect-subEffect 'setCaptain' saknar obligatoriskt fält targetPlayerId")
+              if (!updatedGame.players.some(p => p.id === sub.targetPlayerId && p.clubId === updatedGame.managedClubId)) {
+                throw new Error("multiEffect-subEffect 'setCaptain' kräver en spelare i den hanterade klubben")
+              }
+              updatedGame = { ...updatedGame, captainPlayerId: sub.targetPlayerId }
             } else if (sub.type === 'reduceBurnout') {
               // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): burnoutRelief-eventets
               // tre handlingar. amount är alltid negativt (sänker), samma
@@ -1043,11 +1103,13 @@ export function resolveEvent(
               // gren saknades — effekten var tyst noll. Samma matte som top-level
               // case 'kommunBidragChange' (rad 491-499).
               if (updatedGame.localPolitician) {
+                const delta = sub.amount ?? 0
                 updatedGame = {
                   ...updatedGame,
                   localPolitician: {
                     ...updatedGame.localPolitician,
-                    kommunBidrag: Math.max(0, (updatedGame.localPolitician.kommunBidrag ?? 0) + (sub.amount ?? 0)),
+                    kommunBidrag: Math.max(0, (updatedGame.localPolitician.kommunBidrag ?? 0) + delta),
+                    kommunBidragModifier: (updatedGame.localPolitician.kommunBidragModifier ?? 0) + delta,
                   },
                 }
               }
@@ -1076,7 +1138,7 @@ export function resolveEvent(
                 ...updatedGame,
                 clubs: updatedGame.clubs.map(c =>
                   c.id === updatedGame.managedClubId
-                    ? { ...c, facilities: Math.min(100, (c.facilities ?? 50) + (sub.amount ?? 5)) }
+                    ? { ...c, facilities: Math.max(0, Math.min(100, (c.facilities ?? 50) + (sub.amount ?? 5))) }
                     : c
                 ),
               }
@@ -1100,7 +1162,17 @@ export function resolveEvent(
                 ...updatedGame,
                 players: updatedGame.players.map(p =>
                   p.id === sub.targetPlayerId
-                    ? { ...p, morale: Math.min(100, p.morale + (sub.amount ?? 5)) }
+                    ? { ...p, morale: Math.max(0, Math.min(100, p.morale + (sub.amount ?? 5))) }
+                    : p
+                ),
+              }
+            } else if (sub.type === 'restPlayer') {
+              if (!sub.targetPlayerId) throw new Error("multiEffect-subEffect 'restPlayer' saknar obligatoriskt fält targetPlayerId")
+              updatedGame = {
+                ...updatedGame,
+                players: updatedGame.players.map(p =>
+                  p.id === sub.targetPlayerId
+                    ? { ...p, restGamesRemaining: Math.max(p.restGamesRemaining ?? 0, sub.amount ?? 1) }
                     : p
                 ),
               }
@@ -1215,6 +1287,8 @@ export function resolveEvent(
                   },
                 }
               }
+            } else if (sub.type === 'patronHappiness') {
+              updatedGame = applyPatronHappiness(updatedGame, sub.amount ?? 0)
             } else if (sub.type === 'mecenatHappiness') {
               // 2.5-vakt-svepet (2026-08-17): villkoret var tidigare
               // `&& sub.targetMecenatId` — samma tyst-no-op-mönster som
@@ -1278,6 +1352,9 @@ export function resolveEvent(
             finansiering?: 'egen' | 'kommun' | 'patron'
             cooldownUntilSeason?: number
             selfNedlagd?: boolean
+            buildCost?: number
+            buildPausedUntilSeason?: number
+            buildPausedAtMatchday?: number
           }
           const currentTrial = updatedGame.facilityState?.hallTrial
           let newTrial: HallTrial
@@ -1293,6 +1370,8 @@ export function resolveEvent(
               }),
               ...(update.finansiering !== undefined && { finansiering: update.finansiering }),
               ...(update.cooldownUntilSeason !== undefined && { cooldownUntilSeason: update.cooldownUntilSeason }),
+              ...(update.buildPausedUntilSeason !== undefined && { buildPausedUntilSeason: update.buildPausedUntilSeason }),
+              ...(update.buildPausedAtMatchday !== undefined && { buildPausedAtMatchday: update.buildPausedAtMatchday }),
             }
           } else break
           const baseFacState = updatedGame.facilityState ?? { builtNodeIds: [] }
@@ -1302,9 +1381,22 @@ export function resolveEvent(
           const resolvedFacState = shouldStartBuild
             ? startFacilityBuild('matchhall', baseFacState, updatedGame.currentMatchday)
             : baseFacState
+          const matchhallDef = FACILITY_NODE_DEFS.find(def => def.id === 'matchhall')
+          const externalShare = update.finansiering === 'kommun'
+            ? (matchhallDef?.financing?.kommun?.share ?? 0)
+            : update.finansiering === 'patron'
+              ? (matchhallDef?.financing?.mecenat?.share ?? 0)
+              : 0
+          const buildCost = update.buildCost ?? Math.round((matchhallDef?.cost ?? 0) * (1 - externalShare))
+          if (shouldStartBuild && (!Number.isFinite(buildCost) || buildCost < 0)) {
+            throw new Error("effect 'hallProcess': buildCost måste vara ett icke-negativt tal")
+          }
           updatedGame = {
             ...updatedGame,
             facilityState: { ...resolvedFacState, hallTrial: newTrial },
+            clubs: shouldStartBuild
+              ? applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, -buildCost)
+              : updatedGame.clubs,
           }
           // Avbryta-val: liten klackMood-vinst ("han lyssnade")
           if (update.selfNedlagd && updatedGame.supporterGroup) {
@@ -1402,12 +1494,13 @@ export function resolveEvent(
     }
     case 'saveBandyLetter': {
       // DREAM-010: archive the letter + reply
-      const managedPlayers = updatedGame.players.filter(p => p.clubId === updatedGame.managedClubId)
       const letter = {
         id: eventId,
         senderName: event.sender?.name ?? 'Okänd',
-        senderAge: 0,
-        senderOrigin: '',
+        // Nya events bär dessa strukturerat. Fallbackarna bevarar äldre
+        // serialiserade brev utan att försöka gissa ur brödtexten.
+        senderAge: effect.senderAge ?? 0,
+        senderOrigin: effect.senderOrigin ?? effect.communityValue ?? '',
         season: updatedGame.currentSeason,
         text: event.body,
         playerReply: effect.replyText,
@@ -1417,17 +1510,6 @@ export function resolveEvent(
         ...updatedGame,
         bandyLetters: [...(updatedGame.bandyLetters ?? []), letter],
         bandyLetterThisSeason: updatedGame.currentSeason,
-      }
-      // Morale boost to managed players — reading the letter together
-      if (managedPlayers.length > 0) {
-        updatedGame = {
-          ...updatedGame,
-          players: updatedGame.players.map(p =>
-            p.clubId === updatedGame.managedClubId
-              ? { ...p, morale: Math.min(100, p.morale + 3) }
-              : p
-          ),
-        }
       }
       break
     }
@@ -1540,6 +1622,9 @@ export function resolveEvent(
     }
     case 'saveSchoolAssignment': {
       // DREAM-016: archive the school assignment answer
+      if (!effect.replyText) {
+        throw new Error("effect 'saveSchoolAssignment' saknar obligatoriskt fält replyText")
+      }
       const player = event.relatedPlayerId
         ? updatedGame.players.find(p => p.id === event.relatedPlayerId)
         : undefined
@@ -1547,7 +1632,7 @@ export function resolveEvent(
         season: updatedGame.currentSeason,
         youngPlayerName: player ? `${player.firstName} ${player.lastName}` : event.sender?.name ?? '',
         choiceLabel: event.choices.find(c => c.id === choiceId)?.label ?? choiceId,
-        archiveText: effect.replyText ?? '',
+        archiveText: effect.replyText,
       }
       updatedGame = {
         ...updatedGame,
@@ -1678,7 +1763,10 @@ export function resolveEvent(
     }
   }
 
-  const resolvedMatchday = game.lastProcessedMatchday ?? 1
+  // SupporterGroup-markörerna konsumeras mot global currentMatchday i
+  // klackPresenter. lastProcessedMatchday är en processorcursor och kan
+  // ligga på en annan axel/vara stale; lagra den kanoniska tidpunkten här.
+  const resolvedMatchday = game.currentMatchday
 
   // Special: supporterEvent tifo — mark tifoDone
   if (event.type === 'supporterEvent' && event.id.startsWith('supporter_tifo_') && choiceId !== 'no' && updatedGame.supporterGroup) {
@@ -1722,21 +1810,6 @@ export function resolveEvent(
     updatedGame = {
       ...updatedGame,
       board: [...existing, newMember],
-    }
-  }
-
-  // Special: icaMaxiEvent send_player — also add morale effect to random player
-  if (event.type === 'icaMaxiEvent' && choiceId === 'send_player') {
-    const managedPlayers = updatedGame.players.filter(p => p.clubId === updatedGame.managedClubId && !p.isInjured)
-    if (managedPlayers.length > 0) {
-      const chosen = managedPlayers[Math.floor(rand() * managedPlayers.length)]
-      const moraleDelta = (chosen.discipline ?? 50) > 60 ? 5 : -3
-      updatedGame = {
-        ...updatedGame,
-        players: updatedGame.players.map(p =>
-          p.id === chosen.id ? { ...p, morale: Math.max(0, Math.min(100, p.morale + moraleDelta)) } : p
-        ),
-      }
     }
   }
 
@@ -2156,14 +2229,15 @@ export function resolveEvent(
   }
 
   // ── Create follow-up if event has followUpText ──────────────────────────
-  if (event.followUpText) {
+  const followUpText = choice.followUpText ?? event.followUpText
+  if (followUpText) {
     const followUp = {
       id: `fu_${eventId}_${choiceId}`,
       triggerEventId: eventId,
       matchdaysDelay: 3 + Math.floor(rand() * 3), // 3-5 matchdays
       createdMatchday: currentMatchday,
       type: 'simple_inbox',
-      data: { text: event.followUpText } as Record<string, unknown>,
+      data: { text: followUpText } as Record<string, unknown>,
     }
     updatedGame = {
       ...updatedGame,
@@ -2257,6 +2331,17 @@ export function resolveEvent(
           ? { ...arc, decisionsMade: [...arc.decisionsMade, choiceId] }
           : arc
       ),
+    }
+  }
+
+  // Kommunmötet ska inträffa en gång per politiker. Fältet fanns och lästes
+  // redan av generatorn, men skrevs aldrig, vilket gjorde framför allt
+  // infrastructure-varianten säsongsåterkommande. Ett svar avslutar själva
+  // mötet oavsett om spelaren höll med; valets separata effekt avgör relationen.
+  if (event.type === 'kommunMote' && updatedGame.localPolitician) {
+    updatedGame = {
+      ...updatedGame,
+      localPolitician: { ...updatedGame.localPolitician, demandsMet: true },
     }
   }
 

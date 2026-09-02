@@ -61,13 +61,11 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   // Bud — eget håll-ställningen-val (avslå), inget noOp finns.
   transferBidReceived: 'rejectBid',
 
-  // Sponsor/mecenat/patron/kommun/anläggning: samtliga har ett avböj-val.
+  // Sponsor/mecenat/patron/kommun/anläggning: typer med ett faktiskt noOp-val.
   sponsorOffer: 'decline',
   riskySponsorOffer: 'decline',
   icaMaxiEvent: 'decline',
-  spoksponsor: 'decline',
   patronEvent: 'decline',
-  patronInfluence: 'decline',
   patronWithdrawal: 'decline',
   mecenatEvent: 'decline',
   mecenatInteraction: 'decline',
@@ -75,15 +73,21 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   mecenatWithdrawal: 'decline',
   hallDebate: 'decline',
   hallProcess: 'decline',
-  kommunMote: 'decline',
   politicianEvent: 'decline',
-  gentjanst: 'decline',
   academyEvent: 'decline',
   // ANSPRÅK 4, spak 3: eventet bär ett uttryckligt 'decline'-val med
   // effect.type === 'noOp' ("låt den stå kvar sliten"). Ett obesvarat
   // förnyelsebeslut ska landa där, inte rinna ut tyst — utfallet är ändå
   // synligt nästa säsong, som en aktivitet som fortsatt tappa effekt.
   communityActivityRenewal: 'decline',
+
+  // Kommunmötets, gentjänstens, patronens inflytandekorts och spöksponsorns
+  // val är ställningstaganden med state-effekt. Det finns inget neutralt svar
+  // som rollover får välja åt spelaren.
+  kommunMote: 'expire',
+  gentjanst: 'expire',
+  patronInfluence: 'expire',
+  spoksponsor: 'expire',
 
   // Ekonomi/trupp: avvakta om eventet erbjuder det.
   economicStress: 'decline',
@@ -104,19 +108,29 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   // Bakgrund: kulör och småval. Avböj där det går, annars utrinning.
   pressConference: 'decline',
   csPress: 'decline',
-  journalistExclusive: 'decline',
+  // Både accept och decline ändrar state; inget neutralt noOp finns.
+  journalistExclusive: 'expire',
   mediaReaction: 'decline',
-  playerMediaComment: 'decline',
+  // Alla tre svar ändrar den namngivna spelarens moral. Det finns inget
+  // neutralt noOp som rollover får välja åt spelaren.
+  playerMediaComment: 'expire',
   communityEvent: 'decline',
-  supporterEvent: 'decline',
+  // Klackeventens samtliga val ändrar state; inget neutralt noOp finns.
+  supporterEvent: 'expire',
   fanLetter: 'decline',
-  bandyLetter: 'decline',
+  // Alla val sparar ett faktiskt brev/svar; inget är ett neutralt noOp som
+  // kan väljas åt spelaren. Ett obesvarat brev rinner därför ut.
+  bandyLetter: 'expire',
   opponentQuote: 'decline',
   starPerformance: 'decline',
   playerPraise: 'decline',
   captainSpeech: 'decline',
-  playerArc: 'decline',
-  schoolAssignment: 'decline',
+  // De levande playerArc-undertyperna saknar neutralt noOp-val; resolverns
+  // arc-beslut får aldrig väljas åt spelaren över en säsongsgräns.
+  playerArc: 'expire',
+  // Varje val skriver en specifik intervju till historiken; inget neutralt
+  // svar finns som rollover får välja åt spelaren.
+  schoolAssignment: 'expire',
   refereeMeeting: 'decline',
   retirementCeremony: 'expire',
   seasonGoalHalfway: 'decline',

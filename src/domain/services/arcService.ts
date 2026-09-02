@@ -479,7 +479,7 @@ export function progressArcs(
                 // samma +5 moral, kostar nu utvecklingstakt (developmentRate,
                 // INTE potentialAbility — ett tak krymper inte för att
                 // ingen tryckte på). Text låst av Jacob, ordagrant.
-                subtitle: 'Han får spela sig igenom det. Det tar längre tid den vägen.',
+                subtitle: '💛 Moral +5 · utvecklingstakt −4',
                 effect: {
                   type: 'multiEffect',
                   subEffects: JSON.stringify([
@@ -574,7 +574,7 @@ export function progressArcs(
                 // samma +8 moral, kostar nu discipline (fältet
                 // disciplineRisk redan läser i matchmotorn, matchCore.ts).
                 // Text låst av Jacob, ordagrant.
-                subtitle: 'Du säger inget om utvisningarna. Han hör det.',
+                subtitle: '💛 Moral +8 · disciplin −4',
                 effect: {
                   type: 'multiEffect',
                   subEffects: JSON.stringify([
@@ -585,9 +585,15 @@ export function progressArcs(
               },
               {
                 id: 'bench_joker',
-                label: 'Bänka tills vidare',
-                subtitle: '💛 Moral −10',
-                effect: { type: 'boostMorale', value: -10, targetPlayerId: p.id },
+                label: 'Bänka nästa match',
+                subtitle: 'Vilar nästa match · moral −10',
+                effect: {
+                  type: 'multiEffect',
+                  subEffects: JSON.stringify([
+                    { type: 'boostMorale', amount: -10, targetPlayerId: p.id },
+                    { type: 'restPlayer', amount: 1, targetPlayerId: p.id },
+                  ]),
+                },
               },
             ],
             sender: { name: 'Styrelseordföranden', role: 'Styrelse' },
@@ -659,7 +665,7 @@ export function progressArcs(
                 // +6 klackens stämning, godkänd magnitud — mindre än avskedets
                 // −14: att behålla någon är förväntat, att släppa någon är
                 // en händelse.
-                subtitle: 'Klacken får behålla honom. Platsen förblir upptagen.',
+                subtitle: 'Kontrakt +2 år · klackens stämning +6',
                 effect: {
                   type: 'multiEffect',
                   subEffects: JSON.stringify([
@@ -677,7 +683,7 @@ export function progressArcs(
                 // lagd till: konsekvensen är omedelbar, inte väntande på
                 // säsongsslutets kontraktsutgång. −14 klackens stämning,
                 // godkänd magnitud.
-                subtitle: 'Ni får loss lönen och platsen. Klacken får veta av er.',
+                subtitle: 'Spelaren lämnar · moral −20 · klackens stämning −14',
                 effect: {
                   type: 'multiEffect',
                   subEffects: JSON.stringify([
@@ -802,7 +808,7 @@ export function progressArcs(
                   // gratis). Behåller samma +15 moral hela laget, kostar nu
                   // 10 000 kr (applyFinanceChange, income-subEffect). Text
                   // låst av Jacob, ordagrant.
-                  subtitle: 'Blommor, tal, hela laget på isen. Kostar 10 tkr.',
+                  subtitle: 'Lagets moral +15 · kostar 10 tkr',
                   effect: {
                     type: 'multiEffect',
                     subEffects: JSON.stringify([
@@ -813,7 +819,7 @@ export function progressArcs(
                 },
                 {
                   id: 'ceremony_simple',
-                  label: 'Enkelt — han vill det inte stor',
+                  label: 'Håll avtackningen enkel',
                   subtitle: '💛 Moral +5',
                   effect: { type: 'boostMorale', value: 5, targetPlayerId: p.id },
                 },
@@ -862,19 +868,19 @@ export function progressArcs(
               {
                 id: 'extend_now',
                 label: 'Erbjud förlängning nu',
-                subtitle: '✅ Spekulationer upphör · Moral +10',
-                effect: { type: 'boostMorale', value: 10, targetPlayerId: p.id },
+                subtitle: 'Kontrakt +1 år · moral +10',
+                effect: { type: 'extendContract', targetPlayerId: p.id, contractYears: 1 },
               },
               {
                 id: 'wait_drama',
                 label: 'Vänta till säsongsslut',
-                subtitle: '⚠️ Risk för avhopp · Moral −5',
+                subtitle: 'Kontraktet oförändrat · moral −5',
                 effect: { type: 'boostMorale', value: -5, targetPlayerId: p.id },
               },
               {
                 id: 'let_go',
                 label: 'Du får gå',
-                subtitle: '💛 Moral −25',
+                subtitle: 'Spelaren lämnar · moral −25',
                 // O2 lager 1 (Jacobs dom 2026-08-24): var enbart boostMorale
                 // på spelaren som lämnar — "Du får gå" gjorde honom aldrig
                 // faktiskt free agent, storylinetexten nedan (`${name} lämnade

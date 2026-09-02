@@ -953,9 +953,22 @@ const retirementEvent: GameEvent = {
   relatedPlayerId: 'p-f1',
   resolved: false,
   choices: [
-    { id: 'coach', label: 'Erbjud en roll i ledarstaben', subtitle: 'Erfarenheten stannar i klubben', effect: { type: 'noOp' } },
-    { id: 'honour', label: 'Tacka av honom på isen', subtitle: 'Låt kvällen tillhöra Karl', effect: { type: 'noOp' } },
+    { id: 'coach', label: 'Erbjud en roll i ledarstaben', subtitle: 'Erfarenheten stannar i klubben', effect: { type: 'setLegendRole', legendRole: 'youth_coach' } },
+    { id: 'honour', label: 'Tacka av honom på isen', subtitle: 'Låt kvällen tillhöra Karl', effect: { type: 'setLegendRole', legendRole: 'farewell' } },
   ],
+}
+
+// Produktion skapar ceremonin efter att den pensionerade spelaren tagits ur
+// players. Scenen speglar det läget och bevisar att statistiken läses ur den
+// frusna ClubLegend-posten i stället för att tyst falla till noll.
+const retirementCeremonyGame: SaveGame = {
+  ...squadGame,
+  players: squadGame.players.filter(player => player.id !== 'p-f1'),
+  clubLegends: [{
+    playerId: 'p-f1', name: 'K. Lindström', position: 'Forward', seasons: 7,
+    totalGames: 143, totalGoals: 58, totalAssists: 41, titles: [], retiredSeason: 2027,
+  }],
+  pendingEvents: [retirementEvent],
 }
 
 const boardPatienceWarningGame = {
@@ -1651,6 +1664,8 @@ export function DevScenesScreen() {
   const storeReady = useGameStore(s => s.game?.lastCompletedFixtureId === 'fx-granska')
   const seasonReady = useGameStore(s => (s.game?.seasonSummaries?.length ?? 0) > 0)
   const finalReady = useGameStore(s => !!s.game?.playoffBracket?.final)
+  const storeGame = useGameStore(s => s.game)
+  const retirementEventForScene = storeGame?.pendingEvents.find(event => event.id === retirementEvent.id)
 
   // Seed the store so all screens that call useGameStore() work.
   // Detta låg tidigare i useMemo och anropade useGameStore.setState() UNDER
@@ -1738,7 +1753,8 @@ export function DevScenesScreen() {
       : scene === 'corner-interaction' || scene === 'penalty-interaction' || scene === 'counter-interaction'
         || scene === 'free-kick-interaction' || scene === 'phase-overlay' || scene === 'bid-modal'
         || scene === 'renew-contract-modal' || scene === 'ceremony-sm-final' || scene === 'ceremony-cup-final' ? squadGame
-      : scene === 'intro-sequence' || scene === 'name-input' || scene === 'klubbparm' || scene === 'ceremony-retirement' ? squadGame
+      : scene === 'ceremony-retirement' ? retirementCeremonyGame
+      : scene === 'intro-sequence' || scene === 'name-input' || scene === 'klubbparm' ? squadGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' || scene === 'granska-level3' ? granskaRoundSummary
@@ -2008,8 +2024,8 @@ export function DevScenesScreen() {
         {scene === 'klubbparm' && (
           <KlubbparmOverlay game={squadGame} onClose={() => {}} />
         )}
-        {scene === 'ceremony-retirement' && (
-          <CeremonyRetirement game={squadGame} event={retirementEvent} />
+        {scene === 'ceremony-retirement' && storeGame && retirementEventForScene && (
+          <CeremonyRetirement game={storeGame} event={retirementEventForScene} />
         )}
         {scene === 'corner-interaction' && (
           <CornerInteraction data={interactionCornerData} outcome={null} onChoose={() => {}} practice />

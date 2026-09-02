@@ -93,7 +93,7 @@ describe('getDefaultRolloverChoice', () => {
 
 describe('resolveDeferredAtRollover — aldrig tyst', () => {
   it('post MED deklarerat default-utfall: utfallet tillämpas + EXAKT en inboxrad', () => {
-    const deferred = [evt('d1', 'kommunMote', [
+    const deferred = [evt('d1', 'patronEvent', [
       { id: 'go', label: 'Gå på mötet', effect: { type: 'reputation', amount: 3 } },
       { id: 'skip', label: 'Avstå', effect: { type: 'noOp' } },
     ])]
@@ -125,7 +125,7 @@ describe('resolveDeferredAtRollover — aldrig tyst', () => {
 
   it('varje post i kön ger exakt EN rad — ingen försvinner tyst', () => {
     const deferred = [
-      evt('d1', 'kommunMote', [{ id: 'skip', label: 'Avstå', effect: { type: 'noOp' } }]),
+      evt('d1', 'patronEvent', [{ id: 'skip', label: 'Avstå', effect: { type: 'noOp' } }]),
       evt('d2', 'criticalEconomy', [{ id: 'wait', label: 'Avvakta', effect: { type: 'noOp' } }]),
       evt('d3', 'sponsorOffer', [{ id: 'accept', label: 'Ja', effect: { type: 'acceptSponsor' } }]),
     ]
@@ -146,7 +146,7 @@ describe('resolveDeferredAtRollover — aldrig tyst', () => {
   })
 
   it('Opus-texten interpolerar titel och valt utfall korrekt (resolved)', () => {
-    const deferred = [evt('d1', 'kommunMote', [{ id: 'skip', label: 'Avstå', effect: { type: 'noOp' } }])]
+    const deferred = [evt('d1', 'patronEvent', [{ id: 'skip', label: 'Avstå', effect: { type: 'noOp' } }])]
     const result = resolveDeferredAtRollover(game(), deferred, 2026)
     // 2026-08-31: mustDeadlineWarningText.ts/deferredRolloverText.ts levererade —
     // ingen Code-skriven prosa här, bara interpolation av Opus egna mallar

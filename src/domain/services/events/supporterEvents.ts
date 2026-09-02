@@ -25,7 +25,7 @@ export function generateSupporterEvents(
         id: eid,
         type: 'supporterEvent',
         title: `${elin} och tifon`,
-        body: `${elin} från klacken hör av sig. Hon och några kompisar vill göra ett tifo till nästa hemmamatch — en stor banderoll med klubbnamnet och ett citat från 1963.\n\n"Vi behöver bara tillgång till en hörna av föreningslokalen och lite tid. Inget kostar något."`,
+        body: `${elin} från klacken hör av sig. Hon och några kompisar vill göra ett tifo — en stor banderoll med klubbnamnet och ett citat från 1963.\n\n"Vi behöver bara tillgång till en hörna av föreningslokalen och lite tid. Inget kostar något."`,
         choices: [
           {
             id: 'yes',
@@ -67,7 +67,7 @@ export function generateSupporterEvents(
           {
             id: 'both',
             label: 'Bjud in båda på ett möte med truppen',
-            subtitle: '💛 +5 klackens stämning · 💰 engagerar klacken',
+            subtitle: '💛 +5 klackens stämning · 🙂 +3 publikstämning',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'supporterMood', amount: 5 },
               { type: 'fanMood', amount: 3 },
@@ -76,7 +76,7 @@ export function generateSupporterEvents(
           {
             id: 'sture',
             label: `Ge ${sture} rätt — traditionen är viktig`,
-            subtitle: `💛 -2 klackens stämning · ${elin} besviken`,
+            subtitle: '💛 −2 klackens stämning',
             effect: { type: 'supporterMood', amount: -2 },
           },
           {
@@ -137,8 +137,8 @@ export function generateSupporterEvents(
     f.status === 'scheduled' &&
     f.awayClubId === game.managedClubId &&
     !f.isCup &&
-    f.roundNumber >= currentRound &&
-    f.roundNumber <= currentRound + 3
+    f.matchday >= currentRound &&
+    f.matchday <= currentRound + 3
   )
   if (
     currentRound >= 6 && currentRound <= 15 &&

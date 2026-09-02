@@ -199,9 +199,7 @@ export const DECISION_MODE_BY_TYPE: Record<GameEventType, DecisionMode> = {
   kommunMote: 'dilemma',
   politicianEvent: 'dilemma',
   gentjanst: 'dilemma',
-  academyEvent: 'dilemma',
   economicStress: 'dilemma',
-  playoffEvent: 'dilemma',
   playThroughInjury: 'dilemma',
   burnoutRelief: 'dilemma',
   dayJobConflict: 'dilemma',
@@ -227,6 +225,10 @@ export const DECISION_MODE_BY_TYPE: Record<GameEventType, DecisionMode> = {
   schoolAssignment: 'notis',
   refereeMeeting: 'notis',
   seasonGoalHalfway: 'notis',
+  // Enknappskvitteringar av redan inträffade fakta, utan state-effekt.
+  // De ska surfa på month-ytan men är inte tvåsidiga dilemman.
+  academyEvent: 'notis',
+  playoffEvent: 'notis',
 }
 
 export function getDecisionMode(type: GameEventType): DecisionMode {

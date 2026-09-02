@@ -36,6 +36,7 @@ export function generateBandyLetterEvent(game: SaveGame, nextMatchday: number): 
   const eventId = `event_bandy_letter_${game.currentSeason}`
   if ((game.resolvedEventIds ?? []).includes(eventId)) return null
   if ((game.pendingEvents ?? []).some(e => e.id === eventId)) return null
+  if ((game.deferredDecisions ?? []).some(e => e.id === eventId)) return null
 
   const club = game.clubs.find(c => c.id === game.managedClubId)
   if (!club) return null
@@ -89,8 +90,8 @@ export function generateBandyLetterEvent(game: SaveGame, nextMatchday: number): 
       effect: {
         type: 'saveBandyLetter' as const,
         replyText: opt.replyText,
-        communityKey: `${firstName} ${lastName}`,
-        communityValue: origin,
+        senderAge: age,
+        senderOrigin: origin,
       },
     })),
     resolved: false,

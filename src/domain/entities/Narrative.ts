@@ -292,6 +292,7 @@ export interface ClubLegend {
   name: string
   position: string
   seasons: number
+  totalGames?: number
   totalGoals: number
   totalAssists: number
   titles: string[]

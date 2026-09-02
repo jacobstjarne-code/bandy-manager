@@ -5,7 +5,8 @@ import type { FacilityNodeDef } from '../entities/Community'
 // Ordning inom gren = visningsordning.
 // financing (B1 §1/§8): kommun gated på politician.relationship (+ ev. communityStanding),
 // mecenat på aktiv villig mecenat. Egen kassa alltid implicit (full cost). Lägre tröskel
-// ju mindre/mer ungdomsinriktad noden är. Matchhall saknar financing (prövningsspec/patron-borgen).
+// ju mindre/mer ungdomsinriktad noden är. Matchhallen går genom prövningen men
+// återanvänder samma finansieringsmodell; hallprocessen ska inte bära en parallell kostnadstabell.
 //
 // upkeepCost (O5 kraft 2, Jacobs dom 2026-08-17, byggd 2026-08-23): cost/12
 // avrundat till närmaste 100. De nio ordinarie noderna (allt utom
@@ -82,6 +83,7 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 20,
     capacityBonus: 5000,
     isHall: true,
+    financing: { kommun: { share: 0.4, minRelation: 45 }, mecenat: { share: 0.4 } },
     // Påståendekartan, byggnodernas löften (2026-08-27, Jacobs dom): "Klacken
     // glesnar" struken — koden gör MOTSATSEN (hasIndoorArena skyddar mot
     // väder, HÖJER publiken, effectiveWeatherAttendance). Att lova en

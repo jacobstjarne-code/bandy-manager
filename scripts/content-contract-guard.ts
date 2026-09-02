@@ -5,10 +5,10 @@
  * kan inte nå produktion utan att de sex fälten är ifyllda... Kontraktet är
  * inte ett dokument någon ska minnas. Det är en fil som failar bygget."
  *
- * 96 rader i CONTENT_CONTRACT (contentContract.ts), en delmängd `filled: true`
+ * 97 rader i CONTENT_CONTRACT (contentContract.ts), en delmängd `filled: true`
  * (sex fält verifierade mot koden), resten `filled: false` — ärlig, accepterad
  * TODO-skuld under avarbetning. Att faila på VARJE TODO-rad hade failat dagens
- * bygge (87 av 96) och blockerat all annan utveckling — inte grinden domen bad
+ * bygge (76 av 97 efter 2026-09-02:s avverkning) och blockerat all annan utveckling — inte grinden domen bad
  * om. Grinden failar istället om TODO-antalet ÖKAR mot en sparad baslinje: en
  * ny narrativ typ som läggs till (AssertNoMissingIds i contentContract.ts
  * tvingar redan fram en rad — se den filens ENFORCEMENT-kommentar) men lämnas

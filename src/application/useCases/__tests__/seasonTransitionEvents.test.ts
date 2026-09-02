@@ -11,6 +11,8 @@ import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../createNewGame'
 import { handleSeasonEnd } from '../seasonEndProcessor'
 import { deriveEpokVariant, seasonOrdinalSwedish } from '../../../domain/services/seasonTransitionService'
+import { contractRequestEvent } from '../../../domain/services/events/eventFactories'
+import { resolveEvent } from '../../../domain/services/events/eventResolver'
 
 function makeGame() {
   return createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 42 })
@@ -33,6 +35,30 @@ describe('seasonEndProcessor — pendingSeasonTransitionEvents (5.1 Sommaren)', 
     const contractEvent = events.find(e => e.type === 'contractExpired' && e.playerId === targetPlayer.id)
     expect(contractEvent).toBeDefined()
     expect(contractEvent?.playerLastName).toBe(targetPlayer.lastName)
+  })
+
+  it('avslaget contractRequest markerar frågan hanterad men låter ändå det oförlängda kontraktet löpa ut', () => {
+    const base = makeGame()
+    const targetPlayer = base.players.find(p => p.clubId === base.managedClubId)!
+    const prepared = {
+      ...base,
+      players: base.players.map(p => p.id === targetPlayer.id
+        ? { ...p, age: 22, isClubLegend: false, contractUntilSeason: base.currentSeason, morale: 70 }
+        : p),
+    }
+    const event = contractRequestEvent(prepared, targetPlayer.id)
+    const rejected = resolveEvent({ ...prepared, pendingEvents: [event] }, event.id, 'reject', undefined, true)
+
+    expect(rejected.handledContractPlayerIds).toContain(targetPlayer.id)
+    expect(rejected.players.find(p => p.id === targetPlayer.id)?.contractUntilSeason).toBe(base.currentSeason)
+    expect(rejected.players.find(p => p.id === targetPlayer.id)?.morale).toBe(60)
+
+    const result = handleSeasonEnd(rejected, 1)
+    expect(result.game.players.find(p => p.id === targetPlayer.id)?.clubId).not.toBe(base.managedClubId)
+    expect(result.game.pendingSeasonTransitionEvents).toContainEqual(expect.objectContaining({
+      type: 'contractExpired',
+      playerId: targetPlayer.id,
+    }))
   })
 
   it('den äldsta kvarvarande spelaren i truppen ger ett aged-event med rätt ålder', () => {

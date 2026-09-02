@@ -18,7 +18,7 @@ export function generateSponsorEvents(
         id: eid,
         type: 'icaMaxiEvent',
         title: 'Spelarsponsorträff',
-        body: `ICA Maxi erbjuder 5 000 kr extra/omg om en spelare besöker butiken och träffar kunder.`,
+        body: `ICA Maxi erbjuder 5 000 kr extra den här omgången om en spelare besöker butiken och träffar kunder.`,
         choices: [
           {
             id: 'send_player',

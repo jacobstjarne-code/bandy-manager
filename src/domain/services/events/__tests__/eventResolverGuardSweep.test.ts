@@ -47,6 +47,8 @@ describe('vakt-svepet — spelareffekter kräver targetPlayerId', () => {
   it('extendContract utan targetPlayerId kastar', () => expectThrows({ type: 'extendContract' }, /targetPlayerId/))
   it('rejectContract utan targetPlayerId kastar', () => expectThrows({ type: 'rejectContract' }, /targetPlayerId/))
   it('playThroughInjury utan targetPlayerId kastar', () => expectThrows({ type: 'playThroughInjury' }, /targetPlayerId/))
+  it('restPlayer utan targetPlayerId kastar', () => expectThrows({ type: 'restPlayer' }, /targetPlayerId/))
+  it('setCaptain utan targetPlayerId kastar', () => expectThrows({ type: 'setCaptain' }, /targetPlayerId/))
   // O1 kandidat 2 (Jacobs dom 2026-08-24): extendContract fick en multiEffect-
   // subEffect-gren (veteran_farewell behöver kombinera den med supporterMood)
   // — samma vaktprincip som mecenatHappiness-paret ovan.
@@ -91,4 +93,6 @@ describe('vakt-svepet — övriga case-specifika obligatoriska fält', () => {
     const game = { ...makeGame(), pendingEvents: [pendingWith({ type: 'saveBandyLetter' })] }
     expect(() => resolveEvent(game, 'test_guard_event', 'go', undefined, true)).not.toThrow()
   })
+  it('saveSchoolAssignment utan replyText kastar (tom historikpost är inte ett giltigt val)', () =>
+    expectThrows({ type: 'saveSchoolAssignment' }, /replyText/))
 })

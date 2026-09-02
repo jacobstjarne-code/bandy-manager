@@ -122,4 +122,61 @@ describe('resolveEvent — pressResponse läser matchday via relatedFixtureId, i
     const entry = game.journalist!.memory.at(-1)!
     expect(entry.matchday).toBe(30) // currentMatchday, inte den gamla säsongens 5
   })
+
+  it('håller både lagmoral och båda journalistrelationerna inom 0–100', () => {
+    const positive = pressEvent({
+      choices: [{
+        id: 'positive',
+        label: 'Positivt svar',
+        effect: { type: 'pressResponse', value: 8, mediaQuote: 'Positivt citat' },
+      }],
+    })
+    let positiveGame = baseGame({
+      players: [
+        { id: 'managed', clubId: MANAGED, morale: 98 },
+        { id: 'other', clubId: 'club_x', morale: 98 },
+      ] as never,
+      journalist: {
+        name: 'Britta Sandström', outlet: 'Lokaltidningen', relationship: 99,
+        pressRefusals: 0, memory: [],
+      },
+      journalistRelationship: 99,
+      pendingEvents: [positive],
+      pendingPressConference: positive,
+    })
+
+    positiveGame = resolveEvent(positiveGame, positive.id, 'positive', undefined, true)
+
+    expect(positiveGame.players.find(p => p.id === 'managed')?.morale).toBe(100)
+    expect(positiveGame.players.find(p => p.id === 'other')?.morale).toBe(98)
+    expect(positiveGame.journalist?.relationship).toBe(100)
+    expect(positiveGame.journalistRelationship).toBe(100)
+    expect(positiveGame.pendingPressConference).toBeUndefined()
+    expect(positiveGame.inbox.at(-1)?.title).toBe('Positivt citat')
+    expect(positiveGame.narrativeBeatLog?.at(-1)?.semanticKey).toBe('pressConference')
+
+    const negative = pressEvent({
+      id: 'event_press_negative',
+      choices: [{
+        id: 'negative',
+        label: 'Negativt svar',
+        effect: { type: 'pressResponse', value: -3, mediaQuote: 'Negativt citat' },
+      }],
+    })
+    let negativeGame = baseGame({
+      players: [{ id: 'managed', clubId: MANAGED, morale: 1 }] as never,
+      journalist: {
+        name: 'Britta Sandström', outlet: 'Lokaltidningen', relationship: 1,
+        pressRefusals: 0, memory: [],
+      },
+      journalistRelationship: 1,
+      pendingEvents: [negative],
+    })
+
+    negativeGame = resolveEvent(negativeGame, negative.id, 'negative', undefined, true)
+
+    expect(negativeGame.players[0]?.morale).toBe(0)
+    expect(negativeGame.journalist?.relationship).toBe(0)
+    expect(negativeGame.journalistRelationship).toBe(0)
+  })
 })

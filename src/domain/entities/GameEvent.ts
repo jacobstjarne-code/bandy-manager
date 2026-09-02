@@ -89,6 +89,8 @@ export interface EventChoice {
    *  consequenceLevel — se getConsequenceLines(). */
   irreversible?: boolean
   effect: EventEffect
+  /** Valspecifik eftertext; används när bara ett visst svar ska ge ett eko. */
+  followUpText?: string
 }
 
 /**
@@ -164,6 +166,10 @@ export interface EventEffect {
     | 'hallProcess'
     | 'playThroughInjury'
     | 'releasePlayer'
+    /** Återanvänder Player.restGamesRemaining — en riktig, befintlig
+     *  enmatchsvila som spärrar laguttagning och rullas ned efter matchen. */
+    | 'restPlayer'
+    | 'setCaptain'
     // O2 lager 3 (Jacobs dom 2026-08-24): läser targetPlayerId + amount,
     // samma konvention som boostMorale. developmentRate (INTE
     // potentialAbility — det är en fast ceiling, krymper aldrig annars i
@@ -196,6 +202,9 @@ export interface EventEffect {
   subEffects?: string
   // For saveBandyLetter / saveSchoolAssignment — reply text embedded in choice
   replyText?: string
+  /** Strukturerad avsändardata för saveBandyLetter; ska inte återparsas ur copy. */
+  senderAge?: number
+  senderOrigin?: string
   // For startEconomicCrisis / resolveEconomicCrisis
   crisisPhase?: string
   removePlayerId?: string

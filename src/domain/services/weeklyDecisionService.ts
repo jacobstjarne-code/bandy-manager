@@ -219,7 +219,9 @@ export function generateWeeklyDecision(game: SaveGame, round: number): WeeklyDec
 
   // Don't generate a new decision if one was just generated within the cooldown window
   const lastRound = game.weeklyDecisionLastRound ?? 0
-  if (lastRound > 0 && round - lastRound < WEEKLY_DECISION_COOLDOWN) return null
+  // Ett negativt värde är ett giltigt, rebased ankare från föregående säsong.
+  // Noll är däremot den äldre "inget beslut ännu"-sentineln.
+  if (lastRound !== 0 && round - lastRound < WEEKLY_DECISION_COOLDOWN) return null
 
   const pool = makeDecisions(game)
   const resolved = game.resolvedWeeklyDecisions ?? []

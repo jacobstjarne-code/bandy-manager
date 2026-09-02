@@ -83,6 +83,10 @@ describe('varsel — de berörda spelarnas moral (var boostMorale utan targetPla
     let game = makeGameWithSquad()
     game = { ...game, players: game.players.map(p => ({ ...p, morale: 50 })) }
     const { event, affectedIds } = makeVarselEvent(game)
+    expect(event.choices.find(choice => choice.id === 'support')).toMatchObject({
+      label: 'Ge de berörda spelarna ditt stöd',
+      subtitle: '+5 moral för alla berörda',
+    })
     game = { ...game, pendingEvents: [event] }
     game = resolveEvent(game, event.id, 'support', undefined, true)
 

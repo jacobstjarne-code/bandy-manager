@@ -17,12 +17,11 @@ export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
     id: `event_bidwar_${bid.id}`,
     type: 'bidWar',
     title: `⚔️ Budkrig — ${playerName}`,
-    body: `${sellingClub?.name ?? 'Klubben'} uppges ha fått intresse från ytterligare en klubb för ${playerName}. Vill du höja budet från ${formatValue(bid.offerAmount)} till ${formatValue(raisedAmount)} för att säkra affären?`,
+    body: `${sellingClub?.name ?? 'Klubben'} uppges ha fått intresse från ytterligare en klubb för ${playerName}. Vill du höja budet från ${formatValue(bid.offerAmount)} till ${formatValue(raisedAmount)}?`,
     choices: [
       {
         id: 'raise',
         label: `Höj budet till ${formatValue(raisedAmount)}`,
-        subtitle: `💰 -${formatValue(raisedAmount)}`,
         effect: { type: 'raiseBid', bidId: bid.id, value: raisedAmount },
       },
       {
@@ -234,12 +233,15 @@ export function generateDayJobConflictEvent(player: Player, roundNumber: number)
         id: 'vila',
         label: 'Ge honom vila',
         subtitle: '+10 moral',
-        effect: { type: 'boostMorale', value: 10, targetPlayerId: player.id },
+        effect: { type: 'multiEffect', subEffects: JSON.stringify([
+          { type: 'boostMorale', targetPlayerId: player.id, amount: 10 },
+          { type: 'restPlayer', targetPlayerId: player.id, amount: 1 },
+        ]) },
       },
       {
         id: 'press',
         label: 'Han klarar det',
-        subtitle: '-3 moral · risk för skada',
+        subtitle: '-3 moral',
         effect: { type: 'boostMorale', value: -3, targetPlayerId: player.id },
       },
       {
@@ -259,13 +261,20 @@ export function generateDayJobConflictEvent(player: Player, roundNumber: number)
 }
 
 // ── Player media comment — unhappy player talks to press ──────────────────
-export function generatePlayerMediaEvent(player: Player, journalistName: string): GameEvent {
+export function generatePlayerMediaEvent(
+  player: Player,
+  journalistName: string,
+  roundPlayed: number,
+): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   return {
-    id: `event_media_${player.id}_${Date.now()}`,
+    // Samma canonical id som postAdvanceEvents deduplicerar mot. Det gamla
+    // Date.now()-id:t gjorde pending/resolved-kollen verkningslös och kunde
+    // skapa flera identiska kommentarer för samma spelare och omgång.
+    id: `event_media_${player.id}_r${roundPlayed}`,
     type: 'playerMediaComment',
     title: `📰 ${playerName} till ${journalistName}: "Jag vill spela"`,
-    body: `${playerName} har pratat med ${journalistName} och uttryckt frustration över brist på speltid.\n\n"Jag tränar varje dag och gör mitt bästa. Men jag sitter bara på bänken. Det är klart att jag funderar på min framtid."`,
+    body: `${playerName} har pratat med ${journalistName} och uttryckt frustration över att sällan få starta.\n\n"Jag tränar varje dag och gör mitt bästa. Men jag får inte den startplats jag vill ha. Det är klart att jag funderar på min framtid."`,
     choices: [
       {
         id: 'talk',
@@ -320,6 +329,7 @@ export function generatePlayerPraiseEvent(
         ]) },
       },
     ],
+    relatedPlayerId: praised.id,
     resolved: false,
   }
 }
@@ -364,7 +374,7 @@ export function generateCaptainSpeechEvent(captain: Player, clubId: string, seas
       {
         id: 'support',
         label: 'Ja — kör på, det behövs',
-        subtitle: 'Du låter honom tala. Laget lyssnar på honom, inte på dig.',
+        subtitle: `💛 Lagets moral +${isHighForm ? 8 : 5} · styrelsens tålamod −3`,
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([
@@ -386,6 +396,7 @@ export function generateCaptainSpeechEvent(captain: Player, clubId: string, seas
         effect: { type: 'noOp', value: 0 },
       },
     ],
+    relatedPlayerId: captain.id,
     resolved: false,
   }
 }
@@ -421,8 +432,8 @@ export function generateVarselEvent(
         // boostMorale-subEffect per BERÖRD spelare (inte hela klubben —
         // varslet gäller bara dessa namngivna spelare).
         id: 'support',
-        label: 'Stöd spelarna — erbjud extra träning och stöd',
-        subtitle: '+5 moral alla · 🤝 laget håller ihop',
+        label: 'Ge de berörda spelarna ditt stöd',
+        subtitle: '+5 moral för alla berörda',
         effect: { type: 'multiEffect', subEffects: JSON.stringify(
           players.map(p => ({ type: 'boostMorale', targetPlayerId: p.id, amount: 5 }))
         ) },
@@ -462,11 +473,11 @@ export function generateVarselEvent(
 }
 
 // ── Promotion offer — player's boss offers career advancement ─────────────
-export function generatePromotionOfferEvent(player: Player): GameEvent {
+export function generatePromotionOfferEvent(player: Player, season: number): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   const jobTitle = player.dayJob?.title ?? 'jobbet'
   return {
-    id: `event_promotion_${player.id}_${Date.now()}`,
+    id: `event_promotion_${player.id}_s${season}`,
     type: 'dayJobConflict',
     title: `${playerName} erbjuds befordran`,
     body: `${playerName} har erbjudits en befordran som ${jobTitle}. Det innebär mer ansvar, bättre lön — men sämre flexibilitet för bandy. Han behöver ditt råd.`,
@@ -509,7 +520,10 @@ export function generateShiftConflictEvent(player: Player, matchRound: number): 
         id: 'bench',
         label: 'Sätt honom på bänken istället',
         subtitle: '-5 moral',
-        effect: { type: 'boostMorale', value: -5, targetPlayerId: player.id },
+        effect: { type: 'multiEffect', subEffects: JSON.stringify([
+          { type: 'boostMorale', targetPlayerId: player.id, amount: -5 },
+          { type: 'restPlayer', targetPlayerId: player.id, amount: 1 },
+        ]) },
       },
     ],
     relatedPlayerId: player.id,
@@ -585,12 +599,13 @@ export function generateJournalistExclusiveEvent(
         effect: { type: 'journalistRelationship', amount: -5 },
       },
     ],
+    relatedPlayerId: player.id,
     resolved: false,
   }
 }
 
 // ── Mecenat cooling-off intervention ─────────────────────────────────────────
-export function generateMecenatInterventionEvent(mec: Mecenat, roundNumber: number): GameEvent {
+export function generateMecenatInterventionEvent(mec: Mecenat, season: number, roundNumber: number): GameEvent {
   const isShowman = mec.personality === 'showman'
   const isTystKraft = mec.personality === 'tyst_kraft'
   const eventLabel = isShowman ? 'en VIP-kväll på arenan' : isTystKraft ? 'en privat middag' : 'en golfrunda'
@@ -599,7 +614,7 @@ export function generateMecenatInterventionEvent(mec: Mecenat, roundNumber: numb
   const happinessBonusWrong = 8   // wrong event type — half effect
 
   return {
-    id: `event_mec_intervention_${mec.id}_r${roundNumber}`,
+    id: `event_mec_intervention_${mec.id}_s${season}_r${roundNumber}`,
     type: 'mecenatInteraction',
     title: `⚠️ ${mec.name} är på väg att tappa tron`,
     body: `${mec.name} från ${mec.business} har blivit allt tystare på sistone. Happiness: ${mec.happiness}/100.\n\nDu kan ta initiativet och bjuda in till ${eventLabel} (kostnad: ${eventCost.toLocaleString('sv')} kr), eller låta det rinna av.`,

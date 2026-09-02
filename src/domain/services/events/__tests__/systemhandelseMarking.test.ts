@@ -44,7 +44,7 @@ describe('O19: systemhandelse-märkning', () => {
       id: 'm1', name: 'Test Mecenat', business: 'Test AB', personality: 'showman',
       happiness: 40, isActive: true, goodwill: 50,
     } as Mecenat
-    const event = generateMecenatInterventionEvent(mec, 5)
+    const event = generateMecenatInterventionEvent(mec, 2025, 5)
     expect(event.systemhandelse).toBe(true)
   })
 
