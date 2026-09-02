@@ -102,7 +102,7 @@ export const REACTION_TYPES = new Set<GameEventType>([
  * fallbacken eller D1 punkt 4:s självkontroll (getEffectivePriority
  * nedgraderar critical→normal om eventet saknar en "därför nu"-rad).
  * Granska kunde alltså räkna ett event som blockerande kritiskt som
- * GameShell/PortalEventSlot/EventPrimary redan korrekt nedgraderat till
+ * GameShell/PortalEventSlot redan korrekt nedgraderat till
  * normal. Läser nu samma delade funktion.
  */
 export function classifyEventNature(event: GameEvent): EventNature {

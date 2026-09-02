@@ -63,8 +63,8 @@ export type EventRenderTarget = 'overlay' | 'inline' | 'ambient'
 
 /**
  * Central källa för VAR ett pending event ska renderas. GameShell (EventOverlay-
- * gaten), PortalEventSlot (inline-gaten) och EventPrimary (dashboard-primärkortet)
- * läste tidigare var sin kopia av samma priority==='critical'-check — tre ställen
+ * gaten) och PortalEventSlot (inline-gaten) läste tidigare var sin kopia av
+ * samma priority==='critical'-check — två ställen
  * som kunde glida isär (samma klass av bugg som Å7:s dubbelpadding). Ett event
  * utan val rutas ALLTID till 'ambient', oavsett priority — annars softlockar ett
  * kritiskt event utan val EventOverlay (fullskärmsmodal utan knappar, upptäckt

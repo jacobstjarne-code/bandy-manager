@@ -162,11 +162,10 @@ describe('PortalScreen integration — primärkort per game-state', () => {
     expect(layout.primary.id).toBe('next_match_smfinal')
   })
 
-  it('kritisk händelse → väljer event_critical (EventPrimary)', () => {
-    // MASTER_OPPET.md d-evt1-eventprimary-overlay (2026-09-02): eventTriggers.ts
-    // läser nu getEffectivePriority (D1 punkt 4), som nedgraderar en
-    // priority='critical'-stämpel utan en instans-whyNow-rad till 'normal'.
-    // Fixturen bär därför whyNow för att testa en genuint motiverad händelse.
+  it('kritisk händelse ägs av overlayn och konkurrerar inte om portalens primary-plats', () => {
+    // D-EVT1: GameShell renderar det kritiska eventet som EventOverlay. Portalen
+    // ska därför välja sitt vanliga primary-kort i stället för att montera samma
+    // event en andra gång bakom overlayn.
     const game = makeGame({
       pendingEvents: [
         {
@@ -180,10 +179,10 @@ describe('PortalScreen integration — primärkort per game-state', () => {
     })
 
     const layout = buildPortal(game, makeSeed(game))
-    expect(layout.primary.id).toBe('event_critical')
+    expect(layout.primary.id).not.toBe('event_critical')
   })
 
-  it('kritisk händelse UTAN whyNow-rad nedgraderas — väljer inte event_critical', () => {
+  it('kritisk händelse UTAN whyNow-rad skapar inte heller ett redundant primary-kort', () => {
     const game = makeGame({
       pendingEvents: [
         {

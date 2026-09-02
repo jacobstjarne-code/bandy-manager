@@ -16,20 +16,10 @@ import type { Page } from '@playwright/test'
  * sitt rotelement. Denna funktion skannar en scens data-scene-content-yta
  * (samma gräns skärmdumparna redan använder — "per skärm" betyder samma
  * sak här som för toHaveScreenshot) och failar om samma entity-id
- * förekommer via mer än en källa, MED ETT undantag.
- *
- * DET ENDA DEKLARERADE UNDANTAGET: EventPrimary + EventOverlay för samma
- * event-id. Rotorsak (inte kosmetisk): EventPrimary konkurrerar om Portal-
- * primary-platsen även när samma kritiska event tvingar fram en
- * EventOverlay (GameShell, skal-nivå) — ingen koordinering mellan lagren.
- * Overlayen täcker kortet visuellt så ingen spelare SER två kort, men båda
- * monterar i DOM:en. Flaggat, inte fixat — se docs/BACKLOG.md (C-EVT1).
- * Fixen hör hemma i portalBuilder-lagret med egen baseline+rotorsak, inte
- * inklämd här. Undantaget är SNÄVT: bara detta EXAKTA par för SAMMA id.
- * Om EventPrimary eller EventOverlay dubblerar mot NÅGOT ANNAT (eller mot
- * varandra i grupper >2), failar grinden som vanligt.
+ * förekommer via mer än en källa. D-EVT1:s tidigare EventPrimary/EventOverlay-
+ * undantag togs bort när den redundanta EventPrimary-vägen pensionerades:
+ * ett event får nu aldrig dubbelmonteras, oavsett källpar.
  */
-const ALLOWED_DUPLICATE_SOURCE_PAIR = ['EventOverlay', 'EventPrimary'].sort().join('|')
 
 export async function assertNoDuplicateEntityIds(
   page: Page,
@@ -51,9 +41,6 @@ export async function assertNoDuplicateEntityIds(
   const violations: string[] = []
   for (const [id, sources] of bySource) {
     if (sources.length <= 1) continue
-    const isDeclaredException =
-      sources.length === 2 && [...sources].sort().join('|') === ALLOWED_DUPLICATE_SOURCE_PAIR
-    if (isDeclaredException) continue
     violations.push(`${id} renderas ${sources.length}× via [${sources.join(', ')}]`)
   }
 

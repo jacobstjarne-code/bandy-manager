@@ -26,7 +26,6 @@ import {
 } from './triggers/transferTriggers'
 import { patronDemandUnmetOver3Rounds } from './triggers/patronTriggers'
 import { mecenatHasPendingDemand } from './triggers/mecenatTriggers'
-import { hasCriticalEvent } from './triggers/eventTriggers'
 import { hasInjuredStarters } from './triggers/stateTriggers'
 
 // Primary components
@@ -37,7 +36,6 @@ import { CupFinalPrimary } from '../../../presentation/components/portal/primary
 import { FarewellMatchPrimary } from '../../../presentation/components/portal/primary/FarewellMatchPrimary'
 import { TransferDeadlinePrimary } from '../../../presentation/components/portal/primary/TransferDeadlinePrimary'
 import { PatronDemandPrimary } from '../../../presentation/components/portal/primary/PatronDemandPrimary'
-import { EventPrimary } from '../../../presentation/components/portal/primary/EventPrimary'
 
 // Secondary components
 import { SourceSecondaryCard } from '../../../presentation/components/portal/secondary/SourceSecondaryCard'
@@ -108,13 +106,6 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 98,
     triggers: [nextMatchIsCupFinal],
     Component: CupFinalPrimary,
-  },
-  {
-    id: 'event_critical',
-    tier: 'primary',
-    weight: 95,
-    triggers: [hasCriticalEvent],
-    Component: EventPrimary,
   },
   {
     id: 'transfer_deadline_close',

@@ -9,7 +9,7 @@ import type { GameEvent } from '../domain/entities/GameEvent'
  * logik, samma mönster som matchLive_integration.test.tsx:s ARKITEKTONISKA
  * NOTERING beskriver: @testing-library/react är inte installerat, så
  * komponentträd renderas aldrig i testsviten — GameShell/PortalEventSlot/
- * EventPrimary läser alla samma funktion, så ett grönt test här bevisar
+ * de båda ytorna läser samma funktion, så ett grönt test här bevisar
  * även deras beteende.
  *
  * contentContract mockas till att alltid returnera en whyNow-rad —

@@ -103,17 +103,16 @@ test.describe('meta: entityDedup fångar Portal-dubbleringen (AUDIT DEL 2)', () 
     await expect(assertNoDuplicateEntityIds(page)).rejects.toThrow(/storyline:42/)
   })
 
-  // Frisk kontroll 1: enda deklarerade undantaget (EventPrimary +
-  // EventOverlay för SAMMA id) ska INTE flaggas — det är avsiktligt
-  // dokumenterad, känd täckning (C-EVT1 i BACKLOG.md), inte en regression.
-  test('friskt: det deklarerade EventPrimary/EventOverlay-undantaget flaggas inte', async ({ page }) => {
+  // D-EVT1: det tidigare undantaget är pensionerat. Samma event bakom
+  // overlayn är nu ett vanligt grindfel och får aldrig komma tillbaka.
+  test('bugg: EventPrimary/EventOverlay för samma event flaggas', async ({ page }) => {
     await page.setContent(`
       <div data-scene-content>
         <div data-entity-id="event:7" data-entity-source="EventPrimary">A</div>
         <div data-entity-id="event:7" data-entity-source="EventOverlay">B</div>
       </div>
     `)
-    await expect(assertNoDuplicateEntityIds(page)).resolves.toBeUndefined()
+    await expect(assertNoDuplicateEntityIds(page)).rejects.toThrow(/event:7/)
   })
 
   // Frisk kontroll 2: en ensam instans ska förstås inte flaggas.

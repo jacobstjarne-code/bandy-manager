@@ -251,7 +251,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'event-overlay',    label: 'EventOverlay — kritiskt event, fullskärms-modal' },
   { id: 'press-conference', label: 'PressConferenceScene — bespok scen' },
   { id: 'primary-smfinal-vs-deadline', label: 'Primary — SM-final(100) mot deadline(90)' },
-  { id: 'primary-event-vs-farewell',   label: 'Primary — kritiskt event(95) mot avsked(82)' },
+  { id: 'primary-event-vs-farewell',   label: 'Primary — overlay-event lämnar plats åt avsked' },
   { id: 'sommaren-s2',              label: 'Sommaren — säsong 2, utvilad, tre händelser, slutspel rimligt' },
   { id: 'sommaren-titelforsvarare', label: 'Sommaren — säsong 6, titelförsvarare, nära gränsen' },
   { id: 'sommaren-tomt',            label: 'Sommaren — säsong 4, efter tapp, tomt-fallet, slutspel ej rimligt' },
@@ -1078,7 +1078,7 @@ const breakpointEvent = {
 
 // AUDIT DEL 4 (2026-08-12) — täckningslucka i takregel-baselinen: alla fyra
 // tillstånd ovan varierar bara atmosfärslagret. Primary-urvalet (initCardBag.ts,
-// SM-final 100 · cupfinal 98 · event_critical 95 · deadline 90 · avsked 82 ·
+// SM-final 100 · cupfinal 98 · deadline 90 · avsked 82 ·
 // derby 80 · next_match 10) fotograferades aldrig i konkurrens — deadline
 // (90) vann i tre av fyra bara för att inget högre viktat villkor någonsin
 // var sant samtidigt. Samma klass av lucka som lät FÖRESLÅS-badgen vara
@@ -1099,9 +1099,9 @@ const primaryFarewellFixture = {
   homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 0, awayScore: 0,
   status: 'scheduled' as const, farewellMatchForPlayerId: 'p-h1', events: [],
 }
-// event_critical (95) mot avsked (82) samtidigt — ett kritiskt event pendlar
-// medan nästa match är en avskedsmatch. Förväntat vinnare: EventPrimary
-// (95 > 82).
+// Ett kritiskt overlay-event pendlar medan nästa match är en avskedsmatch.
+// D-EVT1: eventet ägs av EventOverlay och konkurrerar inte längre om primary;
+// förväntat portalkort bakom overlayn är FarewellMatchPrimary.
 const primaryEventVsFarewellGame = makeGame([...makeLeagueFixtures(), primaryFarewellFixture], {
   pendingEvents: [{
     id: 'dev-primary-critical', type: 'playerUnhappy' as const, resolved: false,

@@ -42,7 +42,7 @@ const CHARACTER_BIAS: Record<RoundCharacter, Record<string, number>> = {
   standard:       {},
   post_loss:      { journalist_card: 1.5, coffee_room_card: 1.4, klacken: 1.3, board_objectives: 0.7, ekonomi: 0.7 },
   pre_derby:      { klacken: 1.6, next_match_derby: 1.5, opponent_form: 1.4, season_signature_card: 0.5 },
-  cup_day:        { next_match: 1.5, board_objectives: 0.6, event_critical: 0.5, patron_demand_unmet: 0.5 },
+  cup_day:        { next_match: 1.5, board_objectives: 0.6, patron_demand_unmet: 0.5 },
   premiere:       { open_bids: 1.5, ekonomi: 1.2 },
   winning_streak: { klacken: 1.4, journalist_card: 1.3, board_objectives: 0.5 },
   losing_streak:  { coffee_room_card: 1.4, journalist_card: 1.4, board_objectives: 0.5 },

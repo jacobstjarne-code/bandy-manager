@@ -51,7 +51,7 @@ describe('classifyEventNature', () => {
   // MASTER_OPPET.md d-evt1-eventprimary-overlay (2026-09-02): fallgrenen
   // läser nu getEffectivePriority (D1 punkt 4), som nedgraderar en
   // priority='critical'-stämpel UTAN en "därför nu"-rad till 'normal' —
-  // exakt samma självkontroll GameShell/PortalEventSlot/EventPrimary redan
+  // exakt samma självkontroll GameShell/PortalEventSlot redan
   // gjorde. Bägge testen nedan bär därför nu en instans-whyNow (whyNowPerson)
   // för att fortsätta testa en GENUINT motiverad ad hoc-kritisk händelse,
   // inte bara en obekräftad prioritetsstämpel.
