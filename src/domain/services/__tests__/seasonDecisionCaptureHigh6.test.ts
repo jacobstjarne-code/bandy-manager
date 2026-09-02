@@ -142,7 +142,12 @@ describe('HIGH 6 källa 1 — mecenatEvent/side_mec1 + side_mec2', () => {
 // ── Källa 1, regressionsvakt för eventResolver-grinden ────────────────────
 
 describe('HIGH 6 — eventResolver fångar beslut UTAN systemhandelse (regression)', () => {
-  it('mecenatEvent/side_mec1 utan systemhandelse hamnar i seasonDecisionCandidates', () => {
+  // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET:
+  // eventResolver.ts skriver inte längre seasonDecisionCandidates, bara
+  // liggaren. subject bär den namngivna personen (backed-mecenaten) — sentence-
+  // komponering för just side_mec1/2 är en KÄND, separat flaggad lucka (se
+  // seasonDecisionCaptureService.test.ts), inte vad detta testet bevakar.
+  it('mecenatEvent/side_mec1 utan systemhandelse hamnar i liggaren', () => {
     const event = conflictEvent()
     expect(event.systemhandelse).toBeUndefined() // förutsättningen testet vilar på
     const game = makeGame({
@@ -153,9 +158,9 @@ describe('HIGH 6 — eventResolver fångar beslut UTAN systemhandelse (regressio
       pendingEvents: [event],
     })
     const resolved = resolveEvent(game, event.id, 'side_mec1', undefined, true)
-    const candidate = resolved.seasonDecisionCandidates?.find(c => c.eventId === event.id)
-    expect(candidate).toBeDefined()
-    expect(candidate!.namedPerson).toBe('Björn Lindqvist')
+    const entry = resolved.eventLedger?.find(e => e.semanticKey === 'mecenatEvent:side_mec1')
+    expect(entry).toBeDefined()
+    expect(entry!.subject).toEqual({ kind: 'mecenat', id: 'mec1' })
   })
 
   // HIGH 6, attributionshålet (Jacobs körorder 2026-08-31): den STALE-grinden
@@ -163,7 +168,7 @@ describe('HIGH 6 — eventResolver fångar beslut UTAN systemhandelse (regressio
   // eventet. Samma mecenatkonflikt, men auto-resolvad (sim-the-rest/rollover,
   // madeByPlayer=false), ska INTE producera en kandidat — spelaren var inte
   // med om att fatta beslutet, och årsboken ska inte hävda att de var det.
-  it('mecenatEvent/side_mec1 AUTO-RESOLVAD (madeByPlayer=false) ger INGEN kandidat', () => {
+  it('mecenatEvent/side_mec1 AUTO-RESOLVAD (madeByPlayer=false) ger INGEN liggarpost', () => {
     const event = conflictEvent()
     const game = makeGame({
       mecenater: [
@@ -173,8 +178,8 @@ describe('HIGH 6 — eventResolver fångar beslut UTAN systemhandelse (regressio
       pendingEvents: [event],
     })
     const resolved = resolveEvent(game, event.id, 'side_mec1', undefined, false)
-    const candidate = resolved.seasonDecisionCandidates?.find(c => c.eventId === event.id)
-    expect(candidate).toBeUndefined()
+    const entry = resolved.eventLedger?.find(e => e.semanticKey === 'mecenatEvent:side_mec1')
+    expect(entry).toBeUndefined()
   })
 })
 

@@ -1975,16 +1975,23 @@ export function resolveEvent(
   // aldrig var med om att fatta. Gated nu på madeByPlayer.
   const candidate = madeByPlayer ? captureSystemDecision(game, updatedGame, event, choiceId) : null
   if (candidate) {
+    // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET.
+    // Skriver INTE längre seasonDecisionCandidates här — årsboken
+    // (seasonEndProcessor.ts) läser liggaren via pickMostImportantDecisionText
+    // sedan alla tre kandidatkällor (denna, gameStore.ts, gameFlowActions.ts)
+    // dual-writer. `candidate` bärs bara vidare till buildDecisionLedgerEntry,
+    // aldrig till det gamla fältet. Fältet SaveGame.seasonDecisionCandidates
+    // finns kvar (store/-skrivarna refererar typen fortfarande) men är dött
+    // härifrån.
+    //
+    // semanticKey = `${event.type}:${choiceId}`, finkornigare än narrativeBeatLog-
+    // skrivningens rena event.type ovan — composeSeasonDecisionSentence
+    // (seasonDecisionCaptureService.ts) måste kunna skilja t.ex.
+    // criticalEconomy/sell_star från criticalEconomy/ask_mecenat, som delar
+    // event.type men har olika meningar.
     updatedGame = {
       ...updatedGame,
-      seasonDecisionCandidates: [...(updatedGame.seasonDecisionCandidates ?? []), candidate],
-      // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — DUAL-WRITE.
-      // seasonDecisionCandidates orörd (ovan); samma candidate konverteras
-      // till en liggarpost UTAN sentence. Kan inte retireras än — Codes lane
-      // omfattar inte src/presentation/store/, där captureFacilityBuildDecision
-      // (den TREDJE kandidatkällan, HIGH 6) skriver, så seasonDecisionCandidates
-      // förblir aktiv tills den källan också dual-writer.
-      eventLedger: logEvent(updatedGame, buildDecisionLedgerEntry(candidate, event.type, updatedGame.currentMatchday)),
+      eventLedger: logEvent(updatedGame, buildDecisionLedgerEntry(candidate, `${event.type}:${choiceId}`, updatedGame.currentMatchday)),
     }
   }
 

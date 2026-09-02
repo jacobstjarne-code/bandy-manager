@@ -81,6 +81,109 @@ export function buildFacilityBuildTokens(label: string, clubCostKr: number): Fac
   return { facility: label, cost: formatValue(clubCostKr) }
 }
 
+// ── A-H9:s ursprungliga åtta (MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md
+// Fas 2) — flyttade hit ORDAGRANT ur seasonDecisionCaptureService.ts:s
+// builders, som tidigare interpolerade dem inline. Ingen ny text — samma
+// meningar, bara i mallformen de fyra HIGH 6-mallarna ovan redan använder,
+// så årsboksvyn kan komponera dem ur en EventLedgerEntry i stället för
+// gameBefore/gameAfter. Se seasonDecisionLedgerView.ts för anropsstället.
+
+export interface NamedPersonTokens {
+  /** Spelarens/mecenatens fulla namn, exakt som candidate.namedPerson bar. */
+  name: string
+}
+
+export interface SellStarTokens extends NamedPersonTokens {
+  /** positionDefinite(player.position) — redan färdigformaterad. */
+  position: string
+}
+
+export interface AmountOnlyTokens {
+  /** Färdigformaterat belopp ("350 tkr"). */
+  amount: string
+}
+
+export interface NamedPersonAndAmountTokens extends NamedPersonTokens, AmountOnlyTokens {}
+
+export interface OfferProSingleTokens {
+  /** Bara efternamnet — samma som originalets confirmedPlayers[0].lastName. */
+  lastName: string
+  amount: string
+}
+
+const SELL_STAR = 'Du sålde {name}. Det kostade er {position}.'
+const ASK_MECENAT = 'Du bad {name} om hjälp. Det kostade er hans förtroende.'
+const TAKE_LOAN = 'Du tog lånet. Det kostade er varje månad sedan dess.'
+const OFFER_PRO_SINGLE = 'Du gav {lastName} heltidskontrakt. Det kostade {amount} i året.'
+const OFFER_PRO_MULTI = 'Du gav de varslade heltidskontrakt. Det kostade {amount} i året.'
+const DET_OMOJLIGA_VALET_SELL = 'Du sålde {name} innan han hunnit spela klart. Det kostade er akademins bästa år.'
+const DET_OMOJLIGA_VALET_KEEP = 'Du lät det vara. {name} spelar kvar.'
+const TRANSFER_BID_ACCEPT = 'Du tog budet på {name}. Det gav {amount}, och tog {name}.'
+const MECENAT_OFFER_TRIBUTE = 'Du tackade av {name} som han förtjänade. Det gav ett avsked ingen glömmer, och tog 25 tkr.'
+
+export function sentenceForSellStar(template: string, t: SellStarTokens): string | null {
+  return fill(template, { name: t.name, position: t.position })
+}
+export function getSellStarSentence(t: SellStarTokens): string | null {
+  return sentenceForSellStar(SELL_STAR, t)
+}
+
+export function sentenceForAskMecenat(template: string, t: NamedPersonTokens): string | null {
+  return fill(template, { name: t.name })
+}
+export function getAskMecenatSentence(t: NamedPersonTokens): string | null {
+  return sentenceForAskMecenat(ASK_MECENAT, t)
+}
+
+export function sentenceForTakeLoan(template: string): string | null {
+  return fill(template, {})
+}
+export function getTakeLoanSentence(): string | null {
+  return sentenceForTakeLoan(TAKE_LOAN)
+}
+
+export function sentenceForOfferProSingle(template: string, t: OfferProSingleTokens): string | null {
+  return fill(template, { lastName: t.lastName, amount: t.amount })
+}
+export function getOfferProSingleSentence(t: OfferProSingleTokens): string | null {
+  return sentenceForOfferProSingle(OFFER_PRO_SINGLE, t)
+}
+
+export function sentenceForOfferProMulti(template: string, t: AmountOnlyTokens): string | null {
+  return fill(template, { amount: t.amount })
+}
+export function getOfferProMultiSentence(t: AmountOnlyTokens): string | null {
+  return sentenceForOfferProMulti(OFFER_PRO_MULTI, t)
+}
+
+export function sentenceForDetOmojligaValetSell(template: string, t: NamedPersonTokens): string | null {
+  return fill(template, { name: t.name })
+}
+export function getDetOmojligaValetSellSentence(t: NamedPersonTokens): string | null {
+  return sentenceForDetOmojligaValetSell(DET_OMOJLIGA_VALET_SELL, t)
+}
+
+export function sentenceForDetOmojligaValetKeep(template: string, t: NamedPersonTokens): string | null {
+  return fill(template, { name: t.name })
+}
+export function getDetOmojligaValetKeepSentence(t: NamedPersonTokens): string | null {
+  return sentenceForDetOmojligaValetKeep(DET_OMOJLIGA_VALET_KEEP, t)
+}
+
+export function sentenceForTransferBidAccept(template: string, t: NamedPersonAndAmountTokens): string | null {
+  return fill(template, { name: t.name, amount: t.amount })
+}
+export function getTransferBidAcceptSentence(t: NamedPersonAndAmountTokens): string | null {
+  return sentenceForTransferBidAccept(TRANSFER_BID_ACCEPT, t)
+}
+
+export function sentenceForMecenatOfferTribute(template: string, t: NamedPersonTokens): string | null {
+  return fill(template, { name: t.name })
+}
+export function getMecenatOfferTributeSentence(t: NamedPersonTokens): string | null {
+  return sentenceForMecenatOfferTribute(MECENAT_OFFER_TRIBUTE, t)
+}
+
 // ── Interpolation ─────────────────────────────────────────────────────────
 
 /**

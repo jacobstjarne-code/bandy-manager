@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { resolveEvent } from '../eventResolver'
+import { composeSeasonDecisionSentence } from '../../seasonDecisionCaptureService'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { GameEvent } from '../../../entities/GameEvent'
@@ -47,14 +48,18 @@ describe('detOmojligaValet/sell — spelaren tas faktiskt bort ur klubben (H3)',
     expect(club.squadPlayerIds).not.toContain(player.id)
   })
 
-  it('O18-kandidaten "Du sålde X" skrivs bara EFTER att övergången faktiskt hände', () => {
+  // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET:
+  // eventResolver.ts skriver inte längre seasonDecisionCandidates, bara
+  // liggaren. Samma påstående ("mening skrivs bara EFTER att övergången
+  // faktiskt hände"), verifierat via composeSeasonDecisionSentence i stället.
+  it('O18-liggarposten "Du sålde X" skrivs bara EFTER att övergången faktiskt hände', () => {
     const { game, player } = makeGameWithSellEvent()
     const resolved = resolveEvent(game, 'ev_omojlig', 'sell', undefined, true)
 
-    const candidate = resolved.seasonDecisionCandidates?.find(c => c.eventId === 'ev_omojlig')
-    expect(candidate).toBeDefined()
-    expect(candidate!.sentence).toContain(`Du sålde ${player.firstName} ${player.lastName}`)
-    expect(candidate!.namedPerson).toBe(`${player.firstName} ${player.lastName}`)
+    const entry = resolved.eventLedger?.find(e => e.semanticKey === 'detOmojligaValet:sell')
+    expect(entry).toBeDefined()
+    expect(entry!.subject).toEqual({ kind: 'player', id: player.id })
+    expect(composeSeasonDecisionSentence(entry!, resolved)).toContain(`Du sålde ${player.firstName} ${player.lastName}`)
   })
 
   it('relatedPlayerId saknas: resolveEvent kastar synligt istf att tyst lämna spelaren kvar', () => {
@@ -80,11 +85,11 @@ describe('detOmojligaValet/sell — spelaren tas faktiskt bort ur klubben (H3)',
   // för att avstå) — score 1 av 3, kvalificerar inte längre som säsongens
   // beslut-kandidat. Byggarens "Du lät det vara..."-mening finns kvar
   // (text-utan-yta, se seasonDecisionCaptureService.ts), men skrivs inte
-  // längre till seasonDecisionCandidates.
-  it('keep-valet skriver INGEN seasonDecisionCandidates-post (kvalificerar inte under A-H9)', () => {
+  // längre till liggaren (Fas 2 — qualifies() gatar dual-writet, oförändrat).
+  it('keep-valet skriver INGEN liggarpost (kvalificerar inte under A-H9)', () => {
     const { game } = makeGameWithSellEvent()
     const resolved = resolveEvent(game, 'ev_omojlig', 'keep', undefined, true)
-    const candidate = resolved.seasonDecisionCandidates?.find(c => c.eventId === 'ev_omojlig')
-    expect(candidate).toBeUndefined()
+    const entry = resolved.eventLedger?.find(e => e.semanticKey === 'detOmojligaValet:keep')
+    expect(entry).toBeUndefined()
   })
 })

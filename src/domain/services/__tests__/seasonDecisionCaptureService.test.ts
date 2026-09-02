@@ -4,13 +4,15 @@
  * Meningarna i assertions är Jacobs egna, klistrade ordagrant.
  */
 import { describe, it, expect } from 'vitest'
-import { captureSystemDecision, captureFacilityBuildDecision, pickSeasonDecision, SEASON_DECISION_NONE_TEXT, buildDecisionLedgerEntry } from '../seasonDecisionCaptureService'
+import { captureSystemDecision, captureFacilityBuildDecision, pickSeasonDecisionFromLedger, pickMostImportantDecisionText, composeSeasonDecisionSentence, SEASON_DECISION_NONE_TEXT, buildDecisionLedgerEntry } from '../seasonDecisionCaptureService'
+import type { EventLedgerEntry } from '../../entities/Narrative'
 import {
   buildFacilityBuildTokens,
   sentenceForCaptainSupport,
   sentenceForCaptainTakeCharge,
   sentenceForFacilityBuild,
   sentenceForMecenatConflictSide,
+  getOfferProMultiSentence,
 } from '../../data/seasonDecisionSentences'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
@@ -447,61 +449,72 @@ describe('captureSystemDecision — utanför den slutna listan', () => {
 // person → irreversibelt → spänning → antal system (sist, bara skiljedomare)
 // → kronor (allra sist). Ersätter den gamla ordningen (flest system vann
 // oavsett övrigt) — domens ord: "en räknare är inte ett minne."
-describe('pickSeasonDecision — rangordningen (A-H9)', () => {
-  const base = { eventId: 'e', round: 5, season: 1, systemsAffectedCount: 1, irreversible: false, tension: false }
+/**
+ * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET.
+ * pickSeasonDecision (SeasonDecisionCandidate[]) superseterad av
+ * pickSeasonDecisionFromLedger (EventLedgerEntry[]) — exakt samma sex
+ * scenarier portade en-till-en (namedPerson→subject, round→matchday,
+ * ingen sentence på liggarposten) för att bevisa "samma femstegsvektor,
+ * samma vinnare".
+ */
+describe('pickSeasonDecisionFromLedger — rangordningen (A-H9), portad från pickSeasonDecision', () => {
+  const base: Omit<EventLedgerEntry, 'subject' | 'irreversible' | 'tension' | 'systemsAffectedCount' | 'moneyAmount'> & { systemsAffectedCount: number; irreversible: boolean; tension: boolean } = {
+    type: 'decision', semanticKey: 'k', matchday: 5, season: 1, significance: 50, systemsAffectedCount: 1, irreversible: false, tension: false,
+  }
+  const subj = { kind: 'player' as const, id: 'p1' }
 
-  it('namngiven person vinner FÖRST, oavsett antal berörda system', () => {
-    const winner = { ...base, eventId: 'named-few-systems', systemsAffectedCount: 1, namedPerson: 'Erik', sentence: 'named' }
-    const loser = { ...base, eventId: 'unnamed-many-systems', systemsAffectedCount: 4, moneyAmount: 999999, sentence: 'unnamed' }
-    expect(pickSeasonDecision([loser, winner])?.eventId).toBe('named-few-systems')
+  it('namngiven person (subject) vinner FÖRST, oavsett antal berörda system', () => {
+    const winner: EventLedgerEntry = { ...base, semanticKey: 'named-few-systems', systemsAffectedCount: 1, subject: subj }
+    const loser: EventLedgerEntry = { ...base, semanticKey: 'unnamed-many-systems', systemsAffectedCount: 4, moneyAmount: 999999 }
+    expect(pickSeasonDecisionFromLedger([loser, winner])?.semanticKey).toBe('named-few-systems')
   })
 
   it('vid lika (namngiven eller ej): irreversibelt vinner', () => {
-    const winner = { ...base, eventId: 'irrev', namedPerson: 'X', irreversible: true, sentence: 'a' }
-    const loser = { ...base, eventId: 'rev', namedPerson: 'X', irreversible: false, moneyAmount: 999999, sentence: 'b' }
-    expect(pickSeasonDecision([loser, winner])?.eventId).toBe('irrev')
+    const winner: EventLedgerEntry = { ...base, semanticKey: 'irrev', subject: subj, irreversible: true }
+    const loser: EventLedgerEntry = { ...base, semanticKey: 'rev', subject: subj, irreversible: false, moneyAmount: 999999 }
+    expect(pickSeasonDecisionFromLedger([loser, winner])?.semanticKey).toBe('irrev')
   })
 
   it('vid lika namngiven+irreversibilitet: spänning (gjorde det ont) vinner', () => {
-    const winner = { ...base, eventId: 'tension', namedPerson: 'X', irreversible: true, tension: true, sentence: 'a' }
-    const loser = { ...base, eventId: 'no-tension', namedPerson: 'X', irreversible: true, tension: false, moneyAmount: 999999, sentence: 'b' }
-    expect(pickSeasonDecision([loser, winner])?.eventId).toBe('tension')
+    const winner: EventLedgerEntry = { ...base, semanticKey: 'tension', subject: subj, irreversible: true, tension: true }
+    const loser: EventLedgerEntry = { ...base, semanticKey: 'no-tension', subject: subj, irreversible: true, tension: false, moneyAmount: 999999 }
+    expect(pickSeasonDecisionFromLedger([loser, winner])?.semanticKey).toBe('tension')
   })
 
   it('vid lika de tre första: antal berörda system, BARA som skiljedomare', () => {
-    const winner = { ...base, eventId: 'many-systems', namedPerson: 'X', irreversible: true, tension: true, systemsAffectedCount: 4, sentence: 'a' }
-    const loser = { ...base, eventId: 'few-systems', namedPerson: 'X', irreversible: true, tension: true, systemsAffectedCount: 2, moneyAmount: 999999, sentence: 'b' }
-    expect(pickSeasonDecision([loser, winner])?.eventId).toBe('many-systems')
+    const winner: EventLedgerEntry = { ...base, semanticKey: 'many-systems', subject: subj, irreversible: true, tension: true, systemsAffectedCount: 4 }
+    const loser: EventLedgerEntry = { ...base, semanticKey: 'few-systems', subject: subj, irreversible: true, tension: true, systemsAffectedCount: 2, moneyAmount: 999999 }
+    expect(pickSeasonDecisionFromLedger([loser, winner])?.semanticKey).toBe('many-systems')
   })
 
   it('vid lika allt övrigt: kronor som allra sista skiljedomare', () => {
-    const winner = { ...base, eventId: 'more-money', namedPerson: 'Erik', irreversible: true, tension: true, systemsAffectedCount: 2, moneyAmount: 500000, sentence: 'a' }
-    const loser = { ...base, eventId: 'less-money', namedPerson: 'Anna', irreversible: true, tension: true, systemsAffectedCount: 2, moneyAmount: 100000, sentence: 'b' }
-    expect(pickSeasonDecision([loser, winner])?.eventId).toBe('more-money')
+    const winner: EventLedgerEntry = { ...base, semanticKey: 'more-money', subject: subj, irreversible: true, tension: true, systemsAffectedCount: 2, moneyAmount: 500000 }
+    const loser: EventLedgerEntry = { ...base, semanticKey: 'less-money', subject: { kind: 'mecenat', id: 'm1' }, irreversible: true, tension: true, systemsAffectedCount: 2, moneyAmount: 100000 }
+    expect(pickSeasonDecisionFromLedger([loser, winner])?.semanticKey).toBe('more-money')
   })
 
-  it('vid FULL likhet: det senaste i säsongen vinner', () => {
-    const earlier = { ...base, eventId: 'early', round: 3, sentence: 'a' }
-    const later = { ...base, eventId: 'late', round: 20, sentence: 'b' }
-    expect(pickSeasonDecision([earlier, later])?.eventId).toBe('late')
+  it('vid FULL likhet: den senaste omgången (matchday) vinner', () => {
+    const earlier: EventLedgerEntry = { ...base, semanticKey: 'early', matchday: 3 }
+    const later: EventLedgerEntry = { ...base, semanticKey: 'late', matchday: 20 }
+    expect(pickSeasonDecisionFromLedger([earlier, later])?.semanticKey).toBe('late')
   })
 
   it('tom lista: null', () => {
-    expect(pickSeasonDecision([])).toBeNull()
+    expect(pickSeasonDecisionFromLedger([])).toBeNull()
   })
 })
 
-// A-H9: raden ska ALDRIG utebli längre. seasonEndProcessor.ts skriver
-// `pickSeasonDecision(...)?.sentence ?? SEASON_DECISION_NONE_TEXT` — testar
-// här att den låsta fallback-texten (Jacobs ord, ordagrant) är exakt vad
-// som används i det mönstret när ingen kandidat finns.
+// A-H9: raden ska ALDRIG utebli längre. pickMostImportantDecisionText
+// bär SEASON_DECISION_NONE_TEXT (Jacobs ord, ordagrant) internt när ingen
+// kandidat kvalificerar ELLER går att komponera.
 describe('SEASON_DECISION_NONE_TEXT — A-H9 fallback', () => {
   it('är den låsta texten', () => {
     expect(SEASON_DECISION_NONE_TEXT).toBe('Inget beslut stack ut i vintras.')
   })
 
-  it('används av mönstret seasonEndProcessor.ts faktiskt kör: pickSeasonDecision(...)?.sentence ?? SEASON_DECISION_NONE_TEXT', () => {
-    expect(pickSeasonDecision([])?.sentence ?? SEASON_DECISION_NONE_TEXT).toBe('Inget beslut stack ut i vintras.')
+  it('pickMostImportantDecisionText faller tillbaka på den när liggaren är tom', () => {
+    const game = makeGame({ eventLedger: [] })
+    expect(pickMostImportantDecisionText(game, game.currentSeason)).toBe('Inget beslut stack ut i vintras.')
   })
 })
 
@@ -684,5 +697,172 @@ describe('buildDecisionLedgerEntry — Fas 2 dual-write', () => {
     const candidate = { eventId: 'x', round: 1, season: 1, systemsAffectedCount: 10, irreversible: true, tension: true, subject: { kind: 'player' as const, id: 'p1' }, sentence: 's' }
     const entry = buildDecisionLedgerEntry(candidate, 'k', 1)
     expect(entry.significance).toBe(100)
+  })
+})
+
+/**
+ * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET,
+ * slutbeviset: "samma femstegsvektor, samma vinnare" — end-to-end genom
+ * resolveEvent → captureSystemDecision → buildDecisionLedgerEntry →
+ * composeSeasonDecisionSentence, jämfört mot candidate.sentence (den gamla
+ * vägen) för samma resolution. Skillnaden bevisas noll.
+ */
+describe('composeSeasonDecisionSentence — Fas 2 slutbevis (samma mening som candidate.sentence)', () => {
+  it('sell_star: liggarkomponerad mening === candidate.sentence', () => {
+    const game = makeGame()
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const playerId = club.squadPlayerIds[0]
+    const event: GameEvent = {
+      id: 'ev1', type: 'criticalEconomy', title: 't', body: 'b',
+      choices: [{ id: 'sell_star', label: 'l', effect: { type: 'resolveEconomicCrisis', removePlayerId: playerId } }],
+      resolved: false, systemhandelse: true,
+    }
+    const gameAfter = applySale(game, playerId)
+    const candidate = captureSystemDecision(game, gameAfter, event, 'sell_star')!
+    const entry = buildDecisionLedgerEntry(candidate, 'criticalEconomy:sell_star', 14)
+    expect(composeSeasonDecisionSentence(entry, gameAfter)).toBe(candidate.sentence)
+  })
+
+  it('offer_pro (EN varslad, den enda som kvalificerar — flera ger score 1/3): liggarkomponerad === candidate.sentence', () => {
+    const game = makeGame()
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const playerId = club.squadPlayerIds[0]
+    const player = game.players.find(p => p.id === playerId)!
+    const newSalary = Math.round(player.salary * 1.5)
+    const event: GameEvent = {
+      id: 'ev4', type: 'varsel', title: 't', body: 'b',
+      choices: [{ id: 'offer_pro', label: 'l', effect: { type: 'multiEffect', subEffects: JSON.stringify([{ targetPlayerId: playerId, value: newSalary }]) } }],
+      resolved: false, systemhandelse: true,
+    }
+    const gameAfter = applyFullTimePro(game, playerId)
+    const candidate = captureSystemDecision(game, gameAfter, event, 'offer_pro')!
+    const entry = buildDecisionLedgerEntry(candidate, 'varsel:offer_pro', 14)
+    expect(composeSeasonDecisionSentence(entry, gameAfter)).toBe(candidate.sentence)
+  })
+
+  it('offer_pro (flera varslade): kvalificerar aldrig via captureSystemDecision (score 1/3, se egen describe ovan) — multi-mallen testas direkt mot en konstruerad post', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'varsel:offer_pro', season: 1, matchday: 10,
+      significance: 60, irreversible: false, tension: true, systemsAffectedCount: 2, moneyAmount: 84000,
+    }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBe(getOfferProMultiSentence({ amount: formatValue(84000) }))
+  })
+
+  it('anläggningsbygge: semanticKey (candidate.eventId) parsas till nodeId, mening === candidate.sentence', () => {
+    const gameBefore = makeGame({ facilityState: { builtNodeIds: [] } })
+    const club = gameBefore.clubs.find(c => c.id === gameBefore.managedClubId)!
+    const gameAfter: SaveGame = {
+      ...gameBefore,
+      facilityState: { builtNodeIds: [], activeProject: { nodeId: 'varmestuga', startedMatchday: 0, etaMatchday: 8 } },
+      clubs: gameBefore.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 120000 } : c),
+    }
+    const candidate = captureFacilityBuildDecision(gameBefore, gameAfter, 'varmestuga', 120000)!
+    const entry = buildDecisionLedgerEntry(candidate, candidate.eventId, gameAfter.currentMatchday)
+    expect(composeSeasonDecisionSentence(entry, gameAfter)).toBe(candidate.sentence)
+  })
+
+  it('nodeId med interna understreck (akademi_2) parsas korrekt trots season-suffixet', () => {
+    const gameBefore = makeGame({ facilityState: { builtNodeIds: [] }, currentSeason: 2027 })
+    const club = gameBefore.clubs.find(c => c.id === gameBefore.managedClubId)!
+    const gameAfter: SaveGame = {
+      ...gameBefore,
+      facilityState: { builtNodeIds: [], activeProject: { nodeId: 'akademi_2', startedMatchday: 0, etaMatchday: 8 } },
+      clubs: gameBefore.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 90000 } : c),
+    }
+    const candidate = captureFacilityBuildDecision(gameBefore, gameAfter, 'akademi_2', 90000)!
+    expect(candidate.eventId).toBe('facility_akademi_2_s2027')
+    const entry = buildDecisionLedgerEntry(candidate, candidate.eventId, gameAfter.currentMatchday)
+    expect(composeSeasonDecisionSentence(entry, gameAfter)).toBe(candidate.sentence)
+  })
+
+  it('KÄND LUCKA: mecenatkonfliktens post går inte att komponera (subject bär bara backed, inte other)', () => {
+    const mec1 = makeMecenat({ id: 'mec1', name: 'Björn', happiness: 60 })
+    const mec2 = makeMecenat({ id: 'mec2', name: 'Anna', happiness: 60 })
+    const gameBefore = makeGame({ mecenater: [mec1, mec2] })
+    const event: GameEvent = {
+      id: 'ev1', type: 'mecenatEvent', title: 't', body: 'b',
+      choices: [{ id: 'side_mec1', label: 'l', effect: { type: 'noOp', subEffects: JSON.stringify([{ type: 'mecenatHappiness', targetMecenatId: 'mec1', amount: 15 }, { type: 'mecenatHappiness', targetMecenatId: 'mec2', amount: -10 }]) } }],
+      resolved: false,
+    }
+    const gameAfter: SaveGame = { ...gameBefore, mecenater: [{ ...mec1, happiness: 75 }, { ...mec2, happiness: 50 }] }
+    const candidate = captureSystemDecision(gameBefore, gameAfter, event, 'side_mec1')!
+    expect(candidate.sentence).toContain('Björn') // gamla vägen HAR meningen
+    const entry = buildDecisionLedgerEntry(candidate, 'mecenatEvent:side_mec1', 14)
+    expect(composeSeasonDecisionSentence(entry, gameAfter)).toBeNull() // nya vägen kan inte
+  })
+
+  it('subject pekar på en spelare som inte längre finns: null, inte en krasch', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'criticalEconomy:sell_star', season: 1, matchday: 5,
+      subject: { kind: 'player', id: 'does-not-exist' }, significance: 80, irreversible: true, tension: true,
+    }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBeNull()
+  })
+
+  it('okänd semanticKey (varken A-H9-mönster eller facility-mönster): null', () => {
+    const entry: EventLedgerEntry = { type: 'decision', semanticKey: 'unknownType:unknownChoice', season: 1, matchday: 5, significance: 50 }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBeNull()
+  })
+})
+
+describe('pickMostImportantDecisionText — samma vinnare som pickSeasonDecision skulle valt', () => {
+  it('rankar rätt vinnare bland flera liggarposter OCH faller igenom en okomponerbar post till nästa', () => {
+    const game = makeGame()
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const playerId = club.squadPlayerIds[0]
+
+    // Kandidat 1 (svagare): take_loan — kvalificerar aldrig (score 1/3), men
+    // lägg den ändå i liggaren för att bevisa att den korrekt IGNORERAS av
+    // rangordningen precis som captureSystemDecision redan filtrerar den.
+    // Kandidat 2 (starkare, ska vinna): sell_star — subject+irreversible+tension.
+    const event: GameEvent = {
+      id: 'ev1', type: 'criticalEconomy', title: 't', body: 'b',
+      choices: [{ id: 'sell_star', label: 'l', effect: { type: 'resolveEconomicCrisis', removePlayerId: playerId } }],
+      resolved: false, systemhandelse: true,
+    }
+    const gameAfter = applySale(game, playerId)
+    const candidate = captureSystemDecision(game, gameAfter, event, 'sell_star')!
+    const winningEntry = buildDecisionLedgerEntry(candidate, 'criticalEconomy:sell_star', 14)
+
+    // En svagare men KOMPONERBAR konkurrent (offer_tribute, mecenat) — ska förlora rangordningen.
+    const mec = makeMecenat({ id: 'mec1', name: 'Björn', happiness: 60 })
+    const weakerEntry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'mecenatEvent:offer_tribute', season: game.currentSeason, matchday: 10,
+      subject: { kind: 'mecenat', id: 'mec1' }, significance: 60, irreversible: false, tension: true, systemsAffectedCount: 3, moneyAmount: 25000,
+    }
+    const finalGame: SaveGame = { ...gameAfter, mecenater: [mec], eventLedger: [weakerEntry, winningEntry] }
+
+    expect(pickMostImportantDecisionText(finalGame, game.currentSeason)).toBe(candidate.sentence)
+  })
+
+  it('om högst rankade post inte går att komponera, faller den igenom till nästa (inte NONE_TEXT direkt)', () => {
+    const mec1 = makeMecenat({ id: 'mec1', name: 'Björn', happiness: 60 })
+    const mec2 = makeMecenat({ id: 'mec2', name: 'Anna', happiness: 60 })
+    const game = makeGame({ mecenater: [mec1, mec2] })
+
+    // Okomponerbar men HÖGRE rankad (subject satt): mecenatkonflikt.
+    const unComposable: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'mecenatEvent:side_mec1', season: game.currentSeason, matchday: 8,
+      subject: { kind: 'mecenat', id: 'mec1' }, significance: 70, irreversible: false, tension: true, systemsAffectedCount: 2,
+    }
+    // Komponerbar men lägre rankad: offer_tribute (samma subject-bit, men lägre annars — irreversible false/tension true på bägge, avgörs av systemsAffectedCount/moneyAmount).
+    const composable: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'mecenatEvent:offer_tribute', season: game.currentSeason, matchday: 10,
+      subject: { kind: 'mecenat', id: 'mec2' }, significance: 60, irreversible: false, tension: true, systemsAffectedCount: 1, moneyAmount: 25000,
+    }
+    const finalGame: SaveGame = { ...game, eventLedger: [composable, unComposable] }
+
+    const result = pickMostImportantDecisionText(finalGame, game.currentSeason)
+    expect(result).not.toBe(SEASON_DECISION_NONE_TEXT)
+    expect(result).toContain('Anna')
+  })
+
+  it('ingen post kvalificerar/går att komponera: SEASON_DECISION_NONE_TEXT', () => {
+    const unComposable: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'mecenatEvent:side_mec1', season: 1, matchday: 8,
+      subject: { kind: 'mecenat', id: 'ghost' }, significance: 70, irreversible: false, tension: true,
+    }
+    const game = makeGame({ eventLedger: [unComposable] })
+    expect(pickMostImportantDecisionText(game, game.currentSeason)).toBe(SEASON_DECISION_NONE_TEXT)
   })
 })

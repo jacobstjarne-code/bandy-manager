@@ -64,6 +64,15 @@ import {
   getCaptainTakeChargeSentence,
   getFacilityBuildSentence,
   getMecenatConflictSideSentence,
+  getSellStarSentence,
+  getAskMecenatSentence,
+  getTakeLoanSentence,
+  getOfferProSingleSentence,
+  getOfferProMultiSentence,
+  getDetOmojligaValetSellSentence,
+  getDetOmojligaValetKeepSentence,
+  getTransferBidAcceptSentence,
+  getMecenatOfferTributeSentence,
 } from '../data/seasonDecisionSentences'
 
 /** A-H9: låst text (Jacobs ord, ordagrant) för när ingen kandidat kvalificerar. */
@@ -201,6 +210,8 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
       const stillManaged = player.clubId === gameAfter.managedClubId
       if (stillManaged) return null
       const name = `${player.firstName} ${player.lastName}`
+      const sentence = getSellStarSentence({ name, position: positionDefinite(player.position) })
+      if (!sentence) return null
       return {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 2, // finances, spelartrupp
@@ -209,7 +220,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         namedPerson: name,
         subject: { kind: 'player', id: player.id },
         moneyAmount: 350_000,
-        sentence: `Du sålde ${name}. Det kostade er ${positionDefinite(player.position)}.`,
+        sentence,
       }
     },
     // PÅSTÅENDEKARTAN (2026-08-24): ask_mecenat påstod tidigare "det kostade
@@ -227,6 +238,8 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
       const mecenatBefore = (gameBefore.mecenater ?? []).find(m => m.id === targetId)
       const actuallyDropped = mecenatBefore !== undefined && mecenatAfter.happiness < mecenatBefore.happiness
       if (!actuallyDropped) return null
+      const sentence = getAskMecenatSentence({ name: mecenatAfter.name })
+      if (!sentence) return null
       return {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 2, // finances, mecenatrelation
@@ -235,7 +248,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         namedPerson: mecenatAfter.name,
         subject: { kind: 'mecenat', id: mecenatAfter.id },
         moneyAmount: 200_000,
-        sentence: `Du bad ${mecenatAfter.name} om hjälp. Det kostade er hans förtroende.`,
+        sentence,
       }
     },
     // PÅSTÅENDEKARTAN (2026-08-24): skrev tidigare meningen oavsett utfall —
@@ -246,13 +259,15 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
     // bara när crisisPhase faktiskt var 'loan'.
     take_loan: (_gameBefore, gameAfter, event) => {
       if (gameAfter.economicCrisisState?.outcome !== 'loan') return null
+      const sentence = getTakeLoanSentence()
+      if (!sentence) return null
       return {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 1, // finances (löpande)
         irreversible: false,
         tension: true, // en löpande kostnad som äter av varje omgångs marginal
         moneyAmount: 300_000,
-        sentence: 'Du tog lånet. Det kostade er varje månad sedan dess.',
+        sentence,
       }
     },
   },
@@ -281,8 +296,9 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         .filter((p): p is NonNullable<typeof p> => !!p?.isFullTimePro)
       if (confirmedPlayers.length === 0) return null
       const sentence = confirmedPlayers.length === 1
-        ? `Du gav ${confirmedPlayers[0].lastName} heltidskontrakt. Det kostade ${formatValue(annualIncrease)} i året.`
-        : `Du gav de varslade heltidskontrakt. Det kostade ${formatValue(annualIncrease)} i året.`
+        ? getOfferProSingleSentence({ lastName: confirmedPlayers[0].lastName, amount: formatValue(annualIncrease) })
+        : getOfferProMultiSentence({ amount: formatValue(annualIncrease) })
+      if (!sentence) return null
       return {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 2, // finances, spelartrupp (anställningsstatus)
@@ -310,6 +326,8 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
       const stillManaged = player.clubId === gameAfter.managedClubId
       if (stillManaged) return null
       const name = `${player.firstName} ${player.lastName}`
+      const sentence = getDetOmojligaValetSellSentence({ name })
+      if (!sentence) return null
       return {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 4, // finances, spelartrupp, communityStanding, fanMood
@@ -318,7 +336,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         namedPerson: name,
         subject: { kind: 'player', id: player.id },
         moneyAmount: 180_000,
-        sentence: `Du sålde ${name} innan han hunnit spela klart. Det kostade er akademins bästa år.`,
+        sentence,
       }
     },
     // PÅSTÅENDEKARTAN (2026-08-24), Jacobs egen rättelse: "Licensnämnden fick
@@ -333,6 +351,8 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
       const stillManaged = player.clubId === gameAfter.managedClubId
       if (!stillManaged) return null
       const name = `${player.firstName} ${player.lastName}`
+      const sentence = getDetOmojligaValetKeepSentence({ name })
+      if (!sentence) return null
       return {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 2, // communityStanding, fanMood
@@ -340,7 +360,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         tension: false, // ett avstående utan uttalad kostnad — inget system pekade emot
         namedPerson: name,
         subject: { kind: 'player', id: player.id },
-        sentence: `Du lät det vara. ${name} spelar kvar.`,
+        sentence,
       }
     },
   },
@@ -353,6 +373,8 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
       // längre tillhöra managedClub.
       if (player.clubId === gameAfter.managedClubId) return null
       const name = `${player.firstName} ${player.lastName}`
+      const sentence = getTransferBidAcceptSentence({ name, amount: formatValue(bid.offerAmount) })
+      if (!sentence) return null
       return {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 2, // finances, spelartrupp
@@ -361,7 +383,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         namedPerson: name,
         subject: { kind: 'player', id: player.id },
         moneyAmount: bid.offerAmount,
-        sentence: `Du tog budet på ${name}. Det gav ${formatValue(bid.offerAmount)}, och tog ${name}.`,
+        sentence,
       }
     },
   },
@@ -380,6 +402,8 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
       const clubAfter = gameAfter.clubs.find(c => c.id === gameAfter.managedClubId)
       const actuallyCost = clubBefore !== undefined && clubAfter !== undefined && clubAfter.finances < clubBefore.finances
       if (!actuallyCost) return null
+      const sentence = getMecenatOfferTributeSentence({ name: mecenat.name })
+      if (!sentence) return null
       return {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 3, // finances, mecenatrelation, communityStanding
@@ -388,7 +412,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         namedPerson: mecenat.name,
         subject: { kind: 'mecenat', id: mecenat.id },
         moneyAmount: clubBefore!.finances - clubAfter!.finances,
-        sentence: `Du tackade av ${mecenat.name} som han förtjänade. Det gav ett avsked ingen glömmer, och tog 25 tkr.`,
+        sentence,
       }
     },
     // HIGH 6, källa 1. Spegelbilder — samma verifiering, sidan läses ur
@@ -631,26 +655,164 @@ export function captureFacilityBuildDecision(
 }
 
 /**
- * Rangordningsprincipen (A-H9, DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md):
- * (1) namngiven person, (2) irreversibilitet, (3) spänning (pekade valet
- * åt olika håll — gjorde det ont), (4) antal berörda system — sist, bara
- * som skiljedomare, (5) kronor — allra sista skiljedomaren. Vid full
- * likhet: det senaste i säsongen. Ersätter den gamla ordningen (flest
- * system vann) — domens ord: "en räknare är inte ett minne."
+ * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET.
+ * Samma rangordningsprincip som den superseterade pickSeasonDecision hade
+ * (A-H9, DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): (1) namngiven person
+ * (subject !== undefined), (2) irreversibilitet, (3) spänning, (4) antal
+ * berörda system (EGET fält, INTE consequences.length — se
+ * EventLedgerEntry:s docstring för varför), (5) kronor. Vid full likhet:
+ * senaste omgången (matchday, ALDRIG round/rond-identitet).
+ *
+ * Anroparen filtrerar till `type==='decision'` för rätt säsong — samma
+ * ansvarsfördelning som pickSeasonDecision hade (den fick redan en
+ * förfiltrerad lista, den sorterar bara).
  */
-export function pickSeasonDecision(candidates: SeasonDecisionCandidate[]): SeasonDecisionCandidate | null {
-  if (candidates.length === 0) return null
-  const sorted = [...candidates].sort((a, b) => {
-    const aNamedFirst = a.namedPerson ? 1 : 0
-    const bNamedFirst = b.namedPerson ? 1 : 0
+export function pickSeasonDecisionFromLedger(entries: EventLedgerEntry[]): EventLedgerEntry | null {
+  if (entries.length === 0) return null
+  const sorted = [...entries].sort((a, b) => {
+    const aNamedFirst = a.subject ? 1 : 0
+    const bNamedFirst = b.subject ? 1 : 0
     if (aNamedFirst !== bNamedFirst) return bNamedFirst - aNamedFirst
     if (a.irreversible !== b.irreversible) return a.irreversible ? -1 : 1
     if (a.tension !== b.tension) return a.tension ? -1 : 1
-    if (a.systemsAffectedCount !== b.systemsAffectedCount) return b.systemsAffectedCount - a.systemsAffectedCount
+    const aCount = a.systemsAffectedCount ?? 0
+    const bCount = b.systemsAffectedCount ?? 0
+    if (aCount !== bCount) return bCount - aCount
     const aMoney = a.moneyAmount ?? 0
     const bMoney = b.moneyAmount ?? 0
     if (aMoney !== bMoney) return bMoney - aMoney
-    return b.round - a.round
+    return b.matchday - a.matchday
   })
   return sorted[0]
+}
+
+function findSubjectPlayer(game: SaveGame, subject: EventLedgerEntry['subject']) {
+  if (subject?.kind !== 'player') return undefined
+  return game.players.find(p => p.id === subject.id)
+}
+
+function findSubjectMecenat(game: SaveGame, subject: EventLedgerEntry['subject']) {
+  if (subject?.kind !== 'mecenat') return undefined
+  return (game.mecenater ?? []).find(m => m.id === subject.id)
+}
+
+const FACILITY_SEMANTIC_KEY = /^facility_(.+)_s\d+$/
+
+/**
+ * Komponerar årsbokens mening ur en EventLedgerEntry — den prosa-generering
+ * som tidigare skedde INNE i BUILDERS (candidate.sentence), nu i konsumenten
+ * ("rå sanning i botten, all mening i ytorna"). Läser om entiteten (subject)
+ * ur `game` LIVE — namn/position ändras inte efter att beslutet fattades,
+ * så en omslagning vid säsongsslut ger samma text som resolution-tiden gav.
+ *
+ * `semanticKey` för A-H9-beslut är `${event.type}:${choiceId}` (finkornigare
+ * än narrativeBeatLogs event.type-granularitet — flera choiceIds delar
+ * samma event.type men har olika meningar, se eventResolver.ts:s
+ * anropsställe). Facility-beslut har ingen (event.type, choiceId) alls —
+ * semanticKey är candidate.eventId (`facility_{nodeId}_s{season}`), matchat
+ * separat.
+ *
+ * Returnerar `null` om entiteten inte längre går att slå upp (t.ex. en
+ * mecenat som senare tagits bort) ELLER om schemat genuint inte bär vad
+ * meningen behöver — se `mecenatEvent:side_mec1`/`side_mec2` nedan. Samma
+ * "hellre ingen mening än en falsk"-disciplin som byggarna redan följer;
+ * `pickMostImportantDecisionText` faller då igenom till nästa rankade post.
+ */
+export function composeSeasonDecisionSentence(entry: EventLedgerEntry, game: SaveGame): string | null {
+  const facilityMatch = FACILITY_SEMANTIC_KEY.exec(entry.semanticKey)
+  if (facilityMatch) {
+    if (entry.moneyAmount === undefined) return null
+    const def = FACILITY_NODE_DEFS.find(d => d.id === facilityMatch[1])
+    if (!def) return null
+    return getFacilityBuildSentence(buildFacilityBuildTokens(def.label, entry.moneyAmount))
+  }
+
+  switch (entry.semanticKey) {
+    case 'criticalEconomy:sell_star': {
+      const player = findSubjectPlayer(game, entry.subject)
+      if (!player) return null
+      return getSellStarSentence({ name: `${player.firstName} ${player.lastName}`, position: positionDefinite(player.position) })
+    }
+    case 'criticalEconomy:ask_mecenat': {
+      const mecenat = findSubjectMecenat(game, entry.subject)
+      if (!mecenat) return null
+      return getAskMecenatSentence({ name: mecenat.name })
+    }
+    case 'criticalEconomy:take_loan':
+      return getTakeLoanSentence()
+    case 'varsel:offer_pro': {
+      if (entry.moneyAmount === undefined) return null
+      const amount = formatValue(entry.moneyAmount)
+      if (!entry.subject) return getOfferProMultiSentence({ amount })
+      const player = findSubjectPlayer(game, entry.subject)
+      if (!player) return null
+      return getOfferProSingleSentence({ lastName: player.lastName, amount })
+    }
+    case 'detOmojligaValet:sell': {
+      const player = findSubjectPlayer(game, entry.subject)
+      if (!player) return null
+      return getDetOmojligaValetSellSentence({ name: `${player.firstName} ${player.lastName}` })
+    }
+    case 'detOmojligaValet:keep': {
+      const player = findSubjectPlayer(game, entry.subject)
+      if (!player) return null
+      return getDetOmojligaValetKeepSentence({ name: `${player.firstName} ${player.lastName}` })
+    }
+    case 'transferBidReceived:accept': {
+      const player = findSubjectPlayer(game, entry.subject)
+      if (!player || entry.moneyAmount === undefined) return null
+      return getTransferBidAcceptSentence({ name: `${player.firstName} ${player.lastName}`, amount: formatValue(entry.moneyAmount) })
+    }
+    case 'mecenatEvent:offer_tribute': {
+      const mecenat = findSubjectMecenat(game, entry.subject)
+      if (!mecenat) return null
+      return getMecenatOfferTributeSentence({ name: mecenat.name })
+    }
+    // KÄND, FLAGGAD LUCKA (MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md
+    // Fas 2, rapporterad till Opus/Jacob, INTE tyst löst): mecenatkonfliktens
+    // mening ("Du valde {backed}s sida... {other} glömmer inte...") behöver
+    // BÅDA mecenaternas namn, men `subject` bär bara den BACKADE — den
+    // FÖRKASTADE mecenatens identitet finns ingenstans i schemat. Kan inte
+    // rekonstrueras. Faller igenom till nästa rankade kandidat nedan — en
+    // smalt sämre utfall (denna sortens beslut väljs aldrig som "säsongens
+    // beslut" längre, även när den femstegsvektorn objektivt vunnit) än en
+    // schemautökning skulle kräva (ett andra subject-fält). Vägval, inte löst.
+    case 'mecenatEvent:side_mec1':
+    case 'mecenatEvent:side_mec2':
+      return null
+    case 'captainSpeech:take_charge': {
+      const captain = findSubjectPlayer(game, entry.subject)
+      if (!captain) return null
+      return getCaptainTakeChargeSentence({ captain: `${captain.firstName} ${captain.lastName}`, last: captain.lastName })
+    }
+    case 'captainSpeech:support': {
+      const captain = findSubjectPlayer(game, entry.subject)
+      if (!captain) return null
+      return getCaptainSupportSentence({ captain: `${captain.firstName} ${captain.lastName}`, last: captain.lastName })
+    }
+    default:
+      return null
+  }
+}
+
+/**
+ * Årsbokens enda anropsställe. Ersätter
+ * `pickSeasonDecision(game.seasonDecisionCandidates ?? [])?.sentence ??
+ * SEASON_DECISION_NONE_TEXT` (seasonEndProcessor.ts) — samma fallback-text,
+ * samma femstegsvektor, men läser liggaren i stället för det spridda fältet.
+ *
+ * Provar rankade kandidater i ordning tills en faktiskt går att komponera
+ * (se composeSeasonDecisionSentence:s docstring för varför en kandidat kan
+ * misslyckas) — annars SEASON_DECISION_NONE_TEXT, aldrig en tom mening.
+ */
+export function pickMostImportantDecisionText(game: SaveGame, season: number): string {
+  const remaining = (game.eventLedger ?? []).filter(e => e.type === 'decision' && e.season === season)
+  while (remaining.length > 0) {
+    const winner = pickSeasonDecisionFromLedger(remaining)
+    if (!winner) break
+    const sentence = composeSeasonDecisionSentence(winner, game)
+    if (sentence) return sentence
+    remaining.splice(remaining.indexOf(winner), 1)
+  }
+  return SEASON_DECISION_NONE_TEXT
 }

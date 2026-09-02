@@ -172,7 +172,9 @@ describe('eventResolver — Fas 1 write-hook (samma tre transferbudsutfall som t
     expect(after.eventLedger).toHaveLength(2)
     const [decisionEntry, rippleEntry] = after.eventLedger ?? []
     expect(decisionEntry.type).toBe('decision')
-    expect(decisionEntry.semanticKey).toBe('transferBidReceived')
+    // Fas 2 (RETIRE-STEGET): semanticKey = `${event.type}:${choiceId}` för
+    // A-H9-dual-writet — finkornigare än Fas 1:s rena event.type nedan.
+    expect(decisionEntry.semanticKey).toBe('transferBidReceived:accept')
     expect(decisionEntry.subject).toEqual({ kind: 'player', id: 'berg' })
     expect(decisionEntry.irreversible).toBe(true) // Fas 2:s A-H9-fält — bara på decision-kandidatens post
     expect(decisionEntry).not.toHaveProperty('consequences')
