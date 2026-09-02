@@ -239,19 +239,4 @@ describe('D4-regressionsfix — portade reaktioner i getCoffeeRoomScene', () => 
     expect(found).toBe(true)
   })
 
-  it('avskedsmatch (FAREWELL_MATCH_STRINGS) prioriteras och interpolerar spelarnamn', () => {
-    const lastHome = makeFixture({ id: 'home_last', matchday: 20, homeClubId: 'managed', awayClubId: 'opp', status: FixtureStatus.Scheduled, homeScore: null, awayScore: null })
-    const g = makeGame({
-      fixtures: [completed, lastHome],
-      currentMatchday: 19,
-      players: [{ id: 'vet1', firstName: 'Bo', lastName: 'Fransson' } as never],
-      activeArcs: [{
-        id: 'arc_vet1', type: 'veteran_farewell', playerId: 'vet1', subject: 'B. Fransson',
-        startedMatchday: 1, phase: 'peak', expiresMatchday: 25, eventsFired: [], decisionsMade: [],
-      }] as never,
-    })
-    const scene = getCoffeeRoomScene(g)
-    expect(scene?.narratorLine?.text).toContain('Fransson')
-    expect(scene?.exchanges).toEqual([])
-  })
 })

@@ -11,9 +11,6 @@ import { ANTICIPATION_KAFFERUM } from '../data/anticipationKafferumText'
 import { getFatigueState } from './decisionFatigueService'
 import { getUpcomingAnchor } from './calendarLookahead'
 import { TRANSFER_DEADLINE_ROUND } from './portal/triggers/transferTriggers'
-import { getNextManagedFixture } from './portal/triggers/matchTriggers'
-import { FAREWELL_MATCH_STRINGS } from '../data/retirementText'
-import { getFarewellMatchPlayer } from './retirementService'
 import { COFFEE_ROOM_QUESTIONS, COFFEE_ROOM_QUESTION_SPEAKER, type CoffeeRoomAnswerOption } from '../data/coffeeRoomQuestionsText'
 import { PROVNING_AMBIENT, HALL_KLACK_BASE } from '../data/hallProvningData'
 import { deriveUtfall } from './matchTypeAxes'
@@ -554,25 +551,6 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
   if (round === 0) return null
-
-  // M67a / D4-regressionsfix (2026-07-21) — veteran_farewell-arcens sista
-  // hemmamatch. Samma prioritetsnivå som ursprungligen: en gång per säsong,
-  // en spelare, ska inte konkurrera bort av rutinkafferum-repliker.
-  const farewellPlayer = getFarewellMatchPlayer(game, getNextManagedFixture(game))
-  if (farewellPlayer) {
-    const fseed = hashSeed(farewellPlayer.id.length * 17 + game.currentSeason * 31)
-    const template = FAREWELL_MATCH_STRINGS[Math.abs(fseed) % FAREWELL_MATCH_STRINGS.length]
-    const text = template
-      .replace('{player}', farewellPlayer.lastName)
-      .replace('{members}', String(game.supporterGroup?.members ?? ''))
-      .replace('{leader}', getCharacterName(game, 'leader'))
-    return {
-      exchanges: [],
-      pickedIndices: [],
-      meta: { title: 'Kafferummet' },
-      narratorLine: { text },
-    }
-  }
 
   // Release-svepet 2026-07-21 (Block 2a) — landslagsåterkomsten. Var tidigare
   // bara en inbox-rad (INBOX-PRINCIPEN-brott, CLAUDE.md: syntes aldrig i en

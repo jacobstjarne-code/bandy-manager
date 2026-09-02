@@ -70,38 +70,3 @@ export const RETIREMENT_RESPONSES: Record<string, string[]> = {
     '"Tack för att du frågade. Det var ett bra sätt att avsluta."',
   ],
 }
-
-// M60/M67a (textaudit 2026-07-04/05): FAREWELL_MATCH_STRINGS var död kod
-// (noll konsumenter) — WIRAD 2026-07-05 i coffeeRoomService.getCoffeeRoomQuote,
-// gated på en aktiv veteran_farewell-arc vars spelares sista hemmamatch i
-// säsongen är nästa matchade fixture.
-// Pool 2 (2026-07-19): FAREWELL_MATCH_ATMOSPHERE + FAREWELL_MATCH_KLACK nu
-// WIRADE som matchdags-ceremoniröst i MatchLaddningScene.tsx (den generella
-// pre-match-scenen, inte FinalIntroScreen.tsx — den senare renderar ENDAST
-// SM-final/cupfinal, ett för snävt gate för en vanlig ligamatch). Samma
-// gate-signal som kafferummet (retirementService.ts's getFarewellMatchPlayer,
-// extraherad ur den tidigare duplicerade inline-logiken i coffeeRoomService.ts
-// — en delad funktion, inte två separata beräkningar). Skild från
-// pensionsvals-eventet (retirementDecisionService.ts, matchdag ≠ avgångsbeslut).
-
-// Avskedsmatch atmosphere/klack-strängar
-export const FAREWELL_MATCH_STRINGS = [
-  '"{player} spelar sin sista match. {members} i klacken har förberett sig."',
-  '"{player}s avskedsmatch. Publiken vet. Stämningen är extra laddad."',
-  '"Det sista avslaget för {player}. Det är mer i luften än bandy i dag."',
-  '"Hemmaplan. {player}s sista match. {leader} och klacken håller i det."',
-]
-
-// Legacy exports (kept for forward compatibility)
-export const FAREWELL_MATCH_ATMOSPHERE = [
-  'Avskedsmatch i dag. Klubbhuset gjorde i ordning kaffe extra. Klacken har målat banderoll.',
-  'Sista matchen för en av oss. Det märks på läktarna.',
-  'Hela bygden visste innan söndagen kom. I dag står de där.',
-]
-
-export const FAREWELL_MATCH_KLACK = [
-  'Det han gett oss glöms inte.',
-  'Hela klacken sjöng hans namn i halvtid. Han stod kvar och tittade på oss.',
-  'Vi har sett det mesta med honom. Idag är den sista.',
-  'En sista vinkning mot klacken. Ingen går hem riktigt än.',
-]
