@@ -51,6 +51,13 @@ describe('AI-klubbars boardExpectation/reputation rör sig efter säsongsslut', 
     const aiClubs = game.clubs.filter(c => c.id !== managedClubId)
     expect(aiClubs.length, 'elva AI-klubbar ska finnas kvar efter säsongsslut').toBe(11)
 
+    const latestSummary = game.seasonSummaries.at(-1)
+    const aiStrengthSnapshots = latestSummary?.standingsSnapshot
+      ?.filter(row => row.clubId !== managedClubId)
+      .map(row => row.squadStrength)
+    expect(aiStrengthSnapshots).toHaveLength(11)
+    expect(aiStrengthSnapshots?.every(value => typeof value === 'number' && value >= 0 && value <= 100)).toBe(true)
+
     const changed = aiClubs.filter(c => {
       const before = startState.get(c.id)
       if (!before) return false

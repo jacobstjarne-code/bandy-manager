@@ -716,12 +716,29 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     }
   }
 
-  // Standings snapshot
-  const standingsSnapshot = game.standings.map(s => ({
-    clubId: s.clubId,
-    position: s.position,
-    points: s.points,
-  }))
+  // AI-truppstyrka-snapshot (MASTER_OPPET): använd den avslutade säsongens
+  // faktiska Player.clubId + currentAbility. seasonEndProcessor kan bära
+  // nästa säsongs roster i game.clubs när summeringen byggs; spelarens
+  // clubId är därför den konsekventa källan här. Ingen proxy eller ny
+  // simulering, bara ett snitt av redan levande data. Tom trupp lämnar
+  // fältet undefined i stället för att lagra ett påhittat normalvärde.
+  const squadAbilityByClub = new Map<string, { total: number; count: number }>()
+  for (const player of game.players) {
+    const current = squadAbilityByClub.get(player.clubId) ?? { total: 0, count: 0 }
+    squadAbilityByClub.set(player.clubId, {
+      total: current.total + player.currentAbility,
+      count: current.count + 1,
+    })
+  }
+  const standingsSnapshot = game.standings.map(s => {
+    const squad = squadAbilityByClub.get(s.clubId)
+    return {
+      clubId: s.clubId,
+      position: s.position,
+      points: s.points,
+      squadStrength: squad ? Math.round((squad.total / squad.count) * 10) / 10 : undefined,
+    }
+  })
 
   // Narrative summary
   const verdictSentence = buildExpectationVerdictSentence(

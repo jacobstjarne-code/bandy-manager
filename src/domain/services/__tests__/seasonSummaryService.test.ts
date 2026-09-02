@@ -31,6 +31,27 @@ function makeFullSeasonGame() {
 }
 
 describe('generateSeasonSummary', () => {
+  it('fryser faktisk snitt-CA för en AI-klubb i befintlig standingsSnapshot', () => {
+    const game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 42 })
+    const aiClub = game.clubs.find(club => club.id !== game.managedClubId)!
+    const aiPlayerIds = new Set(game.players.filter(player => player.clubId === aiClub.id).map(player => player.id))
+    const firstAiPlayerId = [...aiPlayerIds][0]
+    const players = game.players.map(player => aiPlayerIds.has(player.id)
+      ? { ...player, currentAbility: player.id === firstAiPlayerId ? 40 : 60 }
+      : player)
+    const expectedAverage = Math.round(
+      players
+        .filter(player => player.clubId === aiClub.id)
+        .reduce((sum, player) => sum + player.currentAbility, 0)
+      / aiPlayerIds.size * 10,
+    ) / 10
+
+    const summary = generateSeasonSummary({ ...game, players })
+    const snapshot = summary.standingsSnapshot?.find(row => row.clubId === aiClub.id)
+
+    expect(snapshot?.squadStrength).toBe(expectedAverage)
+  })
+
   it('returns correct clubId and clubName', () => {
     const game = makeFullSeasonGame()
     const summary = generateSeasonSummary(game)

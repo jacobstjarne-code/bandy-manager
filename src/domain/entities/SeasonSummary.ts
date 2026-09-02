@@ -167,7 +167,10 @@ export interface SeasonSummary {
   communityHighlights: string[]
 
   cupResult?: 'winner' | 'finalist' | 'semifinal' | 'quarter' | 'eliminated' | null
-  standingsSnapshot?: Array<{ clubId: string; position: number; points: number }>
+  /** Säsongsslutets ligatabell plus faktisk truppstyrka för varje klubb.
+   * `squadStrength` är snitt-CA för spelare registrerade på klubben i den
+   * avslutade säsongens spelarstate. Valfritt för bakåtkompatibla saves. */
+  standingsSnapshot?: Array<{ clubId: string; position: number; points: number; squadStrength?: number }>
   storyTriggers?: Array<{
     type: 'academyStarBorn' | 'rivalBoughtOurPlayer' | 'veteranFarewell' | 'hatTrickHero' | 'topScorerDebut' | 'comebackKing'
     headline: string
