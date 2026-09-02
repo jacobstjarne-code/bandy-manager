@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { archiveCompletedSeasonInbox, rebaseFutureMatchday, rolloverActiveArcs, rolloverCoffeeRoomReturns, rolloverEconomicCrisis, rolloverFollowUps, rolloverLeadershipActions, rolloverNationalTeamCamp, rolloverPendingDemand, rolloverPlayerInjuryRamp, rolloverTransientEchoMatchdays, rolloverYouthAvailability } from '../seasonEndProcessor'
+import { archiveCompletedSeasonInbox, handleSeasonEnd, rebaseFutureMatchday, rolloverActiveArcs, rolloverCoffeeRoomReturns, rolloverEconomicCrisis, rolloverFollowUps, rolloverLeadershipActions, rolloverNationalTeamCamp, rolloverPendingDemand, rolloverPlayerInjuryRamp, rolloverSeasonMatchdayAnchors, rolloverTransientEchoMatchdays, rolloverYouthAvailability } from '../seasonEndProcessor'
+import { createNewGame } from '../createNewGame'
+import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { InboxItemType } from '../../../domain/enums'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Player } from '../../../domain/entities/Player'
@@ -10,6 +12,65 @@ describe('season rollover — absoluta matchday-fält', () => {
     expect(rebaseFutureMatchday(26, 22)).toBe(4)
     expect(rebaseFutureMatchday(22, 22)).toBe(0)
     expect(rebaseFutureMatchday(undefined, 22)).toBeUndefined()
+  })
+
+  it('bevarar cooldowners återstående tid, historikankarnas ålder och flyttar cursorn till start', () => {
+    const rolled = rolloverSeasonMatchdayAnchors({
+      currentMatchday: 22,
+      lastCoffeeSceneRound: 21,
+      weeklyDecisionLastRound: 21,
+      lastEconomicStressRound: 20,
+      lastCSPressMatchday: 19,
+      lastRumorRound: 21,
+      lastEventQueueRound: 22,
+      lastRivalSaleMatchday: 20,
+      lastIncomingBidMatchday: 21,
+      lastProcessedMatchday: 22,
+      cardStaleTracking: {
+        ekonomi: { firstShownAt: 18, lastShownAt: 22, shownCount: 5 },
+      },
+    } as SaveGame)
+
+    expect(rolled).toMatchObject({
+      lastCoffeeSceneRound: -1,
+      weeklyDecisionLastRound: -1,
+      lastEconomicStressRound: -2,
+      lastCSPressMatchday: -3,
+      lastRumorRound: -1,
+      lastEventQueueRound: 0,
+      lastRivalSaleMatchday: -2,
+      lastIncomingBidMatchday: -1,
+      lastProcessedMatchday: 0,
+      cardStaleTracking: {
+        ekonomi: { firstShownAt: -4, lastShownAt: 0, shownCount: 5 },
+      },
+    })
+  })
+
+  it('kopplar in samma ankare i det verkliga handleSeasonEnd-rollovern', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
+    const rolled = handleSeasonEnd({
+      ...base,
+      currentMatchday: 22,
+      lastCoffeeSceneRound: 21,
+      weeklyDecisionLastRound: 21,
+      lastRivalSaleMatchday: 20,
+      lastProcessedMatchday: 22,
+      cardStaleTracking: {
+        ekonomi: { firstShownAt: 18, lastShownAt: 22, shownCount: 5 },
+      },
+    }, 1).game
+
+    expect(rolled.currentMatchday).toBe(0)
+    expect(rolled.lastCoffeeSceneRound).toBe(-1)
+    expect(rolled.weeklyDecisionLastRound).toBe(-1)
+    expect(rolled.lastRivalSaleMatchday).toBe(-2)
+    expect(rolled.lastProcessedMatchday).toBe(0)
+    expect(rolled.cardStaleTracking?.ekonomi).toEqual({
+      firstShownAt: -4,
+      lastShownAt: 0,
+      shownCount: 5,
+    })
   })
 
   it('bevarar återstående juniorlandslagsfrånvaro för kvarvarande P19-spelare', () => {

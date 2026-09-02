@@ -52,14 +52,55 @@ import type { YouthPlayer } from '../../domain/entities/Academy'
 import type { PendingDemand } from '../../domain/entities/Demand'
 import { getCoffeeRoomReturnDueMatchday } from '../../domain/services/coffeeRoomService'
 
-/** Bevara återstående tid när currentMatchday börjar om på 0. */
-export function rebaseFutureMatchday(
+/** Flytta ett värde på den avslutade säsongens matchday-axel till nästa säsongs nollpunkt. */
+export function rebaseMatchdayAnchor(
   absoluteMatchday: number | undefined,
   completedSeasonMatchday: number,
 ): number | undefined {
   return absoluteMatchday === undefined
     ? undefined
     : absoluteMatchday - completedSeasonMatchday
+}
+
+/** Bevara återstående tid när currentMatchday börjar om på 0. */
+export function rebaseFutureMatchday(
+  absoluteMatchday: number | undefined,
+  completedSeasonMatchday: number,
+): number | undefined {
+  return rebaseMatchdayAnchor(absoluteMatchday, completedSeasonMatchday)
+}
+
+/**
+ * Cooldowns och historikankare läses mot game.currentMatchday. När axeln
+ * börjar om måste deras ålder/återstående tid bevaras. Processor-cursorn
+ * beskriver däremot den nya axelns start och nollställs därför till 0.
+ */
+export function rolloverSeasonMatchdayAnchors(game: SaveGame) {
+  const completedSeasonMatchday = game.currentMatchday
+  const rebase = (value: number | undefined) => rebaseMatchdayAnchor(value, completedSeasonMatchday)
+  const cardStaleTracking = Object.fromEntries(
+    Object.entries(game.cardStaleTracking ?? {}).map(([cardId, tracking]) => [
+      cardId,
+      {
+        ...tracking,
+        firstShownAt: tracking.firstShownAt - completedSeasonMatchday,
+        lastShownAt: tracking.lastShownAt - completedSeasonMatchday,
+      },
+    ]),
+  )
+
+  return {
+    lastCoffeeSceneRound: rebase(game.lastCoffeeSceneRound),
+    weeklyDecisionLastRound: rebase(game.weeklyDecisionLastRound),
+    lastEconomicStressRound: rebase(game.lastEconomicStressRound),
+    lastCSPressMatchday: rebase(game.lastCSPressMatchday),
+    lastRumorRound: rebase(game.lastRumorRound),
+    lastEventQueueRound: rebase(game.lastEventQueueRound),
+    lastRivalSaleMatchday: rebase(game.lastRivalSaleMatchday),
+    lastIncomingBidMatchday: rebase(game.lastIncomingBidMatchday),
+    lastProcessedMatchday: 0,
+    cardStaleTracking,
+  }
 }
 
 export function rolloverYouthAvailability(
@@ -87,6 +128,40 @@ export function rolloverPlayerInjuryRamp(
       completedSeasonMatchday,
     ),
   }))
+}
+
+/**
+ * SKALA-BUGGEN steg B-sidofynd (2026-09-02, Jacob) — playerConversations
+ * rebasades aldrig vid säsongsskifte (samma steg-C-klass som recentlyInjured-
+ * Until/managedClubPeriodisationSince ovan, missad då eftersom fältnamnet
+ * inte matchade *UntilRound/*Expires-mönstret). Utan detta blir "N omgångar
+ * sedan" negativt i UI:t (PlayerCard.tsx) första omgången varje ny säsong.
+ */
+export function rolloverPlayerConversations(
+  conversations: Record<string, number> | undefined,
+  completedSeasonMatchday: number,
+): Record<string, number> {
+  return Object.fromEntries(
+    Object.entries(conversations ?? {}).map(([playerId, matchday]) => [
+      playerId,
+      rebaseFutureMatchday(matchday, completedSeasonMatchday) as number,
+    ]),
+  )
+}
+
+/**
+ * SKALA-BUGGEN steg B-sidofynd (2026-09-02, Jacob) — financeLog rebasas
+ * aldrig vid säsongsskifte. Till skillnad från journalistminnet (som bär
+ * `season` per post och behöver exakt säsong för "X år sedan"-prosa)
+ * behöver kassans transaktionshistorik ingen säsongsprecision, bara att
+ * .round håller sig kronologiskt begripligt — rebase är därför enklare och
+ * räckte, ingen schemautökning av FinanceEntry på ~28 skrivställen.
+ */
+export function rolloverFinanceLog(
+  log: FinanceEntry[] | undefined,
+  completedSeasonMatchday: number,
+): FinanceEntry[] {
+  return (log ?? []).map(entry => ({ ...entry, round: entry.round - completedSeasonMatchday }))
 }
 
 export function rolloverPendingDemand(
@@ -832,6 +907,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         name: `${player.firstName[0]}. ${player.lastName}`,
         position: player.position,
         seasons: seasonsInClub,
+        totalGames: player.careerStats?.totalGames ?? 0,
         totalGoals: player.careerStats?.totalGoals ?? 0,
         totalAssists: player.careerStats?.totalAssists ?? 0,
         titles: [],
@@ -1331,11 +1407,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       id: `licenseHandlingsplan_${game.currentSeason}`,
       type: 'licenseHandlingsplan',
       title: 'Licensnämndens krav: Handlingsplan',
-      body: `Licensnämnden kräver en handlingsplan för att säkra ${managedClubForLicense?.name ?? 'klubbens'} framtida licens. Välj er strategi noggrant.`,
+      body: `Licensnämnden vill se att ${managedClubForLicense?.name ?? 'klubben'} tar tag i ekonomin. Det finns inte en enda rätt väg — välj var ni lägger kraften.`,
       choices: [
         {
           id: 'sparplan',
-          label: 'Sparplan — dra ner på löner och kostnader',
+          label: 'Skjut till kapital ur egen kassa',
+          subtitle: `💰 engångsintäkt ${Math.round((licenseReview?.requiredCapital ?? 50000) * 0.8 / 1000)} tkr`,
           effect: { type: 'multiEffect', subEffects: JSON.stringify([
             { type: 'income', amount: Math.round((licenseReview?.requiredCapital ?? 50000) * 0.8) },
           ]) },
@@ -1343,16 +1420,19 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         {
           id: 'membership',
           label: 'Medlemsdrivning — engagera lokala krafter',
+          subtitle: '⭐ +8 ortens stöd',
           effect: { type: 'communityStanding', amount: 8 },
         },
         {
           id: 'sponsors',
-          label: 'Fler sponsorer — lova synlighet och PR',
+          label: 'Vänd dig till sponsorerna',
+          subtitle: '📰 +3 rykte',
           effect: { type: 'reputation', amount: 3 },
         },
         ...(updatedPatron?.isActive ? [{
           id: 'patron',
-          label: `Patronen — be ${updatedPatron.name} om hjälp`,
+          label: `Be ${updatedPatron.name} ställa upp`,
+          subtitle: `🤝 +15 ${updatedPatron.name}s välvilja (inga pengar nu)`,
           effect: { type: 'patronHappiness' as const, amount: 15 },
         }] : []),
       ],
@@ -1811,6 +1891,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     captainPlayerId: nextCaptainPlayerId,
     currentSeason: nextSeason,
     currentMatchday: 0,
+    ...rolloverSeasonMatchdayAnchors(game),
     ...rolloverTransientEchoMatchdays(game),
     activeNationalTeamCamp: rolloverNationalTeamCamp(game.activeNationalTeamCamp, game.currentMatchday),
     burnoutTrainingSlowdownUntilRound: rebaseFutureMatchday(
@@ -1825,6 +1906,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       game.managedClubPeriodisationSince,
       game.currentMatchday,
     ),
+    playerConversations: rolloverPlayerConversations(game.playerConversations, game.currentMatchday),
     pendingFollowUps: rolloverFollowUps(game.pendingFollowUps, game.currentMatchday),
     leadershipActions: rolloverLeadershipActions(game.leadershipActions, game.currentMatchday),
     coffeeRoomPendingReturns: rolloverCoffeeRoomReturns(game.coffeeRoomPendingReturns, game.currentMatchday),
@@ -1873,9 +1955,16 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // appendFinanceLog/cap-vid-50 som roundProcessor.ts:1504-1507 använder
     // varje omgång) — annars härleder EkonomiTab/deriveKassaHistory fel
     // saldo för perioden mellan sista ligaomgången och säsong N+1 omg 1.
-    financeLog: offseasonFinanceLog.reduce(
-      (log, entry) => appendFinanceLog(log, entry),
-      game.financeLog ?? []
+    // SKALA-BUGGEN steg B — både det befintliga loggets poster och de nya
+    // offseason-posterna ovan (offseasonRound = game.currentMatchday) är
+    // uttryckta på den GAMLA säsongens skala. Rebasa hela resultatet i ett
+    // svep i stället för att göra det två gånger på olika ställen.
+    financeLog: rolloverFinanceLog(
+      offseasonFinanceLog.reduce(
+        (log, entry) => appendFinanceLog(log, entry),
+        game.financeLog ?? []
+      ),
+      game.currentMatchday,
     ),
     managedClubPendingLineup: undefined,
     matchWeathers: [],
