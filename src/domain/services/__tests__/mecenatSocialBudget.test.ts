@@ -7,6 +7,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import {
+  generateMecenatAllianceEvent,
+  generateSilentShoutEvent,
   generateSocialEvent,
   getMecenatSocialUsedTypes,
   getMecenatSocialType,
@@ -91,5 +93,38 @@ describe('generateSocialEvent — säsongsminnet', () => {
 
   it('MECENAT_SOCIAL_MAX_PER_SEASON är 2 — budgeten callern (eventProcessor) grindar mot', () => {
     expect(MECENAT_SOCIAL_MAX_PER_SEASON).toBe(2)
+  })
+})
+
+describe('mecenatlöften motsvarar deklarerad state-effekt', () => {
+  it('socialeventet lovar bara den relationseffekt som faktiskt appliceras', () => {
+    const event = generateSocialEvent(makeMecenat(), 3, 10, zeroRand)
+    const accept = event?.choices.find(choice => choice.id === 'accept')
+
+    expect(accept?.subtitle).toBe('🤝 +15 relation')
+    expect(accept?.subtitle).not.toContain('träningsdag')
+    expect(accept?.effect).toEqual({ type: 'mecenatHappiness', targetMecenatId: 'mec1', amount: 15 })
+  })
+
+  it('transferförslaget lovar inte finansiering när effekten bara ändrar relationen', () => {
+    const event = generateSilentShoutEvent(makeMecenat({ silentShout: 50 }), 'Karl Karlsson', zeroRand)
+    const accept = event?.choices.find(choice => choice.id === 'accept')
+
+    expect(event?.body).not.toContain('halva kostnaden')
+    expect(accept?.subtitle).toBe('🤝 +10 relation')
+    expect(accept?.effect).toEqual({ type: 'mecenatHappiness', targetMecenatId: 'mec1', amount: 10 })
+  })
+
+  it('allianseventet lovar inte projektpengar när effekten bara ändrar relationerna', () => {
+    const event = generateMecenatAllianceEvent(
+      makeMecenat(),
+      makeMecenat({ id: 'mec2', name: 'Anna Andersson' }),
+      'en ny hall',
+    )
+    const accept = event.choices.find(choice => choice.id === 'accept')
+
+    expect(event.body).not.toMatch(/finansiera|kostnaden/)
+    expect(accept?.subtitle).toBe('🤝 +10 båda')
+    expect(accept?.effect.type).toBe('multiEffect')
   })
 })

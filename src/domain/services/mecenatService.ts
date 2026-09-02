@@ -384,7 +384,7 @@ export function generateSocialEvent(
       {
         id: 'accept',
         label: 'Tacka ja',
-        subtitle: '🤝 +15 relation · ⏰ truppen missar en träningsdag',
+        subtitle: '🤝 +15 relation',
         effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 15 },
       },
       {
@@ -447,12 +447,12 @@ export function generateSilentShoutEvent(
       type: 'mecenatEvent',
       title: `💰 ${mecenat.name} har ett förslag`,
       sender: { name: mecenat.name, role: mecenat.business },
-      body: `${mecenat.name} ringer.\n\n"Jag hörde att det finns en spelare som hade passat er. Jag kan tänka mig att bidra med halva kostnaden."`,
+      body: `${mecenat.name} ringer.\n\n"Jag hörde att det finns en spelare som hade passat er."`,
       choices: [
         {
           id: 'accept',
           label: 'Intressant — berätta mer',
-          subtitle: '🤝 +10 relation · 💰 mecenat bidrar',
+          subtitle: '🤝 +10 relation',
           effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 10 },
         },
         {
@@ -597,12 +597,12 @@ export function generateMecenatAllianceEvent(
     id: `event_alliance_${mec1.id}_${mec2.id}`,
     type: 'mecenatEvent',
     title: `🤝 ${mec1.name} & ${mec2.name} samarbetar`,
-    body: `Både ${mec1.name} och ${mec2.name} har uttryckt intresse för att finansiera ${projectName}.\n\n"Vi kan dela på kostnaden om klubben tar resten."`,
+    body: `Både ${mec1.name} och ${mec2.name} har uttryckt intresse för ${projectName}.`,
     choices: [
       {
         id: 'accept',
         label: 'Fantastiskt — tack!',
-        subtitle: '💰 projekt finansieras · 🤝 +10 båda',
+        subtitle: '🤝 +10 båda',
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([

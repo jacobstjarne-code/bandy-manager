@@ -613,12 +613,12 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     notes: 'Domens eget referensfall för O2. Ärligt: bara två val, ingen tredje "no-op med löfte om mer"-risk kvar i denna specifika event.',
   },
   playerPraise: {
-    trigger: 'Spelare med hög form/matchbelastning triggar praise-event (playerPraiseEvent-mönstret, eventFactories.ts ~199)',
-    stateEffect: `'vila'-valet: boostMorale +10 — INTE en fitness/vila-effekt, spelaren spelar nästa match som vanligt. Domens Varför-tabell citerar just detta som exempel på ett löfte texten INTE höll ("Ge honom vila" → spelaren vilade inte).`,
-    systems: ['spelarmoral'],
+    trigger: 'En spelare berömmer en lagkamrat i media; generatePlayerPraiseEvent bygger ett namngivet kort för de två spelarna.',
+    stateEffect: `'great' ger både den berömmande och den berömda spelaren morale +3 via multiEffect. Inget vila-löfte finns i denna eventtyp; "Ge honom vila" tillhör dayJobConflict och har en verklig restGamesRemaining=1-effekt.`,
+    systems: ['spelarmoral för båda namngivna spelarna'],
     lifespan: 'engångs',
     recallSurface: 'ingen',
-    notes: 'Kvarstående gap, inte fixat i detta pass — texten kan fortfarande lova mer än effekten ger. Kräver Opus-text för att antingen korrigera löftet eller bygga en riktig vila-mekanik.',
+    notes: 'Rättad 2026-09-02: den tidigare posten blandade ihop playerPraise med dayJobConflict. PlayerPraise-effekten är testad som +3 moral på båda; dayJobConflict-vilan är separat testad som +10 moral och exakt en matchs vila.',
   },
   sponsorOffer: {
     trigger: 'postAdvanceEvents.ts:~599 (generateSponsorOffer, sponsorService.ts) — en gång per omgång om activeSponsors<maxSponsors.',
