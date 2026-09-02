@@ -21,6 +21,8 @@
     "test:visual:update": "playwright test --update-snapshots",
     "stress": "node_modules/.bin/vite-node scripts/stress-test.ts",
     "analyze-stress": "node_modules/.bin/vite-node scripts/analyze-stress.ts",
+    "analyze:choice-entropy": "node_modules/.bin/vite-node scripts/analyze-choice-entropy.ts",
+    "analyze:text-repetition": "node_modules/.bin/vite-node scripts/analyze-text-repetition.ts",
     "warehouse:generate": "node_modules/.bin/vite-node scripts/data-warehouse/generate.ts",
     "warehouse:validate": "node_modules/.bin/vite-node scripts/data-warehouse/validate.ts",
     "check:deploy-sync": "node scripts/check-deploy-sync.mjs"

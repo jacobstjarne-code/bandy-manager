@@ -38,7 +38,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_canonical', 'ack', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_canonical')
-    expect(entry).toEqual({ eventId: 'event_canonical', choiceId: 'ack', label: 'Notera det' })
+    expect(entry).toEqual({ eventId: 'event_canonical', eventType: 'communityEvent', choiceId: 'ack', label: 'Notera det', madeByPlayer: true })
   })
 
   it('sponsorOffer — accept-grenen (specialfall 1/4): skrivs innan den egna early-returnen', () => {
@@ -59,7 +59,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_sponsor_accept', 'accept', () => 0.5, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_sponsor_accept')
-    expect(entry).toEqual({ eventId: 'event_sponsor_accept', choiceId: 'accept', label: 'Acceptera sponsorn' })
+    expect(entry).toEqual({ eventId: 'event_sponsor_accept', eventType: 'sponsorOffer', choiceId: 'accept', label: 'Acceptera sponsorn', madeByPlayer: true })
   })
 
   it('sponsorOffer — reject-grenen (specialfall 2/4)', () => {
@@ -80,7 +80,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_sponsor_reject', 'reject', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_sponsor_reject')
-    expect(entry).toEqual({ eventId: 'event_sponsor_reject', choiceId: 'reject', label: 'Tacka nej' })
+    expect(entry).toEqual({ eventId: 'event_sponsor_reject', eventType: 'sponsorOffer', choiceId: 'reject', label: 'Tacka nej', madeByPlayer: true })
   })
 
   it('riskySponsorOffer — accept-grenen, lyckad JSON-parse (specialfall 3/4)', () => {
@@ -101,7 +101,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_risky_accept', 'accept', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_risky_accept')
-    expect(entry).toEqual({ eventId: 'event_risky_accept', choiceId: 'accept', label: 'Ta risken' })
+    expect(entry).toEqual({ eventId: 'event_risky_accept', eventType: 'riskySponsorOffer', choiceId: 'accept', label: 'Ta risken', madeByPlayer: true })
   })
 
   it('riskySponsorOffer — reject-grenen, faller till den avslutande early-returnen (specialfall 4/4)', () => {
@@ -122,7 +122,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_risky_reject', 'reject', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_risky_reject')
-    expect(entry).toEqual({ eventId: 'event_risky_reject', choiceId: 'reject', label: 'Nej tack' })
+    expect(entry).toEqual({ eventId: 'event_risky_reject', eventType: 'riskySponsorOffer', choiceId: 'reject', label: 'Nej tack', madeByPlayer: true })
   })
 
   it('capas till senaste 200, precis som resolvedEventIds', () => {
@@ -141,6 +141,25 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     expect(game.resolvedChoices).toHaveLength(200)
     expect(game.resolvedChoices!.some(c => c.eventId === 'old_0')).toBe(false)
     expect(game.resolvedChoices!.some(c => c.eventId === 'event_overflow')).toBe(true)
+  })
+
+  it('sparar auto-resolution explicit så U9 inte räknar den som ett spelarval', () => {
+    let game = baseGame()
+    game = {
+      ...game,
+      pendingEvents: [{
+        id: 'event_auto_choice', type: 'communityEvent', title: 't', body: 'b',
+        choices: [{ id: 'ack', label: 'Notera', effect: { type: 'noOp' } }],
+        resolved: false,
+      }],
+    }
+
+    game = resolveEvent(game, 'event_auto_choice', 'ack', undefined, false)
+
+    expect(game.resolvedChoices?.find(c => c.eventId === 'event_auto_choice')).toMatchObject({
+      eventType: 'communityEvent',
+      madeByPlayer: false,
+    })
   })
 
   it('choices.length===0 (auto-resolverat atmosfäriskt event, inget riktigt val): skriver INGEN resolvedChoices-post', () => {

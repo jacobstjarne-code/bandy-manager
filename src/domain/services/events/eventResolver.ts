@@ -30,8 +30,20 @@ import { captureDecisionRipple } from '../orsakVerkanService'
  * MEDIUM 15 (2026-08-29): de fyra tidiga specialfallen gick förbi den kanoniska
  * vägens ANDRA skrivning också — `resolvedEventIds`. Se recordResolvedId nedan.
  */
-function recordResolvedChoice(game: SaveGame, eventId: string, choiceId: string, label: string): SaveGame['resolvedChoices'] {
-  return [...(game.resolvedChoices ?? []), { eventId, choiceId, label }].slice(-200)
+function recordResolvedChoice(
+  game: SaveGame,
+  event: Pick<GameEvent, 'id' | 'type'>,
+  choiceId: string,
+  label: string,
+  madeByPlayer: boolean,
+): SaveGame['resolvedChoices'] {
+  return [...(game.resolvedChoices ?? []), {
+    eventId: event.id,
+    eventType: event.type,
+    choiceId,
+    label,
+    madeByPlayer,
+  }].slice(-200)
 }
 
 /**
@@ -162,7 +174,7 @@ export function resolveEvent(
         communityStanding,
         inbox,
         riskySponsorContract,
-        resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
+        resolvedChoices: recordResolvedChoice(game, event, choiceId, choice.label, madeByPlayer),
         resolvedEventIds: recordResolvedId(game, eventId),
       }
     }
@@ -183,7 +195,7 @@ export function resolveEvent(
       ...game,
       pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
       inbox,
-      resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
+      resolvedChoices: recordResolvedChoice(game, event, choiceId, choice.label, madeByPlayer),
       resolvedEventIds: recordResolvedId(game, eventId),
     }
   }
@@ -216,7 +228,7 @@ export function resolveEvent(
               riskMaturityRound: sponsorData.riskMaturityRound,
               season: game.currentSeason,
             },
-            resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
+            resolvedChoices: recordResolvedChoice(game, event, choiceId, choice.label, madeByPlayer),
             resolvedEventIds: recordResolvedId(game, eventId),
           }
         } catch {}
@@ -225,7 +237,7 @@ export function resolveEvent(
     return {
       ...game,
       pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
-      resolvedChoices: recordResolvedChoice(game, eventId, choiceId, choice.label),
+      resolvedChoices: recordResolvedChoice(game, event, choiceId, choice.label, madeByPlayer),
       resolvedEventIds: recordResolvedId(game, eventId),
     }
   }
@@ -1955,7 +1967,7 @@ export function resolveEvent(
     ...updatedGame,
     pendingEvents: (updatedGame.pendingEvents ?? []).filter(e => e.id !== eventId),
     resolvedEventIds: [...(updatedGame.resolvedEventIds ?? []), eventId].slice(-200), // keep last 200
-    resolvedChoices: recordResolvedChoice(updatedGame, eventId, choiceId, choice.label),
+    resolvedChoices: recordResolvedChoice(updatedGame, event, choiceId, choice.label, madeByPlayer),
     narrativeBeatLog: logNarrativeBeat(
       updatedGame, event.type, updatedGame.currentSeason, updatedGame.currentMatchday,
       event.systemhandelse,

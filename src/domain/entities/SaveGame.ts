@@ -14,7 +14,7 @@ import type { CupBracket } from './Cup'
 import type { SeasonSummary, SeasonGoalType } from './SeasonSummary'
 import type { ScoutReport, ScoutAssignment } from './Scouting'
 import type { YouthTeam, Mentorship, MentorshipRecord, LoanDeal, AcademyLevel } from './Academy'
-import type { GameEvent, TransferBid } from './GameEvent'
+import type { GameEvent, GameEventType, TransferBid } from './GameEvent'
 import type { OpponentAnalysis } from '../services/opponentAnalysisService'
 import type { StandingRow } from './Standing'
 import type { InboxItem } from './Inbox'
@@ -63,6 +63,20 @@ export interface RippleChain {
   round: number
   season: number
   steps: RippleChainStep[]
+}
+
+/**
+ * Lokalt kvitto på ett löst val. `eventType` och `madeByPlayer` lades till
+ * för U9:s val-entropi; de är optional för att äldre exporterade saves ska
+ * fortsätta kunna laddas. Analysen räknar aldrig poster där attributionen
+ * saknas, eftersom auto-resolverade val annars skulle se ut som spelarval.
+ */
+export interface ResolvedChoice {
+  eventId: string
+  eventType?: GameEventType
+  choiceId: string
+  label: string
+  madeByPlayer?: boolean
 }
 
 // ── Re-exports so existing `import from '../entities/SaveGame'` still works ──
@@ -421,7 +435,7 @@ export interface SaveGame {
    *  200). label är ett snapshot av choice.label vid resolutionstillfället —
    *  om poolen någonsin randomiseras ska kvittot visa vad spelaren FAKTISKT
    *  såg, inte en omslagen nutida text. */
-  resolvedChoices?: Array<{ eventId: string; choiceId: string; label: string }>
+  resolvedChoices?: ResolvedChoice[]
 
   // V1.0 — Named journalist with memory
   journalist?: Journalist
