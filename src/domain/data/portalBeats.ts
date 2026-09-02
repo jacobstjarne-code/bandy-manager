@@ -12,6 +12,7 @@ import type { Fixture } from '../entities/Fixture'
 import { getRivalry } from './rivalries'
 import { nextManagedFixture } from '../services/situationFragments'
 import { deriveCoachNemesis } from '../services/managerProfileService'
+import { deriveUtfall } from '../services/matchTypeAxes'
 import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from './facilityPortalBeats'
 import { FACILITY_NODE_DEFS } from './facilityNodes'
 import { getFirstUnseenCompletedFacility, facilityCompletedBeatKey } from '../services/facilityService'
@@ -55,20 +56,11 @@ export function firesBeforeNextFixture(
   return predicate(next, opponentId)
 }
 
-function nextManagedLeagueFixture(game: SaveGame) {
-  const id = game.managedClubId
-  return game.fixtures
-    .filter(f =>
-      f.status === 'scheduled' && !f.isCup && !f.isKnockout &&
-      (f.homeClubId === id || f.awayClubId === id)
-    )
-    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
-}
-
 function completedLeagueCount(game: SaveGame): number {
   const id = game.managedClubId
   return game.fixtures.filter(
-    f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
+    f => f.season === game.currentSeason &&
+      f.status === 'completed' && !f.isCup && !f.isKnockout &&
       (f.homeClubId === id || f.awayClubId === id)
   ).length
 }
@@ -508,7 +500,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
       if (completedLeagueCount(g) !== 0) return false
       // Don't show during a cup week — the immediate next fixture must be a league match
       const nextAny = g.fixtures
-        .filter(f => f.status === 'scheduled' &&
+        .filter(f => f.season === g.currentSeason && f.status === 'scheduled' &&
           (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId))
         .sort((a, b) => a.matchday - b.matchday)[0] ?? null
       if (!nextAny || nextAny.isCup) return false
@@ -522,11 +514,12 @@ export const PORTAL_BEATS: PortalBeat[] = [
     id: 'first_win',
     emoji: '✓',
     text: 'Första segern. Omklädningsrummet lät inte likadant efteråt.',
-    trigger: (g) => {
-      const id = g.managedClubId
-      const wins = g.standings.find(s => s.clubId === id)?.wins ?? 0
-      return wins === 1
-    },
+    trigger: (g) => g.fixtures.filter(fixture =>
+      fixture.season === g.currentSeason &&
+      fixture.status === 'completed' &&
+      (fixture.homeClubId === g.managedClubId || fixture.awayClubId === g.managedClubId) &&
+      deriveUtfall(fixture, g.managedClubId) === 'vunnet'
+    ).length === 1,
     oncePerSeason: true,
   },
 
@@ -536,16 +529,15 @@ export const PORTAL_BEATS: PortalBeat[] = [
     emoji: '🔥',
     text: 'Första derbyt. Det här är matcher som lever längre än säsongen.',
     trigger: (g) => {
-      const next = nextManagedLeagueFixture(g)
-      if (!next) return false
-      // Surfa bara när derbyt är NÄSTA match överhuvudtaget — inte medan en cupmatch ligger emellan.
-      const nextAny = nextManagedFixture(g)
-      if (!nextAny || nextAny.id !== next.id) return false
-      const oppId = next.homeClubId === g.managedClubId ? next.awayClubId : next.homeClubId
-      if (!getRivalry(g.managedClubId, oppId)) return false
-      // Kolla att inget derby spelats den här säsongen
+      const nextIsDerby = firesBeforeNextFixture(g, (_fixture, opponentId) =>
+        getRivalry(g.managedClubId, opponentId) !== null
+      )
+      if (!nextIsDerby) return false
+
+      // "Första derbyt" gäller tävlingsoberoende: ett redan spelat cupderby
+      // gör nästa ligaderby till säsongens andra derby, inte det första.
       const completedDerbies = g.fixtures.filter(f =>
-        f.status === 'completed' && !f.isCup && !f.isKnockout &&
+        f.status === 'completed' &&
         f.season === g.currentSeason &&
         (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId) &&
         getRivalry(g.managedClubId, f.homeClubId === g.managedClubId ? f.awayClubId : f.homeClubId) !== null

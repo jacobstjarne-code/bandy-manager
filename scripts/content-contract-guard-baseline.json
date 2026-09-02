@@ -1,12 +1,7 @@
 {
-  "todo": 9,
+  "todo": 4,
   "todoIds": [
     "GameEventType:retirementCeremony",
-    "PortalBeat:callback_legend_record",
-    "PortalBeat:season_opener",
-    "PortalBeat:first_win",
-    "PortalBeat:first_derby",
-    "PortalBeat:halftime",
     "PortalBeat:transfer_window_open",
     "PortalBeat:last_league_round",
     "PortalBeat:facility_completed"

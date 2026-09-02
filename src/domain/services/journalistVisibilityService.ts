@@ -17,6 +17,9 @@ export function shouldShowJournalistCard(game: SaveGame): boolean {
 
 export type RelationshipEventType = 'broken_under_20' | 'recovered_above_75' | null
 
+type JournalistStoryContext = Pick<SaveGame, 'journalist'> &
+  Partial<Pick<SaveGame, 'storylines' | 'currentSeason' | 'managedClubId'>>
+
 export function detectRelationshipEvent(game: SaveGame): RelationshipEventType {
   const j = game.journalist
   if (!j) return null
@@ -26,17 +29,54 @@ export function detectRelationshipEvent(game: SaveGame): RelationshipEventType {
   return null
 }
 
+function hasPreviousSeasonRelationshipStory(
+  game: Partial<Pick<SaveGame, 'storylines' | 'currentSeason' | 'managedClubId'>>,
+  type: 'journalist_feud' | 'journalist_redemption',
+): boolean {
+  const currentSeason = game.currentSeason
+  const managedClubId = game.managedClubId
+  if (currentSeason === undefined || !managedClubId) return false
+  return (game.storylines ?? []).some(storyline =>
+    storyline.type === type &&
+    storyline.season < currentSeason &&
+    storyline.clubId === managedClubId,
+  )
+}
+
+/**
+ * A fresh threshold crossing is a feud relapse only when permanent storyline
+ * history proves that the same rupture happened in an earlier season.
+ */
+export function isJournalistFeudRelapse(
+  game: Partial<Pick<SaveGame, 'storylines' | 'currentSeason' | 'managedClubId'>>,
+): boolean {
+  return hasPreviousSeasonRelationshipStory(game, 'journalist_feud')
+}
+
+/** Same historical read for a renewed reconciliation after an earlier season. */
+export function isJournalistRedemptionRelapse(
+  game: Partial<Pick<SaveGame, 'storylines' | 'currentSeason' | 'managedClubId'>>,
+): boolean {
+  return hasPreviousSeasonRelationshipStory(game, 'journalist_redemption')
+}
+
 /** Existing relationship-scene copy, shared with the frozen storyline memory. */
 export function getJournalistRelationshipStoryText(
-  game: Pick<SaveGame, 'journalist'>,
+  game: JournalistStoryContext,
   eventType: Exclude<RelationshipEventType, null>,
 ): string | null {
   const journalist = game.journalist
   if (!journalist) return null
+  const lastName = journalist.name.split(' ').pop() ?? journalist.name
   if (eventType === 'broken_under_20') {
+    if (isJournalistFeudRelapse(game)) {
+      return `Bruten igen. ${lastName} har sett det förr, och den här gången sitter det djupare.`
+    }
     return 'Relationen är bruten. Det krävs tid och ärlighet för att vända.'
   }
-  const lastName = journalist.name.split(' ').pop() ?? journalist.name
+  if (isJournalistRedemptionRelapse(game)) {
+    return `${lastName} kommer tillbaka, men inte hela vägen. En relation som brustit en gång läks aldrig riktigt blint igen.`
+  }
   return `${lastName} är på er sida nu. Det håller så länge du är lika öppen tillbaka.`
 }
 

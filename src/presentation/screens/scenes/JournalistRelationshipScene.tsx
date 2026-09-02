@@ -16,7 +16,12 @@ interface Props {
 export function JournalistRelationshipScene({ game, onComplete }: Props) {
   if (!game.journalist) return null
 
-  const data = buildJournalistSceneData(game.journalist, game.currentSeason)
+  const data = buildJournalistSceneData(
+    game.journalist,
+    game.currentSeason,
+    game.storylines,
+    game.managedClubId,
+  )
   const isCold = data.severity === 'cold'
 
   const fillGradient = isCold

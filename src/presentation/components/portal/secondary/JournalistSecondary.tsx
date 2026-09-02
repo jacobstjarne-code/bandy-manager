@@ -17,7 +17,12 @@ export function JournalistSecondary({ game }: CardRenderProps) {
   if (severity === 'hidden' || !game.journalist) return null
 
   const isCold = severity === 'cold'
-  const data = buildJournalistSceneData(game.journalist, game.currentSeason)
+  const data = buildJournalistSceneData(
+    game.journalist,
+    game.currentSeason,
+    game.storylines,
+    game.managedClubId,
+  )
   const recentSummary = data.memories.length > 0
     ? data.memories[0].summary
     : 'Ingen kontakt ännu'

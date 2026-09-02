@@ -27,6 +27,7 @@ export function nextManagedFixture(game: SaveGame) {
   return game.fixtures
     .filter(f => {
       if (f.status !== 'scheduled') return false
+      if (f.season !== game.currentSeason) return false
       if (f.homeClubId !== id && f.awayClubId !== id) return false
       if (eliminated && f.matchday > 26 && !f.isCup) return false
       return true

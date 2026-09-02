@@ -1,4 +1,4 @@
-import type { Journalist } from '../../entities/SaveGame'
+import type { Journalist, SaveGame } from '../../entities/SaveGame'
 import { getJournalistRelationshipStoryText } from '../../services/journalistVisibilityService'
 
 export interface JournalistSceneMemoryEntry {
@@ -48,23 +48,39 @@ function buildStatusText(relationship: number, lastName: string): string {
 /**
  * @cites pressRefusals
  */
-function buildOutlookText(journalist: Journalist): string {
+function buildOutlookText(
+  journalist: Journalist,
+  currentSeason: number,
+  storylines: SaveGame['storylines'],
+  managedClubId: string,
+): string {
   const rel = journalist.relationship
   const refusals = journalist.pressRefusals ?? 0
   if (rel <= 20) {
     if (refusals >= 3) return `${refusals} nekade presskonferenser. Det syns i rubrikerna.`
-    return getJournalistRelationshipStoryText({ journalist }, 'broken_under_20')!
+    return getJournalistRelationshipStoryText(
+      { journalist, currentSeason, storylines, managedClubId },
+      'broken_under_20',
+    )!
   }
   if (rel <= 30) {
     return 'Några ärliga svar i rad — då vänder det.'
   }
   if (rel >= 75) {
-    return getJournalistRelationshipStoryText({ journalist }, 'recovered_above_75')!
+    return getJournalistRelationshipStoryText(
+      { journalist, currentSeason, storylines, managedClubId },
+      'recovered_above_75',
+    )!
   }
   return 'Fortsätt svara ärligt. Relationen håller.'
 }
 
-export function buildJournalistSceneData(journalist: Journalist, _currentSeason: number): JournalistRelationshipSceneData {
+export function buildJournalistSceneData(
+  journalist: Journalist,
+  currentSeason: number,
+  storylines: SaveGame['storylines'] = [],
+  managedClubId = '',
+): JournalistRelationshipSceneData {
   const rel = journalist.relationship
   const severity: 'cold' | 'warm' = rel >= 70 ? 'warm' : 'cold'
   const lastName = journalist.name.split(' ').pop() ?? journalist.name
@@ -86,6 +102,6 @@ export function buildJournalistSceneData(journalist: Journalist, _currentSeason:
     severity,
     statusText: buildStatusText(rel, lastName),
     memories,
-    outlookText: buildOutlookText(journalist),
+    outlookText: buildOutlookText(journalist, currentSeason, storylines, managedClubId),
   }
 }

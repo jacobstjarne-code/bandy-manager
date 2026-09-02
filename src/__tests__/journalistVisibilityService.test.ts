@@ -5,10 +5,13 @@ import {
   detectRelationshipEvent,
   appendJournalistRelationshipStoryline,
   getJournalistRelationshipStoryText,
+  isJournalistFeudRelapse,
+  isJournalistRedemptionRelapse,
   getJournalistAttendanceModifier,
   getJournalistCommunityModifier,
 } from '../domain/services/journalistVisibilityService'
 import type { SaveGame } from '../domain/entities/SaveGame'
+import { buildJournalistSceneData } from '../domain/data/scenes/journalistRelationshipScene'
 
 function makeGame(relationship: number, lastTriggered?: number): SaveGame {
   return {
@@ -32,6 +35,27 @@ function makeGame(relationship: number, lastTriggered?: number): SaveGame {
 
 function makeGameNoJournalist(): SaveGame {
   return {} as SaveGame
+}
+
+function withRelationshipStory(
+  game: SaveGame,
+  type: 'journalist_feud' | 'journalist_redemption',
+  season: number,
+  clubId = game.managedClubId,
+): SaveGame {
+  return {
+    ...game,
+    storylines: [{
+      id: `historical_${type}_${season}`,
+      type,
+      season,
+      matchday: 12,
+      clubId,
+      description: 'historical',
+      displayText: 'historical',
+      resolved: true,
+    }],
+  }
 }
 
 describe('getJournalistCardSeverity', () => {
@@ -99,6 +123,56 @@ describe('journalistens relationsstorylines', () => {
       resolved: true,
     })
     expect(appendJournalistRelationshipStoryline(makeGame(82, 78), 'recovered_above_75').storylines).toEqual([])
+  })
+
+  it('läser en feud från en tidigare säsong som återfall och fryser den eskalerade texten', () => {
+    const game = withRelationshipStory(makeGame(18, 25), 'journalist_feud', 2025)
+    const text = 'Bruten igen. Bergström har sett det förr, och den här gången sitter det djupare.'
+
+    expect(isJournalistFeudRelapse(game)).toBe(true)
+    expect(getJournalistRelationshipStoryText(game, 'broken_under_20')).toBe(text)
+    expect(appendJournalistRelationshipStoryline(game, 'broken_under_20').storylines?.at(-1)).toMatchObject({
+      id: 'story_journalist_feud_2026_8',
+      type: 'journalist_feud',
+      description: text,
+      displayText: text,
+    })
+    expect(buildJournalistSceneData(
+      game.journalist!, game.currentSeason, game.storylines, game.managedClubId,
+    ).outlookText)
+      .toBe(text)
+  })
+
+  it('läser en redemption från en tidigare säsong som återfall med den skeptiska återfallstexten', () => {
+    const game = withRelationshipStory(makeGame(80, 70), 'journalist_redemption', 2025)
+    const text = 'Bergström kommer tillbaka, men inte hela vägen. En relation som brustit en gång läks aldrig riktigt blint igen.'
+
+    expect(isJournalistRedemptionRelapse(game)).toBe(true)
+    expect(getJournalistRelationshipStoryText(game, 'recovered_above_75')).toBe(text)
+    expect(appendJournalistRelationshipStoryline(game, 'recovered_above_75').storylines?.at(-1)).toMatchObject({
+      id: 'story_journalist_redemption_2026_8',
+      type: 'journalist_redemption',
+      description: text,
+      displayText: text,
+    })
+    expect(buildJournalistSceneData(
+      game.journalist!, game.currentSeason, game.storylines, game.managedClubId,
+    ).outlookText)
+      .toBe(text)
+  })
+
+  it('räknar inte samma säsongs post eller den andra relationstypen som återfall', () => {
+    const sameSeasonFeud = withRelationshipStory(makeGame(18, 25), 'journalist_feud', 2026)
+    const priorRedemption = withRelationshipStory(makeGame(18, 25), 'journalist_redemption', 2025)
+    const otherClubFeud = withRelationshipStory(
+      makeGame(18, 25), 'journalist_feud', 2025, 'club_other',
+    )
+
+    expect(isJournalistFeudRelapse(sameSeasonFeud)).toBe(false)
+    expect(isJournalistFeudRelapse(priorRedemption)).toBe(false)
+    expect(isJournalistFeudRelapse(otherClubFeud)).toBe(false)
+    expect(getJournalistRelationshipStoryText(sameSeasonFeud, 'broken_under_20'))
+      .toBe('Relationen är bruten. Det krävs tid och ärlighet för att vända.')
   })
 })
 

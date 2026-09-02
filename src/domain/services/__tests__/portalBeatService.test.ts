@@ -3,6 +3,7 @@ import { getActiveBeat, getBeatKey } from '../portalBeatService'
 import { PORTAL_BEATS, PIVOTAL_BEAT_IDS, PIVOTAL_BEAT_COOLDOWN_SEASONS } from '../../data/portalBeats'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
+import { getRivalry } from '../../data/rivalries'
 import type { SaveGame } from '../../entities/SaveGame'
 
 /**
@@ -75,6 +76,7 @@ describe('callback_streak — canonical H2H-svit inför exakt nästa match', () 
       status: 'scheduled' as const,
       homeClubId: base.managedClubId,
       awayClubId: opponent.id,
+      season: 5,
       matchday: 12,
     }
     const winning = {
@@ -489,5 +491,239 @@ describe('callback_legend_record — verklig högsta legendnotering', () => {
       }),
     }
     expect(beat.trigger(surpassed)).toBe(false)
+  })
+})
+
+describe('season_opener — efter försäsongscupen, före aktuell ligarunda 1', () => {
+  const beat = PORTAL_BEATS.find(candidate => candidate.id === 'season_opener')!
+
+  it('blockeras av nästa cupmatch och visas när aktuell säsongs första ligamatch står näst', () => {
+    const generated = makeGame()
+    const base = {
+      ...generated,
+      currentSeason: 5,
+      fixtures: generated.fixtures.map(fixture => ({ ...fixture, season: 5 })),
+    }
+    const currentLeague = base.fixtures.find(fixture =>
+      !fixture.isCup && !fixture.isKnockout &&
+      (fixture.homeClubId === base.managedClubId || fixture.awayClubId === base.managedClubId)
+    )!
+    const managedCup = {
+      ...currentLeague,
+      id: 'managed_cup_before_league',
+      matchday: currentLeague.matchday - 1,
+      status: 'scheduled' as const,
+      isCup: true,
+    }
+    const beforeCup = { ...base, fixtures: [managedCup, currentLeague] }
+    expect(beat.trigger(beforeCup)).toBe(false)
+
+    const afterCup = {
+      ...beforeCup,
+      fixtures: [{ ...managedCup, status: 'completed' as const }, currentLeague],
+    }
+    expect(beat.trigger(afterCup)).toBe(true)
+    expect(typeof beat.text === 'function' ? beat.text(afterCup) : beat.text)
+      .toBe('Ispremiär. Wienerbröd på morgonen, isen är stenhård. Det är säsong nu.')
+    expect(getBeatKey(beat, afterCup.currentSeason, afterCup)).toBe('season_opener_5')
+
+    expect(beat.trigger({
+      ...afterCup,
+      fixtures: afterCup.fixtures.map(fixture => fixture.id === currentLeague.id
+        ? { ...fixture, status: 'completed' as const }
+        : fixture),
+    })).toBe(false)
+  })
+
+  it('ignorerar historiska completed/scheduled fixtures från en annan säsong', () => {
+    const generated = makeGame()
+    const base = {
+      ...generated,
+      currentSeason: 5,
+      fixtures: generated.fixtures.map(fixture => ({ ...fixture, season: 5 })),
+    }
+    const currentLeague = base.fixtures.find(fixture =>
+      fixture.season === 5 && !fixture.isCup && !fixture.isKnockout &&
+      (fixture.homeClubId === base.managedClubId || fixture.awayClubId === base.managedClubId)
+    )!
+    const oldCompleted = {
+      ...currentLeague, id: 'old_completed_league', season: 4,
+      matchday: 1, status: 'completed' as const,
+    }
+    const oldScheduled = {
+      ...currentLeague, id: 'old_scheduled_cup', season: 4,
+      matchday: 0, status: 'scheduled' as const, isCup: true,
+    }
+    const game = { ...base, fixtures: [oldCompleted, oldScheduled, currentLeague] }
+
+    expect(beat.trigger(game)).toBe(true)
+  })
+})
+
+describe('first_win — första segern i någon tävling', () => {
+  const beat = PORTAL_BEATS.find(candidate => candidate.id === 'first_win')!
+
+  it('triggar på första cupsegern även när ligatabellen har noll vinster', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const opponent = base.clubs.find(club => club.id !== base.managedClubId)!
+    const cupWin = {
+      ...base.fixtures[0], id: 'first_cup_win', season: 5, matchday: 2,
+      status: 'completed' as const, isCup: true,
+      homeClubId: base.managedClubId, awayClubId: opponent.id,
+      homeScore: 2, awayScore: 2,
+      penaltyResult: { home: 4, away: 3 }, wentToPenalties: true,
+    }
+    const game = {
+      ...base,
+      fixtures: [cupWin],
+      standings: base.standings.map(row => row.clubId === base.managedClubId
+        ? { ...row, wins: 0 }
+        : row),
+    }
+
+    expect(beat.trigger(game)).toBe(true)
+    expect(typeof beat.text === 'function' ? beat.text(game) : beat.text)
+      .toBe('Första segern. Omklädningsrummet lät inte likadant efteråt.')
+    expect(getBeatKey(beat, game.currentSeason, game)).toBe('first_win_5')
+  })
+
+  it('kallar inte första ligasegern första segern om laget redan vunnit i cupen', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const opponent = base.clubs.find(club => club.id !== base.managedClubId)!
+    const fixture = (id: string, matchday: number, isCup: boolean) => ({
+      ...base.fixtures[0], id, season: 5, matchday, status: 'completed' as const, isCup,
+      homeClubId: base.managedClubId, awayClubId: opponent.id, homeScore: 3, awayScore: 1,
+    })
+    const game = {
+      ...base,
+      fixtures: [fixture('cup_win', 2, true), fixture('league_win', 5, false)],
+      standings: base.standings.map(row => row.clubId === base.managedClubId
+        ? { ...row, wins: 1 }
+        : row),
+    }
+
+    expect(beat.trigger(game)).toBe(false)
+    expect(beat.trigger({
+      ...game,
+      fixtures: [
+        { ...fixture('old_win', 20, false), season: 4 },
+        fixture('current_win', 5, false),
+      ],
+    })).toBe(true)
+  })
+})
+
+describe('first_derby — första derbyt i någon tävling', () => {
+  const beat = PORTAL_BEATS.find(candidate => candidate.id === 'first_derby')!
+
+  it('visas inför exakt nästa derby även när det är en cupmatch', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const rival = base.clubs.find(club =>
+      club.id !== base.managedClubId && getRivalry(base.managedClubId, club.id) !== null
+    )!
+    const cupDerby = {
+      ...base.fixtures[0], id: 'first_cup_derby', season: 5, matchday: 2,
+      status: 'scheduled' as const, isCup: true, isKnockout: true,
+      homeClubId: base.managedClubId, awayClubId: rival.id,
+    }
+    const historicalScheduled = {
+      ...cupDerby, id: 'historical_scheduled', season: 4, matchday: 1,
+      awayClubId: base.clubs.find(club =>
+        club.id !== base.managedClubId && getRivalry(base.managedClubId, club.id) === null
+      )!.id,
+    }
+    const game = { ...base, fixtures: [historicalScheduled, cupDerby] }
+
+    expect(beat.trigger(game)).toBe(true)
+    expect(typeof beat.text === 'function' ? beat.text(game) : beat.text)
+      .toBe('Första derbyt. Det här är matcher som lever längre än säsongen.')
+    expect(getBeatKey(beat, game.currentSeason, game)).toBe('first_derby_5')
+  })
+
+  it('kallar inte ligaderbyt det första när ett cupderby redan spelats samma säsong', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const rival = base.clubs.find(club =>
+      club.id !== base.managedClubId && getRivalry(base.managedClubId, club.id) !== null
+    )!
+    const fixture = (id: string, matchday: number, status: 'scheduled' | 'completed', isCup: boolean) => ({
+      ...base.fixtures[0], id, season: 5, matchday, status, isCup,
+      isKnockout: isCup,
+      homeClubId: base.managedClubId, awayClubId: rival.id,
+      homeScore: status === 'completed' ? 3 : undefined,
+      awayScore: status === 'completed' ? 2 : undefined,
+    })
+    const game = {
+      ...base,
+      fixtures: [
+        fixture('completed_cup_derby', 2, 'completed', true),
+        fixture('next_league_derby', 8, 'scheduled', false),
+      ],
+    }
+
+    expect(beat.trigger(game)).toBe(false)
+    expect(beat.trigger({
+      ...game,
+      fixtures: [
+        { ...fixture('historical_derby', 20, 'completed', true), season: 4 },
+        fixture('next_league_derby', 8, 'scheduled', false),
+      ],
+    })).toBe(true)
+  })
+
+  it('väntar om en annan match ligger före det kommande derbyt', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const rival = base.clubs.find(club =>
+      club.id !== base.managedClubId && getRivalry(base.managedClubId, club.id) !== null
+    )!
+    const neutral = base.clubs.find(club =>
+      club.id !== base.managedClubId && getRivalry(base.managedClubId, club.id) === null
+    )!
+    const next = {
+      ...base.fixtures[0], season: 5, status: 'scheduled' as const,
+      homeClubId: base.managedClubId,
+    }
+    const game = {
+      ...base,
+      fixtures: [
+        { ...next, id: 'non_derby_first', matchday: 4, awayClubId: neutral.id },
+        { ...next, id: 'derby_second', matchday: 5, awayClubId: rival.id },
+      ],
+    }
+
+    expect(beat.trigger(game)).toBe(false)
+  })
+})
+
+describe('halftime — exakt halva den låsta 22-omgångarsserien', () => {
+  const beat = PORTAL_BEATS.find(candidate => candidate.id === 'halftime')!
+
+  it('räknar 11 currentSeason-ligamatcher men inte cup, slutspel eller historik', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const opponent = base.clubs.find(club => club.id !== base.managedClubId)!
+    const leagueFixture = (id: string, season: number, matchday: number) => ({
+      ...base.fixtures[0], id, season, matchday, roundNumber: matchday,
+      status: 'completed' as const, isCup: false, isKnockout: false,
+      homeClubId: base.managedClubId, awayClubId: opponent.id,
+      homeScore: 2, awayScore: 1,
+    })
+    const currentLeague = Array.from({ length: 11 }, (_, index) =>
+      leagueFixture(`current_${index + 1}`, 5, index + 1)
+    )
+    const ignored = [
+      leagueFixture('historical', 4, 22),
+      { ...leagueFixture('cup', 5, 2), isCup: true },
+      { ...leagueFixture('playoff', 5, 30), isKnockout: true },
+    ]
+    const game = { ...base, fixtures: [...ignored, ...currentLeague] }
+
+    expect(beat.trigger(game)).toBe(true)
+    expect(typeof beat.text === 'function' ? beat.text(game) : beat.text)
+      .toBe('Halvtid. Det ni gjort står — det som kommer ligger framför er.')
+    expect(getBeatKey(beat, game.currentSeason, game)).toBe('halftime_5')
+    expect(beat.trigger({ ...game, fixtures: [...ignored, ...currentLeague.slice(0, 10)] })).toBe(false)
+    expect(beat.trigger({
+      ...game,
+      fixtures: [...ignored, ...currentLeague, leagueFixture('current_12', 5, 12)],
+    })).toBe(false)
   })
 })

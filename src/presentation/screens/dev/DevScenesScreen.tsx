@@ -587,12 +587,35 @@ const interactionFreeKickData = {
 }
 const ceremonyHomeLineup = buildSimpleLineup(squadGame, HOME_ID)
 const ceremonyAwayLineup = buildSimpleLineup(squadGame, AWAY_ID)
+const journalistRelationshipArc = typeof window !== 'undefined'
+  ? new URLSearchParams(window.location.search).get('relationshipArc')
+  : null
+const journalistRelationshipType = journalistRelationshipArc === 'feud'
+  ? 'journalist_feud' as const
+  : journalistRelationshipArc === 'redemption'
+    ? 'journalist_redemption' as const
+    : null
 const journalistSceneGame = {
   ...efterklangGame,
+  storylines: journalistRelationshipType ? [{
+    id: `dev-${journalistRelationshipType}`,
+    type: journalistRelationshipType,
+    season: 7,
+    matchday: 12,
+    clubId: HOME_ID,
+    description: 'dev-history',
+    displayText: 'dev-history',
+    resolved: true,
+  }] : [],
   journalist: {
     ...efterklangGame.journalist!,
     outlet: 'Gefle Dagblad',
     style: 'neutral' as const,
+    relationship: journalistRelationshipArc === 'feud'
+      ? 18
+      : journalistRelationshipArc === 'redemption'
+        ? 80
+        : efterklangGame.journalist!.relationship,
     pressRefusals: 1,
     memory: efterklangGame.journalist!.memory.map((m, i) => i === 2 ? { ...m, event: 'refused_press' } : m),
   },
@@ -1678,8 +1701,8 @@ export function DevScenesScreen() {
   const seasonReady = useGameStore(s => (s.game?.seasonSummaries?.length ?? 0) > 0)
   const finalReady = useGameStore(s => !!s.game?.playoffBracket?.final)
   const storeGame = useGameStore(s => s.game)
-  const retirementEventForScene = storeGame?.pendingEvents.find(event => event.id === retirementEvent.id)
-  const mecenatDinnerEventForScene = storeGame?.pendingEvents.find(event => event.id === mecenatDinnerEvent.id)
+  const retirementEventForScene = storeGame?.pendingEvents?.find(event => event.id === retirementEvent.id)
+  const mecenatDinnerEventForScene = storeGame?.pendingEvents?.find(event => event.id === mecenatDinnerEvent.id)
 
   // Seed the store so all screens that call useGameStore() work.
   // Detta låg tidigare i useMemo och anropade useGameStore.setState() UNDER
