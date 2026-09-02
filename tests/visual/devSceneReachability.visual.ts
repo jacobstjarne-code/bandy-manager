@@ -175,3 +175,56 @@ test('Säsongssignaturen visar kall vinter som riktig scen', async ({ page }) =>
   await expect(scene.getByText('KÖLDVINTERN')).toBeVisible()
   await expect(scene.getByRole('button')).toBeVisible()
 })
+
+test('Scouting-scenen visar både talangspaning och utvärderingspool', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=scouting&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('Ny talangspaning')).toBeVisible()
+  await expect(scene.getByText('Spelare att utvärdera')).toBeVisible()
+  await expect(scene.getByRole('button', { name: 'Utvärdera' }).first()).toBeVisible()
+})
+
+test('Introt går från kallöppning till karriär-CTA', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=intro-sequence&width=390', { waitUntil: 'networkidle' })
+
+  await expect(page.getByText('Strålkastarna tänds. Isen ligger klar.')).toBeVisible({ timeout: 3_000 })
+  await expect(page.getByRole('button', { name: 'STARTA KARRIÄREN' })).toBeVisible({ timeout: 7_000 })
+  await expect(page.getByText('En ort. Ett lag. Ett mål.')).toBeVisible()
+})
+
+test('Tillträdet visar klubb, assistent och första riktiga steg', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=tilltrade&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText(/Tillträdet/)).toBeVisible()
+  await expect(scene.getByText('Assisterande tränare', { exact: false })).toBeVisible()
+  await expect(scene.getByRole('button', { name: 'Visa mig' })).toBeVisible()
+})
+
+test('Namnsteget visar identitetsfråga, fält och nästa CTA', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=name-input&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('VEM ÄR DU?')).toBeVisible()
+  await expect(scene.getByPlaceholder('Ditt namn')).toBeVisible()
+  await expect(scene.getByRole('button', { name: /GÅ VIDARE/ })).toBeVisible()
+})
+
+test('Klubbpärmen visar riktig dialog, klubb och kapitel', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=klubbparm&width=390', { waitUntil: 'networkidle' })
+  const dialog = page.getByRole('dialog', { name: 'Klubbpärmen' })
+
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByText('Klubbpärmen', { exact: true })).toBeVisible()
+  await expect(dialog.getByRole('button', { name: 'Stäng' })).toBeVisible()
+})
+
+test('Avskedsceremonin visar spelaren, avskedet och båda valen', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=ceremony-retirement&width=390', { waitUntil: 'networkidle' })
+
+  await expect(page.getByText('🎖️ AVSKED', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Karl Lindström' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Erbjud en roll i ledarstaben' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Tacka av honom på isen' })).toBeVisible()
+})

@@ -116,4 +116,10 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   ['contract-demands'], ['career-break'], ['inbox'], ['sim-summary'], ['hall-provning'],
   // Tidigare helt onåbara berättelsescener, nu riktiga produktkomponenter.
   ['coffee-room'], ['valet'], ['journalist-relationship'], ['cup-intro'], ['sunday-training'], ['season-signature-reveal'],
+  // Sista sex helt onåbara produktkomponenter ur sluttestets registreringslista.
+  // Klubbpärmen och avskedsceremonin är fixed overlays och fotograferas mot
+  // hela viewporten, samma regel som EventOverlay/CallupModal ovan.
+  ['scouting'], ['intro-sequence'], ['tilltrade'], ['name-input'],
+  ['klubbparm', undefined, undefined, true],
+  ['ceremony-retirement', undefined, undefined, true],
 ]

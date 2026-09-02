@@ -69,6 +69,13 @@ import { JournalistRelationshipScene } from '../scenes/JournalistRelationshipSce
 import { CupIntroScene } from '../scenes/CupIntroScene'
 import { SundayTrainingScene } from '../scenes/SundayTrainingScene'
 import { SeasonSignatureRevealScene } from '../scenes/SeasonSignatureRevealScene'
+import { ScoutingTab } from '../../components/transfers/ScoutingTab'
+import { IntroSequence } from '../IntroSequence'
+import { TilltradeScreen } from '../TilltradeScreen'
+import { NameInputScreen } from '../NameInputScreen'
+import { KlubbparmOverlay } from '../../components/KlubbparmOverlay'
+import { CeremonyRetirement } from '../../components/portal/CeremonyRetirement'
+import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
@@ -169,6 +176,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // riktiga produktskärmar och deterministisk state, inte ytkopior.
   | 'contract-demands' | 'career-break' | 'inbox' | 'sim-summary' | 'hall-provning'
   | 'coffee-room' | 'valet' | 'journalist-relationship' | 'cup-intro' | 'sunday-training' | 'season-signature-reveal'
+  | 'scouting' | 'intro-sequence' | 'tilltrade' | 'name-input' | 'klubbparm' | 'ceremony-retirement'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -264,6 +272,12 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-intro', label: 'Cupintro — innan serien' },
   { id: 'sunday-training', label: 'Söndagsträning — sex spelare på isen' },
   { id: 'season-signature-reveal', label: 'Säsongssignatur — kall vinter' },
+  { id: 'scouting', label: 'Scouting — talangspaning och spelare' },
+  { id: 'intro-sequence', label: 'Intro — kallstart och karriär-CTA' },
+  { id: 'tilltrade', label: 'Tillträdet — första onboardingsteget' },
+  { id: 'name-input', label: 'Nytt spel — tränarnamn' },
+  { id: 'klubbparm', label: 'Klubbpärmen — första kapitlet' },
+  { id: 'ceremony-retirement', label: 'Avskedsceremoni — klubbikon slutar' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -836,6 +850,57 @@ const transfersClosedGame = withTransferWindowClosed(factoryMidSeasonGame)
 const transfersOpenNoBidsGame = withTransferWindowOpen(factoryMidSeasonGame)
 const transfersOneBidGame = withIncomingBids(withTransferWindowOpen(factoryMidSeasonGame), 1)
 const transfersMultiBidsGame = withIncomingBids(withTransferWindowOpen(factoryMidSeasonGame), 3)
+
+function ScoutingDevScene() {
+  const [position, setPosition] = useState('ALL')
+  const [maxAge, setMaxAge] = useState(24)
+  const [maxSalary, setMaxSalary] = useState(12_000)
+  const game = transfersOpenNoBidsGame
+  const managedClub = game.clubs.find(club => club.id === game.managedClubId)
+
+  return (
+    <ScoutingTab
+      game={game}
+      scoutReports={{}}
+      scoutBudget={game.scoutBudget ?? 10}
+      activeAssignment={game.activeScoutAssignment ?? null}
+      windowOpen
+      managedClub={managedClub}
+      spaningPosition={position}
+      spaningMaxAge={maxAge}
+      spaningMaxSalary={maxSalary}
+      currentRound={game.currentMatchday}
+      onSetSpanningPosition={setPosition}
+      onSetSpanningMaxAge={setMaxAge}
+      onSetSpanningMaxSalary={setMaxSalary}
+      onBid={() => {}}
+      onScout={() => {}}
+      onStartTalentSearch={() => ({ success: true })}
+      onScoutMessage={() => {}}
+      onToggleShortlist={() => {}}
+    />
+  )
+}
+
+const tilltradeGame: SaveGame = {
+  ...makeBaseGame({ seed: 31 }),
+  onboardingComplete: false,
+  tilltradeStep: 1,
+}
+
+const retirementEvent: GameEvent = {
+  id: 'dev-retirement-ceremony',
+  type: 'retirementCeremony',
+  title: 'En sista kväll på isen',
+  body: 'Det här har varit mitt hem. Jag kommer sakna ljudet från läktaren. Vill du erbjuda en roll i klubben?',
+  sender: { name: 'Karl Lindström', role: 'Klubbikon' },
+  relatedPlayerId: 'p-f1',
+  resolved: false,
+  choices: [
+    { id: 'coach', label: 'Erbjud en roll i ledarstaben', subtitle: 'Erfarenheten stannar i klubben', effect: { type: 'noOp' } },
+    { id: 'honour', label: 'Tacka av honom på isen', subtitle: 'Låt kvällen tillhöra Karl', effect: { type: 'noOp' } },
+  ],
+}
 
 // PORTAL-TAKREGEL (2026-08-09) — §5-baselinen, fyra tillstånd.
 // portal-full: matchday 24 valt specifikt — inom upptakt-fönstret (sista 3
@@ -1562,6 +1627,9 @@ export function DevScenesScreen() {
       : scene === 'journalist-relationship' ? journalistSceneGame
       : scene === 'season-signature-reveal' ? seasonSignatureGame
       : scene === 'coffee-room' || scene === 'cup-intro' || scene === 'sunday-training' ? squadGame
+      : scene === 'scouting' ? transfersOpenNoBidsGame
+      : scene === 'tilltrade' ? tilltradeGame
+      : scene === 'intro-sequence' || scene === 'name-input' || scene === 'klubbparm' || scene === 'ceremony-retirement' ? squadGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -1807,6 +1875,32 @@ export function DevScenesScreen() {
         )}
         {scene === 'season-signature-reveal' && (
           <SeasonSignatureRevealScene game={seasonSignatureGame} onComplete={() => {}} />
+        )}
+        {scene === 'scouting' && (
+          <div style={{ minHeight: '844px', background: 'var(--bg)', padding: '16px 12px' }}>
+            <ScoutingDevScene />
+          </div>
+        )}
+        {scene === 'intro-sequence' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <IntroSequence />
+          </div>
+        )}
+        {scene === 'tilltrade' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <TilltradeScreen />
+          </div>
+        )}
+        {scene === 'name-input' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <NameInputScreen />
+          </div>
+        )}
+        {scene === 'klubbparm' && (
+          <KlubbparmOverlay game={squadGame} onClose={() => {}} />
+        )}
+        {scene === 'ceremony-retirement' && (
+          <CeremonyRetirement game={squadGame} event={retirementEvent} />
         )}
         {(scene === 'sommaren-s2' || scene === 'sommaren-titelforsvarare' || scene === 'sommaren-tomt' || scene === 'sommaren-siffra') && (
           <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
