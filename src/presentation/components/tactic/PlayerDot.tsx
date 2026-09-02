@@ -32,6 +32,15 @@ export function PlayerDot({ slot, player, onClick, readOnly, isSelected }: Playe
       aria-label={!readOnly ? label : undefined}
       style={{ cursor: readOnly ? 'default' : 'pointer' }}
     >
+      {/*
+        M5: separat, osynlig tumträffyta. Den synliga spelarpricken behåller
+        sin 28-enheters diameter; träffytan är 46×46 och ryms mellan planens
+        tätaste slotar (56 enheter mellan centrum). `fill="transparent"`
+        deltar i SVG-hit-testing utan att skapa en parallell kontroll.
+      */}
+      {!readOnly && (
+        <circle cx={cx} cy={cy} r="23" fill="transparent" aria-hidden="true" data-player-dot-hit-area />
+      )}
       {/* Selection ring */}
       {isSelected && (
         <circle cx={cx} cy={cy} r={r + 4} fill="none" stroke="var(--accent)" strokeWidth="2" opacity="0.8" />

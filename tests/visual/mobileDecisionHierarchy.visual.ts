@@ -117,4 +117,30 @@ test.describe('mobil beslutshierarki @ 390×844', () => {
     expect(style.borderLeftStyle).toBe('solid')
     expect(style.shadow).not.toBe('none')
   })
+
+  test('taktiktavlans elva spelarval har tumträffyta och går att välja', async ({ page }) => {
+    await openMobileScene(page, 'taktik')
+
+    const playerDots = page.locator('svg g[role="button"][aria-label]')
+    await expect(playerDots).toHaveCount(11)
+
+    const boxes = await playerDots.evaluateAll(elements => elements.map(element => {
+      const rect = element.getBoundingClientRect()
+      return { width: rect.width, height: rect.height }
+    }))
+    for (const box of boxes) {
+      expect(box.width).toBeGreaterThanOrEqual(44)
+      expect(box.height).toBeGreaterThanOrEqual(44)
+    }
+
+    const firstDot = playerDots.first()
+    await firstDot.scrollIntoViewIfNeeded()
+    const firstBox = await firstDot.boundingBox()
+    if (!firstBox) throw new Error('Spelarvalet saknar bounding box')
+    await page.mouse.click(firstBox.x + firstBox.width / 2, firstBox.y + firstBox.height / 2)
+    await expect(page.getByText('VÄLJ FRÅN BÄNKEN ELLER EN ANNAN POSITION')).toBeVisible()
+
+    const sizeCheck = await findControlSizeViolations(page, '[data-scene-content]')
+    expect(sizeCheck.violations.map(v => v.message)).toEqual([])
+  })
 })

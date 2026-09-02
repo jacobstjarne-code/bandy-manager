@@ -27,6 +27,10 @@ for (const [id, clickText, snapshotNameOverride, fixedOverlay, extraHeight] of S
     await page.goto(`/dev/scenes?scene=${id}`, { waitUntil: 'networkidle' })
     // Vänta förbi BURY FEN-splashen tills dev-galleriet faktiskt monterat.
     await page.getByText('DEV GALLERY').waitFor({ timeout: 15000 })
+    // Aktivera capture-läget före ett eventuellt scenklick. På de höga
+    // Granska-scenerna måste Playwright scrolla till fliken; om dev-navet
+    // fortfarande är sticky fångar det klicket och scenen fotograferas aldrig.
+    await page.evaluate(() => document.documentElement.classList.add('capture-mode'))
     if (clickText) {
       await page.locator(clickText).first().click()
       await page.waitForTimeout(300)
@@ -46,7 +50,6 @@ for (const [id, clickText, snapshotNameOverride, fixedOverlay, extraHeight] of S
     // sätter navet till position:static när documentElement bär klassen
     // 'capture-mode' (satt här, innan screenshot) — inga andra ytor eller
     // viewporter behöver längre justeras för nav-artefaktens skull.
-    await page.evaluate(() => document.documentElement.classList.add('capture-mode'))
     if (fixedOverlay) {
       // Se kommentaren vid SCENES-deklarationen: position:fixed-modaler
       // täcker hela viewporten, inte data-scene-content-elementets egen box.

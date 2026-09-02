@@ -1313,15 +1313,17 @@ function makeUpptaktStandings(managedPoints: number, otherPoints: number[]) {
   return rows
 }
 // Schemalagd nästa match (md 20, grundserie) så NextMatchPrimary renderar w2-warm pcard
-const upptaktNextFixture = {
-  id: 'fx-upptakt-next', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
-  homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 0, awayScore: 0,
-  status: 'scheduled' as const, events: [], isCup: false, date: '2026-02-08', tipoffHour: 14,
-}
-const upptaktFx = () => [...makeLeagueFixtures(), upptaktNextFixture]
-const upptaktSakrat = makeGame(upptaktFx(), { currentMatchday: 19, standings: makeUpptaktStandings(34, [38, 36, 30, 28, 28, 20, 18, 16, 14, 12, 10]) })
-const upptaktFarozon = makeGame(upptaktFx(), { currentMatchday: 19, standings: makeUpptaktStandings(20, [30, 30, 28, 28, 28, 28, 26, 24, 22, 12, 10]) })
-const upptaktBottenstrid = makeGame(upptaktFx(), { currentMatchday: 19, standings: makeUpptaktStandings(8, [32, 30, 28, 26, 24, 22, 20, 18, 16, 10, 6]) })
+const upptaktFx = (variant: 'sakrat' | 'farozon' | 'bottenstrid') => [
+  ...makeLeagueFixtures(),
+  {
+    id: `fx-upptakt-next-${variant}`, leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
+    homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 0, awayScore: 0,
+    status: 'scheduled' as const, events: [], isCup: false, date: '2026-02-08', tipoffHour: 14,
+  },
+]
+const upptaktSakrat = makeGame(upptaktFx('sakrat'), { currentMatchday: 19, standings: makeUpptaktStandings(34, [38, 36, 30, 28, 28, 20, 18, 16, 14, 12, 10]) })
+const upptaktFarozon = makeGame(upptaktFx('farozon'), { currentMatchday: 19, standings: makeUpptaktStandings(20, [30, 30, 28, 28, 28, 28, 26, 24, 22, 12, 10]) })
+const upptaktBottenstrid = makeGame(upptaktFx('bottenstrid'), { currentMatchday: 19, standings: makeUpptaktStandings(8, [32, 30, 28, 26, 24, 22, 20, 18, 16, 10, 6]) })
 
 // Ekonomi (Våg 4) — kassa-trend härledd ur financeLog. Två states för stroke-färgning.
 function makeFinanceLog(nets: number[]) {

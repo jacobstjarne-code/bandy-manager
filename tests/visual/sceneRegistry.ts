@@ -49,7 +49,11 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   ['granska', 'text="Analys"', 'granska-analys', undefined, EXTRA_HEIGHT],
   ['season-a'], ['season-b'], ['season-c'],
   ['miljoheader-karlsborg'], ['miljoheader-rogle'],
-  ['tabell'], ['season-header'], ['season-noplayoffs'], ['season-fired'], ['finalhelg'], ['annandagen'],
+  ['tabell'], ['season-header'], ['season-noplayoffs'], ['season-fired'], ['finalhelg'],
+  // AnslagOverlay är avsiktligt position:fixed/inset:0, samma overlay-klass
+  // som event-overlay och press-conference nedan. Fånga därför viewporten och
+  // undanta scenen från den vanliga innehålls-occlusiongrinden.
+  ['annandagen', undefined, undefined, true],
   // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — fyra baseline-scener, CODE_
   // INSTRUKTION_SOMMAREN_2026-08-17.md:s matris. Saknade baseline fram till
   // denna rad — osynade av hela svepet tills nu, samma lucka-klass som
