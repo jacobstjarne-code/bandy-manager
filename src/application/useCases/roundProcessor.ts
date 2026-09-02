@@ -1413,6 +1413,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (patronCooldownOk) {
       const emergeId = `patron_emerge_${game.currentSeason}`
       const alreadyQueued = (game.pendingEvents ?? []).some(e => e.id === emergeId) ||
+        (game.resolvedEventIds ?? []).includes(emergeId) ||
         game.inbox.some(i => i.id === emergeId) ||
         allNewEvents.some(e => e.id === emergeId)
       if (!alreadyQueued) {
@@ -2282,6 +2283,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           ]}
         }
       }
+      // DOM_BURNOUT_TAK_2026-09-02 (A) — stämpla episoden som erbjuden SAMMA
+      // omgång eventet faktiskt genereras (eventProcessor.ts). Ingen source-
+      // cooldown/budget skyddar detta eventet (avsiktligt, se dess trigger) —
+      // profil-stämpeln är den ENDA spärren mot att samma episod erbjuds om
+      // och om igen så länge scoret ligger kvar på taket.
+      if (allNewEvents.some(e => e.type === 'burnoutCeiling')) {
+        enrichedProfile = { ...enrichedProfile, burnoutCeilingChoiceOffered: true }
+      }
+
       // HIGH 10 (DOM_HIGH10_BURNOUT_BAGE_2026-08-29) — bågens tre beats,
       // ömsesidigt uteslutande i prioritetsordningen slut → lättnad →
       // eskalering. Villkoren kan per konstruktion inte överlappa (slut

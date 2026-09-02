@@ -39,6 +39,7 @@ import { updatePlayerAvailability } from '../../domain/services/playerAvailabili
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 import { calculateWageBudget } from '../../domain/services/wageBudgetService'
+import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
 import {
   buildDefaultLineup,
   generateManagedClubEntourage,
@@ -211,6 +212,7 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     boardObjectiveHistory: [],
     seasonStartBoardExpectation: managedClub.boardExpectation,
     seasonStartFinances: managedClub.finances,
+    seasonStartSquadSnapshot: buildSeasonStartSquadSnapshot(game.players, newClubId, season),
     seasonStartSnapshot: undefined,
     seasonContractExtensionCount: 0,
     seasonNetTransferSpend: 0,

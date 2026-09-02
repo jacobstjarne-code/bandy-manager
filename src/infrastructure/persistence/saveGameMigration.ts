@@ -1,4 +1,5 @@
-import type { SaveGame } from '../../domain/entities/SaveGame'
+import { CURRENT_SAVE_VERSION, type SaveGame } from '../../domain/entities/SaveGame'
+export { CURRENT_SAVE_VERSION } from '../../domain/entities/SaveGame'
 import type { BoardMember, BoardPersonality, BoardRole } from '../../domain/entities/Club'
 import type { FacilityState } from '../../domain/entities/Community'
 import { PendingScreen } from '../../domain/enums'
@@ -9,6 +10,7 @@ import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { FACILITY_NODE_DEFS } from '../../domain/services/facilityService'
 import { computeSeasonVerdictRating, expectationVerdictFromRating } from '../../domain/services/boardService'
 import { buildExpectationVerdictSentence } from '../../domain/services/seasonSummaryService'
+import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
 
 // B1 §5 — migrera gamla facilityProjects → ny facilityState. SJÄLVSTÄNDIG legacy-shape
 // (importerar inte den borttagna FacilityProject-typen) så den överlever utfasningen.
@@ -114,8 +116,6 @@ function mergeLegacyBoard(
 
   return result
 }
-
-export const CURRENT_SAVE_VERSION = '0.3.7'
 
 export function migrateSaveGame(raw: unknown): SaveGame {
   const data = raw as Record<string, unknown>
@@ -385,6 +385,26 @@ export function migrateSaveGame(raw: unknown): SaveGame {
         ...s, clubId: typeof s.clubId === 'string' ? mapId(s.clubId) : s.clubId,
       }))
     }
+    if (data.seasonStartSquadSnapshot && typeof data.seasonStartSquadSnapshot === 'object') {
+      const snapshot = data.seasonStartSquadSnapshot as Record<string, unknown>
+      if (typeof snapshot.clubId === 'string') snapshot.clubId = mapId(snapshot.clubId)
+    }
+  }
+
+  // mostImproved-snapshotten kan bara backfyllas sanningsenligt vid exakt
+  // säsongsstart. Mitt i en legacy-säsong kan nuvarande trupp redan sakna en
+  // såld spelare; då lämnas fältet tomt och årsboken avstår från utmärkelsen
+  // den säsongen i stället för att presentera en falsk vinnare.
+  if (data.seasonStartSquadSnapshot === undefined
+    && data.currentMatchday === 0
+    && typeof data.currentSeason === 'number'
+    && typeof data.managedClubId === 'string'
+    && Array.isArray(data.players)) {
+    data.seasonStartSquadSnapshot = buildSeasonStartSquadSnapshot(
+      data.players as unknown as import('../../domain/entities/Player').Player[],
+      data.managedClubId,
+      data.currentSeason,
+    )
   }
 
   // V1.4 — narrative / supporter fields

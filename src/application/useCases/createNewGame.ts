@@ -1,4 +1,4 @@
-import type { SaveGame } from '../../domain/entities/SaveGame'
+import { CURRENT_SAVE_VERSION, type SaveGame } from '../../domain/entities/SaveGame'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { League } from '../../domain/entities/League'
 import { FixtureStatus, TrainingType, TrainingIntensity } from '../../domain/enums'
@@ -19,6 +19,7 @@ import { generateReferees } from '../../domain/services/refereeService'
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
 import { generateManagerProfile, generateCoachRivalries } from '../../domain/services/managerProfileService'
 import { calculateWageBudget } from '../../domain/services/wageBudgetService'
+import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
 // O13 (DOM_TRANARMARKNADEN_2026-08-26): det klubbspecifika steget är utbrutet
 // till setupManagedClub.ts så att tränarmarknadens klubbyte kan köra EXAKT
 // samma generering mot en redan existerande värld. rand-ordningen där är
@@ -154,6 +155,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     lastPlayoffElimination: null,
     cupBracket,
     seasonSummaries: [],
+    seasonStartSquadSnapshot: buildSeasonStartSquadSnapshot(players, input.clubId, season),
     pendingScreen: null,
     coachMarksSeen: false,
     onboardingComplete: false,
@@ -207,7 +209,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     academyLevel: 'basic',
     mentorships: [],
     loanDeals: [],
-    version: '0.1.0',
+    version: CURRENT_SAVE_VERSION,
     lastSavedAt: now,
     // V0.9 fields
     communityStanding: 50,

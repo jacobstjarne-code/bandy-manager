@@ -26,6 +26,9 @@ import type { Moment, MomentSource } from './Moment'
 import type { AssistantCoach } from './AssistantCoach'
 import type { PendingScene, SceneId } from './Scene'
 
+/** En enda källa för save-schemats version, både vid skapande och migrering. */
+export const CURRENT_SAVE_VERSION = '0.3.8'
+
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'
 import type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
@@ -133,9 +136,10 @@ export interface SeasonTransitionEvent {
  * ingen egen beräkning där — samma mönster som pendingSeasonTransitionEvents.
  *
  * STEG 1 (byggt): kvittensrad + kravband, grundat ENDAST i egen placering
- * (föregående resultat). STEG 2 (blockerad, väntar på aiTransferLog +
- * standingsSnapshot-trend): mellandelen ("vad de vet om läget", ligarörelser)
- * — renderas inte förrän den finns, "hellre två sanna delar än tre där en
+ * (föregående resultat). STEG 2:s datakällor (`aiTransferLog` och
+ * `standingsSnapshot`-trend) finns nu, men mellandelen ("vad de vet om
+ * läget", ligarörelser) väntar fortfarande på fyra ordagranna skälsrader
+ * från Opus — se boardService.ts. "Hellre två sanna delar än tre där en
  * hittar på" (Jacobs ord).
  */
 export interface BoardAssessment {
@@ -151,6 +155,23 @@ export interface BoardAssessment {
    * på Opus — se boardService.ts:s '[Opus]'-platshållare.
    */
   seasonAcknowledgment: string
+}
+
+/**
+ * Fryst medlemskap och CA vid starten av en manager-säsong. Årsbokens
+ * `mostImproved` får inte härleda kandidatgruppen ur spelarens klubb vid
+ * säsongsslut: en spelare kan ha utvecklats i klubben och därefter sålts.
+ * `season` + `clubId` gör att en gammal snapshot aldrig kan återanvändas
+ * efter rollover eller klubbyte.
+ */
+export interface SeasonStartSquadSnapshot {
+  season: number
+  clubId: string
+  players: Array<{
+    playerId: string
+    playerName: string
+    startCA: number
+  }>
 }
 
 export interface SaveGame {
@@ -178,7 +199,13 @@ export interface SaveGame {
   // A2 (2026-07-19) — kafferummets frågor (COFFEE_ROOM_QUESTIONS). D1-D3.
   coffeeRoomAnsweredQuestions?: string[]   // questionId — pensionerad, ställs aldrig igen
   coffeeRoomAnswers?: Record<string, 'A' | 'B'>  // questionId → valt svar, för återkomsten (D3)
-  coffeeRoomPendingReturns?: Array<{ questionId: string; answerId: 'A' | 'B'; answeredMatchday: number }>
+  coffeeRoomPendingReturns?: Array<{
+    questionId: string
+    answerId: 'A' | 'B'
+    answeredMatchday: number
+    /** Explicit deadline so rebasning cannot change the seeded 2–6-round delay. */
+    dueMatchday?: number
+  }>
 
   // Portal-beats (lättviktiga engångsmoment)
   shownBeats?: string[]                // Beat-nycklar som visats (format: beatId eller beatId_season)
@@ -260,6 +287,9 @@ export interface SaveGame {
   pendingScreen?: PendingScreen | null
   seasonSummaries: SeasonSummary[]
   seasonStartFinances?: number  // club finances at season start
+  /** Källan för årsbokens mostImproved. Saknas på legacy-saves där ett
+   *  pågående säsongsstartsmedlemskap inte längre kan återskapas säkert. */
+  seasonStartSquadSnapshot?: SeasonStartSquadSnapshot
   /** A-H1 (SEXSÄSONGSAUDITEN 2026-08-26, spår 2 rot a — "ett fält med flera
    *  semantiker"): managedClub.boardExpectation stegas till NÄSTA säsongs
    *  krav i seasonEndProcessor.ts INNAN generateSeasonSummary läser den —

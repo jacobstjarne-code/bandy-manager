@@ -25,6 +25,11 @@ function hashSeed(n: number): number {
   return (x ^ (x >>> 16)) >>> 0
 }
 
+export function getCoffeeRoomReturnDueMatchday(questionId: string, answeredMatchday: number): number {
+  const delay = 2 + (hashSeed(questionId.length * 13 + answeredMatchday * 7) % 5)
+  return answeredMatchday + delay
+}
+
 /** A2 (2026-07-19) — D1: Sture vänder sig till spelaren, tredje beaten. */
 export interface CoffeeRoomQuestionPrompt {
   questionId: string
@@ -865,8 +870,7 @@ function pickDueCoffeeRoomReturn(game: SaveGame): { questionId: string; answerId
   const due = [...pending]
     .sort((a, b) => a.answeredMatchday - b.answeredMatchday)
     .find(p => {
-      const delay = 2 + (hashSeed(p.questionId.length * 13 + p.answeredMatchday * 7) % 5)
-      return currentMatchday >= p.answeredMatchday + delay
+      return currentMatchday >= (p.dueMatchday ?? getCoffeeRoomReturnDueMatchday(p.questionId, p.answeredMatchday))
     })
   return due ? { questionId: due.questionId, answerId: due.answerId } : null
 }

@@ -5,7 +5,7 @@ import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightServ
 import type { Player } from '../../domain/entities/Player'
 import type { Moment } from '../../domain/entities/Moment'
 import { appendMomentsToLedger } from '../../domain/services/momentLedgerService'
-import type { GameEvent } from '../../domain/entities/GameEvent'
+import type { FollowUp, GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype, ClubExpectation } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -46,6 +46,191 @@ import { computeSeasonEndContractDemands } from '../../domain/services/contractD
 import { resolveDeferredAtRollover } from '../../domain/services/deferredRolloverService'
 import { FALLBACK_SEASON_DEADLINE_MATCHDAY } from '../../domain/services/decisionTierService'
 import { calculateWageBudget } from '../../domain/services/wageBudgetService'
+import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
+import type { FacilityState } from '../../domain/entities/Community'
+import type { YouthPlayer } from '../../domain/entities/Academy'
+import type { PendingDemand } from '../../domain/entities/Demand'
+import { getCoffeeRoomReturnDueMatchday } from '../../domain/services/coffeeRoomService'
+
+/** Bevara återstående tid när currentMatchday börjar om på 0. */
+export function rebaseFutureMatchday(
+  absoluteMatchday: number | undefined,
+  completedSeasonMatchday: number,
+): number | undefined {
+  return absoluteMatchday === undefined
+    ? undefined
+    : absoluteMatchday - completedSeasonMatchday
+}
+
+export function rolloverYouthAvailability(
+  players: YouthPlayer[],
+  completedSeasonMatchday: number,
+): YouthPlayer[] {
+  return players.map(player => ({
+    ...player,
+    availabilityUntilRound: rebaseFutureMatchday(
+      player.availabilityUntilRound,
+      completedSeasonMatchday,
+    ),
+  }))
+}
+
+/** Bevara återstående "ramp först"-frist över säsongsskiftet (steg C, DOM_BURNOUT_TAK-ordern 2026-09-02). */
+export function rolloverPlayerInjuryRamp(
+  players: Player[],
+  completedSeasonMatchday: number,
+): Player[] {
+  return players.map(player => ({
+    ...player,
+    recentlyInjuredUntil: rebaseFutureMatchday(
+      player.recentlyInjuredUntil,
+      completedSeasonMatchday,
+    ),
+  }))
+}
+
+export function rolloverPendingDemand(
+  demand: PendingDemand | undefined,
+  completedSeasonMatchday: number,
+): PendingDemand | undefined {
+  if (!demand) return undefined
+  return {
+    ...demand,
+    createdRound: demand.createdRound - completedSeasonMatchday,
+    deadlineRound: demand.deadlineRound - completedSeasonMatchday,
+  }
+}
+
+export function rolloverFollowUps(
+  followUps: FollowUp[] | undefined,
+  completedSeasonMatchday: number,
+): FollowUp[] {
+  return (followUps ?? []).map(followUp => ({
+    ...followUp,
+    createdMatchday: followUp.createdMatchday - completedSeasonMatchday,
+  }))
+}
+
+export function rolloverLeadershipActions(
+  actions: NonNullable<SaveGame['leadershipActions']> | undefined,
+  completedSeasonMatchday: number,
+): NonNullable<SaveGame['leadershipActions']> {
+  return (actions ?? []).map(action => ({
+    ...action,
+    fromRound: action.fromRound - completedSeasonMatchday,
+    expiresRound: action.expiresRound - completedSeasonMatchday,
+  }))
+}
+
+export function rolloverCoffeeRoomReturns(
+  pendingReturns: SaveGame['coffeeRoomPendingReturns'],
+  completedSeasonMatchday: number,
+): NonNullable<SaveGame['coffeeRoomPendingReturns']> {
+  return (pendingReturns ?? []).map(pending => {
+    const dueMatchday = pending.dueMatchday
+      ?? getCoffeeRoomReturnDueMatchday(pending.questionId, pending.answeredMatchday)
+    return {
+      ...pending,
+      answeredMatchday: pending.answeredMatchday - completedSeasonMatchday,
+      dueMatchday: dueMatchday - completedSeasonMatchday,
+    }
+  })
+}
+
+export function rolloverEconomicCrisis(
+  crisis: SaveGame['economicCrisisState'],
+  completedSeasonMatchday: number,
+): SaveGame['economicCrisisState'] {
+  if (!crisis || crisis.phase === 'resolved') return undefined
+  return {
+    ...crisis,
+    startedMatchday: crisis.startedMatchday - completedSeasonMatchday,
+  }
+}
+
+export function rolloverActiveArcs(
+  arcs: SaveGame['activeArcs'],
+  completedSeasonMatchday: number,
+): NonNullable<SaveGame['activeArcs']> {
+  return (arcs ?? []).map(arc => ({
+    ...arc,
+    startedMatchday: arc.startedMatchday - completedSeasonMatchday,
+    expiresMatchday: arc.expiresMatchday - completedSeasonMatchday,
+  }))
+}
+
+export function rolloverTransientEchoMatchdays(game: SaveGame) {
+  return {
+    victoryEchoExpires: rebaseFutureMatchday(game.victoryEchoExpires, game.currentMatchday),
+    nationalTeamReturnExpires: rebaseFutureMatchday(game.nationalTeamReturnExpires, game.currentMatchday),
+    hallEchoExpires: rebaseFutureMatchday(game.hallEchoExpires, game.currentMatchday),
+    klackEcho: game.klackEcho
+      ? {
+          ...game.klackEcho,
+          resultMatchday: game.klackEcho.resultMatchday - game.currentMatchday,
+        }
+      : undefined,
+  }
+}
+
+export function rolloverNationalTeamCamp(
+  camp: SaveGame['activeNationalTeamCamp'],
+  completedSeasonMatchday: number,
+): SaveGame['activeNationalTeamCamp'] {
+  if (!camp) return undefined
+  return {
+    ...camp,
+    startRound: camp.startRound - completedSeasonMatchday,
+    endRound: camp.endRound - completedSeasonMatchday,
+  }
+}
+
+export function archiveCompletedSeasonInbox(items: InboxItem[]): InboxItem[] {
+  return items.map(item => {
+    if (item.isRead) return item
+    // expiresRound sätts idag enbart på transferbudens inboxposter. Själva
+    // transferBids-kön avslutas vid rollover, så deadlinen får inte signalera
+    // ett beslut som inte längre existerar.
+    if (item.expiresRound !== undefined) {
+      return { ...item, isRead: true, expiresRound: undefined }
+    }
+    return { ...item, isRead: true }
+  })
+}
+
+/**
+ * currentMatchday börjar om på 0 varje säsong, medan activeProject tidigare
+ * behöll sin gamla etaMatchday. Då kunde ett sent bygge aldrig nå sitt ETA.
+ * Bevara bara den återstående byggtiden på den nya säsongens skala.
+ */
+export function rolloverFacilityState(game: SaveGame): FacilityState | undefined {
+  const state = game.facilityState
+  const project = state?.activeProject
+  if (!state) return state
+
+  const pausedAt = state.hallTrial?.buildPausedAtMatchday
+  const referenceMatchday = pausedAt ?? game.currentMatchday
+  const remainingRounds = project
+    ? Math.max(0, project.etaMatchday - referenceMatchday)
+    : undefined
+  return {
+    ...state,
+    activeProject: project
+      ? {
+          ...project,
+          startedMatchday: 0,
+          etaMatchday: remainingRounds!,
+        }
+      : undefined,
+    hallTrial: state.hallTrial
+      ? {
+          ...state.hallTrial,
+          stageStartedRound: state.hallTrial.stageStartedRound - game.currentMatchday,
+          buildPausedAtMatchday: undefined,
+        }
+      : undefined,
+  }
+}
 
 // ── Position-aware replenishment helpers ──────────────────────────────────────
 const POSITION_MINIMUMS: Record<PlayerPosition, number> = {
@@ -784,13 +969,17 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   })
 
   // ── Contract expiry — players whose contracts have run out ───────────────
-  const handledContractIds = new Set(game.handledContractPlayerIds ?? [])
   const contractExpiredIds = new Set<string>()
   const contractExpiryInbox: InboxItem[] = []
 
   for (const player of resetPlayers) {
     if (retiredPlayerIds.has(player.id)) continue          // already retiring
-    if (handledContractIds.has(player.id)) continue        // renewed during season
+    // `handledContractPlayerIds` betyder att årets contractRequest har
+    // besvarats, inte att kontraktet nödvändigtvis förlängdes: rejectContract
+    // skriver samma id för att inte återgenerera kortet senare under säsongen.
+    // Själva contractUntilSeason är därför den enda sanningen för om avtalet
+    // faktiskt löper vidare. En förlängning har redan flyttat datumet framåt;
+    // ett avslag lämnar datumet orört och ska inte ge ett gratis extraår.
     if (player.contractUntilSeason > game.currentSeason) continue  // still valid
 
     contractExpiredIds.add(player.id)
@@ -1622,10 +1811,27 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     captainPlayerId: nextCaptainPlayerId,
     currentSeason: nextSeason,
     currentMatchday: 0,
+    ...rolloverTransientEchoMatchdays(game),
+    activeNationalTeamCamp: rolloverNationalTeamCamp(game.activeNationalTeamCamp, game.currentMatchday),
+    burnoutTrainingSlowdownUntilRound: rebaseFutureMatchday(
+      game.burnoutTrainingSlowdownUntilRound,
+      game.currentMatchday,
+    ),
+    burnoutCeilingRecoveryUntilRound: rebaseFutureMatchday(
+      game.burnoutCeilingRecoveryUntilRound,
+      game.currentMatchday,
+    ),
+    managedClubPeriodisationSince: rebaseFutureMatchday(
+      game.managedClubPeriodisationSince,
+      game.currentMatchday,
+    ),
+    pendingFollowUps: rolloverFollowUps(game.pendingFollowUps, game.currentMatchday),
+    leadershipActions: rolloverLeadershipActions(game.leadershipActions, game.currentMatchday),
+    coffeeRoomPendingReturns: rolloverCoffeeRoomReturns(game.coffeeRoomPendingReturns, game.currentMatchday),
     currentDate: `${nextSeason}-10-01`,
     seasonCalendar: nextSeasonCalendar,
     clubs: clubsAfterLicense,
-    players: playersAfterLicense,
+    players: rolloverPlayerInjuryRamp(playersAfterLicense, game.currentMatchday),
     // 5.1 Sommaren: ackumulerade akademiuppflyttningar under säsongen
     // (academyActions.ts) + retired/contractExpired/aged från denna körning.
     // Sommaren tömmer listan när den visas, inte denna funktion.
@@ -1640,13 +1846,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // nollställs här. Utan detta ser en spelare t.ex. annandagen en gång, aldrig igen.
     phaseMarksSeen: [],
     // A5 — Notisdiet: arkivera olästa från föregående säsong (markera som lästa).
-    // Decision-items med levande expiresRound följer med orörd.
+    // Transferbudens deadlines arkiveras också: själva buden nollställs nedan,
+    // så en levande expiresRound här hade blivit en föräldralös nästa-säsongspost.
     inbox: [
-      ...game.inbox.map(i => {
-        if (i.isRead) return i
-        if (i.expiresRound != null) return i  // levande beslut följer med
-        return { ...i, isRead: true }
-      }),
+      ...archiveCompletedSeasonInbox(game.inbox),
       ...newInboxItems,
       ...retirementMessages,
       ...contractExpiryInbox,
@@ -1732,6 +1935,14 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ? Math.max(0, (game.fanMood ?? 50) - 15)
       : game.fanMood,
     seasonStartFinances: updatedClubs.find(c => c.id === game.managedClubId)?.finances,
+    // mostImproved-källan för nästa säsong fryses EFTER sommarens
+    // pensioner, kontraktsutgångar, AI-transfers och truppkomplettering.
+    // Den avslutade säsongens summary ovan har redan läst den gamla snapshotten.
+    seasonStartSquadSnapshot: buildSeasonStartSquadSnapshot(
+      playersAfterLicense,
+      game.managedClubId,
+      nextSeason,
+    ),
     // A-H1: rullar fram den frusna förväntan till NÄSTA säsongs "säsongsstart"
     // — updatedClubs bär redan den stegade boardExpectation (rad ~379), så
     // detta är samma värde som clubsAfterLicense[managedClubId].boardExpectation
@@ -1779,8 +1990,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     meritBuffer: newMeritBuffer,
     rivalryHistory: game.rivalryHistory ?? {},
     clubLegends: newLegends,
-    mecenater: ageMecenater((game.mecenater ?? []).map(m => m.isActive ? updateSilentShout(m) : m)),
-    facilityState: game.facilityState,
+    mecenater: ageMecenater((game.mecenater ?? []).map(m => m.isActive ? updateSilentShout(m) : m))
+      .map(m => ({
+        ...m,
+        pendingDemand: rolloverPendingDemand(m.pendingDemand, game.currentMatchday),
+      })),
+    facilityState: rolloverFacilityState(game),
+    activeArcs: rolloverActiveArcs(game.activeArcs, game.currentMatchday),
     storylines: game.storylines ?? [],
     boardObjectives: newSeasonObjectives,
     boardObjectiveHistory: [
@@ -1810,7 +2026,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       })()
       // Carry over existing youth players (age them up, retain under-20s) rather than generating fresh
       if (game.youthTeam && game.youthTeam.players.length > 0) {
-        return carryOverYouthTeam(game.youthTeam, managedClub, nextAcademyLevel, nextSeason, baseSeed + 77777)
+        const carried = carryOverYouthTeam(game.youthTeam, managedClub, nextAcademyLevel, nextSeason, baseSeed + 77777)
+        return {
+          ...carried,
+          players: rolloverYouthAvailability(carried.players, game.currentMatchday),
+        }
       }
       return generateYouthTeam(managedClub, nextAcademyLevel, nextSeason, baseSeed + 77777)
     })(),
@@ -1841,7 +2061,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     communityStanding: Math.min(100, newCommunityStanding + communityStandingDelta),
     journalistRelationship: newJournalistRelationship,
     sponsorNetworkMood: game.sponsorNetworkMood ?? 70,
-    patron: updatedPatron,
+    patron: updatedPatron
+      ? {
+          ...updatedPatron,
+          pendingDemand: rolloverPendingDemand(updatedPatron.pendingDemand, game.currentMatchday),
+        }
+      : updatedPatron,
     localPolitician: nextPolitician
       ? {
           ...nextPolitician,
@@ -1877,7 +2102,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     bandyLetterThisSeason: undefined,
     schoolAssignmentThisSeason: undefined,
     // DREAM-002: reset crisis state at season rollover if resolved
-    economicCrisisState: game.economicCrisisState?.phase === 'resolved' ? undefined : game.economicCrisisState,
+    economicCrisisState: rolloverEconomicCrisis(game.economicCrisisState, game.currentMatchday),
     // Reset per-season finance warning flag so new season can trigger fresh warnings
     financeWarningGivenThisSeason: false,
     // Lager 3: Licensnämnden
