@@ -194,6 +194,7 @@ interface GameState {
   markAnslagSeen: (key: import('../../domain/services/anslagService').AnslagKey) => void
   resolveWeeklyDecision: (choice: 'A' | 'B') => void
   completeScene: (sceneId: import('../../domain/entities/Scene').SceneId, choiceId?: string) => void
+  recordFinalIntroShown: (fixture: import('../../domain/entities/Fixture').Fixture, tier: import('../../domain/data/scenes/finalIntroScene').FinalTier) => void
   triggerCoffeeRoomScene: () => void
   triggerJournalistScene: () => void
   markPhaseAcknowledged: (phase: import('../../domain/data/seasonPhases').PortalPhase) => void

@@ -29,6 +29,7 @@ import type { Fixture } from '../../entities/Fixture'
 import type { MatchWeather } from '../../entities/Weather'
 import type { CoachPersonality } from '../../entities/AssistantCoach'
 import { getConditionLabel } from '../../services/weatherService'
+import { rotateSubject } from '../../services/narrativeCoordinatorService'
 import { seededPick } from '../../utils/random'
 
 export type FinalTier = 'gold' | 'copper'  // gold = SM-final, copper = kvarts/semi
@@ -44,6 +45,8 @@ export interface FinalIntroScene {
   statLabels: { serien: string; slutspel: string }
   /** Lagpresentationens nyckelreplik — assisterande tränaren. */
   keyline: { quote: string; speaker: string }
+  /** Samma urvalsnycklar som scenen visar, skrivs när spelaren går till avslag. */
+  narrativeKeys: readonly [hero: string, ingress: string, keyline: string]
   /** Scen-CTA:er (uppercase per mockens casing). */
   ctaToLineup: string
   ctaToKickoff: string
@@ -161,22 +164,53 @@ const INGRESS_POOL_COPPER = [
   `Slutspelskväll. {väder}\nVinn, så spelas det igen.\nFörlora tre, och vintern är slut.`,
 ]
 
-function buildHero(tier: FinalTier, seed: number): string {
+function pickRotatingFrame(
+  pool: readonly string[],
+  semanticKeyPrefix: string,
+  game: SaveGame,
+  seed: number,
+): { text: string; semanticKey: string } {
+  const selected = rotateSubject(
+    pool.map((text, index) => ({ id: String(index), text })),
+    semanticKeyPrefix,
+    game,
+    Infinity,
+    candidates => seededPick(candidates, seed),
+  )
+  if (!selected) throw new Error(`Tom finaltextpool: ${semanticKeyPrefix}`)
+  return { text: selected.text, semanticKey: `${semanticKeyPrefix}${selected.id}` }
+}
+
+function buildHero(tier: FinalTier, game: SaveGame, seed: number): { text: string; semanticKey: string } {
   // Ej hårdkodad annandag (se kanon-not). Venue är kanon i gold-poolen; copper
   // spelas hos lagen (INTE Studenternas), bäst av fem, inget ödesspråk.
-  return seededPick(tier === 'gold' ? HERO_POOL_GOLD : HERO_POOL_COPPER, seed)
+  return pickRotatingFrame(
+    tier === 'gold' ? HERO_POOL_GOLD : HERO_POOL_COPPER,
+    `final-hero_${tier}_`,
+    game,
+    seed,
+  )
 }
 
 function buildIngress(
   tier: FinalTier,
+  game: SaveGame,
   managedClubName: string,
   seed: number,
   weather?: MatchWeather,
-): string {
+): { text: string; semanticKey: string } {
   const cond = weather ? getConditionLabel(weather.weather.condition).toLowerCase() : null
   const väder = cond ? `${cond}.` : 'Vinterljus över planen.'
-  const template = seededPick(tier === 'gold' ? INGRESS_POOL_GOLD : INGRESS_POOL_COPPER, seed + 1)
-  return template.replace(/\{väder\}/g, väder).replace(/\{klubb\}/g, managedClubName)
+  const selected = pickRotatingFrame(
+    tier === 'gold' ? INGRESS_POOL_GOLD : INGRESS_POOL_COPPER,
+    `final-ingress_${tier}_`,
+    game,
+    seed + 1,
+  )
+  return {
+    text: selected.text.replace(/\{väder\}/g, väder).replace(/\{klubb\}/g, managedClubName),
+    semanticKey: selected.semanticKey,
+  }
 }
 
 // E-FS1 (BACKLOG.md): SM-final-uppspelet renderas i två komponenter (Förbered/
@@ -199,19 +233,24 @@ export function getFinalIntroScene(
 
   // MB-replik: pool nyckom personlighet OCH tier — gold-poolen är finalskriven,
   // copper (kvarts/semi, bäst av fem) har egen pool utan finalretorik.
-  // seededPick på fixture.id så repliken är stabil för matchen men varierar mellan finaler.
+  // Tie-break är stabil för tier+säsong+motstånd, medan rotateSubject läser
+  // karriärloggen och tar bort redan visade ramar före själva seedvalet.
   const personality: CoachPersonality = coach?.personality ?? 'calm'
   const pool = (tier === 'gold' ? KEYLINE_POOL : COPPER_KEYLINE_POOL)[personality]
-  const seed = fixture.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  const quote = seededPick(pool, seed)
+  const seedKey = `${tier}:${fixture.season}:${fixture.homeClubId}:${fixture.awayClubId}`
+  const seed = seedKey.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  const hero = buildHero(tier, game, seed)
+  const ingress = buildIngress(tier, game, managedClubName, seed, weather)
+  const keyline = pickRotatingFrame(pool, `final-keyline_${tier}_${personality}_`, game, seed)
   const speaker = coach ? `${coach.name} · Assisterande tränare` : 'Assisterande tränaren'
 
   return {
     eyebrow,
-    hero: buildHero(tier, seed),
-    ingress: buildIngress(tier, managedClubName, seed, weather),
+    hero: hero.text,
+    ingress: ingress.text,
     statLabels: FINAL_STAT_LABELS,
-    keyline: { quote, speaker },
+    keyline: { quote: keyline.text, speaker },
+    narrativeKeys: [hero.semanticKey, ingress.semanticKey, keyline.semanticKey],
     ctaToLineup: 'LAGEN →',
     ctaToKickoff: 'TILL AVSLAG →',
   }

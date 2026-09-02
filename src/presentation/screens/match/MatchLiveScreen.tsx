@@ -128,6 +128,7 @@ export function MatchLiveScreen() {
   const navigate = useNavigate()
   const { game, saveLiveMatchResult, advance, markMatchStarted, simulateAbandonedMatch } = useGameStore()
   const dismissHint = useGameStore(s => s.dismissHint)
+  const recordFinalIntroShown = useGameStore(s => s.recordFinalIntroShown)
   const managedClub = useManagedClub()
 
   const state = location.state as LocationState | null
@@ -1289,7 +1290,12 @@ export function MatchLiveScreen() {
         variant="sm"
         slide={finalIntroSlide}
         onNext={() => setFinalIntroSlide(prev => prev + 1)}
-        onStart={() => { setPostIntroFade(true); setFinalIntroSlide(0); setCurrentStep(0) }}
+        onStart={() => {
+          recordFinalIntroShown(fixture, 'gold')
+          setPostIntroFade(true)
+          setFinalIntroSlide(0)
+          setCurrentStep(0)
+        }}
         homeClubName={homeClubName}
         awayClubName={awayClubName}
         homeLineup={homeLineup}

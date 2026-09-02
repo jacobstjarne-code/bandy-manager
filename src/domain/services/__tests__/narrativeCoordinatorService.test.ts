@@ -135,6 +135,17 @@ describe('rotateSubject — subjekts-rotation', () => {
     expect(result?.id).toBe('p1')
   })
 
+  it('sorterar historiken på säsong före den säsongslokala omgången', () => {
+    const game = gameWithLog([
+      { semanticKey: 'beat_p1', season: 1, round: 30 },
+      { semanticKey: 'beat_p2', season: 2, round: 2 },
+    ])
+    const result = rotateSubject(pool, 'beat_', game, 1, c => c[0])
+
+    // p2 är senast trots lägre round; p1 ska därför fortfarande vara valbar.
+    expect(result?.id).toBe('p1')
+  })
+
   it('släpper spärren helt när hela poolen uteslutits (fullt varv)', () => {
     const game = gameWithLog([
       { semanticKey: 'beat_p1', season: 1, round: 1 },

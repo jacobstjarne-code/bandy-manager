@@ -209,7 +209,11 @@ export function rotateSubject<T extends { id: string }>(
 ): T | null {
   if (pool.length === 0) return null
 
-  const log = [...(game.narrativeBeatLog ?? [])].sort((a, b) => b.round - a.round)
+  // round är en säsongslokal axel och nollställs vid rollover. Sortera därför
+  // alltid på säsong först; annars ser t.ex. omg 30 förra säsongen nyare ut än
+  // omg 2 i den aktuella och fel subjekt spärras av rotationsfönstret.
+  const log = [...(game.narrativeBeatLog ?? [])]
+    .sort((a, b) => (b.season - a.season) || (b.round - a.round))
   const recentIds: string[] = []
   const seen = new Set<string>()
   for (const e of log) {

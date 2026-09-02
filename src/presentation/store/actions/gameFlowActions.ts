@@ -1,5 +1,6 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
+import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SeasonGoalType } from '../../../domain/entities/SeasonSummary'
 import type { AnslagKey } from '../../../domain/services/anslagService'
 import { findActiveAnniversaries } from '../../../domain/services/clubMemoryService'
@@ -28,6 +29,7 @@ import { PIVOTAL_BEAT_IDS } from '../../../domain/data/portalBeats'
 import { hasManagedClubFutureFixture } from '../../utils/nextActionCue'
 import { applyContractDemandResolutions } from '../../../domain/services/contractDemandService'
 import { fixtureSeed, mulberry32 } from '../../../domain/utils/random'
+import { getFinalIntroScene, type FinalTier } from '../../../domain/data/scenes/finalIntroScene'
 
 interface GetState {
   game: SaveGame | null
@@ -38,6 +40,7 @@ interface GetState {
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
   resolveWeeklyDecision: (choice: 'A' | 'B') => void
   completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => void
+  recordFinalIntroShown: (fixture: Fixture, tier: FinalTier) => void
   triggerCoffeeRoomScene: () => void
   triggerJournalistScene: () => void
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
@@ -834,6 +837,41 @@ export function gameFlowActions(get: Get, set: Set) {
 
       set({ game: updatedGame })
       void persistAutosave(updatedGame, 'completeScene', set)
+    },
+
+    recordFinalIntroShown: (fixture: Fixture, tier: FinalTier) => {
+      const { game } = get()
+      if (!game) return
+      const alreadyShownThisSeason = (game.narrativeBeatLog ?? []).some(entry =>
+        entry.season === game.currentSeason && entry.semanticKey.startsWith(`final-hero_${tier}_`),
+      )
+      if (alreadyShownThisSeason) return
+
+      // A-M9: scenen väljer hero/ingress/keyline via rotateSubject mot samma
+      // narrativeBeatLog. Skriv först NÄR hela uppladdningen faktiskt visats
+      // och spelaren går till avslag; då kan den pågående rendern inte byta
+      // ram under fötterna på spelaren, medan nästa final ser alla tre valen.
+      const { narrativeKeys } = getFinalIntroScene(game, fixture, tier)
+      let updatedGame = game
+      for (const semanticKey of narrativeKeys) {
+        const alreadyLoggedThisSeason = (updatedGame.narrativeBeatLog ?? []).some(entry =>
+          entry.semanticKey === semanticKey && entry.season === updatedGame.currentSeason,
+        )
+        if (!alreadyLoggedThisSeason) {
+          updatedGame = {
+            ...updatedGame,
+            narrativeBeatLog: logNarrativeBeat(
+              updatedGame,
+              semanticKey,
+              updatedGame.currentSeason,
+              getCurrentLeagueRound(updatedGame),
+            ),
+          }
+        }
+      }
+      if (updatedGame === game) return
+      set({ game: updatedGame })
+      void persistAutosave(updatedGame, 'recordFinalIntroShown', set)
     },
 
     triggerCoffeeRoomScene: () => {
