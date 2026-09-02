@@ -62,7 +62,6 @@ export const CHANNEL_BY_EVENT_TYPE: Partial<Record<GameEventType, SurfacingChann
   csPress: 'press',
   journalistExclusive: 'press',
   playerMediaComment: 'press',
-  mediaReaction: 'press',
   // transfer
   transferBidReceived: 'transfer',
   bidWar: 'transfer',

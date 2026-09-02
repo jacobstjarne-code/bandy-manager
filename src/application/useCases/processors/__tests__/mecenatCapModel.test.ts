@@ -79,6 +79,7 @@ describe('applyMecenatCapEviction — dubbelriktad: taket sjunker, någon lämna
     const evicted = result.updatedMecenater.find(m => m.id === 'mec_sad')
     expect(evicted?.isActive).toBe(false)
     expect(evicted?.permanentlyWithdrawn).toBe(true)
+    expect(result.withdrawnSeason).toBe(game.currentSeason)
     expect(result.newEvents.length).toBe(1)
     // De två andra fortfarande aktiva — bara EN evictas per anrop denna omgång
     expect(result.updatedMecenater.find(m => m.id === 'mec_happy')?.isActive).toBe(true)

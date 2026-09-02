@@ -6,14 +6,13 @@ import { useGameStore } from '../../store/gameStore'
 import { playSound } from '../../audio/soundEffects'
 import { MatchEventType } from '../../../domain/enums'
 import { FixtureStatus } from '../../../domain/enums'
-import { getCriticalEventsForGranska } from '../../../domain/services/granskaEventClassifier'
 import { deriveMatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { GranskaOversikt } from './GranskaOversikt'
 import { GranskaSpelare } from './GranskaSpelare'
 import { GranskaShotmap } from './GranskaShotmap'
 import { GranskaAnalys } from './GranskaAnalys'
 import { NextOpponentHook } from './NextOpponentHook'
-import { mergeResolvedChoices } from './helpers'
+import { countUnresolvedGranskaDecisions, mergeResolvedChoices } from './helpers'
 
 type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'analys'
 
@@ -200,10 +199,13 @@ export function GranskaScreen() {
     transition: `all 0.35s ease ${80 + i * 60}ms`,
   })
 
-  const unresolvedCritical = getCriticalEventsForGranska(pendingEvents).filter(e => !effectiveResolvedEventIds.has(e.id)).length
-  const unresolvedPC = game.pendingPressConference && !effectiveResolvedEventIds.has(game.pendingPressConference.id) ? 1 : 0
-  const unresolvedRM = game.pendingRefereeMeeting && !effectiveResolvedEventIds.has(game.pendingRefereeMeeting.id) ? 1 : 0
-  const unresolved = unresolvedCritical + unresolvedPC + unresolvedRM
+  const unresolved = countUnresolvedGranskaDecisions(
+    pendingEvents,
+    effectiveResolvedEventIds,
+    game.pendingPressConference,
+    game.pendingCSPress,
+    game.pendingRefereeMeeting,
+  )
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>

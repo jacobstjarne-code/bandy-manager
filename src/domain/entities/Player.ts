@@ -173,6 +173,9 @@ export interface Player {
     matchday: number
     text: string
     type: 'milestone' | 'form' | 'injury' | 'transfer' | 'storyline'
+    /** Maskinläsbar identitet för påståenden som måste återknyta till en
+     *  exakt händelse utan att tolka den svenska visningstexten. */
+    semanticKey?: 'first_team_debut'
   }>
 
   // DREAM-011 — Club legend (one per club, homegrown, never sold)

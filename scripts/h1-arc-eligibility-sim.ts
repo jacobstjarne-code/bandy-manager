@@ -6,7 +6,7 @@
  *
  * Mäter VALBARHET, inte dragning: för var och en av arcService.ts:s
  * val-bärande arc-typer (hungrig_breakthrough, joker_redemption,
- * veteran_farewell, veteran_final_season, contract_drama — ledare_crisis
+ * veteran_farewell, contract_drama — ledare_crisis
  * borttagen sedan Jacobs dom, se filens senare kommentar), en egen
  * predikatfunktion som speglar EXAKT samma villkor som
  * detectArcTriggers() (arcService.ts) använder — men UTAN hasArcType/
@@ -38,7 +38,7 @@ const SEASONS = 4
 
 type ArcKey =
   | 'hungrig_breakthrough' | 'joker_redemption' | 'veteran_farewell'
-  | 'veteran_final_season' | 'contract_drama'
+  | 'contract_drama'
 
 // ledare_crisis borttagen (H1-uppföljning, 2026-08-24, Jacobs dom) —
 // captainSpeech (postAdvanceEvents.ts) är kanon, se BACKLOG.md "Två läsare,
@@ -47,7 +47,7 @@ type ArcKey =
 // verifierad av postAdvanceEventsCaptainSpeech.test.ts.
 const ARC_KEYS: ArcKey[] = [
   'hungrig_breakthrough', 'joker_redemption', 'veteran_farewell',
-  'veteran_final_season', 'contract_drama',
+  'contract_drama',
 ]
 
 interface CareerEligibility {
@@ -88,12 +88,6 @@ function isJokerRedemptionEligible(game: SaveGame, justCompletedFixture: Fixture
   const jokerPlayers = managedPlayers.filter(p => p.trait === 'joker')
   const events = justCompletedFixture.events ?? []
   return jokerPlayers.some(p => events.some(e => e.type === MatchEventType.Suspension && e.playerId === p.id))
-}
-
-function isVeteranFinalSeasonEligible(game: SaveGame, currentMatchday: number): boolean {
-  if (currentMatchday > 1) return false // engångsfönster, matchar arcService.ts:s currentMatchday<=1
-  const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
-  return managedPlayers.some(p => p.age >= 34 && p.contractUntilSeason === game.currentSeason)
 }
 
 function isVeteranFarewellEligible(game: SaveGame, currentMatchday: number): boolean {
@@ -154,7 +148,6 @@ function runOne(clubId: string, seed: number): CareerEligibility {
           hungrig_breakthrough: isHungrigBreakthroughEligible(game, managedFixturesSorted),
           joker_redemption: isJokerRedemptionEligible(game, justCompletedFixture),
           veteran_farewell: isVeteranFarewellEligible(game, currentMatchday),
-          veteran_final_season: isVeteranFinalSeasonEligible(game, currentMatchday),
           contract_drama: isContractDramaEligible(game),
         }
         for (const k of ARC_KEYS) {

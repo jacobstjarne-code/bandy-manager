@@ -85,7 +85,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
 
   it('riskySponsorOffer — accept-grenen, lyckad JSON-parse (specialfall 3/4)', () => {
     let game = baseGame()
-    const offer = makeSponsor({ id: 'sponsor_risky' })
+    const offer = { ...makeSponsor({ id: 'sponsor_risky' }), riskMaturityRound: game.currentMatchday + 6 }
     game = {
       ...game,
       sponsors: [],

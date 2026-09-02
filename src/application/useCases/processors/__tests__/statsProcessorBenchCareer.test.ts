@@ -79,4 +79,58 @@ describe('updatePlayerMatchStats — bänkspelare (ej inbytt)', () => {
     expect(p.seasonStats.gamesPlayed).toBe(1)
     expect(p.careerStats.totalGames).toBe(1)
   })
+
+  it('bokför explicit inhopp som match och skriver samma strukturerade akademidebut som startgrenen', () => {
+    const starter = makePlayer('p_starter')
+    const substitute = { ...makePlayer('p_sub'), promotedFromAcademy: true }
+    const fixture: Fixture = {
+      id: 'fx_sub', leagueId: 'liga', season: 1, roundNumber: 1, matchday: 1,
+      homeClubId: 'club_a', awayClubId: 'club_b', status: FixtureStatus.Completed,
+      homeScore: 2, awayScore: 1,
+      homeLineup: { startingPlayerIds: [starter.id], benchPlayerIds: [substitute.id], tactic: {} as never },
+      awayLineup: { startingPlayerIds: [], benchPlayerIds: [], tactic: {} as never },
+      events: [{ type: 'substitution', minute: 60, playerId: starter.id, secondaryPlayerId: substitute.id }] as never,
+      report: { playerRatings: { [starter.id]: 6.5 } } as never,
+    }
+    const game = {
+      currentSeason: 1,
+      managedClubId: 'club_a',
+      clubs: [{ id: 'club_b', name: 'Motståndarna', shortName: 'MOT' }],
+    } as unknown as SaveGame
+
+    const result = updatePlayerMatchStats([starter, substitute], [fixture], game, 1)
+    const updated = result.finalPlayers.find(player => player.id === substitute.id)!
+
+    expect(updated.seasonStats.gamesPlayed).toBe(1)
+    expect(updated.careerStats.totalGames).toBe(1)
+    expect(updated.diary?.find(entry => entry.semanticKey === 'first_team_debut')).toMatchObject({
+      season: 1,
+      matchday: 1,
+      type: 'milestone',
+    })
+  })
+
+  it('skriver strukturerad akademidebut även för flygande bänkbyte', () => {
+    const starter = makePlayer('p_starter')
+    const benchPlayer = { ...makePlayer('p_flying_bench'), promotedFromAcademy: true }
+    const fixture: Fixture = {
+      id: 'fx_flying', leagueId: 'liga', season: 1, roundNumber: 1, matchday: 1,
+      homeClubId: 'club_a', awayClubId: 'club_b', status: FixtureStatus.Completed,
+      homeScore: 2, awayScore: 1,
+      homeLineup: { startingPlayerIds: [starter.id], benchPlayerIds: [benchPlayer.id], tactic: {} as never },
+      awayLineup: { startingPlayerIds: [], benchPlayerIds: [], tactic: {} as never },
+      events: [], report: { playerRatings: { [starter.id]: 6.5 } } as never,
+    }
+    const game = {
+      currentSeason: 1,
+      managedClubId: 'club_a',
+      clubs: [{ id: 'club_b', name: 'Motståndarna', shortName: 'MOT' }],
+    } as unknown as SaveGame
+
+    const result = updatePlayerMatchStats([starter, benchPlayer], [fixture], game, 1)
+    const updated = result.finalPlayers.find(player => player.id === benchPlayer.id)!
+
+    expect(updated.careerStats.totalGames).toBe(1)
+    expect(updated.diary?.some(entry => entry.semanticKey === 'first_team_debut')).toBe(true)
+  })
 })

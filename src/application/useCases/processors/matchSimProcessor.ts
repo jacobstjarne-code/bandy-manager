@@ -15,7 +15,7 @@ import { generatePressConference } from '../../../domain/services/pressConferenc
 import { mulberry32 } from '../../../domain/utils/random'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../../domain/data/playerNames'
 import { pickRefereeForMatch, shouldTriggerRefereeMeeting, updateRefereeRelation, getRefereeMeetingQuotePool, getRefereeDisplayName, generateReferees } from '../../../domain/services/refereeService'
-import type { Referee } from '../../../domain/entities/Referee'
+import type { Referee, RefereeRelation } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
 
@@ -155,6 +155,7 @@ export interface MatchSimResult {
   pendingRefereeMeeting?: GameEvent
   injuredPlayers: Array<{ player: Player; event: import('../../../domain/services/matchInjuryService').MatchInjuryEvent }>
   updatedReferees: Referee[]
+  updatedRefereeRelations: RefereeRelation[]
 }
 
 /**
@@ -186,7 +187,8 @@ export function simulateRound(
   let pendingRefereeMeeting: GameEvent | undefined = undefined
 
   // Initialize referees if not yet generated
-  const allRefs: Referee[] = game.referees?.length ? game.referees : generateReferees()
+  let updatedReferees: Referee[] = game.referees?.length ? game.referees : generateReferees()
+  let updatedRefereeRelations: RefereeRelation[] = [...(game.refereeRelations ?? [])]
 
   // True when the managed club has a scheduled cup fixture on this matchday.
   // Used to prevent the liga fixture from being simulated while the cup match is still pending.
@@ -324,7 +326,7 @@ export function simulateRound(
       : 'regular'
 
     // Pick referee for this fixture
-    const referee = pickRefereeForMatch(allRefs, game.refereeRelations ?? [], nextMatchday, mulberry32(baseSeed + i + 9999))
+    const referee = pickRefereeForMatch(updatedReferees, updatedRefereeRelations, nextMatchday, mulberry32(baseSeed + i + 9999))
 
     const isThisManaged = fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId
     const managedChem = isThisManaged
@@ -397,12 +399,12 @@ export function simulateRound(
       }
 
       // Update referee relation for managed fixture
-      const existingRelation = (game.refereeRelations ?? []).find(r => r.refereeId === referee.id)
+      const existingRelation = updatedRefereeRelations.find(r => r.refereeId === referee.id)
       const suspCount2 = result.fixture.events.filter(
         e => e.type === MatchEventType.Suspension && e.clubId === game.managedClubId
       ).length
       const penCount2 = result.fixture.events.filter(e => e.isPenaltyGoal).length
-      updateRefereeRelation(
+      const nextRelation = updateRefereeRelation(
         existingRelation,
         referee.id,
         result.fixture,
@@ -411,6 +413,15 @@ export function simulateRound(
         nextMatchday,
         suspCount2,
         penCount2,
+      )
+      updatedRefereeRelations = [
+        ...updatedRefereeRelations.filter(relation => relation.refereeId !== referee.id),
+        nextRelation,
+      ]
+      updatedReferees = updatedReferees.map(candidate =>
+        candidate.id === referee.id
+          ? { ...candidate, managedMatches: candidate.managedMatches + 1 }
+          : candidate
       )
     }
 
@@ -470,6 +481,7 @@ export function simulateRound(
     pressEvent,
     pendingRefereeMeeting,
     injuredPlayers,
-    updatedReferees: allRefs,
+    updatedReferees,
+    updatedRefereeRelations,
   }
 }

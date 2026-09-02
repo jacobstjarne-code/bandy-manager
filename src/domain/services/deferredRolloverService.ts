@@ -44,9 +44,11 @@ import { getDeferredResolvedText, getDeferredExpiredText } from '../data/deferre
  *                saknar noOp; att falla tillbaka på choices[0] hade ACCEPTERAT
  *                budet, samma fälla som fixtures.ts gick i 2026-08-30 och
  *                dränerade en trupp under 11 spelare).
+ *  'acknowledge' — tillämpa ett ensamt, uttryckligt acknowledge-val för ett
+ *                  systemutfall som redan inträffat; aldrig ett spelarval.
  *  'expire'    — inget försvarbart tyst utfall finns; rinner ut uttryckligen.
  */
-export type RolloverPolicy = 'decline' | 'rejectBid' | 'expire'
+export type RolloverPolicy = 'decline' | 'rejectBid' | 'acknowledge' | 'expire'
 
 export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   // Måste — kan aldrig deferreras, raden finns bara för täckningsgrinden.
@@ -66,11 +68,18 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   riskySponsorOffer: 'decline',
   icaMaxiEvent: 'decline',
   patronEvent: 'decline',
-  patronWithdrawal: 'decline',
+  // Patronen är redan inaktiv och årsintäkten stoppad när detta enknappskort
+  // skapas. Knappen kvitterar systemutfallet; den väljer ingen framtida väg.
+  patronWithdrawal: 'acknowledge',
   mecenatEvent: 'decline',
   mecenatInteraction: 'decline',
-  mecenatDinner: 'decline',
-  mecenatWithdrawal: 'decline',
+  // 'start' är bara ingången till den trefrågorsscen som samlar de verkliga
+  // valen. Rollover får inte tolka den knappen som ett neutralt slututfall.
+  mecenatDinner: 'expire',
+  // Avhoppet har redan inträffat när kortet skapas. Kravvarianten bär en
+  // obligatorisk kassaeffekt på sin enda acknowledge-knapp; cap-varianten
+  // bär samma enda knapp som noOp. Båda är kvittenser, inte spelarval.
+  mecenatWithdrawal: 'acknowledge',
   hallDebate: 'decline',
   hallProcess: 'decline',
   politicianEvent: 'decline',
@@ -94,7 +103,9 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   bidWar: 'decline',
   hesitantPlayer: 'decline',
   playerUnhappy: 'decline',
-  burnoutRelief: 'decline',
+  // Alla tre svar sänker burnout och tar ett verkligt pris. Inget neutralt
+  // val finns som rollover får göra åt spelaren.
+  burnoutRelief: 'expire',
   dayJobConflict: 'decline',
 
   // Ingen tyst väg ut — en kris, ett varsel, ett omöjligt val eller ett
@@ -107,21 +118,26 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
 
   // Bakgrund: kulör och småval. Avböj där det går, annars utrinning.
   pressConference: 'decline',
-  csPress: 'decline',
+  // Alla fyra val är specialresolverade ställningstaganden trots att deras
+  // generiska effect är noOp. Första noOp får aldrig väljas åt spelaren.
+  csPress: 'expire',
   // Både accept och decline ändrar state; inget neutralt noOp finns.
   journalistExclusive: 'expire',
-  mediaReaction: 'decline',
   // Alla tre svar ändrar den namngivna spelarens moral. Det finns inget
   // neutralt noOp som rollover får välja åt spelaren.
   playerMediaComment: 'expire',
   communityEvent: 'decline',
   // Klackeventens samtliga val ändrar state; inget neutralt noOp finns.
   supporterEvent: 'expire',
-  fanLetter: 'decline',
+  // Atmosfärisk matchreaktion utan val. Den ska normalt autoavslutas i
+  // Granska och kan därför inte ha något tyst decline-utfall vid rollover.
+  fanLetter: 'expire',
   // Alla val sparar ett faktiskt brev/svar; inget är ett neutralt noOp som
   // kan väljas åt spelaren. Ett obesvarat brev rinner därför ut.
   bandyLetter: 'expire',
-  opponentQuote: 'decline',
+  // Samma valfria ambientmodell som fanLetter: inget val finns att välja åt
+  // spelaren om en onormal instans ändå skulle ligga kvar vid rollover.
+  opponentQuote: 'expire',
   starPerformance: 'decline',
   playerPraise: 'decline',
   captainSpeech: 'decline',
@@ -131,9 +147,12 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   // Varje val skriver en specifik intervju till historiken; inget neutralt
   // svar finns som rollover får välja åt spelaren.
   schoolAssignment: 'expire',
-  refereeMeeting: 'decline',
+  // Även 'neutral' registrerar ett faktiskt mötessvar; inget av de tre valen
+  // är deklarerat noOp och får därför inte väljas åt spelaren vid rollover.
+  refereeMeeting: 'expire',
   retirementCeremony: 'expire',
-  seasonGoalHalfway: 'decline',
+  // Ren ambient målstatus utan val; ingen spelarhandling får hittas på.
+  seasonGoalHalfway: 'expire',
   playThroughInjury: 'expire',
 }
 
@@ -153,6 +172,10 @@ export function getDefaultRolloverChoice(event: GameEvent): EventChoice | null {
       return event.choices.find(c => c.effect?.type === 'rejectTransfer') ?? null
     case 'decline':
       return event.choices.find(c => c.effect?.type === 'noOp') ?? null
+    case 'acknowledge':
+      return event.choices.length === 1 && event.choices[0].id === 'acknowledge'
+        ? event.choices[0]
+        : null
     case 'expire':
       return null
   }

@@ -247,7 +247,7 @@ describe('HIGH 11-följdfix (2026-08-31) — bakgrundsnivån undantagen throttle
       pendingEvents: [
         makeTypedEvent('bg1', 'communityEvent'),
         makeTypedEvent('bg2', 'fanLetter'),
-        makeTypedEvent('bg3', 'mediaReaction'),
+        makeTypedEvent('bg3', 'opponentQuote'),
         makeTypedEvent('a', 'sponsorOffer'),
       ],
     })
@@ -262,7 +262,7 @@ describe('HIGH 11-följdfix (2026-08-31) — bakgrundsnivån undantagen throttle
     const pending = [
       makeTypedEvent('bg1', 'communityEvent'),
       makeTypedEvent('bg2', 'fanLetter'),
-      makeTypedEvent('bg3', 'mediaReaction'),
+      makeTypedEvent('bg3', 'opponentQuote'),
       ...['a', 'b', 'c', 'd'].map(id => makeTypedEvent(id, 'sponsorOffer')),
     ]
     const { surface, deferred } = partitionInterruptBudget(pending, 5)

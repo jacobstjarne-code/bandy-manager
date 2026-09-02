@@ -236,16 +236,12 @@ const RISKY_SPONSOR_COMMUNITY_STANDING_DELTA = -4
  * nedan" — ingen sådan kod fanns någonsin. Text lovade tre effekter, koden
  * gav noll.
  *
- * Sidofynd wirat i SAMMA leverans (Jacobs order — annars wiras tre effekter
- * till en väg som ändå aldrig nås): den gamla checken gated på
- * `rc.season === game.currentSeason`, vilket gjorde kontraktet permanent
- * okontrollerbart så fort säsongen rullade över UTAN att risken utlösts
- * (rc.season låst vid tecknandet, currentSeason bara ökar). En SENARE säsong
- * har per definition redan passerat mognadsfönstret (riskMaturityRound
- * sattes alltid inom tecknandesäsongen) — annars skulle kontraktet aldrig
- * kunna kontrolleras igen efter ett säsongsskifte. `riskySponsorContract`
- * rensades inte heller när risken FAKTISKT utlöstes, eller när sponsorn
- * löpte ut naturligt innan risken hann utlösas — båda fallen städas nu.
+ * Vid säsongsskifte rebasar seasonEndProcessor riskMaturityRound och flyttar
+ * kontraktets season till den nya axeln, så återstående väntetid bevaras.
+ * Villkoret för äldre saves med en redan passerad contract-season behålls som
+ * migrationsfallback; utan det skulle de kontrakten bli permanent tysta.
+ * `riskySponsorContract` rensas också när risken utlöses eller sponsorn löper
+ * ut naturligt innan dess.
  *
  * Ren funktion (game in, game ut) — `localRand` injiceras så testerna kan
  * styra utfallet deterministiskt utan att fejka hela omgångspipelinen.
@@ -266,11 +262,11 @@ export function applyRiskySponsorMaturation(
     return { ...game, riskySponsorContract: undefined }
   }
 
-  // Samma säsong: håll den ursprungliga inom-säsongs-omgångsjämförelsen.
-  // En senare säsong har redan passerat mognadsfönstret, se filhuvudet.
+  // Canonical saves har samma season och ett rebasat mognadsmål. Äldre saves
+  // vars contract-season redan passerat mognar direkt som migrationsfallback.
   const maturityReached = rc.season === game.currentSeason
     ? nextMatchday >= rc.riskMaturityRound
-    : true
+    : rc.season < game.currentSeason
   if (!maturityReached || localRand() >= RISKY_SPONSOR_MATURATION_CHANCE) return game
 
   const matId = `risky_sponsor_exposed_${rc.sponsorId}`
@@ -297,11 +293,9 @@ export function applyRiskySponsorMaturation(
   // Effekt 1: sponsorn tas bort.
   const sponsorsAfter = (game.sponsors ?? []).filter(s => s.id !== rc.sponsorId)
 
-  // Effekt 2: claw-back — HÄLFTEN av vad sponsorn hunnit betala, inte allt
-  // (Jacobs dom: en sponsor som drar sig ur tar tillbaka det som återstår av
-  // avtalet, inte pengar som redan gått åt). contractRounds decrementeras
-  // varje omgång oavsett säsongsgräns (processSponsors ovan) — robust mot att
-  // kontraktet nu kan sträcka sig över ett säsongsskifte.
+  // Effekt 2: claw-back — hälften av vad sponsorn redan hunnit betala.
+  // contractRounds decrementeras varje omgång oavsett säsongsgräns
+  // (processSponsors ovan), så underlaget består över rollover.
   const roundsElapsed = Math.max(0, RISKY_SPONSOR_CONTRACT_ROUNDS - sponsor.contractRounds)
   const paidSoFar = sponsor.weeklyIncome * roundsElapsed
   const clawback = Math.round(paidSoFar * RISKY_SPONSOR_CLAWBACK_SHARE)

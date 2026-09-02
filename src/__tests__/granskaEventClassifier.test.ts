@@ -102,7 +102,6 @@ describe('classifyEventNature', () => {
     expect(classifyEventNature(makeEvent('bandyLetter'))).toBe('reactions')
     expect(classifyEventNature(makeEvent('fanLetter'))).toBe('reactions')
     expect(classifyEventNature(makeEvent('opponentQuote'))).toBe('reactions')
-    expect(classifyEventNature(makeEvent('mediaReaction'))).toBe('reactions')
   })
 
   it('REACTION_TYPES with choices.length > 0 → critical (eventResolver requires real choiceId)', () => {
@@ -111,7 +110,6 @@ describe('classifyEventNature', () => {
     expect(classifyEventNature(makeEvent('bandyLetter', withChoice))).toBe('critical')
     expect(classifyEventNature(makeEvent('fanLetter', withChoice))).toBe('critical')
     expect(classifyEventNature(makeEvent('opponentQuote', withChoice))).toBe('critical')
-    expect(classifyEventNature(makeEvent('mediaReaction', withChoice))).toBe('critical')
   })
 })
 

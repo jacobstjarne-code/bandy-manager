@@ -2,14 +2,13 @@ import type { SaveGame, Sponsor, CommunityActivities } from '../../entities/Save
 import type { HallTrial, HallTrialStage, StaleableActivityKey } from '../../entities/Community'
 import { STALEABLE_ACTIVITY_KEYS } from '../communityRenewalService'
 import type { GameEvent } from '../../entities/GameEvent'
-import type { DinnerScene } from '../mecenatDinnerService'
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
 import { describeRippleChain, transferRejectMoraleWeight } from '../rippleEffectService'
 import { applyFinanceChange, appendFinanceLog } from '../economyService'
 import { startFacilityBuild } from '../facilityService'
 import { recordInteraction, recordPressRefusal, generateCriticalArticle } from '../journalistService'
-import { pickCSPressPublishedQuote, buildCSPressMemoryEntry } from '../../data/csPressEventText'
+import { pickCSPressPublishedQuote } from '../../data/csPressEventText'
 import type { PressChoice } from '../../data/csPressEventText'
 import { EVENT_SOURCE_MAP, startCooldown } from '../sourceCooldownService'
 import type { SourceKey } from '../sourceCooldownService'
@@ -20,6 +19,8 @@ import { logNarrativeBeat } from '../narrativeLogService'
 import { captureSystemDecision, buildDecisionLedgerEntry } from '../seasonDecisionCaptureService'
 import { logEvent } from '../eventLedgerService'
 import { captureDecisionRipple } from '../orsakVerkanService'
+import { applyPatronHappinessTransition } from '../patronWithdrawalService'
+import { findEmployerForJob } from '../../data/localEmployers'
 
 /**
  * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
@@ -75,43 +76,68 @@ function recordResolvedId(game: SaveGame, eventId: string): string[] {
  * en förenklad parallell implementation som missar följdeffekterna.
  */
 function applyPatronHappiness(game: SaveGame, amount: number): SaveGame {
-  if (!game.patron?.isActive) return game
-
-  const patronBeforeUpdate = game.patron
-  const newHappiness = Math.max(0, Math.min(100, (patronBeforeUpdate.happiness ?? 50) + amount))
-  let updatedGame: SaveGame = {
+  const transition = applyPatronHappinessTransition(game, amount)
+  return {
     ...game,
-    patron: { ...patronBeforeUpdate, happiness: newHappiness, isActive: newHappiness > 0 },
+    patron: transition.patron,
+    patronWithdrawnSeason: transition.patronWithdrawnSeason,
+    pendingEvents: transition.withdrawalEvent
+      ? [...(game.pendingEvents ?? []), transition.withdrawalEvent]
+      : game.pendingEvents,
   }
+}
 
-  if (newHappiness === 0) {
-    updatedGame = { ...updatedGame, patronWithdrawnSeason: updatedGame.currentSeason }
-    const withdrawalId = `patron_withdrawal_${updatedGame.currentSeason}`
-    const alreadyQueued = (updatedGame.pendingEvents ?? []).some(e => e.id === withdrawalId)
-    if (!alreadyQueued) {
-      const tkr = Math.round(patronBeforeUpdate.contribution / 1000)
-      const withdrawalEvent: GameEvent = {
-        id: withdrawalId,
-        type: 'patronWithdrawal',
-        title: `${patronBeforeUpdate.name} drar sig ur`,
-        body: `${patronBeforeUpdate.name} har bestämt sig. Det grundläggande bidraget — ${tkr} tkr/säsong — upphör. Klubben tappar sin dolda grundpelare.`,
-        choices: [
-          {
-            id: 'acknowledge',
-            label: 'Noterat',
-            effect: { type: 'patronWithdrawn' },
-          },
-        ],
-        resolved: false,
-      }
-      updatedGame = {
-        ...updatedGame,
-        pendingEvents: [...(updatedGame.pendingEvents ?? []), withdrawalEvent],
-      }
-    }
+/**
+ * En gemensam heltidsproffsväg för top-level- och multiEffect-val.
+ * Storylinen är ett kvitto på en verklig statusövergång, så ett saknat mål,
+ * en redan heltidsanställd spelare eller en spelare utanför managed club får
+ * varken ett falskt karriärminne eller en press-/matchpremiss.
+ */
+function applyFullTimePro(
+  game: SaveGame,
+  playerId: string,
+  salary: number | undefined,
+  madeByPlayer: boolean,
+): SaveGame {
+  const player = game.players.find(p => p.id === playerId)
+  if (!player) return game
+
+  const oldJob = player.dayJob?.title ?? 'jobbet'
+  const storylineId = `story_pro_${playerId}_${game.currentSeason}`
+  const shouldWriteStoryline = madeByPlayer
+    && !player.isFullTimePro
+    && player.clubId === game.managedClubId
+    && !(game.storylines ?? []).some(story => story.id === storylineId)
+  const displayText = `${player.firstName} ${player.lastName} slutade som ${oldJob} för att satsa heltid på bandyn`
+
+  return {
+    ...game,
+    players: game.players.map(p => p.id === playerId
+      ? {
+          ...p,
+          isFullTimePro: true,
+          dayJob: undefined,
+          salary: salary ?? p.salary,
+          morale: Math.min(100, p.morale + 15),
+        }
+      : p),
+    ...(shouldWriteStoryline ? {
+      storylines: [
+        ...(game.storylines ?? []),
+        {
+          id: storylineId,
+          type: 'went_fulltime_pro' as const,
+          season: game.currentSeason,
+          matchday: getCurrentLeagueRound(game),
+          playerId,
+          clubId: game.managedClubId,
+          description: displayText,
+          displayText,
+          resolved: true,
+        },
+      ],
+    } : {}),
   }
-
-  return updatedGame
 }
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
@@ -147,11 +173,14 @@ export function resolveEvent(
     ?? (game.pendingCSPress?.id === eventId ? game.pendingCSPress : undefined)
   if (!event) return game
 
-  // Events with no choices (e.g. atmospheric auto-resolved events) — just remove from queue
+  // Events with no choices are observations, not decisions: consume the row and
+  // remember its stable id for generator dedup, but never fabricate a
+  // resolvedChoices entry or a player-attributed narrative beat.
   if (event.choices.length === 0) {
     return {
       ...game,
       pendingEvents: (game.pendingEvents ?? []).filter(e => e.id !== eventId),
+      resolvedEventIds: recordResolvedId(game, eventId),
     }
   }
 
@@ -207,7 +236,9 @@ export function resolveEvent(
       // 'riskySponsorOffer' nedan) — tyst tills den ev. utlöses, ingen ny
       // text krävs. Bara om inget riskykontrakt redan pågår (samma
       // encelliga state som resten av mekanismen).
-      const riskySponsorContract = (!event.terminateSponsorId && !game.riskySponsorContract && rand() < 0.08)
+      const dedicatedRiskOfferPending = [...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])]
+        .some(candidate => candidate.type === 'riskySponsorOffer' && !candidate.resolved)
+      const riskySponsorContract = (!event.terminateSponsorId && !game.riskySponsorContract && !dedicatedRiskOfferPending && rand() < 0.08)
         ? {
             sponsorId: sponsor.id,
             riskMaturityRound: game.currentMatchday + 6,
@@ -251,34 +282,54 @@ export function resolveEvent(
   if (event.type === 'riskySponsorOffer') {
     if (choiceId === 'accept') {
       const rawData = choice.effect.sponsorData
-      if (rawData) {
-        try {
-          const sponsorData = JSON.parse(rawData)
-          const sponsor: Sponsor = {
-            id: sponsorData.id,
-            name: sponsorData.name,
-            category: sponsorData.category,
-            weeklyIncome: sponsorData.weeklyIncome,
-            contractRounds: sponsorData.contractRounds,
-            signedRound: sponsorData.signedRound,
-            tier: sponsorData.tier,
-            triggeredBy: sponsorData.triggeredBy,
-            triggeredSeason: sponsorData.triggeredSeason,
-            expiresSeason: sponsorData.expiresSeason,
-          }
-          return {
-            ...game,
-            pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
-            sponsors: [...(game.sponsors ?? []), sponsor],
-            riskySponsorContract: {
-              sponsorId: sponsor.id,
-              riskMaturityRound: sponsorData.riskMaturityRound,
-              season: game.currentSeason,
-            },
-            resolvedChoices: recordResolvedChoice(game, event, choiceId, choice.label, madeByPlayer),
-            resolvedEventIds: recordResolvedId(game, eventId),
-          }
-        } catch {}
+      if (!rawData) throw new Error("riskySponsorOffer/accept saknar obligatoriskt fält sponsorData")
+      let parsedSponsorData: unknown
+      try {
+        parsedSponsorData = JSON.parse(rawData)
+      } catch {
+        throw new Error("riskySponsorOffer/accept har ogiltig sponsorData-JSON")
+      }
+      if (!parsedSponsorData || typeof parsedSponsorData !== 'object' || Array.isArray(parsedSponsorData)) {
+        throw new Error("riskySponsorOffer/accept har ofullständig sponsorData")
+      }
+      const sponsorData = parsedSponsorData as Record<string, unknown>
+      if (
+        typeof sponsorData.id !== 'string' || sponsorData.id.length === 0 ||
+        typeof sponsorData.name !== 'string' || sponsorData.name.length === 0 ||
+        typeof sponsorData.category !== 'string' || sponsorData.category.length === 0 ||
+        typeof sponsorData.weeklyIncome !== 'number' || !Number.isFinite(sponsorData.weeklyIncome) ||
+        typeof sponsorData.contractRounds !== 'number' || !Number.isFinite(sponsorData.contractRounds) || sponsorData.contractRounds <= 0 ||
+        typeof sponsorData.signedRound !== 'number' || !Number.isFinite(sponsorData.signedRound) ||
+        typeof sponsorData.riskMaturityRound !== 'number' || !Number.isFinite(sponsorData.riskMaturityRound)
+      ) {
+        throw new Error("riskySponsorOffer/accept har ofullständig sponsorData")
+      }
+      if (game.riskySponsorContract) {
+        throw new Error("riskySponsorOffer/accept kan inte ersätta ett pågående riskavtal")
+      }
+      const sponsor: Sponsor = {
+        id: sponsorData.id,
+        name: sponsorData.name,
+        category: sponsorData.category,
+        weeklyIncome: sponsorData.weeklyIncome,
+        contractRounds: sponsorData.contractRounds,
+        signedRound: sponsorData.signedRound,
+        tier: sponsorData.tier as Sponsor['tier'],
+        triggeredBy: sponsorData.triggeredBy as Sponsor['triggeredBy'],
+        triggeredSeason: sponsorData.triggeredSeason as number | undefined,
+        expiresSeason: sponsorData.expiresSeason as number | undefined,
+      }
+      return {
+        ...game,
+        pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
+        sponsors: [...(game.sponsors ?? []), sponsor],
+        riskySponsorContract: {
+          sponsorId: sponsor.id,
+          riskMaturityRound: sponsorData.riskMaturityRound,
+          season: game.currentSeason,
+        },
+        resolvedChoices: recordResolvedChoice(game, event, choiceId, choice.label, madeByPlayer),
+        resolvedEventIds: recordResolvedId(game, eventId),
       }
     }
     return {
@@ -535,6 +586,9 @@ export function resolveEvent(
       // valet "han spelar" skulle tyst inte ändra någon spelares status.
       const pid = effect.targetPlayerId
       if (!pid) throw new Error("effect 'playThroughInjury' saknar obligatoriskt fält targetPlayerId")
+      if (!event.relatedPlayerId || event.relatedPlayerId !== pid) {
+        throw new Error("playThroughInjury-effekten matchar inte kortets relatedPlayerId")
+      }
       // HIGH 9 (audit 2026-08-29): sista spärren. Rensningen av inaktuella kort
       // (isPlayThroughInjuryCardStillValid) körs på omgångsadvance och efter
       // livematch, men resolutionen är den punkt där EFFEKTEN faktiskt landar —
@@ -675,59 +729,7 @@ export function resolveEvent(
       // Se boostMorale-kommentaren ovan — samma vaktprincip.
       const pid = effect.targetPlayerId
       if (!pid) throw new Error("effect 'makeFullTimePro' saknar obligatoriskt fält targetPlayerId")
-      {
-        const proPlayer = updatedGame.players.find(p => p.id === pid)
-        const oldJob = proPlayer?.dayJob?.title ?? 'jobbet'
-        updatedGame = {
-          ...updatedGame,
-          players: updatedGame.players.map(p =>
-            p.id === pid
-              ? {
-                  ...p,
-                  isFullTimePro: true,
-                  dayJob: undefined,
-                  salary: effect.value ?? p.salary,
-                  morale: Math.min(100, p.morale + 15),
-                }
-              : p
-          ),
-          // HIGH 6 (Jacobs körorder 2026-08-31): gated på madeByPlayer — samma
-          // klass som captainSpeech/varsel nedan. Denna storyline hävdar en
-          // spelar-berättad milstolpe ("X slutade som Y") och effekten kan
-          // triggas antingen av spelarens egen tap ('goPro') eller av sim-the-
-          // rest/rollover som auto-väljer choiceId 'offer_pro'/'goPro' åt AI:n.
-          ...(madeByPlayer ? {
-            storylines: [
-              ...(updatedGame.storylines ?? []),
-              {
-                id: `story_pro_${pid}_${updatedGame.currentSeason}`,
-                type: 'went_fulltime_pro' as const,
-                season: updatedGame.currentSeason,
-                // 4.6 (SLUTTEST_KO.md, 2026-08-17): var en inline-reimplementation av
-                // getCurrentLeagueRound — samma logik, dubblerad. Bytt till den delade
-                // funktionen så en framtida läsare inte kopierar mönstret fel (arcService.ts
-                // gjorde precis det misstaget med sin egen, GLOBALA currentMatchday-variabel).
-                matchday: getCurrentLeagueRound(updatedGame),
-                playerId: pid,
-                // 4.6 (SLUTTEST_KO.md, 2026-08-17): description var den råa
-                // typnyckeln ('went_fulltime_pro') — läcker som synlig text där
-                // seasonSummaryService.ts:s arcMoments använder .description som
-                // body (t.ex. SeasonSummaryScreen.tsx:s "DIN SÄSONG"-kort).
-                // Ingen ny svensk text författad här (SVENSK TEXT-regeln,
-                // CLAUDE.md) — återanvänder samma redan godkända mening som
-                // displayText, inte en påhittad andra rad.
-                description: proPlayer
-                  ? `${proPlayer.firstName} ${proPlayer.lastName} slutade som ${oldJob} för att satsa heltid på bandyn`
-                  : 'Blev heltidsproffs',
-                displayText: proPlayer
-                  ? `${proPlayer.firstName} ${proPlayer.lastName} slutade som ${oldJob} för att satsa heltid på bandyn`
-                  : 'Blev heltidsproffs',
-                resolved: true,
-              },
-            ],
-          } : {}),
-        }
-      }
+      updatedGame = applyFullTimePro(updatedGame, pid, effect.value, madeByPlayer)
       break
     }
     case 'raiseBid': {
@@ -844,7 +846,11 @@ export function resolveEvent(
       break
     }
     case 'patronWithdrawn': {
-      updatedGame = { ...updatedGame, patronWithdrawnSeason: updatedGame.currentSeason }
+      updatedGame = {
+        ...updatedGame,
+        patron: updatedGame.patron ? { ...updatedGame.patron, isActive: false } : updatedGame.patron,
+        patronWithdrawnSeason: updatedGame.currentSeason,
+      }
       break
     }
     case 'politicianRelationship': {
@@ -1269,14 +1275,7 @@ export function resolveEvent(
               // no-op bakom "höjd lönekostnad · +15 moral". Samma effekt som
               // top-level case 'makeFullTimePro'.
               if (!sub.targetPlayerId) throw new Error("multiEffect-subEffect 'makeFullTimePro' saknar obligatoriskt fält targetPlayerId")
-              updatedGame = {
-                ...updatedGame,
-                players: updatedGame.players.map(p =>
-                  p.id === sub.targetPlayerId
-                    ? { ...p, isFullTimePro: true, dayJob: undefined, salary: sub.value ?? p.salary, morale: Math.min(100, p.morale + 15) }
-                    : p
-                ),
-              }
+              updatedGame = applyFullTimePro(updatedGame, sub.targetPlayerId, sub.value, madeByPlayer)
             } else if (sub.type === 'patronInfluence') {
               if (updatedGame.patron) {
                 updatedGame = {
@@ -1302,7 +1301,11 @@ export function resolveEvent(
                   ...updatedGame,
                   mecenater: updatedGame.mecenater.map(m =>
                     m.id === sub.targetMecenatId
-                      ? { ...m, happiness: Math.max(0, Math.min(100, m.happiness + delta)) }
+                      ? {
+                          ...m,
+                          happiness: Math.max(0, Math.min(100, m.happiness + delta)),
+                          lastInteractionRound: updatedGame.currentMatchday,
+                        }
                       : m
                   ),
                 }
@@ -1975,9 +1978,6 @@ export function resolveEvent(
         newStyle = 'provocative' as const
       }
 
-      const memoryText = player && opponent
-        ? buildCSPressMemoryEntry(choiceType, player, opponent)
-        : `Coach valde ${choiceType} vid CS-pressrunda`
       const newMemory = [
         ...journalist.memory.slice(-9),
         {
@@ -1985,16 +1985,21 @@ export function resolveEvent(
           matchday: updatedGame.currentMatchday,
           event: `cs_press_${choiceType}`,
           sentiment: relDelta,
+          opponentShort: opponent?.shortName ?? opponent?.name,
         },
       ]
 
       updatedGame = {
         ...updatedGame,
-        journalist: { ...journalist, relationship: newRelationship, style: newStyle, memory: newMemory },
+        journalist: {
+          ...journalist,
+          relationship: newRelationship,
+          style: newStyle,
+          memory: newMemory,
+          lastInteractionMatchday: updatedGame.currentMatchday,
+        },
         journalistRelationship: newRelationship,
       }
-      // suppress unused warning on memoryText
-      void memoryText
     }
 
     // Published quote — inbox notification
@@ -2117,6 +2122,87 @@ export function resolveEvent(
   // inline-reimplementation — se kommentaren vid importen/rad ~398 för varför.
   const currentMatchday = getCurrentLeagueRound(updatedGame)
 
+  // Coworker bond: the event names a pair, not merely relatedPlayerId. Keep
+  // the storyline coupled to the same canonical employer model that generated
+  // the card and that calculatePairChemistry reads. A malformed/stale card,
+  // an auto-resolution, or players who no longer satisfy the premise may
+  // still apply its explicit morale effect, but must not write false history.
+  if (madeByPlayer && event.type === 'communityEvent' && event.id.startsWith('event_bond_') && choiceId === 'great') {
+    const playerIds = [...new Set(event.selectedPlayerIds ?? [])]
+    const players = playerIds.map(id => game.players.find(p => p.id === id))
+    const validPair = playerIds.length === 2
+      && players.every((p): p is NonNullable<typeof p> => Boolean(
+        p
+        && p.clubId === game.managedClubId
+        && !p.isFullTimePro
+        && p.dayJob?.title,
+      ))
+    const employers = validPair
+      ? players.map(p => findEmployerForJob(game.managedClubId, p!.dayJob!.title))
+      : []
+    const sameEmployer = employers.length === 2
+      && employers[0] !== undefined
+      && employers[0].name === employers[1]?.name
+    const storylineId = `story_workplace_bond_${playerIds.slice().sort().join('_')}`
+
+    if (validPair && sameEmployer && event.relatedClubId === game.managedClubId
+      && !(updatedGame.storylines ?? []).some(story => story.id === storylineId)) {
+      updatedGame = {
+        ...updatedGame,
+        storylines: [
+          ...(updatedGame.storylines ?? []),
+          {
+            id: storylineId,
+            type: 'workplace_bond' as const,
+            season: updatedGame.currentSeason,
+            matchday: currentMatchday,
+            playerIds,
+            clubId: game.managedClubId,
+            description: event.body,
+            displayText: event.body,
+            resolved: true,
+          },
+        ],
+      }
+    }
+  }
+
+  // Promotion sacrifice: persist the player's explicit advice choice, but do
+  // not invent a second job/promotion model. The day-job card already owns the
+  // immediate morale consequence; this resolved storyline is the durable fact
+  // that later narrative surfaces can recall.
+  if (madeByPlayer && event.type === 'dayJobConflict' && event.id.startsWith('event_promotion_') && choiceId === 'discourage') {
+    const player = game.players.find(p => p.id === event.relatedPlayerId)
+    const storylineId = player
+      ? `story_promotion_sacrifice_${player.id}_${game.currentSeason}`
+      : undefined
+    if (player && storylineId
+      && player.clubId === game.managedClubId
+      && !player.isFullTimePro
+      && player.dayJob
+      && !(updatedGame.storylines ?? []).some(story => story.id === storylineId)) {
+      // Existing approved wording from FORSTARKNINGSSPEC_V3; no new player copy.
+      const displayText = 'Tackade nej till befordran för bandyn'
+      updatedGame = {
+        ...updatedGame,
+        storylines: [
+          ...(updatedGame.storylines ?? []),
+          {
+            id: storylineId,
+            type: 'promotion_sacrifice' as const,
+            season: updatedGame.currentSeason,
+            matchday: currentMatchday,
+            playerId: player.id,
+            clubId: game.managedClubId,
+            description: displayText,
+            displayText,
+            resolved: true,
+          },
+        ],
+      }
+    }
+  }
+
   // 2.5 (choice-label-svepet, 2026-08-17): skrevs tidigare OAVSETT choiceId
   // — "Kaptenen samlade laget" hamnade i karriärminnet även när spelaren
   // valde 'decline' ("Nej — jag tar det här samtalet själv", ingen moralboost
@@ -2128,22 +2214,34 @@ export function resolveEvent(
   // auto-resolvat captainSpeech (sim-the-rest, rollover) fick den tidigare
   // in i karriären som om spelaren varit med.
   if (madeByPlayer && event.type === 'captainSpeech' && choiceId === 'support' && updatedGame.managedClubId) {
-    updatedGame = {
-      ...updatedGame,
-      storylines: [
-        ...(updatedGame.storylines ?? []),
-        {
-          id: `story_captain_${updatedGame.currentSeason}`,
-          type: 'captain_rallied_team' as const,
-          season: updatedGame.currentSeason,
-          matchday: currentMatchday,
-          // 4.6 (SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — se
-          // kommentaren vid went_fulltime_pro-storylinen ovan för rotorsak.
-          description: 'Kaptenen samlade laget efter en svår period',
-          displayText: 'Kaptenen samlade laget efter en svår period',
-          resolved: true,
-        },
-      ],
+    // relatedPlayerId is the captain frozen onto the generated card. The
+    // take_charge target is a compatibility fallback for older queued saves.
+    // Do not turn a stale card into history if that player has since left.
+    const captainId = event.relatedPlayerId
+      ?? event.choices.find(candidate => candidate.id === 'take_charge')?.effect.targetPlayerId
+    const captain = updatedGame.players.find(player =>
+      player.id === captainId && player.clubId === updatedGame.managedClubId,
+    )
+    if (captain) {
+      updatedGame = {
+        ...updatedGame,
+        storylines: [
+          ...(updatedGame.storylines ?? []),
+          {
+            id: `story_captain_${updatedGame.currentSeason}`,
+            type: 'captain_rallied_team' as const,
+            season: updatedGame.currentSeason,
+            matchday: currentMatchday,
+            playerId: captain.id,
+            clubId: updatedGame.managedClubId,
+            // 4.6 (SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — se
+            // kommentaren vid went_fulltime_pro-storylinen ovan för rotorsak.
+            description: 'Kaptenen samlade laget efter en svår period',
+            displayText: 'Kaptenen samlade laget efter en svår period',
+            resolved: true,
+          },
+        ],
+      }
     }
   }
 
@@ -2157,32 +2255,38 @@ export function resolveEvent(
   // resolverad varsel/offer_pro (sim-the-rest, rollover) fick den tidigare
   // in i karriären utan att spelaren gjort valet.
   if (madeByPlayer && event.type === 'varsel' && choiceId === 'offer_pro') {
-    let hasSuccessfulRescue = false
+    const successfulRescuePlayerIds = new Set<string>()
     try {
       const subList = JSON.parse(choice.effect.subEffects ?? '[]') as Array<{ type: string; targetPlayerId?: string }>
-      hasSuccessfulRescue = subList.some(sub =>
-        sub.type === 'makeFullTimePro' && sub.targetPlayerId
-        && updatedGame.players.find(p => p.id === sub.targetPlayerId)?.isFullTimePro === true
-      )
+      for (const sub of subList) {
+        if (sub.type !== 'makeFullTimePro' || !sub.targetPlayerId) continue
+        const before = game.players.find(p => p.id === sub.targetPlayerId)
+        const after = updatedGame.players.find(p => p.id === sub.targetPlayerId)
+        if (before?.clubId === game.managedClubId && !before.isFullTimePro && after?.isFullTimePro === true) {
+          successfulRescuePlayerIds.add(sub.targetPlayerId)
+        }
+      }
     } catch { /* malformad subEffects — ingen räddning skedde */ }
 
-    if (hasSuccessfulRescue) {
+    if (successfulRescuePlayerIds.size > 0) {
       updatedGame = {
         ...updatedGame,
         storylines: [
           ...(updatedGame.storylines ?? []),
-          {
-            id: `story_varsel_rescue_${updatedGame.currentSeason}`,
+          ...[...successfulRescuePlayerIds].map(playerId => ({
+            id: `story_varsel_rescue_${playerId}_${updatedGame.currentSeason}`,
             type: 'rescued_from_unemployment' as const,
             season: updatedGame.currentSeason,
             matchday: currentMatchday,
+            playerId,
+            clubId: game.managedClubId,
             // 4.6 (SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — se
             // kommentaren vid went_fulltime_pro-storylinen (eventResolver.ts
             // rad ~405) för rotorsak.
             description: 'Klubben räddade spelare från uppsägning genom att erbjuda heltidskontrakt',
             displayText: 'Klubben räddade spelare från uppsägning genom att erbjuda heltidskontrakt',
             resolved: true,
-          },
+          })),
         ],
       }
     }
@@ -2279,56 +2383,22 @@ export function resolveEvent(
     }
   }
 
-  // ── DREAM-017: Mecenatens middag — apply cumulative effects ─────────────────
-  if (event.type === 'mecenatDinner' && choiceId.startsWith('final|') && event.sponsorData) {
-    try {
-      const scene: DinnerScene = JSON.parse(event.sponsorData)
-      const chosenIds = choiceId.replace('final|', '').split('|')
-      let totalHappiness = 0, totalCS = 0, totalFinancial = 0
-      for (const q of scene.questions) {
-        const chosen = chosenIds.find(id => id.startsWith(q.id + '_'))
-        if (!chosen) continue
-        const opt = q.options.find(o => o.id === chosen)
-        if (!opt) continue
-        totalHappiness += opt.effect.happiness
-        totalCS += opt.effect.communityStanding
-        totalFinancial += opt.effect.financial ?? 0
-      }
-      // Apply mecenat happiness
-      if (scene.mecenatId) {
-        updatedGame = {
-          ...updatedGame,
-          mecenater: (updatedGame.mecenater ?? []).map(m =>
-            m.id === scene.mecenatId
-              ? { ...m, happiness: Math.max(0, Math.min(100, m.happiness + totalHappiness)), lastInteractionRound: currentMatchday }
-              : m
-          ),
-        }
-      }
-      // Apply communityStanding
-      if (totalCS !== 0) {
-        updatedGame = {
-          ...updatedGame,
-          communityStanding: Math.max(0, Math.min(100, (updatedGame.communityStanding ?? 50) + totalCS)),
-        }
-      }
-      // Apply financial (cost-share gift from mecenat)
-      if (totalFinancial > 0) {
-        updatedGame = {
-          ...updatedGame,
-          clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, totalFinancial),
-        }
-      }
-    } catch { /* ignore parse errors */ }
-  }
-
   // ── Record arc decisions ──────────────────────────────────────────────────
   if (event.type === 'playerArc') {
     updatedGame = {
       ...updatedGame,
       activeArcs: (updatedGame.activeArcs ?? []).map(arc =>
         arc.eventsFired.includes(eventId)
-          ? { ...arc, decisionsMade: [...arc.decisionsMade, choiceId] }
+          ? {
+              ...arc,
+              decisionsMade: [...arc.decisionsMade, choiceId],
+              // joker_vindicated must be grounded in a contribution AFTER
+              // the manager backed the player. Keep the global time anchor
+              // on the existing arc data instead of inferring it later.
+              data: arc.type === 'joker_redemption'
+                ? { ...arc.data, decisionMatchday: updatedGame.currentMatchday }
+                : arc.data,
+            }
           : arc
       ),
     }

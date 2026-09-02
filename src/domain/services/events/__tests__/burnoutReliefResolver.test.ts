@@ -11,6 +11,7 @@ import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { GameEvent } from '../../../entities/GameEvent'
 import type { SaveGame } from '../../../entities/SaveGame'
+import { generateBurnoutReliefEvent } from '../../burnoutReliefService'
 
 function baseGame(overrides: Partial<SaveGame> = {}): SaveGame {
   const template = CLUB_TEMPLATES[0]
@@ -88,5 +89,32 @@ describe('eventResolver — burnoutRelief multiEffect, kombinerad (delegera-vale
 
     expect(game.managerProfile!.burnoutScore).toBe(48)
     expect(game.journalistRelationship).toBe(40)
+    expect(game.journalist!.relationship).toBe(40)
+    expect(game.journalist!.lastInteractionMatchday).toBe(game.currentMatchday)
+  })
+})
+
+describe('eventResolver — genererade burnoutRelief-val hela vägen', () => {
+  it('train sänker burnout, startar fyra omgångars broms och källcooldown', () => {
+    let game = baseGame({ currentMatchday: 10 })
+    game = { ...game, managerProfile: { ...game.managerProfile!, burnoutScore: 60 } }
+    const event = generateBurnoutReliefEvent(10, game.currentSeason, 'hog')
+
+    game = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'train', undefined, true)
+
+    expect(game.managerProfile!.burnoutScore).toBe(45)
+    expect(game.burnoutTrainingSlowdownUntilRound).toBe(14)
+    expect(game.sourceCooldowns?.burnout).toEqual({ roundsLeft: 6, totalRounds: 6 })
+  })
+
+  it('board sänker burnout mest och tar verkligt styrelsetålamod', () => {
+    let game = baseGame({ currentMatchday: 10, boardPatience: 70 })
+    game = { ...game, managerProfile: { ...game.managerProfile!, burnoutScore: 60 } }
+    const event = generateBurnoutReliefEvent(10, game.currentSeason, 'hog')
+
+    game = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'board', undefined, true)
+
+    expect(game.managerProfile!.burnoutScore).toBe(35)
+    expect(game.boardPatience).toBe(60)
   })
 })

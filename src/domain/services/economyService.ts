@@ -25,6 +25,7 @@ export type FinanceReason =
   | 'cup_prize'
   | 'league_prize'
   | 'patron'
+  | 'mecenat'
   | 'kommunbidrag'             // säsongsstart, economyService.ts (rykte+CS)
   | 'kommunbidrag_politiker'   // säsongsslut, politicianService.ts (CS+ungdom+agenda+relation) — DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md: två avsiktliga källor, skilda etiketter så en framtida reason-aggregering inte konflaterar dem
   | 'kommunstod'               // engångsbidrag, contextualSponsorService.ts (kontinuerlig CS-skala, tak 80k, en gång/säsong) — TREDJE oberoende kommun-mekanismen, hittad via financelog-gap-diagnos-2026-09-01.ts, tidigare helt olöggad

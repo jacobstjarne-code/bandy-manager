@@ -3,6 +3,7 @@ import type { FormationSlot } from '../entities/Formation'
 import type { Tactic } from '../entities/Club'
 import type { OpponentAnalysis } from './opponentAnalysisService'
 import { TacticMentality, TacticPress } from '../enums'
+import { findEmployerForJob } from '../data/localEmployers'
 
 export interface PairChemistry {
   playerId1: string
@@ -34,10 +35,21 @@ export function calculatePairChemistry(
     reasons.push(`${Math.round(sharedMinutes / 90)} matcher ihop`)
   }
 
-  // Same day job
-  if (a.dayJob?.title && b.dayJob?.title && a.dayJob.title === b.dayJob.title) {
-    strength += 0.25
-    reasons.push(`Båda ${a.dayJob.title.toLowerCase()}`)
+  // Same day job / workplace. Coworker events group by the canonical local-
+  // employer lookup, so chemistry must read that same model rather than
+  // requiring identical job titles (a teacher and an economist can both work
+  // for the municipality). Preserve the old title fallback for legacy/custom
+  // clubs whose jobs do not map to a local employer.
+  if (a.dayJob?.title && b.dayJob?.title) {
+    const employerA = findEmployerForJob(a.clubId, a.dayJob.title)
+    const employerB = findEmployerForJob(b.clubId, b.dayJob.title)
+    if (a.clubId === b.clubId && employerA && employerB && employerA.name === employerB.name) {
+      strength += 0.25
+      reasons.push(`Arbetskamrater på ${employerA.name}`)
+    } else if (a.dayJob.title === b.dayJob.title) {
+      strength += 0.25
+      reasons.push(`Båda ${a.dayJob.title.toLowerCase()}`)
+    }
   }
 
   // Age gap: big gap between veteran (35+) and young (< 22) adds slight bonus

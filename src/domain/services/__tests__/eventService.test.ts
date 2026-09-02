@@ -223,7 +223,12 @@ describe('dayJobConflict — deklarerad text har verklig state-effekt', () => {
 
     expect(updated).toMatchObject({ isFullTimePro: true, salary: 15000, morale: 85 })
     expect(updated.dayJob).toBeUndefined()
-    expect(result.storylines?.at(-1)).toMatchObject({ type: 'went_fulltime_pro', playerId: player.id })
+    expect(result.storylines?.at(-1)).toMatchObject({
+      type: 'went_fulltime_pro',
+      playerId: player.id,
+      clubId: game.managedClubId,
+      resolved: true,
+    })
   })
 
   it('schemakrockens bänkval använder samma enmatchsvila och promotionen ändrar bara utlovad moral', () => {
@@ -237,6 +242,49 @@ describe('dayJobConflict — deklarerad text har verklig state-effekt', () => {
     expect(promotion.id).toBe('event_promotion_p1_s2025')
     expect(promoted.players[0].morale).toBe(78)
     expect(promoted.players[0].dayJob).toEqual(dayJob)
+  })
+
+  it('befordringsoffret fryser exakt spelare och klubb efter spelarens nej-råd', () => {
+    const player = makePlayer({ morale: 70, dayJob, isFullTimePro: false })
+    const promotion = generatePromotionOfferEvent(player, 2025)
+    const game = makeGame({ players: [player], pendingEvents: [promotion] })
+
+    const declined = resolveEvent(game, promotion.id, 'discourage', undefined, true)
+
+    expect(declined.players[0].morale).toBe(67)
+    expect(declined.storylines?.at(-1)).toMatchObject({
+      id: 'story_promotion_sacrifice_p1_2025',
+      type: 'promotion_sacrifice',
+      playerId: player.id,
+      clubId: game.managedClubId,
+      season: 2025,
+      description: 'Tackade nej till befordran för bandyn',
+      displayText: 'Tackade nej till befordran för bandyn',
+      resolved: true,
+    })
+  })
+
+  it('skriver inte befordringshistorik för auto-resolution eller stale spelarpremiss', () => {
+    const player = makePlayer({ morale: 70, dayJob, isFullTimePro: false })
+    const promotion = generatePromotionOfferEvent(player, 2025)
+    const auto = resolveEvent(
+      makeGame({ players: [player], pendingEvents: [promotion] }),
+      promotion.id,
+      'discourage',
+      undefined,
+      false,
+    )
+    expect(auto.storylines?.some(story => story.type === 'promotion_sacrifice') ?? false).toBe(false)
+
+    const nowPro = { ...player, isFullTimePro: true, dayJob: undefined }
+    const stale = resolveEvent(
+      makeGame({ players: [nowPro], pendingEvents: [promotion] }),
+      promotion.id,
+      'discourage',
+      undefined,
+      true,
+    )
+    expect(stale.storylines?.some(story => story.type === 'promotion_sacrifice') ?? false).toBe(false)
   })
 
   it('samma spelares redan lösta befordran genereras inte igen samma säsong', () => {

@@ -14,7 +14,6 @@ import type { DashboardCard } from './dashboardCardBag'
 import {
   nextMatchIsSMFinal,
   nextMatchIsCupFinal,
-  nextMatchIsFarewellMatch,
   nextMatchIsDerby,
   nextMatchIsHome,
   nextMatchIsBigGame,
@@ -33,7 +32,6 @@ import { NextMatchPrimary } from '../../../presentation/components/portal/primar
 import { DerbyPrimary } from '../../../presentation/components/portal/primary/DerbyPrimary'
 import { SMFinalPrimary } from '../../../presentation/components/portal/primary/SMFinalPrimary'
 import { CupFinalPrimary } from '../../../presentation/components/portal/primary/CupFinalPrimary'
-import { FarewellMatchPrimary } from '../../../presentation/components/portal/primary/FarewellMatchPrimary'
 import { TransferDeadlinePrimary } from '../../../presentation/components/portal/primary/TransferDeadlinePrimary'
 import { PatronDemandPrimary } from '../../../presentation/components/portal/primary/PatronDemandPrimary'
 
@@ -119,13 +117,6 @@ const PORTAL_CARDS: DashboardCard[] = [
   // Vikt strax över derbyt (80) — ett en-gång-per-karriär-ögonblick väger
   // tyngre narrativt än en återkommande rivalmatch, även om det inte har
   // samma tabellstakes.
-  {
-    id: 'next_match_farewell',
-    tier: 'primary',
-    weight: 82,
-    triggers: [nextMatchIsFarewellMatch],
-    Component: FarewellMatchPrimary,
-  },
   {
     id: 'next_match_derby',
     tier: 'primary',

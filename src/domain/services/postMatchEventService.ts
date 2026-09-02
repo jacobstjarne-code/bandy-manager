@@ -46,7 +46,10 @@ export function generatePostMatchEvents(game: SaveGame, fixture: Fixture): GameE
 
     if (opponentClub) {
       const theyWon = margin < 0
-      const opponentScandal = (game.scandalHistory ?? []).some(s =>
+      const opponentScandal = [
+        ...(game.activeScandals ?? []),
+        ...(game.scandalHistory ?? []),
+      ].some(s =>
         s.affectedClubId === opponentClub.id &&
         s.season === game.currentSeason &&
         s.type !== 'small_absurdity'
@@ -63,6 +66,8 @@ export function generatePostMatchEvents(game: SaveGame, fixture: Fixture): GameE
           choices: [],
           resolved: false,
           priority: 'low',
+          relatedClubId: opponentClub.id,
+          relatedFixtureId: fixture.id,
         })
       }
     }

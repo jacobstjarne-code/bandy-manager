@@ -3,14 +3,12 @@ import {
   nextMatchIsDerby,
   nextMatchIsSMFinal,
   nextMatchIsCupFinal,
-  nextMatchIsFarewellMatch,
   nextMatchIsHome,
   nextMatchIsBigGame,
   alwaysTrue,
 } from '../../domain/services/portal/triggers/matchTriggers'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import type { Fixture } from '../../domain/entities/Fixture'
-import type { ActiveArc } from '../../domain/entities/Narrative'
 
 function makeGame(fixtures: Partial<Fixture>[] = [], overrides: Partial<SaveGame> = {}): SaveGame {
   return {
@@ -135,28 +133,6 @@ describe('nextMatchIsCupFinal — B2 (2026-07-19)', () => {
       { cupBracket: { matches: [{ round: 4, fixtureId: 'f0' }] } as never },
     )
     expect(nextMatchIsCupFinal(game)).toBe(false)
-  })
-})
-
-describe('nextMatchIsFarewellMatch — B2 (2026-07-19)', () => {
-  it('returnerar false utan aktiv veteran_farewell-arc', () => {
-    const game = makeGame([{ status: 'scheduled', isCup: false }])
-    expect(nextMatchIsFarewellMatch(game)).toBe(false)
-  })
-
-  it('returnerar true när nästa fixture är den sista hemmamatchen för en veteran_farewell-spelare', () => {
-    const arc: ActiveArc = {
-      id: 'arc1', type: 'veteran_farewell', playerId: 'p1',
-      startedMatchday: 1, phase: 'peak', expiresMatchday: 22,
-    }
-    const game = makeGame(
-      [{ id: 'f0', homeClubId: 'club_forsbacka', awayClubId: 'club_heros', status: 'scheduled', isCup: false, matchday: 1, season: 2026 }],
-      {
-        players: [{ id: 'p1', clubId: 'club_forsbacka' } as never],
-        activeArcs: [arc],
-      },
-    )
-    expect(nextMatchIsFarewellMatch(game)).toBe(true)
   })
 })
 

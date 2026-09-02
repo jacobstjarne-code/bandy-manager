@@ -13,6 +13,7 @@ import {
   generatePromotionOfferEvent,
   generateShiftConflictEvent,
   generateCoworkerBondEvent,
+  coworkerBondEventId,
   generateVarselEvent,
   varselEventId,
   generatePlayerMediaEvent,
@@ -91,6 +92,7 @@ export function generatePostAdvanceEvents(
   const events: GameEvent[] = []
   const alreadyQueued = new Set([
     ...(game.pendingEvents ?? []).map(e => e.id),
+    ...(game.deferredDecisions ?? []).map(e => e.id),
     ...(game.resolvedEventIds ?? []),
   ])
 
@@ -357,7 +359,7 @@ export function generatePostAdvanceEvents(
         const emp1 = findEmployerForJob(game.managedClubId, nonProPlayers[i].dayJob!.title)
         const emp2 = findEmployerForJob(game.managedClubId, nonProPlayers[j].dayJob!.title)
         if (emp1 && emp2 && emp1.name === emp2.name) {
-          const eid = `event_bond_${nonProPlayers[i].id}_${nonProPlayers[j].id}`
+          const eid = coworkerBondEventId(nonProPlayers[i].id, nonProPlayers[j].id)
           if (!alreadyQueued.has(eid)) {
             events.push(generateCoworkerBondEvent(nonProPlayers[i], nonProPlayers[j], emp1.name))
             break

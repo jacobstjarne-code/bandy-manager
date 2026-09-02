@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { archiveCompletedSeasonInbox, handleSeasonEnd, rebaseFutureMatchday, rolloverActiveArcs, rolloverCoffeeRoomReturns, rolloverEconomicCrisis, rolloverFollowUps, rolloverLeadershipActions, rolloverNationalTeamCamp, rolloverPendingDemand, rolloverPlayerInjuryRamp, rolloverSeasonMatchdayAnchors, rolloverTransientEchoMatchdays, rolloverYouthAvailability } from '../seasonEndProcessor'
+import { archiveCompletedSeasonInbox, handleSeasonEnd, rebaseFutureMatchday, rolloverActiveArcs, rolloverCoffeeRoomReturns, rolloverEconomicCrisis, rolloverFollowUps, rolloverLeadershipActions, rolloverNationalTeamCamp, rolloverPendingDemand, rolloverPlayerInjuryRamp, rolloverRiskySponsorContract, rolloverSeasonMatchdayAnchors, rolloverTransientEchoMatchdays, rolloverYouthAvailability } from '../seasonEndProcessor'
 import { createNewGame } from '../createNewGame'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { InboxItemType } from '../../../domain/enums'
@@ -12,6 +12,18 @@ describe('season rollover — absoluta matchday-fält', () => {
     expect(rebaseFutureMatchday(26, 22)).toBe(4)
     expect(rebaseFutureMatchday(22, 22)).toBe(0)
     expect(rebaseFutureMatchday(undefined, 22)).toBeUndefined()
+  })
+
+  it('bevarar riskavtalets återstående mognadstid och flyttar dess säsongsaxel', () => {
+    expect(rolloverRiskySponsorContract({
+      sponsorId: 'risk',
+      riskMaturityRound: 26,
+      season: 1,
+    }, 22, 2)).toEqual({
+      sponsorId: 'risk',
+      riskMaturityRound: 4,
+      season: 2,
+    })
   })
 
   it('bevarar cooldowners återstående tid, historikankarnas ålder och flyttar cursorn till start', () => {
@@ -56,6 +68,7 @@ describe('season rollover — absoluta matchday-fält', () => {
       weeklyDecisionLastRound: 21,
       lastRivalSaleMatchday: 20,
       lastProcessedMatchday: 22,
+      riskySponsorContract: { sponsorId: 'risk', riskMaturityRound: 26, season: 1 },
       cardStaleTracking: {
         ekonomi: { firstShownAt: 18, lastShownAt: 22, shownCount: 5 },
       },
@@ -66,6 +79,7 @@ describe('season rollover — absoluta matchday-fält', () => {
     expect(rolled.weeklyDecisionLastRound).toBe(-1)
     expect(rolled.lastRivalSaleMatchday).toBe(-2)
     expect(rolled.lastProcessedMatchday).toBe(0)
+    expect(rolled.riskySponsorContract).toEqual({ sponsorId: 'risk', riskMaturityRound: 4, season: rolled.currentSeason })
     expect(rolled.cardStaleTracking?.ekonomi).toEqual({
       firstShownAt: -4,
       lastShownAt: 0,

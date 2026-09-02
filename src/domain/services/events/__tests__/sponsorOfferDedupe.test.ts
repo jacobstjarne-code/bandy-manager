@@ -136,7 +136,7 @@ describe('generatePostAdvanceEvents — MEDIUM 15: ett besvarat erbjudande åter
 describe('resolveEvent — sponsorbesluten skriver resolvedEventIds', () => {
   const sponsorData = JSON.stringify({
     id: 'sponsor_8_123', name: 'Testbolaget', category: 'bygg',
-    weeklyIncome: 4500, contractRounds: 10, signedRound: 8,
+    weeklyIncome: 4500, contractRounds: 10, signedRound: 8, riskMaturityRound: 14,
   })
 
   function gameWith(event: GameEvent): SaveGame {

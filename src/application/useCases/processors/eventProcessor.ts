@@ -10,7 +10,6 @@ import { createEconomicStressEvent } from '../../../domain/services/events/event
 import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent, getMecenatSocialUsedTypes, getMecenatSocialType, MECENAT_SOCIAL_MAX_PER_SEASON } from '../../../domain/services/mecenatService'
 import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterService'
 import { checkEconomicCrisis } from '../../../domain/services/economicCrisisService'
-import { checkSeasonGoalHalfwayEvent } from '../../../domain/services/seasonGoalService'
 import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
 import { getBurnoutZone, shouldTriggerBurnoutCeilingChoice } from '../../../domain/services/managerProfileService'
@@ -32,6 +31,7 @@ import { seededPick } from '../../../domain/utils/random'
 import { pickDemandCategory, createPendingDemand, isDemandFulfilled } from '../../../domain/services/demandEngine'
 import type { MecenatDemand } from '../../../domain/entities/Mecenat'
 import type { Patron } from '../../../domain/entities/Community'
+import { applyPatronHappinessTransition } from '../../../domain/services/patronWithdrawalService'
 
 export interface EventProcessorResult {
   gameEvents: GameEvent[]
@@ -49,6 +49,7 @@ export interface EventProcessorResult {
   wageBudgetOverrunRounds: number
   wageBudgetWarningSent: boolean
   riskySponsorOfferSentThisSeason: number | undefined
+  patronWithdrawnSeason: number | undefined
   mecenatWithdrawnSeason: number | undefined
   // Beslutsekonomi
   lastEventQueueRound: number | undefined
@@ -120,10 +121,6 @@ export function processGameEvents(
   if (crisisCheck.event) gameEvents.push(crisisCheck.event)
   const economicCrisisState = crisisCheck.economicCrisisState
 
-  // O3 — säsongsmålets halvtidsrad (ambient, D1 punkt 2)
-  const seasonGoalHalfwayEvent = checkSeasonGoalHalfwayEvent(game)
-  if (seasonGoalHalfwayEvent) gameEvents.push(seasonGoalHalfwayEvent)
-
   // DREAM-016: Skoluppgift
   const schoolEvent = generateSchoolAssignmentEvent(game, nextMatchday)
   if (schoolEvent) gameEvents.push(schoolEvent)
@@ -139,8 +136,11 @@ export function processGameEvents(
   // Aldrig i 'frisk'-zonen (ingen effekt att lätta på), aldrig oftare än
   // var 6:e omgång (SOURCE_COOLDOWN_ROUNDS.burnout) så länge zonen håller i sig.
   const burnoutZone = getBurnoutZone(game.managerProfile?.burnoutScore ?? 0)
+  const burnoutReliefQueued = [...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])]
+    .some(event => event.type === 'burnoutRelief' && !event.resolved)
   if (
     (burnoutZone === 'markbar' || burnoutZone === 'hog') &&
+    !burnoutReliefQueued &&
     canAddDecision(game, nextMatchday) &&
     !isInCooldown(game.sourceCooldowns ?? {}, 'burnout')
   ) {
@@ -257,38 +257,44 @@ export function processGameEvents(
       updatedMecenater = updatedMecenater.map((m, idx) => idx === i ? { ...m, pendingDemand: newDemand } : m)
     }
 
-    if (mec.demands.length > 0) {
-      const demandId = `inbox_mec_demand_${mec.id}_${nextMatchday}`
+    // Kravresolutionen ovan kan ha ändrat både happiness och demands den här
+    // omgången. Påminnelse och avhopp måste läsa samma färska entitet.
+    const mecAfterDemand = updatedMecenater[i]
+    if (mecAfterDemand.demands.length > 0) {
+      const demandId = `inbox_mec_demand_${mecAfterDemand.id}_${nextMatchday}`
       if (!game.inbox.some(item => item.id === demandId) && nextMatchday % 5 === 0) {
-        const demandTexts = mec.demands.map(d => d.description ?? d.type).join(', ')
+        const demandTexts = mecAfterDemand.demands.map(d => d.description ?? d.type).join(', ')
         inboxItems.push({
           id: demandId,
           date: game.currentDate,
           type: InboxItemType.PatronInfluence,
-          title: `${mec.name} påminner`,
-          body: `${mec.name} har fortfarande önskemål som inte hanterats: ${demandTexts}.`,
+          title: `${mecAfterDemand.name} påminner`,
+          body: `${mecAfterDemand.name} har fortfarande önskemål som inte hanterats: ${demandTexts}.`,
           isRead: false,
         } as InboxItem)
       }
     }
 
     // ── 2C: Mecenat permanent withdrawal (happiness < 20, 3+ ignorerade krav) ──
-    if (mec.happiness < 20 && mec.demands.length >= 3) {
-      const withdrawalId = `mecenat_withdrawal_${mec.id}_${game.currentSeason}`
+    if (mecAfterDemand.happiness < 20 && mecAfterDemand.demands.length >= 3) {
+      const withdrawalId = `mecenat_withdrawal_${mecAfterDemand.id}_${game.currentSeason}`
       const alreadyWithdrawn = game.pendingEvents?.some(e => e.id === withdrawalId) ||
+        game.deferredDecisions?.some(e => e.id === withdrawalId) ||
+        game.resolvedEventIds?.includes(withdrawalId) ||
         game.inbox.some(i => i.id === withdrawalId)
       if (!alreadyWithdrawn) {
-        // Financial penalty based on wealth tier (estimated from happiness × wealth proxy)
-        const wealthLevel = (mec.happiness < 10) ? 3 : (mec.happiness < 15) ? 2 : 1
+        // Entiteten bär redan faktisk wealth (1–5); relationens happiness får
+        // inte fungera som en andra, dold förmögenhetsskala.
+        const wealthLevel = mecAfterDemand.wealth >= 4 ? 3 : mecAfterDemand.wealth >= 3 ? 2 : 1
         const penalty = wealthLevel === 3 ? -1_000_000 : wealthLevel === 2 ? -600_000 : -300_000
         const penaltyText = Math.abs(penalty).toLocaleString('sv-SE')
 
         const withdrawalTemplate =
-          MECENAT_WITHDRAWAL_TEXT[mec.personality] ??
+          MECENAT_WITHDRAWAL_TEXT[mecAfterDemand.personality] ??
           seededPick(MECENAT_WITHDRAWAL_FALLBACK, game.currentSeason)
         const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'Klubben'
-        const withdrawalTitle = fillL2Tokens(withdrawalTemplate.title, { MECENAT: mec.name, KLUBB: clubName })
-        const withdrawalBody = fillL2Tokens(withdrawalTemplate.body, { MECENAT: mec.name, KLUBB: clubName })
+        const withdrawalTitle = fillL2Tokens(withdrawalTemplate.title, { MECENAT: mecAfterDemand.name, KLUBB: clubName })
+        const withdrawalBody = fillL2Tokens(withdrawalTemplate.body, { MECENAT: mecAfterDemand.name, KLUBB: clubName })
 
         const withdrawalEvent: GameEvent = {
           id: withdrawalId,
@@ -365,11 +371,12 @@ export function processGameEvents(
     }
   }
 
-  // ── 2B: Risky sponsor offer (1-2x per season, at rounds 8 or 16) ──────────
+  // ── 2B: Risky sponsor offer (at most once per season, at round 8 or 16) ───
   let riskySponsorOfferSentThisSeason = game.riskySponsorOfferSentThisSeason
   const triggerRiskyOffer = (nextMatchday === 8 || nextMatchday === 16) &&
     riskySponsorOfferSentThisSeason !== game.currentSeason &&
-    localRand() < 0.4  // 40% chance at each trigger round → ~1-2x per season
+    !game.riskySponsorContract &&
+    localRand() < 0.4  // 40% at round 8; round 16 is a second chance only after a miss
   if (triggerRiskyOffer) {
     riskySponsorOfferSentThisSeason = game.currentSeason
     const offerId = `risky_sponsor_${game.currentSeason}_${nextMatchday}`
@@ -420,18 +427,25 @@ export function processGameEvents(
   // demands.length>0 && patience<30) — demands hålls kvar (INTE rensad) vid
   // misslyckande så triggern hittar den stale texten; rensas bara vid uppfyllt.
   let updatedPatron = game.patron
+  let patronWithdrawnSeason = game.patronWithdrawnSeason
   if (updatedPatron?.isActive) {
     if (updatedPatron.pendingDemand) {
       if (nextMatchday >= updatedPatron.pendingDemand.deadlineRound) {
         const fulfilled = isDemandFulfilled(game, updatedPatron.pendingDemand, game.managedClubId)
         const delta = fulfilled ? 15 : -15
-        updatedPatron = {
-          ...updatedPatron,
-          happiness: Math.max(0, Math.min(100, updatedPatron.happiness + delta)),
+        const transition = applyPatronHappinessTransition({
+          ...game,
+          patron: updatedPatron,
+          pendingEvents: [...(game.pendingEvents ?? []), ...gameEvents],
+        }, delta)
+        updatedPatron = transition.patron ? {
+          ...transition.patron,
           goodwill: Math.max(0, Math.min(100, (updatedPatron.goodwill ?? 80) + delta)),
           demands: fulfilled ? [] : updatedPatron.demands,
           pendingDemand: undefined,
-        }
+        } : undefined
+        patronWithdrawnSeason = transition.patronWithdrawnSeason
+        if (transition.withdrawalEvent) gameEvents.push(transition.withdrawalEvent)
       }
     } else if (localRand() < 0.2) {
       const seed = (updatedPatron.name?.length ?? 5) * 7 + nextMatchday * 13 + game.currentSeason * 31
@@ -462,6 +476,7 @@ export function processGameEvents(
     wageBudgetOverrunRounds,
     wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason,
+    patronWithdrawnSeason,
     mecenatWithdrawnSeason,
     lastEventQueueRound,
   }
@@ -548,7 +563,7 @@ export function applyMecenatSpawn(
 export function applyMecenatCapEviction(
   game: SaveGame,
   updatedMecenater: NonNullable<SaveGame['mecenater']>,
-): { updatedMecenater: NonNullable<SaveGame['mecenater']>; newEvents: GameEvent[] } {
+): { updatedMecenater: NonNullable<SaveGame['mecenater']>; newEvents: GameEvent[]; withdrawnSeason?: number } {
   const cs = game.communityStanding ?? 50
   const cap = mecenatCapForCs(cs)
   const active = updatedMecenater.filter(m => m.isActive)
@@ -575,7 +590,7 @@ export function applyMecenatCapEviction(
     choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'noOp' } }],
     resolved: false,
   }
-  return { updatedMecenater: newUpdated, newEvents: [withdrawalEvent] }
+  return { updatedMecenater: newUpdated, newEvents: [withdrawalEvent], withdrawnSeason: game.currentSeason }
 }
 
 // ── Pool 1c: spela-på-erbjudandet (injuryDoctorText.ts) ──────────────────────
@@ -596,11 +611,11 @@ export function checkForPlayThroughInjuryOffer(
   nextMatchday: number,
 ): GameEvent[] {
   const managedId = game.managedClubId
-  const hasManagedFixtureThisRound = game.fixtures.some(
+  const managedFixtureThisRound = game.fixtures.find(
     f => f.matchday === nextMatchday && f.status === 'scheduled' &&
          (f.homeClubId === managedId || f.awayClubId === managedId)
   )
-  if (!hasManagedFixtureThisRound) return []
+  if (!managedFixtureThisRound) return []
 
   const candidates = game.players.filter(p =>
     p.clubId === managedId &&
@@ -610,10 +625,10 @@ export function checkForPlayThroughInjuryOffer(
   )
   if (candidates.length === 0) return []
 
-  const pending = game.pendingEvents ?? []
+  const queued = [...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])]
   const events: GameEvent[] = []
   for (const player of candidates) {
-    const alreadyPending = pending.some(
+    const alreadyPending = queued.some(
       e => e.type === 'playThroughInjury' && e.relatedPlayerId === player.id && !e.resolved
     )
     if (alreadyPending) continue
@@ -627,6 +642,7 @@ export function checkForPlayThroughInjuryOffer(
         { id: 'rest', label: 'Han vilar', subtitle: 'Tillbaka enligt plan', effect: { type: 'noOp' } },
       ],
       relatedPlayerId: player.id,
+      relatedFixtureId: managedFixtureThisRound.id,
       resolved: false,
     })
   }
@@ -666,9 +682,16 @@ export function isPlayThroughInjuryCardStillValid(event: GameEvent, game: SaveGa
   if (player.clubId !== game.managedClubId) return false
   if (!player.isInjured || player.playingThroughInjury) return false
 
-  // Matchdagen kortet gäller ligger i id:t (GameEvent saknar ett generellt
-  // createdMatchday-fält, till skillnad från FollowUp/TransferBid). Splitta på
-  // SISTA understrecket — player-id:n innehåller själva understreck.
+  // Nya kort bär den exakta fixture-identiteten. Äldre saves kan bara ha
+  // matchdagen inbakad i id:t; behåll den vägen som migrationsfallback.
+  if (event.relatedFixtureId) {
+    return game.fixtures.some(
+      fixture => fixture.id === event.relatedFixtureId &&
+        fixture.status === 'scheduled' &&
+        (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
+    )
+  }
+
   const forMatchday = Number(event.id.slice(event.id.lastIndexOf('_') + 1))
   if (!Number.isFinite(forMatchday)) return false
 

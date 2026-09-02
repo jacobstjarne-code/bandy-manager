@@ -38,7 +38,7 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
   const existing = game.activeArcs ?? []
   const newArcs: ActiveArc[] = []
 
-  const currentMatchday = justCompletedFixture?.matchday ?? 0
+  const currentMatchday = justCompletedFixture?.matchday ?? game.currentMatchday
 
   const nonDerbyActive = existing.filter(a => a.type !== 'derby_echo' && a.phase !== 'resolving')
   const activePlayerIds = new Set(existing.map(a => a.playerId).filter(Boolean) as string[])
@@ -65,7 +65,12 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
   // ökar). Två tal om samma sak i två filer, nu samma tal. Bekräftat i
   // simulering (scripts/h1-arc-eligibility-sim.ts, 20 karriärer): traiten
   // är den smalare grinden och ska förbli det.
-  if (!hasArcType('hungrig_breakthrough') && canAddArc()) {
+  if (justCompletedFixture
+    && justCompletedFixture.status === 'completed'
+    && (justCompletedFixture.homeClubId === game.managedClubId
+      || justCompletedFixture.awayClubId === game.managedClubId)
+    && !hasArcType('hungrig_breakthrough')
+    && canAddArc()) {
     const hungrigPlayers = managedPlayers.filter(
       p => p.trait === 'hungrig' && p.age <= 24 && !activePlayerIds.has(p.id)
     )
@@ -80,7 +85,11 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
         const lineup = isHome ? f.homeLineup : f.awayLineup
         const wasInLineup = lineup?.startingPlayerIds?.includes(p.id) || lineup?.benchPlayerIds?.includes(p.id)
         if (!wasInLineup) continue
-        const scored = (f.events ?? []).some(e => e.type === 'goal' && e.playerId === p.id)
+        const scored = (f.events ?? []).some(e =>
+          e.type === MatchEventType.Goal
+          && e.playerId === p.id
+          && e.clubId === game.managedClubId,
+        )
         if (scored) break
         gamesWithoutGoal++
       }
@@ -103,13 +112,22 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
   }
 
   // ── joker_redemption ── (triggers from just-completed fixture)
-  if (justCompletedFixture && !hasArcType('joker_redemption') && canAddArc()) {
+  if (justCompletedFixture
+    && justCompletedFixture.status === 'completed'
+    && (justCompletedFixture.homeClubId === game.managedClubId
+      || justCompletedFixture.awayClubId === game.managedClubId)
+    && !hasArcType('joker_redemption')
+    && canAddArc()) {
     const jokerPlayers = managedPlayers.filter(
       p => p.trait === 'joker' && !activePlayerIds.has(p.id)
     )
     for (const p of jokerPlayers) {
       const events = justCompletedFixture.events ?? []
-      const hadSuspension = events.some(e => e.type === MatchEventType.Suspension && e.playerId === p.id)
+      const hadSuspension = events.some(e =>
+        e.type === MatchEventType.Suspension
+        && e.playerId === p.id
+        && e.clubId === game.managedClubId,
+      )
       if (hadSuspension) {
         newArcs.push({
           id: genId('arc', currentMatchday, `joker_${p.id}`),
@@ -121,32 +139,10 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
           eventsFired: [],
           decisionsMade: [],
           expiresMatchday: currentMatchday + 4,
+          data: { sourceFixtureId: justCompletedFixture.id },
         })
         break
       }
-    }
-  }
-
-  // ── veteran_final_season ── Triggas vid säsongsstart (md <= 1)
-  if (!hasArcType('veteran_final_season') && canAddArc() && currentMatchday <= 1) {
-    const veterans = managedPlayers.filter(p =>
-      p.age >= 34 &&
-      p.contractUntilSeason === game.currentSeason &&
-      !activePlayerIds.has(p.id)
-    )
-    for (const vet of veterans) {
-      newArcs.push({
-        id: `arc_vetfinal_${vet.id}_s${game.currentSeason}`,
-        type: 'veteran_final_season',
-        playerId: vet.id,
-        subject: `${vet.firstName[0]}. ${vet.lastName}`,
-        startedMatchday: 0,
-        phase: 'building',
-        eventsFired: [],
-        decisionsMade: [],
-        expiresMatchday: 22,
-        data: { gamesPlayed: vet.careerStats?.totalGames ?? 0 },
-      })
     }
   }
 
@@ -186,14 +182,20 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
 
   // ── lokal_hero ── (mål i just spelat derby)
   if (justCompletedFixture && !hasArcType('lokal_hero') && canAddArc()) {
+    const managedPlayed = justCompletedFixture.homeClubId === game.managedClubId
+      || justCompletedFixture.awayClubId === game.managedClubId
     const rivalry = getRivalry(justCompletedFixture.homeClubId, justCompletedFixture.awayClubId)
-    if (rivalry) {
+    if (managedPlayed && rivalry) {
       const lokalPlayers = managedPlayers.filter(
         p => p.trait === 'lokal' && !activePlayerIds.has(p.id)
       )
       for (const p of lokalPlayers) {
         const events = justCompletedFixture.events ?? []
-        const scoredInDerby = events.some(e => e.type === 'goal' && e.playerId === p.id)
+        const scoredInDerby = events.some(e =>
+          e.type === MatchEventType.Goal
+          && e.playerId === p.id
+          && e.clubId === game.managedClubId,
+        )
         if (scoredInDerby) {
           newArcs.push({
             id: genId('arc', currentMatchday, `lokal_${p.id}`),
@@ -204,7 +206,8 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
             phase: 'building',
             eventsFired: [],
             decisionsMade: [],
-            expiresMatchday: currentMatchday + 3,
+            expiresMatchday: currentMatchday + 4,
+            data: { sourceFixtureId: justCompletedFixture.id },
           })
           break
         }
@@ -224,8 +227,8 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
   // sämre än inget" — omskrivet mot faktisk state: `game.transferBids`
   // (transferService.ts, `direction:'incoming'` = ett bud på VÅR spelare,
   // satt av sellingClubId===managedClubId, se createOutgoingBid-motparten)
-  // och `Player.contractUntilSeason` (samma fält veteran_farewell/
-  // veteran_final_season redan använder för "utgående kontrakt").
+  // och `Player.contractUntilSeason` (samma fält veteran_farewell redan
+  // använder för "utgående kontrakt").
   if (!hasArcType('contract_drama') && canAddArc()) {
     const biddedPlayerIds = new Set(
       game.transferBids
@@ -253,7 +256,9 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
   }
 
   // ── derby_echo ── (just completed derby)
-  if (justCompletedFixture) {
+  if (justCompletedFixture
+    && (justCompletedFixture.homeClubId === game.managedClubId
+      || justCompletedFixture.awayClubId === game.managedClubId)) {
     const rivalry = getRivalry(justCompletedFixture.homeClubId, justCompletedFixture.awayClubId)
     if (rivalry && !existing.some(a => a.type === 'derby_echo' && a.phase !== 'resolving')) {
       const opponentId = justCompletedFixture.homeClubId === game.managedClubId
@@ -272,7 +277,7 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
         eventsFired: [],
         decisionsMade: [],
         expiresMatchday: currentMatchday + 2,
-        data: { derbyResult },
+        data: { derbyResult, sourceFixtureId: justCompletedFixture.id },
       })
     }
   }
@@ -302,19 +307,15 @@ export interface ArcProgressResult {
  * funktion grenar per arc-typ, och grenarna har olika sanningshalt.
  * hungrig_breakthroughs och contract_dramas peak-event REVERIFIERAR nu sitt
  * triggervillkor innan eventet skapas (mutationVerificationGate-utökning,
- * Jacobs order) — inte längre utelämnade. derby_echo och veteran_final_season
- * fick låst text av Jacob 2026-08-25 (SANNINGEN-SAKNAS-fix): derby_echo
- * släppte kausalpåståendet ("satte tonen") och citerar nu bara det utfall
- * som faktiskt lagras; veteran_final_seasons dagboksrader väljs på
- * p.morale/p.seasonForm i stället för matchday-modulo. Ingen gren
- * utelämnad längre av denna anledning.
+ * Jacobs order) — inte längre utelämnade. derby_echo fick låst text av
+ * Jacob 2026-08-25 (SANNINGEN-SAKNAS-fix): den släppte kausalpåståendet
+ * ("satte tonen") och citerar nu bara det utfall som faktiskt lagras.
  *
- * @cites arc.data.derbyResult, completedSinceStart, arc.decisionsMade, p.age, p.careerStats.seasonsPlayed, p.salary, updatedArc.phase, game.transferBids, p.morale, p.seasonForm
+ * @cites arc.data.derbyResult, completedSinceStart, arc.decisionsMade, p.age, p.careerStats.seasonsPlayed, p.salary, updatedArc.phase, game.transferBids
  */
 export function progressArcs(
   game: SaveGame,
   currentMatchday: number,
-  justCompletedFixture?: Fixture,
 ): ArcProgressResult {
   const arcs = game.activeArcs ?? []
   const updatedArcs: ActiveArc[] = []
@@ -323,7 +324,6 @@ export function progressArcs(
   const newStorylines: StorylineEntry[] = []
 
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
-  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   const localPaper = game.localPaperName ?? 'Lokaltidningen'
   const currentDate = game.currentDate
 
@@ -350,11 +350,36 @@ export function progressArcs(
 
     // ────────────────────────────────────────────────────────────────────────
     if (arc.type === 'derby_echo') {
-      const derbyResult = (arc.data?.derbyResult as string) ?? 'draw'
-      const opponentClub = game.clubs.find(c => c.id === arc.opponentClubId)
+      if (matchdaysSinceStart >= 2) {
+        updatedArc = { ...updatedArc, phase: 'resolving' }
+      }
+      const sourceFixtureId = arc.data?.sourceFixtureId as string | undefined
+      const sourceFixture = game.fixtures.find(fixture =>
+        fixture.status === 'completed'
+        && (sourceFixtureId ? fixture.id === sourceFixtureId : fixture.matchday === arc.startedMatchday)
+        && (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
+        && getRivalry(fixture.homeClubId, fixture.awayClubId) !== null
+        && (!arc.opponentClubId
+          || fixture.homeClubId === arc.opponentClubId
+          || fixture.awayClubId === arc.opponentClubId),
+      )
+      const isHome = sourceFixture?.homeClubId === game.managedClubId
+      const ourScore = sourceFixture
+        ? (isHome ? sourceFixture.homeScore : sourceFixture.awayScore)
+        : undefined
+      const theirScore = sourceFixture
+        ? (isHome ? sourceFixture.awayScore : sourceFixture.homeScore)
+        : undefined
+      const derbyResult = ourScore === undefined || ourScore === null || theirScore === undefined || theirScore === null
+        ? null
+        : ourScore > theirScore ? 'win' : ourScore < theirScore ? 'loss' : 'draw'
+      const sourceOpponentId = sourceFixture
+        ? (isHome ? sourceFixture.awayClubId : sourceFixture.homeClubId)
+        : arc.opponentClubId
+      const opponentClub = game.clubs.find(c => c.id === sourceOpponentId)
       const opponentName = opponentClub?.name ?? 'rivalen'
 
-      if (arc.phase === 'building') {
+      if (arc.phase === 'building' && derbyResult) {
         const echoId = `derby_echo_inbox_${arc.id}`
         if (!arc.eventsFired.includes(echoId)) {
           const headline = derbyResult === 'win'
@@ -367,10 +392,10 @@ export function progressArcs(
             type: InboxItemType.Derby,
             title: `📰 ${localPaper}: "${headline}"`,
             body: derbyResult === 'win'
-              ? `Efter segern mot ${opponentName} pratar alla om laget. Stämningen i orten är på topp.`
+              ? `🏆 Derby-triumf mot ${opponentName}`
               : derbyResult === 'loss'
-                ? `Nederlaget mot ${opponentName} satt hårt. Fansen hoppas på revansch.`
-                : `Oavgjort mot ${opponentName}. Derbyt var jämnt — ingen riktigt nöjd.`,
+                ? `💔 Derby-förlust mot ${opponentName}`
+                : `Oavgjort mot ${opponentName}.`,
             isRead: false,
             date: currentDate,
           })
@@ -380,22 +405,23 @@ export function progressArcs(
 
       if (updatedArc.phase === 'resolving') {
         const storylineId = `storyline_${arc.id}_resolved`
-        if (!arc.eventsFired.includes(storylineId)) {
+        if (!arc.eventsFired.includes(storylineId) && derbyResult) {
           newStorylines.push({
             id: storylineId,
             type: 'derby_echo_resolved',
             season: game.currentSeason,
             matchday: getCurrentLeagueRound(game),
-            // Text låst av Jacob 2026-08-25 (SANNINGEN-SAKNAS-fix): den
-            // gamla texten hävdade en kausal effekt ("satte tonen") som var
-            // overifierbar även med ett nytt fält. Säger nu bara att derbyt
-            // spelades och hur det känns, inte vad det orsakade.
+            clubId: game.managedClubId,
             description: derbyResult === 'win'
-              ? `Derbysegern mot ${opponentName} pratas det fortfarande om.`
-              : `Derbyförlusten mot ${opponentName} sitter kvar i omklädningsrummet.`,
+              ? `🏆 Derby-triumf mot ${opponentName}`
+              : derbyResult === 'loss'
+                ? `💔 Derby-förlust mot ${opponentName}`
+                : `Oavgjort mot ${opponentName}.`,
             displayText: derbyResult === 'win'
               ? `🏆 Derby-triumf mot ${opponentName}`
-              : `💔 Derby-förlust mot ${opponentName}`,
+              : derbyResult === 'loss'
+                ? `💔 Derby-förlust mot ${opponentName}`
+                : `Oavgjort mot ${opponentName}.`,
             resolved: true,
           })
         }
@@ -408,14 +434,28 @@ export function progressArcs(
 
     // ────────────────────────────────────────────────────────────────────────
     if (arc.type === 'lokal_hero') {
-      if (updatedArc.phase === 'peak' && p) {
+      const sourceFixtureId = arc.data?.sourceFixtureId as string | undefined
+      const sourceFixture = game.fixtures.find(fixture =>
+        fixture.status === 'completed'
+        && (sourceFixtureId ? fixture.id === sourceFixtureId : fixture.matchday === arc.startedMatchday)
+        && (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
+        && getRivalry(fixture.homeClubId, fixture.awayClubId) !== null
+        && (fixture.events ?? []).some(event =>
+          event.type === MatchEventType.Goal
+          && event.playerId === arc.playerId
+          && event.clubId === game.managedClubId,
+        ),
+      )
+      const groundedLocalHero = Boolean(p && sourceFixture)
+
+      if (updatedArc.phase === 'peak' && p && groundedLocalHero) {
         const inboxId = `lokal_hero_inbox_${arc.id}`
         if (!arc.eventsFired.includes(inboxId)) {
           newInboxItems.push({
             id: `inbox_${inboxId}`,
             type: InboxItemType.Media,
             title: `📰 ${localPaper}: "${name} — ortens hjälte"`,
-            body: `${name}s mål i derbyt har gjort honom till en legend i orten. ${managedClub?.name ?? 'Klubben'} fick en ovärderlig poäng.`,
+            body: `${name} spelade sin roll. Orten minns.`,
             relatedPlayerId: p.id,
             isRead: false,
             date: currentDate,
@@ -425,14 +465,15 @@ export function progressArcs(
       }
       if (updatedArc.phase === 'resolving') {
         const storylineId = `storyline_${arc.id}_resolved`
-        if (!arc.eventsFired.includes(storylineId) && p) {
+        if (!arc.eventsFired.includes(storylineId) && p && groundedLocalHero) {
           newStorylines.push({
             id: storylineId,
             type: 'lokal_hero_moment',
             season: game.currentSeason,
             matchday: getCurrentLeagueRound(game),
             playerId: p.id,
-            description: `${name}s derby-mål blev säsongens folkligaste ögonblick.`,
+            clubId: game.managedClubId,
+            description: `🏠 ${name} — ortens hjälte`,
             displayText: `🏠 ${name} — ortens hjälte`,
             resolved: true,
           })
@@ -460,7 +501,11 @@ export function progressArcs(
                (f.matchday ?? 0) > arc.startedMatchday
         )
         const alreadyScored = completedSinceStart.some(f =>
-          (f.events ?? []).some(e => e.type === 'goal' && e.playerId === arc.playerId)
+          (f.events ?? []).some(e =>
+            e.type === MatchEventType.Goal
+            && e.playerId === arc.playerId
+            && e.clubId === game.managedClubId,
+          )
         )
         const eventId = `hungrig_peak_event_${arc.id}`
         if (!alreadyScored && !arc.eventsFired.includes(eventId)) {
@@ -468,7 +513,7 @@ export function progressArcs(
             id: eventId,
             type: 'playerArc',
             title: `Journalisten frågar om ${name}`,
-            body: `"Tror du fortfarande på ${name}? Han har inte gjort mål på länge och fansen undrar."`,
+            body: `${name} har det tungt. Tror du fortfarande på honom?`,
             choices: [
               {
                 id: 'back_him',
@@ -516,7 +561,11 @@ export function progressArcs(
                (f.matchday ?? 0) > arc.startedMatchday
         )
         const playerScored = completedSinceStart.some(f =>
-          (f.events ?? []).some(e => e.type === 'goal' && e.playerId === arc.playerId)
+          (f.events ?? []).some(e =>
+            e.type === MatchEventType.Goal
+            && e.playerId === arc.playerId
+            && e.clubId === game.managedClubId,
+          )
         )
         if (playerScored && p) {
           const storylineId = `storyline_${arc.id}_resolved`
@@ -525,9 +574,13 @@ export function progressArcs(
               id: storylineId,
               type: 'hungrig_breakthrough',
               season: game.currentSeason,
-            matchday: getCurrentLeagueRound(game),
+              matchday: getCurrentLeagueRound(game),
               playerId: p.id,
-              description: `${name} bröt den långa målsvälten och levererade när det gällde som mest.`,
+              clubId: game.managedClubId,
+              // The goal event proves that the drought ended, but not that
+              // this was the match's or season's decisive moment. Reuse the
+              // existing approved display line for the narrower true claim.
+              description: `${name} bröt isen`,
               displayText: `${name} bröt isen`,
               resolved: true,
             })
@@ -541,14 +594,27 @@ export function progressArcs(
 
     // ────────────────────────────────────────────────────────────────────────
     if (arc.type === 'joker_redemption') {
-      if (arc.phase === 'building' && p) {
+      const sourceFixtureId = arc.data?.sourceFixtureId as string | undefined
+      const suspensionFixture = game.fixtures.find(fixture =>
+        fixture.status === 'completed'
+        && (sourceFixtureId ? fixture.id === sourceFixtureId : fixture.matchday === arc.startedMatchday)
+        && (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
+        && (fixture.events ?? []).some(event =>
+          event.type === MatchEventType.Suspension
+          && event.playerId === arc.playerId
+          && event.clubId === game.managedClubId,
+        ),
+      )
+      const groundedSuspension = Boolean(p && suspensionFixture)
+
+      if (arc.phase === 'building' && p && groundedSuspension) {
         const inboxId = `joker_building_inbox_${arc.id}`
         if (!arc.eventsFired.includes(inboxId)) {
           newInboxItems.push({
             id: `inbox_${inboxId}`,
             type: InboxItemType.Media,
             title: `📰 ${localPaper}: "${name} — geni eller risk?"`,
-            body: `${name}s senaste insats väcker frågor. Spelaren är oförutsägbar men talangfull. Fansen är delade.`,
+            body: `${name} — geni eller risk?`,
             relatedPlayerId: p.id,
             isRead: false,
             date: currentDate,
@@ -557,7 +623,7 @@ export function progressArcs(
         }
       }
 
-      if (updatedArc.phase === 'peak' && p) {
+      if (updatedArc.phase === 'peak' && p && groundedSuspension) {
         const eventId = `joker_peak_event_${arc.id}`
         if (!arc.eventsFired.includes(eventId)) {
           newEvents.push({
@@ -605,22 +671,35 @@ export function progressArcs(
       }
 
       if (updatedArc.phase === 'resolving' && p) {
-        const wasBenched = arc.decisionsMade.includes('bench_joker')
-        if (!wasBenched && justCompletedFixture) {
-          const events = justCompletedFixture.events ?? []
-          const decisive = events.some(
-            e => (e.type === 'goal' || e.type === 'assist') && e.playerId === p.id
+        const wasBacked = arc.decisionsMade.includes('back_joker')
+        const decisionMatchday = typeof arc.data?.decisionMatchday === 'number'
+          ? arc.data.decisionMatchday
+          : undefined
+        if (wasBacked && decisionMatchday !== undefined) {
+          const contributed = game.fixtures.some(fixture =>
+            fixture.status === 'completed'
+            && (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
+            && (fixture.matchday ?? 0) > decisionMatchday
+            && (fixture.matchday ?? 0) <= currentMatchday
+            && (fixture.events ?? []).some(event =>
+              (event.type === 'goal' || event.type === 'assist')
+                && event.playerId === p.id
+                && event.clubId === game.managedClubId,
+            ),
           )
-          if (decisive) {
+          if (contributed) {
             const storylineId = `storyline_${arc.id}_resolved`
             if (!arc.eventsFired.includes(storylineId)) {
               newStorylines.push({
                 id: storylineId,
                 type: 'joker_vindicated',
                 season: game.currentSeason,
-            matchday: getCurrentLeagueRound(game),
+                matchday: getCurrentLeagueRound(game),
                 playerId: p.id,
-                description: `${name} avgjorde när det gällde och tystade alla kritiker.`,
+                clubId: game.managedClubId,
+                // The event proves a contribution after the manager backed
+                // the player, not a match-winning action or universal acclaim.
+                description: `${name} — joker i hjärtat`,
                 displayText: `${name} — joker i hjärtat`,
                 resolved: true,
               })
@@ -709,126 +788,41 @@ export function progressArcs(
         }
       }
 
-      if (updatedArc.phase === 'resolving' && p) {
+      if (updatedArc.phase === 'resolving') {
         const storylineId = `storyline_${arc.id}_resolved`
         if (!arc.eventsFired.includes(storylineId)) {
           const extended = arc.decisionsMade.includes('extend_veteran')
-          newStorylines.push({
-            id: storylineId,
-            type: extended ? 'veteran_stayed' : 'veteran_farewell',
-            season: game.currentSeason,
-            matchday: getCurrentLeagueRound(game),
-            playerId: p.id,
-            // O1 kandidat 2, utfallsraderna låsta av Jacob 2026-08-24 — den
-            // sista meningen i avskedet ("Han sa att han förstod") är avsiktligt
-            // det som gör beslutet dyrt.
-            description: extended
-              ? `${name} skriver på i omklädningsrummet. Någon hade tagit med tårta.`
-              : `${name} tömde skåpet själv. Han sa att han förstod.`,
-            displayText: extended
-              ? `🏅 ${name} stannar — legenden lever`
-              : `🏅 ${name}s sista säsong`,
-            resolved: true,
-          })
-        }
-        continue
-      }
-      updatedArcs.push(updatedArc)
-      continue
-    }
-
-    // ────────────────────────────────────────────────────────────────────────
-    if (arc.type === 'veteran_final_season') {
-      // Dagboksanteckningar var 4:e omgång
-      if (p) {
-        const diaryId = `vetfinal_diary_${arc.id}_r${Math.floor(currentMatchday / 4)}`
-        if (!arc.eventsFired.includes(diaryId) && currentMatchday > 0 && currentMatchday % 4 === 0) {
-          // Text låst av Jacob 2026-08-25 (SANNINGEN-SAKNAS-fix): raderna
-          // roterade tidigare på currentMatchday%4 — ingen koppling till
-          // spelarens faktiska tillstånd. Grundas nu i morale/seasonForm.
-          // Prioritetsordning: låg moral (mest angeläget) → hög moral →
-          // stark form → svag form (fallback, matchar alltid). Moral-
-          // trösklarna (<30/≥70) matchar etablerad konvention i kodbasen
-          // (playerVoiceService.ts, eventFactories.ts isHighForm). seasonForm-
-          // trösklarna (≥75/annars svag) saknar motsvarande prejudikat i
-          // koden — satta symmetriskt kring basvärdet 60, flaggat öppet.
-          const diaryText = p.morale < 30
-            ? `${name} satt kvar en stund efter träningen. Ingen frågade varför.`
-            : p.morale >= 70
-              ? `${name} sa lite mer i omklädningsrummet idag. Laget lyssnar.`
-              : p.seasonForm >= 75
-                ? `${name} drev sista passet som om kroppen visste något.`
-                : `${name} har börjat prata om vad som kommer sen. Ungdomslaget, kanske.`
-          newInboxItems.push({
-            id: `inbox_${diaryId}`,
-            type: InboxItemType.Community,
-            title: `📓 ${name}`,
-            body: diaryText,
-            relatedPlayerId: p.id,
-            isRead: false,
-            date: currentDate,
-          })
-          updatedArc = { ...updatedArc, eventsFired: [...updatedArc.eventsFired, diaryId] }
-        }
-
-        // Kapten-fråga i presskonferens (hanteras i pressConferenceService via is_captain + veteran)
-        // Sista matchen ceremoni — om vid md 22 och inte avslutad
-        if (currentMatchday >= 22 && updatedArc.phase !== 'resolving') {
-          updatedArc = { ...updatedArc, phase: 'resolving' }
-        }
-      }
-
-      if (updatedArc.phase === 'resolving' && p) {
-        const storylineId = `storyline_${arc.id}_final`
-        if (!arc.eventsFired.includes(storylineId)) {
-          newStorylines.push({
-            id: storylineId,
-            type: 'veteran_farewell',
-            season: game.currentSeason,
-            matchday: getCurrentLeagueRound(game),
-            playerId: p.id,
-            description: `${name}s sista säsong. Publiken hyllar honom vid avslutet.`,
-            displayText: `🏅 ${name} — en karriär på isen`,
-            resolved: true,
-          })
-          const ceremonyId = `vetfinal_ceremony_${arc.id}`
-          if (!arc.eventsFired.includes(ceremonyId)) {
-            newEvents.push({
-              id: ceremonyId,
-              type: 'playerArc',
-              title: `${name}s sista match`,
-              body: `Sista omgången. Publiken vet. Laget vet. Dags att tacka av en spelare som gett allt.`,
-              choices: [
-                {
-                  id: 'ceremony_flowers',
-                  label: 'Blombukett och avtackning',
-                  // O2 lager 3 (Jacobs dom 2026-08-24): var ren
-                  // teamBoostMorale, zero cost — en strikt delmängdsöverlägsen
-                  // effekt mot ceremony_simple (mer moral, fler spelare,
-                  // gratis). Behåller samma +15 moral hela laget, kostar nu
-                  // 10 000 kr (applyFinanceChange, income-subEffect). Text
-                  // låst av Jacob, ordagrant.
-                  subtitle: 'Lagets moral +15 · kostar 10 tkr',
-                  effect: {
-                    type: 'multiEffect',
-                    subEffects: JSON.stringify([
-                      { type: 'teamBoostMorale', amount: 15, targetClubId: game.managedClubId },
-                      { type: 'income', amount: -10000 },
-                    ]),
-                  },
-                },
-                {
-                  id: 'ceremony_simple',
-                  label: 'Håll avtackningen enkel',
-                  subtitle: '💛 Moral +5',
-                  effect: { type: 'boostMorale', value: 5, targetPlayerId: p.id },
-                },
-              ],
-              sender: { name: 'Truppen', role: 'Omklädningsrum' },
-              relatedPlayerId: p.id,
-              resolved: false,
+          const farewelled = arc.decisionsMade.includes('farewell_veteran')
+          const veteran = arc.playerId ? game.players.find(player => player.id === arc.playerId) : undefined
+          const managedSquad = game.clubs.find(club => club.id === game.managedClubId)?.squadPlayerIds ?? []
+          const outcomeIsApplied = veteran && (
+            (extended
+              && veteran.clubId === game.managedClubId
+              && veteran.contractUntilSeason >= game.currentSeason + 2)
+            || (farewelled
+              && veteran.clubId === 'free_agent'
+              && !managedSquad.includes(veteran.id))
+          )
+          if (veteran && outcomeIsApplied) {
+            const veteranName = playerName(veteran)
+            newStorylines.push({
+              id: storylineId,
+              type: extended ? 'veteran_stayed' : 'veteran_farewell',
+              season: game.currentSeason,
+              matchday: getCurrentLeagueRound(game),
+              playerId: veteran.id,
+              clubId: game.managedClubId,
+              // O1 kandidat 2, utfallsraderna låsta av Jacob 2026-08-24 — den
+              // sista meningen i avskedet ("Han sa att han förstod") är avsiktligt
+              // det som gör beslutet dyrt.
+              description: extended
+                ? `${veteranName} skriver på i omklädningsrummet. Någon hade tagit med tårta.`
+                : `${veteranName} tömde skåpet själv. Han sa att han förstod.`,
+              displayText: extended
+                ? `🏅 ${veteranName} stannar — legenden lever`
+                : `${veteranName} tömde skåpet själv. Han sa att han förstod.`,
+              resolved: true,
             })
-            updatedArc = { ...updatedArc, eventsFired: [...updatedArc.eventsFired, ceremonyId, storylineId] }
           }
         }
         continue
@@ -904,19 +898,26 @@ export function progressArcs(
         }
       }
 
-      if (updatedArc.phase === 'resolving' && p) {
+      if (updatedArc.phase === 'resolving') {
         const letGo = arc.decisionsMade.includes('let_go')
-        if (letGo) {
+        const player = arc.playerId ? game.players.find(candidate => candidate.id === arc.playerId) : undefined
+        const managedSquad = game.clubs.find(club => club.id === game.managedClubId)?.squadPlayerIds ?? []
+        const releaseIsApplied = player
+          && player.clubId === 'free_agent'
+          && !managedSquad.includes(player.id)
+        if (letGo && player && releaseIsApplied) {
           const storylineId = `storyline_${arc.id}_resolved`
           if (!arc.eventsFired.includes(storylineId)) {
+            const playerDisplayName = playerName(player)
             newStorylines.push({
               id: storylineId,
               type: 'contract_drama_resolved',
               season: game.currentSeason,
-            matchday: getCurrentLeagueRound(game),
-              playerId: p.id,
-              description: `${name} lämnade klubben efter kontraktsstriden. En bitter upplösning.`,
-              displayText: `📋 ${name} lämnade`,
+              matchday: getCurrentLeagueRound(game),
+              playerId: player.id,
+              clubId: game.managedClubId,
+              description: `${playerDisplayName} lämnade klubben efter kontraktsstriden. En bitter upplösning.`,
+              displayText: `📋 ${playerDisplayName} lämnade`,
               resolved: true,
             })
           }

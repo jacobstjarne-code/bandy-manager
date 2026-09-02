@@ -429,12 +429,10 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
     // namnen är ärligt beslutets person. Kan inte nå 2 av 3.
   },
   // ── HIGH 6, källa 2 — kaptensmötet (eventFactories.generateCaptainSpeech-
-  // Event). Eventet saknar `relatedPlayerId`; kaptenens identitet finns bara
-  // i 'take_charge'-valets `effect.targetPlayerId` (fabriken sätter den till
-  // captain.id). BÅDA byggarna nedan läser därifrån — inte ur
-  // `game.captainPlayerId`, som är lineup-fältet och kan ha bytt person sedan
-  // eventet köades (postAdvanceEvents.ts faller dessutom tillbaka på en
-  // annan spelare helt om captainPlayerId saknas).
+  // Event). Kaptenens identitet är frusen på event.relatedPlayerId. Äldre
+  // köade saves kan sakna det fältet, så 'take_charge'-valets targetPlayerId
+  // är en kompatibilitetsfallback. game.captainPlayerId används inte: det är
+  // lineup-state och kan ha bytt person sedan eventet köades.
   captainSpeech: {
     // 'take_charge': du sa nej och tog samtalet själv. Priset är kaptenens
     // egen moral (−5) — en namngiven relation som betalar.
@@ -446,7 +444,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
     // namngiven spelare. Laget och kaptenen pekade åt varsitt håll.
     take_charge: (gameBefore, gameAfter, event) => {
       const choice = event.choices.find(c => c.id === 'take_charge')
-      const captainId = choice?.effect.targetPlayerId
+      const captainId = event.relatedPlayerId ?? choice?.effect.targetPlayerId
       const before = findManagedPlayer(gameBefore, captainId)
       const after = findManagedPlayer(gameAfter, captainId)
       if (!before || !after) return null
@@ -474,7 +472,8 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
     // fallit. Klamras endera (hela truppen redan på 100 moral, eller
     // boardPatience redan på 0) är null rätt svar.
     support: (gameBefore, gameAfter, event) => {
-      const captainId = event.choices.find(c => c.id === 'take_charge')?.effect.targetPlayerId
+      const captainId = event.relatedPlayerId
+        ?? event.choices.find(c => c.id === 'take_charge')?.effect.targetPlayerId
       const captain = findManagedPlayer(gameAfter, captainId)
       if (!captain) return null
       const patienceBefore = gameBefore.boardPatience ?? 70

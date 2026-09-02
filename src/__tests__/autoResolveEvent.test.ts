@@ -26,6 +26,7 @@ describe('auto-resolve for no-choice events', () => {
 
     const resolved = resolveEvent(gameWithEvent, evt.id, 'auto', undefined, false)
     expect(resolved.pendingEvents.some(e => e.id === evt.id)).toBe(false)
+    expect(resolved.resolvedEventIds).toContain(evt.id)
   })
 
   it('removes an opponentQuote event from pendingEvents when resolved', () => {

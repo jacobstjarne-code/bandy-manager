@@ -9,9 +9,9 @@
 
 import type { SaveGame, RippleChain } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
-import type { CoachRivalry } from '../entities/ManagerProfile'
 import { getRivalry } from './rivalries'
 import { nextManagedFixture } from '../services/situationFragments'
+import { deriveCoachNemesis } from '../services/managerProfileService'
 import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from './facilityPortalBeats'
 import { FACILITY_NODE_DEFS } from './facilityNodes'
 import { getFirstUnseenCompletedFacility, facilityCompletedBeatKey } from '../services/facilityService'
@@ -65,22 +65,46 @@ function nextManagedLeagueFixture(game: SaveGame) {
     .sort((a, b) => a.matchday - b.matchday)[0] ?? null
 }
 
-function _nemesisScore(r: CoachRivalry): number {
-  return (r.h2hWins + r.h2hDraws + r.h2hLosses) * Math.max(0, r.h2hLosses - r.h2hWins)
-}
-
-function _deriveNemesis(rivalries: CoachRivalry[]): CoachRivalry | null {
-  return rivalries
-    .filter(r => _nemesisScore(r) > 0)
-    .sort((a, b) => _nemesisScore(b) - _nemesisScore(a))[0] ?? null
-}
-
 function completedLeagueCount(game: SaveGame): number {
   const id = game.managedClubId
   return game.fixtures.filter(
     f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
       (f.homeClubId === id || f.awayClubId === id)
   ).length
+}
+
+/** Senaste verifierbara mentorskapet där senioren faktiskt blev klubbikon.
+ *  Arrayordningen är skrivordningen; baklängesgång gör ommentorskap stabilt
+ *  utan att tolka startRound över säsongsgränser. */
+function findLegendMentor(game: SaveGame, youthPlayerId: string) {
+  const history = game.mentorshipHistory ?? []
+  for (let index = history.length - 1; index >= 0; index--) {
+    const record = history[index]
+    if (record.youthPlayerId !== youthPlayerId) continue
+    const legend = (game.clubLegends ?? []).find(
+      candidate => candidate.playerId === record.seniorPlayerId,
+    )
+    if (legend) return { record, legend }
+  }
+  return null
+}
+
+function findCurrentLegendDebut(game: SaveGame) {
+  for (const player of game.players) {
+    if (
+      player.clubId !== game.managedClubId ||
+      (player.careerStats?.totalGames ?? 0) !== 1
+    ) continue
+    const debut = (player.diary ?? []).find(entry =>
+      entry.semanticKey === 'first_team_debut' &&
+      entry.season === game.currentSeason &&
+      entry.matchday === game.currentMatchday
+    )
+    if (!debut) continue
+    const mentorship = findLegendMentor(game, player.id)
+    if (mentorship) return { player, debut, mentorship }
+  }
+  return null
 }
 
 /** Har transfer_window_open-beatet visats i en tidigare säsong? shownBeats
@@ -233,7 +257,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
       const streak = g.rivalryHistory?.[opp]?.currentStreak ?? 0
       const n = Math.abs(streak)
       if (streak <= -2) return `${n} raka mot ${oppClub?.name ?? 'dem'} nu. Någon gång ska det vändas.`
-      return `${oppClub?.name ?? 'De'} har inte tagit dig på ${n} möten. De vet om det.`
+      return `${oppClub?.name ?? 'De'} har inte tagit dig på ${n} möten.`
     },
     keyFn: (g) => {
       const next = nextManagedFixture(g)
@@ -253,6 +277,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
       if (!getRivalry(g.managedClubId, opp)) return false
       return g.fixtures.some(f =>
         f.status === 'completed' && !f.isCup && !f.isKnockout &&
+        typeof f.homeScore === 'number' && typeof f.awayScore === 'number' &&
         ((f.homeClubId === g.managedClubId && f.awayClubId === opp) ||
          (f.awayClubId === g.managedClubId && f.homeClubId === opp))
       )
@@ -264,15 +289,16 @@ export const PORTAL_BEATS: PortalBeat[] = [
       const pastDerby = g.fixtures
         .filter(f =>
           f.status === 'completed' && !f.isCup && !f.isKnockout &&
+          typeof f.homeScore === 'number' && typeof f.awayScore === 'number' &&
           ((f.homeClubId === g.managedClubId && f.awayClubId === opp) ||
            (f.awayClubId === g.managedClubId && f.homeClubId === opp))
         )
         .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))[0]
-      if (!pastDerby) return `Derbyt mot ${oppClub?.name ?? 'rivalen'}. Klacken minns.`
+      if (!pastDerby) return `Derbyt mot ${oppClub?.name ?? 'rivalen'}.`
       const managedHome = pastDerby.homeClubId === g.managedClubId
       const ourGoals = managedHome ? pastDerby.homeScore : pastDerby.awayScore
       const theirGoals = managedHome ? pastDerby.awayScore : pastDerby.homeScore
-      return `Förra derbyt mot ${oppClub?.name ?? 'rivalen'}: ${ourGoals}–${theirGoals}. Klacken har inte glömt.`
+      return `Förra derbyt mot ${oppClub?.name ?? 'rivalen'}: ${ourGoals}–${theirGoals}.`
     },
     keyFn: (g) => {
       const next = nextManagedFixture(g)
@@ -298,7 +324,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
       const snub = g.lastNationalSnub
       const player = snub ? g.players.find(p => p.id === snub.playerId) : undefined
       const name = player ? `${player.firstName} ${player.lastName}` : 'Spelaren'
-      return `${name} förbigicks i landslaget. Han har något att säga i kväll.`
+      return `${name} förbigicks i landslaget.`
     },
     keyFn: (g) => `callback_snub_${g.lastNationalSnub?.playerId ?? 'unknown'}_s${g.currentSeason}`,
     oncePerSeason: false,
@@ -312,16 +338,36 @@ export const PORTAL_BEATS: PortalBeat[] = [
     severity: () => 1,
     trigger: (g) => {
       const info = g.lastRivalSaleInfo
-      if (!info?.buyerClubId) return false
-      return firesBeforeNextFixture(g, (_fx, opp) => opp === info.buyerClubId)
+      if (
+        !info?.buyerClubId ||
+        typeof info.saleSeason !== 'number' ||
+        typeof info.saleMatchday !== 'number'
+      ) return false
+
+      const isAfterSale = (fixture: Fixture) =>
+        fixture.season > info.saleSeason! ||
+        (fixture.season === info.saleSeason && fixture.matchday > info.saleMatchday!)
+      const isManagedBuyerMeeting = (fixture: Fixture) =>
+        (fixture.homeClubId === g.managedClubId && fixture.awayClubId === info.buyerClubId) ||
+        (fixture.awayClubId === g.managedClubId && fixture.homeClubId === info.buyerClubId)
+
+      return firesBeforeNextFixture(g, (fixture, opp) =>
+        opp === info.buyerClubId &&
+        isAfterSale(fixture) &&
+        !g.fixtures.some(candidate =>
+          candidate.status === 'completed' &&
+          isAfterSale(candidate) &&
+          isManagedBuyerMeeting(candidate)
+        )
+      )
     },
     text: (g) => {
       const info = g.lastRivalSaleInfo
-      return `Första mötet med ${info?.buyerClubName ?? 'dem'} sedan ${info?.soldPlayerName ?? 'spelaren'} gick dit. Det blir laddat.`
+      return `Första mötet med ${info?.buyerClubName ?? 'dem'} sedan ${info?.soldPlayerName ?? 'spelaren'} gick dit.`
     },
     keyFn: (g) => {
       const info = g.lastRivalSaleInfo
-      return `callback_sale_s${g.currentSeason}_${info?.buyerClubId ?? 'unknown'}`
+      return `callback_sale_${info?.buyerClubId ?? 'unknown'}_s${info?.saleSeason ?? 'unknown'}_m${info?.saleMatchday ?? 'unknown'}`
     },
     oncePerSeason: false,
   },
@@ -335,25 +381,28 @@ export const PORTAL_BEATS: PortalBeat[] = [
     trigger: (g) => {
       const profile = g.managerProfile
       if (!profile) return false
-      const nemesis = _deriveNemesis(profile.coachRivalries)
+      const nemesis = deriveCoachNemesis(
+        profile.coachRivalries.filter(rivalry => rivalry.clubId !== g.managedClubId),
+      )
       if (!nemesis) return false
       return firesBeforeNextFixture(g, (_f, opp) => opp === nemesis.clubId)
     },
     text: (g) => {
       const profile = g.managerProfile
       if (!profile) return ''
-      const nemesis = _deriveNemesis(profile.coachRivalries)
+      const nemesis = deriveCoachNemesis(
+        profile.coachRivalries.filter(rivalry => rivalry.clubId !== g.managedClubId),
+      )
       if (!nemesis) return ''
-      const coachName = g.aiCoaches?.[nemesis.clubId]?.name
       const clubName = g.clubs.find(c => c.id === nemesis.clubId)?.name ?? 'rivalen'
       const record = `${nemesis.h2hWins}V ${nemesis.h2hDraws}O ${nemesis.h2hLosses}F`
-      return coachName
-        ? `${coachName} står där igen. ${record} mot honom. Han ler redan.`
-        : `Det blir ${clubName} igen. ${record} i böckerna. Den här gången, då.`
+      return `Det blir ${clubName} igen. ${record} i böckerna.`
     },
     keyFn: (g) => {
       const profile = g.managerProfile
-      const nemesis = profile ? _deriveNemesis(profile.coachRivalries) : null
+      const nemesis = profile
+        ? deriveCoachNemesis(profile.coachRivalries.filter(rivalry => rivalry.clubId !== g.managedClubId))
+        : null
       return `callback_nemesis_${nemesis?.clubId ?? 'none'}_s${g.currentSeason}`
     },
     oncePerSeason: true,
@@ -368,20 +417,25 @@ export const PORTAL_BEATS: PortalBeat[] = [
     trigger: (g) => {
       const captainId = g.captainPlayerId
       if (!captainId) return false
-      return (g.mentorshipHistory ?? []).some(r => r.youthPlayerId === captainId)
+      const captain = g.players.find(
+        player => player.id === captainId && player.clubId === g.managedClubId,
+      )
+      return !!captain && !!findLegendMentor(g, captainId)
     },
     text: (g) => {
       const captainId = g.captainPlayerId ?? ''
-      const record = (g.mentorshipHistory ?? []).find(r => r.youthPlayerId === captainId)
-      if (!record) return ''
-      const mentor = g.players.find(p => p.id === record.seniorPlayerId)
-        ?? g.clubLegends?.find(l => l.playerId === record.seniorPlayerId)
-      const captain = g.players.find(p => p.id === captainId)
-      if (!captain) return ''
-      const mentorName = mentor ? ('firstName' in mentor ? `${mentor.firstName} ${mentor.lastName}` : mentor.name) : 'En legend'
-      return `${captain.firstName} ${captain.lastName} bär bindeln nu. Det var ${mentorName} som visade honom hur man gör.`
+      const captain = g.players.find(
+        player => player.id === captainId && player.clubId === g.managedClubId,
+      )
+      const mentorship = findLegendMentor(g, captainId)
+      if (!captain || !mentorship) return ''
+      return `${captain.firstName} ${captain.lastName} bär bindeln nu. Det var ${mentorship.legend.name} som visade honom hur man gör.`
     },
-    keyFn: (g) => `callback_legend_mentor_${g.captainPlayerId ?? 'none'}_s${g.currentSeason}`,
+    keyFn: (g) => {
+      const captainId = g.captainPlayerId ?? 'none'
+      const mentorship = findLegendMentor(g, captainId)
+      return `callback_legend_mentor_${captainId}_${mentorship?.legend.playerId ?? 'none'}_s${g.currentSeason}`
+    },
     oncePerSeason: true,
   },
 
@@ -391,32 +445,15 @@ export const PORTAL_BEATS: PortalBeat[] = [
     emoji: '⭐',
     kicker: 'Genombrott',
     severity: () => 0,
-    trigger: (g) => {
-      const mentored = new Set((g.mentorshipHistory ?? []).map(r => r.youthPlayerId))
-      return g.players.some(p =>
-        mentored.has(p.id) && p.clubId === g.managedClubId &&
-        (p.careerStats?.totalGames ?? 0) >= 1 && (p.careerStats?.totalGames ?? 0) <= 3
-      )
-    },
+    trigger: (g) => !!findCurrentLegendDebut(g),
     text: (g) => {
-      const mentored = new Set((g.mentorshipHistory ?? []).map(r => r.youthPlayerId))
-      const debutant = g.players.find(p =>
-        mentored.has(p.id) && p.clubId === g.managedClubId &&
-        (p.careerStats?.totalGames ?? 0) >= 1 && (p.careerStats?.totalGames ?? 0) <= 3
-      )
-      if (!debutant) return ''
-      const record = (g.mentorshipHistory ?? []).find(r => r.youthPlayerId === debutant.id)
-      const mentor = record ? g.players.find(p => p.id === record.seniorPlayerId) ?? g.clubLegends?.find(l => l.playerId === record.seniorPlayerId) : null
-      const mentorName = mentor ? ('firstName' in mentor ? `${mentor.firstName} ${mentor.lastName}` : mentor.name) : null
-      return `${debutant.firstName} ${debutant.lastName} gör debut, ${debutant.age} år.${mentorName ? ` ${mentorName} såg det innan någon annan.` : ''}`
+      const context = findCurrentLegendDebut(g)
+      if (!context) return ''
+      return `${context.player.firstName} ${context.player.lastName} gör debut, ${context.player.age} år.`
     },
     keyFn: (g) => {
-      const mentored = new Set((g.mentorshipHistory ?? []).map(r => r.youthPlayerId))
-      const debutant = g.players.find(p =>
-        mentored.has(p.id) && p.clubId === g.managedClubId &&
-        (p.careerStats?.totalGames ?? 0) >= 1 && (p.careerStats?.totalGames ?? 0) <= 3
-      )
-      return `callback_legend_debut_${debutant?.id ?? 'none'}_s${g.currentSeason}`
+      const context = findCurrentLegendDebut(g)
+      return `callback_legend_debut_${context?.player.id ?? 'none'}_${context?.mentorship.legend.playerId ?? 'none'}_s${context?.debut.season ?? 'unknown'}_m${context?.debut.matchday ?? 'unknown'}`
     },
     oncePerSeason: false,
   },

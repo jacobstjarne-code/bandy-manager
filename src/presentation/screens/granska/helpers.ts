@@ -2,8 +2,10 @@ import { MatchEventType, FixtureStatus } from '../../../domain/enums'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { Tavlingstyp, Skede } from '../../../domain/services/matchTypeAxes'
 import type { KvittoOutcomeDir } from '../../../domain/data/managerKvittoText'
+import { getCriticalEventsForGranska } from '../../../domain/services/granskaEventClassifier'
 import { SPELKLARHET_FITNESS_FLOOR } from '../../utils/lineupNudge'
 
 /**
@@ -25,6 +27,25 @@ export function getStartedTiredDirection(
   if (belowFloor) return 'bad'
   if (rating !== undefined) return rating >= 7 ? 'good' : rating <= 5 ? 'bad' : 'neutral'
   return fallbackDir
+}
+
+/**
+ * Alla beslut som blockerar Granskas fortsättknapp. De tre fristående
+ * pending-fälten måste räknas tillsammans med pendingEvents; annars kan ett
+ * synligt press-/domarkort lämnas obesvarat när spelaren går vidare.
+ */
+export function countUnresolvedGranskaDecisions(
+  pendingEvents: GameEvent[],
+  resolvedEventIds: ReadonlySet<string>,
+  pendingPressConference?: GameEvent,
+  pendingCSPress?: GameEvent,
+  pendingRefereeMeeting?: GameEvent,
+): number {
+  const unresolvedCritical = getCriticalEventsForGranska(pendingEvents)
+    .filter(event => !resolvedEventIds.has(event.id)).length
+  const standalone = [pendingPressConference, pendingCSPress, pendingRefereeMeeting]
+    .filter((event): event is GameEvent => !!event && !resolvedEventIds.has(event.id)).length
+  return unresolvedCritical + standalone
 }
 
 /**

@@ -41,7 +41,6 @@ export type GameEventType =
   | 'riskySponsorOffer'
   | 'mecenatWithdrawal'
   | 'patronWithdrawal'
-  | 'mediaReaction'
   | 'fanLetter'
   | 'opponentQuote'
   | 'csPress'
@@ -280,7 +279,6 @@ export function getEventPriority(type: GameEventType): EventPriority {
       return 'normal'
     case 'bandyLetter':
     case 'schoolAssignment':
-    case 'mediaReaction':
     case 'fanLetter':
     case 'opponentQuote':
       return 'low'

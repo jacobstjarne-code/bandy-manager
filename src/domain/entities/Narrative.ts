@@ -86,18 +86,13 @@ export interface TrainerArc extends BaseArc {
 export type StorylineType =
   | 'rescued_from_unemployment'
   | 'went_fulltime_pro'
-  | 'refused_to_go_pro'
-  | 'left_for_bigger_club'
-  | 'returned_to_club'
   | 'workplace_bond'
   | 'journalist_feud'
   | 'journalist_redemption'
   | 'promotion_sacrifice'
-  | 'career_crossroads_stayed'
   | 'underdog_season'
   | 'relegation_escape'
   | 'gala_winner'
-  | 'partner_moved_here'
   | 'captain_rallied_team'
   // Arc resolutions
   | 'hungrig_breakthrough'
@@ -114,6 +109,8 @@ export interface StorylineEntry {
   season: number
   matchday: number
   playerId?: string
+  /** Exact pair/group anchor for storylines involving more than one player. */
+  playerIds?: string[]
   clubId?: string
   description: string
   displayText: string
@@ -316,7 +313,6 @@ export type ArcType =
   | 'hungrig_breakthrough'    // Ung hungrig spelare som kämpar för genombrott
   | 'joker_redemption'        // Joker som kostar/räddar — oförutsägbar
   | 'veteran_farewell'        // Veteran med utgående kontrakt, sista säsongen?
-  | 'veteran_final_season'    // Veteran 34+ vars kontrakt löper ut detta år — hela säsongen-arc
   // 'ledare_crisis' BORTTAGEN (H1-uppföljning, 2026-08-24, Jacobs dom) —
   // dubblerade postAdvanceEvents.ts:s captainSpeech (samma trigger, "3
   // förluster i rad"), som är kanon. Se saveGameMigration.ts för migrering

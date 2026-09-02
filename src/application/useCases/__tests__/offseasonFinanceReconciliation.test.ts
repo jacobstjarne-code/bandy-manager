@@ -58,6 +58,32 @@ describe('seasonEndProcessor — offseasonFinanceLog (A-M5)', () => {
     expect(summaryEntry?.amount).toBe(75000)
   })
 
+  it('betalar och loggar varje aktiv synlig mecenats säsongsbidrag separat från patronen', () => {
+    const base = makeGame()
+    const mecenat = {
+      id: 'mec_1', name: 'Test Mecenat', gender: 'female', business: 'Test AB',
+      businessType: 'brukspatron', wealth: 3, personality: 'filantropen',
+      influence: 20, happiness: 60, goodwill: 50, contribution: 75_000,
+      totalContributed: 0, demands: [], socialExpectations: [], isActive: true,
+      arrivedSeason: 2025, silentShout: 0,
+    } as const
+
+    const withoutMecenat = handleSeasonEnd({ ...base, mecenater: [] }, 1).game
+    const withMecenat = handleSeasonEnd({ ...base, mecenater: [mecenat] }, 1).game
+    const managedWithout = withoutMecenat.clubs.find(c => c.id === base.managedClubId)!
+    const managedWith = withMecenat.clubs.find(c => c.id === base.managedClubId)!
+
+    expect(managedWith.finances - managedWithout.finances).toBe(75_000)
+    expect(withMecenat.financeLog?.find(e => e.reason === 'mecenat')).toMatchObject({
+      amount: 75_000,
+      label: 'Mecenatbidrag (Test Mecenat)',
+    })
+    expect(withMecenat.seasonSummaries?.at(-1)?.offseasonFinanceEntries?.find(e => e.reason === 'mecenat')).toMatchObject({
+      amount: 75_000,
+    })
+    expect(withMecenat.mecenater?.[0].totalContributed).toBe(75_000)
+  })
+
   it('financeLog bevarar tidigare poster (append, inte overwrite)', () => {
     const base = makeGame()
     const game = {

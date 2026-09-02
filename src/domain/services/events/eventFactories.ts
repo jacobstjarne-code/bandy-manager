@@ -532,6 +532,10 @@ export function generateShiftConflictEvent(player: Player, matchRound: number): 
 }
 
 // ── Coworker bond — two players who work together develop chemistry ───────
+export function coworkerBondEventId(playerId1: string, playerId2: string): string {
+  return `event_bond_${[playerId1, playerId2].sort().join('_')}`
+}
+
 export function generateCoworkerBondEvent(
   player1: Player,
   player2: Player,
@@ -540,7 +544,7 @@ export function generateCoworkerBondEvent(
   const name1 = `${player1.firstName} ${player1.lastName}`
   const name2 = `${player2.firstName} ${player2.lastName}`
   return {
-    id: `event_bond_${player1.id}_${player2.id}`,
+    id: coworkerBondEventId(player1.id, player2.id),
     type: 'communityEvent',
     title: `Arbetskamrater på ${employerName}`,
     body: `${name1} och ${name2} jobbar båda på ${employerName}. De pendlar tillsammans och har börjat träna extra på lunchen. Kemin på planen har blivit bättre.`,
@@ -561,6 +565,8 @@ export function generateCoworkerBondEvent(
       },
     ],
     relatedPlayerId: player1.id,
+    selectedPlayerIds: [player1.id, player2.id],
+    relatedClubId: player1.clubId,
     resolved: false,
   }
 }

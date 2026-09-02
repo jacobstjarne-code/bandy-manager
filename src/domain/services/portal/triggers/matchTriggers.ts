@@ -2,7 +2,6 @@ import type { SaveGame } from '../../../entities/SaveGame'
 import type { Fixture } from '../../../entities/Fixture'
 import { getRivalry } from '../../../data/rivalries'
 import { PlayoffRound } from '../../../enums'
-import { getFarewellMatchPlayer } from '../../retirementService'
 
 /** Returnerar nästa schemalagda fixture för managed club. */
 export function getNextManagedFixture(game: SaveGame): Fixture | null {
@@ -81,11 +80,6 @@ export function nextMatchIsCupFinal(game: SaveGame): boolean {
  * (MatchLaddningScene) och kafferummet redan använder, återanvänd här
  * istf en tredje beräkning av samma villkor.
  */
-export function nextMatchIsFarewellMatch(game: SaveGame): boolean {
-  const next = getNextManagedFixture(game)
-  return getFarewellMatchPlayer(game, next) !== null
-}
-
 /** Nästa match är en hemmamatch. */
 export function nextMatchIsHome(game: SaveGame): boolean {
   const next = getNextManagedFixture(game)

@@ -68,7 +68,6 @@ export const PLAYER_TYPES = new Set<GameEventType>([
  * function below routes choice-bearing reactions to 'critical' instead.
  */
 export const REACTION_TYPES = new Set<GameEventType>([
-  'mediaReaction',
   'fanLetter',
   'opponentQuote',
   'supporterEvent',

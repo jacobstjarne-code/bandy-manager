@@ -143,7 +143,7 @@ describe('applyRiskySponsorMaturation', () => {
     expect(result.inbox.length).toBe(game.inbox.length)
   })
 
-  it('sidofynd fixat: en SENARE säsong utan att risken utlösts är fortfarande kontrollerbar (inte permanent tyst)', () => {
+  it('legacy-save från en tidigare säsong är fortfarande kontrollerbar (inte permanent tyst)', () => {
     let game = baseGame()
     game = {
       ...game,
@@ -151,11 +151,22 @@ describe('applyRiskySponsorMaturation', () => {
       riskySponsorContract: { sponsorId: 'sponsor_risky', riskMaturityRound: 14, acceptedRound: 8, season: game.currentSeason },
       currentSeason: game.currentSeason + 1, // säsongen har rullat över, kontraktet fick aldrig utlösas förra säsongen
     }
-    // nextMatchday=1 (ny säsongs första omgång) — under den GAMLA riskMaturityRound=14,
-    // men eftersom vi är i en SENARE säsong ska mognadsfönstret ändå räknas som nått.
+    // Canonical rollover rebasar numera mognadsmålet och season. Detta täcker
+    // äldre saves som redan hunnit sparas med den gamla säsongen kvar.
     const result = applyRiskySponsorMaturation(game, 1, '2027-01-01', ALWAYS_FIRES)
     expect(result.riskySponsorContract).toBeUndefined()
     expect(result.sponsors!.find(s => s.id === 'sponsor_risky')).toBeUndefined()
+  })
+
+  it('ett rebasat avtal väntar den återstående tiden efter säsongsskiftet', () => {
+    const game = {
+      ...baseGame(),
+      currentSeason: 2,
+      sponsors: [makeRiskySponsor()],
+      riskySponsorContract: { sponsorId: 'sponsor_risky', riskMaturityRound: 4, season: 2 },
+    }
+    expect(applyRiskySponsorMaturation(game, 1, '2027-01-01', ALWAYS_FIRES)).toBe(game)
+    expect(applyRiskySponsorMaturation(game, 4, '2027-01-01', ALWAYS_FIRES).riskySponsorContract).toBeUndefined()
   })
 
   it('redan exponerad denna matId → ingen dubbel-effekt (idempotent)', () => {

@@ -57,7 +57,7 @@ export function generateReturnFromInjuryEntry(season: number, matchday: number):
  */
 export function generateDebutEntry(opponent: string, season: number, matchday: number): NarrativeEntry {
   return {
-    season, matchday, type: 'milestone',
+    season, matchday, type: 'milestone', semanticKey: 'first_team_debut',
     text: `A-lagsdebut mot ${opponent}. Nerverna satt — men benen höll.`,
   }
 }

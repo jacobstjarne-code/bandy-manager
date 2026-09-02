@@ -4,6 +4,7 @@ import { InboxItemType } from '../enums'
 import type { InboxItem } from '../entities/SaveGame'
 import { formatRating } from '../format'
 import { seasonChampionYear } from '../utils/seasonYear'
+import { getCurrentLeagueRound } from '../data/seasonPhases'
 
 // ── Awards ──────────────────────────────────────────────────────────────────
 
@@ -160,23 +161,17 @@ export function generateGalaEvent(
 
 // ── Generate gala inbox items + storylines ──────────────────────────────────
 
-/**
- * roundNumber läses bara som en gate (senaste avslutade omgången, för att
- * avgöra TIMING på galan) — inte för att ordna eller attribuera specifika
- * matcher, som är den förbjudna genvägen (CLAUDE.md). Deklarerad öppet
- * ändå, per grindens krav på ingen tyst läsning av kända proxy-tokens.
- *
- * @cites nom.playerName, nom.stat, player.clubId, matchday
- */
+/** @cites nom.playerName, nom.stat, player.clubId, matchday */
 export function generateGalaInbox(
   nominations: GalaNomination[],
   game: SaveGame,
 ): { inboxItems: InboxItem[]; storylines: StorylineEntry[] } {
   const inboxItems: InboxItem[] = []
   const storylines: StorylineEntry[] = []
-  const currentMatchday = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
-    .reduce((m, f) => Math.max(m, f.matchday ?? 0), 0)
+  // StorylineEntry.matchday is a historical league-round anchor. The gala is
+  // generated at rollover, so freeze the current canonical league round rather
+  // than the larger global calendar matchday used to schedule cup/off-day slots.
+  const currentLeagueRound = getCurrentLeagueRound(game)
 
   for (const nom of nominations) {
     const player = game.players.find(p => p.id === nom.playerId)
@@ -198,8 +193,9 @@ export function generateGalaInbox(
         id: `story_gala_${nom.award}_${game.currentSeason}`,
         type: 'gala_winner',
         season: game.currentSeason,
-        matchday: currentMatchday,
+        matchday: currentLeagueRound,
         playerId: nom.playerId,
+        clubId: game.managedClubId,
         // 4.6 (SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — samma
         // felklass som eventResolver.ts:s tre storylines, se kommentaren där.
         description: `${nom.playerName} vann ${AWARD_LABELS[nom.award]} på Bandygalan ${seasonChampionYear(game.currentSeason)}`,

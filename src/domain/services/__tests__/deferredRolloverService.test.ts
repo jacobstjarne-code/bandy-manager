@@ -47,7 +47,7 @@ function game(overrides: Partial<SaveGame> = {}): SaveGame {
 describe('ROLLOVER_POLICY_BY_TYPE — täckning', () => {
   it('deklarerar ett default-utfall (eller uttrycklig utrinning) för varje GameEventType', () => {
     for (const id of GAME_EVENT_TYPE_IDS) {
-      expect(['decline', 'rejectBid', 'expire'], `policy saknas för ${id}`)
+      expect(['decline', 'rejectBid', 'acknowledge', 'expire'], `policy saknas för ${id}`)
         .toContain(ROLLOVER_POLICY_BY_TYPE[id as GameEventType])
     }
   })

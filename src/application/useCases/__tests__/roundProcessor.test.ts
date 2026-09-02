@@ -562,6 +562,7 @@ describe('checkForPlayThroughInjuryOffer', () => {
     const healthyEvents = checkForPlayThroughInjuryOffer(healthyGame, nextFixture.matchday)
 
     expect(mildEvents.some(e => e.relatedPlayerId === player.id)).toBe(true)
+    expect(mildEvents.find(e => e.relatedPlayerId === player.id)?.relatedFixtureId).toBe(nextFixture.id)
     expect(svarEvents.some(e => e.relatedPlayerId === player.id)).toBe(false)
     expect(healthyEvents.some(e => e.relatedPlayerId === player.id)).toBe(false)
   })
@@ -583,6 +584,30 @@ describe('checkForPlayThroughInjuryOffer', () => {
     }
     const events = checkForPlayThroughInjuryOffer(injuredGame, nextFixture.matchday)
     expect(events.some(e => e.relatedPlayerId === player.id)).toBe(false)
+  })
+
+  it('erbjuder inte en dubblett när spelarens kort ligger i deferredDecisions', () => {
+    const game = makeGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const nextFixture = game.fixtures.find(
+      f => !f.isCup && f.status === FixtureStatus.Scheduled &&
+           (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )!
+    const deferred = {
+      id: `playthrough_${player.id}_${nextFixture.matchday}`,
+      type: 'playThroughInjury' as const,
+      title: 'x', body: 'x', choices: [], relatedPlayerId: player.id, resolved: false,
+    }
+    const injuredGame: SaveGame = {
+      ...game,
+      players: game.players.map(p => p.id === player.id
+        ? { ...p, isInjured: true, injuryDaysRemaining: 10 }
+        : p),
+      pendingEvents: [],
+      deferredDecisions: [deferred],
+    }
+
+    expect(checkForPlayThroughInjuryOffer(injuredGame, nextFixture.matchday)).toEqual([])
   })
 })
 
@@ -730,6 +755,34 @@ describe('HIGH 9 (audit 2026-08-29): stale playThroughInjury-kort purgas varje o
     const p2 = stillInjured.players.find(p => p.id === player.id)!
     expect(p2.playingThroughInjury).toBe(true)
     expect(p2.isInjured).toBe(false)
+  })
+
+  it('avvisar ett play-val vars effekt pekar på en annan spelare än kortet', () => {
+    const game = makeGame()
+    const ownPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+    const [named, effectTarget] = ownPlayers
+    const cardId = `playthrough_${named.id}_${game.currentMatchday + 1}`
+    const card = {
+      id: cardId,
+      type: 'playThroughInjury' as const,
+      title: 'x', body: 'x',
+      choices: [{
+        id: 'play', label: 'Han spelar',
+        effect: { type: 'playThroughInjury' as const, targetPlayerId: effectTarget.id },
+      }],
+      relatedPlayerId: named.id,
+      resolved: false,
+    }
+    const withCard: SaveGame = {
+      ...game,
+      players: game.players.map(p => p.id === effectTarget.id
+        ? { ...p, isInjured: true, injuryDaysRemaining: 10 }
+        : p),
+      pendingEvents: [card],
+    }
+
+    expect(() => resolveEvent(withCard, cardId, 'play', undefined, true))
+      .toThrow(/relatedPlayerId/)
   })
 })
 

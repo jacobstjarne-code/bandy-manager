@@ -179,7 +179,6 @@ export function buildEventFromStoryline(storyline: StorylineEntry): MemoryEvent 
     relegation_escape: 65,
     gala_winner: 60,
     captain_rallied_team: 55,
-    career_crossroads_stayed: 50,
     promotion_sacrifice: 50,
     hungrig_breakthrough: 50,
     veteran_farewell: 45,
@@ -189,12 +188,8 @@ export function buildEventFromStoryline(storyline: StorylineEntry): MemoryEvent 
     workplace_bond: 40,
     journalist_feud: 40,
     journalist_redemption: 40,
-    returned_to_club: 45,
-    left_for_bigger_club: 45,
-    partner_moved_here: 40,
     rescued_from_unemployment: 45,
     went_fulltime_pro: 50,
-    refused_to_go_pro: 40,
   }
   const sig = sigMap[storyline.type] ?? 45
 

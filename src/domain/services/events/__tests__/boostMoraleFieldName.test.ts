@@ -15,6 +15,7 @@ import { resolveEvent } from '../eventResolver'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { SaveGame } from '../../../entities/SaveGame'
+import { findEmployerForJob } from '../../../data/localEmployers'
 
 function baseGame(): SaveGame {
   const template = CLUB_TEMPLATES[0]
@@ -48,14 +49,23 @@ describe('generateCoworkerBondEvent — "great"-valet ger exakt +5 moral (redan 
   it('subtitlen lovar +5 moral båda — resolvern ska leverera exakt det', () => {
     let game = baseGame()
     const [player1, player2] = game.players.filter(p => p.clubId === game.managedClubId)
+    const employer = findEmployerForJob(game.managedClubId, 'Lärare')!
     game = {
       ...game,
       players: game.players.map(p =>
-        p.id === player1.id || p.id === player2.id ? { ...p, morale: 50 } : p
+        p.id === player1.id
+          ? { ...p, morale: 50, isFullTimePro: false, dayJob: { title: 'Lärare', flexibility: 70, weeklyIncome: 1000 } }
+          : p.id === player2.id
+            ? { ...p, morale: 50, isFullTimePro: false, dayJob: { title: 'Ekonom', flexibility: 70, weeklyIncome: 1000 } }
+            : p
       ),
     }
-    const event = generateCoworkerBondEvent(player1, player2, 'ICA Maxi')
+    const anchoredPlayer1 = game.players.find(p => p.id === player1.id)!
+    const anchoredPlayer2 = game.players.find(p => p.id === player2.id)!
+    const event = generateCoworkerBondEvent(anchoredPlayer1, anchoredPlayer2, employer.name)
     expect(event.choices[0].subtitle).toBe('+5 moral båda')
+    expect(event.selectedPlayerIds).toEqual([player1.id, player2.id])
+    expect(event.relatedClubId).toBe(game.managedClubId)
     game = { ...game, pendingEvents: [event] }
 
     game = resolveEvent(game, event.id, 'great', undefined, true)
@@ -64,5 +74,42 @@ describe('generateCoworkerBondEvent — "great"-valet ger exakt +5 moral (redan 
     const updated2 = game.players.find(p => p.id === player2.id)!
     expect(updated1.morale).toBe(55)
     expect(updated2.morale).toBe(55)
+
+    const story = game.storylines?.find(s => s.type === 'workplace_bond')
+    expect(story).toMatchObject({
+      id: `story_workplace_bond_${[player1.id, player2.id].sort().join('_')}`,
+      playerIds: [player1.id, player2.id],
+      clubId: game.managedClubId,
+      season: game.currentSeason,
+      description: event.body,
+      displayText: event.body,
+      resolved: true,
+    })
+    expect(story?.playerId).toBeUndefined()
+  })
+
+  it('skriver ingen par-storyline när kortet saknar det andra spelarankaret', () => {
+    let game = baseGame()
+    const [player1, player2] = game.players.filter(p => p.clubId === game.managedClubId)
+    game = {
+      ...game,
+      players: game.players.map(p =>
+        p.id === player1.id || p.id === player2.id
+          ? { ...p, isFullTimePro: false, dayJob: { title: 'Lärare', flexibility: 70, weeklyIncome: 1000 } }
+          : p
+      ),
+    }
+    const event = {
+      ...generateCoworkerBondEvent(
+        game.players.find(p => p.id === player1.id)!,
+        game.players.find(p => p.id === player2.id)!,
+        findEmployerForJob(game.managedClubId, 'Lärare')!.name,
+      ),
+      selectedPlayerIds: [player1.id],
+    }
+
+    game = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'great', undefined, true)
+
+    expect(game.storylines?.some(s => s.type === 'workplace_bond')).toBe(false)
   })
 })

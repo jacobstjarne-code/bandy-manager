@@ -554,6 +554,24 @@ export function expectationVerdictFromRating(
 }
 
 /**
+ * An underdog season is not a second performance scale. It is the canonical
+ * season verdict, narrowed to clubs whose frozen starting expectation was to
+ * avoid the bottom or merely survive.
+ */
+export function isUnderdogSeason(
+  expectation: ClubExpectation,
+  finalPosition: number,
+  totalTeams: number,
+  isChampion: boolean,
+): boolean {
+  if (expectation !== ClubExpectation.AvoidBottom && expectation !== ClubExpectation.Survive) {
+    return false
+  }
+  const rating = computeSeasonVerdictRating(expectation, finalPosition, totalTeams)
+  return expectationVerdictFromRating(expectation, rating, isChampion) === 'exceeded'
+}
+
+/**
  * Påståendesvepet #4 (MASTER.md, 2026-08-24), Jacobs dom 2026-08-26: årsbokens
  * gamla 3-grenade text ("Styrelsen är nöjd/besviken", SeasonSummaryScreen.tsx)
  * lät som ett omdöme om ställningen hos styrelsen — kunde motsäga portalens

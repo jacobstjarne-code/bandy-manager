@@ -136,7 +136,7 @@ describe('eventResolver — plain sponsorOffer riskkoppling', () => {
 
   it('dedikerade riskySponsorOffer-eventet (annan väg, sätter redan sitt eget kontrakt) dubbel-rullar inte risken', () => {
     let game = baseGame()
-    const offer = makeSponsor({ id: 'sponsor_risky', tier: 'risky' as never })
+    const offer = { ...makeSponsor({ id: 'sponsor_risky', tier: 'risky' as never }), riskMaturityRound: game.currentMatchday + 6 }
     game = {
       ...game,
       sponsors: [],

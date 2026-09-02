@@ -109,6 +109,15 @@ describe('varsel — de berörda spelarnas moral (var boostMorale utan targetPla
 
   it("'offer_pro' gör de berörda spelarna heltidsproffs (var multiEffect-subtyp utan gren i resolvern)", () => {
     let game = makeGameWithSquad()
+    // Produktionsgeneratorn väljer bara spelare som ännu inte är heltidsproffs.
+    // Testfixturen måste bära samma premiss för att statusövergången och dess
+    // storyline-ankare ska vara verkliga.
+    game = {
+      ...game,
+      players: game.players.map(p => p.clubId === game.managedClubId
+        ? { ...p, isFullTimePro: false, dayJob: p.dayJob ?? { title: 'Testjobb', flexibility: 50, weeklyIncome: 1_000 } }
+        : p),
+    }
     const { event, affectedIds } = makeVarselEvent(game)
     game = { ...game, pendingEvents: [event] }
     game = resolveEvent(game, event.id, 'offer_pro', undefined, true)
@@ -116,7 +125,16 @@ describe('varsel — de berörda spelarnas moral (var boostMorale utan targetPla
     const affected = game.players.filter(p => affectedIds.includes(p.id))
     expect(affected.every(p => p.isFullTimePro === true)).toBe(true)
     expect(affected.every(p => p.dayJob === undefined)).toBe(true)
-    expect(game.storylines?.some(s => s.type === 'went_fulltime_pro' || s.type === 'rescued_from_unemployment')).toBeTruthy()
+    const rescueStories = game.storylines?.filter(s => s.type === 'rescued_from_unemployment') ?? []
+    const proStories = game.storylines?.filter(s => s.type === 'went_fulltime_pro') ?? []
+    expect(rescueStories).toHaveLength(affectedIds.length)
+    expect(rescueStories.map(s => s.playerId).sort()).toEqual([...affectedIds].sort())
+    expect(rescueStories.every(s => s.clubId === game.managedClubId)).toBe(true)
+    expect(new Set(rescueStories.map(s => s.id)).size).toBe(affectedIds.length)
+    expect(proStories).toHaveLength(affectedIds.length)
+    expect(proStories.map(s => s.playerId).sort()).toEqual([...affectedIds].sort())
+    expect(proStories.every(s => s.clubId === game.managedClubId)).toBe(true)
+    expect(new Set(proStories.map(s => s.id)).size).toBe(affectedIds.length)
   })
 
   // HIGH 6, attributionshålet (Jacobs körorder 2026-08-31): effekten (heltids-

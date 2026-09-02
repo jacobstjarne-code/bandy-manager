@@ -30,9 +30,8 @@ export function getArcHeadline(arc: ActiveArc, player?: ArcPlayer): string {
     }
     case 'joker_redemption':
       return `${initial} — efter utvisningen`
-    case 'veteran_final_season':
     case 'veteran_farewell':
-      return `${initial} — sista säsongen`
+      return `${initial} — kontraktsfrågan hänger i luften`
     case 'lokal_hero':
       return `${initial} — lokalhjältens stund`
     case 'contract_drama':

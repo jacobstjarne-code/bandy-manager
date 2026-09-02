@@ -1,4 +1,4 @@
-import type { SaveGame, InboxItem, AllTimeRecords, SeasonTransitionEvent, BoardAssessment } from '../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem, AllTimeRecords, SeasonTransitionEvent, BoardAssessment, StorylineEntry } from '../../domain/entities/SaveGame'
 import { resolveContractExtension, getManagerDisplayName } from '../../domain/services/managerProfileService'
 
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
@@ -22,7 +22,7 @@ import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/pla
 import { generateRetirementData, generateFarewellQuote, isRetiringClubLegendEligible, recordCompletedCaptainSeason } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
-import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine, buildSeasonBoardTruth } from '../../domain/services/boardService'
+import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine, buildSeasonBoardTruth, isUnderdogSeason, seasonVerdictText, RELEGATION_ZONE_SIZE } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 import { pickMostImportantDecisionText } from '../../domain/services/seasonDecisionCaptureService'
 import { deriveUtfall } from '../../domain/services/matchTypeAxes'
@@ -51,6 +51,7 @@ import type { FacilityState } from '../../domain/entities/Community'
 import type { YouthPlayer } from '../../domain/entities/Academy'
 import type { PendingDemand } from '../../domain/entities/Demand'
 import { getCoffeeRoomReturnDueMatchday } from '../../domain/services/coffeeRoomService'
+import { getCurrentLeagueRound } from '../../domain/data/seasonPhases'
 
 /** Flytta ett värde på den avslutade säsongens matchday-axel till nästa säsongs nollpunkt. */
 export function rebaseMatchdayAnchor(
@@ -100,6 +101,50 @@ export function rolloverSeasonMatchdayAnchors(game: SaveGame) {
     lastIncomingBidMatchday: rebase(game.lastIncomingBidMatchday),
     lastProcessedMatchday: 0,
     cardStaleTracking,
+  }
+}
+
+/**
+ * A last-gasp escape is a table transition, not a proxy for a merely low final
+ * position: in the qualification zone before the managed club's final league
+ * match, outside it after. Both snapshots use the canonical standings engine.
+ */
+export function didEscapeRelegationOnFinalMatchday(game: SaveGame): boolean {
+  const completedLeagueFixtures = game.fixtures.filter(
+    fixture => fixture.status === FixtureStatus.Completed && !fixture.isCup && !fixture.isKnockout,
+  )
+  const finalStandings = calculateStandings(game.league.teamIds, completedLeagueFixtures, game.pointDeductions)
+  const finalPosition = finalStandings.find(row => row.clubId === game.managedClubId)?.position
+  const lastManagedFixture = completedLeagueFixtures
+    .filter(fixture => fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
+    .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))[0]
+  if (!lastManagedFixture || finalPosition === undefined) return false
+
+  const priorFixtures = completedLeagueFixtures.filter(
+    fixture => (fixture.matchday ?? 0) < (lastManagedFixture.matchday ?? 0),
+  )
+  const priorPosition = calculateStandings(game.league.teamIds, priorFixtures, game.pointDeductions)
+    .find(row => row.clubId === game.managedClubId)?.position
+  if (priorPosition === undefined) return false
+
+  const relegationZoneStart = game.league.teamIds.length - RELEGATION_ZONE_SIZE + 1
+  return priorPosition >= relegationZoneStart && finalPosition < relegationZoneStart
+}
+
+/** Bevara riskavtalets återstående mognadstid på nästa säsongs matchday-axel. */
+export function rolloverRiskySponsorContract(
+  contract: SaveGame['riskySponsorContract'],
+  completedSeasonMatchday: number,
+  nextSeason: number,
+): SaveGame['riskySponsorContract'] {
+  if (!contract) return undefined
+  return {
+    ...contract,
+    riskMaturityRound: rebaseFutureMatchday(
+      contract.riskMaturityRound,
+      completedSeasonMatchday,
+    ) as number,
+    season: nextSeason,
   }
 }
 
@@ -592,6 +637,20 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         isRead: false,
       } as InboxItem)
     }
+  }
+
+  // Synliga mecenater är separata från den dolda patronen. updateSilentShout
+  // bokför redan contribution i totalContributed varje säsong; samma belopp
+  // måste därför också nå klubbkassan och den kanoniska ekonomiloggen.
+  for (const mecenat of game.mecenater ?? []) {
+    if (!mecenat.isActive || mecenat.contribution <= 0) continue
+    offseasonFinanceLog.push({
+      round: offseasonRound,
+      amount: mecenat.contribution,
+      reason: 'mecenat',
+      label: `Mecenatbidrag (${mecenat.name})`,
+    })
+    updatedClubs = applyFinanceChange(updatedClubs, game.managedClubId, mecenat.contribution)
   }
 
   // KommunBidrag at season end — dynamic calculation (V0.9)
@@ -1338,7 +1397,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   // ── Media effects (journalist relationship) ────────────────────────────────
-  let newJournalistRelationship = game.journalistRelationship ?? 50
+  let newJournalistRelationship = game.journalist?.relationship ?? game.journalistRelationship ?? 50
   let newCommunityStanding = game.communityStanding ?? 50
 
   // Grävande artikel trigger: journalist unhappy + bad finances or license warning
@@ -1517,11 +1576,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // ── Bandygalan ────────────────────────────────────────────────────────────
   const galaNominations = generateNominations(game)
+  let galaStorylinesForSeason: StorylineEntry[] = []
   if (galaNominations.length > 0) {
     seasonEndPendingEvents.push(generateGalaEvent(game, galaNominations))
     const { inboxItems: galaInbox, storylines: galaStorylines } = generateGalaInbox(galaNominations, game)
     newInboxItems.push(...galaInbox)
-    galaStorylines.forEach(s => (game.storylines ?? []).push(s))
+    galaStorylinesForSeason = galaStorylines
   }
 
   // ── NARR-001: Mecenat retirement check ───────────────────────────────────
@@ -1757,6 +1817,50 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     mostImportantDecision: pickMostImportantDecisionText(game, game.currentSeason),
   }
 
+  // O11: freeze a real underdog season from the same frozen expectation and
+  // verdict scale as the yearbook/board assessment. No parallel threshold.
+  const underdogStorylineId = `story_underdog_${game.managedClubId}_${game.currentSeason}`
+  const shouldWriteUnderdogStoryline = isUnderdogSeason(
+    seasonSummary.boardExpectation,
+    seasonSummary.finalPosition,
+    game.clubs.length,
+    seasonSummary.playoffResult === 'champion',
+  ) && !(game.storylines ?? []).some(story => story.id === underdogStorylineId)
+  // Gala generation must not mutate the incoming save. Keeping the generated
+  // entries in this single rollover accumulator also preserves them when an
+  // older save has no storylines array yet.
+  const seasonEndStorylines = [...(game.storylines ?? []), ...galaStorylinesForSeason]
+  if (shouldWriteUnderdogStoryline) {
+    const displayText = seasonVerdictText(seasonSummary.boardExpectation, seasonSummary.finalPosition, game.clubs.length)
+    seasonEndStorylines.push({
+      id: underdogStorylineId,
+      type: 'underdog_season',
+      season: game.currentSeason,
+      matchday: getCurrentLeagueRound(game),
+      clubId: game.managedClubId,
+      description: displayText,
+      displayText,
+      resolved: true,
+    })
+  }
+
+  const relegationEscapeStorylineId = `story_relegation_escape_${game.managedClubId}_${game.currentSeason}`
+  if (didEscapeRelegationOnFinalMatchday(game)
+    && !seasonEndStorylines.some(story => story.id === relegationEscapeStorylineId)) {
+    // Existing approved wording from FORSTARKNINGSSPEC_V3.
+    const displayText = 'Räddade sig kvar i sista stund'
+    seasonEndStorylines.push({
+      id: relegationEscapeStorylineId,
+      type: 'relegation_escape',
+      season: game.currentSeason,
+      matchday: getCurrentLeagueRound(game),
+      clubId: game.managedClubId,
+      description: displayText,
+      displayText,
+      resolved: true,
+    })
+  }
+
   // A-H4 (TRIAGE_AUDIT_2026-08-29.md, HIGH 4): den gemensamma sanningsmodellen
   // — se entities/SeasonSummary.ts (`boardTruth`) och boardService.ts
   // (`buildSeasonBoardTruth`) för den fulla motiveringen. isChampion läses ur
@@ -1901,6 +2005,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     burnoutCeilingRecoveryUntilRound: rebaseFutureMatchday(
       game.burnoutCeilingRecoveryUntilRound,
       game.currentMatchday,
+    ),
+    riskySponsorContract: rolloverRiskySponsorContract(
+      game.riskySponsorContract,
+      game.currentMatchday,
+      nextSeason,
     ),
     managedClubPeriodisationSince: rebaseFutureMatchday(
       game.managedClubPeriodisationSince,
@@ -2086,7 +2195,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       })),
     facilityState: rolloverFacilityState(game),
     activeArcs: rolloverActiveArcs(game.activeArcs, game.currentMatchday),
-    storylines: game.storylines ?? [],
+    storylines: seasonEndStorylines,
     boardObjectives: newSeasonObjectives,
     boardObjectiveHistory: [
       ...(game.boardObjectiveHistory ?? []),
@@ -2149,6 +2258,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     namedCharacters: updatedNamedCharacters,
     communityStanding: Math.min(100, newCommunityStanding + communityStandingDelta),
     journalistRelationship: newJournalistRelationship,
+    journalist: game.journalist
+      ? { ...game.journalist, relationship: newJournalistRelationship }
+      : game.journalist,
     sponsorNetworkMood: game.sponsorNetworkMood ?? 70,
     patron: updatedPatron
       ? {

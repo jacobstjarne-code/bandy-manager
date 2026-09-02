@@ -71,7 +71,29 @@ describe('captainSpeech — trigger, text och state', () => {
     expect(result.boardPatience).toBe(67)
     expect(result.players.filter(player => player.clubId === game.managedClubId)
       .every(player => player.morale === 58)).toBe(true)
-    expect(result.storylines?.some(story => story.type === 'captain_rallied_team')).toBe(true)
+    expect(result.storylines?.find(story => story.type === 'captain_rallied_team')).toMatchObject({
+      id: `story_captain_${game.currentSeason}`,
+      playerId: captainId,
+      clubId: game.managedClubId,
+      description: 'Kaptenen samlade laget efter en svår period',
+      displayText: 'Kaptenen samlade laget efter en svår period',
+      resolved: true,
+    })
+  })
+
+  it('skriver ingen falsk kaptenstoryline om kortets namngivna spelare har lämnat klubben', () => {
+    const { game, captainId } = makeLossStreakGame(80)
+    const captain = game.players.find(player => player.id === captainId)!
+    const event = generateCaptainSpeechEvent(captain, game.managedClubId, game.currentSeason)
+    const stale = {
+      ...game,
+      players: game.players.map(player => player.id === captainId ? { ...player, clubId: 'free_agent' } : player),
+      pendingEvents: [event],
+    }
+
+    const result = resolveEvent(stale, event.id, 'support', undefined, true)
+
+    expect(result.storylines?.some(story => story.type === 'captain_rallied_team') ?? false).toBe(false)
   })
 
   it('take_charge kostar exakt 5 kaptenmoral medan decline är noOp', () => {

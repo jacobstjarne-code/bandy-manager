@@ -57,7 +57,7 @@ import {
   RECENCY_WINDOW_BY_CHANNEL,
 } from '../../domain/services/narrativeCoordinatorService'
 import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
-import { detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
+import { appendJournalistRelationshipStoryline, detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
 import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
 import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, isPlayThroughInjuryCardStillValid } from './processors/eventProcessor'
@@ -75,6 +75,7 @@ import {
   type SpecialDateContext,
 } from '../../domain/data/specialDateStrings'
 import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
+import { checkSeasonGoalHalfwayEvent } from '../../domain/services/seasonGoalService'
 import { canAddDecision, partitionInterruptBudget, MAX_DEFERRED_DECISIONS } from '../../domain/services/decisionBudgetService'
 import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
@@ -86,7 +87,7 @@ import { selectNationalTeam, applyCallupEffects, applyReturnEffects, LANDSLAGS_C
 import {
   SNUB_SCENE_LINES,
 } from '../../domain/data/landslagText'
-import { updateManagerBurnout, updateH2HRecord, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
+import { updateManagerBurnout, updateH2HRecord, deriveCoachNemesis, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
 import { pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteIndex, pickBurnoutRelapseHelperIndex, BURNOUT_QUOTE_PREFIX, BURNOUT_HELPER_PREFIX, BURNOUT_RELAPSE_QUOTE_PREFIX, BURNOUT_RELAPSE_HELPER_PREFIX } from '../../domain/services/burnoutReliefService'
 import { BURNOUT_MARK, BURNOUT_MARK_RELAPSE } from '../../domain/data/managerKaraktarText'
 import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
@@ -1010,8 +1011,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     localRand,
   )
   const allNewEvents = [...eventResult.gameEvents, ...playoffResult.gameEvents]
+  // O3 — halvtidsraden måste läsa samma omgångs färdigspelade fixtures,
+  // tabell, spelarstatistik och globala matchday. eventProcessor körde den
+  // tidigare mot pre-round-snapshotten och kunde därför visa gårdagens facit.
+  const seasonGoalHalfwayEvent = checkSeasonGoalHalfwayEvent({
+    ...preEventGame,
+    fixtures: finalAllFixtures,
+    standings,
+    currentMatchday: nextMatchday,
+  })
+  if (seasonGoalHalfwayEvent) allNewEvents.push(seasonGoalHalfwayEvent)
   let updatedMecenater = eventResult.updatedMecenater
   let updatedPatron = eventResult.updatedPatron
+  let mecenatWithdrawnSeason = eventResult.mecenatWithdrawnSeason
   newInboxItems.push(...eventResult.inboxItems)
 
   // Legibel konsekvens: mecenat_left ripple (VILANDE i eventProcessor, wiras här)
@@ -1091,12 +1103,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         reputation: Math.max(0, Math.min(100, (academyUpdatedClubs[managedIdx].reputation ?? 50) + mediaResult.reputationDelta)),
       }
     }
-  }
-
-  // ── Post-match events: insändare, opponent quote (atmosfäriska, auto-resolved i Granska) ─
-  if (justCompletedManagedFixture && !isSecondPassForManagedMatch) {
-    const postMatchEvents = generatePostMatchEvents(game, justCompletedManagedFixture)
-    allNewEvents.push(...postMatchEvents)
   }
 
   // Stamp new inbox items with creation matchday for cleanup
@@ -1255,7 +1261,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const soldP = postTransferPlayers.find(p => p.id === rivalSaleMoment.subjectPlayerId)
     const buyerC = postTransferClubs.find(c => c.id === rivalSaleMoment.subjectClubId)
     if (soldP && buyerC) {
-      lastRivalSaleInfo = { soldPlayerName: `${soldP.firstName} ${soldP.lastName}`, buyerClubName: buyerC.name, buyerClubId: buyerC.id }
+      lastRivalSaleInfo = {
+        soldPlayerName: `${soldP.firstName} ${soldP.lastName}`,
+        buyerClubName: buyerC.name,
+        buyerClubId: buyerC.id,
+        saleSeason: game.currentSeason,
+        saleMatchday: nextMatchday,
+      }
     }
   }
 
@@ -1319,6 +1331,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // ── Scandals (Lager 1 — Världshändelser) ──────────────────────────────────
   const scandalResult = processScandals(preEventGame, nextMatchday, localRand, { skipSideEffects: isSecondPassForManagedMatch })
   newInboxItems.push(...scandalResult.inboxItems)
+
+  // ── Post-match events: insändare, opponent quote (ambient i Granska) ─────
+  // Citatets skandalpremiss måste läsa den här omgångens canonical resultat,
+  // inte roundProcessor-ingångens stale activeScandals/scandalHistory.
+  if (justCompletedManagedFixture && !isSecondPassForManagedMatch) {
+    const postMatchEvents = generatePostMatchEvents({
+      ...game,
+      activeScandals: scandalResult.updatedScandals,
+      scandalHistory: scandalResult.updatedScandalHistory,
+    }, justCompletedManagedFixture)
+    allNewEvents.push(...postMatchEvents)
+  }
+
   // Apply scandal-driven club changes (finances/reputation) as deltas on top of postTransferClubs
   if (scandalResult.updatedClubs !== preEventGame.clubs) {
     for (const scandalClub of scandalResult.updatedClubs) {
@@ -1360,6 +1385,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     // avhopp — se applyMecenatCapEviction i eventProcessor.ts.
     const evictionResult = applyMecenatCapEviction(game, updatedMecenater)
     updatedMecenater = evictionResult.updatedMecenater
+    mecenatWithdrawnSeason = evictionResult.withdrawnSeason ?? mecenatWithdrawnSeason
     allNewEvents.push(...evictionResult.newEvents)
   }
 
@@ -1431,7 +1457,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // en gång, inte en spak i båda riktningarna. Samma effekttyp
   // ('patronWithdrawn') som den befintliga happiness-baserade avgångsvägen
   // återanvänds för resolutionen — ETT ställe sätter patronWithdrawnSeason.
-  let patronWithdrawnSeasonAfterCsEviction = game.patronWithdrawnSeason
+  let patronWithdrawnSeasonAfterCsEviction = eventResult.patronWithdrawnSeason
   if (updatedPatron?.isActive && (game.communityStanding ?? 50) < PATRON_EMERGE_CS) {
     const evictionId = `patron_cs_eviction_${game.currentSeason}`
     const alreadyQueued = (game.pendingEvents ?? []).some(e => e.id === evictionId) ||
@@ -1596,7 +1622,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     pendingPressConference: simResult.pressEvent ?? undefined,
     pendingRefereeMeeting: simResult.pendingRefereeMeeting ?? undefined,
     referees: simResult.updatedReferees,
-    refereeRelations: game.refereeRelations ?? [],
+    refereeRelations: simResult.updatedRefereeRelations,
     ...(() => {
       // Update rolling average attendance for home matches
       if (!justCompletedManagedFixture) return {}
@@ -1657,13 +1683,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     wageBudgetOverrunRounds: eventResult.wageBudgetOverrunRounds,
     wageBudgetWarningSent: eventResult.wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason: eventResult.riskySponsorOfferSentThisSeason,
-    mecenatWithdrawnSeason: eventResult.mecenatWithdrawnSeason,
+    mecenatWithdrawnSeason,
     // O2 lager 2 (Jacobs dom 2026-08-24): fas 1 (event_crisis_awareness)
     // ambient — tillståndsövergången sker vid genereringen
     // (checkEconomicCrisis), måste tröskas ut hit precis som övriga
     // eventResult.*-fält ovan, annars sätts economicCrisisState aldrig och
-    // fas 1 skulle generera om varje omgång (ambienta events, choices:[],
-    // adderas aldrig till resolvedEventIds — se eventResolver.ts:33).
+    // fas 1 skulle annars generera om innan det ambienta eventet ens hunnit
+    // konsumeras. resolvedEventIds ger dedup efter konsumtion; fas-state måste
+    // fortfarande tröskas ut atomärt redan vid genereringen.
     economicCrisisState: eventResult.economicCrisisState,
     // P1 — Annandagen val-state
     pendingAnnandagsVal,
@@ -1806,7 +1833,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Press placeras FÖRST i kandidatlistan: en presskonferens efter en
   // nyss spelad match är en starkare narrativ förpliktelse än
   // event-blockets valfria press-liknande flavor (playerMediaComment/
-  // mediaReaction/journalistExclusive). Domen tillåter uttryckligen bägge
+  // journalistExclusive). Domen tillåter uttryckligen bägge
   // riktningar ("håller event-blocket tillbaka en press-lik kanal, och
   // vice versa") — ordningen här är Codes tolkning, inte en explicit
   // ordning i domen.
@@ -1855,7 +1882,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const arcResult = progressArcs(
       { ...updatedGame, activeArcs: allArcs },
       nextMatchday,
-      justCompletedManagedFixture ?? undefined,
     )
     const arcInbox: InboxItem[] = arcResult.newInboxItems.map(item => ({
       ...item,
@@ -2170,6 +2196,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Journalist relationship event inbox (SPEC_JOURNALIST_KAPITEL_A)
   const relEvent = detectRelationshipEvent(updatedGame)
+  if (relEvent) {
+    updatedGame = appendJournalistRelationshipStoryline(updatedGame, relEvent)
+  }
   if (relEvent === 'broken_under_20' && updatedGame.journalist) {
     updatedGame = {
       ...updatedGame,
@@ -2387,12 +2416,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       // Log rivalry once when a clear nemesis emerges (3+ losses, losses > wins)
       const existingRivalryLog = (profileWithH2H.diary ?? []).some(e => e.type === 'rivalry')
       if (!existingRivalryLog) {
-        const nemesisCandidate = (profileWithH2H.coachRivalries ?? [])
-          .find(r => r.h2hLosses >= 3 && r.h2hLosses > r.h2hWins)
+        const nemesisCandidate = deriveCoachNemesis(
+          (profileWithH2H.coachRivalries ?? []).filter(r => r.h2hLosses >= 3),
+        )
         if (nemesisCandidate) {
           profileWithH2H = { ...profileWithH2H, diary: [
             ...(profileWithH2H.diary ?? []),
-            { season: game.currentSeason, matchday: nextMatchday, type: 'rivalry' as const, text: `${game.clubs.find(c => c.id === nemesisCandidate.clubId)?.name ?? 'rivalen'} blev din nemesis. Det satte sig i kroppen, det här.` },
+            { season: game.currentSeason, matchday: nextMatchday, type: 'rivalry' as const, text: `${game.clubs.find(c => c.id === nemesisCandidate.clubId)?.name ?? 'rivalen'} blev din nemesis.` },
           ]}
         }
       }

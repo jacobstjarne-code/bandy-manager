@@ -113,7 +113,6 @@ export const DECISION_TIER_BY_TYPE: Record<GameEventType, DecisionTier> = {
   pressConference: 'background',
   csPress: 'background',
   journalistExclusive: 'background',
-  mediaReaction: 'background',
   playerMediaComment: 'background',
   // Orten/klacken
   communityEvent: 'background',
@@ -211,7 +210,6 @@ export const DECISION_MODE_BY_TYPE: Record<GameEventType, DecisionMode> = {
   pressConference: 'notis',
   csPress: 'notis',
   journalistExclusive: 'notis',
-  mediaReaction: 'notis',
   playerMediaComment: 'notis',
   communityEvent: 'notis',
   supporterEvent: 'notis',

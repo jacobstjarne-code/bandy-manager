@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { PLAYER_RESPONSES, TAG_DEFS, type PressContext } from '../pressConferenceService'
 
-// 4.2 (SLUTTEST_KO.md, 2026-08-19): de 17 storyline-/arc-/community-standing-
+// 4.2 (SLUTTEST_KO.md, 2026-08-19): de kvarvarande storyline-/arc-/community-standing-
 // frågornas preferIds ärvde tidigare ordagrant `question.preferIds` från
 // FÖRRA frågan (buggen, se docs/DERBYREPLIKEN_STORYLINE_FRAGOR_2026-08-19.md).
 // Facit nedan är exakt de listor som wire:ats in i pressConferenceService.ts —
@@ -13,7 +13,6 @@ const QUESTION_PREFER_IDS: Record<string, string[]> = {
   '4_raddad_matchhjalte': ['tp_liv1', 'tp_liv4', 'tp_liv2'],
   '5_raddad_allmant': ['tp_liv2', 'tp_liv8', 'tp_liv3'],
   '6_heltidsproffs': ['tp_liv5', 'tp_liv1', 'tp_liv6'],
-  '7_atervant': ['tp_liv7', 'tp_liv6', 'tp_liv3'],
   '8_galavinnare': ['tp_spe1', 'tp_ort4', 'w_p3'],
   '9_hog_status': ['tp_ort4', 'tp_ort1', 'tp_ort2'],
   '10_lag_status': ['tp_ort5', 'tp_ort3', 'tp_ort2'],
@@ -29,8 +28,8 @@ const QUESTION_PREFER_IDS: Record<string, string[]> = {
 describe('storyline-/arc-frågornas preferIds — tabelltest', () => {
   const bankIds = new Set(PLAYER_RESPONSES.map(r => r.id))
 
-  it('täcker exakt 17 frågor', () => {
-    expect(Object.keys(QUESTION_PREFER_IDS)).toHaveLength(17)
+  it('täcker exakt 16 frågor', () => {
+    expect(Object.keys(QUESTION_PREFER_IDS)).toHaveLength(16)
   })
 
   for (const [question, preferIds] of Object.entries(QUESTION_PREFER_IDS)) {
@@ -70,7 +69,7 @@ describe('storyline-/arc-frågornas preferIds — tabelltest', () => {
 
   it('topic_*-svar i banken bär bara topic_*-taggar (ingen läckt in under en existerande taggs namn)', () => {
     const topicResponses = PLAYER_RESPONSES.filter(r => r.id.startsWith('tp_'))
-    expect(topicResponses).toHaveLength(31)
+    expect(topicResponses).toHaveLength(30)
     for (const r of topicResponses) {
       expect(TOPIC_TAGS).toContain(r.tag)
     }

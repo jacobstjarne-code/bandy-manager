@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL, boardGraceState } from '../boardService'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL, boardGraceState, isUnderdogSeason } from '../boardService'
 import { ClubExpectation } from '../../enums'
 import type { Club } from '../../entities/Club'
 const TOTAL = 12
@@ -641,5 +641,18 @@ describe('seasonReputationDelta — U6 (SLUTTEST_KO.md, 2026-08-17) / D028', () 
     expect(seasonReputationDelta(2)).toBeLessThan(0)
     expect(seasonReputationDelta(4)).toBeGreaterThan(0)
     expect(seasonReputationDelta(5)).toBeGreaterThan(0)
+  })
+})
+
+describe('isUnderdogSeason — canonical säsongsdom, låg startförväntan', () => {
+  it('är sann när Survive/AvoidBottom får den befintliga exceeded-domen', () => {
+    expect(isUnderdogSeason(ClubExpectation.Survive, 10, TOTAL, false)).toBe(true)
+    expect(isUnderdogSeason(ClubExpectation.AvoidBottom, 8, TOTAL, false)).toBe(true)
+  })
+
+  it('är falsk när låg förväntan bara möts och när en topptippad klubb får femma', () => {
+    expect(isUnderdogSeason(ClubExpectation.Survive, 12, TOTAL, false)).toBe(false)
+    expect(isUnderdogSeason(ClubExpectation.WinLeague, 1, TOTAL, false)).toBe(false)
+    expect(isUnderdogSeason(ClubExpectation.ChallengeTop, 2, TOTAL, false)).toBe(false)
   })
 })

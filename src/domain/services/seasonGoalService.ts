@@ -477,7 +477,7 @@ export function checkSeasonGoalHalfwayEvent(game: SaveGame): GameEvent | null {
 
   const eventId = `event_season_goal_halfway_${game.currentSeason}`
   if ((game.resolvedEventIds ?? []).includes(eventId)) return null
-  if ((game.pendingEvents ?? []).some(e => e.id === eventId)) return null
+  if ([...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])].some(e => e.id === eventId)) return null
 
   return {
     id: eventId,

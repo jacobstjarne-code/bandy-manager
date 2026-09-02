@@ -83,7 +83,6 @@ export const EVENT_TYPE_LABELS: Record<GameEventType, EventTypeLabel> = {
   riskySponsorOffer:    { icon: '💼', label: 'Sponsor' },
   mecenatWithdrawal:    { icon: '🤝', label: 'Mecenat' },
   patronWithdrawal:     { icon: '🤝', label: 'Mecenat' },
-  mediaReaction:        { icon: '📰', label: 'Lokaltidningen' },
   fanLetter:            { icon: '✉️', label: 'Insändare' },
   opponentQuote:        { icon: '🏒', label: 'Motståndaren' },
   csPress:              { icon: '📰', label: 'Lokaltidningen' },

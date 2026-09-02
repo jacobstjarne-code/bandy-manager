@@ -35,6 +35,18 @@ export function updatePlayerMatchStats(
   for (const fixture of simulatedFixtures) {
     if (fixture.status !== FixtureStatus.Completed) continue
     const isCupFixture = !!fixture.isCup  // A5: cup-mål bokförs separat från ligastatistik
+    const debutDiary = (player: Player) => {
+      if (
+        player.clubId !== game.managedClubId ||
+        !player.promotedFromAcademy ||
+        player.careerStats.totalGames !== 0
+      ) return player.diary
+      const isHome = fixture.homeClubId === game.managedClubId
+      const opponentId = isHome ? fixture.awayClubId : fixture.homeClubId
+      const opponent = game.clubs.find(club => club.id === opponentId)
+      const opponentName = opponent?.shortName ?? opponent?.name ?? 'motståndet'
+      return [...(player.diary ?? []), generateDebutEntry(opponentName, game.currentSeason, nextRound)].slice(-20)
+    }
     const allStarters = [
       ...(fixture.homeLineup?.startingPlayerIds ?? []),
       ...(fixture.awayLineup?.startingPlayerIds ?? []),
@@ -262,11 +274,20 @@ export function updatePlayerMatchStats(
       const subMinutes = Math.max(0, 90 - Math.min(90, subEvent.minute))
       if (subMinutes <= 0) continue
       const subTarget = isCupFixture ? (subPlayer.seasonCupStats ?? emptySeasonStats()) : subPlayer.seasonStats
-      const subUpdated = { ...subTarget, minutesPlayed: subTarget.minutesPlayed + subMinutes }
+      const subUpdated = {
+        ...subTarget,
+        minutesPlayed: subTarget.minutesPlayed + subMinutes,
+        gamesPlayed: subTarget.gamesPlayed + 1,
+      }
       finalPlayers[subInIdx] = {
         ...subPlayer,
         seasonStats: isCupFixture ? subPlayer.seasonStats : subUpdated,
         seasonCupStats: isCupFixture ? subUpdated : subPlayer.seasonCupStats,
+        careerStats: {
+          ...subPlayer.careerStats,
+          totalGames: subPlayer.careerStats.totalGames + 1,
+        },
+        diary: debutDiary(subPlayer),
       }
     }
 
@@ -297,6 +318,7 @@ export function updatePlayerMatchStats(
         // tal kan glida isär), upptäckt genom en riktig flersäsongskörning där
         // careerStats-ökningen inte matchade seasonStats hos djupbänkade spelare.
         careerStats: { ...benchPlayer.careerStats, totalGames: benchPlayer.careerStats.totalGames + 1 },
+        diary: debutDiary(benchPlayer),
       }
     }
   }

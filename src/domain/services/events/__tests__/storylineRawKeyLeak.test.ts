@@ -30,12 +30,38 @@ describe('storyline.description är aldrig den råa type-nyckeln', () => {
   it("makeFullTimePro-storylinen (went_fulltime_pro) har en riktig mening som description", () => {
     let game = makeGame()
     const target = game.players.find(p => p.clubId === game.managedClubId)!
-    game = { ...game, pendingEvents: [pendingWith({ type: 'makeFullTimePro', targetPlayerId: target.id, value: 20000 })] }
+    game = {
+      ...game,
+      players: game.players.map(p => p.id === target.id
+        ? { ...p, isFullTimePro: false, dayJob: { title: 'Testjobb', flexibility: 50, weeklyIncome: 1_000 } }
+        : p),
+      pendingEvents: [pendingWith({ type: 'makeFullTimePro', targetPlayerId: target.id, value: 20000 })],
+    }
     game = resolveEvent(game, 'test_rawkey_event', 'go', undefined, true)
 
     const storyline = game.storylines?.find(s => s.type === 'went_fulltime_pro')
     expect(storyline).toBeTruthy()
     expect(storyline!.description).not.toBe('went_fulltime_pro')
     expect(storyline!.description.length).toBeGreaterThan('went_fulltime_pro'.length)
+  })
+
+  it('makeFullTimePro skriver inget karriärminne utan en verklig deltid→heltid-övergång', () => {
+    let game = makeGame()
+    const target = game.players.find(p => p.clubId === game.managedClubId)!
+    game = {
+      ...game,
+      players: game.players.map(p => p.id === target.id ? { ...p, isFullTimePro: true, dayJob: undefined } : p),
+      pendingEvents: [pendingWith({ type: 'makeFullTimePro', targetPlayerId: target.id, value: 20000 })],
+    }
+
+    const alreadyPro = resolveEvent(game, 'test_rawkey_event', 'go', undefined, true)
+    expect(alreadyPro.storylines?.some(s => s.type === 'went_fulltime_pro')).toBe(false)
+
+    const missingTargetGame = {
+      ...makeGame(),
+      pendingEvents: [pendingWith({ type: 'makeFullTimePro', targetPlayerId: 'saknas', value: 20000 })],
+    }
+    const missingTarget = resolveEvent(missingTargetGame, 'test_rawkey_event', 'go', undefined, true)
+    expect(missingTarget.storylines?.some(s => s.type === 'went_fulltime_pro')).toBe(false)
   })
 })

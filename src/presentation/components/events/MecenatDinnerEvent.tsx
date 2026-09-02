@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
+import { getDinnerResolution } from '../../../domain/services/mecenatDinnerService'
 import type { DinnerScene, DinnerOption } from '../../../domain/services/mecenatDinnerService'
 
 interface Props {
@@ -18,21 +19,6 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
   const [step, setStep] = useState<Step>({ kind: 'intro' })
   const [chosenIds, setChosenIds] = useState<string[]>([])
 
-  function sumEffects(ids: string[]) {
-    let happiness = 0, cs = 0, financial = 0
-    for (const qid of ['q0', 'q1', 'q2']) {
-      const chosen = ids.find(id => id.startsWith(qid + '_'))
-      if (!chosen) continue
-      const q = scene.questions.find(q => q.id === qid)
-      const opt = q?.options.find(o => o.id === chosen)
-      if (!opt) continue
-      happiness += opt.effect.happiness
-      cs += opt.effect.communityStanding
-      financial += opt.effect.financial ?? 0
-    }
-    return { happiness, cs, financial }
-  }
-
   function handleOptionPick(qIndex: number, option: DinnerOption) {
     const updated = [...chosenIds, option.id]
     setChosenIds(updated)
@@ -44,8 +30,14 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
     if (nextQ < scene.questions.length) {
       setStep({ kind: 'question', qIndex: nextQ })
     } else {
-      const { happiness, cs } = sumEffects(chosenIds)
-      setStep({ kind: 'outro', totalHappiness: happiness, totalCS: cs })
+      const resolution = getDinnerResolution(scene, `final|${chosenIds.join('|')}`)
+      if (resolution) {
+        setStep({
+          kind: 'outro',
+          totalHappiness: resolution.totalHappiness,
+          totalCS: resolution.totalCommunityStanding,
+        })
+      }
     }
   }
 

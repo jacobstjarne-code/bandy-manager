@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { FixtureStatus } from '../../enums'
 import type { SeasonSummary } from '../../entities/SeasonSummary'
+import { resolveEvent } from '../events/eventResolver'
 import {
   getSeasonGoalOffers,
   evaluateSeasonGoal,
@@ -431,6 +432,31 @@ describe('checkSeasonGoalHalfwayEvent — ambient rad (D1)', () => {
       resolvedEventIds: [`event_season_goal_halfway_${game.currentSeason}`],
     }
     expect(checkSeasonGoalHalfwayEvent(game)).toBeNull()
+  })
+
+  it('ambient stängning skriver dedup-id så raden inte återkommer nästa omgång', () => {
+    let game = atHalfway(baseGame())
+    game = {
+      ...game,
+      activeSeasonGoal: { type: 'playoff', chosenSeason: game.currentSeason },
+    }
+    const event = checkSeasonGoalHalfwayEvent(game)!
+    const resolved = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'ambient_dismiss', undefined, true)
+
+    expect(resolved.resolvedEventIds).toContain(event.id)
+    expect(resolved.resolvedChoices ?? []).toEqual(game.resolvedChoices ?? [])
+    expect(checkSeasonGoalHalfwayEvent(resolved)).toBeNull()
+  })
+
+  it('kort i deferredDecisions spärrar en samtidig kopia', () => {
+    let game = atHalfway(baseGame())
+    game = {
+      ...game,
+      activeSeasonGoal: { type: 'playoff', chosenSeason: game.currentSeason },
+    }
+    const event = checkSeasonGoalHalfwayEvent(game)!
+
+    expect(checkSeasonGoalHalfwayEvent({ ...game, deferredDecisions: [event] })).toBeNull()
   })
 
   // A-M7 (SEXSÄSONGSAUDITEN 2026-08-26): gaten var bara en NEDRE gräns

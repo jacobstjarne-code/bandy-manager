@@ -93,6 +93,7 @@ import { generateDetailedAnalysis } from '../../../domain/services/opponentAnaly
 import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids, withActiveIncomingBidEvent } from './gameStateFactory'
 import { CUP_FINAL_VENUE, SM_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
 import { generatePlayoffBracket } from '../../../domain/services/playoffService'
+import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -187,7 +188,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'contract-demands' | 'career-break' | 'inbox' | 'sim-summary' | 'hall-provning'
   | 'coffee-room' | 'valet' | 'journalist-relationship' | 'cup-intro' | 'sunday-training' | 'season-signature-reveal'
   | 'scouting' | 'intro-sequence' | 'tilltrade' | 'name-input' | 'klubbparm' | 'ceremony-retirement'
-  | 'granska-level3' | 'board-patience-minimal' | 'next-match-derby' | 'next-match-annandagen'
+  | 'granska-level3' | 'board-patience-minimal' | 'next-match-derby' | 'next-match-annandagen' | 'mecenat-dinner'
   | 'corner-interaction' | 'penalty-interaction' | 'counter-interaction' | 'free-kick-interaction'
   | 'phase-overlay' | 'bid-modal' | 'renew-contract-modal' | 'ceremony-sm-final' | 'ceremony-cup-final'
   | 'manager-fired-redirect'
@@ -292,6 +293,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'name-input', label: 'Nytt spel — tränarnamn' },
   { id: 'klubbparm', label: 'Klubbpärmen — första kapitlet' },
   { id: 'ceremony-retirement', label: 'Avskedsceremoni — klubbikon slutar' },
+  { id: 'mecenat-dinner', label: 'Mecenatmiddag — tre frågor och verklig resolution' },
   { id: 'granska-level3', label: 'Granska — löst val med belagt citat' },
   { id: 'board-patience-minimal', label: 'Portal minimal — styrelsens ultimatum' },
   { id: 'next-match-derby', label: 'Nästa match — derby i portal' },
@@ -553,6 +555,18 @@ const smGame     = makeGame([...makeLeagueFixtures(), smFinalFixture])
 const arcGame    = makeGame(makeLeagueFixtures())
 const portalGame = makeGame(makeLeagueFixtures())
 const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1', board })
+const mecenatDinnerBaseGame = makeGame(makeLeagueFixtures(), {
+  currentMatchday: 20,
+  communityStanding: 50,
+  mecenater: [{
+    id: 'dev-mecenat-dinner', name: 'Karin Berg', gender: 'female', business: 'Berg AB',
+    businessType: 'entrepreneur', wealth: 3, personality: 'tyst_kraft', influence: 60,
+    happiness: 60, goodwill: 50, contribution: 60_000, totalContributed: 120_000,
+    demands: [], socialExpectations: [], isActive: true, arrivedSeason: 7, silentShout: 0,
+  }],
+})
+const mecenatDinnerEvent = generateDinnerEvent(mecenatDinnerBaseGame, 20)!
+const mecenatDinnerGame = { ...mecenatDinnerBaseGame, pendingEvents: [mecenatDinnerEvent] }
 const interactionPlayer = (squadGame.players.find(p => p.clubId === squadGame.managedClubId) ?? squadGame.players[0])!
 const interactionCornerData = {
   cornerTakerId: interactionPlayer.id, cornerTakerName: `${interactionPlayer.firstName[0]}. ${interactionPlayer.lastName}`,
@@ -1114,7 +1128,6 @@ const primaryFarewellFixture = {
 }
 // Ett kritiskt overlay-event pendlar medan nästa match är en avskedsmatch.
 // D-EVT1: eventet ägs av EventOverlay och konkurrerar inte längre om primary;
-// förväntat portalkort bakom overlayn är FarewellMatchPrimary.
 const primaryEventVsFarewellGame = makeGame([...makeLeagueFixtures(), primaryFarewellFixture], {
   pendingEvents: [{
     id: 'dev-primary-critical', type: 'playerUnhappy' as const, resolved: false,
@@ -1666,6 +1679,7 @@ export function DevScenesScreen() {
   const finalReady = useGameStore(s => !!s.game?.playoffBracket?.final)
   const storeGame = useGameStore(s => s.game)
   const retirementEventForScene = storeGame?.pendingEvents.find(event => event.id === retirementEvent.id)
+  const mecenatDinnerEventForScene = storeGame?.pendingEvents.find(event => event.id === mecenatDinnerEvent.id)
 
   // Seed the store so all screens that call useGameStore() work.
   // Detta låg tidigare i useMemo och anropade useGameStore.setState() UNDER
@@ -1754,6 +1768,7 @@ export function DevScenesScreen() {
         || scene === 'free-kick-interaction' || scene === 'phase-overlay' || scene === 'bid-modal'
         || scene === 'renew-contract-modal' || scene === 'ceremony-sm-final' || scene === 'ceremony-cup-final' ? squadGame
       : scene === 'ceremony-retirement' ? retirementCeremonyGame
+      : scene === 'mecenat-dinner' ? mecenatDinnerGame
       : scene === 'intro-sequence' || scene === 'name-input' || scene === 'klubbparm' ? squadGame
       : portalGame
     const roundSummaryForScene =
@@ -2354,6 +2369,12 @@ export function DevScenesScreen() {
         {scene === 'event-overlay-breakpoint' && (
           <div style={{ position: 'relative', minHeight: 500 }}>
             <EventOverlay event={breakpointEvent} />
+          </div>
+        )}
+
+        {scene === 'mecenat-dinner' && mecenatDinnerEventForScene && (
+          <div style={{ position: 'relative', minHeight: 500 }}>
+            <EventOverlay event={mecenatDinnerEventForScene} />
           </div>
         )}
 
