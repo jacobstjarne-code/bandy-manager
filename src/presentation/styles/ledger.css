@@ -321,9 +321,8 @@
 }
 
 .lf-stamp:disabled {
-  background: transparent;
-  border-color: var(--border-strong);
-  color: var(--ink-faint);
+  opacity: var(--disabled-opacity);
+  pointer-events: none;
   cursor: not-allowed;
 }
 
