@@ -1352,6 +1352,19 @@ export function resolveEvent(
       }
       break
     }
+    case 'lockKioskSupplyContract': {
+      // O2 materialar-/korvfallet: den utlovade tvååriga bindningen var
+      // tidigare bara text, vilket gjorde +4 000-valet strikt dominant över
+      // no-op-alternativet. Bindningen spärrar nya omförhandlingar tills
+      // perioden löpt ut; värdet i att behålla flexibiliteten blir därmed
+      // verkligt utan att uppfinna en annan kostnad än den spelaren såg.
+      updatedGame = {
+        ...updatedGame,
+        clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, effect.value ?? 0),
+        kioskSupplyContractUntilSeason: updatedGame.currentSeason + (effect.amount ?? 2),
+      }
+      break
+    }
     case 'moraleDelta': {
       // DEV-012: apply morale delta to all managed club players
       const delta = effect.value ?? 0

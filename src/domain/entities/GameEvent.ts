@@ -173,6 +173,7 @@ export interface EventEffect {
     // communityStanding direkt — domens SKYDDAT-punkt: förnyelsen sänker inte
     // CS, den UTEBLIVNA förnyelsen låter staleness göra det.
     | 'renewCommunityActivity'
+    | 'lockKioskSupplyContract'
   value?: number
   refereeId?: string
   amount?: number

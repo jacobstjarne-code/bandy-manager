@@ -38,6 +38,7 @@ import { mulberry32 } from '../../domain/utils/random'
 import { updatePlayerAvailability } from '../../domain/services/playerAvailabilityService'
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
+import { calculateWageBudget } from '../../domain/services/wageBudgetService'
 import {
   buildDefaultLineup,
   generateManagedClubEntourage,
@@ -112,10 +113,7 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
   // false på spelarens startklubb): det är en nybörjarregel för spelets
   // första klubb, inte ett världsfaktum. Att slå sönder en arena som redan
   // står där hade varit en världsmutation, vilket domen uttryckligen förbjuder.
-  const newClubMonthlyWages = game.players
-    .filter(p => p.clubId === newClubId)
-    .reduce((sum, p) => sum + p.salary, 0)
-  const wageBudget = Math.ceil(newClubMonthlyWages * 1.1 / 1000) * 1000
+  const wageBudget = calculateWageBudget(game.players, newClubId)
   const clubs = game.clubs.map(c => c.id === newClubId ? { ...c, wageBudget } : c)
   const managedClub = clubs.find(c => c.id === newClubId)!
 

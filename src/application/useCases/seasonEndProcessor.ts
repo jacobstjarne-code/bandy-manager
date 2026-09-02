@@ -43,6 +43,7 @@ import { appendFinanceLog, applyFinanceChange, type FinanceEntry } from '../../d
 import { computeSeasonEndContractDemands } from '../../domain/services/contractDemandService'
 import { resolveDeferredAtRollover } from '../../domain/services/deferredRolloverService'
 import { FALLBACK_SEASON_DEADLINE_MATCHDAY } from '../../domain/services/decisionTierService'
+import { calculateWageBudget } from '../../domain/services/wageBudgetService'
 
 // ── Position-aware replenishment helpers ──────────────────────────────────────
 const POSITION_MINIMUMS: Record<PlayerPosition, number> = {
@@ -1400,6 +1401,16 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     playersAfterLicense = [...playersAfterLicense, ...replenishedPlayers]
     clubsAfterLicense = replenishedClubs
   }
+
+  // Budgeten måste följa truppen som faktiskt sparas för nästa säsong. Före
+  // denna omräkning behöll klubben start-/klubbytesvärdet även efter pensioner,
+  // kontraktsutgångar, AI-övergångar och automatisk truppfyllnad.
+  const nextSeasonWageBudget = calculateWageBudget(playersAfterLicense, game.managedClubId)
+  clubsAfterLicense = clubsAfterLicense.map(club =>
+    club.id === game.managedClubId
+      ? { ...club, wageBudget: nextSeasonWageBudget }
+      : club
+  )
 
   const notableTransfers = aiTransferResult.transfers.filter(t => t.fee > 50000).slice(0, 3)
   if (notableTransfers.length > 0) {

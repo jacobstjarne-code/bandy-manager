@@ -18,6 +18,7 @@ import { updatePlayerAvailability } from '../../domain/services/playerAvailabili
 import { generateReferees } from '../../domain/services/refereeService'
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
 import { generateManagerProfile, generateCoachRivalries } from '../../domain/services/managerProfileService'
+import { calculateWageBudget } from '../../domain/services/wageBudgetService'
 // O13 (DOM_TRANARMARKNADEN_2026-08-26): det klubbspecifika steget är utbrutet
 // till setupManagedClub.ts så att tränarmarknadens klubbyte kan köra EXAKT
 // samma generering mot en redan existerande värld. rand-ordningen där är
@@ -102,10 +103,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const allFixtures = [...fixtures, ...cupFixtures]
 
   // Ensure the player's chosen club doesn't have hasIndoorArena
-  const managedMonthlyWages = players
-    .filter(p => p.clubId === input.clubId)
-    .reduce((sum, p) => sum + p.salary, 0)
-  const initialWageBudget = Math.ceil(managedMonthlyWages * 1.1 / 1000) * 1000
+  const initialWageBudget = calculateWageBudget(players, input.clubId)
   const clubsFixed = clubs.map(c =>
     c.id === input.clubId ? { ...c, hasIndoorArena: false, wageBudget: initialWageBudget } : c
   )

@@ -406,6 +406,8 @@ export interface SaveGame {
   politicianLastInteraction?: PoliticianInteractionLog
   board?: BoardMember[]   // KF4: EN styrelsemodell (ersätter boardPersonalities + club.board)
   lastEconomicStressRound?: number
+  /** Säsongen då det tvååriga exklusiva kioskavtalet åter kan omförhandlas. */
+  kioskSupplyContractUntilSeason?: number
   pendingPressConference?: import('../entities/GameEvent').GameEvent
   pendingCSPress?: import('../entities/GameEvent').GameEvent
   lastCSPressMatchday?: number  // for C-B1 cooldown tracking

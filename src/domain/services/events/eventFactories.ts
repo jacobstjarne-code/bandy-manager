@@ -655,15 +655,17 @@ export function createEconomicStressEvent(game: SaveGame, currentMatchday: numbe
         { id: 'shop', label: 'Fråga andra bolag — kan ta tid', effect: { type: 'noOp' } },
       ],
     },
-    {
-      id: 'economic_stress_kiosk',
-      title: 'Kioskvakten: förnyar vi korvavtalet?',
-      body: 'Korvfabriken vill sälja oss exklusivt. 10% billigare men låst i två år.',
-      choices: [
-        { id: 'lock', label: 'Skriv — bra marginaler', effect: { type: 'finance', value: 4000 } },
-        { id: 'free', label: 'Behåll flexibiliteten', effect: { type: 'noOp' } },
-      ],
-    },
+    ...(game.kioskSupplyContractUntilSeason != null && game.currentSeason < game.kioskSupplyContractUntilSeason
+      ? []
+      : [{
+          id: 'economic_stress_kiosk',
+          title: 'Kioskvakten: förnyar vi korvavtalet?',
+          body: 'Korvfabriken vill sälja oss exklusivt. 10% billigare men låst i två år.',
+          choices: [
+            { id: 'lock', label: 'Skriv — bra marginaler', effect: { type: 'lockKioskSupplyContract' as const, value: 4000, amount: 2 } },
+            { id: 'free', label: 'Behåll flexibiliteten', effect: { type: 'noOp' as const } },
+          ],
+        }]),
   ]
 
   const idx = Math.floor(localRand() * options.length)
